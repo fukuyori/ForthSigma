@@ -16,6 +16,8 @@ FORTH/Σ（フォース・シグマ）の言語コアを、Zigで動くネイテ
 
 利用者がデータを持つワードを作る定義用語（BUILDS/DOES）にも対応しています。
 
+`SAVE filename`／`LOAD filename` で利用者定義語を保存・追加読み込みできます。単独実行ファイルは別の拡張語 `SAVESYS filename.exe` で作成します。
+
 ワードごとの対応状況は[互換性一覧](forth/sigma/COMPATIBILITY.md)、資料で確定した仕様と移植上の判断の区別は[決定事項・保留事項](forth/sigma/DECISIONS.md)を参照してください。
 
 現時点では、LIST、ソースファイルやエディタの操作、CP/Mのファイル機能、PC-8001のモニタ機能、Z80機械語を使うワードには対応していません。
@@ -35,6 +37,17 @@ Linux/macOSでは、生成されたzig-out/bin/sigmaを実行してください�
 
     : SQUARE DUP * ;
     12 SQUARE .
+
+Forthソースファイルは標準入力から読み込めます。例:
+
+    sigma.exe < examples/demo.fs
+
+この移植版の `SAVE filename`／`LOAD filename` は利用者定義語を辞書イメージとして保存・追加読み込みします。同名語は新しい定義が優先され、`FORGET` で新しい方を削除すると古い定義に戻ります。誌面の `LOAD`／`SAVE` はエディットバッファ操作であり、その機能は実装していません。登録語を含む単独実行ファイルは `SAVESYS` で作成します。
+
+    SAVE words.sigma
+    SAVESYS demo.exe
+
+保存した実行ファイルは、引数なしなら登録語を持つ対話プロンプトを開きます。引数があれば、引数列をForth入力として一度実行して終了します。サンプルは `12` の平方である `144` を表示します。
 
 ## 標準Forthとの違い
 

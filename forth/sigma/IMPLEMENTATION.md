@@ -26,6 +26,9 @@ These routine names and relationships come from the source-list explanation in t
 - Output, terminal input, and base selection: `.`, `C.`, `ECHO`, `CR`, `SPACE`, `SPCES`, `TYPE`, `INPUT`, `HEX`, `DEC`, `OCT`, `BASE`, the original compile-time `"..."` string word, and the extension `."..."`.
 - Compilation: `: ... ;`, `[` and `]`, `'`, `EXECUTE`, `IF ... ELSE ... THEN`, `BEGIN ... END`, `BEGIN ... WHILE ... REPEAT`, `DO ... LOOP`, `DO ... +LOOP`, `?DO`, `LEAVE`, `I`, `J`, and `K`.
 - Defining words: <BUILDS creates a named data word from the remaining input; DOES> attaches the compiled behavior after it to that word.
+- Source can be piped to standard input and is interpreted by the same core as interactive input.
+- `SAVE filename` writes a versioned dictionary image. `LOAD filename` appends its user definitions to the current dictionary. Newer duplicate definitions take precedence; `FORGET` of the newer definition reveals the older one. These portable dictionary operations differ from the magazine editor-buffer commands with the same names.
+- `SAVESYS image.exe` copies the running executable and appends a versioned snapshot of the dictionary, compiled operations, and memory. The generated executable restores that image at startup. With no arguments it opens the interactive prompt; command-line arguments are joined as Forth input, interpreted once, and then the process exits.
 - `WORDS`, `FORGET`, and `BYE` are provided for interactive use.
 
 ## Deliberate implementation choices
@@ -57,7 +60,7 @@ The gforth source and ForthBasicMaster book are comparison material, not FORTH/Î
 
 ## Not implemented yet
 
-The runtime does not implement LIST, source-file/editor words (EDIT, LOAD, SAVE, EXEC, CLB, CLOAD, CSAVE), CP/M file calls, PC-8001 monitor/graphics/printing words, MCODE, USR, PUHL/POHL/NEXT, or every word in the magazine's dictionary tables. These facilities either depend on the original dictionary/compiler layout, an editor or filesystem, or Z80/monitor machine code. The core does not execute Z80 instructions and does not claim byte-level machine compatibility.
+The runtime does not implement the magazine's editor-buffer versions of LOAD/SAVE, LIST, EDIT, EXEC, CLB, CLOAD, CSAVE, CP/M file calls, PC-8001 monitor/graphics/printing words, MCODE, USR, PUHL/POHL/NEXT, or every word in the magazine's dictionary tables. These facilities either depend on the original dictionary/compiler layout, an editor or filesystem, or Z80/monitor machine code. The core does not execute Z80 instructions and does not claim byte-level machine compatibility.
 
 ## Verification record
 

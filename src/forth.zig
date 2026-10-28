@@ -13,6 +13,9 @@ pub const Writer = struct {
     context: ?*anyopaque,
     write_fn: *const fn (?*anyopaque, []const u8) void,
     read_fn: ?*const fn (?*anyopaque, []u8) ?[]const u8 = null,
+    load_fn: ?*const fn (?*anyopaque, []const u8, *State) RuntimeError!void = null,
+    save_fn: ?*const fn (?*anyopaque, []const u8, *State) RuntimeError!void = null,
+    savesys_fn: ?*const fn (?*anyopaque, []const u8, *State) RuntimeError!void = null,
 
     pub fn write(self: Writer, bytes: []const u8) void {
         self.write_fn(self.context, bytes);
@@ -88,6 +91,9 @@ const Builtin = enum {
     words,
     input,
     bye,
+    load,
+    save,
+    savesys,
 };
 
 const WordKind = enum { builtin, colon, variable, constant, array, created };
@@ -105,7 +111,7 @@ const Word = struct {
     data_here_before: Cell = 0,
 };
 
-const OpKind = enum { call, literal, branch, branch_zero, do_loop, q_do_loop, loop, plus_loop, print_string, string_literal, does, exit };
+const OpKind = enum { call, literal, execution_token, branch, branch_zero, do_loop, q_do_loop, loop, plus_loop, print_string, string_literal, does, exit };
 const Op = struct { kind: OpKind, value: u16 = 0 };
 const ControlKind = enum { if_branch, else_branch, begin_loop, while_branch, do_loop };
 const Control = struct { kind: ControlKind, address: u16 };
@@ -133,7 +139,21 @@ pub const RuntimeError = error{
     InvalidExecutionToken,
     MemoryExhausted,
     InputUnavailable,
+    FileUnavailable,
+    InvalidImage,
 };
+
+fn writeU32(output: []u8, value: anytype) void {
+    const number: u32 = @intCast(value);
+    output[0] = @truncate(number);
+    output[1] = @truncate(number >> 8);
+    output[2] = @truncate(number >> 16);
+    output[3] = @truncate(number >> 24);
+}
+
+fn readU32(input: []const u8) u32 {
+    return @as(u32, input[0]) | (@as(u32, input[1]) << 8) | (@as(u32, input[2]) << 16) | (@as(u32, input[3]) << 24);
+}
 
 pub const State = struct {
     writer: Writer,
@@ -178,6 +198,108 @@ pub const State = struct {
         self.writer.write(bytes);
     }
 
+    pub fn imageCapacity() usize {
+        return 20 + max_words * @sizeOf(Word) + max_code * @sizeOf(Op) + memory_size;
+    }
+
+    pub fn encodeImage(self: *State, output: []u8) RuntimeError!usize {
+        const required = 20 + @as(usize, self.word_count) * @sizeOf(Word) + @as(usize, self.code_count) * @sizeOf(Op) + memory_size;
+        if (output.len < required) return error.InvalidImage;
+        @memcpy(output[0..8], "SIGIMG01");
+        writeU32(output[8..12], self.word_count);
+        writeU32(output[12..16], self.code_count);
+        writeU32(output[16..20], self.data_here);
+        var cursor: usize = 20;
+        const word_bytes = std.mem.sliceAsBytes(self.words[0..self.word_count]);
+        @memcpy(output[cursor .. cursor + word_bytes.len], word_bytes);
+        cursor += word_bytes.len;
+        const code_bytes = std.mem.sliceAsBytes(self.code[0..self.code_count]);
+        @memcpy(output[cursor .. cursor + code_bytes.len], code_bytes);
+        cursor += code_bytes.len;
+        @memcpy(output[cursor .. cursor + memory_size], &self.memory);
+        return required;
+    }
+
+    pub fn restoreImage(self: *State, input: []const u8) RuntimeError!void {
+        if (input.len < 20 or !std.mem.eql(u8, input[0..8], "SIGIMG01")) return error.InvalidImage;
+        const word_count = readU32(input[8..12]);
+        const code_count = readU32(input[12..16]);
+        const data_here = readU32(input[16..20]);
+        if (word_count < self.builtin_count or word_count > max_words or code_count > max_code or data_here < 0x4000 or data_here > memory_size) return error.InvalidImage;
+        const word_bytes_len = @as(usize, word_count) * @sizeOf(Word);
+        const code_bytes_len = @as(usize, code_count) * @sizeOf(Op);
+        const required = 20 + word_bytes_len + code_bytes_len + memory_size;
+        if (input.len != required) return error.InvalidImage;
+        var cursor: usize = 20;
+        @memcpy(std.mem.sliceAsBytes(self.words[0..word_count]), input[cursor .. cursor + word_bytes_len]);
+        cursor += word_bytes_len;
+        @memcpy(std.mem.sliceAsBytes(self.code[0..code_count]), input[cursor .. cursor + code_bytes_len]);
+        cursor += code_bytes_len;
+        @memcpy(&self.memory, input[cursor .. cursor + memory_size]);
+        self.word_count = @intCast(word_count);
+        self.code_count = @intCast(code_count);
+        self.data_here = @intCast(data_here);
+        self.data_depth = 0;
+        self.return_depth = 0;
+        self.control_depth = 0;
+        self.loop_depth = 0;
+        self.compiling = false;
+        self.defining = false;
+        self.pending = .none;
+    }
+
+    pub fn appendImage(self: *State, source: *const State) RuntimeError!void {
+        if (source.builtin_count != self.builtin_count or source.word_count < source.builtin_count) return error.InvalidImage;
+        const added_words: usize = source.word_count - source.builtin_count;
+        const word_base: usize = self.word_count;
+        const code_base: usize = self.code_count;
+        const code_count: usize = source.code_count;
+        const data_base: usize = self.data_here;
+        if (word_base + added_words > max_words or code_base + code_count > max_code) return error.DictionaryFull;
+        if (source.data_here < 0x4000) return error.InvalidImage;
+        const data_len: usize = source.data_here - 0x4000;
+        if (data_base + data_len > std.math.maxInt(Cell)) return error.MemoryExhausted;
+        const data_delta = data_base - 0x4000;
+
+        for (source.words[source.builtin_count..source.word_count], 0..) |original, offset| {
+            var word = original;
+            word.data_here_before = @intCast(@as(usize, word.data_here_before) + data_delta);
+            if (word.kind == .colon) {
+                word.code_start = @intCast(@as(usize, word.code_start) + code_base);
+                word.code_end = @intCast(@as(usize, word.code_end) + code_base);
+            }
+            if (word.has_does) {
+                word.does_code_start = @intCast(@as(usize, word.does_code_start) + code_base);
+                word.does_code_end = @intCast(@as(usize, word.does_code_end) + code_base);
+            }
+            if (word.kind == .variable or word.kind == .array or word.kind == .created)
+                word.value = @intCast(@as(usize, word.value) + data_delta);
+            self.words[word_base + offset] = word;
+        }
+
+        for (source.code[0..source.code_count], 0..) |original, offset| {
+            var op = original;
+            switch (op.kind) {
+                .call, .execution_token => if (op.value >= source.builtin_count) {
+                    op.value = @intCast(word_base + (op.value - source.builtin_count));
+                },
+                .branch, .branch_zero, .do_loop, .q_do_loop, .loop, .plus_loop => {
+                    op.value = @intCast(@as(usize, op.value) + code_base);
+                },
+                .print_string, .string_literal => {
+                    op.value = @intCast(@as(usize, op.value) + data_delta);
+                },
+                .literal, .does, .exit => {},
+            }
+            self.code[code_base + offset] = op;
+        }
+        @memcpy(self.memory[data_base .. data_base + data_len], source.memory[0x4000..source.data_here]);
+        self.word_count = @intCast(word_base + added_words);
+        self.code_count = @intCast(code_base + code_count);
+        self.data_here = @intCast(data_base + data_len);
+        self.last_created_word = null;
+    }
+
     pub fn report(self: *State, err: anyerror) void {
         if (self.defining) {
             self.code_count = self.words[self.current_word].code_start;
@@ -203,7 +325,7 @@ pub const State = struct {
             self.write("NESTING ERROR !\n");
             return;
         }
-        const message: []const u8 = if (err == error.StackUnderflow) "STACK UNDER FLOW !" else if (err == error.ReturnStackUnderflow) "RETURN STACK UNDER FLOW !" else if (err == error.StackOverflow) "STACK OVER FLOW !" else if (err == error.ReturnStackOverflow) "RETURN STACK OVER FLOW !" else if (err == error.DictionaryFull) "OUT OF DICTIONARY !" else if (err == error.CodeFull) "OUT OF CODE SPACE !" else if (err == error.InvalidDefinition) "DEFINITION ERROR !" else if (err == error.CommentUnclosed) "END OF COMMENT MUST BE \")\" !" else if (err == error.ControlMismatch) "CONTROL STRUCTURE ERROR !" else if (err == error.CompileOnly) "COMPILE MODE ERROR !" else if (err == error.UnknownWord) "?" else if (err == error.InvalidNumber) "NUMBER ERROR !" else if (err == error.DivisionByZero) "DIVISION BY ZERO !" else if (err == error.LoopMismatch) "LOOP ERROR !" else if (err == error.InvalidBase) "BASE ERROR !" else if (err == error.InvalidExecutionToken) "INVALID EXECUTION TOKEN !" else if (err == error.MemoryExhausted) "OUT OF MEMORY !" else if (err == error.InputUnavailable) "INPUT ERROR !" else "FORTH ERROR !";
+        const message: []const u8 = if (err == error.StackUnderflow) "STACK UNDER FLOW !" else if (err == error.ReturnStackUnderflow) "RETURN STACK UNDER FLOW !" else if (err == error.StackOverflow) "STACK OVER FLOW !" else if (err == error.ReturnStackOverflow) "RETURN STACK OVER FLOW !" else if (err == error.DictionaryFull) "OUT OF DICTIONARY !" else if (err == error.CodeFull) "OUT OF CODE SPACE !" else if (err == error.InvalidDefinition) "DEFINITION ERROR !" else if (err == error.CommentUnclosed) "END OF COMMENT MUST BE \")\" !" else if (err == error.ControlMismatch) "CONTROL STRUCTURE ERROR !" else if (err == error.CompileOnly) "COMPILE MODE ERROR !" else if (err == error.UnknownWord) "?" else if (err == error.InvalidNumber) "NUMBER ERROR !" else if (err == error.DivisionByZero) "DIVISION BY ZERO !" else if (err == error.LoopMismatch) "LOOP ERROR !" else if (err == error.InvalidBase) "BASE ERROR !" else if (err == error.InvalidExecutionToken) "INVALID EXECUTION TOKEN !" else if (err == error.MemoryExhausted) "OUT OF MEMORY !" else if (err == error.InputUnavailable) "INPUT ERROR !" else if (err == error.FileUnavailable) "FILE ERROR !" else if (err == error.InvalidImage) "INVALID IMAGE !" else "FORTH ERROR !";
         self.write(message);
         self.write("\n");
     }
@@ -253,20 +375,21 @@ pub const State = struct {
 
     fn installBuiltins(self: *State) void {
         const definitions = [_]struct { []const u8, Builtin }{
-            .{ "DROP", .drop },      .{ "DUP", .dup },         .{ "SWAP", .swap },        .{ "OVER", .over },          .{ "ROT", .rot },
-            .{ ">R", .to_r },        .{ "R>", .from_r },       .{ "+", .add },            .{ "-", .sub },              .{ "*", .mul },
-            .{ "/", .div },          .{ "MOD", .mod },         .{ "/MOD", .div_mod },     .{ "MINUS", .negate },       .{ "ABS", .abs },
-            .{ "MAX", .max },        .{ "MIN", .min },         .{ "=", .equal },          .{ "<>", .not_equal },       .{ "<", .less },
-            .{ ">", .greater },      .{ "<=", .less_equal },   .{ ">=", .greater_equal }, .{ "NOT", .logical_not },    .{ "0=", .zero_equal },
-            .{ "AND", .bit_and },    .{ "OR", .bit_or },       .{ "XOR", .bit_xor },      .{ "COM", .bit_complement }, .{ "NAND", .bit_nand },
-            .{ "NOR", .bit_nor },    .{ "SWAB", .swap_bytes }, .{ "1-", .one_minus },     .{ "@", .fetch },            .{ "!", .store },
-            .{ ",", .comma },        .{ "C,", .c_comma },      .{ "EXECUTE", .execute },  .{ "C@", .cfetch },          .{ "C!", .cstore },
-            .{ "+!", .add_store },   .{ "1+!", .inc_store },   .{ "1-!", .dec_store },    .{ "OSET", .zero_store },    .{ "?", .question },
-            .{ "A@", .array_fetch }, .{ "A!", .array_store },  .{ ".", .dot },            .{ "C.", .c_dot },           .{ "ECHO", .echo },
-            .{ "CR", .cr },          .{ "SPACE", .space },     .{ "SPCES", .spaces },     .{ "TYPE", .type },          .{ "HEX", .hex },
-            .{ "DEC", .dec },        .{ "OCT", .oct },         .{ "BASE", .base },        .{ "HERE", .here },          .{ "ALLOT", .allot },
-            .{ "I", .index },        .{ "J", .index_2 },       .{ "K", .index_3 },        .{ "LEAVE", .leave },        .{ "WORDS", .words },
-            .{ "BYE", .bye },        .{ "INPUT", .input },      .{ "<BUILDS", .builds },
+            .{ "DROP", .drop },       .{ "DUP", .dup },         .{ "SWAP", .swap },        .{ "OVER", .over },          .{ "ROT", .rot },
+            .{ ">R", .to_r },         .{ "R>", .from_r },       .{ "+", .add },            .{ "-", .sub },              .{ "*", .mul },
+            .{ "/", .div },           .{ "MOD", .mod },         .{ "/MOD", .div_mod },     .{ "MINUS", .negate },       .{ "ABS", .abs },
+            .{ "MAX", .max },         .{ "MIN", .min },         .{ "=", .equal },          .{ "<>", .not_equal },       .{ "<", .less },
+            .{ ">", .greater },       .{ "<=", .less_equal },   .{ ">=", .greater_equal }, .{ "NOT", .logical_not },    .{ "0=", .zero_equal },
+            .{ "AND", .bit_and },     .{ "OR", .bit_or },       .{ "XOR", .bit_xor },      .{ "COM", .bit_complement }, .{ "NAND", .bit_nand },
+            .{ "NOR", .bit_nor },     .{ "SWAB", .swap_bytes }, .{ "1-", .one_minus },     .{ "@", .fetch },            .{ "!", .store },
+            .{ ",", .comma },         .{ "C,", .c_comma },      .{ "EXECUTE", .execute },  .{ "C@", .cfetch },          .{ "C!", .cstore },
+            .{ "+!", .add_store },    .{ "1+!", .inc_store },   .{ "1-!", .dec_store },    .{ "OSET", .zero_store },    .{ "?", .question },
+            .{ "A@", .array_fetch },  .{ "A!", .array_store },  .{ ".", .dot },            .{ "C.", .c_dot },           .{ "ECHO", .echo },
+            .{ "CR", .cr },           .{ "SPACE", .space },     .{ "SPCES", .spaces },     .{ "TYPE", .type },          .{ "HEX", .hex },
+            .{ "DEC", .dec },         .{ "OCT", .oct },         .{ "BASE", .base },        .{ "HERE", .here },          .{ "ALLOT", .allot },
+            .{ "I", .index },         .{ "J", .index_2 },       .{ "K", .index_3 },        .{ "LEAVE", .leave },        .{ "WORDS", .words },
+            .{ "BYE", .bye },         .{ "INPUT", .input },     .{ "<BUILDS", .builds },   .{ "LOAD", .load },          .{ "SAVE", .save },
+            .{ "SAVESYS", .savesys },
         };
         for (definitions) |definition| self.addBuiltin(definition[0], definition[1]) catch unreachable;
         self.builtin_count = self.word_count;
@@ -363,7 +486,7 @@ pub const State = struct {
                     return error.UnknownWord;
                 };
                 if (self.compiling) {
-                    _ = try self.emit(.{ .kind = .literal, .value = id });
+                    _ = try self.emit(.{ .kind = .execution_token, .value = id });
                 } else try self.push(id);
             },
         }
@@ -612,7 +735,7 @@ pub const State = struct {
             pc += 1;
             switch (op.kind) {
                 .call => try self.executeWord(op.value),
-                .literal => try self.push(op.value),
+                .literal, .execution_token => try self.push(op.value),
                 .branch => pc = op.value,
                 .branch_zero => {
                     if (try self.pop() == 0) pc = op.value;
@@ -897,6 +1020,21 @@ pub const State = struct {
                 }
             },
             .bye => self.halted = true,
+            .load => {
+                const path = self.nextSourceToken() orelse return error.InputUnavailable;
+                const load_fn = self.writer.load_fn orelse return error.FileUnavailable;
+                try load_fn(self.writer.context, path, self);
+            },
+            .save => {
+                const path = self.nextSourceToken() orelse return error.InputUnavailable;
+                const save_fn = self.writer.save_fn orelse return error.FileUnavailable;
+                try save_fn(self.writer.context, path, self);
+            },
+            .savesys => {
+                const path = self.nextSourceToken() orelse return error.InputUnavailable;
+                const savesys_fn = self.writer.savesys_fn orelse return error.FileUnavailable;
+                try savesys_fn(self.writer.context, path, self);
+            },
         }
     }
 
