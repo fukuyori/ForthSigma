@@ -14,6 +14,8 @@ FORTH/Σ（フォース・シグマ）の言語コアを、Zigで動くネイテ
 
 対応ワードと移植上の判断は[実装ノート](forth/sigma/IMPLEMENTATION.md)、資料から整理した言語仕様は[FORTH/Σ仕様書](forth/sigma/SPEC.md)を参照してください。実装は開発中であり、誌面の全ワードや機種固有機能には対応していません。
 
+使い方と現在登録されている組み込みワードの一覧は[ユーザーマニュアル](forth/sigma/USER_MANUAL.md)を参照してください。
+
 利用者がデータを持つワードを作る定義用語（BUILDS/DOES）にも対応しています。
 
 `SAVE filename`／`LOAD filename` で利用者定義語を保存・追加読み込みできます。単独実行ファイルは別の拡張語 `SAVESYS filename.exe` で作成します。
@@ -32,6 +34,16 @@ Zigをインストールした環境で、リポジトリのルートから実�
 コアの回帰テストはzig build testで実行できます。
 
 Linux/macOSでは、生成されたzig-out/bin/sigmaを実行してください。別のZigターゲットを指定する場合はzig build -Dtarget=<triple>を使います。
+
+現在の製品バージョンは [`VERSION`](VERSION) に記載しています。Windows向けリリースビルドとInno Setupインストーラーは次のPowerShellスクリプトで作成できます。インストーラーは `VERSION` の値を使い、必要なら `-Version MAJOR.MINOR.PATCH` で上書きできます。
+
+    .\scripts\build-release.ps1
+    .\scripts\build-installer.ps1
+
+署名する場合は `CODESIGN_CERT` に証明書ストア上の証明書サブジェクトを設定し、`-Sign` を指定します。署名時は実行ファイル、インストーラー、アンインストーラーを署名し、実行ファイルとインストーラーの署名を検証します。
+
+    .\scripts\build-release.ps1 -Sign
+    .\scripts\build-installer.ps1 -Sign
 
 例:
 

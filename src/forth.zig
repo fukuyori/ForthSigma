@@ -225,7 +225,7 @@ pub const State = struct {
         const word_count = readU32(input[8..12]);
         const code_count = readU32(input[12..16]);
         const data_here = readU32(input[16..20]);
-        if (word_count < self.builtin_count or word_count > max_words or code_count > max_code or data_here < 0x4000 or data_here > memory_size) return error.InvalidImage;
+        if (word_count < self.builtin_count or word_count > max_words or code_count > max_code or data_here < 0x4000 or data_here > std.math.maxInt(Cell)) return error.InvalidImage;
         const word_bytes_len = @as(usize, word_count) * @sizeOf(Word);
         const code_bytes_len = @as(usize, code_count) * @sizeOf(Op);
         const required = 20 + word_bytes_len + code_bytes_len + memory_size;
@@ -255,7 +255,8 @@ pub const State = struct {
         const code_base: usize = self.code_count;
         const code_count: usize = source.code_count;
         const data_base: usize = self.data_here;
-        if (word_base + added_words > max_words or code_base + code_count > max_code) return error.DictionaryFull;
+        if (word_base + added_words > max_words) return error.DictionaryFull;
+        if (code_base + code_count > max_code) return error.CodeFull;
         if (source.data_here < 0x4000) return error.InvalidImage;
         const data_len: usize = source.data_here - 0x4000;
         if (data_base + data_len > std.math.maxInt(Cell)) return error.MemoryExhausted;
