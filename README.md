@@ -14,7 +14,9 @@ FORTH/Σ（フォース・シグマ）の言語コアを、Zigで動くネイテ
 
 対応ワードと移植上の判断は[実装ノート](forth/sigma/IMPLEMENTATION.md)、資料から整理した言語仕様は[FORTH/Σ仕様書](forth/sigma/SPEC.md)を参照してください。実装は開発中であり、誌面の全ワードや機種固有機能には対応していません。
 
-現時点では、<BUILDS/DOES>、LIST、ソースファイルやエディタの操作、CP/Mのファイル機能、PC-8001のモニタ機能、Z80機械語を使うワードには対応していません。
+ワードごとの対応状況は[互換性一覧](forth/sigma/COMPATIBILITY.md)、資料で確定した仕様と移植上の判断の区別は[決定事項・保留事項](forth/sigma/DECISIONS.md)を参照してください。
+
+現時点では、&lt;BUILDS/DOES&gt;、LIST、ソースファイルやエディタの操作、CP/Mのファイル機能、PC-8001のモニタ機能、Z80機械語を使うワードには対応していません。
 
 ## ビルドと実行
 
@@ -22,6 +24,8 @@ Zigをインストールした環境で、リポジトリのルートから実�
 
     zig build
     ./zig-out/bin/sigma.exe
+
+コアの回帰テストはzig build testで実行できます。
 
 Linux/macOSでは、生成されたzig-out/bin/sigmaを実行してください。別のZigターゲットを指定する場合はzig build -Dtarget=<triple>を使います。
 

@@ -118,6 +118,7 @@ pub const RuntimeError = error{
     InvalidDefinition,
     CommentUnclosed,
     ControlMismatch,
+    ControlStackOverflow,
     CompileOnly,
     UnknownWord,
     InvalidNumber,
@@ -188,6 +189,10 @@ pub const State = struct {
                 self.last_unknown_word = null;
                 return;
             }
+        }
+        if (err == error.ControlStackOverflow) {
+            self.write("NESTING ERROR !\n");
+            return;
         }
         const message: []const u8 = if (err == error.StackUnderflow) "STACK UNDER FLOW !" else if (err == error.ReturnStackUnderflow) "RETURN STACK UNDER FLOW !" else if (err == error.StackOverflow) "STACK OVER FLOW !" else if (err == error.ReturnStackOverflow) "RETURN STACK OVER FLOW !" else if (err == error.DictionaryFull) "OUT OF DICTIONARY !" else if (err == error.CodeFull) "OUT OF CODE SPACE !" else if (err == error.InvalidDefinition) "DEFINITION ERROR !" else if (err == error.CommentUnclosed) "END OF COMMENT MUST BE \")\" !" else if (err == error.ControlMismatch) "CONTROL STRUCTURE ERROR !" else if (err == error.CompileOnly) "COMPILE MODE ERROR !" else if (err == error.UnknownWord) "?" else if (err == error.InvalidNumber) "NUMBER ERROR !" else if (err == error.DivisionByZero) "DIVISION BY ZERO !" else if (err == error.LoopMismatch) "LOOP ERROR !" else if (err == error.InvalidBase) "BASE ERROR !" else if (err == error.InvalidExecutionToken) "INVALID EXECUTION TOKEN !" else if (err == error.MemoryExhausted) "OUT OF MEMORY !" else if (err == error.InputUnavailable) "INPUT ERROR !" else "FORTH ERROR !";
         self.write(message);
@@ -438,7 +443,7 @@ pub const State = struct {
 
     fn pushControl(self: *State, kind: ControlKind, address: u16) RuntimeError!void {
         if (!self.compiling) return error.CompileOnly;
-        if (self.control_depth == max_controls) return error.CodeFull;
+        if (self.control_depth == max_controls) return error.ControlStackOverflow;
         self.control_stack[self.control_depth] = .{ .kind = kind, .address = address };
         self.control_depth += 1;
     }

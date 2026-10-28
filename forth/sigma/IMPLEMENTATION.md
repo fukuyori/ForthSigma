@@ -60,4 +60,4 @@ The runtime does not implement `<BUILDS`/`DOES>`, `LIST`, source-file/editor wor
 
 ## Verification record
 
-`zig build` succeeded for the native Windows target after these changes. No runtime checks or automated tests were run for this revision. The older manual checks covered arithmetic, definitions, control flow, variables, arrays, input, and the former `."` implementation; they predate these corrections and do not validate the corrected semantics above.
+zig build passes for the native Windows target. zig build test passes 19 regression tests with Zig 0.16.0, covering arithmetic, flags, dictionary lookup and capacity, FORGET, nested loops, loop boundaries, variables/arrays/strings, output, allocation and cell-address boundaries, stack limits, code/control limits, division by zero, and error recovery. The suite does not cover every word or every invalid input. No cross-OS execution checks have been run.
