@@ -135,10 +135,34 @@ fn terminalWrite(_: ?*anyopaque, bytes: []const u8) void {
     _ = fflush(null);
 }
 
+/// One byte read ahead by KEY? and returned by the next read.
+var lookahead: ?u8 = null;
+
+fn readByte() c_int {
+    if (lookahead) |byte| {
+        lookahead = null;
+        return byte;
+    }
+    return getchar();
+}
+
+fn terminalKey(_: ?*anyopaque) ?u8 {
+    const ch = readByte();
+    return if (ch < 0) null else @intCast(ch);
+}
+
+fn terminalKeyReady(_: ?*anyopaque) bool {
+    if (lookahead != null) return true;
+    const ch = getchar();
+    if (ch < 0) return false;
+    lookahead = @intCast(ch);
+    return true;
+}
+
 fn terminalRead(_: ?*anyopaque, buffer: []u8) ?[]const u8 {
     var used: usize = 0;
     while (true) {
-        const ch = getchar();
+        const ch = readByte();
         if (ch < 0) return if (used == 0) null else buffer[0..used];
         const byte: u8 = @intCast(ch);
         if (byte == '\r' or byte == '\n') {
@@ -168,7 +192,7 @@ pub fn main(init: std.process.Init) !void {
     const machine = try allocator.create(forth.State);
     defer allocator.destroy(machine);
 
-    machine.* = forth.State.init(.{ .context = @ptrCast(&host), .write_fn = terminalWrite, .read_fn = terminalRead, .load_fn = loadDictionary, .save_fn = saveDictionary, .savesys_fn = saveExecutableImage });
+    machine.* = forth.State.init(.{ .context = @ptrCast(&host), .write_fn = terminalWrite, .read_fn = terminalRead, .load_fn = loadDictionary, .save_fn = saveDictionary, .savesys_fn = saveExecutableImage, .key_fn = terminalKey, .key_ready_fn = terminalKeyReady });
     loadEmbeddedImage(executable_path, machine, allocator);
     machine.write("FORTH/Sigma Zig portable core\n");
 
@@ -201,7 +225,7 @@ pub fn main(init: std.process.Init) !void {
     var used: usize = 0;
     var discarding_line = false;
     while (!machine.halted) {
-        const ch = getchar();
+        const ch = readByte();
         if (ch < 0) {
             if (!discarding_line and used != 0) interpretAndPrompt(machine, line[0..used]);
             break;

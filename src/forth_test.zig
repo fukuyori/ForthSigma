@@ -7,6 +7,8 @@ const Output = struct {
     input_lines: [4][]const u8 = undefined,
     input_count: usize = 0,
     input_index: usize = 0,
+    keys: []const u8 = "",
+    key_index: usize = 0,
 
     fn write(context: ?*anyopaque, bytes: []const u8) void {
         const output: *Output = @ptrCast(@alignCast(context.?));
@@ -16,7 +18,19 @@ const Output = struct {
     }
 
     fn writer(self: *Output) forth.Writer {
-        return .{ .context = @ptrCast(self), .write_fn = write, .read_fn = read };
+        return .{ .context = @ptrCast(self), .write_fn = write, .read_fn = read, .key_fn = key, .key_ready_fn = keyReady };
+    }
+
+    fn key(context: ?*anyopaque) ?u8 {
+        const output: *Output = @ptrCast(@alignCast(context.?));
+        if (output.key_index == output.keys.len) return null;
+        output.key_index += 1;
+        return output.keys[output.key_index - 1];
+    }
+
+    fn keyReady(context: ?*anyopaque) bool {
+        const output: *Output = @ptrCast(@alignCast(context.?));
+        return output.key_index < output.keys.len;
     }
 
     fn read(context: ?*anyopaque, buffer: []u8) ?[]const u8 {
@@ -34,99 +48,141 @@ const Output = struct {
     }
 };
 
+fn createMachine(output: *Output) !*forth.State {
+    const machine = try std.testing.allocator.create(forth.State);
+    machine.* = forth.State.init(output.writer());
+    return machine;
+}
+
+fn destroyMachine(machine: *forth.State) void {
+    std.testing.allocator.destroy(machine);
+}
+
 fn expectStack(machine: *const forth.State, expected: []const forth.Cell) !void {
     try std.testing.expectEqual(expected.len, machine.data_depth);
     try std.testing.expectEqualSlices(forth.Cell, expected, machine.data_stack[0..machine.data_depth]);
 }
 
-test "16-bit arithmetic wraps and signed division truncates toward zero" {
-    var output = Output{};
-    var machine = forth.State.init(output.writer());
-
-    try machine.interpretLine("32767 1 + -7 3 /MOD");
-
-    const expected = [_]forth.Cell{ 32768, 0xffff, 0xfffe };
-    try expectStack(&machine, &expected);
+fn expectFloatStack(machine: *const forth.State, expected: []const forth.Float) !void {
+    try std.testing.expectEqual(expected.len, machine.float_depth);
+    try std.testing.expectEqualSlices(forth.Float, expected, machine.float_stack[0..machine.float_depth]);
 }
 
-test "true flags use one and zero remains false" {
+fn expectOutput(line: []const u8, expected: []const u8) !void {
     var output = Output{};
-    var machine = forth.State.init(output.writer());
-
-    try machine.interpretLine("1 1 = 0 0= AND 0 1 = OR");
-
-    const expected = [_]forth.Cell{1};
-    try expectStack(&machine, &expected);
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
+    try machine.interpretLine(line);
+    try std.testing.expectEqualStrings(expected, output.written());
 }
 
-test "dictionary uses case-insensitive names and first-five-character identity" {
+test "64-bit arithmetic wraps and division floors toward negative infinity" {
     var output = Output{};
-    var machine = forth.State.init(output.writer());
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
 
-    try machine.interpretLine(": ABCDE1 1 ; : ABCDE2 2 ; abcde2");
+    try machine.interpretLine("9223372036854775807 1 + -7 3 /MOD -7 2 / -7 2 MOD 7 -2 MOD");
 
-    const expected = [_]forth.Cell{2};
-    try expectStack(&machine, &expected);
+    const expected = [_]forth.Cell{ std.math.minInt(forth.Cell), 2, -3, -4, 1, -1 };
+    try expectStack(machine, &expected);
+}
+
+test "true flags are all bits set and zero remains false" {
+    var output = Output{};
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
+
+    try machine.interpretLine("1 1 = 0 0= AND 0 1 = OR 1 2 < 2 1 < NOT TRUE FALSE");
+
+    const expected = [_]forth.Cell{ -1, -1, -1, -1, 0 };
+    try expectStack(machine, &expected);
+}
+
+test "dictionary uses case-insensitive full-name identity" {
+    var output = Output{};
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
+
+    try machine.interpretLine(": ABCDE1 1 ; : ABCDE2 2 ; abcde1 abcde2");
+
+    const expected = [_]forth.Cell{ 1, 2 };
+    try expectStack(machine, &expected);
 }
 
 test "compiled nested loops and outer indices produce expected result" {
     var output = Output{};
-    var machine = forth.State.init(output.writer());
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
 
     try machine.interpretLine(": TOTAL 0 3 0 DO 2 0 DO I J + + LOOP LOOP ; TOTAL");
 
     const expected = [_]forth.Cell{9};
-    try expectStack(&machine, &expected);
+    try expectStack(machine, &expected);
 }
 
 test "q-do skips an empty range and do enters an equal range once" {
     var output = Output{};
-    var machine = forth.State.init(output.writer());
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
 
     try machine.interpretLine(": SKIP 0 5 5 ?DO 1 + LOOP ; : ONCE 0 5 5 DO 1 + LOOP ; SKIP ONCE");
 
     const expected = [_]forth.Cell{ 0, 1 };
-    try expectStack(&machine, &expected);
+    try expectStack(machine, &expected);
 }
 
 test "variable array and string operations use the portable data area" {
     var output = Output{};
-    var machine = forth.State.init(output.writer());
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
 
     try machine.interpretLine("VARIABLE V 123 V ! V @ 2 ARRAY A 42 1 A A! 1 A A@ : MESSAGE \" OK\" TYPE ; MESSAGE");
 
     const expected = [_]forth.Cell{ 123, 42 };
-    try expectStack(&machine, &expected);
+    try expectStack(machine, &expected);
     try std.testing.expectEqualStrings("OK", output.written());
 }
 
-test "decimal output has no trailing space and CR emits a newline" {
+test "number output is followed by a space and CR emits a newline" {
+    try expectOutput("3 . -3 . CR", "3 -3 \n");
+}
+
+test "number output uses signed digits without zero padding in every base" {
+    try expectOutput("HEX FF . -1 . 10 U. DECIMAL -1 U. 8 OCT . DECIMAL 300 C.", "FF -1 10 18446744073709551615 10 44 ");
+}
+
+test "dot-s shows depth and items without consuming them" {
     var output = Output{};
-    var machine = forth.State.init(output.writer());
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
 
-    try machine.interpretLine("3 . CR");
+    try machine.interpretLine("1 -2 3 .S");
 
-    try std.testing.expectEqualStrings("3\n", output.written());
+    try std.testing.expectEqualStrings("<3> 1 -2 3 ", output.written());
+    const expected = [_]forth.Cell{ 1, -2, 3 };
+    try expectStack(machine, &expected);
 }
 
 test "error reporting resets the stack and reports the unknown token" {
     var output = Output{};
-    var machine = forth.State.init(output.writer());
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
 
     machine.interpretLine("1 MISSING") catch |err| machine.report(err);
 
-    try expectStack(&machine, &.{});
+    try expectStack(machine, &.{});
     try std.testing.expectEqualStrings("MISSING ?\n", output.written());
 }
 
 test "forget removes later words and reclaims their data allocation" {
     var output = Output{};
-    var machine = forth.State.init(output.writer());
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
 
     try machine.interpretLine(": KEEP 11 ; 2 ARRAY RECLAIM FORGET RECLAIM HERE KEEP");
 
     const expected = [_]forth.Cell{ 0x4000, 11 };
-    try expectStack(&machine, &expected);
+    try expectStack(machine, &expected);
     try std.testing.expectEqual(@as(forth.Cell, 0x4000), machine.data_here);
 
     const missing = machine.interpretLine("RECLAIM");
@@ -137,20 +193,22 @@ test "forget removes later words and reclaims their data allocation" {
 
 test "forget reclaims compiled code for later definitions" {
     var output = Output{};
-    var machine = forth.State.init(output.writer());
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
 
     try machine.interpretLine(": KEEP 11 ; : REMOVE 22 ; FORGET REMOVE KEEP");
     const before_redefinition = [_]forth.Cell{11};
-    try expectStack(&machine, &before_redefinition);
+    try expectStack(machine, &before_redefinition);
 
     try machine.interpretLine(": REMOVE 33 ; REMOVE");
     const expected = [_]forth.Cell{ 11, 33 };
-    try expectStack(&machine, &expected);
+    try expectStack(machine, &expected);
 }
 
 test "failed definition is rolled back and the interpreter recovers" {
     var output = Output{};
-    var machine = forth.State.init(output.writer());
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
     const initial_words = machine.word_count;
     const initial_code = machine.code_count;
 
@@ -162,48 +220,60 @@ test "failed definition is rolled back and the interpreter recovers" {
 
     try machine.interpretLine(": GOOD 9 ; GOOD");
     const expected = [_]forth.Cell{9};
-    try expectStack(&machine, &expected);
+    try expectStack(machine, &expected);
 }
 
-test "data allocation rejects 16-bit wrap without moving the allocation pointer" {
+test "data allocation stops at the end of logical memory without moving the allocation pointer" {
     var output = Output{};
-    var machine = forth.State.init(output.writer());
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
 
-    try machine.interpretLine("49151 ALLOT HERE");
-    const expected = [_]forth.Cell{0xffff};
-    try expectStack(&machine, &expected);
-    try std.testing.expectEqual(@as(forth.Cell, 0xffff), machine.data_here);
+    try machine.interpretLine("1032192 ALLOT HERE");
+    const expected = [_]forth.Cell{forth.memory_size};
+    try expectStack(machine, &expected);
+    try std.testing.expectEqual(@as(forth.Cell, forth.memory_size), machine.data_here);
 
     const overflow = machine.interpretLine("1 ALLOT");
     try std.testing.expectError(error.MemoryExhausted, overflow);
     machine.report(error.MemoryExhausted);
-    try std.testing.expectEqual(@as(forth.Cell, 0xffff), machine.data_here);
+    try std.testing.expectEqual(@as(forth.Cell, forth.memory_size), machine.data_here);
 }
 
-test "16-bit cell access wraps across the logical memory boundary" {
+test "cell access is 64-bit little-endian and rejects addresses outside logical memory" {
     var output = Output{};
-    var machine = forth.State.init(output.writer());
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
 
-    try machine.interpretLine("4660 65535 ! 65535 @");
+    try machine.interpretLine("-2 1048568 ! 1048568 @ 1048568 C@ 1048575 C@");
+    const expected = [_]forth.Cell{ -2, 0xfe, 0xff };
+    try expectStack(machine, &expected);
 
-    const expected = [_]forth.Cell{0x1234};
-    try expectStack(&machine, &expected);
+    try std.testing.expectError(error.InvalidAddress, machine.interpretLine("1048569 @"));
+    machine.report(error.InvalidAddress);
+    try std.testing.expectError(error.InvalidAddress, machine.interpretLine("-1 C@"));
+    machine.report(error.InvalidAddress);
+    try std.testing.expectEqualStrings("INVALID MEMORY ADDRESS !\nINVALID MEMORY ADDRESS !\n", output.written());
 }
 
-test "division by zero returns the documented portable values" {
+test "division by zero is reported as an error" {
     var output = Output{};
-    var machine = forth.State.init(output.writer());
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
 
-    try machine.interpretLine("7 0 / 7 0 MOD 7 0 /MOD");
-
-    const expected = [_]forth.Cell{ 0x7fff, 0, 0, 0x7fff };
-    try expectStack(&machine, &expected);
-    try std.testing.expectEqualStrings("DIVISION BY ZERO\nDIVISION BY ZERO\nDIVISION BY ZERO\n", output.written());
+    try std.testing.expectError(error.DivisionByZero, machine.interpretLine("7 0 /"));
+    machine.report(error.DivisionByZero);
+    try std.testing.expectError(error.DivisionByZero, machine.interpretLine("7 0 MOD"));
+    machine.report(error.DivisionByZero);
+    try std.testing.expectError(error.DivisionByZero, machine.interpretLine("7 0 /MOD"));
+    machine.report(error.DivisionByZero);
+    try expectStack(machine, &.{});
+    try std.testing.expectEqualStrings("DIVISION BY ZERO !\nDIVISION BY ZERO !\nDIVISION BY ZERO !\n", output.written());
 }
 
 test "stack overflow is reported and subsequent input can run" {
     var output = Output{};
-    var machine = forth.State.init(output.writer());
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
     var input: [2050]u8 = undefined;
     for (0..1024) |index| {
         input[index * 2] = '0';
@@ -215,16 +285,17 @@ test "stack overflow is reported and subsequent input can run" {
     const overflow = machine.interpretLine(&input);
     try std.testing.expectError(error.StackOverflow, overflow);
     machine.report(error.StackOverflow);
-    try expectStack(&machine, &.{});
+    try expectStack(machine, &.{});
 
     try machine.interpretLine("2 3 +");
     const expected = [_]forth.Cell{5};
-    try expectStack(&machine, &expected);
+    try expectStack(machine, &expected);
 }
 
 test "return stack overflow and underflow reset cleanly" {
     var output = Output{};
-    var machine = forth.State.init(output.writer());
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
 
     for (0..1024) |_| try machine.interpretLine("0 >R");
     try std.testing.expectEqual(@as(usize, 1024), machine.return_depth);
@@ -232,7 +303,7 @@ test "return stack overflow and underflow reset cleanly" {
     try std.testing.expectError(error.ReturnStackOverflow, overflow);
     machine.report(error.ReturnStackOverflow);
     try std.testing.expectEqual(@as(usize, 0), machine.return_depth);
-    try expectStack(&machine, &.{});
+    try expectStack(machine, &.{});
 
     const underflow = machine.interpretLine("R>");
     try std.testing.expectError(error.ReturnStackUnderflow, underflow);
@@ -242,7 +313,8 @@ test "return stack overflow and underflow reset cleanly" {
 
 test "dictionary capacity failure preserves existing words" {
     var output = Output{};
-    var machine = forth.State.init(output.writer());
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
     var definition: [32]u8 = undefined;
 
     while (machine.word_count < 1024) {
@@ -257,12 +329,13 @@ test "dictionary capacity failure preserves existing words" {
     try std.testing.expectEqual(@as(u16, 1024), machine.word_count);
     try machine.interpretLine("W1023");
     const expected = [_]forth.Cell{1};
-    try expectStack(&machine, &expected);
+    try expectStack(machine, &expected);
 }
 
 test "control nesting overflow rolls back the incomplete definition" {
     var output = Output{};
-    var machine = forth.State.init(output.writer());
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
     const initial_words = machine.word_count;
     const initial_code = machine.code_count;
     var input: [400]u8 = undefined;
@@ -285,7 +358,8 @@ test "control nesting overflow rolls back the incomplete definition" {
 
 test "compiled code capacity failure rolls back the incomplete definition" {
     var output = Output{};
-    var machine = forth.State.init(output.writer());
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
     const initial_words = machine.word_count;
     const initial_code = machine.code_count;
     var input: [16396]u8 = undefined;
@@ -309,49 +383,54 @@ test "compiled code capacity failure rolls back the incomplete definition" {
 
 test "nested IF ELSE THEN selects every branch" {
     var output = Output{};
-    var machine = forth.State.init(output.writer());
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
 
     try machine.interpretLine(": SELECT DUP 0= IF DROP 10 ELSE DUP 1 = IF DROP 20 ELSE DROP 30 THEN THEN ; 0 SELECT 1 SELECT 2 SELECT");
 
     const expected = [_]forth.Cell{ 10, 20, 30 };
-    try expectStack(&machine, &expected);
+    try expectStack(machine, &expected);
 }
 
 test "BEGIN WHILE REPEAT and BEGIN END compile and run" {
     var output = Output{};
-    var machine = forth.State.init(output.writer());
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
 
     try machine.interpretLine(": COUNT-UP 0 BEGIN DUP 3 < WHILE 1 + REPEAT ;");
     try machine.interpretLine(": COUNT-TO 0 BEGIN 1 + DUP 3 = END ;");
     try machine.interpretLine("COUNT-UP COUNT-TO");
 
     const expected = [_]forth.Cell{ 3, 3 };
-    try expectStack(&machine, &expected);
+    try expectStack(machine, &expected);
 }
 
 test "+LOOP handles positive and negative increments at the boundary" {
     var output = Output{};
-    var machine = forth.State.init(output.writer());
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
 
     try machine.interpretLine(": COUNT-UP 0 5 0 DO 1 + 2 +LOOP ; : COUNT-DOWN 0 0 3 DO 1 + -1 +LOOP ; COUNT-UP COUNT-DOWN");
 
     const expected = [_]forth.Cell{ 3, 4 };
-    try expectStack(&machine, &expected);
+    try expectStack(machine, &expected);
 }
 
 test "LEAVE exits the active loop without losing the outer result" {
     var output = Output{};
-    var machine = forth.State.init(output.writer());
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
 
     try machine.interpretLine(": SUM-UNTIL-FIVE 0 10 0 DO I 5 = IF LEAVE ELSE I + THEN LOOP ; SUM-UNTIL-FIVE");
 
     const expected = [_]forth.Cell{10};
-    try expectStack(&machine, &expected);
+    try expectStack(machine, &expected);
 }
 
 test "multiline definitions and immediate string output preserve compiler state" {
     var output = Output{};
-    var machine = forth.State.init(output.writer());
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
 
     try machine.interpretLine(": GREET");
     try machine.interpretLine("\" HELLO\" TYPE ;");
@@ -362,7 +441,8 @@ test "multiline definitions and immediate string output preserve compiler state"
 
 test "quoted string length is limited to 127 bytes" {
     var output = Output{};
-    var machine = forth.State.init(output.writer());
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
     var input: [256]u8 = undefined;
     var used: usize = 0;
     const prefix = ": TEXT \" ";
@@ -395,47 +475,430 @@ test "quoted string length is limited to 127 bytes" {
 
 test "redefinition warns and subsequent lookup uses the newest definition" {
     var output = Output{};
-    var machine = forth.State.init(output.writer());
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
 
     try machine.interpretLine(": VALUE 1 ; : VALUE 2 ; VALUE");
 
     const expected = [_]forth.Cell{2};
-    try expectStack(&machine, &expected);
+    try expectStack(machine, &expected);
     try std.testing.expectEqualStrings("WARNING: SAME NAME WORD EXISTS\n", output.written());
 }
 
 test "<BUILDS and DOES> attach a compiled behavior to created words" {
     var output = Output{};
-    var machine = forth.State.init(output.writer());
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
 
     try machine.interpretLine(": CELL <BUILDS , DOES> @ ; 42 CELL ANSWER 43 CELL OTHER ANSWER OTHER");
 
     const expected = [_]forth.Cell{ 42, 43 };
-    try expectStack(&machine, &expected);
-    try std.testing.expectEqual(@as(forth.Cell, 0x4004), machine.data_here);
+    try expectStack(machine, &expected);
+    try std.testing.expectEqual(@as(forth.Cell, forth.data_start + 16), machine.data_here);
 }
 
 test "<BUILDS reads a created word name from the next input line" {
     var output = Output{};
     output.input_lines[0] = "ACROSS-LINE";
     output.input_count = 1;
-    var machine = forth.State.init(output.writer());
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
 
     try machine.interpretLine(": CELL <BUILDS , DOES> @ ;");
     try machine.interpretLine("73 CELL");
     try machine.interpretLine("ACROSS-LINE");
 
     const expected = [_]forth.Cell{73};
-    try expectStack(&machine, &expected);
+    try expectStack(machine, &expected);
 }
 
 test "FORGET removes created words and their data can be reused" {
     var output = Output{};
-    var machine = forth.State.init(output.writer());
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
 
     try machine.interpretLine(": CELL <BUILDS , DOES> @ ; 42 CELL FIRST 43 CELL SECOND FORGET SECOND 44 CELL THIRD FIRST THIRD");
 
     const expected = [_]forth.Cell{ 42, 44 };
-    try expectStack(&machine, &expected);
-    try std.testing.expectEqual(@as(forth.Cell, 0x4004), machine.data_here);
+    try expectStack(machine, &expected);
+    try std.testing.expectEqual(@as(forth.Cell, forth.data_start + 16), machine.data_here);
+}
+
+test "LEAVE exits immediately and UNLOOP allows EXIT from a loop" {
+    var output = Output{};
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
+
+    try machine.interpretLine(": STOP-AT-3 0 10 0 DO I 3 = IF LEAVE THEN 1+ LOOP ;");
+    try machine.interpretLine(": FIND-4 10 0 DO I 4 = IF I UNLOOP EXIT THEN LOOP -1 ;");
+    try machine.interpretLine("STOP-AT-3 FIND-4");
+
+    const expected = [_]forth.Cell{ 3, 4 };
+    try expectStack(machine, &expected);
+    try std.testing.expectEqual(@as(usize, 0), machine.loop_depth);
+}
+
+test "stack words follow the standard stack effects" {
+    var output = Output{};
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
+
+    try machine.interpretLine("1 2 3 -ROT NIP 4 TUCK 2DUP 2DROP DEPTH 9 8 7 2 PICK 3 ROLL 5 >R R@ R> 2SWAP 2OVER");
+
+    const expected = [_]forth.Cell{ 3, 4, 2, 4, 4, 8, 7, 5, 5, 9, 9, 5, 5 };
+    try expectStack(machine, &expected);
+}
+
+test "basic standard words cover bit shifts, cells, characters, and number prefixes" {
+    var output = Output{};
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
+
+    try machine.interpretLine("1 4 LSHIFT -1 60 RSHIFT 3 CELLS 0 CELL+ 9 ALIGNED BL CHAR A : Z [CHAR] Z ; Z $FF #10 %101 'a' -7 2/ 1 \\ 2 3");
+
+    const expected = [_]forth.Cell{ 16, 15, 24, 8, 16, 32, 65, 90, 255, 10, 5, 97, -4, 1 };
+    try expectStack(machine, &expected);
+}
+
+test "memory words fill, erase, move, and switch flags on and off" {
+    var output = Output{};
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
+
+    try machine.interpretLine("CREATE BUF 16 ALLOT BUF 4 65 FILL BUF BUF 1+ 3 MOVE BUF 3 + 1 ERASE BUF 4 TYPE VARIABLE F F ON F @ F OFF F @");
+
+    const expected = [_]forth.Cell{ -1, 0 };
+    try expectStack(machine, &expected);
+    try std.testing.expectEqualStrings("AAA\x00", output.written());
+}
+
+test "UNTIL AGAIN EXIT and RECURSE compile structured definitions" {
+    var output = Output{};
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
+
+    try machine.interpretLine(": U 0 BEGIN 1+ DUP 3 = UNTIL ; : A 0 BEGIN 1+ DUP 5 = IF EXIT THEN AGAIN ;");
+    try machine.interpretLine(": FACT DUP 1 > IF DUP 1- RECURSE * THEN ; U A 20 FACT");
+
+    const expected = [_]forth.Cell{ 3, 5, 2432902008176640000 };
+    try expectStack(machine, &expected);
+}
+
+test "CASE OF ENDOF ENDCASE selects a branch and drops the selector" {
+    var output = Output{};
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
+
+    try machine.interpretLine(": PICK-ONE CASE 1 OF 10 ENDOF 2 OF 20 ENDOF 99 SWAP ENDCASE ; 1 PICK-ONE 2 PICK-ONE 3 PICK-ONE");
+
+    const expected = [_]forth.Cell{ 10, 20, 99 };
+    try expectStack(machine, &expected);
+}
+
+test "VALUE and TO work interpreted and compiled" {
+    var output = Output{};
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
+
+    try machine.interpretLine("5 VALUE X X 7 TO X X : SETX TO X ; 9 SETX X");
+
+    const expected = [_]forth.Cell{ 5, 7, 9 };
+    try expectStack(machine, &expected);
+}
+
+test "IMMEDIATE and POSTPONE extend the compiler" {
+    var output = Output{};
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
+
+    try machine.interpretLine(": MY-IF POSTPONE IF ; IMMEDIATE : SIGNED MY-IF 1 ELSE 2 THEN ; -1 SIGNED 0 SIGNED");
+    try machine.interpretLine(": FIVE 5 ; : COMPILE-FIVE POSTPONE FIVE ; IMMEDIATE : USE-FIVE COMPILE-FIVE ; USE-FIVE");
+
+    const expected = [_]forth.Cell{ 1, 2, 5 };
+    try expectStack(machine, &expected);
+}
+
+test "compile-only words are rejected while interpreting" {
+    var output = Output{};
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
+
+    try std.testing.expectError(error.CompileOnly, machine.interpretLine("1 IF"));
+    machine.report(error.CompileOnly);
+    try std.testing.expectError(error.CompileOnly, machine.interpretLine("EXIT"));
+    machine.report(error.CompileOnly);
+    try std.testing.expectError(error.CompileOnly, machine.interpretLine("LEAVE"));
+    machine.report(error.CompileOnly);
+}
+
+test "float literals require an exponent and use a separate stack" {
+    var output = Output{};
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
+
+    try machine.interpretLine("1 1E 1.5e0 .5E -2.25E+1 0.e 3");
+
+    const expected = [_]forth.Cell{ 1, 3 };
+    try expectStack(machine, &expected);
+    const floats = [_]forth.Float{ 1.0, 1.5, 0.5, -22.5, 0.0 };
+    try expectFloatStack(machine, &floats);
+
+    try machine.interpretLine("2DROP 1.5 HEX 1E DECIMAL");
+    const not_floats = [_]forth.Cell{ 15, 0, 0x1e };
+    try expectStack(machine, &not_floats);
+    try expectFloatStack(machine, &floats);
+}
+
+test "F. prints fixed notation with 15 significant digits and a trailing space" {
+    try expectOutput("1E 2E F+ F. 1.5E F. 0.5E F. 1E-5 F. 1E20 F. -2.5E F. 0E F. 123E F. 2E FSQRT F.", "3. 1.5 0.5 0.00001 100000000000000000000. -2.5 0. 123. 1.4142135623731 ");
+}
+
+test "F. prints non-finite values by name" {
+    try expectOutput("1E 0E F/ F. -1E 0E F/ F. 0E 0E F/ F.", "infinity -infinity NaN ");
+}
+
+test "F.S shows the float stack with exponent markers" {
+    var output = Output{};
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
+
+    try machine.interpretLine("1E 2E 0.5E 1E-7 -3.25E 1E30 F.S");
+
+    try std.testing.expectEqualStrings("<6> 1e 2e .5e 1e-7 -3.25e 1e30 ", output.written());
+    try std.testing.expectEqual(@as(usize, 6), machine.float_depth);
+}
+
+test "float arithmetic comparison and conversion" {
+    var output = Output{};
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
+
+    try machine.interpretLine("1E 2E F< 2E 1E F< 1E 1E F= 0E F0= -1E F0< 10 S>F 4E F/ F>S 2.9E F>S -2.9E F>S FDEPTH");
+    const expected = [_]forth.Cell{ -1, 0, -1, -1, -1, 2, 2, -2, 0 };
+    try expectStack(machine, &expected);
+
+    try machine.interpretLine("3E 4E FMAX -5E FABS FMIN 2E FNEGATE 1E FOVER FSWAP FDROP FNIP 7E 8E FTUCK F-ROT FROT 1 FPICK");
+    const floats = [_]forth.Float{ 4.0, -2.0, 8.0, 7.0, 8.0, 7.0 };
+    try expectFloatStack(machine, &floats);
+}
+
+test "float math functions follow the host libm" {
+    var output = Output{};
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
+
+    try machine.interpretLine("9E FSQRT 0E FEXP 1E FLN 0E FSIN 0E FCOS 0E FTAN");
+
+    const floats = [_]forth.Float{ 3.0, 1.0, 0.0, 0.0, 1.0, 0.0 };
+    try expectFloatStack(machine, &floats);
+}
+
+test "float memory, variables, constants, and arrays" {
+    var output = Output{};
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
+
+    try machine.interpretLine("CREATE TEMP 1 FLOATS ALLOT 37.5E TEMP F! TEMP F@ F.");
+    try machine.interpretLine("FVARIABLE ACC 1.5E ACC F! 2E ACC F+! ACC F?");
+    try machine.interpretLine("3.1415926535E FCONSTANT PI : AREA FDUP F* PI F* ; 5E AREA F.");
+    try machine.interpretLine("3 FARRAY POINTS 1.25E 2 POINTS FA! 2 POINTS FA@ F. HERE 0 FLOAT+ 2 FLOATS");
+    try machine.interpretLine(": HALF 0.5E F* ; 3E HALF F. HERE 6.5E F, F@ F.");
+
+    try std.testing.expectEqualStrings("37.5 3.5 78.5398163375 1.25 1.5 6.5 ", output.written());
+    try std.testing.expectEqual(@as(usize, 3), machine.data_depth);
+    try std.testing.expectEqual(@as(forth.Cell, 8), machine.data_stack[1]);
+    try std.testing.expectEqual(@as(forth.Cell, 16), machine.data_stack[2]);
+}
+
+test "float stack underflow is reported and both stacks are reset" {
+    var output = Output{};
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
+
+    try std.testing.expectError(error.FloatStackUnderflow, machine.interpretLine("1 1E F+"));
+    machine.report(error.FloatStackUnderflow);
+    try expectStack(machine, &.{});
+    try expectFloatStack(machine, &.{});
+    try std.testing.expectEqualStrings("FLOATING-POINT STACK UNDER FLOW !\n", output.written());
+}
+
+test "FINPUT reads a float and INPUT reads a 64-bit integer" {
+    var output = Output{};
+    output.input_lines[0] = "abc";
+    output.input_lines[1] = "2.5";
+    output.input_lines[2] = "-9000000000";
+    output.input_count = 3;
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
+
+    try machine.interpretLine("FINPUT INPUT");
+
+    const expected = [_]forth.Cell{-9000000000};
+    try expectStack(machine, &expected);
+    const floats = [_]forth.Float{2.5};
+    try expectFloatStack(machine, &floats);
+    try std.testing.expectEqualStrings(" ?\n", output.written());
+}
+
+test "dictionary image round trip relocates words, floats, values, and strings" {
+    var output = Output{};
+    const source = try createMachine(&output);
+    defer destroyMachine(source);
+    try source.interpretLine("2.5E FCONSTANT RATE 4 VALUE COUNTER VARIABLE V 11 V ! 70000000000000000000. 2CONSTANT HUGE");
+    try source.interpretLine(": SCALE RATE F* ; : BUMP COUNTER 1+ TO COUNTER ; : SAY \" HI\" TYPE ;");
+    const image = try std.testing.allocator.alloc(u8, forth.State.imageCapacity());
+    defer std.testing.allocator.free(image);
+    const length = try source.encodeImage(image);
+
+    const loaded = try createMachine(&output);
+    defer destroyMachine(loaded);
+    try loaded.restoreImage(image[0..length]);
+
+    const target = try createMachine(&output);
+    defer destroyMachine(target);
+    try target.interpretLine("VARIABLE FIRST 1 FIRST ! : EARLIER 1 ;");
+    try target.appendImage(loaded);
+    try target.interpretLine("2E SCALE F. BUMP COUNTER V @ FIRST @ SAY HUGE D.");
+
+    const expected = [_]forth.Cell{ 5, 11, 1 };
+    try expectStack(target, &expected);
+    try std.testing.expectEqualStrings("5. HI70000000000000000000 ", output.written());
+}
+
+test "numbers containing a dot are double-cell integers" {
+    var output = Output{};
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
+
+    try machine.interpretLine("123. -5. 12345.123 #10. $FF.");
+
+    const expected = [_]forth.Cell{ 123, 0, -5, -1, 12345123, 0, 10, 0, 255, 0 };
+    try expectStack(machine, &expected);
+}
+
+test "double arithmetic, comparison, and output exceed a single cell" {
+    try expectOutput("1234567890000000000. 9876543210000000000. D+ D. -1. D. 5 S>D D. -7 S>D DABS D. 3. DNEGATE D.", "11111111100000000000 -1 5 7 -3 ");
+}
+
+test "2! and 2@ store a double with the high cell first" {
+    var output = Output{};
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
+
+    try machine.interpretLine("CREATE BIGNUM 2 CELLS ALLOT 12345678901234567890 1 BIGNUM 2! BIGNUM 2@ D. BIGNUM @");
+    try machine.interpretLine("2VARIABLE DV 7. DV 2! DV 2@ 42. 2CONSTANT ANSWER ANSWER D0= 0. D0= 1. 2. D< 3. 3. D= -1. D0< 9. D>S");
+
+    try std.testing.expectEqualStrings("30792422974944119506 ", output.written());
+    const expected = [_]forth.Cell{ 1, 7, 0, 0, -1, -1, -1, -1, 9 };
+    try expectStack(machine, &expected);
+}
+
+test "pictured numeric output builds strings from the right" {
+    var output = Output{};
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
+
+    try machine.interpretLine(": MY-U. 0 <<# #S #> TYPE SPACE #>> ;");
+    try machine.interpretLine(": DOLLARS 0 <<# # # [CHAR] . HOLD #S [CHAR] $ HOLD #> TYPE SPACE #>> ;");
+    try machine.interpretLine(": MY-. S>D SWAP OVER DABS <<# #S ROT SIGN #> TYPE SPACE #>> ;");
+    try machine.interpretLine("123 MY-U. 1234 DOLLARS 5 DOLLARS -123 MY-. 456 MY-. 255 HEX MY-U. DECIMAL");
+    try machine.interpretLine("<# 7 0 # # S\" ab\" HOLDS #> TYPE");
+
+    try std.testing.expectEqualStrings("123 $12.34 $0.05 -123 456 FF ab07", output.written());
+    try std.testing.expectEqual(@as(usize, 0), machine.data_depth);
+}
+
+test "nested hold areas keep the outer conversion" {
+    var output = Output{};
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
+
+    try machine.interpretLine("<<# 12 0 #S <<# 34 0 #S #> TYPE #>> #> TYPE #>>");
+
+    try std.testing.expectEqualStrings("3412", output.written());
+    try std.testing.expectError(error.PicturedNumericOverflow, machine.interpretLine("#>>"));
+    machine.report(error.PicturedNumericOverflow);
+}
+
+test "S\" and S\\\" return strings while interpreting and compiling" {
+    var output = Output{};
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
+
+    try machine.interpretLine("S\" Hello, Forth!\" TYPE CR : GREET S\" compiled\" TYPE ; GREET CR");
+    try machine.interpretLine("S\\\" a\\tb\\x41\\\"q\" TYPE .\\\" x\\ny\" : SAY .\\\" [\\q]\" ; SAY .( paren) CR");
+    try machine.interpretLine("CREATE BUF 20 ALLOT S\" Forth\" TUCK BUF SWAP MOVE BUF SWAP TYPE");
+
+    try std.testing.expectEqualStrings("Hello, Forth!\ncompiled\na\tbA\"qx\ny[\"]paren\nForth", output.written());
+}
+
+test "S\" keeps several interpreted strings alive" {
+    var output = Output{};
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
+
+    try machine.interpretLine("S\" one\" S\" two\" S\" three\" TYPE TYPE TYPE");
+
+    try std.testing.expectEqualStrings("threetwoone", output.written());
+}
+
+test "COUNT and PAD give addressable buffers" {
+    var output = Output{};
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
+
+    try machine.interpretLine("3 PAD C! 65 PAD 1+ C! 66 PAD 2 + C! 67 PAD 3 + C! PAD COUNT TYPE PAD");
+
+    try std.testing.expectEqualStrings("ABC", output.written());
+    const expected = [_]forth.Cell{forth.pad_address};
+    try expectStack(machine, &expected);
+}
+
+test ">NUMBER S>NUMBER? and >FLOAT convert strings" {
+    var output = Output{};
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
+
+    try machine.interpretLine("0. S\" 123x\" >NUMBER NIP S\" -42\" S>NUMBER? S\" 3.14\" S>NUMBER? S\" nope\" S>NUMBER?");
+    const expected = [_]forth.Cell{ 123, 0, 1, -42, -1, -1, 314, 0, -1, 0, 0, 0 };
+    try expectStack(machine, &expected);
+}
+
+test ">FLOAT accepts decimal text without an exponent" {
+    var output = Output{};
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
+
+    try machine.interpretLine("S\" 2.5\" >FLOAT S\" 1e3\" >FLOAT S\" x\" >FLOAT S\"  \" >FLOAT 7. D>F 2.9E F>D");
+
+    const expected = [_]forth.Cell{ -1, -1, 0, -1, 2, 0 };
+    try expectStack(machine, &expected);
+    const floats = [_]forth.Float{ 2.5, 1000.0, 0.0, 7.0 };
+    try expectFloatStack(machine, &floats);
+}
+
+test "ACCEPT and EVALUATE read and interpret a line" {
+    var output = Output{};
+    output.input_lines[0] = "2 3 + 4 *";
+    output.input_count = 1;
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
+
+    try machine.interpretLine("PAD 80 ACCEPT PAD SWAP EVALUATE S\" : SQ DUP * ;\" EVALUATE 5 SQ");
+
+    const expected = [_]forth.Cell{ 20, 25 };
+    try expectStack(machine, &expected);
+}
+
+test "KEY and KEY? read single characters" {
+    var output = Output{};
+    output.keys = "hi";
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
+
+    try machine.interpretLine(": ECHO-ALL BEGIN KEY? WHILE KEY EMIT REPEAT ; ECHO-ALL KEY?");
+
+    try std.testing.expectEqualStrings("hi", output.written());
+    const expected = [_]forth.Cell{0};
+    try expectStack(machine, &expected);
 }

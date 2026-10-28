@@ -1,13 +1,34 @@
 const std = @import("std");
 
-pub const Cell = u16;
+pub const Cell = i64;
+pub const UCell = u64;
+pub const Double = i128;
+pub const UDouble = u128;
+pub const Float = f64;
+const cell_size = 8;
+const float_size = 8;
 const max_words = 1024;
 const max_code = 8192;
 const max_stack = 1024;
+const max_float_stack = 1024;
 const max_controls = 128;
 const max_name = 255;
-const memory_size = 65536;
+pub const memory_size = 1 << 20;
 const base_address: Cell = 0x0200;
+const hold_bottom: Cell = 0x1000;
+const hold_top: Cell = 0x2000;
+pub const pad_address: Cell = 0x2000;
+const string_buffer_base: Cell = 0x3000;
+const string_buffer_size = 256;
+const string_buffer_count = 4;
+const max_hold_nesting = 16;
+const max_counted_string = 127;
+const max_gforth_string = 255;
+pub const data_start: Cell = 0x4000;
+const true_flag: Cell = -1;
+const dot_precision = 15;
+const fs_precision = 14;
+const image_magic = "SIGIMG02";
 
 pub const Writer = struct {
     context: ?*anyopaque,
@@ -16,6 +37,8 @@ pub const Writer = struct {
     load_fn: ?*const fn (?*anyopaque, []const u8, *State) RuntimeError!void = null,
     save_fn: ?*const fn (?*anyopaque, []const u8, *State) RuntimeError!void = null,
     savesys_fn: ?*const fn (?*anyopaque, []const u8, *State) RuntimeError!void = null,
+    key_fn: ?*const fn (?*anyopaque) ?u8 = null,
+    key_ready_fn: ?*const fn (?*anyopaque) bool = null,
 
     pub fn write(self: Writer, bytes: []const u8) void {
         self.write_fn(self.context, bytes);
@@ -28,8 +51,19 @@ const Builtin = enum {
     swap,
     over,
     rot,
+    minus_rot,
+    nip,
+    tuck,
+    pick,
+    roll,
+    two_dup,
+    two_drop,
+    two_swap,
+    two_over,
+    depth,
     to_r,
     from_r,
+    r_fetch,
     add,
     sub,
     mul,
@@ -38,7 +72,10 @@ const Builtin = enum {
     div_mod,
     negate,
     abs,
+    one_plus,
     one_minus,
+    two_star,
+    two_slash,
     max,
     min,
     equal,
@@ -49,6 +86,9 @@ const Builtin = enum {
     greater_equal,
     logical_not,
     zero_equal,
+    zero_less,
+    zero_greater,
+    zero_not_equal,
     bit_and,
     bit_or,
     bit_xor,
@@ -56,6 +96,15 @@ const Builtin = enum {
     bit_nand,
     bit_nor,
     swap_bytes,
+    lshift,
+    rshift,
+    true_value,
+    false_value,
+    blank,
+    cell,
+    cells,
+    cell_plus,
+    aligned,
     comma,
     c_comma,
     execute,
@@ -67,11 +116,19 @@ const Builtin = enum {
     inc_store,
     dec_store,
     zero_store,
+    on,
+    off,
     question,
     array_fetch,
     array_store,
+    erase,
+    fill,
+    move,
+    cmove,
     dot,
+    u_dot,
     c_dot,
+    dot_s,
     echo,
     cr,
     space,
@@ -87,42 +144,151 @@ const Builtin = enum {
     index_2,
     index_3,
     leave,
+    unloop,
     builds,
+    immediate,
     words,
     input,
     bye,
     load,
     save,
     savesys,
+    compile_if,
+    compile_else,
+    compile_then,
+    compile_begin,
+    compile_end,
+    compile_again,
+    compile_while,
+    compile_repeat,
+    compile_do,
+    compile_q_do,
+    compile_loop,
+    compile_plus_loop,
+    compile_does,
+    compile_case,
+    compile_of,
+    compile_endof,
+    compile_endcase,
+    compile_exit,
+    compile_recurse,
+    f_drop,
+    f_dup,
+    f_swap,
+    f_over,
+    f_rot,
+    f_minus_rot,
+    f_nip,
+    f_tuck,
+    f_pick,
+    f_depth,
+    f_dot_s,
+    f_add,
+    f_sub,
+    f_mul,
+    f_div,
+    f_negate,
+    f_abs,
+    f_max,
+    f_min,
+    f_sqrt,
+    f_exp,
+    f_ln,
+    f_sin,
+    f_cos,
+    f_tan,
+    f_equal,
+    f_not_equal,
+    f_less,
+    f_greater,
+    f_less_equal,
+    f_greater_equal,
+    f_zero_equal,
+    f_zero_not_equal,
+    f_zero_less,
+    f_zero_greater,
+    f_zero_less_equal,
+    f_zero_greater_equal,
+    f_fetch,
+    f_store,
+    f_comma,
+    f_array_fetch,
+    f_array_store,
+    f_add_store,
+    f_question,
+    floats,
+    float_plus,
+    s_to_f,
+    f_to_s,
+    f_dot,
+    f_input,
+    s_to_d,
+    d_to_s,
+    d_add,
+    d_sub,
+    d_negate,
+    d_abs,
+    d_zero_equal,
+    d_zero_less,
+    d_equal,
+    d_less,
+    d_dot,
+    two_fetch,
+    two_store,
+    d_to_f,
+    f_to_d,
+    count,
+    pad,
+    accept,
+    evaluate,
+    key,
+    key_question,
+    hold_start,
+    hold_nest,
+    hold_digit,
+    hold_digits,
+    hold_finish,
+    hold_release,
+    hold,
+    holds,
+    sign,
+    to_number,
+    string_to_number,
+    to_float,
 };
 
-const WordKind = enum { builtin, colon, variable, constant, array, created };
+const WordKind = enum { builtin, colon, variable, constant, array, created, value, fconstant, two_constant };
 const Word = struct {
     name: [max_name]u8 = [_]u8{0} ** max_name,
     name_len: u8 = 0,
     kind: WordKind = .builtin,
     builtin: Builtin = .drop,
+    immediate: bool = false,
+    has_does: bool = false,
     value: Cell = 0,
     code_start: u16 = 0,
     code_end: u16 = 0,
     does_code_start: u16 = 0,
     does_code_end: u16 = 0,
-    has_does: bool = false,
     data_here_before: Cell = 0,
 };
 
-const OpKind = enum { call, literal, execution_token, branch, branch_zero, do_loop, q_do_loop, loop, plus_loop, print_string, string_literal, does, exit };
-const Op = struct { kind: OpKind, value: u16 = 0 };
-const ControlKind = enum { if_branch, else_branch, begin_loop, while_branch, do_loop };
+const OpKind = enum { call, compile_call, builtin, literal, float_literal, execution_token, store_value, branch, branch_zero, do_loop, q_do_loop, loop, plus_loop, leave, print_string, string_literal, does, exit };
+const Op = struct { kind: OpKind, value: Cell = 0 };
+const ControlKind = enum { if_branch, else_branch, begin_loop, while_branch, do_loop, case_start, of_branch, endof_branch };
 const Control = struct { kind: ControlKind, address: u16 };
-const Loop = struct { index: Cell, limit: Cell, leave: bool = false, exit_after_first: bool = false };
-const Pending = enum { none, colon_name, variable_name, constant_name, array_name, forget_name, tick_name };
+const Loop = struct { index: Cell, limit: Cell, exit_pc: u16, exit_after_first: bool = false };
+const Pending = enum { none, colon_name, variable_name, constant_name, array_name, forget_name, tick_name, value_name, to_name, char_name, postpone_name, fconstant_name, fvariable_name, two_constant_name, two_variable_name };
+const StringWord = enum { s_quote, s_escape_quote, print_escape, print_paren };
+const ParsedNumber = struct { value: Double, double: bool };
 
 pub const RuntimeError = error{
     StackUnderflow,
     ReturnStackUnderflow,
     StackOverflow,
     ReturnStackOverflow,
+    FloatStackUnderflow,
+    FloatStackOverflow,
     DictionaryFull,
     CodeFull,
     NameTooLong,
@@ -137,6 +303,8 @@ pub const RuntimeError = error{
     LoopMismatch,
     InvalidBase,
     InvalidExecutionToken,
+    InvalidAddress,
+    PicturedNumericOverflow,
     MemoryExhausted,
     InputUnavailable,
     FileUnavailable,
@@ -155,30 +323,102 @@ fn readU32(input: []const u8) u32 {
     return @as(u32, input[0]) | (@as(u32, input[1]) << 8) | (@as(u32, input[2]) << 16) | (@as(u32, input[3]) << 24);
 }
 
+fn floatBits(value: Float) Cell {
+    return @bitCast(value);
+}
+
+fn bitsFloat(value: Cell) Float {
+    return @bitCast(value);
+}
+
+const DoubleCells = struct { low: Cell, high: Cell };
+
+fn doubleCells(value: Double) DoubleCells {
+    const bits: UDouble = @bitCast(value);
+    return .{ .low = @bitCast(@as(UCell, @truncate(bits))), .high = @bitCast(@as(UCell, @truncate(bits >> 64))) };
+}
+
+fn cellsDouble(low: Cell, high: Cell) Double {
+    const bits = (@as(UDouble, @as(UCell, @bitCast(high))) << 64) | @as(UCell, @bitCast(low));
+    return @bitCast(bits);
+}
+
+/// Decimal significand of a float, in the manner of Forth's REPRESENT.
+const Representation = struct {
+    digits: [dot_precision + 1]u8 = undefined,
+    len: usize = 0,
+    exponent: i32 = 0,
+    negative: bool = false,
+    finite: bool = true,
+};
+
+fn represent(value: Float, digit_count: usize) Representation {
+    var result = Representation{ .len = digit_count, .negative = std.math.signbit(value) };
+    if (std.math.isNan(value) or std.math.isInf(value)) {
+        result.finite = false;
+        return result;
+    }
+    var buffer: [64]u8 = undefined;
+    const magnitude = @abs(value);
+    const text = switch (digit_count) {
+        fs_precision => std.fmt.bufPrint(&buffer, "{e:.13}", .{magnitude}),
+        fs_precision + 1 => std.fmt.bufPrint(&buffer, "{e:.14}", .{magnitude}),
+        dot_precision + 1 => std.fmt.bufPrint(&buffer, "{e:.15}", .{magnitude}),
+        else => unreachable,
+    } catch unreachable;
+    var used: usize = 0;
+    var cursor: usize = 0;
+    while (cursor < text.len and text[cursor] != 'e') : (cursor += 1) {
+        if (text[cursor] != '.') {
+            result.digits[used] = text[cursor];
+            used += 1;
+        }
+    }
+    std.debug.assert(used == digit_count);
+    const exponent = std.fmt.parseInt(i32, text[cursor + 1 ..], 10) catch unreachable;
+    result.exponent = exponent + 1;
+    return result;
+}
+
+fn withoutTrailingZeros(digits: []const u8) []const u8 {
+    var len = digits.len;
+    while (len > 0 and digits[len - 1] == '0') len -= 1;
+    return digits[0..len];
+}
+
 pub const State = struct {
     writer: Writer,
-    memory: [memory_size]u8 = [_]u8{0} ** memory_size,
+    memory: [memory_size]u8 = @splat(0),
     words: [max_words]Word = undefined,
     word_count: u16 = 0,
     builtin_count: u16 = 0,
     code: [max_code]Op = undefined,
     code_count: u16 = 0,
-    data_stack: [max_stack]Cell = [_]Cell{0} ** max_stack,
+    data_stack: [max_stack]Cell = @splat(0),
     data_depth: usize = 0,
-    return_stack: [max_stack]Cell = [_]Cell{0} ** max_stack,
+    return_stack: [max_stack]Cell = @splat(0),
     return_depth: usize = 0,
+    float_stack: [max_float_stack]Float = @splat(0),
+    float_depth: usize = 0,
     control_stack: [max_controls]Control = undefined,
     control_depth: usize = 0,
     loop_stack: [max_stack]Loop = undefined,
     loop_depth: usize = 0,
-    data_here: Cell = 0x4000,
+    data_here: Cell = data_start,
     compiling: bool = false,
     defining: bool = false,
     current_word: u16 = 0,
     current_data_start: Cell = 0,
     pending: Pending = .none,
     pending_constant: Cell = 0,
+    pending_float: Float = 0,
+    pending_double: Double = 0,
     pending_array_size: Cell = 0,
+    hold_ptr: Cell = hold_top,
+    hold_end: Cell = hold_top,
+    hold_stack: [max_hold_nesting]Cell = undefined,
+    hold_depth: usize = 0,
+    string_buffer_index: usize = 0,
     source_line: []const u8 = &.{},
     source_cursor: usize = 0,
     source_buffer: [4096]u8 = undefined,
@@ -189,7 +429,7 @@ pub const State = struct {
 
     pub fn init(writer: Writer) State {
         var state = State{ .writer = writer };
-        state.memory[base_address] = 10;
+        state.writeCell(base_address, 10) catch unreachable;
         state.installBuiltins();
         return state;
     }
@@ -205,7 +445,7 @@ pub const State = struct {
     pub fn encodeImage(self: *State, output: []u8) RuntimeError!usize {
         const required = 20 + @as(usize, self.word_count) * @sizeOf(Word) + @as(usize, self.code_count) * @sizeOf(Op) + memory_size;
         if (output.len < required) return error.InvalidImage;
-        @memcpy(output[0..8], "SIGIMG01");
+        @memcpy(output[0..8], image_magic);
         writeU32(output[8..12], self.word_count);
         writeU32(output[12..16], self.code_count);
         writeU32(output[16..20], self.data_here);
@@ -221,11 +461,11 @@ pub const State = struct {
     }
 
     pub fn restoreImage(self: *State, input: []const u8) RuntimeError!void {
-        if (input.len < 20 or !std.mem.eql(u8, input[0..8], "SIGIMG01")) return error.InvalidImage;
+        if (input.len < 20 or !std.mem.eql(u8, input[0..8], image_magic)) return error.InvalidImage;
         const word_count = readU32(input[8..12]);
         const code_count = readU32(input[12..16]);
         const data_here = readU32(input[16..20]);
-        if (word_count < self.builtin_count or word_count > max_words or code_count > max_code or data_here < 0x4000 or data_here > std.math.maxInt(Cell)) return error.InvalidImage;
+        if (word_count < self.builtin_count or word_count > max_words or code_count > max_code or data_here < data_start or data_here > memory_size) return error.InvalidImage;
         const word_bytes_len = @as(usize, word_count) * @sizeOf(Word);
         const code_bytes_len = @as(usize, code_count) * @sizeOf(Op);
         const required = 20 + word_bytes_len + code_bytes_len + memory_size;
@@ -238,11 +478,13 @@ pub const State = struct {
         @memcpy(&self.memory, input[cursor .. cursor + memory_size]);
         self.word_count = @intCast(word_count);
         self.code_count = @intCast(code_count);
-        self.data_here = @intCast(data_here);
+        self.data_here = data_here;
         self.data_depth = 0;
         self.return_depth = 0;
+        self.float_depth = 0;
         self.control_depth = 0;
         self.loop_depth = 0;
+        self.resetHold();
         self.compiling = false;
         self.defining = false;
         self.pending = .none;
@@ -254,17 +496,16 @@ pub const State = struct {
         const word_base: usize = self.word_count;
         const code_base: usize = self.code_count;
         const code_count: usize = source.code_count;
-        const data_base: usize = self.data_here;
         if (word_base + added_words > max_words) return error.DictionaryFull;
         if (code_base + code_count > max_code) return error.CodeFull;
-        if (source.data_here < 0x4000) return error.InvalidImage;
-        const data_len: usize = source.data_here - 0x4000;
-        if (data_base + data_len > std.math.maxInt(Cell)) return error.MemoryExhausted;
-        const data_delta = data_base - 0x4000;
+        if (source.data_here < data_start) return error.InvalidImage;
+        const data_len = source.data_here - data_start;
+        if (self.data_here + data_len > memory_size) return error.MemoryExhausted;
+        const data_delta = self.data_here - data_start;
 
         for (source.words[source.builtin_count..source.word_count], 0..) |original, offset| {
             var word = original;
-            word.data_here_before = @intCast(@as(usize, word.data_here_before) + data_delta);
+            word.data_here_before += data_delta;
             if (word.kind == .colon) {
                 word.code_start = @intCast(@as(usize, word.code_start) + code_base);
                 word.code_end = @intCast(@as(usize, word.code_end) + code_base);
@@ -273,31 +514,34 @@ pub const State = struct {
                 word.does_code_start = @intCast(@as(usize, word.does_code_start) + code_base);
                 word.does_code_end = @intCast(@as(usize, word.does_code_end) + code_base);
             }
-            if (word.kind == .variable or word.kind == .array or word.kind == .created)
-                word.value = @intCast(@as(usize, word.value) + data_delta);
+            if (word.kind == .variable or word.kind == .array or word.kind == .created or word.kind == .value or word.kind == .two_constant)
+                word.value += data_delta;
             self.words[word_base + offset] = word;
         }
 
         for (source.code[0..source.code_count], 0..) |original, offset| {
             var op = original;
             switch (op.kind) {
-                .call, .execution_token => if (op.value >= source.builtin_count) {
-                    op.value = @intCast(word_base + (op.value - source.builtin_count));
+                .call, .compile_call, .execution_token, .store_value => if (op.value >= source.builtin_count) {
+                    op.value = @intCast(word_base + @as(usize, @intCast(op.value - source.builtin_count)));
                 },
                 .branch, .branch_zero, .do_loop, .q_do_loop, .loop, .plus_loop => {
-                    op.value = @intCast(@as(usize, op.value) + code_base);
+                    op.value += @intCast(code_base);
                 },
                 .print_string, .string_literal => {
-                    op.value = @intCast(@as(usize, op.value) + data_delta);
+                    op.value += data_delta;
                 },
-                .literal, .does, .exit => {},
+                .builtin, .literal, .float_literal, .leave, .does, .exit => {},
             }
             self.code[code_base + offset] = op;
         }
-        @memcpy(self.memory[data_base .. data_base + data_len], source.memory[0x4000..source.data_here]);
+        const data_from: usize = @intCast(data_start);
+        const data_to: usize = @intCast(self.data_here);
+        const length: usize = @intCast(data_len);
+        @memcpy(self.memory[data_to .. data_to + length], source.memory[data_from .. data_from + length]);
         self.word_count = @intCast(word_base + added_words);
         self.code_count = @intCast(code_base + code_count);
-        self.data_here = @intCast(data_base + data_len);
+        self.data_here += data_len;
         self.last_created_word = null;
     }
 
@@ -313,7 +557,9 @@ pub const State = struct {
         self.control_depth = 0;
         self.data_depth = 0;
         self.return_depth = 0;
+        self.float_depth = 0;
         self.loop_depth = 0;
+        self.resetHold();
         if (err == error.UnknownWord) {
             if (self.last_unknown_word) |name| {
                 self.write(name);
@@ -326,7 +572,7 @@ pub const State = struct {
             self.write("NESTING ERROR !\n");
             return;
         }
-        const message: []const u8 = if (err == error.StackUnderflow) "STACK UNDER FLOW !" else if (err == error.ReturnStackUnderflow) "RETURN STACK UNDER FLOW !" else if (err == error.StackOverflow) "STACK OVER FLOW !" else if (err == error.ReturnStackOverflow) "RETURN STACK OVER FLOW !" else if (err == error.DictionaryFull) "OUT OF DICTIONARY !" else if (err == error.CodeFull) "OUT OF CODE SPACE !" else if (err == error.InvalidDefinition) "DEFINITION ERROR !" else if (err == error.CommentUnclosed) "END OF COMMENT MUST BE \")\" !" else if (err == error.ControlMismatch) "CONTROL STRUCTURE ERROR !" else if (err == error.CompileOnly) "COMPILE MODE ERROR !" else if (err == error.UnknownWord) "?" else if (err == error.InvalidNumber) "NUMBER ERROR !" else if (err == error.DivisionByZero) "DIVISION BY ZERO !" else if (err == error.LoopMismatch) "LOOP ERROR !" else if (err == error.InvalidBase) "BASE ERROR !" else if (err == error.InvalidExecutionToken) "INVALID EXECUTION TOKEN !" else if (err == error.MemoryExhausted) "OUT OF MEMORY !" else if (err == error.InputUnavailable) "INPUT ERROR !" else if (err == error.FileUnavailable) "FILE ERROR !" else if (err == error.InvalidImage) "INVALID IMAGE !" else "FORTH ERROR !";
+        const message: []const u8 = if (err == error.StackUnderflow) "STACK UNDER FLOW !" else if (err == error.ReturnStackUnderflow) "RETURN STACK UNDER FLOW !" else if (err == error.StackOverflow) "STACK OVER FLOW !" else if (err == error.ReturnStackOverflow) "RETURN STACK OVER FLOW !" else if (err == error.FloatStackUnderflow) "FLOATING-POINT STACK UNDER FLOW !" else if (err == error.FloatStackOverflow) "FLOATING-POINT STACK OVER FLOW !" else if (err == error.DictionaryFull) "OUT OF DICTIONARY !" else if (err == error.CodeFull) "OUT OF CODE SPACE !" else if (err == error.InvalidDefinition) "DEFINITION ERROR !" else if (err == error.CommentUnclosed) "END OF COMMENT MUST BE \")\" !" else if (err == error.ControlMismatch) "CONTROL STRUCTURE ERROR !" else if (err == error.CompileOnly) "COMPILE MODE ERROR !" else if (err == error.UnknownWord) "?" else if (err == error.InvalidNumber) "NUMBER ERROR !" else if (err == error.DivisionByZero) "DIVISION BY ZERO !" else if (err == error.LoopMismatch) "LOOP ERROR !" else if (err == error.InvalidBase) "BASE ERROR !" else if (err == error.InvalidExecutionToken) "INVALID EXECUTION TOKEN !" else if (err == error.InvalidAddress) "INVALID MEMORY ADDRESS !" else if (err == error.PicturedNumericOverflow) "PICTURED NUMERIC OUTPUT ERROR !" else if (err == error.MemoryExhausted) "OUT OF MEMORY !" else if (err == error.InputUnavailable) "INPUT ERROR !" else if (err == error.FileUnavailable) "FILE ERROR !" else if (err == error.InvalidImage) "INVALID IMAGE !" else "FORTH ERROR !";
         self.write(message);
         self.write("\n");
     }
@@ -357,8 +603,15 @@ pub const State = struct {
                 cursor = close + 1;
                 continue;
             }
+            if (std.mem.eql(u8, token, "\\")) break;
             if (std.mem.eql(u8, token, "\"")) {
                 try self.handleStringToken(line, &cursor, false);
+                self.source_cursor = cursor;
+                continue;
+            }
+            const string_word: ?StringWord = if (asciiEqlIgnoreCase(token, "S\"")) .s_quote else if (asciiEqlIgnoreCase(token, "S\\\"")) .s_escape_quote else if (std.mem.eql(u8, token, ".\\\"")) .print_escape else if (std.mem.eql(u8, token, ".(")) .print_paren else null;
+            if (string_word) |kind| {
+                try self.handleParsedString(kind, line, &cursor);
                 self.source_cursor = cursor;
                 continue;
             }
@@ -376,28 +629,65 @@ pub const State = struct {
 
     fn installBuiltins(self: *State) void {
         const definitions = [_]struct { []const u8, Builtin }{
-            .{ "DROP", .drop },       .{ "DUP", .dup },         .{ "SWAP", .swap },        .{ "OVER", .over },          .{ "ROT", .rot },
-            .{ ">R", .to_r },         .{ "R>", .from_r },       .{ "+", .add },            .{ "-", .sub },              .{ "*", .mul },
-            .{ "/", .div },           .{ "MOD", .mod },         .{ "/MOD", .div_mod },     .{ "MINUS", .negate },       .{ "ABS", .abs },
-            .{ "MAX", .max },         .{ "MIN", .min },         .{ "=", .equal },          .{ "<>", .not_equal },       .{ "<", .less },
-            .{ ">", .greater },       .{ "<=", .less_equal },   .{ ">=", .greater_equal }, .{ "NOT", .logical_not },    .{ "0=", .zero_equal },
-            .{ "AND", .bit_and },     .{ "OR", .bit_or },       .{ "XOR", .bit_xor },      .{ "COM", .bit_complement }, .{ "NAND", .bit_nand },
-            .{ "NOR", .bit_nor },     .{ "SWAB", .swap_bytes }, .{ "1-", .one_minus },     .{ "@", .fetch },            .{ "!", .store },
-            .{ ",", .comma },         .{ "C,", .c_comma },      .{ "EXECUTE", .execute },  .{ "C@", .cfetch },          .{ "C!", .cstore },
-            .{ "+!", .add_store },    .{ "1+!", .inc_store },   .{ "1-!", .dec_store },    .{ "OSET", .zero_store },    .{ "?", .question },
-            .{ "A@", .array_fetch },  .{ "A!", .array_store },  .{ ".", .dot },            .{ "C.", .c_dot },           .{ "ECHO", .echo },
-            .{ "CR", .cr },           .{ "SPACE", .space },     .{ "SPCES", .spaces },     .{ "TYPE", .type },          .{ "HEX", .hex },
-            .{ "DEC", .dec },         .{ "OCT", .oct },         .{ "BASE", .base },        .{ "HERE", .here },          .{ "ALLOT", .allot },
-            .{ "I", .index },         .{ "J", .index_2 },       .{ "K", .index_3 },        .{ "LEAVE", .leave },        .{ "WORDS", .words },
-            .{ "BYE", .bye },         .{ "INPUT", .input },     .{ "<BUILDS", .builds },   .{ "LOAD", .load },          .{ "SAVE", .save },
-            .{ "SAVESYS", .savesys },
+            .{ "DROP", .drop },              .{ "DUP", .dup },                .{ "SWAP", .swap },             .{ "OVER", .over },                .{ "ROT", .rot },
+            .{ "-ROT", .minus_rot },         .{ "NIP", .nip },                .{ "TUCK", .tuck },             .{ "PICK", .pick },                .{ "ROLL", .roll },
+            .{ "2DUP", .two_dup },           .{ "2DROP", .two_drop },         .{ "2SWAP", .two_swap },        .{ "2OVER", .two_over },           .{ "DEPTH", .depth },
+            .{ ">R", .to_r },                .{ "R>", .from_r },              .{ "R@", .r_fetch },            .{ "+", .add },                    .{ "-", .sub },
+            .{ "*", .mul },                  .{ "/", .div },                  .{ "MOD", .mod },               .{ "/MOD", .div_mod },             .{ "MINUS", .negate },
+            .{ "NEGATE", .negate },          .{ "ABS", .abs },                .{ "1+", .one_plus },           .{ "1-", .one_minus },             .{ "2*", .two_star },
+            .{ "2/", .two_slash },           .{ "MAX", .max },                .{ "MIN", .min },               .{ "=", .equal },                  .{ "<>", .not_equal },
+            .{ "<", .less },                 .{ ">", .greater },              .{ "<=", .less_equal },         .{ ">=", .greater_equal },         .{ "NOT", .logical_not },
+            .{ "0=", .zero_equal },          .{ "0<", .zero_less },           .{ "0>", .zero_greater },       .{ "0<>", .zero_not_equal },       .{ "AND", .bit_and },
+            .{ "OR", .bit_or },              .{ "XOR", .bit_xor },            .{ "COM", .bit_complement },    .{ "INVERT", .bit_complement },    .{ "NAND", .bit_nand },
+            .{ "NOR", .bit_nor },            .{ "SWAB", .swap_bytes },        .{ "LSHIFT", .lshift },         .{ "RSHIFT", .rshift },            .{ "TRUE", .true_value },
+            .{ "FALSE", .false_value },      .{ "BL", .blank },               .{ "CELL", .cell },             .{ "CELLS", .cells },              .{ "CELL+", .cell_plus },
+            .{ "ALIGNED", .aligned },        .{ "@", .fetch },                .{ "!", .store },               .{ ",", .comma },                  .{ "C,", .c_comma },
+            .{ "EXECUTE", .execute },        .{ "C@", .cfetch },              .{ "C!", .cstore },             .{ "+!", .add_store },             .{ "1+!", .inc_store },
+            .{ "1-!", .dec_store },          .{ "OSET", .zero_store },        .{ "ON", .on },                 .{ "OFF", .off },                  .{ "?", .question },
+            .{ "A@", .array_fetch },         .{ "A!", .array_store },         .{ "ERASE", .erase },           .{ "FILL", .fill },                .{ "MOVE", .move },
+            .{ "CMOVE", .cmove },            .{ ".", .dot },                  .{ "U.", .u_dot },              .{ "C.", .c_dot },                 .{ ".S", .dot_s },
+            .{ "ECHO", .echo },              .{ "EMIT", .echo },              .{ "CR", .cr },                 .{ "SPACE", .space },              .{ "SPCES", .spaces },
+            .{ "SPACES", .spaces },          .{ "TYPE", .type },              .{ "HEX", .hex },               .{ "DEC", .dec },                  .{ "DECIMAL", .dec },
+            .{ "OCT", .oct },                .{ "BASE", .base },              .{ "HERE", .here },             .{ "ALLOT", .allot },              .{ "I", .index },
+            .{ "J", .index_2 },              .{ "K", .index_3 },              .{ "LEAVE", .leave },           .{ "UNLOOP", .unloop },            .{ "WORDS", .words },
+            .{ "BYE", .bye },                .{ "INPUT", .input },            .{ "<BUILDS", .builds },        .{ "CREATE", .builds },            .{ "IMMEDIATE", .immediate },
+            .{ "LOAD", .load },              .{ "SAVE", .save },              .{ "SAVESYS", .savesys },       .{ "IF", .compile_if },            .{ "ELSE", .compile_else },
+            .{ "THEN", .compile_then },      .{ "BEGIN", .compile_begin },    .{ "END", .compile_end },       .{ "UNTIL", .compile_end },        .{ "AGAIN", .compile_again },
+            .{ "WHILE", .compile_while },    .{ "REPEAT", .compile_repeat },  .{ "DO", .compile_do },         .{ "?DO", .compile_q_do },         .{ "LOOP", .compile_loop },
+            .{ "+LOOP", .compile_plus_loop }, .{ "DOES>", .compile_does },    .{ "CASE", .compile_case },     .{ "OF", .compile_of },            .{ "ENDOF", .compile_endof },
+            .{ "ENDCASE", .compile_endcase }, .{ "EXIT", .compile_exit },     .{ "RECURSE", .compile_recurse }, .{ "FDROP", .f_drop },           .{ "FDUP", .f_dup },
+            .{ "FSWAP", .f_swap },           .{ "FOVER", .f_over },           .{ "FROT", .f_rot },            .{ "F-ROT", .f_minus_rot },        .{ "FNIP", .f_nip },
+            .{ "FTUCK", .f_tuck },           .{ "FPICK", .f_pick },           .{ "FDEPTH", .f_depth },        .{ "F.S", .f_dot_s },              .{ "F+", .f_add },
+            .{ "F-", .f_sub },               .{ "F*", .f_mul },               .{ "F/", .f_div },              .{ "FNEGATE", .f_negate },         .{ "FMINUS", .f_negate },
+            .{ "FABS", .f_abs },             .{ "FMAX", .f_max },             .{ "FMIN", .f_min },            .{ "FSQRT", .f_sqrt },             .{ "FEXP", .f_exp },
+            .{ "FLN", .f_ln },               .{ "FSIN", .f_sin },             .{ "FCOS", .f_cos },            .{ "FTAN", .f_tan },               .{ "F=", .f_equal },
+            .{ "F<>", .f_not_equal },        .{ "F<", .f_less },              .{ "F>", .f_greater },          .{ "F<=", .f_less_equal },         .{ "F>=", .f_greater_equal },
+            .{ "F0=", .f_zero_equal },       .{ "F0<>", .f_zero_not_equal },  .{ "F0<", .f_zero_less },       .{ "F0>", .f_zero_greater },       .{ "F0<=", .f_zero_less_equal },
+            .{ "F0>=", .f_zero_greater_equal }, .{ "F@", .f_fetch },          .{ "F!", .f_store },            .{ "F,", .f_comma },               .{ "FA@", .f_array_fetch },
+            .{ "FA!", .f_array_store },      .{ "F+!", .f_add_store },        .{ "F?", .f_question },         .{ "FLOATS", .floats },            .{ "FLOAT+", .float_plus },
+            .{ "S>F", .s_to_f },             .{ "F>S", .f_to_s },             .{ "F.", .f_dot },              .{ "FINPUT", .f_input },           .{ "S>D", .s_to_d },
+            .{ "D>S", .d_to_s },             .{ "D+", .d_add },               .{ "D-", .d_sub },              .{ "DNEGATE", .d_negate },         .{ "DABS", .d_abs },
+            .{ "D0=", .d_zero_equal },       .{ "D0<", .d_zero_less },        .{ "D=", .d_equal },            .{ "D<", .d_less },                .{ "D.", .d_dot },
+            .{ "2@", .two_fetch },           .{ "2!", .two_store },           .{ "D>F", .d_to_f },            .{ "F>D", .f_to_d },               .{ "COUNT", .count },
+            .{ "PAD", .pad },                .{ "ACCEPT", .accept },          .{ "EVALUATE", .evaluate },     .{ "KEY", .key },                  .{ "KEY?", .key_question },
+            .{ "<#", .hold_start },          .{ "<<#", .hold_nest },          .{ "#", .hold_digit },          .{ "#S", .hold_digits },           .{ "#>", .hold_finish },
+            .{ "#>>", .hold_release },       .{ "HOLD", .hold },              .{ "HOLDS", .holds },           .{ "SIGN", .sign },                .{ ">NUMBER", .to_number },
+            .{ "S>NUMBER?", .string_to_number }, .{ ">FLOAT", .to_float },
         };
         for (definitions) |definition| self.addBuiltin(definition[0], definition[1]) catch unreachable;
         self.builtin_count = self.word_count;
     }
 
+    fn isImmediateBuiltin(builtin: Builtin) bool {
+        return switch (builtin) {
+            .compile_if, .compile_else, .compile_then, .compile_begin, .compile_end, .compile_again, .compile_while, .compile_repeat, .compile_do, .compile_q_do, .compile_loop, .compile_plus_loop, .compile_does, .compile_case, .compile_of, .compile_endof, .compile_endcase, .compile_exit, .compile_recurse, .leave => true,
+            else => false,
+        };
+    }
+
     fn addBuiltin(self: *State, name: []const u8, builtin: Builtin) RuntimeError!void {
-        _ = try self.appendWord(name, .builtin, builtin, 0);
+        const id = try self.appendWord(name, .builtin, builtin, 0);
+        self.words[id].immediate = isImmediateBuiltin(builtin);
     }
 
     fn appendWord(self: *State, name: []const u8, kind: WordKind, builtin: Builtin, value: Cell) RuntimeError!u16 {
@@ -420,11 +710,28 @@ pub const State = struct {
         while (i > 0) {
             i -= 1;
             const word = self.words[i];
-            const stored_name = word.name[0..word.name_len];
-            const compared_len = @min(stored_name.len, 5);
-            if (stored_name.len == name.len and asciiEqlIgnoreCase(stored_name[0..compared_len], name[0..compared_len])) return i;
+            if (asciiEqlIgnoreCase(word.name[0..word.name_len], name)) return i;
         }
         return null;
+    }
+
+    fn lookupOrFail(self: *State, name: []const u8) RuntimeError!u16 {
+        return self.lookup(name) orelse {
+            self.last_unknown_word = name;
+            return error.UnknownWord;
+        };
+    }
+
+    /// Allocates a data-area word that owns `size` bytes, rolling back on failure.
+    fn appendDataWord(self: *State, name: []const u8, kind: WordKind, size: Cell) RuntimeError!u16 {
+        const address = self.data_here;
+        try self.reserveData(size);
+        const id = self.appendWord(name, kind, .drop, address) catch |err| {
+            self.data_here = address;
+            return err;
+        };
+        self.words[id].data_here_before = address;
+        return id;
     }
 
     fn finishPending(self: *State, token: []const u8) RuntimeError!void {
@@ -439,35 +746,30 @@ pub const State = struct {
                 self.compiling = true;
                 self.defining = true;
             },
-            .variable_name => {
-                const address = self.data_here;
-                try self.reserveData(2);
-                const id = self.appendWord(token, .variable, .drop, address) catch |err| {
-                    self.data_here = address;
-                    return err;
-                };
-                self.words[id].data_here_before = address;
-                self.writeCell(address, 0);
+            .variable_name, .value_name => {
+                const id = try self.appendDataWord(token, if (pending == .value_name) .value else .variable, cell_size);
+                try self.writeCell(self.words[id].value, if (pending == .value_name) self.pending_constant else 0);
+            },
+            .fvariable_name => {
+                const id = try self.appendDataWord(token, .variable, float_size);
+                try self.writeFloat(self.words[id].value, 0);
             },
             .constant_name => {
                 _ = try self.appendWord(token, .constant, .drop, self.pending_constant);
             },
+            .fconstant_name => {
+                _ = try self.appendWord(token, .fconstant, .drop, floatBits(self.pending_float));
+            },
+            .two_variable_name, .two_constant_name => {
+                const id = try self.appendDataWord(token, if (pending == .two_constant_name) .two_constant else .variable, 2 * cell_size);
+                try self.writeDouble(self.words[id].value, if (pending == .two_constant_name) self.pending_double else 0);
+            },
             .array_name => {
-                const address = self.data_here;
-                if (self.pending_array_size > 32767) return error.MemoryExhausted;
-                const amount = self.pending_array_size *% 2;
-                try self.reserveData(amount);
-                const id = self.appendWord(token, .array, .drop, address) catch |err| {
-                    self.data_here = address;
-                    return err;
-                };
-                self.words[id].data_here_before = address;
+                if (self.pending_array_size < 0 or self.pending_array_size > memory_size / cell_size) return error.MemoryExhausted;
+                _ = try self.appendDataWord(token, .array, self.pending_array_size * cell_size);
             },
             .forget_name => {
-                const id = self.lookup(token) orelse {
-                    self.last_unknown_word = token;
-                    return error.UnknownWord;
-                };
+                const id = try self.lookupOrFail(token);
                 if (id < self.builtin_count) return error.InvalidDefinition;
                 self.data_here = self.words[id].data_here_before;
                 var first_removed_code = self.code_count;
@@ -482,18 +784,36 @@ pub const State = struct {
                 self.word_count = id;
             },
             .tick_name => {
-                const id = self.lookup(token) orelse {
-                    self.last_unknown_word = token;
-                    return error.UnknownWord;
-                };
+                const id = try self.lookupOrFail(token);
                 if (self.compiling) {
                     _ = try self.emit(.{ .kind = .execution_token, .value = id });
                 } else try self.push(id);
+            },
+            .to_name => {
+                const id = try self.lookupOrFail(token);
+                if (self.words[id].kind != .value) return error.InvalidDefinition;
+                if (self.compiling) {
+                    _ = try self.emit(.{ .kind = .store_value, .value = id });
+                } else try self.writeCell(self.words[id].value, try self.pop());
+            },
+            .char_name => {
+                if (self.compiling) {
+                    _ = try self.emit(.{ .kind = .literal, .value = token[0] });
+                } else try self.push(token[0]);
+            },
+            .postpone_name => {
+                if (!self.compiling) return error.CompileOnly;
+                const id = try self.lookupOrFail(token);
+                _ = try self.emit(.{ .kind = if (self.words[id].immediate) .call else .compile_call, .value = id });
             },
         }
     }
 
     fn handleToken(self: *State, token: []const u8) RuntimeError!void {
+        const found = self.lookup(token);
+        if (found) |id| {
+            if (id >= self.builtin_count) return self.handleWord(id);
+        }
         if (std.mem.eql(u8, token, ":")) {
             if (self.defining) return error.InvalidDefinition;
             self.pending = .colon_name;
@@ -518,14 +838,28 @@ pub const State = struct {
             self.compiling = true;
             return;
         }
-        if (std.mem.eql(u8, token, "'")) {
+        if (std.mem.eql(u8, token, "'") or std.mem.eql(u8, token, "[']")) {
             self.pending = .tick_name;
             return;
         }
-        if (asciiEqlIgnoreCase(token, "VARIABLE") or asciiEqlIgnoreCase(token, "VAR")) {
-            if (self.compiling) return error.CompileOnly;
-            self.pending = .variable_name;
+        if (asciiEqlIgnoreCase(token, "CHAR") or asciiEqlIgnoreCase(token, "[CHAR]")) {
+            self.pending = .char_name;
             return;
+        }
+        if (asciiEqlIgnoreCase(token, "POSTPONE")) {
+            if (!self.compiling) return error.CompileOnly;
+            self.pending = .postpone_name;
+            return;
+        }
+        if (asciiEqlIgnoreCase(token, "TO")) {
+            self.pending = .to_name;
+            return;
+        }
+        if (asciiEqlIgnoreCase(token, "VARIABLE") or asciiEqlIgnoreCase(token, "VAR")) {
+            return self.startInterpretPending(.variable_name);
+        }
+        if (asciiEqlIgnoreCase(token, "FVARIABLE")) {
+            return self.startInterpretPending(.fvariable_name);
         }
         if (asciiEqlIgnoreCase(token, "CONSTANT") or asciiEqlIgnoreCase(token, "CONST")) {
             if (self.compiling) return error.CompileOnly;
@@ -533,34 +867,54 @@ pub const State = struct {
             self.pending = .constant_name;
             return;
         }
-        if (asciiEqlIgnoreCase(token, "ARRAY")) {
+        if (asciiEqlIgnoreCase(token, "VALUE")) {
+            if (self.compiling) return error.CompileOnly;
+            self.pending_constant = try self.pop();
+            self.pending = .value_name;
+            return;
+        }
+        if (asciiEqlIgnoreCase(token, "2VARIABLE")) {
+            return self.startInterpretPending(.two_variable_name);
+        }
+        if (asciiEqlIgnoreCase(token, "2CONSTANT")) {
+            if (self.compiling) return error.CompileOnly;
+            self.pending_double = try self.popDouble();
+            self.pending = .two_constant_name;
+            return;
+        }
+        if (asciiEqlIgnoreCase(token, "FCONSTANT")) {
+            if (self.compiling) return error.CompileOnly;
+            self.pending_float = try self.fpop();
+            self.pending = .fconstant_name;
+            return;
+        }
+        if (asciiEqlIgnoreCase(token, "ARRAY") or asciiEqlIgnoreCase(token, "FARRAY")) {
             if (self.compiling) return error.CompileOnly;
             self.pending_array_size = try self.pop();
             self.pending = .array_name;
             return;
         }
         if (asciiEqlIgnoreCase(token, "FORGET")) {
-            if (self.compiling) return error.CompileOnly;
-            self.pending = .forget_name;
-            return;
+            return self.startInterpretPending(.forget_name);
         }
-        if (try self.handleControl(token)) return;
-
-        if (self.lookup(token)) |id| {
-            const word = self.words[id];
-            if (self.compiling) {
-                _ = try self.emit(.{ .kind = .call, .value = id });
-            } else {
-                try self.executeWord(id);
-            }
-            _ = word;
-            return;
-        }
+        if (found) |id| return self.handleWord(id);
         if (try self.parseNumber(token)) |number| {
+            const cells = doubleCells(number.value);
             if (self.compiling) {
-                _ = try self.emit(.{ .kind = .literal, .value = number });
+                _ = try self.emit(.{ .kind = .literal, .value = cells.low });
+                if (number.double) _ = try self.emit(.{ .kind = .literal, .value = cells.high });
             } else {
-                try self.push(number);
+                try self.push(cells.low);
+                if (number.double) try self.push(cells.high);
+            }
+            return;
+        }
+        const float_literal = if (self.currentBase() == 10) parseFloat(token, true) else null;
+        if (float_literal) |number| {
+            if (self.compiling) {
+                _ = try self.emit(.{ .kind = .float_literal, .value = floatBits(number) });
+            } else {
+                try self.fpush(number);
             }
             return;
         }
@@ -568,43 +922,32 @@ pub const State = struct {
         return error.UnknownWord;
     }
 
-    fn handleControl(self: *State, token: []const u8) RuntimeError!bool {
-        if (asciiEqlIgnoreCase(token, "IF")) {
-            try self.compileIf();
-        } else if (asciiEqlIgnoreCase(token, "ELSE")) {
-            try self.compileElse();
-        } else if (asciiEqlIgnoreCase(token, "THEN")) {
-            try self.compileThen();
-        } else if (asciiEqlIgnoreCase(token, "BEGIN")) {
-            try self.compileBegin();
-        } else if (asciiEqlIgnoreCase(token, "END")) {
-            try self.compileEnd();
-        } else if (asciiEqlIgnoreCase(token, "WHILE")) {
-            try self.compileWhile();
-        } else if (asciiEqlIgnoreCase(token, "REPEAT")) {
-            try self.compileRepeat();
-        } else if (asciiEqlIgnoreCase(token, "DO")) {
-            try self.compileDo(false);
-        } else if (asciiEqlIgnoreCase(token, "?DO")) {
-            try self.compileDo(true);
-        } else if (asciiEqlIgnoreCase(token, "LOOP")) {
-            try self.compileLoop(false);
-        } else if (asciiEqlIgnoreCase(token, "+LOOP")) {
-            try self.compileLoop(true);
-        } else if (asciiEqlIgnoreCase(token, "DOES>")) {
-            try self.compileDoes();
-        } else return false;
-        return true;
+    fn startInterpretPending(self: *State, pending: Pending) RuntimeError!void {
+        if (self.compiling) return error.CompileOnly;
+        self.pending = pending;
+    }
+
+    fn handleWord(self: *State, id: u16) RuntimeError!void {
+        if (self.compiling and !self.words[id].immediate) {
+            _ = try self.emit(.{ .kind = .call, .value = id });
+        } else {
+            try self.executeWord(id);
+        }
+    }
+
+    fn requireCompiling(self: *State) RuntimeError!void {
+        if (!self.compiling) return error.CompileOnly;
     }
 
     fn pushControl(self: *State, kind: ControlKind, address: u16) RuntimeError!void {
-        if (!self.compiling) return error.CompileOnly;
+        try self.requireCompiling();
         if (self.control_depth == max_controls) return error.ControlStackOverflow;
         self.control_stack[self.control_depth] = .{ .kind = kind, .address = address };
         self.control_depth += 1;
     }
 
     fn popControl(self: *State, expected: ControlKind) RuntimeError!Control {
+        try self.requireCompiling();
         if (self.control_depth == 0) return error.ControlMismatch;
         self.control_depth -= 1;
         const item = self.control_stack[self.control_depth];
@@ -615,8 +958,13 @@ pub const State = struct {
         return item;
     }
 
+    fn topControl(self: *State) ?ControlKind {
+        if (self.control_depth == 0) return null;
+        return self.control_stack[self.control_depth - 1].kind;
+    }
+
     fn compileIf(self: *State) RuntimeError!void {
-        if (!self.compiling) return error.CompileOnly;
+        try self.requireCompiling();
         const at = try self.emit(.{ .kind = .branch_zero });
         try self.pushControl(.if_branch, at);
     }
@@ -629,26 +977,25 @@ pub const State = struct {
     }
 
     fn compileThen(self: *State) RuntimeError!void {
-        if (self.control_depth == 0) return error.ControlMismatch;
-        const kind = self.control_stack[self.control_depth - 1].kind;
+        try self.requireCompiling();
+        const kind = self.topControl() orelse return error.ControlMismatch;
         if (kind != .if_branch and kind != .else_branch) return error.ControlMismatch;
         self.control_depth -= 1;
         self.patch(self.control_stack[self.control_depth].address, self.code_count);
     }
 
     fn compileBegin(self: *State) RuntimeError!void {
-        if (!self.compiling) return error.CompileOnly;
         try self.pushControl(.begin_loop, self.code_count);
     }
 
-    fn compileEnd(self: *State) RuntimeError!void {
+    fn compileEnd(self: *State, unconditional: bool) RuntimeError!void {
         const begin = try self.popControl(.begin_loop);
-        _ = try self.emit(.{ .kind = .branch_zero, .value = begin.address });
+        _ = try self.emit(.{ .kind = if (unconditional) .branch else .branch_zero, .value = begin.address });
     }
 
     fn compileWhile(self: *State) RuntimeError!void {
-        if (!self.compiling or self.control_depth == 0 or self.control_stack[self.control_depth - 1].kind != .begin_loop)
-            return error.ControlMismatch;
+        try self.requireCompiling();
+        if (self.topControl() != .begin_loop) return error.ControlMismatch;
         const begin = self.control_stack[self.control_depth - 1];
         const at = try self.emit(.{ .kind = .branch_zero });
         try self.pushControl(.while_branch, begin.address);
@@ -657,15 +1004,14 @@ pub const State = struct {
 
     fn compileRepeat(self: *State) RuntimeError!void {
         const wh = try self.popControl(.while_branch);
-        if (self.control_depth == 0 or self.control_stack[self.control_depth - 1].kind != .begin_loop)
-            return error.ControlMismatch;
+        if (self.topControl() != .begin_loop) return error.ControlMismatch;
         self.control_depth -= 1;
         _ = try self.emit(.{ .kind = .branch, .value = self.control_stack[self.control_depth].address });
         self.patch(wh.address, self.code_count);
     }
 
     fn compileDo(self: *State, conditional: bool) RuntimeError!void {
-        if (!self.compiling) return error.CompileOnly;
+        try self.requireCompiling();
         const at = try self.emit(.{ .kind = if (conditional) .q_do_loop else .do_loop });
         try self.pushControl(.do_loop, at);
     }
@@ -677,9 +1023,59 @@ pub const State = struct {
         self.patch(loop.address, self.code_count);
     }
 
+    fn compileLeave(self: *State) RuntimeError!void {
+        try self.requireCompiling();
+        for (self.control_stack[0..self.control_depth]) |control| {
+            if (control.kind == .do_loop) {
+                _ = try self.emit(.{ .kind = .leave });
+                return;
+            }
+        }
+        return error.ControlMismatch;
+    }
+
     fn compileDoes(self: *State) RuntimeError!void {
         if (!self.compiling or !self.defining) return error.CompileOnly;
         _ = try self.emit(.{ .kind = .does });
+    }
+
+    fn compileCase(self: *State) RuntimeError!void {
+        try self.pushControl(.case_start, 0);
+    }
+
+    fn compileOf(self: *State) RuntimeError!void {
+        try self.requireCompiling();
+        const kind = self.topControl() orelse return error.ControlMismatch;
+        if (kind != .case_start and kind != .endof_branch) return error.ControlMismatch;
+        _ = try self.emit(.{ .kind = .builtin, .value = @intFromEnum(Builtin.over) });
+        _ = try self.emit(.{ .kind = .builtin, .value = @intFromEnum(Builtin.equal) });
+        const at = try self.emit(.{ .kind = .branch_zero });
+        _ = try self.emit(.{ .kind = .builtin, .value = @intFromEnum(Builtin.drop) });
+        try self.pushControl(.of_branch, at);
+    }
+
+    fn compileEndof(self: *State) RuntimeError!void {
+        const of = try self.popControl(.of_branch);
+        const at = try self.emit(.{ .kind = .branch });
+        self.patch(of.address, self.code_count);
+        try self.pushControl(.endof_branch, at);
+    }
+
+    fn compileEndcase(self: *State) RuntimeError!void {
+        try self.requireCompiling();
+        _ = try self.emit(.{ .kind = .builtin, .value = @intFromEnum(Builtin.drop) });
+        while (true) {
+            const kind = self.topControl() orelse return error.ControlMismatch;
+            self.control_depth -= 1;
+            switch (kind) {
+                .case_start => return,
+                .endof_branch => self.patch(self.control_stack[self.control_depth].address, self.code_count),
+                else => {
+                    self.control_depth += 1;
+                    return error.ControlMismatch;
+                },
+            }
+        }
     }
 
     fn nextSourceToken(self: *State) ?[]const u8 {
@@ -709,6 +1105,9 @@ pub const State = struct {
         switch (word.kind) {
             .builtin => try self.executeBuiltin(word.builtin),
             .variable, .constant, .array => try self.push(word.value),
+            .value => try self.push(try self.readCell(word.value)),
+            .fconstant => try self.fpush(bitsFloat(word.value)),
+            .two_constant => try self.pushDouble(try self.readDouble(word.value)),
             .created => {
                 try self.push(word.value);
                 if (word.has_does) {
@@ -729,58 +1128,76 @@ pub const State = struct {
         try self.executeOperations(word.code_start, word.code_end, id);
     }
 
+    fn wordId(self: *State, value: Cell) RuntimeError!u16 {
+        if (value < 0 or value >= self.word_count) return error.InvalidExecutionToken;
+        return @intCast(value);
+    }
+
     fn executeOperations(self: *State, start_pc: u16, end_pc: u16, defining_word: ?u16) RuntimeError!void {
         var pc = start_pc;
         while (pc < end_pc and !self.halted) {
             const op = self.code[pc];
             pc += 1;
             switch (op.kind) {
-                .call => try self.executeWord(op.value),
+                .call => try self.executeWord(try self.wordId(op.value)),
+                .compile_call => {
+                    try self.requireCompiling();
+                    _ = try self.emit(.{ .kind = .call, .value = op.value });
+                },
+                .builtin => try self.executeBuiltin(@enumFromInt(op.value)),
                 .literal, .execution_token => try self.push(op.value),
-                .branch => pc = op.value,
+                .float_literal => try self.fpush(bitsFloat(op.value)),
+                .store_value => {
+                    const word = self.words[try self.wordId(op.value)];
+                    try self.writeCell(word.value, try self.pop());
+                },
+                .branch => pc = @intCast(op.value),
                 .branch_zero => {
-                    if (try self.pop() == 0) pc = op.value;
+                    if (try self.pop() == 0) pc = @intCast(op.value);
                 },
                 .do_loop, .q_do_loop => {
                     const start = try self.pop();
                     const limit = try self.pop();
+                    const exit_pc: u16 = @intCast(op.value);
                     if (op.kind == .q_do_loop and start == limit) {
-                        pc = op.value;
+                        pc = exit_pc;
                         continue;
                     }
                     if (self.loop_depth == max_stack) return error.StackOverflow;
-                    self.loop_stack[self.loop_depth] = .{ .index = start, .limit = limit, .exit_after_first = start == limit };
+                    self.loop_stack[self.loop_depth] = .{ .index = start, .limit = limit, .exit_pc = exit_pc, .exit_after_first = start == limit };
                     self.loop_depth += 1;
                 },
                 .loop, .plus_loop => {
                     if (self.loop_depth == 0) return error.LoopMismatch;
                     const step: Cell = if (op.kind == .plus_loop) try self.pop() else 1;
                     const frame = &self.loop_stack[self.loop_depth - 1];
-                    const old: i16 = @bitCast(frame.index);
-                    const limit: i16 = @bitCast(frame.limit);
+                    const old = frame.index;
+                    const limit = frame.limit;
                     frame.index +%= step;
-                    const after: i16 = @bitCast(frame.index);
-                    const step_signed: i16 = @bitCast(step);
-                    const crossed = if (step_signed > 0) old <= limit and after >= limit else if (step_signed < 0) old >= limit and after < limit else old == limit;
-                    const again = if (frame.leave or frame.exit_after_first) false else if (op.kind == .loop) frame.index != frame.limit else !crossed;
+                    const after = frame.index;
+                    const crossed = if (step > 0) old <= limit and after >= limit else if (step < 0) old >= limit and after < limit else old == limit;
+                    const again = if (frame.exit_after_first) false else if (op.kind == .loop) frame.index != frame.limit else !crossed;
                     if (again) {
-                        pc = op.value;
+                        pc = @intCast(op.value);
                     } else {
                         self.loop_depth -= 1;
                     }
                 },
+                .leave => {
+                    if (self.loop_depth == 0) return error.LoopMismatch;
+                    self.loop_depth -= 1;
+                    pc = self.loop_stack[self.loop_depth].exit_pc;
+                },
                 .print_string => {
-                    const address = op.value;
+                    const address = try self.memoryAddress(op.value, 1);
                     const length = self.memory[address];
-                    const start: usize = @as(usize, address) + 1;
-                    if (start + length > self.memory.len) return error.MemoryExhausted;
+                    const start = try self.memoryAddress(op.value + 1, length);
                     self.write(self.memory[start .. start + length]);
                 },
                 .string_literal => {
-                    const address = op.value;
-                    const length = self.memory[address];
-                    try self.push(length);
-                    try self.push(address +% 1);
+                    const address = try self.memoryAddress(op.value, 1);
+                    try self.push(op.value + 1);
+                    try self.push(self.memory[address]);
                 },
                 .does => {
                     const created_id = self.last_created_word orelse return error.InvalidDefinition;
@@ -799,22 +1216,61 @@ pub const State = struct {
     fn executeBuiltin(self: *State, builtin: Builtin) RuntimeError!void {
         switch (builtin) {
             .drop => _ = try self.pop(),
-            .dup => try self.push(self.peek(0) catch return error.StackUnderflow),
+            .dup => try self.push(try self.peek(0)),
             .swap => {
-                if (self.data_depth < 2) return error.StackUnderflow;
+                try self.requireDepth(2);
                 std.mem.swap(Cell, &self.data_stack[self.data_depth - 1], &self.data_stack[self.data_depth - 2]);
             },
-            .over => {
-                if (self.data_depth < 2) return error.StackUnderflow;
-                try self.push(self.data_stack[self.data_depth - 2]);
+            .over => try self.push(try self.peek(1)),
+            .rot, .minus_rot => {
+                try self.requireDepth(3);
+                const items = self.data_stack[self.data_depth - 3 .. self.data_depth];
+                if (builtin == .rot) std.mem.rotate(Cell, items, 1) else std.mem.rotate(Cell, items, 2);
             },
-            .rot => {
-                if (self.data_depth < 3) return error.StackUnderflow;
-                const a = self.data_stack[self.data_depth - 3];
-                self.data_stack[self.data_depth - 3] = self.data_stack[self.data_depth - 2];
-                self.data_stack[self.data_depth - 2] = self.data_stack[self.data_depth - 1];
-                self.data_stack[self.data_depth - 1] = a;
+            .nip => {
+                const top = try self.pop();
+                _ = try self.pop();
+                try self.push(top);
             },
+            .tuck => {
+                try self.requireDepth(2);
+                const top = try self.peek(0);
+                std.mem.swap(Cell, &self.data_stack[self.data_depth - 1], &self.data_stack[self.data_depth - 2]);
+                try self.push(top);
+            },
+            .pick => {
+                const depth = try self.pop();
+                if (depth < 0) return error.StackUnderflow;
+                try self.push(try self.peek(@intCast(depth)));
+            },
+            .roll => {
+                const depth = try self.pop();
+                if (depth < 0) return error.StackUnderflow;
+                const count: usize = @intCast(depth);
+                try self.requireDepth(count + 1);
+                std.mem.rotate(Cell, self.data_stack[self.data_depth - count - 1 .. self.data_depth], 1);
+            },
+            .two_dup => {
+                const second = try self.peek(1);
+                const top = try self.peek(0);
+                try self.push(second);
+                try self.push(top);
+            },
+            .two_drop => {
+                try self.requireDepth(2);
+                self.data_depth -= 2;
+            },
+            .two_swap => {
+                try self.requireDepth(4);
+                std.mem.rotate(Cell, self.data_stack[self.data_depth - 4 .. self.data_depth], 2);
+            },
+            .two_over => {
+                const fourth = try self.peek(3);
+                const third = try self.peek(2);
+                try self.push(fourth);
+                try self.push(third);
+            },
+            .depth => try self.push(@intCast(self.data_depth)),
             .to_r => {
                 const value = try self.pop();
                 if (self.return_depth == max_stack) return error.ReturnStackOverflow;
@@ -826,130 +1282,142 @@ pub const State = struct {
                 self.return_depth -= 1;
                 try self.push(self.return_stack[self.return_depth]);
             },
-            .add, .sub, .mul, .div, .mod, .max, .min, .equal, .not_equal, .less, .greater, .less_equal, .greater_equal, .bit_and, .bit_or, .bit_xor, .bit_nand, .bit_nor => try self.binary(builtin),
+            .r_fetch => {
+                if (self.return_depth == 0) return error.ReturnStackUnderflow;
+                try self.push(self.return_stack[self.return_depth - 1]);
+            },
+            .add, .sub, .mul, .div, .mod, .max, .min, .equal, .not_equal, .less, .greater, .less_equal, .greater_equal, .bit_and, .bit_or, .bit_xor, .bit_nand, .bit_nor, .lshift, .rshift => try self.binary(builtin),
             .div_mod => {
                 const divisor = try self.pop();
                 const dividend = try self.pop();
-                if (divisor == 0) {
-                    self.write("DIVISION BY ZERO\n");
-                    try self.push(0);
-                    try self.push(0x7fff);
-                } else {
-                    const a: i16 = @bitCast(dividend);
-                    const b: i16 = @bitCast(divisor);
-                    const quotient: Cell = if (a == -32768 and b == -1) dividend else @bitCast(@divTrunc(a, b));
-                    const remainder: Cell = if (a == -32768 and b == -1) 0 else @bitCast(@rem(a, b));
-                    try self.push(remainder);
-                    try self.push(quotient);
-                }
+                const result = try flooredDivision(dividend, divisor);
+                try self.push(result.remainder);
+                try self.push(result.quotient);
             },
-            .swap_bytes => {
-                const value = try self.pop();
-                try self.push((value << 8) | (value >> 8));
-            },
-            .negate => {
-                const a = try self.pop();
-                try self.push(0 -% a);
-            },
-            .one_minus => try self.push((try self.pop()) -% 1),
+            .swap_bytes => try self.push(@byteSwap(try self.pop())),
+            .negate => try self.push(0 -% try self.pop()),
             .abs => {
                 const a = try self.pop();
-                const signed: i16 = @bitCast(a);
-                try self.push(if (signed < 0) 0 -% a else a);
+                try self.push(if (a < 0) 0 -% a else a);
             },
-            .logical_not, .zero_equal => {
-                const a = try self.pop();
-                try self.push(if (a == 0) 1 else 0);
-            },
+            .one_plus => try self.push((try self.pop()) +% 1),
+            .one_minus => try self.push((try self.pop()) -% 1),
+            .two_star => try self.push((try self.pop()) *% 2),
+            .two_slash => try self.push((try self.pop()) >> 1),
+            .logical_not, .zero_equal => try self.push(truth(try self.pop() == 0)),
+            .zero_less => try self.push(truth(try self.pop() < 0)),
+            .zero_greater => try self.push(truth(try self.pop() > 0)),
+            .zero_not_equal => try self.push(truth(try self.pop() != 0)),
             .bit_complement => try self.push(~(try self.pop())),
+            .true_value => try self.push(true_flag),
+            .false_value => try self.push(0),
+            .blank => try self.push(' '),
+            .cell => try self.push(cell_size),
+            .cells => try self.push((try self.pop()) *% cell_size),
+            .cell_plus => try self.push((try self.pop()) +% cell_size),
+            .aligned => {
+                const address = try self.pop();
+                try self.push((address +% (cell_size - 1)) & ~@as(Cell, cell_size - 1));
+            },
             .fetch => {
                 const address = try self.pop();
-                try self.push(self.readCell(address));
+                try self.push(try self.readCell(address));
             },
             .store => {
                 const address = try self.pop();
                 const value = try self.pop();
-                self.writeCell(address, value);
+                try self.writeCell(address, value);
             },
             .cfetch => {
-                const address = try self.pop();
+                const address = try self.memoryAddress(try self.pop(), 1);
                 try self.push(self.memory[address]);
             },
             .cstore => {
-                const address = try self.pop();
+                const address = try self.memoryAddress(try self.pop(), 1);
                 const value = try self.pop();
-                self.memory[address] = @truncate(value);
+                self.memory[address] = @truncate(@as(UCell, @bitCast(value)));
             },
             .add_store => {
                 const address = try self.pop();
                 const value = try self.pop();
-                self.writeCell(address, self.readCell(address) +% value);
+                try self.writeCell(address, (try self.readCell(address)) +% value);
             },
             .inc_store, .dec_store => {
                 const address = try self.pop();
-                const old = self.readCell(address);
-                self.writeCell(address, if (builtin == .inc_store) old +% 1 else old -% 1);
+                const old = try self.readCell(address);
+                try self.writeCell(address, if (builtin == .inc_store) old +% 1 else old -% 1);
             },
-            .zero_store => {
-                const address = try self.pop();
-                self.writeCell(address, 0);
-            },
+            .zero_store, .off => try self.writeCell(try self.pop(), 0),
+            .on => try self.writeCell(try self.pop(), true_flag),
             .question => {
                 const address = try self.pop();
-                self.writeNumber(self.readCell(address), false);
+                self.writeNumber(try self.readCell(address));
+                self.write(" ");
             },
             .array_fetch => {
-                const base = try self.pop();
-                const index = try self.pop();
-                const address = base +% (index *% 2);
-                try self.push(self.readCell(address));
+                const address = try self.arrayAddress();
+                try self.push(try self.readCell(address));
             },
             .array_store => {
-                const base = try self.pop();
-                const index = try self.pop();
+                const address = try self.arrayAddress();
                 const value = try self.pop();
-                const address = base +% (index *% 2);
-                self.writeCell(address, value);
+                try self.writeCell(address, value);
             },
-            .dot => {
+            .erase, .fill => {
+                const byte: u8 = if (builtin == .fill) @truncate(@as(UCell, @bitCast(try self.pop()))) else 0;
+                const bytes = try self.memoryRange();
+                @memset(bytes, byte);
+            },
+            .move, .cmove => {
+                const count = try self.pop();
+                const destination = try self.pop();
+                const source = try self.pop();
+                if (count <= 0) return;
+                const length: usize = @intCast(count);
+                const to = try self.memoryAddress(destination, length);
+                const from = try self.memoryAddress(source, length);
+                if (builtin == .cmove or to <= from) {
+                    for (0..length) |offset| self.memory[to + offset] = self.memory[from + offset];
+                } else {
+                    std.mem.copyBackwards(u8, self.memory[to .. to + length], self.memory[from .. from + length]);
+                }
+            },
+            .dot, .u_dot => {
                 const value = try self.pop();
-                self.writeNumber(value, false);
+                self.writeNumber(if (builtin == .u_dot) @as(UCell, @bitCast(value)) else value);
+                self.write(" ");
             },
             .c_dot => {
-                const value = try self.pop();
-                self.writeNumber(@truncate(value), true);
+                self.writeNumber((try self.pop()) & 0xff);
+                self.write(" ");
+            },
+            .dot_s => {
+                self.writeDepth(self.data_depth);
+                for (self.data_stack[0..self.data_depth]) |value| {
+                    self.writeNumber(value);
+                    self.write(" ");
+                }
             },
             .echo => {
-                const value = try self.pop();
-                const byte: [1]u8 = .{@truncate(value)};
+                const byte: [1]u8 = .{@truncate(@as(UCell, @bitCast(try self.pop())))};
                 self.write(&byte);
             },
             .cr => self.write("\n"),
             .space => self.write(" "),
             .spaces => {
-                const count = try self.pop();
-                const signed: i16 = @bitCast(count);
-                var i: Cell = 0;
-                while (signed > 0 and i < count and i < 4096) : (i += 1) self.write(" ");
+                var count = try self.pop();
+                while (count > 0) : (count -= 1) self.write(" ");
             },
             .type => {
-                const address = try self.pop();
-                const count = try self.pop() & 0x00ff;
-                var offset: Cell = 0;
-                while (offset < count) : (offset += 1) {
-                    const byte: [1]u8 = .{self.memory[address +% offset]};
-                    self.write(&byte);
-                }
+                const bytes = try self.memoryRange();
+                self.write(bytes);
             },
-            .hex => self.memory[base_address] = 16,
-            .dec => self.memory[base_address] = 10,
-            .oct => self.memory[base_address] = 8,
+            .hex => try self.writeCell(base_address, 16),
+            .dec => try self.writeCell(base_address, 10),
+            .oct => try self.writeCell(base_address, 8),
             .base => try self.push(base_address),
             .here => try self.push(self.data_here),
-            .allot => {
-                const amount = try self.pop();
-                try self.reserveData(amount);
-            },
+            .allot => try self.reserveData(try self.pop()),
             .builds => {
                 const name = self.nextSourceToken() orelse return error.InvalidDefinition;
                 const address = self.data_here;
@@ -957,40 +1425,30 @@ pub const State = struct {
                 self.words[id].data_here_before = address;
                 self.last_created_word = id;
             },
+            .immediate => {
+                if (self.word_count == self.builtin_count) return error.InvalidDefinition;
+                self.words[self.word_count - 1].immediate = true;
+            },
             .comma => {
                 const value = try self.pop();
                 const address = self.data_here;
-                try self.reserveData(2);
-                self.writeCell(address, value);
+                try self.reserveData(cell_size);
+                try self.writeCell(address, value);
             },
             .c_comma => {
                 const value = try self.pop();
                 const address = self.data_here;
                 try self.reserveData(1);
-                self.memory[address] = @truncate(value);
+                self.memory[@intCast(address)] = @truncate(@as(UCell, @bitCast(value)));
             },
-            .execute => {
-                const id = try self.pop();
-                if (id >= self.word_count) return error.InvalidExecutionToken;
-                try self.executeWord(id);
-            },
-            .index => {
+            .execute => try self.executeWord(try self.wordId(try self.pop())),
+            .index => try self.push((try self.loopFrame(1)).index),
+            .index_2 => try self.push((try self.loopFrame(2)).index),
+            .index_3 => try self.push((try self.loopFrame(3)).index),
+            .leave => try self.compileLeave(),
+            .unloop => {
                 if (self.loop_depth == 0) return error.LoopMismatch;
-                try self.push(self.loop_stack[self.loop_depth - 1].index);
-            },
-            .index_2 => {
-                if (self.loop_depth < 2) return error.LoopMismatch;
-                try self.push(self.loop_stack[self.loop_depth - 2].index);
-            },
-            .index_3 => {
-                if (self.loop_depth < 3) return error.LoopMismatch;
-                try self.push(self.loop_stack[self.loop_depth - 3].index);
-            },
-            .leave => {
-                if (self.loop_depth == 0) return error.LoopMismatch;
-                const frame = &self.loop_stack[self.loop_depth - 1];
-                frame.index = frame.limit;
-                frame.leave = true;
+                self.loop_depth -= 1;
             },
             .words => {
                 for (self.words[0..self.word_count]) |word| {
@@ -1001,22 +1459,26 @@ pub const State = struct {
             },
             .input => {
                 var line: [4096]u8 = undefined;
-                const read_fn = self.writer.read_fn orelse return error.InputUnavailable;
                 while (true) {
-                    const input = read_fn(self.writer.context, &line) orelse return error.InputUnavailable;
-                    var cursor: usize = 0;
-                    const token = nextToken(input, &cursor) orelse {
-                        self.write(" ?\n");
-                        continue;
-                    };
-                    const parsed = try self.parseNumber(token);
-                    var trailing = false;
-                    if (nextToken(input, &cursor) != null) trailing = true;
-                    if (parsed == null or trailing) {
+                    const token = try self.readInputToken(&line) orelse continue;
+                    const parsed = try self.parseNumber(token) orelse ParsedNumber{ .value = 0, .double = true };
+                    if (parsed.double) {
                         self.write(" ?\n");
                         continue;
                     }
-                    try self.push(parsed.?);
+                    try self.push(doubleCells(parsed.value).low);
+                    break;
+                }
+            },
+            .f_input => {
+                var line: [4096]u8 = undefined;
+                while (true) {
+                    const token = try self.readInputToken(&line) orelse continue;
+                    const parsed = parseFloat(token, false) orelse {
+                        self.write(" ?\n");
+                        continue;
+                    };
+                    try self.fpush(parsed);
                     break;
                 }
             },
@@ -1036,54 +1498,392 @@ pub const State = struct {
                 const savesys_fn = self.writer.savesys_fn orelse return error.FileUnavailable;
                 try savesys_fn(self.writer.context, path, self);
             },
+            .compile_if => try self.compileIf(),
+            .compile_else => try self.compileElse(),
+            .compile_then => try self.compileThen(),
+            .compile_begin => try self.compileBegin(),
+            .compile_end => try self.compileEnd(false),
+            .compile_again => try self.compileEnd(true),
+            .compile_while => try self.compileWhile(),
+            .compile_repeat => try self.compileRepeat(),
+            .compile_do => try self.compileDo(false),
+            .compile_q_do => try self.compileDo(true),
+            .compile_loop => try self.compileLoop(false),
+            .compile_plus_loop => try self.compileLoop(true),
+            .compile_does => try self.compileDoes(),
+            .compile_case => try self.compileCase(),
+            .compile_of => try self.compileOf(),
+            .compile_endof => try self.compileEndof(),
+            .compile_endcase => try self.compileEndcase(),
+            .compile_exit => {
+                try self.requireCompiling();
+                _ = try self.emit(.{ .kind = .exit });
+            },
+            .compile_recurse => {
+                if (!self.compiling or !self.defining) return error.CompileOnly;
+                _ = try self.emit(.{ .kind = .call, .value = self.current_word });
+            },
+            .f_drop => _ = try self.fpop(),
+            .f_dup => try self.fpush(try self.fpeek(0)),
+            .f_swap => {
+                try self.requireFloatDepth(2);
+                std.mem.swap(Float, &self.float_stack[self.float_depth - 1], &self.float_stack[self.float_depth - 2]);
+            },
+            .f_over => try self.fpush(try self.fpeek(1)),
+            .f_rot, .f_minus_rot => {
+                try self.requireFloatDepth(3);
+                const items = self.float_stack[self.float_depth - 3 .. self.float_depth];
+                if (builtin == .f_rot) std.mem.rotate(Float, items, 1) else std.mem.rotate(Float, items, 2);
+            },
+            .f_nip => {
+                const top = try self.fpop();
+                _ = try self.fpop();
+                try self.fpush(top);
+            },
+            .f_tuck => {
+                try self.requireFloatDepth(2);
+                const top = try self.fpeek(0);
+                std.mem.swap(Float, &self.float_stack[self.float_depth - 1], &self.float_stack[self.float_depth - 2]);
+                try self.fpush(top);
+            },
+            .f_pick => {
+                const depth = try self.pop();
+                if (depth < 0) return error.FloatStackUnderflow;
+                try self.fpush(try self.fpeek(@intCast(depth)));
+            },
+            .f_depth => try self.push(@intCast(self.float_depth)),
+            .f_dot_s => {
+                self.writeDepth(self.float_depth);
+                for (self.float_stack[0..self.float_depth]) |value| {
+                    self.writeFloatExponent(value, fs_precision);
+                    self.write(" ");
+                }
+            },
+            .f_add, .f_sub, .f_mul, .f_div, .f_max, .f_min => {
+                const b = try self.fpop();
+                const a = try self.fpop();
+                try self.fpush(switch (builtin) {
+                    .f_add => a + b,
+                    .f_sub => a - b,
+                    .f_mul => a * b,
+                    .f_div => a / b,
+                    .f_max => @max(a, b),
+                    .f_min => @min(a, b),
+                    else => unreachable,
+                });
+            },
+            .f_negate, .f_abs, .f_sqrt, .f_exp, .f_ln, .f_sin, .f_cos, .f_tan => {
+                const a = try self.fpop();
+                try self.fpush(switch (builtin) {
+                    .f_negate => -a,
+                    .f_abs => @abs(a),
+                    .f_sqrt => @sqrt(a),
+                    .f_exp => @exp(a),
+                    .f_ln => @log(a),
+                    .f_sin => @sin(a),
+                    .f_cos => @cos(a),
+                    .f_tan => @tan(a),
+                    else => unreachable,
+                });
+            },
+            .f_equal, .f_not_equal, .f_less, .f_greater, .f_less_equal, .f_greater_equal => {
+                const b = try self.fpop();
+                const a = try self.fpop();
+                try self.push(truth(switch (builtin) {
+                    .f_equal => a == b,
+                    .f_not_equal => a != b,
+                    .f_less => a < b,
+                    .f_greater => a > b,
+                    .f_less_equal => a <= b,
+                    .f_greater_equal => a >= b,
+                    else => unreachable,
+                }));
+            },
+            .f_zero_equal, .f_zero_not_equal, .f_zero_less, .f_zero_greater, .f_zero_less_equal, .f_zero_greater_equal => {
+                const a = try self.fpop();
+                try self.push(truth(switch (builtin) {
+                    .f_zero_equal => a == 0,
+                    .f_zero_not_equal => a != 0,
+                    .f_zero_less => a < 0,
+                    .f_zero_greater => a > 0,
+                    .f_zero_less_equal => a <= 0,
+                    .f_zero_greater_equal => a >= 0,
+                    else => unreachable,
+                }));
+            },
+            .f_fetch => try self.fpush(try self.readFloat(try self.pop())),
+            .f_store => {
+                const address = try self.pop();
+                try self.writeFloat(address, try self.fpop());
+            },
+            .f_comma => {
+                const value = try self.fpop();
+                const address = self.data_here;
+                try self.reserveData(float_size);
+                try self.writeFloat(address, value);
+            },
+            .f_array_fetch => try self.fpush(try self.readFloat(try self.arrayAddress())),
+            .f_array_store => {
+                const address = try self.arrayAddress();
+                try self.writeFloat(address, try self.fpop());
+            },
+            .f_add_store => {
+                const address = try self.pop();
+                const value = try self.fpop();
+                try self.writeFloat(address, (try self.readFloat(address)) + value);
+            },
+            .f_question => {
+                self.writeFloatFixed(try self.readFloat(try self.pop()));
+                self.write(" ");
+            },
+            .floats => try self.push((try self.pop()) *% float_size),
+            .float_plus => try self.push((try self.pop()) +% float_size),
+            .s_to_f => try self.fpush(@floatFromInt(try self.pop())),
+            .f_to_s => try self.push(floatToCell(try self.fpop())),
+            .f_dot => {
+                self.writeFloatFixed(try self.fpop());
+                self.write(" ");
+            },
+            .s_to_d => try self.pushDouble(try self.pop()),
+            .d_to_s => {
+                _ = try self.pop();
+            },
+            .d_add, .d_sub => {
+                const b = try self.popDouble();
+                const a = try self.popDouble();
+                try self.pushDouble(if (builtin == .d_add) a +% b else a -% b);
+            },
+            .d_negate => try self.pushDouble(0 -% try self.popDouble()),
+            .d_abs => {
+                const d = try self.popDouble();
+                try self.pushDouble(if (d < 0) 0 -% d else d);
+            },
+            .d_zero_equal => try self.push(truth(try self.popDouble() == 0)),
+            .d_zero_less => try self.push(truth(try self.popDouble() < 0)),
+            .d_equal, .d_less => {
+                const b = try self.popDouble();
+                const a = try self.popDouble();
+                try self.push(truth(if (builtin == .d_equal) a == b else a < b));
+            },
+            .d_dot => {
+                self.writeNumber(try self.popDouble());
+                self.write(" ");
+            },
+            .two_fetch => try self.pushDouble(try self.readDouble(try self.pop())),
+            .two_store => {
+                const address = try self.pop();
+                try self.writeDouble(address, try self.popDouble());
+            },
+            .d_to_f => try self.fpush(@floatFromInt(try self.popDouble())),
+            .f_to_d => try self.pushDouble(floatToDouble(try self.fpop())),
+            .count => {
+                const address = try self.pop();
+                const at = try self.memoryAddress(address, 1);
+                try self.push(address + 1);
+                try self.push(self.memory[at]);
+            },
+            .pad => try self.push(pad_address),
+            .accept => {
+                const capacity = try self.pop();
+                const address = try self.pop();
+                const read_fn = self.writer.read_fn orelse return error.InputUnavailable;
+                var line: [4096]u8 = undefined;
+                const input = read_fn(self.writer.context, &line) orelse &.{};
+                const length: usize = @min(input.len, @as(usize, @intCast(@max(capacity, 0))));
+                const start = try self.memoryAddress(address, length);
+                @memcpy(self.memory[start .. start + length], input[0..length]);
+                try self.push(@intCast(length));
+            },
+            .evaluate => try self.interpretLine(try self.memoryRange()),
+            .key => {
+                const key_fn = self.writer.key_fn orelse return error.InputUnavailable;
+                try self.push(key_fn(self.writer.context) orelse return error.InputUnavailable);
+            },
+            .key_question => {
+                const ready = if (self.writer.key_ready_fn) |ready_fn| ready_fn(self.writer.context) else false;
+                try self.push(truth(ready));
+            },
+            .hold_start => self.resetHold(),
+            .hold_nest => {
+                if (self.hold_depth == max_hold_nesting) return error.PicturedNumericOverflow;
+                self.hold_stack[self.hold_depth] = self.hold_end;
+                self.hold_depth += 1;
+                self.hold_end = self.hold_ptr;
+            },
+            .hold_release => {
+                if (self.hold_depth == 0) return error.PicturedNumericOverflow;
+                self.hold_depth -= 1;
+                self.hold_ptr = self.hold_end;
+                self.hold_end = self.hold_stack[self.hold_depth];
+            },
+            .hold_digit => try self.pushDouble(@bitCast(try self.holdDigit(@bitCast(try self.popDouble())))),
+            .hold_digits => {
+                var value: UDouble = @bitCast(try self.popDouble());
+                while (true) {
+                    value = try self.holdDigit(value);
+                    if (value == 0) break;
+                }
+                try self.pushDouble(0);
+            },
+            .hold_finish => {
+                _ = try self.popDouble();
+                try self.push(self.hold_ptr);
+                try self.push(self.hold_end - self.hold_ptr);
+            },
+            .hold => try self.holdBytes(&.{@truncate(@as(UCell, @bitCast(try self.pop())))}),
+            .holds => {
+                const bytes = try self.memoryRange();
+                var copy: [max_gforth_string]u8 = undefined;
+                if (bytes.len > copy.len) return error.PicturedNumericOverflow;
+                @memcpy(copy[0..bytes.len], bytes);
+                try self.holdBytes(copy[0..bytes.len]);
+            },
+            .sign => {
+                if (try self.pop() < 0) try self.holdBytes("-");
+            },
+            .to_number => {
+                const count = try self.pop();
+                var address = try self.pop();
+                var value: UDouble = @bitCast(try self.popDouble());
+                const base = try self.validBase();
+                var remaining = count;
+                while (remaining > 0) : (remaining -= 1) {
+                    const at = try self.memoryAddress(address, 1);
+                    const digit = digitValue(self.memory[at]) orelse break;
+                    if (digit >= base) break;
+                    value = value *% @as(UDouble, @intCast(base)) +% @as(UDouble, @intCast(digit));
+                    address += 1;
+                }
+                try self.pushDouble(@bitCast(value));
+                try self.push(address);
+                try self.push(remaining);
+            },
+            .string_to_number => {
+                const parsed = try self.parseNumber(try self.memoryRange());
+                try self.pushDouble(if (parsed) |number| number.value else 0);
+                try self.push(truth(parsed != null));
+            },
+            .to_float => {
+                const bytes = try self.memoryRange();
+                const blank = std.mem.indexOfNone(u8, bytes, " ") == null;
+                if (if (blank) 0 else parseFloat(bytes, false)) |value| {
+                    try self.fpush(value);
+                    try self.push(true_flag);
+                } else try self.push(0);
+            },
         }
+    }
+
+    fn resetHold(self: *State) void {
+        self.hold_ptr = hold_top;
+        self.hold_end = hold_top;
+        self.hold_depth = 0;
+    }
+
+    fn holdBytes(self: *State, bytes: []const u8) RuntimeError!void {
+        const length: Cell = @intCast(bytes.len);
+        if (self.hold_ptr - hold_bottom < length) return error.PicturedNumericOverflow;
+        self.hold_ptr -= length;
+        const start: usize = @intCast(self.hold_ptr);
+        @memcpy(self.memory[start .. start + bytes.len], bytes);
+    }
+
+    /// `#`: prepends the least-significant digit of `value` and returns the remaining quotient.
+    fn holdDigit(self: *State, value: UDouble) RuntimeError!UDouble {
+        const base: UDouble = @intCast(try self.validBase());
+        const digit: u8 = @intCast(value % base);
+        try self.holdBytes(&.{if (digit < 10) '0' + digit else 'A' + digit - 10});
+        return value / base;
     }
 
     fn binary(self: *State, builtin: Builtin) RuntimeError!void {
         const b = try self.pop();
         const a = try self.pop();
-        const sa: i16 = @bitCast(a);
-        const sb: i16 = @bitCast(b);
         const result: Cell = switch (builtin) {
             .add => a +% b,
             .sub => a -% b,
             .mul => a *% b,
-            .div => blk: {
-                if (b == 0) {
-                    self.write("DIVISION BY ZERO\n");
-                    break :blk 0x7fff;
-                }
-                if (sa == -32768 and sb == -1) break :blk a;
-                break :blk @bitCast(@divTrunc(sa, sb));
-            },
-            .mod => blk: {
-                if (b == 0) {
-                    self.write("DIVISION BY ZERO\n");
-                    break :blk 0;
-                }
-                if (sa == -32768 and sb == -1) break :blk 0;
-                break :blk @bitCast(@rem(sa, sb));
-            },
-            .max => if (sa > sb) a else b,
-            .min => if (sa < sb) a else b,
+            .div => (try flooredDivision(a, b)).quotient,
+            .mod => (try flooredDivision(a, b)).remainder,
+            .max => @max(a, b),
+            .min => @min(a, b),
             .equal => truth(a == b),
             .not_equal => truth(a != b),
-            .less => truth(sa < sb),
-            .greater => truth(sa > sb),
-            .less_equal => truth(sa <= sb),
-            .greater_equal => truth(sa >= sb),
+            .less => truth(a < b),
+            .greater => truth(a > b),
+            .less_equal => truth(a <= b),
+            .greater_equal => truth(a >= b),
             .bit_and => a & b,
             .bit_or => a | b,
             .bit_xor => a ^ b,
             .bit_nand => ~(a & b),
             .bit_nor => ~(a | b),
+            .lshift, .rshift => blk: {
+                const bits: UCell = @bitCast(a);
+                if (b < 0 or b >= 64) break :blk 0;
+                const amount: u6 = @intCast(b);
+                break :blk @bitCast(if (builtin == .lshift) bits << amount else bits >> amount);
+            },
             else => unreachable,
         };
         try self.push(result);
     }
 
+    const Division = struct { quotient: Cell, remainder: Cell };
+
+    fn flooredDivision(dividend: Cell, divisor: Cell) RuntimeError!Division {
+        if (divisor == 0) return error.DivisionByZero;
+        if (dividend == std.math.minInt(Cell) and divisor == -1) return .{ .quotient = dividend, .remainder = 0 };
+        return .{ .quotient = @divFloor(dividend, divisor), .remainder = @mod(dividend, divisor) };
+    }
+
     fn truth(value: bool) Cell {
-        return if (value) 1 else 0;
+        return if (value) true_flag else 0;
+    }
+
+    fn floatToCell(value: Float) Cell {
+        if (std.math.isNan(value)) return 0;
+        if (value >= 0x1p63) return std.math.maxInt(Cell);
+        if (value < -0x1p63) return std.math.minInt(Cell);
+        return @intFromFloat(value);
+    }
+
+    fn floatToDouble(value: Float) Double {
+        if (std.math.isNan(value)) return 0;
+        if (value >= 0x1p127) return std.math.maxInt(Double);
+        if (value < -0x1p127) return std.math.minInt(Double);
+        return @intFromFloat(value);
+    }
+
+    /// Pops a double-cell number; the high cell is on top of the stack.
+    fn popDouble(self: *State) RuntimeError!Double {
+        try self.requireDepth(2);
+        const high = try self.pop();
+        const low = try self.pop();
+        return cellsDouble(low, high);
+    }
+
+    fn pushDouble(self: *State, value: Double) RuntimeError!void {
+        const cells = doubleCells(value);
+        try self.push(cells.low);
+        try self.push(cells.high);
+    }
+
+    /// 2@ / 2! layout: the high cell at `address`, the low cell in the next cell.
+    fn readDouble(self: *State, address: Cell) RuntimeError!Double {
+        const high = try self.readCell(address);
+        return cellsDouble(try self.readCell(address +% cell_size), high);
+    }
+
+    fn writeDouble(self: *State, address: Cell, value: Double) RuntimeError!void {
+        _ = try self.memoryAddress(address, 2 * cell_size);
+        const cells = doubleCells(value);
+        try self.writeCell(address, cells.high);
+        try self.writeCell(address + cell_size, cells.low);
+    }
+
+    fn requireDepth(self: *State, depth: usize) RuntimeError!void {
+        if (self.data_depth < depth) return error.StackUnderflow;
     }
 
     fn peek(self: *State, depth: usize) RuntimeError!Cell {
@@ -1103,71 +1903,306 @@ pub const State = struct {
         self.data_depth += 1;
     }
 
-    fn readCell(self: *State, address: Cell) Cell {
-        const next: Cell = address +% 1;
-        return @as(Cell, self.memory[address]) | (@as(Cell, self.memory[next]) << 8);
+    fn requireFloatDepth(self: *State, depth: usize) RuntimeError!void {
+        if (self.float_depth < depth) return error.FloatStackUnderflow;
     }
 
-    fn writeCell(self: *State, address: Cell, value: Cell) void {
-        self.memory[address] = @truncate(value);
-        self.memory[address +% 1] = @truncate(value >> 8);
+    fn fpeek(self: *State, depth: usize) RuntimeError!Float {
+        if (depth >= self.float_depth) return error.FloatStackUnderflow;
+        return self.float_stack[self.float_depth - depth - 1];
+    }
+
+    fn fpop(self: *State) RuntimeError!Float {
+        if (self.float_depth == 0) return error.FloatStackUnderflow;
+        self.float_depth -= 1;
+        return self.float_stack[self.float_depth];
+    }
+
+    fn fpush(self: *State, value: Float) RuntimeError!void {
+        if (self.float_depth == max_float_stack) return error.FloatStackOverflow;
+        self.float_stack[self.float_depth] = value;
+        self.float_depth += 1;
+    }
+
+    fn loopFrame(self: *State, nesting: usize) RuntimeError!Loop {
+        if (self.loop_depth < nesting) return error.LoopMismatch;
+        return self.loop_stack[self.loop_depth - nesting];
+    }
+
+    /// Validates that `length` bytes starting at `address` lie inside logical memory.
+    fn memoryAddress(self: *State, address: Cell, length: usize) RuntimeError!usize {
+        _ = self;
+        if (address < 0 or address > memory_size) return error.InvalidAddress;
+        const start: usize = @intCast(address);
+        if (length > memory_size - start) return error.InvalidAddress;
+        return start;
+    }
+
+    /// Pops ( addr u ) and returns the addressed bytes.
+    fn memoryRange(self: *State) RuntimeError![]u8 {
+        const count = try self.pop();
+        const address = try self.pop();
+        const length: usize = if (count < 0) 0 else @intCast(@min(count, memory_size));
+        const start = try self.memoryAddress(address, length);
+        return self.memory[start .. start + length];
+    }
+
+    /// Pops ( index base ) and returns the address of the indexed cell.
+    fn arrayAddress(self: *State) RuntimeError!Cell {
+        const base = try self.pop();
+        const index = try self.pop();
+        return base +% (index *% cell_size);
+    }
+
+    fn readCell(self: *State, address: Cell) RuntimeError!Cell {
+        const start = try self.memoryAddress(address, cell_size);
+        return std.mem.readInt(Cell, self.memory[start..][0..cell_size], .little);
+    }
+
+    fn writeCell(self: *State, address: Cell, value: Cell) RuntimeError!void {
+        const start = try self.memoryAddress(address, cell_size);
+        std.mem.writeInt(Cell, self.memory[start..][0..cell_size], value, .little);
+    }
+
+    fn readFloat(self: *State, address: Cell) RuntimeError!Float {
+        return bitsFloat(try self.readCell(address));
+    }
+
+    fn writeFloat(self: *State, address: Cell, value: Float) RuntimeError!void {
+        try self.writeCell(address, floatBits(value));
     }
 
     fn reserveData(self: *State, amount: Cell) RuntimeError!void {
-        const next = self.data_here +% amount;
-        if (next < self.data_here and amount != 0) return error.MemoryExhausted;
+        const next, const overflow = @addWithOverflow(self.data_here, amount);
+        if (overflow != 0 or next < data_start or next > memory_size) return error.MemoryExhausted;
         self.data_here = next;
     }
 
-    fn parseNumber(self: *State, token: []const u8) RuntimeError!?Cell {
-        if (token.len == 0) return null;
-        const base = self.memory[base_address];
-        if (base < 2 or base > 16) return error.InvalidBase;
-        var i: usize = 0;
-        var negative = false;
-        if (token[0] == '-') {
-            negative = true;
-            i = 1;
-        }
-        if (i == token.len) return null;
-        var value: Cell = 0;
-        while (i < token.len) : (i += 1) {
-            const c = token[i];
-            const digit: u8 = if (c >= '0' and c <= '9') c - '0' else if (c >= 'A' and c <= 'F') c - 'A' + 10 else if (c >= 'a' and c <= 'f') c - 'a' + 10 else return null;
-            if (digit >= base) return null;
-            value = value *% base +% digit;
-        }
-        return if (negative) 0 -% value else value;
+    fn currentBase(self: *State) Cell {
+        return self.readCell(base_address) catch unreachable;
     }
 
-    fn writeNumber(self: *State, value: Cell, byte_value: bool) void {
-        const base = self.memory[base_address];
-        if (base < 2 or base > 16) {
+    fn readInputToken(self: *State, line: *[4096]u8) RuntimeError!?[]const u8 {
+        const read_fn = self.writer.read_fn orelse return error.InputUnavailable;
+        const input = read_fn(self.writer.context, line) orelse return error.InputUnavailable;
+        var cursor: usize = 0;
+        const token = nextToken(input, &cursor) orelse {
+            self.write(" ?\n");
+            return null;
+        };
+        if (nextToken(input, &cursor) != null) {
+            self.write(" ?\n");
+            return null;
+        }
+        return token;
+    }
+
+    fn validBase(self: *State) RuntimeError!Cell {
+        const base = self.currentBase();
+        if (base < 2 or base > 36) return error.InvalidBase;
+        return base;
+    }
+
+    fn digitValue(c: u8) ?Cell {
+        return if (c >= '0' and c <= '9') c - '0' else if (c >= 'A' and c <= 'Z') c - 'A' + 10 else if (c >= 'a' and c <= 'z') c - 'a' + 10 else null;
+    }
+
+    /// Recognizes an integer in the manner of gforth's number recognizer: optional `-`, an
+    /// optional base prefix (`$` `#` `&` `%`), digits, and `'c'` character literals. A `.`
+    /// anywhere among the digits makes the number double-cell (`123.` and `12.34` are doubles).
+    fn parseNumber(self: *State, token: []const u8) RuntimeError!?ParsedNumber {
+        if (token.len == 3 and token[0] == '\'' and token[2] == '\'') return .{ .value = token[1], .double = false };
+        var base = try self.validBase();
+        var i: usize = 0;
+        var negative = false;
+        if (i < token.len and token[i] == '-') {
+            negative = true;
+            i += 1;
+        }
+        if (i < token.len) {
+            const prefixed_base: ?Cell = switch (token[i]) {
+                '$' => 16,
+                '#', '&' => 10,
+                '%' => 2,
+                else => null,
+            };
+            if (prefixed_base) |prefixed| {
+                base = prefixed;
+                i += 1;
+            }
+        }
+        if (!negative and i < token.len and token[i] == '-') {
+            negative = true;
+            i += 1;
+        }
+        var value: UDouble = 0;
+        var digits: usize = 0;
+        var double = false;
+        while (i < token.len) : (i += 1) {
+            if (token[i] == '.') {
+                double = true;
+                continue;
+            }
+            const digit = digitValue(token[i]) orelse return null;
+            if (digit >= base) return null;
+            value = value *% @as(UDouble, @intCast(base)) +% @as(UDouble, @intCast(digit));
+            digits += 1;
+        }
+        if (digits == 0) return null;
+        const signed: Double = @bitCast(value);
+        const result = if (negative) 0 -% signed else signed;
+        // A single-cell number wraps to 64 bits, as gforth's >NUMBER does with the high cell dropped.
+        return .{ .value = if (double) result else doubleCells(result).low, .double = double };
+    }
+
+    /// Recognizes a decimal float. Source literals require an exponent marker (`1E`, `1.5e-3`);
+    /// FINPUT and >FLOAT also accept plain decimal numbers.
+    fn parseFloat(token: []const u8, require_exponent: bool) ?Float {
+        var normalized: [80]u8 = undefined;
+        var used: usize = 0;
+        var i: usize = 0;
+        if (i < token.len and (token[i] == '-' or token[i] == '+')) {
+            normalized[used] = token[i];
+            used += 1;
+            i += 1;
+        }
+        const integer_start = i;
+        while (i < token.len and std.ascii.isDigit(token[i])) i += 1;
+        const integer_digits = token[integer_start..i];
+        var fraction_digits: []const u8 = &.{};
+        if (i < token.len and token[i] == '.') {
+            i += 1;
+            const fraction_start = i;
+            while (i < token.len and std.ascii.isDigit(token[i])) i += 1;
+            fraction_digits = token[fraction_start..i];
+        }
+        if (integer_digits.len + fraction_digits.len == 0) return null;
+        var exponent_sign: []const u8 = "";
+        var exponent_digits: []const u8 = "0";
+        if (i < token.len and (token[i] == 'e' or token[i] == 'E')) {
+            i += 1;
+            if (i < token.len and (token[i] == '-' or token[i] == '+')) {
+                exponent_sign = token[i .. i + 1];
+                i += 1;
+            }
+            const exponent_start = i;
+            while (i < token.len and std.ascii.isDigit(token[i])) i += 1;
+            if (i > exponent_start) exponent_digits = token[exponent_start..i];
+        } else if (require_exponent) return null;
+        if (i != token.len) return null;
+        const parts = [_][]const u8{ if (integer_digits.len == 0) "0" else integer_digits, ".", if (fraction_digits.len == 0) "0" else fraction_digits, "e", exponent_sign, exponent_digits };
+        for (parts) |part| {
+            if (used + part.len > normalized.len) return null;
+            @memcpy(normalized[used .. used + part.len], part);
+            used += part.len;
+        }
+        return std.fmt.parseFloat(Float, normalized[0..used]) catch null;
+    }
+
+    fn writeDepth(self: *State, depth: usize) void {
+        self.write("<");
+        self.writeNumber(depth);
+        self.write("> ");
+    }
+
+    /// Writes a signed number in the current base; callers widen unsigned cells before passing them.
+    fn writeNumber(self: *State, value: Double) void {
+        const base = self.currentBase();
+        if (base < 2 or base > 36) {
             self.write("?BASE?");
             return;
         }
-        var n = value;
-        var negative = false;
-        if (base == 10 and (@as(i16, @bitCast(value)) < 0)) {
-            negative = true;
-            n = 0 -% value;
-        }
-        var digits: [16]u8 = undefined;
+        const radix: UDouble = @intCast(base);
+        const negative = value < 0;
+        var n: UDouble = @bitCast(value);
+        if (negative) n = 0 -% n;
+        var digits: [128]u8 = undefined;
         var length: usize = 0;
         while (true) {
-            const digit: u8 = @intCast(n % base);
+            const digit: u8 = @intCast(n % radix);
             digits[length] = if (digit < 10) '0' + digit else 'A' + digit - 10;
             length += 1;
-            n /= base;
+            n /= radix;
             if (n == 0) break;
         }
-        const min_digits: usize = if (byte_value) (if (base == 16) 2 else if (base == 8) 3 else 0) else if (base == 16) 4 else if (base == 8) 6 else 0;
-        while (length < min_digits) : (length += 1) digits[length] = '0';
         if (negative) self.write("-");
         while (length > 0) {
             length -= 1;
             self.write(digits[length .. length + 1]);
         }
+    }
+
+    fn writeZeros(self: *State, count: i64) void {
+        var remaining = count;
+        while (remaining > 0) : (remaining -= 1) self.write("0");
+    }
+
+    /// F. output: significand rounded to 15 digits, printed without an exponent.
+    fn writeFloatFixed(self: *State, value: Float) void {
+        const rep = represent(value, dot_precision);
+        if (!rep.finite) return self.writeNonFinite(value, "infinity");
+        if (rep.negative) self.write("-");
+        const exponent: i64 = rep.exponent;
+        const digits = rep.digits[0..rep.len];
+        if (exponent <= 0) {
+            self.write("0");
+        } else {
+            self.write(digits[0..@intCast(@min(exponent, dot_precision))]);
+            self.writeZeros(exponent - dot_precision);
+        }
+        self.write(".");
+        self.writeZeros(-exponent);
+        const fraction_start: usize = @intCast(std.math.clamp(exponent, 0, dot_precision));
+        self.write(withoutTrailingZeros(digits[fraction_start..]));
+    }
+
+    /// F.S item output: up to `precision` significant digits with an `e` marker.
+    fn writeFloatExponent(self: *State, value: Float, precision: usize) void {
+        if (std.math.isNan(value) or std.math.isInf(value)) return self.writeNonFinite(value, "inf");
+        var digit_count = precision;
+        const magnitude = @abs(value);
+        const lower = std.math.pow(Float, 10, @floatFromInt(precision));
+        if (magnitude >= lower and magnitude < lower * 10) digit_count += 1;
+        const rep = represent(value, digit_count);
+        if (rep.negative) self.write("-");
+        const digits = withoutTrailingZeros(rep.digits[0..rep.len]);
+        const exponent: i64 = rep.exponent;
+        if (exponent >= 0 and exponent <= @as(i64, @intCast(digit_count))) {
+            const point: usize = @intCast(exponent);
+            if (point < digits.len) {
+                self.write(digits[0..point]);
+                self.write(".");
+                self.write(digits[point..]);
+            } else {
+                self.write(digits);
+                self.writeZeros(exponent - @as(i64, @intCast(digits.len)));
+            }
+            self.write("e");
+        } else if (exponent < 0 and exponent > -5) {
+            self.write(".");
+            self.writeZeros(-exponent);
+            self.write(digits);
+            self.write("e");
+        } else {
+            self.write(digits[0..1]);
+            if (digits.len > 1) {
+                self.write(".");
+                self.write(digits[1..]);
+            }
+            self.write("e");
+            self.writeNumberDecimal(exponent - 1);
+        }
+    }
+
+    fn writeNonFinite(self: *State, value: Float, infinity: []const u8) void {
+        if (std.math.isNan(value)) return self.write("NaN");
+        if (std.math.signbit(value)) self.write("-");
+        self.write(infinity);
+    }
+
+    fn writeNumberDecimal(self: *State, value: i64) void {
+        var buffer: [24]u8 = undefined;
+        self.write(std.fmt.bufPrint(&buffer, "{d}", .{value}) catch unreachable);
     }
 
     fn handleStringToken(self: *State, input: []const u8, cursor: *usize, immediate: bool) RuntimeError!void {
@@ -1206,10 +2241,88 @@ pub const State = struct {
         if (!immediate or self.compiling) {
             const address = self.data_here;
             try self.reserveData(@intCast(bytes.len + 1));
-            self.memory[address] = @intCast(bytes.len);
-            @memcpy(self.memory[@as(usize, address) + 1 .. @as(usize, address) + 1 + bytes.len], bytes);
+            const start: usize = @intCast(address);
+            self.memory[start] = @intCast(bytes.len);
+            @memcpy(self.memory[start + 1 .. start + 1 + bytes.len], bytes);
             _ = try self.emit(.{ .kind = if (immediate) .print_string else .string_literal, .value = address });
         } else self.write(bytes);
+    }
+
+    /// Handles the gforth string words `S"`, `S\"`, `.\"`, and `.(`.
+    fn handleParsedString(self: *State, kind: StringWord, input: []const u8, cursor: *usize) RuntimeError!void {
+        var text: [max_gforth_string]u8 = undefined;
+        const escapes = kind == .s_escape_quote or kind == .print_escape;
+        const bytes = try parseDelimited(input, cursor, if (kind == .print_paren) ')' else '"', escapes, &text);
+        switch (kind) {
+            .print_paren => self.write(bytes),
+            .print_escape => {
+                if (self.compiling) try self.compileCountedString(bytes, .print_string) else self.write(bytes);
+            },
+            .s_quote, .s_escape_quote => {
+                if (self.compiling) return self.compileCountedString(bytes, .string_literal);
+                const slot = string_buffer_base + @as(Cell, @intCast(self.string_buffer_index * string_buffer_size));
+                self.string_buffer_index = (self.string_buffer_index + 1) % string_buffer_count;
+                const start: usize = @intCast(slot);
+                @memcpy(self.memory[start .. start + bytes.len], bytes);
+                try self.push(slot);
+                try self.push(@intCast(bytes.len));
+            },
+        }
+    }
+
+    fn compileCountedString(self: *State, bytes: []const u8, kind: OpKind) RuntimeError!void {
+        const address = self.data_here;
+        try self.reserveData(@intCast(bytes.len + 1));
+        const start: usize = @intCast(address);
+        self.memory[start] = @intCast(bytes.len);
+        @memcpy(self.memory[start + 1 .. start + 1 + bytes.len], bytes);
+        _ = try self.emit(.{ .kind = kind, .value = address });
+    }
+
+    /// Reads text after a parsing word up to `delimiter`, skipping one leading separator.
+    fn parseDelimited(input: []const u8, cursor: *usize, delimiter: u8, escapes: bool, output: []u8) RuntimeError![]const u8 {
+        var length: usize = 0;
+        if (cursor.* < input.len and isSeparator(input[cursor.*])) cursor.* += 1;
+        while (true) {
+            if (cursor.* == input.len) return error.InvalidDefinition;
+            var c = input[cursor.*];
+            cursor.* += 1;
+            if (c == delimiter) break;
+            if (escapes and c == '\\') {
+                if (cursor.* == input.len) return error.InvalidDefinition;
+                const code = input[cursor.*];
+                cursor.* += 1;
+                c = switch (code) {
+                    'a' => 7,
+                    'b' => 8,
+                    'e' => 27,
+                    'f' => 12,
+                    'l', 'n' => '\n',
+                    'q' => '"',
+                    'r' => '\r',
+                    't' => '\t',
+                    'v' => 11,
+                    'z' => 0,
+                    'm' => blk: {
+                        if (length == output.len) return error.MemoryExhausted;
+                        output[length] = '\r';
+                        length += 1;
+                        break :blk '\n';
+                    },
+                    'x' => blk: {
+                        if (input.len - cursor.* < 2) return error.InvalidDefinition;
+                        const value = std.fmt.parseInt(u8, input[cursor.* .. cursor.* + 2], 16) catch return error.InvalidDefinition;
+                        cursor.* += 2;
+                        break :blk value;
+                    },
+                    else => code,
+                };
+            }
+            if (length == output.len) return error.MemoryExhausted;
+            output[length] = c;
+            length += 1;
+        }
+        return output[0..length];
     }
 
     fn asciiEqlIgnoreCase(a: []const u8, b: []const u8) bool {

@@ -1,50 +1,71 @@
 # FORTH/Σワード互換性一覧
 
-この一覧は[FORTH/Σ仕様書](SPEC.md)と現在のZig実装を対応づけたものです。誌面に同名ワードがあることだけでは、すべての機種版で同じ仕様とは限らないため、出典は誌面の掲載内容で確認しています。
+この一覧は[FORTH/Σ仕様書](SPEC.md)と現在のZig実装を対応づけたものです。誌面に同名ワードがあることだけでは、すべての機種版で同じ仕様とは限らないため、出典は誌面の掲載内容で確認しています。2026-10-28以降、数値まわりと基本ワードはGforthに合わせています（[決定事項](DECISIONS.md)）。
 
 ## 凡例
 
 - **実装**: 現在のZigコアに実装されています。
+- **変更**: 誌面に掲載がありますが、Gforthに合わせて動作を変えています。
 - **拡張**: ポータブル化のために追加した機能、または資料と動作が異なる実装判断です。
 - **未実装**: 誌面に掲載がありますが、現在のコアにはありません。
 - **機種依存**: CP/M、PC-8001、Z80の機械語やモニターに依存し、共通コアの対象外です。
 
-## 共通言語コア
+## 共通言語コア（誌面掲載ワード）
 
 | 分類 | 誌面掲載ワード | 現状 | 出典・補足 |
 | --- | --- | --- | --- |
-| スタック | DROP, DUP, SWAP, OVER, ROT, >R, R> | 実装 | 誌面参照|
-| 算術 | +, -, *, /, MOD, /MOD, 1-, MINUS, ABS, MAX, MIN | 実装 | 誌面参照。1-はサンプルとワード表の記載が一致しません。 |
-| 比較・論理 | =, <>, <, >, <=, >=, 0=, NOT, AND, OR, XOR, COM, NAND, NOR | 実装 | 誌面参照。NORの定義は資料内で記述が食い違います。 |
-| バイト操作 | SWAB | 実装 | 誌面参照|
-| メモリ | @, !, C@, C!, +!, 1+!, 1-!, OSET, ? | 実装 | 誌面参照|
-| 配列 | ARRAY, A@, A! | 実装 | 誌面参照。境界検査はありません。 |
-| 辞書・データ領域 | :, ;, HERE, ALLOT, ,, C,, FORGET | 実装 | 誌面参照。名前は長さと先頭5文字で識別します。 |
-| 定義用語 | <BUILDS, DOES> | 実装 | 誌面参照の動的データ定義機能。実行時に作成名を入力ストリームから読み、DOES>以後の操作列を作成語に結び付けます。 |
+| スタック | DROP, DUP, SWAP, OVER, ROT, >R, R> | 実装 | 誌面参照。セルは64ビット。 |
+| 算術 | +, -, *, /, MOD, /MOD, 1-, MINUS, ABS, MAX, MIN | 変更 | 64ビット。/、MOD、/MODは床関数除算、ゼロ除算はエラー。1-はサンプルとワード表の記載が一致しません。 |
+| 比較・論理 | =, <>, <, >, <=, >=, 0=, NOT, AND, OR, XOR, COM, NAND, NOR | 変更 | 真は-1。NORの定義は資料内で記述が食い違います。 |
+| バイト操作 | SWAB | 変更 | セル全体（8バイト）のバイト順を反転。 |
+| メモリ | @, !, C@, C!, +!, 1+!, 1-!, OSET, ? | 変更 | セルは8バイト。?は末尾に空白。範囲外アドレスはエラー。 |
+| 配列 | ARRAY, A@, A! | 変更 | 1要素8バイト。境界検査はありません。 |
+| 辞書・データ領域 | :, ;, HERE, ALLOT, ,, C,, FORGET | 変更 | 名前は全文字で識別します（誌面は長さと先頭5文字）。 |
+| 定義用語 | <BUILDS, DOES> | 実装 | 実行時に作成名を入力ストリームから読み、DOES>以後の操作列を作成語に結び付けます。 |
 | 変数・定数 | VARIABLE/VAR, CONSTANT/CONST | 実装 | 誌面の版によりVAR/CONST等の表記差があります。 |
-| 条件分岐 | IF, ELSE, THEN | 実装 | 誌面参照|
-| 条件・後判定ループ | BEGIN, WHILE, REPEAT, END | 実装 | 誌面参照|
-| カウント付きループ | DO, LOOP, +LOOP, LEAVE, I | 実装 | 誌面参照。負の+LOOPの終端判定は資料から確定できません。 |
-| 基数 | BASE, HEX, DEC, OCT | 実装 | 誌面参照。資料で確認できる基数は8、10、16です。 |
-| 出力 | ., C., ECHO, CR, SPACE, SPCES, TYPE, ? | 実装 | 誌面参照。SPCESは誌面の表記を維持しています。 |
-| 数値入力 | INPUT | 実装 | 誌面参照。現在は端末から数値1個を読み取ります。 |
-| 文字列 | " | 実装 | 誌面参照。コンパイル専用、最大127バイト、長さを積んでからアドレスを積みます。 |
+| 条件分岐 | IF, ELSE, THEN | 実装 | 誌面参照。 |
+| 条件・後判定ループ | BEGIN, WHILE, REPEAT, END | 実装 | 誌面参照。 |
+| カウント付きループ | DO, LOOP, +LOOP, LEAVE, I | 変更 | LEAVEは即座にループを抜けます（誌面は次のLOOPで終了）。DOの最低1回実行は維持。負の+LOOPの終端判定は資料から確定できません。 |
+| 基数 | BASE, HEX, DEC, OCT | 実装 | 資料で確認できる基数は8、10、16です。 |
+| 出力 | ., C., ECHO, CR, SPACE, SPCES, TYPE | 変更 | .とC.は末尾に空白、ゼロ埋めなし。TYPEは ( addr u )。 |
+| 数値入力 | INPUT | 実装 | 端末から整数1個を読み取ります。 |
+| 文字列 | " | 変更 | コンパイル専用、最大127バイト。アドレス、文字数の順に積みます（誌面は文字数、アドレス）。 |
+
+## Gforthに合わせて追加したワード
+
+| 分類 | ワード | 備考 |
+| --- | --- | --- |
+| スタック | -ROT, NIP, TUCK, PICK, ROLL, 2DUP, 2DROP, 2SWAP, 2OVER, DEPTH, R@, .S | |
+| 算術・比較 | NEGATE, 1+, 2*, 2/, 0<, 0>, 0<>, TRUE, FALSE | |
+| ビット | INVERT, LSHIFT, RSHIFT | |
+| メモリ | CELL, CELLS, CELL+, ALIGNED, BL, ON, OFF, ERASE, FILL, MOVE, CMOVE | |
+| 出力 | U., EMIT, SPACES, DECIMAL | |
+| 定義 | CREATE, VALUE, TO, IMMEDIATE, POSTPONE, RECURSE, CHAR, [CHAR], ['] | |
+| 制御構造 | UNTIL, AGAIN, CASE, OF, ENDOF, ENDCASE, EXIT, UNLOOP | |
+| コメント | \ | |
+| 浮動小数点スタック | FDROP, FDUP, FSWAP, FOVER, FROT, F-ROT, FNIP, FTUCK, FPICK, FDEPTH, F.S | 教材Level 17 |
+| 浮動小数点演算 | F+, F-, F*, F/, FNEGATE, FABS, FMAX, FMIN, FSQRT, FEXP, FLN, FSIN, FCOS, FTAN | 教材Level 17 |
+| 浮動小数点比較 | F=, F<>, F<, F>, F<=, F>=, F0=, F0<>, F0<, F0>, F0<=, F0>= | 結果は整数スタック |
+| 浮動小数点メモリ・変換 | F@, F!, F,, FLOATS, FLOAT+, FVARIABLE, FCONSTANT, S>F, F>S, F. | 教材Level 17 |
+| 文字列・入力 | S", S\", .\", .(, COUNT, PAD, ACCEPT, EVALUATE, KEY, KEY?, >NUMBER, S>NUMBER?, >FLOAT | 段階3。教材Level 6、9、14、29 |
+| 倍長整数 | 倍長整数リテラル（`123.`）, S>D, D>S, D+, D-, DNEGATE, DABS, D0=, D0<, D=, D<, D., 2@, 2!, 2VARIABLE, 2CONSTANT, D>F, F>D | 段階3。教材Level 18、20 |
+| 数値の書式 | <#, <<#, #, #S, HOLD, HOLDS, SIGN, #>, #>> | 段階3。教材Level 20 |
 
 ## 追加機能・移植上の違い
 
 | 機能 | 状態 | 現在の動作 |
 | --- | --- | --- |
-| 大文字・小文字を区別しない名前照合 | 拡張 | ASCII英字の大小を同一視します。誌面の共通仕様としては確定できません。 |
-| 数値基数2〜16 | 拡張 | HEX/DEC/OCTに加えて、BASEのメモリ値を変更すれば2〜16を使えます。 |
-| 小文字a〜fの数値入力 | 拡張 | 16進数入力で受け付けます。 |
+| 大文字・小文字を区別しない名前照合 | 拡張 | ASCII英字の大小を同一視します。Gforthと同じです。 |
+| 数値基数2〜36と接頭辞 | 拡張 | BASEのメモリ値で2〜36を使えます。`$` `#` `&` `%` 接頭辞と `'c'` を認識します。 |
+| 浮動小数点リテラル | 拡張 | 基数10で `e`/`E` を含むトークン。 |
+| F+!, F?, FA@, FA!, FARRAY, FINPUT, FMINUS | 拡張 | FORTH/Σの +!、?、A@、A!、ARRAY、INPUT、MINUS に対応する浮動小数点版。Gforthのワードではありません。 |
 | ."文字列出力 | 拡張 | コンパイル時文字列出力です。1982年資料のワードではありません。 |
 | ?DO | 拡張 | 開始値と終値が同じ場合、ループ本体を実行しません。FORTH/ΣのDOは同値でも1回実行します。 |
 | J, K | 拡張 | 2段目・3段目のループ添字を取得します。誌面では利用者定義例として説明されています。 |
 | EXECUTE | 拡張 | ポータブルな辞書トークンを実行します。Z80コードアドレス互換ではありません。 |
-| 単一の論理メモリと上限 | 拡張 | 64 KiBの論理メモリ、各種固定容量を使います。歴史的な機種のメモリ配置とは異なります。 |
-| 除算ゼロ | 拡張 | 診断を出力し、/、MOD、/MODそれぞれに定めた値を返します。 |
+| 単一の論理メモリと上限 | 拡張 | 1 MiBの論理メモリ、各種固定容量を使います。歴史的な機種のメモリ配置とは異なります。 |
 | SAVESYS | 拡張 | 現在の辞書・コンパイル済みコード・データ領域を含む単独実行ファイルを作成します。 |
-| SAVE, LOAD | 拡張 | 利用者定義語の辞書イメージを保存し、読み込み時は既存定義の後ろへ追加します。同名語は後から読み込んだ定義が優先されます。 |
+| SAVE, LOAD | 拡張 | 利用者定義語の辞書イメージ（`SIGIMG02`）を保存し、読み込み時は既存定義の後ろへ追加します。16ビット版のイメージは読み込めません。 |
 
 実装の選択値と容量は[実装ノート](IMPLEMENTATION.md)に記録しています。各ワードのスタック効果を含む誌面記述は[SPEC.md](SPEC.md)を参照してください。
 
@@ -58,27 +79,38 @@
 | USR, PUHL, POHL, NEXT | 機種依存 | Z80レジスタ、呼出規約、機械語実行に関係します。誌面参照。 |
 | CP/Mのファイル操作、BDOS、DMA | 機種依存 | CP/M版のOS呼び出しとバッファを必要とします。誌面参照。 |
 | PC-8001の編集、表示、モニター機能 | 機種依存 | PC-8001固有の入出力とモニターを必要とします。誌面参照。 |
+| Gforthのローカル変数、例外、ファイル、動的メモリと動的文字列（`$!` など）、語彙、条件付きコンパイル | 未実装 | 段階4〜6で対応予定（[決定事項](DECISIONS.md)）。 |
+| Gforthの .R, U.R, D.R, UM*, UM/MOD, M*, C", /STRING, COMPARE, F.RDP, F>STR-RDP, F>BUF-RDP | 未実装 | 段階1〜3の対象外。 |
 
 Z80の命令実行・エミュレーションはプロジェクトの対象外です。
 
 ## 自動回帰テストとの対応
 
-zig build testで、現行コアの主要動作を次のテストで確認します。
+zig build testで、現行コアの主要動作を次のテストで確認します（62件）。
 
 | テスト | 確認する動作 |
 | --- | --- |
-| 16-bit arithmetic | 16ビット折り返し、符号付き除算、0方向への剰余・商 |
-| true flags | 比較・0=の真偽値 |
-| dictionary identity | 大小文字を区別しない照合、名前長と先頭5文字 |
-| nested loops | 入れ子DO/LOOP、I/J、累積演算 |
-| loop boundaries | ?DOの0回実行、DOの最低1回実行 |
+| 64-bit arithmetic | 64ビット折り返し、床関数除算の商と剰余 |
+| true flags | 比較・0=・NOTの真偽値（-1と0） |
+| dictionary identity | 大小文字を区別しない全文字照合 |
+| nested loops, loop boundaries | 入れ子DO/LOOP、I/J、?DOの0回実行、DOの最低1回実行 |
+| LEAVE, UNLOOP | LEAVEの即時脱出、UNLOOPとEXIT |
 | variable, array, string | 変数、配列、文字列リテラルとTYPE |
-| numeric output | 小数点ワードの出力、CR |
-| error recovery | 未定義語の報告とエラー後のデータスタック初期化 |
+| number output, dot-s | 末尾空白、全基数での符号付き表示、U.、C.、.S |
+| standard words | スタック操作、シフト、セル計算、文字、数値接頭辞、\ コメント、メモリ操作 |
+| control structures | UNTIL、AGAIN、EXIT、RECURSE、CASE、コンパイル専用語の拒否 |
+| VALUE, IMMEDIATE, POSTPONE | 値の変更、即時語、コンパイル動作の組み込み |
+| error recovery | 未定義語の報告とエラー後のスタック初期化 |
 | FORGET | 辞書語・配列領域・コンパイル済みコード・作成語の回収と再利用 |
 | defining words | <BUILDS/DOES>の実行時語作成、動作の結び付け、複数行入力、FORGET後の再利用 |
-| memory boundary | データ領域の折り返し拒否、16ビットセル読書きのアドレス折り返し |
+| memory boundary | 1 MiB末尾でのデータ領域確保の拒否、範囲外アドレスのエラー |
 | capacity errors | データ／リターンスタック、辞書、制御ネスト、コンパイル領域の上限 |
-| division by zero | /、MOD、/MODの診断と返却値 |
+| division by zero | /、MOD、/MODのエラー |
+| floating point | リテラル認識、F.とF.Sの書式、非有限値、算術・比較・変換、関数、メモリ・変数・定数・配列、FINPUT、浮動小数点スタックのアンダーフロー |
+| double-cell integers | 倍長整数リテラル、D+等の演算・比較・表示、2@/2!、2VARIABLE、2CONSTANT |
+| pictured numeric output | <<# # #S HOLD HOLDS SIGN #> #>>、入れ子、対応しない #>> のエラー |
+| strings | S"、S\"、.\"、.( の解釈時・コンパイル時の動作、一時バッファ、COUNT、PAD |
+| string conversion and input | >NUMBER、S>NUMBER?、>FLOAT、D>F、F>D、ACCEPT、EVALUATE、KEY、KEY? |
+| image round trip | 辞書イメージの保存・復元・追加読み込みでの語・浮動小数点定数・VALUE・2CONSTANT・文字列の再配置 |
 
-現行テストは主要経路の初版です。全ワード、すべての容量境界、各エラー条件を網羅したものではありません。
+現行テストは主要経路を確認するものです。全ワード、すべての容量境界、各エラー条件を網羅したものではありません。
