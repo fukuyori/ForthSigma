@@ -4,6 +4,9 @@ const forth = @import("forth.zig");
 const Output = struct {
     bytes: [4096]u8 = undefined,
     len: usize = 0,
+    input_lines: [4][]const u8 = undefined,
+    input_count: usize = 0,
+    input_index: usize = 0,
 
     fn write(context: ?*anyopaque, bytes: []const u8) void {
         const output: *Output = @ptrCast(@alignCast(context.?));
@@ -13,7 +16,17 @@ const Output = struct {
     }
 
     fn writer(self: *Output) forth.Writer {
-        return .{ .context = @ptrCast(self), .write_fn = write };
+        return .{ .context = @ptrCast(self), .write_fn = write, .read_fn = read };
+    }
+
+    fn read(context: ?*anyopaque, buffer: []u8) ?[]const u8 {
+        const output: *Output = @ptrCast(@alignCast(context.?));
+        if (output.input_index == output.input_count) return null;
+        const line = output.input_lines[output.input_index];
+        output.input_index += 1;
+        if (line.len > buffer.len) return null;
+        @memcpy(buffer[0..line.len], line);
+        return buffer[0..line.len];
     }
 
     fn written(self: *const Output) []const u8 {
@@ -292,4 +305,137 @@ test "compiled code capacity failure rolls back the incomplete definition" {
     machine.report(error.CodeFull);
     try std.testing.expectEqual(initial_words, machine.word_count);
     try std.testing.expectEqual(initial_code, machine.code_count);
+}
+
+test "nested IF ELSE THEN selects every branch" {
+    var output = Output{};
+    var machine = forth.State.init(output.writer());
+
+    try machine.interpretLine(": SELECT DUP 0= IF DROP 10 ELSE DUP 1 = IF DROP 20 ELSE DROP 30 THEN THEN ; 0 SELECT 1 SELECT 2 SELECT");
+
+    const expected = [_]forth.Cell{ 10, 20, 30 };
+    try expectStack(&machine, &expected);
+}
+
+test "BEGIN WHILE REPEAT and BEGIN END compile and run" {
+    var output = Output{};
+    var machine = forth.State.init(output.writer());
+
+    try machine.interpretLine(": COUNT-UP 0 BEGIN DUP 3 < WHILE 1 + REPEAT ;");
+    try machine.interpretLine(": COUNT-TO 0 BEGIN 1 + DUP 3 = END ;");
+    try machine.interpretLine("COUNT-UP COUNT-TO");
+
+    const expected = [_]forth.Cell{ 3, 3 };
+    try expectStack(&machine, &expected);
+}
+
+test "+LOOP handles positive and negative increments at the boundary" {
+    var output = Output{};
+    var machine = forth.State.init(output.writer());
+
+    try machine.interpretLine(": COUNT-UP 0 5 0 DO 1 + 2 +LOOP ; : COUNT-DOWN 0 0 3 DO 1 + -1 +LOOP ; COUNT-UP COUNT-DOWN");
+
+    const expected = [_]forth.Cell{ 3, 4 };
+    try expectStack(&machine, &expected);
+}
+
+test "LEAVE exits the active loop without losing the outer result" {
+    var output = Output{};
+    var machine = forth.State.init(output.writer());
+
+    try machine.interpretLine(": SUM-UNTIL-FIVE 0 10 0 DO I 5 = IF LEAVE ELSE I + THEN LOOP ; SUM-UNTIL-FIVE");
+
+    const expected = [_]forth.Cell{10};
+    try expectStack(&machine, &expected);
+}
+
+test "multiline definitions and immediate string output preserve compiler state" {
+    var output = Output{};
+    var machine = forth.State.init(output.writer());
+
+    try machine.interpretLine(": GREET");
+    try machine.interpretLine("\" HELLO\" TYPE ;");
+    try machine.interpretLine("GREET : SAY .\" SIGMA\" ; SAY");
+
+    try std.testing.expectEqualStrings("HELLOSIGMA", output.written());
+}
+
+test "quoted string length is limited to 127 bytes" {
+    var output = Output{};
+    var machine = forth.State.init(output.writer());
+    var input: [256]u8 = undefined;
+    var used: usize = 0;
+    const prefix = ": TEXT \" ";
+    @memcpy(input[used .. used + prefix.len], prefix);
+    used += prefix.len;
+    @memset(input[used .. used + 127], 'X');
+    used += 127;
+    const suffix = "\" TYPE ; TEXT";
+    @memcpy(input[used .. used + suffix.len], suffix);
+    used += suffix.len;
+    try machine.interpretLine(input[0..used]);
+    try std.testing.expectEqual(@as(usize, 127), output.len);
+    try std.testing.expect(std.mem.allEqual(u8, output.written(), 'X'));
+
+    var oversized: [256]u8 = undefined;
+    var oversized_len: usize = 0;
+    const oversized_prefix = ": TOO-LONG \" ";
+    @memcpy(oversized[oversized_len .. oversized_len + oversized_prefix.len], oversized_prefix);
+    oversized_len += oversized_prefix.len;
+    @memset(oversized[oversized_len .. oversized_len + 128], 'Y');
+    oversized_len += 128;
+    oversized[oversized_len] = '"';
+    oversized_len += 1;
+
+    const too_long = machine.interpretLine(oversized[0..oversized_len]);
+    try std.testing.expectError(error.MemoryExhausted, too_long);
+    machine.report(error.MemoryExhausted);
+    try std.testing.expectEqual(@as(forth.Cell, 0x4000 + 128), machine.data_here);
+}
+
+test "redefinition warns and subsequent lookup uses the newest definition" {
+    var output = Output{};
+    var machine = forth.State.init(output.writer());
+
+    try machine.interpretLine(": VALUE 1 ; : VALUE 2 ; VALUE");
+
+    const expected = [_]forth.Cell{2};
+    try expectStack(&machine, &expected);
+    try std.testing.expectEqualStrings("WARNING: SAME NAME WORD EXISTS\n", output.written());
+}
+
+test "<BUILDS and DOES> attach a compiled behavior to created words" {
+    var output = Output{};
+    var machine = forth.State.init(output.writer());
+
+    try machine.interpretLine(": CELL <BUILDS , DOES> @ ; 42 CELL ANSWER 43 CELL OTHER ANSWER OTHER");
+
+    const expected = [_]forth.Cell{ 42, 43 };
+    try expectStack(&machine, &expected);
+    try std.testing.expectEqual(@as(forth.Cell, 0x4004), machine.data_here);
+}
+
+test "<BUILDS reads a created word name from the next input line" {
+    var output = Output{};
+    output.input_lines[0] = "ACROSS-LINE";
+    output.input_count = 1;
+    var machine = forth.State.init(output.writer());
+
+    try machine.interpretLine(": CELL <BUILDS , DOES> @ ;");
+    try machine.interpretLine("73 CELL");
+    try machine.interpretLine("ACROSS-LINE");
+
+    const expected = [_]forth.Cell{73};
+    try expectStack(&machine, &expected);
+}
+
+test "FORGET removes created words and their data can be reused" {
+    var output = Output{};
+    var machine = forth.State.init(output.writer());
+
+    try machine.interpretLine(": CELL <BUILDS , DOES> @ ; 42 CELL FIRST 43 CELL SECOND FORGET SECOND 44 CELL THIRD FIRST THIRD");
+
+    const expected = [_]forth.Cell{ 42, 44 };
+    try expectStack(&machine, &expected);
+    try std.testing.expectEqual(@as(forth.Cell, 0x4004), machine.data_here);
 }

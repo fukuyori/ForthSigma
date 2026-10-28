@@ -16,7 +16,7 @@ The June 1982 source article describes the main path used for the port:
 - `FLER` handles parse/compile errors and abandons an incomplete definition.
 - The compiler emits Z80 subroutine calls and machine-code branches. This implementation preserves the language-level call and branch behavior in a host-independent operation stream instead.
 
-These routine names and relationships come from the source-list explanation in `Forth.pdf`, PDF pages 15–20 (ASCII Vol. 6, No. 6–7, June–July 1982). The byte-for-byte Z80 layout is intentionally not reproduced.
+These routine names and relationships come from the source-list explanation in `Forth.pdf`, PDF pages 15–20 (*Encyclopedia ASCII*, Vol. 6, No. 6–7, June–July 1982). The byte-for-byte Z80 layout is intentionally not reproduced.
 
 ## Current language support
 
@@ -25,6 +25,7 @@ These routine names and relationships come from the source-list explanation in `
 - Memory: `@`, `!`, `C@`, `C!`, `,`, `C,`, `+!`, `1+!`, `1-!`, `OSET`, `?`, `A@`, `A!`, `HERE`, `ALLOT`, `VARIABLE`/`VAR`, `CONSTANT`/`CONST`, and `ARRAY`.
 - Output, terminal input, and base selection: `.`, `C.`, `ECHO`, `CR`, `SPACE`, `SPCES`, `TYPE`, `INPUT`, `HEX`, `DEC`, `OCT`, `BASE`, the original compile-time `"..."` string word, and the extension `."..."`.
 - Compilation: `: ... ;`, `[` and `]`, `'`, `EXECUTE`, `IF ... ELSE ... THEN`, `BEGIN ... END`, `BEGIN ... WHILE ... REPEAT`, `DO ... LOOP`, `DO ... +LOOP`, `?DO`, `LEAVE`, `I`, `J`, and `K`.
+- Defining words: <BUILDS creates a named data word from the remaining input; DOES> attaches the compiled behavior after it to that word.
 - `WORDS`, `FORGET`, and `BYE` are provided for interactive use.
 
 ## Deliberate implementation choices
@@ -56,8 +57,8 @@ The gforth source and ForthBasicMaster book are comparison material, not FORTH/�
 
 ## Not implemented yet
 
-The runtime does not implement `<BUILDS`/`DOES>`, `LIST`, source-file/editor words (`EDIT`, `LOAD`, `SAVE`, `EXEC`, `CLB`, `CLOAD`, `CSAVE`), CP/M file calls, PC-8001 monitor/graphics/printing words, `MCODE`, `USR`, `PUHL`/`POHL`/`NEXT`, or every word in the magazine's dictionary tables. These facilities either depend on the original dictionary/compiler layout, an editor or filesystem, or Z80/monitor machine code. The core does not execute Z80 instructions and does not claim byte-level machine compatibility.
+The runtime does not implement LIST, source-file/editor words (EDIT, LOAD, SAVE, EXEC, CLB, CLOAD, CSAVE), CP/M file calls, PC-8001 monitor/graphics/printing words, MCODE, USR, PUHL/POHL/NEXT, or every word in the magazine's dictionary tables. These facilities either depend on the original dictionary/compiler layout, an editor or filesystem, or Z80/monitor machine code. The core does not execute Z80 instructions and does not claim byte-level machine compatibility.
 
 ## Verification record
 
-zig build passes for the native Windows target. zig build test passes 19 regression tests with Zig 0.16.0, covering arithmetic, flags, dictionary lookup and capacity, FORGET, nested loops, loop boundaries, variables/arrays/strings, output, allocation and cell-address boundaries, stack limits, code/control limits, division by zero, and error recovery. The suite does not cover every word or every invalid input. No cross-OS execution checks have been run.
+zig build passes for the native Windows target. zig build test passes 29 regression tests with Zig 0.16.0, covering arithmetic, flags, dictionary lookup and capacity, FORGET, nested and conditional control flow, positive and negative loop steps, LEAVE, variables/arrays/strings, <BUILDS/DOES>, redefinition, output, allocation and cell-address boundaries, stack limits, code/control limits, division by zero, and error recovery. The suite does not cover every word or every invalid input. No cross-OS execution checks have been run.

@@ -20,6 +20,7 @@
 | メモリ | @, !, C@, C!, +!, 1+!, 1-!, OSET, ? | 実装 | PDF pp. 19–22, 29–31 |
 | 配列 | ARRAY, A@, A! | 実装 | PDF p. 31。境界検査はありません。 |
 | 辞書・データ領域 | :, ;, HERE, ALLOT, ,, C,, FORGET | 実装 | PDF pp. 15–16, 28–31。名前は長さと先頭5文字で識別します。 |
+| 定義用語 | <BUILDS, DOES> | 実装 | PDF pp. 19–20の動的データ定義機能。実行時に作成名を入力ストリームから読み、DOES>以後の操作列を作成語に結び付けます。 |
 | 変数・定数 | VARIABLE/VAR, CONSTANT/CONST | 実装 | 誌面の版によりVAR/CONST等の表記差があります。 |
 | 条件分岐 | IF, ELSE, THEN | 実装 | PDF pp. 19–20, 29–30 |
 | 条件・後判定ループ | BEGIN, WHILE, REPEAT, END | 実装 | PDF pp. 19–20, 29–30 |
@@ -49,7 +50,6 @@
 
 | ワード・機能 | 現状 | 主な理由・出典 |
 | --- | --- | --- |
-| <BUILDS, DOES> | 未実装 | 実行時に辞書構造を作る定義機能。PDF p. 31。 |
 | LIST, EDIT, CLB | 未実装 | ブロック／編集バッファ機能。掲載版と環境に依存。PDF pp. 7–14, 31。 |
 | LOAD, SAVE, EXEC, CLOAD, CSAVE | 未実装 | ソースファイル、編集バッファ、カセット等の機種別処理。PDF pp. 7–14, 31。 |
 | MCODE | 機種依存 | Z80機械語領域を扱います。 |
@@ -73,7 +73,8 @@ zig build testで、現行コアの主要動作を次のテストで確認しま
 | variable, array, string | 変数、配列、文字列リテラルとTYPE |
 | numeric output | 小数点ワードの出力、CR |
 | error recovery | 未定義語の報告とエラー後のデータスタック初期化 |
-| FORGET | 辞書語・配列領域・コンパイル済みコードの回収と再利用 |
+| FORGET | 辞書語・配列領域・コンパイル済みコード・作成語の回収と再利用 |
+| defining words | <BUILDS/DOES>の実行時語作成、動作の結び付け、複数行入力、FORGET後の再利用 |
 | memory boundary | データ領域の折り返し拒否、16ビットセル読書きのアドレス折り返し |
 | capacity errors | データ／リターンスタック、辞書、制御ネスト、コンパイル領域の上限 |
 | division by zero | /、MOD、/MODの診断と返却値 |

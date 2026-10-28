@@ -84,12 +84,13 @@ const Builtin = enum {
     index_2,
     index_3,
     leave,
+    builds,
     words,
     input,
     bye,
 };
 
-const WordKind = enum { builtin, colon, variable, constant, array };
+const WordKind = enum { builtin, colon, variable, constant, array, created };
 const Word = struct {
     name: [max_name]u8 = [_]u8{0} ** max_name,
     name_len: u8 = 0,
@@ -97,10 +98,14 @@ const Word = struct {
     builtin: Builtin = .drop,
     value: Cell = 0,
     code_start: u16 = 0,
+    code_end: u16 = 0,
+    does_code_start: u16 = 0,
+    does_code_end: u16 = 0,
+    has_does: bool = false,
     data_here_before: Cell = 0,
 };
 
-const OpKind = enum { call, literal, branch, branch_zero, do_loop, q_do_loop, loop, plus_loop, print_string, string_literal, exit };
+const OpKind = enum { call, literal, branch, branch_zero, do_loop, q_do_loop, loop, plus_loop, print_string, string_literal, does, exit };
 const Op = struct { kind: OpKind, value: u16 = 0 };
 const ControlKind = enum { if_branch, else_branch, begin_loop, while_branch, do_loop };
 const Control = struct { kind: ControlKind, address: u16 };
@@ -154,6 +159,10 @@ pub const State = struct {
     pending: Pending = .none,
     pending_constant: Cell = 0,
     pending_array_size: Cell = 0,
+    source_line: []const u8 = &.{},
+    source_cursor: usize = 0,
+    source_buffer: [4096]u8 = undefined,
+    last_created_word: ?u16 = null,
     halted: bool = false,
     call_depth: usize = 0,
     last_unknown_word: ?[]const u8 = null,
@@ -200,27 +209,44 @@ pub const State = struct {
     }
 
     pub fn interpretLine(self: *State, input: []const u8) RuntimeError!void {
+        const previous_line = self.source_line;
+        const previous_cursor = self.source_cursor;
+        self.source_line = input;
+        self.source_cursor = 0;
+        self.last_created_word = null;
+        defer {
+            self.source_line = previous_line;
+            self.source_cursor = previous_cursor;
+        }
         self.last_unknown_word = null;
+        var line = input;
         var cursor: usize = 0;
-        while (nextToken(input, &cursor)) |token| {
+        while (true) {
+            const token = nextToken(line, &cursor) orelse break;
+            self.source_line = line;
+            self.source_cursor = cursor;
             if (self.pending != .none) {
                 try self.finishPending(token);
                 continue;
             }
             if (std.mem.eql(u8, token, "(")) {
-                const close = std.mem.indexOfScalarPos(u8, input, cursor, ')') orelse return error.CommentUnclosed;
+                const close = std.mem.indexOfScalarPos(u8, line, cursor, ')') orelse return error.CommentUnclosed;
                 cursor = close + 1;
                 continue;
             }
             if (std.mem.eql(u8, token, "\"")) {
-                try self.handleStringToken(input, &cursor, false);
+                try self.handleStringToken(line, &cursor, false);
+                self.source_cursor = cursor;
                 continue;
             }
             if (std.mem.startsWith(u8, token, ".\"")) {
-                try self.handleStringToken(input, &cursor, true);
+                try self.handleStringToken(line, &cursor, true);
+                self.source_cursor = cursor;
                 continue;
             }
             try self.handleToken(token);
+            line = self.source_line;
+            cursor = self.source_cursor;
             if (self.halted) break;
         }
     }
@@ -240,7 +266,7 @@ pub const State = struct {
             .{ "CR", .cr },          .{ "SPACE", .space },     .{ "SPCES", .spaces },     .{ "TYPE", .type },          .{ "HEX", .hex },
             .{ "DEC", .dec },        .{ "OCT", .oct },         .{ "BASE", .base },        .{ "HERE", .here },          .{ "ALLOT", .allot },
             .{ "I", .index },        .{ "J", .index_2 },       .{ "K", .index_3 },        .{ "LEAVE", .leave },        .{ "WORDS", .words },
-            .{ "BYE", .bye },        .{ "INPUT", .input },
+            .{ "BYE", .bye },        .{ "INPUT", .input },      .{ "<BUILDS", .builds },
         };
         for (definitions) |definition| self.addBuiltin(definition[0], definition[1]) catch unreachable;
         self.builtin_count = self.word_count;
@@ -326,6 +352,9 @@ pub const State = struct {
                         first_removed_code = word.code_start;
                 }
                 self.code_count = first_removed_code;
+                if (self.last_created_word) |created_id| {
+                    if (created_id >= id) self.last_created_word = null;
+                }
                 self.word_count = id;
             },
             .tick_name => {
@@ -350,6 +379,7 @@ pub const State = struct {
             if (!self.defining or !self.compiling) return error.CompileOnly;
             if (self.control_depth != 0) return error.ControlMismatch;
             _ = try self.emit(.{ .kind = .exit });
+            self.words[self.current_word].code_end = self.code_count;
             self.compiling = false;
             self.defining = false;
             return;
@@ -437,6 +467,8 @@ pub const State = struct {
             try self.compileLoop(false);
         } else if (asciiEqlIgnoreCase(token, "+LOOP")) {
             try self.compileLoop(true);
+        } else if (asciiEqlIgnoreCase(token, "DOES>")) {
+            try self.compileDoes();
         } else return false;
         return true;
     }
@@ -521,6 +553,21 @@ pub const State = struct {
         self.patch(loop.address, self.code_count);
     }
 
+    fn compileDoes(self: *State) RuntimeError!void {
+        if (!self.compiling or !self.defining) return error.CompileOnly;
+        _ = try self.emit(.{ .kind = .does });
+    }
+
+    fn nextSourceToken(self: *State) ?[]const u8 {
+        while (true) {
+            if (nextToken(self.source_line, &self.source_cursor)) |token| return token;
+            const read_fn = self.writer.read_fn orelse return null;
+            const line = read_fn(self.writer.context, &self.source_buffer) orelse return null;
+            self.source_line = line;
+            self.source_cursor = 0;
+        }
+    }
+
     fn emit(self: *State, op: Op) RuntimeError!u16 {
         if (self.code_count == max_code) return error.CodeFull;
         const at = self.code_count;
@@ -538,16 +585,29 @@ pub const State = struct {
         switch (word.kind) {
             .builtin => try self.executeBuiltin(word.builtin),
             .variable, .constant, .array => try self.push(word.value),
-            .colon => try self.executeColon(word),
+            .created => {
+                try self.push(word.value);
+                if (word.has_does) {
+                    if (self.call_depth == max_stack) return error.ReturnStackOverflow;
+                    self.call_depth += 1;
+                    defer self.call_depth -= 1;
+                    try self.executeOperations(word.does_code_start, word.does_code_end, null);
+                }
+            },
+            .colon => try self.executeColon(id, word),
         }
     }
 
-    fn executeColon(self: *State, word: Word) RuntimeError!void {
+    fn executeColon(self: *State, id: u16, word: Word) RuntimeError!void {
         if (self.call_depth == max_stack) return error.ReturnStackOverflow;
         self.call_depth += 1;
         defer self.call_depth -= 1;
-        var pc = word.code_start;
-        while (pc < self.code_count and !self.halted) {
+        try self.executeOperations(word.code_start, word.code_end, id);
+    }
+
+    fn executeOperations(self: *State, start_pc: u16, end_pc: u16, defining_word: ?u16) RuntimeError!void {
+        var pc = start_pc;
+        while (pc < end_pc and !self.halted) {
             const op = self.code[pc];
             pc += 1;
             switch (op.kind) {
@@ -597,6 +657,15 @@ pub const State = struct {
                     const length = self.memory[address];
                     try self.push(length);
                     try self.push(address +% 1);
+                },
+                .does => {
+                    const created_id = self.last_created_word orelse return error.InvalidDefinition;
+                    const defining_id = defining_word orelse return error.InvalidDefinition;
+                    self.words[created_id].does_code_start = pc;
+                    self.words[created_id].does_code_end = self.words[defining_id].code_end;
+                    self.words[created_id].has_does = true;
+                    self.last_created_word = null;
+                    return;
                 },
                 .exit => return,
             }
@@ -756,6 +825,13 @@ pub const State = struct {
             .allot => {
                 const amount = try self.pop();
                 try self.reserveData(amount);
+            },
+            .builds => {
+                const name = self.nextSourceToken() orelse return error.InvalidDefinition;
+                const address = self.data_here;
+                const id = try self.appendWord(name, .created, .drop, address);
+                self.words[id].data_here_before = address;
+                self.last_created_word = id;
             },
             .comma => {
                 const value = try self.pop();
