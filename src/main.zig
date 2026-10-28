@@ -181,7 +181,7 @@ fn interpretAndPrompt(machine: *forth.State, line: []const u8) void {
         machine.report(err);
         return;
     };
-    machine.write(" OK\n");
+    if (!machine.defining) machine.write(" OK\n");
 }
 
 pub fn main(init: std.process.Init) !void {
