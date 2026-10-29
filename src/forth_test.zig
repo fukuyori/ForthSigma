@@ -166,6 +166,21 @@ fn createMachine(output: *Output) !*forth.State {
     return machine;
 }
 
+/// Feeds a definition of `count` literals over several lines, since one input line holds
+/// at most `forth.tib_size` bytes.
+fn interpretLiteralDefinition(machine: *forth.State, prefix: []const u8, count: usize) !void {
+    try machine.interpretLine(prefix);
+    var line: [2000]u8 = undefined;
+    var remaining = count;
+    while (remaining > 0) {
+        const batch: usize = @min(remaining, line.len / 2);
+        for (0..batch) |index| @memcpy(line[index * 2 ..][0..2], "1 ");
+        try machine.interpretLine(line[0 .. batch * 2]);
+        remaining -= batch;
+    }
+    try machine.interpretLine(";");
+}
+
 fn destroyMachine(machine: *forth.State) void {
     std.testing.allocator.destroy(machine);
 }
@@ -474,19 +489,7 @@ test "compiled code capacity failure rolls back the incomplete definition" {
     defer destroyMachine(machine);
     const initial_words = machine.word_count;
     const initial_code = machine.code_count;
-    var input: [16396]u8 = undefined;
-    var used: usize = 0;
-    const prefix = ": TOO-LONG ";
-    @memcpy(input[used .. used + prefix.len], prefix);
-    used += prefix.len;
-    for (0..8192) |_| {
-        @memcpy(input[used .. used + 2], "1 ");
-        used += 2;
-    }
-    input[used] = ';';
-    used += 1;
-
-    const overflow = machine.interpretLine(input[0..used]);
+    const overflow = interpretLiteralDefinition(machine, ": TOO-LONG", 8192);
     try std.testing.expectError(error.CodeFull, overflow);
     machine.report(error.CodeFull);
     try std.testing.expectEqual(initial_words, machine.word_count);
@@ -1299,7 +1302,7 @@ test "freeing every block returns the heap to its start" {
     const machine = try createMachine(&output);
     defer destroyMachine(machine);
 
-    try machine.interpretLine("16 ALLOCATE THROW 32 ALLOCATE THROW 64 ALLOCATE THROW ROT DUP >R FREE THROW FREE THROW FREE THROW 980000 ALLOCATE THROW R> =");
+    try machine.interpretLine("16 ALLOCATE THROW 32 ALLOCATE THROW 64 ALLOCATE THROW ROT DUP >R FREE THROW FREE THROW FREE THROW 900000 ALLOCATE THROW R> =");
     try expectStack(machine, &.{-1});
 }
 
@@ -1539,17 +1542,7 @@ test ":NONAME rolls back when the code area fills at ; and fails cleanly on a fu
     defer destroyMachine(machine);
     const words = machine.word_count;
     const code = machine.code_count;
-    var input: [16400]u8 = undefined;
-    var used: usize = 0;
-    @memcpy(input[0..8], ":NONAME ");
-    used = 8;
-    for (0..8192 - @as(usize, code)) |_| {
-        @memcpy(input[used .. used + 2], "1 ");
-        used += 2;
-    }
-    input[used] = ';';
-    used += 1;
-    try std.testing.expectError(error.CodeFull, machine.interpretLine(input[0..used]));
+    try std.testing.expectError(error.CodeFull, interpretLiteralDefinition(machine, ":NONAME", 8192 - @as(usize, code)));
     machine.report(error.CodeFull);
     try std.testing.expectEqual(words, machine.word_count);
     try std.testing.expectEqual(code, machine.code_count);
@@ -1634,4 +1627,73 @@ test "CATCH abandons a definition started by the caught word" {
     try std.testing.expect(!machine.defining);
     try machine.interpretLine(": AFTER 3 ; AFTER");
     try expectStack(machine, &.{ -13, 0, 3 });
+}
+test "a token consumes one following separator, so PARSE keeps further spaces" {
+    var output = Output{};
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
+
+    try machine.interpretLine(": P [CHAR] | PARSE TYPE .\" |\" ; P  x y| : Q [CHAR] ) PARSE TYPE ; Q in parens) .\" after\"");
+    try machine.interpretLine("S\"  two\" TYPE .\" |\" .\"glued text\" .\" |\" ");
+    try std.testing.expectEqualStrings(" x y|in parensafter two|glued text|", output.written());
+}
+
+test "WORD returns a counted string and FIND reports immediacy" {
+    var output = Output{};
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
+
+    try machine.interpretLine(": NEXT-NAME BL WORD COUNT ; NEXT-NAME    spaced NEXT-NAME");
+    try std.testing.expectEqual(@as(usize, 4), machine.data_depth);
+    try std.testing.expectEqual(@as(forth.Cell, 6), machine.data_stack[1]);
+    try std.testing.expectEqual(@as(forth.Cell, 0), machine.data_stack[3]);
+    machine.data_depth = 0;
+    try machine.interpretLine(": LOOKUP BL WORD FIND NIP ; LOOKUP DUP LOOKUP IF LOOKUP NOSUCH : SHOW BL WORD FIND IF EXECUTE ELSE COUNT TYPE THEN ; 7 SHOW . SHOW MISSING");
+    try expectStack(machine, &.{ -1, 1, 0 });
+    try std.testing.expectEqualStrings("7 MISSING", output.written());
+}
+
+test "FIND-NAME NAME>INT and NAME>STRING follow the book's Level 10 example" {
+    var output = Output{};
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
+
+    try machine.interpretLine("S\" DUP\" FIND-NAME DUP 0<> SWAP NAME>INT ' DUP = S\" dup\" FIND-NAME NAME>STRING TYPE S\" NOSUCH\" FIND-NAME");
+    try expectStack(machine, &.{ -1, -1, 0 });
+    try std.testing.expectEqualStrings("DUP", output.written());
+    try std.testing.expectError(error.InvalidExecutionToken, machine.interpretLine("0 NAME>INT"));
+    machine.report(error.InvalidExecutionToken);
+    try std.testing.expectError(error.InvalidExecutionToken, machine.interpretLine("100000 NAME>STRING"));
+}
+
+test "SEE shows definitions with their control structures" {
+    var output = Output{};
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
+
+    try machine.interpretLine(": SQUARE ( n -- n^2 ) DUP * ; SEE SQUARE SEE IF 42 CONSTANT C SEE C");
+    try machine.interpretLine(": T DUP 0< IF NEGATE ELSE 1+ THEN 3 0 DO I LOOP BEGIN DUP WHILE 1- REPEAT BEGIN 1+ DUP 5 > UNTIL BEGIN AGAIN ; SEE T");
+    try machine.interpretLine(": M CREATE , DOES> @ ; 5 M FIVE SEE FIVE : S S\" hi\" TYPE .\" x\" ['] DUP DROP ; IMMEDIATE SEE S");
+    try std.testing.expectEqualStrings(
+        ": SQUARE\n  DUP *\n;\nBUILT-IN IF IMMEDIATE\n42 CONSTANT C\n" ++
+            ": T\n  DUP 0< IF NEGATE ELSE 1+ THEN 3 0 DO I LOOP BEGIN DUP WHILE 1- REPEAT\n  BEGIN 1+ DUP 5 > UNTIL BEGIN AGAIN\n;\n" ++
+            "CREATE FIVE\nDOES>\n  @\n;\n: S\n  S\" hi\" TYPE .\" x\" ['] DUP DROP\n; IMMEDIATE\n",
+        output.written(),
+    );
+}
+
+test "EVALUATE does not read further terminal lines and input lines are limited to the TIB" {
+    var output = Output{};
+    output.input_lines[0] = "NAME";
+    output.input_count = 1;
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
+
+    try std.testing.expectError(error.InvalidDefinition, machine.interpretLine("S\" CREATE\" EVALUATE"));
+    machine.report(error.InvalidDefinition);
+    try std.testing.expectEqual(@as(usize, 0), output.input_index);
+    try machine.interpretLine("CREATE");
+    try std.testing.expectEqual(@as(usize, 1), output.input_index);
+    const long = [_]u8{' '} ** (forth.tib_size + 1);
+    try std.testing.expectError(error.StringTooLong, machine.interpretLine(&long));
 }

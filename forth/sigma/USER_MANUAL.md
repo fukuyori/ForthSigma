@@ -328,7 +328,30 @@ NAMES $[].                      \ Alice と Bob を1行ずつ表示
 | `$[]FREE` | ( $[]var -- ) | 全要素と配列を解放します。 |
 | `$[]SLURP`, `$[]SLURP-FILE` | ( fileid $[]var -- )、( addr u $[]var -- ) | ファイルを1行ずつ配列に読み込みます。 |
 
-ヒープは960 KiBです。`SAVESYS` で作った実行ファイルにはヒープの内容も保存されますが、`LOAD` では引き継がれません。
+ヒープは896 KiBです。`SAVESYS` で作った実行ファイルにはヒープの内容も保存されますが、`LOAD` では引き継がれません。
+
+## 辞書の探索と入力の解析
+
+```forth
+: SQUARE ( n -- n^2 ) DUP * ;
+SEE SQUARE                         \ : SQUARE / DUP * / ; と表示
+S" DUP" FIND-NAME NAME>STRING TYPE \ DUP
+: SHOW BL WORD FIND IF EXECUTE . ELSE COUNT TYPE ." ?" THEN ;
+42 CONSTANT ANSWER
+SHOW ANSWER                        \ 42
+```
+
+| ワード | スタック | 説明 |
+| --- | --- | --- |
+| `SEE 名前` | ( -- ) | 定義の内容を表示します。コロン定義は命令列から再構成するので、ソースと完全には一致しません。 |
+| `FIND-NAME` | ( addr u -- nt \| 0 ) | 名前で辞書を探し、名前トークンを返します。見つからなければ0です。 |
+| `NAME>INT` | ( nt -- xt ) | 名前トークンから実行トークンを得ます。 |
+| `NAME>STRING` | ( nt -- addr u ) | 名前を文字列で返します。結果は8回分まで有効です。 |
+| `WORD` | ( c -- c-addr ) | 入力から文字cで区切られた次の語を読み、数え付き文字列で返します。 |
+| `FIND` | ( c-addr -- c-addr 0 \| xt 1 \| xt -1 ) | 数え付き文字列の名前を探します。即時語なら1、それ以外は-1です。`:` や `TO` などの構文語は見つかりません。 |
+| `PARSE` | ( c -- addr u ) | 入力の続きを文字cの手前まで返します。 |
+
+`WORD` と `PARSE` は、そのワードが書かれた行の続きを読みます。行をまたいでは読みません。
 
 ## 辞書の保存と単独実行ファイル
 
@@ -339,7 +362,7 @@ SAVE words.sigma
 LOAD words.sigma
 ```
 
-`LOAD` は保存した利用者定義語を現在の辞書の後ろに追加します。同名語は読み込んだ新しい定義が優先されます。以前の版で保存した辞書イメージ（`SIGIMG01`〜`SIGIMG06`）は読み込めません（`INVALID IMAGE !`）。定数や変数に保存した実行トークン（`:NONAME` の結果など）は、すでに利用者定義語がある辞書へ `LOAD` すると別の語を指すことがあります。`SAVESYS` で作った実行ファイルではこの問題は起きません。
+`LOAD` は保存した利用者定義語を現在の辞書の後ろに追加します。同名語は読み込んだ新しい定義が優先されます。以前の版で保存した辞書イメージ（`SIGIMG01`〜`SIGIMG07`）は読み込めません（`INVALID IMAGE !`）。定数や変数に保存した実行トークン（`:NONAME` の結果など）は、すでに利用者定義語がある辞書へ `LOAD` すると別の語を指すことがあります。`SAVESYS` で作った実行ファイルではこの問題は起きません。
 
 `SAVESYS` は、現在の辞書・コンパイル済み定義・データを含む、実行中環境向けの単独実行ファイルを作ります。
 
@@ -363,21 +386,21 @@ SAVESYS demo.exe
 | ループ関連 | `I`, `J`, `K`, `LEAVE`, `UNLOOP` |
 | 入出力 | `.`, `U.`, `C.`, `.S`, `ECHO`, `EMIT`, `CR`, `SPACE`, `SPCES`, `SPACES`, `TYPE`, `INPUT` |
 | 基数 | `HEX`, `DEC`, `DECIMAL`, `OCT`, `BASE` |
-| 定義補助・辞書・実行 | `<BUILDS`, `CREATE`, `IMMEDIATE`, `WORDS`, `BYE`, `LOAD`, `SAVE`, `SAVESYS`, `EXECUTE` |
+| 定義補助・辞書・実行 | `<BUILDS`, `CREATE`, `IMMEDIATE`, `WORDS`, `BYE`, `LOAD`, `SAVE`, `SAVESYS`, `EXECUTE`, `SEE`, `FIND`, `FIND-NAME`, `NAME>INT`, `NAME>STRING` |
 | 制御構造（即時語） | `IF`, `ELSE`, `THEN`, `ENDIF`, `BEGIN`, `END`, `UNTIL`, `AGAIN`, `WHILE`, `REPEAT`, `DO`, `?DO`, `LOOP`, `+LOOP`, `DOES>`, `CASE`, `OF`, `ENDOF`, `ENDCASE`, `EXIT`, `RECURSE` |
 | 浮動小数点スタック | `FDROP`, `FDUP`, `FSWAP`, `FOVER`, `FROT`, `F-ROT`, `FNIP`, `FTUCK`, `FPICK`, `FDEPTH`, `F.S` |
 | 浮動小数点算術・関数 | `F+`, `F-`, `F*`, `F/`, `FNEGATE`, `FMINUS`, `FABS`, `FMAX`, `FMIN`, `FSQRT`, `FEXP`, `FLN`, `FSIN`, `FCOS`, `FTAN` |
 | 浮動小数点比較 | `F=`, `F<>`, `F<`, `F>`, `F<=`, `F>=`, `F0=`, `F0<>`, `F0<`, `F0>`, `F0<=`, `F0>=` |
 | 浮動小数点メモリ・変換・入出力 | `F@`, `F!`, `F,`, `FA@`, `FA!`, `F+!`, `F?`, `FLOATS`, `FLOAT+`, `S>F`, `F>S`, `F.`, `FINPUT` |
 | 倍長整数 | `S>D`, `D>S`, `D+`, `D-`, `DNEGATE`, `DABS`, `D0=`, `D0<`, `D=`, `D<`, `D.`, `2@`, `2!`, `D>F`, `F>D` |
-| 文字列・入力 | `COUNT`, `PAD`, `ACCEPT`, `EVALUATE`, `KEY`, `KEY?`, `>NUMBER`, `S>NUMBER?`, `>FLOAT` |
+| 文字列・入力 | `COUNT`, `PAD`, `ACCEPT`, `EVALUATE`, `KEY`, `KEY?`, `>NUMBER`, `S>NUMBER?`, `>FLOAT`, `WORD`, `PARSE` |
 | 数値の書式 | `<#`, `<<#`, `#`, `#S`, `#>`, `#>>`, `HOLD`, `HOLDS`, `SIGN` |
 | 文字列格納・状態・中断 | `PLACE`, `STATE`, `ABORT` |
 | 時間・画面・OS | `MS`, `UTIME`, `PAGE`, `GETENV`, `SYSTEM` |
 | ファイル・例外 | `THROW`, `CATCH`, `R/O`, `W/O`, `R/W`, `STDIN`, `STDOUT`, `STDERR`, `OPEN-FILE`, `CREATE-FILE`, `CLOSE-FILE`, `READ-LINE`, `WRITE-LINE`, `WRITE-FILE`, `FILE-SIZE`, `REPOSITION-FILE` |
 | 動的メモリ・動的文字列 | `ALLOCATE`, `FREE`, `RESIZE`, `$!`, `$@`, `$@LEN`, `$!LEN`, `$+!`, `C$+!`, `$.`, `$DEL`, `$INS`, `$OVER`, `$FREE`, `$INIT`, `$SPLIT`, `$ITER`, `$TMP`, `$[]`, `$[]!`, `$[]@`, `$[]#`, `$[].`, `$[]MAP`, `$[]FREE`, `$[]SLURP`, `$[]SLURP-FILE` |
 
-組み込み語は起動時点で **272語** 登録されています（`MINUS`/`NEGATE` のような別名もそれぞれ1語と数えます）。
+組み込み語は起動時点で **279語** 登録されています（`MINUS`/`NEGATE` のような別名もそれぞれ1語と数えます）。
 
 ### 構文・定義形式
 

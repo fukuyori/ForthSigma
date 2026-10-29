@@ -22,7 +22,16 @@ const heap_base: Cell = data_limit;
 /// (`W^`, `F^`, ...) have addresses in logical memory.
 const locals_base: Cell = memory_size - 0x10000;
 const locals_end: Cell = memory_size;
-const heap_end: Cell = locals_base;
+/// Input buffers below the locals: the terminal input buffer first; the rest is kept
+/// for the line buffers of nested INCLUDE files.
+const input_area_base: Cell = locals_base - 0x10000;
+const tib_address: Cell = input_area_base;
+pub const tib_size = 4096;
+const heap_end: Cell = input_area_base;
+/// Results of NAME>STRING, eight 256-byte buffers used in turn, and the WORD buffer.
+const name_buffer_base: Cell = 0x0400;
+const name_buffer_count = 8;
+const word_buffer_address: Cell = 0x0c00;
 const max_locals = 64;
 /// Each heap block starts with its payload size and a used flag, one cell each.
 const heap_header = 2 * cell_size;
@@ -49,7 +58,7 @@ pub const data_start: Cell = 0x4000;
 const true_flag: Cell = -1;
 const dot_precision = 15;
 const fs_precision = 14;
-const image_magic = "SIGIMG07";
+const image_magic = "SIGIMG08";
 
 /// File ids of the standard streams; the host numbers opened files from `first_file_id`.
 pub const stdin_fileid: Cell = 1;
@@ -375,9 +384,17 @@ const Builtin = enum {
     string_array_slurp,
     string_array_slurp_file,
     catch_word,
+    word_parse,
+    find_word,
+    parse,
+    find_name,
+    name_to_int,
+    name_to_string,
+    see,
 };
 
 const HeapResult = union(enum) { address: Cell, no_memory, bad_pointer };
+const SourceKind = enum { terminal, evaluate };
 
 /// THROW codes for interpreter errors, so CATCH can return them and THROW can raise
 /// them again with the original message. Standard Forth 2012 codes are used where one
@@ -593,7 +610,9 @@ pub const State = struct {
     string_buffer_index: usize = 0,
     source_line: []const u8 = &.{},
     source_cursor: usize = 0,
-    source_buffer: [4096]u8 = undefined,
+    /// Where the current input came from; only terminal input reads further lines.
+    source_kind: SourceKind = .terminal,
+    name_buffer_index: usize = 0,
     last_created_word: ?u16 = null,
     halted: bool = false,
     call_depth: usize = 0,
@@ -805,15 +824,28 @@ pub const State = struct {
         self.write(std.fmt.bufPrint(&buffer, "ERROR #{d} !\n", .{code}) catch unreachable);
     }
 
+    /// Interprets one line of terminal input. The line is copied to the terminal input
+    /// buffer so PARSE and WORD can return addresses in logical memory.
     pub fn interpretLine(self: *State, input: []const u8) RuntimeError!void {
+        if (input.len > tib_size) return error.StringTooLong;
+        const start: usize = @intCast(tib_address);
+        std.mem.copyForwards(u8, self.memory[start .. start + input.len], input);
+        return self.interpretSource(self.memory[start .. start + input.len], .terminal);
+    }
+
+    /// Interprets `input`, which lies in logical memory.
+    fn interpretSource(self: *State, input: []const u8, source_kind: SourceKind) RuntimeError!void {
         const previous_line = self.source_line;
         const previous_cursor = self.source_cursor;
+        const previous_kind = self.source_kind;
         self.source_line = input;
         self.source_cursor = 0;
+        self.source_kind = source_kind;
         self.last_created_word = null;
         defer {
             self.source_line = previous_line;
             self.source_cursor = previous_cursor;
+            self.source_kind = previous_kind;
         }
         self.last_unknown_word = null;
         var line = input;
@@ -833,7 +865,7 @@ pub const State = struct {
             }
             if (std.mem.eql(u8, token, "\\")) break;
             if (std.mem.eql(u8, token, "\"")) {
-                try self.handleStringToken(line, &cursor, false);
+                try self.handleStringToken(token, line, &cursor, false);
                 self.source_cursor = cursor;
                 continue;
             }
@@ -844,7 +876,7 @@ pub const State = struct {
                 continue;
             }
             if (std.mem.startsWith(u8, token, ".\"")) {
-                try self.handleStringToken(line, &cursor, true);
+                try self.handleStringToken(token, line, &cursor, true);
                 self.source_cursor = cursor;
                 continue;
             }
@@ -911,7 +943,8 @@ pub const State = struct {
             .{ "$INS", .string_insert },     .{ "$OVER", .string_over },      .{ "$FREE", .string_free },     .{ "$INIT", .string_init },        .{ "$SPLIT", .string_split },
             .{ "$ITER", .string_iter },      .{ "$TMP", .string_tmp },        .{ "$[]", .string_array },      .{ "$[]!", .string_array_store },  .{ "$[]@", .string_array_fetch },
             .{ "$[]#", .string_array_count }, .{ "$[].", .string_array_dot }, .{ "$[]MAP", .string_array_map }, .{ "$[]FREE", .string_array_free }, .{ "$[]SLURP", .string_array_slurp },
-            .{ "$[]SLURP-FILE", .string_array_slurp_file }, .{ "CATCH", .catch_word },
+            .{ "$[]SLURP-FILE", .string_array_slurp_file }, .{ "CATCH", .catch_word },      .{ "WORD", .word_parse },     .{ "FIND", .find_word },
+            .{ "PARSE", .parse },            .{ "FIND-NAME", .find_name },    .{ "NAME>INT", .name_to_int },  .{ "NAME>STRING", .name_to_string }, .{ "SEE", .see },
         };
         for (definitions) |definition| self.addBuiltin(definition[0], definition[1]) catch unreachable;
         self.builtin_count = self.word_count;
@@ -1489,14 +1522,23 @@ pub const State = struct {
         }
     }
 
+    /// Reads the next token, refilling from the terminal when the line is used up.
+    /// An EVALUATE string never reads past its end.
     fn nextSourceToken(self: *State) ?[]const u8 {
         while (true) {
             if (nextToken(self.source_line, &self.source_cursor)) |token| return token;
+            if (self.source_kind != .terminal) return null;
             const read_fn = self.writer.read_fn orelse return null;
-            const line = read_fn(self.writer.context, &self.source_buffer) orelse return null;
+            const start: usize = @intCast(tib_address);
+            const line = read_fn(self.writer.context, self.memory[start .. start + tib_size]) orelse return null;
             self.source_line = line;
             self.source_cursor = 0;
         }
+    }
+
+    /// Address in logical memory of the current input position.
+    fn sourceAddress(self: *State) Cell {
+        return @intCast(@intFromPtr(self.source_line.ptr) - @intFromPtr(&self.memory) + self.source_cursor);
     }
 
     fn emit(self: *State, op: Op) RuntimeError!u16 {
@@ -2131,7 +2173,7 @@ pub const State = struct {
                 @memcpy(self.memory[start .. start + length], input[0..length]);
                 try self.push(@intCast(length));
             },
-            .evaluate => try self.interpretLine(try self.memoryRange()),
+            .evaluate => try self.interpretSource(try self.memoryRange(), .evaluate),
             .key => {
                 const key_fn = self.writer.key_fn orelse return error.InputUnavailable;
                 try self.push(key_fn(self.writer.context) orelse return error.InputUnavailable);
@@ -2309,6 +2351,63 @@ pub const State = struct {
                     self.restoreCatchFrame(frame);
                     try self.push(code);
                 }
+            },
+            .word_parse => {
+                const delimiter: u8 = @truncate(@as(UCell, @bitCast(try self.pop())));
+                const text = self.parseWordText(delimiter);
+                if (text.len > max_gforth_string) return error.StringTooLong;
+                const start: usize = @intCast(word_buffer_address);
+                // The text may lie in the buffer of an earlier WORD result.
+                std.mem.copyForwards(u8, self.memory[start + 1 .. start + 1 + text.len], text);
+                self.memory[start] = @intCast(text.len);
+                try self.push(word_buffer_address);
+            },
+            .find_word => {
+                const address = try self.pop();
+                const at = try self.memoryAddress(address, 1);
+                const length = self.memory[at];
+                _ = try self.memoryAddress(address + 1, length);
+                if (self.lookup(self.memory[at + 1 .. at + 1 + length])) |id| {
+                    try self.push(id);
+                    try self.push(if (self.words[id].immediate) 1 else -1);
+                } else {
+                    try self.push(address);
+                    try self.push(0);
+                }
+            },
+            .parse => {
+                const delimiter: u8 = @truncate(@as(UCell, @bitCast(try self.pop())));
+                if (!self.sourceInMemory()) {
+                    try self.push(0);
+                    try self.push(0);
+                    return;
+                }
+                const address = self.sourceAddress();
+                const rest = self.remainingSource();
+                const length = for (rest, 0..) |byte, index| {
+                    if (byte == delimiter) break index;
+                } else rest.len;
+                self.source_cursor += if (length < rest.len) length + 1 else length;
+                try self.push(address);
+                try self.push(@intCast(length));
+            },
+            .find_name => {
+                const name = try self.memoryRange();
+                try self.push(if (self.lookup(name)) |id| @as(Cell, id) + 1 else 0);
+            },
+            .name_to_int => try self.push(try self.validNameToken(try self.pop())),
+            .name_to_string => {
+                const word = self.words[try self.validNameToken(try self.pop())];
+                const slot = name_buffer_base + @as(Cell, @intCast(self.name_buffer_index)) * (max_name + 1);
+                self.name_buffer_index = (self.name_buffer_index + 1) % name_buffer_count;
+                const start: usize = @intCast(slot);
+                @memcpy(self.memory[start .. start + word.name_len], word.name[0..word.name_len]);
+                try self.push(slot);
+                try self.push(word.name_len);
+            },
+            .see => {
+                const name = self.nextSourceToken() orelse return error.InputUnavailable;
+                try self.seeWord(try self.lookupOrFail(name));
             },
             .read_only => try self.push(fam_read_only),
             .write_only => try self.push(fam_write_only),
@@ -2858,6 +2957,253 @@ pub const State = struct {
         try self.executeBuiltin(.string_init);
     }
 
+    const SeeRole = enum(u8) { plain, if_branch, else_branch, while_branch, repeat_branch, until_branch, again_branch };
+
+    /// Writes the space-separated tokens of SEE, wrapping long bodies.
+    const SeeOutput = struct {
+        state: *State,
+        column: usize = 0,
+
+        fn token(self: *SeeOutput, width: usize) void {
+            if (self.column != 0 and self.column + 1 + width > 72) {
+                self.state.write("\n");
+                self.column = 0;
+            }
+            if (self.column == 0) {
+                self.state.write("  ");
+                self.column = 2;
+            } else {
+                self.state.write(" ");
+                self.column += 1;
+            }
+            self.column += width;
+        }
+
+        fn text(self: *SeeOutput, parts: []const []const u8) void {
+            var width: usize = 0;
+            for (parts) |part| width += part.len;
+            self.token(width);
+            for (parts) |part| self.state.write(part);
+        }
+
+        fn number(self: *SeeOutput, value: Double) void {
+            self.token(self.state.numberWidth(value));
+            self.state.writeNumber(value);
+        }
+    };
+
+    /// SEE: shows how a word was defined. Colon definitions are decompiled from their
+    /// operations; branches that form IF ELSE THEN, BEGIN UNTIL/AGAIN, or BEGIN WHILE
+    /// REPEAT are shown as those words, and any other branch as BRANCH or ?BRANCH with
+    /// its target offset.
+    fn seeWord(self: *State, id: u16) RuntimeError!void {
+        const word = self.words[id];
+        const name = word.name[0..word.name_len];
+        switch (word.kind) {
+            .builtin => {
+                self.write("BUILT-IN ");
+                self.write(name);
+            },
+            .variable, .array => {
+                self.write(if (word.kind == .array) "ARRAY " else "VARIABLE ");
+                self.write(name);
+            },
+            .constant, .value => {
+                self.writeNumber(if (word.kind == .value) try self.readCell(word.value) else word.value);
+                self.write(if (word.kind == .value) " VALUE " else " CONSTANT ");
+                self.write(name);
+            },
+            .fconstant => {
+                self.writeFloatExponent(bitsFloat(word.value), fs_precision);
+                self.write(" FCONSTANT ");
+                self.write(name);
+            },
+            .two_constant => {
+                self.writeNumber(try self.readDouble(word.value));
+                self.write(". 2CONSTANT ");
+                self.write(name);
+            },
+            .created => {
+                self.write("CREATE ");
+                self.write(name);
+                if (word.has_does) {
+                    self.write("\nDOES>");
+                    try self.seeBody(word.does_code_start, word.does_code_end);
+                }
+            },
+            .colon => {
+                if (name.len == 0) self.write(":NONAME") else {
+                    self.write(": ");
+                    self.write(name);
+                }
+                try self.seeBody(word.code_start, word.code_end);
+            },
+        }
+        if (word.immediate) self.write(" IMMEDIATE");
+        self.write("\n");
+    }
+
+    fn seeBody(self: *State, start: u16, end: u16) RuntimeError!void {
+        var stop: usize = end;
+        if (stop > start and self.code[stop - 1].kind == .exit) stop -= 1;
+        var roles: [max_code]SeeRole = undefined;
+        var thens: [max_code + 1]u16 = undefined;
+        var begins: [max_code + 1]u16 = undefined;
+        @memset(roles[start..stop], .plain);
+        @memset(thens[start .. stop + 1], 0);
+        @memset(begins[start .. stop + 1], 0);
+        for (start..stop) |pc| {
+            const op = self.code[pc];
+            if (op.kind != .branch_zero) continue;
+            const target: usize = @intCast(op.value);
+            if (target < start or target > stop) continue;
+            if (target <= pc) {
+                roles[pc] = .until_branch;
+                begins[target] += 1;
+                continue;
+            }
+            const before = target - 1;
+            if (before > pc and self.code[before].kind == .branch and roles[before] == .plain) {
+                const other: usize = @intCast(self.code[before].value);
+                if (other >= start and other <= pc) {
+                    roles[pc] = .while_branch;
+                    roles[before] = .repeat_branch;
+                    begins[other] += 1;
+                    continue;
+                }
+                if (other > before and other <= stop) {
+                    roles[pc] = .if_branch;
+                    roles[before] = .else_branch;
+                    thens[other] += 1;
+                    continue;
+                }
+            }
+            roles[pc] = .if_branch;
+            thens[target] += 1;
+        }
+        for (start..stop) |pc| {
+            const op = self.code[pc];
+            if (op.kind != .branch or roles[pc] != .plain) continue;
+            const target: usize = @intCast(op.value);
+            if (target >= start and target <= pc) {
+                roles[pc] = .again_branch;
+                begins[target] += 1;
+            }
+        }
+        self.write("\n");
+        var out = SeeOutput{ .state = self };
+        var pc: usize = start;
+        while (true) : (pc += 1) {
+            for (0..thens[pc]) |_| out.text(&.{"THEN"});
+            if (pc == stop) break;
+            for (0..begins[pc]) |_| out.text(&.{"BEGIN"});
+            try self.seeOperation(&out, pc, roles[pc], start);
+        }
+        if (out.column != 0) self.write("\n");
+        self.write(";");
+    }
+
+    fn seeName(self: *State, id: Cell) []const u8 {
+        if (id < 0 or id >= self.word_count) return "<INVALID>";
+        const word = &self.words[@intCast(id)];
+        return if (word.name_len == 0) "<NONAME>" else word.name[0..word.name_len];
+    }
+
+    fn seeOperation(self: *State, out: *SeeOutput, pc: usize, role: SeeRole, start: usize) RuntimeError!void {
+        const op = self.code[pc];
+        var offset_text: [24]u8 = undefined;
+        switch (op.kind) {
+            .call => out.text(&.{self.seeName(op.value)}),
+            .compile_call => out.text(&.{ "POSTPONE ", self.seeName(op.value) }),
+            .execution_token => out.text(&.{ "['] ", self.seeName(op.value) }),
+            .store_value => out.text(&.{ "TO ", self.seeName(op.value) }),
+            .builtin => {
+                const builtin: Builtin = @enumFromInt(op.value);
+                const name = for (self.words[0..self.builtin_count]) |*word| {
+                    if (word.builtin == builtin) break word.name[0..word.name_len];
+                } else "<BUILT-IN>";
+                out.text(&.{name});
+            },
+            .literal => out.number(op.value),
+            .float_literal => {
+                // The width of a float is not measured, so a wrapped line may run a little long.
+                out.token(1);
+                self.writeFloatExponent(bitsFloat(op.value), fs_precision);
+            },
+            .branch, .branch_zero => switch (role) {
+                .if_branch => out.text(&.{"IF"}),
+                .else_branch => out.text(&.{"ELSE"}),
+                .while_branch => out.text(&.{"WHILE"}),
+                .repeat_branch => out.text(&.{"REPEAT"}),
+                .until_branch => out.text(&.{"UNTIL"}),
+                .again_branch => out.text(&.{"AGAIN"}),
+                .plain => {
+                    const relative: Cell = op.value - @as(Cell, @intCast(start));
+                    const label = std.fmt.bufPrint(&offset_text, "{d}", .{relative}) catch unreachable;
+                    out.text(&.{ if (op.kind == .branch) "BRANCH " else "?BRANCH ", label });
+                },
+            },
+            .do_loop => out.text(&.{"DO"}),
+            .q_do_loop => out.text(&.{"?DO"}),
+            .loop => out.text(&.{"LOOP"}),
+            .plus_loop => out.text(&.{"+LOOP"}),
+            .leave => out.text(&.{"LEAVE"}),
+            .print_string, .string_literal => {
+                const at = try self.memoryAddress(op.value, 1);
+                const length = self.memory[at];
+                _ = try self.memoryAddress(op.value + 1, length);
+                out.text(&.{ if (op.kind == .print_string) ".\" " else "S\" ", self.memory[at + 1 .. at + 1 + length], "\"" });
+            },
+            .does => out.text(&.{"DOES>"}),
+            .exit => out.text(&.{"EXIT"}),
+            .local_frame => {},
+            .local_store, .local_fetch, .local_address, .local_execute => {
+                const slot = std.fmt.bufPrint(&offset_text, "L#{d}", .{@divTrunc(op.value & 0xffff_ffff, cell_size)}) catch unreachable;
+                const prefix: []const u8 = switch (op.kind) {
+                    .local_store => "TO ",
+                    .local_address => "ADDR ",
+                    .local_execute => "EXECUTE ",
+                    else => "",
+                };
+                out.text(&.{ prefix, slot });
+            },
+        }
+    }
+
+    /// The rest of the current input line, and whether it lies in logical memory.
+    fn remainingSource(self: *State) []const u8 {
+        return self.source_line[@min(self.source_cursor, self.source_line.len)..];
+    }
+
+    fn sourceInMemory(self: *State) bool {
+        const start = @intFromPtr(&self.memory);
+        const address = @intFromPtr(self.source_line.ptr);
+        return self.source_line.len != 0 and address >= start and address < start + memory_size;
+    }
+
+    fn isDelimiter(byte: u8, delimiter: u8) bool {
+        return if (delimiter == ' ') isSeparator(byte) else byte == delimiter;
+    }
+
+    /// WORD: skips leading delimiters, then returns the text up to the next delimiter
+    /// and consumes that delimiter. A blank delimiter also matches tabs and line ends.
+    fn parseWordText(self: *State, delimiter: u8) []const u8 {
+        const rest = self.remainingSource();
+        var index: usize = 0;
+        while (index < rest.len and isDelimiter(rest[index], delimiter)) index += 1;
+        const start = index;
+        while (index < rest.len and !isDelimiter(rest[index], delimiter)) index += 1;
+        const text = rest[start..index];
+        if (index < rest.len) index += 1;
+        self.source_cursor += index;
+        return text;
+    }
+
+    fn validNameToken(self: *State, nt: Cell) RuntimeError!u16 {
+        if (nt < 1 or nt > self.word_count) return error.InvalidExecutionToken;
+        return @intCast(nt - 1);
+    }
+
     fn throwCodeOf(self: *State, err: RuntimeError) Cell {
         if (err == error.Thrown) return self.throw_code;
         if (err == error.Aborted) return -1;
@@ -3251,6 +3597,21 @@ pub const State = struct {
         }
     }
 
+    /// Number of characters `writeNumber` prints for `value`.
+    fn numberWidth(self: *State, value: Double) usize {
+        const base = self.currentBase();
+        if (base < 2 or base > 36) return 6;
+        var n: UDouble = @bitCast(value);
+        if (value < 0) n = 0 -% n;
+        var width: usize = if (value < 0) 1 else 0;
+        while (true) {
+            width += 1;
+            n /= @intCast(base);
+            if (n == 0) break;
+        }
+        return width;
+    }
+
     fn writeZeros(self: *State, count: i64) void {
         var remaining = count;
         while (remaining > 0) : (remaining -= 1) self.write("0");
@@ -3324,17 +3685,11 @@ pub const State = struct {
         self.write(std.fmt.bufPrint(&buffer, "{d}", .{value}) catch unreachable);
     }
 
-    fn handleStringToken(self: *State, input: []const u8, cursor: *usize, immediate: bool) RuntimeError!void {
+    /// `token` is `"` or a token starting with `."`; text glued to `."` belongs to the string.
+    fn handleStringToken(self: *State, token: []const u8, input: []const u8, cursor: *usize, immediate: bool) RuntimeError!void {
         var literal: [127]u8 = undefined;
         var length: usize = 0;
-        var inline_prefix: []const u8 = &.{};
-        if (immediate and cursor.* > 0) {
-            const token_start = cursor.*;
-            var start = token_start;
-            while (start > 0 and !isSeparator(input[start - 1])) start -= 1;
-            const token = input[start..token_start];
-            if (std.mem.startsWith(u8, token, ".\"")) inline_prefix = token[2..];
-        }
+        const inline_prefix: []const u8 = if (immediate) token[2..] else &.{};
         const closed_inline = inline_prefix.len > 0 and inline_prefix[inline_prefix.len - 1] == '"';
         if (closed_inline) {
             const content = inline_prefix[0 .. inline_prefix.len - 1];
@@ -3345,7 +3700,13 @@ pub const State = struct {
             if (inline_prefix.len > literal.len) return error.MemoryExhausted;
             @memcpy(literal[0..inline_prefix.len], inline_prefix);
             length = inline_prefix.len;
-            if (inline_prefix.len == 0 and cursor.* < input.len and isSeparator(input[cursor.*])) cursor.* += 1;
+            // A separator after the glued text is part of the string; the one after a bare
+            // token was already consumed by nextToken.
+            if (inline_prefix.len > 0 and cursor.* > 0 and isSeparator(input[cursor.* - 1])) {
+                if (length == literal.len) return error.MemoryExhausted;
+                literal[length] = input[cursor.* - 1];
+                length += 1;
+            }
             while (cursor.* < input.len and input[cursor.*] != '"') {
                 if (length == literal.len) return error.MemoryExhausted;
                 literal[length] = input[cursor.*];
@@ -3398,10 +3759,10 @@ pub const State = struct {
         _ = try self.emit(.{ .kind = kind, .value = address });
     }
 
-    /// Reads text after a parsing word up to `delimiter`, skipping one leading separator.
+    /// Reads text after a parsing word up to `delimiter`. The separator after the parsing
+    /// word itself was consumed with the word.
     fn parseDelimited(input: []const u8, cursor: *usize, delimiter: u8, escapes: bool, output: []u8) RuntimeError![]const u8 {
         var length: usize = 0;
-        if (cursor.* < input.len and isSeparator(input[cursor.*])) cursor.* += 1;
         while (true) {
             if (cursor.* == input.len) return error.InvalidDefinition;
             var c = input[cursor.*];
@@ -3459,11 +3820,15 @@ pub const State = struct {
         return byte == ' ' or byte == '\t' or byte == '\r' or byte == '\n';
     }
 
+    /// Reads the next blank-delimited token and, as gforth does, consumes the one separator
+    /// that ends it, so PARSE starts right after that separator.
     fn nextToken(input: []const u8, cursor: *usize) ?[]const u8 {
         while (cursor.* < input.len and isSeparator(input[cursor.*])) cursor.* += 1;
         if (cursor.* == input.len) return null;
         const start = cursor.*;
         while (cursor.* < input.len and !isSeparator(input[cursor.*])) cursor.* += 1;
-        return input[start..cursor.*];
+        const token = input[start..cursor.*];
+        if (cursor.* < input.len) cursor.* += 1;
+        return token;
     }
 };
