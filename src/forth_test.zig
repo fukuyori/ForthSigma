@@ -9,6 +9,9 @@ const Output = struct {
     input_index: usize = 0,
     keys: []const u8 = "",
     key_index: usize = 0,
+    slept: forth.Cell = -1,
+    command: [64]u8 = undefined,
+    command_len: usize = 0,
 
     fn write(context: ?*anyopaque, bytes: []const u8) void {
         const output: *Output = @ptrCast(@alignCast(context.?));
@@ -18,7 +21,30 @@ const Output = struct {
     }
 
     fn writer(self: *Output) forth.Writer {
-        return .{ .context = @ptrCast(self), .write_fn = write, .read_fn = read, .key_fn = key, .key_ready_fn = keyReady };
+        return .{ .context = @ptrCast(self), .write_fn = write, .read_fn = read, .key_fn = key, .key_ready_fn = keyReady, .sleep_fn = sleep, .utime_fn = utime, .getenv_fn = getenv, .system_fn = system };
+    }
+
+    fn sleep(context: ?*anyopaque, milliseconds: forth.Cell) forth.RuntimeError!void {
+        const output: *Output = @ptrCast(@alignCast(context.?));
+        output.slept = milliseconds;
+    }
+
+    fn utime(_: ?*anyopaque) forth.RuntimeError!forth.Double {
+        return 1_700_000_000_000_000;
+    }
+
+    fn getenv(_: ?*anyopaque, name: []const u8, buffer: []u8) forth.RuntimeError!?usize {
+        const value: []const u8 = if (std.mem.eql(u8, name, "HOME")) "/home/lemon" else if (std.mem.eql(u8, name, "EMPTY")) "" else if (std.mem.eql(u8, name, "LONG")) &([_]u8{'x'} ** 4000) else return null;
+        if (value.len > buffer.len) return error.StringTooLong;
+        @memcpy(buffer[0..value.len], value);
+        return value.len;
+    }
+
+    fn system(context: ?*anyopaque, command: []const u8) forth.RuntimeError!void {
+        const output: *Output = @ptrCast(@alignCast(context.?));
+        if (std.mem.eql(u8, command, "fail")) return error.HostFailed;
+        @memcpy(output.command[0..command.len], command);
+        output.command_len = command.len;
     }
 
     fn key(context: ?*anyopaque) ?u8 {
@@ -901,4 +927,164 @@ test "KEY and KEY? read single characters" {
     try std.testing.expectEqualStrings("hi", output.written());
     const expected = [_]forth.Cell{0};
     try expectStack(machine, &expected);
+}
+
+test "WITHIN tests a half-open range with wrap-around like gforth" {
+    var output = Output{};
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
+
+    try machine.interpretLine("5 0 10 WITHIN 10 0 10 WITHIN -1 0 10 WITHIN 0 -5 -1 WITHIN 5 5 5 WITHIN 3 10 0 WITHIN 11 10 0 WITHIN");
+    try machine.interpretLine("9223372036854775807 9223372036854775807 -9223372036854775808 WITHIN -9223372036854775808 9223372036854775807 -9223372036854775808 WITHIN");
+
+    const expected = [_]forth.Cell{ -1, 0, 0, 0, 0, 0, -1, -1, 0 };
+    try expectStack(machine, &expected);
+}
+
+test "2>R and 2R> move a cell pair and keep its order" {
+    var output = Output{};
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
+
+    try machine.interpretLine(": T 1 2 2>R 3 2R> ; T");
+    const expected = [_]forth.Cell{ 3, 1, 2 };
+    try expectStack(machine, &expected);
+
+    machine.data_depth = 0;
+    try std.testing.expectError(error.StackUnderflow, machine.interpretLine("1 2>R"));
+    machine.report(error.StackUnderflow);
+    try std.testing.expectEqual(@as(usize, 0), machine.return_depth);
+    try std.testing.expectError(error.ReturnStackUnderflow, machine.interpretLine("1 >R 2R>"));
+    machine.report(error.ReturnStackUnderflow);
+}
+
+test "ENDIF is an alias of THEN" {
+    var output = Output{};
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
+
+    try machine.interpretLine(": S 0< IF -1 ELSE 1 ENDIF ; -5 S 5 S");
+
+    const expected = [_]forth.Cell{ -1, 1 };
+    try expectStack(machine, &expected);
+}
+
+test "PLACE stores a counted string, handles overlap, and limits the length to 255" {
+    try expectOutput("S\" hello\" PAD PLACE PAD COUNT TYPE", "hello");
+    try expectOutput("S\" abcde\" PAD SWAP MOVE PAD 5 PAD PLACE PAD COUNT TYPE", "abcde");
+    try expectOutput("S\" vwxyz\" PAD 10 + SWAP MOVE PAD 10 + 5 PAD 7 + PLACE PAD 7 + COUNT TYPE", "vwxyz");
+
+    var output = Output{};
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
+    try machine.interpretLine("PAD 255 PAD 512 + PLACE PAD 512 + C@ PAD 256 PAD 1024 + PLACE PAD 1024 + C@ PAD 0 1048575 PLACE");
+    const expected = [_]forth.Cell{ 255, 255 };
+    try expectStack(machine, &expected);
+    try std.testing.expectError(error.InvalidAddress, machine.interpretLine("PAD 1 1048575 PLACE"));
+}
+
+test "STATE reflects the compiler state through a saved address" {
+    var output = Output{};
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
+
+    try machine.interpretLine("STATE @ STATE CONSTANT ST : CHECK ST @ ; IMMEDIATE : SAMPLE CHECK [ ST @ ] ; ST @");
+    const expected = [_]forth.Cell{ 0, -1, 0, 0 };
+    try expectStack(machine, &expected);
+
+    try std.testing.expectError(error.UnknownWord, machine.interpretLine(": BROKEN MISSING"));
+    machine.report(error.UnknownWord);
+    try machine.interpretLine("ST @");
+    try expectStack(machine, &.{0});
+}
+
+test "ABORT clears the stacks silently, even from EVALUATE" {
+    var output = Output{};
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
+
+    try std.testing.expectError(error.Aborted, machine.interpretLine("1 2 ABORT 3"));
+    machine.report(error.Aborted);
+    try expectStack(machine, &.{});
+
+    try std.testing.expectError(error.Aborted, machine.interpretLine("1E : STOP 1 ABORT 2 ; S\" STOP\" EVALUATE"));
+    machine.report(error.Aborted);
+    try expectStack(machine, &.{});
+    try expectFloatStack(machine, &.{});
+    try std.testing.expectEqualStrings("", output.written());
+}
+
+test ":NONAME compiles an unnamed definition and leaves its execution token" {
+    var output = Output{};
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
+    const initial_words = machine.word_count;
+
+    try machine.interpretLine(":NONAME 2 * ; 21 SWAP EXECUTE :NONAME 42 ; CONSTANT ACTION ACTION EXECUTE");
+    const expected = [_]forth.Cell{ 42, 42 };
+    try expectStack(machine, &expected);
+
+    try machine.interpretLine("WORDS");
+    try std.testing.expect(std.mem.indexOf(u8, output.written(), "  ") == null);
+
+    try std.testing.expectError(error.InvalidDefinition, machine.interpretLine(": OUTER :NONAME ;"));
+    machine.report(error.InvalidDefinition);
+    try std.testing.expectError(error.UnknownWord, machine.interpretLine(":NONAME 1 MISSING"));
+    machine.report(error.UnknownWord);
+    // The two unnamed definitions and ACTION remain; OUTER and the failed one are rolled back.
+    try std.testing.expectEqual(initial_words + 3, machine.word_count);
+}
+
+test "an execution token stored in a constant survives a full image restore" {
+    var output = Output{};
+    const source = try createMachine(&output);
+    defer destroyMachine(source);
+    try source.interpretLine(":NONAME 42 ; CONSTANT ACTION");
+    const image = try std.testing.allocator.alloc(u8, forth.State.imageCapacity());
+    defer std.testing.allocator.free(image);
+    const length = try source.encodeImage(image);
+
+    const loaded = try createMachine(&output);
+    defer destroyMachine(loaded);
+    try loaded.restoreImage(image[0..length]);
+    try loaded.interpretLine("ACTION EXECUTE");
+    try expectStack(loaded, &.{42});
+
+    @memcpy(image[0..8], "SIGIMG02");
+    try std.testing.expectError(error.InvalidImage, loaded.restoreImage(image[0..length]));
+}
+
+test "MS UTIME GETENV and SYSTEM call the host" {
+    var output = Output{};
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
+
+    try machine.interpretLine("250 MS UTIME S\" HOME\" GETENV TYPE S\" MISSING\" GETENV S\" EMPTY\" GETENV NIP S\" dir /b\" SYSTEM");
+    try std.testing.expectEqual(@as(forth.Cell, 250), output.slept);
+    try std.testing.expectEqualStrings("/home/lemon", output.written());
+    try std.testing.expectEqualStrings("dir /b", output.command[0..output.command_len]);
+    const expected = [_]forth.Cell{ 1_700_000_000_000_000, 0, 0, 0, 0 };
+    try expectStack(machine, &expected);
+
+    try std.testing.expectError(error.StringTooLong, machine.interpretLine("S\" LONG\" GETENV"));
+    machine.report(error.StringTooLong);
+    try std.testing.expectError(error.HostFailed, machine.interpretLine("S\" fail\" SYSTEM"));
+    machine.report(error.HostFailed);
+}
+
+test "host words report an error when the host does not provide them" {
+    var output = Output{};
+    const machine = try std.testing.allocator.create(forth.State);
+    defer destroyMachine(machine);
+    machine.* = forth.State.init(.{ .context = @ptrCast(&output), .write_fn = Output.write });
+
+    try std.testing.expectError(error.HostUnavailable, machine.interpretLine("1 MS"));
+    machine.report(error.HostUnavailable);
+    try std.testing.expectError(error.HostUnavailable, machine.interpretLine("S\" X\" SYSTEM"));
+    machine.report(error.HostUnavailable);
+    try std.testing.expectEqualStrings("HOST FUNCTION UNAVAILABLE !\nHOST FUNCTION UNAVAILABLE !\n", output.written());
+}
+
+test "PAGE clears the screen with ANSI sequences" {
+    try expectOutput("PAGE", "\x1b[2J\x1b[1;1H");
 }

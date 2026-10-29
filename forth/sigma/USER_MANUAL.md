@@ -113,7 +113,7 @@ CREATE BUF 16 ALLOT
 - `CASE ... OF ... ENDOF ... ENDCASE`
 - `DO ... LOOP`、`DO ... +LOOP`、`?DO`
 
-`DO` は開始値と終値が等しくても本体を1回実行します（FORTH/Σの仕様）。`?DO` は等しい場合に本体を実行しません。`LEAVE` は直ちにループを抜けます。ループの途中で `EXIT` するときは、先に `UNLOOP` でループを片付けます。`I`、`J`、`K` は内側からそれぞれ1段目、2段目、3段目のループ添字を返します。
+`IF ... ENDIF` も使えます（`ENDIF` は `THEN` の別名）。`DO` は開始値と終値が等しくても本体を1回実行します（FORTH/Σの仕様）。`?DO` は等しい場合に本体を実行しません。`LEAVE` は直ちにループを抜けます。ループの途中で `EXIT` するときは、先に `UNLOOP` でループを片付けます。`I`、`J`、`K` は内側からそれぞれ1段目、2段目、3段目のループ添字を返します。
 
 ## 浮動小数点数
 
@@ -206,6 +206,30 @@ S" Forth" TUCK BUF SWAP MOVE BUF SWAP TYPE
 | `#>` | ( ud -- addr u ) | 変換を終了し、文字列を返します。 |
 | `#>>` | ( -- ) | `<<#` で始めた保持領域を解放します。 |
 
+## その他のワード
+
+```forth
+5 0 10 WITHIN .                    \ -1
+S" hello" PAD PLACE PAD COUNT TYPE  \ hello
+:NONAME DUP * ; CONSTANT SQUARE
+7 SQUARE EXECUTE .                  \ 49
+S" HOME" GETENV TYPE
+S" dir" SYSTEM
+```
+
+| ワード | スタック | 説明 |
+| --- | --- | --- |
+| `WITHIN` | ( n lo hi -- flag ) | lo ≦ n < hi なら真を返します。範囲は符号なしの差で判定するため、上限と下限が逆でも一周する範囲として扱います。 |
+| `2>R`, `2R>` | ( x1 x2 -- )、( -- x1 x2 ) | 2個のセルを順序を保ってリターンスタックとの間で移します。 |
+| `PLACE` | ( addr u c-addr -- ) | 文字列を、先頭バイトに長さを持つ形でc-addrへ格納します。最大255文字です。 |
+| `STATE` | ( -- addr ) | コンパイル中は-1、解釈中は0を保持するセルのアドレスです。書き込んでも状態は変わりません。 |
+| `:NONAME ... ;` | ( -- xt ) | 名前のない定義を作り、実行トークンを積みます。 |
+| `ABORT` | ( -- ) | スタックを空にして入力待ちに戻ります。メッセージは表示しません。 |
+| `MS` | ( n -- ) | nミリ秒待ちます。 |
+| `UTIME` | ( -- ud ) | 1970年1月1日からの経過時間をマイクロ秒単位の倍長整数で返します。 |
+| `PAGE` | ( -- ) | 画面を消去し、カーソルを左上へ移します。 |
+| `GETENV` | ( addr u -- addr2 u2 ) | 環境変数の値を返します。未設定なら `0 0` です。結果は次の `GETENV` まで有効で、3072バイトを超える値は `STRING TOO LONG !` になります。 |
+| `SYSTEM` | ( addr u -- ) | 文字列をシェルのコマンドとして実行します（Windowsは `cmd.exe`）。コマンドの終了コードは返しません。 |
 ## 辞書の保存と単独実行ファイル
 
 この移植版の `SAVE` と `LOAD` は利用者定義語の辞書イメージを扱います。誌面のエディットバッファ操作とは異なります。
@@ -215,7 +239,7 @@ SAVE words.sigma
 LOAD words.sigma
 ```
 
-`LOAD` は保存した利用者定義語を現在の辞書の後ろに追加します。同名語は読み込んだ新しい定義が優先されます。16ビット版で保存した辞書イメージは読み込めません（`INVALID IMAGE !`）。
+`LOAD` は保存した利用者定義語を現在の辞書の後ろに追加します。同名語は読み込んだ新しい定義が優先されます。以前の版で保存した辞書イメージ（`SIGIMG01`、`SIGIMG02`）は読み込めません（`INVALID IMAGE !`）。定数や変数に保存した実行トークン（`:NONAME` の結果など）は、すでに利用者定義語がある辞書へ `LOAD` すると別の語を指すことがあります。`SAVESYS` で作った実行ファイルではこの問題は起きません。
 
 `SAVESYS` は、現在の辞書・コンパイル済み定義・データを含む、実行中環境向けの単独実行ファイルを作ります。
 
@@ -231,16 +255,16 @@ SAVESYS demo.exe
 
 | 分類 | 登録語 |
 | --- | --- |
-| スタック操作 | `DROP`, `DUP`, `SWAP`, `OVER`, `ROT`, `-ROT`, `NIP`, `TUCK`, `PICK`, `ROLL`, `2DUP`, `2DROP`, `2SWAP`, `2OVER`, `DEPTH`, `>R`, `R>`, `R@` |
+| スタック操作 | `DROP`, `DUP`, `SWAP`, `OVER`, `ROT`, `-ROT`, `NIP`, `TUCK`, `PICK`, `ROLL`, `2DUP`, `2DROP`, `2SWAP`, `2OVER`, `DEPTH`, `>R`, `R>`, `R@`, `2>R`, `2R>` |
 | 算術 | `+`, `-`, `*`, `/`, `MOD`, `/MOD`, `MINUS`, `NEGATE`, `ABS`, `1+`, `1-`, `2*`, `2/`, `MAX`, `MIN` |
 | 比較・論理・ビット | `=`, `<>`, `<`, `>`, `<=`, `>=`, `NOT`, `0=`, `0<`, `0>`, `0<>`, `AND`, `OR`, `XOR`, `COM`, `INVERT`, `NAND`, `NOR`, `SWAB`, `LSHIFT`, `RSHIFT`, `TRUE`, `FALSE` |
-| 定数・アドレス計算 | `BL`, `CELL`, `CELLS`, `CELL+`, `ALIGNED` |
+| 定数・アドレス計算 | `BL`, `CELL`, `CELLS`, `CELL+`, `ALIGNED`, `WITHIN` |
 | メモリ・配列 | `@`, `!`, `,`, `C,`, `C@`, `C!`, `+!`, `1+!`, `1-!`, `OSET`, `ON`, `OFF`, `?`, `A@`, `A!`, `ERASE`, `FILL`, `MOVE`, `CMOVE`, `HERE`, `ALLOT` |
 | ループ関連 | `I`, `J`, `K`, `LEAVE`, `UNLOOP` |
 | 入出力 | `.`, `U.`, `C.`, `.S`, `ECHO`, `EMIT`, `CR`, `SPACE`, `SPCES`, `SPACES`, `TYPE`, `INPUT` |
 | 基数 | `HEX`, `DEC`, `DECIMAL`, `OCT`, `BASE` |
 | 定義補助・辞書・実行 | `<BUILDS`, `CREATE`, `IMMEDIATE`, `WORDS`, `BYE`, `LOAD`, `SAVE`, `SAVESYS`, `EXECUTE` |
-| 制御構造（即時語） | `IF`, `ELSE`, `THEN`, `BEGIN`, `END`, `UNTIL`, `AGAIN`, `WHILE`, `REPEAT`, `DO`, `?DO`, `LOOP`, `+LOOP`, `DOES>`, `CASE`, `OF`, `ENDOF`, `ENDCASE`, `EXIT`, `RECURSE` |
+| 制御構造（即時語） | `IF`, `ELSE`, `THEN`, `ENDIF`, `BEGIN`, `END`, `UNTIL`, `AGAIN`, `WHILE`, `REPEAT`, `DO`, `?DO`, `LOOP`, `+LOOP`, `DOES>`, `CASE`, `OF`, `ENDOF`, `ENDCASE`, `EXIT`, `RECURSE` |
 | 浮動小数点スタック | `FDROP`, `FDUP`, `FSWAP`, `FOVER`, `FROT`, `F-ROT`, `FNIP`, `FTUCK`, `FPICK`, `FDEPTH`, `F.S` |
 | 浮動小数点算術・関数 | `F+`, `F-`, `F*`, `F/`, `FNEGATE`, `FMINUS`, `FABS`, `FMAX`, `FMIN`, `FSQRT`, `FEXP`, `FLN`, `FSIN`, `FCOS`, `FTAN` |
 | 浮動小数点比較 | `F=`, `F<>`, `F<`, `F>`, `F<=`, `F>=`, `F0=`, `F0<>`, `F0<`, `F0>`, `F0<=`, `F0>=` |
@@ -248,8 +272,10 @@ SAVESYS demo.exe
 | 倍長整数 | `S>D`, `D>S`, `D+`, `D-`, `DNEGATE`, `DABS`, `D0=`, `D0<`, `D=`, `D<`, `D.`, `2@`, `2!`, `D>F`, `F>D` |
 | 文字列・入力 | `COUNT`, `PAD`, `ACCEPT`, `EVALUATE`, `KEY`, `KEY?`, `>NUMBER`, `S>NUMBER?`, `>FLOAT` |
 | 数値の書式 | `<#`, `<<#`, `#`, `#S`, `#>`, `#>>`, `HOLD`, `HOLDS`, `SIGN` |
+| 文字列格納・状態・中断 | `PLACE`, `STATE`, `ABORT` |
+| 時間・画面・OS | `MS`, `UTIME`, `PAGE`, `GETENV`, `SYSTEM` |
 
-組み込み語は起動時点で **217語** 登録されています（`MINUS`/`NEGATE` のような別名もそれぞれ1語と数えます）。
+組み込み語は起動時点で **229語** 登録されています（`MINUS`/`NEGATE` のような別名もそれぞれ1語と数えます）。
 
 ### 構文・定義形式
 
@@ -257,7 +283,7 @@ SAVESYS demo.exe
 
 | 種類 | 語・形式 | 説明 |
 | --- | --- | --- |
-| 定義 | `: 名前 ... ;` | コンパイル済みの利用者定義語を作ります。 |
+| 定義 | `: 名前 ... ;`, `:NONAME ... ;` | コンパイル済みの利用者定義語を作ります。`:NONAME` は名前のない定義を作り、実行トークンを積みます。 |
 | 定義・削除 | `VARIABLE 名前`, `VAR 名前`, `CONSTANT 名前`, `CONST 名前`, `値 VALUE 名前`, `FORGET 名前` | 変数・定数・値を登録し、または辞書末尾までを削除します。 |
 | 値の変更 | `TO 名前` | `VALUE` で作った語の値を変更します。定義内でも使えます。 |
 | 浮動小数点の定義 | `FVARIABLE 名前`, `FCONSTANT 名前` | 浮動小数点の変数・定数を登録します。 |
@@ -273,4 +299,4 @@ SAVESYS demo.exe
 
 現在は `EDIT`、`LIST`、エディットバッファ版の `LOAD`／`SAVE`、CP/Mファイル操作、PC-8001のモニター機能、`MCODE`やZ80機械語実行に対応していません。Z80をエミュレートする処理系ではありません。
 
-Gforthのワードのうち、ローカル変数、`THROW`／`CATCH`、ファイル操作、`ALLOCATE`、`$!` などの動的文字列、語彙（ワードリスト）、`[IF]`、`.R`、`F.RDP` などは未実装です。詳しくは[互換性一覧](COMPATIBILITY.md)を参照してください。
+Gforthのワードのうち、ローカル変数、`THROW`／`CATCH`、ファイル操作、`$?`、`ALLOCATE`、`$!` などの動的文字列、語彙（ワードリスト）、`[IF]`、`.R`、`F.RDP` などは未実装です。詳しくは[互換性一覧](COMPATIBILITY.md)を参照してください。

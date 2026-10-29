@@ -50,6 +50,7 @@
 | 文字列・入力 | S", S\", .\", .(, COUNT, PAD, ACCEPT, EVALUATE, KEY, KEY?, >NUMBER, S>NUMBER?, >FLOAT | 段階3。教材Level 6、9、14、29 |
 | 倍長整数 | 倍長整数リテラル（`123.`）, S>D, D>S, D+, D-, DNEGATE, DABS, D0=, D0<, D=, D<, D., 2@, 2!, 2VARIABLE, 2CONSTANT, D>F, F>D | 段階3。教材Level 18、20 |
 | 数値の書式 | <#, <<#, #, #S, HOLD, HOLDS, SIGN, #>, #>> | 段階3。教材Level 20 |
+| 小規模追加（グループA） | WITHIN, 2>R, 2R>, ENDIF, PLACE, ABORT, STATE, :NONAME, MS, UTIME, PAGE, GETENV, SYSTEM | 教材Level 2、5、6、9、10、14、15、25、30〜32。MS、UTIME、GETENV、SYSTEMはホスト機能を使います。 |
 
 ## 追加機能・移植上の違い
 
@@ -65,7 +66,7 @@
 | EXECUTE | 拡張 | ポータブルな辞書トークンを実行します。Z80コードアドレス互換ではありません。 |
 | 単一の論理メモリと上限 | 拡張 | 1 MiBの論理メモリ、各種固定容量を使います。歴史的な機種のメモリ配置とは異なります。 |
 | SAVESYS | 拡張 | 現在の辞書・コンパイル済みコード・データ領域を含む単独実行ファイルを作成します。 |
-| SAVE, LOAD | 拡張 | 利用者定義語の辞書イメージ（`SIGIMG02`）を保存し、読み込み時は既存定義の後ろへ追加します。16ビット版のイメージは読み込めません。 |
+| SAVE, LOAD | 拡張 | 利用者定義語の辞書イメージ（`SIGIMG03`）を保存し、読み込み時は既存定義の後ろへ追加します。`SIGIMG02` 以前のイメージは読み込めません。定数やメモリに保存した実行トークンは、追加読み込みでは再配置されません。 |
 
 実装の選択値と容量は[実装ノート](IMPLEMENTATION.md)に記録しています。各ワードのスタック効果を含む誌面記述は[SPEC.md](SPEC.md)を参照してください。
 
@@ -86,7 +87,7 @@ Z80の命令実行・エミュレーションはプロジェクトの対象外�
 
 ## 自動回帰テストとの対応
 
-zig build testで、現行コアの主要動作を次のテストで確認します（62件）。
+zig build testで、現行コアの主要動作を次のテストで確認します（73件）。
 
 | テスト | 確認する動作 |
 | --- | --- |
@@ -111,6 +112,8 @@ zig build testで、現行コアの主要動作を次のテストで確認しま
 | pictured numeric output | <<# # #S HOLD HOLDS SIGN #> #>>、入れ子、対応しない #>> のエラー |
 | strings | S"、S\"、.\"、.( の解釈時・コンパイル時の動作、一時バッファ、COUNT、PAD |
 | string conversion and input | >NUMBER、S>NUMBER?、>FLOAT、D>F、F>D、ACCEPT、EVALUATE、KEY、KEY? |
-| image round trip | 辞書イメージの保存・復元・追加読み込みでの語・浮動小数点定数・VALUE・2CONSTANT・文字列の再配置 |
+| image round trip | 辞書イメージの保存・復元・追加読み込みでの語・浮動小数点定数・VALUE・2CONSTANT・文字列の再配置、定数に保存した実行トークンの完全復元、旧形式の拒否 |
+| group A words | WITHINの境界と折り返し、2>R/2R>の順序と不足、ENDIF、PLACEの重なり・255バイト上限・メモリ末尾、STATEの保存アドレス経由の読み取り、ABORT、:NONAMEとその巻き戻し |
+| host words | MS、UTIME、GETENV（未設定・空・長すぎる値）、SYSTEM（失敗）、ホスト機能がない場合のエラー、PAGEの出力 |
 
 現行テストは主要経路を確認するものです。全ワード、すべての容量境界、各エラー条件を網羅したものではありません。

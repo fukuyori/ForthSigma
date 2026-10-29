@@ -15,12 +15,16 @@ const max_controls = 128;
 const max_name = 255;
 pub const memory_size = 1 << 20;
 const base_address: Cell = 0x0200;
+const state_address: Cell = 0x0208;
 const hold_bottom: Cell = 0x1000;
 const hold_top: Cell = 0x2000;
 pub const pad_address: Cell = 0x2000;
 const string_buffer_base: Cell = 0x3000;
 const string_buffer_size = 256;
 const string_buffer_count = 4;
+const environment_buffer_base: Cell = 0x3400;
+const environment_buffer_size = 0x0c00;
+const max_host_name = 1024;
 const max_hold_nesting = 16;
 const max_counted_string = 127;
 const max_gforth_string = 255;
@@ -28,7 +32,7 @@ pub const data_start: Cell = 0x4000;
 const true_flag: Cell = -1;
 const dot_precision = 15;
 const fs_precision = 14;
-const image_magic = "SIGIMG02";
+const image_magic = "SIGIMG03";
 
 pub const Writer = struct {
     context: ?*anyopaque,
@@ -39,6 +43,13 @@ pub const Writer = struct {
     savesys_fn: ?*const fn (?*anyopaque, []const u8, *State) RuntimeError!void = null,
     key_fn: ?*const fn (?*anyopaque) ?u8 = null,
     key_ready_fn: ?*const fn (?*anyopaque) bool = null,
+    sleep_fn: ?*const fn (?*anyopaque, Cell) RuntimeError!void = null,
+    /// Microseconds since the Unix epoch.
+    utime_fn: ?*const fn (?*anyopaque) RuntimeError!Double = null,
+    /// Copies the variable's value into the buffer and returns its length, or null when unset.
+    getenv_fn: ?*const fn (?*anyopaque, []const u8, []u8) RuntimeError!?usize = null,
+    /// Runs a shell command; a non-zero exit status is not an error.
+    system_fn: ?*const fn (?*anyopaque, []const u8) RuntimeError!void = null,
 
     pub fn write(self: Writer, bytes: []const u8) void {
         self.write_fn(self.context, bytes);
@@ -255,6 +266,17 @@ const Builtin = enum {
     to_number,
     string_to_number,
     to_float,
+    within,
+    two_to_r,
+    two_r_from,
+    place,
+    abort,
+    ms,
+    utime,
+    page,
+    getenv,
+    system,
+    state,
 };
 
 const WordKind = enum { builtin, colon, variable, constant, array, created, value, fconstant, two_constant };
@@ -309,6 +331,10 @@ pub const RuntimeError = error{
     InputUnavailable,
     FileUnavailable,
     InvalidImage,
+    Aborted,
+    HostUnavailable,
+    HostFailed,
+    StringTooLong,
 };
 
 fn writeU32(output: []u8, value: anytype) void {
@@ -485,7 +511,7 @@ pub const State = struct {
         self.control_depth = 0;
         self.loop_depth = 0;
         self.resetHold();
-        self.compiling = false;
+        self.setCompiling(false);
         self.defining = false;
         self.pending = .none;
     }
@@ -551,7 +577,7 @@ pub const State = struct {
             self.word_count = self.current_word;
             self.data_here = self.current_data_start;
         }
-        self.compiling = false;
+        self.setCompiling(false);
         self.defining = false;
         self.pending = .none;
         self.control_depth = 0;
@@ -560,6 +586,7 @@ pub const State = struct {
         self.float_depth = 0;
         self.loop_depth = 0;
         self.resetHold();
+        if (err == error.Aborted) return;
         if (err == error.UnknownWord) {
             if (self.last_unknown_word) |name| {
                 self.write(name);
@@ -572,7 +599,7 @@ pub const State = struct {
             self.write("NESTING ERROR !\n");
             return;
         }
-        const message: []const u8 = if (err == error.StackUnderflow) "STACK UNDER FLOW !" else if (err == error.ReturnStackUnderflow) "RETURN STACK UNDER FLOW !" else if (err == error.StackOverflow) "STACK OVER FLOW !" else if (err == error.ReturnStackOverflow) "RETURN STACK OVER FLOW !" else if (err == error.FloatStackUnderflow) "FLOATING-POINT STACK UNDER FLOW !" else if (err == error.FloatStackOverflow) "FLOATING-POINT STACK OVER FLOW !" else if (err == error.DictionaryFull) "OUT OF DICTIONARY !" else if (err == error.CodeFull) "OUT OF CODE SPACE !" else if (err == error.InvalidDefinition) "DEFINITION ERROR !" else if (err == error.CommentUnclosed) "END OF COMMENT MUST BE \")\" !" else if (err == error.ControlMismatch) "CONTROL STRUCTURE ERROR !" else if (err == error.CompileOnly) "COMPILE MODE ERROR !" else if (err == error.UnknownWord) "?" else if (err == error.InvalidNumber) "NUMBER ERROR !" else if (err == error.DivisionByZero) "DIVISION BY ZERO !" else if (err == error.LoopMismatch) "LOOP ERROR !" else if (err == error.InvalidBase) "BASE ERROR !" else if (err == error.InvalidExecutionToken) "INVALID EXECUTION TOKEN !" else if (err == error.InvalidAddress) "INVALID MEMORY ADDRESS !" else if (err == error.PicturedNumericOverflow) "PICTURED NUMERIC OUTPUT ERROR !" else if (err == error.MemoryExhausted) "OUT OF MEMORY !" else if (err == error.InputUnavailable) "INPUT ERROR !" else if (err == error.FileUnavailable) "FILE ERROR !" else if (err == error.InvalidImage) "INVALID IMAGE !" else "FORTH ERROR !";
+        const message: []const u8 = if (err == error.StackUnderflow) "STACK UNDER FLOW !" else if (err == error.ReturnStackUnderflow) "RETURN STACK UNDER FLOW !" else if (err == error.StackOverflow) "STACK OVER FLOW !" else if (err == error.ReturnStackOverflow) "RETURN STACK OVER FLOW !" else if (err == error.FloatStackUnderflow) "FLOATING-POINT STACK UNDER FLOW !" else if (err == error.FloatStackOverflow) "FLOATING-POINT STACK OVER FLOW !" else if (err == error.DictionaryFull) "OUT OF DICTIONARY !" else if (err == error.CodeFull) "OUT OF CODE SPACE !" else if (err == error.InvalidDefinition) "DEFINITION ERROR !" else if (err == error.CommentUnclosed) "END OF COMMENT MUST BE \")\" !" else if (err == error.ControlMismatch) "CONTROL STRUCTURE ERROR !" else if (err == error.CompileOnly) "COMPILE MODE ERROR !" else if (err == error.UnknownWord) "?" else if (err == error.InvalidNumber) "NUMBER ERROR !" else if (err == error.DivisionByZero) "DIVISION BY ZERO !" else if (err == error.LoopMismatch) "LOOP ERROR !" else if (err == error.InvalidBase) "BASE ERROR !" else if (err == error.InvalidExecutionToken) "INVALID EXECUTION TOKEN !" else if (err == error.InvalidAddress) "INVALID MEMORY ADDRESS !" else if (err == error.PicturedNumericOverflow) "PICTURED NUMERIC OUTPUT ERROR !" else if (err == error.MemoryExhausted) "OUT OF MEMORY !" else if (err == error.InputUnavailable) "INPUT ERROR !" else if (err == error.FileUnavailable) "FILE ERROR !" else if (err == error.InvalidImage) "INVALID IMAGE !" else if (err == error.HostUnavailable) "HOST FUNCTION UNAVAILABLE !" else if (err == error.HostFailed) "HOST FUNCTION ERROR !" else if (err == error.StringTooLong) "STRING TOO LONG !" else "FORTH ERROR !";
         self.write(message);
         self.write("\n");
     }
@@ -672,7 +699,9 @@ pub const State = struct {
             .{ "PAD", .pad },                .{ "ACCEPT", .accept },          .{ "EVALUATE", .evaluate },     .{ "KEY", .key },                  .{ "KEY?", .key_question },
             .{ "<#", .hold_start },          .{ "<<#", .hold_nest },          .{ "#", .hold_digit },          .{ "#S", .hold_digits },           .{ "#>", .hold_finish },
             .{ "#>>", .hold_release },       .{ "HOLD", .hold },              .{ "HOLDS", .holds },           .{ "SIGN", .sign },                .{ ">NUMBER", .to_number },
-            .{ "S>NUMBER?", .string_to_number }, .{ ">FLOAT", .to_float },
+            .{ "S>NUMBER?", .string_to_number }, .{ ">FLOAT", .to_float },   .{ "WITHIN", .within },         .{ "2>R", .two_to_r },             .{ "2R>", .two_r_from },
+            .{ "ENDIF", .compile_then },     .{ "PLACE", .place },            .{ "ABORT", .abort },           .{ "MS", .ms },                    .{ "UTIME", .utime },
+            .{ "PAGE", .page },              .{ "GETENV", .getenv },          .{ "SYSTEM", .system },         .{ "STATE", .state },
         };
         for (definitions) |definition| self.addBuiltin(definition[0], definition[1]) catch unreachable;
         self.builtin_count = self.word_count;
@@ -696,6 +725,16 @@ pub const State = struct {
         if (kind != .builtin and self.lookup(name) != null) {
             self.write("WARNING: SAME NAME WORD EXISTS\n");
         }
+        return self.appendEntry(name, kind, builtin, value);
+    }
+
+    /// Appends a colon definition without a name (`:NONAME`); lookup never finds it.
+    fn appendAnonymousColon(self: *State) RuntimeError!u16 {
+        if (self.word_count == max_words) return error.DictionaryFull;
+        return self.appendEntry("", .colon, .drop, 0);
+    }
+
+    fn appendEntry(self: *State, name: []const u8, kind: WordKind, builtin: Builtin, value: Cell) RuntimeError!u16 {
         const id = self.word_count;
         var word = Word{ .kind = kind, .builtin = builtin, .value = value, .name_len = @intCast(name.len), .data_here_before = self.data_here };
         @memcpy(word.name[0..name.len], name);
@@ -710,7 +749,7 @@ pub const State = struct {
         while (i > 0) {
             i -= 1;
             const word = self.words[i];
-            if (asciiEqlIgnoreCase(word.name[0..word.name_len], name)) return i;
+            if (word.name_len != 0 and asciiEqlIgnoreCase(word.name[0..word.name_len], name)) return i;
         }
         return null;
     }
@@ -740,11 +779,7 @@ pub const State = struct {
         switch (pending) {
             .none => unreachable,
             .colon_name => {
-                const id = try self.appendWord(token, .colon, .drop, 0);
-                self.current_word = id;
-                self.current_data_start = self.words[id].data_here_before;
-                self.compiling = true;
-                self.defining = true;
+                self.beginDefinition(try self.appendWord(token, .colon, .drop, 0));
             },
             .variable_name, .value_name => {
                 const id = try self.appendDataWord(token, if (pending == .value_name) .value else .variable, cell_size);
@@ -819,23 +854,32 @@ pub const State = struct {
             self.pending = .colon_name;
             return;
         }
+        if (asciiEqlIgnoreCase(token, ":NONAME")) {
+            if (self.defining) return error.InvalidDefinition;
+            // Check the stack first so a failure cannot leave an unterminated definition behind.
+            if (self.data_depth == max_stack) return error.StackOverflow;
+            const id = try self.appendAnonymousColon();
+            self.beginDefinition(id);
+            self.push(id) catch unreachable;
+            return;
+        }
         if (std.mem.eql(u8, token, ";")) {
             if (!self.defining or !self.compiling) return error.CompileOnly;
             if (self.control_depth != 0) return error.ControlMismatch;
             _ = try self.emit(.{ .kind = .exit });
             self.words[self.current_word].code_end = self.code_count;
-            self.compiling = false;
+            self.setCompiling(false);
             self.defining = false;
             return;
         }
         if (std.mem.eql(u8, token, "[")) {
             if (!self.defining or !self.compiling) return error.CompileOnly;
-            self.compiling = false;
+            self.setCompiling(false);
             return;
         }
         if (std.mem.eql(u8, token, "]")) {
             if (!self.defining or self.compiling) return error.CompileOnly;
-            self.compiling = true;
+            self.setCompiling(true);
             return;
         }
         if (std.mem.eql(u8, token, "'") or std.mem.eql(u8, token, "[']")) {
@@ -920,6 +964,20 @@ pub const State = struct {
         }
         self.last_unknown_word = token;
         return error.UnknownWord;
+    }
+
+    fn beginDefinition(self: *State, id: u16) void {
+        self.current_word = id;
+        self.current_data_start = self.words[id].data_here_before;
+        self.setCompiling(true);
+        self.defining = true;
+    }
+
+    /// Changes the compiler state and mirrors it in the STATE cell, so a saved
+    /// `STATE` address always reads the current value.
+    fn setCompiling(self: *State, compiling: bool) void {
+        self.compiling = compiling;
+        self.writeCell(state_address, truth(compiling)) catch unreachable;
     }
 
     fn startInterpretPending(self: *State, pending: Pending) RuntimeError!void {
@@ -1452,6 +1510,7 @@ pub const State = struct {
             },
             .words => {
                 for (self.words[0..self.word_count]) |word| {
+                    if (word.name_len == 0) continue;
                     self.write(word.name[0..word.name_len]);
                     self.write(" ");
                 }
@@ -1771,6 +1830,76 @@ pub const State = struct {
                     try self.push(true_flag);
                 } else try self.push(0);
             },
+            .within => {
+                const upper = try self.pop();
+                const lower = try self.pop();
+                const value = try self.pop();
+                try self.push(truth(@as(UCell, @bitCast(value -% lower)) < @as(UCell, @bitCast(upper -% lower))));
+            },
+            .two_to_r => {
+                try self.requireDepth(2);
+                if (max_stack - self.return_depth < 2) return error.ReturnStackOverflow;
+                const second = try self.pop();
+                const first = try self.pop();
+                self.return_stack[self.return_depth] = first;
+                self.return_stack[self.return_depth + 1] = second;
+                self.return_depth += 2;
+            },
+            .two_r_from => {
+                if (self.return_depth < 2) return error.ReturnStackUnderflow;
+                if (max_stack - self.data_depth < 2) return error.StackOverflow;
+                self.return_depth -= 2;
+                try self.push(self.return_stack[self.return_depth]);
+                try self.push(self.return_stack[self.return_depth + 1]);
+            },
+            .place => {
+                const destination = try self.pop();
+                const count = try self.pop();
+                const source = try self.pop();
+                // Like gforth, at most 255 bytes are stored; the length byte is written
+                // after the copy so an overlapping source is read intact.
+                const length: usize = @intCast(std.math.clamp(count, 0, 255));
+                const to = try self.memoryAddress(destination, length + 1);
+                const from = try self.memoryAddress(source, length);
+                const target = self.memory[to + 1 .. to + 1 + length];
+                const bytes = self.memory[from .. from + length];
+                if (to + 1 <= from) std.mem.copyForwards(u8, target, bytes) else std.mem.copyBackwards(u8, target, bytes);
+                self.memory[to] = @intCast(length);
+            },
+            .abort => return error.Aborted,
+            .ms => {
+                const milliseconds = try self.pop();
+                const sleep_fn = self.writer.sleep_fn orelse return error.HostUnavailable;
+                try sleep_fn(self.writer.context, @max(milliseconds, 0));
+            },
+            .utime => {
+                const utime_fn = self.writer.utime_fn orelse return error.HostUnavailable;
+                try self.pushDouble(try utime_fn(self.writer.context));
+            },
+            .page => self.write("\x1b[2J\x1b[1;1H"),
+            .getenv => {
+                const name = try self.memoryRange();
+                const getenv_fn = self.writer.getenv_fn orelse return error.HostUnavailable;
+                // The name may lie inside the result buffer, so copy it out first.
+                if (name.len > max_host_name) return error.StringTooLong;
+                var name_copy: [max_host_name]u8 = undefined;
+                @memcpy(name_copy[0..name.len], name);
+                const start: usize = @intCast(environment_buffer_base);
+                const found = try getenv_fn(self.writer.context, name_copy[0..name.len], self.memory[start .. start + environment_buffer_size]);
+                if (found) |length| {
+                    try self.push(environment_buffer_base);
+                    try self.push(@intCast(length));
+                } else {
+                    try self.push(0);
+                    try self.push(0);
+                }
+            },
+            .system => {
+                const command = try self.memoryRange();
+                const system_fn = self.writer.system_fn orelse return error.HostUnavailable;
+                try system_fn(self.writer.context, command);
+            },
+            .state => try self.push(state_address),
         }
     }
 
