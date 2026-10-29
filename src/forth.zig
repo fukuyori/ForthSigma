@@ -37,6 +37,10 @@ const source_file_table: Cell = include_buffer_base + max_include_depth * tib_si
 const max_source_files = 64;
 const source_file_entry_size = 256;
 const source_file_count_address: Cell = 0x0218;
+/// One byte per table entry: non-zero while the file counts as loaded for REQUIRE.
+/// MARKER clears these flags instead of shortening the table, so names that words and
+/// open input frames refer to stay valid.
+const source_file_loaded_flags: Cell = source_file_table + max_source_files * source_file_entry_size;
 /// SOURCEFILENAME results outside files, as in gforth.
 const terminal_source_name = "*the terminal*";
 const evaluate_source_name = "*evaluated string*";
@@ -750,21 +754,31 @@ pub const State = struct {
         if (self.data_here + data_len > data_limit) return error.MemoryExhausted;
         const data_delta = self.data_here - data_start;
 
-        // Merge the loaded image's source files into this table; a file that does not fit
-        // loses its location information (index 0).
-        const files_before = self.sourceFileCount();
+        // Merge the loaded image's source files into this table, keeping their loaded
+        // flags; a file that does not fit loses its location information (index 0).
+        const loaded_before = self.loadedSourceFiles();
         var file_map: [max_source_files]u8 = @splat(0);
-        const source_files = @min(@as(usize, @intCast(std.math.clamp(source.readCellConst(source_file_count_address), 0, max_source_files))), max_source_files);
+        const source_files: usize = @intCast(std.math.clamp(source.readCellConst(source_file_count_address), 0, max_source_files));
         for (0..source_files) |index| {
-            file_map[index] = if (self.recordSourceFile(source.sourceFileName(index))) |mapped| mapped + 1 else |_| 0;
+            const mapped = self.sourceFileEntryIndex(source.sourceFileName(index)) catch continue;
+            file_map[index] = mapped + 1;
+            if (source.sourceFileLoaded(index)) self.setSourceFileLoaded(mapped, true);
         }
 
         for (source.words[source.builtin_count..source.word_count], 0..) |original, offset| {
             var word = original;
             word.data_here_before += data_delta;
             if (word.source_file != 0) word.source_file = if (word.source_file <= source_files) file_map[word.source_file - 1] else 0;
-            // A loaded MARKER forgets the files merged by this LOAD as well.
-            if (word.kind == .marker) word.value = @intCast(files_before);
+            // A loaded MARKER keeps this dictionary's history and the files that the saved
+            // one had loaded when the marker was made.
+            if (word.kind == .marker) {
+                var mask = loaded_before;
+                const saved: UCell = @bitCast(word.value);
+                for (0..source_files) |index| {
+                    if (saved & (@as(UCell, 1) << @intCast(index)) != 0 and file_map[index] != 0) mask |= @as(UCell, 1) << @intCast(file_map[index] - 1);
+                }
+                word.value = @bitCast(mask);
+            }
             if (word.kind == .colon) {
                 word.code_start = @intCast(@as(usize, word.code_start) + code_base);
                 word.code_end = @intCast(@as(usize, word.code_end) + code_base);
@@ -901,7 +915,10 @@ pub const State = struct {
         self.source_line = input;
         self.source_cursor = 0;
         self.source_kind = source_kind;
-        self.last_created_word = null;
+        // A nested file or EVALUATE string runs inside the caller's work, so it must not
+        // drop the word that a pending DOES> will attach to.
+        if (source_kind == .terminal) self.last_created_word = null;
+        const pending_before = self.pending;
         defer {
             self.source_line = previous_line;
             self.source_cursor = previous_cursor;
@@ -944,6 +961,12 @@ pub const State = struct {
             line = self.source_line;
             cursor = self.source_cursor;
             if (self.halted) break;
+        }
+        // An EVALUATE string cannot read past its end, so a parsing word such as
+        // VARIABLE or : left waiting for its name must not take the caller's next word.
+        if (source_kind == .evaluate and pending_before == .none and self.pending != .none) {
+            self.pending = .none;
+            return error.InvalidDefinition;
         }
     }
 
@@ -1644,24 +1667,65 @@ pub const State = struct {
         return self.memory[at + 1 .. at + 1 + self.memory[at]];
     }
 
-    fn findSourceFile(self: *State, name: []const u8) ?u8 {
+    fn sourceFileLoadedFlag(index: usize) usize {
+        return @intCast(source_file_loaded_flags + @as(Cell, @intCast(index)));
+    }
+
+    fn sourceFileLoaded(self: *const State, index: usize) bool {
+        return self.memory[sourceFileLoadedFlag(index)] != 0;
+    }
+
+    fn setSourceFileLoaded(self: *State, index: usize, loaded: bool) void {
+        self.memory[sourceFileLoadedFlag(index)] = @intFromBool(loaded);
+    }
+
+    fn findSourceEntry(self: *State, name: []const u8) ?u8 {
         for (0..self.sourceFileCount()) |index| {
             if (std.mem.eql(u8, self.sourceFileName(index), name)) return @intCast(index);
         }
         return null;
     }
 
-    /// Adds a file to the table of included files (the REQUIRE history) unless it is there.
-    fn recordSourceFile(self: *State, name: []const u8) RuntimeError!u8 {
-        if (self.findSourceFile(name)) |index| return index;
+    /// The table entry of a file in the REQUIRE history, or null when it is not loaded.
+    fn findSourceFile(self: *State, name: []const u8) ?u8 {
+        const index = self.findSourceEntry(name) orelse return null;
+        return if (self.sourceFileLoaded(index)) index else null;
+    }
+
+    /// The table entry for `name`, added when the name is new. Entries are never removed.
+    fn sourceFileEntryIndex(self: *State, name: []const u8) RuntimeError!u8 {
+        if (self.findSourceEntry(name)) |index| return index;
         if (name.len >= source_file_entry_size) return error.StringTooLong;
         const count = self.sourceFileCount();
         if (count == max_source_files) return error.TooManySourceFiles;
         const at = sourceFileEntry(count);
         self.memory[at] = @intCast(name.len);
         @memcpy(self.memory[at + 1 .. at + 1 + name.len], name);
+        self.setSourceFileLoaded(count, false);
         self.setSourceFileCount(count + 1);
         return @intCast(count);
+    }
+
+    /// Records an included file in the REQUIRE history.
+    fn recordSourceFile(self: *State, name: []const u8) RuntimeError!u8 {
+        const index = try self.sourceFileEntryIndex(name);
+        self.setSourceFileLoaded(index, true);
+        return index;
+    }
+
+    /// The loaded flags as one bit per table entry, which a MARKER keeps in its value.
+    fn loadedSourceFiles(self: *const State) UCell {
+        var mask: UCell = 0;
+        const count: usize = @intCast(std.math.clamp(self.readCellConst(source_file_count_address), 0, max_source_files));
+        for (0..count) |index| {
+            if (self.sourceFileLoaded(index)) mask |= @as(UCell, 1) << @intCast(index);
+        }
+        return mask;
+    }
+
+    /// MARKER: the REQUIRE history returns to what it was when the marker was made.
+    fn restoreLoadedSourceFiles(self: *State, mask: UCell) void {
+        for (0..self.sourceFileCount()) |index| self.setSourceFileLoaded(index, mask & (@as(UCell, 1) << @intCast(index)) != 0);
     }
 
     /// Reads the next physical line of the innermost included file into its line buffer,
@@ -1702,10 +1766,15 @@ pub const State = struct {
         self.include_stack[self.include_depth] = .{ .fileid = fileid, .file_index = file_index, .line = 0 };
         self.include_depth += 1;
         const result = self.interpretIncludedFile();
+        const last_line = self.include_stack[self.include_depth - 1].line;
         self.include_depth -= 1;
         const closed = files.close(self.writer.context, fileid);
         try result;
-        if (closed != 0) return self.throwCode(closed);
+        if (closed != 0) {
+            // The file is out of the input stack now, so name it here.
+            if (self.error_location == null) self.error_location = .{ .file_index = file_index, .line = last_line };
+            return self.throwCode(closed);
+        }
     }
 
     fn interpretIncludedFile(self: *State) RuntimeError!void {
@@ -1715,14 +1784,17 @@ pub const State = struct {
             self.error_location = .{ .file_index = frame.file_index, .line = frame.line };
         };
         const was_defining = self.defining;
+        const word_before = self.current_word;
         const pending_before = self.pending;
         while (!self.halted) {
             const line = try self.readIncludeLine() orelse break;
             try self.interpretSource(line, .file);
         }
         if (self.halted) return;
-        // A definition or parsing word started in this file must end in it.
-        if ((self.defining and !was_defining) or (self.pending != .none and pending_before == .none)) return error.InvalidDefinition;
+        // A definition or parsing word started in this file must end in it. Comparing the
+        // word also catches a file that ends the caller's definition and starts another.
+        const started_here = self.defining and (!was_defining or self.current_word != word_before);
+        if (started_here or (self.pending != .none and pending_before == .none)) return error.InvalidDefinition;
     }
 
     fn requireFile(self: *State, name: []const u8) RuntimeError!void {
@@ -1806,7 +1878,7 @@ pub const State = struct {
             // files included since, so REQUIRE loads them again.
             .marker => {
                 self.forgetFrom(id);
-                self.setSourceFileCount(@intCast(word.value));
+                self.restoreLoadedSourceFiles(@bitCast(word.value));
             },
         }
     }
@@ -2668,7 +2740,7 @@ pub const State = struct {
             .source_line_number => try self.push(if (self.currentFileFrame()) |frame| frame.line else 0),
             .marker => {
                 const name = (try self.nextSourceToken()) orelse return error.InvalidDefinition;
-                _ = try self.appendWord(name, .marker, .drop, @intCast(self.sourceFileCount()));
+                _ = try self.appendWord(name, .marker, .drop, @bitCast(self.loadedSourceFiles()));
             },
             .locate => {
                 const name = (try self.nextSourceToken()) orelse return error.InputUnavailable;

@@ -11,6 +11,7 @@ const Output = struct {
     key_index: usize = 0,
     slept: forth.Cell = -1,
     host_fails: bool = false,
+    close_fails: bool = false,
     command: [64]u8 = undefined,
     command_len: usize = 0,
     files: [4]FakeFile = .{ .{}, .{}, .{}, .{} },
@@ -127,7 +128,7 @@ fn fakeOpen(context: ?*anyopaque, name: []const u8, _: forth.FileAccess, create:
 fn fakeClose(context: ?*anyopaque, fileid: forth.Cell) forth.Cell {
     const file = fakeFile(context, fileid) orelse return forth.errnoIor(forth.errno_bad_file);
     file.open = false;
-    return 0;
+    return if (fakeOutput(context).close_fails) forth.errnoIor(5) else 0;
 }
 
 fn fakeReadLine(context: ?*anyopaque, fileid: forth.Cell, buffer: []u8) forth.LineResult {
@@ -1826,4 +1827,132 @@ test "source locations and the REQUIRE history survive image restore and LOAD" {
     try expectStack(loaded, &.{-1});
     try expectStack(target, &.{-1});
     try std.testing.expectEqualStrings("b.txt:1\n: FROM-B\n  2 ;\nb.txt:1\n: FROM-B\n  2 ;\na.txt:1\n: FROM-A 1 ;\n", output.written());
+}
+test "a parsing word left waiting at the end of an EVALUATE string is an error" {
+    var output = Output{};
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
+    const words = machine.word_count;
+
+    try std.testing.expectError(error.InvalidDefinition, machine.interpretLine("S\" VARIABLE\" EVALUATE LEAK"));
+    machine.report(error.InvalidDefinition);
+    try std.testing.expectError(error.InvalidDefinition, machine.interpretLine("S\" :\" EVALUATE NAME"));
+    machine.report(error.InvalidDefinition);
+    try std.testing.expectEqual(words, machine.word_count);
+    try machine.interpretLine("S\" 5 CONSTANT\" ' EVALUATE CATCH NIP NIP S\" LEAK\" FIND-NAME");
+    try expectStack(machine, &.{ -259, 0 });
+}
+
+test "INCLUDE between CREATE and DOES> keeps the word being created" {
+    var output = Output{};
+    setFakeFile(&output, 0, "\\ only a comment\n");
+    setFakeFile(&output, 1, "MISSING\n");
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
+
+    try machine.interpretLine(": M1 CREATE , S\" a.txt\" INCLUDED DOES> @ ; 5 M1 FIVE FIVE");
+    try machine.interpretLine(": M2 CREATE , S\" b.txt\" ['] INCLUDED CATCH NIP NIP DROP DOES> @ ; 6 M2 SIX SIX");
+    try machine.interpretLine(": M3 CREATE , S\" 1 DROP\" EVALUATE DOES> @ ; 7 M3 SEVEN SEVEN");
+    try expectStack(machine, &.{ 5, 6, 7 });
+}
+
+test "MARKER inside an included file keeps the names that frames and words refer to" {
+    var output = Output{};
+    setFakeFile(&output, 0, ": FROM-A ;\nM\nINCLUDE c.txt\nSOURCEFILENAME TYPE\n");
+    setFakeFile(&output, 2, ": FROM-C ;\n");
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
+
+    try machine.interpretLine("MARKER M INCLUDE a.txt S\" a.txt\" INCLUDED? S\" c.txt\" INCLUDED? LOCATE FROM-C");
+    try expectStack(machine, &.{ 0, -1 });
+    try std.testing.expectEqualStrings("a.txtc.txt:1\n: FROM-C ;\n", output.written());
+    machine.data_depth = 0;
+    try machine.interpretLine("MARKER M2 REQUIRE c.txt M2 S\" c.txt\" INCLUDED?");
+    try expectStack(machine, &.{-1});
+}
+
+test "a MARKER loaded with LOAD restores the history it was made with" {
+    var output = Output{};
+    setFakeFile(&output, 0, ": FROM-A 1 ;\n");
+    setFakeFile(&output, 1, ": FROM-B 2 ;\n");
+    setFakeFile(&output, 2, ": FROM-C 3 ;\n");
+    const source = try createMachine(&output);
+    defer destroyMachine(source);
+    try source.interpretLine("INCLUDE a.txt MARKER M");
+    const image = try std.testing.allocator.alloc(u8, forth.State.imageCapacity());
+    defer std.testing.allocator.free(image);
+    const length = try source.encodeImage(image);
+    const loaded = try createMachine(&output);
+    defer destroyMachine(loaded);
+    try loaded.restoreImage(image[0..length]);
+
+    const target = try createMachine(&output);
+    defer destroyMachine(target);
+    try target.interpretLine("INCLUDE b.txt");
+    try target.appendImage(loaded);
+    try target.interpretLine("REQUIRE c.txt M S\" a.txt\" INCLUDED? S\" b.txt\" INCLUDED? S\" c.txt\" INCLUDED? INCLUDE c.txt LOCATE FROM-A");
+    try expectStack(target, &.{ -1, -1, 0 });
+    try std.testing.expectEqualStrings("a.txt:1\n: FROM-A 1 ;\n", output.written());
+}
+
+test "a file that ends the caller's definition and starts another is an error" {
+    var output = Output{};
+    setFakeFile(&output, 3, "] ; : HALF 1\n");
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
+
+    try std.testing.expectError(error.InvalidDefinition, machine.interpretLine(": OUTER 1 [ S\" d.txt\" INCLUDED"));
+    machine.report(error.InvalidDefinition);
+    try std.testing.expectEqualStrings("d.txt:1: DEFINITION ERROR !\n", output.written());
+    try machine.interpretLine("S\" HALF\" FIND-NAME");
+    try expectStack(machine, &.{0});
+}
+
+test "a failing close is reported at the file that failed" {
+    var output = Output{};
+    output.close_fails = true;
+    setFakeFile(&output, 0, "1\n");
+    setFakeFile(&output, 1, "INCLUDE a.txt\n2\n");
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
+
+    try std.testing.expectError(error.Thrown, machine.interpretLine("INCLUDE a.txt"));
+    machine.report(error.Thrown);
+    try std.testing.expectError(error.Thrown, machine.interpretLine("INCLUDE b.txt"));
+    machine.report(error.Thrown);
+    try machine.interpretLine("S\" a.txt\" ' INCLUDED CATCH NIP NIP");
+    try expectStack(machine, &.{forth.errnoIor(5)});
+    try std.testing.expectEqualStrings("a.txt:1: INPUT/OUTPUT ERROR !\na.txt:1: INPUT/OUTPUT ERROR !\n", output.written());
+    for (output.files) |file| try std.testing.expect(!file.open);
+}
+
+test "WORD and NAME>STRING buffers have the documented limits" {
+    var output = Output{};
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
+    var line: [300]u8 = undefined;
+    @memcpy(line[0..16], ": W BL WORD ; W ");
+    @memset(line[16 .. 16 + 255], 'x');
+
+    try machine.interpretLine(line[0 .. 16 + 255]);
+    try std.testing.expectEqual(@as(u8, 255), machine.memory[@intCast(machine.data_stack[0])]);
+    line[16 + 255] = 'x';
+    try std.testing.expectError(error.StringTooLong, machine.interpretLine(line[0 .. 16 + 256]));
+    machine.report(error.StringTooLong);
+    try machine.interpretLine(": NS 9 0 DO S\" DUP\" FIND-NAME NAME>STRING DROP LOOP ; NS");
+    try std.testing.expectEqual(@as(usize, 9), machine.data_depth);
+    try std.testing.expectEqual(machine.data_stack[0], machine.data_stack[8]);
+    for (1..8) |index| try std.testing.expect(machine.data_stack[index] != machine.data_stack[0]);
+}
+
+test "SEE handles nested and empty branches and CASE" {
+    var output = Output{};
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
+
+    try machine.interpretLine(": N IF IF 1 THEN ELSE THEN ; SEE N : E IF THEN BEGIN UNTIL ; SEE E : C CASE 1 OF 10 ENDOF 20 SWAP ENDCASE ; SEE C");
+    try std.testing.expectEqualStrings(
+        ": N\n  IF IF 1 THEN ELSE THEN\n;\n: E\n  IF THEN BEGIN UNTIL\n;\n: C\n  1 OVER = IF DROP 10 ELSE 20 SWAP DROP THEN\n;\n",
+        output.written(),
+    );
 }

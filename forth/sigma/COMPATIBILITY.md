@@ -93,7 +93,7 @@ Z80の命令実行・エミュレーションはプロジェクトの対象外�
 
 ## 自動回帰テストとの対応
 
-zig build testで、現行コアの主要動作を次のテストで確認します（コア117件、ホスト3件の計120件）。
+zig build testで、現行コアの主要動作を次のテストで確認します（コア125件、ホスト3件の計128件）。
 
 | テスト | 確認する動作 |
 | --- | --- |
@@ -128,6 +128,7 @@ zig build testで、現行コアの主要動作を次のテストで確認しま
 | heap | ALLOCATE・FREE・RESIZEの成功と失敗（ENOMEM、無効なアドレス）、解放した領域の再利用、全解放後のヒープの回復 |
 | dynamic strings | 教材Level 14の例、自分自身を元にした連結・挿入、範囲外の削除・挿入・上書き、$SPLIT、$ITER、$TMP（入れ子、エラー後の出力復帰）、文字列配列、$[]SLURP／$[]SLURP-FILE、完全復元後のヒープ文字列 |
 | tab separators | タブで区切ったソース、文字列語・CHARの直後のタブ |
+| source files（レビュー対応） | EVALUATE内の名前待ちのエラー、CREATEとDOES>の間のINCLUDE／EVALUATE、読み込み中のファイル内でのMARKER、LOADで読み込んだMARKER、呼び出し元の定義を終えて別の定義を始めるファイル、閉じるのに失敗した場合の位置、WORDの255／256バイト、NAME>STRINGの8個のバッファ、SEEの入れ子・空の分岐・CASE |
 | source files | INCLUDEの複数行定義・SOURCEFILENAME・SOURCELINE#・INCLUDED?、REQUIRE（自分自身・パラメータ付き）、入れ子の内側のエラー位置、定義途中のファイル終了、ファイルがない場合、すべてのファイルを閉じること、CATCHで捕捉した後の続き、入れ子の上限、MARKERによる語と履歴の巻き戻し、LOCATE、位置情報と履歴のイメージ復元・追加読み込み、実際のホストでのCR LFと4096／4097バイトの行 |
 | parsing and dictionary words | 語の後の区切り1文字の消費とPARSE、文字列語の空白、WORDの数え付き文字列、FINDの即時語・未発見、FIND-NAME・NAME>INT・NAME>STRINGと無効な名前トークン、SEEの出力（制御構造、CREATE/DOES>、IMMEDIATE）、EVALUATEが端末の次の行を読まないこと、入力行の上限 |
 | locals | スタック順の受け取り、定義途中・ループ内での宣言、TO、`\|`、W:/D:/F:/C:/XT:、W^/F^/C^のアドレス、LOCALS\|、`{: :}`、再帰と領域の解放、エラー後の解放、名前の有効範囲、定義外での拒否、追加読み込み後の実行 |
