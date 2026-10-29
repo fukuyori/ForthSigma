@@ -535,7 +535,9 @@ const Local = struct {
 };
 const Op = struct { kind: OpKind, value: Cell = 0 };
 const ControlKind = enum { if_branch, else_branch, begin_loop, while_branch, do_loop, case_start, of_branch, endof_branch };
-const Control = struct { kind: ControlKind, address: u16 };
+/// `locals` is the number of local names visible where the structure starts; a DO loop
+/// also keeps the fewest visible at any of its LEAVEs.
+const Control = struct { kind: ControlKind, address: u16, locals: u16 = 0, leave_locals: u16 = std.math.maxInt(u16) };
 const Loop = struct { index: Cell, limit: Cell, exit_pc: u16, exit_after_first: bool = false };
 const Pending = enum { none, colon_name, variable_name, constant_name, array_name, forget_name, tick_name, value_name, to_name, char_name, postpone_name, fconstant_name, fvariable_name, two_constant_name, two_variable_name };
 const StringWord = enum { s_quote, s_escape_quote, print_escape, print_paren };
@@ -1664,7 +1666,7 @@ pub const State = struct {
     fn pushControl(self: *State, kind: ControlKind, address: u16) RuntimeError!void {
         try self.requireCompiling();
         if (self.control_depth == max_controls) return error.ControlStackOverflow;
-        self.control_stack[self.control_depth] = .{ .kind = kind, .address = address };
+        self.control_stack[self.control_depth] = .{ .kind = kind, .address = address, .locals = @intCast(self.local_count) };
         self.control_depth += 1;
     }
 
@@ -1695,6 +1697,8 @@ pub const State = struct {
         const old = try self.popControl(.if_branch);
         const at = try self.emit(.{ .kind = .branch });
         self.patch(old.address, self.code_count);
+        // The ELSE part is reached without the locals declared in the IF part.
+        self.local_count = old.locals;
         try self.pushControl(.else_branch, at);
     }
 
@@ -1704,6 +1708,9 @@ pub const State = struct {
         if (kind != .if_branch and kind != .else_branch) return error.ControlMismatch;
         self.control_depth -= 1;
         self.patch(self.control_stack[self.control_depth].address, self.code_count);
+        // After THEN only the locals visible at the IF remain: the code can be reached
+        // along a path that skipped the branch (gforth's rule).
+        self.local_count = self.control_stack[self.control_depth].locals;
     }
 
     fn compileBegin(self: *State) RuntimeError!void {
@@ -1730,6 +1737,8 @@ pub const State = struct {
         self.control_depth -= 1;
         _ = try self.emit(.{ .kind = .branch, .value = self.control_stack[self.control_depth].address });
         self.patch(wh.address, self.code_count);
+        // The loop is left at WHILE, so the locals declared after it are not visible.
+        self.local_count = wh.locals;
     }
 
     fn compileDo(self: *State, conditional: bool) RuntimeError!void {
@@ -1743,13 +1752,22 @@ pub const State = struct {
         const body: u16 = loop.address + 1;
         _ = try self.emit(.{ .kind = if (plus) .plus_loop else .loop, .value = body });
         self.patch(loop.address, self.code_count);
+        // DO always runs the body, so its locals stay visible, except those a LEAVE can
+        // skip; ?DO may skip the whole body.
+        if (self.code[loop.address].kind == .q_do_loop) {
+            self.local_count = loop.locals;
+        } else self.local_count = @min(self.local_count, loop.leave_locals);
     }
 
     fn compileLeave(self: *State) RuntimeError!void {
         try self.requireCompiling();
-        for (self.control_stack[0..self.control_depth]) |control| {
+        var index = self.control_depth;
+        while (index > 0) {
+            index -= 1;
+            const control = &self.control_stack[index];
             if (control.kind == .do_loop) {
                 _ = try self.emit(.{ .kind = .leave });
+                control.leave_locals = @min(control.leave_locals, @as(u16, @intCast(self.local_count)));
                 return;
             }
         }
@@ -1782,6 +1800,8 @@ pub const State = struct {
         const of = try self.popControl(.of_branch);
         const at = try self.emit(.{ .kind = .branch });
         self.patch(of.address, self.code_count);
+        // The next OF test is reached without the locals declared in this OF branch.
+        self.local_count = of.locals;
         try self.pushControl(.endof_branch, at);
     }
 
@@ -1792,7 +1812,10 @@ pub const State = struct {
             const kind = self.topControl() orelse return error.ControlMismatch;
             self.control_depth -= 1;
             switch (kind) {
-                .case_start => return,
+                .case_start => {
+                    self.local_count = self.control_stack[self.control_depth].locals;
+                    return;
+                },
                 .endof_branch => self.patch(self.control_stack[self.control_depth].address, self.code_count),
                 else => {
                     self.control_depth += 1;

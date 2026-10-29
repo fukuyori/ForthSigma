@@ -2151,3 +2151,35 @@ test "image restore keeps words of a vocabulary made with :NONAME and DOES>" {
     try expectStack(loaded, &.{ 42, -1 });
     try std.testing.expectEqualStrings("TWO ?\nTOOLS Forth Forth Root     Forth ", output.written());
 }
+test "locals are visible only where every path passes their declaration, as in gforth" {
+    var output = Output{};
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
+
+    const visible = [_][]const u8{
+        ": T1 1 IF 5 { x } x THEN ; T1",
+        ": T4 BEGIN 5 { x } x 1 UNTIL ; T4",
+        ": T5 BEGIN 5 { x } 1 UNTIL x ; T5",
+        ": T7 3 0 DO I { x } LOOP x ; T7",
+        ": T8 5 { x } 1 IF x THEN x ; T8",
+        ": T11 1 IF 5 { dup } THEN 3 dup ; T11",
+        ": T13 10 0 DO I { x } x 5 = IF LEAVE THEN LOOP x ; T13",
+        ": T14 1 BEGIN 7 { y } DUP WHILE 1- REPEAT DROP y ; T14",
+    };
+    for (visible) |line| try machine.interpretLine(line);
+    try expectStack(machine, &.{ 5, 5, 5, 2, 5, 5, 3, 3, 5, 7 });
+
+    const hidden = [_][]const u8{
+        ": T2 0 IF 5 { x } ELSE x THEN ;",
+        ": T3 1 IF 5 { x } THEN x ;",
+        ": T9 3 0 ?DO I { x } LOOP x ;",
+        ": T10 1 BEGIN DUP WHILE 5 { x } 1- REPEAT DROP x ;",
+        ": T12 10 0 DO I 5 = IF LEAVE THEN I { x } LOOP x ;",
+        ": T15 2 CASE 1 OF 5 { z } ENDOF z ENDCASE ;",
+    };
+    for (hidden) |line| {
+        try std.testing.expectError(error.UnknownWord, machine.interpretLine(line));
+        machine.report(error.UnknownWord);
+    }
+    try std.testing.expectEqualStrings("x ?\nx ?\nx ?\nx ?\nx ?\nz ?\n", output.written());
+}

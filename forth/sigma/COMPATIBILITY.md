@@ -94,7 +94,7 @@ Z80の命令実行・エミュレーションはプロジェクトの対象外�
 
 ## 自動回帰テストとの対応
 
-zig build testで、現行コアの主要動作を次のテストで確認します（コア137件、ホスト3件の計140件）。
+zig build testで、現行コアの主要動作を次のテストで確認します（コア138件、ホスト3件の計141件）。
 
 | テスト | 確認する動作 |
 | --- | --- |
@@ -130,6 +130,7 @@ zig build testで、現行コアの主要動作を次のテストで確認しま
 | dynamic strings | 教材Level 14の例、自分自身を元にした連結・挿入、範囲外の削除・挿入・上書き、$SPLIT、$ITER、$TMP（入れ子、エラー後の出力復帰）、文字列配列、$[]SLURP／$[]SLURP-FILE、完全復元後のヒープ文字列 |
 | tab separators | タブで区切ったソース、文字列語・CHARの直後のタブ |
 | word lists | 教材Level 16の例（VOCABULARY・ONLY・ALSO・DEFINITIONS・ORDERの表示、WORDLIST・SET-CURRENT・>ORDERのモジュールと隠し方）、GET-ORDER・SET-ORDER・PREVIOUS・-1 SET-ORDER、検索順序のあふれ・不足・無効な語彙、WORDSとSEARCH-WORDLIST、MARKERによる検索順序の復元、イメージの復元とLOADでの語彙番号の付け替え |
+| locals visibility | IF・ELSE・THEN、BEGIN・UNTIL・WHILE・REPEAT、DO・?DO・LOOP・LEAVE、CASE・OFでの名前の見える範囲（Gforthで確かめた15例） |
 | word lists（レビュー対応） | 回収したデータ領域に作ったMARKERのLOAD、[DEFINED]・[UNDEFINED]とローカル変数、INCLUDEの中での[IF]の読み飛ばしとファイルの終わり、複数の語彙にある同名語のFIND・LOCATE、語彙と:NONAME・DOES>を含むイメージの復元 |
 | conditional compilation | [IF] [ELSE] [THEN]の選択・入れ子・行をまたぐ読み飛ばし・コンパイル中の使用、[DEFINED]・[UNDEFINED]、EVALUATEの中で終わらない[IF] |
 | source files（レビュー対応） | EVALUATE内の名前待ちのエラー、CREATEとDOES>の間のINCLUDE／EVALUATE、読み込み中のファイル内でのMARKER、LOADで読み込んだMARKER、呼び出し元の定義を終えて別の定義を始めるファイル、閉じるのに失敗した場合の位置、WORDの255／256バイト、NAME>STRINGの8個のバッファ、SEEの入れ子・空の分岐・CASE |
