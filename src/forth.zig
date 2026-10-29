@@ -41,6 +41,23 @@ const source_file_count_address: Cell = 0x0218;
 /// MARKER clears these flags instead of shortening the table, so names that words and
 /// open input frames refer to stay valid.
 const source_file_loaded_flags: Cell = source_file_table + max_source_files * source_file_entry_size;
+/// Word lists: ids 1 (Forth) and 2 (Root) exist from the start; WORDLIST and
+/// VOCABULARY allocate more. The count, the current list, and the search order are
+/// kept in memory so images restore them. `search_order` holds the first-searched
+/// list at index 0.
+const forth_wordlist: Cell = 1;
+const root_wordlist: Cell = 2;
+const max_wordlists = 64;
+const max_search_order = 16;
+const wordlist_count_address: Cell = 0x0220;
+const current_wordlist_address: Cell = 0x0228;
+const search_order_depth_address: Cell = 0x0230;
+const search_order_address: Cell = 0x0238;
+/// Words that are also in the Root word list, so they stay usable after ONLY.
+const root_word_names = [_][]const u8{ "FORTH", "FORTH-WORDLIST", "ONLY", "ALSO", "PREVIOUS", "ORDER", "DEFINITIONS", "GET-ORDER", "SET-ORDER", "WORDS" };
+/// Bytes a MARKER keeps: the loaded-file mask, the current list, the order depth, and the order.
+const marker_snapshot_size = (3 + max_search_order) * cell_size;
+
 /// SOURCEFILENAME results outside files, as in gforth.
 const terminal_source_name = "*the terminal*";
 const evaluate_source_name = "*evaluated string*";
@@ -77,7 +94,7 @@ pub const data_start: Cell = 0x4000;
 const true_flag: Cell = -1;
 const dot_precision = 15;
 const fs_precision = 14;
-const image_magic = "SIGIMG09";
+const image_magic = "SIGIMG10";
 
 /// File ids of the standard streams; the host numbers opened files from `first_file_id`.
 pub const stdin_fileid: Cell = 1;
@@ -419,6 +436,26 @@ const Builtin = enum {
     source_line_number,
     marker,
     locate,
+    only,
+    also,
+    previous,
+    forth,
+    definitions,
+    order,
+    get_order,
+    set_order,
+    to_order,
+    get_current,
+    set_current,
+    vocabulary,
+    wordlist,
+    forth_wordlist_word,
+    search_wordlist,
+    bracket_if,
+    bracket_else,
+    bracket_then,
+    bracket_defined,
+    bracket_undefined,
 };
 
 const HeapResult = union(enum) { address: Cell, no_memory, bad_pointer };
@@ -442,6 +479,7 @@ const error_codes = [_]struct { RuntimeError, Cell }{
     .{ error.InvalidBase, -260 },           .{ error.InvalidExecutionToken, -261 }, .{ error.InputUnavailable, -262 },
     .{ error.FileUnavailable, -263 },       .{ error.InvalidImage, -264 },          .{ error.HostFailed, -265 },
     .{ error.CommentUnclosed, -266 },       .{ error.IncludeNesting, -267 },        .{ error.TooManySourceFiles, -268 },
+    .{ error.SearchOrderOverflow, -49 },     .{ error.SearchOrderUnderflow, -50 },   .{ error.InvalidWordlist, -269 },
 };
 const throw_code_undefined_word: Cell = -13;
 
@@ -458,7 +496,7 @@ const CatchFrame = struct {
     local_count: usize,
 };
 
-const WordKind = enum { builtin, colon, variable, constant, array, created, value, fconstant, two_constant, marker };
+const WordKind = enum { builtin, colon, variable, constant, array, created, value, fconstant, two_constant, marker, vocabulary };
 const Word = struct {
     name: [max_name]u8 = [_]u8{0} ** max_name,
     name_len: u8 = 0,
@@ -479,6 +517,8 @@ const Word = struct {
     source_file: u8 = 0,
     source_line: u32 = 0,
     source_end_line: u32 = 0,
+    /// The word list the word belongs to.
+    wordlist: u8 = @intCast(forth_wordlist),
 };
 
 /// Local operations other than `local_frame` encode the frame offset in the low 32 bits
@@ -536,6 +576,9 @@ pub const RuntimeError = error{
     Thrown,
     IncludeNesting,
     TooManySourceFiles,
+    SearchOrderOverflow,
+    SearchOrderUnderflow,
+    InvalidWordlist,
 };
 
 fn writeU32(output: []u8, value: anytype) void {
@@ -674,6 +717,10 @@ pub const State = struct {
         state.writeCell(heap_top_address, heap_base) catch unreachable;
         state.storeSourceName(terminal_source_name_address, terminal_source_name);
         state.storeSourceName(evaluate_source_name_address, evaluate_source_name);
+        // gforth starts with the search order Forth Forth Root and defines into Forth.
+        state.writeCell(wordlist_count_address, root_wordlist) catch unreachable;
+        state.writeCell(current_wordlist_address, forth_wordlist) catch unreachable;
+        state.setSearchOrder(&.{ forth_wordlist, forth_wordlist, root_wordlist });
         state.installBuiltins();
         return state;
     }
@@ -753,6 +800,15 @@ pub const State = struct {
         const data_len = source.data_here - data_start;
         if (self.data_here + data_len > data_limit) return error.MemoryExhausted;
         const data_delta = self.data_here - data_start;
+        // User word lists of the loaded image get new ids after this dictionary's.
+        const source_wordlists = std.math.clamp(source.readCellConst(wordlist_count_address), root_wordlist, max_wordlists);
+        const wordlist_base = self.wordlistCount();
+        if (wordlist_base + source_wordlists - root_wordlist > max_wordlists) return error.DictionaryFull;
+        const mapWordlist = struct {
+            fn map(wid: Cell, base: Cell) Cell {
+                return if (wid <= root_wordlist) wid else base + wid - root_wordlist;
+            }
+        }.map;
 
         // Merge the loaded image's source files into this table, keeping their loaded
         // flags; a file that does not fit loses its location information (index 0).
@@ -769,16 +825,8 @@ pub const State = struct {
             var word = original;
             word.data_here_before += data_delta;
             if (word.source_file != 0) word.source_file = if (word.source_file <= source_files) file_map[word.source_file - 1] else 0;
-            // A loaded MARKER keeps this dictionary's history and the files that the saved
-            // one had loaded when the marker was made.
-            if (word.kind == .marker) {
-                var mask = loaded_before;
-                const saved: UCell = @bitCast(word.value);
-                for (0..source_files) |index| {
-                    if (saved & (@as(UCell, 1) << @intCast(index)) != 0 and file_map[index] != 0) mask |= @as(UCell, 1) << @intCast(file_map[index] - 1);
-                }
-                word.value = @bitCast(mask);
-            }
+            word.wordlist = @intCast(mapWordlist(word.wordlist, wordlist_base));
+            if (word.kind == .vocabulary) word.value = mapWordlist(word.value, wordlist_base);
             if (word.kind == .colon) {
                 word.code_start = @intCast(@as(usize, word.code_start) + code_base);
                 word.code_end = @intCast(@as(usize, word.code_end) + code_base);
@@ -787,7 +835,7 @@ pub const State = struct {
                 word.does_code_start = @intCast(@as(usize, word.does_code_start) + code_base);
                 word.does_code_end = @intCast(@as(usize, word.does_code_end) + code_base);
             }
-            if (word.kind == .variable or word.kind == .array or word.kind == .created or word.kind == .value or word.kind == .two_constant)
+            if (word.kind == .variable or word.kind == .array or word.kind == .created or word.kind == .value or word.kind == .two_constant or word.kind == .marker)
                 word.value += data_delta;
             self.words[word_base + offset] = word;
         }
@@ -812,6 +860,23 @@ pub const State = struct {
         const data_to: usize = @intCast(self.data_here);
         const length: usize = @intCast(data_len);
         @memcpy(self.memory[data_to .. data_to + length], source.memory[data_from .. data_from + length]);
+        // A loaded MARKER keeps this dictionary's REQUIRE history plus the files the saved
+        // one had loaded, and its word lists are renumbered like the words.
+        for (self.words[word_base .. word_base + added_words]) |word| {
+            if (word.kind != .marker) continue;
+            const saved: UCell = @bitCast(self.readCellConst(word.value));
+            var mask = loaded_before;
+            for (0..source_files) |index| {
+                if (saved & (@as(UCell, 1) << @intCast(index)) != 0 and file_map[index] != 0) mask |= @as(UCell, 1) << @intCast(file_map[index] - 1);
+            }
+            try self.writeCell(word.value, @bitCast(mask));
+            for (1..3 + max_search_order) |slot| {
+                if (slot == 2) continue;
+                const at = word.value + @as(Cell, @intCast(slot)) * cell_size;
+                try self.writeCell(at, mapWordlist(try self.readCell(at), wordlist_base));
+            }
+        }
+        try self.writeCell(wordlist_count_address, wordlist_base + source_wordlists - root_wordlist);
         self.word_count = @intCast(word_base + added_words);
         self.code_count = @intCast(code_base + code_count);
         self.data_here += data_len;
@@ -862,7 +927,7 @@ pub const State = struct {
             self.write("NESTING ERROR !\n");
             return;
         }
-        const message: []const u8 = if (err == error.StackUnderflow) "STACK UNDER FLOW !" else if (err == error.ReturnStackUnderflow) "RETURN STACK UNDER FLOW !" else if (err == error.StackOverflow) "STACK OVER FLOW !" else if (err == error.ReturnStackOverflow) "RETURN STACK OVER FLOW !" else if (err == error.FloatStackUnderflow) "FLOATING-POINT STACK UNDER FLOW !" else if (err == error.FloatStackOverflow) "FLOATING-POINT STACK OVER FLOW !" else if (err == error.DictionaryFull) "OUT OF DICTIONARY !" else if (err == error.CodeFull) "OUT OF CODE SPACE !" else if (err == error.InvalidDefinition) "DEFINITION ERROR !" else if (err == error.CommentUnclosed) "END OF COMMENT MUST BE \")\" !" else if (err == error.ControlMismatch) "CONTROL STRUCTURE ERROR !" else if (err == error.CompileOnly) "COMPILE MODE ERROR !" else if (err == error.UnknownWord) "?" else if (err == error.InvalidNumber) "NUMBER ERROR !" else if (err == error.DivisionByZero) "DIVISION BY ZERO !" else if (err == error.LoopMismatch) "LOOP ERROR !" else if (err == error.InvalidBase) "BASE ERROR !" else if (err == error.InvalidExecutionToken) "INVALID EXECUTION TOKEN !" else if (err == error.InvalidAddress) "INVALID MEMORY ADDRESS !" else if (err == error.PicturedNumericOverflow) "PICTURED NUMERIC OUTPUT ERROR !" else if (err == error.MemoryExhausted) "OUT OF MEMORY !" else if (err == error.InputUnavailable) "INPUT ERROR !" else if (err == error.FileUnavailable) "FILE ERROR !" else if (err == error.InvalidImage) "INVALID IMAGE !" else if (err == error.HostUnavailable) "HOST FUNCTION UNAVAILABLE !" else if (err == error.HostFailed) "HOST FUNCTION ERROR !" else if (err == error.StringTooLong) "STRING TOO LONG !" else if (err == error.IncludeNesting) "INCLUDE NESTING ERROR !" else if (err == error.TooManySourceFiles) "TOO MANY SOURCE FILES !" else "FORTH ERROR !";
+        const message: []const u8 = if (err == error.StackUnderflow) "STACK UNDER FLOW !" else if (err == error.ReturnStackUnderflow) "RETURN STACK UNDER FLOW !" else if (err == error.StackOverflow) "STACK OVER FLOW !" else if (err == error.ReturnStackOverflow) "RETURN STACK OVER FLOW !" else if (err == error.FloatStackUnderflow) "FLOATING-POINT STACK UNDER FLOW !" else if (err == error.FloatStackOverflow) "FLOATING-POINT STACK OVER FLOW !" else if (err == error.DictionaryFull) "OUT OF DICTIONARY !" else if (err == error.CodeFull) "OUT OF CODE SPACE !" else if (err == error.InvalidDefinition) "DEFINITION ERROR !" else if (err == error.CommentUnclosed) "END OF COMMENT MUST BE \")\" !" else if (err == error.ControlMismatch) "CONTROL STRUCTURE ERROR !" else if (err == error.CompileOnly) "COMPILE MODE ERROR !" else if (err == error.UnknownWord) "?" else if (err == error.InvalidNumber) "NUMBER ERROR !" else if (err == error.DivisionByZero) "DIVISION BY ZERO !" else if (err == error.LoopMismatch) "LOOP ERROR !" else if (err == error.InvalidBase) "BASE ERROR !" else if (err == error.InvalidExecutionToken) "INVALID EXECUTION TOKEN !" else if (err == error.InvalidAddress) "INVALID MEMORY ADDRESS !" else if (err == error.PicturedNumericOverflow) "PICTURED NUMERIC OUTPUT ERROR !" else if (err == error.MemoryExhausted) "OUT OF MEMORY !" else if (err == error.InputUnavailable) "INPUT ERROR !" else if (err == error.FileUnavailable) "FILE ERROR !" else if (err == error.InvalidImage) "INVALID IMAGE !" else if (err == error.HostUnavailable) "HOST FUNCTION UNAVAILABLE !" else if (err == error.HostFailed) "HOST FUNCTION ERROR !" else if (err == error.StringTooLong) "STRING TOO LONG !" else if (err == error.IncludeNesting) "INCLUDE NESTING ERROR !" else if (err == error.TooManySourceFiles) "TOO MANY SOURCE FILES !" else if (err == error.SearchOrderOverflow) "SEARCH ORDER OVER FLOW !" else if (err == error.SearchOrderUnderflow) "SEARCH ORDER UNDER FLOW !" else if (err == error.InvalidWordlist) "INVALID WORDLIST !" else "FORTH ERROR !";
         self.write(message);
         self.write("\n");
     }
@@ -1030,14 +1095,27 @@ pub const State = struct {
             .{ "PARSE", .parse },            .{ "FIND-NAME", .find_name },    .{ "NAME>INT", .name_to_int },  .{ "NAME>STRING", .name_to_string }, .{ "SEE", .see },
             .{ "INCLUDE", .include },        .{ "INCLUDED", .included },      .{ "REQUIRE", .require },       .{ "NEEDS", .require },            .{ "REQUIRED", .required },
             .{ "INCLUDED?", .included_query }, .{ "SOURCEFILENAME", .source_file_name }, .{ "SOURCELINE#", .source_line_number }, .{ "MARKER", .marker }, .{ "LOCATE", .locate },
+            .{ "ONLY", .only },              .{ "ALSO", .also },              .{ "PREVIOUS", .previous },     .{ "FORTH", .forth },              .{ "DEFINITIONS", .definitions },
+            .{ "ORDER", .order },            .{ "GET-ORDER", .get_order },    .{ "SET-ORDER", .set_order },   .{ ">ORDER", .to_order },          .{ "GET-CURRENT", .get_current },
+            .{ "SET-CURRENT", .set_current }, .{ "VOCABULARY", .vocabulary }, .{ "WORDLIST", .wordlist },    .{ "FORTH-WORDLIST", .forth_wordlist_word }, .{ "SEARCH-WORDLIST", .search_wordlist },
+            .{ "[IF]", .bracket_if },        .{ "[ELSE]", .bracket_else },    .{ "[THEN]", .bracket_then },   .{ "[DEFINED]", .bracket_defined }, .{ "[UNDEFINED]", .bracket_undefined },
         };
         for (definitions) |definition| self.addBuiltin(definition[0], definition[1]) catch unreachable;
+        // The Root list repeats the words needed to rebuild the search order after ONLY.
+        self.writeCell(current_wordlist_address, root_wordlist) catch unreachable;
+        for (root_word_names) |name| {
+            const builtin = for (definitions) |definition| {
+                if (std.mem.eql(u8, definition[0], name)) break definition[1];
+            } else unreachable;
+            self.addBuiltin(name, builtin) catch unreachable;
+        }
+        self.writeCell(current_wordlist_address, forth_wordlist) catch unreachable;
         self.builtin_count = self.word_count;
     }
 
     fn isImmediateBuiltin(builtin: Builtin) bool {
         return switch (builtin) {
-            .compile_if, .compile_else, .compile_then, .compile_begin, .compile_end, .compile_again, .compile_while, .compile_repeat, .compile_do, .compile_q_do, .compile_loop, .compile_plus_loop, .compile_does, .compile_case, .compile_of, .compile_endof, .compile_endcase, .compile_exit, .compile_recurse, .leave => true,
+            .compile_if, .compile_else, .compile_then, .compile_begin, .compile_end, .compile_again, .compile_while, .compile_repeat, .compile_do, .compile_q_do, .compile_loop, .compile_plus_loop, .compile_does, .compile_case, .compile_of, .compile_endof, .compile_endcase, .compile_exit, .compile_recurse, .leave, .bracket_if, .bracket_else, .bracket_then, .bracket_defined, .bracket_undefined => true,
             else => false,
         };
     }
@@ -1064,7 +1142,7 @@ pub const State = struct {
 
     fn appendEntry(self: *State, name: []const u8, kind: WordKind, builtin: Builtin, value: Cell) RuntimeError!u16 {
         const id = self.word_count;
-        var word = Word{ .kind = kind, .builtin = builtin, .value = value, .name_len = @intCast(name.len), .data_here_before = self.data_here };
+        var word = Word{ .kind = kind, .builtin = builtin, .value = value, .name_len = @intCast(name.len), .data_here_before = self.data_here, .wordlist = @intCast(self.currentWordlist()) };
         if (self.currentFileFrame()) |frame| {
             word.source_file = frame.file_index + 1;
             word.source_line = frame.line;
@@ -1077,14 +1155,114 @@ pub const State = struct {
         return id;
     }
 
+    /// Finds a word through the search order, first-searched list first.
     fn lookup(self: *State, name: []const u8) ?u16 {
+        var order: [max_search_order]Cell = undefined;
+        const entries = self.searchOrder(&order);
+        for (entries, 0..) |wid, index| {
+            // A list that appears earlier in the order was already searched.
+            if (std.mem.indexOfScalar(Cell, entries[0..index], wid) != null) continue;
+            if (self.lookupIn(name, wid)) |id| return id;
+        }
+        return null;
+    }
+
+    /// Finds the newest word named `name` in one word list.
+    fn lookupIn(self: *State, name: []const u8, wid: Cell) ?u16 {
         var i = self.word_count;
         while (i > 0) {
             i -= 1;
             const word = self.words[i];
-            if (word.name_len != 0 and asciiEqlIgnoreCase(word.name[0..word.name_len], name)) return i;
+            if (word.wordlist == wid and word.name_len != 0 and asciiEqlIgnoreCase(word.name[0..word.name_len], name)) return i;
         }
         return null;
+    }
+
+    fn wordlistCount(self: *State) Cell {
+        return self.readCell(wordlist_count_address) catch unreachable;
+    }
+
+    fn validWordlist(self: *State, wid: Cell) RuntimeError!Cell {
+        if (wid < forth_wordlist or wid > self.wordlistCount()) return error.InvalidWordlist;
+        return wid;
+    }
+
+    fn currentWordlist(self: *State) Cell {
+        return self.readCell(current_wordlist_address) catch unreachable;
+    }
+
+    fn searchOrderDepth(self: *State) usize {
+        const depth = self.readCell(search_order_depth_address) catch unreachable;
+        return @intCast(std.math.clamp(depth, 0, max_search_order));
+    }
+
+    fn searchOrderEntry(self: *State, index: usize) Cell {
+        return self.readCell(search_order_address + @as(Cell, @intCast(index)) * cell_size) catch unreachable;
+    }
+
+    /// Sets the search order; `order[0]` is searched first.
+    fn setSearchOrder(self: *State, order: []const Cell) void {
+        for (order, 0..) |wid, index| self.writeCell(search_order_address + @as(Cell, @intCast(index)) * cell_size, wid) catch unreachable;
+        self.writeCell(search_order_depth_address, @intCast(order.len)) catch unreachable;
+    }
+
+    fn searchOrder(self: *State, buffer: *[max_search_order]Cell) []Cell {
+        const depth = self.searchOrderDepth();
+        for (0..depth) |index| buffer[index] = self.searchOrderEntry(index);
+        return buffer[0..depth];
+    }
+
+    /// Writes a word list's name for ORDER: Forth and Root, the name of a VOCABULARY,
+    /// or of a constant holding the id (as gforth shows `WORDLIST CONSTANT X`), else the id.
+    fn writeWordlistName(self: *State, wid: Cell) void {
+        if (wid == forth_wordlist) return self.write("Forth");
+        if (wid == root_wordlist) return self.write("Root");
+        for ([_]WordKind{ .vocabulary, .constant }) |kind| {
+            var i = self.word_count;
+            while (i > self.builtin_count) {
+                i -= 1;
+                const word = &self.words[i];
+                if (word.kind == kind and word.value == wid and word.name_len != 0) return self.write(word.name[0..word.name_len]);
+            }
+        }
+        self.writeNumberDecimal(wid);
+    }
+
+    /// [IF] and [ELSE]: skips input words up to the matching [THEN], or to the matching
+    /// [ELSE] when `to_else` is set, counting nested [IF]s. Skipping may read further lines.
+    fn skipConditional(self: *State, to_else: bool) RuntimeError!void {
+        var depth: usize = 0;
+        while (true) {
+            const token = (try self.nextSourceToken()) orelse return error.ControlMismatch;
+            if (asciiEqlIgnoreCase(token, "[IF]")) {
+                depth += 1;
+            } else if (asciiEqlIgnoreCase(token, "[ELSE]")) {
+                if (depth == 0 and to_else) return;
+            } else if (asciiEqlIgnoreCase(token, "[THEN]")) {
+                if (depth == 0) return;
+                depth -= 1;
+            }
+        }
+    }
+
+    fn snapshotMarker(self: *State, address: Cell) RuntimeError!void {
+        try self.writeCell(address, @bitCast(self.loadedSourceFiles()));
+        try self.writeCell(address + cell_size, self.currentWordlist());
+        const depth = self.searchOrderDepth();
+        try self.writeCell(address + 2 * cell_size, @intCast(depth));
+        for (0..depth) |index| try self.writeCell(address + @as(Cell, @intCast(3 + index)) * cell_size, self.searchOrderEntry(index));
+    }
+
+    /// MARKER: restores the REQUIRE history, the current list, and the search order.
+    fn restoreMarker(self: *State, address: Cell) RuntimeError!void {
+        const mask: UCell = @bitCast(try self.readCell(address));
+        const current = try self.readCell(address + cell_size);
+        const depth: usize = @intCast(std.math.clamp(try self.readCell(address + 2 * cell_size), 0, max_search_order));
+        var order: [max_search_order]Cell = undefined;
+        for (0..depth) |index| order[index] = try self.readCell(address + @as(Cell, @intCast(3 + index)) * cell_size);
+        self.restoreLoadedSourceFiles(mask);
+        try self.writeCell(current_wordlist_address, current);
+        self.setSearchOrder(order[0..depth]);
     }
 
     fn lookupOrFail(self: *State, name: []const u8) RuntimeError!u16 {
@@ -1877,8 +2055,19 @@ pub const State = struct {
             // A MARKER removes itself and everything after it, and forgets the source
             // files included since, so REQUIRE loads them again.
             .marker => {
+                // Read the snapshot first: forgetting releases its data area.
+                const address = word.value;
                 self.forgetFrom(id);
-                self.restoreLoadedSourceFiles(@bitCast(word.value));
+                try self.restoreMarker(address);
+            },
+            // A VOCABULARY replaces the first-searched word list with its own.
+            .vocabulary => {
+                var order: [max_search_order]Cell = undefined;
+                const current = self.searchOrder(&order);
+                if (current.len == 0) self.setSearchOrder(&.{word.value}) else {
+                    current[0] = word.value;
+                    self.setSearchOrder(current);
+                }
             },
         }
     }
@@ -2238,8 +2427,10 @@ pub const State = struct {
                 self.loop_depth -= 1;
             },
             .words => {
+                // Like gforth, WORDS lists the word list that is searched first.
+                const wid = if (self.searchOrderDepth() == 0) forth_wordlist else self.searchOrderEntry(0);
                 for (self.words[0..self.word_count]) |word| {
-                    if (word.name_len == 0) continue;
+                    if (word.name_len == 0 or word.wordlist != wid) continue;
                     self.write(word.name[0..word.name_len]);
                     self.write(" ");
                 }
@@ -2740,11 +2931,113 @@ pub const State = struct {
             .source_line_number => try self.push(if (self.currentFileFrame()) |frame| frame.line else 0),
             .marker => {
                 const name = (try self.nextSourceToken()) orelse return error.InvalidDefinition;
-                _ = try self.appendWord(name, .marker, .drop, @bitCast(self.loadedSourceFiles()));
+                const id = try self.appendDataWord(name, .marker, marker_snapshot_size);
+                try self.snapshotMarker(self.words[id].value);
             },
             .locate => {
                 const name = (try self.nextSourceToken()) orelse return error.InputUnavailable;
                 try self.locateWord(try self.lookupOrFail(name));
+            },
+            .only => self.setSearchOrder(&.{ root_wordlist, root_wordlist }),
+            .also, .previous, .forth => {
+                var order: [max_search_order]Cell = undefined;
+                const current = self.searchOrder(&order);
+                switch (builtin) {
+                    .also => {
+                        if (current.len == 0) return error.SearchOrderUnderflow;
+                        if (current.len == max_search_order) return error.SearchOrderOverflow;
+                        std.mem.copyBackwards(Cell, order[1 .. current.len + 1], order[0..current.len]);
+                        self.setSearchOrder(order[0 .. current.len + 1]);
+                    },
+                    .previous => {
+                        if (current.len == 0) return error.SearchOrderUnderflow;
+                        self.setSearchOrder(current[1..]);
+                    },
+                    else => {
+                        if (current.len == 0) self.setSearchOrder(&.{forth_wordlist}) else {
+                            current[0] = forth_wordlist;
+                            self.setSearchOrder(current);
+                        }
+                    },
+                }
+            },
+            .definitions => {
+                if (self.searchOrderDepth() == 0) return error.SearchOrderUnderflow;
+                try self.writeCell(current_wordlist_address, self.searchOrderEntry(0));
+            },
+            .order => {
+                for (0..self.searchOrderDepth()) |index| {
+                    self.writeWordlistName(self.searchOrderEntry(index));
+                    self.write(" ");
+                }
+                self.write("    ");
+                self.writeWordlistName(self.currentWordlist());
+                self.write(" ");
+            },
+            .get_order => {
+                const depth = self.searchOrderDepth();
+                if (max_stack - self.data_depth < depth + 1) return error.StackOverflow;
+                var index = depth;
+                while (index > 0) {
+                    index -= 1;
+                    try self.push(self.searchOrderEntry(index));
+                }
+                try self.push(@intCast(depth));
+            },
+            .set_order => {
+                const count = try self.pop();
+                if (count == -1) {
+                    self.setSearchOrder(&.{ root_wordlist, root_wordlist });
+                    return;
+                }
+                if (count < 0) return error.SearchOrderUnderflow;
+                if (count > max_search_order) return error.SearchOrderOverflow;
+                const depth: usize = @intCast(count);
+                try self.requireDepth(depth);
+                var order: [max_search_order]Cell = undefined;
+                for (0..depth) |index| order[index] = try self.validWordlist(try self.peek(index));
+                self.data_depth -= depth;
+                self.setSearchOrder(order[0..depth]);
+            },
+            .to_order => {
+                const wid = try self.validWordlist(try self.pop());
+                var order: [max_search_order]Cell = undefined;
+                const current = self.searchOrder(&order);
+                if (current.len == max_search_order) return error.SearchOrderOverflow;
+                std.mem.copyBackwards(Cell, order[1 .. current.len + 1], order[0..current.len]);
+                order[0] = wid;
+                self.setSearchOrder(order[0 .. current.len + 1]);
+            },
+            .get_current => try self.push(self.currentWordlist()),
+            .set_current => try self.writeCell(current_wordlist_address, try self.validWordlist(try self.pop())),
+            .wordlist, .vocabulary => {
+                const count = self.wordlistCount();
+                if (count == max_wordlists) return error.DictionaryFull;
+                const wid = count + 1;
+                if (builtin == .vocabulary) {
+                    const name = (try self.nextSourceToken()) orelse return error.InvalidDefinition;
+                    _ = try self.appendWord(name, .vocabulary, .drop, wid);
+                } else try self.push(wid);
+                try self.writeCell(wordlist_count_address, wid);
+            },
+            .forth_wordlist_word => try self.push(forth_wordlist),
+            .search_wordlist => {
+                const wid = try self.validWordlist(try self.pop());
+                const name = try self.memoryRange();
+                if (self.lookupIn(name, wid)) |id| {
+                    try self.push(id);
+                    try self.push(if (self.words[id].immediate) 1 else -1);
+                } else try self.push(0);
+            },
+            .bracket_if => {
+                if (try self.pop() == 0) try self.skipConditional(true);
+            },
+            .bracket_else => try self.skipConditional(false),
+            .bracket_then => {},
+            .bracket_defined, .bracket_undefined => {
+                const name = (try self.nextSourceToken()) orelse return error.InputUnavailable;
+                const found = self.lookup(name) != null;
+                try self.push(truth(if (builtin == .bracket_defined) found else !found));
             },
             .read_only => try self.push(fam_read_only),
             .write_only => try self.push(fam_write_only),
@@ -3368,8 +3661,8 @@ pub const State = struct {
                     try self.seeBody(word.does_code_start, word.does_code_end);
                 }
             },
-            .marker => {
-                self.write("MARKER ");
+            .marker, .vocabulary => {
+                self.write(if (word.kind == .marker) "MARKER " else "VOCABULARY ");
                 self.write(name);
             },
             .colon => {

@@ -353,6 +353,41 @@ SHOW ANSWER                        \ 42
 
 `WORD` と `PARSE` は、そのワードが書かれた行の続きを読みます。行をまたいでは読みません。
 
+## 語彙（ワードリスト）と条件付きコンパイル
+
+```forth
+VOCABULARY MY-WORDS
+ONLY FORTH ALSO MY-WORDS DEFINITIONS
+: HELLO ." Hello, My Words!" ;
+ORDER                \ MY-WORDS Forth Root     MY-WORDS
+ONLY FORTH DEFINITIONS
+HELLO                \ HELLO ?（見えなくなる）
+WORDLIST CONSTANT UTIL
+UTIL SET-CURRENT : TWICE 2 * ; FORTH DEFINITIONS
+UTIL >ORDER 5 TWICE .   \ 10
+1 [IF] ." yes" [ELSE] ." no" [THEN]
+```
+
+語は「語彙」に属し、検索順序に並んだ語彙から探されます。新しい語は定義先の語彙に入ります。起動時の検索順序は `Forth Forth Root`、定義先は `Forth` です。
+
+| ワード | スタック | 説明 |
+| --- | --- | --- |
+| `VOCABULARY 名前` | ( -- ) | 語彙を作ります。名前を実行すると、検索順序の先頭をその語彙に置き換えます。 |
+| `WORDLIST` | ( -- wid ) | 名前のない語彙を作り、その番号を返します。 |
+| `FORTH`, `FORTH-WORDLIST` | ( -- )、( -- wid ) | 検索順序の先頭をForthにする、またはForthの番号を返します。 |
+| `ONLY` | ( -- ) | 検索順序を最小（`Root Root`）にします。続けて `FORTH` と書くのが普通です。 |
+| `ALSO`, `PREVIOUS` | ( -- ) | 検索順序の先頭を複製する、または先頭を取り除きます。 |
+| `>ORDER` | ( wid -- ) | 語彙を検索順序の先頭に加えます。 |
+| `DEFINITIONS` | ( -- ) | 検索順序の先頭の語彙を定義先にします。 |
+| `GET-CURRENT`, `SET-CURRENT` | ( -- wid )、( wid -- ) | 定義先の語彙を取得、または変更します。 |
+| `GET-ORDER`, `SET-ORDER` | ( -- wid... n )、( wid... n -- ) | 検索順序を取得、または設定します。`-1 SET-ORDER` は `ONLY` と同じです。 |
+| `ORDER` | ( -- ) | 検索順序と、空白をあけて定義先を表示します。 |
+| `SEARCH-WORDLIST` | ( addr u wid -- 0 \| xt 1 \| xt -1 ) | 1つの語彙だけから名前を探します。 |
+| `[IF]`, `[ELSE]`, `[THEN]` | ( flag -- )、( -- )、( -- ) | flagが0なら、`[ELSE]` か `[THEN]` までの入力を読み飛ばします。行をまたいでも使えます。 |
+| `[DEFINED] 名前`, `[UNDEFINED] 名前` | ( -- flag ) | 名前が検索順序で見つかるかどうかを返します。 |
+
+検索順序は16段までです。`WORDS` は検索順序の先頭の語彙の語だけを表示します。`ONLY` の後でも `FORTH` `ONLY` `ALSO` `ORDER` などは使えます。`:` や `TO` などの構文語は、検索順序によらずいつでも使えます。
+
 ## ソースファイルの読み込み
 
 ```forth
@@ -386,7 +421,7 @@ SAVE words.sigma
 LOAD words.sigma
 ```
 
-`LOAD` は保存した利用者定義語を現在の辞書の後ろに追加します。同名語は読み込んだ新しい定義が優先されます。以前の版で保存した辞書イメージ（`SIGIMG01`〜`SIGIMG08`）は読み込めません（`INVALID IMAGE !`）。定数や変数に保存した実行トークン（`:NONAME` の結果など）は、すでに利用者定義語がある辞書へ `LOAD` すると別の語を指すことがあります。`SAVESYS` で作った実行ファイルではこの問題は起きません。
+`LOAD` は保存した利用者定義語を現在の辞書の後ろに追加します。同名語は読み込んだ新しい定義が優先されます。以前の版で保存した辞書イメージ（`SIGIMG01`〜`SIGIMG09`）は読み込めません（`INVALID IMAGE !`）。定数や変数に保存した実行トークン（`:NONAME` の結果など）は、すでに利用者定義語がある辞書へ `LOAD` すると別の語を指すことがあります。`SAVESYS` で作った実行ファイルではこの問題は起きません。
 
 `SAVESYS` は、現在の辞書・コンパイル済み定義・データを含む、実行中環境向けの単独実行ファイルを作ります。
 
@@ -421,11 +456,12 @@ SAVESYS demo.exe
 | 数値の書式 | `<#`, `<<#`, `#`, `#S`, `#>`, `#>>`, `HOLD`, `HOLDS`, `SIGN` |
 | 文字列格納・状態・中断 | `PLACE`, `STATE`, `ABORT` |
 | 時間・画面・OS | `MS`, `UTIME`, `PAGE`, `GETENV`, `SYSTEM` |
+| 語彙・条件付きコンパイル | `ONLY`, `ALSO`, `PREVIOUS`, `FORTH`, `DEFINITIONS`, `ORDER`, `GET-ORDER`, `SET-ORDER`, `>ORDER`, `GET-CURRENT`, `SET-CURRENT`, `VOCABULARY`, `WORDLIST`, `FORTH-WORDLIST`, `SEARCH-WORDLIST`, `[IF]`, `[ELSE]`, `[THEN]`, `[DEFINED]`, `[UNDEFINED]` |
 | ソース読み込み | `INCLUDE`, `INCLUDED`, `REQUIRE`, `REQUIRED`, `NEEDS`, `INCLUDED?`, `SOURCEFILENAME`, `SOURCELINE#` |
 | ファイル・例外 | `THROW`, `CATCH`, `R/O`, `W/O`, `R/W`, `STDIN`, `STDOUT`, `STDERR`, `OPEN-FILE`, `CREATE-FILE`, `CLOSE-FILE`, `READ-LINE`, `WRITE-LINE`, `WRITE-FILE`, `FILE-SIZE`, `REPOSITION-FILE` |
 | 動的メモリ・動的文字列 | `ALLOCATE`, `FREE`, `RESIZE`, `$!`, `$@`, `$@LEN`, `$!LEN`, `$+!`, `C$+!`, `$.`, `$DEL`, `$INS`, `$OVER`, `$FREE`, `$INIT`, `$SPLIT`, `$ITER`, `$TMP`, `$[]`, `$[]!`, `$[]@`, `$[]#`, `$[].`, `$[]MAP`, `$[]FREE`, `$[]SLURP`, `$[]SLURP-FILE` |
 
-組み込み語は起動時点で **289語** 登録されています（`MINUS`/`NEGATE` のような別名もそれぞれ1語と数えます）。
+起動時点でForth語彙に **309語** の組み込み語があります（`MINUS`/`NEGATE` のような別名もそれぞれ1語と数えます）。このほかRoot語彙に、`FORTH` `ONLY` などの10語が重ねて登録されています。
 
 ### 構文・定義形式
 
@@ -450,4 +486,4 @@ SAVESYS demo.exe
 
 現在は `EDIT`、`LIST`、エディットバッファ版の `LOAD`／`SAVE`、CP/Mファイル操作、PC-8001のモニター機能、`MCODE`やZ80機械語実行に対応していません。Z80をエミュレートする処理系ではありません。
 
-Gforthのワードのうち、`READ-FILE` などの残りのファイル操作、`WHERE`、`$?`、語彙（ワードリスト）、`[IF]`、`.R`、`F.RDP` などは未実装です。詳しくは[互換性一覧](COMPATIBILITY.md)を参照してください。
+Gforthのワードのうち、`READ-FILE` などの残りのファイル操作、`WHERE`、`$?`、`[IFDEF]` など、`.R`、`F.RDP` などは未実装です。詳しくは[互換性一覧](COMPATIBILITY.md)を参照してください。
