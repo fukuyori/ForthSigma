@@ -13,7 +13,7 @@ const Output = struct {
     host_fails: bool = false,
     command: [64]u8 = undefined,
     command_len: usize = 0,
-    files: [2]FakeFile = .{ .{}, .{} },
+    files: [4]FakeFile = .{ .{}, .{}, .{}, .{} },
     stdout_bytes: [64]u8 = undefined,
     stdout_len: usize = 0,
 
@@ -90,6 +90,14 @@ const FakeFile = struct {
     exists: bool = false,
 };
 
+const fake_file_names = [_][]const u8{ "a.txt", "b.txt", "c.txt", "d.txt" };
+
+fn setFakeFile(output: *Output, index: usize, text: []const u8) void {
+    @memcpy(output.files[index].data[0..text.len], text);
+    output.files[index].len = text.len;
+    output.files[index].exists = true;
+}
+
 const fake_file_ops = forth.FileOps{ .open = fakeOpen, .close = fakeClose, .read_line = fakeReadLine, .write = fakeWrite, .size = fakeSize, .reposition = fakeReposition };
 
 fn fakeOutput(context: ?*anyopaque) *Output {
@@ -104,7 +112,9 @@ fn fakeFile(context: ?*anyopaque, fileid: forth.Cell) ?*FakeFile {
 }
 
 fn fakeOpen(context: ?*anyopaque, name: []const u8, _: forth.FileAccess, create: bool) forth.FileResult {
-    const index: usize = if (std.mem.eql(u8, name, "a.txt")) 0 else if (std.mem.eql(u8, name, "b.txt")) 1 else return .{ .ior = forth.errnoIor(2) };
+    const index: usize = for (fake_file_names, 0..) |known, position| {
+        if (std.mem.eql(u8, name, known)) break position;
+    } else return .{ .ior = forth.errnoIor(2) };
     const file = &fakeOutput(context).files[index];
     if (!create and !file.exists) return .{ .ior = forth.errnoIor(2) };
     if (create) file.len = 0;
@@ -1696,4 +1706,124 @@ test "EVALUATE does not read further terminal lines and input lines are limited 
     try std.testing.expectEqual(@as(usize, 1), output.input_index);
     const long = [_]u8{' '} ** (forth.tib_size + 1);
     try std.testing.expectError(error.StringTooLong, machine.interpretLine(&long));
+}
+test "INCLUDE interprets a file across lines and reports its name and line" {
+    var output = Output{};
+    setFakeFile(&output, 0, ": SQUARE ( n -- n^2 )\n\tDUP * ;\nSOURCEFILENAME TYPE SPACE SOURCELINE# .\nCREATE\n  TABLE 7 ,\n");
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
+
+    try machine.interpretLine("INCLUDE a.txt 3 SQUARE TABLE @ S\" a.txt\" INCLUDED? S\" b.txt\" INCLUDED? SOURCELINE#");
+    try expectStack(machine, &.{ 9, 7, -1, 0, 0 });
+    try machine.interpretLine("SPACE SOURCEFILENAME TYPE SPACE S\" SOURCEFILENAME TYPE\" EVALUATE");
+    try std.testing.expectEqualStrings("a.txt 3  *the terminal* *evaluated string*", output.written());
+    try std.testing.expect(!output.files[0].open);
+}
+
+test "REQUIRE loads a file once, even when it requires itself" {
+    var output = Output{};
+    setFakeFile(&output, 0, "REQUIRE a.txt\n.\" once\"\n");
+    setFakeFile(&output, 1, "DUP CONSTANT SIZE\n");
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
+
+    try machine.interpretLine("REQUIRE a.txt NEEDS a.txt S\" a.txt\" REQUIRED 1024 REQUIRE b.txt DROP 2048 REQUIRE b.txt DROP SIZE");
+    try expectStack(machine, &.{1024});
+    try std.testing.expectEqualStrings("once", output.written());
+}
+
+test "errors in included files name the innermost file and line and close every file" {
+    var output = Output{};
+    setFakeFile(&output, 0, "1\nINCLUDE b.txt\n2\n");
+    setFakeFile(&output, 1, "3\n: BAD MISSING ;\n");
+    setFakeFile(&output, 2, ": HALF 1\n");
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
+    const words = machine.word_count;
+
+    try std.testing.expectError(error.UnknownWord, machine.interpretLine("INCLUDE a.txt"));
+    machine.report(error.UnknownWord);
+    try std.testing.expectError(error.InvalidDefinition, machine.interpretLine("INCLUDE c.txt"));
+    machine.report(error.InvalidDefinition);
+    try std.testing.expectError(error.Thrown, machine.interpretLine("INCLUDE none.txt"));
+    machine.report(error.Thrown);
+    try std.testing.expectEqualStrings("b.txt:2: MISSING ?\nc.txt:1: DEFINITION ERROR !\nNO SUCH FILE OR DIRECTORY !\n", output.written());
+    try std.testing.expectEqual(words, machine.word_count);
+    for (output.files) |file| try std.testing.expect(!file.open);
+    try machine.interpretLine("STATE @");
+    try expectStack(machine, &.{0});
+}
+
+test "CATCH around INCLUDED lets the rest of the line run" {
+    var output = Output{};
+    setFakeFile(&output, 0, "1 2\nMISSING\n");
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
+
+    try machine.interpretLine("S\" a.txt\" ' INCLUDED CATCH NIP NIP 42");
+    try expectStack(machine, &.{ -13, 42 });
+    machine.report(error.Aborted);
+    try std.testing.expectEqualStrings("", output.written());
+    try std.testing.expect(!output.files[0].open);
+}
+
+test "INCLUDE nesting is limited" {
+    var output = Output{};
+    setFakeFile(&output, 0, "INCLUDE a.txt\n");
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
+
+    try std.testing.expectError(error.IncludeNesting, machine.interpretLine("INCLUDE a.txt"));
+    machine.report(error.IncludeNesting);
+    try std.testing.expectEqualStrings("a.txt:1: INCLUDE NESTING ERROR !\n", output.written());
+}
+
+test "MARKER forgets later words and the files required after it" {
+    var output = Output{};
+    setFakeFile(&output, 0, "DUP CONSTANT SIZE\n");
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
+    const words = machine.word_count;
+
+    try machine.interpretLine("MARKER SAFE : TEMP 1 ; 5 REQUIRE a.txt DROP SIZE SAFE 7 REQUIRE a.txt DROP SIZE S\" TEMP\" FIND-NAME");
+    try expectStack(machine, &.{ 5, 7, 0 });
+    try std.testing.expectEqual(words + 1, machine.word_count);
+    try machine.interpretLine("MARKER M SEE M");
+    try std.testing.expectEqualStrings("MARKER M\n", output.written());
+}
+
+test "LOCATE prints the file, line, and the lines of the definition" {
+    var output = Output{};
+    setFakeFile(&output, 0, "\\ library\n: SUM\n  BEGIN DEPTH 1 > WHILE + REPEAT ;\n: OTHER ;\n");
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
+
+    try machine.interpretLine("INCLUDE a.txt : HERE-ONLY ; LOCATE SUM LOCATE HERE-ONLY");
+    try std.testing.expectEqualStrings("a.txt:2\n: SUM\n  BEGIN DEPTH 1 > WHILE + REPEAT ;\nHERE-ONLY: NO FILE INFORMATION\n", output.written());
+}
+
+test "source locations and the REQUIRE history survive image restore and LOAD" {
+    var output = Output{};
+    setFakeFile(&output, 0, ": FROM-A 1 ;\n");
+    setFakeFile(&output, 1, ": FROM-B\n  2 ;\n");
+    const source = try createMachine(&output);
+    defer destroyMachine(source);
+    try source.interpretLine("INCLUDE b.txt");
+    const image = try std.testing.allocator.alloc(u8, forth.State.imageCapacity());
+    defer std.testing.allocator.free(image);
+    const length = try source.encodeImage(image);
+
+    const loaded = try createMachine(&output);
+    defer destroyMachine(loaded);
+    try loaded.restoreImage(image[0..length]);
+    try loaded.interpretLine("S\" b.txt\" INCLUDED? LOCATE FROM-B");
+
+    const target = try createMachine(&output);
+    defer destroyMachine(target);
+    try target.interpretLine("INCLUDE a.txt");
+    try target.appendImage(loaded);
+    try target.interpretLine("S\" b.txt\" INCLUDED? LOCATE FROM-B LOCATE FROM-A");
+    try expectStack(loaded, &.{-1});
+    try expectStack(target, &.{-1});
+    try std.testing.expectEqualStrings("b.txt:1\n: FROM-B\n  2 ;\nb.txt:1\n: FROM-B\n  2 ;\na.txt:1\n: FROM-A 1 ;\n", output.written());
 }

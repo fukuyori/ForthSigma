@@ -27,6 +27,21 @@ const locals_end: Cell = memory_size;
 const input_area_base: Cell = locals_base - 0x10000;
 const tib_address: Cell = input_area_base;
 pub const tib_size = 4096;
+/// One line buffer per nested INCLUDE level after the TIB.
+const max_include_depth = 8;
+const include_buffer_base: Cell = tib_address + tib_size;
+/// Names of the source files that have been included, which is also the REQUIRE
+/// history: 64 entries of a length byte and up to 255 name bytes. The entry count
+/// lives at `source_file_count_address`, so images keep the table.
+const source_file_table: Cell = include_buffer_base + max_include_depth * tib_size;
+const max_source_files = 64;
+const source_file_entry_size = 256;
+const source_file_count_address: Cell = 0x0218;
+/// SOURCEFILENAME results outside files, as in gforth.
+const terminal_source_name = "*the terminal*";
+const evaluate_source_name = "*evaluated string*";
+const terminal_source_name_address: Cell = 0x0d00;
+const evaluate_source_name_address: Cell = 0x0d20;
 const heap_end: Cell = input_area_base;
 /// Results of NAME>STRING, eight 256-byte buffers used in turn, and the WORD buffer.
 const name_buffer_base: Cell = 0x0400;
@@ -58,7 +73,7 @@ pub const data_start: Cell = 0x4000;
 const true_flag: Cell = -1;
 const dot_precision = 15;
 const fs_precision = 14;
-const image_magic = "SIGIMG08";
+const image_magic = "SIGIMG09";
 
 /// File ids of the standard streams; the host numbers opened files from `first_file_id`.
 pub const stdin_fileid: Cell = 1;
@@ -391,10 +406,22 @@ const Builtin = enum {
     name_to_int,
     name_to_string,
     see,
+    include,
+    included,
+    require,
+    required,
+    included_query,
+    source_file_name,
+    source_line_number,
+    marker,
+    locate,
 };
 
 const HeapResult = union(enum) { address: Cell, no_memory, bad_pointer };
-const SourceKind = enum { terminal, evaluate };
+const SourceKind = enum { terminal, evaluate, file };
+const IncludeFrame = struct { fileid: Cell, file_index: u8, line: u32 };
+/// Where an error happened inside an included file, kept for `report`.
+const ErrorLocation = struct { file_index: u8, line: u32 };
 
 /// THROW codes for interpreter errors, so CATCH can return them and THROW can raise
 /// them again with the original message. Standard Forth 2012 codes are used where one
@@ -410,7 +437,7 @@ const error_codes = [_]struct { RuntimeError, Cell }{
     .{ error.MemoryExhausted, -257 },       .{ error.ControlStackOverflow, -258 },  .{ error.InvalidDefinition, -259 },
     .{ error.InvalidBase, -260 },           .{ error.InvalidExecutionToken, -261 }, .{ error.InputUnavailable, -262 },
     .{ error.FileUnavailable, -263 },       .{ error.InvalidImage, -264 },          .{ error.HostFailed, -265 },
-    .{ error.CommentUnclosed, -266 },
+    .{ error.CommentUnclosed, -266 },       .{ error.IncludeNesting, -267 },        .{ error.TooManySourceFiles, -268 },
 };
 const throw_code_undefined_word: Cell = -13;
 
@@ -427,7 +454,7 @@ const CatchFrame = struct {
     local_count: usize,
 };
 
-const WordKind = enum { builtin, colon, variable, constant, array, created, value, fconstant, two_constant };
+const WordKind = enum { builtin, colon, variable, constant, array, created, value, fconstant, two_constant, marker };
 const Word = struct {
     name: [max_name]u8 = [_]u8{0} ** max_name,
     name_len: u8 = 0,
@@ -443,6 +470,11 @@ const Word = struct {
     data_here_before: Cell = 0,
     /// Bytes of local-variable frame the definition needs when it runs.
     locals_size: u16 = 0,
+    /// Source file table index + 1 (0 when not defined in a file) and the lines where
+    /// the definition starts and ends, for LOCATE.
+    source_file: u8 = 0,
+    source_line: u32 = 0,
+    source_end_line: u32 = 0,
 };
 
 /// Local operations other than `local_frame` encode the frame offset in the low 32 bits
@@ -498,6 +530,8 @@ pub const RuntimeError = error{
     StringTooLong,
     /// A non-zero code passed to THROW; the code is kept in `State.throw_code`.
     Thrown,
+    IncludeNesting,
+    TooManySourceFiles,
 };
 
 fn writeU32(output: []u8, value: anytype) void {
@@ -612,6 +646,9 @@ pub const State = struct {
     source_cursor: usize = 0,
     /// Where the current input came from; only terminal input reads further lines.
     source_kind: SourceKind = .terminal,
+    include_stack: [max_include_depth]IncludeFrame = undefined,
+    include_depth: usize = 0,
+    error_location: ?ErrorLocation = null,
     name_buffer_index: usize = 0,
     last_created_word: ?u16 = null,
     halted: bool = false,
@@ -631,6 +668,8 @@ pub const State = struct {
         var state = State{ .writer = writer };
         state.writeCell(base_address, 10) catch unreachable;
         state.writeCell(heap_top_address, heap_base) catch unreachable;
+        state.storeSourceName(terminal_source_name_address, terminal_source_name);
+        state.storeSourceName(evaluate_source_name_address, evaluate_source_name);
         state.installBuiltins();
         return state;
     }
@@ -711,9 +750,21 @@ pub const State = struct {
         if (self.data_here + data_len > data_limit) return error.MemoryExhausted;
         const data_delta = self.data_here - data_start;
 
+        // Merge the loaded image's source files into this table; a file that does not fit
+        // loses its location information (index 0).
+        const files_before = self.sourceFileCount();
+        var file_map: [max_source_files]u8 = @splat(0);
+        const source_files = @min(@as(usize, @intCast(std.math.clamp(source.readCellConst(source_file_count_address), 0, max_source_files))), max_source_files);
+        for (0..source_files) |index| {
+            file_map[index] = if (self.recordSourceFile(source.sourceFileName(index))) |mapped| mapped + 1 else |_| 0;
+        }
+
         for (source.words[source.builtin_count..source.word_count], 0..) |original, offset| {
             var word = original;
             word.data_here_before += data_delta;
+            if (word.source_file != 0) word.source_file = if (word.source_file <= source_files) file_map[word.source_file - 1] else 0;
+            // A loaded MARKER forgets the files merged by this LOAD as well.
+            if (word.kind == .marker) word.value = @intCast(files_before);
             if (word.kind == .colon) {
                 word.code_start = @intCast(@as(usize, word.code_start) + code_base);
                 word.code_end = @intCast(@as(usize, word.code_end) + code_base);
@@ -771,7 +822,16 @@ pub const State = struct {
         self.float_depth = 0;
         self.loop_depth = 0;
         self.resetHold();
-        if (err == error.Aborted) return;
+        if (err == error.Aborted) {
+            self.error_location = null;
+            return;
+        }
+        if (self.error_location) |location| {
+            var line_text: [24]u8 = undefined;
+            self.write(self.sourceFileName(location.file_index));
+            self.write(std.fmt.bufPrint(&line_text, ":{d}: ", .{location.line}) catch unreachable);
+            self.error_location = null;
+        }
         if (err == error.Thrown) {
             self.writeThrowMessage(self.throw_code);
             return;
@@ -788,7 +848,7 @@ pub const State = struct {
             self.write("NESTING ERROR !\n");
             return;
         }
-        const message: []const u8 = if (err == error.StackUnderflow) "STACK UNDER FLOW !" else if (err == error.ReturnStackUnderflow) "RETURN STACK UNDER FLOW !" else if (err == error.StackOverflow) "STACK OVER FLOW !" else if (err == error.ReturnStackOverflow) "RETURN STACK OVER FLOW !" else if (err == error.FloatStackUnderflow) "FLOATING-POINT STACK UNDER FLOW !" else if (err == error.FloatStackOverflow) "FLOATING-POINT STACK OVER FLOW !" else if (err == error.DictionaryFull) "OUT OF DICTIONARY !" else if (err == error.CodeFull) "OUT OF CODE SPACE !" else if (err == error.InvalidDefinition) "DEFINITION ERROR !" else if (err == error.CommentUnclosed) "END OF COMMENT MUST BE \")\" !" else if (err == error.ControlMismatch) "CONTROL STRUCTURE ERROR !" else if (err == error.CompileOnly) "COMPILE MODE ERROR !" else if (err == error.UnknownWord) "?" else if (err == error.InvalidNumber) "NUMBER ERROR !" else if (err == error.DivisionByZero) "DIVISION BY ZERO !" else if (err == error.LoopMismatch) "LOOP ERROR !" else if (err == error.InvalidBase) "BASE ERROR !" else if (err == error.InvalidExecutionToken) "INVALID EXECUTION TOKEN !" else if (err == error.InvalidAddress) "INVALID MEMORY ADDRESS !" else if (err == error.PicturedNumericOverflow) "PICTURED NUMERIC OUTPUT ERROR !" else if (err == error.MemoryExhausted) "OUT OF MEMORY !" else if (err == error.InputUnavailable) "INPUT ERROR !" else if (err == error.FileUnavailable) "FILE ERROR !" else if (err == error.InvalidImage) "INVALID IMAGE !" else if (err == error.HostUnavailable) "HOST FUNCTION UNAVAILABLE !" else if (err == error.HostFailed) "HOST FUNCTION ERROR !" else if (err == error.StringTooLong) "STRING TOO LONG !" else "FORTH ERROR !";
+        const message: []const u8 = if (err == error.StackUnderflow) "STACK UNDER FLOW !" else if (err == error.ReturnStackUnderflow) "RETURN STACK UNDER FLOW !" else if (err == error.StackOverflow) "STACK OVER FLOW !" else if (err == error.ReturnStackOverflow) "RETURN STACK OVER FLOW !" else if (err == error.FloatStackUnderflow) "FLOATING-POINT STACK UNDER FLOW !" else if (err == error.FloatStackOverflow) "FLOATING-POINT STACK OVER FLOW !" else if (err == error.DictionaryFull) "OUT OF DICTIONARY !" else if (err == error.CodeFull) "OUT OF CODE SPACE !" else if (err == error.InvalidDefinition) "DEFINITION ERROR !" else if (err == error.CommentUnclosed) "END OF COMMENT MUST BE \")\" !" else if (err == error.ControlMismatch) "CONTROL STRUCTURE ERROR !" else if (err == error.CompileOnly) "COMPILE MODE ERROR !" else if (err == error.UnknownWord) "?" else if (err == error.InvalidNumber) "NUMBER ERROR !" else if (err == error.DivisionByZero) "DIVISION BY ZERO !" else if (err == error.LoopMismatch) "LOOP ERROR !" else if (err == error.InvalidBase) "BASE ERROR !" else if (err == error.InvalidExecutionToken) "INVALID EXECUTION TOKEN !" else if (err == error.InvalidAddress) "INVALID MEMORY ADDRESS !" else if (err == error.PicturedNumericOverflow) "PICTURED NUMERIC OUTPUT ERROR !" else if (err == error.MemoryExhausted) "OUT OF MEMORY !" else if (err == error.InputUnavailable) "INPUT ERROR !" else if (err == error.FileUnavailable) "FILE ERROR !" else if (err == error.InvalidImage) "INVALID IMAGE !" else if (err == error.HostUnavailable) "HOST FUNCTION UNAVAILABLE !" else if (err == error.HostFailed) "HOST FUNCTION ERROR !" else if (err == error.StringTooLong) "STRING TOO LONG !" else if (err == error.IncludeNesting) "INCLUDE NESTING ERROR !" else if (err == error.TooManySourceFiles) "TOO MANY SOURCE FILES !" else "FORTH ERROR !";
         self.write(message);
         self.write("\n");
     }
@@ -945,6 +1005,8 @@ pub const State = struct {
             .{ "$[]#", .string_array_count }, .{ "$[].", .string_array_dot }, .{ "$[]MAP", .string_array_map }, .{ "$[]FREE", .string_array_free }, .{ "$[]SLURP", .string_array_slurp },
             .{ "$[]SLURP-FILE", .string_array_slurp_file }, .{ "CATCH", .catch_word },      .{ "WORD", .word_parse },     .{ "FIND", .find_word },
             .{ "PARSE", .parse },            .{ "FIND-NAME", .find_name },    .{ "NAME>INT", .name_to_int },  .{ "NAME>STRING", .name_to_string }, .{ "SEE", .see },
+            .{ "INCLUDE", .include },        .{ "INCLUDED", .included },      .{ "REQUIRE", .require },       .{ "NEEDS", .require },            .{ "REQUIRED", .required },
+            .{ "INCLUDED?", .included_query }, .{ "SOURCEFILENAME", .source_file_name }, .{ "SOURCELINE#", .source_line_number }, .{ "MARKER", .marker }, .{ "LOCATE", .locate },
         };
         for (definitions) |definition| self.addBuiltin(definition[0], definition[1]) catch unreachable;
         self.builtin_count = self.word_count;
@@ -980,6 +1042,11 @@ pub const State = struct {
     fn appendEntry(self: *State, name: []const u8, kind: WordKind, builtin: Builtin, value: Cell) RuntimeError!u16 {
         const id = self.word_count;
         var word = Word{ .kind = kind, .builtin = builtin, .value = value, .name_len = @intCast(name.len), .data_here_before = self.data_here };
+        if (self.currentFileFrame()) |frame| {
+            word.source_file = frame.file_index + 1;
+            word.source_line = frame.line;
+            word.source_end_line = frame.line;
+        }
         @memcpy(word.name[0..name.len], name);
         if (kind == .colon) word.code_start = self.code_count;
         self.words[id] = word;
@@ -1049,17 +1116,7 @@ pub const State = struct {
             .forget_name => {
                 const id = try self.lookupOrFail(token);
                 if (id < self.builtin_count) return error.InvalidDefinition;
-                self.data_here = self.words[id].data_here_before;
-                var first_removed_code = self.code_count;
-                for (self.words[id..self.word_count]) |word| {
-                    if (word.kind == .colon and word.code_start < first_removed_code)
-                        first_removed_code = word.code_start;
-                }
-                self.code_count = first_removed_code;
-                if (self.last_created_word) |created_id| {
-                    if (created_id >= id) self.last_created_word = null;
-                }
-                self.word_count = id;
+                self.forgetFrom(id);
             },
             .tick_name => {
                 const id = try self.lookupOrFail(token);
@@ -1092,6 +1149,21 @@ pub const State = struct {
                 _ = try self.emit(.{ .kind = if (self.words[id].immediate) .call else .compile_call, .value = id });
             },
         }
+    }
+
+    /// Removes word `id` and every later word, reclaiming their code and data areas.
+    fn forgetFrom(self: *State, id: u16) void {
+        self.data_here = self.words[id].data_here_before;
+        var first_removed_code = self.code_count;
+        for (self.words[id..self.word_count]) |word| {
+            if (word.kind == .colon and word.code_start < first_removed_code)
+                first_removed_code = word.code_start;
+        }
+        self.code_count = first_removed_code;
+        if (self.last_created_word) |created_id| {
+            if (created_id >= id) self.last_created_word = null;
+        }
+        self.word_count = id;
     }
 
     fn handleToken(self: *State, token: []const u8) RuntimeError!void {
@@ -1129,6 +1201,9 @@ pub const State = struct {
             _ = try self.emit(.{ .kind = .exit });
             self.words[self.current_word].code_end = self.code_count;
             self.words[self.current_word].locals_size = self.locals_frame_size;
+            if (self.currentFileFrame()) |frame| {
+                if (self.words[self.current_word].source_file == frame.file_index + 1) self.words[self.current_word].source_end_line = frame.line;
+            }
             self.local_count = 0;
             self.setCompiling(false);
             self.defining = false;
@@ -1294,7 +1369,7 @@ pub const State = struct {
         const Flavor = struct { kind: LocalKind, variable: bool };
         var pending: ?Flavor = null;
         while (true) {
-            const token = self.nextSourceToken() orelse return error.InvalidDefinition;
+            const token = (try self.nextSourceToken()) orelse return error.InvalidDefinition;
             if (std.mem.eql(u8, token, closing)) break;
             if (comment) continue;
             if (std.mem.eql(u8, token, "--")) {
@@ -1338,7 +1413,7 @@ pub const State = struct {
         var names: [max_locals]Local = undefined;
         var count: usize = 0;
         while (true) {
-            const token = self.nextSourceToken() orelse return error.InvalidDefinition;
+            const token = (try self.nextSourceToken()) orelse return error.InvalidDefinition;
             if (std.mem.eql(u8, token, "|")) break;
             names[count] = try self.addLocal(token, .cell, false);
             count += 1;
@@ -1522,17 +1597,173 @@ pub const State = struct {
         }
     }
 
-    /// Reads the next token, refilling from the terminal when the line is used up.
-    /// An EVALUATE string never reads past its end.
-    fn nextSourceToken(self: *State) ?[]const u8 {
+    /// Reads the next token, refilling from the terminal or the file being included when
+    /// the line is used up. An EVALUATE string never reads past its end.
+    fn nextSourceToken(self: *State) RuntimeError!?[]const u8 {
         while (true) {
             if (nextToken(self.source_line, &self.source_cursor)) |token| return token;
-            if (self.source_kind != .terminal) return null;
-            const read_fn = self.writer.read_fn orelse return null;
-            const start: usize = @intCast(tib_address);
-            const line = read_fn(self.writer.context, self.memory[start .. start + tib_size]) orelse return null;
+            const line = switch (self.source_kind) {
+                .evaluate => return null,
+                .file => try self.readIncludeLine() orelse return null,
+                .terminal => blk: {
+                    const read_fn = self.writer.read_fn orelse return null;
+                    const start: usize = @intCast(tib_address);
+                    break :blk read_fn(self.writer.context, self.memory[start .. start + tib_size]) orelse return null;
+                },
+            };
             self.source_line = line;
             self.source_cursor = 0;
+        }
+    }
+
+    fn storeSourceName(self: *State, address: Cell, name: []const u8) void {
+        const start: usize = @intCast(address);
+        @memcpy(self.memory[start .. start + name.len], name);
+    }
+
+    fn currentFileFrame(self: *State) ?IncludeFrame {
+        if (self.source_kind != .file or self.include_depth == 0) return null;
+        return self.include_stack[self.include_depth - 1];
+    }
+
+    fn sourceFileCount(self: *State) usize {
+        const count = self.readCell(source_file_count_address) catch unreachable;
+        return @intCast(std.math.clamp(count, 0, max_source_files));
+    }
+
+    fn setSourceFileCount(self: *State, count: usize) void {
+        self.writeCell(source_file_count_address, @intCast(count)) catch unreachable;
+    }
+
+    fn sourceFileEntry(index: usize) usize {
+        return @intCast(source_file_table + @as(Cell, @intCast(index * source_file_entry_size)));
+    }
+
+    fn sourceFileName(self: *const State, index: usize) []const u8 {
+        const at = sourceFileEntry(index);
+        return self.memory[at + 1 .. at + 1 + self.memory[at]];
+    }
+
+    fn findSourceFile(self: *State, name: []const u8) ?u8 {
+        for (0..self.sourceFileCount()) |index| {
+            if (std.mem.eql(u8, self.sourceFileName(index), name)) return @intCast(index);
+        }
+        return null;
+    }
+
+    /// Adds a file to the table of included files (the REQUIRE history) unless it is there.
+    fn recordSourceFile(self: *State, name: []const u8) RuntimeError!u8 {
+        if (self.findSourceFile(name)) |index| return index;
+        if (name.len >= source_file_entry_size) return error.StringTooLong;
+        const count = self.sourceFileCount();
+        if (count == max_source_files) return error.TooManySourceFiles;
+        const at = sourceFileEntry(count);
+        self.memory[at] = @intCast(name.len);
+        @memcpy(self.memory[at + 1 .. at + 1 + name.len], name);
+        self.setSourceFileCount(count + 1);
+        return @intCast(count);
+    }
+
+    /// Reads the next physical line of the innermost included file into its line buffer,
+    /// or returns null at the end of the file.
+    fn readIncludeLine(self: *State) RuntimeError!?[]const u8 {
+        const frame = &self.include_stack[self.include_depth - 1];
+        const files = try self.fileOps();
+        // One byte more than a line may hold shows whether the host stopped at a line end.
+        var chunk: [tib_size + 1]u8 = undefined;
+        const result = files.read_line(self.writer.context, frame.fileid, &chunk);
+        if (result.ior != 0) return self.throwCode(result.ior);
+        if (!result.found) return null;
+        frame.line += 1;
+        if (result.length > tib_size) return error.StringTooLong;
+        const start: usize = @intCast(include_buffer_base + @as(Cell, @intCast((self.include_depth - 1) * tib_size)));
+        @memcpy(self.memory[start .. start + result.length], chunk[0..result.length]);
+        return self.memory[start .. start + result.length];
+    }
+
+    /// INCLUDED: interprets a source file line by line. The file is recorded in the
+    /// REQUIRE history when it opens (as gforth does), closed on every exit path, and an
+    /// error inside it is reported with the file name and line.
+    fn includeFile(self: *State, name: []const u8) RuntimeError!void {
+        if (self.include_depth == max_include_depth) return error.IncludeNesting;
+        if (name.len >= source_file_entry_size) return error.StringTooLong;
+        // The name may lie in a line buffer that the include overwrites.
+        var name_copy: [source_file_entry_size - 1]u8 = undefined;
+        @memcpy(name_copy[0..name.len], name);
+        const file_name = name_copy[0..name.len];
+        const files = try self.fileOps();
+        const opened = files.open(self.writer.context, file_name, .read_only, false);
+        if (opened.ior != 0) return self.throwCode(opened.ior);
+        const fileid: Cell = @bitCast(opened.value);
+        const file_index = self.recordSourceFile(file_name) catch |err| {
+            _ = files.close(self.writer.context, fileid);
+            return err;
+        };
+        self.include_stack[self.include_depth] = .{ .fileid = fileid, .file_index = file_index, .line = 0 };
+        self.include_depth += 1;
+        const result = self.interpretIncludedFile();
+        self.include_depth -= 1;
+        const closed = files.close(self.writer.context, fileid);
+        try result;
+        if (closed != 0) return self.throwCode(closed);
+    }
+
+    fn interpretIncludedFile(self: *State) RuntimeError!void {
+        // The innermost file records where an error happened, before its frame goes away.
+        errdefer if (self.error_location == null) {
+            const frame = self.include_stack[self.include_depth - 1];
+            self.error_location = .{ .file_index = frame.file_index, .line = frame.line };
+        };
+        const was_defining = self.defining;
+        const pending_before = self.pending;
+        while (!self.halted) {
+            const line = try self.readIncludeLine() orelse break;
+            try self.interpretSource(line, .file);
+        }
+        if (self.halted) return;
+        // A definition or parsing word started in this file must end in it.
+        if ((self.defining and !was_defining) or (self.pending != .none and pending_before == .none)) return error.InvalidDefinition;
+    }
+
+    fn requireFile(self: *State, name: []const u8) RuntimeError!void {
+        if (self.findSourceFile(name) == null) try self.includeFile(name);
+    }
+
+    /// LOCATE: prints where a word was defined and the lines of its definition.
+    fn locateWord(self: *State, id: u16) RuntimeError!void {
+        const word = self.words[id];
+        if (word.source_file == 0 or word.source_file > self.sourceFileCount()) {
+            self.write(word.name[0..word.name_len]);
+            self.write(": NO FILE INFORMATION\n");
+            return;
+        }
+        const name = self.sourceFileName(word.source_file - 1);
+        var line_text: [24]u8 = undefined;
+        self.write(name);
+        self.write(std.fmt.bufPrint(&line_text, ":{d}\n", .{word.source_line}) catch unreachable);
+        const files = try self.fileOps();
+        const opened = files.open(self.writer.context, name, .read_only, false);
+        if (opened.ior != 0) return;
+        const fileid: Cell = @bitCast(opened.value);
+        defer _ = files.close(self.writer.context, fileid);
+        const last = @min(word.source_end_line, word.source_line + 19);
+        var chunk: [tib_size + 1]u8 = undefined;
+        var number: u32 = 0;
+        while (number < last) {
+            var result = files.read_line(self.writer.context, fileid, &chunk);
+            if (result.ior != 0 or !result.found) return;
+            // An over-long line comes in several pieces; count it as one physical line.
+            const too_long = result.length > tib_size;
+            while (result.length > tib_size) {
+                result = files.read_line(self.writer.context, fileid, &chunk);
+                if (result.ior != 0 or !result.found) return;
+            }
+            number += 1;
+            if (too_long) continue;
+            if (number >= word.source_line) {
+                self.write(chunk[0..result.length]);
+                self.write("\n");
+            }
         }
     }
 
@@ -1571,6 +1802,12 @@ pub const State = struct {
                 }
             },
             .colon => try self.executeColon(id, word),
+            // A MARKER removes itself and everything after it, and forgets the source
+            // files included since, so REQUIRE loads them again.
+            .marker => {
+                self.forgetFrom(id);
+                self.setSourceFileCount(@intCast(word.value));
+            },
         }
     }
 
@@ -1897,7 +2134,7 @@ pub const State = struct {
             .here => try self.push(self.data_here),
             .allot => try self.reserveData(try self.pop()),
             .builds => {
-                const name = self.nextSourceToken() orelse return error.InvalidDefinition;
+                const name = (try self.nextSourceToken()) orelse return error.InvalidDefinition;
                 const address = self.data_here;
                 const id = try self.appendWord(name, .created, .drop, address);
                 self.words[id].data_here_before = address;
@@ -1963,17 +2200,17 @@ pub const State = struct {
             },
             .bye => self.halted = true,
             .load => {
-                const path = self.nextSourceToken() orelse return error.InputUnavailable;
+                const path = (try self.nextSourceToken()) orelse return error.InputUnavailable;
                 const load_fn = self.writer.load_fn orelse return error.FileUnavailable;
                 try load_fn(self.writer.context, path, self);
             },
             .save => {
-                const path = self.nextSourceToken() orelse return error.InputUnavailable;
+                const path = (try self.nextSourceToken()) orelse return error.InputUnavailable;
                 const save_fn = self.writer.save_fn orelse return error.FileUnavailable;
                 try save_fn(self.writer.context, path, self);
             },
             .savesys => {
-                const path = self.nextSourceToken() orelse return error.InputUnavailable;
+                const path = (try self.nextSourceToken()) orelse return error.InputUnavailable;
                 const savesys_fn = self.writer.savesys_fn orelse return error.FileUnavailable;
                 try savesys_fn(self.writer.context, path, self);
             },
@@ -2406,8 +2643,36 @@ pub const State = struct {
                 try self.push(word.name_len);
             },
             .see => {
-                const name = self.nextSourceToken() orelse return error.InputUnavailable;
+                const name = (try self.nextSourceToken()) orelse return error.InputUnavailable;
                 try self.seeWord(try self.lookupOrFail(name));
+            },
+            .include, .require => {
+                const name = (try self.nextSourceToken()) orelse return error.InputUnavailable;
+                if (builtin == .include) try self.includeFile(name) else try self.requireFile(name);
+            },
+            .included, .required => {
+                const name = try self.memoryRange();
+                if (builtin == .included) try self.includeFile(name) else try self.requireFile(name);
+            },
+            .included_query => try self.push(truth(self.findSourceFile(try self.memoryRange()) != null)),
+            .source_file_name => {
+                if (self.currentFileFrame()) |frame| {
+                    try self.push(@intCast(sourceFileEntry(frame.file_index) + 1));
+                    try self.push(@intCast(self.sourceFileName(frame.file_index).len));
+                } else {
+                    const evaluating = self.source_kind == .evaluate;
+                    try self.push(if (evaluating) evaluate_source_name_address else terminal_source_name_address);
+                    try self.push(@intCast(if (evaluating) evaluate_source_name.len else terminal_source_name.len));
+                }
+            },
+            .source_line_number => try self.push(if (self.currentFileFrame()) |frame| frame.line else 0),
+            .marker => {
+                const name = (try self.nextSourceToken()) orelse return error.InvalidDefinition;
+                _ = try self.appendWord(name, .marker, .drop, @intCast(self.sourceFileCount()));
+            },
+            .locate => {
+                const name = (try self.nextSourceToken()) orelse return error.InputUnavailable;
+                try self.locateWord(try self.lookupOrFail(name));
             },
             .read_only => try self.push(fam_read_only),
             .write_only => try self.push(fam_write_only),
@@ -3031,6 +3296,10 @@ pub const State = struct {
                     try self.seeBody(word.does_code_start, word.does_code_end);
                 }
             },
+            .marker => {
+                self.write("MARKER ");
+                self.write(name);
+            },
             .colon => {
                 if (name.len == 0) self.write(":NONAME") else {
                     self.write(": ");
@@ -3233,6 +3502,7 @@ pub const State = struct {
         self.local_count = frame.local_count;
         self.setCompiling(frame.compiling);
         self.last_unknown_word = null;
+        self.error_location = null;
     }
 
     fn fileOps(self: *State) RuntimeError!*const FileOps {
@@ -3417,6 +3687,12 @@ pub const State = struct {
         const base = try self.pop();
         const index = try self.pop();
         return base +% (index *% cell_size);
+    }
+
+    /// Reads a cell at a fixed system address of another machine (always in memory).
+    fn readCellConst(self: *const State, address: Cell) Cell {
+        const start: usize = @intCast(address);
+        return std.mem.readInt(Cell, self.memory[start..][0..cell_size], .little);
     }
 
     fn readCell(self: *State, address: Cell) RuntimeError!Cell {

@@ -484,3 +484,34 @@ test "SYSTEM through the host checks length and embedded NUL before running" {
     // A command that runs but exits with a non-zero status is not an error.
     try runShellCommand(null, "exit 3");
 }
+fn writeTestFile(path: [*:0]const u8, bytes: []const u8) !void {
+    const file = fopen(path, "wb") orelse return error.TestUnexpectedResult;
+    defer _ = fclose(file);
+    if (fwrite(bytes.ptr, 1, bytes.len, file) != bytes.len) return error.TestUnexpectedResult;
+}
+
+test "INCLUDE through the host reads CR LF lines and limits a line to 4096 bytes" {
+    const allocator = std.testing.allocator;
+    const fit = try allocator.alloc(u8, 4096 + 7);
+    defer allocator.free(fit);
+    @memset(fit, ' ');
+    @memcpy(fit[0..2], "1 ");
+    @memcpy(fit[4094..4096], " 2");
+    @memcpy(fit[4096..4103], "\r\n3\r\n4\n");
+    try writeTestFile(".zig-cache/sigma-include-fit.fs", fit);
+    const long = try allocator.alloc(u8, 4097);
+    defer allocator.free(long);
+    @memset(long, ' ');
+    try writeTestFile(".zig-cache/sigma-include-long.fs", long);
+
+    var host = HostContext{ .allocator = allocator, .executable_path = "", .io = undefined, .environ_map = undefined };
+    const machine = try allocator.create(forth.State);
+    defer allocator.destroy(machine);
+    machine.* = forth.State.init(.{ .context = @ptrCast(&host), .write_fn = discardOutput, .file_ops = &file_ops });
+    defer closeAllFiles();
+
+    try machine.interpretLine("INCLUDE .zig-cache/sigma-include-fit.fs SOURCELINE#");
+    try std.testing.expectEqualSlices(forth.Cell, &.{ 1, 2, 3, 4, 0 }, machine.data_stack[0..machine.data_depth]);
+    try std.testing.expectError(error.StringTooLong, machine.interpretLine("INCLUDE .zig-cache/sigma-include-long.fs"));
+    for (open_files) |slot| try std.testing.expect(slot == null);
+}
