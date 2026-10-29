@@ -12,6 +12,21 @@ extern "c" fn ftell(?*anyopaque) c_long;
 extern "c" fn fread([*]u8, usize, usize, ?*anyopaque) usize;
 extern "c" fn fwrite([*]const u8, usize, usize, ?*anyopaque) usize;
 extern "c" fn system(?[*:0]const u8) c_int;
+extern "c" fn getc(?*anyopaque) c_int;
+extern "c" fn ungetc(c_int, ?*anyopaque) c_int;
+extern "c" fn ferror(?*anyopaque) c_int;
+extern "c" fn clearerr(?*anyopaque) void;
+/// 64-bit file positions: `fseek`/`ftell` take a 32-bit `long` on Windows.
+const seek64 = if (builtin.os.tag == .windows) struct {
+    extern "c" fn _fseeki64(?*anyopaque, i64, c_int) c_int;
+}._fseeki64 else struct {
+    extern "c" fn fseeko(?*anyopaque, i64, c_int) c_int;
+}.fseeko;
+const tell64 = if (builtin.os.tag == .windows) struct {
+    extern "c" fn _ftelli64(?*anyopaque) i64;
+}._ftelli64 else struct {
+    extern "c" fn ftello(?*anyopaque) i64;
+}.ftello;
 extern "kernel32" fn GetStdHandle(u32) callconv(.winapi) ?*anyopaque;
 extern "kernel32" fn GetConsoleMode(*anyopaque, *u32) callconv(.winapi) c_int;
 extern "kernel32" fn SetConsoleMode(*anyopaque, u32) callconv(.winapi) c_int;
@@ -56,6 +71,140 @@ fn runShellCommand(_: ?*anyopaque, command: []const u8) forth.RuntimeError!void 
     terminated[command.len] = 0;
     if (system(&terminated) == -1) return error.HostFailed;
 }
+
+const max_open_files = 64;
+const errno_io = 5;
+const errno_too_many_files = 24;
+var open_files: [max_open_files]?*anyopaque = @splat(null);
+
+fn clearErrno() void {
+    std.c._errno().* = 0;
+}
+
+fn lastIor() forth.Cell {
+    const errno = std.c._errno().*;
+    return forth.errnoIor(if (errno == 0) errno_io else errno);
+}
+
+fn badFileIor() forth.Cell {
+    return forth.errnoIor(forth.errno_bad_file);
+}
+
+fn openedFile(fileid: forth.Cell) ?*anyopaque {
+    if (fileid < forth.first_file_id or fileid - forth.first_file_id >= max_open_files) return null;
+    return open_files[@intCast(fileid - forth.first_file_id)];
+}
+
+fn fileOpen(_: ?*anyopaque, name: []const u8, access: forth.FileAccess, create: bool) forth.FileResult {
+    var path: [4096:0]u8 = undefined;
+    if (name.len >= path.len or std.mem.indexOfScalar(u8, name, 0) != null) return .{ .ior = forth.errnoIor(forth.errno_invalid) };
+    const slot = for (open_files, 0..) |file, index| {
+        if (file == null) break index;
+    } else return .{ .ior = forth.errnoIor(errno_too_many_files) };
+    @memcpy(path[0..name.len], name);
+    path[name.len] = 0;
+    // C streams cannot be opened write-only without truncation, so W/O on an existing
+    // file uses update mode.
+    const mode: [*:0]const u8 = if (create) (if (access == .write_only) "wb" else "w+b") else switch (access) {
+        .read_only => "rb",
+        .write_only, .read_write => "r+b",
+    };
+    clearErrno();
+    const file = fopen(&path, mode) orelse return .{ .ior = lastIor() };
+    open_files[slot] = file;
+    return .{ .value = @intCast(forth.first_file_id + @as(forth.Cell, @intCast(slot))) };
+}
+
+fn fileClose(_: ?*anyopaque, fileid: forth.Cell) forth.Cell {
+    if (fileid == forth.stdin_fileid or fileid == forth.stdout_fileid or fileid == forth.stderr_fileid) return 0;
+    const file = openedFile(fileid) orelse return badFileIor();
+    open_files[@intCast(fileid - forth.first_file_id)] = null;
+    clearErrno();
+    return if (fclose(file) == 0) 0 else lastIor();
+}
+
+/// Reads bytes from an open C stream, or from the terminal input for STDIN so that
+/// the byte read ahead by KEY? is not lost.
+const LineSource = struct {
+    file: ?*anyopaque,
+
+    fn get(self: LineSource) c_int {
+        return if (self.file) |file| getc(file) else readByte();
+    }
+
+    fn unget(self: LineSource, byte: c_int) void {
+        if (self.file) |file| {
+            _ = ungetc(byte, file);
+        } else lookahead = @intCast(byte);
+    }
+};
+
+fn fileReadLine(_: ?*anyopaque, fileid: forth.Cell, buffer: []u8) forth.LineResult {
+    const source = LineSource{ .file = if (fileid == forth.stdin_fileid) null else openedFile(fileid) orelse return .{ .ior = badFileIor() } };
+    clearErrno();
+    var length: usize = 0;
+    while (length < buffer.len) {
+        const byte = source.get();
+        if (byte < 0) {
+            if (source.file) |file| {
+                if (ferror(file) != 0) {
+                    clearerr(file);
+                    return .{ .ior = lastIor() };
+                }
+            }
+            return .{ .length = length, .found = length != 0 };
+        }
+        if (byte == '\n') break;
+        if (byte == '\r') {
+            const next = source.get();
+            if (next >= 0 and next != '\n') source.unget(next);
+            break;
+        }
+        buffer[length] = @intCast(byte);
+        length += 1;
+    }
+    return .{ .length = length, .found = true };
+}
+
+fn fileWrite(context: ?*anyopaque, fileid: forth.Cell, bytes: []const u8) forth.Cell {
+    if (fileid == forth.stdout_fileid) {
+        terminalWrite(context, bytes);
+        return 0;
+    }
+    if (fileid == forth.stderr_fileid) {
+        const host = hostContext(context) catch return forth.errnoIor(errno_io);
+        std.Io.File.stderr().writeStreamingAll(host.io, bytes) catch return forth.errnoIor(errno_io);
+        return 0;
+    }
+    const file = openedFile(fileid) orelse return badFileIor();
+    clearErrno();
+    return if (fwrite(bytes.ptr, 1, bytes.len, file) == bytes.len) 0 else lastIor();
+}
+
+fn fileSize(_: ?*anyopaque, fileid: forth.Cell) forth.FileResult {
+    const file = openedFile(fileid) orelse return .{ .ior = badFileIor() };
+    clearErrno();
+    const position = tell64(file);
+    if (position < 0 or seek64(file, 0, 2) != 0) return .{ .ior = lastIor() };
+    const end = tell64(file);
+    if (end < 0 or seek64(file, position, 0) != 0) return .{ .ior = lastIor() };
+    return .{ .value = @intCast(end) };
+}
+
+fn fileReposition(_: ?*anyopaque, fileid: forth.Cell, position: forth.UCell) forth.Cell {
+    const file = openedFile(fileid) orelse return badFileIor();
+    clearErrno();
+    return if (seek64(file, @intCast(position), 0) == 0) 0 else lastIor();
+}
+
+fn closeAllFiles() void {
+    for (&open_files) |*slot| {
+        if (slot.*) |file| _ = fclose(file);
+        slot.* = null;
+    }
+}
+
+const file_ops = forth.FileOps{ .open = fileOpen, .close = fileClose, .read_line = fileReadLine, .write = fileWrite, .size = fileSize, .reposition = fileReposition };
 
 /// Lets the Windows console interpret the ANSI sequences written by PAGE.
 fn enableVirtualTerminal() void {
@@ -246,7 +395,8 @@ pub fn main(init: std.process.Init) !void {
     defer allocator.destroy(machine);
 
     enableVirtualTerminal();
-    machine.* = forth.State.init(.{ .context = @ptrCast(&host), .write_fn = terminalWrite, .read_fn = terminalRead, .load_fn = loadDictionary, .save_fn = saveDictionary, .savesys_fn = saveExecutableImage, .key_fn = terminalKey, .key_ready_fn = terminalKeyReady, .sleep_fn = sleepMilliseconds, .utime_fn = microsecondsSinceEpoch, .getenv_fn = environmentValue, .system_fn = runShellCommand });
+    machine.* = forth.State.init(.{ .context = @ptrCast(&host), .write_fn = terminalWrite, .read_fn = terminalRead, .load_fn = loadDictionary, .save_fn = saveDictionary, .savesys_fn = saveExecutableImage, .key_fn = terminalKey, .key_ready_fn = terminalKeyReady, .sleep_fn = sleepMilliseconds, .utime_fn = microsecondsSinceEpoch, .getenv_fn = environmentValue, .system_fn = runShellCommand, .file_ops = &file_ops });
+    defer closeAllFiles();
     loadEmbeddedImage(executable_path, machine, allocator);
     machine.write("FORTH/Sigma Zig portable core\n");
 

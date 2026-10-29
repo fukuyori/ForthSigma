@@ -1,4 +1,5 @@
 const std = @import("std");
+const builtin_info = @import("builtin");
 
 pub const Cell = i64;
 pub const UCell = u64;
@@ -32,7 +33,43 @@ pub const data_start: Cell = 0x4000;
 const true_flag: Cell = -1;
 const dot_precision = 15;
 const fs_precision = 14;
-const image_magic = "SIGIMG03";
+const image_magic = "SIGIMG04";
+
+/// File ids of the standard streams; the host numbers opened files from `first_file_id`.
+pub const stdin_fileid: Cell = 1;
+pub const stdout_fileid: Cell = 2;
+pub const stderr_fileid: Cell = 3;
+pub const first_file_id: Cell = 4;
+/// File access methods, with gforth's values for R/O, R/W and W/O.
+const fam_read_only: Cell = 0;
+const fam_read_write: Cell = 2;
+const fam_write_only: Cell = 4;
+/// I/O results follow gforth: 0 for success, otherwise -512 minus the C errno.
+pub const ior_errno_base: Cell = -512;
+pub const errno_bad_file: Cell = 9;
+pub const errno_invalid: Cell = 22;
+const line_terminator = if (builtin_info.os.tag == .windows) "\r\n" else "\n";
+
+pub fn errnoIor(errno: Cell) Cell {
+    return ior_errno_base - errno;
+}
+
+pub const FileAccess = enum { read_only, write_only, read_write };
+pub const FileResult = struct { value: UCell = 0, ior: Cell = 0 };
+/// `found` is false only at the end of the file with nothing read.
+pub const LineResult = struct { length: usize = 0, found: bool = false, ior: Cell = 0 };
+
+/// Host file operations. Ids are opaque cells; the standard streams use the fixed ids above.
+pub const FileOps = struct {
+    /// Opens an existing file, or creates and truncates one when `create` is set.
+    open: *const fn (?*anyopaque, []const u8, FileAccess, bool) FileResult,
+    close: *const fn (?*anyopaque, Cell) Cell,
+    /// Reads up to `buffer.len` bytes of one line, without the LF, CR or CRLF terminator.
+    read_line: *const fn (?*anyopaque, Cell, []u8) LineResult,
+    write: *const fn (?*anyopaque, Cell, []const u8) Cell,
+    size: *const fn (?*anyopaque, Cell) FileResult,
+    reposition: *const fn (?*anyopaque, Cell, UCell) Cell,
+};
 
 pub const Writer = struct {
     context: ?*anyopaque,
@@ -50,6 +87,7 @@ pub const Writer = struct {
     getenv_fn: ?*const fn (?*anyopaque, []const u8, []u8) RuntimeError!?usize = null,
     /// Runs a shell command; a non-zero exit status is not an error.
     system_fn: ?*const fn (?*anyopaque, []const u8) RuntimeError!void = null,
+    file_ops: ?*const FileOps = null,
 
     pub fn write(self: Writer, bytes: []const u8) void {
         self.write_fn(self.context, bytes);
@@ -277,6 +315,21 @@ const Builtin = enum {
     getenv,
     system,
     state,
+    throw,
+    read_only,
+    write_only,
+    read_write,
+    stdin,
+    stdout,
+    stderr,
+    open_file,
+    create_file,
+    close_file,
+    read_line,
+    write_line,
+    write_file,
+    file_size,
+    reposition_file,
 };
 
 const WordKind = enum { builtin, colon, variable, constant, array, created, value, fconstant, two_constant };
@@ -335,6 +388,8 @@ pub const RuntimeError = error{
     HostUnavailable,
     HostFailed,
     StringTooLong,
+    /// A non-zero code passed to THROW; the code is kept in `State.throw_code`.
+    Thrown,
 };
 
 fn writeU32(output: []u8, value: anytype) void {
@@ -452,6 +507,7 @@ pub const State = struct {
     halted: bool = false,
     call_depth: usize = 0,
     last_unknown_word: ?[]const u8 = null,
+    throw_code: Cell = 0,
 
     pub fn init(writer: Writer) State {
         var state = State{ .writer = writer };
@@ -587,6 +643,10 @@ pub const State = struct {
         self.loop_depth = 0;
         self.resetHold();
         if (err == error.Aborted) return;
+        if (err == error.Thrown) {
+            self.writeThrowMessage(self.throw_code);
+            return;
+        }
         if (err == error.UnknownWord) {
             if (self.last_unknown_word) |name| {
                 self.write(name);
@@ -602,6 +662,39 @@ pub const State = struct {
         const message: []const u8 = if (err == error.StackUnderflow) "STACK UNDER FLOW !" else if (err == error.ReturnStackUnderflow) "RETURN STACK UNDER FLOW !" else if (err == error.StackOverflow) "STACK OVER FLOW !" else if (err == error.ReturnStackOverflow) "RETURN STACK OVER FLOW !" else if (err == error.FloatStackUnderflow) "FLOATING-POINT STACK UNDER FLOW !" else if (err == error.FloatStackOverflow) "FLOATING-POINT STACK OVER FLOW !" else if (err == error.DictionaryFull) "OUT OF DICTIONARY !" else if (err == error.CodeFull) "OUT OF CODE SPACE !" else if (err == error.InvalidDefinition) "DEFINITION ERROR !" else if (err == error.CommentUnclosed) "END OF COMMENT MUST BE \")\" !" else if (err == error.ControlMismatch) "CONTROL STRUCTURE ERROR !" else if (err == error.CompileOnly) "COMPILE MODE ERROR !" else if (err == error.UnknownWord) "?" else if (err == error.InvalidNumber) "NUMBER ERROR !" else if (err == error.DivisionByZero) "DIVISION BY ZERO !" else if (err == error.LoopMismatch) "LOOP ERROR !" else if (err == error.InvalidBase) "BASE ERROR !" else if (err == error.InvalidExecutionToken) "INVALID EXECUTION TOKEN !" else if (err == error.InvalidAddress) "INVALID MEMORY ADDRESS !" else if (err == error.PicturedNumericOverflow) "PICTURED NUMERIC OUTPUT ERROR !" else if (err == error.MemoryExhausted) "OUT OF MEMORY !" else if (err == error.InputUnavailable) "INPUT ERROR !" else if (err == error.FileUnavailable) "FILE ERROR !" else if (err == error.InvalidImage) "INVALID IMAGE !" else if (err == error.HostUnavailable) "HOST FUNCTION UNAVAILABLE !" else if (err == error.HostFailed) "HOST FUNCTION ERROR !" else if (err == error.StringTooLong) "STRING TOO LONG !" else "FORTH ERROR !";
         self.write(message);
         self.write("\n");
+    }
+
+    /// Reports an uncaught THROW code. Standard codes reuse the interpreter's messages;
+    /// I/O results (-512 minus errno) name the C error, as gforth does.
+    fn writeThrowMessage(self: *State, code: Cell) void {
+        const message: ?[]const u8 = switch (code) {
+            -3 => "STACK OVER FLOW !",
+            -4 => "STACK UNDER FLOW !",
+            -5 => "RETURN STACK OVER FLOW !",
+            -6 => "RETURN STACK UNDER FLOW !",
+            -9 => "INVALID MEMORY ADDRESS !",
+            -10 => "DIVISION BY ZERO !",
+            -13 => "UNDEFINED WORD !",
+            -37 => "FILE I/O EXCEPTION !",
+            -38 => "NON-EXISTENT FILE !",
+            ior_errno_base - 2 => "NO SUCH FILE OR DIRECTORY !",
+            ior_errno_base - 5 => "INPUT/OUTPUT ERROR !",
+            ior_errno_base - errno_bad_file => "BAD FILE DESCRIPTOR !",
+            ior_errno_base - 13 => "PERMISSION DENIED !",
+            ior_errno_base - 17 => "FILE EXISTS !",
+            ior_errno_base - 21 => "IS A DIRECTORY !",
+            ior_errno_base - errno_invalid => "INVALID ARGUMENT !",
+            ior_errno_base - 24 => "TOO MANY OPEN FILES !",
+            ior_errno_base - 28 => "NO SPACE LEFT ON DEVICE !",
+            else => null,
+        };
+        if (message) |text| {
+            self.write(text);
+            self.write("\n");
+            return;
+        }
+        var buffer: [48]u8 = undefined;
+        self.write(std.fmt.bufPrint(&buffer, "ERROR #{d} !\n", .{code}) catch unreachable);
     }
 
     pub fn interpretLine(self: *State, input: []const u8) RuntimeError!void {
@@ -701,7 +794,10 @@ pub const State = struct {
             .{ "#>>", .hold_release },       .{ "HOLD", .hold },              .{ "HOLDS", .holds },           .{ "SIGN", .sign },                .{ ">NUMBER", .to_number },
             .{ "S>NUMBER?", .string_to_number }, .{ ">FLOAT", .to_float },   .{ "WITHIN", .within },         .{ "2>R", .two_to_r },             .{ "2R>", .two_r_from },
             .{ "ENDIF", .compile_then },     .{ "PLACE", .place },            .{ "ABORT", .abort },           .{ "MS", .ms },                    .{ "UTIME", .utime },
-            .{ "PAGE", .page },              .{ "GETENV", .getenv },          .{ "SYSTEM", .system },         .{ "STATE", .state },
+            .{ "PAGE", .page },              .{ "GETENV", .getenv },          .{ "SYSTEM", .system },         .{ "STATE", .state },              .{ "THROW", .throw },
+            .{ "R/O", .read_only },          .{ "W/O", .write_only },         .{ "R/W", .read_write },        .{ "STDIN", .stdin },              .{ "STDOUT", .stdout },
+            .{ "STDERR", .stderr },          .{ "OPEN-FILE", .open_file },    .{ "CREATE-FILE", .create_file }, .{ "CLOSE-FILE", .close_file },  .{ "READ-LINE", .read_line },
+            .{ "WRITE-LINE", .write_line },  .{ "WRITE-FILE", .write_file },  .{ "FILE-SIZE", .file_size },   .{ "REPOSITION-FILE", .reposition_file },
         };
         for (definitions) |definition| self.addBuiltin(definition[0], definition[1]) catch unreachable;
         self.builtin_count = self.word_count;
@@ -1900,7 +1996,72 @@ pub const State = struct {
                 try system_fn(self.writer.context, command);
             },
             .state => try self.push(state_address),
+            .throw => {
+                const code = try self.pop();
+                if (code == 0) return;
+                if (code == -1) return error.Aborted;
+                self.throw_code = code;
+                return error.Thrown;
+            },
+            .read_only => try self.push(fam_read_only),
+            .write_only => try self.push(fam_write_only),
+            .read_write => try self.push(fam_read_write),
+            .stdin => try self.push(stdin_fileid),
+            .stdout => try self.push(stdout_fileid),
+            .stderr => try self.push(stderr_fileid),
+            .open_file, .create_file => {
+                const fam = try self.pop();
+                const name = try self.memoryRange();
+                const files = try self.fileOps();
+                const access: ?FileAccess = switch (fam) {
+                    fam_read_only => .read_only,
+                    fam_write_only => .write_only,
+                    fam_read_write => .read_write,
+                    else => null,
+                };
+                const result = if (access) |mode| files.open(self.writer.context, name, mode, builtin == .create_file) else FileResult{ .ior = errnoIor(errno_invalid) };
+                try self.push(if (result.ior == 0) @bitCast(result.value) else 0);
+                try self.push(result.ior);
+            },
+            .close_file => {
+                const fileid = try self.pop();
+                try self.push((try self.fileOps()).close(self.writer.context, fileid));
+            },
+            .read_line => {
+                const fileid = try self.pop();
+                const buffer = try self.memoryRange();
+                const files = try self.fileOps();
+                if (max_stack - self.data_depth < 3) return error.StackOverflow;
+                const result = files.read_line(self.writer.context, fileid, buffer);
+                try self.push(if (result.ior == 0) @intCast(result.length) else 0);
+                try self.push(if (result.ior == 0) truth(result.found) else 0);
+                try self.push(result.ior);
+            },
+            .write_line, .write_file => {
+                const fileid = try self.pop();
+                const bytes = try self.memoryRange();
+                const files = try self.fileOps();
+                var ior = files.write(self.writer.context, fileid, bytes);
+                if (ior == 0 and builtin == .write_line) ior = files.write(self.writer.context, fileid, line_terminator);
+                try self.push(ior);
+            },
+            .file_size => {
+                const fileid = try self.pop();
+                const result = (try self.fileOps()).size(self.writer.context, fileid);
+                try self.pushDouble(if (result.ior == 0) result.value else 0);
+                try self.push(result.ior);
+            },
+            .reposition_file => {
+                const fileid = try self.pop();
+                const position: UDouble = @bitCast(try self.popDouble());
+                const files = try self.fileOps();
+                try self.push(if (position > std.math.maxInt(i64)) errnoIor(errno_invalid) else files.reposition(self.writer.context, fileid, @intCast(position)));
+            },
         }
+    }
+
+    fn fileOps(self: *State) RuntimeError!*const FileOps {
+        return self.writer.file_ops orelse error.HostUnavailable;
     }
 
     fn resetHold(self: *State) void {

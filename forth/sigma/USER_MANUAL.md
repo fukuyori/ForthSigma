@@ -230,6 +230,40 @@ S" dir" SYSTEM
 | `PAGE` | ( -- ) | 画面を消去し、カーソルを左上へ移します。 |
 | `GETENV` | ( addr u -- addr2 u2 ) | 環境変数の値を返します。未設定なら `0 0` です。結果は次の `GETENV` まで有効で、3072バイトを超える値は `STRING TOO LONG !` になります。 |
 | `SYSTEM` | ( addr u -- ) | 文字列をシェルのコマンドとして実行します（Windowsは `cmd.exe`）。コマンドの終了コードは返しません。 |
+## ファイルと例外
+
+```forth
+: MAKE-FILE
+  S" data.txt" W/O CREATE-FILE THROW >R
+  S" line 1" R@ WRITE-LINE THROW
+  S" line 2" R@ WRITE-LINE THROW
+  R> CLOSE-FILE THROW ;
+: SHOW-FILE ( addr u -- )
+  R/O OPEN-FILE THROW
+  BEGIN PAD 80 2 PICK READ-LINE THROW
+  WHILE CR PAD SWAP TYPE
+  REPEAT DROP CLOSE-FILE THROW ;
+MAKE-FILE S" data.txt" SHOW-FILE
+```
+
+ファイル語は結果のほかに **ior**（0なら成功、0以外ならエラー番号）を積みます。`THROW` に渡すと、エラーのときだけ処理を中断してメッセージを表示します（例: `NO SUCH FILE OR DIRECTORY !`）。
+
+| ワード | スタック | 説明 |
+| --- | --- | --- |
+| `R/O`, `W/O`, `R/W` | ( -- fam ) | 読み取り専用、書き込み専用、読み書き両用のアクセス方法です。 |
+| `OPEN-FILE` | ( addr u fam -- fileid ior ) | 既存のファイルを開きます。`W/O` で開いても内容は消えません。 |
+| `CREATE-FILE` | ( addr u fam -- fileid ior ) | ファイルを新しく作ります。既にあれば中身を空にします。 |
+| `CLOSE-FILE` | ( fileid -- ior ) | ファイルを閉じます。 |
+| `READ-LINE` | ( addr u fileid -- u2 flag ior ) | 1行を最大u文字読み、文字数を返します。行末の改行は含みません。ファイルの終わりではflagが偽になります。 |
+| `WRITE-LINE` | ( addr u fileid -- ior ) | 文字列と改行を書き込みます（WindowsはCR LF、それ以外はLF）。 |
+| `WRITE-FILE` | ( addr u fileid -- ior ) | 文字列を改行なしで書き込みます。 |
+| `FILE-SIZE` | ( fileid -- ud ior ) | ファイルの大きさ（バイト数、倍長整数）を返します。 |
+| `REPOSITION-FILE` | ( ud fileid -- ior ) | 読み書きの位置を移動します。`FILE-SIZE` の結果を渡すと末尾へ移動し、追記できます。 |
+| `STDIN`, `STDOUT`, `STDERR` | ( -- fileid ) | 標準入力、標準出力、標準エラー出力のファイル番号です。 |
+| `THROW` | ( n -- ) | nが0なら何もしません。-1なら `ABORT` と同じです。それ以外はエラーとして表示し、入力待ちに戻ります。 |
+
+同時に開けるファイルは64個までです。終了時に開いたままのファイルは閉じます。`CATCH` は未実装のため、`THROW` を捕まえることはできません。
+
 ## 辞書の保存と単独実行ファイル
 
 この移植版の `SAVE` と `LOAD` は利用者定義語の辞書イメージを扱います。誌面のエディットバッファ操作とは異なります。
@@ -239,7 +273,7 @@ SAVE words.sigma
 LOAD words.sigma
 ```
 
-`LOAD` は保存した利用者定義語を現在の辞書の後ろに追加します。同名語は読み込んだ新しい定義が優先されます。以前の版で保存した辞書イメージ（`SIGIMG01`、`SIGIMG02`）は読み込めません（`INVALID IMAGE !`）。定数や変数に保存した実行トークン（`:NONAME` の結果など）は、すでに利用者定義語がある辞書へ `LOAD` すると別の語を指すことがあります。`SAVESYS` で作った実行ファイルではこの問題は起きません。
+`LOAD` は保存した利用者定義語を現在の辞書の後ろに追加します。同名語は読み込んだ新しい定義が優先されます。以前の版で保存した辞書イメージ（`SIGIMG01`〜`SIGIMG03`）は読み込めません（`INVALID IMAGE !`）。定数や変数に保存した実行トークン（`:NONAME` の結果など）は、すでに利用者定義語がある辞書へ `LOAD` すると別の語を指すことがあります。`SAVESYS` で作った実行ファイルではこの問題は起きません。
 
 `SAVESYS` は、現在の辞書・コンパイル済み定義・データを含む、実行中環境向けの単独実行ファイルを作ります。
 
@@ -274,8 +308,9 @@ SAVESYS demo.exe
 | 数値の書式 | `<#`, `<<#`, `#`, `#S`, `#>`, `#>>`, `HOLD`, `HOLDS`, `SIGN` |
 | 文字列格納・状態・中断 | `PLACE`, `STATE`, `ABORT` |
 | 時間・画面・OS | `MS`, `UTIME`, `PAGE`, `GETENV`, `SYSTEM` |
+| ファイル・例外 | `THROW`, `R/O`, `W/O`, `R/W`, `STDIN`, `STDOUT`, `STDERR`, `OPEN-FILE`, `CREATE-FILE`, `CLOSE-FILE`, `READ-LINE`, `WRITE-LINE`, `WRITE-FILE`, `FILE-SIZE`, `REPOSITION-FILE` |
 
-組み込み語は起動時点で **229語** 登録されています（`MINUS`/`NEGATE` のような別名もそれぞれ1語と数えます）。
+組み込み語は起動時点で **244語** 登録されています（`MINUS`/`NEGATE` のような別名もそれぞれ1語と数えます）。
 
 ### 構文・定義形式
 
@@ -299,4 +334,4 @@ SAVESYS demo.exe
 
 現在は `EDIT`、`LIST`、エディットバッファ版の `LOAD`／`SAVE`、CP/Mファイル操作、PC-8001のモニター機能、`MCODE`やZ80機械語実行に対応していません。Z80をエミュレートする処理系ではありません。
 
-Gforthのワードのうち、ローカル変数、`THROW`／`CATCH`、ファイル操作、`$?`、`ALLOCATE`、`$!` などの動的文字列、語彙（ワードリスト）、`[IF]`、`.R`、`F.RDP` などは未実装です。詳しくは[互換性一覧](COMPATIBILITY.md)を参照してください。
+Gforthのワードのうち、ローカル変数、`CATCH`、`READ-FILE` などの残りのファイル操作、`INCLUDE`、`$?`、`ALLOCATE`、`$!` などの動的文字列、語彙（ワードリスト）、`[IF]`、`.R`、`F.RDP` などは未実装です。詳しくは[互換性一覧](COMPATIBILITY.md)を参照してください。

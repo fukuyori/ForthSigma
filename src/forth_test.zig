@@ -12,6 +12,9 @@ const Output = struct {
     slept: forth.Cell = -1,
     command: [64]u8 = undefined,
     command_len: usize = 0,
+    files: [2]FakeFile = .{ .{}, .{} },
+    stdout_bytes: [64]u8 = undefined,
+    stdout_len: usize = 0,
 
     fn write(context: ?*anyopaque, bytes: []const u8) void {
         const output: *Output = @ptrCast(@alignCast(context.?));
@@ -21,7 +24,7 @@ const Output = struct {
     }
 
     fn writer(self: *Output) forth.Writer {
-        return .{ .context = @ptrCast(self), .write_fn = write, .read_fn = read, .key_fn = key, .key_ready_fn = keyReady, .sleep_fn = sleep, .utime_fn = utime, .getenv_fn = getenv, .system_fn = system };
+        return .{ .context = @ptrCast(self), .write_fn = write, .read_fn = read, .key_fn = key, .key_ready_fn = keyReady, .sleep_fn = sleep, .utime_fn = utime, .getenv_fn = getenv, .system_fn = system, .file_ops = &fake_file_ops };
     }
 
     fn sleep(context: ?*anyopaque, milliseconds: forth.Cell) forth.RuntimeError!void {
@@ -73,6 +76,85 @@ const Output = struct {
         return self.bytes[0..self.len];
     }
 };
+
+/// An in-memory file for the fake host; "a.txt" and "b.txt" are the only names.
+const FakeFile = struct {
+    data: [256]u8 = undefined,
+    len: usize = 0,
+    position: usize = 0,
+    open: bool = false,
+    exists: bool = false,
+};
+
+const fake_file_ops = forth.FileOps{ .open = fakeOpen, .close = fakeClose, .read_line = fakeReadLine, .write = fakeWrite, .size = fakeSize, .reposition = fakeReposition };
+
+fn fakeOutput(context: ?*anyopaque) *Output {
+    return @ptrCast(@alignCast(context.?));
+}
+
+fn fakeFile(context: ?*anyopaque, fileid: forth.Cell) ?*FakeFile {
+    const output = fakeOutput(context);
+    if (fileid < forth.first_file_id or fileid - forth.first_file_id >= output.files.len) return null;
+    const file = &output.files[@intCast(fileid - forth.first_file_id)];
+    return if (file.open) file else null;
+}
+
+fn fakeOpen(context: ?*anyopaque, name: []const u8, _: forth.FileAccess, create: bool) forth.FileResult {
+    const index: usize = if (std.mem.eql(u8, name, "a.txt")) 0 else if (std.mem.eql(u8, name, "b.txt")) 1 else return .{ .ior = forth.errnoIor(2) };
+    const file = &fakeOutput(context).files[index];
+    if (!create and !file.exists) return .{ .ior = forth.errnoIor(2) };
+    if (create) file.len = 0;
+    file.exists = true;
+    file.open = true;
+    file.position = 0;
+    return .{ .value = @intCast(forth.first_file_id + @as(forth.Cell, @intCast(index))) };
+}
+
+fn fakeClose(context: ?*anyopaque, fileid: forth.Cell) forth.Cell {
+    const file = fakeFile(context, fileid) orelse return forth.errnoIor(forth.errno_bad_file);
+    file.open = false;
+    return 0;
+}
+
+fn fakeReadLine(context: ?*anyopaque, fileid: forth.Cell, buffer: []u8) forth.LineResult {
+    const file = fakeFile(context, fileid) orelse return .{ .ior = forth.errnoIor(forth.errno_bad_file) };
+    if (file.position >= file.len) return .{};
+    var length: usize = 0;
+    while (length < buffer.len and file.position < file.len) {
+        const byte = file.data[file.position];
+        file.position += 1;
+        if (byte == '\n') break;
+        if (byte == '\r') continue;
+        buffer[length] = byte;
+        length += 1;
+    }
+    return .{ .length = length, .found = true };
+}
+
+fn fakeWrite(context: ?*anyopaque, fileid: forth.Cell, bytes: []const u8) forth.Cell {
+    if (fileid == forth.stdout_fileid) {
+        const output = fakeOutput(context);
+        @memcpy(output.stdout_bytes[output.stdout_len .. output.stdout_len + bytes.len], bytes);
+        output.stdout_len += bytes.len;
+        return 0;
+    }
+    const file = fakeFile(context, fileid) orelse return forth.errnoIor(forth.errno_bad_file);
+    @memcpy(file.data[file.position .. file.position + bytes.len], bytes);
+    file.position += bytes.len;
+    file.len = @max(file.len, file.position);
+    return 0;
+}
+
+fn fakeSize(context: ?*anyopaque, fileid: forth.Cell) forth.FileResult {
+    const file = fakeFile(context, fileid) orelse return .{ .ior = forth.errnoIor(forth.errno_bad_file) };
+    return .{ .value = file.len };
+}
+
+fn fakeReposition(context: ?*anyopaque, fileid: forth.Cell, position: forth.UCell) forth.Cell {
+    const file = fakeFile(context, fileid) orelse return forth.errnoIor(forth.errno_bad_file);
+    file.position = @intCast(position);
+    return 0;
+}
 
 fn createMachine(output: *Output) !*forth.State {
     const machine = try std.testing.allocator.create(forth.State);
@@ -1087,4 +1169,85 @@ test "host words report an error when the host does not provide them" {
 
 test "PAGE clears the screen with ANSI sequences" {
     try expectOutput("PAGE", "\x1b[2J\x1b[1;1H");
+}
+test "THROW ignores zero, aborts on -1, and reports other codes in decimal" {
+    var output = Output{};
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
+
+    try machine.interpretLine("1 2 0 THROW");
+    try expectStack(machine, &.{ 1, 2 });
+    try std.testing.expectError(error.Aborted, machine.interpretLine("-1 THROW"));
+    machine.report(error.Aborted);
+    try expectStack(machine, &.{});
+
+    const codes = [_][]const u8{ "-4 THROW", "-514 THROW", ": T -37 THROW ; T", "HEX 5 THROW" };
+    for (codes) |line| {
+        try std.testing.expectError(error.Thrown, machine.interpretLine(line));
+        machine.report(error.Thrown);
+    }
+    try std.testing.expectEqualStrings("STACK UNDER FLOW !\nNO SUCH FILE OR DIRECTORY !\nFILE I/O EXCEPTION !\nERROR #5 !\n", output.written());
+}
+
+test "file access methods and standard stream ids follow gforth" {
+    var output = Output{};
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
+
+    try machine.interpretLine("R/O W/O R/W STDIN STDOUT STDERR");
+    try expectStack(machine, &.{ 0, 4, 2, 1, 2, 3 });
+}
+
+test "files are created, written, sized, repositioned, read by line, and closed" {
+    var output = Output{};
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
+    const newline = if (@import("builtin").os.tag == .windows) "\r\n" else "\n";
+
+    try machine.interpretLine("S\" a.txt\" W/O CREATE-FILE THROW VALUE F");
+    try machine.interpretLine("S\" abc\" F WRITE-LINE S\" de\" F WRITE-FILE F FILE-SIZE F CLOSE-FILE");
+    try expectStack(machine, &.{ 0, 0, @intCast(5 + newline.len), 0, 0, 0 });
+    try std.testing.expectEqualStrings("abc" ++ newline ++ "de", output.files[0].data[0..output.files[0].len]);
+
+    machine.data_depth = 0;
+    try machine.interpretLine("S\" a.txt\" R/O OPEN-FILE THROW TO F PAD 2 F READ-LINE PAD 10 F READ-LINE PAD 10 F READ-LINE PAD 10 F READ-LINE");
+    try expectStack(machine, &.{ 2, -1, 0, 1, -1, 0, 2, -1, 0, 0, 0, 0 });
+    machine.data_depth = 0;
+    try machine.interpretLine("0. F REPOSITION-FILE PAD 10 F READ-LINE DROP DROP PAD SWAP TYPE F CLOSE-FILE F CLOSE-FILE");
+    try std.testing.expectEqualStrings("abc", output.written());
+    try expectStack(machine, &.{ 0, 0, forth.errnoIor(forth.errno_bad_file) });
+}
+
+test "file errors are returned as iors without changing the stack shape" {
+    var output = Output{};
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
+    const bad = forth.errnoIor(forth.errno_bad_file);
+    const invalid = forth.errnoIor(forth.errno_invalid);
+
+    try machine.interpretLine("S\" b.txt\" R/O OPEN-FILE S\" a.txt\" 99 OPEN-FILE 99 FILE-SIZE PAD 4 99 READ-LINE");
+    try expectStack(machine, &.{ 0, forth.errnoIor(2), 0, invalid, 0, 0, bad, 0, 0, bad });
+    machine.data_depth = 0;
+    try machine.interpretLine("S\" a.txt\" W/O CREATE-FILE DROP -1 0 2 PICK REPOSITION-FILE NIP");
+    try expectStack(machine, &.{invalid});
+}
+
+test "WRITE-LINE to STDOUT reaches the host" {
+    var output = Output{};
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
+    const newline = if (@import("builtin").os.tag == .windows) "\r\n" else "\n";
+
+    try machine.interpretLine("S\" hi\" STDOUT WRITE-LINE");
+    try expectStack(machine, &.{0});
+    try std.testing.expectEqualStrings("hi" ++ newline, output.stdout_bytes[0..output.stdout_len]);
+}
+
+test "file words report an error when the host has no file support" {
+    var output = Output{};
+    const machine = try std.testing.allocator.create(forth.State);
+    defer destroyMachine(machine);
+    machine.* = forth.State.init(.{ .context = @ptrCast(&output), .write_fn = Output.write });
+
+    try std.testing.expectError(error.HostUnavailable, machine.interpretLine("S\" a.txt\" R/O OPEN-FILE"));
 }
