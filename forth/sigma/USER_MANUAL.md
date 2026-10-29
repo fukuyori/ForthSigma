@@ -264,6 +264,45 @@ MAKE-FILE S" data.txt" SHOW-FILE
 
 同時に開けるファイルは64個までです。終了時に開いたままのファイルは閉じます。`CATCH` は未実装のため、`THROW` を捕まえることはできません。
 
+## 動的メモリと動的文字列
+
+```forth
+VARIABLE MYSTRING
+S" Hello, World!" MYSTRING $!
+7 MYSTRING $!LEN  S" land" MYSTRING $+!  '!' MYSTRING C$+!
+MYSTRING $.                     \ Hello, land!
+VARIABLE NAMES
+S" Alice" 0 NAMES $[]!  S" Bob" 1 NAMES $[]!
+NAMES $[].                      \ Alice と Bob を1行ずつ表示
+100 CELLS ALLOCATE THROW  FREE THROW
+```
+
+文字列変数は `VARIABLE` で作ります。中身はヒープに置かれ、長さに合わせて自動的に確保・解放されます。
+
+| ワード | スタック | 説明 |
+| --- | --- | --- |
+| `ALLOCATE` | ( u -- addr ior ) | uバイトの領域を確保します。足りなければiorが-524です。 |
+| `FREE` | ( addr -- ior ) | `ALLOCATE` で確保した領域を解放します。 |
+| `RESIZE` | ( addr u -- addr2 ior ) | 領域の大きさを変えます。内容は保たれ、アドレスが変わることがあります。 |
+| `$!` | ( addr u $var -- ) | 文字列を文字列変数に格納します。 |
+| `$@`, `$@LEN` | ( $var -- addr u )、( $var -- u ) | 文字列、または長さを返します。空の変数では `0 0`、`0` です。 |
+| `$!LEN` | ( u $var -- ) | 長さを変えます。伸ばした部分は0です。 |
+| `$+!`, `C$+!` | ( addr u $var -- )、( c $var -- ) | 文字列、または1文字を末尾に追加します。 |
+| `$.` | ( $var -- ) | 文字列を表示します。 |
+| `$INS`, `$OVER` | ( addr u $var off -- ) | off文字目に挿入、または上書きします。 |
+| `$DEL` | ( $var off u -- ) | off文字目からu文字を削除します。 |
+| `$FREE`, `$INIT` | ( $var -- ) | 文字列を解放して変数を0に、または空の文字列にします。 |
+| `$SPLIT` | ( addr u c -- addr u1 addr2 u2 ) | 最初の文字cの前後に分けます。 |
+| `$ITER` | ( $var c xt -- ) | 文字cで区切った各部分 ( addr u ) についてxtを実行します。 |
+| `$TMP` | ( xt -- addr u ) | xtを実行し、その間の出力を文字列として返します。 |
+| `$[]!`, `$[]@` | ( addr u n $[]var -- )、( n $[]var -- addr u ) | 文字列配列のn番目に格納、または取り出します。 |
+| `$[]#`, `$[].` | ( $[]var -- n )、( $[]var -- ) | 要素数を返す、または全要素を1行ずつ表示します。 |
+| `$[]MAP` | ( $[]var xt -- ) | 各要素 ( addr u ) についてxtを実行します。 |
+| `$[]FREE` | ( $[]var -- ) | 全要素と配列を解放します。 |
+| `$[]SLURP`, `$[]SLURP-FILE` | ( fileid $[]var -- )、( addr u $[]var -- ) | ファイルを1行ずつ配列に読み込みます。 |
+
+ヒープは1 MiBです。`SAVESYS` で作った実行ファイルにはヒープの内容も保存されますが、`LOAD` では引き継がれません。
+
 ## 辞書の保存と単独実行ファイル
 
 この移植版の `SAVE` と `LOAD` は利用者定義語の辞書イメージを扱います。誌面のエディットバッファ操作とは異なります。
@@ -273,7 +312,7 @@ SAVE words.sigma
 LOAD words.sigma
 ```
 
-`LOAD` は保存した利用者定義語を現在の辞書の後ろに追加します。同名語は読み込んだ新しい定義が優先されます。以前の版で保存した辞書イメージ（`SIGIMG01`〜`SIGIMG03`）は読み込めません（`INVALID IMAGE !`）。定数や変数に保存した実行トークン（`:NONAME` の結果など）は、すでに利用者定義語がある辞書へ `LOAD` すると別の語を指すことがあります。`SAVESYS` で作った実行ファイルではこの問題は起きません。
+`LOAD` は保存した利用者定義語を現在の辞書の後ろに追加します。同名語は読み込んだ新しい定義が優先されます。以前の版で保存した辞書イメージ（`SIGIMG01`〜`SIGIMG04`）は読み込めません（`INVALID IMAGE !`）。定数や変数に保存した実行トークン（`:NONAME` の結果など）は、すでに利用者定義語がある辞書へ `LOAD` すると別の語を指すことがあります。`SAVESYS` で作った実行ファイルではこの問題は起きません。
 
 `SAVESYS` は、現在の辞書・コンパイル済み定義・データを含む、実行中環境向けの単独実行ファイルを作ります。
 
@@ -309,8 +348,9 @@ SAVESYS demo.exe
 | 文字列格納・状態・中断 | `PLACE`, `STATE`, `ABORT` |
 | 時間・画面・OS | `MS`, `UTIME`, `PAGE`, `GETENV`, `SYSTEM` |
 | ファイル・例外 | `THROW`, `R/O`, `W/O`, `R/W`, `STDIN`, `STDOUT`, `STDERR`, `OPEN-FILE`, `CREATE-FILE`, `CLOSE-FILE`, `READ-LINE`, `WRITE-LINE`, `WRITE-FILE`, `FILE-SIZE`, `REPOSITION-FILE` |
+| 動的メモリ・動的文字列 | `ALLOCATE`, `FREE`, `RESIZE`, `$!`, `$@`, `$@LEN`, `$!LEN`, `$+!`, `C$+!`, `$.`, `$DEL`, `$INS`, `$OVER`, `$FREE`, `$INIT`, `$SPLIT`, `$ITER`, `$TMP`, `$[]`, `$[]!`, `$[]@`, `$[]#`, `$[].`, `$[]MAP`, `$[]FREE`, `$[]SLURP`, `$[]SLURP-FILE` |
 
-組み込み語は起動時点で **244語** 登録されています（`MINUS`/`NEGATE` のような別名もそれぞれ1語と数えます）。
+組み込み語は起動時点で **271語** 登録されています（`MINUS`/`NEGATE` のような別名もそれぞれ1語と数えます）。
 
 ### 構文・定義形式
 
@@ -334,4 +374,4 @@ SAVESYS demo.exe
 
 現在は `EDIT`、`LIST`、エディットバッファ版の `LOAD`／`SAVE`、CP/Mファイル操作、PC-8001のモニター機能、`MCODE`やZ80機械語実行に対応していません。Z80をエミュレートする処理系ではありません。
 
-Gforthのワードのうち、ローカル変数、`CATCH`、`READ-FILE` などの残りのファイル操作、`INCLUDE`、`$?`、`ALLOCATE`、`$!` などの動的文字列、語彙（ワードリスト）、`[IF]`、`.R`、`F.RDP` などは未実装です。詳しくは[互換性一覧](COMPATIBILITY.md)を参照してください。
+Gforthのワードのうち、ローカル変数、`CATCH`、`READ-FILE` などの残りのファイル操作、`INCLUDE`、`$?`、語彙（ワードリスト）、`[IF]`、`.R`、`F.RDP` などは未実装です。詳しくは[互換性一覧](COMPATIBILITY.md)を参照してください。

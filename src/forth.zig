@@ -14,9 +14,20 @@ const max_stack = 1024;
 const max_float_stack = 1024;
 const max_controls = 128;
 const max_name = 255;
-pub const memory_size = 1 << 20;
+pub const memory_size = 2 << 20;
+/// The data area ends where the ALLOCATE heap begins; the heap runs to the end of memory.
+pub const data_limit: Cell = 1 << 20;
+const heap_base: Cell = data_limit;
+const heap_end: Cell = memory_size;
+/// Each heap block starts with its payload size and a used flag, one cell each.
+const heap_header = 2 * cell_size;
 const base_address: Cell = 0x0200;
 const state_address: Cell = 0x0208;
+/// The end of the used part of the heap; kept in memory so images preserve it.
+const heap_top_address: Cell = 0x0210;
+/// Sixteen string variables holding the results of $TMP, reused in turn.
+const tmp_string_base: Cell = 0x0300;
+const tmp_string_count = 16;
 const hold_bottom: Cell = 0x1000;
 const hold_top: Cell = 0x2000;
 pub const pad_address: Cell = 0x2000;
@@ -33,7 +44,7 @@ pub const data_start: Cell = 0x4000;
 const true_flag: Cell = -1;
 const dot_precision = 15;
 const fs_precision = 14;
-const image_magic = "SIGIMG04";
+const image_magic = "SIGIMG05";
 
 /// File ids of the standard streams; the host numbers opened files from `first_file_id`.
 pub const stdin_fileid: Cell = 1;
@@ -47,6 +58,7 @@ const fam_write_only: Cell = 4;
 /// I/O results follow gforth: 0 for success, otherwise -512 minus the C errno.
 pub const ior_errno_base: Cell = -512;
 pub const errno_bad_file: Cell = 9;
+pub const errno_no_memory: Cell = 12;
 pub const errno_invalid: Cell = 22;
 const line_terminator = if (builtin_info.os.tag == .windows) "\r\n" else "\n";
 
@@ -330,7 +342,36 @@ const Builtin = enum {
     write_file,
     file_size,
     reposition_file,
+    allocate,
+    free,
+    resize,
+    string_store,
+    string_fetch,
+    string_fetch_len,
+    string_store_len,
+    string_append,
+    char_append,
+    string_dot,
+    string_delete,
+    string_insert,
+    string_over,
+    string_free,
+    string_init,
+    string_split,
+    string_iter,
+    string_tmp,
+    string_array,
+    string_array_store,
+    string_array_fetch,
+    string_array_count,
+    string_array_dot,
+    string_array_map,
+    string_array_free,
+    string_array_slurp,
+    string_array_slurp_file,
 };
+
+const HeapResult = union(enum) { address: Cell, no_memory, bad_pointer };
 
 const WordKind = enum { builtin, colon, variable, constant, array, created, value, fconstant, two_constant };
 const Word = struct {
@@ -508,15 +549,26 @@ pub const State = struct {
     call_depth: usize = 0,
     last_unknown_word: ?[]const u8 = null,
     throw_code: Cell = 0,
+    capture_target: ?Cell = null,
+    capture_failed: bool = false,
+    tmp_string_index: usize = 0,
 
     pub fn init(writer: Writer) State {
         var state = State{ .writer = writer };
         state.writeCell(base_address, 10) catch unreachable;
+        state.writeCell(heap_top_address, heap_base) catch unreachable;
         state.installBuiltins();
         return state;
     }
 
+    /// Writes interpreter output, or appends it to the string being built by $TMP.
     pub fn write(self: *State, bytes: []const u8) void {
+        if (self.capture_target) |target| {
+            self.appendString(target, bytes) catch {
+                self.capture_failed = true;
+            };
+            return;
+        }
         self.writer.write(bytes);
     }
 
@@ -547,7 +599,7 @@ pub const State = struct {
         const word_count = readU32(input[8..12]);
         const code_count = readU32(input[12..16]);
         const data_here = readU32(input[16..20]);
-        if (word_count < self.builtin_count or word_count > max_words or code_count > max_code or data_here < data_start or data_here > memory_size) return error.InvalidImage;
+        if (word_count < self.builtin_count or word_count > max_words or code_count > max_code or data_here < data_start or data_here > data_limit) return error.InvalidImage;
         const word_bytes_len = @as(usize, word_count) * @sizeOf(Word);
         const code_bytes_len = @as(usize, code_count) * @sizeOf(Op);
         const required = 20 + word_bytes_len + code_bytes_len + memory_size;
@@ -582,7 +634,7 @@ pub const State = struct {
         if (code_base + code_count > max_code) return error.CodeFull;
         if (source.data_here < data_start) return error.InvalidImage;
         const data_len = source.data_here - data_start;
-        if (self.data_here + data_len > memory_size) return error.MemoryExhausted;
+        if (self.data_here + data_len > data_limit) return error.MemoryExhausted;
         const data_delta = self.data_here - data_start;
 
         for (source.words[source.builtin_count..source.word_count], 0..) |original, offset| {
@@ -628,6 +680,7 @@ pub const State = struct {
     }
 
     pub fn report(self: *State, err: anyerror) void {
+        self.capture_target = null;
         if (self.defining) {
             self.code_count = self.words[self.current_word].code_start;
             self.word_count = self.current_word;
@@ -678,7 +731,11 @@ pub const State = struct {
             -37 => "FILE I/O EXCEPTION !",
             -38 => "NON-EXISTENT FILE !",
             ior_errno_base - 2 => "NO SUCH FILE OR DIRECTORY !",
+            -59 => "ALLOCATE ERROR !",
+            -60 => "FREE ERROR !",
+            -61 => "RESIZE ERROR !",
             ior_errno_base - 5 => "INPUT/OUTPUT ERROR !",
+            ior_errno_base - errno_no_memory => "CANNOT ALLOCATE MEMORY !",
             ior_errno_base - errno_bad_file => "BAD FILE DESCRIPTOR !",
             ior_errno_base - 13 => "PERMISSION DENIED !",
             ior_errno_base - 17 => "FILE EXISTS !",
@@ -797,7 +854,13 @@ pub const State = struct {
             .{ "PAGE", .page },              .{ "GETENV", .getenv },          .{ "SYSTEM", .system },         .{ "STATE", .state },              .{ "THROW", .throw },
             .{ "R/O", .read_only },          .{ "W/O", .write_only },         .{ "R/W", .read_write },        .{ "STDIN", .stdin },              .{ "STDOUT", .stdout },
             .{ "STDERR", .stderr },          .{ "OPEN-FILE", .open_file },    .{ "CREATE-FILE", .create_file }, .{ "CLOSE-FILE", .close_file },  .{ "READ-LINE", .read_line },
-            .{ "WRITE-LINE", .write_line },  .{ "WRITE-FILE", .write_file },  .{ "FILE-SIZE", .file_size },   .{ "REPOSITION-FILE", .reposition_file },
+            .{ "WRITE-LINE", .write_line },  .{ "WRITE-FILE", .write_file },  .{ "FILE-SIZE", .file_size },   .{ "REPOSITION-FILE", .reposition_file }, .{ "ALLOCATE", .allocate },
+            .{ "FREE", .free },              .{ "RESIZE", .resize },          .{ "$!", .string_store },       .{ "$@", .string_fetch },          .{ "$@LEN", .string_fetch_len },
+            .{ "$!LEN", .string_store_len }, .{ "$+!", .string_append },      .{ "C$+!", .char_append },      .{ "$.", .string_dot },            .{ "$DEL", .string_delete },
+            .{ "$INS", .string_insert },     .{ "$OVER", .string_over },      .{ "$FREE", .string_free },     .{ "$INIT", .string_init },        .{ "$SPLIT", .string_split },
+            .{ "$ITER", .string_iter },      .{ "$TMP", .string_tmp },        .{ "$[]", .string_array },      .{ "$[]!", .string_array_store },  .{ "$[]@", .string_array_fetch },
+            .{ "$[]#", .string_array_count }, .{ "$[].", .string_array_dot }, .{ "$[]MAP", .string_array_map }, .{ "$[]FREE", .string_array_free }, .{ "$[]SLURP", .string_array_slurp },
+            .{ "$[]SLURP-FILE", .string_array_slurp_file },
         };
         for (definitions) |definition| self.addBuiltin(definition[0], definition[1]) catch unreachable;
         self.builtin_count = self.word_count;
@@ -896,7 +959,7 @@ pub const State = struct {
                 try self.writeDouble(self.words[id].value, if (pending == .two_constant_name) self.pending_double else 0);
             },
             .array_name => {
-                if (self.pending_array_size < 0 or self.pending_array_size > memory_size / cell_size) return error.MemoryExhausted;
+                if (self.pending_array_size < 0 or self.pending_array_size > data_limit / cell_size) return error.MemoryExhausted;
                 _ = try self.appendDataWord(token, .array, self.pending_array_size * cell_size);
             },
             .forget_name => {
@@ -2057,7 +2120,498 @@ pub const State = struct {
                 const files = try self.fileOps();
                 try self.push(if (position > std.math.maxInt(i64)) errnoIor(errno_invalid) else files.reposition(self.writer.context, fileid, @intCast(position)));
             },
+            .allocate => {
+                const size: UCell = @bitCast(try self.pop());
+                const address = try self.heapAllocate(size);
+                try self.push(address orelse 0);
+                try self.push(if (address == null) errnoIor(errno_no_memory) else 0);
+            },
+            .free => {
+                const freed = try self.heapFree(try self.pop());
+                try self.push(if (freed) 0 else errnoIor(errno_invalid));
+            },
+            .resize => {
+                const size: UCell = @bitCast(try self.pop());
+                const address = try self.pop();
+                switch (try self.heapResize(address, size)) {
+                    .address => |moved| {
+                        try self.push(moved);
+                        try self.push(0);
+                    },
+                    .no_memory, .bad_pointer => |_, tag| {
+                        try self.push(address);
+                        try self.push(errnoIor(if (tag == .no_memory) errno_no_memory else errno_invalid));
+                    },
+                }
+            },
+            .string_store => {
+                const string_var = try self.pop();
+                const length = try self.popLength();
+                const source = try self.pop();
+                _ = try self.memoryAddress(source, length);
+                // A fresh buffer keeps the source intact even when it lies in the old string.
+                const buffer = try self.heapAllocate(cell_size + length) orelse return self.throwIor(errno_no_memory);
+                self.copyMemory(buffer + cell_size, source, length);
+                try self.writeCell(buffer, @intCast(length));
+                const old = try self.readCell(string_var);
+                if (!try self.heapFree(old)) {
+                    _ = try self.heapFree(buffer);
+                    return self.throwIor(errno_invalid);
+                }
+                try self.writeCell(string_var, buffer);
+            },
+            .string_fetch => {
+                const string = try self.fetchString(try self.pop());
+                try self.push(string.address);
+                try self.push(@intCast(string.length));
+            },
+            .string_fetch_len => try self.push(@intCast((try self.fetchString(try self.pop())).length)),
+            .string_store_len => {
+                const string_var = try self.pop();
+                _ = try self.setStringLength(string_var, try self.popLength());
+            },
+            .string_append => {
+                const string_var = try self.pop();
+                const length = try self.popLength();
+                const source = try self.pop();
+                const end = (try self.fetchString(string_var)).length;
+                try self.insertString(string_var, end, source, length, false);
+            },
+            .char_append => {
+                const string_var = try self.pop();
+                const char: u8 = @truncate(@as(UCell, @bitCast(try self.pop())));
+                const length = (try self.fetchString(string_var)).length;
+                const buffer = try self.setStringLength(string_var, length + 1);
+                self.memory[@intCast(buffer + cell_size + @as(Cell, @intCast(length)))] = char;
+            },
+            .string_dot => {
+                const string = try self.fetchString(try self.pop());
+                self.writeMemory(string.address, string.length);
+            },
+            .string_delete => {
+                const count = try self.popLength();
+                const offset = try self.popLength();
+                const string_var = try self.pop();
+                const string = try self.fetchString(string_var);
+                const start = @min(offset, string.length);
+                const removed = @min(count, string.length - start);
+                const base: usize = @intCast(string.address);
+                std.mem.copyForwards(u8, self.memory[base + start .. base + string.length - removed], self.memory[base + start + removed .. base + string.length]);
+                _ = try self.setStringLength(string_var, string.length - removed);
+            },
+            .string_insert, .string_over => {
+                const offset = try self.popLength();
+                const string_var = try self.pop();
+                const length = try self.popLength();
+                const source = try self.pop();
+                try self.insertString(string_var, offset, source, length, builtin == .string_over);
+            },
+            .string_free => {
+                const string_var = try self.pop();
+                try self.freeString(string_var);
+            },
+            .string_init => {
+                const string_var = try self.pop();
+                const buffer = try self.heapAllocate(cell_size) orelse return self.throwIor(errno_no_memory);
+                try self.writeCell(buffer, 0);
+                try self.writeCell(string_var, buffer);
+            },
+            .string_split => {
+                const separator: u8 = @truncate(@as(UCell, @bitCast(try self.pop())));
+                const length = try self.popLength();
+                const address = try self.pop();
+                const start = try self.memoryAddress(address, length);
+                const found = std.mem.indexOfScalar(u8, self.memory[start .. start + length], separator);
+                const first = found orelse length;
+                const rest = if (found != null) first + 1 else length;
+                try self.push(address);
+                try self.push(@intCast(first));
+                try self.push(address + @as(Cell, @intCast(rest)));
+                try self.push(@intCast(length - rest));
+            },
+            .string_iter => {
+                const xt = try self.wordId(try self.pop());
+                const separator: u8 = @truncate(@as(UCell, @bitCast(try self.pop())));
+                const string = try self.fetchString(try self.pop());
+                var address = string.address;
+                var remaining = string.length;
+                while (remaining != 0) {
+                    const start: usize = @intCast(address);
+                    const part = std.mem.indexOfScalar(u8, self.memory[start .. start + remaining], separator) orelse remaining;
+                    const consumed = if (part < remaining) part + 1 else part;
+                    try self.push(address);
+                    try self.push(@intCast(part));
+                    try self.executeWord(xt);
+                    address += @intCast(consumed);
+                    remaining -= consumed;
+                }
+            },
+            .string_tmp => {
+                const xt = try self.wordId(try self.pop());
+                const slot = tmp_string_base + @as(Cell, @intCast(self.tmp_string_index % tmp_string_count)) * cell_size;
+                self.tmp_string_index += 1;
+                try self.freeString(slot);
+                const previous_target = self.capture_target;
+                const previous_failed = self.capture_failed;
+                self.capture_target = slot;
+                self.capture_failed = false;
+                const result = self.executeWord(xt);
+                const failed = self.capture_failed;
+                self.capture_target = previous_target;
+                self.capture_failed = previous_failed;
+                try result;
+                if (failed) return self.throwIor(errno_no_memory);
+                const string = try self.fetchString(slot);
+                try self.push(string.address);
+                try self.push(@intCast(string.length));
+            },
+            .string_array => {
+                const array_var = try self.pop();
+                try self.push(try self.stringArrayElement(array_var, try self.popLength()));
+            },
+            .string_array_store => {
+                const array_var = try self.pop();
+                const index = try self.popLength();
+                const element = try self.stringArrayElement(array_var, index);
+                try self.push(element);
+                try self.executeBuiltin(.string_store);
+            },
+            .string_array_fetch => {
+                const array_var = try self.pop();
+                const index: UCell = @bitCast(try self.pop());
+                if (index < try self.stringArrayCount(array_var)) {
+                    const string = try self.fetchString(try self.stringArrayElement(array_var, @intCast(index)));
+                    try self.push(string.address);
+                    try self.push(@intCast(string.length));
+                } else {
+                    try self.push(0);
+                    try self.push(0);
+                }
+            },
+            .string_array_count => try self.push(@intCast(try self.stringArrayCount(try self.pop()))),
+            .string_array_dot, .string_array_map => {
+                const xt: ?u16 = if (builtin == .string_array_map) try self.wordId(try self.pop()) else null;
+                const array_var = try self.pop();
+                const count = try self.stringArrayCount(array_var);
+                for (0..count) |index| {
+                    if (index >= try self.stringArrayCount(array_var)) break;
+                    const string = try self.fetchString(try self.stringArrayElement(array_var, index));
+                    if (xt) |id| {
+                        try self.push(string.address);
+                        try self.push(@intCast(string.length));
+                        try self.executeWord(id);
+                    } else {
+                        self.writeMemory(string.address, string.length);
+                        self.write("\n");
+                    }
+                }
+            },
+            .string_array_free => {
+                const array_var = try self.pop();
+                const count = try self.stringArrayCount(array_var);
+                for (0..count) |index| try self.freeString(try self.stringArrayElement(array_var, index));
+                try self.freeString(array_var);
+            },
+            .string_array_slurp => {
+                const array_var = try self.pop();
+                const fileid = try self.pop();
+                try self.slurpLines(fileid, array_var);
+            },
+            .string_array_slurp_file => {
+                const array_var = try self.pop();
+                const name = try self.memoryRange();
+                const files = try self.fileOps();
+                const opened = files.open(self.writer.context, name, .read_only, false);
+                if (opened.ior != 0) return self.throwCode(opened.ior);
+                const fileid: Cell = @bitCast(opened.value);
+                self.slurpLines(fileid, array_var) catch |err| {
+                    _ = files.close(self.writer.context, fileid);
+                    return err;
+                };
+                const closed = files.close(self.writer.context, fileid);
+                if (closed != 0) return self.throwCode(closed);
+            },
         }
+    }
+
+    fn throwCode(self: *State, code: Cell) RuntimeError {
+        self.throw_code = code;
+        return error.Thrown;
+    }
+
+    fn throwIor(self: *State, errno: Cell) RuntimeError {
+        return self.throwCode(errnoIor(errno));
+    }
+
+    /// Pops a byte count; negative counts are treated as 0 and huge ones as memory-sized.
+    fn popLength(self: *State) RuntimeError!usize {
+        const count = try self.pop();
+        return if (count < 0) 0 else @intCast(@min(count, memory_size));
+    }
+
+    fn writeMemory(self: *State, address: Cell, length: usize) void {
+        const start: usize = @intCast(address);
+        self.write(self.memory[start .. start + length]);
+    }
+
+    fn copyMemory(self: *State, destination: Cell, source: Cell, length: usize) void {
+        const to: usize = @intCast(destination);
+        const from: usize = @intCast(source);
+        if (to <= from) {
+            std.mem.copyForwards(u8, self.memory[to .. to + length], self.memory[from .. from + length]);
+        } else std.mem.copyBackwards(u8, self.memory[to .. to + length], self.memory[from .. from + length]);
+    }
+
+    // ALLOCATE heap: blocks laid out from `heap_base` to the top stored at
+    // `heap_top_address`, each preceded by a size cell and a used cell.
+
+    fn heapTop(self: *State) Cell {
+        return self.readCell(heap_top_address) catch unreachable;
+    }
+
+    /// Reads a block size, rejecting headers that would leave the used heap.
+    fn blockSize(self: *State, block: Cell) RuntimeError!Cell {
+        const size = try self.readCell(block);
+        if (size < 0 or @rem(size, cell_size) != 0 or size > self.heapTop() - block - heap_header) return error.InvalidAddress;
+        return size;
+    }
+
+    fn blockUsed(self: *State, block: Cell) RuntimeError!bool {
+        return try self.readCell(block + cell_size) != 0;
+    }
+
+    fn setBlock(self: *State, block: Cell, size: Cell, used: bool) void {
+        self.writeCell(block, size) catch unreachable;
+        self.writeCell(block + cell_size, @intFromBool(used)) catch unreachable;
+    }
+
+    /// Gives `block` exactly `need` bytes when the rest is large enough to form a free block.
+    fn splitBlock(self: *State, block: Cell, size: Cell, need: Cell, used: bool) void {
+        if (size - need < heap_header + cell_size) {
+            self.setBlock(block, size, used);
+            return;
+        }
+        self.setBlock(block, need, used);
+        self.setBlock(block + heap_header + need, size - need - heap_header, false);
+    }
+
+    fn heapNeed(size: UCell) ?Cell {
+        if (size > heap_end - heap_base - heap_header) return null;
+        return @intCast((size + cell_size - 1) & ~@as(UCell, cell_size - 1));
+    }
+
+    fn heapAllocate(self: *State, size: UCell) RuntimeError!?Cell {
+        const need = heapNeed(size) orelse return null;
+        const top = self.heapTop();
+        var block = heap_base;
+        while (block < top) {
+            const size_here = try self.blockSize(block);
+            if (!try self.blockUsed(block) and size_here >= need) {
+                self.splitBlock(block, size_here, need, true);
+                return block + heap_header;
+            }
+            block += heap_header + size_here;
+        }
+        if (heap_end - top < heap_header + need) return null;
+        self.setBlock(top, need, true);
+        self.writeCell(heap_top_address, top + heap_header + need) catch unreachable;
+        return top + heap_header;
+    }
+
+    /// Finds the used block whose payload starts at `address`.
+    fn findBlock(self: *State, address: Cell) RuntimeError!?Cell {
+        const top = self.heapTop();
+        var block = heap_base;
+        while (block < top and block + heap_header <= address) {
+            const size = try self.blockSize(block);
+            if (block + heap_header == address) return if (try self.blockUsed(block)) block else null;
+            block += heap_header + size;
+        }
+        return null;
+    }
+
+    /// Merges neighbouring free blocks and gives a free last block back to the heap top.
+    fn coalesceHeap(self: *State) RuntimeError!void {
+        const top = self.heapTop();
+        var block = heap_base;
+        var last: ?Cell = null;
+        while (block < top) {
+            var size = try self.blockSize(block);
+            if (!try self.blockUsed(block)) {
+                var next = block + heap_header + size;
+                while (next < top and !try self.blockUsed(next)) {
+                    size += heap_header + try self.blockSize(next);
+                    next = block + heap_header + size;
+                }
+                self.setBlock(block, size, false);
+            }
+            last = block;
+            block += heap_header + size;
+        }
+        if (last) |block_at_end| {
+            if (!try self.blockUsed(block_at_end)) self.writeCell(heap_top_address, block_at_end) catch unreachable;
+        }
+    }
+
+    /// Frees an ALLOCATE address; 0 is accepted. Returns false for an unknown address.
+    fn heapFree(self: *State, address: Cell) RuntimeError!bool {
+        if (address == 0) return true;
+        const block = try self.findBlock(address) orelse return false;
+        self.setBlock(block, try self.blockSize(block), false);
+        try self.coalesceHeap();
+        return true;
+    }
+
+    fn heapResize(self: *State, address: Cell, size: UCell) RuntimeError!HeapResult {
+        if (address == 0) return if (try self.heapAllocate(size)) |fresh| .{ .address = fresh } else .no_memory;
+        const block = try self.findBlock(address) orelse return .bad_pointer;
+        const need = heapNeed(size) orelse return .no_memory;
+        const old_size = try self.blockSize(block);
+        // Grow in place by absorbing following free blocks, or past the heap top.
+        const top = self.heapTop();
+        var available = old_size;
+        var next = block + heap_header + available;
+        while (available < need and next < top and !try self.blockUsed(next)) {
+            available += heap_header + try self.blockSize(next);
+            next = block + heap_header + available;
+        }
+        if (available >= need) {
+            self.splitBlock(block, available, need, true);
+            try self.coalesceHeap();
+            return .{ .address = address };
+        }
+        if (next == top and heap_end - block - heap_header >= need) {
+            self.setBlock(block, need, true);
+            self.writeCell(heap_top_address, block + heap_header + need) catch unreachable;
+            return .{ .address = address };
+        }
+        const moved = try self.heapAllocate(size) orelse return .no_memory;
+        self.copyMemory(moved, address, @intCast(old_size));
+        _ = try self.heapFree(address);
+        return .{ .address = moved };
+    }
+
+    // Dynamic strings, as in gforth: a string variable holds 0 or the address of a heap
+    // buffer that starts with the length cell followed by the characters.
+
+    const StringRef = struct { address: Cell, length: usize };
+
+    fn fetchString(self: *State, string_var: Cell) RuntimeError!StringRef {
+        const buffer = try self.readCell(string_var);
+        if (buffer == 0) return .{ .address = 0, .length = 0 };
+        const length = try self.readCell(buffer);
+        if (length < 0) return error.InvalidAddress;
+        _ = try self.memoryAddress(buffer + cell_size, @intCast(length));
+        return .{ .address = buffer + cell_size, .length = @intCast(length) };
+    }
+
+    /// Resizes the string buffer; new bytes are zero. Returns the (possibly moved) buffer.
+    fn setStringLength(self: *State, string_var: Cell, length: usize) RuntimeError!Cell {
+        const old_length = (try self.fetchString(string_var)).length;
+        const buffer = switch (try self.heapResize(try self.readCell(string_var), cell_size + length)) {
+            .address => |moved| moved,
+            .no_memory => return self.throwIor(errno_no_memory),
+            .bad_pointer => return self.throwIor(errno_invalid),
+        };
+        try self.writeCell(string_var, buffer);
+        try self.writeCell(buffer, @intCast(length));
+        if (length > old_length) {
+            const start: usize = @intCast(buffer + cell_size);
+            @memset(self.memory[start + old_length .. start + length], 0);
+        }
+        return buffer;
+    }
+
+    fn freeString(self: *State, string_var: Cell) RuntimeError!void {
+        if (!try self.heapFree(try self.readCell(string_var))) return self.throwIor(errno_invalid);
+        try self.writeCell(string_var, 0);
+    }
+
+    /// Inserts (or, for $OVER, overwrites) `length` bytes from `source` at `offset`.
+    /// A source inside the same string is copied out first, since resizing may move it.
+    fn insertString(self: *State, string_var: Cell, offset: usize, source: Cell, length: usize, overwrite: bool) RuntimeError!void {
+        _ = try self.memoryAddress(source, length);
+        const old = try self.fetchString(string_var);
+        const inside = old.address != 0 and source + @as(Cell, @intCast(length)) > old.address - cell_size and source < old.address + @as(Cell, @intCast(old.length));
+        var from = source;
+        var detached: ?Cell = null;
+        defer if (detached) |copy| {
+            _ = self.heapFree(copy) catch {};
+        };
+        if (inside and length != 0) {
+            const copy = try self.heapAllocate(length) orelse return self.throwIor(errno_no_memory);
+            self.copyMemory(copy, source, length);
+            detached = copy;
+            from = copy;
+        }
+        const at = if (overwrite) offset else @min(offset, old.length);
+        const new_length = if (overwrite) @max(old.length, at + length) else old.length + length;
+        const buffer = try self.setStringLength(string_var, new_length);
+        const text = buffer + cell_size;
+        if (overwrite) {
+            // $OVER past the end pads the gap with blanks, as gforth does.
+            if (at > old.length) @memset(self.memory[@intCast(text + @as(Cell, @intCast(old.length)))..@intCast(text + @as(Cell, @intCast(at)))], ' ');
+        } else {
+            self.copyMemory(text + @as(Cell, @intCast(at + length)), text + @as(Cell, @intCast(at)), old.length - at);
+        }
+        self.copyMemory(text + @as(Cell, @intCast(at)), from, length);
+    }
+
+    /// Appends output bytes to a string (used while $TMP captures output).
+    fn appendString(self: *State, string_var: Cell, bytes: []const u8) RuntimeError!void {
+        const memory_start = @intFromPtr(&self.memory);
+        const address = @intFromPtr(bytes.ptr);
+        if (address >= memory_start and address < memory_start + memory_size) {
+            const end = (try self.fetchString(string_var)).length;
+            return self.insertString(string_var, end, @intCast(address - memory_start), bytes.len, false);
+        }
+        const end = (try self.fetchString(string_var)).length;
+        const buffer = try self.setStringLength(string_var, end + bytes.len);
+        const start: usize = @intCast(buffer + cell_size);
+        @memcpy(self.memory[start + end .. start + end + bytes.len], bytes);
+    }
+
+    fn stringArrayCount(self: *State, array_var: Cell) RuntimeError!usize {
+        return (try self.fetchString(array_var)).length / cell_size;
+    }
+
+    /// Address of element `index`, growing the array with empty strings as needed.
+    fn stringArrayElement(self: *State, array_var: Cell, index: usize) RuntimeError!Cell {
+        if (index >= (heap_end - heap_base) / cell_size) return self.throwIor(errno_no_memory);
+        const needed = (index + 1) * cell_size;
+        if ((try self.fetchString(array_var)).length < needed) _ = try self.setStringLength(array_var, needed);
+        return (try self.fetchString(array_var)).address + @as(Cell, @intCast(index * cell_size));
+    }
+
+    /// Reads the file line by line into the string array, replacing its contents.
+    fn slurpLines(self: *State, fileid: Cell, array_var: Cell) RuntimeError!void {
+        const files = try self.fileOps();
+        var chunk: [256]u8 = undefined;
+        var count: usize = 0;
+        while (true) {
+            const element = try self.stringArrayElement(array_var, count);
+            try self.freeString(element);
+            var found = false;
+            while (true) {
+                const result = files.read_line(self.writer.context, fileid, &chunk);
+                if (result.ior != 0) return self.throwCode(result.ior);
+                if (!result.found) break;
+                found = true;
+                try self.appendString(element, chunk[0..result.length]);
+                if (result.length < chunk.len) break;
+            }
+            if (!found) break;
+            if ((try self.fetchString(element)).address == 0) try self.executeStringInit(element);
+            count += 1;
+        }
+        const total = try self.stringArrayCount(array_var);
+        for (count..total) |index| try self.freeString(try self.stringArrayElement(array_var, index));
+        _ = try self.setStringLength(array_var, count * cell_size);
+    }
+
+    fn executeStringInit(self: *State, string_var: Cell) RuntimeError!void {
+        try self.push(string_var);
+        try self.executeBuiltin(.string_init);
     }
 
     fn fileOps(self: *State) RuntimeError!*const FileOps {
@@ -2264,7 +2818,7 @@ pub const State = struct {
 
     fn reserveData(self: *State, amount: Cell) RuntimeError!void {
         const next, const overflow = @addWithOverflow(self.data_here, amount);
-        if (overflow != 0 or next < data_start or next > memory_size) return error.MemoryExhausted;
+        if (overflow != 0 or next < data_start or next > data_limit) return error.MemoryExhausted;
         self.data_here = next;
     }
 
