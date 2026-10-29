@@ -286,9 +286,10 @@ MAKE-FILE S" data.txt" SHOW-FILE
 | `FILE-SIZE` | ( fileid -- ud ior ) | ファイルの大きさ（バイト数、倍長整数）を返します。 |
 | `REPOSITION-FILE` | ( ud fileid -- ior ) | 読み書きの位置を移動します。`FILE-SIZE` の結果を渡すと末尾へ移動し、追記できます。 |
 | `STDIN`, `STDOUT`, `STDERR` | ( -- fileid ) | 標準入力、標準出力、標準エラー出力のファイル番号です。 |
-| `THROW` | ( n -- ) | nが0なら何もしません。-1なら `ABORT` と同じです。それ以外はエラーとして表示し、入力待ちに戻ります。 |
+| `THROW` | ( n -- ) | nが0なら何もしません。-1なら `ABORT` と同じです。それ以外は、`CATCH` で捕まえていなければエラーとして表示し、入力待ちに戻ります。 |
+| `CATCH` | ( xt -- 0 \| n ) | xtを実行し、正常に終われば0を、`THROW` やエラーが起きればその番号を積みます。例外のときはスタックの深さをCATCHの時点に戻します。スタック不足は-4、ゼロ除算は-10、未定義語は-13です。 |
 
-同時に開けるファイルは64個までです。終了時に開いたままのファイルは閉じます。`CATCH` は未実装のため、`THROW` を捕まえることはできません。
+同時に開けるファイルは64個までです。終了時に開いたままのファイルは閉じます。`CATCH` で `THROW` を捕まえられます（下の表）。
 
 ## 動的メモリと動的文字列
 
@@ -338,7 +339,7 @@ SAVE words.sigma
 LOAD words.sigma
 ```
 
-`LOAD` は保存した利用者定義語を現在の辞書の後ろに追加します。同名語は読み込んだ新しい定義が優先されます。以前の版で保存した辞書イメージ（`SIGIMG01`〜`SIGIMG05`）は読み込めません（`INVALID IMAGE !`）。定数や変数に保存した実行トークン（`:NONAME` の結果など）は、すでに利用者定義語がある辞書へ `LOAD` すると別の語を指すことがあります。`SAVESYS` で作った実行ファイルではこの問題は起きません。
+`LOAD` は保存した利用者定義語を現在の辞書の後ろに追加します。同名語は読み込んだ新しい定義が優先されます。以前の版で保存した辞書イメージ（`SIGIMG01`〜`SIGIMG06`）は読み込めません（`INVALID IMAGE !`）。定数や変数に保存した実行トークン（`:NONAME` の結果など）は、すでに利用者定義語がある辞書へ `LOAD` すると別の語を指すことがあります。`SAVESYS` で作った実行ファイルではこの問題は起きません。
 
 `SAVESYS` は、現在の辞書・コンパイル済み定義・データを含む、実行中環境向けの単独実行ファイルを作ります。
 
@@ -373,10 +374,10 @@ SAVESYS demo.exe
 | 数値の書式 | `<#`, `<<#`, `#`, `#S`, `#>`, `#>>`, `HOLD`, `HOLDS`, `SIGN` |
 | 文字列格納・状態・中断 | `PLACE`, `STATE`, `ABORT` |
 | 時間・画面・OS | `MS`, `UTIME`, `PAGE`, `GETENV`, `SYSTEM` |
-| ファイル・例外 | `THROW`, `R/O`, `W/O`, `R/W`, `STDIN`, `STDOUT`, `STDERR`, `OPEN-FILE`, `CREATE-FILE`, `CLOSE-FILE`, `READ-LINE`, `WRITE-LINE`, `WRITE-FILE`, `FILE-SIZE`, `REPOSITION-FILE` |
+| ファイル・例外 | `THROW`, `CATCH`, `R/O`, `W/O`, `R/W`, `STDIN`, `STDOUT`, `STDERR`, `OPEN-FILE`, `CREATE-FILE`, `CLOSE-FILE`, `READ-LINE`, `WRITE-LINE`, `WRITE-FILE`, `FILE-SIZE`, `REPOSITION-FILE` |
 | 動的メモリ・動的文字列 | `ALLOCATE`, `FREE`, `RESIZE`, `$!`, `$@`, `$@LEN`, `$!LEN`, `$+!`, `C$+!`, `$.`, `$DEL`, `$INS`, `$OVER`, `$FREE`, `$INIT`, `$SPLIT`, `$ITER`, `$TMP`, `$[]`, `$[]!`, `$[]@`, `$[]#`, `$[].`, `$[]MAP`, `$[]FREE`, `$[]SLURP`, `$[]SLURP-FILE` |
 
-組み込み語は起動時点で **271語** 登録されています（`MINUS`/`NEGATE` のような別名もそれぞれ1語と数えます）。
+組み込み語は起動時点で **272語** 登録されています（`MINUS`/`NEGATE` のような別名もそれぞれ1語と数えます）。
 
 ### 構文・定義形式
 
@@ -401,4 +402,4 @@ SAVESYS demo.exe
 
 現在は `EDIT`、`LIST`、エディットバッファ版の `LOAD`／`SAVE`、CP/Mファイル操作、PC-8001のモニター機能、`MCODE`やZ80機械語実行に対応していません。Z80をエミュレートする処理系ではありません。
 
-Gforthのワードのうち、`CATCH`、`READ-FILE` などの残りのファイル操作、`INCLUDE`、`$?`、語彙（ワードリスト）、`[IF]`、`.R`、`F.RDP` などは未実装です。詳しくは[互換性一覧](COMPATIBILITY.md)を参照してください。
+Gforthのワードのうち、`READ-FILE` などの残りのファイル操作、`INCLUDE`、`$?`、語彙（ワードリスト）、`[IF]`、`.R`、`F.RDP` などは未実装です。詳しくは[互換性一覧](COMPATIBILITY.md)を参照してください。

@@ -49,7 +49,7 @@ pub const data_start: Cell = 0x4000;
 const true_flag: Cell = -1;
 const dot_precision = 15;
 const fs_precision = 14;
-const image_magic = "SIGIMG06";
+const image_magic = "SIGIMG07";
 
 /// File ids of the standard streams; the host numbers opened files from `first_file_id`.
 pub const stdin_fileid: Cell = 1;
@@ -374,9 +374,41 @@ const Builtin = enum {
     string_array_free,
     string_array_slurp,
     string_array_slurp_file,
+    catch_word,
 };
 
 const HeapResult = union(enum) { address: Cell, no_memory, bad_pointer };
+
+/// THROW codes for interpreter errors, so CATCH can return them and THROW can raise
+/// them again with the original message. Standard Forth 2012 codes are used where one
+/// fits; the rest are system codes from -256 down. UnknownWord stays a plain code
+/// because its message needs the word that was not found.
+const error_codes = [_]struct { RuntimeError, Cell }{
+    .{ error.StackOverflow, -3 },           .{ error.StackUnderflow, -4 },          .{ error.ReturnStackOverflow, -5 },
+    .{ error.ReturnStackUnderflow, -6 },    .{ error.DictionaryFull, -8 },          .{ error.InvalidAddress, -9 },
+    .{ error.DivisionByZero, -10 },         .{ error.CompileOnly, -14 },            .{ error.PicturedNumericOverflow, -17 },
+    .{ error.StringTooLong, -18 },          .{ error.NameTooLong, -19 },            .{ error.HostUnavailable, -21 },
+    .{ error.ControlMismatch, -22 },        .{ error.InvalidNumber, -24 },          .{ error.LoopMismatch, -26 },
+    .{ error.FloatStackOverflow, -44 },     .{ error.FloatStackUnderflow, -45 },    .{ error.CodeFull, -256 },
+    .{ error.MemoryExhausted, -257 },       .{ error.ControlStackOverflow, -258 },  .{ error.InvalidDefinition, -259 },
+    .{ error.InvalidBase, -260 },           .{ error.InvalidExecutionToken, -261 }, .{ error.InputUnavailable, -262 },
+    .{ error.FileUnavailable, -263 },       .{ error.InvalidImage, -264 },          .{ error.HostFailed, -265 },
+    .{ error.CommentUnclosed, -266 },
+};
+const throw_code_undefined_word: Cell = -13;
+
+/// Interpreter state that CATCH restores when the executed word throws.
+const CatchFrame = struct {
+    data_depth: usize,
+    float_depth: usize,
+    return_depth: usize,
+    loop_depth: usize,
+    control_depth: usize,
+    pending: Pending,
+    compiling: bool,
+    defining: bool,
+    local_count: usize,
+};
 
 const WordKind = enum { builtin, colon, variable, constant, array, created, value, fconstant, two_constant };
 const Word = struct {
@@ -746,13 +778,7 @@ pub const State = struct {
     /// I/O results (-512 minus errno) name the C error, as gforth does.
     fn writeThrowMessage(self: *State, code: Cell) void {
         const message: ?[]const u8 = switch (code) {
-            -3 => "STACK OVER FLOW !",
-            -4 => "STACK UNDER FLOW !",
-            -5 => "RETURN STACK OVER FLOW !",
-            -6 => "RETURN STACK UNDER FLOW !",
-            -9 => "INVALID MEMORY ADDRESS !",
-            -10 => "DIVISION BY ZERO !",
-            -13 => "UNDEFINED WORD !",
+            throw_code_undefined_word => "UNDEFINED WORD !",
             -37 => "FILE I/O EXCEPTION !",
             -38 => "NON-EXISTENT FILE !",
             ior_errno_base - 2 => "NO SUCH FILE OR DIRECTORY !",
@@ -885,7 +911,7 @@ pub const State = struct {
             .{ "$INS", .string_insert },     .{ "$OVER", .string_over },      .{ "$FREE", .string_free },     .{ "$INIT", .string_init },        .{ "$SPLIT", .string_split },
             .{ "$ITER", .string_iter },      .{ "$TMP", .string_tmp },        .{ "$[]", .string_array },      .{ "$[]!", .string_array_store },  .{ "$[]@", .string_array_fetch },
             .{ "$[]#", .string_array_count }, .{ "$[].", .string_array_dot }, .{ "$[]MAP", .string_array_map }, .{ "$[]FREE", .string_array_free }, .{ "$[]SLURP", .string_array_slurp },
-            .{ "$[]SLURP-FILE", .string_array_slurp_file },
+            .{ "$[]SLURP-FILE", .string_array_slurp_file }, .{ "CATCH", .catch_word },
         };
         for (definitions) |definition| self.addBuiltin(definition[0], definition[1]) catch unreachable;
         self.builtin_count = self.word_count;
@@ -2256,8 +2282,33 @@ pub const State = struct {
                 const code = try self.pop();
                 if (code == 0) return;
                 if (code == -1) return error.Aborted;
+                // Codes of interpreter errors raise that error again, with its own message.
+                for (error_codes) |entry| {
+                    if (entry[1] == code) return entry[0];
+                }
                 self.throw_code = code;
                 return error.Thrown;
+            },
+            .catch_word => {
+                const xt = try self.wordId(try self.pop());
+                const frame = CatchFrame{
+                    .data_depth = self.data_depth,
+                    .float_depth = self.float_depth,
+                    .return_depth = self.return_depth,
+                    .loop_depth = self.loop_depth,
+                    .control_depth = self.control_depth,
+                    .pending = self.pending,
+                    .compiling = self.compiling,
+                    .defining = self.defining,
+                    .local_count = self.local_count,
+                };
+                if (self.executeWord(xt)) |_| {
+                    try self.push(0);
+                } else |err| {
+                    const code = self.throwCodeOf(err);
+                    self.restoreCatchFrame(frame);
+                    try self.push(code);
+                }
             },
             .read_only => try self.push(fam_read_only),
             .write_only => try self.push(fam_write_only),
@@ -2805,6 +2856,37 @@ pub const State = struct {
     fn executeStringInit(self: *State, string_var: Cell) RuntimeError!void {
         try self.push(string_var);
         try self.executeBuiltin(.string_init);
+    }
+
+    fn throwCodeOf(self: *State, err: RuntimeError) Cell {
+        if (err == error.Thrown) return self.throw_code;
+        if (err == error.Aborted) return -1;
+        if (err == error.UnknownWord) return throw_code_undefined_word;
+        for (error_codes) |entry| {
+            if (entry[0] == err) return entry[1];
+        }
+        unreachable;
+    }
+
+    /// Restores the stack depths and compiler state saved by CATCH. Stack contents below
+    /// the saved depths are left as they are, as in gforth. A definition that the caught
+    /// word started is abandoned the same way `report` abandons one.
+    fn restoreCatchFrame(self: *State, frame: CatchFrame) void {
+        if (self.defining and !frame.defining) {
+            self.code_count = self.words[self.current_word].code_start;
+            self.word_count = self.current_word;
+            self.data_here = self.current_data_start;
+            self.defining = false;
+        }
+        self.data_depth = frame.data_depth;
+        self.float_depth = frame.float_depth;
+        self.return_depth = frame.return_depth;
+        self.loop_depth = frame.loop_depth;
+        self.control_depth = frame.control_depth;
+        self.pending = frame.pending;
+        self.local_count = frame.local_count;
+        self.setCompiling(frame.compiling);
+        self.last_unknown_word = null;
     }
 
     fn fileOps(self: *State) RuntimeError!*const FileOps {
