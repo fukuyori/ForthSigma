@@ -3372,8 +3372,9 @@ pub const State = struct {
         return true;
     }
 
+    /// Token delimiters. Tabs separate tokens as in gforth, so tab-indented sources work.
     fn isSeparator(byte: u8) bool {
-        return byte == ' ' or byte == '\r' or byte == '\n';
+        return byte == ' ' or byte == '\t' or byte == '\r' or byte == '\n';
     }
 
     fn nextToken(input: []const u8, cursor: *usize) ?[]const u8 {

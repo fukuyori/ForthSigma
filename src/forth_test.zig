@@ -1471,3 +1471,13 @@ test "locals survive a full image restore" {
     try target.interpretLine("10 3 SUB");
     try expectStack(target, &.{7});
 }
+test "tabs separate tokens like spaces" {
+    var output = Output{};
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
+
+    try machine.interpretLine(": T\t{ a b -- c }\n\t10 { c }\ta b + c * ;\t1\t2 T");
+    try machine.interpretLine("S\"\tx\" TYPE\t.\"\ty\"\tCHAR\tz EMIT");
+    try expectStack(machine, &.{30});
+    try std.testing.expectEqualStrings("xyz", output.written());
+}
