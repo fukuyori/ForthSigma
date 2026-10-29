@@ -91,7 +91,7 @@ Z80の命令実行・エミュレーションはプロジェクトの対象外�
 
 ## 自動回帰テストとの対応
 
-zig build testで、現行コアの主要動作を次のテストで確認します（97件）。
+zig build testで、現行コアの主要動作を次のテストで確認します（コア100件、ホスト2件の計102件）。
 
 | テスト | 確認する動作 |
 | --- | --- |
@@ -118,7 +118,9 @@ zig build testで、現行コアの主要動作を次のテストで確認しま
 | string conversion and input | >NUMBER、S>NUMBER?、>FLOAT、D>F、F>D、ACCEPT、EVALUATE、KEY、KEY? |
 | image round trip | 辞書イメージの保存・復元・追加読み込みでの語・浮動小数点定数・VALUE・2CONSTANT・文字列の再配置、定数に保存した実行トークンの完全復元、旧形式の拒否 |
 | group A words | WITHINの境界と折り返し、2>R/2R>の順序と不足、ENDIF、PLACEの重なり・255バイト上限・メモリ末尾、STATEの保存アドレス経由の読み取り、ABORT、:NONAMEとその巻き戻し |
-| host words | MS、UTIME、GETENV（未設定・空・長すぎる値）、SYSTEM（失敗）、ホスト機能がない場合のエラー、PAGEの出力 |
+| :NONAME rollback | 定義中のエラー、`;` でのコード領域不足、開始時のスタック満杯・辞書満杯の後に、辞書・コード・データ位置・スタック・STATEが戻り、次の定義が作れること |
+| host words | MS、UTIME、GETENV（未設定・空・長すぎる値）、SYSTEM（失敗）、MS・UTIMEの失敗の報告、ホスト機能がない場合のエラー（MS、SYSTEM、UTIME、GETENV）、PAGEの出力 |
+| host callbacks（`src/main.zig`） | 実際のGETENVの3072／3073バイト境界と未設定・空・`=` を含む名前、実際のSYSTEMの4095／4096バイト境界、NULを含むコマンドの拒否、0以外の終了コード |
 | THROW | 0の無視、-1の中断、標準コード・ファイルのior・その他のコードの報告（基数によらず10進） |
 | heap | ALLOCATE・FREE・RESIZEの成功と失敗（ENOMEM、無効なアドレス）、解放した領域の再利用、全解放後のヒープの回復 |
 | dynamic strings | 教材Level 14の例、自分自身を元にした連結・挿入、範囲外の削除・挿入・上書き、$SPLIT、$ITER、$TMP（入れ子、エラー後の出力復帰）、文字列配列、$[]SLURP／$[]SLURP-FILE、完全復元後のヒープ文字列 |

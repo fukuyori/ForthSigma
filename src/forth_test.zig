@@ -10,6 +10,7 @@ const Output = struct {
     keys: []const u8 = "",
     key_index: usize = 0,
     slept: forth.Cell = -1,
+    host_fails: bool = false,
     command: [64]u8 = undefined,
     command_len: usize = 0,
     files: [2]FakeFile = .{ .{}, .{} },
@@ -29,10 +30,13 @@ const Output = struct {
 
     fn sleep(context: ?*anyopaque, milliseconds: forth.Cell) forth.RuntimeError!void {
         const output: *Output = @ptrCast(@alignCast(context.?));
+        if (output.host_fails) return error.HostFailed;
         output.slept = milliseconds;
     }
 
-    fn utime(_: ?*anyopaque) forth.RuntimeError!forth.Double {
+    fn utime(context: ?*anyopaque) forth.RuntimeError!forth.Double {
+        const output: *Output = @ptrCast(@alignCast(context.?));
+        if (output.host_fails) return error.HostFailed;
         return 1_700_000_000_000_000;
     }
 
@@ -1164,7 +1168,27 @@ test "host words report an error when the host does not provide them" {
     machine.report(error.HostUnavailable);
     try std.testing.expectError(error.HostUnavailable, machine.interpretLine("S\" X\" SYSTEM"));
     machine.report(error.HostUnavailable);
-    try std.testing.expectEqualStrings("HOST FUNCTION UNAVAILABLE !\nHOST FUNCTION UNAVAILABLE !\n", output.written());
+    try std.testing.expectError(error.HostUnavailable, machine.interpretLine("UTIME"));
+    machine.report(error.HostUnavailable);
+    try std.testing.expectError(error.HostUnavailable, machine.interpretLine("S\" X\" GETENV"));
+    machine.report(error.HostUnavailable);
+    try std.testing.expectEqualStrings("HOST FUNCTION UNAVAILABLE !\n" ** 4, output.written());
+    try expectStack(machine, &.{});
+}
+
+test "host failures in MS and UTIME are reported and leave a clean stack" {
+    var output = Output{};
+    output.host_fails = true;
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
+
+    try std.testing.expectError(error.HostFailed, machine.interpretLine("7 100 MS"));
+    machine.report(error.HostFailed);
+    try std.testing.expectError(error.HostFailed, machine.interpretLine(": T UTIME ; T"));
+    machine.report(error.HostFailed);
+    try std.testing.expectEqualStrings("HOST FUNCTION ERROR !\nHOST FUNCTION ERROR !\n", output.written());
+    try std.testing.expectEqual(@as(forth.Cell, -1), output.slept);
+    try expectStack(machine, &.{});
 }
 
 test "PAGE clears the screen with ANSI sequences" {
@@ -1480,4 +1504,66 @@ test "tabs separate tokens like spaces" {
     try machine.interpretLine("S\"\tx\" TYPE\t.\"\ty\"\tCHAR\tz EMIT");
     try expectStack(machine, &.{30});
     try std.testing.expectEqualStrings("xyz", output.written());
+}
+test ":NONAME failures restore code, data, stack, and STATE" {
+    var output = Output{};
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
+    const words = machine.word_count;
+    const code = machine.code_count;
+    const data = machine.data_here;
+
+    try std.testing.expectError(error.UnknownWord, machine.interpretLine(":NONAME [ 16 ALLOT ] 1 MISSING"));
+    machine.report(error.UnknownWord);
+    try std.testing.expectEqual(words, machine.word_count);
+    try std.testing.expectEqual(code, machine.code_count);
+    try std.testing.expectEqual(data, machine.data_here);
+    try expectStack(machine, &.{});
+    try machine.interpretLine("STATE @ :NONAME 5 ; EXECUTE");
+    try expectStack(machine, &.{ 0, 5 });
+
+    // A full data stack fails before the definition starts.
+    machine.data_depth = machine.data_stack.len;
+    const words_before_overflow = machine.word_count;
+    try std.testing.expectError(error.StackOverflow, machine.interpretLine(":NONAME 1 ;"));
+    try std.testing.expect(!machine.defining);
+    try std.testing.expectEqual(words_before_overflow, machine.word_count);
+    machine.report(error.StackOverflow);
+}
+
+test ":NONAME rolls back when the code area fills at ; and fails cleanly on a full dictionary" {
+    var output = Output{};
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
+    const words = machine.word_count;
+    const code = machine.code_count;
+    var input: [16400]u8 = undefined;
+    var used: usize = 0;
+    @memcpy(input[0..8], ":NONAME ");
+    used = 8;
+    for (0..8192 - @as(usize, code)) |_| {
+        @memcpy(input[used .. used + 2], "1 ");
+        used += 2;
+    }
+    input[used] = ';';
+    used += 1;
+    try std.testing.expectError(error.CodeFull, machine.interpretLine(input[0..used]));
+    machine.report(error.CodeFull);
+    try std.testing.expectEqual(words, machine.word_count);
+    try std.testing.expectEqual(code, machine.code_count);
+    try expectStack(machine, &.{});
+    try machine.interpretLine("STATE @ :NONAME 5 ; EXECUTE");
+    try expectStack(machine, &.{ 0, 5 });
+
+    machine.data_depth = 0;
+    var definition: [32]u8 = undefined;
+    while (machine.word_count < 1024) {
+        try machine.interpretLine(try std.fmt.bufPrint(&definition, ": W{d} 1 ;", .{machine.word_count}));
+    }
+    try std.testing.expectError(error.DictionaryFull, machine.interpretLine(":NONAME 1 ;"));
+    try std.testing.expect(!machine.defining);
+    machine.report(error.DictionaryFull);
+    try expectStack(machine, &.{});
+    try machine.interpretLine("W1023 STATE @");
+    try expectStack(machine, &.{ 1, 0 });
 }

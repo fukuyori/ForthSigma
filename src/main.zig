@@ -67,6 +67,8 @@ fn environmentValue(context: ?*anyopaque, name: []const u8, buffer: []u8) forth.
 fn runShellCommand(_: ?*anyopaque, command: []const u8) forth.RuntimeError!void {
     var terminated: [4096:0]u8 = undefined;
     if (command.len >= terminated.len) return error.StringTooLong;
+    // `system` would stop at an embedded NUL and run only the text before it.
+    if (std.mem.indexOfScalar(u8, command, 0) != null) return error.HostFailed;
     @memcpy(terminated[0..command.len], command);
     terminated[command.len] = 0;
     if (system(&terminated) == -1) return error.HostFailed;
@@ -451,4 +453,34 @@ pub fn main(init: std.process.Init) !void {
         line[used] = byte;
         used += 1;
     }
+}
+
+// Host tests: these exercise the real callbacks, which the core tests replace with fakes.
+
+fn discardOutput(_: ?*anyopaque, _: []const u8) void {}
+
+test "GETENV through the host accepts 3072 bytes and rejects 3073" {
+    var map = std.process.Environ.Map.init(std.testing.allocator);
+    defer map.deinit();
+    try map.put("SIGMA_FIT", &([_]u8{'x'} ** 3072));
+    try map.put("SIGMA_LONG", &([_]u8{'y'} ** 3073));
+    try map.put("SIGMA_EMPTY", "");
+    var host = HostContext{ .allocator = std.testing.allocator, .executable_path = "", .io = undefined, .environ_map = &map };
+    const machine = try std.testing.allocator.create(forth.State);
+    defer std.testing.allocator.destroy(machine);
+    machine.* = forth.State.init(.{ .context = @ptrCast(&host), .write_fn = discardOutput, .getenv_fn = environmentValue });
+
+    try machine.interpretLine("S\" SIGMA_FIT\" GETENV NIP S\" SIGMA_EMPTY\" GETENV NIP S\" SIGMA_UNSET\" GETENV S\" A=B\" GETENV");
+    try std.testing.expectEqualSlices(forth.Cell, &.{ 3072, 0, 0, 0, 0, 0 }, machine.data_stack[0..machine.data_depth]);
+    try std.testing.expectError(error.StringTooLong, machine.interpretLine("S\" SIGMA_LONG\" GETENV"));
+}
+
+test "SYSTEM through the host checks length and embedded NUL before running" {
+    var command: [4096]u8 = @splat(' ');
+    @memcpy(command[0..6], "exit 0");
+    try runShellCommand(null, command[0..4095]);
+    try std.testing.expectError(error.StringTooLong, runShellCommand(null, command[0..4096]));
+    try std.testing.expectError(error.HostFailed, runShellCommand(null, "exit 0\x00 & exit 1"));
+    // A command that runs but exits with a non-zero status is not an error.
+    try runShellCommand(null, "exit 3");
 }
