@@ -18,7 +18,12 @@ pub const memory_size = 2 << 20;
 /// The data area ends where the ALLOCATE heap begins; the heap runs to the end of memory.
 pub const data_limit: Cell = 1 << 20;
 const heap_base: Cell = data_limit;
-const heap_end: Cell = memory_size;
+/// The last 64 KiB hold the frames of local variables, so variable-flavoured locals
+/// (`W^`, `F^`, ...) have addresses in logical memory.
+const locals_base: Cell = memory_size - 0x10000;
+const locals_end: Cell = memory_size;
+const heap_end: Cell = locals_base;
+const max_locals = 64;
 /// Each heap block starts with its payload size and a used flag, one cell each.
 const heap_header = 2 * cell_size;
 const base_address: Cell = 0x0200;
@@ -44,7 +49,7 @@ pub const data_start: Cell = 0x4000;
 const true_flag: Cell = -1;
 const dot_precision = 15;
 const fs_precision = 14;
-const image_magic = "SIGIMG05";
+const image_magic = "SIGIMG06";
 
 /// File ids of the standard streams; the host numbers opened files from `first_file_id`.
 pub const stdin_fileid: Cell = 1;
@@ -387,9 +392,22 @@ const Word = struct {
     does_code_start: u16 = 0,
     does_code_end: u16 = 0,
     data_here_before: Cell = 0,
+    /// Bytes of local-variable frame the definition needs when it runs.
+    locals_size: u16 = 0,
 };
 
-const OpKind = enum { call, compile_call, builtin, literal, float_literal, execution_token, store_value, branch, branch_zero, do_loop, q_do_loop, loop, plus_loop, leave, print_string, string_literal, does, exit };
+/// Local operations other than `local_frame` encode the frame offset in the low 32 bits
+/// of the value and the `LocalKind` above them; `local_frame` holds the word id.
+const OpKind = enum { call, compile_call, builtin, literal, float_literal, execution_token, store_value, branch, branch_zero, do_loop, q_do_loop, loop, plus_loop, leave, print_string, string_literal, does, exit, local_frame, local_store, local_fetch, local_address, local_execute };
+const LocalKind = enum(u8) { cell, double, float, char, xt };
+const Local = struct {
+    name: [max_name]u8 = undefined,
+    name_len: u8 = 0,
+    kind: LocalKind = .cell,
+    /// Variable flavour (`W^` ...): the name pushes the slot address instead of its value.
+    variable: bool = false,
+    offset: u16 = 0,
+};
 const Op = struct { kind: OpKind, value: Cell = 0 };
 const ControlKind = enum { if_branch, else_branch, begin_loop, while_branch, do_loop, case_start, of_branch, endof_branch };
 const Control = struct { kind: ControlKind, address: u16 };
@@ -552,6 +570,11 @@ pub const State = struct {
     capture_target: ?Cell = null,
     capture_failed: bool = false,
     tmp_string_index: usize = 0,
+    locals: [max_locals]Local = undefined,
+    local_count: usize = 0,
+    /// Frame bytes used so far by the definition being compiled.
+    locals_frame_size: u16 = 0,
+    locals_top: Cell = locals_base,
 
     pub fn init(writer: Writer) State {
         var state = State{ .writer = writer };
@@ -656,7 +679,7 @@ pub const State = struct {
         for (source.code[0..source.code_count], 0..) |original, offset| {
             var op = original;
             switch (op.kind) {
-                .call, .compile_call, .execution_token, .store_value => if (op.value >= source.builtin_count) {
+                .call, .compile_call, .execution_token, .store_value, .local_frame => if (op.value >= source.builtin_count) {
                     op.value = @intCast(word_base + @as(usize, @intCast(op.value - source.builtin_count)));
                 },
                 .branch, .branch_zero, .do_loop, .q_do_loop, .loop, .plus_loop => {
@@ -665,7 +688,7 @@ pub const State = struct {
                 .print_string, .string_literal => {
                     op.value += data_delta;
                 },
-                .builtin, .literal, .float_literal, .leave, .does, .exit => {},
+                .builtin, .literal, .float_literal, .leave, .does, .exit, .local_store, .local_fetch, .local_address, .local_execute => {},
             }
             self.code[code_base + offset] = op;
         }
@@ -681,6 +704,8 @@ pub const State = struct {
 
     pub fn report(self: *State, err: anyerror) void {
         self.capture_target = null;
+        self.local_count = 0;
+        self.locals_top = locals_base;
         if (self.defining) {
             self.code_count = self.words[self.current_word].code_start;
             self.word_count = self.current_word;
@@ -984,6 +1009,13 @@ pub const State = struct {
                 } else try self.push(id);
             },
             .to_name => {
+                if (self.compiling) {
+                    if (self.findLocal(token)) |local| {
+                        if (local.variable) return error.InvalidDefinition;
+                        _ = try self.emit(.{ .kind = .local_store, .value = localOperand(local) });
+                        return;
+                    }
+                }
                 const id = try self.lookupOrFail(token);
                 if (self.words[id].kind != .value) return error.InvalidDefinition;
                 if (self.compiling) {
@@ -1004,6 +1036,10 @@ pub const State = struct {
     }
 
     fn handleToken(self: *State, token: []const u8) RuntimeError!void {
+        // Local variables shadow every dictionary word inside their definition.
+        if (self.compiling) {
+            if (self.findLocal(token)) |local| return self.compileLocalReference(local);
+        }
         const found = self.lookup(token);
         if (found) |id| {
             if (id >= self.builtin_count) return self.handleWord(id);
@@ -1012,6 +1048,12 @@ pub const State = struct {
             if (self.defining) return error.InvalidDefinition;
             self.pending = .colon_name;
             return;
+        }
+        if (std.mem.eql(u8, token, "{") or std.mem.eql(u8, token, "{:")) {
+            return self.compileLocals(if (token.len == 1) "}" else ":}");
+        }
+        if (asciiEqlIgnoreCase(token, "LOCALS|")) {
+            return self.compileAnsLocals();
         }
         if (asciiEqlIgnoreCase(token, ":NONAME")) {
             if (self.defining) return error.InvalidDefinition;
@@ -1027,6 +1069,8 @@ pub const State = struct {
             if (self.control_depth != 0) return error.ControlMismatch;
             _ = try self.emit(.{ .kind = .exit });
             self.words[self.current_word].code_end = self.code_count;
+            self.words[self.current_word].locals_size = self.locals_frame_size;
+            self.local_count = 0;
             self.setCompiling(false);
             self.defining = false;
             return;
@@ -1126,6 +1170,8 @@ pub const State = struct {
     }
 
     fn beginDefinition(self: *State, id: u16) void {
+        self.local_count = 0;
+        self.locals_frame_size = 0;
         self.current_word = id;
         self.current_data_start = self.words[id].data_here_before;
         self.setCompiling(true);
@@ -1137,6 +1183,126 @@ pub const State = struct {
     fn setCompiling(self: *State, compiling: bool) void {
         self.compiling = compiling;
         self.writeCell(state_address, truth(compiling)) catch unreachable;
+    }
+
+    fn findLocal(self: *State, name: []const u8) ?Local {
+        var index = self.local_count;
+        while (index > 0) {
+            index -= 1;
+            const local = self.locals[index];
+            if (asciiEqlIgnoreCase(local.name[0..local.name_len], name)) return local;
+        }
+        return null;
+    }
+
+    fn localOperand(local: Local) Cell {
+        return @as(Cell, local.offset) | (@as(Cell, @intFromEnum(local.kind)) << 32);
+    }
+
+    fn compileLocalReference(self: *State, local: Local) RuntimeError!void {
+        const kind: OpKind = if (local.variable) .local_address else if (local.kind == .xt) .local_execute else .local_fetch;
+        _ = try self.emit(.{ .kind = kind, .value = localOperand(local) });
+    }
+
+    fn addLocal(self: *State, name: []const u8, kind: LocalKind, variable: bool) RuntimeError!Local {
+        if (self.local_count == max_locals) return error.InvalidDefinition;
+        if (name.len == 0 or name.len > max_name) return error.NameTooLong;
+        const size: u16 = if (kind == .double) 2 * cell_size else cell_size;
+        var local = Local{ .name_len = @intCast(name.len), .kind = kind, .variable = variable, .offset = self.locals_frame_size };
+        @memcpy(local.name[0..name.len], name);
+        self.locals[self.local_count] = local;
+        self.local_count += 1;
+        self.locals_frame_size += size;
+        return local;
+    }
+
+    /// Emits the frame setup and the stores that take initial values off the stacks.
+    /// `locals` is in the order the values are popped (top of stack first).
+    fn compileLocalInitialization(self: *State, locals: []const Local) RuntimeError!void {
+        _ = try self.emit(.{ .kind = .local_frame, .value = self.current_word });
+        for (locals) |local| _ = try self.emit(.{ .kind = .local_store, .value = localOperand(local) });
+    }
+
+    /// gforth's `{ ... }` and the standard `{: ... :}`: typed names take their values from
+    /// the stacks (the last name from the top), names after `|` start at zero, and
+    /// everything after `--` is a comment.
+    fn compileLocals(self: *State, closing: []const u8) RuntimeError!void {
+        if (!self.compiling or !self.defining) return error.CompileOnly;
+        var initialized: [max_locals]Local = undefined;
+        var initialized_count: usize = 0;
+        var uninitialized = false;
+        var comment = false;
+        const Flavor = struct { kind: LocalKind, variable: bool };
+        var pending: ?Flavor = null;
+        while (true) {
+            const token = self.nextSourceToken() orelse return error.InvalidDefinition;
+            if (std.mem.eql(u8, token, closing)) break;
+            if (comment) continue;
+            if (std.mem.eql(u8, token, "--")) {
+                comment = true;
+                continue;
+            }
+            if (std.mem.eql(u8, token, "|")) {
+                if (pending != null) return error.InvalidDefinition;
+                uninitialized = true;
+                continue;
+            }
+            const types = [_]struct { []const u8, LocalKind, bool }{
+                .{ "W:", .cell, false }, .{ "W^", .cell, true },  .{ "D:", .double, false }, .{ "D^", .double, true },
+                .{ "F:", .float, false }, .{ "F^", .float, true }, .{ "C:", .char, false },   .{ "C^", .char, true },
+                .{ "XT:", .xt, false },  .{ "XT^", .xt, true },
+            };
+            const prefix = for (types) |entry| {
+                if (asciiEqlIgnoreCase(token, entry[0])) break entry;
+            } else null;
+            if (prefix) |entry| {
+                if (pending != null) return error.InvalidDefinition;
+                pending = .{ .kind = entry[1], .variable = entry[2] };
+                continue;
+            }
+            const flavor = pending orelse Flavor{ .kind = .cell, .variable = false };
+            pending = null;
+            const local = try self.addLocal(token, flavor.kind, flavor.variable);
+            if (!uninitialized) {
+                initialized[initialized_count] = local;
+                initialized_count += 1;
+            }
+        }
+        if (pending != null) return error.InvalidDefinition;
+        std.mem.reverse(Local, initialized[0..initialized_count]);
+        try self.compileLocalInitialization(initialized[0..initialized_count]);
+    }
+
+    /// The standard `LOCALS| a b |`: the first name takes the top of the stack.
+    fn compileAnsLocals(self: *State) RuntimeError!void {
+        if (!self.compiling or !self.defining) return error.CompileOnly;
+        var names: [max_locals]Local = undefined;
+        var count: usize = 0;
+        while (true) {
+            const token = self.nextSourceToken() orelse return error.InvalidDefinition;
+            if (std.mem.eql(u8, token, "|")) break;
+            names[count] = try self.addLocal(token, .cell, false);
+            count += 1;
+        }
+        try self.compileLocalInitialization(names[0..count]);
+    }
+
+    fn storeLocal(self: *State, address: Cell, kind: LocalKind) RuntimeError!void {
+        switch (kind) {
+            .cell, .xt => try self.writeCell(address, try self.pop()),
+            .double => try self.writeDouble(address, try self.popDouble()),
+            .float => try self.writeFloat(address, try self.fpop()),
+            .char => self.memory[try self.memoryAddress(address, 1)] = @truncate(@as(UCell, @bitCast(try self.pop()))),
+        }
+    }
+
+    fn fetchLocal(self: *State, address: Cell, kind: LocalKind) RuntimeError!void {
+        switch (kind) {
+            .cell, .xt => try self.push(try self.readCell(address)),
+            .double => try self.pushDouble(try self.readDouble(address)),
+            .float => try self.fpush(try self.readFloat(address)),
+            .char => try self.push(self.memory[try self.memoryAddress(address, 1)]),
+        }
     }
 
     fn startInterpretPending(self: *State, pending: Pending) RuntimeError!void {
@@ -1254,6 +1420,8 @@ pub const State = struct {
     fn compileDoes(self: *State) RuntimeError!void {
         if (!self.compiling or !self.defining) return error.CompileOnly;
         _ = try self.emit(.{ .kind = .does });
+        // The DOES> part runs in its own invocation, so earlier locals are out of scope.
+        self.local_count = 0;
     }
 
     fn compileCase(self: *State) RuntimeError!void {
@@ -1352,6 +1520,11 @@ pub const State = struct {
 
     fn executeOperations(self: *State, start_pc: u16, end_pc: u16, defining_word: ?u16) RuntimeError!void {
         var pc = start_pc;
+        // The local-variable frame of this invocation, released on every exit path.
+        var locals_frame: ?Cell = null;
+        defer if (locals_frame) |base| {
+            self.locals_top = base;
+        };
         while (pc < end_pc and !self.halted) {
             const op = self.code[pc];
             pc += 1;
@@ -1426,6 +1599,26 @@ pub const State = struct {
                     return;
                 },
                 .exit => return,
+                .local_frame => if (locals_frame == null) {
+                    const size = self.words[try self.wordId(op.value)].locals_size;
+                    if (locals_end - self.locals_top < size) return error.ReturnStackOverflow;
+                    const start: usize = @intCast(self.locals_top);
+                    @memset(self.memory[start .. start + size], 0);
+                    locals_frame = self.locals_top;
+                    self.locals_top += size;
+                },
+                .local_store, .local_fetch, .local_address, .local_execute => {
+                    const base = locals_frame orelse return error.InvalidAddress;
+                    const address = base + (op.value & 0xffff_ffff);
+                    const kind: LocalKind = @enumFromInt(op.value >> 32);
+                    switch (op.kind) {
+                        .local_store => try self.storeLocal(address, kind),
+                        .local_fetch => try self.fetchLocal(address, kind),
+                        .local_address => try self.push(address),
+                        .local_execute => try self.executeWord(try self.wordId(try self.readCell(address))),
+                        else => unreachable,
+                    }
+                },
             }
         }
     }

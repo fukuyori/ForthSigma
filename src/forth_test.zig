@@ -1273,7 +1273,7 @@ test "freeing every block returns the heap to its start" {
     const machine = try createMachine(&output);
     defer destroyMachine(machine);
 
-    try machine.interpretLine("16 ALLOCATE THROW 32 ALLOCATE THROW 64 ALLOCATE THROW ROT DUP >R FREE THROW FREE THROW FREE THROW 1048000 ALLOCATE THROW R> =");
+    try machine.interpretLine("16 ALLOCATE THROW 32 ALLOCATE THROW 64 ALLOCATE THROW ROT DUP >R FREE THROW FREE THROW FREE THROW 980000 ALLOCATE THROW R> =");
     try expectStack(machine, &.{-1});
 }
 
@@ -1370,4 +1370,104 @@ test "heap strings survive a full image restore" {
     try loaded.restoreImage(image[0..length]);
     try loaded.interpretLine("S $. S\" !\" S $+! S $.");
     try std.testing.expectEqualStrings("keptkept!", output.written());
+}
+test "locals take values in stack order and can be redefined mid-definition" {
+    var output = Output{};
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
+
+    try machine.interpretLine(": T { a b -- c } 10 { c } a b < IF a b + c * ELSE a b - c * THEN ; 1 2 T 2 1 T");
+    try machine.interpretLine(": E { a b c } c b a ; 10 20 30 E : L 3 0 DO I { k } k k * LOOP ; L");
+    try expectStack(machine, &.{ 30, 10, 30, 20, 10, 0, 1, 4 });
+}
+
+test "TO changes value-flavoured locals and | starts locals at zero" {
+    var output = Output{};
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
+
+    try machine.interpretLine(": C { n -- } BEGIN n n 1- TO n n 0= UNTIL ; 3 C : U { a | b c -- } b c a TO b b 2 * TO c b c ; 21 U");
+    try expectStack(machine, &.{ 3, 2, 1, 0, 0, 21, 42 });
+}
+
+test "typed locals hold cells, doubles, floats, characters, and execution tokens" {
+    var output = Output{};
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
+
+    try machine.interpretLine(": AREA { F: r -- F: a } r r F* ; 3E AREA : ADD { D: n -- D: r } n 1000. D+ ; 5000. ADD");
+    try machine.interpretLine(": UP { C: ch } ch 32 - ; 'a' 256 + UP : RUN { XT: x } x ; : PASS { W: xt } xt EXECUTE ; 1 2 ' + RUN 3 4 ' * PASS");
+    try expectFloatStack(machine, &.{9});
+    try expectStack(machine, &.{ 6000, 0, 'A', 3, 12 });
+}
+
+test "variable-flavoured locals push addresses into the locals frame" {
+    var output = Output{};
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
+
+    try machine.interpretLine(": SW { W^ a W^ b } a @ 2 * b @ 2 * a ! b ! a @ b @ ; 3 7 SW : FS { F^ a F^ b } a F@ b F@ a F! b F! a F@ b F@ ; 1.5E 2.5E FS");
+    try machine.interpretLine(": CH { C^ p } p 1 TYPE ; 72 CH 73 CH : G 0 { W^ s } S\" Hi\" s $! S\" !\" s $+! s $. ; G");
+    try expectStack(machine, &.{ 14, 6 });
+    try expectFloatStack(machine, &.{ 2.5, 1.5 });
+    try std.testing.expectEqualStrings("HIHi!", output.written());
+}
+
+test "LOCALS| binds the first name to the top of the stack and {: :} is accepted" {
+    var output = Output{};
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
+
+    try machine.interpretLine(": M LOCALS| n2 n1 | n1 n2 > IF n1 ELSE n2 THEN ; 3 9 M 9 3 M : S {: a b -- d :} a b - ; 10 3 S");
+    try expectStack(machine, &.{ 9, 9, 7 });
+}
+
+test "each recursive call gets its own locals frame and frames are released" {
+    var output = Output{};
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
+    const top = machine.locals_top;
+
+    try machine.interpretLine(": FIB { n -- r } n 2 < IF n ELSE n 1- RECURSE n 2 - RECURSE + THEN ; 20 FIB : R { a b } a >R b 2 * R> + ; 1 2 R");
+    try expectStack(machine, &.{ 6765, 5 });
+    try std.testing.expectEqual(top, machine.locals_top);
+    machine.data_depth = 0;
+    try std.testing.expectError(error.StackUnderflow, machine.interpretLine("FIB"));
+    machine.report(error.StackUnderflow);
+    try std.testing.expectEqual(top, machine.locals_top);
+}
+
+test "local names are scoped to their definition and rejected outside one" {
+    var output = Output{};
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
+
+    try machine.interpretLine(": DUP2 { DUP } DUP DUP ; 4 DUP2 : AFTER 5 DUP ; AFTER");
+    try expectStack(machine, &.{ 4, 4, 5, 5 });
+    try std.testing.expectError(error.CompileOnly, machine.interpretLine("1 { X }"));
+    machine.report(error.CompileOnly);
+    try std.testing.expectError(error.InvalidDefinition, machine.interpretLine(": BAD { F: } ;"));
+    machine.report(error.InvalidDefinition);
+    try std.testing.expectError(error.InvalidDefinition, machine.interpretLine(": BAD2 { W^ v } 1 TO v ;"));
+    machine.report(error.InvalidDefinition);
+}
+
+test "locals survive a full image restore" {
+    var output = Output{};
+    const source = try createMachine(&output);
+    defer destroyMachine(source);
+    try source.interpretLine(": SUB { a b } a b - ; :NONAME { F: x } x x F* ; CONSTANT SQ");
+    const image = try std.testing.allocator.alloc(u8, forth.State.imageCapacity());
+    defer std.testing.allocator.free(image);
+    const length = try source.encodeImage(image);
+
+    const target = try createMachine(&output);
+    defer destroyMachine(target);
+    try target.interpretLine(": EARLIER 1 ;");
+    const loaded = try createMachine(&output);
+    defer destroyMachine(loaded);
+    try loaded.restoreImage(image[0..length]);
+    try target.appendImage(loaded);
+    try target.interpretLine("10 3 SUB");
+    try expectStack(target, &.{7});
 }
