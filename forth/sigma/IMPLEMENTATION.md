@@ -126,6 +126,8 @@ The runtime does not implement the magazine's editor-buffer versions of LOAD/SAV
 
 ## Verification record
 
+On 2026-10-29, after the Codex review of the stage 6 commit, a `MARKER` clears the unused slots of its record and `LOAD` renumbers only the recorded order entries, and `[DEFINED]`/`[UNDEFINED]` see local variables while compiling. `zig build test` passed all 140 tests (137 core, 3 host) on Windows, and the review's `[DEFINED] x` example now prints 7 as gforth does.
+
 On 2026-10-29, after stage 6, `zig build test` passed all 135 tests (132 core, 3 host) and `zig build` succeeded on Windows; cross-builds for x86_64 Linux musl and x86_64 macOS also succeeded. On Windows every Level 16 example (`VOCABULARY MY-WORDS`, `ONLY FORTH ALSO`, `DEFINITIONS`, `ORDER`, `GET-ORDER`/`SET-ORDER`, the `WORDLIST`-based `MATH`/`IO` modules with `3 MAIN` printing `Result: 25`, and the `W1`/`W2` shadowing) printed the book's output, including `ORDER` lines such as `MY-WORDS Forth Root     MY-WORDS`. The Linux build ran a vocabulary and `[IF]` example under Ubuntu WSL. macOS has not been run.
 
 On 2026-10-29, after the Codex review of the #153/#154 commits, `zig build test` passed all 128 tests (125 core, 3 host) and `zig build` succeeded on Windows; the Linux musl cross-build succeeded. The two reproduced problems (`S" VARIABLE" EVALUATE LEAK` taking `LEAK` as the name, and `INCLUDED` between `CREATE` and `DOES>`) no longer occur in the executable.

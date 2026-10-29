@@ -806,7 +806,7 @@ pub const State = struct {
         if (wordlist_base + source_wordlists - root_wordlist > max_wordlists) return error.DictionaryFull;
         const mapWordlist = struct {
             fn map(wid: Cell, base: Cell) Cell {
-                return if (wid <= root_wordlist) wid else base + wid - root_wordlist;
+                return if (wid <= root_wordlist) wid else base +% wid -% root_wordlist;
             }
         }.map;
 
@@ -870,9 +870,12 @@ pub const State = struct {
                 if (saved & (@as(UCell, 1) << @intCast(index)) != 0 and file_map[index] != 0) mask |= @as(UCell, 1) << @intCast(file_map[index] - 1);
             }
             try self.writeCell(word.value, @bitCast(mask));
-            for (1..3 + max_search_order) |slot| {
-                if (slot == 2) continue;
-                const at = word.value + @as(Cell, @intCast(slot)) * cell_size;
+            // Only the current list and the recorded order entries hold word-list ids.
+            const current_at = word.value + cell_size;
+            try self.writeCell(current_at, mapWordlist(try self.readCell(current_at), wordlist_base));
+            const depth: usize = @intCast(std.math.clamp(try self.readCell(word.value + 2 * cell_size), 0, max_search_order));
+            for (0..depth) |index| {
+                const at = word.value + @as(Cell, @intCast(3 + index)) * cell_size;
                 try self.writeCell(at, mapWordlist(try self.readCell(at), wordlist_base));
             }
         }
@@ -1250,7 +1253,8 @@ pub const State = struct {
         try self.writeCell(address + cell_size, self.currentWordlist());
         const depth = self.searchOrderDepth();
         try self.writeCell(address + 2 * cell_size, @intCast(depth));
-        for (0..depth) |index| try self.writeCell(address + @as(Cell, @intCast(3 + index)) * cell_size, self.searchOrderEntry(index));
+        // Unused slots are cleared, since the data area may hold old values.
+        for (0..max_search_order) |index| try self.writeCell(address + @as(Cell, @intCast(3 + index)) * cell_size, if (index < depth) self.searchOrderEntry(index) else 0);
     }
 
     /// MARKER: restores the REQUIRE history, the current list, and the search order.
@@ -3036,7 +3040,8 @@ pub const State = struct {
             .bracket_then => {},
             .bracket_defined, .bracket_undefined => {
                 const name = (try self.nextSourceToken()) orelse return error.InputUnavailable;
-                const found = self.lookup(name) != null;
+                // While compiling, a local variable in scope counts as defined, as in gforth.
+                const found = (self.compiling and self.findLocal(name) != null) or self.lookup(name) != null;
                 try self.push(truth(if (builtin == .bracket_defined) found else !found));
             },
             .read_only => try self.push(fam_read_only),
