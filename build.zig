@@ -15,6 +15,9 @@ pub fn build(b: *std.Build) void {
     });
     addCoreMath(b, exe.root_module);
     b.installArtifact(exe);
+    // The program's license and the third-party notices go with every build output.
+    b.installFile("LICENSE", "LICENSE");
+    b.installFile("THIRD_PARTY_NOTICES.md", "THIRD_PARTY_NOTICES.md");
 
     const test_module = b.createModule(.{
         .root_source_file = b.path("src/forth_test.zig"),

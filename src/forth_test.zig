@@ -2311,3 +2311,48 @@ test "FSIN FCOS FTAN FEXP FLN are correctly rounded, as the original gforth in L
     }
     try std.testing.expect(std.math.isNan(machine.float_stack[expected.len]));
 }
+
+test "math functions match the original gforth at large arguments, range limits, subnormals, and non-finite values" {
+    var output = Output{};
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
+
+    // Expected bits are the original gforth's (glibc) and CORE-MATH's, which agree here.
+    try machine.interpretLine("1E300 FSIN 1E300 FCOS 1E300 FTAN -1E300 FSIN 1E22 FSIN 1E22 FCOS");
+    try machine.interpretLine("709.782712893384E FEXP 709.7827128933841E FEXP -745E FEXP -746E FEXP -708.4E FEXP");
+    try machine.interpretLine("5E-324 FLN 5E-324 FSIN 5E-324 FTAN 1.0000000000000002E FLN 0.9999999999999999E FLN");
+    try machine.interpretLine("2.2250738585072014E-308 FLN 1.7976931348623157E308 FLN");
+    const expected = [_]u64{
+        0xBFEA2C16B010E385, 0xBFE2699022ADC4C1, 0x3FF6BE411F37AC77, 0x3FEA2C16B010E385, 0xBFEB453AB76BF397, 0x3FE0BE2CEF01C8F4,
+        0x7FEFFFFFFFFFFF2A, 0x7FF0000000000000, 0x0000000000000001, 0x0000000000000000, 0x000FF15B469EDF89,
+        0xC0874385446D71C3, 0x0000000000000001, 0x0000000000000001, 0x3CAFFFFFFFFFFFFF, 0xBCA0000000000000,
+        0xC086232BDD7ABCD2, 0x40862E42FEFA39EF,
+    };
+    try std.testing.expectEqual(expected.len, machine.float_depth);
+    for (expected, machine.float_stack[0..expected.len]) |want, got| try std.testing.expectEqual(want, @as(u64, @bitCast(got)));
+
+    // A NaN argument comes back unchanged (quiet); infinity gives the CPU's default NaN,
+    // not CORE-MATH's all-ones NaN.
+    try machine.interpretLine(": FCLEAR FDEPTH 0 ?DO FDROP LOOP ; FCLEAR CREATE BB 8 ALLOT");
+    try machine.interpretLine("HEX 7FF8000000001234 BB ! BB F@ FSIN FFF8000000005678 BB ! BB F@ FTAN DECIMAL");
+    // The default NaN comes from the CPU at run time, as the interpreter computes it.
+    try machine.interpretLine("1E 0E F/ FSIN 1E 0E F/ FCOS -1E 0E F/ FTAN 1E 0E F/ FDUP F-");
+    const default_nan: u64 = @bitCast(machine.float_stack[5]);
+    machine.float_depth -= 1;
+    const nans = [_]u64{ 0x7FF8000000001234, 0xFFF8000000005678, default_nan, default_nan, default_nan };
+    try std.testing.expectEqual(nans.len, machine.float_depth);
+    for (nans, machine.float_stack[0..nans.len]) |want, got| try std.testing.expectEqual(want, @as(u64, @bitCast(got)));
+    try std.testing.expect(default_nan != 0xFFFFFFFFFFFFFFFF);
+}
+
+test ".S and F.S at depth zero, at exactly nine items, and in hexadecimal" {
+    var output = Output{};
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
+
+    try machine.interpretLine(".S F.S 1 2 3 4 5 6 7 8 9 .S 10 HEX .S DECIMAL");
+    try machine.interpretLine("1E 2E 3E 4E 5E 6E 7E 8E 9E F.S 10E HEX F.S DECIMAL");
+    try std.testing.expectEqualStrings("<0> <0> <9> 1 2 3 4 5 6 7 8 9 <A> 2 3 4 5 6 7 8 9 A " ++
+        "<9> 1.0000000000E0 2.0000000000E0 3.0000000000E0 4.0000000000E0 5.0000000000E0 6.0000000000E0 7.0000000000E0 8.0000000000E0 9.0000000000E0 " ++
+        "<A> 2.0000000000E0 3.0000000000E0 4.0000000000E0 5.0000000000E0 6.0000000000E0 7.0000000000E0 8.0000000000E0 9.0000000000E0 1.0000000000E1 ", output.written());
+}
