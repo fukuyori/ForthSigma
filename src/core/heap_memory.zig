@@ -1,3 +1,5 @@
+//! The ALLOCATE heap: blocks with a size cell and a used cell.
+
 const defs = @import("defs.zig");
 const forth = @import("../forth.zig");
 const memory_map = @import("memory_map.zig");

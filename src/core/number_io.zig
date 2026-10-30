@@ -1,3 +1,5 @@
+//! Number parsing and output, and the pictured numeric output area.
+
 const std = @import("std");
 const defs = @import("defs.zig");
 const float_format = @import("float_format.zig");

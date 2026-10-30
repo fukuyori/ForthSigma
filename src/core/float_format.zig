@@ -1,3 +1,5 @@
+//! Exact decimal conversion of floats, for F., F.S, and F.RDP.
+
 const std = @import("std");
 const defs = @import("defs.zig");
 const integer_math = @import("integer_math.zig");

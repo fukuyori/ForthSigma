@@ -1,3 +1,5 @@
+//! Types shared by the core: built-in word ids, dictionary entries, operations, and errors.
+
 const std = @import("std");
 const error_reporting = @import("error_reporting.zig");
 const forth = @import("../forth.zig");

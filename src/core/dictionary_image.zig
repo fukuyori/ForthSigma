@@ -1,3 +1,5 @@
+//! Saving the dictionary as an image, restoring it, and appending it with LOAD.
+
 const std = @import("std");
 const defs = @import("defs.zig");
 const forth = @import("../forth.zig");

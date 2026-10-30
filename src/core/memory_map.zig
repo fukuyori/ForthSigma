@@ -1,3 +1,5 @@
+//! Cell types, limits, and the layout of the 2 MiB logical memory.
+
 const builtin_info = @import("builtin");
 const defs = @import("defs.zig");
 const Word = defs.Word;

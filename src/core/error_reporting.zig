@@ -1,3 +1,5 @@
+//! Error messages, THROW codes, and the state CATCH restores.
+
 const std = @import("std");
 const defs = @import("defs.zig");
 const forth = @import("../forth.zig");

@@ -1,3 +1,5 @@
+//! Correctly rounded math functions from CORE-MATH (src/core-math).
+
 const std = @import("std");
 
 // Correctly rounded functions from CORE-MATH (src/core-math), so that results are the

@@ -1,3 +1,5 @@
+//! Defining words: the names they wait for and the words they make.
+
 const defs = @import("defs.zig");
 const forth = @import("../forth.zig");
 const local_variables = @import("local_variables.zig");

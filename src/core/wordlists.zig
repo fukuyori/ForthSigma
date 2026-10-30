@@ -1,3 +1,5 @@
+//! Word lists, the search order, and MARKER snapshots.
+
 const std = @import("std");
 const defs = @import("defs.zig");
 const forth = @import("../forth.zig");

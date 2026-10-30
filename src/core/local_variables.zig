@@ -1,3 +1,5 @@
+//! Local variables: declarations, frames, and access.
+
 const std = @import("std");
 const defs = @import("defs.zig");
 const forth = @import("../forth.zig");

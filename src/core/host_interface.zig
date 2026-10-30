@@ -1,3 +1,5 @@
+//! What the host provides to the core: output, input, files, and other services.
+
 const defs = @import("defs.zig");
 const forth = @import("../forth.zig");
 const memory_map = @import("memory_map.zig");

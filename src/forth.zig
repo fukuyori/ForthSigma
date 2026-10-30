@@ -1,5 +1,7 @@
+//! The FORTH/Sigma core: the State, the outer interpreter, the inner interpreter, and the dispatch of
+//! built-in words. The other parts live in src/core, one subject per file.
+
 const std = @import("std");
-const builtin_info = @import("builtin");
 const control_flow = @import("core/control_flow.zig");
 const decompiler = @import("core/decompiler.zig");
 const definers = @import("core/definers.zig");

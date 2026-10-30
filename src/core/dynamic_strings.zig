@@ -1,3 +1,5 @@
+//! Dynamic strings ($! and its relatives) and string arrays.
+
 const defs = @import("defs.zig");
 const forth = @import("../forth.zig");
 const memory_map = @import("memory_map.zig");

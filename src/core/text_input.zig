@@ -1,3 +1,5 @@
+//! Reading tokens, names, and strings from the input.
+
 const std = @import("std");
 const defs = @import("defs.zig");
 const forth = @import("../forth.zig");

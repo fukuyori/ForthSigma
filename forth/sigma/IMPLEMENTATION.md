@@ -8,6 +8,16 @@ The runtime uses 64-bit cells, a separate 64-bit (IEEE binary64) floating-point 
 
 The FORTH/Σ source articles define a 16-bit system. Since stage 1 of the gforth-alignment work (2026-10-28), cell width, truth values, division, output spacing, name identity, and `TYPE` follow gforth instead; see [DECISIONS.md](DECISIONS.md). FORTH/Σ-specific words that do not conflict with gforth are retained.
 
+### Source layout
+
+- `src/main.zig`: the command-line host (C standard I/O, files, environment, shell) and its tests.
+- `src/forth.zig`: `State`, the outer interpreter (`interpretSource`, `handleToken`), the inner interpreter (`executeOperations`), stack and memory primitives, and `executeBuiltin`, which only dispatches to the `words_*` files. `State` keeps an alias for every function moved to `src/core`, so they are still called as `self.name(...)`.
+- `src/core/memory_map.zig` (cell types, limits, logical memory layout), `defs.zig` (built-in ids, dictionary entries, operations, errors), `host_interface.zig` (`Writer`, `FileOps`).
+- Subjects: `text_input.zig` (tokens and strings), `number_io.zig` (number parsing and output, pictured output), `integer_math.zig`, `float_format.zig` and `float_math.zig` (exact decimal conversion, CORE-MATH bindings), `definers.zig`, `control_flow.zig`, `local_variables.zig`, `wordlists.zig`, `source_input.zig` (INCLUDE, REQUIRE, LOCATE), `heap_memory.zig`, `dynamic_strings.zig`, `decompiler.zig` (SEE), `dictionary_image.zig` (SAVE, LOAD), `error_reporting.zig`.
+- Built-in words by subject: `words_stack.zig`, `words_arithmetic.zig`, `words_memory.zig`, `words_output.zig`, `words_input.zig`, `words_compiling.zig`, `words_float.zig`, `words_pictured.zig`, `words_dictionary.zig`, `words_system.zig`, `words_files.zig`, `words_strings.zig`; each has an `execute` function with the switch arms of its words.
+- `src/core-math/`: CORE-MATH's C sources, compiled by `build.zig`.
+- `src/forth_test.zig` collects the core tests in `src/tests/*_test.zig`, one file per subject; `src/tests/support.zig` holds the fake host they share.
+
 ## Z80 listing correspondence
 
 The June 1982 source article describes the main path used for the port:
@@ -126,6 +136,8 @@ The gforth source and ForthBasicMaster book (`D:\home\Documents\BasicMaster\Fort
 The runtime does not implement the magazine's editor-buffer versions of LOAD/SAVE, LIST, EDIT, EXEC, CLB, CLOAD, CSAVE, CP/M file calls, PC-8001 monitor/graphics/printing words, MCODE, USR, PUHL/POHL/NEXT, or every word in the magazine's dictionary tables. From gforth, the remaining file words (`READ-FILE`, `FILE-POSITION`, `BIN`, …), `WHERE`, `$?`, `$slurp` and the other string words not listed above, `[IFDEF]` and similar words, `DPL`, `.R`/`U.R`/`D.R`, `UM*`/`UM/MOD`/`M*`, `C"`, `/STRING`, `COMPARE`, and floating-point words other than those listed above (for example `FE.`, `FS.`, `F**`, `FLOOR`, `FROUND`) are not implemented yet. gforth's `CODE`, `END-CODE`, `SAVESYSTEM`, `'COLD`, `BOOTMESSAGE`, `IS`, `FPATH`, and `SCRIPT?` are out of scope (decided on 2026-10-30).
 
 ## Verification record
+
+On 2026-10-30, `src/forth.zig` (4,814 lines) and `src/forth_test.zig` (2,461 lines) were split into the files listed under "Source layout" without changing code: a line-by-line comparison found every original line in the new files, apart from the added imports, aliases, `pub`, and the wrapping `switch` of each `words_*` file. `zig build test` passed all 157 tests (154 core, 3 host) on Windows in Debug, ReleaseSafe, and ReleaseFast, and in Debug and ReleaseFast for an FMA-capable CPU; cross-builds for x86_64 Linux musl and x86_64 macOS succeeded. The 118 F.RDP cases, the bitwise math comparison (Windows and the Linux build under WSL, Debug and ReleaseFast), and the textbook comparison against the original gforth gave the same results as before.
 
 On 2026-10-30, after the Codex review of commits `8e24705` and `b24e000`, the documents state that an execution token or address compiled by `LITERAL` is not relocated by an additive `LOAD` (one compiled by `[']` is), the user manual explains when `'` and `[']` read their name and lists `LITERAL`, `FLITERAL`, and `>BODY`, and tests cover `'` across the search order and input boundaries, `>BODY` of `ARRAY`, plain `CREATE`, and words without a data area, `LITERAL`'s cell order and errors, and the `LOAD` relocation difference. The shared cases print what the original gforth prints, except the error codes: a trailing `'` in an `EVALUATE` string is -259 here and -16 in gforth, and `LITERAL` without a value is -4 here and -22 in gforth. `zig build test` passed all 157 tests (154 core, 3 host) on Windows.
 

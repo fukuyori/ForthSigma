@@ -1,3 +1,5 @@
+//! Compiling control structures, and skipping input for [IF].
+
 const defs = @import("defs.zig");
 const forth = @import("../forth.zig");
 const memory_map = @import("memory_map.zig");
