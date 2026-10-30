@@ -14,6 +14,7 @@ pub fn build(b: *std.Build) void {
         }),
     });
     addCoreMath(b, exe.root_module);
+    addEmbeddedTexts(b, exe.root_module);
     b.installArtifact(exe);
     // The program's license and the third-party notices go with every build output.
     b.installFile("LICENSE", "LICENSE");
@@ -26,6 +27,7 @@ pub fn build(b: *std.Build) void {
         .link_libc = true,
     });
     addCoreMath(b, test_module);
+    addEmbeddedTexts(b, test_module);
     const unit_tests = b.addTest(.{ .root_module = test_module });
     const run_tests = b.addRunArtifact(unit_tests);
     const test_step = b.step("test", "Run FORTH/Σ core and host tests");
@@ -44,4 +46,11 @@ fn addCoreMath(b: *std.Build, module: *std.Build.Module) void {
         // rint gives the same result in the round-to-nearest mode Forth always runs in.
         .flags = &.{ "-std=gnu11", "-D__builtin_roundeven=__builtin_rint" },
     });
+}
+
+/// The version and the license texts that the banner, HELP, and LICENSE show.
+fn addEmbeddedTexts(b: *std.Build, module: *std.Build.Module) void {
+    module.addAnonymousImport("version", .{ .root_source_file = b.path("VERSION") });
+    module.addAnonymousImport("license", .{ .root_source_file = b.path("LICENSE") });
+    module.addAnonymousImport("third_party_notices", .{ .root_source_file = b.path("THIRD_PARTY_NOTICES.md") });
 }

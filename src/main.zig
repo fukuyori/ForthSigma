@@ -388,6 +388,9 @@ fn interpretAndPrompt(machine: *forth.State, line: []const u8) void {
     if (!machine.defining) machine.write(" OK\n");
 }
 
+const version = std.mem.trimEnd(u8, @embedFile("version"), " \t\r\n");
+const banner = "FORTH/Sigma " ++ version ++ "  MIT License\nType `help' for basic help\n";
+
 pub fn main(init: std.process.Init) !void {
     const allocator = init.gpa;
     const executable_path = try std.process.executablePathAlloc(init.io, allocator);
@@ -400,7 +403,6 @@ pub fn main(init: std.process.Init) !void {
     machine.* = forth.State.init(.{ .context = @ptrCast(&host), .write_fn = terminalWrite, .read_fn = terminalRead, .load_fn = loadDictionary, .save_fn = saveDictionary, .savesys_fn = saveExecutableImage, .key_fn = terminalKey, .key_ready_fn = terminalKeyReady, .sleep_fn = sleepMilliseconds, .utime_fn = microsecondsSinceEpoch, .getenv_fn = environmentValue, .system_fn = runShellCommand, .file_ops = &file_ops });
     defer closeAllFiles();
     loadEmbeddedImage(executable_path, machine, allocator);
-    machine.write("FORTH/Sigma Zig portable core\n");
 
     var arguments = try std.process.Args.Iterator.initAllocator(init.minimal.args, allocator);
     defer arguments.deinit();
@@ -427,6 +429,8 @@ pub fn main(init: std.process.Init) !void {
         return;
     }
 
+    // Only an interactive session (no arguments) starts with the banner.
+    machine.write(banner);
     var line: [4096]u8 = undefined;
     var used: usize = 0;
     var discarding_line = false;
@@ -514,4 +518,11 @@ test "INCLUDE through the host reads CR LF lines and limits a line to 4096 bytes
     try std.testing.expectEqualSlices(forth.Cell, &.{ 1, 2, 3, 4, 0 }, machine.data_stack[0..machine.data_depth]);
     try std.testing.expectError(error.StringTooLong, machine.interpretLine("INCLUDE .zig-cache/sigma-include-long.fs"));
     for (open_files) |slot| try std.testing.expect(slot == null);
+}
+
+test "the banner names the version from VERSION and the license" {
+    const expected = comptime std.mem.trimEnd(u8, @embedFile("version"), " \t\r\n");
+    try std.testing.expect(std.mem.startsWith(u8, banner, "FORTH/Sigma " ++ expected ++ "  MIT License\n"));
+    try std.testing.expect(std.mem.endsWith(u8, banner, "Type `help' for basic help\n"));
+    try std.testing.expect(std.mem.indexOfScalar(u8, banner, '\r') == null);
 }

@@ -23,6 +23,7 @@ const words_compiling = @import("core/words_compiling.zig");
 const words_dictionary = @import("core/words_dictionary.zig");
 const words_files = @import("core/words_files.zig");
 const words_float = @import("core/words_float.zig");
+const words_help = @import("core/words_help.zig");
 const words_input = @import("core/words_input.zig");
 const words_memory = @import("core/words_memory.zig");
 const words_output = @import("core/words_output.zig");
@@ -334,6 +335,7 @@ pub const State = struct {
             .{ "CONSTANT", .define_constant }, .{ "CONST", .define_constant }, .{ "VALUE", .define_value },  .{ "2VARIABLE", .define_two_variable }, .{ "2CONSTANT", .define_two_constant },
             .{ "FCONSTANT", .define_fconstant }, .{ "ARRAY", .define_array }, .{ "FARRAY", .define_array }, .{ "PI", .pi },
             .{ "'", .tick },                 .{ ">BODY", .to_body },          .{ "LITERAL", .literal },       .{ "FLITERAL", .fliteral },
+            .{ "HELP", .help },              .{ "LICENSE", .license },
         };
         for (definitions) |definition| self.addBuiltin(definition[0], definition[1]) catch unreachable;
         // The Root list repeats the words needed to rebuild the search order after ONLY.
@@ -780,7 +782,7 @@ pub const State = struct {
         }
     }
 
-    const word_modules = .{ words_stack, words_arithmetic, words_memory, words_output, words_input, words_compiling, words_float, words_pictured, words_dictionary, words_system, words_files, words_strings };
+    const word_modules = .{ words_stack, words_arithmetic, words_memory, words_output, words_input, words_compiling, words_float, words_pictured, words_dictionary, words_system, words_files, words_strings, words_help };
 
     /// For each built-in word, the index in `word_modules` of the file that executes it.
     const word_owner = blk: {

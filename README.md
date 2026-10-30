@@ -48,6 +48,8 @@ Linux/macOSでは、生成されたzig-out/bin/sigmaを実行してください�
     .\scripts\build-release.ps1 -Sign
     .\scripts\build-installer.ps1 -Sign
 
+引数なしで起動すると、版番号とライセンスの2行（`FORTH/Sigma 0.1.0  MIT License`、`` Type `help' for basic help ``）を表示して対話プロンプトになります。`HELP` で基本的な使い方、`HELP DUP` のように語名を付けるとその語の説明、`LICENSE` でライセンスの全文を表示します。
+
 例:
 
     : SQUARE DUP * ;
