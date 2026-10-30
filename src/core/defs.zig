@@ -1,18 +1,14 @@
 //! Types shared by the core: built-in word ids, dictionary entries, operations, and errors.
 
 const std = @import("std");
-const error_reporting = @import("error_reporting.zig");
-const forth = @import("../forth.zig");
 const memory_map = @import("memory_map.zig");
 const Cell = memory_map.Cell;
 const Double = memory_map.Double;
 const Float = memory_map.Float;
-const State = forth.State;
 const UCell = memory_map.UCell;
 const UDouble = memory_map.UDouble;
 const forth_wordlist = memory_map.forth_wordlist;
 const max_name = memory_map.max_name;
-const report = error_reporting.report;
 
 pub const Builtin = enum {
     drop,

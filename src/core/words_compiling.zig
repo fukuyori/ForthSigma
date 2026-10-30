@@ -11,7 +11,19 @@ const floatBits = defs.floatBits;
 const state_address = memory_map.state_address;
 const truth = integer_math.truth;
 
-pub fn execute(self: *State, builtin: Builtin) RuntimeError!void {
+/// The built-in words this file executes; executeBuiltin dispatches by this list.
+pub const words = [_]Builtin{
+    .builds, .immediate, .execute, .index, .index_2, .index_3, .leave, .unloop, .compile_if,
+    .compile_else, .compile_then, .compile_begin, .compile_end, .compile_again, .compile_while,
+    .compile_repeat, .compile_do, .compile_q_do, .compile_loop, .compile_plus_loop, .compile_does,
+    .compile_case, .compile_of, .compile_endof, .compile_endcase, .compile_exit, .compile_recurse,
+    .define_colon, .define_variable, .define_fvariable, .define_constant, .define_value,
+    .define_two_variable, .define_two_constant, .define_fconstant, .define_array, .end_definition,
+    .tick, .to_body, .literal, .fliteral, .state, .bracket_if, .bracket_else, .bracket_then,
+    .bracket_defined, .bracket_undefined,
+};
+
+pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
     switch (builtin) {
         .builds => {
             const name = (try self.nextSourceToken()) orelse return error.InvalidDefinition;
@@ -86,6 +98,6 @@ pub fn execute(self: *State, builtin: Builtin) RuntimeError!void {
             const found = (self.compiling and self.findLocal(name) != null) or self.lookup(name) != null;
             try self.push(truth(if (builtin == .bracket_defined) found else !found));
         },
-        else => unreachable,
+        else => @compileError(@tagName(builtin) ++ " is not in the words of this file"),
     }
 }

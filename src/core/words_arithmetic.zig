@@ -12,7 +12,17 @@ const flooredDivision = integer_math.flooredDivision;
 const true_flag = memory_map.true_flag;
 const truth = integer_math.truth;
 
-pub fn execute(self: *State, builtin: Builtin) RuntimeError!void {
+/// The built-in words this file executes; executeBuiltin dispatches by this list.
+pub const words = [_]Builtin{
+    .add, .sub, .mul, .div, .mod, .max, .min, .equal, .not_equal, .less, .greater, .less_equal,
+    .greater_equal, .bit_and, .bit_or, .bit_xor, .bit_nand, .bit_nor, .lshift, .rshift, .div_mod,
+    .swap_bytes, .negate, .abs, .one_plus, .one_minus, .two_star, .two_slash, .logical_not,
+    .zero_equal, .zero_less, .zero_greater, .zero_not_equal, .bit_complement, .true_value,
+    .false_value, .s_to_d, .d_to_s, .d_add, .d_sub, .d_negate, .d_abs, .d_zero_equal, .d_zero_less,
+    .d_equal, .d_less, .within,
+};
+
+pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
     switch (builtin) {
         .add, .sub, .mul, .div, .mod, .max, .min, .equal, .not_equal, .less, .greater, .less_equal, .greater_equal, .bit_and, .bit_or, .bit_xor, .bit_nand, .bit_nor, .lshift, .rshift => try self.binary(builtin),
         .div_mod => {
@@ -66,6 +76,6 @@ pub fn execute(self: *State, builtin: Builtin) RuntimeError!void {
             const value = try self.pop();
             try self.push(truth(@as(UCell, @bitCast(value -% lower)) < @as(UCell, @bitCast(upper -% lower))));
         },
-        else => unreachable,
+        else => @compileError(@tagName(builtin) ++ " is not in the words of this file"),
     }
 }

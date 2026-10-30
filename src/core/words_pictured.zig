@@ -15,7 +15,13 @@ const max_gforth_string = memory_map.max_gforth_string;
 const max_hold_nesting = memory_map.max_hold_nesting;
 const truth = integer_math.truth;
 
-pub fn execute(self: *State, builtin: Builtin) RuntimeError!void {
+/// The built-in words this file executes; executeBuiltin dispatches by this list.
+pub const words = [_]Builtin{
+    .hold_start, .hold_nest, .hold_release, .hold_digit, .hold_digits, .hold_finish, .hold, .holds,
+    .sign, .to_number, .string_to_number,
+};
+
+pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
     switch (builtin) {
         .hold_start => self.resetHold(),
         .hold_nest => {
@@ -77,6 +83,6 @@ pub fn execute(self: *State, builtin: Builtin) RuntimeError!void {
             try self.pushDouble(if (parsed) |number| number.value else 0);
             try self.push(truth(parsed != null));
         },
-        else => unreachable,
+        else => @compileError(@tagName(builtin) ++ " is not in the words of this file"),
     }
 }

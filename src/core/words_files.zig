@@ -30,7 +30,14 @@ const terminal_source_name = memory_map.terminal_source_name;
 const terminal_source_name_address = memory_map.terminal_source_name_address;
 const truth = integer_math.truth;
 
-pub fn execute(self: *State, builtin: Builtin) RuntimeError!void {
+/// The built-in words this file executes; executeBuiltin dispatches by this list.
+pub const words = [_]Builtin{
+    .include, .require, .included, .required, .included_query, .source_file_name,
+    .source_line_number, .read_only, .write_only, .read_write, .stdin, .stdout, .stderr, .open_file,
+    .create_file, .close_file, .read_line, .write_line, .write_file, .file_size, .reposition_file,
+};
+
+pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
     switch (builtin) {
         .include, .require => {
             const name = (try self.nextSourceToken()) orelse return error.InputUnavailable;
@@ -106,6 +113,6 @@ pub fn execute(self: *State, builtin: Builtin) RuntimeError!void {
             const files = try self.fileOps();
             try self.push(if (position > std.math.maxInt(i64)) errnoIor(errno_invalid) else files.reposition(self.writer.context, fileid, @intCast(position)));
         },
-        else => unreachable,
+        else => @compileError(@tagName(builtin) ++ " is not in the words of this file"),
     }
 }

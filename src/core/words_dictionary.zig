@@ -20,7 +20,14 @@ const name_buffer_count = memory_map.name_buffer_count;
 const root_wordlist = memory_map.root_wordlist;
 const wordlist_count_address = memory_map.wordlist_count_address;
 
-pub fn execute(self: *State, builtin: Builtin) RuntimeError!void {
+/// The built-in words this file executes; executeBuiltin dispatches by this list.
+pub const words = [_]Builtin{
+    .words, .find_word, .find_name, .name_to_int, .name_to_string, .see, .marker, .locate, .only,
+    .also, .previous, .forth, .definitions, .order, .get_order, .set_order, .to_order, .get_current,
+    .set_current, .wordlist, .vocabulary, .forth_wordlist_word, .search_wordlist,
+};
+
+pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
     switch (builtin) {
         .words => {
             // Like gforth, WORDS lists the word list that is searched first.
@@ -163,6 +170,6 @@ pub fn execute(self: *State, builtin: Builtin) RuntimeError!void {
                 try self.push(if (self.words[id].immediate) 1 else -1);
             } else try self.push(0);
         },
-        else => unreachable,
+        else => @compileError(@tagName(builtin) ++ " is not in the words of this file"),
     }
 }

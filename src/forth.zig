@@ -265,7 +265,7 @@ pub const State = struct {
         }
     }
 
-    pub fn installBuiltins(self: *State) void {
+    fn installBuiltins(self: *State) void {
         const definitions = [_]struct { []const u8, Builtin }{
             .{ "DROP", .drop },              .{ "DUP", .dup },                .{ "SWAP", .swap },             .{ "OVER", .over },                .{ "ROT", .rot },
             .{ "-ROT", .minus_rot },         .{ "NIP", .nip },                .{ "TUCK", .tuck },             .{ "PICK", .pick },                .{ "ROLL", .roll },
@@ -348,14 +348,14 @@ pub const State = struct {
         self.builtin_count = self.word_count;
     }
 
-    pub fn isImmediateBuiltin(builtin: Builtin) bool {
+    fn isImmediateBuiltin(builtin: Builtin) bool {
         return switch (builtin) {
             .compile_if, .compile_else, .compile_then, .compile_begin, .compile_end, .compile_again, .compile_while, .compile_repeat, .compile_do, .compile_q_do, .compile_loop, .compile_plus_loop, .compile_does, .compile_case, .compile_of, .compile_endof, .compile_endcase, .compile_exit, .compile_recurse, .leave, .bracket_if, .bracket_else, .bracket_then, .bracket_defined, .bracket_undefined, .end_definition, .literal, .fliteral => true,
             else => false,
         };
     }
 
-    pub fn addBuiltin(self: *State, name: []const u8, builtin: Builtin) RuntimeError!void {
+    fn addBuiltin(self: *State, name: []const u8, builtin: Builtin) RuntimeError!void {
         const id = try self.appendWord(name, .builtin, builtin, 0);
         self.words[id].immediate = isImmediateBuiltin(builtin);
     }
@@ -370,12 +370,12 @@ pub const State = struct {
     }
 
     /// Appends a colon definition without a name (`:NONAME`); lookup never finds it.
-    pub fn appendAnonymousColon(self: *State) RuntimeError!u16 {
+    fn appendAnonymousColon(self: *State) RuntimeError!u16 {
         if (self.word_count == max_words) return error.DictionaryFull;
         return self.appendEntry("", .colon, .drop, 0);
     }
 
-    pub fn appendEntry(self: *State, name: []const u8, kind: WordKind, builtin: Builtin, value: Cell) RuntimeError!u16 {
+    fn appendEntry(self: *State, name: []const u8, kind: WordKind, builtin: Builtin, value: Cell) RuntimeError!u16 {
         const id = self.word_count;
         var word = Word{ .kind = kind, .builtin = builtin, .value = value, .name_len = @intCast(name.len), .data_here_before = self.data_here, .wordlist = @intCast(self.currentWordlist()) };
         if (self.currentFileFrame()) |frame| {
@@ -434,7 +434,7 @@ pub const State = struct {
         self.word_count = id;
     }
 
-    pub fn handleToken(self: *State, token: []const u8) RuntimeError!void {
+    fn handleToken(self: *State, token: []const u8) RuntimeError!void {
         // Local variables shadow every dictionary word inside their definition.
         if (self.compiling) {
             if (self.findLocal(token)) |local| return self.compileLocalReference(local);
@@ -554,7 +554,7 @@ pub const State = struct {
     pub const storeLocal = local_variables.storeLocal;
     pub const fetchLocal = local_variables.fetchLocal;
 
-    pub fn handleWord(self: *State, id: u16) RuntimeError!void {
+    fn handleWord(self: *State, id: u16) RuntimeError!void {
         if (self.compiling and !self.words[id].immediate) {
             _ = try self.emit(.{ .kind = .call, .value = id });
         } else {
@@ -655,7 +655,7 @@ pub const State = struct {
         }
     }
 
-    pub fn executeColon(self: *State, id: u16, word: Word) RuntimeError!void {
+    fn executeColon(self: *State, id: u16, word: Word) RuntimeError!void {
         if (self.call_depth == max_stack) return error.ReturnStackOverflow;
         self.call_depth += 1;
         defer self.call_depth -= 1;
@@ -667,7 +667,7 @@ pub const State = struct {
         return @intCast(value);
     }
 
-    pub fn executeOperations(self: *State, start_pc: u16, end_pc: u16, defining_word: ?u16) RuntimeError!void {
+    fn executeOperations(self: *State, start_pc: u16, end_pc: u16, defining_word: ?u16) RuntimeError!void {
         var pc = start_pc;
         // The local-variable frame of this invocation, released on every exit path.
         var locals_frame: ?Cell = null;
@@ -772,23 +772,33 @@ pub const State = struct {
         }
     }
 
+    /// Runs a built-in word: each `words_*` file in src/core lists the words it executes,
+    /// and every word must be in exactly one list.
     pub fn executeBuiltin(self: *State, builtin: Builtin) RuntimeError!void {
         switch (builtin) {
-            .drop, .dup, .swap, .over, .rot, .minus_rot, .nip, .tuck, .pick, .roll, .two_dup, .two_drop, .two_swap, .two_over, .depth, .to_r, .from_r, .r_fetch, .two_to_r, .two_r_from => try words_stack.execute(self, builtin),
-            .add, .sub, .mul, .div, .mod, .max, .min, .equal, .not_equal, .less, .greater, .less_equal, .greater_equal, .bit_and, .bit_or, .bit_xor, .bit_nand, .bit_nor, .lshift, .rshift, .div_mod, .swap_bytes, .negate, .abs, .one_plus, .one_minus, .two_star, .two_slash, .logical_not, .zero_equal, .zero_less, .zero_greater, .zero_not_equal, .bit_complement, .true_value, .false_value, .s_to_d, .d_to_s, .d_add, .d_sub, .d_negate, .d_abs, .d_zero_equal, .d_zero_less, .d_equal, .d_less, .within => try words_arithmetic.execute(self, builtin),
-            .blank, .cell, .cells, .cell_plus, .aligned, .fetch, .store, .cfetch, .cstore, .add_store, .inc_store, .dec_store, .zero_store, .off, .on, .question, .array_fetch, .array_store, .erase, .fill, .move, .cmove, .here, .allot, .comma, .c_comma, .two_fetch, .two_store, .count, .pad, .place, .allocate, .free, .resize => try words_memory.execute(self, builtin),
-            .dot, .u_dot, .c_dot, .dot_s, .echo, .cr, .space, .spaces, .type, .hex, .dec, .oct, .base, .d_dot, .page => try words_output.execute(self, builtin),
-            .input, .accept, .evaluate, .key, .key_question, .word_parse, .parse => try words_input.execute(self, builtin),
-            .builds, .immediate, .execute, .index, .index_2, .index_3, .leave, .unloop, .compile_if, .compile_else, .compile_then, .compile_begin, .compile_end, .compile_again, .compile_while, .compile_repeat, .compile_do, .compile_q_do, .compile_loop, .compile_plus_loop, .compile_does, .compile_case, .compile_of, .compile_endof, .compile_endcase, .compile_exit, .compile_recurse, .define_colon, .define_variable, .define_fvariable, .define_constant, .define_value, .define_two_variable, .define_two_constant, .define_fconstant, .define_array, .end_definition, .tick, .to_body, .literal, .fliteral, .state, .bracket_if, .bracket_else, .bracket_then, .bracket_defined, .bracket_undefined => try words_compiling.execute(self, builtin),
-            .f_input, .f_drop, .f_dup, .f_swap, .f_over, .f_rot, .f_minus_rot, .f_nip, .f_tuck, .f_pick, .f_depth, .f_dot_s, .f_add, .f_sub, .f_mul, .f_div, .f_max, .f_min, .f_negate, .f_abs, .f_sqrt, .f_exp, .f_ln, .f_sin, .f_cos, .f_tan, .f_equal, .f_not_equal, .f_less, .f_greater, .f_less_equal, .f_greater_equal, .f_zero_equal, .f_zero_not_equal, .f_zero_less, .f_zero_greater, .f_zero_less_equal, .f_zero_greater_equal, .f_fetch, .f_store, .f_comma, .f_array_fetch, .f_array_store, .f_add_store, .f_question, .floats, .float_plus, .s_to_f, .f_to_s, .pi, .f_dot, .d_to_f, .f_to_d, .to_float, .f_dot_rdp, .f_to_str_rdp, .f_to_buf_rdp => try words_float.execute(self, builtin),
-            .hold_start, .hold_nest, .hold_release, .hold_digit, .hold_digits, .hold_finish, .hold, .holds, .sign, .to_number, .string_to_number => try words_pictured.execute(self, builtin),
-            .words, .find_word, .find_name, .name_to_int, .name_to_string, .see, .marker, .locate, .only, .also, .previous, .forth, .definitions, .order, .get_order, .set_order, .to_order, .get_current, .set_current, .wordlist, .vocabulary, .forth_wordlist_word, .search_wordlist => try words_dictionary.execute(self, builtin),
-            .bye, .load, .save, .savesys, .abort, .ms, .utime, .getenv, .system, .throw, .catch_word => try words_system.execute(self, builtin),
-            .include, .require, .included, .required, .included_query, .source_file_name, .source_line_number, .read_only, .write_only, .read_write, .stdin, .stdout, .stderr, .open_file, .create_file, .close_file, .read_line, .write_line, .write_file, .file_size, .reposition_file => try words_files.execute(self, builtin),
-            .string_store, .string_fetch, .string_fetch_len, .string_store_len, .string_append, .char_append, .string_dot, .string_delete, .string_insert, .string_over, .string_free, .string_init, .string_split, .string_iter, .string_tmp, .string_array, .string_array_store, .string_array_fetch, .string_array_count, .string_array_dot, .string_array_map, .string_array_free, .string_array_slurp, .string_array_slurp_file => try words_strings.execute(self, builtin),
+            inline else => |word| try word_modules[word_owner[@intFromEnum(word)]].execute(self, word),
         }
     }
 
+    const word_modules = .{ words_stack, words_arithmetic, words_memory, words_output, words_input, words_compiling, words_float, words_pictured, words_dictionary, words_system, words_files, words_strings };
+
+    /// For each built-in word, the index in `word_modules` of the file that executes it.
+    const word_owner = blk: {
+        @setEvalBranchQuota(100_000);
+        const count = @typeInfo(Builtin).@"enum".fields.len;
+        var owner = [_]?usize{null} ** count;
+        for (word_modules, 0..) |module, index| {
+            for (module.words) |word| {
+                if (owner[@intFromEnum(word)] != null) @compileError(@tagName(word) ++ " is in two words_* lists");
+                owner[@intFromEnum(word)] = index;
+            }
+        }
+        var result: [count]usize = undefined;
+        for (owner, 0..) |index, slot| {
+            result[slot] = index orelse @compileError(@tagName(@as(Builtin, @enumFromInt(slot))) ++ " is in no words_* list");
+        }
+        break :blk result;
+    };
     /// Pops a byte count; negative counts are treated as 0 and huge ones as memory-sized.
     pub fn popLength(self: *State) RuntimeError!usize {
         const count = try self.pop();

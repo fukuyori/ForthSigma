@@ -2,12 +2,10 @@
 
 const std = @import("std");
 const defs = @import("defs.zig");
-const integer_math = @import("integer_math.zig");
 const memory_map = @import("memory_map.zig");
 const Cell = memory_map.Cell;
 const Float = memory_map.Float;
 const RuntimeError = defs.RuntimeError;
-const binary = integer_math.binary;
 const dot_precision = memory_map.dot_precision;
 
 /// Decimal significand of a float, in the manner of Forth's REPRESENT.

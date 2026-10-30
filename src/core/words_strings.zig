@@ -15,7 +15,16 @@ const errno_no_memory = memory_map.errno_no_memory;
 const tmp_string_base = memory_map.tmp_string_base;
 const tmp_string_count = memory_map.tmp_string_count;
 
-pub fn execute(self: *State, builtin: Builtin) RuntimeError!void {
+/// The built-in words this file executes; executeBuiltin dispatches by this list.
+pub const words = [_]Builtin{
+    .string_store, .string_fetch, .string_fetch_len, .string_store_len, .string_append,
+    .char_append, .string_dot, .string_delete, .string_insert, .string_over, .string_free,
+    .string_init, .string_split, .string_iter, .string_tmp, .string_array, .string_array_store,
+    .string_array_fetch, .string_array_count, .string_array_dot, .string_array_map,
+    .string_array_free, .string_array_slurp, .string_array_slurp_file,
+};
+
+pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
     switch (builtin) {
         .string_store => {
             const string_var = try self.pop();
@@ -204,6 +213,6 @@ pub fn execute(self: *State, builtin: Builtin) RuntimeError!void {
             const closed = files.close(self.writer.context, fileid);
             if (closed != 0) return self.throwCode(closed);
         },
-        else => unreachable,
+        else => @compileError(@tagName(builtin) ++ " is not in the words of this file"),
     }
 }

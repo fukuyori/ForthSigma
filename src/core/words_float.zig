@@ -30,7 +30,18 @@ const trig = float_math.trig;
 const true_flag = memory_map.true_flag;
 const truth = integer_math.truth;
 
-pub fn execute(self: *State, builtin: Builtin) RuntimeError!void {
+/// The built-in words this file executes; executeBuiltin dispatches by this list.
+pub const words = [_]Builtin{
+    .f_input, .f_drop, .f_dup, .f_swap, .f_over, .f_rot, .f_minus_rot, .f_nip, .f_tuck, .f_pick,
+    .f_depth, .f_dot_s, .f_add, .f_sub, .f_mul, .f_div, .f_max, .f_min, .f_negate, .f_abs, .f_sqrt,
+    .f_exp, .f_ln, .f_sin, .f_cos, .f_tan, .f_equal, .f_not_equal, .f_less, .f_greater,
+    .f_less_equal, .f_greater_equal, .f_zero_equal, .f_zero_not_equal, .f_zero_less,
+    .f_zero_greater, .f_zero_less_equal, .f_zero_greater_equal, .f_fetch, .f_store, .f_comma,
+    .f_array_fetch, .f_array_store, .f_add_store, .f_question, .floats, .float_plus, .s_to_f,
+    .f_to_s, .pi, .f_dot, .d_to_f, .f_to_d, .to_float, .f_dot_rdp, .f_to_str_rdp, .f_to_buf_rdp,
+};
+
+pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
     switch (builtin) {
         .f_input => {
             var line: [4096]u8 = undefined;
@@ -205,6 +216,6 @@ pub fn execute(self: *State, builtin: Builtin) RuntimeError!void {
                 },
             }
         },
-        else => unreachable,
+        else => @compileError(@tagName(builtin) ++ " is not in the words of this file"),
     }
 }

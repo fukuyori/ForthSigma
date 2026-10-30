@@ -15,7 +15,12 @@ const max_gforth_string = memory_map.max_gforth_string;
 const truth = integer_math.truth;
 const word_buffer_address = memory_map.word_buffer_address;
 
-pub fn execute(self: *State, builtin: Builtin) RuntimeError!void {
+/// The built-in words this file executes; executeBuiltin dispatches by this list.
+pub const words = [_]Builtin{
+    .input, .accept, .evaluate, .key, .key_question, .word_parse, .parse,
+};
+
+pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
     switch (builtin) {
         .input => {
             var line: [4096]u8 = undefined;
@@ -76,6 +81,6 @@ pub fn execute(self: *State, builtin: Builtin) RuntimeError!void {
             try self.push(address);
             try self.push(@intCast(length));
         },
-        else => unreachable,
+        else => @compileError(@tagName(builtin) ++ " is not in the words of this file"),
     }
 }

@@ -12,7 +12,12 @@ const environment_buffer_size = memory_map.environment_buffer_size;
 const error_codes = defs.error_codes;
 const max_host_name = memory_map.max_host_name;
 
-pub fn execute(self: *State, builtin: Builtin) RuntimeError!void {
+/// The built-in words this file executes; executeBuiltin dispatches by this list.
+pub const words = [_]Builtin{
+    .bye, .load, .save, .savesys, .abort, .ms, .utime, .getenv, .system, .throw, .catch_word,
+};
+
+pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
     switch (builtin) {
         .bye => self.halted = true,
         .load => {
@@ -94,6 +99,6 @@ pub fn execute(self: *State, builtin: Builtin) RuntimeError!void {
                 try self.push(code);
             }
         },
-        else => unreachable,
+        else => @compileError(@tagName(builtin) ++ " is not in the words of this file"),
     }
 }

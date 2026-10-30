@@ -16,7 +16,15 @@ const errno_no_memory = memory_map.errno_no_memory;
 const pad_address = memory_map.pad_address;
 const true_flag = memory_map.true_flag;
 
-pub fn execute(self: *State, builtin: Builtin) RuntimeError!void {
+/// The built-in words this file executes; executeBuiltin dispatches by this list.
+pub const words = [_]Builtin{
+    .blank, .cell, .cells, .cell_plus, .aligned, .fetch, .store, .cfetch, .cstore, .add_store,
+    .inc_store, .dec_store, .zero_store, .off, .on, .question, .array_fetch, .array_store, .erase,
+    .fill, .move, .cmove, .here, .allot, .comma, .c_comma, .two_fetch, .two_store, .count, .pad,
+    .place, .allocate, .free, .resize,
+};
+
+pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
     switch (builtin) {
         .blank => try self.push(' '),
         .cell => try self.push(cell_size),
@@ -153,6 +161,6 @@ pub fn execute(self: *State, builtin: Builtin) RuntimeError!void {
                 },
             }
         },
-        else => unreachable,
+        else => @compileError(@tagName(builtin) ++ " is not in the words of this file"),
     }
 }

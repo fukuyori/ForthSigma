@@ -10,7 +10,13 @@ const RuntimeError = defs.RuntimeError;
 const State = forth.State;
 const max_stack = memory_map.max_stack;
 
-pub fn execute(self: *State, builtin: Builtin) RuntimeError!void {
+/// The built-in words this file executes; executeBuiltin dispatches by this list.
+pub const words = [_]Builtin{
+    .drop, .dup, .swap, .over, .rot, .minus_rot, .nip, .tuck, .pick, .roll, .two_dup, .two_drop,
+    .two_swap, .two_over, .depth, .to_r, .from_r, .r_fetch, .two_to_r, .two_r_from,
+};
+
+pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
     switch (builtin) {
         .drop => _ = try self.pop(),
         .dup => try self.push(try self.peek(0)),
@@ -99,6 +105,6 @@ pub fn execute(self: *State, builtin: Builtin) RuntimeError!void {
             try self.push(self.return_stack[self.return_depth]);
             try self.push(self.return_stack[self.return_depth + 1]);
         },
-        else => unreachable,
+        else => @compileError(@tagName(builtin) ++ " is not in the words of this file"),
     }
 }

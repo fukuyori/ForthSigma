@@ -8,7 +8,6 @@ const Double = memory_map.Double;
 const RuntimeError = defs.RuntimeError;
 const State = forth.State;
 const UCell = memory_map.UCell;
-const write = State.write;
 
 pub const FileAccess = enum { read_only, write_only, read_write };
 

@@ -10,7 +10,13 @@ const UCell = memory_map.UCell;
 const base_address = memory_map.base_address;
 const max_dot_s_items = memory_map.max_dot_s_items;
 
-pub fn execute(self: *State, builtin: Builtin) RuntimeError!void {
+/// The built-in words this file executes; executeBuiltin dispatches by this list.
+pub const words = [_]Builtin{
+    .dot, .u_dot, .c_dot, .dot_s, .echo, .cr, .space, .spaces, .type, .hex, .dec, .oct, .base,
+    .d_dot, .page,
+};
+
+pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
     switch (builtin) {
         .dot, .u_dot => {
             const value = try self.pop();
@@ -52,6 +58,6 @@ pub fn execute(self: *State, builtin: Builtin) RuntimeError!void {
             self.write(" ");
         },
         .page => self.write("\x1b[2J\x1b[1;1H"),
-        else => unreachable,
+        else => @compileError(@tagName(builtin) ++ " is not in the words of this file"),
     }
 }
