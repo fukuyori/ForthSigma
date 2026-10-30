@@ -167,8 +167,10 @@ pub const true_flag: Cell = -1;
 /// PRECISION at startup, as in gforth.
 pub const dot_precision = 15;
 
-/// Output uses at most this many digits (and at least one); gforth fails for zero or less.
-pub const max_float_precision = 100;
+/// Output uses at most this many digits (and at least one). gforth prints up to at least
+/// 1000 and fails for zero or less and for 4000; a double's exact decimal form has at
+/// most 767 significant digits, and zeros follow.
+pub const max_float_precision = 1000;
 
 /// Items .S and F.S show below the depth, as gforth's maxdepth-.s.
 pub const max_dot_s_items = 9;

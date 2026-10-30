@@ -32,6 +32,8 @@ jobs:
       # so the math functions take a different path there than on the runner's CPU.
       - if: runner.arch == 'X64'
         run: zig build test -Dcpu=baseline --summary all
+      - if: runner.arch == 'X64'
+        run: zig build test -Dcpu=baseline -Doptimize=ReleaseFast --summary all
 
   build:
     name: Build ${{ matrix.name }}

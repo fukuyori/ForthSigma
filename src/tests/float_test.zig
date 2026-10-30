@@ -10,6 +10,9 @@ const expectStack = support.expectStack;
 const expectFloatStack = support.expectFloatStack;
 const expectOutput = support.expectOutput;
 
+/// __builtin_fma as the CORE-MATH files get it (src/fma/fma_for_tests.c).
+extern fn sigma_fma_for_tests(x: f64, y: f64, z: f64) f64;
+
 test "float literals require an exponent and use a separate stack" {
     var output = Output{};
     const machine = try createMachine(&output);
@@ -359,8 +362,67 @@ test "FE. FS. and F. follow PRECISION as in gforth" {
     // gforth fails for these two; padding with zeros keeps the value right.
     try expectOutput("1 SET-PRECISION 0.95E FE. 12E FE.", "900.E-3 10.E0 ");
     try expectOutput("20 SET-PRECISION 1E 3E F/ F. 1E 3E F/ FE. 0.1E F.", "0.33333333333333331483 333.33333333333331483E-3 0.10000000000000000555 ");
-    // PRECISION gives back what was set; output keeps to 1 to 100 digits.
+    // PRECISION gives back what was set; output keeps to 1 to 1000 digits.
     try expectOutput("-1 SET-PRECISION PRECISION . 1E 3E F/ F. 15 SET-PRECISION PRECISION .", "-1 0.3 15 ");
+}
+
+test "the fma that CORE-MATH uses gives the FMA instruction's results" {
+    // x, y, z, and the result of the FMA instruction (computed with -mfma). Without an FMA
+    // instruction, as with -Dcpu=baseline, this is musl's fma through sigma_fma.h; the
+    // fma linked on Windows returned NaN for the first products that underflow. A NaN
+    // result is compared as NaN only, since the CPU's default NaN differs between x86 and ARM.
+    const cases = [_][4]u64{
+        .{ 0x032598bc8a19195c, 0xb7ec2bb5797f5e16, 0x0000000000000000, 0x8000000000000000 },
+        .{ 0x032598bc8a19195c, 0x37ec2bb5797f5e16, 0x8000000000000000, 0x0000000000000000 },
+        .{ 0x9a70000000000000, 0x1a70000000000000, 0x8000000000000000, 0x8000000000000000 },
+        .{ 0x0000000000000000, 0x4014000000000000, 0x8000000000000000, 0x0000000000000000 },
+        .{ 0x8000000000000000, 0x4014000000000000, 0x8000000000000000, 0x8000000000000000 },
+        .{ 0x8000000000000000, 0x4014000000000000, 0x0000000000000000, 0x0000000000000000 },
+        .{ 0x01a56e1fc2f8f359, 0x3c80000000000000, 0x3ff0000000000000, 0x3ff0000000000000 },
+        .{ 0x0000000000000001, 0x3c80000000000000, 0x3ff0000000000000, 0x3ff0000000000000 },
+        .{ 0x01a56e1fc2f8f359, 0x01a56e1fc2f8f359, 0xbff0000000000000, 0xbff0000000000000 },
+        .{ 0x0010000000000000, 0x3cb0000000000000, 0x0000000000000000, 0x0000000000000001 },
+        .{ 0x0010000000000000, 0x3cb8000000000000, 0x0000000000000001, 0x0000000000000002 },
+        .{ 0x3ff0000000000001, 0x3fefffffffffffff, 0xbff0000000000000, 0x3c9ffffffffffffe },
+        .{ 0x3ff0000000000001, 0x3ff0000000000001, 0xbff0000000000002, 0x3970000000000000 },
+        .{ 0x7fefffffffffffff, 0x4000000000000000, 0xffefffffffffffff, 0x7fefffffffffffff },
+        .{ 0x4008000000000000, 0x4014000000000000, 0x401c000000000000, 0x4036000000000000 },
+        .{ 0x7ff0000000000000, 0x4000000000000000, 0x3ff0000000000000, 0x7ff0000000000000 },
+        .{ 0x7ff0000000000000, 0x4000000000000000, 0xfff0000000000000, 0xfff8000000000000 },
+        .{ 0x0000000000000000, 0x7ff0000000000000, 0x3ff0000000000000, 0xfff8000000000000 },
+        .{ 0x3ff0000000000000, 0x4000000000000000, 0x7ff0000000000000, 0x7ff0000000000000 },
+        .{ 0x7ff8000000000000, 0x3ff0000000000000, 0x3ff0000000000000, 0x7ff8000000000000 },
+    };
+    for (cases) |case| {
+        const got = sigma_fma_for_tests(@bitCast(case[0]), @bitCast(case[1]), @bitCast(case[2]));
+        const want: f64 = @bitCast(case[3]);
+        if (std.math.isNan(want)) {
+            try std.testing.expect(std.math.isNan(got));
+        } else try std.testing.expectEqual(case[3], @as(u64, @bitCast(got)));
+    }
+}
+
+test "SF! FROUND and many-digit output at their limits, as in gforth" {
+    var output = Output{};
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
+
+    // SF! rounds to a 32-bit float: overflow to infinity, the smallest subnormal, a value
+    // below half of it, a negative underflow to -0, and NaN.
+    try machine.interpretLine("CREATE B 8 ALLOT : SBITS B SF! B @ 4294967295 AND ; 1E300 SBITS -1E300 SBITS -0E SBITS 1.401298464324817E-45 SBITS -1E-50 SBITS 0E 0E F/ SBITS 7.006492321624085E-46 SBITS 1.1754942E-38 SBITS");
+    try expectStack(machine, &.{ 0x7F800000, 0xFF800000, 0x80000000, 1, 0x80000000, 0xFFC00000, 0, 0x7FFFFF });
+    machine.data_depth = 0;
+    try machine.interpretLine("0.49999999999999994E FROUND 0.5000000000000001E FROUND 4503599627370495.5E FROUND -4503599627370495.5E FROUND -0.5000000000000001E FROUND");
+    try expectFloatBits(machine, &.{ 0, 0x3FF0000000000000, 0x4330000000000000, 0xC330000000000000, 0xBFF0000000000000 });
+    try machine.interpretLine("100 SET-PRECISION 0.1E FS. 101 SET-PRECISION 1E FS. 1000 SET-PRECISION 5E-324 FE.");
+    const exact_tenth = "1.000000000000000055511151231257827021181583404541015625" ++ "0" ** 45 ++ "E-1 ";
+    const one = "1." ++ "0" ** 100 ++ "E0 ";
+    // 5e-324 is 2^-1074, whose exact decimal form has 751 significant digits.
+    const smallest = "4.940656458412465441765687928682213723650598026143247644255856825006755072702087518652998363616359923797965646";
+    const written = output.written();
+    try std.testing.expect(std.mem.startsWith(u8, written, exact_tenth ++ one ++ smallest));
+    try std.testing.expect(std.mem.endsWith(u8, written, "0" ** 249 ++ "E-324 "));
+    try std.testing.expectEqual(exact_tenth.len + one.len + "4.".len + 999 + "E-324 ".len, written.len);
 }
 
 test "FVALUE pushes its float, TO stores one, and SEE shows it" {

@@ -75,6 +75,39 @@ test "an image keeps HERE's data, the used heap, and the source table, and nothi
     try std.testing.expectError(error.InvalidImage, loaded.restoreImage(image[0 .. length - 1]));
 }
 
+test "an FVALUE and a TO of it keep working after LOAD, a second LOAD, and a full restore" {
+    var output = Output{};
+    const source = try createMachine(&output);
+    defer destroyMachine(source);
+    try source.interpretLine("1.5E FVALUE FV : SETFV 2.5E TO FV ; : GETFV FV ;");
+    const image = try saveImage(source);
+    defer freeImage(image);
+
+    // Appended twice after data of the dictionary's own, so the address of the value moves.
+    const target = try createMachine(&output);
+    defer destroyMachine(target);
+    try target.interpretLine("CREATE FILLER 100 ALLOT 7E FVALUE OWN : EARLIER 1 ;");
+    const loaded = try createMachine(&output);
+    defer destroyMachine(loaded);
+    try loaded.restoreImage(image);
+    try target.appendImage(loaded);
+    try target.interpretLine("FV F. SETFV FV F. GETFV F. 3.5E TO FV GETFV F.");
+    try target.appendImage(loaded);
+    try target.interpretLine("FV F. SETFV GETFV F. OWN F.");
+    try std.testing.expectEqualStrings("1.5 2.5 2.5 3.5 1.5 2.5 7. ", output.written());
+
+    // A full restore, as SAVESYS starts, keeps the value and the word that stores it.
+    output.len = 0;
+    const restored = try createMachine(&output);
+    defer destroyMachine(restored);
+    try source.interpretLine("4.5E TO FV");
+    const image2 = try saveImage(source);
+    defer freeImage(image2);
+    try restored.restoreImage(image2);
+    try restored.interpretLine("FV F. SETFV GETFV F. SEE FV");
+    try std.testing.expectEqualStrings("4.5 2.5 2.5e FVALUE FV\n", output.written());
+}
+
 test "LOAD gives the added words their names after the dictionary's own" {
     var output = Output{};
     const source = try createMachine(&output);

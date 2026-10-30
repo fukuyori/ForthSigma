@@ -155,7 +155,7 @@ CREATE BUF 16 ALLOT
 | メモリ | `F@`, `F!`, `F,`, `F+!`, `FLOATS`, `FLOAT+`, `DF@`, `DF!`, `DFLOATS`, `DFLOAT+`, `SF@`, `SF!`, `SFLOATS`, `SFLOAT+`, `FALIGN`, `FALIGNED`, `DFALIGN`, `DFALIGNED`, `SFALIGN`, `SFALIGNED` | 1個8バイトです。`DF` の付く語は同じ8バイトの値、`SF` の付く語は4バイト（単精度）の値を扱います（`SF!` は単精度に丸め、範囲を超えると無限大になります）。`FALIGN` と `DFALIGN` はHEREを8の倍数に、`SFALIGN` は4の倍数に切り上げます。 |
 | 定義 | `FVARIABLE 名前`, `値 FCONSTANT 名前`, `値 FVALUE 名前`, `要素数 FARRAY 名前`, `FA@`, `FA!` | `FVALUE` の名前は値を浮動小数点スタックに積み、`値 TO 名前` で変更できます。 `FARRAY` の読み書きは `添字 配列名 FA@`、`添字 配列名 FA!` です。 |
 | 変換・入力 | `S>F`, `F>S`, `FINPUT` | `F>S` は0方向へ切り捨てます。`FINPUT` は端末から数値を1個読み取ります（`E` は省略可能）。 |
-| 表示の桁数 | `PRECISION`, `SET-PRECISION` | `F.` `FE.` `FS.` の桁数を返す・設定します。表示は1〜100桁の範囲で行います（Gforthは0以下で異常終了します）。`PRECISION` は設定した値をそのまま返します。 |
+| 表示の桁数 | `PRECISION`, `SET-PRECISION` | `F.` `FE.` `FS.` の桁数を返す・設定します。表示は1〜1000桁の範囲で行います（Gforthは1000桁まで表示し、0以下や4000では異常終了します）。`PRECISION` は設定した値をそのまま返します。 |
 | 書式付き出力 | `F.RDP`, `F>STR-RDP`, `F>BUF-RDP` | ( r 幅 小数桁 最低有効桁 -- ) の形で、幅に右寄せして表示（`F.RDP`）、文字列で返す（`F>STR-RDP` は ( -- addr u )、次の数値書式で上書きされます）、指定したバッファに書き込みます（`F>BUF-RDP` は ( r addr 幅 小数桁 最低有効桁 -- )）。例: `12345.6789E 10 2 7 F.RDP` は `  12345.68`、最低有効桁を8にすると `1.234568E4`。固定小数点で有効桁が足りないか、整数部が幅に収まらなければ指数表記、それも入らなければ `*` で埋めます。Gforthと同じ結果です。 |
 
 ## 入出力と基数

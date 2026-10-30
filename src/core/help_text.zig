@@ -336,7 +336,7 @@ pub const entries = [_]Entry{
     .{ .name = "FE.", .stack = "( F: r -- )", .text = "Print r with PRECISION digits and an exponent that is a multiple of 3, and a space." },
     .{ .name = "FS.", .stack = "( F: r -- )", .text = "Print r with PRECISION digits, one before the point, an exponent, and a space." },
     .{ .name = "PRECISION", .stack = "( -- u )", .text = "The significant digits F. FE. and FS. show (15 at startup)." },
-    .{ .name = "SET-PRECISION", .stack = "( u -- )", .text = "Set PRECISION; output uses 1 to 100 digits." },
+    .{ .name = "SET-PRECISION", .stack = "( u -- )", .text = "Set PRECISION; output uses 1 to 1000 digits." },
     .{ .name = "F.RDP", .stack = "( nr nd np -- ) ( F: r -- )", .text = "Print r right-aligned in nr characters with nd digits after the point, or in exponent form when fewer than np digits would show." },
     .{ .name = "F>STR-RDP", .stack = "( nr nd np -- addr u ) ( F: r -- )", .text = "Format r as F.RDP does; the string lasts until the next number conversion." },
     .{ .name = "F>BUF-RDP", .stack = "( addr nr nd np -- ) ( F: r -- )", .text = "Format r as F.RDP does into the buffer at addr." },

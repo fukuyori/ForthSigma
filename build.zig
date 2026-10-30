@@ -32,6 +32,10 @@ pub fn build(b: *std.Build) void {
     });
     addCoreMath(b, test_module);
     addEmbeddedTexts(b, test_module);
+    test_module.addCSourceFile(.{
+        .file = b.path("src/fma/fma_for_tests.c"),
+        .flags = &.{ "-std=gnu11", "-include", b.pathFromRoot("src/fma/sigma_fma.h") },
+    });
     const unit_tests = b.addTest(.{ .root_module = test_module });
     const run_tests = b.addRunArtifact(unit_tests);
     const test_step = b.step("test", "Run FORTH/Σ core and host tests");
