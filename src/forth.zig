@@ -700,11 +700,64 @@ fn scaledDecimalWith(allocator: std.mem.Allocator, mantissa: u64, binary_exponen
     return output[0..text.len];
 }
 
+/// `count` significant decimal digits of `magnitude`, rounded half to even, and the
+/// exponent e with magnitude ~= 0.d1d2... * 10^e. Zero gives zeros with e = 1, so that
+/// it has one integer digit. Beyond 800 digits a double has no more nonzero digits, so
+/// the rest is padded with zeros.
+const Represented = struct { digits: []const u8, exponent: i32 };
+
+fn representDecimal(magnitude: Float, count: usize, buffer: *[max_rdp_width + 400]u8) RuntimeError!Represented {
+    if (magnitude == 0) {
+        @memset(buffer[0..count], '0');
+        return .{ .digits = buffer[0..count], .exponent = 1 };
+    }
+    const exact: usize = @min(count, 800);
+    const exact_i: i32 = @intCast(exact);
+    var exponent: i32 = @as(i32, @intFromFloat(@floor(@log10(magnitude)))) + 1;
+    var attempt: usize = 0;
+    while (true) : (attempt += 1) {
+        const scale = exact_i - exponent;
+        const rounded = try scaledDecimal(magnitude, scale, buffer);
+        exponent = @as(i32, @intCast(rounded.len)) - scale;
+        // A wrong estimate or a carry (9.99 -> 10.0) changes the length; round again.
+        if (rounded.len != exact and attempt < 3) continue;
+        if (rounded.len < count) @memset(buffer[rounded.len..count], '0');
+        return .{ .digits = buffer[0..count], .exponent = exponent };
+    }
+}
+
+/// Whether F.RDP uses fixed-point notation for a value with decimal exponent
+/// `exponent`, and how many significant digits that layout shows.
+const RdpLayout = struct { fixed: bool, digits: i64 };
+
+fn rdpLayout(exponent: i32, width: usize, fraction: usize, precision: i64, sign_width: usize) RdpLayout {
+    const width_i: i64 = @intCast(width);
+    const fraction_i: i64 = @intCast(fraction);
+    const sign_i: i64 = @intCast(sign_width);
+    const before_point = width_i - fraction_i - 1;
+    const enough_precision = precision == 0 or fraction_i + exponent >= precision;
+    if (before_point >= 0 and enough_precision and before_point - sign_i >= @max(exponent, 0))
+        return .{ .fixed = true, .digits = std.math.clamp(exponent + fraction_i, 1, width_i) };
+    return .{ .fixed = false, .digits = mantissaDigits(exponent, width, sign_width) };
+}
+
+/// Digits of an exponential-notation mantissa that fill `width`, counting the point
+/// once there are at least one; 0 means a single digit and no point, and a negative
+/// count means the field is too narrow.
+fn mantissaDigits(exponent: i32, width: usize, sign_width: usize) i64 {
+    var exponent_text: [16]u8 = undefined;
+    const etext = std.fmt.bufPrint(&exponent_text, "{d}", .{exponent - 1}) catch unreachable;
+    return @as(i64, @intCast(width)) - @as(i64, @intCast(etext.len)) - 2 - @as(i64, @intCast(sign_width));
+}
+
 /// F.RDP formatting of `value` into a field of `width` characters with `fraction`
 /// digits after the point in fixed-point notation, which is used when it shows at least
 /// `precision` significant digits and its integer part fits; otherwise exponential
-/// notation (`1.23E5`), and asterisks when even that does not fit. The rules follow
-/// gforth's documentation and the outputs observed from gforth.
+/// notation (`1.23E5`), and asterisks when even that does not fit. The value is
+/// rounded to the field width, the layout chosen, then rounded again to the digits
+/// that layout shows and the layout chosen again, since rounding can change the
+/// exponent (0.09999 -> 0.10, 9.999E-10 -> 1E-9). The rules follow gforth's
+/// documentation and the outputs observed from gforth.
 fn formatRdp(value: Float, width_cell: Cell, fraction_cell: Cell, precision_cell: Cell, output: *[max_rdp_width]u8) RuntimeError![]const u8 {
     if (width_cell > max_rdp_width) return error.StringTooLong;
     const width: usize = @intCast(@max(width_cell, 0));
@@ -722,92 +775,73 @@ fn formatRdp(value: Float, width_cell: Cell, fraction_cell: Cell, precision_cell
     const negative = std.math.signbit(value);
     const sign_width: usize = @intFromBool(negative);
     const magnitude = @abs(value);
-    var digits: [max_rdp_width + 400]u8 = undefined;
+    var buffer: [max_rdp_width + 400]u8 = undefined;
 
-    // Decimal exponent e with magnitude = 0.d1d2... * 10^e, after rounding to the
-    // field width (at most 40 digits are needed to see a carry).
-    var exponent: i32 = 1;
-    if (magnitude != 0) {
-        const significant: i32 = @intCast(@min(width, 40));
-        const estimate: i32 = @intFromFloat(@floor(@log10(magnitude)));
-        const scale = significant - 1 - estimate;
-        const rounded = try scaledDecimal(magnitude, scale, &digits);
-        exponent = @as(i32, @intCast(rounded.len)) - scale;
-    }
+    const first = try representDecimal(magnitude, width, &buffer);
+    const first_layout = rdpLayout(first.exponent, width, fraction, precision, sign_width);
+    const count: usize = @intCast(std.math.clamp(first_layout.digits, 1, @as(i64, @intCast(width))));
+    const rep = try representDecimal(magnitude, count, &buffer);
+    const layout = rdpLayout(rep.exponent, width, fraction, precision, sign_width);
 
-    // Fixed-point notation.
-    if (width >= fraction + 1 and (precision == 0 or @as(i64, @intCast(fraction)) + exponent >= precision)) {
-        const fraction_i: i32 = @intCast(fraction);
+    if (layout.fixed) {
+        const fraction_i: i64 = @intCast(fraction);
         // When the first digit lies beyond the last place, gforth rounds up to one unit
         // only if twice the value exceeds that unit (so 0.0005 shows as 0.000).
-        const scaled: []const u8 = if (magnitude != 0 and exponent + fraction_i <= 0)
-            (if (2 * magnitude > std.math.pow(Float, 0.1, @floatFromInt(fraction))) "1" else "0")
-        else
-            try scaledDecimal(magnitude, fraction_i, &digits);
-        const integer_len = if (scaled.len > fraction and !(scaled.len == 1 and scaled[0] == '0')) scaled.len - fraction else 0;
+        const tiny = magnitude != 0 and rep.exponent + fraction_i <= 0;
+        const round_up = tiny and 2 * magnitude > std.math.pow(Float, 0.1, @floatFromInt(fraction));
         const room = width - fraction - 1;
-        if (integer_len + sign_width <= room) {
-            var at = width - fraction;
-            field[at - 1] = '.';
-            // Fraction digits, padded with zeros on the left.
-            var index: usize = 0;
-            while (index < fraction) : (index += 1) {
-                const from_end = fraction - index;
-                field[at + index] = if (from_end <= scaled.len) scaled[scaled.len - from_end] else '0';
-            }
-            at -= 1;
-            if (integer_len > 0) {
-                @memcpy(field[at - integer_len .. at], scaled[0..integer_len]);
-                at -= integer_len;
-            } else if (room > sign_width) {
-                at -= 1;
-                field[at] = '0';
-            }
-            if (negative) field[at - 1] = '-';
-            return field;
+        // The layout leaves room for the integer digits; a unit rounded up from a tiny
+        // value is left out when it does not fit (0.7 in a field of 1 shows ".").
+        const integer_len: usize = if (rep.exponent > 0) @intCast(rep.exponent) else @intFromBool(round_up and fraction == 0 and room > sign_width);
+        var at = width - fraction;
+        field[at - 1] = '.';
+        var index: usize = 0;
+        while (index < fraction) : (index += 1) {
+            const place = rep.exponent + @as(i64, @intCast(index));
+            field[at + index] = if (tiny)
+                (if (round_up and index + 1 == fraction) '1' else '0')
+            else if (place >= 0 and place < rep.digits.len) rep.digits[@intCast(place)] else '0';
         }
+        at -= 1;
+        if (integer_len > 0) {
+            var digit: usize = 0;
+            while (digit < integer_len) : (digit += 1)
+                field[at - integer_len + digit] = if (tiny) '1' else if (digit < rep.digits.len) rep.digits[digit] else '0';
+            at -= integer_len;
+        } else if (room > sign_width) {
+            at -= 1;
+            field[at] = '0';
+        }
+        if (negative) field[at - 1] = '-';
+        return field;
     }
 
     // Exponential notation: d.ddddEe filling the field exactly.
-    var decimal_exponent: i32 = if (magnitude == 0) 0 else exponent - 1;
-    var exponent_text: [16]u8 = undefined;
-    var attempt: usize = 0;
-    while (true) : (attempt += 1) {
-        const etext = std.fmt.bufPrint(&exponent_text, "{d}", .{decimal_exponent}) catch unreachable;
-        const mantissa_len: i64 = @as(i64, @intCast(width)) - @as(i64, @intCast(etext.len)) - 2 - @as(i64, @intCast(sign_width));
-        if (mantissa_len < 0) {
-            @memset(field, '*');
-            return field;
-        }
-        const count: usize = @intCast(@max(mantissa_len, 1));
-        const scale: i32 = @as(i32, @intCast(count)) - 1 - decimal_exponent;
-        const mantissa = if (magnitude == 0) blk: {
-            @memset(digits[0..count], '0');
-            break :blk digits[0..count];
-        } else try scaledDecimal(magnitude, scale, &digits);
-        const actual: i32 = if (magnitude == 0) 0 else @as(i32, @intCast(mantissa.len)) - scale - 1;
-        if (actual != decimal_exponent and attempt < 2) {
-            decimal_exponent = actual;
-            continue;
-        }
-        var at: usize = 0;
-        if (negative) {
-            field[0] = '-';
-            at = 1;
-        }
-        field[at] = mantissa[0];
-        at += 1;
-        if (mantissa_len >= 1) {
-            field[at] = '.';
-            at += 1;
-            const rest: usize = @intCast(mantissa_len - 1);
-            @memcpy(field[at .. at + rest], mantissa[1 .. 1 + rest]);
-            at += rest;
-        }
-        field[at] = 'E';
-        @memcpy(field[at + 1 .. at + 1 + etext.len], etext);
+    const mantissa_len = mantissaDigits(rep.exponent, width, sign_width);
+    if (mantissa_len < 0) {
+        @memset(field, '*');
         return field;
     }
+    var exponent_text: [16]u8 = undefined;
+    const etext = std.fmt.bufPrint(&exponent_text, "{d}", .{rep.exponent - 1}) catch unreachable;
+    var at: usize = 0;
+    if (negative) {
+        field[0] = '-';
+        at = 1;
+    }
+    field[at] = rep.digits[0];
+    at += 1;
+    if (mantissa_len >= 1) {
+        field[at] = '.';
+        at += 1;
+        const rest: usize = @intCast(mantissa_len - 1);
+        var index: usize = 0;
+        while (index < rest) : (index += 1) field[at + index] = if (index + 1 < rep.digits.len) rep.digits[index + 1] else '0';
+        at += rest;
+    }
+    field[at] = 'E';
+    @memcpy(field[at + 1 .. at + 1 + etext.len], etext);
+    return field;
 }
 
 fn withoutTrailingZeros(digits: []const u8) []const u8 {

@@ -2197,6 +2197,14 @@ test "F>STR-RDP matches gforth's output for fixed, exponential, and overflowing 
         .{ "0.95E 5 1 0", "  0.9" },               .{ "1E 1 0 0", "*" },                 .{ "9.99E 3 1 1", "1E1" },
         .{ "1E-100 7 0 1", "1.E-100" },            .{ "0.0005E 7 3 0", "  0.000" },      .{ "0.0006E 7 3 0", "  0.001" },
         .{ "0.05E 5 1 0", "  0.0" },               .{ "0.000123E 10 6 2", "  0.000123" }, .{ "-100E 3 0 1", "***" },
+        // Rounding that shortens the exponent, adds a digit, or makes np reachable.
+        .{ "9.999E-10 4 2 1", "1E-9" },            .{ "-0.9999E 4 2 1", "-1E0" },     .{ "0.09999E 4 2 2", "0.10" },
+        .{ "9.999E-100 5 2 1", "1E-99" },          .{ "9.999E-100 6 2 1", "1.E-99" }, .{ "99.996E 5 2 1", "1.0E2" },
+        .{ "99.996E 6 2 1", "100.00" },            .{ "-99.996E 6 2 1", "-1.0E2" },   .{ "0.96E 2 1 0", "**" },
+        // Zero has one integer digit; a tiny value rounded up loses a unit that does not fit.
+        .{ "0E 4 3 1", "0.E0" },                   .{ "-0E 5 3 1", "-0.E0" },         .{ "0E 3 3 1", "0E0" },
+        .{ "-0E 6 3 1", "-0.000" },                .{ "0.7E 1 0 0", "." },            .{ "-0.7E 2 0 0", "-." },
+        .{ "0.7E 2 0 0", "1." },                   .{ "0.0007E 4 3 0", ".001" },
     };
     for (cases) |case| {
         var output = Output{};
@@ -2223,4 +2231,14 @@ test "F.RDP prints, F>BUF-RDP fills a buffer, and the book's Level 20 examples h
     try std.testing.expectError(error.StringTooLong, machine.interpretLine("1E 5000 2 0 F.RDP"));
     machine.report(error.StringTooLong);
     try std.testing.expectError(error.PicturedNumericOverflow, machine.interpretLine("123. <# #S 1E 4096 2 0 F>STR-RDP"));
+}
+
+test "F.RDP and F>BUF-RDP show a value whose exponent shortens when rounded" {
+    var output = Output{};
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
+
+    try machine.interpretLine("CREATE BUF 8 ALLOT BUF 8 88 FILL 9.999E-10 BUF 1+ 4 2 1 F>BUF-RDP BUF 8 TYPE 9.999E-10 4 2 1 F.RDP");
+    try std.testing.expectEqualStrings("X1E-9XXX1E-9", output.written());
+    try expectStack(machine, &.{});
 }
