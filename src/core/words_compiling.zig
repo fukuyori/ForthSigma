@@ -23,6 +23,7 @@ pub const words = [_]Builtin{
     .compile_else, .compile_ahead, .compile_then, .compile_begin, .compile_end, .compile_again, .compile_while,
     .compile_repeat, .compile_do, .compile_q_do, .compile_loop, .compile_plus_loop, .compile_does,
     .compile_case, .compile_of, .compile_endof, .compile_endcase, .compile_exit, .compile_recurse,
+    .question_exit, .question_leave, .compile_question_of, .compile_contof, .compile_next_case,
     .define_colon, .define_variable, .define_fvariable, .define_constant, .define_value,
     .define_two_variable, .define_two_constant, .define_fconstant, .define_fvalue, .define_two_value, .define_buffer, .define_array, .end_definition,
     .tick, .to_body, .literal, .fliteral, .sliteral, .two_literal, .state, .bracket_if, .bracket_else, .bracket_then,
@@ -75,6 +76,18 @@ pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
             try self.requireCompiling();
             _ = try self.emit(.{ .kind = .exit });
         },
+        // ?EXIT ( flag -- ) and ?LEAVE ( flag -- ) exit or leave when flag is true.
+        .question_exit, .question_leave => {
+            try self.requireCompiling();
+            const at = try self.emit(.{ .kind = .branch_zero });
+            if (builtin == .question_exit) {
+                _ = try self.emit(.{ .kind = .exit });
+            } else try self.compileLeave();
+            self.patch(at, self.code_count);
+        },
+        .compile_question_of => try self.compileQuestionOf(),
+        .compile_contof => try self.compileContof(),
+        .compile_next_case => try self.compileNextCase(),
         .compile_recurse => {
             if (!self.compiling or !self.defining) return error.CompileOnly;
             _ = try self.emit(.{ .kind = .call, .value = self.current_word });

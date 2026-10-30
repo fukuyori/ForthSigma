@@ -20,7 +20,7 @@ const true_flag = memory_map.true_flag;
 
 /// The built-in words this file executes; executeBuiltin dispatches by this list.
 pub const words = [_]Builtin{
-    .blank, .cell, .cells, .cell_plus, .aligned, .fetch, .store, .cfetch, .cstore, .add_store,
+    .blank, .cell, .cells, .cell_plus, .cell_minus, .aligned, .fetch, .store, .cfetch, .cstore, .add_store,
     .inc_store, .dec_store, .zero_store, .off, .on, .question, .array_fetch, .array_store, .erase,
     .fill, .move, .cmove, .here, .allot, .comma, .c_comma, .two_fetch, .two_store, .count, .pad,
     .place, .compare, .search, .slash_string, .minus_trailing, .char_plus, .chars, .bounds,
@@ -35,6 +35,7 @@ pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
         .cell => try self.push(cell_size),
         .cells => try self.push((try self.pop()) *% cell_size),
         .cell_plus => try self.push((try self.pop()) +% cell_size),
+        .cell_minus => try self.push((try self.pop()) -% cell_size),
         .aligned => {
             const address = try self.pop();
             try self.push((address +% (cell_size - 1)) & ~@as(Cell, cell_size - 1));

@@ -151,7 +151,8 @@ pub fn compileDoes(self: *State) RuntimeError!void {
 }
 
 pub fn compileCase(self: *State) RuntimeError!void {
-    try self.pushControl(.case_start, 0);
+    // CONTOF and NEXT-CASE go back to here.
+    try self.pushControl(.case_start, self.code_count);
 }
 
 pub fn compileOf(self: *State) RuntimeError!void {
@@ -163,6 +164,45 @@ pub fn compileOf(self: *State) RuntimeError!void {
     const at = try self.emit(.{ .kind = .branch_zero });
     _ = try self.emit(.{ .kind = .builtin, .value = @intFromEnum(Builtin.drop) });
     try self.pushControl(.of_branch, at);
+}
+
+/// ?OF ( flag -- ): gforth's OF that takes a flag instead of comparing with the selector.
+pub fn compileQuestionOf(self: *State) RuntimeError!void {
+    try self.requireCompiling();
+    const kind = self.topControl() orelse return error.ControlMismatch;
+    if (kind != .case_start and kind != .endof_branch) return error.ControlMismatch;
+    const at = try self.emit(.{ .kind = .branch_zero });
+    try self.pushControl(.of_branch, at);
+}
+
+/// CONTOF: gforth's ENDOF that goes back to CASE instead of leaving it.
+pub fn compileContof(self: *State) RuntimeError!void {
+    const of = try self.popControl(.of_branch);
+    const start = try caseStart(self);
+    _ = try self.emit(.{ .kind = .branch, .value = start });
+    self.patch(of.address, self.code_count);
+    self.local_count = of.locals;
+}
+
+/// NEXT-CASE: gforth's ENDCASE that goes back to CASE instead of dropping the selector.
+pub fn compileNextCase(self: *State) RuntimeError!void {
+    try self.requireCompiling();
+    _ = try self.emit(.{ .kind = .branch, .value = try caseStart(self) });
+    try closeCase(self);
+}
+
+/// The address of the innermost CASE, under its ENDOF branches.
+fn caseStart(self: *State) RuntimeError!u16 {
+    var index = self.control_depth;
+    while (index > 0) {
+        index -= 1;
+        switch (self.control_stack[index].kind) {
+            .case_start => return self.control_stack[index].address,
+            .endof_branch => {},
+            else => return error.ControlMismatch,
+        }
+    }
+    return error.ControlMismatch;
 }
 
 pub fn compileEndof(self: *State) RuntimeError!void {
@@ -177,6 +217,11 @@ pub fn compileEndof(self: *State) RuntimeError!void {
 pub fn compileEndcase(self: *State) RuntimeError!void {
     try self.requireCompiling();
     _ = try self.emit(.{ .kind = .builtin, .value = @intFromEnum(Builtin.drop) });
+    try closeCase(self);
+}
+
+/// Points the ENDOF branches past the end of the CASE and removes it.
+fn closeCase(self: *State) RuntimeError!void {
     while (true) {
         const kind = self.topControl() orelse return error.ControlMismatch;
         self.control_depth -= 1;

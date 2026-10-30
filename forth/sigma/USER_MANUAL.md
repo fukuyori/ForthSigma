@@ -93,6 +93,47 @@ BIGNUM 2@ D.                                      \ 30792422974944119506
 
 `IMMEDIATE` は直前に定義した語を即時語にします。`POSTPONE 名前` は、定義中の語に「名前のコンパイル」を組み込みます。`RECURSE` は定義中の語自身を呼び出します。
 
+### 遅延語とコンパイルの語
+
+| ワード | スタック | 説明 |
+|---|---|---|
+| `DEFER 名前` | ( -- ) | 実行する語をあとで決める語を作ります。 |
+| `xt IS 名前` | ( xt -- ) | DEFERの語が実行する語を決めます。`TO` と同じで、定義の中でも使え、VALUEにも使えます（Gforthと同じ）。 |
+| `ACTION-OF 名前` | ( -- xt ) | DEFERの語が実行する語を返します。 |
+| `DEFER!`, `DEFER@` | ( xt2 xt1 -- )、( xt1 -- xt2 ) | 実行トークンで指定したDEFERの語の動作を設定し、または取り出します。 |
+| `DEFERS 名前` | ( -- ) | 定義の中で、DEFERの語がそのとき実行する語を埋め込みます。動作を決めていないDEFERではエラーです（Gforthは警告を出す語を埋め込みます）。 |
+| `COMPILE,` | ( xt -- ) | 作成中の定義に、xtの実行を加えます。 |
+| `[COMPILE] 名前` | ( -- ) | 作成中の定義に、名前の実行を加えます（即時語でも）。ローカル変数と、`S"` `TO` のような語彙にない構文語には使えません。 |
+| `NAME>COMPILE` | ( nt -- xt1 xt2 ) | xt1に対してxt2を実行すると名前をコンパイルできます（xt2は `COMPILE,`、即時語では `EXECUTE`）。 |
+| `値 +TO 名前` | ( n -- ) | VALUEやローカル変数に値を足します（FVALUEと浮動小数点のローカル変数は浮動小数点数、2VALUEと倍長のローカル変数は倍長整数）。 |
+| `PERFORM`, `NOOP` | ( addr -- )、( -- ) | `PERFORM` はaddrにある実行トークンを実行します（`@ EXECUTE`）。`NOOP` は何もしません。 |
+
+DEFERの語にまだ動作を決めていないときは、Gforthと同じく警告（`WARNING: DEFERRED WORD 名前 IS UNINITIALIZED`）を出して何もしません。そのときの `DEFER@` は -1 です（Gforthは警告を出す語の実行トークン）。Gforthは定義の外の `COMPILE,` を警告を出してコンパイルしますが、Sigmaではエラー（`COMPILE MODE ERROR !`）です。DEFERが自分自身を（ほかの語を通しても）実行すると、`RETURN STACK OVER FLOW !` になります（Gforthは止まらずに回り続けます）。`FORGET` や `MARKER` で消した語を実行するDEFERは、動作を決めていない状態に戻ります。
+
+### 構造体
+
+```forth
+BEGIN-STRUCTURE POINT
+  FIELD: P.X
+  FIELD: P.Y
+END-STRUCTURE
+CREATE ORIGIN POINT ALLOT
+10 ORIGIN P.Y !   ORIGIN P.Y @ .
+```
+
+| ワード | スタック | 説明 |
+|---|---|---|
+| `BEGIN-STRUCTURE 名前`, `END-STRUCTURE` | ( -- addr 0 )、( addr n -- ) | 構造体を定義します。名前は構造体の大きさを返すVALUEになります（Gforthと同じ）。 |
+| `+FIELD 名前` | ( n1 n2 -- n3 ) | オフセットn1、大きさn2のフィールドを作ります。名前はアドレスにn1を足します。 |
+| `FIELD:`, `CFIELD:`, `FFIELD:`, `SFFIELD:`, `DFFIELD:` | ( n1 -- n2 ) | セル、文字、浮動小数点数、32ビット・64ビットの浮動小数点数のフィールドを、必要なら境界を合わせて作ります。 |
+| `STRUCT`, `FIELD 名前`, `END-STRUCT 名前` | ( -- align size )、( align1 offset1 align size -- align2 offset2 )、( align size -- ) | Gforthの古い書き方の構造体です。`END-STRUCT` の名前は境界と大きさの2つを返します。 |
+| `CELL%`, `CHAR%`, `FLOAT%`, `DOUBLE%`, `SFLOAT%`, `DFLOAT%` | ( -- align size ) | 型の境界と大きさです。 |
+| `%SIZE`, `%ALIGNMENT` | ( align size -- size )、( align size -- align ) | 大きさ、境界を取り出します。 |
+| `%ALIGN`, `%ALLOT` | ( align size -- )、( align size -- addr ) | `HERE` の境界を合わせます。`%ALLOT` はさらに大きさ分を確保してアドレスを返します。 |
+| `%ALLOC`, `%ALLOCATE` | ( align size -- addr )、( align size -- addr ior ) | ヒープに確保します。`%ALLOC` は失敗すると `THROW` します。 |
+
+`SEE` はフィールドを `オフセット +FIELD 名前` と表示します（Gforthの表示とは違います）。
+
 ## 変数・定数・配列
 
 ```forth
@@ -125,10 +166,10 @@ CREATE BUF 16 ALLOT
 
 - `IF ... ELSE ... THEN`
 - `BEGIN ... END`（`END` の別名 `UNTIL`）、`BEGIN ... AGAIN`、`BEGIN ... WHILE ... REPEAT`
-- `CASE ... OF ... ENDOF ... ENDCASE`
+- `CASE ... OF ... ENDOF ... ENDCASE`（Gforthの `?OF`、`CONTOF`、`NEXT-CASE` も使えます）
 - `DO ... LOOP`、`DO ... +LOOP`、`?DO`
 
-`IF ... ENDIF` も使えます（`ENDIF` は `THEN` の別名）。`DO` は開始値と終値が等しくても本体を1回実行します（FORTH/Σの仕様）。`?DO` は等しい場合に本体を実行しません。`LEAVE` は直ちにループを抜けます。ループの途中で `EXIT` するときは、先に `UNLOOP` でループを片付けます。`I`、`J`、`K` は内側からそれぞれ1段目、2段目、3段目のループ添字を返します。
+`IF ... ENDIF` も使えます（`ENDIF` は `THEN` の別名）。`DO` は開始値と終値が等しくても本体を1回実行します（FORTH/Σの仕様）。`?DO` は等しい場合に本体を実行しません。`LEAVE` は直ちにループを抜けます。ループの途中で `EXIT` するときは、先に `UNLOOP` でループを片付けます。`?EXIT`（( flag -- )）は真のとき `EXIT` し、`?LEAVE`（( flag -- )）は真のとき `LEAVE` します。`?OF`（( flag -- )）は値と比べる代わりに真偽で選ぶ `OF`、`CONTOF` は `CASE` の先頭へ戻る `ENDOF`、`NEXT-CASE` は選択値を捨てずに先頭へ戻る `ENDCASE` です（Gforthと同じ）。`I`、`J`、`K` は内側からそれぞれ1段目、2段目、3段目のループ添字を返します。
 
 ## 浮動小数点数
 
@@ -507,7 +548,7 @@ SAVE words.sigma
 LOAD words.sigma
 ```
 
-`LOAD` は保存した利用者定義語を現在の辞書の後ろに追加します。同名語は読み込んだ新しい定義が優先されます。以前の版で保存した辞書イメージ（`SIGIMG01`〜`SIGIMG30`）と、壊れた辞書イメージは読み込めません（`INVALID IMAGE !`）。辞書イメージにはチェックサムが付いており、偶然の破損は読み込む前に見つかります。読み込むのは、Sigmaの `SAVE`・`SAVESYS` で作ったファイルだけにしてください。定数や変数に保存した実行トークン（`:NONAME` の結果など）と、`LITERAL` で定義に埋め込んだ実行トークンやアドレス（`[ ' X ] LITERAL` など）は、すでに利用者定義語がある辞書へ `LOAD` すると別の語や場所を指すことがあります。`['] X` で埋め込んだ実行トークンは正しく付け替えられます。`SAVESYS` で作った実行ファイルではこの問題は起きません。
+`LOAD` は保存した利用者定義語を現在の辞書の後ろに追加します。同名語は読み込んだ新しい定義が優先されます。以前の版で保存した辞書イメージ（`SIGIMG01`〜`SIGIMG31`）と、壊れた辞書イメージは読み込めません（`INVALID IMAGE !`）。辞書イメージにはチェックサムが付いており、偶然の破損は読み込む前に見つかります。読み込むのは、Sigmaの `SAVE`・`SAVESYS` で作ったファイルだけにしてください。定数や変数に保存した実行トークン（`:NONAME` の結果など）と、`LITERAL` で定義に埋め込んだ実行トークンやアドレス（`[ ' X ] LITERAL` など）は、すでに利用者定義語がある辞書へ `LOAD` すると別の語や場所を指すことがあります。`['] X` で埋め込んだ実行トークンは正しく付け替えられます。`SAVESYS` で作った実行ファイルではこの問題は起きません。
 
 `SAVESYS` は、現在の辞書・コンパイル済み定義・データを含む、実行中環境向けの単独実行ファイルを作ります。
 
@@ -524,15 +565,15 @@ SAVESYS demo.exe
 | 分類 | 登録語 |
 | --- | --- |
 | スタック操作 | `DROP`, `DUP`, `SWAP`, `OVER`, `ROT`, `-ROT`, `NIP`, `TUCK`, `PICK`, `ROLL`, `2DUP`, `2DROP`, `2SWAP`, `2OVER`, `DEPTH`, `>R`, `R>`, `R@`, `2>R`, `2R>`, `2R@`, `?DUP`, `2ROT`, `N>R`, `NR>` |
-| 算術 | `+`, `-`, `*`, `/`, `MOD`, `/MOD`, `*/`, `*/MOD`, `MINUS`, `NEGATE`, `ABS`, `1+`, `1-`, `2*`, `2/`, `MAX`, `MIN` |
-| 比較・論理・ビット | `=`, `<>`, `<`, `>`, `<=`, `>=`, `NOT`, `0=`, `0<`, `0>`, `0<>`, `AND`, `OR`, `XOR`, `COM`, `INVERT`, `NAND`, `NOR`, `SWAB`, `LSHIFT`, `RSHIFT`, `TRUE`, `FALSE` |
+| 算術 | `+`, `-`, `*`, `/`, `MOD`, `/MOD`, `*/`, `*/MOD`, `MINUS`, `NEGATE`, `ABS`, `1+`, `1-`, `2*`, `2/`, `MAX`, `MIN`, `UNDER+` |
+| 比較・論理・ビット | `=`, `<>`, `<`, `>`, `<=`, `>=`, `NOT`, `0=`, `0<`, `0>`, `0>=`, `0<>`, `AND`, `OR`, `XOR`, `COM`, `INVERT`, `NAND`, `NOR`, `SWAB`, `LSHIFT`, `RSHIFT`, `TRUE`, `FALSE` |
 | 定数・アドレス計算 | `BL`, `CELL`, `CELLS`, `CELL+`, `ALIGNED`, `ALIGN`, `UNUSED`, `WITHIN`, `BUFFER:`, `DUMP` |
-| メモリ・配列 | `@`, `!`, `,`, `C,`, `C@`, `C!`, `+!`, `1+!`, `1-!`, `OSET`, `ON`, `OFF`, `?`, `A@`, `A!`, `ERASE`, `FILL`, `MOVE`, `CMOVE`, `HERE`, `ALLOT` |
+| メモリ・配列 | `@`, `!`, `,`, `C,`, `C@`, `C!`, `+!`, `1+!`, `1-!`, `OSET`, `ON`, `OFF`, `?`, `A@`, `A!`, `ERASE`, `FILL`, `MOVE`, `CMOVE`, `HERE`, `ALLOT`, `CELL-` |
 | ループ関連 | `I`, `J`, `K`, `LEAVE`, `UNLOOP` |
 | 入出力 | `.`, `U.`, `.R`, `U.R`, `C.`, `.S`, `ECHO`, `EMIT`, `CR`, `SPACE`, `SPCES`, `SPACES`, `TYPE`, `INPUT` |
 | 基数 | `HEX`, `DEC`, `DECIMAL`, `OCT`, `BASE` |
-| 定義補助・辞書・実行 | `<BUILDS`, `CREATE`, `IMMEDIATE`, `WORDS`, `BYE`, `LOAD`, `SAVE`, `SAVESYS`, `EXECUTE`, `SEE`, `FIND`, `FIND-NAME`, `NAME>INT`, `NAME>STRING`, `MARKER`, `LOCATE`, `WHERE` |
-| 制御構造（即時語） | `IF`, `ELSE`, `AHEAD`, `THEN`, `CS-PICK`, `CS-ROLL`, `ENDIF`, `BEGIN`, `END`, `UNTIL`, `AGAIN`, `WHILE`, `REPEAT`, `DO`, `?DO`, `LOOP`, `+LOOP`, `DOES>`, `CASE`, `OF`, `ENDOF`, `ENDCASE`, `EXIT`, `RECURSE` |
+| 定義補助・辞書・実行 | `<BUILDS`, `CREATE`, `IMMEDIATE`, `WORDS`, `BYE`, `LOAD`, `SAVE`, `SAVESYS`, `EXECUTE`, `SEE`, `FIND`, `FIND-NAME`, `NAME>INT`, `NAME>STRING`, `MARKER`, `LOCATE`, `WHERE`, `PERFORM`, `NOOP`, `DEFER`, `IS`, `ACTION-OF`, `DEFER!`, `DEFER@`, `DEFERS`, `COMPILE,`, `[COMPILE]`, `NAME>COMPILE`, `BEGIN-STRUCTURE`, `END-STRUCTURE`, `+FIELD`, `FIELD:`, `CFIELD:`, `FFIELD:`, `SFFIELD:`, `DFFIELD:`, `STRUCT`, `FIELD`, `END-STRUCT`, `CELL%`, `CHAR%`, `FLOAT%`, `DOUBLE%`, `SFLOAT%`, `DFLOAT%`, `%SIZE`, `%ALIGNMENT`, `%ALIGN`, `%ALLOT`, `%ALLOC`, `%ALLOCATE` |
+| 制御構造（即時語） | `IF`, `ELSE`, `AHEAD`, `THEN`, `CS-PICK`, `CS-ROLL`, `ENDIF`, `BEGIN`, `END`, `UNTIL`, `AGAIN`, `WHILE`, `REPEAT`, `DO`, `?DO`, `LOOP`, `+LOOP`, `DOES>`, `CASE`, `OF`, `?OF`, `ENDOF`, `CONTOF`, `ENDCASE`, `NEXT-CASE`, `EXIT`, `?EXIT`, `?LEAVE`, `RECURSE` |
 | 浮動小数点スタック | `FDROP`, `FDUP`, `FSWAP`, `FOVER`, `FROT`, `F-ROT`, `FNIP`, `FTUCK`, `FPICK`, `FDEPTH`, `F.S` |
 | 浮動小数点算術・関数 | `F+`, `F-`, `F*`, `F/`, `FNEGATE`, `FMINUS`, `FABS`, `FMAX`, `FMIN`, `FSQRT`, `FEXP`, `FLN`, `FSIN`, `FCOS`, `FTAN`, `FSINCOS`, `FASIN`, `FACOS`, `FATAN`, `FATAN2`, `FSINH`, `FCOSH`, `FTANH`, `FASINH`, `FACOSH`, `FATANH`, `FEXPM1`, `FLNP1`, `FLOG`, `FALOG`, `F**`, `FLOOR`, `FTRUNC`, `FROUND` |
 | 浮動小数点比較 | `F=`, `F<>`, `F<`, `F>`, `F<=`, `F>=`, `F0=`, `F0<>`, `F0<`, `F0>`, `F0<=`, `F0>=`, `F~` |
@@ -549,7 +590,7 @@ SAVESYS demo.exe
 | 定数・説明 | `PI`, `HELP`, `LICENSE` |
 | 動的メモリ・動的文字列 | `ALLOCATE`, `FREE`, `RESIZE`, `$!`, `$@`, `$@LEN`, `$!LEN`, `$+!`, `C$+!`, `$.`, `$DEL`, `$INS`, `$OVER`, `$FREE`, `$INIT`, `$SPLIT`, `$ITER`, `$TMP`, `$SLURP-FILE`, `$[]`, `$[]!`, `$[]@`, `$[]#`, `$[].`, `$[]MAP`, `$[]FREE`, `$[]SLURP`, `$[]SLURP-FILE`, `$SLURP`, `$+SLURP`, `$+SLURP-FILE`, `$SLURP-LINE`, `$+!LEN`, `$[]+!`, `$+[]!`, `$EXEC`, `$OFF`, `$VARIABLE`, `$[]VARIABLE`, `$?` |
 
-起動時点でForth語彙に **476語** の組み込み語があります（`MINUS`/`NEGATE` のような別名もそれぞれ1語と数えます）。このほかRoot語彙に、`FORTH` `ONLY` などの10語が重ねて登録されています。
+起動時点でForth語彙に **516語** の組み込み語があります（`MINUS`/`NEGATE` のような別名もそれぞれ1語と数えます）。このほかRoot語彙に、`FORTH` `ONLY` などの10語が重ねて登録されています。
 
 ### 構文・定義形式
 
@@ -575,4 +616,4 @@ SAVESYS demo.exe
 
 現在は `EDIT`、`LIST`、エディットバッファ版の `LOAD`／`SAVE`、CP/Mファイル操作、PC-8001のモニター機能、`MCODE`やZ80機械語実行に対応していません。Z80をエミュレートする処理系ではありません。
 
-Gforthのワードのうち、`$SUBSTITUTE` などは未実装です。`CODE` や `SAVESYSTEM` などGforthの起動処理に関わる語は対象外です。詳しくは[互換性一覧](COMPATIBILITY.md)を参照してください。
+Gforthのワードのうち、`SUBSTITUTE` `$SUBSTITUTE` などの文字列の置き換え、`XC@+` などのUTF-8の文字単位の語、`TRY` … `ENDTRY` などは未実装です。`CODE` や `SAVESYSTEM` などGforthの起動処理に関わる語は対象外です。詳しくは[互換性一覧](COMPATIBILITY.md)を参照してください。

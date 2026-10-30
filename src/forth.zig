@@ -23,6 +23,7 @@ const words_compiling = @import("core/words_compiling.zig");
 const words_dictionary = @import("core/words_dictionary.zig");
 const words_files = @import("core/words_files.zig");
 const words_float = @import("core/words_float.zig");
+const words_defining = @import("core/words_defining.zig");
 const words_help = @import("core/words_help.zig");
 const words_input = @import("core/words_input.zig");
 const words_memory = @import("core/words_memory.zig");
@@ -382,6 +383,16 @@ pub const State = struct {
             .{ "PARSE", .parse },            .{ "FIND-NAME", .find_name },    .{ "NAME>INT", .name_to_int },  .{ "NAME>STRING", .name_to_string }, .{ "SEE", .see },
             .{ "INCLUDE", .include },        .{ "INCLUDED", .included },      .{ "REQUIRE", .require },       .{ "NEEDS", .require },            .{ "REQUIRED", .required },
             .{ "INCLUDED?", .included_query }, .{ "SOURCEFILENAME", .source_file_name }, .{ "SOURCELINE#", .source_line_number }, .{ "MARKER", .marker }, .{ "LOCATE", .locate }, .{ "WHERE", .where },
+            .{ "DEFER", .define_defer }, .{ "DEFER!", .defer_store }, .{ "DEFER@", .defer_fetch }, .{ "DEFERS", .defers },
+            .{ "COMPILE,", .compile_comma }, .{ "[COMPILE]", .bracket_compile }, .{ "NAME>COMPILE", .name_to_compile }, .{ "BEGIN-STRUCTURE", .begin_structure },
+            .{ "END-STRUCTURE", .end_structure }, .{ "+FIELD", .plus_field }, .{ "FIELD:", .field_cell }, .{ "CFIELD:", .field_char },
+            .{ "FFIELD:", .field_float }, .{ "SFFIELD:", .field_sfloat }, .{ "DFFIELD:", .field_dfloat }, .{ "STRUCT", .struct_start },
+            .{ "END-STRUCT", .end_struct }, .{ "FIELD", .struct_field }, .{ "CELL%", .cell_percent }, .{ "CHAR%", .char_percent },
+            .{ "FLOAT%", .float_percent }, .{ "DOUBLE%", .double_percent }, .{ "SFLOAT%", .sfloat_percent }, .{ "DFLOAT%", .dfloat_percent },
+            .{ "%SIZE", .percent_size }, .{ "%ALIGNMENT", .percent_alignment }, .{ "%ALIGN", .percent_align }, .{ "%ALLOT", .percent_allot },
+            .{ "%ALLOC", .percent_alloc }, .{ "%ALLOCATE", .percent_allocate }, .{ "?EXIT", .question_exit }, .{ "NOOP", .noop },
+            .{ "PERFORM", .perform }, .{ "?LEAVE", .question_leave }, .{ "CELL-", .cell_minus }, .{ "UNDER+", .under_plus },
+            .{ "0>=", .zero_greater_equal }, .{ "?OF", .compile_question_of }, .{ "CONTOF", .compile_contof }, .{ "NEXT-CASE", .compile_next_case },
             .{ "ONLY", .only },              .{ "ALSO", .also },              .{ "PREVIOUS", .previous },     .{ "FORTH", .forth },              .{ "DEFINITIONS", .definitions },
             .{ "ORDER", .order },            .{ "GET-ORDER", .get_order },    .{ "SET-ORDER", .set_order },   .{ ">ORDER", .to_order },          .{ "GET-CURRENT", .get_current },
             .{ "SET-CURRENT", .set_current }, .{ "VOCABULARY", .vocabulary }, .{ "WORDLIST", .wordlist },    .{ "FORTH-WORDLIST", .forth_wordlist_word }, .{ "SEARCH-WORDLIST", .search_wordlist },
@@ -440,7 +451,7 @@ pub const State = struct {
 
     fn isImmediateBuiltin(builtin: Builtin) bool {
         return switch (builtin) {
-            .compile_if, .compile_else, .compile_ahead, .compile_then, .compile_begin, .compile_end, .compile_again, .compile_while, .compile_repeat, .compile_do, .compile_q_do, .compile_loop, .compile_plus_loop, .compile_does, .compile_case, .compile_of, .compile_endof, .compile_endcase, .compile_exit, .compile_recurse, .leave, .bracket_if, .bracket_else, .bracket_then, .bracket_defined, .bracket_undefined, .bracket_ifdef, .bracket_ifundef, .bracket_do, .bracket_q_do, .bracket_loop, .bracket_plus_loop, .bracket_i, .bracket_begin, .bracket_until, .bracket_again, .bracket_while, .bracket_repeat, .bracket_for, .bracket_next, .end_definition, .literal, .fliteral, .sliteral, .two_literal => true,
+            .compile_if, .compile_else, .compile_ahead, .compile_then, .compile_begin, .compile_end, .compile_again, .compile_while, .compile_repeat, .compile_do, .compile_q_do, .compile_loop, .compile_plus_loop, .compile_does, .compile_case, .compile_of, .compile_endof, .compile_endcase, .compile_exit, .compile_recurse, .leave, .bracket_if, .bracket_else, .bracket_then, .bracket_defined, .bracket_undefined, .bracket_ifdef, .bracket_ifundef, .bracket_do, .bracket_q_do, .bracket_loop, .bracket_plus_loop, .bracket_i, .bracket_begin, .bracket_until, .bracket_again, .bracket_while, .bracket_repeat, .bracket_for, .bracket_next, .end_definition, .literal, .fliteral, .sliteral, .two_literal, .defers, .bracket_compile, .question_exit, .question_leave, .compile_question_of, .compile_contof, .compile_next_case => true,
             else => false,
         };
     }
@@ -527,8 +538,14 @@ pub const State = struct {
         self.use_count += 1;
     }
 
-    /// Drops the recorded uses of word `id` and every later word.
+    /// Drops what refers to word `id` and every later word, whose numbers new words
+    /// will reuse: the recorded uses, and the actions of the DEFERs that are kept.
     pub fn dropUsesFrom(self: *State, id: u16) void {
+        for (self.words[0..@min(id, self.word_count)]) |word| {
+            if (word.kind != .deferred) continue;
+            const action = self.readCell(word.value) catch continue;
+            if (action >= id) self.writeCell(word.value, words_defining.uninitialized_defer) catch {};
+        }
         var kept: usize = 0;
         for (self.uses[0..self.use_count]) |use| {
             if (use.word >= id) continue;
@@ -663,8 +680,17 @@ pub const State = struct {
             self.pending = .postpone_name;
             return;
         }
-        if (asciiEqlIgnoreCase(token, "TO")) {
+        // IS sets a DEFER as TO sets a VALUE; in gforth both work on either.
+        if (asciiEqlIgnoreCase(token, "TO") or asciiEqlIgnoreCase(token, "IS")) {
             self.pending = .to_name;
+            return;
+        }
+        if (asciiEqlIgnoreCase(token, "+TO")) {
+            self.pending = .plus_to_name;
+            return;
+        }
+        if (asciiEqlIgnoreCase(token, "ACTION-OF")) {
+            self.pending = .action_of_name;
             return;
         }
         if (asciiEqlIgnoreCase(token, "FORGET")) {
@@ -750,6 +776,9 @@ pub const State = struct {
     pub const compileOf = control_flow.compileOf;
     pub const compileEndof = control_flow.compileEndof;
     pub const compileEndcase = control_flow.compileEndcase;
+    pub const compileQuestionOf = control_flow.compileQuestionOf;
+    pub const compileContof = control_flow.compileContof;
+    pub const compileNextCase = control_flow.compileNextCase;
     pub const skipConditional = control_flow.skipConditional;
 
     pub const storeSourceName = source_input.storeSourceName;
@@ -810,6 +839,23 @@ pub const State = struct {
                 }
             },
             .colon => try self.executeColon(id, word),
+            .deferred => {
+                const action = try self.readCell(word.value);
+                // gforth warns and goes on when a DEFER has no action yet.
+                if (action == words_defining.uninitialized_defer) {
+                    self.write("WARNING: DEFERRED WORD ");
+                    self.write(self.wordName(word));
+                    self.write(" IS UNINITIALIZED\n");
+                    return;
+                }
+                // A DEFER that runs itself, directly or through other words, must end in
+                // an error, not in the host's stack overflow (gforth loops for ever).
+                if (self.call_depth == max_stack) return error.ReturnStackOverflow;
+                self.call_depth += 1;
+                defer self.call_depth -= 1;
+                try self.executeWord(try self.wordId(action));
+            },
+            .field => try self.push((try self.pop()) +% word.value),
             // A MARKER removes itself and everything after it, and forgets the source
             // files included since, so REQUIRE loads them again.
             .marker => {
@@ -835,6 +881,25 @@ pub const State = struct {
         self.call_depth += 1;
         defer self.call_depth -= 1;
         try self.executeOperations(word.code_start, word.code_end, id);
+    }
+
+    /// +TO: adds the top of the stack (or the float stack) to a VALUE, FVALUE, or 2VALUE.
+    pub fn addToValue(self: *State, id: u16) RuntimeError!void {
+        const word = self.words[id];
+        switch (word.kind) {
+            .fvalue => try self.writeFloat(word.value, (try self.readFloat(word.value)) + try self.fpop()),
+            .two_value => try self.writeDouble(word.value, (try self.readDouble(word.value)) +% try self.popDouble()),
+            .value => try self.writeCell(word.value, (try self.readCell(word.value)) +% try self.pop()),
+            else => return error.InvalidDefinition,
+        }
+    }
+
+    /// The execution token of a built-in word.
+    pub fn builtinWord(self: *const State, builtin: Builtin) Cell {
+        for (self.words[0..self.builtin_count], 0..) |word, id| {
+            if (word.kind == .builtin and word.builtin == builtin) return @intCast(id);
+        }
+        unreachable;
     }
 
     pub fn wordId(self: *State, value: Cell) RuntimeError!u16 {
@@ -869,6 +934,7 @@ pub const State = struct {
                         else => try self.writeCell(word.value, try self.pop()),
                     }
                 },
+                .add_value => try self.addToValue(try self.wordId(op.value)),
                 .branch => pc = @intCast(op.value),
                 .branch_zero => {
                     if (try self.pop() == 0) pc = @intCast(op.value);
@@ -963,7 +1029,7 @@ pub const State = struct {
         }
     }
 
-    const word_modules = .{ words_stack, words_arithmetic, words_memory, words_output, words_input, words_compiling, words_float, words_pictured, words_dictionary, words_system, words_files, words_strings, words_help };
+    const word_modules = .{ words_stack, words_arithmetic, words_memory, words_output, words_input, words_compiling, words_float, words_pictured, words_dictionary, words_system, words_files, words_strings, words_help, words_defining };
 
     /// For each built-in word, the index in `word_modules` of the file that executes it.
     const word_owner = blk: {

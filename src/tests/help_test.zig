@@ -23,7 +23,7 @@ test "HELP has a description for every built-in word, and only for words that ex
         }
     }
     // The parser handles these without dictionary entries.
-    const parser_words = [_][]const u8{ "(", "\\", ".(", "[", "]", "[']", "CHAR", "[CHAR]", "POSTPONE", "TO", ":NONAME", "{", "{:", "LOCALS|", "S\"", "S\\\"", ".\"", ".\\\"", "\"", "C\"", "ABORT\"", "FORGET" };
+    const parser_words = [_][]const u8{ "(", "\\", ".(", "[", "]", "[']", "CHAR", "[CHAR]", "POSTPONE", "TO", "IS", "+TO", "ACTION-OF", ":NONAME", "{", "{:", "LOCALS|", "S\"", "S\\\"", ".\"", ".\\\"", "\"", "C\"", "ABORT\"", "FORGET" };
     for (help_text.entries, 0..) |entry, index| {
         const known = machine.lookup(entry.name) != null or for (parser_words) |parser_word| {
             if (std.mem.eql(u8, parser_word, entry.name)) break true;

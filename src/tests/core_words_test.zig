@@ -744,3 +744,84 @@ test "compile-only words are rejected while interpreting" {
     try std.testing.expectError(error.CompileOnly, machine.interpretLine("LEAVE"));
     machine.report(error.CompileOnly);
 }
+
+test "DEFER IS ACTION-OF DEFER! DEFER@ and DEFERS work as in gforth" {
+    try expectOutput("DEFER D1 ' DUP IS D1 3 D1 . . : SET ['] SWAP IS D1 ; SET 1 2 D1 . . ACTION-OF D1 ' SWAP = . : GET ACTION-OF D1 ; GET ' SWAP = .", "3 3 1 2 -1 -1 ");
+    try expectOutput("DEFER D1 ' OVER ' D1 DEFER! ' D1 DEFER@ ' OVER = . ' NIP TO D1 1 2 D1 . : T2 [ ' DUP ] LITERAL TO D1 ; T2 ' D1 DEFER@ ' DUP = .", "-1 2 -1 ");
+    // DEFERS compiles the action the DEFER has when the definition is made.
+    try expectOutput(": SQ DUP * ; DEFER D2 ' SQ IS D2 : T3 DEFERS D2 1+ ; ' DROP IS D2 5 T3 . SEE T3", "26 : T3\n  SQ 1+\n;\n");
+    // As in gforth, a DEFER without an action warns and does nothing; its DEFER@ is -1 here.
+    try expectOutput("DEFER D3 ' D3 DEFER@ . 7 D3 . SEE D3 ' DUP IS D3 SEE D3 ' D3 >BODY @ ' DUP = .", "-1 WARNING: DEFERRED WORD D3 IS UNINITIALIZED\n7 DEFER D3\nDEFER D3\n' DUP IS D3\n-1 ");
+    // IS sets a VALUE too, as in gforth; DEFER@ and ACTION-OF need a DEFER.
+    try expectOutput("5 VALUE V 9 IS V V .", "9 ");
+    var output = Output{};
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
+    try std.testing.expectError(error.InvalidExecutionToken, machine.interpretLine("' DUP DEFER@"));
+    try std.testing.expectError(error.InvalidDefinition, machine.interpretLine("ACTION-OF DUP"));
+    try std.testing.expectError(error.InvalidDefinition, machine.interpretLine("1 IS DUP"));
+}
+
+test "+TO ?EXIT NOOP PERFORM ?LEAVE CELL- UNDER+ and 0>= work as in gforth" {
+    try expectOutput("5 VALUE V 3 +TO V V . : T1 2 +TO V ; T1 V . 1E FVALUE FV 2E +TO FV FV F. 1 0 2VALUE DV 5 0 +TO DV DV D. SEE T1", "8 10 3. 6 : T1\n  2 +TO V\n;\n");
+    try expectOutput(": T2 DUP . ?EXIT .\" after\" ; 0 T2 1 T2 NOOP VARIABLE XV ' DUP XV ! 4 XV PERFORM . .", "0 after1 4 4 ");
+    try expectOutput(": T3 10 0 DO I . I 3 = ?LEAVE LOOP ; T3 10 CELL- . 1 2 3 UNDER+ . . 0 0>= . -1 0>= . 1 0>= .", "0 1 2 3 2 2 4 -1 0 -1 ");
+    var output = Output{};
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
+    try std.testing.expectError(error.InvalidDefinition, machine.interpretLine("1 +TO DUP"));
+    try std.testing.expectError(error.CompileOnly, machine.interpretLine("1 ?EXIT"));
+}
+
+test "?OF CONTOF and NEXT-CASE extend CASE as in gforth" {
+    try expectOutput(": T4 CASE DUP 0< ?OF .\" neg\" ENDOF 1 OF .\" one\" ENDOF .\" other\" ENDCASE ; -5 T4 1 T4 7 T4", "negoneother");
+    try expectOutput(": T5 CASE DUP . DUP 0> ?OF 1- CONTOF .\" done\" ENDCASE ; 3 T5", "3 2 1 0 done");
+    try expectOutput(": T6 CASE DUP . 1- DUP 0> ?OF ENDOF NEXT-CASE ; 3 T6 : T7 CASE 1+ DUP 3 < ?OF ENDOF DUP . NEXT-CASE DROP ; 0 T7 .", "3 2 ");
+}
+
+test "a DEFER that runs itself, +TO of locals, and DEFERs of forgotten words, after the Codex review" {
+    // +TO adds to a local variable, as in gforth, and leaves a VALUE of the same name alone.
+    try expectOutput("5 VALUE X : T { X -- } 1 +TO X X . ; 99 T X . : T2 { F: Y -- } 2E +TO Y Y F. ; 1E T2 : T3 { D: Z -- } 5 0 +TO Z Z D. ; 1 0 T3", "100 5 3. 6 ");
+    // A DEFER that runs itself ends with an error that CATCH takes; gforth loops for ever.
+    try expectOutput("DEFER D ' D IS D ' D CATCH . DEFER P DEFER Q ' Q IS P ' P IS Q ' P CATCH .", "-5 -5 ");
+    // A DEFER that ran a forgotten word has no action, so a new word with its number is not run.
+    try expectOutput("DEFER F : A 42 ; ' A IS F FORGET A : B 99 ; F ' F DEFER@ . MARKER M : C 7 ; ' C IS F M F", "WARNING: DEFERRED WORD F IS UNINITIALIZED\n-1 WARNING: DEFERRED WORD F IS UNINITIALIZED\n");
+    var output = Output{};
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
+    // [COMPILE] does not take a local variable, and DEFERS needs a DEFER with an action.
+    try std.testing.expectError(error.InvalidDefinition, machine.interpretLine("5 VALUE X : U { X -- } [COMPILE] X . ;"));
+    machine.report(error.InvalidDefinition);
+    try std.testing.expectError(error.InvalidDefinition, machine.interpretLine("DEFER E : BAD DEFERS E ;"));
+    machine.report(error.InvalidDefinition);
+    try std.testing.expectError(error.UnknownWord, machine.interpretLine(": STR [COMPILE] S\" hello\" ;"));
+}
+
+test "COMPILE, [COMPILE] and NAME>COMPILE work as in gforth" {
+    try expectOutput(": SQ DUP * ; : GEN ['] SQ COMPILE, ; IMMEDIATE : T1 GEN 1+ ; 5 T1 . : T2 [ ' SQ COMPILE, ] ; 3 T2 .", "26 9 ");
+    try expectOutput(": SQ DUP * ; : MYIF [COMPILE] IF ; IMMEDIATE : T3 MYIF 1 ELSE 2 THEN ; 0 T3 . -1 T3 . : T4 [COMPILE] SQ ; 4 T4 .", "2 1 16 ");
+    try expectOutput(": SQ DUP * ; S\" SQ\" FIND-NAME NAME>COMPILE ' COMPILE, = . ' SQ = . S\" IF\" FIND-NAME NAME>COMPILE ' EXECUTE = . DROP : T5 [ S\" SQ\" FIND-NAME NAME>COMPILE EXECUTE ] ; 6 T5 .", "-1 -1 -1 36 ");
+    // gforth compiles outside a definition with a warning; Sigma has no code to add to.
+    var output = Output{};
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
+    try std.testing.expectError(error.CompileOnly, machine.interpretLine("' DUP COMPILE,"));
+}
+
+test "BEGIN-STRUCTURE and the FIELD: words lay out fields as in gforth" {
+    try expectOutput(
+        "BEGIN-STRUCTURE POINT FIELD: P.X FIELD: P.Y CFIELD: P.C FFIELD: P.F SFFIELD: P.S DFFIELD: P.D 3 +FIELD P.Z CFIELD: P.E END-STRUCTURE " ++
+            "POINT . 0 P.X . 0 P.Y . 0 P.C . 0 P.F . 0 P.S . 0 P.D . 0 P.Z . 0 P.E . 1000 P.Y . " ++
+            "BEGIN-STRUCTURE EMPTY END-STRUCTURE EMPTY . 1 CFIELD: QQ 0 QQ . . 100 5 +FIELD R1 . 3 R1 . SEE P.Y SEE POINT",
+        "52 0 8 16 24 32 40 48 51 1008 0 1 2 105 103 8 +FIELD P.Y\n52 VALUE POINT\n",
+    );
+}
+
+test "STRUCT FIELD END-STRUCT and the % words work as gforth's structures" {
+    try expectOutput(
+        "STRUCT . . STRUCT CELL% FIELD S.A CHAR% FIELD S.B FLOAT% FIELD S.C CHAR% FIELD S.D DOUBLE% FIELD S.E SFLOAT% FIELD S.F DFLOAT% FIELD S.G CHAR% 3 * FIELD S.H END-STRUCT REC% " ++
+            "REC% . . 0 S.A . 0 S.B . 0 S.C . 0 S.D . 0 S.E . 0 S.F . 0 S.G . 0 S.H . CELL% . . CHAR% . . FLOAT% . . DOUBLE% . . SFLOAT% . . DFLOAT% . . REC% %SIZE . REC% %ALIGNMENT .",
+        "0 1 72 8 0 8 16 24 32 48 56 64 8 8 1 1 8 8 16 8 4 4 8 8 72 8 ",
+    );
+    try expectOutput("STRUCT CELL% FIELD S.A END-STRUCT R% HERE 1 ALLOT R% %ALIGN HERE SWAP - . HERE R% %ALLOT TUCK = . HERE SWAP - . R% %ALLOC 0<> . R% %ALLOCATE . 0<> .", "8 -1 8 -1 0 -1 ");
+}

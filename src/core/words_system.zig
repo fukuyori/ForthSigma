@@ -30,7 +30,7 @@ const true_flag = memory_map.true_flag;
 /// The built-in words this file executes; executeBuiltin dispatches by this list.
 pub const words = [_]Builtin{
     .bye, .load, .save, .savesys, .abort, .ms, .utime, .getenv, .system, .throw, .catch_word,
-    .ekey_to_char, .environment_query, .quit,
+    .ekey_to_char, .environment_query, .quit, .noop, .perform,
 };
 
 pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
@@ -120,6 +120,9 @@ pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
                 try self.push(0);
             }
         },
+        .noop => {},
+        // PERFORM ( addr -- ) is @ EXECUTE.
+        .perform => try self.executeWord(try self.wordId(try self.readCell(try self.pop()))),
         .system => {
             const command = try self.memoryRange();
             const system_fn = self.writer.system_fn orelse return error.HostUnavailable;

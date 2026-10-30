@@ -222,7 +222,7 @@ pub fn appendImage(self: *State, source: *const State) RuntimeError!void {
             word.does_code_start = @intCast(@as(usize, word.does_code_start) + code_base);
             word.does_code_end = @intCast(@as(usize, word.does_code_end) + code_base);
         }
-        if (word.kind == .variable or word.kind == .array or word.kind == .created or word.kind == .value or word.kind == .fvalue or word.kind == .two_constant or word.kind == .two_value or word.kind == .marker)
+        if (word.kind == .variable or word.kind == .array or word.kind == .created or word.kind == .value or word.kind == .fvalue or word.kind == .two_constant or word.kind == .two_value or word.kind == .marker or word.kind == .deferred)
             word.value += data_delta;
         self.words[word_base + offset] = word;
     }
@@ -230,7 +230,7 @@ pub fn appendImage(self: *State, source: *const State) RuntimeError!void {
     for (source.code[0..source.code_count], 0..) |original, offset| {
         var op = original;
         switch (op.kind) {
-            .call, .compile_call, .execution_token, .store_value, .local_frame => if (op.value >= source.builtin_count) {
+            .call, .compile_call, .execution_token, .store_value, .add_value, .local_frame => if (op.value >= source.builtin_count) {
                 op.value = @intCast(word_base + @as(usize, @intCast(op.value - source.builtin_count)));
             },
             .branch, .branch_zero, .do_loop, .q_do_loop, .loop, .plus_loop => {
@@ -247,6 +247,13 @@ pub fn appendImage(self: *State, source: *const State) RuntimeError!void {
     const data_to: usize = @intCast(self.data_here);
     const length: usize = @intCast(data_len);
     @memcpy(self.memory[data_to .. data_to + length], source.memory[data_from .. data_from + length]);
+    // A loaded DEFER whose action is a loaded word follows that word's new number.
+    for (self.words[word_base .. word_base + added_words]) |word| {
+        if (word.kind != .deferred) continue;
+        const action = self.readCellConst(word.value);
+        if (action >= source.builtin_count and action < source.word_count)
+            try self.writeCell(word.value, @intCast(word_base + @as(usize, @intCast(action - source.builtin_count))));
+    }
     // A loaded MARKER keeps this dictionary's REQUIRE history plus the files the saved
     // one had loaded, and its word lists are renumbered like the words.
     for (self.words[word_base .. word_base + added_words]) |word| {

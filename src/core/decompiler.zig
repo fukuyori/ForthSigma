@@ -98,6 +98,23 @@ pub fn seeWord(self: *State, id: u16) RuntimeError!void {
             self.write(" ");
             self.write(self.wordName(self.words[@intCast(word.value)]));
         },
+        // A DEFER shows its action the way it would be set.
+        .deferred => {
+            self.write("DEFER ");
+            self.write(name);
+            const action = try self.readCell(word.value);
+            if (action >= 0 and action < self.word_count) {
+                self.write("\n' ");
+                self.write(self.seeName(action));
+                self.write(" IS ");
+                self.write(name);
+            }
+        },
+        .field => {
+            self.writeNumber(word.value);
+            self.write(" +FIELD ");
+            self.write(name);
+        },
         .marker, .vocabulary => {
             self.write(if (word.kind == .marker) "MARKER " else "VOCABULARY ");
             self.write(name);
@@ -188,6 +205,7 @@ pub fn seeOperation(self: *State, out: *SeeOutput, pc: usize, role: SeeRole, sta
         .compile_call => out.text(&.{ "POSTPONE ", self.seeName(op.value) }),
         .execution_token => out.text(&.{ "['] ", self.seeName(op.value) }),
         .store_value => out.text(&.{ "TO ", self.seeName(op.value) }),
+        .add_value => out.text(&.{ "+TO ", self.seeName(op.value) }),
         .builtin => {
             const builtin: Builtin = @enumFromInt(op.value);
             const name = for (self.words[0..self.builtin_count]) |*word| {

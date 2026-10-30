@@ -54,6 +54,7 @@
 | 基本語・倍長の乗除算・READ-FILE（2026-10-30） | ?DUP, U<, U>, ALIGN, UNUSED, .R, U.R, 2R@, */, */MOD, M*, UM*, UM/MOD, FM/MOD, SM/REM, READ-FILE | Forth 2012のCORE・CORE EXTの語と、ファイルの語。結果はGforthと同じです。`*/` などの除算は、0で割ると `DIVISION BY ZERO !`（-10）、商が1セルに収まらないと `RESULT OUT OF RANGE !`（-11）になります（Gforthと同じ）。`/` `MOD` `/MOD` も、最小値を-1で割ると-11になります（Gforthと同じ、2026-10-30から）。`READ-FILE` は `STDIN` からも読めます。Windowsでも、パイプやリダイレクトの標準入力はバイナリで読むので、CR LFや0x1Aもそのまま読めます（コンソールはテキストのままです）。 |
 | REPRESENT, M*/（2026-10-30） | REPRESENT, M*/ | 結果はGforthと同じです。`REPRESENT` は数字を2進数の値から正確に丸め、0の指数は1、無限大とNaNは名前を切って書きます。`M*/` は途中を256ビットで計算し、Gforthと同じく除数を符号なしとして扱い、商が2セルに収まらないと折り返します（エラーにしません）。 |
 | WHERE（2026-10-30） | WHERE | 出力はGforthと同じです（ファイルの位置、行頭の空白を除いた行、80桁、通し番号。全角文字は2桁、タブは8桁ごと）。Gforthと同じく、`'` `[DEFINED]` `FIND-NAME` などで名前を探した箇所も、直前に読んだ語の位置で記録します。違い: 記録するのはファイルから読んだ使用だけで、組み込み語の定義の中の使用はありません（Gforthの `WHERE DUP` はGforth自身のソースの使用も表示します）。記録は65536件までです。辞書イメージには入らず、`LOAD` やイメージの復元の後は空になります。行の幅は端末の幅によらず80桁です。位置の部分だけで80桁を超える行は、Gforthと同じく行の内容を切らずに全部表示します。 |
+| 遅延語・コンパイル・構造体・小さなGforthの語（2026-10-30） | DEFER, IS, ACTION-OF, DEFER!, DEFER@, DEFERS, COMPILE,, [COMPILE], NAME>COMPILE, BEGIN-STRUCTURE, END-STRUCTURE, +FIELD, FIELD:, CFIELD:, FFIELD:, SFFIELD:, DFFIELD:, STRUCT, FIELD, END-STRUCT, CELL%, CHAR%, FLOAT%, DOUBLE%, SFLOAT%, DFLOAT%, %SIZE, %ALIGNMENT, %ALIGN, %ALLOT, %ALLOC, %ALLOCATE, +TO, ?EXIT, NOOP, PERFORM, ?LEAVE, CELL-, UNDER+, 0>=, ?OF, CONTOF, NEXT-CASE | 利用者の決定で、教材で使わない一般のGforthの語も加えた。結果はWindows版・Linux版ともGforthと同じです。違い: 動作を決めていないDEFERは警告を出して何もしないのはGforthと同じですが、`DEFER@` は-1を返します。定義の外の `COMPILE,` はエラーです（Gforthは警告を出してコンパイルします）。`SEE` の表示（DEFER、フィールド、`END-STRUCT` の名前）はGforthと違います。自分自身を実行するDEFERは `RETURN STACK OVER FLOW !` です（Gforthは止まりません）。動作を決めていないDEFERの `DEFERS` はエラーです（Gforthは警告を出す語を埋め込みます）。`[COMPILE]` にローカル変数を渡すとエラーです（Gforthも正しく扱いません）。`FORGET` や `MARKER` で消した語を実行するDEFERは、動作を決めていない状態に戻します（番号が新しい語に使われるため）。`+TO` はローカル変数にも使えます（Gforthと同じ）。`IS` `ACTION-OF` `+TO` は `TO` と同じく構文語で、語彙に属しません。`LOAD` では、DEFERの動作が読み込んだ語なら、その語の新しい番号に付け替えます。 |
 | 残りの動的文字列の語（2026-10-30） | $SLURP、$+SLURP、$+SLURP-FILE、$SLURP-LINE、$+!LEN、$[]+!、$+[]!、$EXEC、$OFF、$VARIABLE、$[]VARIABLE、$? | Linux版の結果はGforthと同じです。`$VARIABLE` `$[]VARIABLE` は `VARIABLE` の別名で、`SEE` もGforthと同じく変数として表示します。`$?` はGforthでは値（VALUE）ですが、Sigmaでは値を返す語で、`TO` は使えません。Windowsの `$?` は終了コードです（Linux・macOSは `system` の返す値で、Gforthと同じ）。 |
 | 解釈中の繰り返しと条件付きコンパイル（2026-10-30） | [IFDEF], [IFUNDEF], [ENDIF], [DO], [?DO], [LOOP], [+LOOP], [I], [BEGIN], [UNTIL], [AGAIN], [WHILE], [REPEAT], [FOR], [NEXT] | 結果はGforthと同じです。繰り返しは入力の位置（`SAVE-INPUT` と同じ情報）を覚えて戻るので、ファイルでは行をまたいで使え、`[ ]` の中でも使えます。端末と `EVALUATE` では同じ行の中だけで繰り返します。対応する開始語がないと `CONTROL STRUCTURE ERROR !` です。`CATCH` で捕捉したときは、捕捉した語の中で始めた繰り返しも終わります。 |
 | 残りのファイルの語（2026-10-30） | FILE-POSITION, RESIZE-FILE, FLUSH-FILE, DELETE-FILE, RENAME-FILE, FILE-STATUS, BIN, INCLUDE-FILE | 結果（iorと値）はGforthと同じです。`BIN` は動きを変えません（ファイルはいつもバイトのまま扱います）。`RENAME-FILE` は、Windowsでも、変更先の名前のファイルを置き換えます（Gforthと同じ）。Windowsでは置き換えを一度の操作（`MoveFileEx`）で行うので、失敗しても変更先のファイルは残ります。`FILE-STATUS` の値は開ける方法（`R/O` `W/O` `R/W`）です。`INCLUDE-FILE` で読むファイルは、名前を `*file*` として記録します。 |
@@ -68,7 +69,7 @@
 | 浮動小数点の関数・丸め・表示・メモリ（#200、2026-10-30） | FSINCOS, FASIN, FACOS, FATAN, FATAN2, FSINH, FCOSH, FTANH, FASINH, FACOSH, FATANH, FEXPM1, FLNP1, FLOG, FALOG, F**, FLOOR, FTRUNC, FROUND, F~, FE., FS., PRECISION, SET-PRECISION, FVALUE, SF@, SF!, DF@, DF!, SFLOATS, DFLOATS, SFLOAT+, DFLOAT+, FALIGN, FALIGNED, SFALIGN, SFALIGNED, DFALIGN, DFALIGNED | 数学関数はCORE-MATHの正しく丸める関数で、どのOSでも同じ値です（利用者の決定、方針A）。Gforth（glibc）とは30,349件のうち29,017件（95.6%）でビットまで一致し、残りの1 ulpの違いはglibcが正しく丸めていないためです（例: `0.5e FATANH` はln(3)/2を正しく丸めた値で、Gforthより1 ulp大きい）。範囲外の引数のNaNの符号はGforthと同じです。それ以外の語の出力はGforthと同じです。`PRECISION` が1のときの `FE.` と、0以下の `PRECISION` では、Gforthは異常終了しますが、Sigmaは表示します（1〜1000桁）。 |
 | 浮動小数点の書式（#156） | F.RDP, F>STR-RDP, F>BUF-RDP | 教材Level 20、25、29。Gforthで確かめた118例すべてと同じ出力です。 |
 | 説明・ライセンス | HELP, LICENSE | Gforthの `help` `license` に相当します。`HELP 語名` の説明はこの移植版のために書いたもので、Gforthのマニュアルの文章ではありません。起動時の表示（引数なしのときだけ）は2行で、版番号とライセンスを示します。 |
-| リテラルのコンパイル（#181） | LITERAL, FLITERAL | 教材Level 31。科学計算DSL（完成版）はGforthと同じ出力になります。COMPILE,、DEFER、IS、ACTION-OFはありません。 |
+| リテラルのコンパイル（#181） | LITERAL, FLITERAL | 教材Level 31。科学計算DSL（完成版）はGforthと同じ出力になります。COMPILE,、DEFER、IS、ACTION-OFも使えます（2026-10-30に追加）。 |
 | 実行トークンのデータ領域（#177） | >BODY | 教材Level 31。`'` は語の番号を返すので、`'` の値をアドレスとして使う教材Level 12の `' DATA +` とLevel 21の `' pointA @` は動きません（Gforthでは動きます）。標準のForthでも、実行トークンをアドレスとして使うことは保証されていません（3.1.1）。語の番号は `BASE`（200H）などの処理系の変数の番地と重なるため、`' DATA +` への書き込みは `BASE` を壊し、`BASE ERROR !` になります（語の番号は組み込み語が増えると上がるので、届く番地も変わります）。`' DATA >BODY +` と書き直せば、結果はGforthと同じです（Level 12は `10 20 30 40 50 30`）。CONSTANT・FCONSTANT・コロン定義・組み込み語の `>BODY` はエラーです。 |
 | 定義語・定数（#158） | 定義の中の :, ;, VARIABLE, VAR, FVARIABLE, 2VARIABLE, CONSTANT, CONST, FCONSTANT, 2CONSTANT, VALUE, ARRAY, FARRAY、PI | 教材Level 20、25、31。定義の中に書いた定義語は、その定義の実行時に名前を読みます。解釈中の `[` はエラーにしません。 |
 | 語彙・条件付きコンパイル（段階6） | ONLY, ALSO, PREVIOUS, FORTH, DEFINITIONS, ORDER, GET-ORDER, SET-ORDER, >ORDER, GET-CURRENT, SET-CURRENT, VOCABULARY, WORDLIST, FORTH-WORDLIST, SEARCH-WORDLIST, [IF], [ELSE], [THEN], [DEFINED], [UNDEFINED] | 教材Level 16、30。検索順序の初期値と `ORDER` の表示はGforthと同じです。`:` `TO` などの構文語は語彙に属さず、検索順序によらず使えます。 |
@@ -90,7 +91,7 @@
 | EXECUTE | 拡張 | ポータブルな辞書トークンを実行します。Z80コードアドレス互換ではありません。 |
 | 単一の論理メモリと上限 | 拡張 | 2 MiBの論理メモリ（データ領域は100000H未満、ヒープは100000H〜1DFFFFH、入力バッファは1E0000H〜1EFFFFH、ローカル変数は1F0000H〜1FFFFFH）、各種固定容量を使います。歴史的な機種のメモリ配置とは異なります。 |
 | SAVESYS | 拡張 | 現在の辞書・コンパイル済みコード・データ領域を含む単独実行ファイルを作成します。 |
-| SAVE, LOAD | 拡張 | 利用者定義語の辞書イメージ（`SIGIMG31`）を保存し、読み込み時は既存定義の後ろへ追加します。`SIGIMG30` 以前のイメージは読み込めません。イメージにはCRC-32のチェックサムを付け、壊れたイメージは読み込みません。読み込めるのはSigmaの `SAVE`・`SAVESYS` で作ったファイルだけで、それ以外のファイルを読ませることは想定していません。イメージには論理メモリのうち使う範囲（0〜HERE、ヒープの使用部分、ソースファイルの表）だけを入れるので、1語だけなら約50 KBです。ソースファイルの位置情報と読み込み履歴は引き継がれます。ヒープの内容は追加読み込みでは引き継がれません。定数やメモリに保存した実行トークンと、`LITERAL` で定義に埋め込んだ実行トークンやアドレスは、追加読み込みでは再配置されません（`[']` で埋め込んだものは再配置されます）。 |
+| SAVE, LOAD | 拡張 | 利用者定義語の辞書イメージ（`SIGIMG32`）を保存し、読み込み時は既存定義の後ろへ追加します。`SIGIMG31` 以前のイメージは読み込めません。イメージにはCRC-32のチェックサムを付け、壊れたイメージは読み込みません。読み込めるのはSigmaの `SAVE`・`SAVESYS` で作ったファイルだけで、それ以外のファイルを読ませることは想定していません。イメージには論理メモリのうち使う範囲（0〜HERE、ヒープの使用部分、ソースファイルの表）だけを入れるので、1語だけなら約50 KBです。ソースファイルの位置情報と読み込み履歴は引き継がれます。ヒープの内容は追加読み込みでは引き継がれません。定数やメモリに保存した実行トークンと、`LITERAL` で定義に埋め込んだ実行トークンやアドレスは、追加読み込みでは再配置されません（`[']` で埋め込んだものは再配置されます）。 |
 
 実装の選択値と容量は[実装ノート](IMPLEMENTATION.md)に記録しています。各ワードのスタック効果を含む誌面記述は[SPEC.md](SPEC.md)を参照してください。
 
@@ -104,10 +105,14 @@
 | USR, PUHL, POHL, NEXT | 機種依存 | Z80レジスタ、呼出規約、機械語実行に関係します。誌面参照。 |
 | CP/Mのファイル操作、BDOS、DMA | 機種依存 | CP/M版のOS呼び出しとバッファを必要とします。誌面参照。 |
 | PC-8001の編集、表示、モニター機能 | 機種依存 | PC-8001固有の入出力とモニターを必要とします。誌面参照。 |
-| 方針の決定待ち: DEFER, IS, ACTION-OF, DEFER!, DEFER@, COMPILE,, [COMPILE] | 未実装 | DEFER系とCOMPILE,は教材で使わないため見送っています（[決定事項](DECISIONS.md)、#181）。教材対応から一般のGforth互換へ広げるかを決めてから対応します。 |
-| NAME>COMPILE | 未実装 | 返す実行トークンが `COMPILE,` を実行するため、`COMPILE,` を加えるか（#199、利用者の判断待ち）と合わせて対応します。 |
-| `$SUBSTITUTE` `$UNESCAPE` `$VALUE` などの残りの文字列語 | 未実装 | 必要に応じて対応（[決定事項](DECISIONS.md)）。 |
-| Gforthの CODE, END-CODE, SAVESYSTEM, 'COLD, BOOTMESSAGE, IS, FPATH, SCRIPT? | 対象外 | Gforthの起動処理やアセンブラに依存します（2026-10-30決定、教材Level 30）。SAVESYSTEM の代わりに SAVESYS を使えます。 |
+| 文字列の置き換え: SUBSTITUTE, REPLACES, UNESCAPE と、Gforthの `$SUBSTITUTE` `$UNESCAPE` `$VALUE` などの残りの文字列語 | 未実装 | 標準のSTRING-EXTとGforthの語（2026-10-30の調査）。 |
+| UTF-8の文字単位の語（XCHAR）: XC@+, XC!+, XC!+?, XC,, XC-SIZE, X-SIZE, X-WIDTH, XC-WIDTH, XCHAR+, XEMIT, XKEY, XKEY?, XHOLD, +X/STRING, X\STRING-, -TRAILING-GARBAGE, EKEY>XCHAR | 未実装 | 標準のXCHAR（2026-10-30の調査）。日本語の文字単位の処理に使います。 |
+| Gforthの例外の書き方: TRY, ENDTRY, RESTORE, IFERROR | 未実装 | `CATCH` で同じことができます（2026-10-30の調査）。 |
+| Gforthの道具の語: LATEST, LATESTXT, ID., .NAME, >NAME, ALIAS, ]], [[, ~~, ASSERT( | 未実装 | 2026-10-30の調査。 |
+| キーの語: EKEY>FKEY, EMIT?, K-UP などのキーの定数 | 未実装 | 標準のFACILITY-EXT（2026-10-30の調査）。 |
+| (LOCAL) | 未実装 | `{:` で書けます。 |
+| CODE, ;CODE, ASSEMBLER, EDITOR（標準のTOOLS-EXT） | 対象外 | アセンブラとエディター。Gforthの `CODE` と同じく対象外です。 |
+| Gforthの CODE, END-CODE, SAVESYSTEM, 'COLD, BOOTMESSAGE, FPATH, SCRIPT? | 対象外 | Gforthの起動処理やアセンブラに依存します（2026-10-30決定、教材Level 30）。SAVESYSTEM の代わりに SAVESYS を使えます。 |
 
 Z80の命令実行・エミュレーションはプロジェクトの対象外です。
 
@@ -115,7 +120,7 @@ Z80の命令実行・エミュレーションはプロジェクトの対象外�
 
 ## 自動回帰テストとの対応
 
-zig build testで、現行コアの主要動作を次のテストで確認します（コア203件、ホスト7件の計210件）。
+zig build testで、現行コアの主要動作を次のテストで確認します（コア211件、ホスト7件の計218件）。
 
 | テスト | 確認する動作 |
 | --- | --- |
@@ -163,7 +168,7 @@ zig build testで、現行コアの主要動作を次のテストで確認しま
 | LITERAL・FLITERAL | `[ 2 3 * ] LITERAL`、`[ ... ] FLITERAL`、`[ DEBUG ] LITERAL IF`、`[ ' DUP ] LITERAL EXECUTE`、教材Level 31のDSLと同じ形で `POSTPONE LITERAL` により変数のアドレスと実行トークンを埋め込む語、解釈中のエラー |
 | '・>BODY・LITERALの境界 | 語彙で定義し直した `'` が検索順序に従うこと、FIND-NAME・POSTPONE・CATCHの中・INCLUDEしたファイルの次の行で `'` が名前を読むこと、EVALUATEの文字列の最後の `'` のエラー、ARRAYと（DOES>のない）CREATEの>BODY、MARKER・VOCABULARY・:NONAME・FCONSTANT・不正な値の>BODYのエラー、倍長整数を1セルずつ取り込むLITERAL、値がないときと `[ ]` の中のエラー、追加読み込みで `[']` の実行トークンは再配置されLITERALで埋め込んだものはされないこと |
 | HELP・LICENSE | すべての組み込み語に説明があり、説明の名前はすべて実在する語であること（重複なし）、`HELP` だけで基本の説明を表示して次の行を読まないこと、`EVALUATE` の文字列で改行の先を読まないこと、定義の中の `HELP` が実行時に名前を読むこと、組み込み語・構文語・利用者定義語の `HELP 語名`、知らない名前のエラー、`LICENSE` がMITの全文とCORE-MATHの表示を、ホストに渡す前はLFで出すこと |
-| 名前の領域・イメージの大きさ | FORGET・MARKER・失敗した定義で名前の領域も戻ること、255文字の名前で名前の領域がいっぱいになると `OUT OF DICTIONARY !` でそれまでの語は使えること、イメージの大きさが保存する範囲の合計に等しく、ヒープの中身を保ちHEREより先は0で戻り、1バイト欠けると読み込まないこと、LOADで加えた語の名前とSEE・FORGET。辞書8192語・コード65535操作の上限でのエラーと巻き戻し。1バイト壊れたイメージ（チェックサムで検出し、辞書・コード・メモリが変わらないこと）、名前の位置や長さが壊れたイメージと `SIGIMG30` のイメージを何も変えずに拒否すること、名前の領域がないときのVARIABLEがHEREを戻すこと、CATCHで捨てた定義の名前の領域、名前のない語をはさんだLOADとFORGET、名前の領域が足りないLOADで何も変わらないこと |
+| 名前の領域・イメージの大きさ | FORGET・MARKER・失敗した定義で名前の領域も戻ること、255文字の名前で名前の領域がいっぱいになると `OUT OF DICTIONARY !` でそれまでの語は使えること、イメージの大きさが保存する範囲の合計に等しく、ヒープの中身を保ちHEREより先は0で戻り、1バイト欠けると読み込まないこと、LOADで加えた語の名前とSEE・FORGET。辞書8192語・コード65535操作の上限でのエラーと巻き戻し。1バイト壊れたイメージ（チェックサムで検出し、辞書・コード・メモリが変わらないこと）、名前の位置や長さが壊れたイメージと `SIGIMG31` のイメージを何も変えずに拒否すること、名前の領域がないときのVARIABLEがHEREを戻すこと、CATCHで捨てた定義の名前の領域、名前のない語をはさんだLOADとFORGET、名前の領域が足りないLOADで何も変わらないこと |
 | 定義の中の定義語 | 定義の中のVARIABLE・CONSTANT・FVARIABLE・FCONSTANT・VALUE・2CONSTANT・2VARIABLE・ARRAY、教材Level 31の `:` で始めて `POSTPONE ;` で終える語、名前がない場合と定義中の `:` のエラー、検索順序から外した定義語、DOES>を付けた変数、10の累乗に近い値のF. |
 | 解釈中の[・PI・F. | 解釈中の `[`、PIのF.とF.RDP、2進数の値から正確に丸めるF.とF.S |
 | locals visibility | IF・ELSE・THEN、BEGIN・UNTIL・WHILE・REPEAT、DO・?DO・LOOP・LEAVE、CASE・OFでの名前の見える範囲（Gforthで確かめた15例） |

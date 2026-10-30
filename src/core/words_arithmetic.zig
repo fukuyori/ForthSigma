@@ -21,7 +21,7 @@ pub const words = [_]Builtin{
     .add, .sub, .mul, .div, .mod, .max, .min, .equal, .not_equal, .less, .greater, .less_equal,
     .greater_equal, .bit_and, .bit_or, .bit_xor, .bit_nand, .bit_nor, .lshift, .rshift, .div_mod,
     .swap_bytes, .negate, .abs, .one_plus, .one_minus, .two_star, .two_slash, .logical_not,
-    .zero_equal, .zero_less, .zero_greater, .zero_not_equal, .bit_complement, .true_value,
+    .zero_equal, .zero_less, .zero_greater, .zero_greater_equal, .under_plus, .zero_not_equal, .bit_complement, .true_value,
     .false_value, .s_to_d, .d_to_s, .d_add, .d_sub, .d_negate, .d_abs, .d_zero_equal, .d_zero_less,
     .d_equal, .d_less, .within, .u_less, .u_greater, .star_slash, .star_slash_mod, .m_star, .um_star,
     .um_slash_mod, .fm_slash_mod, .sm_slash_rem, .d_two_star, .d_two_slash, .d_max, .d_min, .m_plus,
@@ -111,6 +111,14 @@ pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
         .logical_not, .zero_equal => try self.push(truth(try self.pop() == 0)),
         .zero_less => try self.push(truth(try self.pop() < 0)),
         .zero_greater => try self.push(truth(try self.pop() > 0)),
+        .zero_greater_equal => try self.push(truth(try self.pop() >= 0)),
+        // UNDER+ ( n1 n2 n3 -- n1+n3 n2 )
+        .under_plus => {
+            const addend = try self.pop();
+            const top = try self.pop();
+            try self.push((try self.pop()) +% addend);
+            try self.push(top);
+        },
         .zero_not_equal => try self.push(truth(try self.pop() != 0)),
         .bit_complement => try self.push(~(try self.pop())),
         .true_value => try self.push(true_flag),

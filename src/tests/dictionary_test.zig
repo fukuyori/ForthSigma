@@ -185,10 +185,10 @@ test "a damaged image, or one whose names are out of order or out of range, is r
         try std.testing.expectEqual(before_names, loaded.names_used);
     }
     // The previous format is not read either.
-    @memcpy(image[0..8], "SIGIMG30");
+    @memcpy(image[0..8], "SIGIMG31");
     resealImage(image);
     try std.testing.expectError(error.InvalidImage, loaded.restoreImage(image));
-    @memcpy(image[0..8], "SIGIMG31");
+    @memcpy(image[0..8], "SIGIMG32");
     resealImage(image);
     // One damaged byte anywhere, here in the saved memory or in the checksum itself,
     // fails the checksum, and the dictionary, code, and memory stay as they were.
@@ -290,4 +290,24 @@ test "LOAD into a dictionary without room changes nothing, and unnamed words kee
     try std.testing.expectEqual(names, full.names_used);
     try std.testing.expectEqual(code, full.code_count);
     try std.testing.expectEqual(here, full.data_here);
+}
+
+test "LOAD keeps a DEFER's action pointing to the loaded word" {
+    var output = Output{};
+    const source = try createMachine(&output);
+    defer destroyMachine(source);
+    try source.interpretLine(": TWICE 2 * ; DEFER ACT ' TWICE IS ACT DEFER BUILTIN-ACT ' DUP IS BUILTIN-ACT");
+    const image = try std.testing.allocator.alloc(u8, forth.State.imageCapacity());
+    defer std.testing.allocator.free(image);
+    const length = try source.encodeImage(image);
+
+    const target = try createMachine(&output);
+    defer destroyMachine(target);
+    try target.interpretLine(": ALREADY-HERE 5 ; : MORE 6 ;");
+    const loaded = try createMachine(&output);
+    defer destroyMachine(loaded);
+    try loaded.restoreImage(image[0..length]);
+    try target.appendImage(loaded);
+    try target.interpretLine("4 ACT 3 BUILTIN-ACT ACTION-OF ACT ' TWICE =");
+    try expectStack(target, &.{ 8, 3, 3, -1 });
 }
