@@ -93,11 +93,18 @@
 | USR, PUHL, POHL, NEXT | 機種依存 | Z80レジスタ、呼出規約、機械語実行に関係します。誌面参照。 |
 | CP/Mのファイル操作、BDOS、DMA | 機種依存 | CP/M版のOS呼び出しとバッファを必要とします。誌面参照。 |
 | PC-8001の編集、表示、モニター機能 | 機種依存 | PC-8001固有の入出力とモニターを必要とします。誌面参照。 |
-| Gforthの残りのファイル語（READ-FILE、FILE-POSITION、BINなど）、WHERE、`$SLURP` などの残りの文字列語、`[IFDEF]` などの残りの条件付きコンパイル語 | 未実装 | 必要に応じて対応（[決定事項](DECISIONS.md)）。 |
-| Gforthの .R, U.R, D.R, UM*, UM/MOD, M*, C" | 未実装 | 段階1〜3の対象外。 |
+| 基本語（優先度1の候補）: ?DUP, U<, U>, ALIGN, .R, U.R, 2R@, UNUSED, */, */MOD, M*, UM*, UM/MOD, FM/MOD, SM/REM, READ-FILE | 未実装 | 小さな語と基本の倍長の乗除算。倍長の除算は、ゼロ除算、商が1セルに収まらない場合、最小値÷-1を扱う必要があります。READ-FILEはホストの `read` で作れます。 |
+| 入力処理: SOURCE, >IN, SOURCE-ID, REFILL、その後 SAVE-INPUT, RESTORE-INPUT | 未実装 | `>IN` は論理メモリ上の変数とし、入力位置（端末、ファイル、EVALUATE、入れ子）と同期する設計が必要です。 |
+| 次点: C", ABORT", BUFFER:, 2LITERAL, D.R, D2*, D2/, DMAX, DMIN, M+, DU<, 2ROT, 2VALUE, DUMP | 未実装 | `C"` は長さバイトのアドレスを積む新しい命令が必要で、LOADの再配置の対象になります。`ABORT"` は例外コード-2とメッセージの扱いが必要です。 |
+| 方針の決定待ち: DEFER, IS, ACTION-OF, DEFER!, DEFER@, COMPILE,, [COMPILE], M*/ | 未実装 | DEFER系とCOMPILE,は教材で使わないため見送っています（[決定事項](DECISIONS.md)、#181）。教材対応から一般のGforth互換へ広げるかを決めてから対応します。M*/は192ビットの途中結果が必要です。 |
+| 浮動小数点: FLOOR, FROUND, FTRUNC, F**, FASIN, FACOS, FATAN, FATAN2, FSINCOS, FLOG, FALOG, FEXPM1, FLNP1, FSINH, FCOSH, FTANH, FASINH, FACOSH, FATANH, F~, FVALUE, FE., FS., REPRESENT, PRECISION, SET-PRECISION, FALIGN, FALIGNED, SFALIGN, SFALIGNED, DFALIGN, DFALIGNED, SF@, SF!, DF@, DF!, SFLOATS, DFLOATS, SFLOAT+, DFLOAT+ | 未実装 | 精度の方針（正しく丸める、特定のGforthの結果に合わせる、関数ごとに決める）を決めてから対応します。FLOOR・FTRUNCは関数の精度と関係なく先に作れます。 |
+| 個別に設計: QUIT, ENVIRONMENT?, EKEY, EKEY?, EKEY>CHAR, AT-XY, TIME&DATE, AHEAD, CS-PICK, CS-ROLL, N>R, NR>, SYNONYM, TRAVERSE-WORDLIST, NAME>COMPILE, NAME>INTERPRET | 未実装 | `QUIT` はデータスタックを残したまま入力待ちへ戻る経路が、`ENVIRONMENT?` は問い合わせの表が必要です。 |
+| Gforthの残りのファイル語（FILE-POSITION, BIN, DELETE-FILE, RENAME-FILE, RESIZE-FILE, FLUSH-FILE, FILE-STATUS, INCLUDE-FILE）、WHERE、`$SLURP` などの残りの文字列語、`[IFDEF]` などの残りの条件付きコンパイル語 | 未実装 | 必要に応じて対応（[決定事項](DECISIONS.md)）。 |
 | Gforthの CODE, END-CODE, SAVESYSTEM, 'COLD, BOOTMESSAGE, IS, FPATH, SCRIPT? | 対象外 | Gforthの起動処理やアセンブラに依存します（2026-10-30決定、教材Level 30）。SAVESYSTEM の代わりに SAVESYS を使えます。 |
 
 Z80の命令実行・エミュレーションはプロジェクトの対象外です。
+
+上の表の「基本語」から「個別に設計」までは、2026-10-30の調査（Codexのレビューを反映）によるものです。Forth 2012のCORE、CORE EXT、DOUBLEの語と、よく使われる拡張の語について、`HELP` で1語ずつ調べ、Sigmaにない語がオリジナル版Gforth（0.7.9）にあることを `find-name` で確かめました。調べた語の一覧は標準の原典と照合していないため、この表が標準の語のすべてを網羅しているとは限りません。表の語がGforthと同じ意味で動くかは、実装するときに確かめます。
 
 ## 自動回帰テストとの対応
 
