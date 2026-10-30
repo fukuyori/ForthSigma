@@ -2205,6 +2205,8 @@ test "F>STR-RDP matches gforth's output for fixed, exponential, and overflowing 
         .{ "0E 4 3 1", "0.E0" },                   .{ "-0E 5 3 1", "-0.E0" },         .{ "0E 3 3 1", "0E0" },
         .{ "-0E 6 3 1", "-0.000" },                .{ "0.7E 1 0 0", "." },            .{ "-0.7E 2 0 0", "-." },
         .{ "0.7E 2 0 0", "1." },                   .{ "0.0007E 4 3 0", ".001" },
+        // log10 overestimates the exponent of these; rounding there would lose a digit.
+        .{ "9.999999999999998E34 20 0 0", "9.999999999999998E34" }, .{ "9.999999999999998E-10 21 0 1", "9.999999999999999E-10" },
     };
     for (cases) |case| {
         var output = Output{};
@@ -2270,4 +2272,16 @@ test "[ while interpreting, PI, and F. rounded from the exact binary value" {
     // The shortest forms end in 5 (1.414213562373095, 0.5463024898437905); the exact values round down.
     try machine.interpretLine("1.4142135623730949E F. 0.5E FTAN F. 1E 3E F/ F.S");
     try std.testing.expectEqualStrings("1 2 3 3.14159265358979     3.14161.41421356237309 0.54630248984379 <1> .33333333333333e ", output.written());
+}
+
+test "defining words follow the search order, a variable takes DOES>, and F. keeps every digit" {
+    var output = Output{};
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
+
+    try machine.interpretLine(": PROBE ONLY S\" VARIABLE AA\" EVALUATE ; ' PROBE CATCH FORTH . [DEFINED] AA .");
+    try machine.interpretLine(": V VARIABLE DOES> @ ; V BB BB . : USEIT BB ; USEIT . : FV FVARIABLE DOES> F@ ; FV FF FF F.");
+    try machine.interpretLine(": V2 2VARIABLE DOES> 2@ ; V2 DD DD D. 9.99999999999995E34 F.");
+    try std.testing.expectEqualStrings("-13 0 0 0 0. 0 99999999999999500000000000000000000. ", output.written());
+    try expectStack(machine, &.{});
 }

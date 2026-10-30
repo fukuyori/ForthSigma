@@ -661,6 +661,15 @@ const max_rdp_width = 4096;
 /// binary value. std.fmt rounds the shortest decimal form instead, which differs from
 /// gforth for values such as 2.675 or 0.95.
 fn scaledDecimal(value: Float, scale: i32, output: []u8) RuntimeError![]const u8 {
+    return scaledDecimalRounded(value, scale, true, output);
+}
+
+/// Like scaledDecimal, but truncating: the digits of floor(|value| * 10^scale).
+fn truncatedDecimal(value: Float, scale: i32, output: []u8) RuntimeError![]const u8 {
+    return scaledDecimalRounded(value, scale, false, output);
+}
+
+fn scaledDecimalRounded(value: Float, scale: i32, round: bool, output: []u8) RuntimeError![]const u8 {
     const magnitude = @abs(value);
     if (magnitude == 0) {
         output[0] = '0';
@@ -675,10 +684,10 @@ fn scaledDecimal(value: Float, scale: i32, output: []u8) RuntimeError![]const u8
     var scratch: [32768]u8 = undefined;
     var fixed = std.heap.FixedBufferAllocator.init(&scratch);
     const allocator = fixed.allocator();
-    return scaledDecimalWith(allocator, mantissa, binary_exponent, scale, output) catch error.StringTooLong;
+    return scaledDecimalWith(allocator, mantissa, binary_exponent, scale, round, output) catch error.StringTooLong;
 }
 
-fn scaledDecimalWith(allocator: std.mem.Allocator, mantissa: u64, binary_exponent: i32, scale: i32, output: []u8) ![]const u8 {
+fn scaledDecimalWith(allocator: std.mem.Allocator, mantissa: u64, binary_exponent: i32, scale: i32, round: bool, output: []u8) ![]const u8 {
     const Big = std.math.big.int.Managed;
     var numerator = try Big.initSet(allocator, mantissa);
     var denominator = try Big.initSet(allocator, 1);
@@ -692,7 +701,7 @@ fn scaledDecimalWith(allocator: std.mem.Allocator, mantissa: u64, binary_exponen
     try quotient.divTrunc(&remainder, &numerator, &denominator);
     try remainder.shiftLeft(&remainder, 1);
     const half = remainder.order(denominator);
-    if (half == .gt or (half == .eq and !quotient.isEven())) try quotient.addScalar(&quotient, 1);
+    if (round and (half == .gt or (half == .eq and !quotient.isEven()))) try quotient.addScalar(&quotient, 1);
     const text = try quotient.toString(allocator, 10, .lower);
     if (text.len > output.len) return error.NoSpaceLeft;
     @memcpy(output[0..text.len], text);
@@ -711,18 +720,17 @@ fn representDecimal(magnitude: Float, count: usize, buffer: *[max_rdp_width + 40
         return .{ .digits = buffer[0..count], .exponent = 1 };
     }
     const exact: usize = @min(count, 800);
-    const exact_i: i32 = @intCast(exact);
-    var exponent: i32 = @as(i32, @intFromFloat(@floor(@log10(magnitude)))) + 1;
-    var attempt: usize = 0;
-    while (true) : (attempt += 1) {
-        const scale = exact_i - exponent;
-        const rounded = try scaledDecimal(magnitude, scale, buffer);
-        exponent = @as(i32, @intCast(rounded.len)) - scale;
-        // A wrong estimate or a carry (9.99 -> 10.0) changes the length; round again.
-        if (rounded.len != exact and attempt < 3) continue;
-        if (rounded.len < count) @memset(buffer[rounded.len..count], '0');
-        return .{ .digits = buffer[0..count], .exponent = exponent };
-    }
+    // log10 can be off by one near powers of ten, so the exponent comes from the
+    // truncated digits: with this scale they number 1 to 4, and their count fixes it.
+    const estimate: i32 = @as(i32, @intFromFloat(@floor(@log10(magnitude)))) + 1;
+    const probe_scale = 2 - estimate;
+    var exponent: i32 = @as(i32, @intCast((try truncatedDecimal(magnitude, probe_scale, buffer)).len)) - probe_scale;
+    const scale = @as(i32, @intCast(exact)) - exponent;
+    const rounded = try scaledDecimal(magnitude, scale, buffer);
+    // A carry (9.99 -> 10.0) adds a digit; the digits after its 1 are zeros.
+    if (rounded.len > exact) exponent += 1;
+    if (exact < count) @memset(buffer[exact..count], '0');
+    return .{ .digits = buffer[0..count], .exponent = exponent };
 }
 
 /// Whether F.RDP uses fixed-point notation for a value with decimal exponent
@@ -1496,10 +1504,13 @@ pub const State = struct {
             .variable_name, .value_name => {
                 const id = try self.appendDataWord(token, if (pending == .value_name) .value else .variable, cell_size);
                 try self.writeCell(self.words[id].value, if (pending == .value_name) self.pending_constant else 0);
+                // A variable can take a DOES> part, as in gforth, where VARIABLE is CREATE 0 ,.
+                if (pending == .variable_name) self.last_created_word = id;
             },
             .fvariable_name => {
                 const id = try self.appendDataWord(token, .variable, float_size);
                 try self.writeFloat(self.words[id].value, 0);
+                self.last_created_word = id;
             },
             .constant_name => {
                 _ = try self.appendWord(token, .constant, .drop, self.pending_constant);
@@ -1510,6 +1521,7 @@ pub const State = struct {
             .two_variable_name, .two_constant_name => {
                 const id = try self.appendDataWord(token, if (pending == .two_constant_name) .two_constant else .variable, 2 * cell_size);
                 try self.writeDouble(self.words[id].value, if (pending == .two_constant_name) self.pending_double else 0);
+                if (pending == .two_variable_name) self.last_created_word = id;
             },
             .array_name => {
                 if (self.pending_array_size < 0 or self.pending_array_size > data_limit / cell_size) return error.MemoryExhausted;
@@ -1576,13 +1588,14 @@ pub const State = struct {
         const found = self.lookup(token);
         if (found) |id| {
             if (id >= self.builtin_count) return self.handleWord(id);
-            // A defining word compiled into a definition reads its name when that runs.
-            if (self.compiling and isDefiningBuiltin(self.words[id].builtin)) return self.handleWord(id);
-        }
-        if (std.mem.eql(u8, token, ":")) {
-            if (self.defining) return error.InvalidDefinition;
-            self.pending = .colon_name;
-            return;
+            // Defining words are dictionary words, found through the search order. One
+            // compiled into a definition reads its name when that runs; interpreted, it
+            // takes the next name, which may be on a later line.
+            if (isDefiningBuiltin(self.words[id].builtin)) {
+                if (self.compiling) return self.handleWord(id);
+                self.pending = try self.definingPending(self.words[id].builtin);
+                return;
+            }
         }
         if (std.mem.eql(u8, token, "{") or std.mem.eql(u8, token, "{:")) {
             return self.compileLocals(if (token.len == 1) "}" else ":}");
@@ -1599,7 +1612,6 @@ pub const State = struct {
             self.push(id) catch unreachable;
             return;
         }
-        if (std.mem.eql(u8, token, ";")) return self.endDefinition();
         if (std.mem.eql(u8, token, "[")) {
             // As in gforth, [ while interpreting leaves the interpreter as it is.
             if (self.compiling) self.setCompiling(false);
@@ -1625,45 +1637,6 @@ pub const State = struct {
         }
         if (asciiEqlIgnoreCase(token, "TO")) {
             self.pending = .to_name;
-            return;
-        }
-        if (asciiEqlIgnoreCase(token, "VARIABLE") or asciiEqlIgnoreCase(token, "VAR")) {
-            return self.startInterpretPending(.variable_name);
-        }
-        if (asciiEqlIgnoreCase(token, "FVARIABLE")) {
-            return self.startInterpretPending(.fvariable_name);
-        }
-        if (asciiEqlIgnoreCase(token, "CONSTANT") or asciiEqlIgnoreCase(token, "CONST")) {
-            if (self.compiling) return error.CompileOnly;
-            self.pending_constant = try self.pop();
-            self.pending = .constant_name;
-            return;
-        }
-        if (asciiEqlIgnoreCase(token, "VALUE")) {
-            if (self.compiling) return error.CompileOnly;
-            self.pending_constant = try self.pop();
-            self.pending = .value_name;
-            return;
-        }
-        if (asciiEqlIgnoreCase(token, "2VARIABLE")) {
-            return self.startInterpretPending(.two_variable_name);
-        }
-        if (asciiEqlIgnoreCase(token, "2CONSTANT")) {
-            if (self.compiling) return error.CompileOnly;
-            self.pending_double = try self.popDouble();
-            self.pending = .two_constant_name;
-            return;
-        }
-        if (asciiEqlIgnoreCase(token, "FCONSTANT")) {
-            if (self.compiling) return error.CompileOnly;
-            self.pending_float = try self.fpop();
-            self.pending = .fconstant_name;
-            return;
-        }
-        if (asciiEqlIgnoreCase(token, "ARRAY") or asciiEqlIgnoreCase(token, "FARRAY")) {
-            if (self.compiling) return error.CompileOnly;
-            self.pending_array_size = try self.pop();
-            self.pending = .array_name;
             return;
         }
         if (asciiEqlIgnoreCase(token, "FORGET")) {
@@ -1854,7 +1827,15 @@ pub const State = struct {
     /// Runs a defining word from a definition: takes its value from the stack, then
     /// reads the new word's name from the input, as interpreting the word would.
     fn runDefiningWord(self: *State, builtin: Builtin) RuntimeError!void {
-        const pending: Pending = switch (builtin) {
+        const pending = try self.definingPending(builtin);
+        const name = (try self.nextSourceToken()) orelse return error.InvalidDefinition;
+        self.pending = pending;
+        try self.finishPending(name);
+    }
+
+    /// Takes a defining word's value from the stack and returns what its name makes.
+    fn definingPending(self: *State, builtin: Builtin) RuntimeError!Pending {
+        return switch (builtin) {
             .define_colon => blk: {
                 if (self.defining) return error.InvalidDefinition;
                 break :blk .colon_name;
@@ -1884,9 +1865,6 @@ pub const State = struct {
             },
             else => unreachable,
         };
-        const name = (try self.nextSourceToken()) orelse return error.InvalidDefinition;
-        self.pending = pending;
-        try self.finishPending(name);
     }
 
     fn startInterpretPending(self: *State, pending: Pending) RuntimeError!void {
@@ -2308,11 +2286,11 @@ pub const State = struct {
         const word = self.words[id];
         switch (word.kind) {
             .builtin => try self.executeBuiltin(word.builtin),
-            .variable, .constant, .array => try self.push(word.value),
+            .constant, .array => try self.push(word.value),
             .value => try self.push(try self.readCell(word.value)),
             .fconstant => try self.fpush(bitsFloat(word.value)),
             .two_constant => try self.pushDouble(try self.readDouble(word.value)),
-            .created => {
+            .variable, .created => {
                 try self.push(word.value);
                 if (word.has_does) {
                     if (self.call_depth == max_stack) return error.ReturnStackOverflow;
@@ -3937,6 +3915,10 @@ pub const State = struct {
             .variable, .array => {
                 self.write(if (word.kind == .array) "ARRAY " else "VARIABLE ");
                 self.write(name);
+                if (word.has_does) {
+                    self.write("\nDOES>");
+                    try self.seeBody(word.does_code_start, word.does_code_end);
+                }
             },
             .constant, .value => {
                 self.writeNumber(if (word.kind == .value) try self.readCell(word.value) else word.value);
