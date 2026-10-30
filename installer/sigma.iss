@@ -33,6 +33,7 @@ SignedUninstaller=yes
 Source: "{#PayloadExe}"; DestDir: "{app}"; DestName: "sigma.exe"; Flags: ignoreversion
 Source: "..\LICENSE"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\README.md"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\THIRD_PARTY_NOTICES.md"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\forth\sigma\USER_MANUAL.md"; DestDir: "{app}\docs"; Flags: ignoreversion
 
 [Icons]

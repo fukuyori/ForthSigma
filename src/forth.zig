@@ -93,6 +93,23 @@ const max_gforth_string = 255;
 pub const data_start: Cell = 0x4000;
 const true_flag: Cell = -1;
 const dot_precision = 15;
+/// Items .S and F.S show below the depth, as gforth's maxdepth-.s.
+const max_dot_s_items = 9;
+
+// Correctly rounded functions from CORE-MATH (src/core-math), so that results are the
+// same on every system; the original gforth in Linux gets them from glibc nearly always.
+extern fn cr_sin(x: f64) f64;
+extern fn cr_cos(x: f64) f64;
+extern fn cr_tan(x: f64) f64;
+extern fn cr_exp(x: f64) f64;
+extern fn cr_log(x: f64) f64;
+
+/// CORE-MATH answers infinity and NaN with an all-ones NaN; x - x gives the CPU's
+/// default NaN for infinity and keeps a NaN argument, as glibc and gforth do.
+fn trig(function: *const fn (f64) callconv(.c) f64, x: f64) f64 {
+    if (std.math.isNan(x) or std.math.isInf(x)) return x - x;
+    return function(x);
+}
 const fs_precision = 14;
 const image_magic = "SIGIMG12";
 
@@ -2617,7 +2634,8 @@ pub const State = struct {
             },
             .dot_s => {
                 self.writeDepth(self.data_depth);
-                for (self.data_stack[0..self.data_depth]) |value| {
+                // Like gforth, only the top items are shown below the depth.
+                for (self.data_stack[self.data_depth -| max_dot_s_items .. self.data_depth]) |value| {
                     self.writeNumber(value);
                     self.write(" ");
                 }
@@ -2781,8 +2799,11 @@ pub const State = struct {
             .f_depth => try self.push(@intCast(self.float_depth)),
             .f_dot_s => {
                 self.writeDepth(self.float_depth);
-                for (self.float_stack[0..self.float_depth]) |value| {
-                    self.writeFloatExponent(value, fs_precision);
+                // gforth shows each item as 14 0 17 F.RDP does: exponential notation
+                // filling 14 characters (3.0000000000E0).
+                var field: [max_rdp_width]u8 = undefined;
+                for (self.float_stack[self.float_depth -| max_dot_s_items .. self.float_depth]) |value| {
+                    self.write(formatRdp(value, 14, 0, 17, &field) catch unreachable);
                     self.write(" ");
                 }
             },
@@ -2805,11 +2826,11 @@ pub const State = struct {
                     .f_negate => -a,
                     .f_abs => @abs(a),
                     .f_sqrt => @sqrt(a),
-                    .f_exp => @exp(a),
-                    .f_ln => @log(a),
-                    .f_sin => @sin(a),
-                    .f_cos => @cos(a),
-                    .f_tan => @tan(a),
+                    .f_exp => cr_exp(a),
+                    .f_ln => cr_log(a),
+                    .f_sin => trig(cr_sin, a),
+                    .f_cos => trig(cr_cos, a),
+                    .f_tan => trig(cr_tan, a),
                     else => unreachable,
                 });
             },

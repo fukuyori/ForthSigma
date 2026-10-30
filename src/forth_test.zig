@@ -783,14 +783,14 @@ test "F. prints non-finite values by name" {
     try expectOutput("1E 0E F/ F. -1E 0E F/ F. 0E 0E F/ F.", "infinity -infinity NaN ");
 }
 
-test "F.S shows the float stack with exponent markers" {
+test "F.S shows each float as 14 0 17 F.RDP does" {
     var output = Output{};
     const machine = try createMachine(&output);
     defer destroyMachine(machine);
 
     try machine.interpretLine("1E 2E 0.5E 1E-7 -3.25E 1E30 F.S");
 
-    try std.testing.expectEqualStrings("<6> 1e 2e .5e 1e-7 -3.25e 1e30 ", output.written());
+    try std.testing.expectEqualStrings("<6> 1.0000000000E0 2.0000000000E0 5.000000000E-1 1.000000000E-7 -3.250000000E0 1.000000000E30 ", output.written());
     try std.testing.expectEqual(@as(usize, 6), machine.float_depth);
 }
 
@@ -2271,7 +2271,7 @@ test "[ while interpreting, PI, and F. rounded from the exact binary value" {
     try machine.interpretLine("PI F. PI 10 4 0 F.RDP");
     // The shortest forms end in 5 (1.414213562373095, 0.5463024898437905); the exact values round down.
     try machine.interpretLine("1.4142135623730949E F. 0.5E FTAN F. 1E 3E F/ F.S");
-    try std.testing.expectEqualStrings("1 2 3 3.14159265358979     3.14161.41421356237309 0.54630248984379 <1> .33333333333333e ", output.written());
+    try std.testing.expectEqualStrings("1 2 3 3.14159265358979     3.14161.41421356237309 0.54630248984379 <1> 3.333333333E-1 ", output.written());
 }
 
 test "defining words follow the search order, a variable takes DOES>, and F. keeps every digit" {
@@ -2284,4 +2284,30 @@ test "defining words follow the search order, a variable takes DOES>, and F. kee
     try machine.interpretLine(": V2 2VARIABLE DOES> 2@ ; V2 DD DD D. 9.99999999999995E34 F.");
     try std.testing.expectEqualStrings("-13 0 0 0 0. 0 99999999999999500000000000000000000. ", output.written());
     try expectStack(machine, &.{});
+}
+
+test ".S and F.S show the top nine items, and F.S shows zero, infinity, and NaN as gforth does" {
+    var output = Output{};
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
+
+    try machine.interpretLine("1E 2E 0E -0E 1E 0E F/ 0E 0E F/ 5E-324 -1.7976931348623157E308 1E-300 2E F.S");
+    try machine.interpretLine("1 2 3 4 5 6 7 8 9 10 11 12 .S");
+    try std.testing.expectEqualStrings("<10> 2.0000000000E0 0.0000000000E0 -0.000000000E0 infinity       NaN            4.9406565E-324 -1.7976931E308 1.0000000E-300 2.0000000000E0 <12> 4 5 6 7 8 9 10 11 12 ", output.written());
+}
+
+test "FSIN FCOS FTAN FEXP FLN are correctly rounded, as the original gforth in Linux gets them from glibc" {
+    var output = Output{};
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
+
+    // Values where the Windows gforth (UCRT) and Zig's builtins are one bit off.
+    try machine.interpretLine("8.455291201133988E FSIN 4.097339611316615E FCOS -3.790540510731324E FTAN 7.5804220383449845E 10E F/ FEXP");
+    try machine.interpretLine("0.7853981634E FSIN 2E FLN 1E 0E F/ FSIN");
+    const expected = [_]forth.Float{ 0x1.a63160a19e355p-1, -0x1.276c6481934a7p-1, -0x1.846014ab289adp-1, 0x1.1129fe0eea6f9p+1, 0x1.6a09e667f7b49p-1, 0x1.62e42fefa39efp-1 };
+    try std.testing.expectEqual(@as(usize, expected.len + 1), machine.float_depth);
+    for (expected, machine.float_stack[0..expected.len]) |want, got| {
+        try std.testing.expectEqual(@as(u64, @bitCast(want)), @as(u64, @bitCast(got)));
+    }
+    try std.testing.expect(std.math.isNan(machine.float_stack[expected.len]));
 }

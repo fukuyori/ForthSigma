@@ -13,6 +13,7 @@ pub fn build(b: *std.Build) void {
             .link_libc = true,
         }),
     });
+    addCoreMath(b, exe.root_module);
     b.installArtifact(exe);
 
     const test_module = b.createModule(.{
@@ -21,6 +22,7 @@ pub fn build(b: *std.Build) void {
         .optimize = optimize,
         .link_libc = true,
     });
+    addCoreMath(b, test_module);
     const unit_tests = b.addTest(.{ .root_module = test_module });
     const run_tests = b.addRunArtifact(unit_tests);
     const test_step = b.step("test", "Run FORTH/Σ core and host tests");
@@ -28,4 +30,15 @@ pub fn build(b: *std.Build) void {
 
     const host_tests = b.addTest(.{ .root_module = exe.root_module });
     test_step.dependOn(&b.addRunArtifact(host_tests).step);
+}
+
+/// The correctly rounded math functions the core calls for FSIN, FCOS, FTAN, FEXP, and FLN.
+fn addCoreMath(b: *std.Build, module: *std.Build.Module) void {
+    module.addCSourceFiles(.{
+        .root = b.path("src/core-math"),
+        .files = &.{ "sin.c", "cos.c", "tan.c", "exp.c", "log.c" },
+        // On a baseline CPU __builtin_roundeven becomes a call that musl and macOS lack;
+        // rint gives the same result in the round-to-nearest mode Forth always runs in.
+        .flags = &.{ "-std=gnu11", "-D__builtin_roundeven=__builtin_rint" },
+    });
 }

@@ -97,7 +97,7 @@ Z80の命令実行・エミュレーションはプロジェクトの対象外�
 
 ## 自動回帰テストとの対応
 
-zig build testで、現行コアの主要動作を次のテストで確認します（コア144件、ホスト3件の計147件）。
+zig build testで、現行コアの主要動作を次のテストで確認します（コア146件、ホスト3件の計149件）。
 
 | テスト | 確認する動作 |
 | --- | --- |
@@ -134,6 +134,7 @@ zig build testで、現行コアの主要動作を次のテストで確認しま
 | tab separators | タブで区切ったソース、文字列語・CHARの直後のタブ |
 | word lists | 教材Level 16の例（VOCABULARY・ONLY・ALSO・DEFINITIONS・ORDERの表示、WORDLIST・SET-CURRENT・>ORDERのモジュールと隠し方）、GET-ORDER・SET-ORDER・PREVIOUS・-1 SET-ORDER、検索順序のあふれ・不足・無効な語彙、WORDSとSEARCH-WORDLIST、MARKERによる検索順序の復元、イメージの復元とLOADでの語彙番号の付け替え |
 | F.RDP | Gforthの出力と同じになる55例（固定小数点・指数表記・*で埋める場合・0・無限大・NaN・偶数への丸め・小さな値の丸め・丸めで指数の桁や有効桁数が変わる場合・0の整数部が入らない幅）、F.RDPの表示、F>BUF-RDP、教材Level 20の例、幅の上限と保持領域のあふれ、丸めで指数が短くなる値のF.RDPとF>BUF-RDP |
+| 数学関数・F.S・.S | FSIN・FCOS・FTAN・FEXP・FLNがビット単位で正しく丸めた値になること（Windows版Gforthとzigの組み込み関数で1ビットずれる値と教材Level 25の値）、F.Sの `14 0 17 F.RDP` 形式と上の9個の表示（0・-0・無限大・NaN・非正規化数）、.Sの上の9個の表示 |
 | 定義の中の定義語 | 定義の中のVARIABLE・CONSTANT・FVARIABLE・FCONSTANT・VALUE・2CONSTANT・2VARIABLE・ARRAY、教材Level 31の `:` で始めて `POSTPONE ;` で終える語、名前がない場合と定義中の `:` のエラー、検索順序から外した定義語、DOES>を付けた変数、10の累乗に近い値のF. |
 | 解釈中の[・PI・F. | 解釈中の `[`、PIのF.とF.RDP、2進数の値から正確に丸めるF.とF.S |
 | locals visibility | IF・ELSE・THEN、BEGIN・UNTIL・WHILE・REPEAT、DO・?DO・LOOP・LEAVE、CASE・OFでの名前の見える範囲（Gforthで確かめた15例） |
