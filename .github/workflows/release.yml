@@ -23,7 +23,7 @@ jobs:
         os: [windows-latest, ubuntu-latest, ubuntu-24.04-arm, macos-latest]
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: mlugg/setup-zig@v2
         with:
           version: ${{ env.ZIG_VERSION }}
@@ -43,7 +43,7 @@ jobs:
           - { name: linux-arm64, target: aarch64-linux-musl, exe: sigma }
           - { name: macos-arm64, target: aarch64-macos, exe: sigma }
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: mlugg/setup-zig@v2
         with:
           version: ${{ env.ZIG_VERSION }}
@@ -63,7 +63,7 @@ jobs:
           mkdir "$dir"
           cp "out/bin/${{ matrix.exe }}" LICENSE THIRD_PARTY_NOTICES.md README.md forth/sigma/USER_MANUAL.md "$dir/"
           zip -r "$dir.zip" "$dir"
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: sigma-${{ matrix.name }}
           path: sigma-*.zip
@@ -77,7 +77,7 @@ jobs:
     permissions:
       contents: write
     steps:
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
           path: dist
           merge-multiple: true
