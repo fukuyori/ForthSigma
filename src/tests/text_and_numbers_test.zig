@@ -202,6 +202,72 @@ test "PLACE stores a counted string, handles overlap, and limits the length to 2
     try std.testing.expectError(error.InvalidAddress, machine.interpretLine("PAD 1 2097151 PLACE"));
 }
 
+test "COMPARE SEARCH /STRING and -TRAILING work as in gforth" {
+    try expectOutput(
+        "S\" abc\" S\" abd\" COMPARE . S\" abd\" S\" abc\" COMPARE . S\" abc\" S\" abc\" COMPARE . " ++
+            "S\" ab\" S\" abc\" COMPARE . S\" abc\" S\" ab\" COMPARE . S\" \" S\" \" COMPARE . " ++
+            "200 PAD C! 65 PAD 1+ C! PAD 1 PAD 1+ 1 COMPARE .",
+        "-1 1 0 -1 1 0 1 ",
+    );
+    try expectOutput(
+        "S\" hello world\" S\" wor\" SEARCH . TYPE CR S\" hello world\" S\" xyz\" SEARCH . TYPE CR " ++
+            "S\" hello world\" S\" \" SEARCH . TYPE CR S\" \" S\" a\" SEARCH . . DROP CR " ++
+            "S\" aaa\" S\" aaaa\" SEARCH . TYPE CR S\" abcabc\" S\" bc\" SEARCH . TYPE",
+        "-1 world\n0 hello world\n-1 hello world\n0 0 \n0 aaa\n-1 bcabc",
+    );
+    try expectOutput(
+        "S\" hello\" 2 /STRING TYPE CR S\" hello\" 0 /STRING TYPE CR S\" hello\" 5 /STRING . DROP " ++
+            "PAD 5 -1 /STRING SWAP PAD - . . S\" hello\" 7 /STRING . DROP",
+        "llo\nhello\n0 -1 6 -2 ",
+    );
+    try expectOutput(
+        "S\" hi   \" -TRAILING TYPE .\" |\" S\" hi\t\" -TRAILING . DROP S\"    \" -TRAILING . DROP " ++
+            "S\" \" -TRAILING . DROP PAD -5 -TRAILING . DROP",
+        "hi|3 0 0 -5 ",
+    );
+}
+
+test "CHAR+ CHARS BOUNDS BLANK CMOVE> SCAN SKIP STR= STRING-PREFIX? and +PLACE work as in gforth" {
+    try expectOutput("5 CHAR+ . 7 CHARS . -3 CHARS . PAD 4 BOUNDS PAD - SWAP PAD - . .", "6 7 -3 4 0 ");
+    try expectOutput("PAD 10 ERASE PAD 3 BLANK PAD 4 TYPE .\" |\" PAD 0 BLANK PAD -1 BLANK PAD 3 + C@ .", "   \x00|0 ");
+    // CMOVE> copies from the highest byte down, so an overlap below repeats the bytes.
+    try expectOutput(
+        "S\" abcdef\" PAD SWAP MOVE PAD PAD 2 + 4 CMOVE> PAD 6 TYPE SPACE " ++
+            "S\" abcdef\" PAD SWAP MOVE PAD 2 + PAD 4 CMOVE> PAD 6 TYPE PAD PAD 1+ -3 CMOVE>",
+        "ababcd efefef",
+    );
+    try expectOutput(
+        "S\" hello world\" BL SCAN TYPE .\" |\" S\" hello\" CHAR z SCAN . DROP S\" hello\" CHAR h SCAN TYPE " ++
+            "S\"    hi\" BL SKIP TYPE .\" |\" S\"    \" BL SKIP . DROP S\" a\tb\" BL SCAN . DROP S\" \t x\" BL SKIP . DROP " ++
+            "S\" hello\" DROP -1 CHAR l SCAN . DROP",
+        " world|0 hellohi|0 0 3 0 ",
+    );
+    try expectOutput(
+        "S\" abc\" S\" abc\" STR= . S\" abc\" S\" abd\" STR= . S\" abc\" S\" ab\" STR= . S\" \" S\" \" STR= . " ++
+            "S\" hello\" S\" he\" STRING-PREFIX? . S\" hello\" S\" lo\" STRING-PREFIX? . S\" he\" S\" hello\" STRING-PREFIX? . S\" hello\" S\" \" STRING-PREFIX? .",
+        "-1 0 0 -1 -1 0 0 -1 ",
+    );
+    // +PLACE stops at 255 bytes; a negative length appends nothing.
+    try expectOutput(
+        "S\" ab\" PAD PLACE S\" cde\" PAD +PLACE PAD COUNT TYPE SPACE S\" xyz\" DROP -2 PAD +PLACE PAD C@ . " ++
+            "PAD 1+ 255 ERASE 250 PAD C! S\" 0123456789\" PAD +PLACE PAD C@ . PAD 256 + C@ .",
+        "abcde 5 255 0 ",
+    );
+}
+
+test "SLITERAL compiles a string and PARSE-NAME reads the next name" {
+    var output = Output{};
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
+
+    try machine.interpretLine(": T1 [ S\" hi there\" ] SLITERAL ; T1 TYPE : T2 [ S\" \" ] SLITERAL ; T2 . DROP : T3 [ PAD 255 ] SLITERAL NIP ; T3 .");
+    try machine.interpretLine(": T4 PARSE-NAME ; T4    word1 TYPE .\" |\" PARSE-NAME \tabc TYPE .\" |\" : T5 PARSE-NAME NIP . ; T5");
+    try machine.interpretLine("S\" PARSE-NAME\" EVALUATE NIP .");
+    try std.testing.expectEqualStrings("hi there0 255 word1|abc|0 0 ", output.written());
+    try std.testing.expectError(error.CompileOnly, machine.interpretLine("S\" x\" SLITERAL"));
+    try std.testing.expectError(error.StringTooLong, machine.interpretLine(": T6 [ PAD 256 ] SLITERAL ;"));
+}
+
 test "STATE reflects the compiler state through a saved address" {
     var output = Output{};
     const machine = try createMachine(&output);

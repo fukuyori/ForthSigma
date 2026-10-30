@@ -1,4 +1,4 @@
-//! Memory access, data space, and ALLOCATE words.
+//! Memory access, data space, string, and ALLOCATE words.
 
 const std = @import("std");
 const defs = @import("defs.zig");
@@ -21,7 +21,9 @@ pub const words = [_]Builtin{
     .blank, .cell, .cells, .cell_plus, .aligned, .fetch, .store, .cfetch, .cstore, .add_store,
     .inc_store, .dec_store, .zero_store, .off, .on, .question, .array_fetch, .array_store, .erase,
     .fill, .move, .cmove, .here, .allot, .comma, .c_comma, .two_fetch, .two_store, .count, .pad,
-    .place, .allocate, .free, .resize,
+    .place, .compare, .search, .slash_string, .minus_trailing, .char_plus, .chars, .bounds,
+    .blank_fill, .cmove_up, .scan, .skip, .str_equal, .string_prefix_query, .plus_place,
+    .allocate, .free, .resize,
 };
 
 pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
@@ -78,8 +80,12 @@ pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
             const value = try self.pop();
             try self.writeCell(address, value);
         },
-        .erase, .fill => {
-            const byte: u8 = if (builtin == .fill) @truncate(@as(UCell, @bitCast(try self.pop()))) else 0;
+        .erase, .fill, .blank_fill => {
+            const byte: u8 = switch (builtin) {
+                .fill => @truncate(@as(UCell, @bitCast(try self.pop()))),
+                .blank_fill => ' ',
+                else => 0,
+            };
             const bytes = try self.memoryRange();
             @memset(bytes, byte);
         },
@@ -95,6 +101,21 @@ pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
                 for (0..length) |offset| self.memory[to + offset] = self.memory[from + offset];
             } else {
                 std.mem.copyBackwards(u8, self.memory[to .. to + length], self.memory[from .. from + length]);
+            }
+        },
+        .cmove_up => {
+            const count = try self.pop();
+            const destination = try self.pop();
+            const source = try self.pop();
+            if (count <= 0) return;
+            const length: usize = @intCast(count);
+            const to = try self.memoryAddress(destination, length);
+            const from = try self.memoryAddress(source, length);
+            // Byte by byte from the highest address down, as the standard defines it.
+            var offset = length;
+            while (offset > 0) {
+                offset -= 1;
+                self.memory[to + offset] = self.memory[from + offset];
             }
         },
         .here => try self.push(self.data_here),
@@ -136,6 +157,89 @@ pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
             const bytes = self.memory[from .. from + length];
             if (to + 1 <= from) std.mem.copyForwards(u8, target, bytes) else std.mem.copyBackwards(u8, target, bytes);
             self.memory[to] = @intCast(length);
+        },
+        // A negative length counts as an empty string, as in TYPE and the other string words.
+        .compare => {
+            const second = try self.memoryRange();
+            const first = try self.memoryRange();
+            try self.push(switch (std.mem.order(u8, first, second)) {
+                .lt => -1,
+                .eq => 0,
+                .gt => 1,
+            });
+        },
+        .search => {
+            const pattern = try self.memoryRange();
+            const count = try self.pop();
+            const address = try self.pop();
+            try self.push(address);
+            try self.push(count);
+            const text = try self.memoryRange();
+            if (std.mem.indexOf(u8, text, pattern)) |offset| {
+                try self.push(address + @as(Cell, @intCast(offset)));
+                try self.push(count - @as(Cell, @intCast(offset)));
+                try self.push(true_flag);
+            } else {
+                try self.push(address);
+                try self.push(count);
+                try self.push(0);
+            }
+        },
+        .slash_string => {
+            // Like gforth, n is not checked against u.
+            const n = try self.pop();
+            const count = try self.pop();
+            const address = try self.pop();
+            try self.push(address +% n);
+            try self.push(count -% n);
+        },
+        .minus_trailing => {
+            const count = try self.pop();
+            const address = try self.pop();
+            try self.push(address);
+            try self.push(count);
+            const text = try self.memoryRange();
+            try self.push(address);
+            try self.push(if (count <= 0) count else @intCast(std.mem.trimEnd(u8, text, " ").len));
+        },
+        .char_plus => try self.push((try self.pop()) +% 1),
+        .chars => try self.push(try self.pop()),
+        .bounds => {
+            const count = try self.pop();
+            const address = try self.pop();
+            try self.push(address +% count);
+            try self.push(address);
+        },
+        // SCAN stops at the first c and SKIP passes the leading c's; c matches only
+        // itself (a blank does not match a tab), as in gforth.
+        .scan, .skip => {
+            const byte: u8 = @truncate(@as(UCell, @bitCast(try self.pop())));
+            const text = try self.memoryRange();
+            const offset = for (text, 0..) |char, index| {
+                if ((char == byte) == (builtin == .scan)) break index;
+            } else text.len;
+            const start: Cell = @intCast(@intFromPtr(text.ptr) - @intFromPtr(&self.memory));
+            try self.push(start + @as(Cell, @intCast(offset)));
+            try self.push(@intCast(text.len - offset));
+        },
+        .str_equal, .string_prefix_query => {
+            const second = try self.memoryRange();
+            const first = try self.memoryRange();
+            const result = if (builtin == .str_equal) std.mem.eql(u8, first, second) else std.mem.startsWith(u8, first, second);
+            try self.push(if (result) true_flag else 0);
+        },
+        .plus_place => {
+            const destination = try self.pop();
+            const count = try self.pop();
+            const source = try self.pop();
+            // Like gforth, the counted string stops growing at 255 bytes.
+            const to = try self.memoryAddress(destination, 1);
+            const old: usize = self.memory[to];
+            const length: usize = @intCast(std.math.clamp(count, 0, @as(Cell, @intCast(255 - old))));
+            _ = try self.memoryAddress(destination, 1 + old + length);
+            _ = try self.memoryAddress(source, length);
+            self.copyMemory(destination + 1 + @as(Cell, @intCast(old)), source, length);
+            self.memory[to] = @intCast(old + length);
         },
         .allocate => {
             const size: UCell = @bitCast(try self.pop());

@@ -168,6 +168,17 @@ fn fileReadLine(_: ?*anyopaque, fileid: forth.Cell, buffer: []u8) forth.LineResu
     return .{ .length = length, .found = true };
 }
 
+fn fileRead(_: ?*anyopaque, fileid: forth.Cell, buffer: []u8) forth.FileResult {
+    const file = openedFile(fileid) orelse return .{ .ior = badFileIor() };
+    clearErrno();
+    const count = fread(buffer.ptr, 1, buffer.len, file);
+    if (count < buffer.len and ferror(file) != 0) {
+        clearerr(file);
+        return .{ .ior = lastIor() };
+    }
+    return .{ .value = count };
+}
+
 fn fileWrite(context: ?*anyopaque, fileid: forth.Cell, bytes: []const u8) forth.Cell {
     if (fileid == forth.stdout_fileid) {
         terminalWrite(context, bytes);
@@ -206,7 +217,7 @@ fn closeAllFiles() void {
     }
 }
 
-const file_ops = forth.FileOps{ .open = fileOpen, .close = fileClose, .read_line = fileReadLine, .write = fileWrite, .size = fileSize, .reposition = fileReposition };
+const file_ops = forth.FileOps{ .open = fileOpen, .close = fileClose, .read_line = fileReadLine, .read = fileRead, .write = fileWrite, .size = fileSize, .reposition = fileReposition };
 
 /// Lets the Windows console interpret the ANSI sequences written by PAGE.
 fn enableVirtualTerminal() void {
@@ -517,6 +528,30 @@ test "INCLUDE through the host reads CR LF lines and limits a line to 4096 bytes
     try machine.interpretLine("INCLUDE .zig-cache/sigma-include-fit.fs SOURCELINE#");
     try std.testing.expectEqualSlices(forth.Cell, &.{ 1, 2, 3, 4, 0 }, machine.data_stack[0..machine.data_depth]);
     try std.testing.expectError(error.StringTooLong, machine.interpretLine("INCLUDE .zig-cache/sigma-include-long.fs"));
+    for (open_files) |slot| try std.testing.expect(slot == null);
+}
+
+test "SLURP-FILE through the host reads every byte as it is" {
+    const allocator = std.testing.allocator;
+    const text = try allocator.alloc(u8, 10000);
+    defer allocator.free(text);
+    for (text, 0..) |*byte, index| byte.* = @truncate(index);
+    @memcpy(text[0..5], "a\r\nb\n");
+    try writeTestFile(".zig-cache/sigma-slurp.txt", text);
+    try writeTestFile(".zig-cache/sigma-slurp-empty.txt", "");
+
+    var host = HostContext{ .allocator = allocator, .executable_path = "", .io = undefined, .environ_map = undefined };
+    const machine = try allocator.create(forth.State);
+    defer allocator.destroy(machine);
+    machine.init(.{ .context = @ptrCast(&host), .write_fn = discardOutput, .file_ops = &file_ops });
+    defer closeAllFiles();
+
+    try machine.interpretLine("S\" .zig-cache/sigma-slurp.txt\" SLURP-FILE S\" .zig-cache/sigma-slurp-empty.txt\" SLURP-FILE NIP");
+    try std.testing.expectEqual(@as(usize, 3), machine.data_depth);
+    const address: usize = @intCast(machine.data_stack[0]);
+    try std.testing.expectEqual(@as(forth.Cell, 10000), machine.data_stack[1]);
+    try std.testing.expectEqualSlices(u8, text, machine.memory[address .. address + text.len]);
+    try std.testing.expectEqual(@as(forth.Cell, 0), machine.data_stack[2]);
     for (open_files) |slot| try std.testing.expect(slot == null);
 }
 

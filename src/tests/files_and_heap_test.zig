@@ -176,6 +176,29 @@ test "$[]SLURP and $[]SLURP-FILE read a file line by line" {
     try std.testing.expectEqual(forth.errnoIor(2), machine.throw_code);
 }
 
+test "SLURP-FILE and $SLURP-FILE read a whole file as it is and close it" {
+    var output = Output{};
+    const text = "one\r\ntwo\n\x00end";
+    @memcpy(output.files[1].data[0..text.len], text);
+    output.files[1].len = text.len;
+    output.files[1].exists = true;
+    output.files[2].exists = true;
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
+
+    try machine.interpretLine("S\" b.txt\" SLURP-FILE 2DUP TYPE DROP FREE . S\" c.txt\" SLURP-FILE NIP .");
+    try std.testing.expectEqualStrings(text ++ "0 0 ", output.written());
+    try std.testing.expect(!output.files[1].open and !output.files[2].open);
+    // $SLURP-FILE replaces the text of the string.
+    try machine.interpretLine("VARIABLE S S\" old text that is longer\" S $! S\" b.txt\" S $SLURP-FILE S $@ NIP S\" b.txt\" S $SLURP-FILE S $@ NIP S\" c.txt\" S $SLURP-FILE S $@ NIP");
+    try expectStack(machine, &.{ text.len, text.len, 0 });
+    try std.testing.expect(!output.files[1].open);
+    try std.testing.expectError(error.Thrown, machine.interpretLine("S\" none.txt\" SLURP-FILE"));
+    try std.testing.expectEqual(forth.errnoIor(2), machine.throw_code);
+    try std.testing.expectError(error.Thrown, machine.interpretLine("S\" none.txt\" S $SLURP-FILE"));
+    try std.testing.expectEqual(forth.errnoIor(2), machine.throw_code);
+}
+
 test "heap strings survive a full image restore" {
     var output = Output{};
     const source = try createMachine(&output);

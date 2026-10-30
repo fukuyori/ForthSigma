@@ -6,6 +6,7 @@ const memory_map = @import("memory_map.zig");
 const Cell = memory_map.Cell;
 const RuntimeError = defs.RuntimeError;
 const State = forth.State;
+const UCell = memory_map.UCell;
 const cell_size = memory_map.cell_size;
 const errno_invalid = memory_map.errno_invalid;
 const errno_no_memory = memory_map.errno_no_memory;
@@ -126,6 +127,53 @@ pub fn slurpLines(self: *State, fileid: Cell, array_var: Cell) RuntimeError!void
     const total = try self.stringArrayCount(array_var);
     for (count..total) |index| try self.freeString(try self.stringArrayElement(array_var, index));
     _ = try self.setStringLength(array_var, count * cell_size);
+}
+
+/// Reads the whole named file for SLURP-FILE and $SLURP-FILE: into the string variable
+/// when one is given, replacing its text, or else into a new ALLOCATE block.
+pub fn slurpFile(self: *State, name: []const u8, string_var: ?Cell) RuntimeError!StringRef {
+    const files = try self.fileOps();
+    const opened = files.open(self.writer.context, name, .read_only, false);
+    if (opened.ior != 0) return self.throwCode(opened.ior);
+    const fileid: Cell = @bitCast(opened.value);
+    const text = readWholeFile(self, fileid, string_var) catch |err| {
+        _ = files.close(self.writer.context, fileid);
+        return err;
+    };
+    const closed = files.close(self.writer.context, fileid);
+    if (closed != 0) {
+        if (string_var == null) _ = try self.heapFree(text.address);
+        return self.throwCode(closed);
+    }
+    return text;
+}
+
+fn readWholeFile(self: *State, fileid: Cell, string_var: ?Cell) RuntimeError!StringRef {
+    const files = try self.fileOps();
+    const sized = files.size(self.writer.context, fileid);
+    if (sized.ior != 0) return self.throwCode(sized.ior);
+    if (sized.value > @as(UCell, @intCast(heap_end - heap_base))) return self.throwIor(errno_no_memory);
+    const size: usize = @intCast(sized.value);
+    const address = if (string_var) |string|
+        (try self.setStringLength(string, size)) + cell_size
+    else
+        try self.heapAllocate(size) orelse return self.throwIor(errno_no_memory);
+    errdefer if (string_var == null) {
+        _ = self.heapFree(address) catch {};
+    };
+    const start: usize = @intCast(address);
+    var length: usize = 0;
+    while (length < size) {
+        const result = files.read(self.writer.context, fileid, self.memory[start + length .. start + size]);
+        if (result.ior != 0) return self.throwCode(result.ior);
+        if (result.value == 0) break;
+        length += @intCast(result.value);
+    }
+    // A file that shrank since its size was taken gives fewer bytes.
+    if (length < size) {
+        if (string_var) |string| return .{ .address = (try self.setStringLength(string, length)) + cell_size, .length = length };
+    }
+    return .{ .address = address, .length = length };
 }
 
 pub fn executeStringInit(self: *State, string_var: Cell) RuntimeError!void {

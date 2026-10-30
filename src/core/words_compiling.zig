@@ -8,6 +8,7 @@ const Builtin = defs.Builtin;
 const RuntimeError = defs.RuntimeError;
 const State = forth.State;
 const floatBits = defs.floatBits;
+const max_gforth_string = memory_map.max_gforth_string;
 const state_address = memory_map.state_address;
 const truth = integer_math.truth;
 
@@ -19,7 +20,7 @@ pub const words = [_]Builtin{
     .compile_case, .compile_of, .compile_endof, .compile_endcase, .compile_exit, .compile_recurse,
     .define_colon, .define_variable, .define_fvariable, .define_constant, .define_value,
     .define_two_variable, .define_two_constant, .define_fconstant, .define_array, .end_definition,
-    .tick, .to_body, .literal, .fliteral, .state, .bracket_if, .bracket_else, .bracket_then,
+    .tick, .to_body, .literal, .fliteral, .sliteral, .state, .bracket_if, .bracket_else, .bracket_then,
     .bracket_defined, .bracket_undefined,
 };
 
@@ -85,6 +86,17 @@ pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
         .fliteral => {
             try self.requireCompiling();
             _ = try self.emit(.{ .kind = .float_literal, .value = floatBits(try self.fpop()) });
+        },
+        // Compile a copy of the string, as S" does; it may lie in a buffer that changes.
+        .sliteral => {
+            try self.requireCompiling();
+            const length = try self.popLength();
+            const address = try self.pop();
+            if (length > max_gforth_string) return error.StringTooLong;
+            const start = try self.memoryAddress(address, length);
+            var copy: [max_gforth_string]u8 = undefined;
+            @memcpy(copy[0..length], self.memory[start .. start + length]);
+            try self.compileCountedString(copy[0..length], .string_literal);
         },
         .state => try self.push(state_address),
         .bracket_if => {

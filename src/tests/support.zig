@@ -101,7 +101,7 @@ pub fn setFakeFile(output: *Output, index: usize, text: []const u8) void {
     output.files[index].exists = true;
 }
 
-pub const fake_file_ops = forth.FileOps{ .open = fakeOpen, .close = fakeClose, .read_line = fakeReadLine, .write = fakeWrite, .size = fakeSize, .reposition = fakeReposition };
+pub const fake_file_ops = forth.FileOps{ .open = fakeOpen, .close = fakeClose, .read_line = fakeReadLine, .read = fakeRead, .write = fakeWrite, .size = fakeSize, .reposition = fakeReposition };
 
 pub fn fakeOutput(context: ?*anyopaque) *Output {
     return @ptrCast(@alignCast(context.?));
@@ -146,6 +146,14 @@ pub fn fakeReadLine(context: ?*anyopaque, fileid: forth.Cell, buffer: []u8) fort
         length += 1;
     }
     return .{ .length = length, .found = true };
+}
+
+pub fn fakeRead(context: ?*anyopaque, fileid: forth.Cell, buffer: []u8) forth.FileResult {
+    const file = fakeFile(context, fileid) orelse return .{ .ior = forth.errnoIor(forth.errno_bad_file) };
+    const count = @min(buffer.len, file.len -| file.position);
+    @memcpy(buffer[0..count], file.data[file.position .. file.position + count]);
+    file.position += count;
+    return .{ .value = count };
 }
 
 pub fn fakeWrite(context: ?*anyopaque, fileid: forth.Cell, bytes: []const u8) forth.Cell {

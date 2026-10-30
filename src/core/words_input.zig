@@ -6,6 +6,7 @@ const forth = @import("../forth.zig");
 const integer_math = @import("integer_math.zig");
 const memory_map = @import("memory_map.zig");
 const Builtin = defs.Builtin;
+const Cell = memory_map.Cell;
 const ParsedNumber = defs.ParsedNumber;
 const RuntimeError = defs.RuntimeError;
 const State = forth.State;
@@ -17,7 +18,7 @@ const word_buffer_address = memory_map.word_buffer_address;
 
 /// The built-in words this file executes; executeBuiltin dispatches by this list.
 pub const words = [_]Builtin{
-    .input, .accept, .evaluate, .key, .key_question, .word_parse, .parse,
+    .input, .accept, .evaluate, .key, .key_question, .word_parse, .parse, .parse_name,
 };
 
 pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
@@ -80,6 +81,20 @@ pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
             self.source_cursor += if (length < rest.len) length + 1 else length;
             try self.push(address);
             try self.push(@intCast(length));
+        },
+        // The next name in the input, passing blanks and tabs before it, as in the source
+        // itself; at the end of the input the length is 0.
+        .parse_name => {
+            if (!self.sourceInMemory()) {
+                try self.push(0);
+                try self.push(0);
+                return;
+            }
+            const address = self.sourceAddress();
+            const rest = self.remainingSource();
+            const text = self.parseWordText(' ');
+            try self.push(address + @as(Cell, @intCast(@intFromPtr(text.ptr) - @intFromPtr(rest.ptr))));
+            try self.push(@intCast(text.len));
         },
         else => @compileError(@tagName(builtin) ++ " is not in the words of this file"),
     }

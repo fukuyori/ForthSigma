@@ -341,6 +341,10 @@ pub const State = struct {
             .{ "FCONSTANT", .define_fconstant }, .{ "ARRAY", .define_array }, .{ "FARRAY", .define_array }, .{ "PI", .pi },
             .{ "'", .tick },                 .{ ">BODY", .to_body },          .{ "LITERAL", .literal },       .{ "FLITERAL", .fliteral },
             .{ "HELP", .help },              .{ "LICENSE", .license },
+            .{ "COMPARE", .compare },        .{ "SEARCH", .search },          .{ "/STRING", .slash_string },  .{ "-TRAILING", .minus_trailing },
+            .{ "CHAR+", .char_plus },        .{ "CHARS", .chars },            .{ "BOUNDS", .bounds },         .{ "BLANK", .blank_fill },         .{ "CMOVE>", .cmove_up },
+            .{ "SCAN", .scan },              .{ "SKIP", .skip },              .{ "STR=", .str_equal },        .{ "STRING-PREFIX?", .string_prefix_query }, .{ "+PLACE", .plus_place },
+            .{ "SLITERAL", .sliteral },      .{ "PARSE-NAME", .parse_name },  .{ "SLURP-FILE", .slurp_file }, .{ "$SLURP-FILE", .string_slurp_file },
         };
         for (definitions) |definition| self.addBuiltin(definition[0], definition[1]) catch unreachable;
         // The Root list repeats the words needed to rebuild the search order after ONLY.
@@ -357,7 +361,7 @@ pub const State = struct {
 
     fn isImmediateBuiltin(builtin: Builtin) bool {
         return switch (builtin) {
-            .compile_if, .compile_else, .compile_then, .compile_begin, .compile_end, .compile_again, .compile_while, .compile_repeat, .compile_do, .compile_q_do, .compile_loop, .compile_plus_loop, .compile_does, .compile_case, .compile_of, .compile_endof, .compile_endcase, .compile_exit, .compile_recurse, .leave, .bracket_if, .bracket_else, .bracket_then, .bracket_defined, .bracket_undefined, .end_definition, .literal, .fliteral => true,
+            .compile_if, .compile_else, .compile_then, .compile_begin, .compile_end, .compile_again, .compile_while, .compile_repeat, .compile_do, .compile_q_do, .compile_loop, .compile_plus_loop, .compile_does, .compile_case, .compile_of, .compile_endof, .compile_endcase, .compile_exit, .compile_recurse, .leave, .bracket_if, .bracket_else, .bracket_then, .bracket_defined, .bracket_undefined, .end_definition, .literal, .fliteral, .sliteral => true,
             else => false,
         };
     }
@@ -860,6 +864,7 @@ pub const State = struct {
     pub const stringArrayCount = dynamic_strings.stringArrayCount;
     pub const stringArrayElement = dynamic_strings.stringArrayElement;
     pub const slurpLines = dynamic_strings.slurpLines;
+    pub const slurpFile = dynamic_strings.slurpFile;
     pub const executeStringInit = dynamic_strings.executeStringInit;
 
     pub const SeeRole = decompiler.SeeRole;

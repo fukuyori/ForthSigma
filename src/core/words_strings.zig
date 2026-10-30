@@ -21,7 +21,7 @@ pub const words = [_]Builtin{
     .char_append, .string_dot, .string_delete, .string_insert, .string_over, .string_free,
     .string_init, .string_split, .string_iter, .string_tmp, .string_array, .string_array_store,
     .string_array_fetch, .string_array_count, .string_array_dot, .string_array_map,
-    .string_array_free, .string_array_slurp, .string_array_slurp_file,
+    .string_array_free, .string_array_slurp, .string_array_slurp_file, .string_slurp_file,
 };
 
 pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
@@ -212,6 +212,10 @@ pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
             };
             const closed = files.close(self.writer.context, fileid);
             if (closed != 0) return self.throwCode(closed);
+        },
+        .string_slurp_file => {
+            const string_var = try self.pop();
+            _ = try self.slurpFile(try self.memoryRange(), string_var);
         },
         else => @compileError(@tagName(builtin) ++ " is not in the words of this file"),
     }

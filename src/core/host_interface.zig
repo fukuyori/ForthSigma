@@ -23,6 +23,8 @@ pub const FileOps = struct {
     close: *const fn (?*anyopaque, Cell) Cell,
     /// Reads up to `buffer.len` bytes of one line, without the LF, CR or CRLF terminator.
     read_line: *const fn (?*anyopaque, Cell, []u8) LineResult,
+    /// Reads up to `buffer.len` bytes as they are; the value is the count, 0 at the end.
+    read: *const fn (?*anyopaque, Cell, []u8) FileResult,
     write: *const fn (?*anyopaque, Cell, []const u8) Cell,
     size: *const fn (?*anyopaque, Cell) FileResult,
     reposition: *const fn (?*anyopaque, Cell, UCell) Cell,

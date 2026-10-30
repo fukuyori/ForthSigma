@@ -35,6 +35,7 @@ pub const words = [_]Builtin{
     .include, .require, .included, .required, .included_query, .source_file_name,
     .source_line_number, .read_only, .write_only, .read_write, .stdin, .stdout, .stderr, .open_file,
     .create_file, .close_file, .read_line, .write_line, .write_file, .file_size, .reposition_file,
+    .slurp_file,
 };
 
 pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
@@ -112,6 +113,11 @@ pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
             const position: UDouble = @bitCast(try self.popDouble());
             const files = try self.fileOps();
             try self.push(if (position > std.math.maxInt(i64)) errnoIor(errno_invalid) else files.reposition(self.writer.context, fileid, @intCast(position)));
+        },
+        .slurp_file => {
+            const text = try self.slurpFile(try self.memoryRange(), null);
+            try self.push(text.address);
+            try self.push(@intCast(text.length));
         },
         else => @compileError(@tagName(builtin) ++ " is not in the words of this file"),
     }

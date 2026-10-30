@@ -221,6 +221,13 @@ S" Forth" TUCK BUF SWAP MOVE BUF SWAP TYPE
 ```forth
 5 0 10 WITHIN .                    \ -1
 S" hello" PAD PLACE PAD COUNT TYPE  \ hello
+S" abc" S" abd" COMPARE .          \ -1
+S" hello world" S" wor" SEARCH . TYPE  \ -1 world
+S" hello" 2 /STRING TYPE           \ llo
+S" hi   " -TRAILING TYPE           \ hi
+S" a,b,c" CHAR , SCAN TYPE         \ ,b,c
+S" hello" S" he" STRING-PREFIX? .  \ -1
+: GREETING [ S" hi there" ] SLITERAL ;
 :NONAME DUP * ; CONSTANT SQUARE
 7 SQUARE EXECUTE .                  \ 49
 S" HOME" GETENV TYPE
@@ -232,6 +239,20 @@ S" dir" SYSTEM
 | `WITHIN` | ( n lo hi -- flag ) | lo ≦ n < hi なら真を返します。範囲は符号なしの差で判定するため、上限と下限が逆でも一周する範囲として扱います。 |
 | `2>R`, `2R>` | ( x1 x2 -- )、( -- x1 x2 ) | 2個のセルを順序を保ってリターンスタックとの間で移します。 |
 | `PLACE` | ( addr u c-addr -- ) | 文字列を、先頭バイトに長さを持つ形でc-addrへ格納します。最大255文字です。 |
+| `COMPARE` | ( addr1 u1 addr2 u2 -- n ) | 2つの文字列を先頭から1バイトずつ符号なしで比べ、1つ目が前なら-1、等しければ0、後なら1を返します。片方がもう片方の先頭部分なら、短いほうが前です。 |
+| `SEARCH` | ( addr1 u1 addr2 u2 -- addr3 u3 flag ) | 1つ目の文字列から2つ目の文字列を探します。見つかれば、見つかった位置から後ろの文字列と真を、見つからなければ1つ目の文字列と偽を返します。2つ目が空なら、先頭で見つかったことになります。 |
+| `/STRING` | ( addr u n -- addr+n u-n ) | 文字列の先頭からn文字を除きます。nがuを超えていても確かめません（Gforthと同じ）。 |
+| `-TRAILING` | ( addr u -- addr u' ) | 文字列の末尾の空白を除きます。タブは除きません。 |
+| `CHAR+`, `CHARS` | ( addr -- addr+1 )、( n -- n ) | 文字1つ分（1バイト）を加えます。`CHARS` はn文字分のバイト数（nのまま）を返します。 |
+| `BOUNDS` | ( addr u -- addr+u addr ) | 文字列を `DO ... LOOP` の終わりと始めに変えます（`BOUNDS ?DO I C@ ... LOOP`）。 |
+| `BLANK` | ( addr u -- ) | uバイトを空白にします。 |
+| `CMOVE>` | ( from to u -- ) | uバイトを、高いアドレスから低いアドレスへ1バイトずつ写します。 |
+| `SCAN` | ( addr u c -- addr' u' ) | 文字cを探し、見つかった位置から後ろの文字列を返します。見つからなければ長さ0です。空白はタブに一致しません。 |
+| `SKIP` | ( addr u c -- addr' u' ) | 先頭に続く文字cを飛ばし、残りの文字列を返します。 |
+| `STR=` | ( addr1 u1 addr2 u2 -- flag ) | 2つの文字列が同じなら真を返します。 |
+| `STRING-PREFIX?` | ( addr1 u1 addr2 u2 -- flag ) | 1つ目の文字列が2つ目の文字列で始まるなら真を返します。 |
+| `+PLACE` | ( addr u c-addr -- ) | 数え付き文字列の後ろに文字列を加えます。合わせて255バイトで止まります。 |
+| `SLITERAL` | コンパイル時 ( addr u -- )、実行時 ( -- addr u ) | 定義の中で使い、文字列（255バイトまで）を定義に埋め込みます。 |
 | `STATE` | ( -- addr ) | コンパイル中は-1、解釈中は0を保持するセルのアドレスです。書き込んでも状態は変わりません。 |
 | `:NONAME ... ;` | ( -- xt ) | 名前のない定義を作り、実行トークンを積みます。 |
 | `ABORT` | ( -- ) | スタックを空にして入力待ちに戻ります。メッセージは表示しません。 |
@@ -295,6 +316,7 @@ MAKE-FILE S" data.txt" SHOW-FILE
 | `WRITE-FILE` | ( addr u fileid -- ior ) | 文字列を改行なしで書き込みます。 |
 | `FILE-SIZE` | ( fileid -- ud ior ) | ファイルの大きさ（バイト数、倍長整数）を返します。 |
 | `REPOSITION-FILE` | ( ud fileid -- ior ) | 読み書きの位置を移動します。`FILE-SIZE` の結果を渡すと末尾へ移動し、追記できます。 |
+| `SLURP-FILE` | ( addr u -- addr' u' ) | 名前のファイルを丸ごと、改行も含めてそのまま読み、`ALLOCATE` で確保した領域に置きます。使い終わったら `FREE` で解放します。開けなければ `THROW` します。 |
 | `STDIN`, `STDOUT`, `STDERR` | ( -- fileid ) | 標準入力、標準出力、標準エラー出力のファイル番号です。 |
 | `THROW` | ( n -- ) | nが0なら何もしません。-1なら `ABORT` と同じです。それ以外は、`CATCH` で捕まえていなければエラーとして表示し、入力待ちに戻ります。 |
 | `CATCH` | ( xt -- 0 \| n ) | xtを実行し、正常に終われば0を、`THROW` やエラーが起きればその番号を積みます。例外のときはスタックの深さをCATCHの時点に戻します。スタック不足は-4、ゼロ除算は-10、未定義語は-13です。 |
@@ -337,6 +359,7 @@ NAMES $[].                      \ Alice と Bob を1行ずつ表示
 | `$[]MAP` | ( $[]var xt -- ) | 各要素 ( addr u ) についてxtを実行します。 |
 | `$[]FREE` | ( $[]var -- ) | 全要素と配列を解放します。 |
 | `$[]SLURP`, `$[]SLURP-FILE` | ( fileid $[]var -- )、( addr u $[]var -- ) | ファイルを1行ずつ配列に読み込みます。 |
+| `$SLURP-FILE` | ( addr u $var -- ) | 名前のファイルを丸ごと動的文字列に読み込み、それまでの内容と置き換えます。 |
 
 ヒープは896 KiBです。`SAVESYS` で作った実行ファイルにはヒープの内容も保存されますが、`LOAD` では引き継がれません。
 
@@ -360,8 +383,9 @@ SHOW ANSWER                        \ 42
 | `WORD` | ( c -- c-addr ) | 入力から文字cで区切られた次の語を読み、数え付き文字列で返します。 |
 | `FIND` | ( c-addr -- c-addr 0 \| xt 1 \| xt -1 ) | 数え付き文字列の名前を探します。即時語なら1、それ以外は-1です。`:` や `TO` などの構文語は見つかりません。 |
 | `PARSE` | ( c -- addr u ) | 入力の続きを文字cの手前まで返します。 |
+| `PARSE-NAME` | ( "name" -- addr u ) | 空白とタブを飛ばして、入力から次の名前を返します。行の終わりでは長さ0です。 |
 
-`WORD` と `PARSE` は、そのワードが書かれた行の続きを読みます。行をまたいでは読みません。
+`WORD`、`PARSE`、`PARSE-NAME` は、そのワードが書かれた行の続きを読みます。行をまたいでは読みません。
 
 ## 語彙（ワードリスト）と条件付きコンパイル
 
@@ -431,7 +455,7 @@ SAVE words.sigma
 LOAD words.sigma
 ```
 
-`LOAD` は保存した利用者定義語を現在の辞書の後ろに追加します。同名語は読み込んだ新しい定義が優先されます。以前の版で保存した辞書イメージ（`SIGIMG01`〜`SIGIMG16`）と、壊れた辞書イメージは読み込めません（`INVALID IMAGE !`）。辞書イメージにはチェックサムが付いており、偶然の破損は読み込む前に見つかります。読み込むのは、Sigmaの `SAVE`・`SAVESYS` で作ったファイルだけにしてください。定数や変数に保存した実行トークン（`:NONAME` の結果など）と、`LITERAL` で定義に埋め込んだ実行トークンやアドレス（`[ ' X ] LITERAL` など）は、すでに利用者定義語がある辞書へ `LOAD` すると別の語や場所を指すことがあります。`['] X` で埋め込んだ実行トークンは正しく付け替えられます。`SAVESYS` で作った実行ファイルではこの問題は起きません。
+`LOAD` は保存した利用者定義語を現在の辞書の後ろに追加します。同名語は読み込んだ新しい定義が優先されます。以前の版で保存した辞書イメージ（`SIGIMG01`〜`SIGIMG18`）と、壊れた辞書イメージは読み込めません（`INVALID IMAGE !`）。辞書イメージにはチェックサムが付いており、偶然の破損は読み込む前に見つかります。読み込むのは、Sigmaの `SAVE`・`SAVESYS` で作ったファイルだけにしてください。定数や変数に保存した実行トークン（`:NONAME` の結果など）と、`LITERAL` で定義に埋め込んだ実行トークンやアドレス（`[ ' X ] LITERAL` など）は、すでに利用者定義語がある辞書へ `LOAD` すると別の語や場所を指すことがあります。`['] X` で埋め込んだ実行トークンは正しく付け替えられます。`SAVESYS` で作った実行ファイルではこの問題は起きません。
 
 `SAVESYS` は、現在の辞書・コンパイル済み定義・データを含む、実行中環境向けの単独実行ファイルを作ります。
 
@@ -462,18 +486,18 @@ SAVESYS demo.exe
 | 浮動小数点比較 | `F=`, `F<>`, `F<`, `F>`, `F<=`, `F>=`, `F0=`, `F0<>`, `F0<`, `F0>`, `F0<=`, `F0>=` |
 | 浮動小数点メモリ・変換・入出力 | `F@`, `F!`, `F,`, `FA@`, `FA!`, `F+!`, `F?`, `FLOATS`, `FLOAT+`, `S>F`, `F>S`, `F.`, `FINPUT`, `F.RDP`, `F>STR-RDP`, `F>BUF-RDP` |
 | 倍長整数 | `S>D`, `D>S`, `D+`, `D-`, `DNEGATE`, `DABS`, `D0=`, `D0<`, `D=`, `D<`, `D.`, `2@`, `2!`, `D>F`, `F>D` |
-| 文字列・入力 | `COUNT`, `PAD`, `ACCEPT`, `EVALUATE`, `KEY`, `KEY?`, `>NUMBER`, `S>NUMBER?`, `>FLOAT`, `WORD`, `PARSE` |
+| 文字列・入力 | `COUNT`, `PAD`, `ACCEPT`, `EVALUATE`, `KEY`, `KEY?`, `>NUMBER`, `S>NUMBER?`, `>FLOAT`, `WORD`, `PARSE`, `PARSE-NAME` |
 | 数値の書式 | `<#`, `<<#`, `#`, `#S`, `#>`, `#>>`, `HOLD`, `HOLDS`, `SIGN` |
-| 文字列格納・状態・中断 | `PLACE`, `STATE`, `ABORT` |
+| 文字列格納・比較・状態・中断 | `PLACE`, `+PLACE`, `COMPARE`, `SEARCH`, `/STRING`, `-TRAILING`, `CHAR+`, `CHARS`, `BOUNDS`, `BLANK`, `CMOVE>`, `SCAN`, `SKIP`, `STR=`, `STRING-PREFIX?`, `SLITERAL`, `STATE`, `ABORT` |
 | 時間・画面・OS | `MS`, `UTIME`, `PAGE`, `GETENV`, `SYSTEM` |
 | 語彙・条件付きコンパイル | `ONLY`, `ALSO`, `PREVIOUS`, `FORTH`, `DEFINITIONS`, `ORDER`, `GET-ORDER`, `SET-ORDER`, `>ORDER`, `GET-CURRENT`, `SET-CURRENT`, `VOCABULARY`, `WORDLIST`, `FORTH-WORDLIST`, `SEARCH-WORDLIST`, `[IF]`, `[ELSE]`, `[THEN]`, `[DEFINED]`, `[UNDEFINED]` |
 | ソース読み込み | `INCLUDE`, `INCLUDED`, `REQUIRE`, `REQUIRED`, `NEEDS`, `INCLUDED?`, `SOURCEFILENAME`, `SOURCELINE#` |
-| ファイル・例外 | `THROW`, `CATCH`, `R/O`, `W/O`, `R/W`, `STDIN`, `STDOUT`, `STDERR`, `OPEN-FILE`, `CREATE-FILE`, `CLOSE-FILE`, `READ-LINE`, `WRITE-LINE`, `WRITE-FILE`, `FILE-SIZE`, `REPOSITION-FILE` |
+| ファイル・例外 | `THROW`, `CATCH`, `R/O`, `W/O`, `R/W`, `STDIN`, `STDOUT`, `STDERR`, `OPEN-FILE`, `CREATE-FILE`, `CLOSE-FILE`, `READ-LINE`, `WRITE-LINE`, `WRITE-FILE`, `FILE-SIZE`, `SLURP-FILE`, `REPOSITION-FILE` |
 | 定義語・コンパイル | `:`, `;`, `VARIABLE`, `VAR`, `FVARIABLE`, `2VARIABLE`, `CONSTANT`, `CONST`, `FCONSTANT`, `2CONSTANT`, `VALUE`, `ARRAY`, `FARRAY`, `'`, `>BODY`, `LITERAL`, `FLITERAL` |
 | 定数・説明 | `PI`, `HELP`, `LICENSE` |
-| 動的メモリ・動的文字列 | `ALLOCATE`, `FREE`, `RESIZE`, `$!`, `$@`, `$@LEN`, `$!LEN`, `$+!`, `C$+!`, `$.`, `$DEL`, `$INS`, `$OVER`, `$FREE`, `$INIT`, `$SPLIT`, `$ITER`, `$TMP`, `$[]`, `$[]!`, `$[]@`, `$[]#`, `$[].`, `$[]MAP`, `$[]FREE`, `$[]SLURP`, `$[]SLURP-FILE` |
+| 動的メモリ・動的文字列 | `ALLOCATE`, `FREE`, `RESIZE`, `$!`, `$@`, `$@LEN`, `$!LEN`, `$+!`, `C$+!`, `$.`, `$DEL`, `$INS`, `$OVER`, `$FREE`, `$INIT`, `$SPLIT`, `$ITER`, `$TMP`, `$SLURP-FILE`, `$[]`, `$[]!`, `$[]@`, `$[]#`, `$[].`, `$[]MAP`, `$[]FREE`, `$[]SLURP`, `$[]SLURP-FILE` |
 
-起動時点でForth語彙に **332語** の組み込み語があります（`MINUS`/`NEGATE` のような別名もそれぞれ1語と数えます）。このほかRoot語彙に、`FORTH` `ONLY` などの10語が重ねて登録されています。
+起動時点でForth語彙に **350語** の組み込み語があります（`MINUS`/`NEGATE` のような別名もそれぞれ1語と数えます）。このほかRoot語彙に、`FORTH` `ONLY` などの10語が重ねて登録されています。
 
 ### 構文・定義形式
 
