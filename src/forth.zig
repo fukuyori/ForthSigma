@@ -62,6 +62,7 @@ const cellsDouble = defs.cellsDouble;
 const current_wordlist_address = memory_map.current_wordlist_address;
 pub const data_limit = memory_map.data_limit;
 pub const data_start = memory_map.data_start;
+const dot_precision = memory_map.dot_precision;
 const doubleCells = defs.doubleCells;
 pub const errnoIor = memory_map.errnoIor;
 pub const errno_bad_file = memory_map.errno_bad_file;
@@ -91,6 +92,7 @@ const max_words = memory_map.max_words;
 pub const memory_size = memory_map.memory_size;
 const names_capacity = memory_map.names_capacity;
 pub const pad_address = memory_map.pad_address;
+const precision_address = memory_map.precision_address;
 const root_word_names = memory_map.root_word_names;
 const root_wordlist = memory_map.root_wordlist;
 const state_address = memory_map.state_address;
@@ -166,6 +168,7 @@ pub const State = struct {
     pub fn init(self: *State, writer: Writer) void {
         self.* = .{ .writer = writer };
         self.writeCell(base_address, 10) catch unreachable;
+        self.writeCell(precision_address, dot_precision) catch unreachable;
         self.writeCell(heap_top_address, heap_base) catch unreachable;
         self.storeSourceName(terminal_source_name_address, terminal_source_name);
         self.storeSourceName(evaluate_source_name_address, evaluate_source_name);
@@ -349,6 +352,14 @@ pub const State = struct {
             .{ ".R", .dot_r },               .{ "U.R", .u_dot_r },            .{ "UNUSED", .unused },         .{ "*/", .star_slash },            .{ "*/MOD", .star_slash_mod },
             .{ "M*", .m_star },              .{ "UM*", .um_star },            .{ "UM/MOD", .um_slash_mod },   .{ "FM/MOD", .fm_slash_mod },      .{ "SM/REM", .sm_slash_rem },
             .{ "READ-FILE", .read_file },
+            .{ "FLOOR", .f_floor },          .{ "FTRUNC", .f_trunc },         .{ "FROUND", .f_round },         .{ "FE.", .f_e_dot },            .{ "FS.", .f_s_dot },
+            .{ "PRECISION", .precision },    .{ "SET-PRECISION", .set_precision }, .{ "F~", .f_proximate },         .{ "SF@", .sf_fetch },           .{ "SF!", .sf_store },
+            .{ "DF@", .df_fetch },           .{ "DF!", .df_store },           .{ "SFLOATS", .sfloats },        .{ "DFLOATS", .dfloats },        .{ "SFLOAT+", .sfloat_plus },
+            .{ "DFLOAT+", .dfloat_plus },    .{ "FALIGN", .f_align },         .{ "FALIGNED", .f_aligned },     .{ "SFALIGN", .sf_align },       .{ "SFALIGNED", .sf_aligned },
+            .{ "DFALIGN", .df_align },       .{ "DFALIGNED", .df_aligned },   .{ "FSINCOS", .f_sincos },       .{ "FASIN", .f_asin },           .{ "FACOS", .f_acos },
+            .{ "FATAN", .f_atan },           .{ "FATAN2", .f_atan2 },         .{ "FSINH", .f_sinh },           .{ "FCOSH", .f_cosh },           .{ "FTANH", .f_tanh },
+            .{ "FASINH", .f_asinh },         .{ "FACOSH", .f_acosh },         .{ "FATANH", .f_atanh },         .{ "FEXPM1", .f_expm1 },         .{ "FLNP1", .f_lnp1 },
+            .{ "FLOG", .f_log },             .{ "FALOG", .f_alog },           .{ "F**", .f_power },            .{ "FVALUE", .define_fvalue },
         };
         for (definitions) |definition| self.addBuiltin(definition[0], definition[1]) catch unreachable;
         // The Root list repeats the words needed to rebuild the search order after ONLY.
@@ -647,6 +658,7 @@ pub const State = struct {
             .constant, .array => try self.push(word.value),
             .value => try self.push(try self.readCell(word.value)),
             .fconstant => try self.fpush(bitsFloat(word.value)),
+            .fvalue => try self.fpush(try self.readFloat(word.value)),
             .two_constant => try self.pushDouble(try self.readDouble(word.value)),
             .variable, .created => {
                 try self.push(word.value);
@@ -711,7 +723,7 @@ pub const State = struct {
                 .float_literal => try self.fpush(bitsFloat(op.value)),
                 .store_value => {
                     const word = self.words[try self.wordId(op.value)];
-                    try self.writeCell(word.value, try self.pop());
+                    if (word.kind == .fvalue) try self.writeFloat(word.value, try self.fpop()) else try self.writeCell(word.value, try self.pop());
                 },
                 .branch => pc = @intCast(op.value),
                 .branch_zero => {
@@ -910,6 +922,8 @@ pub const State = struct {
     pub const numberWidth = number_io.numberWidth;
     pub const writeZeros = number_io.writeZeros;
     pub const writeFloatFixed = number_io.writeFloatFixed;
+    pub const writeFloatScientific = number_io.writeFloatScientific;
+    pub const floatPrecision = number_io.floatPrecision;
     pub const writeFloatExponent = number_io.writeFloatExponent;
     pub const writeNonFinite = number_io.writeNonFinite;
     pub const writeNumberDecimal = number_io.writeNumberDecimal;

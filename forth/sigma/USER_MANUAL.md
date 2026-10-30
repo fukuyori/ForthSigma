@@ -146,14 +146,16 @@ CREATE BUF 16 ALLOT
 
 | 用途 | ワード | 説明 |
 | --- | --- | --- |
-| 表示 | `F.`, `F.S`, `F?` | `F.` は有効15桁を指数なしで表示し、末尾に空白を付けます（`3.`、`0.5`）。`F.S` は個数の後に上の9個を、それぞれ `14 0 17 F.RDP` と同じ形（`3.0000000000E0`）で表示します。 |
+| 表示 | `F.`, `FE.`, `FS.`, `F.S`, `F?` | `F.` は `PRECISION` 桁（初期値15）を指数なしで表示し、末尾に空白を付けます（`3.`、`0.5`）。`FS.` は先頭1桁と小数点と指数（`1.23456780000000E4`）、`FE.` は指数を3の倍数にして（`12.3456780000000E3`）、どちらも `PRECISION` 桁を末尾の0も含めて表示します。無限大とNaNは名前（`infinity` `NaN`）だけを、空白を付けずに表示します（Gforthと同じ）。`F.S` は個数の後に上の9個を、それぞれ `14 0 17 F.RDP` と同じ形（`3.0000000000E0`）で表示します。 |
 | スタック | `FDROP`, `FDUP`, `FSWAP`, `FOVER`, `FROT`, `F-ROT`, `FNIP`, `FTUCK`, `FPICK`, `FDEPTH` | `FPICK` の位置と `FDEPTH` の結果は整数スタックを使います。 |
 | 算術 | `F+`, `F-`, `F*`, `F/`, `FNEGATE`/`FMINUS`, `FABS`, `FMAX`, `FMIN` | 0で割ると無限大またはNaNになります。 |
-| 関数 | `FSQRT`, `FEXP`, `FLN`, `FSIN`, `FCOS`, `FTAN` | 三角関数はラジアンです。 |
-| 比較 | `F=`, `F<>`, `F<`, `F>`, `F<=`, `F>=`, `F0=`, `F0<>`, `F0<`, `F0>`, `F0<=`, `F0>=` | 結果（-1または0）は整数スタックに積みます。 |
-| メモリ | `F@`, `F!`, `F,`, `F+!`, `FLOATS`, `FLOAT+` | 1個8バイトです。 |
-| 定義 | `FVARIABLE 名前`, `値 FCONSTANT 名前`, `要素数 FARRAY 名前`, `FA@`, `FA!` | `FARRAY` の読み書きは `添字 配列名 FA@`、`添字 配列名 FA!` です。 |
+| 関数 | `FSQRT`, `FEXP`, `FLN`, `FSIN`, `FCOS`, `FTAN`, `FSINCOS`, `FASIN`, `FACOS`, `FATAN`, `FATAN2`, `FSINH`, `FCOSH`, `FTANH`, `FASINH`, `FACOSH`, `FATANH`, `FEXPM1`, `FLNP1`, `FLOG`, `FALOG`, `F**` | 三角関数はラジアンです。`FSINCOS` は ( f: r -- 正弦 余弦 )、`FATAN2` は ( f: y x -- 角度 )、`F**` は ( f: x y -- xのy乗 )、`FLOG` は常用対数、`FALOG` は10のr乗、`FEXPM1` はe^r - 1、`FLNP1` はln(1 + r)です。`FSQRT` 以外は正しく丸めた値で、どのOSでも同じ結果です。 |
+| 丸め | `FLOOR`, `FTRUNC`, `FROUND` | 整数に丸めます。`FLOOR` は負の無限大方向、`FTRUNC` は0方向、`FROUND` は最も近い整数（ちょうど中間なら偶数）です。 |
+| 比較 | `F=`, `F<>`, `F<`, `F>`, `F<=`, `F>=`, `F0=`, `F0<>`, `F0<`, `F0>`, `F0<=`, `F0>=`, `F~` | 結果（-1または0）は整数スタックに積みます。`F~`（( f: r1 r2 r3 -- ) ( -- flag )）は、r3が正なら差の絶対値がr3より小さいか、0ならビットまで同じか（`0e` と `-0e` は違い、同じNaNは等しい）、負なら差が \|r3\|×(\|r1\|+\|r2\|) より小さいかを調べます。 |
+| メモリ | `F@`, `F!`, `F,`, `F+!`, `FLOATS`, `FLOAT+`, `DF@`, `DF!`, `DFLOATS`, `DFLOAT+`, `SF@`, `SF!`, `SFLOATS`, `SFLOAT+`, `FALIGN`, `FALIGNED`, `DFALIGN`, `DFALIGNED`, `SFALIGN`, `SFALIGNED` | 1個8バイトです。`DF` の付く語は同じ8バイトの値、`SF` の付く語は4バイト（単精度）の値を扱います（`SF!` は単精度に丸め、範囲を超えると無限大になります）。`FALIGN` と `DFALIGN` はHEREを8の倍数に、`SFALIGN` は4の倍数に切り上げます。 |
+| 定義 | `FVARIABLE 名前`, `値 FCONSTANT 名前`, `値 FVALUE 名前`, `要素数 FARRAY 名前`, `FA@`, `FA!` | `FVALUE` の名前は値を浮動小数点スタックに積み、`値 TO 名前` で変更できます。 `FARRAY` の読み書きは `添字 配列名 FA@`、`添字 配列名 FA!` です。 |
 | 変換・入力 | `S>F`, `F>S`, `FINPUT` | `F>S` は0方向へ切り捨てます。`FINPUT` は端末から数値を1個読み取ります（`E` は省略可能）。 |
+| 表示の桁数 | `PRECISION`, `SET-PRECISION` | `F.` `FE.` `FS.` の桁数を返す・設定します。表示は1〜100桁の範囲で行います（Gforthは0以下で異常終了します）。`PRECISION` は設定した値をそのまま返します。 |
 | 書式付き出力 | `F.RDP`, `F>STR-RDP`, `F>BUF-RDP` | ( r 幅 小数桁 最低有効桁 -- ) の形で、幅に右寄せして表示（`F.RDP`）、文字列で返す（`F>STR-RDP` は ( -- addr u )、次の数値書式で上書きされます）、指定したバッファに書き込みます（`F>BUF-RDP` は ( r addr 幅 小数桁 最低有効桁 -- )）。例: `12345.6789E 10 2 7 F.RDP` は `  12345.68`、最低有効桁を8にすると `1.234568E4`。固定小数点で有効桁が足りないか、整数部が幅に収まらなければ指数表記、それも入らなければ `*` で埋めます。Gforthと同じ結果です。 |
 
 ## 入出力と基数
@@ -463,7 +465,7 @@ SAVE words.sigma
 LOAD words.sigma
 ```
 
-`LOAD` は保存した利用者定義語を現在の辞書の後ろに追加します。同名語は読み込んだ新しい定義が優先されます。以前の版で保存した辞書イメージ（`SIGIMG01`〜`SIGIMG19`）と、壊れた辞書イメージは読み込めません（`INVALID IMAGE !`）。辞書イメージにはチェックサムが付いており、偶然の破損は読み込む前に見つかります。読み込むのは、Sigmaの `SAVE`・`SAVESYS` で作ったファイルだけにしてください。定数や変数に保存した実行トークン（`:NONAME` の結果など）と、`LITERAL` で定義に埋め込んだ実行トークンやアドレス（`[ ' X ] LITERAL` など）は、すでに利用者定義語がある辞書へ `LOAD` すると別の語や場所を指すことがあります。`['] X` で埋め込んだ実行トークンは正しく付け替えられます。`SAVESYS` で作った実行ファイルではこの問題は起きません。
+`LOAD` は保存した利用者定義語を現在の辞書の後ろに追加します。同名語は読み込んだ新しい定義が優先されます。以前の版で保存した辞書イメージ（`SIGIMG01`〜`SIGIMG20`）と、壊れた辞書イメージは読み込めません（`INVALID IMAGE !`）。辞書イメージにはチェックサムが付いており、偶然の破損は読み込む前に見つかります。読み込むのは、Sigmaの `SAVE`・`SAVESYS` で作ったファイルだけにしてください。定数や変数に保存した実行トークン（`:NONAME` の結果など）と、`LITERAL` で定義に埋め込んだ実行トークンやアドレス（`[ ' X ] LITERAL` など）は、すでに利用者定義語がある辞書へ `LOAD` すると別の語や場所を指すことがあります。`['] X` で埋め込んだ実行トークンは正しく付け替えられます。`SAVESYS` で作った実行ファイルではこの問題は起きません。
 
 `SAVESYS` は、現在の辞書・コンパイル済み定義・データを含む、実行中環境向けの単独実行ファイルを作ります。
 
@@ -490,9 +492,9 @@ SAVESYS demo.exe
 | 定義補助・辞書・実行 | `<BUILDS`, `CREATE`, `IMMEDIATE`, `WORDS`, `BYE`, `LOAD`, `SAVE`, `SAVESYS`, `EXECUTE`, `SEE`, `FIND`, `FIND-NAME`, `NAME>INT`, `NAME>STRING`, `MARKER`, `LOCATE` |
 | 制御構造（即時語） | `IF`, `ELSE`, `THEN`, `ENDIF`, `BEGIN`, `END`, `UNTIL`, `AGAIN`, `WHILE`, `REPEAT`, `DO`, `?DO`, `LOOP`, `+LOOP`, `DOES>`, `CASE`, `OF`, `ENDOF`, `ENDCASE`, `EXIT`, `RECURSE` |
 | 浮動小数点スタック | `FDROP`, `FDUP`, `FSWAP`, `FOVER`, `FROT`, `F-ROT`, `FNIP`, `FTUCK`, `FPICK`, `FDEPTH`, `F.S` |
-| 浮動小数点算術・関数 | `F+`, `F-`, `F*`, `F/`, `FNEGATE`, `FMINUS`, `FABS`, `FMAX`, `FMIN`, `FSQRT`, `FEXP`, `FLN`, `FSIN`, `FCOS`, `FTAN` |
-| 浮動小数点比較 | `F=`, `F<>`, `F<`, `F>`, `F<=`, `F>=`, `F0=`, `F0<>`, `F0<`, `F0>`, `F0<=`, `F0>=` |
-| 浮動小数点メモリ・変換・入出力 | `F@`, `F!`, `F,`, `FA@`, `FA!`, `F+!`, `F?`, `FLOATS`, `FLOAT+`, `S>F`, `F>S`, `F.`, `FINPUT`, `F.RDP`, `F>STR-RDP`, `F>BUF-RDP` |
+| 浮動小数点算術・関数 | `F+`, `F-`, `F*`, `F/`, `FNEGATE`, `FMINUS`, `FABS`, `FMAX`, `FMIN`, `FSQRT`, `FEXP`, `FLN`, `FSIN`, `FCOS`, `FTAN`, `FSINCOS`, `FASIN`, `FACOS`, `FATAN`, `FATAN2`, `FSINH`, `FCOSH`, `FTANH`, `FASINH`, `FACOSH`, `FATANH`, `FEXPM1`, `FLNP1`, `FLOG`, `FALOG`, `F**`, `FLOOR`, `FTRUNC`, `FROUND` |
+| 浮動小数点比較 | `F=`, `F<>`, `F<`, `F>`, `F<=`, `F>=`, `F0=`, `F0<>`, `F0<`, `F0>`, `F0<=`, `F0>=`, `F~` |
+| 浮動小数点メモリ・変換・入出力 | `F@`, `F!`, `F,`, `FA@`, `FA!`, `F+!`, `F?`, `FLOATS`, `FLOAT+`, `DF@`, `DF!`, `DFLOATS`, `DFLOAT+`, `SF@`, `SF!`, `SFLOATS`, `SFLOAT+`, `FALIGN`, `FALIGNED`, `DFALIGN`, `DFALIGNED`, `SFALIGN`, `SFALIGNED`, `S>F`, `F>S`, `F.`, `FE.`, `FS.`, `PRECISION`, `SET-PRECISION`, `FINPUT`, `F.RDP`, `F>STR-RDP`, `F>BUF-RDP` |
 | 倍長整数 | `S>D`, `D>S`, `D+`, `D-`, `DNEGATE`, `DABS`, `D0=`, `D0<`, `D=`, `D<`, `D.`, `M*`, `UM*`, `UM/MOD`, `FM/MOD`, `SM/REM`, `2@`, `2!`, `D>F`, `F>D` |
 | 文字列・入力 | `COUNT`, `PAD`, `ACCEPT`, `EVALUATE`, `KEY`, `KEY?`, `>NUMBER`, `S>NUMBER?`, `>FLOAT`, `WORD`, `PARSE`, `PARSE-NAME` |
 | 数値の書式 | `<#`, `<<#`, `#`, `#S`, `#>`, `#>>`, `HOLD`, `HOLDS`, `SIGN` |
@@ -501,11 +503,11 @@ SAVESYS demo.exe
 | 語彙・条件付きコンパイル | `ONLY`, `ALSO`, `PREVIOUS`, `FORTH`, `DEFINITIONS`, `ORDER`, `GET-ORDER`, `SET-ORDER`, `>ORDER`, `GET-CURRENT`, `SET-CURRENT`, `VOCABULARY`, `WORDLIST`, `FORTH-WORDLIST`, `SEARCH-WORDLIST`, `[IF]`, `[ELSE]`, `[THEN]`, `[DEFINED]`, `[UNDEFINED]` |
 | ソース読み込み | `INCLUDE`, `INCLUDED`, `REQUIRE`, `REQUIRED`, `NEEDS`, `INCLUDED?`, `SOURCEFILENAME`, `SOURCELINE#` |
 | ファイル・例外 | `THROW`, `CATCH`, `R/O`, `W/O`, `R/W`, `STDIN`, `STDOUT`, `STDERR`, `OPEN-FILE`, `CREATE-FILE`, `CLOSE-FILE`, `READ-LINE`, `READ-FILE`, `WRITE-LINE`, `WRITE-FILE`, `FILE-SIZE`, `SLURP-FILE`, `REPOSITION-FILE` |
-| 定義語・コンパイル | `:`, `;`, `VARIABLE`, `VAR`, `FVARIABLE`, `2VARIABLE`, `CONSTANT`, `CONST`, `FCONSTANT`, `2CONSTANT`, `VALUE`, `ARRAY`, `FARRAY`, `'`, `>BODY`, `LITERAL`, `FLITERAL` |
+| 定義語・コンパイル | `:`, `;`, `VARIABLE`, `VAR`, `FVARIABLE`, `2VARIABLE`, `CONSTANT`, `CONST`, `FCONSTANT`, `2CONSTANT`, `VALUE`, `FVALUE`, `ARRAY`, `FARRAY`, `'`, `>BODY`, `LITERAL`, `FLITERAL` |
 | 定数・説明 | `PI`, `HELP`, `LICENSE` |
 | 動的メモリ・動的文字列 | `ALLOCATE`, `FREE`, `RESIZE`, `$!`, `$@`, `$@LEN`, `$!LEN`, `$+!`, `C$+!`, `$.`, `$DEL`, `$INS`, `$OVER`, `$FREE`, `$INIT`, `$SPLIT`, `$ITER`, `$TMP`, `$SLURP-FILE`, `$[]`, `$[]!`, `$[]@`, `$[]#`, `$[].`, `$[]MAP`, `$[]FREE`, `$[]SLURP`, `$[]SLURP-FILE` |
 
-起動時点でForth語彙に **366語** の組み込み語があります（`MINUS`/`NEGATE` のような別名もそれぞれ1語と数えます）。このほかRoot語彙に、`FORTH` `ONLY` などの10語が重ねて登録されています。
+起動時点でForth語彙に **405語** の組み込み語があります（`MINUS`/`NEGATE` のような別名もそれぞれ1語と数えます）。このほかRoot語彙に、`FORTH` `ONLY` などの10語が重ねて登録されています。
 
 ### 構文・定義形式
 

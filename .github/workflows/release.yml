@@ -28,6 +28,10 @@ jobs:
         with:
           version: ${{ env.ZIG_VERSION }}
       - run: zig build test --summary all
+      # The release builds target the baseline x86-64 CPU, which has no FMA instruction,
+      # so the math functions take a different path there than on the runner's CPU.
+      - if: runner.arch == 'X64'
+        run: zig build test -Dcpu=baseline --summary all
 
   build:
     name: Build ${{ matrix.name }}

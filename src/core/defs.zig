@@ -346,6 +346,44 @@ pub const Builtin = enum {
     f_dot_rdp,
     f_to_str_rdp,
     f_to_buf_rdp,
+    f_floor,
+    f_trunc,
+    f_round,
+    f_e_dot,
+    f_s_dot,
+    precision,
+    set_precision,
+    f_proximate,
+    sf_fetch,
+    sf_store,
+    df_fetch,
+    df_store,
+    sfloats,
+    dfloats,
+    sfloat_plus,
+    dfloat_plus,
+    f_align,
+    f_aligned,
+    sf_align,
+    sf_aligned,
+    df_align,
+    df_aligned,
+    f_sincos,
+    f_asin,
+    f_acos,
+    f_atan,
+    f_atan2,
+    f_sinh,
+    f_cosh,
+    f_tanh,
+    f_asinh,
+    f_acosh,
+    f_atanh,
+    f_expm1,
+    f_lnp1,
+    f_log,
+    f_alog,
+    f_power,
     define_colon,
     end_definition,
     define_variable,
@@ -355,6 +393,7 @@ pub const Builtin = enum {
     define_two_variable,
     define_two_constant,
     define_fconstant,
+    define_fvalue,
     define_array,
     pi,
     tick,
@@ -408,7 +447,7 @@ pub const CatchFrame = struct {
     local_count: usize,
 };
 
-pub const WordKind = enum { builtin, colon, variable, constant, array, created, value, fconstant, two_constant, marker, vocabulary };
+pub const WordKind = enum { builtin, colon, variable, constant, array, created, value, fconstant, fvalue, two_constant, marker, vocabulary };
 
 pub const Word = struct {
     /// Where the name is in `State.names`.
@@ -460,7 +499,7 @@ pub const Control = struct { kind: ControlKind, address: u16, locals: u16 = 0, l
 
 pub const Loop = struct { index: Cell, limit: Cell, exit_pc: u16, exit_after_first: bool = false };
 
-pub const Pending = enum { none, colon_name, variable_name, constant_name, array_name, forget_name, tick_name, value_name, to_name, char_name, postpone_name, fconstant_name, fvariable_name, two_constant_name, two_variable_name };
+pub const Pending = enum { none, colon_name, variable_name, constant_name, array_name, forget_name, tick_name, value_name, to_name, char_name, postpone_name, fconstant_name, fvalue_name, fvariable_name, two_constant_name, two_variable_name };
 
 pub const StringWord = enum { s_quote, s_escape_quote, print_escape, print_paren };
 

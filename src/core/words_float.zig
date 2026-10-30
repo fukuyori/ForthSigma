@@ -13,11 +13,25 @@ const Cell = memory_map.Cell;
 const Float = memory_map.Float;
 const RuntimeError = defs.RuntimeError;
 const State = forth.State;
+const cr_acos = float_math.cr_acos;
+const cr_acosh = float_math.cr_acosh;
+const cr_asin = float_math.cr_asin;
+const cr_asinh = float_math.cr_asinh;
+const cr_atan = float_math.cr_atan;
+const cr_atan2 = float_math.cr_atan2;
+const cr_atanh = float_math.cr_atanh;
 const cr_cos = float_math.cr_cos;
+const cr_cosh = float_math.cr_cosh;
 const cr_exp = float_math.cr_exp;
+const cr_exp10 = float_math.cr_exp10;
+const cr_expm1 = float_math.cr_expm1;
 const cr_log = float_math.cr_log;
+const cr_log10 = float_math.cr_log10;
+const cr_log1p = float_math.cr_log1p;
 const cr_sin = float_math.cr_sin;
+const cr_sinh = float_math.cr_sinh;
 const cr_tan = float_math.cr_tan;
+const cr_tanh = float_math.cr_tanh;
 const floatToCell = integer_math.floatToCell;
 const floatToDouble = integer_math.floatToDouble;
 const float_size = memory_map.float_size;
@@ -26,9 +40,13 @@ const hold_bottom = memory_map.hold_bottom;
 const max_dot_s_items = memory_map.max_dot_s_items;
 const max_rdp_width = float_format.max_rdp_width;
 const parseFloat = number_io.parseFloat;
+const power = float_math.power;
+const precision_address = memory_map.precision_address;
+const roundHalfEven = float_math.roundHalfEven;
 const trig = float_math.trig;
 const true_flag = memory_map.true_flag;
 const truth = integer_math.truth;
+const unary = float_math.unary;
 
 /// The built-in words this file executes; executeBuiltin dispatches by this list.
 pub const words = [_]Builtin{
@@ -39,6 +57,11 @@ pub const words = [_]Builtin{
     .f_zero_greater, .f_zero_less_equal, .f_zero_greater_equal, .f_fetch, .f_store, .f_comma,
     .f_array_fetch, .f_array_store, .f_add_store, .f_question, .floats, .float_plus, .s_to_f,
     .f_to_s, .pi, .f_dot, .d_to_f, .f_to_d, .to_float, .f_dot_rdp, .f_to_str_rdp, .f_to_buf_rdp,
+    .f_floor, .f_trunc, .f_round, .f_e_dot, .f_s_dot, .precision, .set_precision, .f_proximate,
+    .sf_fetch, .sf_store, .df_fetch, .df_store, .sfloats, .dfloats, .sfloat_plus, .dfloat_plus,
+    .f_align, .f_aligned, .sf_align, .sf_aligned, .df_align, .df_aligned, .f_sincos, .f_asin,
+    .f_acos, .f_atan, .f_atan2, .f_sinh, .f_cosh, .f_tanh, .f_asinh, .f_acosh, .f_atanh,
+    .f_expm1, .f_lnp1, .f_log, .f_alog, .f_power,
 };
 
 pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
@@ -107,7 +130,7 @@ pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
                 else => unreachable,
             });
         },
-        .f_negate, .f_abs, .f_sqrt, .f_exp, .f_ln, .f_sin, .f_cos, .f_tan => {
+        .f_negate, .f_abs, .f_sqrt, .f_exp, .f_ln, .f_sin, .f_cos, .f_tan, .f_floor, .f_trunc, .f_round, .f_asin, .f_acos, .f_atan, .f_sinh, .f_cosh, .f_tanh, .f_asinh, .f_acosh, .f_atanh, .f_expm1, .f_lnp1, .f_log, .f_alog => {
             const a = try self.fpop();
             try self.fpush(switch (builtin) {
                 .f_negate => -a,
@@ -118,8 +141,89 @@ pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
                 .f_sin => trig(cr_sin, a),
                 .f_cos => trig(cr_cos, a),
                 .f_tan => trig(cr_tan, a),
+                .f_floor => @floor(a),
+                .f_trunc => @trunc(a),
+                .f_round => roundHalfEven(a),
+                .f_asin => unary(cr_asin, a, .positive),
+                .f_acos => unary(cr_acos, a, .positive),
+                .f_atan => unary(cr_atan, a, .default),
+                .f_sinh => unary(cr_sinh, a, .default),
+                .f_cosh => unary(cr_cosh, a, .default),
+                .f_tanh => unary(cr_tanh, a, .default),
+                .f_asinh => unary(cr_asinh, a, .default),
+                .f_acosh => unary(cr_acosh, a, .default),
+                .f_atanh => unary(cr_atanh, a, .default),
+                .f_expm1 => unary(cr_expm1, a, .default),
+                .f_lnp1 => unary(cr_log1p, a, .default),
+                .f_log => unary(cr_log10, a, .positive),
+                .f_alog => unary(cr_exp10, a, .default),
                 else => unreachable,
             });
+        },
+        .f_sincos => {
+            const a = try self.fpop();
+            try self.fpush(trig(cr_sin, a));
+            try self.fpush(trig(cr_cos, a));
+        },
+        // FATAN2 ( F: y x -- r ) and F** ( F: x y -- r ).
+        .f_atan2 => {
+            const x = try self.fpop();
+            const y = try self.fpop();
+            try self.fpush(cr_atan2(y, x));
+        },
+        .f_power => {
+            const y = try self.fpop();
+            const x = try self.fpop();
+            try self.fpush(power(x, y));
+        },
+        // F~ ( F: r1 r2 r3 -- ) ( -- flag ): r3 > 0 compares the difference with r3, a zero
+        // r3 the bits (so 0e and -0e differ and a NaN equals itself), and r3 < 0 the
+        // difference with |r3| times |r1| + |r2|, as gforth does.
+        .f_proximate => {
+            const r3 = try self.fpop();
+            const r2 = try self.fpop();
+            const r1 = try self.fpop();
+            const close = if (r3 > 0)
+                @abs(r1 - r2) < r3
+            else if (r3 == 0)
+                @as(u64, @bitCast(r1)) == @as(u64, @bitCast(r2))
+            else
+                @abs(r1 - r2) < -r3 * (@abs(r1) + @abs(r2));
+            try self.push(truth(close));
+        },
+        .f_e_dot, .f_s_dot => {
+            if (self.writeFloatScientific(try self.fpop(), builtin == .f_e_dot)) self.write(" ");
+        },
+        .precision => try self.push(try self.readCell(precision_address)),
+        .set_precision => try self.writeCell(precision_address, try self.pop()),
+        // SF@ and SF! use 32-bit IEEE floats; DF@ and DF! are F@ and F!.
+        .sf_fetch => {
+            const at = try self.memoryAddress(try self.pop(), 4);
+            const bits = std.mem.readInt(u32, self.memory[at..][0..4], .little);
+            try self.fpush(@as(f32, @bitCast(bits)));
+        },
+        .sf_store => {
+            const at = try self.memoryAddress(try self.pop(), 4);
+            const value: f32 = @floatCast(try self.fpop());
+            std.mem.writeInt(u32, self.memory[at..][0..4], @bitCast(value), .little);
+        },
+        .df_fetch => try self.fpush(try self.readFloat(try self.pop())),
+        .df_store => {
+            const address = try self.pop();
+            try self.writeFloat(address, try self.fpop());
+        },
+        .sfloats => try self.push((try self.pop()) *% 4),
+        .dfloats => try self.push((try self.pop()) *% float_size),
+        .sfloat_plus => try self.push((try self.pop()) +% 4),
+        .dfloat_plus => try self.push((try self.pop()) +% float_size),
+        .f_align, .df_align, .sf_align => {
+            const size: Cell = if (builtin == .sf_align) 4 else float_size;
+            const aligned = (self.data_here + (size - 1)) & ~(size - 1);
+            try self.reserveData(aligned - self.data_here);
+        },
+        .f_aligned, .df_aligned, .sf_aligned => {
+            const size: Cell = if (builtin == .sf_aligned) 4 else float_size;
+            try self.push(((try self.pop()) +% (size - 1)) & ~(size - 1));
         },
         .f_equal, .f_not_equal, .f_less, .f_greater, .f_less_equal, .f_greater_equal => {
             const b = try self.fpop();

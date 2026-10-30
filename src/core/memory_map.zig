@@ -92,6 +92,9 @@ pub const search_order_depth_address: Cell = 0x0230;
 
 pub const search_order_address: Cell = 0x0238;
 
+/// The digits F. FE. and FS. show, set by SET-PRECISION (after the search order's 16 cells).
+pub const precision_address: Cell = 0x02c0;
+
 /// Words that are also in the Root word list, so they stay usable after ONLY.
 pub const root_word_names = [_][]const u8{ "FORTH", "FORTH-WORDLIST", "ONLY", "ALSO", "PREVIOUS", "ORDER", "DEFINITIONS", "GET-ORDER", "SET-ORDER", "WORDS" };
 
@@ -161,14 +164,18 @@ pub const data_start: Cell = 0x4000;
 
 pub const true_flag: Cell = -1;
 
+/// PRECISION at startup, as in gforth.
 pub const dot_precision = 15;
+
+/// Output uses at most this many digits (and at least one); gforth fails for zero or less.
+pub const max_float_precision = 100;
 
 /// Items .S and F.S show below the depth, as gforth's maxdepth-.s.
 pub const max_dot_s_items = 9;
 
 pub const fs_precision = 14;
 
-pub const image_magic = "SIGIMG20";
+pub const image_magic = "SIGIMG21";
 
 /// File ids of the standard streams; the host numbers opened files from `first_file_id`.
 pub const stdin_fileid: Cell = 1;

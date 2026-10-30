@@ -120,4 +120,4 @@ MITライセンスは、このプロジェクトで作成したプログラム�
 
 ## ライセンス
 
-プロジェクトで作成したコードとドキュメントは[MIT License](LICENSE)で提供します。浮動小数点の数学関数（`FSIN` `FCOS` `FTAN` `FEXP` `FLN`）は、CORE-MATHのコード（MIT License、`src/core-math/`）を使います。著作権表示は[THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)にあります。第三者資料の扱いは上記「資料とライセンスの範囲」を参照してください。
+プロジェクトで作成したコードとドキュメントは[MIT License](LICENSE)で提供します。浮動小数点の数学関数（`FSIN` `FEXP` `FASIN` `F**` など）は、CORE-MATHのコード（MIT License、`src/core-math/`）と、FMA命令のないCPUではmuslの `fma`（MIT License、`src/fma/`）を使います。著作権表示は[THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)にあります。第三者資料の扱いは上記「資料とライセンスの範囲」を参照してください。

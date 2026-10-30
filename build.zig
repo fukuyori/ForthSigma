@@ -55,14 +55,28 @@ pub fn build(b: *std.Build) void {
     test_step.dependOn(&pipe_lines.step);
 }
 
-/// The correctly rounded math functions the core calls for FSIN, FCOS, FTAN, FEXP, and FLN.
+/// The correctly rounded math functions the core calls for FSIN, FEXP, FASIN, F**, and
+/// the other floating-point functions. Each newer function keeps CORE-MATH's folder, since
+/// their helper headers share names but differ.
 fn addCoreMath(b: *std.Build, module: *std.Build.Module) void {
     module.addCSourceFiles(.{
         .root = b.path("src/core-math"),
-        .files = &.{ "sin.c", "cos.c", "tan.c", "exp.c", "log.c" },
+        .files = &.{
+            "sin.c",         "cos.c",         "tan.c",         "exp.c",         "log.c",
+            "asin/asin.c",   "acos/acos.c",   "atan/atan.c",   "atan2/atan2.c", "sinh/sinh.c",
+            "cosh/cosh.c",   "tanh/tanh.c",   "asinh/asinh.c", "acosh/acosh.c", "atanh/atanh.c",
+            "expm1/expm1.c", "log1p/log1p.c", "log10/log10.c", "exp10/exp10.c", "pow/pow.c",
+        },
         // On a baseline CPU __builtin_roundeven becomes a call that musl and macOS lack;
         // rint gives the same result in the round-to-nearest mode Forth always runs in.
-        .flags = &.{ "-std=gnu11", "-D__builtin_roundeven=__builtin_rint" },
+        // sigma_fma.h sends __builtin_fma to musl's fma when the CPU has no FMA
+        // instruction, since the C library's fma on Windows is wrong for tiny products.
+        .flags = &.{ "-std=gnu11", "-D__builtin_roundeven=__builtin_rint", "-include", b.pathFromRoot("src/fma/sigma_fma.h") },
+    });
+    module.addCSourceFiles(.{
+        .root = b.path("src/fma"),
+        .files = &.{"fma.c"},
+        .flags = &.{ "-std=gnu11", "-Dfma=sigma_fma_software", "-Wno-shift-op-parentheses" },
     });
 }
 

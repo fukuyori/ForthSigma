@@ -13,10 +13,11 @@ const RuntimeError = defs.RuntimeError;
 const State = forth.State;
 const UDouble = memory_map.UDouble;
 const base_address = memory_map.base_address;
-const dot_precision = memory_map.dot_precision;
 const doubleCells = defs.doubleCells;
 const hold_bottom = memory_map.hold_bottom;
 const hold_top = memory_map.hold_top;
+const max_float_precision = memory_map.max_float_precision;
+const precision_address = memory_map.precision_address;
 const represent = float_format.represent;
 const withoutTrailingZeros = float_format.withoutTrailingZeros;
 
@@ -202,7 +203,14 @@ pub fn writeZeros(self: *State, count: i64) void {
 }
 
 /// F. output: significand rounded to 15 digits, printed without an exponent.
+/// The digits F. FE. and FS. show: PRECISION, kept between 1 and max_float_precision.
+pub fn floatPrecision(self: *State) usize {
+    const precision = self.readCellConst(precision_address);
+    return @intCast(std.math.clamp(precision, 1, max_float_precision));
+}
+
 pub fn writeFloatFixed(self: *State, value: Float) void {
+    const dot_precision = self.floatPrecision();
     const rep = represent(value, dot_precision);
     if (!rep.finite) return self.writeNonFinite(value, "infinity");
     if (rep.negative) self.write("-");
@@ -211,13 +219,43 @@ pub fn writeFloatFixed(self: *State, value: Float) void {
     if (exponent <= 0) {
         self.write("0");
     } else {
-        self.write(digits[0..@intCast(@min(exponent, dot_precision))]);
-        self.writeZeros(exponent - dot_precision);
+        self.write(digits[0..@intCast(@min(exponent, @as(i64, @intCast(dot_precision))))]);
+        self.writeZeros(exponent - @as(i64, @intCast(dot_precision)));
     }
     self.write(".");
     self.writeZeros(-exponent);
-    const fraction_start: usize = @intCast(std.math.clamp(exponent, 0, dot_precision));
+    const fraction_start: usize = @intCast(std.math.clamp(exponent, 0, @as(i64, @intCast(dot_precision))));
     self.write(withoutTrailingZeros(digits[fraction_start..]));
+}
+
+/// FS. and FE.: PRECISION significant digits, trailing zeros kept, and an exponent; FE.
+/// keeps the exponent a multiple of three, padding the integer part with zeros if the
+/// digits run out (as 0.95e FE. with one digit gives 900.E-3). Returns false for a
+/// non-finite value, which is printed by name; gforth leaves no space after it.
+pub fn writeFloatScientific(self: *State, value: Float, engineering: bool) bool {
+    const precision = self.floatPrecision();
+    const rep = represent(value, precision);
+    if (!rep.finite) {
+        self.writeNonFinite(value, "infinity");
+        return false;
+    }
+    if (rep.negative) self.write("-");
+    const digits = rep.digits[0..precision];
+    var exponent: i64 = if (value == 0) 0 else rep.exponent - 1;
+    var integer_digits: usize = 1;
+    if (engineering) {
+        const multiple = @divFloor(exponent, 3) * 3;
+        integer_digits = @intCast(exponent - multiple + 1);
+        exponent = multiple;
+    }
+    const shown = @min(integer_digits, digits.len);
+    self.write(digits[0..shown]);
+    self.writeZeros(@intCast(integer_digits - shown));
+    self.write(".");
+    self.write(digits[shown..]);
+    self.write("E");
+    self.writeNumberDecimal(exponent);
+    return true;
 }
 
 /// F.S item output: up to `precision` significant digits with an `e` marker.

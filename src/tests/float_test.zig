@@ -277,6 +277,102 @@ test "math functions match the original gforth at large arguments, range limits,
     try std.testing.expect(default_nan != 0xFFFFFFFFFFFFFFFF);
 }
 
+test "tiny arguments give the same results without an FMA instruction" {
+    // Without an FMA instruction CORE-MATH used the C library's fma, and on Windows FCOS
+    // gave NaN and FSIN and FTAN lost the last bit for these arguments. The expected bits
+    // are the original gforth's. Run the tests with -Dcpu=baseline to check that build.
+    var output = Output{};
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
+
+    try machine.interpretLine("CREATE BB 8 ALLOT HEX 0104FBDED5CFE46A BB ! BB F@ FCOS 80416FC797E7F607 BB ! BB F@ FCOS");
+    try machine.interpretLine("000A45AD6D0175E3 BB ! BB F@ FSIN 800D3630CCBAC9A1 BB ! BB F@ FSIN 000916FA26F94A47 BB ! BB F@ FTAN DECIMAL 1E-300 FCOS");
+    const expected = [_]u64{ 0x3FF0000000000000, 0x3FF0000000000000, 0x000A45AD6D0175E3, 0x800D3630CCBAC9A1, 0x000916FA26F94A47, 0x3FF0000000000000 };
+    try std.testing.expectEqual(expected.len, machine.float_depth);
+    for (expected, machine.float_stack[0..expected.len]) |want, got| try std.testing.expectEqual(want, @as(u64, @bitCast(got)));
+}
+
+fn expectFloatBits(machine: *forth.State, expected: []const u64) !void {
+    try std.testing.expectEqual(expected.len, machine.float_depth);
+    for (expected, machine.float_stack[0..expected.len]) |want, got| try std.testing.expectEqual(want, @as(u64, @bitCast(got)));
+    machine.float_depth = 0;
+}
+
+test "the CORE-MATH functions of FASIN to F** are correctly rounded and give gforth's NaNs" {
+    var output = Output{};
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
+
+    // These agree with the original gforth bit for bit.
+    try machine.interpretLine("0.5E FASIN 0.5E FACOS 1E FATAN 1E 2E FATAN2 -1E -0E FATAN2 0E -0E FATAN2 1E FSINH 1E FCOSH 1E FTANH");
+    try expectFloatBits(machine, &.{ 0x3FE0C152382D7366, 0x3FF0C152382D7366, 0x3FE921FB54442D18, 0x3FDDAC670561BB4F, 0xBFF921FB54442D18, 0x400921FB54442D18, 0x3FF2CD9FC44EB982, 0x3FF8B07551D9F550, 0x3FE85EFAB514F394 });
+    try machine.interpretLine("1E FASINH 1E-10 FEXPM1 1E-10 FLNP1 100E FLOG 2E FALOG 2E 0.5E F** -8E 3E F** 0E 0E F**");
+    try expectFloatBits(machine, &.{ 0x3FEC34366179D427, 0x3DDB7CDFD9DDA4E3, 0x3DDB7CDFD9D1D693, 0x4000000000000000, 0x4059000000000000, 0x3FF6A09E667F3BCD, 0xC080000000000000, 0x3FF0000000000000 });
+    // Where glibc is not correctly rounded, the results differ from gforth's by one
+    // unit in the last place: atanh(0.5) = ln(3)/2 = 0.54930614433405484570...,
+    // log1p(2) = ln 3, e - 1, and acosh(2) = ln(2 + sqrt 3) round to these.
+    try machine.interpretLine("0.5E FATANH 2E FLNP1 1E FEXPM1 2E FACOSH");
+    try expectFloatBits(machine, &.{ 0x3FE193EA7AAD030B, 0x3FF193EA7AAD030B, 0x3FFB7E151628AED3, 0x3FF5124271980435 });
+    // Outside the domain: a positive NaN for FASIN, FACOS, and FLOG, the CPU's default NaN
+    // for the others, as gforth (glibc on x86-64) gives them.
+    try machine.interpretLine("2E FASIN 2E FACOS -1E FLOG");
+    try expectFloatBits(machine, &.{ 0x7FF8000000000000, 0x7FF8000000000000, 0x7FF8000000000000 });
+    try machine.interpretLine("1E 0E F/ FDUP F- -1E FSQRT 0.5E FACOSH -2E FATANH -2E FLNP1 -2E 0.5E F** 1E 0E F/ FSINCOS");
+    const default_nan: u64 = @bitCast(machine.float_stack[0]);
+    try expectFloatBits(machine, &.{ default_nan, default_nan, default_nan, default_nan, default_nan, default_nan, default_nan, default_nan });
+}
+
+test "FLOOR FTRUNC FROUND F~ FSINCOS and the SF@ DF@ and alignment words work as in gforth" {
+    var output = Output{};
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
+
+    try machine.interpretLine("2.5E FROUND -2.5E FROUND -0.4E FROUND 0.5E FROUND -0.5E FROUND 4503599627370497E FROUND 3.5E FROUND -1.5E FLOOR -0E FLOOR 0.5E FLOOR -1.5E FTRUNC -0.5E FTRUNC 1E 0E F/ FROUND");
+    try expectFloatBits(machine, &.{ 0x4000000000000000, 0xC000000000000000, 0x8000000000000000, 0, 0x8000000000000000, 0x4330000000000001, 0x4010000000000000, 0xC000000000000000, 0x8000000000000000, 0, 0xBFF0000000000000, 0x8000000000000000, 0x7FF0000000000000 });
+    try expectOutput(
+        "1E 1.0000001E 1E-6 F~ . 1E 1.1E 1E-6 F~ . 1E 1E 0E F~ . 0E -0E 0E F~ . 1E 1.0000001E -1E-6 F~ . 1E 1.1E -0.01E F~ . 0E 0E F/ FDUP 0E F~ . 0E 0E F/ FDUP 1E F~ .",
+        "-1 0 -1 0 -1 0 -1 0 ",
+    );
+    try expectOutput("1E FSINCOS F. F. 0E FSINCOS F. F.", "0.54030230586814 0.841470984807897 1. 0. ");
+    try expectOutput(
+        "HERE 3 ALLOT FALIGN HERE SWAP - . HERE 1 ALLOT SFALIGN HERE SWAP - . HERE 1 ALLOT DFALIGN HERE SWAP - . 5 FALIGNED . 5 SFALIGNED . 5 DFALIGNED . 3 SFLOATS . 3 DFLOATS . 10 SFLOAT+ . 10 DFLOAT+ .",
+        "8 4 4 8 8 8 12 24 14 18 ",
+    );
+    try expectOutput(
+        "CREATE SB 16 ALLOT 1.1E SB SF! SB SF@ F. SB @ 4294967295 AND HEX U. DECIMAL 1E300 SB SF! SB SF@ F. 2.5E SB DF! SB DF@ F. 1E-50 SB SF! SB SF@ F.",
+        "1.10000002384186 3F8CCCCD infinity 2.5 0. ",
+    );
+}
+
+test "FE. FS. and F. follow PRECISION as in gforth" {
+    try expectOutput(
+        "12345.678E FE. 12345.678E FS. -0.000123E FE. -0.000123E FS. 0E FE. 0E FS. 999.9999999999999E FE. -0E FS.",
+        "12.3456780000000E3 1.23456780000000E4 -123.000000000000E-6 -1.23000000000000E-4 0.00000000000000E0 0.00000000000000E0 1.00000000000000E3 -0.00000000000000E0 ",
+    );
+    // A non-finite value is printed by name, without a space after it, as gforth does.
+    try expectOutput("1E 0E F/ FE. -1E 0E F/ FS. 0E 0E F/ FE. 5E-324 FS. 1.7976931348623157E308 FE.", "infinity-infinityNaN4.94065645841247E-324 179.769313486232E306 ");
+    try expectOutput(
+        "3 SET-PRECISION 12345.678E FE. 12345.678E FS. 1E 3E F/ F. 9.9999E FS. 99999E FE. PRECISION . 2.675E F.",
+        "12.3E3 1.23E4 0.333 1.00E1 100.E3 3 2.67 ",
+    );
+    try expectOutput("1 SET-PRECISION 1E 3E F/ F. 2.5E FS. 3.5E FS. 0.95E FS. 99E FS.", "0.3 2.E0 4.E0 9.E-1 1.E2 ");
+    // gforth fails for these two; padding with zeros keeps the value right.
+    try expectOutput("1 SET-PRECISION 0.95E FE. 12E FE.", "900.E-3 10.E0 ");
+    try expectOutput("20 SET-PRECISION 1E 3E F/ F. 1E 3E F/ FE. 0.1E F.", "0.33333333333333331483 333.33333333333331483E-3 0.10000000000000000555 ");
+    // PRECISION gives back what was set; output keeps to 1 to 100 digits.
+    try expectOutput("-1 SET-PRECISION PRECISION . 1E 3E F/ F. 15 SET-PRECISION PRECISION .", "-1 0.3 15 ");
+}
+
+test "FVALUE pushes its float, TO stores one, and SEE shows it" {
+    var output = Output{};
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
+
+    try machine.interpretLine("1.5E FVALUE FV FV F. 2.5E TO FV FV F. : T 3.5E TO FV FV F. ; T ' FV >BODY F@ F. SEE FV");
+    try std.testing.expectEqualStrings("1.5 2.5 3.5 3.5 3.5e FVALUE FV\n", output.written());
+    try std.testing.expectError(error.FloatStackUnderflow, machine.interpretLine("TO FV"));
+}
+
 test ".S and F.S at depth zero, at exactly nine items, and in hexadecimal" {
     var output = Output{};
     const machine = try createMachine(&output);

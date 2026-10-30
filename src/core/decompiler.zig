@@ -74,9 +74,9 @@ pub fn seeWord(self: *State, id: u16) RuntimeError!void {
             self.write(if (word.kind == .value) " VALUE " else " CONSTANT ");
             self.write(name);
         },
-        .fconstant => {
-            self.writeFloatExponent(bitsFloat(word.value), fs_precision);
-            self.write(" FCONSTANT ");
+        .fconstant, .fvalue => {
+            self.writeFloatExponent(if (word.kind == .fvalue) try self.readFloat(word.value) else bitsFloat(word.value), fs_precision);
+            self.write(if (word.kind == .fvalue) " FVALUE " else " FCONSTANT ");
             self.write(name);
         },
         .two_constant => {

@@ -19,7 +19,7 @@ pub const words = [_]Builtin{
     .compile_repeat, .compile_do, .compile_q_do, .compile_loop, .compile_plus_loop, .compile_does,
     .compile_case, .compile_of, .compile_endof, .compile_endcase, .compile_exit, .compile_recurse,
     .define_colon, .define_variable, .define_fvariable, .define_constant, .define_value,
-    .define_two_variable, .define_two_constant, .define_fconstant, .define_array, .end_definition,
+    .define_two_variable, .define_two_constant, .define_fconstant, .define_fvalue, .define_array, .end_definition,
     .tick, .to_body, .literal, .fliteral, .sliteral, .state, .bracket_if, .bracket_else, .bracket_then,
     .bracket_defined, .bracket_undefined,
 };
@@ -71,7 +71,7 @@ pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
             if (!self.compiling or !self.defining) return error.CompileOnly;
             _ = try self.emit(.{ .kind = .call, .value = self.current_word });
         },
-        .define_colon, .define_variable, .define_fvariable, .define_constant, .define_value, .define_two_variable, .define_two_constant, .define_fconstant, .define_array => try self.runDefiningWord(builtin),
+        .define_colon, .define_variable, .define_fvariable, .define_constant, .define_value, .define_two_variable, .define_two_constant, .define_fconstant, .define_fvalue, .define_array => try self.runDefiningWord(builtin),
         .end_definition => try self.endDefinition(),
         .tick => {
             const name = (try self.nextSourceToken()) orelse return error.InvalidDefinition;

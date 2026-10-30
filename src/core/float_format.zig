@@ -6,11 +6,11 @@ const memory_map = @import("memory_map.zig");
 const Cell = memory_map.Cell;
 const Float = memory_map.Float;
 const RuntimeError = defs.RuntimeError;
-const dot_precision = memory_map.dot_precision;
+const max_float_precision = memory_map.max_float_precision;
 
 /// Decimal significand of a float, in the manner of Forth's REPRESENT.
 pub const Representation = struct {
-    digits: [dot_precision + 1]u8 = undefined,
+    digits: [max_float_precision + 1]u8 = undefined,
     len: usize = 0,
     exponent: i32 = 0,
     negative: bool = false,

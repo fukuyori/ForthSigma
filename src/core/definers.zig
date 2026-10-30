@@ -53,6 +53,10 @@ pub fn finishPending(self: *State, token: []const u8) RuntimeError!void {
         .fconstant_name => {
             _ = try self.appendWord(token, .fconstant, .drop, floatBits(self.pending_float));
         },
+        .fvalue_name => {
+            const id = try self.appendDataWord(token, .fvalue, float_size);
+            try self.writeFloat(self.words[id].value, self.pending_float);
+        },
         .two_variable_name, .two_constant_name => {
             const id = try self.appendDataWord(token, if (pending == .two_constant_name) .two_constant else .variable, 2 * cell_size);
             try self.writeDouble(self.words[id].value, if (pending == .two_constant_name) self.pending_double else 0);
@@ -82,9 +86,12 @@ pub fn finishPending(self: *State, token: []const u8) RuntimeError!void {
                 }
             }
             const id = try self.lookupOrFail(token);
-            if (self.words[id].kind != .value) return error.InvalidDefinition;
+            const kind = self.words[id].kind;
+            if (kind != .value and kind != .fvalue) return error.InvalidDefinition;
             if (self.compiling) {
                 _ = try self.emit(.{ .kind = .store_value, .value = id });
+            } else if (kind == .fvalue) {
+                try self.writeFloat(self.words[id].value, try self.fpop());
             } else try self.writeCell(self.words[id].value, try self.pop());
         },
         .char_name => {
@@ -119,14 +126,14 @@ pub fn endDefinition(self: *State) RuntimeError!void {
 pub fn bodyAddress(self: *State, id: u16) RuntimeError!Cell {
     const word = self.words[id];
     return switch (word.kind) {
-        .variable, .array, .created, .value, .two_constant => word.value,
+        .variable, .array, .created, .value, .fvalue, .two_constant => word.value,
         else => error.InvalidExecutionToken,
     };
 }
 
 pub fn isDefiningBuiltin(builtin: Builtin) bool {
     return switch (builtin) {
-        .define_colon, .define_variable, .define_fvariable, .define_constant, .define_value, .define_two_variable, .define_two_constant, .define_fconstant, .define_array => true,
+        .define_colon, .define_variable, .define_fvariable, .define_constant, .define_value, .define_two_variable, .define_two_constant, .define_fconstant, .define_fvalue, .define_array => true,
         else => false,
     };
 }
@@ -165,6 +172,10 @@ pub fn definingPending(self: *State, builtin: Builtin) RuntimeError!Pending {
         .define_fconstant => blk: {
             self.pending_float = try self.fpop();
             break :blk .fconstant_name;
+        },
+        .define_fvalue => blk: {
+            self.pending_float = try self.fpop();
+            break :blk .fvalue_name;
         },
         .define_array => blk: {
             self.pending_array_size = try self.pop();

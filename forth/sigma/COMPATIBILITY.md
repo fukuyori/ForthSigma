@@ -56,6 +56,7 @@
 | 例外・ファイル（段階5a、CATCH） | THROW, CATCH, R/O, W/O, R/W, STDIN, STDOUT, STDERR, OPEN-FILE, CREATE-FILE, CLOSE-FILE, READ-LINE, WRITE-LINE, WRITE-FILE, FILE-SIZE, REPOSITION-FILE | 教材Level 14、19、23、25、29。CATCHで捕捉しなかった0以外のTHROWはエラーとして報告します。 |
 | 動的メモリ・動的文字列（段階5b） | ALLOCATE, FREE, RESIZE, $!, $@, $@LEN, $!LEN, $+!, C$+!, $., $DEL, $INS, $OVER, $FREE, $INIT, $SPLIT, $ITER, $TMP, $[], $[]!, $[]@, $[]#, $[]., $[]MAP, $[]FREE, $[]SLURP, $[]SLURP-FILE | 教材Level 14、29、30、32。ヒープは論理メモリの100000H〜1DFFFFH。 |
 | 辞書探索・解析（#153） | WORD, FIND, PARSE, FIND-NAME, NAME>INT, NAME>STRING, SEE | 教材Level 10、31。`SEE` はコンパイル済みの命令列から定義を再構成します。`FIND` は構文語（`TO` `[']` など）を見つけません。 |
+| 浮動小数点の関数・丸め・表示・メモリ（#200、2026-10-30） | FSINCOS, FASIN, FACOS, FATAN, FATAN2, FSINH, FCOSH, FTANH, FASINH, FACOSH, FATANH, FEXPM1, FLNP1, FLOG, FALOG, F**, FLOOR, FTRUNC, FROUND, F~, FE., FS., PRECISION, SET-PRECISION, FVALUE, SF@, SF!, DF@, DF!, SFLOATS, DFLOATS, SFLOAT+, DFLOAT+, FALIGN, FALIGNED, SFALIGN, SFALIGNED, DFALIGN, DFALIGNED | 数学関数はCORE-MATHの正しく丸める関数で、どのOSでも同じ値です（利用者の決定、方針A）。Gforth（glibc）とは30,349件のうち29,017件（95.6%）でビットまで一致し、残りの1 ulpの違いはglibcが正しく丸めていないためです（例: `0.5e FATANH` はln(3)/2を正しく丸めた値で、Gforthより1 ulp大きい）。範囲外の引数のNaNの符号はGforthと同じです。それ以外の語の出力はGforthと同じです。`PRECISION` が1のときの `FE.` と、0以下の `PRECISION` では、Gforthは異常終了しますが、Sigmaは表示します（1〜100桁）。 |
 | 浮動小数点の書式（#156） | F.RDP, F>STR-RDP, F>BUF-RDP | 教材Level 20、25、29。Gforthで確かめた118例すべてと同じ出力です。 |
 | 説明・ライセンス | HELP, LICENSE | Gforthの `help` `license` に相当します。`HELP 語名` の説明はこの移植版のために書いたもので、Gforthのマニュアルの文章ではありません。起動時の表示（引数なしのときだけ）は2行で、版番号とライセンスを示します。 |
 | リテラルのコンパイル（#181） | LITERAL, FLITERAL | 教材Level 31。科学計算DSL（完成版）はGforthと同じ出力になります。COMPILE,、DEFER、IS、ACTION-OFはありません。 |
@@ -80,7 +81,7 @@
 | EXECUTE | 拡張 | ポータブルな辞書トークンを実行します。Z80コードアドレス互換ではありません。 |
 | 単一の論理メモリと上限 | 拡張 | 2 MiBの論理メモリ（データ領域は100000H未満、ヒープは100000H〜1DFFFFH、入力バッファは1E0000H〜1EFFFFH、ローカル変数は1F0000H〜1FFFFFH）、各種固定容量を使います。歴史的な機種のメモリ配置とは異なります。 |
 | SAVESYS | 拡張 | 現在の辞書・コンパイル済みコード・データ領域を含む単独実行ファイルを作成します。 |
-| SAVE, LOAD | 拡張 | 利用者定義語の辞書イメージ（`SIGIMG20`）を保存し、読み込み時は既存定義の後ろへ追加します。`SIGIMG19` 以前のイメージは読み込めません。イメージにはCRC-32のチェックサムを付け、壊れたイメージは読み込みません。読み込めるのはSigmaの `SAVE`・`SAVESYS` で作ったファイルだけで、それ以外のファイルを読ませることは想定していません。イメージには論理メモリのうち使う範囲（0〜HERE、ヒープの使用部分、ソースファイルの表）だけを入れるので、1語だけなら約50 KBです。ソースファイルの位置情報と読み込み履歴は引き継がれます。ヒープの内容は追加読み込みでは引き継がれません。定数やメモリに保存した実行トークンと、`LITERAL` で定義に埋め込んだ実行トークンやアドレスは、追加読み込みでは再配置されません（`[']` で埋め込んだものは再配置されます）。 |
+| SAVE, LOAD | 拡張 | 利用者定義語の辞書イメージ（`SIGIMG21`）を保存し、読み込み時は既存定義の後ろへ追加します。`SIGIMG20` 以前のイメージは読み込めません。イメージにはCRC-32のチェックサムを付け、壊れたイメージは読み込みません。読み込めるのはSigmaの `SAVE`・`SAVESYS` で作ったファイルだけで、それ以外のファイルを読ませることは想定していません。イメージには論理メモリのうち使う範囲（0〜HERE、ヒープの使用部分、ソースファイルの表）だけを入れるので、1語だけなら約50 KBです。ソースファイルの位置情報と読み込み履歴は引き継がれます。ヒープの内容は追加読み込みでは引き継がれません。定数やメモリに保存した実行トークンと、`LITERAL` で定義に埋め込んだ実行トークンやアドレスは、追加読み込みでは再配置されません（`[']` で埋め込んだものは再配置されます）。 |
 
 実装の選択値と容量は[実装ノート](IMPLEMENTATION.md)に記録しています。各ワードのスタック効果を含む誌面記述は[SPEC.md](SPEC.md)を参照してください。
 
@@ -97,7 +98,7 @@
 | 入力処理: SOURCE, >IN, SOURCE-ID, REFILL、その後 SAVE-INPUT, RESTORE-INPUT | 未実装 | `>IN` は論理メモリ上の変数とし、入力位置（端末、ファイル、EVALUATE、入れ子）と同期する設計が必要です。 |
 | 次点: C", ABORT", BUFFER:, 2LITERAL, D.R, D2*, D2/, DMAX, DMIN, M+, DU<, 2ROT, 2VALUE, DUMP | 未実装 | `C"` は長さバイトのアドレスを積む新しい命令が必要で、LOADの再配置の対象になります。`ABORT"` は例外コード-2とメッセージの扱いが必要です。 |
 | 方針の決定待ち: DEFER, IS, ACTION-OF, DEFER!, DEFER@, COMPILE,, [COMPILE], M*/ | 未実装 | DEFER系とCOMPILE,は教材で使わないため見送っています（[決定事項](DECISIONS.md)、#181）。教材対応から一般のGforth互換へ広げるかを決めてから対応します。M*/は192ビットの途中結果が必要です。 |
-| 浮動小数点: FLOOR, FROUND, FTRUNC, F**, FASIN, FACOS, FATAN, FATAN2, FSINCOS, FLOG, FALOG, FEXPM1, FLNP1, FSINH, FCOSH, FTANH, FASINH, FACOSH, FATANH, F~, FVALUE, FE., FS., REPRESENT, PRECISION, SET-PRECISION, FALIGN, FALIGNED, SFALIGN, SFALIGNED, DFALIGN, DFALIGNED, SF@, SF!, DF@, DF!, SFLOATS, DFLOATS, SFLOAT+, DFLOAT+ | 未実装 | 精度の方針（正しく丸める、特定のGforthの結果に合わせる、関数ごとに決める）を決めてから対応します。FLOOR・FTRUNCは関数の精度と関係なく先に作れます。 |
+| 浮動小数点: REPRESENT | 未実装 | ほかの浮動小数点の語は2026-10-30に実装しました。 |
 | 個別に設計: QUIT, ENVIRONMENT?, EKEY, EKEY?, EKEY>CHAR, AT-XY, TIME&DATE, AHEAD, CS-PICK, CS-ROLL, N>R, NR>, SYNONYM, TRAVERSE-WORDLIST, NAME>COMPILE, NAME>INTERPRET | 未実装 | `QUIT` はデータスタックを残したまま入力待ちへ戻る経路が、`ENVIRONMENT?` は問い合わせの表が必要です。 |
 | Gforthの残りのファイル語（FILE-POSITION, BIN, DELETE-FILE, RENAME-FILE, RESIZE-FILE, FLUSH-FILE, FILE-STATUS, INCLUDE-FILE）、WHERE、`$SLURP` などの残りの文字列語、`[IFDEF]` などの残りの条件付きコンパイル語 | 未実装 | 必要に応じて対応（[決定事項](DECISIONS.md)）。 |
 | Gforthの CODE, END-CODE, SAVESYSTEM, 'COLD, BOOTMESSAGE, IS, FPATH, SCRIPT? | 対象外 | Gforthの起動処理やアセンブラに依存します（2026-10-30決定、教材Level 30）。SAVESYSTEM の代わりに SAVESYS を使えます。 |
@@ -108,7 +109,7 @@ Z80の命令実行・エミュレーションはプロジェクトの対象外�
 
 ## 自動回帰テストとの対応
 
-zig build testで、現行コアの主要動作を次のテストで確認します（コア174件、ホスト6件の計180件）。
+zig build testで、現行コアの主要動作を次のテストで確認します（コア179件、ホスト6件の計185件）。
 
 | テスト | 確認する動作 |
 | --- | --- |
@@ -128,7 +129,7 @@ zig build testで、現行コアの主要動作を次のテストで確認しま
 | memory boundary | ヒープの先頭（100000H）でのデータ領域確保の拒否、2 MiB末尾を越えるアドレスのエラー |
 | capacity errors | データ／リターンスタック、辞書、制御ネスト、コンパイル領域の上限 |
 | division by zero | /、MOD、/MODのエラー。*/、*/MOD、UM/MOD、FM/MOD、SM/REMのゼロ除算と、商が1セルに収まらない場合の `RESULT OUT OF RANGE !`（CATCHでは-11） |
-| floating point | リテラル認識、F.とF.Sの書式、非有限値、算術・比較・変換、関数、メモリ・変数・定数・配列、FINPUT、浮動小数点スタックのアンダーフロー |
+| floating point | リテラル認識、F.とF.Sの書式、非有限値、算術・比較・変換、関数、メモリ・変数・定数・配列、FINPUT、浮動小数点スタックのアンダーフロー。FASINからF**までの関数のGforthと同じビット、Gforthと1 ulp違う正しく丸めた値、範囲外の引数のNaN、FMA命令のないビルドの小さな引数、FLOOR・FTRUNC・FROUND（-0、中間の値、無限大）、F~、FSINCOS、SF@・SF!・DF@・DF!と境界の語、FE.・FS.・F.とPRECISION（1桁、20桁、範囲外）、FVALUEとTO・>BODY・SEE |
 | double-cell integers | 倍長整数リテラル、D+等の演算・比較・表示、2@/2!、2VARIABLE、2CONSTANT。*/、*/MOD、M*、UM*、UM/MOD、FM/MOD、SM/REMの結果がGforthと同じこと（負の数、積が1セルを超える場合） |
 | pictured numeric output | <<# # #S HOLD HOLDS SIGN #> #>>、入れ子、対応しない #>> のエラー |
 | strings | S"、S\"、.\"、.( の解釈時・コンパイル時の動作、一時バッファ、COUNT、PAD。COMPARE、SEARCH、/STRING、-TRAILINGの結果がGforthと同じこと（空の文字列、負の長さ、符号なしの比較を含む）。CHAR+、CHARS、BOUNDS、BLANK、CMOVE>（重なり）、SCAN・SKIP（タブ、負の長さ）、STR=、STRING-PREFIX?、+PLACE（255バイト）、SLITERAL（解釈中のエラー、255バイト）、PARSE-NAME（タブ、行末、EVALUATE）、SLURP-FILE・$SLURP-FILE（CR LFとNULをそのまま読む、空のファイル、置き換え、ファイルを閉じる、ないファイルのior、閉じるのに失敗したときに確保した領域を解放すること）、READ-FILE（CR LFをそのまま読む、ファイルの終わり、閉じたファイルのior）、?DUP、U<、U>、2R@、ALIGN、UNUSED、.R・U.R（負の幅、幅より長い数、16進数）、読み込み中のファイルからのPARSE-NAME、メモリの終わりを越える長さの文字列がエラーになること（STR=、COMPARE、SEARCH、-TRAILING、SCAN、SKIP、STRING-PREFIX?、BLANK、TYPE） |
@@ -155,7 +156,7 @@ zig build testで、現行コアの主要動作を次のテストで確認しま
 | LITERAL・FLITERAL | `[ 2 3 * ] LITERAL`、`[ ... ] FLITERAL`、`[ DEBUG ] LITERAL IF`、`[ ' DUP ] LITERAL EXECUTE`、教材Level 31のDSLと同じ形で `POSTPONE LITERAL` により変数のアドレスと実行トークンを埋め込む語、解釈中のエラー |
 | '・>BODY・LITERALの境界 | 語彙で定義し直した `'` が検索順序に従うこと、FIND-NAME・POSTPONE・CATCHの中・INCLUDEしたファイルの次の行で `'` が名前を読むこと、EVALUATEの文字列の最後の `'` のエラー、ARRAYと（DOES>のない）CREATEの>BODY、MARKER・VOCABULARY・:NONAME・FCONSTANT・不正な値の>BODYのエラー、倍長整数を1セルずつ取り込むLITERAL、値がないときと `[ ]` の中のエラー、追加読み込みで `[']` の実行トークンは再配置されLITERALで埋め込んだものはされないこと |
 | HELP・LICENSE | すべての組み込み語に説明があり、説明の名前はすべて実在する語であること（重複なし）、`HELP` だけで基本の説明を表示して次の行を読まないこと、`EVALUATE` の文字列で改行の先を読まないこと、定義の中の `HELP` が実行時に名前を読むこと、組み込み語・構文語・利用者定義語の `HELP 語名`、知らない名前のエラー、`LICENSE` がMITの全文とCORE-MATHの表示を、ホストに渡す前はLFで出すこと |
-| 名前の領域・イメージの大きさ | FORGET・MARKER・失敗した定義で名前の領域も戻ること、255文字の名前で名前の領域がいっぱいになると `OUT OF DICTIONARY !` でそれまでの語は使えること、イメージの大きさが保存する範囲の合計に等しく、ヒープの中身を保ちHEREより先は0で戻り、1バイト欠けると読み込まないこと、LOADで加えた語の名前とSEE・FORGET。辞書8192語・コード65535操作の上限でのエラーと巻き戻し。1バイト壊れたイメージ（チェックサムで検出し、辞書・コード・メモリが変わらないこと）、名前の位置や長さが壊れたイメージと `SIGIMG19` のイメージを何も変えずに拒否すること、名前の領域がないときのVARIABLEがHEREを戻すこと、CATCHで捨てた定義の名前の領域、名前のない語をはさんだLOADとFORGET、名前の領域が足りないLOADで何も変わらないこと |
+| 名前の領域・イメージの大きさ | FORGET・MARKER・失敗した定義で名前の領域も戻ること、255文字の名前で名前の領域がいっぱいになると `OUT OF DICTIONARY !` でそれまでの語は使えること、イメージの大きさが保存する範囲の合計に等しく、ヒープの中身を保ちHEREより先は0で戻り、1バイト欠けると読み込まないこと、LOADで加えた語の名前とSEE・FORGET。辞書8192語・コード65535操作の上限でのエラーと巻き戻し。1バイト壊れたイメージ（チェックサムで検出し、辞書・コード・メモリが変わらないこと）、名前の位置や長さが壊れたイメージと `SIGIMG20` のイメージを何も変えずに拒否すること、名前の領域がないときのVARIABLEがHEREを戻すこと、CATCHで捨てた定義の名前の領域、名前のない語をはさんだLOADとFORGET、名前の領域が足りないLOADで何も変わらないこと |
 | 定義の中の定義語 | 定義の中のVARIABLE・CONSTANT・FVARIABLE・FCONSTANT・VALUE・2CONSTANT・2VARIABLE・ARRAY、教材Level 31の `:` で始めて `POSTPONE ;` で終える語、名前がない場合と定義中の `:` のエラー、検索順序から外した定義語、DOES>を付けた変数、10の累乗に近い値のF. |
 | 解釈中の[・PI・F. | 解釈中の `[`、PIのF.とF.RDP、2進数の値から正確に丸めるF.とF.S |
 | locals visibility | IF・ELSE・THEN、BEGIN・UNTIL・WHILE・REPEAT、DO・?DO・LOOP・LEAVE、CASE・OFでの名前の見える範囲（Gforthで確かめた15例） |
