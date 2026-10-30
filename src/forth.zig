@@ -111,7 +111,7 @@ fn trig(function: *const fn (f64) callconv(.c) f64, x: f64) f64 {
     return function(x);
 }
 const fs_precision = 14;
-const image_magic = "SIGIMG12";
+const image_magic = "SIGIMG13";
 
 /// File ids of the standard streams; the host numbers opened files from `first_file_id`.
 pub const stdin_fileid: Cell = 1;
@@ -487,6 +487,8 @@ const Builtin = enum {
     define_fconstant,
     define_array,
     pi,
+    tick,
+    to_body,
 };
 
 const HeapResult = union(enum) { address: Cell, no_memory, bad_pointer };
@@ -1324,6 +1326,7 @@ pub const State = struct {
             .{ ":", .define_colon },         .{ ";", .end_definition },       .{ "VARIABLE", .define_variable }, .{ "VAR", .define_variable },  .{ "FVARIABLE", .define_fvariable },
             .{ "CONSTANT", .define_constant }, .{ "CONST", .define_constant }, .{ "VALUE", .define_value },  .{ "2VARIABLE", .define_two_variable }, .{ "2CONSTANT", .define_two_constant },
             .{ "FCONSTANT", .define_fconstant }, .{ "ARRAY", .define_array }, .{ "FARRAY", .define_array }, .{ "PI", .pi },
+            .{ "'", .tick },                 .{ ">BODY", .to_body },
         };
         for (definitions) |definition| self.addBuiltin(definition[0], definition[1]) catch unreachable;
         // The Root list repeats the words needed to rebuild the search order after ONLY.
@@ -1613,6 +1616,13 @@ pub const State = struct {
                 self.pending = try self.definingPending(self.words[id].builtin);
                 return;
             }
+            // ' in a definition reads the name when the definition runs, as in standard
+            // Forth; ['] takes it at compile time.
+            if (self.words[id].builtin == .tick) {
+                if (self.compiling) return self.handleWord(id);
+                self.pending = .tick_name;
+                return;
+            }
         }
         if (std.mem.eql(u8, token, "{") or std.mem.eql(u8, token, "{:")) {
             return self.compileLocals(if (token.len == 1) "}" else ":}");
@@ -1639,7 +1649,7 @@ pub const State = struct {
             self.setCompiling(true);
             return;
         }
-        if (std.mem.eql(u8, token, "'") or std.mem.eql(u8, token, "[']")) {
+        if (std.mem.eql(u8, token, "[']")) {
             self.pending = .tick_name;
             return;
         }
@@ -1832,6 +1842,16 @@ pub const State = struct {
         self.local_count = 0;
         self.setCompiling(false);
         self.defining = false;
+    }
+
+    /// >BODY: the data area of a word that has one. CONSTANT and FCONSTANT keep their
+    /// value in the dictionary entry, so they have none here (gforth gives an address).
+    fn bodyAddress(self: *State, id: u16) RuntimeError!Cell {
+        const word = self.words[id];
+        return switch (word.kind) {
+            .variable, .array, .created, .value, .two_constant => word.value,
+            else => error.InvalidExecutionToken,
+        };
     }
 
     fn isDefiningBuiltin(builtin: Builtin) bool {
@@ -2890,6 +2910,11 @@ pub const State = struct {
             .f_to_s => try self.push(floatToCell(try self.fpop())),
             .define_colon, .define_variable, .define_fvariable, .define_constant, .define_value, .define_two_variable, .define_two_constant, .define_fconstant, .define_array => try self.runDefiningWord(builtin),
             .end_definition => try self.endDefinition(),
+            .tick => {
+                const name = (try self.nextSourceToken()) orelse return error.InvalidDefinition;
+                try self.push(try self.lookupOrFail(name));
+            },
+            .to_body => try self.push(try self.bodyAddress(try self.wordId(try self.pop()))),
             .pi => try self.fpush(std.math.pi),
             .f_dot => {
                 self.writeFloatFixed(try self.fpop());

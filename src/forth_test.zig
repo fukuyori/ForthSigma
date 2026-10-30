@@ -2356,3 +2356,22 @@ test ".S and F.S at depth zero, at exactly nine items, and in hexadecimal" {
         "<9> 1.0000000000E0 2.0000000000E0 3.0000000000E0 4.0000000000E0 5.0000000000E0 6.0000000000E0 7.0000000000E0 8.0000000000E0 9.0000000000E0 " ++
         "<A> 2.0000000000E0 3.0000000000E0 4.0000000000E0 5.0000000000E0 6.0000000000E0 7.0000000000E0 8.0000000000E0 9.0000000000E0 1.0000000000E1 ", output.written());
 }
+
+test ">BODY gives the data area, and ' in a definition reads its name when the definition runs" {
+    var output = Output{};
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
+
+    try machine.interpretLine("VARIABLE V 11 V ! ' V >BODY @ . 2VARIABLE D 1. D 2! ' D >BODY 2@ D. FVARIABLE F 2E F F! ' F >BODY F@ F.");
+    try machine.interpretLine("7 VALUE W ' W >BODY @ . 3. 2CONSTANT DC ' DC >BODY 2@ D. : MK CREATE , DOES> @ ; 9 MK M ' M >BODY @ .");
+    // Level 31 of the book: a word that reads a variable's name when it runs.
+    try machine.interpretLine(": RT ' >BODY @ ; RT V . : READ-NEXT ' ; READ-NEXT DUP ' DUP = . : TK ['] DUP ; TK ' DUP = .");
+    try machine.interpretLine("' V EXECUTE ' V >BODY = . '");
+    try machine.interpretLine("V ' V = .");
+    try std.testing.expectEqualStrings("11 1 2. 7 3 9 11 -1 -1 -1 -1 ", output.written());
+    try expectStack(machine, &.{});
+    try std.testing.expectError(error.InvalidExecutionToken, machine.interpretLine("5 CONSTANT K ' K >BODY"));
+    try std.testing.expectError(error.InvalidExecutionToken, machine.interpretLine(": SQ DUP * ; ' SQ >BODY"));
+    try std.testing.expectError(error.InvalidExecutionToken, machine.interpretLine("' DUP >BODY"));
+    try std.testing.expectError(error.InvalidDefinition, machine.interpretLine("RT"));
+}
