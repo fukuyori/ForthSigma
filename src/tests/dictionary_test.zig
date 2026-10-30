@@ -150,10 +150,10 @@ test "a damaged image, or one whose names are out of order or out of range, is r
         try std.testing.expectEqual(before_names, loaded.names_used);
     }
     // The previous format is not read either.
-    @memcpy(image[0..8], "SIGIMG18");
+    @memcpy(image[0..8], "SIGIMG19");
     resealImage(image);
     try std.testing.expectError(error.InvalidImage, loaded.restoreImage(image));
-    @memcpy(image[0..8], "SIGIMG19");
+    @memcpy(image[0..8], "SIGIMG20");
     resealImage(image);
     // One damaged byte anywhere, here in the saved memory or in the checksum itself,
     // fails the checksum, and the dictionary, code, and memory stay as they were.

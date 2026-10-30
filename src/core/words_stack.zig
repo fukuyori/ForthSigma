@@ -13,7 +13,8 @@ const max_stack = memory_map.max_stack;
 /// The built-in words this file executes; executeBuiltin dispatches by this list.
 pub const words = [_]Builtin{
     .drop, .dup, .swap, .over, .rot, .minus_rot, .nip, .tuck, .pick, .roll, .two_dup, .two_drop,
-    .two_swap, .two_over, .depth, .to_r, .from_r, .r_fetch, .two_to_r, .two_r_from,
+    .two_swap, .two_over, .depth, .to_r, .from_r, .r_fetch, .two_to_r, .two_r_from, .two_r_fetch,
+    .question_dup,
 };
 
 pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
@@ -88,6 +89,17 @@ pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
         .r_fetch => {
             if (self.return_depth == 0) return error.ReturnStackUnderflow;
             try self.push(self.return_stack[self.return_depth - 1]);
+        },
+        // Copies the pair 2>R moved, in the same order, and leaves it on the return stack.
+        .two_r_fetch => {
+            if (self.return_depth < 2) return error.ReturnStackUnderflow;
+            if (max_stack - self.data_depth < 2) return error.StackOverflow;
+            try self.push(self.return_stack[self.return_depth - 2]);
+            try self.push(self.return_stack[self.return_depth - 1]);
+        },
+        .question_dup => {
+            const value = try self.peek(0);
+            if (value != 0) try self.push(value);
         },
         .two_to_r => {
             try self.requireDepth(2);

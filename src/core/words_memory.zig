@@ -10,6 +10,7 @@ const RuntimeError = defs.RuntimeError;
 const State = forth.State;
 const UCell = memory_map.UCell;
 const cell_size = memory_map.cell_size;
+const data_limit = memory_map.data_limit;
 const errnoIor = memory_map.errnoIor;
 const errno_invalid = memory_map.errno_invalid;
 const errno_no_memory = memory_map.errno_no_memory;
@@ -22,7 +23,8 @@ pub const words = [_]Builtin{
     .inc_store, .dec_store, .zero_store, .off, .on, .question, .array_fetch, .array_store, .erase,
     .fill, .move, .cmove, .here, .allot, .comma, .c_comma, .two_fetch, .two_store, .count, .pad,
     .place, .compare, .search, .slash_string, .minus_trailing, .char_plus, .chars, .bounds,
-    .blank_fill, .cmove_up, .scan, .skip, .str_equal, .string_prefix_query, .plus_place,
+    .blank_fill, .cmove_up, .scan, .skip, .str_equal, .string_prefix_query, .plus_place, .align_here,
+    .unused,
     .allocate, .free, .resize,
 };
 
@@ -119,6 +121,12 @@ pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
             }
         },
         .here => try self.push(self.data_here),
+        .align_here => {
+            const aligned = (self.data_here + (cell_size - 1)) & ~@as(Cell, cell_size - 1);
+            try self.reserveData(aligned - self.data_here);
+        },
+        // The bytes of data space left for ALLOT, , and the defining words.
+        .unused => try self.push(data_limit - self.data_here),
         .allot => try self.reserveData(try self.pop()),
         .comma => {
             const value = try self.pop();

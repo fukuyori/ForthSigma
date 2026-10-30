@@ -222,6 +222,20 @@ test "PARSE-NAME reads the next name from a file being included" {
     try std.testing.expectEqualStrings("abc0 ", output.written());
 }
 
+test "READ-FILE reads bytes as they are and gives 0 at the end of the file" {
+    var output = Output{};
+    support.setFakeFile(&output, 1, "abcd\r\nef");
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
+
+    try machine.interpretLine("S\" b.txt\" R/O OPEN-FILE THROW VALUE F PAD 4 F READ-FILE PAD 4 TYPE PAD 20 F READ-FILE PAD 4 TYPE PAD 20 F READ-FILE PAD 0 F READ-FILE F CLOSE-FILE");
+    try expectStack(machine, &.{ 4, 0, 4, 0, 0, 0, 0, 0, 0 });
+    try std.testing.expectEqualStrings("abcd\r\nef", output.written());
+    machine.data_depth = 0;
+    try machine.interpretLine("PAD 4 F READ-FILE");
+    try expectStack(machine, &.{ 0, forth.errnoIor(forth.errno_bad_file) });
+}
+
 test "heap strings survive a full image restore" {
     var output = Output{};
     const source = try createMachine(&output);

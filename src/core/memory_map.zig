@@ -168,7 +168,7 @@ pub const max_dot_s_items = 9;
 
 pub const fs_precision = 14;
 
-pub const image_magic = "SIGIMG19";
+pub const image_magic = "SIGIMG20";
 
 /// File ids of the standard streams; the host numbers opened files from `first_file_id`.
 pub const stdin_fileid: Cell = 1;

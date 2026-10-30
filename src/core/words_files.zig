@@ -35,7 +35,7 @@ pub const words = [_]Builtin{
     .include, .require, .included, .required, .included_query, .source_file_name,
     .source_line_number, .read_only, .write_only, .read_write, .stdin, .stdout, .stderr, .open_file,
     .create_file, .close_file, .read_line, .write_line, .write_file, .file_size, .reposition_file,
-    .slurp_file,
+    .slurp_file, .read_file,
 };
 
 pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
@@ -113,6 +113,15 @@ pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
             const position: UDouble = @bitCast(try self.popDouble());
             const files = try self.fileOps();
             try self.push(if (position > std.math.maxInt(i64)) errnoIor(errno_invalid) else files.reposition(self.writer.context, fileid, @intCast(position)));
+        },
+        .read_file => {
+            const fileid = try self.pop();
+            const buffer = try self.memoryRange();
+            const files = try self.fileOps();
+            if (max_stack - self.data_depth < 2) return error.StackOverflow;
+            const result = files.read(self.writer.context, fileid, buffer);
+            try self.push(if (result.ior == 0) @intCast(result.value) else 0);
+            try self.push(result.ior);
         },
         .slurp_file => {
             const text = try self.slurpFile(try self.memoryRange(), null);

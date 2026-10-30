@@ -32,6 +32,8 @@ pub fn binary(self: *State, builtin: Builtin) RuntimeError!void {
         .greater => truth(a > b),
         .less_equal => truth(a <= b),
         .greater_equal => truth(a >= b),
+        .u_less => truth(@as(UCell, @bitCast(a)) < @as(UCell, @bitCast(b))),
+        .u_greater => truth(@as(UCell, @bitCast(a)) > @as(UCell, @bitCast(b))),
         .bit_and => a & b,
         .bit_or => a | b,
         .bit_xor => a ^ b,
@@ -52,6 +54,20 @@ pub fn flooredDivision(dividend: Cell, divisor: Cell) RuntimeError!Division {
     if (divisor == 0) return error.DivisionByZero;
     if (dividend == std.math.minInt(Cell) and divisor == -1) return .{ .quotient = dividend, .remainder = 0 };
     return .{ .quotient = @divFloor(dividend, divisor), .remainder = @mod(dividend, divisor) };
+}
+
+/// Divides a double-cell number by a cell for FM/MOD and */ (quotient rounded toward
+/// minus infinity) or SM/REM (toward zero). As in gforth, a quotient that does not fit
+/// in a cell is an error rather than a wrapped value.
+pub fn doubleDivision(dividend: Double, divisor: Cell, floored: bool) RuntimeError!Division {
+    if (divisor == 0) return error.DivisionByZero;
+    // The one quotient Double division itself cannot hold is out of range for a cell too.
+    if (dividend == std.math.minInt(Double) and divisor == -1) return error.ResultOutOfRange;
+    const wide: Double = divisor;
+    const quotient = if (floored) @divFloor(dividend, wide) else @divTrunc(dividend, wide);
+    const remainder = if (floored) @mod(dividend, wide) else @rem(dividend, wide);
+    if (quotient < std.math.minInt(Cell) or quotient > std.math.maxInt(Cell)) return error.ResultOutOfRange;
+    return .{ .quotient = @intCast(quotient), .remainder = @intCast(remainder) };
 }
 
 pub fn truth(value: bool) Cell {

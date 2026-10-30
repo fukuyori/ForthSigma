@@ -345,6 +345,10 @@ pub const State = struct {
             .{ "CHAR+", .char_plus },        .{ "CHARS", .chars },            .{ "BOUNDS", .bounds },         .{ "BLANK", .blank_fill },         .{ "CMOVE>", .cmove_up },
             .{ "SCAN", .scan },              .{ "SKIP", .skip },              .{ "STR=", .str_equal },        .{ "STRING-PREFIX?", .string_prefix_query }, .{ "+PLACE", .plus_place },
             .{ "SLITERAL", .sliteral },      .{ "PARSE-NAME", .parse_name },  .{ "SLURP-FILE", .slurp_file }, .{ "$SLURP-FILE", .string_slurp_file },
+            .{ "?DUP", .question_dup },      .{ "2R@", .two_r_fetch },        .{ "U<", .u_less },             .{ "U>", .u_greater },             .{ "ALIGN", .align_here },
+            .{ ".R", .dot_r },               .{ "U.R", .u_dot_r },            .{ "UNUSED", .unused },         .{ "*/", .star_slash },            .{ "*/MOD", .star_slash_mod },
+            .{ "M*", .m_star },              .{ "UM*", .um_star },            .{ "UM/MOD", .um_slash_mod },   .{ "FM/MOD", .fm_slash_mod },      .{ "SM/REM", .sm_slash_rem },
+            .{ "READ-FILE", .read_file },
         };
         for (definitions) |definition| self.addBuiltin(definition[0], definition[1]) catch unreachable;
         // The Root list repeats the words needed to rebuild the search order after ONLY.

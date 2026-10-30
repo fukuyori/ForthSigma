@@ -204,6 +204,63 @@ test "division by zero is reported as an error" {
     try std.testing.expectEqualStrings("DIVISION BY ZERO !\nDIVISION BY ZERO !\nDIVISION BY ZERO !\n", output.written());
 }
 
+test "?DUP U< U> 2R@ ALIGN UNUSED .R and U.R work as in gforth" {
+    try expectOutput("5 ?DUP . . 0 ?DUP . DEPTH .", "5 5 0 0 ");
+    try expectOutput("1 2 U< . -1 1 U< . 1 -1 U< . 2 2 U< . 1 2 U> . -1 1 U> .", "-1 0 -1 0 0 -1 ");
+    try expectOutput(": T2 1 2 2>R 2R@ 2R> ; T2 . . . .", "2 1 2 1 ");
+    try expectOutput("HERE 1 ALLOT ALIGN HERE SWAP - . HERE ALIGN HERE SWAP - . UNUSED 0> .", "8 0 -1 ");
+    try expectOutput(
+        "CHAR | EMIT 42 5 .R CHAR | EMIT -42 5 .R CHAR | EMIT 123456 3 .R CHAR | EMIT 7 0 .R CHAR | EMIT 7 -3 .R CHAR | EMIT " ++
+            "42 5 U.R CHAR | EMIT -1 3 U.R CHAR | EMIT 7 -9223372036854775808 .R CHAR | EMIT HEX 255 6 .R",
+        "|   42|  -42|123456|7|7|   42|18446744073709551615|7|   255",
+    );
+
+    var output = Output{};
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
+    try std.testing.expectError(error.ReturnStackUnderflow, machine.interpretLine("1 >R 2R@"));
+    machine.report(error.ReturnStackUnderflow);
+    // UNUSED is what is left of the data space.
+    try machine.interpretLine("UNUSED HERE + UNUSED 1000 ALLOT UNUSED - ");
+    try expectStack(machine, &.{ forth.data_limit, 1000 });
+}
+
+test "*/ */MOD M* UM* UM/MOD FM/MOD and SM/REM work as in gforth" {
+    try expectOutput("10 3 4 */ . -10 3 4 */ . 10 -3 4 */ . 7 2 -3 */ . 10 3 4 */MOD . . -10 3 4 */MOD . .", "7 -8 -8 -5 7 2 -8 2 ");
+    // The product of */ is a double cell, so it does not overflow before the division.
+    try expectOutput("9223372036854775807 2 3 */ .", "6148914691236517204 ");
+    try expectOutput(
+        "3 -4 M* . . -1 -1 UM* . . 9223372036854775807 9223372036854775807 M* D. 9223372036854775807 -9223372036854775808 M* D.",
+        "-1 -12 -2 1 85070591730234615847396907784232501249 -85070591730234615856620279821087277056 ",
+    );
+    try expectOutput("7 0 1 UM/MOD . . -1 1 2 UM/MOD . .", "7 0 -1 1 ");
+    try expectOutput(
+        "-7 S>D 2 FM/MOD . . -7 S>D 2 SM/REM . . 7 S>D -2 FM/MOD . . 7 S>D -2 SM/REM . . 5 S>D -5 FM/MOD . . 0 S>D 3 FM/MOD . .",
+        "-4 1 -3 -1 -4 -1 -3 1 -1 0 0 0 ",
+    );
+
+    var output = Output{};
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
+    const zero = [_][]const u8{ "1 2 0 */", "1 2 0 */MOD", "1 0 0 UM/MOD", "1 S>D 0 FM/MOD", "1 S>D 0 SM/REM" };
+    for (zero) |line| try std.testing.expectError(error.DivisionByZero, machine.interpretLine(line));
+    // A quotient that does not fit in a cell is an error, as in gforth.
+    const out_of_range = [_][]const u8{
+        "9223372036854775807 9223372036854775807 1 */",
+        "0 5 5 UM/MOD",
+        "-9223372036854775808 S>D -1 SM/REM",
+        "-9223372036854775808 S>D -1 FM/MOD",
+        "-9223372036854775808 -1 1 */",
+        "-9223372036854775808 1 -1 */",
+    };
+    for (out_of_range) |line| try std.testing.expectError(error.ResultOutOfRange, machine.interpretLine(line));
+    machine.data_depth = 0;
+    try machine.interpretLine(": T 9223372036854775807 9223372036854775807 1 */ ; ' T CATCH");
+    try expectStack(machine, &.{-11});
+    machine.report(error.ResultOutOfRange);
+    try std.testing.expectEqualStrings("RESULT OUT OF RANGE !\n", output.written());
+}
+
 test "stack overflow is reported and subsequent input can run" {
     var output = Output{};
     const machine = try createMachine(&output);

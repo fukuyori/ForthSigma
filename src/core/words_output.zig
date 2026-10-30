@@ -4,6 +4,8 @@ const defs = @import("defs.zig");
 const forth = @import("../forth.zig");
 const memory_map = @import("memory_map.zig");
 const Builtin = defs.Builtin;
+const Cell = memory_map.Cell;
+const Double = memory_map.Double;
 const RuntimeError = defs.RuntimeError;
 const State = forth.State;
 const UCell = memory_map.UCell;
@@ -12,7 +14,7 @@ const max_dot_s_items = memory_map.max_dot_s_items;
 
 /// The built-in words this file executes; executeBuiltin dispatches by this list.
 pub const words = [_]Builtin{
-    .dot, .u_dot, .c_dot, .dot_s, .echo, .cr, .space, .spaces, .type, .hex, .dec, .oct, .base,
+    .dot, .u_dot, .dot_r, .u_dot_r, .c_dot, .dot_s, .echo, .cr, .space, .spaces, .type, .hex, .dec, .oct, .base,
     .d_dot, .page,
 };
 
@@ -22,6 +24,16 @@ pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
             const value = try self.pop();
             self.writeNumber(if (builtin == .u_dot) @as(UCell, @bitCast(value)) else value);
             self.write(" ");
+        },
+        // The number right-aligned in a field of width characters, without a space after it;
+        // a longer number is printed whole.
+        .dot_r, .u_dot_r => {
+            const width = try self.pop();
+            const value = try self.pop();
+            const number: Double = if (builtin == .u_dot_r) @as(UCell, @bitCast(value)) else value;
+            var pad = width -| @as(Cell, @intCast(self.numberWidth(number)));
+            while (pad > 0) : (pad -= 1) self.write(" ");
+            self.writeNumber(number);
         },
         .c_dot => {
             self.writeNumber((try self.pop()) & 0xff);

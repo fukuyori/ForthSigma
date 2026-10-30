@@ -169,6 +169,17 @@ fn fileReadLine(_: ?*anyopaque, fileid: forth.Cell, buffer: []u8) forth.LineResu
 }
 
 fn fileRead(_: ?*anyopaque, fileid: forth.Cell, buffer: []u8) forth.FileResult {
+    if (fileid == forth.stdin_fileid) {
+        // Byte by byte from the terminal input, so the byte read ahead by KEY? comes first;
+        // as in READ-LINE, the end of the input ends the read.
+        var count: usize = 0;
+        while (count < buffer.len) : (count += 1) {
+            const byte = readByte();
+            if (byte < 0) break;
+            buffer[count] = @intCast(byte);
+        }
+        return .{ .value = count };
+    }
     const file = openedFile(fileid) orelse return .{ .ior = badFileIor() };
     clearErrno();
     const count = fread(buffer.ptr, 1, buffer.len, file);

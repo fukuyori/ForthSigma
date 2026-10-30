@@ -40,6 +40,8 @@ pub const entries = [_]Entry{
     .{ .name = "R@", .stack = "( -- x ) ( R: x -- x )", .text = "Copy the top of the return stack." },
     .{ .name = "2>R", .stack = "( x1 x2 -- ) ( R: -- x1 x2 )", .text = "Move a pair to the return stack, keeping its order." },
     .{ .name = "2R>", .stack = "( -- x1 x2 ) ( R: x1 x2 -- )", .text = "Move a pair from the return stack, keeping its order." },
+    .{ .name = "2R@", .stack = "( -- x1 x2 ) ( R: x1 x2 -- x1 x2 )", .text = "Copy the pair 2>R moved, keeping it on the return stack." },
+    .{ .name = "?DUP", .stack = "( x -- 0 | x x )", .text = "Copy the top cell unless it is zero." },
 
     // Integer arithmetic and logic
     .{ .name = "+", .stack = "( n1 n2 -- n3 )", .text = "Add; 64-bit two's complement, wrapping on overflow." },
@@ -81,6 +83,10 @@ pub const entries = [_]Entry{
     .{ .name = "TRUE", .stack = "( -- -1 )", .text = "The true flag, all bits set." },
     .{ .name = "FALSE", .stack = "( -- 0 )", .text = "The false flag." },
     .{ .name = "WITHIN", .stack = "( n lo hi -- flag )", .text = "True if lo <= n < hi, compared as unsigned differences, so the range may wrap around." },
+    .{ .name = "U<", .stack = "( u1 u2 -- flag )", .text = "True if u1 is less than u2, compared as unsigned numbers." },
+    .{ .name = "U>", .stack = "( u1 u2 -- flag )", .text = "True if u1 is greater than u2, compared as unsigned numbers." },
+    .{ .name = "*/", .stack = "( n1 n2 n3 -- n4 )", .text = "n1 times n2 divided by n3 (floored), with a double-cell product in between." },
+    .{ .name = "*/MOD", .stack = "( n1 n2 n3 -- rem quot )", .text = "Like */, giving the remainder too." },
 
     // Double-cell numbers
     .{ .name = "S>D", .stack = "( n -- d )", .text = "Extend a cell to a double cell." },
@@ -93,6 +99,11 @@ pub const entries = [_]Entry{
     .{ .name = "D0<", .stack = "( d -- flag )", .text = "True if the double cell is negative." },
     .{ .name = "D=", .stack = "( d1 d2 -- flag )", .text = "True if the double cells are equal." },
     .{ .name = "D<", .stack = "( d1 d2 -- flag )", .text = "True if d1 is less than d2." },
+    .{ .name = "M*", .stack = "( n1 n2 -- d )", .text = "Multiply two numbers into a double-cell product." },
+    .{ .name = "UM*", .stack = "( u1 u2 -- ud )", .text = "Multiply two unsigned numbers into an unsigned double-cell product." },
+    .{ .name = "UM/MOD", .stack = "( ud u -- urem uquot )", .text = "Divide an unsigned double-cell number by u; the quotient must fit in a cell." },
+    .{ .name = "FM/MOD", .stack = "( d n -- rem quot )", .text = "Divide d by n, rounding the quotient toward minus infinity." },
+    .{ .name = "SM/REM", .stack = "( d n -- rem quot )", .text = "Divide d by n, rounding the quotient toward zero." },
     .{ .name = "D.", .stack = "( d -- )", .text = "Print a double cell and a space." },
     .{ .name = "2@", .stack = "( addr -- d )", .text = "Fetch a double cell; the high cell is at addr." },
     .{ .name = "2!", .stack = "( d addr -- )", .text = "Store a double cell; the high cell goes to addr." },
@@ -105,6 +116,8 @@ pub const entries = [_]Entry{
     .{ .name = "CELLS", .stack = "( n -- n*8 )", .text = "The size of n cells in bytes." },
     .{ .name = "CELL+", .stack = "( addr -- addr+8 )", .text = "Add the size of a cell." },
     .{ .name = "ALIGNED", .stack = "( addr -- addr' )", .text = "Round up to a multiple of the cell size." },
+    .{ .name = "ALIGN", .stack = "( -- )", .text = "Round HERE up to a multiple of the cell size." },
+    .{ .name = "UNUSED", .stack = "( -- u )", .text = "The bytes of data space left." },
     .{ .name = "@", .stack = "( addr -- x )", .text = "Fetch a cell (little-endian)." },
     .{ .name = "!", .stack = "( x addr -- )", .text = "Store a cell." },
     .{ .name = ",", .stack = "( x -- )", .text = "Store a cell at HERE and advance HERE." },
@@ -150,6 +163,8 @@ pub const entries = [_]Entry{
     // Output and number base
     .{ .name = ".", .stack = "( n -- )", .text = "Print a number in the current base and a space." },
     .{ .name = "U.", .stack = "( u -- )", .text = "Print an unsigned number and a space." },
+    .{ .name = ".R", .stack = "( n width -- )", .text = "Print n right-aligned in width characters, without a space after it." },
+    .{ .name = "U.R", .stack = "( u width -- )", .text = "Print u unsigned, right-aligned in width characters, without a space after it." },
     .{ .name = "C.", .stack = "( n -- )", .text = "Print the low 8 bits as a number and a space." },
     .{ .name = ".S", .stack = "( -- )", .text = "Show the depth and the top nine cells without removing them." },
     .{ .name = "ECHO", .stack = "( c -- )", .text = "Print a character (the FORTH/Sigma name of EMIT)." },
@@ -342,6 +357,7 @@ pub const entries = [_]Entry{
     .{ .name = "CREATE-FILE", .stack = "( addr u fam -- fileid ior )", .text = "Create a file, emptying it if it exists." },
     .{ .name = "CLOSE-FILE", .stack = "( fileid -- ior )", .text = "Close a file." },
     .{ .name = "READ-LINE", .stack = "( addr u fileid -- u2 flag ior )", .text = "Read a line of at most u characters without its end; flag is false at the end of the file." },
+    .{ .name = "READ-FILE", .stack = "( addr u fileid -- u2 ior )", .text = "Read up to u bytes as they are; u2 is 0 at the end of the file." },
     .{ .name = "WRITE-LINE", .stack = "( addr u fileid -- ior )", .text = "Write a string and a line end." },
     .{ .name = "WRITE-FILE", .stack = "( addr u fileid -- ior )", .text = "Write a string." },
     .{ .name = "FILE-SIZE", .stack = "( fileid -- ud ior )", .text = "The size of the file in bytes." },
