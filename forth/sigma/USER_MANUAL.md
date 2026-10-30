@@ -140,6 +140,7 @@ CREATE BUF 16 ALLOT
 | メモリ | `F@`, `F!`, `F,`, `F+!`, `FLOATS`, `FLOAT+` | 1個8バイトです。 |
 | 定義 | `FVARIABLE 名前`, `値 FCONSTANT 名前`, `要素数 FARRAY 名前`, `FA@`, `FA!` | `FARRAY` の読み書きは `添字 配列名 FA@`、`添字 配列名 FA!` です。 |
 | 変換・入力 | `S>F`, `F>S`, `FINPUT` | `F>S` は0方向へ切り捨てます。`FINPUT` は端末から数値を1個読み取ります（`E` は省略可能）。 |
+| 書式付き出力 | `F.RDP`, `F>STR-RDP`, `F>BUF-RDP` | ( r 幅 小数桁 最低有効桁 -- ) の形で、幅に右寄せして表示（`F.RDP`）、文字列で返す（`F>STR-RDP` は ( -- addr u )、次の数値書式で上書きされます）、指定したバッファに書き込みます（`F>BUF-RDP` は ( r addr 幅 小数桁 最低有効桁 -- )）。例: `12345.6789E 10 2 7 F.RDP` は `  12345.68`、最低有効桁を8にすると `1.234568E4`。固定小数点で有効桁が足りないか、整数部が幅に収まらなければ指数表記、それも入らなければ `*` で埋めます。Gforthと同じ結果です。 |
 
 ## 入出力と基数
 
@@ -421,7 +422,7 @@ SAVE words.sigma
 LOAD words.sigma
 ```
 
-`LOAD` は保存した利用者定義語を現在の辞書の後ろに追加します。同名語は読み込んだ新しい定義が優先されます。以前の版で保存した辞書イメージ（`SIGIMG01`〜`SIGIMG09`）は読み込めません（`INVALID IMAGE !`）。定数や変数に保存した実行トークン（`:NONAME` の結果など）は、すでに利用者定義語がある辞書へ `LOAD` すると別の語を指すことがあります。`SAVESYS` で作った実行ファイルではこの問題は起きません。
+`LOAD` は保存した利用者定義語を現在の辞書の後ろに追加します。同名語は読み込んだ新しい定義が優先されます。以前の版で保存した辞書イメージ（`SIGIMG01`〜`SIGIMG10`）は読み込めません（`INVALID IMAGE !`）。定数や変数に保存した実行トークン（`:NONAME` の結果など）は、すでに利用者定義語がある辞書へ `LOAD` すると別の語を指すことがあります。`SAVESYS` で作った実行ファイルではこの問題は起きません。
 
 `SAVESYS` は、現在の辞書・コンパイル済み定義・データを含む、実行中環境向けの単独実行ファイルを作ります。
 
@@ -450,7 +451,7 @@ SAVESYS demo.exe
 | 浮動小数点スタック | `FDROP`, `FDUP`, `FSWAP`, `FOVER`, `FROT`, `F-ROT`, `FNIP`, `FTUCK`, `FPICK`, `FDEPTH`, `F.S` |
 | 浮動小数点算術・関数 | `F+`, `F-`, `F*`, `F/`, `FNEGATE`, `FMINUS`, `FABS`, `FMAX`, `FMIN`, `FSQRT`, `FEXP`, `FLN`, `FSIN`, `FCOS`, `FTAN` |
 | 浮動小数点比較 | `F=`, `F<>`, `F<`, `F>`, `F<=`, `F>=`, `F0=`, `F0<>`, `F0<`, `F0>`, `F0<=`, `F0>=` |
-| 浮動小数点メモリ・変換・入出力 | `F@`, `F!`, `F,`, `FA@`, `FA!`, `F+!`, `F?`, `FLOATS`, `FLOAT+`, `S>F`, `F>S`, `F.`, `FINPUT` |
+| 浮動小数点メモリ・変換・入出力 | `F@`, `F!`, `F,`, `FA@`, `FA!`, `F+!`, `F?`, `FLOATS`, `FLOAT+`, `S>F`, `F>S`, `F.`, `FINPUT`, `F.RDP`, `F>STR-RDP`, `F>BUF-RDP` |
 | 倍長整数 | `S>D`, `D>S`, `D+`, `D-`, `DNEGATE`, `DABS`, `D0=`, `D0<`, `D=`, `D<`, `D.`, `2@`, `2!`, `D>F`, `F>D` |
 | 文字列・入力 | `COUNT`, `PAD`, `ACCEPT`, `EVALUATE`, `KEY`, `KEY?`, `>NUMBER`, `S>NUMBER?`, `>FLOAT`, `WORD`, `PARSE` |
 | 数値の書式 | `<#`, `<<#`, `#`, `#S`, `#>`, `#>>`, `HOLD`, `HOLDS`, `SIGN` |
@@ -461,7 +462,7 @@ SAVESYS demo.exe
 | ファイル・例外 | `THROW`, `CATCH`, `R/O`, `W/O`, `R/W`, `STDIN`, `STDOUT`, `STDERR`, `OPEN-FILE`, `CREATE-FILE`, `CLOSE-FILE`, `READ-LINE`, `WRITE-LINE`, `WRITE-FILE`, `FILE-SIZE`, `REPOSITION-FILE` |
 | 動的メモリ・動的文字列 | `ALLOCATE`, `FREE`, `RESIZE`, `$!`, `$@`, `$@LEN`, `$!LEN`, `$+!`, `C$+!`, `$.`, `$DEL`, `$INS`, `$OVER`, `$FREE`, `$INIT`, `$SPLIT`, `$ITER`, `$TMP`, `$[]`, `$[]!`, `$[]@`, `$[]#`, `$[].`, `$[]MAP`, `$[]FREE`, `$[]SLURP`, `$[]SLURP-FILE` |
 
-起動時点でForth語彙に **309語** の組み込み語があります（`MINUS`/`NEGATE` のような別名もそれぞれ1語と数えます）。このほかRoot語彙に、`FORTH` `ONLY` などの10語が重ねて登録されています。
+起動時点でForth語彙に **312語** の組み込み語があります（`MINUS`/`NEGATE` のような別名もそれぞれ1語と数えます）。このほかRoot語彙に、`FORTH` `ONLY` などの10語が重ねて登録されています。
 
 ### 構文・定義形式
 
@@ -486,4 +487,4 @@ SAVESYS demo.exe
 
 現在は `EDIT`、`LIST`、エディットバッファ版の `LOAD`／`SAVE`、CP/Mファイル操作、PC-8001のモニター機能、`MCODE`やZ80機械語実行に対応していません。Z80をエミュレートする処理系ではありません。
 
-Gforthのワードのうち、`READ-FILE` などの残りのファイル操作、`WHERE`、`$?`、`[IFDEF]` など、`.R`、`F.RDP` などは未実装です。詳しくは[互換性一覧](COMPATIBILITY.md)を参照してください。
+Gforthのワードのうち、`READ-FILE` などの残りのファイル操作、`WHERE`、`$?`、`[IFDEF]` など、`.R` などは未実装です。`CODE` や `SAVESYSTEM` などGforthの起動処理に関わる語は対象外です。詳しくは[互換性一覧](COMPATIBILITY.md)を参照してください。

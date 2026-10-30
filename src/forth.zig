@@ -94,7 +94,7 @@ pub const data_start: Cell = 0x4000;
 const true_flag: Cell = -1;
 const dot_precision = 15;
 const fs_precision = 14;
-const image_magic = "SIGIMG10";
+const image_magic = "SIGIMG11";
 
 /// File ids of the standard streams; the host numbers opened files from `first_file_id`.
 pub const stdin_fileid: Cell = 1;
@@ -456,6 +456,9 @@ const Builtin = enum {
     bracket_then,
     bracket_defined,
     bracket_undefined,
+    f_dot_rdp,
+    f_to_str_rdp,
+    f_to_buf_rdp,
 };
 
 const HeapResult = union(enum) { address: Cell, no_memory, bad_pointer };
@@ -650,6 +653,161 @@ fn represent(value: Float, digit_count: usize) Representation {
     const exponent = std.fmt.parseInt(i32, text[cursor + 1 ..], 10) catch unreachable;
     result.exponent = exponent + 1;
     return result;
+}
+
+/// Widest field F.RDP and its relatives format.
+const max_rdp_width = 4096;
+
+/// Decimal digits of round-half-even(|value| * 10^scale), computed exactly from the
+/// binary value. std.fmt rounds the shortest decimal form instead, which differs from
+/// gforth for values such as 2.675 or 0.95.
+fn scaledDecimal(value: Float, scale: i32, output: []u8) RuntimeError![]const u8 {
+    const magnitude = @abs(value);
+    if (magnitude == 0) {
+        output[0] = '0';
+        return output[0..1];
+    }
+    const bits: u64 = @bitCast(magnitude);
+    const exponent_field: i32 = @intCast(bits >> 52);
+    const fraction = bits & ((@as(u64, 1) << 52) - 1);
+    const mantissa = if (exponent_field == 0) fraction else fraction | (@as(u64, 1) << 52);
+    const binary_exponent: i32 = (if (exponent_field == 0) -1074 else exponent_field - 1075);
+
+    var scratch: [32768]u8 = undefined;
+    var fixed = std.heap.FixedBufferAllocator.init(&scratch);
+    const allocator = fixed.allocator();
+    return scaledDecimalWith(allocator, mantissa, binary_exponent, scale, output) catch error.StringTooLong;
+}
+
+fn scaledDecimalWith(allocator: std.mem.Allocator, mantissa: u64, binary_exponent: i32, scale: i32, output: []u8) ![]const u8 {
+    const Big = std.math.big.int.Managed;
+    var numerator = try Big.initSet(allocator, mantissa);
+    var denominator = try Big.initSet(allocator, 1);
+    if (binary_exponent > 0) try numerator.shiftLeft(&numerator, @intCast(binary_exponent));
+    if (binary_exponent < 0) try denominator.shiftLeft(&denominator, @intCast(-binary_exponent));
+    var power = try Big.initSet(allocator, 10);
+    try power.pow(&power, @intCast(@abs(scale)));
+    if (scale > 0) try numerator.mul(&numerator, &power) else if (scale < 0) try denominator.mul(&denominator, &power);
+    var quotient = try Big.init(allocator);
+    var remainder = try Big.init(allocator);
+    try quotient.divTrunc(&remainder, &numerator, &denominator);
+    try remainder.shiftLeft(&remainder, 1);
+    const half = remainder.order(denominator);
+    if (half == .gt or (half == .eq and !quotient.isEven())) try quotient.addScalar(&quotient, 1);
+    const text = try quotient.toString(allocator, 10, .lower);
+    if (text.len > output.len) return error.NoSpaceLeft;
+    @memcpy(output[0..text.len], text);
+    return output[0..text.len];
+}
+
+/// F.RDP formatting of `value` into a field of `width` characters with `fraction`
+/// digits after the point in fixed-point notation, which is used when it shows at least
+/// `precision` significant digits and its integer part fits; otherwise exponential
+/// notation (`1.23E5`), and asterisks when even that does not fit. The rules follow
+/// gforth's documentation and the outputs observed from gforth.
+fn formatRdp(value: Float, width_cell: Cell, fraction_cell: Cell, precision_cell: Cell, output: *[max_rdp_width]u8) RuntimeError![]const u8 {
+    if (width_cell > max_rdp_width) return error.StringTooLong;
+    const width: usize = @intCast(@max(width_cell, 0));
+    const fraction: usize = @intCast(std.math.clamp(fraction_cell, 0, max_rdp_width));
+    const precision: i64 = @max(precision_cell, 0);
+    const field = output[0..width];
+    if (width == 0) return field;
+    @memset(field, ' ');
+    if (std.math.isNan(value) or std.math.isInf(value)) {
+        const name: []const u8 = if (std.math.isNan(value)) "NaN" else if (value < 0) "-infinity" else "infinity";
+        const shown = @min(name.len, width);
+        @memcpy(field[0..shown], name[0..shown]);
+        return field;
+    }
+    const negative = std.math.signbit(value);
+    const sign_width: usize = @intFromBool(negative);
+    const magnitude = @abs(value);
+    var digits: [max_rdp_width + 400]u8 = undefined;
+
+    // Decimal exponent e with magnitude = 0.d1d2... * 10^e, after rounding to the
+    // field width (at most 40 digits are needed to see a carry).
+    var exponent: i32 = 1;
+    if (magnitude != 0) {
+        const significant: i32 = @intCast(@min(width, 40));
+        const estimate: i32 = @intFromFloat(@floor(@log10(magnitude)));
+        const scale = significant - 1 - estimate;
+        const rounded = try scaledDecimal(magnitude, scale, &digits);
+        exponent = @as(i32, @intCast(rounded.len)) - scale;
+    }
+
+    // Fixed-point notation.
+    if (width >= fraction + 1 and (precision == 0 or @as(i64, @intCast(fraction)) + exponent >= precision)) {
+        const fraction_i: i32 = @intCast(fraction);
+        // When the first digit lies beyond the last place, gforth rounds up to one unit
+        // only if twice the value exceeds that unit (so 0.0005 shows as 0.000).
+        const scaled: []const u8 = if (magnitude != 0 and exponent + fraction_i <= 0)
+            (if (2 * magnitude > std.math.pow(Float, 0.1, @floatFromInt(fraction))) "1" else "0")
+        else
+            try scaledDecimal(magnitude, fraction_i, &digits);
+        const integer_len = if (scaled.len > fraction and !(scaled.len == 1 and scaled[0] == '0')) scaled.len - fraction else 0;
+        const room = width - fraction - 1;
+        if (integer_len + sign_width <= room) {
+            var at = width - fraction;
+            field[at - 1] = '.';
+            // Fraction digits, padded with zeros on the left.
+            var index: usize = 0;
+            while (index < fraction) : (index += 1) {
+                const from_end = fraction - index;
+                field[at + index] = if (from_end <= scaled.len) scaled[scaled.len - from_end] else '0';
+            }
+            at -= 1;
+            if (integer_len > 0) {
+                @memcpy(field[at - integer_len .. at], scaled[0..integer_len]);
+                at -= integer_len;
+            } else if (room > sign_width) {
+                at -= 1;
+                field[at] = '0';
+            }
+            if (negative) field[at - 1] = '-';
+            return field;
+        }
+    }
+
+    // Exponential notation: d.ddddEe filling the field exactly.
+    var decimal_exponent: i32 = if (magnitude == 0) 0 else exponent - 1;
+    var exponent_text: [16]u8 = undefined;
+    var attempt: usize = 0;
+    while (true) : (attempt += 1) {
+        const etext = std.fmt.bufPrint(&exponent_text, "{d}", .{decimal_exponent}) catch unreachable;
+        const mantissa_len: i64 = @as(i64, @intCast(width)) - @as(i64, @intCast(etext.len)) - 2 - @as(i64, @intCast(sign_width));
+        if (mantissa_len < 0) {
+            @memset(field, '*');
+            return field;
+        }
+        const count: usize = @intCast(@max(mantissa_len, 1));
+        const scale: i32 = @as(i32, @intCast(count)) - 1 - decimal_exponent;
+        const mantissa = if (magnitude == 0) blk: {
+            @memset(digits[0..count], '0');
+            break :blk digits[0..count];
+        } else try scaledDecimal(magnitude, scale, &digits);
+        const actual: i32 = if (magnitude == 0) 0 else @as(i32, @intCast(mantissa.len)) - scale - 1;
+        if (actual != decimal_exponent and attempt < 2) {
+            decimal_exponent = actual;
+            continue;
+        }
+        var at: usize = 0;
+        if (negative) {
+            field[0] = '-';
+            at = 1;
+        }
+        field[at] = mantissa[0];
+        at += 1;
+        if (mantissa_len >= 1) {
+            field[at] = '.';
+            at += 1;
+            const rest: usize = @intCast(mantissa_len - 1);
+            @memcpy(field[at .. at + rest], mantissa[1 .. 1 + rest]);
+            at += rest;
+        }
+        field[at] = 'E';
+        @memcpy(field[at + 1 .. at + 1 + etext.len], etext);
+        return field;
+    }
 }
 
 fn withoutTrailingZeros(digits: []const u8) []const u8 {
@@ -1104,6 +1262,7 @@ pub const State = struct {
             .{ "ORDER", .order },            .{ "GET-ORDER", .get_order },    .{ "SET-ORDER", .set_order },   .{ ">ORDER", .to_order },          .{ "GET-CURRENT", .get_current },
             .{ "SET-CURRENT", .set_current }, .{ "VOCABULARY", .vocabulary }, .{ "WORDLIST", .wordlist },    .{ "FORTH-WORDLIST", .forth_wordlist_word }, .{ "SEARCH-WORDLIST", .search_wordlist },
             .{ "[IF]", .bracket_if },        .{ "[ELSE]", .bracket_else },    .{ "[THEN]", .bracket_then },   .{ "[DEFINED]", .bracket_defined }, .{ "[UNDEFINED]", .bracket_undefined },
+            .{ "F.RDP", .f_dot_rdp },        .{ "F>STR-RDP", .f_to_str_rdp }, .{ "F>BUF-RDP", .f_to_buf_rdp },
         };
         for (definitions) |definition| self.addBuiltin(definition[0], definition[1]) catch unreachable;
         // The Root list repeats the words needed to rebuild the search order after ONLY.
@@ -3061,6 +3220,32 @@ pub const State = struct {
             },
             .bracket_else => try self.skipConditional(false),
             .bracket_then => {},
+            .f_dot_rdp, .f_to_str_rdp, .f_to_buf_rdp => {
+                const np = try self.pop();
+                const nd = try self.pop();
+                const nr = try self.pop();
+                const destination: ?Cell = if (builtin == .f_to_buf_rdp) try self.pop() else null;
+                const value = try self.fpop();
+                var text: [max_rdp_width]u8 = undefined;
+                const formatted = try formatRdp(value, nr, nd, np, &text);
+                switch (builtin) {
+                    .f_dot_rdp => self.write(formatted),
+                    .f_to_buf_rdp => {
+                        const start = try self.memoryAddress(destination.?, formatted.len);
+                        @memcpy(self.memory[start .. start + formatted.len], formatted);
+                    },
+                    else => {
+                        // Like gforth, the text goes just below the pictured numeric output
+                        // in the hold area and is overwritten by the next conversion.
+                        const length: Cell = @intCast(formatted.len);
+                        if (self.hold_ptr - hold_bottom < length) return error.PicturedNumericOverflow;
+                        const start: usize = @intCast(self.hold_ptr - length);
+                        @memcpy(self.memory[start .. start + formatted.len], formatted);
+                        try self.push(self.hold_ptr - length);
+                        try self.push(length);
+                    },
+                }
+            },
             .bracket_defined, .bracket_undefined => {
                 const name = (try self.nextSourceToken()) orelse return error.InputUnavailable;
                 // While compiling, a local variable in scope counts as defined, as in gforth.

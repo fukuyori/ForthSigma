@@ -2183,3 +2183,44 @@ test "locals are visible only where every path passes their declaration, as in g
     }
     try std.testing.expectEqualStrings("x ?\nx ?\nx ?\nx ?\nx ?\nz ?\n", output.written());
 }
+test "F>STR-RDP matches gforth's output for fixed, exponential, and overflowing fields" {
+    const cases = [_]struct { []const u8, []const u8 }{
+        .{ "12.3456789E 7 3 1", " 12.346" },       .{ "12.3456789E 7 4 1", "12.3457" },  .{ "-12.3456789E 7 4 1", "-1.23E1" },
+        .{ "0.0996E 7 3 1", "  0.100" },           .{ "0.0996E 7 3 3", "9.96E-2" },      .{ "999.9994E 7 3 1", "999.999" },
+        .{ "999.9996E 7 3 1", "1.000E3" },         .{ "-1E-20 5 2 1", "*****" },         .{ "12345.6789E 10 2 7", "  12345.68" },
+        .{ "12345.6789E 10 2 8", "1.234568E4" },   .{ "0E 7 3 1", "  0.000" },           .{ "-0E 7 3 1", " -0.000" },
+        .{ "1E 0E F/ 7 3 1", "infinit" },          .{ "-1E 0E F/ 7 3 1", "-infini" },    .{ "0E 0E F/ 7 3 1", "NaN    " },
+        .{ "1E-20 5 2 1", "1E-20" },               .{ "1E-5 7 3 1", "1.00E-5" },         .{ "1E-5 7 3 0", "  0.000" },
+        .{ "1.5E300 7 2 1", "1.5E300" },           .{ "123456E 6 0 0", "1.23E5" },       .{ "2.5E 5 0 1", "   2." },
+        .{ "3.5E 5 0 1", "   4." },                .{ "3.14159E 4 3 1", "3.E0" },        .{ "0.5E 4 3 1", ".500" },
+        .{ "-0.5E 5 3 1", "-.500" },               .{ "3.14159E 10 2 11", "3.141590E0" }, .{ "2.675E 6 2 1", "  2.67" },
+        .{ "0.95E 5 1 0", "  0.9" },               .{ "1E 1 0 0", "*" },                 .{ "9.99E 3 1 1", "1E1" },
+        .{ "1E-100 7 0 1", "1.E-100" },            .{ "0.0005E 7 3 0", "  0.000" },      .{ "0.0006E 7 3 0", "  0.001" },
+        .{ "0.05E 5 1 0", "  0.0" },               .{ "0.000123E 10 6 2", "  0.000123" }, .{ "-100E 3 0 1", "***" },
+    };
+    for (cases) |case| {
+        var output = Output{};
+        const machine = try createMachine(&output);
+        defer destroyMachine(machine);
+        var line: [80]u8 = undefined;
+        try machine.interpretLine(try std.fmt.bufPrint(&line, "{s} F>STR-RDP TYPE", .{case[0]}));
+        std.testing.expectEqualStrings(case[1], output.written()) catch |err| {
+            std.debug.print("case: {s}\n", .{case[0]});
+            return err;
+        };
+    }
+}
+
+test "F.RDP prints, F>BUF-RDP fills a buffer, and the book's Level 20 examples hold" {
+    var output = Output{};
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
+
+    try machine.interpretLine("12345.6789E 10 2 7 F.RDP 12345.6789E 10 2 8 F.RDP 3.14159265E FCONSTANT PI PI 10 2 0 F.RDP");
+    try machine.interpretLine("CREATE BUF 50 ALLOT BUF 50 ERASE PI BUF 10 4 0 F>BUF-RDP BUF 10 TYPE PI 0 2 0 F>STR-RDP NIP PI 0 0 0 F.RDP");
+    try std.testing.expectEqualStrings("  12345.681.234568E4      3.14    3.1416", output.written());
+    try expectStack(machine, &.{0});
+    try std.testing.expectError(error.StringTooLong, machine.interpretLine("1E 5000 2 0 F.RDP"));
+    machine.report(error.StringTooLong);
+    try std.testing.expectError(error.PicturedNumericOverflow, machine.interpretLine("123. <# #S 1E 4096 2 0 F>STR-RDP"));
+}
