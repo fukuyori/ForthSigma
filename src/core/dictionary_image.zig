@@ -1,6 +1,7 @@
 //! Saving the dictionary as an image, restoring it, and appending it with LOAD.
 
 const std = @import("std");
+const native_endian = @import("builtin").cpu.arch.endian();
 const defs = @import("defs.zig");
 const forth = @import("../forth.zig");
 const memory_map = @import("memory_map.zig");
@@ -62,6 +63,22 @@ fn memoryRanges(data_here: Cell, heap_top: Cell) [3][2]usize {
     };
 }
 
+/// Whether the names of the saved words lie one after another from the start of the name
+/// area to `names_used`, as appendEntry places them; FORGET and LOAD rely on that order.
+/// A word without a name takes no bytes. The fields are read from the bytes, so nothing
+/// is changed before an image is accepted.
+fn namesAreConsecutive(word_bytes: []const u8, names_used: usize) bool {
+    var next: usize = 0;
+    var at: usize = 0;
+    while (at < word_bytes.len) : (at += @sizeOf(Word)) {
+        const start = std.mem.readInt(u32, word_bytes[at + @offsetOf(Word, "name_start") ..][0..4], native_endian);
+        const length = word_bytes[at + @offsetOf(Word, "name_len")];
+        if (start != next) return false;
+        next += length;
+    }
+    return next == names_used;
+}
+
 fn rangesLength(ranges: [3][2]usize) usize {
     var total: usize = 0;
     for (ranges) |range| total += range[1] - range[0];
@@ -110,6 +127,7 @@ pub fn restoreImage(self: *State, input: []const u8) RuntimeError!void {
     if (heap_top < heap_base or heap_top > heap_end) return error.InvalidImage;
     const ranges = memoryRanges(data_here, heap_top);
     if (input.len != memory_at + rangesLength(ranges)) return error.InvalidImage;
+    if (!namesAreConsecutive(input[header_size .. header_size + word_bytes_len], names_used)) return error.InvalidImage;
     var cursor: usize = header_size;
     @memcpy(std.mem.sliceAsBytes(self.words[0..word_count]), input[cursor .. cursor + word_bytes_len]);
     cursor += word_bytes_len;
@@ -139,7 +157,7 @@ pub fn restoreImage(self: *State, input: []const u8) RuntimeError!void {
 }
 
 pub fn appendImage(self: *State, source: *const State) RuntimeError!void {
-    if (source.builtin_count != self.builtin_count or source.word_count < source.builtin_count) return error.InvalidImage;
+    if (source.builtin_count == 0 or source.builtin_count != self.builtin_count or source.word_count < source.builtin_count) return error.InvalidImage;
     const added_words: usize = source.word_count - source.builtin_count;
     const word_base: usize = self.word_count;
     const code_base: usize = self.code_count;

@@ -175,7 +175,7 @@ pub fn fakeReposition(context: ?*anyopaque, fileid: forth.Cell, position: forth.
 
 pub fn createMachine(output: *Output) !*forth.State {
     const machine = try std.testing.allocator.create(forth.State);
-    machine.* = forth.State.init(output.writer());
+    machine.init(output.writer());
     return machine;
 }
 

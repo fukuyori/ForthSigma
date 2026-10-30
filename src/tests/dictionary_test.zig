@@ -97,3 +97,135 @@ test "LOAD gives the added words their names after the dictionary's own" {
     try target.interpretLine("FORGET FIRST-LOADED : AFTER-FORGET 3 ; AFTER-FORGET");
     try expectStack(target, &.{ 5, 11, 10, 3 });
 }
+
+fn saveImage(machine: *forth.State) ![]u8 {
+    const image = try std.testing.allocator.alloc(u8, forth.State.imageCapacity());
+    errdefer std.testing.allocator.free(image);
+    const length = try machine.encodeImage(image);
+    return image[0..length];
+}
+
+fn freeImage(image: []u8) void {
+    std.testing.allocator.free(image.ptr[0..forth.State.imageCapacity()]);
+}
+
+test "an image whose names are out of order or out of range is rejected before anything changes" {
+    var output = Output{};
+    const source = try createMachine(&output);
+    defer destroyMachine(source);
+    try source.interpretLine(": FIRST-WORD 1 ; :NONAME 2 ; DROP : SECOND-WORD 3 ;");
+    const image = try saveImage(source);
+    defer freeImage(image);
+    const Word = @TypeOf(source.words[0]);
+    const builtins: usize = source.builtin_count;
+
+    const loaded = try createMachine(&output);
+    defer destroyMachine(loaded);
+    const before_words = loaded.word_count;
+    const before_names = loaded.names_used;
+    const corruptions = [_]struct { usize, usize, u8 }{
+        // A user word's name moved into the built-in names.
+        .{ builtins, @offsetOf(Word, "name_start"), 0 },
+        // The last built-in name made longer than the name area holds.
+        .{ builtins - 1, @offsetOf(Word, "name_len"), 255 },
+        // The last word's name moved past the end of the used names.
+        .{ source.word_count - 1, @offsetOf(Word, "name_start") + 2, 4 },
+    };
+    for (corruptions) |corruption| {
+        const at = 24 + corruption[0] * @sizeOf(Word) + corruption[1];
+        const saved = image[at];
+        image[at] = corruption[2];
+        try std.testing.expectError(error.InvalidImage, loaded.restoreImage(image));
+        image[at] = saved;
+        try std.testing.expectEqual(before_words, loaded.word_count);
+        try std.testing.expectEqual(before_names, loaded.names_used);
+    }
+    // The previous format is not read either.
+    @memcpy(image[0..8], "SIGIMG15");
+    try std.testing.expectError(error.InvalidImage, loaded.restoreImage(image));
+    @memcpy(image[0..8], "SIGIMG16");
+    try loaded.restoreImage(image);
+    try loaded.interpretLine("FIRST-WORD SECOND-WORD");
+    try expectStack(loaded, &.{ 1, 3 });
+}
+
+test "a VARIABLE without room for its name and a definition CATCH abandons leave HERE and the names as they were" {
+    var output = Output{};
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
+
+    const names_before = machine.names_used;
+    try machine.interpretLine(": START S\" : BROKEN NO-SUCH-WORD ;\" EVALUATE ; ' START CATCH .");
+    try std.testing.expectEqualStrings("-13 ", output.written());
+    try std.testing.expectEqual(names_before + "START".len, machine.names_used);
+
+    var line: [300]u8 = undefined;
+    var count: usize = 0;
+    while (true) : (count += 1) {
+        machine.interpretLine(try std.fmt.bufPrint(&line, ": {s}{d:0>6} ;", .{ "N" ** 249, count })) catch |err| {
+            machine.report(err);
+            break;
+        };
+    }
+    const here = machine.data_here;
+    const names = machine.names_used;
+    const words = machine.word_count;
+    try std.testing.expectError(error.DictionaryFull, machine.interpretLine("VARIABLE " ++ "V" ** 255));
+    machine.report(error.DictionaryFull);
+    try std.testing.expectEqual(here, machine.data_here);
+    try std.testing.expectEqual(names, machine.names_used);
+    try std.testing.expectEqual(words, machine.word_count);
+}
+
+test "LOAD into a dictionary without room changes nothing, and unnamed words keep LOAD and FORGET in step" {
+    var output = Output{};
+    const source = try createMachine(&output);
+    defer destroyMachine(source);
+    try source.interpretLine(": AAA 1 ; :NONAME 2 ; DROP : BBB 3 ;");
+    const image = try saveImage(source);
+    defer freeImage(image);
+    const loaded = try createMachine(&output);
+    defer destroyMachine(loaded);
+    try loaded.restoreImage(image);
+
+    const target = try createMachine(&output);
+    defer destroyMachine(target);
+    try target.interpretLine(":NONAME 9 ; DROP : CCC 4 ;");
+    const names_before = target.names_used;
+    try target.appendImage(loaded);
+    try target.interpretLine("AAA BBB CCC");
+    try expectStack(target, &.{ 1, 3, 4 });
+    try target.interpretLine("FORGET AAA : DDD 5 ; DDD CCC");
+    try std.testing.expectEqual(names_before + "DDD".len, target.names_used);
+    try expectStack(target, &.{ 1, 3, 4, 5, 4 });
+
+    // A full name area: the appended image does not fit and nothing changes.
+    const full = try createMachine(&output);
+    defer destroyMachine(full);
+    var line: [300]u8 = undefined;
+    var count: usize = 0;
+    while (true) : (count += 1) {
+        full.interpretLine(try std.fmt.bufPrint(&line, ": {s}{d:0>6} ;", .{ "N" ** 249, count })) catch |err| {
+            full.report(err);
+            break;
+        };
+    }
+    const words = full.word_count;
+    const names = full.names_used;
+    const code = full.code_count;
+    const here = full.data_here;
+    // Names longer than the room left (less than one 255-byte name).
+    const long_source = try createMachine(&output);
+    defer destroyMachine(long_source);
+    try long_source.interpretLine(": " ++ "A" ** 200 ++ " 1 ; : " ++ "B" ** 200 ++ " 2 ;");
+    const long_image = try saveImage(long_source);
+    defer freeImage(long_image);
+    const long_loaded = try createMachine(&output);
+    defer destroyMachine(long_loaded);
+    try long_loaded.restoreImage(long_image);
+    try std.testing.expectError(error.DictionaryFull, full.appendImage(long_loaded));
+    try std.testing.expectEqual(words, full.word_count);
+    try std.testing.expectEqual(names, full.names_used);
+    try std.testing.expectEqual(code, full.code_count);
+    try std.testing.expectEqual(here, full.data_here);
+}

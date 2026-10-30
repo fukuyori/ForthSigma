@@ -161,18 +161,19 @@ pub const State = struct {
     locals_frame_size: u16 = 0,
     locals_top: Cell = locals_base,
 
-    pub fn init(writer: Writer) State {
-        var state = State{ .writer = writer };
-        state.writeCell(base_address, 10) catch unreachable;
-        state.writeCell(heap_top_address, heap_base) catch unreachable;
-        state.storeSourceName(terminal_source_name_address, terminal_source_name);
-        state.storeSourceName(evaluate_source_name_address, evaluate_source_name);
+    /// Sets up a State where it lies. The State is a few megabytes, so it is built in
+    /// place rather than returned by value, which could need copies on the stack.
+    pub fn init(self: *State, writer: Writer) void {
+        self.* = .{ .writer = writer };
+        self.writeCell(base_address, 10) catch unreachable;
+        self.writeCell(heap_top_address, heap_base) catch unreachable;
+        self.storeSourceName(terminal_source_name_address, terminal_source_name);
+        self.storeSourceName(evaluate_source_name_address, evaluate_source_name);
         // gforth starts with the search order Forth Forth Root and defines into Forth.
-        state.writeCell(wordlist_count_address, root_wordlist) catch unreachable;
-        state.writeCell(current_wordlist_address, forth_wordlist) catch unreachable;
-        state.setSearchOrder(&.{ forth_wordlist, forth_wordlist, root_wordlist });
-        state.installBuiltins();
-        return state;
+        self.writeCell(wordlist_count_address, root_wordlist) catch unreachable;
+        self.writeCell(current_wordlist_address, forth_wordlist) catch unreachable;
+        self.setSearchOrder(&.{ forth_wordlist, forth_wordlist, root_wordlist });
+        self.installBuiltins();
     }
 
     /// Writes interpreter output, or appends it to the string being built by $TMP.

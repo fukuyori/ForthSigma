@@ -274,7 +274,7 @@ fn loadDictionary(context: ?*anyopaque, input_path: []const u8, machine: *forth.
     if (fread(bytes.ptr, 1, bytes.len, file) != bytes.len) return error.FileUnavailable;
     const loaded = host.allocator.create(forth.State) catch return error.MemoryExhausted;
     defer host.allocator.destroy(loaded);
-    loaded.* = forth.State.init(machine.writer);
+    loaded.init(machine.writer);
     try loaded.restoreImage(bytes);
     try machine.appendImage(loaded);
 }
@@ -400,7 +400,7 @@ pub fn main(init: std.process.Init) !void {
     defer allocator.destroy(machine);
 
     enableVirtualTerminal();
-    machine.* = forth.State.init(.{ .context = @ptrCast(&host), .write_fn = terminalWrite, .read_fn = terminalRead, .load_fn = loadDictionary, .save_fn = saveDictionary, .savesys_fn = saveExecutableImage, .key_fn = terminalKey, .key_ready_fn = terminalKeyReady, .sleep_fn = sleepMilliseconds, .utime_fn = microsecondsSinceEpoch, .getenv_fn = environmentValue, .system_fn = runShellCommand, .file_ops = &file_ops });
+    machine.init(.{ .context = @ptrCast(&host), .write_fn = terminalWrite, .read_fn = terminalRead, .load_fn = loadDictionary, .save_fn = saveDictionary, .savesys_fn = saveExecutableImage, .key_fn = terminalKey, .key_ready_fn = terminalKeyReady, .sleep_fn = sleepMilliseconds, .utime_fn = microsecondsSinceEpoch, .getenv_fn = environmentValue, .system_fn = runShellCommand, .file_ops = &file_ops });
     defer closeAllFiles();
     loadEmbeddedImage(executable_path, machine, allocator);
 
@@ -472,7 +472,7 @@ test "GETENV through the host accepts 3072 bytes and rejects 3073" {
     var host = HostContext{ .allocator = std.testing.allocator, .executable_path = "", .io = undefined, .environ_map = &map };
     const machine = try std.testing.allocator.create(forth.State);
     defer std.testing.allocator.destroy(machine);
-    machine.* = forth.State.init(.{ .context = @ptrCast(&host), .write_fn = discardOutput, .getenv_fn = environmentValue });
+    machine.init(.{ .context = @ptrCast(&host), .write_fn = discardOutput, .getenv_fn = environmentValue });
 
     try machine.interpretLine("S\" SIGMA_FIT\" GETENV NIP S\" SIGMA_EMPTY\" GETENV NIP S\" SIGMA_UNSET\" GETENV S\" A=B\" GETENV");
     try std.testing.expectEqualSlices(forth.Cell, &.{ 3072, 0, 0, 0, 0, 0 }, machine.data_stack[0..machine.data_depth]);
@@ -511,7 +511,7 @@ test "INCLUDE through the host reads CR LF lines and limits a line to 4096 bytes
     var host = HostContext{ .allocator = allocator, .executable_path = "", .io = undefined, .environ_map = undefined };
     const machine = try allocator.create(forth.State);
     defer allocator.destroy(machine);
-    machine.* = forth.State.init(.{ .context = @ptrCast(&host), .write_fn = discardOutput, .file_ops = &file_ops });
+    machine.init(.{ .context = @ptrCast(&host), .write_fn = discardOutput, .file_ops = &file_ops });
     defer closeAllFiles();
 
     try machine.interpretLine("INCLUDE .zig-cache/sigma-include-fit.fs SOURCELINE#");
@@ -525,4 +525,21 @@ test "the banner names the version from VERSION and the license" {
     try std.testing.expect(std.mem.startsWith(u8, banner, "FORTH/Sigma " ++ expected ++ "  MIT License\n"));
     try std.testing.expect(std.mem.endsWith(u8, banner, "Type `help' for basic help\n"));
     try std.testing.expect(std.mem.indexOfScalar(u8, banner, '\r') == null);
+}
+
+test "SAVE and LOAD through the host keep the words, also when loaded twice" {
+    const allocator = std.testing.allocator;
+    var host = HostContext{ .allocator = allocator, .executable_path = "", .io = undefined, .environ_map = undefined };
+    const writer: forth.Writer = .{ .context = @ptrCast(&host), .write_fn = discardOutput, .load_fn = loadDictionary, .save_fn = saveDictionary };
+    const source = try allocator.create(forth.State);
+    defer allocator.destroy(source);
+    source.init(writer);
+    try source.interpretLine(": SQ DUP * ; :NONAME 7 ; DROP VARIABLE V 11 V ! SAVE .zig-cache/sigma-load-test.sigma");
+
+    // LOAD builds a second State of several megabytes; it must not need a copy on the stack.
+    const target = try allocator.create(forth.State);
+    defer allocator.destroy(target);
+    target.init(writer);
+    try target.interpretLine(": EARLIER 1 ; LOAD .zig-cache/sigma-load-test.sigma LOAD .zig-cache/sigma-load-test.sigma 6 SQ V @ EARLIER");
+    try std.testing.expectEqualSlices(forth.Cell, &.{ 36, 11, 1 }, target.data_stack[0..target.data_depth]);
 }
