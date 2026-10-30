@@ -335,6 +335,15 @@ pub const Builtin = enum {
     string_array_slurp,
     string_array_slurp_file,
     string_slurp_file,
+    string_slurp,
+    string_plus_slurp,
+    string_plus_slurp_file,
+    string_slurp_line,
+    string_plus_store_len,
+    string_array_append,
+    string_append_array,
+    string_exec,
+    system_status,
     catch_word,
     word_parse,
     find_word,
@@ -359,6 +368,7 @@ pub const Builtin = enum {
     source_line_number,
     marker,
     locate,
+    where,
     only,
     also,
     previous,
@@ -379,6 +389,20 @@ pub const Builtin = enum {
     bracket_then,
     bracket_defined,
     bracket_undefined,
+    bracket_ifdef,
+    bracket_ifundef,
+    bracket_do,
+    bracket_q_do,
+    bracket_loop,
+    bracket_plus_loop,
+    bracket_i,
+    bracket_begin,
+    bracket_until,
+    bracket_again,
+    bracket_while,
+    bracket_repeat,
+    bracket_for,
+    bracket_next,
     f_dot_rdp,
     f_to_str_rdp,
     f_to_buf_rdp,
@@ -450,6 +474,16 @@ pub const HeapResult = union(enum) { address: Cell, no_memory, bad_pointer };
 pub const SourceKind = enum { terminal, evaluate, file };
 
 /// `line_start` is the file position where the current line began, for RESTORE-INPUT.
+/// A place in the input, as SAVE-INPUT gives it: the source id, >IN, the line's mark
+/// (its address, or for a file where it started), and its number or length.
+pub const InputPlace = struct { id: Cell, cursor: Cell, mark: Cell, number: Cell };
+
+/// A loop of [DO], [?DO], [FOR], or [BEGIN]: the input goes back to `place` to repeat it.
+pub const InterpretLoop = struct { kind: enum { counted, countdown, begin }, index: Cell = 0, limit: Cell = 0, place: InputPlace };
+
+/// A place in a file where a word was found by name, for WHERE. The column counts from 1.
+pub const WordUse = struct { word: u16, file_index: u8, column: u16, line: u32 };
+
 pub const IncludeFrame = struct { fileid: Cell, file_index: u8, line: u32, line_start: UCell = 0 };
 
 /// Where an error happened inside an included file, kept for `report`.
@@ -482,6 +516,7 @@ pub const CatchFrame = struct {
     return_depth: usize,
     loop_depth: usize,
     control_depth: usize,
+    interpret_loop_depth: usize,
     pending: Pending,
     compiling: bool,
     defining: bool,

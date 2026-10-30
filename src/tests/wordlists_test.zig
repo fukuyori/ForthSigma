@@ -174,6 +174,117 @@ test "[IF] skipping inside an included file reads further lines and fails at its
     for (output.files) |file| try std.testing.expect(!file.open);
 }
 
+test "[IFDEF] [IFUNDEF] [ENDIF] and the interpreted loops work as in gforth" {
+    var output = Output{};
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
+
+    try machine.interpretLine("[IFDEF] DUP 1 [ELSE] 2 [THEN] [IFDEF] NOSUCH 3 [ELSE] 4 [ENDIF] [IFUNDEF] NOSUCH 5 [THEN] [IFUNDEF] DUP 6 [THEN]");
+    try expectStack(machine, &.{ 1, 4, 5 });
+    machine.data_depth = 0;
+    try machine.interpretLine("3 0 [DO] [I] [LOOP] 0 0 [?DO] 99 [LOOP] 10 0 [DO] [I] 3 [+LOOP] 0 3 [DO] [I] -1 [+LOOP]");
+    try expectStack(machine, &.{ 0, 1, 2, 0, 3, 6, 9, 3, 2, 1, 0 });
+    machine.data_depth = 0;
+    try machine.interpretLine("2 0 [DO] 2 0 [DO] [I] [LOOP] [LOOP] 2 [FOR] [I] [NEXT] 0 [FOR] [I] [NEXT]");
+    try expectStack(machine, &.{ 0, 1, 0, 1, 2, 1, 0, 0 });
+    machine.data_depth = 0;
+    try machine.interpretLine("VARIABLE N 0 N ! [BEGIN] N @ 1 N +! N @ 3 = [UNTIL] 0 N ! [BEGIN] N @ 2 < [WHILE] N @ 10 + 1 N +! [REPEAT] N @");
+    try expectStack(machine, &.{ 0, 1, 2, 10, 11, 2 });
+    machine.data_depth = 0;
+    try machine.interpretLine(": T [ 2 0 [DO] [I] ] LITERAL [ [LOOP] ] ; T S\" 2 0 [DO] [I] [LOOP]\" EVALUATE");
+    try expectStack(machine, &.{ 0, 1, 0, 1 });
+    try std.testing.expectError(error.ControlMismatch, machine.interpretLine("[LOOP]"));
+    try std.testing.expectError(error.ControlMismatch, machine.interpretLine("[I]"));
+}
+
+test "CATCH ends the interpreted loops started in the caught word" {
+    var output = Output{};
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
+
+    try machine.interpretLine(": BAD S\" 3 0 [DO] -99 THROW [LOOP]\" EVALUATE ; ' BAD CATCH");
+    try expectStack(machine, &.{-99});
+    try std.testing.expectError(error.ControlMismatch, machine.interpretLine("[I]"));
+    // An outer loop goes on with its own index.
+    machine.data_depth = 0;
+    try machine.interpretLine("2 0 [DO] [I] ' BAD CATCH DROP [LOOP]");
+    try expectStack(machine, &.{ 0, 1 });
+}
+
+test "an interpreted loop does not go back into a later terminal line of the same length" {
+    var output = Output{};
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
+
+    // The two lines have the same length and lie in the same buffer.
+    try machine.interpretLine("2 0 [DO] [I] .                          ");
+    try std.testing.expectError(error.ControlMismatch, machine.interpretLine("[LOOP]   99 .                           "));
+    try std.testing.expectEqualStrings("0 ", output.written());
+    // SAVE-INPUT on one line cannot go back from the next line either.
+    machine.data_depth = 0;
+    try machine.interpretLine("SAVE-INPUT                    ");
+    try machine.interpretLine("RESTORE-INPUT                 ");
+    try expectStack(machine, &.{-1});
+}
+
+test "an interpreted loop in an included file repeats its lines" {
+    var output = Output{};
+    setFakeFile(&output, 0, "3 0 [DO] [I]\n  100 +\n[LOOP] 7\n");
+    setFakeFile(&output, 1, "0 0 [?DO]\n  never\n[LOOP] 8\n");
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
+
+    try machine.interpretLine("INCLUDE a.txt INCLUDE b.txt");
+    try expectStack(machine, &.{ 100, 101, 102, 7, 8 });
+}
+
+test "WHERE lists the uses of a word in included files as gforth does" {
+    var output = Output{};
+    setFakeFile(&output, 0, ": SQ DUP * ;\n\t: T2\tSQ ;\n   7 SQ DROP\n: T3 SQ SQ ; \\ \u{3042}\u{3044}\u{3046}\n: LONG " ++ "SQ " ** 30 ++ ";\n");
+    setFakeFile(&output, 1, "' SQ DROP CHAR SQ DROP .( SQ) \\ SQ\n[DEFINED] SQ DROP S\" SQ\" FIND-NAME DROP 0 [IF] SQ [THEN]\n");
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
+
+    // A use typed at the terminal is not recorded.
+    try machine.interpretLine("INCLUDE a.txt 3 SQ DROP WHERE SQ");
+    const long_line = ": LONG " ++ "SQ " ** 20 ++ "S";
+    // A tab takes the columns up to the next multiple of 8 and a wide character two.
+    const first_lines = "\na.txt:2:7: : T2\tSQ ;" ++ " " ** 56 ++ "0" ++
+        "\na.txt:3:6: 7 SQ DROP" ++ " " ** 59 ++ "1" ++
+        "\na.txt:4:6: : T3 SQ SQ ; \\ \u{3042}\u{3044}\u{3046}" ++ " " ** 47 ++ "2" ++
+        "\na.txt:4:9: : T3 SQ SQ ; \\ \u{3042}\u{3044}\u{3046}" ++ " " ** 47 ++ "3" ++
+        "\na.txt:5:8: " ++ long_line ++ "4" ++
+        "\na.txt:5:11: " ++ long_line[0 .. long_line.len - 1] ++ "5";
+    try std.testing.expectEqualStrings(first_lines, output.written()[0..first_lines.len]);
+    try std.testing.expectEqual(@as(usize, 34), std.mem.count(u8, output.written(), "\n"));
+
+    // ' [DEFINED] and FIND-NAME record a use at the last word read; CHAR, comments,
+    // and skipped input do not. As in gforth, the uses in forgotten definitions stay.
+    output.len = 0;
+    try machine.interpretLine("INCLUDE b.txt FORGET T2 WHERE SQ");
+    const written = output.written();
+    try std.testing.expectEqual(@as(usize, 37), std.mem.count(u8, written, "\n"));
+    try std.testing.expectEqual(@as(usize, 1), std.mem.count(u8, written, "\nb.txt:1:"));
+    try std.testing.expect(std.mem.indexOf(u8, written, "\nb.txt:1:3: ' SQ DROP CHAR SQ DROP .( SQ) \\ SQ ") != null);
+    try std.testing.expectEqual(@as(usize, 2), std.mem.count(u8, written, "\nb.txt:2:"));
+    try std.testing.expect(std.mem.indexOf(u8, written, "\nb.txt:2:11: [DEFINED] SQ") != null);
+    try std.testing.expect(std.mem.indexOf(u8, written, "\nb.txt:2:26: [DEFINED] SQ") != null);
+
+    // A new definition of the name has uses of its own; a forgotten word has none.
+    output.len = 0;
+    try machine.interpretLine(": SQ 1 ; WHERE SQ");
+    try std.testing.expectEqualStrings("WARNING: SAME NAME WORD EXISTS\n", output.written());
+    try std.testing.expectError(error.UnknownWord, machine.interpretLine("WHERE NOSUCH"));
+
+    // When the place alone is wider than the line, all of the text follows, as in gforth.
+    const long_name = support.fake_file_names[4];
+    const long_text = ": T SQ2 " ++ "SQ2 " ** 20 ++ ";";
+    setFakeFile(&output, 4, ": SQ2 DUP * ;\n" ++ long_text ++ "\n");
+    output.len = 0;
+    try machine.interpretLine("INCLUDE " ++ long_name ++ " WHERE SQ2");
+    try std.testing.expectEqualStrings("\n" ++ long_name ++ ":2:5: " ++ long_text ++ "0", output.written()[0 .. long_name.len + long_text.len + 8]);
+}
+
 test "FIND and LOCATE pick the word from the first list in the search order" {
     var output = Output{};
     setFakeFile(&output, 0, "VOCABULARY V1 VOCABULARY V2\nALSO V1 DEFINITIONS : SAME 1 ;\nV2 DEFINITIONS : SAME 2 ;\n");

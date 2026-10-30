@@ -225,7 +225,10 @@ pub fn nextSourceToken(self: *State) RuntimeError!?[]const u8 {
         var cursor = self.sourceCursor();
         const token = nextToken(self.source_line, &cursor);
         self.setSourceCursor(cursor);
-        if (token) |found| return found;
+        if (token) |found| {
+            self.token_start = @intFromPtr(found.ptr) - @intFromPtr(self.source_line.ptr);
+            return found;
+        }
         const line = switch (self.source_kind) {
             .evaluate => return null,
             .file => try self.readIncludeLine() orelse return null,
@@ -237,5 +240,6 @@ pub fn nextSourceToken(self: *State) RuntimeError!?[]const u8 {
         };
         self.source_line = line;
         self.setSourceCursor(0);
+        self.numberInputLine();
     }
 }

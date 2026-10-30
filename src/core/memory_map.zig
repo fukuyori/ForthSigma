@@ -17,6 +17,8 @@ pub const cell_size = 8;
 pub const float_size = 8;
 
 pub const max_words = 8192;
+/// Uses of words read from files that WHERE can list; later uses are not recorded.
+pub const max_uses = 65536;
 
 pub const max_code = 65535;
 
@@ -180,7 +182,7 @@ pub const max_dot_s_items = 9;
 
 pub const fs_precision = 14;
 
-pub const image_magic = "SIGIMG28";
+pub const image_magic = "SIGIMG31";
 
 /// File ids of the standard streams; the host numbers opened files from `first_file_id`.
 pub const stdin_fileid: Cell = 1;

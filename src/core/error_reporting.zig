@@ -32,12 +32,14 @@ pub fn report(self: *State, err: anyerror) void {
         self.code_count = self.words[self.current_word].code_start;
         self.names_used = self.words[self.current_word].name_start;
         self.word_count = self.current_word;
+        self.dropUsesFrom(self.current_word);
         self.data_here = self.current_data_start;
     }
     self.setCompiling(false);
     self.defining = false;
     self.pending = .none;
     self.control_depth = 0;
+    self.interpret_loop_depth = 0;
     self.data_depth = 0;
     self.return_depth = 0;
     self.float_depth = 0;
@@ -144,6 +146,7 @@ pub fn restoreCatchFrame(self: *State, frame: CatchFrame) void {
         self.code_count = self.words[self.current_word].code_start;
         self.names_used = self.words[self.current_word].name_start;
         self.word_count = self.current_word;
+        self.dropUsesFrom(self.current_word);
         self.data_here = self.current_data_start;
         self.defining = false;
     }
@@ -152,6 +155,8 @@ pub fn restoreCatchFrame(self: *State, frame: CatchFrame) void {
     self.return_depth = frame.return_depth;
     self.loop_depth = frame.loop_depth;
     self.control_depth = frame.control_depth;
+    // Interpreted loops started inside the caught word end with it.
+    self.interpret_loop_depth = @min(self.interpret_loop_depth, frame.interpret_loop_depth);
     self.pending = frame.pending;
     self.local_count = frame.local_count;
     self.setCompiling(frame.compiling);

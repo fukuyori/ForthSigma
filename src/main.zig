@@ -101,14 +101,17 @@ fn environmentValue(context: ?*anyopaque, name: []const u8, buffer: []u8) forth.
 
 /// Runs the command through the C library's `system`, which uses `cmd.exe /c` on
 /// Windows and `/bin/sh -c` elsewhere.
-fn runShellCommand(_: ?*anyopaque, command: []const u8) forth.RuntimeError!void {
+fn runShellCommand(_: ?*anyopaque, command: []const u8) forth.RuntimeError!forth.Cell {
     var terminated: [4096:0]u8 = undefined;
     if (command.len >= terminated.len) return error.StringTooLong;
     // `system` would stop at an embedded NUL and run only the text before it.
     if (std.mem.indexOfScalar(u8, command, 0) != null) return error.HostFailed;
     @memcpy(terminated[0..command.len], command);
     terminated[command.len] = 0;
-    if (system(&terminated) == -1) return error.HostFailed;
+    // On POSIX systems this is the wait status, as gforth's $? gives; on Windows, the exit code.
+    const status = system(&terminated);
+    if (status == -1) return error.HostFailed;
+    return status;
 }
 
 const max_open_files = 64;
@@ -303,17 +306,26 @@ fn fileRename(_: ?*anyopaque, old: []const u8, new: []const u8) forth.Cell {
     var new_path: [4096:0]u8 = undefined;
     const c_old = cPath(old, &old_path) orelse return forth.errnoIor(forth.errno_invalid);
     const c_new = cPath(new, &new_path) orelse return forth.errnoIor(forth.errno_invalid);
+    // The Windows C library's rename does not replace an existing file, as POSIX rename
+    // (and so gforth) does. MoveFileEx replaces it in one step, so a failure leaves the
+    // file there as it was.
+    if (builtin.os.tag == .windows) {
+        if (MoveFileExA(c_old, c_new, move_replace_existing | move_copy_allowed) != 0) return 0;
+        return forth.errnoIor(switch (GetLastError()) {
+            2, 3 => 2, // ERROR_FILE_NOT_FOUND, ERROR_PATH_NOT_FOUND: ENOENT
+            5, 32 => 13, // ERROR_ACCESS_DENIED, ERROR_SHARING_VIOLATION: EACCES
+            else => errno_io,
+        });
+    }
     clearErrno();
     if (rename(c_old, c_new) == 0) return 0;
-    // The Windows C library does not replace an existing file, as POSIX rename (and so
-    // gforth) does; remove it and try once more.
-    const errno_exists = 17;
-    if (builtin.os.tag == .windows and std.c._errno().* == errno_exists) {
-        clearErrno();
-        if (remove(c_new) == 0 and rename(c_old, c_new) == 0) return 0;
-    }
     return lastIor();
 }
+
+extern "kernel32" fn MoveFileExA([*:0]const u8, [*:0]const u8, u32) callconv(.winapi) c_int;
+extern "kernel32" fn GetLastError() callconv(.winapi) u32;
+const move_replace_existing = 0x1;
+const move_copy_allowed = 0x2;
 
 fn fileStatus(_: ?*anyopaque, name: []const u8) forth.FileResult {
     var path: [4096:0]u8 = undefined;
@@ -623,11 +635,13 @@ test "GETENV through the host accepts 3072 bytes and rejects 3073" {
 test "SYSTEM through the host checks length and embedded NUL before running" {
     var command: [4096]u8 = @splat(' ');
     @memcpy(command[0..6], "exit 0");
-    try runShellCommand(null, command[0..4095]);
+    try std.testing.expectEqual(@as(forth.Cell, 0), try runShellCommand(null, command[0..4095]));
     try std.testing.expectError(error.StringTooLong, runShellCommand(null, command[0..4096]));
     try std.testing.expectError(error.HostFailed, runShellCommand(null, "exit 0\x00 & exit 1"));
-    // A command that runs but exits with a non-zero status is not an error.
-    try runShellCommand(null, "exit 3");
+    // A command that runs but exits with a non-zero status is not an error; its status
+    // is the exit code on Windows and the wait status elsewhere, as gforth's $? gives.
+    const status: forth.Cell = if (builtin.os.tag == .windows) 3 else 3 << 8;
+    try std.testing.expectEqual(status, try runShellCommand(null, "exit 3"));
 }
 fn writeTestFile(path: [*:0]const u8, bytes: []const u8) !void {
     const file = fopen(path, "wb") orelse return error.TestUnexpectedResult;
@@ -704,6 +718,13 @@ test "file words through the host: position, resize, flush, status, rename over 
     // the first DELETE-FILE works and the second finds no file.
     try std.testing.expectEqualSlices(forth.Cell, &.{ 0, 11, 0, 0, 0, 0, 5, 0, 0, 11, 0, 0, 0, forth.fam_read_write, 0, 0, forth.errnoIor(2), 5, 0, forth.errnoIor(2) }, machine.data_stack[0..machine.data_depth]);
     for (open_files) |slot| try std.testing.expect(slot == null);
+
+    // A rename that fails leaves the file it would have replaced as it was.
+    machine.data_depth = 0;
+    try writeTestFile(".zig-cache/sigma-files-b.txt", "old");
+    try machine.interpretLine("S\" .zig-cache/sigma-files-none.txt\" S\" .zig-cache/sigma-files-b.txt\" RENAME-FILE S\" .zig-cache/sigma-files-b.txt\" SLURP-FILE NIP");
+    try machine.interpretLine("S\" .zig-cache/sigma-files-b.txt\" DELETE-FILE");
+    try std.testing.expectEqualSlices(forth.Cell, &.{ forth.errnoIor(2), 3, 0 }, machine.data_stack[0..machine.data_depth]);
 }
 
 test "the banner names the version from VERSION and the license" {

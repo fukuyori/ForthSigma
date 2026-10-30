@@ -6,6 +6,7 @@ const forth = @import("../forth.zig");
 const memory_map = @import("memory_map.zig");
 const Builtin = defs.Builtin;
 const Cell = memory_map.Cell;
+const truth = @import("integer_math.zig").truth;
 const RuntimeError = defs.RuntimeError;
 const State = forth.State;
 const UCell = memory_map.UCell;
@@ -22,6 +23,8 @@ pub const words = [_]Builtin{
     .string_init, .string_split, .string_iter, .string_tmp, .string_array, .string_array_store,
     .string_array_fetch, .string_array_count, .string_array_dot, .string_array_map,
     .string_array_free, .string_array_slurp, .string_array_slurp_file, .string_slurp_file,
+    .string_slurp, .string_plus_slurp, .string_plus_slurp_file, .string_slurp_line,
+    .string_plus_store_len, .string_array_append, .string_append_array, .string_exec, .system_status,
 };
 
 pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
@@ -133,19 +136,15 @@ pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
             const slot = tmp_string_base + @as(Cell, @intCast(self.tmp_string_index % tmp_string_count)) * cell_size;
             self.tmp_string_index += 1;
             try self.freeString(slot);
-            const previous_target = self.capture_target;
-            const previous_failed = self.capture_failed;
-            self.capture_target = slot;
-            self.capture_failed = false;
-            const result = self.executeWord(xt);
-            const failed = self.capture_failed;
-            self.capture_target = previous_target;
-            self.capture_failed = previous_failed;
-            try result;
-            if (failed) return self.throwIor(errno_no_memory);
+            try captureOutput(self, xt, slot);
             const string = try self.fetchString(slot);
             try self.push(string.address);
             try self.push(@intCast(string.length));
+        },
+        // $EXEC ( xt $addr -- ) appends what xt prints to the string.
+        .string_exec => {
+            const string_var = try self.pop();
+            try captureOutput(self, try self.wordId(try self.pop()), string_var);
         },
         .string_array => {
             const array_var = try self.pop();
@@ -217,6 +216,63 @@ pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
             const string_var = try self.pop();
             _ = try self.slurpFile(try self.memoryRange(), string_var);
         },
+        .string_plus_slurp_file => {
+            const string_var = try self.pop();
+            const name = try self.memoryRange();
+            const files = try self.fileOps();
+            const opened = files.open(self.writer.context, name, .read_only, false);
+            if (opened.ior != 0) return self.throwCode(opened.ior);
+            const fileid: Cell = @bitCast(opened.value);
+            self.slurpRest(fileid, string_var) catch |err| {
+                _ = files.close(self.writer.context, fileid);
+                return err;
+            };
+            const closed = files.close(self.writer.context, fileid);
+            if (closed != 0) return self.throwCode(closed);
+        },
+        // $SLURP and $+SLURP ( fid $addr -- ) read from the file position to the end.
+        .string_slurp, .string_plus_slurp => {
+            const string_var = try self.pop();
+            const fileid = try self.pop();
+            if (builtin == .string_slurp) try self.freeString(string_var);
+            try self.slurpRest(fileid, string_var);
+        },
+        .string_slurp_line => {
+            const string_var = try self.pop();
+            const fileid = try self.pop();
+            try self.push(truth(try self.slurpLine(fileid, string_var)));
+        },
+        // $+!LEN ( u $addr -- addr ) lengthens the string by u and gives the added part.
+        .string_plus_store_len => {
+            const string_var = try self.pop();
+            const added = try self.popLength();
+            const length = (try self.fetchString(string_var)).length;
+            const buffer = try self.setStringLength(string_var, length + added);
+            try self.push(buffer + cell_size + @as(Cell, @intCast(length)));
+        },
+        // $[]+! ( addr u n $[]addr -- ) appends to element n; $+[]! ( addr u $[]addr -- )
+        // stores a new last element.
+        .string_array_append, .string_append_array => {
+            const array_var = try self.pop();
+            const index = if (builtin == .string_array_append) try self.popLength() else try self.stringArrayCount(array_var);
+            try self.push(try self.stringArrayElement(array_var, index));
+            try self.executeBuiltin(if (builtin == .string_array_append) .string_append else .string_store);
+        },
+        .system_status => try self.push(self.system_status),
         else => @compileError(@tagName(builtin) ++ " is not in the words of this file"),
     }
+}
+
+/// Runs xt with its output appended to the string variable, for $TMP and $EXEC.
+fn captureOutput(self: *State, xt: u16, string_var: Cell) RuntimeError!void {
+    const previous_target = self.capture_target;
+    const previous_failed = self.capture_failed;
+    self.capture_target = string_var;
+    self.capture_failed = false;
+    const result = self.executeWord(xt);
+    const failed = self.capture_failed;
+    self.capture_target = previous_target;
+    self.capture_failed = previous_failed;
+    try result;
+    if (failed) return self.throwIor(errno_no_memory);
 }

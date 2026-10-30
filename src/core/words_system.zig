@@ -123,7 +123,7 @@ pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
         .system => {
             const command = try self.memoryRange();
             const system_fn = self.writer.system_fn orelse return error.HostUnavailable;
-            try system_fn(self.writer.context, command);
+            self.system_status = try system_fn(self.writer.context, command);
         },
         .throw => {
             const code = try self.pop();
@@ -144,6 +144,7 @@ pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
                 .return_depth = self.return_depth,
                 .loop_depth = self.loop_depth,
                 .control_depth = self.control_depth,
+                .interpret_loop_depth = self.interpret_loop_depth,
                 .pending = self.pending,
                 .compiling = self.compiling,
                 .defining = self.defining,

@@ -6,6 +6,7 @@ const forth = @import("../forth.zig");
 const integer_math = @import("integer_math.zig");
 const memory_map = @import("memory_map.zig");
 const Builtin = defs.Builtin;
+const Cell = memory_map.Cell;
 const Control = defs.Control;
 const RuntimeError = defs.RuntimeError;
 const State = forth.State;
@@ -25,7 +26,9 @@ pub const words = [_]Builtin{
     .define_colon, .define_variable, .define_fvariable, .define_constant, .define_value,
     .define_two_variable, .define_two_constant, .define_fconstant, .define_fvalue, .define_two_value, .define_buffer, .define_array, .end_definition,
     .tick, .to_body, .literal, .fliteral, .sliteral, .two_literal, .state, .bracket_if, .bracket_else, .bracket_then,
-    .bracket_defined, .bracket_undefined, .cs_pick, .cs_roll,
+    .bracket_defined, .bracket_undefined, .cs_pick, .cs_roll, .bracket_ifdef, .bracket_ifundef,
+    .bracket_do, .bracket_q_do, .bracket_loop, .bracket_plus_loop, .bracket_i, .bracket_begin,
+    .bracket_until, .bracket_again, .bracket_while, .bracket_repeat, .bracket_for, .bracket_next,
 };
 
 pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
@@ -92,6 +95,64 @@ pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
             try self.requireCompiling();
             _ = try self.emit(.{ .kind = .float_literal, .value = floatBits(try self.fpop()) });
         },
+        // [IFDEF] name and [IFUNDEF] name: [DEFINED] name [IF] and [UNDEFINED] name [IF].
+        .bracket_ifdef, .bracket_ifundef => {
+            const name = (try self.nextSourceToken()) orelse return error.InputUnavailable;
+            const found = (self.compiling and self.findLocal(name) != null) or self.lookupRecorded(name);
+            if (found != (builtin == .bracket_ifdef)) try self.skipConditional(true);
+        },
+        // The interpreted loops repeat by going back in the input to where they started,
+        // also across the lines of a file, as gforth's do.
+        .bracket_do, .bracket_q_do => {
+            const start = try self.pop();
+            const limit = try self.pop();
+            if (builtin == .bracket_q_do and start == limit) {
+                return self.skipInterpretLoop(&.{ "[DO]", "[?DO]" }, &.{ "[LOOP]", "[+LOOP]" }, &.{ "[LOOP]", "[+LOOP]" });
+            }
+            try self.pushInterpretLoop(.{ .kind = .counted, .index = start, .limit = limit, .place = self.saveInputPlace() });
+        },
+        .bracket_loop, .bracket_plus_loop => {
+            const step: Cell = if (builtin == .bracket_plus_loop) try self.pop() else 1;
+            const loop = try self.topInterpretLoop(.counted);
+            const crossed = integer_math.loopCrossed(loop.index, loop.limit, step);
+            loop.index +%= step;
+            const again = if (builtin == .bracket_loop) loop.index != loop.limit else !crossed;
+            try self.repeatInterpretLoop(again);
+        },
+        .bracket_i => {
+            var index = self.interpret_loop_depth;
+            while (index > 0) {
+                index -= 1;
+                const loop = self.interpret_loops[index];
+                if (loop.kind != .begin) return self.push(loop.index);
+            }
+            return error.ControlMismatch;
+        },
+        .bracket_for => try self.pushInterpretLoop(.{ .kind = .countdown, .index = try self.pop(), .place = self.saveInputPlace() }),
+        .bracket_next => {
+            const loop = try self.topInterpretLoop(.countdown);
+            const again = loop.index > 0;
+            loop.index -%= 1;
+            try self.repeatInterpretLoop(again);
+        },
+        .bracket_begin => try self.pushInterpretLoop(.{ .kind = .begin, .place = self.saveInputPlace() }),
+        .bracket_until => {
+            const flag = try self.pop();
+            _ = try self.topInterpretLoop(.begin);
+            try self.repeatInterpretLoop(flag == 0);
+        },
+        .bracket_again, .bracket_repeat => {
+            _ = try self.topInterpretLoop(.begin);
+            try self.repeatInterpretLoop(true);
+        },
+        .bracket_while => {
+            const flag = try self.pop();
+            _ = try self.topInterpretLoop(.begin);
+            if (flag == 0) {
+                self.interpret_loop_depth -= 1;
+                try self.skipInterpretLoop(&.{"[BEGIN]"}, &.{ "[UNTIL]", "[AGAIN]", "[REPEAT]" }, &.{"[REPEAT]"});
+            }
+        },
         // CS-PICK and CS-ROLL ( u -- ) copy or move the u-th control-flow entry to the top.
         .cs_pick, .cs_roll => {
             const position = try self.pop();
@@ -133,7 +194,7 @@ pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
         .bracket_defined, .bracket_undefined => {
             const name = (try self.nextSourceToken()) orelse return error.InputUnavailable;
             // While compiling, a local variable in scope counts as defined, as in gforth.
-            const found = (self.compiling and self.findLocal(name) != null) or self.lookup(name) != null;
+            const found = (self.compiling and self.findLocal(name) != null) or self.lookupRecorded(name);
             try self.push(truth(if (builtin == .bracket_defined) found else !found));
         },
         else => @compileError(@tagName(builtin) ++ " is not in the words of this file"),

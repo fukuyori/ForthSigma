@@ -150,6 +150,8 @@ pub fn restoreImage(self: *State, image: []const u8) RuntimeError!void {
     }
     self.names_used = names_used;
     self.word_count = @intCast(word_count);
+    // The recorded uses are not in the image.
+    self.use_count = 0;
     self.code_count = @intCast(code_count);
     self.data_here = data_here;
     self.data_depth = 0;

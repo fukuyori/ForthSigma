@@ -41,6 +41,8 @@ pub const FileOps = host_interface.FileOps;
 pub const FileResult = host_interface.FileResult;
 pub const Float = memory_map.Float;
 const IncludeFrame = defs.IncludeFrame;
+const InputPlace = defs.InputPlace;
+const InterpretLoop = defs.InterpretLoop;
 pub const LineResult = host_interface.LineResult;
 const Local = defs.Local;
 const LocalKind = defs.LocalKind;
@@ -94,6 +96,7 @@ const max_name = memory_map.max_name;
 const max_search_order = memory_map.max_search_order;
 const max_stack = memory_map.max_stack;
 const max_words = memory_map.max_words;
+const max_uses = memory_map.max_uses;
 pub const memory_size = memory_map.memory_size;
 const names_capacity = memory_map.names_capacity;
 pub const pad_address = memory_map.pad_address;
@@ -129,6 +132,17 @@ pub const State = struct {
     float_depth: usize = 0,
     control_stack: [max_controls]Control = undefined,
     control_depth: usize = 0,
+    /// The loops of [DO], [FOR], and [BEGIN] that are running.
+    interpret_loops: [16]InterpretLoop = undefined,
+    interpret_loop_depth: usize = 0,
+    /// The number of the current terminal line or EVALUATE string, so that SAVE-INPUT
+    /// and the interpreted loops can tell it from a later line in the same buffer.
+    input_line_serial: Cell = 0,
+    input_lines_read: Cell = 0,
+    /// Where the last token read starts in the source line, for WHERE.
+    token_start: usize = 0,
+    uses: [max_uses]defs.WordUse = undefined,
+    use_count: usize = 0,
     loop_stack: [max_stack]Loop = undefined,
     loop_depth: usize = 0,
     data_here: Cell = data_start,
@@ -161,6 +175,8 @@ pub const State = struct {
     /// The counted string of the ABORT" that threw -2, for its message.
     abort_message: ?Cell = null,
     capture_target: ?Cell = null,
+    /// The status of the last SYSTEM, for $?.
+    system_status: Cell = 0,
     capture_failed: bool = false,
     tmp_string_index: usize = 0,
     locals: [max_locals]Local = undefined,
@@ -241,9 +257,11 @@ pub const State = struct {
         const previous_line = self.source_line;
         const previous_cursor = self.sourceCursor();
         const previous_kind = self.source_kind;
+        const previous_serial = self.input_line_serial;
         self.source_line = input;
         self.setSourceCursor(0);
         self.source_kind = source_kind;
+        self.numberInputLine();
         // A nested file or EVALUATE string runs inside the caller's work, so it must not
         // drop the word that a pending DOES> will attach to.
         if (source_kind == .terminal) self.last_created_word = null;
@@ -252,6 +270,7 @@ pub const State = struct {
             self.source_line = previous_line;
             self.setSourceCursor(previous_cursor);
             self.source_kind = previous_kind;
+            self.input_line_serial = previous_serial;
         }
         self.last_unknown_word = null;
         var line = input;
@@ -259,6 +278,7 @@ pub const State = struct {
         while (true) {
             const token = nextToken(line, &cursor) orelse break;
             self.source_line = line;
+            self.token_start = @intFromPtr(token.ptr) - @intFromPtr(line.ptr);
             self.setSourceCursor(cursor);
             if (self.pending != .none) {
                 try self.finishPending(token);
@@ -361,7 +381,7 @@ pub const State = struct {
             .{ "$[]SLURP-FILE", .string_array_slurp_file }, .{ "CATCH", .catch_word },      .{ "WORD", .word_parse },     .{ "FIND", .find_word },
             .{ "PARSE", .parse },            .{ "FIND-NAME", .find_name },    .{ "NAME>INT", .name_to_int },  .{ "NAME>STRING", .name_to_string }, .{ "SEE", .see },
             .{ "INCLUDE", .include },        .{ "INCLUDED", .included },      .{ "REQUIRE", .require },       .{ "NEEDS", .require },            .{ "REQUIRED", .required },
-            .{ "INCLUDED?", .included_query }, .{ "SOURCEFILENAME", .source_file_name }, .{ "SOURCELINE#", .source_line_number }, .{ "MARKER", .marker }, .{ "LOCATE", .locate },
+            .{ "INCLUDED?", .included_query }, .{ "SOURCEFILENAME", .source_file_name }, .{ "SOURCELINE#", .source_line_number }, .{ "MARKER", .marker }, .{ "LOCATE", .locate }, .{ "WHERE", .where },
             .{ "ONLY", .only },              .{ "ALSO", .also },              .{ "PREVIOUS", .previous },     .{ "FORTH", .forth },              .{ "DEFINITIONS", .definitions },
             .{ "ORDER", .order },            .{ "GET-ORDER", .get_order },    .{ "SET-ORDER", .set_order },   .{ ">ORDER", .to_order },          .{ "GET-CURRENT", .get_current },
             .{ "SET-CURRENT", .set_current }, .{ "VOCABULARY", .vocabulary }, .{ "WORDLIST", .wordlist },    .{ "FORTH-WORDLIST", .forth_wordlist_word }, .{ "SEARCH-WORDLIST", .search_wordlist },
@@ -376,6 +396,9 @@ pub const State = struct {
             .{ "CHAR+", .char_plus },        .{ "CHARS", .chars },            .{ "BOUNDS", .bounds },         .{ "BLANK", .blank_fill },         .{ "CMOVE>", .cmove_up },
             .{ "SCAN", .scan },              .{ "SKIP", .skip },              .{ "STR=", .str_equal },        .{ "STRING-PREFIX?", .string_prefix_query }, .{ "+PLACE", .plus_place },
             .{ "SLITERAL", .sliteral },      .{ "PARSE-NAME", .parse_name },  .{ "SLURP-FILE", .slurp_file }, .{ "$SLURP-FILE", .string_slurp_file },
+            .{ "$SLURP", .string_slurp },     .{ "$+SLURP", .string_plus_slurp }, .{ "$+SLURP-FILE", .string_plus_slurp_file }, .{ "$SLURP-LINE", .string_slurp_line },
+            .{ "$+!LEN", .string_plus_store_len }, .{ "$[]+!", .string_array_append }, .{ "$+[]!", .string_append_array }, .{ "$EXEC", .string_exec },
+            .{ "$?", .system_status },       .{ "$OFF", .string_free },       .{ "$VARIABLE", .define_variable }, .{ "$[]VARIABLE", .define_variable },
             .{ "?DUP", .question_dup },      .{ "2R@", .two_r_fetch },        .{ "U<", .u_less },             .{ "U>", .u_greater },             .{ "ALIGN", .align_here },
             .{ ".R", .dot_r },               .{ "U.R", .u_dot_r },            .{ "UNUSED", .unused },         .{ "*/", .star_slash },            .{ "*/MOD", .star_slash_mod },
             .{ "M*", .m_star },              .{ "UM*", .um_star },            .{ "UM/MOD", .um_slash_mod },   .{ "FM/MOD", .fm_slash_mod },      .{ "SM/REM", .sm_slash_rem },
@@ -397,6 +420,9 @@ pub const State = struct {
             .{ "RENAME-FILE", .rename_file },      .{ "FILE-STATUS", .file_status },     .{ "INCLUDE-FILE", .include_file },
             .{ "SAVE-INPUT", .save_input },        .{ "RESTORE-INPUT", .restore_input },
             .{ "M*/", .m_star_slash },              .{ "REPRESENT", .represent },
+            .{ "[IFDEF]", .bracket_ifdef },        .{ "[IFUNDEF]", .bracket_ifundef },   .{ "[ENDIF]", .bracket_then },        .{ "[DO]", .bracket_do },             .{ "[?DO]", .bracket_q_do },
+            .{ "[LOOP]", .bracket_loop },          .{ "[+LOOP]", .bracket_plus_loop },   .{ "[I]", .bracket_i },               .{ "[BEGIN]", .bracket_begin },       .{ "[UNTIL]", .bracket_until },
+            .{ "[AGAIN]", .bracket_again },        .{ "[WHILE]", .bracket_while },       .{ "[REPEAT]", .bracket_repeat },     .{ "[FOR]", .bracket_for },           .{ "[NEXT]", .bracket_next },
             .{ "M+", .m_plus },                    .{ "DU<", .du_less },                 .{ "2ROT", .two_rot },                .{ "DUMP", .dump },
         };
         for (definitions) |definition| self.addBuiltin(definition[0], definition[1]) catch unreachable;
@@ -414,7 +440,7 @@ pub const State = struct {
 
     fn isImmediateBuiltin(builtin: Builtin) bool {
         return switch (builtin) {
-            .compile_if, .compile_else, .compile_ahead, .compile_then, .compile_begin, .compile_end, .compile_again, .compile_while, .compile_repeat, .compile_do, .compile_q_do, .compile_loop, .compile_plus_loop, .compile_does, .compile_case, .compile_of, .compile_endof, .compile_endcase, .compile_exit, .compile_recurse, .leave, .bracket_if, .bracket_else, .bracket_then, .bracket_defined, .bracket_undefined, .end_definition, .literal, .fliteral, .sliteral, .two_literal => true,
+            .compile_if, .compile_else, .compile_ahead, .compile_then, .compile_begin, .compile_end, .compile_again, .compile_while, .compile_repeat, .compile_do, .compile_q_do, .compile_loop, .compile_plus_loop, .compile_does, .compile_case, .compile_of, .compile_endof, .compile_endcase, .compile_exit, .compile_recurse, .leave, .bracket_if, .bracket_else, .bracket_then, .bracket_defined, .bracket_undefined, .bracket_ifdef, .bracket_ifundef, .bracket_do, .bracket_q_do, .bracket_loop, .bracket_plus_loop, .bracket_i, .bracket_begin, .bracket_until, .bracket_again, .bracket_while, .bracket_repeat, .bracket_for, .bracket_next, .end_definition, .literal, .fliteral, .sliteral, .two_literal => true,
             else => false,
         };
     }
@@ -470,10 +496,46 @@ pub const State = struct {
     pub const restoreMarker = wordlists.restoreMarker;
 
     pub fn lookupOrFail(self: *State, name: []const u8) RuntimeError!u16 {
-        return self.lookup(name) orelse {
+        const id = self.lookup(name) orelse {
             self.last_unknown_word = name;
             return error.UnknownWord;
         };
+        self.recordUse(id);
+        return id;
+    }
+
+    /// Whether the name is found, recording the use: [DEFINED] and [IFDEF].
+    pub fn lookupRecorded(self: *State, name: []const u8) bool {
+        const id = self.lookup(name) orelse return false;
+        self.recordUse(id);
+        return true;
+    }
+
+    /// Gives the line that has just become the input a number of its own.
+    pub fn numberInputLine(self: *State) void {
+        self.input_lines_read +%= 1;
+        self.input_line_serial = self.input_lines_read;
+    }
+
+    /// Records that a word was found by name while reading a file, at the last token
+    /// read, as gforth does for WHERE.
+    pub fn recordUse(self: *State, id: u16) void {
+        const frame = self.currentFileFrame() orelse return;
+        if (self.use_count == max_uses) return;
+        const column = @min(self.token_start + 1, std.math.maxInt(u16));
+        self.uses[self.use_count] = .{ .word = id, .file_index = frame.file_index, .column = @intCast(column), .line = frame.line };
+        self.use_count += 1;
+    }
+
+    /// Drops the recorded uses of word `id` and every later word.
+    pub fn dropUsesFrom(self: *State, id: u16) void {
+        var kept: usize = 0;
+        for (self.uses[0..self.use_count]) |use| {
+            if (use.word >= id) continue;
+            self.uses[kept] = use;
+            kept += 1;
+        }
+        self.use_count = kept;
     }
 
     pub const appendDataWord = definers.appendDataWord;
@@ -499,6 +561,31 @@ pub const State = struct {
         }
         self.names_used = self.words[id].name_start;
         self.word_count = id;
+        self.dropUsesFrom(id);
+    }
+
+    pub fn pushInterpretLoop(self: *State, loop: InterpretLoop) RuntimeError!void {
+        if (self.interpret_loop_depth == self.interpret_loops.len) return error.ControlStackOverflow;
+        self.interpret_loops[self.interpret_loop_depth] = loop;
+        self.interpret_loop_depth += 1;
+    }
+
+    pub fn topInterpretLoop(self: *State, kind: @FieldType(InterpretLoop, "kind")) RuntimeError!*InterpretLoop {
+        if (self.interpret_loop_depth == 0) return error.ControlMismatch;
+        const loop = &self.interpret_loops[self.interpret_loop_depth - 1];
+        if (loop.kind != kind) return error.ControlMismatch;
+        return loop;
+    }
+
+    /// Goes back to the start of the innermost interpreted loop, or ends it.
+    pub fn repeatInterpretLoop(self: *State, again: bool) RuntimeError!void {
+        const loop = self.interpret_loops[self.interpret_loop_depth - 1];
+        if (!again) {
+            self.interpret_loop_depth -= 1;
+            return;
+        }
+        // A loop on the terminal cannot go back to an earlier line.
+        if (!try self.restoreInputPlace(loop.place)) return error.ControlMismatch;
     }
 
     /// The word a SYNONYM stands for (itself for any other word).
@@ -520,6 +607,7 @@ pub const State = struct {
         }
         const found = self.lookup(token);
         if (found) |id| {
+            self.recordUse(id);
             if (id >= self.builtin_count) return self.handleWord(id);
             // Defining words are dictionary words, found through the search order. One
             // compiled into a definition reads its name when that runs; interpreted, it
@@ -648,6 +736,7 @@ pub const State = struct {
     pub const compileIf = control_flow.compileIf;
     pub const compileElse = control_flow.compileElse;
     pub const compileAhead = control_flow.compileAhead;
+    pub const skipInterpretLoop = control_flow.skipInterpretLoop;
     pub const compileThen = control_flow.compileThen;
     pub const compileBegin = control_flow.compileBegin;
     pub const compileEnd = control_flow.compileEnd;
@@ -680,10 +769,13 @@ pub const State = struct {
     pub const restoreLoadedSourceFiles = source_input.restoreLoadedSourceFiles;
     pub const readIncludeLine = source_input.readIncludeLine;
     pub const includeOpenFile = source_input.includeOpenFile;
+    pub const saveInputPlace = source_input.saveInputPlace;
+    pub const restoreInputPlace = source_input.restoreInputPlace;
     pub const includeFile = source_input.includeFile;
     pub const interpretIncludedFile = source_input.interpretIncludedFile;
     pub const requireFile = source_input.requireFile;
     pub const locateWord = source_input.locateWord;
+    pub const listUses = source_input.listUses;
     pub const sourceAddress = source_input.sourceAddress;
 
     pub fn emit(self: *State, op: Op) RuntimeError!u16 {
@@ -797,11 +889,8 @@ pub const State = struct {
                     if (self.loop_depth == 0) return error.LoopMismatch;
                     const step: Cell = if (op.kind == .plus_loop) try self.pop() else 1;
                     const frame = &self.loop_stack[self.loop_depth - 1];
-                    const old = frame.index;
-                    const limit = frame.limit;
+                    const crossed = integer_math.loopCrossed(frame.index, frame.limit, step);
                     frame.index +%= step;
-                    const after = frame.index;
-                    const crossed = if (step > 0) old <= limit and after >= limit else if (step < 0) old >= limit and after < limit else old == limit;
                     const again = if (frame.exit_after_first) false else if (op.kind == .loop) frame.index != frame.limit else !crossed;
                     if (again) {
                         pc = @intCast(op.value);
@@ -940,6 +1029,8 @@ pub const State = struct {
     pub const stringArrayElement = dynamic_strings.stringArrayElement;
     pub const slurpLines = dynamic_strings.slurpLines;
     pub const slurpFile = dynamic_strings.slurpFile;
+    pub const slurpLine = dynamic_strings.slurpLine;
+    pub const slurpRest = dynamic_strings.slurpRest;
     pub const executeStringInit = dynamic_strings.executeStringInit;
 
     pub const SeeRole = decompiler.SeeRole;

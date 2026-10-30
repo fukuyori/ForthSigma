@@ -196,15 +196,38 @@ pub fn compileEndcase(self: *State) RuntimeError!void {
 
 /// [IF] and [ELSE]: skips input words up to the matching [THEN], or to the matching
 /// [ELSE] when `to_else` is set, counting nested [IF]s. Skipping may read further lines.
+/// Reads past the word that closes an interpreted loop not run: [?DO] with equal bounds
+/// to its [LOOP] or [+LOOP], [WHILE] with false to its [REPEAT], over nested loops.
+pub fn skipInterpretLoop(self: *State, openers: []const []const u8, closers: []const []const u8, last: []const []const u8) RuntimeError!void {
+    var depth: usize = 0;
+    while (true) {
+        const token = (try self.nextSourceToken()) orelse return error.ControlMismatch;
+        if (anyName(token, openers)) {
+            depth += 1;
+        } else if (depth == 0 and anyName(token, last)) {
+            return;
+        } else if (depth > 0 and anyName(token, closers)) {
+            depth -= 1;
+        }
+    }
+}
+
+fn anyName(token: []const u8, names: []const []const u8) bool {
+    for (names) |name| {
+        if (asciiEqlIgnoreCase(token, name)) return true;
+    }
+    return false;
+}
+
 pub fn skipConditional(self: *State, to_else: bool) RuntimeError!void {
     var depth: usize = 0;
     while (true) {
         const token = (try self.nextSourceToken()) orelse return error.ControlMismatch;
-        if (asciiEqlIgnoreCase(token, "[IF]")) {
+        if (asciiEqlIgnoreCase(token, "[IF]") or asciiEqlIgnoreCase(token, "[IFDEF]") or asciiEqlIgnoreCase(token, "[IFUNDEF]")) {
             depth += 1;
         } else if (asciiEqlIgnoreCase(token, "[ELSE]")) {
             if (depth == 0 and to_else) return;
-        } else if (asciiEqlIgnoreCase(token, "[THEN]")) {
+        } else if (asciiEqlIgnoreCase(token, "[THEN]") or asciiEqlIgnoreCase(token, "[ENDIF]")) {
             if (depth == 0) return;
             depth -= 1;
         }

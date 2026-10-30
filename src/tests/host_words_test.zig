@@ -71,6 +71,10 @@ test "MS UTIME GETENV and SYSTEM call the host" {
     try std.testing.expectEqualStrings("dir /b", output.command[0..output.command_len]);
     const expected = [_]forth.Cell{ 1_700_000_000_000_000, 0, 0, 0, 0 };
     try expectStack(machine, &expected);
+    // $? gives the status of the last SYSTEM.
+    machine.data_depth = 0;
+    try machine.interpretLine("$? S\" exit 3\" SYSTEM $? S\" true\" SYSTEM $?");
+    try expectStack(machine, &.{ 0, 768, 0 });
 
     try std.testing.expectError(error.StringTooLong, machine.interpretLine("S\" LONG\" GETENV"));
     machine.report(error.StringTooLong);

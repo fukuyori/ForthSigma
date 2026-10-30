@@ -57,8 +57,8 @@ pub const Writer = struct {
     local_time_fn: ?*const fn (?*anyopaque) RuntimeError!LocalTime = null,
     /// Copies the variable's value into the buffer and returns its length, or null when unset.
     getenv_fn: ?*const fn (?*anyopaque, []const u8, []u8) RuntimeError!?usize = null,
-    /// Runs a shell command; a non-zero exit status is not an error.
-    system_fn: ?*const fn (?*anyopaque, []const u8) RuntimeError!void = null,
+    /// Runs a shell command and returns the status `system` gave; a non-zero status is not an error.
+    system_fn: ?*const fn (?*anyopaque, []const u8) RuntimeError!Cell = null,
     file_ops: ?*const FileOps = null,
 
     pub fn write(self: Writer, bytes: []const u8) void {

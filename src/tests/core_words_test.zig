@@ -515,6 +515,21 @@ test "+LOOP handles positive and negative increments at the boundary" {
     try expectStack(machine, &expected);
 }
 
+test "+LOOP ends when the index crosses the limit also across the largest cell, as in gforth" {
+    var output = Output{};
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
+
+    try machine.interpretLine(": UP 9223372036854775807 9223372036854775806 DO I 2 +LOOP ; : DOWN -9223372036854775808 -9223372036854775807 DO I -2 +LOOP ; UP DOWN");
+    try machine.interpretLine(": EDGE 0 1 DO I -1 +LOOP ; EDGE");
+    // A step of 0 does not end the loop; LEAVE does.
+    try machine.interpretLine("VARIABLE N 0 N ! : STILL 5 0 DO I N @ 1+ DUP N ! 3 = IF LEAVE THEN 0 +LOOP ; STILL");
+    try expectStack(machine, &.{ 9223372036854775806, -9223372036854775807, 1, 0, 0, 0, 0 });
+    machine.data_depth = 0;
+    try machine.interpretLine("9223372036854775807 9223372036854775806 [DO] [I] 2 [+LOOP] -9223372036854775808 -9223372036854775807 [DO] [I] -2 [+LOOP] 0 1 [DO] [I] -1 [+LOOP]");
+    try expectStack(machine, &.{ 9223372036854775806, -9223372036854775807, 1, 0 });
+}
+
 test "LEAVE exits the active loop without losing the outer result" {
     var output = Output{};
     const machine = try createMachine(&output);

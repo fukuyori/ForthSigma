@@ -176,6 +176,47 @@ test "$[]SLURP and $[]SLURP-FILE read a file line by line" {
     try std.testing.expectEqual(forth.errnoIor(2), machine.throw_code);
 }
 
+test "$SLURP $+SLURP $+SLURP-FILE and $SLURP-LINE read files as in gforth" {
+    var output = Output{};
+    const text = "line1\r\nline22\n\nlast";
+    @memcpy(output.files[1].data[0..text.len], text);
+    output.files[1].len = text.len;
+    output.files[1].exists = true;
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
+
+    try machine.interpretLine("VARIABLE A VARIABLE B S\" b.txt\" R/O OPEN-FILE THROW CONSTANT F F A $SLURP A $@LEN F FILE-POSITION THROW D>S");
+    try machine.interpretLine("F A $SLURP A @ 0<> A $@LEN 0. F REPOSITION-FILE THROW S\" X:\" B $! F B $+SLURP B $@LEN");
+    try expectStack(machine, &.{ 19, 19, -1, 0, 21 });
+    machine.data_depth = 0;
+    try machine.interpretLine("0. F REPOSITION-FILE THROW : L F A $SLURP-LINE A $@ TYPE .\" |\" ; L L L L L A @ 0<> F CLOSE-FILE THROW");
+    try expectStack(machine, &.{ -1, -1, -1, -1, 0, -1 });
+    try std.testing.expectEqualStrings("line1|line22||last||", output.written());
+    machine.data_depth = 0;
+    try machine.interpretLine("S\" pre\" A $! S\" b.txt\" A $+SLURP-FILE A $@LEN");
+    try expectStack(machine, &.{22});
+    try std.testing.expect(!output.files[1].open);
+    try std.testing.expectError(error.Thrown, machine.interpretLine("S\" none.txt\" A $+SLURP-FILE"));
+    try std.testing.expectEqual(forth.errnoIor(2), machine.throw_code);
+}
+
+test "$+!LEN $[]+! $+[]! $EXEC $OFF and $VARIABLE work as in gforth" {
+    var output = Output{};
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
+
+    try machine.interpretLine("VARIABLE A S\" abc\" A $! 3 A $+!LEN A $@ DROP - A $@LEN");
+    try machine.interpretLine("$[]VARIABLE R R @ S\" x\" 2 R $[]+! S\" y\" 2 R $[]+! S\" z\" R $+[]! R $[]# 2 R $[]@ TYPE 3 R $[]@ TYPE 0 R $[]@ NIP");
+    try expectStack(machine, &.{ 3, 6, 0, 4, 0 });
+    try std.testing.expectEqualStrings("xyz", output.written());
+    machine.data_depth = 0;
+    output.len = 0;
+    // The output goes back to where it went before, also when xt throws.
+    try machine.interpretLine(": HI .\" hi\" 42 EMIT ; $VARIABLE B : NEST .\" in\" ['] HI B $EXEC .\" out\" ; S\" >\" A $! ' NEST A $EXEC A $@ TYPE B $. ");
+    try machine.interpretLine(": BAD .\" partial\" 5 THROW ; S\" \" A $! ' BAD A ' $EXEC CATCH . A $. A $OFF A @ . SEE B");
+    try std.testing.expectEqualStrings(">inouthi*5 partial0 VARIABLE B\n", output.written());
+}
+
 test "SLURP-FILE and $SLURP-FILE read a whole file as it is and close it" {
     var output = Output{};
     const text = "one\r\ntwo\n\x00end";

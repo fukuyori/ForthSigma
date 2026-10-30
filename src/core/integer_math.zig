@@ -71,6 +71,15 @@ pub fn doubleDivision(dividend: Double, divisor: Cell, floored: bool) RuntimeErr
     return .{ .quotient = @intCast(quotient), .remainder = @intCast(remainder) };
 }
 
+/// Whether +LOOP's step takes the index across the boundary between limit-1 and limit,
+/// counting with wrapping cells as the standard does: the loop ends when index - limit
+/// changes sign in the direction of the step. A step of 0 never ends the loop.
+pub fn loopCrossed(index: Cell, limit: Cell, step: Cell) bool {
+    const before = index -% limit;
+    const after = before +% step;
+    return ((before ^ after) & (before ^ step)) < 0;
+}
+
 pub fn truth(value: bool) Cell {
     return if (value) true_flag else 0;
 }

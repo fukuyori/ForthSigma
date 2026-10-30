@@ -281,7 +281,8 @@ S" dir" SYSTEM
 | `PAGE` | ( -- ) | 画面を消去し、カーソルを左上へ移します。 |
 | `AT-XY` | ( x y -- ) | カーソルをx列、y行（どちらも0から）へ移します。Gforthと同じエスケープシーケンスを出力します。 |
 | `GETENV` | ( addr u -- addr2 u2 ) | 環境変数の値を返します。未設定なら `0 0` です。結果は次の `GETENV` まで有効で、3072バイトを超える値は `STRING TOO LONG !` になります。 |
-| `SYSTEM` | ( addr u -- ) | 文字列をシェルのコマンドとして実行します（Windowsは `cmd.exe`）。コマンドの終了コードは返しません。 |
+| `SYSTEM` | ( addr u -- ) | 文字列をシェルのコマンドとして実行します（Windowsは `cmd.exe`）。コマンドの終了コードは返しません（`$?` で取り出せます）。 |
+| `$?` | ( -- n ) | 最後に実行した `SYSTEM` の状態です。LinuxとmacOSではGforthと同じく `system` の返す値（終了コードの256倍）、Windowsでは終了コードです。 |
 ## ローカル変数
 
 ```forth
@@ -384,12 +385,20 @@ NAMES $[].                      \ Alice と Bob を1行ずつ表示
 | `$SPLIT` | ( addr u c -- addr u1 addr2 u2 ) | 最初の文字cの前後に分けます。 |
 | `$ITER` | ( $var c xt -- ) | 文字cで区切った各部分 ( addr u ) についてxtを実行します。 |
 | `$TMP` | ( xt -- addr u ) | xtを実行し、その間の出力を文字列として返します。 |
+| `$EXEC` | ( xt $var -- ) | xtを実行し、その間の出力を動的文字列の後ろに加えます。xtが `THROW` しても出力先は元に戻ります。 |
+| `$+!LEN` | ( u $var -- addr ) | 文字列をuバイト長くし、加えた部分のアドレスを返します。 |
+| `$OFF` | ( $var -- ) | `$FREE` と同じです（Gforthの古い名前）。 |
+| `$VARIABLE 名前`, `$[]VARIABLE 名前` | ( -- ) | 動的文字列・文字列配列のための変数を作ります。`VARIABLE` と同じです。 |
 | `$[]!`, `$[]@` | ( addr u n $[]var -- )、( n $[]var -- addr u ) | 文字列配列のn番目に格納、または取り出します。 |
 | `$[]#`, `$[].` | ( $[]var -- n )、( $[]var -- ) | 要素数を返す、または全要素を1行ずつ表示します。 |
 | `$[]MAP` | ( $[]var xt -- ) | 各要素 ( addr u ) についてxtを実行します。 |
 | `$[]FREE` | ( $[]var -- ) | 全要素と配列を解放します。 |
 | `$[]SLURP`, `$[]SLURP-FILE` | ( fileid $[]var -- )、( addr u $[]var -- ) | ファイルを1行ずつ配列に読み込みます。 |
+| `$[]+!`, `$+[]!` | ( addr u n $[]var -- )、( addr u $[]var -- ) | 配列のn番目の文字列の後ろに加えます。`$+[]!` は新しい最後の要素として置きます。 |
 | `$SLURP-FILE` | ( addr u $var -- ) | 名前のファイルを丸ごと動的文字列に読み込み、それまでの内容と置き換えます。 |
+| `$+SLURP-FILE` | ( addr u $var -- ) | 名前のファイルを丸ごと動的文字列の後ろに加えます。 |
+| `$SLURP`, `$+SLURP` | ( fileid $var -- ) | 開いたファイルを今の位置から終わりまで読み、動的文字列と置き換えます（`$+SLURP` は後ろに加えます）。ファイルは閉じません。 |
+| `$SLURP-LINE` | ( fileid $var -- flag ) | 次の1行を（改行を除いて）動的文字列に読み込みます。ファイルの終わりではflagが0で、文字列は空になります。 |
 
 ヒープは896 KiBです。`SAVESYS` で作った実行ファイルにはヒープの内容も保存されますが、`LOAD` では引き継がれません。
 
@@ -457,6 +466,10 @@ UTIL >ORDER 5 TWICE .   \ 10
 | `SEARCH-WORDLIST` | ( addr u wid -- 0 \| xt 1 \| xt -1 ) | 1つの語彙だけから名前を探します。 |
 | `[IF]`, `[ELSE]`, `[THEN]` | ( flag -- )、( -- )、( -- ) | flagが0なら、`[ELSE]` か `[THEN]` までの入力を読み飛ばします。行をまたいでも使えます。 |
 | `[DEFINED] 名前`, `[UNDEFINED] 名前` | ( -- flag ) | 名前が検索順序で見つかるかどうかを返します。 |
+| `[IFDEF] 名前`, `[IFUNDEF] 名前`, `[ENDIF]` | ( -- ) | `[DEFINED] 名前 [IF]`、`[UNDEFINED] 名前 [IF]` と同じです。`[ENDIF]` は `[THEN]` と同じです。 |
+| `[DO]` … `[LOOP]`, `[?DO]`, `[+LOOP]`, `[I]` | ( limit start -- )、( n -- )、( -- n ) | 解釈中に、入力の範囲を繰り返します（Gforthと同じ）。`[?DO]` はlimitとstartが等しければ1回も実行しません。`[I]` は一番内側の `[DO]` か `[FOR]` の添字です。ファイルでは行をまたいでも使えます。 |
+| `[BEGIN]` … `[UNTIL]`, `[AGAIN]`, `[WHILE]` … `[REPEAT]` | ( flag -- ) など | 解釈中の不定回の繰り返しです。 |
+| `[FOR]` … `[NEXT]` | ( n -- ) | 添字をnから0まで減らしながら、n+1回繰り返します。 |
 
 検索順序は16段までです。`WORDS` は検索順序の先頭の語彙の語だけを表示します。`ONLY` の後でも `FORTH` `ONLY` `ALSO` `ORDER` などは使えます。`:` や `TO` などの構文語は、検索順序によらずいつでも使えます。
 
@@ -480,6 +493,7 @@ MARKER SAFE  : TEMP ." Hello" ;  SAFE   \ TEMP は消えます
 | `SOURCEFILENAME` | ( -- addr u ) | 読み込み中のファイル名です。端末では `*the terminal*` です。 |
 | `SOURCELINE#` | ( -- u ) | 読み込み中の行番号です。端末では0です。 |
 | `LOCATE 名前` | ( -- ) | その語を定義したファイルと行、定義の内容を表示します。 |
+| `WHERE 名前` | ( -- ) | 読み込んだファイルの中で、その語を使った箇所を `ファイル:行:桁: 行の内容` の形で一覧します（Gforthと同じく、各行は80桁で、右端に通し番号が付きます）。`'` や `[DEFINED]` で名前を探した箇所も含みます。端末や `EVALUATE` の文字列での使用は記録しません。 |
 | `MARKER 名前` | ( -- ) | 名前を実行すると、その語と以後の定義を消し、以後に読み込んだファイルを未読み込みに戻します。 |
 
 ファイル名はカレントディレクトリからの相対パスです。`REQUIRE` は名前を書かれたとおりに比べるので、`./a.fs` と `a.fs` は別のファイルとして扱います。読み込み中にエラーが起きると、`mylib.fs:3: ...` のようにファイル名と行番号を付けて表示します。ファイルの中で始めた定義は、同じファイルの中で終える必要があります。入れ子は8段まで、記録できるファイルは64個までです。
@@ -493,7 +507,7 @@ SAVE words.sigma
 LOAD words.sigma
 ```
 
-`LOAD` は保存した利用者定義語を現在の辞書の後ろに追加します。同名語は読み込んだ新しい定義が優先されます。以前の版で保存した辞書イメージ（`SIGIMG01`〜`SIGIMG27`）と、壊れた辞書イメージは読み込めません（`INVALID IMAGE !`）。辞書イメージにはチェックサムが付いており、偶然の破損は読み込む前に見つかります。読み込むのは、Sigmaの `SAVE`・`SAVESYS` で作ったファイルだけにしてください。定数や変数に保存した実行トークン（`:NONAME` の結果など）と、`LITERAL` で定義に埋め込んだ実行トークンやアドレス（`[ ' X ] LITERAL` など）は、すでに利用者定義語がある辞書へ `LOAD` すると別の語や場所を指すことがあります。`['] X` で埋め込んだ実行トークンは正しく付け替えられます。`SAVESYS` で作った実行ファイルではこの問題は起きません。
+`LOAD` は保存した利用者定義語を現在の辞書の後ろに追加します。同名語は読み込んだ新しい定義が優先されます。以前の版で保存した辞書イメージ（`SIGIMG01`〜`SIGIMG30`）と、壊れた辞書イメージは読み込めません（`INVALID IMAGE !`）。辞書イメージにはチェックサムが付いており、偶然の破損は読み込む前に見つかります。読み込むのは、Sigmaの `SAVE`・`SAVESYS` で作ったファイルだけにしてください。定数や変数に保存した実行トークン（`:NONAME` の結果など）と、`LITERAL` で定義に埋め込んだ実行トークンやアドレス（`[ ' X ] LITERAL` など）は、すでに利用者定義語がある辞書へ `LOAD` すると別の語や場所を指すことがあります。`['] X` で埋め込んだ実行トークンは正しく付け替えられます。`SAVESYS` で作った実行ファイルではこの問題は起きません。
 
 `SAVESYS` は、現在の辞書・コンパイル済み定義・データを含む、実行中環境向けの単独実行ファイルを作ります。
 
@@ -517,7 +531,7 @@ SAVESYS demo.exe
 | ループ関連 | `I`, `J`, `K`, `LEAVE`, `UNLOOP` |
 | 入出力 | `.`, `U.`, `.R`, `U.R`, `C.`, `.S`, `ECHO`, `EMIT`, `CR`, `SPACE`, `SPCES`, `SPACES`, `TYPE`, `INPUT` |
 | 基数 | `HEX`, `DEC`, `DECIMAL`, `OCT`, `BASE` |
-| 定義補助・辞書・実行 | `<BUILDS`, `CREATE`, `IMMEDIATE`, `WORDS`, `BYE`, `LOAD`, `SAVE`, `SAVESYS`, `EXECUTE`, `SEE`, `FIND`, `FIND-NAME`, `NAME>INT`, `NAME>STRING`, `MARKER`, `LOCATE` |
+| 定義補助・辞書・実行 | `<BUILDS`, `CREATE`, `IMMEDIATE`, `WORDS`, `BYE`, `LOAD`, `SAVE`, `SAVESYS`, `EXECUTE`, `SEE`, `FIND`, `FIND-NAME`, `NAME>INT`, `NAME>STRING`, `MARKER`, `LOCATE`, `WHERE` |
 | 制御構造（即時語） | `IF`, `ELSE`, `AHEAD`, `THEN`, `CS-PICK`, `CS-ROLL`, `ENDIF`, `BEGIN`, `END`, `UNTIL`, `AGAIN`, `WHILE`, `REPEAT`, `DO`, `?DO`, `LOOP`, `+LOOP`, `DOES>`, `CASE`, `OF`, `ENDOF`, `ENDCASE`, `EXIT`, `RECURSE` |
 | 浮動小数点スタック | `FDROP`, `FDUP`, `FSWAP`, `FOVER`, `FROT`, `F-ROT`, `FNIP`, `FTUCK`, `FPICK`, `FDEPTH`, `F.S` |
 | 浮動小数点算術・関数 | `F+`, `F-`, `F*`, `F/`, `FNEGATE`, `FMINUS`, `FABS`, `FMAX`, `FMIN`, `FSQRT`, `FEXP`, `FLN`, `FSIN`, `FCOS`, `FTAN`, `FSINCOS`, `FASIN`, `FACOS`, `FATAN`, `FATAN2`, `FSINH`, `FCOSH`, `FTANH`, `FASINH`, `FACOSH`, `FATANH`, `FEXPM1`, `FLNP1`, `FLOG`, `FALOG`, `F**`, `FLOOR`, `FTRUNC`, `FROUND` |
@@ -528,14 +542,14 @@ SAVESYS demo.exe
 | 数値の書式 | `<#`, `<<#`, `#`, `#S`, `#>`, `#>>`, `HOLD`, `HOLDS`, `SIGN` |
 | 文字列格納・比較・状態・中断 | `PLACE`, `+PLACE`, `COMPARE`, `SEARCH`, `/STRING`, `-TRAILING`, `CHAR+`, `CHARS`, `BOUNDS`, `BLANK`, `CMOVE>`, `SCAN`, `SKIP`, `STR=`, `STRING-PREFIX?`, `SLITERAL`, `STATE`, `ABORT` |
 | 時間・画面・OS | `MS`, `UTIME`, `TIME&DATE`, `PAGE`, `AT-XY`, `GETENV`, `SYSTEM`, `ENVIRONMENT?`, `QUIT` |
-| 語彙・条件付きコンパイル | `ONLY`, `ALSO`, `PREVIOUS`, `FORTH`, `DEFINITIONS`, `SYNONYM`, `TRAVERSE-WORDLIST`, `NAME>INTERPRET`, `ORDER`, `GET-ORDER`, `SET-ORDER`, `>ORDER`, `GET-CURRENT`, `SET-CURRENT`, `VOCABULARY`, `WORDLIST`, `FORTH-WORDLIST`, `SEARCH-WORDLIST`, `[IF]`, `[ELSE]`, `[THEN]`, `[DEFINED]`, `[UNDEFINED]` |
+| 語彙・条件付きコンパイル | `ONLY`, `ALSO`, `PREVIOUS`, `FORTH`, `DEFINITIONS`, `SYNONYM`, `TRAVERSE-WORDLIST`, `NAME>INTERPRET`, `ORDER`, `GET-ORDER`, `SET-ORDER`, `>ORDER`, `GET-CURRENT`, `SET-CURRENT`, `VOCABULARY`, `WORDLIST`, `FORTH-WORDLIST`, `SEARCH-WORDLIST`, `[IF]`, `[ELSE]`, `[THEN]`, `[DEFINED]`, `[UNDEFINED]`, `[IFDEF]`, `[IFUNDEF]`, `[ENDIF]`, `[DO]`, `[?DO]`, `[LOOP]`, `[+LOOP]`, `[I]`, `[BEGIN]`, `[UNTIL]`, `[AGAIN]`, `[WHILE]`, `[REPEAT]`, `[FOR]`, `[NEXT]` |
 | ソース読み込み | `INCLUDE`, `INCLUDED`, `REQUIRE`, `REQUIRED`, `NEEDS`, `INCLUDED?`, `SOURCEFILENAME`, `SOURCELINE#` |
 | ファイル・例外 | `THROW`, `CATCH`, `R/O`, `W/O`, `R/W`, `STDIN`, `STDOUT`, `STDERR`, `OPEN-FILE`, `CREATE-FILE`, `CLOSE-FILE`, `READ-LINE`, `READ-FILE`, `FILE-POSITION`, `RESIZE-FILE`, `FLUSH-FILE`, `DELETE-FILE`, `RENAME-FILE`, `FILE-STATUS`, `BIN`, `INCLUDE-FILE`, `WRITE-LINE`, `WRITE-FILE`, `FILE-SIZE`, `SLURP-FILE`, `REPOSITION-FILE` |
 | 定義語・コンパイル | `:`, `;`, `VARIABLE`, `VAR`, `FVARIABLE`, `2VARIABLE`, `CONSTANT`, `CONST`, `FCONSTANT`, `2CONSTANT`, `VALUE`, `FVALUE`, `ARRAY`, `FARRAY`, `'`, `>BODY`, `LITERAL`, `FLITERAL` |
 | 定数・説明 | `PI`, `HELP`, `LICENSE` |
-| 動的メモリ・動的文字列 | `ALLOCATE`, `FREE`, `RESIZE`, `$!`, `$@`, `$@LEN`, `$!LEN`, `$+!`, `C$+!`, `$.`, `$DEL`, `$INS`, `$OVER`, `$FREE`, `$INIT`, `$SPLIT`, `$ITER`, `$TMP`, `$SLURP-FILE`, `$[]`, `$[]!`, `$[]@`, `$[]#`, `$[].`, `$[]MAP`, `$[]FREE`, `$[]SLURP`, `$[]SLURP-FILE` |
+| 動的メモリ・動的文字列 | `ALLOCATE`, `FREE`, `RESIZE`, `$!`, `$@`, `$@LEN`, `$!LEN`, `$+!`, `C$+!`, `$.`, `$DEL`, `$INS`, `$OVER`, `$FREE`, `$INIT`, `$SPLIT`, `$ITER`, `$TMP`, `$SLURP-FILE`, `$[]`, `$[]!`, `$[]@`, `$[]#`, `$[].`, `$[]MAP`, `$[]FREE`, `$[]SLURP`, `$[]SLURP-FILE`, `$SLURP`, `$+SLURP`, `$+SLURP-FILE`, `$SLURP-LINE`, `$+!LEN`, `$[]+!`, `$+[]!`, `$EXEC`, `$OFF`, `$VARIABLE`, `$[]VARIABLE`, `$?` |
 
-起動時点でForth語彙に **448語** の組み込み語があります（`MINUS`/`NEGATE` のような別名もそれぞれ1語と数えます）。このほかRoot語彙に、`FORTH` `ONLY` などの10語が重ねて登録されています。
+起動時点でForth語彙に **476語** の組み込み語があります（`MINUS`/`NEGATE` のような別名もそれぞれ1語と数えます）。このほかRoot語彙に、`FORTH` `ONLY` などの10語が重ねて登録されています。
 
 ### 構文・定義形式
 
@@ -551,7 +565,7 @@ SAVESYS demo.exe
 | 配列 | `要素数 ARRAY 名前`, `要素数 FARRAY 名前` | 要素数をスタックから取り、配列を登録します。 |
 | ローカル変数 | `{ ... }`, `{: ... :}`, `LOCALS\| ... \|` | 「ローカル変数」の節を参照してください。 |
 | コンパイル制御 | `[`, `]`, `' 名前`, `['] 名前`, `POSTPONE 名前`, `LITERAL`, `FLITERAL` | コンパイル中断／再開、実行トークンの取得、コンパイル動作の組み込み、値の埋め込みに使います。`'` は実行したときに次の名前を読み、定義の中に書くとその定義を実行したときに読みます。`[']` は定義をコンパイルするときに名前を読み、その実行トークンを埋め込みます。`LITERAL` `FLITERAL` はコンパイル中にスタックの値を定義へ埋め込みます。 |
-| データ領域 | `実行トークン >BODY` | VARIABLE・VALUE・CREATEなどで作った語のデータ領域のアドレスを積みます。CONSTANT・FCONSTANT・コロン定義・組み込み語では `INVALID EXECUTION TOKEN !` です。`'` は語の番号を返すので、Gforthのように `' 名前` の値をアドレスとして使うことはできません。 |
+| データ領域 | `実行トークン >BODY` | VARIABLE・VALUE・CREATEなどで作った語のデータ領域のアドレスを積みます。CONSTANT・FCONSTANT・コロン定義・組み込み語では `INVALID EXECUTION TOKEN !` です。`'` は語の番号を返すので、Gforthのように `' 名前` の値をアドレスとして使うことはできません。語の番号は低い番地（`BASE` などの処理系の変数がある所）と重なるため、`' 名前 +` の先に書き込むと、処理系の変数を壊すことがあります（`BASE ERROR !` など）。データ領域には `' 名前 >BODY` を使ってください（例: `10 0 CELLS ' DATA >BODY + !`）。これは標準のForthでも正しい書き方です。 |
 | 文字 | `CHAR 文字`, `[CHAR] 文字` | 文字コードを積みます。 |
 | コメント | `( ... )`, `\` | 行内コメント、行末までのコメントです。 |
 | 文字列 | `"..."`, `."..."` | コンパイル時文字列と、移植版の文字列出力拡張です。 |
@@ -561,4 +575,4 @@ SAVESYS demo.exe
 
 現在は `EDIT`、`LIST`、エディットバッファ版の `LOAD`／`SAVE`、CP/Mファイル操作、PC-8001のモニター機能、`MCODE`やZ80機械語実行に対応していません。Z80をエミュレートする処理系ではありません。
 
-Gforthのワードのうち、`WHERE`、`$?`、`[IFDEF]` などは未実装です。`CODE` や `SAVESYSTEM` などGforthの起動処理に関わる語は対象外です。詳しくは[互換性一覧](COMPATIBILITY.md)を参照してください。
+Gforthのワードのうち、`$SUBSTITUTE` などは未実装です。`CODE` や `SAVESYSTEM` などGforthの起動処理に関わる語は対象外です。詳しくは[互換性一覧](COMPATIBILITY.md)を参照してください。

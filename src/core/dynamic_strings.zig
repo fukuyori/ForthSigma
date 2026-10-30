@@ -105,28 +105,44 @@ pub fn stringArrayElement(self: *State, array_var: Cell, index: usize) RuntimeEr
 
 /// Reads the file line by line into the string array, replacing its contents.
 pub fn slurpLines(self: *State, fileid: Cell, array_var: Cell) RuntimeError!void {
-    const files = try self.fileOps();
-    var chunk: [256]u8 = undefined;
     var count: usize = 0;
-    while (true) {
-        const element = try self.stringArrayElement(array_var, count);
-        try self.freeString(element);
-        var found = false;
-        while (true) {
-            const result = files.read_line(self.writer.context, fileid, &chunk);
-            if (result.ior != 0) return self.throwCode(result.ior);
-            if (!result.found) break;
-            found = true;
-            try self.appendString(element, chunk[0..result.length]);
-            if (result.length < chunk.len) break;
-        }
-        if (!found) break;
-        if ((try self.fetchString(element)).address == 0) try self.executeStringInit(element);
-        count += 1;
-    }
+    while (try slurpLine(self, fileid, try self.stringArrayElement(array_var, count))) count += 1;
     const total = try self.stringArrayCount(array_var);
     for (count..total) |index| try self.freeString(try self.stringArrayElement(array_var, index));
     _ = try self.setStringLength(array_var, count * cell_size);
+}
+
+/// Reads the next line of the file into the string variable, replacing its text, for
+/// $SLURP-LINE and $[]SLURP. At the end of the file it gives false and, as in gforth,
+/// leaves an empty string.
+pub fn slurpLine(self: *State, fileid: Cell, string_var: Cell) RuntimeError!bool {
+    const files = try self.fileOps();
+    var chunk: [256]u8 = undefined;
+    try self.freeString(string_var);
+    var found = false;
+    while (true) {
+        const result = files.read_line(self.writer.context, fileid, &chunk);
+        if (result.ior != 0) return self.throwCode(result.ior);
+        if (!result.found) break;
+        found = true;
+        try self.appendString(string_var, chunk[0..result.length]);
+        if (result.length < chunk.len) break;
+    }
+    if ((try self.fetchString(string_var)).address == 0) try self.executeStringInit(string_var);
+    return found;
+}
+
+/// Appends the rest of the file, from its position to the end, to the string variable.
+pub fn slurpRest(self: *State, fileid: Cell, string_var: Cell) RuntimeError!void {
+    const files = try self.fileOps();
+    var chunk: [4096]u8 = undefined;
+    while (true) {
+        const result = files.read(self.writer.context, fileid, &chunk);
+        if (result.ior != 0) return self.throwCode(result.ior);
+        if (result.value == 0) break;
+        try self.appendString(string_var, chunk[0..@intCast(result.value)]);
+    }
+    if ((try self.fetchString(string_var)).address == 0) try self.executeStringInit(string_var);
 }
 
 /// Reads the whole named file for SLURP-FILE and $SLURP-FILE: into the string variable

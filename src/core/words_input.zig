@@ -119,26 +119,18 @@ pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
             if (line) |text| {
                 self.source_line = text;
                 self.setSourceCursor(0);
+                self.numberInputLine();
             }
             try self.push(truth(line != null));
         },
         // SAVE-INPUT ( -- source-id >in line-mark line-number 4 ): the line is marked by its
         // address for the terminal and EVALUATE, and by where it starts for a file.
         .save_input => {
-            const id: Cell, const mark: Cell, const number: Cell = switch (self.source_kind) {
-                .terminal => .{ 0, self.sourceLineAddress(), @intCast(self.source_line.len) },
-                .evaluate => .{ -1, self.sourceLineAddress(), @intCast(self.source_line.len) },
-                .file => blk: {
-                    const frame = self.include_stack[self.include_depth - 1];
-                    break :blk .{ frame.fileid, @bitCast(frame.line_start), frame.line };
-                },
-            };
+            const place = self.saveInputPlace();
             if (max_stack - self.data_depth < 5) return error.StackOverflow;
-            for ([_]Cell{ id, @intCast(self.sourceCursor()), mark, number, 4 }) |item| try self.push(item);
+            for ([_]Cell{ place.id, place.cursor, place.mark, place.number, 4 }) |item| try self.push(item);
         },
-        // RESTORE-INPUT ( x1..x4 4 -- flag ): false when the input went back. The terminal
-        // and an EVALUATE string go back within the same line only; a file reads the
-        // saved line again from where it started.
+        // RESTORE-INPUT ( x1..x4 4 -- flag ): false when the input went back.
         .restore_input => {
             const count = try self.pop();
             if (count != 4) {
@@ -149,26 +141,8 @@ pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
             const mark = try self.pop();
             const cursor = try self.pop();
             const id = try self.pop();
-            const current: Cell = switch (self.source_kind) {
-                .terminal => 0,
-                .evaluate => -1,
-                .file => self.include_stack[self.include_depth - 1].fileid,
-            };
-            if (id != current or cursor < 0) return self.push(true_flag);
-            switch (self.source_kind) {
-                .terminal, .evaluate => {
-                    if (mark != self.sourceLineAddress() or number != @as(Cell, @intCast(self.source_line.len))) return self.push(true_flag);
-                },
-                .file => {
-                    const frame = &self.include_stack[self.include_depth - 1];
-                    const files = try self.fileOps();
-                    if (number < 1 or files.reposition(self.writer.context, frame.fileid, @bitCast(mark)) != 0) return self.push(true_flag);
-                    frame.line = @intCast(number - 1);
-                    self.source_line = try self.readIncludeLine() orelse return self.push(true_flag);
-                },
-            }
-            self.setSourceCursor(@intCast(cursor));
-            try self.push(0);
+            const back = try self.restoreInputPlace(.{ .id = id, .cursor = cursor, .mark = mark, .number = number });
+            try self.push(if (back) 0 else true_flag);
         },
         // The next name in the input, passing blanks and tabs before it, as in the source
         // itself; at the end of the input the length is 0.

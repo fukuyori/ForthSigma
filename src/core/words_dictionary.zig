@@ -22,7 +22,7 @@ const wordlist_count_address = memory_map.wordlist_count_address;
 
 /// The built-in words this file executes; executeBuiltin dispatches by this list.
 pub const words = [_]Builtin{
-    .words, .find_word, .find_name, .name_to_int, .name_to_string, .see, .marker, .locate, .only,
+    .words, .find_word, .find_name, .name_to_int, .name_to_string, .see, .marker, .locate, .where, .only,
     .also, .previous, .forth, .definitions, .order, .get_order, .set_order, .to_order, .get_current,
     .set_current, .wordlist, .vocabulary, .forth_wordlist_word, .search_wordlist, .synonym,
     .traverse_wordlist,
@@ -75,6 +75,7 @@ pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
             const length = self.memory[at];
             _ = try self.memoryAddress(address + 1, length);
             if (self.lookup(self.memory[at + 1 .. at + 1 + length])) |id| {
+                self.recordUse(id);
                 try self.push(id);
                 try self.push(if (self.words[id].immediate) 1 else -1);
             } else {
@@ -84,7 +85,9 @@ pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
         },
         .find_name => {
             const name = try self.memoryRange();
-            try self.push(if (self.lookup(name)) |id| @as(Cell, id) + 1 else 0);
+            const found = self.lookup(name);
+            if (found) |id| self.recordUse(id);
+            try self.push(if (found) |id| @as(Cell, id) + 1 else 0);
         },
         .name_to_int => try self.push(try self.validNameToken(try self.pop())),
         .name_to_string => {
@@ -108,6 +111,10 @@ pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
         .locate => {
             const name = (try self.nextSourceToken()) orelse return error.InputUnavailable;
             try self.locateWord(try self.lookupOrFail(name));
+        },
+        .where => {
+            const name = (try self.nextSourceToken()) orelse return error.InputUnavailable;
+            try self.listUses(try self.lookupOrFail(name));
         },
         .only => self.setSearchOrder(&.{ root_wordlist, root_wordlist }),
         .also, .previous, .forth => {
@@ -196,6 +203,7 @@ pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
             const wid = try self.validWordlist(try self.pop());
             const name = try self.memoryRange();
             if (self.lookupIn(name, wid)) |id| {
+                self.recordUse(id);
                 try self.push(id);
                 try self.push(if (self.words[id].immediate) 1 else -1);
             } else try self.push(0);

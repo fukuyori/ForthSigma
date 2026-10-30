@@ -16,7 +16,7 @@ pub const Output = struct {
     close_fails: bool = false,
     command: [64]u8 = undefined,
     command_len: usize = 0,
-    files: [4]FakeFile = .{ .{}, .{}, .{}, .{} },
+    files: [5]FakeFile = .{ .{}, .{}, .{}, .{}, .{} },
     stdout_bytes: [64]u8 = undefined,
     stdout_len: usize = 0,
 
@@ -56,11 +56,12 @@ pub const Output = struct {
         return value.len;
     }
 
-    pub fn system(context: ?*anyopaque, command: []const u8) forth.RuntimeError!void {
+    pub fn system(context: ?*anyopaque, command: []const u8) forth.RuntimeError!forth.Cell {
         const output: *Output = @ptrCast(@alignCast(context.?));
         if (std.mem.eql(u8, command, "fail")) return error.HostFailed;
         @memcpy(output.command[0..command.len], command);
         output.command_len = command.len;
+        return if (std.mem.eql(u8, command, "exit 3")) 768 else 0;
     }
 
     pub fn key(context: ?*anyopaque) ?u8 {
@@ -99,7 +100,8 @@ pub const FakeFile = struct {
     exists: bool = false,
 };
 
-pub const fake_file_names = [_][]const u8{ "a.txt", "b.txt", "c.txt", "d.txt" };
+/// The last name is long, for WHERE lines whose place takes more than 80 columns.
+pub const fake_file_names = [_][]const u8{ "a.txt", "b.txt", "c.txt", "d.txt", "f" ** 75 ++ ".txt" };
 
 pub fn setFakeFile(output: *Output, index: usize, text: []const u8) void {
     @memcpy(output.files[index].data[0..text.len], text);
