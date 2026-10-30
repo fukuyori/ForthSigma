@@ -212,6 +212,35 @@ test "SLURP-FILE and $SLURP-FILE read a whole file as it is and close it" {
     try expectStack(machine, &.{-1});
 }
 
+test "RESTORE-INPUT goes back to a saved line of a file or place in a string, as in gforth" {
+    var output = Output{};
+    support.setFakeFile(&output, 0,
+        \\VARIABLE C 0 C !
+        \\CREATE SAVED 10 CELLS ALLOT
+        \\: KEEP DUP 1+ 0 DO SAVED I CELLS + ! LOOP ;
+        \\: BACK SAVED @ 0 SWAP DO SAVED I CELLS + @ -1 +LOOP ;
+        \\: MARK SAVE-INPUT KEEP ;
+        \\MARK
+        \\C @ 1+ DUP C ! .
+        \\C @ 3 < [IF] BACK RESTORE-INPUT DROP [THEN]
+        \\.( done)
+        \\0 C ! : M2 SAVE-INPUT KEEP ; S" M2 C @ 1+ DUP C ! . C @ 4 < [IF] BACK RESTORE-INPUT DROP [THEN]" EVALUATE
+        \\BACK RESTORE-INPUT .
+        \\
+    );
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
+
+    try machine.interpretLine("INCLUDE a.txt");
+    // The last RESTORE-INPUT fails: the saved place is in an EVALUATE string, not the file.
+    try std.testing.expectEqualStrings("1 2 3 done1 2 3 4 -1 ", output.written());
+    // The terminal goes back within the same line only.
+    output.len = 0;
+    try machine.interpretLine("M2 C @ 1+ DUP C ! . C @ 7 < [IF] BACK RESTORE-INPUT DROP [THEN]");
+    try machine.interpretLine("BACK RESTORE-INPUT . 1 2 3 4 5 RESTORE-INPUT . 0 RESTORE-INPUT .");
+    try std.testing.expectEqualStrings("5 6 7 -1 -1 -1 ", output.written());
+}
+
 test "SOURCE-ID gives the file id and REFILL the next line of an included file" {
     var output = Output{};
     support.setFakeFile(&output, 0, ": NL REFILL . SOURCE TYPE SOURCE NIP >IN ! ; SOURCE-ID 0> . NL\nthis line is read by REFILL\nSOURCE-ID 0> .\n");
@@ -230,6 +259,25 @@ test "PARSE-NAME reads the next name from a file being included" {
 
     try machine.interpretLine("INCLUDE a.txt");
     try std.testing.expectEqualStrings("abc0 ", output.written());
+}
+
+test "FILE-POSITION RESIZE-FILE FLUSH-FILE FILE-STATUS RENAME-FILE DELETE-FILE BIN and INCLUDE-FILE work as in gforth" {
+    var output = Output{};
+    support.setFakeFile(&output, 2, "1 2 + .\n");
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
+
+    try machine.interpretLine("R/O BIN . R/W BIN . W/O BIN .");
+    try machine.interpretLine("S\" a.txt\" W/O BIN CREATE-FILE THROW VALUE F S\" hello world\" F WRITE-FILE . F FILE-POSITION . . . F FLUSH-FILE .");
+    try machine.interpretLine("5 0 F RESIZE-FILE . F FILE-SIZE . . . F FILE-POSITION . . . F CLOSE-FILE .");
+    try machine.interpretLine("S\" a.txt\" FILE-STATUS . . S\" b.txt\" FILE-STATUS . .");
+    try machine.interpretLine("S\" a.txt\" S\" b.txt\" RENAME-FILE . S\" a.txt\" FILE-STATUS . DROP S\" b.txt\" FILE-STATUS . DROP");
+    // RENAME-FILE moved the contents, cut to five bytes, to b.txt.
+    try std.testing.expectEqualStrings("hello", output.files[1].data[0..output.files[1].len]);
+    try machine.interpretLine("S\" b.txt\" DELETE-FILE . S\" b.txt\" DELETE-FILE .");
+    try machine.interpretLine("S\" c.txt\" R/O OPEN-FILE THROW INCLUDE-FILE 99 F FILE-POSITION . . .");
+    try std.testing.expectEqualStrings("1 3 5 0 0 0 11 0 0 0 0 5 0 0 11 0 0 2 -514 0 0 -514 0 0 -514 3 -521 -1 -1 ", output.written());
+    try std.testing.expect(!output.files[1].exists and !output.files[2].open);
 }
 
 test "READ-FILE reads bytes as they are and gives 0 at the end of the file" {

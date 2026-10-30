@@ -68,6 +68,9 @@ const doubleCells = defs.doubleCells;
 pub const errnoIor = memory_map.errnoIor;
 pub const errno_bad_file = memory_map.errno_bad_file;
 pub const errno_invalid = memory_map.errno_invalid;
+pub const fam_read_only = memory_map.fam_read_only;
+pub const fam_read_write = memory_map.fam_read_write;
+pub const fam_write_only = memory_map.fam_write_only;
 pub const errno_no_memory = memory_map.errno_no_memory;
 const evaluate_source_name = memory_map.evaluate_source_name;
 const evaluate_source_name_address = memory_map.evaluate_source_name_address;
@@ -210,6 +213,14 @@ pub const State = struct {
     pub fn sourceCursor(self: *const State) usize {
         const offset = self.readCellConst(in_address);
         return @intCast(std.math.clamp(offset, 0, @as(Cell, @intCast(self.source_line.len))));
+    }
+
+    /// Where the current line or EVALUATE string lies in logical memory (0 if it does not).
+    pub fn sourceLineAddress(self: *const State) Cell {
+        const start = @intFromPtr(&self.memory);
+        const address = @intFromPtr(self.source_line.ptr);
+        if (self.source_line.len == 0 or address < start or address >= start + memory_size) return 0;
+        return @intCast(address - start);
     }
 
     pub fn setSourceCursor(self: *State, offset: usize) void {
@@ -382,6 +393,10 @@ pub const State = struct {
             .{ "AHEAD", .compile_ahead },          .{ "N>R", .n_to_r },                  .{ "NR>", .n_r_from },                .{ "AT-XY", .at_xy },                 .{ "TIME&DATE", .time_and_date },
             .{ "SYNONYM", .synonym },              .{ "TRAVERSE-WORDLIST", .traverse_wordlist }, .{ "NAME>INTERPRET", .name_to_int }, .{ "CS-PICK", .cs_pick },     .{ "CS-ROLL", .cs_roll },
             .{ "EKEY", .key },                     .{ "EKEY?", .key_question },          .{ "EKEY>CHAR", .ekey_to_char },      .{ "ENVIRONMENT?", .environment_query }, .{ "QUIT", .quit },
+            .{ "BIN", .bin },                      .{ "FILE-POSITION", .file_position }, .{ "RESIZE-FILE", .resize_file },     .{ "FLUSH-FILE", .flush_file },       .{ "DELETE-FILE", .delete_file },
+            .{ "RENAME-FILE", .rename_file },      .{ "FILE-STATUS", .file_status },     .{ "INCLUDE-FILE", .include_file },
+            .{ "SAVE-INPUT", .save_input },        .{ "RESTORE-INPUT", .restore_input },
+            .{ "M*/", .m_star_slash },              .{ "REPRESENT", .represent },
             .{ "M+", .m_plus },                    .{ "DU<", .du_less },                 .{ "2ROT", .two_rot },                .{ "DUMP", .dump },
         };
         for (definitions) |definition| self.addBuiltin(definition[0], definition[1]) catch unreachable;
@@ -664,6 +679,7 @@ pub const State = struct {
     pub const loadedSourceFiles = source_input.loadedSourceFiles;
     pub const restoreLoadedSourceFiles = source_input.restoreLoadedSourceFiles;
     pub const readIncludeLine = source_input.readIncludeLine;
+    pub const includeOpenFile = source_input.includeOpenFile;
     pub const includeFile = source_input.includeFile;
     pub const interpretIncludedFile = source_input.interpretIncludedFile;
     pub const requireFile = source_input.requireFile;

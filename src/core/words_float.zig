@@ -38,6 +38,7 @@ const float_size = memory_map.float_size;
 const formatRdp = float_format.formatRdp;
 const hold_bottom = memory_map.hold_bottom;
 const max_dot_s_items = memory_map.max_dot_s_items;
+const max_float_precision = memory_map.max_float_precision;
 const max_rdp_width = float_format.max_rdp_width;
 const parseFloat = number_io.parseFloat;
 const power = float_math.power;
@@ -61,7 +62,7 @@ pub const words = [_]Builtin{
     .sf_fetch, .sf_store, .df_fetch, .df_store, .sfloats, .dfloats, .sfloat_plus, .dfloat_plus,
     .f_align, .f_aligned, .sf_align, .sf_aligned, .df_align, .df_aligned, .f_sincos, .f_asin,
     .f_acos, .f_atan, .f_atan2, .f_sinh, .f_cosh, .f_tanh, .f_asinh, .f_acosh, .f_atanh,
-    .f_expm1, .f_lnp1, .f_log, .f_alog, .f_power,
+    .f_expm1, .f_lnp1, .f_log, .f_alog, .f_power, .represent,
 };
 
 pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
@@ -159,6 +160,32 @@ pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
                 .f_alog => unary(cr_exp10, a, .default),
                 else => unreachable,
             });
+        },
+        // REPRESENT ( c-addr u -- n flag1 flag2 ) ( F: r -- ): u digits of r, rounded from
+        // its exact value, the exponent n (r = 0.digits * 10^n), its sign, and whether it
+        // is finite; infinity and NaN are written by name, cut to u characters, as gforth does.
+        .represent => {
+            const length = try self.popLength();
+            const address = try self.pop();
+            const value = try self.fpop();
+            const start = try self.memoryAddress(address, length);
+            const out = self.memory[start .. start + length];
+            if (std.math.isNan(value) or std.math.isInf(value)) {
+                const name: []const u8 = if (std.math.isNan(value)) "NaN" else if (value < 0) "-infinity" else "infinity";
+                const shown = @min(name.len, out.len);
+                @memcpy(out[0..shown], name[0..shown]);
+                try self.push(0);
+                try self.push(truth(!std.math.isNan(value) and value < 0));
+                return self.push(0);
+            }
+            const digits = @max(1, @min(length, max_float_precision));
+            const rep = float_format.represent(value, digits);
+            const shown = @min(digits, out.len);
+            @memcpy(out[0..shown], rep.digits[0..shown]);
+            @memset(out[shown..], '0');
+            try self.push(rep.exponent);
+            try self.push(truth(rep.negative));
+            try self.push(true_flag);
         },
         .f_sincos => {
             const a = try self.fpop();

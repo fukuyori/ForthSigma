@@ -16,6 +16,26 @@ extern "c" fn getc(?*anyopaque) c_int;
 extern "c" fn ungetc(c_int, ?*anyopaque) c_int;
 extern "c" fn ferror(?*anyopaque) c_int;
 extern "c" fn clearerr(?*anyopaque) void;
+extern "c" fn remove([*:0]const u8) c_int;
+extern "c" fn rename([*:0]const u8, [*:0]const u8) c_int;
+/// Changing a file's size goes through its descriptor: _chsize_s on Windows, ftruncate
+/// elsewhere (64-bit off_t on musl and macOS).
+const file_number = if (builtin.os.tag == .windows) struct {
+    extern "c" fn _fileno(?*anyopaque) c_int;
+}._fileno else struct {
+    extern "c" fn fileno(?*anyopaque) c_int;
+}.fileno;
+const resizeDescriptor = if (builtin.os.tag == .windows) struct {
+    extern "c" fn _chsize_s(c_int, i64) c_int;
+    fn call(descriptor: c_int, size: i64) c_int {
+        return _chsize_s(descriptor, size);
+    }
+}.call else struct {
+    extern "c" fn ftruncate(c_int, i64) c_int;
+    fn call(descriptor: c_int, size: i64) c_int {
+        return ftruncate(descriptor, size);
+    }
+}.call;
 /// 64-bit file positions: `fseek`/`ftell` take a 32-bit `long` on Windows.
 const seek64 = if (builtin.os.tag == .windows) struct {
     extern "c" fn _fseeki64(?*anyopaque, i64, c_int) c_int;
@@ -238,6 +258,78 @@ fn fileReposition(_: ?*anyopaque, fileid: forth.Cell, position: forth.UCell) for
     return if (seek64(file, @intCast(position), 0) == 0) 0 else lastIor();
 }
 
+fn filePosition(_: ?*anyopaque, fileid: forth.Cell) forth.FileResult {
+    const file = openedFile(fileid) orelse return .{ .ior = badFileIor() };
+    clearErrno();
+    const position = tell64(file);
+    return if (position < 0) .{ .ior = lastIor() } else .{ .value = @intCast(position) };
+}
+
+fn fileResize(_: ?*anyopaque, fileid: forth.Cell, size: forth.UCell) forth.Cell {
+    const file = openedFile(fileid) orelse return badFileIor();
+    if (size > std.math.maxInt(i64)) return forth.errnoIor(forth.errno_invalid);
+    clearErrno();
+    if (fflush(file) != 0) return lastIor();
+    // _chsize_s returns the error number itself; ftruncate returns -1 and sets errno.
+    const result = resizeDescriptor(file_number(file), @intCast(size));
+    if (result == 0) return 0;
+    return if (builtin.os.tag == .windows) forth.errnoIor(result) else lastIor();
+}
+
+fn fileFlush(_: ?*anyopaque, fileid: forth.Cell) forth.Cell {
+    if (fileid == forth.stdout_fileid or fileid == forth.stderr_fileid) return 0;
+    const file = openedFile(fileid) orelse return badFileIor();
+    clearErrno();
+    return if (fflush(file) == 0) 0 else lastIor();
+}
+
+/// The name as a C string, or null when it is too long or holds a NUL.
+fn cPath(name: []const u8, path: *[4096:0]u8) ?[*:0]const u8 {
+    if (name.len >= path.len or std.mem.indexOfScalar(u8, name, 0) != null) return null;
+    @memcpy(path[0..name.len], name);
+    path[name.len] = 0;
+    return path;
+}
+
+fn fileDelete(_: ?*anyopaque, name: []const u8) forth.Cell {
+    var path: [4096:0]u8 = undefined;
+    const c_name = cPath(name, &path) orelse return forth.errnoIor(forth.errno_invalid);
+    clearErrno();
+    return if (remove(c_name) == 0) 0 else lastIor();
+}
+
+fn fileRename(_: ?*anyopaque, old: []const u8, new: []const u8) forth.Cell {
+    var old_path: [4096:0]u8 = undefined;
+    var new_path: [4096:0]u8 = undefined;
+    const c_old = cPath(old, &old_path) orelse return forth.errnoIor(forth.errno_invalid);
+    const c_new = cPath(new, &new_path) orelse return forth.errnoIor(forth.errno_invalid);
+    clearErrno();
+    if (rename(c_old, c_new) == 0) return 0;
+    // The Windows C library does not replace an existing file, as POSIX rename (and so
+    // gforth) does; remove it and try once more.
+    const errno_exists = 17;
+    if (builtin.os.tag == .windows and std.c._errno().* == errno_exists) {
+        clearErrno();
+        if (remove(c_new) == 0 and rename(c_old, c_new) == 0) return 0;
+    }
+    return lastIor();
+}
+
+fn fileStatus(_: ?*anyopaque, name: []const u8) forth.FileResult {
+    var path: [4096:0]u8 = undefined;
+    const c_name = cPath(name, &path) orelse return .{ .ior = forth.errnoIor(forth.errno_invalid) };
+    clearErrno();
+    const readable = fopen(c_name, "rb");
+    if (readable) |file| _ = fclose(file);
+    const read_ior = lastIor();
+    clearErrno();
+    const writable = fopen(c_name, "r+b");
+    if (writable) |file| _ = fclose(file);
+    if (readable == null and writable == null) return .{ .ior = read_ior };
+    const fam: forth.Cell = if (readable != null and writable != null) forth.fam_read_write else if (readable != null) forth.fam_read_only else forth.fam_write_only;
+    return .{ .value = @bitCast(fam) };
+}
+
 fn closeAllFiles() void {
     for (&open_files) |*slot| {
         if (slot.*) |file| _ = fclose(file);
@@ -245,7 +337,7 @@ fn closeAllFiles() void {
     }
 }
 
-const file_ops = forth.FileOps{ .open = fileOpen, .close = fileClose, .read_line = fileReadLine, .read = fileRead, .write = fileWrite, .size = fileSize, .reposition = fileReposition };
+const file_ops = forth.FileOps{ .open = fileOpen, .close = fileClose, .read_line = fileReadLine, .read = fileRead, .write = fileWrite, .size = fileSize, .reposition = fileReposition, .position = filePosition, .resize = fileResize, .flush = fileFlush, .delete = fileDelete, .rename = fileRename, .status = fileStatus };
 
 /// Lets the Windows console interpret the ANSI sequences written by PAGE.
 fn enableVirtualTerminal() void {
@@ -590,6 +682,27 @@ test "SLURP-FILE through the host reads every byte as it is" {
     try std.testing.expectEqual(@as(forth.Cell, 10000), machine.data_stack[1]);
     try std.testing.expectEqualSlices(u8, text, machine.memory[address .. address + text.len]);
     try std.testing.expectEqual(@as(forth.Cell, 0), machine.data_stack[2]);
+    for (open_files) |slot| try std.testing.expect(slot == null);
+}
+
+test "file words through the host: position, resize, flush, status, rename over a file, delete" {
+    const allocator = std.testing.allocator;
+    try writeTestFile(".zig-cache/sigma-files-b.txt", "old");
+    var host = HostContext{ .allocator = allocator, .executable_path = "", .io = undefined, .environ_map = undefined };
+    const machine = try allocator.create(forth.State);
+    defer allocator.destroy(machine);
+    machine.init(.{ .context = @ptrCast(&host), .write_fn = discardOutput, .file_ops = &file_ops });
+    defer closeAllFiles();
+
+    try machine.interpretLine("S\" .zig-cache/sigma-files-a.txt\" W/O BIN CREATE-FILE THROW VALUE F S\" hello world\" F WRITE-FILE F FILE-POSITION F FLUSH-FILE");
+    try machine.interpretLine("5 0 F RESIZE-FILE F FILE-SIZE F FILE-POSITION F CLOSE-FILE");
+    try machine.interpretLine("S\" .zig-cache/sigma-files-a.txt\" FILE-STATUS S\" .zig-cache/sigma-files-a.txt\" S\" .zig-cache/sigma-files-b.txt\" RENAME-FILE");
+    try machine.interpretLine("S\" .zig-cache/sigma-files-a.txt\" FILE-STATUS NIP S\" .zig-cache/sigma-files-b.txt\" SLURP-FILE NIP");
+    try machine.interpretLine("S\" .zig-cache/sigma-files-b.txt\" DELETE-FILE S\" .zig-cache/sigma-files-b.txt\" DELETE-FILE");
+    // WRITE-FILE, FILE-POSITION, FLUSH-FILE; RESIZE-FILE, FILE-SIZE, FILE-POSITION (it stays),
+    // CLOSE-FILE; FILE-STATUS (R/W), RENAME-FILE over b; a is gone, b holds the five bytes;
+    // the first DELETE-FILE works and the second finds no file.
+    try std.testing.expectEqualSlices(forth.Cell, &.{ 0, 11, 0, 0, 0, 0, 5, 0, 0, 11, 0, 0, 0, forth.fam_read_write, 0, 0, forth.errnoIor(2), 5, 0, forth.errnoIor(2) }, machine.data_stack[0..machine.data_depth]);
     for (open_files) |slot| try std.testing.expect(slot == null);
 }
 

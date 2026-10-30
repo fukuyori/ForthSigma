@@ -28,6 +28,15 @@ pub const FileOps = struct {
     write: *const fn (?*anyopaque, Cell, []const u8) Cell,
     size: *const fn (?*anyopaque, Cell) FileResult,
     reposition: *const fn (?*anyopaque, Cell, UCell) Cell,
+    /// The read and write position.
+    position: *const fn (?*anyopaque, Cell) FileResult,
+    /// Cuts the file to the size or extends it with zero bytes; the position stays.
+    resize: *const fn (?*anyopaque, Cell, UCell) Cell,
+    flush: *const fn (?*anyopaque, Cell) Cell,
+    delete: *const fn (?*anyopaque, []const u8) Cell,
+    rename: *const fn (?*anyopaque, []const u8, []const u8) Cell,
+    /// Whether the named file exists; the value is R/O, W/O, or R/W, as it can be opened.
+    status: *const fn (?*anyopaque, []const u8) FileResult,
 };
 
 /// The local date and time, for TIME&DATE: month 1 to 12, the full year.

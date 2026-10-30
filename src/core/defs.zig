@@ -233,6 +233,7 @@ pub const Builtin = enum {
     d_min,
     m_plus,
     du_less,
+    m_star_slash,
     d_dot,
     two_fetch,
     two_store,
@@ -298,6 +299,14 @@ pub const Builtin = enum {
     reposition_file,
     slurp_file,
     read_file,
+    bin,
+    file_position,
+    resize_file,
+    flush_file,
+    delete_file,
+    rename_file,
+    file_status,
+    include_file,
     allocate,
     free,
     resize,
@@ -335,6 +344,8 @@ pub const Builtin = enum {
     source,
     source_id,
     refill,
+    save_input,
+    restore_input,
     find_name,
     name_to_int,
     name_to_string,
@@ -409,6 +420,7 @@ pub const Builtin = enum {
     f_log,
     f_alog,
     f_power,
+    represent,
     define_colon,
     end_definition,
     define_variable,
@@ -437,7 +449,8 @@ pub const HeapResult = union(enum) { address: Cell, no_memory, bad_pointer };
 
 pub const SourceKind = enum { terminal, evaluate, file };
 
-pub const IncludeFrame = struct { fileid: Cell, file_index: u8, line: u32 };
+/// `line_start` is the file position where the current line began, for RESTORE-INPUT.
+pub const IncludeFrame = struct { fileid: Cell, file_index: u8, line: u32, line_start: UCell = 0 };
 
 /// Where an error happened inside an included file, kept for `report`.
 pub const ErrorLocation = struct { file_index: u8, line: u32 };

@@ -8,6 +8,7 @@ const integer_math = @import("integer_math.zig");
 const memory_map = @import("memory_map.zig");
 const source_input = @import("source_input.zig");
 const Builtin = defs.Builtin;
+const Cell = memory_map.Cell;
 const FileAccess = host_interface.FileAccess;
 const FileResult = host_interface.FileResult;
 const RuntimeError = defs.RuntimeError;
@@ -35,7 +36,8 @@ pub const words = [_]Builtin{
     .include, .require, .included, .required, .included_query, .source_file_name,
     .source_line_number, .read_only, .write_only, .read_write, .stdin, .stdout, .stderr, .open_file,
     .create_file, .close_file, .read_line, .write_line, .write_file, .file_size, .reposition_file,
-    .slurp_file, .read_file,
+    .slurp_file, .read_file, .bin, .file_position, .resize_file, .flush_file, .delete_file,
+    .rename_file, .file_status, .include_file,
 };
 
 pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
@@ -70,7 +72,8 @@ pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
             const fam = try self.pop();
             const name = try self.memoryRange();
             const files = try self.fileOps();
-            const access: ?FileAccess = switch (fam) {
+            // BIN changes nothing: files are always read and written as bytes.
+            const access: ?FileAccess = switch (fam & ~@as(Cell, 1)) {
                 fam_read_only => .read_only,
                 fam_write_only => .write_only,
                 fam_read_write => .read_write,
@@ -114,6 +117,35 @@ pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
             const files = try self.fileOps();
             try self.push(if (position > std.math.maxInt(i64)) errnoIor(errno_invalid) else files.reposition(self.writer.context, fileid, @intCast(position)));
         },
+        .bin => try self.push((try self.pop()) | 1),
+        .file_position => {
+            const result = (try self.fileOps()).position(self.writer.context, try self.pop());
+            try self.pushDouble(if (result.ior == 0) result.value else -1);
+            try self.push(result.ior);
+        },
+        .resize_file => {
+            const fileid = try self.pop();
+            const size: UDouble = @bitCast(try self.popDouble());
+            const files = try self.fileOps();
+            try self.push(if (size > std.math.maxInt(i64)) errnoIor(errno_invalid) else files.resize(self.writer.context, fileid, @intCast(size)));
+        },
+        .flush_file => try self.push((try self.fileOps()).flush(self.writer.context, try self.pop())),
+        .delete_file => {
+            const name = try self.memoryRange();
+            try self.push((try self.fileOps()).delete(self.writer.context, name));
+        },
+        .rename_file => {
+            const new = try self.memoryRange();
+            const old = try self.memoryRange();
+            try self.push((try self.fileOps()).rename(self.writer.context, old, new));
+        },
+        .file_status => {
+            const name = try self.memoryRange();
+            const result = (try self.fileOps()).status(self.writer.context, name);
+            try self.push(if (result.ior == 0) @bitCast(result.value) else 0);
+            try self.push(result.ior);
+        },
+        .include_file => try self.includeOpenFile(try self.pop(), "*file*"),
         .read_file => {
             const fileid = try self.pop();
             const buffer = try self.memoryRange();

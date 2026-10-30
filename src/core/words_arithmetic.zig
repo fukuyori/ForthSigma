@@ -25,7 +25,7 @@ pub const words = [_]Builtin{
     .false_value, .s_to_d, .d_to_s, .d_add, .d_sub, .d_negate, .d_abs, .d_zero_equal, .d_zero_less,
     .d_equal, .d_less, .within, .u_less, .u_greater, .star_slash, .star_slash_mod, .m_star, .um_star,
     .um_slash_mod, .fm_slash_mod, .sm_slash_rem, .d_two_star, .d_two_slash, .d_max, .d_min, .m_plus,
-    .du_less,
+    .du_less, .m_star_slash,
 };
 
 pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
@@ -76,6 +76,16 @@ pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
         .m_plus => {
             const n = try self.pop();
             try self.pushDouble((try self.popDouble()) +% n);
+        },
+        // M*/ ( d1 n1 +n2 -- d2 ): d1 times n1 in three cells, divided by n2 and floored. As
+        // gforth does, n2 is taken as unsigned and a quotient too big for d2 wraps.
+        .m_star_slash => {
+            const divisor: UCell = @bitCast(try self.pop());
+            const factor = try self.pop();
+            const number = try self.popDouble();
+            if (divisor == 0) return error.DivisionByZero;
+            const product = @as(i256, number) * factor;
+            try self.pushDouble(@truncate(@divFloor(product, @as(i256, divisor))));
         },
         .du_less => {
             const b: UDouble = @bitCast(try self.popDouble());

@@ -107,7 +107,7 @@ pub fn setFakeFile(output: *Output, index: usize, text: []const u8) void {
     output.files[index].exists = true;
 }
 
-pub const fake_file_ops = forth.FileOps{ .open = fakeOpen, .close = fakeClose, .read_line = fakeReadLine, .read = fakeRead, .write = fakeWrite, .size = fakeSize, .reposition = fakeReposition };
+pub const fake_file_ops = forth.FileOps{ .open = fakeOpen, .close = fakeClose, .read_line = fakeReadLine, .read = fakeRead, .write = fakeWrite, .size = fakeSize, .reposition = fakeReposition, .position = fakePosition, .resize = fakeResize, .flush = fakeFlush, .delete = fakeDelete, .rename = fakeRename, .status = fakeStatus };
 
 pub fn fakeOutput(context: ?*anyopaque) *Output {
     return @ptrCast(@alignCast(context.?));
@@ -179,6 +179,57 @@ pub fn fakeWrite(context: ?*anyopaque, fileid: forth.Cell, bytes: []const u8) fo
 pub fn fakeSize(context: ?*anyopaque, fileid: forth.Cell) forth.FileResult {
     const file = fakeFile(context, fileid) orelse return .{ .ior = forth.errnoIor(forth.errno_bad_file) };
     return .{ .value = file.len };
+}
+
+pub fn fakePosition(context: ?*anyopaque, fileid: forth.Cell) forth.FileResult {
+    const file = fakeFile(context, fileid) orelse return .{ .ior = forth.errnoIor(forth.errno_bad_file) };
+    return .{ .value = file.position };
+}
+
+pub fn fakeResize(context: ?*anyopaque, fileid: forth.Cell, size: forth.UCell) forth.Cell {
+    const file = fakeFile(context, fileid) orelse return forth.errnoIor(forth.errno_bad_file);
+    if (size > file.data.len) return forth.errnoIor(28);
+    const length: usize = @intCast(size);
+    if (length > file.len) @memset(file.data[file.len..length], 0);
+    file.len = length;
+    return 0;
+}
+
+pub fn fakeFlush(context: ?*anyopaque, fileid: forth.Cell) forth.Cell {
+    _ = fakeFile(context, fileid) orelse return forth.errnoIor(forth.errno_bad_file);
+    return 0;
+}
+
+fn fakeIndex(name: []const u8) ?usize {
+    for (fake_file_names, 0..) |known, index| {
+        if (std.mem.eql(u8, name, known)) return index;
+    }
+    return null;
+}
+
+pub fn fakeDelete(context: ?*anyopaque, name: []const u8) forth.Cell {
+    const index = fakeIndex(name) orelse return forth.errnoIor(2);
+    const file = &fakeOutput(context).files[index];
+    if (!file.exists) return forth.errnoIor(2);
+    file.exists = false;
+    file.len = 0;
+    return 0;
+}
+
+pub fn fakeRename(context: ?*anyopaque, old: []const u8, new: []const u8) forth.Cell {
+    const from = fakeIndex(old) orelse return forth.errnoIor(2);
+    const to = fakeIndex(new) orelse return forth.errnoIor(13);
+    const files = &fakeOutput(context).files;
+    if (!files[from].exists) return forth.errnoIor(2);
+    files[to] = files[from];
+    files[from] = .{};
+    return 0;
+}
+
+pub fn fakeStatus(context: ?*anyopaque, name: []const u8) forth.FileResult {
+    const index = fakeIndex(name) orelse return .{ .ior = forth.errnoIor(2) };
+    if (!fakeOutput(context).files[index].exists) return .{ .ior = forth.errnoIor(2) };
+    return .{ .value = @bitCast(forth.fam_read_write) };
 }
 
 pub fn fakeReposition(context: ?*anyopaque, fileid: forth.Cell, position: forth.UCell) forth.Cell {

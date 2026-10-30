@@ -347,6 +347,13 @@ test "FLOOR FTRUNC FROUND F~ FSINCOS and the SF@ DF@ and alignment words work as
     );
 }
 
+test "REPRESENT gives the digits, exponent, and sign as gforth does" {
+    const line = "CREATE BUF 40 ALLOT : R. ( u -- ) BUF OVER BLANK BUF SWAP 2DUP 2>R REPRESENT . . . 2R> TYPE .\" |\" ; ";
+    try expectOutput(line ++ "3.14159E 5 R. -0.000123456E 4 R. 0E 5 R. -0E 3 R. 9.99999E 3 R. 1E300 6 R.", "-1 0 1 31416|-1 -1 -3 1235|-1 0 1 00000|-1 -1 1 000|-1 0 2 100|-1 0 301 100000|");
+    try expectOutput(line ++ "5E-324 4 R. 2.5E 1 R. 123.456E 20 R.", "-1 0 -323 4941|-1 0 1 2|-1 0 3 12345600000000000307|");
+    try expectOutput(line ++ "1E 0E F/ 5 R. -1E 0E F/ 5 R. 0E 0E F/ 5 R.", "0 0 0 infin|0 -1 0 -infi|0 0 0 NaN  |");
+}
+
 test "FE. FS. and F. follow PRECISION as in gforth" {
     try expectOutput(
         "12345.678E FE. 12345.678E FS. -0.000123E FE. -0.000123E FS. 0E FE. 0E FS. 999.9999999999999E FE. -0E FS.",

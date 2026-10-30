@@ -14,14 +14,16 @@ const UCell = memory_map.UCell;
 const doubleCells = defs.doubleCells;
 const in_address = memory_map.in_address;
 const max_gforth_string = memory_map.max_gforth_string;
+const max_stack = memory_map.max_stack;
 const tib_address = memory_map.tib_address;
 const tib_size = memory_map.tib_size;
+const true_flag = memory_map.true_flag;
 const truth = integer_math.truth;
 const word_buffer_address = memory_map.word_buffer_address;
 
 /// The built-in words this file executes; executeBuiltin dispatches by this list.
 pub const words = [_]Builtin{
-    .input, .accept, .evaluate, .key, .key_question, .word_parse, .parse, .parse_name, .to_in, .source, .source_id, .refill,
+    .input, .accept, .evaluate, .key, .key_question, .word_parse, .parse, .parse_name, .to_in, .source, .source_id, .refill, .save_input, .restore_input,
 };
 
 pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
@@ -93,7 +95,7 @@ pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
                 try self.push(0);
                 return;
             }
-            try self.push(@intCast(@intFromPtr(self.source_line.ptr) - @intFromPtr(&self.memory)));
+            try self.push(self.sourceLineAddress());
             try self.push(@intCast(self.source_line.len));
         },
         // SOURCE-ID: 0 for the terminal, -1 for EVALUATE, the file id while including.
@@ -119,6 +121,54 @@ pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
                 self.setSourceCursor(0);
             }
             try self.push(truth(line != null));
+        },
+        // SAVE-INPUT ( -- source-id >in line-mark line-number 4 ): the line is marked by its
+        // address for the terminal and EVALUATE, and by where it starts for a file.
+        .save_input => {
+            const id: Cell, const mark: Cell, const number: Cell = switch (self.source_kind) {
+                .terminal => .{ 0, self.sourceLineAddress(), @intCast(self.source_line.len) },
+                .evaluate => .{ -1, self.sourceLineAddress(), @intCast(self.source_line.len) },
+                .file => blk: {
+                    const frame = self.include_stack[self.include_depth - 1];
+                    break :blk .{ frame.fileid, @bitCast(frame.line_start), frame.line };
+                },
+            };
+            if (max_stack - self.data_depth < 5) return error.StackOverflow;
+            for ([_]Cell{ id, @intCast(self.sourceCursor()), mark, number, 4 }) |item| try self.push(item);
+        },
+        // RESTORE-INPUT ( x1..x4 4 -- flag ): false when the input went back. The terminal
+        // and an EVALUATE string go back within the same line only; a file reads the
+        // saved line again from where it started.
+        .restore_input => {
+            const count = try self.pop();
+            if (count != 4) {
+                if (count > 0 and count <= self.data_depth) self.data_depth -= @intCast(count);
+                return self.push(true_flag);
+            }
+            const number = try self.pop();
+            const mark = try self.pop();
+            const cursor = try self.pop();
+            const id = try self.pop();
+            const current: Cell = switch (self.source_kind) {
+                .terminal => 0,
+                .evaluate => -1,
+                .file => self.include_stack[self.include_depth - 1].fileid,
+            };
+            if (id != current or cursor < 0) return self.push(true_flag);
+            switch (self.source_kind) {
+                .terminal, .evaluate => {
+                    if (mark != self.sourceLineAddress() or number != @as(Cell, @intCast(self.source_line.len))) return self.push(true_flag);
+                },
+                .file => {
+                    const frame = &self.include_stack[self.include_depth - 1];
+                    const files = try self.fileOps();
+                    if (number < 1 or files.reposition(self.writer.context, frame.fileid, @bitCast(mark)) != 0) return self.push(true_flag);
+                    frame.line = @intCast(number - 1);
+                    self.source_line = try self.readIncludeLine() orelse return self.push(true_flag);
+                },
+            }
+            self.setSourceCursor(@intCast(cursor));
+            try self.push(0);
         },
         // The next name in the input, passing blanks and tabs before it, as in the source
         // itself; at the end of the input the length is 0.

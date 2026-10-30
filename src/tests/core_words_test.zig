@@ -294,6 +294,19 @@ test "QUIT keeps both data stacks, stops the line and the file, and CATCH does n
     try std.testing.expectEqualStrings("", output.written());
 }
 
+test "M*/ works as in gforth" {
+    try expectOutput("10. 3 4 M*/ D. -10. 3 4 M*/ D. 10. -3 4 M*/ D. -10. -3 4 M*/ D. 7. 1 2 M*/ D. -7. 1 2 M*/ D.", "7 -8 -8 7 3 -4 ");
+    // The product has three cells, so this does not overflow before the division.
+    try expectOutput("170141183460469231731687303715884105727. 2 3 M*/ D.", "113427455640312821154458202477256070484 ");
+    // As in gforth, a quotient too big for two cells wraps and the divisor is unsigned.
+    try expectOutput("170141183460469231731687303715884105727. 3 2 M*/ D. 1. 1 -2 M*/ D. -1. 1 -2 M*/ D.", "-85070591730234615865843651857942052866 0 -1 ");
+
+    var output = Output{};
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
+    try std.testing.expectError(error.DivisionByZero, machine.interpretLine("1. 1 0 M*/"));
+}
+
 test "AHEAD N>R and NR> work as in gforth" {
     try expectOutput(": T1 AHEAD 111 . THEN 222 . ; T1 : T2 1 2 3 3 N>R 99 . NR> . . . . ; T2 : T3 0 N>R NR> . ; T3", "222 99 3 3 2 1 0 ");
 

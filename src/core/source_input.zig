@@ -114,6 +114,8 @@ pub fn readIncludeLine(self: *State) RuntimeError!?[]const u8 {
     const files = try self.fileOps();
     // One byte more than a line may hold shows whether the host stopped at a line end.
     var chunk: [tib_size + 1]u8 = undefined;
+    const position = files.position(self.writer.context, frame.fileid);
+    if (position.ior == 0) frame.line_start = position.value;
     const result = files.read_line(self.writer.context, frame.fileid, &chunk);
     if (result.ior != 0) return self.throwCode(result.ior);
     if (!result.found) return null;
@@ -137,7 +139,14 @@ pub fn includeFile(self: *State, name: []const u8) RuntimeError!void {
     const files = try self.fileOps();
     const opened = files.open(self.writer.context, file_name, .read_only, false);
     if (opened.ior != 0) return self.throwCode(opened.ior);
-    const fileid: Cell = @bitCast(opened.value);
+    return self.includeOpenFile(@bitCast(opened.value), file_name);
+}
+
+/// Interprets a file that is open already, then closes it: INCLUDED after opening it,
+/// and INCLUDE-FILE, whose file has no name (it is recorded as `*file*`).
+pub fn includeOpenFile(self: *State, fileid: Cell, file_name: []const u8) RuntimeError!void {
+    if (self.include_depth == max_include_depth) return error.IncludeNesting;
+    const files = try self.fileOps();
     const file_index = self.recordSourceFile(file_name) catch |err| {
         _ = files.close(self.writer.context, fileid);
         return err;

@@ -78,7 +78,7 @@ BIGNUM 2@ D.                                      \ 30792422974944119506
 
 `*/` `*/MOD` `UM/MOD` `FM/MOD` `SM/REM` は、0で割ると `DIVISION BY ZERO !`、商が1セルに収まらないと `RESULT OUT OF RANGE !`（例外コード-11）になります。Gforthと同じです。
 | メモリ・定義 | `2@`, `2!`, `2VARIABLE 名前`, `値 2CONSTANT 名前`, `値 2VALUE 名前`, `2LITERAL` | `2VALUE` の名前は値を積み、`値 TO 名前` で変更できます。`2LITERAL` は定義の中で倍長整数を埋め込みます。 |
-| その他 | `D2*`, `D2/`, `DMAX`, `DMIN`, `M+`, `DU<`, `2ROT`, `D.R` | `D2/` は負の無限大方向へ丸めます（算術シフト）。`M+` は倍長整数に単長整数を加えます。`DU<` は符号なしで比べます。`2ROT` は3組目の2セルを先頭へ移します。`D.R`（( d 幅 -- )）は幅に右寄せし、空白を付けません。 |
+| その他 | `D2*`, `D2/`, `DMAX`, `DMIN`, `M+`, `M*/`, `DU<`, `2ROT`, `D.R` | `M*/`（( d1 n1 +n2 -- d2 )）はd1×n1を3セルで計算してからn2で割ります（床関数除算。Gforthと同じく、n2は符号なしとして扱い、商が2セルに収まらないと折り返します）。`D2/` は負の無限大方向へ丸めます（算術シフト）。`M+` は倍長整数に単長整数を加えます。`DU<` は符号なしで比べます。`2ROT` は3組目の2セルを先頭へ移します。`D.R`（( d 幅 -- )）は幅に右寄せし、空白を付けません。 |
 
 ## ワードの定義と辞書
 
@@ -156,6 +156,7 @@ CREATE BUF 16 ALLOT
 | メモリ | `F@`, `F!`, `F,`, `F+!`, `FLOATS`, `FLOAT+`, `DF@`, `DF!`, `DFLOATS`, `DFLOAT+`, `SF@`, `SF!`, `SFLOATS`, `SFLOAT+`, `FALIGN`, `FALIGNED`, `DFALIGN`, `DFALIGNED`, `SFALIGN`, `SFALIGNED` | 1個8バイトです。`DF` の付く語は同じ8バイトの値、`SF` の付く語は4バイト（単精度）の値を扱います（`SF!` は単精度に丸め、範囲を超えると無限大になります）。`FALIGN` と `DFALIGN` はHEREを8の倍数に、`SFALIGN` は4の倍数に切り上げます。 |
 | 定義 | `FVARIABLE 名前`, `値 FCONSTANT 名前`, `値 FVALUE 名前`, `要素数 FARRAY 名前`, `FA@`, `FA!` | `FVALUE` の名前は値を浮動小数点スタックに積み、`値 TO 名前` で変更できます。 `FARRAY` の読み書きは `添字 配列名 FA@`、`添字 配列名 FA!` です。 |
 | 変換・入力 | `S>F`, `F>S`, `FINPUT` | `F>S` は0方向へ切り捨てます。`FINPUT` は端末から数値を1個読み取ります（`E` は省略可能）。 |
+| 数字の取り出し | `REPRESENT` | ( addr u -- n flag1 flag2 ) ( f: r -- ) の形で、rの有効数字u桁を（2進数の値から正確に丸めて）addrに書き、指数n（r = 0.数字 × 10のn乗）、負かどうか、有限かどうかを返します。無限大とNaNは名前をu文字までに切って書きます（Gforthと同じ）。 |
 | 表示の桁数 | `PRECISION`, `SET-PRECISION` | `F.` `FE.` `FS.` の桁数を返す・設定します。表示は1〜1000桁の範囲で行います（Gforthは1000桁まで表示し、0以下や4000では異常終了します）。`PRECISION` は設定した値をそのまま返します。 |
 | 書式付き出力 | `F.RDP`, `F>STR-RDP`, `F>BUF-RDP` | ( r 幅 小数桁 最低有効桁 -- ) の形で、幅に右寄せして表示（`F.RDP`）、文字列で返す（`F>STR-RDP` は ( -- addr u )、次の数値書式で上書きされます）、指定したバッファに書き込みます（`F>BUF-RDP` は ( r addr 幅 小数桁 最低有効桁 -- )）。例: `12345.6789E 10 2 7 F.RDP` は `  12345.68`、最低有効桁を8にすると `1.234568E4`。固定小数点で有効桁が足りないか、整数部が幅に収まらなければ指数表記、それも入らなければ `*` で埋めます。Gforthと同じ結果です。 |
 
@@ -337,6 +338,14 @@ MAKE-FILE S" data.txt" SHOW-FILE
 | `WRITE-FILE` | ( addr u fileid -- ior ) | 文字列を改行なしで書き込みます。 |
 | `FILE-SIZE` | ( fileid -- ud ior ) | ファイルの大きさ（バイト数、倍長整数）を返します。 |
 | `REPOSITION-FILE` | ( ud fileid -- ior ) | 読み書きの位置を移動します。`FILE-SIZE` の結果を渡すと末尾へ移動し、追記できます。 |
+| `FILE-POSITION` | ( fileid -- ud ior ) | 読み書きの位置を返します。 |
+| `RESIZE-FILE` | ( ud fileid -- ior ) | ファイルをudバイトに切り詰めるか、0のバイトで伸ばします。読み書きの位置は変わりません。 |
+| `FLUSH-FILE` | ( fileid -- ior ) | たまっている書き込みをファイルに書き出します。 |
+| `DELETE-FILE` | ( addr u -- ior ) | 名前のファイルを削除します。 |
+| `RENAME-FILE` | ( addr1 u1 addr2 u2 -- ior ) | 1つ目の名前のファイルを2つ目の名前に変えます。2つ目の名前のファイルがあれば置き換えます（Windowsでも同じ）。 |
+| `FILE-STATUS` | ( addr u -- x ior ) | 名前のファイルがあればiorは0で、xは開ける方法（`R/O` `W/O` `R/W`）です。なければ-514です。 |
+| `BIN` | ( fam -- fam' ) | バイナリのファイルを指定します。ファイルはいつもバイトのまま読み書きするので、動きは変わりません。 |
+| `INCLUDE-FILE` | ( fileid -- ) | 開いたファイルを解釈し、閉じます。エラーの表示では、ファイル名は `*file*` になります。 |
 | `SLURP-FILE` | ( addr u -- addr' u' ) | 名前のファイルを丸ごと、改行も含めてそのまま読み、`ALLOCATE` で確保した領域に置きます。使い終わったら `FREE` で解放します。開けなければ `THROW` します。 |
 | `STDIN`, `STDOUT`, `STDERR` | ( -- fileid ) | 標準入力、標準出力、標準エラー出力のファイル番号です。 |
 | `THROW` | ( n -- ) | nが0なら何もしません。-1なら `ABORT` と同じです。それ以外は、`CATCH` で捕まえていなければエラーとして表示し、入力待ちに戻ります。 |
@@ -411,6 +420,7 @@ SHOW ANSWER                        \ 42
 | `>IN` | ( -- addr ) | 入力行の中で次に読む位置（先頭からのバイト数）を持つセルのアドレスです。書き換えると、読む位置が変わります（行の長さ以上なら行の残りを読み飛ばし、負の値は `STRING TOO LONG !`）。 |
 | `SOURCE-ID` | ( -- n ) | 端末なら0、`EVALUATE` なら-1、ファイルの読み込み中はそのファイルの番号です。 |
 | `REFILL` | ( -- flag ) | 端末または読み込み中のファイルから次の行を読み、それを入力にして真を返します。入力の終わりと `EVALUATE` の中では偽です。 |
+| `SAVE-INPUT`, `RESTORE-INPUT` | ( -- x1 x2 x3 x4 4 )、( x1 x2 x3 x4 4 -- flag ) | 入力の位置（入力元、`>IN`、行）を保存し、そこへ戻ります。戻れたらflagは偽です。ファイルでは保存した行を読み直し、端末と `EVALUATE` では同じ行の中でだけ戻れます。 |
 | `PARSE-NAME` | ( "name" -- addr u ) | 空白とタブを飛ばして、入力から次の名前を返します。行の終わりでは長さ0です。 |
 
 `WORD`、`PARSE`、`PARSE-NAME` は、そのワードが書かれた行の続きを読みます。行をまたいでは読みません。
@@ -483,7 +493,7 @@ SAVE words.sigma
 LOAD words.sigma
 ```
 
-`LOAD` は保存した利用者定義語を現在の辞書の後ろに追加します。同名語は読み込んだ新しい定義が優先されます。以前の版で保存した辞書イメージ（`SIGIMG01`〜`SIGIMG24`）と、壊れた辞書イメージは読み込めません（`INVALID IMAGE !`）。辞書イメージにはチェックサムが付いており、偶然の破損は読み込む前に見つかります。読み込むのは、Sigmaの `SAVE`・`SAVESYS` で作ったファイルだけにしてください。定数や変数に保存した実行トークン（`:NONAME` の結果など）と、`LITERAL` で定義に埋め込んだ実行トークンやアドレス（`[ ' X ] LITERAL` など）は、すでに利用者定義語がある辞書へ `LOAD` すると別の語や場所を指すことがあります。`['] X` で埋め込んだ実行トークンは正しく付け替えられます。`SAVESYS` で作った実行ファイルではこの問題は起きません。
+`LOAD` は保存した利用者定義語を現在の辞書の後ろに追加します。同名語は読み込んだ新しい定義が優先されます。以前の版で保存した辞書イメージ（`SIGIMG01`〜`SIGIMG27`）と、壊れた辞書イメージは読み込めません（`INVALID IMAGE !`）。辞書イメージにはチェックサムが付いており、偶然の破損は読み込む前に見つかります。読み込むのは、Sigmaの `SAVE`・`SAVESYS` で作ったファイルだけにしてください。定数や変数に保存した実行トークン（`:NONAME` の結果など）と、`LITERAL` で定義に埋め込んだ実行トークンやアドレス（`[ ' X ] LITERAL` など）は、すでに利用者定義語がある辞書へ `LOAD` すると別の語や場所を指すことがあります。`['] X` で埋め込んだ実行トークンは正しく付け替えられます。`SAVESYS` で作った実行ファイルではこの問題は起きません。
 
 `SAVESYS` は、現在の辞書・コンパイル済み定義・データを含む、実行中環境向けの単独実行ファイルを作ります。
 
@@ -512,20 +522,20 @@ SAVESYS demo.exe
 | 浮動小数点スタック | `FDROP`, `FDUP`, `FSWAP`, `FOVER`, `FROT`, `F-ROT`, `FNIP`, `FTUCK`, `FPICK`, `FDEPTH`, `F.S` |
 | 浮動小数点算術・関数 | `F+`, `F-`, `F*`, `F/`, `FNEGATE`, `FMINUS`, `FABS`, `FMAX`, `FMIN`, `FSQRT`, `FEXP`, `FLN`, `FSIN`, `FCOS`, `FTAN`, `FSINCOS`, `FASIN`, `FACOS`, `FATAN`, `FATAN2`, `FSINH`, `FCOSH`, `FTANH`, `FASINH`, `FACOSH`, `FATANH`, `FEXPM1`, `FLNP1`, `FLOG`, `FALOG`, `F**`, `FLOOR`, `FTRUNC`, `FROUND` |
 | 浮動小数点比較 | `F=`, `F<>`, `F<`, `F>`, `F<=`, `F>=`, `F0=`, `F0<>`, `F0<`, `F0>`, `F0<=`, `F0>=`, `F~` |
-| 浮動小数点メモリ・変換・入出力 | `F@`, `F!`, `F,`, `FA@`, `FA!`, `F+!`, `F?`, `FLOATS`, `FLOAT+`, `DF@`, `DF!`, `DFLOATS`, `DFLOAT+`, `SF@`, `SF!`, `SFLOATS`, `SFLOAT+`, `FALIGN`, `FALIGNED`, `DFALIGN`, `DFALIGNED`, `SFALIGN`, `SFALIGNED`, `S>F`, `F>S`, `F.`, `FE.`, `FS.`, `PRECISION`, `SET-PRECISION`, `FINPUT`, `F.RDP`, `F>STR-RDP`, `F>BUF-RDP` |
-| 倍長整数 | `S>D`, `D>S`, `D+`, `D-`, `DNEGATE`, `DABS`, `D0=`, `D0<`, `D=`, `D<`, `DU<`, `DMAX`, `DMIN`, `D2*`, `D2/`, `M+`, `D.`, `D.R`, `M*`, `UM*`, `UM/MOD`, `FM/MOD`, `SM/REM`, `2@`, `2!`, `2VALUE`, `2LITERAL`, `D>F`, `F>D` |
-| 文字列・入力 | `COUNT`, `PAD`, `ACCEPT`, `EVALUATE`, `KEY`, `KEY?`, `>NUMBER`, `S>NUMBER?`, `>FLOAT`, `WORD`, `PARSE`, `PARSE-NAME`, `SOURCE`, `>IN`, `SOURCE-ID`, `REFILL`, `EKEY`, `EKEY?`, `EKEY>CHAR` |
+| 浮動小数点メモリ・変換・入出力 | `F@`, `F!`, `F,`, `FA@`, `FA!`, `F+!`, `F?`, `FLOATS`, `FLOAT+`, `DF@`, `DF!`, `DFLOATS`, `DFLOAT+`, `SF@`, `SF!`, `SFLOATS`, `SFLOAT+`, `FALIGN`, `FALIGNED`, `DFALIGN`, `DFALIGNED`, `SFALIGN`, `SFALIGNED`, `S>F`, `F>S`, `F.`, `FE.`, `FS.`, `REPRESENT`, `PRECISION`, `SET-PRECISION`, `FINPUT`, `F.RDP`, `F>STR-RDP`, `F>BUF-RDP` |
+| 倍長整数 | `S>D`, `D>S`, `D+`, `D-`, `DNEGATE`, `DABS`, `D0=`, `D0<`, `D=`, `D<`, `DU<`, `DMAX`, `DMIN`, `D2*`, `D2/`, `M+`, `M*/`, `D.`, `D.R`, `M*`, `UM*`, `UM/MOD`, `FM/MOD`, `SM/REM`, `2@`, `2!`, `2VALUE`, `2LITERAL`, `D>F`, `F>D` |
+| 文字列・入力 | `COUNT`, `PAD`, `ACCEPT`, `EVALUATE`, `KEY`, `KEY?`, `>NUMBER`, `S>NUMBER?`, `>FLOAT`, `WORD`, `PARSE`, `PARSE-NAME`, `SOURCE`, `>IN`, `SOURCE-ID`, `REFILL`, `SAVE-INPUT`, `RESTORE-INPUT`, `EKEY`, `EKEY?`, `EKEY>CHAR` |
 | 数値の書式 | `<#`, `<<#`, `#`, `#S`, `#>`, `#>>`, `HOLD`, `HOLDS`, `SIGN` |
 | 文字列格納・比較・状態・中断 | `PLACE`, `+PLACE`, `COMPARE`, `SEARCH`, `/STRING`, `-TRAILING`, `CHAR+`, `CHARS`, `BOUNDS`, `BLANK`, `CMOVE>`, `SCAN`, `SKIP`, `STR=`, `STRING-PREFIX?`, `SLITERAL`, `STATE`, `ABORT` |
 | 時間・画面・OS | `MS`, `UTIME`, `TIME&DATE`, `PAGE`, `AT-XY`, `GETENV`, `SYSTEM`, `ENVIRONMENT?`, `QUIT` |
 | 語彙・条件付きコンパイル | `ONLY`, `ALSO`, `PREVIOUS`, `FORTH`, `DEFINITIONS`, `SYNONYM`, `TRAVERSE-WORDLIST`, `NAME>INTERPRET`, `ORDER`, `GET-ORDER`, `SET-ORDER`, `>ORDER`, `GET-CURRENT`, `SET-CURRENT`, `VOCABULARY`, `WORDLIST`, `FORTH-WORDLIST`, `SEARCH-WORDLIST`, `[IF]`, `[ELSE]`, `[THEN]`, `[DEFINED]`, `[UNDEFINED]` |
 | ソース読み込み | `INCLUDE`, `INCLUDED`, `REQUIRE`, `REQUIRED`, `NEEDS`, `INCLUDED?`, `SOURCEFILENAME`, `SOURCELINE#` |
-| ファイル・例外 | `THROW`, `CATCH`, `R/O`, `W/O`, `R/W`, `STDIN`, `STDOUT`, `STDERR`, `OPEN-FILE`, `CREATE-FILE`, `CLOSE-FILE`, `READ-LINE`, `READ-FILE`, `WRITE-LINE`, `WRITE-FILE`, `FILE-SIZE`, `SLURP-FILE`, `REPOSITION-FILE` |
+| ファイル・例外 | `THROW`, `CATCH`, `R/O`, `W/O`, `R/W`, `STDIN`, `STDOUT`, `STDERR`, `OPEN-FILE`, `CREATE-FILE`, `CLOSE-FILE`, `READ-LINE`, `READ-FILE`, `FILE-POSITION`, `RESIZE-FILE`, `FLUSH-FILE`, `DELETE-FILE`, `RENAME-FILE`, `FILE-STATUS`, `BIN`, `INCLUDE-FILE`, `WRITE-LINE`, `WRITE-FILE`, `FILE-SIZE`, `SLURP-FILE`, `REPOSITION-FILE` |
 | 定義語・コンパイル | `:`, `;`, `VARIABLE`, `VAR`, `FVARIABLE`, `2VARIABLE`, `CONSTANT`, `CONST`, `FCONSTANT`, `2CONSTANT`, `VALUE`, `FVALUE`, `ARRAY`, `FARRAY`, `'`, `>BODY`, `LITERAL`, `FLITERAL` |
 | 定数・説明 | `PI`, `HELP`, `LICENSE` |
 | 動的メモリ・動的文字列 | `ALLOCATE`, `FREE`, `RESIZE`, `$!`, `$@`, `$@LEN`, `$!LEN`, `$+!`, `C$+!`, `$.`, `$DEL`, `$INS`, `$OVER`, `$FREE`, `$INIT`, `$SPLIT`, `$ITER`, `$TMP`, `$SLURP-FILE`, `$[]`, `$[]!`, `$[]@`, `$[]#`, `$[].`, `$[]MAP`, `$[]FREE`, `$[]SLURP`, `$[]SLURP-FILE` |
 
-起動時点でForth語彙に **436語** の組み込み語があります（`MINUS`/`NEGATE` のような別名もそれぞれ1語と数えます）。このほかRoot語彙に、`FORTH` `ONLY` などの10語が重ねて登録されています。
+起動時点でForth語彙に **448語** の組み込み語があります（`MINUS`/`NEGATE` のような別名もそれぞれ1語と数えます）。このほかRoot語彙に、`FORTH` `ONLY` などの10語が重ねて登録されています。
 
 ### 構文・定義形式
 
@@ -551,4 +561,4 @@ SAVESYS demo.exe
 
 現在は `EDIT`、`LIST`、エディットバッファ版の `LOAD`／`SAVE`、CP/Mファイル操作、PC-8001のモニター機能、`MCODE`やZ80機械語実行に対応していません。Z80をエミュレートする処理系ではありません。
 
-Gforthのワードのうち、`FILE-POSITION` などの残りのファイル操作、`WHERE`、`$?`、`[IFDEF]` など、`SOURCE` `>IN` などは未実装です。`CODE` や `SAVESYSTEM` などGforthの起動処理に関わる語は対象外です。詳しくは[互換性一覧](COMPATIBILITY.md)を参照してください。
+Gforthのワードのうち、`WHERE`、`$?`、`[IFDEF]` などは未実装です。`CODE` や `SAVESYSTEM` などGforthの起動処理に関わる語は対象外です。詳しくは[互換性一覧](COMPATIBILITY.md)を参照してください。

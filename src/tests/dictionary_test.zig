@@ -163,18 +163,20 @@ test "a damaged image, or one whose names are out of order or out of range, is r
     defer destroyMachine(loaded);
     const before_words = loaded.word_count;
     const before_names = loaded.names_used;
+    // Each byte is flipped with the mask, so the corruption changes it whatever it was
+    // (a fixed value can equal the byte already there as the built-in names grow).
     const corruptions = [_]struct { usize, usize, u8 }{
-        // A user word's name moved into the built-in names.
-        .{ builtins, @offsetOf(Word, "name_start"), 0 },
-        // The last built-in name made longer than the name area holds.
-        .{ builtins - 1, @offsetOf(Word, "name_len"), 255 },
-        // The last word's name moved past the end of the used names.
-        .{ source.word_count - 1, @offsetOf(Word, "name_start") + 2, 4 },
+        // A user word's name moved by one byte, into the built-in names or past them.
+        .{ builtins, @offsetOf(Word, "name_start"), 0x01 },
+        // The last built-in name given another length.
+        .{ builtins - 1, @offsetOf(Word, "name_len"), 0xff },
+        // The last word's name moved far past the end of the used names.
+        .{ source.word_count - 1, @offsetOf(Word, "name_start") + 2, 0x04 },
     };
     for (corruptions) |corruption| {
         const at = 24 + corruption[0] * @sizeOf(Word) + corruption[1];
         const saved = image[at];
-        image[at] = corruption[2];
+        image[at] = saved ^ corruption[2];
         resealImage(image);
         try std.testing.expectError(error.InvalidImage, loaded.restoreImage(image));
         image[at] = saved;
@@ -183,10 +185,10 @@ test "a damaged image, or one whose names are out of order or out of range, is r
         try std.testing.expectEqual(before_names, loaded.names_used);
     }
     // The previous format is not read either.
-    @memcpy(image[0..8], "SIGIMG24");
+    @memcpy(image[0..8], "SIGIMG27");
     resealImage(image);
     try std.testing.expectError(error.InvalidImage, loaded.restoreImage(image));
-    @memcpy(image[0..8], "SIGIMG25");
+    @memcpy(image[0..8], "SIGIMG28");
     resealImage(image);
     // One damaged byte anywhere, here in the saved memory or in the checksum itself,
     // fails the checksum, and the dictionary, code, and memory stay as they were.
