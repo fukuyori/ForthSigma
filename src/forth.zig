@@ -1000,11 +1000,12 @@ pub const State = struct {
         return start;
     }
 
-    /// Pops ( addr u ) and returns the addressed bytes.
+    /// Pops ( addr u ) and returns the addressed bytes. A negative u counts as an empty
+    /// string; a u past the end of memory is an error, not cut short.
     pub fn memoryRange(self: *State) RuntimeError![]u8 {
         const count = try self.pop();
         const address = try self.pop();
-        const length: usize = if (count < 0) 0 else @intCast(@min(count, memory_size));
+        const length = std.math.cast(usize, @max(count, 0)) orelse return error.InvalidAddress;
         const start = try self.memoryAddress(address, length);
         return self.memory[start .. start + length];
     }

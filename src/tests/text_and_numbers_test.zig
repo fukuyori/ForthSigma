@@ -227,6 +227,31 @@ test "COMPARE SEARCH /STRING and -TRAILING work as in gforth" {
     );
 }
 
+test "a string longer than memory is an error, not cut short" {
+    var output = Output{};
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
+
+    // The whole memory, 2097152 bytes from address 0, is still a valid string.
+    try machine.interpretLine("0 2097152 0 2097152 STR= 0 2097152 0 2097152 COMPARE");
+    try expectStack(machine, &.{ -1, 0 });
+    const cases = [_][]const u8{
+        "0 2097153 0 2097152 STR=",
+        "0 2097153 0 2097152 COMPARE",
+        "0 2097153 0 0 SEARCH",
+        "0 2097153 -TRAILING",
+        "0 2097153 0 SCAN",
+        "0 2097153 0 SKIP",
+        "0 2097153 S\" a\" STRING-PREFIX?",
+        "0 2097153 BLANK",
+        "0 2097153 TYPE",
+    };
+    for (cases) |case| {
+        machine.data_depth = 0;
+        try std.testing.expectError(error.InvalidAddress, machine.interpretLine(case));
+    }
+}
+
 test "CHAR+ CHARS BOUNDS BLANK CMOVE> SCAN SKIP STR= STRING-PREFIX? and +PLACE work as in gforth" {
     try expectOutput("5 CHAR+ . 7 CHARS . -3 CHARS . PAD 4 BOUNDS PAD - SWAP PAD - . .", "6 7 -3 4 0 ");
     try expectOutput("PAD 10 ERASE PAD 3 BLANK PAD 4 TYPE .\" |\" PAD 0 BLANK PAD -1 BLANK PAD 3 + C@ .", "   \x00|0 ");

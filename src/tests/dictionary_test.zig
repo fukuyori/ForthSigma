@@ -156,12 +156,20 @@ test "a damaged image, or one whose names are out of order or out of range, is r
     @memcpy(image[0..8], "SIGIMG19");
     resealImage(image);
     // One damaged byte anywhere, here in the saved memory or in the checksum itself,
-    // fails the checksum.
+    // fails the checksum, and the dictionary, code, and memory stay as they were.
+    const memory_before = try std.testing.allocator.dupe(u8, &loaded.memory);
+    defer std.testing.allocator.free(memory_before);
+    const code_before = loaded.code_count;
+    const here_before = loaded.data_here;
     for ([_]usize{ image.len - 100, image.len - 1 }) |at| {
         image[at] ^= 0x01;
         try std.testing.expectError(error.InvalidImage, loaded.restoreImage(image));
         image[at] ^= 0x01;
         try std.testing.expectEqual(before_words, loaded.word_count);
+        try std.testing.expectEqual(before_names, loaded.names_used);
+        try std.testing.expectEqual(code_before, loaded.code_count);
+        try std.testing.expectEqual(here_before, loaded.data_here);
+        try std.testing.expectEqualSlices(u8, memory_before, &loaded.memory);
     }
     try loaded.restoreImage(image);
     try loaded.interpretLine("FIRST-WORD SECOND-WORD");

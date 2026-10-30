@@ -197,6 +197,29 @@ test "SLURP-FILE and $SLURP-FILE read a whole file as it is and close it" {
     try std.testing.expectEqual(forth.errnoIor(2), machine.throw_code);
     try std.testing.expectError(error.Thrown, machine.interpretLine("S\" none.txt\" S $SLURP-FILE"));
     try std.testing.expectEqual(forth.errnoIor(2), machine.throw_code);
+
+    // When closing fails, SLURP-FILE throws and frees the block it allocated: the next
+    // ALLOCATE of the same size gets the same address.
+    machine.data_depth = 0;
+    try machine.interpretLine("VARIABLE SLOT S\" b.txt\" SLURP-FILE DROP DUP SLOT ! FREE THROW");
+    output.close_fails = true;
+    try std.testing.expectError(error.Thrown, machine.interpretLine("S\" b.txt\" SLURP-FILE"));
+    try std.testing.expectEqual(forth.errnoIor(5), machine.throw_code);
+    output.close_fails = false;
+    try std.testing.expect(!output.files[1].open);
+    machine.data_depth = 0;
+    try machine.interpretLine("13 ALLOCATE THROW SLOT @ =");
+    try expectStack(machine, &.{-1});
+}
+
+test "PARSE-NAME reads the next name from a file being included" {
+    var output = Output{};
+    support.setFakeFile(&output, 0, ": NEXT-NAME PARSE-NAME ; : LAST-NAME NEXT-NAME NIP . ;\nNEXT-NAME \t  abc TYPE\nLAST-NAME\n");
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
+
+    try machine.interpretLine("INCLUDE a.txt");
+    try std.testing.expectEqualStrings("abc0 ", output.written());
 }
 
 test "heap strings survive a full image restore" {
