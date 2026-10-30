@@ -2375,3 +2375,20 @@ test ">BODY gives the data area, and ' in a definition reads its name when the d
     try std.testing.expectError(error.InvalidExecutionToken, machine.interpretLine("' DUP >BODY"));
     try std.testing.expectError(error.InvalidDefinition, machine.interpretLine("RT"));
 }
+
+test "LITERAL and FLITERAL compile a value, as the book's Level 31 DSL uses them" {
+    var output = Output{};
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
+
+    try machine.interpretLine(": SIX [ 2 3 * ] LITERAL ; SIX . : AREA FDUP F* [ 3.14159265358979E 2.0E F* ] FLITERAL F* 2.0E F/ ; 2E AREA F.");
+    try machine.interpretLine("TRUE CONSTANT DEBUG : PROCESS [ DEBUG ] LITERAL IF 1 . THEN 2 * ; 5 PROCESS . : T2 [ ' DUP ] LITERAL EXECUTE ; 7 T2 . .");
+    // Words that compile a variable's address or a word's xt where they are used.
+    try machine.interpretLine(": PUT ' >BODY STATE @ IF POSTPONE LITERAL POSTPONE F! ELSE F! THEN ; IMMEDIATE");
+    try machine.interpretLine(": (AT) EXECUTE F. ; : AT ' STATE @ IF POSTPONE LITERAL POSTPONE (AT) ELSE (AT) THEN ; IMMEDIATE");
+    try machine.interpretLine("FVARIABLE X 1.5E PUT X X F@ F. : SQ FDUP F* ; : RUN 3E PUT X X F@ AT SQ ; RUN 4E AT SQ");
+    try std.testing.expectEqualStrings("6 12.5663706143592 1 10 7 7 1.5 9. 16. ", output.written());
+    try expectStack(machine, &.{});
+    try std.testing.expectError(error.CompileOnly, machine.interpretLine("5 LITERAL"));
+    try std.testing.expectError(error.CompileOnly, machine.interpretLine("1E FLITERAL"));
+}

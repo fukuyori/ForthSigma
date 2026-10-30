@@ -111,7 +111,7 @@ fn trig(function: *const fn (f64) callconv(.c) f64, x: f64) f64 {
     return function(x);
 }
 const fs_precision = 14;
-const image_magic = "SIGIMG13";
+const image_magic = "SIGIMG14";
 
 /// File ids of the standard streams; the host numbers opened files from `first_file_id`.
 pub const stdin_fileid: Cell = 1;
@@ -489,6 +489,8 @@ const Builtin = enum {
     pi,
     tick,
     to_body,
+    literal,
+    fliteral,
 };
 
 const HeapResult = union(enum) { address: Cell, no_memory, bad_pointer };
@@ -1326,7 +1328,7 @@ pub const State = struct {
             .{ ":", .define_colon },         .{ ";", .end_definition },       .{ "VARIABLE", .define_variable }, .{ "VAR", .define_variable },  .{ "FVARIABLE", .define_fvariable },
             .{ "CONSTANT", .define_constant }, .{ "CONST", .define_constant }, .{ "VALUE", .define_value },  .{ "2VARIABLE", .define_two_variable }, .{ "2CONSTANT", .define_two_constant },
             .{ "FCONSTANT", .define_fconstant }, .{ "ARRAY", .define_array }, .{ "FARRAY", .define_array }, .{ "PI", .pi },
-            .{ "'", .tick },                 .{ ">BODY", .to_body },
+            .{ "'", .tick },                 .{ ">BODY", .to_body },          .{ "LITERAL", .literal },       .{ "FLITERAL", .fliteral },
         };
         for (definitions) |definition| self.addBuiltin(definition[0], definition[1]) catch unreachable;
         // The Root list repeats the words needed to rebuild the search order after ONLY.
@@ -1343,7 +1345,7 @@ pub const State = struct {
 
     fn isImmediateBuiltin(builtin: Builtin) bool {
         return switch (builtin) {
-            .compile_if, .compile_else, .compile_then, .compile_begin, .compile_end, .compile_again, .compile_while, .compile_repeat, .compile_do, .compile_q_do, .compile_loop, .compile_plus_loop, .compile_does, .compile_case, .compile_of, .compile_endof, .compile_endcase, .compile_exit, .compile_recurse, .leave, .bracket_if, .bracket_else, .bracket_then, .bracket_defined, .bracket_undefined, .end_definition => true,
+            .compile_if, .compile_else, .compile_then, .compile_begin, .compile_end, .compile_again, .compile_while, .compile_repeat, .compile_do, .compile_q_do, .compile_loop, .compile_plus_loop, .compile_does, .compile_case, .compile_of, .compile_endof, .compile_endcase, .compile_exit, .compile_recurse, .leave, .bracket_if, .bracket_else, .bracket_then, .bracket_defined, .bracket_undefined, .end_definition, .literal, .fliteral => true,
             else => false,
         };
     }
@@ -2915,6 +2917,15 @@ pub const State = struct {
                 try self.push(try self.lookupOrFail(name));
             },
             .to_body => try self.push(try self.bodyAddress(try self.wordId(try self.pop()))),
+            // Compile the value on the stack into the definition (`[ 2 3 * ] LITERAL`).
+            .literal => {
+                try self.requireCompiling();
+                _ = try self.emit(.{ .kind = .literal, .value = try self.pop() });
+            },
+            .fliteral => {
+                try self.requireCompiling();
+                _ = try self.emit(.{ .kind = .float_literal, .value = floatBits(try self.fpop()) });
+            },
             .pi => try self.fpush(std.math.pi),
             .f_dot => {
                 self.writeFloatFixed(try self.fpop());
