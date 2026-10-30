@@ -39,6 +39,20 @@ pub fn build(b: *std.Build) void {
 
     const host_tests = b.addTest(.{ .root_module = exe.root_module });
     test_step.dependOn(&b.addRunArtifact(host_tests).step);
+
+    // The executable itself reading a real pipe: READ-FILE gets the bytes unchanged (on
+    // Windows the C library would turn CR LF into LF and stop at Ctrl+Z), and READ-LINE
+    // still ends lines at CR LF.
+    const pipe_bytes = b.addRunArtifact(exe);
+    pipe_bytes.addArg(": T PAD 9 STDIN READ-FILE . DUP . 0 DO PAD I + C@ . LOOP ; T");
+    pipe_bytes.setStdIn(.{ .bytes = "A\r\nB\x1aC\x00\xff" });
+    pipe_bytes.expectStdOutEqual("0 8 65 13 10 66 26 67 0 255 ");
+    test_step.dependOn(&pipe_bytes.step);
+    const pipe_lines = b.addRunArtifact(exe);
+    pipe_lines.addArg("PAD 20 STDIN READ-LINE . . PAD SWAP TYPE PAD 20 STDIN READ-LINE . . PAD SWAP TYPE");
+    pipe_lines.setStdIn(.{ .bytes = "ab\r\ncd\n" });
+    pipe_lines.expectStdOutEqual("0 -1 ab0 -1 cd");
+    test_step.dependOn(&pipe_lines.step);
 }
 
 /// The correctly rounded math functions the core calls for FSIN, FCOS, FTAN, FEXP, and FLN.

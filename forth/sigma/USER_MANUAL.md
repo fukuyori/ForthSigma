@@ -319,7 +319,7 @@ MAKE-FILE S" data.txt" SHOW-FILE
 | `CREATE-FILE` | ( addr u fam -- fileid ior ) | ファイルを新しく作ります。既にあれば中身を空にします。 |
 | `CLOSE-FILE` | ( fileid -- ior ) | ファイルを閉じます。 |
 | `READ-LINE` | ( addr u fileid -- u2 flag ior ) | 1行を最大u文字読み、文字数を返します。行末の改行は含みません。ファイルの終わりではflagが偽になります。 |
-| `READ-FILE` | ( addr u fileid -- u2 ior ) | 最大uバイトを、改行も含めてそのまま読みます。ファイルの終わりではu2が0になります。`STDIN` からも読めます。 |
+| `READ-FILE` | ( addr u fileid -- u2 ior ) | 最大uバイトを、改行も含めてそのまま読みます。ファイルの終わりではu2が0になります。`STDIN` からも読めます（Windowsでも、パイプやリダイレクトからはそのまま読みます。コンソールからの入力は、Enterが改行1文字になります）。 |
 | `WRITE-LINE` | ( addr u fileid -- ior ) | 文字列と改行を書き込みます（WindowsはCR LF、それ以外はLF）。 |
 | `WRITE-FILE` | ( addr u fileid -- ior ) | 文字列を改行なしで書き込みます。 |
 | `FILE-SIZE` | ( fileid -- ud ior ) | ファイルの大きさ（バイト数、倍長整数）を返します。 |

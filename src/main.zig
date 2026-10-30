@@ -27,6 +27,13 @@ const tell64 = if (builtin.os.tag == .windows) struct {
 }._ftelli64 else struct {
     extern "c" fn ftello(?*anyopaque) i64;
 }.ftello;
+/// The Windows C library opens standard input in text mode, which turns CR LF into LF
+/// and stops at Ctrl+Z.
+const windows_stdin = struct {
+    extern "c" fn _setmode(c_int, c_int) c_int;
+    extern "c" fn _isatty(c_int) c_int;
+    const binary_mode = 0x8000;
+};
 extern "kernel32" fn GetStdHandle(u32) callconv(.winapi) ?*anyopaque;
 extern "kernel32" fn GetConsoleMode(*anyopaque, *u32) callconv(.winapi) c_int;
 extern "kernel32" fn SetConsoleMode(*anyopaque, u32) callconv(.winapi) c_int;
@@ -241,6 +248,15 @@ fn enableVirtualTerminal() void {
     }
 }
 
+/// On Windows, piped or redirected standard input is read as bytes, as on the other
+/// systems, so READ-FILE and KEY see CR, Ctrl+Z, and every other byte. A console keeps
+/// text mode, where Enter gives a single LF to KEY.
+fn useBinaryStdin() void {
+    if (builtin.os.tag == .windows) {
+        if (windows_stdin._isatty(0) == 0) _ = windows_stdin._setmode(0, windows_stdin.binary_mode);
+    }
+}
+
 fn readU32(bytes: []const u8) u32 {
     return @as(u32, bytes[0]) | (@as(u32, bytes[1]) << 8) | (@as(u32, bytes[2]) << 16) | (@as(u32, bytes[3]) << 24);
 }
@@ -422,6 +438,7 @@ pub fn main(init: std.process.Init) !void {
     defer allocator.destroy(machine);
 
     enableVirtualTerminal();
+    useBinaryStdin();
     machine.init(.{ .context = @ptrCast(&host), .write_fn = terminalWrite, .read_fn = terminalRead, .load_fn = loadDictionary, .save_fn = saveDictionary, .savesys_fn = saveExecutableImage, .key_fn = terminalKey, .key_ready_fn = terminalKeyReady, .sleep_fn = sleepMilliseconds, .utime_fn = microsecondsSinceEpoch, .getenv_fn = environmentValue, .system_fn = runShellCommand, .file_ops = &file_ops });
     defer closeAllFiles();
     loadEmbeddedImage(executable_path, machine, allocator);
