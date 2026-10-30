@@ -604,7 +604,7 @@ test "redefinition warns and subsequent lookup uses the newest definition" {
     const machine = try createMachine(&output);
     defer destroyMachine(machine);
 
-    try machine.interpretLine(": VALUE 1 ; : VALUE 2 ; VALUE");
+    try machine.interpretLine(": TWICE 1 ; : TWICE 2 ; TWICE");
 
     const expected = [_]forth.Cell{2};
     try expectStack(machine, &expected);
@@ -826,7 +826,7 @@ test "float memory, variables, constants, and arrays" {
 
     try machine.interpretLine("CREATE TEMP 1 FLOATS ALLOT 37.5E TEMP F! TEMP F@ F.");
     try machine.interpretLine("FVARIABLE ACC 1.5E ACC F! 2E ACC F+! ACC F?");
-    try machine.interpretLine("3.1415926535E FCONSTANT PI : AREA FDUP F* PI F* ; 5E AREA F.");
+    try machine.interpretLine("3.1415926535E FCONSTANT MYPI : AREA FDUP F* MYPI F* ; 5E AREA F.");
     try machine.interpretLine("3 FARRAY POINTS 1.25E 2 POINTS FA! 2 POINTS FA@ F. HERE 0 FLOAT+ 2 FLOATS");
     try machine.interpretLine(": HALF 0.5E F* ; 3E HALF F. HERE 6.5E F, F@ F.");
 
@@ -2224,7 +2224,7 @@ test "F.RDP prints, F>BUF-RDP fills a buffer, and the book's Level 20 examples h
     const machine = try createMachine(&output);
     defer destroyMachine(machine);
 
-    try machine.interpretLine("12345.6789E 10 2 7 F.RDP 12345.6789E 10 2 8 F.RDP 3.14159265E FCONSTANT PI PI 10 2 0 F.RDP");
+    try machine.interpretLine("12345.6789E 10 2 7 F.RDP 12345.6789E 10 2 8 F.RDP PI 10 2 0 F.RDP");
     try machine.interpretLine("CREATE BUF 50 ALLOT BUF 50 ERASE PI BUF 10 4 0 F>BUF-RDP BUF 10 TYPE PI 0 2 0 F>STR-RDP NIP PI 0 0 0 F.RDP");
     try std.testing.expectEqualStrings("  12345.681.234568E4      3.14    3.1416", output.written());
     try expectStack(machine, &.{0});
@@ -2241,4 +2241,33 @@ test "F.RDP and F>BUF-RDP show a value whose exponent shortens when rounded" {
     try machine.interpretLine("CREATE BUF 8 ALLOT BUF 8 88 FILL 9.999E-10 BUF 1+ 4 2 1 F>BUF-RDP BUF 8 TYPE 9.999E-10 4 2 1 F.RDP");
     try std.testing.expectEqualStrings("X1E-9XXX1E-9", output.written());
     try expectStack(machine, &.{});
+}
+
+test "defining words compiled into a definition read their name when it runs" {
+    var output = Output{};
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
+
+    try machine.interpretLine(": V VARIABLE ; V AA 5 AA ! AA @ . : C CONSTANT ; 7 C BB BB . : FV FVARIABLE ; FV CC 2E CC F! CC F@ F.");
+    try machine.interpretLine(": FC FCONSTANT ; 3E FC DD DD F. : VL VALUE ; 9 VL GG GG . 4 TO GG GG . : D2 2CONSTANT ; 1. D2 HH HH D.");
+    try machine.interpretLine(": V2 2VARIABLE ; V2 II 3. II 2! II 2@ D. : AR ARRAY ; 3 AR JJ 8 1 JJ A! 1 JJ A@ .");
+    // Level 31 of the book: a word that starts a definition and one that ends it.
+    try machine.interpretLine(": DEFINE-FUNCTION : ; : END-FUNCTION POSTPONE ; ; IMMEDIATE");
+    try machine.interpretLine("DEFINE-FUNCTION SQUARE FDUP F* END-FUNCTION 3E SQUARE F.");
+    try std.testing.expectEqualStrings("5 7 2. 3. 9 4 1 3 8 9. ", output.written());
+    try expectStack(machine, &.{});
+    try std.testing.expectError(error.InvalidDefinition, machine.interpretLine("V"));
+    try std.testing.expectError(error.InvalidDefinition, machine.interpretLine(": START : ; IMMEDIATE : OUTER START INNER ;"));
+}
+
+test "[ while interpreting, PI, and F. rounded from the exact binary value" {
+    var output = Output{};
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
+
+    try machine.interpretLine("[ 1 . : X [ 2 . ] 3 ; X .");
+    try machine.interpretLine("PI F. PI 10 4 0 F.RDP");
+    // The shortest forms end in 5 (1.414213562373095, 0.5463024898437905); the exact values round down.
+    try machine.interpretLine("1.4142135623730949E F. 0.5E FTAN F. 1E 3E F/ F.S");
+    try std.testing.expectEqualStrings("1 2 3 3.14159265358979     3.14161.41421356237309 0.54630248984379 <1> .33333333333333e ", output.written());
 }

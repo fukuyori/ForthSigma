@@ -94,7 +94,7 @@ pub const data_start: Cell = 0x4000;
 const true_flag: Cell = -1;
 const dot_precision = 15;
 const fs_precision = 14;
-const image_magic = "SIGIMG11";
+const image_magic = "SIGIMG12";
 
 /// File ids of the standard streams; the host numbers opened files from `first_file_id`.
 pub const stdin_fileid: Cell = 1;
@@ -459,6 +459,17 @@ const Builtin = enum {
     f_dot_rdp,
     f_to_str_rdp,
     f_to_buf_rdp,
+    define_colon,
+    end_definition,
+    define_variable,
+    define_fvariable,
+    define_constant,
+    define_value,
+    define_two_variable,
+    define_two_constant,
+    define_fconstant,
+    define_array,
+    pi,
 };
 
 const HeapResult = union(enum) { address: Cell, no_memory, bad_pointer };
@@ -627,31 +638,19 @@ const Representation = struct {
     finite: bool = true,
 };
 
+/// `digit_count` significant digits of `value`, rounded exactly from the binary value
+/// (std.fmt rounds its shortest decimal form, so 0.5e FTAN would print a 1 too many).
 fn represent(value: Float, digit_count: usize) Representation {
     var result = Representation{ .len = digit_count, .negative = std.math.signbit(value) };
     if (std.math.isNan(value) or std.math.isInf(value)) {
         result.finite = false;
         return result;
     }
-    var buffer: [64]u8 = undefined;
-    const magnitude = @abs(value);
-    const text = switch (digit_count) {
-        fs_precision => std.fmt.bufPrint(&buffer, "{e:.13}", .{magnitude}),
-        fs_precision + 1 => std.fmt.bufPrint(&buffer, "{e:.14}", .{magnitude}),
-        dot_precision + 1 => std.fmt.bufPrint(&buffer, "{e:.15}", .{magnitude}),
-        else => unreachable,
-    } catch unreachable;
-    var used: usize = 0;
-    var cursor: usize = 0;
-    while (cursor < text.len and text[cursor] != 'e') : (cursor += 1) {
-        if (text[cursor] != '.') {
-            result.digits[used] = text[cursor];
-            used += 1;
-        }
-    }
-    std.debug.assert(used == digit_count);
-    const exponent = std.fmt.parseInt(i32, text[cursor + 1 ..], 10) catch unreachable;
-    result.exponent = exponent + 1;
+    var buffer: [max_rdp_width + 400]u8 = undefined;
+    // A few digits of a double need only a small exact computation.
+    const decimal = representDecimal(@abs(value), digit_count, &buffer) catch unreachable;
+    @memcpy(result.digits[0..digit_count], decimal.digits);
+    result.exponent = decimal.exponent;
     return result;
 }
 
@@ -1297,6 +1296,9 @@ pub const State = struct {
             .{ "SET-CURRENT", .set_current }, .{ "VOCABULARY", .vocabulary }, .{ "WORDLIST", .wordlist },    .{ "FORTH-WORDLIST", .forth_wordlist_word }, .{ "SEARCH-WORDLIST", .search_wordlist },
             .{ "[IF]", .bracket_if },        .{ "[ELSE]", .bracket_else },    .{ "[THEN]", .bracket_then },   .{ "[DEFINED]", .bracket_defined }, .{ "[UNDEFINED]", .bracket_undefined },
             .{ "F.RDP", .f_dot_rdp },        .{ "F>STR-RDP", .f_to_str_rdp }, .{ "F>BUF-RDP", .f_to_buf_rdp },
+            .{ ":", .define_colon },         .{ ";", .end_definition },       .{ "VARIABLE", .define_variable }, .{ "VAR", .define_variable },  .{ "FVARIABLE", .define_fvariable },
+            .{ "CONSTANT", .define_constant }, .{ "CONST", .define_constant }, .{ "VALUE", .define_value },  .{ "2VARIABLE", .define_two_variable }, .{ "2CONSTANT", .define_two_constant },
+            .{ "FCONSTANT", .define_fconstant }, .{ "ARRAY", .define_array }, .{ "FARRAY", .define_array }, .{ "PI", .pi },
         };
         for (definitions) |definition| self.addBuiltin(definition[0], definition[1]) catch unreachable;
         // The Root list repeats the words needed to rebuild the search order after ONLY.
@@ -1313,7 +1315,7 @@ pub const State = struct {
 
     fn isImmediateBuiltin(builtin: Builtin) bool {
         return switch (builtin) {
-            .compile_if, .compile_else, .compile_then, .compile_begin, .compile_end, .compile_again, .compile_while, .compile_repeat, .compile_do, .compile_q_do, .compile_loop, .compile_plus_loop, .compile_does, .compile_case, .compile_of, .compile_endof, .compile_endcase, .compile_exit, .compile_recurse, .leave, .bracket_if, .bracket_else, .bracket_then, .bracket_defined, .bracket_undefined => true,
+            .compile_if, .compile_else, .compile_then, .compile_begin, .compile_end, .compile_again, .compile_while, .compile_repeat, .compile_do, .compile_q_do, .compile_loop, .compile_plus_loop, .compile_does, .compile_case, .compile_of, .compile_endof, .compile_endcase, .compile_exit, .compile_recurse, .leave, .bracket_if, .bracket_else, .bracket_then, .bracket_defined, .bracket_undefined, .end_definition => true,
             else => false,
         };
     }
@@ -1574,6 +1576,8 @@ pub const State = struct {
         const found = self.lookup(token);
         if (found) |id| {
             if (id >= self.builtin_count) return self.handleWord(id);
+            // A defining word compiled into a definition reads its name when that runs.
+            if (self.compiling and isDefiningBuiltin(self.words[id].builtin)) return self.handleWord(id);
         }
         if (std.mem.eql(u8, token, ":")) {
             if (self.defining) return error.InvalidDefinition;
@@ -1595,23 +1599,10 @@ pub const State = struct {
             self.push(id) catch unreachable;
             return;
         }
-        if (std.mem.eql(u8, token, ";")) {
-            if (!self.defining or !self.compiling) return error.CompileOnly;
-            if (self.control_depth != 0) return error.ControlMismatch;
-            _ = try self.emit(.{ .kind = .exit });
-            self.words[self.current_word].code_end = self.code_count;
-            self.words[self.current_word].locals_size = self.locals_frame_size;
-            if (self.currentFileFrame()) |frame| {
-                if (self.words[self.current_word].source_file == frame.file_index + 1) self.words[self.current_word].source_end_line = frame.line;
-            }
-            self.local_count = 0;
-            self.setCompiling(false);
-            self.defining = false;
-            return;
-        }
+        if (std.mem.eql(u8, token, ";")) return self.endDefinition();
         if (std.mem.eql(u8, token, "[")) {
-            if (!self.defining or !self.compiling) return error.CompileOnly;
-            self.setCompiling(false);
+            // As in gforth, [ while interpreting leaves the interpreter as it is.
+            if (self.compiling) self.setCompiling(false);
             return;
         }
         if (std.mem.eql(u8, token, "]")) {
@@ -1837,6 +1828,65 @@ pub const State = struct {
             .float => try self.fpush(try self.readFloat(address)),
             .char => try self.push(self.memory[try self.memoryAddress(address, 1)]),
         }
+    }
+
+    fn endDefinition(self: *State) RuntimeError!void {
+        if (!self.defining or !self.compiling) return error.CompileOnly;
+        if (self.control_depth != 0) return error.ControlMismatch;
+        _ = try self.emit(.{ .kind = .exit });
+        self.words[self.current_word].code_end = self.code_count;
+        self.words[self.current_word].locals_size = self.locals_frame_size;
+        if (self.currentFileFrame()) |frame| {
+            if (self.words[self.current_word].source_file == frame.file_index + 1) self.words[self.current_word].source_end_line = frame.line;
+        }
+        self.local_count = 0;
+        self.setCompiling(false);
+        self.defining = false;
+    }
+
+    fn isDefiningBuiltin(builtin: Builtin) bool {
+        return switch (builtin) {
+            .define_colon, .define_variable, .define_fvariable, .define_constant, .define_value, .define_two_variable, .define_two_constant, .define_fconstant, .define_array => true,
+            else => false,
+        };
+    }
+
+    /// Runs a defining word from a definition: takes its value from the stack, then
+    /// reads the new word's name from the input, as interpreting the word would.
+    fn runDefiningWord(self: *State, builtin: Builtin) RuntimeError!void {
+        const pending: Pending = switch (builtin) {
+            .define_colon => blk: {
+                if (self.defining) return error.InvalidDefinition;
+                break :blk .colon_name;
+            },
+            .define_variable => .variable_name,
+            .define_fvariable => .fvariable_name,
+            .define_constant => blk: {
+                self.pending_constant = try self.pop();
+                break :blk .constant_name;
+            },
+            .define_value => blk: {
+                self.pending_constant = try self.pop();
+                break :blk .value_name;
+            },
+            .define_two_variable => .two_variable_name,
+            .define_two_constant => blk: {
+                self.pending_double = try self.popDouble();
+                break :blk .two_constant_name;
+            },
+            .define_fconstant => blk: {
+                self.pending_float = try self.fpop();
+                break :blk .fconstant_name;
+            },
+            .define_array => blk: {
+                self.pending_array_size = try self.pop();
+                break :blk .array_name;
+            },
+            else => unreachable,
+        };
+        const name = (try self.nextSourceToken()) orelse return error.InvalidDefinition;
+        self.pending = pending;
+        try self.finishPending(name);
     }
 
     fn startInterpretPending(self: *State, pending: Pending) RuntimeError!void {
@@ -2839,6 +2889,9 @@ pub const State = struct {
             .float_plus => try self.push((try self.pop()) +% float_size),
             .s_to_f => try self.fpush(@floatFromInt(try self.pop())),
             .f_to_s => try self.push(floatToCell(try self.fpop())),
+            .define_colon, .define_variable, .define_fvariable, .define_constant, .define_value, .define_two_variable, .define_two_constant, .define_fconstant, .define_array => try self.runDefiningWord(builtin),
+            .end_definition => try self.endDefinition(),
+            .pi => try self.fpush(std.math.pi),
             .f_dot => {
                 self.writeFloatFixed(try self.fpop());
                 self.write(" ");
