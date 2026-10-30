@@ -47,9 +47,13 @@ pub fn readU32(input: []const u8) u32 {
 /// of names, four bytes each.
 const header_size = 24;
 
+/// The image ends with the CRC-32 of all the bytes before it, four bytes. It finds
+/// accidental damage only; an image is trusted to come from SAVE or SAVESYS.
+const checksum_size = 4;
+
 /// The most bytes an image can have.
 pub fn imageCapacity() usize {
-    return header_size + max_words * @sizeOf(Word) + max_code * @sizeOf(Op) + names_capacity + memory_size;
+    return header_size + max_words * @sizeOf(Word) + max_code * @sizeOf(Op) + names_capacity + memory_size + checksum_size;
 }
 
 /// The parts of memory an image keeps: the system area and the data space up to HERE,
@@ -90,7 +94,7 @@ pub fn encodeImage(self: *State, output: []u8) RuntimeError!usize {
     const word_bytes = std.mem.sliceAsBytes(self.words[0..self.word_count]);
     const code_bytes = std.mem.sliceAsBytes(self.code[0..self.code_count]);
     const name_bytes = self.names[0..self.names_used];
-    const required = header_size + word_bytes.len + code_bytes.len + name_bytes.len + rangesLength(ranges);
+    const required = header_size + word_bytes.len + code_bytes.len + name_bytes.len + rangesLength(ranges) + checksum_size;
     if (output.len < required) return error.InvalidImage;
     @memcpy(output[0..8], image_magic);
     writeU32(output[8..12], self.word_count);
@@ -107,11 +111,14 @@ pub fn encodeImage(self: *State, output: []u8) RuntimeError!usize {
         @memcpy(output[cursor .. cursor + length], self.memory[range[0]..range[1]]);
         cursor += length;
     }
+    writeU32(output[cursor..][0..checksum_size], std.hash.Crc32.hash(output[0..cursor]));
     return required;
 }
 
-pub fn restoreImage(self: *State, input: []const u8) RuntimeError!void {
-    if (input.len < header_size or !std.mem.eql(u8, input[0..8], image_magic)) return error.InvalidImage;
+pub fn restoreImage(self: *State, image: []const u8) RuntimeError!void {
+    if (image.len < header_size + checksum_size or !std.mem.eql(u8, image[0..8], image_magic)) return error.InvalidImage;
+    const input = image[0 .. image.len - checksum_size];
+    if (readU32(image[input.len..]) != std.hash.Crc32.hash(input)) return error.InvalidImage;
     const word_count = readU32(input[8..12]);
     const code_count = readU32(input[12..16]);
     const data_here = readU32(input[16..20]);

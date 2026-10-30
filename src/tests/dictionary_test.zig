@@ -62,7 +62,7 @@ test "an image keeps HERE's data, the used heap, and the source table, and nothi
 
     const source_table_bytes = 64 * 256 + 64;
     const expected = 24 + @as(usize, source.word_count) * @sizeOf(@TypeOf(source.words[0])) + @as(usize, source.code_count) * @sizeOf(@TypeOf(source.code[0])) +
-        source.names_used + @as(usize, @intCast(source.data_here)) + @as(usize, @intCast(source.heapTop() - forth.data_limit)) + source_table_bytes;
+        source.names_used + @as(usize, @intCast(source.data_here)) + @as(usize, @intCast(source.heapTop() - forth.data_limit)) + source_table_bytes + 4;
     try std.testing.expectEqual(expected, length);
     try std.testing.expect(length < 200_000);
 
@@ -109,7 +109,14 @@ fn freeImage(image: []u8) void {
     std.testing.allocator.free(image.ptr[0..forth.State.imageCapacity()]);
 }
 
-test "an image whose names are out of order or out of range is rejected before anything changes" {
+/// Writes the checksum again after a test has changed an image, so that the checks
+/// behind it are reached.
+fn resealImage(image: []u8) void {
+    const body = image[0 .. image.len - 4];
+    std.mem.writeInt(u32, image[body.len..][0..4], std.hash.Crc32.hash(body), .little);
+}
+
+test "a damaged image, or one whose names are out of order or out of range, is rejected before anything changes" {
     var output = Output{};
     const source = try createMachine(&output);
     defer destroyMachine(source);
@@ -135,15 +142,27 @@ test "an image whose names are out of order or out of range is rejected before a
         const at = 24 + corruption[0] * @sizeOf(Word) + corruption[1];
         const saved = image[at];
         image[at] = corruption[2];
+        resealImage(image);
         try std.testing.expectError(error.InvalidImage, loaded.restoreImage(image));
         image[at] = saved;
+        resealImage(image);
         try std.testing.expectEqual(before_words, loaded.word_count);
         try std.testing.expectEqual(before_names, loaded.names_used);
     }
     // The previous format is not read either.
-    @memcpy(image[0..8], "SIGIMG15");
-    try std.testing.expectError(error.InvalidImage, loaded.restoreImage(image));
     @memcpy(image[0..8], "SIGIMG16");
+    resealImage(image);
+    try std.testing.expectError(error.InvalidImage, loaded.restoreImage(image));
+    @memcpy(image[0..8], "SIGIMG17");
+    resealImage(image);
+    // One damaged byte anywhere, here in the saved memory or in the checksum itself,
+    // fails the checksum.
+    for ([_]usize{ image.len - 100, image.len - 1 }) |at| {
+        image[at] ^= 0x01;
+        try std.testing.expectError(error.InvalidImage, loaded.restoreImage(image));
+        image[at] ^= 0x01;
+        try std.testing.expectEqual(before_words, loaded.word_count);
+    }
     try loaded.restoreImage(image);
     try loaded.interpretLine("FIRST-WORD SECOND-WORD");
     try expectStack(loaded, &.{ 1, 3 });
