@@ -43,7 +43,7 @@ Linux/macOSでは、生成されたzig-out/bin/sigmaを実行してください�
     .\scripts\build-release.ps1
     .\scripts\build-installer.ps1
 
-署名する場合は `CODESIGN_CERT` に証明書ストア上の証明書サブジェクトを設定し、`-Sign` を指定します。署名時は実行ファイル、インストーラー、アンインストーラーを署名し、実行ファイルとインストーラーの署名を検証します。
+署名する場合は `CODESIGN_CERT` に証明書ストア上の証明書サブジェクトを設定し、`-Sign` を指定します。署名時は実行ファイル、インストーラー、アンインストーラーを署名し、実行ファイルとインストーラーの署名を検証します。署名にはRFC 3161のタイムスタンプを付け、証明書の期限が切れた後も署名が有効なままになるようにします。タイムスタンプのサーバーは既定で `http://timestamp.digicert.com`（証明書のルートであるDigiCertのサーバー）で、環境変数 `CODESIGN_TIMESTAMP_URL` で変えられます。タイムスタンプが付かなかった場合はエラーにします。
 
     .\scripts\build-release.ps1 -Sign
     .\scripts\build-installer.ps1 -Sign

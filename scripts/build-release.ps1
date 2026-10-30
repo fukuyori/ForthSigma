@@ -56,13 +56,19 @@ if ($Sign) {
         $signToolPath = $signTool.Source
     }
 
-    & $signToolPath sign /n $env:CODESIGN_CERT /fd SHA256 $executablePath
+    # RFC 3161 timestamp, so that the signature stays valid after the certificate expires.
+    # The certificate chains to DigiCert Trusted Root G4; CODESIGN_TIMESTAMP_URL overrides the server.
+    $timestampUrl = if ([string]::IsNullOrWhiteSpace($env:CODESIGN_TIMESTAMP_URL)) { 'http://timestamp.digicert.com' } else { $env:CODESIGN_TIMESTAMP_URL }
+    & $signToolPath sign /n $env:CODESIGN_CERT /fd SHA256 /tr $timestampUrl /td SHA256 $executablePath
     if ($LASTEXITCODE -ne 0) {
         throw "Signing the executable failed with exit code $LASTEXITCODE"
     }
     & $signToolPath verify /pa /all $executablePath
     if ($LASTEXITCODE -ne 0) {
         throw "Executable signature verification failed with exit code $LASTEXITCODE"
+    }
+    if (-not (Get-AuthenticodeSignature -LiteralPath $executablePath).TimeStamperCertificate) {
+        throw "The executable signature has no timestamp: $executablePath"
     }
 }
 
