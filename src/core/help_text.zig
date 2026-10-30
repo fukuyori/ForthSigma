@@ -195,10 +195,10 @@ pub const entries = [_]Entry{
     .{ .name = "AGAIN", .stack = "( -- )", .text = "Go back to BEGIN forever (leave with EXIT)." },
     .{ .name = "WHILE", .stack = "( flag -- )", .text = "Leave a BEGIN ... WHILE ... REPEAT loop when flag is false." },
     .{ .name = "REPEAT", .stack = "( -- )", .text = "Go back to BEGIN." },
-    .{ .name = "DO", .stack = "( limit start -- )", .text = "Start a counted loop; the body runs at least once (FORTH/Sigma)." },
+    .{ .name = "DO", .stack = "( limit start -- )", .text = "Start a counted loop; the body runs at least once, and exactly once when limit equals start (FORTH/Sigma)." },
     .{ .name = "?DO", .stack = "( limit start -- )", .text = "Start a counted loop that is skipped when limit equals start." },
-    .{ .name = "LOOP", .stack = "( -- )", .text = "Add one to the index and repeat until it reaches the limit." },
-    .{ .name = "+LOOP", .stack = "( n -- )", .text = "Add n to the index and repeat until it crosses the limit." },
+    .{ .name = "LOOP", .stack = "( -- )", .text = "Add one to the index and repeat until it reaches the limit; a loop whose limit equals its start ends after one pass." },
+    .{ .name = "+LOOP", .stack = "( n -- )", .text = "Add n to the index and repeat until it crosses the limit; a loop whose limit equals its start ends after one pass, even when n is 0." },
     .{ .name = "I", .stack = "( -- n )", .text = "The index of the innermost loop." },
     .{ .name = "J", .stack = "( -- n )", .text = "The index of the next outer loop." },
     .{ .name = "K", .stack = "( -- n )", .text = "The index of the third loop out." },
@@ -377,7 +377,7 @@ pub const entries = [_]Entry{
     .{ .name = "SAVE", .stack = "( \"file\" -- )", .text = "Save the words you defined to an image file." },
     .{ .name = "LOAD", .stack = "( \"file\" -- )", .text = "Add the words of an image file made by SAVE to the dictionary." },
     .{ .name = "SAVESYS", .stack = "( \"file\" -- )", .text = "Write an executable that starts with the current dictionary." },
-    .{ .name = "HELP", .stack = "( \"name\" -- )", .text = "Describe name, or show the basic help when no name follows on the line." },
+    .{ .name = "HELP", .stack = "( \"name\" -- )", .text = "Describe name, or show the basic help when no name follows on the line. In a definition, HELP reads the name when the definition runs." },
     .{ .name = "LICENSE", .stack = "( -- )", .text = "Show the license of FORTH/Sigma and of the code it includes." },
 
     // Words the parser handles

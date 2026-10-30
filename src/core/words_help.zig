@@ -14,8 +14,7 @@ pub const words = [_]Builtin{ .help, .license };
 pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
     switch (builtin) {
         .help => {
-            // Only a name on the same line counts, so HELP alone does not wait for input.
-            const name = text_input.nextToken(self.source_line, &self.source_cursor) orelse return self.write(help_text.basic);
+            const name = nameOnSameLine(self) orelse return self.write(help_text.basic);
             try describe(self, name);
         },
         .license => {
@@ -25,6 +24,23 @@ pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
         },
         else => @compileError(@tagName(builtin) ++ " is not in the words of this file"),
     }
+}
+
+/// The next name if it is on the same line. HELP alone does not wait for input, and in
+/// an EVALUATE string, whose lines are one input, it does not take a name from the next
+/// line; the separator after HELP may already be that line end.
+fn nameOnSameLine(self: *State) ?[]const u8 {
+    const line = self.source_line;
+    var cursor = self.source_cursor;
+    if (cursor > 0 and cursor <= line.len and isLineEnd(line[cursor - 1])) return null;
+    while (cursor < line.len and !isLineEnd(line[cursor]) and text_input.isSeparator(line[cursor])) cursor += 1;
+    if (cursor == line.len or isLineEnd(line[cursor])) return null;
+    self.source_cursor = cursor;
+    return text_input.nextToken(line, &self.source_cursor);
+}
+
+fn isLineEnd(byte: u8) bool {
+    return byte == '\n' or byte == '\r';
 }
 
 /// Prints the description of a built-in or parser word, or says where to look for a
