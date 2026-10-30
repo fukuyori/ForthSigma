@@ -92,6 +92,12 @@ pub fn seeWord(self: *State, id: u16) RuntimeError!void {
                 try self.seeBody(word.does_code_start, word.does_code_end);
             }
         },
+        .synonym => {
+            self.write("SYNONYM ");
+            self.write(name);
+            self.write(" ");
+            self.write(self.wordName(self.words[@intCast(word.value)]));
+        },
         .marker, .vocabulary => {
             self.write(if (word.kind == .marker) "MARKER " else "VOCABULARY ");
             self.write(name);

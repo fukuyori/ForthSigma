@@ -18,6 +18,13 @@ const locals_base = memory_map.locals_base;
 const throw_code_undefined_word = defs.throw_code_undefined_word;
 
 pub fn report(self: *State, err: anyerror) void {
+    // QUIT keeps both data stacks and shows nothing, as gforth does.
+    const kept_data = self.data_depth;
+    const kept_floats = self.float_depth;
+    defer if (err == error.Quit) {
+        self.data_depth = kept_data;
+        self.float_depth = kept_floats;
+    };
     self.capture_target = null;
     self.local_count = 0;
     self.locals_top = locals_base;
@@ -36,7 +43,7 @@ pub fn report(self: *State, err: anyerror) void {
     self.float_depth = 0;
     self.loop_depth = 0;
     self.resetHold();
-    if (err == error.Aborted) {
+    if (err == error.Aborted or err == error.Quit) {
         self.error_location = null;
         return;
     }

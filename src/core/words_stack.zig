@@ -14,7 +14,7 @@ const max_stack = memory_map.max_stack;
 pub const words = [_]Builtin{
     .drop, .dup, .swap, .over, .rot, .minus_rot, .nip, .tuck, .pick, .roll, .two_dup, .two_drop,
     .two_swap, .two_over, .depth, .to_r, .from_r, .r_fetch, .two_to_r, .two_r_from, .two_r_fetch,
-    .question_dup, .two_rot,
+    .question_dup, .two_rot, .n_to_r, .n_r_from,
 };
 
 pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
@@ -106,6 +106,28 @@ pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
             std.mem.copyForwards(Cell, self.data_stack[base .. base + 4], self.data_stack[base + 2 .. base + 6]);
             self.data_stack[base + 4] = first;
             self.data_stack[base + 5] = second;
+        },
+        // N>R ( x1 .. xn n -- ) ( R: -- x1 .. xn n ) and NR> back, keeping the order.
+        .n_to_r => {
+            const count = try self.peek(0);
+            if (count < 0 or count >= self.data_depth) return error.StackUnderflow;
+            const n: usize = @intCast(count);
+            if (max_stack - self.return_depth < n + 1) return error.ReturnStackOverflow;
+            const base = self.data_depth - 1 - n;
+            @memcpy(self.return_stack[self.return_depth .. self.return_depth + n + 1], self.data_stack[base .. base + n + 1]);
+            self.return_depth += n + 1;
+            self.data_depth = base;
+        },
+        .n_r_from => {
+            if (self.return_depth == 0) return error.ReturnStackUnderflow;
+            const count = self.return_stack[self.return_depth - 1];
+            if (count < 0 or count >= self.return_depth) return error.ReturnStackUnderflow;
+            const n: usize = @intCast(count);
+            if (max_stack - self.data_depth < n + 1) return error.StackOverflow;
+            const base = self.return_depth - 1 - n;
+            @memcpy(self.data_stack[self.data_depth .. self.data_depth + n + 1], self.return_stack[base .. base + n + 1]);
+            self.data_depth += n + 1;
+            self.return_depth = base;
         },
         .question_dup => {
             const value = try self.peek(0);

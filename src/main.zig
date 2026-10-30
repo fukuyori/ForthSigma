@@ -57,6 +57,16 @@ fn microsecondsSinceEpoch(context: ?*anyopaque) forth.RuntimeError!forth.Double 
     return @divFloor(now.nanoseconds, std.time.ns_per_us);
 }
 
+/// The C library's time.h, through its header, so that time_t and the names of time and
+/// localtime are the ones each target uses (32-bit musl and Windows rename them).
+const c_time = @cImport(@cInclude("time.h"));
+
+fn localTime(_: ?*anyopaque) forth.RuntimeError!forth.LocalTime {
+    const now = c_time.time(null);
+    const parts = c_time.localtime(&now) orelse return error.HostFailed;
+    return .{ .second = parts.*.tm_sec, .minute = parts.*.tm_min, .hour = parts.*.tm_hour, .day = parts.*.tm_mday, .month = parts.*.tm_mon + 1, .year = parts.*.tm_year + 1900 };
+}
+
 fn environmentValue(context: ?*anyopaque, name: []const u8, buffer: []u8) forth.RuntimeError!?usize {
     const host = try hostContext(context);
     // Names the environment can never hold are reported as unset instead of tripping
@@ -439,7 +449,7 @@ pub fn main(init: std.process.Init) !void {
 
     enableVirtualTerminal();
     useBinaryStdin();
-    machine.init(.{ .context = @ptrCast(&host), .write_fn = terminalWrite, .read_fn = terminalRead, .load_fn = loadDictionary, .save_fn = saveDictionary, .savesys_fn = saveExecutableImage, .key_fn = terminalKey, .key_ready_fn = terminalKeyReady, .sleep_fn = sleepMilliseconds, .utime_fn = microsecondsSinceEpoch, .getenv_fn = environmentValue, .system_fn = runShellCommand, .file_ops = &file_ops });
+    machine.init(.{ .context = @ptrCast(&host), .write_fn = terminalWrite, .read_fn = terminalRead, .load_fn = loadDictionary, .save_fn = saveDictionary, .savesys_fn = saveExecutableImage, .key_fn = terminalKey, .key_ready_fn = terminalKeyReady, .sleep_fn = sleepMilliseconds, .utime_fn = microsecondsSinceEpoch, .local_time_fn = localTime, .getenv_fn = environmentValue, .system_fn = runShellCommand, .file_ops = &file_ops });
     defer closeAllFiles();
     loadEmbeddedImage(executable_path, machine, allocator);
 

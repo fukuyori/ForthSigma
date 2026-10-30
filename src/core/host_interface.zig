@@ -30,6 +30,9 @@ pub const FileOps = struct {
     reposition: *const fn (?*anyopaque, Cell, UCell) Cell,
 };
 
+/// The local date and time, for TIME&DATE: month 1 to 12, the full year.
+pub const LocalTime = struct { second: Cell, minute: Cell, hour: Cell, day: Cell, month: Cell, year: Cell };
+
 pub const Writer = struct {
     context: ?*anyopaque,
     write_fn: *const fn (?*anyopaque, []const u8) void,
@@ -42,6 +45,7 @@ pub const Writer = struct {
     sleep_fn: ?*const fn (?*anyopaque, Cell) RuntimeError!void = null,
     /// Microseconds since the Unix epoch.
     utime_fn: ?*const fn (?*anyopaque) RuntimeError!Double = null,
+    local_time_fn: ?*const fn (?*anyopaque) RuntimeError!LocalTime = null,
     /// Copies the variable's value into the buffer and returns its length, or null when unset.
     getenv_fn: ?*const fn (?*anyopaque, []const u8, []u8) RuntimeError!?usize = null,
     /// Runs a shell command; a non-zero exit status is not an error.

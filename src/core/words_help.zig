@@ -31,12 +31,13 @@ pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
 /// line; the separator after HELP may already be that line end.
 fn nameOnSameLine(self: *State) ?[]const u8 {
     const line = self.source_line;
-    var cursor = self.source_cursor;
+    var cursor = self.sourceCursor();
     if (cursor > 0 and cursor <= line.len and isLineEnd(line[cursor - 1])) return null;
     while (cursor < line.len and !isLineEnd(line[cursor]) and text_input.isSeparator(line[cursor])) cursor += 1;
     if (cursor == line.len or isLineEnd(line[cursor])) return null;
-    self.source_cursor = cursor;
-    return text_input.nextToken(line, &self.source_cursor);
+    const token = text_input.nextToken(line, &cursor);
+    self.setSourceCursor(cursor);
+    return token;
 }
 
 fn isLineEnd(byte: u8) bool {

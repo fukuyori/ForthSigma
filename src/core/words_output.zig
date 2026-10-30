@@ -1,5 +1,6 @@
 //! Number and text output words, and the number base.
 
+const std = @import("std");
 const defs = @import("defs.zig");
 const forth = @import("../forth.zig");
 const memory_map = @import("memory_map.zig");
@@ -14,7 +15,7 @@ const max_dot_s_items = memory_map.max_dot_s_items;
 
 /// The built-in words this file executes; executeBuiltin dispatches by this list.
 pub const words = [_]Builtin{
-    .dot, .u_dot, .dot_r, .u_dot_r, .d_dot_r, .c_dot, .dot_s, .echo, .cr, .space, .spaces, .type, .hex, .dec, .oct, .base,
+    .dot, .u_dot, .dot_r, .u_dot_r, .d_dot_r, .at_xy, .c_dot, .dot_s, .echo, .cr, .space, .spaces, .type, .hex, .dec, .oct, .base,
     .d_dot, .page,
 };
 
@@ -77,6 +78,13 @@ pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
             self.write(" ");
         },
         .page => self.write("\x1b[2J\x1b[1;1H"),
+        // AT-XY ( x y -- ): column x and row y from 0, as gforth's ANSI terminal output.
+        .at_xy => {
+            const y = try self.pop();
+            const x = try self.pop();
+            var text: [48]u8 = undefined;
+            self.write(std.fmt.bufPrint(&text, "\x1b[{d};{d}H", .{ y +% 1, x +% 1 }) catch unreachable);
+        },
         else => @compileError(@tagName(builtin) ++ " is not in the words of this file"),
     }
 }

@@ -220,5 +220,5 @@ pub fn locateWord(self: *State, id: u16) RuntimeError!void {
 
 /// Address in logical memory of the current input position.
 pub fn sourceAddress(self: *State) Cell {
-    return @intCast(@intFromPtr(self.source_line.ptr) - @intFromPtr(&self.memory) + self.source_cursor);
+    return @intCast(@intFromPtr(self.source_line.ptr) - @intFromPtr(&self.memory) + self.sourceCursor());
 }

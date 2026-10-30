@@ -54,6 +54,7 @@ pub const UCell = memory_map.UCell;
 pub const UDouble = memory_map.UDouble;
 const Word = defs.Word;
 const WordKind = defs.WordKind;
+pub const LocalTime = host_interface.LocalTime;
 pub const Writer = host_interface.Writer;
 const base_address = memory_map.base_address;
 const bitsFloat = defs.bitsFloat;
@@ -76,6 +77,7 @@ const forth_wordlist = memory_map.forth_wordlist;
 const heap_base = memory_map.heap_base;
 const heap_top_address = memory_map.heap_top_address;
 const hold_top = memory_map.hold_top;
+const in_address = memory_map.in_address;
 pub const ior_errno_base = memory_map.ior_errno_base;
 const locals_base = memory_map.locals_base;
 const locals_end = memory_map.locals_end;
@@ -142,7 +144,6 @@ pub const State = struct {
     hold_depth: usize = 0,
     string_buffer_index: usize = 0,
     source_line: []const u8 = &.{},
-    source_cursor: usize = 0,
     /// Where the current input came from; only terminal input reads further lines.
     source_kind: SourceKind = .terminal,
     include_stack: [max_include_depth]IncludeFrame = undefined,
@@ -204,6 +205,17 @@ pub const State = struct {
     pub const throwCodeOf = error_reporting.throwCodeOf;
     pub const restoreCatchFrame = error_reporting.restoreCatchFrame;
 
+    /// >IN: kept in logical memory so that Forth code can read and set it. An offset past
+    /// the end of the source counts as the end, and a negative one as the start.
+    pub fn sourceCursor(self: *const State) usize {
+        const offset = self.readCellConst(in_address);
+        return @intCast(std.math.clamp(offset, 0, @as(Cell, @intCast(self.source_line.len))));
+    }
+
+    pub fn setSourceCursor(self: *State, offset: usize) void {
+        self.writeCell(in_address, @intCast(offset)) catch unreachable;
+    }
+
     /// Interprets one line of terminal input. The line is copied to the terminal input
     /// buffer so PARSE and WORD can return addresses in logical memory.
     pub fn interpretLine(self: *State, input: []const u8) RuntimeError!void {
@@ -216,10 +228,10 @@ pub const State = struct {
     /// Interprets `input`, which lies in logical memory.
     pub fn interpretSource(self: *State, input: []const u8, source_kind: SourceKind) RuntimeError!void {
         const previous_line = self.source_line;
-        const previous_cursor = self.source_cursor;
+        const previous_cursor = self.sourceCursor();
         const previous_kind = self.source_kind;
         self.source_line = input;
-        self.source_cursor = 0;
+        self.setSourceCursor(0);
         self.source_kind = source_kind;
         // A nested file or EVALUATE string runs inside the caller's work, so it must not
         // drop the word that a pending DOES> will attach to.
@@ -227,7 +239,7 @@ pub const State = struct {
         const pending_before = self.pending;
         defer {
             self.source_line = previous_line;
-            self.source_cursor = previous_cursor;
+            self.setSourceCursor(previous_cursor);
             self.source_kind = previous_kind;
         }
         self.last_unknown_word = null;
@@ -236,7 +248,7 @@ pub const State = struct {
         while (true) {
             const token = nextToken(line, &cursor) orelse break;
             self.source_line = line;
-            self.source_cursor = cursor;
+            self.setSourceCursor(cursor);
             if (self.pending != .none) {
                 try self.finishPending(token);
                 continue;
@@ -249,23 +261,26 @@ pub const State = struct {
             if (std.mem.eql(u8, token, "\\")) break;
             if (std.mem.eql(u8, token, "\"")) {
                 try self.handleStringToken(token, line, &cursor, false);
-                self.source_cursor = cursor;
+                self.setSourceCursor(cursor);
                 continue;
             }
             const string_word: ?StringWord = if (asciiEqlIgnoreCase(token, "S\"")) .s_quote else if (asciiEqlIgnoreCase(token, "S\\\"")) .s_escape_quote else if (std.mem.eql(u8, token, ".\\\"")) .print_escape else if (std.mem.eql(u8, token, ".(")) .print_paren else if (asciiEqlIgnoreCase(token, "C\"")) .c_quote else if (asciiEqlIgnoreCase(token, "ABORT\"")) .abort_quote else null;
             if (string_word) |kind| {
                 try self.handleParsedString(kind, line, &cursor);
-                self.source_cursor = cursor;
+                self.setSourceCursor(cursor);
                 continue;
             }
             if (std.mem.startsWith(u8, token, ".\"")) {
                 try self.handleStringToken(token, line, &cursor, true);
-                self.source_cursor = cursor;
+                self.setSourceCursor(cursor);
                 continue;
             }
             try self.handleToken(token);
+            // gforth reports a negative >IN as a parsed string overflow; going back to
+            // the start instead would run the line again and again.
+            if (self.readCellConst(in_address) < 0) return error.StringTooLong;
             line = self.source_line;
-            cursor = self.source_cursor;
+            cursor = self.sourceCursor();
             if (self.halted) break;
         }
         // An EVALUATE string cannot read past its end, so a parsing word such as
@@ -363,6 +378,10 @@ pub const State = struct {
             .{ "FASINH", .f_asinh },         .{ "FACOSH", .f_acosh },         .{ "FATANH", .f_atanh },         .{ "FEXPM1", .f_expm1 },         .{ "FLNP1", .f_lnp1 },
             .{ "FLOG", .f_log },             .{ "FALOG", .f_alog },           .{ "F**", .f_power },            .{ "FVALUE", .define_fvalue },         .{ "2VALUE", .define_two_value },     .{ "BUFFER:", .define_buffer },       .{ "2LITERAL", .two_literal },
             .{ "D.R", .d_dot_r },                  .{ "D2*", .d_two_star },              .{ "D2/", .d_two_slash },             .{ "DMAX", .d_max },                  .{ "DMIN", .d_min },
+            .{ ">IN", .to_in },                    .{ "SOURCE", .source },               .{ "SOURCE-ID", .source_id },         .{ "REFILL", .refill },
+            .{ "AHEAD", .compile_ahead },          .{ "N>R", .n_to_r },                  .{ "NR>", .n_r_from },                .{ "AT-XY", .at_xy },                 .{ "TIME&DATE", .time_and_date },
+            .{ "SYNONYM", .synonym },              .{ "TRAVERSE-WORDLIST", .traverse_wordlist }, .{ "NAME>INTERPRET", .name_to_int }, .{ "CS-PICK", .cs_pick },     .{ "CS-ROLL", .cs_roll },
+            .{ "EKEY", .key },                     .{ "EKEY?", .key_question },          .{ "EKEY>CHAR", .ekey_to_char },      .{ "ENVIRONMENT?", .environment_query }, .{ "QUIT", .quit },
             .{ "M+", .m_plus },                    .{ "DU<", .du_less },                 .{ "2ROT", .two_rot },                .{ "DUMP", .dump },
         };
         for (definitions) |definition| self.addBuiltin(definition[0], definition[1]) catch unreachable;
@@ -380,7 +399,7 @@ pub const State = struct {
 
     fn isImmediateBuiltin(builtin: Builtin) bool {
         return switch (builtin) {
-            .compile_if, .compile_else, .compile_then, .compile_begin, .compile_end, .compile_again, .compile_while, .compile_repeat, .compile_do, .compile_q_do, .compile_loop, .compile_plus_loop, .compile_does, .compile_case, .compile_of, .compile_endof, .compile_endcase, .compile_exit, .compile_recurse, .leave, .bracket_if, .bracket_else, .bracket_then, .bracket_defined, .bracket_undefined, .end_definition, .literal, .fliteral, .sliteral, .two_literal => true,
+            .compile_if, .compile_else, .compile_ahead, .compile_then, .compile_begin, .compile_end, .compile_again, .compile_while, .compile_repeat, .compile_do, .compile_q_do, .compile_loop, .compile_plus_loop, .compile_does, .compile_case, .compile_of, .compile_endof, .compile_endcase, .compile_exit, .compile_recurse, .leave, .bracket_if, .bracket_else, .bracket_then, .bracket_defined, .bracket_undefined, .end_definition, .literal, .fliteral, .sliteral, .two_literal => true,
             else => false,
         };
     }
@@ -465,6 +484,13 @@ pub const State = struct {
         }
         self.names_used = self.words[id].name_start;
         self.word_count = id;
+    }
+
+    /// The word a SYNONYM stands for (itself for any other word).
+    pub fn synonymTarget(self: *const State, id: u16) u16 {
+        var target = id;
+        while (self.words[target].kind == .synonym) target = @intCast(self.words[target].value);
+        return target;
     }
 
     /// The name of a dictionary entry, kept in `names`.
@@ -606,6 +632,7 @@ pub const State = struct {
     pub const topControl = control_flow.topControl;
     pub const compileIf = control_flow.compileIf;
     pub const compileElse = control_flow.compileElse;
+    pub const compileAhead = control_flow.compileAhead;
     pub const compileThen = control_flow.compileThen;
     pub const compileBegin = control_flow.compileBegin;
     pub const compileEnd = control_flow.compileEnd;
@@ -658,6 +685,7 @@ pub const State = struct {
     pub fn executeWord(self: *State, id: u16) RuntimeError!void {
         const word = self.words[id];
         switch (word.kind) {
+            .synonym => try self.executeWord(try self.wordId(word.value)),
             .builtin => try self.executeBuiltin(word.builtin),
             .constant, .array => try self.push(word.value),
             .value => try self.push(try self.readCell(word.value)),

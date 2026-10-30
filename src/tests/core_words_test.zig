@@ -243,6 +243,70 @@ test "DUMP shows 16 bytes a line in hexadecimal and as characters, as gforth doe
     try std.testing.expectEqualStrings(text, output.written());
 }
 
+test "WHILE follows the standard control-flow order, so CS-ROLL idioms and several WHILEs work" {
+    try expectOutput(": MYWHILE POSTPONE IF 1 CS-ROLL ; IMMEDIATE : T2 0 BEGIN DUP 3 < MYWHILE 1+ REPEAT . ; T2", "3 ");
+    try expectOutput(": T8 0 BEGIN DUP 10 < WHILE DUP 5 <> WHILE 1+ REPEAT .\" five\" THEN . ; T8", "five5 ");
+    try expectOutput(": T9 0 BEGIN 1+ DUP 3 < WHILE DUP 7 = UNTIL .\" seven\" THEN . ; T9", "3 ");
+    try expectOutput(": T7 0 BEGIN [ 0 CS-PICK ] 1+ DUP 3 > UNTIL . EXIT AGAIN ; T7", "4 ");
+
+    var output = Output{};
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
+    try std.testing.expectError(error.ControlMismatch, machine.interpretLine(": BAD [ 5 CS-ROLL ] ;"));
+}
+
+test "SYNONYM TRAVERSE-WORDLIST NAME>INTERPRET EKEY>CHAR and ENVIRONMENT? work as in gforth" {
+    try expectOutput(": SQ DUP * ; SYNONYM SQUARE SQ 5 SQUARE . VARIABLE V SYNONYM W V 7 W ! V @ .", "25 7 ");
+    try expectOutput(": IM .\" immediate!\" ; IMMEDIATE SYNONYM IM2 IM : T IM2 ; 5 VALUE VV SYNONYM VV2 VV 9 TO VV2 VV .", "immediate!9 ");
+    try expectOutput(
+        "WORDLIST CONSTANT WL GET-CURRENT WL SET-CURRENT : AAA ; : BBB ; : CCC ; SET-CURRENT " ++
+            ": SHOW NAME>STRING TYPE SPACE TRUE ; ' SHOW WL TRAVERSE-WORDLIST : FIRST NAME>STRING TYPE SPACE FALSE ; ' FIRST WL TRAVERSE-WORDLIST",
+        "CCC BBB AAA CCC ",
+    );
+    try expectOutput("S\" DUP\" FIND-NAME NAME>INTERPRET S\" DUP\" FIND-NAME NAME>INT = . 65 EKEY>CHAR . . 300 EKEY>CHAR . .", "-1 -1 65 0 300 ");
+    try expectOutput(
+        "S\" NOSUCH\" ENVIRONMENT? . S\" ADDRESS-UNIT-BITS\" ENVIRONMENT? . . S\" floored\" ENVIRONMENT? . . S\" MAX-CHAR\" ENVIRONMENT? . . S\" MAX-N\" ENVIRONMENT? . . S\" MAX-U\" ENVIRONMENT? . . S\" MAX-D\" ENVIRONMENT? . D.",
+        "0 -1 8 -1 -1 -1 255 -1 9223372036854775807 -1 -1 -1 170141183460469231731687303715884105727 ",
+    );
+    // The sizes are this system's.
+    try expectOutput("S\" /HOLD\" ENVIRONMENT? . . S\" /PAD\" ENVIRONMENT? . . S\" STACK-CELLS\" ENVIRONMENT? . . S\" WORDLISTS\" ENVIRONMENT? . .", "-1 4096 -1 4096 -1 1024 -1 64 ");
+    try expectOutput(": SQ DUP * ; SYNONYM SQUARE SQ SEE SQUARE 3 ' SQUARE EXECUTE .", "SYNONYM SQUARE SQ\n9 ");
+}
+
+test "QUIT keeps both data stacks, stops the line and the file, and CATCH does not stop it" {
+    var output = Output{};
+    support.setFakeFile(&output, 0, ": TQ 1 2 QUIT 3 ; TQ .S\n4 .\n");
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
+
+    try std.testing.expectError(error.Quit, machine.interpretLine("1.5E 1 2 : T 3 QUIT 4 . ; T 99 ."));
+    machine.report(error.Quit);
+    try expectStack(machine, &.{ 1, 2, 3 });
+    try std.testing.expectEqual(@as(usize, 1), machine.float_depth);
+    machine.data_depth = 0;
+    try std.testing.expectError(error.Quit, machine.interpretLine(": U 5 QUIT ; : V 1 ['] U CATCH ; V"));
+    machine.report(error.Quit);
+    try expectStack(machine, &.{ 1, 5 });
+    machine.data_depth = 0;
+    try std.testing.expectError(error.Quit, machine.interpretLine("INCLUDE a.txt"));
+    machine.report(error.Quit);
+    try expectStack(machine, &.{ 1, 2 });
+    try std.testing.expectEqualStrings("", output.written());
+}
+
+test "AHEAD N>R and NR> work as in gforth" {
+    try expectOutput(": T1 AHEAD 111 . THEN 222 . ; T1 : T2 1 2 3 3 N>R 99 . NR> . . . . ; T2 : T3 0 N>R NR> . ; T3", "222 99 3 3 2 1 0 ");
+
+    var output = Output{};
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
+    try std.testing.expectError(error.CompileOnly, machine.interpretLine("AHEAD"));
+    machine.report(error.CompileOnly);
+    try std.testing.expectError(error.StackUnderflow, machine.interpretLine("1 2 5 N>R"));
+    machine.report(error.StackUnderflow);
+    try std.testing.expectError(error.ReturnStackUnderflow, machine.interpretLine("NR>"));
+}
+
 test "?DUP U< U> 2R@ ALIGN UNUSED .R and U.R work as in gforth" {
     try expectOutput("5 ?DUP . . 0 ?DUP . DEPTH .", "5 5 0 0 ");
     try expectOutput("1 2 U< . -1 1 U< . 1 -1 U< . 2 2 U< . 1 2 U> . -1 1 U> .", "-1 0 -1 0 0 -1 ");

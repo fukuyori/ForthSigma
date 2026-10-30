@@ -1,14 +1,17 @@
 //! Defining, compiling, and control-structure words.
 
+const std = @import("std");
 const defs = @import("defs.zig");
 const forth = @import("../forth.zig");
 const integer_math = @import("integer_math.zig");
 const memory_map = @import("memory_map.zig");
 const Builtin = defs.Builtin;
+const Control = defs.Control;
 const RuntimeError = defs.RuntimeError;
 const State = forth.State;
 const doubleCells = defs.doubleCells;
 const floatBits = defs.floatBits;
+const max_controls = memory_map.max_controls;
 const max_gforth_string = memory_map.max_gforth_string;
 const state_address = memory_map.state_address;
 const truth = integer_math.truth;
@@ -16,13 +19,13 @@ const truth = integer_math.truth;
 /// The built-in words this file executes; executeBuiltin dispatches by this list.
 pub const words = [_]Builtin{
     .builds, .immediate, .execute, .index, .index_2, .index_3, .leave, .unloop, .compile_if,
-    .compile_else, .compile_then, .compile_begin, .compile_end, .compile_again, .compile_while,
+    .compile_else, .compile_ahead, .compile_then, .compile_begin, .compile_end, .compile_again, .compile_while,
     .compile_repeat, .compile_do, .compile_q_do, .compile_loop, .compile_plus_loop, .compile_does,
     .compile_case, .compile_of, .compile_endof, .compile_endcase, .compile_exit, .compile_recurse,
     .define_colon, .define_variable, .define_fvariable, .define_constant, .define_value,
     .define_two_variable, .define_two_constant, .define_fconstant, .define_fvalue, .define_two_value, .define_buffer, .define_array, .end_definition,
     .tick, .to_body, .literal, .fliteral, .sliteral, .two_literal, .state, .bracket_if, .bracket_else, .bracket_then,
-    .bracket_defined, .bracket_undefined,
+    .bracket_defined, .bracket_undefined, .cs_pick, .cs_roll,
 };
 
 pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
@@ -49,6 +52,7 @@ pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
         },
         .compile_if => try self.compileIf(),
         .compile_else => try self.compileElse(),
+        .compile_ahead => try self.compileAhead(),
         .compile_then => try self.compileThen(),
         .compile_begin => try self.compileBegin(),
         .compile_end => try self.compileEnd(false),
@@ -87,6 +91,21 @@ pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
         .fliteral => {
             try self.requireCompiling();
             _ = try self.emit(.{ .kind = .float_literal, .value = floatBits(try self.fpop()) });
+        },
+        // CS-PICK and CS-ROLL ( u -- ) copy or move the u-th control-flow entry to the top.
+        .cs_pick, .cs_roll => {
+            const position = try self.pop();
+            if (position < 0 or position >= self.control_depth) return error.ControlMismatch;
+            const at = self.control_depth - 1 - @as(usize, @intCast(position));
+            const item = self.control_stack[at];
+            if (builtin == .cs_pick) {
+                if (self.control_depth == max_controls) return error.ControlStackOverflow;
+                self.control_stack[self.control_depth] = item;
+                self.control_depth += 1;
+            } else {
+                std.mem.copyForwards(Control, self.control_stack[at .. self.control_depth - 1], self.control_stack[at + 1 .. self.control_depth]);
+                self.control_stack[self.control_depth - 1] = item;
+            }
         },
         .two_literal => {
             try self.requireCompiling();

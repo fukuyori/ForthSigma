@@ -28,13 +28,19 @@ pub const Output = struct {
     }
 
     pub fn writer(self: *Output) forth.Writer {
-        return .{ .context = @ptrCast(self), .write_fn = write, .read_fn = read, .key_fn = key, .key_ready_fn = keyReady, .sleep_fn = sleep, .utime_fn = utime, .getenv_fn = getenv, .system_fn = system, .file_ops = &fake_file_ops };
+        return .{ .context = @ptrCast(self), .write_fn = write, .read_fn = read, .key_fn = key, .key_ready_fn = keyReady, .sleep_fn = sleep, .utime_fn = utime, .local_time_fn = localTime, .getenv_fn = getenv, .system_fn = system, .file_ops = &fake_file_ops };
     }
 
     pub fn sleep(context: ?*anyopaque, milliseconds: forth.Cell) forth.RuntimeError!void {
         const output: *Output = @ptrCast(@alignCast(context.?));
         if (output.host_fails) return error.HostFailed;
         output.slept = milliseconds;
+    }
+
+    pub fn localTime(context: ?*anyopaque) forth.RuntimeError!forth.LocalTime {
+        const output: *Output = @ptrCast(@alignCast(context.?));
+        if (output.host_fails) return error.HostFailed;
+        return .{ .second = 14, .minute = 39, .hour = 18, .day = 30, .month = 10, .year = 2026 };
     }
 
     pub fn utime(context: ?*anyopaque) forth.RuntimeError!forth.Double {

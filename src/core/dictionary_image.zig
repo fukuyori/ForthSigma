@@ -210,6 +210,8 @@ pub fn appendImage(self: *State, source: *const State) RuntimeError!void {
         if (word.source_file != 0) word.source_file = if (word.source_file <= source_files) file_map[word.source_file - 1] else 0;
         word.wordlist = @intCast(mapWordlist(word.wordlist, wordlist_base));
         if (word.kind == .vocabulary) word.value = mapWordlist(word.value, wordlist_base);
+        if (word.kind == .synonym and word.value >= source.builtin_count)
+            word.value = @intCast(word_base + @as(usize, @intCast(word.value - source.builtin_count)));
         if (word.kind == .colon) {
             word.code_start = @intCast(@as(usize, word.code_start) + code_base);
             word.code_end = @intCast(@as(usize, word.code_end) + code_base);

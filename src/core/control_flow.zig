@@ -55,10 +55,17 @@ pub fn compileElse(self: *State) RuntimeError!void {
     try self.pushControl(.else_branch, at);
 }
 
+/// AHEAD: a forward branch taken always, resolved by THEN as ELSE's is.
+pub fn compileAhead(self: *State) RuntimeError!void {
+    try self.requireCompiling();
+    const at = try self.emit(.{ .kind = .branch });
+    try self.pushControl(.else_branch, at);
+}
+
 pub fn compileThen(self: *State) RuntimeError!void {
     try self.requireCompiling();
     const kind = self.topControl() orelse return error.ControlMismatch;
-    if (kind != .if_branch and kind != .else_branch) return error.ControlMismatch;
+    if (kind != .if_branch and kind != .else_branch and kind != .while_branch) return error.ControlMismatch;
     self.control_depth -= 1;
     self.patch(self.control_stack[self.control_depth].address, self.code_count);
     // After THEN only the locals visible at the IF remain: the code can be reached
@@ -75,23 +82,32 @@ pub fn compileEnd(self: *State, unconditional: bool) RuntimeError!void {
     _ = try self.emit(.{ .kind = if (unconditional) .branch else .branch_zero, .value = begin.address });
 }
 
+/// WHILE ( C: dest -- orig dest ), as the standard has it: the forward branch goes under
+/// the BEGIN, so that REPEAT, AGAIN, or UNTIL closes the loop and THEN resolves each
+/// further WHILE (BEGIN ... WHILE ... WHILE ... REPEAT THEN), and CS-ROLL idioms work.
 pub fn compileWhile(self: *State) RuntimeError!void {
     try self.requireCompiling();
     if (self.topControl() != .begin_loop) return error.ControlMismatch;
     const begin = self.control_stack[self.control_depth - 1];
+    self.control_depth -= 1;
     const at = try self.emit(.{ .kind = .branch_zero });
-    try self.pushControl(.while_branch, begin.address);
-    self.control_stack[self.control_depth - 1].address = at;
+    try self.pushControl(.while_branch, at);
+    if (self.control_depth == max_controls) return error.ControlStackOverflow;
+    self.control_stack[self.control_depth] = begin;
+    self.control_depth += 1;
 }
 
+/// REPEAT ( C: orig dest -- ): AGAIN, then THEN for the branch under the BEGIN.
 pub fn compileRepeat(self: *State) RuntimeError!void {
-    const wh = try self.popControl(.while_branch);
-    if (self.topControl() != .begin_loop) return error.ControlMismatch;
+    const begin = try self.popControl(.begin_loop);
+    const kind = self.topControl() orelse return error.ControlMismatch;
+    if (kind != .while_branch and kind != .if_branch and kind != .else_branch) return error.ControlMismatch;
     self.control_depth -= 1;
-    _ = try self.emit(.{ .kind = .branch, .value = self.control_stack[self.control_depth].address });
-    self.patch(wh.address, self.code_count);
+    const orig = self.control_stack[self.control_depth];
+    _ = try self.emit(.{ .kind = .branch, .value = begin.address });
+    self.patch(orig.address, self.code_count);
     // The loop is left at WHILE, so the locals declared after it are not visible.
-    self.local_count = wh.locals;
+    self.local_count = orig.locals;
 }
 
 pub fn compileDo(self: *State, conditional: bool) RuntimeError!void {

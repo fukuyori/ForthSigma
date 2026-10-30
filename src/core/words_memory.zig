@@ -14,6 +14,7 @@ const data_limit = memory_map.data_limit;
 const errnoIor = memory_map.errnoIor;
 const errno_invalid = memory_map.errno_invalid;
 const errno_no_memory = memory_map.errno_no_memory;
+const max_stack = memory_map.max_stack;
 const pad_address = memory_map.pad_address;
 const true_flag = memory_map.true_flag;
 
@@ -24,7 +25,7 @@ pub const words = [_]Builtin{
     .fill, .move, .cmove, .here, .allot, .comma, .c_comma, .two_fetch, .two_store, .count, .pad,
     .place, .compare, .search, .slash_string, .minus_trailing, .char_plus, .chars, .bounds,
     .blank_fill, .cmove_up, .scan, .skip, .str_equal, .string_prefix_query, .plus_place, .align_here,
-    .unused, .dump,
+    .unused, .dump, .time_and_date,
     .allocate, .free, .resize,
 };
 
@@ -150,6 +151,13 @@ pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
                 for (bytes[line..@min(line + 16, bytes.len)]) |byte| self.write(if (byte >= 32 and byte <= 126) &.{byte} else ".");
                 self.write("\n");
             }
+        },
+        // TIME&DATE ( -- second minute hour day month year ), local time from the host.
+        .time_and_date => {
+            const local_time_fn = self.writer.local_time_fn orelse return error.HostUnavailable;
+            const now = try local_time_fn(self.writer.context);
+            if (max_stack - self.data_depth < 6) return error.StackOverflow;
+            for ([_]Cell{ now.second, now.minute, now.hour, now.day, now.month, now.year }) |part| try self.push(part);
         },
         // The bytes of data space left for ALLOT, , and the defining words.
         .unused => try self.push(data_limit - self.data_here),

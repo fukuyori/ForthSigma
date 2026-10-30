@@ -19,7 +19,7 @@ const tib_size = memory_map.tib_size;
 
 /// The rest of the current input line, and whether it lies in logical memory.
 pub fn remainingSource(self: *State) []const u8 {
-    return self.source_line[@min(self.source_cursor, self.source_line.len)..];
+    return self.source_line[self.sourceCursor()..];
 }
 
 pub fn sourceInMemory(self: *State) bool {
@@ -42,7 +42,7 @@ pub fn parseWordText(self: *State, delimiter: u8) []const u8 {
     while (index < rest.len and !isDelimiter(rest[index], delimiter)) index += 1;
     const text = rest[start..index];
     if (index < rest.len) index += 1;
-    self.source_cursor += index;
+    self.setSourceCursor(self.sourceCursor() + index);
     return text;
 }
 
@@ -222,7 +222,10 @@ pub fn nextToken(input: []const u8, cursor: *usize) ?[]const u8 {
 /// the line is used up. An EVALUATE string never reads past its end.
 pub fn nextSourceToken(self: *State) RuntimeError!?[]const u8 {
     while (true) {
-        if (nextToken(self.source_line, &self.source_cursor)) |token| return token;
+        var cursor = self.sourceCursor();
+        const token = nextToken(self.source_line, &cursor);
+        self.setSourceCursor(cursor);
+        if (token) |found| return found;
         const line = switch (self.source_kind) {
             .evaluate => return null,
             .file => try self.readIncludeLine() orelse return null,
@@ -233,6 +236,6 @@ pub fn nextSourceToken(self: *State) RuntimeError!?[]const u8 {
             },
         };
         self.source_line = line;
-        self.source_cursor = 0;
+        self.setSourceCursor(0);
     }
 }

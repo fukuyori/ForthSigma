@@ -107,12 +107,21 @@ pub const Builtin = enum {
     align_here,
     unused,
     dump,
+    time_and_date,
+    synonym,
+    traverse_wordlist,
+    cs_pick,
+    cs_roll,
+    ekey_to_char,
+    environment_query,
+    quit,
     dot,
     u_dot,
     c_dot,
     dot_r,
     u_dot_r,
     d_dot_r,
+    at_xy,
     dot_s,
     echo,
     cr,
@@ -140,6 +149,7 @@ pub const Builtin = enum {
     savesys,
     compile_if,
     compile_else,
+    compile_ahead,
     compile_then,
     compile_begin,
     compile_end,
@@ -260,6 +270,8 @@ pub const Builtin = enum {
     two_r_from,
     two_r_fetch,
     two_rot,
+    n_to_r,
+    n_r_from,
     question_dup,
     place,
     abort,
@@ -319,6 +331,10 @@ pub const Builtin = enum {
     find_word,
     parse,
     parse_name,
+    to_in,
+    source,
+    source_id,
+    refill,
     find_name,
     name_to_int,
     name_to_string,
@@ -459,7 +475,7 @@ pub const CatchFrame = struct {
     local_count: usize,
 };
 
-pub const WordKind = enum { builtin, colon, variable, constant, array, created, value, fconstant, fvalue, two_constant, two_value, marker, vocabulary };
+pub const WordKind = enum { builtin, colon, variable, constant, array, created, value, fconstant, fvalue, two_constant, two_value, marker, vocabulary, synonym };
 
 pub const Word = struct {
     /// Where the name is in `State.names`.
@@ -536,6 +552,8 @@ pub const RuntimeError = error{
     InvalidNumber,
     DivisionByZero,
     ResultOutOfRange,
+    /// QUIT: back to the terminal with the data stacks kept; CATCH does not catch it.
+    Quit,
     LoopMismatch,
     InvalidBase,
     InvalidExecutionToken,

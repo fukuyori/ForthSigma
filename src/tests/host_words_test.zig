@@ -49,6 +49,17 @@ test "an execution token stored in a constant survives a full image restore" {
     try std.testing.expectError(error.InvalidImage, loaded.restoreImage(image[0..length]));
 }
 
+test "TIME&DATE gives the host's local time and AT-XY moves the cursor as gforth does" {
+    var output = Output{};
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
+
+    try machine.interpretLine("TIME&DATE . . . . . . 3 2 AT-XY 0 0 AT-XY");
+    try std.testing.expectEqualStrings("2026 10 30 18 39 14 \x1b[3;4H\x1b[1;1H", output.written());
+    output.host_fails = true;
+    try std.testing.expectError(error.HostFailed, machine.interpretLine("TIME&DATE"));
+}
+
 test "MS UTIME GETENV and SYSTEM call the host" {
     var output = Output{};
     const machine = try createMachine(&output);

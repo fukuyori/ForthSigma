@@ -95,6 +95,9 @@ pub const search_order_address: Cell = 0x0238;
 /// The digits F. FE. and FS. show, set by SET-PRECISION (after the search order's 16 cells).
 pub const precision_address: Cell = 0x02c0;
 
+/// >IN, the offset of the next character in the current input source.
+pub const in_address: Cell = 0x02c8;
+
 /// Words that are also in the Root word list, so they stay usable after ONLY.
 pub const root_word_names = [_][]const u8{ "FORTH", "FORTH-WORDLIST", "ONLY", "ALSO", "PREVIOUS", "ORDER", "DEFINITIONS", "GET-ORDER", "SET-ORDER", "WORDS" };
 
@@ -177,7 +180,7 @@ pub const max_dot_s_items = 9;
 
 pub const fs_precision = 14;
 
-pub const image_magic = "SIGIMG22";
+pub const image_magic = "SIGIMG25";
 
 /// File ids of the standard streams; the host numbers opened files from `first_file_id`.
 pub const stdin_fileid: Cell = 1;

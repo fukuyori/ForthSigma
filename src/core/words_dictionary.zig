@@ -24,11 +24,41 @@ const wordlist_count_address = memory_map.wordlist_count_address;
 pub const words = [_]Builtin{
     .words, .find_word, .find_name, .name_to_int, .name_to_string, .see, .marker, .locate, .only,
     .also, .previous, .forth, .definitions, .order, .get_order, .set_order, .to_order, .get_current,
-    .set_current, .wordlist, .vocabulary, .forth_wordlist_word, .search_wordlist,
+    .set_current, .wordlist, .vocabulary, .forth_wordlist_word, .search_wordlist, .synonym,
+    .traverse_wordlist,
 };
 
 pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
     switch (builtin) {
+        // SYNONYM newname oldname: newname stands for oldname, immediate if it is.
+        .synonym => {
+            const new_token = (try self.nextSourceToken()) orelse return error.InvalidDefinition;
+            if (new_token.len > max_name) return error.NameTooLong;
+            // The old name may be on the next line, which reuses the buffer of this one.
+            var new_name: [max_name]u8 = undefined;
+            @memcpy(new_name[0..new_token.len], new_token);
+            const old_name = (try self.nextSourceToken()) orelse return error.InvalidDefinition;
+            const target = self.synonymTarget(try self.lookupOrFail(old_name));
+            const id = try self.appendWord(new_name[0..new_token.len], .synonym, .drop, target);
+            self.words[id].immediate = self.words[target].immediate;
+        },
+        // TRAVERSE-WORDLIST ( xt wid -- ): xt ( nt -- flag ) for each word of the list,
+        // newest first, until it gives false.
+        .traverse_wordlist => {
+            const wid = try self.validWordlist(try self.pop());
+            const xt = try self.wordId(try self.pop());
+            var index = self.word_count;
+            while (index > 0) {
+                index -= 1;
+                // The words xt runs may have removed later entries.
+                if (index >= self.word_count) continue;
+                const word = self.words[index];
+                if (word.wordlist != wid or word.name_len == 0) continue;
+                try self.push(@as(Cell, index) + 1);
+                try self.executeWord(xt);
+                if (try self.pop() == 0) break;
+            }
+        },
         .words => {
             // Like gforth, WORDS lists the word list that is searched first.
             const wid = if (self.searchOrderDepth() == 0) forth_wordlist else self.searchOrderEntry(0);

@@ -12,13 +12,16 @@ const RuntimeError = defs.RuntimeError;
 const State = forth.State;
 const UCell = memory_map.UCell;
 const doubleCells = defs.doubleCells;
+const in_address = memory_map.in_address;
 const max_gforth_string = memory_map.max_gforth_string;
+const tib_address = memory_map.tib_address;
+const tib_size = memory_map.tib_size;
 const truth = integer_math.truth;
 const word_buffer_address = memory_map.word_buffer_address;
 
 /// The built-in words this file executes; executeBuiltin dispatches by this list.
 pub const words = [_]Builtin{
-    .input, .accept, .evaluate, .key, .key_question, .word_parse, .parse, .parse_name,
+    .input, .accept, .evaluate, .key, .key_question, .word_parse, .parse, .parse_name, .to_in, .source, .source_id, .refill,
 };
 
 pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
@@ -78,9 +81,44 @@ pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
             const length = for (rest, 0..) |byte, index| {
                 if (byte == delimiter) break index;
             } else rest.len;
-            self.source_cursor += if (length < rest.len) length + 1 else length;
+            self.setSourceCursor(self.sourceCursor() + if (length < rest.len) length + 1 else length);
             try self.push(address);
             try self.push(@intCast(length));
+        },
+        .to_in => try self.push(in_address),
+        // SOURCE: the current line (or EVALUATE string) in logical memory.
+        .source => {
+            if (!self.sourceInMemory()) {
+                try self.push(0);
+                try self.push(0);
+                return;
+            }
+            try self.push(@intCast(@intFromPtr(self.source_line.ptr) - @intFromPtr(&self.memory)));
+            try self.push(@intCast(self.source_line.len));
+        },
+        // SOURCE-ID: 0 for the terminal, -1 for EVALUATE, the file id while including.
+        .source_id => try self.push(switch (self.source_kind) {
+            .terminal => 0,
+            .evaluate => -1,
+            .file => self.include_stack[self.include_depth - 1].fileid,
+        }),
+        // REFILL: the next line of the terminal or the file becomes the input, read from
+        // its start; an EVALUATE string has no next line.
+        .refill => {
+            const line: ?[]const u8 = switch (self.source_kind) {
+                .evaluate => null,
+                .file => try self.readIncludeLine(),
+                .terminal => blk: {
+                    const read_fn = self.writer.read_fn orelse break :blk null;
+                    const start: usize = @intCast(tib_address);
+                    break :blk read_fn(self.writer.context, self.memory[start .. start + tib_size]);
+                },
+            };
+            if (line) |text| {
+                self.source_line = text;
+                self.setSourceCursor(0);
+            }
+            try self.push(truth(line != null));
         },
         // The next name in the input, passing blanks and tabs before it, as in the source
         // itself; at the end of the input the length is 0.

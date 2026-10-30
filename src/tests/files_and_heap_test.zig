@@ -212,6 +212,16 @@ test "SLURP-FILE and $SLURP-FILE read a whole file as it is and close it" {
     try expectStack(machine, &.{-1});
 }
 
+test "SOURCE-ID gives the file id and REFILL the next line of an included file" {
+    var output = Output{};
+    support.setFakeFile(&output, 0, ": NL REFILL . SOURCE TYPE SOURCE NIP >IN ! ; SOURCE-ID 0> . NL\nthis line is read by REFILL\nSOURCE-ID 0> .\n");
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
+
+    try machine.interpretLine("INCLUDE a.txt SOURCE-ID .");
+    try std.testing.expectEqualStrings("-1 -1 this line is read by REFILL-1 0 ", output.written());
+}
+
 test "PARSE-NAME reads the next name from a file being included" {
     var output = Output{};
     support.setFakeFile(&output, 0, ": NEXT-NAME PARSE-NAME ; : LAST-NAME NEXT-NAME NIP . ;\nNEXT-NAME \t  abc TYPE\nLAST-NAME\n");

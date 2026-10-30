@@ -280,6 +280,27 @@ test "CHAR+ CHARS BOUNDS BLANK CMOVE> SCAN SKIP STR= STRING-PREFIX? and +PLACE w
     );
 }
 
+test "SOURCE >IN SOURCE-ID and REFILL work as in gforth" {
+    try expectOutput(": T SOURCE TYPE ; T .( |)", ": T SOURCE TYPE ; T .( |)|");
+    try expectOutput("SOURCE NIP . >IN @ .", "20 19 ");
+    // Setting >IN to the end skips the rest of the line; going back reads a word again.
+    try expectOutput(": SKIPREST SOURCE NIP >IN ! ; SKIPREST 111 222 .", "");
+    try expectOutput(": TWICE >IN @ BL WORD COUNT TYPE SPACE >IN ! BL WORD COUNT TYPE ; TWICE hello", "hello hello");
+    try expectOutput("S\" SOURCE-ID . >IN @ .\" EVALUATE SOURCE-ID . S\" REFILL .\" EVALUATE", "-1 18 0 0 ");
+
+    var output = Output{};
+    output.input_lines[0] = "read by refill";
+    output.input_count = 1;
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
+    try machine.interpretLine(": NL REFILL . SOURCE TYPE SOURCE NIP >IN ! ; NL ignored");
+    try machine.interpretLine("NL");
+    // When REFILL fails, the source stays the line it was in.
+    try std.testing.expectEqualStrings("-1 read by refill0 NL", output.written());
+    // A negative >IN is a parsed string overflow, as in gforth, not a rerun of the line.
+    try std.testing.expectError(error.StringTooLong, machine.interpretLine("-5 >IN ! 1"));
+}
+
 test "SLITERAL compiles a string and PARSE-NAME reads the next name" {
     var output = Output{};
     const machine = try createMachine(&output);

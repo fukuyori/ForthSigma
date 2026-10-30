@@ -93,7 +93,7 @@ pub fn finishPending(self: *State, token: []const u8) RuntimeError!void {
                     return;
                 }
             }
-            const id = try self.lookupOrFail(token);
+            const id = self.synonymTarget(try self.lookupOrFail(token));
             const kind = self.words[id].kind;
             if (kind != .value and kind != .fvalue and kind != .two_value) return error.InvalidDefinition;
             if (self.compiling) {
@@ -134,7 +134,7 @@ pub fn endDefinition(self: *State) RuntimeError!void {
 /// >BODY: the data area of a word that has one. CONSTANT and FCONSTANT keep their
 /// value in the dictionary entry, so they have none here (gforth gives an address).
 pub fn bodyAddress(self: *State, id: u16) RuntimeError!Cell {
-    const word = self.words[id];
+    const word = self.words[self.synonymTarget(id)];
     return switch (word.kind) {
         .variable, .array, .created, .value, .fvalue, .two_constant, .two_value => word.value,
         else => error.InvalidExecutionToken,
