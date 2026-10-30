@@ -1,3 +1,27 @@
+const std = @import("std");
+const defs = @import("defs.zig");
+const forth = @import("../forth.zig");
+const memory_map = @import("memory_map.zig");
+const Cell = memory_map.Cell;
+const Op = defs.Op;
+const RuntimeError = defs.RuntimeError;
+const State = forth.State;
+const UCell = memory_map.UCell;
+const Word = defs.Word;
+const cell_size = memory_map.cell_size;
+const data_limit = memory_map.data_limit;
+const data_start = memory_map.data_start;
+const image_magic = memory_map.image_magic;
+const max_code = memory_map.max_code;
+const max_search_order = memory_map.max_search_order;
+const max_source_files = memory_map.max_source_files;
+const max_wordlists = memory_map.max_wordlists;
+const max_words = memory_map.max_words;
+const memory_size = memory_map.memory_size;
+const root_wordlist = memory_map.root_wordlist;
+const source_file_count_address = memory_map.source_file_count_address;
+const wordlist_count_address = memory_map.wordlist_count_address;
+
 
 
 pub fn writeU32(output: []u8, value: anytype) void {
@@ -10,4 +34,154 @@ pub fn writeU32(output: []u8, value: anytype) void {
 
 pub fn readU32(input: []const u8) u32 {
     return @as(u32, input[0]) | (@as(u32, input[1]) << 8) | (@as(u32, input[2]) << 16) | (@as(u32, input[3]) << 24);
+}
+
+pub fn imageCapacity() usize {
+    return 20 + max_words * @sizeOf(Word) + max_code * @sizeOf(Op) + memory_size;
+}
+
+pub fn encodeImage(self: *State, output: []u8) RuntimeError!usize {
+    const required = 20 + @as(usize, self.word_count) * @sizeOf(Word) + @as(usize, self.code_count) * @sizeOf(Op) + memory_size;
+    if (output.len < required) return error.InvalidImage;
+    @memcpy(output[0..8], image_magic);
+    writeU32(output[8..12], self.word_count);
+    writeU32(output[12..16], self.code_count);
+    writeU32(output[16..20], self.data_here);
+    var cursor: usize = 20;
+    const word_bytes = std.mem.sliceAsBytes(self.words[0..self.word_count]);
+    @memcpy(output[cursor .. cursor + word_bytes.len], word_bytes);
+    cursor += word_bytes.len;
+    const code_bytes = std.mem.sliceAsBytes(self.code[0..self.code_count]);
+    @memcpy(output[cursor .. cursor + code_bytes.len], code_bytes);
+    cursor += code_bytes.len;
+    @memcpy(output[cursor .. cursor + memory_size], &self.memory);
+    return required;
+}
+
+pub fn restoreImage(self: *State, input: []const u8) RuntimeError!void {
+    if (input.len < 20 or !std.mem.eql(u8, input[0..8], image_magic)) return error.InvalidImage;
+    const word_count = readU32(input[8..12]);
+    const code_count = readU32(input[12..16]);
+    const data_here = readU32(input[16..20]);
+    if (word_count < self.builtin_count or word_count > max_words or code_count > max_code or data_here < data_start or data_here > data_limit) return error.InvalidImage;
+    const word_bytes_len = @as(usize, word_count) * @sizeOf(Word);
+    const code_bytes_len = @as(usize, code_count) * @sizeOf(Op);
+    const required = 20 + word_bytes_len + code_bytes_len + memory_size;
+    if (input.len != required) return error.InvalidImage;
+    var cursor: usize = 20;
+    @memcpy(std.mem.sliceAsBytes(self.words[0..word_count]), input[cursor .. cursor + word_bytes_len]);
+    cursor += word_bytes_len;
+    @memcpy(std.mem.sliceAsBytes(self.code[0..code_count]), input[cursor .. cursor + code_bytes_len]);
+    cursor += code_bytes_len;
+    @memcpy(&self.memory, input[cursor .. cursor + memory_size]);
+    self.word_count = @intCast(word_count);
+    self.code_count = @intCast(code_count);
+    self.data_here = data_here;
+    self.data_depth = 0;
+    self.return_depth = 0;
+    self.float_depth = 0;
+    self.control_depth = 0;
+    self.loop_depth = 0;
+    self.resetHold();
+    self.setCompiling(false);
+    self.defining = false;
+    self.pending = .none;
+}
+
+pub fn appendImage(self: *State, source: *const State) RuntimeError!void {
+    if (source.builtin_count != self.builtin_count or source.word_count < source.builtin_count) return error.InvalidImage;
+    const added_words: usize = source.word_count - source.builtin_count;
+    const word_base: usize = self.word_count;
+    const code_base: usize = self.code_count;
+    const code_count: usize = source.code_count;
+    if (word_base + added_words > max_words) return error.DictionaryFull;
+    if (code_base + code_count > max_code) return error.CodeFull;
+    if (source.data_here < data_start) return error.InvalidImage;
+    const data_len = source.data_here - data_start;
+    if (self.data_here + data_len > data_limit) return error.MemoryExhausted;
+    const data_delta = self.data_here - data_start;
+    // User word lists of the loaded image get new ids after this dictionary's.
+    const source_wordlists = std.math.clamp(source.readCellConst(wordlist_count_address), root_wordlist, max_wordlists);
+    const wordlist_base = self.wordlistCount();
+    if (wordlist_base + source_wordlists - root_wordlist > max_wordlists) return error.DictionaryFull;
+    const mapWordlist = struct {
+        fn map(wid: Cell, base: Cell) Cell {
+            return if (wid <= root_wordlist) wid else base +% wid -% root_wordlist;
+        }
+    }.map;
+
+    // Merge the loaded image's source files into this table, keeping their loaded
+    // flags; a file that does not fit loses its location information (index 0).
+    const loaded_before = self.loadedSourceFiles();
+    var file_map: [max_source_files]u8 = @splat(0);
+    const source_files: usize = @intCast(std.math.clamp(source.readCellConst(source_file_count_address), 0, max_source_files));
+    for (0..source_files) |index| {
+        const mapped = self.sourceFileEntryIndex(source.sourceFileName(index)) catch continue;
+        file_map[index] = mapped + 1;
+        if (source.sourceFileLoaded(index)) self.setSourceFileLoaded(mapped, true);
+    }
+
+    for (source.words[source.builtin_count..source.word_count], 0..) |original, offset| {
+        var word = original;
+        word.data_here_before += data_delta;
+        if (word.source_file != 0) word.source_file = if (word.source_file <= source_files) file_map[word.source_file - 1] else 0;
+        word.wordlist = @intCast(mapWordlist(word.wordlist, wordlist_base));
+        if (word.kind == .vocabulary) word.value = mapWordlist(word.value, wordlist_base);
+        if (word.kind == .colon) {
+            word.code_start = @intCast(@as(usize, word.code_start) + code_base);
+            word.code_end = @intCast(@as(usize, word.code_end) + code_base);
+        }
+        if (word.has_does) {
+            word.does_code_start = @intCast(@as(usize, word.does_code_start) + code_base);
+            word.does_code_end = @intCast(@as(usize, word.does_code_end) + code_base);
+        }
+        if (word.kind == .variable or word.kind == .array or word.kind == .created or word.kind == .value or word.kind == .two_constant or word.kind == .marker)
+            word.value += data_delta;
+        self.words[word_base + offset] = word;
+    }
+
+    for (source.code[0..source.code_count], 0..) |original, offset| {
+        var op = original;
+        switch (op.kind) {
+            .call, .compile_call, .execution_token, .store_value, .local_frame => if (op.value >= source.builtin_count) {
+                op.value = @intCast(word_base + @as(usize, @intCast(op.value - source.builtin_count)));
+            },
+            .branch, .branch_zero, .do_loop, .q_do_loop, .loop, .plus_loop => {
+                op.value += @intCast(code_base);
+            },
+            .print_string, .string_literal => {
+                op.value += data_delta;
+            },
+            .builtin, .literal, .float_literal, .leave, .does, .exit, .local_store, .local_fetch, .local_address, .local_execute => {},
+        }
+        self.code[code_base + offset] = op;
+    }
+    const data_from: usize = @intCast(data_start);
+    const data_to: usize = @intCast(self.data_here);
+    const length: usize = @intCast(data_len);
+    @memcpy(self.memory[data_to .. data_to + length], source.memory[data_from .. data_from + length]);
+    // A loaded MARKER keeps this dictionary's REQUIRE history plus the files the saved
+    // one had loaded, and its word lists are renumbered like the words.
+    for (self.words[word_base .. word_base + added_words]) |word| {
+        if (word.kind != .marker) continue;
+        const saved: UCell = @bitCast(self.readCellConst(word.value));
+        var mask = loaded_before;
+        for (0..source_files) |index| {
+            if (saved & (@as(UCell, 1) << @intCast(index)) != 0 and file_map[index] != 0) mask |= @as(UCell, 1) << @intCast(file_map[index] - 1);
+        }
+        try self.writeCell(word.value, @bitCast(mask));
+        // Only the current list and the recorded order entries hold word-list ids.
+        const current_at = word.value + cell_size;
+        try self.writeCell(current_at, mapWordlist(try self.readCell(current_at), wordlist_base));
+        const depth: usize = @intCast(std.math.clamp(try self.readCell(word.value + 2 * cell_size), 0, max_search_order));
+        for (0..depth) |index| {
+            const at = word.value + @as(Cell, @intCast(3 + index)) * cell_size;
+            try self.writeCell(at, mapWordlist(try self.readCell(at), wordlist_base));
+        }
+    }
+    try self.writeCell(wordlist_count_address, wordlist_base + source_wordlists - root_wordlist);
+    self.word_count = @intCast(word_base + added_words);
+    self.code_count = @intCast(code_base + code_count);
+    self.data_here += data_len;
+    self.last_created_word = null;
 }
