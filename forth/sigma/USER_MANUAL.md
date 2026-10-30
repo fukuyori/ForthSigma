@@ -16,7 +16,7 @@ zig build
 引数なしで起動すると、次の2行を表示して対話プロンプトになります。版番号はルートの `VERSION` ファイルの値です。引数を付けて起動したとき（引数の文字列を1回実行して終了します）は表示しません。
 
 ```text
-FORTH/Sigma 0.1.0  MIT License
+FORTH/Sigma 0.2.0  MIT License
 Type `help' for basic help
 ```
 

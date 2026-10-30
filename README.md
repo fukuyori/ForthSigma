@@ -48,11 +48,11 @@ Linux/macOSでは、生成されたzig-out/bin/sigmaを実行してください�
     .\scripts\build-release.ps1 -Sign
     .\scripts\build-installer.ps1 -Sign
 
-`v0.1.0` のように `VERSION` と同じ版番号のタグをプッシュすると、GitHub Actions（`.github/workflows/release.yml`）がWindows x86_64、Linux x86_64・arm32・arm64、macOS arm64でテストとビルドを行い、各ZIP（実行ファイル、LICENSE、THIRD_PARTY_NOTICES.md、README.md、USER_MANUAL.md）を下書きのリリースに登録します。テストはWindows x86_64、Linux x86_64・arm64、macOS arm64の実機で実行します。CIのWindows版は署名なしなので、公開前に、次のスクリプトで作った同じ名前・同じ中身の署名付きZIP（`dist\zip\sigma-版番号-windows-x86_64.zip`）に差し替えます。
+`v0.2.0` のように `VERSION` と同じ版番号のタグをプッシュすると、GitHub Actions（`.github/workflows/release.yml`）がWindows x86_64、Linux x86_64・arm32・arm64、macOS arm64でテストとビルドを行い、各ZIP（実行ファイル、LICENSE、THIRD_PARTY_NOTICES.md、README.md、USER_MANUAL.md）を下書きのリリースに登録します。テストはWindows x86_64、Linux x86_64・arm64、macOS arm64の実機で実行します。CIのWindows版は署名なしなので、公開前に、次のスクリプトで作った同じ名前・同じ中身の署名付きZIP（`dist\zip\sigma-版番号-windows-x86_64.zip`）に差し替えます。
 
     .\scripts\build-zip.ps1 -Sign
 
-引数なしで起動すると、版番号とライセンスの2行（`FORTH/Sigma 0.1.0  MIT License`、`` Type `help' for basic help ``）を表示して対話プロンプトになります。`HELP` で基本的な使い方、`HELP DUP` のように語名を付けるとその語の説明、`LICENSE` でライセンスの全文を表示します。
+引数なしで起動すると、版番号とライセンスの2行（`FORTH/Sigma 0.2.0  MIT License`、`` Type `help' for basic help ``）を表示して対話プロンプトになります。`HELP` で基本的な使い方、`HELP DUP` のように語名を付けるとその語の説明、`LICENSE` でライセンスの全文を表示します。
 
 例:
 
