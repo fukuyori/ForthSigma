@@ -1,882 +1,135 @@
 const std = @import("std");
 const builtin_info = @import("builtin");
-
-pub const Cell = i64;
-pub const UCell = u64;
-pub const Double = i128;
-pub const UDouble = u128;
-pub const Float = f64;
-const cell_size = 8;
-const float_size = 8;
-const max_words = 1024;
-const max_code = 8192;
-const max_stack = 1024;
-const max_float_stack = 1024;
-const max_controls = 128;
-const max_name = 255;
-pub const memory_size = 2 << 20;
-/// The data area ends where the ALLOCATE heap begins; the heap runs to the end of memory.
-pub const data_limit: Cell = 1 << 20;
-const heap_base: Cell = data_limit;
-/// The last 64 KiB hold the frames of local variables, so variable-flavoured locals
-/// (`W^`, `F^`, ...) have addresses in logical memory.
-const locals_base: Cell = memory_size - 0x10000;
-const locals_end: Cell = memory_size;
-/// Input buffers below the locals: the terminal input buffer first; the rest is kept
-/// for the line buffers of nested INCLUDE files.
-const input_area_base: Cell = locals_base - 0x10000;
-const tib_address: Cell = input_area_base;
-pub const tib_size = 4096;
-/// One line buffer per nested INCLUDE level after the TIB.
-const max_include_depth = 8;
-const include_buffer_base: Cell = tib_address + tib_size;
-/// Names of the source files that have been included, which is also the REQUIRE
-/// history: 64 entries of a length byte and up to 255 name bytes. The entry count
-/// lives at `source_file_count_address`, so images keep the table.
-const source_file_table: Cell = include_buffer_base + max_include_depth * tib_size;
-const max_source_files = 64;
-const source_file_entry_size = 256;
-const source_file_count_address: Cell = 0x0218;
-/// One byte per table entry: non-zero while the file counts as loaded for REQUIRE.
-/// MARKER clears these flags instead of shortening the table, so names that words and
-/// open input frames refer to stay valid.
-const source_file_loaded_flags: Cell = source_file_table + max_source_files * source_file_entry_size;
-/// Word lists: ids 1 (Forth) and 2 (Root) exist from the start; WORDLIST and
-/// VOCABULARY allocate more. The count, the current list, and the search order are
-/// kept in memory so images restore them. `search_order` holds the first-searched
-/// list at index 0.
-const forth_wordlist: Cell = 1;
-const root_wordlist: Cell = 2;
-const max_wordlists = 64;
-const max_search_order = 16;
-const wordlist_count_address: Cell = 0x0220;
-const current_wordlist_address: Cell = 0x0228;
-const search_order_depth_address: Cell = 0x0230;
-const search_order_address: Cell = 0x0238;
-/// Words that are also in the Root word list, so they stay usable after ONLY.
-const root_word_names = [_][]const u8{ "FORTH", "FORTH-WORDLIST", "ONLY", "ALSO", "PREVIOUS", "ORDER", "DEFINITIONS", "GET-ORDER", "SET-ORDER", "WORDS" };
-/// Bytes a MARKER keeps: the loaded-file mask, the current list, the order depth, and the order.
-const marker_snapshot_size = (3 + max_search_order) * cell_size;
-
-/// SOURCEFILENAME results outside files, as in gforth.
-const terminal_source_name = "*the terminal*";
-const evaluate_source_name = "*evaluated string*";
-const terminal_source_name_address: Cell = 0x0d00;
-const evaluate_source_name_address: Cell = 0x0d20;
-const heap_end: Cell = input_area_base;
-/// Results of NAME>STRING, eight 256-byte buffers used in turn, and the WORD buffer.
-const name_buffer_base: Cell = 0x0400;
-const name_buffer_count = 8;
-const word_buffer_address: Cell = 0x0c00;
-const max_locals = 64;
-/// Each heap block starts with its payload size and a used flag, one cell each.
-const heap_header = 2 * cell_size;
-const base_address: Cell = 0x0200;
-const state_address: Cell = 0x0208;
-/// The end of the used part of the heap; kept in memory so images preserve it.
-const heap_top_address: Cell = 0x0210;
-/// Sixteen string variables holding the results of $TMP, reused in turn.
-const tmp_string_base: Cell = 0x0300;
-const tmp_string_count = 16;
-const hold_bottom: Cell = 0x1000;
-const hold_top: Cell = 0x2000;
-pub const pad_address: Cell = 0x2000;
-const string_buffer_base: Cell = 0x3000;
-const string_buffer_size = 256;
-const string_buffer_count = 4;
-const environment_buffer_base: Cell = 0x3400;
-const environment_buffer_size = 0x0c00;
-const max_host_name = 1024;
-const max_hold_nesting = 16;
-const max_counted_string = 127;
-const max_gforth_string = 255;
-pub const data_start: Cell = 0x4000;
-const true_flag: Cell = -1;
-const dot_precision = 15;
-/// Items .S and F.S show below the depth, as gforth's maxdepth-.s.
-const max_dot_s_items = 9;
-
-// Correctly rounded functions from CORE-MATH (src/core-math), so that results are the
-// same on every system; the original gforth in Linux gets them from glibc nearly always.
-extern fn cr_sin(x: f64) f64;
-extern fn cr_cos(x: f64) f64;
-extern fn cr_tan(x: f64) f64;
-extern fn cr_exp(x: f64) f64;
-extern fn cr_log(x: f64) f64;
-
-/// CORE-MATH answers infinity and NaN with an all-ones NaN; x - x gives the CPU's
-/// default NaN for infinity and keeps a NaN argument, as glibc and gforth do.
-fn trig(function: *const fn (f64) callconv(.c) f64, x: f64) f64 {
-    if (std.math.isNan(x) or std.math.isInf(x)) return x - x;
-    return function(x);
-}
-const fs_precision = 14;
-const image_magic = "SIGIMG14";
-
-/// File ids of the standard streams; the host numbers opened files from `first_file_id`.
-pub const stdin_fileid: Cell = 1;
-pub const stdout_fileid: Cell = 2;
-pub const stderr_fileid: Cell = 3;
-pub const first_file_id: Cell = 4;
-/// File access methods, with gforth's values for R/O, R/W and W/O.
-const fam_read_only: Cell = 0;
-const fam_read_write: Cell = 2;
-const fam_write_only: Cell = 4;
-/// I/O results follow gforth: 0 for success, otherwise -512 minus the C errno.
-pub const ior_errno_base: Cell = -512;
-pub const errno_bad_file: Cell = 9;
-pub const errno_no_memory: Cell = 12;
-pub const errno_invalid: Cell = 22;
-const line_terminator = if (builtin_info.os.tag == .windows) "\r\n" else "\n";
-
-pub fn errnoIor(errno: Cell) Cell {
-    return ior_errno_base - errno;
-}
-
-pub const FileAccess = enum { read_only, write_only, read_write };
-pub const FileResult = struct { value: UCell = 0, ior: Cell = 0 };
-/// `found` is false only at the end of the file with nothing read.
-pub const LineResult = struct { length: usize = 0, found: bool = false, ior: Cell = 0 };
-
-/// Host file operations. Ids are opaque cells; the standard streams use the fixed ids above.
-pub const FileOps = struct {
-    /// Opens an existing file, or creates and truncates one when `create` is set.
-    open: *const fn (?*anyopaque, []const u8, FileAccess, bool) FileResult,
-    close: *const fn (?*anyopaque, Cell) Cell,
-    /// Reads up to `buffer.len` bytes of one line, without the LF, CR or CRLF terminator.
-    read_line: *const fn (?*anyopaque, Cell, []u8) LineResult,
-    write: *const fn (?*anyopaque, Cell, []const u8) Cell,
-    size: *const fn (?*anyopaque, Cell) FileResult,
-    reposition: *const fn (?*anyopaque, Cell, UCell) Cell,
-};
-
-pub const Writer = struct {
-    context: ?*anyopaque,
-    write_fn: *const fn (?*anyopaque, []const u8) void,
-    read_fn: ?*const fn (?*anyopaque, []u8) ?[]const u8 = null,
-    load_fn: ?*const fn (?*anyopaque, []const u8, *State) RuntimeError!void = null,
-    save_fn: ?*const fn (?*anyopaque, []const u8, *State) RuntimeError!void = null,
-    savesys_fn: ?*const fn (?*anyopaque, []const u8, *State) RuntimeError!void = null,
-    key_fn: ?*const fn (?*anyopaque) ?u8 = null,
-    key_ready_fn: ?*const fn (?*anyopaque) bool = null,
-    sleep_fn: ?*const fn (?*anyopaque, Cell) RuntimeError!void = null,
-    /// Microseconds since the Unix epoch.
-    utime_fn: ?*const fn (?*anyopaque) RuntimeError!Double = null,
-    /// Copies the variable's value into the buffer and returns its length, or null when unset.
-    getenv_fn: ?*const fn (?*anyopaque, []const u8, []u8) RuntimeError!?usize = null,
-    /// Runs a shell command; a non-zero exit status is not an error.
-    system_fn: ?*const fn (?*anyopaque, []const u8) RuntimeError!void = null,
-    file_ops: ?*const FileOps = null,
-
-    pub fn write(self: Writer, bytes: []const u8) void {
-        self.write_fn(self.context, bytes);
-    }
-};
-
-const Builtin = enum {
-    drop,
-    dup,
-    swap,
-    over,
-    rot,
-    minus_rot,
-    nip,
-    tuck,
-    pick,
-    roll,
-    two_dup,
-    two_drop,
-    two_swap,
-    two_over,
-    depth,
-    to_r,
-    from_r,
-    r_fetch,
-    add,
-    sub,
-    mul,
-    div,
-    mod,
-    div_mod,
-    negate,
-    abs,
-    one_plus,
-    one_minus,
-    two_star,
-    two_slash,
-    max,
-    min,
-    equal,
-    not_equal,
-    less,
-    greater,
-    less_equal,
-    greater_equal,
-    logical_not,
-    zero_equal,
-    zero_less,
-    zero_greater,
-    zero_not_equal,
-    bit_and,
-    bit_or,
-    bit_xor,
-    bit_complement,
-    bit_nand,
-    bit_nor,
-    swap_bytes,
-    lshift,
-    rshift,
-    true_value,
-    false_value,
-    blank,
-    cell,
-    cells,
-    cell_plus,
-    aligned,
-    comma,
-    c_comma,
-    execute,
-    fetch,
-    store,
-    cfetch,
-    cstore,
-    add_store,
-    inc_store,
-    dec_store,
-    zero_store,
-    on,
-    off,
-    question,
-    array_fetch,
-    array_store,
-    erase,
-    fill,
-    move,
-    cmove,
-    dot,
-    u_dot,
-    c_dot,
-    dot_s,
-    echo,
-    cr,
-    space,
-    spaces,
-    type,
-    hex,
-    dec,
-    oct,
-    base,
-    here,
-    allot,
-    index,
-    index_2,
-    index_3,
-    leave,
-    unloop,
-    builds,
-    immediate,
-    words,
-    input,
-    bye,
-    load,
-    save,
-    savesys,
-    compile_if,
-    compile_else,
-    compile_then,
-    compile_begin,
-    compile_end,
-    compile_again,
-    compile_while,
-    compile_repeat,
-    compile_do,
-    compile_q_do,
-    compile_loop,
-    compile_plus_loop,
-    compile_does,
-    compile_case,
-    compile_of,
-    compile_endof,
-    compile_endcase,
-    compile_exit,
-    compile_recurse,
-    f_drop,
-    f_dup,
-    f_swap,
-    f_over,
-    f_rot,
-    f_minus_rot,
-    f_nip,
-    f_tuck,
-    f_pick,
-    f_depth,
-    f_dot_s,
-    f_add,
-    f_sub,
-    f_mul,
-    f_div,
-    f_negate,
-    f_abs,
-    f_max,
-    f_min,
-    f_sqrt,
-    f_exp,
-    f_ln,
-    f_sin,
-    f_cos,
-    f_tan,
-    f_equal,
-    f_not_equal,
-    f_less,
-    f_greater,
-    f_less_equal,
-    f_greater_equal,
-    f_zero_equal,
-    f_zero_not_equal,
-    f_zero_less,
-    f_zero_greater,
-    f_zero_less_equal,
-    f_zero_greater_equal,
-    f_fetch,
-    f_store,
-    f_comma,
-    f_array_fetch,
-    f_array_store,
-    f_add_store,
-    f_question,
-    floats,
-    float_plus,
-    s_to_f,
-    f_to_s,
-    f_dot,
-    f_input,
-    s_to_d,
-    d_to_s,
-    d_add,
-    d_sub,
-    d_negate,
-    d_abs,
-    d_zero_equal,
-    d_zero_less,
-    d_equal,
-    d_less,
-    d_dot,
-    two_fetch,
-    two_store,
-    d_to_f,
-    f_to_d,
-    count,
-    pad,
-    accept,
-    evaluate,
-    key,
-    key_question,
-    hold_start,
-    hold_nest,
-    hold_digit,
-    hold_digits,
-    hold_finish,
-    hold_release,
-    hold,
-    holds,
-    sign,
-    to_number,
-    string_to_number,
-    to_float,
-    within,
-    two_to_r,
-    two_r_from,
-    place,
-    abort,
-    ms,
-    utime,
-    page,
-    getenv,
-    system,
-    state,
-    throw,
-    read_only,
-    write_only,
-    read_write,
-    stdin,
-    stdout,
-    stderr,
-    open_file,
-    create_file,
-    close_file,
-    read_line,
-    write_line,
-    write_file,
-    file_size,
-    reposition_file,
-    allocate,
-    free,
-    resize,
-    string_store,
-    string_fetch,
-    string_fetch_len,
-    string_store_len,
-    string_append,
-    char_append,
-    string_dot,
-    string_delete,
-    string_insert,
-    string_over,
-    string_free,
-    string_init,
-    string_split,
-    string_iter,
-    string_tmp,
-    string_array,
-    string_array_store,
-    string_array_fetch,
-    string_array_count,
-    string_array_dot,
-    string_array_map,
-    string_array_free,
-    string_array_slurp,
-    string_array_slurp_file,
-    catch_word,
-    word_parse,
-    find_word,
-    parse,
-    find_name,
-    name_to_int,
-    name_to_string,
-    see,
-    include,
-    included,
-    require,
-    required,
-    included_query,
-    source_file_name,
-    source_line_number,
-    marker,
-    locate,
-    only,
-    also,
-    previous,
-    forth,
-    definitions,
-    order,
-    get_order,
-    set_order,
-    to_order,
-    get_current,
-    set_current,
-    vocabulary,
-    wordlist,
-    forth_wordlist_word,
-    search_wordlist,
-    bracket_if,
-    bracket_else,
-    bracket_then,
-    bracket_defined,
-    bracket_undefined,
-    f_dot_rdp,
-    f_to_str_rdp,
-    f_to_buf_rdp,
-    define_colon,
-    end_definition,
-    define_variable,
-    define_fvariable,
-    define_constant,
-    define_value,
-    define_two_variable,
-    define_two_constant,
-    define_fconstant,
-    define_array,
-    pi,
-    tick,
-    to_body,
-    literal,
-    fliteral,
-};
-
-const HeapResult = union(enum) { address: Cell, no_memory, bad_pointer };
-const SourceKind = enum { terminal, evaluate, file };
-const IncludeFrame = struct { fileid: Cell, file_index: u8, line: u32 };
-/// Where an error happened inside an included file, kept for `report`.
-const ErrorLocation = struct { file_index: u8, line: u32 };
-
-/// THROW codes for interpreter errors, so CATCH can return them and THROW can raise
-/// them again with the original message. Standard Forth 2012 codes are used where one
-/// fits; the rest are system codes from -256 down. UnknownWord stays a plain code
-/// because its message needs the word that was not found.
-const error_codes = [_]struct { RuntimeError, Cell }{
-    .{ error.StackOverflow, -3 },           .{ error.StackUnderflow, -4 },          .{ error.ReturnStackOverflow, -5 },
-    .{ error.ReturnStackUnderflow, -6 },    .{ error.DictionaryFull, -8 },          .{ error.InvalidAddress, -9 },
-    .{ error.DivisionByZero, -10 },         .{ error.CompileOnly, -14 },            .{ error.PicturedNumericOverflow, -17 },
-    .{ error.StringTooLong, -18 },          .{ error.NameTooLong, -19 },            .{ error.HostUnavailable, -21 },
-    .{ error.ControlMismatch, -22 },        .{ error.InvalidNumber, -24 },          .{ error.LoopMismatch, -26 },
-    .{ error.FloatStackOverflow, -44 },     .{ error.FloatStackUnderflow, -45 },    .{ error.CodeFull, -256 },
-    .{ error.MemoryExhausted, -257 },       .{ error.ControlStackOverflow, -258 },  .{ error.InvalidDefinition, -259 },
-    .{ error.InvalidBase, -260 },           .{ error.InvalidExecutionToken, -261 }, .{ error.InputUnavailable, -262 },
-    .{ error.FileUnavailable, -263 },       .{ error.InvalidImage, -264 },          .{ error.HostFailed, -265 },
-    .{ error.CommentUnclosed, -266 },       .{ error.IncludeNesting, -267 },        .{ error.TooManySourceFiles, -268 },
-    .{ error.SearchOrderOverflow, -49 },     .{ error.SearchOrderUnderflow, -50 },   .{ error.InvalidWordlist, -269 },
-};
-const throw_code_undefined_word: Cell = -13;
-
-/// Interpreter state that CATCH restores when the executed word throws.
-const CatchFrame = struct {
-    data_depth: usize,
-    float_depth: usize,
-    return_depth: usize,
-    loop_depth: usize,
-    control_depth: usize,
-    pending: Pending,
-    compiling: bool,
-    defining: bool,
-    local_count: usize,
-};
-
-const WordKind = enum { builtin, colon, variable, constant, array, created, value, fconstant, two_constant, marker, vocabulary };
-const Word = struct {
-    name: [max_name]u8 = [_]u8{0} ** max_name,
-    name_len: u8 = 0,
-    kind: WordKind = .builtin,
-    builtin: Builtin = .drop,
-    immediate: bool = false,
-    has_does: bool = false,
-    value: Cell = 0,
-    code_start: u16 = 0,
-    code_end: u16 = 0,
-    does_code_start: u16 = 0,
-    does_code_end: u16 = 0,
-    data_here_before: Cell = 0,
-    /// Bytes of local-variable frame the definition needs when it runs.
-    locals_size: u16 = 0,
-    /// Source file table index + 1 (0 when not defined in a file) and the lines where
-    /// the definition starts and ends, for LOCATE.
-    source_file: u8 = 0,
-    source_line: u32 = 0,
-    source_end_line: u32 = 0,
-    /// The word list the word belongs to.
-    wordlist: u8 = @intCast(forth_wordlist),
-};
-
-/// Local operations other than `local_frame` encode the frame offset in the low 32 bits
-/// of the value and the `LocalKind` above them; `local_frame` holds the word id.
-const OpKind = enum { call, compile_call, builtin, literal, float_literal, execution_token, store_value, branch, branch_zero, do_loop, q_do_loop, loop, plus_loop, leave, print_string, string_literal, does, exit, local_frame, local_store, local_fetch, local_address, local_execute };
-const LocalKind = enum(u8) { cell, double, float, char, xt };
-const Local = struct {
-    name: [max_name]u8 = undefined,
-    name_len: u8 = 0,
-    kind: LocalKind = .cell,
-    /// Variable flavour (`W^` ...): the name pushes the slot address instead of its value.
-    variable: bool = false,
-    offset: u16 = 0,
-};
-const Op = struct { kind: OpKind, value: Cell = 0 };
-const ControlKind = enum { if_branch, else_branch, begin_loop, while_branch, do_loop, case_start, of_branch, endof_branch };
-/// `locals` is the number of local names visible where the structure starts; a DO loop
-/// also keeps the fewest visible at any of its LEAVEs.
-const Control = struct { kind: ControlKind, address: u16, locals: u16 = 0, leave_locals: u16 = std.math.maxInt(u16) };
-const Loop = struct { index: Cell, limit: Cell, exit_pc: u16, exit_after_first: bool = false };
-const Pending = enum { none, colon_name, variable_name, constant_name, array_name, forget_name, tick_name, value_name, to_name, char_name, postpone_name, fconstant_name, fvariable_name, two_constant_name, two_variable_name };
-const StringWord = enum { s_quote, s_escape_quote, print_escape, print_paren };
-const ParsedNumber = struct { value: Double, double: bool };
-
-pub const RuntimeError = error{
-    StackUnderflow,
-    ReturnStackUnderflow,
-    StackOverflow,
-    ReturnStackOverflow,
-    FloatStackUnderflow,
-    FloatStackOverflow,
-    DictionaryFull,
-    CodeFull,
-    NameTooLong,
-    InvalidDefinition,
-    CommentUnclosed,
-    ControlMismatch,
-    ControlStackOverflow,
-    CompileOnly,
-    UnknownWord,
-    InvalidNumber,
-    DivisionByZero,
-    LoopMismatch,
-    InvalidBase,
-    InvalidExecutionToken,
-    InvalidAddress,
-    PicturedNumericOverflow,
-    MemoryExhausted,
-    InputUnavailable,
-    FileUnavailable,
-    InvalidImage,
-    Aborted,
-    HostUnavailable,
-    HostFailed,
-    StringTooLong,
-    /// A non-zero code passed to THROW; the code is kept in `State.throw_code`.
-    Thrown,
-    IncludeNesting,
-    TooManySourceFiles,
-    SearchOrderOverflow,
-    SearchOrderUnderflow,
-    InvalidWordlist,
-};
-
-fn writeU32(output: []u8, value: anytype) void {
-    const number: u32 = @intCast(value);
-    output[0] = @truncate(number);
-    output[1] = @truncate(number >> 8);
-    output[2] = @truncate(number >> 16);
-    output[3] = @truncate(number >> 24);
-}
-
-fn readU32(input: []const u8) u32 {
-    return @as(u32, input[0]) | (@as(u32, input[1]) << 8) | (@as(u32, input[2]) << 16) | (@as(u32, input[3]) << 24);
-}
-
-fn floatBits(value: Float) Cell {
-    return @bitCast(value);
-}
-
-fn bitsFloat(value: Cell) Float {
-    return @bitCast(value);
-}
-
-const DoubleCells = struct { low: Cell, high: Cell };
-
-fn doubleCells(value: Double) DoubleCells {
-    const bits: UDouble = @bitCast(value);
-    return .{ .low = @bitCast(@as(UCell, @truncate(bits))), .high = @bitCast(@as(UCell, @truncate(bits >> 64))) };
-}
-
-fn cellsDouble(low: Cell, high: Cell) Double {
-    const bits = (@as(UDouble, @as(UCell, @bitCast(high))) << 64) | @as(UCell, @bitCast(low));
-    return @bitCast(bits);
-}
-
-/// Decimal significand of a float, in the manner of Forth's REPRESENT.
-const Representation = struct {
-    digits: [dot_precision + 1]u8 = undefined,
-    len: usize = 0,
-    exponent: i32 = 0,
-    negative: bool = false,
-    finite: bool = true,
-};
-
-/// `digit_count` significant digits of `value`, rounded exactly from the binary value
-/// (std.fmt rounds its shortest decimal form, so 0.5e FTAN would print a 1 too many).
-fn represent(value: Float, digit_count: usize) Representation {
-    var result = Representation{ .len = digit_count, .negative = std.math.signbit(value) };
-    if (std.math.isNan(value) or std.math.isInf(value)) {
-        result.finite = false;
-        return result;
-    }
-    var buffer: [max_rdp_width + 400]u8 = undefined;
-    // A few digits of a double need only a small exact computation.
-    const decimal = representDecimal(@abs(value), digit_count, &buffer) catch unreachable;
-    @memcpy(result.digits[0..digit_count], decimal.digits);
-    result.exponent = decimal.exponent;
-    return result;
-}
-
-/// Widest field F.RDP and its relatives format.
-const max_rdp_width = 4096;
-
-/// Decimal digits of round-half-even(|value| * 10^scale), computed exactly from the
-/// binary value. std.fmt rounds the shortest decimal form instead, which differs from
-/// gforth for values such as 2.675 or 0.95.
-fn scaledDecimal(value: Float, scale: i32, output: []u8) RuntimeError![]const u8 {
-    return scaledDecimalRounded(value, scale, true, output);
-}
-
-/// Like scaledDecimal, but truncating: the digits of floor(|value| * 10^scale).
-fn truncatedDecimal(value: Float, scale: i32, output: []u8) RuntimeError![]const u8 {
-    return scaledDecimalRounded(value, scale, false, output);
-}
-
-fn scaledDecimalRounded(value: Float, scale: i32, round: bool, output: []u8) RuntimeError![]const u8 {
-    const magnitude = @abs(value);
-    if (magnitude == 0) {
-        output[0] = '0';
-        return output[0..1];
-    }
-    const bits: u64 = @bitCast(magnitude);
-    const exponent_field: i32 = @intCast(bits >> 52);
-    const fraction = bits & ((@as(u64, 1) << 52) - 1);
-    const mantissa = if (exponent_field == 0) fraction else fraction | (@as(u64, 1) << 52);
-    const binary_exponent: i32 = (if (exponent_field == 0) -1074 else exponent_field - 1075);
-
-    var scratch: [32768]u8 = undefined;
-    var fixed = std.heap.FixedBufferAllocator.init(&scratch);
-    const allocator = fixed.allocator();
-    return scaledDecimalWith(allocator, mantissa, binary_exponent, scale, round, output) catch error.StringTooLong;
-}
-
-fn scaledDecimalWith(allocator: std.mem.Allocator, mantissa: u64, binary_exponent: i32, scale: i32, round: bool, output: []u8) ![]const u8 {
-    const Big = std.math.big.int.Managed;
-    var numerator = try Big.initSet(allocator, mantissa);
-    var denominator = try Big.initSet(allocator, 1);
-    if (binary_exponent > 0) try numerator.shiftLeft(&numerator, @intCast(binary_exponent));
-    if (binary_exponent < 0) try denominator.shiftLeft(&denominator, @intCast(-binary_exponent));
-    var power = try Big.initSet(allocator, 10);
-    try power.pow(&power, @intCast(@abs(scale)));
-    if (scale > 0) try numerator.mul(&numerator, &power) else if (scale < 0) try denominator.mul(&denominator, &power);
-    var quotient = try Big.init(allocator);
-    var remainder = try Big.init(allocator);
-    try quotient.divTrunc(&remainder, &numerator, &denominator);
-    try remainder.shiftLeft(&remainder, 1);
-    const half = remainder.order(denominator);
-    if (round and (half == .gt or (half == .eq and !quotient.isEven()))) try quotient.addScalar(&quotient, 1);
-    const text = try quotient.toString(allocator, 10, .lower);
-    if (text.len > output.len) return error.NoSpaceLeft;
-    @memcpy(output[0..text.len], text);
-    return output[0..text.len];
-}
-
-/// `count` significant decimal digits of `magnitude`, rounded half to even, and the
-/// exponent e with magnitude ~= 0.d1d2... * 10^e. Zero gives zeros with e = 1, so that
-/// it has one integer digit. Beyond 800 digits a double has no more nonzero digits, so
-/// the rest is padded with zeros.
-const Represented = struct { digits: []const u8, exponent: i32 };
-
-fn representDecimal(magnitude: Float, count: usize, buffer: *[max_rdp_width + 400]u8) RuntimeError!Represented {
-    if (magnitude == 0) {
-        @memset(buffer[0..count], '0');
-        return .{ .digits = buffer[0..count], .exponent = 1 };
-    }
-    const exact: usize = @min(count, 800);
-    // log10 can be off by one near powers of ten, so the exponent comes from the
-    // truncated digits: with this scale they number 1 to 4, and their count fixes it.
-    const estimate: i32 = @as(i32, @intFromFloat(@floor(@log10(magnitude)))) + 1;
-    const probe_scale = 2 - estimate;
-    var exponent: i32 = @as(i32, @intCast((try truncatedDecimal(magnitude, probe_scale, buffer)).len)) - probe_scale;
-    const scale = @as(i32, @intCast(exact)) - exponent;
-    const rounded = try scaledDecimal(magnitude, scale, buffer);
-    // A carry (9.99 -> 10.0) adds a digit; the digits after its 1 are zeros.
-    if (rounded.len > exact) exponent += 1;
-    if (exact < count) @memset(buffer[exact..count], '0');
-    return .{ .digits = buffer[0..count], .exponent = exponent };
-}
-
-/// Whether F.RDP uses fixed-point notation for a value with decimal exponent
-/// `exponent`, and how many significant digits that layout shows.
-const RdpLayout = struct { fixed: bool, digits: i64 };
-
-fn rdpLayout(exponent: i32, width: usize, fraction: usize, precision: i64, sign_width: usize) RdpLayout {
-    const width_i: i64 = @intCast(width);
-    const fraction_i: i64 = @intCast(fraction);
-    const sign_i: i64 = @intCast(sign_width);
-    const before_point = width_i - fraction_i - 1;
-    const enough_precision = precision == 0 or fraction_i + exponent >= precision;
-    if (before_point >= 0 and enough_precision and before_point - sign_i >= @max(exponent, 0))
-        return .{ .fixed = true, .digits = std.math.clamp(exponent + fraction_i, 1, width_i) };
-    return .{ .fixed = false, .digits = mantissaDigits(exponent, width, sign_width) };
-}
-
-/// Digits of an exponential-notation mantissa that fill `width`, counting the point
-/// once there are at least one; 0 means a single digit and no point, and a negative
-/// count means the field is too narrow.
-fn mantissaDigits(exponent: i32, width: usize, sign_width: usize) i64 {
-    var exponent_text: [16]u8 = undefined;
-    const etext = std.fmt.bufPrint(&exponent_text, "{d}", .{exponent - 1}) catch unreachable;
-    return @as(i64, @intCast(width)) - @as(i64, @intCast(etext.len)) - 2 - @as(i64, @intCast(sign_width));
-}
-
-/// F.RDP formatting of `value` into a field of `width` characters with `fraction`
-/// digits after the point in fixed-point notation, which is used when it shows at least
-/// `precision` significant digits and its integer part fits; otherwise exponential
-/// notation (`1.23E5`), and asterisks when even that does not fit. The value is
-/// rounded to the field width, the layout chosen, then rounded again to the digits
-/// that layout shows and the layout chosen again, since rounding can change the
-/// exponent (0.09999 -> 0.10, 9.999E-10 -> 1E-9). The rules follow gforth's
-/// documentation and the outputs observed from gforth.
-fn formatRdp(value: Float, width_cell: Cell, fraction_cell: Cell, precision_cell: Cell, output: *[max_rdp_width]u8) RuntimeError![]const u8 {
-    if (width_cell > max_rdp_width) return error.StringTooLong;
-    const width: usize = @intCast(@max(width_cell, 0));
-    const fraction: usize = @intCast(std.math.clamp(fraction_cell, 0, max_rdp_width));
-    const precision: i64 = @max(precision_cell, 0);
-    const field = output[0..width];
-    if (width == 0) return field;
-    @memset(field, ' ');
-    if (std.math.isNan(value) or std.math.isInf(value)) {
-        const name: []const u8 = if (std.math.isNan(value)) "NaN" else if (value < 0) "-infinity" else "infinity";
-        const shown = @min(name.len, width);
-        @memcpy(field[0..shown], name[0..shown]);
-        return field;
-    }
-    const negative = std.math.signbit(value);
-    const sign_width: usize = @intFromBool(negative);
-    const magnitude = @abs(value);
-    var buffer: [max_rdp_width + 400]u8 = undefined;
-
-    const first = try representDecimal(magnitude, width, &buffer);
-    const first_layout = rdpLayout(first.exponent, width, fraction, precision, sign_width);
-    const count: usize = @intCast(std.math.clamp(first_layout.digits, 1, @as(i64, @intCast(width))));
-    const rep = try representDecimal(magnitude, count, &buffer);
-    const layout = rdpLayout(rep.exponent, width, fraction, precision, sign_width);
-
-    if (layout.fixed) {
-        const fraction_i: i64 = @intCast(fraction);
-        // When the first digit lies beyond the last place, gforth rounds up to one unit
-        // only if twice the value exceeds that unit (so 0.0005 shows as 0.000).
-        const tiny = magnitude != 0 and rep.exponent + fraction_i <= 0;
-        const round_up = tiny and 2 * magnitude > std.math.pow(Float, 0.1, @floatFromInt(fraction));
-        const room = width - fraction - 1;
-        // The layout leaves room for the integer digits; a unit rounded up from a tiny
-        // value is left out when it does not fit (0.7 in a field of 1 shows ".").
-        const integer_len: usize = if (rep.exponent > 0) @intCast(rep.exponent) else @intFromBool(round_up and fraction == 0 and room > sign_width);
-        var at = width - fraction;
-        field[at - 1] = '.';
-        var index: usize = 0;
-        while (index < fraction) : (index += 1) {
-            const place = rep.exponent + @as(i64, @intCast(index));
-            field[at + index] = if (tiny)
-                (if (round_up and index + 1 == fraction) '1' else '0')
-            else if (place >= 0 and place < rep.digits.len) rep.digits[@intCast(place)] else '0';
-        }
-        at -= 1;
-        if (integer_len > 0) {
-            var digit: usize = 0;
-            while (digit < integer_len) : (digit += 1)
-                field[at - integer_len + digit] = if (tiny) '1' else if (digit < rep.digits.len) rep.digits[digit] else '0';
-            at -= integer_len;
-        } else if (room > sign_width) {
-            at -= 1;
-            field[at] = '0';
-        }
-        if (negative) field[at - 1] = '-';
-        return field;
-    }
-
-    // Exponential notation: d.ddddEe filling the field exactly.
-    const mantissa_len = mantissaDigits(rep.exponent, width, sign_width);
-    if (mantissa_len < 0) {
-        @memset(field, '*');
-        return field;
-    }
-    var exponent_text: [16]u8 = undefined;
-    const etext = std.fmt.bufPrint(&exponent_text, "{d}", .{rep.exponent - 1}) catch unreachable;
-    var at: usize = 0;
-    if (negative) {
-        field[0] = '-';
-        at = 1;
-    }
-    field[at] = rep.digits[0];
-    at += 1;
-    if (mantissa_len >= 1) {
-        field[at] = '.';
-        at += 1;
-        const rest: usize = @intCast(mantissa_len - 1);
-        var index: usize = 0;
-        while (index < rest) : (index += 1) field[at + index] = if (index + 1 < rep.digits.len) rep.digits[index + 1] else '0';
-        at += rest;
-    }
-    field[at] = 'E';
-    @memcpy(field[at + 1 .. at + 1 + etext.len], etext);
-    return field;
-}
-
-fn withoutTrailingZeros(digits: []const u8) []const u8 {
-    var len = digits.len;
-    while (len > 0 and digits[len - 1] == '0') len -= 1;
-    return digits[0..len];
-}
+const defs = @import("core/defs.zig");
+const dictionary_image = @import("core/dictionary_image.zig");
+const float_format = @import("core/float_format.zig");
+const float_math = @import("core/float_math.zig");
+const host_interface = @import("core/host_interface.zig");
+const memory_map = @import("core/memory_map.zig");
+const Builtin = defs.Builtin;
+const CatchFrame = defs.CatchFrame;
+pub const Cell = memory_map.Cell;
+const Control = defs.Control;
+const ControlKind = defs.ControlKind;
+pub const Double = memory_map.Double;
+const ErrorLocation = defs.ErrorLocation;
+pub const FileAccess = host_interface.FileAccess;
+pub const FileOps = host_interface.FileOps;
+pub const FileResult = host_interface.FileResult;
+pub const Float = memory_map.Float;
+const HeapResult = defs.HeapResult;
+const IncludeFrame = defs.IncludeFrame;
+pub const LineResult = host_interface.LineResult;
+const Local = defs.Local;
+const LocalKind = defs.LocalKind;
+const Loop = defs.Loop;
+const Op = defs.Op;
+const OpKind = defs.OpKind;
+const ParsedNumber = defs.ParsedNumber;
+const Pending = defs.Pending;
+pub const RuntimeError = defs.RuntimeError;
+const SourceKind = defs.SourceKind;
+const StringWord = defs.StringWord;
+pub const UCell = memory_map.UCell;
+pub const UDouble = memory_map.UDouble;
+const Word = defs.Word;
+const WordKind = defs.WordKind;
+pub const Writer = host_interface.Writer;
+const base_address = memory_map.base_address;
+const bitsFloat = defs.bitsFloat;
+const cell_size = memory_map.cell_size;
+const cellsDouble = defs.cellsDouble;
+const cr_cos = float_math.cr_cos;
+const cr_exp = float_math.cr_exp;
+const cr_log = float_math.cr_log;
+const cr_sin = float_math.cr_sin;
+const cr_tan = float_math.cr_tan;
+const current_wordlist_address = memory_map.current_wordlist_address;
+pub const data_limit = memory_map.data_limit;
+pub const data_start = memory_map.data_start;
+const dot_precision = memory_map.dot_precision;
+const doubleCells = defs.doubleCells;
+const environment_buffer_base = memory_map.environment_buffer_base;
+const environment_buffer_size = memory_map.environment_buffer_size;
+pub const errnoIor = memory_map.errnoIor;
+pub const errno_bad_file = memory_map.errno_bad_file;
+pub const errno_invalid = memory_map.errno_invalid;
+pub const errno_no_memory = memory_map.errno_no_memory;
+const error_codes = defs.error_codes;
+const evaluate_source_name = memory_map.evaluate_source_name;
+const evaluate_source_name_address = memory_map.evaluate_source_name_address;
+const fam_read_only = memory_map.fam_read_only;
+const fam_read_write = memory_map.fam_read_write;
+const fam_write_only = memory_map.fam_write_only;
+pub const first_file_id = memory_map.first_file_id;
+const floatBits = defs.floatBits;
+const float_size = memory_map.float_size;
+const formatRdp = float_format.formatRdp;
+const forth_wordlist = memory_map.forth_wordlist;
+const fs_precision = memory_map.fs_precision;
+const heap_base = memory_map.heap_base;
+const heap_end = memory_map.heap_end;
+const heap_header = memory_map.heap_header;
+const heap_top_address = memory_map.heap_top_address;
+const hold_bottom = memory_map.hold_bottom;
+const hold_top = memory_map.hold_top;
+const image_magic = memory_map.image_magic;
+const include_buffer_base = memory_map.include_buffer_base;
+pub const ior_errno_base = memory_map.ior_errno_base;
+const line_terminator = memory_map.line_terminator;
+const locals_base = memory_map.locals_base;
+const locals_end = memory_map.locals_end;
+const marker_snapshot_size = memory_map.marker_snapshot_size;
+const max_code = memory_map.max_code;
+const max_controls = memory_map.max_controls;
+const max_dot_s_items = memory_map.max_dot_s_items;
+const max_float_stack = memory_map.max_float_stack;
+const max_gforth_string = memory_map.max_gforth_string;
+const max_hold_nesting = memory_map.max_hold_nesting;
+const max_host_name = memory_map.max_host_name;
+const max_include_depth = memory_map.max_include_depth;
+const max_locals = memory_map.max_locals;
+const max_name = memory_map.max_name;
+const max_rdp_width = float_format.max_rdp_width;
+const max_search_order = memory_map.max_search_order;
+const max_source_files = memory_map.max_source_files;
+const max_stack = memory_map.max_stack;
+const max_wordlists = memory_map.max_wordlists;
+const max_words = memory_map.max_words;
+pub const memory_size = memory_map.memory_size;
+const name_buffer_base = memory_map.name_buffer_base;
+const name_buffer_count = memory_map.name_buffer_count;
+pub const pad_address = memory_map.pad_address;
+const readU32 = dictionary_image.readU32;
+const represent = float_format.represent;
+const root_word_names = memory_map.root_word_names;
+const root_wordlist = memory_map.root_wordlist;
+const search_order_address = memory_map.search_order_address;
+const search_order_depth_address = memory_map.search_order_depth_address;
+const source_file_count_address = memory_map.source_file_count_address;
+const source_file_entry_size = memory_map.source_file_entry_size;
+const source_file_loaded_flags = memory_map.source_file_loaded_flags;
+const source_file_table = memory_map.source_file_table;
+const state_address = memory_map.state_address;
+pub const stderr_fileid = memory_map.stderr_fileid;
+pub const stdin_fileid = memory_map.stdin_fileid;
+pub const stdout_fileid = memory_map.stdout_fileid;
+const string_buffer_base = memory_map.string_buffer_base;
+const string_buffer_count = memory_map.string_buffer_count;
+const string_buffer_size = memory_map.string_buffer_size;
+const terminal_source_name = memory_map.terminal_source_name;
+const terminal_source_name_address = memory_map.terminal_source_name_address;
+const throw_code_undefined_word = defs.throw_code_undefined_word;
+const tib_address = memory_map.tib_address;
+pub const tib_size = memory_map.tib_size;
+const tmp_string_base = memory_map.tmp_string_base;
+const tmp_string_count = memory_map.tmp_string_count;
+const trig = float_math.trig;
+const true_flag = memory_map.true_flag;
+const withoutTrailingZeros = float_format.withoutTrailingZeros;
+const word_buffer_address = memory_map.word_buffer_address;
+const wordlist_count_address = memory_map.wordlist_count_address;
+const writeU32 = dictionary_image.writeU32;
 
 pub const State = struct {
     writer: Writer,
