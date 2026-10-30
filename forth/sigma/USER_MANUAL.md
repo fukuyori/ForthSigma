@@ -41,7 +41,7 @@ Get-Content .\examples\demo.fs | .\zig-out\bin\sigma.exe
 
 ## 数値
 
-整数は64ビットの符号付き値です。範囲を超えた加算・減算・乗算は折り返します。`/`、`MOD`、`/MOD` は床関数除算（負の無限大方向への切り捨て）で、`-7 2 /` は `-4`、`-7 2 MOD` は `1` です。0で割るとエラー `DIVISION BY ZERO !` になります。
+整数は64ビットの符号付き値です。範囲を超えた加算・減算・乗算は折り返します。`/`、`MOD`、`/MOD` は床関数除算（負の無限大方向への切り捨て）で、`-7 2 /` は `-4`、`-7 2 MOD` は `1` です。0で割るとエラー `DIVISION BY ZERO !` になります。最小値（-9223372036854775808）を-1で割ると、商が1セルに収まらないため、`MOD` も含めて `RESULT OUT OF RANGE !`（例外コード-11）になります（Gforthと同じ）。
 
 `*/`（( n1 n2 n3 -- n4 )）と `*/MOD`（( n1 n2 n3 -- 余り 商 )）は、n1×n2を倍長で計算してからn3で割るので、積が1セルを超えても正しい商が得られます（床関数除算）。`U<` `U>` は符号なしで比べます。`?DUP` は0でなければ複製します。
 
@@ -77,7 +77,8 @@ BIGNUM 2@ D.                                      \ 30792422974944119506
 | 単長と倍長の乗除算 | `M*`（( n1 n2 -- d )）、`UM*`（( u1 u2 -- ud )）、`UM/MOD`（( ud u -- 余り 商 )、符号なし）、`FM/MOD`（( d n -- 余り 商 )、床関数除算）、`SM/REM`（( d n -- 余り 商 )、0方向への切り捨て） |
 
 `*/` `*/MOD` `UM/MOD` `FM/MOD` `SM/REM` は、0で割ると `DIVISION BY ZERO !`、商が1セルに収まらないと `RESULT OUT OF RANGE !`（例外コード-11）になります。Gforthと同じです。
-| メモリ・定義 | `2@`, `2!`, `2VARIABLE 名前`, `値 2CONSTANT 名前` |
+| メモリ・定義 | `2@`, `2!`, `2VARIABLE 名前`, `値 2CONSTANT 名前`, `値 2VALUE 名前`, `2LITERAL` | `2VALUE` の名前は値を積み、`値 TO 名前` で変更できます。`2LITERAL` は定義の中で倍長整数を埋め込みます。 |
+| その他 | `D2*`, `D2/`, `DMAX`, `DMIN`, `M+`, `DU<`, `2ROT`, `D.R` | `D2/` は負の無限大方向へ丸めます（算術シフト）。`M+` は倍長整数に単長整数を加えます。`DU<` は符号なしで比べます。`2ROT` は3組目の2セルを先頭へ移します。`D.R`（( d 幅 -- )）は幅に右寄せし、空白を付けません。 |
 
 ## ワードの定義と辞書
 
@@ -248,6 +249,9 @@ S" dir" SYSTEM
 | `2R@` | ( -- x1 x2 ) | `2>R` で移した2個のセルを、リターンスタックに残したまま複写します。 |
 | `ALIGN`, `UNUSED` | ( -- )、( -- u ) | `ALIGN` はHEREをセルの大きさの倍数に切り上げます。`UNUSED` はデータ領域の残りのバイト数です。 |
 | `PLACE` | ( addr u c-addr -- ) | 文字列を、先頭バイトに長さを持つ形でc-addrへ格納します。最大255文字です。 |
+| `C" ..."` | ( -- c-addr ) | 定義の中で使い、先頭バイトに長さを持つ文字列のアドレスを積みます（定義の外では `COMPILE MODE ERROR !`）。 |
+| `BUFFER: 名前` | ( u -- ) | uバイトのデータ領域を確保し、名前はそのアドレスを積みます。中身は初期化しません。 |
+| `DUMP` | ( addr u -- ) | addrからuバイトを、1行16バイトずつ16進数と文字で表示します（32〜126以外の文字は `.`）。アドレスは論理メモリのアドレスです。 |
 | `COMPARE` | ( addr1 u1 addr2 u2 -- n ) | 2つの文字列を先頭から1バイトずつ符号なしで比べ、1つ目が前なら-1、等しければ0、後なら1を返します。片方がもう片方の先頭部分なら、短いほうが前です。 |
 | `SEARCH` | ( addr1 u1 addr2 u2 -- addr3 u3 flag ) | 1つ目の文字列から2つ目の文字列を探します。見つかれば、見つかった位置から後ろの文字列と真を、見つからなければ1つ目の文字列と偽を返します。2つ目が空なら、先頭で見つかったことになります。 |
 | `/STRING` | ( addr u n -- addr+n u-n ) | 文字列の先頭からn文字を除きます。nがuを超えていても確かめません（Gforthと同じ）。 |
@@ -265,6 +269,7 @@ S" dir" SYSTEM
 | `STATE` | ( -- addr ) | コンパイル中は-1、解釈中は0を保持するセルのアドレスです。書き込んでも状態は変わりません。 |
 | `:NONAME ... ;` | ( -- xt ) | 名前のない定義を作り、実行トークンを積みます。 |
 | `ABORT` | ( -- ) | スタックを空にして入力待ちに戻ります。メッセージは表示しません。 |
+| `ABORT" ..."` | ( flag -- ) | 定義の中で使い、flagが0でなければ文字列を表示して中断します（`THROW` の-2）。`CATCH` で捕まえると-2を返し、表示しません。 |
 | `MS` | ( n -- ) | nミリ秒待ちます。 |
 | `UTIME` | ( -- ud ) | 1970年1月1日からの経過時間をマイクロ秒単位の倍長整数で返します。 |
 | `PAGE` | ( -- ) | 画面を消去し、カーソルを左上へ移します。 |
@@ -465,7 +470,7 @@ SAVE words.sigma
 LOAD words.sigma
 ```
 
-`LOAD` は保存した利用者定義語を現在の辞書の後ろに追加します。同名語は読み込んだ新しい定義が優先されます。以前の版で保存した辞書イメージ（`SIGIMG01`〜`SIGIMG20`）と、壊れた辞書イメージは読み込めません（`INVALID IMAGE !`）。辞書イメージにはチェックサムが付いており、偶然の破損は読み込む前に見つかります。読み込むのは、Sigmaの `SAVE`・`SAVESYS` で作ったファイルだけにしてください。定数や変数に保存した実行トークン（`:NONAME` の結果など）と、`LITERAL` で定義に埋め込んだ実行トークンやアドレス（`[ ' X ] LITERAL` など）は、すでに利用者定義語がある辞書へ `LOAD` すると別の語や場所を指すことがあります。`['] X` で埋め込んだ実行トークンは正しく付け替えられます。`SAVESYS` で作った実行ファイルではこの問題は起きません。
+`LOAD` は保存した利用者定義語を現在の辞書の後ろに追加します。同名語は読み込んだ新しい定義が優先されます。以前の版で保存した辞書イメージ（`SIGIMG01`〜`SIGIMG21`）と、壊れた辞書イメージは読み込めません（`INVALID IMAGE !`）。辞書イメージにはチェックサムが付いており、偶然の破損は読み込む前に見つかります。読み込むのは、Sigmaの `SAVE`・`SAVESYS` で作ったファイルだけにしてください。定数や変数に保存した実行トークン（`:NONAME` の結果など）と、`LITERAL` で定義に埋め込んだ実行トークンやアドレス（`[ ' X ] LITERAL` など）は、すでに利用者定義語がある辞書へ `LOAD` すると別の語や場所を指すことがあります。`['] X` で埋め込んだ実行トークンは正しく付け替えられます。`SAVESYS` で作った実行ファイルではこの問題は起きません。
 
 `SAVESYS` は、現在の辞書・コンパイル済み定義・データを含む、実行中環境向けの単独実行ファイルを作ります。
 
@@ -481,10 +486,10 @@ SAVESYS demo.exe
 
 | 分類 | 登録語 |
 | --- | --- |
-| スタック操作 | `DROP`, `DUP`, `SWAP`, `OVER`, `ROT`, `-ROT`, `NIP`, `TUCK`, `PICK`, `ROLL`, `2DUP`, `2DROP`, `2SWAP`, `2OVER`, `DEPTH`, `>R`, `R>`, `R@`, `2>R`, `2R>`, `2R@`, `?DUP` |
+| スタック操作 | `DROP`, `DUP`, `SWAP`, `OVER`, `ROT`, `-ROT`, `NIP`, `TUCK`, `PICK`, `ROLL`, `2DUP`, `2DROP`, `2SWAP`, `2OVER`, `DEPTH`, `>R`, `R>`, `R@`, `2>R`, `2R>`, `2R@`, `?DUP`, `2ROT` |
 | 算術 | `+`, `-`, `*`, `/`, `MOD`, `/MOD`, `*/`, `*/MOD`, `MINUS`, `NEGATE`, `ABS`, `1+`, `1-`, `2*`, `2/`, `MAX`, `MIN` |
 | 比較・論理・ビット | `=`, `<>`, `<`, `>`, `<=`, `>=`, `NOT`, `0=`, `0<`, `0>`, `0<>`, `AND`, `OR`, `XOR`, `COM`, `INVERT`, `NAND`, `NOR`, `SWAB`, `LSHIFT`, `RSHIFT`, `TRUE`, `FALSE` |
-| 定数・アドレス計算 | `BL`, `CELL`, `CELLS`, `CELL+`, `ALIGNED`, `ALIGN`, `UNUSED`, `WITHIN` |
+| 定数・アドレス計算 | `BL`, `CELL`, `CELLS`, `CELL+`, `ALIGNED`, `ALIGN`, `UNUSED`, `WITHIN`, `BUFFER:`, `DUMP` |
 | メモリ・配列 | `@`, `!`, `,`, `C,`, `C@`, `C!`, `+!`, `1+!`, `1-!`, `OSET`, `ON`, `OFF`, `?`, `A@`, `A!`, `ERASE`, `FILL`, `MOVE`, `CMOVE`, `HERE`, `ALLOT` |
 | ループ関連 | `I`, `J`, `K`, `LEAVE`, `UNLOOP` |
 | 入出力 | `.`, `U.`, `.R`, `U.R`, `C.`, `.S`, `ECHO`, `EMIT`, `CR`, `SPACE`, `SPCES`, `SPACES`, `TYPE`, `INPUT` |
@@ -495,7 +500,7 @@ SAVESYS demo.exe
 | 浮動小数点算術・関数 | `F+`, `F-`, `F*`, `F/`, `FNEGATE`, `FMINUS`, `FABS`, `FMAX`, `FMIN`, `FSQRT`, `FEXP`, `FLN`, `FSIN`, `FCOS`, `FTAN`, `FSINCOS`, `FASIN`, `FACOS`, `FATAN`, `FATAN2`, `FSINH`, `FCOSH`, `FTANH`, `FASINH`, `FACOSH`, `FATANH`, `FEXPM1`, `FLNP1`, `FLOG`, `FALOG`, `F**`, `FLOOR`, `FTRUNC`, `FROUND` |
 | 浮動小数点比較 | `F=`, `F<>`, `F<`, `F>`, `F<=`, `F>=`, `F0=`, `F0<>`, `F0<`, `F0>`, `F0<=`, `F0>=`, `F~` |
 | 浮動小数点メモリ・変換・入出力 | `F@`, `F!`, `F,`, `FA@`, `FA!`, `F+!`, `F?`, `FLOATS`, `FLOAT+`, `DF@`, `DF!`, `DFLOATS`, `DFLOAT+`, `SF@`, `SF!`, `SFLOATS`, `SFLOAT+`, `FALIGN`, `FALIGNED`, `DFALIGN`, `DFALIGNED`, `SFALIGN`, `SFALIGNED`, `S>F`, `F>S`, `F.`, `FE.`, `FS.`, `PRECISION`, `SET-PRECISION`, `FINPUT`, `F.RDP`, `F>STR-RDP`, `F>BUF-RDP` |
-| 倍長整数 | `S>D`, `D>S`, `D+`, `D-`, `DNEGATE`, `DABS`, `D0=`, `D0<`, `D=`, `D<`, `D.`, `M*`, `UM*`, `UM/MOD`, `FM/MOD`, `SM/REM`, `2@`, `2!`, `D>F`, `F>D` |
+| 倍長整数 | `S>D`, `D>S`, `D+`, `D-`, `DNEGATE`, `DABS`, `D0=`, `D0<`, `D=`, `D<`, `DU<`, `DMAX`, `DMIN`, `D2*`, `D2/`, `M+`, `D.`, `D.R`, `M*`, `UM*`, `UM/MOD`, `FM/MOD`, `SM/REM`, `2@`, `2!`, `2VALUE`, `2LITERAL`, `D>F`, `F>D` |
 | 文字列・入力 | `COUNT`, `PAD`, `ACCEPT`, `EVALUATE`, `KEY`, `KEY?`, `>NUMBER`, `S>NUMBER?`, `>FLOAT`, `WORD`, `PARSE`, `PARSE-NAME` |
 | 数値の書式 | `<#`, `<<#`, `#`, `#S`, `#>`, `#>>`, `HOLD`, `HOLDS`, `SIGN` |
 | 文字列格納・比較・状態・中断 | `PLACE`, `+PLACE`, `COMPARE`, `SEARCH`, `/STRING`, `-TRAILING`, `CHAR+`, `CHARS`, `BOUNDS`, `BLANK`, `CMOVE>`, `SCAN`, `SKIP`, `STR=`, `STRING-PREFIX?`, `SLITERAL`, `STATE`, `ABORT` |
@@ -507,7 +512,7 @@ SAVESYS demo.exe
 | 定数・説明 | `PI`, `HELP`, `LICENSE` |
 | 動的メモリ・動的文字列 | `ALLOCATE`, `FREE`, `RESIZE`, `$!`, `$@`, `$@LEN`, `$!LEN`, `$+!`, `C$+!`, `$.`, `$DEL`, `$INS`, `$OVER`, `$FREE`, `$INIT`, `$SPLIT`, `$ITER`, `$TMP`, `$SLURP-FILE`, `$[]`, `$[]!`, `$[]@`, `$[]#`, `$[].`, `$[]MAP`, `$[]FREE`, `$[]SLURP`, `$[]SLURP-FILE` |
 
-起動時点でForth語彙に **405語** の組み込み語があります（`MINUS`/`NEGATE` のような別名もそれぞれ1語と数えます）。このほかRoot語彙に、`FORTH` `ONLY` などの10語が重ねて登録されています。
+起動時点でForth語彙に **417語** の組み込み語があります（`MINUS`/`NEGATE` のような別名もそれぞれ1語と数えます）。このほかRoot語彙に、`FORTH` `ONLY` などの10語が重ねて登録されています。
 
 ### 構文・定義形式
 
@@ -519,7 +524,7 @@ SAVESYS demo.exe
 | 定義・削除 | `VARIABLE 名前`, `VAR 名前`, `CONSTANT 名前`, `CONST 名前`, `値 VALUE 名前`, `FORGET 名前` | 変数・定数・値を登録し、または辞書末尾までを削除します。 |
 | 値の変更 | `TO 名前` | `VALUE` で作った語の値を変更します。定義内でも使えます。 |
 | 浮動小数点の定義 | `FVARIABLE 名前`, `FCONSTANT 名前` | 浮動小数点の変数・定数を登録します。 |
-| 倍長整数の定義 | `2VARIABLE 名前`, `2CONSTANT 名前` | 倍長整数の変数・定数を登録します。 |
+| 倍長整数の定義 | `2VARIABLE 名前`, `2CONSTANT 名前`, `2VALUE 名前` | 倍長整数の変数・定数・値を登録します。 |
 | 配列 | `要素数 ARRAY 名前`, `要素数 FARRAY 名前` | 要素数をスタックから取り、配列を登録します。 |
 | ローカル変数 | `{ ... }`, `{: ... :}`, `LOCALS\| ... \|` | 「ローカル変数」の節を参照してください。 |
 | コンパイル制御 | `[`, `]`, `' 名前`, `['] 名前`, `POSTPONE 名前`, `LITERAL`, `FLITERAL` | コンパイル中断／再開、実行トークンの取得、コンパイル動作の組み込み、値の埋め込みに使います。`'` は実行したときに次の名前を読み、定義の中に書くとその定義を実行したときに読みます。`[']` は定義をコンパイルするときに名前を読み、その実行トークンを埋め込みます。`LITERAL` `FLITERAL` はコンパイル中にスタックの値を定義へ埋め込みます。 |

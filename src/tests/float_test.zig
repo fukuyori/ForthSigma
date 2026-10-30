@@ -408,9 +408,10 @@ test "SF! FROUND and many-digit output at their limits, as in gforth" {
     defer destroyMachine(machine);
 
     // SF! rounds to a 32-bit float: overflow to infinity, the smallest subnormal, a value
-    // below half of it, a negative underflow to -0, and NaN.
-    try machine.interpretLine("CREATE B 8 ALLOT : SBITS B SF! B @ 4294967295 AND ; 1E300 SBITS -1E300 SBITS -0E SBITS 1.401298464324817E-45 SBITS -1E-50 SBITS 0E 0E F/ SBITS 7.006492321624085E-46 SBITS 1.1754942E-38 SBITS");
-    try expectStack(machine, &.{ 0x7F800000, 0xFF800000, 0x80000000, 1, 0x80000000, 0xFFC00000, 0, 0x7FFFFF });
+    // below half of it, a negative underflow to -0, and NaN (only checked to be a NaN: the
+    // CPU's default NaN, from 0E 0E F/, is negative on x86 and positive on ARM).
+    try machine.interpretLine("CREATE B 8 ALLOT : SBITS B SF! B @ 4294967295 AND ; 1E300 SBITS -1E300 SBITS -0E SBITS 1.401298464324817E-45 SBITS -1E-50 SBITS 0E 0E F/ SBITS 2147483647 AND 2139095040 > 7.006492321624085E-46 SBITS 1.1754942E-38 SBITS");
+    try expectStack(machine, &.{ 0x7F800000, 0xFF800000, 0x80000000, 1, 0x80000000, -1, 0, 0x7FFFFF });
     machine.data_depth = 0;
     try machine.interpretLine("0.49999999999999994E FROUND 0.5000000000000001E FROUND 4503599627370495.5E FROUND -4503599627370495.5E FROUND -0.5000000000000001E FROUND");
     try expectFloatBits(machine, &.{ 0, 0x3FF0000000000000, 0x4330000000000000, 0xC330000000000000, 0xBFF0000000000000 });

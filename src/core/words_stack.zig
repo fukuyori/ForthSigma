@@ -14,7 +14,7 @@ const max_stack = memory_map.max_stack;
 pub const words = [_]Builtin{
     .drop, .dup, .swap, .over, .rot, .minus_rot, .nip, .tuck, .pick, .roll, .two_dup, .two_drop,
     .two_swap, .two_over, .depth, .to_r, .from_r, .r_fetch, .two_to_r, .two_r_from, .two_r_fetch,
-    .question_dup,
+    .question_dup, .two_rot,
 };
 
 pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
@@ -96,6 +96,16 @@ pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
             if (max_stack - self.data_depth < 2) return error.StackOverflow;
             try self.push(self.return_stack[self.return_depth - 2]);
             try self.push(self.return_stack[self.return_depth - 1]);
+        },
+        // ( x1 x2 x3 x4 x5 x6 -- x3 x4 x5 x6 x1 x2 )
+        .two_rot => {
+            try self.requireDepth(6);
+            const base = self.data_depth - 6;
+            const first = self.data_stack[base];
+            const second = self.data_stack[base + 1];
+            std.mem.copyForwards(Cell, self.data_stack[base .. base + 4], self.data_stack[base + 2 .. base + 6]);
+            self.data_stack[base + 4] = first;
+            self.data_stack[base + 5] = second;
         },
         .question_dup => {
             const value = try self.peek(0);

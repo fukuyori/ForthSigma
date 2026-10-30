@@ -94,6 +94,18 @@ pub fn writeThrowMessage(self: *State, code: Cell) void {
         self.write("\n");
         return;
     }
+    // ABORT" shows its own text, as gforth does.
+    if (code == -2) {
+        if (self.abort_message) |address| {
+            self.abort_message = null;
+            const at = self.memoryAddress(address, 1) catch return;
+            const length = self.memory[at];
+            const text = self.memoryAddress(address + 1, length) catch return;
+            self.write(self.memory[text .. text + length]);
+            self.write("\n");
+            return;
+        }
+    }
     var buffer: [48]u8 = undefined;
     self.write(std.fmt.bufPrint(&buffer, "ERROR #{d} !\n", .{code}) catch unreachable);
 }

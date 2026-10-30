@@ -204,6 +204,45 @@ test "division by zero is reported as an error" {
     try std.testing.expectEqualStrings("DIVISION BY ZERO !\nDIVISION BY ZERO !\nDIVISION BY ZERO !\n", output.written());
 }
 
+test "C\" ABORT\" BUFFER: 2LITERAL 2VALUE and the double-cell words work as in gforth" {
+    try expectOutput(": T1 C\" hello\" ; T1 COUNT TYPE T1 C@ . : T2 C\" \" ; T2 C@ .", "hello5 0 ");
+    try expectOutput(": CHK ABORT\" bad value\" ; 0 CHK .\" after0\" : T3 1 ABORT\" first\" ; ' T3 CATCH . : T4 0 ABORT\" never\" 5 ; T4 .", "after0-2 5 ");
+    try expectOutput("16 BUFFER: BUF BUF 16 ERASE 7 BUF C! BUF C@ . HERE BUF - . : T5 [ 12345678901234567890. ] 2LITERAL ; T5 D.", "7 16 12345678901234567890 ");
+    try expectOutput(
+        "CHAR | EMIT 12345. 10 D.R CHAR | EMIT -12345. 10 D.R CHAR | EMIT 123456789012. 3 D.R CHAR | EMIT 12345. -3 D.R CHAR | EMIT 0. 0 D.R CHAR | EMIT",
+        "|     12345|    -12345|123456789012|12345|0|",
+    );
+    try expectOutput("5. D2* D. -5. D2* D. -5. D2/ D. 5. D2/ D. -1. D2/ D. 1. 2. DMAX D. -1. 2. DMIN D. 5. 7 M+ D. -5. -7 M+ D.", "10 -10 -3 2 -1 2 -1 12 -12 ");
+    try expectOutput("1. 2. DU< . -1. 1. DU< . 1. -1. DU< . 1. 2. 3. 2ROT D. D. D.", "-1 0 -1 1 3 2 ");
+    try expectOutput("5. 2VALUE DV DV D. 7. TO DV DV D. : T6 9. TO DV ; T6 DV D. SEE DV SEE T6", "5 7 9 9. 2VALUE DV\n: T6\n  9 0 TO DV\n;\n");
+
+    var output = Output{};
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
+    // Without CATCH, ABORT" shows its text, as gforth does.
+    try std.testing.expectError(error.Thrown, machine.interpretLine(": CHK ABORT\" bad value\" ; 1 CHK 2"));
+    machine.report(error.Thrown);
+    try std.testing.expectEqualStrings("bad value\n", output.written());
+    try std.testing.expectError(error.CompileOnly, machine.interpretLine("C\" x\""));
+    try std.testing.expectError(error.CompileOnly, machine.interpretLine("1 ABORT\" x\""));
+    output.len = 0;
+    try machine.interpretLine(": T C\" ab\" ABORT\" msg\" ; SEE T");
+    try std.testing.expectEqualStrings(": T\n  C\" ab\" ABORT\" msg\"\n;\n", output.written());
+}
+
+test "DUMP shows 16 bytes a line in hexadecimal and as characters, as gforth does" {
+    var output = Output{};
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
+
+    const here: usize = @intCast(machine.data_here);
+    try machine.interpretLine("CREATE DD 40 ALLOT DD 40 ERASE S\" AB\" DD SWAP MOVE 1 DD 2 + C! 127 DD 3 + C! 200 DD 4 + C! 32 DD 5 + C! 126 DD 6 + C! DD 20 DUMP DD 0 DUMP DD 3 DUMP");
+    var expected: [512]u8 = undefined;
+    const text = try std.fmt.bufPrint(&expected, "\n{X}: 41 42 01 7F  C8 20 7E 00 - 00 00 00 00  00 00 00 00  AB... ~.........\n" ++
+        "{X}: 00 00 00 00              -                           ....\n\n\n{X}: 41 42 01                 -                           AB.\n", .{ here, here + 16, here });
+    try std.testing.expectEqualStrings(text, output.written());
+}
+
 test "?DUP U< U> 2R@ ALIGN UNUSED .R and U.R work as in gforth" {
     try expectOutput("5 ?DUP . . 0 ?DUP . DEPTH .", "5 5 0 0 ");
     try expectOutput("1 2 U< . -1 1 U< . 1 -1 U< . 2 2 U< . 1 2 U> . -1 1 U> .", "-1 0 -1 0 0 -1 ");
@@ -244,7 +283,7 @@ test "*/ */MOD M* UM* UM/MOD FM/MOD and SM/REM work as in gforth" {
     defer destroyMachine(machine);
     const zero = [_][]const u8{ "1 2 0 */", "1 2 0 */MOD", "1 0 0 UM/MOD", "1 S>D 0 FM/MOD", "1 S>D 0 SM/REM" };
     for (zero) |line| try std.testing.expectError(error.DivisionByZero, machine.interpretLine(line));
-    // A quotient that does not fit in a cell is an error, as in gforth.
+    // A quotient that does not fit in a cell is an error, as in gforth (also for MOD).
     const out_of_range = [_][]const u8{
         "9223372036854775807 9223372036854775807 1 */",
         "0 5 5 UM/MOD",
@@ -252,6 +291,9 @@ test "*/ */MOD M* UM* UM/MOD FM/MOD and SM/REM work as in gforth" {
         "-9223372036854775808 S>D -1 FM/MOD",
         "-9223372036854775808 -1 1 */",
         "-9223372036854775808 1 -1 */",
+        "-9223372036854775808 -1 /",
+        "-9223372036854775808 -1 MOD",
+        "-9223372036854775808 -1 /MOD",
     };
     for (out_of_range) |line| try std.testing.expectError(error.ResultOutOfRange, machine.interpretLine(line));
     machine.data_depth = 0;

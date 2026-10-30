@@ -154,6 +154,8 @@ pub const State = struct {
     call_depth: usize = 0,
     last_unknown_word: ?[]const u8 = null,
     throw_code: Cell = 0,
+    /// The counted string of the ABORT" that threw -2, for its message.
+    abort_message: ?Cell = null,
     capture_target: ?Cell = null,
     capture_failed: bool = false,
     tmp_string_index: usize = 0,
@@ -250,7 +252,7 @@ pub const State = struct {
                 self.source_cursor = cursor;
                 continue;
             }
-            const string_word: ?StringWord = if (asciiEqlIgnoreCase(token, "S\"")) .s_quote else if (asciiEqlIgnoreCase(token, "S\\\"")) .s_escape_quote else if (std.mem.eql(u8, token, ".\\\"")) .print_escape else if (std.mem.eql(u8, token, ".(")) .print_paren else null;
+            const string_word: ?StringWord = if (asciiEqlIgnoreCase(token, "S\"")) .s_quote else if (asciiEqlIgnoreCase(token, "S\\\"")) .s_escape_quote else if (std.mem.eql(u8, token, ".\\\"")) .print_escape else if (std.mem.eql(u8, token, ".(")) .print_paren else if (asciiEqlIgnoreCase(token, "C\"")) .c_quote else if (asciiEqlIgnoreCase(token, "ABORT\"")) .abort_quote else null;
             if (string_word) |kind| {
                 try self.handleParsedString(kind, line, &cursor);
                 self.source_cursor = cursor;
@@ -359,7 +361,9 @@ pub const State = struct {
             .{ "DFALIGN", .df_align },       .{ "DFALIGNED", .df_aligned },   .{ "FSINCOS", .f_sincos },       .{ "FASIN", .f_asin },           .{ "FACOS", .f_acos },
             .{ "FATAN", .f_atan },           .{ "FATAN2", .f_atan2 },         .{ "FSINH", .f_sinh },           .{ "FCOSH", .f_cosh },           .{ "FTANH", .f_tanh },
             .{ "FASINH", .f_asinh },         .{ "FACOSH", .f_acosh },         .{ "FATANH", .f_atanh },         .{ "FEXPM1", .f_expm1 },         .{ "FLNP1", .f_lnp1 },
-            .{ "FLOG", .f_log },             .{ "FALOG", .f_alog },           .{ "F**", .f_power },            .{ "FVALUE", .define_fvalue },
+            .{ "FLOG", .f_log },             .{ "FALOG", .f_alog },           .{ "F**", .f_power },            .{ "FVALUE", .define_fvalue },         .{ "2VALUE", .define_two_value },     .{ "BUFFER:", .define_buffer },       .{ "2LITERAL", .two_literal },
+            .{ "D.R", .d_dot_r },                  .{ "D2*", .d_two_star },              .{ "D2/", .d_two_slash },             .{ "DMAX", .d_max },                  .{ "DMIN", .d_min },
+            .{ "M+", .m_plus },                    .{ "DU<", .du_less },                 .{ "2ROT", .two_rot },                .{ "DUMP", .dump },
         };
         for (definitions) |definition| self.addBuiltin(definition[0], definition[1]) catch unreachable;
         // The Root list repeats the words needed to rebuild the search order after ONLY.
@@ -376,7 +380,7 @@ pub const State = struct {
 
     fn isImmediateBuiltin(builtin: Builtin) bool {
         return switch (builtin) {
-            .compile_if, .compile_else, .compile_then, .compile_begin, .compile_end, .compile_again, .compile_while, .compile_repeat, .compile_do, .compile_q_do, .compile_loop, .compile_plus_loop, .compile_does, .compile_case, .compile_of, .compile_endof, .compile_endcase, .compile_exit, .compile_recurse, .leave, .bracket_if, .bracket_else, .bracket_then, .bracket_defined, .bracket_undefined, .end_definition, .literal, .fliteral, .sliteral => true,
+            .compile_if, .compile_else, .compile_then, .compile_begin, .compile_end, .compile_again, .compile_while, .compile_repeat, .compile_do, .compile_q_do, .compile_loop, .compile_plus_loop, .compile_does, .compile_case, .compile_of, .compile_endof, .compile_endcase, .compile_exit, .compile_recurse, .leave, .bracket_if, .bracket_else, .bracket_then, .bracket_defined, .bracket_undefined, .end_definition, .literal, .fliteral, .sliteral, .two_literal => true,
             else => false,
         };
     }
@@ -659,7 +663,7 @@ pub const State = struct {
             .value => try self.push(try self.readCell(word.value)),
             .fconstant => try self.fpush(bitsFloat(word.value)),
             .fvalue => try self.fpush(try self.readFloat(word.value)),
-            .two_constant => try self.pushDouble(try self.readDouble(word.value)),
+            .two_constant, .two_value => try self.pushDouble(try self.readDouble(word.value)),
             .variable, .created => {
                 try self.push(word.value);
                 if (word.has_does) {
@@ -723,7 +727,11 @@ pub const State = struct {
                 .float_literal => try self.fpush(bitsFloat(op.value)),
                 .store_value => {
                     const word = self.words[try self.wordId(op.value)];
-                    if (word.kind == .fvalue) try self.writeFloat(word.value, try self.fpop()) else try self.writeCell(word.value, try self.pop());
+                    switch (word.kind) {
+                        .fvalue => try self.writeFloat(word.value, try self.fpop()),
+                        .two_value => try self.writeDouble(word.value, try self.popDouble()),
+                        else => try self.writeCell(word.value, try self.pop()),
+                    }
                 },
                 .branch => pc = @intCast(op.value),
                 .branch_zero => {
@@ -767,6 +775,13 @@ pub const State = struct {
                     const length = self.memory[address];
                     const start = try self.memoryAddress(op.value + 1, length);
                     self.write(self.memory[start .. start + length]);
+                },
+                .counted_string => try self.push(op.value),
+                .abort_string => {
+                    if (try self.pop() != 0) {
+                        self.abort_message = op.value;
+                        return self.throwCode(-2);
+                    }
                 },
                 .string_literal => {
                     const address = try self.memoryAddress(op.value, 1);

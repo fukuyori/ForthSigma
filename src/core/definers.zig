@@ -57,6 +57,14 @@ pub fn finishPending(self: *State, token: []const u8) RuntimeError!void {
             const id = try self.appendDataWord(token, .fvalue, float_size);
             try self.writeFloat(self.words[id].value, self.pending_float);
         },
+        .two_value_name => {
+            const id = try self.appendDataWord(token, .two_value, 2 * cell_size);
+            try self.writeDouble(self.words[id].value, self.pending_double);
+        },
+        .buffer_name => {
+            if (self.pending_array_size < 0 or self.pending_array_size > data_limit) return error.MemoryExhausted;
+            _ = try self.appendDataWord(token, .created, self.pending_array_size);
+        },
         .two_variable_name, .two_constant_name => {
             const id = try self.appendDataWord(token, if (pending == .two_constant_name) .two_constant else .variable, 2 * cell_size);
             try self.writeDouble(self.words[id].value, if (pending == .two_constant_name) self.pending_double else 0);
@@ -87,12 +95,14 @@ pub fn finishPending(self: *State, token: []const u8) RuntimeError!void {
             }
             const id = try self.lookupOrFail(token);
             const kind = self.words[id].kind;
-            if (kind != .value and kind != .fvalue) return error.InvalidDefinition;
+            if (kind != .value and kind != .fvalue and kind != .two_value) return error.InvalidDefinition;
             if (self.compiling) {
                 _ = try self.emit(.{ .kind = .store_value, .value = id });
-            } else if (kind == .fvalue) {
-                try self.writeFloat(self.words[id].value, try self.fpop());
-            } else try self.writeCell(self.words[id].value, try self.pop());
+            } else switch (kind) {
+                .fvalue => try self.writeFloat(self.words[id].value, try self.fpop()),
+                .two_value => try self.writeDouble(self.words[id].value, try self.popDouble()),
+                else => try self.writeCell(self.words[id].value, try self.pop()),
+            }
         },
         .char_name => {
             if (self.compiling) {
@@ -126,14 +136,14 @@ pub fn endDefinition(self: *State) RuntimeError!void {
 pub fn bodyAddress(self: *State, id: u16) RuntimeError!Cell {
     const word = self.words[id];
     return switch (word.kind) {
-        .variable, .array, .created, .value, .fvalue, .two_constant => word.value,
+        .variable, .array, .created, .value, .fvalue, .two_constant, .two_value => word.value,
         else => error.InvalidExecutionToken,
     };
 }
 
 pub fn isDefiningBuiltin(builtin: Builtin) bool {
     return switch (builtin) {
-        .define_colon, .define_variable, .define_fvariable, .define_constant, .define_value, .define_two_variable, .define_two_constant, .define_fconstant, .define_fvalue, .define_array => true,
+        .define_colon, .define_variable, .define_fvariable, .define_constant, .define_value, .define_two_variable, .define_two_constant, .define_fconstant, .define_fvalue, .define_two_value, .define_buffer, .define_array => true,
         else => false,
     };
 }
@@ -176,6 +186,14 @@ pub fn definingPending(self: *State, builtin: Builtin) RuntimeError!Pending {
         .define_fvalue => blk: {
             self.pending_float = try self.fpop();
             break :blk .fvalue_name;
+        },
+        .define_two_value => blk: {
+            self.pending_double = try self.popDouble();
+            break :blk .two_value_name;
+        },
+        .define_buffer => blk: {
+            self.pending_array_size = try self.pop();
+            break :blk .buffer_name;
         },
         .define_array => blk: {
             self.pending_array_size = try self.pop();

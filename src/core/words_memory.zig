@@ -24,7 +24,7 @@ pub const words = [_]Builtin{
     .fill, .move, .cmove, .here, .allot, .comma, .c_comma, .two_fetch, .two_store, .count, .pad,
     .place, .compare, .search, .slash_string, .minus_trailing, .char_plus, .chars, .bounds,
     .blank_fill, .cmove_up, .scan, .skip, .str_equal, .string_prefix_query, .plus_place, .align_here,
-    .unused,
+    .unused, .dump,
     .allocate, .free, .resize,
 };
 
@@ -124,6 +124,32 @@ pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
         .align_here => {
             const aligned = (self.data_here + (cell_size - 1)) & ~@as(Cell, cell_size - 1);
             try self.reserveData(aligned - self.data_here);
+        },
+        // DUMP: lines of 16 bytes in hexadecimal and as characters (a dot for anything but
+        // 32 to 126), laid out as gforth does; the addresses are those of logical memory.
+        .dump => {
+            const bytes = try self.memoryRange();
+            const start: usize = @intFromPtr(bytes.ptr) - @intFromPtr(&self.memory);
+            self.write("\n");
+            var line: usize = 0;
+            while (line < bytes.len) : (line += 16) {
+                var text: [96]u8 = undefined;
+                var used = (std.fmt.bufPrint(&text, "{X}: ", .{start + line}) catch unreachable).len;
+                for (0..16) |column| {
+                    const gap: []const u8 = if (column == 8) "- " else if (column == 4 or column == 12) " " else "";
+                    @memcpy(text[used .. used + gap.len], gap);
+                    used += gap.len;
+                    if (line + column < bytes.len) {
+                        _ = std.fmt.bufPrint(text[used .. used + 3], "{X:0>2} ", .{bytes[line + column]}) catch unreachable;
+                    } else @memcpy(text[used .. used + 3], "   ");
+                    used += 3;
+                }
+                text[used] = ' ';
+                used += 1;
+                self.write(text[0..used]);
+                for (bytes[line..@min(line + 16, bytes.len)]) |byte| self.write(if (byte >= 32 and byte <= 126) &.{byte} else ".");
+                self.write("\n");
+            }
         },
         // The bytes of data space left for ALLOT, , and the defining words.
         .unused => try self.push(data_limit - self.data_here),

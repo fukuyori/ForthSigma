@@ -14,7 +14,7 @@ const max_dot_s_items = memory_map.max_dot_s_items;
 
 /// The built-in words this file executes; executeBuiltin dispatches by this list.
 pub const words = [_]Builtin{
-    .dot, .u_dot, .dot_r, .u_dot_r, .c_dot, .dot_s, .echo, .cr, .space, .spaces, .type, .hex, .dec, .oct, .base,
+    .dot, .u_dot, .dot_r, .u_dot_r, .d_dot_r, .c_dot, .dot_s, .echo, .cr, .space, .spaces, .type, .hex, .dec, .oct, .base,
     .d_dot, .page,
 };
 
@@ -31,6 +31,13 @@ pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
             const width = try self.pop();
             const value = try self.pop();
             const number: Double = if (builtin == .u_dot_r) @as(UCell, @bitCast(value)) else value;
+            var pad = width -| @as(Cell, @intCast(self.numberWidth(number)));
+            while (pad > 0) : (pad -= 1) self.write(" ");
+            self.writeNumber(number);
+        },
+        .d_dot_r => {
+            const width = try self.pop();
+            const number = try self.popDouble();
             var pad = width -| @as(Cell, @intCast(self.numberWidth(number)));
             while (pad > 0) : (pad -= 1) self.write(" ");
             self.writeNumber(number);

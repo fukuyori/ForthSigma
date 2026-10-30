@@ -79,9 +79,9 @@ pub fn seeWord(self: *State, id: u16) RuntimeError!void {
             self.write(if (word.kind == .fvalue) " FVALUE " else " FCONSTANT ");
             self.write(name);
         },
-        .two_constant => {
+        .two_constant, .two_value => {
             self.writeNumber(try self.readDouble(word.value));
-            self.write(". 2CONSTANT ");
+            self.write(if (word.kind == .two_value) ". 2VALUE " else ". 2CONSTANT ");
             self.write(name);
         },
         .created => {
@@ -213,11 +213,17 @@ pub fn seeOperation(self: *State, out: *SeeOutput, pc: usize, role: SeeRole, sta
         .loop => out.text(&.{"LOOP"}),
         .plus_loop => out.text(&.{"+LOOP"}),
         .leave => out.text(&.{"LEAVE"}),
-        .print_string, .string_literal => {
+        .print_string, .string_literal, .counted_string, .abort_string => {
             const at = try self.memoryAddress(op.value, 1);
             const length = self.memory[at];
             _ = try self.memoryAddress(op.value + 1, length);
-            out.text(&.{ if (op.kind == .print_string) ".\" " else "S\" ", self.memory[at + 1 .. at + 1 + length], "\"" });
+            const opening = switch (op.kind) {
+                .print_string => ".\" ",
+                .counted_string => "C\" ",
+                .abort_string => "ABORT\" ",
+                else => "S\" ",
+            };
+            out.text(&.{ opening, self.memory[at + 1 .. at + 1 + length], "\"" });
         },
         .does => out.text(&.{"DOES>"}),
         .exit => out.text(&.{"EXIT"}),

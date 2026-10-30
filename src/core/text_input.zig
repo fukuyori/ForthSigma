@@ -119,6 +119,11 @@ pub fn handleParsedString(self: *State, kind: StringWord, input: []const u8, cur
         .print_escape => {
             if (self.compiling) try self.compileCountedString(bytes, .print_string) else self.write(bytes);
         },
+        // C" and ABORT" are compile-only, as in gforth.
+        .c_quote, .abort_quote => {
+            if (!self.compiling) return error.CompileOnly;
+            try self.compileCountedString(bytes, if (kind == .c_quote) .counted_string else .abort_string);
+        },
         .s_quote, .s_escape_quote => {
             if (self.compiling) return self.compileCountedString(bytes, .string_literal);
             const slot = string_buffer_base + @as(Cell, @intCast(self.string_buffer_index * string_buffer_size));

@@ -52,7 +52,8 @@ pub fn binary(self: *State, builtin: Builtin) RuntimeError!void {
 
 pub fn flooredDivision(dividend: Cell, divisor: Cell) RuntimeError!Division {
     if (divisor == 0) return error.DivisionByZero;
-    if (dividend == std.math.minInt(Cell) and divisor == -1) return .{ .quotient = dividend, .remainder = 0 };
+    // The quotient does not fit in a cell; gforth reports it for MOD as well.
+    if (dividend == std.math.minInt(Cell) and divisor == -1) return error.ResultOutOfRange;
     return .{ .quotient = @divFloor(dividend, divisor), .remainder = @mod(dividend, divisor) };
 }
 

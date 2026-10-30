@@ -106,11 +106,13 @@ pub const Builtin = enum {
     plus_place,
     align_here,
     unused,
+    dump,
     dot,
     u_dot,
     c_dot,
     dot_r,
     u_dot_r,
+    d_dot_r,
     dot_s,
     echo,
     cr,
@@ -215,6 +217,12 @@ pub const Builtin = enum {
     d_zero_less,
     d_equal,
     d_less,
+    d_two_star,
+    d_two_slash,
+    d_max,
+    d_min,
+    m_plus,
+    du_less,
     d_dot,
     two_fetch,
     two_store,
@@ -251,6 +259,7 @@ pub const Builtin = enum {
     two_to_r,
     two_r_from,
     two_r_fetch,
+    two_rot,
     question_dup,
     place,
     abort,
@@ -394,6 +403,8 @@ pub const Builtin = enum {
     define_two_constant,
     define_fconstant,
     define_fvalue,
+    define_two_value,
+    define_buffer,
     define_array,
     pi,
     tick,
@@ -401,6 +412,7 @@ pub const Builtin = enum {
     literal,
     fliteral,
     sliteral,
+    two_literal,
     help,
     license,
 };
@@ -447,7 +459,7 @@ pub const CatchFrame = struct {
     local_count: usize,
 };
 
-pub const WordKind = enum { builtin, colon, variable, constant, array, created, value, fconstant, fvalue, two_constant, marker, vocabulary };
+pub const WordKind = enum { builtin, colon, variable, constant, array, created, value, fconstant, fvalue, two_constant, two_value, marker, vocabulary };
 
 pub const Word = struct {
     /// Where the name is in `State.names`.
@@ -476,7 +488,7 @@ pub const Word = struct {
 
 /// Local operations other than `local_frame` encode the frame offset in the low 32 bits
 /// of the value and the `LocalKind` above them; `local_frame` holds the word id.
-pub const OpKind = enum { call, compile_call, builtin, literal, float_literal, execution_token, store_value, branch, branch_zero, do_loop, q_do_loop, loop, plus_loop, leave, print_string, string_literal, does, exit, local_frame, local_store, local_fetch, local_address, local_execute };
+pub const OpKind = enum { call, compile_call, builtin, literal, float_literal, execution_token, store_value, branch, branch_zero, do_loop, q_do_loop, loop, plus_loop, leave, print_string, string_literal, counted_string, abort_string, does, exit, local_frame, local_store, local_fetch, local_address, local_execute };
 
 pub const LocalKind = enum(u8) { cell, double, float, char, xt };
 
@@ -499,9 +511,9 @@ pub const Control = struct { kind: ControlKind, address: u16, locals: u16 = 0, l
 
 pub const Loop = struct { index: Cell, limit: Cell, exit_pc: u16, exit_after_first: bool = false };
 
-pub const Pending = enum { none, colon_name, variable_name, constant_name, array_name, forget_name, tick_name, value_name, to_name, char_name, postpone_name, fconstant_name, fvalue_name, fvariable_name, two_constant_name, two_variable_name };
+pub const Pending = enum { none, colon_name, variable_name, constant_name, array_name, forget_name, tick_name, value_name, to_name, char_name, postpone_name, fconstant_name, fvalue_name, fvariable_name, two_constant_name, two_value_name, two_variable_name, buffer_name };
 
-pub const StringWord = enum { s_quote, s_escape_quote, print_escape, print_paren };
+pub const StringWord = enum { s_quote, s_escape_quote, print_escape, print_paren, c_quote, abort_quote };
 
 pub const ParsedNumber = struct { value: Double, double: bool };
 

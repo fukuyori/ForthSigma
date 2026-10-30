@@ -24,7 +24,8 @@ pub const words = [_]Builtin{
     .zero_equal, .zero_less, .zero_greater, .zero_not_equal, .bit_complement, .true_value,
     .false_value, .s_to_d, .d_to_s, .d_add, .d_sub, .d_negate, .d_abs, .d_zero_equal, .d_zero_less,
     .d_equal, .d_less, .within, .u_less, .u_greater, .star_slash, .star_slash_mod, .m_star, .um_star,
-    .um_slash_mod, .fm_slash_mod, .sm_slash_rem,
+    .um_slash_mod, .fm_slash_mod, .sm_slash_rem, .d_two_star, .d_two_slash, .d_max, .d_min, .m_plus,
+    .du_less,
 };
 
 pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
@@ -64,6 +65,22 @@ pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
             if (quotient > std.math.maxInt(UCell)) return error.ResultOutOfRange;
             try self.push(@bitCast(@as(UCell, @intCast(dividend % divisor))));
             try self.push(@bitCast(@as(UCell, @intCast(quotient))));
+        },
+        .d_two_star => try self.pushDouble((try self.popDouble()) *% 2),
+        .d_two_slash => try self.pushDouble((try self.popDouble()) >> 1),
+        .d_max, .d_min => {
+            const b = try self.popDouble();
+            const a = try self.popDouble();
+            try self.pushDouble(if (builtin == .d_max) @max(a, b) else @min(a, b));
+        },
+        .m_plus => {
+            const n = try self.pop();
+            try self.pushDouble((try self.popDouble()) +% n);
+        },
+        .du_less => {
+            const b: UDouble = @bitCast(try self.popDouble());
+            const a: UDouble = @bitCast(try self.popDouble());
+            try self.push(truth(a < b));
         },
         .fm_slash_mod, .sm_slash_rem => {
             const divisor = try self.pop();

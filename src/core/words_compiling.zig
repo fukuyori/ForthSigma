@@ -7,6 +7,7 @@ const memory_map = @import("memory_map.zig");
 const Builtin = defs.Builtin;
 const RuntimeError = defs.RuntimeError;
 const State = forth.State;
+const doubleCells = defs.doubleCells;
 const floatBits = defs.floatBits;
 const max_gforth_string = memory_map.max_gforth_string;
 const state_address = memory_map.state_address;
@@ -19,8 +20,8 @@ pub const words = [_]Builtin{
     .compile_repeat, .compile_do, .compile_q_do, .compile_loop, .compile_plus_loop, .compile_does,
     .compile_case, .compile_of, .compile_endof, .compile_endcase, .compile_exit, .compile_recurse,
     .define_colon, .define_variable, .define_fvariable, .define_constant, .define_value,
-    .define_two_variable, .define_two_constant, .define_fconstant, .define_fvalue, .define_array, .end_definition,
-    .tick, .to_body, .literal, .fliteral, .sliteral, .state, .bracket_if, .bracket_else, .bracket_then,
+    .define_two_variable, .define_two_constant, .define_fconstant, .define_fvalue, .define_two_value, .define_buffer, .define_array, .end_definition,
+    .tick, .to_body, .literal, .fliteral, .sliteral, .two_literal, .state, .bracket_if, .bracket_else, .bracket_then,
     .bracket_defined, .bracket_undefined,
 };
 
@@ -71,7 +72,7 @@ pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
             if (!self.compiling or !self.defining) return error.CompileOnly;
             _ = try self.emit(.{ .kind = .call, .value = self.current_word });
         },
-        .define_colon, .define_variable, .define_fvariable, .define_constant, .define_value, .define_two_variable, .define_two_constant, .define_fconstant, .define_fvalue, .define_array => try self.runDefiningWord(builtin),
+        .define_colon, .define_variable, .define_fvariable, .define_constant, .define_value, .define_two_variable, .define_two_constant, .define_fconstant, .define_fvalue, .define_two_value, .define_buffer, .define_array => try self.runDefiningWord(builtin),
         .end_definition => try self.endDefinition(),
         .tick => {
             const name = (try self.nextSourceToken()) orelse return error.InvalidDefinition;
@@ -86,6 +87,12 @@ pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
         .fliteral => {
             try self.requireCompiling();
             _ = try self.emit(.{ .kind = .float_literal, .value = floatBits(try self.fpop()) });
+        },
+        .two_literal => {
+            try self.requireCompiling();
+            const cells = doubleCells(try self.popDouble());
+            _ = try self.emit(.{ .kind = .literal, .value = cells.low });
+            _ = try self.emit(.{ .kind = .literal, .value = cells.high });
         },
         // Compile a copy of the string, as S" does; it may lie in a buffer that changes.
         .sliteral => {

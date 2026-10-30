@@ -95,6 +95,7 @@ pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
                 try self.push(0);
             } else |err| {
                 const code = self.throwCodeOf(err);
+                self.abort_message = null;
                 self.restoreCatchFrame(frame);
                 try self.push(code);
             }
