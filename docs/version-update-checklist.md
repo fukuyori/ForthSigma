@@ -9,6 +9,8 @@
 - [ ] `scripts/build-installer.ps1` で作ったインストーラー名と製品情報を確認する。
 - [ ] 署名付き配布物を作る場合は `CODESIGN_CERT` を確認し、`scripts/build-installer.ps1 -Sign` を使う。
 - [ ] 公開前にREADME、変更履歴、互換性情報に版固有の変更があれば反映する。
+- [ ] `v` に `VERSION` の値を付けたタグ（例: `v0.1.0`）をプッシュすると、GitHub Actionsがテスト・ビルドを行い、各OSのZIPを下書きのリリースに登録する。タグと `VERSION` が違うとビルドは失敗する。
+- [ ] 下書きのリリースで、CIが作った署名なしのWindows版を、`scripts/build-zip.ps1 -Sign` で作った署名付きのZIP（同じ名前・同じ中身）に差し替えてから公開する。`build-zip.ps1` も `VERSION` の値を使い、`-Version` で上書きできる。
 - [ ] 更新後のソースと生成物の版番号が一致することを確認する（引数なしで起動したときの1行目を含む）。
 
 ## バージョン情報を新しいファイルへ追加した場合
