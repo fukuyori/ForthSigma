@@ -95,4 +95,4 @@ jobs:
             --repo "$GITHUB_REPOSITORY" \
             --draft \
             --title "FORTH/Sigma $GITHUB_REF_NAME" \
-            --notes "Builds for Windows x86_64, Linux x86_64, arm32, and arm64, and macOS arm64. The Windows executable is not signed."
+            --notes "Builds for Windows x86_64, Linux x86_64, arm32, and arm64, and macOS arm64."
