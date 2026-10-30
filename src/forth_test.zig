@@ -2392,3 +2392,70 @@ test "LITERAL and FLITERAL compile a value, as the book's Level 31 DSL uses them
     try std.testing.expectError(error.CompileOnly, machine.interpretLine("5 LITERAL"));
     try std.testing.expectError(error.CompileOnly, machine.interpretLine("1E FLITERAL"));
 }
+
+test "' follows the search order and reads its name across input boundaries" {
+    var output = Output{};
+    setFakeFile(&output, 0, "'\nDUP ' DUP = .\n: Q ' ;\nQ\nSWAP ' SWAP = .\n");
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
+
+    try machine.interpretLine("VOCABULARY V ALSO V DEFINITIONS : ' 99 ; PREVIOUS DEFINITIONS ALSO V ' . PREVIOUS ' DUP ' DUP = .");
+    try machine.interpretLine("S\" '\" FIND-NAME 0<> . : PT POSTPONE ' ; IMMEDIATE : RT PT ; RT DUP ' DUP = .");
+    // Q reads the name after it when it runs, here inside CATCH.
+    try machine.interpretLine(": Q ' ; ' Q CATCH DUP . ' DUP = .");
+    try machine.interpretLine("INCLUDE a.txt");
+    try std.testing.expectEqualStrings("WARNING: SAME NAME WORD EXISTS\n99 -1 -1 -1 0 -1 -1 WARNING: SAME NAME WORD EXISTS\n-1 ", output.written());
+    try expectStack(machine, &.{});
+    // An EVALUATE string ends the input: a ' at its end has no name to read.
+    try std.testing.expectError(error.InvalidDefinition, machine.interpretLine("S\" '\" EVALUATE"));
+    try std.testing.expectError(error.InvalidDefinition, machine.interpretLine("S\" Q\" EVALUATE"));
+}
+
+test ">BODY of ARRAY and plain CREATE words, and the words without a data area" {
+    var output = Output{};
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
+
+    try machine.interpretLine("3 ARRAY A ' A >BODY A = . CREATE C ' C >BODY C = . HERE ' C >BODY = .");
+    try std.testing.expectEqualStrings("-1 -1 -1 ", output.written());
+    try std.testing.expectError(error.InvalidExecutionToken, machine.interpretLine("MARKER MM ' MM >BODY"));
+    try std.testing.expectError(error.InvalidExecutionToken, machine.interpretLine("VOCABULARY VV ' VV >BODY"));
+    try std.testing.expectError(error.InvalidExecutionToken, machine.interpretLine(":NONAME 1 ; >BODY"));
+    try std.testing.expectError(error.InvalidExecutionToken, machine.interpretLine("1E FCONSTANT FC ' FC >BODY"));
+    try std.testing.expectError(error.InvalidExecutionToken, machine.interpretLine("12345 >BODY"));
+}
+
+test "LITERAL takes one cell at a time and fails without a value or outside a definition" {
+    var output = Output{};
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
+
+    try machine.interpretLine(": DD [ 123. ] LITERAL LITERAL ; DD . .");
+    try std.testing.expectEqualStrings("123 0 ", output.written());
+    try std.testing.expectError(error.StackUnderflow, machine.interpretLine(": EMPTY LITERAL ;"));
+    machine.report(error.StackUnderflow);
+    try std.testing.expectError(error.FloatStackUnderflow, machine.interpretLine(": EMPTYF FLITERAL ;"));
+    machine.report(error.FloatStackUnderflow);
+    try std.testing.expectError(error.CompileOnly, machine.interpretLine(": BRACKET [ 5 LITERAL ] ;"));
+}
+
+test "an execution token compiled by ['] is relocated by LOAD, one compiled by LITERAL is not" {
+    var output = Output{};
+    const source = try createMachine(&output);
+    defer destroyMachine(source);
+    try source.interpretLine(": TARGET 123 ; : A ['] TARGET EXECUTE ; : B [ ' TARGET ] LITERAL EXECUTE ;");
+    const image = try std.testing.allocator.alloc(u8, forth.State.imageCapacity());
+    defer std.testing.allocator.free(image);
+    const length = try source.encodeImage(image);
+
+    const target = try createMachine(&output);
+    defer destroyMachine(target);
+    try target.interpretLine(": EARLIER 1 ;");
+    const loaded = try createMachine(&output);
+    defer destroyMachine(loaded);
+    try loaded.restoreImage(image[0..length]);
+    try target.appendImage(loaded);
+    // LITERAL compiled the number TARGET had when it was saved, which is EARLIER here.
+    try target.interpretLine("A B");
+    try expectStack(target, &.{ 123, 1 });
+}
