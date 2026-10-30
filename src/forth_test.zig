@@ -12,4 +12,5 @@ comptime {
     _ = @import("tests/wordlists_test.zig");
     _ = @import("tests/definitions_test.zig");
     _ = @import("tests/help_test.zig");
+    _ = @import("tests/dictionary_test.zig");
 }

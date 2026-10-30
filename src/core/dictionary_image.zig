@@ -13,6 +13,9 @@ const Word = defs.Word;
 const cell_size = memory_map.cell_size;
 const data_limit = memory_map.data_limit;
 const data_start = memory_map.data_start;
+const heap_base = memory_map.heap_base;
+const heap_end = memory_map.heap_end;
+const heap_top_address = memory_map.heap_top_address;
 const image_magic = memory_map.image_magic;
 const max_code = memory_map.max_code;
 const max_search_order = memory_map.max_search_order;
@@ -20,11 +23,12 @@ const max_source_files = memory_map.max_source_files;
 const max_wordlists = memory_map.max_wordlists;
 const max_words = memory_map.max_words;
 const memory_size = memory_map.memory_size;
+const names_capacity = memory_map.names_capacity;
 const root_wordlist = memory_map.root_wordlist;
 const source_file_count_address = memory_map.source_file_count_address;
+const source_file_loaded_flags = memory_map.source_file_loaded_flags;
+const source_file_table = memory_map.source_file_table;
 const wordlist_count_address = memory_map.wordlist_count_address;
-
-
 
 pub fn writeU32(output: []u8, value: anytype) void {
     const number: u32 = @intCast(value);
@@ -38,44 +42,88 @@ pub fn readU32(input: []const u8) u32 {
     return @as(u32, input[0]) | (@as(u32, input[1]) << 8) | (@as(u32, input[2]) << 16) | (@as(u32, input[3]) << 24);
 }
 
+/// The header: the magic, then the word count, the operation count, HERE, and the bytes
+/// of names, four bytes each.
+const header_size = 24;
+
+/// The most bytes an image can have.
 pub fn imageCapacity() usize {
-    return 20 + max_words * @sizeOf(Word) + max_code * @sizeOf(Op) + memory_size;
+    return header_size + max_words * @sizeOf(Word) + max_code * @sizeOf(Op) + names_capacity + memory_size;
+}
+
+/// The parts of memory an image keeps: the system area and the data space up to HERE,
+/// the used part of the heap, and the source file table with its loaded flags. The rest
+/// (input buffers, local frames, free space) starts as zeros when the image is restored.
+fn memoryRanges(data_here: Cell, heap_top: Cell) [3][2]usize {
+    return .{
+        .{ 0, @intCast(data_here) },
+        .{ @intCast(heap_base), @intCast(heap_top) },
+        .{ @intCast(source_file_table), @intCast(source_file_loaded_flags + max_source_files) },
+    };
+}
+
+fn rangesLength(ranges: [3][2]usize) usize {
+    var total: usize = 0;
+    for (ranges) |range| total += range[1] - range[0];
+    return total;
 }
 
 pub fn encodeImage(self: *State, output: []u8) RuntimeError!usize {
-    const required = 20 + @as(usize, self.word_count) * @sizeOf(Word) + @as(usize, self.code_count) * @sizeOf(Op) + memory_size;
+    const ranges = memoryRanges(self.data_here, self.heapTop());
+    const word_bytes = std.mem.sliceAsBytes(self.words[0..self.word_count]);
+    const code_bytes = std.mem.sliceAsBytes(self.code[0..self.code_count]);
+    const name_bytes = self.names[0..self.names_used];
+    const required = header_size + word_bytes.len + code_bytes.len + name_bytes.len + rangesLength(ranges);
     if (output.len < required) return error.InvalidImage;
     @memcpy(output[0..8], image_magic);
     writeU32(output[8..12], self.word_count);
     writeU32(output[12..16], self.code_count);
     writeU32(output[16..20], self.data_here);
-    var cursor: usize = 20;
-    const word_bytes = std.mem.sliceAsBytes(self.words[0..self.word_count]);
-    @memcpy(output[cursor .. cursor + word_bytes.len], word_bytes);
-    cursor += word_bytes.len;
-    const code_bytes = std.mem.sliceAsBytes(self.code[0..self.code_count]);
-    @memcpy(output[cursor .. cursor + code_bytes.len], code_bytes);
-    cursor += code_bytes.len;
-    @memcpy(output[cursor .. cursor + memory_size], &self.memory);
+    writeU32(output[20..24], self.names_used);
+    var cursor: usize = header_size;
+    for ([_][]const u8{ word_bytes, code_bytes, name_bytes }) |bytes| {
+        @memcpy(output[cursor .. cursor + bytes.len], bytes);
+        cursor += bytes.len;
+    }
+    for (ranges) |range| {
+        const length = range[1] - range[0];
+        @memcpy(output[cursor .. cursor + length], self.memory[range[0]..range[1]]);
+        cursor += length;
+    }
     return required;
 }
 
 pub fn restoreImage(self: *State, input: []const u8) RuntimeError!void {
-    if (input.len < 20 or !std.mem.eql(u8, input[0..8], image_magic)) return error.InvalidImage;
+    if (input.len < header_size or !std.mem.eql(u8, input[0..8], image_magic)) return error.InvalidImage;
     const word_count = readU32(input[8..12]);
     const code_count = readU32(input[12..16]);
     const data_here = readU32(input[16..20]);
-    if (word_count < self.builtin_count or word_count > max_words or code_count > max_code or data_here < data_start or data_here > data_limit) return error.InvalidImage;
+    const names_used = readU32(input[20..24]);
+    if (word_count < self.builtin_count or word_count > max_words or code_count > max_code or data_here < data_start or data_here > data_limit or names_used > names_capacity) return error.InvalidImage;
     const word_bytes_len = @as(usize, word_count) * @sizeOf(Word);
     const code_bytes_len = @as(usize, code_count) * @sizeOf(Op);
-    const required = 20 + word_bytes_len + code_bytes_len + memory_size;
-    if (input.len != required) return error.InvalidImage;
-    var cursor: usize = 20;
+    const memory_at = header_size + word_bytes_len + code_bytes_len + names_used;
+    // The heap's end is a cell of the saved system area; check it before changing anything.
+    const heap_top_at = memory_at + @as(usize, @intCast(heap_top_address));
+    if (input.len < heap_top_at + cell_size) return error.InvalidImage;
+    const heap_top: Cell = @bitCast(std.mem.readInt(u64, input[heap_top_at..][0..8], .little));
+    if (heap_top < heap_base or heap_top > heap_end) return error.InvalidImage;
+    const ranges = memoryRanges(data_here, heap_top);
+    if (input.len != memory_at + rangesLength(ranges)) return error.InvalidImage;
+    var cursor: usize = header_size;
     @memcpy(std.mem.sliceAsBytes(self.words[0..word_count]), input[cursor .. cursor + word_bytes_len]);
     cursor += word_bytes_len;
     @memcpy(std.mem.sliceAsBytes(self.code[0..code_count]), input[cursor .. cursor + code_bytes_len]);
     cursor += code_bytes_len;
-    @memcpy(&self.memory, input[cursor .. cursor + memory_size]);
+    @memcpy(self.names[0..names_used], input[cursor .. cursor + names_used]);
+    cursor += names_used;
+    @memset(&self.memory, 0);
+    for (ranges) |range| {
+        const length = range[1] - range[0];
+        @memcpy(self.memory[range[0]..range[1]], input[cursor .. cursor + length]);
+        cursor += length;
+    }
+    self.names_used = names_used;
     self.word_count = @intCast(word_count);
     self.code_count = @intCast(code_count);
     self.data_here = data_here;
@@ -98,6 +146,13 @@ pub fn appendImage(self: *State, source: *const State) RuntimeError!void {
     const code_count: usize = source.code_count;
     if (word_base + added_words > max_words) return error.DictionaryFull;
     if (code_base + code_count > max_code) return error.CodeFull;
+    // The added words' names follow the built-in names in the source; they go after
+    // this dictionary's names.
+    const last_builtin = source.words[source.builtin_count - 1];
+    const source_names_start: usize = last_builtin.name_start + last_builtin.name_len;
+    const names_len = source.names_used - source_names_start;
+    if (names_len > names_capacity - self.names_used) return error.DictionaryFull;
+    const name_base: usize = self.names_used;
     if (source.data_here < data_start) return error.InvalidImage;
     const data_len = source.data_here - data_start;
     if (self.data_here + data_len > data_limit) return error.MemoryExhausted;
@@ -125,6 +180,7 @@ pub fn appendImage(self: *State, source: *const State) RuntimeError!void {
 
     for (source.words[source.builtin_count..source.word_count], 0..) |original, offset| {
         var word = original;
+        word.name_start = @intCast(name_base + (word.name_start - source_names_start));
         word.data_here_before += data_delta;
         if (word.source_file != 0) word.source_file = if (word.source_file <= source_files) file_map[word.source_file - 1] else 0;
         word.wordlist = @intCast(mapWordlist(word.wordlist, wordlist_base));
@@ -182,6 +238,8 @@ pub fn appendImage(self: *State, source: *const State) RuntimeError!void {
         }
     }
     try self.writeCell(wordlist_count_address, wordlist_base + source_wordlists - root_wordlist);
+    @memcpy(self.names[name_base .. name_base + names_len], source.names[source_names_start..source.names_used]);
+    self.names_used = @intCast(name_base + names_len);
     self.word_count = @intCast(word_base + added_words);
     self.code_count = @intCast(code_base + code_count);
     self.data_here += data_len;

@@ -16,9 +16,9 @@ pub const cell_size = 8;
 
 pub const float_size = 8;
 
-pub const max_words = 1024;
+pub const max_words = 8192;
 
-pub const max_code = 8192;
+pub const max_code = 65535;
 
 pub const max_stack = 1024;
 
@@ -27,6 +27,8 @@ pub const max_float_stack = 1024;
 pub const max_controls = 128;
 
 pub const max_name = 255;
+/// Bytes for the names of all dictionary entries, which are kept in one area.
+pub const names_capacity = 256 * 1024;
 
 pub const memory_size = 2 << 20;
 
@@ -166,7 +168,7 @@ pub const max_dot_s_items = 9;
 
 pub const fs_precision = 14;
 
-pub const image_magic = "SIGIMG15";
+pub const image_magic = "SIGIMG16";
 
 /// File ids of the standard streams; the host numbers opened files from `first_file_id`.
 pub const stdin_fileid: Cell = 1;

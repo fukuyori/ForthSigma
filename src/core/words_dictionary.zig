@@ -34,7 +34,7 @@ pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
             const wid = if (self.searchOrderDepth() == 0) forth_wordlist else self.searchOrderEntry(0);
             for (self.words[0..self.word_count]) |word| {
                 if (word.name_len == 0 or word.wordlist != wid) continue;
-                self.write(word.name[0..word.name_len]);
+                self.write(self.wordName(word));
                 self.write(" ");
             }
             self.write("\n");
@@ -62,7 +62,7 @@ pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
             const slot = name_buffer_base + @as(Cell, @intCast(self.name_buffer_index)) * (max_name + 1);
             self.name_buffer_index = (self.name_buffer_index + 1) % name_buffer_count;
             const start: usize = @intCast(slot);
-            @memcpy(self.memory[start .. start + word.name_len], word.name[0..word.name_len]);
+            @memcpy(self.memory[start .. start + word.name_len], self.wordName(word));
             try self.push(slot);
             try self.push(word.name_len);
         },

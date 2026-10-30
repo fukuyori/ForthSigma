@@ -377,7 +377,8 @@ pub const CatchFrame = struct {
 pub const WordKind = enum { builtin, colon, variable, constant, array, created, value, fconstant, two_constant, marker, vocabulary };
 
 pub const Word = struct {
-    name: [max_name]u8 = [_]u8{0} ** max_name,
+    /// Where the name is in `State.names`.
+    name_start: u32 = 0,
     name_len: u8 = 0,
     kind: WordKind = .builtin,
     builtin: Builtin = .drop,

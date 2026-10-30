@@ -3,6 +3,9 @@ const std = @import("std");
 pub fn build(b: *std.Build) void {
     const target = b.standardTargetOptions(.{});
     const optimize = b.standardOptimizeOption(.{});
+    // Release builds for distribution leave out debug information unless -Dstrip=false.
+    const strip = b.option(bool, "strip", "Omit debug information (default: on for ReleaseFast and ReleaseSmall)") orelse
+        (optimize == .ReleaseFast or optimize == .ReleaseSmall);
 
     const exe = b.addExecutable(.{
         .name = "sigma",
@@ -11,6 +14,7 @@ pub fn build(b: *std.Build) void {
             .target = target,
             .optimize = optimize,
             .link_libc = true,
+            .strip = strip,
         }),
     });
     addCoreMath(b, exe.root_module);

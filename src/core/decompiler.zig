@@ -55,7 +55,7 @@ pub const SeeOutput = struct {
 /// its target offset.
 pub fn seeWord(self: *State, id: u16) RuntimeError!void {
     const word = self.words[id];
-    const name = word.name[0..word.name_len];
+    const name = self.wordName(word);
     switch (word.kind) {
         .builtin => {
             self.write("BUILT-IN ");
@@ -171,7 +171,7 @@ pub fn seeBody(self: *State, start: u16, end: u16) RuntimeError!void {
 pub fn seeName(self: *State, id: Cell) []const u8 {
     if (id < 0 or id >= self.word_count) return "<INVALID>";
     const word = &self.words[@intCast(id)];
-    return if (word.name_len == 0) "<NONAME>" else word.name[0..word.name_len];
+    return if (word.name_len == 0) "<NONAME>" else self.wordName(word.*);
 }
 
 pub fn seeOperation(self: *State, out: *SeeOutput, pc: usize, role: SeeRole, start: usize) RuntimeError!void {
@@ -185,7 +185,7 @@ pub fn seeOperation(self: *State, out: *SeeOutput, pc: usize, role: SeeRole, sta
         .builtin => {
             const builtin: Builtin = @enumFromInt(op.value);
             const name = for (self.words[0..self.builtin_count]) |*word| {
-                if (word.builtin == builtin) break word.name[0..word.name_len];
+                if (word.builtin == builtin) break self.wordName(word.*);
             } else "<BUILT-IN>";
             out.text(&.{name});
         },

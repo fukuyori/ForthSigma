@@ -184,7 +184,7 @@ pub fn requireFile(self: *State, name: []const u8) RuntimeError!void {
 pub fn locateWord(self: *State, id: u16) RuntimeError!void {
     const word = self.words[id];
     if (word.source_file == 0 or word.source_file > self.sourceFileCount()) {
-        self.write(word.name[0..word.name_len]);
+        self.write(self.wordName(word));
         self.write(": NO FILE INFORMATION\n");
         return;
     }

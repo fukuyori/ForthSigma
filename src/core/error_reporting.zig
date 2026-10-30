@@ -23,6 +23,7 @@ pub fn report(self: *State, err: anyerror) void {
     self.locals_top = locals_base;
     if (self.defining) {
         self.code_count = self.words[self.current_word].code_start;
+        self.names_used = self.words[self.current_word].name_start;
         self.word_count = self.current_word;
         self.data_here = self.current_data_start;
     }
@@ -122,6 +123,7 @@ pub fn throwCodeOf(self: *State, err: RuntimeError) Cell {
 pub fn restoreCatchFrame(self: *State, frame: CatchFrame) void {
     if (self.defining and !frame.defining) {
         self.code_count = self.words[self.current_word].code_start;
+        self.names_used = self.words[self.current_word].name_start;
         self.word_count = self.current_word;
         self.data_here = self.current_data_start;
         self.defining = false;

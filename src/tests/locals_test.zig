@@ -154,7 +154,7 @@ test ":NONAME rolls back when the code area fills at ; and fails cleanly on a fu
     defer destroyMachine(machine);
     const words = machine.word_count;
     const code = machine.code_count;
-    try std.testing.expectError(error.CodeFull, interpretLiteralDefinition(machine, ":NONAME", 8192 - @as(usize, code)));
+    try std.testing.expectError(error.CodeFull, interpretLiteralDefinition(machine, ":NONAME", machine.code.len - @as(usize, code)));
     machine.report(error.CodeFull);
     try std.testing.expectEqual(words, machine.word_count);
     try std.testing.expectEqual(code, machine.code_count);
@@ -164,14 +164,14 @@ test ":NONAME rolls back when the code area fills at ; and fails cleanly on a fu
 
     machine.data_depth = 0;
     var definition: [32]u8 = undefined;
-    while (machine.word_count < 1024) {
+    while (machine.word_count < machine.words.len) {
         try machine.interpretLine(try std.fmt.bufPrint(&definition, ": W{d} 1 ;", .{machine.word_count}));
     }
     try std.testing.expectError(error.DictionaryFull, machine.interpretLine(":NONAME 1 ;"));
     try std.testing.expect(!machine.defining);
     machine.report(error.DictionaryFull);
     try expectStack(machine, &.{});
-    try machine.interpretLine("W1023 STATE @");
+    try machine.interpretLine(try std.fmt.bufPrint(&definition, "W{d} STATE @", .{machine.words.len - 1}));
     try expectStack(machine, &.{ 1, 0 });
 }
 

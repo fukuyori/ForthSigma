@@ -89,6 +89,7 @@ const max_search_order = memory_map.max_search_order;
 const max_stack = memory_map.max_stack;
 const max_words = memory_map.max_words;
 pub const memory_size = memory_map.memory_size;
+const names_capacity = memory_map.names_capacity;
 pub const pad_address = memory_map.pad_address;
 const root_word_names = memory_map.root_word_names;
 const root_wordlist = memory_map.root_wordlist;
@@ -110,6 +111,9 @@ pub const State = struct {
     builtin_count: u16 = 0,
     code: [max_code]Op = undefined,
     code_count: u16 = 0,
+    /// The names of the dictionary entries, one after another.
+    names: [names_capacity]u8 = undefined,
+    names_used: u32 = 0,
     data_stack: [max_stack]Cell = @splat(0),
     data_depth: usize = 0,
     return_stack: [max_stack]Cell = @splat(0),
@@ -378,14 +382,16 @@ pub const State = struct {
     }
 
     fn appendEntry(self: *State, name: []const u8, kind: WordKind, builtin: Builtin, value: Cell) RuntimeError!u16 {
+        if (name.len > names_capacity - self.names_used) return error.DictionaryFull;
         const id = self.word_count;
-        var word = Word{ .kind = kind, .builtin = builtin, .value = value, .name_len = @intCast(name.len), .data_here_before = self.data_here, .wordlist = @intCast(self.currentWordlist()) };
+        var word = Word{ .kind = kind, .builtin = builtin, .value = value, .name_start = self.names_used, .name_len = @intCast(name.len), .data_here_before = self.data_here, .wordlist = @intCast(self.currentWordlist()) };
         if (self.currentFileFrame()) |frame| {
             word.source_file = frame.file_index + 1;
             word.source_line = frame.line;
             word.source_end_line = frame.line;
         }
-        @memcpy(word.name[0..name.len], name);
+        @memcpy(self.names[self.names_used..][0..name.len], name);
+        self.names_used += @intCast(name.len);
         if (kind == .colon) word.code_start = self.code_count;
         self.words[id] = word;
         self.word_count += 1;
@@ -433,7 +439,13 @@ pub const State = struct {
         if (self.last_created_word) |created_id| {
             if (created_id >= id) self.last_created_word = null;
         }
+        self.names_used = self.words[id].name_start;
         self.word_count = id;
+    }
+
+    /// The name of a dictionary entry, kept in `names`.
+    pub fn wordName(self: *const State, word: Word) []const u8 {
+        return self.names[word.name_start..][0..word.name_len];
     }
 
     fn handleToken(self: *State, token: []const u8) RuntimeError!void {

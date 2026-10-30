@@ -251,17 +251,18 @@ test "dictionary capacity failure preserves existing words" {
     defer destroyMachine(machine);
     var definition: [32]u8 = undefined;
 
-    while (machine.word_count < 1024) {
+    const limit: u16 = @intCast(machine.words.len);
+    while (machine.word_count < limit) {
         const text = try std.fmt.bufPrint(&definition, ": W{d} 1 ;", .{machine.word_count});
         try machine.interpretLine(text);
     }
-    try std.testing.expectEqual(@as(u16, 1024), machine.word_count);
+    try std.testing.expectEqual(limit, machine.word_count);
 
     const overflow = machine.interpretLine(": EXTRA 2 ;");
     try std.testing.expectError(error.DictionaryFull, overflow);
     machine.report(error.DictionaryFull);
-    try std.testing.expectEqual(@as(u16, 1024), machine.word_count);
-    try machine.interpretLine("W1023");
+    try std.testing.expectEqual(limit, machine.word_count);
+    try machine.interpretLine(try std.fmt.bufPrint(&definition, "W{d}", .{limit - 1}));
     const expected = [_]forth.Cell{1};
     try expectStack(machine, &expected);
 }
@@ -296,7 +297,7 @@ test "compiled code capacity failure rolls back the incomplete definition" {
     defer destroyMachine(machine);
     const initial_words = machine.word_count;
     const initial_code = machine.code_count;
-    const overflow = interpretLiteralDefinition(machine, ": TOO-LONG", 8192);
+    const overflow = interpretLiteralDefinition(machine, ": TOO-LONG", machine.code.len);
     try std.testing.expectError(error.CodeFull, overflow);
     machine.report(error.CodeFull);
     try std.testing.expectEqual(initial_words, machine.word_count);

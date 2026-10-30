@@ -49,7 +49,7 @@ fn describe(self: *State, name: []const u8) RuntimeError!void {
     if (self.lookup(name)) |id| {
         if (id >= self.builtin_count) {
             const word = self.words[id];
-            const word_name = word.name[0..word.name_len];
+            const word_name = self.wordName(word);
             self.write(word_name);
             self.write(" is a word defined after start-up; SEE ");
             self.write(word_name);

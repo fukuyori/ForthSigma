@@ -38,7 +38,7 @@ pub fn lookupIn(self: *State, name: []const u8, wid: Cell) ?u16 {
     while (i > 0) {
         i -= 1;
         const word = self.words[i];
-        if (word.wordlist == wid and word.name_len != 0 and asciiEqlIgnoreCase(word.name[0..word.name_len], name)) return i;
+        if (word.wordlist == wid and word.name_len != 0 and asciiEqlIgnoreCase(self.wordName(word), name)) return i;
     }
     return null;
 }
@@ -87,7 +87,7 @@ pub fn writeWordlistName(self: *State, wid: Cell) void {
         while (i > self.builtin_count) {
             i -= 1;
             const word = &self.words[i];
-            if (word.kind == kind and word.value == wid and word.name_len != 0) return self.write(word.name[0..word.name_len]);
+            if (word.kind == kind and word.value == wid and word.name_len != 0) return self.write(self.wordName(word.*));
         }
     }
     self.writeNumberDecimal(wid);
