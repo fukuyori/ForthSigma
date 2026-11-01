@@ -77,7 +77,8 @@ if ($Sign) {
     # RFC 3161 timestamp, so that the signature stays valid after the certificate expires.
     # The certificate chains to DigiCert Trusted Root G4; CODESIGN_TIMESTAMP_URL overrides the server.
     $timestampUrl = if ([string]::IsNullOrWhiteSpace($env:CODESIGN_TIMESTAMP_URL)) { 'http://timestamp.digicert.com' } else { $env:CODESIGN_TIMESTAMP_URL }
-    $signCommand = '"{0}" sign /n $q{1}$q /fd SHA256 /tr {2} /td SHA256 $f' -f $signToolPath, $env:CODESIGN_CERT, $timestampUrl
+    # $q, not a literal quote: PowerShell passes an embedded quote as \", which ISCC splits at the space in the path.
+    $signCommand = '$q{0}$q sign /n $q{1}$q /fd SHA256 /tr {2} /td SHA256 $f' -f $signToolPath, $env:CODESIGN_CERT, $timestampUrl
     $compilerArguments += "/Ssigma=$signCommand"
     $compilerArguments += '/DEnableSigning'
 }
