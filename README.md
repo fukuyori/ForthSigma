@@ -38,7 +38,7 @@ Zig 0.17.0をインストールした環境で、リポジトリのルートか�
 
 Linux/macOSでは、生成されたzig-out/bin/sigmaを実行してください。別のZigターゲットを指定する場合はzig build -Dtarget=<triple>を使います。
 
-現在の製品バージョンは [`VERSION`](VERSION) に記載しています。Windows向けリリースビルドとInno Setupインストーラーは次のPowerShellスクリプトで作成できます。インストーラーは `VERSION` の値を使い、必要なら `-Version MAJOR.MINOR.PATCH` で上書きできます。
+現在の製品バージョンは [`VERSION`](VERSION) に記載しています。Windows向けリリースビルドとInno Setupインストーラーは次のPowerShellスクリプトで作成できます。インストーラー（`dist\installer\sigma-版番号-windows-x86_64-setup.exe`）は `VERSION` の値を使い、必要なら `-Version MAJOR.MINOR.PATCH` で上書きできます。
 
     .\scripts\build-release.ps1
     .\scripts\build-installer.ps1

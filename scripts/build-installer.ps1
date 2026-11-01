@@ -94,7 +94,7 @@ finally {
     Pop-Location
 }
 
-$installerPath = Join-Path $outputPath "FORTH-Sigma-Setup-$Version.exe"
+$installerPath = Join-Path $outputPath "sigma-$Version-windows-x86_64-setup.exe"
 if (-not (Test-Path -LiteralPath $installerPath -PathType Leaf)) {
     throw "Installer output was not produced: $installerPath"
 }
