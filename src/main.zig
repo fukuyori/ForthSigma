@@ -77,9 +77,8 @@ fn microsecondsSinceEpoch(context: ?*anyopaque) forth.RuntimeError!forth.Double 
     return @divFloor(now.nanoseconds, std.time.ns_per_us);
 }
 
-/// The C library's time.h, through its header, so that time_t and the names of time and
-/// localtime are the ones each target uses (32-bit musl and Windows rename them).
-const c_time = @cImport(@cInclude("time.h"));
+/// The C library's time.h, translated by build.zig (see addCTime).
+const c_time = @import("c_time");
 
 fn localTime(_: ?*anyopaque) forth.RuntimeError!forth.LocalTime {
     const now = c_time.time(null);
@@ -619,8 +618,8 @@ fn discardOutput(_: ?*anyopaque, _: []const u8) void {}
 test "GETENV through the host accepts 3072 bytes and rejects 3073" {
     var map = std.process.Environ.Map.init(std.testing.allocator);
     defer map.deinit();
-    try map.put("SIGMA_FIT", &([_]u8{'x'} ** 3072));
-    try map.put("SIGMA_LONG", &([_]u8{'y'} ** 3073));
+    try map.put("SIGMA_FIT", &@as([3072]u8, @splat('x')));
+    try map.put("SIGMA_LONG", &@as([3073]u8, @splat('y')));
     try map.put("SIGMA_EMPTY", "");
     var host = HostContext{ .allocator = std.testing.allocator, .executable_path = "", .io = undefined, .environ_map = &map };
     const machine = try std.testing.allocator.create(forth.State);

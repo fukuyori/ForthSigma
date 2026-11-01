@@ -4,6 +4,7 @@ const std = @import("std");
 const forth = @import("../forth.zig");
 const support = @import("support.zig");
 const Output = support.Output;
+const repeat = support.repeat;
 const setFakeFile = support.setFakeFile;
 const createMachine = support.createMachine;
 const destroyMachine = support.destroyMachine;
@@ -240,19 +241,19 @@ test "an interpreted loop in an included file repeats its lines" {
 
 test "WHERE lists the uses of a word in included files as gforth does" {
     var output = Output{};
-    setFakeFile(&output, 0, ": SQ DUP * ;\n\t: T2\tSQ ;\n   7 SQ DROP\n: T3 SQ SQ ; \\ \u{3042}\u{3044}\u{3046}\n: LONG " ++ "SQ " ** 30 ++ ";\n");
+    setFakeFile(&output, 0, ": SQ DUP * ;\n\t: T2\tSQ ;\n   7 SQ DROP\n: T3 SQ SQ ; \\ \u{3042}\u{3044}\u{3046}\n: LONG " ++ repeat("SQ ", 30) ++ ";\n");
     setFakeFile(&output, 1, "' SQ DROP CHAR SQ DROP .( SQ) \\ SQ\n[DEFINED] SQ DROP S\" SQ\" FIND-NAME DROP 0 [IF] SQ [THEN]\n");
     const machine = try createMachine(&output);
     defer destroyMachine(machine);
 
     // A use typed at the terminal is not recorded.
     try machine.interpretLine("INCLUDE a.txt 3 SQ DROP WHERE SQ");
-    const long_line = ": LONG " ++ "SQ " ** 20 ++ "S";
+    const long_line = ": LONG " ++ repeat("SQ ", 20) ++ "S";
     // A tab takes the columns up to the next multiple of 8 and a wide character two.
-    const first_lines = "\na.txt:2:7: : T2\tSQ ;" ++ " " ** 56 ++ "0" ++
-        "\na.txt:3:6: 7 SQ DROP" ++ " " ** 59 ++ "1" ++
-        "\na.txt:4:6: : T3 SQ SQ ; \\ \u{3042}\u{3044}\u{3046}" ++ " " ** 47 ++ "2" ++
-        "\na.txt:4:9: : T3 SQ SQ ; \\ \u{3042}\u{3044}\u{3046}" ++ " " ** 47 ++ "3" ++
+    const first_lines = "\na.txt:2:7: : T2\tSQ ;" ++ repeat(" ", 56) ++ "0" ++
+        "\na.txt:3:6: 7 SQ DROP" ++ repeat(" ", 59) ++ "1" ++
+        "\na.txt:4:6: : T3 SQ SQ ; \\ \u{3042}\u{3044}\u{3046}" ++ repeat(" ", 47) ++ "2" ++
+        "\na.txt:4:9: : T3 SQ SQ ; \\ \u{3042}\u{3044}\u{3046}" ++ repeat(" ", 47) ++ "3" ++
         "\na.txt:5:8: " ++ long_line ++ "4" ++
         "\na.txt:5:11: " ++ long_line[0 .. long_line.len - 1] ++ "5";
     try std.testing.expectEqualStrings(first_lines, output.written()[0..first_lines.len]);
@@ -278,7 +279,7 @@ test "WHERE lists the uses of a word in included files as gforth does" {
 
     // When the place alone is wider than the line, all of the text follows, as in gforth.
     const long_name = support.fake_file_names[4];
-    const long_text = ": T SQ2 " ++ "SQ2 " ** 20 ++ ";";
+    const long_text = ": T SQ2 " ++ repeat("SQ2 ", 20) ++ ";";
     setFakeFile(&output, 4, ": SQ2 DUP * ;\n" ++ long_text ++ "\n");
     output.len = 0;
     try machine.interpretLine("INCLUDE " ++ long_name ++ " WHERE SQ2");

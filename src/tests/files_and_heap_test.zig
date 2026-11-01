@@ -4,6 +4,7 @@ const std = @import("std");
 const forth = @import("../forth.zig");
 const support = @import("support.zig");
 const Output = support.Output;
+const repeat = support.repeat;
 const createMachine = support.createMachine;
 const destroyMachine = support.destroyMachine;
 const expectStack = support.expectStack;
@@ -158,7 +159,7 @@ test "string arrays store, fetch, count, map, print, and free elements" {
 
 test "$[]SLURP and $[]SLURP-FILE read a file line by line" {
     var output = Output{};
-    const long = "x" ** 300;
+    const long = repeat("x", 300);
     const text = "one\n\n" ++ long ++ "\nlast";
     @memcpy(output.files[1].data[0..text.len], text);
     output.files[1].len = text.len;

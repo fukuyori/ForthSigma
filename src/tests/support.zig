@@ -3,6 +3,17 @@
 const std = @import("std");
 const forth = @import("../forth.zig");
 
+/// `text` written `count` times, which Zig 0.17 no longer has an operator for.
+pub fn repeat(comptime text: []const u8, comptime count: usize) *const [text.len * count]u8 {
+    return comptime blk: {
+        @setEvalBranchQuota(count * 10 + 1000);
+        var result: [text.len * count]u8 = undefined;
+        for (0..count) |index| @memcpy(result[index * text.len ..][0..text.len], text);
+        const final = result;
+        break :blk &final;
+    };
+}
+
 pub const Output = struct {
     bytes: [4096]u8 = undefined,
     len: usize = 0,
@@ -50,7 +61,7 @@ pub const Output = struct {
     }
 
     pub fn getenv(_: ?*anyopaque, name: []const u8, buffer: []u8) forth.RuntimeError!?usize {
-        const value: []const u8 = if (std.mem.eql(u8, name, "HOME")) "/home/lemon" else if (std.mem.eql(u8, name, "EMPTY")) "" else if (std.mem.eql(u8, name, "LONG")) &([_]u8{'x'} ** 4000) else return null;
+        const value: []const u8 = if (std.mem.eql(u8, name, "HOME")) "/home/lemon" else if (std.mem.eql(u8, name, "EMPTY")) "" else if (std.mem.eql(u8, name, "LONG")) &@as([4000]u8, @splat('x')) else return null;
         if (value.len > buffer.len) return error.StringTooLong;
         @memcpy(buffer[0..value.len], value);
         return value.len;
@@ -101,7 +112,7 @@ pub const FakeFile = struct {
 };
 
 /// The last name is long, for WHERE lines whose place takes more than 80 columns.
-pub const fake_file_names = [_][]const u8{ "a.txt", "b.txt", "c.txt", "d.txt", "f" ** 75 ++ ".txt" };
+pub const fake_file_names = [_][]const u8{ "a.txt", "b.txt", "c.txt", "d.txt", repeat("f", 75) ++ ".txt" };
 
 pub fn setFakeFile(output: *Output, index: usize, text: []const u8) void {
     @memcpy(output.files[index].data[0..text.len], text);

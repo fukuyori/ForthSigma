@@ -4,6 +4,7 @@ const std = @import("std");
 const forth = @import("../forth.zig");
 const support = @import("support.zig");
 const Output = support.Output;
+const repeat = support.repeat;
 const createMachine = support.createMachine;
 const destroyMachine = support.destroyMachine;
 const expectStack = support.expectStack;
@@ -96,7 +97,7 @@ test "host words report an error when the host does not provide them" {
     machine.report(error.HostUnavailable);
     try std.testing.expectError(error.HostUnavailable, machine.interpretLine("S\" X\" GETENV"));
     machine.report(error.HostUnavailable);
-    try std.testing.expectEqualStrings("HOST FUNCTION UNAVAILABLE !\n" ** 4, output.written());
+    try std.testing.expectEqualStrings(repeat("HOST FUNCTION UNAVAILABLE !\n", 4), output.written());
     try expectStack(machine, &.{});
 }
 

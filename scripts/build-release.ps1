@@ -9,7 +9,7 @@ $ErrorActionPreference = 'Stop'
 $repositoryRoot = Split-Path -Parent $PSScriptRoot
 $zig = Get-Command 'zig' -ErrorAction Stop
 $outputPath = [IO.Path]::GetFullPath($OutputDirectory, (Get-Location).Path)
-$buildArguments = @('build', '-Doptimize=ReleaseFast', '--prefix', $outputPath)
+$buildArguments = @('build', '-Doptimize=fast', '--prefix', $outputPath)
 
 if ($Target) {
     $buildArguments += "-Dtarget=$Target"

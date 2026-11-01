@@ -4,8 +4,8 @@ pub fn build(b: *std.Build) void {
     const target = b.standardTargetOptions(.{});
     const optimize = b.standardOptimizeOption(.{});
     // Release builds for distribution leave out debug information unless -Dstrip=false.
-    const strip = b.option(bool, "strip", "Omit debug information (default: on for ReleaseFast and ReleaseSmall)") orelse
-        (optimize == .ReleaseFast or optimize == .ReleaseSmall);
+    const strip = b.option(bool, "strip", "Omit debug information (default: on for fast and small)") orelse
+        (optimize == .fast or optimize == .small);
 
     const exe = b.addExecutable(.{
         .name = "sigma",
@@ -19,6 +19,7 @@ pub fn build(b: *std.Build) void {
     });
     addCoreMath(b, exe.root_module);
     addEmbeddedTexts(b, exe.root_module);
+    addCTime(b, exe.root_module, target, optimize);
     b.installArtifact(exe);
     // The program's license and the third-party notices go with every build output.
     b.installFile("LICENSE", "LICENSE");
@@ -34,7 +35,7 @@ pub fn build(b: *std.Build) void {
     addEmbeddedTexts(b, test_module);
     test_module.addCSourceFile(.{
         .file = b.path("src/fma/fma_for_tests.c"),
-        .flags = &.{ "-std=gnu11", "-include", b.pathFromRoot("src/fma/sigma_fma.h") },
+        .flags = &.{ "-std=gnu11", "-include", fmaHeader(b) },
     });
     const unit_tests = b.addTest(.{ .root_module = test_module });
     const run_tests = b.addRunArtifact(unit_tests);
@@ -75,7 +76,7 @@ fn addCoreMath(b: *std.Build, module: *std.Build.Module) void {
         // rint gives the same result in the round-to-nearest mode Forth always runs in.
         // sigma_fma.h sends __builtin_fma to musl's fma when the CPU has no FMA
         // instruction, since the C library's fma on Windows is wrong for tiny products.
-        .flags = &.{ "-std=gnu11", "-D__builtin_roundeven=__builtin_rint", "-include", b.pathFromRoot("src/fma/sigma_fma.h") },
+        .flags = &.{ "-std=gnu11", "-D__builtin_roundeven=__builtin_rint", "-include", fmaHeader(b) },
     });
     module.addCSourceFiles(.{
         .root = b.path("src/fma"),
@@ -89,4 +90,20 @@ fn addEmbeddedTexts(b: *std.Build, module: *std.Build.Module) void {
     module.addAnonymousImport("version", .{ .root_source_file = b.path("VERSION") });
     module.addAnonymousImport("license", .{ .root_source_file = b.path("LICENSE") });
     module.addAnonymousImport("third_party_notices", .{ .root_source_file = b.path("THIRD_PARTY_NOTICES.md") });
+}
+
+/// The full path of the header that `-include` puts before each math source file.
+fn fmaHeader(b: *std.Build) []const u8 {
+    return b.root.joinString(b.allocator, "src/fma/sigma_fma.h") catch @panic("OOM");
+}
+
+/// The C library's time.h as the module `c_time`, so that time_t and the names of time
+/// and localtime are the ones each target uses (32-bit musl and Windows rename them).
+fn addCTime(b: *std.Build, module: *std.Build.Module, target: std.Build.ResolvedTarget, optimize: std.builtin.Optimize) void {
+    const c_time = b.addTranslateC(.{
+        .root_source_file = b.addWriteFiles().add("c_time.h", "#include <time.h>\n"),
+        .target = target,
+        .optimize = optimize,
+    });
+    module.addImport("c_time", c_time.createModule());
 }

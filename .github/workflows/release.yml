@@ -12,7 +12,7 @@ permissions:
   contents: read
 
 env:
-  ZIG_VERSION: 0.16.0
+  ZIG_VERSION: 0.17.0
 
 jobs:
   test:
@@ -33,7 +33,7 @@ jobs:
       - if: runner.arch == 'X64'
         run: zig build test -Dcpu=baseline --summary all
       - if: runner.arch == 'X64'
-        run: zig build test -Dcpu=baseline -Doptimize=ReleaseFast --summary all
+        run: zig build test -Dcpu=baseline -Doptimize=fast --summary all
 
   build:
     name: Build ${{ matrix.name }}
@@ -61,7 +61,7 @@ jobs:
             echo "The tag $GITHUB_REF_NAME does not match VERSION ($version)."
             exit 1
           fi
-      - run: zig build -Doptimize=ReleaseFast -Dtarget=${{ matrix.target }} --prefix out
+      - run: zig build -Doptimize=fast -Dtarget=${{ matrix.target }} --prefix out
       - name: Package
         run: |
           version="$(tr -d '\r\n' < VERSION)"

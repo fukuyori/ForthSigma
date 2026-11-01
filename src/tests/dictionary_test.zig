@@ -4,6 +4,7 @@ const std = @import("std");
 const forth = @import("../forth.zig");
 const support = @import("support.zig");
 const Output = support.Output;
+const repeat = support.repeat;
 const createMachine = support.createMachine;
 const destroyMachine = support.destroyMachine;
 const expectStack = support.expectStack;
@@ -36,7 +37,7 @@ test "a full name area is a full dictionary, and the words before still work" {
     var line: [300]u8 = undefined;
     var count: usize = 0;
     while (true) : (count += 1) {
-        const text = try std.fmt.bufPrint(&line, ": {s}{d:0>6} {d} ;", .{ "N" ** 249, count, count });
+        const text = try std.fmt.bufPrint(&line, ": {s}{d:0>6} {d} ;", .{ repeat("N", 249), count, count });
         machine.interpretLine(text) catch |err| {
             try std.testing.expectEqual(error.DictionaryFull, err);
             machine.report(err);
@@ -45,7 +46,7 @@ test "a full name area is a full dictionary, and the words before still work" {
     }
     try std.testing.expect(count > 1000 and count < machine.words.len);
     try std.testing.expect(machine.names_used <= machine.names.len);
-    try machine.interpretLine(try std.fmt.bufPrint(&line, "{s}{d:0>6}", .{ "N" ** 249, count - 1 }));
+    try machine.interpretLine(try std.fmt.bufPrint(&line, "{s}{d:0>6}", .{ repeat("N", 249), count - 1 }));
     try expectStack(machine, &.{@as(forth.Cell, @intCast(count - 1))});
 }
 
@@ -224,7 +225,7 @@ test "a VARIABLE without room for its name and a definition CATCH abandons leave
     var line: [300]u8 = undefined;
     var count: usize = 0;
     while (true) : (count += 1) {
-        machine.interpretLine(try std.fmt.bufPrint(&line, ": {s}{d:0>6} ;", .{ "N" ** 249, count })) catch |err| {
+        machine.interpretLine(try std.fmt.bufPrint(&line, ": {s}{d:0>6} ;", .{ repeat("N", 249), count })) catch |err| {
             machine.report(err);
             break;
         };
@@ -232,7 +233,7 @@ test "a VARIABLE without room for its name and a definition CATCH abandons leave
     const here = machine.data_here;
     const names = machine.names_used;
     const words = machine.word_count;
-    try std.testing.expectError(error.DictionaryFull, machine.interpretLine("VARIABLE " ++ "V" ** 255));
+    try std.testing.expectError(error.DictionaryFull, machine.interpretLine("VARIABLE " ++ repeat("V", 255)));
     machine.report(error.DictionaryFull);
     try std.testing.expectEqual(here, machine.data_here);
     try std.testing.expectEqual(names, machine.names_used);
@@ -267,7 +268,7 @@ test "LOAD into a dictionary without room changes nothing, and unnamed words kee
     var line: [300]u8 = undefined;
     var count: usize = 0;
     while (true) : (count += 1) {
-        full.interpretLine(try std.fmt.bufPrint(&line, ": {s}{d:0>6} ;", .{ "N" ** 249, count })) catch |err| {
+        full.interpretLine(try std.fmt.bufPrint(&line, ": {s}{d:0>6} ;", .{ repeat("N", 249), count })) catch |err| {
             full.report(err);
             break;
         };
@@ -279,7 +280,7 @@ test "LOAD into a dictionary without room changes nothing, and unnamed words kee
     // Names longer than the room left (less than one 255-byte name).
     const long_source = try createMachine(&output);
     defer destroyMachine(long_source);
-    try long_source.interpretLine(": " ++ "A" ** 200 ++ " 1 ; : " ++ "B" ** 200 ++ " 2 ;");
+    try long_source.interpretLine(": " ++ repeat("A", 200) ++ " 1 ; : " ++ repeat("B", 200) ++ " 2 ;");
     const long_image = try saveImage(long_source);
     defer freeImage(long_image);
     const long_loaded = try createMachine(&output);

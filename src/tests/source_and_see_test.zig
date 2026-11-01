@@ -75,7 +75,7 @@ test "EVALUATE does not read further terminal lines and input lines are limited 
     try std.testing.expectEqual(@as(usize, 0), output.input_index);
     try machine.interpretLine("CREATE");
     try std.testing.expectEqual(@as(usize, 1), output.input_index);
-    const long = [_]u8{' '} ** (forth.tib_size + 1);
+    const long: [forth.tib_size + 1]u8 = @splat(' ');
     try std.testing.expectError(error.StringTooLong, machine.interpretLine(&long));
 }
 

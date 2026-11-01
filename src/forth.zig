@@ -1034,8 +1034,8 @@ pub const State = struct {
     /// For each built-in word, the index in `word_modules` of the file that executes it.
     const word_owner = blk: {
         @setEvalBranchQuota(100_000);
-        const count = @typeInfo(Builtin).@"enum".fields.len;
-        var owner = [_]?usize{null} ** count;
+        const count = @typeInfo(Builtin).@"enum".field_names.len;
+        var owner: [count]?usize = @splat(null);
         for (word_modules, 0..) |module, index| {
             for (module.words) |word| {
                 if (owner[@intFromEnum(word)] != null) @compileError(@tagName(word) ++ " is in two words_* lists");

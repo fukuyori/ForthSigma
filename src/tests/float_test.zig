@@ -4,6 +4,7 @@ const std = @import("std");
 const forth = @import("../forth.zig");
 const support = @import("support.zig");
 const Output = support.Output;
+const repeat = support.repeat;
 const createMachine = support.createMachine;
 const destroyMachine = support.destroyMachine;
 const expectStack = support.expectStack;
@@ -423,13 +424,13 @@ test "SF! FROUND and many-digit output at their limits, as in gforth" {
     try machine.interpretLine("0.49999999999999994E FROUND 0.5000000000000001E FROUND 4503599627370495.5E FROUND -4503599627370495.5E FROUND -0.5000000000000001E FROUND");
     try expectFloatBits(machine, &.{ 0, 0x3FF0000000000000, 0x4330000000000000, 0xC330000000000000, 0xBFF0000000000000 });
     try machine.interpretLine("100 SET-PRECISION 0.1E FS. 101 SET-PRECISION 1E FS. 1000 SET-PRECISION 5E-324 FE.");
-    const exact_tenth = "1.000000000000000055511151231257827021181583404541015625" ++ "0" ** 45 ++ "E-1 ";
-    const one = "1." ++ "0" ** 100 ++ "E0 ";
+    const exact_tenth = "1.000000000000000055511151231257827021181583404541015625" ++ repeat("0", 45) ++ "E-1 ";
+    const one = "1." ++ repeat("0", 100) ++ "E0 ";
     // 5e-324 is 2^-1074, whose exact decimal form has 751 significant digits.
     const smallest = "4.940656458412465441765687928682213723650598026143247644255856825006755072702087518652998363616359923797965646";
     const written = output.written();
     try std.testing.expect(std.mem.startsWith(u8, written, exact_tenth ++ one ++ smallest));
-    try std.testing.expect(std.mem.endsWith(u8, written, "0" ** 249 ++ "E-324 "));
+    try std.testing.expect(std.mem.endsWith(u8, written, repeat("0", 249) ++ "E-324 "));
     try std.testing.expectEqual(exact_tenth.len + one.len + "4.".len + 999 + "E-324 ".len, written.len);
 }
 
