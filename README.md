@@ -1,127 +1,129 @@
 # FORTH/Σ for Zig
 
-FORTH/Σ（フォース・シグマ）の言語コアを、Zigで動くネイティブな移植版として実装するプロジェクトです。1982年の月刊アスキー誌面に掲載されたFORTH/Σの説明とZ80ソースリストを仕様調査の資料として使っています。Z80の命令や機械語を実行・エミュレートするものではありません。
+Japanese version: [README.ja.md](README.ja.md). This English version is the primary one.
 
-## 現在の実装
+This project implements the language core of FORTH/Σ (FORTH/Sigma) as a native port that runs on Zig. It uses the description of FORTH/Σ and the Z80 source listing published in the monthly magazine ASCII in 1982 as material for studying the specification. It does not execute or emulate Z80 instructions or machine code.
 
-- 64ビットセルと2 MiBの論理メモリ（上半分は `ALLOCATE` のヒープとローカル変数の領域）を使います。真の値は-1で、除算は床関数除算です。
-- 浮動小数点数（倍精度）を専用スタックで扱えます。`1E`、`1.5e0` のように `E` を含む数が浮動小数点数になり、`F+`、`F.`、`FSQRT`、`FCONSTANT` などのF系ワードを使えます。
-- 対話入力、辞書検索、数値入力、ワード定義とコンパイルに対応しています。
-- スタック操作、算術・比較・論理演算、メモリ操作、変数・定数・値・配列を使えます。
-- IF ... ELSE ... THEN、BEGIN ... END/UNTIL、BEGIN ... AGAIN、BEGIN ... WHILE ... REPEAT、CASE ... ENDCASE、DO ... LOOP、DO ... +LOOP、LEAVE、EXITを使えます。
-- IMMEDIATE、POSTPONE、RECURSE、CREATE ... DOES> でコンパイラを拡張できます。
-- HEX、DEC、OCTによる基数変更、数値・文字・文字列の出力に対応しています。
-- `S"` などの文字列、`123.` 形式の倍長整数（128ビット）、`<<# # #S #> #>>` による数値の書式、`ACCEPT`、`EVALUATE`、`KEY` を使えます。
-- WORDS、FORGET、BYEを対話用ワードとして提供します。
-- 辞書、コンパイル済み定義、メモリ、入出力をホスト環境から分離し、他のOS・CPUへ移植しやすい構成にしています。
+## Current implementation
 
-対応ワードと移植上の判断は[実装ノート](forth/sigma/IMPLEMENTATION.md)、資料から整理した言語仕様は[FORTH/Σ仕様書](forth/sigma/SPEC.md)を参照してください。実装は開発中であり、誌面の全ワードや機種固有機能には対応していません。
+- It uses 64-bit cells and 2 MiB of logical memory (the upper half holds the `ALLOCATE` heap and the local-variable area). The true value is -1, and division is floored.
+- Floating-point numbers (double precision) are handled on a separate stack. A number that contains `E`, such as `1E` or `1.5e0`, is a floating-point number, and the F words such as `F+`, `F.`, `FSQRT`, and `FCONSTANT` are available.
+- It supports interactive input, dictionary search, number input, and word definition and compilation.
+- Stack operations, arithmetic, comparison, and logical operations, memory operations, and variables, constants, values, and arrays are available.
+- IF ... ELSE ... THEN, BEGIN ... END/UNTIL, BEGIN ... AGAIN, BEGIN ... WHILE ... REPEAT, CASE ... ENDCASE, DO ... LOOP, DO ... +LOOP, LEAVE, and EXIT are available.
+- The compiler can be extended with IMMEDIATE, POSTPONE, RECURSE, and CREATE ... DOES>.
+- It supports base changes with HEX, DEC, and OCT, and output of numbers, characters, and strings.
+- Strings such as `S"`, double-cell integers (128-bit) in the `123.` form, number formatting with `<<# # #S #> #>>`, `ACCEPT`, `EVALUATE`, and `KEY` are available.
+- WORDS, FORGET, and BYE are provided as interactive words.
+- The dictionary, compiled definitions, memory, and input and output are separated from the host environment, so the program is easy to port to other operating systems and CPUs.
 
-使い方と現在登録されている組み込みワードの一覧は[ユーザーマニュアル](forth/sigma/USER_MANUAL.md)を参照してください。
+For the supported words and the porting decisions, see the [implementation notes](forth/sigma/IMPLEMENTATION.md). For the language specification compiled from the sources, see the [FORTH/Σ specification](forth/sigma/SPEC.md). The implementation is under development and does not support every word in the book or machine-specific features.
 
-利用者がデータを持つワードを作る定義用語（BUILDS/DOES）にも対応しています。
+For usage and the list of the built-in words registered now, see the [user manual](forth/sigma/USER_MANUAL.md).
 
-`SAVE filename`／`LOAD filename` で利用者定義語を保存・追加読み込みできます。単独実行ファイルは別の拡張語 `SAVESYS filename.exe` で作成します。
+The defining words (BUILDS/DOES) that let users make words that hold data are also supported.
 
-ワードごとの対応状況は[互換性一覧](forth/sigma/COMPATIBILITY.md)、資料で確定した仕様と移植上の判断の区別は[決定事項・保留事項](forth/sigma/DECISIONS.md)を参照してください。
+`SAVE filename` and `LOAD filename` save user-defined words and load them additionally. A standalone executable is made with a separate extension word, `SAVESYS filename.exe`.
 
-現時点では、LIST、ソースファイルやエディタの操作、CP/Mのファイル機能、PC-8001のモニタ機能、Z80機械語を使うワードには対応していません。
+For the support status of each word, see the [compatibility list](forth/sigma/COMPATIBILITY.md). For the distinction between the specification settled by the sources and the porting decisions, see [decisions and open issues](forth/sigma/DECISIONS.md).
 
-## ビルドと実行
+At present, LIST, source file and editor operations, the CP/M file functions, the PC-8001 monitor functions, and words that use Z80 machine code are not supported.
 
-Zig 0.17.0をインストールした環境で、リポジトリのルートから実行します。
+## Building and running
+
+In an environment with Zig 0.17.0 installed, run these commands from the root of the repository.
 
     zig build
     ./zig-out/bin/sigma.exe
 
-コアの回帰テストはzig build testで実行できます。
+The core regression tests run with zig build test.
 
-Linux/macOSでは、生成されたzig-out/bin/sigmaを実行してください。別のZigターゲットを指定する場合はzig build -Dtarget=<triple>を使います。
+On Linux and macOS, run the generated zig-out/bin/sigma. To specify another Zig target, use zig build -Dtarget=<triple>.
 
-`zig build -Dfloat=false` とすると、浮動小数点の語とCORE-MATHを除いた小さい版を作れます（リリースと同じ `-Doptimize=fast` でWindows x86_64は約340 KB、浮動小数点を含む版は約750 KB）。浮動小数点数のリテラル（`1e` など）、`F:` `F^` のローカル変数、`ENVIRONMENT?` の `FLOATING-STACK` `MAX-FLOAT` もなくなります。テストは `zig build test -Dfloat=false` で実行でき、浮動小数点の語を使うテストは飛ばします。
+`zig build -Dfloat=false` builds a smaller version without the floating-point words and CORE-MATH (with `-Doptimize=fast`, the same as the release, it is about 340 KB on Windows x86_64; the version with floating point is about 750 KB). Floating-point literals (such as `1e`), the `F:` and `F^` local variables, and `FLOATING-STACK` and `MAX-FLOAT` of `ENVIRONMENT?` are also removed. The tests run with `zig build test -Dfloat=false`; the tests that use floating-point words are skipped.
 
-現在の製品バージョンは [`VERSION`](VERSION) に記載しています。Windows向けリリースビルドとInno Setupインストーラーは次のPowerShellスクリプトで作成できます。インストーラー（`dist\installer\sigma-版番号-windows-x86_64-setup.exe`）は `VERSION` の値を使い、必要なら `-Version MAJOR.MINOR.PATCH` で上書きできます。
+The current product version is recorded in [`VERSION`](VERSION). The Windows release build and the Inno Setup installer are made with the following PowerShell scripts. The installer (`dist\installer\sigma-<version>-windows-x86_64-setup.exe`) uses the value in `VERSION`; if needed, `-Version MAJOR.MINOR.PATCH` overrides it.
 
     .\scripts\build-release.ps1
     .\scripts\build-installer.ps1
 
-`build-release.ps1` は、浮動小数点の語を含む版（`dist\release`）と除いた版（`dist\release-nofloat`）の両方をビルドします。`-Variant Float` または `-Variant NoFloat` で片方だけにでき、出力先は `-OutputDirectory` と `-NoFloatOutputDirectory` で変えられます。`-Target` を指定しないときもCPUはbaseline（`-Dcpu=baseline`）です。インストーラーは浮動小数点の語を含む版だけです。
+`build-release.ps1` builds both the version with the floating-point words (`dist\release`) and the version without them (`dist\release-nofloat`). `-Variant Float` or `-Variant NoFloat` builds only one of them, and `-OutputDirectory` and `-NoFloatOutputDirectory` change the output directories. Even when `-Target` is not given, the CPU is baseline (`-Dcpu=baseline`). The installer contains only the version with the floating-point words.
 
-署名する場合は `CODESIGN_CERT` に証明書ストア上の証明書サブジェクトを設定し、`-Sign` を指定します。署名時は実行ファイル、インストーラー、アンインストーラーを署名し、実行ファイルとインストーラーの署名を検証します。署名にはRFC 3161のタイムスタンプを付け、証明書の期限が切れた後も署名が有効なままになるようにします。タイムスタンプのサーバーは既定で `http://timestamp.digicert.com`（証明書のルートであるDigiCertのサーバー）で、環境変数 `CODESIGN_TIMESTAMP_URL` で変えられます。タイムスタンプが付かなかった場合はエラーにします。
+To sign, set `CODESIGN_CERT` to the subject of the certificate in the certificate store, and give `-Sign`. When signing, the scripts sign the executable, the installer, and the uninstaller, and verify the signatures of the executable and the installer. The signatures get an RFC 3161 timestamp, so they stay valid after the certificate expires. The timestamp server is `http://timestamp.digicert.com` by default (the server of DigiCert, the root of the certificate); the environment variable `CODESIGN_TIMESTAMP_URL` changes it. If no timestamp is added, the scripts stop with an error.
 
     .\scripts\build-release.ps1 -Sign
     .\scripts\build-installer.ps1 -Sign
 
-`v0.3.0` のように `VERSION` と同じ版番号のタグをプッシュすると、GitHub Actions（`.github/workflows/release.yml`）がWindows x86_64、Linux x86_64・arm32・arm64、macOS arm64でテストとビルドを行い、各ZIP（実行ファイル、LICENSE、THIRD_PARTY_NOTICES.md、README.md、USER_MANUAL.md）を下書きのリリースに登録します。ZIPは対象ごとに、浮動小数点の語を含む版（`sigma-版番号-対象.zip`）と除いた版（`sigma-版番号-対象-nofloat.zip`）の2つです。テストはWindows x86_64、Linux x86_64・arm64、macOS arm64の実機で実行します。CIのWindows版は署名なしなので、公開前に、次のスクリプトで作った同じ名前・同じ中身の署名付きZIP（`dist\zip\sigma-版番号-windows-x86_64.zip` と `dist\zip\sigma-版番号-windows-x86_64-nofloat.zip`）に差し替えます。`-Variant Float` または `-Variant NoFloat` で片方だけ作ることもできます。
+When a tag with the same version as `VERSION`, such as `v0.3.0`, is pushed, GitHub Actions (`.github/workflows/release.yml`) tests and builds on Windows x86_64, Linux x86_64, arm32, and arm64, and macOS arm64, and adds each ZIP (the executable, LICENSE, THIRD_PARTY_NOTICES.md, README.md, and USER_MANUAL.md) to a draft release. Each target has two ZIPs: the version with the floating-point words (`sigma-<version>-<target>.zip`) and the version without them (`sigma-<version>-<target>-nofloat.zip`). The tests run on real machines for Windows x86_64, Linux x86_64 and arm64, and macOS arm64. The Windows build from CI is not signed, so before publishing, its ZIPs are replaced with signed ZIPs that have the same names and the same contents (`dist\zip\sigma-<version>-windows-x86_64.zip` and `dist\zip\sigma-<version>-windows-x86_64-nofloat.zip`), made with the following script. `-Variant Float` or `-Variant NoFloat` makes only one of them.
 
     .\scripts\build-zip.ps1 -Sign
 
-引数なしで起動すると、版番号とライセンスの2行（`FORTH/Sigma 0.3.0  MIT License`、`` Type `help' for basic help ``）を表示して対話プロンプトになります。`HELP` で基本的な使い方、`HELP DUP` のように語名を付けるとその語の説明、`LICENSE` でライセンスの全文を表示します。
+When started with no arguments, the program shows two lines with the version and the license (`FORTH/Sigma 0.3.0  MIT License` and `` Type `help' for basic help ``) and then the interactive prompt. `HELP` shows basic usage, `HELP` followed by a word name, such as `HELP DUP`, shows the description of that word, and `LICENSE` shows the full text of the license.
 
-例:
+Example:
 
     : SQUARE DUP * ;
     12 SQUARE .
 
-Forthソースファイルは標準入力から読み込めます。例:
+Forth source files can be read from standard input. Example:
 
     sigma.exe < examples/demo.fs
 
-この移植版の `SAVE filename`／`LOAD filename` は利用者定義語を辞書イメージとして保存・追加読み込みします。同名語は新しい定義が優先され、`FORGET` で新しい方を削除すると古い定義に戻ります。誌面の `LOAD`／`SAVE` はエディットバッファ操作であり、その機能は実装していません。登録語を含む単独実行ファイルは `SAVESYS` で作成します。
+In this port, `SAVE filename` and `LOAD filename` save user-defined words as a dictionary image and load them additionally. For words with the same name, the newer definition takes precedence; when `FORGET` removes the newer one, the older definition comes back. `LOAD` and `SAVE` in the book are edit-buffer operations, and that function is not implemented. A standalone executable that contains the registered words is made with `SAVESYS`.
 
     SAVE words.sigma
     SAVESYS demo.exe
 
-保存した実行ファイルは、引数なしなら登録語を持つ対話プロンプトを開きます。引数があれば、引数列をForth入力として一度実行して終了します。サンプルは `12` の平方である `144` を表示します。
+With no arguments, the saved executable opens an interactive prompt that has the registered words. With arguments, it executes the arguments once as Forth input and exits. The sample shows `144`, the square of `12`.
 
-## Gforth・標準Forthとの関係
+## Relation to gforth and standard Forth
 
-2026-10-28から、数値まわりと基本ワードを[Gforth](https://github.com/forthy42/gforth)の挙動に合わせ、教材ForthBasicMasterのサンプルが動くことを目標にしています。作業は6段階に分けており、段階1（64ビットセル、真=-1、床関数除算、全文字の名前照合、`TYPE ( addr u )`、基本標準ワード）、段階2（浮動小数点）、段階3（`S"` などの文字列、倍長整数、`<# #>` による数値書式）と、教材で使う小規模なワード（`WITHIN`、`:NONAME`、`STATE`、`MS`、`GETENV`、`SYSTEM` など）、`THROW`／`CATCH` と主なファイル操作（`OPEN-FILE`、`READ-LINE`、`WRITE-LINE` など）、`ALLOCATE` と動的文字列（`$!`、`$[]!` など）、ローカル変数（`{ a b -- c }`、`F:` などの型指定、`LOCALS|`）、ソースファイルの読み込み（`INCLUDE`、`REQUIRE` など）、`SEE`・`LOCATE`・`MARKER`、語彙（`VOCABULARY`、`ONLY`、`ALSO` など）と `[IF]` を実装済みで、6段階はすべて終わりました（[決定事項・保留事項](forth/sigma/DECISIONS.md)）。
+Since 2026-10-28, the numeric behavior and the basic words follow the behavior of [gforth](https://github.com/forthy42/gforth), with the goal of running the samples of the ForthBasicMaster course material. The work was divided into 6 stages. Stage 1 (64-bit cells, true = -1, floored division, name matching on all characters, `TYPE ( addr u )`, basic standard words), stage 2 (floating point), stage 3 (strings such as `S"`, double-cell integers, number formatting with `<# #>`), the small words used in the course material (`WITHIN`, `:NONAME`, `STATE`, `MS`, `GETENV`, `SYSTEM`, and others), `THROW` and `CATCH` and the main file operations (`OPEN-FILE`, `READ-LINE`, `WRITE-LINE`, and others), `ALLOCATE` and dynamic strings (`$!`, `$[]!`, and others), local variables (`{ a b -- c }`, type prefixes such as `F:`, `LOCALS|`), loading source files (`INCLUDE`, `REQUIRE`, and others), `SEE`, `LOCATE`, and `MARKER`, and word lists (`VOCABULARY`, `ONLY`, `ALSO`, and others) and `[IF]` are implemented, and all 6 stages are done ([decisions and open issues](forth/sigma/DECISIONS.md)).
 
-この実装は**ANS Forth／Forth 2012準拠を保証する処理系ではありません**。Gforthと意味が衝突しないFORTH/Σ固有のワードは残しています。
+This implementation is **not a system that guarantees conformance to ANS Forth or Forth 2012**. Words specific to FORTH/Σ whose meaning does not conflict with gforth are retained.
 
-| 項目 | FORTH/Σ資料 | 現在の移植版 |
+| Item | FORTH/Σ sources | Current port |
 | --- | --- | --- |
-| セル幅 | 16ビット | 64ビット（Gforthの64ビット環境と同じ） |
-| 真偽値 | 0が偽、1が真 | 0が偽、-1が真 |
-| 名前の識別 | 長さと先頭5文字 | 名前全体（大小文字は区別しない） |
+| Cell width | 16 bits | 64 bits (the same as gforth on 64-bit systems) |
+| Truth values | 0 is false, 1 is true | 0 is false, -1 is true |
+| Name identity | Length and first 5 characters | The whole name (case-insensitive) |
 | TYPE | ( u addr -- ) | ( addr u -- ) |
-| 文字列 | "..."は長さの後にアドレスを積む | "..."はアドレスの後に長さを積む。."も拡張として提供。S"、S\"、.\"も使える |
-| 数値表示 | .は空白なし、16進4桁、8進6桁 | .は末尾に空白、ゼロ埋めなし、全基数で符号付き |
-| 除算 | 資料で確定しない | 床関数除算。ゼロ除算はエラー |
-| LEAVE | 次のLOOPで終了 | 即座にループを抜ける |
-| DO | 開始値と終値が同じでも1回実行 | 資料どおり（Gforthとは異なる） |
-| 浮動小数点 | なし | 専用スタック、倍精度、`E` を含むリテラル |
+| Strings | "..." pushes the address after the length | "..." pushes the length after the address. ." is also provided as an extension. S", S\", and .\" are also available |
+| Number output | . prints no space; 4 hexadecimal digits, 6 octal digits | . prints a trailing space, no zero padding, signed in every base |
+| Division | Not settled by the sources | Floored division. Division by zero is an error |
+| LEAVE | Ends at the next LOOP | Leaves the loop at once |
+| DO | Runs once even when the start and limit are equal | As in the sources (differs from gforth) |
+| Floating point | None | Separate stack, double precision, literals containing `E` |
 
-標準側の定義は[Forth 2012 Standard](https://forth-standard.org/standard/index)を参照してください。個々の挙動と移植上の判断は、仕様書・実装ノート・決定事項に記録しています。
+For the definitions on the standard side, see the [Forth 2012 Standard](https://forth-standard.org/standard/index). Individual behavior and porting decisions are recorded in the specification, the implementation notes, and the decisions.
 
-## 出典・参考資料
+## Sources and references
 
-### FORTH/Σの一次資料
+### Primary sources of FORTH/Σ
 
-本プロジェクトでは、一ノ瀬敏彰／山口晶嗣による「FORTH/Σ」を、『エンサイクロペディア・アスキー』第11巻（ASCII 1982年4月号）から第13巻（同年9月号）までの連載誌面で参照しています。以下に各回の巻・号と誌面ページを示します。
+This project refers to "FORTH/Σ" by 一ノ瀬敏彰 and 山口晶嗣 in the series of articles in *Encyclopedia ASCII* Vol. 11 (ASCII, April 1982) to Vol. 13 (September of the same year). The table below gives the volume, issue, and pages of each installment.
 
-| 資料 | 誌面ページ | 主な参照箇所 |
+| Source | Pages | Main parts referred to |
 | --- | --- | --- |
-| 一ノ瀬敏彰／山口晶嗣「FORTH/Σ」『エンサイクロペディア・アスキー 第11巻 ASCII 1982年4月号』 | pp. 108–117 | 概要、辞書、インタプリタ、制御構造、ユーザーズマニュアル、ワード表。 |
-| 同「FORTH/Σ」『エンサイクロペディア・アスキー 第12巻 ASCII 1982年5月号』 | pp. 166–173 | PC-8001版の説明、メモリ配置、エディタ、機種固有ワード。 |
-| 同「FORTH/Σ」『エンサイクロペディア・アスキー 第12巻 ASCII 1982年6月号』 | pp. 92–99 | 辞書検索、数値変換、定義作成、コンパイルと制御構造のZ80ソース。 |
-| 同「FORTH/Σ」『エンサイクロペディア・アスキー 第12巻 ASCII 1982年7月号』 | pp. 178–185 | 定義、制御構造、メモリ、スタック、ワード一覧。 |
-| 同「FORTH/Σ」『エンサイクロペディア・アスキー 第12巻 ASCII 1982年8月号』 | pp. 144–151 | 数値出力、算術処理などのソースリスト。 |
-| 同「FORTH/Σ」『エンサイクロペディア・アスキー 第13巻 ASCII 1982年9月号』 | pp. 172–179 | CP/M版の編集・ファイル処理。 |
+| 一ノ瀬敏彰 and 山口晶嗣, "FORTH/Σ", *Encyclopedia ASCII* Vol. 11, ASCII, April 1982 | pp. 108–117 | Overview, dictionary, interpreter, control structures, user's manual, word table. |
+| Same authors, "FORTH/Σ", *Encyclopedia ASCII* Vol. 12, ASCII, May 1982 | pp. 166–173 | Description of the PC-8001 version, memory layout, editor, machine-specific words. |
+| Same authors, "FORTH/Σ", *Encyclopedia ASCII* Vol. 12, ASCII, June 1982 | pp. 92–99 | Z80 source for dictionary search, number conversion, creating definitions, compilation, and control structures. |
+| Same authors, "FORTH/Σ", *Encyclopedia ASCII* Vol. 12, ASCII, July 1982 | pp. 178–185 | Definitions, control structures, memory, stack, word list. |
+| Same authors, "FORTH/Σ", *Encyclopedia ASCII* Vol. 12, ASCII, August 1982 | pp. 144–151 | Source listings for number output, arithmetic, and others. |
+| Same authors, "FORTH/Σ", *Encyclopedia ASCII* Vol. 13, ASCII, September 1982 | pp. 172–179 | Editing and file processing in the CP/M version. |
 
-上記の誌面ページ情報は[FORTH/Σ仕様書](forth/sigma/SPEC.md)に記録しています。誌面のZ80ソースは処理内容を調べるために参照したもので、移植版はZ80機械語や誌面のソースコードを収録・実行していません。
+The page information above is recorded in the [FORTH/Σ specification](forth/sigma/SPEC.md). The Z80 source in the book was referred to in order to study what it does; the port does not contain or execute Z80 machine code or the source code from the book.
 
-### 比較・照合に使った資料
+### Sources used for comparison and checking
 
-- [Gforth](https://github.com/forthy42/gforth)のソースコードと[マニュアル](https://gforth.org/manual/)を、名前照合など資料で確定しない実装上の挙動を検討する際の比較資料として参照しています。FORTH/Σの仕様根拠ではありません。
-- ForthBasicMasterの教材を、Forthの用語や利用例を確認するための参考資料として参照しています。FORTH/Σの仕様根拠ではありません。
-- Forth 2012との違いは、[Forth 2012 Standard](https://forth-standard.org/standard/index)の該当する定義と比較しています。
+- The source code and the [manual](https://gforth.org/manual/) of [gforth](https://github.com/forthy42/gforth) are referred to as comparison material when considering implementation behavior that the sources do not settle, such as name matching. They are not a basis for the FORTH/Σ specification.
+- The ForthBasicMaster course material is referred to as reference material for checking Forth terms and usage examples. It is not a basis for the FORTH/Σ specification.
+- Differences from Forth 2012 are compared with the corresponding definitions in the [Forth 2012 Standard](https://forth-standard.org/standard/index).
 
-### 資料とライセンスの範囲
+### Scope of the sources and the license
 
-MITライセンスは、このプロジェクトで作成したプログラムコードとドキュメントを対象とします。雑誌記事、その他の第三者資料はMITライセンスの対象ではありません。第三者資料はリポジトリに含めていません。出典を示すことは、第三者資料の複製・再配布許諾を意味しません。
+The MIT License covers the program code and documentation made in this project. Magazine articles and other third-party material are not covered by the MIT License. Third-party material is not included in the repository. Citing a source does not mean permission to copy or redistribute third-party material.
 
-## ライセンス
+## License
 
-プロジェクトで作成したコードとドキュメントは[MIT License](LICENSE)で提供します。浮動小数点の数学関数（`FSIN` `FEXP` `FASIN` `F**` など）は、CORE-MATHのコード（MIT License、`src/core-math/`）と、FMA命令のないCPUではmuslの `fma`（MIT License、`src/fma/`）を使います。著作権表示は[THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)にあります。第三者資料の扱いは上記「資料とライセンスの範囲」を参照してください。
+The code and documentation made in the project are provided under the [MIT License](LICENSE). The floating-point math functions (`FSIN` `FEXP` `FASIN` `F**` and others) use the code of CORE-MATH (MIT License, `src/core-math/`) and, on CPUs without an FMA instruction, musl's `fma` (MIT License, `src/fma/`). The copyright notices are in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md). For the handling of third-party material, see "Scope of the sources and the license" above.

@@ -1,141 +1,143 @@
-# FORTH/Σ 仕様書
+# FORTH/Σ specification
 
-## 1. 文書の位置付け
+Japanese version: [SPEC.ja.md](SPEC.ja.md). This English version is the primary one.
 
-本書は、一ノ瀬敏彰／山口晶嗣による「FORTH/Σ」の解説、ユーザーズマニュアル、ワード一覧およびソースリストから確認できる仕様を整理したものです。連載は『エンサイクロペディア・アスキー』第11巻（ASCII 1982年4月号）から第13巻（同年9月号）に掲載されました。後年のForth標準や一般的なForth処理系の仕様を補ってはいません。
+## 1. Purpose of this document
 
-原文では複数の機種・版が登場します。機種や版が特定されない記述は「共通仕様」とし、版固有の機能・容量は該当版の情報として扱います。判読できない箇所や資料に記載のない挙動は「未確定」とします。
+This document organizes the specification that can be confirmed from the explanation, the user's manual, the word list, and the source listing of "FORTH/Σ" by 一ノ瀬敏彰 and 山口晶嗣. The series appeared in 『エンサイクロペディア・アスキー』 (Encyclopedia ASCII), Vol. 11 (ASCII, April 1982) through Vol. 13 (ASCII, September 1982). It does not fill in gaps with later Forth standards or with the specifications of common Forth systems.
 
-本書は原資料の仕様の記録です。現在のZig実装は、セル幅、真偽値、名前の識別、`TYPE`、数値表示などをGforthに合わせて変更しており、本書の記述とは異なる部分があります。違いは[決定事項・保留事項](DECISIONS.md)を参照してください。
+The original material covers several machines and versions. A description that names no particular machine or version is treated as the "common specification". Features and capacities specific to one version are treated as information about that version. A passage that cannot be read, or a behavior that the material does not describe, is marked "undetermined".
 
-## 2. 製品概要
+This document is a record of the specification in the original material. The current Zig implementation changes cell width, truth values, name identity, `TYPE`, numeric output, and other points to match Gforth, so parts of it differ from this document. For the differences, see [Decisions and open items](DECISIONS.md).
 
-FORTH/Σは、Z80系CPU向けのスタック型プログラミング言語処理系です。ワードを定義して辞書を拡張しながらプログラムを組み立てる自己拡張型の言語として説明されています。対話実行に加え、定義したワードをコンパイルして辞書へ登録できます。実行速度を重視し、処理系の中核はアセンブリ言語で実装されています。
+## 2. Product overview
 
-### 2.1 資料で確認できる機種・版
+FORTH/Σ is a stack-based programming language system for Z80-family CPUs. It is described as a self-extending language: a program is built by defining words and extending the dictionary. Besides interactive execution, it can compile defined words and register them in the dictionary. It puts weight on execution speed, and the core of the system is written in assembly language.
 
-| 機種・版 | 資料で確認できる内容 |
+### 2.1 Machines and versions confirmed in the material
+
+| Machine or version | What the material shows |
 | --- | --- |
-| SORD M200 | FORTH/Σの最初の実装（VER.1）として紹介されています。 |
-| CP/M版 | ソースリストと、CP/Mのファイル入出力・DMAを利用する処理が掲載されています。 |
-| PC-8001版 | 1982年5月号にPC-8001版のメモリ配置、エディタ、機種固有ワードが掲載されています。 |
-| 4月号掲載版 | ユーザーズマニュアルとワード表。誌面では機種をPC-8001に限定していません。 |
+| SORD M200 | Introduced as the first implementation of FORTH/Σ (VER.1). |
+| CP/M version | The source listing is published, together with routines that use CP/M file input/output and DMA. |
+| PC-8001 version | The May 1982 issue publishes the memory layout, the editor, and the machine-specific words of the PC-8001 version. |
+| Version in the April issue | The user's manual and the word table. The magazine does not limit this version to the PC-8001. |
 
-これらの版が同一のメモリ配置、ワード構成、入出力機能を持つとは資料から確認できません。実装時は対象機種・版を別途固定してください。
+The material does not confirm that these versions share the same memory layout, word set, and input/output features. When implementing, fix the target machine and version separately.
 
-## 3. 言語モデル
+## 3. Language model
 
-### 3.1 スタックと値
+### 3.1 Stacks and values
 
-- 主な演算はパラメータ・スタック上の値を取り出して処理し、結果をスタックへ戻す後置記法です。
-- 資料ではデータ幅を16ビットとしています。数値、アドレス、論理値の区別はなく、同じ16ビット値として扱います。
-- スタックの先頭値を第1要素として表します。ワードごとのスタック消費数・供給数はユーザーズマニュアルの表に記載されています。
-- リターン・スタックはループ情報などに使われます。資料はパラメータ・スタック、リターン・スタック、CPUレジスタを区別しています。
-- メモリ図の例では16ビット値 `0821` を下位バイト `21`、上位バイト `08` の順に格納しています。
+- Most operations use postfix notation: they take values from the parameter stack, process them, and put the results back on the stack.
+- The material gives the data width as 16 bits. Numbers, addresses, and logical values are not distinguished; they are all handled as the same 16-bit values.
+- The top value of the stack is called the first element. The number of stack items each word consumes and produces is listed in the tables of the user's manual.
+- The return stack is used for loop information and similar data. The material distinguishes the parameter stack, the return stack, and the CPU registers.
+- In an example memory diagram, the 16-bit value `0821` is stored as the low byte `21` followed by the high byte `08`.
 
-値は16ビットの2の補数として扱われます。比較、`MAX`、`MIN` は符号付きです。除算は0方向へ切り捨て、剰余は被除数と同じ符号になります。数値変換は16ビットを超えた場合のオーバーフローを検査しません。パラメータ・スタックは低位アドレス方向、リターン・スタックは高位アドレス方向へ伸びます。
+Values are handled as 16-bit two's complement. Comparison, `MAX`, and `MIN` are signed. Division truncates toward zero, and the remainder has the same sign as the dividend. Number conversion does not check for overflow beyond 16 bits. The parameter stack grows toward lower addresses, and the return stack grows toward higher addresses.
 
-### 3.2 トークンと実行
+### 3.2 Tokens and execution
 
-入力文字列は空白（20H）およびキャリッジリターン（0DH）で区切られます。タブは区切り文字として扱われません。インタプリタはトークンを辞書から検索し、ワードがあれば実行します。ワードでなく数値として認識できる場合は、現在の基数で数値に変換してスタックへ積みます。どちらにも該当しない入力では、語と ` ?` を表示します。
+The input text is separated by spaces (20H) and carriage returns (0DH). Tabs are not treated as separators. The interpreter searches the dictionary for each token and executes the word if it is found. If the token is not a word but can be recognized as a number, it is converted to a number in the current base and pushed on the stack. For input that is neither, the system prints the token followed by ` ?`.
 
-資料の例では、空白はワードの区切りであり、ワード間に演算子の優先順位はありません。式は後置記法で記述します。大文字・小文字の照合方法は資料から確定できません。
+In the examples in the material, spaces separate words, and there is no operator precedence between words. Expressions are written in postfix notation. The material does not settle how upper and lower case are matched.
 
-### 3.3 定義とコンパイル
+### 3.3 Definitions and compilation
 
-- 新しいワードは `: 名前 ... ;` の形式で定義します。
-- 通常の実行モードとコンパイル・モードがあります。コンパイル中は定義内のワードを辞書へ登録し、`;` で定義を終了します。
-- 既存ワードを組み合わせて新しいワードを作るため、再帰的な定義も可能です。
-- `FORGET` は指定したワードと、それ以降に登録されたワードを辞書から削除し、使用メモリを解放します。後から定義したワードも合わせて失われるため、基本ワードを削除しないよう注意が必要です。
-- 同名ワードの再定義は可能で、再定義後は新しい定義が使われます。
-- ワード名は文字数と先頭5文字で識別されます。ヘッダーには文字数、5文字の名前欄、リンク、ステータスが含まれます。再定義時は警告が表示されます。警告文は掲載版により異なります。
-- 配列、変数、定数を使う場合は、使用前に定義します。
+- A new word is defined in the form `: name ... ;`.
+- There is a normal execution mode and a compile mode. During compilation, the words in the definition are registered in the dictionary, and `;` ends the definition.
+- A new word is made by combining existing words, so recursive definitions are also possible.
+- `FORGET` removes the given word and all words registered after it from the dictionary, and frees the memory they used. Words defined later are also lost, so care is needed not to remove basic words.
+- A word with the same name can be redefined. After the redefinition, the new definition is used.
+- A word name is identified by its length and its first 5 characters. The header contains the length, a 5-character name field, a link, and a status. A warning is printed on redefinition. The warning text differs between the published versions.
+- Arrays, variables, and constants must be defined before they are used.
 
-名前の文字コードと、大文字・小文字を区別するかどうかは資料から確定できません。
+The material does not settle the character encoding of names or whether upper and lower case are distinguished.
 
-### 3.4 制御構造
+### 3.4 Control structures
 
-資料にある制御構造は次のとおりです。
+The control structures in the material are as follows.
 
-- 条件分岐: `IF ... THEN`、`IF ... ELSE ... THEN`
-- 条件付き反復: `BEGIN ... WHILE ... REPEAT`
-- 後判定反復: `BEGIN ... END`
-- カウント付き反復: `DO ... LOOP`、`DO ... +LOOP`
-- 反復中のインデックス参照: `I`
-- 反復脱出: `LEAVE`
+- Conditional branch: `IF ... THEN`, `IF ... ELSE ... THEN`
+- Conditional loop: `BEGIN ... WHILE ... REPEAT`
+- Loop with the test at the end: `BEGIN ... END`
+- Counted loop: `DO ... LOOP`, `DO ... +LOOP`
+- Reference to the index inside a loop: `I`
+- Leaving a loop: `LEAVE`
 
-条件判定ではスタック先頭の値を調べ、0を偽、0以外を真として扱います。真の値は1です。資料では `IF`、`WHILE` のほか、比較ワードや `NOT` が示されています。`BEGIN ... END` は `END` の位置で条件判定し、間のワードを少なくとも一度実行する後判定ループです。`DO ... LOOP`／`+LOOP` の本体も最低1回は実行されます。`LEAVE` はカウンタを終期値にして `LOOP` まで進み、そこで脱出します。
+A condition test examines the top value of the stack and treats 0 as false and any other value as true. The true value is 1. Besides `IF` and `WHILE`, the material shows the comparison words and `NOT`. `BEGIN ... END` is a loop with the test at the end: the condition is tested at `END`, so the words in between run at least once. The body of `DO ... LOOP`/`+LOOP` also runs at least once. `LEAVE` sets the counter to the limit value and continues to `LOOP`, where the loop exits.
 
-### 3.5 基数
+### 3.5 Number base
 
-初期基数は10進です。`HEX`、`DEC`、`OCT` により16進、10進、8進へ切り替えます。これら以外の基数では数字を扱えません。`BASE` は基数インジケータのアドレスをスタックに積むワードとして掲載されています。
+The initial base is decimal. `HEX`, `DEC`, and `OCT` switch to hexadecimal, decimal, and octal. Numbers cannot be handled in any other base. `BASE` is listed as a word that pushes the address of the base indicator on the stack.
 
-## 4. 辞書とメモリ
+## 4. Dictionary and memory
 
-辞書はワードのヘッダーと、実行ルーチンまたはデータ領域で構成されます。図示されたヘッダー要素は、文字数、名前、リンク、ステータス、実行ルーチン／データ領域です。辞書リンクをたどってワードを検索します。
+The dictionary consists of word headers and execution routines or data areas. The header elements shown in the figures are the length, the name, the link, the status, and the execution routine or data area. A word is searched for by following the dictionary links.
 
-資料の機種紹介では、処理系本体が約1 KB、辞書が約5 KB、スタックなどの作業領域が約1.5 KBと説明されています。これらは掲載版の説明値であり、すべての版に適用される保証値ではありません。別途、CP/M版のソースリストには入出力バッファや編集バッファが示されています。
+The machine introduction in the material describes the system core as about 1 KB, the dictionary as about 5 KB, and the work areas such as the stacks as about 1.5 KB. These are the values stated for the published version, not values guaranteed for every version. Separately, the source listing of the CP/M version shows input/output buffers and an edit buffer.
 
-資料には `HERE`、`ALLOT`、`ARRAY`、`<BUILDS`、`DOES>`、`MCODE` 等の辞書・メモリ操作ワードがあります。配列は要素数をスタックに積んで `ARRAY` に続けて名前を指定して定義し、添字は0から指定します。`A@` は添字と配列先頭アドレスから要素を読み、`A!` は値・添字・配列先頭アドレスをスタックに積んで要素を書き込みます。`OSET` は指定アドレスの16ビット値を0にし、`?` は指定アドレスの値を表示します。配列境界は検査されず、範囲外アクセスはメモリを破壊します。
+The material has dictionary and memory words such as `HERE`, `ALLOT`, `ARRAY`, `<BUILDS`, `DOES>`, and `MCODE`. An array is defined by pushing the number of elements on the stack and then giving `ARRAY` followed by the name. Indexes start at 0. `A@` reads an element from an index and the start address of the array. `A!` writes an element with the value, the index, and the start address of the array on the stack. `OSET` sets the 16-bit value at the given address to 0, and `?` prints the value at the given address. Array bounds are not checked, and an access out of range corrupts memory.
 
-## 5. ワード群
+## 5. Word groups
 
-以下は資料に掲載されたワードの分類です。表記は誌面の表記を基本とし、同名ワードでも機種版によって実装差があり得ます。
+The following is a classification of the words published in the material. The spelling follows the magazine. Words with the same name may still be implemented differently in the versions for different machines.
 
-| 分類 | 資料掲載例 | 概要 |
+| Group | Examples in the material | Summary |
 | --- | --- | --- |
-| スタック操作 | `DROP`, `DUP`, `SWAP`, `OVER`, `ROT`, `>R`, `R>` | 値の破棄、複製、交換、複製参照、ローテーション、リターン・スタックとの移動。 |
-| 算術 | `+`, `-`, `*`, `/`, `MOD`, `1-`, `ABS`, `MINUS`, `MAX`, `MIN` | 整数演算、剰余、減算、絶対値、符号反転、大小選択。`1-` はサンプルに現れますが、語一覧での扱いは一貫しません。 |
-| 論理・比較 | `AND`, `OR`, `XOR`, `COM`, `NAND`, `NOR`, `=`, `<`, `>`, `<=`, `>=`, `<>`, `NOT`, `0=` | ビット演算、比較、真偽値の反転・判定。 |
-| メモリ | `@`, `!`, `C@`, `C!`, `+!`, `1+!`, `1-!`, `OSET`, `?`, `A@`, `A!` | 16ビット／8ビットの読み書き、加算更新、メモリ初期化・表示、配列アクセス等。掲載版により構成が異なります。 |
-| 定義・辞書 | `:`, `;`, `FORGET`, `HERE`, `ALLOT`, `ARRAY`, `CONST`, `VAR`, `MCODE`, `<BUILDS`, `DOES>` | ワード、定数、変数、配列、機械語領域の定義・管理。 |
-| 入出力 | `.`, `C.`, `CR`, `SPACE`, `SPCES`, `ECHO`, `TYPE`, `INPUT`, `?`, `"` | 数値・文字・文字列・空白・改行の出力、数値入力、メモリ内容の表示。`C.` は下位8ビットを数値として出力し、`ECHO` は文字を出力します。`TYPE` は文字数とアドレスをスタックに積み、アドレスが最上位です。 |
-| ファイル／編集 | `EDIT`, `EXEC`, `CLB`, `LOAD`, `SAVE`, `LIST`, `INPUT`, `BYE` | 編集バッファ操作、ファイルのロード／保存、リスト表示、入力、処理系終了。利用可否は版によります。 |
-| 基数 | `HEX`, `DEC`, `OCT`, `BASE` | 数値入出力の基数指定・参照。 |
-| ループ | `DO`, `LOOP`, `+LOOP`, `LEAVE`, `I`, `BEGIN`, `END`, `WHILE`, `REPEAT` | 条件反復・カウント反復。`J`／`K` は利用者が定義できる例として説明されています。 |
-| その他 | `/MOD`, `SWAB`, `LEAVE`, `[`, `]`, `'`, `,`, `C,`, `NAND`, `NOR`, `J`, `K`, `USR`, `PUHL`, `POHL`, `NEXT` | 掲載版により利用可否が異なります。`J`／`K` は利用者定義例として説明されています。 |
+| Stack operations | `DROP`, `DUP`, `SWAP`, `OVER`, `ROT`, `>R`, `R>` | Discard, duplicate, exchange, copy from below, rotate, and move to and from the return stack. |
+| Arithmetic | `+`, `-`, `*`, `/`, `MOD`, `1-`, `ABS`, `MINUS`, `MAX`, `MIN` | Integer arithmetic, remainder, decrement, absolute value, sign inversion, and selection of the larger or smaller value. `1-` appears in a sample, but its treatment in the word lists is not consistent. |
+| Logic and comparison | `AND`, `OR`, `XOR`, `COM`, `NAND`, `NOR`, `=`, `<`, `>`, `<=`, `>=`, `<>`, `NOT`, `0=` | Bit operations, comparison, and inversion and testing of truth values. |
+| Memory | `@`, `!`, `C@`, `C!`, `+!`, `1+!`, `1-!`, `OSET`, `?`, `A@`, `A!` | 16-bit and 8-bit reads and writes, update by addition, memory clearing and display, array access, and so on. The set differs between the published versions. |
+| Definitions and dictionary | `:`, `;`, `FORGET`, `HERE`, `ALLOT`, `ARRAY`, `CONST`, `VAR`, `MCODE`, `<BUILDS`, `DOES>` | Definition and management of words, constants, variables, arrays, and machine-code areas. |
+| Input/output | `.`, `C.`, `CR`, `SPACE`, `SPCES`, `ECHO`, `TYPE`, `INPUT`, `?`, `"` | Output of numbers, characters, strings, spaces, and new lines; number input; and display of memory contents. `C.` prints the low 8 bits as a number, and `ECHO` prints a character. `TYPE` takes the length and the address on the stack, with the address on top. |
+| Files and editing | `EDIT`, `EXEC`, `CLB`, `LOAD`, `SAVE`, `LIST`, `INPUT`, `BYE` | Edit buffer operations, file load and save, listing, input, and exit from the system. Availability depends on the version. |
+| Number base | `HEX`, `DEC`, `OCT`, `BASE` | Selection and reference of the base for number input and output. |
+| Loops | `DO`, `LOOP`, `+LOOP`, `LEAVE`, `I`, `BEGIN`, `END`, `WHILE`, `REPEAT` | Conditional loops and counted loops. `J` and `K` are described as examples that the user can define. |
+| Others | `/MOD`, `SWAB`, `LEAVE`, `[`, `]`, `'`, `,`, `C,`, `NAND`, `NOR`, `J`, `K`, `USR`, `PUHL`, `POHL`, `NEXT` | Availability differs between the published versions. `J` and `K` are described as examples of user definitions. |
 
-### 5.1 入出力・数値変換の補足
+### 5.1 Notes on input/output and number conversion
 
-ユーザーズマニュアルには、数値出力、ASCII文字出力、文字列出力、改行、空白出力が掲載されています。`.` は末尾に空白を付けません。16進数値は4桁、8進数は6桁で表示し、10進数は符号付きでゼロ抑制します。`"` はコンパイル中に文字列のアドレスと文字数を積むワードで、文字列は最大127文字です。スタック最上位にアドレスが来るため、`TYPE` は文字数、アドレスの順で積んで使います。`."` はFORTH/Σの誌面にはない移植版の拡張です。CP/M版ソースリストにはファイルのオープン、クローズ、シーケンシャル読み書き、ファイル作成、およびDMAアドレス設定に対応する処理が掲載されています。
+The user's manual covers number output, ASCII character output, string output, new lines, and space output. `.` does not add a trailing space. A hexadecimal number is printed with 4 digits and an octal number with 6 digits; a decimal number is printed signed, with leading zeros suppressed. `"` is a word that, during compilation, pushes the address and the length of a string; a string is at most 127 characters. The address comes on top of the stack, so `TYPE` is used with the length and then the address pushed. `."` is not in the FORTH/Σ magazine articles; it is an extension of the port. The CP/M version's source listing contains routines for file open, close, sequential read and write, file creation, and setting the DMA address.
 
-CP/M版の説明では、ディスク転送用バッファは128バイトです。これはCP/M版のソースに関する値であり、他機種版のファイル形式・バッファ長を定めるものではありません。
+In the description of the CP/M version, the disk transfer buffer is 128 bytes. This value concerns the source of the CP/M version; it does not define the file format or buffer length of the versions for other machines.
 
-## 6. エラーと警告
+## 6. Errors and warnings
 
-資料で確認できる診断表示には、未定義語に対する「語 ` ?`」、`STACK UNDER FLOW !`、`COMPILE MODE ERROR !!`、`OUT OF MEMORY !`、`NESTING ERROR`、`END OF COMMENT MUST BE ")" !`、`DIVISION BY ZERO`、既存名の再定義警告、ファイル操作時の `DISK FULL !` 等があります。再定義警告の文面は掲載版によって異なります。
+The diagnostic messages confirmed in the material include "the token followed by ` ?`" for an undefined word, `STACK UNDER FLOW !`, `COMPILE MODE ERROR !!`, `OUT OF MEMORY !`, `NESTING ERROR`, `END OF COMMENT MUST BE ")" !`, `DIVISION BY ZERO`, the warning on redefining an existing name, and `DISK FULL !` during file operations. The text of the redefinition warning differs between the published versions.
 
-FLERはエラー時にスタックポインタ等を初期化し、未完了のコンパイルを中断してインタプリタへ戻します。資料の個別エラー文言は掲載版ごとに異なります。
+On an error, FLER resets the stack pointer and other state, abandons an incomplete compilation, and returns to the interpreter. The individual error messages in the material differ between the published versions.
 
-### 6.1 資料内の不一致・判読が難しい箇所
+### 6.1 Inconsistencies and hard-to-read passages in the material
 
-- `NOR` は解説文に `OR NOT`、Z80リストとマニュアルに `OR COM` とあり、記述が一致しません。
-- `1-` は誌面のサンプルに現れますが、ワード一覧では確認できません。
-- `+LOOP` の負の増分と終期値の比較方法、`NTEST` が小文字の16進数字を受け付けるかは、Z80リストの判読に確信がありません。
+- For `NOR`, the explanatory text says `OR NOT`, while the Z80 listing and the manual say `OR COM`; the descriptions do not agree.
+- `1-` appears in a sample in the magazine, but its treatment in the word lists is not consistent.
+- How `+LOOP` compares a negative increment with the limit value, and whether `NTEST` accepts lowercase hexadecimal digits, cannot be read from the Z80 listing with confidence.
 
-これらは共通仕様として断定しません。移植版が挙動を選ぶ場合は実装判断として記録します。
+These are not stated as part of the common specification. When a port chooses a behavior for them, the choice is recorded as an implementation decision.
 
-## 7. 資料に基づく適合範囲
+## 7. Scope of conformance based on the material
 
-この仕様書を実装要件として使う場合、まず対象版を明示してください。特に以下は版ごとに切り分けが必要です。
+When you use this specification as implementation requirements, first state the target version. The following items in particular must be separated by version.
 
-1. 起動環境とメモリ配置（SORD M200、CP/M、PC-8001）
-2. 利用可能なファイル／編集ワード
-3. 辞書・スタック・作業領域の容量
-4. 機種別ワードと、Z80機械語を直接扱う語の移植方法
-5. 入力行長、文字コード、大文字・小文字の扱い
-6. 全ワードの消費・供給スタック数と副作用
+1. Startup environment and memory layout (SORD M200, CP/M, PC-8001)
+2. The available file and editing words
+3. The capacity of the dictionary, the stacks, and the work areas
+4. Machine-specific words, and how to port words that handle Z80 machine code directly
+5. Input line length, character encoding, and handling of upper and lower case
+6. The number of stack items consumed and produced, and the side effects, of every word
 
-資料に記載がない上記の挙動は、この文書では新しい仕様として補完していません。
+Where the material does not describe the behaviors above, this document does not fill them in with new specifications.
 
-## 8. 出典箇所
+## 8. Sources
 
-以下は連載各回の誌面ページです。
+The following are the magazine pages of each installment of the series.
 
-- 誌面108–109ページ、一ノ瀬敏彰／山口晶嗣「FORTH/Σ」『エンサイクロペディア・アスキー 第11巻 ASCII 1982年4月号』: 概要、設計方針、スタックの説明、Z80向けシステムのメモリ規模。
-- 誌面110–117ページ、同号: 辞書、インタプリタ、コンパイル／実行モード、制御構造、ユーザーズマニュアル、ワード表。
-- 誌面166–173ページ、同「FORTH/Σ」『エンサイクロペディア・アスキー 第12巻 ASCII 1982年5月号』: PC-8001版、機種固有ワード、メモリ配置、エディタ。
-- 誌面92–99ページ、同「FORTH/Σ」『エンサイクロペディア・アスキー 第12巻 ASCII 1982年6月号』: 辞書検索、数値変換、定義作成、コンパイラおよび制御構造のZ80ソースリストと説明。
-- 誌面178–185ページ、同「FORTH/Σ」『エンサイクロペディア・アスキー 第12巻 ASCII 1982年7月号』: 定義ワード、制御構造、メモリ、スタック、ワード一覧。
-- 誌面144–151ページ、同「FORTH/Σ」『エンサイクロペディア・アスキー 第12巻 ASCII 1982年8月号』: ソースリストと数値出力・算術処理などの説明。
-- 誌面172–179ページ、同「FORTH/Σ」『エンサイクロペディア・アスキー 第13巻 ASCII 1982年9月号』: CP/M版の編集／ファイル処理と転送バッファの説明。
+- Magazine pages 108–109, 一ノ瀬敏彰 and 山口晶嗣, "FORTH/Σ", 『エンサイクロペディア・アスキー 第11巻 ASCII 1982年4月号』 (Encyclopedia ASCII, Vol. 11, ASCII, April 1982): overview, design policy, explanation of the stacks, and the memory size of the system for the Z80.
+- Magazine pages 110–117, same issue: dictionary, interpreter, compile and execution modes, control structures, user's manual, and word table.
+- Magazine pages 166–173, same authors, "FORTH/Σ", 『エンサイクロペディア・アスキー 第12巻 ASCII 1982年5月号』 (Encyclopedia ASCII, Vol. 12, ASCII, May 1982): the PC-8001 version, machine-specific words, memory layout, and editor.
+- Magazine pages 92–99, same authors, "FORTH/Σ", 『エンサイクロペディア・アスキー 第12巻 ASCII 1982年6月号』 (Encyclopedia ASCII, Vol. 12, ASCII, June 1982): Z80 source listing and explanation of the dictionary search, number conversion, definition creation, the compiler, and the control structures.
+- Magazine pages 178–185, same authors, "FORTH/Σ", 『エンサイクロペディア・アスキー 第12巻 ASCII 1982年7月号』 (Encyclopedia ASCII, Vol. 12, ASCII, July 1982): defining words, control structures, memory, stacks, and word list.
+- Magazine pages 144–151, same authors, "FORTH/Σ", 『エンサイクロペディア・アスキー 第12巻 ASCII 1982年8月号』 (Encyclopedia ASCII, Vol. 12, ASCII, August 1982): source listing and explanation of number output, arithmetic, and other processing.
+- Magazine pages 172–179, same authors, "FORTH/Σ", 『エンサイクロペディア・アスキー 第13巻 ASCII 1982年9月号』 (Encyclopedia ASCII, Vol. 13, ASCII, September 1982): editing and file processing of the CP/M version, and explanation of the transfer buffer.

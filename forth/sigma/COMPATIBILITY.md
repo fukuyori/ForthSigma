@@ -1,186 +1,188 @@
-# FORTH/Σワード互換性一覧
+# FORTH/Σ word compatibility list
 
-この一覧は[FORTH/Σ仕様書](SPEC.md)と現在のZig実装を対応づけたものです。誌面に同名ワードがあることだけでは、すべての機種版で同じ仕様とは限らないため、出典は誌面の掲載内容で確認しています。2026-10-28以降、数値まわりと基本ワードはGforthに合わせています（[決定事項](DECISIONS.md)）。
+Japanese version: [COMPATIBILITY.ja.md](COMPATIBILITY.ja.md). This English version is the primary one.
 
-## 凡例
+This list maps the [FORTH/Σ specification](SPEC.md) to the current Zig implementation. A word with the same name in the book does not always have the same specification in every machine version, so each source was checked against what the book prints. Since 2026-10-28, numeric behavior and the basic words follow gforth ([Decisions](DECISIONS.md)).
 
-- **実装**: 現在のZigコアに実装されています。
-- **変更**: 誌面に掲載がありますが、Gforthに合わせて動作を変えています。
-- **拡張**: ポータブル化のために追加した機能、または資料と動作が異なる実装判断です。
-- **未実装**: 誌面に掲載がありますが、現在のコアにはありません。
-- **機種依存**: CP/M、PC-8001、Z80の機械語やモニターに依存し、共通コアの対象外です。
+## Legend
 
-## 共通言語コア（誌面掲載ワード）
+- **Implemented**: Implemented in the current Zig core.
+- **Changed**: Printed in the book, but the behavior was changed to match gforth.
+- **Extended**: A feature added for portability, or an implementation decision whose behavior differs from the material.
+- **Not implemented**: Printed in the book, but not in the current core.
+- **Machine-specific**: Depends on CP/M, the PC-8001, or Z80 machine code or the monitor, and is outside the common core.
 
-| 分類 | 誌面掲載ワード | 現状 | 出典・補足 |
+## Common language core (words printed in the book)
+
+| Category | Words in the book | Status | Source and notes |
 | --- | --- | --- | --- |
-| スタック | DROP, DUP, SWAP, OVER, ROT, >R, R> | 実装 | 誌面参照。セルは64ビット。 |
-| 算術 | +, -, *, /, MOD, /MOD, 1-, MINUS, ABS, MAX, MIN | 変更 | 64ビット。/、MOD、/MODは床関数除算、ゼロ除算はエラー。1-はサンプルとワード表の記載が一致しません。 |
-| 比較・論理 | =, <>, <, >, <=, >=, 0=, NOT, AND, OR, XOR, COM, NAND, NOR | 変更 | 真は-1。NORの定義は資料内で記述が食い違います。 |
-| バイト操作 | SWAB | 変更 | セル全体（8バイト）のバイト順を反転。 |
-| メモリ | @, !, C@, C!, +!, 1+!, 1-!, OSET, ? | 変更 | セルは8バイト。?は末尾に空白。範囲外アドレスはエラー。 |
-| 配列 | ARRAY, A@, A! | 変更 | 1要素8バイト。境界検査はありません。 |
-| 辞書・データ領域 | :, ;, HERE, ALLOT, ,, C,, FORGET | 変更 | 名前は全文字で識別します（誌面は長さと先頭5文字）。 |
-| 定義用語 | <BUILDS, DOES> | 実装 | 実行時に作成名を入力ストリームから読み、DOES>以後の操作列を作成語に結び付けます。 |
-| 変数・定数 | VARIABLE/VAR, CONSTANT/CONST | 実装 | 誌面の版によりVAR/CONST等の表記差があります。 |
-| 条件分岐 | IF, ELSE, THEN | 実装 | 誌面参照。 |
-| 条件・後判定ループ | BEGIN, WHILE, REPEAT, END | 実装 | 誌面参照。 |
-| カウント付きループ | DO, LOOP, +LOOP, LEAVE, I | 変更 | LEAVEは即座にループを抜けます（誌面は次のLOOPで終了）。DOの最低1回実行は維持。負の+LOOPの終端判定は資料から確定できません。 |
-| 基数 | BASE, HEX, DEC, OCT | 実装 | 資料で確認できる基数は8、10、16です。 |
-| 出力 | ., C., ECHO, CR, SPACE, SPCES, TYPE | 変更 | .とC.は末尾に空白、ゼロ埋めなし。TYPEは ( addr u )。 |
-| 数値入力 | INPUT | 実装 | 端末から整数1個を読み取ります。 |
-| 文字列 | " | 変更 | コンパイル専用、最大127バイト。アドレス、文字数の順に積みます（誌面は文字数、アドレス）。 |
+| Stack | DROP, DUP, SWAP, OVER, ROT, >R, R> | Implemented | See the book. A cell is 64 bits. |
+| Arithmetic | +, -, *, /, MOD, /MOD, 1-, MINUS, ABS, MAX, MIN | Changed | 64 bits. /, MOD, and /MOD use floored division; division by zero is an error. For 1-, the sample and the word table do not agree. |
+| Comparison and logic | =, <>, <, >, <=, >=, 0=, NOT, AND, OR, XOR, COM, NAND, NOR | Changed | True is -1. The material describes NOR inconsistently. |
+| Byte operation | SWAB | Changed | Reverses the byte order of the whole cell (8 bytes). |
+| Memory | @, !, C@, C!, +!, 1+!, 1-!, OSET, ? | Changed | A cell is 8 bytes. ? appends a space. An out-of-range address is an error. |
+| Array | ARRAY, A@, A! | Changed | 8 bytes per element. There is no bounds check. |
+| Dictionary and data area | :, ;, HERE, ALLOT, ,, C,, FORGET | Changed | Names are identified by all their characters (the book uses the length and the first 5 characters). |
+| Defining words | <BUILDS, DOES> | Implemented | At run time, reads the name to create from the input stream and attaches the operations after DOES> to the created word. |
+| Variables and constants | VARIABLE/VAR, CONSTANT/CONST | Implemented | The spelling (VAR/CONST and so on) differs between versions of the book. |
+| Conditional branch | IF, ELSE, THEN | Implemented | See the book. |
+| Conditional and post-test loops | BEGIN, WHILE, REPEAT, END | Implemented | See the book. |
+| Counted loop | DO, LOOP, +LOOP, LEAVE, I | Changed | LEAVE leaves the loop immediately (in the book, the loop ends at the next LOOP). DO still runs at least once. The end test of a negative +LOOP cannot be determined from the material. |
+| Base | BASE, HEX, DEC, OCT | Implemented | The bases confirmed in the material are 8, 10, and 16. |
+| Output | ., C., ECHO, CR, SPACE, SPCES, TYPE | Changed | . and C. append a space and do not pad with zeros. TYPE takes ( addr u ). |
+| Number input | INPUT | Implemented | Reads one integer from the terminal. |
+| String | " | Changed | Compile-only, up to 127 bytes. Pushes the address, then the length (the book pushes the length, then the address). |
 
-## Gforthに合わせて追加したワード
+## Words added to match gforth
 
-`zig build -Dfloat=false` でビルドした版には、この節の浮動小数点の語（浮動小数点の行の語と、`FFIELD:` などのフィールド、`FLOAT%` などの大きさ、`FVALUE`、`FLITERAL`）と、共通言語コアの浮動小数点の語がありません（[決定事項](DECISIONS.md)の「浮動小数点を除いた版」）。
+The build made with `zig build -Dfloat=false` does not have the floating-point words of this section (the words in the floating-point rows, the fields such as `FFIELD:`, the sizes such as `FLOAT%`, `FVALUE`, and `FLITERAL`) or the floating-point words of the common language core ("the build without floating point" in [Decisions](DECISIONS.md)).
 
-| 分類 | ワード | 備考 |
+| Category | Words | Notes |
 | --- | --- | --- |
-| スタック | -ROT, NIP, TUCK, PICK, ROLL, 2DUP, 2DROP, 2SWAP, 2OVER, DEPTH, R@, .S | |
-| 算術・比較 | NEGATE, 1+, 2*, 2/, 0<, 0>, 0<>, TRUE, FALSE | |
-| ビット | INVERT, LSHIFT, RSHIFT | |
-| メモリ | CELL, CELLS, CELL+, ALIGNED, BL, ON, OFF, ERASE, FILL, MOVE, CMOVE | |
-| 出力 | U., EMIT, SPACES, DECIMAL | |
-| 定義 | CREATE, VALUE, TO, IMMEDIATE, POSTPONE, RECURSE, CHAR, [CHAR], ['] | |
-| 制御構造 | UNTIL, AGAIN, CASE, OF, ENDOF, ENDCASE, EXIT, UNLOOP | |
-| コメント | \ | |
-| 浮動小数点スタック | FDROP, FDUP, FSWAP, FOVER, FROT, F-ROT, FNIP, FTUCK, FPICK, FDEPTH, F.S | 教材Level 17 |
-| 浮動小数点演算 | F+, F-, F*, F/, FNEGATE, FABS, FMAX, FMIN, FSQRT, FEXP, FLN, FSIN, FCOS, FTAN | 教材Level 17 |
-| 浮動小数点比較 | F=, F<>, F<, F>, F<=, F>=, F0=, F0<>, F0<, F0>, F0<=, F0>= | 結果は整数スタック |
-| 浮動小数点メモリ・変換 | F@, F!, F,, FLOATS, FLOAT+, FVARIABLE, FCONSTANT, S>F, F>S, F. | 教材Level 17 |
-| 文字列・入力 | S", S\", .\", .(, COUNT, PAD, ACCEPT, EVALUATE, KEY, KEY?, >NUMBER, S>NUMBER?, >FLOAT | 段階3。教材Level 6、9、14、29 |
-| 倍長整数 | 倍長整数リテラル（`123.`）, S>D, D>S, D+, D-, DNEGATE, DABS, D0=, D0<, D=, D<, D., 2@, 2!, 2VARIABLE, 2CONSTANT, D>F, F>D | 段階3。教材Level 18、20 |
-| 数値の書式 | <#, <<#, #, #S, HOLD, HOLDS, SIGN, #>, #>> | 段階3。教材Level 20 |
-| 小規模追加（グループA） | WITHIN, 2>R, 2R>, ENDIF, PLACE, ABORT, STATE, :NONAME, MS, UTIME, PAGE, GETENV, SYSTEM | 教材Level 2、5、6、9、10、14、15、25、30〜32。MS、UTIME、GETENV、SYSTEMはホスト機能を使います。 |
-| 基本語・倍長の乗除算・READ-FILE（2026-10-30） | ?DUP, U<, U>, ALIGN, UNUSED, .R, U.R, 2R@, */, */MOD, M*, UM*, UM/MOD, FM/MOD, SM/REM, READ-FILE | Forth 2012のCORE・CORE EXTの語と、ファイルの語。結果はGforthと同じです。`*/` などの除算は、0で割ると `DIVISION BY ZERO !`（-10）、商が1セルに収まらないと `RESULT OUT OF RANGE !`（-11）になります（Gforthと同じ）。`/` `MOD` `/MOD` も、最小値を-1で割ると-11になります（Gforthと同じ、2026-10-30から）。`READ-FILE` は `STDIN` からも読めます。Windowsでも、パイプやリダイレクトの標準入力はバイナリで読むので、CR LFや0x1Aもそのまま読めます（コンソールはテキストのままです）。 |
-| REPRESENT, M*/（2026-10-30） | REPRESENT, M*/ | 結果はGforthと同じです。`REPRESENT` は数字を2進数の値から正確に丸め、0の指数は1、無限大とNaNは名前を切って書きます。`M*/` は途中を256ビットで計算し、Gforthと同じく除数を符号なしとして扱い、商が2セルに収まらないと折り返します（エラーにしません）。 |
-| WHERE（2026-10-30） | WHERE | 出力はGforthと同じです（ファイルの位置、行頭の空白を除いた行、80桁、通し番号。全角文字は2桁、タブは8桁ごと）。Gforthと同じく、`'` `[DEFINED]` `FIND-NAME` などで名前を探した箇所も、直前に読んだ語の位置で記録します。違い: 記録するのはファイルから読んだ使用だけで、組み込み語の定義の中の使用はありません（Gforthの `WHERE DUP` はGforth自身のソースの使用も表示します）。記録は65536件までです。辞書イメージには入らず、`LOAD` やイメージの復元の後は空になります。行の幅は端末の幅によらず80桁です。位置の部分だけで80桁を超える行は、Gforthと同じく行の内容を切らずに全部表示します。 |
-| 遅延語・コンパイル・構造体・小さなGforthの語（2026-10-30） | DEFER, IS, ACTION-OF, DEFER!, DEFER@, DEFERS, COMPILE,, [COMPILE], NAME>COMPILE, BEGIN-STRUCTURE, END-STRUCTURE, +FIELD, FIELD:, CFIELD:, FFIELD:, SFFIELD:, DFFIELD:, STRUCT, FIELD, END-STRUCT, CELL%, CHAR%, FLOAT%, DOUBLE%, SFLOAT%, DFLOAT%, %SIZE, %ALIGNMENT, %ALIGN, %ALLOT, %ALLOC, %ALLOCATE, +TO, ?EXIT, NOOP, PERFORM, ?LEAVE, CELL-, UNDER+, 0>=, ?OF, CONTOF, NEXT-CASE | 利用者の決定で、教材で使わない一般のGforthの語も加えた。結果はWindows版・Linux版ともGforthと同じです。違い: 動作を決めていないDEFERは警告を出して何もしないのはGforthと同じですが、`DEFER@` は-1を返します。定義の外の `COMPILE,` はエラーです（Gforthは警告を出してコンパイルします）。`SEE` の表示（DEFER、フィールド、`END-STRUCT` の名前）はGforthと違います。自分自身を実行するDEFERは `RETURN STACK OVER FLOW !` です（Gforthは止まりません）。動作を決めていないDEFERの `DEFERS` はエラーです（Gforthは警告を出す語を埋め込みます）。`[COMPILE]` にローカル変数を渡すとエラーです（Gforthも正しく扱いません）。`FORGET` や `MARKER` で消した語を実行するDEFERは、動作を決めていない状態に戻します（番号が新しい語に使われるため）。`+TO` はローカル変数にも使えます（Gforthと同じ）。`IS` `ACTION-OF` `+TO` は `TO` と同じく構文語で、語彙に属しません。`LOAD` では、DEFERの動作が読み込んだ語なら、その語の新しい番号に付け替えます。 |
-| 残りの動的文字列の語（2026-10-30） | $SLURP、$+SLURP、$+SLURP-FILE、$SLURP-LINE、$+!LEN、$[]+!、$+[]!、$EXEC、$OFF、$VARIABLE、$[]VARIABLE、$? | Linux版の結果はGforthと同じです。`$VARIABLE` `$[]VARIABLE` は `VARIABLE` の別名で、`SEE` もGforthと同じく変数として表示します。`$?` はGforthでは値（VALUE）ですが、Sigmaでは値を返す語で、`TO` は使えません。Windowsの `$?` は終了コードです（Linux・macOSは `system` の返す値で、Gforthと同じ）。 |
-| 解釈中の繰り返しと条件付きコンパイル（2026-10-30） | [IFDEF], [IFUNDEF], [ENDIF], [DO], [?DO], [LOOP], [+LOOP], [I], [BEGIN], [UNTIL], [AGAIN], [WHILE], [REPEAT], [FOR], [NEXT] | 結果はGforthと同じです。繰り返しは入力の位置（`SAVE-INPUT` と同じ情報）を覚えて戻るので、ファイルでは行をまたいで使え、`[ ]` の中でも使えます。端末と `EVALUATE` では同じ行の中だけで繰り返します。対応する開始語がないと `CONTROL STRUCTURE ERROR !` です。`CATCH` で捕捉したときは、捕捉した語の中で始めた繰り返しも終わります。 |
-| 残りのファイルの語（2026-10-30） | FILE-POSITION, RESIZE-FILE, FLUSH-FILE, DELETE-FILE, RENAME-FILE, FILE-STATUS, BIN, INCLUDE-FILE | 結果（iorと値）はGforthと同じです。`BIN` は動きを変えません（ファイルはいつもバイトのまま扱います）。`RENAME-FILE` は、Windowsでも、変更先の名前のファイルを置き換えます（Gforthと同じ）。Windowsでは置き換えを一度の操作（`MoveFileEx`）で行うので、失敗しても変更先のファイルは残ります。`FILE-STATUS` の値は開ける方法（`R/O` `W/O` `R/W`）です。`INCLUDE-FILE` で読むファイルは、名前を `*file*` として記録します。 |
-| 個別に設計の語の残り（#201、2026-10-30） | SYNONYM, TRAVERSE-WORDLIST, NAME>INTERPRET, CS-PICK, CS-ROLL, EKEY, EKEY?, EKEY>CHAR, ENVIRONMENT?, QUIT | 結果はGforthと同じです。`EKEY` は `KEY` と同じで、ファンクションキーなどの特殊なキーは解釈しません。`ENVIRONMENT?` はこの処理系の大きさを返し（`/HOLD` 4096、`STACK-CELLS` 1024 など、Gforthとは値が違います）、語群の名前（`CORE` など）には偽を返します。`QUIT` はデータスタックを残し、`CATCH` で捕まえません。`WHILE` は標準と同じく、分岐をBEGINの下に置くようにしたので、`CS-ROLL` を使う書き方や、`BEGIN ... WHILE ... WHILE ... REPEAT THEN` が使えます。 |
-| 個別に設計の語のうち小さなもの（#201、2026-10-30） | AHEAD, N>R, NR>, AT-XY, TIME&DATE | 結果はGforthと同じです。`AT-XY` はGforthと同じエスケープシーケンス（`ESC[行;列H`）を出力します。`TIME&DATE` はホストのCライブラリの地方時です。 |
-| 入力処理（#197、2026-10-30） | SOURCE, >IN, SOURCE-ID, REFILL, SAVE-INPUT, RESTORE-INPUT | `>IN` は論理メモリのセルで、`PARSE` `WORD` などはこのセルの位置から読みます。端末・ファイル・`EVALUATE` での結果はGforthと同じです。負の `>IN` はGforthと同じく-18（`STRING TOO LONG !`）にします。`SAVE-INPUT` は入力元、`>IN`、行（端末と `EVALUATE` では行のアドレス、ファイルでは行の先頭の位置）、行の番号（ファイルでは行番号、端末と `EVALUATE` では行ごとの通し番号）の4個を返します（値の中身はGforthと違います）。`RESTORE-INPUT` はファイルでは保存した行を読み直し、端末と `EVALUATE` では同じ行の中でだけ戻り、入力元が違えば失敗（真）を返します。 |
-| 次点の語（#198、2026-10-30） | C", ABORT", BUFFER:, 2LITERAL, 2VALUE, D.R, D2*, D2/, DMAX, DMIN, M+, DU<, 2ROT, DUMP | 出力はGforthと同じです。`C"` と `ABORT"` はGforthと同じく定義の中だけで使えます（定義の外では `COMPILE MODE ERROR !`）。`ABORT"` は `CATCH` がなければ文字列だけを表示します。`DUMP` の書式はGforthと同じで、表示するアドレスは論理メモリのアドレスです。 |
-| 文字列の操作・比較・検索 | COMPARE, SEARCH, /STRING, -TRAILING, CHAR+, CHARS, BOUNDS, BLANK, CMOVE>, SLITERAL, PARSE-NAME, SCAN, SKIP, STR=, STRING-PREFIX?, +PLACE, SLURP-FILE, $SLURP-FILE | Forth 2012のSTRING語と基本語、Gforthの文字列語。`+PLACE` はGforthでは古い語とされています。負の長さは、Sigmaのほかの文字列語と同じく空の文字列として扱います（Gforthの `BLANK` `SCAN` などはメモリの誤りになります）。メモリの終わりを越える長さは `INVALID MEMORY ADDRESS !` になります。`SLITERAL` の文字列は `S"` と同じく255バイトまでです。境界の値（空の文字列、負の長さ、範囲を超える/STRING、タブを含む末尾）もGforthと同じ結果です。 |
-| 例外・ファイル（段階5a、CATCH） | THROW, CATCH, R/O, W/O, R/W, STDIN, STDOUT, STDERR, OPEN-FILE, CREATE-FILE, CLOSE-FILE, READ-LINE, WRITE-LINE, WRITE-FILE, FILE-SIZE, REPOSITION-FILE | 教材Level 14、19、23、25、29。CATCHで捕捉しなかった0以外のTHROWはエラーとして報告します。 |
-| 動的メモリ・動的文字列（段階5b） | ALLOCATE, FREE, RESIZE, $!, $@, $@LEN, $!LEN, $+!, C$+!, $., $DEL, $INS, $OVER, $FREE, $INIT, $SPLIT, $ITER, $TMP, $[], $[]!, $[]@, $[]#, $[]., $[]MAP, $[]FREE, $[]SLURP, $[]SLURP-FILE, $SLURP, $+SLURP, $+SLURP-FILE, $SLURP-LINE, $+!LEN, $[]+!, $+[]!, $EXEC, $OFF, $VARIABLE, $[]VARIABLE, $? | 教材Level 14、29、30、32。ヒープは論理メモリの100000H〜1DFFFFH。 |
-| 辞書探索・解析（#153） | WORD, FIND, PARSE, FIND-NAME, NAME>INT, NAME>STRING, SEE | 教材Level 10、31。`SEE` はコンパイル済みの命令列から定義を再構成します。`FIND` は構文語（`TO` `[']` など）を見つけません。 |
-| 浮動小数点の関数・丸め・表示・メモリ（#200、2026-10-30） | FSINCOS, FASIN, FACOS, FATAN, FATAN2, FSINH, FCOSH, FTANH, FASINH, FACOSH, FATANH, FEXPM1, FLNP1, FLOG, FALOG, F**, FLOOR, FTRUNC, FROUND, F~, FE., FS., PRECISION, SET-PRECISION, FVALUE, SF@, SF!, DF@, DF!, SFLOATS, DFLOATS, SFLOAT+, DFLOAT+, FALIGN, FALIGNED, SFALIGN, SFALIGNED, DFALIGN, DFALIGNED | 数学関数はCORE-MATHの正しく丸める関数で、どのOSでも同じ値です（利用者の決定、方針A）。Gforth（glibc）とは30,349件のうち29,017件（95.6%）でビットまで一致し、残りの1 ulpの違いはglibcが正しく丸めていないためです（例: `0.5e FATANH` はln(3)/2を正しく丸めた値で、Gforthより1 ulp大きい）。範囲外の引数のNaNの符号はGforthと同じです。それ以外の語の出力はGforthと同じです。`PRECISION` が1のときの `FE.` と、0以下の `PRECISION` では、Gforthは異常終了しますが、Sigmaは表示します（1〜1000桁）。 |
-| 浮動小数点の書式（#156） | F.RDP, F>STR-RDP, F>BUF-RDP | 教材Level 20、25、29。Gforthで確かめた118例すべてと同じ出力です。 |
-| 説明・ライセンス | HELP, LICENSE | Gforthの `help` `license` に相当します。`HELP 語名` の説明はこの移植版のために書いたもので、Gforthのマニュアルの文章ではありません。起動時の表示（引数なしのときだけ）は2行で、版番号とライセンスを示します。 |
-| リテラルのコンパイル（#181） | LITERAL, FLITERAL | 教材Level 31。科学計算DSL（完成版）はGforthと同じ出力になります。COMPILE,、DEFER、IS、ACTION-OFも使えます（2026-10-30に追加）。 |
-| 実行トークンのデータ領域（#177） | >BODY | 教材Level 31。`'` は語の番号を返すので、`'` の値をアドレスとして使う教材Level 12の `' DATA +` とLevel 21の `' pointA @` は動きません（Gforthでは動きます）。標準のForthでも、実行トークンをアドレスとして使うことは保証されていません（3.1.1）。語の番号は `BASE`（200H）などの処理系の変数の番地と重なるため、`' DATA +` への書き込みは `BASE` を壊し、`BASE ERROR !` になります（語の番号は組み込み語が増えると上がるので、届く番地も変わります）。`' DATA >BODY +` と書き直せば、結果はGforthと同じです（Level 12は `10 20 30 40 50 30`）。CONSTANT・FCONSTANT・コロン定義・組み込み語の `>BODY` はエラーです。 |
-| 定義語・定数（#158） | 定義の中の :, ;, VARIABLE, VAR, FVARIABLE, 2VARIABLE, CONSTANT, CONST, FCONSTANT, 2CONSTANT, VALUE, ARRAY, FARRAY、PI | 教材Level 20、25、31。定義の中に書いた定義語は、その定義の実行時に名前を読みます。解釈中の `[` はエラーにしません。 |
-| 語彙・条件付きコンパイル（段階6） | ONLY, ALSO, PREVIOUS, FORTH, DEFINITIONS, ORDER, GET-ORDER, SET-ORDER, >ORDER, GET-CURRENT, SET-CURRENT, VOCABULARY, WORDLIST, FORTH-WORDLIST, SEARCH-WORDLIST, [IF], [ELSE], [THEN], [DEFINED], [UNDEFINED] | 教材Level 16、30。検索順序の初期値と `ORDER` の表示はGforthと同じです。`:` `TO` などの構文語は語彙に属さず、検索順序によらず使えます。 |
-| ソース読み込み（#154）・MARKER | INCLUDE, INCLUDED, REQUIRE, REQUIRED, NEEDS, INCLUDED?, SOURCEFILENAME, SOURCELINE#, LOCATE, WHERE, MARKER | 教材Level 2、10、14、16、19、30。ファイル名はカレントディレクトリからの相対パスです。 |
-| ローカル変数（段階4） | { ... }, {: ... :}, LOCALS\|, 型指定 W: W^ D: D^ F: F^ C: C^ XT: XT^, TO | 教材Level 14〜16、25〜27、29、32。`{` と `LOCALS\|` は構文語で、`WORDS` には表示しません。 |
+| Stack | -ROT, NIP, TUCK, PICK, ROLL, 2DUP, 2DROP, 2SWAP, 2OVER, DEPTH, R@, .S | |
+| Arithmetic and comparison | NEGATE, 1+, 2*, 2/, 0<, 0>, 0<>, TRUE, FALSE | |
+| Bits | INVERT, LSHIFT, RSHIFT | |
+| Memory | CELL, CELLS, CELL+, ALIGNED, BL, ON, OFF, ERASE, FILL, MOVE, CMOVE | |
+| Output | U., EMIT, SPACES, DECIMAL | |
+| Definitions | CREATE, VALUE, TO, IMMEDIATE, POSTPONE, RECURSE, CHAR, [CHAR], ['] | |
+| Control structures | UNTIL, AGAIN, CASE, OF, ENDOF, ENDCASE, EXIT, UNLOOP | |
+| Comments | \ | |
+| Floating-point stack | FDROP, FDUP, FSWAP, FOVER, FROT, F-ROT, FNIP, FTUCK, FPICK, FDEPTH, F.S | Level 17 |
+| Floating-point arithmetic | F+, F-, F*, F/, FNEGATE, FABS, FMAX, FMIN, FSQRT, FEXP, FLN, FSIN, FCOS, FTAN | Level 17 |
+| Floating-point comparison | F=, F<>, F<, F>, F<=, F>=, F0=, F0<>, F0<, F0>, F0<=, F0>= | The result goes to the data stack |
+| Floating-point memory and conversion | F@, F!, F,, FLOATS, FLOAT+, FVARIABLE, FCONSTANT, S>F, F>S, F. | Level 17 |
+| Strings and input | S", S\", .\", .(, COUNT, PAD, ACCEPT, EVALUATE, KEY, KEY?, >NUMBER, S>NUMBER?, >FLOAT | Stage 3. Levels 6, 9, 14, and 29 |
+| Double-cell integers | Double-cell integer literals (`123.`), S>D, D>S, D+, D-, DNEGATE, DABS, D0=, D0<, D=, D<, D., 2@, 2!, 2VARIABLE, 2CONSTANT, D>F, F>D | Stage 3. Levels 18 and 20 |
+| Number formatting | <#, <<#, #, #S, HOLD, HOLDS, SIGN, #>, #>> | Stage 3. Level 20 |
+| Small additions (group A) | WITHIN, 2>R, 2R>, ENDIF, PLACE, ABORT, STATE, :NONAME, MS, UTIME, PAGE, GETENV, SYSTEM | Levels 2, 5, 6, 9, 10, 14, 15, 25, and 30–32. MS, UTIME, GETENV, and SYSTEM use host functions. |
+| Basic words, double-cell multiply and divide, READ-FILE (2026-10-30) | ?DUP, U<, U>, ALIGN, UNUSED, .R, U.R, 2R@, */, */MOD, M*, UM*, UM/MOD, FM/MOD, SM/REM, READ-FILE | Words from CORE and CORE EXT of Forth 2012, and a file word. The results are the same as gforth. Division words such as `*/` give `DIVISION BY ZERO !` (-10) on division by 0, and `RESULT OUT OF RANGE !` (-11) when the quotient does not fit in one cell (same as gforth). `/` `MOD` `/MOD` also give -11 when the minimum value is divided by -1 (same as gforth, since 2026-10-30). `READ-FILE` can also read from `STDIN`. On Windows too, piped or redirected standard input is read in binary, so CR LF and 0x1A are read as they are (a console stays in text mode). |
+| REPRESENT, M*/ (2026-10-30) | REPRESENT, M*/ | The results are the same as gforth. `REPRESENT` rounds the digits exactly from the binary value, gives the exponent 1 for 0, and writes infinity and NaN with their names cut. `M*/` computes the intermediate result in 256 bits, treats the divisor as unsigned like gforth, and wraps when the quotient does not fit in two cells (it is not an error). |
+| WHERE (2026-10-30) | WHERE | The output is the same as gforth (the file position, the line without its leading blanks, 80 columns, a serial number; a full-width character takes 2 columns, and tabs stop every 8 columns). Like gforth, a place where a name is looked up with `'` `[DEFINED]` `FIND-NAME` and so on is also recorded, at the position of the word read just before. Differences: only uses read from files are recorded; uses inside the definitions of built-in words are not (gforth's `WHERE DUP` also shows the uses in gforth's own source). Up to 65536 entries are recorded. They are not part of the dictionary image and are empty after `LOAD` or an image restore. The line width is 80 columns regardless of the terminal width. A line whose position part alone exceeds 80 columns is shown in full without cutting the line content, like gforth. |
+| Deferred words, compilation, structures, small gforth words (2026-10-30) | DEFER, IS, ACTION-OF, DEFER!, DEFER@, DEFERS, COMPILE,, [COMPILE], NAME>COMPILE, BEGIN-STRUCTURE, END-STRUCTURE, +FIELD, FIELD:, CFIELD:, FFIELD:, SFFIELD:, DFFIELD:, STRUCT, FIELD, END-STRUCT, CELL%, CHAR%, FLOAT%, DOUBLE%, SFLOAT%, DFLOAT%, %SIZE, %ALIGNMENT, %ALIGN, %ALLOT, %ALLOC, %ALLOCATE, +TO, ?EXIT, NOOP, PERFORM, ?LEAVE, CELL-, UNDER+, 0>=, ?OF, CONTOF, NEXT-CASE | By the user's decision, general gforth words that the course material does not use were also added. The results are the same as gforth in both the Windows and the Linux versions. Differences: a DEFER with no action set prints a warning and does nothing, as in gforth, but `DEFER@` returns -1. `COMPILE,` outside a definition is an error (gforth prints a warning and compiles). The `SEE` output (the names of DEFER, fields, and `END-STRUCT`) differs from gforth. A DEFER that executes itself gives `RETURN STACK OVER FLOW !` (gforth does not stop). `DEFERS` of a DEFER with no action set is an error (gforth compiles a word that prints a warning). Passing a local variable to `[COMPILE]` is an error (gforth does not handle it correctly either). A DEFER that executes a word removed by `FORGET` or `MARKER` goes back to having no action set (because its number is reused by a new word). `+TO` also works on local variables (same as gforth). `IS` `ACTION-OF` `+TO` are parsing words like `TO` and belong to no word list. On `LOAD`, when the action of a DEFER is a loaded word, the action is changed to the new number of that word. |
+| Remaining dynamic string words (2026-10-30) | $SLURP, $+SLURP, $+SLURP-FILE, $SLURP-LINE, $+!LEN, $[]+!, $+[]!, $EXEC, $OFF, $VARIABLE, $[]VARIABLE, $? | The results of the Linux version are the same as gforth. `$VARIABLE` `$[]VARIABLE` are aliases of `VARIABLE`, and `SEE` shows them as variables, as gforth does. In gforth `$?` is a value (VALUE), but in Sigma it is a word that returns a value, and `TO` cannot be used with it. On Windows `$?` is the exit code (on Linux and macOS it is the value that `system` returns, as in gforth). |
+| Interpretive loops and conditional compilation (2026-10-30) | [IFDEF], [IFUNDEF], [ENDIF], [DO], [?DO], [LOOP], [+LOOP], [I], [BEGIN], [UNTIL], [AGAIN], [WHILE], [REPEAT], [FOR], [NEXT] | The results are the same as gforth. A loop remembers the input position (the same information as `SAVE-INPUT`) and goes back to it, so in a file a loop can span lines, and it can be used inside `[ ]`. At the terminal and in `EVALUATE`, a loop repeats only within the same line. Without a matching start word the result is `CONTROL STRUCTURE ERROR !`. When `CATCH` catches an exception, loops started inside the caught word also end. |
+| Remaining file words (2026-10-30) | FILE-POSITION, RESIZE-FILE, FLUSH-FILE, DELETE-FILE, RENAME-FILE, FILE-STATUS, BIN, INCLUDE-FILE | The results (ior and values) are the same as gforth. `BIN` does not change the behavior (files are always handled as bytes). `RENAME-FILE` replaces an existing file with the new name, also on Windows (same as gforth). On Windows the replacement is done in one operation (`MoveFileEx`), so if it fails, the destination file remains. The value of `FILE-STATUS` is the access method (`R/O` `W/O` `R/W`). A file read with `INCLUDE-FILE` is recorded with the name `*file*`. |
+| Individually designed words, the rest (#201, 2026-10-30) | SYNONYM, TRAVERSE-WORDLIST, NAME>INTERPRET, CS-PICK, CS-ROLL, EKEY, EKEY?, EKEY>CHAR, ENVIRONMENT?, QUIT | The results are the same as gforth. `EKEY` is the same as `KEY` and does not interpret special keys such as function keys. `ENVIRONMENT?` returns the sizes of this implementation (`/HOLD` 4096, `STACK-CELLS` 1024, and so on; the values differ from gforth), and returns false for the names of word sets (such as `CORE`). `QUIT` keeps the data stack and is not caught by `CATCH`. `WHILE` now puts its branch below the BEGIN, as the standard does, so code that uses `CS-ROLL` and `BEGIN ... WHILE ... WHILE ... REPEAT THEN` work. |
+| Individually designed words, the small ones (#201, 2026-10-30) | AHEAD, N>R, NR>, AT-XY, TIME&DATE | The results are the same as gforth. `AT-XY` outputs the same escape sequence as gforth (`ESC[row;columnH`). `TIME&DATE` gives the local time of the host C library. |
+| Input handling (#197, 2026-10-30) | SOURCE, >IN, SOURCE-ID, REFILL, SAVE-INPUT, RESTORE-INPUT | `>IN` is a cell in logical memory, and `PARSE`, `WORD`, and so on read from the position in this cell. The results at the terminal, in files, and in `EVALUATE` are the same as gforth. A negative `>IN` gives -18 (`STRING TOO LONG !`), as in gforth. `SAVE-INPUT` returns 4 values: the input source, `>IN`, the line (the address of the line at the terminal and in `EVALUATE`, the position of the start of the line in a file), and the line number (the line number in a file, a serial number per line at the terminal and in `EVALUATE`) (the contents of the values differ from gforth). `RESTORE-INPUT` reads the saved line again in a file, goes back only within the same line at the terminal and in `EVALUATE`, and returns failure (true) when the input source differs. |
+| Runner-up words (#198, 2026-10-30) | C", ABORT", BUFFER:, 2LITERAL, 2VALUE, D.R, D2*, D2/, DMAX, DMIN, M+, DU<, 2ROT, DUMP | The output is the same as gforth. `C"` and `ABORT"` can be used only inside a definition, as in gforth (outside a definition the result is `COMPILE MODE ERROR !`). Without a `CATCH`, `ABORT"` shows only the string. The format of `DUMP` is the same as gforth, and the addresses it shows are logical memory addresses. |
+| String operations, comparison, and search | COMPARE, SEARCH, /STRING, -TRAILING, CHAR+, CHARS, BOUNDS, BLANK, CMOVE>, SLITERAL, PARSE-NAME, SCAN, SKIP, STR=, STRING-PREFIX?, +PLACE, SLURP-FILE, $SLURP-FILE | The STRING words and basic words of Forth 2012, and the gforth string words. gforth regards `+PLACE` as obsolete. A negative length is treated as an empty string, as in the other string words of Sigma (gforth's `BLANK`, `SCAN`, and so on give a memory error). A length that goes past the end of memory gives `INVALID MEMORY ADDRESS !`. The string of `SLITERAL` is up to 255 bytes, as for `S"`. Boundary values (an empty string, a negative length, /STRING beyond the range, a trailing part that contains tabs) also give the same results as gforth. |
+| Exceptions and files (stage 5a, CATCH) | THROW, CATCH, R/O, W/O, R/W, STDIN, STDOUT, STDERR, OPEN-FILE, CREATE-FILE, CLOSE-FILE, READ-LINE, WRITE-LINE, WRITE-FILE, FILE-SIZE, REPOSITION-FILE | Levels 14, 19, 23, 25, and 29. A non-zero THROW that CATCH does not catch is reported as an error. |
+| Dynamic memory and dynamic strings (stage 5b) | ALLOCATE, FREE, RESIZE, $!, $@, $@LEN, $!LEN, $+!, C$+!, $., $DEL, $INS, $OVER, $FREE, $INIT, $SPLIT, $ITER, $TMP, $[], $[]!, $[]@, $[]#, $[]., $[]MAP, $[]FREE, $[]SLURP, $[]SLURP-FILE, $SLURP, $+SLURP, $+SLURP-FILE, $SLURP-LINE, $+!LEN, $[]+!, $+[]!, $EXEC, $OFF, $VARIABLE, $[]VARIABLE, $? | Levels 14, 29, 30, and 32. The heap is at 100000H–1DFFFFH of logical memory. |
+| Dictionary search and parsing (#153) | WORD, FIND, PARSE, FIND-NAME, NAME>INT, NAME>STRING, SEE | Levels 10 and 31. `SEE` reconstructs a definition from its compiled operation stream. `FIND` does not find parsing words (`TO`, `[']`, and so on). |
+| Floating-point functions, rounding, display, and memory (#200, 2026-10-30) | FSINCOS, FASIN, FACOS, FATAN, FATAN2, FSINH, FCOSH, FTANH, FASINH, FACOSH, FATANH, FEXPM1, FLNP1, FLOG, FALOG, F**, FLOOR, FTRUNC, FROUND, F~, FE., FS., PRECISION, SET-PRECISION, FVALUE, SF@, SF!, DF@, DF!, SFLOATS, DFLOATS, SFLOAT+, DFLOAT+, FALIGN, FALIGNED, SFALIGN, SFALIGNED, DFALIGN, DFALIGNED | The math functions are the correctly rounded functions of CORE-MATH and give the same values on every OS (user decision, policy A). They match gforth (glibc) to the bit in 29,017 of 30,349 cases (95.6%); the remaining differences of 1 ulp are because glibc does not round correctly (example: `0.5e FATANH` is ln(3)/2 correctly rounded, 1 ulp larger than gforth). The sign of the NaN for an out-of-range argument is the same as gforth. The output of the other words is the same as gforth. For `FE.` with a `PRECISION` of 1, and for a `PRECISION` of 0 or less, gforth terminates abnormally, but Sigma prints the value (1 to 1000 digits). |
+| Floating-point formatting (#156) | F.RDP, F>STR-RDP, F>BUF-RDP | Levels 20, 25, and 29. The output is the same for all 118 examples checked with gforth. |
+| Help and license | HELP, LICENSE | Correspond to gforth's `help` and `license`. The descriptions shown by `HELP name` were written for this port and are not text from the gforth manual. The startup banner (shown only when there are no arguments) has 2 lines and shows the version number and the license. |
+| Compiling literals (#181) | LITERAL, FLITERAL | Level 31. The scientific computing DSL (final version) gives the same output as gforth. COMPILE,, DEFER, IS, and ACTION-OF can also be used (added on 2026-10-30). |
+| Data area of an execution token (#177) | >BODY | Level 31. `'` returns the word number, so `' DATA +` in Level 12 and `' pointA @` in Level 21, which use the value of `'` as an address, do not work (they work in gforth). Standard Forth does not guarantee that an execution token can be used as an address either (3.1.1). Word numbers overlap the addresses of implementation variables such as `BASE` (200H), so a store to `' DATA +` corrupts `BASE` and gives `BASE ERROR !` (word numbers go up when built-in words are added, so the address reached also changes). Rewritten as `' DATA >BODY +`, the result is the same as gforth (Level 12 gives `10 20 30 40 50 30`). `>BODY` of a CONSTANT, an FCONSTANT, a colon definition, or a built-in word is an error. |
+| Defining words and constants (#158) | Inside a definition: :, ;, VARIABLE, VAR, FVARIABLE, 2VARIABLE, CONSTANT, CONST, FCONSTANT, 2CONSTANT, VALUE, ARRAY, FARRAY, PI | Levels 20, 25, and 31. A defining word written inside a definition reads the name when that definition runs. `[` while interpreting is not an error. |
+| Word lists and conditional compilation (stage 6) | ONLY, ALSO, PREVIOUS, FORTH, DEFINITIONS, ORDER, GET-ORDER, SET-ORDER, >ORDER, GET-CURRENT, SET-CURRENT, VOCABULARY, WORDLIST, FORTH-WORDLIST, SEARCH-WORDLIST, [IF], [ELSE], [THEN], [DEFINED], [UNDEFINED] | Levels 16 and 30. The initial search order and the output of `ORDER` are the same as gforth. Parsing words such as `:` and `TO` belong to no word list and work regardless of the search order. |
+| Loading source (#154) and MARKER | INCLUDE, INCLUDED, REQUIRE, REQUIRED, NEEDS, INCLUDED?, SOURCEFILENAME, SOURCELINE#, LOCATE, WHERE, MARKER | Levels 2, 10, 14, 16, 19, and 30. File names are paths relative to the current directory. |
+| Local variables (stage 4) | { ... }, {: ... :}, LOCALS\|, type prefixes W: W^ D: D^ F: F^ C: C^ XT: XT^, TO | Levels 14–16, 25–27, 29, and 32. `{` and `LOCALS\|` are parsing words and are not shown by `WORDS`. |
 
-## 追加機能・移植上の違い
+## Additional features and porting differences
 
-| 機能 | 状態 | 現在の動作 |
+| Feature | Status | Current behavior |
 | --- | --- | --- |
-| タブ区切り | 拡張 | タブも空白と同じくトークンの区切りです（誌面は空白とCRのみ）。Gforthと同じです。 |
-| 大文字・小文字を区別しない名前照合 | 拡張 | ASCII英字の大小を同一視します。Gforthと同じです。 |
-| 数値基数2〜36と接頭辞 | 拡張 | BASEのメモリ値で2〜36を使えます。`$` `#` `&` `%` 接頭辞と `'c'` を認識します。 |
-| 浮動小数点リテラル | 拡張 | 基数10で `e`/`E` を含むトークン。 |
-| 無限大・NaNの表示 | 拡張 | `F.` `FE.` `FS.` は `infinity` `-infinity` `NaN` を `PRECISION` で切らずに表示します。Gforthは `PRECISION` の文字数で切ります（`6 SET-PRECISION` で `infini`、`2 SET-PRECISION` で `Na`）。既定の `PRECISION`（15）では同じです。 |
-| F+!, F?, FA@, FA!, FARRAY, FINPUT, FMINUS | 拡張 | FORTH/Σの +!、?、A@、A!、ARRAY、INPUT、MINUS に対応する浮動小数点版。Gforthのワードではありません。 |
-| ."文字列出力 | 拡張 | コンパイル時文字列出力です。1982年資料のワードではありません。 |
-| ?DO | 拡張 | 開始値と終値が同じ場合、ループ本体を実行しません。FORTH/ΣのDOは同値でも1回実行します。 |
-| J, K | 拡張 | 2段目・3段目のループ添字を取得します。誌面では利用者定義例として説明されています。 |
-| EXECUTE | 拡張 | ポータブルな辞書トークンを実行します。Z80コードアドレス互換ではありません。 |
-| 単一の論理メモリと上限 | 拡張 | 2 MiBの論理メモリ（データ領域は100000H未満、ヒープは100000H〜1DFFFFH、入力バッファは1E0000H〜1EFFFFH、ローカル変数は1F0000H〜1FFFFFH）、各種固定容量を使います。歴史的な機種のメモリ配置とは異なります。 |
-| SAVESYS | 拡張 | 現在の辞書・コンパイル済みコード・データ領域を含む単独実行ファイルを作成します。 |
-| SAVE, LOAD | 拡張 | 利用者定義語の辞書イメージ（`SIGIMG32`）を保存し、読み込み時は既存定義の後ろへ追加します。`SIGIMG31` 以前のイメージは読み込めません。イメージにはCRC-32のチェックサムを付け、壊れたイメージは読み込みません。読み込めるのはSigmaの `SAVE`・`SAVESYS` で作ったファイルだけで、それ以外のファイルを読ませることは想定していません。イメージには論理メモリのうち使う範囲（0〜HERE、ヒープの使用部分、ソースファイルの表）だけを入れるので、1語だけなら約50 KBです。ソースファイルの位置情報と読み込み履歴は引き継がれます。ヒープの内容は追加読み込みでは引き継がれません。定数やメモリに保存した実行トークンと、`LITERAL` で定義に埋め込んだ実行トークンやアドレスは、追加読み込みでは再配置されません（`[']` で埋め込んだものは再配置されます）。 |
+| Tab separators | Extended | A tab separates tokens like a space (in the book only space and CR do). Same as gforth. |
+| Case-insensitive name matching | Extended | Upper and lower case ASCII letters are treated as the same. Same as gforth. |
+| Number bases 2 to 36 and prefixes | Extended | The value of BASE in memory can be 2 to 36. The prefixes `$` `#` `&` `%` and `'c'` are recognized. |
+| Floating-point literals | Extended | A token that contains `e`/`E`, in base 10. |
+| Display of infinity and NaN | Extended | `F.` `FE.` `FS.` print `infinity` `-infinity` `NaN` without cutting them to `PRECISION`. gforth cuts them to `PRECISION` characters (`infini` with `6 SET-PRECISION`, `Na` with `2 SET-PRECISION`). With the default `PRECISION` (15) the output is the same. |
+| F+!, F?, FA@, FA!, FARRAY, FINPUT, FMINUS | Extended | Floating-point versions of the FORTH/Σ words +!, ?, A@, A!, ARRAY, INPUT, and MINUS. They are not gforth words. |
+| ." string output | Extended | Compile-time string output. It is not a word of the 1982 material. |
+| ?DO | Extended | When the start value and the limit are equal, the loop body does not run. The FORTH/Σ DO runs once even when they are equal. |
+| J, K | Extended | Get the loop index of the second and third levels. The book explains them as examples of user definitions. |
+| EXECUTE | Extended | Executes a portable dictionary token. It is not compatible with Z80 code addresses. |
+| Single logical memory and limits | Extended | Uses 2 MiB of logical memory (the data area below 100000H, the heap at 100000H–1DFFFFH, the input buffers at 1E0000H–1EFFFFH, local variables at 1F0000H–1FFFFFH) and various fixed capacities. This differs from the memory layout of the historical machines. |
+| SAVESYS | Extended | Creates a standalone executable that contains the current dictionary, compiled code, and data area. |
+| SAVE, LOAD | Extended | Saves a dictionary image (`SIGIMG32`) of the user-defined words; loading appends it after the existing definitions. Images of `SIGIMG31` and earlier cannot be loaded. An image carries a CRC-32 checksum, and a damaged image is not loaded. Only files made by `SAVE` and `SAVESYS` of Sigma can be loaded; loading any other file is not supported. An image holds only the used ranges of logical memory (0 to HERE, the used part of the heap, the table of source files), so an image with one word is about 50 KB. The position information of source files and the load history are carried over. Heap contents are not carried over by an appending load. Execution tokens stored in constants or memory, and execution tokens or addresses embedded in a definition with `LITERAL`, are not relocated by an appending load (those embedded with `[']` are relocated). |
 
-実装の選択値と容量は[実装ノート](IMPLEMENTATION.md)に記録しています。各ワードのスタック効果を含む誌面記述は[SPEC.md](SPEC.md)を参照してください。
+Implementation choices and capacities are recorded in the [implementation notes](IMPLEMENTATION.md). For the descriptions in the book, including the stack effect of each word, see [SPEC.md](SPEC.md).
 
-## 未実装・機種依存
+## Not implemented and machine-specific
 
-| ワード・機能 | 現状 | 主な理由・出典 |
+| Word or feature | Status | Main reason and source |
 | --- | --- | --- |
-| エディットバッファ版のLOAD／SAVE、LIST, EDIT, EXEC, CLB | 未実装 | エディットバッファ操作。掲載版と環境に依存します。 |
-| CLOAD, CSAVE | 未実装 | カセット等の機種別処理。 |
-| MCODE | 機種依存 | Z80機械語領域を扱います。 |
-| USR, PUHL, POHL, NEXT | 機種依存 | Z80レジスタ、呼出規約、機械語実行に関係します。誌面参照。 |
-| CP/Mのファイル操作、BDOS、DMA | 機種依存 | CP/M版のOS呼び出しとバッファを必要とします。誌面参照。 |
-| PC-8001の編集、表示、モニター機能 | 機種依存 | PC-8001固有の入出力とモニターを必要とします。誌面参照。 |
-| 文字列の置き換え: SUBSTITUTE, REPLACES, UNESCAPE と、Gforthの `$SUBSTITUTE` `$UNESCAPE` `$VALUE` などの残りの文字列語 | 未実装 | 標準のSTRING-EXTとGforthの語（2026-10-30の調査）。 |
-| UTF-8の文字単位の語（XCHAR）: XC@+, XC!+, XC!+?, XC,, XC-SIZE, X-SIZE, X-WIDTH, XC-WIDTH, XCHAR+, XEMIT, XKEY, XKEY?, XHOLD, +X/STRING, X\STRING-, -TRAILING-GARBAGE, EKEY>XCHAR | 未実装 | 標準のXCHAR（2026-10-30の調査）。日本語の文字単位の処理に使います。 |
-| Gforthの例外の書き方: TRY, ENDTRY, RESTORE, IFERROR | 未実装 | `CATCH` で同じことができます（2026-10-30の調査）。 |
-| Gforthの道具の語: LATEST, LATESTXT, ID., .NAME, >NAME, ALIAS, ]], [[, ~~, ASSERT( | 未実装 | 2026-10-30の調査。 |
-| キーの語: EKEY>FKEY, EMIT?, K-UP などのキーの定数 | 未実装 | 標準のFACILITY-EXT（2026-10-30の調査）。 |
-| (LOCAL) | 未実装 | `{:` で書けます。 |
-| CODE, ;CODE, ASSEMBLER, EDITOR（標準のTOOLS-EXT） | 対象外 | アセンブラとエディター。Gforthの `CODE` と同じく対象外です。 |
-| Gforthの CODE, END-CODE, SAVESYSTEM, 'COLD, BOOTMESSAGE, FPATH, SCRIPT? | 対象外 | Gforthの起動処理やアセンブラに依存します（2026-10-30決定、教材Level 30）。SAVESYSTEM の代わりに SAVESYS を使えます。 |
+| LOAD/SAVE of the edit buffer, LIST, EDIT, EXEC, CLB | Not implemented | Edit buffer operations. They depend on the printed version and the environment. |
+| CLOAD, CSAVE | Not implemented | Machine-specific processing for cassettes and the like. |
+| MCODE | Machine-specific | Handles the Z80 machine code area. |
+| USR, PUHL, POHL, NEXT | Machine-specific | Related to Z80 registers, the calling convention, and machine code execution. See the book. |
+| CP/M file operations, BDOS, DMA | Machine-specific | Need the OS calls and buffers of the CP/M version. See the book. |
+| PC-8001 editing, display, and monitor functions | Machine-specific | Need the input and output and the monitor specific to the PC-8001. See the book. |
+| String replacement: SUBSTITUTE, REPLACES, UNESCAPE, and the remaining gforth string words such as `$SUBSTITUTE` `$UNESCAPE` `$VALUE` | Not implemented | Standard STRING-EXT and gforth words (survey of 2026-10-30). |
+| UTF-8 character words (XCHAR): XC@+, XC!+, XC!+?, XC,, XC-SIZE, X-SIZE, X-WIDTH, XC-WIDTH, XCHAR+, XEMIT, XKEY, XKEY?, XHOLD, +X/STRING, X\STRING-, -TRAILING-GARBAGE, EKEY>XCHAR | Not implemented | Standard XCHAR (survey of 2026-10-30). Used for processing Japanese text character by character. |
+| gforth exception syntax: TRY, ENDTRY, RESTORE, IFERROR | Not implemented | `CATCH` can do the same (survey of 2026-10-30). |
+| gforth tool words: LATEST, LATESTXT, ID., .NAME, >NAME, ALIAS, ]], [[, ~~, ASSERT( | Not implemented | Survey of 2026-10-30. |
+| Key words: EKEY>FKEY, EMIT?, key constants such as K-UP | Not implemented | Standard FACILITY-EXT (survey of 2026-10-30). |
+| (LOCAL) | Not implemented | Can be written with `{:`. |
+| CODE, ;CODE, ASSEMBLER, EDITOR (standard TOOLS-EXT) | Out of scope | Assembler and editor. Out of scope, like `CODE` of gforth. |
+| gforth's CODE, END-CODE, SAVESYSTEM, 'COLD, BOOTMESSAGE, FPATH, SCRIPT? | Out of scope | Depend on the startup processing and the assembler of gforth (decided on 2026-10-30, Level 30). SAVESYS can be used instead of SAVESYSTEM. |
 
-Z80の命令実行・エミュレーションはプロジェクトの対象外です。
+Executing or emulating Z80 instructions is outside the scope of the project.
 
-上の表の「基本語」から「個別に設計」までは、2026-10-30の調査（Codexのレビューを反映）によるものです。Forth 2012のCORE、CORE EXT、DOUBLEの語と、よく使われる拡張の語について、`HELP` で1語ずつ調べ、Sigmaにない語がオリジナル版Gforth（0.7.9）にあることを `find-name` で確かめました。調べた語の一覧は標準の原典と照合していないため、この表が標準の語のすべてを網羅しているとは限りません。表の語がGforthと同じ意味で動くかは、実装するときに確かめます。
+In the tables above, the entries from "Basic words" to "Individually designed" come from the survey of 2026-10-30 (with the review by Codex applied). For the words of CORE, CORE EXT, and DOUBLE of Forth 2012 and commonly used extension words, each word was looked up with `HELP`, and `find-name` confirmed that the words missing from Sigma exist in the original gforth (0.7.9). The list of words examined was not checked against the original text of the standard, so this table may not cover all the standard words. Whether a word in the table works with the same meaning as in gforth is checked when it is implemented.
 
-## 自動回帰テストとの対応
+## Correspondence with the automated regression tests
 
-zig build testで、現行コアの主要動作を次のテストで確認します（コア211件、ホスト7件の計218件）。
+zig build test checks the main behavior of the current core with the following tests (211 core tests and 7 host tests, 218 in total).
 
-| テスト | 確認する動作 |
+| Test | Behavior checked |
 | --- | --- |
-| 64-bit arithmetic | 64ビット折り返し、床関数除算の商と剰余 |
-| true flags | 比較・0=・NOTの真偽値（-1と0） |
-| dictionary identity | 大小文字を区別しない全文字照合 |
-| nested loops, loop boundaries | 入れ子DO/LOOP、I/J、?DOの0回実行、DOの最低1回実行 |
-| LEAVE, UNLOOP | LEAVEの即時脱出、UNLOOPとEXIT |
-| variable, array, string | 変数、配列、文字列リテラルとTYPE |
-| number output, dot-s | 末尾空白、全基数での符号付き表示、U.、C.、.S |
-| standard words | スタック操作、シフト、セル計算、文字、数値接頭辞、\ コメント、メモリ操作 |
-| control structures | UNTIL、AGAIN、EXIT、RECURSE、CASE、コンパイル専用語の拒否 |
-| VALUE, IMMEDIATE, POSTPONE | 値の変更、即時語、コンパイル動作の組み込み |
-| error recovery | 未定義語の報告とエラー後のスタック初期化 |
-| FORGET | 辞書語・配列領域・コンパイル済みコード・作成語の回収と再利用 |
-| defining words | <BUILDS/DOES>の実行時語作成、動作の結び付け、複数行入力、FORGET後の再利用 |
-| memory boundary | ヒープの先頭（100000H）でのデータ領域確保の拒否、2 MiB末尾を越えるアドレスのエラー |
-| capacity errors | データ／リターンスタック、辞書、制御ネスト、コンパイル領域の上限 |
-| division by zero | /、MOD、/MODのエラーと、最小値÷-1の `RESULT OUT OF RANGE !`。*/、*/MOD、UM/MOD、FM/MOD、SM/REMのゼロ除算と、商が1セルに収まらない場合の `RESULT OUT OF RANGE !`（CATCHでは-11） |
-| floating point | リテラル認識、F.とF.Sの書式、非有限値、算術・比較・変換、関数、メモリ・変数・定数・配列、FINPUT、浮動小数点スタックのアンダーフロー。FASINからF**までの関数のGforthと同じビット、Gforthと1 ulp違う正しく丸めた値、範囲外の引数のNaN、FMA命令のないビルドの小さな引数、FLOOR・FTRUNC・FROUND（-0、中間の値、無限大）、F~、FSINCOS、SF@・SF!・DF@・DF!と境界の語、FE.・FS.・F.とPRECISION（1桁、20桁、100桁、101桁、1000桁、範囲外）、FVALUEとTO・>BODY・SEE、REPRESENT（丸めの繰り上がり、0と-0、非正規化数、無限大・NaN）、SF!の境界（無限大、非正規化数、負の0、NaN）、FROUNDの0.5と2^52の前後、CORE-MATHが使う `fma` とFMA命令の結果（符号付きの0、積が非常に小さい場合、無限大・NaN） |
-| double-cell integers | 倍長整数リテラル、D+等の演算・比較・表示、2@/2!、2VARIABLE、2CONSTANT、2VALUE（TO、SEE）、2LITERAL、D.R、D2*、D2/、DMAX、DMIN、M+、M*/（3セルの積、折り返し、符号なしの除数）、DU<、2ROT。*/、*/MOD、M*、UM*、UM/MOD、FM/MOD、SM/REMの結果がGforthと同じこと（負の数、積が1セルを超える場合） |
-| pictured numeric output | <<# # #S HOLD HOLDS SIGN #> #>>、入れ子、対応しない #>> のエラー |
-| strings | S"、S\"、.\"、.( の解釈時・コンパイル時の動作、一時バッファ、COUNT、PAD。C"、ABORT"（CATCHの-2、CATCHがないときの表示、定義の外のエラー、SEE）、BUFFER:、DUMP（1行16バイト、端数の行、0バイト）。COMPARE、SEARCH、/STRING、-TRAILINGの結果がGforthと同じこと（空の文字列、負の長さ、符号なしの比較を含む）。CHAR+、CHARS、BOUNDS、BLANK、CMOVE>（重なり）、SCAN・SKIP（タブ、負の長さ）、STR=、STRING-PREFIX?、+PLACE（255バイト）、SLITERAL（解釈中のエラー、255バイト）、PARSE-NAME（タブ、行末、EVALUATE）、SLURP-FILE・$SLURP-FILE（CR LFとNULをそのまま読む、空のファイル、置き換え、ファイルを閉じる、ないファイルのior、閉じるのに失敗したときに確保した領域を解放すること）、READ-FILE（CR LFをそのまま読む、ファイルの終わり、閉じたファイルのior）、?DUP、U<、U>、2R@、ALIGN、UNUSED、.R・U.R（負の幅、幅より長い数、16進数）、読み込み中のファイルからのPARSE-NAME、メモリの終わりを越える長さの文字列がエラーになること（STR=、COMPARE、SEARCH、-TRAILING、SCAN、SKIP、STRING-PREFIX?、BLANK、TYPE） |
-| string conversion and input | >NUMBER、S>NUMBER?、>FLOAT、D>F、F>D、ACCEPT、EVALUATE、KEY、KEY?。SOURCE、>IN（行末への移動、同じ語の読み直し、負の値）、SOURCE-ID（端末・EVALUATE・ファイル）、REFILL（端末・ファイル・EVALUATE、失敗したとき）、SAVE-INPUT・RESTORE-INPUT（ファイルの行への繰り返し、EVALUATEの文字列の中、端末の同じ行と違う行、入力元が違うとき、個数が違うとき） |
-| image round trip | 辞書イメージの保存・復元・追加読み込みでの語・浮動小数点定数・VALUE・FVALUE（2回の追加読み込み、保存したTO、完全復元）・2CONSTANT・文字列の再配置、定数に保存した実行トークンの完全復元、旧形式の拒否 |
-| group A words | WITHINの境界と折り返し、2>R/2R>の順序と不足、ENDIF、PLACEの重なり・255バイト上限・メモリ末尾、STATEの保存アドレス経由の読み取り、ABORT、:NONAMEとその巻き戻し |
-| :NONAME rollback | 定義中のエラー、`;` でのコード領域不足、開始時のスタック満杯・辞書満杯の後に、辞書・コード・データ位置・スタック・STATEが戻り、次の定義が作れること |
-| host words | MS、UTIME、TIME&DATE、AT-XY、GETENV（未設定・空・長すぎる値）、SYSTEM（失敗）・$?、MS・UTIMEの失敗の報告、ホスト機能がない場合のエラー（MS、SYSTEM、UTIME、GETENV）、PAGEの出力 |
-| host callbacks（`src/main.zig`） | 実際のGETENVの3072／3073バイト境界と未設定・空・`=` を含む名前、実際のSYSTEMの4095／4096バイト境界、NULを含むコマンドの拒否、0以外の終了コードとその状態の値 |
-| 起動時の表示（`src/main.zig`） | 版番号が `VERSION` の値と同じで、ライセンスと `help` の案内を含み、CRを含まないこと |
-| 標準入力のパイプ（`build.zig`） | 作った実行ファイルに実際のパイプでバイトを渡し、`READ-FILE` がCR LF、0x1A、NUL、255をそのまま読むこと、`READ-LINE` がCR LFで行を区切ること |
-| ファイルの語（`src/main.zig`） | 実際のファイルで、FILE-POSITION、RESIZE-FILE、FLUSH-FILE、FILE-STATUS、既にあるファイルへのRENAME-FILE、失敗したRENAME-FILEで変更先が残ること、DELETE-FILE（2回目のior） |
-| SLURP-FILE（`src/main.zig`） | 実際のファイルの10000バイト（CR LFとすべてのバイト値を含む）と空のファイルをそのまま読み、ファイルを閉じること |
-| SAVE・LOAD（`src/main.zig`） | ホストを通したSAVEと、2回続けたLOAD（LOADが作る2つ目のStateをスタックに置かないこと）で語と変数が使えること |
-| THROW | 0の無視、-1の中断、標準コード・ファイルのior・その他のコードの報告（基数によらず10進） |
-| CATCH | 0とTHROWコードの返却、データ・浮動小数点・リターン・ループスタックの深さの復元（Gforthと同じ結果）、内部エラーのコード、入れ子、ファイルのior、ローカル変数・$TMPとの組み合わせ、捕捉したコードの再THROW、途中で始まった定義の破棄 |
-| heap | ALLOCATE・FREE・RESIZEの成功と失敗（ENOMEM、無効なアドレス）、解放した領域の再利用、全解放後のヒープの回復 |
-| dynamic strings | 教材Level 14の例、自分自身を元にした連結・挿入、範囲外の削除・挿入・上書き、$SPLIT、$ITER、$TMP（入れ子、エラー後の出力復帰）、文字列配列、$[]SLURP／$[]SLURP-FILE、$SLURP・$+SLURP（ファイルの位置から）・$+SLURP-FILE・$SLURP-LINE（CR LF、空の行、終わり）、$+!LEN、$[]+!・$+[]!、$EXEC（入れ子、THROWの後の出力先）、$OFF、$VARIABLE、完全復元後のヒープ文字列 |
-| tab separators | タブで区切ったソース、文字列語・CHARの直後のタブ |
-| word lists | 教材Level 16の例（VOCABULARY・ONLY・ALSO・DEFINITIONS・ORDERの表示、WORDLIST・SET-CURRENT・>ORDERのモジュールと隠し方）、GET-ORDER・SET-ORDER・PREVIOUS・-1 SET-ORDER、検索順序のあふれ・不足・無効な語彙、WORDSとSEARCH-WORDLIST、MARKERによる検索順序の復元、イメージの復元とLOADでの語彙番号の付け替え |
-| F.RDP | Gforthの出力と同じになる55例（固定小数点・指数表記・*で埋める場合・0・無限大・NaN・偶数への丸め・小さな値の丸め・丸めで指数の桁や有効桁数が変わる場合・0の整数部が入らない幅）、F.RDPの表示、F>BUF-RDP、教材Level 20の例、幅の上限と保持領域のあふれ、丸めで指数が短くなる値のF.RDPとF>BUF-RDP |
-| 数学関数・F.S・.S | FSIN・FCOS・FTAN・FEXP・FLNがビット単位で正しく丸めた値になること（Windows版Gforthとzigの組み込み関数で1ビットずれる値と教材Level 25の値）、F.Sの `14 0 17 F.RDP` 形式と上の9個の表示（0・-0・無限大・NaN・非正規化数）、.Sの上の9個の表示 |
-| 数学関数の境界 | 大きな引数の三角関数、FEXPのオーバーフロー・非正規化数・0への境界、FLNの最小非正規化数・1の近く・最大値でオリジナル版Gforthと同じビットになること、NaNの引数をそのまま返し無限大でCPUの既定のNaNを返すこと（全ビット1のNaNでないこと）、.SとF.Sの深さ0・ちょうど9個・16進 |
-| >BODYと' | VARIABLE・2VARIABLE・FVARIABLE・VALUE・2CONSTANT・DOES>付きCREATE・CREATEの>BODY、定義の中の `'` が実行時に名前を読むこと（教材Level 31の形）、`[']` はコンパイル時に読むこと、解釈中の `'` が次の行の名前を読むこと、CONSTANT・コロン定義・組み込み語の>BODYのエラー、名前がない場合のエラー |
-| LITERAL・FLITERAL | `[ 2 3 * ] LITERAL`、`[ ... ] FLITERAL`、`[ DEBUG ] LITERAL IF`、`[ ' DUP ] LITERAL EXECUTE`、教材Level 31のDSLと同じ形で `POSTPONE LITERAL` により変数のアドレスと実行トークンを埋め込む語、解釈中のエラー |
-| '・>BODY・LITERALの境界 | 語彙で定義し直した `'` が検索順序に従うこと、FIND-NAME・POSTPONE・CATCHの中・INCLUDEしたファイルの次の行で `'` が名前を読むこと、EVALUATEの文字列の最後の `'` のエラー、ARRAYと（DOES>のない）CREATEの>BODY、MARKER・VOCABULARY・:NONAME・FCONSTANT・不正な値の>BODYのエラー、倍長整数を1セルずつ取り込むLITERAL、値がないときと `[ ]` の中のエラー、追加読み込みで `[']` の実行トークンは再配置されLITERALで埋め込んだものはされないこと |
-| HELP・LICENSE | すべての組み込み語に説明があり、説明の名前はすべて実在する語であること（重複なし）、`HELP` だけで基本の説明を表示して次の行を読まないこと、`EVALUATE` の文字列で改行の先を読まないこと、定義の中の `HELP` が実行時に名前を読むこと、組み込み語・構文語・利用者定義語の `HELP 語名`、知らない名前のエラー、`LICENSE` がMITの全文とCORE-MATHの表示を、ホストに渡す前はLFで出すこと |
-| 名前の領域・イメージの大きさ | FORGET・MARKER・失敗した定義で名前の領域も戻ること、255文字の名前で名前の領域がいっぱいになると `OUT OF DICTIONARY !` でそれまでの語は使えること、イメージの大きさが保存する範囲の合計に等しく、ヒープの中身を保ちHEREより先は0で戻り、1バイト欠けると読み込まないこと、LOADで加えた語の名前とSEE・FORGET。辞書8192語・コード65535操作の上限でのエラーと巻き戻し。1バイト壊れたイメージ（チェックサムで検出し、辞書・コード・メモリが変わらないこと）、名前の位置や長さが壊れたイメージと `SIGIMG31` のイメージを何も変えずに拒否すること、名前の領域がないときのVARIABLEがHEREを戻すこと、CATCHで捨てた定義の名前の領域、名前のない語をはさんだLOADとFORGET、名前の領域が足りないLOADで何も変わらないこと |
-| 定義の中の定義語 | 定義の中のVARIABLE・CONSTANT・FVARIABLE・FCONSTANT・VALUE・2CONSTANT・2VARIABLE・ARRAY、教材Level 31の `:` で始めて `POSTPONE ;` で終える語、名前がない場合と定義中の `:` のエラー、検索順序から外した定義語、DOES>を付けた変数、10の累乗に近い値のF. |
-| 解釈中の[・PI・F. | 解釈中の `[`、PIのF.とF.RDP、2進数の値から正確に丸めるF.とF.S |
-| locals visibility | IF・ELSE・THEN、BEGIN・UNTIL・WHILE・REPEAT、DO・?DO・LOOP・LEAVE、CASE・OFでの名前の見える範囲（Gforthで確かめた15例） |
-| word lists（レビュー対応） | 回収したデータ領域に作ったMARKERのLOAD、[DEFINED]・[UNDEFINED]とローカル変数、INCLUDEの中での[IF]の読み飛ばしとファイルの終わり、複数の語彙にある同名語のFIND・LOCATE、語彙と:NONAME・DOES>を含むイメージの復元 |
-| conditional compilation | [IF] [ELSE] [THEN]の選択・入れ子・行をまたぐ読み飛ばし・コンパイル中の使用、[DEFINED]・[UNDEFINED]、EVALUATEの中で終わらない[IF]、[IFDEF] [IFUNDEF] [ENDIF]、[DO] [?DO] [LOOP] [+LOOP] [I]（入れ子、負の増分、`[ ]` の中、EVALUATE、ファイルの行をまたぐ繰り返し）、[BEGIN] [UNTIL] [WHILE] [REPEAT]、[FOR] [NEXT]、開始語のない[LOOP]と[I]、CATCHの後の繰り返し、同じ長さの次の端末の行、最大のセルをまたぐ[+LOOP]と+LOOP |
-| source files（レビュー対応） | EVALUATE内の名前待ちのエラー、CREATEとDOES>の間のINCLUDE／EVALUATE、読み込み中のファイル内でのMARKER、LOADで読み込んだMARKER、呼び出し元の定義を終えて別の定義を始めるファイル、閉じるのに失敗した場合の位置、WORDの255／256バイト、NAME>STRINGの8個のバッファ、SEEの入れ子・空の分岐・CASE |
-| source files | INCLUDEの複数行定義・SOURCEFILENAME・SOURCELINE#・INCLUDED?、REQUIRE（自分自身・パラメータ付き）、入れ子の内側のエラー位置、定義途中のファイル終了、ファイルがない場合、すべてのファイルを閉じること、CATCHで捕捉した後の続き、入れ子の上限、MARKERによる語と履歴の巻き戻し、LOCATE、WHERE（タブと全角文字の幅、長い行、80桁を超える位置、端末での使用、FORGETの後、再定義）、位置情報と履歴のイメージ復元・追加読み込み、実際のホストでのCR LFと4096／4097バイトの行 |
-| parsing and dictionary words | 語の後の区切り1文字の消費とPARSE、文字列語の空白、WORDの数え付き文字列、FINDの即時語・未発見、FIND-NAME・NAME>INT・NAME>STRINGと無効な名前トークン、SEEの出力（制御構造、CREATE/DOES>、IMMEDIATE）、EVALUATEが端末の次の行を読まないこと、入力行の上限 |
-| locals | スタック順の受け取り、定義途中・ループ内での宣言、TO、`\|`、W:/D:/F:/C:/XT:、W^/F^/C^のアドレス、LOCALS\|、`{: :}`、再帰と領域の解放、エラー後の解放、名前の有効範囲、定義外での拒否、追加読み込み後の実行 |
-| file words | アクセス方法とストリーム番号、作成・書き込み・大きさ・位置変更・行単位の読み込み・閉じる、エラー時のiorとスタックの形、STDOUTへの書き込み、ホスト機能がない場合のエラー。FILE-POSITION、RESIZE-FILE（位置が変わらないこと）、FLUSH-FILE、FILE-STATUS、RENAME-FILE、DELETE-FILE（2回目のior）、BIN、INCLUDE-FILE、閉じたファイルのior |
+| 64-bit arithmetic | 64-bit wraparound, the quotient and remainder of floored division |
+| true flags | Truth values (-1 and 0) of comparisons, 0=, and NOT |
+| dictionary identity | Case-insensitive matching of all characters |
+| nested loops, loop boundaries | Nested DO/LOOP, I/J, zero iterations of ?DO, at least one iteration of DO |
+| LEAVE, UNLOOP | Immediate exit with LEAVE, UNLOOP and EXIT |
+| variable, array, string | Variables, arrays, string literals and TYPE |
+| number output, dot-s | Trailing space, signed output in every base, U., C., .S |
+| standard words | Stack operations, shifts, cell arithmetic, characters, number prefixes, \ comments, memory operations |
+| control structures | UNTIL, AGAIN, EXIT, RECURSE, CASE, rejection of compile-only words |
+| VALUE, IMMEDIATE, POSTPONE | Changing a value, immediate words, compiling compilation behavior |
+| error recovery | Reporting undefined words and resetting the stacks after an error |
+| FORGET | Reclaiming and reusing dictionary words, array areas, compiled code, and created words |
+| defining words | Creating words at run time with <BUILDS/DOES>, attaching behavior, multi-line input, reuse after FORGET |
+| memory boundary | Rejecting data area allocation at the start of the heap (100000H), error for an address past the end of the 2 MiB |
+| capacity errors | Limits of the data and return stacks, the dictionary, control nesting, and the compile area |
+| division by zero | Errors of /, MOD, and /MOD, and `RESULT OUT OF RANGE !` for the minimum value ÷ -1. Division by zero in */, */MOD, UM/MOD, FM/MOD, and SM/REM, and `RESULT OUT OF RANGE !` when the quotient does not fit in one cell (-11 with CATCH) |
+| floating point | Literal recognition, the formats of F. and F.S, non-finite values, arithmetic, comparison, conversion, functions, memory, variables, constants, arrays, FINPUT, floating-point stack underflow. The same bits as gforth for the functions from FASIN to F**, correctly rounded values that differ from gforth by 1 ulp, the NaN for out-of-range arguments, small arguments in a build without the FMA instruction, FLOOR, FTRUNC, and FROUND (-0, halfway values, infinity), F~, FSINCOS, SF@, SF!, DF@, DF! and the alignment words, FE., FS., F. and PRECISION (1 digit, 20 digits, 100 digits, 101 digits, 1000 digits, out of range), FVALUE with TO, >BODY, and SEE, REPRESENT (carry in rounding, 0 and -0, subnormal numbers, infinity, NaN), the boundaries of SF! (infinity, subnormal numbers, negative zero, NaN), FROUND around 0.5 and 2^52, the results of the `fma` that CORE-MATH uses and of the FMA instruction (signed zero, very small products, infinity, NaN) |
+| double-cell integers | Double-cell integer literals, arithmetic, comparison, and output such as D+, 2@/2!, 2VARIABLE, 2CONSTANT, 2VALUE (TO, SEE), 2LITERAL, D.R, D2*, D2/, DMAX, DMIN, M+, M*/ (triple-cell product, wraparound, unsigned divisor), DU<, 2ROT. The results of */, */MOD, M*, UM*, UM/MOD, FM/MOD, and SM/REM are the same as gforth (negative numbers, products wider than one cell) |
+| pictured numeric output | <<# # #S HOLD HOLDS SIGN #> #>>, nesting, the error for an unmatched #>> |
+| strings | S", S\", .\", and .( while interpreting and while compiling, the temporary buffers, COUNT, PAD. C", ABORT" (-2 with CATCH, the output without CATCH, the error outside a definition, SEE), BUFFER:, DUMP (16 bytes per line, a partial line, 0 bytes). The results of COMPARE, SEARCH, /STRING, and -TRAILING are the same as gforth (including empty strings, negative lengths, and unsigned comparison). CHAR+, CHARS, BOUNDS, BLANK, CMOVE> (overlap), SCAN and SKIP (tabs, negative lengths), STR=, STRING-PREFIX?, +PLACE (255 bytes), SLITERAL (error while interpreting, 255 bytes), PARSE-NAME (tabs, end of line, EVALUATE), SLURP-FILE and $SLURP-FILE (reading CR LF and NUL as they are, an empty file, replacement, closing the file, the ior of a missing file, freeing the allocated area when closing fails), READ-FILE (reading CR LF as it is, end of file, the ior of a closed file), ?DUP, U<, U>, 2R@, ALIGN, UNUSED, .R and U.R (negative width, a number longer than the width, hexadecimal), PARSE-NAME from a file being loaded, errors for strings whose length goes past the end of memory (STR=, COMPARE, SEARCH, -TRAILING, SCAN, SKIP, STRING-PREFIX?, BLANK, TYPE) |
+| string conversion and input | >NUMBER, S>NUMBER?, >FLOAT, D>F, F>D, ACCEPT, EVALUATE, KEY, KEY?. SOURCE, >IN (moving to the end of the line, reading the same word again, negative values), SOURCE-ID (terminal, EVALUATE, file), REFILL (terminal, file, EVALUATE, on failure), SAVE-INPUT and RESTORE-INPUT (repeating over lines of a file, inside an EVALUATE string, the same and a different terminal line, a different input source, a different count) |
+| image round trip | Relocation of words, floating-point constants, VALUE, FVALUE (two appending loads, a saved TO, full restore), 2CONSTANT, and strings when a dictionary image is saved, restored, and appended; full restore of an execution token stored in a constant; rejection of old formats |
+| group A words | Boundaries and wraparound of WITHIN, the order and underflow of 2>R/2R>, ENDIF, overlap, the 255-byte limit, and the end of memory for PLACE, reading STATE through a saved address, ABORT, :NONAME and its rollback |
+| :NONAME rollback | After an error inside a definition, a lack of code space at `;`, and a full stack or a full dictionary at the start, the dictionary, code, data position, stacks, and STATE are restored and the next definition can be made |
+| host words | MS, UTIME, TIME&DATE, AT-XY, GETENV (unset, empty, and too long values), SYSTEM (failure) and $?, reporting failures of MS and UTIME, errors when host functions are missing (MS, SYSTEM, UTIME, GETENV), the output of PAGE |
+| host callbacks (`src/main.zig`) | The 3072/3073-byte boundary of the real GETENV and names that are unset, empty, or contain `=`, the 4095/4096-byte boundary of the real SYSTEM, rejection of a command that contains NUL, a non-zero exit code and the value of that status |
+| Startup banner (`src/main.zig`) | The version number is the same as the value in `VERSION`, the banner includes the license and the pointer to `help`, and it contains no CR |
+| Pipe on standard input (`build.zig`) | Bytes are passed to the built executable through a real pipe; `READ-FILE` reads CR LF, 0x1A, NUL, and 255 as they are, and `READ-LINE` splits lines at CR LF |
+| File words (`src/main.zig`) | With real files: FILE-POSITION, RESIZE-FILE, FLUSH-FILE, FILE-STATUS, RENAME-FILE onto an existing file, the destination remaining after a failed RENAME-FILE, DELETE-FILE (the ior of the second call) |
+| SLURP-FILE (`src/main.zig`) | Reads 10000 bytes of a real file (including CR LF and every byte value) and an empty file as they are, and closes the file |
+| SAVE and LOAD (`src/main.zig`) | Words and variables work after a SAVE through the host and two LOADs in a row (LOAD does not put the second State it makes on the stack) |
+| THROW | Ignoring 0, aborting on -1, reporting standard codes, file iors, and other codes (in decimal regardless of the base) |
+| CATCH | Returning 0 and THROW codes, restoring the depths of the data, floating-point, return, and loop stacks (same results as gforth), codes of internal errors, nesting, file iors, combination with local variables and $TMP, THROW again of a caught code, discarding a definition started partway |
+| heap | Success and failure of ALLOCATE, FREE, and RESIZE (ENOMEM, invalid address), reuse of freed areas, recovery of the heap after everything is freed |
+| dynamic strings | The Level 14 example, concatenation and insertion with the string itself as the source, out-of-range deletion, insertion, and overwrite, $SPLIT, $ITER, $TMP (nesting, restoring the output after an error), string arrays, $[]SLURP/$[]SLURP-FILE, $SLURP, $+SLURP (from the file position), $+SLURP-FILE, $SLURP-LINE (CR LF, empty lines, the end), $+!LEN, $[]+! and $+[]!, $EXEC (nesting, the output destination after THROW), $OFF, $VARIABLE, heap strings after a full restore |
+| tab separators | Tab-separated source, a tab right after a string word or CHAR |
+| word lists | The Level 16 example (VOCABULARY, ONLY, ALSO, DEFINITIONS, the output of ORDER, modules and hiding with WORDLIST, SET-CURRENT, and >ORDER), GET-ORDER, SET-ORDER, PREVIOUS, -1 SET-ORDER, overflow and underflow of the search order and invalid word lists, WORDS and SEARCH-WORDLIST, restoring the search order with MARKER, renumbering word lists on image restore and LOAD |
+| F.RDP | 55 examples that match the gforth output (fixed point, exponential notation, filling with *, 0, infinity, NaN, rounding to even, rounding of small values, cases where rounding changes the exponent digits or the number of significant digits, a width with no room for the integer part 0), the output of F.RDP, F>BUF-RDP, the Level 20 example, the width limit and overflow of the hold area, F.RDP and F>BUF-RDP of values whose exponent gets shorter by rounding |
+| Math functions, F.S, .S | FSIN, FCOS, FTAN, FEXP, and FLN give bit-exact correctly rounded values (values where the Windows gforth and the built-in functions of Zig are 1 bit off, and the Level 25 values), F.S in the `14 0 17 F.RDP` form and the display of the top 9 items (0, -0, infinity, NaN, subnormal numbers), the display of the top 9 items by .S |
+| Math function boundaries | Trigonometric functions of large arguments, overflow, subnormal numbers, and the boundary to 0 of FEXP, FLN at the smallest subnormal number, near 1, and at the maximum value giving the same bits as the original gforth, returning a NaN argument unchanged and returning the default NaN of the CPU for infinity (not a NaN with all bits set), .S and F.S at depth 0, with exactly 9 items, and in hexadecimal |
+| >BODY and ' | >BODY of VARIABLE, 2VARIABLE, FVARIABLE, VALUE, 2CONSTANT, CREATE with DOES>, and CREATE, `'` inside a definition reading the name at run time (the Level 31 form), `[']` reading at compile time, `'` while interpreting reading a name on the next line, errors for >BODY of CONSTANT, colon definitions, and built-in words, the error when there is no name |
+| LITERAL and FLITERAL | `[ 2 3 * ] LITERAL`, `[ ... ] FLITERAL`, `[ DEBUG ] LITERAL IF`, `[ ' DUP ] LITERAL EXECUTE`, a word that embeds the address of a variable and an execution token with `POSTPONE LITERAL` in the same form as the Level 31 DSL, errors while interpreting |
+| Boundaries of ', >BODY, and LITERAL | `'` redefined in a word list follows the search order, `'` reads the name in FIND-NAME, in POSTPONE, inside CATCH, and on the next line of an INCLUDEd file, the error for `'` at the end of an EVALUATE string, >BODY of ARRAY and of CREATE (without DOES>), errors for >BODY of MARKER, VOCABULARY, :NONAME, FCONSTANT, and invalid values, LITERAL taking a double-cell integer one cell at a time, errors when there is no value and inside `[ ]`, on an appending load the execution token of `[']` is relocated and one embedded with LITERAL is not |
+| HELP and LICENSE | Every built-in word has a description and every name in the descriptions is an existing word (no duplicates), `HELP` alone shows the basic description and does not read the next line, it does not read past a line break in an `EVALUATE` string, `HELP` inside a definition reads the name at run time, `HELP name` for built-in words, parsing words, and user-defined words, the error for an unknown name, `LICENSE` outputs the full MIT text and the CORE-MATH notice with LF before they are passed to the host |
+| Name area and image size | FORGET, MARKER, and a failed definition also restore the name area, when 255-character names fill the name area `OUT OF DICTIONARY !` is raised and the earlier words still work, the image size equals the sum of the saved ranges, the heap contents are kept, memory past HERE comes back as 0, an image that is one byte short is not loaded, names, SEE, and FORGET of words added by LOAD. Errors and rollback at the limits of 8192 dictionary words and 65535 code operations. An image with one damaged byte (detected by the checksum, with the dictionary, code, and memory unchanged), rejecting images with a damaged name position or length and `SIGIMG31` images without changing anything, VARIABLE restoring HERE when the name area is full, the name area of a definition discarded by CATCH, LOAD and FORGET with unnamed words in between, nothing changing on a LOAD with too little name area |
+| Defining words inside definitions | VARIABLE, CONSTANT, FVARIABLE, FCONSTANT, VALUE, 2CONSTANT, 2VARIABLE, and ARRAY inside definitions, the Level 31 word that starts with `:` and ends with `POSTPONE ;`, errors when there is no name and for `:` inside a definition, defining words removed from the search order, variables with DOES>, F. of values close to powers of 10 |
+| [ while interpreting, PI, F. | `[` while interpreting, F. and F.RDP of PI, F. and F.S rounded exactly from the binary value |
+| locals visibility | The visibility of names in IF, ELSE, THEN, BEGIN, UNTIL, WHILE, REPEAT, DO, ?DO, LOOP, LEAVE, CASE, and OF (15 examples checked with gforth) |
+| word lists (review fixes) | LOAD of a MARKER made in a reclaimed data area, [DEFINED] and [UNDEFINED] with local variables, skipping with [IF] inside INCLUDE and the end of the file, FIND and LOCATE of words with the same name in several word lists, image restore that includes word lists, :NONAME, and DOES> |
+| conditional compilation | Selection, nesting, skipping across lines, and use while compiling of [IF] [ELSE] [THEN], [DEFINED] and [UNDEFINED], an [IF] that does not end inside EVALUATE, [IFDEF] [IFUNDEF] [ENDIF], [DO] [?DO] [LOOP] [+LOOP] [I] (nesting, a negative increment, inside `[ ]`, EVALUATE, repeating across lines of a file), [BEGIN] [UNTIL] [WHILE] [REPEAT], [FOR] [NEXT], [LOOP] and [I] without a start word, loops after CATCH, the next terminal line of the same length, [+LOOP] and +LOOP crossing the largest cell |
+| source files (review fixes) | The error for a word waiting for a name inside EVALUATE, INCLUDE/EVALUATE between CREATE and DOES>, MARKER inside a file being loaded, a MARKER loaded with LOAD, a file that ends the caller's definition and starts another, the position when closing fails, 255/256 bytes for WORD, the 8 buffers of NAME>STRING, SEE with nesting, empty branches, and CASE |
+| source files | Multi-line definitions in INCLUDE, SOURCEFILENAME, SOURCELINE#, INCLUDED?, REQUIRE (of itself, with parameters), error positions inside nesting, the end of a file in the middle of a definition, a missing file, closing every file, continuing after CATCH catches an error, the nesting limit, rolling back words and the history with MARKER, LOCATE, WHERE (widths of tabs and full-width characters, long lines, positions past 80 columns, use at the terminal, after FORGET, redefinition), image restore and appending load of the position information and the history, CR LF and 4096/4097-byte lines on the real host |
+| parsing and dictionary words | Consuming one delimiter after a word and PARSE, blanks in string words, the counted string of WORD, FIND for immediate words and words not found, FIND-NAME, NAME>INT, NAME>STRING and invalid name tokens, the output of SEE (control structures, CREATE/DOES>, IMMEDIATE), EVALUATE not reading the next terminal line, the input line limit |
+| locals | Receiving in stack order, declarations in the middle of a definition and inside loops, TO, `\|`, W:/D:/F:/C:/XT:, the addresses of W^/F^/C^, LOCALS\|, `{: :}`, recursion and freeing the area, freeing after an error, the scope of names, rejection outside definitions, running after an appending load |
+| file words | Access methods and stream numbers, creating, writing, size, repositioning, reading lines, closing, the ior and stack shape on errors, writing to STDOUT, errors when host functions are missing. FILE-POSITION, RESIZE-FILE (the position does not change), FLUSH-FILE, FILE-STATUS, RENAME-FILE, DELETE-FILE (the ior of the second call), BIN, INCLUDE-FILE, the ior of a closed file |
 
-現行テストは主要経路を確認するものです。全ワード、すべての容量境界、各エラー条件を網羅したものではありません。
+The current tests check the main paths. They do not cover every word, every capacity limit, or every error condition.

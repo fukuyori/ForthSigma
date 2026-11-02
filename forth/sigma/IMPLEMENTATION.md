@@ -30,7 +30,7 @@ The June 1982 source article describes the main path used for the port:
 - `FLER` handles parse/compile errors and abandons an incomplete definition.
 - The compiler emits Z80 subroutine calls and machine-code branches. This implementation preserves the language-level call and branch behavior in a host-independent operation stream instead.
 
-These routine names and relationships come from the source-list explanation in the June–July 1982 source articles, magazine pages 92–99 and 178–185 (*Encyclopedia ASCII*, Vol. 6, No. 6–7, June–July 1982). The byte-for-byte Z80 layout is intentionally not reproduced.
+These routine names and relationships come from the source-list explanation in the June–July 1982 source articles, magazine pages 92–99 and 178–185 (*Encyclopedia ASCII* Vol. 12, ASCII, June and July 1982). The byte-for-byte Z80 layout is intentionally not reproduced.
 
 ## Current language support
 

@@ -1,9 +1,11 @@
 # FORTH/Σ for Zig
 
-プロジェクト概要、ビルド方法、現状の機能、Forth標準との違い、出典とライセンスは[リポジトリのREADME](../../README.md)を参照してください。
+Japanese version: [README.ja.md](README.ja.md). This English version is the primary one.
 
-- [FORTH/Σ仕様書](SPEC.md): 雑誌資料から整理した仕様と出典箇所
-- [ユーザーマニュアル](USER_MANUAL.md): 起動方法、基本操作、現在の登録語一覧
-- [実装ノート](IMPLEMENTATION.md): Zig移植版の構成、実装判断、未実装機能
-- [ワード互換性一覧](COMPATIBILITY.md): 誌面掲載ワードと現在の実装状況
-- [決定事項・保留事項](DECISIONS.md): 原資料の仕様と移植判断の区分
+For the project overview, how to build, the current features, the differences from standard Forth, and the sources and the license, see the [README of the repository](../../README.md).
+
+- [FORTH/Σ specification](SPEC.md): the specification compiled from the magazine sources, and where it comes from
+- [User manual](USER_MANUAL.md): how to start, basic operation, the list of the words registered now
+- [Implementation notes](IMPLEMENTATION.md): the structure of the Zig port, implementation decisions, features not implemented
+- [Word compatibility list](COMPATIBILITY.md): the words published in the book and their current implementation status
+- [Decisions and open issues](DECISIONS.md): the division between the specification of the original sources and the porting decisions
