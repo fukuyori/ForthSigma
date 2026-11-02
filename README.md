@@ -42,6 +42,10 @@ On Linux and macOS, run the generated zig-out/bin/sigma. To specify another Zig 
 
 `zig build -Dfloat=false` builds a smaller version without the floating-point words and CORE-MATH (with `-Doptimize=fast`, the same as the release, it is about 340 KB on Windows x86_64; the version with floating point is about 750 KB). Floating-point literals (such as `1e`), the `F:` and `F^` local variables, and `FLOATING-STACK` and `MAX-FLOAT` of `ENVIRONMENT?` are also removed. The tests run with `zig build test -Dfloat=false`; the tests that use floating-point words are skipped.
 
+The other word groups can be left out the same way: `-Dfiles=false` (the words that open, read, write, or include files, such as `INCLUDE`, `REQUIRE`, `OPEN-FILE`, `STDIN`, `SLURP-FILE`, and the `$...SLURP` words), `-Dhelp=false` (`HELP`, `LICENSE`, and their texts; the banner no longer mentions `help`), `-Dtools=false` (`SEE`, `LOCATE`, and `WHERE`), and `-Dimage=false` (`SAVE`, `LOAD`, and `SAVESYS`). The words of a group left out are not in the dictionary, and `HELP` has no entries for them. With `-Doptimize=fast` on Windows x86_64, `-Dhelp=false` saves about 65 KB, and the build without any of the groups, floating point included, is about 255 KB. The tests run with the same options; the tests that use a group left out are skipped.
+
+`zig build freestanding` compiles the core (`src/forth.zig` and `src/core/`) for a Cortex-M0+ with no operating system. It fails when the core starts to use a service of the operating system, so that the core stays usable with a host of its own, such as a microcontroller. `zig build test` includes it.
+
 The current product version is recorded in [`VERSION`](VERSION). The Windows release build and the Inno Setup installer are made with the following PowerShell scripts. The installer (`dist\installer\sigma-<version>-windows-x86_64-setup.exe`) uses the value in `VERSION`; if needed, `-Version MAJOR.MINOR.PATCH` overrides it.
 
     .\scripts\build-release.ps1

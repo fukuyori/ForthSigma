@@ -42,6 +42,7 @@ test "HELP has a description for every built-in word, and only for words that ex
 }
 
 test "HELP shows the basic help, a word's description, or where to look for a defined word" {
+    try support.skipWithout(&.{ .help });
     var output = Output{};
     output.input_lines[0] = "DUP";
     output.input_count = 1;
@@ -55,12 +56,13 @@ test "HELP shows the basic help, a word's description, or where to look for a de
     output.len = 0;
     try machine.interpretLine("help dup HELP to : SQ DUP * ; HELP sq");
     try std.testing.expectEqualStrings("DUP ( x -- x x )\n  Copy the top cell.\nTO ( x \"name\" -- )\n  Change a VALUE or a local variable.\n" ++
-        "SQ is a word defined after start-up; SEE SQ shows its definition.\n", output.written());
+        (if (@import("build_options").tools) "SQ is a word defined after start-up; SEE SQ shows its definition.\n" else "SQ is a word defined after start-up.\n"), output.written());
     try std.testing.expectError(error.UnknownWord, machine.interpretLine("HELP NO-SUCH-WORD"));
     machine.report(error.UnknownWord);
 }
 
 test "HELP takes a name only from its own line, also in EVALUATE, and in a definition when it runs" {
+    try support.skipWithout(&.{ .help });
     var output = Output{};
     const machine = try createMachine(&output);
     defer destroyMachine(machine);
@@ -82,6 +84,7 @@ test "HELP takes a name only from its own line, also in EVALUATE, and in a defin
 }
 
 test "LICENSE shows the MIT License and the CORE-MATH notices with LF line ends before the host" {
+    try support.skipWithout(&.{ .help });
     var output = Output{};
     const machine = try createMachine(&output);
     defer destroyMachine(machine);

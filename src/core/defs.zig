@@ -10,8 +10,19 @@ const UDouble = memory_map.UDouble;
 const forth_wordlist = memory_map.forth_wordlist;
 const max_name = memory_map.max_name;
 
+const build_options = @import("build_options");
+
 /// False in a build with -Dfloat=false, which leaves out the floating-point words.
-pub const float_enabled = @import("build_options").float;
+pub const float_enabled = build_options.float;
+/// False with -Dfiles=false, which leaves out the words that open, read, write, or include
+/// files (also the $...SLURP words, which read a file or a file id).
+pub const files_enabled = build_options.files;
+/// False with -Dhelp=false, which leaves out HELP, LICENSE, and their texts.
+pub const help_enabled = build_options.help;
+/// False with -Dtools=false, which leaves out SEE, LOCATE, and WHERE.
+pub const tools_enabled = build_options.tools;
+/// False with -Dimage=false, which leaves out SAVE, LOAD, and SAVESYS.
+pub const image_enabled = build_options.image;
 
 /// The built-in words of the floating-point word set: those of words_float.zig and the
 /// float fields, sizes, and defining words of the other files.
@@ -19,10 +30,35 @@ pub fn isFloatBuiltin(builtin: Builtin) bool {
     return float_builtins[@intFromEnum(builtin)];
 }
 
-const float_builtins = blk: {
-    var table: [@typeInfo(Builtin).@"enum".field_names.len]bool = @splat(false);
-    for (@import("words_float.zig").words) |word| table[@intFromEnum(word)] = true;
-    for ([_]Builtin{ .field_float, .field_sfloat, .field_dfloat, .float_percent, .sfloat_percent, .dfloat_percent, .define_fvariable, .define_fconstant, .define_fvalue, .fliteral }) |word| table[@intFromEnum(word)] = true;
+/// A built-in word of a group this build leaves out. Such a word is not in the dictionary
+/// and its code is not compiled in.
+pub fn isExcludedBuiltin(builtin: Builtin) bool {
+    return excluded_builtins[@intFromEnum(builtin)];
+}
+
+const builtin_count = @typeInfo(Builtin).@"enum".field_names.len;
+
+fn builtinSet(comptime lists: []const []const Builtin) [builtin_count]bool {
+    var table: [builtin_count]bool = @splat(false);
+    for (lists) |list| {
+        for (list) |word| table[@intFromEnum(word)] = true;
+    }
+    return table;
+}
+
+const float_builtins = builtinSet(&.{ &@import("words_float.zig").words, &.{ .field_float, .field_sfloat, .field_dfloat, .float_percent, .sfloat_percent, .dfloat_percent, .define_fvariable, .define_fconstant, .define_fvalue, .fliteral } });
+const file_builtins = builtinSet(&.{ &@import("words_files.zig").words, &.{ .string_slurp, .string_plus_slurp, .string_slurp_file, .string_plus_slurp_file, .string_slurp_line, .string_array_slurp, .string_array_slurp_file } });
+const help_builtins = builtinSet(&.{&.{ .help, .license }});
+const tool_builtins = builtinSet(&.{&.{ .see, .locate, .where }});
+const image_builtins = builtinSet(&.{&.{ .load, .save, .savesys }});
+
+const excluded_builtins = blk: {
+    var table: [builtin_count]bool = undefined;
+    for (&table, 0..) |*excluded, index| {
+        excluded.* = (!float_enabled and float_builtins[index]) or (!files_enabled and file_builtins[index]) or
+            (!help_enabled and help_builtins[index]) or (!tools_enabled and tool_builtins[index]) or
+            (!image_enabled and image_builtins[index]);
+    }
     break :blk table;
 };
 

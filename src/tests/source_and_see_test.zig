@@ -48,6 +48,7 @@ test "FIND-NAME NAME>INT and NAME>STRING follow the book's Level 10 example" {
 }
 
 test "SEE shows definitions with their control structures" {
+    try support.skipWithout(&.{ .tools });
     var output = Output{};
     const machine = try createMachine(&output);
     defer destroyMachine(machine);
@@ -80,6 +81,7 @@ test "EVALUATE does not read further terminal lines and input lines are limited 
 }
 
 test "INCLUDE interprets a file across lines and reports its name and line" {
+    try support.skipWithout(&.{ .files });
     var output = Output{};
     setFakeFile(&output, 0, ": SQUARE ( n -- n^2 )\n\tDUP * ;\nSOURCEFILENAME TYPE SPACE SOURCELINE# .\nCREATE\n  TABLE 7 ,\n");
     const machine = try createMachine(&output);
@@ -93,6 +95,7 @@ test "INCLUDE interprets a file across lines and reports its name and line" {
 }
 
 test "REQUIRE loads a file once, even when it requires itself" {
+    try support.skipWithout(&.{ .files });
     var output = Output{};
     setFakeFile(&output, 0, "REQUIRE a.txt\n.\" once\"\n");
     setFakeFile(&output, 1, "DUP CONSTANT SIZE\n");
@@ -105,6 +108,7 @@ test "REQUIRE loads a file once, even when it requires itself" {
 }
 
 test "errors in included files name the innermost file and line and close every file" {
+    try support.skipWithout(&.{ .files });
     var output = Output{};
     setFakeFile(&output, 0, "1\nINCLUDE b.txt\n2\n");
     setFakeFile(&output, 1, "3\n: BAD MISSING ;\n");
@@ -127,6 +131,7 @@ test "errors in included files name the innermost file and line and close every 
 }
 
 test "CATCH around INCLUDED lets the rest of the line run" {
+    try support.skipWithout(&.{ .files });
     var output = Output{};
     setFakeFile(&output, 0, "1 2\nMISSING\n");
     const machine = try createMachine(&output);
@@ -140,6 +145,7 @@ test "CATCH around INCLUDED lets the rest of the line run" {
 }
 
 test "INCLUDE nesting is limited" {
+    try support.skipWithout(&.{ .files });
     var output = Output{};
     setFakeFile(&output, 0, "INCLUDE a.txt\n");
     const machine = try createMachine(&output);
@@ -151,6 +157,7 @@ test "INCLUDE nesting is limited" {
 }
 
 test "MARKER forgets later words and the files required after it" {
+    try support.skipWithout(&.{ .files, .tools });
     var output = Output{};
     setFakeFile(&output, 0, "DUP CONSTANT SIZE\n");
     const machine = try createMachine(&output);
@@ -165,6 +172,7 @@ test "MARKER forgets later words and the files required after it" {
 }
 
 test "LOCATE prints the file, line, and the lines of the definition" {
+    try support.skipWithout(&.{ .files, .tools });
     var output = Output{};
     setFakeFile(&output, 0, "\\ library\n: SUM\n  BEGIN DEPTH 1 > WHILE + REPEAT ;\n: OTHER ;\n");
     const machine = try createMachine(&output);
@@ -175,6 +183,7 @@ test "LOCATE prints the file, line, and the lines of the definition" {
 }
 
 test "source locations and the REQUIRE history survive image restore and LOAD" {
+    try support.skipWithout(&.{ .files, .tools });
     var output = Output{};
     setFakeFile(&output, 0, ": FROM-A 1 ;\n");
     setFakeFile(&output, 1, ": FROM-B\n  2 ;\n");
@@ -216,6 +225,7 @@ test "a parsing word left waiting at the end of an EVALUATE string is an error" 
 }
 
 test "INCLUDE between CREATE and DOES> keeps the word being created" {
+    try support.skipWithout(&.{ .files });
     var output = Output{};
     setFakeFile(&output, 0, "\\ only a comment\n");
     setFakeFile(&output, 1, "MISSING\n");
@@ -229,6 +239,7 @@ test "INCLUDE between CREATE and DOES> keeps the word being created" {
 }
 
 test "MARKER inside an included file keeps the names that frames and words refer to" {
+    try support.skipWithout(&.{ .files, .tools });
     var output = Output{};
     setFakeFile(&output, 0, ": FROM-A ;\nM\nINCLUDE c.txt\nSOURCEFILENAME TYPE\n");
     setFakeFile(&output, 2, ": FROM-C ;\n");
@@ -244,6 +255,7 @@ test "MARKER inside an included file keeps the names that frames and words refer
 }
 
 test "a MARKER loaded with LOAD restores the history it was made with" {
+    try support.skipWithout(&.{ .files, .tools });
     var output = Output{};
     setFakeFile(&output, 0, ": FROM-A 1 ;\n");
     setFakeFile(&output, 1, ": FROM-B 2 ;\n");
@@ -268,6 +280,7 @@ test "a MARKER loaded with LOAD restores the history it was made with" {
 }
 
 test "a file that ends the caller's definition and starts another is an error" {
+    try support.skipWithout(&.{ .files });
     var output = Output{};
     setFakeFile(&output, 3, "] ; : HALF 1\n");
     const machine = try createMachine(&output);
@@ -281,6 +294,7 @@ test "a file that ends the caller's definition and starts another is an error" {
 }
 
 test "a failing close is reported at the file that failed" {
+    try support.skipWithout(&.{ .files });
     var output = Output{};
     output.close_fails = true;
     setFakeFile(&output, 0, "1\n");
@@ -318,6 +332,7 @@ test "WORD and NAME>STRING buffers have the documented limits" {
 }
 
 test "SEE handles nested and empty branches and CASE" {
+    try support.skipWithout(&.{ .tools });
     var output = Output{};
     const machine = try createMachine(&output);
     defer destroyMachine(machine);

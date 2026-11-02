@@ -6,6 +6,15 @@ const std = @import("std");
 pub fn skipWithoutFloat() error{SkipZigTest}!void {
     if (!@import("build_options").float) return error.SkipZigTest;
 }
+
+/// Skips a test that uses a word group the build leaves out (-Dfiles=false, -Dhelp=false,
+/// -Dtools=false, or -Dimage=false); several groups may be named.
+pub fn skipWithout(comptime groups: []const enum { files, help, tools, image }) error{SkipZigTest}!void {
+    const options = @import("build_options");
+    inline for (groups) |group| {
+        if (!@field(options, @tagName(group))) return error.SkipZigTest;
+    }
+}
 const forth = @import("../forth.zig");
 
 /// `text` written `count` times, which Zig 0.17 no longer has an operator for.

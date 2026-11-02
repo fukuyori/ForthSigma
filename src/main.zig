@@ -621,7 +621,8 @@ fn interpretAndPrompt(machine: *forth.State, line: []const u8) void {
 }
 
 const version = std.mem.trimEnd(u8, @embedFile("version"), " \t\r\n");
-const banner = "FORTH/Sigma " ++ version ++ "  MIT License\nType `help' for basic help\n";
+/// Without HELP (-Dhelp=false) the banner does not point to it.
+const banner = "FORTH/Sigma " ++ version ++ "  MIT License\n" ++ (if (@import("build_options").help) "Type `help' for basic help\n" else "");
 
 /// Init.Minimal gives the arguments and the environment, decoded from UTF-16 on Windows,
 /// without setting up std.Io (see HostContext).
@@ -747,6 +748,7 @@ fn writeTestFile(path: [*:0]const u8, bytes: []const u8) !void {
 }
 
 test "INCLUDE through the host reads CR LF lines and limits a line to 4096 bytes" {
+    if (!@import("build_options").files) return error.SkipZigTest;
     const allocator = std.testing.allocator;
     const fit = try allocator.alloc(u8, 4096 + 7);
     defer allocator.free(fit);
@@ -773,6 +775,7 @@ test "INCLUDE through the host reads CR LF lines and limits a line to 4096 bytes
 }
 
 test "SLURP-FILE through the host reads every byte as it is" {
+    if (!@import("build_options").files) return error.SkipZigTest;
     const allocator = std.testing.allocator;
     const text = try allocator.alloc(u8, 10000);
     defer allocator.free(text);
@@ -797,6 +800,7 @@ test "SLURP-FILE through the host reads every byte as it is" {
 }
 
 test "file words through the host: position, resize, flush, status, rename over a file, delete" {
+    if (!@import("build_options").files) return error.SkipZigTest;
     const allocator = std.testing.allocator;
     try writeTestFile(".zig-cache/sigma-files-b.txt", "old");
     var host = HostContext{ .allocator = allocator, .executable_path = "", .environ_map = undefined };
@@ -827,11 +831,16 @@ test "file words through the host: position, resize, flush, status, rename over 
 test "the banner names the version from VERSION and the license" {
     const expected = comptime std.mem.trimEnd(u8, @embedFile("version"), " \t\r\n");
     try std.testing.expect(std.mem.startsWith(u8, banner, "FORTH/Sigma " ++ expected ++ "  MIT License\n"));
-    try std.testing.expect(std.mem.endsWith(u8, banner, "Type `help' for basic help\n"));
+    if (@import("build_options").help) {
+        try std.testing.expect(std.mem.endsWith(u8, banner, "Type `help' for basic help\n"));
+    } else {
+        try std.testing.expect(std.mem.indexOf(u8, banner, "help") == null);
+    }
     try std.testing.expect(std.mem.indexOfScalar(u8, banner, '\r') == null);
 }
 
 test "SAVE and LOAD through the host keep the words, also when loaded twice" {
+    if (!@import("build_options").image) return error.SkipZigTest;
     const allocator = std.testing.allocator;
     var host = HostContext{ .allocator = allocator, .executable_path = "", .environ_map = undefined };
     const writer: forth.Writer = .{ .context = @ptrCast(&host), .write_fn = discardOutput, .load_fn = loadDictionary, .save_fn = saveDictionary };

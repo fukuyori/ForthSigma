@@ -53,6 +53,8 @@ fn describe(self: *State, name: []const u8) RuntimeError!void {
             const word = self.words[id];
             const word_name = self.wordName(word);
             self.write(word_name);
+            // Without SEE (-Dtools=false) the message does not point to it.
+            if (!defs.tools_enabled) return self.write(" is a word defined after start-up.\n");
             self.write(" is a word defined after start-up; SEE ");
             self.write(word_name);
             self.write(" shows its definition.\n");
@@ -78,20 +80,32 @@ pub fn entry(name: []const u8) ?*const help_text.Entry {
     return null;
 }
 
-/// The basic help; without floating-point words it does not mention float numbers.
-pub const basic = if (defs.float_enabled) help_text.basic else blk: {
-    const numbers = "123 is a cell, 123. a double cell, 1e or 1.5E3 a float (the E is needed);";
-    const at = std.mem.indexOf(u8, help_text.basic, numbers).?;
-    break :blk help_text.basic[0..at] ++ "123 is a cell and 123. a double cell;" ++ help_text.basic[at + numbers.len ..];
+/// The basic help, without what mentions the word groups the build leaves out: float
+/// numbers without floating-point words, and SEE and LOCATE without the tools.
+pub const basic = blk: {
+    @setEvalBranchQuota(100_000);
+    var text: []const u8 = help_text.basic;
+    if (!defs.float_enabled) text = replaced(text, "123 is a cell, 123. a double cell, 1e or 1.5E3 a float (the E is needed);", "123 is a cell and 123. a double cell;");
+    if (!defs.tools_enabled) {
+        text = replaced(text, "  SEE name      show how a word is defined\n", "");
+        text = replaced(text, "  LOCATE name   show the file and lines where a word was defined\n", "");
+    }
+    break :blk text;
 };
 
-/// The help entries, without those of floating-point words in a build that leaves them out.
-pub const help_entries = if (defs.float_enabled) help_text.entries else blk: {
+fn replaced(comptime text: []const u8, comptime old: []const u8, comptime new: []const u8) []const u8 {
+    const at = std.mem.indexOf(u8, text, old).?;
+    return text[0..at] ++ new ++ text[at + old.len ..];
+}
+
+/// The help entries, without those of the words a build leaves out (-Dfloat=false and
+/// the like).
+pub const help_entries = blk: {
     @setEvalBranchQuota(10_000_000);
     var kept: [help_text.entries.len]help_text.Entry = undefined;
     var count: usize = 0;
     for (help_text.entries) |candidate| {
-        if (isFloatName(candidate.name)) continue;
+        if (isExcludedName(candidate.name)) continue;
         kept[count] = candidate;
         count += 1;
     }
@@ -99,11 +113,12 @@ pub const help_entries = if (defs.float_enabled) help_text.entries else blk: {
     break :blk result;
 };
 
-/// A name of a floating-point built-in word, or of an F: or F^ local.
-fn isFloatName(comptime name: []const u8) bool {
-    if (std.mem.eql(u8, name, "F:") or std.mem.eql(u8, name, "F^")) return true;
+/// A name of a built-in word the build leaves out, or of an F: or F^ local without
+/// floating-point words.
+fn isExcludedName(comptime name: []const u8) bool {
+    if (!defs.float_enabled and (std.mem.eql(u8, name, "F:") or std.mem.eql(u8, name, "F^"))) return true;
     for (State.builtin_definitions) |definition| {
-        if (std.mem.eql(u8, definition[0], name)) return defs.isFloatBuiltin(definition[1]);
+        if (std.mem.eql(u8, definition[0], name)) return defs.isExcludedBuiltin(definition[1]);
     }
     return false;
 }

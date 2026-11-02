@@ -79,6 +79,7 @@ test "LITERAL and FLITERAL compile a value, as the book's Level 31 DSL uses them
 }
 
 test "' follows the search order and reads its name across input boundaries" {
+    try support.skipWithout(&.{ .files });
     var output = Output{};
     setFakeFile(&output, 0, "'\nDUP ' DUP = .\n: Q ' ;\nQ\nSWAP ' SWAP = .\n");
     const machine = try createMachine(&output);

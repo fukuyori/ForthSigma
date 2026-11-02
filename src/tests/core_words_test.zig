@@ -205,6 +205,7 @@ test "division by zero is reported as an error" {
 }
 
 test "C\" ABORT\" BUFFER: 2LITERAL 2VALUE and the double-cell words work as in gforth" {
+    try support.skipWithout(&.{ .tools });
     try expectOutput(": T1 C\" hello\" ; T1 COUNT TYPE T1 C@ . : T2 C\" \" ; T2 C@ .", "hello5 0 ");
     try expectOutput(": CHK ABORT\" bad value\" ; 0 CHK .\" after0\" : T3 1 ABORT\" first\" ; ' T3 CATCH . : T4 0 ABORT\" never\" 5 ; T4 .", "after0-2 5 ");
     try expectOutput("16 BUFFER: BUF BUF 16 ERASE 7 BUF C! BUF C@ . HERE BUF - . : T5 [ 12345678901234567890. ] 2LITERAL ; T5 D.", "7 16 12345678901234567890 ");
@@ -256,6 +257,7 @@ test "WHILE follows the standard control-flow order, so CS-ROLL idioms and sever
 }
 
 test "SYNONYM TRAVERSE-WORDLIST NAME>INTERPRET EKEY>CHAR and ENVIRONMENT? work as in gforth" {
+    try support.skipWithout(&.{ .tools });
     try expectOutput(": SQ DUP * ; SYNONYM SQUARE SQ 5 SQUARE . VARIABLE V SYNONYM W V 7 W ! V @ .", "25 7 ");
     try expectOutput(": IM .\" immediate!\" ; IMMEDIATE SYNONYM IM2 IM : T IM2 ; 5 VALUE VV SYNONYM VV2 VV 9 TO VV2 VV .", "immediate!9 ");
     try expectOutput(
@@ -274,6 +276,7 @@ test "SYNONYM TRAVERSE-WORDLIST NAME>INTERPRET EKEY>CHAR and ENVIRONMENT? work a
 }
 
 test "QUIT keeps both data stacks, stops the line and the file, and CATCH does not stop it" {
+    try support.skipWithout(&.{ .files });
     try support.skipWithoutFloat();
     var output = Output{};
     support.setFakeFile(&output, 0, ": TQ 1 2 QUIT 3 ; TQ .S\n4 .\n");
@@ -747,6 +750,7 @@ test "compile-only words are rejected while interpreting" {
 }
 
 test "DEFER IS ACTION-OF DEFER! DEFER@ and DEFERS work as in gforth" {
+    try support.skipWithout(&.{ .tools });
     try expectOutput("DEFER D1 ' DUP IS D1 3 D1 . . : SET ['] SWAP IS D1 ; SET 1 2 D1 . . ACTION-OF D1 ' SWAP = . : GET ACTION-OF D1 ; GET ' SWAP = .", "3 3 1 2 -1 -1 ");
     try expectOutput("DEFER D1 ' OVER ' D1 DEFER! ' D1 DEFER@ ' OVER = . ' NIP TO D1 1 2 D1 . : T2 [ ' DUP ] LITERAL TO D1 ; T2 ' D1 DEFER@ ' DUP = .", "-1 2 -1 ");
     // DEFERS compiles the action the DEFER has when the definition is made.
@@ -764,6 +768,7 @@ test "DEFER IS ACTION-OF DEFER! DEFER@ and DEFERS work as in gforth" {
 }
 
 test "+TO ?EXIT NOOP PERFORM ?LEAVE CELL- UNDER+ and 0>= work as in gforth" {
+    try support.skipWithout(&.{ .tools });
     try support.skipWithoutFloat();
     try expectOutput("5 VALUE V 3 +TO V V . : T1 2 +TO V ; T1 V . 1E FVALUE FV 2E +TO FV FV F. 1 0 2VALUE DV 5 0 +TO DV DV D. SEE T1", "8 10 3. 6 : T1\n  2 +TO V\n;\n");
     try expectOutput(": T2 DUP . ?EXIT .\" after\" ; 0 T2 1 T2 NOOP VARIABLE XV ' DUP XV ! 4 XV PERFORM . .", "0 after1 4 4 ");
@@ -812,6 +817,7 @@ test "COMPILE, [COMPILE] and NAME>COMPILE work as in gforth" {
 }
 
 test "BEGIN-STRUCTURE and the FIELD: words lay out fields as in gforth" {
+    try support.skipWithout(&.{ .tools });
     try support.skipWithoutFloat();
     try expectOutput(
         "BEGIN-STRUCTURE POINT FIELD: P.X FIELD: P.Y CFIELD: P.C FFIELD: P.F SFFIELD: P.S DFFIELD: P.D 3 +FIELD P.Z CFIELD: P.E END-STRUCTURE " ++

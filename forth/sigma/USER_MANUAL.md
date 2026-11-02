@@ -15,9 +15,9 @@ zig build
 .\zig-out\bin\sigma.exe
 ```
 
-Building with `zig build -Dfloat=false` gives a smaller version without floating-point numbers (see the chapter [Floating-point numbers](#floating-point-numbers)).
+Building with `zig build -Dfloat=false` gives a smaller version without floating-point numbers (see the chapter [Floating-point numbers](#floating-point-numbers)). In the same way, `-Dfiles=false` leaves out the words that open, read, write, or include files (such as `INCLUDE`, `REQUIRE`, `OPEN-FILE`, `STDIN`, `SLURP-FILE`, and the `$...SLURP` words), `-Dhelp=false` leaves out `HELP` and `LICENSE`, `-Dtools=false` leaves out `SEE`, `LOCATE`, and `WHERE`, and `-Dimage=false` leaves out `SAVE`, `LOAD`, and `SAVESYS`. The words left out are not in the dictionary (their names give the error `name ?`). In an image saved by a build that has them, running such a word gives the error `INVALID EXECUTION TOKEN`.
 
-Started without arguments, it prints the following two lines and shows the interactive prompt. The version number is the value of the `VERSION` file at the root. When it is started with arguments (it runs the argument string once and exits), these lines are not printed.
+Started without arguments, it prints the following two lines (only the first in a build with `-Dhelp=false`) and shows the interactive prompt. The version number is the value of the `VERSION` file at the root. When it is started with arguments (it runs the argument string once and exits), these lines are not printed.
 
 ```text
 FORTH/Sigma 0.3.0  MIT License

@@ -435,6 +435,7 @@ test "SF! FROUND and many-digit output at their limits, as in gforth" {
 }
 
 test "FVALUE pushes its float, TO stores one, and SEE shows it" {
+    try support.skipWithout(&.{ .tools });
     var output = Output{};
     const machine = try createMachine(&output);
     defer destroyMachine(machine);

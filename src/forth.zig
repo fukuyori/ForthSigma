@@ -440,7 +440,7 @@ pub const State = struct {
     fn installBuiltins(self: *State) void {
         const definitions = builtin_definitions;
         for (definitions) |definition| {
-            if (!defs.float_enabled and defs.isFloatBuiltin(definition[1])) continue;
+            if (defs.isExcludedBuiltin(definition[1])) continue;
             self.addBuiltin(definition[0], definition[1]) catch unreachable;
         }
         // The Root list repeats the words needed to rebuild the search order after ONLY.
@@ -1031,9 +1031,10 @@ pub const State = struct {
     /// and every word must be in exactly one list.
     pub fn executeBuiltin(self: *State, builtin: Builtin) RuntimeError!void {
         switch (builtin) {
-            // Without floating-point words their code is not compiled in; such a word can
-            // only come from an image saved by a build that has them.
-            inline else => |word| if (comptime !defs.float_enabled and defs.isFloatBuiltin(word))
+            // The code of a word group the build leaves out (-Dfloat=false and the like) is
+            // not compiled in; such a word can only come from an image saved by a build
+            // that has it.
+            inline else => |word| if (comptime defs.isExcludedBuiltin(word))
                 return error.InvalidExecutionToken
             else
                 try word_modules[word_owner[@intFromEnum(word)]].execute(self, word),

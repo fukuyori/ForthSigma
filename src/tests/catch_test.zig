@@ -33,6 +33,7 @@ test "CATCH returns 0 or the THROW code and restores the stack depths like gfort
 }
 
 test "CATCH works with file iors, nested catches, locals, and $TMP" {
+    try support.skipWithout(&.{ .files });
     var output = Output{};
     const machine = try createMachine(&output);
     defer destroyMachine(machine);

@@ -8,8 +8,17 @@ pub fn build(b: *std.Build) void {
         (optimize == .fast or optimize == .small);
     // -Dfloat=false leaves out the floating-point words and CORE-MATH, for a smaller program.
     const float = b.option(bool, "float", "Include the floating-point words (default: on)") orelse true;
+    // The other word groups can be left out the same way, for a smaller program.
+    const files = b.option(bool, "files", "Include the words that open, read, write, and include files (default: on)") orelse true;
+    const help = b.option(bool, "help", "Include HELP, LICENSE, and their texts (default: on)") orelse true;
+    const tools = b.option(bool, "tools", "Include SEE, LOCATE, and WHERE (default: on)") orelse true;
+    const image = b.option(bool, "image", "Include SAVE, LOAD, and SAVESYS (default: on)") orelse true;
     const options = b.addOptions();
     options.addOption(bool, "float", float);
+    options.addOption(bool, "files", files);
+    options.addOption(bool, "help", help);
+    options.addOption(bool, "tools", tools);
+    options.addOption(bool, "image", image);
 
     const exe = b.addExecutable(.{
         .name = "sigma",
@@ -58,9 +67,29 @@ pub fn build(b: *std.Build) void {
     const host_tests = b.addTest(.{ .root_module = exe.root_module });
     test_step.dependOn(&b.addRunArtifact(host_tests).step);
 
+    // The core compiled for a Cortex-M0+ with no operating system: it fails to build
+    // when forth.zig or src/core starts to use an OS service. The test step includes it.
+    const freestanding_module = b.createModule(.{
+        .root_source_file = b.path("src/freestanding_check.zig"),
+        .target = b.resolveTargetQuery(.{
+            .cpu_arch = .thumb,
+            .os_tag = .freestanding,
+            .abi = .eabi,
+            .cpu_model = .{ .explicit = &std.Target.arm.cpu.cortex_m0plus },
+        }),
+        .optimize = .ReleaseSmall,
+    });
+    freestanding_module.addOptions("build_options", options);
+    addEmbeddedTexts(b, freestanding_module);
+    const freestanding = b.addObject(.{ .name = "sigma-freestanding", .root_module = freestanding_module });
+    const freestanding_step = b.step("freestanding", "Compile the core for a Cortex-M0+ with no OS");
+    freestanding_step.dependOn(&freestanding.step);
+    test_step.dependOn(&freestanding.step);
+
     // The executable itself reading a real pipe: READ-FILE gets the bytes unchanged (on
     // Windows the C library would turn CR LF into LF and stop at Ctrl+Z), and READ-LINE
     // still ends lines at CR LF.
+    if (!files) return;
     const pipe_bytes = b.addRunArtifact(exe);
     pipe_bytes.addArg(": T PAD 9 STDIN READ-FILE . DUP . 0 DO PAD I + C@ . LOOP ; T");
     pipe_bytes.setStdIn(.{ .bytes = "A\r\nB\x1aC\x00\xff" });

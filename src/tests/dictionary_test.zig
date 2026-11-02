@@ -2,12 +2,32 @@
 
 const std = @import("std");
 const forth = @import("../forth.zig");
+const Builtin = @import("../core/defs.zig").Builtin;
 const support = @import("support.zig");
 const Output = support.Output;
 const repeat = support.repeat;
 const createMachine = support.createMachine;
 const destroyMachine = support.destroyMachine;
 const expectStack = support.expectStack;
+
+test "a word group the build leaves out has no words in the dictionary, and its code does not run" {
+    var output = Output{};
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
+
+    const options = @import("build_options");
+    const groups = .{
+        .{ options.files, [_][]const u8{ "INCLUDE", "REQUIRE", "OPEN-FILE", "READ-LINE", "STDIN", "SLURP-FILE", "$SLURP-FILE", "$[]SLURP" }, Builtin.include },
+        .{ options.help, [_][]const u8{ "HELP", "LICENSE" }, Builtin.help },
+        .{ options.tools, [_][]const u8{ "SEE", "LOCATE", "WHERE" }, Builtin.see },
+        .{ options.image, [_][]const u8{ "SAVE", "LOAD", "SAVESYS" }, Builtin.save },
+    };
+    inline for (groups) |group| {
+        for (group[1]) |name| try std.testing.expectEqual(group[0], machine.lookup(name) != null);
+        // An excluded word can only come from an image of a build that has it.
+        if (!group[0]) try std.testing.expectError(error.InvalidExecutionToken, machine.executeBuiltin(group[2]));
+    }
+}
 
 test "FORGET, MARKER, and a failed definition give back the space of their names" {
     var output = Output{};
@@ -77,6 +97,7 @@ test "an image keeps HERE's data, the used heap, and the source table, and nothi
 }
 
 test "an FVALUE and a TO of it keep working after LOAD, a second LOAD, and a full restore" {
+    try support.skipWithout(&.{ .tools });
     try support.skipWithoutFloat();
     var output = Output{};
     const source = try createMachine(&output);
@@ -111,6 +132,7 @@ test "an FVALUE and a TO of it keep working after LOAD, a second LOAD, and a ful
 }
 
 test "LOAD gives the added words their names after the dictionary's own" {
+    try support.skipWithout(&.{ .tools });
     var output = Output{};
     const source = try createMachine(&output);
     defer destroyMachine(source);

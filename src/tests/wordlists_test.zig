@@ -11,6 +11,7 @@ const destroyMachine = support.destroyMachine;
 const expectStack = support.expectStack;
 
 test "VOCABULARY ONLY ALSO DEFINITIONS and ORDER follow the book's Level 16 example" {
+    try support.skipWithout(&.{ .tools });
     var output = Output{};
     const machine = try createMachine(&output);
     defer destroyMachine(machine);
@@ -159,6 +160,7 @@ test "[DEFINED] and [UNDEFINED] see local variables while compiling" {
 }
 
 test "[IF] skipping inside an included file reads further lines and fails at its end" {
+    try support.skipWithout(&.{ .files });
     var output = Output{};
     setFakeFile(&output, 0, "0 [IF]\n  skipped\n  lines\n[ELSE] 1\n[THEN] 2\n");
     setFakeFile(&output, 1, "0 [IF]\nnever closed\n");
@@ -229,6 +231,7 @@ test "an interpreted loop does not go back into a later terminal line of the sam
 }
 
 test "an interpreted loop in an included file repeats its lines" {
+    try support.skipWithout(&.{ .files });
     var output = Output{};
     setFakeFile(&output, 0, "3 0 [DO] [I]\n  100 +\n[LOOP] 7\n");
     setFakeFile(&output, 1, "0 0 [?DO]\n  never\n[LOOP] 8\n");
@@ -240,6 +243,7 @@ test "an interpreted loop in an included file repeats its lines" {
 }
 
 test "WHERE lists the uses of a word in included files as gforth does" {
+    try support.skipWithout(&.{ .files, .tools });
     var output = Output{};
     setFakeFile(&output, 0, ": SQ DUP * ;\n\t: T2\tSQ ;\n   7 SQ DROP\n: T3 SQ SQ ; \\ \u{3042}\u{3044}\u{3046}\n: LONG " ++ repeat("SQ ", 30) ++ ";\n");
     setFakeFile(&output, 1, "' SQ DROP CHAR SQ DROP .( SQ) \\ SQ\n[DEFINED] SQ DROP S\" SQ\" FIND-NAME DROP 0 [IF] SQ [THEN]\n");
@@ -287,6 +291,7 @@ test "WHERE lists the uses of a word in included files as gforth does" {
 }
 
 test "FIND and LOCATE pick the word from the first list in the search order" {
+    try support.skipWithout(&.{ .files, .tools });
     var output = Output{};
     setFakeFile(&output, 0, "VOCABULARY V1 VOCABULARY V2\nALSO V1 DEFINITIONS : SAME 1 ;\nV2 DEFINITIONS : SAME 2 ;\n");
     const machine = try createMachine(&output);

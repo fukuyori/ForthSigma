@@ -15,9 +15,9 @@ zig build
 .\zig-out\bin\sigma.exe
 ```
 
-`zig build -Dfloat=false` でビルドすると、浮動小数点数を扱わない小さい版になります（[浮動小数点数](#浮動小数点数)の章を参照）。
+`zig build -Dfloat=false` でビルドすると、浮動小数点数を扱わない小さい版になります（[浮動小数点数](#浮動小数点数)の章を参照）。同じように、`-Dfiles=false` はファイルを開く・読む・書く・取り込む語（`INCLUDE`、`REQUIRE`、`OPEN-FILE`、`STDIN`、`SLURP-FILE`、`$...SLURP` の語など）を、`-Dhelp=false` は `HELP` と `LICENSE` を、`-Dtools=false` は `SEE`、`LOCATE`、`WHERE` を、`-Dimage=false` は `SAVE`、`LOAD`、`SAVESYS` を除きます。除いた語は辞書になく、名前は `名前 ?` のエラーになります。それらの語を含む版で保存したイメージを読み込むと、その語の実行は `INVALID EXECUTION TOKEN` のエラーになります。
 
-引数なしで起動すると、次の2行を表示して対話プロンプトになります。版番号はルートの `VERSION` ファイルの値です。引数を付けて起動したとき（引数の文字列を1回実行して終了します）は表示しません。
+引数なしで起動すると、次の2行（`-Dhelp=false` の版では1行目だけ）を表示して対話プロンプトになります。版番号はルートの `VERSION` ファイルの値です。引数を付けて起動したとき（引数の文字列を1回実行して終了します）は表示しません。
 
 ```text
 FORTH/Sigma 0.3.0  MIT License

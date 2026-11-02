@@ -42,6 +42,10 @@ Linux/macOSでは、生成されたzig-out/bin/sigmaを実行してください�
 
 `zig build -Dfloat=false` とすると、浮動小数点の語とCORE-MATHを除いた小さい版を作れます（リリースと同じ `-Doptimize=fast` でWindows x86_64は約340 KB、浮動小数点を含む版は約750 KB）。浮動小数点数のリテラル（`1e` など）、`F:` `F^` のローカル変数、`ENVIRONMENT?` の `FLOATING-STACK` `MAX-FLOAT` もなくなります。テストは `zig build test -Dfloat=false` で実行でき、浮動小数点の語を使うテストは飛ばします。
 
+ほかの語のグループも同じように除けます。`-Dfiles=false`（`INCLUDE`、`REQUIRE`、`OPEN-FILE`、`STDIN`、`SLURP-FILE`、`$...SLURP` の語など、ファイルを開く・読む・書く・取り込む語）、`-Dhelp=false`（`HELP`、`LICENSE` とその文章。起動時の表示も `help` を案内しなくなります）、`-Dtools=false`（`SEE`、`LOCATE`、`WHERE`）、`-Dimage=false`（`SAVE`、`LOAD`、`SAVESYS`）です。除いたグループの語は辞書になく、`HELP` の説明もありません。リリースと同じ `-Doptimize=fast` のWindows x86_64では、`-Dhelp=false` で約65 KB小さくなり、浮動小数点を含むすべてのグループを除いた版は約255 KBです。テストも同じオプションで実行でき、除いたグループを使うテストは飛ばします。
+
+`zig build freestanding` は、コア（`src/forth.zig` と `src/core/`）をOSのないCortex-M0+向けにコンパイルします。コアがOSの機能を使い始めると失敗するので、マイコンなど独自のホストでもコアを使える状態を保てます。`zig build test` にも含まれます。
+
 現在の製品バージョンは [`VERSION`](VERSION) に記載しています。Windows向けリリースビルドとInno Setupインストーラーは次のPowerShellスクリプトで作成できます。インストーラー（`dist\installer\sigma-版番号-windows-x86_64-setup.exe`）は `VERSION` の値を使い、必要なら `-Version MAJOR.MINOR.PATCH` で上書きできます。
 
     .\scripts\build-release.ps1
