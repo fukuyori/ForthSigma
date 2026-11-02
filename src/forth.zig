@@ -444,7 +444,8 @@ pub const State = struct {
             // lookup never finds: every build gives each built-in word the same execution
             // token, so an image moves between builds and its excluded words do not run.
             if (defs.isExcludedBuiltin(definition[1])) {
-                _ = self.appendEntry("", .builtin, definition[1], 0) catch unreachable;
+                const id = self.appendEntry("", .builtin, definition[1], 0) catch unreachable;
+                self.words[id].immediate = isImmediateBuiltin(definition[1]);
                 continue;
             }
             self.addBuiltin(definition[0], definition[1]) catch unreachable;

@@ -3,6 +3,7 @@
 const std = @import("std");
 const forth = @import("../forth.zig");
 const support = @import("support.zig");
+const see = support.see;
 const Output = support.Output;
 const setFakeFile = support.setFakeFile;
 const createMachine = support.createMachine;
@@ -157,7 +158,7 @@ test "INCLUDE nesting is limited" {
 }
 
 test "MARKER forgets later words and the files required after it" {
-    try support.skipWithout(&.{ .files, .tools });
+    try support.skipWithout(&.{ .files });
     var output = Output{};
     setFakeFile(&output, 0, "DUP CONSTANT SIZE\n");
     const machine = try createMachine(&output);
@@ -167,8 +168,8 @@ test "MARKER forgets later words and the files required after it" {
     try machine.interpretLine("MARKER SAFE : TEMP 1 ; 5 REQUIRE a.txt DROP SIZE SAFE 7 REQUIRE a.txt DROP SIZE S\" TEMP\" FIND-NAME");
     try expectStack(machine, &.{ 5, 7, 0 });
     try std.testing.expectEqual(words + 1, machine.word_count);
-    try machine.interpretLine("MARKER M SEE M");
-    try std.testing.expectEqualStrings("MARKER M\n", output.written());
+    try machine.interpretLine("MARKER M" ++ see(" SEE M"));
+    try std.testing.expectEqualStrings(see("MARKER M\n"), output.written());
 }
 
 test "LOCATE prints the file, line, and the lines of the definition" {
@@ -183,7 +184,7 @@ test "LOCATE prints the file, line, and the lines of the definition" {
 }
 
 test "source locations and the REQUIRE history survive image restore and LOAD" {
-    try support.skipWithout(&.{ .files, .tools });
+    try support.skipWithout(&.{ .files });
     var output = Output{};
     setFakeFile(&output, 0, ": FROM-A 1 ;\n");
     setFakeFile(&output, 1, ": FROM-B\n  2 ;\n");
@@ -197,16 +198,16 @@ test "source locations and the REQUIRE history survive image restore and LOAD" {
     const loaded = try createMachine(&output);
     defer destroyMachine(loaded);
     try loaded.restoreImage(image[0..length]);
-    try loaded.interpretLine("S\" b.txt\" INCLUDED? LOCATE FROM-B");
+    try loaded.interpretLine("S\" b.txt\" INCLUDED?" ++ see(" LOCATE FROM-B"));
 
     const target = try createMachine(&output);
     defer destroyMachine(target);
     try target.interpretLine("INCLUDE a.txt");
     try target.appendImage(loaded);
-    try target.interpretLine("S\" b.txt\" INCLUDED? LOCATE FROM-B LOCATE FROM-A");
+    try target.interpretLine("S\" b.txt\" INCLUDED?" ++ see(" LOCATE FROM-B LOCATE FROM-A"));
     try expectStack(loaded, &.{-1});
     try expectStack(target, &.{-1});
-    try std.testing.expectEqualStrings("b.txt:1\n: FROM-B\n  2 ;\nb.txt:1\n: FROM-B\n  2 ;\na.txt:1\n: FROM-A 1 ;\n", output.written());
+    try std.testing.expectEqualStrings(see("b.txt:1\n: FROM-B\n  2 ;\nb.txt:1\n: FROM-B\n  2 ;\na.txt:1\n: FROM-A 1 ;\n"), output.written());
 }
 
 test "a parsing word left waiting at the end of an EVALUATE string is an error" {
@@ -239,23 +240,23 @@ test "INCLUDE between CREATE and DOES> keeps the word being created" {
 }
 
 test "MARKER inside an included file keeps the names that frames and words refer to" {
-    try support.skipWithout(&.{ .files, .tools });
+    try support.skipWithout(&.{ .files });
     var output = Output{};
     setFakeFile(&output, 0, ": FROM-A ;\nM\nINCLUDE c.txt\nSOURCEFILENAME TYPE\n");
     setFakeFile(&output, 2, ": FROM-C ;\n");
     const machine = try createMachine(&output);
     defer destroyMachine(machine);
 
-    try machine.interpretLine("MARKER M INCLUDE a.txt S\" a.txt\" INCLUDED? S\" c.txt\" INCLUDED? LOCATE FROM-C");
+    try machine.interpretLine("MARKER M INCLUDE a.txt S\" a.txt\" INCLUDED? S\" c.txt\" INCLUDED?" ++ see(" LOCATE FROM-C"));
     try expectStack(machine, &.{ 0, -1 });
-    try std.testing.expectEqualStrings("a.txtc.txt:1\n: FROM-C ;\n", output.written());
+    try std.testing.expectEqualStrings("a.txt" ++ see("c.txt:1\n: FROM-C ;\n"), output.written());
     machine.data_depth = 0;
     try machine.interpretLine("MARKER M2 REQUIRE c.txt M2 S\" c.txt\" INCLUDED?");
     try expectStack(machine, &.{-1});
 }
 
 test "a MARKER loaded with LOAD restores the history it was made with" {
-    try support.skipWithout(&.{ .files, .tools });
+    try support.skipWithout(&.{ .files });
     var output = Output{};
     setFakeFile(&output, 0, ": FROM-A 1 ;\n");
     setFakeFile(&output, 1, ": FROM-B 2 ;\n");
@@ -274,9 +275,9 @@ test "a MARKER loaded with LOAD restores the history it was made with" {
     defer destroyMachine(target);
     try target.interpretLine("INCLUDE b.txt");
     try target.appendImage(loaded);
-    try target.interpretLine("REQUIRE c.txt M S\" a.txt\" INCLUDED? S\" b.txt\" INCLUDED? S\" c.txt\" INCLUDED? INCLUDE c.txt LOCATE FROM-A");
+    try target.interpretLine("REQUIRE c.txt M S\" a.txt\" INCLUDED? S\" b.txt\" INCLUDED? S\" c.txt\" INCLUDED? INCLUDE c.txt" ++ see(" LOCATE FROM-A"));
     try expectStack(target, &.{ -1, -1, 0 });
-    try std.testing.expectEqualStrings("a.txt:1\n: FROM-A 1 ;\n", output.written());
+    try std.testing.expectEqualStrings(see("a.txt:1\n: FROM-A 1 ;\n"), output.written());
 }
 
 test "a file that ends the caller's definition and starts another is an error" {

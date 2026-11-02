@@ -290,16 +290,16 @@ test "WHERE lists the uses of a word in included files as gforth does" {
 }
 
 test "FIND and LOCATE pick the word from the first list in the search order" {
-    try support.skipWithout(&.{ .files, .tools });
+    try support.skipWithout(&.{ .files });
     var output = Output{};
     setFakeFile(&output, 0, "VOCABULARY V1 VOCABULARY V2\nALSO V1 DEFINITIONS : SAME 1 ;\nV2 DEFINITIONS : SAME 2 ;\n");
     const machine = try createMachine(&output);
     defer destroyMachine(machine);
 
-    try machine.interpretLine("INCLUDE a.txt FORTH DEFINITIONS ALSO V1 SAME : W BL WORD FIND DROP EXECUTE ; W SAME LOCATE SAME");
-    try machine.interpretLine("PREVIOUS ALSO V2 SAME W SAME LOCATE SAME");
+    try machine.interpretLine("INCLUDE a.txt FORTH DEFINITIONS ALSO V1 SAME : W BL WORD FIND DROP EXECUTE ; W SAME" ++ support.see(" LOCATE SAME"));
+    try machine.interpretLine("PREVIOUS ALSO V2 SAME W SAME" ++ support.see(" LOCATE SAME"));
     try expectStack(machine, &.{ 1, 1, 2, 2 });
-    try std.testing.expectEqualStrings("a.txt:2\nALSO V1 DEFINITIONS : SAME 1 ;\na.txt:3\nV2 DEFINITIONS : SAME 2 ;\n", output.written());
+    try std.testing.expectEqualStrings(support.see("a.txt:2\nALSO V1 DEFINITIONS : SAME 1 ;\na.txt:3\nV2 DEFINITIONS : SAME 2 ;\n"), output.written());
 }
 
 test "image restore keeps words of a vocabulary made with :NONAME and DOES>" {

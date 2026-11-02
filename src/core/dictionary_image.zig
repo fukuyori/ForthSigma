@@ -99,6 +99,22 @@ fn builtinsMatch(self: *const State, word_bytes: []const u8) bool {
     return true;
 }
 
+/// Where the names of this build's built-in words end; the names lie one after another.
+fn builtinNamesEnd(self: *const State) usize {
+    if (self.builtin_count == 0) return 0;
+    const last = self.words[self.builtin_count - 1];
+    return @as(usize, last.name_start) + last.name_len;
+}
+
+/// Where the names of the image's built-in words end, read from the saved words, which
+/// namesAreConsecutive has checked.
+fn savedBuiltinNamesEnd(word_bytes: []const u8, builtins: usize) usize {
+    if (builtins == 0) return 0;
+    const at = (builtins - 1) * @sizeOf(Word);
+    const start = std.mem.readInt(u32, word_bytes[at + @offsetOf(Word, "name_start") ..][0..4], native_endian);
+    return @as(usize, start) + word_bytes[at + @offsetOf(Word, "name_len")];
+}
+
 /// The tag of an enum field read from the bytes, without making an enum of a value the
 /// bytes may not hold.
 fn savedTag(comptime E: type, bytes: []const u8) @typeInfo(E).@"enum".tag_type {
@@ -158,13 +174,24 @@ pub fn restoreImage(self: *State, image: []const u8) RuntimeError!void {
     const ranges = memoryRanges(data_here, heap_top);
     if (input.len != memory_at + rangesLength(ranges)) return error.InvalidImage;
     if (!namesAreConsecutive(input[header_size .. header_size + word_bytes_len], names_used)) return error.InvalidImage;
-    if (!builtinsMatch(self, input[header_size .. header_size + word_bytes_len])) return error.InvalidImage;
-    var cursor: usize = header_size;
-    @memcpy(std.mem.sliceAsBytes(self.words[0..word_count]), input[cursor .. cursor + word_bytes_len]);
-    cursor += word_bytes_len;
+    const word_bytes = input[header_size .. header_size + word_bytes_len];
+    if (!builtinsMatch(self, word_bytes)) return error.InvalidImage;
+    // The built-in words stay this build's own, with their names: an image of a build with
+    // other word groups has the same built-in words at the same places, but names only for
+    // the groups that build has. The image's own words and names follow this build's
+    // built-in names, so their name places move by the difference.
+    const builtins: usize = self.builtin_count;
+    const own_names = builtinNamesEnd(self);
+    const image_names = savedBuiltinNamesEnd(word_bytes, builtins);
+    const added_names = names_used - image_names;
+    if (added_names > names_capacity - own_names) return error.DictionaryFull;
+    var cursor: usize = header_size + builtins * @sizeOf(Word);
+    @memcpy(std.mem.sliceAsBytes(self.words[builtins..word_count]), input[cursor .. header_size + word_bytes_len]);
+    for (self.words[builtins..word_count]) |*word| word.name_start = @intCast(word.name_start - image_names + own_names);
+    cursor = header_size + word_bytes_len;
     @memcpy(std.mem.sliceAsBytes(self.code[0..code_count]), input[cursor .. cursor + code_bytes_len]);
     cursor += code_bytes_len;
-    @memcpy(self.names[0..names_used], input[cursor .. cursor + names_used]);
+    @memcpy(self.names[own_names..][0..added_names], input[cursor + image_names .. cursor + names_used]);
     cursor += names_used;
     @memset(&self.memory, 0);
     for (ranges) |range| {
@@ -172,7 +199,7 @@ pub fn restoreImage(self: *State, image: []const u8) RuntimeError!void {
         @memcpy(self.memory[range[0]..range[1]], input[cursor .. cursor + length]);
         cursor += length;
     }
-    self.names_used = names_used;
+    self.names_used = @intCast(own_names + added_names);
     self.word_count = @intCast(word_count);
     // The recorded uses are not in the image.
     self.use_count = 0;

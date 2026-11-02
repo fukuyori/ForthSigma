@@ -53,7 +53,65 @@ test "every build gives each built-in word the same execution token, a word left
         } else {
             try std.testing.expectEqualStrings(definition[0], machine.wordName(word));
         }
+        // An immediate word stays immediate when the build leaves it out, so a name token
+        // from an image of a build that has it compiles the same way.
+        if (definition[1] == .fliteral or definition[1] == .compile_if) try std.testing.expect(word.immediate);
     }
+}
+
+test "a full restore keeps this build's built-in words when the image's built-in names differ" {
+    var output = Output{};
+    const source = try createMachine(&output);
+    defer destroyMachine(source);
+    try source.interpretLine(": MINE 7 ; : TWICE MINE DUP + ;");
+    const saved = try saveImage(source);
+    defer freeImage(saved);
+
+    // The image as a build without DUP's name would save it: DUP keeps its place without
+    // a name, and the names after it move down.
+    const Word = @TypeOf(source.words[0]);
+    const dup: usize = source.lookup("DUP").?;
+    const removed: usize = source.words[dup].name_len;
+    const removed_at: usize = source.words[dup].name_start;
+    const header = 24;
+    const words_end = header + @as(usize, source.word_count) * @sizeOf(Word);
+    const names_at = words_end + @as(usize, source.code_count) * @sizeOf(@TypeOf(source.code[0]));
+    const image = try std.testing.allocator.alloc(u8, saved.len - removed);
+    defer std.testing.allocator.free(image);
+    @memcpy(image[0 .. names_at + removed_at], saved[0 .. names_at + removed_at]);
+    @memcpy(image[names_at + removed_at ..], saved[names_at + removed_at + removed ..]);
+    std.mem.writeInt(u32, image[20..24], source.names_used - @as(u32, @intCast(removed)), .little);
+    image[header + dup * @sizeOf(Word) + @offsetOf(Word, "name_len")] = 0;
+    for (dup + 1..source.word_count) |id| {
+        const at = header + id * @sizeOf(Word) + @offsetOf(Word, "name_start");
+        const start = std.mem.readInt(u32, image[at..][0..4], .little);
+        std.mem.writeInt(u32, image[at..][0..4], start - @as(u32, @intCast(removed)), .little);
+    }
+    resealImage(image);
+
+    const restored = try createMachine(&output);
+    defer destroyMachine(restored);
+    const fresh_names = restored.names_used;
+    try restored.restoreImage(image);
+    // DUP keeps this build's name, and the image's words their own.
+    try std.testing.expectEqualStrings("DUP", restored.wordName(restored.words[dup]));
+    try std.testing.expectEqual(fresh_names + "MINE".len + "TWICE".len, restored.names_used);
+    try restored.interpretLine("TWICE 3 DUP");
+    try expectStack(restored, &.{ 14, 3, 3 });
+    try restored.interpretLine("FORGET TWICE : AFTER 1 ; AFTER");
+    try expectStack(restored, &.{ 14, 3, 3, 1 });
+}
+
+test "SEE shows a built-in word the build leaves out by its own name" {
+    try support.skipWithout(&.{.tools});
+    var output = Output{};
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
+    try machine.interpretLine(": CALL-DUP DUP ; : TICK-DUP ['] DUP ; SYNONYM MY-DUP DUP");
+    // DUP as it is in a build that leaves it out: in its place, without a name.
+    machine.words[machine.lookup("DUP").?].name_len = 0;
+    try machine.interpretLine("SEE CALL-DUP SEE TICK-DUP SEE MY-DUP");
+    try std.testing.expectEqualStrings(": CALL-DUP\n  DUP\n;\n: TICK-DUP\n  ['] DUP\n;\nSYNONYM MY-DUP DUP\n", output.written());
 }
 
 test "FORGET, MARKER, and a failed definition give back the space of their names" {

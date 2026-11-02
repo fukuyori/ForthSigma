@@ -96,7 +96,7 @@ pub fn seeWord(self: *State, id: u16) RuntimeError!void {
             self.write("SYNONYM ");
             self.write(name);
             self.write(" ");
-            self.write(self.wordName(self.words[@intCast(word.value)]));
+            self.write(seeName(self, word.value));
         },
         // A DEFER shows its action the way it would be set.
         .deferred => {
@@ -194,7 +194,18 @@ pub fn seeBody(self: *State, start: u16, end: u16) RuntimeError!void {
 pub fn seeName(self: *State, id: Cell) []const u8 {
     if (id < 0 or id >= self.word_count) return "<INVALID>";
     const word = &self.words[@intCast(id)];
-    return if (word.name_len == 0) "<NONAME>" else self.wordName(word.*);
+    if (word.name_len != 0) return self.wordName(word.*);
+    // A built-in word the build leaves out has no name in the dictionary; a definition
+    // loaded from a build that has it shows it by its own name.
+    return if (word.kind == .builtin) builtinName(word.builtin) else "<NONAME>";
+}
+
+/// The name a built-in word is defined with, whether or not the build has it.
+fn builtinName(builtin: Builtin) []const u8 {
+    for (State.builtin_definitions) |definition| {
+        if (definition[1] == builtin) return definition[0];
+    }
+    return "<BUILT-IN>";
 }
 
 pub fn seeOperation(self: *State, out: *SeeOutput, pc: usize, role: SeeRole, start: usize) RuntimeError!void {
@@ -210,7 +221,7 @@ pub fn seeOperation(self: *State, out: *SeeOutput, pc: usize, role: SeeRole, sta
             const builtin: Builtin = @enumFromInt(op.value);
             const name = for (self.words[0..self.builtin_count]) |*word| {
                 if (word.builtin == builtin and word.name_len != 0) break self.wordName(word.*);
-            } else "<BUILT-IN>";
+            } else builtinName(builtin);
             out.text(&.{name});
         },
         .literal => out.number(op.value),
