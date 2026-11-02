@@ -110,6 +110,7 @@ test ">NUMBER S>NUMBER? and >FLOAT convert strings" {
 }
 
 test ">FLOAT accepts decimal text without an exponent" {
+    try support.skipWithoutFloat();
     var output = Output{};
     const machine = try createMachine(&output);
     defer destroyMachine(machine);
@@ -330,6 +331,7 @@ test "STATE reflects the compiler state through a saved address" {
 }
 
 test "ABORT clears the stacks silently, even from EVALUATE" {
+    try support.skipWithoutFloat();
     var output = Output{};
     const machine = try createMachine(&output);
     defer destroyMachine(machine);

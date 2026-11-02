@@ -10,6 +10,7 @@ const destroyMachine = support.destroyMachine;
 const expectStack = support.expectStack;
 
 test "defining words compiled into a definition read their name when it runs" {
+    try support.skipWithoutFloat();
     var output = Output{};
     const machine = try createMachine(&output);
     defer destroyMachine(machine);
@@ -27,6 +28,7 @@ test "defining words compiled into a definition read their name when it runs" {
 }
 
 test "defining words follow the search order, a variable takes DOES>, and F. keeps every digit" {
+    try support.skipWithoutFloat();
     var output = Output{};
     const machine = try createMachine(&output);
     defer destroyMachine(machine);
@@ -39,6 +41,7 @@ test "defining words follow the search order, a variable takes DOES>, and F. kee
 }
 
 test ">BODY gives the data area, and ' in a definition reads its name when the definition runs" {
+    try support.skipWithoutFloat();
     var output = Output{};
     const machine = try createMachine(&output);
     defer destroyMachine(machine);
@@ -58,6 +61,7 @@ test ">BODY gives the data area, and ' in a definition reads its name when the d
 }
 
 test "LITERAL and FLITERAL compile a value, as the book's Level 31 DSL uses them" {
+    try support.skipWithoutFloat();
     var output = Output{};
     const machine = try createMachine(&output);
     defer destroyMachine(machine);
@@ -93,6 +97,7 @@ test "' follows the search order and reads its name across input boundaries" {
 }
 
 test ">BODY of ARRAY and plain CREATE words, and the words without a data area" {
+    try support.skipWithoutFloat();
     var output = Output{};
     const machine = try createMachine(&output);
     defer destroyMachine(machine);
@@ -107,6 +112,7 @@ test ">BODY of ARRAY and plain CREATE words, and the words without a data area" 
 }
 
 test "LITERAL takes one cell at a time and fails without a value or outside a definition" {
+    try support.skipWithoutFloat();
     var output = Output{};
     const machine = try createMachine(&output);
     defer destroyMachine(machine);

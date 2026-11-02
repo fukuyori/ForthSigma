@@ -323,8 +323,8 @@ pub const State = struct {
         }
     }
 
-    fn installBuiltins(self: *State) void {
-        const definitions = [_]struct { []const u8, Builtin }{
+    /// The names of the built-in words. A build without floating-point words skips those.
+    pub const builtin_definitions = [_]struct { []const u8, Builtin }{
             .{ "DROP", .drop },              .{ "DUP", .dup },                .{ "SWAP", .swap },             .{ "OVER", .over },                .{ "ROT", .rot },
             .{ "-ROT", .minus_rot },         .{ "NIP", .nip },                .{ "TUCK", .tuck },             .{ "PICK", .pick },                .{ "ROLL", .roll },
             .{ "2DUP", .two_dup },           .{ "2DROP", .two_drop },         .{ "2SWAP", .two_swap },        .{ "2OVER", .two_over },           .{ "DEPTH", .depth },
@@ -436,7 +436,13 @@ pub const State = struct {
             .{ "[AGAIN]", .bracket_again },        .{ "[WHILE]", .bracket_while },       .{ "[REPEAT]", .bracket_repeat },     .{ "[FOR]", .bracket_for },           .{ "[NEXT]", .bracket_next },
             .{ "M+", .m_plus },                    .{ "DU<", .du_less },                 .{ "2ROT", .two_rot },                .{ "DUMP", .dump },
         };
-        for (definitions) |definition| self.addBuiltin(definition[0], definition[1]) catch unreachable;
+
+    fn installBuiltins(self: *State) void {
+        const definitions = builtin_definitions;
+        for (definitions) |definition| {
+            if (!defs.float_enabled and defs.isFloatBuiltin(definition[1])) continue;
+            self.addBuiltin(definition[0], definition[1]) catch unreachable;
+        }
         // The Root list repeats the words needed to rebuild the search order after ONLY.
         self.writeCell(current_wordlist_address, root_wordlist) catch unreachable;
         for (root_word_names) |name| {
@@ -708,7 +714,7 @@ pub const State = struct {
             }
             return;
         }
-        const float_literal = if (self.currentBase() == 10) parseFloat(token, true) else null;
+        const float_literal = if (defs.float_enabled and self.currentBase() == 10) parseFloat(token, true) else null;
         if (float_literal) |number| {
             if (self.compiling) {
                 _ = try self.emit(.{ .kind = .float_literal, .value = floatBits(number) });
@@ -1025,7 +1031,12 @@ pub const State = struct {
     /// and every word must be in exactly one list.
     pub fn executeBuiltin(self: *State, builtin: Builtin) RuntimeError!void {
         switch (builtin) {
-            inline else => |word| try word_modules[word_owner[@intFromEnum(word)]].execute(self, word),
+            // Without floating-point words their code is not compiled in; such a word can
+            // only come from an image saved by a build that has them.
+            inline else => |word| if (comptime !defs.float_enabled and defs.isFloatBuiltin(word))
+                return error.InvalidExecutionToken
+            else
+                try word_modules[word_owner[@intFromEnum(word)]].execute(self, word),
         }
     }
 

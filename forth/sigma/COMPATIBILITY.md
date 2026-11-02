@@ -33,6 +33,8 @@
 
 ## Gforthに合わせて追加したワード
 
+`zig build -Dfloat=false` でビルドした版には、この節の浮動小数点の語（浮動小数点の行の語と、`FFIELD:` などのフィールド、`FLOAT%` などの大きさ、`FVALUE`、`FLITERAL`）と、共通言語コアの浮動小数点の語がありません（[決定事項](DECISIONS.md)の「浮動小数点を除いた版」）。
+
 | 分類 | ワード | 備考 |
 | --- | --- | --- |
 | スタック | -ROT, NIP, TUCK, PICK, ROLL, 2DUP, 2DROP, 2SWAP, 2OVER, DEPTH, R@, .S | |

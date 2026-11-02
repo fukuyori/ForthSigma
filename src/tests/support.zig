@@ -1,6 +1,11 @@
 //! Helpers shared by the core tests: a fake host with output capture and files.
 
 const std = @import("std");
+
+/// Skips a test that uses floating-point words in a build without them (-Dfloat=false).
+pub fn skipWithoutFloat() error{SkipZigTest}!void {
+    if (!@import("build_options").float) return error.SkipZigTest;
+}
 const forth = @import("../forth.zig");
 
 /// `text` written `count` times, which Zig 0.17 no longer has an operator for.

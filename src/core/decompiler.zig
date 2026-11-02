@@ -75,7 +75,7 @@ pub fn seeWord(self: *State, id: u16) RuntimeError!void {
             self.write(name);
         },
         .fconstant, .fvalue => {
-            self.writeFloatExponent(if (word.kind == .fvalue) try self.readFloat(word.value) else bitsFloat(word.value), fs_precision);
+            if (defs.float_enabled) self.writeFloatExponent(if (word.kind == .fvalue) try self.readFloat(word.value) else bitsFloat(word.value), fs_precision) else self.write("?");
             self.write(if (word.kind == .fvalue) " FVALUE " else " FCONSTANT ");
             self.write(name);
         },
@@ -217,7 +217,7 @@ pub fn seeOperation(self: *State, out: *SeeOutput, pc: usize, role: SeeRole, sta
         .float_literal => {
             // The width of a float is not measured, so a wrapped line may run a little long.
             out.token(1);
-            self.writeFloatExponent(bitsFloat(op.value), fs_precision);
+            if (defs.float_enabled) self.writeFloatExponent(bitsFloat(op.value), fs_precision) else self.write("?");
         },
         .branch, .branch_zero => switch (role) {
             .if_branch => out.text(&.{"IF"}),

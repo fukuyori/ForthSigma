@@ -30,6 +30,7 @@ test "TO changes value-flavoured locals and | starts locals at zero" {
 }
 
 test "typed locals hold cells, doubles, floats, characters, and execution tokens" {
+    try support.skipWithoutFloat();
     var output = Output{};
     const machine = try createMachine(&output);
     defer destroyMachine(machine);
@@ -41,6 +42,7 @@ test "typed locals hold cells, doubles, floats, characters, and execution tokens
 }
 
 test "variable-flavoured locals push addresses into the locals frame" {
+    try support.skipWithoutFloat();
     var output = Output{};
     const machine = try createMachine(&output);
     defer destroyMachine(machine);
@@ -77,6 +79,7 @@ test "each recursive call gets its own locals frame and frames are released" {
 }
 
 test "local names are scoped to their definition and rejected outside one" {
+    try support.skipWithoutFloat();
     var output = Output{};
     const machine = try createMachine(&output);
     defer destroyMachine(machine);
@@ -92,6 +95,7 @@ test "local names are scoped to their definition and rejected outside one" {
 }
 
 test "locals survive a full image restore" {
+    try support.skipWithoutFloat();
     var output = Output{};
     const source = try createMachine(&output);
     defer destroyMachine(source);

@@ -55,26 +55,56 @@ const windows_stdin = struct {
     const binary_mode = 0x8000;
 };
 extern "kernel32" fn GetStdHandle(u32) callconv(.winapi) ?*anyopaque;
+extern "kernel32" fn WriteFile(*anyopaque, [*]const u8, u32, ?*u32, ?*anyopaque) callconv(.winapi) c_int;
+extern "kernel32" fn Sleep(u32) callconv(.winapi) void;
+extern "kernel32" fn GetSystemTimePreciseAsFileTime(*u64) callconv(.winapi) void;
 extern "kernel32" fn GetConsoleMode(*anyopaque, *u32) callconv(.winapi) c_int;
 extern "kernel32" fn SetConsoleMode(*anyopaque, u32) callconv(.winapi) c_int;
 
 const image_footer_size = 20;
 const image_footer_magic = "SIGEND01";
-const HostContext = struct { allocator: std.mem.Allocator, executable_path: [:0]const u8, io: std.Io, environ_map: *std.process.Environ.Map };
+/// The host keeps away from std.Io: a main that takes std.process.Init sets up std.Io's
+/// threaded implementation, whose table of functions links in every file, network, and
+/// process operation of the standard library (about 450 KB on Windows). Sigma does its
+/// file work through the C library, and the few calls below go to the system directly.
+const HostContext = struct { allocator: std.mem.Allocator, executable_path: [:0]const u8, environ_map: *std.process.Environ.Map };
 
 fn hostContext(context: ?*anyopaque) forth.RuntimeError!*HostContext {
     return @ptrCast(@alignCast(context orelse return error.HostUnavailable));
 }
 
-fn sleepMilliseconds(context: ?*anyopaque, milliseconds: forth.Cell) forth.RuntimeError!void {
-    const host = try hostContext(context);
-    std.Io.sleep(host.io, .fromMilliseconds(milliseconds), .awake) catch return error.HostFailed;
+fn sleepMilliseconds(_: ?*anyopaque, milliseconds: forth.Cell) forth.RuntimeError!void {
+    if (milliseconds <= 0) return;
+    if (builtin.os.tag == .windows) {
+        // Sleep takes a u32, and its largest value means forever, so longer waits go in parts.
+        var left: u64 = @intCast(milliseconds);
+        while (left > 0) {
+            const part: u32 = @intCast(@min(left, std.math.maxInt(u32) - 1));
+            Sleep(part);
+            left -= part;
+        }
+        return;
+    }
+    var request: std.c.timespec = .{ .sec = @intCast(@divTrunc(milliseconds, 1000)), .nsec = @intCast(@rem(milliseconds, 1000) * std.time.ns_per_ms) };
+    var remaining: std.c.timespec = undefined;
+    // A signal can end the wait early; it goes on with the time that is left.
+    while (std.c.nanosleep(&request, &remaining) != 0) {
+        if (std.c._errno().* != @intFromEnum(std.c.E.INTR)) return error.HostFailed;
+        request = remaining;
+    }
 }
 
-fn microsecondsSinceEpoch(context: ?*anyopaque) forth.RuntimeError!forth.Double {
-    const host = try hostContext(context);
-    const now = std.Io.Timestamp.now(host.io, .real);
-    return @divFloor(now.nanoseconds, std.time.ns_per_us);
+/// Microseconds since 1970-01-01 00:00 UTC.
+fn microsecondsSinceEpoch(_: ?*anyopaque) forth.RuntimeError!forth.Double {
+    if (builtin.os.tag == .windows) {
+        // A FILETIME counts 100 ns from 1601-01-01; 11644473600 seconds lie before 1970.
+        var ticks: u64 = 0;
+        GetSystemTimePreciseAsFileTime(&ticks);
+        return @divFloor(@as(forth.Double, ticks) - 116_444_736_000_000_000, 10);
+    }
+    var now: std.c.timespec = undefined;
+    if (std.c.clock_gettime(std.c.CLOCK.REALTIME, &now) != 0) return error.HostFailed;
+    return @as(forth.Double, now.sec) * std.time.us_per_s + @divFloor(@as(forth.Double, now.nsec), std.time.ns_per_us);
 }
 
 /// The C library's time.h, translated by build.zig (see addCTime).
@@ -234,11 +264,7 @@ fn fileWrite(context: ?*anyopaque, fileid: forth.Cell, bytes: []const u8) forth.
         terminalWrite(context, bytes);
         return 0;
     }
-    if (fileid == forth.stderr_fileid) {
-        const host = hostContext(context) catch return forth.errnoIor(errno_io);
-        std.Io.File.stderr().writeStreamingAll(host.io, bytes) catch return forth.errnoIor(errno_io);
-        return 0;
-    }
+    if (fileid == forth.stderr_fileid) return if (writeStandardError(bytes)) 0 else forth.errnoIor(errno_io);
     const file = openedFile(fileid) orelse return badFileIor();
     clearErrno();
     return if (fwrite(bytes.ptr, 1, bytes.len, file) == bytes.len) 0 else lastIor();
@@ -485,6 +511,61 @@ fn saveExecutableImage(context: ?*anyopaque, output_path: []const u8, machine: *
     if (fwrite(&footer, 1, footer.len, destination) != footer.len) return error.FileUnavailable;
 }
 
+/// Writes to the standard error handle directly, as std.Io did: it is not buffered, so it
+/// does not wait for a flush of the C library's stderr stream.
+fn writeStandardError(bytes: []const u8) bool {
+    var rest = bytes;
+    while (rest.len > 0) {
+        if (builtin.os.tag == .windows) {
+            const std_error_handle: u32 = @bitCast(@as(i32, -12));
+            const handle = GetStdHandle(std_error_handle) orelse return false;
+            var written: u32 = 0;
+            const wanted: u32 = @intCast(@min(rest.len, std.math.maxInt(u32)));
+            if (WriteFile(handle, rest.ptr, wanted, &written, null) == 0) return false;
+            rest = rest[written..];
+        } else {
+            const written = std.c.write(2, rest.ptr, rest.len);
+            if (written < 0) {
+                if (std.c._errno().* == @intFromEnum(std.c.E.INTR)) continue;
+                return false;
+            }
+            rest = rest[@intCast(written)..];
+        }
+    }
+    return true;
+}
+
+/// The path of the running executable, for the image a SAVESYS executable carries, as
+/// std.process.executablePath gives it: WTF-8 on Windows, with symbolic links resolved
+/// on Linux and macOS. Other systems resolve the program name the shell passed.
+fn executablePathAlloc(allocator: std.mem.Allocator, argv0: ?[*:0]const u8) ![:0]u8 {
+    switch (builtin.os.tag) {
+        .windows => {
+            const name = std.os.windows.peb().ProcessParameters.ImagePathName;
+            return std.unicode.wtf16LeToWtf8AllocZ(allocator, name.Buffer.?[0 .. name.Length / 2]);
+        },
+        .linux, .serenity, .illumos => {
+            const link = if (builtin.os.tag == .illumos) "/proc/self/path/a.out" else "/proc/self/exe";
+            var buffer: [std.c.PATH_MAX]u8 = undefined;
+            const length = std.c.readlink(link, &buffer, buffer.len);
+            if (length < 0) return error.FileNotFound;
+            return allocator.dupeSentinel(u8, buffer[0..@intCast(length)], 0);
+        },
+        else => {
+            var named: [std.c.PATH_MAX + 1]u8 = undefined;
+            const path: [*:0]const u8 = if (builtin.os.tag.isDarwin()) path: {
+                // _NSGetExecutablePath may give a symbolic link to the executable.
+                var size: u32 = named.len;
+                if (std.c._NSGetExecutablePath(&named, &size) != 0) return error.NameTooLong;
+                break :path @ptrCast(&named);
+            } else argv0 orelse return error.FileNotFound;
+            var resolved: [std.c.PATH_MAX]u8 = undefined;
+            const real = std.c.realpath(path, &resolved) orelse return error.FileNotFound;
+            return allocator.dupeSentinel(u8, std.mem.span(real), 0);
+        },
+    }
+}
+
 fn terminalWrite(_: ?*anyopaque, bytes: []const u8) void {
     for (bytes) |byte| _ = putchar(byte);
     _ = fflush(null);
@@ -542,11 +623,28 @@ fn interpretAndPrompt(machine: *forth.State, line: []const u8) void {
 const version = std.mem.trimEnd(u8, @embedFile("version"), " \t\r\n");
 const banner = "FORTH/Sigma " ++ version ++ "  MIT License\nType `help' for basic help\n";
 
-pub fn main(init: std.process.Init) !void {
-    const allocator = init.gpa;
-    const executable_path = try std.process.executablePathAlloc(init.io, allocator);
+/// Init.Minimal gives the arguments and the environment, decoded from UTF-16 on Windows,
+/// without setting up std.Io (see HostContext).
+pub fn main(init: std.process.Init.Minimal) u8 {
+    run(init) catch |err| {
+        // As the standard library reports an error returned from main.
+        var message: [128]u8 = undefined;
+        _ = writeStandardError(std.fmt.bufPrint(&message, "error: {s}\n", .{@errorName(err)}) catch "error\n");
+        return 1;
+    };
+    return 0;
+}
+
+fn run(init: std.process.Init.Minimal) !void {
+    // The C library's allocator, which std.process.Init also gives in a release build
+    // that links the C library.
+    const allocator = std.heap.c_allocator;
+    var environ_map = try std.process.Environ.createMap(init.environ, allocator);
+    defer environ_map.deinit();
+    const argv0: ?[*:0]const u8 = if (builtin.os.tag == .windows or init.args.vector.len == 0) null else init.args.vector[0];
+    const executable_path = try executablePathAlloc(allocator, argv0);
     defer allocator.free(executable_path);
-    var host = HostContext{ .allocator = allocator, .executable_path = executable_path, .io = init.io, .environ_map = init.environ_map };
+    var host = HostContext{ .allocator = allocator, .executable_path = executable_path, .environ_map = &environ_map };
     const machine = try allocator.create(forth.State);
     defer allocator.destroy(machine);
 
@@ -556,7 +654,7 @@ pub fn main(init: std.process.Init) !void {
     defer closeAllFiles();
     loadEmbeddedImage(executable_path, machine, allocator);
 
-    var arguments = try std.process.Args.Iterator.initAllocator(init.minimal.args, allocator);
+    var arguments = try std.process.Args.Iterator.initAllocator(init.args, allocator);
     defer arguments.deinit();
     _ = arguments.next();
     var argument_line: [4096]u8 = undefined;
@@ -621,7 +719,7 @@ test "GETENV through the host accepts 3072 bytes and rejects 3073" {
     try map.put("SIGMA_FIT", &@as([3072]u8, @splat('x')));
     try map.put("SIGMA_LONG", &@as([3073]u8, @splat('y')));
     try map.put("SIGMA_EMPTY", "");
-    var host = HostContext{ .allocator = std.testing.allocator, .executable_path = "", .io = undefined, .environ_map = &map };
+    var host = HostContext{ .allocator = std.testing.allocator, .executable_path = "", .environ_map = &map };
     const machine = try std.testing.allocator.create(forth.State);
     defer std.testing.allocator.destroy(machine);
     machine.init(.{ .context = @ptrCast(&host), .write_fn = discardOutput, .getenv_fn = environmentValue });
@@ -662,7 +760,7 @@ test "INCLUDE through the host reads CR LF lines and limits a line to 4096 bytes
     @memset(long, ' ');
     try writeTestFile(".zig-cache/sigma-include-long.fs", long);
 
-    var host = HostContext{ .allocator = allocator, .executable_path = "", .io = undefined, .environ_map = undefined };
+    var host = HostContext{ .allocator = allocator, .executable_path = "", .environ_map = undefined };
     const machine = try allocator.create(forth.State);
     defer allocator.destroy(machine);
     machine.init(.{ .context = @ptrCast(&host), .write_fn = discardOutput, .file_ops = &file_ops });
@@ -683,7 +781,7 @@ test "SLURP-FILE through the host reads every byte as it is" {
     try writeTestFile(".zig-cache/sigma-slurp.txt", text);
     try writeTestFile(".zig-cache/sigma-slurp-empty.txt", "");
 
-    var host = HostContext{ .allocator = allocator, .executable_path = "", .io = undefined, .environ_map = undefined };
+    var host = HostContext{ .allocator = allocator, .executable_path = "", .environ_map = undefined };
     const machine = try allocator.create(forth.State);
     defer allocator.destroy(machine);
     machine.init(.{ .context = @ptrCast(&host), .write_fn = discardOutput, .file_ops = &file_ops });
@@ -701,7 +799,7 @@ test "SLURP-FILE through the host reads every byte as it is" {
 test "file words through the host: position, resize, flush, status, rename over a file, delete" {
     const allocator = std.testing.allocator;
     try writeTestFile(".zig-cache/sigma-files-b.txt", "old");
-    var host = HostContext{ .allocator = allocator, .executable_path = "", .io = undefined, .environ_map = undefined };
+    var host = HostContext{ .allocator = allocator, .executable_path = "", .environ_map = undefined };
     const machine = try allocator.create(forth.State);
     defer allocator.destroy(machine);
     machine.init(.{ .context = @ptrCast(&host), .write_fn = discardOutput, .file_ops = &file_ops });
@@ -735,7 +833,7 @@ test "the banner names the version from VERSION and the license" {
 
 test "SAVE and LOAD through the host keep the words, also when loaded twice" {
     const allocator = std.testing.allocator;
-    var host = HostContext{ .allocator = allocator, .executable_path = "", .io = undefined, .environ_map = undefined };
+    var host = HostContext{ .allocator = allocator, .executable_path = "", .environ_map = undefined };
     const writer: forth.Writer = .{ .context = @ptrCast(&host), .write_fn = discardOutput, .load_fn = loadDictionary, .save_fn = saveDictionary };
     const source = try allocator.create(forth.State);
     defer allocator.destroy(source);

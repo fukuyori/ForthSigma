@@ -38,21 +38,25 @@ Zig 0.17.0をインストールした環境で、リポジトリのルートか�
 
 Linux/macOSでは、生成されたzig-out/bin/sigmaを実行してください。別のZigターゲットを指定する場合はzig build -Dtarget=<triple>を使います。
 
+`zig build -Dfloat=false` とすると、浮動小数点の語とCORE-MATHを除いた小さい版を作れます（リリースと同じ `-Doptimize=fast` でWindows x86_64は約340 KB、浮動小数点を含む版は約750 KB）。浮動小数点数のリテラル（`1e` など）、`F:` `F^` のローカル変数、`ENVIRONMENT?` の `FLOATING-STACK` `MAX-FLOAT` もなくなります。テストは `zig build test -Dfloat=false` で実行でき、浮動小数点の語を使うテストは飛ばします。
+
 現在の製品バージョンは [`VERSION`](VERSION) に記載しています。Windows向けリリースビルドとInno Setupインストーラーは次のPowerShellスクリプトで作成できます。インストーラー（`dist\installer\sigma-版番号-windows-x86_64-setup.exe`）は `VERSION` の値を使い、必要なら `-Version MAJOR.MINOR.PATCH` で上書きできます。
 
     .\scripts\build-release.ps1
     .\scripts\build-installer.ps1
+
+`build-release.ps1` は、浮動小数点の語を含む版（`dist\release`）と除いた版（`dist\release-nofloat`）の両方をビルドします。`-Variant Float` または `-Variant NoFloat` で片方だけにでき、出力先は `-OutputDirectory` と `-NoFloatOutputDirectory` で変えられます。`-Target` を指定しないときもCPUはbaseline（`-Dcpu=baseline`）です。インストーラーは浮動小数点の語を含む版だけです。
 
 署名する場合は `CODESIGN_CERT` に証明書ストア上の証明書サブジェクトを設定し、`-Sign` を指定します。署名時は実行ファイル、インストーラー、アンインストーラーを署名し、実行ファイルとインストーラーの署名を検証します。署名にはRFC 3161のタイムスタンプを付け、証明書の期限が切れた後も署名が有効なままになるようにします。タイムスタンプのサーバーは既定で `http://timestamp.digicert.com`（証明書のルートであるDigiCertのサーバー）で、環境変数 `CODESIGN_TIMESTAMP_URL` で変えられます。タイムスタンプが付かなかった場合はエラーにします。
 
     .\scripts\build-release.ps1 -Sign
     .\scripts\build-installer.ps1 -Sign
 
-`v0.2.1` のように `VERSION` と同じ版番号のタグをプッシュすると、GitHub Actions（`.github/workflows/release.yml`）がWindows x86_64、Linux x86_64・arm32・arm64、macOS arm64でテストとビルドを行い、各ZIP（実行ファイル、LICENSE、THIRD_PARTY_NOTICES.md、README.md、USER_MANUAL.md）を下書きのリリースに登録します。テストはWindows x86_64、Linux x86_64・arm64、macOS arm64の実機で実行します。CIのWindows版は署名なしなので、公開前に、次のスクリプトで作った同じ名前・同じ中身の署名付きZIP（`dist\zip\sigma-版番号-windows-x86_64.zip`）に差し替えます。
+`v0.3.0` のように `VERSION` と同じ版番号のタグをプッシュすると、GitHub Actions（`.github/workflows/release.yml`）がWindows x86_64、Linux x86_64・arm32・arm64、macOS arm64でテストとビルドを行い、各ZIP（実行ファイル、LICENSE、THIRD_PARTY_NOTICES.md、README.md、USER_MANUAL.md）を下書きのリリースに登録します。ZIPは対象ごとに、浮動小数点の語を含む版（`sigma-版番号-対象.zip`）と除いた版（`sigma-版番号-対象-nofloat.zip`）の2つです。テストはWindows x86_64、Linux x86_64・arm64、macOS arm64の実機で実行します。CIのWindows版は署名なしなので、公開前に、次のスクリプトで作った同じ名前・同じ中身の署名付きZIP（`dist\zip\sigma-版番号-windows-x86_64.zip` と `dist\zip\sigma-版番号-windows-x86_64-nofloat.zip`）に差し替えます。`-Variant Float` または `-Variant NoFloat` で片方だけ作ることもできます。
 
     .\scripts\build-zip.ps1 -Sign
 
-引数なしで起動すると、版番号とライセンスの2行（`FORTH/Sigma 0.2.1  MIT License`、`` Type `help' for basic help ``）を表示して対話プロンプトになります。`HELP` で基本的な使い方、`HELP DUP` のように語名を付けるとその語の説明、`LICENSE` でライセンスの全文を表示します。
+引数なしで起動すると、版番号とライセンスの2行（`FORTH/Sigma 0.3.0  MIT License`、`` Type `help' for basic help ``）を表示して対話プロンプトになります。`HELP` で基本的な使い方、`HELP DUP` のように語名を付けるとその語の説明、`LICENSE` でライセンスの全文を表示します。
 
 例:
 

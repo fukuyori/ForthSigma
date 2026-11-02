@@ -77,6 +77,7 @@ test "an image keeps HERE's data, the used heap, and the source table, and nothi
 }
 
 test "an FVALUE and a TO of it keep working after LOAD, a second LOAD, and a full restore" {
+    try support.skipWithoutFloat();
     var output = Output{};
     const source = try createMachine(&output);
     defer destroyMachine(source);

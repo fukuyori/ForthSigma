@@ -6,6 +6,10 @@ pub fn build(b: *std.Build) void {
     // Release builds for distribution leave out debug information unless -Dstrip=false.
     const strip = b.option(bool, "strip", "Omit debug information (default: on for fast and small)") orelse
         (optimize == .fast or optimize == .small);
+    // -Dfloat=false leaves out the floating-point words and CORE-MATH, for a smaller program.
+    const float = b.option(bool, "float", "Include the floating-point words (default: on)") orelse true;
+    const options = b.addOptions();
+    options.addOption(bool, "float", float);
 
     const exe = b.addExecutable(.{
         .name = "sigma",
@@ -17,9 +21,15 @@ pub fn build(b: *std.Build) void {
             .strip = strip,
         }),
     });
-    addCoreMath(b, exe.root_module);
+    exe.root_module.addOptions("build_options", options);
+    if (float) addCoreMath(b, exe.root_module);
     addEmbeddedTexts(b, exe.root_module);
     addCTime(b, exe.root_module, target, optimize);
+    // Each function and constant in its own section, so that the linker drops the ones
+    // nothing calls, also from the C files.
+    exe.link_function_sections = true;
+    exe.link_data_sections = true;
+    exe.link_gc_sections = true;
     b.installArtifact(exe);
     // The program's license and the third-party notices go with every build output.
     b.installFile("LICENSE", "LICENSE");
@@ -31,12 +41,15 @@ pub fn build(b: *std.Build) void {
         .optimize = optimize,
         .link_libc = true,
     });
-    addCoreMath(b, test_module);
+    test_module.addOptions("build_options", options);
     addEmbeddedTexts(b, test_module);
-    test_module.addCSourceFile(.{
-        .file = b.path("src/fma/fma_for_tests.c"),
-        .flags = &.{ "-std=gnu11", "-include", fmaHeader(b) },
-    });
+    if (float) {
+        addCoreMath(b, test_module);
+        test_module.addCSourceFile(.{
+            .file = b.path("src/fma/fma_for_tests.c"),
+            .flags = &.{ "-std=gnu11", "-include", fmaHeader(b) },
+        });
+    }
     const unit_tests = b.addTest(.{ .root_module = test_module });
     const run_tests = b.addRunArtifact(unit_tests);
     const test_step = b.step("test", "Run FORTH/Σ core and host tests");

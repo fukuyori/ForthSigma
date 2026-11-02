@@ -2,7 +2,8 @@
 
 comptime {
     _ = @import("tests/core_words_test.zig");
-    _ = @import("tests/float_test.zig");
+    // The floating-point tests need the floating-point words (not in -Dfloat=false).
+    if (@import("build_options").float) _ = @import("tests/float_test.zig");
     _ = @import("tests/text_and_numbers_test.zig");
     _ = @import("tests/host_words_test.zig");
     _ = @import("tests/files_and_heap_test.zig");

@@ -1,5 +1,6 @@
 //! HELP and LICENSE.
 
+const std = @import("std");
 const defs = @import("defs.zig");
 const forth = @import("../forth.zig");
 const help_text = @import("help_text.zig");
@@ -14,7 +15,7 @@ pub const words = [_]Builtin{ .help, .license };
 pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
     switch (builtin) {
         .help => {
-            const name = nameOnSameLine(self) orelse return self.write(help_text.basic);
+            const name = nameOnSameLine(self) orelse return self.write(basic);
             try describe(self, name);
         },
         .license => {
@@ -71,10 +72,40 @@ fn describe(self: *State, name: []const u8) RuntimeError!void {
 }
 
 pub fn entry(name: []const u8) ?*const help_text.Entry {
-    for (&help_text.entries) |*candidate| {
+    for (&help_entries) |*candidate| {
         if (State.asciiEqlIgnoreCase(candidate.name, name)) return candidate;
     }
     return null;
+}
+
+/// The basic help; without floating-point words it does not mention float numbers.
+pub const basic = if (defs.float_enabled) help_text.basic else blk: {
+    const numbers = "123 is a cell, 123. a double cell, 1e or 1.5E3 a float (the E is needed);";
+    const at = std.mem.indexOf(u8, help_text.basic, numbers).?;
+    break :blk help_text.basic[0..at] ++ "123 is a cell and 123. a double cell;" ++ help_text.basic[at + numbers.len ..];
+};
+
+/// The help entries, without those of floating-point words in a build that leaves them out.
+pub const help_entries = if (defs.float_enabled) help_text.entries else blk: {
+    @setEvalBranchQuota(10_000_000);
+    var kept: [help_text.entries.len]help_text.Entry = undefined;
+    var count: usize = 0;
+    for (help_text.entries) |candidate| {
+        if (isFloatName(candidate.name)) continue;
+        kept[count] = candidate;
+        count += 1;
+    }
+    const result = kept[0..count].*;
+    break :blk result;
+};
+
+/// A name of a floating-point built-in word, or of an F: or F^ local.
+fn isFloatName(comptime name: []const u8) bool {
+    if (std.mem.eql(u8, name, "F:") or std.mem.eql(u8, name, "F^")) return true;
+    for (State.builtin_definitions) |definition| {
+        if (std.mem.eql(u8, definition[0], name)) return defs.isFloatBuiltin(definition[1]);
+    }
+    return false;
 }
 
 const license_text = withoutCarriageReturns(@embedFile("license"));

@@ -1,6 +1,7 @@
-# Builds FORTH/Sigma for each target and, for a tag vX.Y.Z, attaches the ZIP files to a
-# draft release. The Windows build is unsigned; replace it with the signed ZIP of the
-# same name and contents that scripts/build-zip.ps1 -Sign makes before publishing.
+# Builds FORTH/Sigma for each target, with and without the floating-point words, and,
+# for a tag vX.Y.Z, attaches the ZIP files to a draft release. The Windows builds are
+# unsigned; replace them with the signed ZIPs of the same names and contents that
+# scripts/build-zip.ps1 -Sign makes before publishing.
 name: Release
 
 on:
@@ -34,20 +35,26 @@ jobs:
         run: zig build test -Dcpu=baseline --summary all
       - if: runner.arch == 'X64'
         run: zig build test -Dcpu=baseline -Doptimize=fast --summary all
+      # The build without floating-point words (-Dfloat=false).
+      - run: zig build test -Dfloat=false --summary all
 
   build:
-    name: Build ${{ matrix.name }}
+    name: Build ${{ matrix.platform.name }}${{ matrix.variant.suffix }}
     needs: test
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        include:
+        platform:
           - { name: windows-x86_64, target: x86_64-windows-gnu, exe: sigma.exe }
           - { name: linux-x86_64, target: x86_64-linux-musl, exe: sigma }
           - { name: linux-arm32, target: arm-linux-musleabihf, exe: sigma }
           - { name: linux-arm64, target: aarch64-linux-musl, exe: sigma }
           - { name: macos-arm64, target: aarch64-macos, exe: sigma }
+        # Each platform with the floating-point words and without them (-Dfloat=false).
+        variant:
+          - { float: 'true', suffix: '' }
+          - { float: 'false', suffix: '-nofloat' }
     steps:
       - uses: actions/checkout@v7
       - uses: mlugg/setup-zig@v2
@@ -61,17 +68,17 @@ jobs:
             echo "The tag $GITHUB_REF_NAME does not match VERSION ($version)."
             exit 1
           fi
-      - run: zig build -Doptimize=fast -Dtarget=${{ matrix.target }} --prefix out
+      - run: zig build -Doptimize=fast -Dfloat=${{ matrix.variant.float }} -Dtarget=${{ matrix.platform.target }} --prefix out
       - name: Package
         run: |
           version="$(tr -d '\r\n' < VERSION)"
-          dir="sigma-$version-${{ matrix.name }}"
+          dir="sigma-$version-${{ matrix.platform.name }}${{ matrix.variant.suffix }}"
           mkdir "$dir"
-          cp "out/bin/${{ matrix.exe }}" LICENSE THIRD_PARTY_NOTICES.md README.md forth/sigma/USER_MANUAL.md "$dir/"
+          cp "out/bin/${{ matrix.platform.exe }}" LICENSE THIRD_PARTY_NOTICES.md README.md forth/sigma/USER_MANUAL.md "$dir/"
           zip -r "$dir.zip" "$dir"
       - uses: actions/upload-artifact@v7
         with:
-          name: sigma-${{ matrix.name }}
+          name: sigma-${{ matrix.platform.name }}${{ matrix.variant.suffix }}
           path: sigma-*.zip
           if-no-files-found: error
 
@@ -95,4 +102,4 @@ jobs:
             --repo "$GITHUB_REPOSITORY" \
             --draft \
             --title "FORTH/Sigma $GITHUB_REF_NAME" \
-            --notes "Builds for Windows x86_64, Linux x86_64, arm32, and arm64, and macOS arm64."
+            --notes "Builds for Windows x86_64, Linux x86_64, arm32, and arm64, and macOS arm64. The -nofloat builds leave out the floating-point words for a smaller program."

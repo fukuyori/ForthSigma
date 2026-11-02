@@ -274,6 +274,7 @@ test "SYNONYM TRAVERSE-WORDLIST NAME>INTERPRET EKEY>CHAR and ENVIRONMENT? work a
 }
 
 test "QUIT keeps both data stacks, stops the line and the file, and CATCH does not stop it" {
+    try support.skipWithoutFloat();
     var output = Output{};
     support.setFakeFile(&output, 0, ": TQ 1 2 QUIT 3 ; TQ .S\n4 .\n");
     const machine = try createMachine(&output);
@@ -763,6 +764,7 @@ test "DEFER IS ACTION-OF DEFER! DEFER@ and DEFERS work as in gforth" {
 }
 
 test "+TO ?EXIT NOOP PERFORM ?LEAVE CELL- UNDER+ and 0>= work as in gforth" {
+    try support.skipWithoutFloat();
     try expectOutput("5 VALUE V 3 +TO V V . : T1 2 +TO V ; T1 V . 1E FVALUE FV 2E +TO FV FV F. 1 0 2VALUE DV 5 0 +TO DV DV D. SEE T1", "8 10 3. 6 : T1\n  2 +TO V\n;\n");
     try expectOutput(": T2 DUP . ?EXIT .\" after\" ; 0 T2 1 T2 NOOP VARIABLE XV ' DUP XV ! 4 XV PERFORM . .", "0 after1 4 4 ");
     try expectOutput(": T3 10 0 DO I . I 3 = ?LEAVE LOOP ; T3 10 CELL- . 1 2 3 UNDER+ . . 0 0>= . -1 0>= . 1 0>= .", "0 1 2 3 2 2 4 -1 0 -1 ");
@@ -780,6 +782,7 @@ test "?OF CONTOF and NEXT-CASE extend CASE as in gforth" {
 }
 
 test "a DEFER that runs itself, +TO of locals, and DEFERs of forgotten words, after the Codex review" {
+    try support.skipWithoutFloat();
     // +TO adds to a local variable, as in gforth, and leaves a VALUE of the same name alone.
     try expectOutput("5 VALUE X : T { X -- } 1 +TO X X . ; 99 T X . : T2 { F: Y -- } 2E +TO Y Y F. ; 1E T2 : T3 { D: Z -- } 5 0 +TO Z Z D. ; 1 0 T3", "100 5 3. 6 ");
     // A DEFER that runs itself ends with an error that CATCH takes; gforth loops for ever.
@@ -809,6 +812,7 @@ test "COMPILE, [COMPILE] and NAME>COMPILE work as in gforth" {
 }
 
 test "BEGIN-STRUCTURE and the FIELD: words lay out fields as in gforth" {
+    try support.skipWithoutFloat();
     try expectOutput(
         "BEGIN-STRUCTURE POINT FIELD: P.X FIELD: P.Y CFIELD: P.C FFIELD: P.F SFFIELD: P.S DFFIELD: P.D 3 +FIELD P.Z CFIELD: P.E END-STRUCTURE " ++
             "POINT . 0 P.X . 0 P.Y . 0 P.C . 0 P.F . 0 P.S . 0 P.D . 0 P.Z . 0 P.E . 1000 P.Y . " ++
@@ -818,6 +822,7 @@ test "BEGIN-STRUCTURE and the FIELD: words lay out fields as in gforth" {
 }
 
 test "STRUCT FIELD END-STRUCT and the % words work as gforth's structures" {
+    try support.skipWithoutFloat();
     try expectOutput(
         "STRUCT . . STRUCT CELL% FIELD S.A CHAR% FIELD S.B FLOAT% FIELD S.C CHAR% FIELD S.D DOUBLE% FIELD S.E SFLOAT% FIELD S.F DFLOAT% FIELD S.G CHAR% 3 * FIELD S.H END-STRUCT REC% " ++
             "REC% . . 0 S.A . 0 S.B . 0 S.C . 0 S.D . 0 S.E . 0 S.F . 0 S.G . 0 S.H . CELL% . . CHAR% . . FLOAT% . . DOUBLE% . . SFLOAT% . . DFLOAT% . . REC% %SIZE . REC% %ALIGNMENT .",

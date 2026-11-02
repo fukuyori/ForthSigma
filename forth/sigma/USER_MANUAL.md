@@ -13,10 +13,12 @@ zig build
 .\zig-out\bin\sigma.exe
 ```
 
+`zig build -Dfloat=false` でビルドすると、浮動小数点数を扱わない小さい版になります（[浮動小数点数](#浮動小数点数)の章を参照）。
+
 引数なしで起動すると、次の2行を表示して対話プロンプトになります。版番号はルートの `VERSION` ファイルの値です。引数を付けて起動したとき（引数の文字列を1回実行して終了します）は表示しません。
 
 ```text
-FORTH/Sigma 0.2.1  MIT License
+FORTH/Sigma 0.3.0  MIT License
 Type `help' for basic help
 ```
 
@@ -172,6 +174,8 @@ CREATE BUF 16 ALLOT
 `IF ... ENDIF` も使えます（`ENDIF` は `THEN` の別名）。`DO` は開始値と終値が等しくても本体を1回実行します（FORTH/Σの仕様）。`?DO` は等しい場合に本体を実行しません。`LEAVE` は直ちにループを抜けます。ループの途中で `EXIT` するときは、先に `UNLOOP` でループを片付けます。`?EXIT`（( flag -- )）は真のとき `EXIT` し、`?LEAVE`（( flag -- )）は真のとき `LEAVE` します。`?OF`（( flag -- )）は値と比べる代わりに真偽で選ぶ `OF`、`CONTOF` は `CASE` の先頭へ戻る `ENDOF`、`NEXT-CASE` は選択値を捨てずに先頭へ戻る `ENDCASE` です（Gforthと同じ）。`I`、`J`、`K` は内側からそれぞれ1段目、2段目、3段目のループ添字を返します。
 
 ## 浮動小数点数
+
+`zig build -Dfloat=false` でビルドした版には、この章の語（語の一覧の「浮動小数点」の行の語、`FVARIABLE` `FCONSTANT` `FVALUE` `FLITERAL` `>FLOAT`、`FFIELD:` `SFFIELD:` `DFFIELD:`、`FLOAT%` `SFLOAT%` `DFLOAT%`）、浮動小数点数のリテラル、`F:` `F^` のローカル変数がありません。`1e` のような数は未定義の語として扱われ、`ENVIRONMENT?` は `FLOATING-STACK` と `MAX-FLOAT` に偽を返します。浮動小数点数を含む版で保存したイメージを読み込むと、浮動小数点の語の実行は `INVALID EXECUTION TOKEN` のエラーになります。
 
 浮動小数点数は64ビット（倍精度）で、整数とは別の浮動小数点スタックに積みます。ソース中では、基数が10のときに `e` または `E` を含む数が浮動小数点数になります。
 

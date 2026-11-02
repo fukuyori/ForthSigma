@@ -63,6 +63,7 @@ pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
                 .{ "WORDLISTS", max_wordlists },
             };
             for (cells) |entry| {
+                if (!defs.float_enabled and std.mem.eql(u8, entry[0], "FLOATING-STACK")) continue;
                 if (asciiEqlIgnoreCase(name, entry[0])) {
                     try self.push(entry[1]);
                     return self.push(true_flag);
@@ -72,7 +73,7 @@ pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
                 try self.pushDouble(if (asciiEqlIgnoreCase(name, "MAX-D")) std.math.maxInt(Double) else -1);
                 return self.push(true_flag);
             }
-            if (asciiEqlIgnoreCase(name, "MAX-FLOAT")) {
+            if (defs.float_enabled and asciiEqlIgnoreCase(name, "MAX-FLOAT")) {
                 try self.fpush(std.math.floatMax(Float));
                 return self.push(true_flag);
             }

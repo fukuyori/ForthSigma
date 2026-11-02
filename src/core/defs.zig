@@ -10,6 +10,22 @@ const UDouble = memory_map.UDouble;
 const forth_wordlist = memory_map.forth_wordlist;
 const max_name = memory_map.max_name;
 
+/// False in a build with -Dfloat=false, which leaves out the floating-point words.
+pub const float_enabled = @import("build_options").float;
+
+/// The built-in words of the floating-point word set: those of words_float.zig and the
+/// float fields, sizes, and defining words of the other files.
+pub fn isFloatBuiltin(builtin: Builtin) bool {
+    return float_builtins[@intFromEnum(builtin)];
+}
+
+const float_builtins = blk: {
+    var table: [@typeInfo(Builtin).@"enum".field_names.len]bool = @splat(false);
+    for (@import("words_float.zig").words) |word| table[@intFromEnum(word)] = true;
+    for ([_]Builtin{ .field_float, .field_sfloat, .field_dfloat, .float_percent, .sfloat_percent, .dfloat_percent, .define_fvariable, .define_fconstant, .define_fvalue, .fliteral }) |word| table[@intFromEnum(word)] = true;
+    break :blk table;
+};
+
 pub const Builtin = enum {
     drop,
     dup,

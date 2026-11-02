@@ -4,7 +4,7 @@ FORTH/Sigma includes the following third-party code. The MIT License in [LICENSE
 
 ## CORE-MATH
 
-Correctly rounded math functions in `src/core-math/`, used by `FSIN`, `FCOS`, `FTAN`, `FEXP`, `FLN`, `FASIN`, `FACOS`, `FATAN`, `FATAN2`, `FSINH`, `FCOSH`, `FTANH`, `FASINH`, `FACOSH`, `FATANH`, `FEXPM1`, `FLNP1`, `FLOG`, `FALOG`, and `F**`. Project: <https://core-math.gitlabpages.inria.fr/>. Details in [src/core-math/README.md](src/core-math/README.md).
+Correctly rounded math functions in `src/core-math/`, used by `FSIN`, `FCOS`, `FTAN`, `FEXP`, `FLN`, `FASIN`, `FACOS`, `FATAN`, `FATAN2`, `FSINH`, `FCOSH`, `FTANH`, `FASINH`, `FACOSH`, `FATANH`, `FEXPM1`, `FLNP1`, `FLOG`, `FALOG`, and `F**`. Project: <https://core-math.gitlabpages.inria.fr/>. Details in [src/core-math/README.md](src/core-math/README.md). A build with `-Dfloat=false` leaves out CORE-MATH and the musl `fma` below.
 
 ```text
 sin.c, cos.c, tan.c: Copyright (c) 2022-2025 Paul Zimmermann and Tom Hubrecht

@@ -24,7 +24,7 @@ test "HELP has a description for every built-in word, and only for words that ex
     }
     // The parser handles these without dictionary entries.
     const parser_words = [_][]const u8{ "(", "\\", ".(", "[", "]", "[']", "CHAR", "[CHAR]", "POSTPONE", "TO", "IS", "+TO", "ACTION-OF", ":NONAME", "{", "{:", "LOCALS|", "S\"", "S\\\"", ".\"", ".\\\"", "\"", "C\"", "ABORT\"", "FORGET" };
-    for (help_text.entries, 0..) |entry, index| {
+    for (words_help.help_entries, 0..) |entry, index| {
         const known = machine.lookup(entry.name) != null or for (parser_words) |parser_word| {
             if (std.mem.eql(u8, parser_word, entry.name)) break true;
         } else false;
@@ -32,7 +32,7 @@ test "HELP has a description for every built-in word, and only for words that ex
             std.debug.print("help for a word that does not exist: {s}\n", .{entry.name});
             return error.TestExpectedEqual;
         }
-        for (help_text.entries[index + 1 ..]) |other| {
+        for (words_help.help_entries[index + 1 ..]) |other| {
             if (std.ascii.eqlIgnoreCase(other.name, entry.name)) {
                 std.debug.print("two help entries for {s}\n", .{entry.name});
                 return error.TestExpectedEqual;
@@ -50,7 +50,7 @@ test "HELP shows the basic help, a word's description, or where to look for a de
 
     // HELP alone does not read the next input line as a name.
     try machine.interpretLine("HELP");
-    try std.testing.expectEqualStrings(help_text.basic, output.written());
+    try std.testing.expectEqualStrings(words_help.basic, output.written());
     try std.testing.expectEqual(@as(usize, 0), output.input_index);
     output.len = 0;
     try machine.interpretLine("help dup HELP to : SQ DUP * ; HELP sq");
@@ -67,15 +67,15 @@ test "HELP takes a name only from its own line, also in EVALUATE, and in a defin
 
     // The DUP on the next line of the string runs; HELP shows the basic help.
     try machine.interpretLine("7 S\\\" HELP\\nDUP\" EVALUATE");
-    try std.testing.expectEqualStrings(help_text.basic, output.written());
+    try std.testing.expectEqualStrings(words_help.basic, output.written());
     try expectStack(machine, &.{ 7, 7 });
     output.len = 0;
     try machine.interpretLine("S\\\" HELP  \\n SWAP\" EVALUATE S\\\" HELP DUP\\nOVER\" EVALUATE");
-    try std.testing.expectEqualStrings(help_text.basic ++ "DUP ( x -- x x )\n  Copy the top cell.\n", output.written());
+    try std.testing.expectEqualStrings(words_help.basic ++ "DUP ( x -- x x )\n  Copy the top cell.\n", output.written());
     try expectStack(machine, &.{ 7, 7, 7 });
     output.len = 0;
     try machine.interpretLine(": H HELP ; H SWAP H");
-    try std.testing.expectEqualStrings("SWAP ( x1 x2 -- x2 x1 )\n  Exchange the top two cells.\n" ++ help_text.basic, output.written());
+    try std.testing.expectEqualStrings("SWAP ( x1 x2 -- x2 x1 )\n  Exchange the top two cells.\n" ++ words_help.basic, output.written());
     try std.testing.expectError(error.UnknownWord, machine.interpretLine("H NO-SUCH-WORD 1"));
     machine.report(error.UnknownWord);
     try expectStack(machine, &.{});

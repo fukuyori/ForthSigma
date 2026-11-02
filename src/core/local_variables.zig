@@ -85,6 +85,7 @@ pub fn compileLocals(self: *State, closing: []const u8) RuntimeError!void {
             .{ "XT:", .xt, false },  .{ "XT^", .xt, true },
         };
         const prefix = for (types) |entry| {
+            if (!defs.float_enabled and entry[1] == .float) continue;
             if (asciiEqlIgnoreCase(token, entry[0])) break entry;
         } else null;
         if (prefix) |entry| {

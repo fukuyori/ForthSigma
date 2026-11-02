@@ -24,8 +24,10 @@ if ($Sign -and [string]::IsNullOrWhiteSpace($env:CODESIGN_CERT)) {
     throw 'Set CODESIGN_CERT to the signing certificate subject before using -Sign.'
 }
 
+# The installer holds the version with floating-point words.
 $releaseParameters = @{
     OutputDirectory = $releaseDirectory
+    Variant         = 'Float'
 }
 if ($Sign) {
     $releaseParameters.Sign = $true
