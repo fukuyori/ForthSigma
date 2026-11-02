@@ -86,6 +86,7 @@
 | 大文字・小文字を区別しない名前照合 | 拡張 | ASCII英字の大小を同一視します。Gforthと同じです。 |
 | 数値基数2〜36と接頭辞 | 拡張 | BASEのメモリ値で2〜36を使えます。`$` `#` `&` `%` 接頭辞と `'c'` を認識します。 |
 | 浮動小数点リテラル | 拡張 | 基数10で `e`/`E` を含むトークン。 |
+| 無限大・NaNの表示 | 拡張 | `F.` `FE.` `FS.` は `infinity` `-infinity` `NaN` を `PRECISION` で切らずに表示します。Gforthは `PRECISION` の文字数で切ります（`6 SET-PRECISION` で `infini`、`2 SET-PRECISION` で `Na`）。既定の `PRECISION`（15）では同じです。 |
 | F+!, F?, FA@, FA!, FARRAY, FINPUT, FMINUS | 拡張 | FORTH/Σの +!、?、A@、A!、ARRAY、INPUT、MINUS に対応する浮動小数点版。Gforthのワードではありません。 |
 | ."文字列出力 | 拡張 | コンパイル時文字列出力です。1982年資料のワードではありません。 |
 | ?DO | 拡張 | 開始値と終値が同じ場合、ループ本体を実行しません。FORTH/ΣのDOは同値でも1回実行します。 |
