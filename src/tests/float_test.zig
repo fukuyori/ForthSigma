@@ -435,13 +435,12 @@ test "SF! FROUND and many-digit output at their limits, as in gforth" {
 }
 
 test "FVALUE pushes its float, TO stores one, and SEE shows it" {
-    try support.skipWithout(&.{ .tools });
     var output = Output{};
     const machine = try createMachine(&output);
     defer destroyMachine(machine);
 
-    try machine.interpretLine("1.5E FVALUE FV FV F. 2.5E TO FV FV F. : T 3.5E TO FV FV F. ; T ' FV >BODY F@ F. SEE FV");
-    try std.testing.expectEqualStrings("1.5 2.5 3.5 3.5 3.5e FVALUE FV\n", output.written());
+    try machine.interpretLine("1.5E FVALUE FV FV F. 2.5E TO FV FV F. : T 3.5E TO FV FV F. ; T ' FV >BODY F@ F." ++ support.see(" SEE FV"));
+    try std.testing.expectEqualStrings("1.5 2.5 3.5 3.5 " ++ support.see("3.5e FVALUE FV\n"), output.written());
     try std.testing.expectError(error.FloatStackUnderflow, machine.interpretLine("TO FV"));
 }
 

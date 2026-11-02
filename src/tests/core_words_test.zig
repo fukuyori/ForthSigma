@@ -9,6 +9,7 @@ const interpretLiteralDefinition = support.interpretLiteralDefinition;
 const destroyMachine = support.destroyMachine;
 const expectStack = support.expectStack;
 const expectOutput = support.expectOutput;
+const see = support.see;
 
 test "64-bit arithmetic wraps and division floors toward negative infinity" {
     var output = Output{};
@@ -205,7 +206,6 @@ test "division by zero is reported as an error" {
 }
 
 test "C\" ABORT\" BUFFER: 2LITERAL 2VALUE and the double-cell words work as in gforth" {
-    try support.skipWithout(&.{ .tools });
     try expectOutput(": T1 C\" hello\" ; T1 COUNT TYPE T1 C@ . : T2 C\" \" ; T2 C@ .", "hello5 0 ");
     try expectOutput(": CHK ABORT\" bad value\" ; 0 CHK .\" after0\" : T3 1 ABORT\" first\" ; ' T3 CATCH . : T4 0 ABORT\" never\" 5 ; T4 .", "after0-2 5 ");
     try expectOutput("16 BUFFER: BUF BUF 16 ERASE 7 BUF C! BUF C@ . HERE BUF - . : T5 [ 12345678901234567890. ] 2LITERAL ; T5 D.", "7 16 12345678901234567890 ");
@@ -215,7 +215,7 @@ test "C\" ABORT\" BUFFER: 2LITERAL 2VALUE and the double-cell words work as in g
     );
     try expectOutput("5. D2* D. -5. D2* D. -5. D2/ D. 5. D2/ D. -1. D2/ D. 1. 2. DMAX D. -1. 2. DMIN D. 5. 7 M+ D. -5. -7 M+ D.", "10 -10 -3 2 -1 2 -1 12 -12 ");
     try expectOutput("1. 2. DU< . -1. 1. DU< . 1. -1. DU< . 1. 2. 3. 2ROT D. D. D.", "-1 0 -1 1 3 2 ");
-    try expectOutput("5. 2VALUE DV DV D. 7. TO DV DV D. : T6 9. TO DV ; T6 DV D. SEE DV SEE T6", "5 7 9 9. 2VALUE DV\n: T6\n  9 0 TO DV\n;\n");
+    try expectOutput("5. 2VALUE DV DV D. 7. TO DV DV D. : T6 9. TO DV ; T6 DV D." ++ see(" SEE DV SEE T6"), "5 7 9 " ++ see("9. 2VALUE DV\n: T6\n  9 0 TO DV\n;\n"));
 
     var output = Output{};
     const machine = try createMachine(&output);
@@ -227,8 +227,8 @@ test "C\" ABORT\" BUFFER: 2LITERAL 2VALUE and the double-cell words work as in g
     try std.testing.expectError(error.CompileOnly, machine.interpretLine("C\" x\""));
     try std.testing.expectError(error.CompileOnly, machine.interpretLine("1 ABORT\" x\""));
     output.len = 0;
-    try machine.interpretLine(": T C\" ab\" ABORT\" msg\" ; SEE T");
-    try std.testing.expectEqualStrings(": T\n  C\" ab\" ABORT\" msg\"\n;\n", output.written());
+    try machine.interpretLine(": T C\" ab\" ABORT\" msg\" ;" ++ see(" SEE T"));
+    try std.testing.expectEqualStrings(see(": T\n  C\" ab\" ABORT\" msg\"\n;\n"), output.written());
 }
 
 test "DUMP shows 16 bytes a line in hexadecimal and as characters, as gforth does" {
@@ -257,7 +257,6 @@ test "WHILE follows the standard control-flow order, so CS-ROLL idioms and sever
 }
 
 test "SYNONYM TRAVERSE-WORDLIST NAME>INTERPRET EKEY>CHAR and ENVIRONMENT? work as in gforth" {
-    try support.skipWithout(&.{ .tools });
     try expectOutput(": SQ DUP * ; SYNONYM SQUARE SQ 5 SQUARE . VARIABLE V SYNONYM W V 7 W ! V @ .", "25 7 ");
     try expectOutput(": IM .\" immediate!\" ; IMMEDIATE SYNONYM IM2 IM : T IM2 ; 5 VALUE VV SYNONYM VV2 VV 9 TO VV2 VV .", "immediate!9 ");
     try expectOutput(
@@ -272,7 +271,7 @@ test "SYNONYM TRAVERSE-WORDLIST NAME>INTERPRET EKEY>CHAR and ENVIRONMENT? work a
     );
     // The sizes are this system's.
     try expectOutput("S\" /HOLD\" ENVIRONMENT? . . S\" /PAD\" ENVIRONMENT? . . S\" STACK-CELLS\" ENVIRONMENT? . . S\" WORDLISTS\" ENVIRONMENT? . .", "-1 4096 -1 4096 -1 1024 -1 64 ");
-    try expectOutput(": SQ DUP * ; SYNONYM SQUARE SQ SEE SQUARE 3 ' SQUARE EXECUTE .", "SYNONYM SQUARE SQ\n9 ");
+    try expectOutput(": SQ DUP * ; SYNONYM SQUARE SQ" ++ see(" SEE SQUARE") ++ " 3 ' SQUARE EXECUTE .", see("SYNONYM SQUARE SQ\n") ++ "9 ");
 }
 
 test "QUIT keeps both data stacks, stops the line and the file, and CATCH does not stop it" {
@@ -750,13 +749,12 @@ test "compile-only words are rejected while interpreting" {
 }
 
 test "DEFER IS ACTION-OF DEFER! DEFER@ and DEFERS work as in gforth" {
-    try support.skipWithout(&.{ .tools });
     try expectOutput("DEFER D1 ' DUP IS D1 3 D1 . . : SET ['] SWAP IS D1 ; SET 1 2 D1 . . ACTION-OF D1 ' SWAP = . : GET ACTION-OF D1 ; GET ' SWAP = .", "3 3 1 2 -1 -1 ");
     try expectOutput("DEFER D1 ' OVER ' D1 DEFER! ' D1 DEFER@ ' OVER = . ' NIP TO D1 1 2 D1 . : T2 [ ' DUP ] LITERAL TO D1 ; T2 ' D1 DEFER@ ' DUP = .", "-1 2 -1 ");
     // DEFERS compiles the action the DEFER has when the definition is made.
-    try expectOutput(": SQ DUP * ; DEFER D2 ' SQ IS D2 : T3 DEFERS D2 1+ ; ' DROP IS D2 5 T3 . SEE T3", "26 : T3\n  SQ 1+\n;\n");
+    try expectOutput(": SQ DUP * ; DEFER D2 ' SQ IS D2 : T3 DEFERS D2 1+ ; ' DROP IS D2 5 T3 ." ++ see(" SEE T3"), "26 " ++ see(": T3\n  SQ 1+\n;\n"));
     // As in gforth, a DEFER without an action warns and does nothing; its DEFER@ is -1 here.
-    try expectOutput("DEFER D3 ' D3 DEFER@ . 7 D3 . SEE D3 ' DUP IS D3 SEE D3 ' D3 >BODY @ ' DUP = .", "-1 WARNING: DEFERRED WORD D3 IS UNINITIALIZED\n7 DEFER D3\nDEFER D3\n' DUP IS D3\n-1 ");
+    try expectOutput("DEFER D3 ' D3 DEFER@ . 7 D3 ." ++ see(" SEE D3") ++ " ' DUP IS D3" ++ see(" SEE D3") ++ " ' D3 >BODY @ ' DUP = .", "-1 WARNING: DEFERRED WORD D3 IS UNINITIALIZED\n7 " ++ see("DEFER D3\nDEFER D3\n' DUP IS D3\n") ++ "-1 ");
     // IS sets a VALUE too, as in gforth; DEFER@ and ACTION-OF need a DEFER.
     try expectOutput("5 VALUE V 9 IS V V .", "9 ");
     var output = Output{};
@@ -768,9 +766,8 @@ test "DEFER IS ACTION-OF DEFER! DEFER@ and DEFERS work as in gforth" {
 }
 
 test "+TO ?EXIT NOOP PERFORM ?LEAVE CELL- UNDER+ and 0>= work as in gforth" {
-    try support.skipWithout(&.{ .tools });
     try support.skipWithoutFloat();
-    try expectOutput("5 VALUE V 3 +TO V V . : T1 2 +TO V ; T1 V . 1E FVALUE FV 2E +TO FV FV F. 1 0 2VALUE DV 5 0 +TO DV DV D. SEE T1", "8 10 3. 6 : T1\n  2 +TO V\n;\n");
+    try expectOutput("5 VALUE V 3 +TO V V . : T1 2 +TO V ; T1 V . 1E FVALUE FV 2E +TO FV FV F. 1 0 2VALUE DV 5 0 +TO DV DV D." ++ see(" SEE T1"), "8 10 3. 6 " ++ see(": T1\n  2 +TO V\n;\n"));
     try expectOutput(": T2 DUP . ?EXIT .\" after\" ; 0 T2 1 T2 NOOP VARIABLE XV ' DUP XV ! 4 XV PERFORM . .", "0 after1 4 4 ");
     try expectOutput(": T3 10 0 DO I . I 3 = ?LEAVE LOOP ; T3 10 CELL- . 1 2 3 UNDER+ . . 0 0>= . -1 0>= . 1 0>= .", "0 1 2 3 2 2 4 -1 0 -1 ");
     var output = Output{};
@@ -817,13 +814,12 @@ test "COMPILE, [COMPILE] and NAME>COMPILE work as in gforth" {
 }
 
 test "BEGIN-STRUCTURE and the FIELD: words lay out fields as in gforth" {
-    try support.skipWithout(&.{ .tools });
     try support.skipWithoutFloat();
     try expectOutput(
         "BEGIN-STRUCTURE POINT FIELD: P.X FIELD: P.Y CFIELD: P.C FFIELD: P.F SFFIELD: P.S DFFIELD: P.D 3 +FIELD P.Z CFIELD: P.E END-STRUCTURE " ++
             "POINT . 0 P.X . 0 P.Y . 0 P.C . 0 P.F . 0 P.S . 0 P.D . 0 P.Z . 0 P.E . 1000 P.Y . " ++
-            "BEGIN-STRUCTURE EMPTY END-STRUCTURE EMPTY . 1 CFIELD: QQ 0 QQ . . 100 5 +FIELD R1 . 3 R1 . SEE P.Y SEE POINT",
-        "52 0 8 16 24 32 40 48 51 1008 0 1 2 105 103 8 +FIELD P.Y\n52 VALUE POINT\n",
+            "BEGIN-STRUCTURE EMPTY END-STRUCTURE EMPTY . 1 CFIELD: QQ 0 QQ . . 100 5 +FIELD R1 . 3 R1 ." ++ see(" SEE P.Y SEE POINT"),
+        "52 0 8 16 24 32 40 48 51 1008 0 1 2 105 103 " ++ see("8 +FIELD P.Y\n52 VALUE POINT\n"),
     );
 }
 

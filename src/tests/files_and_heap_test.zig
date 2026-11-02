@@ -209,7 +209,6 @@ test "$SLURP $+SLURP $+SLURP-FILE and $SLURP-LINE read files as in gforth" {
 }
 
 test "$+!LEN $[]+! $+[]! $EXEC $OFF and $VARIABLE work as in gforth" {
-    try support.skipWithout(&.{ .tools });
     var output = Output{};
     const machine = try createMachine(&output);
     defer destroyMachine(machine);
@@ -222,8 +221,8 @@ test "$+!LEN $[]+! $+[]! $EXEC $OFF and $VARIABLE work as in gforth" {
     output.len = 0;
     // The output goes back to where it went before, also when xt throws.
     try machine.interpretLine(": HI .\" hi\" 42 EMIT ; $VARIABLE B : NEST .\" in\" ['] HI B $EXEC .\" out\" ; S\" >\" A $! ' NEST A $EXEC A $@ TYPE B $. ");
-    try machine.interpretLine(": BAD .\" partial\" 5 THROW ; S\" \" A $! ' BAD A ' $EXEC CATCH . A $. A $OFF A @ . SEE B");
-    try std.testing.expectEqualStrings(">inouthi*5 partial0 VARIABLE B\n", output.written());
+    try machine.interpretLine(": BAD .\" partial\" 5 THROW ; S\" \" A $! ' BAD A ' $EXEC CATCH . A $. A $OFF A @ ." ++ support.see(" SEE B"));
+    try std.testing.expectEqualStrings(">inouthi*5 partial0 " ++ support.see("VARIABLE B\n"), output.written());
 }
 
 test "SLURP-FILE and $SLURP-FILE read a whole file as it is and close it" {

@@ -209,7 +209,7 @@ pub fn seeOperation(self: *State, out: *SeeOutput, pc: usize, role: SeeRole, sta
         .builtin => {
             const builtin: Builtin = @enumFromInt(op.value);
             const name = for (self.words[0..self.builtin_count]) |*word| {
-                if (word.builtin == builtin) break self.wordName(word.*);
+                if (word.builtin == builtin and word.name_len != 0) break self.wordName(word.*);
             } else "<BUILT-IN>";
             out.text(&.{name});
         },

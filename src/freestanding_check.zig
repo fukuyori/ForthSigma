@@ -1,6 +1,8 @@
 //! A root for compiling the core with no operating system (`zig build freestanding`).
-//! Nothing runs it: building it checks that forth.zig and src/core use no OS service, so
-//! that the core stays usable on a microcontroller with a host of its own.
+//! Nothing runs it: building it checks that what a host calls (start-up, a line, and the
+//! image functions) reaches no OS service through Zig's standard library, so that the
+//! core stays usable on a microcontroller with a host of its own. The object is not
+//! linked, so a function the core declares `extern` itself is not checked.
 
 const forth = @import("forth.zig");
 
@@ -13,5 +15,24 @@ export fn sigma_interpret_line(state: *forth.State, line: [*]const u8, length: u
         state.report(err);
         return false;
     };
+    return true;
+}
+
+export fn sigma_image_capacity() usize {
+    return forth.State.imageCapacity();
+}
+
+/// The image's length, or 0 when it does not fit.
+export fn sigma_encode_image(state: *forth.State, output: [*]u8, capacity: usize) usize {
+    return state.encodeImage(output[0..capacity]) catch 0;
+}
+
+export fn sigma_restore_image(state: *forth.State, image: [*]const u8, length: usize) bool {
+    state.restoreImage(image[0..length]) catch return false;
+    return true;
+}
+
+export fn sigma_append_image(state: *forth.State, source: *const forth.State) bool {
+    state.appendImage(source) catch return false;
     return true;
 }

@@ -15,6 +15,13 @@ pub fn skipWithout(comptime groups: []const enum { files, help, tools, image }) 
         if (!@field(options, @tagName(group))) return error.SkipZigTest;
     }
 }
+
+/// `text` in a build with SEE, LOCATE, and WHERE, and nothing in one without them
+/// (-Dtools=false): a test puts its SEE and what SEE prints in it, so that the rest of
+/// the test still runs without the tools.
+pub inline fn see(comptime text: []const u8) []const u8 {
+    return if (@import("build_options").tools) text else "";
+}
 const forth = @import("../forth.zig");
 
 /// `text` written `count` times, which Zig 0.17 no longer has an operator for.

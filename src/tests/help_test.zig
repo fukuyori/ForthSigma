@@ -16,6 +16,8 @@ test "HELP has a description for every built-in word, and only for words that ex
     defer destroyMachine(machine);
 
     for (machine.words[0..machine.builtin_count]) |word| {
+        // A word the build leaves out keeps its place without a name.
+        if (word.name_len == 0) continue;
         const name = machine.wordName(word);
         if (words_help.entry(name) == null) {
             std.debug.print("no help for {s}\n", .{name});

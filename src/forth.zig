@@ -440,7 +440,13 @@ pub const State = struct {
     fn installBuiltins(self: *State) void {
         const definitions = builtin_definitions;
         for (definitions) |definition| {
-            if (defs.isExcludedBuiltin(definition[1])) continue;
+            // A word of a group the build leaves out keeps its place without a name, which
+            // lookup never finds: every build gives each built-in word the same execution
+            // token, so an image moves between builds and its excluded words do not run.
+            if (defs.isExcludedBuiltin(definition[1])) {
+                _ = self.appendEntry("", .builtin, definition[1], 0) catch unreachable;
+                continue;
+            }
             self.addBuiltin(definition[0], definition[1]) catch unreachable;
         }
         // The Root list repeats the words needed to rebuild the search order after ONLY.

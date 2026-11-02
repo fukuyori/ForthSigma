@@ -11,6 +11,8 @@ const RuntimeError = defs.RuntimeError;
 const State = forth.State;
 const UCell = memory_map.UCell;
 const Word = defs.Word;
+const Builtin = defs.Builtin;
+const WordKind = defs.WordKind;
 const cell_size = memory_map.cell_size;
 const data_limit = memory_map.data_limit;
 const data_start = memory_map.data_start;
@@ -83,6 +85,27 @@ fn namesAreConsecutive(word_bytes: []const u8, names_used: usize) bool {
     return next == names_used;
 }
 
+/// Whether the saved dictionary starts with this build's built-in words at the same
+/// places, so that the image's execution tokens of built-in words mean the same words.
+/// A word group a build leaves out keeps its places (installBuiltins), so builds with
+/// other groups match; an image of a build that dropped those places does not.
+fn builtinsMatch(self: *const State, word_bytes: []const u8) bool {
+    if (word_bytes.len < @as(usize, self.builtin_count) * @sizeOf(Word)) return false;
+    for (self.words[0..self.builtin_count], 0..) |own, index| {
+        const at = index * @sizeOf(Word);
+        if (savedTag(WordKind, word_bytes[at + @offsetOf(Word, "kind") ..]) != @intFromEnum(own.kind)) return false;
+        if (savedTag(Builtin, word_bytes[at + @offsetOf(Word, "builtin") ..]) != @intFromEnum(own.builtin)) return false;
+    }
+    return true;
+}
+
+/// The tag of an enum field read from the bytes, without making an enum of a value the
+/// bytes may not hold.
+fn savedTag(comptime E: type, bytes: []const u8) @typeInfo(E).@"enum".tag_type {
+    const Storage = @Int(.unsigned, @sizeOf(E) * 8);
+    return @truncate(std.mem.readInt(Storage, bytes[0..@sizeOf(E)], native_endian));
+}
+
 fn rangesLength(ranges: [3][2]usize) usize {
     var total: usize = 0;
     for (ranges) |range| total += range[1] - range[0];
@@ -135,6 +158,7 @@ pub fn restoreImage(self: *State, image: []const u8) RuntimeError!void {
     const ranges = memoryRanges(data_here, heap_top);
     if (input.len != memory_at + rangesLength(ranges)) return error.InvalidImage;
     if (!namesAreConsecutive(input[header_size .. header_size + word_bytes_len], names_used)) return error.InvalidImage;
+    if (!builtinsMatch(self, input[header_size .. header_size + word_bytes_len])) return error.InvalidImage;
     var cursor: usize = header_size;
     @memcpy(std.mem.sliceAsBytes(self.words[0..word_count]), input[cursor .. cursor + word_bytes_len]);
     cursor += word_bytes_len;

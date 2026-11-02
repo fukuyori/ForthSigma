@@ -11,7 +11,6 @@ const destroyMachine = support.destroyMachine;
 const expectStack = support.expectStack;
 
 test "VOCABULARY ONLY ALSO DEFINITIONS and ORDER follow the book's Level 16 example" {
-    try support.skipWithout(&.{ .tools });
     var output = Output{};
     const machine = try createMachine(&output);
     defer destroyMachine(machine);
@@ -19,10 +18,10 @@ test "VOCABULARY ONLY ALSO DEFINITIONS and ORDER follow the book's Level 16 exam
     try machine.interpretLine("ORDER CR VOCABULARY MY-WORDS ONLY FORTH ALSO MY-WORDS DEFINITIONS : HELLO .\" Hello\" ; ORDER CR");
     try std.testing.expectError(error.UnknownWord, machine.interpretLine("ONLY FORTH HELLO"));
     machine.report(error.UnknownWord);
-    try machine.interpretLine("ORDER CR DEFINITIONS ORDER CR ONLY FORTH ALSO MY-WORDS HELLO CR ONLY ORDER FORTH CR SEE MY-WORDS");
+    try machine.interpretLine("ORDER CR DEFINITIONS ORDER CR ONLY FORTH ALSO MY-WORDS HELLO CR ONLY ORDER FORTH CR" ++ support.see(" SEE MY-WORDS"));
     try std.testing.expectEqualStrings(
         "Forth Forth Root     Forth \nMY-WORDS Forth Root     MY-WORDS \nHELLO ?\n" ++
-            "Forth Root     MY-WORDS \nForth Root     Forth \nHello\nRoot Root     Forth \nVOCABULARY MY-WORDS\n",
+            "Forth Root     MY-WORDS \nForth Root     Forth \nHello\nRoot Root     Forth \n" ++ support.see("VOCABULARY MY-WORDS\n"),
         output.written(),
     );
 }

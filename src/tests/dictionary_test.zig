@@ -2,13 +2,15 @@
 
 const std = @import("std");
 const forth = @import("../forth.zig");
-const Builtin = @import("../core/defs.zig").Builtin;
+const defs = @import("../core/defs.zig");
+const Builtin = defs.Builtin;
 const support = @import("support.zig");
 const Output = support.Output;
 const repeat = support.repeat;
 const createMachine = support.createMachine;
 const destroyMachine = support.destroyMachine;
 const expectStack = support.expectStack;
+const see = support.see;
 
 test "a word group the build leaves out has no words in the dictionary, and its code does not run" {
     var output = Output{};
@@ -24,8 +26,33 @@ test "a word group the build leaves out has no words in the dictionary, and its 
     };
     inline for (groups) |group| {
         for (group[1]) |name| try std.testing.expectEqual(group[0], machine.lookup(name) != null);
-        // An excluded word can only come from an image of a build that has it.
-        if (!group[0]) try std.testing.expectError(error.InvalidExecutionToken, machine.executeBuiltin(group[2]));
+        // An excluded word can only come from an image of a build that has it: its
+        // execution token, kept at the same place, does not run it.
+        if (!group[0]) {
+            try std.testing.expectError(error.InvalidExecutionToken, machine.executeBuiltin(group[2]));
+            var line: [32]u8 = undefined;
+            const text = try std.fmt.bufPrint(&line, "{d} EXECUTE", .{machine.builtinWord(group[2])});
+            try std.testing.expectError(error.InvalidExecutionToken, machine.interpretLine(text));
+        }
+    }
+}
+
+test "every build gives each built-in word the same execution token, a word left out keeping its place without a name" {
+    var output = Output{};
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
+
+    // The Root list's copies follow the definitions.
+    const definitions = forth.State.builtin_definitions;
+    try std.testing.expect(machine.builtin_count > definitions.len);
+    for (definitions, 0..) |definition, id| {
+        const word = machine.words[id];
+        try std.testing.expectEqual(definition[1], word.builtin);
+        if (defs.isExcludedBuiltin(definition[1])) {
+            try std.testing.expectEqual(@as(u8, 0), word.name_len);
+        } else {
+            try std.testing.expectEqualStrings(definition[0], machine.wordName(word));
+        }
     }
 }
 
@@ -97,7 +124,6 @@ test "an image keeps HERE's data, the used heap, and the source table, and nothi
 }
 
 test "an FVALUE and a TO of it keep working after LOAD, a second LOAD, and a full restore" {
-    try support.skipWithout(&.{ .tools });
     try support.skipWithoutFloat();
     var output = Output{};
     const source = try createMachine(&output);
@@ -127,12 +153,11 @@ test "an FVALUE and a TO of it keep working after LOAD, a second LOAD, and a ful
     const image2 = try saveImage(source);
     defer freeImage(image2);
     try restored.restoreImage(image2);
-    try restored.interpretLine("FV F. SETFV GETFV F. SEE FV");
-    try std.testing.expectEqualStrings("4.5 2.5 2.5e FVALUE FV\n", output.written());
+    try restored.interpretLine("FV F. SETFV GETFV F." ++ see(" SEE FV"));
+    try std.testing.expectEqualStrings("4.5 2.5 " ++ see("2.5e FVALUE FV\n"), output.written());
 }
 
 test "LOAD gives the added words their names after the dictionary's own" {
-    try support.skipWithout(&.{ .tools });
     var output = Output{};
     const source = try createMachine(&output);
     defer destroyMachine(source);
@@ -148,9 +173,9 @@ test "LOAD gives the added words their names after the dictionary's own" {
     defer destroyMachine(loaded);
     try loaded.restoreImage(image[0..length]);
     try target.appendImage(loaded);
-    try target.interpretLine("ALREADY-HERE SECOND-LOADED FIRST-LOADED SEE SECOND-LOADED");
+    try target.interpretLine("ALREADY-HERE SECOND-LOADED FIRST-LOADED" ++ see(" SEE SECOND-LOADED"));
     try expectStack(target, &.{ 5, 11, 10 });
-    try std.testing.expectEqualStrings(": SECOND-LOADED\n  FIRST-LOADED 1+\n;\n", output.written());
+    try std.testing.expectEqualStrings(see(": SECOND-LOADED\n  FIRST-LOADED 1+\n;\n"), output.written());
     try target.interpretLine("FORGET FIRST-LOADED : AFTER-FORGET 3 ; AFTER-FORGET");
     try expectStack(target, &.{ 5, 11, 10, 3 });
 }
@@ -196,6 +221,10 @@ test "a damaged image, or one whose names are out of order or out of range, is r
         .{ builtins - 1, @offsetOf(Word, "name_len"), 0xff },
         // The last word's name moved far past the end of the used names.
         .{ source.word_count - 1, @offsetOf(Word, "name_start") + 2, 0x04 },
+        // A built-in word at another place, as in an image of a build that gave the
+        // built-in words other execution tokens; their tokens would mean other words.
+        .{ 0, @offsetOf(Word, "builtin"), 0x01 },
+        .{ 1, @offsetOf(Word, "kind"), 0x01 },
     };
     for (corruptions) |corruption| {
         const at = 24 + corruption[0] * @sizeOf(Word) + corruption[1];
