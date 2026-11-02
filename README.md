@@ -40,12 +40,6 @@ The core regression tests run with zig build test.
 
 On Linux and macOS, run the generated zig-out/bin/sigma. To specify another Zig target, use zig build -Dtarget=<triple>.
 
-`zig build -Dfloat=false` builds a smaller version without the floating-point words and CORE-MATH (with `-Doptimize=fast`, the same as the release, it is about 340 KB on Windows x86_64; the version with floating point is about 750 KB). Floating-point literals (such as `1e`), the `F:` and `F^` local variables, and `FLOATING-STACK` and `MAX-FLOAT` of `ENVIRONMENT?` are also removed. The tests run with `zig build test -Dfloat=false`; the tests that use floating-point words are skipped.
-
-The other word groups can be left out the same way: `-Dfiles=false` (the words that open, read, write, or include files, such as `INCLUDE`, `REQUIRE`, `OPEN-FILE`, `STDIN`, `SLURP-FILE`, and the `$...SLURP` words), `-Dhelp=false` (`HELP`, `LICENSE`, and their texts; the banner no longer mentions `help`), `-Dtools=false` (`SEE`, `LOCATE`, and `WHERE`), and `-Dimage=false` (`SAVE`, `LOAD`, and `SAVESYS`). The words of a group left out are not in the dictionary, and `HELP` has no entries for them. The groups are independent: without the file words, `SAVE`, `LOAD`, and `SAVESYS` still write and read image files, and `LOCATE` still reads the source file, unless their own groups are left out too. Every build gives each built-in word the same execution token, so an image saved by one build loads into a build with other groups; running a word that build left out gives the error `INVALID EXECUTION TOKEN`. With `-Doptimize=fast` on Windows x86_64, `-Dhelp=false` saves about 65 KB, and the build without any of the groups, floating point included, is about 255 KB. The tests run with the same options; the tests that use a group left out are skipped.
-
-`zig build freestanding` compiles the core (`src/forth.zig` and `src/core/`) for a Cortex-M0+ with no operating system, from what a host calls: start-up, interpreting a line, and the image functions. It fails when that code reaches a service of the operating system through Zig's standard library, so that the core stays usable with a host of its own, such as a microcontroller. The result is not linked, so a function the core declared `extern` itself would not be found. `zig build test` includes it.
-
 The current product version is recorded in [`VERSION`](VERSION). The Windows release build and the Inno Setup installer are made with the following PowerShell scripts. The installer (`dist\installer\sigma-<version>-windows-x86_64-setup.exe`) uses the value in `VERSION`; if needed, `-Version MAJOR.MINOR.PATCH` overrides it.
 
     .\scripts\build-release.ps1
@@ -79,6 +73,28 @@ In this port, `SAVE filename` and `LOAD filename` save user-defined words as a d
     SAVESYS demo.exe
 
 With no arguments, the saved executable opens an interactive prompt that has the registered words. With arguments, it executes the arguments once as Forth input and exits. The sample shows `144`, the square of `12`.
+
+### Leaving out word groups
+
+Build options leave out groups of words, for a smaller program or for a host that does not need them. Without them, every group is in.
+
+| Option | Leaves out | Size |
+|---|---|---|
+| (none) | — | 737,792 bytes |
+| `-Dfloat=false` | The floating-point words, floating-point literals (such as `1e`), the `F:` and `F^` local variables, `FLOATING-STACK` and `MAX-FLOAT` of `ENVIRONMENT?`, and CORE-MATH | 354,304 bytes |
+| `-Dfiles=false` | The words that open, read, write, or include files, such as `INCLUDE`, `REQUIRE`, `OPEN-FILE`, `STDIN`, `SLURP-FILE`, and the `$...SLURP` words | 717,824 bytes |
+| `-Dhelp=false` | `HELP`, `LICENSE`, and their texts (the banner no longer mentions `help`) | 671,744 bytes |
+| `-Dtools=false` | `SEE`, `LOCATE`, and `WHERE` | 707,584 bytes |
+| `-Dimage=false` | `SAVE`, `LOAD`, and `SAVESYS` | 737,280 bytes |
+| All five | All of the above | 261,632 bytes |
+
+The sizes are those of 0.4.0 built with `-Doptimize=fast`, the same as the release, on Windows x86_64. The options can be combined, for example `zig build -Doptimize=fast -Dfloat=false -Dhelp=false`.
+
+The words of a group left out are not in the dictionary, and `HELP` has no entries for them. The groups are independent: without the file words, `SAVE`, `LOAD`, and `SAVESYS` still write and read image files, and `LOCATE` still reads the source file, unless their own groups are left out too. Every build gives each built-in word the same execution token, so an image saved by one build loads into a build with other groups; running a word that build left out gives the error `INVALID EXECUTION TOKEN`, and `SEE` shows it by its name. An image saved by an earlier build that left a group out (such as `-Dfloat=false`) gives `INVALID IMAGE`, since its built-in words had other execution tokens.
+
+The tests run with the same options, for example `zig build test -Dfloat=false`; the tests that use a group left out are skipped.
+
+`zig build freestanding` compiles the core (`src/forth.zig` and `src/core/`) for a Cortex-M0+ with no operating system, from what a host calls: start-up, interpreting a line, and the image functions. It fails when that code reaches a service of the operating system through Zig's standard library, so that the core stays usable with a host of its own, such as a microcontroller. The result is not linked, so a function the core declared `extern` itself would not be found. `zig build test` includes it.
 
 ## Relation to gforth and standard Forth
 

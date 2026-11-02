@@ -40,12 +40,6 @@ Zig 0.17.0をインストールした環境で、リポジトリのルートか�
 
 Linux/macOSでは、生成されたzig-out/bin/sigmaを実行してください。別のZigターゲットを指定する場合はzig build -Dtarget=<triple>を使います。
 
-`zig build -Dfloat=false` とすると、浮動小数点の語とCORE-MATHを除いた小さい版を作れます（リリースと同じ `-Doptimize=fast` でWindows x86_64は約340 KB、浮動小数点を含む版は約750 KB）。浮動小数点数のリテラル（`1e` など）、`F:` `F^` のローカル変数、`ENVIRONMENT?` の `FLOATING-STACK` `MAX-FLOAT` もなくなります。テストは `zig build test -Dfloat=false` で実行でき、浮動小数点の語を使うテストは飛ばします。
-
-ほかの語のグループも同じように除けます。`-Dfiles=false`（`INCLUDE`、`REQUIRE`、`OPEN-FILE`、`STDIN`、`SLURP-FILE`、`$...SLURP` の語など、ファイルを開く・読む・書く・取り込む語）、`-Dhelp=false`（`HELP`、`LICENSE` とその文章。起動時の表示も `help` を案内しなくなります）、`-Dtools=false`（`SEE`、`LOCATE`、`WHERE`）、`-Dimage=false`（`SAVE`、`LOAD`、`SAVESYS`）です。除いたグループの語は辞書になく、`HELP` の説明もありません。グループはそれぞれ独立しているので、ファイルの語を除いても、`SAVE`・`LOAD`・`SAVESYS` はイメージのファイルを書き読みし、`LOCATE` はソースファイルを読みます（それぞれのグループも除いた場合を除きます）。組み込み語の実行トークンはどの版でも同じなので、ある版で保存したイメージは、グループの違う版でも読み込めます。その版で除いた語を実行すると `INVALID EXECUTION TOKEN` のエラーになります。リリースと同じ `-Doptimize=fast` のWindows x86_64では、`-Dhelp=false` で約65 KB小さくなり、浮動小数点を含むすべてのグループを除いた版は約255 KBです。テストも同じオプションで実行でき、除いたグループを使うテストは飛ばします。
-
-`zig build freestanding` は、コア（`src/forth.zig` と `src/core/`）を、ホストが呼ぶ処理（起動、1行の解釈、イメージの関数）からOSのないCortex-M0+向けにコンパイルします。その処理がZigの標準ライブラリを通してOSの機能を使うと失敗するので、マイコンなど独自のホストでもコアを使える状態を保てます。リンクはしないので、コアが自分で `extern` と宣言した関数は見つけられません。`zig build test` にも含まれます。
-
 現在の製品バージョンは [`VERSION`](VERSION) に記載しています。Windows向けリリースビルドとInno Setupインストーラーは次のPowerShellスクリプトで作成できます。インストーラー（`dist\installer\sigma-版番号-windows-x86_64-setup.exe`）は `VERSION` の値を使い、必要なら `-Version MAJOR.MINOR.PATCH` で上書きできます。
 
     .\scripts\build-release.ps1
@@ -79,6 +73,28 @@ Forthソースファイルは標準入力から読み込めます。例:
     SAVESYS demo.exe
 
 保存した実行ファイルは、引数なしなら登録語を持つ対話プロンプトを開きます。引数があれば、引数列をForth入力として一度実行して終了します。サンプルは `12` の平方である `144` を表示します。
+
+### 語のグループを除く
+
+ビルドのオプションで、語のグループを除けます。プログラムを小さくしたいときや、そのグループを使わないホストのためです。オプションを付けなければ、すべてのグループを含みます。
+
+| オプション | 除くもの | 大きさ |
+|---|---|---|
+| （なし） | — | 737,792バイト |
+| `-Dfloat=false` | 浮動小数点の語、浮動小数点数のリテラル（`1e` など）、`F:` `F^` のローカル変数、`ENVIRONMENT?` の `FLOATING-STACK` `MAX-FLOAT`、CORE-MATH | 354,304バイト |
+| `-Dfiles=false` | `INCLUDE`、`REQUIRE`、`OPEN-FILE`、`STDIN`、`SLURP-FILE`、`$...SLURP` の語など、ファイルを開く・読む・書く・取り込む語 | 717,824バイト |
+| `-Dhelp=false` | `HELP`、`LICENSE` とその文章（起動時の表示も `help` を案内しなくなります） | 671,744バイト |
+| `-Dtools=false` | `SEE`、`LOCATE`、`WHERE` | 707,584バイト |
+| `-Dimage=false` | `SAVE`、`LOAD`、`SAVESYS` | 737,280バイト |
+| 5つすべて | 上のすべて | 261,632バイト |
+
+大きさは、0.4.0をリリースと同じ `-Doptimize=fast` でWindows x86_64向けにビルドしたものです。オプションは組み合わせられます（例: `zig build -Doptimize=fast -Dfloat=false -Dhelp=false`）。
+
+除いたグループの語は辞書になく、`HELP` の説明もありません。グループはそれぞれ独立しているので、ファイルの語を除いても、`SAVE`・`LOAD`・`SAVESYS` はイメージのファイルを書き読みし、`LOCATE` はソースファイルを読みます（それぞれのグループも除いた場合を除きます）。組み込み語の実行トークンはどの版でも同じなので、ある版で保存したイメージは、グループの違う版でも読み込めます。その版で除いた語を実行すると `INVALID EXECUTION TOKEN` のエラーになり、`SEE` はその語を名前で表示します。グループを除いた以前の版（`-Dfloat=false` など）で保存したイメージは、組み込み語の実行トークンが違うので `INVALID IMAGE` になります。
+
+テストも同じオプションで実行でき（例: `zig build test -Dfloat=false`）、除いたグループを使うテストは飛ばします。
+
+`zig build freestanding` は、コア（`src/forth.zig` と `src/core/`）を、ホストが呼ぶ処理（起動、1行の解釈、イメージの関数）からOSのないCortex-M0+向けにコンパイルします。その処理がZigの標準ライブラリを通してOSの機能を使うと失敗するので、マイコンなど独自のホストでもコアを使える状態を保てます。リンクはしないので、コアが自分で `extern` と宣言した関数は見つけられません。`zig build test` にも含まれます。
 
 ## Gforth・標準Forthとの関係
 
