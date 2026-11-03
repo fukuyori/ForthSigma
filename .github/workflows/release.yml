@@ -76,7 +76,7 @@ jobs:
           version="$(tr -d '\r\n' < VERSION)"
           dir="sigma-$version-${{ matrix.platform.name }}${{ matrix.variant.suffix }}"
           mkdir "$dir"
-          cp "out/bin/${{ matrix.platform.exe }}" LICENSE THIRD_PARTY_NOTICES.md README.md forth/sigma/USER_MANUAL.md "$dir/"
+          cp "out/bin/${{ matrix.platform.exe }}" LICENSE THIRD_PARTY_NOTICES.md README.md docs/USER_MANUAL.md "$dir/"
           zip -r "$dir.zip" "$dir"
       - uses: actions/upload-artifact@v7
         with:

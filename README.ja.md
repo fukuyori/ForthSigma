@@ -17,15 +17,15 @@ FORTH/Σ（フォース・シグマ）の言語コアを、Zigで動くネイテ
 - WORDS、FORGET、BYEを対話用ワードとして提供します。
 - 辞書、コンパイル済み定義、メモリ、入出力をホスト環境から分離し、他のOS・CPUへ移植しやすい構成にしています。
 
-対応ワードと移植上の判断は[実装ノート](forth/sigma/IMPLEMENTATION.md)、資料から整理した言語仕様は[FORTH/Σ仕様書](forth/sigma/SPEC.ja.md)を参照してください。実装は開発中であり、誌面の全ワードや機種固有機能には対応していません。
+対応ワードと移植上の判断は[実装ノート](docs/IMPLEMENTATION.md)、資料から整理した言語仕様は[FORTH/Σ仕様書](docs/SPEC.ja.md)を参照してください。実装は開発中であり、誌面の全ワードや機種固有機能には対応していません。
 
-使い方と現在登録されている組み込みワードの一覧は[ユーザーマニュアル](forth/sigma/USER_MANUAL.ja.md)を参照してください。
+使い方と現在登録されている組み込みワードの一覧は[ユーザーマニュアル](docs/USER_MANUAL.ja.md)を参照してください。
 
 利用者がデータを持つワードを作る定義用語（BUILDS/DOES）にも対応しています。
 
 `SAVE filename`／`LOAD filename` で利用者定義語を保存・追加読み込みできます。単独実行ファイルは別の拡張語 `SAVESYS filename.exe` で作成します。
 
-ワードごとの対応状況は[互換性一覧](forth/sigma/COMPATIBILITY.ja.md)、資料で確定した仕様と移植上の判断の区別は[決定事項・保留事項](forth/sigma/DECISIONS.md)を参照してください。
+ワードごとの対応状況は[互換性一覧](docs/COMPATIBILITY.ja.md)、資料で確定した仕様と移植上の判断の区別は[決定事項・保留事項](docs/DECISIONS.md)を参照してください。
 
 現時点では、LIST、ソースファイルやエディタの操作、CP/Mのファイル機能、PC-8001のモニタ機能、Z80機械語を使うワードには対応していません。
 
@@ -98,7 +98,7 @@ Forthソースファイルは標準入力から読み込めます。例:
 
 ## Gforth・標準Forthとの関係
 
-2026-10-28から、数値まわりと基本ワードを[Gforth](https://github.com/forthy42/gforth)の挙動に合わせ、教材ForthBasicMasterのサンプルが動くことを目標にしています。作業は6段階に分けており、段階1（64ビットセル、真=-1、床関数除算、全文字の名前照合、`TYPE ( addr u )`、基本標準ワード）、段階2（浮動小数点）、段階3（`S"` などの文字列、倍長整数、`<# #>` による数値書式）と、教材で使う小規模なワード（`WITHIN`、`:NONAME`、`STATE`、`MS`、`GETENV`、`SYSTEM` など）、`THROW`／`CATCH` と主なファイル操作（`OPEN-FILE`、`READ-LINE`、`WRITE-LINE` など）、`ALLOCATE` と動的文字列（`$!`、`$[]!` など）、ローカル変数（`{ a b -- c }`、`F:` などの型指定、`LOCALS|`）、ソースファイルの読み込み（`INCLUDE`、`REQUIRE` など）、`SEE`・`LOCATE`・`MARKER`、語彙（`VOCABULARY`、`ONLY`、`ALSO` など）と `[IF]` を実装済みで、6段階はすべて終わりました（[決定事項・保留事項](forth/sigma/DECISIONS.md)）。
+2026-10-28から、数値まわりと基本ワードを[Gforth](https://github.com/forthy42/gforth)の挙動に合わせ、教材ForthBasicMasterのサンプルが動くことを目標にしています。作業は6段階に分けており、段階1（64ビットセル、真=-1、床関数除算、全文字の名前照合、`TYPE ( addr u )`、基本標準ワード）、段階2（浮動小数点）、段階3（`S"` などの文字列、倍長整数、`<# #>` による数値書式）と、教材で使う小規模なワード（`WITHIN`、`:NONAME`、`STATE`、`MS`、`GETENV`、`SYSTEM` など）、`THROW`／`CATCH` と主なファイル操作（`OPEN-FILE`、`READ-LINE`、`WRITE-LINE` など）、`ALLOCATE` と動的文字列（`$!`、`$[]!` など）、ローカル変数（`{ a b -- c }`、`F:` などの型指定、`LOCALS|`）、ソースファイルの読み込み（`INCLUDE`、`REQUIRE` など）、`SEE`・`LOCATE`・`MARKER`、語彙（`VOCABULARY`、`ONLY`、`ALSO` など）と `[IF]` を実装済みで、6段階はすべて終わりました（[決定事項・保留事項](docs/DECISIONS.md)）。
 
 この実装は**ANS Forth／Forth 2012準拠を保証する処理系ではありません**。Gforthと意味が衝突しないFORTH/Σ固有のワードは残しています。
 
@@ -132,7 +132,7 @@ Forthソースファイルは標準入力から読み込めます。例:
 | 同「FORTH/Σ」『エンサイクロペディア・アスキー 第12巻 ASCII 1982年8月号』 | pp. 144–151 | 数値出力、算術処理などのソースリスト。 |
 | 同「FORTH/Σ」『エンサイクロペディア・アスキー 第13巻 ASCII 1982年9月号』 | pp. 172–179 | CP/M版の編集・ファイル処理。 |
 
-上記の誌面ページ情報は[FORTH/Σ仕様書](forth/sigma/SPEC.ja.md)に記録しています。誌面のZ80ソースは処理内容を調べるために参照したもので、移植版はZ80機械語や誌面のソースコードを収録・実行していません。
+上記の誌面ページ情報は[FORTH/Σ仕様書](docs/SPEC.ja.md)に記録しています。誌面のZ80ソースは処理内容を調べるために参照したもので、移植版はZ80機械語や誌面のソースコードを収録・実行していません。
 
 ### 比較・照合に使った資料
 

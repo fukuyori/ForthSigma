@@ -5,7 +5,7 @@ pub const Entry = struct { name: []const u8, stack: []const u8, text: []const u8
 
 pub const basic =
     \\FORTH/Sigma follows gforth in most words. The user manual is USER_MANUAL.md
-    \\(docs\ in the installed folder, forth/sigma/ in the source).
+    \\(docs\ in the installed folder, docs/ in the source).
     \\  WORDS         list the words of the first word list in the search order
     \\  HELP name     describe a word, for example HELP DUP
     \\  SEE name      show how a word is defined

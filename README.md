@@ -17,15 +17,15 @@ This project implements the language core of FORTH/Σ (FORTH/Sigma) as a native 
 - WORDS, FORGET, and BYE are provided as interactive words.
 - The dictionary, compiled definitions, memory, and input and output are separated from the host environment, so the program is easy to port to other operating systems and CPUs.
 
-For the supported words and the porting decisions, see the [implementation notes](forth/sigma/IMPLEMENTATION.md). For the language specification compiled from the sources, see the [FORTH/Σ specification](forth/sigma/SPEC.md). The implementation is under development and does not support every word in the book or machine-specific features.
+For the supported words and the porting decisions, see the [implementation notes](docs/IMPLEMENTATION.md). For the language specification compiled from the sources, see the [FORTH/Σ specification](docs/SPEC.md). The implementation is under development and does not support every word in the book or machine-specific features.
 
-For usage and the list of the built-in words registered now, see the [user manual](forth/sigma/USER_MANUAL.md).
+For usage and the list of the built-in words registered now, see the [user manual](docs/USER_MANUAL.md).
 
 The defining words (BUILDS/DOES) that let users make words that hold data are also supported.
 
 `SAVE filename` and `LOAD filename` save user-defined words and load them additionally. A standalone executable is made with a separate extension word, `SAVESYS filename.exe`.
 
-For the support status of each word, see the [compatibility list](forth/sigma/COMPATIBILITY.md). For the distinction between the specification settled by the sources and the porting decisions, see [decisions and open issues](forth/sigma/DECISIONS.md).
+For the support status of each word, see the [compatibility list](docs/COMPATIBILITY.md). For the distinction between the specification settled by the sources and the porting decisions, see [decisions and open issues](docs/DECISIONS.md).
 
 At present, LIST, source file and editor operations, the CP/M file functions, the PC-8001 monitor functions, and words that use Z80 machine code are not supported.
 
@@ -98,7 +98,7 @@ The tests run with the same options, for example `zig build test -Dfloat=false`;
 
 ## Relation to gforth and standard Forth
 
-Since 2026-10-28, the numeric behavior and the basic words follow the behavior of [gforth](https://github.com/forthy42/gforth), with the goal of running the samples of the ForthBasicMaster course material. The work was divided into 6 stages. Stage 1 (64-bit cells, true = -1, floored division, name matching on all characters, `TYPE ( addr u )`, basic standard words), stage 2 (floating point), stage 3 (strings such as `S"`, double-cell integers, number formatting with `<# #>`), the small words used in the course material (`WITHIN`, `:NONAME`, `STATE`, `MS`, `GETENV`, `SYSTEM`, and others), `THROW` and `CATCH` and the main file operations (`OPEN-FILE`, `READ-LINE`, `WRITE-LINE`, and others), `ALLOCATE` and dynamic strings (`$!`, `$[]!`, and others), local variables (`{ a b -- c }`, type prefixes such as `F:`, `LOCALS|`), loading source files (`INCLUDE`, `REQUIRE`, and others), `SEE`, `LOCATE`, and `MARKER`, and word lists (`VOCABULARY`, `ONLY`, `ALSO`, and others) and `[IF]` are implemented, and all 6 stages are done ([decisions and open issues](forth/sigma/DECISIONS.md)).
+Since 2026-10-28, the numeric behavior and the basic words follow the behavior of [gforth](https://github.com/forthy42/gforth), with the goal of running the samples of the ForthBasicMaster course material. The work was divided into 6 stages. Stage 1 (64-bit cells, true = -1, floored division, name matching on all characters, `TYPE ( addr u )`, basic standard words), stage 2 (floating point), stage 3 (strings such as `S"`, double-cell integers, number formatting with `<# #>`), the small words used in the course material (`WITHIN`, `:NONAME`, `STATE`, `MS`, `GETENV`, `SYSTEM`, and others), `THROW` and `CATCH` and the main file operations (`OPEN-FILE`, `READ-LINE`, `WRITE-LINE`, and others), `ALLOCATE` and dynamic strings (`$!`, `$[]!`, and others), local variables (`{ a b -- c }`, type prefixes such as `F:`, `LOCALS|`), loading source files (`INCLUDE`, `REQUIRE`, and others), `SEE`, `LOCATE`, and `MARKER`, and word lists (`VOCABULARY`, `ONLY`, `ALSO`, and others) and `[IF]` are implemented, and all 6 stages are done ([decisions and open issues](docs/DECISIONS.md)).
 
 This implementation is **not a system that guarantees conformance to ANS Forth or Forth 2012**. Words specific to FORTH/Σ whose meaning does not conflict with gforth are retained.
 
@@ -132,7 +132,7 @@ This project refers to "FORTH/Σ" by 一ノ瀬敏彰 and 山口晶嗣 in the ser
 | Same authors, "FORTH/Σ", *Encyclopedia ASCII* Vol. 12, ASCII, August 1982 | pp. 144–151 | Source listings for number output, arithmetic, and others. |
 | Same authors, "FORTH/Σ", *Encyclopedia ASCII* Vol. 13, ASCII, September 1982 | pp. 172–179 | Editing and file processing in the CP/M version. |
 
-The page information above is recorded in the [FORTH/Σ specification](forth/sigma/SPEC.md). The Z80 source in the book was referred to in order to study what it does; the port does not contain or execute Z80 machine code or the source code from the book.
+The page information above is recorded in the [FORTH/Σ specification](docs/SPEC.md). The Z80 source in the book was referred to in order to study what it does; the port does not contain or execute Z80 machine code or the source code from the book.
 
 ### Sources used for comparison and checking
 
