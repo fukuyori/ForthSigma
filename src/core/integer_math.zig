@@ -15,7 +15,7 @@ const true_flag = memory_map.true_flag;
 
 pub const Division = struct { quotient: Cell, remainder: Cell };
 
-pub fn binary(self: *State, builtin: Builtin) RuntimeError!void {
+pub inline fn binary(self: *State, comptime builtin: Builtin) RuntimeError!void {
     const b = try self.pop();
     const a = try self.pop();
     const result: Cell = switch (builtin) {

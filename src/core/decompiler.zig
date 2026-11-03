@@ -212,7 +212,7 @@ pub fn seeOperation(self: *State, out: *SeeOutput, pc: usize, role: SeeRole, sta
     const op = self.code[pc];
     var offset_text: [24]u8 = undefined;
     switch (op.kind) {
-        .call => out.text(&.{self.seeName(op.value)}),
+        .call, .call_builtin => out.text(&.{self.seeName(op.value)}),
         .compile_call => out.text(&.{ "POSTPONE ", self.seeName(op.value) }),
         .execution_token => out.text(&.{ "['] ", self.seeName(op.value) }),
         .store_value => out.text(&.{ "TO ", self.seeName(op.value) }),

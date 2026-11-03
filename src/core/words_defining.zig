@@ -45,13 +45,13 @@ pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
             const action = try self.readCell(try deferAction(self, try self.lookupOrFail(name)));
             // gforth compiles the word that warns; Sigma has no such word, so it is an error.
             if (action == uninitialized_defer) return error.InvalidDefinition;
-            _ = try self.emit(.{ .kind = .call, .value = try self.wordId(action) });
+            try self.compileCall(try self.wordId(action));
         },
         // COMPILE, ( xt -- ) appends xt's execution to the definition being made. gforth
         // also compiles outside a definition, with a warning; Sigma has no code to add to.
         .compile_comma => {
             if (!self.defining) return error.CompileOnly;
-            _ = try self.emit(.{ .kind = .call, .value = try self.wordId(try self.pop()) });
+            try self.compileCall(try self.wordId(try self.pop()));
         },
         // [COMPILE] name appends name's execution, for an immediate word as for any other.
         .bracket_compile => {
@@ -59,7 +59,7 @@ pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
             const name = (try self.nextSourceToken()) orelse return error.InputUnavailable;
             // A local variable is not a dictionary word; gforth does not compile one either.
             if (self.findLocal(name) != null) return error.InvalidDefinition;
-            _ = try self.emit(.{ .kind = .call, .value = try self.lookupOrFail(name) });
+            try self.compileCall(try self.lookupOrFail(name));
         },
         // NAME>COMPILE ( nt -- xt1 xt2 ): xt2 is EXECUTE for an immediate word, COMPILE, for others.
         .name_to_compile => {

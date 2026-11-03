@@ -49,6 +49,7 @@ const Local = defs.Local;
 const LocalKind = defs.LocalKind;
 const Loop = defs.Loop;
 const Op = defs.Op;
+const OpKind = defs.OpKind;
 const Pending = defs.Pending;
 pub const RuntimeError = defs.RuntimeError;
 const SourceKind = defs.SourceKind;
@@ -171,6 +172,10 @@ pub const State = struct {
     last_created_word: ?u16 = null,
     halted: bool = false,
     call_depth: usize = 0,
+    /// The callers of the colon definitions that compiled code is running, innermost last
+    /// (see executeOperations).
+    frames: [max_stack]CallFrame = undefined,
+    frame_depth: usize = 0,
     last_unknown_word: ?[]const u8 = null,
     throw_code: Cell = 0,
     /// The counted string of the ABORT" that threw -2, for its message.
@@ -762,10 +767,18 @@ pub const State = struct {
 
     fn handleWord(self: *State, id: u16) RuntimeError!void {
         if (self.compiling and !self.words[id].immediate) {
-            _ = try self.emit(.{ .kind = .call, .value = id });
+            try self.compileCall(id);
         } else {
             try self.executeWord(id);
         }
+    }
+
+    /// Appends a call of the word to the definition. A built-in word is called without
+    /// going through executeWord, which saves the most time of any one change in running
+    /// compiled code; the operation keeps the word's id, so SEE shows the name used.
+    pub fn compileCall(self: *State, id: u16) RuntimeError!void {
+        const kind: OpKind = if (self.words[id].kind == .builtin) .call_builtin else .call;
+        _ = try self.emit(.{ .kind = kind, .value = id });
     }
 
     pub const requireCompiling = control_flow.requireCompiling;
@@ -920,21 +933,83 @@ pub const State = struct {
         return @intCast(value);
     }
 
+    /// Where a colon definition that compiled code called goes on when the callee ends.
+    pub const CallFrame = struct { pc: u16, end_pc: u16, defining_word: ?u16, locals_frame: ?Cell };
+
+    /// The definition that is running and its callers' frames, as executeOperations keeps them.
+    const Running = struct {
+        pc: u16,
+        end_pc: u16,
+        defining_word: ?u16,
+        /// The local-variable frame of the running definition.
+        locals_frame: ?Cell = null,
+    };
+
+    /// Ends the running definition and goes on in its caller; false when the definition
+    /// executeOperations started with ends.
+    inline fn returnToCaller(self: *State, running: *Running, entry_frames: usize) bool {
+        if (self.frame_depth == entry_frames) return false;
+        if (running.locals_frame) |base| self.locals_top = base;
+        self.frame_depth -= 1;
+        const frame = self.frames[self.frame_depth];
+        running.* = .{ .pc = frame.pc, .end_pc = frame.end_pc, .defining_word = frame.defining_word, .locals_frame = frame.locals_frame };
+        self.call_depth -= 1;
+        return true;
+    }
+
     fn executeOperations(self: *State, start_pc: u16, end_pc: u16, defining_word: ?u16) RuntimeError!void {
-        var pc = start_pc;
-        // The local-variable frame of this invocation, released on every exit path.
-        var locals_frame: ?Cell = null;
-        defer if (locals_frame) |base| {
-            self.locals_top = base;
-        };
-        while (pc < end_pc and !self.halted) {
-            const op = self.code[pc];
-            pc += 1;
+        var running: Running = .{ .pc = start_pc, .end_pc = end_pc, .defining_word = defining_word };
+        // A colon definition that compiled code calls runs in this loop, its caller kept
+        // in `frames`, instead of in a host call of its own: three calls and returns per
+        // call made word nesting slow. Whatever ends the loop, an error included, leaves
+        // the nesting depth, the frames, and the local-variable area as they were on entry,
+        // as the calls of their own did.
+        const entry_frames = self.frame_depth;
+        const entry_call_depth = self.call_depth;
+        const entry_locals_top = self.locals_top;
+        defer {
+            self.frame_depth = entry_frames;
+            self.call_depth = entry_call_depth;
+            self.locals_top = entry_locals_top;
+        }
+        while (!self.halted) {
+            if (running.pc >= running.end_pc) {
+                if (!self.returnToCaller(&running, entry_frames)) return;
+                continue;
+            }
+            const op = self.code[running.pc];
+            running.pc += 1;
             switch (op.kind) {
-                .call => try self.executeWord(try self.wordId(op.value)),
+                .call => {
+                    const id = try self.wordId(op.value);
+                    const word = &self.words[id];
+                    if (word.kind != .colon) {
+                        try self.executeWord(id);
+                        continue;
+                    }
+                    if (self.call_depth == max_stack) return error.ReturnStackOverflow;
+                    self.call_depth += 1;
+                    self.frames[self.frame_depth] = .{ .pc = running.pc, .end_pc = running.end_pc, .defining_word = running.defining_word, .locals_frame = running.locals_frame };
+                    self.frame_depth += 1;
+                    running = .{ .pc = word.code_start, .end_pc = word.code_end, .defining_word = id };
+                },
+                .call_builtin => {
+                    if (op.value < 0 or op.value >= self.builtin_count) return error.InvalidExecutionToken;
+                    const builtin = self.words[@intCast(op.value)].builtin;
+                    switch (builtin) {
+                        // The words compiled code runs most often run here, their file's
+                        // own code put in place, instead of through executeBuiltin: the
+                        // calls in between cost more than these words' work.
+                        inline .dup, .drop, .swap, .over, .rot, .nip, .tuck, .two_dup, .two_drop, .add, .sub, .mul, .equal, .not_equal, .less, .greater, .zero_equal, .zero_less, .bit_and, .bit_or, .bit_xor, .bit_complement, .negate, .one_plus, .one_minus, .to_r, .from_r, .r_fetch, .fetch, .store, .cfetch, .cstore, .add_store, .index, .index_2, .cells, .cell_plus => |hot| {
+                            if (comptime defs.isExcludedBuiltin(hot)) return error.InvalidExecutionToken;
+                            try @call(.always_inline, word_modules[word_owner[@intFromEnum(hot)]].execute, .{ self, hot });
+                        },
+                        else => try self.executeBuiltin(builtin),
+                    }
+                },
                 .compile_call => {
                     try self.requireCompiling();
-                    _ = try self.emit(.{ .kind = .call, .value = op.value });
+                    try self.compileCall(try self.wordId(op.value));
                 },
                 .builtin => try self.executeBuiltin(@enumFromInt(op.value)),
                 .literal, .execution_token => try self.push(op.value),
@@ -948,16 +1023,16 @@ pub const State = struct {
                     }
                 },
                 .add_value => try self.addToValue(try self.wordId(op.value)),
-                .branch => pc = @intCast(op.value),
+                .branch => running.pc = @intCast(op.value),
                 .branch_zero => {
-                    if (try self.pop() == 0) pc = @intCast(op.value);
+                    if (try self.pop() == 0) running.pc = @intCast(op.value);
                 },
                 .do_loop, .q_do_loop => {
                     const start = try self.pop();
                     const limit = try self.pop();
                     const exit_pc: u16 = @intCast(op.value);
                     if (op.kind == .q_do_loop and start == limit) {
-                        pc = exit_pc;
+                        running.pc = exit_pc;
                         continue;
                     }
                     if (self.loop_depth == max_stack) return error.StackOverflow;
@@ -972,7 +1047,7 @@ pub const State = struct {
                     frame.index +%= step;
                     const again = if (frame.exit_after_first) false else if (op.kind == .loop) frame.index != frame.limit else !crossed;
                     if (again) {
-                        pc = @intCast(op.value);
+                        running.pc = @intCast(op.value);
                     } else {
                         self.loop_depth -= 1;
                     }
@@ -980,7 +1055,7 @@ pub const State = struct {
                 .leave => {
                     if (self.loop_depth == 0) return error.LoopMismatch;
                     self.loop_depth -= 1;
-                    pc = self.loop_stack[self.loop_depth].exit_pc;
+                    running.pc = self.loop_stack[self.loop_depth].exit_pc;
                 },
                 .print_string => {
                     const address = try self.memoryAddress(op.value, 1);
@@ -1002,24 +1077,25 @@ pub const State = struct {
                 },
                 .does => {
                     const created_id = self.last_created_word orelse return error.InvalidDefinition;
-                    const defining_id = defining_word orelse return error.InvalidDefinition;
-                    self.words[created_id].does_code_start = pc;
+                    const defining_id = running.defining_word orelse return error.InvalidDefinition;
+                    self.words[created_id].does_code_start = running.pc;
                     self.words[created_id].does_code_end = self.words[defining_id].code_end;
                     self.words[created_id].has_does = true;
                     self.last_created_word = null;
-                    return;
+                    // The defining word ends here, as at EXIT.
+                    if (!self.returnToCaller(&running, entry_frames)) return;
                 },
-                .exit => return,
-                .local_frame => if (locals_frame == null) {
+                .exit => if (!self.returnToCaller(&running, entry_frames)) return,
+                .local_frame => if (running.locals_frame == null) {
                     const size = self.words[try self.wordId(op.value)].locals_size;
                     if (locals_end - self.locals_top < size) return error.ReturnStackOverflow;
                     const start: usize = @intCast(self.locals_top);
                     @memset(self.memory[start .. start + size], 0);
-                    locals_frame = self.locals_top;
+                    running.locals_frame = self.locals_top;
                     self.locals_top += size;
                 },
                 .local_store, .local_fetch, .local_address, .local_execute => {
-                    const base = locals_frame orelse return error.InvalidAddress;
+                    const base = running.locals_frame orelse return error.InvalidAddress;
                     const address = base + (op.value & 0xffff_ffff);
                     const kind: LocalKind = @enumFromInt(op.value >> 32);
                     switch (op.kind) {

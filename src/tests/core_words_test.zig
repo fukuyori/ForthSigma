@@ -405,6 +405,43 @@ test "stack overflow is reported and subsequent input can run" {
     try expectStack(machine, &expected);
 }
 
+test "colon definitions called from compiled code nest, end, and fail as their own calls did" {
+    var output = Output{};
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
+    const locals_top = machine.locals_top;
+
+    // Endless recursion stops at the nesting limit, and everything is back afterwards.
+    try std.testing.expectError(error.ReturnStackOverflow, machine.interpretLine(": DEEP 1+ RECURSE ; 0 DEEP"));
+    machine.report(error.ReturnStackOverflow);
+    try std.testing.expectEqual(@as(usize, 0), machine.call_depth);
+    try std.testing.expectEqual(@as(usize, 0), machine.frame_depth);
+    // The limit is where it was when each call nested in the host (checked with 0.4.0):
+    // 1023 DOWN, 1024 calls of DOWN, fits; 1024 DOWN does not.
+    try machine.interpretLine(": DOWN DUP IF 1- RECURSE THEN ; 1023 DOWN");
+    try expectStack(machine, &.{0});
+    try std.testing.expectError(error.ReturnStackOverflow, machine.interpretLine("1024 DOWN"));
+    machine.report(error.ReturnStackOverflow);
+    machine.data_depth = 0;
+
+    // An error inside nested calls with local variables gives back their area.
+    try std.testing.expectError(error.DivisionByZero, machine.interpretLine(": INNER { a -- } a 0 / ; : OUTER { b -- } b INNER ; 5 OUTER"));
+    machine.report(error.DivisionByZero);
+    try std.testing.expectEqual(locals_top, machine.locals_top);
+    try machine.interpretLine(": L2 { x y -- z } x y + ; : L1 { p -- q } p 10 L2 p * ; 3 L1");
+    try expectStack(machine, &.{39});
+    try std.testing.expectEqual(locals_top, machine.locals_top);
+    machine.data_depth = 0;
+
+    // EXIT and DOES> end only the definition they are in; THROW passes through to CATCH.
+    try machine.interpretLine(": E1 1 EXIT 2 ; : E2 E1 3 ; E2");
+    try machine.interpretLine(": MAKER CREATE , DOES> @ 1+ ; : MAKE-TWO 41 MAKER 7 ; MAKE-TWO ANSWER ANSWER");
+    try machine.interpretLine(": T1 99 THROW ; : T2 T1 1 ; : T3 T2 2 ; ' T3 CATCH 5");
+    try expectStack(machine, &.{ 1, 3, 7, 42, 99, 5 });
+    try std.testing.expectEqual(@as(usize, 0), machine.call_depth);
+    try std.testing.expectEqual(@as(usize, 0), machine.frame_depth);
+}
+
 test "return stack overflow and underflow reset cleanly" {
     var output = Output{};
     const machine = try createMachine(&output);

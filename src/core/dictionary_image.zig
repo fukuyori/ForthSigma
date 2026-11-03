@@ -20,6 +20,7 @@ const heap_base = memory_map.heap_base;
 const heap_end = memory_map.heap_end;
 const heap_top_address = memory_map.heap_top_address;
 const image_magic = memory_map.image_magic;
+const previous_image_magic = memory_map.previous_image_magic;
 const max_code = memory_map.max_code;
 const max_search_order = memory_map.max_search_order;
 const max_source_files = memory_map.max_source_files;
@@ -155,7 +156,8 @@ pub fn encodeImage(self: *State, output: []u8) RuntimeError!usize {
 }
 
 pub fn restoreImage(self: *State, image: []const u8) RuntimeError!void {
-    if (image.len < header_size + checksum_size or !std.mem.eql(u8, image[0..8], image_magic)) return error.InvalidImage;
+    if (image.len < header_size + checksum_size) return error.InvalidImage;
+    if (!std.mem.eql(u8, image[0..8], image_magic) and !std.mem.eql(u8, image[0..8], previous_image_magic)) return error.InvalidImage;
     const input = image[0 .. image.len - checksum_size];
     if (readU32(image[input.len..]) != std.hash.Crc32.hash(input)) return error.InvalidImage;
     const word_count = readU32(input[8..12]);
@@ -290,7 +292,7 @@ pub fn appendImage(self: *State, source: *const State) RuntimeError!void {
             .print_string, .string_literal, .counted_string, .abort_string => {
                 op.value += data_delta;
             },
-            .builtin, .literal, .float_literal, .leave, .does, .exit, .local_store, .local_fetch, .local_address, .local_execute => {},
+            .builtin, .call_builtin, .literal, .float_literal, .leave, .does, .exit, .local_store, .local_fetch, .local_address, .local_execute => {},
         }
         self.code[code_base + offset] = op;
     }

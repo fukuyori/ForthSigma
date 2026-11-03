@@ -102,6 +102,41 @@ test "a full restore keeps this build's built-in words when the image's built-in
     try expectStack(restored, &.{ 14, 3, 3, 1 });
 }
 
+test "a built-in word compiles to a direct call, and an image of the previous format with plain calls still runs" {
+    var output = Output{};
+    const source = try createMachine(&output);
+    defer destroyMachine(source);
+    try source.interpretLine(": SQ DUP * ; : FOUR SQ SQ ;");
+    const sq = source.words[source.lookup("SQ").?];
+    const four = source.words[source.lookup("FOUR").?];
+    // DUP and * skip executeWord; SQ, a colon definition, is called as before.
+    try std.testing.expectEqual(defs.OpKind.call_builtin, source.code[sq.code_start].kind);
+    try std.testing.expectEqual(defs.OpKind.call_builtin, source.code[sq.code_start + 1].kind);
+    try std.testing.expectEqual(defs.OpKind.call, source.code[four.code_start].kind);
+
+    // The same words as a SIGIMG32 image has them: built-in words called with .call.
+    const image = try saveImage(source);
+    defer freeImage(image);
+    const Word = @TypeOf(source.words[0]);
+    const Op = @TypeOf(source.code[0]);
+    const code_at = 24 + @as(usize, source.word_count) * @sizeOf(Word);
+    var changed: usize = 0;
+    for (source.code[0..source.code_count], 0..) |op, index| {
+        if (op.kind != .call_builtin) continue;
+        const at = code_at + index * @sizeOf(Op) + @offsetOf(Op, "kind");
+        image[at] = @intFromEnum(defs.OpKind.call);
+        changed += 1;
+    }
+    try std.testing.expect(changed >= 2);
+    @memcpy(image[0..8], "SIGIMG32");
+    resealImage(image);
+    const restored = try createMachine(&output);
+    defer destroyMachine(restored);
+    try restored.restoreImage(image);
+    try restored.interpretLine("3 FOUR 5 SQ");
+    try expectStack(restored, &.{ 81, 25 });
+}
+
 test "SEE shows a built-in word the build leaves out by its own name" {
     try support.skipWithout(&.{.tools});
     var output = Output{};
@@ -295,11 +330,12 @@ test "a damaged image, or one whose names are out of order or out of range, is r
         try std.testing.expectEqual(before_words, loaded.word_count);
         try std.testing.expectEqual(before_names, loaded.names_used);
     }
-    // The previous format is not read either.
+    // SIGIMG31 and earlier are not read; SIGIMG32, which has no call_builtin operation,
+    // is.
     @memcpy(image[0..8], "SIGIMG31");
     resealImage(image);
     try std.testing.expectError(error.InvalidImage, loaded.restoreImage(image));
-    @memcpy(image[0..8], "SIGIMG32");
+    @memcpy(image[0..8], "SIGIMG33");
     resealImage(image);
     // One damaged byte anywhere, here in the saved memory or in the checksum itself,
     // fails the checksum, and the dictionary, code, and memory stay as they were.

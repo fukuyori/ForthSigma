@@ -391,7 +391,7 @@ File words push an **ior** (0 for success, an error number otherwise) in additio
 | `REPOSITION-FILE` | ( ud fileid -- ior ) | Move the read and write position. Passing the result of `FILE-SIZE` moves to the end, so you can append. |
 | `FILE-POSITION` | ( fileid -- ud ior ) | Return the read and write position. |
 | `RESIZE-FILE` | ( ud fileid -- ior ) | Cut the file to ud bytes, or extend it with zero bytes. The read and write position does not change. |
-| `FLUSH-FILE` | ( fileid -- ior ) | Write what is buffered to the file. |
+| `FLUSH-FILE` | ( fileid -- ior ) | Write what is buffered to the file. Output to `STDOUT` is kept and written when input is read, before `MS`, `SYSTEM`, and output to `STDERR`, at the end of each line on a terminal, and at the end; `STDOUT FLUSH-FILE` writes it at once. |
 | `DELETE-FILE` | ( addr u -- ior ) | Delete the named file. |
 | `RENAME-FILE` | ( addr1 u1 addr2 u2 -- ior ) | Rename the file of the first name to the second name. If a file of the second name exists, it is replaced (also on Windows). |
 | `FILE-STATUS` | ( addr u -- x ior ) | If the named file exists, ior is 0 and x is the way it can be opened (`R/O`, `W/O`, `R/W`). If not, ior is -514. |
@@ -557,7 +557,7 @@ SAVE words.sigma
 LOAD words.sigma
 ```
 
-`LOAD` adds the saved user-defined words to the end of the current dictionary. For words with the same name, the newly loaded definitions take precedence. Dictionary images saved by earlier versions (`SIGIMG01` to `SIGIMG31`) and damaged dictionary images cannot be loaded (`INVALID IMAGE !`). A dictionary image has a checksum, so accidental damage is found before loading. Load only files made by `SAVE` or `SAVESYS` of Sigma. Execution tokens stored in constants or variables (such as the result of `:NONAME`), and execution tokens or addresses compiled into a definition with `LITERAL` (such as `[ ' X ] LITERAL`), may point to another word or place after `LOAD` into a dictionary that already has user-defined words. Execution tokens compiled with `['] X` are relocated correctly. This problem does not occur in an executable made with `SAVESYS`.
+`LOAD` adds the saved user-defined words to the end of the current dictionary. For words with the same name, the newly loaded definitions take precedence. Dictionary images saved by earlier versions (`SIGIMG01` to `SIGIMG31`) and damaged dictionary images cannot be loaded (`INVALID IMAGE !`). Images of `SIGIMG32` (0.4.0) are loaded, but 0.4.0 cannot load the images (`SIGIMG33`) this version saves. A dictionary image has a checksum, so accidental damage is found before loading. Load only files made by `SAVE` or `SAVESYS` of Sigma. Execution tokens stored in constants or variables (such as the result of `:NONAME`), and execution tokens or addresses compiled into a definition with `LITERAL` (such as `[ ' X ] LITERAL`), may point to another word or place after `LOAD` into a dictionary that already has user-defined words. Execution tokens compiled with `['] X` are relocated correctly. This problem does not occur in an executable made with `SAVESYS`.
 
 `SAVESYS` makes a stand-alone executable for the running environment that contains the current dictionary, the compiled definitions, and the data.
 

@@ -74,6 +74,8 @@ fn hostContext(context: ?*anyopaque) forth.RuntimeError!*HostContext {
 }
 
 fn sleepMilliseconds(_: ?*anyopaque, milliseconds: forth.Cell) forth.RuntimeError!void {
+    // What was written before the wait shows during it, as a progress display expects.
+    flushOutput();
     if (milliseconds <= 0) return;
     if (builtin.os.tag == .windows) {
         // Sleep takes a u32, and its largest value means forever, so longer waits go in parts.
@@ -137,6 +139,8 @@ fn runShellCommand(_: ?*anyopaque, command: []const u8) forth.RuntimeError!forth
     if (std.mem.indexOfScalar(u8, command, 0) != null) return error.HostFailed;
     @memcpy(terminated[0..command.len], command);
     terminated[command.len] = 0;
+    // The command's output comes after what Forth wrote before it.
+    flushOutput();
     // On POSIX systems this is the wait status, as gforth's $? gives; on Windows, the exit code.
     const status = system(&terminated);
     if (status == -1) return error.HostFailed;
@@ -305,6 +309,7 @@ fn fileResize(_: ?*anyopaque, fileid: forth.Cell, size: forth.UCell) forth.Cell 
 }
 
 fn fileFlush(_: ?*anyopaque, fileid: forth.Cell) forth.Cell {
+    if (fileid == forth.stdout_fileid) flushOutput();
     if (fileid == forth.stdout_fileid or fileid == forth.stderr_fileid) return 0;
     const file = openedFile(fileid) orelse return badFileIor();
     clearErrno();
@@ -514,6 +519,8 @@ fn saveExecutableImage(context: ?*anyopaque, output_path: []const u8, machine: *
 /// Writes to the standard error handle directly, as std.Io did: it is not buffered, so it
 /// does not wait for a flush of the C library's stderr stream.
 fn writeStandardError(bytes: []const u8) bool {
+    // Standard output written before keeps its place when both go to one terminal.
+    flushOutput();
     var rest = bytes;
     while (rest.len > 0) {
         if (builtin.os.tag == .windows) {
@@ -566,9 +573,38 @@ fn executablePathAlloc(allocator: std.mem.Allocator, argv0: ?[*:0]const u8) ![:0
     }
 }
 
+/// Standard output is kept here and written out in pieces: writing each EMIT at once cost
+/// a system call per character, which made output-heavy programs many times slower.
+/// The buffer is written before any input is read, before MS, SYSTEM, and STDERR output,
+/// on FLUSH-FILE of STDOUT, and at the end; on a terminal also at the end of each line.
+var output_buffer: [4096]u8 = undefined;
+var output_used: usize = 0;
+/// Whether standard output is a terminal (set at start-up).
+var output_is_terminal = false;
+
 fn terminalWrite(_: ?*anyopaque, bytes: []const u8) void {
-    for (bytes) |byte| _ = putchar(byte);
+    var rest = bytes;
+    while (rest.len > 0) {
+        if (output_used == output_buffer.len) flushOutput();
+        const amount = @min(rest.len, output_buffer.len - output_used);
+        @memcpy(output_buffer[output_used..][0..amount], rest[0..amount]);
+        output_used += amount;
+        rest = rest[amount..];
+    }
+    if (output_is_terminal and std.mem.indexOfScalar(u8, bytes, '\n') != null) flushOutput();
+}
+
+/// Writes the buffered output through the C library, as before, so that the C library
+/// still turns LF into CR LF where it did.
+fn flushOutput() void {
+    if (output_used == 0) return;
+    for (output_buffer[0..output_used]) |byte| _ = putchar(byte);
+    output_used = 0;
     _ = fflush(null);
+}
+
+fn isTerminal(descriptor: c_int) bool {
+    return if (builtin.os.tag == .windows) windows_stdin._isatty(descriptor) != 0 else std.c.isatty(descriptor) != 0;
 }
 
 /// One byte read ahead by KEY? and returned by the next read.
@@ -579,6 +615,8 @@ fn readByte() c_int {
         lookahead = null;
         return byte;
     }
+    // A prompt or a question is out before the program waits for the answer.
+    flushOutput();
     return getchar();
 }
 
@@ -589,6 +627,7 @@ fn terminalKey(_: ?*anyopaque) ?u8 {
 
 fn terminalKeyReady(_: ?*anyopaque) bool {
     if (lookahead != null) return true;
+    flushOutput();
     const ch = getchar();
     if (ch < 0) return false;
     lookahead = @intCast(ch);
@@ -648,6 +687,9 @@ fn run(init: std.process.Init.Minimal) !void {
     var host = HostContext{ .allocator = allocator, .executable_path = executable_path, .environ_map = &environ_map };
     const machine = try allocator.create(forth.State);
     defer allocator.destroy(machine);
+    output_is_terminal = isTerminal(1);
+    // The output kept in the buffer goes out however the session ends.
+    defer flushOutput();
 
     enableVirtualTerminal();
     useBinaryStdin();

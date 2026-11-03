@@ -644,7 +644,7 @@ pub const Word = struct {
 
 /// Local operations other than `local_frame` encode the frame offset in the low 32 bits
 /// of the value and the `LocalKind` above them; `local_frame` holds the word id.
-pub const OpKind = enum { call, compile_call, builtin, literal, float_literal, execution_token, store_value, branch, branch_zero, do_loop, q_do_loop, loop, plus_loop, leave, print_string, string_literal, counted_string, abort_string, does, exit, local_frame, local_store, local_fetch, local_address, local_execute, add_value };
+pub const OpKind = enum { call, compile_call, builtin, literal, float_literal, execution_token, store_value, branch, branch_zero, do_loop, q_do_loop, loop, plus_loop, leave, print_string, string_literal, counted_string, abort_string, does, exit, local_frame, local_store, local_fetch, local_address, local_execute, add_value, call_builtin };
 
 pub const LocalKind = enum(u8) { cell, double, float, char, xt };
 
