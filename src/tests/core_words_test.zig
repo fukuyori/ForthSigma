@@ -442,6 +442,40 @@ test "colon definitions called from compiled code nest, end, and fail as their o
     try std.testing.expectEqual(@as(usize, 0), machine.frame_depth);
 }
 
+test "after CATCH, QUIT, and BYE in nested calls with local variables, the callers go on or stop cleanly" {
+    var output = Output{};
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
+    const locals_top = machine.locals_top;
+
+    // INNER fails two calls deep inside CATCH; OUTER, with its local variables and its
+    // own caller TOP kept, goes on with the throw code.
+    try machine.interpretLine(": INNER { n -- } n 0 / ; : MIDDLE { m -- } m INNER ; : OUTER { a b -- c } a ['] MIDDLE CATCH NIP a b + * ; : TOP 3 4 OUTER 1+ ; TOP");
+    try expectStack(machine, &.{-69});
+    try std.testing.expectEqual(locals_top, machine.locals_top);
+    try std.testing.expectEqual(@as(usize, 0), machine.call_depth);
+    try std.testing.expectEqual(@as(usize, 0), machine.frame_depth);
+    machine.data_depth = 0;
+
+    // QUIT from nested calls keeps the data stack and gives back the frames and locals.
+    try std.testing.expectError(error.Quit, machine.interpretLine(": Q2 { x -- } x QUIT ; : Q1 { y -- } y Q2 ; 5 Q1 6"));
+    machine.report(error.Quit);
+    try expectStack(machine, &.{5});
+    try std.testing.expectEqual(locals_top, machine.locals_top);
+    try std.testing.expectEqual(@as(usize, 0), machine.call_depth);
+    try std.testing.expectEqual(@as(usize, 0), machine.frame_depth);
+    try std.testing.expectEqual(@as(usize, 0), machine.loop_depth);
+    machine.data_depth = 0;
+
+    // BYE in a nested call stops the callers too.
+    try machine.interpretLine(": B2 { x -- } 8 BYE 9 ; : B1 B2 99 ; 7 B1");
+    try std.testing.expect(machine.halted);
+    try expectStack(machine, &.{8});
+    try std.testing.expectEqual(locals_top, machine.locals_top);
+    try std.testing.expectEqual(@as(usize, 0), machine.call_depth);
+    try std.testing.expectEqual(@as(usize, 0), machine.frame_depth);
+}
+
 test "return stack overflow and underflow reset cleanly" {
     var output = Output{};
     const machine = try createMachine(&output);

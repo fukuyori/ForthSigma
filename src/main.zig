@@ -611,12 +611,13 @@ fn isTerminal(descriptor: c_int) bool {
 var lookahead: ?u8 = null;
 
 fn readByte() c_int {
+    // A prompt or a question is out before the program takes the answer, also when KEY?
+    // has read the byte ahead and the program wrote in between.
+    flushOutput();
     if (lookahead) |byte| {
         lookahead = null;
         return byte;
     }
-    // A prompt or a question is out before the program waits for the answer.
-    flushOutput();
     return getchar();
 }
 
@@ -626,8 +627,8 @@ fn terminalKey(_: ?*anyopaque) ?u8 {
 }
 
 fn terminalKeyReady(_: ?*anyopaque) bool {
-    if (lookahead != null) return true;
     flushOutput();
+    if (lookahead != null) return true;
     const ch = getchar();
     if (ch < 0) return false;
     lookahead = @intCast(ch);
