@@ -78,6 +78,34 @@ test "each recursive call gets its own locals frame and frames are released" {
     try std.testing.expectEqual(top, machine.locals_top);
 }
 
+test "nested calls preserve locals at the end of memory and recover from exhaustion" {
+    var output = Output{};
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
+    const memory_end: forth.Cell = @intCast(machine.memory.len);
+    try machine.interpretLine(": LEAF { x } x 1+ ; : MIDDLE { y } y LEAF y + ; : OUTER MIDDLE ;");
+
+    // Two frames occupy the last two cells; OUTER itself has no locals.
+    machine.locals_top = memory_end - 16;
+    try machine.interpretLine("20 OUTER");
+    try expectStack(machine, &.{41});
+    try std.testing.expectEqual(memory_end - 16, machine.locals_top);
+    machine.data_depth = 0;
+
+    // Only MIDDLE fits. Failure entering LEAF must unwind both compiled callers
+    // and the dynamic call made by CATCH, keeping the original local-area limit.
+    machine.locals_top = memory_end - 8;
+    try machine.interpretLine("20 ' OUTER CATCH");
+    try std.testing.expectEqual(@as(forth.Cell, -5), try machine.pop());
+    try std.testing.expectEqual(@as(usize, 1), machine.data_depth);
+    try std.testing.expectEqual(memory_end - 8, machine.locals_top);
+    try std.testing.expectEqual(@as(usize, 0), machine.frame_depth);
+    try std.testing.expectEqual(@as(usize, 0), machine.call_depth);
+    try machine.interpretLine("DROP 41 LEAF");
+    try expectStack(machine, &.{42});
+    try std.testing.expectEqual(memory_end - 8, machine.locals_top);
+}
+
 test "local names are scoped to their definition and rejected outside one" {
     try support.skipWithoutFloat();
     var output = Output{};

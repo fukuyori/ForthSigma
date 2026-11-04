@@ -947,25 +947,28 @@ pub const State = struct {
     }
 
     /// Where a colon definition that compiled code called goes on when the callee ends.
-    pub const CallFrame = struct { pc: u16, end_pc: u16, defining_word: ?u16, locals_frame: ?Cell };
-
-    /// The definition that is running and its callers' frames, as executeOperations keeps them.
-    const Running = struct {
+    pub const CallFrame = struct {
         pc: u16,
         end_pc: u16,
         defining_word: ?u16,
-        /// The local-variable frame of the running definition.
-        locals_frame: ?Cell = null,
+        /// Zero means no locals; the local-variable area has nonzero addresses.
+        locals_frame: Cell = 0,
     };
+
+    /// The definition that is running and its callers' frames, as executeOperations keeps them.
+    const Running = CallFrame;
+
+    comptime {
+        std.debug.assert(locals_base > 0);
+    }
 
     /// Ends the running definition and goes on in its caller; false when the definition
     /// executeOperations started with ends.
     inline fn returnToCaller(self: *State, running: *Running, entry_frames: usize) bool {
         if (self.frame_depth == entry_frames) return false;
-        if (running.locals_frame) |base| self.locals_top = base;
+        if (running.locals_frame != 0) self.locals_top = running.locals_frame;
         self.frame_depth -= 1;
-        const frame = self.frames[self.frame_depth];
-        running.* = .{ .pc = frame.pc, .end_pc = frame.end_pc, .defining_word = frame.defining_word, .locals_frame = frame.locals_frame };
+        running.* = self.frames[self.frame_depth];
         self.call_depth -= 1;
         return true;
     }
@@ -1018,7 +1021,7 @@ pub const State = struct {
                     };
                     if (self.call_depth == max_stack) return error.ReturnStackOverflow;
                     self.call_depth += 1;
-                    self.frames[self.frame_depth] = .{ .pc = running.pc, .end_pc = running.end_pc, .defining_word = running.defining_word, .locals_frame = running.locals_frame };
+                    self.frames[self.frame_depth] = running;
                     self.frame_depth += 1;
                     running = .{ .pc = word.code_start, .end_pc = word.code_end, .defining_word = id };
                 },
@@ -1114,7 +1117,7 @@ pub const State = struct {
                     if (!self.returnToCaller(&running, entry_frames)) return;
                 },
                 .exit => if (!self.returnToCaller(&running, entry_frames)) return,
-                .local_frame => if (running.locals_frame == null) {
+                .local_frame => if (running.locals_frame == 0) {
                     const size = self.words[try self.wordId(op.value)].locals_size;
                     if (locals_end - self.locals_top < size) return error.ReturnStackOverflow;
                     const start: usize = @intCast(self.locals_top);
@@ -1123,7 +1126,8 @@ pub const State = struct {
                     self.locals_top += size;
                 },
                 .local_store, .local_fetch, .local_address, .local_execute => {
-                    const base = running.locals_frame orelse return error.InvalidAddress;
+                    if (running.locals_frame == 0) return error.InvalidAddress;
+                    const base: Cell = running.locals_frame;
                     const address = base + (op.value & 0xffff_ffff);
                     const kind: LocalKind = @enumFromInt(op.value >> 32);
                     switch (op.kind) {

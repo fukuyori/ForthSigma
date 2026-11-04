@@ -139,6 +139,37 @@ The runtime does not implement the magazine's editor-buffer versions of LOAD/SAV
 
 ## Verification record
 
+### Compact colon-call frames (2026-11-04)
+
+The running definition and its saved callers now share one frame type. The local-variable frame address uses a `Cell` with zero meaning no local frame, instead of an optional `Cell` with a separate presence flag. A compile-time assertion requires the local-variable area to start above zero. The frame is 16 bytes rather than 24 on Windows/Linux x86_64, reducing the 1024-entry frame array by 8 KiB. The word id, return program counter, end counter, local addresses, call limits, and error handling are preserved. Frames are transient execution state and are not part of the saved image format.
+
+A new regression test fills the last two cells of local-variable memory with nested calls, checks that the caller's local survives the return, then leaves room for only one local frame and checks recovery through `CATCH` after the next allocation fails. Windows Debug and fast passed 232 tests (225 core, 7 host); fast without floating-point words passed 187 with 19 skipped. Cortex-M0+ compilation and real-pipe checks passed. The 13 native-process recursion/output checks passed in each of Windows and WSL/Linux, Debug and fast. The full Linux unit suite was not run.
+
+An initial 12-byte frame with a 32-bit local address improved calls but slowed several other kernels, including LOOP and floating-point arithmetic, so it was discarded. The retained 16-byte frame keeps the existing cell-width address. Performance results below apply to the complete retained change, not to a separately measured contribution from frame-array size alone.
+
+The baseline is `a27f8de` (0.5.1), compared with the retained change using Zig 0.17.0, `-Dtarget=x86_64-linux-musl -Doptimize=fast`, WSL CPU affinity 0, and normal Gforth 0.7.9_20260410 amd64. The schema-version-2 procedure below used 100,000,000 iterations, one discarded run, and seven alternating measured rounds, with no concurrent builds or tests. Checksums matched for every engine. Median execution-interval CPU times:
+
+| Kernel | Before (ms) | After (ms) | Gforth (ms) | Reduction | After / Gforth |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| arithmetic | 789.105 | 583.256 | 266.402 | 26.1% | 2.19 |
+| stacks | 1397.207 | 1059.034 | 349.195 | 24.2% | 3.03 |
+| calls | 4408.159 | 2679.555 | 765.251 | 39.2% | 3.50 |
+| variables | 620.403 | 491.484 | 174.426 | 20.8% | 2.82 |
+| loops | 577.120 | 438.464 | 197.735 | 24.0% | 2.22 |
+| plus-loop | 387.085 | 276.040 | 127.055 | 28.7% | 2.17 |
+| extended | 1267.712 | 728.401 | 345.113 | 42.5% | 2.11 |
+| float | 744.204 | 597.216 | 459.647 | 19.8% | 1.30 |
+
+All eight medians decreased. The twice-Gforth target is still unmet overall; only the float kernel is within it. A separate local-variable call kernel, with 20,000,000 iterations and five measured rounds after one discarded run, took 692.969 ms before and 542.910 ms after (21.7% less), against 128.849 ms in Gforth. It uses the same handshake protocol with this definition:
+
+```forth
+: BENCH-A { n -- r } n 1+ ;
+: BENCH-B { n -- r } n BENCH-A BENCH-A ;
+: BENCH-RUN 0 BENCH-ITERATIONS 0 DO BENCH-B LOOP ;
+```
+
+These are small diagnostic kernels, not general application benchmarks. Raw samples and executable metadata are in `.work/call-cell-final.json` and `.work/call-locals-final.json` (ignored by Git). The retained Linux executable SHA-256 is `62d89e288b576306e4993ac8fb1f990aa7e3584a4b2b20148998b04199fd81da`.
+
 ### Claude Code review follow-up (2026-11-04)
 
 The read-only Claude Code review of `a1da425..7ef25d4` found no confirmed serious runtime or image-compatibility defect. Its proposed checks and documentation corrections were handled as follows:
