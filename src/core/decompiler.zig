@@ -1,6 +1,7 @@
 //! SEE: showing definitions from their operations.
 
 const std = @import("std");
+const inline_calls = @import("inline_calls.zig");
 const defs = @import("defs.zig");
 const forth = @import("../forth.zig");
 const memory_map = @import("memory_map.zig");
@@ -186,6 +187,7 @@ pub fn seeBody(self: *State, start: u16, end: u16) RuntimeError!void {
         if (pc == stop) break;
         for (0..begins[pc]) |_| out.text(&.{"BEGIN"});
         try self.seeOperation(&out, pc, roles[pc], start);
+        if (inline_calls.isInline(self.code[pc])) pc += inline_calls.span(self.code[pc].value) - 1;
     }
     if (out.column != 0) self.write("\n");
     self.write(";");
@@ -212,7 +214,7 @@ pub fn seeOperation(self: *State, out: *SeeOutput, pc: usize, role: SeeRole, sta
     const op = self.code[pc];
     var offset_text: [24]u8 = undefined;
     switch (op.kind) {
-        .call, .call_builtin, .call_colon => out.text(&.{self.seeName(op.value)}),
+        .call, .call_builtin, .call_colon => out.text(&.{self.seeName(if (inline_calls.isInline(op)) inline_calls.wordId(op.value) else op.value)}),
         inline else => |kind| {
             _ = comptime defs.primitiveBuiltin(kind);
             out.text(&.{self.seeName(op.value)});

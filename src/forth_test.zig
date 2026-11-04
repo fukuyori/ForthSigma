@@ -14,4 +14,5 @@ comptime {
     _ = @import("tests/definitions_test.zig");
     _ = @import("tests/help_test.zig");
     _ = @import("tests/dictionary_test.zig");
+    _ = @import("tests/inline_calls_test.zig");
 }

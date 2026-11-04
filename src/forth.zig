@@ -12,6 +12,7 @@ const error_reporting = @import("core/error_reporting.zig");
 const heap_memory = @import("core/heap_memory.zig");
 const host_interface = @import("core/host_interface.zig");
 const integer_math = @import("core/integer_math.zig");
+const inline_calls = @import("core/inline_calls.zig");
 const local_variables = @import("core/local_variables.zig");
 const memory_map = @import("core/memory_map.zig");
 const number_io = @import("core/number_io.zig");
@@ -774,8 +775,10 @@ pub const State = struct {
     }
 
     /// Compiles known colon targets and frequent built-ins to direct operations.
-    /// The operand keeps the word id for SEE and image relocation.
+    /// Inline guards pack the original word id with their span and depth; ordinary
+    /// calls keep the word id directly. Both preserve SEE and image relocation.
     pub fn compileCall(self: *State, id: u16) RuntimeError!void {
+        if (try inline_calls.compile(self, id)) return;
         _ = try self.emit(self.specializeCall(.{ .kind = .call, .value = id }));
     }
 
@@ -997,6 +1000,12 @@ pub const State = struct {
             running.pc += 1;
             switch (op.kind) {
                 inline .call, .call_colon => |call_kind| {
+                    if (call_kind == .call_colon and inline_calls.isInline(op)) {
+                        // The following straight-line operations are the copied
+                        // body. Keep the original call-limit check without a frame.
+                        if (self.call_depth + inline_calls.depth(op.value) > max_stack) return error.ReturnStackOverflow;
+                        continue;
+                    }
                     const id = try self.wordId(op.value);
                     const word = &self.words[id];
                     if (call_kind == .call_colon) std.debug.assert(word.kind == .colon);

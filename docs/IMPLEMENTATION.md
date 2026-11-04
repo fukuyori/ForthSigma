@@ -139,6 +139,56 @@ The runtime does not implement the magazine's editor-buffer versions of LOAD/SAV
 
 ## Verification record
 
+### Bounded inlining of short colon definitions (2026-11-04)
+
+Completed, non-immediate colon definitions with one to four operations before their final EXIT can now be copied into a compiled call site. Eligible bodies contain only literal values, execution tokens, specialized primitives, and already-inlined call guards. Recursive or branching bodies, locals, dynamic calls, DOES>, early EXIT, and larger bodies retain their ordinary calls. Insufficient space for the expansion falls back to an ordinary call. Expansion increases code-area consumption; the four-operation limit includes nested guards and bounds the growth per call site.
+
+The existing `call_colon` tag represents an inline guard when its operand encodes the original word id, expansion span, and required call-depth headroom. It checks the original call limit at the original position, then continues into the copied instructions without saving a frame. Nested guards retain their relative depths and error order. No new dispatch tag is added. SEE shows the original callee name and skips its copied body; redefinition appends a new word and does not change existing expansions.
+
+SAVE writes an ordinary call to the original word followed by branches over the reserved expansion slots. This keeps code positions stable and preserves SIGIMG33 compatibility. Restore reconstructs only exact padding spans whose earlier callee is eligible, with no branch destination or word/DOES> boundary inside the span. LOAD relocates the word ids packed in guards, as well as execution tokens copied into their bodies. Old images without reserved expansion space retain ordinary calls.
+
+Five added tests cover nested guards, redefinition and SEE, stack effects and error ordering near the call-depth limit, excluded definitions, code-capacity fallback, save/restore and repeated LOAD relocation, and a branch entering the padding. Windows Debug and fast passed 237 tests (230 core, 7 host); fast without floating-point words passed 192 with 19 skipped. Cortex-M0+ compilation and real-pipe checks passed. The 13 native-process recursion/output checks passed for Windows and WSL/Linux in Debug and fast. Four real-file checks under WSL passed: the baseline executable loaded the new image, the new executable loaded both old and new images, and the new executable loaded a new image re-saved by the baseline. All ran nested calls, recursion, and a local-variable caller with the expected output. The full Linux unit suite was not run.
+
+The final comparison used baseline `4cf51df`, Zig 0.17.0, `-Dtarget=x86_64-linux-musl -Doptimize=fast`, WSL CPU affinity 0, and normal Gforth 0.7.9_20260410 amd64. Each kernel ran 100,000,000 iterations, one discarded run and seven alternating measured rounds, with the schema-version-2 execution interval and no concurrent builds/tests. All checksums matched. Positive time change means slower:
+
+| Kernel | Before (ms) | After (ms) | Gforth (ms) | Time change | After / Gforth |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| arithmetic | 608.474 | 615.676 | 268.192 | +1.2% | 2.30 |
+| stacks | 1088.262 | 1102.010 | 350.999 | +1.3% | 3.14 |
+| calls | 2753.195 | 1264.124 | 782.985 | -54.1% | 1.61 |
+| variables | 505.472 | 499.532 | 175.134 | -1.2% | 2.85 |
+| loops | 480.752 | 471.963 | 199.158 | -1.8% | 2.37 |
+| plus-loop | 283.163 | 286.949 | 127.501 | +1.3% | 2.25 |
+| extended | 758.180 | 756.704 | 347.712 | -0.2% | 2.18 |
+| float | 615.574 | 533.291 | 462.505 | -13.4% | 1.15 |
+
+The short-call kernel is now within twice Gforth, as is the float kernel; the overall target is still unmet. This is not a uniform speedup. The separate local-variable call kernel shown below, which is excluded from inlining, increased from 560.140 to 594.459 ms (+6.1%) in a 20,000,000-iteration, five-measured-round comparison (Gforth 129.882 ms). Its sample ranges did not overlap: before 557.015–563.201 ms, after 580.762–603.354 ms. This regression is retained as a known tradeoff of the current implementation, not described as noise. No claim is made that unrelated kernel changes result from call removal alone.
+
+Raw final samples are `.work/inline-verified-final.json` and `.work/inline-locals-final.json`. The final Linux executable SHA-256 is `138ccfbec066ffb8fdac9bb5369b894fc924e2d7dcc807d90d1b8bc3858f25b0`; image-interchange results are in `.work/inline-image-results.json`. These artifacts are local and ignored by Git. An earlier new-opcode prototype regressed other kernels and was replaced by the retained tagged `call_colon` guard.
+
+### Literal/primitive fusion experiment, not adopted (2026-11-04)
+
+After `4cf51df`, selected literal/primitive pairs were prototyped as execution-only operations. Both original code slots and operands stayed in place; the first operation performed both steps and skipped the second. Branch destinations and word/DOES> boundaries prevented fusion across an entry point. The prototype normalized the first tag on image save and rebuilt fusion after definition completion, image restoration, and relocation; SEE still displayed both original operations. This design was tested as an experiment and is **not present in the retained runtime**.
+
+The four-pair version (`literal +`, `literal *`, `literal AND`, `literal RSHIFT`) regressed performance, both when reusing the existing primitive helpers and when directly updating the top stack cell while retaining temporary-literal overflow and underflow behavior. Reducing the experiment to `literal AND` improved some kernels but regressed others. The following paired medians use Zig 0.17.0, `x86_64-linux-musl`, fast, WSL CPU affinity 0, the schema-version-2 execution interval, 20,000,000 iterations, one discarded run, and five alternating measured rounds. No builds or tests ran concurrently; checksums agreed. Positive change means slower:
+
+| Kernel | Baseline (ms) | AND-only prototype (ms) | Time change |
+| --- | ---: | ---: | ---: |
+| arithmetic | 119.203 | 116.791 | -2.0% |
+| stacks | 212.269 | 233.567 | +10.0% |
+| calls | 538.959 | 516.886 | -4.1% |
+| variables | 101.046 | 128.273 | +26.9% |
+| loops | 88.107 | 78.986 | -10.4% |
+| plus-loop | 55.989 | 54.079 | -3.4% |
+| extended | 148.221 | 152.436 | +2.8% |
+| float | 120.040 | 109.871 | -8.5% |
+
+Callgrind on `: T 0 100000 0 DO I 7 AND + LOOP ; T .` reported 12,400,163 instructions in the baseline's execution loop and 12,300,183 in the direct four-pair prototype: less than a 1% decrease despite removing a dispatch from each iteration. Disassembly showed additional spill/reload instructions in the prototype's common dispatch path. This establishes that the generated loop did not retain most of the expected instruction savings; it does not quantify all causes of elapsed CPU-time differences. Moving the instruction advance into the common dispatch path and separating cleanup snapshots into a wrapper were also measured and rejected after regressions.
+
+The initial four-pair prototype passed the existing 232 Windows Debug tests. Its direct-update variant also passed a new emission/execution check (233 tests total). Performance regressions ended the experiment before completing release acceptance or old-executable image interchange. All prototype source and test changes were reverted to `4cf51df`; only this evaluation record remains. The previously measured performance of `4cf51df` is unchanged by these documentation edits. This result does not rule out other fusion designs or compiler configurations.
+
+Local artifacts (ignored by Git): `.work/fuse-four-probe.json`, `fuse-direct-probe.json`, `fuse-and-probe.json`, `fuse-advance-probe.json`, and `fuse-wrapper-probe.json`; `.work/fuse-cg-before`, `fuse-cg-after`, and `fuse-assembly.txt`; the last prototype's patch and added files in `.work/fusion-rejected/`.
+
 ### Compact colon-call frames (2026-11-04)
 
 The running definition and its saved callers now share one frame type. The local-variable frame address uses a `Cell` with zero meaning no local frame, instead of an optional `Cell` with a separate presence flag. A compile-time assertion requires the local-variable area to start above zero. The frame is 16 bytes rather than 24 on Windows/Linux x86_64, reducing the 1024-entry frame array by 8 KiB. The word id, return program counter, end counter, local addresses, call limits, and error handling are preserved. Frames are transient execution state and are not part of the saved image format.

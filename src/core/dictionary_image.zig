@@ -1,6 +1,7 @@
 //! Saving the dictionary as an image, restoring it, and appending it with LOAD.
 
 const std = @import("std");
+const inline_calls = @import("inline_calls.zig");
 const native_endian = @import("builtin").cpu.arch.endian();
 const defs = @import("defs.zig");
 const forth = @import("../forth.zig");
@@ -148,11 +149,22 @@ pub fn encodeImage(self: *State, output: []u8) RuntimeError!usize {
     }
     // Keep SIGIMG33 readable by existing releases: the specialization is only
     // an execution detail. Do not change the running machine's operations.
-    for (self.code[0..self.code_count], 0..) |op, index| {
-        if (op.kind != .call_colon and !defs.isPrimitiveOp(op.kind)) continue;
-        const saved_call: defs.OpKind = if (op.kind == .call_colon) .call else .call_builtin;
-        const at = header_size + word_bytes.len + index * @sizeOf(Op) + @offsetOf(Op, "kind");
-        @memcpy(output[at..][0..@sizeOf(defs.OpKind)], std.mem.asBytes(&saved_call));
+    var inline_end: usize = 0;
+    for (self.code[0..self.code_count], 0..) |original, index| {
+        var op = original;
+        if (index < inline_end) {
+            op = .{ .kind = .branch, .value = @intCast(inline_end) };
+        } else if (inline_calls.isInline(op)) {
+            inline_end = index + inline_calls.span(op.value);
+            op = .{ .kind = .call, .value = inline_calls.wordId(op.value) };
+        } else if (op.kind == .call_colon) {
+            op.kind = .call;
+        } else if (defs.isPrimitiveOp(op.kind)) {
+            op.kind = .call_builtin;
+        }
+        const at = header_size + word_bytes.len + index * @sizeOf(Op);
+        @memcpy(output[at + @offsetOf(Op, "kind") ..][0..@sizeOf(defs.OpKind)], std.mem.asBytes(&op.kind));
+        @memcpy(output[at + @offsetOf(Op, "value") ..][0..@sizeOf(Cell)], std.mem.asBytes(&op.value));
     }
     for (ranges) |range| {
         const length = range[1] - range[0];
@@ -219,6 +231,7 @@ pub fn restoreImage(self: *State, image: []const u8) RuntimeError!void {
     for (self.code[0..self.code_count]) |*op| {
         op.* = self.specializeCall(op.*);
     }
+    inline_calls.restore(self);
     self.data_here = data_here;
     self.data_depth = 0;
     self.return_depth = 0;
@@ -296,7 +309,14 @@ pub fn appendImage(self: *State, source: *const State) RuntimeError!void {
     for (source.code[0..source.code_count], 0..) |original, offset| {
         var op = original;
         switch (op.kind) {
-            .call, .call_colon, .compile_call, .execution_token, .store_value, .add_value, .local_frame => if (op.value >= source.builtin_count) {
+            .call_colon => if (inline_calls.isInline(op)) {
+                const id = inline_calls.wordId(op.value);
+                const relocated: u16 = if (id >= source.builtin_count) @intCast(word_base + id - source.builtin_count) else id;
+                op.value = inline_calls.operand(relocated, inline_calls.span(op.value), inline_calls.depth(op.value));
+            } else if (op.value >= source.builtin_count) {
+                op.value = @intCast(word_base + @as(usize, @intCast(op.value - source.builtin_count)));
+            },
+            .call, .compile_call, .execution_token, .store_value, .add_value, .local_frame => if (op.value >= source.builtin_count) {
                 op.value = @intCast(word_base + @as(usize, @intCast(op.value - source.builtin_count)));
             },
             .branch, .branch_zero, .do_loop, .q_do_loop, .loop, .plus_loop => {

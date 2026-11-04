@@ -3,6 +3,7 @@
 const std = @import("std");
 const forth = @import("../forth.zig");
 const defs = @import("../core/defs.zig");
+const inline_calls = @import("../core/inline_calls.zig");
 const Builtin = defs.Builtin;
 const support = @import("support.zig");
 const Output = support.Output;
@@ -121,9 +122,9 @@ test "a built-in word compiles to a direct call, and an image of the previous fo
     const Op = @TypeOf(source.code[0]);
     const code_at = 24 + @as(usize, source.word_count) * @sizeOf(Word);
     var changed: usize = 0;
-    for (source.code[0..source.code_count], 0..) |op, index| {
-        if (op.kind != .call_builtin and !defs.isPrimitiveOp(op.kind)) continue;
+    for (0..source.code_count) |index| {
         const at = code_at + index * @sizeOf(Op) + @offsetOf(Op, "kind");
+        if (image[at] != @intFromEnum(defs.OpKind.call_builtin)) continue;
         image[at] = @intFromEnum(defs.OpKind.call);
         changed += 1;
     }
@@ -148,11 +149,14 @@ test "execution-only calls normalize on save and relocate on LOAD without changi
     const Word = @TypeOf(source.words[0]);
     const Op = @TypeOf(source.code[0]);
     const code_at = 24 + @as(usize, source.word_count) * @sizeOf(Word);
+    var inline_end: usize = 0;
     for (source.code[0..source.code_count], 0..) |op, index| {
         const at = code_at + index * @sizeOf(Op);
         const tag = image[at + @offsetOf(Op, "kind")];
-        const expected = if (op.kind == .call_colon) defs.OpKind.call else if (defs.isPrimitiveOp(op.kind)) defs.OpKind.call_builtin else op.kind;
+        const expected = if (index < inline_end) defs.OpKind.branch else if (op.kind == .call_colon) defs.OpKind.call else if (defs.isPrimitiveOp(op.kind)) defs.OpKind.call_builtin else op.kind;
         try std.testing.expectEqual(@intFromEnum(expected), tag);
+        if (index >= inline_end and inline_calls.isInline(op))
+            inline_end = index + inline_calls.span(op.value);
     }
     // Saving must not replace the fast instructions in the running machine.
     const four = source.words[source.lookup("FOUR").?];
