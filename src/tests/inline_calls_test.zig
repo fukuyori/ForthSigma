@@ -37,6 +37,36 @@ test "short calls inline with nested depth guards and retain original word ident
     try std.testing.expectEqualStrings(support.see(": B\n  A A\n;\n: C\n  B B\n;\n"), output.written());
 }
 
+test "inlined calls reject words removed during execution by FORGET or MARKER" {
+    for ([_][]const u8{
+        ": A 1+ ; : P S\" FORGET A\" EVALUATE 10 A . ;",
+        "MARKER M : A 1+ ; : P M 10 A . ;",
+        ": A 1+ ; : B A A ; : P S\" FORGET A\" EVALUATE 10 B . ;",
+        "MARKER M : A 1+ ; : B A A ; : P M 10 B . ;",
+    }) |source| {
+        for ([_]bool{ false, true }) |ordinary| {
+            var output = support.Output{};
+            const machine = try support.createMachine(&output);
+            defer support.destroyMachine(machine);
+            try machine.interpretLine(source);
+            const caller = machine.lookup("P").?;
+            const word = machine.words[caller];
+            const has_inline = for (machine.code[word.code_start..word.code_end]) |op| {
+                if (inline_calls.isInline(op)) break true;
+            } else false;
+            try std.testing.expect(has_inline);
+            if (ordinary) ordinaryCalls(machine);
+            try std.testing.expectError(error.InvalidExecutionToken, machine.executeWord(caller));
+            try support.expectStack(machine, &.{10});
+            try std.testing.expectEqualStrings("", output.written());
+            try std.testing.expect(machine.lookup("A") == null);
+            try std.testing.expect(machine.lookup("P") == null);
+            try std.testing.expectEqual(@as(usize, 0), machine.call_depth);
+            try std.testing.expectEqual(@as(usize, 0), machine.frame_depth);
+        }
+    }
+}
+
 test "inlined calls preserve call-limit and stack-error ordering" {
     var output = support.Output{};
     const optimized = try support.createMachine(&output);

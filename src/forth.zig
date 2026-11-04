@@ -1001,6 +1001,9 @@ pub const State = struct {
             switch (op.kind) {
                 inline .call, .call_colon => |call_kind| {
                     if (call_kind == .call_colon and inline_calls.isInline(op)) {
+                        // FORGET/MARKER may remove this word while its caller runs.
+                        // Validate before the depth check, as an ordinary call does.
+                        _ = try self.wordId(inline_calls.wordId(op.value));
                         // The following straight-line operations are the copied
                         // body. Keep the original call-limit check without a frame.
                         if (self.call_depth + inline_calls.depth(op.value) > max_stack) return error.ReturnStackOverflow;
