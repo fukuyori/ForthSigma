@@ -2,6 +2,15 @@
 
 製品バージョンの基準値はルートの `VERSION` ファイルです。`build.zig` はこの値を実行ファイルに埋め込み、起動時の表示（`FORTH/Sigma 版番号  MIT License`）に使います。`scripts/build-installer.ps1` はこの値を読み、Inno Setupの製品情報と出力名へ渡します。`-Version MAJOR.MINOR.PATCH` を指定するとビルド時だけ上書きできます。
 
+## 更新対象ファイル
+
+- `VERSION`: 製品バージョンの基準値。
+- `README.md`、`README.ja.md`: 起動時の表示とリリースタグの例。
+- `docs/USER_MANUAL.md`、`docs/USER_MANUAL.ja.md`: 起動時の表示例。
+- `docs/DEVELOPMENT_SCHEDULE.md`: 今回の版番号更新と変更内容の記録。
+
+過去の変更履歴や実測値に付けた版番号は、その時点の記録として残す。`build.zig`、インストーラー、リリーススクリプトは `VERSION` を参照するため、固定の版番号を追加しない。
+
 ## リリース時
 
 - [ ] `VERSION` の値を公開する版番号へ更新する。

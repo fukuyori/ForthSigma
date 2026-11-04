@@ -20,7 +20,7 @@ Building with `zig build -Dfloat=false` gives a smaller version without floating
 Started without arguments, it prints the following two lines (only the first in a build with `-Dhelp=false`) and shows the interactive prompt. The version number is the value of the `VERSION` file at the root. When it is started with arguments (it runs the argument string once and exits), these lines are not printed.
 
 ```text
-FORTH/Sigma 0.5.0  MIT License
+FORTH/Sigma 0.5.1  MIT License
 Type `help' for basic help
 ```
 
