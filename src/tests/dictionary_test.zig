@@ -109,10 +109,10 @@ test "a built-in word compiles to a direct call, and an image of the previous fo
     try source.interpretLine(": SQ DUP * ; : FOUR SQ SQ ;");
     const sq = source.words[source.lookup("SQ").?];
     const four = source.words[source.lookup("FOUR").?];
-    // DUP and * skip executeWord; SQ, a colon definition, is called as before.
-    try std.testing.expectEqual(defs.OpKind.call_builtin, source.code[sq.code_start].kind);
-    try std.testing.expectEqual(defs.OpKind.call_builtin, source.code[sq.code_start + 1].kind);
-    try std.testing.expectEqual(defs.OpKind.call, source.code[four.code_start].kind);
+    // Execution-only tags bypass both word-kind and primitive dispatch.
+    try std.testing.expectEqual(defs.OpKind.dup, source.code[sq.code_start].kind);
+    try std.testing.expectEqual(defs.OpKind.mul, source.code[sq.code_start + 1].kind);
+    try std.testing.expectEqual(defs.OpKind.call_colon, source.code[four.code_start].kind);
 
     // The same words as a SIGIMG32 image has them: built-in words called with .call.
     const image = try saveImage(source);
@@ -122,7 +122,7 @@ test "a built-in word compiles to a direct call, and an image of the previous fo
     const code_at = 24 + @as(usize, source.word_count) * @sizeOf(Word);
     var changed: usize = 0;
     for (source.code[0..source.code_count], 0..) |op, index| {
-        if (op.kind != .call_builtin) continue;
+        if (op.kind != .call_builtin and !defs.isPrimitiveOp(op.kind)) continue;
         const at = code_at + index * @sizeOf(Op) + @offsetOf(Op, "kind");
         image[at] = @intFromEnum(defs.OpKind.call);
         changed += 1;
@@ -135,6 +135,91 @@ test "a built-in word compiles to a direct call, and an image of the previous fo
     try restored.restoreImage(image);
     try restored.interpretLine("3 FOUR 5 SQ");
     try expectStack(restored, &.{ 81, 25 });
+}
+
+test "execution-only calls normalize on save and relocate on LOAD without changing SEE" {
+    var output = Output{};
+    const source = try createMachine(&output);
+    defer destroyMachine(source);
+    try source.interpretLine(": SQ DUP * ; : FOUR SQ SQ ; : DOWN DUP IF 1- RECURSE THEN ; : ALIASES MINUS INVERT ;");
+    const image = try saveImage(source);
+    defer freeImage(image);
+    try std.testing.expectEqualStrings("SIGIMG33", image[0..8]);
+    const Word = @TypeOf(source.words[0]);
+    const Op = @TypeOf(source.code[0]);
+    const code_at = 24 + @as(usize, source.word_count) * @sizeOf(Word);
+    for (source.code[0..source.code_count], 0..) |op, index| {
+        const at = code_at + index * @sizeOf(Op);
+        const tag = image[at + @offsetOf(Op, "kind")];
+        const expected = if (op.kind == .call_colon) defs.OpKind.call else if (defs.isPrimitiveOp(op.kind)) defs.OpKind.call_builtin else op.kind;
+        try std.testing.expectEqual(@intFromEnum(expected), tag);
+    }
+    // Saving must not replace the fast instructions in the running machine.
+    const four = source.words[source.lookup("FOUR").?];
+    try std.testing.expectEqual(defs.OpKind.call_colon, source.code[four.code_start].kind);
+    const restored = try createMachine(&output);
+    defer destroyMachine(restored);
+    try restored.restoreImage(image);
+    const restored_four = restored.words[restored.lookup("FOUR").?];
+    try std.testing.expectEqual(defs.OpKind.call_colon, restored.code[restored_four.code_start].kind);
+    const target = try createMachine(&output);
+    defer destroyMachine(target);
+    // Shift both dictionary ids and code addresses before appending.
+    try target.interpretLine(": EXISTING 99 ; 11 CONSTANT OLD");
+    try target.appendImage(restored);
+    try target.interpretLine("3 FOUR 5 DOWN EXISTING");
+    try expectStack(target, &.{ 81, 0, 99 });
+    try target.interpretLine(see("SEE FOUR SEE ALIASES"));
+    try std.testing.expectEqualStrings(see(": FOUR\n  SQ SQ\n;\n: ALIASES\n  MINUS INVERT\n;\n"), output.written());
+}
+
+test "primitive instructions match dictionary calls including errors and full stacks" {
+    var direct_output = Output{};
+    var generic_output = Output{};
+    const direct = try createMachine(&direct_output);
+    defer destroyMachine(direct);
+    const generic = try createMachine(&generic_output);
+    defer destroyMachine(generic);
+    const Op = @TypeOf(direct.code[0]);
+    try direct.interpretLine(": PROBE ;");
+    const probe_id = direct.lookup("PROBE").?;
+    const probe_start = direct.words[probe_id].code_start;
+    // Compare all specialized primitives with their interpreted implementation,
+    // including partial stack effects on underflow/overflow and memory errors.
+    inline for (@typeInfo(defs.OpKind).@"enum".field_names) |name| {
+        const kind = @field(defs.OpKind, name);
+        if (comptime defs.isPrimitiveOp(kind)) {
+            const builtin = comptime defs.primitiveBuiltin(kind);
+            try std.testing.expectEqual(kind, defs.builtinOpKind(builtin));
+            const id = direct.builtinWord(builtin);
+            for ([_]usize{ 0, 1, 2, 3, direct.data_stack.len }) |depth| {
+                direct.data_depth = depth;
+                generic.data_depth = depth;
+                @memset(&direct.data_stack, 3);
+                @memset(&generic.data_stack, 3);
+                direct.float_depth = @min(depth, direct.float_stack.len);
+                generic.float_depth = direct.float_depth;
+                @memset(&direct.float_stack, 2);
+                @memset(&generic.float_stack, 2);
+                direct.return_depth = 0;
+                generic.return_depth = 0;
+                direct.loop_depth = 0;
+                generic.loop_depth = 0;
+                direct.code[probe_start] = Op{ .kind = kind, .value = id };
+                const direct_result = direct.executeWord(probe_id);
+                const generic_result = generic.executeWord(try generic.wordId(id));
+                if (generic_result) |_| {
+                    try direct_result;
+                } else |err| try std.testing.expectError(err, direct_result);
+                try std.testing.expectEqual(generic.data_depth, direct.data_depth);
+                try std.testing.expectEqualSlices(forth.Cell, &generic.data_stack, &direct.data_stack);
+                try std.testing.expectEqual(generic.float_depth, direct.float_depth);
+                try std.testing.expectEqualSlices(forth.Float, &generic.float_stack, &direct.float_stack);
+                try std.testing.expectEqual(generic.return_depth, direct.return_depth);
+                try std.testing.expectEqualSlices(forth.Cell, &generic.return_stack, &direct.return_stack);
+            }
+        }
+    }
 }
 
 test "SEE shows a built-in word the build leaves out by its own name" {

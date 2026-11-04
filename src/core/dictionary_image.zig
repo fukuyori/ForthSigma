@@ -146,6 +146,14 @@ pub fn encodeImage(self: *State, output: []u8) RuntimeError!usize {
         @memcpy(output[cursor .. cursor + bytes.len], bytes);
         cursor += bytes.len;
     }
+    // Keep SIGIMG33 readable by existing releases: the specialization is only
+    // an execution detail. Do not change the running machine's operations.
+    for (self.code[0..self.code_count], 0..) |op, index| {
+        if (op.kind != .call_colon and !defs.isPrimitiveOp(op.kind)) continue;
+        const saved_call: defs.OpKind = if (op.kind == .call_colon) .call else .call_builtin;
+        const at = header_size + word_bytes.len + index * @sizeOf(Op) + @offsetOf(Op, "kind");
+        @memcpy(output[at..][0..@sizeOf(defs.OpKind)], std.mem.asBytes(&saved_call));
+    }
     for (ranges) |range| {
         const length = range[1] - range[0];
         @memcpy(output[cursor .. cursor + length], self.memory[range[0]..range[1]]);
@@ -206,6 +214,11 @@ pub fn restoreImage(self: *State, image: []const u8) RuntimeError!void {
     // The recorded uses are not in the image.
     self.use_count = 0;
     self.code_count = @intCast(code_count);
+    // Old and new images store ordinary calls; rebuild dispatch information
+    // only after the word entries and counts have been restored.
+    for (self.code[0..self.code_count]) |*op| {
+        op.* = self.specializeCall(op.*);
+    }
     self.data_here = data_here;
     self.data_depth = 0;
     self.return_depth = 0;
@@ -283,7 +296,7 @@ pub fn appendImage(self: *State, source: *const State) RuntimeError!void {
     for (source.code[0..source.code_count], 0..) |original, offset| {
         var op = original;
         switch (op.kind) {
-            .call, .compile_call, .execution_token, .store_value, .add_value, .local_frame => if (op.value >= source.builtin_count) {
+            .call, .call_colon, .compile_call, .execution_token, .store_value, .add_value, .local_frame => if (op.value >= source.builtin_count) {
                 op.value = @intCast(word_base + @as(usize, @intCast(op.value - source.builtin_count)));
             },
             .branch, .branch_zero, .do_loop, .q_do_loop, .loop, .plus_loop => {
@@ -293,6 +306,9 @@ pub fn appendImage(self: *State, source: *const State) RuntimeError!void {
                 op.value += data_delta;
             },
             .builtin, .call_builtin, .literal, .float_literal, .leave, .does, .exit, .local_store, .local_fetch, .local_address, .local_execute => {},
+            inline else => |kind| {
+                _ = comptime defs.primitiveBuiltin(kind);
+            },
         }
         self.code[code_base + offset] = op;
     }

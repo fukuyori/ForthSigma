@@ -139,6 +139,29 @@ The runtime does not implement the magazine's editor-buffer versions of LOAD/SAV
 
 ## Verification record
 
+### Direct execution instructions (2026-11-04)
+
+Compiled colon calls now use the execution-only `call_colon` operation. The 49 frequent built-ins previously dispatched inside `call_builtin` now have individual operation tags, so the main operation switch selects their implementation without a dictionary lookup and a second switch. Their operand remains the original word id: aliases such as `MINUS` and `INVERT` still display by the name used in the source. Other built-ins retain `call_builtin`, and dynamic calls such as `EXECUTE`, deferred words, and synonyms retain their existing path. `RECURSE` uses the same specialization as normal compiled calls; frame limits and error cleanup are unchanged.
+
+The saved format remains **SIGIMG33**. `encodeImage` converts execution-only tags to `call` or `call_builtin` in the output buffer, without modifying the running machine. `restoreImage` rebuilds the specialized operations after restoring the dictionary; SIGIMG32 is still accepted. `LOAD` relocates `call_colon` word ids just as it relocates ordinary calls. The operation tag remains one byte, with a compile-time size check. Under WSL, the pre-change `c79163b` executable successfully loaded an image saved by the changed executable, and the changed executable loaded the old one's image; both ran nested calls and recursion with the same results (`81 0`).
+
+Regression coverage compares every specialized primitive with dictionary execution at data-stack depths 0, 1, 2, 3, and 1024, including errors and partial stack effects. It also checks serialized tags, specialization after restoration, relocation into a nonempty dictionary, recursion, and `SEE` alias names. Windows Debug and fast passed 229 tests each; fast without floating-point words passed 184 tests with 19 skipped. The Cortex-M0+ compilation and real-pipe checks passed. Linux validation consists of the cross-built executable's image interchange and benchmark runs, not the full Linux unit suite.
+
+The same eight diagnostic kernels were measured against baseline `c79163b` and Gforth 0.7.9_20260410 amd64. Both Sigma executables used Zig 0.17.0, `-Dtarget=x86_64-linux-musl -Doptimize=fast`. WSL CPU affinity was fixed to 0; each kernel used 10,000,000 iterations and seven measured runs after one discarded run, with engine order alternating. No builds or tests ran concurrently. All checksums agreed. Median process CPU times below include startup and compilation, as in the comparison procedure below; they are not execution-only timings.
+
+| Kernel | Before (ms) | After (ms) | Gforth (ms) | Reduction | After / Gforth |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| arithmetic | 101.140 | 81.304 | 34.554 | 19.6% | 2.35 |
+| stacks | 210.022 | 143.244 | 42.805 | 31.8% | 3.35 |
+| calls | 454.390 | 443.511 | 84.564 | 2.4% | 5.24 |
+| variables | 81.346 | 64.416 | 25.565 | 20.8% | 2.52 |
+| loops | 95.208 | 59.562 | 27.686 | 37.4% | 2.15 |
+| plus-loop | 57.022 | 41.285 | 20.329 | 27.6% | 2.03 |
+| extended | 173.127 | 129.462 | 42.140 | 25.2% | 3.07 |
+| float | 82.263 | 76.458 | 54.483 | 7.1% | 1.40 |
+
+All eight medians decreased, but calls improved only slightly and the overall twice-Gforth target remains unmet. These kernels do not establish general application performance. Raw samples and environment metadata are in `.work/direct-final.json` (ignored by Git). To repeat this comparison, use the procedure below with `.work/colon-before/bin/sigma` as `before`, `.work/direct-after/bin/sigma` as `after`, and `.work/direct-final.json` as output. Preserve the before executable before editing the runtime.
+
 ### Repeating runtime performance comparisons
 
 `scripts/benchmark-runtime.py` runs eight original diagnostic kernels (integer arithmetic, stack operations, nested calls, constants/variables, LOOP, +LOOP, shifts, and floating-point arithmetic). They are not a replacement for an algorithm benchmark suite. Each engine must produce the same integer checksum. Use Linux binaries inside WSL/Linux, with Python 3 and no third-party Python packages. Build the before and after executables with the same target and optimization options, retaining each under a separate prefix:

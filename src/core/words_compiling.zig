@@ -90,7 +90,7 @@ pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
         .compile_next_case => try self.compileNextCase(),
         .compile_recurse => {
             if (!self.compiling or !self.defining) return error.CompileOnly;
-            _ = try self.emit(.{ .kind = .call, .value = self.current_word });
+            try self.compileCall(self.current_word);
         },
         .define_colon, .define_variable, .define_fvariable, .define_constant, .define_value, .define_two_variable, .define_two_constant, .define_fconstant, .define_fvalue, .define_two_value, .define_buffer, .define_array => try self.runDefiningWord(builtin),
         .end_definition => try self.endDefinition(),

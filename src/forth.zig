@@ -773,12 +773,23 @@ pub const State = struct {
         }
     }
 
-    /// Appends a call of the word to the definition. A built-in word is called without
-    /// going through executeWord, which saves the most time of any one change in running
-    /// compiled code; the operation keeps the word's id, so SEE shows the name used.
+    /// Compiles known colon targets and frequent built-ins to direct operations.
+    /// The operand keeps the word id for SEE and image relocation.
     pub fn compileCall(self: *State, id: u16) RuntimeError!void {
-        const kind: OpKind = if (self.words[id].kind == .builtin) .call_builtin else .call;
-        _ = try self.emit(.{ .kind = kind, .value = id });
+        _ = try self.emit(self.specializeCall(.{ .kind = .call, .value = id }));
+    }
+
+    /// Cache immutable dispatch information, keeping the original word id for SEE.
+    /// Images normalize these operations and rebuild them after restoring words.
+    pub fn specializeCall(self: *const State, op: Op) Op {
+        if (op.kind != .call and op.kind != .call_builtin) return op;
+        if (op.value < 0 or op.value >= self.word_count) return op;
+        const word = &self.words[@intCast(op.value)];
+        if (word.kind == .builtin and op.value < self.builtin_count) {
+            return .{ .kind = defs.builtinOpKind(word.builtin), .value = op.value };
+        }
+        if (op.kind == .call and word.kind == .colon) return .{ .kind = .call_colon, .value = op.value };
+        return op;
     }
 
     pub const requireCompiling = control_flow.requireCompiling;
@@ -980,10 +991,10 @@ pub const State = struct {
             const op = self.code[running.pc];
             running.pc += 1;
             switch (op.kind) {
-                .call => {
+                inline .call, .call_colon => |call_kind| {
                     const id = try self.wordId(op.value);
                     const word = &self.words[id];
-                    switch (word.kind) {
+                    if (call_kind == .call) switch (word.kind) {
                         .colon => {},
                         // Keep the word id in compiled code (SEE and image relocation
                         // use it), but avoid another dispatcher for simple data words.
@@ -1001,7 +1012,7 @@ pub const State = struct {
                             try self.executeWord(id);
                             continue;
                         },
-                    }
+                    };
                     if (self.call_depth == max_stack) return error.ReturnStackOverflow;
                     self.call_depth += 1;
                     self.frames[self.frame_depth] = .{ .pc = running.pc, .end_pc = running.end_pc, .defining_word = running.defining_word, .locals_frame = running.locals_frame };
@@ -1010,21 +1021,14 @@ pub const State = struct {
                 },
                 .call_builtin => {
                     if (op.value < 0 or op.value >= self.builtin_count) return error.InvalidExecutionToken;
-                    const builtin = self.words[@intCast(op.value)].builtin;
-                    switch (builtin) {
-                        // The words compiled code runs most often run here, their file's
-                        // own code put in place, instead of through executeBuiltin: the
-                        // calls in between cost more than these words' work.
-                        inline .dup, .drop, .swap, .over, .rot, .nip, .tuck, .two_dup, .two_drop, .add, .sub, .mul, .equal, .not_equal, .less, .greater, .zero_equal, .zero_less, .bit_and, .bit_or, .bit_xor, .bit_complement, .negate, .one_plus, .one_minus, .to_r, .from_r, .r_fetch, .fetch, .store, .cfetch, .cstore, .add_store, .index, .index_2, .cells, .cell_plus => |hot| {
-                            if (comptime defs.isExcludedBuiltin(hot)) return error.InvalidExecutionToken;
-                            try @call(.always_inline, word_modules[word_owner[@intFromEnum(hot)]].execute, .{ self, hot });
-                        },
-                        inline .two_star, .two_slash, .lshift, .rshift, .f_add, .f_sub, .f_mul, .f_div, .f_dup, .f_drop, .f_swap, .f_over => |hot| {
-                            if (comptime defs.isExcludedBuiltin(hot)) return error.InvalidExecutionToken;
-                            try @call(.always_inline, word_modules[word_owner[@intFromEnum(hot)]].execute, .{ self, hot });
-                        },
-                        else => try self.executeBuiltin(builtin),
-                    }
+                    try self.executeBuiltin(self.words[@intCast(op.value)].builtin);
+                },
+                // These tags directly select the implementation: no dictionary
+                // lookup or second runtime switch for frequent primitive words.
+                inline else => |kind| {
+                    const hot = comptime defs.primitiveBuiltin(kind);
+                    if (comptime defs.isExcludedBuiltin(hot)) return error.InvalidExecutionToken;
+                    try @call(.always_inline, word_modules[word_owner[@intFromEnum(hot)]].execute, .{ self, hot });
                 },
                 .compile_call => {
                     try self.requireCompiling();

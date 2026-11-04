@@ -644,7 +644,35 @@ pub const Word = struct {
 
 /// Local operations other than `local_frame` encode the frame offset in the low 32 bits
 /// of the value and the `LocalKind` above them; `local_frame` holds the word id.
-pub const OpKind = enum { call, compile_call, builtin, literal, float_literal, execution_token, store_value, branch, branch_zero, do_loop, q_do_loop, loop, plus_loop, leave, print_string, string_literal, counted_string, abort_string, does, exit, local_frame, local_store, local_fetch, local_address, local_execute, add_value, call_builtin };
+// Execution-only specializations are normalized when saving an image. Everything
+// from dup onward is a primitive operation named after its Builtin; value remains
+// the original word id. Keep the serialized tags (call through call_builtin) stable.
+pub const OpKind = enum {
+    call, compile_call, builtin, literal, float_literal, execution_token, store_value, branch, branch_zero, do_loop, q_do_loop, loop, plus_loop, leave, print_string, string_literal, counted_string, abort_string, does, exit, local_frame, local_store, local_fetch, local_address, local_execute, add_value, call_builtin,
+    call_colon,
+    dup, drop, swap, over, rot, nip, tuck, two_dup, two_drop, add, sub, mul, equal, not_equal, less, greater, zero_equal, zero_less, bit_and, bit_or, bit_xor, bit_complement, negate, one_plus, one_minus, to_r, from_r, r_fetch, fetch, store, cfetch, cstore, add_store, index, index_2, cells, cell_plus,
+    two_star, two_slash, lshift, rshift, f_add, f_sub, f_mul, f_div, f_dup, f_drop, f_swap, f_over,
+};
+
+pub fn isPrimitiveOp(kind: OpKind) bool {
+    return @intFromEnum(kind) >= @intFromEnum(OpKind.dup);
+}
+
+pub fn primitiveBuiltin(comptime kind: OpKind) Builtin {
+    if (!isPrimitiveOp(kind)) @compileError("not a primitive operation");
+    return @field(Builtin, @tagName(kind));
+}
+
+pub fn builtinOpKind(builtin: Builtin) OpKind {
+    return switch (builtin) {
+        inline .dup, .drop, .swap, .over, .rot, .nip, .tuck, .two_dup, .two_drop, .add, .sub, .mul, .equal, .not_equal, .less, .greater, .zero_equal, .zero_less, .bit_and, .bit_or, .bit_xor, .bit_complement, .negate, .one_plus, .one_minus, .to_r, .from_r, .r_fetch, .fetch, .store, .cfetch, .cstore, .add_store, .index, .index_2, .cells, .cell_plus, .two_star, .two_slash, .lshift, .rshift, .f_add, .f_sub, .f_mul, .f_div, .f_dup, .f_drop, .f_swap, .f_over => |hot| @field(OpKind, @tagName(hot)),
+        else => .call_builtin,
+    };
+}
+
+comptime {
+    if (@sizeOf(OpKind) != 1) @compileError("operation tags must keep their image layout");
+}
 
 pub const LocalKind = enum(u8) { cell, double, float, char, xt };
 
