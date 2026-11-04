@@ -983,9 +983,24 @@ pub const State = struct {
                 .call => {
                     const id = try self.wordId(op.value);
                     const word = &self.words[id];
-                    if (word.kind != .colon) {
-                        try self.executeWord(id);
-                        continue;
+                    switch (word.kind) {
+                        .colon => {},
+                        // Keep the word id in compiled code (SEE and image relocation
+                        // use it), but avoid another dispatcher for simple data words.
+                        .constant, .array => {
+                            try self.push(word.value);
+                            continue;
+                        },
+                        .variable, .created => {
+                            if (word.has_does) {
+                                try self.executeWord(id);
+                            } else try self.push(word.value);
+                            continue;
+                        },
+                        else => {
+                            try self.executeWord(id);
+                            continue;
+                        },
                     }
                     if (self.call_depth == max_stack) return error.ReturnStackOverflow;
                     self.call_depth += 1;
@@ -1001,6 +1016,10 @@ pub const State = struct {
                         // own code put in place, instead of through executeBuiltin: the
                         // calls in between cost more than these words' work.
                         inline .dup, .drop, .swap, .over, .rot, .nip, .tuck, .two_dup, .two_drop, .add, .sub, .mul, .equal, .not_equal, .less, .greater, .zero_equal, .zero_less, .bit_and, .bit_or, .bit_xor, .bit_complement, .negate, .one_plus, .one_minus, .to_r, .from_r, .r_fetch, .fetch, .store, .cfetch, .cstore, .add_store, .index, .index_2, .cells, .cell_plus => |hot| {
+                            if (comptime defs.isExcludedBuiltin(hot)) return error.InvalidExecutionToken;
+                            try @call(.always_inline, word_modules[word_owner[@intFromEnum(hot)]].execute, .{ self, hot });
+                        },
+                        inline .two_star, .two_slash, .lshift, .rshift, .f_add, .f_sub, .f_mul, .f_div, .f_dup, .f_drop, .f_swap, .f_over => |hot| {
                             if (comptime defs.isExcludedBuiltin(hot)) return error.InvalidExecutionToken;
                             try @call(.always_inline, word_modules[word_owner[@intFromEnum(hot)]].execute, .{ self, hot });
                         },
@@ -1039,13 +1058,15 @@ pub const State = struct {
                     self.loop_stack[self.loop_depth] = .{ .index = start, .limit = limit, .exit_pc = exit_pc, .exit_after_first = start == limit };
                     self.loop_depth += 1;
                 },
-                .loop, .plus_loop => {
+                // Specialize the two loop endings: ordinary LOOP needs neither
+                // a data-stack pop nor +LOOP's boundary-crossing calculation.
+                inline .loop, .plus_loop => |loop_kind| {
                     if (self.loop_depth == 0) return error.LoopMismatch;
-                    const step: Cell = if (op.kind == .plus_loop) try self.pop() else 1;
+                    const step: Cell = if (loop_kind == .plus_loop) try self.pop() else 1;
                     const frame = &self.loop_stack[self.loop_depth - 1];
-                    const crossed = integer_math.loopCrossed(frame.index, frame.limit, step);
+                    const crossed = if (loop_kind == .plus_loop) integer_math.loopCrossed(frame.index, frame.limit, step) else false;
                     frame.index +%= step;
-                    const again = if (frame.exit_after_first) false else if (op.kind == .loop) frame.index != frame.limit else !crossed;
+                    const again = if (frame.exit_after_first) false else if (loop_kind == .loop) frame.index != frame.limit else !crossed;
                     if (again) {
                         running.pc = @intCast(op.value);
                     } else {

@@ -66,6 +66,43 @@ test "q-do skips an empty range and do enters an equal range once" {
     try expectStack(machine, &expected);
 }
 
+test "compiled data words retain identity and execute DOES behavior" {
+    var output = Output{};
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
+
+    try machine.interpretLine("7 CONSTANT K VARIABLE V CREATE RAW 19 , 2 ARRAY A");
+    try machine.interpretLine(": DATA K V RAW A ; DATA");
+    const expected = machine.data_stack[0..4].*;
+    machine.data_depth = 0;
+    try machine.interpretLine("9 CONSTANT K DATA");
+    try expectStack(machine, &expected);
+    machine.data_depth = 0;
+    try machine.interpretLine(": MAKE CREATE , DOES> @ 1+ ; 41 MAKE ITEM : READ ITEM ; READ");
+    try expectStack(machine, &.{42});
+    machine.data_depth = 0;
+    try machine.interpretLine(": MAKE-V VARIABLE DOES> @ ; MAKE-V VV : READ-V VV ; READ-V");
+    try expectStack(machine, &.{0});
+
+    // The fast path still checks capacity and does not change the full stack.
+    machine.data_depth = machine.data_stack.len;
+    try std.testing.expectError(error.StackOverflow, machine.interpretLine("DATA"));
+    try std.testing.expectEqual(machine.data_stack.len, machine.data_depth);
+}
+
+test "compiled LOOP wraps cells and keeps nested equal-range and LEAVE behavior" {
+    var output = Output{};
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
+
+    try machine.interpretLine(": WRAP -9223372036854775807 9223372036854775807 DO I LOOP ; WRAP");
+    try expectStack(machine, &.{ std.math.maxInt(forth.Cell), std.math.minInt(forth.Cell) });
+    machine.data_depth = 0;
+    try machine.interpretLine(": NEST 0 3 0 DO 5 5 DO 1+ LOOP 10 0 DO 1+ LEAVE LOOP LOOP ; NEST");
+    try expectStack(machine, &.{6});
+    try std.testing.expectEqual(@as(usize, 0), machine.loop_depth);
+}
+
 test "variable array and string operations use the portable data area" {
     var output = Output{};
     const machine = try createMachine(&output);

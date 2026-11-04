@@ -139,6 +139,48 @@ The runtime does not implement the magazine's editor-buffer versions of LOAD/SAV
 
 ## Verification record
 
+### Repeating runtime performance comparisons
+
+`scripts/benchmark-runtime.py` runs eight original diagnostic kernels (integer arithmetic, stack operations, nested calls, constants/variables, LOOP, +LOOP, shifts, and floating-point arithmetic). They are not a replacement for an algorithm benchmark suite. Each engine must produce the same integer checksum. Use Linux binaries inside WSL/Linux, with Python 3 and no third-party Python packages. Build the before and after executables with the same target and optimization options, retaining each under a separate prefix:
+
+```powershell
+# Before editing the runtime:
+zig build -Doptimize=fast -Dtarget=x86_64-linux-musl --prefix .work/perf-before
+# After editing it:
+zig build -Doptimize=fast -Dtarget=x86_64-linux-musl --prefix .work/perf-after
+```
+
+From the repository directory inside WSL (choose an available CPU for `taskset`):
+
+```sh
+taskset -c 0 python3 scripts/benchmark-runtime.py \
+  --sigma before=./.work/perf-before/bin/sigma \
+  --sigma after=./.work/perf-after/bin/sigma \
+  --gforth gforth=/usr/local/bin/gforth \
+  --iterations 10000000 --rounds 7 --output .work/perf-final.json
+```
+
+The primary measurement is child-process user plus system CPU time, **including startup, source loading, and compilation**. Long kernels reduce their relative contribution but do not remove it. One run per engine is discarded, then engine order alternates across rounds. JSON contains all samples, medians, ranges, checksums, platform, and CPU affinity. Do not build or run tests concurrently with measurements. `UTIME` differences around the kernel are retained as diagnostics only: Sigma uses `CLOCK_REALTIME`, and an elapsed value was nonpositive during WSL measurement. The benchmark does not alter `UTIME` semantics or substitute a monotonic clock for calendar time.
+
+The follow-up runtime changes keep compiled word ids and the image format unchanged. Constants, arrays, and variables/created words without DOES> run directly in the operation loop; words with DOES> retain their existing execution path. Twelve more short built-ins (`2*`, `2/`, `LSHIFT`, `RSHIFT`, `F+`, `F-`, `F*`, `F/`, `FDUP`, `FDROP`, `FSWAP`, `FOVER`) join the 37 previously inlined ones. LOOP and +LOOP have compile-time-specialized endings. A proposed rewrite of binary stack updates was tested and discarded because it did not show a clear benefit. Regression tests cover compiled data-word identity after redefinition, DOES>, stack overflow, LOOP wrapping, nested equal ranges, and LEAVE.
+
+Windows Debug and fast builds passed 227 tests; fast without floating-point words passed 182 tests with 19 skipped. These runs also passed the Cortex-M0+ compilation check and the two real-pipe checks. The Linux executable was cross-built and its benchmark checksums compared under WSL; the complete Linux unit suite was not run.
+
+2026-11-04 measurements: baseline `54d741f`, Zig 0.17.0, `x86_64-linux-musl`, `-Doptimize=fast`, WSL2 Linux 6.18.33.2, CPU affinity 0, Gforth 0.7.9_20260410 amd64 (`gforth`, not `gforth-fast`). Each kernel used 10,000,000 iterations and seven measured runs after a discarded run. All checksums agreed across the three engines. Times below are median process CPU milliseconds, including startup and compilation:
+
+| Kernel | Before | After | Gforth | After / Gforth |
+| --- | ---: | ---: | ---: | ---: |
+| arithmetic | 104.878 | 102.893 | 35.899 | 2.87 |
+| stacks | 209.035 | 204.617 | 42.671 | 4.80 |
+| calls | 445.884 | 458.912 | 85.677 | 5.36 |
+| variables | 106.187 | 82.123 | 25.188 | 3.26 |
+| loops | 98.245 | 94.941 | 28.108 | 3.38 |
+| plus-loop | 56.280 | 57.635 | 20.521 | 2.81 |
+| extended | 210.986 | 176.331 | 42.839 | 4.12 |
+| float | 118.962 | 82.327 | 54.521 | 1.51 |
+
+Variables, shifts, and floating-point kernels decreased by 22.7%, 16.4%, and 30.8%. Calls and +LOOP increased by 2.9% and 2.4%; this is not a uniform speedup. In a separate comparison with CPU affinity fixed, removing LOOP/+LOOP specialization from the combined change slowed several kernels, so specialization was retained. The target of at most twice Gforth's execution time is **not achieved overall**; these diagnostic process timings also do not establish execution-only or general application performance. Local raw samples are in `.work/perf-final.json` (ignored by Git).
+
 On 2026-11-04, at the user's request, Sigma was compared with gforth 0.7.9_20260410 under WSL on the six programs of theultimatebenchmark.org (the Forth-83/ANS versions, timed with `UTIME`), and made faster. Before the change, Sigma was 5 to 92 times slower than `gforth-fast` and 4 to 11 times slower than `gforth`; callgrind showed 89% of the instructions in dispatch (`executeOperations`, `executeWord`, `executeBuiltin`), about 63 per operation, since each built-in word went through three or four calls with their register saves. Four changes followed. The host keeps standard output in a 4096-byte buffer and writes it before input is read, before `MS`, `SYSTEM`, and standard error output, on `FLUSH-FILE` of `STDOUT`, at the end, and at each line end on a terminal; it still writes through the C library, so the bytes of redirected output are the same (10,000 `EMIT`s took about 2.9 s and now about 0.003 s on Linux). A built-in word compiles to `call_builtin`, which keeps the word's id (so `SEE` shows the name used and image relocation is unchanged) and goes to the built-in without `executeWord`; the image format became `SIGIMG33`, and `SIGIMG32` images, whose operations are all current ones, are still read (a test turns a new image's `call_builtin` operations into `call` and loads it as `SIGIMG32`). Thirty-seven frequent words run in the operation loop with their file's `execute` inlined (`@call(.always_inline, ...)`), and `integer_math.binary` became inline, since a call left in the loop made the caller reload its registers. A colon definition called from compiled code runs in the same loop, its caller kept in `State.frames`; the nesting limit is where it was (1023 nested `RECURSE` calls fit, as before), and an error leaves the depth, frames, and local-variable area as on entry, as the host calls did. The instructions of the reduced runs fell from 2.389 billion to 1.409 billion, and per benchmark by 16 to 48%.
 
 On 2026-11-02, after the antigravity review of `0602bd0` and `7da037c`, four points were fixed at the user's decisions. `restoreImage` copied the image's built-in entries and names over the build's own, so a full restore of an image of a build with other groups made excluded words findable (`HELP` in the `-Dhelp=false` build) and words of the build unfindable (`F+ ?` in the full build after an image of the `-Dfloat=false` build); this was shown by putting the image behind the executable as `SAVESYS` does. It now keeps the build's built-in entries and names and copies only the image's own words and names, moving their name places by the difference (`builtinNamesEnd`, `savedBuiltinNamesEnd`); a test that takes DUP's name out of an image fails with the former code. `SEE` shows a built-in word without a name by the name in `builtin_definitions`, also as the target of a `SYNONYM`, where it had printed nothing or `<NONAME>`. An entry without a name gets the immediate flag of its word, so the name token of `FLITERAL` from an image compiles the same way in every build. Five tests that use `LOCATE` or `SEE` only in part run without the tools.
