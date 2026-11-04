@@ -139,6 +139,34 @@ The runtime does not implement the magazine's editor-buffer versions of LOAD/SAV
 
 ## Verification record
 
+### Checking forgotten inline callees with a narrow comparison (2026-11-04)
+
+Commit `676787b` restored the ordinary-call error when FORGET or MARKER removes an inline callee while its caller is still running. The guard must validate the original word id before checking call depth or executing the copied body. Its packed word id and `word_count` are both unsigned 16-bit values, so the guard now compares them directly instead of widening the id to `Cell` through `wordId`. The validity condition and error order are unchanged, including equality at the first removed word and ids beyond it.
+
+A repeat comparison of `92c6588` and `676787b` measured float at 526.091 versus 598.219 ms (+13.7%), loops at 455.983 versus 464.285 ms (+1.8%), and calls at 1235.746 versus 1289.728 ms (+4.4%). This reproduced the float regression, while the earlier loop regression shrank substantially. These are 100,000,000-iteration, seven-round execution-CPU medians under WSL with CPU affinity 0.
+
+Callgrind at 1,000,000 iterations, including startup and compilation, reported 124,496,371 versus 124,496,391 instructions for float and 124,478,863 versus 124,478,869 for loops: essentially unchanged. Calls increased from 301,522,406 to 325,522,412. Disassembly showed the same float arithmetic instructions and register usage, but changed positions of later instruction blocks. Code layout is a possible explanation for the float timing change, not a proven hardware cause; no hardware performance-counter measurement was available.
+
+The direct 16-bit comparison reduces the added guard check from four x86-64 instructions to two (`cmp` against memory and a conditional branch). Callgrind reports 313,522,406 instructions for calls, 3.7% below `676787b`, while float and loop instruction counts remain essentially unchanged. This is the retained change; it does not remove or defer the deleted-word check. Profiling used ReleaseFast builds with debug information, and timing comparisons use the normal stripped builds. Local evidence is in `.work/regression-repeat.json`, `.work/profile-counts-before-checked.json`, `.work/profile-counts-narrow.json`, and `.work/profile-{before,checked,narrow}.asm` (ignored by Git).
+
+The final timing comparison uses `676787b` as before, the narrow comparison as after, Zig 0.17.0, `x86_64-linux-musl`, ReleaseFast, WSL CPU affinity 0, and normal Gforth 0.7.9_20260410 amd64. All nine kernels use 100,000,000 iterations, one discarded run and seven alternating measured rounds, with the schema-version-2 execution CPU interval and no concurrent builds/tests. All checksums matched. Positive time change means slower:
+
+| Kernel | Before (ms) | After (ms) | Gforth (ms) | Time change | After / Gforth |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| arithmetic | 604.587 | 605.934 | 266.519 | +0.2% | 2.27 |
+| stacks | 1063.247 | 1066.843 | 350.570 | +0.3% | 3.04 |
+| calls | 1296.015 | 1253.964 | 767.502 | -3.2% | 1.63 |
+| variables | 490.677 | 489.365 | 174.333 | -0.3% | 2.81 |
+| loops | 458.349 | 453.976 | 197.138 | -1.0% | 2.30 |
+| plus-loop | 276.409 | 277.524 | 127.032 | +0.4% | 2.18 |
+| extended | 736.673 | 732.164 | 347.538 | -0.6% | 2.11 |
+| float | 598.301 | 564.109 | 462.596 | -5.7% | 1.22 |
+| locals-calls | 2908.893 | 2787.341 | 642.191 | -4.2% | 4.34 |
+
+This recovers part of the float regression but does not establish a return to the pre-validation speed. Only short calls and float remain within twice Gforth; the overall target is unmet. The instruction reduction is established for inline calls; the timing improvements in kernels that do not execute inline guards cannot be attributed to that reduction alone. Raw timing samples, hashes, and environment metadata are in `.work/narrow-final.json` and `.work/narrow-locals-final.json` (ignored by Git).
+
+Windows Debug and ReleaseFast each passed 238 tests, including the FORGET/MARKER regression with ordinary and nested inline callees. ReleaseFast without floating-point words passed 193 tests with 19 skipped. Cortex-M0+ compilation and real-pipe checks passed, as did the 13 WSL native-process checks. The full Linux unit suite and ARM/macOS execution were not run.
+
 ### Bounded inlining of short colon definitions (2026-11-04)
 
 Completed, non-immediate colon definitions with one to four operations before their final EXIT can now be copied into a compiled call site. Eligible bodies contain only literal values, execution tokens, specialized primitives, and already-inlined call guards. Recursive or branching bodies, locals, dynamic calls, DOES>, early EXIT, and larger bodies retain their ordinary calls. Insufficient space for the expansion falls back to an ordinary call. Expansion increases code-area consumption; the four-operation limit includes nested guards and bounds the growth per call site.
