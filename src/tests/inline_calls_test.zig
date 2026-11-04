@@ -20,6 +20,25 @@ fn ordinaryCalls(machine: *forth.State) void {
     }
 }
 
+fn expectInlineToken(machine: *forth.State, caller: u16, guards: []const u16, token: u16) !void {
+    const word = machine.words[caller];
+    try std.testing.expect(inline_calls.isInline(machine.code[word.code_start]));
+    var guard_count: usize = 0;
+    var token_count: usize = 0;
+    for (machine.code[word.code_start..word.code_end]) |op| {
+        if (inline_calls.isInline(op)) {
+            try std.testing.expect(guard_count < guards.len);
+            try std.testing.expectEqual(guards[guard_count], inline_calls.wordId(op.value));
+            guard_count += 1;
+        } else if (op.kind == .execution_token) {
+            token_count += 1;
+            try std.testing.expectEqual(@as(forth.Cell, token), op.value);
+        }
+    }
+    try std.testing.expectEqual(guards.len, guard_count);
+    try std.testing.expectEqual(@as(usize, 1), token_count);
+}
+
 test "short calls inline with nested depth guards and retain original word identity" {
     var output = support.Output{};
     const machine = try support.createMachine(&output);
@@ -114,6 +133,154 @@ test "recursive branching local dynamic and large definitions stay as calls" {
     try std.testing.expectEqual(machine.code.len, machine.code_count);
     try std.testing.expect(!inline_calls.isInline(machine.code[machine.code_count - 1]));
     machine.code_count = saved_count;
+}
+
+test "inline capacity fallback reserves one slot but not the rest of a definition" {
+    for ([_]usize{ 7, 6, 5, 3, 2 }) |remaining| {
+        for ([_]bool{ false, true }) |ordinary| {
+            var output = support.Output{};
+            const machine = try support.createMachine(&output);
+            defer support.destroyMachine(machine);
+            try machine.interpretLine(": A 1+ 1+ 1+ 1+ ;");
+            const start: u16 = @intCast(machine.code.len - remaining);
+            @memset(machine.code[machine.code_count..start], .{ .kind = .exit });
+            machine.code_count = start;
+            const word_count = machine.word_count;
+            const names_used = machine.names_used;
+            try machine.interpretLine(": T");
+            if (ordinary) {
+                _ = try machine.emit(.{ .kind = .call_colon, .value = machine.lookup("A").? });
+            } else {
+                try machine.interpretLine("A");
+            }
+            try std.testing.expectEqual(!ordinary and remaining >= 6, inline_calls.isInline(machine.code[start]));
+            try machine.interpretLine("1");
+            if (remaining == 2 or (!ordinary and remaining == 6)) {
+                try std.testing.expectError(error.CodeFull, machine.interpretLine(";"));
+                machine.report(error.CodeFull);
+                try std.testing.expectEqual(start, machine.code_count);
+                try std.testing.expectEqual(word_count, machine.word_count);
+                try std.testing.expectEqual(names_used, machine.names_used);
+                try std.testing.expect(machine.lookup("T") == null);
+                try std.testing.expectEqualStrings("OUT OF CODE SPACE !\n", output.written());
+                // A smaller definition still compiles and executes after recovery.
+                try machine.interpretLine(": OK 9 ; OK");
+                try support.expectStack(machine, &.{9});
+            } else {
+                try machine.interpretLine("; 10 T");
+                try support.expectStack(machine, &.{ 14, 1 });
+                const used: u16 = if (!ordinary and remaining >= 6) 7 else 3;
+                try std.testing.expectEqual(start + used, machine.code_count);
+            }
+        }
+    }
+}
+
+test "saved inline padding consumes LOAD capacity and rejection leaves the target unchanged" {
+    for ([_]bool{ false, true }) |ordinary| {
+        var output = support.Output{};
+        const source = try support.createMachine(&output);
+        defer support.destroyMachine(source);
+        try source.interpretLine(": A 1+ 1+ 1+ 1+ ; : B");
+        if (ordinary) {
+            _ = try source.emit(.{ .kind = .call_colon, .value = source.lookup("A").? });
+        } else {
+            try source.interpretLine("A");
+        }
+        try source.interpretLine(";");
+        const buffer = try std.testing.allocator.alloc(u8, forth.State.imageCapacity());
+        defer std.testing.allocator.free(buffer);
+        const length = try source.encodeImage(buffer);
+        const restored = try support.createMachine(&output);
+        defer support.destroyMachine(restored);
+        try restored.restoreImage(buffer[0..length]);
+        try std.testing.expectEqual(@as(u16, if (ordinary) 7 else 11), restored.code_count);
+        try std.testing.expectEqual(!ordinary, inline_calls.isInline(first(restored, "B")));
+        const target = try support.createMachine(&output);
+        defer support.destroyMachine(target);
+        try target.interpretLine(": PREFIX 99 ;");
+        @memset(target.code[target.code_count .. target.code.len - 7], .{ .kind = .exit });
+        target.code_count = @intCast(target.code.len - 7);
+        const word_count = target.word_count;
+        const names_used = target.names_used;
+        const data_here = target.data_here;
+        if (ordinary) {
+            try target.appendImage(restored);
+            try std.testing.expectEqual(target.code.len, target.code_count);
+            try target.interpretLine("10 B PREFIX");
+            try support.expectStack(target, &.{ 14, 99 });
+        } else {
+            try std.testing.expectError(error.CodeFull, target.appendImage(restored));
+            try std.testing.expectEqual(target.code.len - 7, target.code_count);
+            try std.testing.expectEqual(word_count, target.word_count);
+            try std.testing.expectEqual(names_used, target.names_used);
+            try std.testing.expectEqual(data_here, target.data_here);
+            try std.testing.expect(target.lookup("A") == null);
+            try std.testing.expect(target.lookup("B") == null);
+            try target.interpretLine("PREFIX");
+            try support.expectStack(target, &.{99});
+        }
+    }
+}
+
+test "copied execution tokens relocate through repeated LOAD and another image round trip" {
+    var output = support.Output{};
+    const source = try support.createMachine(&output);
+    defer support.destroyMachine(source);
+    try source.interpretLine(": T 5 ; : A ['] T ; : U A ; : C U EXECUTE ; : D ['] DUP ; : E D EXECUTE ;");
+    const buffer = try std.testing.allocator.alloc(u8, forth.State.imageCapacity());
+    defer std.testing.allocator.free(buffer);
+    const length = try source.encodeImage(buffer);
+    const restored = try support.createMachine(&output);
+    defer support.destroyMachine(restored);
+    try restored.restoreImage(buffer[0..length]);
+    try restored.interpretLine("C 7 E");
+    try support.expectStack(restored, &.{ 5, 7, 7 });
+    const target = try support.createMachine(&output);
+    defer support.destroyMachine(target);
+    // Wrongly unrelocated user tokens would resolve to these different words.
+    try target.interpretLine(": P1 99 ; : P2 88 ;");
+    const LoadedCopy = struct {
+        c: u16,
+        e: u16,
+        t: u16,
+        u: u16,
+        a: u16,
+        d: u16,
+
+        fn check(copy: @This(), machine: *forth.State, dup: u16) !void {
+            try expectInlineToken(machine, copy.c, &.{ copy.u, copy.a }, copy.t);
+            try expectInlineToken(machine, copy.e, &.{copy.d}, dup);
+        }
+    };
+    const dup = target.lookup("DUP").?;
+    var copies: [2]LoadedCopy = undefined;
+    for (&copies, 0..) |*copy, index| {
+        try target.appendImage(restored);
+        copy.* = .{
+            .c = target.lookup("C").?,
+            .e = target.lookup("E").?,
+            .t = target.lookup("T").?,
+            .u = target.lookup("U").?,
+            .a = target.lookup("A").?,
+            .d = target.lookup("D").?,
+        };
+        // Check earlier copies too: a later LOAD must not retarget their guards or tokens.
+        for (copies[0 .. index + 1]) |loaded| try loaded.check(target, dup);
+        try target.interpretLine("C 7 E P1 P2");
+        try support.expectStack(target, &.{ 5, 7, 7, 99, 88 });
+        target.data_depth = 0;
+    }
+    try std.testing.expect(copies[0].t != copies[1].t);
+    // Both the older and newer loaded definitions must retain their own tokens.
+    const combined_length = try target.encodeImage(buffer);
+    try source.restoreImage(buffer[0..combined_length]);
+    for (copies) |copy| {
+        try copy.check(source, dup);
+        try source.executeWord(copy.c);
+    }
+    try source.interpretLine("7 E P1 P2");
+    try support.expectStack(source, &.{ 5, 5, 7, 7, 99, 88 });
 }
 
 test "inlining survives image normalization restoration and repeated relocation" {
