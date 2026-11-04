@@ -139,6 +139,29 @@ The runtime does not implement the magazine's editor-buffer versions of LOAD/SAV
 
 ## Verification record
 
+### Local-call experiments, not adopted (2026-11-04)
+
+The local-variable call kernel was profiled after `b1d5d04`, retaining the deleted-word check. The runtime is unchanged from `b1480eb`; the baseline stripped Linux binary is `.work/narrow-final/bin/sigma` (SHA-256 `3a5d66414d76c86e1eb92738fe0afd0ce352af3839046fa113b4c5eb8ee49ea7`). The pending SEE tests and documentation were preserved throughout these experiments.
+
+Callgrind on 1,000,000 iterations of `: A { n -- r } n 1+ ; : B { n -- r } n A A ; : T 0 N 0 DO B LOOP ; T .` counted 693,534,023 instructions including startup and compilation. About 88.7% were attributed directly to `executeOperations` in forth.zig, and 6.1% to memset. Disassembly shows a call to the general zero-fill routine even for an eight-byte locals frame, with register saves and reloads around that call. Local access helpers were already incorporated into the execution function, so separate helper-call overhead was not established as the bottleneck.
+
+Two isolated prototypes were measured, then reverted:
+
+| Prototype | Baseline CPU ms | Prototype CPU ms | Time change | Callgrind instructions |
+| --- | ---: | ---: | ---: | ---: |
+| Constant-size memset for 8/16-byte frames, generic memset otherwise | 560.238 | 646.601 | +15.4% | 618,534,071 (-10.8%) |
+| Compile-time-specialized local_store/fetch/address/execute dispatch | 553.957 | 690.450 | +24.6% | 764,534,123 (+10.2%) |
+
+Timing used Zig 0.17.0, `x86_64-linux-musl`, ReleaseFast stripped binaries, WSL CPU affinity 0, 20,000,000 iterations, one discarded run and five alternating measured rounds. The execution CPU interval excludes startup/compilation; all checksums matched and no builds/tests ran concurrently. Instruction profiles used the same target and optimization with debug information and 1,000,000 iterations, so their interval and iteration count differ from the timing measurements. The smaller-frame prototype removed the repeated memset calls and reduced instructions, but did not improve measured speed. This does not identify a hardware-level cause for that regression. The dispatch prototype increased total instructions despite removing the source-level second operation switch.
+
+Neither prototype remains in the runtime. They were rejected using this diagnostic kernel before full regression or broader performance testing; no claim of validated semantic equivalence or general application performance is made for them. Raw evidence is local and ignored by Git: `.work/locals-{small,dispatch}-probe.json`, `.work/locals-{before,small,dispatch}.callgrind`, `.work/locals-{small,dispatch}.asm`, and `.work/locals-dispatch.patch`. The remaining local-call performance gap is unresolved.
+
+### SEE across old and new dictionary images (2026-11-04)
+
+Real-file checks under WSL compared the pre-inlining executable from `4cf51df` with `b1d5d04`. Both versions compiled `: X 1+ ; : Y IF X THEN ; : Z IF X ELSE THEN ; : W X AHEAD THEN ; : B X X ; : C B B ;`, saved images, loaded each other's images, and re-saved them for both readers. All 14 compile/load/re-save paths produced the same six execution results, including both IF branches: `10 11 10 11 11 14`. This verifies these examples, not every possible program. Commands, binary hashes, and complete SEE output are in the local `.work/verify-see-images.py` and `.work/see-images/results.json`.
+
+The old reader displays the new Y as `IF X ELSE THEN` and C with additional `BRANCH` operations. The current reader displays the old Z as `IF X THEN` and W as `X`: their empty branches match the reserved-slot pattern used to rebuild an expansion. The old reader shows the original empty branches again after the current reader re-saves that old image. Reading a new image with the current version preserves its original SEE output, including after an old-version re-save. These are display limitations; the image format and runtime are unchanged. A core regression test constructs compact pre-inlining calls and checks both branch outcomes, expansion eligibility, SEE output, and repeated image round trips. Windows Debug and ReleaseFast each passed 235 core tests; unchanged host tests, Cortex-M0+ compilation, and pipe checks reused successful cached results.
+
 ### Inline capacity and execution-token relocation checks (2026-11-04)
 
 Three regression tests now cover the remaining capacity and copied-token cases from the review. With 7, 6, 5, 3, or 2 operation slots remaining, compilation is compared with an ordinary-call control. The six-slot case confirms that expansion can fit while the later EXIT fails; error reporting removes the incomplete definition and a smaller definition can then compile and run. An image with retained expansion slots is also rejected when its ordinary-call counterpart fits exactly; rejection preserves the target's code count, dictionary counts, data allocation, and existing callable definition.
@@ -179,7 +202,7 @@ Completed, non-immediate colon definitions with one to four operations before th
 
 The existing `call_colon` tag represents an inline guard when its operand encodes the original word id, expansion span, and required call-depth headroom. It checks the original call limit at the original position, then continues into the copied instructions without saving a frame. Nested guards retain their relative depths and error order. No new dispatch tag is added. SEE shows the original callee name and skips its copied body; redefinition appends a new word and does not change existing expansions.
 
-SAVE writes an ordinary call to the original word followed by branches over the reserved expansion slots. This keeps code positions stable and preserves SIGIMG33 compatibility. Restore reconstructs only exact padding spans whose earlier callee is eligible, with no branch destination or word/DOES> boundary inside the span. LOAD relocates the word ids packed in guards, as well as execution tokens copied into their bodies. Old images without reserved expansion space retain ordinary calls.
+SAVE writes an ordinary call to the original word followed by branches over the reserved expansion slots. This keeps code positions stable and preserves SIGIMG33 compatibility. Restore reconstructs only exact padding spans whose earlier callee is eligible, with no branch destination or word/DOES> boundary inside the span. LOAD relocates the word ids packed in guards, as well as execution tokens copied into their bodies. Old calls without a matching following span remain ordinary calls. An old image's empty ELSE or forward branch can coincidentally match the padding pattern, allowing reconstruction and changing SEE output as described above.
 
 Five added tests cover nested guards, redefinition and SEE, stack effects and error ordering near the call-depth limit, excluded definitions, code-capacity fallback, save/restore and repeated LOAD relocation, and a branch entering the padding. Windows Debug and fast passed 237 tests (230 core, 7 host); fast without floating-point words passed 192 with 19 skipped. Cortex-M0+ compilation and real-pipe checks passed. The 13 native-process recursion/output checks passed for Windows and WSL/Linux in Debug and fast. Four real-file checks under WSL passed: the baseline executable loaded the new image, the new executable loaded both old and new images, and the new executable loaded a new image re-saved by the baseline. All ran nested calls, recursion, and a local-variable caller with the expected output. The full Linux unit suite was not run.
 

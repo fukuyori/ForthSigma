@@ -313,6 +313,45 @@ test "inlining survives image normalization restoration and repeated relocation"
     try std.testing.expectEqualStrings(support.see(": C\n  B B\n;\n"), output.written());
 }
 
+test "SEE may omit empty old-image branches reconstructed as inline padding" {
+    try support.skipWithout(&.{ .tools, .image });
+    var output = support.Output{};
+    const original = try support.createMachine(&output);
+    defer support.destroyMachine(original);
+    // Emit compact ordinary calls as the pre-inlining compiler did, without padding.
+    try original.interpretLine(": X 1+ ; : Y IF");
+    const x = original.lookup("X").?;
+    _ = try original.emit(.{ .kind = .call_colon, .value = x });
+    try original.interpretLine("THEN ; : Z IF");
+    _ = try original.emit(.{ .kind = .call_colon, .value = x });
+    try original.interpretLine("ELSE THEN ; : W");
+    _ = try original.emit(.{ .kind = .call_colon, .value = x });
+    try original.interpretLine("AHEAD THEN ; SEE Y SEE Z SEE W");
+    try std.testing.expectEqualStrings(": Y\n  IF X THEN\n;\n: Z\n  IF X ELSE THEN\n;\n: W\n  X BRANCH 2\n;\n", output.written());
+    const execute = "10 0 Y 10 -1 Y 10 0 Z 10 -1 Z 10 W";
+    try original.interpretLine(execute);
+    try support.expectStack(original, &.{ 10, 11, 10, 11, 11 });
+    const buffer = try std.testing.allocator.alloc(u8, forth.State.imageCapacity());
+    defer std.testing.allocator.free(buffer);
+    var length = try original.encodeImage(buffer);
+    const loaded = try support.createMachine(&output);
+    defer support.destroyMachine(loaded);
+    for (0..2) |_| {
+        try loaded.restoreImage(buffer[0..length]);
+        output.len = 0;
+        try loaded.interpretLine("SEE Y SEE Z SEE W");
+        try std.testing.expectEqualStrings(": Y\n  IF X THEN\n;\n: Z\n  IF X THEN\n;\n: W\n  X\n;\n", output.written());
+        const y = loaded.words[loaded.lookup("Y").?];
+        const z = loaded.words[loaded.lookup("Z").?];
+        try std.testing.expect(!inline_calls.isInline(loaded.code[y.code_start + 1]));
+        try std.testing.expect(inline_calls.isInline(loaded.code[z.code_start + 1]));
+        try std.testing.expect(inline_calls.isInline(first(loaded, "W")));
+        try loaded.interpretLine(execute);
+        try support.expectStack(loaded, &.{ 10, 11, 10, 11, 11 });
+        length = try loaded.encodeImage(buffer);
+    }
+}
+
 test "image inlining does not hide a branch into reserved padding" {
     var output = support.Output{};
     const machine = try support.createMachine(&output);

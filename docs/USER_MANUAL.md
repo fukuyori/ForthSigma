@@ -463,6 +463,8 @@ S" DUP" FIND-NAME NAME>STRING TYPE \ DUP
 SHOW ANSWER                        \ 42
 ```
 
+When exchanging saved images with versions from before short-call inlining, `SEE` can display the same executable definition differently. An older version reading a newer image may show extra `BRANCH` operations or an empty `ELSE`. The current version reading an older image may omit an empty `ELSE` or a forward branch to the next operation. These display differences do not by themselves indicate changed execution; `SEE` is not a source backup.
+
 | Word | Stack | Description |
 | --- | --- | --- |
 | `SEE name` | ( -- ) | Show the contents of a definition. A colon definition is rebuilt from its operation stream, so it does not match the source exactly. |
