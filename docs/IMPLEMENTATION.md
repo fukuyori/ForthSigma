@@ -139,6 +139,35 @@ The runtime does not implement the magazine's editor-buffer versions of LOAD/SAV
 
 ## Verification record
 
+### Claude Code review follow-up (2026-11-04)
+
+The read-only Claude Code review of `a1da425..7ef25d4` found no confirmed serious runtime or image-compatibility defect. Its proposed checks and documentation corrections were handled as follows:
+
+- **R01, dynamic recursion:** real Windows and WSL/Linux processes in Debug and fast reached the language call limit and recovered through `CATCH`. `EXECUTE` and nested `CATCH` succeeded at depth 1023 and returned -5 at 1024; the tested `DEFER` chain succeeded at 511 and returned -5 at 512 because it consumes two call levels per iteration. All then evaluated `40 2 +` successfully. These cases did not reproduce a host stack crash; no stack-size change was made. This does not establish safety on untested targets or for every nesting pattern.
+- **R02, measurement:** the benchmark now excludes startup and compilation using external Linux process CPU clocks and input handshakes, as described below. Old process-total measurements remain labeled as historical results.
+- **R03/R06, output:** both manuals explain explicit flushing for newline-less progress output, possible loss of buffered output on abnormal termination, and flushing an open file before passing it to a `SYSTEM` command. Native-process checks cover stdout/stderr and `SYSTEM` ordering, 9000 output bytes, `FLUSH-FILE`, normal exit, `BYE`, and observing the prompt before supplying `KEY` input. No unconditional flush of all open files or C-library output replacement was introduced. Physical terminal rendering and crash-induced output loss were not tested.
+- **R04/R05, design and invariants:** `DECISIONS.md` now describes all 49 specialized primitives, `call_colon`, and save-time normalization and restore-time specialization. The dispatch code documents stable word kinds and asserts the colon kind in checked builds.
+- **R07, regression coverage:** the primitive comparison now also exercises populated return/loop stacks and valid cell addresses; data-word expectations come from interpreted execution; a new case attaches `DOES>` after a reference has already been compiled. A recursion test checks VM frame, stack, and local-area cleanup after the call-limit error.
+
+The repeatable native-process checks are `python3 scripts/verify-runtime.py --sigma PATH --output REPORT.json` (run Windows Python for a Windows executable, Linux Python for a Linux executable). Each invocation performs 13 checks. The benchmark protocol has three separate tests in `scripts/test-benchmark-runtime.py`. Raw review and diagnostic reports are retained locally under `.work/` and are not tracked.
+
+Windows `zig build test --summary all`, `zig build test -Doptimize=fast --summary all`, and `zig build test -Dfloat=false -Doptimize=fast --summary all` passed, including the Cortex-M0+ compilation and real-pipe checks. The native-process checks passed all 13 cases in each of Windows Debug/fast and WSL/Linux Debug/fast, and all three benchmark protocol tests passed on Linux. The full Linux unit suite was not run.
+
+The revised benchmark compared the reviewed runtime plus the assertion/documentation/test changes above with normal Gforth 0.7.9_20260410 amd64. Sigma used Zig 0.17.0, `x86_64-linux-musl`, and `-Doptimize=fast`; WSL CPU affinity was 0. Each kernel ran 100,000,000 iterations, with one discarded run and seven alternating measured rounds. No builds or tests ran concurrently, and all checksums matched. Median execution-interval process CPU times:
+
+| Kernel | Sigma (ms) | Gforth (ms) | Sigma / Gforth |
+| --- | ---: | ---: | ---: |
+| arithmetic | 810.682 | 267.713 | 3.03 |
+| stacks | 1431.515 | 355.122 | 4.03 |
+| calls | 4444.826 | 778.009 | 5.71 |
+| variables | 644.049 | 176.421 | 3.65 |
+| loops | 603.103 | 202.300 | 2.98 |
+| plus-loop | 396.097 | 127.955 | 3.10 |
+| extended | 1272.982 | 348.861 | 3.65 |
+| float | 740.299 | 459.780 | 1.61 |
+
+Only the floating-point kernel meets the twice-Gforth target in this run. The larger ratios than in the historical tables reflect a different measurement interval and iteration count; they are not evidence of a runtime regression. These small kernels do not establish general application performance. Raw schema-version-2 samples and executable metadata are in `.work/review-execution-final.json`; the Sigma SHA-256 is `f5e115ea05a7685be74452de81017d02cf92a38d391d23b4e23ca7326dee38a8`.
+
 ### Direct execution instructions (2026-11-04)
 
 Compiled colon calls now use the execution-only `call_colon` operation. The 49 frequent built-ins previously dispatched inside `call_builtin` now have individual operation tags, so the main operation switch selects their implementation without a dictionary lookup and a second switch. Their operand remains the original word id: aliases such as `MINUS` and `INVERT` still display by the name used in the source. Other built-ins retain `call_builtin`, and dynamic calls such as `EXECUTE`, deferred words, and synonyms retain their existing path. `RECURSE` uses the same specialization as normal compiled calls; frame limits and error cleanup are unchanged.
@@ -160,7 +189,7 @@ The same eight diagnostic kernels were measured against baseline `c79163b` and G
 | extended | 173.127 | 129.462 | 42.140 | 25.2% | 3.07 |
 | float | 82.263 | 76.458 | 54.483 | 7.1% | 1.40 |
 
-All eight medians decreased, but calls improved only slightly and the overall twice-Gforth target remains unmet. These kernels do not establish general application performance. Raw samples and environment metadata are in `.work/direct-final.json` (ignored by Git). To repeat this comparison, use the procedure below with `.work/colon-before/bin/sigma` as `before`, `.work/direct-after/bin/sigma` as `after`, and `.work/direct-final.json` as output. Preserve the before executable before editing the runtime.
+All eight medians decreased, but calls improved only slightly and the overall twice-Gforth target remains unmet. These kernels do not establish general application performance. Raw samples and environment metadata are in `.work/direct-final.json` (ignored by Git). This historical table used the benchmark script at `7ef25d4`; the revised procedure below measures a different interval and must not be compared directly with these times. Preserve the before executable before editing the runtime.
 
 ### Repeating runtime performance comparisons
 
@@ -180,10 +209,14 @@ taskset -c 0 python3 scripts/benchmark-runtime.py \
   --sigma before=./.work/perf-before/bin/sigma \
   --sigma after=./.work/perf-after/bin/sigma \
   --gforth gforth=/usr/local/bin/gforth \
-  --iterations 10000000 --rounds 7 --output .work/perf-final.json
+  --iterations 100000000 --rounds 7 --output .work/perf-final.json
 ```
 
-The primary measurement is child-process user plus system CPU time, **including startup, source loading, and compilation**. Long kernels reduce their relative contribution but do not remove it. One run per engine is discarded, then engine order alternates across rounds. JSON contains all samples, medians, ranges, checksums, platform, and CPU affinity. Do not build or run tests concurrently with measurements. `UTIME` differences around the kernel are retained as diagnostics only: Sigma uses `CLOCK_REALTIME`, and an elapsed value was nonpositive during WSL measurement. The benchmark does not alter `UTIME` semantics or substitute a monotonic clock for calendar time.
+The primary measurement is now the child's Linux process CPU clock between two input handshakes, **excluding startup, source loading, compilation, and shutdown**. After defining the kernel, each engine prints `BENCH-READY` and waits in `KEY`; the parent samples its CPU clock and releases the kernel with one byte. The engine prints `BENCH-DONE` and its checksum and waits in a second `KEY`, keeping its clock available for the parent's final sample. Boundary input/output and interpreter work remain in the interval; this is not an instruction-level timer. One run per engine is discarded, then engine order alternates across rounds. The default is 100,000,000 iterations and seven measured rounds.
+
+JSON schema version 2 contains all execution CPU samples, medians, ranges, checksums, monotonic elapsed samples, whole-process CPU samples, platform, CPU affinity, executable paths, Sigma SHA-256 hashes, and the Gforth version. The old script's `median_us` included startup and compilation; schema version 2 uses the handshake interval. Do not compare these two meanings directly or build/run tests concurrently with measurements. Sigma's `UTIME` remains calendar time and is not used for this measurement. `python3 scripts/test-benchmark-runtime.py` checks that startup/shutdown CPU work and sleeping are excluded from the primary interval and that invalid protocol output and early exit are rejected.
+
+### Earlier data-word and loop measurements
 
 The follow-up runtime changes keep compiled word ids and the image format unchanged. Constants, arrays, and variables/created words without DOES> run directly in the operation loop; words with DOES> retain their existing execution path. Twelve more short built-ins (`2*`, `2/`, `LSHIFT`, `RSHIFT`, `F+`, `F-`, `F*`, `F/`, `FDUP`, `FDROP`, `FSWAP`, `FOVER`) join the 37 previously inlined ones. LOOP and +LOOP have compile-time-specialized endings. A proposed rewrite of binary stack updates was tested and discarded because it did not show a clear benefit. Regression tests cover compiled data-word identity after redefinition, DOES>, stack overflow, LOOP wrapping, nested equal ranges, and LEAVE.
 

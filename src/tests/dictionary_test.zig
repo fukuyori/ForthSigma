@@ -192,19 +192,32 @@ test "primitive instructions match dictionary calls including errors and full st
             const builtin = comptime defs.primitiveBuiltin(kind);
             try std.testing.expectEqual(kind, defs.builtinOpKind(builtin));
             const id = direct.builtinWord(builtin);
-            for ([_]usize{ 0, 1, 2, 3, direct.data_stack.len }) |depth| {
+            for ([_]usize{ 0, 1, 2, 3, direct.data_stack.len }) |depth| for ([_]bool{ false, true }) |populated| {
                 direct.data_depth = depth;
                 generic.data_depth = depth;
                 @memset(&direct.data_stack, 3);
                 @memset(&generic.data_stack, 3);
+                const address = 0x4000;
+                if (populated and depth > 0) {
+                    direct.data_stack[depth - 1] = address;
+                    generic.data_stack[depth - 1] = address;
+                }
+                try direct.writeCell(address, 123);
+                try generic.writeCell(address, 123);
                 direct.float_depth = @min(depth, direct.float_stack.len);
                 generic.float_depth = direct.float_depth;
                 @memset(&direct.float_stack, 2);
                 @memset(&generic.float_stack, 2);
-                direct.return_depth = 0;
-                generic.return_depth = 0;
-                direct.loop_depth = 0;
-                generic.loop_depth = 0;
+                direct.return_depth = if (populated) direct.return_stack.len else 0;
+                generic.return_depth = direct.return_depth;
+                @memset(&direct.return_stack, 7);
+                @memset(&generic.return_stack, 7);
+                direct.loop_depth = if (populated) 2 else 0;
+                generic.loop_depth = direct.loop_depth;
+                direct.loop_stack[0] = .{ .index = 11, .limit = 20, .exit_pc = 0 };
+                direct.loop_stack[1] = .{ .index = 13, .limit = 20, .exit_pc = 0 };
+                generic.loop_stack[0] = direct.loop_stack[0];
+                generic.loop_stack[1] = direct.loop_stack[1];
                 direct.code[probe_start] = Op{ .kind = kind, .value = id };
                 const direct_result = direct.executeWord(probe_id);
                 const generic_result = generic.executeWord(try generic.wordId(id));
@@ -217,7 +230,9 @@ test "primitive instructions match dictionary calls including errors and full st
                 try std.testing.expectEqualSlices(forth.Float, &generic.float_stack, &direct.float_stack);
                 try std.testing.expectEqual(generic.return_depth, direct.return_depth);
                 try std.testing.expectEqualSlices(forth.Cell, &generic.return_stack, &direct.return_stack);
-            }
+                try std.testing.expectEqual(generic.loop_depth, direct.loop_depth);
+                try std.testing.expectEqualSlices(u8, generic.memory[address..][0..8], direct.memory[address..][0..8]);
+            };
         }
     }
 }

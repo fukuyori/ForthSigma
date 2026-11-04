@@ -781,6 +781,8 @@ pub const State = struct {
 
     /// Cache immutable dispatch information, keeping the original word id for SEE.
     /// Images normalize these operations and rebuild them after restoring words.
+    /// Existing word kinds do not change; FORGET also discards code belonging to
+    /// the forgotten definitions. Redefinition appends a new dictionary entry.
     pub fn specializeCall(self: *const State, op: Op) Op {
         if (op.kind != .call and op.kind != .call_builtin) return op;
         if (op.value < 0 or op.value >= self.word_count) return op;
@@ -994,6 +996,7 @@ pub const State = struct {
                 inline .call, .call_colon => |call_kind| {
                     const id = try self.wordId(op.value);
                     const word = &self.words[id];
+                    if (call_kind == .call_colon) std.debug.assert(word.kind == .colon);
                     if (call_kind == .call) switch (word.kind) {
                         .colon => {},
                         // Keep the word id in compiled code (SEE and image relocation

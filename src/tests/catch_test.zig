@@ -9,6 +9,38 @@ const destroyMachine = support.destroyMachine;
 const expectStack = support.expectStack;
 const expectFloatStack = support.expectFloatStack;
 
+test "dynamic recursion reaches the call limit and recovers through CATCH" {
+    var output = Output{};
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
+    const locals_top = machine.locals_top;
+    const cases = .{
+        .{ "VARIABLE XT : X DUP IF 1- XT @ EXECUTE THEN ; ' X XT !", "X", @as(usize, 1023) },
+        .{ "DEFER D : Y DUP IF 1- D THEN ; ' Y IS D", "Y", @as(usize, 511) },
+        .{ "VARIABLE ZXT : Z DUP IF 1- ZXT @ CATCH THROW THEN ; ' Z ZXT !", "Z", @as(usize, 1023) },
+    };
+    inline for (cases) |case| {
+        try machine.interpretLine(case[0]);
+        for ([_]usize{ case[2], case[2] + 1 }) |depth| {
+            machine.data_depth = 0;
+            var buffer: [80]u8 = undefined;
+            try machine.interpretLine(try std.fmt.bufPrint(&buffer, "{d} ' {s} CATCH", .{ depth, case[1] }));
+            const code = try machine.pop();
+            try std.testing.expectEqual(@as(forth.Cell, if (depth == case[2]) 0 else -5), code);
+            try std.testing.expectEqual(@as(usize, 1), machine.data_depth);
+            if (code == 0) try expectStack(machine, &.{0});
+            try std.testing.expectEqual(@as(usize, 0), machine.call_depth);
+            try std.testing.expectEqual(@as(usize, 0), machine.frame_depth);
+            try std.testing.expectEqual(@as(usize, 0), machine.return_depth);
+            try std.testing.expectEqual(@as(usize, 0), machine.loop_depth);
+            try std.testing.expectEqual(locals_top, machine.locals_top);
+            try machine.interpretLine("DROP 40 2 +");
+            try expectStack(machine, &.{42});
+        }
+        machine.data_depth = 0;
+    }
+}
+
 test "CATCH returns 0 or the THROW code and restores the stack depths like gforth" {
     try support.skipWithoutFloat();
     var output = Output{};

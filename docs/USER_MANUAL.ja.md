@@ -391,7 +391,7 @@ MAKE-FILE S" data.txt" SHOW-FILE
 | `REPOSITION-FILE` | ( ud fileid -- ior ) | 読み書きの位置を移動します。`FILE-SIZE` の結果を渡すと末尾へ移動し、追記できます。 |
 | `FILE-POSITION` | ( fileid -- ud ior ) | 読み書きの位置を返します。 |
 | `RESIZE-FILE` | ( ud fileid -- ior ) | ファイルをudバイトに切り詰めるか、0のバイトで伸ばします。読み書きの位置は変わりません。 |
-| `FLUSH-FILE` | ( fileid -- ior ) | たまっている書き込みをファイルに書き出します。`STDOUT` への出力はためておき、入力を読むとき、`MS`・`SYSTEM`・`STDERR` への出力の前、端末では行の終わり、そして終了時に書き出します。`STDOUT FLUSH-FILE` ですぐに書き出せます。 |
+| `FLUSH-FILE` | ( fileid -- ior ) | たまっている書き込みをファイルに書き出します。`STDOUT` への出力はためておき、入力を読むとき、`MS`・`SYSTEM`・`STDERR` への出力の前、端末では行の終わり、バッファが満杯になったとき、正常終了時に書き出します。改行のない進捗表示（`13 EMIT` による行の上書きを含む）は、`STDOUT FLUSH-FILE THROW` ですぐに表示できます。強制終了やクラッシュでは、まだ書き出していない出力が失われることがあります。`SYSTEM` で呼ぶコマンドに開いているファイルの内容を渡す場合は、そのファイルを明示的にフラッシュしておいてください。 |
 | `DELETE-FILE` | ( addr u -- ior ) | 名前のファイルを削除します。 |
 | `RENAME-FILE` | ( addr1 u1 addr2 u2 -- ior ) | 1つ目の名前のファイルを2つ目の名前に変えます。2つ目の名前のファイルがあれば置き換えます（Windowsでも同じ）。 |
 | `FILE-STATUS` | ( addr u -- x ior ) | 名前のファイルがあればiorは0で、xは開ける方法（`R/O` `W/O` `R/W`）です。なければ-514です。 |

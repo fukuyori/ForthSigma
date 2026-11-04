@@ -72,8 +72,13 @@ test "compiled data words retain identity and execute DOES behavior" {
     defer destroyMachine(machine);
 
     try machine.interpretLine("7 CONSTANT K VARIABLE V CREATE RAW 19 , 2 ARRAY A");
-    try machine.interpretLine(": DATA K V RAW A ; DATA");
+    // Obtain the expected values through interpreted executeWord, independently
+    // of the compiled data-word fast path being checked.
+    try machine.interpretLine("K V RAW A");
     const expected = machine.data_stack[0..4].*;
+    machine.data_depth = 0;
+    try machine.interpretLine(": DATA K V RAW A ; DATA");
+    try expectStack(machine, &expected);
     machine.data_depth = 0;
     try machine.interpretLine("9 CONSTANT K DATA");
     try expectStack(machine, &expected);
@@ -88,6 +93,14 @@ test "compiled data words retain identity and execute DOES behavior" {
     machine.data_depth = machine.data_stack.len;
     try std.testing.expectError(error.StackOverflow, machine.interpretLine("DATA"));
     try std.testing.expectEqual(machine.data_stack.len, machine.data_depth);
+}
+
+test "a compiled created-word reference observes DOES attached afterwards" {
+    var output = Output{};
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
+    try machine.interpretLine("CREATE LATE : USE-LATE LATE ; : ATTACH DOES> DROP 99 ; ATTACH USE-LATE");
+    try expectStack(machine, &.{99});
 }
 
 test "compiled LOOP wraps cells and keeps nested equal-range and LEAVE behavior" {

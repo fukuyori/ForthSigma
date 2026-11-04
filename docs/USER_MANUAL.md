@@ -391,7 +391,7 @@ File words push an **ior** (0 for success, an error number otherwise) in additio
 | `REPOSITION-FILE` | ( ud fileid -- ior ) | Move the read and write position. Passing the result of `FILE-SIZE` moves to the end, so you can append. |
 | `FILE-POSITION` | ( fileid -- ud ior ) | Return the read and write position. |
 | `RESIZE-FILE` | ( ud fileid -- ior ) | Cut the file to ud bytes, or extend it with zero bytes. The read and write position does not change. |
-| `FLUSH-FILE` | ( fileid -- ior ) | Write what is buffered to the file. Output to `STDOUT` is kept and written when input is read, before `MS`, `SYSTEM`, and output to `STDERR`, at the end of each line on a terminal, and at the end; `STDOUT FLUSH-FILE` writes it at once. |
+| `FLUSH-FILE` | ( fileid -- ior ) | Write what is buffered to the file. Output to `STDOUT` is kept and written when input is read, before `MS`, `SYSTEM`, and output to `STDERR`, at the end of each line on a terminal, when the buffer fills, and at normal exit. For progress text without a newline (including updates using `13 EMIT`), use `STDOUT FLUSH-FILE THROW` to display it immediately. Forced termination or a crash can lose buffered output. To make an open file's contents available to a command run by `SYSTEM`, explicitly flush that file first. |
 | `DELETE-FILE` | ( addr u -- ior ) | Delete the named file. |
 | `RENAME-FILE` | ( addr1 u1 addr2 u2 -- ior ) | Rename the file of the first name to the second name. If a file of the second name exists, it is replaced (also on Windows). |
 | `FILE-STATUS` | ( addr u -- x ior ) | If the named file exists, ior is 0 and x is the way it can be opened (`R/O`, `W/O`, `R/W`). If not, ior is -514. |

@@ -183,8 +183,8 @@ pub const max_dot_s_items = 9;
 pub const fs_precision = 14;
 
 pub const image_magic = "SIGIMG33";
-/// The format before the call_builtin operation, which is read as it is: its operations
-/// are all of the current ones. Builds that know only it reject the newer images.
+/// The format before call_builtin. Its layout is still accepted; after restoring
+/// words, calls are specialized for execution. Older builds reject newer images.
 pub const previous_image_magic = "SIGIMG32";
 
 /// File ids of the standard streams; the host numbers opened files from `first_file_id`.
