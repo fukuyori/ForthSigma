@@ -552,35 +552,54 @@ File names are relative paths from the current directory. `REQUIRE` compares nam
 
 ## Graphics
 
-Sigma draws on one image in memory and saves it as a PPM or BMP file. The graphics words are not in the dictionary at start-up: `REQUIRE-GRAPHICS` adds the `GRAPHICS` vocabulary, with the `GFX-` words and the graphics library written in Forth, the first time it runs; later it does nothing. It does not change the search order, so make the words visible with `ALSO GRAPHICS` (or `GRAPHICS`).
+Sigma draws on one image in memory and saves it as a PPM or BMP file. The graphics words are not in the dictionary at start-up: `REQUIRE-GRAPHICS` adds the `GRAPHICS` vocabulary, with the `GFX-` words and the graphics library written in Forth (`src/graphics/graphics.fs`, built into the program), the first time it runs; later it does nothing. It does not change the search order, so make the words visible with `ALSO GRAPHICS` (or `GRAPHICS`).
 
 ```forth
 REQUIRE-GRAPHICS
 ALSO GRAPHICS
-320 200 GFX-INIT                    \ a black image of 320 by 200 pixels
-$FF0000 GFX-CLS                     \ fill it with red
-10 300 100 $FFFFFF GFX-HLINE        \ a white line on row 100
-160 50 $00FF00 GFX-PSET             \ one green pixel
-S" picture.bmp" GFX-SAVE-BMP .      \ 0 when the file is written
+320 200 GFX-INIT                  \ a black image of 320 by 200 pixels
+255 0 0 COLOR                     \ the current color: red
+10 10 300 190 LINE
+0 255 0 COLOR
+160 100 50 CIRCLE
+0 0 255 COLOR
+20 120 80 50 FILL-RECT            \ 80 by 50 pixels from 20 120
+S" picture.bmp" SAVE-BMP
 PREVIOUS
 ```
 
-A color is the cell `$RRGGBB` (the bits above the low 24 are ignored), and every pixel is opaque. Coordinates start at 0 0 in the top left corner; drawing outside the image does nothing.
+Coordinates start at 0 0 in the top left corner, and everything drawn outside the image is cut off; drawing far outside costs no more than drawing inside. The drawing words use the current color, which `COLOR` sets and which starts white. A color as one cell is `$RRGGBB` (the bits above the low 24 are ignored), and every pixel is opaque.
 
 | Word | Stack | Description |
 | --- | --- | --- |
-| `REQUIRE-GRAPHICS` | ( -- ) | Load the graphics words, the first time only. It is a parsing word (like `TO`) and cannot be used inside a definition. |
+| `REQUIRE-GRAPHICS` | ( -- ) | Load the graphics words, the first time only. It is a parsing word (like `TO`) and cannot be used inside a definition. The library is read in decimal whatever `BASE` is, and `BASE` stays as it was. |
+| `RGB` | ( r g b -- rgb ) | The color `$RRGGBB` of red, green, and blue, each 0 to 255 (only the low 8 bits are used). |
+| `COLOR` | ( r g b -- ) | Set the current color. |
+| `COLOR!`, `COLOR@` | ( rgb -- ), ( -- rgb ) | Set and get the current color as `$RRGGBB`. |
+| `PSET` | ( x y -- ) | Set one pixel. |
+| `CLS` | ( -- ) | Make the whole image black. |
+| `LINE` | ( x1 y1 x2 y2 -- ) | A line between two points, both included (Bresenham's algorithm). |
+| `RECT` | ( x y w h -- ) | The outline of a w by h rectangle whose top left corner is x y. Nothing when w or h is 0 or less. |
+| `FILL-RECT` | ( x y w h -- ) | A filled w by h rectangle. |
+| `CIRCLE` | ( x y r -- ) | A circle of radius r around x y, with the pixels of the midpoint circle algorithm. Nothing when r is less than 0; one pixel when r is 0. |
+| `FILL-CIRCLE` | ( x y r -- ) | A filled circle; it covers every pixel of `CIRCLE` with the same arguments. |
+| `PAINT` | ( x y -- ) | Fill the area around x y that has the color of x y (pixels joined left, right, up, or down) with the current color. Nothing outside the image or when the area has the current color already. |
+| `SAVE-PPM`, `SAVE-BMP` | ( c-addr u -- ) | Write the image to a new file as a binary PPM (P6) or a 24-bit BMP, and `THROW` the error of the file operation if there is one. |
 | `GFX-INIT` | ( w h -- ) | Make a new black image. Each side is 1 to 8192 pixels and the image at most 64 MiB (4 bytes a pixel, so 4096 by 4096 at most for a square). The previous image stays when the new one cannot be made. |
 | `GFX-WIDTH`, `GFX-HEIGHT` | ( -- n ) | The size of the image, 0 before `GFX-INIT`. |
-| `GFX-PSET` | ( x y rgb -- ) | Set one pixel. |
+| `GFX-PSET` | ( x y rgb -- ) | Set one pixel to the color rgb. |
 | `GFX-PGET` | ( x y -- rgb ) | The color of one pixel, -1 outside the image. |
 | `GFX-HLINE` | ( x1 x2 y rgb -- ) | A horizontal line from x1 to x2, both included. |
-| `GFX-CLS` | ( rgb -- ) | Fill the whole image. |
-| `GFX-SAVE-PPM`, `GFX-SAVE-BMP` | ( c-addr u -- ior ) | Write the image to a new file as a binary PPM (P6) or a 24-bit BMP. ior is 0 or the error of the file operation. They also work in a build with `-Dfiles=false`. |
+| `GFX-CLS` | ( rgb -- ) | Fill the whole image with the color rgb. |
+| `GFX-SAVE-PPM`, `GFX-SAVE-BMP` | ( c-addr u -- ior ) | As `SAVE-PPM` and `SAVE-BMP`, but return ior (0 or the error) instead. They also work in a build with `-Dfiles=false`. |
 
-Errors: a size outside the limits gives `NUMBER ERROR !`; an image the host cannot allocate gives `OUT OF MEMORY !`; using the image before `GFX-INIT` gives `NO GRAPHICS IMAGE !` (THROW -271); and `REQUIRE-GRAPHICS` in a build with `-Dgraphics=false` gives `GRAPHICS UNAVAILABLE !` (THROW -270). If the library fails to load, everything `REQUIRE-GRAPHICS` added is removed again. `REQUIRE-GRAPHICS` loads the words again after `FORGET` or a `MARKER` has removed the `GRAPHICS` vocabulary or `GFX-INIT`; when only later `GFX-` words were forgotten (such as `FORGET GFX-WIDTH`), it does nothing and they stay removed.
+The `GFX-` words are the base the library is written with; the other words are Forth definitions, so `SEE`, `LOCATE`, and `WHERE` show them. So that the arithmetic cannot overflow, coordinates and sizes are first limited to -2^61 .. 2^61 for `LINE`, `RECT`, and `FILL-RECT`, and to -2^30 .. 2^30 for the circles (a circle with a value beyond that is drawn with the value moved to the limit). `PAINT` keeps the rows still to fill in the heap; a very complicated area can need more than the heap has and then gives `CANNOT ALLOCATE MEMORY !` (THROW -524, the area is then partly filled).
 
-The image is not part of the dictionary: `SAVE` and `SAVESYS` keep the graphics words and the words that use them, but not the pixels, so a program makes its image with `GFX-INIT` after it starts. The drawing words written in Forth (lines, rectangles, circles, graphs of functions) and showing the image on the screen come in later stages.
+Errors: a size outside the limits gives `NUMBER ERROR !`; an image the host cannot allocate gives `OUT OF MEMORY !`; using the image before `GFX-INIT` gives `NO GRAPHICS IMAGE !` (THROW -271); and `REQUIRE-GRAPHICS` in a build with `-Dgraphics=false` gives `GRAPHICS UNAVAILABLE !` (THROW -270). If the library fails to load, everything `REQUIRE-GRAPHICS` added is removed again. `REQUIRE-GRAPHICS` loads the words again after `FORGET` or a `MARKER` has removed the `GRAPHICS` vocabulary or `GFX-INIT`; when only later words were forgotten (such as `FORGET GFX-WIDTH`), it does nothing and they stay removed.
+
+To try a changed copy of the library without rebuilding Sigma, load the built-in one and then include the copy into `GRAPHICS`; its words replace the built-in ones: `REQUIRE-GRAPHICS ALSO GRAPHICS DEFINITIONS DECIMAL INCLUDE src/graphics/graphics.fs`.
+
+The image is not part of the dictionary: `SAVE` and `SAVESYS` keep the graphics words and the words that use them, but not the pixels, so a program makes its image with `GFX-INIT` after it starts. Showing the image on the screen, graphs of functions, text, and PNG files come in later stages.
 
 ## Saving the dictionary and stand-alone executables
 

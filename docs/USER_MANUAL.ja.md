@@ -552,35 +552,54 @@ MARKER SAFE  : TEMP ." Hello" ;  SAFE   \ TEMP は消えます
 
 ## グラフィックス
 
-Sigmaは、メモリ上の1枚の画像に描き、PPMまたはBMPのファイルに保存できます。グラフィックスの語は起動時の辞書にはありません。`REQUIRE-GRAPHICS` を初めて実行したときに、`GRAPHICS` 語彙と、`GFX-` の語、Forthで書いたグラフィックスのライブラリを加えます。2回目以降は何もしません。検索順序は変えないので、`ALSO GRAPHICS`（または `GRAPHICS`）で語を使えるようにします。
+Sigmaは、メモリ上の1枚の画像に描き、PPMまたはBMPのファイルに保存できます。グラフィックスの語は起動時の辞書にはありません。`REQUIRE-GRAPHICS` を初めて実行したときに、`GRAPHICS` 語彙と、`GFX-` の語、Forthで書いたグラフィックスのライブラリ（`src/graphics/graphics.fs`。プログラムに組み込み済み）を加えます。2回目以降は何もしません。検索順序は変えないので、`ALSO GRAPHICS`（または `GRAPHICS`）で語を使えるようにします。
 
 ```forth
 REQUIRE-GRAPHICS
 ALSO GRAPHICS
-320 200 GFX-INIT                    \ 320×200画素の黒い画像
-$FF0000 GFX-CLS                     \ 赤で塗る
-10 300 100 $FFFFFF GFX-HLINE        \ 100行目に白い横線
-160 50 $00FF00 GFX-PSET             \ 緑の点を1つ
-S" picture.bmp" GFX-SAVE-BMP .      \ 書けたら0
+320 200 GFX-INIT                  \ 320×200画素の黒い画像
+255 0 0 COLOR                     \ 現在の色を赤に
+10 10 300 190 LINE
+0 255 0 COLOR
+160 100 50 CIRCLE
+0 0 255 COLOR
+20 120 80 50 FILL-RECT            \ 20 120 から 80×50画素
+S" picture.bmp" SAVE-BMP
 PREVIOUS
 ```
 
-色はセルの `$RRGGBB` です（下位24ビットより上は無視します）。画素はすべて不透明です。座標は左上が 0 0 で、画像の外に描いても何も起きません。
+座標は左上が 0 0 です。画像の外に出た部分は切り取り、画像のずっと外を描いても、中を描くより時間はかかりません。描画の語は現在の色で描きます。現在の色は `COLOR` で決め、最初は白です。1つのセルで表す色は `$RRGGBB` です（下位24ビットより上は無視します）。画素はすべて不透明です。
 
 | 語 | スタック | 説明 |
 | --- | --- | --- |
-| `REQUIRE-GRAPHICS` | ( -- ) | グラフィックスの語を読み込みます（初回だけ）。`TO` と同じく解析語で、定義の中では使えません。 |
+| `REQUIRE-GRAPHICS` | ( -- ) | グラフィックスの語を読み込みます（初回だけ）。`TO` と同じく解析語で、定義の中では使えません。ライブラリは `BASE` によらず10進で読み、`BASE` は元のままです。 |
+| `RGB` | ( r g b -- rgb ) | 赤・緑・青（各0〜255、下位8ビットだけを使う）の色 `$RRGGBB`。 |
+| `COLOR` | ( r g b -- ) | 現在の色を決めます。 |
+| `COLOR!`、`COLOR@` | ( rgb -- )、( -- rgb ) | 現在の色を `$RRGGBB` で決める・得る。 |
+| `PSET` | ( x y -- ) | 1画素を塗ります。 |
+| `CLS` | ( -- ) | 画像全体を黒にします。 |
+| `LINE` | ( x1 y1 x2 y2 -- ) | 2点を結ぶ線（両端を含む。Bresenhamの方法）。 |
+| `RECT` | ( x y w h -- ) | 左上が x y で幅 w・高さ h の長方形の枠。w か h が0以下なら何も描きません。 |
+| `FILL-RECT` | ( x y w h -- ) | 塗りつぶした長方形。 |
+| `CIRCLE` | ( x y r -- ) | x y を中心とする半径 r の円。中点アルゴリズムと同じ画素を描きます。r が負なら何も描かず、0なら1画素です。 |
+| `FILL-CIRCLE` | ( x y r -- ) | 塗りつぶした円。同じ引数の `CIRCLE` の画素をすべて含みます。 |
+| `PAINT` | ( x y -- ) | x y と同じ色で上下左右につながる領域を、現在の色で塗ります。画像の外や、領域がすでに現在の色のときは何もしません。 |
+| `SAVE-PPM`、`SAVE-BMP` | ( c-addr u -- ) | 画像を新しいファイルに、2進のPPM（P6）または24ビットのBMPで書きます。ファイル操作のエラーは `THROW` します。 |
 | `GFX-INIT` | ( w h -- ) | 新しい黒い画像を作ります。幅・高さは各1〜8192画素、画像は64 MiBまでです（1画素4バイトなので、正方形なら4096×4096まで）。新しい画像を作れなかったときは、前の画像が残ります。 |
 | `GFX-WIDTH`、`GFX-HEIGHT` | ( -- n ) | 画像の大きさ。`GFX-INIT` の前は0です。 |
-| `GFX-PSET` | ( x y rgb -- ) | 1画素を塗ります。 |
+| `GFX-PSET` | ( x y rgb -- ) | 1画素を色 rgb で塗ります。 |
 | `GFX-PGET` | ( x y -- rgb ) | 1画素の色。画像の外は-1です。 |
 | `GFX-HLINE` | ( x1 x2 y rgb -- ) | x1からx2まで（両端を含む）の横線を引きます。 |
-| `GFX-CLS` | ( rgb -- ) | 画像全体を塗ります。 |
-| `GFX-SAVE-PPM`、`GFX-SAVE-BMP` | ( c-addr u -- ior ) | 画像を新しいファイルに、2進のPPM（P6）または24ビットのBMPで書きます。ior は0か、ファイル操作のエラーです。`-Dfiles=false` の版でも使えます。 |
+| `GFX-CLS` | ( rgb -- ) | 画像全体を色 rgb で塗ります。 |
+| `GFX-SAVE-PPM`、`GFX-SAVE-BMP` | ( c-addr u -- ior ) | `SAVE-PPM`・`SAVE-BMP` と同じですが、`THROW` せずに ior（0かエラー）を返します。`-Dfiles=false` の版でも使えます。 |
 
-エラー: 大きさが範囲外なら `NUMBER ERROR !`、ホストが画像の領域を確保できなければ `OUT OF MEMORY !`、`GFX-INIT` の前に画像を使うと `NO GRAPHICS IMAGE !`（THROW -271）、`-Dgraphics=false` の版の `REQUIRE-GRAPHICS` は `GRAPHICS UNAVAILABLE !`（THROW -270）です。ライブラリの読み込みに失敗したときは、`REQUIRE-GRAPHICS` が加えたものをすべて取り除きます。`FORGET` や `MARKER` で `GRAPHICS` 語彙や `GFX-INIT` を消したあとは、`REQUIRE-GRAPHICS` でもう一度読み込めます。それより後ろの `GFX-` の語だけを消した場合（`FORGET GFX-WIDTH` など）は、`REQUIRE-GRAPHICS` は何もせず、消えた語は戻りません。
+`GFX-` の語は、ライブラリを書くための基本の語です。ほかの語はForthの定義なので、`SEE`・`LOCATE`・`WHERE` で中身を見られます。計算があふれないように、座標と大きさは、`LINE`・`RECT`・`FILL-RECT` では -2^61〜2^61、円では -2^30〜2^30 に制限してから描きます（それを越える値の円は、値を上限に寄せて描きます）。`PAINT` は、まだ塗っていない行をヒープに置きます。非常に複雑な領域ではヒープが足りなくなり、`CANNOT ALLOCATE MEMORY !`（THROW -524）になります（そのときは途中まで塗られます）。
 
-画像は辞書の一部ではありません。`SAVE` と `SAVESYS` はグラフィックスの語とそれを使う語を保存しますが、画素は保存しないので、プログラムは起動後に `GFX-INIT` で画像を作ります。Forthで書く描画の語（線、長方形、円、関数のグラフ）と画面への表示は、後の段階で加えます。
+エラー: 大きさが範囲外なら `NUMBER ERROR !`、ホストが画像の領域を確保できなければ `OUT OF MEMORY !`、`GFX-INIT` の前に画像を使うと `NO GRAPHICS IMAGE !`（THROW -271）、`-Dgraphics=false` の版の `REQUIRE-GRAPHICS` は `GRAPHICS UNAVAILABLE !`（THROW -270）です。ライブラリの読み込みに失敗したときは、`REQUIRE-GRAPHICS` が加えたものをすべて取り除きます。`FORGET` や `MARKER` で `GRAPHICS` 語彙や `GFX-INIT` を消したあとは、`REQUIRE-GRAPHICS` でもう一度読み込めます。それより後ろの語だけを消した場合（`FORGET GFX-WIDTH` など）は、`REQUIRE-GRAPHICS` は何もせず、消えた語は戻りません。
+
+Sigmaを作り直さずにライブラリの変更を試すには、組み込みのライブラリを読み込んでから、変えたファイルを `GRAPHICS` に読み込みます。その語が組み込みの語に代わります: `REQUIRE-GRAPHICS ALSO GRAPHICS DEFINITIONS DECIMAL INCLUDE src/graphics/graphics.fs`。
+
+画像は辞書の一部ではありません。`SAVE` と `SAVESYS` はグラフィックスの語とそれを使う語を保存しますが、画素は保存しないので、プログラムは起動後に `GFX-INIT` で画像を作ります。画面への表示、関数のグラフ、文字、PNGのファイルは、後の段階で加えます。
 
 ## 辞書の保存と単独実行ファイル
 

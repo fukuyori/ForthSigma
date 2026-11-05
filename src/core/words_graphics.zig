@@ -14,6 +14,7 @@ const Builtin = defs.Builtin;
 const Cell = memory_map.Cell;
 const RuntimeError = defs.RuntimeError;
 const State = forth.State;
+const base_address = memory_map.base_address;
 const current_wordlist_address = memory_map.current_wordlist_address;
 const forth_wordlist = memory_map.forth_wordlist;
 const graphics_image_address = memory_map.graphics_image_address;
@@ -33,6 +34,10 @@ pub const definitions = [_]struct { []const u8, Builtin }{
     .{ "GFX-PSET", .gfx_pset },     .{ "GFX-PGET", .gfx_pget },   .{ "GFX-HLINE", .gfx_hline },
     .{ "GFX-CLS", .gfx_cls },       .{ "GFX-SAVE-PPM", .gfx_save_ppm }, .{ "GFX-SAVE-BMP", .gfx_save_bmp },
 };
+
+/// The words of the graphics library that HELP describes; the help test checks that the
+/// library defines each of them.
+pub const library_words = [_][]const u8{ "RGB", "COLOR", "COLOR!", "COLOR@", "PSET", "CLS", "LINE", "RECT", "FILL-RECT", "CIRCLE", "FILL-CIRCLE", "PAINT", "SAVE-PPM", "SAVE-BMP" };
 
 /// The graphics library, which REQUIRE-GRAPHICS interprets after appending the GFX- words.
 pub const library = @embedFile("../graphics/graphics.fs");
@@ -250,6 +255,15 @@ fn writeBmp(self: *const State, output: *FileOutput) void {
     }
 }
 
+/// Whether a word is one REQUIRE-GRAPHICS added: a GFX- word, or a word the graphics
+/// library defined (and not a later word of the same name). HELP describes these.
+pub fn isGraphicsWord(self: *const State, word: defs.Word) bool {
+    if (word.kind == .builtin) return true;
+    const files = self.readCellConst(memory_map.source_file_count_address);
+    if (word.source_file == 0 or word.source_file > files) return false;
+    return std.mem.eql(u8, self.sourceFileName(word.source_file - 1), library_name);
+}
+
 /// Whether REQUIRE-GRAPHICS has loaded the graphics words and they are still in the
 /// dictionary (FORGET and MARKER can remove them).
 pub fn graphicsLoaded(self: *const State) bool {
@@ -283,6 +297,10 @@ pub fn requireGraphics(self: *State) RuntimeError!void {
     const pending = self.pending;
     const control_depth = self.control_depth;
     const interpret_loop_depth = self.interpret_loop_depth;
+    // The library is written in decimal, whatever BASE the caller has.
+    const base = self.readCellConst(base_address);
+    self.writeCell(base_address, 10) catch unreachable;
+    defer self.writeCell(base_address, base) catch unreachable;
 
     loadGraphicsWords(self, wid) catch |err| {
         // A definition the library started is dropped with the rest, so that the error

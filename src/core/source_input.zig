@@ -4,6 +4,7 @@ const std = @import("std");
 const defs = @import("defs.zig");
 const forth = @import("../forth.zig");
 const memory_map = @import("memory_map.zig");
+const words_graphics = @import("words_graphics.zig");
 const Cell = memory_map.Cell;
 const IncludeFrame = defs.IncludeFrame;
 const InputPlace = defs.InputPlace;
@@ -278,12 +279,20 @@ pub fn locateWord(self: *State, id: u16) RuntimeError!void {
     var line_text: [24]u8 = undefined;
     self.write(name);
     self.write(std.fmt.bufPrint(&line_text, ":{d}\n", .{word.source_line}) catch unreachable);
+    const last = @min(word.source_end_line, word.source_line + 19);
+    if (embeddedSource(self, name)) |source| {
+        for (word.source_line..@as(usize, last) + 1) |number| {
+            const line = embeddedLine(source, @intCast(number)) orelse return;
+            self.write(line);
+            self.write("\n");
+        }
+        return;
+    }
     const files = try self.fileOps();
     const opened = files.open(self.writer.context, name, .read_only, false);
     if (opened.ior != 0) return;
     const fileid: Cell = @bitCast(opened.value);
     defer _ = files.close(self.writer.context, fileid);
-    const last = @min(word.source_end_line, word.source_line + 19);
     var chunk: [tib_size + 1]u8 = undefined;
     var number: u32 = 0;
     while (number < last) {
@@ -340,7 +349,26 @@ pub fn listUses(self: *State, id: u16) RuntimeError!void {
 
 /// Reads line `wanted` (counting from 1) of the named file into the buffer, or gives
 /// null when the file cannot be read that far.
+/// The text of a source that is part of the program (the graphics library), which
+/// LOCATE and WHERE read instead of a file. It is this build's text: words restored from
+/// an image of another build may have come from other lines.
+fn embeddedSource(self: *const State, name: []const u8) ?[]const u8 {
+    return if (std.mem.eql(u8, name, words_graphics.library_name)) self.graphics_library else null;
+}
+
+/// Line `wanted` (from 1) of an embedded source, without its LF or CR LF.
+fn embeddedLine(source: []const u8, wanted: u32) ?[]const u8 {
+    var lines = std.mem.splitScalar(u8, source, '\n');
+    var number: u32 = 0;
+    while (lines.next()) |line| {
+        number += 1;
+        if (number == wanted) return std.mem.trimEnd(u8, line, "\r");
+    }
+    return null;
+}
+
 fn readFileLine(self: *State, name: []const u8, wanted: u32, buffer: *[tib_size + 1]u8) RuntimeError!?[]const u8 {
+    if (embeddedSource(self, name)) |source| return embeddedLine(source, wanted);
     const files = try self.fileOps();
     const opened = files.open(self.writer.context, name, .read_only, false);
     if (opened.ior != 0) return null;

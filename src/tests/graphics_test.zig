@@ -50,7 +50,12 @@ test "REQUIRE-GRAPHICS loads the GRAPHICS vocabulary once and keeps the search o
     try machine.interpretLine("REQUIRE-GRAPHICS");
     // The built-in words every dictionary starts with do not change.
     try std.testing.expectEqual(builtins, machine.builtin_count);
-    try std.testing.expectEqual(words_before + 1 + words_graphics.definitions.len, machine.word_count);
+    // GRAPHICS, then the GFX- words, then the words of the library.
+    try std.testing.expectEqual(@import("../core/defs.zig").WordKind.vocabulary, machine.words[words_before].kind);
+    for (words_graphics.definitions, 1..) |definition, offset| {
+        try std.testing.expectEqual(definition[1], machine.words[words_before + offset].builtin);
+    }
+    try std.testing.expect(machine.word_count > words_before + 1 + words_graphics.definitions.len);
     try machine.interpretLine("ORDER");
     try std.testing.expectEqualStrings(order_before, output.written());
     try std.testing.expect(machine.lookup("GFX-INIT") == null);
@@ -447,4 +452,420 @@ test "a build without graphics loads a SIGIMG34 image and refuses to run its GFX
     restored.data_depth = 0;
     try restored.interpretLine("' USE CATCH");
     try std.testing.expectEqual(@as(forth.Cell, -261), restored.data_stack[restored.data_depth - 1]);
+}
+
+// ---- The graphics library (G2) ----
+
+/// A machine with the graphics words in the search order and a w × h image.
+fn libraryMachine(output: *Output, comptime size: []const u8) !*forth.State {
+    const machine = try createMachine(output);
+    errdefer destroyMachine(machine);
+    try machine.interpretLine("REQUIRE-GRAPHICS ALSO GRAPHICS " ++ size ++ " GFX-INIT");
+    return machine;
+}
+
+fn pixel(machine: *const forth.State, x: usize, y: usize) u32 {
+    return machine.gfx_pixels[y * @as(usize, @intCast(machine.gfx_width)) + x] & 0xffffff;
+}
+
+/// The pixels that are not black, as rows of '#' and '.', for comparing shapes.
+fn picture(machine: *const forth.State, buffer: []u8) []const u8 {
+    const width: usize = @intCast(machine.gfx_width);
+    const height: usize = @intCast(machine.gfx_height);
+    var at: usize = 0;
+    for (0..height) |y| {
+        for (0..width) |x| {
+            buffer[at] = if (pixel(machine, x, y) != 0) '#' else '.';
+            at += 1;
+        }
+        buffer[at] = '\n';
+        at += 1;
+    }
+    return buffer[0..at];
+}
+
+fn expectPicture(machine: *const forth.State, expected: []const u8) !void {
+    var buffer: [2048]u8 = undefined;
+    try std.testing.expectEqualStrings(expected, picture(machine, &buffer));
+}
+
+test "the color words, and the library loads in any BASE and leaves BASE as it was" {
+    try skipWithout(&.{.graphics});
+    var output = Output{};
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
+    try machine.interpretLine("HEX REQUIRE-GRAPHICS BASE @ DECIMAL ALSO GRAPHICS COLOR@ 18 52 86 RGB 256 -1 0 RGB");
+    try expectStack(machine, &.{ 16, 0xFFFFFF, 0x123456, 0x00FF00 });
+    machine.data_depth = 0;
+    try machine.interpretLine("1 2 3 COLOR COLOR@ $7F654321 COLOR! COLOR@");
+    try expectStack(machine, &.{ 0x010203, 0x654321 });
+    machine.data_depth = 0;
+    if (!@import("build_options").help) return;
+    try machine.interpretLine("HELP RGB");
+    try std.testing.expectEqualStrings("RGB ( r g b -- rgb )\n  The color $RRGGBB of red, green, and blue, each 0 to 255 (FORTH/Sigma graphics).\n", output.written());
+}
+
+test "the drawing words need an image, as the GFX- words do" {
+    try skipWithout(&.{.graphics});
+    var output = Output{};
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
+    try machine.interpretLine("REQUIRE-GRAPHICS ALSO GRAPHICS");
+    const words = [_][]const u8{ "0 0 PSET", "CLS", "0 0 1 1 LINE", "0 0 1 1 RECT", "0 0 1 1 FILL-RECT", "0 0 1 CIRCLE", "0 0 1 FILL-CIRCLE", "0 0 PAINT", "S\" a.txt\" SAVE-BMP" };
+    for (words) |word| {
+        machine.data_depth = 0;
+        var line: [64]u8 = undefined;
+        const text = try std.fmt.bufPrint(&line, ": T {s} ; ' T CATCH", .{word});
+        try machine.interpretLine(text);
+        try std.testing.expectEqual(@as(forth.Cell, -271), machine.data_stack[machine.data_depth - 1]);
+    }
+}
+
+test "LINE draws both ends, in every direction, and cuts lines at the edges" {
+    try skipWithout(&.{.graphics});
+    var output = Output{};
+    const machine = try libraryMachine(&output, "8 6");
+    defer destroyMachine(machine);
+    try machine.interpretLine("1 1 6 1 LINE 0 5 0 2 LINE 7 0 3 4 LINE 2 2 2 2 LINE");
+    try expectPicture(machine,
+        \\.......#
+        \\.######.
+        \\#.#..#..
+        \\#...#...
+        \\#..#....
+        \\#.......
+        \\
+    );
+    // A steep line and its reverse cover the same pixels here.
+    try machine.interpretLine("CLS 1 0 3 5 LINE");
+    var forward: [64]u8 = undefined;
+    const drawn = picture(machine, &forward);
+    try machine.interpretLine("CLS 3 5 1 0 LINE");
+    try expectPicture(machine, drawn);
+
+    // The part inside the image of a line with far ends is the same as of a short one.
+    try machine.interpretLine("CLS 0 0 5 5 LINE");
+    var short: [64]u8 = undefined;
+    const diagonal = picture(machine, &short);
+    try machine.interpretLine("CLS -1000000000000 -1000000000000 1000000000000 1000000000000 LINE");
+    try expectPicture(machine, diagonal);
+    try machine.interpretLine("CLS -9223372036854775807 0 9223372036854775807 0 LINE");
+    try expectPicture(machine, "########\n" ++ repeat("........\n", 5));
+    // Lines wholly outside draw nothing.
+    try machine.interpretLine("CLS -5 -5 -1 100 LINE 8 0 8 5 LINE 0 6 7 9 LINE");
+    try expectPicture(machine, repeat("........\n", 6));
+    try expectStack(machine, &.{});
+}
+
+test "RECT and FILL-RECT draw w by h pixels from the top left corner, cut at the edges" {
+    try skipWithout(&.{.graphics});
+    var output = Output{};
+    const machine = try libraryMachine(&output, "8 6");
+    defer destroyMachine(machine);
+    try machine.interpretLine("1 1 4 3 RECT 6 4 1 1 RECT");
+    try expectPicture(machine,
+        \\........
+        \\.####...
+        \\.#..#...
+        \\.####...
+        \\......#.
+        \\........
+        \\
+    );
+    try machine.interpretLine("CLS 5 3 10 10 FILL-RECT -3 -3 5 5 RECT 2 2 0 5 FILL-RECT 2 2 5 -1 RECT");
+    try expectPicture(machine,
+        \\.#......
+        \\##......
+        \\........
+        \\.....###
+        \\.....###
+        \\.....###
+        \\
+    );
+    // Far corners and huge sizes are limited to 2^61, which still covers the image.
+    try machine.interpretLine("CLS -1000000000000000000 -1000000000000000000 9223372036854775807 9223372036854775807 FILL-RECT");
+    try std.testing.expect(std.mem.allEqual(u32, machine.gfx_pixels, 0xffffffff));
+    try expectStack(machine, &.{});
+}
+
+test "CIRCLE and FILL-CIRCLE: small radii, symmetry, the outline inside the disc, and far circles" {
+    try skipWithout(&.{.graphics});
+    var output = Output{};
+    const machine = try libraryMachine(&output, "11 11");
+    defer destroyMachine(machine);
+    try machine.interpretLine("5 5 0 CIRCLE 1 1 1 CIRCLE 8 8 -1 CIRCLE 8 8 -1 FILL-CIRCLE");
+    try expectPicture(machine,
+        \\.#.........
+        \\#.#........
+        \\.#.........
+        \\...........
+        \\...........
+        \\.....#.....
+        \\...........
+        \\...........
+        \\...........
+        \\...........
+        \\...........
+        \\
+    );
+    // The shapes of the midpoint circle algorithm.
+    try machine.interpretLine("CLS 5 5 3 FILL-CIRCLE 5 5 2 CIRCLE");
+    try expectPicture(machine,
+        \\...........
+        \\...........
+        \\....###....
+        \\...#####...
+        \\..#######..
+        \\..#######..
+        \\..#######..
+        \\...#####...
+        \\....###....
+        \\...........
+        \\...........
+        \\
+    );
+    try machine.interpretLine("CLS 5 5 5 CIRCLE");
+    try expectPicture(machine,
+        \\...#####...
+        \\..#.....#..
+        \\.#.......#.
+        \\#.........#
+        \\#.........#
+        \\#.........#
+        \\#.........#
+        \\#.........#
+        \\.#.......#.
+        \\..#.....#..
+        \\...#####...
+        \\
+    );
+    try machine.interpretLine("CLS 5 5 5 CIRCLE");
+    // Symmetric about both axes and the diagonal.
+    for (0..11) |y| {
+        for (0..11) |x| {
+            const on = pixel(machine, x, y) != 0;
+            try std.testing.expectEqual(on, pixel(machine, 10 - x, y) != 0);
+            try std.testing.expectEqual(on, pixel(machine, x, 10 - y) != 0);
+            try std.testing.expectEqual(on, pixel(machine, y, x) != 0);
+        }
+    }
+    // Every outline pixel is in the disc, and the outline is closed: painting inside
+    // does not reach the corners.
+    try machine.interpretLine("0 0 255 COLOR 5 5 PAINT 255 255 255 COLOR 5 5 5 FILL-CIRCLE");
+    try std.testing.expectEqual(@as(usize, 0), std.mem.count(u32, machine.gfx_pixels, &.{0xff0000ff}));
+    try machine.interpretLine("CLS 5 5 5 CIRCLE 0 0 255 COLOR 5 5 PAINT");
+    try std.testing.expectEqual(@as(u32, 0), pixel(machine, 0, 0));
+    try std.testing.expectEqual(@as(u32, 0x0000FF), pixel(machine, 5, 5));
+
+    // Circles far away or with huge radii cost one step a row. The lowest point of this
+    // circle is on row 0, where its flat bottom covers the whole row; the disc far below
+    // (its center is limited to 2^30) draws nothing.
+    try machine.interpretLine("CLS 255 255 255 COLOR 5 -1000000000 1000000000 CIRCLE 5 5000000000 10 FILL-CIRCLE");
+    try std.testing.expect(std.mem.allEqual(u32, machine.gfx_pixels[0..11], 0xffffffff));
+    try std.testing.expectEqual(@as(usize, 11), std.mem.count(u32, machine.gfx_pixels, &.{0xffffffff}));
+    try machine.interpretLine("CLS 5 5 100000000000 FILL-CIRCLE");
+    try std.testing.expect(std.mem.allEqual(u32, machine.gfx_pixels, 0xffffffff));
+    try expectStack(machine, &.{});
+}
+
+test "PAINT fills the area of one color, grows its stack, and does nothing on the same color or outside" {
+    try skipWithout(&.{.graphics});
+    var output = Output{};
+    const machine = try libraryMachine(&output, "200 8");
+    defer destroyMachine(machine);
+    // A comb: 100 teeth on every other column below row 0, so row 1 has 100 runs to do,
+    // more than the 64 the stack starts with.
+    try machine.interpretLine(": TEETH 200 1 DO I 1 I 7 LINE 2 +LOOP ; TEETH");
+    const black = std.mem.count(u32, machine.gfx_pixels, &.{0xff000000});
+    try machine.interpretLine("255 0 0 COLOR 0 0 PAINT");
+    try std.testing.expectEqual(@as(usize, 0), std.mem.count(u32, machine.gfx_pixels, &.{0xff000000}));
+    try std.testing.expectEqual(black, std.mem.count(u32, machine.gfx_pixels, &.{0xffff0000}));
+    // The heap is free again.
+    try machine.interpretLine("1000 ALLOCATE THROW FREE THROW");
+    // Same color, outside, and a single pixel area.
+    try machine.interpretLine("0 0 PAINT -1 0 PAINT 0 40 PAINT 0 255 0 COLOR 1 5 PAINT");
+    try std.testing.expectEqual(@as(usize, 7), std.mem.count(u32, machine.gfx_pixels, &.{0xff00ff00}));
+    try expectStack(machine, &.{});
+}
+
+test "SAVE-BMP and SAVE-PPM throw the ior of a failure" {
+    try skipWithout(&.{.graphics});
+    var output = Output{};
+    const machine = try libraryMachine(&output, "2 2");
+    defer destroyMachine(machine);
+    try machine.interpretLine("S\" a.txt\" SAVE-PPM S\" b.txt\" SAVE-BMP");
+    try expectStack(machine, &.{});
+    try machine.interpretLine(": T S\" missing\" SAVE-BMP ; ' T CATCH");
+    try expectStack(machine, &.{forth.errnoIor(2)});
+}
+
+test "LOCATE and WHERE show the lines of the embedded library, without a file" {
+    try skipWithout(&.{ .graphics, .tools });
+    var output = Output{};
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
+    machine.graphics_library = "\\ test library\r\n: G1 1 ;\r\n: G2\r\n  G1 G1 ;\r\n";
+    try machine.interpretLine("REQUIRE-GRAPHICS ALSO GRAPHICS LOCATE G2 WHERE G1");
+    try std.testing.expectEqualStrings("*graphics library*:3\n: G2\n  G1 G1 ;\n" ++
+        "\n*graphics library*:4:3: G1 G1 ;" ++ repeat(" ", 79 - 31) ++ "0" ++
+        "\n*graphics library*:4:6: G1 G1 ;" ++ repeat(" ", 79 - 31) ++ "1", output.written());
+
+    // The built-in library: LOCATE shows the definition from this build's text.
+    const built_in = try createMachine(&output);
+    defer destroyMachine(built_in);
+    output.len = 0;
+    try built_in.interpretLine("REQUIRE-GRAPHICS ALSO GRAPHICS LOCATE PSET");
+    try std.testing.expect(std.mem.startsWith(u8, output.written(), "*graphics library*:"));
+    try std.testing.expect(std.mem.indexOf(u8, output.written(), ": PSET ( x y -- )") != null);
+}
+
+// ---- The library against independent references ----
+
+const ref_size = 40;
+const Bitmap = [ref_size][ref_size]bool;
+
+fn setRef(bitmap: *Bitmap, x: i64, y: i64) void {
+    if (x < 0 or y < 0 or x >= ref_size or y >= ref_size) return;
+    bitmap[@intCast(y)][@intCast(x)] = true;
+}
+
+/// The midpoint circle algorithm, walking the first octant and mirroring it.
+fn midpointCircle(bitmap: *Bitmap, cx: i64, cy: i64, r: i64, fill: bool) void {
+    var x: i64 = 0;
+    var y: i64 = r;
+    var d: i64 = 1 - r;
+    while (x <= y) {
+        const points = [_][2]i64{ .{ x, y }, .{ y, x } };
+        for (points) |p| {
+            for ([_]i64{ -1, 1 }) |sy| {
+                if (fill) {
+                    var column = cx - p[0];
+                    while (column <= cx + p[0]) : (column += 1) setRef(bitmap, column, cy + sy * p[1]);
+                } else for ([_]i64{ -1, 1 }) |sx| setRef(bitmap, cx + sx * p[0], cy + sy * p[1]);
+            }
+        }
+        if (d < 0) {
+            d += 2 * x + 3;
+        } else {
+            d += 2 * (x - y) + 5;
+            y -= 1;
+        }
+        x += 1;
+    }
+}
+
+/// Bresenham's line, as an independent reference.
+fn bresenham(bitmap: *Bitmap, x1_in: i64, y1_in: i64, x2: i64, y2: i64) void {
+    var x1 = x1_in;
+    var y1 = y1_in;
+    const dx: i64 = @intCast(@abs(x2 - x1));
+    const dy: i64 = -@as(i64, @intCast(@abs(y2 - y1)));
+    const sx: i64 = if (x1 < x2) 1 else -1;
+    const sy: i64 = if (y1 < y2) 1 else -1;
+    var err = dx + dy;
+    while (true) {
+        setRef(bitmap, x1, y1);
+        if (x1 == x2 and y1 == y2) return;
+        const e2 = 2 * err;
+        if (e2 >= dy) {
+            err += dy;
+            x1 += sx;
+        }
+        if (e2 <= dx) {
+            err += dx;
+            y1 += sy;
+        }
+    }
+}
+
+fn expectBitmap(machine: *const forth.State, expected: *const Bitmap, what: []const u8) !void {
+    for (0..ref_size) |y| {
+        for (0..ref_size) |x| {
+            if ((pixel(machine, x, y) != 0) != expected[y][x]) {
+                std.debug.print("{s}: pixel {d} {d} differs\n", .{ what, x, y });
+                return error.TestExpectedEqual;
+            }
+        }
+    }
+}
+
+test "CIRCLE and FILL-CIRCLE have the pixels of the midpoint circle algorithm, also cut at the edges" {
+    try skipWithout(&.{.graphics});
+    var output = Output{};
+    const machine = try libraryMachine(&output, "40 40");
+    defer destroyMachine(machine);
+    const centers = [_][2]i64{ .{ 20, 20 }, .{ 0, 0 }, .{ -10, 25 }, .{ 39, 45 }, .{ 17, -30 } };
+    for (centers) |center| {
+        var r: i64 = 0;
+        while (r <= 64) : (r += 1) {
+            for ([_]bool{ false, true }) |fill| {
+                var line: [80]u8 = undefined;
+                const text = try std.fmt.bufPrint(&line, "CLS {d} {d} {d} {s}", .{ center[0], center[1], r, if (fill) "FILL-CIRCLE" else "CIRCLE" });
+                try machine.interpretLine(text);
+                var expected: Bitmap = @splat(@splat(false));
+                midpointCircle(&expected, center[0], center[1], r, fill);
+                try expectBitmap(machine, &expected, text);
+            }
+        }
+    }
+    try expectStack(machine, &.{});
+}
+
+test "LINE between any two points of the image is Bresenham's line from the first point" {
+    try skipWithout(&.{.graphics});
+    var output = Output{};
+    const machine = try libraryMachine(&output, "40 40");
+    defer destroyMachine(machine);
+    // Ends on a coarse grid cover the eight directions, both orders, and steep, flat,
+    // and diagonal lines.
+    const ends = [_]i64{ 0, 1, 7, 20, 38, 39 };
+    for (ends) |x1| {
+        for (ends) |y1| {
+            for (ends) |x2| {
+                for (ends) |y2| {
+                    var line: [64]u8 = undefined;
+                    const text = try std.fmt.bufPrint(&line, "CLS {d} {d} {d} {d} LINE", .{ x1, y1, x2, y2 });
+                    try machine.interpretLine(text);
+                    var expected: Bitmap = @splat(@splat(false));
+                    bresenham(&expected, x1, y1, x2, y2);
+                    try expectBitmap(machine, &expected, text);
+                }
+            }
+        }
+    }
+    try expectStack(machine, &.{});
+}
+
+test "PAINT gives CANNOT ALLOCATE MEMORY when its stack cannot be made or grown, and frees it" {
+    try skipWithout(&.{.graphics});
+    var output = Output{};
+    const machine = try libraryMachine(&output, "200 8");
+    defer destroyMachine(machine);
+    // The heap is 917504 bytes, and each block takes 16 bytes more. Leaving 1000 bytes,
+    // the 1024-byte stack cannot be made.
+    try machine.interpretLine("916488 ALLOCATE THROW VALUE BIG : T 0 0 PAINT ; ' T CATCH");
+    try expectStack(machine, &.{-524});
+    try std.testing.expectEqual(@as(usize, 0), std.mem.count(u32, machine.gfx_pixels, &.{0xffffffff}));
+    machine.data_depth = 0;
+    // Leaving 1600 bytes, the stack is made but cannot grow past its 64 entries for the
+    // 100 runs of the comb: part of the area is filled, and the stack is freed.
+    try machine.interpretLine("BIG FREE THROW 915888 ALLOCATE THROW TO BIG");
+    try machine.interpretLine(": TEETH 200 1 DO I 1 I 7 LINE 2 +LOOP ; TEETH 255 0 0 COLOR ' T CATCH");
+    try expectStack(machine, &.{-524});
+    try std.testing.expect(std.mem.count(u32, machine.gfx_pixels, &.{0xffff0000}) > 0);
+    machine.data_depth = 0;
+    try machine.interpretLine("1500 ALLOCATE THROW FREE THROW");
+    try expectStack(machine, &.{});
+}
+
+test "BASE is restored when the library fails to load" {
+    try skipWithout(&.{.graphics});
+    var output = Output{};
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
+    machine.graphics_library = "10 CONSTANT TEN\nNO-SUCH-WORD\n";
+    try machine.interpretLine("HEX");
+    try std.testing.expectError(error.UnknownWord, machine.interpretLine("REQUIRE-GRAPHICS"));
+    try machine.interpretLine("BASE @ DECIMAL");
+    try expectStack(machine, &.{16});
 }

@@ -28,6 +28,12 @@ test "HELP has a description for every built-in word, and only for words that ex
     // The GFX- words are in the dictionary once REQUIRE-GRAPHICS has loaded them.
     if (@import("build_options").graphics) {
         try machine.interpretLine("REQUIRE-GRAPHICS ALSO GRAPHICS");
+        for (words_graphics.library_words) |name| {
+            if (machine.lookup(name) == null or words_help.entry(name) == null) {
+                std.debug.print("library word without help or definition: {s}\n", .{name});
+                return error.TestExpectedEqual;
+            }
+        }
         for (words_graphics.definitions) |definition| {
             if (words_help.entry(definition[0]) == null) {
                 std.debug.print("no help for {s}\n", .{definition[0]});
