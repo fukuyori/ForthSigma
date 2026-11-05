@@ -57,8 +57,14 @@ pub const Output = struct {
     framebuffers: [2][framebuffer_capacity]u32 = undefined,
     framebuffer_index: usize = 0,
     framebuffer_fails: bool = false,
+    /// Gives one pixel less than asked, as a host that breaks its contract would.
+    framebuffer_short: bool = false,
+    /// When not 0, the write to a file (not STDOUT) with this number, counted from 1,
+    /// fails with the ior of errno 28 (no space).
+    write_fails_at: usize = 0,
+    file_writes: usize = 0,
 
-    pub const framebuffer_capacity = 256;
+    pub const framebuffer_capacity = 1600;
 
     pub fn framebuffer(context: ?*anyopaque, pixels: usize) ?[]u32 {
         const output: *Output = @ptrCast(@alignCast(context.?));
@@ -67,7 +73,7 @@ pub const Output = struct {
         // Old contents, so that a test sees GFX-INIT clear the image.
         const buffer = output.framebuffers[output.framebuffer_index][0..pixels];
         @memset(buffer, 0x12345678);
-        return buffer;
+        return if (output.framebuffer_short) buffer[0 .. pixels - 1] else buffer;
     }
 
     pub fn write(context: ?*anyopaque, bytes: []const u8) void {
@@ -143,7 +149,7 @@ pub const Output = struct {
 
 /// An in-memory file for the fake host; "a.txt" and "b.txt" are the only names.
 pub const FakeFile = struct {
-    data: [512]u8 = undefined,
+    data: [8192]u8 = undefined,
     len: usize = 0,
     position: usize = 0,
     open: bool = false,
@@ -222,6 +228,9 @@ pub fn fakeWrite(context: ?*anyopaque, fileid: forth.Cell, bytes: []const u8) fo
         return 0;
     }
     const file = fakeFile(context, fileid) orelse return forth.errnoIor(forth.errno_bad_file);
+    const output = fakeOutput(context);
+    output.file_writes += 1;
+    if (output.file_writes == output.write_fails_at) return forth.errnoIor(28);
     @memcpy(file.data[file.position .. file.position + bytes.len], bytes);
     file.position += bytes.len;
     file.len = @max(file.len, file.position);

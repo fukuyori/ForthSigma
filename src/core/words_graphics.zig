@@ -57,7 +57,11 @@ pub fn execute(self: *State, builtin: Builtin) RuntimeError!void {
             const framebuffer_fn = self.writer.framebuffer_fn orelse return error.HostUnavailable;
             // The host keeps the old image when it cannot give a new one.
             const buffer = framebuffer_fn(self.writer.context, pixels) orelse return error.MemoryExhausted;
-            if (buffer.len != pixels) return error.HostFailed;
+            if (buffer.len != pixels) {
+                // The host has let the old image go, so it cannot stay in use.
+                clearImage(self);
+                return error.HostFailed;
+            }
             @memset(buffer, opaque_alpha);
             self.gfx_pixels = buffer;
             self.gfx_width = width;
@@ -114,6 +118,13 @@ pub fn imagePixels(width: Cell, height: Cell) RuntimeError!usize {
     const bytes = std.math.mul(u64, pixels, 4) catch return error.InvalidNumber;
     if (bytes > max_bytes) return error.InvalidNumber;
     return @intCast(pixels);
+}
+
+/// Forgets the image without releasing it; the host owns the buffer.
+pub fn clearImage(self: *State) void {
+    self.gfx_pixels = &.{};
+    self.gfx_width = 0;
+    self.gfx_height = 0;
 }
 
 fn requireImage(self: *const State) RuntimeError!void {
@@ -243,7 +254,8 @@ fn writeBmp(self: *const State, output: *FileOutput) void {
 /// dictionary (FORGET and MARKER can remove them).
 pub fn graphicsLoaded(self: *const State) bool {
     const recorded = self.readCellConst(graphics_vocabulary_address);
-    if (recorded < self.builtin_count or recorded + 1 >= self.word_count) return false;
+    // Compared before adding 1, since the cell may hold any value.
+    if (recorded < self.builtin_count or recorded >= @as(Cell, self.word_count) - 1) return false;
     const vocabulary = self.words[@intCast(recorded)];
     const first = self.words[@intCast(recorded + 1)];
     return vocabulary.kind == .vocabulary and first.kind == .builtin and first.builtin == definitions[0][1];
@@ -268,8 +280,25 @@ pub fn requireGraphics(self: *State) RuntimeError!void {
     const loaded_files = self.loadedSourceFiles();
     const first_word = self.word_count;
     const wid = wordlists + 1;
+    const pending = self.pending;
+    const control_depth = self.control_depth;
+    const interpret_loop_depth = self.interpret_loop_depth;
 
     loadGraphicsWords(self, wid) catch |err| {
+        // A definition the library started is dropped with the rest, so that the error
+        // handling after this does not bring the removed words back.
+        if (self.defining) {
+            self.defining = false;
+            self.setCompiling(false);
+            self.local_count = 0;
+            self.locals_frame_size = 0;
+        }
+        self.pending = pending;
+        self.control_depth = control_depth;
+        self.interpret_loop_depth = interpret_loop_depth;
+        if (self.last_created_word) |created| {
+            if (created >= first_word) self.last_created_word = null;
+        }
         if (self.word_count > first_word) self.forgetFrom(first_word);
         self.writeCell(wordlist_count_address, wordlists) catch unreachable;
         self.writeCell(current_wordlist_address, current) catch unreachable;

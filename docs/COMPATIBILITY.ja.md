@@ -185,6 +185,6 @@ zig build testで、現行コアの主要動作を次のテストで確認しま
 | parsing and dictionary words | 語の後の区切り1文字の消費とPARSE、文字列語の空白、WORDの数え付き文字列、FINDの即時語・未発見、FIND-NAME・NAME>INT・NAME>STRINGと無効な名前トークン、SEEの出力（制御構造、CREATE/DOES>、IMMEDIATE）、EVALUATEが端末の次の行を読まないこと、入力行の上限 |
 | locals | スタック順の受け取り、定義途中・ループ内での宣言、TO、`\|`、W:/D:/F:/C:/XT:、W^/F^/C^のアドレス、LOCALS\|、`{: :}`、再帰と領域の解放、エラー後の解放、名前の有効範囲、定義外での拒否、追加読み込み後の実行 |
 | file words | アクセス方法とストリーム番号、作成・書き込み・大きさ・位置変更・行単位の読み込み・閉じる、エラー時のiorとスタックの形、STDOUTへの書き込み、ホスト機能がない場合のエラー。FILE-POSITION、RESIZE-FILE（位置が変わらないこと）、FLUSH-FILE、FILE-STATUS、RENAME-FILE、DELETE-FILE（2回目のior）、BIN、INCLUDE-FILE、閉じたファイルのior |
-| graphics | REQUIRE-GRAPHICS が検索順序と組み込み語を変えずに1回だけ読み込むこと、定義の中と `-Dgraphics=false` の版でのエラー、GFX-INIT の大きさの上限（1〜8192、64 MiB）とホストが失敗したときに前の画像が残ること、画像がないときのエラー、GFX-PSET・GFX-PGET・GFX-HLINE の切り取り、PPMとBMPのファイルのバイト列（行の詰め物）と失敗時のior、ライブラリを GRAPHICS に読み込むことと失敗時にすべて戻すこと、読み込む前は SIGIMG33・後は SIGIMG34（MARKER の後も）、グラフィックスの語を含むイメージの復元と追加読み込み（LOAD） |
+| graphics | REQUIRE-GRAPHICS が検索順序と組み込み語を変えずに1回だけ読み込むこと、定義の中と `-Dgraphics=false` の版でのエラー、GFX-INIT の大きさの上限（1〜8192、64 MiB）とホストが失敗したときに前の画像が残ること、画像がないときのエラー、GFX-PSET・GFX-PGET・GFX-HLINE の切り取り、PPMとBMPのファイルのバイト列（行の詰め物）と失敗時のior、ライブラリを GRAPHICS に読み込むことと失敗時にすべて戻すこと、読み込む前は SIGIMG33・後は SIGIMG34（MARKER の後も）、グラフィックスの語を含むイメージの復元と追加読み込み（LOAD）、定義の途中で失敗するライブラリ（直接、エラー報告の後、CATCH 経由）、画像のある State への復元、語彙のセルの任意の値、違う長さを返すホスト、ライブラリの読み方（CR LF、空行、長すぎる行、行をまたぐ [DO]、REFILL、SOURCE-ID）、書き込み用バッファより大きい保存と書き込み・閉じる失敗、グラフィックスのない版での SIGIMG34 の GFX- の語の実行 |
 
 現行テストは主要経路を確認するものです。全ワード、すべての容量境界、各エラー条件を網羅したものではありません。

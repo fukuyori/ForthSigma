@@ -248,6 +248,8 @@ pub fn restoreImage(self: *State, image: []const u8) RuntimeError!void {
     self.setCompiling(false);
     self.defining = false;
     self.pending = .none;
+    // The image is not part of the dictionary: the restored program makes its own.
+    words_graphics.clearImage(self);
 }
 
 pub fn appendImage(self: *State, source: *const State) RuntimeError!void {

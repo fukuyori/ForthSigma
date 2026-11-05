@@ -62,7 +62,8 @@ pub const Writer = struct {
     file_ops: ?*const FileOps = null,
     /// Gives a graphics image of that many 32-bit pixels, outside logical memory. On
     /// success the host releases the buffer it gave before and returns the new one; on
-    /// failure it returns null and keeps the buffer it gave before.
+    /// failure it returns null and keeps the buffer it gave before. A buffer of another
+    /// length is an error, after which the core uses no image.
     framebuffer_fn: ?*const fn (?*anyopaque, usize) ?[]u32 = null,
 
     pub fn write(self: Writer, bytes: []const u8) void {

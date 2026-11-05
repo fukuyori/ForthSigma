@@ -578,7 +578,7 @@ A color is the cell `$RRGGBB` (the bits above the low 24 are ignored), and every
 | `GFX-CLS` | ( rgb -- ) | Fill the whole image. |
 | `GFX-SAVE-PPM`, `GFX-SAVE-BMP` | ( c-addr u -- ior ) | Write the image to a new file as a binary PPM (P6) or a 24-bit BMP. ior is 0 or the error of the file operation. They also work in a build with `-Dfiles=false`. |
 
-Errors: a size outside the limits gives `NUMBER ERROR !`; an image the host cannot allocate gives `OUT OF MEMORY !`; using the image before `GFX-INIT` gives `NO GRAPHICS IMAGE !` (THROW -271); and `REQUIRE-GRAPHICS` in a build with `-Dgraphics=false` gives `GRAPHICS UNAVAILABLE !` (THROW -270). If the library fails to load, everything `REQUIRE-GRAPHICS` added is removed again.
+Errors: a size outside the limits gives `NUMBER ERROR !`; an image the host cannot allocate gives `OUT OF MEMORY !`; using the image before `GFX-INIT` gives `NO GRAPHICS IMAGE !` (THROW -271); and `REQUIRE-GRAPHICS` in a build with `-Dgraphics=false` gives `GRAPHICS UNAVAILABLE !` (THROW -270). If the library fails to load, everything `REQUIRE-GRAPHICS` added is removed again. `REQUIRE-GRAPHICS` loads the words again after `FORGET` or a `MARKER` has removed the `GRAPHICS` vocabulary or `GFX-INIT`; when only later `GFX-` words were forgotten (such as `FORGET GFX-WIDTH`), it does nothing and they stay removed.
 
 The image is not part of the dictionary: `SAVE` and `SAVESYS` keep the graphics words and the words that use them, but not the pixels, so a program makes its image with `GFX-INIT` after it starts. The drawing words written in Forth (lines, rectangles, circles, graphs of functions) and showing the image on the screen come in later stages.
 

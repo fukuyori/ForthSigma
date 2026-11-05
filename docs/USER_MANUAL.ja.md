@@ -578,7 +578,7 @@ PREVIOUS
 | `GFX-CLS` | ( rgb -- ) | 画像全体を塗ります。 |
 | `GFX-SAVE-PPM`、`GFX-SAVE-BMP` | ( c-addr u -- ior ) | 画像を新しいファイルに、2進のPPM（P6）または24ビットのBMPで書きます。ior は0か、ファイル操作のエラーです。`-Dfiles=false` の版でも使えます。 |
 
-エラー: 大きさが範囲外なら `NUMBER ERROR !`、ホストが画像の領域を確保できなければ `OUT OF MEMORY !`、`GFX-INIT` の前に画像を使うと `NO GRAPHICS IMAGE !`（THROW -271）、`-Dgraphics=false` の版の `REQUIRE-GRAPHICS` は `GRAPHICS UNAVAILABLE !`（THROW -270）です。ライブラリの読み込みに失敗したときは、`REQUIRE-GRAPHICS` が加えたものをすべて取り除きます。
+エラー: 大きさが範囲外なら `NUMBER ERROR !`、ホストが画像の領域を確保できなければ `OUT OF MEMORY !`、`GFX-INIT` の前に画像を使うと `NO GRAPHICS IMAGE !`（THROW -271）、`-Dgraphics=false` の版の `REQUIRE-GRAPHICS` は `GRAPHICS UNAVAILABLE !`（THROW -270）です。ライブラリの読み込みに失敗したときは、`REQUIRE-GRAPHICS` が加えたものをすべて取り除きます。`FORGET` や `MARKER` で `GRAPHICS` 語彙や `GFX-INIT` を消したあとは、`REQUIRE-GRAPHICS` でもう一度読み込めます。それより後ろの `GFX-` の語だけを消した場合（`FORGET GFX-WIDTH` など）は、`REQUIRE-GRAPHICS` は何もせず、消えた語は戻りません。
 
 画像は辞書の一部ではありません。`SAVE` と `SAVESYS` はグラフィックスの語とそれを使う語を保存しますが、画素は保存しないので、プログラムは起動後に `GFX-INIT` で画像を作ります。Forthで書く描画の語（線、長方形、円、関数のグラフ）と画面への表示は、後の段階で加えます。
 
