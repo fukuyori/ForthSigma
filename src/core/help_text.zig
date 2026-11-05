@@ -600,6 +600,10 @@ pub const entries = [_]Entry{
     .{ .name = "GFX-CLS", .stack = "( rgb -- )", .text = "Fill the whole image with the color $RRGGBB (FORTH/Sigma)." },
     .{ .name = "GFX-SAVE-PPM", .stack = "( c-addr u -- ior )", .text = "Write the image to the named file as a binary PPM (P6) (FORTH/Sigma)." },
     .{ .name = "GFX-SAVE-BMP", .stack = "( c-addr u -- ior )", .text = "Write the image to the named file as a 24-bit BMP (FORTH/Sigma)." },
+    .{ .name = "GFX-SHOW-BLOCKS", .stack = "( -- )", .text = "Show the image on the terminal with half block characters, made smaller to fit (FORTH/Sigma)." },
+    .{ .name = "GFX-SHOW-SIXEL", .stack = "( -- )", .text = "Show the image on the terminal as Sixel graphics, made smaller to fit (FORTH/Sigma)." },
+    .{ .name = "GFX-SHOW-WINDOW", .stack = "( -- )", .text = "Show the image in the host's window (FORTH/Sigma)." },
+    .{ .name = "GFX-WINDOW?", .stack = "( -- flag )", .text = "True when the host can show the image in a window (FORTH/Sigma)." },
     // The graphics library, written in Forth (src/graphics/graphics.fs).
     .{ .name = "RGB", .stack = "( r g b -- rgb )", .text = "The color $RRGGBB of red, green, and blue, each 0 to 255 (FORTH/Sigma graphics)." },
     .{ .name = "COLOR", .stack = "( r g b -- )", .text = "Set the current color, which the drawing words use; it starts white (FORTH/Sigma graphics)." },
@@ -615,4 +619,9 @@ pub const entries = [_]Entry{
     .{ .name = "PAINT", .stack = "( x y -- )", .text = "Fill the area around x y that has the color of x y with the current color (FORTH/Sigma graphics)." },
     .{ .name = "SAVE-PPM", .stack = "( c-addr u -- )", .text = "Write the image to the named file as a binary PPM; THROW on failure (FORTH/Sigma graphics)." },
     .{ .name = "SAVE-BMP", .stack = "( c-addr u -- )", .text = "Write the image to the named file as a 24-bit BMP; THROW on failure (FORTH/Sigma graphics)." },
+    .{ .name = "SHOW", .stack = "( -- )", .text = "Show the image in the window or on the terminal, as DISPLAY-WINDOW or DISPLAY-TERMINAL chose (FORTH/Sigma graphics)." },
+    .{ .name = "DISPLAY-TERMINAL", .stack = "( -- )", .text = "Make SHOW show the image on the terminal (FORTH/Sigma graphics)." },
+    .{ .name = "DISPLAY-WINDOW", .stack = "( -- )", .text = "Make SHOW show the image in a window, when the host has one (FORTH/Sigma graphics)." },
+    .{ .name = "TERMINAL-BLOCKS", .stack = "( -- )", .text = "Show the image on the terminal with half block characters, the default (FORTH/Sigma graphics)." },
+    .{ .name = "TERMINAL-SIXEL", .stack = "( -- )", .text = "Show the image on the terminal as Sixel graphics (FORTH/Sigma graphics)." },
 };

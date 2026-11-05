@@ -36,7 +36,7 @@ pub fn repeat(comptime text: []const u8, comptime count: usize) *const [text.len
 }
 
 pub const Output = struct {
-    bytes: [4096]u8 = undefined,
+    bytes: [32768]u8 = undefined,
     len: usize = 0,
     input_lines: [4][]const u8 = undefined,
     input_count: usize = 0,
@@ -63,8 +63,42 @@ pub const Output = struct {
     /// fails with the ior of errno 28 (no space).
     write_fails_at: usize = 0,
     file_writes: usize = 0,
+    /// The terminal size the host reports; 0 columns reports none (not a terminal).
+    terminal_columns: u32 = 0,
+    terminal_rows: u32 = 0,
+    /// The calls of the UTF-8 hook, as "+" (begin) and "-" (end).
+    utf8_calls: [8]u8 = undefined,
+    utf8_count: usize = 0,
+    /// Whether the host has a window; set before createMachine. The last image shown in
+    /// it: its size and the first pixel, and how many times SHOW used it.
+    has_window: bool = false,
+    window_shows: usize = 0,
+    window_width: u32 = 0,
+    window_height: u32 = 0,
+    window_first_pixel: u32 = 0,
 
     pub const framebuffer_capacity = 1600;
+
+    pub fn terminalSize(context: ?*anyopaque) ?forth.TerminalSize {
+        const output: *Output = @ptrCast(@alignCast(context.?));
+        if (output.terminal_columns == 0) return null;
+        return .{ .columns = output.terminal_columns, .rows = output.terminal_rows };
+    }
+
+    pub fn terminalUtf8(context: ?*anyopaque, begin: bool) void {
+        const output: *Output = @ptrCast(@alignCast(context.?));
+        if (output.utf8_count == output.utf8_calls.len) return;
+        output.utf8_calls[output.utf8_count] = if (begin) '+' else '-';
+        output.utf8_count += 1;
+    }
+
+    pub fn window(context: ?*anyopaque, pixels: []const u32, width: u32, height: u32) forth.RuntimeError!void {
+        const output: *Output = @ptrCast(@alignCast(context.?));
+        output.window_shows += 1;
+        output.window_width = width;
+        output.window_height = height;
+        output.window_first_pixel = pixels[0];
+    }
 
     pub fn framebuffer(context: ?*anyopaque, pixels: usize) ?[]u32 {
         const output: *Output = @ptrCast(@alignCast(context.?));
@@ -84,7 +118,7 @@ pub const Output = struct {
     }
 
     pub fn writer(self: *Output) forth.Writer {
-        return .{ .context = @ptrCast(self), .write_fn = write, .read_fn = read, .key_fn = key, .key_ready_fn = keyReady, .sleep_fn = sleep, .utime_fn = utime, .local_time_fn = localTime, .getenv_fn = getenv, .system_fn = system, .file_ops = &fake_file_ops, .framebuffer_fn = framebuffer };
+        return .{ .context = @ptrCast(self), .write_fn = write, .read_fn = read, .key_fn = key, .key_ready_fn = keyReady, .sleep_fn = sleep, .utime_fn = utime, .local_time_fn = localTime, .getenv_fn = getenv, .system_fn = system, .file_ops = &fake_file_ops, .framebuffer_fn = framebuffer, .terminal_size_fn = terminalSize, .terminal_utf8_fn = terminalUtf8, .window_fn = if (self.has_window) window else null };
     }
 
     pub fn sleep(context: ?*anyopaque, milliseconds: forth.Cell) forth.RuntimeError!void {

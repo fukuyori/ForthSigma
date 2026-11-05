@@ -869,3 +869,203 @@ test "BASE is restored when the library fails to load" {
     try machine.interpretLine("BASE @ DECIMAL");
     try expectStack(machine, &.{16});
 }
+
+// ---- Showing the image (G3) ----
+
+test "GFX-SHOW-BLOCKS writes two pixels a cell in 24-bit colors, as UTF-8 the host is told of" {
+    try skipWithout(&.{.graphics});
+    var output = Output{};
+    const machine = try libraryMachine(&output, "2 3");
+    defer destroyMachine(machine);
+    try machine.interpretLine("$FF0000 COLOR! 0 0 PSET $00FF00 COLOR! 0 1 PSET $0000FF COLOR! 1 1 PSET $FFFFFF COLOR! 0 2 PSET");
+    output.len = 0;
+    try machine.interpretLine("GFX-SHOW-BLOCKS");
+    try std.testing.expectEqualStrings("\x1b[38;2;255;0;0m\x1b[48;2;0;255;0m\u{2580}\x1b[38;2;0;0;0m\x1b[48;2;0;0;255m\u{2580}\x1b[0m\n" ++
+        "\x1b[38;2;255;255;255m\x1b[49m\u{2580}\x1b[38;2;0;0;0m\u{2580}\x1b[0m\n", output.written());
+    try std.testing.expectEqualStrings("+-", output.utf8_calls[0..output.utf8_count]);
+}
+
+test "an image larger than the terminal is made smaller, keeping its proportions, by averaging" {
+    try skipWithout(&.{.graphics});
+    var output = Output{ .terminal_columns = 2, .terminal_rows = 2 };
+    const machine = try libraryMachine(&output, "4 2");
+    defer destroyMachine(machine);
+    // Two columns and one row for the image: 2 × 2 pixels, from blocks of 2 × 2.
+    try machine.interpretLine("$FF0000 COLOR! 0 0 PSET 0 1 PSET $0000FF COLOR! 1 0 PSET 1 1 PSET $FFFFFF COLOR! 2 1 PSET 3 1 PSET");
+    output.len = 0;
+    try machine.interpretLine("GFX-SHOW-BLOCKS");
+    try std.testing.expectEqualStrings("\x1b[38;2;128;0;128m\x1b[49m\u{2580}\x1b[38;2;128;128;128m\u{2580}\x1b[0m\n", output.written());
+    // A tall image is limited by the rows: 2 rows (4 pixels) of the 2-row terminal less
+    // the line for the prompt.
+    output.terminal_columns = 80;
+    output.terminal_rows = 3;
+    try machine.interpretLine("1 9 GFX-INIT");
+    output.len = 0;
+    try machine.interpretLine("GFX-SHOW-BLOCKS");
+    try std.testing.expectEqual(@as(usize, 2), std.mem.count(u8, output.written(), "\u{2580}"));
+}
+
+test "GFX-SHOW-SIXEL writes the image as Sixel graphics with the colors of a 6 x 6 x 6 cube" {
+    try skipWithout(&.{.graphics});
+    var output = Output{};
+    const machine = try libraryMachine(&output, "2 1");
+    defer destroyMachine(machine);
+    try machine.interpretLine("$FF0000 COLOR! 0 0 PSET $0000FF COLOR! 1 0 PSET");
+    output.len = 0;
+    try machine.interpretLine("GFX-SHOW-SIXEL");
+    var expected: [4096]u8 = undefined;
+    var at: usize = 0;
+    at += (try std.fmt.bufPrint(expected[at..], "\x1bPq\"1;1;2;1", .{})).len;
+    for (0..216) |register| at += (try std.fmt.bufPrint(expected[at..], "#{d};2;{d};{d};{d}", .{ register, register / 36 * 20, register / 6 % 6 * 20, register % 6 * 20 })).len;
+    // Blue is register 5 and red register 180; each paints its own column of the band.
+    at += (try std.fmt.bufPrint(expected[at..], "#5?@$#180@?$-\x1b\\", .{})).len;
+    try std.testing.expectEqualStrings(expected[0..at], output.written());
+}
+
+test "SHOW goes to the window when the host has one, or to the terminal, as chosen" {
+    try skipWithout(&.{.graphics});
+    var output = Output{ .has_window = true };
+    const machine = try libraryMachine(&output, "3 2");
+    defer destroyMachine(machine);
+    try machine.interpretLine("$123456 GFX-CLS GFX-WINDOW? SHOW");
+    try expectStack(machine, &.{-1});
+    try std.testing.expectEqual(@as(usize, 1), output.window_shows);
+    try std.testing.expectEqual(@as(u32, 3), output.window_width);
+    try std.testing.expectEqual(@as(u32, 2), output.window_height);
+    try std.testing.expectEqual(@as(u32, 0xff123456), output.window_first_pixel);
+    output.len = 0;
+    try machine.interpretLine("DISPLAY-TERMINAL SHOW");
+    try std.testing.expect(std.mem.indexOf(u8, output.written(), "\u{2580}") != null);
+    output.len = 0;
+    try machine.interpretLine("TERMINAL-SIXEL SHOW");
+    try std.testing.expect(std.mem.startsWith(u8, output.written(), "\x1bPq"));
+    try machine.interpretLine("TERMINAL-BLOCKS DISPLAY-WINDOW SHOW");
+    try std.testing.expectEqual(@as(usize, 2), output.window_shows);
+    machine.data_depth = 0;
+
+    // Without a window, SHOW uses the terminal and DISPLAY-WINDOW is refused.
+    var plain = Output{};
+    const terminal = try libraryMachine(&plain, "3 2");
+    defer destroyMachine(terminal);
+    plain.len = 0;
+    try terminal.interpretLine("GFX-WINDOW? SHOW");
+    try std.testing.expect(std.mem.indexOf(u8, plain.written(), "\u{2580}") != null);
+    try terminal.interpretLine("' DISPLAY-WINDOW CATCH");
+    try expectStack(terminal, &.{ 0, -21 });
+    try std.testing.expectError(error.HostUnavailable, terminal.interpretLine("GFX-SHOW-WINDOW"));
+    // No image: the same error as the other words.
+    const empty = try createMachine(&plain);
+    defer destroyMachine(empty);
+    try std.testing.expectError(error.NoCanvas, empty.interpretLine("REQUIRE-GRAPHICS ALSO GRAPHICS SHOW"));
+}
+
+/// Decodes Sixel graphics into color registers (0xff where nothing is drawn), as an
+/// independent check of GFX-SHOW-SIXEL.
+fn decodeSixel(text: []const u8, grid: [][16]u8, width: *usize, height: *usize) !void {
+    if (!std.mem.startsWith(u8, text, "\x1bPq\"1;1;") or !std.mem.endsWith(u8, text, "\x1b\\")) return error.TestUnexpectedResult;
+    var at: usize = 8;
+    const readNumber = struct {
+        fn read(bytes: []const u8, cursor: *usize) usize {
+            var value: usize = 0;
+            while (cursor.* < bytes.len and std.ascii.isDigit(bytes[cursor.*])) : (cursor.* += 1) value = value * 10 + bytes[cursor.*] - '0';
+            return value;
+        }
+    }.read;
+    width.* = readNumber(text, &at);
+    at += 1;
+    height.* = readNumber(text, &at);
+    for (grid) |*row| row.* = @splat(0xff);
+    var color: u8 = 0;
+    var x: usize = 0;
+    var band: usize = 0;
+    while (at < text.len - 2) {
+        const char = text[at];
+        at += 1;
+        switch (char) {
+            '#' => {
+                const register = readNumber(text, &at);
+                if (at < text.len and text[at] == ';') {
+                    // A color definition: #n;2;r;g;b.
+                    while (at < text.len and (text[at] == ';' or std.ascii.isDigit(text[at]))) at += 1;
+                } else color = @intCast(register);
+            },
+            '$' => x = 0,
+            '-' => {
+                x = 0;
+                band += 1;
+            },
+            '!' => {
+                const count = readNumber(text, &at);
+                const sixel = text[at];
+                at += 1;
+                for (0..count) |_| {
+                    paintSixel(grid, x, band, sixel - 63, color);
+                    x += 1;
+                }
+            },
+            '?'...'~' => {
+                paintSixel(grid, x, band, char - 63, color);
+                x += 1;
+            },
+            else => return error.TestUnexpectedResult,
+        }
+    }
+}
+
+fn paintSixel(grid: [][16]u8, x: usize, band: usize, bits: u8, color: u8) void {
+    for (0..6) |line| {
+        if (bits & (@as(u8, 1) << @intCast(line)) != 0) grid[band * 6 + line][x] = color;
+    }
+}
+
+test "the Sixel output decodes to the image's colors for heights of 1, 5, 6, 7, and 13, with runs" {
+    try skipWithout(&.{.graphics});
+    var output = Output{};
+    const machine = try libraryMachine(&output, "1 1");
+    defer destroyMachine(machine);
+    for ([_]u32{ 1, 5, 6, 7, 13 }) |image_height| {
+        var line: [64]u8 = undefined;
+        try machine.interpretLine(try std.fmt.bufPrint(&line, "16 {d} GFX-INIT", .{image_height}));
+        // Runs of one color on the left, a different color for every pixel on the right.
+        for (0..image_height) |y| for (0..16) |x| {
+            const rgb: u32 = if (x < 6) 0x33cc99 else @as(u32, @intCast((x * 37) & 0xff)) << 16 | @as(u32, @intCast((y * 53) & 0xff)) << 8 | @as(u32, @intCast(((x + y) * 29) & 0xff));
+            machine.gfx_pixels[y * 16 + x] = 0xff000000 | rgb;
+        };
+        output.len = 0;
+        try machine.interpretLine("GFX-SHOW-SIXEL");
+        var grid: [18][16]u8 = undefined;
+        var width: usize = 0;
+        var height: usize = 0;
+        try decodeSixel(output.written(), &grid, &width, &height);
+        try std.testing.expectEqual(@as(usize, 16), width);
+        try std.testing.expectEqual(@as(usize, image_height), height);
+        for (0..image_height) |y| for (0..16) |x| {
+            const rgb = machine.gfx_pixels[y * 16 + x];
+            const r = (((rgb >> 16) & 0xff) * 5 + 127) / 255;
+            const g = (((rgb >> 8) & 0xff) * 5 + 127) / 255;
+            const b = ((rgb & 0xff) * 5 + 127) / 255;
+            try std.testing.expectEqual(@as(u8, @intCast(r * 36 + g * 6 + b)), grid[y][x]);
+        };
+        // Nothing below the image.
+        for (image_height..18) |y| try std.testing.expect(std.mem.allEqual(u8, &grid[y], 0xff));
+        try std.testing.expect(std.mem.indexOf(u8, output.written(), "!6") != null);
+    }
+}
+
+test "half block output longer than the output buffer comes out whole" {
+    try skipWithout(&.{.graphics});
+    var output = Output{};
+    const machine = try libraryMachine(&output, "80 10");
+    defer destroyMachine(machine);
+    // Every pixel differs from its neighbors, so every cell has two color escapes.
+    for (machine.gfx_pixels, 0..) |*value, index| value.* = 0xff000000 | @as(u32, @intCast(index * 2654435761 & 0xffffff));
+    output.len = 0;
+    try machine.interpretLine("GFX-SHOW-BLOCKS");
+    const text = output.written();
+    try std.testing.expect(text.len > 4096);
+    try std.testing.expectEqual(@as(usize, 400), std.mem.count(u8, text, "\u{2580}"));
+    try std.testing.expectEqual(@as(usize, 5), std.mem.count(u8, text, "\x1b[0m\n"));
+    try std.testing.expectEqual(@as(usize, 400), std.mem.count(u8, text, "\x1b[38;2;"));
+    try std.testing.expectEqual(@as(usize, 400), std.mem.count(u8, text, "\x1b[48;2;"));
+    try std.testing.expect(std.mem.endsWith(u8, text, "\x1b[0m\n"));
+}

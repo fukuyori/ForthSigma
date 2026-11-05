@@ -60,6 +60,14 @@ extern "kernel32" fn Sleep(u32) callconv(.winapi) void;
 extern "kernel32" fn GetSystemTimePreciseAsFileTime(*u64) callconv(.winapi) void;
 extern "kernel32" fn GetConsoleMode(*anyopaque, *u32) callconv(.winapi) c_int;
 extern "kernel32" fn SetConsoleMode(*anyopaque, u32) callconv(.winapi) c_int;
+extern "kernel32" fn GetConsoleScreenBufferInfo(*anyopaque, *ConsoleScreenBufferInfo) callconv(.winapi) c_int;
+extern "kernel32" fn GetConsoleOutputCP() callconv(.winapi) u32;
+extern "kernel32" fn SetConsoleOutputCP(u32) callconv(.winapi) c_int;
+const ConsoleScreenBufferInfo = extern struct { size: [2]i16, cursor: [2]i16, attributes: u16, window: [4]i16, maximum_size: [2]i16 };
+const posix_ioctl = struct {
+    extern "c" fn ioctl(c_int, c_int, ...) c_int;
+};
+const host_window = @import("host_window.zig");
 
 const image_footer_size = 20;
 const image_footer_magic = "SIGEND01";
@@ -72,6 +80,41 @@ const HostContext = struct { allocator: std.mem.Allocator, executable_path: [:0]
 
 fn hostContext(context: ?*anyopaque) forth.RuntimeError!*HostContext {
     return @ptrCast(@alignCast(context orelse return error.HostUnavailable));
+}
+
+/// The size of the terminal on standard output, for SHOW; null when it is not one.
+fn terminalSize(_: ?*anyopaque) ?forth.TerminalSize {
+    if (!output_is_terminal) return null;
+    if (builtin.os.tag == .windows) {
+        const std_output_handle: u32 = @bitCast(@as(i32, -11));
+        const handle = GetStdHandle(std_output_handle) orelse return null;
+        var info: ConsoleScreenBufferInfo = undefined;
+        if (GetConsoleScreenBufferInfo(handle, &info) == 0) return null;
+        const columns = @as(i32, info.window[2]) - info.window[0] + 1;
+        const rows = @as(i32, info.window[3]) - info.window[1] + 1;
+        if (columns < 1 or rows < 1) return null;
+        return .{ .columns = @intCast(columns), .rows = @intCast(rows) };
+    }
+    var size: std.posix.winsize = undefined;
+    if (posix_ioctl.ioctl(1, @intCast(std.c.T.IOCGWINSZ), &size) != 0) return null;
+    return .{ .columns = size.col, .rows = size.row, .x_pixels = size.xpixel, .y_pixels = size.ypixel };
+}
+
+/// The code page the console had before SHOW switched it to UTF-8.
+var saved_output_code_page: u32 = 0;
+
+/// SHOW writes UTF-8 half blocks: a Windows console shows them only with the UTF-8
+/// code page, which is set for that output and then put back.
+fn terminalUtf8(_: ?*anyopaque, begin: bool) void {
+    if (builtin.os.tag != .windows or !output_is_terminal) return;
+    flushOutput();
+    if (begin) {
+        saved_output_code_page = GetConsoleOutputCP();
+        _ = SetConsoleOutputCP(65001);
+    } else if (saved_output_code_page != 0) {
+        _ = SetConsoleOutputCP(saved_output_code_page);
+        saved_output_code_page = 0;
+    }
 }
 
 /// GFX-INIT's image: a new buffer, replacing the previous one only when it is allocated.
@@ -705,8 +748,9 @@ fn run(init: std.process.Init.Minimal) !void {
 
     enableVirtualTerminal();
     useBinaryStdin();
-    machine.init(.{ .context = @ptrCast(&host), .write_fn = terminalWrite, .read_fn = terminalRead, .load_fn = loadDictionary, .save_fn = saveDictionary, .savesys_fn = saveExecutableImage, .key_fn = terminalKey, .key_ready_fn = terminalKeyReady, .sleep_fn = sleepMilliseconds, .utime_fn = microsecondsSinceEpoch, .local_time_fn = localTime, .getenv_fn = environmentValue, .system_fn = runShellCommand, .file_ops = &file_ops, .framebuffer_fn = graphicsBuffer });
+    machine.init(.{ .context = @ptrCast(&host), .write_fn = terminalWrite, .read_fn = terminalRead, .load_fn = loadDictionary, .save_fn = saveDictionary, .savesys_fn = saveExecutableImage, .key_fn = terminalKey, .key_ready_fn = terminalKeyReady, .sleep_fn = sleepMilliseconds, .utime_fn = microsecondsSinceEpoch, .local_time_fn = localTime, .getenv_fn = environmentValue, .system_fn = runShellCommand, .file_ops = &file_ops, .framebuffer_fn = graphicsBuffer, .terminal_size_fn = terminalSize, .terminal_utf8_fn = terminalUtf8, .window_fn = if (host_window.available) host_window.show else null });
     defer closeAllFiles();
+    defer host_window.close();
     loadEmbeddedImage(executable_path, machine, allocator);
 
     var arguments = try std.process.Args.Iterator.initAllocator(init.args, allocator);

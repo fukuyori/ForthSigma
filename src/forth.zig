@@ -25,6 +25,7 @@ const words_dictionary = @import("core/words_dictionary.zig");
 const words_files = @import("core/words_files.zig");
 const words_float = @import("core/words_float.zig");
 const words_graphics = @import("core/words_graphics.zig");
+const graphics_terminal = @import("core/graphics_terminal.zig");
 const words_defining = @import("core/words_defining.zig");
 const words_help = @import("core/words_help.zig");
 const words_input = @import("core/words_input.zig");
@@ -61,6 +62,7 @@ pub const UDouble = memory_map.UDouble;
 const Word = defs.Word;
 const WordKind = defs.WordKind;
 pub const LocalTime = host_interface.LocalTime;
+pub const TerminalSize = host_interface.TerminalSize;
 pub const Writer = host_interface.Writer;
 const base_address = memory_map.base_address;
 const bitsFloat = defs.bitsFloat;
@@ -198,7 +200,11 @@ pub const State = struct {
     gfx_width: Cell = 0,
     gfx_height: Cell = 0,
     /// The Forth source REQUIRE-GRAPHICS interprets; tests put other source here.
-    graphics_library: []const u8 = words_graphics.library,
+    /// Empty in a build without graphics, which leaves the library text out.
+    graphics_library: []const u8 = if (defs.graphics_enabled) words_graphics.library else "",
+    /// One band of six rows of a Sixel image, as color registers (none in a build without
+    /// graphics).
+    gfx_band: if (defs.graphics_enabled) [6][graphics_terminal.max_sixel_width]u8 else void = undefined,
     /// The source of the embedded file being included (the graphics library).
     embedded_source: []const u8 = &.{},
 

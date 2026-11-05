@@ -9,6 +9,7 @@
 const std = @import("std");
 const defs = @import("defs.zig");
 const forth = @import("../forth.zig");
+const graphics_terminal = @import("graphics_terminal.zig");
 const memory_map = @import("memory_map.zig");
 const Builtin = defs.Builtin;
 const Cell = memory_map.Cell;
@@ -24,7 +25,7 @@ const max_wordlists = memory_map.max_wordlists;
 const wordlist_count_address = memory_map.wordlist_count_address;
 
 /// The built-in words this file executes; executeBuiltin dispatches by this list.
-pub const words = [_]Builtin{ .gfx_init, .gfx_width, .gfx_height, .gfx_pset, .gfx_pget, .gfx_hline, .gfx_cls, .gfx_save_ppm, .gfx_save_bmp };
+pub const words = [_]Builtin{ .gfx_init, .gfx_width, .gfx_height, .gfx_pset, .gfx_pget, .gfx_hline, .gfx_cls, .gfx_save_ppm, .gfx_save_bmp, .gfx_show_blocks, .gfx_show_sixel, .gfx_show_window, .gfx_window_query };
 
 /// The GFX- words in the order REQUIRE-GRAPHICS appends them, right after the GRAPHICS
 /// vocabulary. The order is part of the dictionary that images keep: add new words at
@@ -33,11 +34,13 @@ pub const definitions = [_]struct { []const u8, Builtin }{
     .{ "GFX-INIT", .gfx_init },     .{ "GFX-WIDTH", .gfx_width }, .{ "GFX-HEIGHT", .gfx_height },
     .{ "GFX-PSET", .gfx_pset },     .{ "GFX-PGET", .gfx_pget },   .{ "GFX-HLINE", .gfx_hline },
     .{ "GFX-CLS", .gfx_cls },       .{ "GFX-SAVE-PPM", .gfx_save_ppm }, .{ "GFX-SAVE-BMP", .gfx_save_bmp },
+    .{ "GFX-SHOW-BLOCKS", .gfx_show_blocks }, .{ "GFX-SHOW-SIXEL", .gfx_show_sixel }, .{ "GFX-SHOW-WINDOW", .gfx_show_window },
+    .{ "GFX-WINDOW?", .gfx_window_query },
 };
 
 /// The words of the graphics library that HELP describes; the help test checks that the
 /// library defines each of them.
-pub const library_words = [_][]const u8{ "RGB", "COLOR", "COLOR!", "COLOR@", "PSET", "CLS", "LINE", "RECT", "FILL-RECT", "CIRCLE", "FILL-CIRCLE", "PAINT", "SAVE-PPM", "SAVE-BMP" };
+pub const library_words = [_][]const u8{ "RGB", "COLOR", "COLOR!", "COLOR@", "PSET", "CLS", "LINE", "RECT", "FILL-RECT", "CIRCLE", "FILL-CIRCLE", "PAINT", "SAVE-PPM", "SAVE-BMP", "SHOW", "DISPLAY-TERMINAL", "DISPLAY-WINDOW", "TERMINAL-BLOCKS", "TERMINAL-SIXEL" };
 
 /// The graphics library, which REQUIRE-GRAPHICS interprets after appending the GFX- words.
 pub const library = @embedFile("../graphics/graphics.fs");
@@ -111,6 +114,20 @@ pub fn execute(self: *State, builtin: Builtin) RuntimeError!void {
             try requireImage(self);
             try self.push(try saveImage(self, name, if (builtin == .gfx_save_ppm) .ppm else .bmp));
         },
+        .gfx_show_blocks => {
+            try requireImage(self);
+            graphics_terminal.showBlocks(self);
+        },
+        .gfx_show_sixel => {
+            try requireImage(self);
+            graphics_terminal.showSixel(self);
+        },
+        .gfx_show_window => {
+            try requireImage(self);
+            const window_fn = self.writer.window_fn orelse return error.HostUnavailable;
+            try window_fn(self.writer.context, self.gfx_pixels, @intCast(self.gfx_width), @intCast(self.gfx_height));
+        },
+        .gfx_window_query => try self.push(if (self.writer.window_fn != null) -1 else 0),
         else => unreachable,
     }
 }

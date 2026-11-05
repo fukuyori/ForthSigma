@@ -240,3 +240,26 @@ VARIABLE (P-STACK)  VARIABLE (P-SIZE)  VARIABLE (P-USED)  VARIABLE (P-TARGET)
    ['] (P-FILL) CATCH
    (P-STACK) @ FREE DROP
    THROW ;
+
+\ ---- Showing the image -------------------------------------------------------------
+
+\ Where SHOW puts the image: 0 the window when the host has one and the terminal
+\ otherwise, 1 the terminal, 2 the window. And how the terminal shows it: 0 with half
+\ block characters, 1 as Sixel graphics.
+VARIABLE (DISPLAY)  0 (DISPLAY) !
+VARIABLE (TERMINAL-MODE)  0 (TERMINAL-MODE) !
+
+: DISPLAY-TERMINAL ( -- )   1 (DISPLAY) ! ;
+\ HOST FUNCTION UNAVAILABLE when the host has no window.
+: DISPLAY-WINDOW ( -- )   GFX-WINDOW? 0= IF -21 THROW THEN  2 (DISPLAY) ! ;
+: TERMINAL-BLOCKS ( -- )   0 (TERMINAL-MODE) ! ;
+: TERMINAL-SIXEL ( -- )   1 (TERMINAL-MODE) ! ;
+
+: (WINDOW?) ( -- flag )
+   (DISPLAY) @ DUP 2 =  SWAP 0=  GFX-WINDOW? AND  OR ;
+
+\ Shows the image where DISPLAY-TERMINAL or DISPLAY-WINDOW said.
+: SHOW ( -- )
+   (NEED-IMAGE)
+   (WINDOW?) IF GFX-SHOW-WINDOW EXIT THEN
+   (TERMINAL-MODE) @ IF GFX-SHOW-SIXEL ELSE GFX-SHOW-BLOCKS THEN ;

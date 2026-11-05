@@ -20,7 +20,7 @@ Building with `zig build -Dfloat=false` gives a smaller version without floating
 Started without arguments, it prints the following two lines (only the first in a build with `-Dhelp=false`) and shows the interactive prompt. The version number is the value of the `VERSION` file at the root. When it is started with arguments (it runs the argument string once and exits), these lines are not printed.
 
 ```text
-FORTH/Sigma 0.5.2  MIT License
+FORTH/Sigma 0.6.0  MIT License
 Type `help' for basic help
 ```
 
@@ -585,6 +585,9 @@ Coordinates start at 0 0 in the top left corner, and everything drawn outside th
 | `FILL-CIRCLE` | ( x y r -- ) | A filled circle; it covers every pixel of `CIRCLE` with the same arguments. |
 | `PAINT` | ( x y -- ) | Fill the area around x y that has the color of x y (pixels joined left, right, up, or down) with the current color. Nothing outside the image or when the area has the current color already. |
 | `SAVE-PPM`, `SAVE-BMP` | ( c-addr u -- ) | Write the image to a new file as a binary PPM (P6) or a 24-bit BMP, and `THROW` the error of the file operation if there is one. |
+| `SHOW` | ( -- ) | Show the image: in a window when the host has one (Windows), on the terminal otherwise, or where `DISPLAY-TERMINAL` or `DISPLAY-WINDOW` said. |
+| `DISPLAY-TERMINAL`, `DISPLAY-WINDOW` | ( -- ) | Make `SHOW` use the terminal, or the window. `DISPLAY-WINDOW` gives `HOST FUNCTION UNAVAILABLE !` when the host has no window. |
+| `TERMINAL-BLOCKS`, `TERMINAL-SIXEL` | ( -- ) | Show the image on the terminal with half block characters (the default), or as Sixel graphics. |
 | `GFX-INIT` | ( w h -- ) | Make a new black image. Each side is 1 to 8192 pixels and the image at most 64 MiB (4 bytes a pixel, so 4096 by 4096 at most for a square). The previous image stays when the new one cannot be made. |
 | `GFX-WIDTH`, `GFX-HEIGHT` | ( -- n ) | The size of the image, 0 before `GFX-INIT`. |
 | `GFX-PSET` | ( x y rgb -- ) | Set one pixel to the color rgb. |
@@ -592,6 +595,8 @@ Coordinates start at 0 0 in the top left corner, and everything drawn outside th
 | `GFX-HLINE` | ( x1 x2 y rgb -- ) | A horizontal line from x1 to x2, both included. |
 | `GFX-CLS` | ( rgb -- ) | Fill the whole image with the color rgb. |
 | `GFX-SAVE-PPM`, `GFX-SAVE-BMP` | ( c-addr u -- ior ) | As `SAVE-PPM` and `SAVE-BMP`, but return ior (0 or the error) instead. They also work in a build with `-Dfiles=false`. |
+| `GFX-SHOW-BLOCKS`, `GFX-SHOW-SIXEL`, `GFX-SHOW-WINDOW` | ( -- ) | Show the image on the terminal with half blocks, as Sixel, or in the window. |
+| `GFX-WINDOW?` | ( -- flag ) | True when the host can show the image in a window. |
 
 The `GFX-` words are the base the library is written with; the other words are Forth definitions, so `SEE`, `LOCATE`, and `WHERE` show them. So that the arithmetic cannot overflow, coordinates and sizes are first limited to -2^61 .. 2^61 for `LINE`, `RECT`, and `FILL-RECT`, and to -2^30 .. 2^30 for the circles (a circle with a value beyond that is drawn with the value moved to the limit). `PAINT` keeps the rows still to fill in the heap; a very complicated area can need more than the heap has and then gives `CANNOT ALLOCATE MEMORY !` (THROW -524, the area is then partly filled).
 
@@ -599,7 +604,11 @@ Errors: a size outside the limits gives `NUMBER ERROR !`; an image the host cann
 
 To try a changed copy of the library without rebuilding Sigma, load the built-in one and then include the copy into `GRAPHICS`; its words replace the built-in ones: `REQUIRE-GRAPHICS ALSO GRAPHICS DEFINITIONS DECIMAL INCLUDE src/graphics/graphics.fs`.
 
-The image is not part of the dictionary: `SAVE` and `SAVESYS` keep the graphics words and the words that use them, but not the pixels, so a program makes its image with `GFX-INIT` after it starts. Showing the image on the screen, graphs of functions, text, and PNG files come in later stages.
+On the terminal, each character shows two pixels, one above the other, with 24-bit color escapes, which most terminals understand (Windows Terminal and the Windows console, xterm, GNOME Terminal, and so on). An image larger than the terminal is made smaller to fit, keeping its proportions, and each new pixel has the average color of the pixels it stands for; one line is left for the prompt. When the output is not a terminal (a pipe or a file), 80 columns and 24 rows are assumed. Sixel graphics (`TERMINAL-SIXEL`) show real pixels on terminals that support it, with 216 colors; a terminal without Sixel may show stray characters or nothing. On Windows, the console shows the half blocks with the UTF-8 code page, which Sigma sets while it writes them and then sets back.
+
+On Windows, the window has a thread of its own: while Forth waits for input it can be moved, resized (the image is stretched to fit), and closed, and the keyboard stays with the console. Each `SHOW` draws the current image in it again and fits the window to a new image size (an image larger than 1600 by 1200 pixels is shown smaller). A window that was closed is opened again by the next `SHOW` (an image shown at the very moment the window is being closed may not appear until then). Linux and macOS have no window yet; `SHOW` uses the terminal there.
+
+The image is not part of the dictionary: `SAVE` and `SAVESYS` keep the graphics words and the words that use them, but not the pixels, so a program makes its image with `GFX-INIT` after it starts. A dictionary keeps the graphics library it loaded: `REQUIRE-GRAPHICS` does not add the words of a newer library to it, so build such a dictionary again from its source to use them. Graphs of functions, text, PNG files, and input from the window come in later stages.
 
 ## Saving the dictionary and stand-alone executables
 

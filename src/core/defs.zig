@@ -573,6 +573,10 @@ pub const Builtin = enum {
     gfx_cls,
     gfx_save_ppm,
     gfx_save_bmp,
+    gfx_show_blocks,
+    gfx_show_sixel,
+    gfx_show_window,
+    gfx_window_query,
 };
 
 pub const HeapResult = union(enum) { address: Cell, no_memory, bad_pointer };

@@ -39,6 +39,9 @@ pub const FileOps = struct {
     status: *const fn (?*anyopaque, []const u8) FileResult,
 };
 
+/// A terminal's size in characters, and in pixels when the host knows it (0 otherwise).
+pub const TerminalSize = struct { columns: u32, rows: u32, x_pixels: u32 = 0, y_pixels: u32 = 0 };
+
 /// The local date and time, for TIME&DATE: month 1 to 12, the full year.
 pub const LocalTime = struct { second: Cell, minute: Cell, hour: Cell, day: Cell, month: Cell, year: Cell };
 
@@ -65,6 +68,17 @@ pub const Writer = struct {
     /// failure it returns null and keeps the buffer it gave before. A buffer of another
     /// length is an error, after which the core uses no image.
     framebuffer_fn: ?*const fn (?*anyopaque, usize) ?[]u32 = null,
+    /// The size of the terminal that output goes to, or null when it is not a terminal
+    /// (the graphics words then assume 80 columns and 24 rows).
+    terminal_size_fn: ?*const fn (?*anyopaque) ?TerminalSize = null,
+    /// Called with true before the graphics words write UTF-8 text to the terminal, and
+    /// with false after it, for a host whose terminal needs to be told (a Windows
+    /// console with another code page). The output written before the call must have
+    /// reached the terminal first.
+    terminal_utf8_fn: ?*const fn (?*anyopaque, bool) void = null,
+    /// Shows the 32-bit pixels (0xAARRGGBB, rows from the top) of a width × height
+    /// image in a window, which the host keeps open. The host copies the pixels.
+    window_fn: ?*const fn (?*anyopaque, []const u32, u32, u32) RuntimeError!void = null,
 
     pub fn write(self: Writer, bytes: []const u8) void {
         self.write_fn(self.context, bytes);

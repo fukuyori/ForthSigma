@@ -52,11 +52,11 @@ Linux/macOSでは、生成されたzig-out/bin/sigmaを実行してください�
     .\scripts\build-release.ps1 -Sign
     .\scripts\build-installer.ps1 -Sign
 
-`v0.5.2` のように `VERSION` と同じ版番号のタグをプッシュすると、GitHub Actions（`.github/workflows/release.yml`）がWindows x86_64、Linux x86_64・arm32・arm64、macOS arm64でテストとビルドを行い、各ZIP（実行ファイル、LICENSE、THIRD_PARTY_NOTICES.md、README.md、USER_MANUAL.md）を下書きのリリースに登録します。ZIPは対象ごとに、浮動小数点の語を含む版（`sigma-版番号-対象.zip`）と除いた版（`sigma-版番号-対象-nofloat.zip`）の2つです。テストはWindows x86_64、Linux x86_64・arm64、macOS arm64の実機で実行します。CIのWindows版は署名なしなので、公開前に、次のスクリプトで作った同じ名前・同じ中身の署名付きZIP（`dist\zip\sigma-版番号-windows-x86_64.zip` と `dist\zip\sigma-版番号-windows-x86_64-nofloat.zip`）に差し替えます。`-Variant Float` または `-Variant NoFloat` で片方だけ作ることもできます。
+`v0.6.0` のように `VERSION` と同じ版番号のタグをプッシュすると、GitHub Actions（`.github/workflows/release.yml`）がWindows x86_64、Linux x86_64・arm32・arm64、macOS arm64でテストとビルドを行い、各ZIP（実行ファイル、LICENSE、THIRD_PARTY_NOTICES.md、README.md、USER_MANUAL.md）を下書きのリリースに登録します。ZIPは対象ごとに、浮動小数点の語を含む版（`sigma-版番号-対象.zip`）と除いた版（`sigma-版番号-対象-nofloat.zip`）の2つです。テストはWindows x86_64、Linux x86_64・arm64、macOS arm64の実機で実行します。CIのWindows版は署名なしなので、公開前に、次のスクリプトで作った同じ名前・同じ中身の署名付きZIP（`dist\zip\sigma-版番号-windows-x86_64.zip` と `dist\zip\sigma-版番号-windows-x86_64-nofloat.zip`）に差し替えます。`-Variant Float` または `-Variant NoFloat` で片方だけ作ることもできます。
 
     .\scripts\build-zip.ps1 -Sign
 
-引数なしで起動すると、版番号とライセンスの2行（`FORTH/Sigma 0.5.2  MIT License`、`` Type `help' for basic help ``）を表示して対話プロンプトになります。`HELP` で基本的な使い方、`HELP DUP` のように語名を付けるとその語の説明、`LICENSE` でライセンスの全文を表示します。
+引数なしで起動すると、版番号とライセンスの2行（`FORTH/Sigma 0.6.0  MIT License`、`` Type `help' for basic help ``）を表示して対話プロンプトになります。`HELP` で基本的な使い方、`HELP DUP` のように語名を付けるとその語の説明、`LICENSE` でライセンスの全文を表示します。
 
 例:
 
@@ -86,10 +86,10 @@ Forthソースファイルは標準入力から読み込めます。例:
 | `-Dhelp=false` | `HELP`、`LICENSE` とその文章（起動時の表示も `help` を案内しなくなります） | 682,496バイト |
 | `-Dtools=false` | `SEE`、`LOCATE`、`WHERE` | 717,824バイト |
 | `-Dimage=false` | `SAVE`、`LOAD`、`SAVESYS` | 748,544バイト |
-| `-Dgraphics=false` | `REQUIRE-GRAPHICS` とグラフィックスの `GFX-` の語 | 784,896バイト（\*） |
+| `-Dgraphics=false` | `REQUIRE-GRAPHICS`、`GFX-` の語、グラフィックスのライブラリ | 786,944バイト（\*） |
 | 5つすべて | 上のすべて | 270,336バイト |
 
-大きさは、0.5.0をリリースと同じ `-Doptimize=fast` でWindows x86_64向けにビルドしたものです。（\*）グラフィックスの語は0.5.2の後に加えました。同じ方法でビルドした開発中の版は、すべて含むと795,136バイト、グラフィックスの語を除くと784,896バイト、6つすべてを除くと266,752バイトです。オプションは組み合わせられます（例: `zig build -Doptimize=fast -Dfloat=false -Dhelp=false`）。
+大きさは、0.5.0をリリースと同じ `-Doptimize=fast` でWindows x86_64向けにビルドしたものです。（\*）グラフィックスの語は0.6.0で加えました。同じ方法でビルドした0.6.0は、すべて含むと823,808バイト、グラフィックスの語を除くと786,944バイト、6つすべてを除くと267,264バイトです。オプションは組み合わせられます（例: `zig build -Doptimize=fast -Dfloat=false -Dhelp=false`）。
 
 除いたグループの語は辞書になく、`HELP` の説明もありません。グループはそれぞれ独立しているので、ファイルの語を除いても、`SAVE`・`LOAD`・`SAVESYS` はイメージのファイルを書き読みし、`LOCATE` はソースファイルを読みます（それぞれのグループも除いた場合を除きます）。組み込み語の実行トークンはどの版でも同じなので、ある版で保存したイメージは、グループの違う版でも読み込めます。その版で除いた語を実行すると `INVALID EXECUTION TOKEN` のエラーになり、`SEE` はその語を名前で表示します。グループを除いた以前の版（`-Dfloat=false` など）で保存したイメージは、組み込み語の実行トークンが違うので `INVALID IMAGE` になります。
 
