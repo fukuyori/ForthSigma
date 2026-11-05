@@ -122,6 +122,9 @@ fn isExcludedName(comptime name: []const u8) bool {
     for (words_graphics.library_words) |library_word| {
         if (std.mem.eql(u8, library_word, name)) return !defs.graphics_enabled;
     }
+    for (words_graphics.float_library_words) |library_word| {
+        if (std.mem.eql(u8, library_word, name)) return !defs.graphics_enabled or !defs.float_enabled;
+    }
     for (words_graphics.definitions) |definition| {
         if (std.mem.eql(u8, definition[0], name)) return defs.isExcludedBuiltin(definition[1]);
     }

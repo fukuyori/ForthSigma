@@ -13,6 +13,11 @@ pub const available = builtin.os.tag == .windows;
 /// The host's window_fn: shows the pixels, opening the window when it is not open.
 pub const show = if (available) win32.show else unsupported;
 
+/// The next key or mouse change in the window, for INKEY and MOUSE; null when none.
+pub fn poll() ?forth.InputEvent {
+    return if (available) win32.poll() else null;
+}
+
 /// Closes the window and waits for its thread, before the program ends.
 pub fn close() void {
     if (available) win32.close();
@@ -85,6 +90,8 @@ const win32 = struct {
     extern "kernel32" fn CloseHandle(Handle) callconv(.winapi) i32;
     extern "kernel32" fn AcquireSRWLockExclusive(*SrwLock) callconv(.winapi) void;
     extern "kernel32" fn ReleaseSRWLockExclusive(*SrwLock) callconv(.winapi) void;
+    extern "user32" fn SetCapture(?Handle) callconv(.winapi) ?Handle;
+    extern "user32" fn ReleaseCapture() callconv(.winapi) i32;
 
     const overlapped_window: u32 = 0x00CF0000;
     const use_default: i32 = @bitCast(@as(u32, 0x80000000));
@@ -92,6 +99,14 @@ const win32 = struct {
     const wm_close = 0x0010;
     const wm_paint = 0x000F;
     const wm_erase_background = 0x0014;
+    const wm_key_down = 0x0100;
+    const wm_char = 0x0102;
+    const wm_mouse_move = 0x0200;
+    const wm_left_down = 0x0201;
+    const wm_middle_up = 0x0208;
+    const button_left: usize = 0x0001;
+    const button_right: usize = 0x0002;
+    const button_middle: usize = 0x0010;
     /// Sent by SHOW: draw the new image; wparam is 1 when its size changed.
     const wm_new_image = 0x8000;
     const show_no_activate = 4;
@@ -121,6 +136,16 @@ const win32 = struct {
     var update_pending = false;
     /// The image's size changed since the window last fitted it.
     var resize_pending = false;
+    /// Keys pressed in the window and not yet read by INKEY (later ones are dropped when
+    /// it is full), and the mouse: the pixel of the image under it and its buttons.
+    var keys: [64]u32 = undefined;
+    var key_head: usize = 0;
+    var key_count: usize = 0;
+    var high_surrogate: u16 = 0;
+    var mouse_x: i32 = -1;
+    var mouse_y: i32 = -1;
+    var mouse_buttons: u8 = 0;
+    var mouse_changed = false;
 
     // Used only by the thread that runs Forth.
     var thread: ?Handle = null;
@@ -158,6 +183,84 @@ const win32 = struct {
         // the window shows it when it next draws, but the request did not reach it.
         if (!still_open) return open();
         return error.HostFailed;
+    }
+
+    fn poll() ?forth.InputEvent {
+        AcquireSRWLockExclusive(&lock);
+        defer ReleaseSRWLockExclusive(&lock);
+        if (key_count != 0) {
+            const key = keys[key_head];
+            key_head = (key_head + 1) % keys.len;
+            key_count -= 1;
+            return .{ .key = key };
+        }
+        if (!mouse_changed) return null;
+        mouse_changed = false;
+        return .{ .window_mouse = .{ .x = mouse_x, .y = mouse_y, .buttons = mouse_buttons } };
+    }
+
+    /// Called with the lock held.
+    fn pushKey(key: u32) void {
+        if (key_count == keys.len) return;
+        keys[(key_head + key_count) % keys.len] = key;
+        key_count += 1;
+    }
+
+    /// The key code of a key that gives no character (graphics_input's codes).
+    fn virtualKey(code: usize) ?u32 {
+        return switch (code) {
+            0x26 => 256, // up
+            0x28 => 257, // down
+            0x25 => 258, // left
+            0x27 => 259, // right
+            0x24 => 260, // home
+            0x23 => 261, // end
+            0x21 => 262, // page up
+            0x22 => 263, // page down
+            0x2D => 264, // insert
+            0x2E => 265, // delete
+            0x70...0x7B => @intCast(266 + (code - 0x70)), // F1 to F12
+            else => null,
+        };
+    }
+
+    /// A UTF-16 unit of WM_CHAR, as the bytes of its UTF-8 character.
+    fn pushCharacter(unit: u16) void {
+        var code_point: u21 = unit;
+        if (unit >= 0xD800 and unit < 0xDC00) {
+            high_surrogate = unit;
+            return;
+        }
+        if (unit >= 0xDC00 and unit < 0xE000) {
+            if (high_surrogate == 0) return;
+            code_point = 0x10000 + ((@as(u21, high_surrogate) - 0xD800) << 10) + (unit - 0xDC00);
+        }
+        high_surrogate = 0;
+        var bytes: [4]u8 = undefined;
+        const length = std.unicode.utf8Encode(code_point, &bytes) catch return;
+        for (bytes[0..length]) |byte| pushKey(byte);
+    }
+
+    /// The pixel of the image under a point of the client area, which shows the whole
+    /// image stretched.
+    fn mouseMoved(handle: ?Handle, wparam: usize, lparam: isize) void {
+        var client = Rect{};
+        _ = GetClientRect(handle, &client);
+        const bits: usize = @bitCast(lparam);
+        const x: i64 = @as(i16, @bitCast(@as(u16, @truncate(bits))));
+        const y: i64 = @as(i16, @bitCast(@as(u16, @truncate(bits >> 16))));
+        AcquireSRWLockExclusive(&lock);
+        defer ReleaseSRWLockExclusive(&lock);
+        const client_width: i64 = @max(client.right, 1);
+        const client_height: i64 = @max(client.bottom, 1);
+        mouse_x = @intCast(std.math.clamp(@divFloor(x * width, client_width), -1 << 20, 1 << 20));
+        mouse_y = @intCast(std.math.clamp(@divFloor(y * height, client_height), -1 << 20, 1 << 20));
+        var buttons: u8 = 0;
+        if (wparam & button_left != 0) buttons |= 1;
+        if (wparam & button_right != 0) buttons |= 2;
+        if (wparam & button_middle != 0) buttons |= 4;
+        mouse_buttons = buttons;
+        mouse_changed = true;
     }
 
     /// Only called when there is no window: the old thread, if any, is ending (after
@@ -255,6 +358,28 @@ const win32 = struct {
                 return 0;
             },
             wm_erase_background => return 1,
+            wm_key_down => {
+                if (virtualKey(wparam)) |key| {
+                    AcquireSRWLockExclusive(&lock);
+                    pushKey(key);
+                    ReleaseSRWLockExclusive(&lock);
+                }
+                return DefWindowProcW(handle, message, wparam, lparam);
+            },
+            wm_char => {
+                AcquireSRWLockExclusive(&lock);
+                pushCharacter(@truncate(wparam));
+                ReleaseSRWLockExclusive(&lock);
+                return 0;
+            },
+            wm_mouse_move...wm_middle_up => {
+                mouseMoved(handle, wparam, lparam);
+                // While a button is held, the mouse is followed also outside the window.
+                if (wparam & (button_left | button_right | button_middle) != 0) {
+                    if (message != wm_mouse_move) _ = SetCapture(handle);
+                } else _ = ReleaseCapture();
+                return 0;
+            },
             wm_new_image => {
                 AcquireSRWLockExclusive(&lock);
                 update_pending = false;

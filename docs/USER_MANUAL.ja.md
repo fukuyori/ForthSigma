@@ -552,7 +552,7 @@ MARKER SAFE  : TEMP ." Hello" ;  SAFE   \ TEMP は消えます
 
 ## グラフィックス
 
-Sigmaは、メモリ上の1枚の画像に描き、PPMまたはBMPのファイルに保存できます。グラフィックスの語は起動時の辞書にはありません。`REQUIRE-GRAPHICS` を初めて実行したときに、`GRAPHICS` 語彙と、`GFX-` の語、Forthで書いたグラフィックスのライブラリ（`src/graphics/graphics.fs`。プログラムに組み込み済み）を加えます。2回目以降は何もしません。検索順序は変えないので、`ALSO GRAPHICS`（または `GRAPHICS`）で語を使えるようにします。
+Sigmaは、メモリ上の1枚の画像に描き、PPM、BMP、またはPNGのファイルに保存できます。グラフィックスの語は起動時の辞書にはありません。`REQUIRE-GRAPHICS` を初めて実行したときに、`GRAPHICS` 語彙と、`GFX-` の語、Forthで書いたグラフィックスのライブラリ（`src/graphics/graphics.fs` と、浮動小数点数の語がある版では `src/graphics/graphics_float.fs`。プログラムに組み込み済み）を加えます。2回目以降は何もしません。検索順序は変えないので、`ALSO GRAPHICS`（または `GRAPHICS`）で語を使えるようにします。
 
 ```forth
 REQUIRE-GRAPHICS
@@ -584,7 +584,7 @@ PREVIOUS
 | `CIRCLE` | ( x y r -- ) | x y を中心とする半径 r の円。中点アルゴリズムと同じ画素を描きます。r が負なら何も描かず、0なら1画素です。 |
 | `FILL-CIRCLE` | ( x y r -- ) | 塗りつぶした円。同じ引数の `CIRCLE` の画素をすべて含みます。 |
 | `PAINT` | ( x y -- ) | x y と同じ色で上下左右につながる領域を、現在の色で塗ります。画像の外や、領域がすでに現在の色のときは何もしません。 |
-| `SAVE-PPM`、`SAVE-BMP` | ( c-addr u -- ) | 画像を新しいファイルに、2進のPPM（P6）または24ビットのBMPで書きます。ファイル操作のエラーは `THROW` します。 |
+| `SAVE-PPM`、`SAVE-BMP`、`SAVE-PNG` | ( c-addr u -- ) | 画像を新しいファイルに、2進のPPM（P6）、24ビットのBMP、またはPNGで書きます。ファイル操作のエラーは `THROW` します。PNGは赤・緑・青の各8ビットで圧縮しないので、大きさはBMPとほぼ同じです。PNGを読めるプログラムなら読めます。 |
 | `SHOW` | ( -- ) | 画像を表示します。ホストにウィンドウがあれば（Windows）ウィンドウに、なければ端末に、または `DISPLAY-TERMINAL`・`DISPLAY-WINDOW` で決めた先に表示します。 |
 | `DISPLAY-TERMINAL`、`DISPLAY-WINDOW` | ( -- ) | `SHOW` の表示先を端末、またはウィンドウにします。ホストにウィンドウがなければ、`DISPLAY-WINDOW` は `HOST FUNCTION UNAVAILABLE !` になります。 |
 | `TERMINAL-BLOCKS`、`TERMINAL-SIXEL` | ( -- ) | 端末への表示を、半角ブロック（既定）またはSixelにします。 |
@@ -594,7 +594,7 @@ PREVIOUS
 | `GFX-PGET` | ( x y -- rgb ) | 1画素の色。画像の外は-1です。 |
 | `GFX-HLINE` | ( x1 x2 y rgb -- ) | x1からx2まで（両端を含む）の横線を引きます。 |
 | `GFX-CLS` | ( rgb -- ) | 画像全体を色 rgb で塗ります。 |
-| `GFX-SAVE-PPM`、`GFX-SAVE-BMP` | ( c-addr u -- ior ) | `SAVE-PPM`・`SAVE-BMP` と同じですが、`THROW` せずに ior（0かエラー）を返します。`-Dfiles=false` の版でも使えます。 |
+| `GFX-SAVE-PPM`、`GFX-SAVE-BMP`、`GFX-SAVE-PNG` | ( c-addr u -- ior ) | `SAVE-PPM`・`SAVE-BMP`・`SAVE-PNG` と同じですが、`THROW` せずに ior（0かエラー）を返します。`-Dfiles=false` の版でも使えます。 |
 | `GFX-SHOW-BLOCKS`、`GFX-SHOW-SIXEL`、`GFX-SHOW-WINDOW` | ( -- ) | 画像を、端末に半角ブロックで、Sixelで、またはウィンドウに表示します。 |
 | `GFX-WINDOW?` | ( -- flag ) | ホストが画像をウィンドウに表示できれば真。 |
 
@@ -608,7 +608,97 @@ Sigmaを作り直さずにライブラリの変更を試すには、組み込み
 
 Windowsのウィンドウは専用のスレッドで動くので、Forthが入力を待っている間も、動かす・大きさを変える（画像はそれに合わせて伸び縮みします）・閉じることができます。キー入力はコンソールのままです。`SHOW` のたびに今の画像を描き直し、画像の大きさが変わればウィンドウの大きさも合わせます（1600×1200画素より大きい画像は縮めて表示します）。閉じたウィンドウは、次の `SHOW` で開き直します（ウィンドウが閉じるのとちょうど同時に表示した画像は、そのときまで表示されないことがあります）。LinuxとmacOSにはまだウィンドウがなく、`SHOW` は端末に表示します。
 
-画像は辞書の一部ではありません。`SAVE` と `SAVESYS` はグラフィックスの語とそれを使う語を保存しますが、画素は保存しないので、プログラムは起動後に `GFX-INIT` で画像を作ります。辞書は、読み込んだときのグラフィックスのライブラリを持ち続けます。`REQUIRE-GRAPHICS` は新しい版のライブラリの語を加えないので、それを使うには、その辞書をソースから作り直します。関数のグラフ、文字、PNGのファイル、ウィンドウからの入力は、後の段階で加えます。
+画像は辞書の一部ではありません。`SAVE` と `SAVESYS` はグラフィックスの語とそれを使う語を保存しますが、画素は保存しないので、プログラムは起動後に `GFX-INIT` で画像を作ります。辞書は、読み込んだときのグラフィックスのライブラリを持ち続けます。`REQUIRE-GRAPHICS` は新しい版のライブラリの語を加えないので、それを使うには、その辞書をソースから作り直します。
+
+### 文字
+
+`TEXT` は、文字列を今のフォントで描きます。初めは組み込みのフォントで、美咲ゴシック（門真なむ氏、自由に利用できるフォント。[THIRD_PARTY_NOTICES.md](../THIRD_PARTY_NOTICES.md) を参照）のASCIIの文字を、幅4画素・高さ8画素で描きます。`LOAD-FONT` はBDFのフォントファイルを読んで使い（どのOSでも）、`SYSTEM-FONT` はシステムに登録されたフォントを名前で使います（Windows）。文字列はUTF-8として読み、フォントにない文字は1つの `?` で描きます（フォントに `?` もなければ描きません）。UTF-8でないバイトも1バイトごとに同じです。制御文字は描きません。
+
+```forth
+REQUIRE-GRAPHICS  ALSO GRAPHICS
+160 40 GFX-INIT
+255 255 0 COLOR  S" Hello, Sigma!" 4 4 TEXT
+2 TEXT-SCALE  0 255 255 COLOR
+S" FORTH/Sigma" 2DUP TEXT-WIDTH  160 SWAP - 2/  20 TEXT     \ 中央にそろえる
+SHOW
+```
+
+| 語 | スタック | 説明 |
+| --- | --- | --- |
+| `TEXT` | ( c-addr u x y -- ) | 文字列を、行の左上が x y になるように、今の色で描く。字の線の間の画素はそのまま。なめらかにしたシステムのフォントでは、縁の画素は今の色と画像の色を混ぜる。 |
+| `TEXT-SCALE` | ( n -- ) | フォントの1画素を n×n 画素で描く。1〜256（ほかは `NUMBER ERROR !`）。初めは1。 |
+| `TEXT-WIDTH` | ( c-addr u -- w ) | `TEXT` が今の倍率で描いたときの幅（画素）。画像は要らない。 |
+| `TEXT-HEIGHT` | ( -- h ) | 今のフォントの1行の高さ（今の倍率で）。 |
+| `LOAD-FONT` | ( c-addr u -- ) | 名前のBDFフォントファイルを読んで使う。開けないファイルはそのエラーを、読めるBDFフォントでないファイルは `FONT ERROR !`（THROW -272）を THROW し、フォントは元のまま。1行の高さは256画素まで、1字の幅は512画素まで。 |
+| `SYSTEM-FONT` | ( c-addr u height -- ) | システムのその名前のフォント（`Consolas`、`MS Gothic`、`メイリオ` など）を、1行 height 画素（1〜256）で、灰色の濃淡でなめらかにして使う。その名前のフォントがなければ `FONT ERROR !`、LinuxとmacOSでは `HOST FUNCTION UNAVAILABLE !`。 |
+| `BUILTIN-FONT` | ( -- ) | 組み込みのフォントに戻す。 |
+| `GFX-GLYPH-LOAD` | ( code -- advance \| -1 ) | 今のフォントの文字番号の字形を読み込み、ペンを進める幅を返す。フォントになければ -1。 |
+| `GFX-GLYPH-BOX` | ( -- left width height ) | 読み込んだ字形の箱。ペンから `left` 画素右（負なら左）、行の上端から。 |
+| `GFX-GLYPH-ALPHA` | ( x y -- a ) | 読み込んだ字形の箱の x y の濃さ。0（なし）〜255（全面）。箱の外は0。 |
+| `GFX-FONT-HEIGHT` | ( -- h ) | 今のフォントの1行の高さ。 |
+| `GFX-FONT-LOAD`, `GFX-FONT-SYSTEM`, `GFX-FONT-BUILTIN` | ( c-addr u -- ior ), ( c-addr u height -- ior ), ( -- ) | `LOAD-FONT`、`SYSTEM-FONT`、`BUILTIN-FONT` と同じだが、ior（0、ファイルのエラー、-272）を返す。 |
+
+フォントは辞書の一部ではありません。`SAVE` と `SAVESYS` は保存せず、プログラムは画像がない状態で始まるのと同じく、組み込みのフォントで始まります。BDFのフォントは論理メモリの外に置きます。`LOAD-FONT` ではどのBDFフォントも使えます。例えば、漢字を含む美咲ゴシック全体（<https://littlelimit.net/misaki.htm> の `misaki_gothic.bdf`）を読み込めば、同じプログラムがどのOSでも同じ画素を描きます。システムのフォントは、OSによって描き方もフォントの名前も違います。
+
+### キー、マウス、アニメーション
+
+`INKEY` は、端末とウィンドウからキーを待たずに読みます。`MOUSE` は、マウスの下にある画像の画素を返します。`KEY`、`KEY?`、`ACCEPT` は変わらず、端末の行入力を読みます。
+
+```forth
+REQUIRE-GRAPHICS  ALSO GRAPHICS
+80 40 GFX-INIT  DISPLAY-TERMINAL  MOUSE-ON
+VARIABLE X  40 X !
+: STEP ( -- flag )   \ q で偽
+   INKEY  DUP K-LEFT = IF -1 X +! THEN  DUP K-RIGHT = IF 1 X +! THEN
+   [CHAR] q <>
+   MOUSE 1 AND IF PSET ELSE 2DROP THEN ;
+: RUN   BEGIN  0 0 255 COLOR  X @ 20 3 FILL-CIRCLE  255 255 255 COLOR  33 FRAME  STEP 0= UNTIL  MOUSE-OFF ;
+RUN
+```
+
+| 語 | スタック | 説明 |
+| --- | --- | --- |
+| `INKEY` | ( -- key \| -1 ) | 押されたキーを待たずに1つ返す。なければ -1。文字はそのバイト（UTF-8の文字は1バイトずつ順に）、Enter は13、Backspace は8、Tab は9、Esc は27。Ctrl+C は `USER INTERRUPT !`（-28）を THROW する。 |
+| `K-UP`, `K-DOWN`, `K-LEFT`, `K-RIGHT`, `K-HOME`, `K-END`, `K-PRIOR`, `K-NEXT`, `K-INSERT`, `K-DELETE`, `K-F1` .. `K-F12` | ( -- key ) | 文字でないキーに `INKEY` が返す番号（256〜277）。 |
+| `MOUSE` | ( -- x y buttons ) | 最後に動いたときにマウスの下にあった画像の画素と、押されているボタン（1 左、2 右、4 中）。位置が分からない間は -1 -1。その間に押されたキーは `INKEY` のために残る。 |
+| `MOUSE-ON`, `MOUSE-OFF` | ( -- ) | 端末にマウスの報告を頼む、または止める。ウィンドウはいつも報告する。 |
+| `FRAME` | ( ms -- ) | 前の `FRAME` から ms ミリ秒たつまで待ってから `SHOW` する。描いて `FRAME` を呼ぶループは一定の間隔で動く。描くのに時間がかかったときは待たない。 |
+| `GFX-INKEY`, `GFX-MOUSE` | `INKEY`, `MOUSE` と同じ | 下の層の語。 |
+| `GFX-MOUSE-MODE` | ( flag -- ) | 真で `MOUSE-ON`、偽で `MOUSE-OFF` と同じ。 |
+
+最初の `INKEY` か `MOUSE` で、端末はキーを1つずつ、エコーなしで渡すようになります。Sigmaは、次に行や `KEY` を読むとき、`SYSTEM` を実行するとき、終わるときに、プログラム向けに打たれた入力を捨てて、端末を行入力に戻します。キーを1つずつ渡している間は、Ctrl+C でSigmaは終わりません。Ctrl+C は `INKEY` に届き、`INKEY` が THROW するので、キーを読むループはこれで止められます（`INKEY` も `MOUSE` も呼ばなくなったループは止められません）。標準入力が端末でないときは、`INKEY` はウィンドウのキーだけを受け取ります。
+
+LinuxとmacOSでは、文字でないキーは端末からエスケープシーケンスで届き、`INKEY` が解読します（すぐ後に続くバイトのない Esc は Esc キーとします）。マウスは、xterm のSGR形式の報告で届きます。多くの端末（xterm、GNOME Terminal、iTerm2、Windows Terminal など）が送ります。`MOUSE-ON` で頼み、`MOUSE-OFF`、行入力に戻るとき、終わるときに止めます。Windowsでは、コンソールがキーとマウスをそのまま渡します。キーを1つずつ渡している間は、コンソールのマウスでの範囲選択は止まります。ウィンドウで押したキーも `INKEY` に届き、ウィンドウのマウスは、引き伸ばした画像のうちマウスの下にある画素を返します。
+
+端末でマウスの下の画素を求めるため、Sigmaは `SHOW` で画像を描いた後に、端末にカーソルの位置を問い合わせます（`MOUSE-ON` の後だけ）。そのため、位置は `MOUSE-ON` の後の最初の `SHOW` から分かります。半角ブロックでは1文字が2画素で、Sixelでは文字の大きさを端末から得るか、10×20画素と仮定します。
+
+端末への `SHOW` は、間に何も書いていなければ、前に描いた画像の上に描きます。そのため、アニメーションは流れずに同じ場所で動きます。間に何か書いたとき（プロンプトなど）は、下に新しく描きます。Sixelでは、画像が占める行数を文字の高さから数えるので、端末によっては合わないことがあります。
+
+### 数学座標と関数のグラフ
+
+浮動小数点数の語がある版では、ライブラリは数学の座標でも描けます（`src/graphics/graphics_float.fs`。`-Dfloat=false` の版には、これらの語はありません）。`X-RANGE` と `Y-RANGE` で、画像に平面のどの部分を映すかを決めます。x は左端から右端へ向かって増え、y は下端から上端へ向かって増えます。どちらも初めは -1 から 1 です。点は、いちばん近い画素に描きます。
+
+```forth
+REQUIRE-GRAPHICS  ALSO GRAPHICS
+320 200 GFX-INIT
+-3.2e0 3.2e0 X-RANGE  -1.5e0 1.5e0 Y-RANGE
+128 128 128 COLOR  AXES
+255 255 0 COLOR  ' FSIN PLOT
+: PARABOLA ( F: x -- y )  FDUP F* 1e0 F- ;
+0 255 255 COLOR  ' PARABOLA PLOT
+SHOW
+```
+
+| 語 | スタック | 説明 |
+| --- | --- | --- |
+| `X-RANGE` | ( F: lo hi -- ) | 左端を x = lo、右端を x = hi にする。 |
+| `Y-RANGE` | ( F: lo hi -- ) | 下端を y = lo、上端を y = hi にする。 |
+| `MPSET` | ( F: x y -- ) | 点 x y の画素を描く。 |
+| `MLINE` | ( F: x1 y1 x2 y2 -- ) | 2点を結ぶ線。 |
+| `AXES` | ( -- ) | x = 0 と y = 0 の軸を、画像の端から端まで描く。範囲の外にある軸は描かない。 |
+| `PLOT` | ( xt -- ) | 関数 xt ( F: x -- y ) のグラフ。画像の各列の x での y を求め、隣の列どうしを線で結ぶ。 |
+
+範囲は lo が hi より小さく、どちらも有限でなければなりません。そうでないと、`X-RANGE` と `Y-RANGE` は `NUMBER ERROR !` になり、範囲は元のままです。数でない座標（NaN）は何も描かず、`PLOT` は y が NaN のところ（関数が定義されないところなど）を空けます。画素の位置が -2^61 .. 2^61 を超えるとき（無限大を含む）は、`LINE` と同じくその限界まで寄せるので、そのような端を持つ線は向きが変わることがあります。
 
 ## 辞書の保存と単独実行ファイル
 

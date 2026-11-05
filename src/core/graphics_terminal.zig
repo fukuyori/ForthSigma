@@ -5,6 +5,7 @@
 const std = @import("std");
 const forth = @import("../forth.zig");
 const host_interface = @import("host_interface.zig");
+const graphics_input = @import("graphics_input.zig");
 const State = forth.State;
 const TerminalSize = host_interface.TerminalSize;
 
@@ -18,11 +19,59 @@ const assumed_cell_height = 20;
 /// The widest Sixel image: one band of it is kept in `State.gfx_band`.
 pub const max_sixel_width = 4096;
 
-fn terminalSize(self: *State) TerminalSize {
-    const size_fn = self.writer.terminal_size_fn orelse return default_size;
-    const size = size_fn(self.writer.context) orelse return default_size;
-    if (size.columns == 0 or size.rows == 0) return default_size;
+/// The terminal's size, or null when the output is not a terminal.
+fn realTerminalSize(self: *State) ?TerminalSize {
+    const size_fn = self.writer.terminal_size_fn orelse return null;
+    const size = size_fn(self.writer.context) orelse return null;
+    if (size.columns == 0 or size.rows == 0) return null;
     return size;
+}
+
+fn terminalSize(self: *State) TerminalSize {
+    return realTerminalSize(self) orelse default_size;
+}
+
+/// Before an image is drawn: when the last SHOW put an image on the terminal and
+/// nothing was written since, the cursor goes back to that image's first row, so that
+/// the new image is drawn over it (an animation stays in place). Returns whether it did.
+fn returnToShown(self: *State, output: *Output) bool {
+    const shown = self.gfx_input.shown orelse return false;
+    if (shown.output_mark != self.output_count or realTerminalSize(self) == null) return false;
+    output.text("\r");
+    if (shown.rows != 0) {
+        output.text("\x1b[");
+        output.number(shown.rows);
+        output.text("A");
+    }
+    return true;
+}
+
+/// After an image is drawn: rows below it that a taller image drawn over left are
+/// cleared, and the image's place is kept for the next SHOW and for the mouse.
+fn recordShown(self: *State, output: *Output, over: bool, scaled: Scaled, rows: u32, cell_width: u32, cell_height: u32) void {
+    if (over) output.text("\x1b[J");
+    output.flush();
+    var top: ?i32 = null;
+    // Drawn over the last picture: it starts where that one did.
+    const previous = self.gfx_input.shown;
+    if (over and previous != null and previous.?.top != null) {
+        top = previous.?.top;
+    } else if (self.gfx_input.mouse_on) {
+        if (self.writer.cursor_fn) |cursor_fn| {
+            if (cursor_fn(self.writer.context)) |cursor| top = cursor.row - @as(i32, @intCast(rows));
+        }
+    }
+    self.gfx_input.shown = .{
+        .output_mark = self.output_count,
+        .rows = rows,
+        .top = top,
+        .width = @intCast(scaled.width),
+        .height = @intCast(scaled.height),
+        .out_width = @intCast(scaled.out_width),
+        .out_height = @intCast(scaled.out_height),
+        .cell_width = cell_width,
+        .cell_height = cell_height,
+    };
 }
 
 /// The size of the image after making it fit max_width × max_height, keeping its
@@ -114,6 +163,7 @@ pub fn showBlocks(self: *State) void {
     if (utf8_fn) |begin| begin(self.writer.context, true);
     defer if (utf8_fn) |end| end(self.writer.context, false);
     var output = Output{ .self = self };
+    const over = returnToShown(self, &output);
     var row: usize = 0;
     while (row < scaled.out_height) : (row += 2) {
         var foreground: ?u32 = null;
@@ -136,7 +186,7 @@ pub fn showBlocks(self: *State) void {
         }
         output.text("\x1b[0m\n");
     }
-    output.flush();
+    recordShown(self, &output, over, scaled, @intCast((scaled.out_height + 1) / 2), 1, 2);
 }
 
 fn colorEscape(output: *Output, layer: []const u8, rgb: u32) void {
@@ -169,6 +219,7 @@ pub fn showSixel(self: *State) void {
     const max_height: u64 = if (size.y_pixels != 0) size.y_pixels * (rows - 1) / rows else (rows - 1) * assumed_cell_height;
     const scaled = scaledImage(self, @min(max_width, max_sixel_width), max_height);
     var output = Output{ .self = self };
+    const over = returnToShown(self, &output);
     output.text("\x1bPq\"1;1;");
     output.number(scaled.out_width);
     output.text(";");
@@ -226,7 +277,11 @@ pub fn showSixel(self: *State) void {
         output.text("-");
     }
     output.text("\x1b\\");
-    output.flush();
+    // The text rows the picture covers, as the terminal counts them (assumed when the
+    // host does not know the cell size in pixels).
+    const cell_width: u32 = if (size.x_pixels != 0) @max(1, size.x_pixels / size.columns) else assumed_cell_width;
+    const cell_height: u32 = if (size.y_pixels != 0) @max(1, size.y_pixels / size.rows) else assumed_cell_height;
+    recordShown(self, &output, over, scaled, @intCast((scaled.out_height + cell_height - 1) / cell_height), cell_width, cell_height);
 }
 
 fn sixelRun(output: *Output, char: u8, length: u64) void {

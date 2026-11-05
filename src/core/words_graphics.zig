@@ -9,6 +9,8 @@
 const std = @import("std");
 const defs = @import("defs.zig");
 const forth = @import("../forth.zig");
+const graphics_input = @import("graphics_input.zig");
+const graphics_font = @import("graphics_font.zig");
 const graphics_terminal = @import("graphics_terminal.zig");
 const memory_map = @import("memory_map.zig");
 const Builtin = defs.Builtin;
@@ -25,7 +27,7 @@ const max_wordlists = memory_map.max_wordlists;
 const wordlist_count_address = memory_map.wordlist_count_address;
 
 /// The built-in words this file executes; executeBuiltin dispatches by this list.
-pub const words = [_]Builtin{ .gfx_init, .gfx_width, .gfx_height, .gfx_pset, .gfx_pget, .gfx_hline, .gfx_cls, .gfx_save_ppm, .gfx_save_bmp, .gfx_show_blocks, .gfx_show_sixel, .gfx_show_window, .gfx_window_query };
+pub const words = [_]Builtin{ .gfx_init, .gfx_width, .gfx_height, .gfx_pset, .gfx_pget, .gfx_hline, .gfx_cls, .gfx_save_ppm, .gfx_save_bmp, .gfx_show_blocks, .gfx_show_sixel, .gfx_show_window, .gfx_window_query, .gfx_save_png, .gfx_inkey, .gfx_mouse, .gfx_mouse_mode, .gfx_glyph_load, .gfx_glyph_box, .gfx_glyph_alpha, .gfx_font_height, .gfx_font_builtin, .gfx_font_load, .gfx_font_system };
 
 /// The GFX- words in the order REQUIRE-GRAPHICS appends them, right after the GRAPHICS
 /// vocabulary. The order is part of the dictionary that images keep: add new words at
@@ -35,15 +37,24 @@ pub const definitions = [_]struct { []const u8, Builtin }{
     .{ "GFX-PSET", .gfx_pset },     .{ "GFX-PGET", .gfx_pget },   .{ "GFX-HLINE", .gfx_hline },
     .{ "GFX-CLS", .gfx_cls },       .{ "GFX-SAVE-PPM", .gfx_save_ppm }, .{ "GFX-SAVE-BMP", .gfx_save_bmp },
     .{ "GFX-SHOW-BLOCKS", .gfx_show_blocks }, .{ "GFX-SHOW-SIXEL", .gfx_show_sixel }, .{ "GFX-SHOW-WINDOW", .gfx_show_window },
-    .{ "GFX-WINDOW?", .gfx_window_query },
+    .{ "GFX-WINDOW?", .gfx_window_query }, .{ "GFX-SAVE-PNG", .gfx_save_png }, .{ "GFX-INKEY", .gfx_inkey },
+    .{ "GFX-MOUSE", .gfx_mouse },           .{ "GFX-MOUSE-MODE", .gfx_mouse_mode }, .{ "GFX-GLYPH-LOAD", .gfx_glyph_load },
+    .{ "GFX-GLYPH-BOX", .gfx_glyph_box },   .{ "GFX-GLYPH-ALPHA", .gfx_glyph_alpha }, .{ "GFX-FONT-HEIGHT", .gfx_font_height },
+    .{ "GFX-FONT-BUILTIN", .gfx_font_builtin }, .{ "GFX-FONT-LOAD", .gfx_font_load }, .{ "GFX-FONT-SYSTEM", .gfx_font_system },
 };
 
 /// The words of the graphics library that HELP describes; the help test checks that the
 /// library defines each of them.
-pub const library_words = [_][]const u8{ "RGB", "COLOR", "COLOR!", "COLOR@", "PSET", "CLS", "LINE", "RECT", "FILL-RECT", "CIRCLE", "FILL-CIRCLE", "PAINT", "SAVE-PPM", "SAVE-BMP", "SHOW", "DISPLAY-TERMINAL", "DISPLAY-WINDOW", "TERMINAL-BLOCKS", "TERMINAL-SIXEL" };
+pub const library_words = [_][]const u8{ "RGB", "COLOR", "COLOR!", "COLOR@", "PSET", "CLS", "LINE", "RECT", "FILL-RECT", "CIRCLE", "FILL-CIRCLE", "PAINT", "SAVE-PPM", "SAVE-BMP", "SAVE-PNG", "SHOW", "DISPLAY-TERMINAL", "DISPLAY-WINDOW", "TERMINAL-BLOCKS", "TERMINAL-SIXEL", "INKEY", "MOUSE", "MOUSE-ON", "MOUSE-OFF", "FRAME", "TEXT", "TEXT-SCALE", "TEXT-WIDTH", "TEXT-HEIGHT", "BUILTIN-FONT", "LOAD-FONT", "SYSTEM-FONT", "K-UP", "K-DOWN", "K-LEFT", "K-RIGHT", "K-HOME", "K-END", "K-PRIOR", "K-NEXT", "K-INSERT", "K-DELETE", "K-F1", "K-F2", "K-F3", "K-F4", "K-F5", "K-F6", "K-F7", "K-F8", "K-F9", "K-F10", "K-F11", "K-F12" };
 
-/// The graphics library, which REQUIRE-GRAPHICS interprets after appending the GFX- words.
-pub const library = @embedFile("../graphics/graphics.fs");
+/// The words of the part of the library that uses floating-point numbers, which a build
+/// without them leaves out.
+pub const float_library_words = [_][]const u8{ "X-RANGE", "Y-RANGE", "MPSET", "MLINE", "AXES", "PLOT" };
+
+/// The graphics library, which REQUIRE-GRAPHICS interprets after appending the GFX- words:
+/// graphics.fs, followed by graphics_float.fs in a build with the floating-point words.
+pub const library = @embedFile("../graphics/graphics.fs") ++
+    (if (defs.float_enabled) @embedFile("../graphics/graphics_float.fs") else "");
 
 /// The name the library has in the source file table, for LOCATE and error messages.
 pub const library_name = "*graphics library*";
@@ -109,10 +120,15 @@ pub fn execute(self: *State, builtin: Builtin) RuntimeError!void {
             try requireImage(self);
             @memset(self.gfx_pixels, color(rgb));
         },
-        .gfx_save_ppm, .gfx_save_bmp => {
+        .gfx_save_ppm, .gfx_save_bmp, .gfx_save_png => {
             const name = try self.memoryRange();
             try requireImage(self);
-            try self.push(try saveImage(self, name, if (builtin == .gfx_save_ppm) .ppm else .bmp));
+            const format: ImageFormat = switch (builtin) {
+                .gfx_save_ppm => .ppm,
+                .gfx_save_bmp => .bmp,
+                else => .png,
+            };
+            try self.push(try saveImage(self, name, format));
         },
         .gfx_show_blocks => {
             try requireImage(self);
@@ -125,9 +141,53 @@ pub fn execute(self: *State, builtin: Builtin) RuntimeError!void {
         .gfx_show_window => {
             try requireImage(self);
             const window_fn = self.writer.window_fn orelse return error.HostUnavailable;
+            // The next SHOW on the terminal starts a new picture there.
+            self.gfx_input.shown = null;
             try window_fn(self.writer.context, self.gfx_pixels, @intCast(self.gfx_width), @intCast(self.gfx_height));
         },
         .gfx_window_query => try self.push(if (self.writer.window_fn != null) -1 else 0),
+        .gfx_inkey => try self.push(try graphics_input.inkey(self)),
+        .gfx_mouse => {
+            const state = try graphics_input.mouseState(self);
+            for (state) |value| try self.push(value);
+        },
+        .gfx_mouse_mode => graphics_input.setMouse(self, try self.pop() != 0),
+        else => {
+            // The fonts are left out of a build without graphics.
+            if (!defs.graphics_enabled) return error.GraphicsUnavailable;
+            try executeFont(self, builtin);
+        },
+    }
+}
+
+fn executeFont(self: *State, builtin: Builtin) RuntimeError!void {
+    switch (builtin) {
+        .gfx_glyph_load => {
+            const code = try self.pop();
+            try self.push(graphics_font.loadGlyph(self, code));
+        },
+        .gfx_glyph_box => {
+            const font = &self.gfx_font;
+            try self.push(font.left);
+            try self.push(font.width);
+            try self.push(font.height);
+        },
+        .gfx_glyph_alpha => {
+            const y = try self.pop();
+            const x = try self.pop();
+            try self.push(graphics_font.alphaAt(self, x, y));
+        },
+        .gfx_font_height => try self.push(graphics_font.fontHeight(self)),
+        .gfx_font_builtin => graphics_font.selectBuiltin(self),
+        .gfx_font_load => {
+            const name = try self.memoryRange();
+            try self.push(try graphics_font.loadBdf(self, name));
+        },
+        .gfx_font_system => {
+            const height = try self.pop();
+            const name = try self.memoryRange();
+            try self.push(try graphics_font.selectSystem(self, name, height));
+        },
         else => unreachable,
     }
 }
@@ -147,6 +207,8 @@ pub fn clearImage(self: *State) void {
     self.gfx_pixels = &.{};
     self.gfx_width = 0;
     self.gfx_height = 0;
+    // A font is not part of the dictionary either.
+    if (defs.graphics_enabled) graphics_font.selectBuiltin(self);
 }
 
 fn requireImage(self: *const State) RuntimeError!void {
@@ -163,7 +225,7 @@ fn color(rgb: Cell) u32 {
     return opaque_alpha | (@as(u32, @truncate(@as(u64, @bitCast(rgb)))) & rgb_mask);
 }
 
-const ImageFormat = enum { ppm, bmp };
+const ImageFormat = enum { ppm, bmp, png };
 
 /// Writes the image to a new file and returns the ior: 0, or the first failure of
 /// opening, writing, or closing the file.
@@ -176,6 +238,7 @@ fn saveImage(self: *State, name: []const u8, format: ImageFormat) RuntimeError!C
     switch (format) {
         .ppm => writePpm(self, &output),
         .bmp => writeBmp(self, &output),
+        .png => writePng(self, &output),
     }
     output.flush();
     const closed = files.close(self.writer.context, fileid);
@@ -217,6 +280,12 @@ const FileOutput = struct {
         output.bytes(&data);
     }
 
+    fn be32(output: *FileOutput, value: u32) void {
+        var data: [4]u8 = undefined;
+        std.mem.writeInt(u32, &data, value, .big);
+        output.bytes(&data);
+    }
+
     fn flush(output: *FileOutput) void {
         if (output.used != 0 and output.ior == 0) {
             const files = output.self.writer.file_ops.?;
@@ -225,6 +294,108 @@ const FileOutput = struct {
         output.used = 0;
     }
 };
+
+/// A PNG chunk being written: its length, then its type and data, which the CRC-32
+/// at its end covers.
+const Chunk = struct {
+    output: *FileOutput,
+    crc: std.hash.Crc32,
+
+    fn begin(output: *FileOutput, kind: *const [4]u8, length: u32) Chunk {
+        output.be32(length);
+        var chunk = Chunk{ .output = output, .crc = std.hash.Crc32.init() };
+        chunk.bytes(kind);
+        return chunk;
+    }
+
+    fn bytes(chunk: *Chunk, data: []const u8) void {
+        chunk.output.bytes(data);
+        chunk.crc.update(data);
+    }
+
+    fn end(chunk: *Chunk) void {
+        chunk.output.be32(chunk.crc.final());
+    }
+};
+
+/// The image data of a PNG: a zlib stream of stored (not compressed) deflate blocks
+/// of at most 65535 bytes, ended by the Adler-32 of the data.
+const StoredStream = struct {
+    chunk: *Chunk,
+    /// Bytes of data still to come, and still to come in the current block.
+    left: u64,
+    block_left: u64 = 0,
+    adler_a: u32 = 1,
+    adler_b: u32 = 0,
+
+    const max_block = 65535;
+
+    fn bytes(stream: *StoredStream, data: []const u8) void {
+        var rest = data;
+        while (rest.len != 0) {
+            if (stream.block_left == 0) {
+                const length: u16 = @intCast(@min(stream.left, max_block));
+                // The last block has BFINAL set; BTYPE 00 is a stored block.
+                const header = [5]u8{ @intFromBool(length == stream.left), @truncate(length), @truncate(length >> 8), @truncate(~length), @truncate(~length >> 8) };
+                stream.chunk.bytes(&header);
+                stream.block_left = length;
+            }
+            const count: usize = @intCast(@min(rest.len, stream.block_left));
+            stream.chunk.bytes(rest[0..count]);
+            stream.adler(rest[0..count]);
+            stream.block_left -= count;
+            stream.left -= count;
+            rest = rest[count..];
+        }
+    }
+
+    fn adler(stream: *StoredStream, data: []const u8) void {
+        for (data) |value| {
+            stream.adler_a = (stream.adler_a + value) % 65521;
+            stream.adler_b = (stream.adler_b + stream.adler_a) % 65521;
+        }
+    }
+};
+
+/// PNG with 8-bit red, green, and blue and no compression; each row starts with
+/// filter type 0 (none).
+fn writePng(self: *const State, output: *FileOutput) void {
+    const width: usize = @intCast(self.gfx_width);
+    const height: usize = @intCast(self.gfx_height);
+    output.bytes("\x89PNG\r\n\x1a\n");
+    var header: [13]u8 = undefined;
+    std.mem.writeInt(u32, header[0..4], @intCast(width), .big);
+    std.mem.writeInt(u32, header[4..8], @intCast(height), .big);
+    header[8..13].* = .{ 8, 2, 0, 0, 0 };
+    var ihdr = Chunk.begin(output, "IHDR", header.len);
+    ihdr.bytes(&header);
+    ihdr.end();
+    const row_size = 1 + 3 * width;
+    const raw: u64 = @as(u64, height) * row_size;
+    const blocks = (raw + StoredStream.max_block - 1) / StoredStream.max_block;
+    // The zlib header, the blocks with their 5-byte headers, and the Adler-32.
+    var idat = Chunk.begin(output, "IDAT", @intCast(2 + raw + 5 * blocks + 4));
+    // CMF 0x78 (deflate, 32K window) and FLG 0x01, whose check bits make 0x7801 a
+    // multiple of 31.
+    idat.bytes(&.{ 0x78, 0x01 });
+    var stream = StoredStream{ .chunk = &idat, .left = raw };
+    var row: [1 + 3 * max_side]u8 = undefined;
+    for (0..height) |y| {
+        row[0] = 0;
+        for (self.gfx_pixels[y * width ..][0..width], 0..) |pixel, x| {
+            row[1 + 3 * x] = @truncate(pixel >> 16);
+            row[2 + 3 * x] = @truncate(pixel >> 8);
+            row[3 + 3 * x] = @truncate(pixel);
+        }
+        stream.bytes(row[0..row_size]);
+    }
+    var checksum: [4]u8 = undefined;
+    std.mem.writeInt(u32, &checksum, (stream.adler_b << 16) | stream.adler_a, .big);
+    idat.bytes(&checksum);
+    idat.end();
+    var iend = Chunk.begin(output, "IEND", 0);
+    iend.end();
+}
 
 /// Binary PPM (P6): a text header, then red, green, and blue bytes, top row first.
 fn writePpm(self: *const State, output: *FileOutput) void {

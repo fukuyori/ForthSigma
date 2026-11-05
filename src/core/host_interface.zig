@@ -42,6 +42,32 @@ pub const FileOps = struct {
 /// A terminal's size in characters, and in pixels when the host knows it (0 otherwise).
 pub const TerminalSize = struct { columns: u32, rows: u32, x_pixels: u32 = 0, y_pixels: u32 = 0 };
 
+/// The mouse buttons in InputEvent: 1 left, 2 right, 4 middle.
+pub const MouseButtons = u8;
+
+/// One thing the user did, as the host's input gives it without waiting (INKEY, MOUSE).
+pub const InputEvent = union(enum) {
+    /// A byte from the terminal as it came, escape sequences included; the graphics
+    /// words decode the keys and the mouse reports in it.
+    byte: u8,
+    /// A key the host decoded itself (a Windows console or a window): a byte of UTF-8
+    /// text, or one of the key codes of graphics_input from 256 up.
+    key: u32,
+    /// The mouse on the terminal: its character cell (column and row from 0, counted on
+    /// the screen as `cursor_fn` counts them) and the buttons held.
+    terminal_mouse: struct { column: i32, row: i32, buttons: MouseButtons },
+    /// The mouse in the window: the pixel of the image under it and the buttons held.
+    window_mouse: struct { x: i32, y: i32, buttons: MouseButtons },
+};
+
+/// A glyph the host drew for TEXT (system_glyph_fn): its advance, and its box of
+/// `width` × `height` pixels from `left` pixels right of the pen (negative: to the left)
+/// and from the top of the line.
+pub const SystemGlyph = struct { advance: i32, left: i32, width: u32, height: u32 };
+
+/// A position on the terminal's screen: column and row from 0.
+pub const CursorPosition = struct { column: i32, row: i32 };
+
 /// The local date and time, for TIME&DATE: month 1 to 12, the full year.
 pub const LocalTime = struct { second: Cell, minute: Cell, hour: Cell, day: Cell, month: Cell, year: Cell };
 
@@ -79,6 +105,28 @@ pub const Writer = struct {
     /// Shows the 32-bit pixels (0xAARRGGBB, rows from the top) of a width × height
     /// image in a window, which the host keeps open. The host copies the pixels.
     window_fn: ?*const fn (?*anyopaque, []const u32, u32, u32) RuntimeError!void = null,
+    /// The next input event without waiting, or null when there is none. The first call
+    /// lets the terminal give each key at once, without echo; the host gives it back its
+    /// line input when the program next reads a line or a KEY, and at the end. The host
+    /// does not stop the program at Ctrl+C here: it gives the byte 3, which INKEY throws.
+    input_fn: ?*const fn (?*anyopaque) ?InputEvent = null,
+    /// Asks the terminal to report the mouse (true) or to stop (false). The host stops
+    /// the reports while the terminal has its line input, and at the end.
+    mouse_fn: ?*const fn (?*anyopaque, bool) void = null,
+    /// Where the cursor is on the terminal's screen, or null when it cannot tell. The
+    /// output written before the call must have reached the terminal first.
+    cursor_fn: ?*const fn (?*anyopaque) ?CursorPosition = null,
+    /// Gives memory for a font LOAD-FONT reads, that many 64-bit words, outside logical
+    /// memory. On success the host releases the buffer it gave before; on failure it
+    /// returns null and keeps it.
+    font_buffer_fn: ?*const fn (?*anyopaque, usize) ?[]u64 = null,
+    /// Chooses the system's font of that name for TEXT, `height` pixels from the top of
+    /// a line to its bottom. False when the system has no font of the name.
+    system_font_fn: ?*const fn (?*anyopaque, []const u8, u32) RuntimeError!bool = null,
+    /// Draws one character of the font system_font_fn chose: its coverage, 0 to 255 for
+    /// each pixel, row after row of `width` bytes in the buffer, the box at most the
+    /// given width wide and as high as the font. Null when the font has no glyph for it.
+    system_glyph_fn: ?*const fn (?*anyopaque, u21, []u8, u32) ?SystemGlyph = null,
 
     pub fn write(self: Writer, bytes: []const u8) void {
         self.write_fn(self.context, bytes);

@@ -28,7 +28,17 @@ test "HELP has a description for every built-in word, and only for words that ex
     // The GFX- words are in the dictionary once REQUIRE-GRAPHICS has loaded them.
     if (@import("build_options").graphics) {
         try machine.interpretLine("REQUIRE-GRAPHICS ALSO GRAPHICS");
-        for (words_graphics.library_words) |name| {
+        // The floating-point part of the library is neither defined nor described
+        // in a build without floats.
+        for (words_graphics.float_library_words) |name| {
+            if (@import("build_options").float) continue;
+            if (machine.lookup(name) != null or words_help.entry(name) != null) {
+                std.debug.print("float library word in a build without floats: {s}\n", .{name});
+                return error.TestExpectedEqual;
+            }
+        }
+        const float_words = if (@import("build_options").float) words_graphics.float_library_words else [0][]const u8{};
+        for (words_graphics.library_words ++ float_words) |name| {
             if (machine.lookup(name) == null or words_help.entry(name) == null) {
                 std.debug.print("library word without help or definition: {s}\n", .{name});
                 return error.TestExpectedEqual;

@@ -68,6 +68,10 @@ const posix_ioctl = struct {
     extern "c" fn ioctl(c_int, c_int, ...) c_int;
 };
 const host_window = @import("host_window.zig");
+const host_input = @import("host_input.zig");
+const host_font = @import("host_font.zig");
+/// Whether the build has the graphics words: a build without them leaves out the fonts.
+const graphics = @import("build_options").graphics;
 
 const image_footer_size = 20;
 const image_footer_magic = "SIGEND01";
@@ -75,8 +79,9 @@ const image_footer_magic = "SIGEND01";
 /// threaded implementation, whose table of functions links in every file, network, and
 /// process operation of the standard library (about 450 KB on Windows). Sigma does its
 /// file work through the C library, and the few calls below go to the system directly.
-/// `framebuffer` is the graphics image that GFX-INIT got last, freed when Sigma ends.
-const HostContext = struct { allocator: std.mem.Allocator, executable_path: [:0]const u8, environ_map: *std.process.Environ.Map, framebuffer: []u32 = &.{} };
+/// `framebuffer` is the graphics image that GFX-INIT got last, and `font` the BDF font
+/// LOAD-FONT read last; both are freed when Sigma ends.
+const HostContext = struct { allocator: std.mem.Allocator, executable_path: [:0]const u8, environ_map: *std.process.Environ.Map, framebuffer: []u32 = &.{}, font: []u64 = &.{} };
 
 fn hostContext(context: ?*anyopaque) forth.RuntimeError!*HostContext {
     return @ptrCast(@alignCast(context orelse return error.HostUnavailable));
@@ -123,6 +128,15 @@ fn graphicsBuffer(context: ?*anyopaque, pixels: usize) ?[]u32 {
     const buffer = host.allocator.alloc(u32, pixels) catch return null;
     if (host.framebuffer.len != 0) host.allocator.free(host.framebuffer);
     host.framebuffer = buffer;
+    return buffer;
+}
+
+/// LOAD-FONT's font: a new buffer, replacing the previous one only when it is allocated.
+fn fontBuffer(context: ?*anyopaque, words: usize) ?[]u64 {
+    const host = hostContext(context) catch return null;
+    const buffer = host.allocator.alloc(u64, words) catch return null;
+    if (host.font.len != 0) host.allocator.free(host.font);
+    host.font = buffer;
     return buffer;
 }
 
@@ -192,6 +206,8 @@ fn runShellCommand(_: ?*anyopaque, command: []const u8) forth.RuntimeError!forth
     if (std.mem.indexOfScalar(u8, command, 0) != null) return error.HostFailed;
     @memcpy(terminated[0..command.len], command);
     terminated[command.len] = 0;
+    // The command gets the terminal with its line input.
+    host_input.leave();
     // The command's output comes after what Forth wrote before it.
     flushOutput();
     // On POSIX systems this is the wait status, as gforth's $? gives; on Windows, the exit code.
@@ -667,6 +683,7 @@ fn readByte() c_int {
     // A prompt or a question is out before the program takes the answer, also when KEY?
     // has read the byte ahead and the program wrote in between.
     flushOutput();
+    host_input.leave();
     if (lookahead) |byte| {
         lookahead = null;
         return byte;
@@ -681,11 +698,29 @@ fn terminalKey(_: ?*anyopaque) ?u8 {
 
 fn terminalKeyReady(_: ?*anyopaque) bool {
     flushOutput();
+    host_input.leave();
     if (lookahead != null) return true;
     const ch = getchar();
     if (ch < 0) return false;
     lookahead = @intCast(ch);
     return true;
+}
+
+/// INKEY's and MOUSE's input: a byte KEY? read ahead, then the terminal, then the window.
+fn inputEvent(_: ?*anyopaque) ?forth.InputEvent {
+    if (lookahead) |byte| {
+        lookahead = null;
+        return .{ .byte = byte };
+    }
+    return host_input.next() orelse host_window.poll();
+}
+
+fn mouseMode(_: ?*anyopaque, on: bool) void {
+    host_input.setMouse(on);
+}
+
+fn cursorPosition(_: ?*anyopaque) ?forth.CursorPosition {
+    return host_input.cursor();
 }
 
 fn terminalRead(_: ?*anyopaque, buffer: []u8) ?[]const u8 {
@@ -740,17 +775,23 @@ fn run(init: std.process.Init.Minimal) !void {
     defer allocator.free(executable_path);
     var host = HostContext{ .allocator = allocator, .executable_path = executable_path, .environ_map = &environ_map };
     defer if (host.framebuffer.len != 0) allocator.free(host.framebuffer);
+    defer if (host.font.len != 0) allocator.free(host.font);
     const machine = try allocator.create(forth.State);
     defer allocator.destroy(machine);
     output_is_terminal = isTerminal(1);
+    host_input.output_is_terminal = output_is_terminal;
+    host_input.input_is_terminal = isTerminal(0);
+    host_input.flush_output = flushOutput;
     // The output kept in the buffer goes out however the session ends.
     defer flushOutput();
 
     enableVirtualTerminal();
     useBinaryStdin();
-    machine.init(.{ .context = @ptrCast(&host), .write_fn = terminalWrite, .read_fn = terminalRead, .load_fn = loadDictionary, .save_fn = saveDictionary, .savesys_fn = saveExecutableImage, .key_fn = terminalKey, .key_ready_fn = terminalKeyReady, .sleep_fn = sleepMilliseconds, .utime_fn = microsecondsSinceEpoch, .local_time_fn = localTime, .getenv_fn = environmentValue, .system_fn = runShellCommand, .file_ops = &file_ops, .framebuffer_fn = graphicsBuffer, .terminal_size_fn = terminalSize, .terminal_utf8_fn = terminalUtf8, .window_fn = if (host_window.available) host_window.show else null });
+    machine.init(.{ .context = @ptrCast(&host), .write_fn = terminalWrite, .read_fn = terminalRead, .load_fn = loadDictionary, .save_fn = saveDictionary, .savesys_fn = saveExecutableImage, .key_fn = terminalKey, .key_ready_fn = terminalKeyReady, .sleep_fn = sleepMilliseconds, .utime_fn = microsecondsSinceEpoch, .local_time_fn = localTime, .getenv_fn = environmentValue, .system_fn = runShellCommand, .file_ops = &file_ops, .framebuffer_fn = graphicsBuffer, .terminal_size_fn = terminalSize, .terminal_utf8_fn = terminalUtf8, .window_fn = if (host_window.available) host_window.show else null, .input_fn = inputEvent, .mouse_fn = mouseMode, .cursor_fn = cursorPosition, .font_buffer_fn = if (graphics) fontBuffer else null, .system_font_fn = if (graphics and host_font.available) host_font.select else null, .system_glyph_fn = if (graphics and host_font.available) host_font.glyph else null });
     defer closeAllFiles();
     defer host_window.close();
+    // The terminal gets its line input back (and stops reporting the mouse) at the end.
+    defer host_input.leave();
     loadEmbeddedImage(executable_path, machine, allocator);
 
     var arguments = try std.process.Args.Iterator.initAllocator(init.args, allocator);

@@ -1069,3 +1069,549 @@ test "half block output longer than the output buffer comes out whole" {
     try std.testing.expectEqual(@as(usize, 400), std.mem.count(u8, text, "\x1b[48;2;"));
     try std.testing.expect(std.mem.endsWith(u8, text, "\x1b[0m\n"));
 }
+
+test "GFX-SAVE-PNG writes a PNG whose chunks, stored blocks, Adler-32, and pixels check out" {
+    try skipWithout(&.{.graphics});
+    var output = Output{};
+    const machine = try libraryMachine(&output, "20 20");
+    defer destroyMachine(machine);
+    for (machine.gfx_pixels, 0..) |*value, index| value.* = 0xff000000 | @as(u32, @intCast(index * 40503 & 0xffffff));
+    try machine.interpretLine("S\" a.txt\" GFX-SAVE-PNG S\" b.txt\" SAVE-PNG");
+    try expectStack(machine, &.{0});
+    const file = output.files[0].data[0..output.files[0].len];
+    try std.testing.expectEqualSlices(u8, output.files[0].data[0..output.files[0].len], output.files[1].data[0..output.files[1].len]);
+    try std.testing.expectEqualSlices(u8, "\x89PNG\r\n\x1a\n", file[0..8]);
+    var at: usize = 8;
+    var kinds: [3][4]u8 = undefined;
+    var count: usize = 0;
+    var idat: []const u8 = &.{};
+    while (at < file.len) : (count += 1) {
+        const length = std.mem.readInt(u32, file[at..][0..4], .big);
+        const kind = file[at + 4 ..][0..4];
+        const body = file[at + 8 ..][0..length];
+        const crc = std.mem.readInt(u32, file[at + 8 + length ..][0..4], .big);
+        var check = std.hash.Crc32.init();
+        check.update(kind);
+        check.update(body);
+        try std.testing.expectEqual(check.final(), crc);
+        kinds[count] = kind.*;
+        if (std.mem.eql(u8, kind, "IHDR")) {
+            try std.testing.expectEqualSlices(u8, &.{ 0, 0, 0, 20, 0, 0, 0, 20, 8, 2, 0, 0, 0 }, body);
+        }
+        if (std.mem.eql(u8, kind, "IDAT")) idat = body;
+        at += 12 + length;
+    }
+    try std.testing.expectEqual(file.len, at);
+    try std.testing.expectEqualStrings("IHDRIDATIEND", std.mem.sliceAsBytes(kinds[0..count]));
+    // zlib: header, one stored block with BFINAL, the data, and the Adler-32 of the data.
+    try std.testing.expectEqualSlices(u8, &.{ 0x78, 0x01, 1 }, idat[0..3]);
+    const length = std.mem.readInt(u16, idat[3..5], .little);
+    try std.testing.expectEqual(@as(u16, 20 * (1 + 3 * 20)), length);
+    try std.testing.expectEqual(~length, std.mem.readInt(u16, idat[5..7], .little));
+    const raw = idat[7..][0..length];
+    var a: u32 = 1;
+    var b: u32 = 0;
+    for (raw) |value| {
+        a = (a + value) % 65521;
+        b = (b + a) % 65521;
+    }
+    try std.testing.expectEqual((b << 16) | a, std.mem.readInt(u32, idat[7 + length ..][0..4], .big));
+    try std.testing.expectEqual(idat.len, 7 + length + 4);
+    for (0..20) |y| {
+        try std.testing.expectEqual(@as(u8, 0), raw[y * 61]);
+        for (0..20) |x| {
+            const value = machine.gfx_pixels[y * 20 + x];
+            const at_pixel = y * 61 + 1 + 3 * x;
+            try std.testing.expectEqualSlices(u8, &.{ @truncate(value >> 16), @truncate(value >> 8), @truncate(value) }, raw[at_pixel..][0..3]);
+        }
+    }
+    try machine.interpretLine(": T S\" missing\" SAVE-PNG ; ' T CATCH");
+    try expectStack(machine, &.{ 0, forth.errnoIor(2) });
+}
+
+test "X-RANGE, Y-RANGE, MPSET, MLINE, AXES, and PLOT draw in mathematical coordinates" {
+    try skipWithout(&.{.graphics});
+    try support.skipWithoutFloat();
+    var output = Output{};
+    const machine = try libraryMachine(&output, "9 5");
+    defer destroyMachine(machine);
+    // At first x and y go from -1 to 1, with y upward.
+    try machine.interpretLine("AXES");
+    try expectPicture(machine,
+        \\....#....
+        \\....#....
+        \\#########
+        \\....#....
+        \\....#....
+        \\
+    );
+    // A coordinate that is NaN draws nothing; far and infinite ones are limited.
+    try machine.interpretLine("CLS 1e0 1e0 MPSET -1e0 -1e0 MPSET 0e0 0e0 F/ 0e0 MPSET 0e0 0e0 0e0 0e0 0e0 F/ MLINE");
+    try expectPicture(machine,
+        \\........#
+        \\.........
+        \\.........
+        \\.........
+        \\#........
+        \\
+    );
+    // Pixel positions beyond 2^61 are moved there, as LINE does with integers: the ends
+    // of this line go to (-2^61, 2^61) and (2^61, -2^61), so that only 0 0 is drawn.
+    try machine.interpretLine("CLS -1e300 -1e300 1e300 1e300 MLINE 1e0 0e0 F/ FDUP MPSET");
+    try expectPicture(machine, "#........\n" ++ repeat(".........\n", 4));
+    try machine.interpretLine("CLS -1e0 -1e0 1e0 -1e0 MLINE");
+    try expectPicture(machine, repeat(".........\n", 4) ++ "#########\n");
+    // The graph joins the columns with lines, and has a gap where y is NaN.
+    try machine.interpretLine("CLS : SQ ( F: x -- y ) FDUP F* ; ' SQ PLOT");
+    try expectPicture(machine,
+        \\#.......#
+        \\.#.....#.
+        \\..#####..
+        \\.........
+        \\.........
+        \\
+    );
+    try machine.interpretLine("CLS : GAP ( F: x -- y ) FDUP F0< IF FDROP 0e0 0e0 F/ THEN ; ' GAP PLOT");
+    try expectPicture(machine,
+        \\.......##
+        \\......#..
+        \\....##...
+        \\.........
+        \\.........
+        \\
+    );
+    try machine.interpretLine("CLS 0e0 4e0 X-RANGE 0e0 2e0 Y-RANGE ' FSQRT PLOT");
+    try expectPicture(machine,
+        \\.......##
+        \\....###..
+        \\..##.....
+        \\.#.......
+        \\#........
+        \\
+    );
+    // An axis outside the range is not drawn, and one at the edge is.
+    try machine.interpretLine("CLS 1e0 2e0 X-RANGE 0e0 1e0 Y-RANGE AXES");
+    try expectPicture(machine, repeat(".........\n", 4) ++ "#########\n");
+    try expectStack(machine, &.{});
+    try support.expectFloatStack(machine, &.{});
+
+    // An empty, reversed, or infinite range is a NUMBER ERROR, and the range stays.
+    const ranges = [_][]const u8{ "1e0 1e0 X-RANGE", "2e0 1e0 Y-RANGE", "-1e0 0e0 F/ 1e0 0e0 F/ X-RANGE", "0e0 0e0 0e0 F/ Y-RANGE" };
+    for (ranges) |range| {
+        var line: [96]u8 = undefined;
+        machine.data_depth = 0;
+        machine.float_depth = 0;
+        try machine.interpretLine(try std.fmt.bufPrint(&line, ": T {s} ; ' T CATCH", .{range}));
+        try expectStack(machine, &.{-24});
+    }
+    machine.data_depth = 0;
+    machine.float_depth = 0;
+    try machine.interpretLine("CLS AXES");
+    try expectPicture(machine, repeat(".........\n", 4) ++ "#########\n");
+
+    // In an image one pixel wide, the graph has the y at the left end of the range.
+    try machine.interpretLine("1 3 GFX-INIT -1e0 1e0 X-RANGE -1e0 1e0 Y-RANGE ' SQ PLOT");
+    try expectPicture(machine, "#\n.\n.\n");
+    // The words need an image, and are described by HELP.
+    const words = [_][]const u8{ "0e0 0e0 MPSET", "0e0 0e0 1e0 1e0 MLINE", "AXES", "['] SQ PLOT" };
+    for (words) |word| {
+        var fresh_output = Output{};
+        const fresh = try createMachine(&fresh_output);
+        defer destroyMachine(fresh);
+        try fresh.interpretLine("REQUIRE-GRAPHICS ALSO GRAPHICS : SQ FDUP F* ;");
+        var line: [64]u8 = undefined;
+        try fresh.interpretLine(try std.fmt.bufPrint(&line, ": T {s} ; ' T CATCH", .{word}));
+        try expectStack(fresh, &.{-271});
+    }
+    if (!@import("build_options").help) return;
+    // Only HELP's text, not the warnings about T defined again.
+    output.len = 0;
+    try machine.interpretLine("HELP PLOT");
+    try std.testing.expectEqualStrings("PLOT ( xt -- )\n  Draw the graph of xt ( F: x -- y ) across the image, joining the columns with lines; NaN leaves a gap (FORTH/Sigma graphics).\n", output.written());
+}
+
+/// The bytes of `text` as input events from a terminal.
+fn byteEvents(comptime text: []const u8) [text.len]forth.InputEvent {
+    var events: [text.len]forth.InputEvent = undefined;
+    for (text, 0..) |byte, index| events[index] = .{ .byte = byte };
+    return events;
+}
+
+fn inkeys(machine: *forth.State, comptime count: usize) !void {
+    try machine.interpretLine(comptime repeat("INKEY ", count));
+}
+
+test "INKEY decodes keys and escape sequences from the terminal, and Ctrl+C throws -28" {
+    try skipWithout(&.{.graphics});
+    var output = Output{};
+    const machine = try libraryMachine(&output, "4 4");
+    defer destroyMachine(machine);
+    // Arrows (CSI, SS3, with a modifier), Delete, F5, F12, F1, LF and DEL as Enter and
+    // Backspace, an unknown sequence (dropped), a UTF-8 character, Esc before a key,
+    // and Esc alone at the end.
+    const events = byteEvents("a\x1b[A\x1bOB\x1b[1;5C\x1b[3~\x1b[15~\x1b[24~\x1bOP\n\x7f\x1b[Zb\xc3\xa9\x1bx\x1b");
+    output.events = &events;
+    try inkeys(machine, 16);
+    try expectStack(machine, &.{ 'a', 256, 257, 259, 265, 270, 277, 266, 13, 8, 'b', 0xc3, 0xa9, 27, 'x', 27 });
+    machine.data_depth = 0;
+    try inkeys(machine, 1);
+    try expectStack(machine, &.{-1});
+    machine.data_depth = 0;
+    try machine.interpretLine("K-UP K-LEFT K-F1 K-F12 K-DELETE K-NEXT");
+    try expectStack(machine, &.{ 256, 258, 266, 277, 265, 263 });
+    machine.data_depth = 0;
+
+    // A sequence that does not end is given as the keys of its bytes.
+    const long = byteEvents("\x1b[" ++ repeat("1", 40));
+    output.events = &long;
+    output.event_index = 0;
+    try machine.interpretLine("INKEY INKEY INKEY");
+    try expectStack(machine, &.{ 27, '[', '1' });
+    machine.data_depth = 0;
+    output.events = &.{};
+    output.event_index = 0;
+    while (machine.gfx_input.key_count != 0) _ = try @import("../core/graphics_input.zig").inkey(machine);
+
+    // Ctrl+C, from the terminal or from the host's own keys.
+    for ([_]forth.InputEvent{ .{ .byte = 3 }, .{ .key = 3 } }) |event| {
+        const one = [_]forth.InputEvent{ event, .{ .byte = 'z' } };
+        output.events = &one;
+        output.event_index = 0;
+        try machine.interpretLine("' INKEY CATCH INKEY");
+        try expectStack(machine, &.{ -28, 'z' });
+        machine.data_depth = 0;
+    }
+    // Keys that the host decoded pass through.
+    const decoded = [_]forth.InputEvent{ .{ .key = 258 }, .{ .key = 'q' } };
+    output.events = &decoded;
+    output.event_index = 0;
+    try inkeys(machine, 3);
+    try expectStack(machine, &.{ 258, 'q', -1 });
+}
+
+test "MOUSE gives the pixel under the mouse on the terminal and in the window, and keys wait for INKEY" {
+    try skipWithout(&.{.graphics});
+    var output = Output{ .terminal_columns = 80, .terminal_rows = 24 };
+    const machine = try libraryMachine(&output, "8 4");
+    defer destroyMachine(machine);
+    // Before SHOW the place of the image is not known.
+    const early = byteEvents("\x1b[<0;3;9M");
+    output.events = &early;
+    try machine.interpretLine("MOUSE");
+    try expectStack(machine, &.{ -1, -1, 1 });
+    machine.data_depth = 0;
+
+    // The image takes 2 rows; the cursor is on row 10 after it, so it starts on row 8.
+    output.cursor_row = 10;
+    try machine.interpretLine("MOUSE-ON DISPLAY-TERMINAL SHOW");
+    try std.testing.expectEqualStrings("+", output.mouse_calls[0..output.mouse_count]);
+    try std.testing.expectEqual(@as(usize, 1), output.cursor_queries);
+    // Drawn over the same place, the image's place is known without asking.
+    try machine.interpretLine("SHOW");
+    try std.testing.expectEqual(@as(usize, 1), output.cursor_queries);
+    // Pressed at column 2 row 8, a key, moved with no button to column 7 row 9, and
+    // released at column 0 row 0 (above the image).
+    const pressed = "\x1b[<0;3;9M";
+    const events = byteEvents(pressed ++ "k" ++ "\x1b[<35;8;10M" ++ "\x1b[<0;1;1m");
+    output.events = events[0..pressed.len];
+    output.event_index = 0;
+    try machine.interpretLine("MOUSE");
+    try expectStack(machine, &.{ 2, 1, 1 });
+    machine.data_depth = 0;
+    output.events = events[pressed.len .. pressed.len + 1 + 11];
+    output.event_index = 0;
+    try machine.interpretLine("MOUSE INKEY");
+    try expectStack(machine, &.{ 7, 3, 0, 'k' });
+    machine.data_depth = 0;
+    output.events = events[pressed.len + 1 + 11 ..];
+    output.event_index = 0;
+    try machine.interpretLine("MOUSE");
+    try expectStack(machine, &.{ 0, -15, 0 });
+    machine.data_depth = 0;
+    // The right and middle buttons, and the wheel, which changes no button.
+    const buttons = byteEvents("\x1b[<2;1;9M\x1b[<1;1;9M\x1b[<64;1;9M\x1b[<2;1;9m");
+    output.events = &buttons;
+    output.event_index = 0;
+    try machine.interpretLine("MOUSE NIP NIP");
+    try expectStack(machine, &.{4});
+    machine.data_depth = 0;
+
+    // Without the cursor's place, the position is not known.
+    output.cursor_row = null;
+    try machine.interpretLine("CR SHOW");
+    output.events = events[0..pressed.len];
+    output.event_index = 0;
+    try machine.interpretLine("MOUSE");
+    try expectStack(machine, &.{ -1, -1, 5 });
+    machine.data_depth = 0;
+    // The window gives the pixel itself; MOUSE-OFF stops the reports.
+    const window = [_]forth.InputEvent{.{ .window_mouse = .{ .x = 5, .y = 3, .buttons = 2 } }};
+    output.events = &window;
+    output.event_index = 0;
+    try machine.interpretLine("MOUSE MOUSE-OFF");
+    try expectStack(machine, &.{ 5, 3, 2 });
+    try std.testing.expectEqualStrings("+-", output.mouse_calls[0..output.mouse_count]);
+}
+
+test "SHOW on the terminal draws over the image it drew last when nothing was written since" {
+    try skipWithout(&.{.graphics});
+    var output = Output{ .terminal_columns = 80, .terminal_rows = 24 };
+    const machine = try libraryMachine(&output, "8 4");
+    defer destroyMachine(machine);
+    try machine.interpretLine("DISPLAY-TERMINAL SHOW");
+    const first = output.len;
+    try std.testing.expect(!std.mem.startsWith(u8, output.written(), "\r"));
+    try machine.interpretLine("SHOW");
+    const again = output.written()[first..];
+    try std.testing.expect(std.mem.startsWith(u8, again, "\r\x1b[2A"));
+    try std.testing.expect(std.mem.endsWith(u8, again, "\n\x1b[J"));
+    // The same picture after the return.
+    try std.testing.expectEqualStrings(output.written()[0..first], again[5 .. again.len - 3]);
+    // Output in between starts a new picture.
+    const before = output.len;
+    try machine.interpretLine("1 . SHOW");
+    try std.testing.expect(!std.mem.startsWith(u8, output.written()[before + 2 ..], "\r"));
+    try machine.interpretLine("TERMINAL-SIXEL SHOW");
+    try std.testing.expect(std.mem.indexOf(u8, output.written()[before..], "\r\x1b[2A\x1bPq") != null);
+    // A Sixel picture 4 pixels high takes 1 row of the assumed 20 pixels.
+    const sixel = output.len;
+    try machine.interpretLine("SHOW");
+    try std.testing.expect(std.mem.startsWith(u8, output.written()[sixel..], "\r\x1b[1A\x1bPq"));
+
+    // Not on a terminal: always a new picture.
+    output.terminal_columns = 0;
+    const piped = output.len;
+    try machine.interpretLine("SHOW");
+    try std.testing.expect(std.mem.startsWith(u8, output.written()[piped..], "\x1bPq"));
+}
+
+test "FRAME waits for the rest of the frame time, does not wait when late, and shows the image" {
+    try skipWithout(&.{.graphics});
+    var output = Output{ .terminal_columns = 80, .terminal_rows = 24 };
+    const machine = try libraryMachine(&output, "2 2");
+    defer destroyMachine(machine);
+    // The first FRAME has no frame before it.
+    try machine.interpretLine("DISPLAY-TERMINAL 50 FRAME");
+    try std.testing.expectEqual(@as(forth.Cell, -1), output.slept);
+    try std.testing.expect(output.len != 0);
+    // 20 ms have passed of the next 50.
+    output.time += 20_000;
+    try machine.interpretLine("50 FRAME");
+    try std.testing.expectEqual(@as(forth.Cell, 30), output.slept);
+    // 80 ms of the next 50: late, so no wait, and the next one counts from now.
+    output.slept = -1;
+    output.time += 30_000 + 80_000;
+    try machine.interpretLine("50 FRAME");
+    try std.testing.expectEqual(@as(forth.Cell, -1), output.slept);
+    output.time += 10_000;
+    try machine.interpretLine("50 FRAME");
+    try std.testing.expectEqual(@as(forth.Cell, 40), output.slept);
+    try expectStack(machine, &.{});
+}
+
+test "the built-in font has the ASCII characters, and the glyph words give their boxes and coverage" {
+    try skipWithout(&.{.graphics});
+    const font = @import("../graphics/font_misaki.zig");
+    // The printable ASCII characters, in order, each 4 pixels wide.
+    try std.testing.expectEqual(@as(usize, 95), font.glyphs.len);
+    for (font.glyphs, 0x20..) |glyph, code| {
+        try std.testing.expectEqual(code, glyph.code);
+        try std.testing.expectEqual(@as(u8, 4), glyph.width);
+    }
+    var output = Output{};
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
+    // A: advancing 4, its box the 3 columns it uses; a space has an empty box.
+    try machine.interpretLine("REQUIRE-GRAPHICS ALSO GRAPHICS GFX-FONT-HEIGHT CHAR A GFX-GLYPH-LOAD GFX-GLYPH-BOX 1 0 GFX-GLYPH-ALPHA 0 0 GFX-GLYPH-ALPHA 2 1 GFX-GLYPH-ALPHA 3 0 GFX-GLYPH-ALPHA");
+    try expectStack(machine, &.{ 8, 4, 0, 3, 8, 255, 0, 255, 0 });
+    machine.data_depth = 0;
+    try machine.interpretLine("BL GFX-GLYPH-LOAD GFX-GLYPH-BOX DROP NIP $1F GFX-GLYPH-LOAD $7F GFX-GLYPH-LOAD $3042 GFX-GLYPH-LOAD -1 GFX-GLYPH-LOAD $110000 GFX-GLYPH-LOAD");
+    try expectStack(machine, &.{ 4, 0, -1, -1, -1, -1, -1 });
+}
+
+test "TEXT draws UTF-8 strings with the font, ? for a character it lacks, and TEXT-SCALE and TEXT-WIDTH" {
+    try skipWithout(&.{.graphics});
+    var output = Output{};
+    const machine = try libraryMachine(&output, "14 9");
+    defer destroyMachine(machine);
+    // A, then あ, which the font lacks, as ?, from 1 1; a control character draws nothing.
+    try machine.interpretLine("S\\\" A\\tあ\" 1 1 TEXT");
+    try expectPicture(machine,
+        \\..............
+        \\..#...#.......
+        \\.#.#.#.#......
+        \\.#.#...#......
+        \\.###..#.......
+        \\.#.#..........
+        \\.#.#..#.......
+        \\..............
+        \\..............
+        \\
+    );
+    // A kanji, an invalid byte, and a sequence cut short are drawn as ? each.
+    try machine.interpretLine("CLS S\\\" 漢\\xff\\xe3\\x81\" 0 0 TEXT");
+    var question: [256]u8 = undefined;
+    const drawn = picture(machine, &question);
+    try machine.interpretLine("CLS S\" ????\" 0 0 TEXT");
+    try expectPicture(machine, drawn);
+    // Twice as large, cut at the edges, and far away.
+    try machine.interpretLine("CLS 2 TEXT-SCALE S\" A\" 7 3 TEXT 1 TEXT-SCALE S\" A\" -100000000000000000 0 TEXT");
+    try expectPicture(machine,
+        \\..............
+        \\..............
+        \\..............
+        \\.........##...
+        \\.........##...
+        \\.......##..##.
+        \\.......##..##.
+        \\.......##..##.
+        \\.......##..##.
+        \\
+    );
+    try machine.interpretLine("S\" Aあ\" TEXT-WIDTH 3 TEXT-SCALE S\" Aあ\" TEXT-WIDTH 1 TEXT-SCALE S\" \" TEXT-WIDTH");
+    try expectStack(machine, &.{ 8, 24, 0 });
+    machine.data_depth = 0;
+    // TEXT-SCALE takes 1 to 256.
+    try machine.interpretLine(": T0 0 TEXT-SCALE ; : T257 257 TEXT-SCALE ; ' T0 CATCH ' T257 CATCH 256 TEXT-SCALE 1 TEXT-SCALE");
+    try expectStack(machine, &.{ -24, -24 });
+    machine.data_depth = 0;
+
+    // TEXT needs an image; TEXT-WIDTH does not.
+    var fresh_output = Output{};
+    const fresh = try createMachine(&fresh_output);
+    defer destroyMachine(fresh);
+    try fresh.interpretLine("REQUIRE-GRAPHICS ALSO GRAPHICS S\" ab\" TEXT-WIDTH : T S\" a\" 0 0 TEXT ; ' T CATCH");
+    try expectStack(fresh, &.{ 8, -271 });
+}
+
+/// A small BDF font: X (a box 3 by 3 from 1 right of the pen), g (below the baseline),
+/// a glyph with no code point, and U+3042 (9 pixels wide: two bytes a row). The glyphs
+/// are not in order, and the font has no "?".
+const test_bdf =
+    \\STARTFONT 2.1
+    \\FONT -test-
+    \\SIZE 6 75 75
+    \\FONTBOUNDINGBOX 9 6 0 -1
+    \\STARTPROPERTIES 2
+    \\FONT_ASCENT 5
+    \\FONT_DESCENT 1
+    \\ENDPROPERTIES
+    \\CHARS 4
+    \\STARTCHAR g
+    \\ENCODING 103
+    \\DWIDTH 3 0
+    \\BBX 2 2 0 -1
+    \\BITMAP
+    \\C0
+    \\C0
+    \\ENDCHAR
+    \\STARTCHAR X
+    \\ENCODING 88
+    \\DWIDTH 5 0
+    \\BBX 3 3 1 0
+    \\BITMAP
+    \\A0
+    \\40
+    \\A0
+    \\ENDCHAR
+    \\STARTCHAR unencoded
+    \\ENCODING -1
+    \\DWIDTH 4 0
+    \\BBX 1 1 0 0
+    \\BITMAP
+    \\80
+    \\ENDCHAR
+    \\STARTCHAR a
+    \\ENCODING 12354
+    \\DWIDTH 10 0
+    \\BBX 9 1 0 4
+    \\BITMAP
+    \\FF80
+    \\ENDCHAR
+    \\ENDFONT
+    \\
+;
+
+test "LOAD-FONT reads a BDF font for TEXT, TEXT-WIDTH, and TEXT-HEIGHT, and BUILTIN-FONT goes back" {
+    try skipWithout(&.{.graphics});
+    var output = Output{};
+    support.setFakeFile(&output, 0, test_bdf);
+    const machine = try libraryMachine(&output, "20 6");
+    defer destroyMachine(machine);
+    // Z and "?" are not in the font, so Z draws nothing and takes no width.
+    try machine.interpretLine("TEXT-HEIGHT S\" a.txt\" LOAD-FONT TEXT-HEIGHT S\\\" XgZ\\xe3\\x81\\x82\" 0 0 TEXT S\\\" XgZ\\xe3\\x81\\x82\" TEXT-WIDTH");
+    try expectStack(machine, &.{ 8, 6, 18 });
+    machine.data_depth = 0;
+    try expectPicture(machine,
+        \\........#########...
+        \\....................
+        \\.#.#................
+        \\..#.................
+        \\.#.#.##.............
+        \\.....##.............
+        \\
+    );
+    try machine.interpretLine("2 TEXT-SCALE TEXT-HEIGHT 1 TEXT-SCALE BUILTIN-FONT TEXT-HEIGHT");
+    try expectStack(machine, &.{ 12, 8 });
+    machine.data_depth = 0;
+    // The glyph words underneath: X's box and coverage, and a glyph the font lacks.
+    try machine.interpretLine("S\" a.txt\" LOAD-FONT CHAR X GFX-GLYPH-LOAD GFX-GLYPH-BOX 0 2 GFX-GLYPH-ALPHA 1 3 GFX-GLYPH-ALPHA 1 2 GFX-GLYPH-ALPHA 9 9 GFX-GLYPH-ALPHA CHAR ? GFX-GLYPH-LOAD");
+    try expectStack(machine, &.{ 5, 1, 3, 6, 255, 255, 0, 0, -1 });
+    machine.data_depth = 0;
+
+    // Files that are not BDF fonts it can read give FONT ERROR, and the font stays.
+    const broken = [_][]const u8{
+        "STARTFONT 2.1\nFONT_ASCENT 5\nFONT_DESCENT 1\nENDFONT\n", // no glyph
+        "FONT_ASCENT 5\nFONT_DESCENT 1\nSTARTCHAR A\nENCODING 65\nBBX 8 2 0 0\nBITMAP\nFF\nENDCHAR\n", // a row missing
+        "FONT_ASCENT 5\nFONT_DESCENT 1\nSTARTCHAR A\nENCODING 65\nBBX 9 1 0 0\nBITMAP\nFF\nENDCHAR\n", // a row too short
+        "FONT_ASCENT 5\nFONT_DESCENT 1\nSTARTCHAR A\nENCODING 65\nBBX 8 1 0 0\nBITMAP\nZZ\nENDCHAR\n", // not hexadecimal
+        "FONT_ASCENT 200\nFONT_DESCENT 100\nSTARTCHAR A\nENCODING 65\nBBX 8 1 0 0\nBITMAP\nFF\nENDCHAR\n", // too high
+        "FONT_ASCENT 5\nFONT_DESCENT 1\nSTARTCHAR A\nENCODING 65\nBBX 600 1 0 0\nBITMAP\nFF\nENDCHAR\n", // too wide
+        "FONT_ASCENT 5\nFONT_DESCENT 1\nSTARTCHAR A\nENCODING 65\nBBX 8 1 0 0\nBITMAP\nFF\n", // not ended
+    };
+    for (broken) |text| {
+        support.setFakeFile(&output, 1, text);
+        try machine.interpretLine(": T S\" b.txt\" LOAD-FONT ; ' T CATCH TEXT-HEIGHT");
+        try expectStack(machine, &.{ -272, 6 });
+        machine.data_depth = 0;
+    }
+    // A file that cannot be opened gives its ior, and a buffer the host cannot give OUT
+    // OF MEMORY; the font stays.
+    try machine.interpretLine(": T2 S\" none.txt\" LOAD-FONT ; ' T2 CATCH 0<> TEXT-HEIGHT");
+    try expectStack(machine, &.{ -1, 6 });
+    machine.data_depth = 0;
+    output.font_fails = true;
+    try machine.interpretLine(": T3 S\" a.txt\" LOAD-FONT ; ' T3 CATCH TEXT-HEIGHT");
+    try expectStack(machine, &.{ -257, 6 });
+    machine.data_depth = 0;
+}
+
+test "SYSTEM-FONT draws the host's glyphs, mixing the current color by coverage" {
+    try skipWithout(&.{.graphics});
+    var output = Output{ .has_system_fonts = true };
+    const machine = try libraryMachine(&output, "8 4");
+    defer destroyMachine(machine);
+    // Red over white: coverage 255, 128, and 64; 0 leaves the pixel. ~, which the font
+    // lacks, is drawn as ?.
+    try machine.interpretLine("$FFFFFF GFX-CLS $FF0000 COLOR! S\" Fake\" 4 SYSTEM-FONT TEXT-HEIGHT S\" A~B\" 2 1 TEXT S\" A~B\" TEXT-WIDTH");
+    try expectStack(machine, &.{ 4, 9 });
+    machine.data_depth = 0;
+    try machine.interpretLine("1 1 GFX-PGET 2 1 GFX-PGET 1 2 GFX-PGET 2 2 GFX-PGET 4 1 GFX-PGET");
+    try expectStack(machine, &.{ 0xFF0000, 0xFF7F7F, 0xFFFFFF, 0xFFBFBF, 0xFF0000 });
+    machine.data_depth = 0;
+    // Twice as large: each pixel of the glyph is 2 by 2.
+    try machine.interpretLine("$FFFFFF GFX-CLS 2 TEXT-SCALE S\" A\" 2 0 TEXT 1 TEXT-SCALE 0 0 GFX-PGET 1 1 GFX-PGET 2 1 GFX-PGET 3 0 GFX-PGET");
+    try expectStack(machine, &.{ 0xFF0000, 0xFF0000, 0xFF7F7F, 0xFF7F7F });
+    machine.data_depth = 0;
+    // A name the host has no font of, and heights outside 1 to 256.
+    try machine.interpretLine(": T1 S\" Other\" 4 SYSTEM-FONT ; : T2 S\" Fake\" 0 SYSTEM-FONT ; : T3 S\" Fake\" 257 SYSTEM-FONT ; ' T1 CATCH ' T2 CATCH ' T3 CATCH");
+    try expectStack(machine, &.{ -272, -24, -24 });
+    machine.data_depth = 0;
+
+    // A host without system fonts.
+    var plain_output = Output{};
+    const plain = try createMachine(&plain_output);
+    defer destroyMachine(plain);
+    try plain.interpretLine("REQUIRE-GRAPHICS ALSO GRAPHICS : T S\" Fake\" 8 SYSTEM-FONT ; ' T CATCH");
+    try expectStack(plain, &.{-21});
+}

@@ -13,6 +13,7 @@
 \   GFX-INIT ( w h -- )  GFX-WIDTH ( -- w )  GFX-HEIGHT ( -- h )
 \   GFX-PSET ( x y rgb -- )  GFX-PGET ( x y -- rgb )  GFX-HLINE ( x1 x2 y rgb -- )
 \   GFX-CLS ( rgb -- )  GFX-SAVE-PPM ( c-addr u -- ior )  GFX-SAVE-BMP ( c-addr u -- ior )
+\   GFX-SAVE-PNG ( c-addr u -- ior )
 \
 \ The words here draw with the current color and cut everything at the edges of the
 \ image. Drawing far outside the image costs no more than drawing inside it. So that
@@ -62,6 +63,7 @@ VARIABLE (COLOR)   $FFFFFF (COLOR) !
 : CLS ( -- )   0 GFX-CLS ;
 : SAVE-PPM ( c-addr u -- )   GFX-SAVE-PPM THROW ;
 : SAVE-BMP ( c-addr u -- )   GFX-SAVE-BMP THROW ;
+: SAVE-PNG ( c-addr u -- )   GFX-SAVE-PNG THROW ;
 
 \ ---- Lines -------------------------------------------------------------------------
 
@@ -263,3 +265,141 @@ VARIABLE (TERMINAL-MODE)  0 (TERMINAL-MODE) !
    (NEED-IMAGE)
    (WINDOW?) IF GFX-SHOW-WINDOW EXIT THEN
    (TERMINAL-MODE) @ IF GFX-SHOW-SIXEL ELSE GFX-SHOW-BLOCKS THEN ;
+
+\ ---- Keys, the mouse, and animation --------------------------------------------------
+
+\ The codes INKEY gives for keys that are not characters. A character gives its byte
+\ (each byte of a UTF-8 character in turn), Enter 13, Backspace 8, Tab 9, and Esc 27.
+256 CONSTANT K-UP     257 CONSTANT K-DOWN   258 CONSTANT K-LEFT    259 CONSTANT K-RIGHT
+260 CONSTANT K-HOME   261 CONSTANT K-END    262 CONSTANT K-PRIOR   263 CONSTANT K-NEXT
+264 CONSTANT K-INSERT 265 CONSTANT K-DELETE
+266 CONSTANT K-F1   267 CONSTANT K-F2   268 CONSTANT K-F3   269 CONSTANT K-F4
+270 CONSTANT K-F5   271 CONSTANT K-F6   272 CONSTANT K-F7   273 CONSTANT K-F8
+274 CONSTANT K-F9   275 CONSTANT K-F10  276 CONSTANT K-F11  277 CONSTANT K-F12
+
+\ The next key pressed on the terminal or in the window, without waiting; -1 when there
+\ is none. Ctrl+C throws USER INTERRUPT (-28).
+: INKEY ( -- key | -1 )   GFX-INKEY ;
+
+\ The pixel of the image under the mouse and the buttons held (1 left, 2 right,
+\ 4 middle); -1 -1 while the position is not known.
+: MOUSE ( -- x y buttons )   GFX-MOUSE ;
+: MOUSE-ON ( -- )   TRUE GFX-MOUSE-MODE ;
+: MOUSE-OFF ( -- )   FALSE GFX-MOUSE-MODE ;
+
+\ FRAME waits until ms milliseconds have passed since the last FRAME, and shows the
+\ image: a loop that draws and calls FRAME runs at a steady pace. When the drawing took
+\ longer, it does not wait, and the next frame counts from now.
+VARIABLE (FRAME-TIME)  0 (FRAME-TIME) !
+
+: FRAME ( ms -- )
+   0 MAX 1000 *  (FRAME-TIME) @ +  UTIME DROP   ( target now )
+   2DUP - DUP 0> IF 1000 / MS ELSE DROP THEN
+   MAX (FRAME-TIME) !
+   SHOW ;
+
+\ ---- Text --------------------------------------------------------------------------
+
+\ TEXT draws with the current font: at first the ASCII characters of Misaki Gothic
+\ (Num Kadoma), 4 pixels wide and 8 high; a BDF font file after LOAD-FONT; a font of
+\ the system after SYSTEM-FONT (Windows). A character the font does not have (each
+\ UTF-8 character, or a byte that is not one) is drawn as "?", and a control character
+\ is not drawn. The words underneath:
+\   GFX-GLYPH-LOAD ( code -- advance | -1 )  loads a glyph (-1: the font has none)
+\   GFX-GLYPH-BOX ( -- left width height )   its box, from the pen and the line's top
+\   GFX-GLYPH-ALPHA ( x y -- a )             its coverage, 0 to 255, at x y of the box
+\   GFX-FONT-HEIGHT ( -- h )  GFX-FONT-BUILTIN ( -- )
+\   GFX-FONT-LOAD ( c-addr u -- ior )  GFX-FONT-SYSTEM ( c-addr u height -- ior )
+VARIABLE (TEXT-SCALE)  1 (TEXT-SCALE) !
+
+\ Each pixel of the font drawn as n by n pixels; NUMBER ERROR unless 1 <= n <= 256.
+: TEXT-SCALE ( n -- )   DUP 1 257 WITHIN 0= IF DROP -24 THROW THEN  (TEXT-SCALE) ! ;
+
+: BUILTIN-FONT ( -- )   GFX-FONT-BUILTIN ;
+\ A BDF font file; the ior of the file, or FONT ERROR when it is not a BDF font this
+\ can read (the font stays as it was then, except when the file failed while it was
+\ being kept: then the built-in font is used).
+: LOAD-FONT ( c-addr u -- )   GFX-FONT-LOAD THROW ;
+\ The system's font of that name, height pixels a line (1 to 256): FONT ERROR when the
+\ system has none of the name, HOST FUNCTION UNAVAILABLE on a host without fonts.
+: SYSTEM-FONT ( c-addr u height -- )   GFX-FONT-SYSTEM THROW ;
+\ The height of a line of text, at the current scale.
+: TEXT-HEIGHT ( -- h )   GFX-FONT-HEIGHT (TEXT-SCALE) @ * ;
+
+\ The code point of the UTF-8 character at the start of a string that is not empty,
+\ and the rest of the string; -1, taking one byte, when the bytes are not a character.
+: (UTF8-NEXT) { addr u | b n code -- addr' u' code }
+   addr C@ TO b
+   b $80 < IF  addr 1+ u 1- b  EXIT THEN
+   b $E0 AND $C0 = IF  1 TO n  b $1F AND TO code  ELSE
+   b $F0 AND $E0 = IF  2 TO n  b $0F AND TO code  ELSE
+   b $F8 AND $F0 = IF  3 TO n  b $07 AND TO code  ELSE
+      addr 1+ u 1- -1 EXIT
+   THEN THEN THEN
+   u n <= IF  addr 1+ u 1- -1  EXIT THEN
+   n 1+ 1 DO
+      addr I + C@  DUP $C0 AND $80 <> IF  DROP UNLOOP addr 1+ u 1- -1  EXIT THEN
+      $3F AND  code 6 LSHIFT OR TO code
+   LOOP
+   addr n 1+ +  u n 1+ -  code ;
+
+\ Loads the glyph TEXT draws for a code point and gives its advance; -1 when nothing
+\ is drawn (a control character, or a font without even "?").
+: (LOAD-GLYPH) ( code -- advance | -1 )
+   DUP 0 32 WITHIN IF DROP -1 EXIT THEN
+   GFX-GLYPH-LOAD  DUP -1 = IF DROP [CHAR] ? GFX-GLYPH-LOAD THEN ;
+
+\ One 8-bit channel of fg over bg with coverage a.
+: (MIX) { fg bg a -- c }   fg a *  bg 255 a - *  +  127 +  255 / ;
+
+\ A pixel of the current color with coverage a over what the image has there.
+: (BLEND-PIXEL) { x y a | bg c -- }
+   a 255 = IF  x y COLOR@ GFX-PSET  EXIT THEN
+   x y GFX-PGET TO bg   bg 0< IF EXIT THEN
+   COLOR@ TO c
+   c 16 RSHIFT 255 AND  bg 16 RSHIFT 255 AND  a (MIX) 16 LSHIFT
+   c 8 RSHIFT 255 AND   bg 8 RSHIFT 255 AND   a (MIX) 8 LSHIFT OR
+   c 255 AND            bg 255 AND            a (MIX) OR
+   x y ROT GFX-PSET ;
+
+\ A pixel of the font, s by s pixels of the image from x y; nothing outside the image.
+: (GLYPH-CELL) { x y a s -- }
+   x GFX-WIDTH >=  y GFX-HEIGHT >= OR  x s + 1 <  OR  y s + 1 < OR IF EXIT THEN
+   s 1 = IF  x y a (BLEND-PIXEL)  EXIT THEN
+   a 255 = IF  x y s s FILL-RECT  EXIT THEN
+   y s + 0 MAX  y 0 MAX ?DO
+      x s + GFX-WIDTH MIN  x 0 MAX ?DO  I J a (BLEND-PIXEL)  LOOP
+   LOOP ;
+
+\ Draws the loaded glyph with its pen at x y (the top of the line).
+: (DRAW-LOADED) { x y | left w h s -- }
+   GFX-GLYPH-BOX TO h TO w TO left   (TEXT-SCALE) @ TO s
+   h 0 ?DO
+      w 0 ?DO
+         I J GFX-GLYPH-ALPHA ?DUP IF
+            >R  left I + s * x +  J s * y +  R> s (GLYPH-CELL)
+         THEN
+      LOOP
+   LOOP ;
+
+\ Draws the UTF-8 string with the top left of its line at x y, with the current color.
+\ Where a font has shades of coverage at the edges of its strokes, the color is mixed
+\ with the image; other pixels are left as they are.
+: TEXT { addr u x y | advance -- }
+   (NEED-IMAGE)
+   x (CLAMP) TO x  y (CLAMP) TO y
+   BEGIN u 0> WHILE
+      addr u (UTF8-NEXT) (LOAD-GLYPH) TO advance TO u TO addr
+      advance 0>= IF
+         x y (DRAW-LOADED)
+         x  advance (TEXT-SCALE) @ *  +  (CLAMP) TO x
+      THEN
+   REPEAT ;
+
+\ How wide TEXT draws the string, in pixels.
+: TEXT-WIDTH { addr u | w -- w }
+   0 TO w
+   BEGIN u 0> WHILE
+      addr u (UTF8-NEXT) (LOAD-GLYPH)  DUP 0< IF DROP ELSE w + TO w THEN  TO u TO addr
+   REPEAT
+   w (TEXT-SCALE) @ * ;

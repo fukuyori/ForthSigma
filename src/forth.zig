@@ -26,6 +26,8 @@ const words_files = @import("core/words_files.zig");
 const words_float = @import("core/words_float.zig");
 const words_graphics = @import("core/words_graphics.zig");
 const graphics_terminal = @import("core/graphics_terminal.zig");
+const graphics_input = @import("core/graphics_input.zig");
+const graphics_font = @import("core/graphics_font.zig");
 const words_defining = @import("core/words_defining.zig");
 const words_help = @import("core/words_help.zig");
 const words_input = @import("core/words_input.zig");
@@ -63,6 +65,9 @@ const Word = defs.Word;
 const WordKind = defs.WordKind;
 pub const LocalTime = host_interface.LocalTime;
 pub const TerminalSize = host_interface.TerminalSize;
+pub const InputEvent = host_interface.InputEvent;
+pub const CursorPosition = host_interface.CursorPosition;
+pub const SystemGlyph = host_interface.SystemGlyph;
 pub const Writer = host_interface.Writer;
 const base_address = memory_map.base_address;
 const bitsFloat = defs.bitsFloat;
@@ -205,8 +210,18 @@ pub const State = struct {
     /// One band of six rows of a Sixel image, as color registers (none in a build without
     /// graphics).
     gfx_band: if (defs.graphics_enabled) [6][graphics_terminal.max_sixel_width]u8 else void = undefined,
+    /// The coverage of the glyph TEXT loaded last (none in a build without graphics).
+    gfx_glyph_alpha: if (defs.graphics_enabled) graphics_font.Alpha else void = undefined,
     /// The source of the embedded file being included (the graphics library).
     embedded_source: []const u8 = &.{},
+    /// Keys and the mouse for INKEY and MOUSE, and where SHOW put the image on the
+    /// terminal.
+    gfx_input: graphics_input.InputState = .{},
+    /// TEXT's font and the glyph it loaded last (none in a build without graphics).
+    gfx_font: if (defs.graphics_enabled) graphics_font.FontState else void = if (defs.graphics_enabled) .{} else {},
+    /// The bytes written to the host so far: SHOW draws over its last image on the
+    /// terminal when nothing was written after it.
+    output_count: u64 = 0,
 
     /// Sets up a State where it lies. The State is a few megabytes, so it is built in
     /// place rather than returned by value, which could need copies on the stack.
@@ -232,6 +247,7 @@ pub const State = struct {
             };
             return;
         }
+        self.output_count +%= bytes.len;
         self.writer.write(bytes);
     }
 

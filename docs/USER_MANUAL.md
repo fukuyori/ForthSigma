@@ -552,7 +552,7 @@ File names are relative paths from the current directory. `REQUIRE` compares nam
 
 ## Graphics
 
-Sigma draws on one image in memory and saves it as a PPM or BMP file. The graphics words are not in the dictionary at start-up: `REQUIRE-GRAPHICS` adds the `GRAPHICS` vocabulary, with the `GFX-` words and the graphics library written in Forth (`src/graphics/graphics.fs`, built into the program), the first time it runs; later it does nothing. It does not change the search order, so make the words visible with `ALSO GRAPHICS` (or `GRAPHICS`).
+Sigma draws on one image in memory and saves it as a PPM, BMP, or PNG file. The graphics words are not in the dictionary at start-up: `REQUIRE-GRAPHICS` adds the `GRAPHICS` vocabulary, with the `GFX-` words and the graphics library written in Forth (`src/graphics/graphics.fs` and, with the floating-point words, `src/graphics/graphics_float.fs`, built into the program), the first time it runs; later it does nothing. It does not change the search order, so make the words visible with `ALSO GRAPHICS` (or `GRAPHICS`).
 
 ```forth
 REQUIRE-GRAPHICS
@@ -584,7 +584,7 @@ Coordinates start at 0 0 in the top left corner, and everything drawn outside th
 | `CIRCLE` | ( x y r -- ) | A circle of radius r around x y, with the pixels of the midpoint circle algorithm. Nothing when r is less than 0; one pixel when r is 0. |
 | `FILL-CIRCLE` | ( x y r -- ) | A filled circle; it covers every pixel of `CIRCLE` with the same arguments. |
 | `PAINT` | ( x y -- ) | Fill the area around x y that has the color of x y (pixels joined left, right, up, or down) with the current color. Nothing outside the image or when the area has the current color already. |
-| `SAVE-PPM`, `SAVE-BMP` | ( c-addr u -- ) | Write the image to a new file as a binary PPM (P6) or a 24-bit BMP, and `THROW` the error of the file operation if there is one. |
+| `SAVE-PPM`, `SAVE-BMP`, `SAVE-PNG` | ( c-addr u -- ) | Write the image to a new file as a binary PPM (P6), a 24-bit BMP, or a PNG, and `THROW` the error of the file operation if there is one. The PNG has 8-bit red, green, and blue and is not compressed, so it is about as large as the BMP; any program that reads PNG files reads it. |
 | `SHOW` | ( -- ) | Show the image: in a window when the host has one (Windows), on the terminal otherwise, or where `DISPLAY-TERMINAL` or `DISPLAY-WINDOW` said. |
 | `DISPLAY-TERMINAL`, `DISPLAY-WINDOW` | ( -- ) | Make `SHOW` use the terminal, or the window. `DISPLAY-WINDOW` gives `HOST FUNCTION UNAVAILABLE !` when the host has no window. |
 | `TERMINAL-BLOCKS`, `TERMINAL-SIXEL` | ( -- ) | Show the image on the terminal with half block characters (the default), or as Sixel graphics. |
@@ -594,7 +594,7 @@ Coordinates start at 0 0 in the top left corner, and everything drawn outside th
 | `GFX-PGET` | ( x y -- rgb ) | The color of one pixel, -1 outside the image. |
 | `GFX-HLINE` | ( x1 x2 y rgb -- ) | A horizontal line from x1 to x2, both included. |
 | `GFX-CLS` | ( rgb -- ) | Fill the whole image with the color rgb. |
-| `GFX-SAVE-PPM`, `GFX-SAVE-BMP` | ( c-addr u -- ior ) | As `SAVE-PPM` and `SAVE-BMP`, but return ior (0 or the error) instead. They also work in a build with `-Dfiles=false`. |
+| `GFX-SAVE-PPM`, `GFX-SAVE-BMP`, `GFX-SAVE-PNG` | ( c-addr u -- ior ) | As `SAVE-PPM`, `SAVE-BMP`, and `SAVE-PNG`, but return ior (0 or the error) instead. They also work in a build with `-Dfiles=false`. |
 | `GFX-SHOW-BLOCKS`, `GFX-SHOW-SIXEL`, `GFX-SHOW-WINDOW` | ( -- ) | Show the image on the terminal with half blocks, as Sixel, or in the window. |
 | `GFX-WINDOW?` | ( -- flag ) | True when the host can show the image in a window. |
 
@@ -608,7 +608,97 @@ On the terminal, each character shows two pixels, one above the other, with 24-b
 
 On Windows, the window has a thread of its own: while Forth waits for input it can be moved, resized (the image is stretched to fit), and closed, and the keyboard stays with the console. Each `SHOW` draws the current image in it again and fits the window to a new image size (an image larger than 1600 by 1200 pixels is shown smaller). A window that was closed is opened again by the next `SHOW` (an image shown at the very moment the window is being closed may not appear until then). Linux and macOS have no window yet; `SHOW` uses the terminal there.
 
-The image is not part of the dictionary: `SAVE` and `SAVESYS` keep the graphics words and the words that use them, but not the pixels, so a program makes its image with `GFX-INIT` after it starts. A dictionary keeps the graphics library it loaded: `REQUIRE-GRAPHICS` does not add the words of a newer library to it, so build such a dictionary again from its source to use them. Graphs of functions, text, PNG files, and input from the window come in later stages.
+The image is not part of the dictionary: `SAVE` and `SAVESYS` keep the graphics words and the words that use them, but not the pixels, so a program makes its image with `GFX-INIT` after it starts. A dictionary keeps the graphics library it loaded: `REQUIRE-GRAPHICS` does not add the words of a newer library to it, so build such a dictionary again from its source to use them.
+
+### Text
+
+`TEXT` draws a string with the current font. At first that is the built-in font: the ASCII characters of Misaki Gothic (美咲ゴシック by Num Kadoma, free to use; see [THIRD_PARTY_NOTICES.md](../THIRD_PARTY_NOTICES.md)), 4 pixels wide and 8 high. `LOAD-FONT` reads a BDF font file instead, on every system, and `SYSTEM-FONT` uses a font installed in the system by its name, on Windows. The string is read as UTF-8; a character the font does not have is drawn as one `?` (or not at all when the font has no `?` either), and so is each byte that is not UTF-8. Control characters are not drawn.
+
+```forth
+REQUIRE-GRAPHICS  ALSO GRAPHICS
+160 40 GFX-INIT
+255 255 0 COLOR  S" Hello, Sigma!" 4 4 TEXT
+2 TEXT-SCALE  0 255 255 COLOR
+S" FORTH/Sigma" 2DUP TEXT-WIDTH  160 SWAP - 2/  20 TEXT     \ centered
+SHOW
+```
+
+| Word | Stack | Description |
+| --- | --- | --- |
+| `TEXT` | ( c-addr u x y -- ) | Draw the string with the top left of its line at x y, with the current color. The pixels between the strokes are left as they are; where a system font is smoothed, the edges mix the color with the image. |
+| `TEXT-SCALE` | ( n -- ) | Draw each pixel of the font as n by n pixels, 1 to 256 (`NUMBER ERROR !` otherwise); 1 at first. |
+| `TEXT-WIDTH` | ( c-addr u -- w ) | How many pixels wide `TEXT` draws the string, at the current scale. It needs no image. |
+| `TEXT-HEIGHT` | ( -- h ) | The height of a line of the current font, at the current scale. |
+| `LOAD-FONT` | ( c-addr u -- ) | Read the named BDF font file and use it. A file that cannot be opened throws its error, and one that is not a BDF font it can read `FONT ERROR !` (THROW -272); the font stays as it was then. A line is at most 256 pixels high and a glyph 512 pixels wide. |
+| `SYSTEM-FONT` | ( c-addr u height -- ) | Use the system's font of that name (such as `Consolas`, `MS Gothic`, or `メイリオ`), height pixels a line (1 to 256), smoothed in shades of gray. `FONT ERROR !` when the system has no font of the name; `HOST FUNCTION UNAVAILABLE !` on Linux and macOS. |
+| `BUILTIN-FONT` | ( -- ) | Use the built-in font again. |
+| `GFX-GLYPH-LOAD` | ( code -- advance \| -1 ) | Load the glyph of a code point in the current font and give how far it moves the pen; -1 when the font has none. |
+| `GFX-GLYPH-BOX` | ( -- left width height ) | The box of the loaded glyph: from `left` pixels right of the pen (negative: to the left) and from the top of the line. |
+| `GFX-GLYPH-ALPHA` | ( x y -- a ) | The coverage of the loaded glyph at x y of its box, 0 (none) to 255 (full); 0 outside the box. |
+| `GFX-FONT-HEIGHT` | ( -- h ) | The height of a line of the current font. |
+| `GFX-FONT-LOAD`, `GFX-FONT-SYSTEM`, `GFX-FONT-BUILTIN` | ( c-addr u -- ior ), ( c-addr u height -- ior ), ( -- ) | As `LOAD-FONT`, `SYSTEM-FONT`, and `BUILTIN-FONT`, but returning ior (0, the file's error, or -272). |
+
+The font is not part of the dictionary: `SAVE` and `SAVESYS` do not keep it, and a program starts with the built-in font, as it starts without an image. A BDF font is kept outside logical memory. With `LOAD-FONT`, any BDF font can be used, for example the whole of Misaki Gothic with its kanji (`misaki_gothic.bdf` from <https://littlelimit.net/misaki.htm>); the same program then draws the same pixels on every system. A system font draws differently on different systems, and the names of the fonts differ too.
+
+### Keys, the mouse, and animation
+
+`INKEY` reads a key without waiting, from the terminal and from the window, and `MOUSE` gives the pixel of the image under the mouse. `KEY`, `KEY?`, and `ACCEPT` are not changed: they still read the terminal's line input.
+
+```forth
+REQUIRE-GRAPHICS  ALSO GRAPHICS
+80 40 GFX-INIT  DISPLAY-TERMINAL  MOUSE-ON
+VARIABLE X  40 X !
+: STEP ( -- flag )   \ false when q is pressed
+   INKEY  DUP K-LEFT = IF -1 X +! THEN  DUP K-RIGHT = IF 1 X +! THEN
+   [CHAR] q <>
+   MOUSE 1 AND IF PSET ELSE 2DROP THEN ;
+: RUN   BEGIN  0 0 255 COLOR  X @ 20 3 FILL-CIRCLE  255 255 255 COLOR  33 FRAME  STEP 0= UNTIL  MOUSE-OFF ;
+RUN
+```
+
+| Word | Stack | Description |
+| --- | --- | --- |
+| `INKEY` | ( -- key \| -1 ) | The next key pressed, without waiting; -1 when there is none. A character gives its byte (each byte of a UTF-8 character in turn), Enter 13, Backspace 8, Tab 9, Esc 27. Ctrl+C throws `USER INTERRUPT !` (-28). |
+| `K-UP`, `K-DOWN`, `K-LEFT`, `K-RIGHT`, `K-HOME`, `K-END`, `K-PRIOR`, `K-NEXT`, `K-INSERT`, `K-DELETE`, `K-F1` .. `K-F12` | ( -- key ) | The codes `INKEY` gives for the keys that are not characters: 256 to 277. |
+| `MOUSE` | ( -- x y buttons ) | The pixel of the image under the mouse when it last moved, and the buttons held: 1 left, 2 right, 4 middle. -1 -1 while the position is not known. Keys pressed meanwhile wait for `INKEY`. |
+| `MOUSE-ON`, `MOUSE-OFF` | ( -- ) | Have the terminal report the mouse, or stop. The window always reports it. |
+| `FRAME` | ( ms -- ) | Wait until ms milliseconds have passed since the last `FRAME`, then `SHOW`. A loop that draws and calls `FRAME` runs at a steady pace; when the drawing took longer, it does not wait. |
+| `GFX-INKEY`, `GFX-MOUSE` | as `INKEY`, `MOUSE` | The words underneath. |
+| `GFX-MOUSE-MODE` | ( flag -- ) | As `MOUSE-ON` (true) and `MOUSE-OFF` (false). |
+
+The first `INKEY` or `MOUSE` sets the terminal to give each key at once, without echo; Sigma sets it back to its line input, dropping what was typed for the program, when it next reads a line or a `KEY`, runs `SYSTEM`, or ends. While the terminal gives single keys, Ctrl+C does not end Sigma: it reaches `INKEY`, which throws, so a loop that reads keys can be stopped with it (a loop that no longer calls `INKEY` or `MOUSE` then cannot). When standard input is not a terminal, `INKEY` gets only the window's keys.
+
+On Linux and macOS, the keys that are not characters come from the terminal as escape sequences, which `INKEY` decodes (an Esc that is not followed at once by more bytes is the Esc key). The mouse comes as the reports of xterm in the SGR form, which most terminals send (xterm, GNOME Terminal, iTerm2, Windows Terminal, and others); `MOUSE-ON` asks for them and `MOUSE-OFF`, the return to line input, and the end stop them. On Windows, the console gives the keys and the mouse itself; the console's selection with the mouse is off while the terminal gives single keys. Keys pressed in the window come to `INKEY` as well, and the mouse in the window gives the pixel of the stretched image under it.
+
+To find the pixel under the mouse on the terminal, Sigma asks the terminal where the cursor is after `SHOW` draws the image (only after `MOUSE-ON`), so the position is known from the first `SHOW` after `MOUSE-ON`. With half blocks, each character is two pixels; with Sixel the cell size comes from the terminal, or 10 by 20 pixels is assumed.
+
+A `SHOW` on the terminal draws over the image it drew last when nothing was written in between, so an animation stays in place instead of scrolling; anything written in between (such as the prompt) starts a new picture below. With Sixel, the rows the picture takes are counted from the cell height, which may not match every terminal.
+
+### Mathematical coordinates and graphs
+
+In a build with the floating-point words, the library also draws in mathematical coordinates (`src/graphics/graphics_float.fs`; a build with `-Dfloat=false` leaves these words out). `X-RANGE` and `Y-RANGE` say which part of the plane the image shows: x grows to the right, from the left edge to the right one, and y grows upward, from the bottom edge to the top one. Both start as -1 to 1. A point is drawn at the pixel nearest to it.
+
+```forth
+REQUIRE-GRAPHICS  ALSO GRAPHICS
+320 200 GFX-INIT
+-3.2e0 3.2e0 X-RANGE  -1.5e0 1.5e0 Y-RANGE
+128 128 128 COLOR  AXES
+255 255 0 COLOR  ' FSIN PLOT
+: PARABOLA ( F: x -- y )  FDUP F* 1e0 F- ;
+0 255 255 COLOR  ' PARABOLA PLOT
+SHOW
+```
+
+| Word | Stack | Description |
+| --- | --- | --- |
+| `X-RANGE` | ( F: lo hi -- ) | Show x from lo at the left edge to hi at the right one. |
+| `Y-RANGE` | ( F: lo hi -- ) | Show y from lo at the bottom edge to hi at the top one. |
+| `MPSET` | ( F: x y -- ) | Set the pixel of the point x y. |
+| `MLINE` | ( F: x1 y1 x2 y2 -- ) | A line between two points. |
+| `AXES` | ( -- ) | The axes x = 0 and y = 0 across the image; an axis outside the range is not drawn. |
+| `PLOT` | ( xt -- ) | The graph of the function xt ( F: x -- y ): its y at the x of every column of the image, with a line between neighboring columns. |
+
+The range needs lo less than hi, both finite; otherwise `X-RANGE` and `Y-RANGE` give `NUMBER ERROR !` and the range stays as it was. A coordinate that is not a number (NaN) draws nothing, and `PLOT` leaves a gap where y is NaN (for example where the function is not defined). Pixel positions beyond -2^61 .. 2^61, among them infinities, are moved to that limit as with `LINE`, so a line with such an end may go in a different direction.
 
 ## Saving the dictionary and stand-alone executables
 

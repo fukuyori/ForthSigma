@@ -577,6 +577,17 @@ pub const Builtin = enum {
     gfx_show_sixel,
     gfx_show_window,
     gfx_window_query,
+    gfx_save_png,
+    gfx_inkey,
+    gfx_mouse,
+    gfx_mouse_mode,
+    gfx_glyph_load,
+    gfx_glyph_box,
+    gfx_glyph_alpha,
+    gfx_font_height,
+    gfx_font_builtin,
+    gfx_font_load,
+    gfx_font_system,
 };
 
 pub const HeapResult = union(enum) { address: Cell, no_memory, bad_pointer };
@@ -617,7 +628,8 @@ pub const error_codes = [_]struct { RuntimeError, Cell }{
     .{ error.FileUnavailable, -263 },       .{ error.InvalidImage, -264 },          .{ error.HostFailed, -265 },
     .{ error.CommentUnclosed, -266 },       .{ error.IncludeNesting, -267 },        .{ error.TooManySourceFiles, -268 },
     .{ error.SearchOrderOverflow, -49 },     .{ error.SearchOrderUnderflow, -50 },   .{ error.InvalidWordlist, -269 },
-    .{ error.GraphicsUnavailable, -270 },   .{ error.NoCanvas, -271 },
+    .{ error.GraphicsUnavailable, -270 },   .{ error.NoCanvas, -271 },          .{ error.UserInterrupt, -28 },
+    .{ error.FontUnavailable, -272 },
 };
 
 pub const throw_code_undefined_word: Cell = -13;
@@ -767,6 +779,10 @@ pub const RuntimeError = error{
     GraphicsUnavailable,
     /// A GFX- word that needs an image before GFX-INIT has made one.
     NoCanvas,
+    /// Ctrl+C read by INKEY or MOUSE.
+    UserInterrupt,
+    /// A font LOAD-FONT cannot read, or a name the system has no font of.
+    FontUnavailable,
 };
 
 pub fn floatBits(value: Float) Cell {

@@ -76,8 +76,72 @@ pub const Output = struct {
     window_width: u32 = 0,
     window_height: u32 = 0,
     window_first_pixel: u32 = 0,
+    /// The input events INKEY and MOUSE get from the host, in turn; then none.
+    events: []const forth.InputEvent = &.{},
+    event_index: usize = 0,
+    /// The calls of MOUSE-ON and MOUSE-OFF, as "+" and "-".
+    mouse_calls: [8]u8 = undefined,
+    mouse_count: usize = 0,
+    /// The cursor's row that the host reports (column 0), or none.
+    cursor_row: ?i32 = null,
+    cursor_queries: usize = 0,
+    /// UTIME's value, which grows by `time_step` at each call.
+    time: forth.Double = 1_700_000_000_000_000,
+    time_step: forth.Double = 0,
+    /// LOAD-FONT's buffer, which fails when `font_fails` is set or more is asked.
+    font_words: [4096]u64 = undefined,
+    font_fails: bool = false,
+    /// Whether the host has system fonts (set before createMachine): only "Fake", whose
+    /// glyphs are 2 by 2 pixels of coverage 255, 128, 0, 64, 1 pixel left of the pen,
+    /// advancing 3; it has no glyph for "~".
+    has_system_fonts: bool = false,
+    system_height: u32 = 0,
 
     pub const framebuffer_capacity = 1600;
+
+    pub fn fontBuffer(context: ?*anyopaque, words: usize) ?[]u64 {
+        const output: *Output = @ptrCast(@alignCast(context.?));
+        if (output.font_fails or words > output.font_words.len) return null;
+        return output.font_words[0..words];
+    }
+
+    pub fn systemFont(context: ?*anyopaque, name: []const u8, height: u32) forth.RuntimeError!bool {
+        const output: *Output = @ptrCast(@alignCast(context.?));
+        if (!std.mem.eql(u8, name, "Fake")) return false;
+        output.system_height = height;
+        return true;
+    }
+
+    pub fn systemGlyph(context: ?*anyopaque, code: u21, alpha: []u8, max_width: u32) ?forth.SystemGlyph {
+        const output: *Output = @ptrCast(@alignCast(context.?));
+        if (code == '~' or max_width < 2) return null;
+        @memset(alpha[0 .. 2 * output.system_height], 0);
+        alpha[0] = 255;
+        alpha[1] = 128;
+        alpha[2] = 0;
+        alpha[3] = 64;
+        return .{ .advance = 3, .left = -1, .width = 2, .height = output.system_height };
+    }
+
+    pub fn input(context: ?*anyopaque) ?forth.InputEvent {
+        const output: *Output = @ptrCast(@alignCast(context.?));
+        if (output.event_index == output.events.len) return null;
+        output.event_index += 1;
+        return output.events[output.event_index - 1];
+    }
+
+    pub fn mouse(context: ?*anyopaque, on: bool) void {
+        const output: *Output = @ptrCast(@alignCast(context.?));
+        if (output.mouse_count == output.mouse_calls.len) return;
+        output.mouse_calls[output.mouse_count] = if (on) '+' else '-';
+        output.mouse_count += 1;
+    }
+
+    pub fn cursor(context: ?*anyopaque) ?forth.CursorPosition {
+        const output: *Output = @ptrCast(@alignCast(context.?));
+        output.cursor_queries += 1;
+        return .{ .column = 0, .row = output.cursor_row orelse return null };
+    }
 
     pub fn terminalSize(context: ?*anyopaque) ?forth.TerminalSize {
         const output: *Output = @ptrCast(@alignCast(context.?));
@@ -118,7 +182,7 @@ pub const Output = struct {
     }
 
     pub fn writer(self: *Output) forth.Writer {
-        return .{ .context = @ptrCast(self), .write_fn = write, .read_fn = read, .key_fn = key, .key_ready_fn = keyReady, .sleep_fn = sleep, .utime_fn = utime, .local_time_fn = localTime, .getenv_fn = getenv, .system_fn = system, .file_ops = &fake_file_ops, .framebuffer_fn = framebuffer, .terminal_size_fn = terminalSize, .terminal_utf8_fn = terminalUtf8, .window_fn = if (self.has_window) window else null };
+        return .{ .context = @ptrCast(self), .write_fn = write, .read_fn = read, .key_fn = key, .key_ready_fn = keyReady, .sleep_fn = sleep, .utime_fn = utime, .local_time_fn = localTime, .getenv_fn = getenv, .system_fn = system, .file_ops = &fake_file_ops, .framebuffer_fn = framebuffer, .terminal_size_fn = terminalSize, .terminal_utf8_fn = terminalUtf8, .window_fn = if (self.has_window) window else null, .input_fn = input, .mouse_fn = mouse, .cursor_fn = cursor, .font_buffer_fn = fontBuffer, .system_font_fn = if (self.has_system_fonts) systemFont else null, .system_glyph_fn = if (self.has_system_fonts) systemGlyph else null };
     }
 
     pub fn sleep(context: ?*anyopaque, milliseconds: forth.Cell) forth.RuntimeError!void {
@@ -136,7 +200,9 @@ pub const Output = struct {
     pub fn utime(context: ?*anyopaque) forth.RuntimeError!forth.Double {
         const output: *Output = @ptrCast(@alignCast(context.?));
         if (output.host_fails) return error.HostFailed;
-        return 1_700_000_000_000_000;
+        const now = output.time;
+        output.time += output.time_step;
+        return now;
     }
 
     pub fn getenv(_: ?*anyopaque, name: []const u8, buffer: []u8) forth.RuntimeError!?usize {

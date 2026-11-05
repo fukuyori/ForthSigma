@@ -71,3 +71,16 @@ CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
 TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ```
+
+## Misaki font
+
+The font of the graphics word `TEXT` in `src/graphics/font_misaki.zig`: the printable ASCII glyphs of Misaki Gothic (美咲ゴシック), converted by `scripts/make-font-data.py` from `misaki_gothic.bdf` of `misaki_bdf_2021-05-05.zip`. Project: <https://littlelimit.net/misaki.htm>. A build with `-Dgraphics=false` leaves it out.
+
+```text
+Copyright (C) 2002-2021 Num Kadoma
+
+These fonts are free softwares.
+Unlimited permission is granted to use, copy, and distribute it, with or without
+modification, either commercially and noncommercially.
+THESE FONTS ARE PROVIDED "AS IS" WITHOUT WARRANTY.
+```
