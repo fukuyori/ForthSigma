@@ -80,16 +80,16 @@ Forthソースファイルは標準入力から読み込めます。例:
 
 | オプション | 除くもの | 大きさ |
 |---|---|---|
-| （なし） | — | 748,544バイト |
-| `-Dfloat=false` | 浮動小数点の語、浮動小数点数のリテラル（`1e` など）、`F:` `F^` のローカル変数、`ENVIRONMENT?` の `FLOATING-STACK` `MAX-FLOAT`、CORE-MATH | 365,056バイト |
-| `-Dfiles=false` | `INCLUDE`、`REQUIRE`、`OPEN-FILE`、`STDIN`、`SLURP-FILE`、`$...SLURP` の語など、ファイルを開く・読む・書く・取り込む語 | 727,040バイト |
-| `-Dhelp=false` | `HELP`、`LICENSE` とその文章（起動時の表示も `help` を案内しなくなります） | 682,496バイト |
-| `-Dtools=false` | `SEE`、`LOCATE`、`WHERE` | 717,824バイト |
-| `-Dimage=false` | `SAVE`、`LOAD`、`SAVESYS` | 748,544バイト |
-| `-Dgraphics=false` | `REQUIRE-GRAPHICS`、`GFX-` の語、グラフィックスのライブラリ | 786,944バイト（\*） |
-| 5つすべて | 上のすべて | 270,336バイト |
+| （なし） | — | 907,776バイト |
+| `-Dfloat=false` | 浮動小数点の語、浮動小数点数のリテラル（`1e` など）、`F:` `F^` のローカル変数、`ENVIRONMENT?` の `FLOATING-STACK` `MAX-FLOAT`、CORE-MATH、グラフを描くグラフィックスの語（`PLOT` など） | 517,632バイト |
+| `-Dfiles=false` | `INCLUDE`、`REQUIRE`、`OPEN-FILE`、`STDIN`、`SLURP-FILE`、`$...SLURP` の語など、ファイルを開く・読む・書く・取り込む語 | 871,424バイト |
+| `-Dhelp=false` | `HELP`、`LICENSE` とその文章（起動時の表示も `help` を案内しなくなります） | 825,344バイト |
+| `-Dtools=false` | `SEE`、`LOCATE`、`WHERE` | 848,896バイト |
+| `-Dimage=false` | `SAVE`、`LOAD`、`SAVESYS` | 907,776バイト |
+| `-Dgraphics=false` | `REQUIRE-GRAPHICS`、`GFX-` の語、グラフィックスのライブラリとそのフォント、Tcl/Tkの語 | 798,720バイト |
+| 6つすべて | 上のすべて | 289,280バイト |
 
-大きさは、0.5.0をリリースと同じ `-Doptimize=fast` でWindows x86_64向けにビルドしたものです。（\*）グラフィックスの語は0.6.0で加えました。同じ方法でビルドした0.6.0は、すべて含むと823,808バイト、グラフィックスの語を除くと786,944バイト、6つすべてを除くと267,264バイトです。オプションは組み合わせられます（例: `zig build -Doptimize=fast -Dfloat=false -Dhelp=false`）。
+大きさは、0.6.0をリリースと同じ `-Doptimize=fast` でWindows x86_64向けにビルドしたものです（2026-11-06に測定）。オプションは組み合わせられます（例: `zig build -Doptimize=fast -Dfloat=false -Dhelp=false`）。
 
 除いたグループの語は辞書になく、`HELP` の説明もありません。グループはそれぞれ独立しているので、ファイルの語を除いても、`SAVE`・`LOAD`・`SAVESYS` はイメージのファイルを書き読みし、`LOCATE` はソースファイルを読みます（それぞれのグループも除いた場合を除きます）。組み込み語の実行トークンはどの版でも同じなので、ある版で保存したイメージは、グループの違う版でも読み込めます。その版で除いた語を実行すると `INVALID EXECUTION TOKEN` のエラーになり、`SEE` はその語を名前で表示します。グループを除いた以前の版（`-Dfloat=false` など）で保存したイメージは、組み込み語の実行トークンが違うので `INVALID IMAGE` になります。
 

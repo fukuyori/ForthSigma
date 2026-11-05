@@ -29,6 +29,7 @@ const graphics_terminal = @import("core/graphics_terminal.zig");
 const graphics_input = @import("core/graphics_input.zig");
 const graphics_font = @import("core/graphics_font.zig");
 const graphics_palette = @import("core/graphics_palette.zig");
+const tcl = @import("core/tcl.zig");
 const words_defining = @import("core/words_defining.zig");
 const words_help = @import("core/words_help.zig");
 const words_input = @import("core/words_input.zig");
@@ -220,6 +221,8 @@ pub const State = struct {
     /// Keys and the mouse for INKEY and MOUSE, and where SHOW put the image on the
     /// terminal.
     gfx_input: graphics_input.InputState = .{},
+    /// The Tcl program of TCL and DISPLAY-TK (none in a build without graphics).
+    tcl: if (defs.graphics_enabled) tcl.TclState else void = if (defs.graphics_enabled) .{} else {},
     /// The colors SHOW uses (GFX-COLOR-MODE).
     gfx_color_mode: graphics_palette.ColorMode = .{},
     /// TEXT's font and the glyph it loaded last (none in a build without graphics).

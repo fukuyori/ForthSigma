@@ -246,8 +246,8 @@ VARIABLE (P-STACK)  VARIABLE (P-SIZE)  VARIABLE (P-USED)  VARIABLE (P-TARGET)
 \ ---- Showing the image -------------------------------------------------------------
 
 \ Where SHOW puts the image: 0 the window when the host has one and the terminal
-\ otherwise, 1 the terminal, 2 the window. And how the terminal shows it: 0 with half
-\ block characters, 1 as Sixel graphics.
+\ otherwise, 1 the terminal, 2 the window, 3 the Tk window (DISPLAY-TK). And how the
+\ terminal shows it: 0 with half block characters, 1 as Sixel graphics.
 VARIABLE (DISPLAY)  0 (DISPLAY) !
 VARIABLE (TERMINAL-MODE)  0 (TERMINAL-MODE) !
 
@@ -275,6 +275,7 @@ VARIABLE (DITHER)  0 (DITHER) !
 : SHOW ( -- )
    (NEED-IMAGE)
    (COLORS) @ (DITHER) @ GFX-COLOR-MODE
+   (DISPLAY) @ 3 = IF GFX-SHOW-TK EXIT THEN
    (WINDOW?) IF GFX-SHOW-WINDOW EXIT THEN
    (TERMINAL-MODE) @ IF GFX-SHOW-SIXEL ELSE GFX-SHOW-BLOCKS THEN ;
 
@@ -417,3 +418,26 @@ VARIABLE (TEXT-SCALE)  1 (TEXT-SCALE) !
       addr u (UTF8-NEXT) (LOAD-GLYPH)  DUP 0< IF DROP ELSE w + TO w THEN  TO u TO addr
    REPEAT
    w (TEXT-SCALE) @ * ;
+
+\ ---- Tcl/Tk ---------------------------------------------------------------------------
+
+\ The TCL words talk to a Tcl/Tk interpreter (wish) that runs as a program of its own,
+\ started the first time it is needed: the program TCL-PROGRAM named, else the one in
+\ the SIGMA_WISH environment variable, else wish on the PATH. The words underneath:
+\   GFX-TCL ( c-addr u -- c-addr2 u2 flag )  runs a script: its result, or with a true
+\     flag its error message (GFX-TCL-ERROR ( -- c-addr u ) gives the message again)
+\   GFX-TCL-EVENT ( -- c-addr u true | false )  GFX-TCL-PROGRAM ( c-addr u -- )
+\   GFX-TCL-STOP ( -- )  GFX-SHOW-TK ( -- )
+\ A result stays until the next script, an event until the next TCL-EVENT.
+
+\ The result of a Tcl script; TCL ERROR (THROW -273) when it fails, whose message
+\ TCL-ERROR$ gives.
+: TCL-EVAL ( c-addr u -- c-addr2 u2 )   GFX-TCL IF 2DROP -273 THROW THEN ;
+: TCL ( c-addr u -- )   TCL-EVAL 2DROP ;
+: TCL-ERROR$ ( -- c-addr u )   GFX-TCL-ERROR ;
+\ The next text a Tk widget sent with sigma_event, without waiting.
+: TCL-EVENT ( -- c-addr u true | false )   GFX-TCL-EVENT ;
+: TCL-PROGRAM ( c-addr u -- )   GFX-TCL-PROGRAM ;
+: TCL-STOP ( -- )   GFX-TCL-STOP ;
+\ Make SHOW show the image in a Tk window, from which INKEY and MOUSE also read.
+: DISPLAY-TK ( -- )   3 (DISPLAY) ! ;

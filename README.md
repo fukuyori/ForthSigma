@@ -80,16 +80,16 @@ Build options leave out groups of words, for a smaller program or for a host tha
 
 | Option | Leaves out | Size |
 |---|---|---|
-| (none) | — | 748,544 bytes |
-| `-Dfloat=false` | The floating-point words, floating-point literals (such as `1e`), the `F:` and `F^` local variables, `FLOATING-STACK` and `MAX-FLOAT` of `ENVIRONMENT?`, and CORE-MATH | 365,056 bytes |
-| `-Dfiles=false` | The words that open, read, write, or include files, such as `INCLUDE`, `REQUIRE`, `OPEN-FILE`, `STDIN`, `SLURP-FILE`, and the `$...SLURP` words | 727,040 bytes |
-| `-Dhelp=false` | `HELP`, `LICENSE`, and their texts (the banner no longer mentions `help`) | 682,496 bytes |
-| `-Dtools=false` | `SEE`, `LOCATE`, and `WHERE` | 717,824 bytes |
-| `-Dimage=false` | `SAVE`, `LOAD`, and `SAVESYS` | 748,544 bytes |
-| `-Dgraphics=false` | `REQUIRE-GRAPHICS`, the `GFX-` words, and the graphics library | 786,944 bytes (\*) |
-| All five | All of the above | 270,336 bytes |
+| (none) | — | 907,776 bytes |
+| `-Dfloat=false` | The floating-point words, floating-point literals (such as `1e`), the `F:` and `F^` local variables, `FLOATING-STACK` and `MAX-FLOAT` of `ENVIRONMENT?`, CORE-MATH, and the graphics words that draw graphs (`PLOT` and others) | 517,632 bytes |
+| `-Dfiles=false` | The words that open, read, write, or include files, such as `INCLUDE`, `REQUIRE`, `OPEN-FILE`, `STDIN`, `SLURP-FILE`, and the `$...SLURP` words | 871,424 bytes |
+| `-Dhelp=false` | `HELP`, `LICENSE`, and their texts (the banner no longer mentions `help`) | 825,344 bytes |
+| `-Dtools=false` | `SEE`, `LOCATE`, and `WHERE` | 848,896 bytes |
+| `-Dimage=false` | `SAVE`, `LOAD`, and `SAVESYS` | 907,776 bytes |
+| `-Dgraphics=false` | `REQUIRE-GRAPHICS`, the `GFX-` words, the graphics library, its fonts, and the Tcl/Tk words | 798,720 bytes |
+| All six | All of the above | 289,280 bytes |
 
-The sizes are those of 0.5.0 built with `-Doptimize=fast`, the same as the release, on Windows x86_64. (\*) The graphics words came in 0.6.0; built the same way, 0.6.0 is 823,808 bytes with every group and 786,944 bytes without the graphics words, and 267,264 bytes without all six groups. The options can be combined, for example `zig build -Doptimize=fast -Dfloat=false -Dhelp=false`.
+The sizes are those of 0.6.0 built with `-Doptimize=fast`, the same as the release, on Windows x86_64 (measured 2026-11-06). The options can be combined, for example `zig build -Doptimize=fast -Dfloat=false -Dhelp=false`.
 
 The words of a group left out are not in the dictionary, and `HELP` has no entries for them. The groups are independent: without the file words, `SAVE`, `LOAD`, and `SAVESYS` still write and read image files, and `LOCATE` still reads the source file, unless their own groups are left out too. Every build gives each built-in word the same execution token, so an image saved by one build loads into a build with other groups; running a word that build left out gives the error `INVALID EXECUTION TOKEN`, and `SEE` shows it by its name. An image saved by an earlier build that left a group out (such as `-Dfloat=false`) gives `INVALID IMAGE`, since its built-in words had other execution tokens.
 

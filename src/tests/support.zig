@@ -102,6 +102,19 @@ pub const Output = struct {
     /// advancing 3; it has no glyph for "~".
     has_system_fonts: bool = false,
     system_height: u32 = 0,
+    /// The Tcl program: how many times it was started and stopped, with which program
+    /// name and script; what Sigma wrote to it; and what it answers, given out a few
+    /// bytes at a time (when they run out, a read that waits finds it ended).
+    process_starts: usize = 0,
+    process_stops: usize = 0,
+    process_running: bool = false,
+    process_program: [64]u8 = undefined,
+    process_program_len: usize = 0,
+    process_script_len: usize = 0,
+    process_written: [16384]u8 = undefined,
+    process_written_len: usize = 0,
+    process_replies: []const u8 = "",
+    process_reply_index: usize = 0,
 
     pub const framebuffer_capacity = 1600;
 
@@ -126,6 +139,45 @@ pub const Output = struct {
                 in_use.* = false;
             }
         }
+    }
+
+    pub fn processStart(context: ?*anyopaque, program: []const u8, script: []const u8) forth.RuntimeError!void {
+        const output: *Output = @ptrCast(@alignCast(context.?));
+        output.process_starts += 1;
+        output.process_running = true;
+        @memcpy(output.process_program[0..program.len], program);
+        output.process_program_len = program.len;
+        output.process_script_len = script.len;
+    }
+
+    pub fn processWrite(context: ?*anyopaque, bytes: []const u8) forth.RuntimeError!void {
+        const output: *Output = @ptrCast(@alignCast(context.?));
+        if (!output.process_running) return error.HostFailed;
+        const count = @min(bytes.len, output.process_written.len - output.process_written_len);
+        @memcpy(output.process_written[output.process_written_len..][0..count], bytes[0..count]);
+        output.process_written_len += count;
+    }
+
+    pub fn processRead(context: ?*anyopaque, buffer: []u8, wait: bool) forth.RuntimeError!usize {
+        const output: *Output = @ptrCast(@alignCast(context.?));
+        if (!output.process_running) return error.HostFailed;
+        const rest = output.process_replies[output.process_reply_index..];
+        if (rest.len == 0) return if (wait) error.HostFailed else 0;
+        // A few bytes at a time, as a pipe may give them.
+        const count = @min(rest.len, buffer.len, 7);
+        @memcpy(buffer[0..count], rest[0..count]);
+        output.process_reply_index += count;
+        return count;
+    }
+
+    pub fn processStop(context: ?*anyopaque) void {
+        const output: *Output = @ptrCast(@alignCast(context.?));
+        output.process_stops += 1;
+        output.process_running = false;
+    }
+
+    pub fn processWritten(self: *const Output) []const u8 {
+        return self.process_written[0..self.process_written_len];
     }
 
     pub fn fontsInUse(self: *const Output) usize {
@@ -210,7 +262,7 @@ pub const Output = struct {
     }
 
     pub fn writer(self: *Output) forth.Writer {
-        return .{ .context = @ptrCast(self), .write_fn = write, .read_fn = read, .key_fn = key, .key_ready_fn = keyReady, .sleep_fn = sleep, .utime_fn = utime, .local_time_fn = localTime, .getenv_fn = getenv, .system_fn = system, .file_ops = &fake_file_ops, .framebuffer_fn = framebuffer, .terminal_size_fn = terminalSize, .terminal_utf8_fn = terminalUtf8, .window_fn = if (self.has_window) window else null, .input_fn = input, .mouse_fn = mouse, .cursor_fn = cursor, .font_buffer_fn = fontBuffer, .font_free_fn = fontFree, .system_font_fn = if (self.has_system_fonts) systemFont else null, .system_glyph_fn = if (self.has_system_fonts) systemGlyph else null };
+        return .{ .context = @ptrCast(self), .write_fn = write, .read_fn = read, .key_fn = key, .key_ready_fn = keyReady, .sleep_fn = sleep, .utime_fn = utime, .local_time_fn = localTime, .getenv_fn = getenv, .system_fn = system, .file_ops = &fake_file_ops, .framebuffer_fn = framebuffer, .terminal_size_fn = terminalSize, .terminal_utf8_fn = terminalUtf8, .window_fn = if (self.has_window) window else null, .input_fn = input, .mouse_fn = mouse, .cursor_fn = cursor, .font_buffer_fn = fontBuffer, .font_free_fn = fontFree, .system_font_fn = if (self.has_system_fonts) systemFont else null, .system_glyph_fn = if (self.has_system_fonts) systemGlyph else null, .process_start_fn = processStart, .process_write_fn = processWrite, .process_read_fn = processRead, .process_stop_fn = processStop };
     }
 
     pub fn sleep(context: ?*anyopaque, milliseconds: forth.Cell) forth.RuntimeError!void {

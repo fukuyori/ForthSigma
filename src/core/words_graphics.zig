@@ -12,6 +12,7 @@ const forth = @import("../forth.zig");
 const graphics_input = @import("graphics_input.zig");
 const graphics_font = @import("graphics_font.zig");
 const graphics_palette = @import("graphics_palette.zig");
+const tcl = @import("tcl.zig");
 const graphics_terminal = @import("graphics_terminal.zig");
 const memory_map = @import("memory_map.zig");
 const Builtin = defs.Builtin;
@@ -28,7 +29,7 @@ const max_wordlists = memory_map.max_wordlists;
 const wordlist_count_address = memory_map.wordlist_count_address;
 
 /// The built-in words this file executes; executeBuiltin dispatches by this list.
-pub const words = [_]Builtin{ .gfx_init, .gfx_width, .gfx_height, .gfx_pset, .gfx_pget, .gfx_hline, .gfx_cls, .gfx_save_ppm, .gfx_save_bmp, .gfx_show_blocks, .gfx_show_sixel, .gfx_show_window, .gfx_window_query, .gfx_save_png, .gfx_inkey, .gfx_mouse, .gfx_mouse_mode, .gfx_glyph_load, .gfx_glyph_box, .gfx_glyph_alpha, .gfx_font_height, .gfx_font_builtin, .gfx_font_load, .gfx_font_system, .gfx_color_mode };
+pub const words = [_]Builtin{ .gfx_init, .gfx_width, .gfx_height, .gfx_pset, .gfx_pget, .gfx_hline, .gfx_cls, .gfx_save_ppm, .gfx_save_bmp, .gfx_show_blocks, .gfx_show_sixel, .gfx_show_window, .gfx_window_query, .gfx_save_png, .gfx_inkey, .gfx_mouse, .gfx_mouse_mode, .gfx_glyph_load, .gfx_glyph_box, .gfx_glyph_alpha, .gfx_font_height, .gfx_font_builtin, .gfx_font_load, .gfx_font_system, .gfx_color_mode, .gfx_tcl, .gfx_tcl_error, .gfx_tcl_event, .gfx_tcl_program, .gfx_tcl_stop, .gfx_show_tk };
 
 /// The GFX- words in the order REQUIRE-GRAPHICS appends them, right after the GRAPHICS
 /// vocabulary. The order is part of the dictionary that images keep: add new words at
@@ -42,12 +43,14 @@ pub const definitions = [_]struct { []const u8, Builtin }{
     .{ "GFX-MOUSE", .gfx_mouse },           .{ "GFX-MOUSE-MODE", .gfx_mouse_mode }, .{ "GFX-GLYPH-LOAD", .gfx_glyph_load },
     .{ "GFX-GLYPH-BOX", .gfx_glyph_box },   .{ "GFX-GLYPH-ALPHA", .gfx_glyph_alpha }, .{ "GFX-FONT-HEIGHT", .gfx_font_height },
     .{ "GFX-FONT-BUILTIN", .gfx_font_builtin }, .{ "GFX-FONT-LOAD", .gfx_font_load }, .{ "GFX-FONT-SYSTEM", .gfx_font_system },
-    .{ "GFX-COLOR-MODE", .gfx_color_mode },
+    .{ "GFX-COLOR-MODE", .gfx_color_mode },  .{ "GFX-TCL", .gfx_tcl },         .{ "GFX-TCL-ERROR", .gfx_tcl_error },
+    .{ "GFX-TCL-EVENT", .gfx_tcl_event },    .{ "GFX-TCL-PROGRAM", .gfx_tcl_program }, .{ "GFX-TCL-STOP", .gfx_tcl_stop },
+    .{ "GFX-SHOW-TK", .gfx_show_tk },
 };
 
 /// The words of the graphics library that HELP describes; the help test checks that the
 /// library defines each of them.
-pub const library_words = [_][]const u8{ "RGB", "COLOR", "COLOR!", "COLOR@", "PSET", "CLS", "LINE", "RECT", "FILL-RECT", "CIRCLE", "FILL-CIRCLE", "PAINT", "SAVE-PPM", "SAVE-BMP", "SAVE-PNG", "SHOW", "DISPLAY-TERMINAL", "DISPLAY-WINDOW", "TERMINAL-BLOCKS", "TERMINAL-SIXEL", "DISPLAY-COLORS", "DITHER", "INKEY", "MOUSE", "MOUSE-ON", "MOUSE-OFF", "FRAME", "TEXT", "TEXT-SCALE", "TEXT-WIDTH", "TEXT-HEIGHT", "BUILTIN-FONT", "LOAD-FONT", "SYSTEM-FONT", "K-UP", "K-DOWN", "K-LEFT", "K-RIGHT", "K-HOME", "K-END", "K-PRIOR", "K-NEXT", "K-INSERT", "K-DELETE", "K-F1", "K-F2", "K-F3", "K-F4", "K-F5", "K-F6", "K-F7", "K-F8", "K-F9", "K-F10", "K-F11", "K-F12" };
+pub const library_words = [_][]const u8{ "RGB", "COLOR", "COLOR!", "COLOR@", "PSET", "CLS", "LINE", "RECT", "FILL-RECT", "CIRCLE", "FILL-CIRCLE", "PAINT", "SAVE-PPM", "SAVE-BMP", "SAVE-PNG", "SHOW", "DISPLAY-TERMINAL", "DISPLAY-WINDOW", "TERMINAL-BLOCKS", "TERMINAL-SIXEL", "DISPLAY-COLORS", "DITHER", "TCL", "TCL-EVAL", "TCL-ERROR$", "TCL-EVENT", "TCL-PROGRAM", "TCL-STOP", "DISPLAY-TK", "INKEY", "MOUSE", "MOUSE-ON", "MOUSE-OFF", "FRAME", "TEXT", "TEXT-SCALE", "TEXT-WIDTH", "TEXT-HEIGHT", "BUILTIN-FONT", "LOAD-FONT", "SYSTEM-FONT", "K-UP", "K-DOWN", "K-LEFT", "K-RIGHT", "K-HOME", "K-END", "K-PRIOR", "K-NEXT", "K-INSERT", "K-DELETE", "K-F1", "K-F2", "K-F3", "K-F4", "K-F5", "K-F6", "K-F7", "K-F8", "K-F9", "K-F10", "K-F11", "K-F12" };
 
 /// The words of the part of the library that uses floating-point numbers, which a build
 /// without them leaves out.
@@ -196,6 +199,25 @@ fn executeFont(self: *State, builtin: Builtin) RuntimeError!void {
             const name = try self.memoryRange();
             try self.push(try graphics_font.selectSystem(self, name, height));
         },
+        .gfx_tcl => {
+            const source = try self.memoryRange();
+            for (try tcl.eval(self, source)) |value| try self.push(value);
+        },
+        .gfx_tcl_error => for (tcl.errorText(self)) |value| try self.push(value),
+        .gfx_tcl_event => {
+            if (try tcl.nextEvent(self)) |text| {
+                for (text) |value| try self.push(value);
+                try self.push(-1);
+            } else try self.push(0);
+        },
+        .gfx_tcl_program => try tcl.setProgram(self, try self.memoryRange()),
+        .gfx_tcl_stop => tcl.stop(self),
+        .gfx_show_tk => {
+            try requireImage(self);
+            // The next SHOW on the terminal starts a new picture there.
+            self.gfx_input.shown = null;
+            try tcl.showImage(self);
+        },
         else => unreachable,
     }
 }
@@ -216,7 +238,10 @@ pub fn clearImage(self: *State) void {
     self.gfx_width = 0;
     self.gfx_height = 0;
     // A font is not part of the dictionary either.
-    if (defs.graphics_enabled) graphics_font.selectBuiltin(self);
+    if (defs.graphics_enabled) {
+        graphics_font.selectBuiltin(self);
+        tcl.forgetHeap(self);
+    }
 }
 
 fn requireImage(self: *const State) RuntimeError!void {
@@ -246,7 +271,7 @@ fn saveImage(self: *State, name: []const u8, format: ImageFormat) RuntimeError!C
     switch (format) {
         .ppm => writePpm(self, &output),
         .bmp => writeBmp(self, &output),
-        .png => writePng(self, &output),
+        .png => writePng(self, output.sink(), null),
     }
     output.flush();
     const closed = files.close(self.writer.context, fileid);
@@ -294,6 +319,15 @@ const FileOutput = struct {
         output.bytes(&data);
     }
 
+    fn sink(output: *FileOutput) ByteSink {
+        return .{ .context = output, .write = struct {
+            fn write(context: *anyopaque, data: []const u8) void {
+                const file_output: *FileOutput = @ptrCast(@alignCast(context));
+                file_output.bytes(data);
+            }
+        }.write };
+    }
+
     fn flush(output: *FileOutput) void {
         if (output.used != 0 and output.ior == 0) {
             const files = output.self.writer.file_ops.?;
@@ -303,13 +337,29 @@ const FileOutput = struct {
     }
 };
 
+/// Where the bytes of a PNG go: a file, or the Tcl program as base64 (DISPLAY-TK).
+pub const ByteSink = struct {
+    context: *anyopaque,
+    write: *const fn (*anyopaque, []const u8) void,
+
+    fn bytes(sink: ByteSink, data: []const u8) void {
+        sink.write(sink.context, data);
+    }
+
+    fn be32(sink: ByteSink, value: u32) void {
+        var data: [4]u8 = undefined;
+        std.mem.writeInt(u32, &data, value, .big);
+        sink.bytes(&data);
+    }
+};
+
 /// A PNG chunk being written: its length, then its type and data, which the CRC-32
 /// at its end covers.
 const Chunk = struct {
-    output: *FileOutput,
+    output: ByteSink,
     crc: std.hash.Crc32,
 
-    fn begin(output: *FileOutput, kind: *const [4]u8, length: u32) Chunk {
+    fn begin(output: ByteSink, kind: *const [4]u8, length: u32) Chunk {
         output.be32(length);
         var chunk = Chunk{ .output = output, .crc = std.hash.Crc32.init() };
         chunk.bytes(kind);
@@ -365,9 +415,17 @@ const StoredStream = struct {
     }
 };
 
+/// The bytes of the PNG writePng writes for a width × height image.
+pub fn pngLength(width: u64, height: u64) u64 {
+    const raw = height * (1 + 3 * width);
+    const blocks = (raw + StoredStream.max_block - 1) / StoredStream.max_block;
+    // The signature, IHDR, IDAT (zlib header, blocks, Adler-32), and IEND.
+    return 8 + (12 + 13) + (12 + 2 + raw + 5 * blocks + 4) + 12;
+}
+
 /// PNG with 8-bit red, green, and blue and no compression; each row starts with
-/// filter type 0 (none).
-fn writePng(self: *const State, output: *FileOutput) void {
+/// filter type 0 (none). With a color mode, each pixel as SHOW shows it.
+pub fn writePng(self: *const State, output: ByteSink, mode: ?graphics_palette.ColorMode) void {
     const width: usize = @intCast(self.gfx_width);
     const height: usize = @intCast(self.gfx_height);
     output.bytes("\x89PNG\r\n\x1a\n");
@@ -390,7 +448,8 @@ fn writePng(self: *const State, output: *FileOutput) void {
     var row: [1 + 3 * max_side]u8 = undefined;
     for (0..height) |y| {
         row[0] = 0;
-        for (self.gfx_pixels[y * width ..][0..width], 0..) |pixel, x| {
+        for (self.gfx_pixels[y * width ..][0..width], 0..) |source, x| {
+            const pixel = if (mode) |colors| graphics_palette.convert(colors, x, y, source) else source;
             row[1 + 3 * x] = @truncate(pixel >> 16);
             row[2 + 3 * x] = @truncate(pixel >> 8);
             row[3 + 3 * x] = @truncate(pixel);

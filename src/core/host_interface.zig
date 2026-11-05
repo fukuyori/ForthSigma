@@ -129,6 +129,18 @@ pub const Writer = struct {
     font_buffer_fn: ?*const fn (?*anyopaque, usize) ?[]u64 = null,
     /// Frees a buffer font_buffer_fn gave.
     font_free_fn: ?*const fn (?*anyopaque, []u64) void = null,
+    /// Starts the Tcl program (TCL): `program` (when empty, the host's choice: the
+    /// SIGMA_WISH environment variable, else wish on the PATH) with `script` as its
+    /// script, with pipes to its standard input and output. One program at a time.
+    process_start_fn: ?*const fn (?*anyopaque, []const u8, []const u8) RuntimeError!void = null,
+    /// Writes to the program's standard input.
+    process_write_fn: ?*const fn (?*anyopaque, []const u8) RuntimeError!void = null,
+    /// Reads what the program wrote to its standard output: waits for at least one
+    /// byte when `wait`, and otherwise gives 0 when there is none. HostFailed when the
+    /// program has ended.
+    process_read_fn: ?*const fn (?*anyopaque, []u8, bool) RuntimeError!usize = null,
+    /// Ends the program, closing its standard input first.
+    process_stop_fn: ?*const fn (?*anyopaque) void = null,
     /// Chooses the system's font of that name for TEXT, `height` pixels from the top of
     /// a line to its bottom. False when the system has no font of the name.
     system_font_fn: ?*const fn (?*anyopaque, []const u8, u32) RuntimeError!bool = null,

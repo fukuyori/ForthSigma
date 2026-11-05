@@ -1839,3 +1839,104 @@ test "PLOT gives its function finite x across a range as wide as the floats allo
     try machine.interpretLine("0e0 1e308 X-RANGE ' REC PLOT BAD @ LAST F@ 1e308 F=");
     try expectStack(machine, &.{ 0, -1 });
 }
+
+// ---- Tcl/Tk ----
+
+test "TCL-EVAL sends a script to the Tcl program it starts, and gives its result or TCL ERROR" {
+    try skipWithout(&.{.graphics});
+    var output = Output{};
+    const machine = try libraryMachine(&output, "4 4");
+    defer destroyMachine(machine);
+    // The answers, given a few bytes at a time: an event and a key before the first
+    // result, then an error, a result of 0 bytes, and a UTF-8 result.
+    output.process_replies = "E 0 5\nfirstK 0 7\n258 97 R 0 2\n42" ++ "R 1 10\nbad script" ++ "R 0 0\n" ++ "R 0 9\n日本語";
+    try machine.interpretLine("S\" expr {6*7}\" TCL-EVAL TYPE");
+    try std.testing.expectEqualStrings("42", output.written());
+    try std.testing.expectEqual(@as(usize, 1), output.process_starts);
+    try std.testing.expectEqual(@as(usize, 0), output.process_program_len);
+    try std.testing.expectEqual(@import("../core/tcl.zig").script.len, output.process_script_len);
+    try std.testing.expectEqualStrings("10\nexpr {6*7}", output.processWritten());
+    // The error, its message, and the program still running.
+    try machine.interpretLine(": T S\" error x\" TCL ; ' T CATCH");
+    try expectStack(machine, &.{-273});
+    machine.data_depth = 0;
+    output.len = 0;
+    try machine.interpretLine("TCL-ERROR$ TYPE S\" set y {}\" TCL-EVAL NIP S\" s\" TCL-EVAL TYPE");
+    try expectStack(machine, &.{0});
+    machine.data_depth = 0;
+    try std.testing.expectEqualStrings("bad script日本語", output.written());
+    try std.testing.expectEqual(@as(usize, 1), output.process_starts);
+    // The event waits for TCL-EVENT, and the keys for INKEY.
+    output.len = 0;
+    try machine.interpretLine("TCL-EVENT . TYPE TCL-EVENT . INKEY INKEY INKEY");
+    try std.testing.expectEqualStrings("-1 first0 ", output.written());
+    try expectStack(machine, &.{ 258, 97, -1 });
+}
+
+test "TCL-EVENT and MOUSE read what the Tcl program sends without waiting, and a lost program starts again" {
+    try skipWithout(&.{.graphics});
+    var output = Output{};
+    const machine = try libraryMachine(&output, "4 4");
+    defer destroyMachine(machine);
+    output.process_replies = "R 0 0\n" ++ "E 0 3\nabcM 0 6\n12 7 1E 0 0\n";
+    try machine.interpretLine("S\" sigma_show\" TCL TCL-EVENT ROT ROT TYPE MOUSE TCL-EVENT ROT DROP TCL-EVENT");
+    try std.testing.expectEqualStrings("abc", output.written());
+    try expectStack(machine, &.{ -1, 12, 7, 1, 0, -1, 0 });
+    machine.data_depth = 0;
+    // No answer: the program has ended. HOST FUNCTION ERROR, and the next script
+    // starts it again, with the program TCL-PROGRAM named.
+    try machine.interpretLine(": T S\" x\" TCL ; ' T CATCH");
+    try expectStack(machine, &.{-265});
+    machine.data_depth = 0;
+    try std.testing.expect(!output.process_running);
+    output.process_replies = "R 0 2\nok";
+    output.process_reply_index = 0;
+    try machine.interpretLine("S\" tclsh9\" TCL-PROGRAM S\" y\" TCL-EVAL TYPE TCL-STOP");
+    try std.testing.expectEqual(@as(usize, 2), output.process_starts);
+    try std.testing.expectEqualStrings("tclsh9", output.process_program[0..output.process_program_len]);
+    try std.testing.expect(!output.process_running);
+    // A header the program could not have sent: the program is taken as lost.
+    output.process_replies = "R 0 99999999999\n";
+    output.process_reply_index = 0;
+    try machine.interpretLine("' T CATCH");
+    try expectStack(machine, &.{-265});
+    machine.data_depth = 0;
+
+    // A host that cannot run programs.
+    var plain_output = Output{};
+    const plain = try createMachine(&plain_output);
+    defer destroyMachine(plain);
+    plain.writer.process_start_fn = null;
+    try plain.interpretLine("REQUIRE-GRAPHICS ALSO GRAPHICS : T S\" x\" TCL ; ' T CATCH");
+    try expectStack(plain, &.{-21});
+}
+
+test "DISPLAY-TK makes SHOW send the image to the Tk window as a PNG in base64" {
+    try skipWithout(&.{.graphics});
+    var output = Output{};
+    const machine = try libraryMachine(&output, "3 2");
+    defer destroyMachine(machine);
+    output.process_replies = "R 0 0\n" ++ "R 1 4\nfail";
+    try machine.interpretLine("$FF0000 COLOR! 0 0 PSET DISPLAY-TK SHOW");
+    const words_graphics_module = @import("../core/words_graphics.zig");
+    const png_length = words_graphics_module.pngLength(3, 2);
+    const base64_length = (png_length + 2) / 3 * 4;
+    const written = output.processWritten();
+    const newline = std.mem.indexOfScalar(u8, written, '\n').?;
+    try std.testing.expectEqual(11 + base64_length, try std.fmt.parseInt(usize, written[0..newline], 10));
+    const body = written[newline + 1 ..];
+    try std.testing.expectEqual(11 + base64_length, body.len);
+    try std.testing.expect(std.mem.startsWith(u8, body, "sigma_show "));
+    var png: [128]u8 = undefined;
+    const decoder = std.base64.standard.Decoder;
+    const decoded_length = try decoder.calcSizeForSlice(body[11..]);
+    try decoder.decode(png[0..decoded_length], body[11..]);
+    try std.testing.expectEqual(png_length, decoded_length);
+    try std.testing.expectEqualStrings("\x89PNG\r\n\x1a\n", png[0..8]);
+    // The first pixel, red, after the zlib and block headers and the row's filter byte.
+    const first_row = 8 + 25 + 8 + 2 + 5 + 1;
+    try std.testing.expectEqualSlices(u8, &.{ 0xff, 0, 0 }, png[first_row..][0..3]);
+    // A failure in the Tcl program is TCL ERROR.
+    try machine.interpretLine(": T SHOW ; ' T CATCH");
+    try expectStack(machine, &.{-273});
+}

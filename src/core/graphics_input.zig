@@ -279,6 +279,8 @@ fn now(self: *State) ?forth.Double {
 /// but the mouse and Ctrl+C are still read.
 fn readInput(self: *State, until_key: bool) RuntimeError!void {
     const input = &self.gfx_input;
+    // The Tk window's keys and mouse come with the Tcl program's messages.
+    if (defs.graphics_enabled) try @import("tcl.zig").poll(self);
     const input_fn = self.writer.input_fn orelse return;
     while (!(until_key and input.key_count != 0)) {
         const event = input_fn(self.writer.context) orelse break;
@@ -311,6 +313,19 @@ fn readInput(self: *State, until_key: bool) RuntimeError!void {
         const expired = time == null or time.? - input.pending_since >= sequence_wait_us or time.? < input.pending_since;
         try decodePending(self, expired);
     }
+}
+
+/// A key pressed in a window whose program sends it (the Tk window of DISPLAY-TK).
+pub fn windowKey(self: *State, key: u32) RuntimeError!void {
+    try apply(self, .{ .key = key });
+}
+
+/// The mouse over such a window: the pixel of the image under it and the buttons.
+pub fn windowMouse(self: *State, x: i32, y: i32, buttons: u8) void {
+    const input = &self.gfx_input;
+    input.mouse_x = x;
+    input.mouse_y = y;
+    input.mouse_buttons = buttons;
 }
 
 /// INKEY: the next key without waiting, or -1 when none has been pressed.

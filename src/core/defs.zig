@@ -589,6 +589,12 @@ pub const Builtin = enum {
     gfx_font_load,
     gfx_font_system,
     gfx_color_mode,
+    gfx_tcl,
+    gfx_tcl_error,
+    gfx_tcl_event,
+    gfx_tcl_program,
+    gfx_tcl_stop,
+    gfx_show_tk,
 };
 
 pub const HeapResult = union(enum) { address: Cell, no_memory, bad_pointer };
@@ -630,7 +636,7 @@ pub const error_codes = [_]struct { RuntimeError, Cell }{
     .{ error.CommentUnclosed, -266 },       .{ error.IncludeNesting, -267 },        .{ error.TooManySourceFiles, -268 },
     .{ error.SearchOrderOverflow, -49 },     .{ error.SearchOrderUnderflow, -50 },   .{ error.InvalidWordlist, -269 },
     .{ error.GraphicsUnavailable, -270 },   .{ error.NoCanvas, -271 },          .{ error.UserInterrupt, -28 },
-    .{ error.FontUnavailable, -272 },
+    .{ error.FontUnavailable, -272 },     .{ error.TclFailed, -273 },
 };
 
 pub const throw_code_undefined_word: Cell = -13;
@@ -784,6 +790,8 @@ pub const RuntimeError = error{
     UserInterrupt,
     /// A font LOAD-FONT cannot read, or a name the system has no font of.
     FontUnavailable,
+    /// A Tcl script that failed (TCL, TCL-EVAL, DISPLAY-TK).
+    TclFailed,
 };
 
 pub fn floatBits(value: Float) Cell {
