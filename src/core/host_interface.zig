@@ -45,6 +45,8 @@ pub const TerminalSize = struct { columns: u32, rows: u32, x_pixels: u32 = 0, y_
 /// The mouse buttons in InputEvent: 1 left, 2 right, 4 middle.
 pub const MouseButtons = u8;
 
+pub const ColorMode = @import("graphics_palette.zig").ColorMode;
+
 /// One thing the user did, as the host's input gives it without waiting (INKEY, MOUSE).
 pub const InputEvent = union(enum) {
     /// A byte from the terminal as it came, escape sequences included; the graphics
@@ -103,8 +105,9 @@ pub const Writer = struct {
     /// reached the terminal first.
     terminal_utf8_fn: ?*const fn (?*anyopaque, bool) void = null,
     /// Shows the 32-bit pixels (0xAARRGGBB, rows from the top) of a width × height
-    /// image in a window, which the host keeps open. The host copies the pixels.
-    window_fn: ?*const fn (?*anyopaque, []const u32, u32, u32) RuntimeError!void = null,
+    /// image in a window, which the host keeps open. The host copies the pixels, each
+    /// as graphics_palette.convert gives it in the color mode (DISPLAY-COLORS).
+    window_fn: ?*const fn (?*anyopaque, []const u32, u32, u32, ColorMode) RuntimeError!void = null,
     /// The next input event without waiting, or null when there is none. The first call
     /// lets the terminal give each key at once, without echo; the host gives it back its
     /// line input when the program next reads a line or a KEY, and at the end. The host

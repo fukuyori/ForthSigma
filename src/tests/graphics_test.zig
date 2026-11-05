@@ -1615,3 +1615,96 @@ test "SYSTEM-FONT draws the host's glyphs, mixing the current color by coverage"
     try plain.interpretLine("REQUIRE-GRAPHICS ALSO GRAPHICS : T S\" Fake\" 8 SYSTEM-FONT ; ' T CATCH");
     try expectStack(plain, &.{-21});
 }
+
+test "the palettes of DISPLAY-COLORS: black and white, the 16 ANSI colors, xterm's 256, and the Bayer dither" {
+    const palette = @import("../core/graphics_palette.zig");
+    const mono = palette.ColorMode{ .colors = 2 };
+    const ansi = palette.ColorMode{ .colors = 16 };
+    const xterm = palette.ColorMode{ .colors = 256 };
+    // Black and white by brightness, 128 and up white.
+    try std.testing.expectEqual(@as(u8, 15), palette.paletteIndex(mono, 0, 0, 0xffffff));
+    try std.testing.expectEqual(@as(u8, 0), palette.paletteIndex(mono, 0, 0, 0x000000));
+    try std.testing.expectEqual(@as(u8, 15), palette.paletteIndex(mono, 0, 0, 0x808080));
+    try std.testing.expectEqual(@as(u8, 0), palette.paletteIndex(mono, 0, 0, 0x7f7f7f));
+    // The nearest of the 16 colors as xterm shows them.
+    try std.testing.expectEqual(@as(u8, 9), palette.paletteIndex(ansi, 0, 0, 0xff0000));
+    try std.testing.expectEqual(@as(u8, 1), palette.paletteIndex(ansi, 0, 0, 0xc80000));
+    try std.testing.expectEqual(@as(u8, 8), palette.paletteIndex(ansi, 0, 0, 0x808080));
+    try std.testing.expectEqual(@as(u8, 7), palette.paletteIndex(ansi, 0, 0, 0xe0e0e0));
+    try std.testing.expectEqual(@as(u8, 4), palette.paletteIndex(ansi, 0, 0, 0x0000ff));
+    // The cube and the grays of the 256 colors.
+    try std.testing.expectEqual(@as(u8, 196), palette.paletteIndex(xterm, 0, 0, 0xff0000));
+    try std.testing.expectEqual(@as(u8, 67), palette.paletteIndex(xterm, 0, 0, 0x5f87af));
+    try std.testing.expectEqual(@as(u8, 244), palette.paletteIndex(xterm, 0, 0, 0x808080));
+    try std.testing.expectEqual(@as(u8, 16), palette.paletteIndex(xterm, 0, 0, 0x000000));
+    try std.testing.expectEqual(@as(u8, 231), palette.paletteIndex(xterm, 0, 0, 0xffffff));
+    try std.testing.expectEqual(@as(u32, 0xff0000), palette.paletteColor(196));
+    try std.testing.expectEqual(@as(u32, 0x808080), palette.paletteColor(244));
+    try std.testing.expectEqual(@as(u32, 0x5f87af), palette.paletteColor(67));
+    try std.testing.expectEqual(@as(u32, 0x5c5cff), palette.paletteColor(12));
+    try std.testing.expectEqual(@as(u32, 0x123456), palette.convert(.{}, 3, 4, 0xff123456));
+    try std.testing.expectEqual(@as(u32, 0xffffff), palette.convert(mono, 0, 0, 0xc0c0c0));
+    // Dithered to 2 colors, a middle gray is white in half of each 4 by 4 block, and
+    // black and white stay. With 16, black stays, and white mixes xterm's two whites.
+    const mono_dither = palette.ColorMode{ .colors = 2, .dither = true };
+    const ansi_dither = palette.ColorMode{ .colors = 16, .dither = true };
+    var white: usize = 0;
+    for (0..4) |y| for (0..4) |x| {
+        if (palette.convert(mono_dither, x, y, 0x808080) == 0xffffff) white += 1;
+        try std.testing.expectEqual(@as(u32, 0), palette.convert(mono_dither, x, y, 0));
+        try std.testing.expectEqual(@as(u32, 0xffffff), palette.convert(mono_dither, x, y, 0xffffff));
+        try std.testing.expectEqual(@as(u32, 0), palette.convert(ansi_dither, x, y, 0));
+        const light = palette.convert(ansi_dither, x, y, 0xffffff);
+        try std.testing.expect(light == 0xffffff or light == 0xe5e5e5);
+    };
+    try std.testing.expectEqual(@as(usize, 8), white);
+    // Dithering a color between two of the cube gives both.
+    const dithered = palette.ColorMode{ .colors = 256, .dither = true };
+    var seen = [2]bool{ false, false };
+    for (0..4) |y| for (0..4) |x| {
+        const index = palette.paletteIndex(dithered, x, y, 0x730000);
+        if (index == 16 + 36 * 1) seen[0] = true;
+        if (index == 16 + 36 * 2) seen[1] = true;
+    };
+    try std.testing.expect(seen[0] and seen[1]);
+}
+
+test "DISPLAY-COLORS and DITHER change what SHOW shows on the terminal and in the window, not the image" {
+    try skipWithout(&.{.graphics});
+    var output = Output{ .has_window = true };
+    const machine = try libraryMachine(&output, "2 3");
+    defer destroyMachine(machine);
+    try machine.interpretLine("$FF0000 COLOR! 0 0 PSET $00FF00 COLOR! 0 1 PSET $0000FF COLOR! 1 1 PSET $FFFFFF COLOR! 0 2 PSET DISPLAY-TERMINAL");
+    output.len = 0;
+    try machine.interpretLine("256 DISPLAY-COLORS SHOW");
+    try std.testing.expectEqualStrings("\x1b[38;5;196m\x1b[48;5;46m\u{2580}\x1b[38;5;16m\x1b[48;5;21m\u{2580}\x1b[0m\n" ++
+        "\x1b[38;5;231m\x1b[49m\u{2580}\x1b[38;5;16m\u{2580}\x1b[0m\n", output.written());
+    output.len = 0;
+    try machine.interpretLine("CR 16 DISPLAY-COLORS SHOW");
+    try std.testing.expectEqualStrings("\n\x1b[91m\x1b[102m\u{2580}\x1b[30m\x1b[44m\u{2580}\x1b[0m\n" ++
+        "\x1b[97m\x1b[49m\u{2580}\x1b[30m\u{2580}\x1b[0m\n", output.written());
+    output.len = 0;
+    try machine.interpretLine("CR 2 DISPLAY-COLORS SHOW");
+    try std.testing.expectEqualStrings("\n\x1b[30m\x1b[107m\u{2580}\x1b[40m\u{2580}\x1b[0m\n" ++
+        "\x1b[97m\x1b[49m\u{2580}\x1b[30m\u{2580}\x1b[0m\n", output.written());
+    // Sixel defines the palette's registers: 2 for black and white, 240 for 256 colors.
+    output.len = 0;
+    try machine.interpretLine("CR TERMINAL-SIXEL SHOW");
+    try std.testing.expect(std.mem.indexOf(u8, output.written(), "#0;2;0;0;0#1;2;100;100;100") != null);
+    try std.testing.expect(std.mem.indexOf(u8, output.written(), "#2;2;") == null);
+    output.len = 0;
+    try machine.interpretLine("CR 256 DISPLAY-COLORS SHOW");
+    try std.testing.expect(std.mem.indexOf(u8, output.written(), "#239;2;93;93;93") != null);
+    try std.testing.expect(std.mem.indexOf(u8, output.written(), "#240;2;") == null);
+    // The image keeps its colors, and the window gets the mode.
+    try machine.interpretLine("0 0 GFX-PGET 1 DITHER 16 DISPLAY-COLORS DISPLAY-WINDOW SHOW");
+    try expectStack(machine, &.{0xFF0000});
+    try std.testing.expectEqual(forth.ColorMode{ .colors = 16, .dither = true }, output.window_mode);
+    // SHOW sets the mode each time, also after GFX-COLOR-MODE.
+    try machine.interpretLine("0 DITHER 0 DISPLAY-COLORS 256 -1 GFX-COLOR-MODE SHOW");
+    try std.testing.expectEqual(forth.ColorMode{}, output.window_mode);
+    machine.data_depth = 0;
+    // Only 0, 2, 16, and 256.
+    try machine.interpretLine(": T8 8 DISPLAY-COLORS ; : T-1 -1 DISPLAY-COLORS ; ' T8 CATCH ' T-1 CATCH 16 DISPLAY-COLORS (COLORS) @");
+    try expectStack(machine, &.{ -24, -24, 16 });
+}

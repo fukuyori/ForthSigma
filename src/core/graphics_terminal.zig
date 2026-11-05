@@ -6,6 +6,8 @@ const std = @import("std");
 const forth = @import("../forth.zig");
 const host_interface = @import("host_interface.zig");
 const graphics_input = @import("graphics_input.zig");
+const graphics_palette = @import("graphics_palette.zig");
+const ColorMode = graphics_palette.ColorMode;
 const State = forth.State;
 const TerminalSize = host_interface.TerminalSize;
 
@@ -164,21 +166,22 @@ pub fn showBlocks(self: *State) void {
     defer if (utf8_fn) |end| end(self.writer.context, false);
     var output = Output{ .self = self };
     const over = returnToShown(self, &output);
+    const mode = self.gfx_color_mode;
     var row: usize = 0;
     while (row < scaled.out_height) : (row += 2) {
         var foreground: ?u32 = null;
         var background: ?u32 = null;
         var x: usize = 0;
         while (x < scaled.out_width) : (x += 1) {
-            const top = scaled.pixel(x, row);
+            const top = cellColor(mode, x, row, scaled.pixel(x, row));
             if (foreground != top) {
-                colorEscape(&output, "38", top);
+                colorEscape(&output, mode, true, top);
                 foreground = top;
             }
             if (row + 1 < scaled.out_height) {
-                const bottom = scaled.pixel(x, row + 1);
+                const bottom = cellColor(mode, x, row + 1, scaled.pixel(x, row + 1));
                 if (background != bottom) {
-                    colorEscape(&output, "48", bottom);
+                    colorEscape(&output, mode, false, bottom);
                     background = bottom;
                 }
             } else if (x == 0) output.text("\x1b[49m");
@@ -189,16 +192,67 @@ pub fn showBlocks(self: *State) void {
     recordShown(self, &output, over, scaled, @intCast((scaled.out_height + 1) / 2), 1, 2);
 }
 
-fn colorEscape(output: *Output, layer: []const u8, rgb: u32) void {
+/// What a half block shows of a pixel: its color in full color, or its palette index.
+fn cellColor(mode: ColorMode, x: usize, y: usize, rgb: u32) u32 {
+    return if (mode.colors == 0) rgb else graphics_palette.paletteIndex(mode, x, y, rgb);
+}
+
+/// The escape of a foreground or background color: 24-bit, one of xterm's 256 colors,
+/// or one of the 16 ANSI colors (30 to 37 and 90 to 97, and 40 to 47 and 100 to 107).
+fn colorEscape(output: *Output, mode: ColorMode, foreground: bool, value: u32) void {
     output.text("\x1b[");
-    output.text(layer);
-    output.text(";2;");
-    output.number((rgb >> 16) & 0xff);
-    output.text(";");
-    output.number((rgb >> 8) & 0xff);
-    output.text(";");
-    output.number(rgb & 0xff);
+    switch (mode.colors) {
+        0 => {
+            output.text(if (foreground) "38;2;" else "48;2;");
+            output.number((value >> 16) & 0xff);
+            output.text(";");
+            output.number((value >> 8) & 0xff);
+            output.text(";");
+            output.number(value & 0xff);
+        },
+        256 => {
+            output.text(if (foreground) "38;5;" else "48;5;");
+            output.number(value);
+        },
+        else => {
+            const base: u32 = if (foreground) 30 else 40;
+            output.number(if (value < 8) base + value else base + 60 + value - 8);
+        },
+    }
     output.text("m");
+}
+
+/// The Sixel registers of a color mode: the 216 colors of a 6 × 6 × 6 cube for full
+/// color, else the palette (black and white, the 16 ANSI colors, or xterm's 16 to 255).
+fn sixelRegisters(mode: ColorMode) usize {
+    return switch (mode.colors) {
+        0 => 216,
+        2 => 2,
+        16 => 16,
+        else => 240,
+    };
+}
+
+fn sixelRegisterColor(mode: ColorMode, register: usize) u32 {
+    return switch (mode.colors) {
+        0 => @intCast((register / 36 * 51) << 16 | (register / 6 % 6 * 51) << 8 | register % 6 * 51),
+        2 => if (register == 0) 0 else 0xffffff,
+        16 => graphics_palette.ansi[register],
+        else => graphics_palette.paletteColor(@intCast(register + 16)),
+    };
+}
+
+fn sixelRegister(mode: ColorMode, x: usize, y: usize, rgb: u32) u8 {
+    return switch (mode.colors) {
+        0 => sixelColor(rgb),
+        2 => if (graphics_palette.paletteIndex(mode, x, y, rgb) == 0) 0 else 1,
+        16 => graphics_palette.paletteIndex(mode, x, y, rgb),
+        else => graphics_palette.paletteIndex(mode, x, y, rgb) - 16,
+    };
+}
+
+fn percent(value: u32) u32 {
+    return (value * 100 + 127) / 255;
 }
 
 /// The register of the 6 × 6 × 6 color cube that a color is nearest to.
@@ -224,20 +278,23 @@ pub fn showSixel(self: *State) void {
     output.number(scaled.out_width);
     output.text(";");
     output.number(scaled.out_height);
-    for (0..216) |register| {
+    const mode = self.gfx_color_mode;
+    for (0..sixelRegisters(mode)) |register| {
+        const color = sixelRegisterColor(mode, register);
         output.text("#");
         output.number(register);
         output.text(";2;");
-        output.number(register / 36 * 20);
+        output.number(percent((color >> 16) & 0xff));
         output.text(";");
-        output.number(register / 6 % 6 * 20);
+        output.number(percent((color >> 8) & 0xff));
         output.text(";");
-        output.number(register % 6 * 20);
+        output.number(percent(color & 0xff));
     }
     const band = &self.gfx_band;
     var top: usize = 0;
     while (top < scaled.out_height) : (top += 6) {
-        var used: [216]bool = @splat(false);
+        // At most 240 registers, so 0xff marks the lines below the image.
+        var used: [256]bool = @splat(false);
         for (0..6) |line| {
             const y = top + line;
             for (0..scaled.out_width) |x| {
@@ -245,7 +302,7 @@ pub fn showSixel(self: *State) void {
                     band[line][x] = 0xff;
                     continue;
                 }
-                const register = sixelColor(scaled.pixel(x, y));
+                const register = sixelRegister(mode, x, y, scaled.pixel(x, y));
                 band[line][x] = register;
                 used[register] = true;
             }

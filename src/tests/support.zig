@@ -76,6 +76,7 @@ pub const Output = struct {
     window_width: u32 = 0,
     window_height: u32 = 0,
     window_first_pixel: u32 = 0,
+    window_mode: forth.ColorMode = .{},
     /// The input events INKEY and MOUSE get from the host, in turn; then none.
     events: []const forth.InputEvent = &.{},
     event_index: usize = 0,
@@ -156,8 +157,9 @@ pub const Output = struct {
         output.utf8_count += 1;
     }
 
-    pub fn window(context: ?*anyopaque, pixels: []const u32, width: u32, height: u32) forth.RuntimeError!void {
+    pub fn window(context: ?*anyopaque, pixels: []const u32, width: u32, height: u32, mode: forth.ColorMode) forth.RuntimeError!void {
         const output: *Output = @ptrCast(@alignCast(context.?));
+        output.window_mode = mode;
         output.window_shows += 1;
         output.window_width = width;
         output.window_height = height;

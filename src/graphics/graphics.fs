@@ -260,9 +260,21 @@ VARIABLE (TERMINAL-MODE)  0 (TERMINAL-MODE) !
 : (WINDOW?) ( -- flag )
    (DISPLAY) @ DUP 2 =  SWAP 0=  GFX-WINDOW? AND  OR ;
 
-\ Shows the image where DISPLAY-TERMINAL or DISPLAY-WINDOW said.
+\ The colors SHOW uses: 0 full color, or 2, 16, or 256, and whether it dithers (with a
+\ 4 by 4 Bayer matrix). The image keeps its colors; GFX-COLOR-MODE ( n flag -- ) sets
+\ them for the GFX-SHOW- words, which SHOW does each time.
+VARIABLE (COLORS)  0 (COLORS) !
+VARIABLE (DITHER)  0 (DITHER) !
+
+\ NUMBER ERROR unless n is 0, 2, 16, or 256.
+: DISPLAY-COLORS ( n -- )   DUP (DITHER) @ GFX-COLOR-MODE  (COLORS) ! ;
+: DITHER ( flag -- )   0<> (DITHER) ! ;
+
+\ Shows the image where DISPLAY-TERMINAL or DISPLAY-WINDOW said, with the colors
+\ DISPLAY-COLORS and DITHER chose.
 : SHOW ( -- )
    (NEED-IMAGE)
+   (COLORS) @ (DITHER) @ GFX-COLOR-MODE
    (WINDOW?) IF GFX-SHOW-WINDOW EXIT THEN
    (TERMINAL-MODE) @ IF GFX-SHOW-SIXEL ELSE GFX-SHOW-BLOCKS THEN ;
 

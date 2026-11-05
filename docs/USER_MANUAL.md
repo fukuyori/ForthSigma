@@ -588,6 +588,8 @@ Coordinates start at 0 0 in the top left corner, and everything drawn outside th
 | `SHOW` | ( -- ) | Show the image: in a window when the host has one (Windows), on the terminal otherwise, or where `DISPLAY-TERMINAL` or `DISPLAY-WINDOW` said. |
 | `DISPLAY-TERMINAL`, `DISPLAY-WINDOW` | ( -- ) | Make `SHOW` use the terminal, or the window. `DISPLAY-WINDOW` gives `HOST FUNCTION UNAVAILABLE !` when the host has no window. |
 | `TERMINAL-BLOCKS`, `TERMINAL-SIXEL` | ( -- ) | Show the image on the terminal with half block characters (the default), or as Sixel graphics. |
+| `DISPLAY-COLORS` | ( n -- ) | Make `SHOW` use full color (0, the default), or 2, 16, or 256 colors, for terminals that show fewer colors or for the look of older computers. 2 is black and white by brightness, 16 the ANSI colors (escapes 30 to 37 and 90 to 97; the nearest is chosen as xterm shows them by default, and other terminals may show them differently), 256 xterm's 6 × 6 × 6 cube and 24 grays (`ESC [ 38 ; 5 ; n m`). Sixel and the window use the same colors. The image keeps its colors, so files are saved in full color. Other values give `NUMBER ERROR !`. |
+| `DITHER` | ( flag -- ) | With fewer colors, mix them in a 4 × 4 Bayer pattern (true) instead of taking the nearest (false, the default). The pattern stays in place, so animation does not flicker. |
 | `GFX-INIT` | ( w h -- ) | Make a new black image. Each side is 1 to 8192 pixels and the image at most 64 MiB (4 bytes a pixel, so 4096 by 4096 at most for a square). The previous image stays when the new one cannot be made. |
 | `GFX-WIDTH`, `GFX-HEIGHT` | ( -- n ) | The size of the image, 0 before `GFX-INIT`. |
 | `GFX-PSET` | ( x y rgb -- ) | Set one pixel to the color rgb. |
@@ -597,6 +599,7 @@ Coordinates start at 0 0 in the top left corner, and everything drawn outside th
 | `GFX-SAVE-PPM`, `GFX-SAVE-BMP`, `GFX-SAVE-PNG` | ( c-addr u -- ior ) | As `SAVE-PPM`, `SAVE-BMP`, and `SAVE-PNG`, but return ior (0 or the error) instead. They also work in a build with `-Dfiles=false`. |
 | `GFX-SHOW-BLOCKS`, `GFX-SHOW-SIXEL`, `GFX-SHOW-WINDOW` | ( -- ) | Show the image on the terminal with half blocks, as Sixel, or in the window. |
 | `GFX-WINDOW?` | ( -- flag ) | True when the host can show the image in a window. |
+| `GFX-COLOR-MODE` | ( n flag -- ) | The colors of the `GFX-SHOW-` words, as `DISPLAY-COLORS` and `DITHER` (which `SHOW` passes each time). |
 
 The `GFX-` words are the base the library is written with; the other words are Forth definitions, so `SEE`, `LOCATE`, and `WHERE` show them. So that the arithmetic cannot overflow, coordinates and sizes are first limited to -2^61 .. 2^61 for `LINE`, `RECT`, and `FILL-RECT`, and to -2^30 .. 2^30 for the circles (a circle with a value beyond that is drawn with the value moved to the limit). `PAINT` keeps the rows still to fill in the heap; a very complicated area can need more than the heap has and then gives `CANNOT ALLOCATE MEMORY !` (THROW -524, the area is then partly filled).
 

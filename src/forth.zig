@@ -28,6 +28,7 @@ const words_graphics = @import("core/words_graphics.zig");
 const graphics_terminal = @import("core/graphics_terminal.zig");
 const graphics_input = @import("core/graphics_input.zig");
 const graphics_font = @import("core/graphics_font.zig");
+const graphics_palette = @import("core/graphics_palette.zig");
 const words_defining = @import("core/words_defining.zig");
 const words_help = @import("core/words_help.zig");
 const words_input = @import("core/words_input.zig");
@@ -68,6 +69,8 @@ pub const TerminalSize = host_interface.TerminalSize;
 pub const InputEvent = host_interface.InputEvent;
 pub const CursorPosition = host_interface.CursorPosition;
 pub const SystemGlyph = host_interface.SystemGlyph;
+pub const ColorMode = host_interface.ColorMode;
+pub const graphicsColor = graphics_palette.convert;
 pub const Writer = host_interface.Writer;
 const base_address = memory_map.base_address;
 const bitsFloat = defs.bitsFloat;
@@ -217,6 +220,8 @@ pub const State = struct {
     /// Keys and the mouse for INKEY and MOUSE, and where SHOW put the image on the
     /// terminal.
     gfx_input: graphics_input.InputState = .{},
+    /// The colors SHOW uses (GFX-COLOR-MODE).
+    gfx_color_mode: graphics_palette.ColorMode = .{},
     /// TEXT's font and the glyph it loaded last (none in a build without graphics).
     gfx_font: if (defs.graphics_enabled) graphics_font.FontState else void = if (defs.graphics_enabled) .{} else {},
     /// The bytes written to the host so far: SHOW draws over its last image on the

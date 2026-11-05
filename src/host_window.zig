@@ -23,7 +23,7 @@ pub fn close() void {
     if (available) win32.close();
 }
 
-fn unsupported(_: ?*anyopaque, _: []const u32, _: u32, _: u32) forth.RuntimeError!void {
+fn unsupported(_: ?*anyopaque, _: []const u32, _: u32, _: u32, _: forth.ColorMode) forth.RuntimeError!void {
     return error.HostUnavailable;
 }
 
@@ -153,7 +153,7 @@ const win32 = struct {
     var ready: ?Handle = null;
     var opened = false;
 
-    fn show(_: ?*anyopaque, image: []const u32, image_width: u32, image_height: u32) forth.RuntimeError!void {
+    fn show(_: ?*anyopaque, image: []const u32, image_width: u32, image_height: u32, mode: forth.ColorMode) forth.RuntimeError!void {
         AcquireSRWLockExclusive(&lock);
         const resized = image_width != width or image_height != height;
         if (pixels.len != image.len) {
@@ -164,7 +164,14 @@ const win32 = struct {
             if (pixels.len != 0) std.heap.c_allocator.free(pixels);
             pixels = buffer;
         }
-        @memcpy(pixels, image);
+        if (mode.colors == 0) {
+            @memcpy(pixels, image);
+        } else {
+            // DISPLAY-COLORS: each pixel as the palette shows it.
+            for (pixels, image, 0..) |*target, pixel, index| {
+                target.* = 0xff00_0000 | forth.graphicsColor(mode, index % image_width, index / image_width, pixel);
+            }
+        }
         width = image_width;
         height = image_height;
         if (resized) resize_pending = true;

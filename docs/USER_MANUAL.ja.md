@@ -588,6 +588,8 @@ PREVIOUS
 | `SHOW` | ( -- ) | 画像を表示します。ホストにウィンドウがあれば（Windows）ウィンドウに、なければ端末に、または `DISPLAY-TERMINAL`・`DISPLAY-WINDOW` で決めた先に表示します。 |
 | `DISPLAY-TERMINAL`、`DISPLAY-WINDOW` | ( -- ) | `SHOW` の表示先を端末、またはウィンドウにします。ホストにウィンドウがなければ、`DISPLAY-WINDOW` は `HOST FUNCTION UNAVAILABLE !` になります。 |
 | `TERMINAL-BLOCKS`、`TERMINAL-SIXEL` | ( -- ) | 端末への表示を、半角ブロック（既定）またはSixelにします。 |
+| `DISPLAY-COLORS` | ( n -- ) | `SHOW` の色数を、フルカラー（0、既定）か、2、16、256色にします。色数の少ない端末や、昔のパソコンのような見た目のためです。2は明るさによる白黒、16はANSIの色（エスケープの30〜37と90〜97。近い色はxtermの既定の見え方で選ぶので、端末によっては違って見えます）、256はxtermの6×6×6の色と24段階の灰色（`ESC [ 38 ; 5 ; n m`）です。Sixelとウィンドウも同じ色を使います。画像の色は変わらないので、ファイルにはフルカラーで保存されます。ほかの値は `NUMBER ERROR !` になります。 |
+| `DITHER` | ( flag -- ) | 色数を減らすとき、4×4のBayerの模様で色を混ぜる（真）か、いちばん近い色にする（偽、既定）かを決めます。模様は位置で決まるので、アニメーションでもちらつきません。 |
 | `GFX-INIT` | ( w h -- ) | 新しい黒い画像を作ります。幅・高さは各1〜8192画素、画像は64 MiBまでです（1画素4バイトなので、正方形なら4096×4096まで）。新しい画像を作れなかったときは、前の画像が残ります。 |
 | `GFX-WIDTH`、`GFX-HEIGHT` | ( -- n ) | 画像の大きさ。`GFX-INIT` の前は0です。 |
 | `GFX-PSET` | ( x y rgb -- ) | 1画素を色 rgb で塗ります。 |
@@ -597,6 +599,7 @@ PREVIOUS
 | `GFX-SAVE-PPM`、`GFX-SAVE-BMP`、`GFX-SAVE-PNG` | ( c-addr u -- ior ) | `SAVE-PPM`・`SAVE-BMP`・`SAVE-PNG` と同じですが、`THROW` せずに ior（0かエラー）を返します。`-Dfiles=false` の版でも使えます。 |
 | `GFX-SHOW-BLOCKS`、`GFX-SHOW-SIXEL`、`GFX-SHOW-WINDOW` | ( -- ) | 画像を、端末に半角ブロックで、Sixelで、またはウィンドウに表示します。 |
 | `GFX-WINDOW?` | ( -- flag ) | ホストが画像をウィンドウに表示できれば真。 |
+| `GFX-COLOR-MODE` | ( n flag -- ) | `GFX-SHOW-` の語の色数。`DISPLAY-COLORS` と `DITHER` と同じです（`SHOW` が毎回渡します）。 |
 
 `GFX-` の語は、ライブラリを書くための基本の語です。ほかの語はForthの定義なので、`SEE`・`LOCATE`・`WHERE` で中身を見られます。計算があふれないように、座標と大きさは、`LINE`・`RECT`・`FILL-RECT` では -2^61〜2^61、円では -2^30〜2^30 に制限してから描きます（それを越える値の円は、値を上限に寄せて描きます）。`PAINT` は、まだ塗っていない行をヒープに置きます。非常に複雑な領域ではヒープが足りなくなり、`CANNOT ALLOCATE MEMORY !`（THROW -524）になります（そのときは途中まで塗られます）。
 

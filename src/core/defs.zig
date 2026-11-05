@@ -588,6 +588,7 @@ pub const Builtin = enum {
     gfx_font_builtin,
     gfx_font_load,
     gfx_font_system,
+    gfx_color_mode,
 };
 
 pub const HeapResult = union(enum) { address: Cell, no_memory, bad_pointer };
