@@ -135,7 +135,7 @@ The gforth source and ForthBasicMaster book (`D:\home\Documents\BasicMaster\Fort
 
 ## Not implemented yet
 
-The runtime does not implement the magazine's editor-buffer versions of LOAD/SAVE, LIST, EDIT, EXEC, CLB, CLOAD, CSAVE, CP/M file calls, PC-8001 monitor/graphics/printing words, MCODE, USR, PUHL/POHL/NEXT, or every word in the magazine's dictionary tables. From gforth, `$?`, `$slurp` and the other string words not listed above, `DPL`, and floating-point words other than those listed above are not implemented yet; the table of unimplemented words in [COMPATIBILITY.md](COMPATIBILITY.md) lists them all. gforth's `CODE`, `END-CODE`, `SAVESYSTEM`, `'COLD`, `BOOTMESSAGE`, `IS`, `FPATH`, and `SCRIPT?` are out of scope (decided on 2026-10-30).
+The runtime does not implement the magazine's editor-buffer versions of LOAD/SAVE, LIST, EDIT, EXEC, CLB, CLOAD, CSAVE, CP/M file calls, the other words of the PC-8001 version (SFORTH, VERIFY, LPRINT, CRT, INKEY, SCREEN) and its monitor and ROM routines (the magazine has no graphics words), MCODE, USR, PUHL/POHL/NEXT, or every word in the magazine's dictionary tables. From gforth, `$?`, `$slurp` and the other string words not listed above, `DPL`, and floating-point words other than those listed above are not implemented yet; the table of unimplemented words in [COMPATIBILITY.md](COMPATIBILITY.md) lists them all. gforth's `CODE`, `END-CODE`, `SAVESYSTEM`, `'COLD`, `BOOTMESSAGE`, `IS`, `FPATH`, and `SCRIPT?` are out of scope (decided on 2026-10-30).
 
 ## Verification record
 

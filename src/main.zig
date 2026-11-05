@@ -67,10 +67,20 @@ const image_footer_magic = "SIGEND01";
 /// threaded implementation, whose table of functions links in every file, network, and
 /// process operation of the standard library (about 450 KB on Windows). Sigma does its
 /// file work through the C library, and the few calls below go to the system directly.
-const HostContext = struct { allocator: std.mem.Allocator, executable_path: [:0]const u8, environ_map: *std.process.Environ.Map };
+/// `framebuffer` is the graphics image that GFX-INIT got last, freed when Sigma ends.
+const HostContext = struct { allocator: std.mem.Allocator, executable_path: [:0]const u8, environ_map: *std.process.Environ.Map, framebuffer: []u32 = &.{} };
 
 fn hostContext(context: ?*anyopaque) forth.RuntimeError!*HostContext {
     return @ptrCast(@alignCast(context orelse return error.HostUnavailable));
+}
+
+/// GFX-INIT's image: a new buffer, replacing the previous one only when it is allocated.
+fn graphicsBuffer(context: ?*anyopaque, pixels: usize) ?[]u32 {
+    const host = hostContext(context) catch return null;
+    const buffer = host.allocator.alloc(u32, pixels) catch return null;
+    if (host.framebuffer.len != 0) host.allocator.free(host.framebuffer);
+    host.framebuffer = buffer;
+    return buffer;
 }
 
 fn sleepMilliseconds(_: ?*anyopaque, milliseconds: forth.Cell) forth.RuntimeError!void {
@@ -686,6 +696,7 @@ fn run(init: std.process.Init.Minimal) !void {
     const executable_path = try executablePathAlloc(allocator, argv0);
     defer allocator.free(executable_path);
     var host = HostContext{ .allocator = allocator, .executable_path = executable_path, .environ_map = &environ_map };
+    defer if (host.framebuffer.len != 0) allocator.free(host.framebuffer);
     const machine = try allocator.create(forth.State);
     defer allocator.destroy(machine);
     output_is_terminal = isTerminal(1);
@@ -694,7 +705,7 @@ fn run(init: std.process.Init.Minimal) !void {
 
     enableVirtualTerminal();
     useBinaryStdin();
-    machine.init(.{ .context = @ptrCast(&host), .write_fn = terminalWrite, .read_fn = terminalRead, .load_fn = loadDictionary, .save_fn = saveDictionary, .savesys_fn = saveExecutableImage, .key_fn = terminalKey, .key_ready_fn = terminalKeyReady, .sleep_fn = sleepMilliseconds, .utime_fn = microsecondsSinceEpoch, .local_time_fn = localTime, .getenv_fn = environmentValue, .system_fn = runShellCommand, .file_ops = &file_ops });
+    machine.init(.{ .context = @ptrCast(&host), .write_fn = terminalWrite, .read_fn = terminalRead, .load_fn = loadDictionary, .save_fn = saveDictionary, .savesys_fn = saveExecutableImage, .key_fn = terminalKey, .key_ready_fn = terminalKeyReady, .sleep_fn = sleepMilliseconds, .utime_fn = microsecondsSinceEpoch, .local_time_fn = localTime, .getenv_fn = environmentValue, .system_fn = runShellCommand, .file_ops = &file_ops, .framebuffer_fn = graphicsBuffer });
     defer closeAllFiles();
     loadEmbeddedImage(executable_path, machine, allocator);
 

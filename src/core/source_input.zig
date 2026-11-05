@@ -10,6 +10,7 @@ const InputPlace = defs.InputPlace;
 const RuntimeError = defs.RuntimeError;
 const State = forth.State;
 const UCell = memory_map.UCell;
+const embedded_source_fileid = memory_map.embedded_source_fileid;
 const include_buffer_base = memory_map.include_buffer_base;
 const max_include_depth = memory_map.max_include_depth;
 const max_source_files = memory_map.max_source_files;
@@ -112,6 +113,7 @@ pub fn restoreLoadedSourceFiles(self: *State, mask: UCell) void {
 /// or returns null at the end of the file.
 pub fn readIncludeLine(self: *State) RuntimeError!?[]const u8 {
     const frame = &self.include_stack[self.include_depth - 1];
+    if (frame.fileid == embedded_source_fileid) return readEmbeddedLine(self, frame);
     const files = try self.fileOps();
     // One byte more than a line may hold shows whether the host stopped at a line end.
     var chunk: [tib_size + 1]u8 = undefined;
@@ -125,6 +127,23 @@ pub fn readIncludeLine(self: *State) RuntimeError!?[]const u8 {
     const start: usize = @intCast(include_buffer_base + @as(Cell, @intCast((self.include_depth - 1) * tib_size)));
     @memcpy(self.memory[start .. start + result.length], chunk[0..result.length]);
     return self.memory[start .. start + result.length];
+}
+
+/// The next line of the embedded source, ended by LF, CR LF, or the end of the source.
+fn readEmbeddedLine(self: *State, frame: *IncludeFrame) RuntimeError!?[]const u8 {
+    const source = self.embedded_source;
+    const start: usize = @intCast(@min(frame.next_offset, source.len));
+    if (start == source.len) return null;
+    const end = std.mem.indexOfScalarPos(u8, source, start, '\n') orelse source.len;
+    var line = source[start..end];
+    if (line.len != 0 and line[line.len - 1] == '\r') line = line[0 .. line.len - 1];
+    frame.line_start = start;
+    frame.next_offset = @min(end + 1, source.len);
+    frame.line += 1;
+    if (line.len > tib_size) return error.StringTooLong;
+    const buffer: usize = @intCast(include_buffer_base + @as(Cell, @intCast((self.include_depth - 1) * tib_size)));
+    @memcpy(self.memory[buffer .. buffer + line.len], line);
+    return self.memory[buffer .. buffer + line.len];
 }
 
 /// INCLUDED: interprets a source file line by line. The file is recorded in the
@@ -158,8 +177,13 @@ pub fn restoreInputPlace(self: *State, place: InputPlace) RuntimeError!bool {
         },
         .file => {
             const frame = &self.include_stack[self.include_depth - 1];
-            const files = try self.fileOps();
-            if (place.number < 1 or files.reposition(self.writer.context, frame.fileid, @bitCast(place.mark)) != 0) return false;
+            if (place.number < 1) return false;
+            if (frame.fileid == embedded_source_fileid) {
+                frame.next_offset = @bitCast(place.mark);
+            } else {
+                const files = try self.fileOps();
+                if (files.reposition(self.writer.context, frame.fileid, @bitCast(place.mark)) != 0) return false;
+            }
             frame.line = @intCast(place.number - 1);
             self.source_line = try self.readIncludeLine() orelse return false;
         },
@@ -202,6 +226,20 @@ pub fn includeOpenFile(self: *State, fileid: Cell, file_name: []const u8) Runtim
         if (self.error_location == null) self.error_location = .{ .file_index = file_index, .line = last_line };
         return self.throwCode(closed);
     }
+}
+
+/// Interprets source that is part of the program, as INCLUDED interprets a file: the
+/// graphics library. It is recorded in the source file table under `name`.
+pub fn includeEmbedded(self: *State, name: []const u8, source: []const u8) RuntimeError!void {
+    if (self.include_depth == max_include_depth) return error.IncludeNesting;
+    const file_index = try self.recordSourceFile(name);
+    const previous_source = self.embedded_source;
+    self.embedded_source = source;
+    defer self.embedded_source = previous_source;
+    self.include_stack[self.include_depth] = .{ .fileid = embedded_source_fileid, .file_index = file_index, .line = 0 };
+    self.include_depth += 1;
+    defer self.include_depth -= 1;
+    return self.interpretIncludedFile();
 }
 
 pub fn interpretIncludedFile(self: *State) RuntimeError!void {

@@ -23,6 +23,8 @@ pub const help_enabled = build_options.help;
 pub const tools_enabled = build_options.tools;
 /// False with -Dimage=false, which leaves out SAVE, LOAD, and SAVESYS.
 pub const image_enabled = build_options.image;
+/// False with -Dgraphics=false, which leaves out REQUIRE-GRAPHICS and the GFX- words.
+pub const graphics_enabled = build_options.graphics;
 
 /// The built-in words of the floating-point word set: those of words_float.zig and the
 /// float fields, sizes, and defining words of the other files.
@@ -51,13 +53,14 @@ const file_builtins = builtinSet(&.{ &@import("words_files.zig").words, &.{ .str
 const help_builtins = builtinSet(&.{&.{ .help, .license }});
 const tool_builtins = builtinSet(&.{&.{ .see, .locate, .where }});
 const image_builtins = builtinSet(&.{&.{ .load, .save, .savesys }});
+const graphics_builtins = builtinSet(&.{&@import("words_graphics.zig").words});
 
 const excluded_builtins = blk: {
     var table: [builtin_count]bool = undefined;
     for (&table, 0..) |*excluded, index| {
         excluded.* = (!float_enabled and float_builtins[index]) or (!files_enabled and file_builtins[index]) or
             (!help_enabled and help_builtins[index]) or (!tools_enabled and tool_builtins[index]) or
-            (!image_enabled and image_builtins[index]);
+            (!image_enabled and image_builtins[index]) or (!graphics_enabled and graphics_builtins[index]);
     }
     break :blk table;
 };
@@ -559,6 +562,17 @@ pub const Builtin = enum {
     two_literal,
     help,
     license,
+    // The GFX- words: REQUIRE-GRAPHICS puts them in the dictionary after the words that
+    // are there, so they are not among the built-in words every dictionary starts with.
+    gfx_init,
+    gfx_width,
+    gfx_height,
+    gfx_pset,
+    gfx_pget,
+    gfx_hline,
+    gfx_cls,
+    gfx_save_ppm,
+    gfx_save_bmp,
 };
 
 pub const HeapResult = union(enum) { address: Cell, no_memory, bad_pointer };
@@ -576,7 +590,9 @@ pub const InterpretLoop = struct { kind: enum { counted, countdown, begin }, ind
 /// A place in a file where a word was found by name, for WHERE. The column counts from 1.
 pub const WordUse = struct { word: u16, file_index: u8, column: u16, line: u32 };
 
-pub const IncludeFrame = struct { fileid: Cell, file_index: u8, line: u32, line_start: UCell = 0 };
+/// `next_offset` is where the next line starts in an embedded source (the graphics
+/// library), which has no file for the host to read.
+pub const IncludeFrame = struct { fileid: Cell, file_index: u8, line: u32, line_start: UCell = 0, next_offset: UCell = 0 };
 
 /// Where an error happened inside an included file, kept for `report`.
 pub const ErrorLocation = struct { file_index: u8, line: u32 };
@@ -597,6 +613,7 @@ pub const error_codes = [_]struct { RuntimeError, Cell }{
     .{ error.FileUnavailable, -263 },       .{ error.InvalidImage, -264 },          .{ error.HostFailed, -265 },
     .{ error.CommentUnclosed, -266 },       .{ error.IncludeNesting, -267 },        .{ error.TooManySourceFiles, -268 },
     .{ error.SearchOrderOverflow, -49 },     .{ error.SearchOrderUnderflow, -50 },   .{ error.InvalidWordlist, -269 },
+    .{ error.GraphicsUnavailable, -270 },   .{ error.NoCanvas, -271 },
 };
 
 pub const throw_code_undefined_word: Cell = -13;
@@ -742,6 +759,10 @@ pub const RuntimeError = error{
     SearchOrderOverflow,
     SearchOrderUnderflow,
     InvalidWordlist,
+    /// REQUIRE-GRAPHICS in a build without graphics (-Dgraphics=false).
+    GraphicsUnavailable,
+    /// A GFX- word that needs an image before GFX-INIT has made one.
+    NoCanvas,
 };
 
 pub fn floatBits(value: Float) Cell {

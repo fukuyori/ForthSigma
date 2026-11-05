@@ -86,9 +86,10 @@ Forthソースファイルは標準入力から読み込めます。例:
 | `-Dhelp=false` | `HELP`、`LICENSE` とその文章（起動時の表示も `help` を案内しなくなります） | 682,496バイト |
 | `-Dtools=false` | `SEE`、`LOCATE`、`WHERE` | 717,824バイト |
 | `-Dimage=false` | `SAVE`、`LOAD`、`SAVESYS` | 748,544バイト |
+| `-Dgraphics=false` | `REQUIRE-GRAPHICS` とグラフィックスの `GFX-` の語 | 784,896バイト（\*） |
 | 5つすべて | 上のすべて | 270,336バイト |
 
-大きさは、0.5.0をリリースと同じ `-Doptimize=fast` でWindows x86_64向けにビルドしたものです。オプションは組み合わせられます（例: `zig build -Doptimize=fast -Dfloat=false -Dhelp=false`）。
+大きさは、0.5.0をリリースと同じ `-Doptimize=fast` でWindows x86_64向けにビルドしたものです。（\*）グラフィックスの語は0.5.2の後に加えました。同じ方法でビルドした開発中の版は、すべて含むと795,136バイト、グラフィックスの語を除くと784,896バイト、6つすべてを除くと266,752バイトです。オプションは組み合わせられます（例: `zig build -Doptimize=fast -Dfloat=false -Dhelp=false`）。
 
 除いたグループの語は辞書になく、`HELP` の説明もありません。グループはそれぞれ独立しているので、ファイルの語を除いても、`SAVE`・`LOAD`・`SAVESYS` はイメージのファイルを書き読みし、`LOCATE` はソースファイルを読みます（それぞれのグループも除いた場合を除きます）。組み込み語の実行トークンはどの版でも同じなので、ある版で保存したイメージは、グループの違う版でも読み込めます。その版で除いた語を実行すると `INVALID EXECUTION TOKEN` のエラーになり、`SEE` はその語を名前で表示します。グループを除いた以前の版（`-Dfloat=false` など）で保存したイメージは、組み込み語の実行トークンが違うので `INVALID IMAGE` になります。
 

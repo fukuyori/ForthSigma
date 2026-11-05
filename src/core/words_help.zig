@@ -5,6 +5,7 @@ const defs = @import("defs.zig");
 const forth = @import("../forth.zig");
 const help_text = @import("help_text.zig");
 const text_input = @import("text_input.zig");
+const words_graphics = @import("words_graphics.zig");
 const Builtin = defs.Builtin;
 const RuntimeError = defs.RuntimeError;
 const State = forth.State;
@@ -117,6 +118,10 @@ pub const help_entries = blk: {
 /// floating-point words.
 fn isExcludedName(comptime name: []const u8) bool {
     if (!defs.float_enabled and (std.mem.eql(u8, name, "F:") or std.mem.eql(u8, name, "F^"))) return true;
+    if (std.mem.eql(u8, name, "REQUIRE-GRAPHICS")) return !defs.graphics_enabled;
+    for (words_graphics.definitions) |definition| {
+        if (std.mem.eql(u8, definition[0], name)) return defs.isExcludedBuiltin(definition[1]);
+    }
     for (State.builtin_definitions) |definition| {
         if (std.mem.eql(u8, definition[0], name)) return defs.isExcludedBuiltin(definition[1]);
     }

@@ -9,7 +9,7 @@ pub fn skipWithoutFloat() error{SkipZigTest}!void {
 
 /// Skips a test that uses a word group the build leaves out (-Dfiles=false, -Dhelp=false,
 /// -Dtools=false, or -Dimage=false); several groups may be named.
-pub fn skipWithout(comptime groups: []const enum { files, help, tools, image }) error{SkipZigTest}!void {
+pub fn skipWithout(comptime groups: []const enum { files, help, tools, image, graphics }) error{SkipZigTest}!void {
     const options = @import("build_options");
     inline for (groups) |group| {
         if (!@field(options, @tagName(group))) return error.SkipZigTest;
@@ -51,6 +51,24 @@ pub const Output = struct {
     files: [5]FakeFile = .{ .{}, .{}, .{}, .{}, .{} },
     stdout_bytes: [64]u8 = undefined,
     stdout_len: usize = 0,
+    /// Two graphics images in turn, so that a new one is given while the old one stays;
+    /// an image of more than `framebuffer_capacity` pixels fails, as does any image when
+    /// `framebuffer_fails` is set.
+    framebuffers: [2][framebuffer_capacity]u32 = undefined,
+    framebuffer_index: usize = 0,
+    framebuffer_fails: bool = false,
+
+    pub const framebuffer_capacity = 256;
+
+    pub fn framebuffer(context: ?*anyopaque, pixels: usize) ?[]u32 {
+        const output: *Output = @ptrCast(@alignCast(context.?));
+        if (output.framebuffer_fails or pixels > framebuffer_capacity) return null;
+        output.framebuffer_index = 1 - output.framebuffer_index;
+        // Old contents, so that a test sees GFX-INIT clear the image.
+        const buffer = output.framebuffers[output.framebuffer_index][0..pixels];
+        @memset(buffer, 0x12345678);
+        return buffer;
+    }
 
     pub fn write(context: ?*anyopaque, bytes: []const u8) void {
         const output: *Output = @ptrCast(@alignCast(context.?));
@@ -60,7 +78,7 @@ pub const Output = struct {
     }
 
     pub fn writer(self: *Output) forth.Writer {
-        return .{ .context = @ptrCast(self), .write_fn = write, .read_fn = read, .key_fn = key, .key_ready_fn = keyReady, .sleep_fn = sleep, .utime_fn = utime, .local_time_fn = localTime, .getenv_fn = getenv, .system_fn = system, .file_ops = &fake_file_ops };
+        return .{ .context = @ptrCast(self), .write_fn = write, .read_fn = read, .key_fn = key, .key_ready_fn = keyReady, .sleep_fn = sleep, .utime_fn = utime, .local_time_fn = localTime, .getenv_fn = getenv, .system_fn = system, .file_ops = &fake_file_ops, .framebuffer_fn = framebuffer };
     }
 
     pub fn sleep(context: ?*anyopaque, milliseconds: forth.Cell) forth.RuntimeError!void {

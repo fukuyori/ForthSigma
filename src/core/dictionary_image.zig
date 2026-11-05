@@ -6,6 +6,7 @@ const native_endian = @import("builtin").cpu.arch.endian();
 const defs = @import("defs.zig");
 const forth = @import("../forth.zig");
 const memory_map = @import("memory_map.zig");
+const words_graphics = @import("words_graphics.zig");
 const Cell = memory_map.Cell;
 const Op = defs.Op;
 const RuntimeError = defs.RuntimeError;
@@ -20,6 +21,9 @@ const data_start = memory_map.data_start;
 const heap_base = memory_map.heap_base;
 const heap_end = memory_map.heap_end;
 const heap_top_address = memory_map.heap_top_address;
+const graphics_image_address = memory_map.graphics_image_address;
+const graphics_image_magic = memory_map.graphics_image_magic;
+const graphics_vocabulary_address = memory_map.graphics_vocabulary_address;
 const image_magic = memory_map.image_magic;
 const previous_image_magic = memory_map.previous_image_magic;
 const max_code = memory_map.max_code;
@@ -137,7 +141,9 @@ pub fn encodeImage(self: *State, output: []u8) RuntimeError!usize {
     const name_bytes = self.names[0..self.names_used];
     const required = header_size + word_bytes.len + code_bytes.len + name_bytes.len + rangesLength(ranges) + checksum_size;
     if (output.len < required) return error.InvalidImage;
-    @memcpy(output[0..8], image_magic);
+    // A dictionary that has had the graphics words is saved as SIGIMG34, which older
+    // builds reject; one that never had them stays SIGIMG33.
+    @memcpy(output[0..8], if (self.readCellConst(graphics_image_address) != 0) graphics_image_magic else image_magic);
     writeU32(output[8..12], self.word_count);
     writeU32(output[12..16], self.code_count);
     writeU32(output[16..20], self.data_here);
@@ -177,7 +183,7 @@ pub fn encodeImage(self: *State, output: []u8) RuntimeError!usize {
 
 pub fn restoreImage(self: *State, image: []const u8) RuntimeError!void {
     if (image.len < header_size + checksum_size) return error.InvalidImage;
-    if (!std.mem.eql(u8, image[0..8], image_magic) and !std.mem.eql(u8, image[0..8], previous_image_magic)) return error.InvalidImage;
+    if (!std.mem.eql(u8, image[0..8], image_magic) and !std.mem.eql(u8, image[0..8], graphics_image_magic) and !std.mem.eql(u8, image[0..8], previous_image_magic)) return error.InvalidImage;
     const input = image[0 .. image.len - checksum_size];
     if (readU32(image[input.len..]) != std.hash.Crc32.hash(input)) return error.InvalidImage;
     const word_count = readU32(input[8..12]);
@@ -248,6 +254,7 @@ pub fn appendImage(self: *State, source: *const State) RuntimeError!void {
     if (source.builtin_count == 0 or source.builtin_count != self.builtin_count or source.word_count < source.builtin_count) return error.InvalidImage;
     const added_words: usize = source.word_count - source.builtin_count;
     const word_base: usize = self.word_count;
+    const graphics_loaded = words_graphics.graphicsLoaded(self);
     const code_base: usize = self.code_count;
     const code_count: usize = source.code_count;
     if (word_base + added_words > max_words) return error.DictionaryFull;
@@ -369,4 +376,11 @@ pub fn appendImage(self: *State, source: *const State) RuntimeError!void {
     self.code_count = @intCast(code_base + code_count);
     self.data_here += data_len;
     self.last_created_word = null;
+    // The loaded image's graphics words count as loaded here too, unless this dictionary
+    // has its own; either way, images saved from now on are SIGIMG34.
+    if (source.readCellConst(graphics_image_address) != 0) try self.writeCell(graphics_image_address, 1);
+    if (!graphics_loaded and words_graphics.graphicsLoaded(source)) {
+        const vocabulary = source.readCellConst(graphics_vocabulary_address) - source.builtin_count;
+        try self.writeCell(graphics_vocabulary_address, @as(Cell, @intCast(word_base)) + vocabulary);
+    }
 }

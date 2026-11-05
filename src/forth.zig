@@ -24,6 +24,7 @@ const words_compiling = @import("core/words_compiling.zig");
 const words_dictionary = @import("core/words_dictionary.zig");
 const words_files = @import("core/words_files.zig");
 const words_float = @import("core/words_float.zig");
+const words_graphics = @import("core/words_graphics.zig");
 const words_defining = @import("core/words_defining.zig");
 const words_help = @import("core/words_help.zig");
 const words_input = @import("core/words_input.zig");
@@ -191,6 +192,15 @@ pub const State = struct {
     /// Frame bytes used so far by the definition being compiled.
     locals_frame_size: u16 = 0,
     locals_top: Cell = locals_base,
+    /// The graphics image that GFX-INIT got from the host, and its size; empty until then.
+    /// It is not part of the dictionary, so images do not keep it.
+    gfx_pixels: []u32 = &.{},
+    gfx_width: Cell = 0,
+    gfx_height: Cell = 0,
+    /// The Forth source REQUIRE-GRAPHICS interprets; tests put other source here.
+    graphics_library: []const u8 = words_graphics.library,
+    /// The source of the embedded file being included (the graphics library).
+    embedded_source: []const u8 = &.{},
 
     /// Sets up a State where it lies. The State is a few megabytes, so it is built in
     /// place rather than returned by value, which could need copies on the stack.
@@ -715,6 +725,11 @@ pub const State = struct {
         if (asciiEqlIgnoreCase(token, "FORGET")) {
             return self.startInterpretPending(.forget_name);
         }
+        // Not a dictionary word, so that a dictionary without the graphics words keeps
+        // the same built-in words as older builds.
+        if (asciiEqlIgnoreCase(token, "REQUIRE-GRAPHICS")) {
+            return words_graphics.requireGraphics(self);
+        }
         if (found) |id| return self.handleWord(id);
         if (try self.parseNumber(token)) |number| {
             const cells = doubleCells(number.value);
@@ -840,6 +855,7 @@ pub const State = struct {
     pub const restoreLoadedSourceFiles = source_input.restoreLoadedSourceFiles;
     pub const readIncludeLine = source_input.readIncludeLine;
     pub const includeOpenFile = source_input.includeOpenFile;
+    pub const includeEmbedded = source_input.includeEmbedded;
     pub const saveInputPlace = source_input.saveInputPlace;
     pub const restoreInputPlace = source_input.restoreInputPlace;
     pub const includeFile = source_input.includeFile;
@@ -1158,6 +1174,8 @@ pub const State = struct {
     /// Runs a built-in word: each `words_*` file in src/core lists the words it executes,
     /// and every word must be in exactly one list.
     pub fn executeBuiltin(self: *State, builtin: Builtin) RuntimeError!void {
+        // The table of excluded words is computed while this switch is expanded.
+        @setEvalBranchQuota(10_000);
         switch (builtin) {
             // The code of a word group the build leaves out (-Dfloat=false and the like) is
             // not compiled in; such a word can only come from an image saved by a build
@@ -1169,7 +1187,7 @@ pub const State = struct {
         }
     }
 
-    const word_modules = .{ words_stack, words_arithmetic, words_memory, words_output, words_input, words_compiling, words_float, words_pictured, words_dictionary, words_system, words_files, words_strings, words_help, words_defining };
+    const word_modules = .{ words_stack, words_arithmetic, words_memory, words_output, words_input, words_compiling, words_float, words_pictured, words_dictionary, words_system, words_files, words_strings, words_help, words_defining, words_graphics };
 
     /// For each built-in word, the index in `word_modules` of the file that executes it.
     const word_owner = blk: {

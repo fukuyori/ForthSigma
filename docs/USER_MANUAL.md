@@ -15,7 +15,7 @@ zig build
 .\zig-out\bin\sigma.exe
 ```
 
-Building with `zig build -Dfloat=false` gives a smaller version without floating-point numbers (see the chapter [Floating-point numbers](#floating-point-numbers)). In the same way, `-Dfiles=false` leaves out the words that open, read, write, or include files (such as `INCLUDE`, `REQUIRE`, `OPEN-FILE`, `STDIN`, `SLURP-FILE`, and the `$...SLURP` words), `-Dhelp=false` leaves out `HELP` and `LICENSE`, `-Dtools=false` leaves out `SEE`, `LOCATE`, and `WHERE`, and `-Dimage=false` leaves out `SAVE`, `LOAD`, and `SAVESYS`. The words left out are not in the dictionary (their names give the error `name ?`). The groups are independent: without the file words, `SAVE`, `LOAD`, and `SAVESYS` still write and read image files, and `LOCATE` still reads the source file. Every build gives each built-in word the same execution token, so an image saved by one build loads into a build with other groups; running a word that build left out gives the error `INVALID EXECUTION TOKEN`, and `SEE` shows it by its name. An image saved by an earlier build that left a group out (such as `-Dfloat=false`) gives `INVALID IMAGE`, since its built-in words had other execution tokens.
+Building with `zig build -Dfloat=false` gives a smaller version without floating-point numbers (see the chapter [Floating-point numbers](#floating-point-numbers)). In the same way, `-Dfiles=false` leaves out the words that open, read, write, or include files (such as `INCLUDE`, `REQUIRE`, `OPEN-FILE`, `STDIN`, `SLURP-FILE`, and the `$...SLURP` words), `-Dhelp=false` leaves out `HELP` and `LICENSE`, `-Dtools=false` leaves out `SEE`, `LOCATE`, and `WHERE`, `-Dimage=false` leaves out `SAVE`, `LOAD`, and `SAVESYS`, and `-Dgraphics=false` leaves out `REQUIRE-GRAPHICS` and the graphics words (see [Graphics](#graphics)). The words left out are not in the dictionary (their names give the error `name ?`). The groups are independent: without the file words, `SAVE`, `LOAD`, and `SAVESYS` still write and read image files, and `LOCATE` still reads the source file. Every build gives each built-in word the same execution token, so an image saved by one build loads into a build with other groups; running a word that build left out gives the error `INVALID EXECUTION TOKEN`, and `SEE` shows it by its name. An image saved by an earlier build that left a group out (such as `-Dfloat=false`) gives `INVALID IMAGE`, since its built-in words had other execution tokens.
 
 Started without arguments, it prints the following two lines (only the first in a build with `-Dhelp=false`) and shows the interactive prompt. The version number is the value of the `VERSION` file at the root. When it is started with arguments (it runs the argument string once and exits), these lines are not printed.
 
@@ -550,6 +550,38 @@ MARKER SAFE  : TEMP ." Hello" ;  SAFE   \ TEMP is removed
 
 File names are relative paths from the current directory. `REQUIRE` compares names as they are written, so `./a.fs` and `a.fs` are treated as different files. When an error occurs while loading, it is shown with the file name and line number, as in `mylib.fs:3: ...`. A definition started in a file must be finished in the same file. Nesting goes up to 8 levels, and up to 64 files can be recorded.
 
+## Graphics
+
+Sigma draws on one image in memory and saves it as a PPM or BMP file. The graphics words are not in the dictionary at start-up: `REQUIRE-GRAPHICS` adds the `GRAPHICS` vocabulary, with the `GFX-` words and the graphics library written in Forth, the first time it runs; later it does nothing. It does not change the search order, so make the words visible with `ALSO GRAPHICS` (or `GRAPHICS`).
+
+```forth
+REQUIRE-GRAPHICS
+ALSO GRAPHICS
+320 200 GFX-INIT                    \ a black image of 320 by 200 pixels
+$FF0000 GFX-CLS                     \ fill it with red
+10 300 100 $FFFFFF GFX-HLINE        \ a white line on row 100
+160 50 $00FF00 GFX-PSET             \ one green pixel
+S" picture.bmp" GFX-SAVE-BMP .      \ 0 when the file is written
+PREVIOUS
+```
+
+A color is the cell `$RRGGBB` (the bits above the low 24 are ignored), and every pixel is opaque. Coordinates start at 0 0 in the top left corner; drawing outside the image does nothing.
+
+| Word | Stack | Description |
+| --- | --- | --- |
+| `REQUIRE-GRAPHICS` | ( -- ) | Load the graphics words, the first time only. It is a parsing word (like `TO`) and cannot be used inside a definition. |
+| `GFX-INIT` | ( w h -- ) | Make a new black image. Each side is 1 to 8192 pixels and the image at most 64 MiB (4 bytes a pixel, so 4096 by 4096 at most for a square). The previous image stays when the new one cannot be made. |
+| `GFX-WIDTH`, `GFX-HEIGHT` | ( -- n ) | The size of the image, 0 before `GFX-INIT`. |
+| `GFX-PSET` | ( x y rgb -- ) | Set one pixel. |
+| `GFX-PGET` | ( x y -- rgb ) | The color of one pixel, -1 outside the image. |
+| `GFX-HLINE` | ( x1 x2 y rgb -- ) | A horizontal line from x1 to x2, both included. |
+| `GFX-CLS` | ( rgb -- ) | Fill the whole image. |
+| `GFX-SAVE-PPM`, `GFX-SAVE-BMP` | ( c-addr u -- ior ) | Write the image to a new file as a binary PPM (P6) or a 24-bit BMP. ior is 0 or the error of the file operation. They also work in a build with `-Dfiles=false`. |
+
+Errors: a size outside the limits gives `NUMBER ERROR !`; an image the host cannot allocate gives `OUT OF MEMORY !`; using the image before `GFX-INIT` gives `NO GRAPHICS IMAGE !` (THROW -271); and `REQUIRE-GRAPHICS` in a build with `-Dgraphics=false` gives `GRAPHICS UNAVAILABLE !` (THROW -270). If the library fails to load, everything `REQUIRE-GRAPHICS` added is removed again.
+
+The image is not part of the dictionary: `SAVE` and `SAVESYS` keep the graphics words and the words that use them, but not the pixels, so a program makes its image with `GFX-INIT` after it starts. The drawing words written in Forth (lines, rectangles, circles, graphs of functions) and showing the image on the screen come in later stages.
+
 ## Saving the dictionary and stand-alone executables
 
 `SAVE` and `LOAD` of this port handle a dictionary image of the user-defined words. They differ from the edit-buffer operations of the book.
@@ -559,7 +591,7 @@ SAVE words.sigma
 LOAD words.sigma
 ```
 
-`LOAD` adds the saved user-defined words to the end of the current dictionary. For words with the same name, the newly loaded definitions take precedence. Dictionary images saved by earlier versions (`SIGIMG01` to `SIGIMG31`) and damaged dictionary images cannot be loaded (`INVALID IMAGE !`). Images of `SIGIMG32` (0.4.0) are loaded, but 0.4.0 cannot load the images (`SIGIMG33`) this version saves. A dictionary image has a checksum, so accidental damage is found before loading. Load only files made by `SAVE` or `SAVESYS` of Sigma. Execution tokens stored in constants or variables (such as the result of `:NONAME`), and execution tokens or addresses compiled into a definition with `LITERAL` (such as `[ ' X ] LITERAL`), may point to another word or place after `LOAD` into a dictionary that already has user-defined words. Execution tokens compiled with `['] X` are relocated correctly. This problem does not occur in an executable made with `SAVESYS`.
+`LOAD` adds the saved user-defined words to the end of the current dictionary. For words with the same name, the newly loaded definitions take precedence. Dictionary images saved by earlier versions (`SIGIMG01` to `SIGIMG31`) and damaged dictionary images cannot be loaded (`INVALID IMAGE !`). Images of `SIGIMG32` (0.4.0) are loaded, but 0.4.0 cannot load the images (`SIGIMG33`) this version saves. A dictionary that has loaded the graphics words with `REQUIRE-GRAPHICS` is saved as `SIGIMG34`, which versions up to 0.5.2 cannot load; this stays so even after the graphics words are removed with `FORGET` or a `MARKER`. A dictionary that never loaded them is saved as `SIGIMG33`, as before. A dictionary image has a checksum, so accidental damage is found before loading. Load only files made by `SAVE` or `SAVESYS` of Sigma. Execution tokens stored in constants or variables (such as the result of `:NONAME`), and execution tokens or addresses compiled into a definition with `LITERAL` (such as `[ ' X ] LITERAL`), may point to another word or place after `LOAD` into a dictionary that already has user-defined words. Execution tokens compiled with `['] X` are relocated correctly. This problem does not occur in an executable made with `SAVESYS`.
 
 `SAVESYS` makes a stand-alone executable for the running environment that contains the current dictionary, the compiled definitions, and the data.
 
@@ -622,6 +654,7 @@ The following are syntax forms that can be used in Forth input, but they are not
 | Comments | `( ... )`, `\` | A comment within a line, and a comment to the end of the line. |
 | Strings | `"..."`, `."..."` | A compile-time string, and the string output extension of the port. |
 | gforth strings | `S" ..."`, `S\" ..."`, `.\" ..."`, `.( ... )` | See the section "Strings". |
+| Graphics | `REQUIRE-GRAPHICS` | Load the graphics words into the `GRAPHICS` vocabulary. See the section "Graphics". |
 
 ## Features not implemented
 

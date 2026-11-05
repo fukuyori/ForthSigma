@@ -100,6 +100,15 @@ pub const precision_address: Cell = 0x02c0;
 /// >IN, the offset of the next character in the current input source.
 pub const in_address: Cell = 0x02c8;
 
+/// The word number of the GRAPHICS vocabulary that REQUIRE-GRAPHICS made, or 0. The
+/// GFX- words follow it; REQUIRE-GRAPHICS loads again when FORGET or a MARKER removed it.
+pub const graphics_vocabulary_address: Cell = 0x02d0;
+
+/// Non-zero once REQUIRE-GRAPHICS has loaded the graphics words: images are then saved
+/// as `graphics_image_magic`, even after the words are forgotten. Both cells are 0 in an
+/// image of an older build, which never wrote them.
+pub const graphics_image_address: Cell = 0x02d8;
+
 /// Words that are also in the Root word list, so they stay usable after ONLY.
 pub const root_word_names = [_][]const u8{ "FORTH", "FORTH-WORDLIST", "ONLY", "ALSO", "PREVIOUS", "ORDER", "DEFINITIONS", "GET-ORDER", "SET-ORDER", "WORDS" };
 
@@ -183,6 +192,9 @@ pub const max_dot_s_items = 9;
 pub const fs_precision = 14;
 
 pub const image_magic = "SIGIMG33";
+/// The same layout as `image_magic`, for an image that has had the graphics words; builds
+/// that only know SIGIMG33 reject it.
+pub const graphics_image_magic = "SIGIMG34";
 /// The format before call_builtin. Its layout is still accepted; after restoring
 /// words, calls are specialized for execution. Older builds reject newer images.
 pub const previous_image_magic = "SIGIMG32";
@@ -195,6 +207,10 @@ pub const stdout_fileid: Cell = 2;
 pub const stderr_fileid: Cell = 3;
 
 pub const first_file_id: Cell = 4;
+
+/// The file id of an embedded source, which the core reads itself (the graphics library;
+/// SOURCE-ID gives it while the library loads).
+pub const embedded_source_fileid: Cell = -2;
 
 /// File access methods, with gforth's values for R/O, R/W and W/O.
 pub const fam_read_only: Cell = 0;

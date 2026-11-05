@@ -3,6 +3,7 @@
 const std = @import("std");
 const forth = @import("../forth.zig");
 const help_text = @import("../core/help_text.zig");
+const words_graphics = @import("../core/words_graphics.zig");
 const words_help = @import("../core/words_help.zig");
 const support = @import("support.zig");
 const Output = support.Output;
@@ -24,8 +25,18 @@ test "HELP has a description for every built-in word, and only for words that ex
             return error.TestExpectedEqual;
         }
     }
+    // The GFX- words are in the dictionary once REQUIRE-GRAPHICS has loaded them.
+    if (@import("build_options").graphics) {
+        try machine.interpretLine("REQUIRE-GRAPHICS ALSO GRAPHICS");
+        for (words_graphics.definitions) |definition| {
+            if (words_help.entry(definition[0]) == null) {
+                std.debug.print("no help for {s}\n", .{definition[0]});
+                return error.TestExpectedEqual;
+            }
+        }
+    }
     // The parser handles these without dictionary entries.
-    const parser_words = [_][]const u8{ "(", "\\", ".(", "[", "]", "[']", "CHAR", "[CHAR]", "POSTPONE", "TO", "IS", "+TO", "ACTION-OF", ":NONAME", "{", "{:", "LOCALS|", "S\"", "S\\\"", ".\"", ".\\\"", "\"", "C\"", "ABORT\"", "FORGET" };
+    const parser_words = [_][]const u8{ "(", "\\", ".(", "[", "]", "[']", "CHAR", "[CHAR]", "POSTPONE", "TO", "IS", "+TO", "ACTION-OF", ":NONAME", "{", "{:", "LOCALS|", "S\"", "S\\\"", ".\"", ".\\\"", "\"", "C\"", "ABORT\"", "FORGET", "REQUIRE-GRAPHICS" };
     for (words_help.help_entries, 0..) |entry, index| {
         const known = machine.lookup(entry.name) != null or for (parser_words) |parser_word| {
             if (std.mem.eql(u8, parser_word, entry.name)) break true;

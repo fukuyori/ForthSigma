@@ -60,6 +60,10 @@ pub const Writer = struct {
     /// Runs a shell command and returns the status `system` gave; a non-zero status is not an error.
     system_fn: ?*const fn (?*anyopaque, []const u8) RuntimeError!Cell = null,
     file_ops: ?*const FileOps = null,
+    /// Gives a graphics image of that many 32-bit pixels, outside logical memory. On
+    /// success the host releases the buffer it gave before and returns the new one; on
+    /// failure it returns null and keeps the buffer it gave before.
+    framebuffer_fn: ?*const fn (?*anyopaque, usize) ?[]u32 = null,
 
     pub fn write(self: Writer, bytes: []const u8) void {
         self.write_fn(self.context, bytes);

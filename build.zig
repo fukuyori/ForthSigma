@@ -13,12 +13,14 @@ pub fn build(b: *std.Build) void {
     const help = b.option(bool, "help", "Include HELP, LICENSE, and their texts (default: on)") orelse true;
     const tools = b.option(bool, "tools", "Include SEE, LOCATE, and WHERE (default: on)") orelse true;
     const image = b.option(bool, "image", "Include SAVE, LOAD, and SAVESYS (default: on)") orelse true;
+    const graphics = b.option(bool, "graphics", "Include REQUIRE-GRAPHICS and the GFX- words (default: on)") orelse true;
     const options = b.addOptions();
     options.addOption(bool, "float", float);
     options.addOption(bool, "files", files);
     options.addOption(bool, "help", help);
     options.addOption(bool, "tools", tools);
     options.addOption(bool, "image", image);
+    options.addOption(bool, "graphics", graphics);
 
     const exe = b.addExecutable(.{
         .name = "sigma",

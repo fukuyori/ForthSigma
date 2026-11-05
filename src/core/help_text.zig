@@ -589,4 +589,15 @@ pub const entries = [_]Entry{
     .{ .name = ".\"", .stack = "( \"text\" -- )", .text = "Print the text up to the next \"." },
     .{ .name = ".\\\"", .stack = "( \"text\" -- )", .text = "Print the text up to the next \", with escapes." },
     .{ .name = "\"", .stack = "( \"text\" -- addr u )", .text = "In a definition, the string up to the next \" (FORTH/Sigma)." },
+    // Graphics (FORTH/Sigma): the GFX- words are in the GRAPHICS vocabulary.
+    .{ .name = "REQUIRE-GRAPHICS", .stack = "( -- )", .text = "Load the graphics words into the GRAPHICS vocabulary, the first time only (FORTH/Sigma)." },
+    .{ .name = "GFX-INIT", .stack = "( w h -- )", .text = "Make a new black image of w by h pixels, each side 1 to 8192, at most 64 MiB (FORTH/Sigma)." },
+    .{ .name = "GFX-WIDTH", .stack = "( -- w )", .text = "The width of the image, 0 before GFX-INIT (FORTH/Sigma)." },
+    .{ .name = "GFX-HEIGHT", .stack = "( -- h )", .text = "The height of the image, 0 before GFX-INIT (FORTH/Sigma)." },
+    .{ .name = "GFX-PSET", .stack = "( x y rgb -- )", .text = "Set the pixel at x y to the color $RRGGBB; nothing happens outside the image (FORTH/Sigma)." },
+    .{ .name = "GFX-PGET", .stack = "( x y -- rgb )", .text = "The color $RRGGBB of the pixel at x y, or -1 outside the image (FORTH/Sigma)." },
+    .{ .name = "GFX-HLINE", .stack = "( x1 x2 y rgb -- )", .text = "Draw a horizontal line from x1 to x2 on row y, cut at the image's edges (FORTH/Sigma)." },
+    .{ .name = "GFX-CLS", .stack = "( rgb -- )", .text = "Fill the whole image with the color $RRGGBB (FORTH/Sigma)." },
+    .{ .name = "GFX-SAVE-PPM", .stack = "( c-addr u -- ior )", .text = "Write the image to the named file as a binary PPM (P6) (FORTH/Sigma)." },
+    .{ .name = "GFX-SAVE-BMP", .stack = "( c-addr u -- ior )", .text = "Write the image to the named file as a 24-bit BMP (FORTH/Sigma)." },
 };

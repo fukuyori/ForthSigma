@@ -86,9 +86,10 @@ Build options leave out groups of words, for a smaller program or for a host tha
 | `-Dhelp=false` | `HELP`, `LICENSE`, and their texts (the banner no longer mentions `help`) | 682,496 bytes |
 | `-Dtools=false` | `SEE`, `LOCATE`, and `WHERE` | 717,824 bytes |
 | `-Dimage=false` | `SAVE`, `LOAD`, and `SAVESYS` | 748,544 bytes |
+| `-Dgraphics=false` | `REQUIRE-GRAPHICS` and the `GFX-` graphics words | 784,896 bytes (\*) |
 | All five | All of the above | 270,336 bytes |
 
-The sizes are those of 0.5.0 built with `-Doptimize=fast`, the same as the release, on Windows x86_64. The options can be combined, for example `zig build -Doptimize=fast -Dfloat=false -Dhelp=false`.
+The sizes are those of 0.5.0 built with `-Doptimize=fast`, the same as the release, on Windows x86_64. (\*) The graphics words came after 0.5.2; built the same way, the development version is 795,136 bytes with every group and 784,896 bytes without the graphics words, and 266,752 bytes without all six groups. The options can be combined, for example `zig build -Doptimize=fast -Dfloat=false -Dhelp=false`.
 
 The words of a group left out are not in the dictionary, and `HELP` has no entries for them. The groups are independent: without the file words, `SAVE`, `LOAD`, and `SAVESYS` still write and read image files, and `LOCATE` still reads the source file, unless their own groups are left out too. Every build gives each built-in word the same execution token, so an image saved by one build loads into a build with other groups; running a word that build left out gives the error `INVALID EXECUTION TOKEN`, and `SEE` shows it by its name. An image saved by an earlier build that left a group out (such as `-Dfloat=false`) gives `INVALID IMAGE`, since its built-in words had other execution tokens.
 
