@@ -115,6 +115,8 @@ pub const Output = struct {
     process_written_len: usize = 0,
     process_replies: []const u8 = "",
     process_reply_index: usize = 0,
+    /// How many bytes of the answers have come so far; the rest has not.
+    process_reply_limit: usize = std.math.maxInt(usize),
 
     pub const framebuffer_capacity = 1600;
 
@@ -161,7 +163,7 @@ pub const Output = struct {
     pub fn processRead(context: ?*anyopaque, buffer: []u8, wait: bool) forth.RuntimeError!usize {
         const output: *Output = @ptrCast(@alignCast(context.?));
         if (!output.process_running) return error.HostFailed;
-        const rest = output.process_replies[output.process_reply_index..];
+        const rest = output.process_replies[output.process_reply_index..@min(output.process_replies.len, @max(output.process_reply_index, output.process_reply_limit))];
         if (rest.len == 0) return if (wait) error.HostFailed else 0;
         // A few bytes at a time, as a pipe may give them.
         const count = @min(rest.len, buffer.len, 7);

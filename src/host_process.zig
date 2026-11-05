@@ -54,13 +54,16 @@ const windows = struct {
     extern "kernel32" fn GetCurrentProcessId() callconv(.winapi) u32;
     extern "kernel32" fn DeleteFileW([*:0]const u16) callconv(.winapi) i32;
     extern "kernel32" fn GetEnvironmentVariableW([*:0]const u16, ?[*]u16, u32) callconv(.winapi) u32;
+    extern "kernel32" fn GetLastError() callconv(.winapi) u32;
+    extern "kernel32" fn GetTickCount64() callconv(.winapi) u64;
 
     const invalid_handle: usize = std.math.maxInt(usize);
     const handle_flag_inherit: u32 = 1;
     const use_std_handles: u32 = 0x100;
     const generic_read: u32 = 0x8000_0000;
     const generic_write: u32 = 0x4000_0000;
-    const create_always: u32 = 2;
+    const create_new: u32 = 1;
+    const error_file_exists: u32 = 80;
     const open_existing: u32 = 3;
     const no_window: u32 = 0x0800_0000;
 
@@ -70,20 +73,37 @@ const windows = struct {
     /// The temporary file of the script, removed when the program stops; empty before.
     var script_name: [1024:0]u16 = @splat(0);
 
+    /// Writes the script to a new file of the user's temporary directory, never over a
+    /// file that is there already.
     fn writeScript(text: []const u8) bool {
         var directory: [512]u16 = undefined;
         const length = GetTempPathW(directory.len, &directory);
         if (length == 0 or length >= directory.len) return false;
-        var name_buffer: [64]u8 = undefined;
-        const name = std.fmt.bufPrint(&name_buffer, "sigma-tk-{d}.tcl", .{GetCurrentProcessId()}) catch return false;
-        @memcpy(script_name[0..length], directory[0..length]);
-        for (name, 0..) |byte, index| script_name[length + index] = byte;
-        script_name[length + name.len] = 0;
-        const file = CreateFileW(&script_name, generic_write, 0, null, create_always, 0, null);
-        if (@intFromPtr(file) == invalid_handle) return false;
-        defer _ = CloseHandle(file);
-        var written: u32 = 0;
-        return WriteFile(file, text.ptr, @intCast(text.len), &written, null) != 0 and written == text.len;
+        for (0..16) |attempt| {
+            var name_buffer: [64]u8 = undefined;
+            const tag = GetTickCount64() *% 0x9E37_79B9_7F4A_7C15 +% attempt;
+            const name = std.fmt.bufPrint(&name_buffer, "sigma-tk-{d}-{x}.tcl", .{ GetCurrentProcessId(), tag }) catch return false;
+            @memcpy(script_name[0..length], directory[0..length]);
+            for (name, 0..) |byte, index| script_name[length + index] = byte;
+            script_name[length + name.len] = 0;
+            const file = CreateFileW(&script_name, generic_write, 0, null, create_new, 0, null);
+            if (@intFromPtr(file) == invalid_handle) {
+                script_name[0] = 0;
+                if (GetLastError() == error_file_exists) continue;
+                return false;
+            }
+            var written: u32 = 0;
+            const ok = WriteFile(file, text.ptr, @intCast(text.len), &written, null) != 0 and written == text.len;
+            _ = CloseHandle(file);
+            if (!ok) removeScript();
+            return ok;
+        }
+        return false;
+    }
+
+    fn removeScript() void {
+        if (script_name[0] != 0) _ = DeleteFileW(&script_name);
+        script_name[0] = 0;
     }
 
     /// The program: TCL-PROGRAM's, SIGMA_WISH, or wish, in UTF-16.
@@ -103,6 +123,7 @@ const windows = struct {
     fn startProgram(_: ?*anyopaque, program: []const u8, script: []const u8) forth.RuntimeError!void {
         stopProgram(null);
         if (!writeScript(script)) return error.HostFailed;
+        errdefer removeScript();
         var name_buffer: [512]u16 = undefined;
         const name = programName(program, &name_buffer) orelse return error.HostFailed;
         // "program" "script"
@@ -129,9 +150,12 @@ const windows = struct {
             _ = CloseHandle(input_writer.?);
             return error.HostFailed;
         }
-        // Sigma's own ends are not inherited.
-        _ = SetHandleInformation(input_writer.?, handle_flag_inherit, 0);
-        _ = SetHandleInformation(output_reader.?, handle_flag_inherit, 0);
+        // Sigma's own ends are not inherited: else the program would hold its own input
+        // open, and never see it end.
+        if (SetHandleInformation(input_writer.?, handle_flag_inherit, 0) == 0 or SetHandleInformation(output_reader.?, handle_flag_inherit, 0) == 0) {
+            for ([_]?Handle{ child_input, input_writer, output_reader, child_output }) |handle| _ = CloseHandle(handle.?);
+            return error.HostFailed;
+        }
         // What the program writes to standard error goes nowhere, not into the messages.
         const nul = CreateFileW(std.unicode.utf8ToUtf16LeStringLiteral("NUL"), generic_write, 3, &inherit, open_existing, 0, null);
         var startup = StartupInfo{ .flags = use_std_handles, .std_input = child_input, .std_output = child_output, .std_error = if (@intFromPtr(nul) == invalid_handle) null else nul };
@@ -143,8 +167,6 @@ const windows = struct {
         if (created == 0) {
             _ = CloseHandle(input_writer.?);
             _ = CloseHandle(output_reader.?);
-            _ = DeleteFileW(&script_name);
-            script_name[0] = 0;
             return error.HostFailed;
         }
         _ = CloseHandle(information.thread.?);
@@ -184,14 +206,16 @@ const windows = struct {
         if (to_program) |handle| _ = CloseHandle(handle);
         to_program = null;
         if (process) |handle| {
-            if (WaitForSingleObject(handle, 2000) != 0) _ = TerminateProcess(handle, 1);
+            if (WaitForSingleObject(handle, 2000) != 0) {
+                _ = TerminateProcess(handle, 1);
+                _ = WaitForSingleObject(handle, 1000);
+            }
             _ = CloseHandle(handle);
         }
         process = null;
         if (from_program) |handle| _ = CloseHandle(handle);
         from_program = null;
-        if (script_name[0] != 0) _ = DeleteFileW(&script_name);
-        script_name[0] = 0;
+        removeScript();
     }
 };
 
@@ -200,6 +224,7 @@ const posix = struct {
     extern "c" fn execvp([*:0]const u8, [*:null]const ?[*:0]const u8) c_int;
     extern "c" fn _exit(c_int) noreturn;
     extern "c" fn dup2(c_int, c_int) c_int;
+    extern "c" fn fcntl(c_int, c_int, ...) c_int;
     extern "c" fn pipe(*[2]c_int) c_int;
     extern "c" fn waitpid(c_int, ?*c_int, c_int) c_int;
     extern "c" fn kill(c_int, c_int) c_int;
@@ -207,14 +232,13 @@ const posix = struct {
     extern "c" fn getpid() c_int;
     extern "c" fn signal(c_int, usize) usize;
     extern "c" fn getenv([*:0]const u8) ?[*:0]const u8;
-    extern "c" fn fopen([*:0]const u8, [*:0]const u8) ?*anyopaque;
-    extern "c" fn fwrite([*]const u8, usize, usize, ?*anyopaque) usize;
-    extern "c" fn fclose(?*anyopaque) c_int;
 
     const sigpipe = 13;
+    const sigkill = 9;
     const sigterm = 15;
     const ignore: usize = 1; // SIG_IGN
     const no_hang = 1; // WNOHANG
+    const duplicate_from = 0; // F_DUPFD
 
     var child: c_int = 0;
     var to_program: c_int = -1;
@@ -222,18 +246,57 @@ const posix = struct {
     /// The temporary file of the script, removed when the program stops; empty before.
     var script_name: [1024:0]u8 = @splat(0);
 
+    /// Writes the script to a new file of the temporary directory, readable only by the
+    /// user: it is created only when no file or link of the name is there, under a name
+    /// that changes with each try.
     fn writeScript(text: []const u8) bool {
         const directory: []const u8 = if (getenv("TMPDIR")) |value| std.mem.span(value) else "/tmp";
-        const name = std.fmt.bufPrint(script_name[0 .. script_name.len - 1], "{s}/sigma-tk-{d}.tcl", .{ std.mem.trimEnd(u8, directory, "/"), getpid() }) catch return false;
-        script_name[name.len] = 0;
-        const file = fopen(&script_name, "wb") orelse return false;
-        const written = fwrite(text.ptr, 1, text.len, file);
-        return fclose(file) == 0 and written == text.len;
+        var time: std.c.timespec = undefined;
+        _ = std.c.clock_gettime(std.c.CLOCK.REALTIME, &time);
+        for (0..16) |attempt| {
+            const tag = (@as(u64, @bitCast(@as(i64, time.nsec))) *% 0x9E37_79B9_7F4A_7C15) +% attempt;
+            const name = std.fmt.bufPrint(script_name[0 .. script_name.len - 1], "{s}/sigma-tk-{d}-{x}.tcl", .{ std.mem.trimEnd(u8, directory, "/"), getpid(), tag }) catch return false;
+            script_name[name.len] = 0;
+            const file = std.c.open(&script_name, .{ .ACCMODE = .WRONLY, .CREAT = true, .EXCL = true, .NOFOLLOW = true, .CLOEXEC = true }, @as(std.c.mode_t, 0o600));
+            if (file < 0) {
+                script_name[0] = 0;
+                if (std.c._errno().* == @intFromEnum(std.c.E.EXIST)) continue;
+                return false;
+            }
+            var rest = text;
+            var ok = true;
+            while (rest.len != 0) {
+                const written = std.c.write(file, rest.ptr, rest.len);
+                if (written < 0 and std.c._errno().* == @intFromEnum(std.c.E.INTR)) continue;
+                if (written <= 0) {
+                    ok = false;
+                    break;
+                }
+                rest = rest[@intCast(written)..];
+            }
+            if (std.c.close(file) != 0) ok = false;
+            if (!ok) removeScript();
+            return ok;
+        }
+        return false;
+    }
+
+    fn removeScript() void {
+        if (script_name[0] != 0) _ = unlink(&script_name);
+        script_name[0] = 0;
+    }
+
+    /// A descriptor numbered 3 or more for the same file, so that putting the pipes at
+    /// 0 and 1 cannot close one of them (when Sigma started with 0 or 1 closed, a pipe
+    /// may have one of those numbers).
+    fn aboveStandard(descriptor: c_int) c_int {
+        return if (descriptor > 2) descriptor else fcntl(descriptor, duplicate_from, @as(c_int, 3));
     }
 
     fn startProgram(_: ?*anyopaque, program: []const u8, script: []const u8) forth.RuntimeError!void {
         stopProgram(null);
         if (!writeScript(script)) return error.HostFailed;
+        errdefer removeScript();
         var name_buffer: [512:0]u8 = undefined;
         const name: [*:0]const u8 = if (program.len != 0) blk: {
             if (program.len >= name_buffer.len) return error.HostFailed;
@@ -249,17 +312,20 @@ const posix = struct {
             _ = std.c.close(input[1]);
             return error.HostFailed;
         }
-        // A write after the program ended gives an error, not the end of Sigma.
-        _ = signal(sigpipe, ignore);
         const pid = fork();
         if (pid < 0) {
             for ([_]c_int{ input[0], input[1], output[0], output[1] }) |descriptor| _ = std.c.close(descriptor);
             return error.HostFailed;
         }
         if (pid == 0) {
-            _ = dup2(input[0], 0);
-            _ = dup2(output[1], 1);
-            for ([_]c_int{ input[0], input[1], output[0], output[1] }) |descriptor| _ = std.c.close(descriptor);
+            const reading = aboveStandard(input[0]);
+            const writing = aboveStandard(output[1]);
+            if (reading < 0 or writing < 0 or dup2(reading, 0) < 0 or dup2(writing, 1) < 0) _exit(126);
+            for ([_]c_int{ input[0], input[1], output[0], output[1], reading, writing }) |descriptor| {
+                // 0 and 1 are the pipes now; 2 is closed only if it was a pipe's end.
+                if (descriptor > 2) _ = std.c.close(descriptor);
+                if (descriptor == 2) _ = std.c.close(2);
+            }
             const arguments = [_:null]?[*:0]const u8{ name, &script_name };
             _ = execvp(name, &arguments);
             _exit(127);
@@ -273,6 +339,10 @@ const posix = struct {
 
     fn writeProgram(_: ?*anyopaque, bytes: []const u8) forth.RuntimeError!void {
         if (to_program < 0) return error.HostFailed;
+        // A write after the program ended gives an error, not the end of Sigma; only
+        // while writing here, so that the commands SYSTEM runs keep SIGPIPE.
+        const previous = signal(sigpipe, ignore);
+        defer _ = signal(sigpipe, previous);
         var rest = bytes;
         while (rest.len != 0) {
             const written = std.c.write(to_program, rest.ptr, rest.len);
@@ -300,26 +370,35 @@ const posix = struct {
         }
     }
 
+    /// Waits up to `steps` times 10 ms for the program to end; whether it did.
+    fn ended(steps: u32) bool {
+        for (0..steps) |_| {
+            const result = waitpid(child, null, no_hang);
+            if (result == child) return true;
+            if (result < 0 and std.c._errno().* != @intFromEnum(std.c.E.INTR)) return true;
+            var pause: std.c.timespec = .{ .sec = 0, .nsec = 10 * std.time.ns_per_ms };
+            _ = std.c.nanosleep(&pause, null);
+        }
+        return false;
+    }
+
     fn stopProgram(_: ?*anyopaque) void {
         if (to_program >= 0) _ = std.c.close(to_program);
         to_program = -1;
         if (child > 0) {
-            // The program ends when its input closes; it is ended if it goes on for 2 s.
-            var waited: u32 = 0;
-            while (waitpid(child, null, no_hang) == 0) : (waited += 1) {
-                if (waited == 200) {
-                    _ = kill(child, sigterm);
-                    _ = waitpid(child, null, 0);
-                    break;
+            // The program ends when its input closes; after 2 s it is asked to end, and
+            // after 1 s more it is ended.
+            if (!ended(200)) {
+                _ = kill(child, sigterm);
+                if (!ended(100)) {
+                    _ = kill(child, sigkill);
+                    while (waitpid(child, null, 0) < 0 and std.c._errno().* == @intFromEnum(std.c.E.INTR)) {}
                 }
-                var pause: std.c.timespec = .{ .sec = 0, .nsec = 10 * std.time.ns_per_ms };
-                _ = std.c.nanosleep(&pause, null);
             }
         }
         child = 0;
         if (from_program >= 0) _ = std.c.close(from_program);
         from_program = -1;
-        if (script_name[0] != 0) _ = unlink(&script_name);
-        script_name[0] = 0;
+        removeScript();
     }
 };

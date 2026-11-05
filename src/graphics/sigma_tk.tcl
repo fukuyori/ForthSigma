@@ -9,7 +9,9 @@
 
 wm withdraw .
 fconfigure stdin -translation binary -blocking 0
-fconfigure stdout -translation binary -buffering full
+# Standard output does not wait: what Sigma has not read yet stays in Tcl's buffer,
+# and this side goes on reading Sigma's scripts, so neither waits for the other.
+fconfigure stdout -translation binary -buffering full -blocking 0
 set sigma_input ""
 
 proc sigma_send {kind code text} {

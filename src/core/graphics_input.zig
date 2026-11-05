@@ -57,7 +57,7 @@ pub const InputState = struct {
     pending_len: usize = 0,
     pending_since: forth.Double = 0,
     /// Keys read but not yet taken by INKEY: MOUSE reads past them.
-    keys: [64]u32 = undefined,
+    keys: [64]Key = undefined,
     key_head: usize = 0,
     key_count: usize = 0,
     /// The pixel of the image under the mouse when it last moved, -1 -1 before that or
@@ -65,8 +65,10 @@ pub const InputState = struct {
     mouse_x: Cell = -1,
     mouse_y: Cell = -1,
     mouse_buttons: Cell = 0,
-    /// The buttons that the terminal's reports said were pressed and not yet released.
+    /// The buttons that the terminal's reports said were pressed and not yet released,
+    /// and whether the terminal (not a window) moved the mouse last.
     terminal_buttons: u8 = 0,
+    mouse_from_terminal: bool = false,
     /// Whether MOUSE-ON asked the terminal for mouse reports.
     mouse_on: bool = false,
     shown: ?Shown = null,
@@ -196,7 +198,11 @@ fn controlSequence(parameter_bytes: []const u8, final: u8, buttons: *u8) Decoded
     return if (letterKey(final)) |key| .{ .key = key } else .nothing;
 }
 
-fn pushKey(input: *InputState, key: u32) void {
+/// A key waiting for INKEY, and whether it came from the terminal (whose keys are
+/// dropped when it gives single keys again) or from a window.
+const Key = struct { code: u32, from_terminal: bool };
+
+fn pushKey(input: *InputState, key: Key) void {
     if (input.key_count == input.keys.len) return;
     input.keys[(input.key_head + input.key_count) % input.keys.len] = key;
     input.key_count += 1;
@@ -207,7 +213,23 @@ fn popKey(input: *InputState) ?u32 {
     const key = input.keys[input.key_head];
     input.key_head = (input.key_head + 1) % input.keys.len;
     input.key_count -= 1;
-    return key;
+    return key.code;
+}
+
+/// The terminal gives single keys again after its line input: what was kept of its
+/// input is dropped; the keys and the mouse of a window stay.
+fn restart(input: *InputState) void {
+    var kept: usize = 0;
+    for (0..input.key_count) |index| {
+        const key = input.keys[(input.key_head + index) % input.keys.len];
+        if (key.from_terminal) continue;
+        input.keys[(input.key_head + kept) % input.keys.len] = key;
+        kept += 1;
+    }
+    input.key_count = kept;
+    input.pending_len = 0;
+    input.terminal_buttons = 0;
+    if (input.mouse_from_terminal) input.mouse_buttons = 0;
 }
 
 /// The pixel of the image under a character cell of the terminal, from where SHOW put
@@ -225,12 +247,10 @@ fn terminalPixel(shown: Shown, column: i32, row: i32) ?[2]Cell {
 fn apply(self: *State, decoded: Decoded) RuntimeError!void {
     const input = &self.gfx_input;
     switch (decoded) {
-        .key => |key| {
-            if (key == interrupt_byte) return error.UserInterrupt;
-            pushKey(input, key);
-        },
+        .key => |key| try addKey(self, key, true),
         .mouse => |mouse| {
             input.mouse_buttons = mouse.buttons;
+            input.mouse_from_terminal = true;
             const shown = input.shown orelse {
                 input.mouse_x = -1;
                 input.mouse_y = -1;
@@ -242,6 +262,18 @@ fn apply(self: *State, decoded: Decoded) RuntimeError!void {
         },
         .nothing => {},
     }
+}
+
+fn addKey(self: *State, key: u32, from_terminal: bool) RuntimeError!void {
+    if (key == interrupt_byte) return error.UserInterrupt;
+    pushKey(&self.gfx_input, .{ .code = key, .from_terminal = from_terminal });
+}
+
+/// Whether a sequence not ended has waited its time for the rest of its bytes.
+fn pendingExpired(self: *State) bool {
+    const input = &self.gfx_input;
+    const time = now(self) orelse return true;
+    return time - input.pending_since >= sequence_wait_us or time < input.pending_since;
 }
 
 /// Decodes the pending bytes; with `flush`, a sequence that has not come whole is taken
@@ -282,42 +314,35 @@ fn readInput(self: *State, until_key: bool) RuntimeError!void {
     // The Tk window's keys and mouse come with the Tcl program's messages.
     if (defs.graphics_enabled) try @import("tcl.zig").poll(self);
     const input_fn = self.writer.input_fn orelse return;
-    while (!(until_key and input.key_count != 0)) {
+    // At least one event is read, so that a restart of the terminal's single keys is
+    // seen before INKEY gives a key it kept from before.
+    var first = true;
+    while (first or !(until_key and input.key_count != 0)) {
+        first = false;
         const event = input_fn(self.writer.context) orelse break;
         switch (event) {
             .byte => |byte| {
+                // A sequence that waited too long ends before the new byte.
+                if (input.pending_len != 0 and pendingExpired(self)) try decodePending(self, true);
                 if (input.pending_len == 0) input.pending_since = now(self) orelse 0;
                 input.pending[input.pending_len] = byte;
                 input.pending_len += 1;
                 try decodePending(self, false);
             },
-            .restarted => {
-                input.key_count = 0;
-                input.key_head = 0;
-                input.pending_len = 0;
-                input.terminal_buttons = 0;
-                input.mouse_buttons = 0;
-            },
-            .key => |key| try apply(self, .{ .key = key }),
+            .restarted => restart(input),
+            .key => |key| try addKey(self, key, true),
+            .window_key => |key| try addKey(self, key, false),
             .terminal_mouse => |mouse| try apply(self, .{ .mouse = .{ .column = mouse.column, .row = mouse.row, .buttons = mouse.buttons } }),
-            .window_mouse => |mouse| {
-                input.mouse_x = mouse.x;
-                input.mouse_y = mouse.y;
-                input.mouse_buttons = mouse.buttons;
-            },
+            .window_mouse => |mouse| windowMouse(self, mouse.x, mouse.y, mouse.buttons),
         }
     }
     // A sequence not ended yet waits for its other bytes, for a while.
-    if (input.pending_len != 0) {
-        const time = now(self);
-        const expired = time == null or time.? - input.pending_since >= sequence_wait_us or time.? < input.pending_since;
-        try decodePending(self, expired);
-    }
+    if (input.pending_len != 0) try decodePending(self, pendingExpired(self));
 }
 
 /// A key pressed in a window whose program sends it (the Tk window of DISPLAY-TK).
 pub fn windowKey(self: *State, key: u32) RuntimeError!void {
-    try apply(self, .{ .key = key });
+    try addKey(self, key, false);
 }
 
 /// The mouse over such a window: the pixel of the image under it and the buttons.
@@ -326,11 +351,11 @@ pub fn windowMouse(self: *State, x: i32, y: i32, buttons: u8) void {
     input.mouse_x = x;
     input.mouse_y = y;
     input.mouse_buttons = buttons;
+    input.mouse_from_terminal = false;
 }
 
 /// INKEY: the next key without waiting, or -1 when none has been pressed.
 pub fn inkey(self: *State) RuntimeError!Cell {
-    if (popKey(&self.gfx_input)) |key| return key;
     try readInput(self, true);
     return if (popKey(&self.gfx_input)) |key| key else -1;
 }

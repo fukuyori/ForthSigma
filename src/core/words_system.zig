@@ -5,6 +5,12 @@ const defs = @import("defs.zig");
 const forth = @import("../forth.zig");
 const memory_map = @import("memory_map.zig");
 const text_input = @import("text_input.zig");
+
+/// The strings of the TCL words are freed before the dictionary is saved, so that the
+/// image does not keep heap blocks nobody owns.
+fn releaseTclStrings(self: *forth.State) void {
+    if (defs.graphics_enabled) @import("tcl.zig").releaseHeap(self);
+}
 const Builtin = defs.Builtin;
 const CatchFrame = defs.CatchFrame;
 const Cell = memory_map.Cell;
@@ -87,11 +93,13 @@ pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
         .save => {
             const path = (try self.nextSourceToken()) orelse return error.InputUnavailable;
             const save_fn = self.writer.save_fn orelse return error.FileUnavailable;
+            releaseTclStrings(self);
             try save_fn(self.writer.context, path, self);
         },
         .savesys => {
             const path = (try self.nextSourceToken()) orelse return error.InputUnavailable;
             const savesys_fn = self.writer.savesys_fn orelse return error.FileUnavailable;
+            releaseTclStrings(self);
             try savesys_fn(self.writer.context, path, self);
         },
         .abort => return error.Aborted,

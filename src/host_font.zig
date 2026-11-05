@@ -123,7 +123,10 @@ const gdi = struct {
         _ = EnumFontFamiliesExW(dc.?, &logical, found, @bitCast(@intFromPtr(&exists)), 0);
         if (!exists) return false;
         const created = CreateFontIndirectW(&logical) orelse return error.HostFailed;
-        _ = SelectObject(dc.?, created);
+        if (SelectObject(dc.?, created) == null) {
+            _ = DeleteObject(created);
+            return error.HostFailed;
+        }
         if (font) |old| _ = DeleteObject(old);
         font = created;
         return true;

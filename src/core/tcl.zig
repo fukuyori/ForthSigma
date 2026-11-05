@@ -40,6 +40,12 @@ pub const TclState = struct {
     events: [max_events]Text = undefined,
     event_head: usize = 0,
     event_count: usize = 0,
+    /// The message being read, which may come in pieces: the header so far, or the
+    /// header read and the bytes of the text so far.
+    header: [64]u8 = undefined,
+    header_length: usize = 0,
+    partial: ?Message = null,
+    received: usize = 0,
 };
 
 /// One message from the program: its kind (R, E, K, or M) and code, and its text in
@@ -59,6 +65,27 @@ pub fn forgetHeap(self: *State) void {
     tcl.error_text = .{};
     tcl.event = .{};
     tcl.event_count = 0;
+    tcl.partial = null;
+    tcl.received = 0;
+}
+
+/// Frees the strings in the heap before the dictionary is saved, so that the image does
+/// not keep blocks nobody owns: a result, an error message, or an event read before
+/// SAVE is not valid after it.
+pub fn releaseHeap(self: *State) void {
+    const tcl = &self.tcl;
+    freeText(self, &tcl.result);
+    freeText(self, &tcl.error_text);
+    freeText(self, &tcl.event);
+    while (tcl.event_count != 0) {
+        freeText(self, &tcl.events[tcl.event_head]);
+        tcl.event_head = (tcl.event_head + 1) % max_events;
+        tcl.event_count -= 1;
+    }
+    if (tcl.partial) |*message| freeText(self, &message.text);
+    tcl.partial = null;
+    tcl.received = 0;
+    tcl.header_length = 0;
 }
 
 fn ensureRunning(self: *State) RuntimeError!void {
@@ -71,10 +98,23 @@ fn ensureRunning(self: *State) RuntimeError!void {
     tcl.input_end = 0;
 }
 
-/// The program has ended or cannot be reached: the next use starts it again.
-fn lost(self: *State) RuntimeError {
-    self.tcl.running = false;
+/// Stops the program and drops what was being read from it.
+fn halt(self: *State) void {
+    const tcl = &self.tcl;
+    tcl.running = false;
+    if (tcl.partial) |*message| freeText(self, &message.text);
+    tcl.partial = null;
+    tcl.received = 0;
+    tcl.header_length = 0;
+    tcl.input_start = 0;
+    tcl.input_end = 0;
     if (self.writer.process_stop_fn) |stop_fn| stop_fn(self.writer.context);
+}
+
+/// The program has ended, cannot be reached, or sent what the protocol does not allow:
+/// HOST FUNCTION ERROR, and the next use starts it again.
+fn lost(self: *State) RuntimeError {
+    halt(self);
     return error.HostFailed;
 }
 
@@ -101,31 +141,55 @@ fn readByte(self: *State, wait: bool) RuntimeError!?u8 {
     return byte;
 }
 
-/// Reads the next message; null, when not waiting, if none has begun. A message that
-/// has begun is read whole, as the program writes each at once.
-fn readMessage(self: *State, wait: bool) RuntimeError!?Message {
-    var header: [64]u8 = undefined;
-    var length: usize = 0;
-    header[0] = try readByte(self, wait) orelse return null;
-    length = 1;
-    while (header[length - 1] != '\n') {
-        if (length == header.len) return lost(self);
-        header[length] = (try readByte(self, true)).?;
-        length += 1;
+/// The kind, code, and text length of a header "<kind> <code> <length>": R with any
+/// code (1 is an error), E, K, and M with 0. Anything else breaks the protocol.
+fn parseHeader(header: []const u8) ?struct { kind: u8, code: i64, size: usize } {
+    var fields = std.mem.splitScalar(u8, header, ' ');
+    const kind = fields.next() orelse return null;
+    const code = std.fmt.parseInt(i64, fields.next() orelse return null, 10) catch return null;
+    const size = std.fmt.parseInt(usize, fields.next() orelse return null, 10) catch return null;
+    if (fields.next() != null or kind.len != 1 or size > max_message) return null;
+    switch (kind[0]) {
+        'R' => {},
+        'E', 'K', 'M' => if (code != 0) return null,
+        else => return null,
     }
-    var fields = std.mem.tokenizeScalar(u8, header[0 .. length - 1], ' ');
-    const kind = fields.next() orelse return lost(self);
-    const code = std.fmt.parseInt(i64, fields.next() orelse return lost(self), 10) catch return lost(self);
-    const size = std.fmt.parseInt(usize, fields.next() orelse return lost(self), 10) catch return lost(self);
-    if (kind.len != 1 or size > max_message) return lost(self);
-    const address = try self.heapAllocate(@max(size, 1)) orelse {
-        // No room for it: the bytes are read and dropped, and the error reported.
-        for (0..size) |_| _ = try readByte(self, true);
-        return error.MemoryExhausted;
-    };
-    const start: usize = @intCast(address);
-    for (self.memory[start..][0..size]) |*byte| byte.* = (try readByte(self, true)).?;
-    return .{ .kind = kind[0], .code = code, .text = .{ .address = address, .length = size } };
+    return .{ .kind = kind[0], .code = code, .size = size };
+}
+
+/// Reads the next message. When not waiting, it takes what has come and gives null if
+/// the message is not whole yet; the rest is read by a later call.
+fn readMessage(self: *State, wait: bool) RuntimeError!?Message {
+    const tcl = &self.tcl;
+    while (tcl.partial == null) {
+        const byte = try readByte(self, wait) orelse return null;
+        if (byte != '\n') {
+            if (tcl.header_length == tcl.header.len) return lost(self);
+            tcl.header[tcl.header_length] = byte;
+            tcl.header_length += 1;
+            continue;
+        }
+        const header = parseHeader(tcl.header[0..tcl.header_length]) orelse return lost(self);
+        tcl.header_length = 0;
+        const address = try self.heapAllocate(@max(header.size, 1)) orelse {
+            // No room for the text: the program is stopped, as its message cannot be
+            // taken.
+            halt(self);
+            return error.MemoryExhausted;
+        };
+        tcl.partial = .{ .kind = header.kind, .code = header.code, .text = .{ .address = address, .length = header.size } };
+        tcl.received = 0;
+    }
+    const message = tcl.partial.?;
+    const start: usize = @intCast(message.text.address);
+    while (tcl.received < message.text.length) {
+        const byte = try readByte(self, wait) orelse return null;
+        self.memory[start + tcl.received] = byte;
+        tcl.received += 1;
+    }
+    tcl.partial = null;
+    tcl.received = 0;
+    return message;
 }
 
 /// Acts on a message that is not a result: keeps an event for TCL-EVENT, and gives keys
@@ -172,6 +236,10 @@ pub fn poll(self: *State) RuntimeError!void {
 /// Returns whether the script failed (Tcl's code 1); the result or the message is kept.
 fn run(self: *State, parts: []const []const u8, length: usize, body: ?*const fn (*State) RuntimeError!void) RuntimeError!bool {
     try ensureRunning(self);
+    // A script whose result cannot be taken (Ctrl+C from the Tk window, no memory for an
+    // event) leaves its result to come: the program is stopped, so that the next
+    // script does not take it for its own.
+    errdefer if (self.tcl.running) halt(self);
     var header: [24]u8 = undefined;
     try write(self, std.fmt.bufPrint(&header, "{d}\n", .{length}) catch unreachable);
     for (parts) |part| try write(self, part);

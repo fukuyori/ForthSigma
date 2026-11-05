@@ -1940,3 +1940,133 @@ test "DISPLAY-TK makes SHOW send the image to the Tk window as a PNG in base64" 
     try machine.interpretLine(": T SHOW ; ' T CATCH");
     try expectStack(machine, &.{-273});
 }
+
+// ---- The review of the Tcl/Tk words ----
+
+fn heapTop(machine: *forth.State) forth.Cell {
+    return machine.readCellConst(@import("../core/memory_map.zig").heap_top_address);
+}
+
+test "Ctrl+C from the Tk window while a script runs stops the program, so the next script gets its own result" {
+    try skipWithout(&.{.graphics});
+    var output = Output{};
+    const machine = try libraryMachine(&output, "4 4");
+    defer destroyMachine(machine);
+    output.process_replies = "K 0 1\n3R 0 3\nold";
+    try machine.interpretLine(": T S\" a\" TCL-EVAL ; ' T CATCH");
+    try expectStack(machine, &.{-28});
+    machine.data_depth = 0;
+    try std.testing.expect(!output.process_running);
+    // The new program answers the new script.
+    output.process_replies = "R 0 3\nnew";
+    output.process_reply_index = 0;
+    try machine.interpretLine("S\" b\" TCL-EVAL TYPE");
+    try std.testing.expectEqualStrings("new", output.written());
+    try std.testing.expectEqual(@as(usize, 2), output.process_starts);
+}
+
+test "a message cut short frees its text, and messages that come in parts are read without waiting" {
+    try skipWithout(&.{.graphics});
+    var output = Output{};
+    const machine = try libraryMachine(&output, "4 4");
+    defer destroyMachine(machine);
+    // The program ends in the middle of a long result: HOST FUNCTION ERROR, and the
+    // heap is as before.
+    const before = heapTop(machine);
+    output.process_replies = "R 0 100000\nabc";
+    try machine.interpretLine(": T S\" a\" TCL ; ' T CATCH");
+    try expectStack(machine, &.{-265});
+    machine.data_depth = 0;
+    try std.testing.expectEqual(before, heapTop(machine));
+    // A started program whose event comes in pieces: TCL-EVENT does not wait for it.
+    output.process_replies = "R 0 0\n" ++ "E 0 5\nabcde";
+    output.process_reply_index = 0;
+    output.process_reply_limit = 6 + 3;
+    try machine.interpretLine("S\" b\" TCL TCL-EVENT");
+    try expectStack(machine, &.{0});
+    machine.data_depth = 0;
+    output.process_reply_limit = 6 + 8;
+    try machine.interpretLine("TCL-EVENT");
+    try expectStack(machine, &.{0});
+    machine.data_depth = 0;
+    output.process_reply_limit = std.math.maxInt(usize);
+    output.len = 0;
+    try machine.interpretLine("TCL-EVENT . TYPE");
+    try std.testing.expectEqualStrings("-1 abcde", output.written());
+    // The strings are freed before the dictionary is saved.
+    if (@import("build_options").graphics) @import("../core/tcl.zig").releaseHeap(machine);
+    try std.testing.expectEqual(before, heapTop(machine));
+}
+
+test "headers the protocol does not allow stop the program" {
+    try skipWithout(&.{.graphics});
+    var output = Output{};
+    const machine = try libraryMachine(&output, "4 4");
+    defer destroyMachine(machine);
+    const wrong = [_][]const u8{ "Z 0 0\n", "R 0 0 extra\n", "E 1 0\n", "K 2 0\n", "R x 0\n", "R 0\n", "R 0 -1\n", "RR 0 0\n", repeat("9", 70) ++ "\n" };
+    for (wrong, 1..) |reply, starts| {
+        output.process_replies = reply;
+        output.process_reply_index = 0;
+        try machine.interpretLine(": T S\" a\" TCL ; ' T CATCH");
+        try expectStack(machine, &.{-265});
+        machine.data_depth = 0;
+        try std.testing.expect(!output.process_running);
+        try std.testing.expectEqual(starts, output.process_starts);
+    }
+    // R with another code than 1 (return, break) is a result.
+    output.process_replies = "R 2 2\nok";
+    output.process_reply_index = 0;
+    output.len = 0;
+    try machine.interpretLine("S\" a\" TCL-EVAL TYPE");
+    try std.testing.expectEqualStrings("ok", output.written());
+}
+
+test "a restart of the terminal drops its kept keys before INKEY gives them, and keeps the Tk window's" {
+    try skipWithout(&.{.graphics});
+    var output = Output{};
+    const machine = try libraryMachine(&output, "4 4");
+    defer destroyMachine(machine);
+    // Keys from the terminal kept by MOUSE, then the terminal restarts.
+    const first = byteEvents("ab");
+    output.events = &first;
+    try machine.interpretLine("MOUSE 2DROP DROP");
+    const restart = [_]forth.InputEvent{.restarted};
+    output.events = &restart;
+    output.event_index = 0;
+    try machine.interpretLine("INKEY");
+    try expectStack(machine, &.{-1});
+    machine.data_depth = 0;
+    // A key and the mouse of the Tk window come before the restart: they stay.
+    output.process_replies = "R 0 0\n" ++ "K 0 2\n97M 0 5\n1 2 1";
+    try machine.interpretLine("S\" a\" TCL");
+    const again = [_]forth.InputEvent{ .{ .byte = 'z' }, .restarted };
+    output.events = &again;
+    output.event_index = 0;
+    try machine.interpretLine("MOUSE INKEY INKEY");
+    try expectStack(machine, &.{ 1, 2, 1, 97, -1 });
+    machine.data_depth = 0;
+    // A window key from the host stays too.
+    const window = [_]forth.InputEvent{ .{ .window_key = 'w' }, .restarted };
+    output.events = &window;
+    output.event_index = 0;
+    try machine.interpretLine("MOUSE 2DROP DROP INKEY");
+    try expectStack(machine, &.{'w'});
+}
+
+test "a sequence that waited past 50 ms ends before the bytes that come after" {
+    try skipWithout(&.{.graphics});
+    var output = Output{};
+    const machine = try libraryMachine(&output, "4 4");
+    defer destroyMachine(machine);
+    const escape = byteEvents("\x1b");
+    output.events = &escape;
+    try machine.interpretLine("INKEY");
+    try expectStack(machine, &.{-1});
+    machine.data_depth = 0;
+    output.time += 100_000;
+    const rest = byteEvents("[A");
+    output.events = &rest;
+    output.event_index = 0;
+    try machine.interpretLine("INKEY INKEY INKEY INKEY");
+    try expectStack(machine, &.{ 27, '[', 'A', -1 });
+}

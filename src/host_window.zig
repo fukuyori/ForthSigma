@@ -199,7 +199,7 @@ const win32 = struct {
             const key = keys[key_head];
             key_head = (key_head + 1) % keys.len;
             key_count -= 1;
-            return .{ .key = key };
+            return .{ .window_key = key };
         }
         if (!mouse_changed) return null;
         mouse_changed = false;

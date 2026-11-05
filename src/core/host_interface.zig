@@ -52,9 +52,11 @@ pub const InputEvent = union(enum) {
     /// A byte from the terminal as it came, escape sequences included; the graphics
     /// words decode the keys and the mouse reports in it.
     byte: u8,
-    /// A key the host decoded itself (a Windows console or a window): a byte of UTF-8
-    /// text, or one of the key codes of graphics_input from 256 up.
+    /// A key the host decoded itself from the terminal (a Windows console): a byte of
+    /// UTF-8 text, or one of the key codes of graphics_input from 256 up.
     key: u32,
+    /// The same, pressed in the window: it stays when the terminal restarts.
+    window_key: u32,
     /// The mouse on the terminal: its character cell (column and row from 0, counted on
     /// the screen as `cursor_fn` counts them) and the buttons held.
     terminal_mouse: struct { column: i32, row: i32, buttons: MouseButtons },
