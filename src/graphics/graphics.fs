@@ -329,8 +329,7 @@ VARIABLE (TEXT-SCALE)  1 (TEXT-SCALE) !
 
 : BUILTIN-FONT ( -- )   GFX-FONT-BUILTIN ;
 \ A BDF font file; the ior of the file, or FONT ERROR when it is not a BDF font this
-\ can read (the font stays as it was then, except when the file failed while it was
-\ being kept: then the built-in font is used).
+\ can read. On an error the font stays as it was.
 : LOAD-FONT ( c-addr u -- )   GFX-FONT-LOAD THROW ;
 \ The system's font of that name, height pixels a line (1 to 256): FONT ERROR when the
 \ system has none of the name, HOST FUNCTION UNAVAILABLE on a host without fonts.
@@ -339,13 +338,15 @@ VARIABLE (TEXT-SCALE)  1 (TEXT-SCALE) !
 : TEXT-HEIGHT ( -- h )   GFX-FONT-HEIGHT (TEXT-SCALE) @ * ;
 
 \ The code point of the UTF-8 character at the start of a string that is not empty,
-\ and the rest of the string; -1, taking one byte, when the bytes are not a character.
-: (UTF8-NEXT) { addr u | b n code -- addr' u' code }
+\ and the rest of the string; -1, taking one byte, when the bytes are not a character:
+\ a byte that cannot start one, missing continuation bytes, a longer form than the
+\ character needs (such as C1 81 for A), a surrogate, or a value above U+10FFFF.
+: (UTF8-NEXT) { addr u | b n code least -- addr' u' code }
    addr C@ TO b
    b $80 < IF  addr 1+ u 1- b  EXIT THEN
-   b $E0 AND $C0 = IF  1 TO n  b $1F AND TO code  ELSE
-   b $F0 AND $E0 = IF  2 TO n  b $0F AND TO code  ELSE
-   b $F8 AND $F0 = IF  3 TO n  b $07 AND TO code  ELSE
+   b $E0 AND $C0 = IF  1 TO n  b $1F AND TO code  $80 TO least  ELSE
+   b $F0 AND $E0 = IF  2 TO n  b $0F AND TO code  $800 TO least  ELSE
+   b $F8 AND $F0 = IF  3 TO n  b $07 AND TO code  $10000 TO least  ELSE
       addr 1+ u 1- -1 EXIT
    THEN THEN THEN
    u n <= IF  addr 1+ u 1- -1  EXIT THEN
@@ -353,6 +354,7 @@ VARIABLE (TEXT-SCALE)  1 (TEXT-SCALE) !
       addr I + C@  DUP $C0 AND $80 <> IF  DROP UNLOOP addr 1+ u 1- -1  EXIT THEN
       $3F AND  code 6 LSHIFT OR TO code
    LOOP
+   code least <  code $10FFFF >  OR  code $D800 $E000 WITHIN  OR IF  addr 1+ u 1- -1  EXIT THEN
    addr n 1+ +  u n 1+ -  code ;
 
 \ Loads the glyph TEXT draws for a code point and gives its advance; -1 when nothing

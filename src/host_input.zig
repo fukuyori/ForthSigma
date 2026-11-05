@@ -30,8 +30,13 @@ var raw = false;
 var mouse_wanted = false;
 var mouse_reporting = false;
 
-/// Bytes read while waiting for the reply to a DSR request, given before new ones.
-var queued: [64]u8 = undefined;
+/// Whether the terminal went to raw mode since next last gave an event: next tells the
+/// core first, which then drops what it kept of the input before.
+var restarted = false;
+
+/// Bytes read while waiting for the reply to a DSR request, given before new ones (more
+/// than fit are dropped, as keys pressed while the host is busy may be).
+var queued: [256]u8 = undefined;
 var queued_head: usize = 0;
 var queued_len: usize = 0;
 
@@ -44,6 +49,10 @@ fn queue(byte: u8) void {
 /// The next event from the terminal without waiting, or null.
 pub fn next() ?InputEvent {
     if (!enter()) return null;
+    if (restarted) {
+        restarted = false;
+        return .restarted;
+    }
     if (is_windows) {
         return windows.next();
     } else {
@@ -93,6 +102,7 @@ fn enter() bool {
     if (!input_is_terminal) return false;
     if (!(if (is_windows) windows.enter() else posix.enter())) return false;
     raw = true;
+    restarted = true;
     if (mouse_wanted) report(true);
     return true;
 }
@@ -144,25 +154,27 @@ const posix = struct {
         }
     }
 
-    /// Sends a DSR request and reads the reply `ESC [ row ; column R` for at most 200 ms.
-    /// The other bytes that come meanwhile are queued for next.
+    /// Milliseconds of a clock that does not go back.
+    fn milliseconds() i64 {
+        var time: std.c.timespec = undefined;
+        if (std.c.clock_gettime(std.c.CLOCK.MONOTONIC, &time) != 0) return 0;
+        return @as(i64, time.sec) * 1000 + @divTrunc(@as(i64, time.nsec), 1_000_000);
+    }
+
+    /// Sends a DSR request and reads the reply `ESC [ row ; column R` for at most 200 ms,
+    /// however much other input comes meanwhile; that input is queued for next.
     fn cursor() ?forth.CursorPosition {
         writeAll("\x1b[6n");
         var reply: [32]u8 = undefined;
         var length: usize = 0;
-        var waited: c_int = 0;
-        while (waited < 200) {
+        const deadline = milliseconds() + 200;
+        while (true) {
+            const left = deadline - milliseconds();
+            if (left <= 0) break;
             var descriptor = [_]std.c.pollfd{.{ .fd = 0, .events = std.c.POLL.IN, .revents = 0 }};
-            const ready = std.c.poll(&descriptor, 1, 20);
-            if (ready <= 0) {
-                waited += 20;
-                continue;
-            }
+            if (std.c.poll(&descriptor, 1, @intCast(@min(left, 200))) <= 0) continue;
             var byte: [1]u8 = undefined;
-            if (std.c.read(0, &byte, 1) != 1) {
-                waited += 20;
-                continue;
-            }
+            if (std.c.read(0, &byte, 1) != 1) continue;
             if (length == reply.len) {
                 for (reply) |kept| queue(kept);
                 length = 0;
@@ -186,6 +198,8 @@ const posix = struct {
         const separator = std.mem.indexOfScalar(u8, body, ';') orelse return null;
         const row = std.fmt.parseInt(i32, body[0..separator], 10) catch return null;
         const column = std.fmt.parseInt(i32, body[separator + 1 ..], 10) catch return null;
+        // A terminal counts from 1; far larger values are not a reply.
+        if (row < 1 or column < 1 or row > 100_000 or column > 100_000) return null;
         return .{ .column = column - 1, .row = row - 1 };
     }
 };
@@ -243,6 +257,7 @@ const windows = struct {
         _ = FlushConsoleInputBuffer(console);
         _ = SetConsoleMode(console, saved_mode);
         pending_len = 0;
+        high_surrogate = 0;
     }
 
     fn setMouse(on: bool) void {
@@ -332,3 +347,11 @@ const windows = struct {
         }
     }
 };
+
+test "a DSR reply gives the cursor's place only for positions from 1" {
+    const place = posix.parseReply("\x1b[12;5R") orelse return error.TestUnexpectedResult;
+    try std.testing.expectEqual(@as(i32, 11), place.row);
+    try std.testing.expectEqual(@as(i32, 4), place.column);
+    const wrong = [_][]const u8{ "\x1b[0;5R", "\x1b[12;0R", "\x1b[-2147483648;1R", "\x1b[99999999999;1R", "\x1b[100001;1R", "\x1b[12R", "\x1b[a;bR", "\x1b[;R" };
+    for (wrong) |reply| try std.testing.expect(posix.parseReply(reply) == null);
+}

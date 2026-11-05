@@ -1248,15 +1248,43 @@ test "INKEY decodes keys and escape sequences from the terminal, and Ctrl+C thro
     defer destroyMachine(machine);
     // Arrows (CSI, SS3, with a modifier), Delete, F5, F12, F1, LF and DEL as Enter and
     // Backspace, an unknown sequence (dropped), a UTF-8 character, Esc before a key,
-    // and Esc alone at the end.
+    // and Esc alone at the end, which waits for what may follow it.
     const events = byteEvents("a\x1b[A\x1bOB\x1b[1;5C\x1b[3~\x1b[15~\x1b[24~\x1bOP\n\x7f\x1b[Zb\xc3\xa9\x1bx\x1b");
     output.events = &events;
     try inkeys(machine, 16);
-    try expectStack(machine, &.{ 'a', 256, 257, 259, 265, 270, 277, 266, 13, 8, 'b', 0xc3, 0xa9, 27, 'x', 27 });
+    try expectStack(machine, &.{ 'a', 256, 257, 259, 265, 270, 277, 266, 13, 8, 'b', 0xc3, 0xa9, 27, 'x', -1 });
     machine.data_depth = 0;
+    // 49 ms later it still waits; at 50 ms it is the Esc key.
+    output.time += 49_000;
     try inkeys(machine, 1);
-    try expectStack(machine, &.{-1});
+    output.time += 1_000;
+    try inkeys(machine, 2);
+    try expectStack(machine, &.{ -1, 27, -1 });
     machine.data_depth = 0;
+    // A sequence that comes in parts, also a mouse report, is one key or report.
+    const part1 = byteEvents("\x1b");
+    const part2 = byteEvents("[");
+    const part3 = byteEvents("A");
+    const part4 = byteEvents("\x1b[<0;");
+    const part5 = byteEvents("3;");
+    const part6 = byteEvents("9M");
+    const parts = [_][]const forth.InputEvent{ &part1, &part2, &part3, &part4, &part5, &part6 };
+    for (parts) |part| {
+        output.events = part;
+        output.event_index = 0;
+        try inkeys(machine, 1);
+    }
+    try expectStack(machine, &.{ -1, -1, 256, -1, -1, -1 });
+    machine.data_depth = 0;
+    try std.testing.expectEqual(@as(forth.Cell, 1), machine.gfx_input.mouse_buttons);
+    // A restart of the terminal's raw input drops the keys and the sequence kept.
+    const restart = [_]forth.InputEvent{ .{ .byte = 'k' }, .{ .byte = 0x1b }, .restarted, .{ .byte = 'n' } };
+    output.events = &restart;
+    output.event_index = 0;
+    try machine.interpretLine("MOUSE 2DROP DROP INKEY INKEY");
+    try expectStack(machine, &.{ 'n', -1 });
+    machine.data_depth = 0;
+    try std.testing.expectEqual(@as(forth.Cell, 0), machine.gfx_input.mouse_buttons);
     try machine.interpretLine("K-UP K-LEFT K-F1 K-F12 K-DELETE K-NEXT");
     try expectStack(machine, &.{ 256, 258, 266, 277, 265, 263 });
     machine.data_depth = 0;
@@ -1365,18 +1393,24 @@ test "SHOW on the terminal draws over the image it drew last when nothing was wr
     const again = output.written()[first..];
     try std.testing.expect(std.mem.startsWith(u8, again, "\r\x1b[2A"));
     try std.testing.expect(std.mem.endsWith(u8, again, "\n\x1b[J"));
-    // The same picture after the return.
-    try std.testing.expectEqualStrings(output.written()[0..first], again[5 .. again.len - 3]);
+    // The same picture after the return, each row ending by clearing the rest of its
+    // line (a narrower picture leaves nothing of the last one).
+    var cleared: [1024]u8 = undefined;
+    const kept = again[5 .. again.len - 3];
+    const length = std.mem.replacementSize(u8, kept, "\x1b[0m\x1b[K", "\x1b[0m");
+    _ = std.mem.replace(u8, kept, "\x1b[0m\x1b[K", "\x1b[0m", &cleared);
+    try std.testing.expectEqualStrings(output.written()[0..first], cleared[0..length]);
+    try std.testing.expectEqual(@as(usize, 2), std.mem.count(u8, again, "\x1b[K"));
     // Output in between starts a new picture.
     const before = output.len;
     try machine.interpretLine("1 . SHOW");
     try std.testing.expect(!std.mem.startsWith(u8, output.written()[before + 2 ..], "\r"));
     try machine.interpretLine("TERMINAL-SIXEL SHOW");
-    try std.testing.expect(std.mem.indexOf(u8, output.written()[before..], "\r\x1b[2A\x1bPq") != null);
+    try std.testing.expect(std.mem.indexOf(u8, output.written()[before..], "\r\x1b[2A\x1b[J\x1bPq") != null);
     // A Sixel picture 4 pixels high takes 1 row of the assumed 20 pixels.
     const sixel = output.len;
     try machine.interpretLine("SHOW");
-    try std.testing.expect(std.mem.startsWith(u8, output.written()[sixel..], "\r\x1b[1A\x1bPq"));
+    try std.testing.expect(std.mem.startsWith(u8, output.written()[sixel..], "\r\x1b[1A\x1b[J\x1bPq"));
 
     // Not on a terminal: always a new picture.
     output.terminal_columns = 0;
@@ -1707,4 +1741,101 @@ test "DISPLAY-COLORS and DITHER change what SHOW shows on the terminal and in th
     // Only 0, 2, 16, and 256.
     try machine.interpretLine(": T8 8 DISPLAY-COLORS ; : T-1 -1 DISPLAY-COLORS ; ' T8 CATCH ' T-1 CATCH 16 DISPLAY-COLORS (COLORS) @");
     try expectStack(machine, &.{ -24, -24, 16 });
+}
+
+// ---- The review of stage G4 ----
+
+test "BDF numbers too large to add give FONT ERROR, and an empty glyph draws nothing" {
+    try skipWithout(&.{.graphics});
+    var output = Output{};
+    const machine = try libraryMachine(&output, "8 4");
+    defer destroyMachine(machine);
+    const extreme = [_][]const u8{
+        "FONT_ASCENT -9223372036854775808\nFONT_DESCENT 1\nSTARTCHAR A\nENCODING 65\nBBX 1 1 0 0\nBITMAP\n80\nENDCHAR\n",
+        "FONT_ASCENT 5\nFONT_DESCENT 9223372036854775807\nSTARTCHAR A\nENCODING 65\nBBX 1 1 0 0\nBITMAP\n80\nENDCHAR\n",
+        "FONTBOUNDINGBOX 1 9223372036854775807 0 -9223372036854775808\nSTARTCHAR A\nENCODING 65\nBBX 1 1 0 0\nBITMAP\n80\nENDCHAR\n",
+        "FONT_ASCENT 5\nFONT_DESCENT 1\nSTARTCHAR A\nENCODING 65\nBBX 1 1 0 -9223372036854775808\nBITMAP\n80\nENDCHAR\n",
+        "FONT_ASCENT 5\nFONT_DESCENT 1\nSTARTCHAR A\nENCODING 9223372036854775807\nBBX 1 1 0 0\nBITMAP\n80\nENDCHAR\n",
+    };
+    for (extreme) |text| {
+        support.setFakeFile(&output, 0, text);
+        try machine.interpretLine(": T S\" a.txt\" LOAD-FONT ; ' T CATCH TEXT-HEIGHT");
+        try expectStack(machine, &.{ -272, 8 });
+        machine.data_depth = 0;
+    }
+    // A, all of its box; then a space with an empty box, after which A's coverage
+    // must not show through.
+    support.setFakeFile(&output, 0, "FONT_ASCENT 2\nFONT_DESCENT 0\nSTARTCHAR A\nENCODING 65\nDWIDTH 2 0\nBBX 2 2 0 0\nBITMAP\nC0\nC0\nENDCHAR\nSTARTCHAR space\nENCODING 32\nDWIDTH 3 0\nBBX 0 0 0 0\nBITMAP\nENDCHAR\n");
+    try machine.interpretLine("S\" a.txt\" LOAD-FONT CHAR A GFX-GLYPH-LOAD DROP BL GFX-GLYPH-LOAD GFX-GLYPH-BOX 0 0 GFX-GLYPH-ALPHA");
+    try expectStack(machine, &.{ 3, 0, 0, 2, 0 });
+    machine.data_depth = 0;
+    try machine.interpretLine("S\"  A\" 0 0 TEXT S\"  A\" TEXT-WIDTH");
+    try expectStack(machine, &.{5});
+    try expectPicture(machine, "...##...\n...##...\n........\n........\n");
+}
+
+test "LOAD-FONT keeps the font it had when the file changes between its two readings" {
+    try skipWithout(&.{.graphics});
+    var output = Output{};
+    const machine = try libraryMachine(&output, "8 4");
+    defer destroyMachine(machine);
+    const two_lines = "FONT_ASCENT 2\nFONT_DESCENT 0\nSTARTCHAR A\nENCODING 65\nBBX 1 1 0 0\nBITMAP\n80\nENDCHAR\n";
+    const three_lines = "FONT_ASCENT 3\nFONT_DESCENT 0\nSTARTCHAR A\nENCODING 65\nBBX 1 1 0 0\nBITMAP\n80\nENDCHAR\n";
+    support.setFakeFile(&output, 0, two_lines);
+    support.setFakeFile(&output, 1, three_lines);
+    // A second font replaces the first, whose buffer is given back.
+    try machine.interpretLine("S\" a.txt\" LOAD-FONT TEXT-HEIGHT S\" b.txt\" LOAD-FONT TEXT-HEIGHT");
+    try expectStack(machine, &.{ 2, 3 });
+    machine.data_depth = 0;
+    try std.testing.expectEqual(@as(usize, 1), output.fontsInUse());
+    // Between the readings the file gets another glyph, or another height: the font
+    // stays, and the new buffer is given back.
+    const changed = [_][]const u8{
+        two_lines ++ "STARTCHAR B\nENCODING 66\nBBX 1 1 0 0\nBITMAP\n80\nENDCHAR\n",
+        "FONT_ASCENT 4\nFONT_DESCENT 0\nSTARTCHAR A\nENCODING 65\nBBX 1 1 0 0\nBITMAP\n80\nENDCHAR\n",
+        "FONT_ASCENT 2\nFONT_DESCENT 0\nSTARTCHAR A\nENCODING 65\nBBX 1 1 0 0\nBITMAP\n80\n",
+    };
+    for (changed) |text| {
+        support.setFakeFile(&output, 0, two_lines);
+        output.swap_file = .{ .index = 0, .text = text };
+        try machine.interpretLine(": T S\" a.txt\" LOAD-FONT ; ' T CATCH TEXT-HEIGHT");
+        try expectStack(machine, &.{ -272, 3 });
+        machine.data_depth = 0;
+        try std.testing.expectEqual(@as(usize, 1), output.fontsInUse());
+    }
+}
+
+test "MOUSE goes on reading the mouse and Ctrl+C when the queue of keys is full" {
+    try skipWithout(&.{.graphics});
+    var output = Output{};
+    const machine = try libraryMachine(&output, "8 4");
+    defer destroyMachine(machine);
+    const events = byteEvents(repeat("a", 70) ++ "\x1b[<0;1;1M" ++ "\x03");
+    output.events = &events;
+    try machine.interpretLine("' MOUSE CATCH");
+    try expectStack(machine, &.{-28});
+    try std.testing.expectEqual(@as(forth.Cell, 1), machine.gfx_input.mouse_buttons);
+    try std.testing.expectEqual(@as(usize, 64), machine.gfx_input.key_count);
+}
+
+test "TEXT takes overlong forms, surrogates, and values above U+10FFFF as bytes that are not UTF-8" {
+    try skipWithout(&.{.graphics});
+    var output = Output{};
+    const machine = try libraryMachine(&output, "8 4");
+    defer destroyMachine(machine);
+    // Each byte of a wrong sequence is a ? (4 pixels); a right one, missing from the
+    // font, one ?.
+    try machine.interpretLine("S\\\" \\xC1\\x81\" TEXT-WIDTH S\\\" \\xC0\\x80\" TEXT-WIDTH S\\\" \\xED\\xA0\\x80\" TEXT-WIDTH S\\\" \\xF4\\x90\\x80\\x80\" TEXT-WIDTH S\\\" \\xF0\\x9F\\x98\\x80\" TEXT-WIDTH S\\\" \\xEF\\xBF\\xBF\" TEXT-WIDTH");
+    try expectStack(machine, &.{ 8, 8, 12, 16, 4, 4 });
+}
+
+test "PLOT gives its function finite x across a range as wide as the floats allow" {
+    try skipWithout(&.{.graphics});
+    try support.skipWithoutFloat();
+    var output = Output{};
+    const machine = try libraryMachine(&output, "4 4");
+    defer destroyMachine(machine);
+    try machine.interpretLine("VARIABLE BAD 0 BAD ! FVARIABLE LAST : REC ( F: x -- y ) FDUP LAST F! FDUP FDUP F- 0e0 F= 0= IF 1 BAD +! THEN FDROP 0e0 ;");
+    try machine.interpretLine("0e0 1e308 X-RANGE ' REC PLOT BAD @ LAST F@ 1e308 F=");
+    try expectStack(machine, &.{ 0, -1 });
 }

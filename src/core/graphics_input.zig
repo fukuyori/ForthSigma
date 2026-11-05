@@ -51,9 +51,11 @@ pub const Shown = struct {
 };
 
 pub const InputState = struct {
-    /// The bytes of an escape sequence that has not come whole yet.
+    /// The bytes of an escape sequence that has not come whole yet, and when its first
+    /// byte came (UTIME's microseconds).
     pending: [32]u8 = undefined,
     pending_len: usize = 0,
+    pending_since: forth.Double = 0,
     /// Keys read but not yet taken by INKEY: MOUSE reads past them.
     keys: [64]u32 = undefined,
     key_head: usize = 0,
@@ -263,18 +265,36 @@ fn decodePending(self: *State, flush: bool) RuntimeError!void {
     }
 }
 
+/// How long a sequence that has not ended waits for the rest of its bytes, which may
+/// come apart (over a slow connection); then its bytes are keys, as Esc pressed alone.
+const sequence_wait_us = 50_000;
+
+fn now(self: *State) ?forth.Double {
+    const utime_fn = self.writer.utime_fn orelse return null;
+    return utime_fn(self.writer.context) catch null;
+}
+
 /// Reads what the host has without waiting, until a key is waiting for INKEY (when
-/// `until_key`) or the host has nothing more.
+/// `until_key`) or the host has nothing more. Keys beyond the queue's room are dropped,
+/// but the mouse and Ctrl+C are still read.
 fn readInput(self: *State, until_key: bool) RuntimeError!void {
     const input = &self.gfx_input;
     const input_fn = self.writer.input_fn orelse return;
-    while (!(until_key and input.key_count != 0) and input.key_count < input.keys.len) {
+    while (!(until_key and input.key_count != 0)) {
         const event = input_fn(self.writer.context) orelse break;
         switch (event) {
             .byte => |byte| {
+                if (input.pending_len == 0) input.pending_since = now(self) orelse 0;
                 input.pending[input.pending_len] = byte;
                 input.pending_len += 1;
                 try decodePending(self, false);
+            },
+            .restarted => {
+                input.key_count = 0;
+                input.key_head = 0;
+                input.pending_len = 0;
+                input.terminal_buttons = 0;
+                input.mouse_buttons = 0;
             },
             .key => |key| try apply(self, .{ .key = key }),
             .terminal_mouse => |mouse| try apply(self, .{ .mouse = .{ .column = mouse.column, .row = mouse.row, .buttons = mouse.buttons } }),
@@ -285,7 +305,12 @@ fn readInput(self: *State, until_key: bool) RuntimeError!void {
             },
         }
     }
-    try decodePending(self, true);
+    // A sequence not ended yet waits for its other bytes, for a while.
+    if (input.pending_len != 0) {
+        const time = now(self);
+        const expired = time == null or time.? - input.pending_since >= sequence_wait_us or time.? < input.pending_since;
+        try decodePending(self, expired);
+    }
 }
 
 /// INKEY: the next key without waiting, or -1 when none has been pressed.

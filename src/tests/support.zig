@@ -89,9 +89,14 @@ pub const Output = struct {
     /// UTIME's value, which grows by `time_step` at each call.
     time: forth.Double = 1_700_000_000_000_000,
     time_step: forth.Double = 0,
-    /// LOAD-FONT's buffer, which fails when `font_fails` is set or more is asked.
-    font_words: [4096]u64 = undefined,
+    /// LOAD-FONT's two buffers, which fail when `font_fails` is set, more is asked, or
+    /// both are in use; how many are in use.
+    font_words: [2][4096]u64 = undefined,
+    font_in_use: [2]bool = .{ false, false },
     font_fails: bool = false,
+    /// A text that replaces the fake file of that index at its next reposition (to 0),
+    /// as a file that changes between LOAD-FONT's two readings.
+    swap_file: ?struct { index: usize, text: []const u8 } = null,
     /// Whether the host has system fonts (set before createMachine): only "Fake", whose
     /// glyphs are 2 by 2 pixels of coverage 255, 128, 0, 64, 1 pixel left of the pen,
     /// advancing 3; it has no glyph for "~".
@@ -102,8 +107,29 @@ pub const Output = struct {
 
     pub fn fontBuffer(context: ?*anyopaque, words: usize) ?[]u64 {
         const output: *Output = @ptrCast(@alignCast(context.?));
-        if (output.font_fails or words > output.font_words.len) return null;
-        return output.font_words[0..words];
+        if (output.font_fails or words > output.font_words[0].len) return null;
+        for (&output.font_in_use, 0..) |*in_use, index| {
+            if (in_use.*) continue;
+            in_use.* = true;
+            // Old contents, so that a font read wrongly does not pass by chance.
+            @memset(&output.font_words[index], 0xAAAA_AAAA_AAAA_AAAA);
+            return output.font_words[index][0..words];
+        }
+        return null;
+    }
+
+    pub fn fontFree(context: ?*anyopaque, buffer: []u64) void {
+        const output: *Output = @ptrCast(@alignCast(context.?));
+        for (&output.font_in_use, 0..) |*in_use, index| {
+            if (buffer.ptr == &output.font_words[index]) {
+                std.debug.assert(in_use.*);
+                in_use.* = false;
+            }
+        }
+    }
+
+    pub fn fontsInUse(self: *const Output) usize {
+        return @intFromBool(self.font_in_use[0]) + @intFromBool(self.font_in_use[1]);
     }
 
     pub fn systemFont(context: ?*anyopaque, name: []const u8, height: u32) forth.RuntimeError!bool {
@@ -184,7 +210,7 @@ pub const Output = struct {
     }
 
     pub fn writer(self: *Output) forth.Writer {
-        return .{ .context = @ptrCast(self), .write_fn = write, .read_fn = read, .key_fn = key, .key_ready_fn = keyReady, .sleep_fn = sleep, .utime_fn = utime, .local_time_fn = localTime, .getenv_fn = getenv, .system_fn = system, .file_ops = &fake_file_ops, .framebuffer_fn = framebuffer, .terminal_size_fn = terminalSize, .terminal_utf8_fn = terminalUtf8, .window_fn = if (self.has_window) window else null, .input_fn = input, .mouse_fn = mouse, .cursor_fn = cursor, .font_buffer_fn = fontBuffer, .system_font_fn = if (self.has_system_fonts) systemFont else null, .system_glyph_fn = if (self.has_system_fonts) systemGlyph else null };
+        return .{ .context = @ptrCast(self), .write_fn = write, .read_fn = read, .key_fn = key, .key_ready_fn = keyReady, .sleep_fn = sleep, .utime_fn = utime, .local_time_fn = localTime, .getenv_fn = getenv, .system_fn = system, .file_ops = &fake_file_ops, .framebuffer_fn = framebuffer, .terminal_size_fn = terminalSize, .terminal_utf8_fn = terminalUtf8, .window_fn = if (self.has_window) window else null, .input_fn = input, .mouse_fn = mouse, .cursor_fn = cursor, .font_buffer_fn = fontBuffer, .font_free_fn = fontFree, .system_font_fn = if (self.has_system_fonts) systemFont else null, .system_glyph_fn = if (self.has_system_fonts) systemGlyph else null };
     }
 
     pub fn sleep(context: ?*anyopaque, milliseconds: forth.Cell) forth.RuntimeError!void {
@@ -398,6 +424,13 @@ pub fn fakeStatus(context: ?*anyopaque, name: []const u8) forth.FileResult {
 pub fn fakeReposition(context: ?*anyopaque, fileid: forth.Cell, position: forth.UCell) forth.Cell {
     const file = fakeFile(context, fileid) orelse return forth.errnoIor(forth.errno_bad_file);
     file.position = @intCast(position);
+    const output: *Output = @ptrCast(@alignCast(context.?));
+    if (output.swap_file) |swap| {
+        if (file == &output.files[swap.index]) {
+            output.swap_file = null;
+            setFakeFile(output, swap.index, swap.text);
+        }
+    }
     return 0;
 }
 

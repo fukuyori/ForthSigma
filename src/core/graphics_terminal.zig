@@ -187,7 +187,8 @@ pub fn showBlocks(self: *State) void {
             } else if (x == 0) output.text("\x1b[49m");
             output.text("\u{2580}");
         }
-        output.text("\x1b[0m\n");
+        // Over the last picture, what it had right of this one's row is cleared.
+        output.text(if (over) "\x1b[0m\x1b[K\n" else "\x1b[0m\n");
     }
     recordShown(self, &output, over, scaled, @intCast((scaled.out_height + 1) / 2), 1, 2);
 }
@@ -274,6 +275,8 @@ pub fn showSixel(self: *State) void {
     const scaled = scaledImage(self, @min(max_width, max_sixel_width), max_height);
     var output = Output{ .self = self };
     const over = returnToShown(self, &output);
+    // Over the last picture: it is cleared first, as a smaller picture leaves parts of it.
+    if (over) output.text("\x1b[J");
     output.text("\x1bPq\"1;1;");
     output.number(scaled.out_width);
     output.text(";");

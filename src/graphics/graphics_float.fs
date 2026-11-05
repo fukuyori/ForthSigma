@@ -43,8 +43,9 @@ FVARIABLE (Y-MAX)   1e0 (Y-MAX) F!
    (Y-MAX) F@ FSWAP F-  (Y-MAX) F@ (Y-MIN) F@ F- F/  GFX-HEIGHT 1- S>F F*  (F>PIXEL) ;
 
 \ The x of a column (the x of column 0 in an image one pixel wide).
+\ The share of the width comes first, so that px times the range cannot overflow.
 : (PX>M) ( px -- ) ( F: -- x )
-   S>F  (X-MAX) F@ (X-MIN) F@ F- F*  GFX-WIDTH 1- 1 MAX S>F F/  (X-MIN) F@ F+ ;
+   S>F  GFX-WIDTH 1- 1 MAX S>F F/  (X-MAX) F@ (X-MIN) F@ F- F*  (X-MIN) F@ F+ ;
 
 \ ---- Drawing in mathematical coordinates ------------------------------------------
 

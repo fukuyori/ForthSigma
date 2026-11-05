@@ -60,6 +60,7 @@ const gdi = struct {
     extern "gdi32" fn CreateDIBSection(?Handle, *const BitmapInfo, u32, *?[*]u8, ?Handle, u32) callconv(.winapi) ?Handle;
     extern "gdi32" fn SelectObject(Handle, Handle) callconv(.winapi) ?Handle;
     extern "gdi32" fn DeleteObject(Handle) callconv(.winapi) i32;
+    extern "gdi32" fn DeleteDC(Handle) callconv(.winapi) i32;
     extern "gdi32" fn CreateFontIndirectW(*const LogFont) callconv(.winapi) ?Handle;
     extern "gdi32" fn EnumFontFamiliesExW(Handle, *const LogFont, EnumProc, isize, u32) callconv(.winapi) i32;
     extern "gdi32" fn SetTextColor(Handle, u32) callconv(.winapi) u32;
@@ -88,10 +89,14 @@ const gdi = struct {
         const info = BitmapInfo{ .header = .{ .width = bitmap_width, .height = -bitmap_height } };
         var pixels: ?[*]u8 = null;
         const bitmap = CreateDIBSection(memory, &info, 0, &pixels, null, 0) orelse {
-            _ = DeleteObject(memory);
+            _ = DeleteDC(memory);
             return false;
         };
-        _ = SelectObject(memory, bitmap);
+        if (SelectObject(memory, bitmap) == null) {
+            _ = DeleteObject(bitmap);
+            _ = DeleteDC(memory);
+            return false;
+        }
         _ = SetTextColor(memory, 0x00FF_FFFF);
         _ = SetBkColor(memory, 0);
         _ = SetBkMode(memory, 2); // OPAQUE
@@ -127,18 +132,14 @@ const gdi = struct {
     fn glyph(_: ?*anyopaque, code: u21, alpha: []u8, max_width: u32) ?forth.SystemGlyph {
         const memory = dc orelse return null;
         if (font == null) return null;
-        var units: [2]u16 = undefined;
-        var count: i32 = 1;
-        if (code >= 0x10000) {
-            const value = code - 0x10000;
-            units = .{ @intCast(0xD800 + (value >> 10)), @intCast(0xDC00 + (value & 0x3FF)) };
-            count = 2;
-        } else {
-            if (code >= 0xD800 and code < 0xE000) return null;
-            units[0] = @intCast(code);
-            var index: [1]u16 = undefined;
-            if (GetGlyphIndicesW(memory, &units, 1, &index, mark_missing) == gdi_error or index[0] == missing_glyph) return null;
-        }
+        // GetGlyphIndicesW tells whether the font has a glyph only for the characters of
+        // one UTF-16 unit; the others (U+10000 and up) are taken as missing (drawn as ?),
+        // rather than as whatever glyph GDI would put in their place.
+        if (code >= 0x10000 or (code >= 0xD800 and code < 0xE000)) return null;
+        var units = [1]u16{@intCast(code)};
+        const count: i32 = 1;
+        var index: [1]u16 = undefined;
+        if (GetGlyphIndicesW(memory, &units, 1, &index, mark_missing) == gdi_error or index[0] == missing_glyph) return null;
         var size: Size = undefined;
         if (GetTextExtentPoint32W(memory, &units, count, &size) == 0) return null;
         // Room on both sides for strokes past the advance (italics, accents).

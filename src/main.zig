@@ -79,9 +79,10 @@ const image_footer_magic = "SIGEND01";
 /// threaded implementation, whose table of functions links in every file, network, and
 /// process operation of the standard library (about 450 KB on Windows). Sigma does its
 /// file work through the C library, and the few calls below go to the system directly.
-/// `framebuffer` is the graphics image that GFX-INIT got last, and `font` the BDF font
-/// LOAD-FONT read last; both are freed when Sigma ends.
-const HostContext = struct { allocator: std.mem.Allocator, executable_path: [:0]const u8, environ_map: *std.process.Environ.Map, framebuffer: []u32 = &.{}, font: []u64 = &.{} };
+/// `framebuffer` is the graphics image that GFX-INIT got last, and `fonts` the buffers of
+/// the BDF fonts LOAD-FONT reads (the font in use, and one being read); all are freed
+/// when Sigma ends.
+const HostContext = struct { allocator: std.mem.Allocator, executable_path: [:0]const u8, environ_map: *std.process.Environ.Map, framebuffer: []u32 = &.{}, fonts: [2][]u64 = .{ &.{}, &.{} } };
 
 fn hostContext(context: ?*anyopaque) forth.RuntimeError!*HostContext {
     return @ptrCast(@alignCast(context orelse return error.HostUnavailable));
@@ -131,13 +132,24 @@ fn graphicsBuffer(context: ?*anyopaque, pixels: usize) ?[]u32 {
     return buffer;
 }
 
-/// LOAD-FONT's font: a new buffer, replacing the previous one only when it is allocated.
+/// A buffer for a font LOAD-FONT reads, kept until fontFree.
 fn fontBuffer(context: ?*anyopaque, words: usize) ?[]u64 {
     const host = hostContext(context) catch return null;
-    const buffer = host.allocator.alloc(u64, words) catch return null;
-    if (host.font.len != 0) host.allocator.free(host.font);
-    host.font = buffer;
-    return buffer;
+    for (&host.fonts) |*slot| {
+        if (slot.len != 0) continue;
+        slot.* = host.allocator.alloc(u64, words) catch return null;
+        return slot.*;
+    }
+    return null;
+}
+
+fn fontFree(context: ?*anyopaque, buffer: []u64) void {
+    const host = hostContext(context) catch return;
+    for (&host.fonts) |*slot| {
+        if (slot.ptr != buffer.ptr or slot.len == 0) continue;
+        host.allocator.free(slot.*);
+        slot.* = &.{};
+    }
 }
 
 fn sleepMilliseconds(_: ?*anyopaque, milliseconds: forth.Cell) forth.RuntimeError!void {
@@ -775,7 +787,9 @@ fn run(init: std.process.Init.Minimal) !void {
     defer allocator.free(executable_path);
     var host = HostContext{ .allocator = allocator, .executable_path = executable_path, .environ_map = &environ_map };
     defer if (host.framebuffer.len != 0) allocator.free(host.framebuffer);
-    defer if (host.font.len != 0) allocator.free(host.font);
+    defer for (host.fonts) |font| {
+        if (font.len != 0) allocator.free(font);
+    };
     const machine = try allocator.create(forth.State);
     defer allocator.destroy(machine);
     output_is_terminal = isTerminal(1);
@@ -787,7 +801,7 @@ fn run(init: std.process.Init.Minimal) !void {
 
     enableVirtualTerminal();
     useBinaryStdin();
-    machine.init(.{ .context = @ptrCast(&host), .write_fn = terminalWrite, .read_fn = terminalRead, .load_fn = loadDictionary, .save_fn = saveDictionary, .savesys_fn = saveExecutableImage, .key_fn = terminalKey, .key_ready_fn = terminalKeyReady, .sleep_fn = sleepMilliseconds, .utime_fn = microsecondsSinceEpoch, .local_time_fn = localTime, .getenv_fn = environmentValue, .system_fn = runShellCommand, .file_ops = &file_ops, .framebuffer_fn = graphicsBuffer, .terminal_size_fn = terminalSize, .terminal_utf8_fn = terminalUtf8, .window_fn = if (host_window.available) host_window.show else null, .input_fn = inputEvent, .mouse_fn = mouseMode, .cursor_fn = cursorPosition, .font_buffer_fn = if (graphics) fontBuffer else null, .system_font_fn = if (graphics and host_font.available) host_font.select else null, .system_glyph_fn = if (graphics and host_font.available) host_font.glyph else null });
+    machine.init(.{ .context = @ptrCast(&host), .write_fn = terminalWrite, .read_fn = terminalRead, .load_fn = loadDictionary, .save_fn = saveDictionary, .savesys_fn = saveExecutableImage, .key_fn = terminalKey, .key_ready_fn = terminalKeyReady, .sleep_fn = sleepMilliseconds, .utime_fn = microsecondsSinceEpoch, .local_time_fn = localTime, .getenv_fn = environmentValue, .system_fn = runShellCommand, .file_ops = &file_ops, .framebuffer_fn = graphicsBuffer, .terminal_size_fn = terminalSize, .terminal_utf8_fn = terminalUtf8, .window_fn = if (host_window.available) host_window.show else null, .input_fn = inputEvent, .mouse_fn = mouseMode, .cursor_fn = cursorPosition, .font_buffer_fn = if (graphics) fontBuffer else null, .font_free_fn = if (graphics) fontFree else null, .system_font_fn = if (graphics and host_font.available) host_font.select else null, .system_glyph_fn = if (graphics and host_font.available) host_font.glyph else null });
     defer closeAllFiles();
     defer host_window.close();
     // The terminal gets its line input back (and stops reporting the mouse) at the end.
@@ -994,4 +1008,8 @@ test "SAVE and LOAD through the host keep the words, also when loaded twice" {
     target.init(writer);
     try target.interpretLine(": EARLIER 1 ; LOAD .zig-cache/sigma-load-test.sigma LOAD .zig-cache/sigma-load-test.sigma 6 SQ V @ EARLIER");
     try std.testing.expectEqualSlices(forth.Cell, &.{ 36, 11, 1 }, target.data_stack[0..target.data_depth]);
+}
+test {
+    // The tests of the host's terminal input.
+    _ = host_input;
 }

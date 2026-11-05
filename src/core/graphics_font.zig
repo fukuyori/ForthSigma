@@ -43,7 +43,9 @@ comptime {
 pub const FontState = struct {
     kind: Kind = .builtin,
     /// The BDF font, in the host's buffer: its glyphs sorted by code point, the rows of
-    /// bits after them, and the height of its lines.
+    /// bits after them, and the height of its lines. The buffer stays after BUILTIN-FONT
+    /// until another font is read.
+    buffer: []u64 = &.{},
     entries: []const Entry = &.{},
     bits: []const u8 = &.{},
     bdf_height: u32 = 0,
@@ -156,6 +158,11 @@ fn systemGlyph(self: *State, code: u21) ?Cell {
 /// TEXT visits fewer pixels.
 fn trimBox(font: *FontState, alpha: *const Alpha) void {
     font.first = 0;
+    // An empty box (a space of a BDF font may have one): nothing to draw.
+    if (font.width == 0 or font.height == 0) {
+        font.width = 0;
+        return;
+    }
     var first: u32 = font.width;
     var last: u32 = 0;
     for (0..font.height) |row| {
@@ -200,13 +207,13 @@ const ScanError = error{ BadFont, ReadFailed };
 /// the host gives. Returns 0, the ior of the file, or `font_error`.
 pub fn loadBdf(self: *State, name: []const u8) RuntimeError!Cell {
     const files = try self.fileOps();
-    const buffer_fn = self.writer.font_buffer_fn orelse return error.HostUnavailable;
+    if (self.writer.font_buffer_fn == null or self.writer.font_free_fn == null) return error.HostUnavailable;
     const context = self.writer.context;
     const opened = files.open(context, name, .read_only, false);
     if (opened.ior != 0) return opened.ior;
     const fileid: Cell = @bitCast(opened.value);
     var ior: Cell = 0;
-    const result = loadOpenBdf(self, fileid, buffer_fn, &ior);
+    const result = loadOpenBdf(self, fileid, &ior);
     const closed = files.close(context, fileid);
     result catch |err| switch (err) {
         error.ReadFailed => return ior,
@@ -217,7 +224,10 @@ pub fn loadBdf(self: *State, name: []const u8) RuntimeError!Cell {
     return closed;
 }
 
-fn loadOpenBdf(self: *State, fileid: Cell, buffer_fn: *const fn (?*anyopaque, usize) ?[]u64, ior: *Cell) error{ BadFont, ReadFailed, MemoryExhausted, HostFailed }!void {
+/// Reads the font into a new buffer, and only when it has all been read gives up the
+/// old font's buffer: a font that fails, also on the second reading, leaves the font
+/// as it was.
+fn loadOpenBdf(self: *State, fileid: Cell, ior: *Cell) error{ BadFont, ReadFailed, MemoryExhausted, HostFailed }!void {
     const counts = try scan(self, fileid, null, ior);
     if (counts.glyphs == 0) return error.BadFont;
     const table_bytes = counts.glyphs * @sizeOf(Entry);
@@ -230,11 +240,9 @@ fn loadOpenBdf(self: *State, fileid: Cell, buffer_fn: *const fn (?*anyopaque, us
     }
     const words = (total + 7) / 8;
     const font = &self.gfx_font;
-    const buffer = buffer_fn(self.writer.context, words) orelse return error.MemoryExhausted;
-    // The host has let the old buffer go: a BDF font in it is gone.
-    if (font.kind == .bdf) font.kind = .builtin;
-    font.entries = &.{};
-    font.bits = &.{};
+    const context = self.writer.context;
+    const buffer = self.writer.font_buffer_fn.?(context, words) orelse return error.MemoryExhausted;
+    errdefer self.writer.font_free_fn.?(context, buffer);
     if (buffer.len != words) return error.HostFailed;
     const entries_start: [*]Entry = @ptrCast(buffer.ptr);
     const bytes_start: [*]u8 = @ptrCast(buffer.ptr);
@@ -247,14 +255,25 @@ fn loadOpenBdf(self: *State, fileid: Cell, buffer_fn: *const fn (?*anyopaque, us
             return a.code < b.code;
         }
     }.less);
+    if (font.buffer.len != 0) self.writer.font_free_fn.?(context, font.buffer);
+    font.buffer = buffer;
     font.entries = output.entries;
     font.bits = output.bits;
     font.bdf_height = counts.height;
     font.kind = .bdf;
 }
 
+/// The largest size a number of a BDF file may have: above every code point (0x10FFFF),
+/// far beyond any real font's sizes, and small enough that the sums and differences of
+/// a few of them cannot overflow.
+const max_bdf_number = 0x200000;
+
+/// A number of a BDF file; FONT ERROR when it is missing, not a number, or beyond
+/// ±0x200000.
 fn number(token: ?[]const u8) ScanError!i64 {
-    return std.fmt.parseInt(i64, token orelse return error.BadFont, 10) catch error.BadFont;
+    const value = std.fmt.parseInt(i64, token orelse return error.BadFont, 10) catch return error.BadFont;
+    if (value < -max_bdf_number or value > max_bdf_number) return error.BadFont;
+    return value;
 }
 
 /// One reading of a BDF file: counts its glyphs and the bytes of their rows and, with

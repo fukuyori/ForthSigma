@@ -60,6 +60,10 @@ pub const InputEvent = union(enum) {
     terminal_mouse: struct { column: i32, row: i32, buttons: MouseButtons },
     /// The mouse in the window: the pixel of the image under it and the buttons held.
     window_mouse: struct { x: i32, y: i32, buttons: MouseButtons },
+    /// The terminal gives single keys again after its line input: what the graphics
+    /// words kept of the terminal's input before (keys not yet read, a sequence not
+    /// ended, buttons held) is dropped, as the host dropped its own.
+    restarted,
 };
 
 /// A glyph the host drew for TEXT (system_glyph_fn): its advance, and its box of
@@ -120,9 +124,11 @@ pub const Writer = struct {
     /// output written before the call must have reached the terminal first.
     cursor_fn: ?*const fn (?*anyopaque) ?CursorPosition = null,
     /// Gives memory for a font LOAD-FONT reads, that many 64-bit words, outside logical
-    /// memory. On success the host releases the buffer it gave before; on failure it
-    /// returns null and keeps it.
+    /// memory, or null when there is none. The buffers given before stay until
+    /// font_free_fn frees them (the core has at most two at a time).
     font_buffer_fn: ?*const fn (?*anyopaque, usize) ?[]u64 = null,
+    /// Frees a buffer font_buffer_fn gave.
+    font_free_fn: ?*const fn (?*anyopaque, []u64) void = null,
     /// Chooses the system's font of that name for TEXT, `height` pixels from the top of
     /// a line to its bottom. False when the system has no font of the name.
     system_font_fn: ?*const fn (?*anyopaque, []const u8, u32) RuntimeError!bool = null,
