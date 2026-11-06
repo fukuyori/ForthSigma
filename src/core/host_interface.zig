@@ -57,6 +57,11 @@ pub const InputEvent = union(enum) {
     key: u32,
     /// The same, pressed in the window: it stays when the terminal restarts.
     window_key: u32,
+    /// A key of `key` was released (a Windows console tells when, and when it loses the
+    /// focus): KEY-HELD? no longer holds it.
+    key_release: u32,
+    /// The same for `window_key`.
+    window_key_release: u32,
     /// The mouse on the terminal: its character cell (column and row from 0, counted on
     /// the screen as `cursor_fn` counts them) and the buttons held.
     terminal_mouse: struct { column: i32, row: i32, buttons: MouseButtons },
@@ -112,8 +117,11 @@ pub const Writer = struct {
     terminal_utf8_fn: ?*const fn (?*anyopaque, bool) void = null,
     /// Shows the 32-bit pixels (0xAARRGGBB, rows from the top) of a width × height
     /// image in a window, which the host keeps open. The host copies the pixels, each
-    /// as graphics_palette.convert gives it in the color mode (DISPLAY-COLORS).
-    window_fn: ?*const fn (?*anyopaque, []const u32, u32, u32, ColorMode) RuntimeError!void = null,
+    /// as graphics_palette.convert gives it in the color mode (DISPLAY-COLORS). The
+    /// last argument is the size of the part of the window that shows the image
+    /// (WINDOW-SIZE), 0 0 for the image's size; the image keeps its proportions in it,
+    /// and the rest is black.
+    window_fn: ?*const fn (?*anyopaque, []const u32, u32, u32, ColorMode, [2]u32) RuntimeError!void = null,
     /// The next input event without waiting, or null when there is none. The first call
     /// lets the terminal give each key at once, without echo; the host gives it back its
     /// line input when the program next reads a line or a KEY, and at the end. The host

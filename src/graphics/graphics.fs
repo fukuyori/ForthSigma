@@ -293,6 +293,12 @@ VARIABLE (DITHER)  0 (DITHER) !
 \ The next key pressed on the terminal or in the window, without waiting; -1 when there
 \ is none. Ctrl+C throws USER INTERRUPT (-28).
 : INKEY ( -- key | -1 )   GFX-INKEY ;
+\ Whether the key (a code as INKEY gives it) is held down now; a terminal does not tell
+\ when a key is released, so its keys count as held for 0.6 s after they were pressed.
+: KEY-HELD? ( key -- flag )   GFX-KEY-HELD ;
+\ The size of the part of the window (and of the Tk window) that shows the image, from
+\ the next SHOW; 0 0 for the image's own size. The image keeps its proportions.
+: WINDOW-SIZE ( w h -- )   GFX-WINDOW-SIZE ;
 
 \ The pixel of the image under the mouse and the buttons held (1 left, 2 right,
 \ 4 middle); -1 -1 while the position is not known.

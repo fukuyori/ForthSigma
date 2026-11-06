@@ -72,7 +72,19 @@ pub const InputState = struct {
     /// Whether MOUSE-ON asked the terminal for mouse reports.
     mouse_on: bool = false,
     shown: ?Shown = null,
+    /// The keys KEY-HELD? holds, the most recently pressed last.
+    held: [16]Held = undefined,
+    held_count: usize = 0,
 };
+
+/// A key that is held: until its host tells it was released (`until` null: a Windows
+/// console, a window, the Tk window), or, as a terminal does not tell, until a while
+/// after it was last pressed (the terminal repeats a key held down).
+const Held = struct { code: u32, from_terminal: bool, until: ?forth.Double };
+
+/// How long a key from a terminal counts as held after it was pressed: longer than
+/// most terminals wait before they repeat a key (about 0.5 s).
+pub const terminal_hold_us = 600_000;
 
 /// What a complete sequence of bytes from the terminal stands for.
 const Decoded = union(enum) {
@@ -230,6 +242,47 @@ fn restart(input: *InputState) void {
     input.pending_len = 0;
     input.terminal_buttons = 0;
     if (input.mouse_from_terminal) input.mouse_buttons = 0;
+    // Keys released while the terminal had its line input were not seen.
+    kept = 0;
+    for (input.held[0..input.held_count]) |held| {
+        if (held.from_terminal) continue;
+        input.held[kept] = held;
+        kept += 1;
+    }
+    input.held_count = kept;
+}
+
+/// The keys KEY-HELD? can tell: those of one byte (ASCII) and the keys from 256 up.
+fn holdable(code: u32) bool {
+    return code < 0x80 or (code >= key_up and code <= key_f1 + 11);
+}
+
+fn forget(input: *InputState, index: usize) void {
+    std.mem.copyForwards(Held, input.held[index .. input.held_count - 1], input.held[index + 1 .. input.held_count]);
+    input.held_count -= 1;
+}
+
+/// A key was pressed: `released` when its host tells when it is released.
+fn press(self: *State, code: u32, from_terminal: bool, released: bool) void {
+    if (!holdable(code)) return;
+    const input = &self.gfx_input;
+    const until: ?forth.Double = if (released) null else (now(self) orelse 0) + terminal_hold_us;
+    for (input.held[0..input.held_count], 0..) |held, index| {
+        if (held.code == code) {
+            forget(input, index);
+            break;
+        }
+    }
+    // With all taken, the key pressed longest ago gives way.
+    if (input.held_count == input.held.len) forget(input, 0);
+    input.held[input.held_count] = .{ .code = code, .from_terminal = from_terminal, .until = until };
+    input.held_count += 1;
+}
+
+fn release(input: *InputState, code: u32) void {
+    for (input.held[0..input.held_count], 0..) |held, index| {
+        if (held.code == code) return forget(input, index);
+    }
 }
 
 /// The pixel of the image under a character cell of the terminal, from where SHOW put
@@ -247,7 +300,10 @@ fn terminalPixel(shown: Shown, column: i32, row: i32) ?[2]Cell {
 fn apply(self: *State, decoded: Decoded) RuntimeError!void {
     const input = &self.gfx_input;
     switch (decoded) {
-        .key => |key| try addKey(self, key, true),
+        .key => |key| {
+            try addKey(self, key, true);
+            press(self, key, true, false);
+        },
         .mouse => |mouse| {
             input.mouse_buttons = mouse.buttons;
             input.mouse_from_terminal = true;
@@ -330,8 +386,12 @@ fn readInput(self: *State, until_key: bool) RuntimeError!void {
                 try decodePending(self, false);
             },
             .restarted => restart(input),
-            .key => |key| try addKey(self, key, true),
-            .window_key => |key| try addKey(self, key, false),
+            .key => |key| {
+                try addKey(self, key, true);
+                press(self, key, true, true);
+            },
+            .window_key => |key| try windowKey(self, key),
+            .key_release, .window_key_release => |key| release(input, key),
             .terminal_mouse => |mouse| try apply(self, .{ .mouse = .{ .column = mouse.column, .row = mouse.row, .buttons = mouse.buttons } }),
             .window_mouse => |mouse| windowMouse(self, mouse.x, mouse.y, mouse.buttons),
         }
@@ -340,9 +400,33 @@ fn readInput(self: *State, until_key: bool) RuntimeError!void {
     if (input.pending_len != 0) try decodePending(self, pendingExpired(self));
 }
 
-/// A key pressed in a window whose program sends it (the Tk window of DISPLAY-TK).
+/// A key pressed in a window: the host's, or one whose program sends it (the Tk window
+/// of DISPLAY-TK). The window tells when it is released.
 pub fn windowKey(self: *State, key: u32) RuntimeError!void {
     try addKey(self, key, false);
+    press(self, key, false, true);
+}
+
+/// A key released in such a window.
+pub fn windowKeyRelease(self: *State, key: u32) void {
+    release(&self.gfx_input, key);
+}
+
+/// KEY-HELD?: whether the key (as INKEY gives it) is held down now. It reads what the
+/// host has first; keys read meanwhile wait for INKEY.
+pub fn keyHeld(self: *State, code: Cell) RuntimeError!bool {
+    try readInput(self, false);
+    const input = &self.gfx_input;
+    for (input.held[0..input.held_count], 0..) |held, index| {
+        if (code < 0 or held.code != code) continue;
+        const until = held.until orelse return true;
+        const time = now(self) orelse 0;
+        // Past its time, or the clock went back.
+        if (time < until and time + terminal_hold_us >= until) return true;
+        forget(input, index);
+        return false;
+    }
+    return false;
 }
 
 /// The mouse over such a window: the pixel of the image under it and the buttons.

@@ -1923,14 +1923,14 @@ test "DISPLAY-TK makes SHOW send the image to the Tk window as a PNG in base64" 
     const base64_length = (png_length + 2) / 3 * 4;
     const written = output.processWritten();
     const newline = std.mem.indexOfScalar(u8, written, '\n').?;
-    try std.testing.expectEqual(11 + base64_length, try std.fmt.parseInt(usize, written[0..newline], 10));
+    try std.testing.expectEqual(15 + base64_length, try std.fmt.parseInt(usize, written[0..newline], 10));
     const body = written[newline + 1 ..];
-    try std.testing.expectEqual(11 + base64_length, body.len);
-    try std.testing.expect(std.mem.startsWith(u8, body, "sigma_show "));
+    try std.testing.expectEqual(15 + base64_length, body.len);
+    try std.testing.expect(std.mem.startsWith(u8, body, "sigma_show 0 0 "));
     var png: [128]u8 = undefined;
     const decoder = std.base64.standard.Decoder;
-    const decoded_length = try decoder.calcSizeForSlice(body[11..]);
-    try decoder.decode(png[0..decoded_length], body[11..]);
+    const decoded_length = try decoder.calcSizeForSlice(body[15..]);
+    try decoder.decode(png[0..decoded_length], body[15..]);
     try std.testing.expectEqual(png_length, decoded_length);
     try std.testing.expectEqualStrings("\x89PNG\r\n\x1a\n", png[0..8]);
     // The first pixel, red, after the zlib and block headers and the row's filter byte.
@@ -2141,4 +2141,165 @@ test "TCL-STOP in the middle of a message frees its text, and the new program is
     try machine.interpretLine("S\" c\" TCL-EVAL TYPE");
     try std.testing.expectEqualStrings("new", output.written());
     try std.testing.expectEqual(@as(usize, 3), output.process_starts);
+}
+
+// ---- KEY-HELD? ----
+
+fn setEvents(output: *Output, events: []const forth.InputEvent) void {
+    output.events = events;
+    output.event_index = 0;
+}
+
+test "KEY-HELD? holds a key of the window until it is released, and INKEY still gives the key" {
+    try skipWithout(&.{.graphics});
+    var output = Output{};
+    const machine = try libraryMachine(&output, "4 4");
+    defer destroyMachine(machine);
+    setEvents(&output, &.{ .{ .window_key = 256 }, .{ .window_key = 'a' } });
+    try machine.interpretLine("K-UP KEY-HELD? K-DOWN KEY-HELD? CHAR a KEY-HELD?");
+    try expectStack(machine, &.{ -1, 0, -1 });
+    machine.data_depth = 0;
+    // Held for long: the window tells when it is released.
+    output.time += 10_000_000;
+    setEvents(&output, &.{.{ .window_key_release = 256 }});
+    try machine.interpretLine("K-UP KEY-HELD? CHAR a KEY-HELD? INKEY INKEY INKEY");
+    try expectStack(machine, &.{ 0, -1, 256, 'a', -1 });
+    machine.data_depth = 0;
+    // Not keys: a negative number, a code KEY-HELD? cannot tell, one never pressed.
+    try machine.interpretLine("-1 KEY-HELD? 200 KEY-HELD? K-F12 KEY-HELD?");
+    try expectStack(machine, &.{ 0, 0, 0 });
+}
+
+test "KEY-HELD? holds a key of the Windows console until it is released or the terminal restarts" {
+    try skipWithout(&.{.graphics});
+    var output = Output{};
+    const machine = try libraryMachine(&output, "4 4");
+    defer destroyMachine(machine);
+    setEvents(&output, &.{ .{ .key = 257 }, .{ .key = 'x' }, .{ .window_key = 258 } });
+    try machine.interpretLine("K-DOWN KEY-HELD? CHAR x KEY-HELD? K-LEFT KEY-HELD?");
+    try expectStack(machine, &.{ -1, -1, -1 });
+    machine.data_depth = 0;
+    output.time += 10_000_000;
+    setEvents(&output, &.{.{ .key_release = 'x' }});
+    try machine.interpretLine("K-DOWN KEY-HELD? CHAR x KEY-HELD?");
+    try expectStack(machine, &.{ -1, 0 });
+    machine.data_depth = 0;
+    // The terminal had its line input: its keys are no longer held; the window's are.
+    setEvents(&output, &.{.restarted});
+    try machine.interpretLine("K-DOWN KEY-HELD? K-LEFT KEY-HELD?");
+    try expectStack(machine, &.{ 0, -1 });
+}
+
+test "KEY-HELD? holds a key of a terminal for 0.6 s after it was last pressed" {
+    try skipWithout(&.{.graphics});
+    var output = Output{};
+    const machine = try libraryMachine(&output, "4 4");
+    defer destroyMachine(machine);
+    const up = byteEvents("\x1b[A");
+    setEvents(&output, &up);
+    try machine.interpretLine("K-UP KEY-HELD?");
+    try expectStack(machine, &.{-1});
+    machine.data_depth = 0;
+    output.time += 500_000;
+    try machine.interpretLine("K-UP KEY-HELD?");
+    try expectStack(machine, &.{-1});
+    machine.data_depth = 0;
+    // The terminal repeats the key held down: each press holds it 0.6 s more.
+    setEvents(&output, &up);
+    output.time += 500_000;
+    try machine.interpretLine("K-UP KEY-HELD?");
+    try expectStack(machine, &.{-1});
+    machine.data_depth = 0;
+    output.time += 600_000;
+    try machine.interpretLine("K-UP KEY-HELD? INKEY INKEY INKEY");
+    try expectStack(machine, &.{ 0, 256, 256, -1 });
+    machine.data_depth = 0;
+    // The clock going back does not hold a key for ever.
+    const b = byteEvents("b");
+    setEvents(&output, &b);
+    try machine.interpretLine("CHAR b KEY-HELD?");
+    try expectStack(machine, &.{-1});
+    machine.data_depth = 0;
+    output.time -= 10_000_000;
+    try machine.interpretLine("CHAR b KEY-HELD? INKEY");
+    try expectStack(machine, &.{ 0, 'b' });
+}
+
+test "KEY-HELD? holds a key of the Tk window until the Tcl program tells it went up" {
+    try skipWithout(&.{.graphics});
+    var output = Output{};
+    const machine = try libraryMachine(&output, "4 4");
+    defer destroyMachine(machine);
+    output.process_replies = "R 0 0\n" ++ "K 0 3\n256" ++ "U 0 3\n256";
+    output.process_reply_limit = 6 + 9;
+    try machine.interpretLine("S\" a\" TCL K-UP KEY-HELD?");
+    try expectStack(machine, &.{-1});
+    machine.data_depth = 0;
+    output.process_reply_limit = std.math.maxInt(usize);
+    try machine.interpretLine("K-UP KEY-HELD? INKEY");
+    try expectStack(machine, &.{ 0, 256 });
+    machine.data_depth = 0;
+    // U with another code than 0 breaks the protocol.
+    output.process_replies = "U 1 3\n256";
+    output.process_reply_index = 0;
+    try machine.interpretLine(": T K-UP KEY-HELD? ; ' T CATCH");
+    try expectStack(machine, &.{-265});
+}
+
+test "KEY-HELD? keeps the 16 keys pressed last" {
+    try skipWithout(&.{.graphics});
+    var output = Output{};
+    const machine = try libraryMachine(&output, "4 4");
+    defer destroyMachine(machine);
+    var events: [17]forth.InputEvent = undefined;
+    for (&events, 0..) |*event, index| event.* = .{ .window_key = @intCast('a' + index) };
+    setEvents(&output, &events);
+    try machine.interpretLine("CHAR a KEY-HELD? CHAR b KEY-HELD? CHAR q KEY-HELD?");
+    try expectStack(machine, &.{ 0, -1, -1 });
+    machine.data_depth = 0;
+    // Pressed again, a key is the latest: the next new key pushes out b, not it.
+    setEvents(&output, &.{ .{ .window_key = 'b' }, .{ .window_key = 'r' } });
+    try machine.interpretLine("CHAR b KEY-HELD? CHAR c KEY-HELD? CHAR r KEY-HELD?");
+    try expectStack(machine, &.{ -1, 0, -1 });
+}
+
+// ---- WINDOW-SIZE ----
+
+test "WINDOW-SIZE gives the window the size to show the image in, from the next SHOW" {
+    try skipWithout(&.{.graphics});
+    var output = Output{ .has_window = true };
+    const machine = try libraryMachine(&output, "4 3");
+    defer destroyMachine(machine);
+    try machine.interpretLine("SHOW");
+    try std.testing.expectEqual([2]u32{ 0, 0 }, output.window_size);
+    try machine.interpretLine("640 480 WINDOW-SIZE");
+    try std.testing.expectEqual(@as(usize, 1), output.window_shows);
+    try machine.interpretLine("SHOW");
+    try std.testing.expectEqual([2]u32{ 640, 480 }, output.window_size);
+    try std.testing.expectEqual(@as(u32, 4), output.window_width);
+    try machine.interpretLine("1 8192 WINDOW-SIZE SHOW");
+    try std.testing.expectEqual([2]u32{ 1, 8192 }, output.window_size);
+    try machine.interpretLine("0 0 WINDOW-SIZE SHOW");
+    try std.testing.expectEqual([2]u32{ 0, 0 }, output.window_size);
+    // Each side 1 to 8192, or both 0; the size stays as it was.
+    try machine.interpretLine("320 200 WINDOW-SIZE");
+    for ([_][]const u8{ "0 5", "5 0", "-1 5", "5 -1", "8193 1", "1 8193" }) |size| {
+        machine.data_depth = 0;
+        var line: [64]u8 = undefined;
+        try std.testing.expectError(error.InvalidNumber, machine.interpretLine(try std.fmt.bufPrint(&line, "{s} WINDOW-SIZE", .{size})));
+    }
+    try machine.interpretLine("SHOW");
+    try std.testing.expectEqual([2]u32{ 320, 200 }, output.window_size);
+}
+
+test "WINDOW-SIZE goes to the Tk window with the image" {
+    try skipWithout(&.{.graphics});
+    var output = Output{};
+    const machine = try libraryMachine(&output, "3 2");
+    defer destroyMachine(machine);
+    output.process_replies = "R 0 0\n";
+    try machine.interpretLine("640 480 WINDOW-SIZE DISPLAY-TK SHOW");
+    const written = output.processWritten();
+    const newline = std.mem.indexOfScalar(u8, written, '\n').?;
+    try std.testing.expect(std.mem.startsWith(u8, written[newline + 1 ..], "sigma_show 640 480 iVBORw0KGgo"));
 }

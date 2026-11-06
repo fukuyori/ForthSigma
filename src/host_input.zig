@@ -226,6 +226,7 @@ const windows = struct {
     const virtual_terminal_input: u32 = 0x0200;
     const key_event: u16 = 0x0001;
     const mouse_event: u16 = 0x0002;
+    const focus_event: u16 = 0x0010;
     const mouse_wheeled: u32 = 0x0004;
     const mouse_hwheeled: u32 = 0x0008;
 
@@ -236,6 +237,16 @@ const windows = struct {
     var pending: [3]u8 = undefined;
     var pending_len: usize = 0;
     var high_surrogate: u16 = 0;
+    /// The key code each virtual key gave when it went down, plus 1 (0: not down), so
+    /// that its release can be told (KEY-HELD?); and releases waiting to be given, when
+    /// the console lost the focus with keys down.
+    var down: [256]u32 = @splat(0);
+    var releases: [16]u32 = undefined;
+    var releases_len: usize = 0;
+
+    fn pressed(virtual_key: u16, code: u32) void {
+        if (virtual_key < down.len and (code < 0x80 or code >= 256)) down[virtual_key] = code + 1;
+    }
 
     fn handle(which: i32) ?Handle {
         return GetStdHandle(@bitCast(which));
@@ -258,6 +269,8 @@ const windows = struct {
         _ = SetConsoleMode(console, saved_mode);
         pending_len = 0;
         high_surrogate = 0;
+        down = @splat(0);
+        releases_len = 0;
     }
 
     fn setMouse(on: bool) void {
@@ -301,6 +314,10 @@ const windows = struct {
             pending_len -= 1;
             return .{ .key = byte };
         }
+        if (releases_len != 0) {
+            releases_len -= 1;
+            return .{ .key_release = releases[releases_len] };
+        }
         const console = input orelse return null;
         while (true) {
             var count: u32 = 0;
@@ -311,10 +328,19 @@ const windows = struct {
             const data = &record.data;
             switch (record.event_type) {
                 key_event => {
-                    if (std.mem.readInt(i32, data[0..4], .little) == 0) continue;
                     const virtual_key = std.mem.readInt(u16, data[6..8], .little);
+                    if (std.mem.readInt(i32, data[0..4], .little) == 0) {
+                        if (virtual_key >= down.len or down[virtual_key] == 0) continue;
+                        const code = down[virtual_key] - 1;
+                        down[virtual_key] = 0;
+                        return .{ .key_release = code };
+                    }
                     const unit = std.mem.readInt(u16, data[10..12], .little);
-                    if (keyCode(virtual_key)) |key| return .{ .key = key };
+                    if (keyCode(virtual_key)) |key| {
+                        pressed(virtual_key, key);
+                        return .{ .key = key };
+                    }
+                    if (unit != 0 and unit < 0x80) pressed(virtual_key, unit);
                     if (unit == 0) continue;
                     if (unit >= 0xD800 and unit < 0xDC00) {
                         high_surrogate = unit;
@@ -341,6 +367,21 @@ const windows = struct {
                     const buttons: u8 = @truncate(std.mem.readInt(u32, data[4..8], .little) & 7);
                     const info = screen() orelse return null;
                     return .{ .terminal_mouse = .{ .column = @as(i32, x) - info.window[0], .row = @as(i32, y) - info.window[1], .buttons = buttons } };
+                },
+                // The console lost the focus: the keys down will not tell their release.
+                focus_event => {
+                    if (std.mem.readInt(i32, data[0..4], .little) != 0) continue;
+                    for (&down) |*code| {
+                        if (code.* == 0) continue;
+                        if (releases_len < releases.len) {
+                            releases[releases_len] = code.* - 1;
+                            releases_len += 1;
+                        }
+                        code.* = 0;
+                    }
+                    if (releases_len == 0) continue;
+                    releases_len -= 1;
+                    return .{ .key_release = releases[releases_len] };
                 },
                 else => continue,
             }

@@ -82,6 +82,7 @@ const win32 = struct {
     extern "user32" fn LoadCursorW(?Handle, usize) callconv(.winapi) ?Handle;
     extern "gdi32" fn StretchDIBits(?Handle, i32, i32, i32, i32, i32, i32, i32, i32, ?*const anyopaque, *const BitmapInfo, u32, u32) callconv(.winapi) i32;
     extern "gdi32" fn SetStretchBltMode(?Handle, i32) callconv(.winapi) i32;
+    extern "gdi32" fn PatBlt(?Handle, i32, i32, i32, i32, u32) callconv(.winapi) i32;
     extern "kernel32" fn GetModuleHandleW(?[*:0]const u16) callconv(.winapi) ?Handle;
     extern "kernel32" fn CreateThread(?*anyopaque, usize, *const fn (?*anyopaque) callconv(.winapi) u32, ?*anyopaque, u32, ?*u32) callconv(.winapi) ?Handle;
     extern "kernel32" fn CreateEventW(?*anyopaque, i32, i32, ?[*:0]const u16) callconv(.winapi) ?Handle;
@@ -99,7 +100,9 @@ const win32 = struct {
     const wm_close = 0x0010;
     const wm_paint = 0x000F;
     const wm_erase_background = 0x0014;
+    const wm_kill_focus = 0x0008;
     const wm_key_down = 0x0100;
+    const wm_key_up = 0x0101;
     const wm_char = 0x0102;
     const wm_mouse_move = 0x0200;
     const wm_left_down = 0x0201;
@@ -116,6 +119,9 @@ const win32 = struct {
     const arrow_cursor: usize = 32512;
     const color_on_color = 3;
     const source_copy: u32 = 0x00CC0020;
+    const blackness: u32 = 0x00000042;
+    const redraw_vertical: u32 = 0x0001;
+    const redraw_horizontal: u32 = 0x0002;
     const infinite: u32 = 0xFFFF_FFFF;
     const wait_object_0: u32 = 0;
     /// The largest client area a new window gets; a larger image is drawn smaller.
@@ -130,18 +136,25 @@ const win32 = struct {
     var pixels: []u32 = &.{};
     var width: u32 = 0;
     var height: u32 = 0;
+    /// WINDOW-SIZE: the client area the window gets, 0 0 for the image's size.
+    var requested: [2]u32 = .{ 0, 0 };
     var window: ?Handle = null;
     /// A wm_new_image message is waiting in the window's queue: SHOW sends no other, so
     /// the queue cannot fill, and that message draws the latest image.
     var update_pending = false;
     /// The image's size changed since the window last fitted it.
     var resize_pending = false;
-    /// Keys pressed in the window and not yet read by INKEY (later ones are dropped when
-    /// it is full), and the mouse: the pixel of the image under it and its buttons.
-    var keys: [64]u32 = undefined;
+    /// Keys pressed and released in the window and not yet read (later ones are dropped
+    /// when it is full), and the mouse: the pixel of the image under it and its buttons.
+    var keys: [64]KeyEvent = undefined;
     var key_head: usize = 0;
     var key_count: usize = 0;
     var high_surrogate: u16 = 0;
+    /// The key code each virtual key gave when it went down, plus 1 (0: not down), so
+    /// that its release can be told (KEY-HELD?); the virtual key of the last WM_KEYDOWN
+    /// that gave no code itself, whose WM_CHAR follows.
+    var down: [256]u32 = @splat(0);
+    var char_key: ?usize = null;
     var mouse_x: i32 = -1;
     var mouse_y: i32 = -1;
     var mouse_buttons: u8 = 0;
@@ -153,9 +166,11 @@ const win32 = struct {
     var ready: ?Handle = null;
     var opened = false;
 
-    fn show(_: ?*anyopaque, image: []const u32, image_width: u32, image_height: u32, mode: forth.ColorMode) forth.RuntimeError!void {
+    fn show(_: ?*anyopaque, image: []const u32, image_width: u32, image_height: u32, mode: forth.ColorMode, size: [2]u32) forth.RuntimeError!void {
         AcquireSRWLockExclusive(&lock);
-        const resized = image_width != width or image_height != height;
+        // The window fits itself again when the image or WINDOW-SIZE changed.
+        const resized = image_width != width or image_height != height or size[0] != requested[0] or size[1] != requested[1];
+        requested = size;
         if (pixels.len != image.len) {
             const buffer = std.heap.c_allocator.alloc(u32, image.len) catch {
                 ReleaseSRWLockExclusive(&lock);
@@ -199,18 +214,32 @@ const win32 = struct {
             const key = keys[key_head];
             key_head = (key_head + 1) % keys.len;
             key_count -= 1;
-            return .{ .window_key = key };
+            return if (key.release) .{ .window_key_release = key.code } else .{ .window_key = key.code };
         }
         if (!mouse_changed) return null;
         mouse_changed = false;
         return .{ .window_mouse = .{ .x = mouse_x, .y = mouse_y, .buttons = mouse_buttons } };
     }
 
+    const KeyEvent = struct { code: u32, release: bool };
+
     /// Called with the lock held.
     fn pushKey(key: u32) void {
+        pushEvent(.{ .code = key, .release = false });
+    }
+
+    fn pushEvent(event: KeyEvent) void {
         if (key_count == keys.len) return;
-        keys[(key_head + key_count) % keys.len] = key;
+        keys[(key_head + key_count) % keys.len] = event;
         key_count += 1;
+    }
+
+    /// A key went up, or (all of them) the window lost the focus. Called with the lock
+    /// held.
+    fn releaseKey(virtual_key: usize) void {
+        if (virtual_key >= down.len or down[virtual_key] == 0) return;
+        pushEvent(.{ .code = down[virtual_key] - 1, .release = true });
+        down[virtual_key] = 0;
     }
 
     /// The key code of a key that gives no character (graphics_input's codes).
@@ -246,10 +275,34 @@ const win32 = struct {
         var bytes: [4]u8 = undefined;
         const length = std.unicode.utf8Encode(code_point, &bytes) catch return;
         for (bytes[0..length]) |byte| pushKey(byte);
+        // A character of one byte is held until its key goes up.
+        if (char_key) |virtual_key| {
+            if (code_point < 0x80 and virtual_key < down.len) down[virtual_key] = code_point + 1;
+        }
+        char_key = null;
     }
 
-    /// The pixel of the image under a point of the client area, which shows the whole
-    /// image stretched.
+    /// Where the image is drawn in a client area: as large as fits with its proportions,
+    /// in the middle; the rest is black. Called with the lock held.
+    fn fitted(client_width: i32, client_height: i32) Rect {
+        const cw: i64 = @max(client_width, 1);
+        const ch: i64 = @max(client_height, 1);
+        const iw: i64 = @max(width, 1);
+        const ih: i64 = @max(height, 1);
+        // The wider of the two fills its width; the other its height.
+        var w: i64 = cw;
+        var h: i64 = @max(1, @divFloor(ih * cw, iw));
+        if (h > ch) {
+            h = ch;
+            w = @max(1, @divFloor(iw * ch, ih));
+        }
+        const left: i32 = @intCast(@divFloor(cw - w, 2));
+        const top: i32 = @intCast(@divFloor(ch - h, 2));
+        return .{ .left = left, .top = top, .right = left + @as(i32, @intCast(w)), .bottom = top + @as(i32, @intCast(h)) };
+    }
+
+    /// The pixel of the image under a point of the client area, from where the image is
+    /// drawn in it (outside the image: beyond its edges).
     fn mouseMoved(handle: ?Handle, wparam: usize, lparam: isize) void {
         var client = Rect{};
         _ = GetClientRect(handle, &client);
@@ -258,10 +311,11 @@ const win32 = struct {
         const y: i64 = @as(i16, @bitCast(@as(u16, @truncate(bits >> 16))));
         AcquireSRWLockExclusive(&lock);
         defer ReleaseSRWLockExclusive(&lock);
-        const client_width: i64 = @max(client.right, 1);
-        const client_height: i64 = @max(client.bottom, 1);
-        mouse_x = @intCast(std.math.clamp(@divFloor(x * width, client_width), -1 << 20, 1 << 20));
-        mouse_y = @intCast(std.math.clamp(@divFloor(y * height, client_height), -1 << 20, 1 << 20));
+        const place = fitted(client.right, client.bottom);
+        const shown_width: i64 = @max(place.right - place.left, 1);
+        const shown_height: i64 = @max(place.bottom - place.top, 1);
+        mouse_x = @intCast(std.math.clamp(@divFloor((x - place.left) * width, shown_width), -1 << 20, 1 << 20));
+        mouse_y = @intCast(std.math.clamp(@divFloor((y - place.top) * height, shown_height), -1 << 20, 1 << 20));
         var buttons: u8 = 0;
         if (wparam & button_left != 0) buttons |= 1;
         if (wparam & button_right != 0) buttons |= 2;
@@ -290,6 +344,7 @@ const win32 = struct {
     /// The size of a client area for the image, at most the largest a new window gets,
     /// keeping the image's proportions.
     fn clientSize(image_width: u32, image_height: u32) [2]i32 {
+        if (requested[0] != 0) return .{ @intCast(requested[0]), @intCast(requested[1]) };
         var w: u64 = @max(image_width, 1);
         var h: u64 = @max(image_height, 1);
         if (w > max_client_width) {
@@ -315,7 +370,8 @@ const win32 = struct {
         if (!class_registered) {
             const class = WindowClass{
                 .size = @sizeOf(WindowClass),
-                .style = 0,
+                // Drawn again whole when resized, so the image fits the new size.
+                .style = redraw_horizontal | redraw_vertical,
                 .window_proc = windowProc,
                 .instance = instance,
                 .cursor = LoadCursorW(null, arrow_cursor),
@@ -359,18 +415,40 @@ const win32 = struct {
                 AcquireSRWLockExclusive(&lock);
                 // Rows from the top: a negative height.
                 const info = BitmapInfo{ .header = .{ .width = @intCast(width), .height = -@as(i32, @intCast(height)) } };
-                if (pixels.len != 0) _ = StretchDIBits(dc, 0, 0, client.right, client.bottom, 0, 0, @intCast(width), @intCast(height), pixels.ptr, &info, 0, source_copy);
+                const place = fitted(client.right, client.bottom);
+                if (pixels.len != 0) _ = StretchDIBits(dc, place.left, place.top, place.right - place.left, place.bottom - place.top, 0, 0, @intCast(width), @intCast(height), pixels.ptr, &info, 0, source_copy);
                 ReleaseSRWLockExclusive(&lock);
+                // Black around the image: above and below it, then left and right of it.
+                _ = PatBlt(dc, 0, 0, client.right, place.top, blackness);
+                _ = PatBlt(dc, 0, place.bottom, client.right, client.bottom - place.bottom, blackness);
+                _ = PatBlt(dc, 0, place.top, place.left, place.bottom - place.top, blackness);
+                _ = PatBlt(dc, place.right, place.top, client.right - place.right, place.bottom - place.top, blackness);
                 _ = EndPaint(handle, &paint);
                 return 0;
             },
             wm_erase_background => return 1,
             wm_key_down => {
+                AcquireSRWLockExclusive(&lock);
                 if (virtualKey(wparam)) |key| {
-                    AcquireSRWLockExclusive(&lock);
                     pushKey(key);
-                    ReleaseSRWLockExclusive(&lock);
-                }
+                    if (wparam < down.len) down[wparam] = key + 1;
+                    char_key = null;
+                } else char_key = wparam;
+                ReleaseSRWLockExclusive(&lock);
+                return DefWindowProcW(handle, message, wparam, lparam);
+            },
+            wm_key_up => {
+                AcquireSRWLockExclusive(&lock);
+                releaseKey(wparam);
+                ReleaseSRWLockExclusive(&lock);
+                return DefWindowProcW(handle, message, wparam, lparam);
+            },
+            // Keys that go up while the window has not the focus do not tell it.
+            wm_kill_focus => {
+                AcquireSRWLockExclusive(&lock);
+                for (0..down.len) |virtual_key| releaseKey(virtual_key);
+                char_key = null;
+                ReleaseSRWLockExclusive(&lock);
                 return DefWindowProcW(handle, message, wparam, lparam);
             },
             wm_char => {

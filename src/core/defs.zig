@@ -595,6 +595,8 @@ pub const Builtin = enum {
     gfx_tcl_program,
     gfx_tcl_stop,
     gfx_show_tk,
+    gfx_key_held,
+    gfx_window_size,
 };
 
 pub const HeapResult = union(enum) { address: Cell, no_memory, bad_pointer };

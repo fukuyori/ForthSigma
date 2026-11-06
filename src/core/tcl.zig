@@ -161,7 +161,7 @@ fn readByte(self: *State, wait: bool) RuntimeError!?u8 {
 }
 
 /// The kind, code, and text length of a header "<kind> <code> <length>": R with any
-/// code (1 is an error), E, K, and M with 0. Anything else breaks the protocol.
+/// code (1 is an error), E, K, U, and M with 0. Anything else breaks the protocol.
 fn parseHeader(header: []const u8) ?struct { kind: u8, code: i64, size: usize } {
     var fields = std.mem.splitScalar(u8, header, ' ');
     const kind = fields.next() orelse return null;
@@ -170,7 +170,7 @@ fn parseHeader(header: []const u8) ?struct { kind: u8, code: i64, size: usize } 
     if (fields.next() != null or kind.len != 1 or size > max_message) return null;
     switch (kind[0]) {
         'R' => {},
-        'E', 'K', 'M' => if (code != 0) return null,
+        'E', 'K', 'U', 'M' => if (code != 0) return null,
         else => return null,
     }
     return .{ .kind = kind[0], .code = code, .size = size };
@@ -222,7 +222,7 @@ fn readMessage(self: *State, wait: bool) RuntimeError!?Message {
 }
 
 /// Acts on a message that is not a result: keeps an event for TCL-EVENT, and gives keys
-/// and the mouse of the Tk window to INKEY and MOUSE.
+/// and the mouse of the Tk window to INKEY and MOUSE, and the keys released to KEY-HELD?.
 fn dispatch(self: *State, message: Message) RuntimeError!void {
     var text = message.text;
     switch (message.kind) {
@@ -236,14 +236,14 @@ fn dispatch(self: *State, message: Message) RuntimeError!void {
             tcl.event_count += 1;
             return;
         },
-        'K', 'M' => {
+        'K', 'U', 'M' => {
             defer freeText(self, &text);
             const start: usize = @intCast(text.address);
             var numbers = std.mem.tokenizeScalar(u8, self.memory[start..][0..text.length], ' ');
-            if (message.kind == 'K') {
+            if (message.kind == 'K' or message.kind == 'U') {
                 while (numbers.next()) |field| {
                     const key = std.fmt.parseInt(u32, field, 10) catch continue;
-                    try graphics_input.windowKey(self, key);
+                    if (message.kind == 'K') try graphics_input.windowKey(self, key) else graphics_input.windowKeyRelease(self, key);
                 }
             } else {
                 var values: [3]i32 = .{ -1, -1, 0 };
@@ -403,7 +403,9 @@ fn writeImage(self: *State) RuntimeError!void {
 pub fn showImage(self: *State) RuntimeError!void {
     const png = words_graphics.pngLength(@intCast(self.gfx_width), @intCast(self.gfx_height));
     const base64 = (png + 2) / 3 * 4;
-    const command = "sigma_show ";
+    // The size of the window's image (WINDOW-SIZE), 0 0 for the image's own.
+    var buffer: [48]u8 = undefined;
+    const command = std.fmt.bufPrint(&buffer, "sigma_show {d} {d} ", .{ self.gfx_window_size[0], self.gfx_window_size[1] }) catch unreachable;
     if (command.len + base64 > max_message) return error.InvalidNumber;
     if (try run(self, &.{command}, @intCast(command.len + base64), writeImage)) return error.TclFailed;
 }

@@ -29,7 +29,7 @@ const max_wordlists = memory_map.max_wordlists;
 const wordlist_count_address = memory_map.wordlist_count_address;
 
 /// The built-in words this file executes; executeBuiltin dispatches by this list.
-pub const words = [_]Builtin{ .gfx_init, .gfx_width, .gfx_height, .gfx_pset, .gfx_pget, .gfx_hline, .gfx_cls, .gfx_save_ppm, .gfx_save_bmp, .gfx_show_blocks, .gfx_show_sixel, .gfx_show_window, .gfx_window_query, .gfx_save_png, .gfx_inkey, .gfx_mouse, .gfx_mouse_mode, .gfx_glyph_load, .gfx_glyph_box, .gfx_glyph_alpha, .gfx_font_height, .gfx_font_builtin, .gfx_font_load, .gfx_font_system, .gfx_color_mode, .gfx_tcl, .gfx_tcl_error, .gfx_tcl_event, .gfx_tcl_program, .gfx_tcl_stop, .gfx_show_tk };
+pub const words = [_]Builtin{ .gfx_init, .gfx_width, .gfx_height, .gfx_pset, .gfx_pget, .gfx_hline, .gfx_cls, .gfx_save_ppm, .gfx_save_bmp, .gfx_show_blocks, .gfx_show_sixel, .gfx_show_window, .gfx_window_query, .gfx_save_png, .gfx_inkey, .gfx_mouse, .gfx_mouse_mode, .gfx_glyph_load, .gfx_glyph_box, .gfx_glyph_alpha, .gfx_font_height, .gfx_font_builtin, .gfx_font_load, .gfx_font_system, .gfx_color_mode, .gfx_tcl, .gfx_tcl_error, .gfx_tcl_event, .gfx_tcl_program, .gfx_tcl_stop, .gfx_show_tk, .gfx_key_held, .gfx_window_size };
 
 /// The GFX- words in the order REQUIRE-GRAPHICS appends them, right after the GRAPHICS
 /// vocabulary. The order is part of the dictionary that images keep: add new words at
@@ -45,12 +45,13 @@ pub const definitions = [_]struct { []const u8, Builtin }{
     .{ "GFX-FONT-BUILTIN", .gfx_font_builtin }, .{ "GFX-FONT-LOAD", .gfx_font_load }, .{ "GFX-FONT-SYSTEM", .gfx_font_system },
     .{ "GFX-COLOR-MODE", .gfx_color_mode },  .{ "GFX-TCL", .gfx_tcl },         .{ "GFX-TCL-ERROR", .gfx_tcl_error },
     .{ "GFX-TCL-EVENT", .gfx_tcl_event },    .{ "GFX-TCL-PROGRAM", .gfx_tcl_program }, .{ "GFX-TCL-STOP", .gfx_tcl_stop },
-    .{ "GFX-SHOW-TK", .gfx_show_tk },
+    .{ "GFX-SHOW-TK", .gfx_show_tk },        .{ "GFX-KEY-HELD", .gfx_key_held },
+    .{ "GFX-WINDOW-SIZE", .gfx_window_size },
 };
 
 /// The words of the graphics library that HELP describes; the help test checks that the
 /// library defines each of them.
-pub const library_words = [_][]const u8{ "RGB", "COLOR", "COLOR!", "COLOR@", "PSET", "CLS", "LINE", "RECT", "FILL-RECT", "CIRCLE", "FILL-CIRCLE", "PAINT", "SAVE-PPM", "SAVE-BMP", "SAVE-PNG", "SHOW", "DISPLAY-TERMINAL", "DISPLAY-WINDOW", "TERMINAL-BLOCKS", "TERMINAL-SIXEL", "DISPLAY-COLORS", "DITHER", "TCL", "TCL-EVAL", "TCL-ERROR$", "TCL-EVENT", "TCL-PROGRAM", "TCL-STOP", "DISPLAY-TK", "INKEY", "MOUSE", "MOUSE-ON", "MOUSE-OFF", "FRAME", "TEXT", "TEXT-SCALE", "TEXT-WIDTH", "TEXT-HEIGHT", "BUILTIN-FONT", "LOAD-FONT", "SYSTEM-FONT", "K-UP", "K-DOWN", "K-LEFT", "K-RIGHT", "K-HOME", "K-END", "K-PRIOR", "K-NEXT", "K-INSERT", "K-DELETE", "K-F1", "K-F2", "K-F3", "K-F4", "K-F5", "K-F6", "K-F7", "K-F8", "K-F9", "K-F10", "K-F11", "K-F12" };
+pub const library_words = [_][]const u8{ "RGB", "COLOR", "COLOR!", "COLOR@", "PSET", "CLS", "LINE", "RECT", "FILL-RECT", "CIRCLE", "FILL-CIRCLE", "PAINT", "SAVE-PPM", "SAVE-BMP", "SAVE-PNG", "SHOW", "DISPLAY-TERMINAL", "DISPLAY-WINDOW", "TERMINAL-BLOCKS", "TERMINAL-SIXEL", "DISPLAY-COLORS", "DITHER", "TCL", "TCL-EVAL", "TCL-ERROR$", "TCL-EVENT", "TCL-PROGRAM", "TCL-STOP", "DISPLAY-TK", "INKEY", "KEY-HELD?", "MOUSE", "WINDOW-SIZE", "MOUSE-ON", "MOUSE-OFF", "FRAME", "TEXT", "TEXT-SCALE", "TEXT-WIDTH", "TEXT-HEIGHT", "BUILTIN-FONT", "LOAD-FONT", "SYSTEM-FONT", "K-UP", "K-DOWN", "K-LEFT", "K-RIGHT", "K-HOME", "K-END", "K-PRIOR", "K-NEXT", "K-INSERT", "K-DELETE", "K-F1", "K-F2", "K-F3", "K-F4", "K-F5", "K-F6", "K-F7", "K-F8", "K-F9", "K-F10", "K-F11", "K-F12" };
 
 /// The words of the part of the library that uses floating-point numbers, which a build
 /// without them leaves out.
@@ -148,7 +149,7 @@ pub fn execute(self: *State, builtin: Builtin) RuntimeError!void {
             const window_fn = self.writer.window_fn orelse return error.HostUnavailable;
             // The next SHOW on the terminal starts a new picture there.
             self.gfx_input.shown = null;
-            try window_fn(self.writer.context, self.gfx_pixels, @intCast(self.gfx_width), @intCast(self.gfx_height), self.gfx_color_mode);
+            try window_fn(self.writer.context, self.gfx_pixels, @intCast(self.gfx_width), @intCast(self.gfx_height), self.gfx_color_mode, self.gfx_window_size);
         },
         .gfx_window_query => try self.push(if (self.writer.window_fn != null) -1 else 0),
         .gfx_color_mode => {
@@ -158,6 +159,18 @@ pub fn execute(self: *State, builtin: Builtin) RuntimeError!void {
             self.gfx_color_mode = .{ .colors = @intCast(colors), .dither = dither };
         },
         .gfx_inkey => try self.push(try graphics_input.inkey(self)),
+        .gfx_window_size => {
+            const height = try self.pop();
+            const width = try self.pop();
+            // 0 0, or each side as GFX-INIT allows.
+            const default = width == 0 and height == 0;
+            if (!default and (width < 1 or width > max_side or height < 1 or height > max_side)) return error.InvalidNumber;
+            self.gfx_window_size = .{ @intCast(width), @intCast(height) };
+        },
+        .gfx_key_held => {
+            const key = try self.pop();
+            try self.push(if (try graphics_input.keyHeld(self, key)) -1 else 0);
+        },
         .gfx_mouse => {
             const state = try graphics_input.mouseState(self);
             for (state) |value| try self.push(value);
