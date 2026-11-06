@@ -2303,3 +2303,55 @@ test "WINDOW-SIZE goes to the Tk window with the image" {
     const newline = std.mem.indexOfScalar(u8, written, '\n').?;
     try std.testing.expect(std.mem.startsWith(u8, written[newline + 1 ..], "sigma_show 640 480 iVBORw0KGgo"));
 }
+
+test "KEY-HELD? forgets the Tk window's keys when the Tcl program stops or a release is given up" {
+    try skipWithout(&.{ .graphics, .image });
+    var output = Output{};
+    const machine = try libraryMachine(&output, "4 4");
+    defer destroyMachine(machine);
+    output.process_replies = "R 0 0\n" ++ "K 0 3\n256";
+    try machine.interpretLine("S\" a\" TCL K-UP KEY-HELD?");
+    try expectStack(machine, &.{-1});
+    machine.data_depth = 0;
+    try machine.interpretLine("TCL-STOP K-UP KEY-HELD?");
+    try expectStack(machine, &.{0});
+    machine.data_depth = 0;
+    // A release that has come in part when SAVE drops it: the keys are not held.
+    output.process_replies = "R 0 0\n" ++ "K 0 3\n257" ++ "U 0 3\n2" ++ "57";
+    output.process_reply_index = 0;
+    output.process_reply_limit = 6 + 9 + 7;
+    try machine.interpretLine("S\" a\" TCL K-DOWN KEY-HELD?");
+    try expectStack(machine, &.{-1});
+    machine.data_depth = 0;
+    try machine.interpretLine("SAVE x.img K-DOWN KEY-HELD?");
+    try expectStack(machine, &.{0});
+    machine.data_depth = 0;
+    // The rest of that message is read and dropped.
+    output.process_reply_limit = std.math.maxInt(usize);
+    try machine.interpretLine("K-DOWN KEY-HELD? INKEY INKEY INKEY");
+    try expectStack(machine, &.{ 0, 256, 257, -1 });
+}
+
+test "KEY-HELD? keeps the keys of each source apart" {
+    try skipWithout(&.{.graphics});
+    var output = Output{};
+    const machine = try libraryMachine(&output, "4 4");
+    defer destroyMachine(machine);
+    // Up held in the console and in the window: released in the console only.
+    setEvents(&output, &.{ .{ .key = 256 }, .{ .window_key = 256 }, .{ .key_release = 256 } });
+    try machine.interpretLine("K-UP KEY-HELD?");
+    try expectStack(machine, &.{-1});
+    machine.data_depth = 0;
+    setEvents(&output, &.{.{ .window_key_release = 256 }});
+    try machine.interpretLine("K-UP KEY-HELD?");
+    try expectStack(machine, &.{0});
+    machine.data_depth = 0;
+    // A restart forgets the terminal's keys only; a window's release does not end them.
+    setEvents(&output, &.{ .{ .key = 'x' }, .{ .window_key = 'y' }, .{ .window_key_release = 'x' } });
+    try machine.interpretLine("CHAR x KEY-HELD? CHAR y KEY-HELD?");
+    try expectStack(machine, &.{ -1, -1 });
+    machine.data_depth = 0;
+    setEvents(&output, &.{.restarted});
+    try machine.interpretLine("CHAR x KEY-HELD? CHAR y KEY-HELD?");
+    try expectStack(machine, &.{ 0, -1 });
+}

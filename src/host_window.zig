@@ -82,6 +82,7 @@ const win32 = struct {
     extern "user32" fn LoadCursorW(?Handle, usize) callconv(.winapi) ?Handle;
     extern "gdi32" fn StretchDIBits(?Handle, i32, i32, i32, i32, i32, i32, i32, i32, ?*const anyopaque, *const BitmapInfo, u32, u32) callconv(.winapi) i32;
     extern "gdi32" fn SetStretchBltMode(?Handle, i32) callconv(.winapi) i32;
+    extern "user32" fn MapVirtualKeyW(u32, u32) callconv(.winapi) u32;
     extern "gdi32" fn PatBlt(?Handle, i32, i32, i32, i32, u32) callconv(.winapi) i32;
     extern "kernel32" fn GetModuleHandleW(?[*:0]const u16) callconv(.winapi) ?Handle;
     extern "kernel32" fn CreateThread(?*anyopaque, usize, *const fn (?*anyopaque) callconv(.winapi) u32, ?*anyopaque, u32, ?*u32) callconv(.winapi) ?Handle;
@@ -120,6 +121,7 @@ const win32 = struct {
     const color_on_color = 3;
     const source_copy: u32 = 0x00CC0020;
     const blackness: u32 = 0x00000042;
+    const map_scan_to_virtual: u32 = 1;
     const redraw_vertical: u32 = 0x0001;
     const redraw_horizontal: u32 = 0x0002;
     const infinite: u32 = 0xFFFF_FFFF;
@@ -144,17 +146,19 @@ const win32 = struct {
     var update_pending = false;
     /// The image's size changed since the window last fitted it.
     var resize_pending = false;
-    /// Keys pressed and released in the window and not yet read (later ones are dropped
-    /// when it is full), and the mouse: the pixel of the image under it and its buttons.
+    /// Keys pressed in the window and not yet read (later ones are dropped when it is
+    /// full), and the mouse: the pixel of the image under it and its buttons.
     var keys: [64]KeyEvent = undefined;
     var key_head: usize = 0;
     var key_count: usize = 0;
     var high_surrogate: u16 = 0;
-    /// The key code each virtual key gave when it went down, plus 1 (0: not down), so
-    /// that its release can be told (KEY-HELD?); the virtual key of the last WM_KEYDOWN
-    /// that gave no code itself, whose WM_CHAR follows.
+    /// For KEY-HELD?, by virtual key, the code plus 1 (0: none): `down`, the key the
+    /// window has down now; `told`, the key poll told the core was pressed and not yet
+    /// that it was released. Releases are not queued: poll tells them from the two, so
+    /// none is lost when the queue is full, the window loses the focus, or a held key
+    /// gives another character.
     var down: [256]u32 = @splat(0);
-    var char_key: ?usize = null;
+    var told: [256]u32 = @splat(0);
     var mouse_x: i32 = -1;
     var mouse_y: i32 = -1;
     var mouse_buttons: u8 = 0;
@@ -212,34 +216,47 @@ const win32 = struct {
         defer ReleaseSRWLockExclusive(&lock);
         if (key_count != 0) {
             const key = keys[key_head];
+            if (key.virtual_key < told.len) {
+                const virtual_key = key.virtual_key;
+                // Another code of a key told down: that one was released first.
+                if (told[virtual_key] != 0 and told[virtual_key] != key.code + 1) {
+                    const old = told[virtual_key] - 1;
+                    told[virtual_key] = 0;
+                    return .{ .window_key_release = old };
+                }
+                if (holdable(key.code)) told[virtual_key] = key.code + 1;
+            }
             key_head = (key_head + 1) % keys.len;
             key_count -= 1;
-            return if (key.release) .{ .window_key_release = key.code } else .{ .window_key = key.code };
+            return .{ .window_key = key.code };
+        }
+        // The keys told down that the window no longer has down.
+        for (&told, down) |*code, now| {
+            if (code.* == 0 or code.* == now) continue;
+            const old = code.* - 1;
+            code.* = 0;
+            return .{ .window_key_release = old };
         }
         if (!mouse_changed) return null;
         mouse_changed = false;
         return .{ .window_mouse = .{ .x = mouse_x, .y = mouse_y, .buttons = mouse_buttons } };
     }
 
-    const KeyEvent = struct { code: u32, release: bool };
+    /// A key pressed, and its virtual key (`no_key` for the bytes of a character after
+    /// the first).
+    const KeyEvent = struct { code: u32, virtual_key: usize };
+    const no_key = std.math.maxInt(usize);
+
+    /// The codes KEY-HELD? tells: one byte (ASCII), and the keys from 256 up.
+    fn holdable(code: u32) bool {
+        return code < 0x80 or code >= 256;
+    }
 
     /// Called with the lock held.
-    fn pushKey(key: u32) void {
-        pushEvent(.{ .code = key, .release = false });
-    }
-
-    fn pushEvent(event: KeyEvent) void {
+    fn pushKey(key: u32, virtual_key: usize) void {
         if (key_count == keys.len) return;
-        keys[(key_head + key_count) % keys.len] = event;
+        keys[(key_head + key_count) % keys.len] = .{ .code = key, .virtual_key = virtual_key };
         key_count += 1;
-    }
-
-    /// A key went up, or (all of them) the window lost the focus. Called with the lock
-    /// held.
-    fn releaseKey(virtual_key: usize) void {
-        if (virtual_key >= down.len or down[virtual_key] == 0) return;
-        pushEvent(.{ .code = down[virtual_key] - 1, .release = true });
-        down[virtual_key] = 0;
     }
 
     /// The key code of a key that gives no character (graphics_input's codes).
@@ -260,8 +277,9 @@ const win32 = struct {
         };
     }
 
-    /// A UTF-16 unit of WM_CHAR, as the bytes of its UTF-8 character.
-    fn pushCharacter(unit: u16) void {
+    /// A UTF-16 unit of WM_CHAR, as the bytes of its UTF-8 character, from the key of
+    /// that virtual key.
+    fn pushCharacter(unit: u16, virtual_key: usize) void {
         var code_point: u21 = unit;
         if (unit >= 0xD800 and unit < 0xDC00) {
             high_surrogate = unit;
@@ -274,12 +292,9 @@ const win32 = struct {
         high_surrogate = 0;
         var bytes: [4]u8 = undefined;
         const length = std.unicode.utf8Encode(code_point, &bytes) catch return;
-        for (bytes[0..length]) |byte| pushKey(byte);
+        for (bytes[0..length], 0..) |byte, index| pushKey(byte, if (index == 0) virtual_key else no_key);
         // A character of one byte is held until its key goes up.
-        if (char_key) |virtual_key| {
-            if (code_point < 0x80 and virtual_key < down.len) down[virtual_key] = code_point + 1;
-        }
-        char_key = null;
+        if (code_point < 0x80 and virtual_key < down.len) down[virtual_key] = code_point + 1;
     }
 
     /// Where the image is drawn in a client area: as large as fits with its proportions,
@@ -428,32 +443,34 @@ const win32 = struct {
             },
             wm_erase_background => return 1,
             wm_key_down => {
-                AcquireSRWLockExclusive(&lock);
                 if (virtualKey(wparam)) |key| {
-                    pushKey(key);
+                    AcquireSRWLockExclusive(&lock);
+                    pushKey(key, wparam);
                     if (wparam < down.len) down[wparam] = key + 1;
-                    char_key = null;
-                } else char_key = wparam;
-                ReleaseSRWLockExclusive(&lock);
+                    ReleaseSRWLockExclusive(&lock);
+                }
                 return DefWindowProcW(handle, message, wparam, lparam);
             },
             wm_key_up => {
                 AcquireSRWLockExclusive(&lock);
-                releaseKey(wparam);
+                if (wparam < down.len) down[wparam] = 0;
                 ReleaseSRWLockExclusive(&lock);
                 return DefWindowProcW(handle, message, wparam, lparam);
             },
             // Keys that go up while the window has not the focus do not tell it.
             wm_kill_focus => {
                 AcquireSRWLockExclusive(&lock);
-                for (0..down.len) |virtual_key| releaseKey(virtual_key);
-                char_key = null;
+                down = @splat(0);
                 ReleaseSRWLockExclusive(&lock);
                 return DefWindowProcW(handle, message, wparam, lparam);
             },
             wm_char => {
+                // The key of the character, from the scan code WM_CHAR carries (keys
+                // pressed in between do not change it).
+                const bits: usize = @bitCast(lparam);
+                const virtual_key: usize = MapVirtualKeyW(@intCast((bits >> 16) & 0xFF), map_scan_to_virtual);
                 AcquireSRWLockExclusive(&lock);
-                pushCharacter(@truncate(wparam));
+                pushCharacter(@truncate(wparam), if (virtual_key == 0) no_key else virtual_key);
                 ReleaseSRWLockExclusive(&lock);
                 return 0;
             },

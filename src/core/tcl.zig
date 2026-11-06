@@ -77,6 +77,8 @@ pub fn forgetHeap(self: *State) void {
 fn dropPartial(self: *State, free: bool) void {
     const tcl = &self.tcl;
     if (tcl.partial) |*message| {
+        // A release given up would leave its key held.
+        if (message.kind == 'U') graphics_input.forgetTkKeys(self);
         tcl.skip += message.text.length - tcl.received;
         if (free) freeText(self, &message.text);
     }
@@ -126,6 +128,7 @@ fn ensureRunning(self: *State) RuntimeError!void {
 fn halt(self: *State) bool {
     self.tcl.running = false;
     resetReading(self);
+    graphics_input.forgetTkKeys(self);
     if (self.writer.process_stop_fn) |stop_fn| return stop_fn(self.writer.context);
     return true;
 }
@@ -243,7 +246,7 @@ fn dispatch(self: *State, message: Message) RuntimeError!void {
             if (message.kind == 'K' or message.kind == 'U') {
                 while (numbers.next()) |field| {
                     const key = std.fmt.parseInt(u32, field, 10) catch continue;
-                    if (message.kind == 'K') try graphics_input.windowKey(self, key) else graphics_input.windowKeyRelease(self, key);
+                    if (message.kind == 'K') try graphics_input.windowKey(self, key, .tk) else graphics_input.windowKeyRelease(self, key, .tk);
                 }
             } else {
                 var values: [3]i32 = .{ -1, -1, 0 };

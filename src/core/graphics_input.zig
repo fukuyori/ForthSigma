@@ -79,8 +79,12 @@ pub const InputState = struct {
 
 /// A key that is held: until its host tells it was released (`until` null: a Windows
 /// console, a window, the Tk window), or, as a terminal does not tell, until a while
-/// after it was last pressed (the terminal repeats a key held down).
-const Held = struct { code: u32, from_terminal: bool, until: ?forth.Double };
+/// after it was last pressed (the terminal repeats a key held down). Its source is
+/// forgotten whole when it can no longer tell: the terminal restarting, the Tcl program
+/// stopping.
+const Held = struct { code: u32, source: KeySource, until: ?forth.Double };
+
+pub const KeySource = enum { terminal, window, tk };
 
 /// How long a key from a terminal counts as held after it was pressed: longer than
 /// most terminals wait before they repeat a key (about 0.5 s).
@@ -243,13 +247,23 @@ fn restart(input: *InputState) void {
     input.terminal_buttons = 0;
     if (input.mouse_from_terminal) input.mouse_buttons = 0;
     // Keys released while the terminal had its line input were not seen.
-    kept = 0;
+    forgetSource(input, .terminal);
+}
+
+/// Forgets the keys held from a source that will not tell their release.
+fn forgetSource(input: *InputState, source: KeySource) void {
+    var kept: usize = 0;
     for (input.held[0..input.held_count]) |held| {
-        if (held.from_terminal) continue;
+        if (held.source == source) continue;
         input.held[kept] = held;
         kept += 1;
     }
     input.held_count = kept;
+}
+
+/// The Tcl program stopped, or a message of it was dropped: the Tk window's keys.
+pub fn forgetTkKeys(self: *State) void {
+    forgetSource(&self.gfx_input, .tk);
 }
 
 /// The keys KEY-HELD? can tell: those of one byte (ASCII) and the keys from 256 up.
@@ -263,25 +277,25 @@ fn forget(input: *InputState, index: usize) void {
 }
 
 /// A key was pressed: `released` when its host tells when it is released.
-fn press(self: *State, code: u32, from_terminal: bool, released: bool) void {
+fn press(self: *State, code: u32, source: KeySource, released: bool) void {
     if (!holdable(code)) return;
     const input = &self.gfx_input;
     const until: ?forth.Double = if (released) null else (now(self) orelse 0) + terminal_hold_us;
     for (input.held[0..input.held_count], 0..) |held, index| {
-        if (held.code == code) {
+        if (held.code == code and held.source == source) {
             forget(input, index);
             break;
         }
     }
     // With all taken, the key pressed longest ago gives way.
     if (input.held_count == input.held.len) forget(input, 0);
-    input.held[input.held_count] = .{ .code = code, .from_terminal = from_terminal, .until = until };
+    input.held[input.held_count] = .{ .code = code, .source = source, .until = until };
     input.held_count += 1;
 }
 
-fn release(input: *InputState, code: u32) void {
+fn release(input: *InputState, code: u32, source: KeySource) void {
     for (input.held[0..input.held_count], 0..) |held, index| {
-        if (held.code == code) return forget(input, index);
+        if (held.code == code and held.source == source) return forget(input, index);
     }
 }
 
@@ -302,7 +316,7 @@ fn apply(self: *State, decoded: Decoded) RuntimeError!void {
     switch (decoded) {
         .key => |key| {
             try addKey(self, key, true);
-            press(self, key, true, false);
+            press(self, key, .terminal, false);
         },
         .mouse => |mouse| {
             input.mouse_buttons = mouse.buttons;
@@ -388,10 +402,11 @@ fn readInput(self: *State, until_key: bool) RuntimeError!void {
             .restarted => restart(input),
             .key => |key| {
                 try addKey(self, key, true);
-                press(self, key, true, true);
+                press(self, key, .terminal, true);
             },
-            .window_key => |key| try windowKey(self, key),
-            .key_release, .window_key_release => |key| release(input, key),
+            .window_key => |key| try windowKey(self, key, .window),
+            .key_release => |key| release(input, key, .terminal),
+            .window_key_release => |key| release(input, key, .window),
             .terminal_mouse => |mouse| try apply(self, .{ .mouse = .{ .column = mouse.column, .row = mouse.row, .buttons = mouse.buttons } }),
             .window_mouse => |mouse| windowMouse(self, mouse.x, mouse.y, mouse.buttons),
         }
@@ -402,14 +417,14 @@ fn readInput(self: *State, until_key: bool) RuntimeError!void {
 
 /// A key pressed in a window: the host's, or one whose program sends it (the Tk window
 /// of DISPLAY-TK). The window tells when it is released.
-pub fn windowKey(self: *State, key: u32) RuntimeError!void {
+pub fn windowKey(self: *State, key: u32, source: KeySource) RuntimeError!void {
     try addKey(self, key, false);
-    press(self, key, false, true);
+    press(self, key, source, true);
 }
 
 /// A key released in such a window.
-pub fn windowKeyRelease(self: *State, key: u32) void {
-    release(&self.gfx_input, key);
+pub fn windowKeyRelease(self: *State, key: u32, source: KeySource) void {
+    release(&self.gfx_input, key, source);
 }
 
 /// KEY-HELD?: whether the key (as INKEY gives it) is held down now. It reads what the

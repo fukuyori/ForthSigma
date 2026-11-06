@@ -139,11 +139,14 @@ const windows = struct {
         }
         const variable = std.unicode.utf8ToUtf16LeStringLiteral("SIGMA_WISH");
         const length = GetEnvironmentVariableW(variable, buffer.ptr, @intCast(buffer.len));
-        if (length != 0 and length < buffer.len) return buffer[0..length];
+        // SIGMA_WISH set: that program, or none when it is too long to take (another
+        // one is not looked for).
+        if (length != 0) return if (length < buffer.len) buffer[0..length] else null;
         const default = std.unicode.utf8ToUtf16LeStringLiteral("wish");
         var found: [512]u16 = undefined;
         const on_path = SearchPathW(null, default, std.unicode.utf8ToUtf16LeStringLiteral(".exe"), found.len, &found, null);
-        if (on_path == 0 or on_path >= found.len) {
+        // Not on the PATH (a longer path than `found` takes is there all the same).
+        if (on_path == 0) {
             for (git_places) |place| {
                 const base = GetEnvironmentVariableW(place.variable, buffer.ptr, @intCast(buffer.len));
                 if (base == 0 or base + place.path.len + 1 > buffer.len) continue;

@@ -238,14 +238,23 @@ const windows = struct {
     var pending_len: usize = 0;
     var high_surrogate: u16 = 0;
     /// The key code each virtual key gave when it went down, plus 1 (0: not down), so
-    /// that its release can be told (KEY-HELD?); and releases waiting to be given, when
-    /// the console lost the focus with keys down.
+    /// that its release can be told (KEY-HELD?); whether the keys down are being
+    /// released, one each call, after the console lost the focus; and an event to give
+    /// after the release of another code of the same key.
     var down: [256]u32 = @splat(0);
-    var releases: [16]u32 = undefined;
-    var releases_len: usize = 0;
+    var releasing = false;
+    var after: ?InputEvent = null;
 
-    fn pressed(virtual_key: u16, code: u32) void {
-        if (virtual_key < down.len and (code < 0x80 or code >= 256)) down[virtual_key] = code + 1;
+    /// The event of a key pressed, remembering its code; when the key was down with
+    /// another code (a held key that gives another character), the release of that one
+    /// comes first.
+    fn press(virtual_key: u16, code: u32, event: InputEvent) InputEvent {
+        if (virtual_key >= down.len or !(code < 0x80 or code >= 256)) return event;
+        const old = down[virtual_key];
+        down[virtual_key] = code + 1;
+        if (old == 0 or old == code + 1) return event;
+        after = event;
+        return .{ .key_release = old - 1 };
     }
 
     fn handle(which: i32) ?Handle {
@@ -270,7 +279,8 @@ const windows = struct {
         pending_len = 0;
         high_surrogate = 0;
         down = @splat(0);
-        releases_len = 0;
+        releasing = false;
+        after = null;
     }
 
     fn setMouse(on: bool) void {
@@ -308,15 +318,24 @@ const windows = struct {
     }
 
     fn next() ?InputEvent {
+        if (after) |event| {
+            after = null;
+            return event;
+        }
         if (pending_len != 0) {
             const byte = pending[0];
             std.mem.copyForwards(u8, pending[0 .. pending_len - 1], pending[1..pending_len]);
             pending_len -= 1;
             return .{ .key = byte };
         }
-        if (releases_len != 0) {
-            releases_len -= 1;
-            return .{ .key_release = releases[releases_len] };
+        if (releasing) {
+            for (&down) |*code| {
+                if (code.* == 0) continue;
+                const old = code.* - 1;
+                code.* = 0;
+                return .{ .key_release = old };
+            }
+            releasing = false;
         }
         const console = input orelse return null;
         while (true) {
@@ -336,11 +355,7 @@ const windows = struct {
                         return .{ .key_release = code };
                     }
                     const unit = std.mem.readInt(u16, data[10..12], .little);
-                    if (keyCode(virtual_key)) |key| {
-                        pressed(virtual_key, key);
-                        return .{ .key = key };
-                    }
-                    if (unit != 0 and unit < 0x80) pressed(virtual_key, unit);
+                    if (keyCode(virtual_key)) |key| return press(virtual_key, key, .{ .key = key });
                     if (unit == 0) continue;
                     if (unit >= 0xD800 and unit < 0xDC00) {
                         high_surrogate = unit;
@@ -356,7 +371,7 @@ const windows = struct {
                     const length = std.unicode.utf8Encode(code_point, &bytes) catch continue;
                     @memcpy(pending[0 .. length - 1], bytes[1..length]);
                     pending_len = length - 1;
-                    return .{ .key = bytes[0] };
+                    return press(virtual_key, if (code_point < 0x80) code_point else 0x80, .{ .key = bytes[0] });
                 },
                 mouse_event => {
                     const flags = std.mem.readInt(u32, data[12..16], .little);
@@ -371,17 +386,8 @@ const windows = struct {
                 // The console lost the focus: the keys down will not tell their release.
                 focus_event => {
                     if (std.mem.readInt(i32, data[0..4], .little) != 0) continue;
-                    for (&down) |*code| {
-                        if (code.* == 0) continue;
-                        if (releases_len < releases.len) {
-                            releases[releases_len] = code.* - 1;
-                            releases_len += 1;
-                        }
-                        code.* = 0;
-                    }
-                    if (releases_len == 0) continue;
-                    releases_len -= 1;
-                    return .{ .key_release = releases[releases_len] };
+                    releasing = true;
+                    return windows.next();
                 },
                 else => continue,
             }

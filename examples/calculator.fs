@@ -16,7 +16,9 @@ CREATE SCRIPT 256 CHARS ALLOT
 VARIABLE SCRIPT#
 : SCRIPT{ ( -- )   0 SCRIPT# ! ;
 : +S ( c-addr u -- )   TUCK SCRIPT SCRIPT# @ CHARS + SWAP CMOVE  SCRIPT# +! ;
-: +N ( n -- )   DUP ABS S>D <# #S ROT SIGN #> +S ;
+\ The digits come from the absolute value as a double, which holds that of the smallest
+\ cell too.
+: +N ( n -- )   DUP S>D DABS <# #S ROT SIGN #> +S ;
 : }TCL ( -- )   SCRIPT SCRIPT# @ TCL ;
 
 \ ---- The window -------------------------------------------------------------------
@@ -81,9 +83,12 @@ VARIABLE DONE
 : OPERATION ( char -- )   RESULT  OP ! ;
 : EQUALS ( -- )   RESULT  0 OP ! ;
 : BACK ( -- )   TYPING @ IF  ENTRY @ S>D 10 SM/REM NIP ENTRY !  ENTRY @ SHOW-NUMBER  THEN ;
+\ The sign changed as a double, so that the smallest cell, whose opposite does not fit,
+\ is Error.
+: OPPOSITE ( n -- -n )   S>D DNEGATE >CELL ;
 : CHANGE-SIGN ( -- )
-   TYPING @ IF  ENTRY @ NEGATE ENTRY !  ENTRY @ SHOW-NUMBER
-   ELSE  ACC @ NEGATE ACC !  ACC @ SHOW-NUMBER  THEN ;
+   TYPING @ IF  ENTRY @ OPPOSITE ENTRY !  ENTRY @ SHOW-NUMBER
+   ELSE  ACC @ OPPOSITE ACC !  ACC @ SHOW-NUMBER  THEN ;
 
 : PRESS ( char -- )
    DUP [CHAR] 0 [CHAR] 9 1+ WITHIN IF  [CHAR] 0 - DIGIT EXIT  THEN

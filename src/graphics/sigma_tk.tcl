@@ -14,13 +14,14 @@ fconfigure stdin -translation binary -blocking 0
 # and this side goes on reading Sigma's scripts, so neither waits for the other.
 fconfigure stdout -translation binary -buffering full -blocking 0
 set sigma_input ""
-# Events, keys, and the mouse are dropped while this many bytes wait for Sigma to read
-# them (it reads them only in the TCL words, INKEY, and MOUSE); results are always
-# sent, as Sigma waits for them.
+# Events, keys pressed, and the mouse are dropped while this many bytes wait for Sigma
+# to read them (it reads them only in the TCL words, INKEY, KEY-HELD?, and MOUSE).
+# Results are always sent, as Sigma waits for them, and so are the releases of keys,
+# few as they are, so that no key stays held.
 set sigma_pending_limit [expr {4 * 1024 * 1024}]
 
 proc sigma_send {kind code text} {
-    if {$kind ne "R" && [chan pending output stdout] > $::sigma_pending_limit} return
+    if {$kind ne "R" && $kind ne "U" && [chan pending output stdout] > $::sigma_pending_limit} return
     set data [encoding convertto utf-8 $text]
     puts -nonewline stdout "$kind $code [string length $data]\n$data"
     flush stdout
@@ -63,6 +64,7 @@ set sigma_buttons 0
 # WINDOW-SIZE as the last image came with it, and how the shown copy of the image is
 # made from it: zoomed by sigma_zoom after taking every sigma_sub-th pixel.
 set sigma_size ""
+set sigma_image_size ""
 set sigma_zoom 1
 set sigma_sub 1
 
@@ -81,14 +83,16 @@ proc sigma_show {w h data} {
         bind .sigma <Motion> {sigma_mouse %x %y}
         bind .sigma <ButtonPress> {sigma_button %b 1 %x %y}
         bind .sigma <ButtonRelease> {sigma_button %b 0 %x %y}
-        bind . <KeyPress> {sigma_key %K %A}
-        bind . <KeyRelease> {sigma_key_release %K}
+        bind . <KeyPress> {sigma_key %K %A %k}
+        bind . <KeyRelease> {sigma_key_release %k}
         bind . <FocusOut> {sigma_keys_released}
         wm protocol . WM_DELETE_WINDOW {wm withdraw .}
         wm title . "FORTH/Sigma graphics"
     }
     sigma_image configure -data $data -format png
-    if {"$w $h" ne $::sigma_size} {
+    set image_size "[image width sigma_image] [image height sigma_image]"
+    # The window fits again when WINDOW-SIZE changed, or, without it, the image's size.
+    if {"$w $h" ne $::sigma_size || ($w == 0 && $image_size ne $::sigma_image_size)} {
         set ::sigma_size "$w $h"
         if {$w == 0} {
             # The image's own size: the window fits a copy of factor 1.
@@ -100,6 +104,7 @@ proc sigma_show {w h data} {
         # The window takes its new size before the copy is fitted to it.
         update idletasks
     }
+    set ::sigma_image_size $image_size
     sigma_fit
     if {[wm state .] ne "normal"} { wm deiconify . }
 }
@@ -162,26 +167,31 @@ proc sigma_mouse {x y} {
     sigma_send M 0 "$x $y $::sigma_buttons"
 }
 
-proc sigma_key {name char} {
+# A key pressed: its name, its character, and the keyboard's code of the key, by which
+# its release is known (the name and the character may change while it is held, with
+# Shift).
+proc sigma_key {name char key} {
     if {[info exists ::sigma_keys($name)]} {
         set codes $::sigma_keys($name)
     } else {
         if {$char eq ""} return
         binary scan [encoding convertto utf-8 $char] cu* codes
     }
+    # A held key that gives another code: the code it gave before is released.
+    if {[info exists ::sigma_down($key)] && $::sigma_down($key) ne $codes} { sigma_key_release $key }
     # A key of one code is held until it goes up (KEY-HELD?).
-    if {[llength $codes] == 1} { set ::sigma_down($name) $codes }
+    if {[llength $codes] == 1} { set ::sigma_down($key) $codes }
     sigma_send K 0 $codes
 }
 
 # Releases "U 0 <length>\n<code>" of the keys that went down.
-proc sigma_key_release {name} {
-    if {![info exists ::sigma_down($name)]} return
-    sigma_send U 0 $::sigma_down($name)
-    unset ::sigma_down($name)
+proc sigma_key_release {key} {
+    if {![info exists ::sigma_down($key)]} return
+    sigma_send U 0 $::sigma_down($key)
+    unset ::sigma_down($key)
 }
 
 # Keys that go up while the window has not the focus do not tell it.
 proc sigma_keys_released {} {
-    foreach name [array names ::sigma_down] { sigma_key_release $name }
+    foreach key [array names ::sigma_down] { sigma_key_release $key }
 }
