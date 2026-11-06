@@ -46,6 +46,10 @@ pub const TclState = struct {
     header_length: usize = 0,
     partial: ?Message = null,
     received: usize = 0,
+    /// The bytes left of a message whose text was given up before it came whole (its
+    /// strings freed before SAVE, or the heap replaced): they are read and dropped, so
+    /// that the next message starts where it should.
+    skip: usize = 0,
 };
 
 /// One message from the program: its kind (R, E, K, or M) and code, and its text in
@@ -65,8 +69,29 @@ pub fn forgetHeap(self: *State) void {
     tcl.error_text = .{};
     tcl.event = .{};
     tcl.event_count = 0;
+    dropPartial(self, false);
+}
+
+/// Gives up the text of the message being read, freeing it if `free`, and keeps how
+/// much of it is still to come.
+fn dropPartial(self: *State, free: bool) void {
+    const tcl = &self.tcl;
+    if (tcl.partial) |*message| {
+        tcl.skip += message.text.length - tcl.received;
+        if (free) freeText(self, &message.text);
+    }
     tcl.partial = null;
     tcl.received = 0;
+}
+
+/// Forgets all that was being read, when the program stops or starts.
+fn resetReading(self: *State) void {
+    const tcl = &self.tcl;
+    dropPartial(self, true);
+    tcl.skip = 0;
+    tcl.header_length = 0;
+    tcl.input_start = 0;
+    tcl.input_end = 0;
 }
 
 /// Frees the strings in the heap before the dictionary is saved, so that the image does
@@ -82,10 +107,9 @@ pub fn releaseHeap(self: *State) void {
         tcl.event_head = (tcl.event_head + 1) % max_events;
         tcl.event_count -= 1;
     }
-    if (tcl.partial) |*message| freeText(self, &message.text);
-    tcl.partial = null;
-    tcl.received = 0;
-    tcl.header_length = 0;
+    // The program goes on: the rest of a message being read is dropped when it comes,
+    // and a header read in part (not in the heap) is kept.
+    dropPartial(self, true);
 }
 
 fn ensureRunning(self: *State) RuntimeError!void {
@@ -94,27 +118,22 @@ fn ensureRunning(self: *State) RuntimeError!void {
     const start = self.writer.process_start_fn orelse return error.HostUnavailable;
     try start(self.writer.context, tcl.program[0..tcl.program_length], script);
     tcl.running = true;
-    tcl.input_start = 0;
-    tcl.input_end = 0;
+    resetReading(self);
 }
 
-/// Stops the program and drops what was being read from it.
-fn halt(self: *State) void {
-    const tcl = &self.tcl;
-    tcl.running = false;
-    if (tcl.partial) |*message| freeText(self, &message.text);
-    tcl.partial = null;
-    tcl.received = 0;
-    tcl.header_length = 0;
-    tcl.input_start = 0;
-    tcl.input_end = 0;
-    if (self.writer.process_stop_fn) |stop_fn| stop_fn(self.writer.context);
+/// Stops the program and drops what was being read from it. Returns whether the host
+/// saw the program end.
+fn halt(self: *State) bool {
+    self.tcl.running = false;
+    resetReading(self);
+    if (self.writer.process_stop_fn) |stop_fn| return stop_fn(self.writer.context);
+    return true;
 }
 
 /// The program has ended, cannot be reached, or sent what the protocol does not allow:
 /// HOST FUNCTION ERROR, and the next use starts it again.
 fn lost(self: *State) RuntimeError {
-    halt(self);
+    _ = halt(self);
     return error.HostFailed;
 }
 
@@ -161,6 +180,16 @@ fn parseHeader(header: []const u8) ?struct { kind: u8, code: i64, size: usize } 
 /// the message is not whole yet; the rest is read by a later call.
 fn readMessage(self: *State, wait: bool) RuntimeError!?Message {
     const tcl = &self.tcl;
+    while (tcl.skip != 0) {
+        if (tcl.input_start == tcl.input_end) {
+            _ = try readByte(self, wait) orelse return null;
+            tcl.skip -= 1;
+            continue;
+        }
+        const take = @min(tcl.skip, tcl.input_end - tcl.input_start);
+        tcl.input_start += take;
+        tcl.skip -= take;
+    }
     while (tcl.partial == null) {
         const byte = try readByte(self, wait) orelse return null;
         if (byte != '\n') {
@@ -174,7 +203,7 @@ fn readMessage(self: *State, wait: bool) RuntimeError!?Message {
         const address = try self.heapAllocate(@max(header.size, 1)) orelse {
             // No room for the text: the program is stopped, as its message cannot be
             // taken.
-            halt(self);
+            _ = halt(self);
             return error.MemoryExhausted;
         };
         tcl.partial = .{ .kind = header.kind, .code = header.code, .text = .{ .address = address, .length = header.size } };
@@ -239,7 +268,9 @@ fn run(self: *State, parts: []const []const u8, length: usize, body: ?*const fn 
     // A script whose result cannot be taken (Ctrl+C from the Tk window, no memory for an
     // event) leaves its result to come: the program is stopped, so that the next
     // script does not take it for its own.
-    errdefer if (self.tcl.running) halt(self);
+    errdefer if (self.tcl.running) {
+        _ = halt(self);
+    };
     var header: [24]u8 = undefined;
     try write(self, std.fmt.bufPrint(&header, "{d}\n", .{length}) catch unreachable);
     for (parts) |part| try write(self, part);
@@ -291,11 +322,11 @@ pub fn setProgram(self: *State, name: []const u8) RuntimeError!void {
     self.tcl.program_length = name.len;
 }
 
-/// GFX-TCL-STOP.
-pub fn stop(self: *State) void {
+/// GFX-TCL-STOP. HOST FUNCTION ERROR if the host could not see the program end; the
+/// next use starts a new one all the same.
+pub fn stop(self: *State) RuntimeError!void {
     if (!self.tcl.running) return;
-    self.tcl.running = false;
-    if (self.writer.process_stop_fn) |stop_fn| stop_fn(self.writer.context);
+    if (!halt(self)) return error.HostFailed;
 }
 
 /// Base64 of the PNG, written to the program in pieces.

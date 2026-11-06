@@ -422,8 +422,8 @@ VARIABLE (TEXT-SCALE)  1 (TEXT-SCALE) !
 \ ---- Tcl/Tk ---------------------------------------------------------------------------
 
 \ The TCL words talk to a Tcl/Tk interpreter (wish) that runs as a program of its own,
-\ started the first time it is needed: the program TCL-PROGRAM named, else the one in
-\ the SIGMA_WISH environment variable, else wish on the PATH. The words underneath:
+\ started the first time it is needed: the program TCL-PROGRAM named, else SIGMA_WISH,
+\ else wish on the PATH, else (Windows) Git for Windows's wish. The words underneath:
 \   GFX-TCL ( c-addr u -- c-addr2 u2 flag )  runs a script: its result, or with a true
 \     flag its error message (GFX-TCL-ERROR ( -- c-addr u ) gives the message again)
 \   GFX-TCL-EVENT ( -- c-addr u true | false )  GFX-TCL-PROGRAM ( c-addr u -- )

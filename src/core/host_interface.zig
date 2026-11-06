@@ -141,8 +141,9 @@ pub const Writer = struct {
     /// byte when `wait`, and otherwise gives 0 when there is none. HostFailed when the
     /// program has ended.
     process_read_fn: ?*const fn (?*anyopaque, []u8, bool) RuntimeError!usize = null,
-    /// Ends the program, closing its standard input first.
-    process_stop_fn: ?*const fn (?*anyopaque) void = null,
+    /// Ends the program, closing its standard input first. False when the host could
+    /// not see it end (it was asked to, and its handles are closed all the same).
+    process_stop_fn: ?*const fn (?*anyopaque) bool = null,
     /// Chooses the system's font of that name for TEXT, `height` pixels from the top of
     /// a line to its bottom. False when the system has no font of the name.
     system_font_fn: ?*const fn (?*anyopaque, []const u8, u32) RuntimeError!bool = null,

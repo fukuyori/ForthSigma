@@ -108,6 +108,7 @@ pub const Output = struct {
     process_starts: usize = 0,
     process_stops: usize = 0,
     process_running: bool = false,
+    process_stop_fails: bool = false,
     process_program: [64]u8 = undefined,
     process_program_len: usize = 0,
     process_script_len: usize = 0,
@@ -117,6 +118,9 @@ pub const Output = struct {
     process_reply_index: usize = 0,
     /// How many bytes of the answers have come so far; the rest has not.
     process_reply_limit: usize = std.math.maxInt(usize),
+    /// SAVE and SAVESYS save nothing: they count, and keep the heap's top as it was.
+    saves: usize = 0,
+    saved_heap_top: forth.Cell = 0,
 
     pub const framebuffer_capacity = 1600;
 
@@ -172,10 +176,17 @@ pub const Output = struct {
         return count;
     }
 
-    pub fn processStop(context: ?*anyopaque) void {
+    pub fn saveImage(context: ?*anyopaque, _: []const u8, machine: *forth.State) forth.RuntimeError!void {
+        const output: *Output = @ptrCast(@alignCast(context.?));
+        output.saves += 1;
+        output.saved_heap_top = machine.readCellConst(@import("../core/memory_map.zig").heap_top_address);
+    }
+
+    pub fn processStop(context: ?*anyopaque) bool {
         const output: *Output = @ptrCast(@alignCast(context.?));
         output.process_stops += 1;
         output.process_running = false;
+        return !output.process_stop_fails;
     }
 
     pub fn processWritten(self: *const Output) []const u8 {
@@ -264,7 +275,7 @@ pub const Output = struct {
     }
 
     pub fn writer(self: *Output) forth.Writer {
-        return .{ .context = @ptrCast(self), .write_fn = write, .read_fn = read, .key_fn = key, .key_ready_fn = keyReady, .sleep_fn = sleep, .utime_fn = utime, .local_time_fn = localTime, .getenv_fn = getenv, .system_fn = system, .file_ops = &fake_file_ops, .framebuffer_fn = framebuffer, .terminal_size_fn = terminalSize, .terminal_utf8_fn = terminalUtf8, .window_fn = if (self.has_window) window else null, .input_fn = input, .mouse_fn = mouse, .cursor_fn = cursor, .font_buffer_fn = fontBuffer, .font_free_fn = fontFree, .system_font_fn = if (self.has_system_fonts) systemFont else null, .system_glyph_fn = if (self.has_system_fonts) systemGlyph else null, .process_start_fn = processStart, .process_write_fn = processWrite, .process_read_fn = processRead, .process_stop_fn = processStop };
+        return .{ .context = @ptrCast(self), .write_fn = write, .read_fn = read, .save_fn = saveImage, .savesys_fn = saveImage, .key_fn = key, .key_ready_fn = keyReady, .sleep_fn = sleep, .utime_fn = utime, .local_time_fn = localTime, .getenv_fn = getenv, .system_fn = system, .file_ops = &fake_file_ops, .framebuffer_fn = framebuffer, .terminal_size_fn = terminalSize, .terminal_utf8_fn = terminalUtf8, .window_fn = if (self.has_window) window else null, .input_fn = input, .mouse_fn = mouse, .cursor_fn = cursor, .font_buffer_fn = fontBuffer, .font_free_fn = fontFree, .system_font_fn = if (self.has_system_fonts) systemFont else null, .system_glyph_fn = if (self.has_system_fonts) systemGlyph else null, .process_start_fn = processStart, .process_write_fn = processWrite, .process_read_fn = processRead, .process_stop_fn = processStop };
     }
 
     pub fn sleep(context: ?*anyopaque, milliseconds: forth.Cell) forth.RuntimeError!void {

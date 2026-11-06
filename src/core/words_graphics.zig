@@ -211,7 +211,7 @@ fn executeFont(self: *State, builtin: Builtin) RuntimeError!void {
             } else try self.push(0);
         },
         .gfx_tcl_program => try tcl.setProgram(self, try self.memoryRange()),
-        .gfx_tcl_stop => tcl.stop(self),
+        .gfx_tcl_stop => try tcl.stop(self),
         .gfx_show_tk => {
             try requireImage(self);
             // The next SHOW on the terminal starts a new picture there.
@@ -240,7 +240,6 @@ pub fn clearImage(self: *State) void {
     // A font is not part of the dictionary either.
     if (defs.graphics_enabled) {
         graphics_font.selectBuiltin(self);
-        tcl.forgetHeap(self);
     }
 }
 

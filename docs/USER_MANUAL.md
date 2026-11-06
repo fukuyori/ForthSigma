@@ -645,7 +645,7 @@ The font is not part of the dictionary: `SAVE` and `SAVESYS` do not keep it, and
 
 ### Tcl/Tk
 
-The TCL words run Tcl scripts in a Tcl/Tk interpreter (`wish`) that Sigma starts as a program of its own, the first time it is needed, and talks to through pipes; no Tcl library is linked into Sigma. With it, a program can use Tk's widgets, and `DISPLAY-TK` shows the image in a Tk window, also on Linux and macOS, which have no window of Sigma's own. Tcl/Tk must be installed: Sigma uses the program named by `TCL-PROGRAM`, else by the environment variable `SIGMA_WISH`, else `wish` on the `PATH`. (Git for Windows comes with one, `C:\Program Files\Git\mingw64\bin\wish.exe`; on Linux it is in the `tk` package.)
+The TCL words run Tcl scripts in a Tcl/Tk interpreter (`wish`) that Sigma starts as a program of its own, the first time it is needed, and talks to through pipes; no Tcl library is linked into Sigma. With it, a program can use Tk's widgets, and `DISPLAY-TK` shows the image in a Tk window, also on Linux and macOS, which have no window of Sigma's own. Tcl/Tk must be installed: Sigma uses the program named by `TCL-PROGRAM`, else by the environment variable `SIGMA_WISH`, else `wish` on the `PATH`, and on Windows, else the one Git for Windows comes with (`Git\mingw64\bin\wish.exe` under `%ProgramW6432%`, `%ProgramFiles%`, or `%LOCALAPPDATA%\Programs`; usually `C:\Program Files\Git\mingw64\bin\wish.exe`). On Linux it is in the `tk` package.
 
 ```forth
 REQUIRE-GRAPHICS  ALSO GRAPHICS
@@ -655,18 +655,20 @@ S" button .b -text Press -command {sigma_event pressed}; pack .b; wm deiconify .
 WAIT-PRESS                                       \ pressed, after the button is pressed
 ```
 
+`examples/calculator.fs` is a whole program: a calculator whose buttons and keys are Tk's and whose arithmetic is Forth's (`sigma.exe < examples/calculator.fs`).
+
 | Word | Stack | Description |
 | --- | --- | --- |
 | `TCL` | ( c-addr u -- ) | Run a Tcl script (UTF-8) at the global level. `TCL ERROR !` (THROW -273) when it fails. |
 | `TCL-EVAL` | ( c-addr u -- c-addr2 u2 ) | Run a Tcl script and give its result, which stays until the next script. |
 | `TCL-ERROR$` | ( -- c-addr u ) | The message of the last script that failed. |
 | `TCL-EVENT` | ( -- c-addr u true \| false ) | The next text the Tcl side sent with `sigma_event` (for example from a button's `-command`), without waiting; the text stays until the next `TCL-EVENT`. |
-| `TCL-PROGRAM` | ( c-addr u -- ) | The program to start next time (a name on the `PATH` or a path); empty for `SIGMA_WISH` or `wish`. |
-| `TCL-STOP` | ( -- ) | End the program; the next `TCL` starts it again. It also ends with Sigma. |
+| `TCL-PROGRAM` | ( c-addr u -- ) | The program to start next time (a name on the `PATH` or a path); empty for `SIGMA_WISH`, `wish`, or Git for Windows's. |
+| `TCL-STOP` | ( -- ) | End the program; the next `TCL` starts it again. It also ends with Sigma. What the program has written and Sigma has not read is dropped. `HOST FUNCTION ERROR !` when the host could not see the program end. |
 | `DISPLAY-TK` | ( -- ) | Make `SHOW` show the image in the Tk window `.` (sent as a PNG, in the colors of `DISPLAY-COLORS`). Keys pressed and the mouse in it come to `INKEY` and `MOUSE`. Closing the window hides it until the next `SHOW`. |
 | `GFX-TCL`, `GFX-TCL-ERROR`, `GFX-TCL-EVENT`, `GFX-TCL-PROGRAM`, `GFX-TCL-STOP`, `GFX-SHOW-TK` | | The words underneath; `GFX-TCL` ( c-addr u -- c-addr2 u2 flag ) gives the result, or the message with a true flag, instead of throwing. |
 
-When the program cannot be started or ends, the word gives `HOST FUNCTION ERROR !` (THROW -265), and the next one starts it again. A script runs until it returns, so a script that waits (such as `vwait`) holds Sigma too; Ctrl+C pressed in the Tk window meanwhile throws `USER INTERRUPT !` and ends the program, which the next script starts again. A script ending with `return`, `break`, or `continue` gives its result as any other; only an error is `TCL ERROR !`. The results and events are kept in the heap, and `SAVE` and `SAVESYS` free them first, so a string a TCL word gave before is not valid after them. Each `SHOW` sends the whole image, so large images update slowly. The Tcl side's protocol is in `src/graphics/sigma_tk.tcl`.
+When the program cannot be started or ends, the word gives `HOST FUNCTION ERROR !` (THROW -265), and the next one starts it again. A script runs until it returns, so a script that waits (such as `vwait`) holds Sigma too; Ctrl+C pressed in the Tk window meanwhile throws `USER INTERRUPT !` and ends the program, which the next script starts again. A script ending with `return`, `break`, or `continue` gives its result as any other; only an error is `TCL ERROR !`. The results and events are kept in the heap, and `SAVE` and `SAVESYS` free them first, so a string a TCL word gave before is not valid after them; a message still coming at that moment is dropped, and the program goes on. While more than 4 MiB that Sigma has not read wait in the program (Sigma reads only in the TCL words, `INKEY`, and `MOUSE`), the program drops new events, keys, and mouse reports; results are always sent. Each `SHOW` sends the whole image, so large images update slowly. The Tcl side's protocol is in `src/graphics/sigma_tk.tcl`.
 
 ### Keys, the mouse, and animation
 

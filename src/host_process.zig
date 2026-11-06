@@ -2,7 +2,8 @@
 //! written to a file in the temporary directory, and pipes to its standard input and
 //! output. Windows uses CreateProcessW and anonymous pipes; Linux and macOS fork and
 //! exec, finding the program on the PATH. The program is SIGMA_WISH when that is set,
-//! else wish, unless TCL-PROGRAM named one.
+//! else wish (on Windows, Git for Windows's when the PATH has none), unless
+//! TCL-PROGRAM named one.
 
 const std = @import("std");
 const builtin = @import("builtin");
@@ -56,6 +57,11 @@ const windows = struct {
     extern "kernel32" fn GetEnvironmentVariableW([*:0]const u16, ?[*]u16, u32) callconv(.winapi) u32;
     extern "kernel32" fn GetLastError() callconv(.winapi) u32;
     extern "kernel32" fn GetTickCount64() callconv(.winapi) u64;
+    extern "kernel32" fn SearchPathW(?[*:0]const u16, [*:0]const u16, ?[*:0]const u16, u32, [*]u16, ?*?[*]u16) callconv(.winapi) u32;
+    extern "kernel32" fn GetFileAttributesW([*:0]const u16) callconv(.winapi) u32;
+
+    const invalid_attributes: u32 = std.math.maxInt(u32);
+    const attribute_directory: u32 = 0x10;
 
     const invalid_handle: usize = std.math.maxInt(usize);
     const handle_flag_inherit: u32 = 1;
@@ -106,7 +112,26 @@ const windows = struct {
         script_name[0] = 0;
     }
 
-    /// The program: TCL-PROGRAM's, SIGMA_WISH, or wish, in UTF-16.
+    /// Where Git for Windows puts its wish: under these directories, named by
+    /// environment variables (the machine's programs, and a user's own install).
+    const git_places = blk: {
+        @setEvalBranchQuota(20_000);
+        const L = std.unicode.utf8ToUtf16LeStringLiteral;
+        break :blk [_]struct { variable: [:0]const u16, path: []const u16 }{
+            .{ .variable = L("ProgramW6432"), .path = L("\\Git\\mingw64\\bin\\wish.exe") },
+            .{ .variable = L("ProgramFiles"), .path = L("\\Git\\mingw64\\bin\\wish.exe") },
+            .{ .variable = L("LOCALAPPDATA"), .path = L("\\Programs\\Git\\mingw64\\bin\\wish.exe") },
+        };
+    };
+
+    /// Whether a file (not a directory) of that name exists.
+    fn isFile(name: [*:0]const u16) bool {
+        const attributes = GetFileAttributesW(name);
+        return attributes != invalid_attributes and attributes & attribute_directory == 0;
+    }
+
+    /// The program: TCL-PROGRAM's, SIGMA_WISH, wish on the PATH, or Git for Windows's
+    /// wish; wish (which then fails to start) when none is found. In UTF-16.
     fn programName(program: []const u8, buffer: []u16) ?[]const u16 {
         if (program.len != 0) {
             const length = std.unicode.utf8ToUtf16Le(buffer, program) catch return null;
@@ -116,12 +141,23 @@ const windows = struct {
         const length = GetEnvironmentVariableW(variable, buffer.ptr, @intCast(buffer.len));
         if (length != 0 and length < buffer.len) return buffer[0..length];
         const default = std.unicode.utf8ToUtf16LeStringLiteral("wish");
+        var found: [512]u16 = undefined;
+        const on_path = SearchPathW(null, default, std.unicode.utf8ToUtf16LeStringLiteral(".exe"), found.len, &found, null);
+        if (on_path == 0 or on_path >= found.len) {
+            for (git_places) |place| {
+                const base = GetEnvironmentVariableW(place.variable, buffer.ptr, @intCast(buffer.len));
+                if (base == 0 or base + place.path.len + 1 > buffer.len) continue;
+                @memcpy(buffer[base..][0..place.path.len], place.path);
+                buffer[base + place.path.len] = 0;
+                if (isFile(@ptrCast(buffer.ptr))) return buffer[0 .. base + place.path.len];
+            }
+        }
         @memcpy(buffer[0..default.len], default);
         return buffer[0..default.len];
     }
 
     fn startProgram(_: ?*anyopaque, program: []const u8, script: []const u8) forth.RuntimeError!void {
-        stopProgram(null);
+        _ = stopProgram(null);
         if (!writeScript(script)) return error.HostFailed;
         errdefer removeScript();
         var name_buffer: [512]u16 = undefined;
@@ -200,22 +236,30 @@ const windows = struct {
         return count;
     }
 
-    fn stopProgram(_: ?*anyopaque) void {
+    /// Returns whether the program was seen to end.
+    fn stopProgram(_: ?*anyopaque) bool {
         // Closing its standard input ends the program's script; it is ended if it
-        // goes on for 2 seconds.
+        // goes on for 2 seconds. Its output is closed too, so that it does not wait
+        // to write what Sigma will not read.
         if (to_program) |handle| _ = CloseHandle(handle);
         to_program = null;
+        if (from_program) |handle| _ = CloseHandle(handle);
+        from_program = null;
+        var stopped = true;
         if (process) |handle| {
             if (WaitForSingleObject(handle, 2000) != 0) {
-                _ = TerminateProcess(handle, 1);
-                _ = WaitForSingleObject(handle, 1000);
+                // TerminateProcess fails when the program has just ended, too.
+                if (TerminateProcess(handle, 1) == 0) {
+                    stopped = WaitForSingleObject(handle, 0) == 0;
+                } else {
+                    stopped = WaitForSingleObject(handle, 5000) == 0;
+                }
             }
             _ = CloseHandle(handle);
         }
         process = null;
-        if (from_program) |handle| _ = CloseHandle(handle);
-        from_program = null;
         removeScript();
+        return stopped;
     }
 };
 
@@ -294,7 +338,7 @@ const posix = struct {
     }
 
     fn startProgram(_: ?*anyopaque, program: []const u8, script: []const u8) forth.RuntimeError!void {
-        stopProgram(null);
+        _ = stopProgram(null);
         if (!writeScript(script)) return error.HostFailed;
         errdefer removeScript();
         var name_buffer: [512:0]u8 = undefined;
@@ -382,9 +426,14 @@ const posix = struct {
         return false;
     }
 
-    fn stopProgram(_: ?*anyopaque) void {
+    /// Returns whether the program was seen to end.
+    fn stopProgram(_: ?*anyopaque) bool {
+        // Its output is closed too, so that it does not wait to write what Sigma will
+        // not read.
         if (to_program >= 0) _ = std.c.close(to_program);
         to_program = -1;
+        if (from_program >= 0) _ = std.c.close(from_program);
+        from_program = -1;
         if (child > 0) {
             // The program ends when its input closes; after 2 s it is asked to end, and
             // after 1 s more it is ended.
@@ -397,8 +446,7 @@ const posix = struct {
             }
         }
         child = 0;
-        if (from_program >= 0) _ = std.c.close(from_program);
-        from_program = -1;
         removeScript();
+        return true;
     }
 };

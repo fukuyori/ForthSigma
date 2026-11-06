@@ -13,8 +13,13 @@ fconfigure stdin -translation binary -blocking 0
 # and this side goes on reading Sigma's scripts, so neither waits for the other.
 fconfigure stdout -translation binary -buffering full -blocking 0
 set sigma_input ""
+# Events, keys, and the mouse are dropped while this many bytes wait for Sigma to read
+# them (it reads them only in the TCL words, INKEY, and MOUSE); results are always
+# sent, as Sigma waits for them.
+set sigma_pending_limit [expr {4 * 1024 * 1024}]
 
 proc sigma_send {kind code text} {
+    if {$kind ne "R" && [chan pending output stdout] > $::sigma_pending_limit} return
     set data [encoding convertto utf-8 $text]
     puts -nonewline stdout "$kind $code [string length $data]\n$data"
     flush stdout
@@ -40,7 +45,8 @@ proc sigma_read {} {
         set code [catch {uplevel #0 $script} result]
         sigma_send R $code $result
     }
-    # Sigma closed the pipe: it has ended or stopped this program.
+    # Sigma closed the pipes: it has ended or stopped this program, and what it has not
+    # read is dropped.
     if {[eof stdin]} { exit 0 }
 }
 fileevent stdin readable sigma_read

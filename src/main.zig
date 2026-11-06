@@ -808,7 +808,9 @@ fn run(init: std.process.Init.Minimal) !void {
     // The terminal gets its line input back (and stops reporting the mouse) at the end.
     defer host_input.leave();
     // The Tcl program of TCL, if it was started, ends with Sigma.
-    defer if (graphics) host_process.stop(null);
+    defer if (graphics) {
+        _ = host_process.stop(null);
+    };
     loadEmbeddedImage(executable_path, machine, allocator);
 
     var arguments = try std.process.Args.Iterator.initAllocator(init.args, allocator);

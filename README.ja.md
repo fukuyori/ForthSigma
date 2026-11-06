@@ -15,6 +15,7 @@ FORTH/Σ（フォース・シグマ）の言語コアを、Zigで動くネイテ
 - HEX、DEC、OCTによる基数変更、数値・文字・文字列の出力に対応しています。
 - `S"` などの文字列、`123.` 形式の倍長整数（128ビット）、`<<# # #S #> #>>` による数値の書式、`ACCEPT`、`EVALUATE`、`KEY` を使えます。
 - WORDS、FORGET、BYEを対話用ワードとして提供します。
+- この移植版の拡張として、グラフィックス（`REQUIRE-GRAPHICS`）を使えます。メモリ上の画像に線、図形、塗りつぶし、グラフ、文字（組み込みのASCIIフォント、BDFフォント、Windowsではシステムのフォント）を描き、端末（半角ブロックかSixel）、Windowsのウィンドウ、Tkのウィンドウに表示します。キーとマウス（`INKEY`、`MOUSE`）と、Sigmaが起動する `wish` でのTcl/Tkのスクリプト（`TCL`、`TCL-EVAL`、`TCL-EVENT`）も使えます。Tcl/TkはSigmaにリンクしないので、TCL の語を使うにはTcl/Tkを入れておく必要があります。
 - 辞書、コンパイル済み定義、メモリ、入出力をホスト環境から分離し、他のOS・CPUへ移植しやすい構成にしています。
 
 対応ワードと移植上の判断は[実装ノート](docs/IMPLEMENTATION.md)、資料から整理した言語仕様は[FORTH/Σ仕様書](docs/SPEC.ja.md)を参照してください。実装は開発中であり、誌面の全ワードや機種固有機能には対応していません。
@@ -67,6 +68,10 @@ Forthソースファイルは標準入力から読み込めます。例:
 
     sigma.exe < examples/demo.fs
 
+`examples/calculator.fs` は、窓とボタンはTkで、計算はForthで行う電卓です。Tcl/Tkが必要で、Sigmaは `SIGMA_WISH`、なければ `PATH` の `wish`、Windowsではそれもなければ Git for Windows の `wish` を使います。
+
+    sigma.exe < examples/calculator.fs
+
 この移植版の `SAVE filename`／`LOAD filename` は利用者定義語を辞書イメージとして保存・追加読み込みします。同名語は新しい定義が優先され、`FORGET` で新しい方を削除すると古い定義に戻ります。誌面の `LOAD`／`SAVE` はエディットバッファ操作であり、その機能は実装していません。登録語を含む単独実行ファイルは `SAVESYS` で作成します。
 
     SAVE words.sigma
@@ -80,14 +85,14 @@ Forthソースファイルは標準入力から読み込めます。例:
 
 | オプション | 除くもの | 大きさ |
 |---|---|---|
-| （なし） | — | 907,776バイト |
-| `-Dfloat=false` | 浮動小数点の語、浮動小数点数のリテラル（`1e` など）、`F:` `F^` のローカル変数、`ENVIRONMENT?` の `FLOATING-STACK` `MAX-FLOAT`、CORE-MATH、グラフを描くグラフィックスの語（`PLOT` など） | 517,632バイト |
-| `-Dfiles=false` | `INCLUDE`、`REQUIRE`、`OPEN-FILE`、`STDIN`、`SLURP-FILE`、`$...SLURP` の語など、ファイルを開く・読む・書く・取り込む語 | 871,424バイト |
-| `-Dhelp=false` | `HELP`、`LICENSE` とその文章（起動時の表示も `help` を案内しなくなります） | 825,344バイト |
-| `-Dtools=false` | `SEE`、`LOCATE`、`WHERE` | 848,896バイト |
-| `-Dimage=false` | `SAVE`、`LOAD`、`SAVESYS` | 907,776バイト |
-| `-Dgraphics=false` | `REQUIRE-GRAPHICS`、`GFX-` の語、グラフィックスのライブラリとそのフォント、Tcl/Tkの語 | 798,720バイト |
-| 6つすべて | 上のすべて | 289,280バイト |
+| （なし） | — | 913,920バイト |
+| `-Dfloat=false` | 浮動小数点の語、浮動小数点数のリテラル（`1e` など）、`F:` `F^` のローカル変数、`ENVIRONMENT?` の `FLOATING-STACK` `MAX-FLOAT`、CORE-MATH、グラフを描くグラフィックスの語（`PLOT` など） | 524,288バイト |
+| `-Dfiles=false` | `INCLUDE`、`REQUIRE`、`OPEN-FILE`、`STDIN`、`SLURP-FILE`、`$...SLURP` の語など、ファイルを開く・読む・書く・取り込む語 | 877,568バイト |
+| `-Dhelp=false` | `HELP`、`LICENSE` とその文章（起動時の表示も `help` を案内しなくなります） | 832,000バイト |
+| `-Dtools=false` | `SEE`、`LOCATE`、`WHERE` | 856,064バイト |
+| `-Dimage=false` | `SAVE`、`LOAD`、`SAVESYS` | 913,920バイト |
+| `-Dgraphics=false` | `REQUIRE-GRAPHICS`、`GFX-` の語、グラフィックスのライブラリとそのフォント、Tcl/Tkの語 | 798,208バイト |
+| 6つすべて | 上のすべて | 289,792バイト |
 
 大きさは、0.6.0をリリースと同じ `-Doptimize=fast` でWindows x86_64向けにビルドしたものです（2026-11-06に測定）。オプションは組み合わせられます（例: `zig build -Doptimize=fast -Dfloat=false -Dhelp=false`）。
 

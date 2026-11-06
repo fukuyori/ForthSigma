@@ -2070,3 +2070,75 @@ test "a sequence that waited past 50 ms ends before the bytes that come after" {
     try machine.interpretLine("INKEY INKEY INKEY INKEY");
     try expectStack(machine, &.{ 27, '[', 'A', -1 });
 }
+
+test "SAVE and SAVESYS in the middle of a message drop its rest, so the next script gets its own result" {
+    try skipWithout(&.{ .graphics, .image });
+    var output = Output{};
+    const machine = try libraryMachine(&output, "4 4");
+    defer destroyMachine(machine);
+    const before = heapTop(machine);
+    // An event of 11 bytes, of which 2 have come; its other 9 look like a result.
+    output.process_replies = "R 0 0\n" ++ "E 0 11\n" ++ "ab" ++ "R 0 3\nold" ++ "R 0 3\nnew";
+    output.process_reply_limit = 6 + 7 + 2;
+    try machine.interpretLine("S\" a\" TCL TCL-EVENT");
+    try expectStack(machine, &.{0});
+    machine.data_depth = 0;
+    try machine.interpretLine("SAVE x.img");
+    try std.testing.expectEqual(@as(usize, 1), output.saves);
+    try std.testing.expectEqual(before, output.saved_heap_top);
+    output.process_reply_limit = std.math.maxInt(usize);
+    output.len = 0;
+    try machine.interpretLine("S\" b\" TCL-EVAL TYPE TCL-EVENT");
+    try std.testing.expectEqualStrings("new", output.written());
+    try expectStack(machine, &.{0});
+    machine.data_depth = 0;
+    try std.testing.expectEqual(@as(usize, 1), output.process_starts);
+    // A header that has come in part is kept: it is not in the heap.
+    output.process_replies = "E 0 2\nhi";
+    output.process_reply_index = 0;
+    output.process_reply_limit = 3;
+    try machine.interpretLine("TCL-EVENT");
+    try expectStack(machine, &.{0});
+    machine.data_depth = 0;
+    try machine.interpretLine("SAVESYS x.exe");
+    try std.testing.expectEqual(@as(usize, 2), output.saves);
+    output.process_reply_limit = std.math.maxInt(usize);
+    output.len = 0;
+    try machine.interpretLine("TCL-EVENT . TYPE");
+    try std.testing.expectEqualStrings("-1 hi", output.written());
+}
+
+test "TCL-STOP in the middle of a message frees its text, and the new program is read from its start" {
+    try skipWithout(&.{.graphics});
+    var output = Output{};
+    const machine = try libraryMachine(&output, "4 4");
+    defer destroyMachine(machine);
+    output.process_replies = "R 0 0\n" ++ "E 0 5\nab";
+    output.process_reply_limit = 6 + 8;
+    try machine.interpretLine("S\" a\" TCL");
+    const before = heapTop(machine);
+    try machine.interpretLine("TCL-EVENT");
+    try expectStack(machine, &.{0});
+    machine.data_depth = 0;
+    try machine.interpretLine("TCL-STOP");
+    try std.testing.expectEqual(before, heapTop(machine));
+    output.process_replies = "R 0 3\nnew";
+    output.process_reply_index = 0;
+    output.process_reply_limit = std.math.maxInt(usize);
+    output.len = 0;
+    try machine.interpretLine("S\" b\" TCL-EVAL TYPE");
+    try std.testing.expectEqualStrings("new", output.written());
+    try std.testing.expectEqual(@as(usize, 2), output.process_starts);
+    // A program the host could not see end: HOST FUNCTION ERROR, and the next script
+    // starts a new one.
+    output.process_stop_fails = true;
+    try machine.interpretLine(": T TCL-STOP ; ' T CATCH");
+    try expectStack(machine, &.{-265});
+    machine.data_depth = 0;
+    output.process_stop_fails = false;
+    output.process_reply_index = 0;
+    output.len = 0;
+    try machine.interpretLine("S\" c\" TCL-EVAL TYPE");
+    try std.testing.expectEqualStrings("new", output.written());
+    try std.testing.expectEqual(@as(usize, 3), output.process_starts);
+}
