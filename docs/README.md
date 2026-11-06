@@ -6,6 +6,7 @@ For the project overview, how to build, the current features, the differences fr
 
 - [FORTH/Σ specification](SPEC.md): the specification compiled from the magazine sources, and where it comes from
 - [User manual](USER_MANUAL.md): how to start, basic operation, the list of the words registered now
+- [Graphics modes](GRAPHICS_MODES.md): where `SHOW` shows the image (terminal, Sixel, window, Tk window), the number of colors, and the size it is shown at
 - [Implementation notes](IMPLEMENTATION.md): the structure of the Zig port, implementation decisions, features not implemented
 - [Word compatibility list](COMPATIBILITY.md): the words published in the book and their current implementation status
 - [Decisions and open issues](DECISIONS.md): the division between the specification of the original sources and the porting decisions (in Japanese)

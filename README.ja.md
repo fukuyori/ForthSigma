@@ -30,6 +30,27 @@ FORTH/Σ（フォース・シグマ）の言語コアを、Zigで動くネイテ
 
 現時点では、LIST、ソースファイルやエディタの操作、CP/Mのファイル機能、PC-8001のモニタ機能、Z80機械語を使うワードには対応していません。
 
+### グラフィックモード
+
+BASICの `SCREEN 1` のような番号付きの画面モードはありません。プログラムは `GFX-INIT` ( w h -- ) で任意の大きさ（各辺1〜8192画素）の画像を1枚作り、`SHOW` の表示先と色数を別々に選びます。画像そのものは常にフルカラーで、ファイルにもフルカラーで保存します。
+
+| `SHOW` の表示先 | 語 | 使える環境 |
+| --- | --- | --- |
+| 端末、半角ブロック（1文字で2画素） | `DISPLAY-TERMINAL TERMINAL-BLOCKS` | すべてのOS |
+| 端末、Sixel | `DISPLAY-TERMINAL TERMINAL-SIXEL` | Sixelに対応した端末 |
+| ウィンドウ | `DISPLAY-WINDOW` | Windows |
+| Tkのウィンドウ | `DISPLAY-TK` | Tcl/Tkが入っている環境 |
+
+選ぶまでは、`SHOW` はWindowsではウィンドウに、ほかのOSでは端末に半角ブロックで表示します。`n DISPLAY-COLORS` で、フルカラー（0、既定）、白黒（2）、ANSIの16色（16）、xtermの256色（256）を選び、`TRUE DITHER` で減らした色をBayerの模様で混ぜます。`w h WINDOW-SIZE` で、ウィンドウとTkのウィンドウに画像を大きく表示します。たとえば `160 120 GFX-INIT 640 480 WINDOW-SIZE` で、1画素を4×4で表示します。
+
+```forth
+REQUIRE-GRAPHICS  ALSO GRAPHICS
+160 120 GFX-INIT  255 255 0 COLOR  80 60 40 CIRCLE
+DISPLAY-TERMINAL  16 DISPLAY-COLORS  TRUE DITHER  SHOW
+```
+
+詳しくは[グラフィックモードのマニュアル](docs/GRAPHICS_MODES.ja.md)を参照してください。
+
 ## ビルドと実行
 
 Zig 0.17.0をインストールした環境で、リポジトリのルートから実行します。

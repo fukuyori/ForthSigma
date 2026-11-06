@@ -552,7 +552,7 @@ File names are relative paths from the current directory. `REQUIRE` compares nam
 
 ## Graphics
 
-Sigma draws on one image in memory and saves it as a PPM, BMP, or PNG file. The graphics words are not in the dictionary at start-up: `REQUIRE-GRAPHICS` adds the `GRAPHICS` vocabulary, with the `GFX-` words and the graphics library written in Forth (`src/graphics/graphics.fs` and, with the floating-point words, `src/graphics/graphics_float.fs`, built into the program), the first time it runs; later it does nothing. It does not change the search order, so make the words visible with `ALSO GRAPHICS` (or `GRAPHICS`).
+Sigma draws on one image in memory and saves it as a PPM, BMP, or PNG file. The graphics words are not in the dictionary at start-up: `REQUIRE-GRAPHICS` adds the `GRAPHICS` vocabulary, with the `GFX-` words and the graphics library written in Forth (`src/graphics/graphics.fs` and, with the floating-point words, `src/graphics/graphics_float.fs`, built into the program), the first time it runs; later it does nothing. It does not change the search order, so make the words visible with `ALSO GRAPHICS` (or `GRAPHICS`). Where `SHOW` shows the image and with how many colors are summed up in the [graphics modes manual](GRAPHICS_MODES.md).
 
 ```forth
 REQUIRE-GRAPHICS

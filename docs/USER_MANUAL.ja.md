@@ -552,7 +552,7 @@ MARKER SAFE  : TEMP ." Hello" ;  SAFE   \ TEMP は消えます
 
 ## グラフィックス
 
-Sigmaは、メモリ上の1枚の画像に描き、PPM、BMP、またはPNGのファイルに保存できます。グラフィックスの語は起動時の辞書にはありません。`REQUIRE-GRAPHICS` を初めて実行したときに、`GRAPHICS` 語彙と、`GFX-` の語、Forthで書いたグラフィックスのライブラリ（`src/graphics/graphics.fs` と、浮動小数点数の語がある版では `src/graphics/graphics_float.fs`。プログラムに組み込み済み）を加えます。2回目以降は何もしません。検索順序は変えないので、`ALSO GRAPHICS`（または `GRAPHICS`）で語を使えるようにします。
+Sigmaは、メモリ上の1枚の画像に描き、PPM、BMP、またはPNGのファイルに保存できます。グラフィックスの語は起動時の辞書にはありません。`REQUIRE-GRAPHICS` を初めて実行したときに、`GRAPHICS` 語彙と、`GFX-` の語、Forthで書いたグラフィックスのライブラリ（`src/graphics/graphics.fs` と、浮動小数点数の語がある版では `src/graphics/graphics_float.fs`。プログラムに組み込み済み）を加えます。2回目以降は何もしません。検索順序は変えないので、`ALSO GRAPHICS`（または `GRAPHICS`）で語を使えるようにします。`SHOW` の表示先と色数は、[グラフィックモードのマニュアル](GRAPHICS_MODES.ja.md)にまとめています。
 
 ```forth
 REQUIRE-GRAPHICS

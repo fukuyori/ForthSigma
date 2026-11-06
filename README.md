@@ -30,6 +30,27 @@ For the support status of each word, see the [compatibility list](docs/COMPATIBI
 
 At present, LIST, source file and editor operations, the CP/M file functions, the PC-8001 monitor functions, and words that use Z80 machine code are not supported.
 
+### Graphics modes
+
+There are no numbered screen modes, such as `SCREEN 1` of BASIC. A program makes one image of any size with `GFX-INIT` ( w h -- ), 1 to 8192 pixels a side, and chooses separately where `SHOW` shows it and with how many colors. The image itself always keeps full color, and files are saved in full color.
+
+| Where `SHOW` shows the image | Words | Where it works |
+| --- | --- | --- |
+| Terminal, half blocks (two pixels a character) | `DISPLAY-TERMINAL TERMINAL-BLOCKS` | every system |
+| Terminal, Sixel | `DISPLAY-TERMINAL TERMINAL-SIXEL` | terminals that support Sixel |
+| Window | `DISPLAY-WINDOW` | Windows |
+| Tk window | `DISPLAY-TK` | where Tcl/Tk is installed |
+
+Until one is chosen, `SHOW` uses the window on Windows and the terminal with half blocks elsewhere. `n DISPLAY-COLORS` shows the image in full color (0, the default), black and white (2), the 16 ANSI colors (16), or xterm's 256 colors (256), and `TRUE DITHER` mixes the fewer colors in a Bayer pattern. `w h WINDOW-SIZE` shows the image larger in the window and the Tk window, for example `160 120 GFX-INIT 640 480 WINDOW-SIZE` shows each pixel as 4 by 4.
+
+```forth
+REQUIRE-GRAPHICS  ALSO GRAPHICS
+160 120 GFX-INIT  255 255 0 COLOR  80 60 40 CIRCLE
+DISPLAY-TERMINAL  16 DISPLAY-COLORS  TRUE DITHER  SHOW
+```
+
+For the details, see the [graphics modes manual](docs/GRAPHICS_MODES.md).
+
 ## Building and running
 
 In an environment with Zig 0.17.0 installed, run these commands from the root of the repository.
