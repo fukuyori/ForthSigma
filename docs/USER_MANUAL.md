@@ -687,7 +687,7 @@ VARIABLE X  40 X !
 RUN
 ```
 
-`examples/paddle.fs` is a whole game with these words: a ball that bounces off three walls and a paddle moved with the Up and Down keys (`sigma.exe "include examples/paddle.fs"`).
+`examples/paddle.fs` is a whole game with these words: a ball that bounces off three walls and a paddle moved with the Up and Down keys (`sigma.exe "include examples/paddle.fs"`). `examples/runner.fs` (Classic Runner) is a larger one: a tile game where the runner climbs ladders, hangs on ropes, digs holes, and collects gold while guards chase it; the line at the bottom shows how long the game's work takes each frame and the frames shown each second.
 
 | Word | Stack | Description |
 | --- | --- | --- |

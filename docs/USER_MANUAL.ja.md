@@ -687,7 +687,7 @@ VARIABLE X  40 X !
 RUN
 ```
 
-`examples/paddle.fs` は、これらの語で作ったゲームです。3方の壁で跳ね返るボールを、上下キーで動かすパッドで打ち返します（`sigma.exe "include examples/paddle.fs"`）。
+`examples/paddle.fs` は、これらの語で作ったゲームです。3方の壁で跳ね返るボールを、上下キーで動かすパッドで打ち返します（`sigma.exe "include examples/paddle.fs"`）。`examples/runner.fs`（Classic Runner）はもっと大きな例で、はしごを登り、ロープにぶら下がり、穴を掘り、追ってくる敵をかわしながら金塊を集めるタイルのゲームです。下の行に、1コマの処理にかかった時間と、1秒に表示したコマ数を出します。
 
 | 語 | スタック | 説明 |
 | --- | --- | --- |
