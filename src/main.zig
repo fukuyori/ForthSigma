@@ -68,11 +68,15 @@ const posix_ioctl = struct {
     extern "c" fn ioctl(c_int, c_int, ...) c_int;
 };
 const host_window = @import("host_window.zig");
+const host_gamepad = @import("host_gamepad.zig");
 const host_input = @import("host_input.zig");
 const host_font = @import("host_font.zig");
 const host_process = @import("host_process.zig");
 /// Whether the build has the graphics words: a build without them leaves out the fonts.
 const graphics = @import("build_options").graphics;
+comptime {
+    if (graphics) _ = host_gamepad;
+}
 
 const image_footer_size = 20;
 const image_footer_magic = "SIGEND01";
@@ -802,9 +806,10 @@ fn run(init: std.process.Init.Minimal) !void {
 
     enableVirtualTerminal();
     useBinaryStdin();
-    machine.init(.{ .context = @ptrCast(&host), .write_fn = terminalWrite, .read_fn = terminalRead, .load_fn = loadDictionary, .save_fn = saveDictionary, .savesys_fn = saveExecutableImage, .key_fn = terminalKey, .key_ready_fn = terminalKeyReady, .sleep_fn = sleepMilliseconds, .utime_fn = microsecondsSinceEpoch, .local_time_fn = localTime, .getenv_fn = environmentValue, .system_fn = runShellCommand, .file_ops = &file_ops, .framebuffer_fn = graphicsBuffer, .terminal_size_fn = terminalSize, .terminal_utf8_fn = terminalUtf8, .window_fn = if (host_window.available) host_window.show else null, .input_fn = inputEvent, .mouse_fn = mouseMode, .cursor_fn = cursorPosition, .font_buffer_fn = if (graphics) fontBuffer else null, .font_free_fn = if (graphics) fontFree else null, .system_font_fn = if (graphics and host_font.available) host_font.select else null, .system_glyph_fn = if (graphics and host_font.available) host_font.glyph else null, .process_start_fn = if (graphics) host_process.start else null, .process_write_fn = if (graphics) host_process.write else null, .process_read_fn = if (graphics) host_process.read else null, .process_stop_fn = if (graphics) host_process.stop else null });
+    machine.init(.{ .gamepad_ops = if (graphics) &host_gamepad.ops else null, .context = @ptrCast(&host), .write_fn = terminalWrite, .read_fn = terminalRead, .load_fn = loadDictionary, .save_fn = saveDictionary, .savesys_fn = saveExecutableImage, .key_fn = terminalKey, .key_ready_fn = terminalKeyReady, .sleep_fn = sleepMilliseconds, .utime_fn = microsecondsSinceEpoch, .local_time_fn = localTime, .getenv_fn = environmentValue, .system_fn = runShellCommand, .file_ops = &file_ops, .framebuffer_fn = graphicsBuffer, .terminal_size_fn = terminalSize, .terminal_utf8_fn = terminalUtf8, .window_fn = if (host_window.available) host_window.show else null, .input_fn = inputEvent, .mouse_fn = mouseMode, .cursor_fn = cursorPosition, .font_buffer_fn = if (graphics) fontBuffer else null, .font_free_fn = if (graphics) fontFree else null, .system_font_fn = if (graphics and host_font.available) host_font.select else null, .system_glyph_fn = if (graphics and host_font.available) host_font.glyph else null, .process_start_fn = if (graphics) host_process.start else null, .process_write_fn = if (graphics) host_process.write else null, .process_read_fn = if (graphics) host_process.read else null, .process_stop_fn = if (graphics) host_process.stop else null });
     defer closeAllFiles();
     defer host_window.close();
+    defer if (graphics) host_gamepad.close();
     // The terminal gets its line input back (and stops reporting the mouse) at the end.
     defer host_input.leave();
     // The Tcl program of TCL, if it was started, ends with Sigma.

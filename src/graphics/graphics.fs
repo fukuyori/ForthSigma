@@ -296,6 +296,27 @@ VARIABLE (DITHER)  0 (DITHER) !
 \ Whether the key (a code as INKEY gives it) is held down now; a terminal does not tell
 \ when a key is released, so its keys count as held for 0.6 s after they were pressed.
 : KEY-HELD? ( key -- flag )   GFX-KEY-HELD ;
+
+\ Snapshot once per frame. Indices 0..7 can change after reconnect: compare IDs.
+\ Poll returns -1 if SDL3 is unavailable, 0 if no pads are connected.
+: GAMEPAD-POLL ( -- count ) GFX-GAMEPAD-POLL ;
+: GAMEPAD? ( pad -- flag ) 0 SWAP GFX-GAMEPAD-QUERY ;
+: GAMEPAD-ID ( pad -- id ) 1 SWAP GFX-GAMEPAD-QUERY ;
+: GAMEPAD-BUTTONS ( pad -- mask ) 2 SWAP GFX-GAMEPAD-QUERY ;
+: GAMEPAD-MAPPED? ( pad -- flag ) 3 SWAP GFX-GAMEPAD-QUERY ;
+: GAMEPAD-AXES ( pad -- count ) 4 SWAP GFX-GAMEPAD-QUERY ;
+: GAMEPAD-BUTTON-COUNT ( pad -- count ) 5 SWAP GFX-GAMEPAD-QUERY ;
+: GAMEPAD-HATS ( pad -- count ) 6 SWAP GFX-GAMEPAD-QUERY ;
+: GAMEPAD-AXIS ( axis pad -- value )
+   { axis pad } axis 0 16 WITHIN 0= IF -24 THROW THEN 16 axis + pad GFX-GAMEPAD-QUERY ;
+: GAMEPAD-HAT ( hat pad -- mask )
+   { hat pad } hat 0 4 WITHIN 0= IF -24 THROW THEN 32 hat + pad GFX-GAMEPAD-QUERY ;
+: GAMEPAD-BUTTON? ( button pad -- flag )
+   { button pad } button 0 32 WITHIN 0= IF -24 THROW THEN
+   pad GAMEPAD-BUTTONS 1 button LSHIFT AND 0<> ;
+: GAMEPAD-NAME ( addr capacity pad -- length ) GFX-GAMEPAD-NAME ;
+: GAMEPAD-GUID ( addr capacity pad -- length ) GFX-GAMEPAD-GUID ;
+: GAMEPAD-MAP ( addr length -- flag ) GFX-GAMEPAD-MAP ;
 \ The size of the part of the window (and of the Tk window) that shows the image, from
 \ the next SHOW; 0 0 for the image's own size. The image keeps its proportions.
 : WINDOW-SIZE ( w h -- )   GFX-WINDOW-SIZE ;

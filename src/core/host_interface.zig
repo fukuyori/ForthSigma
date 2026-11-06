@@ -85,6 +85,7 @@ pub const CursorPosition = struct { column: i32, row: i32 };
 pub const LocalTime = struct { second: Cell, minute: Cell, hour: Cell, day: Cell, month: Cell, year: Cell };
 
 pub const Writer = struct {
+    gamepad_ops: ?*const @import("gamepad.zig").Ops = null,
     context: ?*anyopaque,
     write_fn: *const fn (?*anyopaque, []const u8) void,
     read_fn: ?*const fn (?*anyopaque, []u8) ?[]const u8 = null,

@@ -597,6 +597,11 @@ pub const Builtin = enum {
     gfx_show_tk,
     gfx_key_held,
     gfx_window_size,
+    gfx_gamepad_poll,
+    gfx_gamepad_query,
+    gfx_gamepad_name,
+    gfx_gamepad_map,
+    gfx_gamepad_guid,
 };
 
 pub const HeapResult = union(enum) { address: Cell, no_memory, bad_pointer };

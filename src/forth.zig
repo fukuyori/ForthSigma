@@ -228,6 +228,7 @@ pub const State = struct {
     /// WINDOW-SIZE: the size of the part of the window that shows the image, 0 0 for
     /// the image's own size.
     gfx_window_size: [2]u32 = .{ 0, 0 },
+    gamepads: @import("core/gamepad.zig").Snapshot = .{},
     /// TEXT's font and the glyph it loaded last (none in a build without graphics).
     gfx_font: if (defs.graphics_enabled) graphics_font.FontState else void = if (defs.graphics_enabled) .{} else {},
     /// The bytes written to the host so far: SHOW draws over its last image on the

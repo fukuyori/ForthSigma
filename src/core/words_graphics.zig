@@ -29,7 +29,7 @@ const max_wordlists = memory_map.max_wordlists;
 const wordlist_count_address = memory_map.wordlist_count_address;
 
 /// The built-in words this file executes; executeBuiltin dispatches by this list.
-pub const words = [_]Builtin{ .gfx_init, .gfx_width, .gfx_height, .gfx_pset, .gfx_pget, .gfx_hline, .gfx_cls, .gfx_save_ppm, .gfx_save_bmp, .gfx_show_blocks, .gfx_show_sixel, .gfx_show_window, .gfx_window_query, .gfx_save_png, .gfx_inkey, .gfx_mouse, .gfx_mouse_mode, .gfx_glyph_load, .gfx_glyph_box, .gfx_glyph_alpha, .gfx_font_height, .gfx_font_builtin, .gfx_font_load, .gfx_font_system, .gfx_color_mode, .gfx_tcl, .gfx_tcl_error, .gfx_tcl_event, .gfx_tcl_program, .gfx_tcl_stop, .gfx_show_tk, .gfx_key_held, .gfx_window_size };
+pub const words = [_]Builtin{ .gfx_init, .gfx_width, .gfx_height, .gfx_pset, .gfx_pget, .gfx_hline, .gfx_cls, .gfx_save_ppm, .gfx_save_bmp, .gfx_show_blocks, .gfx_show_sixel, .gfx_show_window, .gfx_window_query, .gfx_save_png, .gfx_inkey, .gfx_mouse, .gfx_mouse_mode, .gfx_glyph_load, .gfx_glyph_box, .gfx_glyph_alpha, .gfx_font_height, .gfx_font_builtin, .gfx_font_load, .gfx_font_system, .gfx_color_mode, .gfx_tcl, .gfx_tcl_error, .gfx_tcl_event, .gfx_tcl_program, .gfx_tcl_stop, .gfx_show_tk, .gfx_key_held, .gfx_window_size, .gfx_gamepad_poll, .gfx_gamepad_query, .gfx_gamepad_name, .gfx_gamepad_map, .gfx_gamepad_guid };
 
 /// The GFX- words in the order REQUIRE-GRAPHICS appends them, right after the GRAPHICS
 /// vocabulary. The order is part of the dictionary that images keep: add new words at
@@ -47,11 +47,16 @@ pub const definitions = [_]struct { []const u8, Builtin }{
     .{ "GFX-TCL-EVENT", .gfx_tcl_event },    .{ "GFX-TCL-PROGRAM", .gfx_tcl_program }, .{ "GFX-TCL-STOP", .gfx_tcl_stop },
     .{ "GFX-SHOW-TK", .gfx_show_tk },        .{ "GFX-KEY-HELD", .gfx_key_held },
     .{ "GFX-WINDOW-SIZE", .gfx_window_size },
+    .{ "GFX-GAMEPAD-POLL", .gfx_gamepad_poll },
+    .{ "GFX-GAMEPAD-QUERY", .gfx_gamepad_query },
+    .{ "GFX-GAMEPAD-NAME", .gfx_gamepad_name },
+    .{ "GFX-GAMEPAD-MAP", .gfx_gamepad_map },
+    .{ "GFX-GAMEPAD-GUID", .gfx_gamepad_guid },
 };
 
 /// The words of the graphics library that HELP describes; the help test checks that the
 /// library defines each of them.
-pub const library_words = [_][]const u8{ "RGB", "COLOR", "COLOR!", "COLOR@", "PSET", "CLS", "LINE", "RECT", "FILL-RECT", "CIRCLE", "FILL-CIRCLE", "PAINT", "SAVE-PPM", "SAVE-BMP", "SAVE-PNG", "SHOW", "DISPLAY-TERMINAL", "DISPLAY-WINDOW", "TERMINAL-BLOCKS", "TERMINAL-SIXEL", "DISPLAY-COLORS", "DITHER", "TCL", "TCL-EVAL", "TCL-ERROR$", "TCL-EVENT", "TCL-PROGRAM", "TCL-STOP", "DISPLAY-TK", "INKEY", "KEY-HELD?", "MOUSE", "WINDOW-SIZE", "MOUSE-ON", "MOUSE-OFF", "FRAME", "TEXT", "TEXT-SCALE", "TEXT-WIDTH", "TEXT-HEIGHT", "BUILTIN-FONT", "LOAD-FONT", "SYSTEM-FONT", "K-UP", "K-DOWN", "K-LEFT", "K-RIGHT", "K-HOME", "K-END", "K-PRIOR", "K-NEXT", "K-INSERT", "K-DELETE", "K-F1", "K-F2", "K-F3", "K-F4", "K-F5", "K-F6", "K-F7", "K-F8", "K-F9", "K-F10", "K-F11", "K-F12" };
+pub const library_words = [_][]const u8{ "RGB", "COLOR", "COLOR!", "COLOR@", "PSET", "CLS", "LINE", "RECT", "FILL-RECT", "CIRCLE", "FILL-CIRCLE", "PAINT", "SAVE-PPM", "SAVE-BMP", "SAVE-PNG", "SHOW", "DISPLAY-TERMINAL", "DISPLAY-WINDOW", "TERMINAL-BLOCKS", "TERMINAL-SIXEL", "DISPLAY-COLORS", "DITHER", "TCL", "TCL-EVAL", "TCL-ERROR$", "TCL-EVENT", "TCL-PROGRAM", "TCL-STOP", "DISPLAY-TK", "INKEY", "KEY-HELD?", "MOUSE", "WINDOW-SIZE", "MOUSE-ON", "MOUSE-OFF", "FRAME", "TEXT", "TEXT-SCALE", "TEXT-WIDTH", "TEXT-HEIGHT", "BUILTIN-FONT", "LOAD-FONT", "SYSTEM-FONT", "K-UP", "K-DOWN", "K-LEFT", "K-RIGHT", "K-HOME", "K-END", "K-PRIOR", "K-NEXT", "K-INSERT", "K-DELETE", "K-F1", "K-F2", "K-F3", "K-F4", "K-F5", "K-F6", "K-F7", "K-F8", "K-F9", "K-F10", "K-F11", "K-F12", "GAMEPAD-POLL", "GAMEPAD?", "GAMEPAD-ID", "GAMEPAD-BUTTONS", "GAMEPAD-MAPPED?", "GAMEPAD-AXES", "GAMEPAD-BUTTON-COUNT", "GAMEPAD-HATS", "GAMEPAD-AXIS", "GAMEPAD-HAT", "GAMEPAD-BUTTON?", "GAMEPAD-NAME", "GAMEPAD-MAP", "GAMEPAD-GUID" };
 
 /// The words of the part of the library that uses floating-point numbers, which a build
 /// without them leaves out.
@@ -75,6 +80,7 @@ const rgb_mask: u32 = 0x00ff_ffff;
 
 pub fn execute(self: *State, builtin: Builtin) RuntimeError!void {
     switch (builtin) {
+        .gfx_gamepad_poll, .gfx_gamepad_query, .gfx_gamepad_name, .gfx_gamepad_map, .gfx_gamepad_guid => try @import("gamepad.zig").execute(self, builtin),
         .gfx_init => {
             const height = try self.pop();
             const width = try self.pop();
