@@ -16,6 +16,7 @@ This project implements the language core of FORTH/Σ (FORTH/Sigma) as a native 
 - Strings such as `S"`, double-cell integers (128-bit) in the `123.` form, number formatting with `<<# # #S #> #>>`, `ACCEPT`, `EVALUATE`, and `KEY` are available.
 - WORDS, FORGET, and BYE are provided as interactive words.
 - Graphics, an extension of this port (`REQUIRE-GRAPHICS`): an image in memory with lines, shapes, painting, graphs, and text (a built-in ASCII font, BDF fonts, and on Windows the system's fonts), shown on the terminal (half blocks or Sixel), in a window on Windows, or in a Tk window; keys and the mouse (`INKEY`, `MOUSE`); and Tcl/Tk scripts run in a `wish` that Sigma starts (`TCL`, `TCL-EVAL`, `TCL-EVENT`). Tcl/Tk is not linked into Sigma and must be installed to use the TCL words.
+- Sound, an extension of this port (`REQUIRE-AUDIO`): MSX BASIC's `PLAY`, `SOUND`, and `BEEP` with its music macro language, played by an audio thread while the program goes on; the sound chips of the MSX, the Atari ST, the NES, the C64, Konami's SCC, and the Amiga, alone or together, with instruments; recorded sound from WAV files and sound effects; and ProTracker modules (MOD files). See [Sound](docs/USER_MANUAL.md#sound) and `examples/music.fs`.
 - The dictionary, compiled definitions, memory, and input and output are separated from the host environment, so the program is easy to port to other operating systems and CPUs.
 
 For the supported words and the porting decisions, see the [implementation notes](docs/IMPLEMENTATION.md). For the language specification compiled from the sources, see the [FORTH/Σ specification](docs/SPEC.md). The implementation is under development and does not support every word in the book or machine-specific features.
@@ -106,16 +107,17 @@ Build options leave out groups of words, for a smaller program or for a host tha
 
 | Option | Leaves out | Size |
 |---|---|---|
-| (none) | — | 913,920 bytes |
-| `-Dfloat=false` | The floating-point words, floating-point literals (such as `1e`), the `F:` and `F^` local variables, `FLOATING-STACK` and `MAX-FLOAT` of `ENVIRONMENT?`, CORE-MATH, and the graphics words that draw graphs (`PLOT` and others) | 524,288 bytes |
-| `-Dfiles=false` | The words that open, read, write, or include files, such as `INCLUDE`, `REQUIRE`, `OPEN-FILE`, `STDIN`, `SLURP-FILE`, and the `$...SLURP` words | 877,568 bytes |
-| `-Dhelp=false` | `HELP`, `LICENSE`, and their texts (the banner no longer mentions `help`) | 832,000 bytes |
-| `-Dtools=false` | `SEE`, `LOCATE`, and `WHERE` | 856,064 bytes |
-| `-Dimage=false` | `SAVE`, `LOAD`, and `SAVESYS` | 913,920 bytes |
-| `-Dgraphics=false` | `REQUIRE-GRAPHICS`, the `GFX-` words, the graphics library, its fonts, and the Tcl/Tk words | 798,208 bytes |
-| All six | All of the above | 289,792 bytes |
+| (none) | — | 1,033,728 bytes |
+| `-Dfloat=false` | The floating-point words, floating-point literals (such as `1e`), the `F:` and `F^` local variables, `FLOATING-STACK` and `MAX-FLOAT` of `ENVIRONMENT?`, CORE-MATH, and the graphics words that draw graphs (`PLOT` and others) | 644,096 bytes |
+| `-Dfiles=false` | The words that open, read, write, or include files, such as `INCLUDE`, `REQUIRE`, `OPEN-FILE`, `STDIN`, `SLURP-FILE`, and the `$...SLURP` words | 997,888 bytes |
+| `-Dhelp=false` | `HELP`, `LICENSE`, and their texts (the banner no longer mentions `help`) | 935,936 bytes |
+| `-Dtools=false` | `SEE`, `LOCATE`, and `WHERE` | 974,848 bytes |
+| `-Dimage=false` | `SAVE`, `LOAD`, and `SAVESYS` | 1,031,680 bytes |
+| `-Dgraphics=false` | `REQUIRE-GRAPHICS`, the `GFX-` words, the graphics library, its fonts, and the Tcl/Tk words | 894,976 bytes |
+| `-Daudio=false` | `REQUIRE-AUDIO`, the `SND-` words, the audio library, and the audio thread | 955,904 bytes |
+| All seven | All of the above | 299,008 bytes |
 
-The sizes are those of 0.6.0 built with `-Doptimize=fast`, the same as the release, on Windows x86_64 (measured 2026-11-06). The options can be combined, for example `zig build -Doptimize=fast -Dfloat=false -Dhelp=false`.
+The sizes are those of 0.6.1 with the sound words (commit `d5de15b`) built with `-Doptimize=fast`, the same as the release, on Windows x86_64 (measured 2026-11-07). The options can be combined, for example `zig build -Doptimize=fast -Dfloat=false -Dhelp=false`.
 
 The words of a group left out are not in the dictionary, and `HELP` has no entries for them. The groups are independent: without the file words, `SAVE`, `LOAD`, and `SAVESYS` still write and read image files, and `LOCATE` still reads the source file, unless their own groups are left out too. Every build gives each built-in word the same execution token, so an image saved by one build loads into a build with other groups; running a word that build left out gives the error `INVALID EXECUTION TOKEN`, and `SEE` shows it by its name. An image saved by an earlier build that left a group out (such as `-Dfloat=false`) gives `INVALID IMAGE`, since its built-in words had other execution tokens.
 

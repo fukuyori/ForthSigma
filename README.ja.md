@@ -16,6 +16,7 @@ FORTH/Σ（フォース・シグマ）の言語コアを、Zigで動くネイテ
 - `S"` などの文字列、`123.` 形式の倍長整数（128ビット）、`<<# # #S #> #>>` による数値の書式、`ACCEPT`、`EVALUATE`、`KEY` を使えます。
 - WORDS、FORGET、BYEを対話用ワードとして提供します。
 - この移植版の拡張として、グラフィックス（`REQUIRE-GRAPHICS`）を使えます。メモリ上の画像に線、図形、塗りつぶし、グラフ、文字（組み込みのASCIIフォント、BDFフォント、Windowsではシステムのフォント）を描き、端末（半角ブロックかSixel）、Windowsのウィンドウ、Tkのウィンドウに表示します。キーとマウス（`INKEY`、`MOUSE`）と、Sigmaが起動する `wish` でのTcl/Tkのスクリプト（`TCL`、`TCL-EVAL`、`TCL-EVENT`）も使えます。Tcl/TkはSigmaにリンクしないので、TCL の語を使うにはTcl/Tkを入れておく必要があります。
+- この移植版の拡張として、サウンド（`REQUIRE-AUDIO`）を使えます。MSX BASIC の `PLAY`、`SOUND`、`BEEP` と MML を、音のスレッドがプログラムと並行して鳴らします。MSX、Atari ST、NES、C64、コナミの SCC、Amiga の音源を、1つずつ、またはいくつか同時に、音色を付けて鳴らせます。WAV ファイルの録音した音と効果音、ProTracker のモジュール（MOD ファイル）も鳴らせます。[サウンド](docs/USER_MANUAL.ja.md#サウンド)と `examples/music.fs` を参照してください。
 - 辞書、コンパイル済み定義、メモリ、入出力をホスト環境から分離し、他のOS・CPUへ移植しやすい構成にしています。
 
 対応ワードと移植上の判断は[実装ノート](docs/IMPLEMENTATION.md)、資料から整理した言語仕様は[FORTH/Σ仕様書](docs/SPEC.ja.md)を参照してください。実装は開発中であり、誌面の全ワードや機種固有機能には対応していません。
@@ -106,16 +107,17 @@ Forthソースファイルは標準入力から読み込めます。例:
 
 | オプション | 除くもの | 大きさ |
 |---|---|---|
-| （なし） | — | 913,920バイト |
-| `-Dfloat=false` | 浮動小数点の語、浮動小数点数のリテラル（`1e` など）、`F:` `F^` のローカル変数、`ENVIRONMENT?` の `FLOATING-STACK` `MAX-FLOAT`、CORE-MATH、グラフを描くグラフィックスの語（`PLOT` など） | 524,288バイト |
-| `-Dfiles=false` | `INCLUDE`、`REQUIRE`、`OPEN-FILE`、`STDIN`、`SLURP-FILE`、`$...SLURP` の語など、ファイルを開く・読む・書く・取り込む語 | 877,568バイト |
-| `-Dhelp=false` | `HELP`、`LICENSE` とその文章（起動時の表示も `help` を案内しなくなります） | 832,000バイト |
-| `-Dtools=false` | `SEE`、`LOCATE`、`WHERE` | 856,064バイト |
-| `-Dimage=false` | `SAVE`、`LOAD`、`SAVESYS` | 913,920バイト |
-| `-Dgraphics=false` | `REQUIRE-GRAPHICS`、`GFX-` の語、グラフィックスのライブラリとそのフォント、Tcl/Tkの語 | 798,208バイト |
-| 6つすべて | 上のすべて | 289,792バイト |
+| （なし） | — | 1,033,728バイト |
+| `-Dfloat=false` | 浮動小数点の語、浮動小数点数のリテラル（`1e` など）、`F:` `F^` のローカル変数、`ENVIRONMENT?` の `FLOATING-STACK` `MAX-FLOAT`、CORE-MATH、グラフを描くグラフィックスの語（`PLOT` など） | 644,096バイト |
+| `-Dfiles=false` | `INCLUDE`、`REQUIRE`、`OPEN-FILE`、`STDIN`、`SLURP-FILE`、`$...SLURP` の語など、ファイルを開く・読む・書く・取り込む語 | 997,888バイト |
+| `-Dhelp=false` | `HELP`、`LICENSE` とその文章（起動時の表示も `help` を案内しなくなります） | 935,936バイト |
+| `-Dtools=false` | `SEE`、`LOCATE`、`WHERE` | 974,848バイト |
+| `-Dimage=false` | `SAVE`、`LOAD`、`SAVESYS` | 1,031,680バイト |
+| `-Dgraphics=false` | `REQUIRE-GRAPHICS`、`GFX-` の語、グラフィックスのライブラリとそのフォント、Tcl/Tkの語 | 894,976バイト |
+| `-Daudio=false` | `REQUIRE-AUDIO`、`SND-` の語、音のライブラリ、音のスレッド | 955,904バイト |
+| 7つすべて | 上のすべて | 299,008バイト |
 
-大きさは、0.6.0をリリースと同じ `-Doptimize=fast` でWindows x86_64向けにビルドしたものです（2026-11-06に測定）。オプションは組み合わせられます（例: `zig build -Doptimize=fast -Dfloat=false -Dhelp=false`）。
+大きさは、サウンドの語を加えた0.6.1（コミット `d5de15b`）をリリースと同じ `-Doptimize=fast` でWindows x86_64向けにビルドしたものです（2026-11-07に測定）。オプションは組み合わせられます（例: `zig build -Doptimize=fast -Dfloat=false -Dhelp=false`）。
 
 除いたグループの語は辞書になく、`HELP` の説明もありません。グループはそれぞれ独立しているので、ファイルの語を除いても、`SAVE`・`LOAD`・`SAVESYS` はイメージのファイルを書き読みし、`LOCATE` はソースファイルを読みます（それぞれのグループも除いた場合を除きます）。組み込み語の実行トークンはどの版でも同じなので、ある版で保存したイメージは、グループの違う版でも読み込めます。その版で除いた語を実行すると `INVALID EXECUTION TOKEN` のエラーになり、`SEE` はその語を名前で表示します。グループを除いた以前の版（`-Dfloat=false` など）で保存したイメージは、組み込み語の実行トークンが違うので `INVALID IMAGE` になります。
 

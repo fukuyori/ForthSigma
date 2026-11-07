@@ -736,6 +736,124 @@ SHOW
 
 The range needs lo less than hi, both finite; otherwise `X-RANGE` and `Y-RANGE` give `NUMBER ERROR !` and the range stays as it was. A coordinate that is not a number (NaN) draws nothing, and `PLOT` leaves a gap where y is NaN (for example where the function is not defined). Pixel positions beyond -2^61 .. 2^61, among them infinities, are moved to that limit as with `LINE`, so a line with such an end may go in a different direction.
 
+## Sound
+
+Sigma plays music in the manner of MSX BASIC's `PLAY` and `SOUND`, on the sound chips of the MSX, the Atari ST, the NES, the Commodore 64, Konami's SCC, and the Amiga, and it plays recorded sound (WAV files) and ProTracker modules (MOD files). The sound is made by an audio thread of its own, so the program goes on while the music plays. The audio words are not in the dictionary at start-up: `REQUIRE-AUDIO` adds the `AUDIO` vocabulary, with the `SND-` words and the audio library written in Forth (`src/audio/audio.fs`, built into the program), the first time it runs; later it does nothing. As with the graphics words, it does not change the search order, so make the words visible with `ALSO AUDIO`.
+
+```forth
+REQUIRE-AUDIO
+ALSO AUDIO
+S" T150 O4 L8 CDEFGAB>C" PLAY               \ voice A, as MSX BASIC's PLAY "..."
+S" O4 C2" S" O4 E2" S" O4 G2" PLAY3         \ a chord: the three voices start together
+BEEP
+NES-SOUND                                   \ from now on PLAY plays on the NES
+1 INSTRUMENT PULSE 25 DUTY 0 4 8 2 ADSR     \ instrument 1: a 25% pulse that fades
+: TUNE S" T120 L8 O4 @1 CEGE CEGE" S" T120 L4 O3 CGCG" S" T120 L2 O2 CG" S" T120 L8 O3 C O4 D# O3 C O4 D#" 4 PLAYS ;
+TUNE
+```
+
+`PLAY` returns as soon as the notes fit in the voices' queues (32 places for each), as on the MSX; the music then goes on by itself. While the queues are full, `PLAY` waits; Ctrl+C then stops the music and gives `USER INTERRUPT !` (THROW -28). Outside such a wait, Ctrl+C works as before. When there is no audio device, the words work the same without sound, in time (`AUDIO?` tells which).
+
+### The music macro language (MML)
+
+`PLAY` and the words like it take the music macro language of MSX BASIC (the MSX1 ROM's, as the MSX Red Book describes it). Upper and lower case letters are the same, and spaces are skipped. Each voice keeps its octave, length, tempo, volume, and instrument from one `PLAY` to the next; `BEEP` sets them back to the defaults.
+
+| Command | Meaning |
+| --- | --- |
+| `A` to `G` | A note, with `+` or `#` (sharp) or `-` (flat), then a length 1 to 64 (or `L`'s), then dots (each one and a half times as long). `B+` is the same octave's `C`, and `C-` the same octave's `B`, as the ROM's table has it. |
+| `R` | A rest of length 1 to 64 (4 when left out), with dots. |
+| `N` | A note by its number, 0 to 96: octave n / 12 + 1, semitone n mod 12 (`N36` is `O4 C`); 0 is a rest. |
+| `O` | The octave, 1 to 8 (4 at first; 4 when the number is left out). |
+| `<`, `>` | One octave down or up. |
+| `L` | The length of the notes without one, 1 to 64 (4: quarter notes). |
+| `T` | The tempo, 32 to 255 quarter notes a minute (120). A note lasts 12000 / (length × tempo) fiftieths of a second, at least 5. |
+| `V` | The volume, 0 to 15 (8); it ends `S`. |
+| `S` | The PSG's envelope shape, 0 to 15 (0), which the notes after it use. |
+| `M` | The PSG's envelope period, 1 to 65535 (255). |
+| `@` | The instrument, 0 to 63 (0), on the chips that have instruments. |
+
+A number left out takes the default in brackets (as the ROM does), except for `N`, which needs one. Anything else, or a number out of its range, gives `INVALID MML !` (THROW -274), and nothing of that `PLAY` is played. BASIC's variables (`X` and `=name;`) are not taken: a Forth program joins the strings itself.
+
+Outside a definition, each `S"` string has its own place, so a `PLAYS` of eight voices can be written on one line; inside a definition the strings are compiled, which is the better place for music that is played more than once.
+
+### MSX BASIC
+
+| Word | Stack | Description |
+| --- | --- | --- |
+| `REQUIRE-AUDIO` | ( -- ) | Load the audio words, the first time only. It is a parsing word (like `REQUIRE-GRAPHICS`) and cannot be used inside a definition. |
+| `PLAY` | ( c-addr u -- ) | Play the MML on voice A. Voices B and C, which have no notes, still start the next `PLAY` together with A. |
+| `PLAY2`, `PLAY3` | ( c-addr1 u1 c-addr2 u2 -- ), ( c-addr1 u1 c-addr2 u2 c-addr3 u3 -- ) | Play voices A and B, or A, B, and C, starting together. |
+| `PLAYS` | ( c-addr1 u1 ... c-addrn un n -- ) | Play the first n voices of the chip (or chips) chosen, starting together; n is 1 to the number of voices. |
+| `PLAY?` | ( n -- flag ) | Whether voice n still has notes to play, or any voice for 0, as MSX BASIC's `PLAY(n)`. A voice without notes counts until the audio thread takes its end of the `PLAY` (within a fiftieth of a second). |
+| `SOUND` | ( reg value -- ) | Write the value 0 to 255 to the PSG's register 0 to 13, as MSX BASIC's `SOUND`; the PSG sounds with every chip. |
+| `BEEP` | ( -- ) | Stop the music, set the PSG and the voices' settings as at start, and beep (about 1316 Hz for 40 ms). It returns when the audio thread has stopped the music. |
+| `AUDIO?` | ( -- flag ) | Whether the sound reaches an audio device. |
+
+### Chips and instruments
+
+`PLAY` plays on one chip, or on several together with `CHIPS`. Choosing a chip stops the music, as `BEEP` does without its sound. On a chip with instruments, the MML's `@n` chooses instrument n; a value a chip does not have is taken to the nearest one it has, and what a chip cannot do is left out.
+
+| Word | Stack | Description |
+| --- | --- | --- |
+| `MSX-SOUND` | ( -- ) | The MSX's AY-3-8910 (3 voices), with the pitches of the MSX's ROM. This is the chip at start. |
+| `ST-SOUND` | ( -- ) | The Atari ST's YM2149 at 2 MHz (3 voices), with its 32-step volume for the envelopes. |
+| `NES-SOUND` | ( -- ) | The NES (4 voices): two pulses (duty 12.5, 25, 50, or 75%), a triangle (no volume: `V0` is silence), and a noise, whose notes from `O3 C` to `O4 D#` choose its 16 sounds from the lowest to the highest. |
+| `C64-SOUND` | ( -- ) | The C64's SID (3 voices): triangle, sawtooth, pulse, and noise, with `RING`, `SYNC`, and `FILTER`. |
+| `SCC-SOUND` | ( -- ) | Konami's SCC (5 voices), each playing its instrument's wave of 32 samples. |
+| `AMIGA-SOUND` | ( -- ) | The Amiga's Paula (4 voices: left, right, right, left), playing the instruments' samples. |
+| `CHIPS` | ( mask -- ) | Several chips together: the sum (`OR`) of `MSX` (1), `ST` (2), `NES` (4), `C64` (8), `SCC` (16), and `AMIGA` (32). The voices are numbered in that order: with `MSX SCC OR CHIPS`, voices 1 to 3 are the PSG's and 4 to 8 the SCC's. At most 8 voices in all, and not `MSX` with `ST` (they are one PSG); otherwise `NUMBER ERROR !`. |
+| `INSTRUMENT` | ( n -- ) | Choose instrument n (0 to 63) for the words below to change. |
+| `SQUARE`, `PULSE`, `TRIANGLE`, `SAW`, `NOISE` | ( -- ) | The instrument's wave (the C64 takes each; the NES's pulses take `PULSE`'s duty; the SCC and the Amiga make a wave of 32 samples of it). `SQUARE` at first. |
+| `DUTY` | ( percent -- ) | The width of `PULSE`, 0 to 100 (50 at first). |
+| `ADSR` | ( a d s r -- ) | The envelope, each 0 to 15 as on the SID: attack 2 ms to 8 s, decay and release three times as long, sustain level s / 15. `0 0 15 0` at first. A note's release starts when the note ends. |
+| `RING`, `SYNC` | ( flag -- ) | On the C64, modulate the instrument's triangle by the voice before it (voice 1 by voice 3), or restart its wave with each cycle of that voice. |
+| `FILTER` | ( mode cutoff resonance -- ) | On the C64, send the instrument through the filter: mode 0 none, 1 low-pass, 2 band-pass, 3 high-pass; cutoff 0 to 2047 (about 30 Hz to 12 kHz), resonance 0 to 15. The voices share one filter, set by the last note that uses it. |
+| `SCC-WAVE` | ( c-addr n -- ) | Make the 32 signed bytes at c-addr the wave of instrument n on the SCC (and the Amiga). Without one, the instrument's wave word's shape. |
+
+The chips are made of common parts and imitate them by their documented behavior: the pitches are rounded to each chip's period registers and the volumes to its steps, but the C64's combined waves and the 6581's filter curve, the NES's sweep and DPCM, and the like are not reproduced.
+
+### Recorded sound
+
+Samples 0 to 63 are recorded sound kept in a pool of 16 MiB outside the dictionary's memory. The pool only grows: loading a sample again takes new room, and `FREE-SAMPLES` empties it.
+
+| Word | Stack | Description |
+| --- | --- | --- |
+| `LOAD-SAMPLE` | ( c-addr u n -- ) | Read a WAV file of 8- or 16-bit PCM, mono or stereo (made mono), into sample n. A file it cannot read gives its error; a file that is not such a WAV gives `SAMPLE ERROR !` (THROW -276); a full pool gives `OUT OF MEMORY !`. Nothing changes on an error. |
+| `SAMPLE` | ( c-addr u rate n -- ) | Make the u signed 8-bit bytes at c-addr sample n, recorded at rate Hz (1000 to 192000). |
+| `LOOP-SAMPLE` | ( start end n -- ) | Repeat the frames from start to end of sample n while it plays; `0 0` for no loop. |
+| `SAMPLE-INSTRUMENT` | ( n -- ) | Have the instrument (chosen with `INSTRUMENT`) play sample n on the Amiga, `O4 C` at the sample's own rate; -1 for none. |
+| `SFX` | ( n -- ) | Play sample n once at its rate, at once and beside the music, on any chip. Four can sound together; a fifth takes the place of the oldest. |
+| `FREE-SAMPLES` | ( -- ) | Stop the music, the sound effects, and the module, and forget every sample and the module. |
+| `AMIGA-FILTER` | ( flag -- ) | Turn the Amiga's LED filter (a low-pass at about 3.3 kHz) on or off. The A500's fixed low-pass (about 4.9 kHz) is always there. |
+
+### Modules
+
+| Word | Stack | Description |
+| --- | --- | --- |
+| `LOAD-MOD` | ( c-addr u -- ) | Read a ProTracker module of four channels (`M.K.`, `M!K!`, `FLT4`, `4CHN`) into the pool. Other files give `MOD ERROR !` (THROW -277); a full pool gives `OUT OF MEMORY !`. |
+| `PLAY-MOD` | ( flag -- ) | Play the module from its start, beside `PLAY` and `SFX`; again after its end when flag is true. |
+| `STOP-MOD` | ( -- ) | Stop the module. |
+| `MOD?` | ( -- flag ) | Whether the module plays. |
+
+The module plays on Paula's periods, panned and filtered as the Amiga's (`AMIGA-FILTER` and the effect `E0x` turn the LED filter on and off). These effects are played: arpeggio, portamento up and down, tone portamento, vibrato, tremolo, the volume slides, sample offset, position jump, pattern break, set volume, set speed and tempo, fine portamento and fine volume slides, pattern loop, retrigger, note cut, note delay, and pattern delay. The vibrato and the tremolo are always a sine (`E4x`, `E7x`), and `E3x`, `E5x`, `E8x`, and `EFx` do nothing.
+
+### The audio device
+
+| System | Device |
+| --- | --- |
+| Windows | waveOut, 48 kHz 16-bit stereo; a note starts about 80 ms after the audio thread takes it. |
+| Linux (the release builds, static) | The first of the commands `pacat`, `pw-play`, and `aplay` that starts, through a pipe (about 40 ms). |
+| Linux (a build that can load libraries) | PulseAudio, then ALSA, then the commands above. |
+| macOS | None yet: the music plays without sound. |
+
+`BEEP`, the chip words, `CHIPS`, `FREE-SAMPLES`, and Ctrl+C while `PLAY` waits stop the music, the sound effects, and the module. The sound (instruments, samples, queues) is not part of the dictionary: `SAVE` and `SAVESYS` keep the audio words and the words that use them, but a program sets its instruments and loads its samples after it starts. A dictionary that has loaded the audio words is saved as `SIGIMG35`.
+
+The `SND-` words are the base the library is written with: `SND-PLAY`, `SND-PLAYS`, `SND-SOUND`, `SND-BEEP`, `SND-PLAYING`, `SND-DEVICE`, `SND-CHIP`, `SND-CHIPS`, `SND-INSTRUMENT`, `SND-WAVE`, `SND-DUTY`, `SND-ADSR`, `SND-RING`, `SND-SYNC`, `SND-FILTER`, `SND-WAVETABLE`, `SND-LOAD-SAMPLE`, `SND-SAMPLE`, `SND-LOOP-SAMPLE`, `SND-SAMPLE-INSTRUMENT`, `SND-SFX`, `SND-AMIGA-FILTER`, `SND-FREE-SAMPLES`, `SND-LOAD-MOD`, `SND-PLAY-MOD`, `SND-STOP-MOD`, and `SND-MOD-PLAYING`. `HELP` describes each of them. `SND-LOAD-SAMPLE` and `SND-LOAD-MOD` return an ior instead of throwing.
+
+Errors: `REQUIRE-AUDIO` in a build with `-Daudio=false` gives `AUDIO UNAVAILABLE !` (THROW -275); a number out of its range gives `NUMBER ERROR !`; a host without an audio thread gives `HOST FUNCTION UNAVAILABLE !`. As with `REQUIRE-GRAPHICS`, a library that fails to load is removed again, and `REQUIRE-AUDIO` loads it again after `FORGET` or a `MARKER` removed it.
+
+`examples/music.fs` plays a short tune on each chip and a sound effect made with `SAMPLE`.
+
 ## Saving the dictionary and stand-alone executables
 
 `SAVE` and `LOAD` of this port handle a dictionary image of the user-defined words. They differ from the edit-buffer operations of the book.
@@ -745,7 +863,7 @@ SAVE words.sigma
 LOAD words.sigma
 ```
 
-`LOAD` adds the saved user-defined words to the end of the current dictionary. For words with the same name, the newly loaded definitions take precedence. Dictionary images saved by earlier versions (`SIGIMG01` to `SIGIMG31`) and damaged dictionary images cannot be loaded (`INVALID IMAGE !`). Images of `SIGIMG32` (0.4.0) are loaded, but 0.4.0 cannot load the images (`SIGIMG33`) this version saves. A dictionary that has loaded the graphics words with `REQUIRE-GRAPHICS` is saved as `SIGIMG34`, which versions up to 0.5.2 cannot load; this stays so even after the graphics words are removed with `FORGET` or a `MARKER`. A dictionary that never loaded them is saved as `SIGIMG33`, as before. A dictionary image has a checksum, so accidental damage is found before loading. Load only files made by `SAVE` or `SAVESYS` of Sigma. Execution tokens stored in constants or variables (such as the result of `:NONAME`), and execution tokens or addresses compiled into a definition with `LITERAL` (such as `[ ' X ] LITERAL`), may point to another word or place after `LOAD` into a dictionary that already has user-defined words. Execution tokens compiled with `['] X` are relocated correctly. This problem does not occur in an executable made with `SAVESYS`.
+`LOAD` adds the saved user-defined words to the end of the current dictionary. For words with the same name, the newly loaded definitions take precedence. Dictionary images saved by earlier versions (`SIGIMG01` to `SIGIMG31`) and damaged dictionary images cannot be loaded (`INVALID IMAGE !`). Images of `SIGIMG32` (0.4.0) are loaded, but 0.4.0 cannot load the images (`SIGIMG33`) this version saves. A dictionary that has loaded the graphics words with `REQUIRE-GRAPHICS` is saved as `SIGIMG34`, which versions up to 0.5.2 cannot load; this stays so even after the graphics words are removed with `FORGET` or a `MARKER`. A dictionary that never loaded them is saved as `SIGIMG33`, as before. A dictionary that has loaded the audio words with `REQUIRE-AUDIO` is saved as `SIGIMG35`, with or without the graphics words, and versions up to 0.6.1 cannot load it. A dictionary image has a checksum, so accidental damage is found before loading. Load only files made by `SAVE` or `SAVESYS` of Sigma. Execution tokens stored in constants or variables (such as the result of `:NONAME`), and execution tokens or addresses compiled into a definition with `LITERAL` (such as `[ ' X ] LITERAL`), may point to another word or place after `LOAD` into a dictionary that already has user-defined words. Execution tokens compiled with `['] X` are relocated correctly. This problem does not occur in an executable made with `SAVESYS`.
 
 `SAVESYS` makes a stand-alone executable for the running environment that contains the current dictionary, the compiled definitions, and the data.
 
