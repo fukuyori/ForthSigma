@@ -71,8 +71,7 @@ foreach ($package in $packages) {
         $executablePath,
         (Join-Path $repositoryRoot 'LICENSE'),
         (Join-Path $repositoryRoot 'THIRD_PARTY_NOTICES.md'),
-        (Join-Path $repositoryRoot 'README.md'),
-        (Join-Path $repositoryRoot 'docs\USER_MANUAL.md')
+        (Join-Path $repositoryRoot 'README.md')
     )
     foreach ($file in $files) {
         Copy-Item -LiteralPath $file -Destination $packageDirectory

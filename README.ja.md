@@ -1,6 +1,6 @@
 # FORTH/Σ for Zig
 
-英語版（正）: [README.md](README.md)。この日本語版は英語版の訳です。内容が異なる場合は英語版に従ってください。
+英語版（正）: [README.md](https://github.com/fukuyori/ForthSigma/blob/main/README.md)。この日本語版は英語版の訳です。内容が異なる場合は英語版に従ってください。
 
 FORTH/Σ（フォース・シグマ）の言語コアを、Zigで動くネイティブな移植版として実装するプロジェクトです。1982年の月刊アスキー誌面に掲載されたFORTH/Σの説明とZ80ソースリストを仕様調査の資料として使っています。Z80の命令や機械語を実行・エミュレートするものではありません。
 
@@ -16,18 +16,18 @@ FORTH/Σ（フォース・シグマ）の言語コアを、Zigで動くネイテ
 - `S"` などの文字列、`123.` 形式の倍長整数（128ビット）、`<<# # #S #> #>>` による数値の書式、`ACCEPT`、`EVALUATE`、`KEY` を使えます。
 - WORDS、FORGET、BYEを対話用ワードとして提供します。
 - この移植版の拡張として、グラフィックス（`REQUIRE-GRAPHICS`）を使えます。メモリ上の画像に線、図形、塗りつぶし、グラフ、文字（組み込みのASCIIフォント、BDFフォント、Windowsではシステムのフォント）を描き、端末（半角ブロックかSixel）、Windowsのウィンドウ、Tkのウィンドウに表示します。キーとマウス（`INKEY`、`MOUSE`）と、Sigmaが起動する `wish` でのTcl/Tkのスクリプト（`TCL`、`TCL-EVAL`、`TCL-EVENT`）も使えます。Tcl/TkはSigmaにリンクしないので、TCL の語を使うにはTcl/Tkを入れておく必要があります。
-- この移植版の拡張として、サウンド（`REQUIRE-AUDIO`）を使えます。MSX BASIC の `PLAY`、`SOUND`、`BEEP` と MML を、音のスレッドがプログラムと並行して鳴らします。MSX、Atari ST、NES、C64、コナミの SCC、Amiga の音源を、1つずつ、またはいくつか同時に、音色を付けて鳴らせます。WAV ファイルの録音した音と効果音、ProTracker のモジュール（MOD ファイル）も鳴らせます。[サウンド](docs/GRAPHICS_AND_SOUND.ja.md#サウンド)と `examples/music.fs` を参照してください。
+- この移植版の拡張として、サウンド（`REQUIRE-AUDIO`）を使えます。MSX BASIC の `PLAY`、`SOUND`、`BEEP` と MML を、音のスレッドがプログラムと並行して鳴らします。MSX、Atari ST、NES、C64、コナミの SCC、Amiga の音源を、1つずつ、またはいくつか同時に、音色を付けて鳴らせます。WAV ファイルの録音した音と効果音、ProTracker のモジュール（MOD ファイル）も鳴らせます。[サウンド](https://github.com/fukuyori/ForthSigma/blob/main/docs/GRAPHICS_AND_SOUND.ja.md#サウンド)と `examples/music.fs` を参照してください。
 - 辞書、コンパイル済み定義、メモリ、入出力をホスト環境から分離し、他のOS・CPUへ移植しやすい構成にしています。
 
-対応ワードと移植上の判断は[実装ノート](docs/IMPLEMENTATION.md)、資料から整理した言語仕様は[FORTH/Σ仕様書](docs/SPEC.ja.md)を参照してください。実装は開発中であり、誌面の全ワードや機種固有機能には対応していません。
+対応ワードと移植上の判断は[実装ノート](https://github.com/fukuyori/ForthSigma/blob/main/docs/IMPLEMENTATION.md)、資料から整理した言語仕様は[FORTH/Σ仕様書](https://github.com/fukuyori/ForthSigma/blob/main/docs/SPEC.ja.md)を参照してください。実装は開発中であり、誌面の全ワードや機種固有機能には対応していません。
 
-使い方と現在登録されている組み込みワードの一覧は[ユーザーマニュアル](docs/USER_MANUAL.ja.md)を、グラフィックスとサウンドは[グラフィックスとサウンドのマニュアル](docs/GRAPHICS_AND_SOUND.ja.md)を参照してください。
+使い方と現在登録されている組み込みワードの一覧は[ユーザーマニュアル](https://github.com/fukuyori/ForthSigma/blob/main/docs/USER_MANUAL.ja.md)を、グラフィックスとサウンドは[グラフィックスとサウンドのマニュアル](https://github.com/fukuyori/ForthSigma/blob/main/docs/GRAPHICS_AND_SOUND.ja.md)を参照してください。
 
 利用者がデータを持つワードを作る定義用語（BUILDS/DOES）にも対応しています。
 
 `SAVE filename`／`LOAD filename` で利用者定義語を保存・追加読み込みできます。単独実行ファイルは別の拡張語 `SAVESYS filename.exe` で作成します。
 
-ワードごとの対応状況は[互換性一覧](docs/COMPATIBILITY.ja.md)、資料で確定した仕様と移植上の判断の区別は[決定事項・保留事項](docs/DECISIONS.md)を参照してください。
+ワードごとの対応状況は[互換性一覧](https://github.com/fukuyori/ForthSigma/blob/main/docs/COMPATIBILITY.ja.md)、資料で確定した仕様と移植上の判断の区別は[決定事項・保留事項](https://github.com/fukuyori/ForthSigma/blob/main/docs/DECISIONS.md)を参照してください。
 
 現時点では、LIST、ソースファイルやエディタの操作、CP/Mのファイル機能、PC-8001のモニタ機能、Z80機械語を使うワードには対応していません。
 
@@ -50,7 +50,7 @@ REQUIRE-GRAPHICS  ALSO GRAPHICS
 DISPLAY-TERMINAL  16 DISPLAY-COLORS  TRUE DITHER  SHOW
 ```
 
-詳しくは[グラフィックモードのマニュアル](docs/GRAPHICS_MODES.ja.md)を参照してください。
+詳しくは[グラフィックモードのマニュアル](https://github.com/fukuyori/ForthSigma/blob/main/docs/GRAPHICS_MODES.ja.md)を参照してください。
 
 ## ビルドと実行
 
@@ -63,7 +63,7 @@ Zig 0.17.0をインストールした環境で、リポジトリのルートか�
 
 Linux/macOSでは、生成されたzig-out/bin/sigmaを実行してください。別のZigターゲットを指定する場合はzig build -Dtarget=<triple>を使います。
 
-現在の製品バージョンは [`VERSION`](VERSION) に記載しています。Windows向けリリースビルドとInno Setupインストーラーは次のPowerShellスクリプトで作成できます。インストーラー（`dist\installer\sigma-版番号-windows-x86_64-setup.exe`）は `VERSION` の値を使い、必要なら `-Version MAJOR.MINOR.PATCH` で上書きできます。
+現在の製品バージョンは [`VERSION`](https://github.com/fukuyori/ForthSigma/blob/main/VERSION) に記載しています。Windows向けリリースビルドとInno Setupインストーラーは次のPowerShellスクリプトで作成できます。インストーラー（`dist\installer\sigma-版番号-windows-x86_64-setup.exe`）は `VERSION` の値を使い、必要なら `-Version MAJOR.MINOR.PATCH` で上書きできます。
 
     .\scripts\build-release.ps1
     .\scripts\build-installer.ps1
@@ -75,7 +75,7 @@ Linux/macOSでは、生成されたzig-out/bin/sigmaを実行してください�
     .\scripts\build-release.ps1 -Sign
     .\scripts\build-installer.ps1 -Sign
 
-`v0.7.0` のように `VERSION` と同じ版番号のタグをプッシュすると、GitHub Actions（`.github/workflows/release.yml`）がWindows x86_64、Linux x86_64・arm32・arm64、macOS arm64でテストとビルドを行い、各ZIP（実行ファイル、LICENSE、THIRD_PARTY_NOTICES.md、README.md、USER_MANUAL.md）を下書きのリリースに登録します。ZIPは対象ごとに、浮動小数点の語を含む版（`sigma-版番号-対象.zip`）と除いた版（`sigma-版番号-対象-nofloat.zip`）の2つです。テストはWindows x86_64、Linux x86_64・arm64、macOS arm64の実機で実行します。CIのWindows版は署名なしなので、公開前に、次のスクリプトで作った同じ名前・同じ中身の署名付きZIP（`dist\zip\sigma-版番号-windows-x86_64.zip` と `dist\zip\sigma-版番号-windows-x86_64-nofloat.zip`）に差し替えます。`-Variant Float` または `-Variant NoFloat` で片方だけ作ることもできます。
+`v0.7.0` のように `VERSION` と同じ版番号のタグをプッシュすると、GitHub Actions（`.github/workflows/release.yml`）がWindows x86_64、Linux x86_64・arm32・arm64、macOS arm64でテストとビルドを行い、各ZIP（実行ファイル、LICENSE、THIRD_PARTY_NOTICES.md、README.md。マニュアルは README のリンクから GitHub で読む）を下書きのリリースに登録します。ZIPは対象ごとに、浮動小数点の語を含む版（`sigma-版番号-対象.zip`）と除いた版（`sigma-版番号-対象-nofloat.zip`）の2つです。テストはWindows x86_64、Linux x86_64・arm64、macOS arm64の実機で実行します。CIのWindows版は署名なしなので、公開前に、次のスクリプトで作った同じ名前・同じ中身の署名付きZIP（`dist\zip\sigma-版番号-windows-x86_64.zip` と `dist\zip\sigma-版番号-windows-x86_64-nofloat.zip`）に差し替えます。`-Variant Float` または `-Variant NoFloat` で片方だけ作ることもできます。
 
     .\scripts\build-zip.ps1 -Sign
 
@@ -127,7 +127,7 @@ Forthソースファイルは標準入力から読み込めます。例:
 
 ## Gforth・標準Forthとの関係
 
-2026-10-28から、数値まわりと基本ワードを[Gforth](https://github.com/forthy42/gforth)の挙動に合わせ、教材ForthBasicMasterのサンプルが動くことを目標にしています。作業は6段階に分けており、段階1（64ビットセル、真=-1、床関数除算、全文字の名前照合、`TYPE ( addr u )`、基本標準ワード）、段階2（浮動小数点）、段階3（`S"` などの文字列、倍長整数、`<# #>` による数値書式）と、教材で使う小規模なワード（`WITHIN`、`:NONAME`、`STATE`、`MS`、`GETENV`、`SYSTEM` など）、`THROW`／`CATCH` と主なファイル操作（`OPEN-FILE`、`READ-LINE`、`WRITE-LINE` など）、`ALLOCATE` と動的文字列（`$!`、`$[]!` など）、ローカル変数（`{ a b -- c }`、`F:` などの型指定、`LOCALS|`）、ソースファイルの読み込み（`INCLUDE`、`REQUIRE` など）、`SEE`・`LOCATE`・`MARKER`、語彙（`VOCABULARY`、`ONLY`、`ALSO` など）と `[IF]` を実装済みで、6段階はすべて終わりました（[決定事項・保留事項](docs/DECISIONS.md)）。
+2026-10-28から、数値まわりと基本ワードを[Gforth](https://github.com/forthy42/gforth)の挙動に合わせ、教材ForthBasicMasterのサンプルが動くことを目標にしています。作業は6段階に分けており、段階1（64ビットセル、真=-1、床関数除算、全文字の名前照合、`TYPE ( addr u )`、基本標準ワード）、段階2（浮動小数点）、段階3（`S"` などの文字列、倍長整数、`<# #>` による数値書式）と、教材で使う小規模なワード（`WITHIN`、`:NONAME`、`STATE`、`MS`、`GETENV`、`SYSTEM` など）、`THROW`／`CATCH` と主なファイル操作（`OPEN-FILE`、`READ-LINE`、`WRITE-LINE` など）、`ALLOCATE` と動的文字列（`$!`、`$[]!` など）、ローカル変数（`{ a b -- c }`、`F:` などの型指定、`LOCALS|`）、ソースファイルの読み込み（`INCLUDE`、`REQUIRE` など）、`SEE`・`LOCATE`・`MARKER`、語彙（`VOCABULARY`、`ONLY`、`ALSO` など）と `[IF]` を実装済みで、6段階はすべて終わりました（[決定事項・保留事項](https://github.com/fukuyori/ForthSigma/blob/main/docs/DECISIONS.md)）。
 
 この実装は**ANS Forth／Forth 2012準拠を保証する処理系ではありません**。Gforthと意味が衝突しないFORTH/Σ固有のワードは残しています。
 
@@ -161,7 +161,7 @@ Forthソースファイルは標準入力から読み込めます。例:
 | 同「FORTH/Σ」『エンサイクロペディア・アスキー 第12巻 ASCII 1982年8月号』 | pp. 144–151 | 数値出力、算術処理などのソースリスト。 |
 | 同「FORTH/Σ」『エンサイクロペディア・アスキー 第13巻 ASCII 1982年9月号』 | pp. 172–179 | CP/M版の編集・ファイル処理。 |
 
-上記の誌面ページ情報は[FORTH/Σ仕様書](docs/SPEC.ja.md)に記録しています。誌面のZ80ソースは処理内容を調べるために参照したもので、移植版はZ80機械語や誌面のソースコードを収録・実行していません。
+上記の誌面ページ情報は[FORTH/Σ仕様書](https://github.com/fukuyori/ForthSigma/blob/main/docs/SPEC.ja.md)に記録しています。誌面のZ80ソースは処理内容を調べるために参照したもので、移植版はZ80機械語や誌面のソースコードを収録・実行していません。
 
 ### 比較・照合に使った資料
 
@@ -175,4 +175,4 @@ MITライセンスは、このプロジェクトで作成したプログラム�
 
 ## ライセンス
 
-プロジェクトで作成したコードとドキュメントは[MIT License](LICENSE)で提供します。浮動小数点の数学関数（`FSIN` `FEXP` `FASIN` `F**` など）は、CORE-MATHのコード（MIT License、`src/core-math/`）と、FMA命令のないCPUではmuslの `fma`（MIT License、`src/fma/`）を使います。著作権表示は[THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)にあります。第三者資料の扱いは上記「資料とライセンスの範囲」を参照してください。
+プロジェクトで作成したコードとドキュメントは[MIT License](https://github.com/fukuyori/ForthSigma/blob/main/LICENSE)で提供します。浮動小数点の数学関数（`FSIN` `FEXP` `FASIN` `F**` など）は、CORE-MATHのコード（MIT License、`src/core-math/`）と、FMA命令のないCPUではmuslの `fma`（MIT License、`src/fma/`）を使います。著作権表示は[THIRD_PARTY_NOTICES.md](https://github.com/fukuyori/ForthSigma/blob/main/THIRD_PARTY_NOTICES.md)にあります。第三者資料の扱いは上記「資料とライセンスの範囲」を参照してください。

@@ -1,6 +1,6 @@
 # FORTH/Σ for Zig
 
-Japanese version: [README.ja.md](README.ja.md). This English version is the primary one.
+Japanese version: [README.ja.md](https://github.com/fukuyori/ForthSigma/blob/main/README.ja.md). This English version is the primary one.
 
 This project implements the language core of FORTH/Σ (FORTH/Sigma) as a native port that runs on Zig. It uses the description of FORTH/Σ and the Z80 source listing published in the monthly magazine ASCII in 1982 as material for studying the specification. It does not execute or emulate Z80 instructions or machine code.
 
@@ -16,18 +16,18 @@ This project implements the language core of FORTH/Σ (FORTH/Sigma) as a native 
 - Strings such as `S"`, double-cell integers (128-bit) in the `123.` form, number formatting with `<<# # #S #> #>>`, `ACCEPT`, `EVALUATE`, and `KEY` are available.
 - WORDS, FORGET, and BYE are provided as interactive words.
 - Graphics, an extension of this port (`REQUIRE-GRAPHICS`): an image in memory with lines, shapes, painting, graphs, and text (a built-in ASCII font, BDF fonts, and on Windows the system's fonts), shown on the terminal (half blocks or Sixel), in a window on Windows, or in a Tk window; keys and the mouse (`INKEY`, `MOUSE`); and Tcl/Tk scripts run in a `wish` that Sigma starts (`TCL`, `TCL-EVAL`, `TCL-EVENT`). Tcl/Tk is not linked into Sigma and must be installed to use the TCL words.
-- Sound, an extension of this port (`REQUIRE-AUDIO`): MSX BASIC's `PLAY`, `SOUND`, and `BEEP` with its music macro language, played by an audio thread while the program goes on; the sound chips of the MSX, the Atari ST, the NES, the C64, Konami's SCC, and the Amiga, alone or together, with instruments; recorded sound from WAV files and sound effects; and ProTracker modules (MOD files). See [Sound](docs/GRAPHICS_AND_SOUND.md#sound) and `examples/music.fs`.
+- Sound, an extension of this port (`REQUIRE-AUDIO`): MSX BASIC's `PLAY`, `SOUND`, and `BEEP` with its music macro language, played by an audio thread while the program goes on; the sound chips of the MSX, the Atari ST, the NES, the C64, Konami's SCC, and the Amiga, alone or together, with instruments; recorded sound from WAV files and sound effects; and ProTracker modules (MOD files). See [Sound](https://github.com/fukuyori/ForthSigma/blob/main/docs/GRAPHICS_AND_SOUND.md#sound) and `examples/music.fs`.
 - The dictionary, compiled definitions, memory, and input and output are separated from the host environment, so the program is easy to port to other operating systems and CPUs.
 
-For the supported words and the porting decisions, see the [implementation notes](docs/IMPLEMENTATION.md). For the language specification compiled from the sources, see the [FORTH/Σ specification](docs/SPEC.md). The implementation is under development and does not support every word in the book or machine-specific features.
+For the supported words and the porting decisions, see the [implementation notes](https://github.com/fukuyori/ForthSigma/blob/main/docs/IMPLEMENTATION.md). For the language specification compiled from the sources, see the [FORTH/Σ specification](https://github.com/fukuyori/ForthSigma/blob/main/docs/SPEC.md). The implementation is under development and does not support every word in the book or machine-specific features.
 
-For usage and the list of the built-in words registered now, see the [user manual](docs/USER_MANUAL.md); for the graphics and the sound, see the [graphics and sound manual](docs/GRAPHICS_AND_SOUND.md).
+For usage and the list of the built-in words registered now, see the [user manual](https://github.com/fukuyori/ForthSigma/blob/main/docs/USER_MANUAL.md); for the graphics and the sound, see the [graphics and sound manual](https://github.com/fukuyori/ForthSigma/blob/main/docs/GRAPHICS_AND_SOUND.md).
 
 The defining words (BUILDS/DOES) that let users make words that hold data are also supported.
 
 `SAVE filename` and `LOAD filename` save user-defined words and load them additionally. A standalone executable is made with a separate extension word, `SAVESYS filename.exe`.
 
-For the support status of each word, see the [compatibility list](docs/COMPATIBILITY.md). For the distinction between the specification settled by the sources and the porting decisions, see [decisions and open issues](docs/DECISIONS.md).
+For the support status of each word, see the [compatibility list](https://github.com/fukuyori/ForthSigma/blob/main/docs/COMPATIBILITY.md). For the distinction between the specification settled by the sources and the porting decisions, see [decisions and open issues](https://github.com/fukuyori/ForthSigma/blob/main/docs/DECISIONS.md).
 
 At present, LIST, source file and editor operations, the CP/M file functions, the PC-8001 monitor functions, and words that use Z80 machine code are not supported.
 
@@ -50,7 +50,7 @@ REQUIRE-GRAPHICS  ALSO GRAPHICS
 DISPLAY-TERMINAL  16 DISPLAY-COLORS  TRUE DITHER  SHOW
 ```
 
-For the details, see the [graphics modes manual](docs/GRAPHICS_MODES.md).
+For the details, see the [graphics modes manual](https://github.com/fukuyori/ForthSigma/blob/main/docs/GRAPHICS_MODES.md).
 
 ## Building and running
 
@@ -63,7 +63,7 @@ The core regression tests run with zig build test.
 
 On Linux and macOS, run the generated zig-out/bin/sigma. To specify another Zig target, use zig build -Dtarget=<triple>.
 
-The current product version is recorded in [`VERSION`](VERSION). The Windows release build and the Inno Setup installer are made with the following PowerShell scripts. The installer (`dist\installer\sigma-<version>-windows-x86_64-setup.exe`) uses the value in `VERSION`; if needed, `-Version MAJOR.MINOR.PATCH` overrides it.
+The current product version is recorded in [`VERSION`](https://github.com/fukuyori/ForthSigma/blob/main/VERSION). The Windows release build and the Inno Setup installer are made with the following PowerShell scripts. The installer (`dist\installer\sigma-<version>-windows-x86_64-setup.exe`) uses the value in `VERSION`; if needed, `-Version MAJOR.MINOR.PATCH` overrides it.
 
     .\scripts\build-release.ps1
     .\scripts\build-installer.ps1
@@ -75,7 +75,7 @@ To sign, set `CODESIGN_CERT` to the subject of the certificate in the certificat
     .\scripts\build-release.ps1 -Sign
     .\scripts\build-installer.ps1 -Sign
 
-When a tag with the same version as `VERSION`, such as `v0.7.0`, is pushed, GitHub Actions (`.github/workflows/release.yml`) tests and builds on Windows x86_64, Linux x86_64, arm32, and arm64, and macOS arm64, and adds each ZIP (the executable, LICENSE, THIRD_PARTY_NOTICES.md, README.md, and USER_MANUAL.md) to a draft release. Each target has two ZIPs: the version with the floating-point words (`sigma-<version>-<target>.zip`) and the version without them (`sigma-<version>-<target>-nofloat.zip`). The tests run on real machines for Windows x86_64, Linux x86_64 and arm64, and macOS arm64. The Windows build from CI is not signed, so before publishing, its ZIPs are replaced with signed ZIPs that have the same names and the same contents (`dist\zip\sigma-<version>-windows-x86_64.zip` and `dist\zip\sigma-<version>-windows-x86_64-nofloat.zip`), made with the following script. `-Variant Float` or `-Variant NoFloat` makes only one of them.
+When a tag with the same version as `VERSION`, such as `v0.7.0`, is pushed, GitHub Actions (`.github/workflows/release.yml`) tests and builds on Windows x86_64, Linux x86_64, arm32, and arm64, and macOS arm64, and adds each ZIP (the executable, LICENSE, THIRD_PARTY_NOTICES.md, and README.md, whose links lead to the manuals on GitHub) to a draft release. Each target has two ZIPs: the version with the floating-point words (`sigma-<version>-<target>.zip`) and the version without them (`sigma-<version>-<target>-nofloat.zip`). The tests run on real machines for Windows x86_64, Linux x86_64 and arm64, and macOS arm64. The Windows build from CI is not signed, so before publishing, its ZIPs are replaced with signed ZIPs that have the same names and the same contents (`dist\zip\sigma-<version>-windows-x86_64.zip` and `dist\zip\sigma-<version>-windows-x86_64-nofloat.zip`), made with the following script. `-Variant Float` or `-Variant NoFloat` makes only one of them.
 
     .\scripts\build-zip.ps1 -Sign
 
@@ -127,7 +127,7 @@ The tests run with the same options, for example `zig build test -Dfloat=false`;
 
 ## Relation to gforth and standard Forth
 
-Since 2026-10-28, the numeric behavior and the basic words follow the behavior of [gforth](https://github.com/forthy42/gforth), with the goal of running the samples of the ForthBasicMaster course material. The work was divided into 6 stages. Stage 1 (64-bit cells, true = -1, floored division, name matching on all characters, `TYPE ( addr u )`, basic standard words), stage 2 (floating point), stage 3 (strings such as `S"`, double-cell integers, number formatting with `<# #>`), the small words used in the course material (`WITHIN`, `:NONAME`, `STATE`, `MS`, `GETENV`, `SYSTEM`, and others), `THROW` and `CATCH` and the main file operations (`OPEN-FILE`, `READ-LINE`, `WRITE-LINE`, and others), `ALLOCATE` and dynamic strings (`$!`, `$[]!`, and others), local variables (`{ a b -- c }`, type prefixes such as `F:`, `LOCALS|`), loading source files (`INCLUDE`, `REQUIRE`, and others), `SEE`, `LOCATE`, and `MARKER`, and word lists (`VOCABULARY`, `ONLY`, `ALSO`, and others) and `[IF]` are implemented, and all 6 stages are done ([decisions and open issues](docs/DECISIONS.md)).
+Since 2026-10-28, the numeric behavior and the basic words follow the behavior of [gforth](https://github.com/forthy42/gforth), with the goal of running the samples of the ForthBasicMaster course material. The work was divided into 6 stages. Stage 1 (64-bit cells, true = -1, floored division, name matching on all characters, `TYPE ( addr u )`, basic standard words), stage 2 (floating point), stage 3 (strings such as `S"`, double-cell integers, number formatting with `<# #>`), the small words used in the course material (`WITHIN`, `:NONAME`, `STATE`, `MS`, `GETENV`, `SYSTEM`, and others), `THROW` and `CATCH` and the main file operations (`OPEN-FILE`, `READ-LINE`, `WRITE-LINE`, and others), `ALLOCATE` and dynamic strings (`$!`, `$[]!`, and others), local variables (`{ a b -- c }`, type prefixes such as `F:`, `LOCALS|`), loading source files (`INCLUDE`, `REQUIRE`, and others), `SEE`, `LOCATE`, and `MARKER`, and word lists (`VOCABULARY`, `ONLY`, `ALSO`, and others) and `[IF]` are implemented, and all 6 stages are done ([decisions and open issues](https://github.com/fukuyori/ForthSigma/blob/main/docs/DECISIONS.md)).
 
 This implementation is **not a system that guarantees conformance to ANS Forth or Forth 2012**. Words specific to FORTH/Σ whose meaning does not conflict with gforth are retained.
 
@@ -161,7 +161,7 @@ This project refers to "FORTH/Σ" by 一ノ瀬敏彰 and 山口晶嗣 in the ser
 | Same authors, "FORTH/Σ", *Encyclopedia ASCII* Vol. 12, ASCII, August 1982 | pp. 144–151 | Source listings for number output, arithmetic, and others. |
 | Same authors, "FORTH/Σ", *Encyclopedia ASCII* Vol. 13, ASCII, September 1982 | pp. 172–179 | Editing and file processing in the CP/M version. |
 
-The page information above is recorded in the [FORTH/Σ specification](docs/SPEC.md). The Z80 source in the book was referred to in order to study what it does; the port does not contain or execute Z80 machine code or the source code from the book.
+The page information above is recorded in the [FORTH/Σ specification](https://github.com/fukuyori/ForthSigma/blob/main/docs/SPEC.md). The Z80 source in the book was referred to in order to study what it does; the port does not contain or execute Z80 machine code or the source code from the book.
 
 ### Sources used for comparison and checking
 
@@ -175,4 +175,4 @@ The MIT License covers the program code and documentation made in this project. 
 
 ## License
 
-The code and documentation made in the project are provided under the [MIT License](LICENSE). The floating-point math functions (`FSIN` `FEXP` `FASIN` `F**` and others) use the code of CORE-MATH (MIT License, `src/core-math/`) and, on CPUs without an FMA instruction, musl's `fma` (MIT License, `src/fma/`). The copyright notices are in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md). For the handling of third-party material, see "Scope of the sources and the license" above.
+The code and documentation made in the project are provided under the [MIT License](https://github.com/fukuyori/ForthSigma/blob/main/LICENSE). The floating-point math functions (`FSIN` `FEXP` `FASIN` `F**` and others) use the code of CORE-MATH (MIT License, `src/core-math/`) and, on CPUs without an FMA instruction, musl's `fma` (MIT License, `src/fma/`). The copyright notices are in [THIRD_PARTY_NOTICES.md](https://github.com/fukuyori/ForthSigma/blob/main/THIRD_PARTY_NOTICES.md). For the handling of third-party material, see "Scope of the sources and the license" above.
