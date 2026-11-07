@@ -2,6 +2,5 @@
 zig-out/
 dist/
 .work/
+/try/
 /reference/
-/examples/runner-local.fs
-/examples/runner-local-assets/
