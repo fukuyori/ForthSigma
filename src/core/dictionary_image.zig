@@ -7,6 +7,7 @@ const defs = @import("defs.zig");
 const forth = @import("../forth.zig");
 const memory_map = @import("memory_map.zig");
 const words_graphics = @import("words_graphics.zig");
+const words_audio = @import("words_audio.zig");
 const Cell = memory_map.Cell;
 const Op = defs.Op;
 const RuntimeError = defs.RuntimeError;
@@ -141,9 +142,16 @@ pub fn encodeImage(self: *State, output: []u8) RuntimeError!usize {
     const name_bytes = self.names[0..self.names_used];
     const required = header_size + word_bytes.len + code_bytes.len + name_bytes.len + rangesLength(ranges) + checksum_size;
     if (output.len < required) return error.InvalidImage;
-    // A dictionary that has had the graphics words is saved as SIGIMG34, which older
-    // builds reject; one that never had them stays SIGIMG33.
-    @memcpy(output[0..8], if (self.readCellConst(graphics_image_address) != 0) graphics_image_magic else image_magic);
+    // A dictionary that has had the audio words is saved as SIGIMG35, one that has had
+    // the graphics words (and not the audio words) as SIGIMG34, which older builds
+    // reject; one that never had them stays SIGIMG33.
+    const magic = if (self.readCellConst(memory_map.audio_image_address) != 0)
+        memory_map.audio_image_magic
+    else if (self.readCellConst(graphics_image_address) != 0)
+        graphics_image_magic
+    else
+        image_magic;
+    @memcpy(output[0..8], magic);
     writeU32(output[8..12], self.word_count);
     writeU32(output[12..16], self.code_count);
     writeU32(output[16..20], self.data_here);
@@ -183,7 +191,10 @@ pub fn encodeImage(self: *State, output: []u8) RuntimeError!usize {
 
 pub fn restoreImage(self: *State, image: []const u8) RuntimeError!void {
     if (image.len < header_size + checksum_size) return error.InvalidImage;
-    if (!std.mem.eql(u8, image[0..8], image_magic) and !std.mem.eql(u8, image[0..8], graphics_image_magic) and !std.mem.eql(u8, image[0..8], previous_image_magic)) return error.InvalidImage;
+    const known = for ([_]*const [8]u8{ image_magic, graphics_image_magic, memory_map.audio_image_magic, previous_image_magic }) |magic| {
+        if (std.mem.eql(u8, image[0..8], magic)) break true;
+    } else false;
+    if (!known) return error.InvalidImage;
     const input = image[0 .. image.len - checksum_size];
     if (readU32(image[input.len..]) != std.hash.Crc32.hash(input)) return error.InvalidImage;
     const word_count = readU32(input[8..12]);
@@ -259,6 +270,7 @@ pub fn appendImage(self: *State, source: *const State) RuntimeError!void {
     const added_words: usize = source.word_count - source.builtin_count;
     const word_base: usize = self.word_count;
     const graphics_loaded = words_graphics.graphicsLoaded(self);
+    const audio_loaded = words_audio.audioLoaded(self);
     const code_base: usize = self.code_count;
     const code_count: usize = source.code_count;
     if (word_base + added_words > max_words) return error.DictionaryFull;
@@ -386,5 +398,10 @@ pub fn appendImage(self: *State, source: *const State) RuntimeError!void {
     if (!graphics_loaded and words_graphics.graphicsLoaded(source)) {
         const vocabulary = source.readCellConst(graphics_vocabulary_address) - source.builtin_count;
         try self.writeCell(graphics_vocabulary_address, @as(Cell, @intCast(word_base)) + vocabulary);
+    }
+    if (source.readCellConst(memory_map.audio_image_address) != 0) try self.writeCell(memory_map.audio_image_address, 1);
+    if (!audio_loaded and words_audio.audioLoaded(source)) {
+        const vocabulary = source.readCellConst(memory_map.audio_vocabulary_address) - source.builtin_count;
+        try self.writeCell(memory_map.audio_vocabulary_address, @as(Cell, @intCast(word_base)) + vocabulary);
     }
 }

@@ -415,6 +415,12 @@ fn readInput(self: *State, until_key: bool) RuntimeError!void {
     if (input.pending_len != 0) try decodePending(self, pendingExpired(self));
 }
 
+/// Reads what the host has without waiting, keeping the keys for INKEY: Ctrl+C throws
+/// USER INTERRUPT (PLAY waiting for its queues).
+pub fn readPending(self: *State) RuntimeError!void {
+    try readInput(self, false);
+}
+
 /// A key pressed in a window: the host's, or one whose program sends it (the Tk window
 /// of DISPLAY-TK). The window tells when it is released.
 pub fn windowKey(self: *State, key: u32, source: KeySource) RuntimeError!void {

@@ -14,19 +14,14 @@ const graphics_font = @import("graphics_font.zig");
 const graphics_palette = @import("graphics_palette.zig");
 const tcl = @import("tcl.zig");
 const graphics_terminal = @import("graphics_terminal.zig");
+const library_loading = @import("library_loading.zig");
 const memory_map = @import("memory_map.zig");
 const Builtin = defs.Builtin;
 const Cell = memory_map.Cell;
 const RuntimeError = defs.RuntimeError;
 const State = forth.State;
-const base_address = memory_map.base_address;
-const current_wordlist_address = memory_map.current_wordlist_address;
-const forth_wordlist = memory_map.forth_wordlist;
 const graphics_image_address = memory_map.graphics_image_address;
 const graphics_vocabulary_address = memory_map.graphics_vocabulary_address;
-const max_search_order = memory_map.max_search_order;
-const max_wordlists = memory_map.max_wordlists;
-const wordlist_count_address = memory_map.wordlist_count_address;
 
 /// The built-in words this file executes; executeBuiltin dispatches by this list.
 pub const words = [_]Builtin{ .gfx_init, .gfx_width, .gfx_height, .gfx_pset, .gfx_pget, .gfx_hline, .gfx_cls, .gfx_save_ppm, .gfx_save_bmp, .gfx_show_blocks, .gfx_show_sixel, .gfx_show_window, .gfx_window_query, .gfx_save_png, .gfx_inkey, .gfx_mouse, .gfx_mouse_mode, .gfx_glyph_load, .gfx_glyph_box, .gfx_glyph_alpha, .gfx_font_height, .gfx_font_builtin, .gfx_font_load, .gfx_font_system, .gfx_color_mode, .gfx_tcl, .gfx_tcl_error, .gfx_tcl_event, .gfx_tcl_program, .gfx_tcl_stop, .gfx_show_tk, .gfx_key_held, .gfx_window_size, .gfx_gamepad_poll, .gfx_gamepad_query, .gfx_gamepad_name, .gfx_gamepad_map, .gfx_gamepad_guid };
@@ -531,22 +526,22 @@ fn writeBmp(self: *const State, output: *FileOutput) void {
 /// Whether a word is one REQUIRE-GRAPHICS added: a GFX- word, or a word the graphics
 /// library defined (and not a later word of the same name). HELP describes these.
 pub fn isGraphicsWord(self: *const State, word: defs.Word) bool {
-    if (word.kind == .builtin) return true;
-    const files = self.readCellConst(memory_map.source_file_count_address);
-    if (word.source_file == 0 or word.source_file > files) return false;
-    return std.mem.eql(u8, self.sourceFileName(word.source_file - 1), library_name);
+    return library_loading.isGroupWord(self, word, library_name);
 }
 
 /// Whether REQUIRE-GRAPHICS has loaded the graphics words and they are still in the
 /// dictionary (FORGET and MARKER can remove them).
 pub fn graphicsLoaded(self: *const State) bool {
-    const recorded = self.readCellConst(graphics_vocabulary_address);
-    // Compared before adding 1, since the cell may hold any value.
-    if (recorded < self.builtin_count or recorded >= @as(Cell, self.word_count) - 1) return false;
-    const vocabulary = self.words[@intCast(recorded)];
-    const first = self.words[@intCast(recorded + 1)];
-    return vocabulary.kind == .vocabulary and first.kind == .builtin and first.builtin == definitions[0][1];
+    return library_loading.isLoaded(self, graphics_vocabulary_address, definitions[0][1]);
 }
+
+const group: library_loading.Group(@TypeOf(definitions[0])) = .{
+    .vocabulary = "GRAPHICS",
+    .definitions = &definitions,
+    .library_name = library_name,
+    .vocabulary_address = graphics_vocabulary_address,
+    .image_address = graphics_image_address,
+};
 
 /// REQUIRE-GRAPHICS: the first time, appends the GRAPHICS vocabulary to the Forth word
 /// list and the GFX- words and the graphics library to GRAPHICS; later it does nothing.
@@ -554,68 +549,5 @@ pub fn graphicsLoaded(self: *const State) bool {
 /// to load, everything it added is removed again.
 pub fn requireGraphics(self: *State) RuntimeError!void {
     if (!defs.graphics_enabled) return error.GraphicsUnavailable;
-    if (self.defining) return error.InvalidDefinition;
-    if (graphicsLoaded(self)) return;
-    const wordlists = self.wordlistCount();
-    if (wordlists == max_wordlists) return error.DictionaryFull;
-    var order_buffer: [max_search_order]Cell = undefined;
-    const saved_order = self.searchOrder(&order_buffer);
-    var order: [max_search_order]Cell = undefined;
-    @memcpy(order[0..saved_order.len], saved_order);
-    const depth = saved_order.len;
-    const current = self.currentWordlist();
-    const loaded_files = self.loadedSourceFiles();
-    const first_word = self.word_count;
-    const wid = wordlists + 1;
-    const pending = self.pending;
-    const control_depth = self.control_depth;
-    const interpret_loop_depth = self.interpret_loop_depth;
-    // The library is written in decimal, whatever BASE the caller has.
-    const base = self.readCellConst(base_address);
-    self.writeCell(base_address, 10) catch unreachable;
-    defer self.writeCell(base_address, base) catch unreachable;
-
-    loadGraphicsWords(self, wid) catch |err| {
-        // A definition the library started is dropped with the rest, so that the error
-        // handling after this does not bring the removed words back.
-        if (self.defining) {
-            self.defining = false;
-            self.setCompiling(false);
-            self.local_count = 0;
-            self.locals_frame_size = 0;
-        }
-        self.pending = pending;
-        self.control_depth = control_depth;
-        self.interpret_loop_depth = interpret_loop_depth;
-        if (self.last_created_word) |created| {
-            if (created >= first_word) self.last_created_word = null;
-        }
-        if (self.word_count > first_word) self.forgetFrom(first_word);
-        self.writeCell(wordlist_count_address, wordlists) catch unreachable;
-        self.writeCell(current_wordlist_address, current) catch unreachable;
-        self.setSearchOrder(order[0..depth]);
-        self.restoreLoadedSourceFiles(loaded_files);
-        return err;
-    };
-    self.writeCell(current_wordlist_address, current) catch unreachable;
-    self.setSearchOrder(order[0..depth]);
-    self.writeCell(graphics_vocabulary_address, first_word) catch unreachable;
-    self.writeCell(graphics_image_address, 1) catch unreachable;
-}
-
-fn loadGraphicsWords(self: *State, wid: Cell) RuntimeError!void {
-    try self.writeCell(current_wordlist_address, forth_wordlist);
-    _ = try self.appendWord("GRAPHICS", .vocabulary, .drop, wid);
-    try self.writeCell(wordlist_count_address, wid);
-    try self.writeCell(current_wordlist_address, wid);
-    for (definitions) |definition| _ = try self.appendWord(definition[0], .builtin, definition[1], 0);
-    // The library defines into GRAPHICS and finds the GFX- words first.
-    var order_buffer: [max_search_order]Cell = undefined;
-    const order = self.searchOrder(&order_buffer);
-    if (order.len == max_search_order) return error.SearchOrderOverflow;
-    var library_order: [max_search_order]Cell = undefined;
-    library_order[0] = wid;
-    @memcpy(library_order[1 .. order.len + 1], order);
-    self.setSearchOrder(library_order[0 .. order.len + 1]);
-    try self.includeEmbedded(library_name, self.graphics_library);
+    return library_loading.require(self, group, self.graphics_library);
 }

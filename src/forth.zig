@@ -25,6 +25,8 @@ const words_dictionary = @import("core/words_dictionary.zig");
 const words_files = @import("core/words_files.zig");
 const words_float = @import("core/words_float.zig");
 const words_graphics = @import("core/words_graphics.zig");
+const words_audio = @import("core/words_audio.zig");
+const sound_mml = @import("core/sound_mml.zig");
 const graphics_terminal = @import("core/graphics_terminal.zig");
 const graphics_input = @import("core/graphics_input.zig");
 const graphics_font = @import("core/graphics_font.zig");
@@ -68,6 +70,7 @@ const WordKind = defs.WordKind;
 pub const LocalTime = host_interface.LocalTime;
 pub const TerminalSize = host_interface.TerminalSize;
 pub const InputEvent = host_interface.InputEvent;
+pub const AudioWait = host_interface.AudioWait;
 pub const CursorPosition = host_interface.CursorPosition;
 pub const SystemGlyph = host_interface.SystemGlyph;
 pub const ColorMode = host_interface.ColorMode;
@@ -211,6 +214,10 @@ pub const State = struct {
     /// The Forth source REQUIRE-GRAPHICS interprets; tests put other source here.
     /// Empty in a build without graphics, which leaves the library text out.
     graphics_library: []const u8 = if (defs.graphics_enabled) words_graphics.library else "",
+    /// The Forth source REQUIRE-AUDIO interprets (empty in a build without audio).
+    audio_library: []const u8 = if (defs.audio_enabled) words_audio.library else "",
+    /// What each voice of PLAY keeps from one PLAY to the next; BEEP resets it.
+    audio_voices: [3]sound_mml.Voice = @splat(.{}),
     /// One band of six rows of a Sixel image, as color registers (none in a build without
     /// graphics).
     gfx_band: if (defs.graphics_enabled) [6][graphics_terminal.max_sixel_width]u8 else void = undefined,
@@ -764,6 +771,9 @@ pub const State = struct {
         if (asciiEqlIgnoreCase(token, "REQUIRE-GRAPHICS")) {
             return words_graphics.requireGraphics(self);
         }
+        if (asciiEqlIgnoreCase(token, "REQUIRE-AUDIO")) {
+            return words_audio.requireAudio(self);
+        }
         if (found) |id| return self.handleWord(id);
         if (try self.parseNumber(token)) |number| {
             const cells = doubleCells(number.value);
@@ -1221,7 +1231,7 @@ pub const State = struct {
         }
     }
 
-    const word_modules = .{ words_stack, words_arithmetic, words_memory, words_output, words_input, words_compiling, words_float, words_pictured, words_dictionary, words_system, words_files, words_strings, words_help, words_defining, words_graphics };
+    const word_modules = .{ words_stack, words_arithmetic, words_memory, words_output, words_input, words_compiling, words_float, words_pictured, words_dictionary, words_system, words_files, words_strings, words_help, words_defining, words_graphics, words_audio };
 
     /// For each built-in word, the index in `word_modules` of the file that executes it.
     const word_owner = blk: {

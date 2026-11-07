@@ -36,3 +36,10 @@ export fn sigma_append_image(state: *forth.State, source: *const forth.State) bo
     state.appendImage(source) catch return false;
     return true;
 }
+
+const sound = @import("core/sound_engine.zig");
+
+/// The sound engine as an audio thread would run it: it, too, must reach no OS service.
+export fn sigma_sound_render(engine: *sound.Engine, output: [*]i16, length: usize) void {
+    engine.render(output[0..length]);
+}

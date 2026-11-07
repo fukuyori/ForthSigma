@@ -14,6 +14,7 @@ pub fn build(b: *std.Build) void {
     const tools = b.option(bool, "tools", "Include SEE, LOCATE, and WHERE (default: on)") orelse true;
     const image = b.option(bool, "image", "Include SAVE, LOAD, and SAVESYS (default: on)") orelse true;
     const graphics = b.option(bool, "graphics", "Include REQUIRE-GRAPHICS and the GFX- words (default: on)") orelse true;
+    const audio = b.option(bool, "audio", "Include REQUIRE-AUDIO and the SND- words (default: on)") orelse true;
     const options = b.addOptions();
     options.addOption(bool, "float", float);
     options.addOption(bool, "files", files);
@@ -21,6 +22,7 @@ pub fn build(b: *std.Build) void {
     options.addOption(bool, "tools", tools);
     options.addOption(bool, "image", image);
     options.addOption(bool, "graphics", graphics);
+    options.addOption(bool, "audio", audio);
 
     const exe = b.addExecutable(.{
         .name = "sigma",

@@ -4,6 +4,7 @@ const std = @import("std");
 const forth = @import("../forth.zig");
 const help_text = @import("../core/help_text.zig");
 const words_graphics = @import("../core/words_graphics.zig");
+const words_audio = @import("../core/words_audio.zig");
 const words_help = @import("../core/words_help.zig");
 const support = @import("support.zig");
 const Output = support.Output;
@@ -51,8 +52,24 @@ test "HELP has a description for every built-in word, and only for words that ex
             }
         }
     }
+    // The same for the SND- words and the audio library.
+    if (@import("build_options").audio) {
+        try machine.interpretLine("REQUIRE-AUDIO ALSO AUDIO");
+        for (words_audio.library_words) |name| {
+            if (machine.lookup(name) == null or words_help.entry(name) == null) {
+                std.debug.print("audio library word without help or definition: {s}\n", .{name});
+                return error.TestExpectedEqual;
+            }
+        }
+        for (words_audio.definitions) |definition| {
+            if (words_help.entry(definition[0]) == null) {
+                std.debug.print("no help for {s}\n", .{definition[0]});
+                return error.TestExpectedEqual;
+            }
+        }
+    }
     // The parser handles these without dictionary entries.
-    const parser_words = [_][]const u8{ "(", "\\", ".(", "[", "]", "[']", "CHAR", "[CHAR]", "POSTPONE", "TO", "IS", "+TO", "ACTION-OF", ":NONAME", "{", "{:", "LOCALS|", "S\"", "S\\\"", ".\"", ".\\\"", "\"", "C\"", "ABORT\"", "FORGET", "REQUIRE-GRAPHICS" };
+    const parser_words = [_][]const u8{ "(", "\\", ".(", "[", "]", "[']", "CHAR", "[CHAR]", "POSTPONE", "TO", "IS", "+TO", "ACTION-OF", ":NONAME", "{", "{:", "LOCALS|", "S\"", "S\\\"", ".\"", ".\\\"", "\"", "C\"", "ABORT\"", "FORGET", "REQUIRE-GRAPHICS", "REQUIRE-AUDIO" };
     for (words_help.help_entries, 0..) |entry, index| {
         const known = machine.lookup(entry.name) != null or for (parser_words) |parser_word| {
             if (std.mem.eql(u8, parser_word, entry.name)) break true;

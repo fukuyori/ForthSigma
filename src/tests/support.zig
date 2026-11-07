@@ -9,7 +9,7 @@ pub fn skipWithoutFloat() error{SkipZigTest}!void {
 
 /// Skips a test that uses a word group the build leaves out (-Dfiles=false, -Dhelp=false,
 /// -Dtools=false, or -Dimage=false); several groups may be named.
-pub fn skipWithout(comptime groups: []const enum { files, help, tools, image, graphics }) error{SkipZigTest}!void {
+pub fn skipWithout(comptime groups: []const enum { files, help, tools, image, graphics, audio }) error{SkipZigTest}!void {
     const options = @import("build_options");
     inline for (groups) |group| {
         if (!@field(options, @tagName(group))) return error.SkipZigTest;
@@ -122,6 +122,17 @@ pub const Output = struct {
     /// SAVE and SAVESYS save nothing: they count, and keep the heap's top as it was.
     saves: usize = 0,
     saved_heap_top: forth.Cell = 0,
+    /// The sound engine the audio words use (null: the host cannot start its thread),
+    /// and whether it reaches a device. Each wait of PLAY plays `audio_wait_samples`
+    /// frames, as the audio thread would meanwhile; the wait numbered
+    /// `audio_interrupt_at` (from 1) reports Ctrl+C, and from `audio_read_input_at` on
+    /// the waits say the terminal gives single keys.
+    audio: ?*@import("../core/sound_engine.zig").Engine = null,
+    audio_device: bool = false,
+    audio_waits: usize = 0,
+    audio_wait_samples: usize = 960,
+    audio_interrupt_at: usize = 0,
+    audio_read_input_at: usize = 0,
 
     pub const framebuffer_capacity = 1600;
 
@@ -277,7 +288,34 @@ pub const Output = struct {
     }
 
     pub fn writer(self: *Output) forth.Writer {
-        return .{ .context = @ptrCast(self), .write_fn = write, .read_fn = read, .save_fn = saveImage, .savesys_fn = saveImage, .key_fn = key, .key_ready_fn = keyReady, .sleep_fn = sleep, .utime_fn = utime, .local_time_fn = localTime, .getenv_fn = getenv, .system_fn = system, .file_ops = &fake_file_ops, .framebuffer_fn = framebuffer, .terminal_size_fn = terminalSize, .terminal_utf8_fn = terminalUtf8, .window_fn = if (self.has_window) window else null, .input_fn = input, .mouse_fn = mouse, .cursor_fn = cursor, .font_buffer_fn = fontBuffer, .font_free_fn = fontFree, .system_font_fn = if (self.has_system_fonts) systemFont else null, .system_glyph_fn = if (self.has_system_fonts) systemGlyph else null, .process_start_fn = processStart, .process_write_fn = processWrite, .process_read_fn = processRead, .process_stop_fn = processStop };
+        return .{ .context = @ptrCast(self), .write_fn = write, .read_fn = read, .save_fn = saveImage, .savesys_fn = saveImage, .key_fn = key, .key_ready_fn = keyReady, .sleep_fn = sleep, .utime_fn = utime, .local_time_fn = localTime, .getenv_fn = getenv, .system_fn = system, .file_ops = &fake_file_ops, .framebuffer_fn = framebuffer, .terminal_size_fn = terminalSize, .terminal_utf8_fn = terminalUtf8, .window_fn = if (self.has_window) window else null, .input_fn = input, .mouse_fn = mouse, .cursor_fn = cursor, .font_buffer_fn = fontBuffer, .font_free_fn = fontFree, .system_font_fn = if (self.has_system_fonts) systemFont else null, .system_glyph_fn = if (self.has_system_fonts) systemGlyph else null, .process_start_fn = processStart, .process_write_fn = processWrite, .process_read_fn = processRead, .process_stop_fn = processStop, .audio_fn = audioEngine, .audio_device_fn = audioDevice, .audio_wait_fn = audioWait };
+    }
+
+    pub fn audioEngine(context: ?*anyopaque) ?*@import("../core/sound_engine.zig").Engine {
+        const output: *Output = @ptrCast(@alignCast(context.?));
+        return output.audio;
+    }
+
+    pub fn audioDevice(context: ?*anyopaque) bool {
+        const output: *Output = @ptrCast(@alignCast(context.?));
+        return output.audio_device;
+    }
+
+    pub fn audioWait(context: ?*anyopaque) forth.AudioWait {
+        const output: *Output = @ptrCast(@alignCast(context.?));
+        output.audio_waits += 1;
+        if (output.audio) |engine| {
+            var samples: [960 * 2]i16 = undefined;
+            var left = output.audio_wait_samples;
+            while (left > 0) {
+                const count: usize = @min(left, 960);
+                engine.render(samples[0 .. count * 2]);
+                left -= count;
+            }
+        }
+        if (output.audio_waits == output.audio_interrupt_at) return .interrupted;
+        if (output.audio_read_input_at != 0 and output.audio_waits >= output.audio_read_input_at) return .read_input;
+        return .waited;
     }
 
     pub fn sleep(context: ?*anyopaque, milliseconds: forth.Cell) forth.RuntimeError!void {

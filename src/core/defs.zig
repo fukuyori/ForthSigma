@@ -25,6 +25,8 @@ pub const tools_enabled = build_options.tools;
 pub const image_enabled = build_options.image;
 /// False with -Dgraphics=false, which leaves out REQUIRE-GRAPHICS and the GFX- words.
 pub const graphics_enabled = build_options.graphics;
+/// False with -Daudio=false, which leaves out REQUIRE-AUDIO and the SND- words.
+pub const audio_enabled = build_options.audio;
 
 /// The built-in words of the floating-point word set: those of words_float.zig and the
 /// float fields, sizes, and defining words of the other files.
@@ -54,13 +56,15 @@ const help_builtins = builtinSet(&.{&.{ .help, .license }});
 const tool_builtins = builtinSet(&.{&.{ .see, .locate, .where }});
 const image_builtins = builtinSet(&.{&.{ .load, .save, .savesys }});
 const graphics_builtins = builtinSet(&.{&@import("words_graphics.zig").words});
+const audio_builtins = builtinSet(&.{&@import("words_audio.zig").words});
 
 const excluded_builtins = blk: {
     var table: [builtin_count]bool = undefined;
     for (&table, 0..) |*excluded, index| {
         excluded.* = (!float_enabled and float_builtins[index]) or (!files_enabled and file_builtins[index]) or
             (!help_enabled and help_builtins[index]) or (!tools_enabled and tool_builtins[index]) or
-            (!image_enabled and image_builtins[index]) or (!graphics_enabled and graphics_builtins[index]);
+            (!image_enabled and image_builtins[index]) or (!graphics_enabled and graphics_builtins[index]) or
+            (!audio_enabled and audio_builtins[index]);
     }
     break :blk table;
 };
@@ -602,6 +606,13 @@ pub const Builtin = enum {
     gfx_gamepad_name,
     gfx_gamepad_map,
     gfx_gamepad_guid,
+    // The SND- words: REQUIRE-AUDIO puts them in the dictionary, as REQUIRE-GRAPHICS
+    // does the GFX- words.
+    snd_play,
+    snd_sound,
+    snd_beep,
+    snd_playing,
+    snd_device,
 };
 
 pub const HeapResult = union(enum) { address: Cell, no_memory, bad_pointer };
@@ -643,7 +654,8 @@ pub const error_codes = [_]struct { RuntimeError, Cell }{
     .{ error.CommentUnclosed, -266 },       .{ error.IncludeNesting, -267 },        .{ error.TooManySourceFiles, -268 },
     .{ error.SearchOrderOverflow, -49 },     .{ error.SearchOrderUnderflow, -50 },   .{ error.InvalidWordlist, -269 },
     .{ error.GraphicsUnavailable, -270 },   .{ error.NoCanvas, -271 },          .{ error.UserInterrupt, -28 },
-    .{ error.FontUnavailable, -272 },     .{ error.TclFailed, -273 },
+    .{ error.FontUnavailable, -272 },     .{ error.TclFailed, -273 },        .{ error.InvalidMml, -274 },
+    .{ error.AudioUnavailable, -275 },
 };
 
 pub const throw_code_undefined_word: Cell = -13;
@@ -799,6 +811,11 @@ pub const RuntimeError = error{
     FontUnavailable,
     /// A Tcl script that failed (TCL, TCL-EVAL, DISPLAY-TK).
     TclFailed,
+    /// A PLAY string that is not MSX BASIC's music macro language, or a number in it
+    /// out of its range.
+    InvalidMml,
+    /// REQUIRE-AUDIO in a build without sound (-Daudio=false).
+    AudioUnavailable,
 };
 
 pub fn floatBits(value: Float) Cell {

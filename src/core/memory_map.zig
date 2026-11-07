@@ -109,6 +109,12 @@ pub const graphics_vocabulary_address: Cell = 0x02d0;
 /// image of an older build, which never wrote them.
 pub const graphics_image_address: Cell = 0x02d8;
 
+/// The same two cells for REQUIRE-AUDIO: the word number of the AUDIO vocabulary, and
+/// non-zero once the audio words were loaded (images are then saved as
+/// `audio_image_magic`).
+pub const audio_vocabulary_address: Cell = 0x02e0;
+pub const audio_image_address: Cell = 0x02e8;
+
 /// Words that are also in the Root word list, so they stay usable after ONLY.
 pub const root_word_names = [_][]const u8{ "FORTH", "FORTH-WORDLIST", "ONLY", "ALSO", "PREVIOUS", "ORDER", "DEFINITIONS", "GET-ORDER", "SET-ORDER", "WORDS" };
 
@@ -195,6 +201,9 @@ pub const image_magic = "SIGIMG33";
 /// The same layout as `image_magic`, for an image that has had the graphics words; builds
 /// that only know SIGIMG33 reject it.
 pub const graphics_image_magic = "SIGIMG34";
+/// The same layout again, for an image that has had the audio words (with or without the
+/// graphics words); builds that only know SIGIMG33 and SIGIMG34 reject it.
+pub const audio_image_magic = "SIGIMG35";
 /// The format before call_builtin. Its layout is still accepted; after restoring
 /// words, calls are specialized for execution. Older builds reject newer images.
 pub const previous_image_magic = "SIGIMG32";

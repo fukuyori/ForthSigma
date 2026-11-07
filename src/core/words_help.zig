@@ -6,6 +6,7 @@ const forth = @import("../forth.zig");
 const help_text = @import("help_text.zig");
 const text_input = @import("text_input.zig");
 const words_graphics = @import("words_graphics.zig");
+const words_audio = @import("words_audio.zig");
 const Builtin = defs.Builtin;
 const RuntimeError = defs.RuntimeError;
 const State = forth.State;
@@ -50,7 +51,8 @@ fn isLineEnd(byte: u8) bool {
 /// word the user defined. An unknown name is an error, as everywhere else.
 fn describe(self: *State, name: []const u8) RuntimeError!void {
     if (self.lookup(name)) |id| {
-        if (id >= self.builtin_count and !(words_graphics.isGraphicsWord(self, self.words[id]) and entry(name) != null)) {
+        const group_word = words_graphics.isGraphicsWord(self, self.words[id]) or words_audio.isAudioWord(self, self.words[id]);
+        if (id >= self.builtin_count and !(group_word and entry(name) != null)) {
             const word = self.words[id];
             const word_name = self.wordName(word);
             self.write(word_name);
@@ -126,6 +128,13 @@ fn isExcludedName(comptime name: []const u8) bool {
         if (std.mem.eql(u8, library_word, name)) return !defs.graphics_enabled or !defs.float_enabled;
     }
     for (words_graphics.definitions) |definition| {
+        if (std.mem.eql(u8, definition[0], name)) return defs.isExcludedBuiltin(definition[1]);
+    }
+    if (std.mem.eql(u8, name, "REQUIRE-AUDIO")) return !defs.audio_enabled;
+    for (words_audio.library_words) |library_word| {
+        if (std.mem.eql(u8, library_word, name)) return !defs.audio_enabled;
+    }
+    for (words_audio.definitions) |definition| {
         if (std.mem.eql(u8, definition[0], name)) return defs.isExcludedBuiltin(definition[1]);
     }
     for (State.builtin_definitions) |definition| {

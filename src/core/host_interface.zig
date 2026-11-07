@@ -84,6 +84,17 @@ pub const CursorPosition = struct { column: i32, row: i32 };
 /// The local date and time, for TIME&DATE: month 1 to 12, the full year.
 pub const LocalTime = struct { second: Cell, minute: Cell, hour: Cell, day: Cell, month: Cell, year: Cell };
 
+/// What audio_wait_fn saw while it waited.
+pub const AudioWait = enum {
+    /// Only the time passed.
+    waited,
+    /// Ctrl+C was pressed (as a signal: the terminal has its line input).
+    interrupted,
+    /// The time passed, and the terminal gives single keys (input_fn has been used):
+    /// Ctrl+C then comes as an input event, which the core reads itself.
+    read_input,
+};
+
 pub const Writer = struct {
     gamepad_ops: ?*const @import("gamepad.zig").Ops = null,
     context: ?*anyopaque,
@@ -160,6 +171,15 @@ pub const Writer = struct {
     /// each pixel, row after row of `width` bytes in the buffer, the box at most the
     /// given width wide and as high as the font. Null when the font has no glyph for it.
     system_glyph_fn: ?*const fn (?*anyopaque, u21, []u8, u32) ?SystemGlyph = null,
+    /// The sound engine that the host's audio thread plays (REQUIRE-AUDIO's words), which
+    /// the first call starts. The thread runs even without an audio device, in time, so
+    /// that PLAY and PLAY? behave the same; null when the host cannot start it.
+    audio_fn: ?*const fn (?*anyopaque) ?*@import("sound_engine.zig").Engine = null,
+    /// Whether the audio thread's samples reach an audio device.
+    audio_device_fn: ?*const fn (?*anyopaque) bool = null,
+    /// Waits a few milliseconds for the audio thread (PLAY with its queues full). Until
+    /// it returns, Ctrl+C does not end the program.
+    audio_wait_fn: ?*const fn (?*anyopaque) AudioWait = null,
 
     pub fn write(self: Writer, bytes: []const u8) void {
         self.write_fn(self.context, bytes);

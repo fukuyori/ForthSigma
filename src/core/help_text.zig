@@ -716,4 +716,18 @@ pub const entries = [_]Entry{
     .{ .name = "MLINE", .stack = "( F: x1 y1 x2 y2 -- )", .text = "Draw a line between two points in mathematical coordinates (FORTH/Sigma graphics)." },
     .{ .name = "AXES", .stack = "( -- )", .text = "Draw the axes x = 0 and y = 0 that are in the range, with the current color (FORTH/Sigma graphics)." },
     .{ .name = "PLOT", .stack = "( xt -- )", .text = "Draw the graph of xt ( F: x -- y ) across the image, joining the columns with lines; NaN leaves a gap (FORTH/Sigma graphics)." },
+    // Audio (FORTH/Sigma): the SND- words and the audio library are in the AUDIO vocabulary.
+    .{ .name = "REQUIRE-AUDIO", .stack = "( -- )", .text = "Load the audio words into the AUDIO vocabulary, the first time only (FORTH/Sigma)." },
+    .{ .name = "SND-PLAY", .stack = "( c-addr1 u1 c-addr2 u2 c-addr3 u3 -- )", .text = "Put the MML of the three voices of one PLAY; an empty string for a voice that has no notes (FORTH/Sigma)." },
+    .{ .name = "SND-SOUND", .stack = "( reg value -- )", .text = "Host primitive for SOUND (FORTH/Sigma)." },
+    .{ .name = "SND-BEEP", .stack = "( -- )", .text = "Host primitive for BEEP (FORTH/Sigma)." },
+    .{ .name = "SND-PLAYING", .stack = "( n -- flag )", .text = "Host primitive for PLAY? (FORTH/Sigma)." },
+    .{ .name = "SND-DEVICE", .stack = "( -- flag )", .text = "Host primitive for AUDIO? (FORTH/Sigma)." },
+    .{ .name = "PLAY", .stack = "( c-addr u -- )", .text = "Play MSX BASIC's MML on voice A, returning once the notes fit in the queue; an invalid string throws -274 (FORTH/Sigma audio)." },
+    .{ .name = "PLAY2", .stack = "( c-addr1 u1 c-addr2 u2 -- )", .text = "Play MML on voices A and B, starting together (FORTH/Sigma audio)." },
+    .{ .name = "PLAY3", .stack = "( c-addr1 u1 c-addr2 u2 c-addr3 u3 -- )", .text = "Play MML on voices A, B, and C, starting together (FORTH/Sigma audio)." },
+    .{ .name = "PLAY?", .stack = "( n -- flag )", .text = "Whether voice n (1 to 3), or any voice for 0, still has notes to play, as MSX BASIC's PLAY(n) (FORTH/Sigma audio)." },
+    .{ .name = "SOUND", .stack = "( reg value -- )", .text = "Write a value 0 to 255 to the PSG's register 0 to 13, as MSX BASIC's SOUND (FORTH/Sigma audio)." },
+    .{ .name = "BEEP", .stack = "( -- )", .text = "Stop the music, set the PSG and the PLAY settings as at start, and beep (FORTH/Sigma audio)." },
+    .{ .name = "AUDIO?", .stack = "( -- flag )", .text = "Whether the sound reaches an audio device; without one the words work silently (FORTH/Sigma audio)." },
 };

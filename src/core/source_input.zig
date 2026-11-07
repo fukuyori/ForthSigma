@@ -349,11 +349,13 @@ pub fn listUses(self: *State, id: u16) RuntimeError!void {
 
 /// Reads line `wanted` (counting from 1) of the named file into the buffer, or gives
 /// null when the file cannot be read that far.
-/// The text of a source that is part of the program (the graphics library), which
+/// The text of a source that is part of the program (the graphics or audio library), which
 /// LOCATE and WHERE read instead of a file. It is this build's text: words restored from
 /// an image of another build may have come from other lines.
 fn embeddedSource(self: *const State, name: []const u8) ?[]const u8 {
-    return if (std.mem.eql(u8, name, words_graphics.library_name)) self.graphics_library else null;
+    if (std.mem.eql(u8, name, words_graphics.library_name)) return self.graphics_library;
+    if (std.mem.eql(u8, name, @import("words_audio.zig").library_name)) return self.audio_library;
+    return null;
 }
 
 /// Line `wanted` (from 1) of an embedded source, without its LF or CR LF.

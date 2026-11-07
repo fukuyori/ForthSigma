@@ -97,6 +97,11 @@ pub fn leave() void {
     queued_len = 0;
 }
 
+/// Whether the terminal gives single keys now (Ctrl+C is then a key, not a signal).
+pub fn isRaw() bool {
+    return raw;
+}
+
 fn enter() bool {
     if (raw) return true;
     if (!input_is_terminal) return false;
