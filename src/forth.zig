@@ -225,6 +225,10 @@ pub const State = struct {
     /// change.
     audio_instruments: [sound_mml.instrument_count]sound_engine.Instrument = @splat(.{}),
     audio_instrument: u8 = 0,
+    /// The samples, as the audio thread has them, and how much of the host's pool they
+    /// take (FREE-SAMPLES empties it).
+    audio_samples: [sound_engine.pcm.sample_count]sound_engine.pcm.Sample = @splat(.{}),
+    audio_pool_used: u32 = 0,
     /// One band of six rows of a Sixel image, as color registers (none in a build without
     /// graphics).
     gfx_band: if (defs.graphics_enabled) [6][graphics_terminal.max_sixel_width]u8 else void = undefined,

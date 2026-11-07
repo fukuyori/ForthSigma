@@ -417,3 +417,119 @@ test "SCC-SOUND plays five voices, and SCC-WAVE gives an instrument its wave" {
     machine.data_depth = 0;
     try std.testing.expectError(error.InvalidAddress, machine.interpretLine("-5 0 SCC-WAVE"));
 }
+
+/// A WAV file of 16-bit mono PCM at 11025 Hz with `frames` samples 0, 500, 1000, ...,
+/// and a LIST chunk before the data (which LOAD-SAMPLE skips).
+fn wavFile(comptime frames: usize) [12 + 24 + 12 + 8 + frames * 2]u8 {
+    var bytes: [12 + 24 + 12 + 8 + frames * 2]u8 = undefined;
+    @memcpy(bytes[0..4], "RIFF");
+    std.mem.writeInt(u32, bytes[4..8], bytes.len - 8, .little);
+    @memcpy(bytes[8..16], "WAVEfmt ");
+    std.mem.writeInt(u32, bytes[16..20], 16, .little);
+    std.mem.writeInt(u16, bytes[20..22], 1, .little);
+    std.mem.writeInt(u16, bytes[22..24], 1, .little);
+    std.mem.writeInt(u32, bytes[24..28], 11025, .little);
+    std.mem.writeInt(u32, bytes[28..32], 22050, .little);
+    std.mem.writeInt(u16, bytes[32..34], 2, .little);
+    std.mem.writeInt(u16, bytes[34..36], 16, .little);
+    @memcpy(bytes[36..40], "LIST");
+    std.mem.writeInt(u32, bytes[40..44], 4, .little);
+    @memcpy(bytes[44..48], "INFO");
+    @memcpy(bytes[48..52], "data");
+    std.mem.writeInt(u32, bytes[52..56], frames * 2, .little);
+    for (0..frames) |i| std.mem.writeInt(i16, bytes[56 + i * 2 ..][0..2], @intCast(i * 500), .little);
+    return bytes;
+}
+
+test "LOAD-SAMPLE reads a WAV file into the pool; other files throw SAMPLE ERROR (-276)" {
+    try skipWithout(&.{ .audio, .files });
+    var engine = newEngine();
+    var pool: [64]i16 = undefined;
+    engine.pool = &pool;
+    var output = Output{ .audio = &engine };
+    support.setFakeFile(&output, 0, &wavFile(20));
+    support.setFakeFile(&output, 1, "RIFF....AVI LIST");
+    support.setFakeFile(&output, 2, &wavFile(50));
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
+    try machine.interpretLine("REQUIRE-AUDIO ALSO AUDIO");
+    try machine.interpretLine("S\" a.txt\" 5 LOAD-SAMPLE");
+    try std.testing.expectEqual(sound_engine.pcm.Sample{ .start = 0, .length = 20, .rate = 11025 }, machine.audio_samples[5]);
+    try std.testing.expectEqual(@as(i16, 9500), pool[19]);
+    try std.testing.expectEqual(@as(u32, 20), machine.audio_pool_used);
+    render(&engine, 1);
+    try std.testing.expectEqual(machine.audio_samples[5], engine.samples[5]);
+
+    try machine.interpretLine("S\" b.txt\" 6 SND-LOAD-SAMPLE S\" missing.txt\" 6 SND-LOAD-SAMPLE 0<>");
+    try std.testing.expectEqual(@as(forth.Cell, -276), machine.data_stack[0]);
+    try std.testing.expectEqual(@as(forth.Cell, -1), machine.data_stack[1]);
+    machine.data_depth = 0;
+    try std.testing.expectError(error.SampleInvalid, machine.interpretLine("S\" b.txt\" 6 LOAD-SAMPLE"));
+    machine.data_depth = 0;
+    // 50 more samples do not fit in the 64 of this pool: nothing changes.
+    try machine.interpretLine("S\" c.txt\" 6 SND-LOAD-SAMPLE");
+    try expectStack(machine, &.{-257});
+    machine.data_depth = 0;
+    try std.testing.expectEqual(@as(u32, 20), machine.audio_pool_used);
+    try std.testing.expectEqual(@as(u32, 0), machine.audio_samples[6].length);
+    try std.testing.expectError(error.InvalidNumber, machine.interpretLine("S\" a.txt\" 64 LOAD-SAMPLE"));
+}
+
+test "SAMPLE, LOOP-SAMPLE, SAMPLE-INSTRUMENT, SFX, and FREE-SAMPLES" {
+    try skipWithout(&.{.audio});
+    var engine = newEngine();
+    var pool: [64]i16 = undefined;
+    engine.pool = &pool;
+    var output = Output{ .audio = &engine };
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
+    try machine.interpretLine("REQUIRE-AUDIO ALSO AUDIO");
+    try machine.interpretLine("CREATE S 10 ALLOT S 10 0 FILL 127 S C! 128 S 1 + C!  S 10 8000 1 SAMPLE");
+    try std.testing.expectEqual(@as(i16, 127 * 256), pool[0]);
+    try std.testing.expectEqual(@as(i16, -128 * 256), pool[1]);
+    try std.testing.expectEqual(@as(u32, 10), machine.audio_samples[1].length);
+    try machine.interpretLine("2 8 1 LOOP-SAMPLE");
+    try std.testing.expect(machine.audio_samples[1].loops());
+    for ([_][]const u8{ "5 4 1 LOOP-SAMPLE", "0 11 1 LOOP-SAMPLE", "S 10 999 1 SAMPLE", "S 10 8000 64 SAMPLE", "64 SAMPLE-INSTRUMENT", "-2 SAMPLE-INSTRUMENT", "64 SFX" }) |line| {
+        try std.testing.expectError(error.InvalidNumber, machine.interpretLine(line));
+        machine.data_depth = 0;
+    }
+    try std.testing.expectError(error.MemoryExhausted, machine.interpretLine("S 60 8000 2 SAMPLE"));
+    machine.data_depth = 0;
+
+    try machine.interpretLine("3 INSTRUMENT 1 SAMPLE-INSTRUMENT");
+    try std.testing.expectEqual(@as(?u8, 1), machine.audio_instruments[3].sample);
+    try machine.interpretLine("-1 SAMPLE-INSTRUMENT");
+    try std.testing.expectEqual(@as(?u8, null), machine.audio_instruments[3].sample);
+
+    try machine.interpretLine("1 SFX");
+    render(&engine, 1);
+    try std.testing.expect(engine.sfx_players[0].active);
+
+    try machine.interpretLine("FREE-SAMPLES");
+    try std.testing.expectEqual(@as(u32, 0), machine.audio_pool_used);
+    try std.testing.expectEqual(@as(u32, 0), machine.audio_samples[1].length);
+    try std.testing.expect(!engine.sfx_players[0].active);
+    render(&engine, 1);
+    try std.testing.expectEqual(@as(u32, 0), engine.samples[1].length);
+}
+
+test "AMIGA-SOUND plays four voices, and AMIGA-FILTER turns the LED filter on" {
+    try skipWithout(&.{.audio});
+    var engine = newEngine();
+    var output = Output{ .audio = &engine };
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
+    try machine.interpretLine("REQUIRE-AUDIO ALSO AUDIO AMIGA-SOUND TRUE AMIGA-FILTER");
+    try std.testing.expectEqual(sound_engine.Chip.amiga, engine.chip);
+    render(&engine, 1);
+    try std.testing.expect(engine.amiga_led);
+    try machine.interpretLine("S\" C\" S\" E\" S\" G\" S\" >C\" 4 PLAYS 4 PLAY?");
+    try expectStack(machine, &.{-1});
+    machine.data_depth = 0;
+    try std.testing.expectError(error.InvalidNumber, machine.interpretLine("5 PLAY?"));
+    machine.data_depth = 0;
+    try machine.interpretLine("FALSE AMIGA-FILTER");
+    render(&engine, 1);
+    try std.testing.expect(!engine.amiga_led);
+}

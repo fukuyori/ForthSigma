@@ -14,6 +14,8 @@ const parts = @import("sound_parts.zig");
 const nes_module = @import("sound_nes.zig");
 const c64_module = @import("sound_c64.zig");
 const scc_module = @import("sound_scc.zig");
+const amiga_module = @import("sound_amiga.zig");
+pub const pcm = @import("sound_pcm.zig");
 
 pub const Event = mml.Event;
 pub const Psg = psg_module.Psg;
@@ -27,6 +29,7 @@ pub const Chip = enum(u8) {
     nes,
     c64,
     scc,
+    amiga,
 
     pub fn voiceCount(chip: Chip) usize {
         return switch (chip) {
@@ -34,12 +37,16 @@ pub const Chip = enum(u8) {
             .nes => nes_module.voice_count,
             .c64 => c64_module.voice_count,
             .scc => scc_module.voice_count,
+            .amiga => amiga_module.voice_count,
         };
     }
 };
 
 /// The most voices a chip has; each has its queue.
 pub const max_voices = 5;
+
+/// The SFX that can sound at once; a new one takes the place of the oldest.
+pub const sfx_voices = 4;
 
 /// A queue with one producer and one consumer. `capacity` must be a power of two.
 pub fn Ring(comptime T: type, comptime capacity: u32) type {
@@ -104,6 +111,14 @@ pub const Command = union(enum) {
     /// INSTRUMENT and the words after it: the instrument's settings, which the notes
     /// that start from now on use.
     instrument: struct { index: u8, value: Instrument },
+    /// LOAD-SAMPLE, SAMPLE, and LOOP-SAMPLE: where sample `index` is in the pool.
+    sample: struct { index: u8, value: pcm.Sample },
+    /// FREE-SAMPLES, after a stop: every sample is gone.
+    free_samples,
+    /// SFX: plays a sample once at its rate, at once and beside the music.
+    sfx: u8,
+    /// AMIGA-FILTER: the LED filter on or off.
+    amiga_filter: bool,
 };
 
 /// The PSG's registers as the MSX's BIOS sets them (GICINI): R0 = 55H, the tones on and
@@ -126,7 +141,15 @@ pub const Engine = struct {
     nes: nes_module.Nes,
     c64: c64_module.C64,
     scc: scc_module.Scc,
+    amiga: amiga_module.Amiga,
     sample_rate: u32,
+    /// The host's pool of samples; the producer adds to its end (sound_pcm.zig).
+    pool: []i16 = &.{},
+    samples: [pcm.sample_count]pcm.Sample = @splat(.{}),
+    amiga_led: bool = false,
+    /// The voices of SFX, used in turn.
+    sfx_players: [sfx_voices]pcm.Player = @splat(.{}),
+    sfx_next: usize = 0,
     chip: Chip = .msx,
     instruments: [mml.instrument_count]Instrument = @splat(.{}),
     voices: [max_voices]Ring(Event, voice_queue_size) = @splat(.{}),
@@ -143,11 +166,11 @@ pub const Engine = struct {
     at_end: [max_voices]bool = @splat(true),
     tick_fraction: u32 = 0,
     beep_samples: u32 = 0,
-    dc_input: f32 = 0,
-    dc_output: f32 = 0,
+    dc_input: [2]f32 = .{ 0, 0 },
+    dc_output: [2]f32 = .{ 0, 0 },
 
     pub fn init(model: psg_module.Model, clock: u32, sample_rate: u32) Engine {
-        var engine: Engine = .{ .psg = Psg.init(model, clock, sample_rate), .nes = nes_module.Nes.init(sample_rate), .c64 = c64_module.C64.init(sample_rate), .scc = scc_module.Scc.init(sample_rate), .sample_rate = sample_rate };
+        var engine: Engine = .{ .psg = Psg.init(model, clock, sample_rate), .nes = nes_module.Nes.init(sample_rate), .c64 = c64_module.C64.init(sample_rate), .scc = scc_module.Scc.init(sample_rate), .amiga = amiga_module.Amiga.init(sample_rate), .sample_rate = sample_rate };
         engine.setRegisters(msxInitialRegisters());
         return engine;
     }
@@ -227,25 +250,29 @@ pub const Engine = struct {
                     self.tick();
                 }
             }
-            var level = self.psg.sample();
-            switch (self.chip) {
-                .msx, .atari_st => {},
-                .nes => level += self.nes.sample(),
-                .c64 => level += self.c64.sample(),
-                .scc => level += self.scc.sample(),
+            const center = self.psg.sample() + switch (self.chip) {
+                .msx, .atari_st, .amiga => 0,
+                .nes => self.nes.sample(),
+                .c64 => self.c64.sample(),
+                .scc => self.scc.sample(),
+            } + self.sfxSample();
+            var sides: [2]f32 = .{ center, center };
+            if (self.chip == .amiga) {
+                const amiga = self.amiga.sample(self.pool, self.amiga_led);
+                sides[0] += amiga[0];
+                sides[1] += amiga[1];
             }
-            const value = self.filtered(level);
-            out[i] = value;
-            out[i + 1] = value;
+            out[i] = self.filtered(0, sides[0]);
+            out[i + 1] = self.filtered(1, sides[1]);
         }
     }
 
     /// The level without its constant part (as the coupling capacitor of a computer's
     /// audio output removes it), as a 16-bit sample.
-    fn filtered(self: *Engine, x: f32) i16 {
-        const y = x - self.dc_input + 0.9985 * self.dc_output;
-        self.dc_input = x;
-        self.dc_output = y;
+    fn filtered(self: *Engine, side: usize, x: f32) i16 {
+        const y = x - self.dc_input[side] + 0.9985 * self.dc_output[side];
+        self.dc_input[side] = x;
+        self.dc_output[side] = y;
         const scaled = std.math.clamp(y * 0.6, -1.0, 1.0) * 32767.0;
         return @intFromFloat(scaled);
     }
@@ -256,6 +283,13 @@ pub const Engine = struct {
             switch (command) {
                 .write => |w| self.psg.write(w.reg, w.value),
                 .instrument => |i| self.instruments[i.index] = i.value,
+                .sample => |s| self.samples[s.index] = s.value,
+                .free_samples => self.samples = @splat(.{}),
+                .amiga_filter => |on| self.amiga_led = on,
+                .sfx => |n| {
+                    self.sfx_players[self.sfx_next].start(self.samples[n], @as(f64, @floatFromInt(self.samples[n].rate)) / @as(f64, @floatFromInt(self.sample_rate)));
+                    self.sfx_next = (self.sfx_next + 1) % sfx_voices;
+                },
                 .reset => |b| {
                     for (&self.voices, b.tails) |*queue, tail| queue.dropUntil(tail);
                     self.plays_started.store(b.plays, .release);
@@ -273,6 +307,8 @@ pub const Engine = struct {
                     self.nes = nes_module.Nes.init(self.sample_rate);
                     self.c64 = c64_module.C64.init(self.sample_rate);
                     self.scc = scc_module.Scc.init(self.sample_rate);
+                    self.amiga = amiga_module.Amiga.init(self.sample_rate);
+                    self.sfx_players = @splat(.{});
                     self.setRegisters(msxInitialRegisters());
                     if (b.beep) {
                         self.psg.write(0, @truncate(beep_period));
@@ -324,6 +360,13 @@ pub const Engine = struct {
         }
     }
 
+    /// The SFX voices together, each sample once at half the full level.
+    fn sfxSample(self: *Engine) f32 {
+        var sum: f32 = 0;
+        for (&self.sfx_players) |*player| sum += player.next(self.pool) * 0.5;
+        return sum;
+    }
+
     /// Ends voice v's note (at a rest or the end of a PLAY).
     fn silence(self: *Engine, v: usize) void {
         switch (self.chip) {
@@ -331,6 +374,7 @@ pub const Engine = struct {
             .nes => if (v < nes_module.voice_count) self.nes.noteOff(v),
             .c64 => if (v < c64_module.voice_count) self.c64.noteOff(v),
             .scc => if (v < scc_module.voice_count) self.scc.noteOff(v),
+            .amiga => if (v < amiga_module.voice_count) self.amiga.noteOff(v),
         }
     }
 
@@ -346,6 +390,7 @@ pub const Engine = struct {
             .nes => self.nes.noteOn(v, event.note, @min(event.amplitude, 15), self.instruments[event.instrument]),
             .c64 => self.c64.noteOn(v, event.note, @min(event.amplitude, 15), self.instruments[event.instrument]),
             .scc => self.scc.noteOn(v, event.note, @min(event.amplitude, 15), self.instruments[event.instrument]),
+            .amiga => self.amiga.noteOn(v, event.note, @min(event.amplitude, 15), self.instruments[event.instrument], &self.samples),
         }
     }
 

@@ -758,3 +758,138 @@ test "SCC-SOUND plays five voices through the engine" {
     player.play(1000);
     try std.testing.expect(!engine.isPlaying(0));
 }
+
+// ---- S4a: samples and the Amiga ----
+
+const pcm = @import("../core/sound_pcm.zig");
+const amiga_module = @import("../core/sound_amiga.zig");
+
+test "a WAV file's format, and its frames as mono 16-bit samples" {
+    // PCM, 2 channels, 22050 Hz, 8 bits.
+    const stereo8 = [_]u8{ 1, 0, 2, 0, 0x22, 0x56, 0, 0, 0x44, 0xac, 0, 0, 2, 0, 8, 0 };
+    const format = try pcm.parseFormat(&stereo8);
+    try std.testing.expectEqual(pcm.Format{ .channels = 2, .rate = 22050, .bits = 8 }, format);
+    var out: [3]i16 = undefined;
+    // 128 is 0; the two channels' mean; a half frame at the end is left.
+    try std.testing.expectEqual(@as(usize, 2), pcm.convertFrames(format, &.{ 128, 128, 255, 1, 0 }, &out));
+    try std.testing.expectEqual(@as(i16, 0), out[0]);
+    try std.testing.expectEqual(@as(i16, 0), out[1]);
+    const mono16: pcm.Format = .{ .channels = 1, .rate = 44100, .bits = 16 };
+    try std.testing.expectEqual(@as(usize, 2), pcm.convertFrames(mono16, &.{ 0x00, 0x80, 0xff, 0x7f }, &out));
+    try std.testing.expectEqual(@as(i16, -32768), out[0]);
+    try std.testing.expectEqual(@as(i16, 32767), out[1]);
+
+    // Not PCM, 3 channels, 24 bits, too short.
+    var bad = stereo8;
+    bad[0] = 3;
+    try std.testing.expectError(error.InvalidWav, pcm.parseFormat(&bad));
+    bad = stereo8;
+    bad[2] = 3;
+    try std.testing.expectError(error.InvalidWav, pcm.parseFormat(&bad));
+    bad = stereo8;
+    bad[14] = 24;
+    try std.testing.expectError(error.InvalidWav, pcm.parseFormat(&bad));
+    try std.testing.expectError(error.InvalidWav, pcm.parseFormat(stereo8[0..10]));
+}
+
+test "the sample player holds each value, stops at the end, and loops where it is told" {
+    const data = [_]i16{ 0, 16384, -16384, 8192 };
+    var player: pcm.Player = .{};
+    player.start(.{ .start = 0, .length = 4, .rate = 8000 }, 0.5);
+    const expected = [_]f32{ 0, 0, 0.5, 0.5, -0.5, -0.5, 0.25, 0.25, 0, 0 };
+    for (expected) |value| try std.testing.expectEqual(value, player.next(&data));
+    try std.testing.expect(!player.active);
+
+    player.start(.{ .start = 1, .length = 3, .rate = 8000, .loop_start = 1, .loop_end = 3 }, 1);
+    const looped = [_]f32{ 0.5, -0.5, 0.25, -0.5, 0.25, -0.5 };
+    for (looped) |value| try std.testing.expectEqual(value, player.next(&data));
+}
+
+test "the Amiga plays a sample on Paula's period, voices 1 and 4 left and 2 and 3 right" {
+    // A sample at 8287 Hz plays O4's C on period 428, as the trackers' C-2.
+    try std.testing.expectEqual(@as(u32, 428), amiga_module.period(8287));
+    try std.testing.expectEqual(@as(u32, amiga_module.min_period), amiga_module.period(100_000));
+
+    var pool: [64]i16 = undefined;
+    for (&pool, 0..) |*s, i| s.* = if (i % 2 == 0) 16384 else -16384;
+    var samples: [pcm.sample_count]pcm.Sample = @splat(.{});
+    samples[3] = .{ .start = 0, .length = 64, .rate = 8287, .loop_start = 0, .loop_end = 64 };
+    var amiga = amiga_module.Amiga.init(rate);
+    amiga.noteOn(0, 48, 15, .{ .sample = 3 }, &samples);
+    var left: f32 = 0;
+    var right: f32 = 0;
+    for (0..rate / 10) |_| {
+        const sides = amiga.sample(&pool, false);
+        left = @max(left, @abs(sides[0]));
+        right = @max(right, @abs(sides[1]));
+    }
+    try std.testing.expect(left > 0.05);
+    try std.testing.expectEqual(@as(f32, 0), right);
+
+    // Without a sample, the instrument's wave at the note's pitch, on the right.
+    var wave = amiga_module.Amiga.init(rate);
+    wave.noteOn(1, 57, 15, .{}, &samples);
+    const out = try std.testing.allocator.alloc(f32, rate);
+    defer std.testing.allocator.free(out);
+    for (out) |*s| s.* = wave.sample(&pool, false)[1];
+    const rises = risesOf(out);
+    try std.testing.expect(rises >= 439 and rises <= 441);
+}
+
+test "the Amiga's LED filter takes the high notes away" {
+    var samples: [pcm.sample_count]pcm.Sample = @splat(.{});
+    var powers: [2]f32 = undefined;
+    for ([_]bool{ false, true }, 0..) |led, i| {
+        var amiga = amiga_module.Amiga.init(rate);
+        amiga.noteOn(0, 93, 15, .{}, &samples); // about 3.5 kHz
+        var sum: f32 = 0;
+        for (0..rate / 2) |_| {
+            const s = amiga.sample(&.{}, led)[0];
+            sum += s * s;
+        }
+        powers[i] = sum;
+    }
+    // O7's A (3520 Hz) is above the filter's 3.3 kHz: its fundamental keeps under half
+    // its power.
+    try std.testing.expect(powers[1] < powers[0] * 0.6);
+}
+
+test "the Amiga plays a high note of a wave with fewer samples, at its pitch" {
+    var samples: [pcm.sample_count]pcm.Sample = @splat(.{});
+    var amiga = amiga_module.Amiga.init(rate);
+    amiga.noteOn(0, 93, 15, .{}, &samples);
+    try std.testing.expectEqual(@as(u32, 8), amiga.voices[0].player.sample.length);
+    const out = try std.testing.allocator.alloc(f32, rate);
+    defer std.testing.allocator.free(out);
+    for (out) |*s| s.* = amiga.sample(&.{}, false)[0];
+    const rises = risesOf(out);
+    // Period 126 for 8 samples: 3546895 / (126 × 8) = 3518.7 Hz.
+    try std.testing.expect(rises >= 3516 and rises <= 3521);
+}
+
+test "SFX plays a sample once beside the music, on any chip, and a stop ends it" {
+    var engine = Engine.init(.ay8910, psg_module.msx_clock, rate);
+    var pool: [4800]i16 = undefined;
+    for (&pool, 0..) |*s, i| s.* = if (i % 20 < 10) 20000 else -20000;
+    engine.pool = &pool;
+    var player: Player = .{ .engine = &engine };
+    try std.testing.expect(engine.putCommand(.{ .sample = .{ .index = 2, .value = .{ .start = 0, .length = 4800, .rate = 48000 } } }));
+    try std.testing.expect(engine.putCommand(.{ .sfx = 2 }));
+    var buffer: [960]i16 = undefined;
+    engine.render(&buffer);
+    var loud = false;
+    for (buffer) |s| {
+        if (@abs(s) > 3000) loud = true;
+    }
+    try std.testing.expect(loud);
+    // 4800 frames are 100 ms: then nothing plays.
+    player.play(200);
+    try std.testing.expect(!engine.sfx_players[0].active);
+
+    try std.testing.expect(engine.putCommand(.{ .sfx = 2 }));
+    player.play(10);
+    try std.testing.expect(engine.sfx_players[1].active);
+    try std.testing.expect(engine.putCommand(engine.resetCommand(false)));
+    player.play(10);
+    try std.testing.expect(!engine.sfx_players[1].active);
+}

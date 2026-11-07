@@ -40,6 +40,9 @@ pub fn start(_: ?*anyopaque) ?*Engine {
         .idle => {},
     }
     engine = Engine.init(.ay8910, sound_psg.msx_clock, sample_rate);
+    // The pool of samples, kept until the program ends; without it, samples do not fit
+    // (OUT OF MEMORY) and the rest works.
+    engine.pool = std.heap.page_allocator.alloc(i16, sound_engine.pcm.pool_samples) catch &.{};
     // The device is opened here, so that AUDIO? knows at once whether there is one.
     if (is_windows and windows.open()) device_open.store(true, .release);
     const thread = std.Thread.spawn(.{ .stack_size = 256 * 1024 }, run, .{}) catch {

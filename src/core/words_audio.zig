@@ -16,28 +16,33 @@ const memory_map = @import("memory_map.zig");
 const mml = @import("sound_mml.zig");
 const sound_engine = @import("sound_engine.zig");
 const parts = @import("sound_parts.zig");
+const pcm = sound_engine.pcm;
 const Builtin = defs.Builtin;
 const Engine = sound_engine.Engine;
 const RuntimeError = defs.RuntimeError;
+const Cell = memory_map.Cell;
 const State = forth.State;
 
 /// The built-in words this file executes; executeBuiltin dispatches by this list.
-pub const words = [_]Builtin{ .snd_play, .snd_sound, .snd_beep, .snd_playing, .snd_device, .snd_plays, .snd_chip, .snd_instrument, .snd_wave, .snd_duty, .snd_adsr, .snd_ring, .snd_sync, .snd_filter, .snd_wavetable };
+pub const words = [_]Builtin{ .snd_play, .snd_sound, .snd_beep, .snd_playing, .snd_device, .snd_plays, .snd_chip, .snd_instrument, .snd_wave, .snd_duty, .snd_adsr, .snd_ring, .snd_sync, .snd_filter, .snd_wavetable, .snd_load_sample, .snd_sample, .snd_loop_sample, .snd_sample_instrument, .snd_sfx, .snd_amiga_filter, .snd_free_samples };
 
 /// The SND- words in the order REQUIRE-AUDIO appends them, right after the AUDIO
 /// vocabulary. The order is part of the dictionary that images keep: add new words at
 /// the end.
 pub const definitions = [_]struct { []const u8, Builtin }{
-    .{ "SND-PLAY", .snd_play },       .{ "SND-SOUND", .snd_sound },           .{ "SND-BEEP", .snd_beep },
-    .{ "SND-PLAYING", .snd_playing }, .{ "SND-DEVICE", .snd_device },         .{ "SND-PLAYS", .snd_plays },
-    .{ "SND-CHIP", .snd_chip },       .{ "SND-INSTRUMENT", .snd_instrument }, .{ "SND-WAVE", .snd_wave },
-    .{ "SND-DUTY", .snd_duty },       .{ "SND-ADSR", .snd_adsr },             .{ "SND-RING", .snd_ring },
-    .{ "SND-SYNC", .snd_sync },       .{ "SND-FILTER", .snd_filter },         .{ "SND-WAVETABLE", .snd_wavetable },
+    .{ "SND-PLAY", .snd_play },                           .{ "SND-SOUND", .snd_sound },           .{ "SND-BEEP", .snd_beep },
+    .{ "SND-PLAYING", .snd_playing },                     .{ "SND-DEVICE", .snd_device },         .{ "SND-PLAYS", .snd_plays },
+    .{ "SND-CHIP", .snd_chip },                           .{ "SND-INSTRUMENT", .snd_instrument }, .{ "SND-WAVE", .snd_wave },
+    .{ "SND-DUTY", .snd_duty },                           .{ "SND-ADSR", .snd_adsr },             .{ "SND-RING", .snd_ring },
+    .{ "SND-SYNC", .snd_sync },                           .{ "SND-FILTER", .snd_filter },         .{ "SND-WAVETABLE", .snd_wavetable },
+    .{ "SND-LOAD-SAMPLE", .snd_load_sample },             .{ "SND-SAMPLE", .snd_sample },         .{ "SND-LOOP-SAMPLE", .snd_loop_sample },
+    .{ "SND-SAMPLE-INSTRUMENT", .snd_sample_instrument }, .{ "SND-SFX", .snd_sfx },               .{ "SND-AMIGA-FILTER", .snd_amiga_filter },
+    .{ "SND-FREE-SAMPLES", .snd_free_samples },
 };
 
 /// The words of the audio library that HELP describes; the help test checks that the
 /// library defines each of them.
-pub const library_words = [_][]const u8{ "PLAY", "PLAY2", "PLAY3", "PLAY?", "SOUND", "BEEP", "AUDIO?", "PLAYS", "MSX-SOUND", "ST-SOUND", "NES-SOUND", "INSTRUMENT", "SQUARE", "PULSE", "TRIANGLE", "SAW", "NOISE", "DUTY", "ADSR", "C64-SOUND", "RING", "SYNC", "FILTER", "SCC-SOUND", "SCC-WAVE" };
+pub const library_words = [_][]const u8{ "PLAY", "PLAY2", "PLAY3", "PLAY?", "SOUND", "BEEP", "AUDIO?", "PLAYS", "MSX-SOUND", "ST-SOUND", "NES-SOUND", "INSTRUMENT", "SQUARE", "PULSE", "TRIANGLE", "SAW", "NOISE", "DUTY", "ADSR", "C64-SOUND", "RING", "SYNC", "FILTER", "SCC-SOUND", "SCC-WAVE", "LOAD-SAMPLE", "SAMPLE", "LOOP-SAMPLE", "SAMPLE-INSTRUMENT", "SFX", "FREE-SAMPLES", "AMIGA-SOUND", "AMIGA-FILTER" };
 
 /// The audio library, which REQUIRE-AUDIO interprets after appending the SND- words.
 pub const library = @embedFile("../audio/audio.fs");
@@ -145,6 +150,56 @@ pub fn execute(self: *State, builtin: Builtin) RuntimeError!void {
             for (&samples, self.memory[start..][0..32]) |*s, byte| s.* = @bitCast(byte);
             try changeInstrumentAt(self, @intCast(n), .{ .wavetable = samples });
         },
+        .snd_load_sample => {
+            const n = try sampleNumber(self);
+            const name = try self.memoryRange();
+            try self.push(try loadSample(self, name, n));
+        },
+        .snd_sample => {
+            const n = try sampleNumber(self);
+            const rate = try self.pop();
+            const bytes = try self.memoryRange();
+            if (rate < 1000 or rate > 192_000) return error.InvalidNumber;
+            const engine = try getEngine(self);
+            const out = try poolSpace(self, engine, bytes.len);
+            for (out, bytes) |*s, byte| s.* = @as(i16, @as(i8, @bitCast(byte))) * 256;
+            try addSample(self, engine, n, @intCast(bytes.len), @intCast(rate));
+        },
+        .snd_loop_sample => {
+            const n = try sampleNumber(self);
+            const end = try self.pop();
+            const start = try self.pop();
+            const sample = &self.audio_samples[n];
+            // 0 0 turns the loop off.
+            if (start < 0 or end < start or end > sample.length) return error.InvalidNumber;
+            sample.loop_start = @intCast(start);
+            sample.loop_end = @intCast(end);
+            const engine = try getEngine(self);
+            try putCommand(self, engine, .{ .sample = .{ .index = n, .value = sample.* } });
+        },
+        .snd_sample_instrument => {
+            const n = try self.pop();
+            if (n < -1 or n >= pcm.sample_count) return error.InvalidNumber;
+            try changeInstrument(self, .{ .sample = if (n < 0) .none else .{ .number = @intCast(n) } });
+        },
+        .snd_sfx => {
+            const n = try sampleNumber(self);
+            const engine = try getEngine(self);
+            try putCommand(self, engine, .{ .sfx = n });
+        },
+        .snd_amiga_filter => {
+            const on = try self.pop() != 0;
+            const engine = try getEngine(self);
+            try putCommand(self, engine, .{ .amiga_filter = on });
+        },
+        .snd_free_samples => {
+            const engine = try getEngine(self);
+            // The music and the SFX stop first, so that nothing reads the pool any more.
+            try reset(self, engine, false);
+            try putCommand(self, engine, .free_samples);
+            self.audio_samples = @splat(.{});
+            self.audio_pool_used = 0;
+        },
         .snd_sound => {
             const value = try self.pop();
             const reg = try self.pop();
@@ -179,6 +234,111 @@ fn getEngine(self: *State) RuntimeError!*Engine {
     return audio_fn(self.writer.context) orelse error.HostFailed;
 }
 
+/// Pops a sample's number, 0 to 63.
+fn sampleNumber(self: *State) RuntimeError!u8 {
+    const n = try self.pop();
+    if (n < 0 or n >= pcm.sample_count) return error.InvalidNumber;
+    return @intCast(n);
+}
+
+/// The next `count` places of the pool, or OUT OF MEMORY when it has not that many.
+fn poolSpace(self: *State, engine: *Engine, count: usize) RuntimeError![]i16 {
+    const used: usize = self.audio_pool_used;
+    if (used > engine.pool.len or count > engine.pool.len - used) return error.MemoryExhausted;
+    return engine.pool[used .. used + count];
+}
+
+/// Makes the `count` samples just written at the pool's end sample n.
+fn addSample(self: *State, engine: *Engine, n: u8, count: u32, rate: u32) RuntimeError!void {
+    self.audio_samples[n] = .{ .start = self.audio_pool_used, .length = count, .rate = rate };
+    self.audio_pool_used += count;
+    try putCommand(self, engine, .{ .sample = .{ .index = n, .value = self.audio_samples[n] } });
+}
+
+/// The THROW code of a file LOAD-SAMPLE cannot read, and of a full pool.
+const sample_error_code: Cell = -276;
+const memory_error_code: Cell = -257;
+
+/// LOAD-SAMPLE: reads a WAV file's PCM into the pool as sample n. The ior: 0, the
+/// file's, SAMPLE ERROR (-276) for a file that is not a WAV of 8- or 16-bit PCM, or
+/// OUT OF MEMORY (-257) when the pool has no room. Nothing changes on an error.
+fn loadSample(self: *State, name: []const u8, n: u8) RuntimeError!Cell {
+    const engine = try getEngine(self);
+    const files = try self.fileOps();
+    const context = self.writer.context;
+    const opened = files.open(context, name, .read_only, false);
+    if (opened.ior != 0) return opened.ior;
+    const fileid: Cell = @bitCast(opened.value);
+    defer _ = files.close(context, fileid);
+    var buffer: [4096]u8 = undefined;
+
+    var header: [12]u8 = undefined;
+    switch (readAll(files, context, fileid, &header)) {
+        .bytes => |count| if (count < 12 or !std.mem.eql(u8, header[0..4], "RIFF") or !std.mem.eql(u8, header[8..12], "WAVE")) return sample_error_code,
+        .ior => |ior| return ior,
+    }
+    var format: ?pcm.Format = null;
+    while (true) {
+        var chunk: [8]u8 = undefined;
+        const got = switch (readAll(files, context, fileid, &chunk)) {
+            .bytes => |count| count,
+            .ior => |ior| return ior,
+        };
+        if (got < 8) return sample_error_code;
+        const size: u64 = std.mem.readInt(u32, chunk[4..8], .little);
+        if (std.mem.eql(u8, chunk[0..4], "data")) {
+            const found = format orelse return sample_error_code;
+            const frame = found.frameBytes();
+            const frames: usize = @intCast(size / frame);
+            const out = poolSpace(self, engine, frames) catch return memory_error_code;
+            // Whole frames at a time: 4096 bytes hold a whole number of any frame size.
+            var done: usize = 0;
+            while (done < frames) {
+                const want = @min(frames - done, buffer.len / frame) * frame;
+                const count = switch (readAll(files, context, fileid, buffer[0..want])) {
+                    .bytes => |c| c,
+                    .ior => |ior| return ior,
+                };
+                done += pcm.convertFrames(found, buffer[0..count], out[done..]);
+                if (count < want) break;
+            }
+            try addSample(self, engine, n, @intCast(done), found.rate);
+            return 0;
+        }
+        // Other chunks are skipped; their size is padded to an even number of bytes.
+        var left = size + (size & 1);
+        if (std.mem.eql(u8, chunk[0..4], "fmt ")) {
+            const body_size: usize = @intCast(@min(size, buffer.len));
+            switch (readAll(files, context, fileid, buffer[0..body_size])) {
+                .bytes => |count| if (count < body_size) return sample_error_code,
+                .ior => |ior| return ior,
+            }
+            format = pcm.parseFormat(buffer[0..body_size]) catch return sample_error_code;
+            left -= body_size;
+        }
+        while (left > 0) {
+            const part: usize = @intCast(@min(left, buffer.len));
+            switch (readAll(files, context, fileid, buffer[0..part])) {
+                .bytes => |count| if (count < part) return sample_error_code,
+                .ior => |ior| return ior,
+            }
+            left -= part;
+        }
+    }
+}
+
+/// Reads until `buffer` is full or the file ends: the bytes read, or the file's ior.
+fn readAll(files: *const forth.FileOps, context: ?*anyopaque, fileid: Cell, buffer: []u8) union(enum) { bytes: usize, ior: Cell } {
+    var used: usize = 0;
+    while (used < buffer.len) {
+        const result = files.read(context, fileid, buffer[used..]);
+        if (result.ior != 0) return .{ .ior = result.ior };
+        if (result.value == 0) break;
+        used += @intCast(result.value);
+    }
+    return .{ .bytes = used };
+}
+
 /// Which settings of the instrument being edited change.
 const Change = struct {
     wave: ?parts.Wave = null,
@@ -193,6 +353,7 @@ const Change = struct {
     cutoff: ?u16 = null,
     resonance: ?u8 = null,
     wavetable: ?[32]i8 = null,
+    sample: ?union(enum) { none, number: u8 } = null,
 };
 
 /// Changes the instrument INSTRUMENT chose, here and for the audio thread.
@@ -215,6 +376,10 @@ fn changeInstrumentAt(self: *State, index: u8, change: Change) RuntimeError!void
     if (change.cutoff) |value| instrument.cutoff = value;
     if (change.resonance) |value| instrument.resonance = value;
     if (change.wavetable) |value| instrument.wavetable = value;
+    if (change.sample) |value| instrument.sample = switch (value) {
+        .none => null,
+        .number => |n| n,
+    };
     const engine = try getEngine(self);
     try putCommand(self, engine, .{ .instrument = .{ .index = index, .value = instrument.* } });
 }

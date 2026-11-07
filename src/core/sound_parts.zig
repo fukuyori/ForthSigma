@@ -33,6 +33,9 @@ pub const Instrument = struct {
     resonance: u8 = 0,
     /// SCC-WAVE: the 32 signed samples the SCC plays; without one it plays `wave`.
     wavetable: ?[32]i8 = null,
+    /// SAMPLE-INSTRUMENT: the sample (0 to 63) the Amiga plays; without one it plays
+    /// the wave as the SCC does.
+    sample: ?u8 = null,
 
     /// The 32 samples the SCC plays: SCC-WAVE's, or `wave` made into 32 steps (the
     /// SCC has no noise: a square instead).

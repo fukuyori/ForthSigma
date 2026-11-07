@@ -623,6 +623,13 @@ pub const Builtin = enum {
     snd_sync,
     snd_filter,
     snd_wavetable,
+    snd_load_sample,
+    snd_sample,
+    snd_loop_sample,
+    snd_sample_instrument,
+    snd_sfx,
+    snd_amiga_filter,
+    snd_free_samples,
 };
 
 pub const HeapResult = union(enum) { address: Cell, no_memory, bad_pointer };
@@ -665,7 +672,7 @@ pub const error_codes = [_]struct { RuntimeError, Cell }{
     .{ error.SearchOrderOverflow, -49 },     .{ error.SearchOrderUnderflow, -50 },   .{ error.InvalidWordlist, -269 },
     .{ error.GraphicsUnavailable, -270 },   .{ error.NoCanvas, -271 },          .{ error.UserInterrupt, -28 },
     .{ error.FontUnavailable, -272 },     .{ error.TclFailed, -273 },        .{ error.InvalidMml, -274 },
-    .{ error.AudioUnavailable, -275 },
+    .{ error.AudioUnavailable, -275 },     .{ error.SampleInvalid, -276 },
 };
 
 pub const throw_code_undefined_word: Cell = -13;
@@ -826,6 +833,8 @@ pub const RuntimeError = error{
     InvalidMml,
     /// REQUIRE-AUDIO in a build without sound (-Daudio=false).
     AudioUnavailable,
+    /// A file LOAD-SAMPLE cannot read: not a WAV file of 8- or 16-bit PCM.
+    SampleInvalid,
 };
 
 pub fn floatBits(value: Float) Cell {
