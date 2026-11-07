@@ -1982,7 +1982,7 @@ test "a message cut short frees its text, and messages that come in parts are re
     output.process_replies = "R 0 0\n" ++ "E 0 5\nabcde";
     output.process_reply_index = 0;
     output.process_reply_limit = 6 + 3;
-    try machine.interpretLine("S\" b\" TCL TCL-EVENT");
+    try machine.interpretLine(": B-SCRIPT S\" b\" ; B-SCRIPT TCL TCL-EVENT");
     try expectStack(machine, &.{0});
     machine.data_depth = 0;
     output.process_reply_limit = 6 + 8;
@@ -2080,7 +2080,7 @@ test "SAVE and SAVESYS in the middle of a message drop its rest, so the next scr
     // An event of 11 bytes, of which 2 have come; its other 9 look like a result.
     output.process_replies = "R 0 0\n" ++ "E 0 11\n" ++ "ab" ++ "R 0 3\nold" ++ "R 0 3\nnew";
     output.process_reply_limit = 6 + 7 + 2;
-    try machine.interpretLine("S\" a\" TCL TCL-EVENT");
+    try machine.interpretLine(": A-SCRIPT S\" a\" ; A-SCRIPT TCL TCL-EVENT");
     try expectStack(machine, &.{0});
     machine.data_depth = 0;
     try machine.interpretLine("SAVE x.img");

@@ -238,7 +238,7 @@ S" Forth" TUCK BUF SWAP MOVE BUF SWAP TYPE
 
 | Word | Stack | Description |
 | --- | --- | --- |
-| `S" ..."` | ( -- addr u ) | Push the address and length of the string. A string used interactively is placed in a temporary buffer, and up to 4 stay valid at once. Inside a definition, it is stored in the data area. At most 255 characters. |
+| `S" ..."` | ( -- addr u ) | Push the address and length of the string. A string used interactively gets its own place in the heap, as in gforth, which stays valid (it is not freed, so making strings this way again and again uses up the heap). Inside a definition, it is stored in the data area. At most 255 characters. |
 | `S\" ..."` | ( -- addr u ) | Interpret escapes such as `\n` (line feed), `\t` (tab), `\"`, `\\`, and `\xHH`. |
 | `.\" ..."` | ( -- ) | Print the string, interpreting escapes. |
 | `.( ... )` | ( -- ) | Print the text up to `)` at once. |

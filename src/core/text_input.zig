@@ -11,9 +11,6 @@ const State = forth.State;
 const StringWord = defs.StringWord;
 const max_gforth_string = memory_map.max_gforth_string;
 const memory_size = memory_map.memory_size;
-const string_buffer_base = memory_map.string_buffer_base;
-const string_buffer_count = memory_map.string_buffer_count;
-const string_buffer_size = memory_map.string_buffer_size;
 const tib_address = memory_map.tib_address;
 const tib_size = memory_map.tib_size;
 
@@ -126,11 +123,13 @@ pub fn handleParsedString(self: *State, kind: StringWord, input: []const u8, cur
         },
         .s_quote, .s_escape_quote => {
             if (self.compiling) return self.compileCountedString(bytes, .string_literal);
-            const slot = string_buffer_base + @as(Cell, @intCast(self.string_buffer_index * string_buffer_size));
-            self.string_buffer_index = (self.string_buffer_index + 1) % string_buffer_count;
-            const start: usize = @intCast(slot);
+            // As in gforth, each string gets its own place in the heap, which stays: the
+            // strings before it keep their text (`S" a" 2CONSTANT A` works), and
+            // nothing frees them.
+            const address = (try self.heapAllocate(@max(bytes.len, 1))) orelse return error.MemoryExhausted;
+            const start: usize = @intCast(address);
             @memcpy(self.memory[start .. start + bytes.len], bytes);
-            try self.push(slot);
+            try self.push(address);
             try self.push(@intCast(bytes.len));
         },
     }

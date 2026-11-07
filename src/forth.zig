@@ -178,7 +178,6 @@ pub const State = struct {
     hold_end: Cell = hold_top,
     hold_stack: [max_hold_nesting]Cell = undefined,
     hold_depth: usize = 0,
-    string_buffer_index: usize = 0,
     source_line: []const u8 = &.{},
     /// Where the current input came from; only terminal input reads further lines.
     source_kind: SourceKind = .terminal,

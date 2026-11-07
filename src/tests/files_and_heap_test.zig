@@ -251,9 +251,10 @@ test "SLURP-FILE and $SLURP-FILE read a whole file as it is and close it" {
     // When closing fails, SLURP-FILE throws and frees the block it allocated: the next
     // ALLOCATE of the same size gets the same address.
     machine.data_depth = 0;
-    try machine.interpretLine("VARIABLE SLOT S\" b.txt\" SLURP-FILE DROP DUP SLOT ! FREE THROW");
+    // The name is compiled, so that an interpreted string does not take the freed block.
+    try machine.interpretLine("VARIABLE SLOT : B-TXT S\" b.txt\" ; B-TXT SLURP-FILE DROP DUP SLOT ! FREE THROW");
     output.close_fails = true;
-    try std.testing.expectError(error.Thrown, machine.interpretLine("S\" b.txt\" SLURP-FILE"));
+    try std.testing.expectError(error.Thrown, machine.interpretLine("B-TXT SLURP-FILE"));
     try std.testing.expectEqual(forth.errnoIor(5), machine.throw_code);
     output.close_fails = false;
     try std.testing.expect(!output.files[1].open);
@@ -363,4 +364,29 @@ test "heap strings survive a full image restore" {
     try loaded.restoreImage(image[0..length]);
     try loaded.interpretLine("S $. S\" !\" S $+! S $.");
     try std.testing.expectEqualStrings("keptkept!", output.written());
+}
+
+test "S\" and S\\\" outside a definition keep each string in the heap, as gforth does" {
+    var output = Output{};
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
+    // gforth 0.7.9 prints "eight seven six five four three two one".
+    try machine.interpretLine("S\" one\" S\" two\" S\" three\" S\" four\" S\\\" five\" S\" six\" S\" seven\" S\" eight\"");
+    try machine.interpretLine("TYPE SPACE TYPE SPACE TYPE SPACE TYPE SPACE TYPE SPACE TYPE SPACE TYPE SPACE TYPE");
+    try std.testing.expectEqualStrings("eight seven six five four three two one", output.written());
+    // A string kept by name stays, however many come after it.
+    try machine.interpretLine("S\" kept\" 2CONSTANT KEPT");
+    for (0..100) |_| try machine.interpretLine("S\" another string\" 2DROP");
+    output.len = 0;
+    try machine.interpretLine("KEPT TYPE");
+    try std.testing.expectEqualStrings("kept", output.written());
+    // The strings are in the heap, not the dictionary.
+    const here = machine.data_here;
+    try machine.interpretLine("S\" x\" DROP");
+    try std.testing.expectEqual(here, machine.data_here);
+    try std.testing.expect(machine.data_stack[machine.data_depth - 1] >= @import("../core/memory_map.zig").heap_base);
+    machine.data_depth = 0;
+    // An empty string has a place too.
+    try machine.interpretLine("S\" \" NIP");
+    try expectStack(machine, &.{0});
 }
