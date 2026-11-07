@@ -44,6 +44,12 @@ BASICの `SCREEN 1` のような番号付きの画面モードはありません
 
 選ぶまでは、`SHOW` はWindowsではウィンドウに表示します。LinuxとmacOSでは、Tcl/Tkが入っていればデスクトップではTkのウィンドウに、ほかでは端末に半角ブロックで表示します。`n DISPLAY-COLORS` で、フルカラー（0、既定）、白黒（2）、ANSIの16色（16）、xtermの256色（256）を選び、`TRUE DITHER` で減らした色をBayerの模様で混ぜます。`w h WINDOW-SIZE` で、ウィンドウとTkのウィンドウに画像を大きく表示します。たとえば `160 120 GFX-INIT 640 480 WINDOW-SIZE` で、1画素を4×4で表示します。
 
+Tcl/TkはSigmaに含まれないので、Tkのウィンドウを使うには入れておきます。DebianとUbuntuでは `tk` パッケージ、FedoraとRHELでは `sudo dnf install tk`、Archでは `sudo pacman -S tk` で、どれも `PATH` に `wish` が入ります。
+
+    sudo apt install tk
+
+macOSにはTcl/Tkが付いています。付いていない場合は `brew install tcl-tk` で入れ、Homebrewは `wish` を `PATH` に置かないので、環境変数 `SIGMA_WISH` にそのパスを設定します（`TCL-PROGRAM` で渡してもかまいません）。Windowsでは、Git for Windows があれば Sigma がその `wish` を使うので、何も入れる必要はありません。Tcl/Tkがあれば、LinuxやmacOSのデスクトップでは `SHOW` を使うプログラムがウィンドウを開きます。たとえば `sigma "include examples/hopper.fs"` です。
+
 ```forth
 REQUIRE-GRAPHICS  ALSO GRAPHICS
 160 120 GFX-INIT  255 255 0 COLOR  80 60 40 CIRCLE

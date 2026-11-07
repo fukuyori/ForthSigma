@@ -44,6 +44,12 @@ There are no numbered screen modes, such as `SCREEN 1` of BASIC. A program makes
 
 Until one is chosen, `SHOW` uses the window on Windows; on Linux and macOS it uses the Tk window on a desktop when Tcl/Tk is installed, and the terminal with half blocks otherwise. `n DISPLAY-COLORS` shows the image in full color (0, the default), black and white (2), the 16 ANSI colors (16), or xterm's 256 colors (256), and `TRUE DITHER` mixes the fewer colors in a Bayer pattern. `w h WINDOW-SIZE` shows the image larger in the window and the Tk window, for example `160 120 GFX-INIT 640 480 WINDOW-SIZE` shows each pixel as 4 by 4.
 
+Tcl/Tk is not part of Sigma, so the Tk window needs it installed. On Debian and Ubuntu it is the `tk` package, on Fedora and RHEL `sudo dnf install tk`, and on Arch `sudo pacman -S tk`; each of them puts a `wish` on the `PATH`.
+
+    sudo apt install tk
+
+macOS comes with Tcl/Tk. Where it does not, `brew install tcl-tk` installs one, and because Homebrew keeps its `wish` off the `PATH`, set `SIGMA_WISH` to that path (or give it to `TCL-PROGRAM`). On Windows nothing has to be installed when Git for Windows is there, since Sigma falls back to its `wish`. With Tcl/Tk in place, a program that calls `SHOW` opens a window on a Linux or macOS desktop, for example `sigma "include examples/hopper.fs"`.
+
 ```forth
 REQUIRE-GRAPHICS  ALSO GRAPHICS
 160 120 GFX-INIT  255 255 0 COLOR  80 60 40 CIRCLE
