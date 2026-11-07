@@ -22,22 +22,22 @@ const RuntimeError = defs.RuntimeError;
 const State = forth.State;
 
 /// The built-in words this file executes; executeBuiltin dispatches by this list.
-pub const words = [_]Builtin{ .snd_play, .snd_sound, .snd_beep, .snd_playing, .snd_device, .snd_plays, .snd_chip, .snd_instrument, .snd_wave, .snd_duty, .snd_adsr };
+pub const words = [_]Builtin{ .snd_play, .snd_sound, .snd_beep, .snd_playing, .snd_device, .snd_plays, .snd_chip, .snd_instrument, .snd_wave, .snd_duty, .snd_adsr, .snd_ring, .snd_sync, .snd_filter };
 
 /// The SND- words in the order REQUIRE-AUDIO appends them, right after the AUDIO
 /// vocabulary. The order is part of the dictionary that images keep: add new words at
 /// the end.
 pub const definitions = [_]struct { []const u8, Builtin }{
-    .{ "SND-PLAY", .snd_play },       .{ "SND-SOUND", .snd_sound },   .{ "SND-BEEP", .snd_beep },
-    .{ "SND-PLAYING", .snd_playing }, .{ "SND-DEVICE", .snd_device },
-    .{ "SND-PLAYS", .snd_plays },     .{ "SND-CHIP", .snd_chip },
-    .{ "SND-INSTRUMENT", .snd_instrument }, .{ "SND-WAVE", .snd_wave },
-    .{ "SND-DUTY", .snd_duty },       .{ "SND-ADSR", .snd_adsr },
+    .{ "SND-PLAY", .snd_play },       .{ "SND-SOUND", .snd_sound },           .{ "SND-BEEP", .snd_beep },
+    .{ "SND-PLAYING", .snd_playing }, .{ "SND-DEVICE", .snd_device },         .{ "SND-PLAYS", .snd_plays },
+    .{ "SND-CHIP", .snd_chip },       .{ "SND-INSTRUMENT", .snd_instrument }, .{ "SND-WAVE", .snd_wave },
+    .{ "SND-DUTY", .snd_duty },       .{ "SND-ADSR", .snd_adsr },             .{ "SND-RING", .snd_ring },
+    .{ "SND-SYNC", .snd_sync },       .{ "SND-FILTER", .snd_filter },
 };
 
 /// The words of the audio library that HELP describes; the help test checks that the
 /// library defines each of them.
-pub const library_words = [_][]const u8{ "PLAY", "PLAY2", "PLAY3", "PLAY?", "SOUND", "BEEP", "AUDIO?", "PLAYS", "MSX-SOUND", "ST-SOUND", "NES-SOUND", "INSTRUMENT", "SQUARE", "PULSE", "TRIANGLE", "SAW", "NOISE", "DUTY", "ADSR" };
+pub const library_words = [_][]const u8{ "PLAY", "PLAY2", "PLAY3", "PLAY?", "SOUND", "BEEP", "AUDIO?", "PLAYS", "MSX-SOUND", "ST-SOUND", "NES-SOUND", "INSTRUMENT", "SQUARE", "PULSE", "TRIANGLE", "SAW", "NOISE", "DUTY", "ADSR", "C64-SOUND", "RING", "SYNC", "FILTER" };
 
 /// The audio library, which REQUIRE-AUDIO interprets after appending the SND- words.
 pub const library = @embedFile("../audio/audio.fs");
@@ -97,7 +97,7 @@ pub fn execute(self: *State, builtin: Builtin) RuntimeError!void {
             const chips = @typeInfo(sound_engine.Chip).@"enum".field_names.len;
             if (n < 0 or n >= chips) return error.InvalidNumber;
             const engine = try getEngine(self);
-            const chip: sound_engine.Chip = @enumFromInt(n);
+            const chip: sound_engine.Chip = @fromBackingInt(@intCast(n));
             self.audio_chip = chip;
             try stop(self, engine, engine.chipCommand(chip));
         },
@@ -109,7 +109,7 @@ pub fn execute(self: *State, builtin: Builtin) RuntimeError!void {
         .snd_wave => {
             const n = try self.pop();
             if (n < 0 or n >= @typeInfo(parts.Wave).@"enum".field_names.len) return error.InvalidNumber;
-            try changeInstrument(self, .{ .wave = @enumFromInt(n) });
+            try changeInstrument(self, .{ .wave = @fromBackingInt(@intCast(n)) });
         },
         .snd_duty => {
             const n = try self.pop();
@@ -126,6 +126,15 @@ pub fn execute(self: *State, builtin: Builtin) RuntimeError!void {
                 values[i] = @intCast(n);
             }
             try changeInstrument(self, .{ .attack = values[0], .decay = values[1], .sustain = values[2], .release = values[3] });
+        },
+        .snd_ring => try changeInstrument(self, .{ .ring = try self.pop() != 0 }),
+        .snd_sync => try changeInstrument(self, .{ .sync = try self.pop() != 0 }),
+        .snd_filter => {
+            const resonance = try self.pop();
+            const cutoff = try self.pop();
+            const mode = try self.pop();
+            if (mode < 0 or mode > 3 or cutoff < 0 or cutoff > 2047 or resonance < 0 or resonance > 15) return error.InvalidNumber;
+            try changeInstrument(self, .{ .filter = @intCast(mode), .cutoff = @intCast(cutoff), .resonance = @intCast(resonance) });
         },
         .snd_sound => {
             const value = try self.pop();
@@ -162,7 +171,19 @@ fn getEngine(self: *State) RuntimeError!*Engine {
 }
 
 /// Which settings of the instrument being edited change.
-const Change = struct { wave: ?parts.Wave = null, duty: ?u8 = null, attack: ?u8 = null, decay: ?u8 = null, sustain: ?u8 = null, release: ?u8 = null };
+const Change = struct {
+    wave: ?parts.Wave = null,
+    duty: ?u8 = null,
+    attack: ?u8 = null,
+    decay: ?u8 = null,
+    sustain: ?u8 = null,
+    release: ?u8 = null,
+    ring: ?bool = null,
+    sync: ?bool = null,
+    filter: ?u8 = null,
+    cutoff: ?u16 = null,
+    resonance: ?u8 = null,
+};
 
 /// Changes the instrument INSTRUMENT chose, here and for the audio thread.
 fn changeInstrument(self: *State, change: Change) RuntimeError!void {
@@ -173,6 +194,11 @@ fn changeInstrument(self: *State, change: Change) RuntimeError!void {
     if (change.decay) |value| instrument.decay = value;
     if (change.sustain) |value| instrument.sustain = value;
     if (change.release) |value| instrument.release = value;
+    if (change.ring) |value| instrument.ring = value;
+    if (change.sync) |value| instrument.sync = value;
+    if (change.filter) |value| instrument.filter = value;
+    if (change.cutoff) |value| instrument.cutoff = value;
+    if (change.resonance) |value| instrument.resonance = value;
     const engine = try getEngine(self);
     try putCommand(self, engine, .{ .instrument = .{ .index = self.audio_instrument, .value = instrument.* } });
 }

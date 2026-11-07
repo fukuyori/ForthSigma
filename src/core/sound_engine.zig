@@ -12,6 +12,7 @@ const mml = @import("sound_mml.zig");
 const psg_module = @import("sound_psg.zig");
 const parts = @import("sound_parts.zig");
 const nes_module = @import("sound_nes.zig");
+const c64_module = @import("sound_c64.zig");
 
 pub const Event = mml.Event;
 pub const Psg = psg_module.Psg;
@@ -23,11 +24,13 @@ pub const Chip = enum(u8) {
     msx,
     atari_st,
     nes,
+    c64,
 
     pub fn voiceCount(chip: Chip) usize {
         return switch (chip) {
             .msx, .atari_st => 3,
             .nes => nes_module.voice_count,
+            .c64 => c64_module.voice_count,
         };
     }
 };
@@ -118,6 +121,7 @@ pub const beep_milliseconds: u32 = 40;
 pub const Engine = struct {
     psg: Psg,
     nes: nes_module.Nes,
+    c64: c64_module.C64,
     sample_rate: u32,
     chip: Chip = .msx,
     instruments: [mml.instrument_count]Instrument = @splat(.{}),
@@ -139,7 +143,7 @@ pub const Engine = struct {
     dc_output: f32 = 0,
 
     pub fn init(model: psg_module.Model, clock: u32, sample_rate: u32) Engine {
-        var engine: Engine = .{ .psg = Psg.init(model, clock, sample_rate), .nes = nes_module.Nes.init(sample_rate), .sample_rate = sample_rate };
+        var engine: Engine = .{ .psg = Psg.init(model, clock, sample_rate), .nes = nes_module.Nes.init(sample_rate), .c64 = c64_module.C64.init(sample_rate), .sample_rate = sample_rate };
         engine.setRegisters(msxInitialRegisters());
         return engine;
     }
@@ -220,7 +224,11 @@ pub const Engine = struct {
                 }
             }
             var level = self.psg.sample();
-            if (self.chip == .nes) level += self.nes.sample();
+            switch (self.chip) {
+                .msx, .atari_st => {},
+                .nes => level += self.nes.sample(),
+                .c64 => level += self.c64.sample(),
+            }
             const value = self.filtered(level);
             out[i] = value;
             out[i + 1] = value;
@@ -258,6 +266,7 @@ pub const Engine = struct {
                             Psg.init(.ay8910, psg_module.msx_clock, self.sample_rate);
                     }
                     self.nes = nes_module.Nes.init(self.sample_rate);
+                    self.c64 = c64_module.C64.init(self.sample_rate);
                     self.setRegisters(msxInitialRegisters());
                     if (b.beep) {
                         self.psg.write(0, @truncate(beep_period));
@@ -314,6 +323,7 @@ pub const Engine = struct {
         switch (self.chip) {
             .msx, .atari_st => if (v < 3) self.psg.write(@intCast(8 + v), 0),
             .nes => if (v < nes_module.voice_count) self.nes.noteOff(v),
+            .c64 => if (v < c64_module.voice_count) self.c64.noteOff(v),
         }
     }
 
@@ -327,6 +337,7 @@ pub const Engine = struct {
             .atari_st => self.playPsg(v, event, @intCast(parts.chipPeriod(event.note, psg_module.atari_st_clock, 16, 0, 4095))),
             // S (the PSG's envelope) has no meaning here: such a note plays at full volume.
             .nes => self.nes.noteOn(v, event.note, @min(event.amplitude, 15), self.instruments[event.instrument]),
+            .c64 => self.c64.noteOn(v, event.note, @min(event.amplitude, 15), self.instruments[event.instrument]),
         }
     }
 

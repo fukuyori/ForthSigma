@@ -359,3 +359,30 @@ test "INSTRUMENT and the words after it change an instrument here and for the au
     try std.testing.expectEqual(sound_engine.Chip.nes, engine.chip);
     try std.testing.expectEqual(expected.duty, machine.audio_instruments[7].duty);
 }
+
+test "C64-SOUND, RING, SYNC, and FILTER" {
+    try skipWithout(&.{.audio});
+    var engine = newEngine();
+    var output = Output{ .audio = &engine };
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
+    try machine.interpretLine("REQUIRE-AUDIO ALSO AUDIO C64-SOUND");
+    try std.testing.expectEqual(sound_engine.Chip.c64, engine.chip);
+    try std.testing.expectError(error.InvalidNumber, machine.interpretLine("S\" C\" S\" C\" S\" C\" S\" C\" 4 PLAYS"));
+    machine.data_depth = 0;
+    try machine.interpretLine("4 INSTRUMENT TRIANGLE TRUE RING TRUE SYNC 2 1500 12 FILTER");
+    const instrument = machine.audio_instruments[4];
+    try std.testing.expect(instrument.ring and instrument.sync);
+    try std.testing.expectEqual(@as(u8, 2), instrument.filter);
+    try std.testing.expectEqual(@as(u16, 1500), instrument.cutoff);
+    try std.testing.expectEqual(@as(u8, 12), instrument.resonance);
+    render(&engine, 1);
+    try std.testing.expectEqual(instrument, engine.instruments[4]);
+    try machine.interpretLine("FALSE RING 0 0 0 FILTER");
+    try std.testing.expect(!machine.audio_instruments[4].ring);
+    try std.testing.expectEqual(@as(u8, 0), machine.audio_instruments[4].filter);
+    for ([_][]const u8{ "4 0 0 FILTER", "1 2048 0 FILTER", "1 0 16 FILTER", "-1 0 0 FILTER" }) |line| {
+        try std.testing.expectError(error.InvalidNumber, machine.interpretLine(line));
+        machine.data_depth = 0;
+    }
+}

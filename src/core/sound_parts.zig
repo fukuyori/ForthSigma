@@ -22,6 +22,15 @@ pub const Instrument = struct {
     decay: u8 = 0,
     sustain: u8 = 15,
     release: u8 = 0,
+    /// RING and SYNC: the C64's ring modulation (of the triangle) and hard sync, by
+    /// the voice before this one.
+    ring: bool = false,
+    sync: bool = false,
+    /// FILTER: 0 none, 1 low-pass, 2 band-pass, 3 high-pass; the cutoff 0 to 2047 and
+    /// the resonance 0 to 15, as the SID's registers.
+    filter: u8 = 0,
+    cutoff: u16 = 1024,
+    resonance: u8 = 0,
 };
 
 /// The SID's attack times in milliseconds for the values 0 to 15; decay and release

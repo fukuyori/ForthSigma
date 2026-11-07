@@ -561,3 +561,139 @@ test "ST-SOUND plays the same notes on a YM2149 at 2 MHz" {
     try std.testing.expectEqual(psg_module.Model.ay8910, engine.psg.model);
     try std.testing.expectEqual(@as(u8, 254), engine.psg.read(0));
 }
+
+// ---- S3b: the C64 ----
+
+const c64_module = @import("../core/sound_c64.zig");
+
+/// One second of the C64's output.
+fn c64Second(c64: *c64_module.C64) ![]f32 {
+    const samples = try std.testing.allocator.alloc(f32, rate);
+    for (samples) |*s| s.* = c64.sample();
+    return samples;
+}
+
+/// The mean square of the samples.
+fn power(samples: []const f32) f32 {
+    var sum: f32 = 0;
+    for (samples) |s| sum += s * s;
+    return sum / @as(f32, @floatFromInt(samples.len));
+}
+
+test "the SID's registers for a note and a pulse width, and the filter's cutoff" {
+    // 440 × 2^24 / 985248 = 7492.5, rounded to 7493 (440.03 Hz).
+    try std.testing.expectEqual(@as(u16, 7493), c64_module.frequencyRegister(57));
+    try std.testing.expectEqual(@as(u16, 65535), c64_module.frequencyRegister(107));
+    try std.testing.expectEqual(@as(u16, 1024), c64_module.pulseWidthRegister(25));
+    try std.testing.expectEqual(@as(u16, 4095), c64_module.pulseWidthRegister(100));
+    try std.testing.expectEqual(@as(f32, 30), c64_module.cutoffFrequency(0));
+    try std.testing.expectApproxEqAbs(@as(f32, 11902.6), c64_module.cutoffFrequency(2047), 0.1);
+}
+
+test "the C64's waves sound at the note's pitch, the pulse with its width" {
+    for ([_]parts.Wave{ .triangle, .saw, .square }) |wave| {
+        var c64 = c64_module.C64.init(rate);
+        c64.noteOn(0, 57, 15, .{ .wave = wave });
+        const samples = try c64Second(&c64);
+        defer std.testing.allocator.free(samples);
+        const rises = risesOf(samples);
+        try std.testing.expect(rises >= 439 and rises <= 441);
+    }
+    var c64 = c64_module.C64.init(rate);
+    c64.noteOn(0, 57, 15, .{ .wave = .pulse, .duty = 25 });
+    const pulse = try c64Second(&c64);
+    defer std.testing.allocator.free(pulse);
+    try std.testing.expectApproxEqAbs(@as(f32, 0.25), highFraction(pulse), 0.01);
+
+    // The noise moves, and stops with the note's release.
+    var noisy = c64_module.C64.init(rate);
+    noisy.noteOn(1, 57, 15, .{ .wave = .noise });
+    var low: f32 = 1;
+    var high: f32 = -1;
+    for (0..rate / 10) |_| {
+        const s = noisy.sample();
+        low = @min(low, s);
+        high = @max(high, s);
+    }
+    try std.testing.expect(high - low > 0.3);
+    noisy.noteOff(1);
+    for (0..rate / 10) |_| _ = noisy.sample();
+    try std.testing.expectEqual(@as(f32, 0), noisy.sample());
+}
+
+test "the C64's sync restarts a voice with the voice before, and ring modulation changes its triangle" {
+    // Voice 2 (a sawtooth at O5's D, 587 Hz) synced to voice 1 (O3's A, 220 Hz): in each
+    // of voice 1's cycles it falls twice by itself and once more at the sync, so 3 × 220
+    // times a second instead of 587.
+    for ([_]bool{ false, true }) |sync| {
+        var c64 = c64_module.C64.init(rate);
+        c64.noteOn(0, 45, 0, .{});
+        c64.noteOn(1, 62, 15, .{ .wave = .saw, .sync = sync });
+        const samples = try c64Second(&c64);
+        defer std.testing.allocator.free(samples);
+        var falls: usize = 0;
+        var falling = false;
+        for (samples[1..], 1..) |s, i| {
+            // The voices are mixed as a third each: a fall of the sawtooth is 2/3.
+            const now = s - samples[i - 1] < -0.15;
+            if (now and !falling) falls += 1;
+            falling = now;
+        }
+        const modulator = @as(f32, @floatFromInt(c64_module.frequencyRegister(45))) * c64_module.clock / 16_777_216.0;
+        const own = @as(f32, @floatFromInt(c64_module.frequencyRegister(62))) * c64_module.clock / 16_777_216.0;
+        const expected = if (sync) 3 * modulator else own;
+        try std.testing.expectApproxEqAbs(expected, @as(f32, @floatFromInt(falls)), 3);
+    }
+
+    // Ring modulation: the same triangle, other samples.
+    var plain = c64_module.C64.init(rate);
+    var ringed = c64_module.C64.init(rate);
+    for ([_]*c64_module.C64{ &plain, &ringed }, [_]bool{ false, true }) |c64, ring| {
+        c64.noteOn(2, 40, 0, .{});
+        c64.noteOn(0, 57, 15, .{ .wave = .triangle, .ring = ring });
+    }
+    var differ = false;
+    for (0..rate / 10) |_| {
+        if (@abs(plain.sample() - ringed.sample()) > 0.1) differ = true;
+    }
+    try std.testing.expect(differ);
+}
+
+test "the C64's filter: a low-pass takes the high notes away, a high-pass the low ones" {
+    var open = c64_module.C64.init(rate);
+    open.noteOn(0, 81, 15, .{ .wave = .saw });
+    const bright = try c64Second(&open);
+    defer std.testing.allocator.free(bright);
+    var closed = c64_module.C64.init(rate);
+    closed.noteOn(0, 81, 15, .{ .wave = .saw, .filter = 1, .cutoff = 0 });
+    const dark = try c64Second(&closed);
+    defer std.testing.allocator.free(dark);
+    try std.testing.expect(power(dark) < power(bright) / 100);
+
+    var high_pass = c64_module.C64.init(rate);
+    high_pass.noteOn(0, 24, 15, .{ .wave = .triangle, .filter = 3, .cutoff = 2047 });
+    const thin = try c64Second(&high_pass);
+    defer std.testing.allocator.free(thin);
+    var full = c64_module.C64.init(rate);
+    full.noteOn(0, 24, 15, .{ .wave = .triangle });
+    const whole = try c64Second(&full);
+    defer std.testing.allocator.free(whole);
+    try std.testing.expect(power(thin) < power(whole) / 100);
+}
+
+test "C64-SOUND plays three voices on the SID through the engine" {
+    var engine = Engine.init(.ay8910, psg_module.msx_clock, rate);
+    var voices: [engine_module.max_voices]mml.Voice = @splat(.{});
+    var player: Player = .{ .engine = &engine };
+    try std.testing.expect(engine.putCommand(engine.chipCommand(.c64)));
+    try std.testing.expect(engine.putCommand(.{ .instrument = .{ .index = 1, .value = .{ .wave = .saw, .filter = 1, .cutoff = 300 } } }));
+    player.play(10);
+    try std.testing.expectEqual(engine_module.Chip.c64, engine.chip);
+    try engine_module.putPlay(&engine, &voices, &.{ "@1 C", "E", "G" }, &player, Player.wait);
+    player.play(30);
+    for (1..4) |n| try std.testing.expect(engine.isPlaying(n));
+    try std.testing.expectEqual(parts.Wave.saw, engine.c64.voices[0].instrument.wave);
+    try std.testing.expectEqual(@as(u8, 1), engine.c64.filter.mode);
+    player.play(1000);
+    try std.testing.expect(!engine.isPlaying(0));
+}
