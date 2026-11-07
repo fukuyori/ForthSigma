@@ -19,7 +19,7 @@
 \   SND-WAVETABLE ( c-addr n -- )  SND-LOAD-SAMPLE ( c-addr u n -- ior )
 \   SND-SAMPLE ( c-addr u rate n -- )  SND-LOOP-SAMPLE ( start end n -- )
 \   SND-SAMPLE-INSTRUMENT ( n -- )  SND-SFX ( n -- )  SND-AMIGA-FILTER ( flag -- )
-\   SND-FREE-SAMPLES ( -- )
+\   SND-FREE-SAMPLES ( -- )  SND-CHIPS ( mask -- )
 \
 \ The sound is MSX BASIC's: an AY-3-8910 at the MSX's clock, played by the host's audio
 \ thread. PLAY takes MSX BASIC's music macro language (MML) and returns as soon as the
@@ -47,6 +47,14 @@
 : SCC-SOUND ( -- )   4 SND-CHIP ;     \ Konami's SCC, 5 voices
 : AMIGA-SOUND ( -- )   5 SND-CHIP ;   \ the Amiga's Paula (PAL): samples, 4 voices
 : PLAYS ( c-addr1 u1 ... c-addrn un n -- )   SND-PLAYS ;
+
+\ Several chips together: CHIPS takes their bits, e.g. MSX SCC OR CHIPS, and numbers
+\ the voices in this order (there voices 1 to 3 are the PSG's, 4 to 8 the SCC's). At
+\ most 8 voices in all, and not MSX and ST together (they are one PSG).
+
+1 CONSTANT MSX   2 CONSTANT ST   4 CONSTANT NES   8 CONSTANT C64
+16 CONSTANT SCC   32 CONSTANT AMIGA
+: CHIPS ( mask -- )   SND-CHIPS ;
 
 \ ---- Instruments ----------------------------------------------------------------
 \

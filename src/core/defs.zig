@@ -630,6 +630,7 @@ pub const Builtin = enum {
     snd_sfx,
     snd_amiga_filter,
     snd_free_samples,
+    snd_chips,
 };
 
 pub const HeapResult = union(enum) { address: Cell, no_memory, bad_pointer };

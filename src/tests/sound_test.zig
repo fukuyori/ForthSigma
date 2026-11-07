@@ -528,7 +528,7 @@ test "the engine plays four NES voices together, with their instruments" {
     try std.testing.expect(engine.putCommand(engine.chipCommand(.nes)));
     try std.testing.expect(engine.putCommand(.{ .instrument = .{ .index = 3, .value = .{ .wave = .pulse, .duty = 12 } } }));
     player.play(10);
-    try std.testing.expectEqual(engine_module.Chip.nes, engine.chip);
+    try std.testing.expectEqual(engine_module.Chip.nes, engine.chips.only().?);
     try std.testing.expectEqual(@as(u8, 12), engine.instruments[3].duty);
     try engine_module.putPlay(&engine, &voices, &.{ "@3 C", "E", "G", "C" }, &player, Player.wait);
     player.play(30);
@@ -688,7 +688,7 @@ test "C64-SOUND plays three voices on the SID through the engine" {
     try std.testing.expect(engine.putCommand(engine.chipCommand(.c64)));
     try std.testing.expect(engine.putCommand(.{ .instrument = .{ .index = 1, .value = .{ .wave = .saw, .filter = 1, .cutoff = 300 } } }));
     player.play(10);
-    try std.testing.expectEqual(engine_module.Chip.c64, engine.chip);
+    try std.testing.expectEqual(engine_module.Chip.c64, engine.chips.only().?);
     try engine_module.putPlay(&engine, &voices, &.{ "@1 C", "E", "G" }, &player, Player.wait);
     player.play(30);
     for (1..4) |n| try std.testing.expect(engine.isPlaying(n));
@@ -892,4 +892,42 @@ test "SFX plays a sample once beside the music, on any chip, and a stop ends it"
     try std.testing.expect(engine.putCommand(engine.resetCommand(false)));
     player.play(10);
     try std.testing.expect(!engine.sfx_players[1].active);
+}
+
+// ---- S4b: several chips together ----
+
+test "the chips CHIPS takes, and the voices numbered across them" {
+    const Chips = engine_module.Chips;
+    const msx_scc = Chips.fromMask(1 | 16).?;
+    try std.testing.expectEqual(@as(usize, 8), msx_scc.voiceCount());
+    try std.testing.expectEqual(@as(?engine_module.Chip, null), msx_scc.only());
+    try std.testing.expectEqual(engine_module.Chip.msx, msx_scc.place(2).?.chip);
+    try std.testing.expectEqual(engine_module.Chip.scc, msx_scc.place(3).?.chip);
+    try std.testing.expectEqual(@as(usize, 0), msx_scc.place(3).?.voice);
+    try std.testing.expectEqual(@as(usize, 4), msx_scc.place(7).?.voice);
+    try std.testing.expect(msx_scc.place(8) == null);
+    const nes_amiga = Chips.fromMask(4 | 32).?;
+    try std.testing.expectEqual(engine_module.Chip.amiga, nes_amiga.place(4).?.chip);
+    try std.testing.expectEqual(engine_module.Chip.nes, Chips.fromMask(4).?.only().?);
+    // None, unknown bits, both PSGs, more than 8 voices.
+    for ([_]i64{ 0, -1, 64, 1 | 2, 16 | 32, 4 | 8 | 16 }) |mask| try std.testing.expect(Chips.fromMask(mask) == null);
+}
+
+test "the MSX's PSG and the SCC play one PLAY of 8 voices together" {
+    var engine = Engine.init(.ay8910, psg_module.msx_clock, rate);
+    var voices: [engine_module.max_voices]mml.Voice = @splat(.{});
+    var player: Player = .{ .engine = &engine };
+    try std.testing.expect(engine.putCommand(engine.chipsCommand(engine_module.Chips.fromMask(1 | 16).?)));
+    player.play(10);
+    try engine_module.putPlay(&engine, &voices, &.{ "A", "", "", "", "", "", "", "C" }, &player, Player.wait);
+    player.play(30);
+    // Voice 1 on the PSG with the ROM's period, voice 8 on the SCC's fifth voice.
+    try std.testing.expectEqual(@as(u8, 254), engine.psg.read(0));
+    try std.testing.expectEqual(@as(u8, 8), engine.psg.read(8));
+    try std.testing.expect(engine.scc.voices[4].increment > 0);
+    try std.testing.expectEqual(@as(f32, 0), engine.scc.voices[0].increment);
+    for ([_]usize{ 1, 8 }) |n| try std.testing.expect(engine.isPlaying(n));
+    try std.testing.expect(!engine.isPlaying(2));
+    player.play(1000);
+    try std.testing.expect(!engine.isPlaying(0));
 }

@@ -42,8 +42,67 @@ pub const Chip = enum(u8) {
     }
 };
 
-/// The most voices a chip has; each has its queue.
-pub const max_voices = 5;
+/// The chips PLAY plays on together (CHIPS; MSX-SOUND and the others choose one). Their
+/// voices are numbered in the order of `Chip`: with the MSX and the SCC, voices 1 to 3
+/// are the PSG's and 4 to 8 the SCC's.
+pub const Chips = struct {
+    mask: u8,
+
+    pub fn one(chip: Chip) Chips {
+        return .{ .mask = bit(chip) };
+    }
+
+    fn bit(chip: Chip) u8 {
+        return @as(u8, 1) << @intCast(@backingInt(chip));
+    }
+
+    pub fn has(self: Chips, chip: Chip) bool {
+        return self.mask & bit(chip) != 0;
+    }
+
+    /// The chip, when only one is chosen.
+    pub fn only(self: Chips) ?Chip {
+        if (@popCount(self.mask) != 1) return null;
+        return @fromBackingInt(@intCast(@ctz(self.mask)));
+    }
+
+    /// A mask CHIPS takes: at least one chip, not both PSGs (the MSX's and the ST's are
+    /// one PSG), and at most `max_voices` voices in all.
+    pub fn fromMask(mask: i64) ?Chips {
+        const all = (@as(i64, 1) << chip_count) - 1;
+        if (mask <= 0 or mask & ~all != 0) return null;
+        const chips: Chips = .{ .mask = @intCast(mask) };
+        if (chips.has(.msx) and chips.has(.atari_st)) return null;
+        if (chips.voiceCount() > max_voices) return null;
+        return chips;
+    }
+
+    pub fn voiceCount(self: Chips) usize {
+        var count: usize = 0;
+        for (0..chip_count) |c| {
+            const chip: Chip = @fromBackingInt(@intCast(c));
+            if (self.has(chip)) count += chip.voiceCount();
+        }
+        return count;
+    }
+
+    /// The chip that plays voice v (from 0), and the voice's number on that chip.
+    pub fn place(self: Chips, v: usize) ?struct { chip: Chip, voice: usize } {
+        var first: usize = 0;
+        for (0..chip_count) |c| {
+            const chip: Chip = @fromBackingInt(@intCast(c));
+            if (!self.has(chip)) continue;
+            if (v < first + chip.voiceCount()) return .{ .chip = chip, .voice = v - first };
+            first += chip.voiceCount();
+        }
+        return null;
+    }
+};
+
+const chip_count = 6;
+
+/// The most voices PLAY has, for all the chips together; each has its queue.
+pub const max_voices = 8;
 
 /// The SFX that can sound at once; a new one takes the place of the oldest.
 pub const sfx_voices = 4;
@@ -107,7 +166,7 @@ pub const Command = union(enum) {
     /// BEEP (with `beep`) or a stop: drops the notes put before it (up to these tails
     /// and this PLAY count), sounds 1316 Hz for 40 ms when `beep`, and sets the PSG as
     /// the MSX starts it. With `chip`, PLAY plays on that chip from now on.
-    reset: struct { tails: [max_voices]u32, plays: u32, beep: bool, chip: ?Chip = null },
+    reset: struct { tails: [max_voices]u32, plays: u32, beep: bool, chips: ?Chips = null },
     /// INSTRUMENT and the words after it: the instrument's settings, which the notes
     /// that start from now on use.
     instrument: struct { index: u8, value: Instrument },
@@ -150,7 +209,7 @@ pub const Engine = struct {
     /// The voices of SFX, used in turn.
     sfx_players: [sfx_voices]pcm.Player = @splat(.{}),
     sfx_next: usize = 0,
-    chip: Chip = .msx,
+    chips: Chips = Chips.one(.msx),
     instruments: [mml.instrument_count]Instrument = @splat(.{}),
     voices: [max_voices]Ring(Event, voice_queue_size) = @splat(.{}),
     commands: Ring(Command, 64) = .{},
@@ -213,8 +272,13 @@ pub const Engine = struct {
 
     /// The command for MSX-SOUND and the others: a stop that also chooses the chip.
     pub fn chipCommand(self: *const Engine, chip: Chip) Command {
+        return self.chipsCommand(Chips.one(chip));
+    }
+
+    /// The command for CHIPS: a stop that also chooses the chips.
+    pub fn chipsCommand(self: *const Engine, chips: Chips) Command {
         var command = self.resetCommand(false);
-        command.reset.chip = chip;
+        command.reset.chips = chips;
         return command;
     }
 
@@ -250,14 +314,12 @@ pub const Engine = struct {
                     self.tick();
                 }
             }
-            const center = self.psg.sample() + switch (self.chip) {
-                .msx, .atari_st, .amiga => 0,
-                .nes => self.nes.sample(),
-                .c64 => self.c64.sample(),
-                .scc => self.scc.sample(),
-            } + self.sfxSample();
+            var center = self.psg.sample() + self.sfxSample();
+            if (self.chips.has(.nes)) center += self.nes.sample();
+            if (self.chips.has(.c64)) center += self.c64.sample();
+            if (self.chips.has(.scc)) center += self.scc.sample();
             var sides: [2]f32 = .{ center, center };
-            if (self.chip == .amiga) {
+            if (self.chips.has(.amiga)) {
                 const amiga = self.amiga.sample(self.pool, self.amiga_led);
                 sides[0] += amiga[0];
                 sides[1] += amiga[1];
@@ -296,10 +358,10 @@ pub const Engine = struct {
                     self.remaining = @splat(0);
                     self.at_end = @splat(true);
                     self.sounding.store(0, .release);
-                    if (b.chip) |chip| {
-                        self.chip = chip;
+                    if (b.chips) |chips| {
+                        self.chips = chips;
                         // The Atari ST's YM2149 runs at 2 MHz; the MSX's PSG is an AY.
-                        self.psg = if (chip == .atari_st)
+                        self.psg = if (chips.has(.atari_st))
                             Psg.init(.ym2149, psg_module.atari_st_clock, self.sample_rate)
                         else
                             Psg.init(.ay8910, psg_module.msx_clock, self.sample_rate);
@@ -369,28 +431,32 @@ pub const Engine = struct {
 
     /// Ends voice v's note (at a rest or the end of a PLAY).
     fn silence(self: *Engine, v: usize) void {
-        switch (self.chip) {
-            .msx, .atari_st => if (v < 3) self.psg.write(@intCast(8 + v), 0),
-            .nes => if (v < nes_module.voice_count) self.nes.noteOff(v),
-            .c64 => if (v < c64_module.voice_count) self.c64.noteOff(v),
-            .scc => if (v < scc_module.voice_count) self.scc.noteOff(v),
-            .amiga => if (v < amiga_module.voice_count) self.amiga.noteOff(v),
+        const at = self.chips.place(v) orelse return;
+        switch (at.chip) {
+            .msx, .atari_st => self.psg.write(@intCast(8 + at.voice), 0),
+            .nes => self.nes.noteOff(at.voice),
+            .c64 => self.c64.noteOff(at.voice),
+            .scc => self.scc.noteOff(at.voice),
+            .amiga => self.amiga.noteOff(at.voice),
         }
     }
 
     fn play(self: *Engine, v: usize, event: Event) void {
         self.remaining[v] = event.ticks;
-        if (v >= self.chip.voiceCount()) return;
+        const at = self.chips.place(v) orelse return;
         if (event.period == 0) return self.silence(v);
-        switch (self.chip) {
-            .msx => self.playPsg(v, event, event.period),
+        const voice = at.voice;
+        const volume = @min(event.amplitude, 15);
+        const instrument = self.instruments[event.instrument];
+        switch (at.chip) {
+            .msx => self.playPsg(voice, event, event.period),
             // The same note on the YM2149's 2 MHz clock.
-            .atari_st => self.playPsg(v, event, @intCast(parts.chipPeriod(event.note, psg_module.atari_st_clock, 16, 0, 4095))),
+            .atari_st => self.playPsg(voice, event, @intCast(parts.chipPeriod(event.note, psg_module.atari_st_clock, 16, 0, 4095))),
             // S (the PSG's envelope) has no meaning here: such a note plays at full volume.
-            .nes => self.nes.noteOn(v, event.note, @min(event.amplitude, 15), self.instruments[event.instrument]),
-            .c64 => self.c64.noteOn(v, event.note, @min(event.amplitude, 15), self.instruments[event.instrument]),
-            .scc => self.scc.noteOn(v, event.note, @min(event.amplitude, 15), self.instruments[event.instrument]),
-            .amiga => self.amiga.noteOn(v, event.note, @min(event.amplitude, 15), self.instruments[event.instrument], &self.samples),
+            .nes => self.nes.noteOn(voice, event.note, volume, instrument),
+            .c64 => self.c64.noteOn(voice, event.note, volume, instrument),
+            .scc => self.scc.noteOn(voice, event.note, volume, instrument),
+            .amiga => self.amiga.noteOn(voice, event.note, volume, instrument, &self.samples),
         }
     }
 

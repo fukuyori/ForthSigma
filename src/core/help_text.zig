@@ -772,5 +772,13 @@ pub const entries = [_]Entry{
     .{ .name = "FREE-SAMPLES", .stack = "( -- )", .text = "Stop the music and the SFX and forget every sample, emptying the pool (FORTH/Sigma audio)." },
     .{ .name = "AMIGA-SOUND", .stack = "( -- )", .text = "Play PLAY on the Amiga's Paula (PAL, 4 voices of samples, left right right left); the music stops (FORTH/Sigma audio)." },
     .{ .name = "AMIGA-FILTER", .stack = "( flag -- )", .text = "Turn the Amiga's LED filter (a low-pass at about 3.3 kHz) on or off; off at first (FORTH/Sigma audio)." },
+    .{ .name = "SND-CHIPS", .stack = "( mask -- )", .text = "Host primitive for CHIPS (FORTH/Sigma)." },
+    .{ .name = "CHIPS", .stack = "( mask -- )", .text = "Play PLAY on several chips together, e.g. MSX SCC OR CHIPS; voices are numbered in the order MSX ST NES C64 SCC AMIGA, at most 8 in all, not MSX with ST; the music stops (FORTH/Sigma audio)." },
+    .{ .name = "MSX", .stack = "( -- 1 )", .text = "The MSX's PSG for CHIPS (3 voices) (FORTH/Sigma audio)." },
+    .{ .name = "ST", .stack = "( -- 2 )", .text = "The Atari ST's YM2149 for CHIPS (3 voices) (FORTH/Sigma audio)." },
+    .{ .name = "NES", .stack = "( -- 4 )", .text = "The NES's APU for CHIPS (4 voices) (FORTH/Sigma audio)." },
+    .{ .name = "C64", .stack = "( -- 8 )", .text = "The C64's SID for CHIPS (3 voices) (FORTH/Sigma audio)." },
+    .{ .name = "SCC", .stack = "( -- 16 )", .text = "Konami's SCC for CHIPS (5 voices) (FORTH/Sigma audio)." },
+    .{ .name = "AMIGA", .stack = "( -- 32 )", .text = "The Amiga's Paula for CHIPS (4 voices) (FORTH/Sigma audio)." },
     .{ .name = "SCC-WAVE", .stack = "( c-addr n -- )", .text = "Make the 32 signed bytes at c-addr the wave instrument n plays on the SCC; without one, its wave word's shape (FORTH/Sigma audio)." },
 };
