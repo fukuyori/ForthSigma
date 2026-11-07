@@ -33,6 +33,18 @@ fn terminalSize(self: *State) TerminalSize {
     return realTerminalSize(self) orelse default_size;
 }
 
+/// Synchronized output (DEC private mode 2026) around each image on a terminal: a
+/// terminal that knows it shows the image only when all of it has come, instead of
+/// drawing it while it comes in pieces (which looks like noise in an animation).
+/// Terminals that do not know the mode ignore it.
+fn beginFrame(self: *State, output: *Output) void {
+    if (realTerminalSize(self) != null) output.text("\x1b[?2026h");
+}
+
+fn endFrame(self: *State, output: *Output) void {
+    if (realTerminalSize(self) != null) output.text("\x1b[?2026l");
+}
+
 /// Before an image is drawn: when the last SHOW put an image on the terminal and
 /// nothing was written since, the cursor goes back to that image's first row, so that
 /// the new image is drawn over it (an animation stays in place). Returns whether it did.
@@ -52,6 +64,7 @@ fn returnToShown(self: *State, output: *Output) bool {
 /// cleared, and the image's place is kept for the next SHOW and for the mouse.
 fn recordShown(self: *State, output: *Output, over: bool, scaled: Scaled, rows: u32, cell_width: u32, cell_height: u32) void {
     if (over) output.text("\x1b[J");
+    endFrame(self, output);
     output.flush();
     var top: ?i32 = null;
     // Drawn over the last picture: it starts where that one did.
@@ -165,6 +178,7 @@ pub fn showBlocks(self: *State) void {
     if (utf8_fn) |begin| begin(self.writer.context, true);
     defer if (utf8_fn) |end| end(self.writer.context, false);
     var output = Output{ .self = self };
+    beginFrame(self, &output);
     const over = returnToShown(self, &output);
     const mode = self.gfx_color_mode;
     var row: usize = 0;
@@ -274,6 +288,7 @@ pub fn showSixel(self: *State) void {
     const max_height: u64 = if (size.y_pixels != 0) size.y_pixels * (rows - 1) / rows else (rows - 1) * assumed_cell_height;
     const scaled = scaledImage(self, @min(max_width, max_sixel_width), max_height);
     var output = Output{ .self = self };
+    beginFrame(self, &output);
     const over = returnToShown(self, &output);
     // Over the last picture: it is cleared first, as a smaller picture leaves parts of it.
     if (over) output.text("\x1b[J");

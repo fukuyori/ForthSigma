@@ -894,7 +894,8 @@ test "an image larger than the terminal is made smaller, keeping its proportions
     try machine.interpretLine("$FF0000 COLOR! 0 0 PSET 0 1 PSET $0000FF COLOR! 1 0 PSET 1 1 PSET $FFFFFF COLOR! 2 1 PSET 3 1 PSET");
     output.len = 0;
     try machine.interpretLine("GFX-SHOW-BLOCKS");
-    try std.testing.expectEqualStrings("\x1b[38;2;128;0;128m\x1b[49m\u{2580}\x1b[38;2;128;128;128m\u{2580}\x1b[0m\n", output.written());
+    // On a terminal, the image is sent as one frame of synchronized output.
+    try std.testing.expectEqualStrings("\x1b[?2026h\x1b[38;2;128;0;128m\x1b[49m\u{2580}\x1b[38;2;128;128;128m\u{2580}\x1b[0m\n\x1b[?2026l", output.written());
     // A tall image is limited by the rows: 2 rows (4 pixels) of the 2-row terminal less
     // the line for the prompt.
     output.terminal_columns = 80;
@@ -1386,33 +1387,37 @@ test "SHOW on the terminal draws over the image it drew last when nothing was wr
     var output = Output{ .terminal_columns = 80, .terminal_rows = 24 };
     const machine = try libraryMachine(&output, "8 4");
     defer destroyMachine(machine);
+    // Each picture is one frame of synchronized output (BSU ... ESU).
+    const bsu = "\x1b[?2026h";
+    const esu = "\x1b[?2026l";
     try machine.interpretLine("DISPLAY-TERMINAL SHOW");
     const first = output.len;
-    try std.testing.expect(!std.mem.startsWith(u8, output.written(), "\r"));
+    try std.testing.expect(std.mem.startsWith(u8, output.written(), bsu ++ "\x1b["));
+    try std.testing.expect(std.mem.endsWith(u8, output.written(), "\n" ++ esu));
     try machine.interpretLine("SHOW");
     const again = output.written()[first..];
-    try std.testing.expect(std.mem.startsWith(u8, again, "\r\x1b[2A"));
-    try std.testing.expect(std.mem.endsWith(u8, again, "\n\x1b[J"));
+    try std.testing.expect(std.mem.startsWith(u8, again, bsu ++ "\r\x1b[2A"));
+    try std.testing.expect(std.mem.endsWith(u8, again, "\n\x1b[J" ++ esu));
     // The same picture after the return, each row ending by clearing the rest of its
     // line (a narrower picture leaves nothing of the last one).
     var cleared: [1024]u8 = undefined;
-    const kept = again[5 .. again.len - 3];
+    const kept = again[bsu.len + 5 .. again.len - 3 - esu.len];
     const length = std.mem.replacementSize(u8, kept, "\x1b[0m\x1b[K", "\x1b[0m");
     _ = std.mem.replace(u8, kept, "\x1b[0m\x1b[K", "\x1b[0m", &cleared);
-    try std.testing.expectEqualStrings(output.written()[0..first], cleared[0..length]);
+    try std.testing.expectEqualStrings(output.written()[bsu.len .. first - esu.len], cleared[0..length]);
     try std.testing.expectEqual(@as(usize, 2), std.mem.count(u8, again, "\x1b[K"));
     // Output in between starts a new picture.
     const before = output.len;
     try machine.interpretLine("1 . SHOW");
-    try std.testing.expect(!std.mem.startsWith(u8, output.written()[before + 2 ..], "\r"));
+    try std.testing.expect(!std.mem.startsWith(u8, output.written()[before + 2 + bsu.len ..], "\r"));
     try machine.interpretLine("TERMINAL-SIXEL SHOW");
-    try std.testing.expect(std.mem.indexOf(u8, output.written()[before..], "\r\x1b[2A\x1b[J\x1bPq") != null);
+    try std.testing.expect(std.mem.indexOf(u8, output.written()[before..], bsu ++ "\r\x1b[2A\x1b[J\x1bPq") != null);
     // A Sixel picture 4 pixels high takes 1 row of the assumed 20 pixels.
     const sixel = output.len;
     try machine.interpretLine("SHOW");
-    try std.testing.expect(std.mem.startsWith(u8, output.written()[sixel..], "\r\x1b[1A\x1b[J\x1bPq"));
+    try std.testing.expect(std.mem.startsWith(u8, output.written()[sixel..], bsu ++ "\r\x1b[1A\x1b[J\x1bPq"));
 
-    // Not on a terminal: always a new picture.
+    // Not on a terminal: always a new picture, and no synchronized output.
     output.terminal_columns = 0;
     const piped = output.len;
     try machine.interpretLine("SHOW");
