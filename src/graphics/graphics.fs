@@ -245,9 +245,9 @@ VARIABLE (P-STACK)  VARIABLE (P-SIZE)  VARIABLE (P-USED)  VARIABLE (P-TARGET)
 
 \ ---- Showing the image -------------------------------------------------------------
 
-\ Where SHOW puts the image: 0 the window when the host has one and the terminal
-\ otherwise, 1 the terminal, 2 the window, 3 the Tk window (DISPLAY-TK). And how the
-\ terminal shows it: 0 with half block characters, 1 as Sixel graphics.
+\ Where SHOW puts the image: 0 not chosen yet (see SHOW), 1 the terminal, 2 the window,
+\ 3 the Tk window (DISPLAY-TK). And how the terminal shows it: 0 with half block
+\ characters, 1 as Sixel graphics.
 VARIABLE (DISPLAY)  0 (DISPLAY) !
 VARIABLE (TERMINAL-MODE)  0 (TERMINAL-MODE) !
 
@@ -270,11 +270,29 @@ VARIABLE (DITHER)  0 (DITHER) !
 : DISPLAY-COLORS ( n -- )   DUP (DITHER) @ GFX-COLOR-MODE  (COLORS) ! ;
 : DITHER ( flag -- )   0<> (DITHER) ! ;
 
-\ Shows the image where DISPLAY-TERMINAL or DISPLAY-WINDOW said, with the colors
-\ DISPLAY-COLORS and DITHER chose.
+\ Whether Sigma runs on a desktop: DISPLAY or WAYLAND_DISPLAY is set (X11, Wayland),
+\ or __CFBundleIdentifier (a terminal app of macOS; not set over SSH).
+: (DESKTOP?) ( -- flag )
+   S" DISPLAY" GETENV NIP  S" WAYLAND_DISPLAY" GETENV NIP OR
+   S" __CFBundleIdentifier" GETENV NIP OR  0<> ;
+
+\ The first SHOW with nothing chosen on a host without a window of its own (Linux,
+\ macOS) tries the Tk window when Sigma runs on a desktop, and keeps to it when that
+\ works; else, or when wish cannot start, it keeps to the terminal. True when it
+\ showed the image in the Tk window.
+: (TRY-TK) ( -- flag )
+   1 (DISPLAY) !
+   ['] (DESKTOP?) CATCH IF FALSE THEN  0= IF FALSE EXIT THEN
+   ['] GFX-SHOW-TK CATCH IF FALSE EXIT THEN
+   3 (DISPLAY) !  TRUE ;
+
+\ Shows the image where DISPLAY-TERMINAL, DISPLAY-WINDOW, or DISPLAY-TK said, with the
+\ colors DISPLAY-COLORS and DITHER chose. With nothing chosen: the window when the host
+\ has one, else the Tk window on a desktop (see (TRY-TK)), else the terminal.
 : SHOW ( -- )
    (NEED-IMAGE)
    (COLORS) @ (DITHER) @ GFX-COLOR-MODE
+   (DISPLAY) @ 0=  GFX-WINDOW? 0= AND IF (TRY-TK) IF EXIT THEN THEN
    (DISPLAY) @ 3 = IF GFX-SHOW-TK EXIT THEN
    (WINDOW?) IF GFX-SHOW-WINDOW EXIT THEN
    (TERMINAL-MODE) @ IF GFX-SHOW-SIXEL ELSE GFX-SHOW-BLOCKS THEN ;

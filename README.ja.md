@@ -42,7 +42,7 @@ BASICの `SCREEN 1` のような番号付きの画面モードはありません
 | ウィンドウ | `DISPLAY-WINDOW` | Windows |
 | Tkのウィンドウ | `DISPLAY-TK` | Tcl/Tkが入っている環境 |
 
-選ぶまでは、`SHOW` はWindowsではウィンドウに、ほかのOSでは端末に半角ブロックで表示します。`n DISPLAY-COLORS` で、フルカラー（0、既定）、白黒（2）、ANSIの16色（16）、xtermの256色（256）を選び、`TRUE DITHER` で減らした色をBayerの模様で混ぜます。`w h WINDOW-SIZE` で、ウィンドウとTkのウィンドウに画像を大きく表示します。たとえば `160 120 GFX-INIT 640 480 WINDOW-SIZE` で、1画素を4×4で表示します。
+選ぶまでは、`SHOW` はWindowsではウィンドウに表示します。LinuxとmacOSでは、Tcl/Tkが入っていればデスクトップではTkのウィンドウに、ほかでは端末に半角ブロックで表示します。`n DISPLAY-COLORS` で、フルカラー（0、既定）、白黒（2）、ANSIの16色（16）、xtermの256色（256）を選び、`TRUE DITHER` で減らした色をBayerの模様で混ぜます。`w h WINDOW-SIZE` で、ウィンドウとTkのウィンドウに画像を大きく表示します。たとえば `160 120 GFX-INIT 640 480 WINDOW-SIZE` で、1画素を4×4で表示します。
 
 ```forth
 REQUIRE-GRAPHICS  ALSO GRAPHICS

@@ -42,7 +42,7 @@ There are no numbered screen modes, such as `SCREEN 1` of BASIC. A program makes
 | Window | `DISPLAY-WINDOW` | Windows |
 | Tk window | `DISPLAY-TK` | where Tcl/Tk is installed |
 
-Until one is chosen, `SHOW` uses the window on Windows and the terminal with half blocks elsewhere. `n DISPLAY-COLORS` shows the image in full color (0, the default), black and white (2), the 16 ANSI colors (16), or xterm's 256 colors (256), and `TRUE DITHER` mixes the fewer colors in a Bayer pattern. `w h WINDOW-SIZE` shows the image larger in the window and the Tk window, for example `160 120 GFX-INIT 640 480 WINDOW-SIZE` shows each pixel as 4 by 4.
+Until one is chosen, `SHOW` uses the window on Windows; on Linux and macOS it uses the Tk window on a desktop when Tcl/Tk is installed, and the terminal with half blocks otherwise. `n DISPLAY-COLORS` shows the image in full color (0, the default), black and white (2), the 16 ANSI colors (16), or xterm's 256 colors (256), and `TRUE DITHER` mixes the fewer colors in a Bayer pattern. `w h WINDOW-SIZE` shows the image larger in the window and the Tk window, for example `160 120 GFX-INIT 640 480 WINDOW-SIZE` shows each pixel as 4 by 4.
 
 ```forth
 REQUIRE-GRAPHICS  ALSO GRAPHICS

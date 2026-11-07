@@ -1,7 +1,7 @@
 \ Sky Hopper: a side-scrolling platform game for FORTH/Sigma. The courses, the
 \ pictures, and the rules are this file's own.
 \
-\   sigma.exe "include examples/hopper.fs"     (Windows: in the graphics window)
+\   sigma.exe "include examples/hopper.fs"     (in a window; Tk on Linux/macOS)
 \
 \ Run to the right to the balloon at the end of each course before the time runs out.
 \ Stamp on the mosslings; a snail stamped on leaves its shell, which a touch kicks

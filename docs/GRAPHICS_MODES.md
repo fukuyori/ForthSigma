@@ -13,7 +13,7 @@ REQUIRE-GRAPHICS  ALSO GRAPHICS
 | Choice | Words | Default |
 | --- | --- | --- |
 | The size of the image | `GFX-INIT` ( w h -- ) | none: no image before `GFX-INIT` |
-| Where `SHOW` shows it | `DISPLAY-TERMINAL`, `DISPLAY-WINDOW`, `DISPLAY-TK`, with `TERMINAL-BLOCKS` and `TERMINAL-SIXEL` for the terminal | the window when the host has one (Windows), the terminal with half blocks otherwise |
+| Where `SHOW` shows it | `DISPLAY-TERMINAL`, `DISPLAY-WINDOW`, `DISPLAY-TK`, with `TERMINAL-BLOCKS` and `TERMINAL-SIXEL` for the terminal | the window when the host has one (Windows); else the Tk window on a desktop when `wish` starts (Linux, macOS); else the terminal with half blocks |
 | With how many colors | `DISPLAY-COLORS` ( n -- ), `DITHER` ( flag -- ) | full color, no dithering |
 
 The three are independent: any image size goes with any place and any number of colors. They change only how the image is shown. The image itself always keeps full 24-bit color, and `SAVE-PPM`, `SAVE-BMP`, and `SAVE-PNG` save it in full color whatever was chosen.
@@ -33,7 +33,7 @@ The size can be chosen to look like an older computer, for example 320 by 200 or
 | Window | `DISPLAY-WINDOW` | Windows | A window of Sigma's own. |
 | Tk window | `DISPLAY-TK` | where Tcl/Tk (`wish`) is installed, on every system | The Tk window `.`, which gets the image as a PNG. |
 
-Until one of `DISPLAY-TERMINAL`, `DISPLAY-WINDOW`, and `DISPLAY-TK` is used, `SHOW` uses the window when the host has one and the terminal otherwise. `GFX-WINDOW?` ( -- flag ) tells whether the host has the window. `DISPLAY-WINDOW` on a host without it gives `HOST FUNCTION UNAVAILABLE !`. Linux and macOS have no window yet, so use the terminal or `DISPLAY-TK` there.
+Until one of `DISPLAY-TERMINAL`, `DISPLAY-WINDOW`, and `DISPLAY-TK` is used, `SHOW` uses the window when the host has one. `GFX-WINDOW?` ( -- flag ) tells whether the host has the window. `DISPLAY-WINDOW` on a host without it gives `HOST FUNCTION UNAVAILABLE !`. Linux and macOS have no window yet, so there the first `SHOW` tries the Tk window when Sigma runs on a desktop: when the environment variable `DISPLAY` or `WAYLAND_DISPLAY` is set (X11, Wayland), or `__CFBundleIdentifier` (a terminal app of macOS; it is not set over SSH). When `wish` starts and shows the image, `SHOW` keeps to the Tk window, as after `DISPLAY-TK`; otherwise (no desktop, no Tcl/Tk), it keeps to the terminal, as after `DISPLAY-TERMINAL`. So `sigma "include examples/hopper.fs"` opens a window on a Linux or macOS desktop with Tcl/Tk installed. A program that wants the terminal there uses `DISPLAY-TERMINAL`.
 
 `TERMINAL-BLOCKS` and `TERMINAL-SIXEL` choose how the terminal shows the image; they do not themselves make `SHOW` use the terminal. Half blocks are the default.
 

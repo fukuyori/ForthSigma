@@ -2,7 +2,7 @@
 \ tile game of the "dig and run" kind. The levels, the pictures, and the guards' rules
 \ are this file's own.
 \
-\   sigma.exe "include examples/runner.fs"     (Windows: in the graphics window)
+\   sigma.exe "include examples/runner.fs"     (in a window; Tk on Linux/macOS)
 \
 \ Collect all the gold; a hidden ladder then appears, and the top row ends the level.
 \ Keys: arrows move, Z and X dig to the left and the right below, P pauses, R gives up

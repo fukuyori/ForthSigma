@@ -1941,6 +1941,55 @@ test "DISPLAY-TK makes SHOW send the image to the Tk window as a PNG in base64" 
     try expectStack(machine, &.{-273});
 }
 
+test "SHOW with nothing chosen and no window of the host's own uses the Tk window on a desktop" {
+    try skipWithout(&.{.graphics});
+    // A desktop and a Tcl program that answers: the Tk window, and it stays.
+    var output = Output{ .display = ":0" };
+    const machine = try libraryMachine(&output, "3 2");
+    defer destroyMachine(machine);
+    output.process_replies = "R 0 0\n" ++ "R 0 0\n";
+    try machine.interpretLine("SHOW SHOW (DISPLAY) @");
+    try expectStack(machine, &.{3});
+    machine.data_depth = 0;
+    try std.testing.expectEqual(@as(usize, 1), output.process_starts);
+    try std.testing.expectEqual(@as(usize, 2), std.mem.count(u8, output.processWritten(), "sigma_show 0 0 "));
+    try std.testing.expect(std.mem.indexOf(u8, output.written(), "\u{2580}") == null);
+
+    // A desktop without a Tcl program that answers (no wish): the terminal, and it
+    // stays, without trying the program again.
+    var lost = Output{ .display = ":0" };
+    const no_wish = try libraryMachine(&lost, "3 2");
+    defer destroyMachine(no_wish);
+    try no_wish.interpretLine("SHOW (DISPLAY) @");
+    try expectStack(no_wish, &.{1});
+    no_wish.data_depth = 0;
+    try std.testing.expect(std.mem.indexOf(u8, lost.written(), "\u{2580}") != null);
+    lost.len = 0;
+    try no_wish.interpretLine("SHOW");
+    try std.testing.expectEqual(@as(usize, 1), lost.process_starts);
+    try std.testing.expect(std.mem.indexOf(u8, lost.written(), "\u{2580}") != null);
+
+    // No desktop: the terminal, and no program is started.
+    var plain = Output{};
+    const terminal = try libraryMachine(&plain, "3 2");
+    defer destroyMachine(terminal);
+    try terminal.interpretLine("SHOW");
+    try std.testing.expectEqual(@as(usize, 0), plain.process_starts);
+    try std.testing.expect(std.mem.indexOf(u8, plain.written(), "\u{2580}") != null);
+
+    // A host with a window of its own, or a choice made, does not try Tk.
+    var windowed = Output{ .display = ":0", .has_window = true };
+    const own = try libraryMachine(&windowed, "3 2");
+    defer destroyMachine(own);
+    try own.interpretLine("SHOW");
+    try std.testing.expectEqual(@as(usize, 1), windowed.window_shows);
+    var chosen = Output{ .display = ":0" };
+    const terminal_chosen = try libraryMachine(&chosen, "3 2");
+    defer destroyMachine(terminal_chosen);
+    try terminal_chosen.interpretLine("DISPLAY-TERMINAL SHOW");
+    try std.testing.expectEqual(@as(usize, 0), chosen.process_starts);
+}
+
 // ---- The review of the Tcl/Tk words ----
 
 fn heapTop(machine: *forth.State) forth.Cell {

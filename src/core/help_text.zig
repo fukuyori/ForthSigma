@@ -621,7 +621,7 @@ pub const entries = [_]Entry{
     .{ .name = "SAVE-PPM", .stack = "( c-addr u -- )", .text = "Write the image to the named file as a binary PPM; THROW on failure (FORTH/Sigma graphics)." },
     .{ .name = "SAVE-BMP", .stack = "( c-addr u -- )", .text = "Write the image to the named file as a 24-bit BMP; THROW on failure (FORTH/Sigma graphics)." },
     .{ .name = "SAVE-PNG", .stack = "( c-addr u -- )", .text = "Write the image to the named file as a PNG; THROW on failure (FORTH/Sigma graphics)." },
-    .{ .name = "SHOW", .stack = "( -- )", .text = "Show the image in the window or on the terminal, as DISPLAY-WINDOW or DISPLAY-TERMINAL chose (FORTH/Sigma graphics)." },
+    .{ .name = "SHOW", .stack = "( -- )", .text = "Show the image where DISPLAY-WINDOW, DISPLAY-TK, or DISPLAY-TERMINAL chose; with none chosen, the window, else the Tk window on a desktop, else the terminal (FORTH/Sigma graphics)." },
     .{ .name = "DISPLAY-TERMINAL", .stack = "( -- )", .text = "Make SHOW show the image on the terminal (FORTH/Sigma graphics)." },
     .{ .name = "DISPLAY-WINDOW", .stack = "( -- )", .text = "Make SHOW show the image in a window, when the host has one (FORTH/Sigma graphics)." },
     .{ .name = "TERMINAL-BLOCKS", .stack = "( -- )", .text = "Show the image on the terminal with half block characters, the default (FORTH/Sigma graphics)." },

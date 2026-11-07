@@ -103,6 +103,8 @@ pub const Output = struct {
     /// advancing 3; it has no glyph for "~".
     has_system_fonts: bool = false,
     system_height: u32 = 0,
+    /// DISPLAY in the environment (unset when null): a desktop, for SHOW's choice.
+    display: ?[]const u8 = null,
     /// The Tcl program: how many times it was started and stopped, with which program
     /// name and script; what Sigma wrote to it; and what it answers, given out a few
     /// bytes at a time (when they run out, a read that waits finds it ended).
@@ -338,8 +340,9 @@ pub const Output = struct {
         return now;
     }
 
-    pub fn getenv(_: ?*anyopaque, name: []const u8, buffer: []u8) forth.RuntimeError!?usize {
-        const value: []const u8 = if (std.mem.eql(u8, name, "HOME")) "/home/lemon" else if (std.mem.eql(u8, name, "EMPTY")) "" else if (std.mem.eql(u8, name, "LONG")) &@as([4000]u8, @splat('x')) else return null;
+    pub fn getenv(context: ?*anyopaque, name: []const u8, buffer: []u8) forth.RuntimeError!?usize {
+        const output: *Output = @ptrCast(@alignCast(context.?));
+        const value: []const u8 = if (std.mem.eql(u8, name, "HOME")) "/home/lemon" else if (std.mem.eql(u8, name, "DISPLAY") and output.display != null) output.display.? else if (std.mem.eql(u8, name, "EMPTY")) "" else if (std.mem.eql(u8, name, "LONG")) &@as([4000]u8, @splat('x')) else return null;
         if (value.len > buffer.len) return error.StringTooLong;
         @memcpy(buffer[0..value.len], value);
         return value.len;

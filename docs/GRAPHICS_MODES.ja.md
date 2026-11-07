@@ -13,7 +13,7 @@ REQUIRE-GRAPHICS  ALSO GRAPHICS
 | 選ぶもの | 語 | 初めの状態 |
 | --- | --- | --- |
 | 画像の大きさ | `GFX-INIT` ( w h -- ) | なし（`GFX-INIT` の前は画像がない） |
-| `SHOW` の表示先 | `DISPLAY-TERMINAL`、`DISPLAY-WINDOW`、`DISPLAY-TK`。端末では `TERMINAL-BLOCKS` と `TERMINAL-SIXEL` | ホストにウィンドウがあれば（Windows）ウィンドウ、なければ端末に半角ブロック |
+| `SHOW` の表示先 | `DISPLAY-TERMINAL`、`DISPLAY-WINDOW`、`DISPLAY-TK`。端末では `TERMINAL-BLOCKS` と `TERMINAL-SIXEL` | ホストにウィンドウがあれば（Windows）ウィンドウ。なければ、デスクトップで `wish` が起動できればTkのウィンドウ（Linux、macOS）。それもだめなら端末に半角ブロック |
 | 色数 | `DISPLAY-COLORS` ( n -- )、`DITHER` ( flag -- ) | フルカラー、ディザなし |
 
 3つは互いに独立していて、どの大きさの画像も、どの表示先・どの色数とも組み合わせられます。変わるのは表示のしかただけです。画像そのものは常に24ビットのフルカラーで、`SAVE-PPM`・`SAVE-BMP`・`SAVE-PNG` は何を選んでいてもフルカラーで保存します。
@@ -33,7 +33,7 @@ REQUIRE-GRAPHICS  ALSO GRAPHICS
 | ウィンドウ | `DISPLAY-WINDOW` | Windows | Sigma自身のウィンドウに表示します。 |
 | Tkのウィンドウ | `DISPLAY-TK` | Tcl/Tk（`wish`）が入っていれば、すべてのOS | Tkのウィンドウ `.` に、画像をPNGで送って表示します。 |
 
-`DISPLAY-TERMINAL`・`DISPLAY-WINDOW`・`DISPLAY-TK` のどれかを使うまでは、`SHOW` は、ホストにウィンドウがあればウィンドウに、なければ端末に表示します。ホストにウィンドウがあるかどうかは `GFX-WINDOW?` ( -- flag ) でわかります。ウィンドウのないホストで `DISPLAY-WINDOW` を使うと `HOST FUNCTION UNAVAILABLE !` になります。LinuxとmacOSにはまだウィンドウがないので、端末か `DISPLAY-TK` を使います。
+`DISPLAY-TERMINAL`・`DISPLAY-WINDOW`・`DISPLAY-TK` のどれかを使うまでは、`SHOW` は、ホストにウィンドウがあればウィンドウに表示します。ホストにウィンドウがあるかどうかは `GFX-WINDOW?` ( -- flag ) でわかります。ウィンドウのないホストで `DISPLAY-WINDOW` を使うと `HOST FUNCTION UNAVAILABLE !` になります。LinuxとmacOSにはまだウィンドウがないので、Sigmaがデスクトップで動いていれば、最初の `SHOW` がTkのウィンドウを試します。デスクトップかどうかは、環境変数 `DISPLAY` か `WAYLAND_DISPLAY`（X11、Wayland）、または `__CFBundleIdentifier`（macOSの端末のアプリ。SSHでは付きません）があるかで決めます。`wish` が起動して画像を表示できれば、それからは `DISPLAY-TK` と同じくTkのウィンドウに表示します。できなければ（デスクトップでない、Tcl/Tkがない）、`DISPLAY-TERMINAL` と同じく端末に表示します。そのため、Tcl/Tkを入れたLinuxやmacOSのデスクトップでは、`sigma "include examples/hopper.fs"` でウィンドウが開きます。そこで端末に表示したいプログラムは `DISPLAY-TERMINAL` を使います。
 
 `TERMINAL-BLOCKS` と `TERMINAL-SIXEL` は、端末での表示のしかたを選ぶだけで、それ自体では `SHOW` の表示先を端末にしません。既定は半角ブロックです。
 
