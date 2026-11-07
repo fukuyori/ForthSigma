@@ -19,7 +19,8 @@
 \   SND-WAVETABLE ( c-addr n -- )  SND-LOAD-SAMPLE ( c-addr u n -- ior )
 \   SND-SAMPLE ( c-addr u rate n -- )  SND-LOOP-SAMPLE ( start end n -- )
 \   SND-SAMPLE-INSTRUMENT ( n -- )  SND-SFX ( n -- )  SND-AMIGA-FILTER ( flag -- )
-\   SND-FREE-SAMPLES ( -- )  SND-CHIPS ( mask -- )
+\   SND-FREE-SAMPLES ( -- )  SND-CHIPS ( mask -- )  SND-LOAD-MOD ( c-addr u -- ior )
+\   SND-PLAY-MOD ( flag -- )  SND-STOP-MOD ( -- )  SND-MOD-PLAYING ( -- flag )
 \
 \ The sound is MSX BASIC's: an AY-3-8910 at the MSX's clock, played by the host's audio
 \ thread. PLAY takes MSX BASIC's music macro language (MML) and returns as soon as the
@@ -90,6 +91,16 @@
 : SFX ( n -- )   SND-SFX ;
 : FREE-SAMPLES ( -- )   SND-FREE-SAMPLES ;                  \ stops the music too
 : AMIGA-FILTER ( flag -- )   SND-AMIGA-FILTER ;             \ the LED filter
+
+\ ---- Modules ----------------------------------------------------------------------
+\
+\ A ProTracker module (MOD, 4 channels) plays beside PLAY and SFX, on the Amiga's
+\ periods and filters; its data is in the pool of samples, which FREE-SAMPLES empties.
+
+: LOAD-MOD ( c-addr u -- )   SND-LOAD-MOD THROW ;
+: PLAY-MOD ( flag -- )   SND-PLAY-MOD ;     \ again from the start after the end when true
+: STOP-MOD ( -- )   SND-STOP-MOD ;
+: MOD? ( -- flag )   SND-MOD-PLAYING ;
 
 \ ---- The device ------------------------------------------------------------------
 

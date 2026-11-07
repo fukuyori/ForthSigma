@@ -631,6 +631,10 @@ pub const Builtin = enum {
     snd_amiga_filter,
     snd_free_samples,
     snd_chips,
+    snd_load_mod,
+    snd_play_mod,
+    snd_stop_mod,
+    snd_mod_playing,
 };
 
 pub const HeapResult = union(enum) { address: Cell, no_memory, bad_pointer };
@@ -674,6 +678,7 @@ pub const error_codes = [_]struct { RuntimeError, Cell }{
     .{ error.GraphicsUnavailable, -270 },   .{ error.NoCanvas, -271 },          .{ error.UserInterrupt, -28 },
     .{ error.FontUnavailable, -272 },     .{ error.TclFailed, -273 },        .{ error.InvalidMml, -274 },
     .{ error.AudioUnavailable, -275 },     .{ error.SampleInvalid, -276 },
+    .{ error.ModInvalid, -277 },
 };
 
 pub const throw_code_undefined_word: Cell = -13;
@@ -836,6 +841,8 @@ pub const RuntimeError = error{
     AudioUnavailable,
     /// A file LOAD-SAMPLE cannot read: not a WAV file of 8- or 16-bit PCM.
     SampleInvalid,
+    /// A file LOAD-MOD cannot read: not a ProTracker module of four channels.
+    ModInvalid,
 };
 
 pub fn floatBits(value: Float) Cell {

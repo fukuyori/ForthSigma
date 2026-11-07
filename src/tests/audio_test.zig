@@ -559,3 +559,188 @@ test "CHIPS chooses several chips, whose voices PLAYS and PLAY? count together" 
     try machine.interpretLine("C64-SOUND");
     try std.testing.expectEqual(sound_engine.Chip.c64, engine.chips.only().?);
 }
+
+// ---- S6: modules ----
+
+const mod_module = @import("../core/sound_mod.zig");
+
+/// Plays a frame at a time until the module is at row `row`, or has stopped; the frames.
+fn playUntil(engine: *Engine, until: enum { row, stopped }, row: u8) usize {
+    var frames: usize = 0;
+    while (frames < rate * 10) : (frames += 1) {
+        switch (until) {
+            .row => if (engine.mod.row == row) return frames,
+            .stopped => if (!engine.mod.playing) return frames,
+        }
+        render(engine, 1);
+    }
+    return frames;
+}
+
+/// One row's cell: sample, period, effect, and parameter.
+fn modCell(sample: u8, period: u16, effect: u4, param: u8) [4]u8 {
+    return .{ (sample & 0xf0) | @as(u8, @intCast(period >> 8)), @truncate(period), (sample << 4) | effect, param };
+}
+
+/// A module of one pattern played `positions` times, with one sample of 64 frames
+/// (square, volume 48, finetune -1) and the rows given for channel 1.
+fn modFile(comptime positions: u8, rows: []const struct { u8, [4]u8 }) [mod_module.header_size + mod_module.pattern_size + 64]u8 {
+    var bytes: [mod_module.header_size + mod_module.pattern_size + 64]u8 = @splat(0);
+    @memcpy(bytes[0..4], "test");
+    const h = bytes[20..50];
+    h[22] = 0;
+    h[23] = 32; // 32 words
+    h[24] = 0x0f; // finetune -1
+    h[25] = 48;
+    h[29] = 1; // no loop
+    bytes[950] = positions;
+    @memcpy(bytes[1080..1084], "M.K.");
+    for (rows) |row| @memcpy(bytes[mod_module.header_size + @as(usize, row[0]) * 16 ..][0..4], &row[1]);
+    for (0..64) |i| bytes[mod_module.header_size + mod_module.pattern_size + i] = if (i % 8 < 4) 100 else 156;
+    return bytes;
+}
+
+test "a MOD header: the tags of four channels, the samples, and the song" {
+    var file = modFile(3, &.{});
+    const song = try mod_module.parseHeader(file[0..mod_module.header_size]);
+    try std.testing.expectEqual(@as(u8, 3), song.length);
+    try std.testing.expectEqual(@as(u8, 1), song.pattern_count);
+    try std.testing.expectEqual(@as(u32, 64), song.samples[0].length);
+    try std.testing.expectEqual(@as(i8, -1), song.samples[0].finetune);
+    try std.testing.expectEqual(@as(u8, 48), song.samples[0].volume);
+    try std.testing.expectEqual(@as(u32, 0), song.samples[0].loop_length);
+    // A loop of 8 words from word 4; the order's highest pattern sets the count.
+    file[20 + 27] = 4;
+    file[20 + 29] = 8;
+    file[952 + 1] = 2;
+    const looped = try mod_module.parseHeader(file[0..mod_module.header_size]);
+    try std.testing.expectEqual(@as(u32, 8), looped.samples[0].loop_start);
+    try std.testing.expectEqual(@as(u32, 16), looped.samples[0].loop_length);
+    try std.testing.expectEqual(@as(u8, 3), looped.pattern_count);
+    for ([_]*const [4]u8{ "M!K!", "FLT4", "4CHN" }) |tag| {
+        @memcpy(file[1080..1084], tag);
+        _ = try mod_module.parseHeader(file[0..mod_module.header_size]);
+    }
+    @memcpy(file[1080..1084], "8CHN");
+    try std.testing.expectError(error.InvalidMod, mod_module.parseHeader(file[0..mod_module.header_size]));
+    @memcpy(file[1080..1084], "M.K.");
+    file[950] = 0;
+    try std.testing.expectError(error.InvalidMod, mod_module.parseHeader(file[0..mod_module.header_size]));
+}
+
+test "LOAD-MOD and PLAY-MOD: a row lasts its speed's ticks, a pattern break ends the song" {
+    try skipWithout(&.{ .audio, .files });
+    var engine = newEngine();
+    var pool: [4096]i16 = undefined;
+    engine.pool = &pool;
+    var output = Output{ .audio = &engine };
+    // Row 0: C-2 (period 428) with sample 1; row 1: a pattern break to the next
+    // position, which is past the song's end.
+    support.setFakeFile(&output, 0, &modFile(1, &.{ .{ 0, modCell(1, 428, 0, 0) }, .{ 1, modCell(0, 0, 0xd, 0) } }));
+    support.setFakeFile(&output, 1, "not a module");
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
+    try machine.interpretLine("REQUIRE-AUDIO ALSO AUDIO S\" a.txt\" LOAD-MOD MOD?");
+    try expectStack(machine, &.{0});
+    machine.data_depth = 0;
+    render(&engine, 1);
+    try std.testing.expectEqual(@as(u8, 1), engine.mod.song.length);
+    const waits = output.audio_waits;
+    try machine.interpretLine("FALSE PLAY-MOD MOD?");
+    try expectStack(machine, &.{-1});
+    machine.data_depth = 0;
+    render(&engine, 1);
+    const channel = engine.mod.channels[0];
+    // Finetune -1 makes the period a little longer than 428.
+    try std.testing.expectEqual(@as(u16, 431), channel.period);
+    try std.testing.expectEqual(@as(i32, 48), channel.volume);
+    try std.testing.expectApproxEqAbs(@as(f64, 3546895.0 / 431.0 / 48000.0), channel.player.step, 1e-9);
+    // Two rows of 6 ticks at 50 a second: 240 ms (the fake host's waits in PLAY-MOD
+    // played some of them already); then it has stopped.
+    const played = (output.audio_waits - waits) * output.audio_wait_samples + 1 + playUntil(&engine, .stopped, 0);
+    try std.testing.expectApproxEqAbs(@as(f64, rate * 240 / 1000), @as(f64, @floatFromInt(played)), 2);
+    try machine.interpretLine("MOD?");
+    try expectStack(machine, &.{0});
+    machine.data_depth = 0;
+
+    // Played again and again, it does not stop; STOP-MOD stops it.
+    try machine.interpretLine("TRUE PLAY-MOD");
+    render(&engine, rate);
+    try std.testing.expect(engine.mod.playing);
+    try machine.interpretLine("STOP-MOD");
+    render(&engine, 1);
+    try std.testing.expect(!engine.mod.playing);
+
+    try std.testing.expectError(error.ModInvalid, machine.interpretLine("S\" b.txt\" LOAD-MOD"));
+    machine.data_depth = 0;
+    try machine.interpretLine("S\" missing.txt\" SND-LOAD-MOD 0<>");
+    try expectStack(machine, &.{-1});
+}
+
+test "the module's effects: set volume, volume slide, speed, and portamento" {
+    try skipWithout(&.{ .audio, .files });
+    var engine = newEngine();
+    var pool: [4096]i16 = undefined;
+    engine.pool = &pool;
+    var output = Output{ .audio = &engine };
+    support.setFakeFile(&output, 0, &modFile(1, &.{
+        .{ 0, modCell(1, 428, 0xf, 3) }, // speed 3: a row is 60 ms
+        .{ 1, modCell(0, 0, 0xc, 20) }, // volume 20
+        .{ 2, modCell(0, 0, 0xa, 0x20) }, // up 2 a tick after the first: 24
+        .{ 3, modCell(0, 0, 0x2, 4) }, // the period down by 4 a tick after the first
+        .{ 4, modCell(0, 0, 0xd, 0) },
+    }));
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
+    try machine.interpretLine("REQUIRE-AUDIO ALSO AUDIO S\" a.txt\" LOAD-MOD");
+    const waits = output.audio_waits;
+    try machine.interpretLine("FALSE PLAY-MOD");
+    var played = (output.audio_waits - waits) * output.audio_wait_samples;
+    // When each row has started, the one before has had all its ticks.
+    played += playUntil(&engine, .row, 2);
+    try std.testing.expectEqual(@as(i32, 20), engine.mod.channels[0].volume);
+    played += playUntil(&engine, .row, 3);
+    try std.testing.expectEqual(@as(i32, 24), engine.mod.channels[0].volume);
+    played += playUntil(&engine, .row, 4);
+    try std.testing.expectEqual(@as(u16, 431 + 8), engine.mod.channels[0].period);
+    // Five rows of 3 ticks: 300 ms.
+    played += playUntil(&engine, .stopped, 0);
+    try std.testing.expectApproxEqAbs(@as(f64, rate * 300 / 1000), @as(f64, @floatFromInt(played)), 2);
+
+    // FREE-SAMPLES forgets the module.
+    try machine.interpretLine("FREE-SAMPLES TRUE PLAY-MOD MOD?");
+    try expectStack(machine, &.{0});
+}
+
+test "the module's pattern loop plays its rows again, and a note delay starts the note late" {
+    try skipWithout(&.{ .audio, .files });
+    var engine = newEngine();
+    var pool: [4096]i16 = undefined;
+    engine.pool = &pool;
+    var output = Output{ .audio = &engine };
+    // Rows 0 and 1 three times (E60, then E62), then row 2 ends the song: 7 rows of
+    // 6 ticks, 840 ms. Row 2 also starts its note on its third tick (ED2).
+    support.setFakeFile(&output, 0, &modFile(1, &.{
+        .{ 0, modCell(1, 428, 0xe, 0x60) },
+        .{ 1, modCell(0, 0, 0xe, 0x62) },
+        .{ 2, modCell(1, 214, 0xe, 0xd2) },
+        .{ 3, modCell(0, 0, 0xd, 0) },
+    }));
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
+    try machine.interpretLine("REQUIRE-AUDIO ALSO AUDIO S\" a.txt\" LOAD-MOD");
+    const waits = output.audio_waits;
+    try machine.interpretLine("FALSE PLAY-MOD");
+    var played = (output.audio_waits - waits) * output.audio_wait_samples;
+    played += playUntil(&engine, .row, 2);
+    // Six rows have played: three times rows 0 and 1.
+    try std.testing.expectApproxEqAbs(@as(f64, rate * 720 / 1000), @as(f64, @floatFromInt(played)), 2);
+    // The delayed note has not started on the row's first tick.
+    render(&engine, rate / 50);
+    try std.testing.expectEqual(@as(u16, 431), engine.mod.channels[0].period);
+    // 214 with finetune -1: 215.55, rounded.
+    render(&engine, rate / 50 * 2);
+    try std.testing.expectEqual(@as(u16, 216), engine.mod.channels[0].period);
+    played += rate / 50 * 3 + playUntil(&engine, .stopped, 0);
+    try std.testing.expectApproxEqAbs(@as(f64, rate * 960 / 1000), @as(f64, @floatFromInt(played)), 2);
+}

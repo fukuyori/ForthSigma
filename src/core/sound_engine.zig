@@ -16,6 +16,7 @@ const c64_module = @import("sound_c64.zig");
 const scc_module = @import("sound_scc.zig");
 const amiga_module = @import("sound_amiga.zig");
 pub const pcm = @import("sound_pcm.zig");
+pub const mod_module = @import("sound_mod.zig");
 
 pub const Event = mml.Event;
 pub const Psg = psg_module.Psg;
@@ -178,6 +179,13 @@ pub const Command = union(enum) {
     sfx: u8,
     /// AMIGA-FILTER: the LED filter on or off.
     amiga_filter: bool,
+    /// LOAD-MOD: the module whose song (sound_mod.Song) is in the pool from this place
+    /// (in 16-bit units). A module that plays stops.
+    mod_load: u32,
+    /// PLAY-MOD: plays the module from its start, again after its end when true.
+    mod_play: bool,
+    /// STOP-MOD.
+    mod_stop,
 };
 
 /// The PSG's registers as the MSX's BIOS sets them (GICINI): R0 = 55H, the tones on and
@@ -209,6 +217,9 @@ pub const Engine = struct {
     /// The voices of SFX, used in turn.
     sfx_players: [sfx_voices]pcm.Player = @splat(.{}),
     sfx_next: usize = 0,
+    mod: mod_module.Mod,
+    /// Whether the module plays; only the consumer writes it (MOD?).
+    mod_playing: std.atomic.Value(bool) = .init(false),
     chips: Chips = Chips.one(.msx),
     instruments: [mml.instrument_count]Instrument = @splat(.{}),
     voices: [max_voices]Ring(Event, voice_queue_size) = @splat(.{}),
@@ -229,7 +240,7 @@ pub const Engine = struct {
     dc_output: [2]f32 = .{ 0, 0 },
 
     pub fn init(model: psg_module.Model, clock: u32, sample_rate: u32) Engine {
-        var engine: Engine = .{ .psg = Psg.init(model, clock, sample_rate), .nes = nes_module.Nes.init(sample_rate), .c64 = c64_module.C64.init(sample_rate), .scc = scc_module.Scc.init(sample_rate), .amiga = amiga_module.Amiga.init(sample_rate), .sample_rate = sample_rate };
+        var engine: Engine = .{ .psg = Psg.init(model, clock, sample_rate), .nes = nes_module.Nes.init(sample_rate), .c64 = c64_module.C64.init(sample_rate), .scc = scc_module.Scc.init(sample_rate), .amiga = amiga_module.Amiga.init(sample_rate), .mod = mod_module.Mod.init(sample_rate), .sample_rate = sample_rate };
         engine.setRegisters(msxInitialRegisters());
         return engine;
     }
@@ -324,9 +335,15 @@ pub const Engine = struct {
                 sides[0] += amiga[0];
                 sides[1] += amiga[1];
             }
+            if (self.mod.playing) {
+                const module = self.mod.sample(self.pool, &self.amiga_led);
+                sides[0] += module[0];
+                sides[1] += module[1];
+            }
             out[i] = self.filtered(0, sides[0]);
             out[i + 1] = self.filtered(1, sides[1]);
         }
+        self.mod_playing.store(self.mod.playing, .release);
     }
 
     /// The level without its constant part (as the coupling capacitor of a computer's
@@ -346,7 +363,26 @@ pub const Engine = struct {
                 .write => |w| self.psg.write(w.reg, w.value),
                 .instrument => |i| self.instruments[i.index] = i.value,
                 .sample => |s| self.samples[s.index] = s.value,
-                .free_samples => self.samples = @splat(.{}),
+                .free_samples => {
+                    self.samples = @splat(.{});
+                    self.mod = mod_module.Mod.init(self.sample_rate);
+                    self.mod_playing.store(false, .release);
+                },
+                .mod_load => |at| {
+                    self.mod.stop();
+                    const bytes = std.mem.sliceAsBytes(self.pool);
+                    const start = @as(usize, at) * 2;
+                    @memcpy(std.mem.asBytes(&self.mod.song), bytes[start..][0..@sizeOf(mod_module.Song)]);
+                    self.mod_playing.store(false, .release);
+                },
+                .mod_play => |repeat| {
+                    self.mod.start(repeat);
+                    self.mod_playing.store(self.mod.playing, .release);
+                },
+                .mod_stop => {
+                    self.mod.stop();
+                    self.mod_playing.store(false, .release);
+                },
                 .amiga_filter => |on| self.amiga_led = on,
                 .sfx => |n| {
                     self.sfx_players[self.sfx_next].start(self.samples[n], @as(f64, @floatFromInt(self.samples[n].rate)) / @as(f64, @floatFromInt(self.sample_rate)));
@@ -371,6 +407,8 @@ pub const Engine = struct {
                     self.scc = scc_module.Scc.init(self.sample_rate);
                     self.amiga = amiga_module.Amiga.init(self.sample_rate);
                     self.sfx_players = @splat(.{});
+                    self.mod.stop();
+                    self.mod_playing.store(false, .release);
                     self.setRegisters(msxInitialRegisters());
                     if (b.beep) {
                         self.psg.write(0, @truncate(beep_period));

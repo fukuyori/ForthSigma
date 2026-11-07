@@ -24,7 +24,7 @@ const Cell = memory_map.Cell;
 const State = forth.State;
 
 /// The built-in words this file executes; executeBuiltin dispatches by this list.
-pub const words = [_]Builtin{ .snd_play, .snd_sound, .snd_beep, .snd_playing, .snd_device, .snd_plays, .snd_chip, .snd_instrument, .snd_wave, .snd_duty, .snd_adsr, .snd_ring, .snd_sync, .snd_filter, .snd_wavetable, .snd_load_sample, .snd_sample, .snd_loop_sample, .snd_sample_instrument, .snd_sfx, .snd_amiga_filter, .snd_free_samples, .snd_chips };
+pub const words = [_]Builtin{ .snd_play, .snd_sound, .snd_beep, .snd_playing, .snd_device, .snd_plays, .snd_chip, .snd_instrument, .snd_wave, .snd_duty, .snd_adsr, .snd_ring, .snd_sync, .snd_filter, .snd_wavetable, .snd_load_sample, .snd_sample, .snd_loop_sample, .snd_sample_instrument, .snd_sfx, .snd_amiga_filter, .snd_free_samples, .snd_chips, .snd_load_mod, .snd_play_mod, .snd_stop_mod, .snd_mod_playing };
 
 /// The SND- words in the order REQUIRE-AUDIO appends them, right after the AUDIO
 /// vocabulary. The order is part of the dictionary that images keep: add new words at
@@ -37,12 +37,13 @@ pub const definitions = [_]struct { []const u8, Builtin }{
     .{ "SND-SYNC", .snd_sync },                           .{ "SND-FILTER", .snd_filter },         .{ "SND-WAVETABLE", .snd_wavetable },
     .{ "SND-LOAD-SAMPLE", .snd_load_sample },             .{ "SND-SAMPLE", .snd_sample },         .{ "SND-LOOP-SAMPLE", .snd_loop_sample },
     .{ "SND-SAMPLE-INSTRUMENT", .snd_sample_instrument }, .{ "SND-SFX", .snd_sfx },               .{ "SND-AMIGA-FILTER", .snd_amiga_filter },
-    .{ "SND-FREE-SAMPLES", .snd_free_samples },           .{ "SND-CHIPS", .snd_chips },
+    .{ "SND-FREE-SAMPLES", .snd_free_samples },           .{ "SND-CHIPS", .snd_chips },           .{ "SND-LOAD-MOD", .snd_load_mod },
+    .{ "SND-PLAY-MOD", .snd_play_mod },                   .{ "SND-STOP-MOD", .snd_stop_mod },     .{ "SND-MOD-PLAYING", .snd_mod_playing },
 };
 
 /// The words of the audio library that HELP describes; the help test checks that the
 /// library defines each of them.
-pub const library_words = [_][]const u8{ "PLAY", "PLAY2", "PLAY3", "PLAY?", "SOUND", "BEEP", "AUDIO?", "PLAYS", "MSX-SOUND", "ST-SOUND", "NES-SOUND", "INSTRUMENT", "SQUARE", "PULSE", "TRIANGLE", "SAW", "NOISE", "DUTY", "ADSR", "C64-SOUND", "RING", "SYNC", "FILTER", "SCC-SOUND", "SCC-WAVE", "LOAD-SAMPLE", "SAMPLE", "LOOP-SAMPLE", "SAMPLE-INSTRUMENT", "SFX", "FREE-SAMPLES", "AMIGA-SOUND", "AMIGA-FILTER", "CHIPS", "MSX", "ST", "NES", "C64", "SCC", "AMIGA" };
+pub const library_words = [_][]const u8{ "PLAY", "PLAY2", "PLAY3", "PLAY?", "SOUND", "BEEP", "AUDIO?", "PLAYS", "MSX-SOUND", "ST-SOUND", "NES-SOUND", "INSTRUMENT", "SQUARE", "PULSE", "TRIANGLE", "SAW", "NOISE", "DUTY", "ADSR", "C64-SOUND", "RING", "SYNC", "FILTER", "SCC-SOUND", "SCC-WAVE", "LOAD-SAMPLE", "SAMPLE", "LOOP-SAMPLE", "SAMPLE-INSTRUMENT", "SFX", "FREE-SAMPLES", "AMIGA-SOUND", "AMIGA-FILTER", "CHIPS", "MSX", "ST", "NES", "C64", "SCC", "AMIGA", "LOAD-MOD", "PLAY-MOD", "STOP-MOD", "MOD?" };
 
 /// The audio library, which REQUIRE-AUDIO interprets after appending the SND- words.
 pub const library = @embedFile("../audio/audio.fs");
@@ -198,6 +199,25 @@ pub fn execute(self: *State, builtin: Builtin) RuntimeError!void {
             self.audio_chips = chips;
             try stop(self, engine, engine.chipsCommand(chips));
         },
+        .snd_load_mod => {
+            const name = try self.memoryRange();
+            try self.push(try loadMod(self, name));
+        },
+        .snd_play_mod => {
+            const repeat = try self.pop() != 0;
+            const engine = try getEngine(self);
+            try putCommand(self, engine, .{ .mod_play = repeat });
+            // MOD? is true at once.
+            waitTaken(self, engine);
+        },
+        .snd_stop_mod => {
+            const engine = try getEngine(self);
+            try putCommand(self, engine, .mod_stop);
+        },
+        .snd_mod_playing => {
+            const engine = try getEngine(self);
+            try self.push(if (engine.mod_playing.load(.acquire)) -1 else 0);
+        },
         .snd_free_samples => {
             const engine = try getEngine(self);
             // The music and the SFX stop first, so that nothing reads the pool any more.
@@ -333,6 +353,75 @@ fn loadSample(self: *State, name: []const u8, n: u8) RuntimeError!Cell {
     }
 }
 
+const mod_error_code: Cell = -277;
+
+/// LOAD-MOD: reads a ProTracker module (4 channels, 31 samples) into the pool: its
+/// patterns, its samples (8-bit, as 16-bit), and its song. The ior: 0, the file's,
+/// MOD ERROR (-277) for a file that is not such a module or ends in its patterns, or
+/// OUT OF MEMORY (-257). A module whose samples end early keeps what is there. The
+/// module that played stops; nothing else changes on an error.
+fn loadMod(self: *State, name: []const u8) RuntimeError!Cell {
+    const mod = sound_engine.mod_module;
+    const engine = try getEngine(self);
+    const files = try self.fileOps();
+    const context = self.writer.context;
+    const opened = files.open(context, name, .read_only, false);
+    if (opened.ior != 0) return opened.ior;
+    const fileid: Cell = @bitCast(opened.value);
+    defer _ = files.close(context, fileid);
+
+    var header: [mod.header_size]u8 = undefined;
+    switch (readAll(files, context, fileid, &header)) {
+        .bytes => |count| if (count < header.len) return mod_error_code,
+        .ior => |ior| return ior,
+    }
+    var song = mod.parseHeader(&header) catch return mod_error_code;
+    // The patterns' bytes, the samples, and the song, one after the other.
+    const pattern_slots = @as(usize, song.pattern_count) * mod.pattern_size / 2;
+    var frames: usize = 0;
+    for (song.samples) |info| frames += info.length;
+    const song_slots = (@sizeOf(mod.Song) + 1) / 2;
+    const out = poolSpace(self, engine, pattern_slots + frames + song_slots) catch return memory_error_code;
+    const base = self.audio_pool_used;
+
+    switch (readAll(files, context, fileid, std.mem.sliceAsBytes(out[0..pattern_slots]))) {
+        .bytes => |count| if (count < pattern_slots * 2) return mod_error_code,
+        .ior => |ior| return ior,
+    }
+    song.patterns_at = base * 2;
+    var at: usize = pattern_slots;
+    var buffer: [4096]u8 = undefined;
+    var ended = false;
+    for (&song.samples) |*info| {
+        info.start = @intCast(base + at);
+        var left: usize = info.length;
+        var done: usize = 0;
+        while (left > 0 and !ended) {
+            const part = @min(left, buffer.len);
+            const count = switch (readAll(files, context, fileid, buffer[0..part])) {
+                .bytes => |c| c,
+                .ior => |ior| return ior,
+            };
+            for (out[at + done ..][0..count], buffer[0..count]) |*s, byte| s.* = @as(i16, @as(i8, @bitCast(byte))) * 256;
+            done += count;
+            left -= count;
+            if (count < part) ended = true;
+        }
+        // A sample cut short by the file's end is as long as what was read.
+        info.length = @intCast(done);
+        if (info.loop_start + info.loop_length > info.length) {
+            info.loop_start = 0;
+            info.loop_length = 0;
+        }
+        at += done;
+    }
+    @memcpy(std.mem.sliceAsBytes(out[at..][0..song_slots])[0..@sizeOf(mod.Song)], std.mem.asBytes(&song));
+    const song_at: u32 = @intCast(base + at);
+    self.audio_pool_used = @intCast(base + at + song_slots);
+    try putCommand(self, engine, .{ .mod_load = song_at });
+    return 0;
+}
+
 /// Reads until `buffer` is full or the file ends: the bytes read, or the file's ior.
 fn readAll(files: *const forth.FileOps, context: ?*anyopaque, fileid: Cell, buffer: []u8) union(enum) { bytes: usize, ior: Cell } {
     var used: usize = 0;
@@ -419,9 +508,13 @@ fn reset(self: *State, engine: *Engine, beep: bool) RuntimeError!void {
 fn stop(self: *State, engine: *Engine, command: sound_engine.Command) RuntimeError!void {
     self.audio_voices = @splat(.{});
     try putCommand(self, engine, command);
-    // The thread takes commands every few milliseconds; Ctrl+C is not taken here, as
-    // the music is stopping anyway. The bound only guards against a host whose thread
-    // has stopped.
+    waitTaken(self, engine);
+}
+
+/// Waits until the audio thread has taken the commands put so far. It takes them every
+/// few milliseconds; Ctrl+C is not taken here (the waits are short). The bound only
+/// guards against a host whose thread has stopped.
+fn waitTaken(self: *State, engine: *Engine) void {
     var waiter: Waiter = .{ .state = self };
     var waits: usize = 0;
     while (!engine.commands.isEmpty() and waits < max_reset_waits) : (waits += 1) {

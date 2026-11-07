@@ -74,23 +74,36 @@ const LowPass = struct {
     }
 };
 
+/// The A500's output filters, for the left and the right: the fixed one-pole low-pass
+/// at about 4.9 kHz, and the LED filter (Butterworth, about 3.3 kHz) when it is on.
+pub const Filters = struct {
+    fixed_factor: f32,
+    fixed: [2]f32 = .{ 0, 0 },
+    led: [2]LowPass,
+
+    pub fn init(sample_rate: u32) Filters {
+        const rate: f32 = @floatFromInt(sample_rate);
+        const filter = LowPass.init(3275, 0.7071, sample_rate);
+        return .{ .fixed_factor = 1 - @exp(-2 * std.math.pi * 4900 / rate), .led = .{ filter, filter } };
+    }
+
+    pub fn process(self: *Filters, sides: [2]f32, led: bool) [2]f32 {
+        var out = sides;
+        for (&out, 0..) |*side, i| {
+            self.fixed[i] += self.fixed_factor * (side.* - self.fixed[i]);
+            side.* = if (led) self.led[i].process(self.fixed[i]) else self.fixed[i];
+        }
+        return out;
+    }
+};
+
 pub const Amiga = struct {
     sample_rate: u32,
     voices: [voice_count]Voice = @splat(.{}),
-    /// The A500's fixed one-pole low-pass at about 4.9 kHz: its factor and state.
-    fixed_factor: f32,
-    fixed: [2]f32 = .{ 0, 0 },
-    /// The LED filter: Butterworth, about 3.3 kHz.
-    led: [2]LowPass,
+    filters: Filters,
 
     pub fn init(sample_rate: u32) Amiga {
-        const rate: f32 = @floatFromInt(sample_rate);
-        const filter = LowPass.init(3275, 0.7071, sample_rate);
-        return .{
-            .sample_rate = sample_rate,
-            .fixed_factor = 1 - @exp(-2 * std.math.pi * 4900 / rate),
-            .led = .{ filter, filter },
-        };
+        return .{ .sample_rate = sample_rate, .filters = Filters.init(sample_rate) };
     }
 
     /// `volume` is MML's V, 0 to 15.
@@ -136,10 +149,6 @@ pub const Amiga = struct {
             // Voices 1 and 4 on the left, 2 and 3 on the right.
             sides[if (v == 0 or v == 3) 0 else 1] += value / 2;
         }
-        for (&sides, 0..) |*side, i| {
-            self.fixed[i] += self.fixed_factor * (side.* - self.fixed[i]);
-            side.* = if (led) self.led[i].process(self.fixed[i]) else self.fixed[i];
-        }
-        return sides;
+        return self.filters.process(sides, led);
     }
 };
