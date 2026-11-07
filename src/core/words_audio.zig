@@ -22,7 +22,7 @@ const RuntimeError = defs.RuntimeError;
 const State = forth.State;
 
 /// The built-in words this file executes; executeBuiltin dispatches by this list.
-pub const words = [_]Builtin{ .snd_play, .snd_sound, .snd_beep, .snd_playing, .snd_device, .snd_plays, .snd_chip, .snd_instrument, .snd_wave, .snd_duty, .snd_adsr, .snd_ring, .snd_sync, .snd_filter };
+pub const words = [_]Builtin{ .snd_play, .snd_sound, .snd_beep, .snd_playing, .snd_device, .snd_plays, .snd_chip, .snd_instrument, .snd_wave, .snd_duty, .snd_adsr, .snd_ring, .snd_sync, .snd_filter, .snd_wavetable };
 
 /// The SND- words in the order REQUIRE-AUDIO appends them, right after the AUDIO
 /// vocabulary. The order is part of the dictionary that images keep: add new words at
@@ -32,12 +32,12 @@ pub const definitions = [_]struct { []const u8, Builtin }{
     .{ "SND-PLAYING", .snd_playing }, .{ "SND-DEVICE", .snd_device },         .{ "SND-PLAYS", .snd_plays },
     .{ "SND-CHIP", .snd_chip },       .{ "SND-INSTRUMENT", .snd_instrument }, .{ "SND-WAVE", .snd_wave },
     .{ "SND-DUTY", .snd_duty },       .{ "SND-ADSR", .snd_adsr },             .{ "SND-RING", .snd_ring },
-    .{ "SND-SYNC", .snd_sync },       .{ "SND-FILTER", .snd_filter },
+    .{ "SND-SYNC", .snd_sync },       .{ "SND-FILTER", .snd_filter },         .{ "SND-WAVETABLE", .snd_wavetable },
 };
 
 /// The words of the audio library that HELP describes; the help test checks that the
 /// library defines each of them.
-pub const library_words = [_][]const u8{ "PLAY", "PLAY2", "PLAY3", "PLAY?", "SOUND", "BEEP", "AUDIO?", "PLAYS", "MSX-SOUND", "ST-SOUND", "NES-SOUND", "INSTRUMENT", "SQUARE", "PULSE", "TRIANGLE", "SAW", "NOISE", "DUTY", "ADSR", "C64-SOUND", "RING", "SYNC", "FILTER" };
+pub const library_words = [_][]const u8{ "PLAY", "PLAY2", "PLAY3", "PLAY?", "SOUND", "BEEP", "AUDIO?", "PLAYS", "MSX-SOUND", "ST-SOUND", "NES-SOUND", "INSTRUMENT", "SQUARE", "PULSE", "TRIANGLE", "SAW", "NOISE", "DUTY", "ADSR", "C64-SOUND", "RING", "SYNC", "FILTER", "SCC-SOUND", "SCC-WAVE" };
 
 /// The audio library, which REQUIRE-AUDIO interprets after appending the SND- words.
 pub const library = @embedFile("../audio/audio.fs");
@@ -136,6 +136,15 @@ pub fn execute(self: *State, builtin: Builtin) RuntimeError!void {
             if (mode < 0 or mode > 3 or cutoff < 0 or cutoff > 2047 or resonance < 0 or resonance > 15) return error.InvalidNumber;
             try changeInstrument(self, .{ .filter = @intCast(mode), .cutoff = @intCast(cutoff), .resonance = @intCast(resonance) });
         },
+        .snd_wavetable => {
+            const n = try self.pop();
+            const address = try self.pop();
+            if (n < 0 or n >= mml.instrument_count) return error.InvalidNumber;
+            const start = try self.memoryAddress(address, 32);
+            var samples: [32]i8 = undefined;
+            for (&samples, self.memory[start..][0..32]) |*s, byte| s.* = @bitCast(byte);
+            try changeInstrumentAt(self, @intCast(n), .{ .wavetable = samples });
+        },
         .snd_sound => {
             const value = try self.pop();
             const reg = try self.pop();
@@ -183,11 +192,17 @@ const Change = struct {
     filter: ?u8 = null,
     cutoff: ?u16 = null,
     resonance: ?u8 = null,
+    wavetable: ?[32]i8 = null,
 };
 
 /// Changes the instrument INSTRUMENT chose, here and for the audio thread.
 fn changeInstrument(self: *State, change: Change) RuntimeError!void {
-    const instrument = &self.audio_instruments[self.audio_instrument];
+    return changeInstrumentAt(self, self.audio_instrument, change);
+}
+
+/// Changes instrument `index`, here and for the audio thread.
+fn changeInstrumentAt(self: *State, index: u8, change: Change) RuntimeError!void {
+    const instrument = &self.audio_instruments[index];
     if (change.wave) |value| instrument.wave = value;
     if (change.duty) |value| instrument.duty = value;
     if (change.attack) |value| instrument.attack = value;
@@ -199,8 +214,9 @@ fn changeInstrument(self: *State, change: Change) RuntimeError!void {
     if (change.filter) |value| instrument.filter = value;
     if (change.cutoff) |value| instrument.cutoff = value;
     if (change.resonance) |value| instrument.resonance = value;
+    if (change.wavetable) |value| instrument.wavetable = value;
     const engine = try getEngine(self);
-    try putCommand(self, engine, .{ .instrument = .{ .index = self.audio_instrument, .value = instrument.* } });
+    try putCommand(self, engine, .{ .instrument = .{ .index = index, .value = instrument.* } });
 }
 
 /// PLAY: checks the voices' MML (an error puts nothing), then puts their notes,

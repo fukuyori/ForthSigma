@@ -386,3 +386,34 @@ test "C64-SOUND, RING, SYNC, and FILTER" {
         machine.data_depth = 0;
     }
 }
+
+test "SCC-SOUND plays five voices, and SCC-WAVE gives an instrument its wave" {
+    try skipWithout(&.{.audio});
+    var engine = newEngine();
+    var output = Output{ .audio = &engine };
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
+    try machine.interpretLine("REQUIRE-AUDIO ALSO AUDIO SCC-SOUND");
+    try std.testing.expectEqual(sound_engine.Chip.scc, engine.chip);
+    try machine.interpretLine("S\" C\" S\" E\" S\" G\" S\" >C\" S\" <C\" 5 PLAYS 5 PLAY?");
+    try expectStack(machine, &.{-1});
+    machine.data_depth = 0;
+
+    // The 32 bytes are signed: 255 is -1. SCC-WAVE does not change which instrument
+    // INSTRUMENT chose.
+    try machine.interpretLine("CREATE W 32 ALLOT  : FILL-W 32 0 DO I 8 * W I + C! LOOP 255 W 31 + C! ;");
+    try machine.interpretLine("3 INSTRUMENT FILL-W W 9 SCC-WAVE");
+    const table = machine.audio_instruments[9].wavetable.?;
+    try std.testing.expectEqual(@as(i8, 0), table[0]);
+    try std.testing.expectEqual(@as(i8, 120), table[15]);
+    try std.testing.expectEqual(@as(i8, -128), table[16]);
+    try std.testing.expectEqual(@as(i8, -1), table[31]);
+    try std.testing.expectEqual(@as(u8, 3), machine.audio_instrument);
+    try std.testing.expect(machine.audio_instruments[3].wavetable == null);
+    render(&engine, 1);
+    try std.testing.expectEqual(table, engine.instruments[9].wavetable.?);
+
+    try std.testing.expectError(error.InvalidNumber, machine.interpretLine("W 64 SCC-WAVE"));
+    machine.data_depth = 0;
+    try std.testing.expectError(error.InvalidAddress, machine.interpretLine("-5 0 SCC-WAVE"));
+}

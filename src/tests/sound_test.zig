@@ -697,3 +697,64 @@ test "C64-SOUND plays three voices on the SID through the engine" {
     player.play(1000);
     try std.testing.expect(!engine.isPlaying(0));
 }
+
+// ---- S3c: the SCC ----
+
+const scc_module = @import("../core/sound_scc.zig");
+
+test "the SCC's period for a note, and the waves the instruments make without SCC-WAVE" {
+    // 3579545 / (32 × (253 + 1)) = 440.4 Hz.
+    try std.testing.expectEqual(@as(u32, 253), scc_module.periodRegister(57));
+    try std.testing.expectEqual(@as(u32, 4095), scc_module.periodRegister(0));
+    const square = (parts.Instrument{}).table();
+    try std.testing.expectEqual(@as(i8, 127), square[15]);
+    try std.testing.expectEqual(@as(i8, -128), square[16]);
+    const pulse = (parts.Instrument{ .wave = .pulse, .duty = 25 }).table();
+    try std.testing.expectEqual(@as(i8, 127), pulse[7]);
+    try std.testing.expectEqual(@as(i8, -128), pulse[8]);
+    const triangle = (parts.Instrument{ .wave = .triangle }).table();
+    try std.testing.expectEqual(@as(i8, -128), triangle[0]);
+    try std.testing.expectEqual(@as(i8, 127), triangle[15]);
+    try std.testing.expectEqual(@as(i8, -128), triangle[31]);
+    const saw = (parts.Instrument{ .wave = .saw }).table();
+    try std.testing.expectEqual(@as(i8, -128), saw[0]);
+    try std.testing.expectEqual(@as(i8, 127), saw[31]);
+    for (saw[1..], 1..) |s, i| try std.testing.expect(s > saw[i - 1]);
+    const own: [32]i8 = @splat(5);
+    try std.testing.expectEqual(own, (parts.Instrument{ .wave = .saw, .wavetable = own }).table());
+}
+
+test "the SCC plays its instrument's 32 samples as steps at the note's pitch" {
+    var scc = scc_module.Scc.init(rate);
+    scc.noteOn(0, 57, 15, .{});
+    const samples = try std.testing.allocator.alloc(f32, rate);
+    defer std.testing.allocator.free(samples);
+    for (samples) |*s| s.* = scc.sample();
+    const rises = risesOf(samples);
+    try std.testing.expect(rises >= 439 and rises <= 441);
+
+    // A wave of its own: half at 64, half at -64 and so on, as the steps say.
+    var wave: [32]i8 = undefined;
+    for (&wave, 0..) |*s, i| s.* = if (i < 16) 64 else -64;
+    var own = scc_module.Scc.init(rate);
+    own.noteOn(4, 57, 15, .{ .wave = .saw, .wavetable = wave });
+    var top: f32 = 0;
+    for (0..rate / 10) |_| top = @max(top, own.sample());
+    try std.testing.expectApproxEqAbs(@as(f32, 0.5 / 5.0), top, 1e-6);
+    own.noteOff(4);
+    for (0..rate / 10) |_| _ = own.sample();
+    try std.testing.expectEqual(@as(f32, 0), own.sample());
+}
+
+test "SCC-SOUND plays five voices through the engine" {
+    var engine = Engine.init(.ay8910, psg_module.msx_clock, rate);
+    var voices: [engine_module.max_voices]mml.Voice = @splat(.{});
+    var player: Player = .{ .engine = &engine };
+    try std.testing.expect(engine.putCommand(engine.chipCommand(.scc)));
+    player.play(10);
+    try engine_module.putPlay(&engine, &voices, &.{ "C", "E", "G", ">C", "<<C" }, &player, Player.wait);
+    player.play(30);
+    for (1..6) |n| try std.testing.expect(engine.isPlaying(n));
+    player.play(1000);
+    try std.testing.expect(!engine.isPlaying(0));
+}

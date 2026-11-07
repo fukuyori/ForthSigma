@@ -622,6 +622,7 @@ pub const Builtin = enum {
     snd_ring,
     snd_sync,
     snd_filter,
+    snd_wavetable,
 };
 
 pub const HeapResult = union(enum) { address: Cell, no_memory, bad_pointer };

@@ -16,6 +16,7 @@
 \   SND-CHIP ( n -- )  SND-INSTRUMENT ( n -- )  SND-WAVE ( n -- )
 \   SND-DUTY ( percent -- )  SND-ADSR ( a d s r -- )  SND-RING ( flag -- )
 \   SND-SYNC ( flag -- )  SND-FILTER ( mode cutoff resonance -- )
+\   SND-WAVETABLE ( c-addr n -- )
 \
 \ The sound is MSX BASIC's: an AY-3-8910 at the MSX's clock, played by the host's audio
 \ thread. PLAY takes MSX BASIC's music macro language (MML) and returns as soon as the
@@ -40,12 +41,13 @@
 : ST-SOUND ( -- )   1 SND-CHIP ;      \ the Atari ST's YM2149 at 2 MHz, 3 voices
 : NES-SOUND ( -- )   2 SND-CHIP ;     \ the NES: pulse, pulse, triangle, noise
 : C64-SOUND ( -- )   3 SND-CHIP ;     \ the C64's SID (PAL), 3 voices
+: SCC-SOUND ( -- )   4 SND-CHIP ;     \ Konami's SCC, 5 voices
 : PLAYS ( c-addr1 u1 ... c-addrn un n -- )   SND-PLAYS ;
 
 \ ---- Instruments ----------------------------------------------------------------
 \
 \ MML's @n plays with instrument n (0 to 63) on the chips that have instruments (the
-\ NES and the C64). INSTRUMENT chooses the one the words after it change, e.g.
+\ NES, the C64, and the SCC). INSTRUMENT chooses the one the words after it change, e.g.
 \   1 INSTRUMENT  PULSE 25 DUTY  0 6 8 4 ADSR
 \   2 INSTRUMENT  SAW  1 400 8 FILTER       ( the C64: low-pass, cutoff, resonance )
 
@@ -60,6 +62,8 @@
 : RING ( flag -- )   SND-RING ;
 : SYNC ( flag -- )   SND-SYNC ;
 : FILTER ( mode cutoff resonance -- )   SND-FILTER ;
+\ The SCC plays instrument n with the 32 signed bytes at c-addr as its wave.
+: SCC-WAVE ( c-addr n -- )   SND-WAVETABLE ;
 
 \ ---- The device ------------------------------------------------------------------
 

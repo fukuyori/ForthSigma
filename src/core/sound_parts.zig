@@ -31,6 +31,29 @@ pub const Instrument = struct {
     filter: u8 = 0,
     cutoff: u16 = 1024,
     resonance: u8 = 0,
+    /// SCC-WAVE: the 32 signed samples the SCC plays; without one it plays `wave`.
+    wavetable: ?[32]i8 = null,
+
+    /// The 32 samples the SCC plays: SCC-WAVE's, or `wave` made into 32 steps (the
+    /// SCC has no noise: a square instead).
+    pub fn table(self: Instrument) [32]i8 {
+        if (self.wavetable) |samples| return samples;
+        var samples: [32]i8 = undefined;
+        const high: usize = switch (self.wave) {
+            .pulse => @intFromFloat(@round(@as(f32, @floatFromInt(@min(self.duty, 100))) * 32.0 / 100.0)),
+            else => 16,
+        };
+        for (&samples, 0..) |*s, i| {
+            const n: i32 = @intCast(i);
+            s.* = switch (self.wave) {
+                .square, .pulse, .noise => if (i < high) 127 else -128,
+                // Up from -128 to 127 and down again, over the 32 steps.
+                .triangle => @intCast(if (n < 16) -128 + n * 17 else 127 - (n - 16) * 17),
+                .saw => @intCast(-128 + n * 8 + @divTrunc(n, 4)),
+            };
+        }
+        return samples;
+    }
 };
 
 /// The SID's attack times in milliseconds for the values 0 to 15; decay and release

@@ -731,7 +731,7 @@ pub const entries = [_]Entry{
     .{ .name = "BEEP", .stack = "( -- )", .text = "Stop the music, set the PSG and the PLAY settings as at start, and beep (FORTH/Sigma audio)." },
     .{ .name = "AUDIO?", .stack = "( -- flag )", .text = "Whether the sound reaches an audio device; without one the words work silently (FORTH/Sigma audio)." },
     .{ .name = "SND-PLAYS", .stack = "( c-addr1 u1 ... c-addrn un n -- )", .text = "Host primitive for PLAYS (FORTH/Sigma)." },
-    .{ .name = "SND-CHIP", .stack = "( n -- )", .text = "Host primitive for MSX-SOUND (0), ST-SOUND (1), NES-SOUND (2), and C64-SOUND (3) (FORTH/Sigma)." },
+    .{ .name = "SND-CHIP", .stack = "( n -- )", .text = "Host primitive for MSX-SOUND (0), ST-SOUND (1), NES-SOUND (2), C64-SOUND (3), and SCC-SOUND (4) (FORTH/Sigma)." },
     .{ .name = "SND-INSTRUMENT", .stack = "( n -- )", .text = "Host primitive for INSTRUMENT (FORTH/Sigma)." },
     .{ .name = "SND-WAVE", .stack = "( n -- )", .text = "Host primitive for SQUARE (0), PULSE (1), TRIANGLE (2), SAW (3), and NOISE (4) (FORTH/Sigma)." },
     .{ .name = "SND-DUTY", .stack = "( percent -- )", .text = "Host primitive for DUTY (FORTH/Sigma)." },
@@ -755,4 +755,7 @@ pub const entries = [_]Entry{
     .{ .name = "RING", .stack = "( flag -- )", .text = "Ring-modulate the instrument's triangle by the voice before (voice 1 by voice 3) on the C64 (FORTH/Sigma audio)." },
     .{ .name = "SYNC", .stack = "( flag -- )", .text = "Restart the instrument's wave with each cycle of the voice before (voice 1 by voice 3) on the C64 (FORTH/Sigma audio)." },
     .{ .name = "FILTER", .stack = "( mode cutoff resonance -- )", .text = "Send the instrument through the C64's filter: mode 0 none, 1 low-pass, 2 band-pass, 3 high-pass; cutoff 0 to 2047, resonance 0 to 15. The voices share one filter, set by the last note that uses it (FORTH/Sigma audio)." },
+    .{ .name = "SND-WAVETABLE", .stack = "( c-addr n -- )", .text = "Host primitive for SCC-WAVE (FORTH/Sigma)." },
+    .{ .name = "SCC-SOUND", .stack = "( -- )", .text = "Play PLAY on Konami's SCC (5 voices of 32-sample waves); the music stops (FORTH/Sigma audio)." },
+    .{ .name = "SCC-WAVE", .stack = "( c-addr n -- )", .text = "Make the 32 signed bytes at c-addr the wave instrument n plays on the SCC; without one, its wave word's shape (FORTH/Sigma audio)." },
 };
