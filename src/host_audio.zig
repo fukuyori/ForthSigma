@@ -1,8 +1,11 @@
 //! The host's audio thread for REQUIRE-AUDIO's words: it runs the core's sound engine
 //! (src/core/sound_engine.zig) and sends its samples, 48 kHz 16-bit stereo, to the audio
-//! device. On Windows the device is waveOut's; elsewhere, and when no device opens,
-//! the thread makes the samples in time without sending them, so that PLAY, PLAY? and
-//! the program behave the same without sound.
+//! device. On Windows the device is waveOut's. On Linux it is PulseAudio's or ALSA's,
+//! their libraries loaded when the program runs (in a build that can load them), or else
+//! the first of the commands pacat, pw-play, and aplay, which the samples go to through
+//! a pipe (the static musl builds). On macOS, and when no device opens, the thread makes
+//! the samples in time without sending them, so that PLAY, PLAY? and the program behave
+//! the same without sound.
 //!
 //! The thread is started by the first audio word and runs until the program ends. It
 //! takes the engine's queues without locks, as the engine expects of its consumer.
@@ -20,6 +23,7 @@ const sound_psg = @import("core/sound_psg.zig");
 
 const Engine = sound_engine.Engine;
 const is_windows = builtin.os.tag == .windows;
+const is_linux = builtin.os.tag == .linux;
 
 pub const sample_rate: u32 = 48_000;
 /// Each of the device's buffers holds 10 ms; eight of them are queued, so a note starts
@@ -45,11 +49,11 @@ pub fn start(_: ?*anyopaque) ?*Engine {
     engine.pool = std.heap.page_allocator.alloc(i16, sound_engine.pcm.pool_samples) catch &.{};
     // The device is opened here, so that AUDIO? knows at once whether there is one.
     if (is_windows and windows.open()) device_open.store(true, .release);
-    const thread = std.Thread.spawn(.{ .stack_size = 256 * 1024 }, run, .{}) catch {
+    if (is_linux and linux.open()) device_open.store(true, .release);
+    if (!startThread()) {
         state = .failed;
         return null;
-    };
-    thread.detach();
+    }
     state = .running;
     return &engine;
 }
@@ -59,10 +63,37 @@ pub fn hasDevice(_: ?*anyopaque) bool {
     return device_open.load(.acquire);
 }
 
+/// Starts the audio thread, which runs until the program ends. Elsewhere than on Windows
+/// it is pthread_create's with its default attributes: Zig 0.17's std.Thread.spawn sets
+/// attributes that glibc 2.39 refuses (EINVAL) in an x86_64-linux-gnu build.
+fn startThread() bool {
+    if (is_windows) {
+        const thread = std.Thread.spawn(.{ .stack_size = 256 * 1024 }, run, .{}) catch return false;
+        thread.detach();
+        return true;
+    }
+    const posix_thread = struct {
+        extern "c" fn pthread_create(*usize, ?*const anyopaque, *const fn (?*anyopaque) callconv(.c) ?*anyopaque, ?*anyopaque) c_int;
+        extern "c" fn pthread_detach(usize) c_int;
+        fn entry(_: ?*anyopaque) callconv(.c) ?*anyopaque {
+            run();
+            return null;
+        }
+    };
+    var handle: usize = 0;
+    if (posix_thread.pthread_create(&handle, null, posix_thread.entry, null) != 0) return false;
+    _ = posix_thread.pthread_detach(handle);
+    return true;
+}
+
 fn run() void {
     if (is_windows and device_open.load(.acquire)) {
         windows.play();
         // The device failed: the music goes on without it.
+        device_open.store(false, .release);
+    }
+    if (is_linux and device_open.load(.acquire)) {
+        linux.play();
         device_open.store(false, .release);
     }
     playSilently();
@@ -229,6 +260,201 @@ const windows = struct {
                 engine.render(&samples[next]);
                 if (waveOutWrite(device.?, &headers[next], @sizeOf(WaveHeader)) != 0) return;
                 next = (next + 1) % buffer_count;
+            }
+        }
+    }
+};
+
+// ---- Linux: PulseAudio, ALSA, or a command through a pipe ----
+
+const linux = struct {
+    extern "c" fn pipe(*[2]c_int) c_int;
+    extern "c" fn close(c_int) c_int;
+    extern "c" fn write(c_int, [*]const u8, usize) isize;
+    extern "c" fn fcntl(c_int, c_int, ...) c_int;
+    extern "c" fn waitpid(c_int, ?*c_int, c_int) c_int;
+    extern "c" fn posix_spawnp(*c_int, [*:0]const u8, ?*const anyopaque, ?*const anyopaque, [*:null]const ?[*:0]const u8, [*:null]const ?[*:0]const u8) c_int;
+    extern "c" fn posix_spawn_file_actions_init(*anyopaque) c_int;
+    extern "c" fn posix_spawn_file_actions_destroy(*anyopaque) c_int;
+    extern "c" fn posix_spawn_file_actions_adddup2(*anyopaque, c_int, c_int) c_int;
+    extern "c" fn posix_spawn_file_actions_addclose(*anyopaque, c_int) c_int;
+    extern "c" fn posix_spawn_file_actions_addopen(*anyopaque, c_int, [*:0]const u8, c_int, c_uint) c_int;
+    extern "c" fn posix_spawnattr_init(*anyopaque) c_int;
+    extern "c" fn posix_spawnattr_destroy(*anyopaque) c_int;
+    extern "c" fn posix_spawnattr_setflags(*anyopaque, c_short) c_int;
+    extern "c" fn posix_spawnattr_setpgroup(*anyopaque, c_int) c_int;
+    extern "c" fn sigemptyset(*anyopaque) c_int;
+    extern "c" fn sigaddset(*anyopaque, c_int) c_int;
+    extern "c" fn pthread_sigmask(c_int, ?*const anyopaque, ?*anyopaque) c_int;
+    extern "c" var environ: [*:null]const ?[*:0]const u8;
+
+    const f_setfd = 2;
+    const fd_cloexec = 1;
+    const f_setpipe_sz = 1031;
+    const o_wronly = 1;
+    const posix_spawn_setpgroup = 2;
+    const sig_block = 0;
+    const sigpipe = 13;
+    const wnohang = 1;
+    const eintr = 4;
+
+    /// A static musl build cannot load shared libraries (as host_gamepad.zig says).
+    const can_load = !(builtin.link_mode == .static and
+        (builtin.abi == .musl or builtin.abi == .musleabi or builtin.abi == .musleabihf));
+
+    var backend: enum { none, pulse, alsa, pipe } = .none;
+
+    // PulseAudio's simple API.
+    const SampleSpec = extern struct { format: c_int, rate: u32, channels: u8 };
+    const BufferAttr = extern struct { maxlength: u32, tlength: u32, prebuf: u32, minreq: u32, fragsize: u32 };
+    const PulseNew = *const fn (?[*:0]const u8, [*:0]const u8, c_int, ?[*:0]const u8, [*:0]const u8, *const SampleSpec, ?*const anyopaque, ?*const BufferAttr, ?*c_int) callconv(.c) ?*anyopaque;
+    const PulseWrite = *const fn (*anyopaque, [*]const u8, usize, ?*c_int) callconv(.c) c_int;
+    var pulse: ?*anyopaque = null;
+    var pulse_write: PulseWrite = undefined;
+
+    // ALSA.
+    const AlsaOpen = *const fn (*?*anyopaque, [*:0]const u8, c_int, c_int) callconv(.c) c_int;
+    const AlsaSetParams = *const fn (*anyopaque, c_int, c_int, c_uint, c_uint, c_int, c_uint) callconv(.c) c_int;
+    const AlsaWrite = *const fn (*anyopaque, [*]const u8, c_ulong) callconv(.c) c_long;
+    const AlsaRecover = *const fn (*anyopaque, c_int, c_int) callconv(.c) c_int;
+    var pcm: ?*anyopaque = null;
+    var alsa_write: AlsaWrite = undefined;
+    var alsa_recover: AlsaRecover = undefined;
+
+    // The command's pipe.
+    var pipe_fd: c_int = -1;
+
+    fn open() bool {
+        if (can_load) {
+            if (openPulse()) {
+                backend = .pulse;
+                return true;
+            }
+            if (openAlsa()) {
+                backend = .alsa;
+                return true;
+            }
+        }
+        if (openPipe()) {
+            backend = .pipe;
+            return true;
+        }
+        return false;
+    }
+
+    /// PulseAudio (and PipeWire's PulseAudio server), about 40 ms ahead.
+    fn openPulse() bool {
+        var lib = std.DynLib.open("libpulse-simple.so.0") catch return false;
+        const new = lib.lookup(PulseNew, "pa_simple_new") orelse return false;
+        pulse_write = lib.lookup(PulseWrite, "pa_simple_write") orelse return false;
+        const spec: SampleSpec = .{ .format = 3, .rate = sample_rate, .channels = 2 }; // PA_SAMPLE_S16LE
+        const none = std.math.maxInt(u32);
+        const attr: BufferAttr = .{ .maxlength = none, .tlength = sample_rate * 4 * 40 / 1000, .prebuf = none, .minreq = none, .fragsize = none };
+        pulse = new(null, "FORTH/Sigma", 1, null, "sound", &spec, null, &attr, null) orelse return false; // PA_STREAM_PLAYBACK
+        return true;
+    }
+
+    /// ALSA's default device, about 50 ms ahead.
+    fn openAlsa() bool {
+        var lib = std.DynLib.open("libasound.so.2") catch return false;
+        const pcm_open = lib.lookup(AlsaOpen, "snd_pcm_open") orelse return false;
+        const set_params = lib.lookup(AlsaSetParams, "snd_pcm_set_params") orelse return false;
+        alsa_write = lib.lookup(AlsaWrite, "snd_pcm_writei") orelse return false;
+        alsa_recover = lib.lookup(AlsaRecover, "snd_pcm_recover") orelse return false;
+        if (pcm_open(&pcm, "default", 0, 0) < 0) return false; // SND_PCM_STREAM_PLAYBACK
+        // SND_PCM_FORMAT_S16_LE, SND_PCM_ACCESS_RW_INTERLEAVED, resampling allowed.
+        return set_params(pcm.?, 2, 3, 2, sample_rate, 1, 50_000) >= 0;
+    }
+
+    /// The first of the commands that starts and is still running a moment later. It runs
+    /// in its own process group, so that Ctrl+C at the terminal does not end it; it ends
+    /// when the pipe closes with the program.
+    fn openPipe() bool {
+        const commands = [_][]const ?[*:0]const u8{
+            &.{ "pacat", "--raw", "--format=s16le", "--rate=48000", "--channels=2", "--latency-msec=40", null },
+            &.{ "pw-play", "--format=s16", "--rate=48000", "--channels=2", "-", null },
+            &.{ "aplay", "-q", "-t", "raw", "-f", "S16_LE", "-r", "48000", "-c", "2", null },
+        };
+        for (commands) |argv| {
+            if (spawn(@ptrCast(argv.ptr))) return true;
+        }
+        return false;
+    }
+
+    fn spawn(argv: [*:null]const ?[*:0]const u8) bool {
+        var fds: [2]c_int = undefined;
+        if (pipe(&fds) != 0) return false;
+        var actions: [256]u8 align(16) = undefined;
+        var attr: [512]u8 align(16) = undefined;
+        _ = posix_spawn_file_actions_init(&actions);
+        defer _ = posix_spawn_file_actions_destroy(&actions);
+        _ = posix_spawn_file_actions_adddup2(&actions, fds[0], 0);
+        _ = posix_spawn_file_actions_addclose(&actions, fds[0]);
+        _ = posix_spawn_file_actions_addclose(&actions, fds[1]);
+        _ = posix_spawn_file_actions_addopen(&actions, 1, "/dev/null", o_wronly, 0);
+        _ = posix_spawn_file_actions_addopen(&actions, 2, "/dev/null", o_wronly, 0);
+        _ = posix_spawnattr_init(&attr);
+        defer _ = posix_spawnattr_destroy(&attr);
+        _ = posix_spawnattr_setflags(&attr, posix_spawn_setpgroup);
+        _ = posix_spawnattr_setpgroup(&attr, 0);
+        var pid: c_int = 0;
+        const failed = posix_spawnp(&pid, argv[0].?, &actions, &attr, argv, environ) != 0;
+        _ = close(fds[0]);
+        if (failed) {
+            _ = close(fds[1]);
+            return false;
+        }
+        // Other children (SYSTEM, the Tcl program) must not keep the pipe open; a small
+        // pipe keeps the delay short (8 KiB: about 40 ms).
+        _ = fcntl(fds[1], f_setfd, @as(c_int, fd_cloexec));
+        _ = fcntl(fds[1], f_setpipe_sz, @as(c_int, 8192));
+        // A command that cannot play (no server) ends at once.
+        sleepMilliseconds(100);
+        var status: c_int = 0;
+        if (waitpid(pid, &status, wnohang) == pid) {
+            _ = close(fds[1]);
+            return false;
+        }
+        pipe_fd = fds[1];
+        return true;
+    }
+
+    /// Sends the samples until the device fails.
+    fn play() void {
+        // A write to a command that has ended fails here instead of ending the program.
+        var set: [128]u8 align(8) = undefined;
+        _ = sigemptyset(&set);
+        _ = sigaddset(&set, sigpipe);
+        _ = pthread_sigmask(sig_block, &set, null);
+        var buffer: [buffer_frames * 2]i16 = undefined;
+        while (true) {
+            engine.render(&buffer);
+            const bytes = std.mem.sliceAsBytes(&buffer);
+            switch (backend) {
+                .pulse => if (pulse_write(pulse.?, bytes.ptr, bytes.len, null) < 0) return,
+                .alsa => {
+                    var done: usize = 0;
+                    while (done < buffer_frames) {
+                        const written = alsa_write(pcm.?, bytes[done * 4 ..].ptr, buffer_frames - done);
+                        if (written < 0) {
+                            if (alsa_recover(pcm.?, @intCast(written), 1) < 0) return;
+                            continue;
+                        }
+                        done += @intCast(written);
+                    }
+                },
+                .pipe => {
+                    var done: usize = 0;
+                    while (done < bytes.len) {
+                        const written = write(pipe_fd, bytes[done..].ptr, bytes.len - done);
+                        if (written < 0) {
+                            if (std.c._errno().* == eintr) continue;
+                            return;
+                        }
+                        done += @intCast(written);
+                    }
+                },
+                .none => return,
             }
         }
     }
