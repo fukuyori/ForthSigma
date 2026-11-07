@@ -6,6 +6,10 @@
 
 - On Linux and macOS, `SHOW` with no display chosen now uses the Tk window when Sigma runs on a desktop (`DISPLAY`, `WAYLAND_DISPLAY`, or macOS's `__CFBundleIdentifier` is set) and `wish` starts; otherwise it uses the terminal as before. The games in `examples` now open a window there without `DISPLAY-TK`.
 
+### Fixed
+
+- The Linux release builds were silent with PipeWire 1.x, whose `pw-play` reads its input as a sound file unless `--raw` is given; Sigma now passes `--raw`, and falls back to the old form for older PipeWire. `pw-play` also gets `--latency=40ms`, as `pacat` does, so that sounds no longer come about 0.2 s late, and `aplay` gets a 40 ms buffer (`-B 40000`) instead of about 0.5 s.
+
 ## [0.7.0] - 2026-11-07
 
 ### Added

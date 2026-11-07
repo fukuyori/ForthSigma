@@ -372,8 +372,11 @@ const linux = struct {
     fn openPipe() bool {
         const commands = [_][]const ?[*:0]const u8{
             &.{ "pacat", "--raw", "--format=s16le", "--rate=48000", "--channels=2", "--latency-msec=40", null },
-            &.{ "pw-play", "--format=s16", "--rate=48000", "--channels=2", "-", null },
-            &.{ "aplay", "-q", "-t", "raw", "-f", "S16_LE", "-r", "48000", "-c", "2", null },
+            // Newer PipeWire reads stdin as a sound file unless --raw says otherwise;
+            // older versions have no --raw and end at once, so the second form follows.
+            &.{ "pw-play", "--raw", "--latency=40ms", "--format=s16", "--rate=48000", "--channels=2", "-", null },
+            &.{ "pw-play", "--latency=40ms", "--format=s16", "--rate=48000", "--channels=2", "-", null },
+            &.{ "aplay", "-q", "-B", "40000", "-t", "raw", "-f", "S16_LE", "-r", "48000", "-c", "2", null },
         };
         for (commands) |argv| {
             if (spawn(@ptrCast(argv.ptr))) return true;
