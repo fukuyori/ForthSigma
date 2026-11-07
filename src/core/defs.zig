@@ -613,6 +613,12 @@ pub const Builtin = enum {
     snd_beep,
     snd_playing,
     snd_device,
+    snd_plays,
+    snd_chip,
+    snd_instrument,
+    snd_wave,
+    snd_duty,
+    snd_adsr,
 };
 
 pub const HeapResult = union(enum) { address: Cell, no_memory, bad_pointer };

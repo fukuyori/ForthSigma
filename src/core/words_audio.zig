@@ -15,13 +15,14 @@ const library_loading = @import("library_loading.zig");
 const memory_map = @import("memory_map.zig");
 const mml = @import("sound_mml.zig");
 const sound_engine = @import("sound_engine.zig");
+const parts = @import("sound_parts.zig");
 const Builtin = defs.Builtin;
 const Engine = sound_engine.Engine;
 const RuntimeError = defs.RuntimeError;
 const State = forth.State;
 
 /// The built-in words this file executes; executeBuiltin dispatches by this list.
-pub const words = [_]Builtin{ .snd_play, .snd_sound, .snd_beep, .snd_playing, .snd_device };
+pub const words = [_]Builtin{ .snd_play, .snd_sound, .snd_beep, .snd_playing, .snd_device, .snd_plays, .snd_chip, .snd_instrument, .snd_wave, .snd_duty, .snd_adsr };
 
 /// The SND- words in the order REQUIRE-AUDIO appends them, right after the AUDIO
 /// vocabulary. The order is part of the dictionary that images keep: add new words at
@@ -29,11 +30,14 @@ pub const words = [_]Builtin{ .snd_play, .snd_sound, .snd_beep, .snd_playing, .s
 pub const definitions = [_]struct { []const u8, Builtin }{
     .{ "SND-PLAY", .snd_play },       .{ "SND-SOUND", .snd_sound },   .{ "SND-BEEP", .snd_beep },
     .{ "SND-PLAYING", .snd_playing }, .{ "SND-DEVICE", .snd_device },
+    .{ "SND-PLAYS", .snd_plays },     .{ "SND-CHIP", .snd_chip },
+    .{ "SND-INSTRUMENT", .snd_instrument }, .{ "SND-WAVE", .snd_wave },
+    .{ "SND-DUTY", .snd_duty },       .{ "SND-ADSR", .snd_adsr },
 };
 
 /// The words of the audio library that HELP describes; the help test checks that the
 /// library defines each of them.
-pub const library_words = [_][]const u8{ "PLAY", "PLAY2", "PLAY3", "PLAY?", "SOUND", "BEEP", "AUDIO?" };
+pub const library_words = [_][]const u8{ "PLAY", "PLAY2", "PLAY3", "PLAY?", "SOUND", "BEEP", "AUDIO?", "PLAYS", "MSX-SOUND", "ST-SOUND", "NES-SOUND", "INSTRUMENT", "SQUARE", "PULSE", "TRIANGLE", "SAW", "NOISE", "DUTY", "ADSR" };
 
 /// The audio library, which REQUIRE-AUDIO interprets after appending the SND- words.
 pub const library = @embedFile("../audio/audio.fs");
@@ -77,6 +81,52 @@ pub fn execute(self: *State, builtin: Builtin) RuntimeError!void {
             }
             try play(self, &texts);
         },
+        .snd_plays => {
+            const count = try self.pop();
+            if (count < 1 or count > self.audio_chip.voiceCount()) return error.InvalidNumber;
+            var texts: [sound_engine.max_voices][]const u8 = undefined;
+            var v: usize = @intCast(count);
+            while (v > 0) {
+                v -= 1;
+                texts[v] = try self.memoryRange();
+            }
+            try play(self, texts[0..@intCast(count)]);
+        },
+        .snd_chip => {
+            const n = try self.pop();
+            const chips = @typeInfo(sound_engine.Chip).@"enum".field_names.len;
+            if (n < 0 or n >= chips) return error.InvalidNumber;
+            const engine = try getEngine(self);
+            const chip: sound_engine.Chip = @enumFromInt(n);
+            self.audio_chip = chip;
+            try stop(self, engine, engine.chipCommand(chip));
+        },
+        .snd_instrument => {
+            const n = try self.pop();
+            if (n < 0 or n >= mml.instrument_count) return error.InvalidNumber;
+            self.audio_instrument = @intCast(n);
+        },
+        .snd_wave => {
+            const n = try self.pop();
+            if (n < 0 or n >= @typeInfo(parts.Wave).@"enum".field_names.len) return error.InvalidNumber;
+            try changeInstrument(self, .{ .wave = @enumFromInt(n) });
+        },
+        .snd_duty => {
+            const n = try self.pop();
+            if (n < 0 or n > 100) return error.InvalidNumber;
+            try changeInstrument(self, .{ .duty = @intCast(n) });
+        },
+        .snd_adsr => {
+            var values: [4]u8 = undefined;
+            var i: usize = 4;
+            while (i > 0) {
+                i -= 1;
+                const n = try self.pop();
+                if (n < 0 or n > 15) return error.InvalidNumber;
+                values[i] = @intCast(n);
+            }
+            try changeInstrument(self, .{ .attack = values[0], .decay = values[1], .sustain = values[2], .release = values[3] });
+        },
         .snd_sound => {
             const value = try self.pop();
             const reg = try self.pop();
@@ -91,7 +141,7 @@ pub fn execute(self: *State, builtin: Builtin) RuntimeError!void {
         },
         .snd_playing => {
             const n = try self.pop();
-            if (n < 0 or n > 3) return error.InvalidNumber;
+            if (n < 0 or n > self.audio_chip.voiceCount()) return error.InvalidNumber;
             const engine = try getEngine(self);
             try self.push(if (engine.isPlaying(@intCast(n))) -1 else 0);
         },
@@ -111,10 +161,26 @@ fn getEngine(self: *State) RuntimeError!*Engine {
     return audio_fn(self.writer.context) orelse error.HostFailed;
 }
 
-/// PLAY: checks the three voices' MML (an error puts nothing), then puts their notes,
+/// Which settings of the instrument being edited change.
+const Change = struct { wave: ?parts.Wave = null, duty: ?u8 = null, attack: ?u8 = null, decay: ?u8 = null, sustain: ?u8 = null, release: ?u8 = null };
+
+/// Changes the instrument INSTRUMENT chose, here and for the audio thread.
+fn changeInstrument(self: *State, change: Change) RuntimeError!void {
+    const instrument = &self.audio_instruments[self.audio_instrument];
+    if (change.wave) |value| instrument.wave = value;
+    if (change.duty) |value| instrument.duty = value;
+    if (change.attack) |value| instrument.attack = value;
+    if (change.decay) |value| instrument.decay = value;
+    if (change.sustain) |value| instrument.sustain = value;
+    if (change.release) |value| instrument.release = value;
+    const engine = try getEngine(self);
+    try putCommand(self, engine, .{ .instrument = .{ .index = self.audio_instrument, .value = instrument.* } });
+}
+
+/// PLAY: checks the voices' MML (an error puts nothing), then puts their notes,
 /// waiting while the queues are full. Ctrl+C while it waits drops every note put so far,
 /// as BEEP does without its sound, and throws USER INTERRUPT.
-fn play(self: *State, texts: *const [3][]const u8) RuntimeError!void {
+fn play(self: *State, texts: []const []const u8) RuntimeError!void {
     for (texts, 0..) |text, v| mml.check(self.audio_voices[v], text) catch return error.InvalidMml;
     const engine = try getEngine(self);
     var waiter: Waiter = .{ .state = self };
@@ -132,8 +198,14 @@ fn play(self: *State, texts: *const [3][]const u8) RuntimeError!void {
 /// BASIC's defaults. It returns when the audio thread has taken the command, so that
 /// PLAY? is false at once.
 fn reset(self: *State, engine: *Engine, beep: bool) RuntimeError!void {
+    try stop(self, engine, engine.resetCommand(beep));
+}
+
+/// Puts a reset command (BEEP's, a stop's, or MSX-SOUND's and the others') and waits
+/// until the audio thread has taken it.
+fn stop(self: *State, engine: *Engine, command: sound_engine.Command) RuntimeError!void {
     self.audio_voices = @splat(.{});
-    try putCommand(self, engine, engine.resetCommand(beep));
+    try putCommand(self, engine, command);
     // The thread takes commands every few milliseconds; Ctrl+C is not taken here, as
     // the music is stopping anyway. The bound only guards against a host whose thread
     // has stopped.

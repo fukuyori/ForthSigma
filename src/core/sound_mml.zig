@@ -10,8 +10,12 @@
 pub const Event = struct {
     kind: Kind = .note,
     ticks: u16 = 0,
-    /// The PSG's tone period; 0 for a rest.
+    /// The PSG's tone period on the MSX; 0 for a rest.
     period: u16 = 0,
+    /// The same pitch for the other chips: octave × 12 + semitone (O4's A is 57, 440 Hz).
+    note: u8 = 0,
+    /// The instrument that `@` chose (0 to 63), for the chips that have instruments.
+    instrument: u8 = 0,
     /// The PSG's amplitude register: a volume 0 to 15, or 16 to use the envelope.
     amplitude: u8 = 0,
     /// The envelope's shape (R13) and period (R11 and R12), when `amplitude` is 16.
@@ -30,7 +34,11 @@ pub const Voice = struct {
     envelope: bool = false,
     shape: u8 = 0,
     envelope_period: u16 = 255,
+    instrument: u8 = 0,
 };
+
+/// The instruments `@` can choose.
+pub const instrument_count = 64;
 
 pub const Error = error{InvalidMml};
 
@@ -83,6 +91,7 @@ pub const Parser = struct {
                     if (period < 1 or period > 65535) return error.InvalidMml;
                     self.voice.envelope_period = @intCast(period);
                 },
+                '@' => self.voice.instrument = try self.argument(0, instrument_count - 1, 0),
                 '<' => {
                     if (self.voice.octave <= 1) return error.InvalidMml;
                     self.voice.octave -= 1;
@@ -119,7 +128,12 @@ pub const Parser = struct {
     }
 
     fn tone(self: *Parser, octave: u8, semitone: u8, length: u8) Error!Event {
-        var event: Event = .{ .ticks = self.duration(length), .period = octave1_periods[semitone] >> @intCast(octave - 1) };
+        var event: Event = .{
+            .ticks = self.duration(length),
+            .period = octave1_periods[semitone] >> @intCast(octave - 1),
+            .note = octave * 12 + semitone,
+            .instrument = self.voice.instrument,
+        };
         if (self.voice.envelope) {
             event.amplitude = 16;
             event.shape = self.voice.shape;

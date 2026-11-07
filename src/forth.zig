@@ -27,6 +27,7 @@ const words_float = @import("core/words_float.zig");
 const words_graphics = @import("core/words_graphics.zig");
 const words_audio = @import("core/words_audio.zig");
 const sound_mml = @import("core/sound_mml.zig");
+const sound_engine = @import("core/sound_engine.zig");
 const graphics_terminal = @import("core/graphics_terminal.zig");
 const graphics_input = @import("core/graphics_input.zig");
 const graphics_font = @import("core/graphics_font.zig");
@@ -217,7 +218,13 @@ pub const State = struct {
     /// The Forth source REQUIRE-AUDIO interprets (empty in a build without audio).
     audio_library: []const u8 = if (defs.audio_enabled) words_audio.library else "",
     /// What each voice of PLAY keeps from one PLAY to the next; BEEP resets it.
-    audio_voices: [3]sound_mml.Voice = @splat(.{}),
+    audio_voices: [sound_engine.max_voices]sound_mml.Voice = @splat(.{}),
+    /// The chip MSX-SOUND and the others chose, as the audio thread has it.
+    audio_chip: sound_engine.Chip = .msx,
+    /// The instruments, as the audio thread has them, and the one INSTRUMENT chose to
+    /// change.
+    audio_instruments: [sound_mml.instrument_count]sound_engine.Instrument = @splat(.{}),
+    audio_instrument: u8 = 0,
     /// One band of six rows of a Sixel image, as color registers (none in a build without
     /// graphics).
     gfx_band: if (defs.graphics_enabled) [6][graphics_terminal.max_sixel_width]u8 else void = undefined,

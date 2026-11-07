@@ -364,3 +364,200 @@ test "the WAV header of 16-bit PCM" {
     wav.putSamples(&bytes, &.{ -2, 0x1234 });
     try std.testing.expectEqualSlices(u8, &.{ 0xfe, 0xff, 0x34, 0x12 }, &bytes);
 }
+
+// ---- S3a: the common parts, the NES, and the Atari ST ----
+
+const parts = @import("../core/sound_parts.zig");
+const nes_module = @import("../core/sound_nes.zig");
+
+/// Rises across the middle of the lowest and highest sample, in `samples`.
+fn risesOf(samples: []const f32) usize {
+    var low = samples[0];
+    var high = samples[0];
+    for (samples) |s| {
+        low = @min(low, s);
+        high = @max(high, s);
+    }
+    const middle = (low + high) / 2;
+    var rises: usize = 0;
+    var above = samples[0] > middle;
+    for (samples[1..]) |s| {
+        const now = s > middle;
+        if (now and !above) rises += 1;
+        above = now;
+    }
+    return rises;
+}
+
+/// The fraction of `samples` above the middle of the lowest and highest.
+fn highFraction(samples: []const f32) f32 {
+    var low = samples[0];
+    var high = samples[0];
+    for (samples) |s| {
+        low = @min(low, s);
+        high = @max(high, s);
+    }
+    var count: usize = 0;
+    for (samples) |s| {
+        if (s > (low + high) / 2) count += 1;
+    }
+    return @as(f32, @floatFromInt(count)) / @as(f32, @floatFromInt(samples.len));
+}
+
+/// One second of the NES's output.
+fn nesSecond(nes: *nes_module.Nes) ![]f32 {
+    const samples = try std.testing.allocator.alloc(f32, rate);
+    for (samples) |*s| s.* = nes.sample();
+    return samples;
+}
+
+test "MML's @ chooses an instrument, and each note has its number for the other chips" {
+    var voice: mml.Voice = .{};
+    var parser = mml.Parser.init(&voice, "@5 C O3 A @ N57 R");
+    const c = (try parser.next()).?;
+    try std.testing.expectEqual(@as(u8, 5), c.instrument);
+    try std.testing.expectEqual(@as(u8, 48), c.note);
+    const a = (try parser.next()).?;
+    try std.testing.expectEqual(@as(u8, 45), a.note);
+    // @ without a number is @0; N57 is O5's A (octave 57 / 12 + 1).
+    const n = (try parser.next()).?;
+    try std.testing.expectEqual(@as(u8, 0), n.instrument);
+    try std.testing.expectEqual(@as(u8, 69), n.note);
+    try std.testing.expectEqual(@as(u16, 0), (try parser.next()).?.period);
+    try std.testing.expectError(error.InvalidMml, mml.check(.{}, "@64C"));
+}
+
+test "a note's pitch in equal temperament, and on the chips' period registers" {
+    try std.testing.expectApproxEqAbs(@as(f64, 440), parts.noteFrequency(57), 1e-9);
+    try std.testing.expectApproxEqAbs(@as(f64, 220), parts.noteFrequency(45), 1e-9);
+    try std.testing.expectApproxEqAbs(@as(f64, 261.6256), parts.noteFrequency(48), 1e-3);
+    // The Atari ST: 2 MHz / (16 × 284) = 440.1 Hz.
+    try std.testing.expectEqual(@as(u32, 284), parts.chipPeriod(57, psg_module.atari_st_clock, 16, 0, 4095));
+    // The NES's pulse: 1789773 / (16 × (253 + 1)) = 440.4 Hz; and the limits.
+    try std.testing.expectEqual(@as(u32, 253), parts.chipPeriod(57, nes_module.cpu_clock, 16, 1, 2047));
+    try std.testing.expectEqual(@as(u32, 2047), parts.chipPeriod(12, nes_module.cpu_clock, 16, 1, 2047));
+}
+
+test "the ADSR envelope: its attack, its sustain level, and its release" {
+    var adsr: parts.Adsr = .{};
+    adsr.start(.{ .attack = 0, .decay = 0, .sustain = 6, .release = 0 }, rate);
+    // Attack 0 is 2 ms (96 samples) to the top.
+    var top: f32 = 0;
+    for (0..100) |_| top = @max(top, adsr.next());
+    try std.testing.expectEqual(@as(f32, 1), top);
+    // Decay 0 is 6 ms to the sustain level, 6 / 15.
+    for (0..rate / 10) |_| _ = adsr.next();
+    try std.testing.expectApproxEqAbs(@as(f32, 0.4), adsr.next(), 1e-3);
+    adsr.stop();
+    for (0..rate / 10) |_| _ = adsr.next();
+    try std.testing.expectEqual(@as(f32, 0), adsr.next());
+
+    // A longer attack (8: 100 ms) is half way after 50 ms.
+    var slow: parts.Adsr = .{};
+    slow.start(.{ .attack = 8 }, rate);
+    var level: f32 = 0;
+    for (0..rate / 20) |_| level = slow.next();
+    try std.testing.expectApproxEqAbs(@as(f32, 0.5), level, 0.01);
+}
+
+test "the NES pulse sounds on its timer with the duty rounded to the four of the chip" {
+    var nes = nes_module.Nes.init(rate);
+    nes.triangle_level = 0;
+    nes.noteOn(0, 57, 15, .{});
+    const square = try nesSecond(&nes);
+    defer std.testing.allocator.free(square);
+    const rises = risesOf(square);
+    try std.testing.expect(rises >= 439 and rises <= 441);
+    try std.testing.expectApproxEqAbs(@as(f32, 0.5), highFraction(square), 0.01);
+
+    nes.noteOn(1, 57, 15, .{ .wave = .pulse, .duty = 30 });
+    nes.noteOff(0);
+    for (0..rate / 10) |_| _ = nes.sample();
+    const narrow = try nesSecond(&nes);
+    defer std.testing.allocator.free(narrow);
+    try std.testing.expectApproxEqAbs(@as(f32, 0.25), highFraction(narrow), 0.01);
+}
+
+test "the NES triangle sounds an octave lower than a pulse on the same timer, and keeps its step when it stops" {
+    var nes = nes_module.Nes.init(rate);
+    nes.noteOn(2, 45, 15, .{});
+    const wave = try nesSecond(&nes);
+    defer std.testing.allocator.free(wave);
+    const rises = risesOf(wave);
+    try std.testing.expect(rises >= 219 and rises <= 221);
+    nes.noteOff(2);
+    const held = nes.sample();
+    for (0..1000) |_| try std.testing.expectEqual(held, nes.sample());
+}
+
+test "the NES noise is shorter for higher notes and goes silent with its envelope" {
+    var nes = nes_module.Nes.init(rate);
+    nes.triangle_level = 0;
+    // O3's C is the longest period, O4's D# the shortest; the notes beyond take the ends.
+    try std.testing.expectEqual(@as(usize, 15), nes_module.noiseIndex(36));
+    try std.testing.expectEqual(@as(usize, 15), nes_module.noiseIndex(12));
+    try std.testing.expectEqual(@as(usize, 14), nes_module.noiseIndex(37));
+    try std.testing.expectEqual(@as(usize, 0), nes_module.noiseIndex(51));
+    try std.testing.expectEqual(@as(usize, 0), nes_module.noiseIndex(84));
+    var previous: usize = 16;
+    for (36..52) |note| {
+        try std.testing.expect(nes_module.noiseIndex(@intCast(note)) < previous);
+        previous = nes_module.noiseIndex(@intCast(note));
+    }
+    nes.noteOn(3, 51, 15, .{});
+    const high_period = nes.noise_period;
+    nes.noteOn(3, 40, 15, .{});
+    try std.testing.expect(nes.noise_period > high_period);
+    var low: f32 = 1;
+    var high: f32 = 0;
+    for (0..rate / 10) |_| {
+        const s = nes.sample();
+        low = @min(low, s);
+        high = @max(high, s);
+    }
+    try std.testing.expect(high - low > 0.1);
+    nes.noteOff(3);
+    for (0..rate / 10) |_| _ = nes.sample();
+    try std.testing.expectEqual(@as(f32, 0), nes.sample());
+}
+
+test "the engine plays four NES voices together, with their instruments" {
+    var engine = Engine.init(.ay8910, psg_module.msx_clock, rate);
+    var voices: [engine_module.max_voices]mml.Voice = @splat(.{});
+    var player: Player = .{ .engine = &engine };
+    try std.testing.expect(engine.putCommand(engine.chipCommand(.nes)));
+    try std.testing.expect(engine.putCommand(.{ .instrument = .{ .index = 3, .value = .{ .wave = .pulse, .duty = 12 } } }));
+    player.play(10);
+    try std.testing.expectEqual(engine_module.Chip.nes, engine.chip);
+    try std.testing.expectEqual(@as(u8, 12), engine.instruments[3].duty);
+    try engine_module.putPlay(&engine, &voices, &.{ "@3 C", "E", "G", "C" }, &player, Player.wait);
+    player.play(30);
+    for (1..5) |n| try std.testing.expect(engine.isPlaying(n));
+    try std.testing.expect(!engine.isPlaying(5));
+    try std.testing.expectEqual(@as(f32, 0.125), engine.nes.voices[0].duty);
+    try std.testing.expectEqual(@as(f32, 0.5), engine.nes.voices[1].duty);
+    player.play(1000);
+    try std.testing.expect(!engine.isPlaying(0));
+}
+
+test "ST-SOUND plays the same notes on a YM2149 at 2 MHz" {
+    var engine = Engine.init(.ay8910, psg_module.msx_clock, rate);
+    var voices: [engine_module.max_voices]mml.Voice = @splat(.{});
+    var player: Player = .{ .engine = &engine };
+    try std.testing.expect(engine.putCommand(engine.chipCommand(.atari_st)));
+    player.play(10);
+    try std.testing.expectEqual(psg_module.Model.ym2149, engine.psg.model);
+    try std.testing.expectEqual(psg_module.atari_st_clock, engine.psg.clock);
+    try engine_module.putPlay(&engine, &voices, &.{"A"}, &player, Player.wait);
+    player.play(30);
+    try std.testing.expectEqual(@as(u8, 284 & 0xff), engine.psg.read(0));
+    try std.testing.expectEqual(@as(u8, 284 >> 8), engine.psg.read(1));
+    try std.testing.expectEqual(@as(u8, 8), engine.psg.read(8));
+    // Back to the MSX: an AY at its clock, with the period of the ROM.
+    try std.testing.expect(engine.putCommand(engine.chipCommand(.msx)));
+    player.play(10);
+    try engine_module.putPlay(&engine, &voices, &.{"A"}, &player, Player.wait);
+    player.play(30);
+    try std.testing.expectEqual(psg_module.Model.ay8910, engine.psg.model);
+    try std.testing.expectEqual(@as(u8, 254), engine.psg.read(0));
+}

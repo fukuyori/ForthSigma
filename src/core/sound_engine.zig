@@ -10,9 +10,30 @@
 const std = @import("std");
 const mml = @import("sound_mml.zig");
 const psg_module = @import("sound_psg.zig");
+const parts = @import("sound_parts.zig");
+const nes_module = @import("sound_nes.zig");
 
 pub const Event = mml.Event;
 pub const Psg = psg_module.Psg;
+pub const Instrument = parts.Instrument;
+
+/// The chip PLAY plays on (MSX-SOUND and the others). The PSG runs with every chip, for
+/// SOUND and BEEP.
+pub const Chip = enum(u8) {
+    msx,
+    atari_st,
+    nes,
+
+    pub fn voiceCount(chip: Chip) usize {
+        return switch (chip) {
+            .msx, .atari_st => 3,
+            .nes => nes_module.voice_count,
+        };
+    }
+};
+
+/// The most voices a chip has; each has its queue.
+pub const max_voices = 5;
 
 /// A queue with one producer and one consumer. `capacity` must be a power of two.
 pub fn Ring(comptime T: type, comptime capacity: u32) type {
@@ -72,8 +93,11 @@ pub const Command = union(enum) {
     write: struct { reg: u8, value: u8 },
     /// BEEP (with `beep`) or a stop: drops the notes put before it (up to these tails
     /// and this PLAY count), sounds 1316 Hz for 40 ms when `beep`, and sets the PSG as
-    /// the MSX starts it.
-    reset: struct { tails: [3]u32, plays: u32, beep: bool },
+    /// the MSX starts it. With `chip`, PLAY plays on that chip from now on.
+    reset: struct { tails: [max_voices]u32, plays: u32, beep: bool, chip: ?Chip = null },
+    /// INSTRUMENT and the words after it: the instrument's settings, which the notes
+    /// that start from now on use.
+    instrument: struct { index: u8, value: Instrument },
 };
 
 /// The PSG's registers as the MSX's BIOS sets them (GICINI): R0 = 55H, the tones on and
@@ -93,8 +117,11 @@ pub const beep_milliseconds: u32 = 40;
 
 pub const Engine = struct {
     psg: Psg,
+    nes: nes_module.Nes,
     sample_rate: u32,
-    voices: [3]Ring(Event, voice_queue_size) = .{ .{}, .{}, .{} },
+    chip: Chip = .msx,
+    instruments: [mml.instrument_count]Instrument = @splat(.{}),
+    voices: [max_voices]Ring(Event, voice_queue_size) = @splat(.{}),
     commands: Ring(Command, 64) = .{},
     /// The PLAYs put in; only the producer writes it.
     plays_put: std.atomic.Value(u32) = .init(0),
@@ -104,15 +131,15 @@ pub const Engine = struct {
     sounding: std.atomic.Value(u8) = .init(0),
 
     // The consumer's own state.
-    remaining: [3]u16 = .{ 0, 0, 0 },
-    at_end: [3]bool = .{ true, true, true },
+    remaining: [max_voices]u16 = @splat(0),
+    at_end: [max_voices]bool = @splat(true),
     tick_fraction: u32 = 0,
     beep_samples: u32 = 0,
     dc_input: f32 = 0,
     dc_output: f32 = 0,
 
     pub fn init(model: psg_module.Model, clock: u32, sample_rate: u32) Engine {
-        var engine: Engine = .{ .psg = Psg.init(model, clock, sample_rate), .sample_rate = sample_rate };
+        var engine: Engine = .{ .psg = Psg.init(model, clock, sample_rate), .nes = nes_module.Nes.init(sample_rate), .sample_rate = sample_rate };
         engine.setRegisters(msxInitialRegisters());
         return engine;
     }
@@ -148,16 +175,26 @@ pub const Engine = struct {
 
     /// The command for BEEP (`beep`) or a stop, which drops every note put so far.
     pub fn resetCommand(self: *const Engine, beep: bool) Command {
-        return .{ .reset = .{
-            .tails = .{ self.voices[0].tail.raw, self.voices[1].tail.raw, self.voices[2].tail.raw },
-            .plays = self.plays_put.raw,
-            .beep = beep,
-        } };
+        var tails: [max_voices]u32 = undefined;
+        for (&tails, &self.voices) |*tail, *queue| tail.* = queue.tail.raw;
+        return .{ .reset = .{ .tails = tails, .plays = self.plays_put.raw, .beep = beep } };
+    }
+
+    /// The command for MSX-SOUND and the others: a stop that also chooses the chip.
+    pub fn chipCommand(self: *const Engine, chip: Chip) Command {
+        var command = self.resetCommand(false);
+        command.reset.chip = chip;
+        return command;
     }
 
     /// PLAY(n): whether voice n - 1 (or any voice, for n = 0) still has notes to play.
     pub fn isPlaying(self: *const Engine, n: usize) bool {
-        if (n == 0) return self.isPlaying(1) or self.isPlaying(2) or self.isPlaying(3);
+        if (n == 0) {
+            for (1..max_voices + 1) |voice| {
+                if (self.isPlaying(voice)) return true;
+            }
+            return false;
+        }
         const voice = n - 1;
         // The consumer sets `sounding` before it takes the note, so the voice never
         // looks idle between the two.
@@ -182,7 +219,9 @@ pub const Engine = struct {
                     self.tick();
                 }
             }
-            const value = self.filtered(self.psg.sample());
+            var level = self.psg.sample();
+            if (self.chip == .nes) level += self.nes.sample();
+            const value = self.filtered(level);
             out[i] = value;
             out[i + 1] = value;
         }
@@ -203,12 +242,22 @@ pub const Engine = struct {
             self.commands.drop();
             switch (command) {
                 .write => |w| self.psg.write(w.reg, w.value),
+                .instrument => |i| self.instruments[i.index] = i.value,
                 .reset => |b| {
                     for (&self.voices, b.tails) |*queue, tail| queue.dropUntil(tail);
                     self.plays_started.store(b.plays, .release);
-                    self.remaining = .{ 0, 0, 0 };
-                    self.at_end = .{ true, true, true };
+                    self.remaining = @splat(0);
+                    self.at_end = @splat(true);
                     self.sounding.store(0, .release);
+                    if (b.chip) |chip| {
+                        self.chip = chip;
+                        // The Atari ST's YM2149 runs at 2 MHz; the MSX's PSG is an AY.
+                        self.psg = if (chip == .atari_st)
+                            Psg.init(.ym2149, psg_module.atari_st_clock, self.sample_rate)
+                        else
+                            Psg.init(.ay8910, psg_module.msx_clock, self.sample_rate);
+                    }
+                    self.nes = nes_module.Nes.init(self.sample_rate);
                     self.setRegisters(msxInitialRegisters());
                     if (b.beep) {
                         self.psg.write(0, @truncate(beep_period));
@@ -223,19 +272,22 @@ pub const Engine = struct {
 
     /// One tick of 1/50 second: each voice counts down its note and takes the next.
     fn tick(self: *Engine) void {
-        for (0..3) |v| {
+        for (0..max_voices) |v| {
             if (self.remaining[v] > 0) self.remaining[v] -= 1;
             if (self.remaining[v] == 0 and !self.at_end[v]) self.nextEvent(v);
         }
-        if (self.at_end[0] and self.at_end[1] and self.at_end[2]) self.startPlay();
+        for (self.at_end) |at_end| {
+            if (!at_end) return;
+        }
+        self.startPlay();
     }
 
     fn startPlay(self: *Engine) void {
         const started = self.plays_started.raw;
         if (self.plays_put.load(.acquire) == started) return;
         self.plays_started.store(started +% 1, .release);
-        self.at_end = .{ false, false, false };
-        for (0..3) |v| self.nextEvent(v);
+        self.at_end = @splat(false);
+        for (0..max_voices) |v| self.nextEvent(v);
     }
 
     fn nextEvent(self: *Engine, v: usize) void {
@@ -245,7 +297,7 @@ pub const Engine = struct {
         switch (event.kind) {
             .end => {
                 self.at_end[v] = true;
-                self.psg.write(@intCast(8 + v), 0);
+                self.silence(v);
                 self.sounding.store(self.sounding.raw & ~bit, .release);
                 self.voices[v].drop();
             },
@@ -257,20 +309,38 @@ pub const Engine = struct {
         }
     }
 
+    /// Ends voice v's note (at a rest or the end of a PLAY).
+    fn silence(self: *Engine, v: usize) void {
+        switch (self.chip) {
+            .msx, .atari_st => if (v < 3) self.psg.write(@intCast(8 + v), 0),
+            .nes => if (v < nes_module.voice_count) self.nes.noteOff(v),
+        }
+    }
+
     fn play(self: *Engine, v: usize, event: Event) void {
         self.remaining[v] = event.ticks;
-        const reg: u8 = @intCast(v * 2);
-        if (event.period != 0) {
-            self.psg.write(reg, @truncate(event.period));
-            self.psg.write(reg + 1, @truncate(event.period >> 8));
+        if (v >= self.chip.voiceCount()) return;
+        if (event.period == 0) return self.silence(v);
+        switch (self.chip) {
+            .msx => self.playPsg(v, event, event.period),
+            // The same note on the YM2149's 2 MHz clock.
+            .atari_st => self.playPsg(v, event, @intCast(parts.chipPeriod(event.note, psg_module.atari_st_clock, 16, 0, 4095))),
+            // S (the PSG's envelope) has no meaning here: such a note plays at full volume.
+            .nes => self.nes.noteOn(v, event.note, @min(event.amplitude, 15), self.instruments[event.instrument]),
         }
-        if (event.period != 0 and event.amplitude == 16) {
+    }
+
+    fn playPsg(self: *Engine, v: usize, event: Event, period: u16) void {
+        const reg: u8 = @intCast(v * 2);
+        self.psg.write(reg, @truncate(period));
+        self.psg.write(reg + 1, @truncate(period >> 8));
+        if (event.amplitude == 16) {
             self.psg.write(11, @truncate(event.envelope_period));
             self.psg.write(12, @truncate(event.envelope_period >> 8));
             self.psg.write(@intCast(8 + v), 16);
             self.psg.write(13, event.shape);
         } else {
-            self.psg.write(@intCast(8 + v), if (event.period == 0) 0 else event.amplitude);
+            self.psg.write(@intCast(8 + v), event.amplitude);
         }
     }
 };
@@ -282,16 +352,16 @@ pub const Engine = struct {
 /// to stop, and putPlay then returns error.Interrupted: the notes put so far stay, and
 /// the caller drops them with a reset command.
 pub fn putPlay(engine: *Engine, voices: []mml.Voice, texts: []const []const u8, context: anytype, comptime waitFn: fn (@TypeOf(context)) bool) (mml.Error || error{Interrupted})!void {
-    std.debug.assert(texts.len <= 3 and voices.len >= texts.len);
+    std.debug.assert(texts.len <= max_voices and voices.len >= texts.len);
     for (texts, 0..) |text, v| try mml.check(voices[v], text);
-    var parsers: [3]?mml.Parser = .{ null, null, null };
+    var parsers: [max_voices]?mml.Parser = @splat(null);
     for (texts, 0..) |text, v| parsers[v] = mml.Parser.init(&voices[v], text);
-    var pending: [3]?Event = .{ null, null, null };
+    var pending: [max_voices]?Event = @splat(null);
     var counted = false;
     while (true) {
         var left = false;
         var progressed = false;
-        for (0..3) |v| {
+        for (0..max_voices) |v| {
             if (parsers[v] == null) continue;
             while (true) {
                 if (pending[v] == null) pending[v] = parsers[v].?.next() catch unreachable;
@@ -316,7 +386,7 @@ pub fn putPlay(engine: *Engine, voices: []mml.Voice, texts: []const []const u8, 
             if (!waitFn(context)) return error.Interrupted;
         }
     }
-    while (engine.voiceFree(0) < 1 or engine.voiceFree(1) < 1 or engine.voiceFree(2) < 1) {
+    while (!allHaveRoom(engine)) {
         if (!counted) {
             engine.countPlay();
             counted = true;
@@ -325,4 +395,11 @@ pub fn putPlay(engine: *Engine, voices: []mml.Voice, texts: []const []const u8, 
     }
     engine.endPlay();
     if (!counted) engine.countPlay();
+}
+
+fn allHaveRoom(engine: *const Engine) bool {
+    for (0..max_voices) |v| {
+        if (engine.voiceFree(v) < 1) return false;
+    }
+    return true;
 }
