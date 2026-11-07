@@ -12,13 +12,15 @@
 - Added ProTracker modules: `LOAD-MOD` (four channels; the new error `MOD ERROR`, -277), `PLAY-MOD`, `STOP-MOD`, and `MOD?`.
 - Added the audio output: waveOut on Windows; on Linux, PulseAudio or ALSA in builds that can load libraries, and otherwise the commands `pacat`, `pw-play`, or `aplay` (the release builds). Without an audio device, and on macOS, the words work without sound; `AUDIO?` tells which.
 - Added the build option `-Daudio=false`, which leaves the sound out; `REQUIRE-AUDIO` then throws the new error `AUDIO UNAVAILABLE` (-275).
-- Added `examples/music.fs`, which plays a tune on each chip and a sound effect, and a Sound chapter to the user manual.
+- Added `examples/music.fs`, which plays a tune on each chip and a sound effect.
+- Added the graphics and sound manual (`docs/GRAPHICS_AND_SOUND.md`, and `.ja.md` in Japanese): the Graphics chapter moved there from the user manual, and a new Sound chapter.
 - Added `examples/hopper.fs` (Sky Hopper), a side-scrolling platform game with sound effects and a tune of its own for each course; `examples/paddle.fs` and `examples/runner.fs` got sound effects. The games play silently in a build without the audio words.
 
 ### Changed
 
 - Updated the product version and startup examples to 0.7.0.
 - A dictionary that has loaded the audio words is saved as `SIGIMG35`, which versions up to 0.6.1 cannot load.
+- The release ZIPs hold the executable, LICENSE, THIRD_PARTY_NOTICES.md, and README.md; the README's links lead to the manuals and the other documents on GitHub.
 - `S"` and `S\"` outside a definition keep each string in the heap, as gforth does, instead of four buffers used in turn: a fifth string no longer overwrites the first, and strings made interactively stay valid. The heap they take is not freed.
 
 ## [0.6.1] - 2026-11-06
