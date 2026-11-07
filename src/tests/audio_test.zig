@@ -460,6 +460,18 @@ test "LOAD-SAMPLE reads a WAV file into the pool; other files throw SAMPLE ERROR
     render(&engine, 1);
     try std.testing.expectEqual(machine.audio_samples[5], engine.samples[5]);
 
+    // A file whose data ends before the size its "data" chunk says: the sample is
+    // what there is (as a module's samples), here 10 frames of the 30 it says.
+    var short = wavFile(10);
+    std.mem.writeInt(u32, short[52..56], 30 * 2, .little);
+    support.setFakeFile(&output, 3, &short);
+    try machine.interpretLine("S\" d.txt\" 7 LOAD-SAMPLE");
+    try std.testing.expectEqual(@as(u32, 10), machine.audio_samples[7].length);
+    try std.testing.expectEqual(@as(u32, 30), machine.audio_pool_used);
+    // (put back as it was before, for the checks below)
+    machine.audio_samples[7] = .{};
+    machine.audio_pool_used = 20;
+
     try machine.interpretLine("S\" b.txt\" 6 SND-LOAD-SAMPLE S\" missing.txt\" 6 SND-LOAD-SAMPLE 0<>");
     try std.testing.expectEqual(@as(forth.Cell, -276), machine.data_stack[0]);
     try std.testing.expectEqual(@as(forth.Cell, -1), machine.data_stack[1]);
@@ -617,6 +629,11 @@ test "a MOD header: the tags of four channels, the samples, and the song" {
     try std.testing.expectEqual(@as(u32, 8), looped.samples[0].loop_start);
     try std.testing.expectEqual(@as(u32, 16), looped.samples[0].loop_length);
     try std.testing.expectEqual(@as(u8, 3), looped.pattern_count);
+    // The entries past the song's length count too: the file keeps the patterns up to
+    // the highest number in all 128 (Codex's review R02, not taken, 2026-11-07).
+    var unused = modFile(1, &.{});
+    unused[952 + 100] = 4;
+    try std.testing.expectEqual(@as(u8, 5), (try mod_module.parseHeader(unused[0..mod_module.header_size])).pattern_count);
     for ([_]*const [4]u8{ "M!K!", "FLT4", "4CHN" }) |tag| {
         @memcpy(file[1080..1084], tag);
         _ = try mod_module.parseHeader(file[0..mod_module.header_size]);

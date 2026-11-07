@@ -687,7 +687,7 @@ VARIABLE X  40 X !
 RUN
 ```
 
-`examples/paddle.fs` is a whole game with these words: a ball that bounces off three walls and a paddle moved with the Up and Down keys (`sigma.exe "include examples/paddle.fs"`). `examples/runner.fs` (Classic Runner) is a larger one: a tile game where the runner climbs ladders, hangs on ropes, digs holes, and collects gold while guards chase it; the line at the bottom shows how long the game's work takes each frame and the frames shown each second.
+`examples/paddle.fs` is a whole game with these words: a ball that bounces off three walls and a paddle moved with the Up and Down keys (`sigma.exe "include examples/paddle.fs"`). `examples/runner.fs` (Classic Runner) is a larger one: a tile game where the runner climbs ladders, hangs on ropes, digs holes, and collects gold while guards chase it; the line at the bottom shows how long the game's work takes each frame and the frames shown each second. `examples/hopper.fs` (Sky Hopper) is a side-scrolling platform game: the hopper runs and jumps through two courses, stamps on enemies, kicks shells, bumps blocks for coins and a berry that makes it big, and rides the balloon at the end; it takes the keys and a mapped gamepad.
 
 | Word | Stack | Description |
 | --- | --- | --- |
@@ -818,7 +818,7 @@ Samples 0 to 63 are recorded sound kept in a pool of 16 MiB outside the dictiona
 
 | Word | Stack | Description |
 | --- | --- | --- |
-| `LOAD-SAMPLE` | ( c-addr u n -- ) | Read a WAV file of 8- or 16-bit PCM, mono or stereo (made mono), into sample n. A file it cannot read gives its error; a file that is not such a WAV gives `SAMPLE ERROR !` (THROW -276); a full pool gives `OUT OF MEMORY !`. Nothing changes on an error. |
+| `LOAD-SAMPLE` | ( c-addr u n -- ) | Read a WAV file of 8- or 16-bit PCM, mono or stereo (made mono), into sample n. A file it cannot read gives its error; a file that is not such a WAV gives `SAMPLE ERROR !` (THROW -276); a full pool gives `OUT OF MEMORY !`. Nothing changes on an error. A file whose data ends before the size it gives makes a sample of the frames there are. |
 | `SAMPLE` | ( c-addr u rate n -- ) | Make the u signed 8-bit bytes at c-addr sample n, recorded at rate Hz (1000 to 192000). |
 | `LOOP-SAMPLE` | ( start end n -- ) | Repeat the frames from start to end of sample n while it plays; `0 0` for no loop. |
 | `SAMPLE-INSTRUMENT` | ( n -- ) | Have the instrument (chosen with `INSTRUMENT`) play sample n on the Amiga, `O4 C` at the sample's own rate; -1 for none. |

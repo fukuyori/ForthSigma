@@ -8,9 +8,58 @@
 \ Keys: arrows move, Z and X dig to the left and the right below, P pauses, R gives up
 \ the level (a life), Q or Esc ends. On Windows the keys go to the console Sigma runs
 \ in. The line at the bottom shows the time the game's work takes each frame (MS) and
-\ the frames shown each second (FPS).
+\ the frames shown each second (FPS). With the audio words, gold, digging, and the
+\ guards make sounds, and a short tune marks the ladders, a cleared level, and the end.
 
 REQUIRE-GRAPHICS  ALSO GRAPHICS
+
+\ ---- Sound effects ----------------------------------------------------------------
+\ Made with SAMPLE and played with SFX when the build has the audio words; a build
+\ without them (-Daudio=false) plays the game silently.
+
+: AUDIO-LOADED? ( -- flag )   S" REQUIRE-AUDIO" ['] EVALUATE CATCH  DUP IF NIP NIP THEN  0= ;
+AUDIO-LOADED? CONSTANT HAS-SOUND
+
+HAS-SOUND [IF]
+ALSO AUDIO
+8000 CONSTANT WAVE-RATE
+CREATE WAVE WAVE-RATE ALLOT             \ room for a second of sound
+VARIABLE WAVE-COUNT  VARIABLE WAVE-SIGN  VARIABLE WAVE-SEED
+\ A square wave of n samples whose half period starts at p samples and changes by dp
+\ every 64 samples (below 0: the pitch rises), fading out.
+: SQUARE-SWEEP { n p dp -- }
+   0 WAVE-COUNT !  1 WAVE-SIGN !
+   n 0 DO
+      1 WAVE-COUNT +!
+      WAVE-COUNT @  p I 64 / dp * +  2 MAX  >= IF  0 WAVE-COUNT !  WAVE-SIGN @ NEGATE WAVE-SIGN !  THEN
+      WAVE-SIGN @ 100 *  n I - *  n /  WAVE I + C!
+   LOOP ;
+\ Noise of n samples, fading out.
+: NOISE-BURST { n -- }
+   n 0 DO
+      WAVE-SEED @ 1103515245 * 12345 + DUP WAVE-SEED !  16 RSHIFT 200 MOD 100 -
+      n I - *  n /  WAVE I + C!
+   LOOP ;
+\ The first n samples of the wave as sample k.
+: KEEP ( n k -- )   >R WAVE SWAP WAVE-RATE R> SAMPLE ;
+: EFFECT ( k -- )   SFX ;
+: JINGLE ( c-addr u -- )   PLAY ;
+PREVIOUS
+[ELSE]
+: EFFECT ( k -- )   DROP ;
+: JINGLE ( c-addr u -- )   2DROP ;
+[THEN]
+
+0 CONSTANT S-GOLD  1 CONSTANT S-DIG  2 CONSTANT S-CRUSH  3 CONSTANT S-CAUGHT
+HAS-SOUND [IF]
+: MAKE-SOUNDS ( -- )
+   400 8 -1 SQUARE-SWEEP  400 S-GOLD KEEP         \ a quick rising chirp
+   1200 NOISE-BURST  1200 S-DIG KEEP               \ a scrape
+   1600 20 2 SQUARE-SWEEP  1600 S-CRUSH KEEP       \ a low thud
+   4000 5 1 SQUARE-SWEEP  4000 S-CAUGHT KEEP ;     \ falling for half a second
+[ELSE]
+: MAKE-SOUNDS ( -- ) ;
+[THEN]
 
 28 CONSTANT COLS
 16 CONSTANT ROWS
@@ -154,14 +203,14 @@ CREATE LEVELS  ' LEVEL-1 ,  ' LEVEL-2 ,
 
 : PICK-GOLD ( -- )
    0 TX 0 TY TILE@ GOLD <> IF EXIT THEN
-   EMPTY 0 TX 0 TY TILE!  100 SCORE +!
-   -1 GOLD-LEFT +!  GOLD-LEFT @ 0= IF REVEAL THEN ;
+   EMPTY 0 TX 0 TY TILE!  100 SCORE +!  S-GOLD EFFECT
+   -1 GOLD-LEFT +!  GOLD-LEFT @ 0= IF  REVEAL  S" T200 L32 O5 CEG>CEG>C" JINGLE  THEN ;
 
 : RESPAWN ( i -- )   \ a guard again, from the top
    >R  BEGIN COLS RANDOM DUP 0 TILE@ EMPTY <> WHILE DROP REPEAT
    TS * R@ EX !  0 R@ EY !  0 0 R@ GO  ROAMING R@ ESTATE !  R> DROP ;
 
-: CRUSHED ( i -- )   ?DUP IF  RESPAWN 200 SCORE +!  ELSE TRUE DEAD ! THEN ;
+: CRUSHED ( i -- )   ?DUP IF  RESPAWN 200 SCORE +!  S-CRUSH EFFECT  ELSE TRUE DEAD ! THEN ;
 
 : CLOSE-HOLE ( tx ty -- )   \ whoever is in it
    2DUP BRICK -ROT TILE!
@@ -182,7 +231,7 @@ CREATE LEVELS  ' LEVEL-1 ,  ' LEVEL-2 ,
    DIG @ DUP 0= IF EXIT THEN
    0 DIG !  0 TX + 0 TY { x y }
    x y 1+ TILE@ BRICK =  x y TILE@ DUP EMPTY = SWAP HIDDEN = OR  AND
-   IF  HOLE x y 1+ TILE!  HOLE-TICKS x y 1+ TIMER !  TRUE  ELSE FALSE THEN ;
+   IF  HOLE x y 1+ TILE!  HOLE-TICKS x y 1+ TIMER !  S-DIG EFFECT  TRUE  ELSE FALSE THEN ;
 
 : WANTS ( -- dx dy )
    0 TX 0 TY { x y }
@@ -289,9 +338,11 @@ VARIABLE LEFT-OPEN  VARIABLE RIGHT-OPEN
 : NEW-GAME ( -- )   0 LEVEL !  5 LIVES !  0 SCORE !  START-LEVEL ;
 : LOSE-LIFE ( -- )
    -1 LIVES +!
-   LIVES @ 0= IF  S" GAME OVER" FPS 3 * ['] NEW-GAME SAY
-   ELSE  S" CAUGHT" FPS ['] START-LEVEL SAY  THEN ;
-: CLEARED ( -- )   1 LEVEL +!  1000 SCORE +!  S" LEVEL CLEAR" FPS 2* ['] START-LEVEL SAY ;
+   LIVES @ 0= IF  S" GAME OVER" FPS 3 * ['] NEW-GAME SAY  S" T120 L8 O4 GEC<G2" JINGLE
+   ELSE  S" CAUGHT" FPS ['] START-LEVEL SAY  S-CAUGHT EFFECT  THEN ;
+: CLEARED ( -- )
+   1 LEVEL +!  1000 SCORE +!  S" LEVEL CLEAR" FPS 2* ['] START-LEVEL SAY
+   S" T160 L16 O5 CEG>C4" JINGLE ;
 : WON? ( -- flag )   GOLD-LEFT @ 0=  0 TY 0= AND  0 ALIGNED? AND ;
 
 : KEY! ( key -- )
@@ -405,7 +456,7 @@ VARIABLE WORK-US  VARIABLE PERIOD-US  VARIABLE LAST-US
 : DRAW ( -- )   CLS DRAW-MAP DRAW-ENTITIES STATUS SHOW-MESSAGE ;
 
 : CLASSIC-RUNNER ( -- )
-   W H GFX-INIT  W 4 * H 4 * WINDOW-SIZE
+   W H GFX-INIT  W 4 * H 4 * WINDOW-SIZE  MAKE-SOUNDS
    NOW SEED !  NEW-GAME  FALSE DONE !  FALSE PAUSED !  0 MESSAGE-TICKS !
    NOW LAST-US !
    BEGIN

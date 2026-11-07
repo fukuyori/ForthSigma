@@ -8,8 +8,57 @@
 \ Keys: Up and Down move the paddle, A lets the paddle play by itself (and stops it),
 \ Q or Esc ends the game. On Windows the keys go to the console Sigma runs in, as
 \ INKEY reads them there; on a terminal the picture is drawn with half blocks.
+\ The ball clicks off the walls and the paddle, and a ball that is out falls away in
+\ sound, when the build has the audio words.
 
 REQUIRE-GRAPHICS  ALSO GRAPHICS
+
+\ ---- Sound effects ----------------------------------------------------------------
+\ Made with SAMPLE and played with SFX when the build has the audio words; a build
+\ without them (-Daudio=false) plays the game silently.
+
+: AUDIO-LOADED? ( -- flag )   S" REQUIRE-AUDIO" ['] EVALUATE CATCH  DUP IF NIP NIP THEN  0= ;
+AUDIO-LOADED? CONSTANT HAS-SOUND
+
+HAS-SOUND [IF]
+ALSO AUDIO
+8000 CONSTANT WAVE-RATE
+CREATE WAVE WAVE-RATE ALLOT             \ room for a second of sound
+VARIABLE WAVE-COUNT  VARIABLE WAVE-SIGN  VARIABLE WAVE-SEED
+\ A square wave of n samples whose half period starts at p samples and changes by dp
+\ every 64 samples (below 0: the pitch rises), fading out.
+: SQUARE-SWEEP { n p dp -- }
+   0 WAVE-COUNT !  1 WAVE-SIGN !
+   n 0 DO
+      1 WAVE-COUNT +!
+      WAVE-COUNT @  p I 64 / dp * +  2 MAX  >= IF  0 WAVE-COUNT !  WAVE-SIGN @ NEGATE WAVE-SIGN !  THEN
+      WAVE-SIGN @ 100 *  n I - *  n /  WAVE I + C!
+   LOOP ;
+\ Noise of n samples, fading out.
+: NOISE-BURST { n -- }
+   n 0 DO
+      WAVE-SEED @ 1103515245 * 12345 + DUP WAVE-SEED !  16 RSHIFT 200 MOD 100 -
+      n I - *  n /  WAVE I + C!
+   LOOP ;
+\ The first n samples of the wave as sample k.
+: KEEP ( n k -- )   >R WAVE SWAP WAVE-RATE R> SAMPLE ;
+: EFFECT ( k -- )   SFX ;
+: JINGLE ( c-addr u -- )   PLAY ;
+PREVIOUS
+[ELSE]
+: EFFECT ( k -- )   DROP ;
+: JINGLE ( c-addr u -- )   2DROP ;
+[THEN]
+
+0 CONSTANT S-WALL  1 CONSTANT S-PADDLE  2 CONSTANT S-OUT
+HAS-SOUND [IF]
+: MAKE-SOUNDS ( -- )
+   300 8 0 SQUARE-SWEEP  300 S-WALL KEEP         \ a short low click
+   500 4 0 SQUARE-SWEEP  500 S-PADDLE KEEP       \ a higher one
+   4000 6 1 SQUARE-SWEEP  4000 S-OUT KEEP ;      \ falling for half a second
+[ELSE]
+: MAKE-SOUNDS ( -- ) ;
+[THEN]
 
 160 CONSTANT W          \ the size of the image
 120 CONSTANT H
@@ -68,13 +117,13 @@ VARIABLE SEED
 : FOLLOW ( -- )   BY @ BS 2/ + PY @ PH 2/ + - -3 3 CLAMP MOVE-PADDLE ;
 
 : BOUNCE-WALLS ( -- )
-   BY @ WALL < IF  WALL BY !  DY @ ABS DY !  THEN
-   BY @ BS + H WALL - > IF  H WALL - BS - BY !  DY @ ABS NEGATE DY !  THEN
-   BX @ BS + W WALL - > IF  W WALL - BS - BX !  DX @ ABS NEGATE DX !  THEN ;
+   BY @ WALL < IF  WALL BY !  DY @ ABS DY !  S-WALL EFFECT  THEN
+   BY @ BS + H WALL - > IF  H WALL - BS - BY !  DY @ ABS NEGATE DY !  S-WALL EFFECT  THEN
+   BX @ BS + W WALL - > IF  W WALL - BS - BX !  DX @ ABS NEGATE DX !  S-WALL EFFECT  THEN ;
 
 \ Where the ball meets the paddle sets its new slope: near an end it goes off steeply.
 : HIT ( -- )
-   PX PW + BX !  DX @ ABS DX !
+   PX PW + BX !  DX @ ABS DX !  S-PADDLE EFFECT
    BY @ BS 2/ +  PY @ PH 2/ +  -  4 /  -2 2 CLAMP
    DUP 0= IF DROP DY @ 0< IF -1 ELSE 1 THEN THEN  DY !
    1 HITS +!  HITS @ BEST @ MAX BEST !
@@ -88,7 +137,7 @@ VARIABLE SEED
    BX @  DX @ BX +!  DY @ BY +!
    BOUNCE-WALLS
    DX @ 0< IF  MEETS-PADDLE? IF HIT THEN  ELSE DROP THEN
-   BX @ BS + 0< IF  1 OUTS +!  OUT-FRAMES PAUSE !  THEN ;
+   BX @ BS + 0< IF  1 OUTS +!  OUT-FRAMES PAUSE !  S-OUT EFFECT  THEN ;
 
 : UPDATE ( -- )
    AUTO @ IF FOLLOW THEN
@@ -119,6 +168,7 @@ VARIABLE SEED
 
 : PADDLE-GAME ( -- )
    W H GFX-INIT  W 4 * H 4 * WINDOW-SIZE  NEW-GAME     \ shown four times as large
+   MAKE-SOUNDS
    BEGIN  GAME-STEP  20 FRAME  DONE @ UNTIL
    1 TEXT-SCALE
    CR ." Best: " BEST @ .  ." Out: " OUTS @ . CR ;

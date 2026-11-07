@@ -206,8 +206,35 @@ test "MML notes: pitches, lengths, dots, and the defaults" {
 test "MML errors" {
     const bad = [_][]const u8{ "O9", "O0", "L65", "C65", "T31", "T256", "V16", "N97", "N", "S16", "M0", "M65536", "Z", "C=X;", "O1<", "O8>", "X$;" };
     for (bad) |text| try std.testing.expectError(error.InvalidMml, mml.check(.{}, text));
+    // A number of any length is an error past 65535, checked at each digit, so it never
+    // overflows (Codex's review R01, 2026-11-07).
+    const long = [_][]const u8{ "C4294967296", "T99999999999999999999", "M65536", "N123456789012345678901234567890" };
+    for (long) |text| try std.testing.expectError(error.InvalidMml, mml.check(.{}, text));
+    try mml.check(.{}, "M65535 C00000000004");
     // Lower-case letters and spaces are taken.
     try mml.check(.{}, "o7 > c d+ l8 e");
+}
+
+test "PLAY's queue at its edge: 31 notes and the end mark fit, one more waits" {
+    var engine = Engine.init(.ay8910, psg_module.msx_clock, rate);
+    var voices: [engine_module.max_voices]mml.Voice = @splat(.{});
+    var player: Player = .{ .engine = &engine };
+    const notes31 = "L64 T255 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC"; // 31 notes
+    try engine_module.putPlay(&engine, &voices, &.{notes31}, &player, Player.wait);
+    try std.testing.expectEqual(@as(usize, 0), player.waits);
+    try std.testing.expectEqual(@as(u32, 0), engine.voiceFree(0));
+    // The next PLAY waits until the audio thread has taken some.
+    try engine_module.putPlay(&engine, &voices, &.{"C"}, &player, Player.wait);
+    try std.testing.expect(player.waits > 0);
+    // A stop while the queue is full drops everything.
+    var stopped = Engine.init(.ay8910, psg_module.msx_clock, rate);
+    var stop_voices: [engine_module.max_voices]mml.Voice = @splat(.{});
+    var stop_player: Player = .{ .engine = &stopped };
+    try engine_module.putPlay(&stopped, &stop_voices, &.{notes31}, &stop_player, Player.wait);
+    try std.testing.expect(stopped.putCommand(stopped.resetCommand(false)));
+    stop_player.play(10);
+    for (0..engine_module.max_voices) |v| try std.testing.expectEqual(@as(u32, engine_module.voice_queue_size), stopped.voiceFree(v));
+    try std.testing.expect(!stopped.isPlaying(0));
 }
 
 /// The wait of putPlay in the tests: the audio thread plays a little.
