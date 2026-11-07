@@ -16,12 +16,12 @@ FORTH/Σ（フォース・シグマ）の言語コアを、Zigで動くネイテ
 - `S"` などの文字列、`123.` 形式の倍長整数（128ビット）、`<<# # #S #> #>>` による数値の書式、`ACCEPT`、`EVALUATE`、`KEY` を使えます。
 - WORDS、FORGET、BYEを対話用ワードとして提供します。
 - この移植版の拡張として、グラフィックス（`REQUIRE-GRAPHICS`）を使えます。メモリ上の画像に線、図形、塗りつぶし、グラフ、文字（組み込みのASCIIフォント、BDFフォント、Windowsではシステムのフォント）を描き、端末（半角ブロックかSixel）、Windowsのウィンドウ、Tkのウィンドウに表示します。キーとマウス（`INKEY`、`MOUSE`）と、Sigmaが起動する `wish` でのTcl/Tkのスクリプト（`TCL`、`TCL-EVAL`、`TCL-EVENT`）も使えます。Tcl/TkはSigmaにリンクしないので、TCL の語を使うにはTcl/Tkを入れておく必要があります。
-- この移植版の拡張として、サウンド（`REQUIRE-AUDIO`）を使えます。MSX BASIC の `PLAY`、`SOUND`、`BEEP` と MML を、音のスレッドがプログラムと並行して鳴らします。MSX、Atari ST、NES、C64、コナミの SCC、Amiga の音源を、1つずつ、またはいくつか同時に、音色を付けて鳴らせます。WAV ファイルの録音した音と効果音、ProTracker のモジュール（MOD ファイル）も鳴らせます。[サウンド](docs/USER_MANUAL.ja.md#サウンド)と `examples/music.fs` を参照してください。
+- この移植版の拡張として、サウンド（`REQUIRE-AUDIO`）を使えます。MSX BASIC の `PLAY`、`SOUND`、`BEEP` と MML を、音のスレッドがプログラムと並行して鳴らします。MSX、Atari ST、NES、C64、コナミの SCC、Amiga の音源を、1つずつ、またはいくつか同時に、音色を付けて鳴らせます。WAV ファイルの録音した音と効果音、ProTracker のモジュール（MOD ファイル）も鳴らせます。[サウンド](docs/GRAPHICS_AND_SOUND.ja.md#サウンド)と `examples/music.fs` を参照してください。
 - 辞書、コンパイル済み定義、メモリ、入出力をホスト環境から分離し、他のOS・CPUへ移植しやすい構成にしています。
 
 対応ワードと移植上の判断は[実装ノート](docs/IMPLEMENTATION.md)、資料から整理した言語仕様は[FORTH/Σ仕様書](docs/SPEC.ja.md)を参照してください。実装は開発中であり、誌面の全ワードや機種固有機能には対応していません。
 
-使い方と現在登録されている組み込みワードの一覧は[ユーザーマニュアル](docs/USER_MANUAL.ja.md)を参照してください。
+使い方と現在登録されている組み込みワードの一覧は[ユーザーマニュアル](docs/USER_MANUAL.ja.md)を、グラフィックスとサウンドは[グラフィックスとサウンドのマニュアル](docs/GRAPHICS_AND_SOUND.ja.md)を参照してください。
 
 利用者がデータを持つワードを作る定義用語（BUILDS/DOES）にも対応しています。
 

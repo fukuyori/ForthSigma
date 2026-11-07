@@ -1,6 +1,6 @@
 # Graphics modes
 
-FORTH/Sigma has no numbered screen modes, such as `SCREEN 1` of BASIC. A program draws on one image in memory, of any size, and chooses separately where `SHOW` shows it and with how many colors. This manual describes these choices; for the drawing words themselves, see the section "Graphics" of the [user manual](USER_MANUAL.md).
+FORTH/Sigma has no numbered screen modes, such as `SCREEN 1` of BASIC. A program draws on one image in memory, of any size, and chooses separately where `SHOW` shows it and with how many colors. This manual describes these choices; for the drawing words themselves, see the [graphics and sound manual](GRAPHICS_AND_SOUND.md).
 
 All the words here are in the `GRAPHICS` vocabulary:
 
@@ -59,7 +59,7 @@ Until one of `DISPLAY-TERMINAL`, `DISPLAY-WINDOW`, and `DISPLAY-TK` is used, `SH
 
 ### Tk window
 
-- Sigma starts the Tcl/Tk program (`wish`) the first time it is needed; see "Tcl/Tk" in the user manual for where it is looked for.
+- Sigma starts the Tcl/Tk program (`wish`) the first time it is needed; see "Tcl/Tk" in the [graphics and sound manual](GRAPHICS_AND_SOUND.md) for where it is looked for.
 - Each `SHOW` sends the whole image as a PNG, so large images update slowly.
 - With `WINDOW-SIZE`, the image is shown as large as fits by a whole factor, since Tk zooms only so, or smaller by a whole factor when it does not fit; also when the window is resized.
 - Closing the window hides it until the next `SHOW`.
@@ -74,7 +74,7 @@ Until one of `DISPLAY-TERMINAL`, `DISPLAY-WINDOW`, and `DISPLAY-TK` is used, `SH
 | Window | the terminal's and the window's | the window always reports it: the pixel of the stretched image under the mouse |
 | Tk window | the terminal's and the Tk window's | the mouse in the Tk window |
 
-See "Keys, the mouse, and animation" in the user manual for the details.
+See "Keys, the mouse, and animation" in the [graphics and sound manual](GRAPHICS_AND_SOUND.md) for the details.
 
 ## The colors
 

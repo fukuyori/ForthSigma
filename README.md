@@ -16,12 +16,12 @@ This project implements the language core of FORTH/Σ (FORTH/Sigma) as a native 
 - Strings such as `S"`, double-cell integers (128-bit) in the `123.` form, number formatting with `<<# # #S #> #>>`, `ACCEPT`, `EVALUATE`, and `KEY` are available.
 - WORDS, FORGET, and BYE are provided as interactive words.
 - Graphics, an extension of this port (`REQUIRE-GRAPHICS`): an image in memory with lines, shapes, painting, graphs, and text (a built-in ASCII font, BDF fonts, and on Windows the system's fonts), shown on the terminal (half blocks or Sixel), in a window on Windows, or in a Tk window; keys and the mouse (`INKEY`, `MOUSE`); and Tcl/Tk scripts run in a `wish` that Sigma starts (`TCL`, `TCL-EVAL`, `TCL-EVENT`). Tcl/Tk is not linked into Sigma and must be installed to use the TCL words.
-- Sound, an extension of this port (`REQUIRE-AUDIO`): MSX BASIC's `PLAY`, `SOUND`, and `BEEP` with its music macro language, played by an audio thread while the program goes on; the sound chips of the MSX, the Atari ST, the NES, the C64, Konami's SCC, and the Amiga, alone or together, with instruments; recorded sound from WAV files and sound effects; and ProTracker modules (MOD files). See [Sound](docs/USER_MANUAL.md#sound) and `examples/music.fs`.
+- Sound, an extension of this port (`REQUIRE-AUDIO`): MSX BASIC's `PLAY`, `SOUND`, and `BEEP` with its music macro language, played by an audio thread while the program goes on; the sound chips of the MSX, the Atari ST, the NES, the C64, Konami's SCC, and the Amiga, alone or together, with instruments; recorded sound from WAV files and sound effects; and ProTracker modules (MOD files). See [Sound](docs/GRAPHICS_AND_SOUND.md#sound) and `examples/music.fs`.
 - The dictionary, compiled definitions, memory, and input and output are separated from the host environment, so the program is easy to port to other operating systems and CPUs.
 
 For the supported words and the porting decisions, see the [implementation notes](docs/IMPLEMENTATION.md). For the language specification compiled from the sources, see the [FORTH/Σ specification](docs/SPEC.md). The implementation is under development and does not support every word in the book or machine-specific features.
 
-For usage and the list of the built-in words registered now, see the [user manual](docs/USER_MANUAL.md).
+For usage and the list of the built-in words registered now, see the [user manual](docs/USER_MANUAL.md); for the graphics and the sound, see the [graphics and sound manual](docs/GRAPHICS_AND_SOUND.md).
 
 The defining words (BUILDS/DOES) that let users make words that hold data are also supported.
 

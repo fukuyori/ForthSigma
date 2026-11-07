@@ -133,7 +133,7 @@ These choices are implementation behavior, not claims about every historical FOR
 
 ### Graphics and Tcl/Tk
 
-The magazine has no graphics words; these are extensions of the port, specified in the [user manual](USER_MANUAL.md). The design decisions and their reasons are in [DECISIONS.md](DECISIONS.md).
+The magazine has no graphics words; these are extensions of the port, specified in the [graphics and sound manual](GRAPHICS_AND_SOUND.md). The design decisions and their reasons are in [DECISIONS.md](DECISIONS.md).
 
 - The core keeps only small `GFX-` built-in words; the rest is Forth in `src/graphics/graphics.fs` (and `graphics_float.fs` with floating point), which `REQUIRE-GRAPHICS` loads into the `GRAPHICS` vocabulary. New `GFX-` words are added at the end of the built-in list, so earlier dictionary images keep their execution tokens. A dictionary that has had the graphics words is saved as `SIGIMG34`; one that never had them stays `SIGIMG33`.
 - The image (24-bit colors, up to 8192 pixels a side and 64 MiB) is a buffer the host gives (`framebuffer_fn`), outside logical memory and outside the dictionary image; restoring an image forgets it.
@@ -146,7 +146,7 @@ The magazine has no graphics words; these are extensions of the port, specified 
 
 ### Sound
 
-The magazine has no sound words either; these are extensions of the port, specified in the [user manual](USER_MANUAL.md#sound), with the research in [SOUND_RESEARCH.md](SOUND_RESEARCH.md) and the decisions in [DECISIONS.md](DECISIONS.md). No emulator's or player's code is used: the chips follow their data sheets and published descriptions, and the AY's volume table is a public-domain measurement.
+The magazine has no sound words either; these are extensions of the port, specified in the [graphics and sound manual](GRAPHICS_AND_SOUND.md#sound), with the research in [SOUND_RESEARCH.md](SOUND_RESEARCH.md) and the decisions in [DECISIONS.md](DECISIONS.md). No emulator's or player's code is used: the chips follow their data sheets and published descriptions, and the AY's volume table is a public-domain measurement.
 
 - The core keeps the `SND-` built-in words (`src/core/words_audio.zig`); the rest is Forth in `src/audio/audio.fs`, which `REQUIRE-AUDIO` loads into the `AUDIO` vocabulary through the same loader as `REQUIRE-GRAPHICS` (`src/core/library_loading.zig`). A dictionary that has had the audio words is saved as `SIGIMG35`.
 - The synthesis is freestanding Zig in `src/core`: the PSG by its registers (`sound_psg.zig`, stepped at clock / 8 and averaged over each output sample), MSX BASIC's MML (`sound_mml.zig`), the common parts (`sound_parts.zig`: instruments, the SID's ADSR table, PolyBLEP pulses, equal-temperament pitch rounded to each chip's period registers), the NES, the C64, the SCC, and the Amiga (`sound_nes.zig`, `sound_c64.zig`, `sound_scc.zig`, `sound_amiga.zig`), samples and WAV files (`sound_pcm.zig`), and ProTracker modules (`sound_mod.zig`). Everything runs at the output's rate (48 kHz) and gives the same samples for the same input, so the tests compare the waves.

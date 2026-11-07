@@ -6,6 +6,7 @@
 
 - [FORTH/Σ仕様書](SPEC.ja.md): 雑誌資料から整理した仕様と出典箇所
 - [ユーザーマニュアル](USER_MANUAL.ja.md): 起動方法、基本操作、現在の登録語一覧
+- [グラフィックスとサウンドのマニュアル](GRAPHICS_AND_SOUND.ja.md): グラフィックスの語（描画、文字、Tcl/Tk、キー、マウス、アニメーション）とサウンドの語（MSX BASIC の PLAY、音源、録音した音、モジュール）
 - [グラフィックモード](GRAPHICS_MODES.ja.md): `SHOW` の表示先（端末、Sixel、ウィンドウ、Tkのウィンドウ）、色数、表示の大きさ
 - [サウンドの調査](SOUND_RESEARCH.md): MSX、Atari ST、C64、NES、Amiga の音源、MSX BASIC の音の語、各システムの音の出力と、その出典
 - [実装ノート](IMPLEMENTATION.md): Zig移植版の構成、実装判断、未実装機能
