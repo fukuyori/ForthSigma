@@ -345,12 +345,17 @@ VARIABLE LEFT-OPEN  VARIABLE RIGHT-OPEN
    S" T160 L16 O5 CEG>C4" JINGLE ;
 : WON? ( -- flag )   GOLD-LEFT @ 0=  0 TY 0= AND  0 ALIGNED? AND ;
 
+\ P held down repeats: only a press 0.6 s after the last P seen changes the pause.
+VARIABLE LAST-P
+: TOGGLE-PAUSE ( -- )
+   UTIME DROP  DUP LAST-P @ - 600000 > IF  PAUSED @ 0= PAUSED !  THEN  LAST-P ! ;
+
 : KEY! ( key -- )
    CASE
       [CHAR] z OF  -1 DIG !  ENDOF   [CHAR] Z OF  -1 DIG !  ENDOF
       [CHAR] x OF  1 DIG !  ENDOF    [CHAR] X OF  1 DIG !  ENDOF
-      [CHAR] p OF  PAUSED @ 0= PAUSED !  ENDOF
-      [CHAR] P OF  PAUSED @ 0= PAUSED !  ENDOF
+      [CHAR] p OF  TOGGLE-PAUSE  ENDOF
+      [CHAR] P OF  TOGGLE-PAUSE  ENDOF
       [CHAR] r OF  MESSAGE-TICKS @ 0= IF LOSE-LIFE THEN  ENDOF
       [CHAR] R OF  MESSAGE-TICKS @ 0= IF LOSE-LIFE THEN  ENDOF
       [CHAR] q OF  TRUE DONE !  ENDOF  [CHAR] Q OF  TRUE DONE !  ENDOF

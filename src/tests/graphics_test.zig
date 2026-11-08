@@ -2279,6 +2279,61 @@ test "KEY-HELD? holds a key of a terminal for 0.6 s after it was last pressed" {
     try expectStack(machine, &.{ 0, 'b' });
 }
 
+test "KEY-HELD? on a terminal: a key being repeated stops soon after its last repeat" {
+    try skipWithout(&.{.graphics});
+    var output = Output{};
+    const machine = try libraryMachine(&output, "4 4");
+    defer destroyMachine(machine);
+    const up = byteEvents("\x1b[A");
+    setEvents(&output, &up);
+    try machine.interpretLine("K-UP KEY-HELD?");
+    try expectStack(machine, &.{-1});
+    machine.data_depth = 0;
+    // The keyboard's wait before it repeats: still the long hold.
+    setEvents(&output, &up);
+    output.time += 500_000;
+    try machine.interpretLine("K-UP KEY-HELD?");
+    try expectStack(machine, &.{-1});
+    machine.data_depth = 0;
+    // The first quick repeat: from now on the short hold.
+    setEvents(&output, &up);
+    output.time += 30_000;
+    try machine.interpretLine("K-UP KEY-HELD?");
+    try expectStack(machine, &.{-1});
+    machine.data_depth = 0;
+    output.time += 100_000;
+    try machine.interpretLine("K-UP KEY-HELD?");
+    try expectStack(machine, &.{-1});
+    machine.data_depth = 0;
+    output.time += 30_000;
+    try machine.interpretLine("K-UP KEY-HELD?");
+    try expectStack(machine, &.{0});
+}
+
+test "KEY-HELD? on a terminal: a new direction ends the one before it, and other keys do not" {
+    try skipWithout(&.{.graphics});
+    var output = Output{};
+    const machine = try libraryMachine(&output, "4 4");
+    defer destroyMachine(machine);
+    const left = byteEvents("\x1b[D");
+    setEvents(&output, &left);
+    try machine.interpretLine("K-LEFT KEY-HELD?");
+    try expectStack(machine, &.{-1});
+    machine.data_depth = 0;
+    const right = byteEvents("\x1b[C");
+    setEvents(&output, &right);
+    output.time += 100_000;
+    try machine.interpretLine("K-LEFT KEY-HELD? K-RIGHT KEY-HELD?");
+    try expectStack(machine, &.{ 0, -1 });
+    machine.data_depth = 0;
+    // Digging while moving: a key that is not a direction leaves the direction held.
+    const z = byteEvents("z");
+    setEvents(&output, &z);
+    output.time += 100_000;
+    try machine.interpretLine("K-RIGHT KEY-HELD? CHAR z KEY-HELD?");
+    try expectStack(machine, &.{ -1, -1 });
+}
+
 test "KEY-HELD? holds a key of the Tk window until the Tcl program tells it went up" {
     try skipWithout(&.{.graphics});
     var output = Output{};

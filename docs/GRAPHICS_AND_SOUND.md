@@ -150,7 +150,7 @@ RUN
 | `MOUSE` | ( -- x y buttons ) | The pixel of the image under the mouse when it last moved, and the buttons held: 1 left, 2 right, 4 middle. -1 -1 while the position is not known. Keys pressed meanwhile wait for `INKEY`. |
 | `MOUSE-ON`, `MOUSE-OFF` | ( -- ) | Have the terminal report the mouse, or stop. The window always reports it. |
 | `FRAME` | ( ms -- ) | Wait until ms milliseconds have passed since the last `FRAME`, then `SHOW`. A loop that draws and calls `FRAME` runs at a steady pace; when the drawing took longer, it does not wait. |
-| `KEY-HELD?` | ( key -- flag ) | Whether the key (a character of one byte, or `K-UP` and the other codes) is held down now. A game moves while a key is held, without waiting for the keyboard to repeat it (it waits about 0.5 s first). The Windows console, the window, and the Tk window tell when a key is released, and when they lose the focus; a terminal on Linux and macOS does not, so its keys count as held for 0.6 s after they were last pressed (a key held down is repeated, which holds it on). Keys read meanwhile wait for `INKEY`. |
+| `KEY-HELD?` | ( key -- flag ) | Whether the key (a character of one byte, or `K-UP` and the other codes) is held down now. A game moves while a key is held, without waiting for the keyboard to repeat it (it waits about 0.5 s first). The Windows console, the window, and the Tk window tell when a key is released, and when they lose the focus; a terminal on Linux and macOS does not, so its keys count as held for 0.6 s after they were last pressed (a key held down is repeated, which holds it on; once it is repeating, 0.12 s after the last repeat, so it stops soon after it is released), and a cursor key stops counting as held when another cursor key is pressed, since a terminal repeats only the key pressed last. Keys read meanwhile wait for `INKEY`. |
 | `GFX-INKEY`, `GFX-MOUSE`, `GFX-KEY-HELD` | as `INKEY`, `MOUSE`, `KEY-HELD?` | The words underneath. |
 | `GFX-MOUSE-MODE` | ( flag -- ) | As `MOUSE-ON` (true) and `MOUSE-OFF` (false). |
 
@@ -241,7 +241,7 @@ Outside a definition, each `S"` string has its own place, so a `PLAYS` of eight 
 | `PLAY?` | ( n -- flag ) | Whether voice n still has notes to play, or any voice for 0, as MSX BASIC's `PLAY(n)`. A voice without notes counts until the audio thread takes its end of the `PLAY` (within a fiftieth of a second). |
 | `SOUND` | ( reg value -- ) | Write the value 0 to 255 to the PSG's register 0 to 13, as MSX BASIC's `SOUND`; the PSG sounds with every chip. |
 | `BEEP` | ( -- ) | Stop the music, set the PSG and the voices' settings as at start, and beep (about 1316 Hz for 40 ms). It returns when the audio thread has stopped the music. |
-| `AUDIO?` | ( -- flag ) | Whether the sound reaches an audio device. |
+| `AUDIO?` | ( -- flag ) | Whether the sound reaches an audio device. If the output fails while the program runs (on Linux, the command that plays it ends, for example), it becomes false and there is no more sound until the program is started again. |
 
 ### Chips and instruments
 

@@ -82,13 +82,18 @@ pub const InputState = struct {
 /// after it was last pressed (the terminal repeats a key held down). Its source is
 /// forgotten whole when it can no longer tell: the terminal restarting, the Tcl program
 /// stopping.
-const Held = struct { code: u32, source: KeySource, until: ?forth.Double };
+const Held = struct { code: u32, source: KeySource, until: ?forth.Double, pressed: forth.Double };
 
 pub const KeySource = enum { terminal, window, tk };
 
 /// How long a key from a terminal counts as held after it was pressed: longer than
 /// most terminals wait before they repeat a key (about 0.5 s).
 pub const terminal_hold_us = 600_000;
+
+/// A key from a terminal that comes again this soon is being repeated, and counts as held
+/// only this long: repeats come much faster than this, and the key stops soon after it is
+/// released.
+pub const terminal_repeat_us = 120_000;
 
 /// What a complete sequence of bytes from the terminal stands for.
 const Decoded = union(enum) {
@@ -271,6 +276,19 @@ fn holdable(code: u32) bool {
     return code < 0x80 or (code >= key_up and code <= key_f1 + 11);
 }
 
+fn isDirection(code: u32) bool {
+    return code >= key_up and code <= key_right;
+}
+
+fn forgetOtherDirections(input: *InputState, source: KeySource, code: u32) void {
+    var index = input.held_count;
+    while (index != 0) {
+        index -= 1;
+        const held = input.held[index];
+        if (held.source == source and isDirection(held.code) and held.code != code) forget(input, index);
+    }
+}
+
 fn forget(input: *InputState, index: usize) void {
     std.mem.copyForwards(Held, input.held[index .. input.held_count - 1], input.held[index + 1 .. input.held_count]);
     input.held_count -= 1;
@@ -280,16 +298,22 @@ fn forget(input: *InputState, index: usize) void {
 fn press(self: *State, code: u32, source: KeySource, released: bool) void {
     if (!holdable(code)) return;
     const input = &self.gfx_input;
-    const until: ?forth.Double = if (released) null else (now(self) orelse 0) + terminal_hold_us;
+    const time = now(self) orelse 0;
+    // A terminal repeats only the key pressed last: a new direction takes over from the
+    // one before it, which would otherwise count as held for a while and could win.
+    if (!released and isDirection(code)) forgetOtherDirections(input, source, code);
+    var repeating = false;
     for (input.held[0..input.held_count], 0..) |held, index| {
         if (held.code == code and held.source == source) {
+            repeating = time >= held.pressed and time - held.pressed <= terminal_repeat_us;
             forget(input, index);
             break;
         }
     }
+    const until: ?forth.Double = if (released) null else time + @as(forth.Double, if (repeating) terminal_repeat_us else terminal_hold_us);
     // With all taken, the key pressed longest ago gives way.
     if (input.held_count == input.held.len) forget(input, 0);
-    input.held[input.held_count] = .{ .code = code, .source = source, .until = until };
+    input.held[input.held_count] = .{ .code = code, .source = source, .until = until, .pressed = time };
     input.held_count += 1;
 }
 

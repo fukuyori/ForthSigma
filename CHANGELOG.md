@@ -20,6 +20,9 @@
 
 ### Fixed
 
+- On a terminal on Linux and macOS, a key held down and released went on counting as held by `KEY-HELD?` for 0.6 s; once the key is repeating it now counts as held for 0.12 s after its last repeat. A key pressed once still counts for 0.6 s.
+- On a terminal on Linux and macOS, `KEY-HELD?` went on counting a cursor key as held for 0.6 s after another cursor key was pressed, so a game could keep going the old way; a new cursor key now ends the one before it.
+- In `examples/runner.fs`, holding P down no longer turns the pause on and off again and again.
 - On a terminal on Linux and macOS, Backspace over a full-width character (Japanese, for example) moved the cursor back one column only, leaving half of the character on the screen, since the terminal's line input knows nothing of widths. Sigma now edits the lines of the interactive prompt and of `ACCEPT` itself: Backspace takes back as many columns as the character is wide, and Ctrl+U, Ctrl+W, Ctrl+D, Ctrl+C, Ctrl+\, and Ctrl+Z work as in the terminal. Cursor keys are now dropped instead of being put in the line as escape sequences.
 - On Windows, file names and `SYSTEM` commands other than ASCII failed (`ERROR #-554 !`, `HOST FUNCTION ERROR !`), since the C library took them in the ANSI code page; they are now UTF-8, passed on as UTF-16. This also lets SAVESYS and an executable it made work from a folder with such a name.
 - On Linux and macOS, an executable made by `SAVESYS` had no permission to run (`-rw-r--r--`); it now gets every permission the umask lets through (usually `-rwxr-xr-x`).
