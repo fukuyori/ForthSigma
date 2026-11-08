@@ -289,7 +289,7 @@ Samples 0 to 63 are recorded sound kept in a pool of 16 MiB outside the dictiona
 | `STOP-MOD` | ( -- ) | Stop the module. |
 | `MOD?` | ( -- flag ) | Whether the module plays. |
 
-The module plays on Paula's periods, panned and filtered as the Amiga's (`AMIGA-FILTER` and the effect `E0x` turn the LED filter on and off). These effects are played: arpeggio, portamento up and down, tone portamento, vibrato, tremolo, the volume slides, sample offset, position jump, pattern break, set volume, set speed and tempo, fine portamento and fine volume slides, pattern loop, retrigger, note cut, note delay, and pattern delay. The vibrato and the tremolo are always a sine (`E4x`, `E7x`), and `E3x`, `E5x`, `E8x`, and `EFx` do nothing.
+The module plays on Paula's periods, panned and filtered as the Amiga's (`AMIGA-FILTER` and the effect `E0x` turn the LED filter on and off). These effects are played: arpeggio, portamento up and down, tone portamento, vibrato, tremolo, the volume slides, sample offset, position jump, pattern break, set volume, set speed and tempo, fine portamento and fine volume slides, pattern loop, retrigger, note cut, note delay, and pattern delay. The vibrato and the tremolo are always a sine (`E4x`, `E7x`), and `E3x`, `E5x`, `E8x`, and `EFx` do nothing. A row with a sample number and no note starts no new sound: the new sample's loop follows when the sound comes to its end or goes round its loop (at once if the sound has already ended), and silence follows if the new sample has no loop. In a module tagged `FLT4`, such a row does not change what is sounding.
 
 ### The audio device
 
