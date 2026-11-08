@@ -563,8 +563,12 @@ const utf8_console = if (builtin.os.tag != .windows) struct {
     var saved_input: u32 = 0;
     /// Standard input, when it is a console.
     var input: ?*anyopaque = null;
-    /// UTF-8 bytes of the line read and not yet given.
-    var bytes: [3 * 1024]u8 = undefined;
+    /// The UTF-16 units one ReadConsoleW reads at most.
+    const units_per_read = 1024;
+    /// UTF-8 bytes of the line read and not yet given. A unit gives at most 3 bytes, and
+    /// a low surrogate whose high one came in the read before gives 4; each character is
+    /// encoded into 4 bytes of room, so 4 bytes a unit always suffice.
+    var bytes: [4 * units_per_read]u8 = undefined;
     var start: usize = 0;
     var end: usize = 0;
     var high_surrogate: u16 = 0;
@@ -631,7 +635,7 @@ const utf8_console = if (builtin.os.tag != .windows) struct {
     }
 
     fn fill() bool {
-        var wide: [1024]u16 = undefined;
+        var wide: [units_per_read]u16 = undefined;
         var read: u32 = 0;
         if (ReadConsoleW(input.?, &wide, wide.len, &read, null) == 0 or read == 0) return false;
         start = 0;
