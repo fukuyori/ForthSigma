@@ -188,7 +188,8 @@ pub const State = struct {
     name_buffer_index: usize = 0,
     last_created_word: ?u16 = null,
     halted: bool = false,
-    /// A byte KEY read for XKEY that did not continue the character; KEY gives it next.
+    /// A byte KEY read for XKEY that did not continue the character, kept here when the
+    /// host has no unread_fn; KEY gives it next.
     pending_key: ?u8 = null,
     call_depth: usize = 0,
     /// The callers of the colon definitions that compiled code is running, innermost last

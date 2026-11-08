@@ -281,7 +281,7 @@ S" 日本語" +X/STRING TYPE        \ 本語
 | `XC,` | ( xc -- ) | Append xc in UTF-8 to the data space. |
 | `XCHAR+`, `XCHAR-` | ( addr -- addr2 ) | The address of the next or of the previous character. |
 | `XEMIT` | ( xc -- ) | Display xc. `EMIT` still writes the low 8 bits as one byte. |
-| `XKEY`, `XKEY?` | ( -- xc ), ( -- flag ) | Read one character (its bytes from `KEY`), and whether one can be read. A byte that does not continue the character is left for the next `KEY`. |
+| `XKEY`, `XKEY?` | ( -- xc ), ( -- flag ) | Read one character (its bytes from `KEY`), and whether one can be read. A byte that does not continue the character is left for the next read of the input (`KEY`, `ACCEPT`, `READ-LINE`, `INKEY`, ...). |
 | `X-WIDTH`, `XC-WIDTH` | ( addr u -- n ), ( xc -- n ) | The columns a string or a character takes on a terminal. `XC-WIDTH` is 0, 1, or 2, or -1 for a character that is not shown (a control or a code point with no character); `X-WIDTH` counts those as 0. |
 | `+X/STRING`, `X\STRING-` | ( addr u -- addr2 u2 ), ( addr u -- addr u2 ) | Remove the first or the last character from the string. |
 | `-TRAILING-GARBAGE` | ( addr u -- addr u2 ) | Remove an incomplete character from the end of the string. |
@@ -291,7 +291,7 @@ S" 日本語" +X/STRING TYPE        \ 本語
 
 Well-formed UTF-8 gives the same values as in gforth, and so do overlong forms and surrogates. Anything else follows one rule: a byte that cannot start a character, a character cut short (by a byte that does not continue it or by the end of the string), or a value above U+10FFFF is U+FFFD, and only the start byte and the bytes that continue it are taken (one byte for a byte that cannot start a character). A code point above U+10FFFF is written as U+FFFD (3 bytes). The widths come from the Unicode Character Database 15.1.0 and are the same as gforth's on Linux (glibc 2.39) for every code point.
 
-On Windows, a console shows and reads UTF-8 while Sigma runs: the output code page is set to UTF-8 (65001) and put back at the end, also after Ctrl+C, and the keys typed are read as UTF-8. Programs started with `SYSTEM` run with that code page. File names other than ASCII cannot be opened on Windows yet.
+On Windows, a console shows and reads UTF-8 while Sigma runs: the output code page is set to UTF-8 (65001) and put back at the end, also after Ctrl+C, and the keys typed are read as UTF-8. Programs started with `SYSTEM` run with the code page the console had before, so they show their messages and their files as without Sigma. File names and `SYSTEM` commands are UTF-8, also on Windows (where they are passed on as UTF-16).
 
 ## Number formatting (pictured numeric output)
 

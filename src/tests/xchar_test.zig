@@ -81,3 +81,12 @@ test "XKEY reads the bytes of a character and leaves a byte that does not contin
     try expectStack(machine, &.{ 12354, 128512, 97, 0xFFFD, -1, 'A', -1, 0xFFFD });
     try std.testing.expectError(error.InputUnavailable, machine.interpretLine("XKEY"));
 }
+
+test "without the host's unread_fn, the byte XKEY leaves still comes first to KEY and XKEY" {
+    var output = Output{ .keys = "\xE6AB" };
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
+    machine.writer.unread_fn = null;
+    try machine.interpretLine("XKEY XKEY? KEY KEY");
+    try expectStack(machine, &.{ 0xFFFD, -1, 'A', 'B' });
+}

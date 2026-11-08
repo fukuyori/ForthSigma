@@ -123,6 +123,26 @@ pub fn build(b: *std.Build) void {
     argument_missing.expectStdOutEqual(if (target.result.os.tag == .windows) missing_message ++ "\r\n" else missing_message ++ "\n");
     argument_missing.expectExitCode(1);
     test_step.dependOn(&argument_missing.step);
+    // A byte XKEY reads that does not continue the character comes first to the next
+    // read of the input, by ACCEPT, READ-LINE, or INKEY as by KEY.
+    const xkey_accept = b.addRunArtifact(exe);
+    xkey_accept.addArgs(&.{ "-e", "XKEY . PAD 10 ACCEPT PAD SWAP TYPE SPACE KEY . BYE" });
+    xkey_accept.setStdIn(.{ .bytes = "\xE6A\nrest\n" });
+    xkey_accept.expectStdOutEqual("65533 A 114 ");
+    test_step.dependOn(&xkey_accept.step);
+    const xkey_read_line = b.addRunArtifact(exe);
+    xkey_read_line.addArgs(&.{ "-e", "XKEY . PAD 10 STDIN READ-LINE . . PAD SWAP TYPE BYE" });
+    xkey_read_line.setStdIn(.{ .bytes = "\xE6Ab\ncd\n" });
+    xkey_read_line.expectStdOutEqual("65533 0 -1 Ab");
+    test_step.dependOn(&xkey_read_line.step);
+    if (graphics) {
+        const xkey_inkey = b.addRunArtifact(exe);
+        xkey_inkey.addArgs(&.{ "-e", "REQUIRE-GRAPHICS ALSO GRAPHICS XKEY . INKEY . INKEY . BYE" });
+        xkey_inkey.setStdIn(.{ .bytes = "\xE6AB" });
+        // INKEY reads a pipe only for the byte read ahead, so B is not a key to it.
+        xkey_inkey.expectStdOutEqual("65533 65 -1 ");
+        test_step.dependOn(&xkey_inkey.step);
+    }
     const argument_no_file = b.addRunArtifact(exe);
     argument_no_file.addArgs(&.{ "sigma-no-such-file.fs", "-e", "BYE" });
     argument_no_file.expectExitCode(1);

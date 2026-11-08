@@ -290,7 +290,7 @@ pub const Output = struct {
     }
 
     pub fn writer(self: *Output) forth.Writer {
-        return .{ .context = @ptrCast(self), .write_fn = write, .read_fn = read, .save_fn = saveImage, .savesys_fn = saveImage, .key_fn = key, .key_ready_fn = keyReady, .sleep_fn = sleep, .utime_fn = utime, .local_time_fn = localTime, .getenv_fn = getenv, .system_fn = system, .file_ops = &fake_file_ops, .framebuffer_fn = framebuffer, .terminal_size_fn = terminalSize, .terminal_utf8_fn = terminalUtf8, .window_fn = if (self.has_window) window else null, .input_fn = input, .mouse_fn = mouse, .cursor_fn = cursor, .font_buffer_fn = fontBuffer, .font_free_fn = fontFree, .system_font_fn = if (self.has_system_fonts) systemFont else null, .system_glyph_fn = if (self.has_system_fonts) systemGlyph else null, .process_start_fn = processStart, .process_write_fn = processWrite, .process_read_fn = processRead, .process_stop_fn = processStop, .audio_fn = audioEngine, .audio_device_fn = audioDevice, .audio_wait_fn = audioWait };
+        return .{ .context = @ptrCast(self), .write_fn = write, .read_fn = read, .save_fn = saveImage, .savesys_fn = saveImage, .key_fn = key, .key_ready_fn = keyReady, .unread_fn = unread, .sleep_fn = sleep, .utime_fn = utime, .local_time_fn = localTime, .getenv_fn = getenv, .system_fn = system, .file_ops = &fake_file_ops, .framebuffer_fn = framebuffer, .terminal_size_fn = terminalSize, .terminal_utf8_fn = terminalUtf8, .window_fn = if (self.has_window) window else null, .input_fn = input, .mouse_fn = mouse, .cursor_fn = cursor, .font_buffer_fn = fontBuffer, .font_free_fn = fontFree, .system_font_fn = if (self.has_system_fonts) systemFont else null, .system_glyph_fn = if (self.has_system_fonts) systemGlyph else null, .process_start_fn = processStart, .process_write_fn = processWrite, .process_read_fn = processRead, .process_stop_fn = processStop, .audio_fn = audioEngine, .audio_device_fn = audioDevice, .audio_wait_fn = audioWait };
     }
 
     pub fn audioEngine(context: ?*anyopaque) ?*@import("../core/sound_engine.zig").Engine {
@@ -361,6 +361,11 @@ pub const Output = struct {
         if (output.key_index == output.keys.len) return null;
         output.key_index += 1;
         return output.keys[output.key_index - 1];
+    }
+
+    pub fn unread(context: ?*anyopaque, _: u8) void {
+        const output: *Output = @ptrCast(@alignCast(context.?));
+        output.key_index -= 1;
     }
 
     pub fn keyReady(context: ?*anyopaque) bool {

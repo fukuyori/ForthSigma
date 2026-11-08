@@ -105,6 +105,10 @@ pub const Writer = struct {
     savesys_fn: ?*const fn (?*anyopaque, []const u8, *State) RuntimeError!void = null,
     key_fn: ?*const fn (?*anyopaque) ?u8 = null,
     key_ready_fn: ?*const fn (?*anyopaque) bool = null,
+    /// Gives back a byte that key_fn gave and XKEY did not take (one that does not
+    /// continue a character): the next read of the terminal input, by any word, gets it
+    /// first. Without it, only KEY and XKEY get the byte back.
+    unread_fn: ?*const fn (?*anyopaque, u8) void = null,
     sleep_fn: ?*const fn (?*anyopaque, Cell) RuntimeError!void = null,
     /// Microseconds since the Unix epoch.
     utime_fn: ?*const fn (?*anyopaque) RuntimeError!Double = null,

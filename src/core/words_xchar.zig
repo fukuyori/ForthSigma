@@ -117,7 +117,8 @@ fn lastCharacter(bytes: []const u8) struct { start: usize, whole: bool } {
     return .{ .start = bytes.len - 1, .whole = decode(bytes[bytes.len - 1 ..]).valid };
 }
 
-/// A byte that KEY read and XKEY did not take, which KEY gives next.
+/// The next byte of the terminal input: first a byte XKEY left when the host cannot
+/// take it back (see `unread_fn`), else from the host.
 fn nextKey(self: *State) RuntimeError!u8 {
     if (self.pending_key) |byte| {
         self.pending_key = null;
@@ -133,7 +134,7 @@ pub fn key(self: *State) RuntimeError!u8 {
 }
 
 /// XKEY: the bytes of one character from KEY. A byte that does not continue the
-/// character is left for the next KEY or XKEY.
+/// character is given back for the next read of the input.
 fn xkey(self: *State) RuntimeError!u21 {
     var bytes: [4]u8 = undefined;
     bytes[0] = try nextKey(self);
@@ -147,7 +148,7 @@ fn xkey(self: *State) RuntimeError!u21 {
     while (length <= more) : (length += 1) {
         const byte = nextKey(self) catch break;
         if (byte & 0xC0 != 0x80) {
-            self.pending_key = byte;
+            if (self.writer.unread_fn) |unread| unread(self.writer.context, byte) else self.pending_key = byte;
             break;
         }
         bytes[length] = byte;

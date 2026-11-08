@@ -5,19 +5,69 @@ const forth = @import("forth.zig");
 extern "c" fn getchar() c_int;
 extern "c" fn putchar(c_int) c_int;
 extern "c" fn fflush(?*anyopaque) c_int;
-extern "c" fn fopen([*:0]const u8, [*:0]const u8) ?*anyopaque;
 extern "c" fn fclose(?*anyopaque) c_int;
 extern "c" fn fseek(?*anyopaque, c_long, c_int) c_int;
 extern "c" fn ftell(?*anyopaque) c_long;
 extern "c" fn fread([*]u8, usize, usize, ?*anyopaque) usize;
 extern "c" fn fwrite([*]const u8, usize, usize, ?*anyopaque) usize;
-extern "c" fn system(?[*:0]const u8) c_int;
 extern "c" fn getc(?*anyopaque) c_int;
 extern "c" fn ungetc(c_int, ?*anyopaque) c_int;
 extern "c" fn ferror(?*anyopaque) c_int;
 extern "c" fn clearerr(?*anyopaque) void;
-extern "c" fn remove([*:0]const u8) c_int;
 extern "c" fn rename([*:0]const u8, [*:0]const u8) c_int;
+
+/// The C library's functions that take a file name or a command. On Windows they would
+/// take it in the ANSI code page (932 on a Japanese system), where UTF-8 names other
+/// than ASCII fail; there the UTF-8 is turned into UTF-16 for their wide forms.
+const libc = struct {
+    extern "c" fn fopen([*:0]const u8, [*:0]const u8) ?*anyopaque;
+    extern "c" fn remove([*:0]const u8) c_int;
+    extern "c" fn system(?[*:0]const u8) c_int;
+};
+
+const wide_c = struct {
+    extern "c" fn _wfopen([*:0]const u16, [*:0]const u16) ?*anyopaque;
+    extern "c" fn _wremove([*:0]const u16) c_int;
+    extern "c" fn _wsystem(?[*:0]const u16) c_int;
+    extern "kernel32" fn MoveFileExW([*:0]const u16, [*:0]const u16, u32) callconv(.winapi) c_int;
+    const errno_illegal_sequence = 42;
+    const errno_name_too_long = 38;
+
+    /// The UTF-16 form of UTF-8 text, in `buffer`; null, with errno set, when the text is
+    /// not UTF-8 or does not fit.
+    fn from(text: [*:0]const u8, buffer: []u16) ?[*:0]const u16 {
+        const bytes = std.mem.span(text);
+        if (bytes.len >= buffer.len) {
+            std.c._errno().* = errno_name_too_long;
+            return null;
+        }
+        const length = std.unicode.utf8ToUtf16Le(buffer[0 .. buffer.len - 1], bytes) catch {
+            std.c._errno().* = errno_illegal_sequence;
+            return null;
+        };
+        buffer[length] = 0;
+        return @ptrCast(buffer[0..length :0]);
+    }
+};
+
+fn fopen(name: [*:0]const u8, mode: [*:0]const u8) ?*anyopaque {
+    if (builtin.os.tag != .windows) return libc.fopen(name, mode);
+    var name_buffer: [8192]u16 = undefined;
+    var mode_buffer: [8]u16 = undefined;
+    return wide_c._wfopen(wide_c.from(name, &name_buffer) orelse return null, wide_c.from(mode, &mode_buffer) orelse return null);
+}
+
+fn remove(name: [*:0]const u8) c_int {
+    if (builtin.os.tag != .windows) return libc.remove(name);
+    var buffer: [8192]u16 = undefined;
+    return wide_c._wremove(wide_c.from(name, &buffer) orelse return -1);
+}
+
+fn system(command: [*:0]const u8) c_int {
+    if (builtin.os.tag != .windows) return libc.system(command);
+    var buffer: [8192]u16 = undefined;
+    return wide_c._wsystem(wide_c.from(command, &buffer) orelse return -1);
+}
 /// Changing a file's size goes through its descriptor: _chsize_s on Windows, ftruncate
 /// elsewhere (64-bit off_t on musl and macOS).
 const file_number = if (builtin.os.tag == .windows) struct {
@@ -232,7 +282,9 @@ fn runShellCommand(_: ?*anyopaque, command: []const u8) forth.RuntimeError!forth
     // The command's output comes after what Forth wrote before it.
     flushOutput();
     // On POSIX systems this is the wait status, as gforth's $? gives; on Windows, the exit code.
+    utf8_console.pause();
     const status = system(&terminated);
+    utf8_console.@"resume"();
     if (status == -1) return error.HostFailed;
     return status;
 }
@@ -430,7 +482,11 @@ fn fileRename(_: ?*anyopaque, old: []const u8, new: []const u8) forth.Cell {
     // (and so gforth) does. MoveFileEx replaces it in one step, so a failure leaves the
     // file there as it was.
     if (builtin.os.tag == .windows) {
-        if (MoveFileExA(c_old, c_new, move_replace_existing | move_copy_allowed) != 0) return 0;
+        var old_wide: [8192]u16 = undefined;
+        var new_wide: [8192]u16 = undefined;
+        const w_old = wide_c.from(c_old, &old_wide) orelse return lastIor();
+        const w_new = wide_c.from(c_new, &new_wide) orelse return lastIor();
+        if (wide_c.MoveFileExW(w_old, w_new, move_replace_existing | move_copy_allowed) != 0) return 0;
         return forth.errnoIor(switch (GetLastError()) {
             2, 3 => 2, // ERROR_FILE_NOT_FOUND, ERROR_PATH_NOT_FOUND: ENOENT
             5, 32 => 13, // ERROR_ACCESS_DENIED, ERROR_SHARING_VIOLATION: EACCES
@@ -442,7 +498,6 @@ fn fileRename(_: ?*anyopaque, old: []const u8, new: []const u8) forth.Cell {
     return lastIor();
 }
 
-extern "kernel32" fn MoveFileExA([*:0]const u8, [*:0]const u8, u32) callconv(.winapi) c_int;
 extern "kernel32" fn GetLastError() callconv(.winapi) u32;
 const move_replace_existing = 0x1;
 const move_copy_allowed = 0x2;
@@ -492,6 +547,8 @@ const utf8_console = if (builtin.os.tag != .windows) struct {
     const input: ?*anyopaque = null;
     fn begin() void {}
     fn finish() void {}
+    fn pause() void {}
+    fn @"resume"() void {}
     fn readByte() c_int {
         return -1;
     }
@@ -534,6 +591,20 @@ const utf8_console = if (builtin.os.tag != .windows) struct {
         _ = SetConsoleOutputCP(saved_output);
         _ = SetConsoleCP(saved_input);
         active = false;
+    }
+
+    /// A program that SYSTEM starts runs with the code pages the console had before, so
+    /// that it shows its messages and its files as without Sigma.
+    fn pause() void {
+        if (!active) return;
+        _ = SetConsoleOutputCP(saved_output);
+        _ = SetConsoleCP(saved_input);
+    }
+
+    fn @"resume"() void {
+        if (!active) return;
+        _ = SetConsoleOutputCP(65001);
+        _ = SetConsoleCP(65001);
     }
 
     /// Ctrl+C, Ctrl+Break, or the console closing: the code pages go back, and the
@@ -714,6 +785,13 @@ fn saveExecutableImage(context: ?*anyopaque, output_path: []const u8, machine: *
     writeU32(footer[8..12], @intCast(image_len));
     writeU64(footer[12..20], base_len);
     if (fwrite(&footer, 1, footer.len, destination) != footer.len) return error.FileUnavailable;
+    // A C stream makes the file without the permission to run it; as a linker does, the
+    // executable gets every permission the umask lets through (usually rwxr-xr-x).
+    if (builtin.os.tag != .windows) {
+        const mask = std.c.umask(0);
+        _ = std.c.umask(mask);
+        if (std.c.chmod(&terminated_output, 0o777 & ~mask) != 0) return error.FileUnavailable;
+    }
 }
 
 /// Writes to the standard error handle directly, as std.Io did: it is not buffered, so it
@@ -833,6 +911,11 @@ fn terminalKey(_: ?*anyopaque) ?u8 {
     return if (ch < 0) null else @intCast(ch);
 }
 
+/// XKEY gives back a byte it read: it becomes the byte read ahead, as KEY? leaves one.
+fn terminalUnread(_: ?*anyopaque, byte: u8) void {
+    lookahead = byte;
+}
+
 fn terminalKeyReady(_: ?*anyopaque) bool {
     flushOutput();
     host_input.leave();
@@ -940,7 +1023,7 @@ fn run(init: std.process.Init.Minimal) !u8 {
     useBinaryStdin();
     utf8_console.begin();
     defer utf8_console.finish();
-    machine.init(.{ .gamepad_ops = if (graphics) &host_gamepad.ops else null, .context = @ptrCast(&host), .write_fn = terminalWrite, .read_fn = terminalRead, .load_fn = loadDictionary, .save_fn = saveDictionary, .savesys_fn = saveExecutableImage, .key_fn = terminalKey, .key_ready_fn = terminalKeyReady, .sleep_fn = sleepMilliseconds, .utime_fn = microsecondsSinceEpoch, .local_time_fn = localTime, .getenv_fn = environmentValue, .system_fn = runShellCommand, .file_ops = &file_ops, .framebuffer_fn = graphicsBuffer, .terminal_size_fn = terminalSize, .terminal_utf8_fn = terminalUtf8, .window_fn = if (host_window.available) host_window.show else null, .input_fn = inputEvent, .mouse_fn = mouseMode, .cursor_fn = cursorPosition, .font_buffer_fn = if (graphics) fontBuffer else null, .font_free_fn = if (graphics) fontFree else null, .system_font_fn = if (graphics and host_font.available) host_font.select else null, .system_glyph_fn = if (graphics and host_font.available) host_font.glyph else null, .process_start_fn = if (graphics) host_process.start else null, .process_write_fn = if (graphics) host_process.write else null, .process_read_fn = if (graphics) host_process.read else null, .process_stop_fn = if (graphics) host_process.stop else null, .audio_fn = if (audio) host_audio.start else null, .audio_device_fn = if (audio) host_audio.hasDevice else null, .audio_wait_fn = if (audio) audioWait else null });
+    machine.init(.{ .gamepad_ops = if (graphics) &host_gamepad.ops else null, .context = @ptrCast(&host), .write_fn = terminalWrite, .read_fn = terminalRead, .load_fn = loadDictionary, .save_fn = saveDictionary, .savesys_fn = saveExecutableImage, .key_fn = terminalKey, .key_ready_fn = terminalKeyReady, .unread_fn = terminalUnread, .sleep_fn = sleepMilliseconds, .utime_fn = microsecondsSinceEpoch, .local_time_fn = localTime, .getenv_fn = environmentValue, .system_fn = runShellCommand, .file_ops = &file_ops, .framebuffer_fn = graphicsBuffer, .terminal_size_fn = terminalSize, .terminal_utf8_fn = terminalUtf8, .window_fn = if (host_window.available) host_window.show else null, .input_fn = inputEvent, .mouse_fn = mouseMode, .cursor_fn = cursorPosition, .font_buffer_fn = if (graphics) fontBuffer else null, .font_free_fn = if (graphics) fontFree else null, .system_font_fn = if (graphics and host_font.available) host_font.select else null, .system_glyph_fn = if (graphics and host_font.available) host_font.glyph else null, .process_start_fn = if (graphics) host_process.start else null, .process_write_fn = if (graphics) host_process.write else null, .process_read_fn = if (graphics) host_process.read else null, .process_stop_fn = if (graphics) host_process.stop else null, .audio_fn = if (audio) host_audio.start else null, .audio_device_fn = if (audio) host_audio.hasDevice else null, .audio_wait_fn = if (audio) audioWait else null });
     defer closeAllFiles();
     defer host_window.close();
     defer if (graphics) host_gamepad.close();
@@ -1151,6 +1234,24 @@ test "file words through the host: position, resize, flush, status, rename over 
     try machine.interpretLine("S\" .zig-cache/sigma-files-none.txt\" S\" .zig-cache/sigma-files-b.txt\" RENAME-FILE S\" .zig-cache/sigma-files-b.txt\" SLURP-FILE NIP");
     try machine.interpretLine("S\" .zig-cache/sigma-files-b.txt\" DELETE-FILE");
     try std.testing.expectEqualSlices(forth.Cell, &.{ forth.errnoIor(2), 3, 0 }, machine.data_stack[0..machine.data_depth]);
+}
+
+test "file names and commands other than ASCII: create, include, status, rename, delete, SYSTEM" {
+    if (!@import("build_options").files) return error.SkipZigTest;
+    const allocator = std.testing.allocator;
+    var host = HostContext{ .allocator = allocator, .executable_path = "", .environ_map = undefined };
+    const machine = try allocator.create(forth.State);
+    defer allocator.destroy(machine);
+    machine.init(.{ .context = @ptrCast(&host), .write_fn = discardOutput, .file_ops = &file_ops, .system_fn = runShellCommand });
+    defer closeAllFiles();
+
+    try machine.interpretLine("S\" .zig-cache/sigma-日本語.fs\" W/O CREATE-FILE THROW VALUE F S\" 6 7 *\" F WRITE-FILE F CLOSE-FILE");
+    try machine.interpretLine("S\" .zig-cache/sigma-日本語.fs\" INCLUDED S\" .zig-cache/sigma-日本語.fs\" FILE-STATUS NIP");
+    try machine.interpretLine("S\" .zig-cache/sigma-日本語.fs\" S\" .zig-cache/sigma-漢字.fs\" RENAME-FILE S\" .zig-cache/sigma-漢字.fs\" DELETE-FILE S\" .zig-cache/sigma-漢字.fs\" FILE-STATUS NIP");
+    // The shell gets the command in UTF-8 as it was written (a name with no file is not found).
+    try machine.interpretLine("S\" exit 0 & echo 日本語 > " ++ (if (builtin.os.tag == .windows) "NUL" else "/dev/null") ++ "\" SYSTEM $?");
+    // WRITE-FILE, CLOSE-FILE; 42 from the file, FILE-STATUS; RENAME-FILE, DELETE-FILE, no file; SYSTEM's status.
+    try std.testing.expectEqualSlices(forth.Cell, &.{ 0, 0, 42, 0, 0, 0, forth.errnoIor(2), 0 }, machine.data_stack[0..machine.data_depth]);
 }
 
 test "the banner names the version from VERSION and the license" {
