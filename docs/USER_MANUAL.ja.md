@@ -17,11 +17,20 @@ zig build
 
 `zig build -Dfloat=false` でビルドすると、浮動小数点数を扱わない小さい版になります（[浮動小数点数](#浮動小数点数)の章を参照）。同じように、`-Dfiles=false` はファイルを開く・読む・書く・取り込む語（`INCLUDE`、`REQUIRE`、`OPEN-FILE`、`STDIN`、`SLURP-FILE`、`$...SLURP` の語など）を、`-Dhelp=false` は `HELP` と `LICENSE` を、`-Dtools=false` は `SEE`、`LOCATE`、`WHERE` を、`-Dimage=false` は `SAVE`、`LOAD`、`SAVESYS` を、`-Dgraphics=false` は `REQUIRE-GRAPHICS` とグラフィックスの語（[グラフィックス](#グラフィックス)を参照）を除きます。除いた語は辞書になく、名前は `名前 ?` のエラーになります。グループはそれぞれ独立しているので、ファイルの語を除いても、`SAVE`・`LOAD`・`SAVESYS` はイメージのファイルを書き読みし、`LOCATE` はソースファイルを読みます。組み込み語の実行トークンはどの版でも同じなので、ある版で保存したイメージは、グループの違う版でも読み込めます。その版で除いた語を実行すると `INVALID EXECUTION TOKEN` のエラーになり、`SEE` はその語を名前で表示します。グループを除いた以前の版（`-Dfloat=false` など）で保存したイメージは、組み込み語の実行トークンが違うので `INVALID IMAGE` になります。
 
-引数なしで起動すると、次の2行（`-Dhelp=false` の版では1行目だけ）を表示して対話プロンプトになります。版番号はルートの `VERSION` ファイルの値です。引数を付けて起動したとき（引数の文字列を1回実行して終了します）は表示しません。
+対話プロンプトの前に、次の2行（`-Dhelp=false` の版では1行目だけ）を表示します。版番号はルートの `VERSION` ファイルの値です。
 
 ```text
 FORTH/Sigma 0.7.0  MIT License
 Type `help' for basic help
+```
+
+コマンドラインの引数は、Gforthと同じように扱います。引数はそれぞれForthソースファイルの名前で、左から順に `INCLUDED` と同じように読み込みます。`-e 文字列`（または `--evaluate 文字列`）は、その文字列を1行の入力として実行します。スタックは引数から引数へ引き継ぎます。`BYE` を実行すると、そこで終了コード0で終了します。引数でエラーが起きると、エラーを表示し（開けないファイルは `名前: NO SUCH FILE OR DIRECTORY !` のように名前の後に表示します）、残りの引数は処理せずに終了コード1で終了します。それ以外の場合は、最後の引数の後に上の2行と対話プロンプトが続きます。
+
+プログラムは、Gforthと同じく `ARGC`、`ARGV`、`ARG`、`SHIFT-ARGS`、`NEXT-ARG` で引数を参照できます。引数は処理する前に取り除くので、ファイルからはそれより後ろの引数だけが見え、ファイルが `NEXT-ARG` で取った引数はファイルとして処理しません。たとえば `NEXT-ARG TYPE CR BYE` と書いたファイル `greet.fs` を `sigma greet.fs world` で起動すると、`world` と表示します。引数0は、起動したときのプログラム名です。引数は256個、合わせて約10 KBまで持てます。
+
+```powershell
+.\zig-out\bin\sigma.exe examples\demo.fs        # ファイルを読み込み、対話プロンプトへ
+.\zig-out\bin\sigma.exe -e "12 DUP * . BYE"     # 144 を表示して終了
 ```
 
 `HELP` は基本的な使い方を、`HELP 語名` は語のスタックの変化と1行の説明を英語で表示します（例: `HELP DUP`）。名前は同じ行から読みます（`EVALUATE` の文字列でも、改行の先は読みません）。定義の中に書いた `HELP` は、その定義を実行したときに名前を読みます。利用者が定義した語は、`SEE` で中身を見るよう案内します。知らない名前は `名前 ?` のエラーです。`LICENSE` はライセンスの全文と、組み込んでいるCORE-MATHの著作権表示を表示します。
@@ -215,10 +224,10 @@ CREATE BUF 16 ALLOT
 | 用途 | ワード | 説明 |
 | --- | --- | --- |
 | 数値出力 | `.`, `U.`, `C.`, `?`, `.S`, `.R`, `U.R` | `.R` `U.R` 以外は数値の後ろに空白を付けます。`.R`（( n 幅 -- )）と `U.R`（( u 幅 -- )）は幅に右寄せし、空白を付けません。数値が幅より長ければそのまま表示します。`U.` は符号なし、`C.` は下位8ビット、`?` はアドレスの内容、`.S` は個数と上の9個（`<個数> 値 ...`）を表示します。ゼロ埋めはしません。 |
-| 文字出力 | `ECHO`/`EMIT` | スタック先頭の下位8ビットを文字として出力します。 |
+| 文字出力 | `ECHO`/`EMIT`, `XEMIT` | `EMIT` はスタック先頭の下位8ビットを1バイトとして出力します。`XEMIT` は文字をUTF-8で出力します（[文字（UTF-8）](#文字utf-8)を参照）。 |
 | 文字列出力 | `TYPE`, `."..."` | `TYPE` はアドレスと文字数を受け取り、文字列を出力します。`."..."` は移植版の拡張です。 |
 | 改行・空白 | `CR`, `SPACE`, `SPCES`/`SPACES`, `BL` | 改行、1個の空白、指定数の空白を出力します。`BL` は空白の文字コードを積みます。 |
-| 文字コード | `CHAR 文字`, `[CHAR] 文字` | 次の語の先頭文字の文字コードを積みます。定義内ではリテラルとしてコンパイルします。 |
+| 文字コード | `CHAR 文字`, `[CHAR] 文字`, `'c'` | 次の語の先頭の文字のコードポイントを積みます（UTF-8なので `CHAR 日` は26085）。定義内ではリテラルとしてコンパイルします。`'c'` は1文字のコードポイントです。 |
 | 数値入力 | `INPUT` | 端末から整数を1個読み取ってスタックへ積みます。 |
 | 基数変更 | `HEX`, `DEC`/`DECIMAL`, `OCT` | 数値入出力の基数を16進、10進、8進に切り替えます。初期値は10進です。 |
 | 基数参照 | `BASE` | 基数値（2〜36）を保持する論理メモリのアドレスをスタックへ積みます。 |
@@ -246,12 +255,43 @@ S" Forth" TUCK BUF SWAP MOVE BUF SWAP TYPE
 | `PAD` | ( -- addr ) | 作業用の4096バイトの領域のアドレスです。 |
 | `ACCEPT` | ( addr u -- u2 ) | 端末から1行読み、最大u文字をaddrに格納して文字数を返します。 |
 | `EVALUATE` | ( addr u -- ) | 文字列をForthの入力として解釈します。 |
-| `KEY` | ( -- c ) | 1文字読み取ります。 |
+| `KEY` | ( -- c ) | 1バイト読み取ります（ASCII以外の文字はUTF-8のバイトで届きます。1文字まとめて読むのは `XKEY` です）。 |
 | `KEY?` | ( -- flag ) | 読み取れる文字があるかを返します。対話端末では入力があるまで待ちます。 |
 | `EKEY`, `EKEY?`, `EKEY>CHAR` | ( -- u )、( -- flag )、( u -- u false \| c true ) | `EKEY` と `EKEY?` は `KEY` と `KEY?` と同じです（ファンクションキーなどは解釈しません）。`EKEY>CHAR` は0〜255なら文字として真を返します。 |
 | `>NUMBER` | ( ud addr u -- ud2 addr2 u2 ) | 数字を変換し、変換できなかった残りを返します。 |
 | `S>NUMBER?` | ( addr u -- d flag ) | 文字列を整数（倍長）に変換し、成否を返します。 |
 | `>FLOAT` | ( addr u -- flag ) ( f: -- r ) | 文字列を浮動小数点数に変換します。`E` は省略できます。成功時だけ浮動小数点スタックに積みます。 |
+
+## 文字（UTF-8）
+
+文字列はバイト列で、ASCII以外の文字はgforthと同じくUTF-8で入ります。`S" 日本語"` の長さは9で、`TYPE`、`/STRING`、`COMPARE` などの文字列の語はバイト単位で働きます。`KEY` は1バイトを返します。`CHAR`、`[CHAR]`、`'日'` のような文字リテラルは先頭の文字のコードポイントを返し（`CHAR 日` は26085）、次の語で1文字ずつ扱えます。
+
+```forth
+S" 日本語" X-WIDTH .            \ 6（端末での桁数）
+S" 日本語" +X/STRING TYPE        \ 本語
+26085 XEMIT                      \ 日
+```
+
+| ワード | スタック | 説明 |
+| --- | --- | --- |
+| `XC-SIZE` | ( xc -- u ) | xcをUTF-8で表したときのバイト数です。 |
+| `X-SIZE` | ( addr u -- u2 ) | 文字列の先頭の文字のバイト数です（空の文字列ではgforthと同じく1）。 |
+| `XC@+`, `XC@` | ( addr -- addr2 xc )、( addr -- xc ) | addrの文字（とその次のアドレス）を取り出します。 |
+| `XC!+`, `XC!+?` | ( xc addr -- addr2 )、( xc addr u -- addr2 u2 flag ) | xcをUTF-8で書きます。`XC!+?` はuバイトに収まるときだけ書き、書いたかどうかを返します。 |
+| `XC,` | ( xc -- ) | xcをUTF-8でデータ領域に加えます。 |
+| `XCHAR+`, `XCHAR-` | ( addr -- addr2 ) | 次の文字、または前の文字のアドレスです。 |
+| `XEMIT` | ( xc -- ) | xcを表示します。`EMIT` はこれまでどおり下位8ビットを1バイトとして書きます。 |
+| `XKEY`, `XKEY?` | ( -- xc )、( -- flag ) | 1文字（`KEY` で読むそのバイト）を読みます。`XKEY?` は読めるかどうかを返します。文字の続きでないバイトは、次の `KEY` のために残します。 |
+| `X-WIDTH`, `XC-WIDTH` | ( addr u -- n )、( xc -- n ) | 文字列や文字が端末で占める桁数です。`XC-WIDTH` は0、1、2か、表示しない文字（制御文字や文字のないコードポイント）なら-1です。`X-WIDTH` はそれらを0と数えます。 |
+| `+X/STRING`, `X\STRING-` | ( addr u -- addr2 u2 )、( addr u -- addr u2 ) | 文字列の先頭、または末尾の1文字を除きます。 |
+| `-TRAILING-GARBAGE` | ( addr u -- addr u2 ) | 文字列の末尾の欠けた文字を除きます。 |
+| `X@+/STRING` | ( addr u -- addr2 u2 xc ) | 文字列の先頭の文字を取り出します。 |
+| `XHOLD` | ( xc -- ) | 数値の書式の先頭にxcを加えます。 |
+| `EKEY>XCHAR` | ( u -- u false \| xc true ) | キーボードのイベントが1文字かどうかを返します。`EKEY` は文字のバイトを1つずつ返すので、1文字になるのはASCIIのバイトだけです。 |
+
+正しいUTF-8は、gforthと同じ値になります。冗長な形やサロゲートも同じです。それ以外は1つの規則に従います。先頭になれないバイト、途中で切れた文字（続きでないバイトか文字列の終わりで切れたもの）、U+10FFFFを超える値はU+FFFDとし、先頭のバイトとその続きのバイトだけを読み進めます（先頭になれないバイトは1バイト）。U+10FFFFを超えるコードポイントは、U+FFFD（3バイト）として書きます。桁数はUnicode Character Database 15.1.0から作り、すべてのコードポイントでLinux（glibc 2.39）のgforthと同じです。
+
+Windowsでは、Sigmaの実行中、コンソールの表示と入力がUTF-8になります。出力のコードページをUTF-8（65001）にし、終了時（Ctrl+Cのときも）に元に戻します。キーボードから入力した文字もUTF-8として読みます。`SYSTEM` で起動したプログラムも、このコードページで動きます。ASCII以外のファイル名は、Windowsではまだ開けません。
 
 ## 数値の書式（pictured numeric output）
 
@@ -330,6 +370,11 @@ S" dir" SYSTEM
 | `TIME&DATE` | ( -- 秒 分 時 日 月 年 ) | 地方時の日時を返します。月は1〜12、年は西暦です。 |
 | `PAGE` | ( -- ) | 画面を消去し、カーソルを左上へ移します。 |
 | `AT-XY` | ( x y -- ) | カーソルをx列、y行（どちらも0から）へ移します。Gforthと同じエスケープシーケンスを出力します。 |
+| `ARGC` | ( -- addr ) | 残っているコマンドラインの引数の数（プログラム名の引数0を含む）を入れた変数です。 |
+| `ARGV` | ( -- addr ) | 引数の配列のアドレスを入れた変数です。配列は引数1つにつき1セルで、それぞれNULバイトで終わる文字列のアドレスです。 |
+| `ARG` | ( u -- addr count ) | コマンドラインの引数 `u`（0はプログラム名）を返します。`u` が `ARGC @` 以上なら `0 0` です。 |
+| `SHIFT-ARGS` | ( -- ) | 引数1を引数から取り除きます。引数0は残ります。引数0しか残っていなければ何もしません。 |
+| `NEXT-ARG` | ( -- addr count ) | 引数1を返し、引数から取り除きます（`1 ARG SHIFT-ARGS`）。残っていなければ `0 0` です。 |
 | `GETENV` | ( addr u -- addr2 u2 ) | 環境変数の値を返します。未設定なら `0 0` です。結果は次の `GETENV` まで有効で、3072バイトを超える値は `STRING TOO LONG !` になります。 |
 | `SYSTEM` | ( addr u -- ) | 文字列をシェルのコマンドとして実行します（Windowsは `cmd.exe`）。コマンドの終了コードは返しません（`$?` で取り出せます）。 |
 | `$?` | ( -- n ) | 最後に実行した `SYSTEM` の状態です。LinuxとmacOSではGforthと同じく `system` の返す値（終了コードの256倍）、Windowsでは終了コードです。 |
@@ -563,7 +608,7 @@ SAVE words.sigma
 LOAD words.sigma
 ```
 
-`LOAD` は保存した利用者定義語を現在の辞書の後ろに追加します。同名語は読み込んだ新しい定義が優先されます。以前の版で保存した辞書イメージ（`SIGIMG01`〜`SIGIMG31`）と、壊れた辞書イメージは読み込めません（`INVALID IMAGE !`）。`SIGIMG32`（0.4.0）のイメージは読み込めますが、この版が保存するイメージ（`SIGIMG33`）は0.4.0では読み込めません。`REQUIRE-GRAPHICS` でグラフィックスの語を読み込んだ辞書は `SIGIMG34` で保存し、0.5.2までの版では読み込めません。`FORGET` や `MARKER` でグラフィックスの語を消したあとも同じです。一度も読み込んでいない辞書は、これまでどおり `SIGIMG33` で保存します。`REQUIRE-AUDIO` で音の語を読み込んだ辞書は、グラフィックスの語の有無によらず `SIGIMG35` で保存し、0.6.1までの版では読み込めません。辞書イメージにはチェックサムが付いており、偶然の破損は読み込む前に見つかります。読み込むのは、Sigmaの `SAVE`・`SAVESYS` で作ったファイルだけにしてください。定数や変数に保存した実行トークン（`:NONAME` の結果など）と、`LITERAL` で定義に埋め込んだ実行トークンやアドレス（`[ ' X ] LITERAL` など）は、すでに利用者定義語がある辞書へ `LOAD` すると別の語や場所を指すことがあります。`['] X` で埋め込んだ実行トークンは正しく付け替えられます。`SAVESYS` で作った実行ファイルではこの問題は起きません。
+`LOAD` は保存した利用者定義語を現在の辞書の後ろに追加します。同名語は読み込んだ新しい定義が優先されます。以前の版で保存した辞書イメージ（`SIGIMG01`〜`SIGIMG35`、つまり0.7.0までの版のもの）と、壊れた辞書イメージは読み込めません（`INVALID IMAGE !`）。引数の語（`ARGC`〜`NEXT-ARG`）とxcharの語（`XC-SIZE`〜`X@+/STRING`）を組み込み語に加え、利用者定義語の番号がずれたためです。この版は `SIGIMG36` で保存します。`REQUIRE-GRAPHICS` でグラフィックスの語を読み込んだ辞書は `SIGIMG37` で保存し、`FORGET` や `MARKER` でグラフィックスの語を消したあとも同じです。`REQUIRE-AUDIO` で音の語を読み込んだ辞書は、グラフィックスの語の有無によらず `SIGIMG38` で保存します。どれも0.7.0までの版では読み込めません。辞書イメージにはチェックサムが付いており、偶然の破損は読み込む前に見つかります。読み込むのは、Sigmaの `SAVE`・`SAVESYS` で作ったファイルだけにしてください。定数や変数に保存した実行トークン（`:NONAME` の結果など）と、`LITERAL` で定義に埋め込んだ実行トークンやアドレス（`[ ' X ] LITERAL` など）は、すでに利用者定義語がある辞書へ `LOAD` すると別の語や場所を指すことがあります。`['] X` で埋め込んだ実行トークンは正しく付け替えられます。`SAVESYS` で作った実行ファイルではこの問題は起きません。
 
 `SAVESYS` は、現在の辞書・コンパイル済み定義・データを含む、実行中環境向けの単独実行ファイルを作ります。
 
@@ -571,7 +616,7 @@ LOAD words.sigma
 SAVESYS demo.exe
 ```
 
-生成したファイルは引数なしで起動すると、その辞書を持つ対話プロンプトを開きます。引数がある場合は、引数を連結した文字列をForth入力として1回実行して終了します。生成物は作成元と同じ実行環境向けです。
+生成したファイルはその辞書を持って起動し、Sigmaと同じコマンドラインの引数を受け付けます（[起動と入力](#起動と入力)を参照）。引数なしなら対話プロンプトを開きます。生成物は作成元と同じ実行環境向けです。
 
 ## 登録済みワード一覧
 
@@ -594,10 +639,10 @@ SAVESYS demo.exe
 | 浮動小数点比較 | `F=`, `F<>`, `F<`, `F>`, `F<=`, `F>=`, `F0=`, `F0<>`, `F0<`, `F0>`, `F0<=`, `F0>=`, `F~` |
 | 浮動小数点メモリ・変換・入出力 | `F@`, `F!`, `F,`, `FA@`, `FA!`, `F+!`, `F?`, `FLOATS`, `FLOAT+`, `DF@`, `DF!`, `DFLOATS`, `DFLOAT+`, `SF@`, `SF!`, `SFLOATS`, `SFLOAT+`, `FALIGN`, `FALIGNED`, `DFALIGN`, `DFALIGNED`, `SFALIGN`, `SFALIGNED`, `S>F`, `F>S`, `F.`, `FE.`, `FS.`, `REPRESENT`, `PRECISION`, `SET-PRECISION`, `FINPUT`, `F.RDP`, `F>STR-RDP`, `F>BUF-RDP` |
 | 倍長整数 | `S>D`, `D>S`, `D+`, `D-`, `DNEGATE`, `DABS`, `D0=`, `D0<`, `D=`, `D<`, `DU<`, `DMAX`, `DMIN`, `D2*`, `D2/`, `M+`, `M*/`, `D.`, `D.R`, `M*`, `UM*`, `UM/MOD`, `FM/MOD`, `SM/REM`, `2@`, `2!`, `2VALUE`, `2LITERAL`, `D>F`, `F>D` |
-| 文字列・入力 | `COUNT`, `PAD`, `ACCEPT`, `EVALUATE`, `KEY`, `KEY?`, `>NUMBER`, `S>NUMBER?`, `>FLOAT`, `WORD`, `PARSE`, `PARSE-NAME`, `SOURCE`, `>IN`, `SOURCE-ID`, `REFILL`, `SAVE-INPUT`, `RESTORE-INPUT`, `EKEY`, `EKEY?`, `EKEY>CHAR` |
+| 文字列・入力 | `COUNT`, `PAD`, `ACCEPT`, `EVALUATE`, `KEY`, `KEY?`, `>NUMBER`, `S>NUMBER?`, `>FLOAT`, `WORD`, `PARSE`, `PARSE-NAME`, `SOURCE`, `>IN`, `SOURCE-ID`, `REFILL`, `SAVE-INPUT`, `RESTORE-INPUT`, `EKEY`, `EKEY?`, `EKEY>CHAR`, `XC-SIZE`, `X-SIZE`, `XC@+`, `XC@`, `XC!+`, `XC!+?`, `XC,`, `XCHAR+`, `XCHAR-`, `XEMIT`, `XKEY`, `XKEY?`, `X-WIDTH`, `XC-WIDTH`, `+X/STRING`, `X\STRING-`, `-TRAILING-GARBAGE`, `X@+/STRING`, `XHOLD`, `EKEY>XCHAR` |
 | 数値の書式 | `<#`, `<<#`, `#`, `#S`, `#>`, `#>>`, `HOLD`, `HOLDS`, `SIGN` |
 | 文字列格納・比較・状態・中断 | `PLACE`, `+PLACE`, `COMPARE`, `SEARCH`, `/STRING`, `-TRAILING`, `CHAR+`, `CHARS`, `BOUNDS`, `BLANK`, `CMOVE>`, `SCAN`, `SKIP`, `STR=`, `STRING-PREFIX?`, `SLITERAL`, `STATE`, `ABORT` |
-| 時間・画面・OS | `MS`, `UTIME`, `TIME&DATE`, `PAGE`, `AT-XY`, `GETENV`, `SYSTEM`, `ENVIRONMENT?`, `QUIT` |
+| 時間・画面・OS | `MS`, `UTIME`, `TIME&DATE`, `PAGE`, `AT-XY`, `GETENV`, `ARGC`, `ARGV`, `ARG`, `SHIFT-ARGS`, `NEXT-ARG`, `SYSTEM`, `ENVIRONMENT?`, `QUIT` |
 | 語彙・条件付きコンパイル | `ONLY`, `ALSO`, `PREVIOUS`, `FORTH`, `DEFINITIONS`, `SYNONYM`, `TRAVERSE-WORDLIST`, `NAME>INTERPRET`, `ORDER`, `GET-ORDER`, `SET-ORDER`, `>ORDER`, `GET-CURRENT`, `SET-CURRENT`, `VOCABULARY`, `WORDLIST`, `FORTH-WORDLIST`, `SEARCH-WORDLIST`, `[IF]`, `[ELSE]`, `[THEN]`, `[DEFINED]`, `[UNDEFINED]`, `[IFDEF]`, `[IFUNDEF]`, `[ENDIF]`, `[DO]`, `[?DO]`, `[LOOP]`, `[+LOOP]`, `[I]`, `[BEGIN]`, `[UNTIL]`, `[AGAIN]`, `[WHILE]`, `[REPEAT]`, `[FOR]`, `[NEXT]` |
 | ソース読み込み | `INCLUDE`, `INCLUDED`, `REQUIRE`, `REQUIRED`, `NEEDS`, `INCLUDED?`, `SOURCEFILENAME`, `SOURCELINE#` |
 | ファイル・例外 | `THROW`, `CATCH`, `R/O`, `W/O`, `R/W`, `STDIN`, `STDOUT`, `STDERR`, `OPEN-FILE`, `CREATE-FILE`, `CLOSE-FILE`, `READ-LINE`, `READ-FILE`, `FILE-POSITION`, `RESIZE-FILE`, `FLUSH-FILE`, `DELETE-FILE`, `RENAME-FILE`, `FILE-STATUS`, `BIN`, `INCLUDE-FILE`, `WRITE-LINE`, `WRITE-FILE`, `FILE-SIZE`, `SLURP-FILE`, `REPOSITION-FILE` |

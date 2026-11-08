@@ -5,6 +5,7 @@ const defs = @import("defs.zig");
 const float_format = @import("float_format.zig");
 const forth = @import("../forth.zig");
 const memory_map = @import("memory_map.zig");
+const words_xchar = @import("words_xchar.zig");
 const Cell = memory_map.Cell;
 const Double = memory_map.Double;
 const Float = memory_map.Float;
@@ -61,7 +62,11 @@ pub fn currentBase(self: *State) Cell {
 /// optional base prefix (`$` `#` `&` `%`), digits, and `'c'` character literals. A `.`
 /// anywhere among the digits makes the number double-cell (`123.` and `12.34` are doubles).
 pub fn parseNumber(self: *State, token: []const u8) RuntimeError!?ParsedNumber {
-    if (token.len == 3 and token[0] == '\'' and token[2] == '\'') return .{ .value = token[1], .double = false };
+    // 'c' with one character, UTF-8 included ('日' is 26085), as in gforth.
+    if (token.len >= 3 and token[0] == '\'' and token[token.len - 1] == '\'') {
+        const found = words_xchar.decode(token[1 .. token.len - 1]);
+        if (found.length == token.len - 2) return .{ .value = found.code, .double = false };
+    }
     var base = try self.validBase();
     var i: usize = 0;
     var negative = false;

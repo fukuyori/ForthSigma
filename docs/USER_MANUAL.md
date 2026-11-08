@@ -17,11 +17,20 @@ zig build
 
 Building with `zig build -Dfloat=false` gives a smaller version without floating-point numbers (see the chapter [Floating-point numbers](#floating-point-numbers)). In the same way, `-Dfiles=false` leaves out the words that open, read, write, or include files (such as `INCLUDE`, `REQUIRE`, `OPEN-FILE`, `STDIN`, `SLURP-FILE`, and the `$...SLURP` words), `-Dhelp=false` leaves out `HELP` and `LICENSE`, `-Dtools=false` leaves out `SEE`, `LOCATE`, and `WHERE`, `-Dimage=false` leaves out `SAVE`, `LOAD`, and `SAVESYS`, and `-Dgraphics=false` leaves out `REQUIRE-GRAPHICS` and the graphics words (see [Graphics](#graphics)). The words left out are not in the dictionary (their names give the error `name ?`). The groups are independent: without the file words, `SAVE`, `LOAD`, and `SAVESYS` still write and read image files, and `LOCATE` still reads the source file. Every build gives each built-in word the same execution token, so an image saved by one build loads into a build with other groups; running a word that build left out gives the error `INVALID EXECUTION TOKEN`, and `SEE` shows it by its name. An image saved by an earlier build that left a group out (such as `-Dfloat=false`) gives `INVALID IMAGE`, since its built-in words had other execution tokens.
 
-Started without arguments, it prints the following two lines (only the first in a build with `-Dhelp=false`) and shows the interactive prompt. The version number is the value of the `VERSION` file at the root. When it is started with arguments (it runs the argument string once and exits), these lines are not printed.
+Before the interactive prompt, it prints the following two lines (only the first in a build with `-Dhelp=false`). The version number is the value of the `VERSION` file at the root.
 
 ```text
 FORTH/Sigma 0.7.0  MIT License
 Type `help' for basic help
+```
+
+The command-line arguments are taken as gforth takes them. Each argument names a Forth source file, which is included as `INCLUDED` includes it, in the order given; `-e text` (or `--evaluate text`) interprets `text` as one line of input. The stacks are kept from one argument to the next. When `BYE` runs, the program ends there with exit status 0. When an argument gives an error, the error is shown (for a file that cannot be opened, after its name, as in `name: NO SUCH FILE OR DIRECTORY !`), the remaining arguments are not processed, and the program ends with exit status 1. Otherwise the two lines above and the interactive prompt follow the last argument.
+
+The program sees the arguments with `ARGC`, `ARGV`, `ARG`, `SHIFT-ARGS`, and `NEXT-ARG`, as in gforth. Each argument is removed before it is processed, so a file sees only the arguments after it, and the ones it takes with `NEXT-ARG` are not processed as files. For example, a file `greet.fs` with `NEXT-ARG TYPE CR BYE` prints `world` for `sigma greet.fs world`. Argument 0 is the program's name as it was started. Up to 256 arguments, about 10 KB in all, are kept.
+
+```powershell
+.\zig-out\bin\sigma.exe examples\demo.fs        # includes the file, then the interactive prompt
+.\zig-out\bin\sigma.exe -e "12 DUP * . BYE"     # prints 144 and exits
 ```
 
 `HELP` shows the basic usage, and `HELP name` shows the stack effect of a word and a one-line description in English (example: `HELP DUP`). The name is read from the same line (also in an `EVALUATE` string, it does not read past a line end). `HELP` written in a definition reads the name when that definition runs. For a word defined by the user, it suggests viewing its contents with `SEE`. An unknown name gives the error `name ?`. `LICENSE` shows the full text of the license and the copyright notice of the included CORE-MATH.
@@ -215,10 +224,10 @@ A number without `E`, such as `1.5`, is not treated as a floating-point number.
 | Use | Words | Description |
 | --- | --- | --- |
 | Number output | `.`, `U.`, `C.`, `?`, `.S`, `.R`, `U.R` | All except `.R` and `U.R` append a space after the number. `.R` (( n width -- )) and `U.R` (( u width -- )) print right-aligned in width characters, without a space. A number longer than the width is printed as it is. `U.` prints unsigned, `C.` the low 8 bits, `?` the contents of an address, and `.S` the count and the top 9 items (`<depth> value ...`). No zero padding is done. |
-| Character output | `ECHO`/`EMIT` | Output the low 8 bits of the top of the stack as a character. |
+| Character output | `ECHO`/`EMIT`, `XEMIT` | `EMIT` outputs the low 8 bits of the top of the stack as one byte; `XEMIT` outputs a character in UTF-8 (see [Characters (UTF-8)](#characters-utf-8)). |
 | String output | `TYPE`, `."..."` | `TYPE` takes an address and a character count and outputs the string. `."..."` is an extension of the port. |
 | Line breaks and spaces | `CR`, `SPACE`, `SPCES`/`SPACES`, `BL` | Output a line break, one space, or the given number of spaces. `BL` pushes the character code of a space. |
-| Character codes | `CHAR char`, `[CHAR] char` | Push the character code of the first character of the next word. Inside a definition, it is compiled as a literal. |
+| Character codes | `CHAR char`, `[CHAR] char`, `'c'` | Push the code point of the first character of the next word (UTF-8, so `CHAR 日` is 26085). Inside a definition, it is compiled as a literal. `'c'` is the code point of one character. |
 | Number input | `INPUT` | Read one integer from the terminal and push it on the stack. |
 | Changing the base | `HEX`, `DEC`/`DECIMAL`, `OCT` | Switch the base of number input and output to hexadecimal, decimal, or octal. The initial base is decimal. |
 | Referring to the base | `BASE` | Push the address in logical memory that holds the base (2 to 36). |
@@ -246,12 +255,43 @@ S" Forth" TUCK BUF SWAP MOVE BUF SWAP TYPE
 | `PAD` | ( -- addr ) | The address of a 4096-byte scratch area. |
 | `ACCEPT` | ( addr u -- u2 ) | Read a line from the terminal, store at most u characters at addr, and return the number of characters. |
 | `EVALUATE` | ( addr u -- ) | Interpret a string as Forth input. |
-| `KEY` | ( -- c ) | Read one character. |
+| `KEY` | ( -- c ) | Read one byte (a character other than ASCII comes as its UTF-8 bytes; `XKEY` reads it whole). |
 | `KEY?` | ( -- flag ) | Return whether a character can be read. On an interactive terminal it waits for input. |
 | `EKEY`, `EKEY?`, `EKEY>CHAR` | ( -- u ), ( -- flag ), ( u -- u false \| c true ) | `EKEY` and `EKEY?` are the same as `KEY` and `KEY?` (function keys and the like are not interpreted). `EKEY>CHAR` returns true with the character for 0 to 255. |
 | `>NUMBER` | ( ud addr u -- ud2 addr2 u2 ) | Convert digits, returning the part that could not be converted. |
 | `S>NUMBER?` | ( addr u -- d flag ) | Convert a string to an integer (double cell) and return whether it succeeded. |
 | `>FLOAT` | ( addr u -- flag ) ( f: -- r ) | Convert a string to a floating-point number. The `E` may be omitted. The number is pushed on the floating-point stack only on success. |
+
+## Characters (UTF-8)
+
+Strings are bytes, and characters other than ASCII are kept in them as UTF-8, as in gforth: `S" 日本語"` has the length 9, and `TYPE`, `/STRING`, `COMPARE`, and the other string words work on the bytes. `KEY` gives one byte. `CHAR`, `[CHAR]`, and character literals such as `'日'` give the code point of the first character (`CHAR 日` is 26085), and the words below handle one character at a time.
+
+```forth
+S" 日本語" X-WIDTH .            \ 6 (columns on a terminal)
+S" 日本語" +X/STRING TYPE        \ 本語
+26085 XEMIT                      \ 日
+```
+
+| Word | Stack | Description |
+| --- | --- | --- |
+| `XC-SIZE` | ( xc -- u ) | The number of bytes of xc in UTF-8. |
+| `X-SIZE` | ( addr u -- u2 ) | The number of bytes of the first character of the string (1 for an empty string, as in gforth). |
+| `XC@+`, `XC@` | ( addr -- addr2 xc ), ( addr -- xc ) | Fetch the character at addr (and the address after it). |
+| `XC!+`, `XC!+?` | ( xc addr -- addr2 ), ( xc addr u -- addr2 u2 flag ) | Store xc in UTF-8. `XC!+?` stores it only if it fits in u bytes and returns whether it did. |
+| `XC,` | ( xc -- ) | Append xc in UTF-8 to the data space. |
+| `XCHAR+`, `XCHAR-` | ( addr -- addr2 ) | The address of the next or of the previous character. |
+| `XEMIT` | ( xc -- ) | Display xc. `EMIT` still writes the low 8 bits as one byte. |
+| `XKEY`, `XKEY?` | ( -- xc ), ( -- flag ) | Read one character (its bytes from `KEY`), and whether one can be read. A byte that does not continue the character is left for the next `KEY`. |
+| `X-WIDTH`, `XC-WIDTH` | ( addr u -- n ), ( xc -- n ) | The columns a string or a character takes on a terminal. `XC-WIDTH` is 0, 1, or 2, or -1 for a character that is not shown (a control or a code point with no character); `X-WIDTH` counts those as 0. |
+| `+X/STRING`, `X\STRING-` | ( addr u -- addr2 u2 ), ( addr u -- addr u2 ) | Remove the first or the last character from the string. |
+| `-TRAILING-GARBAGE` | ( addr u -- addr u2 ) | Remove an incomplete character from the end of the string. |
+| `X@+/STRING` | ( addr u -- addr2 u2 xc ) | Take the first character of the string. |
+| `XHOLD` | ( xc -- ) | Add xc to the start of the pictured numeric output. |
+| `EKEY>XCHAR` | ( u -- u false \| xc true ) | Whether a keyboard event is a whole character. `EKEY` gives the bytes of a character one by one, so only an ASCII byte is one. |
+
+Well-formed UTF-8 gives the same values as in gforth, and so do overlong forms and surrogates. Anything else follows one rule: a byte that cannot start a character, a character cut short (by a byte that does not continue it or by the end of the string), or a value above U+10FFFF is U+FFFD, and only the start byte and the bytes that continue it are taken (one byte for a byte that cannot start a character). A code point above U+10FFFF is written as U+FFFD (3 bytes). The widths come from the Unicode Character Database 15.1.0 and are the same as gforth's on Linux (glibc 2.39) for every code point.
+
+On Windows, a console shows and reads UTF-8 while Sigma runs: the output code page is set to UTF-8 (65001) and put back at the end, also after Ctrl+C, and the keys typed are read as UTF-8. Programs started with `SYSTEM` run with that code page. File names other than ASCII cannot be opened on Windows yet.
 
 ## Number formatting (pictured numeric output)
 
@@ -330,6 +370,11 @@ S" dir" SYSTEM
 | `TIME&DATE` | ( -- second minute hour day month year ) | Return the local date and time. The month is 1 to 12, and the year is the year of the Common Era. |
 | `PAGE` | ( -- ) | Clear the screen and move the cursor to the top left. |
 | `AT-XY` | ( x y -- ) | Move the cursor to column x and row y (both from 0). It outputs the same escape sequence as gforth. |
+| `ARGC` | ( -- addr ) | A variable holding the number of command-line arguments left, the program's name (argument 0) included. |
+| `ARGV` | ( -- addr ) | A variable holding the address of the vector of arguments: one cell per argument, each the address of a string that ends with a NUL byte. |
+| `ARG` | ( u -- addr count ) | Command-line argument `u` (0 is the program's name). `0 0` when `u` is not less than `ARGC @`. |
+| `SHIFT-ARGS` | ( -- ) | Remove argument 1 from the arguments; argument 0 stays. Nothing happens when only argument 0 is left. |
+| `NEXT-ARG` | ( -- addr count ) | Argument 1, removed from the arguments (`1 ARG SHIFT-ARGS`). `0 0` when none is left. |
 | `GETENV` | ( addr u -- addr2 u2 ) | Return the value of an environment variable. When it is not set, `0 0`. The result is valid until the next `GETENV`, and a value longer than 3072 bytes gives `STRING TOO LONG !`. |
 | `SYSTEM` | ( addr u -- ) | Run the string as a shell command (`cmd.exe` on Windows). The exit code of the command is not returned (it can be fetched with `$?`). |
 | `$?` | ( -- n ) | The status of the last `SYSTEM`. On Linux and macOS it is the value returned by `system` (256 times the exit code), as in gforth; on Windows it is the exit code. |
@@ -563,7 +608,7 @@ SAVE words.sigma
 LOAD words.sigma
 ```
 
-`LOAD` adds the saved user-defined words to the end of the current dictionary. For words with the same name, the newly loaded definitions take precedence. Dictionary images saved by earlier versions (`SIGIMG01` to `SIGIMG31`) and damaged dictionary images cannot be loaded (`INVALID IMAGE !`). Images of `SIGIMG32` (0.4.0) are loaded, but 0.4.0 cannot load the images (`SIGIMG33`) this version saves. A dictionary that has loaded the graphics words with `REQUIRE-GRAPHICS` is saved as `SIGIMG34`, which versions up to 0.5.2 cannot load; this stays so even after the graphics words are removed with `FORGET` or a `MARKER`. A dictionary that never loaded them is saved as `SIGIMG33`, as before. A dictionary that has loaded the audio words with `REQUIRE-AUDIO` is saved as `SIGIMG35`, with or without the graphics words, and versions up to 0.6.1 cannot load it. A dictionary image has a checksum, so accidental damage is found before loading. Load only files made by `SAVE` or `SAVESYS` of Sigma. Execution tokens stored in constants or variables (such as the result of `:NONAME`), and execution tokens or addresses compiled into a definition with `LITERAL` (such as `[ ' X ] LITERAL`), may point to another word or place after `LOAD` into a dictionary that already has user-defined words. Execution tokens compiled with `['] X` are relocated correctly. This problem does not occur in an executable made with `SAVESYS`.
+`LOAD` adds the saved user-defined words to the end of the current dictionary. For words with the same name, the newly loaded definitions take precedence. Dictionary images saved by earlier versions (`SIGIMG01` to `SIGIMG35`, that is, by 0.7.0 and earlier) and damaged dictionary images cannot be loaded (`INVALID IMAGE !`): the argument words (`ARGC` to `NEXT-ARG`) and the xchar words (`XC-SIZE` to `X@+/STRING`) were added as built-in words, which moved the numbers of the user-defined words. This version saves `SIGIMG36`. A dictionary that has loaded the graphics words with `REQUIRE-GRAPHICS` is saved as `SIGIMG37`; this stays so even after the graphics words are removed with `FORGET` or a `MARKER`. A dictionary that has loaded the audio words with `REQUIRE-AUDIO` is saved as `SIGIMG38`, with or without the graphics words. Versions up to 0.7.0 cannot load any of them. A dictionary image has a checksum, so accidental damage is found before loading. Load only files made by `SAVE` or `SAVESYS` of Sigma. Execution tokens stored in constants or variables (such as the result of `:NONAME`), and execution tokens or addresses compiled into a definition with `LITERAL` (such as `[ ' X ] LITERAL`), may point to another word or place after `LOAD` into a dictionary that already has user-defined words. Execution tokens compiled with `['] X` are relocated correctly. This problem does not occur in an executable made with `SAVESYS`.
 
 `SAVESYS` makes a stand-alone executable for the running environment that contains the current dictionary, the compiled definitions, and the data.
 
@@ -571,7 +616,7 @@ LOAD words.sigma
 SAVESYS demo.exe
 ```
 
-Started without arguments, the generated file opens an interactive prompt with that dictionary. With arguments, it runs the string of the joined arguments once as Forth input and exits. The generated file is for the same runtime environment as the one that made it.
+The generated file starts with that dictionary and takes the same command-line arguments as Sigma (see [Starting and input](#starting-and-input)): without arguments it opens the interactive prompt. The generated file is for the same runtime environment as the one that made it.
 
 ## Registered words
 
@@ -594,10 +639,10 @@ The following table lists the built-in words that are registered in the dictiona
 | Floating-point comparison | `F=`, `F<>`, `F<`, `F>`, `F<=`, `F>=`, `F0=`, `F0<>`, `F0<`, `F0>`, `F0<=`, `F0>=`, `F~` |
 | Floating-point memory, conversion, and input/output | `F@`, `F!`, `F,`, `FA@`, `FA!`, `F+!`, `F?`, `FLOATS`, `FLOAT+`, `DF@`, `DF!`, `DFLOATS`, `DFLOAT+`, `SF@`, `SF!`, `SFLOATS`, `SFLOAT+`, `FALIGN`, `FALIGNED`, `DFALIGN`, `DFALIGNED`, `SFALIGN`, `SFALIGNED`, `S>F`, `F>S`, `F.`, `FE.`, `FS.`, `REPRESENT`, `PRECISION`, `SET-PRECISION`, `FINPUT`, `F.RDP`, `F>STR-RDP`, `F>BUF-RDP` |
 | Double-cell integers | `S>D`, `D>S`, `D+`, `D-`, `DNEGATE`, `DABS`, `D0=`, `D0<`, `D=`, `D<`, `DU<`, `DMAX`, `DMIN`, `D2*`, `D2/`, `M+`, `M*/`, `D.`, `D.R`, `M*`, `UM*`, `UM/MOD`, `FM/MOD`, `SM/REM`, `2@`, `2!`, `2VALUE`, `2LITERAL`, `D>F`, `F>D` |
-| Strings and input | `COUNT`, `PAD`, `ACCEPT`, `EVALUATE`, `KEY`, `KEY?`, `>NUMBER`, `S>NUMBER?`, `>FLOAT`, `WORD`, `PARSE`, `PARSE-NAME`, `SOURCE`, `>IN`, `SOURCE-ID`, `REFILL`, `SAVE-INPUT`, `RESTORE-INPUT`, `EKEY`, `EKEY?`, `EKEY>CHAR` |
+| Strings and input | `COUNT`, `PAD`, `ACCEPT`, `EVALUATE`, `KEY`, `KEY?`, `>NUMBER`, `S>NUMBER?`, `>FLOAT`, `WORD`, `PARSE`, `PARSE-NAME`, `SOURCE`, `>IN`, `SOURCE-ID`, `REFILL`, `SAVE-INPUT`, `RESTORE-INPUT`, `EKEY`, `EKEY?`, `EKEY>CHAR`, `XC-SIZE`, `X-SIZE`, `XC@+`, `XC@`, `XC!+`, `XC!+?`, `XC,`, `XCHAR+`, `XCHAR-`, `XEMIT`, `XKEY`, `XKEY?`, `X-WIDTH`, `XC-WIDTH`, `+X/STRING`, `X\STRING-`, `-TRAILING-GARBAGE`, `X@+/STRING`, `XHOLD`, `EKEY>XCHAR` |
 | Number formatting | `<#`, `<<#`, `#`, `#S`, `#>`, `#>>`, `HOLD`, `HOLDS`, `SIGN` |
 | String storage, comparison, state, and abort | `PLACE`, `+PLACE`, `COMPARE`, `SEARCH`, `/STRING`, `-TRAILING`, `CHAR+`, `CHARS`, `BOUNDS`, `BLANK`, `CMOVE>`, `SCAN`, `SKIP`, `STR=`, `STRING-PREFIX?`, `SLITERAL`, `STATE`, `ABORT` |
-| Time, screen, and OS | `MS`, `UTIME`, `TIME&DATE`, `PAGE`, `AT-XY`, `GETENV`, `SYSTEM`, `ENVIRONMENT?`, `QUIT` |
+| Time, screen, and OS | `MS`, `UTIME`, `TIME&DATE`, `PAGE`, `AT-XY`, `GETENV`, `ARGC`, `ARGV`, `ARG`, `SHIFT-ARGS`, `NEXT-ARG`, `SYSTEM`, `ENVIRONMENT?`, `QUIT` |
 | Word lists and conditional compilation | `ONLY`, `ALSO`, `PREVIOUS`, `FORTH`, `DEFINITIONS`, `SYNONYM`, `TRAVERSE-WORDLIST`, `NAME>INTERPRET`, `ORDER`, `GET-ORDER`, `SET-ORDER`, `>ORDER`, `GET-CURRENT`, `SET-CURRENT`, `VOCABULARY`, `WORDLIST`, `FORTH-WORDLIST`, `SEARCH-WORDLIST`, `[IF]`, `[ELSE]`, `[THEN]`, `[DEFINED]`, `[UNDEFINED]`, `[IFDEF]`, `[IFUNDEF]`, `[ENDIF]`, `[DO]`, `[?DO]`, `[LOOP]`, `[+LOOP]`, `[I]`, `[BEGIN]`, `[UNTIL]`, `[AGAIN]`, `[WHILE]`, `[REPEAT]`, `[FOR]`, `[NEXT]` |
 | Loading source | `INCLUDE`, `INCLUDED`, `REQUIRE`, `REQUIRED`, `NEEDS`, `INCLUDED?`, `SOURCEFILENAME`, `SOURCELINE#` |
 | Files and exceptions | `THROW`, `CATCH`, `R/O`, `W/O`, `R/W`, `STDIN`, `STDOUT`, `STDERR`, `OPEN-FILE`, `CREATE-FILE`, `CLOSE-FILE`, `READ-LINE`, `READ-FILE`, `FILE-POSITION`, `RESIZE-FILE`, `FLUSH-FILE`, `DELETE-FILE`, `RENAME-FILE`, `FILE-STATUS`, `BIN`, `INCLUDE-FILE`, `WRITE-LINE`, `WRITE-FILE`, `FILE-SIZE`, `SLURP-FILE`, `REPOSITION-FILE` |

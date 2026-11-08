@@ -1,5 +1,5 @@
 \ Generic gamepad inspector, no graphics window required.
-\ sigma.exe "include examples/gamepad.fs"
+\ sigma.exe examples/gamepad.fs
 \ SDL3.dll beside sigma.exe on Windows, or an absolute SIGMA_SDL3 path.
 \ For mapping strings use the GUID shown here and GAMEPAD-MAP. Raw pad button
 \ and axis numbers vary by model. HELP GAMEPAD-BUTTONS describes mapped layout.

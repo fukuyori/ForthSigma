@@ -103,7 +103,7 @@ test "a full restore keeps this build's built-in words when the image's built-in
     try expectStack(restored, &.{ 14, 3, 3, 1 });
 }
 
-test "a built-in word compiles to a direct call, and an image of the previous format with plain calls still runs" {
+test "a built-in word compiles to a direct call, and an image with plain calls still runs" {
     var output = Output{};
     const source = try createMachine(&output);
     defer destroyMachine(source);
@@ -115,7 +115,7 @@ test "a built-in word compiles to a direct call, and an image of the previous fo
     try std.testing.expectEqual(defs.OpKind.mul, source.code[sq.code_start + 1].kind);
     try std.testing.expectEqual(defs.OpKind.call_colon, source.code[four.code_start].kind);
 
-    // The same words as a SIGIMG32 image has them: built-in words called with .call.
+    // The same words with the built-in words called with .call, as SIGIMG32 had them.
     const image = try saveImage(source);
     defer freeImage(image);
     const Word = @TypeOf(source.words[0]);
@@ -129,7 +129,6 @@ test "a built-in word compiles to a direct call, and an image of the previous fo
         changed += 1;
     }
     try std.testing.expect(changed >= 2);
-    @memcpy(image[0..8], "SIGIMG32");
     resealImage(image);
     const restored = try createMachine(&output);
     defer destroyMachine(restored);
@@ -145,7 +144,7 @@ test "execution-only calls normalize on save and relocate on LOAD without changi
     try source.interpretLine(": SQ DUP * ; : FOUR SQ SQ ; : DOWN DUP IF 1- RECURSE THEN ; : ALIASES MINUS INVERT ;");
     const image = try saveImage(source);
     defer freeImage(image);
-    try std.testing.expectEqualStrings("SIGIMG33", image[0..8]);
+    try std.testing.expectEqualStrings("SIGIMG36", image[0..8]);
     const Word = @TypeOf(source.words[0]);
     const Op = @TypeOf(source.code[0]);
     const code_at = 24 + @as(usize, source.word_count) * @sizeOf(Word);
@@ -434,12 +433,13 @@ test "a damaged image, or one whose names are out of order or out of range, is r
         try std.testing.expectEqual(before_words, loaded.word_count);
         try std.testing.expectEqual(before_names, loaded.names_used);
     }
-    // SIGIMG31 and earlier are not read; SIGIMG32, which has no call_builtin operation,
-    // is.
-    @memcpy(image[0..8], "SIGIMG31");
-    resealImage(image);
-    try std.testing.expectError(error.InvalidImage, loaded.restoreImage(image));
-    @memcpy(image[0..8], "SIGIMG33");
+    // SIGIMG35 and earlier are not read, since their user words have other numbers.
+    for ([_]*const [8]u8{ "SIGIMG31", "SIGIMG32", "SIGIMG33", "SIGIMG34", "SIGIMG35" }) |old| {
+        @memcpy(image[0..8], old);
+        resealImage(image);
+        try std.testing.expectError(error.InvalidImage, loaded.restoreImage(image));
+    }
+    @memcpy(image[0..8], "SIGIMG36");
     resealImage(image);
     // One damaged byte anywhere, here in the saved memory or in the checksum itself,
     // fails the checksum, and the dictionary, code, and memory stay as they were.

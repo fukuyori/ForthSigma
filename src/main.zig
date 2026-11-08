@@ -118,9 +118,10 @@ fn terminalSize(_: ?*anyopaque) ?forth.TerminalSize {
 var saved_output_code_page: u32 = 0;
 
 /// SHOW writes UTF-8 half blocks: a Windows console shows them only with the UTF-8
-/// code page, which is set for that output and then put back.
+/// code page, which is set for that output and then put back. While the whole session
+/// uses UTF-8 (see `utf8_console`), there is nothing to switch.
 fn terminalUtf8(_: ?*anyopaque, begin: bool) void {
-    if (builtin.os.tag != .windows or !output_is_terminal) return;
+    if (builtin.os.tag != .windows or !output_is_terminal or utf8_console.active) return;
     flushOutput();
     if (begin) {
         saved_output_code_page = GetConsoleOutputCP();
@@ -481,6 +482,116 @@ fn enableVirtualTerminal() void {
     }
 }
 
+/// Strings are UTF-8, so a Windows console shows and gives text in UTF-8 for the whole
+/// session: the output code page becomes UTF-8 (65001) and is put back at the end, also
+/// when Ctrl+C ends the program; a console's input is read as UTF-16 with ReadConsoleW
+/// and turned into UTF-8, as the C library would give it in text mode (CR LF as LF, a
+/// line that starts with Ctrl+Z as the end of the input).
+const utf8_console = if (builtin.os.tag != .windows) struct {
+    const active = false;
+    const input: ?*anyopaque = null;
+    fn begin() void {}
+    fn finish() void {}
+    fn readByte() c_int {
+        return -1;
+    }
+} else struct {
+    extern "kernel32" fn SetConsoleCP(u32) callconv(.winapi) c_int;
+    extern "kernel32" fn GetConsoleCP() callconv(.winapi) u32;
+    extern "kernel32" fn ReadConsoleW(*anyopaque, [*]u16, u32, *u32, ?*anyopaque) callconv(.winapi) c_int;
+    extern "kernel32" fn SetConsoleCtrlHandler(?*const fn (u32) callconv(.winapi) c_int, c_int) callconv(.winapi) c_int;
+
+    var active = false;
+    var saved_output: u32 = 0;
+    var saved_input: u32 = 0;
+    /// Standard input, when it is a console.
+    var input: ?*anyopaque = null;
+    /// UTF-8 bytes of the line read and not yet given.
+    var bytes: [3 * 1024]u8 = undefined;
+    var start: usize = 0;
+    var end: usize = 0;
+    var high_surrogate: u16 = 0;
+    var ended = false;
+
+    fn begin() void {
+        const stdin_handle = GetStdHandle(@bitCast(@as(i32, -10)));
+        var mode: u32 = 0;
+        if (stdin_handle) |handle| {
+            if (GetConsoleMode(handle, &mode) != 0) input = handle;
+        }
+        if (!output_is_terminal) return;
+        saved_output = GetConsoleOutputCP();
+        saved_input = GetConsoleCP();
+        if (SetConsoleOutputCP(65001) == 0) return;
+        _ = SetConsoleCP(65001);
+        active = true;
+        _ = SetConsoleCtrlHandler(&restoreOnSignal, 1);
+    }
+
+    fn finish() void {
+        if (!active) return;
+        flushOutput();
+        _ = SetConsoleOutputCP(saved_output);
+        _ = SetConsoleCP(saved_input);
+        active = false;
+    }
+
+    /// Ctrl+C, Ctrl+Break, or the console closing: the code pages go back, and the
+    /// default handling (the end of the program) follows.
+    fn restoreOnSignal(_: u32) callconv(.winapi) c_int {
+        if (active) {
+            _ = SetConsoleOutputCP(saved_output);
+            _ = SetConsoleCP(saved_input);
+        }
+        return 0;
+    }
+
+    /// The next byte of a console's input, or -1 at its end.
+    fn readByte() c_int {
+        while (start == end) {
+            if (ended or !fill()) {
+                ended = true;
+                return -1;
+            }
+        }
+        const byte = bytes[start];
+        start += 1;
+        return byte;
+    }
+
+    fn fill() bool {
+        var wide: [1024]u16 = undefined;
+        var read: u32 = 0;
+        if (ReadConsoleW(input.?, &wide, wide.len, &read, null) == 0 or read == 0) return false;
+        start = 0;
+        end = 0;
+        var at: usize = 0;
+        if (wide[0] == 0x1A) return false;
+        while (at < read) : (at += 1) {
+            const unit = wide[at];
+            if (unit == '\r' and at + 1 < read and wide[at + 1] == '\n') continue;
+            var code: u21 = unit;
+            if (unit >= 0xD800 and unit < 0xDC00) {
+                high_surrogate = unit;
+                continue;
+            }
+            if (unit >= 0xDC00 and unit < 0xE000) {
+                if (high_surrogate == 0) continue;
+                code = 0x10000 + ((@as(u21, high_surrogate) - 0xD800) << 10) + (unit - 0xDC00);
+            }
+            high_surrogate = 0;
+            end += std.unicode.utf8Encode(code, bytes[end..][0..4]) catch continue;
+        }
+        return true;
+    }
+};
+
+/// One byte of standard input: from the console as UTF-8, or from the C library.
+fn standardInputByte() c_int {
+    if (builtin.os.tag == .windows and utf8_console.input != null) return utf8_console.readByte();
+    return getchar();
+}
+
 /// On Windows, piped or redirected standard input is read as bytes, as on the other
 /// systems, so READ-FILE and KEY see CR, Ctrl+Z, and every other byte. A console keeps
 /// text mode, where Enter gives a single LF to KEY.
@@ -714,7 +825,7 @@ fn readByte() c_int {
         lookahead = null;
         return byte;
     }
-    return getchar();
+    return standardInputByte();
 }
 
 fn terminalKey(_: ?*anyopaque) ?u8 {
@@ -726,7 +837,7 @@ fn terminalKeyReady(_: ?*anyopaque) bool {
     flushOutput();
     host_input.leave();
     if (lookahead != null) return true;
-    const ch = getchar();
+    const ch = standardInputByte();
     if (ch < 0) return false;
     lookahead = @intCast(ch);
     return true;
@@ -778,19 +889,31 @@ const version = std.mem.trimEnd(u8, @embedFile("version"), " \t\r\n");
 /// Without HELP (-Dhelp=false) the banner does not point to it.
 const banner = "FORTH/Sigma " ++ version ++ "  MIT License\n" ++ (if (@import("build_options").help) "Type `help' for basic help\n" else "");
 
+/// NEXT-ARG for the command-line loop: argument 1, copied into `buffer` (Forth code may
+/// change the memory it lies in) and removed, or null when there is none left.
+fn nextArgument(machine: *forth.State, buffer: []u8) !?[]const u8 {
+    const found = try machine.argument(1);
+    if (found[0] == 0) return null;
+    if (found[1] > buffer.len) return error.StringTooLong;
+    const start = try machine.memoryAddress(found[0], found[1]);
+    @memcpy(buffer[0..found[1]], machine.memory[start .. start + found[1]]);
+    try machine.shiftArguments();
+    return buffer[0..found[1]];
+}
+
 /// Init.Minimal gives the arguments and the environment, decoded from UTF-16 on Windows,
 /// without setting up std.Io (see HostContext).
 pub fn main(init: std.process.Init.Minimal) u8 {
-    run(init) catch |err| {
+    return run(init) catch |err| {
         // As the standard library reports an error returned from main.
         var message: [128]u8 = undefined;
         _ = writeStandardError(std.fmt.bufPrint(&message, "error: {s}\n", .{@errorName(err)}) catch "error\n");
         return 1;
     };
-    return 0;
 }
 
-fn run(init: std.process.Init.Minimal) !void {
+/// Returns the exit status: 1 when an argument fails, as in gforth, and 0 otherwise.
+fn run(init: std.process.Init.Minimal) !u8 {
     // The C library's allocator, which std.process.Init also gives in a release build
     // that links the C library.
     const allocator = std.heap.c_allocator;
@@ -815,6 +938,8 @@ fn run(init: std.process.Init.Minimal) !void {
 
     enableVirtualTerminal();
     useBinaryStdin();
+    utf8_console.begin();
+    defer utf8_console.finish();
     machine.init(.{ .gamepad_ops = if (graphics) &host_gamepad.ops else null, .context = @ptrCast(&host), .write_fn = terminalWrite, .read_fn = terminalRead, .load_fn = loadDictionary, .save_fn = saveDictionary, .savesys_fn = saveExecutableImage, .key_fn = terminalKey, .key_ready_fn = terminalKeyReady, .sleep_fn = sleepMilliseconds, .utime_fn = microsecondsSinceEpoch, .local_time_fn = localTime, .getenv_fn = environmentValue, .system_fn = runShellCommand, .file_ops = &file_ops, .framebuffer_fn = graphicsBuffer, .terminal_size_fn = terminalSize, .terminal_utf8_fn = terminalUtf8, .window_fn = if (host_window.available) host_window.show else null, .input_fn = inputEvent, .mouse_fn = mouseMode, .cursor_fn = cursorPosition, .font_buffer_fn = if (graphics) fontBuffer else null, .font_free_fn = if (graphics) fontFree else null, .system_font_fn = if (graphics and host_font.available) host_font.select else null, .system_glyph_fn = if (graphics and host_font.available) host_font.glyph else null, .process_start_fn = if (graphics) host_process.start else null, .process_write_fn = if (graphics) host_process.write else null, .process_read_fn = if (graphics) host_process.read else null, .process_stop_fn = if (graphics) host_process.stop else null, .audio_fn = if (audio) host_audio.start else null, .audio_device_fn = if (audio) host_audio.hasDevice else null, .audio_wait_fn = if (audio) audioWait else null });
     defer closeAllFiles();
     defer host_window.close();
@@ -827,32 +952,59 @@ fn run(init: std.process.Init.Minimal) !void {
     };
     loadEmbeddedImage(executable_path, machine, allocator);
 
+    // The arguments go into Forth memory, where ARGC, ARGV, ARG, and NEXT-ARG see them.
+    // This comes after the image is restored, since restoring clears that area.
     var arguments = try std.process.Args.Iterator.initAllocator(init.args, allocator);
     defer arguments.deinit();
-    _ = arguments.next();
-    var argument_line: [4096]u8 = undefined;
-    var argument_length: usize = 0;
-    var has_arguments = false;
-    while (arguments.next()) |argument| {
-        if (has_arguments) {
-            if (argument_length == argument_line.len) return;
-            argument_line[argument_length] = ' ';
-            argument_length += 1;
+    var argument_list: std.ArrayList([]const u8) = .empty;
+    defer argument_list.deinit(allocator);
+    while (arguments.next()) |argument| try argument_list.append(allocator, argument);
+    machine.setArguments(argument_list.items) catch |err| {
+        machine.report(err);
+        return 1;
+    };
+    // As in gforth: each argument names a file to include, in order, and `-e` (or
+    // `--evaluate`) interprets the next argument. Each is removed from the arguments
+    // before it runs, so a file sees only the ones after it, and the ones it takes with
+    // NEXT-ARG are not processed here. The first error ends the program with status 1;
+    // BYE ends it with status 0; otherwise the interactive session follows.
+    var argument_text: [4096]u8 = undefined;
+    while (true) {
+        const option = nextArgument(machine, &argument_text) catch |err| {
+            machine.report(err);
+            return 1;
+        } orelse break;
+        if (std.mem.eql(u8, option, "-e") or std.mem.eql(u8, option, "--evaluate")) {
+            var option_name: [16]u8 = undefined;
+            const name = option_name[0..option.len];
+            @memcpy(name, option);
+            const source = nextArgument(machine, &argument_text) catch |err| {
+                machine.report(err);
+                return 1;
+            } orelse {
+                machine.write(name);
+                machine.write(": OPTION REQUIRES AN ARGUMENT !\n");
+                return 1;
+            };
+            machine.interpretLine(source) catch |err| {
+                machine.report(err);
+                return 1;
+            };
+        } else {
+            machine.includeFile(option) catch |err| {
+                // An error inside the file names the file and line; one opening it does not.
+                if (machine.error_location == null) {
+                    machine.write(option);
+                    machine.write(": ");
+                }
+                machine.report(err);
+                return 1;
+            };
         }
-        if (argument.len > argument_line.len - argument_length) {
-            machine.write("ARGUMENT TOO LONG\n");
-            return;
-        }
-        @memcpy(argument_line[argument_length .. argument_length + argument.len], argument);
-        argument_length += argument.len;
-        has_arguments = true;
-    }
-    if (has_arguments) {
-        machine.interpretLine(argument_line[0..argument_length]) catch |err| machine.report(err);
-        return;
+        if (machine.halted) return 0;
     }
 
-    // Only an interactive session (no arguments) starts with the banner.
+    // The banner comes after the arguments, as in gforth.
     machine.write(banner);
     var line: [4096]u8 = undefined;
     var used: usize = 0;
@@ -880,6 +1032,7 @@ fn run(init: std.process.Init.Minimal) !void {
         line[used] = byte;
         used += 1;
     }
+    return 0;
 }
 
 // Host tests: these exercise the real callbacks, which the core tests replace with fakes.

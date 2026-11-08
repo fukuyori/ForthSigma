@@ -26,7 +26,6 @@ const graphics_image_address = memory_map.graphics_image_address;
 const graphics_image_magic = memory_map.graphics_image_magic;
 const graphics_vocabulary_address = memory_map.graphics_vocabulary_address;
 const image_magic = memory_map.image_magic;
-const previous_image_magic = memory_map.previous_image_magic;
 const max_code = memory_map.max_code;
 const max_search_order = memory_map.max_search_order;
 const max_source_files = memory_map.max_source_files;
@@ -142,9 +141,9 @@ pub fn encodeImage(self: *State, output: []u8) RuntimeError!usize {
     const name_bytes = self.names[0..self.names_used];
     const required = header_size + word_bytes.len + code_bytes.len + name_bytes.len + rangesLength(ranges) + checksum_size;
     if (output.len < required) return error.InvalidImage;
-    // A dictionary that has had the audio words is saved as SIGIMG35, one that has had
-    // the graphics words (and not the audio words) as SIGIMG34, which older builds
-    // reject; one that never had them stays SIGIMG33.
+    // A dictionary that has had the audio words is saved as SIGIMG38, one that has had
+    // the graphics words (and not the audio words) as SIGIMG37, which older builds
+    // reject; one that never had them stays SIGIMG36.
     const magic = if (self.readCellConst(memory_map.audio_image_address) != 0)
         memory_map.audio_image_magic
     else if (self.readCellConst(graphics_image_address) != 0)
@@ -161,8 +160,8 @@ pub fn encodeImage(self: *State, output: []u8) RuntimeError!usize {
         @memcpy(output[cursor .. cursor + bytes.len], bytes);
         cursor += bytes.len;
     }
-    // Keep SIGIMG33 readable by existing releases: the specialization is only
-    // an execution detail. Do not change the running machine's operations.
+    // Save the operations unspecialized: the specialization is only an execution detail,
+    // redone after restoring. Do not change the running machine's operations.
     var inline_end: usize = 0;
     for (self.code[0..self.code_count], 0..) |original, index| {
         var op = original;
@@ -191,7 +190,7 @@ pub fn encodeImage(self: *State, output: []u8) RuntimeError!usize {
 
 pub fn restoreImage(self: *State, image: []const u8) RuntimeError!void {
     if (image.len < header_size + checksum_size) return error.InvalidImage;
-    const known = for ([_]*const [8]u8{ image_magic, graphics_image_magic, memory_map.audio_image_magic, previous_image_magic }) |magic| {
+    const known = for ([_]*const [8]u8{ image_magic, graphics_image_magic, memory_map.audio_image_magic }) |magic| {
         if (std.mem.eql(u8, image[0..8], magic)) break true;
     } else false;
     if (!known) return error.InvalidImage;
@@ -393,7 +392,7 @@ pub fn appendImage(self: *State, source: *const State) RuntimeError!void {
     self.data_here += data_len;
     self.last_created_word = null;
     // The loaded image's graphics words count as loaded here too, unless this dictionary
-    // has its own; either way, images saved from now on are SIGIMG34.
+    // has its own; either way, images saved from now on are SIGIMG37.
     if (source.readCellConst(graphics_image_address) != 0) try self.writeCell(graphics_image_address, 1);
     if (!graphics_loaded and words_graphics.graphicsLoaded(source)) {
         const vocabulary = source.readCellConst(graphics_vocabulary_address) - source.builtin_count;

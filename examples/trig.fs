@@ -2,7 +2,7 @@
 \ to 2π, with a grid, the axes, labels, and a legend. It needs a build with graphics
 \ and floating-point numbers.
 \
-\   sigma.exe "include examples/trig.fs"       (in a window; Tk on Linux/macOS)
+\   sigma.exe examples/trig.fs       (in a window; Tk on Linux/macOS)
 \
 \ The window shows the 480 by 300 image twice as large; a key pressed in the console
 \ (or the terminal) ends the demonstration.

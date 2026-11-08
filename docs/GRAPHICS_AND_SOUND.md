@@ -141,7 +141,7 @@ VARIABLE X  40 X !
 RUN
 ```
 
-`examples/paddle.fs` is a whole game with these words: a ball that bounces off three walls and a paddle moved with the Up and Down keys (`sigma.exe "include examples/paddle.fs"`). `examples/runner.fs` (Classic Runner) is a larger one: a tile game where the runner climbs ladders, hangs on ropes, digs holes, and collects gold while guards chase it; the line at the bottom shows how long the game's work takes each frame and the frames shown each second. `examples/hopper.fs` (Sky Hopper) is a side-scrolling platform game: the hopper runs and jumps through two courses, stamps on enemies, kicks shells, bumps blocks for coins and a berry that makes it big, and rides the balloon at the end; it takes the keys and a mapped gamepad.
+`examples/paddle.fs` is a whole game with these words: a ball that bounces off three walls and a paddle moved with the Up and Down keys (`sigma.exe examples/paddle.fs`). `examples/runner.fs` (Classic Runner) is a larger one: a tile game where the runner climbs ladders, hangs on ropes, digs holes, and collects gold while guards chase it; the line at the bottom shows how long the game's work takes each frame and the frames shown each second. `examples/hopper.fs` (Sky Hopper) is a side-scrolling platform game: the hopper runs and jumps through two courses, stamps on enemies, kicks shells, bumps blocks for coins and a berry that makes it big, and rides the balloon at the end; it takes the keys and a mapped gamepad.
 
 | Word | Stack | Description |
 | --- | --- | --- |
@@ -177,7 +177,7 @@ REQUIRE-GRAPHICS  ALSO GRAPHICS
 SHOW
 ```
 
-`examples/trig.fs` draws sin x, cos x, and tan x with a grid, labels, and a legend; it gives `PLOT` NaN where tan x is far beyond the image, so that the graph has gaps at the asymptotes (`sigma.exe "include examples/trig.fs"`).
+`examples/trig.fs` draws sin x, cos x, and tan x with a grid, labels, and a legend; it gives `PLOT` NaN where tan x is far beyond the image, so that the graph has gaps at the asymptotes (`sigma.exe examples/trig.fs`).
 
 | Word | Stack | Description |
 | --- | --- | --- |

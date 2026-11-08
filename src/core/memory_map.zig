@@ -74,6 +74,26 @@ pub const source_file_count_address: Cell = 0x0218;
 /// open input frames refer to stay valid.
 pub const source_file_loaded_flags: Cell = source_file_table + max_source_files * source_file_entry_size;
 
+/// The command-line arguments, as gforth keeps them: ARGC is a cell holding their count
+/// and ARGV a cell holding the address of a vector of cells, each the address of a
+/// NUL-terminated argument; argument 0 names the program. The host writes them at
+/// startup; the area is in the input area, so images do not keep it.
+pub const argc_address: Cell = source_file_loaded_flags + max_source_files;
+
+pub const argv_address: Cell = argc_address + cell_size;
+
+pub const max_arguments = 256;
+
+pub const argument_vector: Cell = argv_address + cell_size;
+
+pub const argument_strings: Cell = argument_vector + max_arguments * cell_size;
+
+pub const argument_strings_end: Cell = locals_base;
+
+comptime {
+    if (argc_address % cell_size != 0 or argument_strings_end - argument_strings < 8192) @compileError("the argument area does not fit");
+}
+
 /// Word lists: ids 1 (Forth) and 2 (Root) exist from the start; WORDLIST and
 /// VOCABULARY allocate more. The count, the current list, and the search order are
 /// kept in memory so images restore them. `search_order` holds the first-searched
@@ -200,16 +220,16 @@ pub const max_dot_s_items = 9;
 
 pub const fs_precision = 14;
 
-pub const image_magic = "SIGIMG33";
+/// SIGIMG36 added the argument words (ARGC to NEXT-ARG) and the xchar words (XC-SIZE to
+/// X@+/STRING), which moved the numbers of the
+/// user's words, so SIGIMG35 and earlier images are not read.
+pub const image_magic = "SIGIMG36";
 /// The same layout as `image_magic`, for an image that has had the graphics words; builds
-/// that only know SIGIMG33 reject it.
-pub const graphics_image_magic = "SIGIMG34";
+/// that only know SIGIMG36 reject it.
+pub const graphics_image_magic = "SIGIMG37";
 /// The same layout again, for an image that has had the audio words (with or without the
-/// graphics words); builds that only know SIGIMG33 and SIGIMG34 reject it.
-pub const audio_image_magic = "SIGIMG35";
-/// The format before call_builtin. Its layout is still accepted; after restoring
-/// words, calls are specialized for execution. Older builds reject newer images.
-pub const previous_image_magic = "SIGIMG32";
+/// graphics words); builds that only know SIGIMG36 and SIGIMG37 reject it.
+pub const audio_image_magic = "SIGIMG38";
 
 /// File ids of the standard streams; the host numbers opened files from `first_file_id`.
 pub const stdin_fileid: Cell = 1;

@@ -53,7 +53,7 @@ def process_clock(pid):
 
 
 def sample(path, gforth, source):
-    command = [path, "-e", source] if gforth else [path, source]
+    command = [path, "-e", source]
     start = resource.getrusage(resource.RUSAGE_CHILDREN)
     # The first KEY parks the child after compilation; the second keeps its
     # process clock available until we have sampled it. Send one byte, not a

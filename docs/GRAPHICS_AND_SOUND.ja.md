@@ -141,7 +141,7 @@ VARIABLE X  40 X !
 RUN
 ```
 
-`examples/paddle.fs` は、これらの語で作ったゲームです。3方の壁で跳ね返るボールを、上下キーで動かすパッドで打ち返します（`sigma.exe "include examples/paddle.fs"`）。`examples/runner.fs`（Classic Runner）はもっと大きな例で、はしごを登り、ロープにぶら下がり、穴を掘り、追ってくる敵をかわしながら金塊を集めるタイルのゲームです。下の行に、1コマの処理にかかった時間と、1秒に表示したコマ数を出します。`examples/hopper.fs`（Sky Hopper）は横スクロールのアクションゲームです。2つのコースを走って跳び、敵を踏み、殻を蹴り、ブロックを下から叩いてコインや体が大きくなるベリーを出し、最後の気球に乗ります。キーと、mapped のゲームパッドで操作できます。
+`examples/paddle.fs` は、これらの語で作ったゲームです。3方の壁で跳ね返るボールを、上下キーで動かすパッドで打ち返します（`sigma.exe examples/paddle.fs`）。`examples/runner.fs`（Classic Runner）はもっと大きな例で、はしごを登り、ロープにぶら下がり、穴を掘り、追ってくる敵をかわしながら金塊を集めるタイルのゲームです。下の行に、1コマの処理にかかった時間と、1秒に表示したコマ数を出します。`examples/hopper.fs`（Sky Hopper）は横スクロールのアクションゲームです。2つのコースを走って跳び、敵を踏み、殻を蹴り、ブロックを下から叩いてコインや体が大きくなるベリーを出し、最後の気球に乗ります。キーと、mapped のゲームパッドで操作できます。
 
 | 語 | スタック | 説明 |
 | --- | --- | --- |
@@ -177,7 +177,7 @@ REQUIRE-GRAPHICS  ALSO GRAPHICS
 SHOW
 ```
 
-`examples/trig.fs` は、sin x・cos x・tan x のグラフを、格子、目盛りの文字、凡例とともに描きます。tan x が画像よりはるかに大きい所では `PLOT` に NaN を返し、漸近線のところでグラフを切ります（`sigma.exe "include examples/trig.fs"`）。
+`examples/trig.fs` は、sin x・cos x・tan x のグラフを、格子、目盛りの文字、凡例とともに描きます。tan x が画像よりはるかに大きい所では `PLOT` に NaN を返し、漸近線のところでグラフを切ります（`sigma.exe examples/trig.fs`）。
 
 | 語 | スタック | 説明 |
 | --- | --- | --- |

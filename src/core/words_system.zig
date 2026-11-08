@@ -36,11 +36,68 @@ const true_flag = memory_map.true_flag;
 /// The built-in words this file executes; executeBuiltin dispatches by this list.
 pub const words = [_]Builtin{
     .bye, .load, .save, .savesys, .abort, .ms, .utime, .getenv, .system, .throw, .catch_word,
-    .ekey_to_char, .environment_query, .quit, .noop, .perform,
+    .ekey_to_char, .environment_query, .quit, .noop, .perform, .argc, .argv, .arg,
+    .shift_args, .next_arg,
 };
+
+/// Writes the command-line arguments into the argument area (see `argc_address`), with
+/// ARGV pointing at the vector. Fails when they do not fit; nothing is set then.
+pub fn setArguments(self: *State, arguments: []const []const u8) RuntimeError!void {
+    if (arguments.len > memory_map.max_arguments) return error.StringTooLong;
+    var bytes: usize = 0;
+    for (arguments) |text| bytes += text.len + 1;
+    if (bytes > memory_map.argument_strings_end - memory_map.argument_strings) return error.StringTooLong;
+    var at: Cell = memory_map.argument_strings;
+    for (arguments, 0..) |text, index| {
+        const start: usize = @intCast(at);
+        @memcpy(self.memory[start .. start + text.len], text);
+        self.memory[start + text.len] = 0;
+        try self.writeCell(memory_map.argument_vector + @as(Cell, @intCast(index)) * memory_map.cell_size, at);
+        at += @intCast(text.len + 1);
+    }
+    try self.writeCell(memory_map.argv_address, memory_map.argument_vector);
+    try self.writeCell(memory_map.argc_address, @intCast(arguments.len));
+}
+
+/// ARG: argument `index` as an address and a length, or 0 0 when ARGC has fewer.
+pub fn argument(self: *State, index: Cell) RuntimeError!struct { Cell, usize } {
+    const count = try self.readCell(memory_map.argc_address);
+    if (@as(u64, @bitCast(index)) >= @as(u64, @bitCast(count))) return .{ 0, 0 };
+    const vector = try self.readCell(memory_map.argv_address);
+    const address = try self.readCell(vector +% index *% memory_map.cell_size);
+    const start = try self.memoryAddress(address, 0);
+    const length = std.mem.indexOfScalar(u8, self.memory[start..], 0) orelse return error.InvalidAddress;
+    return .{ address, length };
+}
+
+/// SHIFT-ARGS: removes argument 1, keeping argument 0 first, as gforth does.
+pub fn shiftArguments(self: *State) RuntimeError!void {
+    const count = try self.readCell(memory_map.argc_address);
+    if (count <= 1) return;
+    const vector = try self.readCell(memory_map.argv_address);
+    const first = try self.readCell(vector);
+    try self.writeCell(memory_map.argc_address, count - 1);
+    try self.writeCell(memory_map.argv_address, vector +% memory_map.cell_size);
+    try self.writeCell(vector +% memory_map.cell_size, first);
+}
+
+fn pushArgument(self: *State, index: Cell) RuntimeError!void {
+    const found = try argument(self, index);
+    try self.push(found[0]);
+    try self.push(@intCast(found[1]));
+}
 
 pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
     switch (builtin) {
+        .argc => try self.push(memory_map.argc_address),
+        .argv => try self.push(memory_map.argv_address),
+        .arg => try pushArgument(self, try self.pop()),
+        .shift_args => try shiftArguments(self),
+        // NEXT-ARG is 1 ARG SHIFT-ARGS.
+        .next_arg => {
+            try pushArgument(self, 1);
+            try shiftArguments(self);
+        },
         .bye => self.halted = true,
         .quit => return error.Quit,
         // EKEY gives what KEY gives, so every event is a character.

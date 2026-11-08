@@ -11,7 +11,8 @@ import threading
 
 
 def run(executable, source, expected, input_bytes=b""):
-    result = subprocess.run([executable, source], input=input_bytes, stdout=subprocess.PIPE,
+    # BYE after the source, so that no interactive session follows.
+    result = subprocess.run([executable, "-e", source, "-e", "BYE"], input=input_bytes, stdout=subprocess.PIPE,
                             stderr=subprocess.STDOUT, timeout=30)
     if result.returncode or result.stdout != expected:
         raise AssertionError(f"exit={result.returncode}; expected={expected[:100]!r}; actual={result.stdout[:500]!r}")
@@ -20,7 +21,7 @@ def run(executable, source, expected, input_bytes=b""):
 def prompt_before_input(executable, newline):
     # No input is sent until the prompt is observed: this detects a missing
     # flush before KEY, which a pre-filled stdin pipe cannot detect.
-    with subprocess.Popen([executable, '." PROMPT " KEY EMIT CR'], stdin=subprocess.PIPE,
+    with subprocess.Popen([executable, "-e", '." PROMPT " KEY EMIT CR BYE'], stdin=subprocess.PIPE,
                           stdout=subprocess.PIPE, stderr=subprocess.STDOUT) as child:
         received = queue.Queue()
 

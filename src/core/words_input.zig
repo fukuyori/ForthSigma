@@ -5,6 +5,7 @@ const defs = @import("defs.zig");
 const forth = @import("../forth.zig");
 const integer_math = @import("integer_math.zig");
 const memory_map = @import("memory_map.zig");
+const words_xchar = @import("words_xchar.zig");
 const Builtin = defs.Builtin;
 const Cell = memory_map.Cell;
 const ParsedNumber = defs.ParsedNumber;
@@ -53,12 +54,9 @@ pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
             try self.push(@intCast(length));
         },
         .evaluate => try self.interpretSource(try self.memoryRange(), .evaluate),
-        .key => {
-            const key_fn = self.writer.key_fn orelse return error.InputUnavailable;
-            try self.push(key_fn(self.writer.context) orelse return error.InputUnavailable);
-        },
+        .key => try self.push(try words_xchar.key(self)),
         .key_question => {
-            const ready = if (self.writer.key_ready_fn) |ready_fn| ready_fn(self.writer.context) else false;
+            const ready = self.pending_key != null or if (self.writer.key_ready_fn) |ready_fn| ready_fn(self.writer.context) else false;
             try self.push(truth(ready));
         },
         .word_parse => {

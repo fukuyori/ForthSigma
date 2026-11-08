@@ -5,10 +5,16 @@
 ### Added
 
 - Sound on macOS: the audio words now play through an AudioQueue of AudioToolbox on the default output device (48 kHz 16-bit stereo, about 80 ms ahead), the framework loaded when the program runs, so that the macOS builds made on Linux need no SDK. Before, the music went on without sound there.
+- The xchar words of gforth for UTF-8: `XC-SIZE`, `X-SIZE`, `XC@+`, `XC@`, `XC!+`, `XC!+?`, `XC,`, `XCHAR+`, `XCHAR-`, `XEMIT`, `XKEY`, `XKEY?`, `X-WIDTH`, `XC-WIDTH`, `+X/STRING`, `X\STRING-`, `-TRAILING-GARBAGE`, `XHOLD`, `EKEY>XCHAR`, and `X@+/STRING`. The widths of `XC-WIDTH` come from the Unicode Character Database 15.1.0 (`scripts/make-width-table.py`).
+- `ARGC`, `ARGV`, `ARG`, `SHIFT-ARGS`, and `NEXT-ARG`, as in gforth: a program sees the command-line arguments that have not been processed yet, and the ones it takes with `NEXT-ARG` are not processed as files (`sigma greet.fs world`).
 - `scripts/sign-and-notarize-macos.sh` builds a universal (arm64 and x86_64) macOS installer package that puts `sigma` in `/usr/local/bin`, signs it with Developer ID certificates, has Apple notarize it, and staples the ticket.
 
 ### Changed
 
+- The command line now follows gforth, also in an executable made by `SAVESYS`: each argument names a file to include, in order (`sigma examples/hopper.fs`), and `-e text` (or `--evaluate text`) interprets `text`. After the last argument the banner and the interactive prompt follow, unless `BYE` ended the program; an error in an argument ends it with exit status 1. Before, the arguments were joined into one line of Forth input, run once, and the program exited, so `sigma "12 DUP * ."` is now written `sigma -e "12 DUP * . BYE"`.
+- Dictionary images are now `SIGIMG36` (`SIGIMG37` with the graphics words, `SIGIMG38` with the audio words), since the argument words and the xchar words moved the numbers of the user's words. Images saved by 0.7.0 and earlier can no longer be loaded with `LOAD`, and 0.7.0 and earlier cannot load the new ones. An executable made by `SAVESYS` of 0.7.0 still runs, since it carries its own 0.7.0 runtime (with the old command line).
+- `CHAR`, `[CHAR]`, and character literals give the code point of a UTF-8 character, as in gforth: `CHAR 日` is 26085 (before, 230, its first byte), and `'日'` is a character literal.
+- On Windows, a console shows and reads UTF-8 while Sigma runs (the code page is put back at the end, also after Ctrl+C). Before, UTF-8 text came out garbled in a Japanese console (code page 932), and the keys typed came as Shift_JIS.
 - On Linux and macOS, `SHOW` with no display chosen now uses the Tk window when Sigma runs on a desktop (`DISPLAY`, `WAYLAND_DISPLAY`, or macOS's `__CFBundleIdentifier` is set) and `wish` starts; otherwise it uses the terminal as before. The games in `examples` now open a window there without `DISPLAY-TK`.
 
 ### Fixed

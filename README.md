@@ -48,7 +48,7 @@ Tcl/Tk is not part of Sigma, so the Tk window needs it installed. On Debian and 
 
     sudo apt install tk
 
-On macOS, install Tcl/Tk with `brew install tcl-tk`: the Tcl/Tk 8.5 that macOS comes with (`/usr/bin/wish`) no longer starts on recent macOS, which kills it as it starts, so Sigma passes over it and uses another `wish` on the `PATH`, else Homebrew's (`/opt/homebrew/bin/wish` or `/usr/local/bin/wish`) or MacPorts's (`/opt/local/bin/wish`). `SIGMA_WISH` (or `TCL-PROGRAM`) names another one. On Windows nothing has to be installed when Git for Windows is there, since Sigma falls back to its `wish`. With Tcl/Tk in place, a program that calls `SHOW` opens a window on a Linux or macOS desktop, for example `sigma "include examples/hopper.fs"`.
+On macOS, install Tcl/Tk with `brew install tcl-tk`: the Tcl/Tk 8.5 that macOS comes with (`/usr/bin/wish`) no longer starts on recent macOS, which kills it as it starts, so Sigma passes over it and uses another `wish` on the `PATH`, else Homebrew's (`/opt/homebrew/bin/wish` or `/usr/local/bin/wish`) or MacPorts's (`/opt/local/bin/wish`). `SIGMA_WISH` (or `TCL-PROGRAM`) names another one. On Windows nothing has to be installed when Git for Windows is there, since Sigma falls back to its `wish`. With Tcl/Tk in place, a program that calls `SHOW` opens a window on a Linux or macOS desktop, for example `sigma examples/hopper.fs`.
 
 ```forth
 REQUIRE-GRAPHICS  ALSO GRAPHICS
@@ -90,14 +90,19 @@ On macOS, the following script builds an installer package (`dist/pkg/sigma-<ver
     xcrun notarytool store-credentials notarytool --apple-id <id> --team-id <team> --password <app-pw>   # once
     ./scripts/sign-and-notarize-macos.sh
 
-When started with no arguments, the program shows two lines with the version and the license (`FORTH/Sigma 0.7.0  MIT License` and `` Type `help' for basic help ``) and then the interactive prompt. `HELP` shows basic usage, `HELP` followed by a word name, such as `HELP DUP`, shows the description of that word, and `LICENSE` shows the full text of the license.
+Before the interactive prompt, the program shows two lines with the version and the license (`FORTH/Sigma 0.7.0  MIT License` and `` Type `help' for basic help ``). `HELP` shows basic usage, `HELP` followed by a word name, such as `HELP DUP`, shows the description of that word, and `LICENSE` shows the full text of the license.
 
 Example:
 
     : SQUARE DUP * ;
     12 SQUARE .
 
-Forth source files can be read from standard input. Example:
+As in gforth, each command-line argument names a Forth source file to include, in order, and `-e text` interprets `text`. After the last argument the interactive prompt follows, unless `BYE` ended the program; an error in an argument ends it with exit status 1. Examples:
+
+    sigma.exe examples/demo.fs
+    sigma.exe -e "12 DUP * . BYE"
+
+Forth source files can also be read from standard input. Example:
 
     sigma.exe < examples/demo.fs
 
@@ -110,7 +115,7 @@ In this port, `SAVE filename` and `LOAD filename` save user-defined words as a d
     SAVE words.sigma
     SAVESYS demo.exe
 
-With no arguments, the saved executable opens an interactive prompt that has the registered words. With arguments, it executes the arguments once as Forth input and exits. The sample shows `144`, the square of `12`.
+The saved executable starts with the registered words and takes the same arguments as `sigma.exe`: with no arguments it opens the interactive prompt, and `demo.exe -e "12 SQUARE . BYE"` runs the expression and exits. The sample shows `144`, the square of `12`.
 
 ### Leaving out word groups
 

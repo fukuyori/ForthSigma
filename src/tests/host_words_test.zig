@@ -140,3 +140,35 @@ test "THROW ignores zero, aborts on -1, and reports other codes in decimal" {
     }
     try std.testing.expectEqualStrings("STACK UNDER FLOW !\nNO SUCH FILE OR DIRECTORY !\nFILE I/O EXCEPTION !\nERROR #5 !\n", output.written());
 }
+
+test "ARGC, ARGV, ARG, SHIFT-ARGS, and NEXT-ARG see the arguments the host set, as in gforth" {
+    var output = Output{};
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
+
+    // No arguments set: ARGC holds 0 and ARG gives 0 0.
+    try machine.interpretLine("ARGC @ 0 ARG NEXT-ARG");
+    try expectStack(machine, &.{ 0, 0, 0, 0, 0 });
+    try machine.interpretLine("DROP DROP DROP DROP DROP");
+
+    try machine.setArguments(&.{ "sigma", "x1", "", "x3" });
+    try machine.interpretLine(": SHOW ARGC @ 0 ?DO I ARG TYPE [CHAR] | EMIT LOOP CR ; ARGC @ . SHOW");
+    // ARG beyond ARGC, and a negative index (unsigned, so beyond too), give 0 0.
+    try machine.interpretLine("4 ARG . . -1 ARG . . CR");
+    // The strings end with NUL, and ARGV @ @ is argument 0.
+    try machine.interpretLine("1 ARG + C@ . ARGV @ @ 0 ARG DROP = . CR");
+    try machine.interpretLine("NEXT-ARG TYPE CR SHOW SHIFT-ARGS SHOW NEXT-ARG TYPE CR SHOW");
+    // With only argument 0 left, NEXT-ARG gives 0 0 and SHIFT-ARGS keeps it.
+    try machine.interpretLine("NEXT-ARG . . SHIFT-ARGS SHOW");
+    try std.testing.expectEqualStrings(
+        "4 sigma|x1||x3|\n0 0 0 0 \n0 -1 \nx1\nsigma||x3|\nsigma|x3|\nx3\nsigma|\n0 0 sigma|\n",
+        output.written(),
+    );
+    try expectStack(machine, &.{});
+
+    // Arguments that do not fit are refused.
+    var many: [300][]const u8 = undefined;
+    for (&many) |*item| item.* = "a";
+    try std.testing.expectError(error.StringTooLong, machine.setArguments(&many));
+    try std.testing.expectError(error.StringTooLong, machine.setArguments(&.{repeat("x", 20000)}));
+}

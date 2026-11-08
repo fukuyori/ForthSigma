@@ -42,6 +42,7 @@ const words_pictured = @import("core/words_pictured.zig");
 const words_stack = @import("core/words_stack.zig");
 const words_strings = @import("core/words_strings.zig");
 const words_system = @import("core/words_system.zig");
+const words_xchar = @import("core/words_xchar.zig");
 const Builtin = defs.Builtin;
 pub const Cell = memory_map.Cell;
 const Control = defs.Control;
@@ -187,6 +188,8 @@ pub const State = struct {
     name_buffer_index: usize = 0,
     last_created_word: ?u16 = null,
     halted: bool = false,
+    /// A byte KEY read for XKEY that did not continue the character; KEY gives it next.
+    pending_key: ?u8 = null,
     call_depth: usize = 0,
     /// The callers of the colon definitions that compiled code is running, innermost last
     /// (see executeOperations).
@@ -502,6 +505,11 @@ pub const State = struct {
             .{ "[LOOP]", .bracket_loop },          .{ "[+LOOP]", .bracket_plus_loop },   .{ "[I]", .bracket_i },               .{ "[BEGIN]", .bracket_begin },       .{ "[UNTIL]", .bracket_until },
             .{ "[AGAIN]", .bracket_again },        .{ "[WHILE]", .bracket_while },       .{ "[REPEAT]", .bracket_repeat },     .{ "[FOR]", .bracket_for },           .{ "[NEXT]", .bracket_next },
             .{ "M+", .m_plus },                    .{ "DU<", .du_less },                 .{ "2ROT", .two_rot },                .{ "DUMP", .dump },
+            .{ "ARGC", .argc },                    .{ "ARGV", .argv },                   .{ "ARG", .arg },                     .{ "SHIFT-ARGS", .shift_args },       .{ "NEXT-ARG", .next_arg },
+            .{ "XC-SIZE", .xc_size },              .{ "X-SIZE", .x_size },               .{ "XC@+", .xc_fetch_plus },          .{ "XC@", .xc_fetch },                .{ "XC!+", .xc_store_plus },
+            .{ "XC!+?", .xc_store_plus_question }, .{ "XC,", .xc_comma },                .{ "XCHAR+", .xchar_plus },           .{ "XCHAR-", .xchar_minus },          .{ "XEMIT", .xemit },
+            .{ "XKEY", .xkey },                    .{ "XKEY?", .xkey_question },         .{ "X-WIDTH", .x_width },             .{ "XC-WIDTH", .xc_width },           .{ "+X/STRING", .plus_x_string },
+            .{ "X\\STRING-", .x_string_minus },.{ "-TRAILING-GARBAGE", .minus_trailing_garbage }, .{ "XHOLD", .xhold }, .{ "EKEY>XCHAR", .ekey_to_xchar }, .{ "X@+/STRING", .x_fetch_plus_string },
         };
 
     fn installBuiltins(self: *State) void {
@@ -918,6 +926,9 @@ pub const State = struct {
     pub const locateWord = source_input.locateWord;
     pub const listUses = source_input.listUses;
     pub const sourceAddress = source_input.sourceAddress;
+    pub const setArguments = words_system.setArguments;
+    pub const argument = words_system.argument;
+    pub const shiftArguments = words_system.shiftArguments;
 
     pub fn emit(self: *State, op: Op) RuntimeError!u16 {
         if (self.code_count == max_code) return error.CodeFull;
@@ -1241,7 +1252,7 @@ pub const State = struct {
         }
     }
 
-    const word_modules = .{ words_stack, words_arithmetic, words_memory, words_output, words_input, words_compiling, words_float, words_pictured, words_dictionary, words_system, words_files, words_strings, words_help, words_defining, words_graphics, words_audio };
+    const word_modules = .{ words_stack, words_arithmetic, words_memory, words_output, words_input, words_compiling, words_float, words_pictured, words_dictionary, words_system, words_files, words_strings, words_help, words_defining, words_graphics, words_audio, words_xchar };
 
     /// For each built-in word, the index in `word_modules` of the file that executes it.
     const word_owner = blk: {

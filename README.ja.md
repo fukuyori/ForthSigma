@@ -48,7 +48,7 @@ Tcl/TkはSigmaに含まれないので、Tkのウィンドウを使うには入�
 
     sudo apt install tk
 
-macOSでは `brew install tcl-tk` でTcl/Tkを入れます。macOSに付いているTcl/Tk 8.5（`/usr/bin/wish`）は、最近のmacOSでは起動したとたんに止められて動かないので、Sigmaはそれを飛ばし、`PATH` のほかの `wish`、なければHomebrewのもの（`/opt/homebrew/bin/wish` か `/usr/local/bin/wish`）かMacPortsのもの（`/opt/local/bin/wish`）を使います。別のものは環境変数 `SIGMA_WISH`（または `TCL-PROGRAM`）で指定します。Windowsでは、Git for Windows があれば Sigma がその `wish` を使うので、何も入れる必要はありません。Tcl/Tkがあれば、LinuxやmacOSのデスクトップでは `SHOW` を使うプログラムがウィンドウを開きます。たとえば `sigma "include examples/hopper.fs"` です。
+macOSでは `brew install tcl-tk` でTcl/Tkを入れます。macOSに付いているTcl/Tk 8.5（`/usr/bin/wish`）は、最近のmacOSでは起動したとたんに止められて動かないので、Sigmaはそれを飛ばし、`PATH` のほかの `wish`、なければHomebrewのもの（`/opt/homebrew/bin/wish` か `/usr/local/bin/wish`）かMacPortsのもの（`/opt/local/bin/wish`）を使います。別のものは環境変数 `SIGMA_WISH`（または `TCL-PROGRAM`）で指定します。Windowsでは、Git for Windows があれば Sigma がその `wish` を使うので、何も入れる必要はありません。Tcl/Tkがあれば、LinuxやmacOSのデスクトップでは `SHOW` を使うプログラムがウィンドウを開きます。たとえば `sigma examples/hopper.fs` です。
 
 ```forth
 REQUIRE-GRAPHICS  ALSO GRAPHICS
@@ -90,14 +90,19 @@ macOSでは、次のスクリプトでインストーラーパッケージ（`di
     xcrun notarytool store-credentials notarytool --apple-id <id> --team-id <team> --password <app-pw>   # 最初の1回だけ
     ./scripts/sign-and-notarize-macos.sh
 
-引数なしで起動すると、版番号とライセンスの2行（`FORTH/Sigma 0.7.0  MIT License`、`` Type `help' for basic help ``）を表示して対話プロンプトになります。`HELP` で基本的な使い方、`HELP DUP` のように語名を付けるとその語の説明、`LICENSE` でライセンスの全文を表示します。
+対話プロンプトの前に、版番号とライセンスの2行（`FORTH/Sigma 0.7.0  MIT License`、`` Type `help' for basic help ``）を表示します。`HELP` で基本的な使い方、`HELP DUP` のように語名を付けるとその語の説明、`LICENSE` でライセンスの全文を表示します。
 
 例:
 
     : SQUARE DUP * ;
     12 SQUARE .
 
-Forthソースファイルは標準入力から読み込めます。例:
+Gforthと同じく、コマンドラインの引数はそれぞれ読み込むForthソースファイルの名前で、左から順に読み込みます。`-e 文字列` はその文字列を実行します。最後の引数の後は、`BYE` で終了していなければ対話プロンプトになります。引数でエラーが起きると、終了コード1で終了します。例:
+
+    sigma.exe examples/demo.fs
+    sigma.exe -e "12 DUP * . BYE"
+
+Forthソースファイルは標準入力からも読み込めます。例:
 
     sigma.exe < examples/demo.fs
 
@@ -110,7 +115,7 @@ Forthソースファイルは標準入力から読み込めます。例:
     SAVE words.sigma
     SAVESYS demo.exe
 
-保存した実行ファイルは、引数なしなら登録語を持つ対話プロンプトを開きます。引数があれば、引数列をForth入力として一度実行して終了します。サンプルは `12` の平方である `144` を表示します。
+保存した実行ファイルは登録語を持って起動し、`sigma.exe` と同じ引数を受け付けます。引数なしなら対話プロンプトを開き、`demo.exe -e "12 SQUARE . BYE"` なら式を実行して終了します。サンプルは `12` の平方である `144` を表示します。
 
 ### 語のグループを除く
 

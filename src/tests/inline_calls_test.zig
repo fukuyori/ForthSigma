@@ -291,7 +291,7 @@ test "inlining survives image normalization restoration and repeated relocation"
     const buffer = try std.testing.allocator.alloc(u8, forth.State.imageCapacity());
     defer std.testing.allocator.free(buffer);
     const length = try source.encodeImage(buffer);
-    try std.testing.expectEqualStrings("SIGIMG33", buffer[0..8]);
+    try std.testing.expectEqualStrings("SIGIMG36", buffer[0..8]);
     try std.testing.expect(inline_calls.isInline(first(source, "B")));
     const restored = try support.createMachine(&output);
     defer support.destroyMachine(restored);

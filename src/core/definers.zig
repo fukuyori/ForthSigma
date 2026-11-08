@@ -4,6 +4,7 @@ const defs = @import("defs.zig");
 const forth = @import("../forth.zig");
 const local_variables = @import("local_variables.zig");
 const memory_map = @import("memory_map.zig");
+const words_xchar = @import("words_xchar.zig");
 const Builtin = defs.Builtin;
 const Cell = memory_map.Cell;
 const Pending = defs.Pending;
@@ -135,10 +136,12 @@ pub fn finishPending(self: *State, token: []const u8) RuntimeError!void {
                 _ = try self.emit(.{ .kind = .builtin, .value = @intFromEnum(Builtin.defer_fetch) });
             } else try self.push(try self.readCell(self.words[id].value));
         },
+        // The code point of the first character, as in gforth (CHAR 日 is 26085).
         .char_name => {
+            const code = words_xchar.decode(token).code;
             if (self.compiling) {
-                _ = try self.emit(.{ .kind = .literal, .value = token[0] });
-            } else try self.push(token[0]);
+                _ = try self.emit(.{ .kind = .literal, .value = code });
+            } else try self.push(code);
         },
         .postpone_name => {
             if (!self.compiling) return error.CompileOnly;

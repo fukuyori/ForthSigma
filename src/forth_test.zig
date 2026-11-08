@@ -6,6 +6,7 @@ comptime {
     if (@import("build_options").float) _ = @import("tests/float_test.zig");
     _ = @import("tests/text_and_numbers_test.zig");
     _ = @import("tests/host_words_test.zig");
+    _ = @import("tests/xchar_test.zig");
     _ = @import("tests/files_and_heap_test.zig");
     _ = @import("tests/locals_test.zig");
     _ = @import("tests/catch_test.zig");

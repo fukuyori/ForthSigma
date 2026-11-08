@@ -95,15 +95,38 @@ pub fn build(b: *std.Build) void {
     // still ends lines at CR LF.
     if (!files) return;
     const pipe_bytes = b.addRunArtifact(exe);
-    pipe_bytes.addArg(": T PAD 9 STDIN READ-FILE . DUP . 0 DO PAD I + C@ . LOOP ; T");
+    pipe_bytes.addArgs(&.{ "-e", ": T PAD 9 STDIN READ-FILE . DUP . 0 DO PAD I + C@ . LOOP ; T BYE" });
     pipe_bytes.setStdIn(.{ .bytes = "A\r\nB\x1aC\x00\xff" });
     pipe_bytes.expectStdOutEqual("0 8 65 13 10 66 26 67 0 255 ");
     test_step.dependOn(&pipe_bytes.step);
     const pipe_lines = b.addRunArtifact(exe);
-    pipe_lines.addArg("PAD 20 STDIN READ-LINE . . PAD SWAP TYPE PAD 20 STDIN READ-LINE . . PAD SWAP TYPE");
+    pipe_lines.addArgs(&.{ "-e", "PAD 20 STDIN READ-LINE . . PAD SWAP TYPE PAD 20 STDIN READ-LINE . . PAD SWAP TYPE BYE" });
     pipe_lines.setStdIn(.{ .bytes = "ab\r\ncd\n" });
     pipe_lines.expectStdOutEqual("0 -1 ab0 -1 cd");
     test_step.dependOn(&pipe_lines.step);
+
+    // The command line as in gforth: a file to include, then `-e`, with the stack kept
+    // between arguments; a missing `-e` argument or file ends the program with status 1.
+    const argument_file = b.addRunArtifact(exe);
+    argument_file.addFileArg(b.path("src/tests/argument_file.fs"));
+    argument_file.addArgs(&.{ "-e", ". BYE" });
+    argument_file.expectStdOutEqual("ARG-FILE5 ");
+    test_step.dependOn(&argument_file.step);
+    const argument_stack = b.addRunArtifact(exe);
+    argument_stack.addArgs(&.{ "-e", "7", "--evaluate", ". BYE" });
+    argument_stack.expectStdOutEqual("7 ");
+    test_step.dependOn(&argument_stack.step);
+    const argument_missing = b.addRunArtifact(exe);
+    argument_missing.addArg("-e");
+    // The terminal output ends lines with CR LF on Windows.
+    const missing_message = "-e: OPTION REQUIRES AN ARGUMENT !";
+    argument_missing.expectStdOutEqual(if (target.result.os.tag == .windows) missing_message ++ "\r\n" else missing_message ++ "\n");
+    argument_missing.expectExitCode(1);
+    test_step.dependOn(&argument_missing.step);
+    const argument_no_file = b.addRunArtifact(exe);
+    argument_no_file.addArgs(&.{ "sigma-no-such-file.fs", "-e", "BYE" });
+    argument_no_file.expectExitCode(1);
+    test_step.dependOn(&argument_no_file.step);
 }
 
 /// The correctly rounded math functions the core calls for FSIN, FEXP, FASIN, F**, and

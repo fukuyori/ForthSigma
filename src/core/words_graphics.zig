@@ -4,7 +4,7 @@
 //! The GFX- words are not among the built-in words every dictionary starts with:
 //! REQUIRE-GRAPHICS appends them, with the GRAPHICS vocabulary and the graphics library
 //! written in Forth, after the words already defined. A dictionary that never loads them
-//! keeps the numbers of its words, and its images stay SIGIMG33.
+//! keeps the numbers of its words, and its images stay SIGIMG36.
 
 const std = @import("std");
 const defs = @import("defs.zig");

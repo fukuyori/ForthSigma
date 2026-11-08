@@ -1,9 +1,9 @@
 \ A short tour of FORTH/Sigma's sound: one tune on each chip, the MSX's PSG and the
 \ SCC together, and a sound effect made with SAMPLE.
 \
-\   sigma.exe "include examples/music.fs"      (Windows)
-\   sigma "include examples/music.fs"          (Linux: pacat, pw-play, or aplay plays it;
-\                                               macOS: AudioToolbox)
+\   sigma.exe examples/music.fs      (Windows)
+\   sigma examples/music.fs          (Linux: pacat, pw-play, or aplay plays it;
+\                                     macOS: AudioToolbox)
 
 REQUIRE-AUDIO
 ALSO AUDIO

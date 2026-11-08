@@ -3,7 +3,7 @@
 \ with the Up and Down keys and sends the ball back. A ball the paddle misses hits the
 \ left side: that is out, and the game starts again.
 \
-\   sigma.exe "include examples/paddle.fs"      (in a window; Tk on Linux/macOS)
+\   sigma.exe examples/paddle.fs      (in a window; Tk on Linux/macOS)
 \
 \ Keys: Up and Down move the paddle, A lets the paddle play by itself (and stops it),
 \ Q or Esc ends the game. On Windows the keys go to the console Sigma runs in, as
