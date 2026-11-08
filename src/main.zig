@@ -120,6 +120,7 @@ const posix_ioctl = struct {
 const host_window = @import("host_window.zig");
 const host_gamepad = @import("host_gamepad.zig");
 const host_input = @import("host_input.zig");
+const host_line = @import("host_line.zig");
 const host_font = @import("host_font.zig");
 const host_process = @import("host_process.zig");
 const host_audio = @import("host_audio.zig");
@@ -948,6 +949,7 @@ fn cursorPosition(_: ?*anyopaque) ?forth.CursorPosition {
 }
 
 fn terminalRead(_: ?*anyopaque, buffer: []u8) ?[]const u8 {
+    if (editedLine(buffer)) |result| return result.line;
     var used: usize = 0;
     while (true) {
         const ch = readByte();
@@ -962,6 +964,27 @@ fn terminalRead(_: ?*anyopaque, buffer: []u8) ?[]const u8 {
             used += 1;
         }
     }
+}
+
+/// Whether lines typed on the terminal are edited by Sigma; cleared if the terminal cannot
+/// be set for it.
+var line_editing = true;
+
+/// On a terminal on Linux and macOS, Sigma edits the line itself, so that Backspace takes
+/// back as many columns as the character is wide (see host_line.zig). Null when the line
+/// is to be read as it comes. The terminal's line input is given back first if INKEY had
+/// taken it.
+fn editedLine(buffer: []u8) ?host_line.Result {
+    if (builtin.os.tag == .windows or !line_editing or !output_is_terminal or !host_input.input_is_terminal) return null;
+    host_input.leave();
+    if (host_line.read(buffer, lineByte, flushOutput)) |result| return result;
+    line_editing = false;
+    return null;
+}
+
+fn lineByte() ?u8 {
+    const ch = readByte();
+    return if (ch < 0) null else @intCast(ch);
 }
 
 fn interpretAndPrompt(machine: *forth.State, line: []const u8) void {
@@ -1097,6 +1120,11 @@ fn run(init: std.process.Init.Minimal) !u8 {
     var used: usize = 0;
     var discarding_line = false;
     while (!machine.halted) {
+        if (editedLine(&line)) |result| {
+            const text = result.line orelse break;
+            if (result.overflow) machine.write("LINE TOO LONG\n") else interpretAndPrompt(machine, text);
+            continue;
+        }
         const ch = readByte();
         if (ch < 0) {
             if (!discarding_line and used != 0) interpretAndPrompt(machine, line[0..used]);
@@ -1289,5 +1317,6 @@ test "SAVE and LOAD through the host keep the words, also when loaded twice" {
 test {
     // The tests of the host's terminal input and of the Tcl program it starts.
     _ = host_input;
+    _ = host_line;
     _ = host_process;
 }

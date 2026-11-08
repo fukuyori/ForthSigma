@@ -20,6 +20,7 @@
 
 ### Fixed
 
+- On a terminal on Linux and macOS, Backspace over a full-width character (Japanese, for example) moved the cursor back one column only, leaving half of the character on the screen, since the terminal's line input knows nothing of widths. Sigma now edits the lines of the interactive prompt and of `ACCEPT` itself: Backspace takes back as many columns as the character is wide, and Ctrl+U, Ctrl+W, Ctrl+D, Ctrl+C, Ctrl+\, and Ctrl+Z work as in the terminal. Cursor keys are now dropped instead of being put in the line as escape sequences.
 - On Windows, file names and `SYSTEM` commands other than ASCII failed (`ERROR #-554 !`, `HOST FUNCTION ERROR !`), since the C library took them in the ANSI code page; they are now UTF-8, passed on as UTF-16. This also lets SAVESYS and an executable it made work from a folder with such a name.
 - On Linux and macOS, an executable made by `SAVESYS` had no permission to run (`-rw-r--r--`); it now gets every permission the umask lets through (usually `-rwxr-xr-x`).
 - On macOS, the TCL words, `DISPLAY-TK`, and `examples/calculator.fs` failed with `HOST FUNCTION ERROR`, because the system's `/usr/bin/wish` (Tcl/Tk 8.5) is killed as it starts on recent macOS. Sigma now passes over it and uses another `wish` on the `PATH`, else Homebrew's or MacPorts's; install Tcl/Tk with `brew install tcl-tk`.

@@ -50,6 +50,8 @@ Get-Content .\examples\demo.fs | .\zig-out\bin\sigma.exe
 
 `BYE` ends the program. When an error such as an undefined word occurs, Sigma prints a diagnostic, empties all stacks, and goes on to the next input line.
 
+On a terminal on Linux and macOS, Sigma edits the lines of the interactive prompt and of `ACCEPT` itself. Backspace (and Ctrl+H) takes away one character, moving back two columns over a full-width one; Ctrl+U takes away the whole line, and Ctrl+W the word before the cursor. Ctrl+D on an empty line ends the input, which ends the interactive session. Ctrl+C, Ctrl+\, and Ctrl+Z give the terminal back its settings and then end or suspend Sigma, as the terminal would. Escape sequences (the cursor keys, for example) and the other control characters are not put in the line; Tab is, and is shown as one space. The keys are those the terminal is set to (`stty`). When standard output is not a terminal, the line is read through the terminal's line input as before. On Windows the console edits the line. `KEY` and `XKEY` still read the terminal's line input, which gives nothing until Enter is pressed.
+
 `( ... )` skips text up to `)` on the same line as a comment, and `\` skips to the end of the line.
 
 ## Numbers

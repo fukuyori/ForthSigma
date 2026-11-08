@@ -77,6 +77,10 @@ pub const CursorPosition = host_interface.CursorPosition;
 pub const SystemGlyph = host_interface.SystemGlyph;
 pub const ColorMode = host_interface.ColorMode;
 pub const graphicsColor = graphics_palette.convert;
+/// For the host's editing of a typed line: a character's UTF-8 decoding and its width in
+/// columns, as XC@ and XC-WIDTH give them.
+pub const decodeXchar = words_xchar.decode;
+pub const charWidth = @import("core/char_width.zig").width;
 pub const Writer = host_interface.Writer;
 const base_address = memory_map.base_address;
 const bitsFloat = defs.bitsFloat;

@@ -127,7 +127,7 @@ WAIT-PRESS                                       \ ボタンを押すと pressed
 
 ### キー、マウス、アニメーション
 
-`INKEY` は、端末とウィンドウからキーを待たずに読みます。`MOUSE` は、マウスの下にある画像の画素を返します。`KEY`、`KEY?`、`ACCEPT` は変わらず、端末の行入力を読みます。
+`INKEY` は、端末とウィンドウからキーを待たずに読みます。`MOUSE` は、マウスの下にある画像の画素を返します。`KEY`、`KEY?`、`ACCEPT` は変わらず、行を読みます（LinuxとmacOSの端末の `ACCEPT` は、Sigmaが行を編集します）。
 
 ```forth
 REQUIRE-GRAPHICS  ALSO GRAPHICS

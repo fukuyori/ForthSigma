@@ -127,7 +127,7 @@ When the program cannot be started or ends, the word gives `HOST FUNCTION ERROR 
 
 ### Keys, the mouse, and animation
 
-`INKEY` reads a key without waiting, from the terminal and from the window, and `MOUSE` gives the pixel of the image under the mouse. `KEY`, `KEY?`, and `ACCEPT` are not changed: they still read the terminal's line input.
+`INKEY` reads a key without waiting, from the terminal and from the window, and `MOUSE` gives the pixel of the image under the mouse. `KEY`, `KEY?`, and `ACCEPT` are not changed: they still read a line (which Sigma edits for `ACCEPT` on a terminal on Linux and macOS).
 
 ```forth
 REQUIRE-GRAPHICS  ALSO GRAPHICS
