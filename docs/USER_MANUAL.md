@@ -67,8 +67,10 @@ A prefix before a number selects its base, whatever the current base is.
 | `$FF` | Hexadecimal |
 | `#10`, `&10` | Decimal |
 | `%101` | Binary |
-| `'a'` | Character code |
+| `0xFF`, `0XFF` | Hexadecimal, as in gforth, when the current base cannot read the number as it is (in base 36, `0x10` is a base-36 number) |
+| `'a'`, `'a` | The code point of one character (UTF-8: `'日` is 26085); the closing `'` may be left out, and `''` is the quote itself |
 
+A `-` may come before the prefix or after it (`-$10`, `$-10`, `-0x10`, `0x-10`, `-'a`), but not both.
 ### Double-cell integers
 
 A number with a `.` among its digits is a double-cell integer (128 bits). It is pushed as two cells, the low cell first and then the high cell. `123.` is 123, and `12345.123` is 12345123 (the position of the dot is not recorded).
@@ -227,7 +229,7 @@ A number without `E`, such as `1.5`, is not treated as a floating-point number.
 | Character output | `ECHO`/`EMIT`, `XEMIT` | `EMIT` outputs the low 8 bits of the top of the stack as one byte; `XEMIT` outputs a character in UTF-8 (see [Characters (UTF-8)](#characters-utf-8)). |
 | String output | `TYPE`, `."..."` | `TYPE` takes an address and a character count and outputs the string. `."..."` is an extension of the port. |
 | Line breaks and spaces | `CR`, `SPACE`, `SPCES`/`SPACES`, `BL` | Output a line break, one space, or the given number of spaces. `BL` pushes the character code of a space. |
-| Character codes | `CHAR char`, `[CHAR] char`, `'c'` | Push the code point of the first character of the next word (UTF-8, so `CHAR 日` is 26085). Inside a definition, it is compiled as a literal. `'c'` is the code point of one character. |
+| Character codes | `CHAR char`, `[CHAR] char`, `'c'` | Push the code point of the first character of the next word (UTF-8, so `CHAR 日` is 26085). Inside a definition, it is compiled as a literal. `'c'` (or `'c`) is the code point of one character. |
 | Number input | `INPUT` | Read one integer from the terminal and push it on the stack. |
 | Changing the base | `HEX`, `DEC`/`DECIMAL`, `OCT` | Switch the base of number input and output to hexadecimal, decimal, or octal. The initial base is decimal. |
 | Referring to the base | `BASE` | Push the address in logical memory that holds the base (2 to 36). |

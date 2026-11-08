@@ -346,3 +346,18 @@ test "ABORT clears the stacks silently, even from EVALUATE" {
     try expectFloatStack(machine, &.{});
     try std.testing.expectEqualStrings("", output.written());
 }
+
+test "0x numbers and 'c character literals as in gforth" {
+    try expectOutput("0x7FF . 0X7ff . -0x10 . 0x-5 . 0x0 . 0x1F. D. HEX 0x10 DECIMAL . 0x10e .", "2047 2047 -16 -5 0 31 16 270 ");
+    // In base 36, 0x10 is a base-36 number, since x is a digit there.
+    try expectOutput("36 BASE ! 0x10 DECIMAL .", "42804 ");
+    try expectOutput("'a . 'a' . '日 . '😀 . ''' . '' . -'a . -'日 . '- . : CC 0x7F 'あ ; CC . .", "97 97 26085 128512 39 39 -97 -26085 45 12354 127 ");
+    try expectOutput("S\" 0x10\" S>NUMBER? . D. S\" 'a\" S>NUMBER? . D.", "-1 16 -1 97 ");
+    var output = Output{};
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
+    for ([_][]const u8{ "0x", "0xG", "-0x-5", "#0x10", "$0x10", "'ab", "'日本", "'a''", "'a.", "--'a" }) |token| {
+        try std.testing.expectError(error.UnknownWord, machine.interpretLine(token));
+        machine.report(error.UnknownWord);
+    }
+}

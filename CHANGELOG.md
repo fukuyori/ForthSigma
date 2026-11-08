@@ -6,6 +6,7 @@
 
 - Sound on macOS: the audio words now play through an AudioQueue of AudioToolbox on the default output device (48 kHz 16-bit stereo, about 80 ms ahead), the framework loaded when the program runs, so that the macOS builds made on Linux need no SDK. Before, the music went on without sound there.
 - The xchar words of gforth for UTF-8: `XC-SIZE`, `X-SIZE`, `XC@+`, `XC@`, `XC!+`, `XC!+?`, `XC,`, `XCHAR+`, `XCHAR-`, `XEMIT`, `XKEY`, `XKEY?`, `X-WIDTH`, `XC-WIDTH`, `+X/STRING`, `X\STRING-`, `-TRAILING-GARBAGE`, `XHOLD`, `EKEY>XCHAR`, and `X@+/STRING`. The widths of `XC-WIDTH` come from the Unicode Character Database 15.1.0 (`scripts/make-width-table.py`).
+- Numbers in the forms gforth reads: `0x` for hexadecimal (`0xFF`, `-0x10`, `0x-5`), and the character literals `'a` (without the closing quote), `-'a`, and `''`.
 - `ARGC`, `ARGV`, `ARG`, `SHIFT-ARGS`, and `NEXT-ARG`, as in gforth: a program sees the command-line arguments that have not been processed yet, and the ones it takes with `NEXT-ARG` are not processed as files (`sigma greet.fs world`).
 - `scripts/sign-and-notarize-macos.sh` builds a universal (arm64 and x86_64) macOS installer package that puts `sigma` in `/usr/local/bin`, signs it with Developer ID certificates, has Apple notarize it, and staples the ticket.
 

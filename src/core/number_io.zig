@@ -61,13 +61,41 @@ pub fn currentBase(self: *State) Cell {
 /// Recognizes an integer in the manner of gforth's number recognizer: optional `-`, an
 /// optional base prefix (`$` `#` `&` `%`), digits, and `'c'` character literals. A `.`
 /// anywhere among the digits makes the number double-cell (`123.` and `12.34` are doubles).
+/// As in gforth, a number that the base cannot read may also start with `0x` or `0X`
+/// for hexadecimal (`0xFF`, `-0x10`, `0x-5`; in base 36, `0x10` is a base-36 number).
 pub fn parseNumber(self: *State, token: []const u8) RuntimeError!?ParsedNumber {
-    // 'c' with one character, UTF-8 included ('日' is 26085), as in gforth.
-    if (token.len >= 3 and token[0] == '\'' and token[token.len - 1] == '\'') {
-        const found = words_xchar.decode(token[1 .. token.len - 1]);
-        if (found.length == token.len - 2) return .{ .value = found.code, .double = false };
-    }
-    var base = try self.validBase();
+    if (characterLiteral(token)) |value| return .{ .value = value, .double = false };
+    const base = try self.validBase();
+    if (parseDigits(token, base)) |number| return number;
+    // 0x after the sign: the rest as a hexadecimal number, which may have its own sign.
+    const sign: usize = @intFromBool(token.len != 0 and token[0] == '-');
+    if (token.len < sign + 2 or token[sign] != '0' or (token[sign + 1] != 'x' and token[sign + 1] != 'X')) return null;
+    var rest: [max_number_token]u8 = undefined;
+    if (token.len - 1 > rest.len) return null;
+    // `-0x10` becomes `-$10`; `0x-5` becomes `$-5`, which takes the sign after the prefix.
+    @memcpy(rest[0..sign], token[0..sign]);
+    rest[sign] = '$';
+    @memcpy(rest[sign + 1 .. token.len - 1], token[sign + 2 ..]);
+    return parseDigits(rest[0 .. token.len - 1], base);
+}
+
+/// The longest token `0x` numbers are read from.
+const max_number_token = 256;
+
+/// `'c` and `'c'`, with one character (UTF-8 included: `'日` is 26085) and an optional
+/// `-` before it (`-'a` is -97), as in gforth; `''` is the quote itself.
+fn characterLiteral(token: []const u8) ?Cell {
+    const sign: usize = @intFromBool(token.len != 0 and token[0] == '-');
+    if (token.len < sign + 2 or token[sign] != '\'') return null;
+    const body = token[sign + 1 ..];
+    const found = words_xchar.decode(body);
+    if (found.length != body.len and !(found.length + 1 == body.len and body[body.len - 1] == '\'')) return null;
+    const code: Cell = found.code;
+    return if (sign == 1) -code else code;
+}
+
+fn parseDigits(token: []const u8, current_base: Cell) ?ParsedNumber {
+    var base = current_base;
     var i: usize = 0;
     var negative = false;
     if (i < token.len and token[i] == '-') {

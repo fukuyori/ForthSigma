@@ -88,7 +88,7 @@ The build made with `zig build -Dfloat=false` does not have the floating-point w
 | --- | --- | --- |
 | Tab separators | Extended | A tab separates tokens like a space (in the book only space and CR do). Same as gforth. |
 | Case-insensitive name matching | Extended | Upper and lower case ASCII letters are treated as the same. Same as gforth. |
-| Number bases 2 to 36 and prefixes | Extended | The value of BASE in memory can be 2 to 36. The prefixes `$` `#` `&` `%` and `'c'` are recognized. |
+| Number bases 2 to 36 and prefixes | Extended | The value of BASE in memory can be 2 to 36. The prefixes `$` `#` `&` `%`, `0x` (when the base cannot read the number, as in gforth), and `'c'` or `'c` (with `-'c`, and UTF-8 characters) are recognized, with the same results as gforth 0.7.9_20260410 under WSL. |
 | Floating-point literals | Extended | A token that contains `e`/`E`, in base 10. |
 | Display of infinity and NaN | Extended | `F.` `FE.` `FS.` print `infinity` `-infinity` `NaN` without cutting them to `PRECISION`. gforth cuts them to `PRECISION` characters (`infini` with `6 SET-PRECISION`, `Na` with `2 SET-PRECISION`). With the default `PRECISION` (15) the output is the same. |
 | F+!, F?, FA@, FA!, FARRAY, FINPUT, FMINUS | Extended | Floating-point versions of the FORTH/Σ words +!, ?, A@, A!, ARRAY, INPUT, and MINUS. They are not gforth words. |
