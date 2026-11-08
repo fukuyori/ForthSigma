@@ -146,6 +146,10 @@ pub const Mod = struct {
     repeating: bool = false,
     jump: ?u8 = null,
     break_row: ?u8 = null,
+    /// Whether the jump is a pattern loop's (E6x), which plays rows again on purpose.
+    pattern_loop: bool = false,
+    /// The rows played, by position: a song played once ends when it jumps to one.
+    visited: [128]u64 = @splat(0),
     channels: [channel_count]Channel = @splat(.{}),
     filters: amiga.Filters,
 
@@ -172,8 +176,10 @@ pub const Mod = struct {
     pub fn sample(self: *Mod, pool: []const i16, led: *bool) [2]f32 {
         if (!self.playing) return .{ 0, 0 };
         if (self.tick_left <= 0) {
+            // A tempo set on this tick (Fxx) counts from the next one.
+            const tempo = self.tempo;
             self.doTick(pool, led);
-            self.tick_left += @as(f64, @floatFromInt(self.sample_rate)) * 2.5 / @as(f64, @floatFromInt(self.tempo));
+            self.tick_left += @as(f64, @floatFromInt(self.sample_rate)) * 2.5 / @as(f64, @floatFromInt(tempo));
         }
         self.tick_left -= 1;
         var sides: [2]f32 = .{ 0, 0 };
@@ -209,7 +215,10 @@ pub const Mod = struct {
     }
 
     fn nextRow(self: *Mod) void {
-        if (self.jump != null or self.break_row != null) {
+        const jumped = self.jump != null or self.break_row != null;
+        const pattern_loop = self.pattern_loop;
+        self.pattern_loop = false;
+        if (jumped) {
             self.position = self.jump orelse self.position +% 1;
             self.row = self.break_row orelse 0;
             self.jump = null;
@@ -225,9 +234,12 @@ pub const Mod = struct {
             if (!self.repeat) return self.stop();
             self.position = 0;
         }
+        // A song played once ends where it would go round again (Bxx or Dxx back).
+        if (jumped and !pattern_loop and !self.repeat and self.visited[self.position] >> @intCast(self.row) & 1 != 0) self.stop();
     }
 
     fn readRow(self: *Mod, pool: []const i16, led: *bool) void {
+        self.visited[self.position] |= @as(u64, 1) << @intCast(self.row);
         const bytes = std.mem.sliceAsBytes(pool);
         const pattern = self.song.order[self.position];
         const at = @as(usize, self.song.patterns_at) + @as(usize, pattern) * pattern_size + @as(usize, self.row) * channel_count * 4;
@@ -268,13 +280,16 @@ pub const Mod = struct {
                     if (y != 0) channel.tremolo_depth = y;
                 },
                 0xb => {
+                    // Row 0, also after a pattern break on a channel before this one.
                     self.jump = channel.param;
-                    if (self.break_row == null) self.break_row = 0;
+                    self.break_row = 0;
+                    self.pattern_loop = false;
                 },
                 0xc => channel.volume = @min(channel.param, 64),
                 0xd => {
                     self.break_row = @min(x * 10 + y, 63);
                     if (self.jump == null) self.jump = self.position +% 1;
+                    self.pattern_loop = false;
                 },
                 0xe => switch (x) {
                     0x0 => led.* = y == 0,
@@ -287,8 +302,11 @@ pub const Mod = struct {
                         if (channel.loop_count > 0) {
                             self.break_row = channel.loop_row;
                             self.jump = self.position;
+                            self.pattern_loop = true;
                         }
                     },
+                    // A row without a note starts the sound again on its first tick too.
+                    0x9 => if (y != 0 and period == 0 and channel.note_period != 0) self.trigger(channel, channel.note_period),
                     0xa => channel.volume = @min(channel.volume + y, 64),
                     0xb => channel.volume = @max(channel.volume - y, 0),
                     0xc => if (y == 0) {
@@ -313,6 +331,8 @@ pub const Mod = struct {
     fn trigger(self: *Mod, channel: *Channel, period: u16) void {
         channel.note_period = period;
         channel.period = period;
+        // A note started on a later tick (EDx, E9x) sounds at its period on that tick.
+        channel.out_period = period;
         channel.vibrato_position = 0;
         channel.tremolo_position = 0;
         if (channel.sample == 0) return;
@@ -328,7 +348,14 @@ pub const Mod = struct {
         }, 0);
         if (channel.effect == 0x9) {
             const offset = @as(u32, channel.offset) * 256;
-            if (offset >= length) channel.player.active = false else channel.player.position = @floatFromInt(offset);
+            // Past the end, a sample with a loop goes on with its loop.
+            if (offset < length) {
+                channel.player.position = @floatFromInt(offset);
+            } else if (loops) {
+                channel.player.position = @floatFromInt(info.loop_start);
+            } else {
+                channel.player.active = false;
+            }
         }
     }
 
@@ -345,6 +372,8 @@ pub const Mod = struct {
         } else {
             channel.period = @max(channel.period -| channel.porta_speed, channel.target);
         }
+        // Reached: a later 300 does not slide back to it after another note.
+        if (channel.period == channel.target) channel.target = 0;
     }
 
     fn vibrato(channel: *Channel) void {

@@ -761,3 +761,416 @@ test "the module's pattern loop plays its rows again, and a note delay starts th
     played += rate / 50 * 3 + playUntil(&engine, .stopped, 0);
     try std.testing.expectApproxEqAbs(@as(f64, rate * 960 / 1000), @as(f64, @floatFromInt(played)), 2);
 }
+
+/// A module played directly, a tick (20 ms at the first tempo) at a time. The effects
+/// below were also compared with libopenmpt, tick by tick (2026-11-08).
+const ModRun = struct {
+    player: mod_module.Mod,
+    pool: [4096]i16,
+    led: bool,
+
+    fn start(self: *ModRun, file: []const u8) !void {
+        var song = try mod_module.parseHeader(file[0..mod_module.header_size]);
+        self.pool = @splat(0);
+        self.led = false;
+        const pattern_slots = mod_module.pattern_size / 2;
+        @memcpy(std.mem.sliceAsBytes(self.pool[0..pattern_slots]), file[mod_module.header_size..][0..mod_module.pattern_size]);
+        song.patterns_at = 0;
+        song.samples[0].start = pattern_slots;
+        for (file[mod_module.header_size + mod_module.pattern_size..], 0..) |byte, i| {
+            self.pool[pattern_slots + i] = @as(i16, @as(i8, @bitCast(byte))) * 256;
+        }
+        self.player = mod_module.Mod.init(rate);
+        self.player.song = song;
+        self.player.start(false);
+    }
+
+    fn frames(self: *ModRun, count: usize) void {
+        for (0..count) |_| _ = self.player.sample(&self.pool, &self.led);
+    }
+
+    fn ticks(self: *ModRun, count: usize) void {
+        self.frames(count * rate / 50);
+    }
+
+    fn channel(self: *ModRun) *@TypeOf(self.player.channels[0]) {
+        return &self.player.channels[0];
+    }
+
+    /// What 1 tick moves the sample by, at a period.
+    fn tickSteps(period: f64) f64 {
+        return 3546895.0 / period / rate * (rate / 50);
+    }
+};
+
+fn expectOut(run: *ModRun, period: u16, volume: i32) !void {
+    try std.testing.expectEqual(period, run.channel().out_period);
+    try std.testing.expectEqual(volume, run.channel().out_volume);
+}
+
+test "the module's arpeggio changes the note on each tick, and comes back" {
+    var run: ModRun = undefined;
+    try run.start(&modFile(1, &.{.{ 0, modCell(1, 428, 0, 0x47) }}));
+    run.ticks(1);
+    try expectOut(&run, 431, 48);
+    run.ticks(1);
+    try expectOut(&run, 342, 48); // 4 semitones up
+    try std.testing.expectApproxEqAbs(@as(f64, 3546895.0 / 342.0 / 48000.0), run.channel().player.step, 1e-9);
+    run.ticks(1);
+    try expectOut(&run, 288, 48); // 7 semitones up
+    run.ticks(1);
+    try expectOut(&run, 431, 48);
+    // The note itself did not move.
+    try std.testing.expectEqual(@as(u16, 431), run.channel().period);
+}
+
+test "the module's portamento stops at ProTracker's limits" {
+    var run: ModRun = undefined;
+    try run.start(&modFile(1, &.{.{ 0, modCell(1, 428, 1, 4) }}));
+    run.ticks(6);
+    try std.testing.expectEqual(@as(u16, 431 - 20), run.channel().period);
+
+    try run.start(&modFile(1, &.{.{ 0, modCell(1, 135, 1, 0x10) }}));
+    run.ticks(2);
+    try std.testing.expectEqual(@as(u16, 120), run.channel().period);
+    run.ticks(1);
+    try std.testing.expectEqual(@as(u16, 113), run.channel().period);
+
+    try run.start(&modFile(1, &.{.{ 0, modCell(1, 808, 2, 0x10) }}));
+    run.ticks(3);
+    try std.testing.expectEqual(@as(u16, 846), run.channel().period);
+    run.ticks(1);
+    try std.testing.expectEqual(@as(u16, 856), run.channel().period);
+}
+
+test "the module's tone portamento slides to the note, remembers its speed, and stops there" {
+    var run: ModRun = undefined;
+    try run.start(&modFile(1, &.{
+        .{ 0, modCell(1, 428, 0, 0) },
+        .{ 1, modCell(0, 339, 3, 8) },
+        .{ 2, modCell(0, 0, 3, 0) },
+        .{ 3, modCell(0, 0, 3, 0) },
+    }));
+    run.ticks(12);
+    try std.testing.expectEqual(@as(u16, 431 - 40), run.channel().period);
+    run.ticks(6);
+    try std.testing.expectEqual(@as(u16, 431 - 80), run.channel().period);
+    run.ticks(2);
+    try std.testing.expectEqual(@as(u16, 343), run.channel().period);
+    run.ticks(1);
+    try std.testing.expectEqual(@as(u16, 341), run.channel().period);
+    run.ticks(3);
+    try std.testing.expectEqual(@as(u16, 341), run.channel().period);
+}
+
+test "the module's vibrato bends the note around it and keeps its place between rows" {
+    var run: ModRun = undefined;
+    try run.start(&modFile(1, &.{
+        .{ 0, modCell(1, 428, 4, 0x48) },
+        .{ 1, modCell(0, 0, 4, 0) },
+        .{ 2, modCell(0, 0, 4, 0x83) },
+    }));
+    run.ticks(2);
+    try expectOut(&run, 431, 48);
+    run.ticks(1);
+    try expectOut(&run, 437, 48);
+    run.ticks(1);
+    try expectOut(&run, 442, 48);
+    run.ticks(2);
+    try expectOut(&run, 446, 48);
+    // The first tick of a row has no vibrato; the rest go on from where it was.
+    run.ticks(1);
+    try expectOut(&run, 431, 48);
+    run.ticks(1);
+    try expectOut(&run, 445, 48);
+    // The second half of the wave, with the new speed and depth.
+    run.ticks(6);
+    try expectOut(&run, 427, 48);
+    try std.testing.expectEqual(@as(u16, 431), run.channel().period);
+}
+
+test "the module's slides of the volume go on with portamento and vibrato" {
+    var run: ModRun = undefined;
+    try run.start(&modFile(1, &.{
+        .{ 0, modCell(1, 428, 0, 0) },
+        .{ 1, modCell(0, 339, 3, 4) },
+        .{ 2, modCell(0, 0, 5, 0x04) },
+        .{ 3, modCell(0, 0, 5, 0x20) },
+    }));
+    run.ticks(18);
+    try std.testing.expectEqual(@as(u16, 431 - 40), run.channel().period);
+    try std.testing.expectEqual(@as(i32, 48 - 20), run.channel().volume);
+    run.ticks(6);
+    try std.testing.expectEqual(@as(u16, 431 - 60), run.channel().period);
+    try std.testing.expectEqual(@as(i32, 28 + 10), run.channel().volume);
+
+    try run.start(&modFile(1, &.{
+        .{ 0, modCell(1, 428, 4, 0x48) },
+        .{ 1, modCell(0, 0, 6, 0x04) },
+    }));
+    run.ticks(8);
+    try expectOut(&run, 445, 44);
+}
+
+test "the module's tremolo moves the volume it plays with, not the channel's" {
+    var run: ModRun = undefined;
+    try run.start(&modFile(1, &.{
+        .{ 0, modCell(1, 428, 0xc, 32) },
+        .{ 1, modCell(0, 0, 7, 0x48) },
+    }));
+    run.ticks(7);
+    try expectOut(&run, 431, 32);
+    run.ticks(1);
+    try expectOut(&run, 431, 32);
+    run.ticks(1);
+    try expectOut(&run, 431, 32 + 12);
+    run.ticks(1);
+    try expectOut(&run, 431, 32 + 22);
+    try std.testing.expectEqual(@as(i32, 32), run.channel().volume);
+}
+
+test "the module's sample offset starts later in the sample and remembers its place" {
+    var run: ModRun = undefined;
+    try run.start(&modFile(1, &.{
+        .{ 0, modCell(1, 428, 9, 2) },
+        .{ 1, modCell(0, 0, 0, 0) },
+        .{ 2, modCell(1, 428, 9, 0) },
+        .{ 3, modCell(1, 428, 0, 0) },
+    }));
+    run.player.song.samples[0].length = 1024;
+    const tick = ModRun.tickSteps(431);
+    run.ticks(1);
+    try std.testing.expectApproxEqAbs(512 + tick, run.channel().player.position, 1);
+    run.ticks(12);
+    try std.testing.expectApproxEqAbs(512 + tick, run.channel().player.position, 1);
+    run.ticks(6);
+    try std.testing.expectApproxEqAbs(tick, run.channel().player.position, 1);
+
+    // Past the end of a sample without a loop: no sound.
+    try run.start(&modFile(1, &.{.{ 0, modCell(1, 428, 9, 1) }}));
+    run.ticks(1);
+    try std.testing.expect(!run.channel().player.active);
+}
+
+test "the module's fine slides work once, on the row's first tick" {
+    var run: ModRun = undefined;
+    try run.start(&modFile(1, &.{
+        .{ 0, modCell(1, 428, 0xe, 0x14) },
+        .{ 1, modCell(0, 0, 0xe, 0x24) },
+        .{ 2, modCell(0, 0, 0xe, 0xa4) },
+        .{ 3, modCell(0, 0, 0xe, 0xb8) },
+    }));
+    run.ticks(1);
+    try std.testing.expectEqual(@as(u16, 427), run.channel().period);
+    run.ticks(5);
+    try std.testing.expectEqual(@as(u16, 427), run.channel().period);
+    run.ticks(6);
+    try std.testing.expectEqual(@as(u16, 431), run.channel().period);
+    run.ticks(1);
+    try std.testing.expectEqual(@as(i32, 52), run.channel().volume);
+    run.ticks(5);
+    try std.testing.expectEqual(@as(i32, 52), run.channel().volume);
+    run.ticks(6);
+    try std.testing.expectEqual(@as(i32, 44), run.channel().volume);
+}
+
+test "the module's note cut silences the note on its tick, and retrigger starts it again" {
+    var run: ModRun = undefined;
+    try run.start(&modFile(1, &.{.{ 0, modCell(1, 428, 0xe, 0xc2) }}));
+    run.ticks(2);
+    try std.testing.expectEqual(@as(i32, 48), run.channel().volume);
+    run.ticks(1);
+    try std.testing.expectEqual(@as(i32, 0), run.channel().volume);
+
+    try run.start(&modFile(1, &.{.{ 0, modCell(1, 428, 0xe, 0x92) }}));
+    run.player.song.samples[0].length = 1024;
+    const tick = ModRun.tickSteps(431);
+    run.ticks(2);
+    try std.testing.expectApproxEqAbs(2 * tick, run.channel().player.position, 1);
+    run.ticks(1);
+    try std.testing.expectApproxEqAbs(tick, run.channel().player.position, 1);
+}
+
+test "the module's position jump, pattern break in decimal digits, delay, and tempo" {
+    var run: ModRun = undefined;
+    try run.start(&modFile(2, &.{.{ 0, modCell(1, 428, 0xb, 1) }}));
+    run.ticks(6);
+    try std.testing.expectEqual(@as(u8, 0), run.player.position);
+    run.ticks(1);
+    try std.testing.expectEqual(@as(u8, 1), run.player.position);
+    try std.testing.expectEqual(@as(u8, 0), run.player.row);
+
+    // A jump past the song's end ends it.
+    try run.start(&modFile(1, &.{.{ 0, modCell(1, 428, 0xb, 5) }}));
+    run.ticks(7);
+    try std.testing.expect(!run.player.playing);
+
+    // D12 is row 12, not 18.
+    try run.start(&modFile(2, &.{.{ 0, modCell(1, 428, 0xd, 0x12) }}));
+    run.ticks(7);
+    try std.testing.expectEqual(@as(u8, 1), run.player.position);
+    try std.testing.expectEqual(@as(u8, 12), run.player.row);
+
+    // EE2: the row lasts three times as long.
+    try run.start(&modFile(1, &.{.{ 0, modCell(1, 428, 0xe, 0xe2) }}));
+    run.ticks(18);
+    try std.testing.expectEqual(@as(u8, 0), run.player.row);
+    run.ticks(1);
+    try std.testing.expectEqual(@as(u8, 1), run.player.row);
+
+    // Tempo 80 counts from the next tick: this one is still 960 frames, the next 1500.
+    try run.start(&modFile(1, &.{.{ 0, modCell(1, 428, 0xf, 80) }}));
+    run.frames(960);
+    try std.testing.expectEqual(@as(u8, 1), run.player.tick);
+    run.frames(1);
+    try std.testing.expectEqual(@as(u8, 2), run.player.tick);
+    run.frames(1499);
+    try std.testing.expectEqual(@as(u8, 2), run.player.tick);
+    run.frames(1);
+    try std.testing.expectEqual(@as(u8, 3), run.player.tick);
+}
+
+test "the module played once ends where it would go round again, and goes on when repeating" {
+    var run: ModRun = undefined;
+    // Row 1 jumps back to the song's start.
+    try run.start(&modFile(1, &.{
+        .{ 0, modCell(1, 428, 0, 0) },
+        .{ 1, modCell(0, 0, 0xb, 0) },
+    }));
+    run.ticks(12);
+    try std.testing.expect(run.player.playing);
+    run.ticks(1);
+    try std.testing.expect(!run.player.playing);
+
+    // Played again and again, it goes round.
+    run.player.start(true);
+    run.ticks(120);
+    try std.testing.expect(run.player.playing);
+
+    // A jump forward to a position not played goes on, and ends when it comes again.
+    try run.start(&modFile(2, &.{.{ 0, modCell(1, 428, 0xb, 1) }}));
+    run.ticks(12);
+    try std.testing.expect(run.player.playing);
+    try std.testing.expectEqual(@as(u8, 1), run.player.position);
+    run.ticks(1);
+    try std.testing.expect(!run.player.playing);
+
+    // A pattern loop plays its rows again without ending the song.
+    try run.start(&modFile(1, &.{
+        .{ 0, modCell(1, 428, 0xe, 0x60) },
+        .{ 1, modCell(0, 0, 0xe, 0x61) },
+        .{ 2, modCell(0, 0, 0xd, 0) },
+    }));
+    run.ticks(24);
+    try std.testing.expect(run.player.playing);
+    try std.testing.expectEqual(@as(u8, 1), run.player.row);
+    run.ticks(1);
+    try std.testing.expect(run.player.playing);
+    try std.testing.expectEqual(@as(u8, 2), run.player.row);
+}
+
+test "the module's delayed note sounds at its own period on the tick it starts" {
+    var run: ModRun = undefined;
+    try run.start(&modFile(1, &.{
+        .{ 0, modCell(1, 428, 0xe, 0xd2) },
+        .{ 1, modCell(1, 339, 0xe, 0xd3) },
+    }));
+    run.ticks(2);
+    try expectOut(&run, 0, 48);
+    run.ticks(1);
+    try expectOut(&run, 431, 48);
+    try std.testing.expectApproxEqAbs(@as(f64, 3546895.0 / 431.0 / 48000.0), run.channel().player.step, 1e-9);
+    // The next row's note keeps the old period until its tick 3.
+    run.ticks(6);
+    try expectOut(&run, 431, 48);
+    run.ticks(1);
+    try expectOut(&run, 341, 48);
+    try std.testing.expectApproxEqAbs(@as(f64, 3546895.0 / 341.0 / 48000.0), run.channel().player.step, 1e-9);
+}
+
+test "the module's sample offset past the end of a sample with a loop plays the loop" {
+    var run: ModRun = undefined;
+    try run.start(&modFile(1, &.{.{ 0, modCell(1, 428, 9, 1) }}));
+    run.player.song.samples[0].loop_start = 8;
+    run.player.song.samples[0].loop_length = 16;
+    run.ticks(1);
+    try std.testing.expect(run.channel().player.active);
+    try std.testing.expect(run.channel().player.position >= 8 and run.channel().player.position < 24);
+}
+
+test "the module's retrigger on a row without a note starts on the first tick too" {
+    var run: ModRun = undefined;
+    try run.start(&modFile(1, &.{
+        .{ 0, modCell(1, 428, 0, 0) },
+        .{ 1, modCell(0, 0, 0xe, 0x93) },
+    }));
+    run.player.song.samples[0].length = 1024;
+    const tick = ModRun.tickSteps(431);
+    run.ticks(6);
+    try std.testing.expectApproxEqAbs(6 * tick, run.channel().player.position, 1);
+    run.ticks(1);
+    try std.testing.expectApproxEqAbs(tick, run.channel().player.position, 1);
+    run.ticks(2);
+    try std.testing.expectApproxEqAbs(3 * tick, run.channel().player.position, 1);
+    run.ticks(1);
+    try std.testing.expectApproxEqAbs(tick, run.channel().player.position, 1);
+}
+
+test "the module's tone portamento forgets a note it reached, but not one it did not" {
+    var run: ModRun = undefined;
+    try run.start(&modFile(1, &.{
+        .{ 0, modCell(1, 428, 0, 0) },
+        .{ 1, modCell(0, 339, 3, 0x40) },
+        .{ 2, modCell(1, 428, 0, 0) },
+        .{ 3, modCell(0, 0, 3, 8) },
+    }));
+    run.ticks(12);
+    try std.testing.expectEqual(@as(u16, 341), run.channel().period);
+    run.ticks(12);
+    try std.testing.expectEqual(@as(u16, 431), run.channel().period);
+
+    try run.start(&modFile(1, &.{
+        .{ 0, modCell(1, 428, 0, 0) },
+        .{ 1, modCell(0, 214, 3, 1) },
+        .{ 2, modCell(1, 428, 0, 0) },
+        .{ 3, modCell(0, 0, 3, 4) },
+    }));
+    run.ticks(24);
+    try std.testing.expectEqual(@as(u16, 431 - 20), run.channel().period);
+}
+
+test "the module's position jump goes to row 0 after a pattern break on an earlier channel" {
+    var run: ModRun = undefined;
+    // Channel 1 breaks to row 3 and channel 2 jumps: row 0.
+    var file = modFile(2, &.{.{ 0, modCell(1, 428, 0xd, 3) }});
+    @memcpy(file[mod_module.header_size + 4 ..][0..4], &modCell(0, 0, 0xb, 1));
+    try run.start(&file);
+    run.ticks(7);
+    try std.testing.expectEqual(@as(u8, 1), run.player.position);
+    try std.testing.expectEqual(@as(u8, 0), run.player.row);
+
+    // Channel 1 jumps and channel 2 breaks to row 3: row 3.
+    file = modFile(2, &.{.{ 0, modCell(1, 428, 0xb, 1) }});
+    @memcpy(file[mod_module.header_size + 4 ..][0..4], &modCell(0, 0, 0xd, 3));
+    try run.start(&file);
+    run.ticks(7);
+    try std.testing.expectEqual(@as(u8, 1), run.player.position);
+    try std.testing.expectEqual(@as(u8, 3), run.player.row);
+}
+
+test "the module's sample with a loop goes on, one without ends, and E0 sets the LED filter" {
+    var run: ModRun = undefined;
+    try run.start(&modFile(1, &.{.{ 0, modCell(1, 428, 0xe, 0x00) }}));
+    run.ticks(30);
+    try std.testing.expect(!run.channel().player.active);
+    try std.testing.expect(run.led);
+
+    try run.start(&modFile(1, &.{.{ 0, modCell(1, 428, 0xe, 0x01) }}));
+    run.led = true;
+    run.player.song.samples[0].loop_start = 8;
+    run.player.song.samples[0].loop_length = 16;
+    run.ticks(30);
+    try std.testing.expect(run.channel().player.active);
+    try std.testing.expect(run.channel().player.position >= 8 and run.channel().player.position < 24);
+    try std.testing.expect(!run.led);
+}

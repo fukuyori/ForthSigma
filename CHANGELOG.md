@@ -20,6 +20,8 @@
 
 ### Fixed
 
+- `FALSE PLAY-MOD` played a song that jumps back with `Bxx` for ever, so `MOD?` never became false; the song now ends where it would go round again. A pattern loop (`E6x`) still plays its rows again, and `TRUE PLAY-MOD` goes on as before.
+- In the MOD player: a note delayed by `EDx` now sounds at its own period on the tick it starts (it kept the old period, or no sound, for that tick); `9xx` past the end of a sample with a loop plays the loop instead of nothing; `E9x` on a row without a note retriggers on the row's first tick too; `300` no longer slides back to a note the tone portamento already reached, after another note; `Bxx` goes to row 0 also after a `Dxx` on an earlier channel of the row; and a tempo set by `Fxx` counts from the next tick. These were found by comparing the player with libopenmpt, tick by tick.
 - `examples/hopper.fs` ran at about half speed on macOS, since showing its window at four times the image's size through Tk took about 37 ms a frame and the game advances once a frame. Its window is now three times the image's size on every system.
 - On a terminal on Linux and macOS, a key held down and released went on counting as held by `KEY-HELD?` for 0.6 s; once the key is repeating it now counts as held for 0.12 s after its last repeat. A key pressed once still counts for 0.6 s.
 - On a terminal on Linux and macOS, `KEY-HELD?` went on counting a cursor key as held for 0.6 s after another cursor key was pressed, so a game could keep going the old way; a new cursor key now ends the one before it.
