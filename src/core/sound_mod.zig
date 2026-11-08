@@ -41,7 +41,10 @@ pub const Song = extern struct {
     /// The positions the song plays, 1 to 128 (0: no module).
     length: u8 = 0,
     pattern_count: u8 = 0,
-    pad: [2]u8 = .{ 0, 0 },
+    /// A module of Startrekker (`FLT4`), where a sample number without a note changes
+    /// nothing of what is sounding.
+    startrekker: bool = false,
+    pad: [1]u8 = .{0},
     /// Where the patterns start in the pool, in bytes.
     patterns_at: u32 = 0,
 };
@@ -58,7 +61,7 @@ pub fn parseHeader(header: *const [header_size]u8) Error!Song {
     for (tags) |known| {
         if (std.mem.eql(u8, tag, known)) break;
     } else return error.InvalidMod;
-    var song: Song = .{};
+    var song: Song = .{ .startrekker = std.mem.eql(u8, tag, "FLT4") };
     for (&song.samples, 0..) |*info, i| {
         const h = header[20 + i * 30 ..][0..30];
         info.length = bigEndian16(h[22..24]) * 2;
@@ -124,6 +127,8 @@ const Channel = struct {
     param: u8 = 0,
     /// A note EDx starts later in the row.
     delayed: u16 = 0,
+    /// The sample whose loop follows when the sound comes to its end (0: none).
+    swap: u8 = 0,
     /// The period and the volume the channel sounds with this tick.
     out_period: u16 = 0,
     out_volume: i32 = 0,
@@ -184,7 +189,7 @@ pub const Mod = struct {
         self.tick_left -= 1;
         var sides: [2]f32 = .{ 0, 0 };
         for (&self.channels, 0..) |*channel, c| {
-            const value = channel.player.next(pool) * @as(f32, @floatFromInt(channel.out_volume)) / 64.0;
+            const value = self.nextValue(channel, pool) * @as(f32, @floatFromInt(channel.out_volume)) / 64.0;
             // Channels 1 and 4 on the left, 2 and 3 on the right, as Paula's.
             sides[if (c == 0 or c == 3) 0 else 1] += value / 2;
         }
@@ -254,6 +259,7 @@ pub const Mod = struct {
             if (number != 0 and number <= sample_count) {
                 channel.sample = number;
                 channel.volume = self.song.samples[number - 1].volume;
+                if (period == 0 and !self.song.startrekker) self.takeLoop(channel, number);
             }
             if (channel.effect == 0x9 and channel.param != 0) channel.offset = channel.param;
             if (period != 0) {
@@ -335,6 +341,7 @@ pub const Mod = struct {
         channel.out_period = period;
         channel.vibrato_position = 0;
         channel.tremolo_position = 0;
+        channel.swap = 0;
         if (channel.sample == 0) return;
         const info = self.song.samples[channel.sample - 1];
         const loops = info.loop_length > 0;
@@ -357,6 +364,49 @@ pub const Mod = struct {
                 channel.player.active = false;
             }
         }
+    }
+
+    /// A sample number without a note starts nothing, but Paula takes the new sample's
+    /// loop when what it plays comes to its end. After a sample that has ended, that is
+    /// at once; a channel that has played no note has its DMA off, and stays silent.
+    fn takeLoop(self: *Mod, channel: *Channel, number: u8) void {
+        if (channel.player.active) {
+            channel.swap = number;
+        } else if (channel.note_period != 0) {
+            self.startLoop(channel, number, 0);
+        }
+    }
+
+    /// The channel goes on with the sample's loop, `past` frames into it. A sample without
+    /// a loop has only its first two bytes to repeat, which is silence.
+    fn startLoop(self: *Mod, channel: *Channel, number: u8, past: f64) void {
+        channel.swap = 0;
+        const info = self.song.samples[number - 1];
+        if (info.loop_length == 0) {
+            channel.player.active = false;
+            return;
+        }
+        const end = info.loop_start + info.loop_length;
+        channel.player.start(.{ .start = info.start, .length = end, .rate = 0, .loop_start = info.loop_start, .loop_end = end }, channel.player.step);
+        channel.player.position = @as(f64, @floatFromInt(info.loop_start)) + @mod(past, @as(f64, @floatFromInt(info.loop_length)));
+    }
+
+    /// The channel's next value: the sample a sample number chose takes over at the moment
+    /// the sound comes to its end or goes round its loop.
+    fn nextValue(self: *Mod, channel: *Channel, pool: []const i16) f32 {
+        const player = &channel.player;
+        if (channel.swap == 0 or !player.active) return player.next(pool);
+        const end: f64 = @floatFromInt(player.sample.length);
+        if (!player.sample.loops() and player.position >= end) {
+            self.startLoop(channel, channel.swap, player.position - end);
+            return player.next(pool);
+        }
+        const before = player.position;
+        const value = player.next(pool);
+        if (player.active and player.position < before) {
+            self.startLoop(channel, channel.swap, player.position - @as(f64, @floatFromInt(player.sample.loop_start)));
+        }
+        return value;
     }
 
     fn volumeSlide(channel: *Channel) void {

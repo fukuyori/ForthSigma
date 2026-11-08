@@ -115,17 +115,17 @@ Implementation choices and capacities are recorded in the [implementation notes]
 | CP/M file operations, BDOS, DMA | Machine-specific | Need the OS calls and buffers of the CP/M version. See the book. |
 | PC-8001 editing, display, and monitor functions | Machine-specific | Need the input and output and the monitor specific to the PC-8001. See the book. |
 | String replacement: SUBSTITUTE, REPLACES, UNESCAPE, and the remaining gforth string words such as `$SUBSTITUTE` `$UNESCAPE` `$VALUE` | Not implemented | Standard STRING-EXT and gforth words (survey of 2026-10-30). |
-| UTF-8 character words (XCHAR): XC@+, XC!+, XC!+?, XC,, XC-SIZE, X-SIZE, X-WIDTH, XC-WIDTH, XCHAR+, XEMIT, XKEY, XKEY?, XHOLD, +X/STRING, X\STRING-, -TRAILING-GARBAGE, EKEY>XCHAR | Not implemented | Standard XCHAR (survey of 2026-10-30). Used for processing Japanese text character by character. |
 | gforth exception syntax: TRY, ENDTRY, RESTORE, IFERROR | Not implemented | `CATCH` can do the same (survey of 2026-10-30). |
 | gforth tool words: LATEST, LATESTXT, ID., .NAME, >NAME, ALIAS, ]], [[, ~~, ASSERT( | Not implemented | Survey of 2026-10-30. |
-| Key words: EKEY>FKEY, EMIT?, key constants such as K-UP | Not implemented | Standard FACILITY-EXT (survey of 2026-10-30). |
+| Key words: EKEY>FKEY, EMIT?, K-SHIFT-MASK, K-CTRL-MASK, K-ALT-MASK | Not implemented | Standard FACILITY-EXT (survey of 2026-10-30). Key constants such as `K-UP` are in the `GRAPHICS` vocabulary of the graphics library (not in the dictionary at startup). |
+| Standard block words: BLK, BLOCK, BUFFER, EMPTY-BUFFERS, FLUSH, LIST, SAVE-BUFFERS, SCR, THRU, UPDATE | Not implemented | Standard BLOCK (checked on 2026-11-08). `LOAD` exists but reads a dictionary image; it is not the standard block word. |
 | (LOCAL) | Not implemented | Can be written with `{:`. |
 | CODE, ;CODE, ASSEMBLER, EDITOR (standard TOOLS-EXT) | Out of scope | Assembler and editor. Out of scope, like `CODE` of gforth. |
 | gforth's CODE, END-CODE, SAVESYSTEM, 'COLD, BOOTMESSAGE, FPATH, SCRIPT? | Out of scope | Depend on the startup processing and the assembler of gforth (decided on 2026-10-30, Level 30). SAVESYS can be used instead of SAVESYSTEM. |
 
 Executing or emulating Z80 instructions is outside the scope of the project.
 
-In the tables above, the entries from "Basic words" to "Individually designed" come from the survey of 2026-10-30 (with the review by Codex applied). For the words of CORE, CORE EXT, and DOUBLE of Forth 2012 and commonly used extension words, each word was looked up with `HELP`, and `find-name` confirmed that the words missing from Sigma exist in the original gforth (0.7.9). The list of words examined was not checked against the original text of the standard, so this table may not cover all the standard words. Whether a word in the table works with the same meaning as in gforth is checked when it is implemented.
+In the tables above, the entries from "Basic words" to "Individually designed" come from the survey of 2026-10-30 (with the review by Codex applied). For the words of CORE, CORE EXT, and DOUBLE of Forth 2012 and commonly used extension words, each word was looked up with `HELP`, and `find-name` confirmed that the words missing from Sigma exist in the original gforth (0.7.9). On 2026-11-08 the words were checked against the Forth 2012 word list of forth-standard.org (Annex H, 433 words). Of the words not in the dictionary, the syntax words (`S"`, `IS`, `{:`, `FORGET`, and so on) were run to see that they work, and the rest are only those listed as not implemented or out of scope in this table. Whether a word in the table works with the same meaning as in gforth is checked when it is implemented.
 
 ## Correspondence with the automated regression tests
 

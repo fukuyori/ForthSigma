@@ -808,6 +808,116 @@ fn expectOut(run: *ModRun, period: u16, volume: i32) !void {
     try std.testing.expectEqual(volume, run.channel().out_volume);
 }
 
+/// Sample 2 of a test module: the first sample's frames, with a loop over the last 32.
+fn addLoopedSample(run: *ModRun) void {
+    const first = run.player.song.samples[0];
+    run.player.song.samples[1] = .{ .start = first.start, .length = 64, .loop_start = 32, .loop_length = 32, .volume = 32 };
+}
+
+test "a sample number without a note starts the loop of a sample once the sound has ended" {
+    var run: ModRun = undefined;
+    try run.start(&modFile(1, &.{
+        .{ 0, modCell(1, 428, 0, 0) },
+        .{ 1, modCell(2, 0, 0, 0) },
+    }));
+    addLoopedSample(&run);
+    run.ticks(6);
+    try std.testing.expect(!run.channel().player.active); // sample 1 has ended
+    run.ticks(1);
+    try std.testing.expect(run.channel().player.active);
+    try std.testing.expectEqual(@as(u32, 32), run.channel().player.sample.loop_start);
+    try std.testing.expect(run.channel().player.position >= 32 and run.channel().player.position < 64);
+    try expectOut(&run, 431, 32); // the old note's period, the new sample's volume
+}
+
+test "a sample number without a note starts nothing without a loop, before a note, or during a sound" {
+    var run: ModRun = undefined;
+    // The new sample has no loop: silence goes on.
+    try run.start(&modFile(1, &.{
+        .{ 0, modCell(1, 428, 0, 0) },
+        .{ 1, modCell(1, 0, 0, 0) },
+    }));
+    run.ticks(7);
+    try std.testing.expect(!run.channel().player.active);
+    // No note has been played on the channel.
+    try run.start(&modFile(1, &.{.{ 0, modCell(2, 0, 0, 0) }}));
+    addLoopedSample(&run);
+    run.ticks(2);
+    try std.testing.expect(!run.channel().player.active);
+}
+
+test "a sample number without a note changes nothing of the sound in a module of Startrekker" {
+    var run: ModRun = undefined;
+    var file = modFile(1, &.{
+        .{ 0, modCell(1, 428, 0, 0) },
+        .{ 1, modCell(2, 0, 0, 0) },
+        .{ 8, modCell(2, 428, 0, 0) },
+        .{ 9, modCell(1, 0, 0, 0) },
+    });
+    @memcpy(file[1080..1084], "FLT4");
+    try run.start(&file);
+    addLoopedSample(&run);
+    try std.testing.expect(run.player.song.startrekker);
+    run.ticks(7);
+    try std.testing.expect(!run.channel().player.active); // the ended sound stays silent
+    run.ticks(6 * 7 + 6);
+    try std.testing.expectEqual(@as(u32, 64), run.channel().player.sample.loop_end);
+    try std.testing.expect(run.channel().player.active); // the loop goes on past the number
+    try std.testing.expectEqual(@as(u8, 0), run.channel().swap);
+}
+
+test "a sample number without a note takes over when the sound goes round its loop or ends" {
+    var run: ModRun = undefined;
+    // A loop goes round: the new sample's loop follows, and not before that.
+    try run.start(&modFile(1, &.{
+        .{ 0, modCell(2, 428, 0, 0) },
+        .{ 1, modCell(3, 0, 0, 0) },
+    }));
+    addLoopedSample(&run);
+    run.player.song.samples[2] = .{ .start = run.player.song.samples[0].start, .length = 16, .loop_start = 8, .loop_length = 8, .volume = 20 };
+    run.ticks(6);
+    run.frames(1);
+    try std.testing.expectEqual(@as(u32, 64), run.channel().player.sample.loop_end);
+    try std.testing.expectEqual(@as(i32, 20), run.channel().out_volume); // the volume at once
+    run.ticks(1);
+    try std.testing.expect(run.channel().player.active);
+    try std.testing.expectEqual(@as(u32, 16), run.channel().player.sample.loop_end);
+    try std.testing.expect(run.channel().player.position >= 8 and run.channel().player.position < 16);
+    try std.testing.expectEqual(@as(u8, 0), run.channel().swap);
+
+    // A new sample without a loop: silence after the loop goes round.
+    try run.start(&modFile(1, &.{
+        .{ 0, modCell(2, 428, 0, 0) },
+        .{ 1, modCell(1, 0, 0, 0) },
+    }));
+    addLoopedSample(&run);
+    run.ticks(7);
+    try std.testing.expect(!run.channel().player.active);
+
+    // A sample without a loop plays to its end before the new loop.
+    try run.start(&modFile(1, &.{
+        .{ 0, modCell(3, 856, 0, 0) },
+        .{ 1, modCell(2, 0, 0, 0) },
+    }));
+    addLoopedSample(&run);
+    run.player.song.samples[2] = .{ .start = run.player.song.samples[0].start, .length = 600, .volume = 64 };
+    run.ticks(7);
+    try std.testing.expectEqual(@as(u32, 600), run.channel().player.sample.length);
+    run.ticks(2);
+    try std.testing.expect(run.channel().player.active);
+    try std.testing.expectEqual(@as(u32, 32), run.channel().player.sample.loop_start);
+
+    // A note before the end takes the place of what was waiting.
+    try run.start(&modFile(1, &.{
+        .{ 0, modCell(2, 428, 0, 0) },
+        .{ 1, modCell(1, 0, 0, 0) },
+        .{ 1, modCell(1, 428, 0, 0) },
+    }));
+    addLoopedSample(&run);
+    run.ticks(7);
+    try std.testing.expectEqual(@as(u8, 0), run.channel().swap);
+}
+
 test "the module's arpeggio changes the note on each tick, and comes back" {
     var run: ModRun = undefined;
     try run.start(&modFile(1, &.{.{ 0, modCell(1, 428, 0, 0x47) }}));

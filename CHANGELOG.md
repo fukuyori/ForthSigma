@@ -20,6 +20,7 @@
 
 ### Fixed
 
+- In the MOD player, a row with a sample number and no note now takes the new sample's loop when the sound comes to its end or goes round its loop, at once if the sound has already ended, and silence if the new sample has no loop, as ProTracker's replayer does (checked against the source of pt2-clone). Before, the sound went on with the old sample, or stayed silent after it ended. A module tagged `FLT4` (Startrekker) keeps the old behavior.
 - `FALSE PLAY-MOD` played a song that jumps back with `Bxx` for ever, so `MOD?` never became false; the song now ends where it would go round again. A pattern loop (`E6x`) still plays its rows again, and `TRUE PLAY-MOD` goes on as before.
 - In the MOD player: a note delayed by `EDx` now sounds at its own period on the tick it starts (it kept the old period, or no sound, for that tick); `9xx` past the end of a sample with a loop plays the loop instead of nothing; `E9x` on a row without a note retriggers on the row's first tick too; `300` no longer slides back to a note the tone portamento already reached, after another note; `Bxx` goes to row 0 also after a `Dxx` on an earlier channel of the row; and a tempo set by `Fxx` counts from the next tick. These were found by comparing the player with libopenmpt, tick by tick.
 - `examples/hopper.fs` ran at about half speed on macOS, since showing its window at four times the image's size through Tk took about 37 ms a frame and the game advances once a frame. Its window is now three times the image's size on every system.

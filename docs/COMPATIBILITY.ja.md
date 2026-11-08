@@ -115,17 +115,17 @@
 | CP/Mのファイル操作、BDOS、DMA | 機種依存 | CP/M版のOS呼び出しとバッファを必要とします。誌面参照。 |
 | PC-8001の編集、表示、モニター機能 | 機種依存 | PC-8001固有の入出力とモニターを必要とします。誌面参照。 |
 | 文字列の置き換え: SUBSTITUTE, REPLACES, UNESCAPE と、Gforthの `$SUBSTITUTE` `$UNESCAPE` `$VALUE` などの残りの文字列語 | 未実装 | 標準のSTRING-EXTとGforthの語（2026-10-30の調査）。 |
-| UTF-8の文字単位の語（XCHAR）: XC@+, XC!+, XC!+?, XC,, XC-SIZE, X-SIZE, X-WIDTH, XC-WIDTH, XCHAR+, XEMIT, XKEY, XKEY?, XHOLD, +X/STRING, X\STRING-, -TRAILING-GARBAGE, EKEY>XCHAR | 未実装 | 標準のXCHAR（2026-10-30の調査）。日本語の文字単位の処理に使います。 |
 | Gforthの例外の書き方: TRY, ENDTRY, RESTORE, IFERROR | 未実装 | `CATCH` で同じことができます（2026-10-30の調査）。 |
 | Gforthの道具の語: LATEST, LATESTXT, ID., .NAME, >NAME, ALIAS, ]], [[, ~~, ASSERT( | 未実装 | 2026-10-30の調査。 |
-| キーの語: EKEY>FKEY, EMIT?, K-UP などのキーの定数 | 未実装 | 標準のFACILITY-EXT（2026-10-30の調査）。 |
+| キーの語: EKEY>FKEY, EMIT?, K-SHIFT-MASK, K-CTRL-MASK, K-ALT-MASK | 未実装 | 標準のFACILITY-EXT（2026-10-30の調査）。`K-UP` などのキーの定数は、グラフィックスのライブラリの `GRAPHICS` 語彙にあります（起動したときの辞書にはありません）。 |
+| 標準のブロックの語: BLK, BLOCK, BUFFER, EMPTY-BUFFERS, FLUSH, LIST, SAVE-BUFFERS, SCR, THRU, UPDATE | 未実装 | 標準のBLOCK（2026-11-08の照合）。`LOAD` はあるが、辞書イメージを読む語で、標準のブロックの語とは別物です。 |
 | (LOCAL) | 未実装 | `{:` で書けます。 |
 | CODE, ;CODE, ASSEMBLER, EDITOR（標準のTOOLS-EXT） | 対象外 | アセンブラとエディター。Gforthの `CODE` と同じく対象外です。 |
 | Gforthの CODE, END-CODE, SAVESYSTEM, 'COLD, BOOTMESSAGE, FPATH, SCRIPT? | 対象外 | Gforthの起動処理やアセンブラに依存します（2026-10-30決定、教材Level 30）。SAVESYSTEM の代わりに SAVESYS を使えます。 |
 
 Z80の命令実行・エミュレーションはプロジェクトの対象外です。
 
-上の表の「基本語」から「個別に設計」までは、2026-10-30の調査（Codexのレビューを反映）によるものです。Forth 2012のCORE、CORE EXT、DOUBLEの語と、よく使われる拡張の語について、`HELP` で1語ずつ調べ、Sigmaにない語がオリジナル版Gforth（0.7.9）にあることを `find-name` で確かめました。調べた語の一覧は標準の原典と照合していないため、この表が標準の語のすべてを網羅しているとは限りません。表の語がGforthと同じ意味で動くかは、実装するときに確かめます。
+上の表の「基本語」から「個別に設計」までは、2026-10-30の調査（Codexのレビューを反映）によるものです。Forth 2012のCORE、CORE EXT、DOUBLEの語と、よく使われる拡張の語について、`HELP` で1語ずつ調べ、Sigmaにない語がオリジナル版Gforth（0.7.9）にあることを `find-name` で確かめました。2026-11-08 に、forth-standard.org のForth 2012の語の一覧（Annex H、433語）と照合しました。辞書にない語のうち、構文語（`S"`、`IS`、`{:`、`FORGET` など）は実際に動かして確かめ、残りはこの表の「未実装」「対象外」の語だけでした。表の語がGforthと同じ意味で動くかは、実装するときに確かめます。
 
 ## 自動回帰テストとの対応
 
