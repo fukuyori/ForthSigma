@@ -100,7 +100,7 @@ The font is not part of the dictionary: `SAVE` and `SAVESYS` do not keep it, and
 
 ### Tcl/Tk
 
-The TCL words run Tcl scripts in a Tcl/Tk interpreter (`wish`) that Sigma starts as a program of its own, the first time it is needed, and talks to through pipes; no Tcl library is linked into Sigma. With it, a program can use Tk's widgets, and `DISPLAY-TK` shows the image in a Tk window, also on Linux and macOS, which have no window of Sigma's own. Tcl/Tk must be installed: Sigma uses the program named by `TCL-PROGRAM`, else by the environment variable `SIGMA_WISH`, else `wish` on the `PATH`, and on Windows, else the one Git for Windows comes with (`Git\mingw64\bin\wish.exe` under `%ProgramW6432%`, `%ProgramFiles%`, or `%LOCALAPPDATA%\Programs`; usually `C:\Program Files\Git\mingw64\bin\wish.exe`). On Linux it is in the `tk` package.
+The TCL words run Tcl scripts in a Tcl/Tk interpreter (`wish`) that Sigma starts as a program of its own, the first time it is needed, and talks to through pipes; no Tcl library is linked into Sigma. With it, a program can use Tk's widgets, and `DISPLAY-TK` shows the image in a Tk window, also on Linux and macOS, which have no window of Sigma's own. Tcl/Tk must be installed: Sigma uses the program named by `TCL-PROGRAM`, else by the environment variable `SIGMA_WISH`, else `wish` on the `PATH`, and on Windows, else the one Git for Windows comes with (`Git\mingw64\bin\wish.exe` under `%ProgramW6432%`, `%ProgramFiles%`, or `%LOCALAPPDATA%\Programs`; usually `C:\Program Files\Git\mingw64\bin\wish.exe`). On Linux it is in the `tk` package. On macOS, install it with `brew install tcl-tk`: the system's `/usr/bin/wish` (Tcl/Tk 8.5) no longer starts on recent macOS, so Sigma passes over it on the `PATH`, and when the `PATH` has no other `wish`, uses Homebrew's (`/opt/homebrew/bin/wish`, `/usr/local/bin/wish`) or MacPorts's (`/opt/local/bin/wish`), the first that is there.
 
 ```forth
 REQUIRE-GRAPHICS  ALSO GRAPHICS
@@ -118,7 +118,7 @@ WAIT-PRESS                                       \ pressed, after the button is 
 | `TCL-EVAL` | ( c-addr u -- c-addr2 u2 ) | Run a Tcl script and give its result, which stays until the next script. |
 | `TCL-ERROR$` | ( -- c-addr u ) | The message of the last script that failed. |
 | `TCL-EVENT` | ( -- c-addr u true \| false ) | The next text the Tcl side sent with `sigma_event` (for example from a button's `-command`), without waiting; the text stays until the next `TCL-EVENT`. |
-| `TCL-PROGRAM` | ( c-addr u -- ) | The program to start next time (a name on the `PATH` or a path); empty for `SIGMA_WISH`, `wish`, or Git for Windows's. |
+| `TCL-PROGRAM` | ( c-addr u -- ) | The program to start next time (a name on the `PATH` or a path); empty for `SIGMA_WISH`, `wish`, Git for Windows's, or on macOS Homebrew's or MacPorts's. |
 | `TCL-STOP` | ( -- ) | End the program; the next `TCL` starts it again. It also ends with Sigma. What the program has written and Sigma has not read is dropped. `HOST FUNCTION ERROR !` when the host could not see the program end. |
 | `DISPLAY-TK` | ( -- ) | Make `SHOW` show the image in the Tk window `.` (sent as a PNG, in the colors of `DISPLAY-COLORS`). Keys pressed and the mouse in it come to `INKEY` and `MOUSE`. Closing the window hides it until the next `SHOW`. With `WINDOW-SIZE`, the image is shown as large as fits by a whole factor (Tk zooms only so), or smaller by a whole factor when it does not fit, also when the window is resized. |
 | `GFX-TCL`, `GFX-TCL-ERROR`, `GFX-TCL-EVENT`, `GFX-TCL-PROGRAM`, `GFX-TCL-STOP`, `GFX-SHOW-TK` | | The words underneath; `GFX-TCL` ( c-addr u -- c-addr2 u2 flag ) gives the result, or the message with a true flag, instead of throwing. |
@@ -298,7 +298,7 @@ The module plays on Paula's periods, panned and filtered as the Amiga's (`AMIGA-
 | Windows | waveOut, 48 kHz 16-bit stereo; a note starts about 80 ms after the audio thread takes it. |
 | Linux (the release builds, static) | The first of the commands `pacat`, `pw-play`, and `aplay` that starts, through a pipe (about 40 ms). |
 | Linux (a build that can load libraries) | PulseAudio, then ALSA, then the commands above. |
-| macOS | None yet: the music plays without sound. |
+| macOS | An AudioQueue of AudioToolbox on the default output device, 48 kHz 16-bit stereo (about 80 ms); the framework is loaded when the program runs. |
 
 `BEEP`, the chip words, `CHIPS`, `FREE-SAMPLES`, and Ctrl+C while `PLAY` waits stop the music, the sound effects, and the module. The sound (instruments, samples, queues) is not part of the dictionary: `SAVE` and `SAVESYS` keep the audio words and the words that use them, but a program sets its instruments and loads its samples after it starts. A dictionary that has loaded the audio words is saved as `SIGIMG35`.
 

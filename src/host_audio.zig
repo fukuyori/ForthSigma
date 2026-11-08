@@ -3,9 +3,10 @@
 //! device. On Windows the device is waveOut's. On Linux it is PulseAudio's or ALSA's,
 //! their libraries loaded when the program runs (in a build that can load them), or else
 //! the first of the commands pacat, pw-play, and aplay, which the samples go to through
-//! a pipe (the static musl builds). On macOS, and when no device opens, the thread makes
-//! the samples in time without sending them, so that PLAY, PLAY? and the program behave
-//! the same without sound.
+//! a pipe (the static musl builds). On macOS it is an AudioQueue of AudioToolbox, the
+//! framework loaded when the program runs (so that a build made on another system needs
+//! no macOS SDK). When no device opens, the thread makes the samples in time without
+//! sending them, so that PLAY, PLAY? and the program behave the same without sound.
 //!
 //! The thread is started by the first audio word and runs until the program ends. It
 //! takes the engine's queues without locks, as the engine expects of its consumer.
@@ -24,6 +25,7 @@ const sound_psg = @import("core/sound_psg.zig");
 const Engine = sound_engine.Engine;
 const is_windows = builtin.os.tag == .windows;
 const is_linux = builtin.os.tag == .linux;
+const is_macos = builtin.os.tag == .macos;
 
 pub const sample_rate: u32 = 48_000;
 /// Each of the device's buffers holds 10 ms; eight of them are queued, so a note starts
@@ -50,6 +52,7 @@ pub fn start(_: ?*anyopaque) ?*Engine {
     // The device is opened here, so that AUDIO? knows at once whether there is one.
     if (is_windows and windows.open()) device_open.store(true, .release);
     if (is_linux and linux.open()) device_open.store(true, .release);
+    if (is_macos and macos.open()) device_open.store(true, .release);
     if (!startThread()) {
         state = .failed;
         return null;
@@ -94,6 +97,10 @@ fn run() void {
     }
     if (is_linux and device_open.load(.acquire)) {
         linux.play();
+        device_open.store(false, .release);
+    }
+    if (is_macos and device_open.load(.acquire)) {
+        macos.play();
         device_open.store(false, .release);
     }
     playSilently();
@@ -460,5 +467,107 @@ const linux = struct {
                 .none => return,
             }
         }
+    }
+};
+
+// ---- macOS: AudioToolbox's AudioQueue ----
+
+const macos = struct {
+    const AudioQueue = *anyopaque;
+    const StreamDescription = extern struct {
+        sample_rate: f64,
+        format_id: u32,
+        format_flags: u32,
+        bytes_per_packet: u32,
+        frames_per_packet: u32,
+        bytes_per_frame: u32,
+        channels_per_frame: u32,
+        bits_per_channel: u32,
+        reserved: u32 = 0,
+    };
+    const Buffer = extern struct {
+        capacity: u32,
+        data: [*]u8,
+        size: u32,
+        user: ?*anyopaque,
+        packet_description_capacity: u32,
+        packet_descriptions: ?*anyopaque,
+        packet_description_count: u32,
+    };
+    const Callback = *const fn (?*anyopaque, AudioQueue, *Buffer) callconv(.c) void;
+    const NewOutput = *const fn (*const StreamDescription, Callback, ?*anyopaque, ?*anyopaque, ?*anyopaque, u32, *?AudioQueue) callconv(.c) i32;
+    const AllocateBuffer = *const fn (AudioQueue, u32, *?*Buffer) callconv(.c) i32;
+    const EnqueueBuffer = *const fn (AudioQueue, *Buffer, u32, ?*const anyopaque) callconv(.c) i32;
+    const Start = *const fn (AudioQueue, ?*const anyopaque) callconv(.c) i32;
+    const Stop = *const fn (AudioQueue, u8) callconv(.c) i32;
+
+    const framework = "/System/Library/Frameworks/AudioToolbox.framework/AudioToolbox";
+    const linear_pcm: u32 = 0x6c70_636d; // 'lpcm'
+    const signed_integer: u32 = 1 << 2;
+    const packed_samples: u32 = 1 << 3;
+    const buffer_bytes = buffer_frames * 4;
+
+    var queue: ?AudioQueue = null;
+    var buffers: [buffer_count]*Buffer = undefined;
+    var enqueue: EnqueueBuffer = undefined;
+    var start_queue: Start = undefined;
+    var stop_queue: Stop = undefined;
+    /// Set by the queue's thread when a buffer could not be queued again.
+    var failed = std.atomic.Value(bool).init(false);
+
+    /// Makes the queue on the default output device and its buffers; false when the
+    /// framework or the device is not there. The queue calls `refill` from a thread of
+    /// its own (no run loop is given).
+    fn open() bool {
+        var lib = std.DynLib.open(framework) catch return false;
+        const new_output = lib.lookup(NewOutput, "AudioQueueNewOutput") orelse return false;
+        const allocate = lib.lookup(AllocateBuffer, "AudioQueueAllocateBuffer") orelse return false;
+        enqueue = lib.lookup(EnqueueBuffer, "AudioQueueEnqueueBuffer") orelse return false;
+        start_queue = lib.lookup(Start, "AudioQueueStart") orelse return false;
+        stop_queue = lib.lookup(Stop, "AudioQueueStop") orelse return false;
+        const format: StreamDescription = .{
+            .sample_rate = sample_rate,
+            .format_id = linear_pcm,
+            .format_flags = signed_integer | packed_samples,
+            .bytes_per_packet = 4,
+            .frames_per_packet = 1,
+            .bytes_per_frame = 4,
+            .channels_per_frame = 2,
+            .bits_per_channel = 16,
+        };
+        if (new_output(&format, refill, null, null, null, 0, &queue) != 0) return false;
+        for (&buffers) |*buffer| {
+            var made: ?*Buffer = null;
+            if (allocate(queue.?, buffer_bytes, &made) != 0) return false;
+            buffer.* = made.?;
+        }
+        return true;
+    }
+
+    /// The queue is done with a buffer: it is filled with the next samples and queued
+    /// again. The engine has one consumer at a time: the queue calls this from one
+    /// thread, and the audio thread renders nothing while the queue plays.
+    fn refill(_: ?*anyopaque, audio_queue: AudioQueue, buffer: *Buffer) callconv(.c) void {
+        if (failed.load(.acquire)) return;
+        fill(buffer);
+        if (enqueue(audio_queue, buffer, 0, null) != 0) failed.store(true, .release);
+    }
+
+    fn fill(buffer: *Buffer) void {
+        const samples: [*]i16 = @ptrCast(@alignCast(buffer.data));
+        engine.render(samples[0 .. buffer_frames * 2]);
+        buffer.size = buffer_bytes;
+    }
+
+    /// Queues the buffers, starts the queue, and waits until it fails; then stops it, so
+    /// that the queue no longer renders when the audio thread goes on without sound.
+    fn play() void {
+        for (buffers) |buffer| {
+            fill(buffer);
+            if (enqueue(queue.?, buffer, 0, null) != 0) return;
+        }
+        if (start_queue(queue.?, null) != 0) return;
+        while (!failed.load(.acquire)) sleepMilliseconds(100);
+        _ = stop_queue(queue.?, 1);
     }
 };

@@ -271,6 +271,18 @@ G3の後にCodexのレビューで、(1) ウィンドウのスレッドが生き
 - 対象は、1バイトの文字（ASCII）と256〜277のキー。覚えるのは16個までで、あふれたら最も前に押したものを忘れる。端末のやり直し（行の入力の後）では、端末のキーを忘れる（その間に離しても知らせが届かないため）。時計が戻ったときも忘れる。
 - `KEY-HELD?` はホストの入力を読み、その間のキーは `INKEY` のために残す。
 
+#### macOS の音の出力（2026-11-08）
+
+利用者の指示で、macOS で音を出す。AudioToolbox の AudioQueue（`AudioQueueNewOutput`）で、既定の出力装置に 48 kHz 16ビット ステレオを送る。リリースの macOS 版は Linux でクロスビルドし、macOS の SDK がないので、フレームワークはリンクせず、実行時に `dlopen`（`std.DynLib`）で読み込む。読み込めない・作れないときは、これまでどおり音を出さずに進める。
+
+- バッファは Windows と同じ 10 ms を 8 個（約80 ms 先まで）。AudioQueue には実行ループを渡さず、AudioQueue の自分のスレッドが、使い終わったバッファを埋めて戻す（`refill`）。そのスレッドが音のエンジンのただ一人の読み手で、音のスレッドはその間、待つだけで描かない。
+- 戻せなかったときは、音のスレッドが AudioQueue をすぐに止め（`AudioQueueStop` の即時）、その後は音なしで進める。
+- Hardened Runtime の署名でも、出力に権限（entitlement）は要らない。
+
+#### macOS のシステムの wish を飛ばす（2026-11-08）
+
+利用者の決定で、macOSでは、`TCL-PROGRAM` も `SIGMA_WISH` もないとき、ホストが `PATH` を自分でたどり（`access` の `X_OK`）、システムの `/usr/bin/wish` は飛ばして、最初に見つかった `wish` を使う。`PATH` にほかがなければ `/opt/homebrew/bin/wish`（Apple silicon の Homebrew）、`/usr/local/bin/wish`（Intel の Homebrew）、`/opt/local/bin/wish`（MacPorts）の順に、あるものを使い、どれもなければこれまでどおり `wish` を起動する（システムのものが起動して失敗する）。`PATH` の空の項目（現在のディレクトリ）は見ない。`SIGMA_WISH` が指すものは、そのまま使う。きっかけは、macOS 27.2 で `examples/calculator.fs` が `HOST FUNCTION ERROR !` になったこと。macOS に付いている Tk 8.5 の `Wish.app` は、端末から直接起動しても `SIGKILL (Code Signature Invalid)`、`Launch Constraint Violation` で止められる。Homebrew の `tcl-tk`（9.x）は keg-only でなくなり `wish` を `PATH` に置くが、`PATH` で `/usr/bin` が先にある場合や、Finder から起動した場合のために、決まった場所も探す。
+
 #### Git for Windows の wish を探す（2026-11-06）
 
 利用者の決定で、Windowsでは、`TCL-PROGRAM` も `SIGMA_WISH` もなく、`PATH` にも `wish.exe` がない（`SearchPathW`）とき、Git for Windows に付いている `wish` を探す。場所は `%ProgramW6432%`・`%ProgramFiles%` の下の `Git\mingw64\bin\wish.exe` と、利用者ごとに入れた場合の `%LOCALAPPDATA%\Programs\Git\mingw64\bin\wish.exe` で、この順に、ファイルがあるものを使う。`C:` のような決まったドライブは書かず、環境変数から作る。`SIGMA_WISH` が指すものがなくても、ほかは探さない（指定を黙って変えない）。Linux・macOSは変えない。きっかけは、`SIGMA_WISH` を設定していない環境で `examples/calculator.fs` が `HOST FUNCTION ERROR !` になったこと。
@@ -575,7 +587,7 @@ MSX BASIC の動作は、MSX Red Book（UK 版の MSX1 の ROM の解説）に�
 | コマンドの起動 | `posix_spawnp` で起動し、標準入力をパイプに、標準出力と標準エラーを `/dev/null` にする。端末の Ctrl+C で終わらないよう、別のプロセスグループにする。起動して 100 ms 後に終わっていれば（サーバーがないなど）、次のコマンドを試す。パイプの書き込み側は `FD_CLOEXEC` にして、`SYSTEM` や Tcl のプログラムに渡らないようにし、大きさを 8 KiB（約40 ms）にする。プログラムが終わるとパイプが閉じ、コマンドも終わる。 |
 | 書き込み | 音のスレッドが 10 ms ずつ作って書く。速さはコマンドやライブラリが受け取る速さで決まる。音のスレッドでは `SIGPIPE` を止め、コマンドが終わったら書き込みの失敗として扱い、音を出さない進行に切り替える。ALSA は書けなかったとき `snd_pcm_recover` で戻す。 |
 | スレッドの起動 | Windows 以外では、音のスレッドを `pthread_create` に属性なしで渡して起動する。Zig 0.17 の `std.Thread.spawn` は、`x86_64-linux-gnu` の版で glibc 2.39 に属性を拒まれ（`EINVAL`）、始められなかったため。 |
-| macOS | 出力層はなく、音を出さずに進める（`AUDIO?` は偽）。 |
+| macOS | 出力層はなく、音を出さずに進める（`AUDIO?` は偽）。2026-11-08 に AudioQueue の出力層を加えた（「macOS の音の出力」）。 |
 | 確かめた範囲（S5） | WSL（Ubuntu、glibc 2.39）で、動的リンクの版が WSLg の PulseAudio に送ること、静的リンクの版がコマンドのないとき音を出さずに進むこと（1942 ms）、代わりの `pacat`（受け取ったデータをファイルに書くだけのもの）に正しい引数でデータを送ることを確かめた。本物の `pacat` `pw-play` `aplay` と ALSA は、WSL にないので確かめていない。ALSA は、使えないときに自分のエラーを標準エラーに書く。 |
 
 #### S6: MOD の再生（2026-11-07）

@@ -48,7 +48,7 @@ Tcl/Tk is not part of Sigma, so the Tk window needs it installed. On Debian and 
 
     sudo apt install tk
 
-macOS comes with Tcl/Tk. Where it does not, `brew install tcl-tk` installs one, and because Homebrew keeps its `wish` off the `PATH`, set `SIGMA_WISH` to that path (or give it to `TCL-PROGRAM`). On Windows nothing has to be installed when Git for Windows is there, since Sigma falls back to its `wish`. With Tcl/Tk in place, a program that calls `SHOW` opens a window on a Linux or macOS desktop, for example `sigma "include examples/hopper.fs"`.
+On macOS, install Tcl/Tk with `brew install tcl-tk`: the Tcl/Tk 8.5 that macOS comes with (`/usr/bin/wish`) no longer starts on recent macOS, which kills it as it starts, so Sigma passes over it and uses another `wish` on the `PATH`, else Homebrew's (`/opt/homebrew/bin/wish` or `/usr/local/bin/wish`) or MacPorts's (`/opt/local/bin/wish`). `SIGMA_WISH` (or `TCL-PROGRAM`) names another one. On Windows nothing has to be installed when Git for Windows is there, since Sigma falls back to its `wish`. With Tcl/Tk in place, a program that calls `SHOW` opens a window on a Linux or macOS desktop, for example `sigma "include examples/hopper.fs"`.
 
 ```forth
 REQUIRE-GRAPHICS  ALSO GRAPHICS
@@ -85,6 +85,11 @@ When a tag with the same version as `VERSION`, such as `v0.7.0`, is pushed, GitH
 
     .\scripts\build-zip.ps1 -Sign
 
+On macOS, the following script builds an installer package (`dist/pkg/sigma-<version>-macos-universal.pkg`), signs it, has Apple notarize it, and staples the ticket to it. The package puts a universal executable (arm64 and x86_64, for macOS 11 or later) in `/usr/local/bin/sigma` and the documents in `/usr/local/share/doc/sigma`. The executable is signed with the hardened runtime using the "Developer ID Application" certificate in the keychain, and the package using the "Developer ID Installer" certificate; `--identity` and `--installer-identity` choose other ones. The notary credentials are the keychain profile `notarytool`, `sigma`, or `notary`, whichever exists, or the one `--profile` names, or `--apple-id`, `--team-id`, and `--password`. `--variant nofloat` or `--variant both` also makes the build without floating-point words, `--arch arm64` or `--arch x86_64` makes a package for one architecture, and `--skip-notarize` only signs. `--help` lists all the options.
+
+    xcrun notarytool store-credentials notarytool --apple-id <id> --team-id <team> --password <app-pw>   # once
+    ./scripts/sign-and-notarize-macos.sh
+
 When started with no arguments, the program shows two lines with the version and the license (`FORTH/Sigma 0.7.0  MIT License` and `` Type `help' for basic help ``) and then the interactive prompt. `HELP` shows basic usage, `HELP` followed by a word name, such as `HELP DUP`, shows the description of that word, and `LICENSE` shows the full text of the license.
 
 Example:
@@ -96,7 +101,7 @@ Forth source files can be read from standard input. Example:
 
     sigma.exe < examples/demo.fs
 
-`examples/calculator.fs` is a calculator whose window and buttons are Tk's and whose arithmetic is Forth's. It needs Tcl/Tk: Sigma uses `SIGMA_WISH`, else `wish` on the `PATH`, and on Windows, else the `wish` of Git for Windows.
+`examples/calculator.fs` is a calculator whose window and buttons are Tk's and whose arithmetic is Forth's. It needs Tcl/Tk: Sigma uses `SIGMA_WISH`, else `wish` on the `PATH`; on Windows, else the `wish` of Git for Windows; and on macOS it passes over the system's `/usr/bin/wish` and, without another `wish` on the `PATH`, uses Homebrew's or MacPorts's.
 
     sigma.exe < examples/calculator.fs
 

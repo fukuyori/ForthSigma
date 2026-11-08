@@ -2,7 +2,8 @@
 \ SCC together, and a sound effect made with SAMPLE.
 \
 \   sigma.exe "include examples/music.fs"      (Windows)
-\   sigma "include examples/music.fs"          (Linux: pacat, pw-play, or aplay plays it)
+\   sigma "include examples/music.fs"          (Linux: pacat, pw-play, or aplay plays it;
+\                                               macOS: AudioToolbox)
 
 REQUIRE-AUDIO
 ALSO AUDIO

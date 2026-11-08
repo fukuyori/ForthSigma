@@ -1029,6 +1029,7 @@ test "SAVE and LOAD through the host keep the words, also when loaded twice" {
     try std.testing.expectEqualSlices(forth.Cell, &.{ 36, 11, 1 }, target.data_stack[0..target.data_depth]);
 }
 test {
-    // The tests of the host's terminal input.
+    // The tests of the host's terminal input and of the Tcl program it starts.
     _ = host_input;
+    _ = host_process;
 }

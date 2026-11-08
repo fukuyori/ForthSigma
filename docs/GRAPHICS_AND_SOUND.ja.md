@@ -100,7 +100,7 @@ SHOW
 
 ### Tcl/Tk
 
-TCL の語は、Sigmaが別のプログラムとして起動するTcl/Tkのインタープリター（`wish`）でTclのスクリプトを実行します。最初に必要になったときに起動し、パイプでやり取りします。SigmaにTclのライブラリはリンクしません。これで、Tkの部品（ウィジェット）を使えるほか、`DISPLAY-TK` で画像をTkのウィンドウに表示できます。Sigma自身のウィンドウがないLinuxやmacOSでも使えます。Tcl/Tkが入っている必要があり、`TCL-PROGRAM` で指定したプログラム、なければ環境変数 `SIGMA_WISH`、なければ `PATH` の `wish`、Windowsではそれもなければ Git for Windows に付いているもの（`%ProgramW6432%`、`%ProgramFiles%`、`%LOCALAPPDATA%\Programs` の下の `Git\mingw64\bin\wish.exe`。ふつうは `C:\Program Files\Git\mingw64\bin\wish.exe`）を使います。Linuxでは `tk` のパッケージにあります。
+TCL の語は、Sigmaが別のプログラムとして起動するTcl/Tkのインタープリター（`wish`）でTclのスクリプトを実行します。最初に必要になったときに起動し、パイプでやり取りします。SigmaにTclのライブラリはリンクしません。これで、Tkの部品（ウィジェット）を使えるほか、`DISPLAY-TK` で画像をTkのウィンドウに表示できます。Sigma自身のウィンドウがないLinuxやmacOSでも使えます。Tcl/Tkが入っている必要があり、`TCL-PROGRAM` で指定したプログラム、なければ環境変数 `SIGMA_WISH`、なければ `PATH` の `wish`、Windowsではそれもなければ Git for Windows に付いているもの（`%ProgramW6432%`、`%ProgramFiles%`、`%LOCALAPPDATA%\Programs` の下の `Git\mingw64\bin\wish.exe`。ふつうは `C:\Program Files\Git\mingw64\bin\wish.exe`）を使います。Linuxでは `tk` のパッケージにあります。macOSでは `brew install tcl-tk` で入れます。システムの `/usr/bin/wish`（Tcl/Tk 8.5）は最近のmacOSでは起動しないので、Sigmaは `PATH` のそれを飛ばし、`PATH` にほかの `wish` がなければ、Homebrewのもの（`/opt/homebrew/bin/wish`、`/usr/local/bin/wish`）かMacPortsのもの（`/opt/local/bin/wish`）のうち、最初にあるものを使います。
 
 ```forth
 REQUIRE-GRAPHICS  ALSO GRAPHICS
@@ -118,7 +118,7 @@ WAIT-PRESS                                       \ ボタンを押すと pressed
 | `TCL-EVAL` | ( c-addr u -- c-addr2 u2 ) | Tclのスクリプトを実行して結果を返す。結果は次のスクリプトまで有効。 |
 | `TCL-ERROR$` | ( -- c-addr u ) | 最後に失敗したスクリプトのメッセージ。 |
 | `TCL-EVENT` | ( -- c-addr u true \| false ) | Tcl側が `sigma_event` で送った次の文字列（ボタンの `-command` からなど）を、待たずに返す。文字列は次の `TCL-EVENT` まで有効。 |
-| `TCL-PROGRAM` | ( c-addr u -- ) | 次に起動するプログラム（`PATH` の名前かパス）。空なら `SIGMA_WISH`、`wish`、Git for Windows のもの。 |
+| `TCL-PROGRAM` | ( c-addr u -- ) | 次に起動するプログラム（`PATH` の名前かパス）。空なら `SIGMA_WISH`、`wish`、Git for Windows のもの、macOSではHomebrewかMacPortsのもの。 |
 | `TCL-STOP` | ( -- ) | プログラムを終える。次の `TCL` で起動し直す。Sigmaの終了時にも終える。プログラムが書いてSigmaがまだ読んでいないものは捨てる。ホストがプログラムの終わりを確かめられなかったときは `HOST FUNCTION ERROR !`。 |
 | `DISPLAY-TK` | ( -- ) | `SHOW` で、画像をTkのウィンドウ `.` に表示する（PNGで送り、`DISPLAY-COLORS` の色数に従う）。そこで押したキーとマウスは `INKEY` と `MOUSE` に届く。ウィンドウを閉じると、次の `SHOW` まで隠れる。`WINDOW-SIZE` があれば、画像は入る最大の整数倍で表示し（Tkは整数倍でしか拡大しないため）、入らなければ整数分の1に縮めます。ウィンドウの大きさを変えたときも同じです。 |
 | `GFX-TCL`、`GFX-TCL-ERROR`、`GFX-TCL-EVENT`、`GFX-TCL-PROGRAM`、`GFX-TCL-STOP`、`GFX-SHOW-TK` | | 下の層の語。`GFX-TCL` ( c-addr u -- c-addr2 u2 flag ) は THROW せず、結果か、真のフラグとメッセージを返す。 |
@@ -298,7 +298,7 @@ TUNE
 | Windows | waveOut、48 kHz 16ビット ステレオ。音符は、音のスレッドが受け取ってから約80 ms で鳴り始める。 |
 | Linux（配布版、静的リンク） | `pacat`、`pw-play`、`aplay` のうち最初に起動できたコマンドに、パイプで送る（約40 ms）。 |
 | Linux（ライブラリを読み込める版） | PulseAudio、次に ALSA、次に上のコマンド。 |
-| macOS | まだない。音を出さずに演奏を進める。 |
+| macOS | AudioToolbox の AudioQueue で、既定の出力装置に送る。48 kHz 16ビット ステレオ（約80 ms）。フレームワークは実行時に読み込む。 |
 
 `BEEP`、機種を選ぶ語、`CHIPS`、`FREE-SAMPLES`、`PLAY` が待っている間の Ctrl+C は、音楽、効果音、モジュールを止めます。音の状態（音色、標本、待ち行列）は辞書に含まれません。`SAVE` と `SAVESYS` は音の語とそれを使う語を保存しますが、音色の設定や標本の読み込みは、プログラムが起動してから行ってください。音の語を読み込んだ辞書は `SIGIMG35` で保存します。
 

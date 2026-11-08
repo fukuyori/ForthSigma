@@ -468,7 +468,8 @@ VARIABLE (TEXT-SCALE)  1 (TEXT-SCALE) !
 
 \ The TCL words talk to a Tcl/Tk interpreter (wish) that runs as a program of its own,
 \ started the first time it is needed: the program TCL-PROGRAM named, else SIGMA_WISH,
-\ else wish on the PATH, else (Windows) Git for Windows's wish. The words underneath:
+\ else wish on the PATH (macOS: not /usr/bin/wish), else Git for Windows's wish
+\ (Windows) or Homebrew's or MacPorts's (macOS). The words underneath:
 \   GFX-TCL ( c-addr u -- c-addr2 u2 flag )  runs a script: its result, or with a true
 \     flag its error message (GFX-TCL-ERROR ( -- c-addr u ) gives the message again)
 \   GFX-TCL-EVENT ( -- c-addr u true | false )  GFX-TCL-PROGRAM ( c-addr u -- )

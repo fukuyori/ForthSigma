@@ -2,8 +2,9 @@
 //! written to a file in the temporary directory, and pipes to its standard input and
 //! output. Windows uses CreateProcessW and anonymous pipes; Linux and macOS fork and
 //! exec, finding the program on the PATH. The program is SIGMA_WISH when that is set,
-//! else wish (on Windows, Git for Windows's when the PATH has none), unless
-//! TCL-PROGRAM named one.
+//! else wish (on Windows, Git for Windows's when the PATH has none; on macOS, not the
+//! system's /usr/bin/wish, which macOS no longer lets start, but Homebrew's or
+//! MacPorts's), unless TCL-PROGRAM named one.
 
 const std = @import("std");
 const builtin = @import("builtin");
@@ -279,6 +280,7 @@ const posix = struct {
     extern "c" fn getpid() c_int;
     extern "c" fn signal(c_int, usize) usize;
     extern "c" fn getenv([*:0]const u8) ?[*:0]const u8;
+    extern "c" fn access([*:0]const u8, c_int) c_int;
 
     const sigpipe = 13;
     const sigkill = 9;
@@ -286,6 +288,7 @@ const posix = struct {
     const ignore: usize = 1; // SIG_IGN
     const no_hang = 1; // WNOHANG
     const duplicate_from = 0; // F_DUPFD
+    const executable = 1; // X_OK
 
     var child: c_int = 0;
     var to_program: c_int = -1;
@@ -333,6 +336,48 @@ const posix = struct {
         script_name[0] = 0;
     }
 
+    /// The wish that the system's Tk 8.5 is; macOS 27 kills it as it starts (a launch
+    /// constraint), and it is the one the PATH usually finds first.
+    const system_wish = "/usr/bin/wish";
+    /// Where Homebrew (Apple silicon, then Intel) and MacPorts put wish, for when the
+    /// PATH does not lead there, such as in a program started from the Finder.
+    const mac_places = [_][]const u8{ "/opt/homebrew/bin/wish", "/usr/local/bin/wish", "/opt/local/bin/wish" };
+
+    fn isExecutable(name: [*:0]const u8) bool {
+        return access(name, executable) == 0;
+    }
+
+    /// The parts one after the other in `buffer`, ended by a zero; null when too long.
+    fn join(buffer: *[512:0]u8, parts: []const []const u8) ?[:0]const u8 {
+        var length: usize = 0;
+        for (parts) |part| {
+            if (part.len > buffer.len - length) return null;
+            @memcpy(buffer[length..][0..part.len], part);
+            length += part.len;
+        }
+        buffer[length] = 0;
+        return buffer[0..length :0];
+    }
+
+    /// The wish to start on macOS: the first on the PATH other than the system's, else
+    /// the first in mac_places, else wish (the system's, which then fails to start).
+    /// The full name goes into `buffer`.
+    fn macWish(path: []const u8, buffer: *[512:0]u8, exists: *const fn ([*:0]const u8) bool) [*:0]const u8 {
+        var directories = std.mem.splitScalar(u8, path, ':');
+        while (directories.next()) |directory| {
+            // An empty entry is the current directory, which is not looked in for wish.
+            if (directory.len == 0) continue;
+            const name = join(buffer, &.{ std.mem.trimEnd(u8, directory, "/"), "/wish" }) orelse continue;
+            if (std.mem.eql(u8, name, system_wish)) continue;
+            if (exists(name.ptr)) return name.ptr;
+        }
+        for (mac_places) |place| {
+            const name = join(buffer, &.{place}).?;
+            if (exists(name.ptr)) return name.ptr;
+        }
+        return "wish";
+    }
+
     /// A descriptor numbered 3 or more for the same file, so that putting the pipes at
     /// 0 and 1 cannot close one of them (when Sigma started with 0 or 1 closed, a pipe
     /// may have one of those numbers).
@@ -350,7 +395,10 @@ const posix = struct {
             @memcpy(name_buffer[0..program.len], program);
             name_buffer[program.len] = 0;
             break :blk &name_buffer;
-        } else getenv("SIGMA_WISH") orelse "wish";
+        } else getenv("SIGMA_WISH") orelse if (builtin.os.tag == .macos)
+            macWish(if (getenv("PATH")) |path| std.mem.span(path) else "", &name_buffer, isExecutable)
+        else
+            "wish";
         var input: [2]c_int = undefined;
         var output: [2]c_int = undefined;
         if (pipe(&input) != 0) return error.HostFailed;
@@ -453,3 +501,24 @@ const posix = struct {
         return true;
     }
 };
+
+test "macOS: wish is the first on the PATH but the system's, else Homebrew's or MacPorts's" {
+    const fake = struct {
+        var present: []const []const u8 = &.{};
+        fn exists(name: [*:0]const u8) bool {
+            for (present) |file| if (std.mem.eql(u8, file, std.mem.span(name))) return true;
+            return false;
+        }
+    };
+    var buffer: [512:0]u8 = undefined;
+    // The system's wish is passed over for one later on the PATH.
+    fake.present = &.{ "/usr/bin/wish", "/opt/homebrew/bin/wish", "/Users/a/bin/wish" };
+    try std.testing.expectEqualStrings("/Users/a/bin/wish", std.mem.span(posix.macWish("/usr/bin::/Users/a/bin/:/opt/homebrew/bin", &buffer, fake.exists)));
+    // Not on the PATH: Homebrew's, then MacPorts's.
+    try std.testing.expectEqualStrings("/opt/homebrew/bin/wish", std.mem.span(posix.macWish("/usr/bin:/bin", &buffer, fake.exists)));
+    fake.present = &.{ "/usr/bin/wish", "/opt/local/bin/wish" };
+    try std.testing.expectEqualStrings("/opt/local/bin/wish", std.mem.span(posix.macWish("", &buffer, fake.exists)));
+    // None: plain wish, which the PATH then finds.
+    fake.present = &.{"/usr/bin/wish"};
+    try std.testing.expectEqualStrings("wish", std.mem.span(posix.macWish("/usr/bin", &buffer, fake.exists)));
+}

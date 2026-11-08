@@ -27,9 +27,11 @@ VARIABLE SCRIPT#
    SCRIPT{ S" calc_button " +S +S }TCL ;
 
 : WINDOW ( -- )
-   S" catch {destroy .calc}; toplevel .calc; wm title .calc {FORTH/Sigma Calculator}" TCL
+   \ The window stays hidden until it has all its widgets: on macOS, a window shown
+   \ while it grows can be left partly undrawn.
+   S" catch {destroy .calc}; toplevel .calc; wm withdraw .calc; wm title .calc {FORTH/Sigma Calculator}" TCL
    S" wm resizable .calc 0 0; wm protocol .calc WM_DELETE_WINDOW {sigma_event quit}" TCL
-   S" label .calc.d -text 0 -anchor e -width 16 -font {Courier 20 bold} -relief sunken -bg white" TCL
+   S" label .calc.d -text 0 -anchor e -width 16 -font {Courier 20 bold} -relief sunken -bg white -fg black" TCL
    S" grid .calc.d -row 0 -column 0 -columnspan 4 -sticky ew -padx 4 -pady 4" TCL
    S" proc calc_button {name text key row column span} { button .calc.$name -text $text -font {Helvetica 14} -width 3 -command [list sigma_event k$key]; grid .calc.$name -row $row -column $column -columnspan $span -sticky nsew -padx 2 -pady 2 }" TCL
    S" clear C C 1 0 1" BUTTON  S" sign ± N 1 1 1" BUTTON
@@ -41,7 +43,8 @@ VARIABLE SCRIPT#
    \ The keyboard: %A is the character typed; Enter, Esc, and BackSpace send the keys
    \ of their buttons.
    S" bind .calc <KeyPress> {sigma_event k%A}; bind .calc <Return> {sigma_event k=}; bind .calc <KP_Enter> {sigma_event k=}" TCL
-   S" bind .calc <Escape> {sigma_event kC}; bind .calc <BackSpace> {sigma_event kB}; focus -force .calc" TCL ;
+   S" bind .calc <Escape> {sigma_event kC}; bind .calc <BackSpace> {sigma_event kB}" TCL
+   S" update idletasks; wm deiconify .calc; focus -force .calc" TCL ;
 
 : SHOW-NUMBER ( n -- )   SCRIPT{ S" .calc.d configure -text " +S +N }TCL ;
 : SHOW-ERROR ( -- )   S" .calc.d configure -text Error" TCL ;

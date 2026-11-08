@@ -152,7 +152,7 @@ pub const Writer = struct {
     /// Frees a buffer font_buffer_fn gave.
     font_free_fn: ?*const fn (?*anyopaque, []u64) void = null,
     /// Starts the Tcl program (TCL): `program` (when empty, the host's choice: the
-    /// SIGMA_WISH environment variable, else wish on the PATH) with `script` as its
+    /// SIGMA_WISH environment variable, else a wish the host finds) with `script` as its
     /// script, with pipes to its standard input and output. One program at a time.
     process_start_fn: ?*const fn (?*anyopaque, []const u8, []const u8) RuntimeError!void = null,
     /// Writes to the program's standard input.

@@ -48,7 +48,7 @@ Tcl/TkはSigmaに含まれないので、Tkのウィンドウを使うには入�
 
     sudo apt install tk
 
-macOSにはTcl/Tkが付いています。付いていない場合は `brew install tcl-tk` で入れ、Homebrewは `wish` を `PATH` に置かないので、環境変数 `SIGMA_WISH` にそのパスを設定します（`TCL-PROGRAM` で渡してもかまいません）。Windowsでは、Git for Windows があれば Sigma がその `wish` を使うので、何も入れる必要はありません。Tcl/Tkがあれば、LinuxやmacOSのデスクトップでは `SHOW` を使うプログラムがウィンドウを開きます。たとえば `sigma "include examples/hopper.fs"` です。
+macOSでは `brew install tcl-tk` でTcl/Tkを入れます。macOSに付いているTcl/Tk 8.5（`/usr/bin/wish`）は、最近のmacOSでは起動したとたんに止められて動かないので、Sigmaはそれを飛ばし、`PATH` のほかの `wish`、なければHomebrewのもの（`/opt/homebrew/bin/wish` か `/usr/local/bin/wish`）かMacPortsのもの（`/opt/local/bin/wish`）を使います。別のものは環境変数 `SIGMA_WISH`（または `TCL-PROGRAM`）で指定します。Windowsでは、Git for Windows があれば Sigma がその `wish` を使うので、何も入れる必要はありません。Tcl/Tkがあれば、LinuxやmacOSのデスクトップでは `SHOW` を使うプログラムがウィンドウを開きます。たとえば `sigma "include examples/hopper.fs"` です。
 
 ```forth
 REQUIRE-GRAPHICS  ALSO GRAPHICS
@@ -85,6 +85,11 @@ Linux/macOSでは、生成されたzig-out/bin/sigmaを実行してください�
 
     .\scripts\build-zip.ps1 -Sign
 
+macOSでは、次のスクリプトでインストーラーパッケージ（`dist/pkg/sigma-版番号-macos-universal.pkg`）を作り、署名し、Appleの公証を受けてチケットを添付（staple）します。パッケージは、ユニバーサルの実行ファイル（arm64とx86_64、macOS 11以降）を `/usr/local/bin/sigma` に、文書を `/usr/local/share/doc/sigma` に入れます。実行ファイルはキーチェーンの「Developer ID Application」の証明書でHardened Runtimeを付けて署名し、パッケージは「Developer ID Installer」の証明書で署名します。別の証明書は `--identity` と `--installer-identity` で指定します。公証の資格情報は、キーチェーンのプロファイル `notarytool`、`sigma`、`notary` のうちあるもの、`--profile` で指定したもの、または `--apple-id`、`--team-id`、`--password` です。`--variant nofloat` または `--variant both` で浮動小数点の語を除いた版も作り、`--arch arm64` または `--arch x86_64` で片方のアーキテクチャだけにし、`--skip-notarize` で署名だけにします。オプションの一覧は `--help` で表示します。
+
+    xcrun notarytool store-credentials notarytool --apple-id <id> --team-id <team> --password <app-pw>   # 最初の1回だけ
+    ./scripts/sign-and-notarize-macos.sh
+
 引数なしで起動すると、版番号とライセンスの2行（`FORTH/Sigma 0.7.0  MIT License`、`` Type `help' for basic help ``）を表示して対話プロンプトになります。`HELP` で基本的な使い方、`HELP DUP` のように語名を付けるとその語の説明、`LICENSE` でライセンスの全文を表示します。
 
 例:
@@ -96,7 +101,7 @@ Forthソースファイルは標準入力から読み込めます。例:
 
     sigma.exe < examples/demo.fs
 
-`examples/calculator.fs` は、窓とボタンはTkで、計算はForthで行う電卓です。Tcl/Tkが必要で、Sigmaは `SIGMA_WISH`、なければ `PATH` の `wish`、Windowsではそれもなければ Git for Windows の `wish` を使います。
+`examples/calculator.fs` は、窓とボタンはTkで、計算はForthで行う電卓です。Tcl/Tkが必要で、Sigmaは `SIGMA_WISH`、なければ `PATH` の `wish` を使います。Windowsではそれもなければ Git for Windows の `wish`、macOSではシステムの `/usr/bin/wish` は飛ばし、それもなければHomebrewかMacPortsのものを使います。
 
     sigma.exe < examples/calculator.fs
 
