@@ -8,6 +8,8 @@
 - Added `examples/shmup-c64.fs` and `examples/shmup-amiga.fs`, Sigma Storm in the style of the Commodore 64 (320 by 200, its 16 colors, pictures drawn dot by dot, raster bars, music on the SID) and of the Amiga (640 by 512, colors of 4 bits a channel, pictures drawn with shaded polygons, a copper gradient, copper bars and a scroller, sampled music on Paula). The rules are those of `examples/shmup.fs`.
 - Added `examples/klondike.fs`, the Klondike patience game played with the mouse: dragging cards and runs, draw 1 or 3, undo, hints, moving cards to the foundations automatically, and cards painted by the program itself.
 - Added `examples/waterworks.fs`, a game of laying pipe ahead of the water on a blueprint: 8 stages with rocks, tanks, pumps, tunnels, and drains, played with the mouse or the keys.
+- Added `examples/sweeper.fs` (Sonar Sweep), a game of finding mines on the sea bed from numbers: three sea areas, a safe first square, buoys, opening around a number, and best times, played with the mouse or the keys.
+- Added `examples/pinball.fs` (Wyrm's Delve), a pinball table of a dungeon: monsters as bumpers with hit points and rolled damage, a d20 shrine, a RUNE bank and a chest, a spinner, an orbit with a one-way gate, a ramp, a kickback, a dragon that wakes when the monsters are slain, levels and floors, and a character sheet beside the table.
 
 ### Fixed
 
