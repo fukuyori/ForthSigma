@@ -32,22 +32,44 @@ pub const max_name = 255;
 /// Bytes for the names of all dictionary entries, which are kept in one area.
 pub const names_capacity = 256 * 1024;
 
-pub const memory_size = 2 << 20;
+// The layout of the logical memory, all of it computed here from two sizes:
+//   0 .. system_end         the system area (see the addresses below)
+//   system_end .. data_start  the input area (a fixed size)
+//   data_start .. m         the data area (HERE)
+//   m .. 2m                 the ALLOCATE heap
+//   2m .. 2m + l            the frames of local variables
+// The checks after the input area's addresses keep the areas apart.
 
-/// The data area ends where the ALLOCATE heap begins; the heap runs to the end of memory.
-pub const data_limit: Cell = 1 << 20;
+/// `m`: where the data area ends, and the size of the heap.
+pub const layout_m = 1 << 20;
+
+/// `l`: the size of the area for the frames of local variables.
+pub const layout_l = 0x10000;
+
+pub const system_end: Cell = 0x4000;
+
+pub const input_area_size = 0x10000;
+
+pub const memory_size = 2 * layout_m + layout_l;
+
+/// The data area ends where the ALLOCATE heap begins.
+pub const data_limit: Cell = layout_m;
 
 pub const heap_base: Cell = data_limit;
 
-/// The last 64 KiB hold the frames of local variables, so variable-flavoured locals
-/// (`W^`, `F^`, ...) have addresses in logical memory.
-pub const locals_base: Cell = memory_size - 0x10000;
+pub const heap_end: Cell = 2 * layout_m;
+
+/// The frames of local variables come last, so variable-flavoured locals (`W^`, `F^`,
+/// ...) have addresses in logical memory.
+pub const locals_base: Cell = heap_end;
 
 pub const locals_end: Cell = memory_size;
 
-/// Input buffers below the locals: the terminal input buffer first; the rest is kept
-/// for the line buffers of nested INCLUDE files.
-pub const input_area_base: Cell = locals_base - 0x10000;
+/// Input buffers after the system area: the terminal input buffer first; the rest is
+/// kept for the line buffers of nested INCLUDE files.
+pub const input_area_base: Cell = system_end;
+
+pub const input_area_end: Cell = input_area_base + input_area_size;
 
 pub const tib_address: Cell = input_area_base;
 
@@ -88,10 +110,15 @@ pub const argument_vector: Cell = argv_address + cell_size;
 
 pub const argument_strings: Cell = argument_vector + max_arguments * cell_size;
 
-pub const argument_strings_end: Cell = locals_base;
+pub const argument_strings_end: Cell = input_area_end;
 
 comptime {
     if (argc_address % cell_size != 0 or argument_strings_end - argument_strings < 8192) @compileError("the argument area does not fit");
+    if (environment_buffer_base + environment_buffer_size > system_end) @compileError("the system area does not fit");
+    if (data_start != input_area_end or data_start % cell_size != 0) @compileError("the data area must follow the input area, aligned to a cell");
+    if (data_limit <= data_start or data_limit % cell_size != 0) @compileError("the data area is empty or not aligned");
+    if (heap_base != data_limit or heap_end <= heap_base or heap_end % cell_size != 0) @compileError("the heap must follow the data area, aligned to a cell");
+    if (locals_base != heap_end or locals_end <= locals_base or locals_end != memory_size) @compileError("the local variables must end the memory");
 }
 
 /// Word lists: ids 1 (Forth) and 2 (Root) exist from the start; WORDLIST and
@@ -150,8 +177,6 @@ pub const terminal_source_name_address: Cell = 0x0d00;
 
 pub const evaluate_source_name_address: Cell = 0x0d20;
 
-pub const heap_end: Cell = input_area_base;
-
 /// Results of NAME>STRING, eight 256-byte buffers used in turn, and the WORD buffer.
 pub const name_buffer_base: Cell = 0x0400;
 
@@ -203,7 +228,7 @@ pub const max_counted_string = 127;
 
 pub const max_gforth_string = 255;
 
-pub const data_start: Cell = 0x4000;
+pub const data_start: Cell = input_area_end;
 
 pub const true_flag: Cell = -1;
 
@@ -220,16 +245,16 @@ pub const max_dot_s_items = 9;
 
 pub const fs_precision = 14;
 
-/// SIGIMG36 added the argument words (ARGC to NEXT-ARG) and the xchar words (XC-SIZE to
-/// X@+/STRING), which moved the numbers of the
-/// user's words, so SIGIMG35 and earlier images are not read.
-pub const image_magic = "SIGIMG36";
+/// SIGIMG39 moved the input area below the data area, which changed the addresses in the
+/// data area and the parts of memory an image keeps, so SIGIMG38 and earlier images are
+/// not read.
+pub const image_magic = "SIGIMG39";
 /// The same layout as `image_magic`, for an image that has had the graphics words; builds
-/// that only know SIGIMG36 reject it.
-pub const graphics_image_magic = "SIGIMG37";
+/// that only know SIGIMG39 reject it.
+pub const graphics_image_magic = "SIGIMG40";
 /// The same layout again, for an image that has had the audio words (with or without the
-/// graphics words); builds that only know SIGIMG36 and SIGIMG37 reject it.
-pub const audio_image_magic = "SIGIMG38";
+/// graphics words); builds that only know SIGIMG39 and SIGIMG40 reject it.
+pub const audio_image_magic = "SIGIMG41";
 
 /// File ids of the standard streams; the host numbers opened files from `first_file_id`.
 pub const stdin_fileid: Cell = 1;

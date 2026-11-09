@@ -166,9 +166,9 @@ test "forget removes later words and reclaims their data allocation" {
 
     try machine.interpretLine(": KEEP 11 ; 2 ARRAY RECLAIM FORGET RECLAIM HERE KEEP");
 
-    const expected = [_]forth.Cell{ 0x4000, 11 };
+    const expected = [_]forth.Cell{ forth.data_start, 11 };
     try expectStack(machine, &expected);
-    try std.testing.expectEqual(@as(forth.Cell, 0x4000), machine.data_here);
+    try std.testing.expectEqual(forth.data_start, machine.data_here);
 
     const missing = machine.interpretLine("RECLAIM");
     try std.testing.expectError(error.UnknownWord, missing);
@@ -213,7 +213,7 @@ test "data allocation stops at the start of the heap without moving the allocati
     const machine = try createMachine(&output);
     defer destroyMachine(machine);
 
-    try machine.interpretLine("1032192 ALLOT HERE");
+    try machine.interpretLine("966656 ALLOT HERE");
     const expected = [_]forth.Cell{forth.data_limit};
     try expectStack(machine, &expected);
     try std.testing.expectEqual(@as(forth.Cell, forth.data_limit), machine.data_here);
@@ -229,11 +229,11 @@ test "cell access is 64-bit little-endian and rejects addresses outside logical 
     const machine = try createMachine(&output);
     defer destroyMachine(machine);
 
-    try machine.interpretLine("-2 2097144 ! 2097144 @ 2097144 C@ 2097151 C@");
+    try machine.interpretLine("-2 2162680 ! 2162680 @ 2162680 C@ 2162687 C@");
     const expected = [_]forth.Cell{ -2, 0xfe, 0xff };
     try expectStack(machine, &expected);
 
-    try std.testing.expectError(error.InvalidAddress, machine.interpretLine("2097145 @"));
+    try std.testing.expectError(error.InvalidAddress, machine.interpretLine("2162681 @"));
     machine.report(error.InvalidAddress);
     try std.testing.expectError(error.InvalidAddress, machine.interpretLine("-1 C@"));
     machine.report(error.InvalidAddress);
@@ -708,7 +708,7 @@ test "quoted string length is limited to 127 bytes" {
     const too_long = machine.interpretLine(oversized[0..oversized_len]);
     try std.testing.expectError(error.MemoryExhausted, too_long);
     machine.report(error.MemoryExhausted);
-    try std.testing.expectEqual(@as(forth.Cell, 0x4000 + 128), machine.data_here);
+    try std.testing.expectEqual(forth.data_start + 128, machine.data_here);
 }
 
 test "redefinition warns and subsequent lookup uses the newest definition" {

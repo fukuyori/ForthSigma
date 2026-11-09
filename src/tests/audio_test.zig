@@ -99,19 +99,19 @@ test "REQUIRE-AUDIO appends AUDIO, the SND- words, and the library once, keeping
     try std.testing.expectError(error.InvalidDefinition, other.interpretLine("REQUIRE-AUDIO"));
 }
 
-test "a dictionary that has had the audio words is saved as SIGIMG38, which LOAD reads" {
+test "a dictionary that has had the audio words is saved as SIGIMG41, which LOAD reads" {
     try skipWithout(&.{ .audio, .image });
     var output = Output{};
     const machine = try createMachine(&output);
     defer destroyMachine(machine);
     const plain = try saveImage(machine);
     defer freeImage(plain);
-    try std.testing.expectEqualStrings("SIGIMG36", plain[0..8]);
+    try std.testing.expectEqualStrings("SIGIMG39", plain[0..8]);
 
     try machine.interpretLine("REQUIRE-AUDIO ALSO AUDIO DEFINITIONS : TUNE S\" CDE\" PLAY ; FORTH DEFINITIONS PREVIOUS");
     const image = try saveImage(machine);
     defer freeImage(image);
-    try std.testing.expectEqualStrings("SIGIMG38", image[0..8]);
+    try std.testing.expectEqualStrings("SIGIMG41", image[0..8]);
 
     const loaded = try createMachine(&output);
     defer destroyMachine(loaded);
@@ -130,7 +130,7 @@ test "a dictionary that has had the audio words is saved as SIGIMG38, which LOAD
     try std.testing.expectEqual(words_after, target.word_count);
     const appended = try saveImage(target);
     defer freeImage(appended);
-    try std.testing.expectEqualStrings("SIGIMG38", appended[0..8]);
+    try std.testing.expectEqualStrings("SIGIMG41", appended[0..8]);
 }
 
 test "PLAY puts the notes of voice A and an end mark in every voice, and PLAY? sees them" {

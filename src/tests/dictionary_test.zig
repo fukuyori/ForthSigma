@@ -144,7 +144,7 @@ test "execution-only calls normalize on save and relocate on LOAD without changi
     try source.interpretLine(": SQ DUP * ; : FOUR SQ SQ ; : DOWN DUP IF 1- RECURSE THEN ; : ALIASES MINUS INVERT ;");
     const image = try saveImage(source);
     defer freeImage(image);
-    try std.testing.expectEqualStrings("SIGIMG36", image[0..8]);
+    try std.testing.expectEqualStrings("SIGIMG39", image[0..8]);
     const Word = @TypeOf(source.words[0]);
     const Op = @TypeOf(source.code[0]);
     const code_at = 24 + @as(usize, source.word_count) * @sizeOf(Word);
@@ -200,7 +200,7 @@ test "primitive instructions match dictionary calls including errors and full st
                 generic.data_depth = depth;
                 @memset(&direct.data_stack, 3);
                 @memset(&generic.data_stack, 3);
-                const address = 0x4000;
+                const address = forth.data_start;
                 if (populated and depth > 0) {
                     direct.data_stack[depth - 1] = address;
                     generic.data_stack[depth - 1] = address;
@@ -306,7 +306,7 @@ test "an image keeps HERE's data, the used heap, and the source table, and nothi
 
     const source_table_bytes = 64 * 256 + 64;
     const expected = 24 + @as(usize, source.word_count) * @sizeOf(@TypeOf(source.words[0])) + @as(usize, source.code_count) * @sizeOf(@TypeOf(source.code[0])) +
-        source.names_used + @as(usize, @intCast(source.data_here)) + @as(usize, @intCast(source.heapTop() - forth.data_limit)) + source_table_bytes + 4;
+        source.names_used + @as(usize, @intCast(source.data_here - 0x10000)) + @as(usize, @intCast(source.heapTop() - forth.data_limit)) + source_table_bytes + 4;
     try std.testing.expectEqual(expected, length);
     try std.testing.expect(length < 200_000);
 
@@ -433,13 +433,13 @@ test "a damaged image, or one whose names are out of order or out of range, is r
         try std.testing.expectEqual(before_words, loaded.word_count);
         try std.testing.expectEqual(before_names, loaded.names_used);
     }
-    // SIGIMG35 and earlier are not read, since their user words have other numbers.
-    for ([_]*const [8]u8{ "SIGIMG31", "SIGIMG32", "SIGIMG33", "SIGIMG34", "SIGIMG35" }) |old| {
+    // SIGIMG38 and earlier are not read: their user words have other numbers, or their addresses are of another layout.
+    for ([_]*const [8]u8{ "SIGIMG31", "SIGIMG32", "SIGIMG33", "SIGIMG34", "SIGIMG35", "SIGIMG36", "SIGIMG37", "SIGIMG38" }) |old| {
         @memcpy(image[0..8], old);
         resealImage(image);
         try std.testing.expectError(error.InvalidImage, loaded.restoreImage(image));
     }
-    @memcpy(image[0..8], "SIGIMG36");
+    @memcpy(image[0..8], "SIGIMG39");
     resealImage(image);
     // One damaged byte anywhere, here in the saved memory or in the checksum itself,
     // fails the checksum, and the dictionary, code, and memory stay as they were.

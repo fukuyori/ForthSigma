@@ -64,12 +64,13 @@ pub fn imageCapacity() usize {
     return header_size + max_words * @sizeOf(Word) + max_code * @sizeOf(Op) + names_capacity + memory_size + checksum_size;
 }
 
-/// The parts of memory an image keeps: the system area and the data space up to HERE,
-/// the used part of the heap, and the source file table with its loaded flags. The rest
+/// The parts of memory an image keeps: the system area, the data space up to HERE, the
+/// used part of the heap, and the source file table with its loaded flags. The rest
 /// (input buffers, local frames, free space) starts as zeros when the image is restored.
-fn memoryRanges(data_here: Cell, heap_top: Cell) [3][2]usize {
+fn memoryRanges(data_here: Cell, heap_top: Cell) [4][2]usize {
     return .{
-        .{ 0, @intCast(data_here) },
+        .{ 0, @intCast(memory_map.system_end) },
+        .{ @intCast(data_start), @intCast(data_here) },
         .{ @intCast(heap_base), @intCast(heap_top) },
         .{ @intCast(source_file_table), @intCast(source_file_loaded_flags + max_source_files) },
     };
@@ -128,7 +129,7 @@ fn savedTag(comptime E: type, bytes: []const u8) @typeInfo(E).@"enum".tag_type {
     return @truncate(std.mem.readInt(Storage, bytes[0..@sizeOf(E)], native_endian));
 }
 
-fn rangesLength(ranges: [3][2]usize) usize {
+fn rangesLength(ranges: [4][2]usize) usize {
     var total: usize = 0;
     for (ranges) |range| total += range[1] - range[0];
     return total;
@@ -141,9 +142,9 @@ pub fn encodeImage(self: *State, output: []u8) RuntimeError!usize {
     const name_bytes = self.names[0..self.names_used];
     const required = header_size + word_bytes.len + code_bytes.len + name_bytes.len + rangesLength(ranges) + checksum_size;
     if (output.len < required) return error.InvalidImage;
-    // A dictionary that has had the audio words is saved as SIGIMG38, one that has had
-    // the graphics words (and not the audio words) as SIGIMG37, which older builds
-    // reject; one that never had them stays SIGIMG36.
+    // A dictionary that has had the audio words is saved as SIGIMG41, one that has had
+    // the graphics words (and not the audio words) as SIGIMG40, which older builds
+    // reject; one that never had them stays SIGIMG39.
     const magic = if (self.readCellConst(memory_map.audio_image_address) != 0)
         memory_map.audio_image_magic
     else if (self.readCellConst(graphics_image_address) != 0)
@@ -392,7 +393,7 @@ pub fn appendImage(self: *State, source: *const State) RuntimeError!void {
     self.data_here += data_len;
     self.last_created_word = null;
     // The loaded image's graphics words count as loaded here too, unless this dictionary
-    // has its own; either way, images saved from now on are SIGIMG37.
+    // has its own; either way, images saved from now on are SIGIMG40.
     if (source.readCellConst(graphics_image_address) != 0) try self.writeCell(graphics_image_address, 1);
     if (!graphics_loaded and words_graphics.graphicsLoaded(source)) {
         const vocabulary = source.readCellConst(graphics_vocabulary_address) - source.builtin_count;

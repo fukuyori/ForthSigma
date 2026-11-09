@@ -12,5 +12,6 @@
 - [実装ノート](IMPLEMENTATION.md): Zig移植版の構成、実装判断、未実装機能
 - [ワード互換性一覧](COMPATIBILITY.ja.md): 誌面掲載ワードと現在の実装状況
 - [決定事項・保留事項](DECISIONS.md): 原資料の仕様と移植判断の区分
+- [メモリとグラフィックスの計画](MEMORY_AND_GRAPHICS_PLAN.md): メモリの上限を起動時とビルド時に指定する計画と、MSX、NES、Amiga を手本にした GUI、スプライト、画像の語の計画
 - [開発の記録](DEVELOPMENT_SCHEDULE.md): 作業の経緯
 - [バージョン更新チェックリスト](version-update-checklist.md): 版番号を変えるときに直すものと、リリースの手順

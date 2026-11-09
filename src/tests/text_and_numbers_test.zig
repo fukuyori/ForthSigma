@@ -197,10 +197,10 @@ test "PLACE stores a counted string, handles overlap, and limits the length to 2
     var output = Output{};
     const machine = try createMachine(&output);
     defer destroyMachine(machine);
-    try machine.interpretLine("PAD 255 PAD 512 + PLACE PAD 512 + C@ PAD 256 PAD 1024 + PLACE PAD 1024 + C@ PAD 0 2097151 PLACE");
+    try machine.interpretLine("PAD 255 PAD 512 + PLACE PAD 512 + C@ PAD 256 PAD 1024 + PLACE PAD 1024 + C@ PAD 0 2162687 PLACE");
     const expected = [_]forth.Cell{ 255, 255 };
     try expectStack(machine, &expected);
-    try std.testing.expectError(error.InvalidAddress, machine.interpretLine("PAD 1 2097151 PLACE"));
+    try std.testing.expectError(error.InvalidAddress, machine.interpretLine("PAD 1 2162687 PLACE"));
 }
 
 test "COMPARE SEARCH /STRING and -TRAILING work as in gforth" {
@@ -233,19 +233,19 @@ test "a string longer than memory is an error, not cut short" {
     const machine = try createMachine(&output);
     defer destroyMachine(machine);
 
-    // The whole memory, 2097152 bytes from address 0, is still a valid string.
-    try machine.interpretLine("0 2097152 0 2097152 STR= 0 2097152 0 2097152 COMPARE");
+    // The whole memory, 2162688 bytes from address 0, is still a valid string.
+    try machine.interpretLine("0 2162688 0 2162688 STR= 0 2162688 0 2162688 COMPARE");
     try expectStack(machine, &.{ -1, 0 });
     const cases = [_][]const u8{
-        "0 2097153 0 2097152 STR=",
-        "0 2097153 0 2097152 COMPARE",
-        "0 2097153 0 0 SEARCH",
-        "0 2097153 -TRAILING",
-        "0 2097153 0 SCAN",
-        "0 2097153 0 SKIP",
-        "0 2097153 S\" a\" STRING-PREFIX?",
-        "0 2097153 BLANK",
-        "0 2097153 TYPE",
+        "0 2162689 0 2162688 STR=",
+        "0 2162689 0 2162688 COMPARE",
+        "0 2162689 0 0 SEARCH",
+        "0 2162689 -TRAILING",
+        "0 2162689 0 SCAN",
+        "0 2162689 0 SKIP",
+        "0 2162689 S\" a\" STRING-PREFIX?",
+        "0 2162689 BLANK",
+        "0 2162689 TYPE",
     };
     for (cases) |case| {
         machine.data_depth = 0;
