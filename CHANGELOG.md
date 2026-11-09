@@ -5,6 +5,11 @@
 ### Added
 
 - `STYLE ( chip -- )` makes an instrument sound like a chip (`MSX`, `ST`, `NES`, `C64`, `SCC`, `AMIGA`, or 0 for the voice's chip) on whichever voice plays it, so that one `PLAY` can use every chip with no chip chosen; `examples/music.fs` shows it.
+- Added `examples/shmup-c64.fs` and `examples/shmup-amiga.fs`, Sigma Storm in the style of the Commodore 64 (320 by 200, its 16 colors, pictures drawn dot by dot, raster bars, music on the SID) and of the Amiga (640 by 512, colors of 4 bits a channel, pictures drawn with shaded polygons, a copper gradient, copper bars and a scroller, sampled music on Paula). The rules are those of `examples/shmup.fs`.
+
+### Fixed
+
+- The games in `examples` (`shmup.fs`, `hopper.fs`, `runner.fs`, and `paddle.fs`) left their window open when they ended; they now end Sigma, which closes it. Run from the interactive prompt with `INCLUDE`, they end Sigma too.
 
 ### Changed
 

@@ -173,4 +173,4 @@ VARIABLE SEED
    1 TEXT-SCALE
    CR ." Best: " BEST @ .  ." Out: " OUTS @ . CR ;
 
-PADDLE-GAME
+PADDLE-GAME BYE
