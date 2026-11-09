@@ -72,7 +72,7 @@ test "file words report an error when the host has no file support" {
     var output = Output{};
     const machine = try std.testing.allocator.create(forth.State);
     defer destroyMachine(machine);
-    machine.init(.{ .context = @ptrCast(&output), .write_fn = Output.write });
+    machine.init(.{ .context = @ptrCast(&output), .write_fn = Output.write }, try support.testStorage());
 
     try std.testing.expectError(error.HostUnavailable, machine.interpretLine("S\" a.txt\" R/O OPEN-FILE"));
 }

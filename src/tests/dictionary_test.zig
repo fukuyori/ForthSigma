@@ -198,8 +198,8 @@ test "primitive instructions match dictionary calls including errors and full st
             for ([_]usize{ 0, 1, 2, 3, direct.data_stack.len }) |depth| for ([_]bool{ false, true }) |populated| {
                 direct.data_depth = depth;
                 generic.data_depth = depth;
-                @memset(&direct.data_stack, 3);
-                @memset(&generic.data_stack, 3);
+                @memset(direct.data_stack, 3);
+                @memset(generic.data_stack, 3);
                 const address = forth.data_start;
                 if (populated and depth > 0) {
                     direct.data_stack[depth - 1] = address;
@@ -209,12 +209,12 @@ test "primitive instructions match dictionary calls including errors and full st
                 try generic.writeCell(address, 123);
                 direct.float_depth = @min(depth, direct.float_stack.len);
                 generic.float_depth = direct.float_depth;
-                @memset(&direct.float_stack, 2);
-                @memset(&generic.float_stack, 2);
+                @memset(direct.float_stack, 2);
+                @memset(generic.float_stack, 2);
                 direct.return_depth = if (populated) direct.return_stack.len else 0;
                 generic.return_depth = direct.return_depth;
-                @memset(&direct.return_stack, 7);
-                @memset(&generic.return_stack, 7);
+                @memset(direct.return_stack, 7);
+                @memset(generic.return_stack, 7);
                 direct.loop_depth = if (populated) 2 else 0;
                 generic.loop_depth = direct.loop_depth;
                 direct.loop_stack[0] = .{ .index = 11, .limit = 20, .exit_pc = 0 };
@@ -228,11 +228,11 @@ test "primitive instructions match dictionary calls including errors and full st
                     try direct_result;
                 } else |err| try std.testing.expectError(err, direct_result);
                 try std.testing.expectEqual(generic.data_depth, direct.data_depth);
-                try std.testing.expectEqualSlices(forth.Cell, &generic.data_stack, &direct.data_stack);
+                try std.testing.expectEqualSlices(forth.Cell, generic.data_stack, direct.data_stack);
                 try std.testing.expectEqual(generic.float_depth, direct.float_depth);
-                try std.testing.expectEqualSlices(forth.Float, &generic.float_stack, &direct.float_stack);
+                try std.testing.expectEqualSlices(forth.Float, generic.float_stack, direct.float_stack);
                 try std.testing.expectEqual(generic.return_depth, direct.return_depth);
-                try std.testing.expectEqualSlices(forth.Cell, &generic.return_stack, &direct.return_stack);
+                try std.testing.expectEqualSlices(forth.Cell, generic.return_stack, direct.return_stack);
                 try std.testing.expectEqual(generic.loop_depth, direct.loop_depth);
                 try std.testing.expectEqualSlices(u8, generic.memory[address..][0..8], direct.memory[address..][0..8]);
             };
@@ -443,7 +443,7 @@ test "a damaged image, or one whose names are out of order or out of range, is r
     resealImage(image);
     // One damaged byte anywhere, here in the saved memory or in the checksum itself,
     // fails the checksum, and the dictionary, code, and memory stay as they were.
-    const memory_before = try std.testing.allocator.dupe(u8, &loaded.memory);
+    const memory_before = try std.testing.allocator.dupe(u8, loaded.memory);
     defer std.testing.allocator.free(memory_before);
     const code_before = loaded.code_count;
     const here_before = loaded.data_here;
@@ -455,7 +455,7 @@ test "a damaged image, or one whose names are out of order or out of range, is r
         try std.testing.expectEqual(before_names, loaded.names_used);
         try std.testing.expectEqual(code_before, loaded.code_count);
         try std.testing.expectEqual(here_before, loaded.data_here);
-        try std.testing.expectEqualSlices(u8, memory_before, &loaded.memory);
+        try std.testing.expectEqualSlices(u8, memory_before, loaded.memory);
     }
     try loaded.restoreImage(image);
     try loaded.interpretLine("FIRST-WORD SECOND-WORD");

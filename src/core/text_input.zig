@@ -20,7 +20,7 @@ pub fn remainingSource(self: *State) []const u8 {
 }
 
 pub fn sourceInMemory(self: *State) bool {
-    const start = @intFromPtr(&self.memory);
+    const start = @intFromPtr(self.memory.ptr);
     const address = @intFromPtr(self.source_line.ptr);
     return self.source_line.len != 0 and address >= start and address < start + memory_size;
 }

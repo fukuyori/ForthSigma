@@ -732,7 +732,9 @@ fn loadDictionary(context: ?*anyopaque, input_path: []const u8, machine: *forth.
     if (fread(bytes.ptr, 1, bytes.len, file) != bytes.len) return error.FileUnavailable;
     const loaded = host.allocator.create(forth.State) catch return error.MemoryExhausted;
     defer host.allocator.destroy(loaded);
-    loaded.init(machine.writer);
+    const loaded_storage = forth.Storage.allocate(std.heap.page_allocator, true) catch return error.MemoryExhausted;
+    defer loaded_storage.free(std.heap.page_allocator);
+    loaded.init(machine.writer, loaded_storage);
     try loaded.restoreImage(bytes);
     try machine.appendImage(loaded);
 }
@@ -1050,7 +1052,9 @@ fn run(init: std.process.Init.Minimal) !u8 {
     useBinaryStdin();
     utf8_console.begin();
     defer utf8_console.finish();
-    machine.init(.{ .gamepad_ops = if (graphics) &host_gamepad.ops else null, .context = @ptrCast(&host), .write_fn = terminalWrite, .read_fn = terminalRead, .load_fn = loadDictionary, .save_fn = saveDictionary, .savesys_fn = saveExecutableImage, .key_fn = terminalKey, .key_ready_fn = terminalKeyReady, .unread_fn = terminalUnread, .sleep_fn = sleepMilliseconds, .utime_fn = microsecondsSinceEpoch, .local_time_fn = localTime, .getenv_fn = environmentValue, .system_fn = runShellCommand, .file_ops = &file_ops, .framebuffer_fn = graphicsBuffer, .terminal_size_fn = terminalSize, .terminal_utf8_fn = terminalUtf8, .window_fn = if (host_window.available) host_window.show else null, .input_fn = inputEvent, .mouse_fn = mouseMode, .cursor_fn = cursorPosition, .font_buffer_fn = if (graphics) fontBuffer else null, .font_free_fn = if (graphics) fontFree else null, .system_font_fn = if (graphics and host_font.available) host_font.select else null, .system_glyph_fn = if (graphics and host_font.available) host_font.glyph else null, .process_start_fn = if (graphics) host_process.start else null, .process_write_fn = if (graphics) host_process.write else null, .process_read_fn = if (graphics) host_process.read else null, .process_stop_fn = if (graphics) host_process.stop else null, .audio_fn = if (audio) host_audio.start else null, .audio_device_fn = if (audio) host_audio.hasDevice else null, .audio_wait_fn = if (audio) audioWait else null });
+    const storage = try forth.Storage.allocate(std.heap.page_allocator, true);
+    defer storage.free(std.heap.page_allocator);
+    machine.init(.{ .gamepad_ops = if (graphics) &host_gamepad.ops else null, .context = @ptrCast(&host), .write_fn = terminalWrite, .read_fn = terminalRead, .load_fn = loadDictionary, .save_fn = saveDictionary, .savesys_fn = saveExecutableImage, .key_fn = terminalKey, .key_ready_fn = terminalKeyReady, .unread_fn = terminalUnread, .sleep_fn = sleepMilliseconds, .utime_fn = microsecondsSinceEpoch, .local_time_fn = localTime, .getenv_fn = environmentValue, .system_fn = runShellCommand, .file_ops = &file_ops, .framebuffer_fn = graphicsBuffer, .terminal_size_fn = terminalSize, .terminal_utf8_fn = terminalUtf8, .window_fn = if (host_window.available) host_window.show else null, .input_fn = inputEvent, .mouse_fn = mouseMode, .cursor_fn = cursorPosition, .font_buffer_fn = if (graphics) fontBuffer else null, .font_free_fn = if (graphics) fontFree else null, .system_font_fn = if (graphics and host_font.available) host_font.select else null, .system_glyph_fn = if (graphics and host_font.available) host_font.glyph else null, .process_start_fn = if (graphics) host_process.start else null, .process_write_fn = if (graphics) host_process.write else null, .process_read_fn = if (graphics) host_process.read else null, .process_stop_fn = if (graphics) host_process.stop else null, .audio_fn = if (audio) host_audio.start else null, .audio_device_fn = if (audio) host_audio.hasDevice else null, .audio_wait_fn = if (audio) audioWait else null }, storage);
     defer closeAllFiles();
     defer host_window.close();
     defer if (graphics) host_gamepad.close();
@@ -1163,7 +1167,9 @@ test "GETENV through the host accepts 3072 bytes and rejects 3073" {
     var host = HostContext{ .allocator = std.testing.allocator, .executable_path = "", .environ_map = &map };
     const machine = try std.testing.allocator.create(forth.State);
     defer std.testing.allocator.destroy(machine);
-    machine.init(.{ .context = @ptrCast(&host), .write_fn = discardOutput, .getenv_fn = environmentValue });
+    const storage = try forth.Storage.allocate(std.testing.allocator, false);
+    defer storage.free(std.testing.allocator);
+    machine.init(.{ .context = @ptrCast(&host), .write_fn = discardOutput, .getenv_fn = environmentValue }, storage);
 
     try machine.interpretLine("S\" SIGMA_FIT\" GETENV NIP S\" SIGMA_EMPTY\" GETENV NIP S\" SIGMA_UNSET\" GETENV S\" A=B\" GETENV");
     try std.testing.expectEqualSlices(forth.Cell, &.{ 3072, 0, 0, 0, 0, 0 }, machine.data_stack[0..machine.data_depth]);
@@ -1205,7 +1211,9 @@ test "INCLUDE through the host reads CR LF lines and limits a line to 4096 bytes
     var host = HostContext{ .allocator = allocator, .executable_path = "", .environ_map = undefined };
     const machine = try allocator.create(forth.State);
     defer allocator.destroy(machine);
-    machine.init(.{ .context = @ptrCast(&host), .write_fn = discardOutput, .file_ops = &file_ops });
+    const storage = try forth.Storage.allocate(allocator, false);
+    defer storage.free(allocator);
+    machine.init(.{ .context = @ptrCast(&host), .write_fn = discardOutput, .file_ops = &file_ops }, storage);
     defer closeAllFiles();
 
     try machine.interpretLine("INCLUDE .zig-cache/sigma-include-fit.fs SOURCELINE#");
@@ -1227,7 +1235,9 @@ test "SLURP-FILE through the host reads every byte as it is" {
     var host = HostContext{ .allocator = allocator, .executable_path = "", .environ_map = undefined };
     const machine = try allocator.create(forth.State);
     defer allocator.destroy(machine);
-    machine.init(.{ .context = @ptrCast(&host), .write_fn = discardOutput, .file_ops = &file_ops });
+    const storage = try forth.Storage.allocate(allocator, false);
+    defer storage.free(allocator);
+    machine.init(.{ .context = @ptrCast(&host), .write_fn = discardOutput, .file_ops = &file_ops }, storage);
     defer closeAllFiles();
 
     try machine.interpretLine("S\" .zig-cache/sigma-slurp.txt\" SLURP-FILE S\" .zig-cache/sigma-slurp-empty.txt\" SLURP-FILE NIP");
@@ -1246,7 +1256,9 @@ test "file words through the host: position, resize, flush, status, rename over 
     var host = HostContext{ .allocator = allocator, .executable_path = "", .environ_map = undefined };
     const machine = try allocator.create(forth.State);
     defer allocator.destroy(machine);
-    machine.init(.{ .context = @ptrCast(&host), .write_fn = discardOutput, .file_ops = &file_ops });
+    const storage = try forth.Storage.allocate(allocator, false);
+    defer storage.free(allocator);
+    machine.init(.{ .context = @ptrCast(&host), .write_fn = discardOutput, .file_ops = &file_ops }, storage);
     defer closeAllFiles();
 
     try machine.interpretLine("S\" .zig-cache/sigma-files-a.txt\" W/O BIN CREATE-FILE THROW VALUE F S\" hello world\" F WRITE-FILE F FILE-POSITION F FLUSH-FILE");
@@ -1274,7 +1286,9 @@ test "file names and commands other than ASCII: create, include, status, rename,
     var host = HostContext{ .allocator = allocator, .executable_path = "", .environ_map = undefined };
     const machine = try allocator.create(forth.State);
     defer allocator.destroy(machine);
-    machine.init(.{ .context = @ptrCast(&host), .write_fn = discardOutput, .file_ops = &file_ops, .system_fn = runShellCommand });
+    const storage = try forth.Storage.allocate(allocator, false);
+    defer storage.free(allocator);
+    machine.init(.{ .context = @ptrCast(&host), .write_fn = discardOutput, .file_ops = &file_ops, .system_fn = runShellCommand }, storage);
     defer closeAllFiles();
 
     try machine.interpretLine("S\" .zig-cache/sigma-日本語.fs\" W/O CREATE-FILE THROW VALUE F S\" 6 7 *\" F WRITE-FILE F CLOSE-FILE");
@@ -1304,13 +1318,17 @@ test "SAVE and LOAD through the host keep the words, also when loaded twice" {
     const writer: forth.Writer = .{ .context = @ptrCast(&host), .write_fn = discardOutput, .load_fn = loadDictionary, .save_fn = saveDictionary };
     const source = try allocator.create(forth.State);
     defer allocator.destroy(source);
-    source.init(writer);
+    const source_storage = try forth.Storage.allocate(allocator, false);
+    defer source_storage.free(allocator);
+    source.init(writer, source_storage);
     try source.interpretLine(": SQ DUP * ; :NONAME 7 ; DROP VARIABLE V 11 V ! SAVE .zig-cache/sigma-load-test.sigma");
 
     // LOAD builds a second State of several megabytes; it must not need a copy on the stack.
     const target = try allocator.create(forth.State);
     defer allocator.destroy(target);
-    target.init(writer);
+    const target_storage = try forth.Storage.allocate(allocator, false);
+    defer target_storage.free(allocator);
+    target.init(writer, target_storage);
     try target.interpretLine(": EARLIER 1 ; LOAD .zig-cache/sigma-load-test.sigma LOAD .zig-cache/sigma-load-test.sigma 6 SQ V @ EARLIER");
     try std.testing.expectEqualSlices(forth.Cell, &.{ 36, 11, 1 }, target.data_stack[0..target.data_depth]);
 }

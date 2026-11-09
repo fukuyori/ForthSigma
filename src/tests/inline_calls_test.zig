@@ -102,13 +102,13 @@ test "inlined calls preserve call-limit and stack-error ordering" {
                 for ([_]*forth.State{ optimized, control }) |machine| {
                     machine.call_depth = call_depth;
                     machine.data_depth = data_depth;
-                    @memset(&machine.data_stack, std.math.maxInt(forth.Cell));
+                    @memset(machine.data_stack, std.math.maxInt(forth.Cell));
                 }
                 const actual = optimized.executeWord(optimized.lookup(name).?);
                 const expected = control.executeWord(control.lookup(name).?);
                 try std.testing.expectEqual(expected, actual);
                 try std.testing.expectEqual(control.data_depth, optimized.data_depth);
-                try std.testing.expectEqualSlices(forth.Cell, &control.data_stack, &optimized.data_stack);
+                try std.testing.expectEqualSlices(forth.Cell, control.data_stack, optimized.data_stack);
                 try std.testing.expectEqual(control.call_depth, optimized.call_depth);
                 try std.testing.expectEqual(control.frame_depth, optimized.frame_depth);
                 try std.testing.expectEqual(control.locals_top, optimized.locals_top);

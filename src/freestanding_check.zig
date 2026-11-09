@@ -6,8 +6,8 @@
 
 const forth = @import("forth.zig");
 
-export fn sigma_init(state: *forth.State, writer: *const forth.Writer) void {
-    state.init(writer.*);
+export fn sigma_init(state: *forth.State, writer: *const forth.Writer, storage: *const forth.Storage) void {
+    state.init(writer.*, storage.*);
 }
 
 export fn sigma_interpret_line(state: *forth.State, line: [*]const u8, length: usize) bool {

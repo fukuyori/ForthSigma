@@ -87,7 +87,7 @@ test "host words report an error when the host does not provide them" {
     var output = Output{};
     const machine = try std.testing.allocator.create(forth.State);
     defer destroyMachine(machine);
-    machine.init(.{ .context = @ptrCast(&output), .write_fn = Output.write });
+    machine.init(.{ .context = @ptrCast(&output), .write_fn = Output.write }, try support.testStorage());
 
     try std.testing.expectError(error.HostUnavailable, machine.interpretLine("1 MS"));
     machine.report(error.HostUnavailable);

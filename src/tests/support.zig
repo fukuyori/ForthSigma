@@ -549,8 +549,13 @@ pub fn fakeReposition(context: ?*anyopaque, fileid: forth.Cell, position: forth.
 
 pub fn createMachine(output: *Output) !*forth.State {
     const machine = try std.testing.allocator.create(forth.State);
-    machine.init(output.writer());
+    machine.init(output.writer(), try testStorage());
     return machine;
+}
+
+/// The memory and the stacks of a machine that `destroyMachine` destroys.
+pub fn testStorage() !forth.Storage {
+    return forth.Storage.allocate(std.testing.allocator, false);
 }
 
 /// Feeds a definition of `count` literals over several lines, since one input line holds
@@ -569,6 +574,7 @@ pub fn interpretLiteralDefinition(machine: *forth.State, prefix: []const u8, cou
 }
 
 pub fn destroyMachine(machine: *forth.State) void {
+    machine.storage().free(std.testing.allocator);
     std.testing.allocator.destroy(machine);
 }
 

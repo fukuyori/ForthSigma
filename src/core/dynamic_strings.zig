@@ -79,7 +79,7 @@ pub fn insertString(self: *State, string_var: Cell, offset: usize, source: Cell,
 
 /// Appends output bytes to a string (used while $TMP captures output).
 pub fn appendString(self: *State, string_var: Cell, bytes: []const u8) RuntimeError!void {
-    const memory_start = @intFromPtr(&self.memory);
+    const memory_start = @intFromPtr(self.memory.ptr);
     const address = @intFromPtr(bytes.ptr);
     if (address >= memory_start and address < memory_start + memory_size) {
         const end = (try self.fetchString(string_var)).length;

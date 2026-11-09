@@ -137,9 +137,50 @@ const tib_address = memory_map.tib_address;
 pub const tib_size = memory_map.tib_size;
 const wordlist_count_address = memory_map.wordlist_count_address;
 
+/// The logical memory and the stacks of a State, which its host allocates. Each has the
+/// size of its limit, and starts as zeros.
+pub const Storage = struct {
+    memory: []u8,
+    data_stack: []Cell,
+    return_stack: []Cell,
+    float_stack: []Float,
+    loop_stack: []Loop,
+
+    /// With `already_zero`, the allocator gives zeros by itself (fresh pages of the
+    /// system), and they are not written, so pages never used take no physical memory.
+    /// Zig's allocators mark new memory as undefined in the builds with safety checks,
+    /// so those builds always write the zeros.
+    pub fn allocate(allocator: std.mem.Allocator, already_zero: bool) std.mem.Allocator.Error!Storage {
+        const memory = try allocator.alloc(u8, memory_size);
+        errdefer allocator.free(memory);
+        const data = try allocator.alloc(Cell, max_stack);
+        errdefer allocator.free(data);
+        const ret = try allocator.alloc(Cell, max_stack);
+        errdefer allocator.free(ret);
+        const float = try allocator.alloc(Float, max_float_stack);
+        errdefer allocator.free(float);
+        const loops = try allocator.alloc(Loop, max_stack);
+        if (!already_zero or std.debug.runtime_safety) {
+            @memset(memory, 0);
+            @memset(data, 0);
+            @memset(ret, 0);
+            @memset(float, 0);
+        }
+        return .{ .memory = memory, .data_stack = data, .return_stack = ret, .float_stack = float, .loop_stack = loops };
+    }
+
+    pub fn free(self: Storage, allocator: std.mem.Allocator) void {
+        allocator.free(self.loop_stack);
+        allocator.free(self.float_stack);
+        allocator.free(self.return_stack);
+        allocator.free(self.data_stack);
+        allocator.free(self.memory);
+    }
+};
+
 pub const State = struct {
     writer: Writer,
-    memory: [memory_size]u8 = @splat(0),
+    memory: []u8,
     words: [max_words]Word = undefined,
     word_count: u16 = 0,
     builtin_count: u16 = 0,
@@ -148,11 +189,11 @@ pub const State = struct {
     /// The names of the dictionary entries, one after another.
     names: [names_capacity]u8 = undefined,
     names_used: u32 = 0,
-    data_stack: [max_stack]Cell = @splat(0),
+    data_stack: []Cell,
     data_depth: usize = 0,
-    return_stack: [max_stack]Cell = @splat(0),
+    return_stack: []Cell,
     return_depth: usize = 0,
-    float_stack: [max_float_stack]Float = @splat(0),
+    float_stack: []Float,
     float_depth: usize = 0,
     control_stack: [max_controls]Control = undefined,
     control_depth: usize = 0,
@@ -167,7 +208,7 @@ pub const State = struct {
     token_start: usize = 0,
     uses: [max_uses]defs.WordUse = undefined,
     use_count: usize = 0,
-    loop_stack: [max_stack]Loop = undefined,
+    loop_stack: []Loop,
     loop_depth: usize = 0,
     data_here: Cell = data_start,
     compiling: bool = false,
@@ -260,8 +301,8 @@ pub const State = struct {
 
     /// Sets up a State where it lies. The State is a few megabytes, so it is built in
     /// place rather than returned by value, which could need copies on the stack.
-    pub fn init(self: *State, writer: Writer) void {
-        self.* = .{ .writer = writer };
+    pub fn init(self: *State, writer: Writer, given: Storage) void {
+        self.* = .{ .writer = writer, .memory = given.memory, .data_stack = given.data_stack, .return_stack = given.return_stack, .float_stack = given.float_stack, .loop_stack = given.loop_stack };
         self.writeCell(base_address, 10) catch unreachable;
         self.writeCell(precision_address, dot_precision) catch unreachable;
         self.writeCell(heap_top_address, heap_base) catch unreachable;
@@ -272,6 +313,11 @@ pub const State = struct {
         self.writeCell(current_wordlist_address, forth_wordlist) catch unreachable;
         self.setSearchOrder(&.{ forth_wordlist, forth_wordlist, root_wordlist });
         self.installBuiltins();
+    }
+
+    /// The memory and the stacks given to `init`, for the host to free.
+    pub fn storage(self: *const State) Storage {
+        return .{ .memory = self.memory, .data_stack = self.data_stack, .return_stack = self.return_stack, .float_stack = self.float_stack, .loop_stack = self.loop_stack };
     }
 
     /// Writes interpreter output, or appends it to the string being built by $TMP.
@@ -307,7 +353,7 @@ pub const State = struct {
 
     /// Where the current line or EVALUATE string lies in logical memory (0 if it does not).
     pub fn sourceLineAddress(self: *const State) Cell {
-        const start = @intFromPtr(&self.memory);
+        const start = @intFromPtr(self.memory.ptr);
         const address = @intFromPtr(self.source_line.ptr);
         if (self.source_line.len == 0 or address < start or address >= start + memory_size) return 0;
         return @intCast(address - start);

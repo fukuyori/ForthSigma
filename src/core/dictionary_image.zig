@@ -232,7 +232,7 @@ pub fn restoreImage(self: *State, image: []const u8) RuntimeError!void {
     cursor += code_bytes_len;
     @memcpy(self.names[own_names..][0..added_names], input[cursor + image_names .. cursor + names_used]);
     cursor += names_used;
-    @memset(&self.memory, 0);
+    @memset(self.memory, 0);
     for (ranges) |range| {
         const length = range[1] - range[0];
         @memcpy(self.memory[range[0]..range[1]], input[cursor .. cursor + length]);

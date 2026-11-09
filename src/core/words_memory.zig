@@ -131,7 +131,7 @@ pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
         // 32 to 126), laid out as gforth does; the addresses are those of logical memory.
         .dump => {
             const bytes = try self.memoryRange();
-            const start: usize = @intFromPtr(bytes.ptr) - @intFromPtr(&self.memory);
+            const start: usize = @intFromPtr(bytes.ptr) - @intFromPtr(self.memory.ptr);
             self.write("\n");
             var line: usize = 0;
             while (line < bytes.len) : (line += 16) {
@@ -261,7 +261,7 @@ pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
             const offset = for (text, 0..) |char, index| {
                 if ((char == byte) == (builtin == .scan)) break index;
             } else text.len;
-            const start: Cell = @intCast(@intFromPtr(text.ptr) - @intFromPtr(&self.memory));
+            const start: Cell = @intCast(@intFromPtr(text.ptr) - @intFromPtr(self.memory.ptr));
             try self.push(start + @as(Cell, @intCast(offset)));
             try self.push(@intCast(text.len - offset));
         },

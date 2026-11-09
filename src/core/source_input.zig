@@ -444,5 +444,5 @@ fn isWide(code: u21) bool {
 
 /// Address in logical memory of the current input position.
 pub fn sourceAddress(self: *State) Cell {
-    return @intCast(@intFromPtr(self.source_line.ptr) - @intFromPtr(&self.memory) + self.sourceCursor());
+    return @intCast(@intFromPtr(self.source_line.ptr) - @intFromPtr(self.memory.ptr) + self.sourceCursor());
 }
