@@ -1,6 +1,6 @@
 # Changelog
 
-## [Unreleased]
+## [0.8.0] - 2026-11-09
 
 ### Added
 
@@ -9,9 +9,11 @@
 - Numbers in the forms gforth reads: `0x` for hexadecimal (`0xFF`, `-0x10`, `0x-5`), and the character literals `'a` (without the closing quote), `-'a`, and `''`.
 - `ARGC`, `ARGV`, `ARG`, `SHIFT-ARGS`, and `NEXT-ARG`, as in gforth: a program sees the command-line arguments that have not been processed yet, and the ones it takes with `NEXT-ARG` are not processed as files (`sigma greet.fs world`).
 - `scripts/sign-and-notarize-macos.sh` builds a universal (arm64 and x86_64) macOS installer package that puts `sigma` in `/usr/local/bin`, signs it with Developer ID certificates, has Apple notarize it, and staples the ticket.
+- Added `examples/shmup.fs` (Sigma Storm), a vertical scrolling shooter: three stages with their waves, a carrier half way, and bosses in parts; a weapon of five levels, bombs, grazing, and a chain that multiplies the score; tunes and sound effects of its own. It takes the keys and a mapped gamepad, keeps its speed on a slow display by advancing in fixed steps, and plays silently in a build without the audio words.
 
 ### Changed
 
+- Updated the product version and startup examples to 0.8.0.
 - The command line now follows gforth, also in an executable made by `SAVESYS`: each argument names a file to include, in order (`sigma examples/hopper.fs`), and `-e text` (or `--evaluate text`) interprets `text`. After the last argument the banner and the interactive prompt follow, unless `BYE` ended the program; an error in an argument ends it with exit status 1. Before, the arguments were joined into one line of Forth input, run once, and the program exited, so `sigma "12 DUP * ."` is now written `sigma -e "12 DUP * . BYE"`.
 - Dictionary images are now `SIGIMG36` (`SIGIMG37` with the graphics words, `SIGIMG38` with the audio words), since the argument words and the xchar words moved the numbers of the user's words. Images saved by 0.7.0 and earlier can no longer be loaded with `LOAD`, and 0.7.0 and earlier cannot load the new ones. An executable made by `SAVESYS` of 0.7.0 still runs, since it carries its own 0.7.0 runtime (with the old command line).
 - `CHAR`, `[CHAR]`, and character literals give the code point of a UTF-8 character, as in gforth: `CHAR 日` is 26085 (before, 230, its first byte), and `'日'` is a character literal.
@@ -71,5 +73,6 @@
 - Updated the product version and startup examples to 0.6.1.
 - Added an optional SDL3 host backend. Builds can still run when SDL3 is unavailable; gamepad polling then reports that the backend is unavailable.
 
+[0.8.0]: https://github.com/fukuyori/ForthSigma/releases/tag/v0.8.0
 [0.7.0]: https://github.com/fukuyori/ForthSigma/releases/tag/v0.7.0
 [0.6.1]: https://github.com/fukuyori/ForthSigma/releases/tag/v0.6.1

@@ -81,7 +81,7 @@ To sign, set `CODESIGN_CERT` to the subject of the certificate in the certificat
     .\scripts\build-release.ps1 -Sign
     .\scripts\build-installer.ps1 -Sign
 
-When a tag with the same version as `VERSION`, such as `v0.7.0`, is pushed, GitHub Actions (`.github/workflows/release.yml`) tests and builds on Windows x86_64, Linux x86_64, arm32, and arm64, and macOS arm64, and adds each ZIP (the executable, LICENSE, THIRD_PARTY_NOTICES.md, and README.md, whose links lead to the manuals on GitHub) to a draft release. Each target has two ZIPs: the version with the floating-point words (`sigma-<version>-<target>.zip`) and the version without them (`sigma-<version>-<target>-nofloat.zip`). The tests run on real machines for Windows x86_64, Linux x86_64 and arm64, and macOS arm64. The Windows build from CI is not signed, so before publishing, its ZIPs are replaced with signed ZIPs that have the same names and the same contents (`dist\zip\sigma-<version>-windows-x86_64.zip` and `dist\zip\sigma-<version>-windows-x86_64-nofloat.zip`), made with the following script. `-Variant Float` or `-Variant NoFloat` makes only one of them.
+When a tag with the same version as `VERSION`, such as `v0.8.0`, is pushed, GitHub Actions (`.github/workflows/release.yml`) tests and builds on Windows x86_64, Linux x86_64, arm32, and arm64, and macOS arm64, and adds each ZIP (the executable, LICENSE, THIRD_PARTY_NOTICES.md, and README.md, whose links lead to the manuals on GitHub) to a draft release. Each target has two ZIPs: the version with the floating-point words (`sigma-<version>-<target>.zip`) and the version without them (`sigma-<version>-<target>-nofloat.zip`). The tests run on real machines for Windows x86_64, Linux x86_64 and arm64, and macOS arm64. The Windows build from CI is not signed, so before publishing, its ZIPs are replaced with signed ZIPs that have the same names and the same contents (`dist\zip\sigma-<version>-windows-x86_64.zip` and `dist\zip\sigma-<version>-windows-x86_64-nofloat.zip`), made with the following script. `-Variant Float` or `-Variant NoFloat` makes only one of them.
 
     .\scripts\build-zip.ps1 -Sign
 
@@ -90,7 +90,7 @@ On macOS, the following script builds an installer package (`dist/pkg/sigma-<ver
     xcrun notarytool store-credentials notarytool --apple-id <id> --team-id <team> --password <app-pw>   # once
     ./scripts/sign-and-notarize-macos.sh
 
-Before the interactive prompt, the program shows two lines with the version and the license (`FORTH/Sigma 0.7.0  MIT License` and `` Type `help' for basic help ``). `HELP` shows basic usage, `HELP` followed by a word name, such as `HELP DUP`, shows the description of that word, and `LICENSE` shows the full text of the license.
+Before the interactive prompt, the program shows two lines with the version and the license (`FORTH/Sigma 0.8.0  MIT License` and `` Type `help' for basic help ``). `HELP` shows basic usage, `HELP` followed by a word name, such as `HELP DUP`, shows the description of that word, and `LICENSE` shows the full text of the license.
 
 Example:
 
