@@ -1,5 +1,15 @@
 # Changelog
 
+## [Unreleased]
+
+### Added
+
+- `STYLE ( chip -- )` makes an instrument sound like a chip (`MSX`, `ST`, `NES`, `C64`, `SCC`, `AMIGA`, or 0 for the voice's chip) on whichever voice plays it, so that one `PLAY` can use every chip with no chip chosen; `examples/music.fs` shows it.
+
+### Changed
+
+- `PLAY` now always has 8 voices: `PLAYS` takes 1 to 8 and `PLAY?` takes 0 to 8 on any chip, and the voices after a chip's own sound like the last chip chosen. `CHIPS` takes any chips, also both `MSX` and `ST` and chips with more than 8 voices (the ones past the 8th are not played). A program that does not use these sounds the same as before, sample for sample.
+
 ## [0.8.0] - 2026-11-09
 
 ### Added

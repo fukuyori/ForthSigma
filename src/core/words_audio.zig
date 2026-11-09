@@ -24,7 +24,7 @@ const Cell = memory_map.Cell;
 const State = forth.State;
 
 /// The built-in words this file executes; executeBuiltin dispatches by this list.
-pub const words = [_]Builtin{ .snd_play, .snd_sound, .snd_beep, .snd_playing, .snd_device, .snd_plays, .snd_chip, .snd_instrument, .snd_wave, .snd_duty, .snd_adsr, .snd_ring, .snd_sync, .snd_filter, .snd_wavetable, .snd_load_sample, .snd_sample, .snd_loop_sample, .snd_sample_instrument, .snd_sfx, .snd_amiga_filter, .snd_free_samples, .snd_chips, .snd_load_mod, .snd_play_mod, .snd_stop_mod, .snd_mod_playing };
+pub const words = [_]Builtin{ .snd_play, .snd_sound, .snd_beep, .snd_playing, .snd_device, .snd_plays, .snd_chip, .snd_instrument, .snd_wave, .snd_duty, .snd_adsr, .snd_ring, .snd_sync, .snd_filter, .snd_wavetable, .snd_load_sample, .snd_sample, .snd_loop_sample, .snd_sample_instrument, .snd_sfx, .snd_amiga_filter, .snd_free_samples, .snd_chips, .snd_load_mod, .snd_play_mod, .snd_stop_mod, .snd_mod_playing, .snd_style };
 
 /// The SND- words in the order REQUIRE-AUDIO appends them, right after the AUDIO
 /// vocabulary. The order is part of the dictionary that images keep: add new words at
@@ -39,11 +39,12 @@ pub const definitions = [_]struct { []const u8, Builtin }{
     .{ "SND-SAMPLE-INSTRUMENT", .snd_sample_instrument }, .{ "SND-SFX", .snd_sfx },               .{ "SND-AMIGA-FILTER", .snd_amiga_filter },
     .{ "SND-FREE-SAMPLES", .snd_free_samples },           .{ "SND-CHIPS", .snd_chips },           .{ "SND-LOAD-MOD", .snd_load_mod },
     .{ "SND-PLAY-MOD", .snd_play_mod },                   .{ "SND-STOP-MOD", .snd_stop_mod },     .{ "SND-MOD-PLAYING", .snd_mod_playing },
+    .{ "SND-STYLE", .snd_style },
 };
 
 /// The words of the audio library that HELP describes; the help test checks that the
 /// library defines each of them.
-pub const library_words = [_][]const u8{ "PLAY", "PLAY2", "PLAY3", "PLAY?", "SOUND", "BEEP", "AUDIO?", "PLAYS", "MSX-SOUND", "ST-SOUND", "NES-SOUND", "INSTRUMENT", "SQUARE", "PULSE", "TRIANGLE", "SAW", "NOISE", "DUTY", "ADSR", "C64-SOUND", "RING", "SYNC", "FILTER", "SCC-SOUND", "SCC-WAVE", "LOAD-SAMPLE", "SAMPLE", "LOOP-SAMPLE", "SAMPLE-INSTRUMENT", "SFX", "FREE-SAMPLES", "AMIGA-SOUND", "AMIGA-FILTER", "CHIPS", "MSX", "ST", "NES", "C64", "SCC", "AMIGA", "LOAD-MOD", "PLAY-MOD", "STOP-MOD", "MOD?" };
+pub const library_words = [_][]const u8{ "PLAY", "PLAY2", "PLAY3", "PLAY?", "SOUND", "BEEP", "AUDIO?", "PLAYS", "MSX-SOUND", "ST-SOUND", "NES-SOUND", "INSTRUMENT", "SQUARE", "PULSE", "TRIANGLE", "SAW", "NOISE", "DUTY", "ADSR", "C64-SOUND", "RING", "SYNC", "FILTER", "SCC-SOUND", "SCC-WAVE", "LOAD-SAMPLE", "SAMPLE", "LOOP-SAMPLE", "SAMPLE-INSTRUMENT", "SFX", "FREE-SAMPLES", "AMIGA-SOUND", "AMIGA-FILTER", "CHIPS", "MSX", "ST", "NES", "C64", "SCC", "AMIGA", "LOAD-MOD", "PLAY-MOD", "STOP-MOD", "MOD?", "STYLE" };
 
 /// The audio library, which REQUIRE-AUDIO interprets after appending the SND- words.
 pub const library = @embedFile("../audio/audio.fs");
@@ -89,7 +90,7 @@ pub fn execute(self: *State, builtin: Builtin) RuntimeError!void {
         },
         .snd_plays => {
             const count = try self.pop();
-            if (count < 1 or count > self.audio_chips.voiceCount()) return error.InvalidNumber;
+            if (count < 1 or count > sound_engine.max_voices) return error.InvalidNumber;
             var texts: [sound_engine.max_voices][]const u8 = undefined;
             var v: usize = @intCast(count);
             while (v > 0) {
@@ -104,8 +105,14 @@ pub fn execute(self: *State, builtin: Builtin) RuntimeError!void {
             if (n < 0 or n >= chips) return error.InvalidNumber;
             const engine = try getEngine(self);
             const chip: sound_engine.Chip = @fromBackingInt(@intCast(n));
-            self.audio_chips = sound_engine.Chips.one(chip);
             try stop(self, engine, engine.chipCommand(chip));
+        },
+        .snd_style => {
+            const n = try self.pop();
+            if (n == 0) return changeInstrument(self, .{ .style = .none });
+            const chips = sound_engine.Chips.fromMask(n) orelse return error.InvalidNumber;
+            const chip = chips.only() orelse return error.InvalidNumber;
+            try changeInstrument(self, .{ .style = .{ .chip = chip } });
         },
         .snd_instrument => {
             const n = try self.pop();
@@ -196,7 +203,6 @@ pub fn execute(self: *State, builtin: Builtin) RuntimeError!void {
         .snd_chips => {
             const chips = sound_engine.Chips.fromMask(try self.pop()) orelse return error.InvalidNumber;
             const engine = try getEngine(self);
-            self.audio_chips = chips;
             try stop(self, engine, engine.chipsCommand(chips));
         },
         .snd_load_mod => {
@@ -240,7 +246,7 @@ pub fn execute(self: *State, builtin: Builtin) RuntimeError!void {
         },
         .snd_playing => {
             const n = try self.pop();
-            if (n < 0 or n > self.audio_chips.voiceCount()) return error.InvalidNumber;
+            if (n < 0 or n > sound_engine.max_voices) return error.InvalidNumber;
             const engine = try getEngine(self);
             try self.push(if (engine.isPlaying(@intCast(n))) -1 else 0);
         },
@@ -436,6 +442,7 @@ fn readAll(files: *const forth.FileOps, context: ?*anyopaque, fileid: Cell, buff
 
 /// Which settings of the instrument being edited change.
 const Change = struct {
+    style: ?union(enum) { none, chip: sound_engine.Chip } = null,
     wave: ?parts.Wave = null,
     duty: ?u8 = null,
     attack: ?u8 = null,
@@ -459,6 +466,10 @@ fn changeInstrument(self: *State, change: Change) RuntimeError!void {
 /// Changes instrument `index`, here and for the audio thread.
 fn changeInstrumentAt(self: *State, index: u8, change: Change) RuntimeError!void {
     const instrument = &self.audio_instruments[index];
+    if (change.style) |value| instrument.style = switch (value) {
+        .none => null,
+        .chip => |chip| chip,
+    };
     if (change.wave) |value| instrument.wave = value;
     if (change.duty) |value| instrument.duty = value;
     if (change.attack) |value| instrument.attack = value;

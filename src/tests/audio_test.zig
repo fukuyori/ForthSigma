@@ -172,7 +172,7 @@ test "PLAY puts the notes of voice A and an end mark in every voice, and PLAY? s
     try std.testing.expectEqual(@as(u32, 4), queued(&engine, 1));
     try std.testing.expectEqual(@as(u32, 3), queued(&engine, 2));
 
-    try std.testing.expectError(error.InvalidNumber, machine.interpretLine("4 PLAY?"));
+    try std.testing.expectError(error.InvalidNumber, machine.interpretLine("9 PLAY?"));
     machine.data_depth = 0;
     try std.testing.expectError(error.InvalidNumber, machine.interpretLine("-1 PLAY?"));
 }
@@ -298,16 +298,16 @@ test "AUDIO? tells whether the sound reaches a device; without the host's engine
     try std.testing.expectError(error.HostFailed, failing.interpretLine("BEEP"));
 }
 
-test "NES-SOUND, ST-SOUND, and MSX-SOUND choose the chip, which sets how many voices PLAYS and PLAY? take" {
+test "NES-SOUND, ST-SOUND, and MSX-SOUND choose the chip, and PLAYS and PLAY? take 8 voices on any" {
     try skipWithout(&.{.audio});
     var engine = newEngine();
     var output = Output{ .audio = &engine };
     const machine = try createMachine(&output);
     defer destroyMachine(machine);
     try machine.interpretLine("REQUIRE-AUDIO ALSO AUDIO");
-    try std.testing.expectError(error.InvalidNumber, machine.interpretLine("S\" C\" S\" D\" S\" E\" S\" F\" 4 PLAYS"));
+    try std.testing.expectError(error.InvalidNumber, machine.interpretLine("9 PLAYS"));
     machine.data_depth = 0;
-    try std.testing.expectError(error.InvalidNumber, machine.interpretLine("4 PLAY?"));
+    try std.testing.expectError(error.InvalidNumber, machine.interpretLine("9 PLAY?"));
     machine.data_depth = 0;
 
     // The chip changes at once: the audio thread has taken the command when it returns.
@@ -321,7 +321,7 @@ test "NES-SOUND, ST-SOUND, and MSX-SOUND choose the chip, which sets how many vo
     machine.data_depth = 0;
     try std.testing.expectEqual(@as(u32, 2), queued(&engine, 3));
     try std.testing.expectEqual(@as(u32, 1), queued(&engine, 4));
-    try std.testing.expectError(error.InvalidNumber, machine.interpretLine("S\" C\" S\" C\" S\" C\" S\" C\" S\" C\" 5 PLAYS"));
+    try std.testing.expectError(error.InvalidNumber, machine.interpretLine("9 PLAYS"));
     machine.data_depth = 0;
     try std.testing.expectError(error.InvalidNumber, machine.interpretLine("0 PLAYS"));
     machine.data_depth = 0;
@@ -368,7 +368,7 @@ test "C64-SOUND, RING, SYNC, and FILTER" {
     defer destroyMachine(machine);
     try machine.interpretLine("REQUIRE-AUDIO ALSO AUDIO C64-SOUND");
     try std.testing.expectEqual(sound_engine.Chip.c64, engine.chips.only().?);
-    try std.testing.expectError(error.InvalidNumber, machine.interpretLine("S\" C\" S\" C\" S\" C\" S\" C\" 4 PLAYS"));
+    try std.testing.expectError(error.InvalidNumber, machine.interpretLine("9 PLAYS"));
     machine.data_depth = 0;
     try machine.interpretLine("4 INSTRUMENT TRIANGLE TRUE RING TRUE SYNC 2 1500 12 FILTER");
     const instrument = machine.audio_instruments[4];
@@ -539,7 +539,7 @@ test "AMIGA-SOUND plays four voices, and AMIGA-FILTER turns the LED filter on" {
     try machine.interpretLine("S\" C\" S\" E\" S\" G\" S\" >C\" 4 PLAYS 4 PLAY?");
     try expectStack(machine, &.{-1});
     machine.data_depth = 0;
-    try std.testing.expectError(error.InvalidNumber, machine.interpretLine("5 PLAY?"));
+    try std.testing.expectError(error.InvalidNumber, machine.interpretLine("9 PLAY?"));
     machine.data_depth = 0;
     try machine.interpretLine("FALSE AMIGA-FILTER");
     render(&engine, 1);
@@ -559,17 +559,44 @@ test "CHIPS chooses several chips, whose voices PLAYS and PLAY? count together" 
     machine.data_depth = 0;
     try std.testing.expectError(error.InvalidNumber, machine.interpretLine("9 PLAY?"));
     machine.data_depth = 0;
-    for ([_][]const u8{ "MSX ST OR CHIPS", "0 CHIPS", "64 CHIPS", "NES C64 OR SCC OR CHIPS" }) |line| {
+    for ([_][]const u8{ "0 CHIPS", "64 CHIPS" }) |line| {
         try std.testing.expectError(error.InvalidNumber, machine.interpretLine(line));
         machine.data_depth = 0;
     }
     try std.testing.expectEqual(@as(u8, 1 | 16), engine.chips.mask);
     try machine.interpretLine("ST NES OR CHIPS");
     try std.testing.expectEqual(psg_module.Model.ym2149, engine.psg.model);
-    try std.testing.expectEqual(@as(usize, 7), machine.audio_chips.voiceCount());
+    try std.testing.expectEqual(@as(usize, 7), engine.chips.voiceCount());
     // A word for one chip chooses that one alone again.
     try machine.interpretLine("C64-SOUND");
     try std.testing.expectEqual(sound_engine.Chip.c64, engine.chips.only().?);
+}
+
+test "STYLE gives an instrument its chip, and every voice can be played" {
+    try skipWithout(&.{.audio});
+    var engine = newEngine();
+    var output = Output{ .audio = &engine };
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
+    try machine.interpretLine("REQUIRE-AUDIO ALSO AUDIO 1 INSTRUMENT NES STYLE TRIANGLE 2 INSTRUMENT SCC STYLE");
+    try std.testing.expectEqual(sound_engine.Chip.nes, machine.audio_instruments[1].style.?);
+    try std.testing.expectEqual(@import("../core/sound_parts.zig").Wave.triangle, machine.audio_instruments[1].wave);
+    render(&engine, 1);
+    try std.testing.expectEqual(sound_engine.Chip.scc, engine.instruments[2].style.?);
+    try std.testing.expectEqual(sound_engine.Chip.msx, engine.chips.only().?);
+    try machine.interpretLine("S\" @1 C\" S\" @2 C\" S\" C\" S\" C\" S\" C\" S\" C\" S\" C\" S\" C\" 8 PLAYS 8 PLAY?");
+    try expectStack(machine, &.{-1});
+    machine.data_depth = 0;
+    // 0 takes the style away; only one chip at a time, and nothing unknown.
+    try machine.interpretLine("0 STYLE");
+    try std.testing.expectEqual(@as(?sound_engine.Chip, null), machine.audio_instruments[2].style);
+    for ([_][]const u8{ "3 STYLE", "64 STYLE", "-1 STYLE" }) |line| {
+        try std.testing.expectError(error.InvalidNumber, machine.interpretLine(line));
+        machine.data_depth = 0;
+    }
+    // BEEP and choosing a chip keep the instruments' styles.
+    try machine.interpretLine("NES-SOUND BEEP");
+    try std.testing.expectEqual(sound_engine.Chip.nes, machine.audio_instruments[1].style.?);
 }
 
 // ---- S6: modules ----

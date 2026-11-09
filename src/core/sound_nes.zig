@@ -28,7 +28,11 @@ const triangle_steps = blk: {
     break :blk steps;
 };
 
+/// The chip's voices; `Nes.voices` has a place for every voice of PLAY.
 pub const voice_count = 4;
+
+/// What a voice plays.
+pub const Role = enum { none, pulse, triangle, noise };
 
 /// The note of the lowest noise (O3's C); each semitone up to O4's D# chooses the next
 /// shorter period.
@@ -43,6 +47,10 @@ pub fn noiseIndex(note: u8) usize {
 
 const Voice = struct {
     on: bool = false,
+    role: Role = .none,
+    /// The role a voice of the chip itself always has, or none for the others, whose
+    /// instrument's wave chooses.
+    fixed: Role = .none,
     /// The phase's step a sample, or for the noise the CPU cycles between shifts.
     increment: f32 = 0,
     duty: f32 = 0.5,
@@ -53,41 +61,82 @@ const Voice = struct {
     phase: f32 = 0,
     /// Muted, as the chip mutes a pulse whose timer is below 8.
     muted: bool = false,
-};
-
-pub const Nes = struct {
-    sample_rate: u32,
-    voices: [voice_count]Voice = @splat(.{}),
     /// 15 bits; the input is bit 0 XOR bit 1, the output (inverted) bit 0.
     lfsr: u16 = 1,
     noise_period: u32 = noise_periods[0],
     /// CPU cycles towards the next shift, in units of 1 / sample_rate.
     noise_fraction: u64 = 0,
     /// The triangle's output while it is stopped: it keeps its step, as the chip does.
-    triangle_level: f32 = 15,
+    triangle_level: f32 = 0,
+};
+
+pub const Nes = struct {
+    sample_rate: u32,
+    voices: [parts.voice_slots]Voice = @splat(.{}),
 
     pub fn init(sample_rate: u32) Nes {
-        return .{ .sample_rate = sample_rate };
+        var nes: Nes = .{ .sample_rate = sample_rate };
+        nes.place(0);
+        return nes;
     }
 
-    /// Voice 0 and 1 are pulses, 2 the triangle, 3 the noise. `volume` is 0 to 15.
+    /// The chip's four voices from `first`: two pulses, the triangle (which starts on
+    /// its top step), and the noise. Without `first`, no voice is the chip's own.
+    pub fn place(self: *Nes, first: ?usize) void {
+        for (&self.voices) |*voice| {
+            voice.role = .none;
+            voice.fixed = .none;
+            voice.triangle_level = 0;
+        }
+        const at = first orelse return;
+        for ([voice_count]Role{ .pulse, .pulse, .triangle, .noise }, at..) |role, v| {
+            if (v >= parts.voice_slots) break;
+            self.voices[v].role = role;
+            self.voices[v].fixed = role;
+            if (role == .triangle) self.voices[v].triangle_level = 15;
+        }
+    }
+
+    /// A note on a voice: one of the chip's own keeps its role, and for any other the
+    /// instrument's wave chooses. `volume` is 0 to 15.
     pub fn noteOn(self: *Nes, v: usize, note: u8, volume: u8, instrument: parts.Instrument) void {
+        const fixed = self.voices[v].fixed;
+        self.start(v, if (fixed != .none) fixed else roleOf(instrument.wave), note, volume, instrument);
+    }
+
+    /// A note whose role the instrument's wave chooses, on any voice (STYLE).
+    pub fn noteOnWave(self: *Nes, v: usize, note: u8, volume: u8, instrument: parts.Instrument) void {
+        self.start(v, roleOf(instrument.wave), note, volume, instrument);
+    }
+
+    /// The wave the chip has nearest to the instrument's.
+    fn roleOf(wave: parts.Wave) Role {
+        return switch (wave) {
+            .square, .pulse, .saw => .pulse,
+            .triangle => .triangle,
+            .noise => .noise,
+        };
+    }
+
+    fn start(self: *Nes, v: usize, role: Role, note: u8, volume: u8, instrument: parts.Instrument) void {
         const voice = &self.voices[v];
         const rate: f32 = @floatFromInt(self.sample_rate);
         voice.on = true;
+        voice.role = role;
         voice.volume = @floatFromInt(@min(volume, 15));
-        switch (v) {
-            0, 1 => {
+        switch (role) {
+            .none => unreachable,
+            .pulse => {
                 const timer = parts.chipPeriod(note, cpu_clock, 16, 1, 2047);
                 voice.muted = timer < 8;
                 voice.increment = @as(f32, @floatFromInt(cpu_clock)) / (16.0 * @as(f32, @floatFromInt(timer + 1))) / rate;
                 voice.duty = nearestDuty(instrument);
             },
-            2 => {
+            .triangle => {
                 const timer = parts.chipPeriod(note, cpu_clock, 32, 1, 2047);
                 voice.increment = @as(f32, @floatFromInt(cpu_clock)) / (32.0 * @as(f32, @floatFromInt(timer + 1))) / rate;
             },
-            else => self.noise_period = noise_periods[noiseIndex(note)],
+            .noise => voice.noise_period = noise_periods[noiseIndex(note)],
         }
         voice.adsr.start(instrument, self.sample_rate);
     }
@@ -115,13 +164,20 @@ pub const Nes = struct {
     /// The next sample, 0 to 1.
     pub fn sample(self: *Nes) f32 {
         var pulses: f32 = 0;
-        for (self.voices[0..2]) |*voice| {
-            const volume = level(voice);
-            const wave = voice.pulse.next(voice.increment, voice.duty);
-            if (!voice.muted) pulses += wave * volume;
+        var triangle: f32 = 0;
+        var noise: f32 = 0;
+        for (&self.voices) |*voice| {
+            switch (voice.role) {
+                .none => {},
+                .pulse => {
+                    const volume = level(voice);
+                    const wave = voice.pulse.next(voice.increment, voice.duty);
+                    if (!voice.muted) pulses += wave * volume;
+                },
+                .triangle => triangle += triangleSample(voice),
+                .noise => noise += self.noiseSample(voice),
+            }
         }
-        const triangle = self.triangleSample();
-        const noise = self.noiseSample();
         // The APU's mixer; at most about 0.49, so twice that is the sample.
         const pulse_out: f32 = if (pulses <= 0) 0 else 95.88 / (8128.0 / pulses + 100.0);
         const tnd_in = triangle / 8227.0 + noise / 12241.0;
@@ -131,33 +187,31 @@ pub const Nes = struct {
 
     /// The triangle has no volume: it plays while the note is on, and keeps its step when
     /// it stops (a constant level, which the output's high-pass takes away).
-    fn triangleSample(self: *Nes) f32 {
-        const voice = &self.voices[2];
+    fn triangleSample(voice: *Voice) f32 {
         if (voice.on and voice.volume > 0) {
             voice.phase += voice.increment;
             if (voice.phase >= 1) voice.phase -= 1;
             const step: usize = @intFromFloat(voice.phase * 32);
-            self.triangle_level = @floatFromInt(triangle_steps[@min(step, 31)]);
+            voice.triangle_level = @floatFromInt(triangle_steps[@min(step, 31)]);
         }
-        return self.triangle_level;
+        return voice.triangle_level;
     }
 
     /// The noise: the mean of its output over the shifts this sample covers.
-    fn noiseSample(self: *Nes) f32 {
-        const voice = &self.voices[3];
+    fn noiseSample(self: *const Nes, voice: *Voice) f32 {
         const volume = level(voice);
-        const unit = @as(u64, self.noise_period) * self.sample_rate;
-        self.noise_fraction += cpu_clock;
+        const unit = @as(u64, voice.noise_period) * self.sample_rate;
+        voice.noise_fraction += cpu_clock;
         var sum: f32 = 0;
         var count: f32 = 0;
-        while (self.noise_fraction >= unit) {
-            self.noise_fraction -= unit;
-            const bit = (self.lfsr ^ (self.lfsr >> 1)) & 1;
-            self.lfsr = (self.lfsr >> 1) | (bit << 14);
-            sum += if (self.lfsr & 1 == 0) 1 else 0;
+        while (voice.noise_fraction >= unit) {
+            voice.noise_fraction -= unit;
+            const bit = (voice.lfsr ^ (voice.lfsr >> 1)) & 1;
+            voice.lfsr = (voice.lfsr >> 1) | (bit << 14);
+            sum += if (voice.lfsr & 1 == 0) 1 else 0;
             count += 1;
         }
-        const high: f32 = if (count > 0) sum / count else if (self.lfsr & 1 == 0) 1 else 0;
+        const high: f32 = if (count > 0) sum / count else if (voice.lfsr & 1 == 0) 1 else 0;
         return high * volume;
     }
 };

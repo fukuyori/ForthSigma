@@ -237,30 +237,41 @@ Outside a definition, each `S"` string has its own place, so a `PLAYS` of eight 
 | `REQUIRE-AUDIO` | ( -- ) | Load the audio words, the first time only. It is a parsing word (like `REQUIRE-GRAPHICS`) and cannot be used inside a definition. |
 | `PLAY` | ( c-addr u -- ) | Play the MML on voice A. Voices B and C, which have no notes, still start the next `PLAY` together with A. |
 | `PLAY2`, `PLAY3` | ( c-addr1 u1 c-addr2 u2 -- ), ( c-addr1 u1 c-addr2 u2 c-addr3 u3 -- ) | Play voices A and B, or A, B, and C, starting together. |
-| `PLAYS` | ( c-addr1 u1 ... c-addrn un n -- ) | Play the first n voices of the chip (or chips) chosen, starting together; n is 1 to the number of voices. |
-| `PLAY?` | ( n -- flag ) | Whether voice n still has notes to play, or any voice for 0, as MSX BASIC's `PLAY(n)`. A voice without notes counts until the audio thread takes its end of the `PLAY` (within a fiftieth of a second). |
+| `PLAYS` | ( c-addr1 u1 ... c-addrn un n -- ) | Play the first n voices, starting together; n is 1 to 8. |
+| `PLAY?` | ( n -- flag ) | Whether voice n (1 to 8) still has notes to play, or any voice for 0, as MSX BASIC's `PLAY(n)`. A voice without notes counts until the audio thread takes its end of the `PLAY` (within a fiftieth of a second). |
 | `SOUND` | ( reg value -- ) | Write the value 0 to 255 to the PSG's register 0 to 13, as MSX BASIC's `SOUND`; the PSG sounds with every chip. |
 | `BEEP` | ( -- ) | Stop the music, set the PSG and the voices' settings as at start, and beep (about 1316 Hz for 40 ms). It returns when the audio thread has stopped the music. |
 | `AUDIO?` | ( -- flag ) | Whether the sound reaches an audio device. If the output fails while the program runs (on Linux, the command that plays it ends, for example), it becomes false and there is no more sound until the program is started again. |
 
 ### Chips and instruments
 
-`PLAY` plays on one chip, or on several together with `CHIPS`. Choosing a chip stops the music, as `BEEP` does without its sound. On a chip with instruments, the MML's `@n` chooses instrument n; a value a chip does not have is taken to the nearest one it has, and what a chip cannot do is left out.
+`PLAY` has 8 voices, and each note can sound like any chip. An instrument with `STYLE` sounds like its chip on whichever voice plays it. Any other note sounds like the chip of its voice, which `MSX-SOUND` and the words like it, or `CHIPS`, choose; these stop the music, as `BEEP` does without its sound. The MML's `@n` chooses instrument n; a value a chip does not have is taken to the nearest one it has, and what a chip cannot do is left out.
+
+```forth
+1 INSTRUMENT  NES STYLE  PULSE 25 DUTY  0 4 8 2 ADSR
+2 INSTRUMENT  SCC STYLE  SAW
+3 INSTRUMENT  C64 STYLE  SAW  1 700 10 FILTER
+4 INSTRUMENT  NES STYLE  TRIANGLE
+S" @1 CDEF" S" @2 EGAB" S" @3 O3 C2G2" S" @4 O2 C1" 4 PLAYS
+```
+
+The voices of one chip go through that chip's mixer and share what the chip shares, wherever they are: the NES's mixer, the C64's filter, and the Amiga's output filters. The MSX's and the Atari ST's voices go three to a PSG (voices 1 to 3, 4 to 6, and 7 and 8), which shares its envelope. A note on another chip than the voice's last note ends that one. The levels of the chips stay as they are, so many voices of one chip can reach the output's limit and distort.
 
 | Word | Stack | Description |
 | --- | --- | --- |
-| `MSX-SOUND` | ( -- ) | The MSX's AY-3-8910 (3 voices), with the pitches of the MSX's ROM. This is the chip at start. |
+| `MSX-SOUND` | ( -- ) | The voices sound like the MSX's AY-3-8910 (3 voices of its own), with the pitches of the MSX's ROM. This is the chip at start. In this table, a chip's "own" voices are the first ones; the voices after them sound like the same chip, and are not fixed in their waves. |
 | `ST-SOUND` | ( -- ) | The Atari ST's YM2149 at 2 MHz (3 voices), with its 32-step volume for the envelopes. |
-| `NES-SOUND` | ( -- ) | The NES (4 voices): two pulses (duty 12.5, 25, 50, or 75%), a triangle (no volume: `V0` is silence), and a noise, whose notes from `O3 C` to `O4 D#` choose its 16 sounds from the lowest to the highest. |
+| `NES-SOUND` | ( -- ) | The NES (4 voices of its own): two pulses (duty 12.5, 25, 50, or 75%), a triangle (no volume: `V0` is silence), and a noise, whose notes from `O3 C` to `O4 D#` choose its 16 sounds from the lowest to the highest. Those four keep their waves whatever the instrument's wave is, unless the instrument has `STYLE`. |
 | `C64-SOUND` | ( -- ) | The C64's SID (3 voices): triangle, sawtooth, pulse, and noise, with `RING`, `SYNC`, and `FILTER`. |
 | `SCC-SOUND` | ( -- ) | Konami's SCC (5 voices), each playing its instrument's wave of 32 samples. |
 | `AMIGA-SOUND` | ( -- ) | The Amiga's Paula (4 voices: left, right, right, left), playing the instruments' samples. |
-| `CHIPS` | ( mask -- ) | Several chips together: the sum (`OR`) of `MSX` (1), `ST` (2), `NES` (4), `C64` (8), `SCC` (16), and `AMIGA` (32). The voices are numbered in that order: with `MSX SCC OR CHIPS`, voices 1 to 3 are the PSG's and 4 to 8 the SCC's. At most 8 voices in all, and not `MSX` with `ST` (they are one PSG); otherwise `NUMBER ERROR !`. |
+| `CHIPS` | ( mask -- ) | Several chips for the voices: the sum (`OR`) of `MSX` (1), `ST` (2), `NES` (4), `C64` (8), `SCC` (16), and `AMIGA` (32). The voices are numbered in that order: with `MSX SCC OR CHIPS`, voices 1 to 3 are the PSG's and 4 to 8 the SCC's. The voices after the last chip's own sound like the last chip, and when the chips have more than 8 voices the ones past the 8th are not played. No chip, or an unknown bit, gives `NUMBER ERROR !`. With both `MSX` and `ST`, `SOUND` and `BEEP` use the MSX's PSG. |
 | `INSTRUMENT` | ( n -- ) | Choose instrument n (0 to 63) for the words below to change. |
+| `STYLE` | ( chip -- ) | The chip the instrument sounds like, on any voice: `MSX`, `ST`, `NES`, `C64`, `SCC`, or `AMIGA`, or 0 (at first) for the chip of the voice that plays it. Anything else gives `NUMBER ERROR !`. On the NES, `TRIANGLE` plays the triangle, `NOISE` the noise, and the other waves a pulse. On the PSGs, the instrument's wave is not used. |
 | `SQUARE`, `PULSE`, `TRIANGLE`, `SAW`, `NOISE` | ( -- ) | The instrument's wave (the C64 takes each; the NES's pulses take `PULSE`'s duty; the SCC and the Amiga make a wave of 32 samples of it). `SQUARE` at first. |
 | `DUTY` | ( percent -- ) | The width of `PULSE`, 0 to 100 (50 at first). |
 | `ADSR` | ( a d s r -- ) | The envelope, each 0 to 15 as on the SID: attack 2 ms to 8 s, decay and release three times as long, sustain level s / 15. `0 0 15 0` at first. A note's release starts when the note ends. |
-| `RING`, `SYNC` | ( flag -- ) | On the C64, modulate the instrument's triangle by the voice before it (voice 1 by voice 3), or restart its wave with each cycle of that voice. |
+| `RING`, `SYNC` | ( flag -- ) | On the C64, modulate the instrument's triangle by the voice before it, or restart its wave with each cycle of that voice. The C64's own three voices go round (the first by the third); any other voice listens to the voice numbered one less (voice 1 to voice 8). |
 | `FILTER` | ( mode cutoff resonance -- ) | On the C64, send the instrument through the filter: mode 0 none, 1 low-pass, 2 band-pass, 3 high-pass; cutoff 0 to 2047 (about 30 Hz to 12 kHz), resonance 0 to 15. The voices share one filter, set by the last note that uses it. |
 | `SCC-WAVE` | ( c-addr n -- ) | Make the 32 signed bytes at c-addr the wave of instrument n on the SCC (and the Amiga). Without one, the instrument's wave word's shape. |
 
@@ -302,8 +313,8 @@ The module plays on Paula's periods, panned and filtered as the Amiga's (`AMIGA-
 
 `BEEP`, the chip words, `CHIPS`, `FREE-SAMPLES`, and Ctrl+C while `PLAY` waits stop the music, the sound effects, and the module. The sound (instruments, samples, queues) is not part of the dictionary: `SAVE` and `SAVESYS` keep the audio words and the words that use them, but a program sets its instruments and loads its samples after it starts. A dictionary that has loaded the audio words is saved as `SIGIMG35`.
 
-The `SND-` words are the base the library is written with: `SND-PLAY`, `SND-PLAYS`, `SND-SOUND`, `SND-BEEP`, `SND-PLAYING`, `SND-DEVICE`, `SND-CHIP`, `SND-CHIPS`, `SND-INSTRUMENT`, `SND-WAVE`, `SND-DUTY`, `SND-ADSR`, `SND-RING`, `SND-SYNC`, `SND-FILTER`, `SND-WAVETABLE`, `SND-LOAD-SAMPLE`, `SND-SAMPLE`, `SND-LOOP-SAMPLE`, `SND-SAMPLE-INSTRUMENT`, `SND-SFX`, `SND-AMIGA-FILTER`, `SND-FREE-SAMPLES`, `SND-LOAD-MOD`, `SND-PLAY-MOD`, `SND-STOP-MOD`, and `SND-MOD-PLAYING`. `HELP` describes each of them. `SND-LOAD-SAMPLE` and `SND-LOAD-MOD` return an ior instead of throwing.
+The `SND-` words are the base the library is written with: `SND-PLAY`, `SND-PLAYS`, `SND-SOUND`, `SND-BEEP`, `SND-PLAYING`, `SND-DEVICE`, `SND-CHIP`, `SND-CHIPS`, `SND-INSTRUMENT`, `SND-WAVE`, `SND-DUTY`, `SND-ADSR`, `SND-RING`, `SND-SYNC`, `SND-FILTER`, `SND-WAVETABLE`, `SND-LOAD-SAMPLE`, `SND-SAMPLE`, `SND-LOOP-SAMPLE`, `SND-SAMPLE-INSTRUMENT`, `SND-SFX`, `SND-AMIGA-FILTER`, `SND-FREE-SAMPLES`, `SND-LOAD-MOD`, `SND-PLAY-MOD`, `SND-STOP-MOD`, `SND-MOD-PLAYING`, and `SND-STYLE`. `HELP` describes each of them. `SND-LOAD-SAMPLE` and `SND-LOAD-MOD` return an ior instead of throwing.
 
 Errors: `REQUIRE-AUDIO` in a build with `-Daudio=false` gives `AUDIO UNAVAILABLE !` (THROW -275); a number out of its range gives `NUMBER ERROR !`; a host without an audio thread gives `HOST FUNCTION UNAVAILABLE !`. As with `REQUIRE-GRAPHICS`, a library that fails to load is removed again, and `REQUIRE-AUDIO` loads it again after `FORGET` or a `MARKER` removed it.
 
-`examples/music.fs` plays a short tune on each chip and a sound effect made with `SAMPLE`.
+`examples/music.fs` plays a short tune on each chip, several chips in one `PLAY`, and a sound effect made with `SAMPLE`.

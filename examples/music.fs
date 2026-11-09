@@ -1,5 +1,5 @@
 \ A short tour of FORTH/Sigma's sound: one tune on each chip, the MSX's PSG and the
-\ SCC together, and a sound effect made with SAMPLE.
+\ SCC together, every chip in one PLAY, and a sound effect made with SAMPLE.
 \
 \   sigma.exe examples/music.fs      (Windows)
 \   sigma examples/music.fs          (Linux: pacat, pw-play, or aplay plays it;
@@ -88,6 +88,23 @@ CREATE SINE-WAVE
    MELODY BASS SECOND  MELODY 1 0 WITH-INSTRUMENT  SECOND  S" " S" " S" "
    8 PLAYS  WAIT-MUSIC ;
 
+\ STYLE makes an instrument sound like a chip on any voice, so one PLAY can use them
+\ all with no chip chosen.
+: ON-EVERY-CHIP ( -- )
+   S" Any voice, any chip: the NES, the SCC, and the C64 in one PLAY" TITLE
+   MSX-SOUND
+   1 INSTRUMENT NES STYLE PULSE 25 DUTY 0 3 10 3 ADSR
+   2 INSTRUMENT SCC STYLE SAW 0 4 12 4 ADSR
+   3 INSTRUMENT C64 STYLE SAW 0 6 10 4 ADSR 1 700 10 FILTER
+   4 INSTRUMENT NES STYLE TRIANGLE
+   5 INSTRUMENT NES STYLE NOISE 0 3 0 2 ADSR
+   MELODY 1 0 WITH-INSTRUMENT  SECOND 2 1 WITH-INSTRUMENT
+   BASS 4 2 WITH-INSTRUMENT    DRUMS 5 3 WITH-INSTRUMENT
+   S" @3 T140 L2 O3 C E F G"
+   5 PLAYS  WAIT-MUSIC
+   1 INSTRUMENT 0 STYLE  2 INSTRUMENT 0 STYLE  3 INSTRUMENT 0 STYLE
+   4 INSTRUMENT 0 STYLE  5 INSTRUMENT 0 STYLE ;
+
 \ ---- A sound effect ------------------------------------------------------------
 
 \ A falling "zap": a square wave whose period grows, fading out, 0.5 s at 8000 Hz.
@@ -108,7 +125,7 @@ CREATE ZAP ZAP-LENGTH ALLOT
    WAIT-MUSIC ;
 
 : TOUR ( -- )
-   ON-MSX ON-ST ON-NES ON-C64 ON-SCC ON-AMIGA ON-MSX-AND-SCC ZAPS
+   ON-MSX ON-ST ON-NES ON-C64 ON-SCC ON-AMIGA ON-MSX-AND-SCC ON-EVERY-CHIP ZAPS
    MSX-SOUND CR ;
 
 TOUR

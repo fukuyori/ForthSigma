@@ -36,6 +36,8 @@ const Voice = struct {
     /// MML's V as Paula's volume, 0 to 64.
     volume: f32 = 0,
     adsr: parts.Adsr = .{},
+    /// Whether the voice is on the left.
+    left: bool = false,
 };
 
 /// A two-pole low-pass (a biquad), for the LED filter.
@@ -99,11 +101,23 @@ pub const Filters = struct {
 
 pub const Amiga = struct {
     sample_rate: u32,
-    voices: [voice_count]Voice = @splat(.{}),
+    voices: [parts.voice_slots]Voice = @splat(.{}),
     filters: Filters,
 
     pub fn init(sample_rate: u32) Amiga {
-        return .{ .sample_rate = sample_rate, .filters = Filters.init(sample_rate) };
+        var amiga: Amiga = .{ .sample_rate = sample_rate, .filters = Filters.init(sample_rate) };
+        amiga.place(0);
+        return amiga;
+    }
+
+    /// Sets the sides, left, right, right, left from voice `first` (from voice 0 when
+    /// the chip has no voices of its own), and so on round.
+    pub fn place(self: *Amiga, first: ?usize) void {
+        const start = first orelse 0;
+        for (&self.voices, 0..) |*voice, v| {
+            const position = (v + parts.voice_slots * 4 - start) % voice_count;
+            voice.left = position == 0 or position == 3;
+        }
     }
 
     /// `volume` is MML's V, 0 to 15.
@@ -143,11 +157,10 @@ pub const Amiga = struct {
     /// The next left and right samples, about -1 to 1, with the LED filter when `led`.
     pub fn sample(self: *Amiga, pool: []const i16, led: bool) [2]f32 {
         var sides: [2]f32 = .{ 0, 0 };
-        for (&self.voices, 0..) |*voice, v| {
+        for (&self.voices) |*voice| {
             const data: []const i16 = if (voice.uses_table) &voice.table else pool;
             const value = voice.player.next(data) * @round(voice.volume * voice.adsr.next()) / 64.0;
-            // Voices 1 and 4 on the left, 2 and 3 on the right.
-            sides[if (v == 0 or v == 3) 0 else 1] += value / 2;
+            sides[if (voice.left) 0 else 1] += value / 2;
         }
         return self.filters.process(sides, led);
     }

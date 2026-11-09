@@ -15,6 +15,8 @@ const parts = @import("sound_parts.zig");
 /// The clock of a PAL C64.
 pub const clock: u32 = 985_248;
 
+/// The chip's voices, which set its level in the mix; `C64.voices` has a place for every
+/// voice of PLAY.
 pub const voice_count = 3;
 
 /// The frequency register for a note: frequency × 2^24 / clock, rounded, at most 65535.
@@ -87,11 +89,25 @@ const Filter = struct {
 
 pub const C64 = struct {
     sample_rate: u32,
-    voices: [voice_count]Voice = @splat(.{}),
+    voices: [parts.voice_slots]Voice = @splat(.{}),
     filter: Filter = .{},
+    /// The voice each voice's RING and SYNC listen to.
+    before: [parts.voice_slots]u8 = undefined,
 
     pub fn init(sample_rate: u32) C64 {
-        return .{ .sample_rate = sample_rate };
+        var c64: C64 = .{ .sample_rate = sample_rate };
+        c64.place(0);
+        return c64;
+    }
+
+    /// The three voices from `first` go round as the chip's do (the first listens to
+    /// the third); every other voice listens to the one before it.
+    pub fn place(self: *C64, first: ?usize) void {
+        for (&self.before, 0..) |*before, v| {
+            before.* = @intCast((v + parts.voice_slots - 1) % parts.voice_slots);
+        }
+        const at = first orelse return;
+        if (at + voice_count <= parts.voice_slots) self.before[at] = @intCast(at + voice_count - 1);
     }
 
     /// `volume` is MML's V, 0 to 15 (the SID has one volume for all; here each voice's
@@ -119,9 +135,9 @@ pub const C64 = struct {
     pub fn sample(self: *C64) f32 {
         // Each voice is synced and ring-modulated by the one before (voice 1 by voice 3),
         // from where that one was at the start of this sample.
-        var modulator_high: [voice_count]bool = undefined;
+        var modulator_high: [parts.voice_slots]bool = undefined;
         for (self.voices, 0..) |voice, v| modulator_high[v] = voice.phase >= 0.5;
-        var wrapped: [voice_count]bool = undefined;
+        var wrapped: [parts.voice_slots]bool = undefined;
         for (&self.voices, 0..) |*voice, v| {
             voice.phase += voice.increment;
             wrapped[v] = voice.phase >= 1;
@@ -130,7 +146,7 @@ pub const C64 = struct {
         var direct: f32 = 0;
         var filtered: f32 = 0;
         for (&self.voices, 0..) |*voice, v| {
-            const before = (v + voice_count - 1) % voice_count;
+            const before = self.before[v];
             if (voice.instrument.sync and wrapped[before]) voice.phase = 0;
             const ring_high = voice.instrument.ring and modulator_high[before];
             const value = self.wave(voice, ring_high) * voice.adsr.next() * voice.volume;

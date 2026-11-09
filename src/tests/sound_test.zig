@@ -489,7 +489,7 @@ test "the ADSR envelope: its attack, its sustain level, and its release" {
 
 test "the NES pulse sounds on its timer with the duty rounded to the four of the chip" {
     var nes = nes_module.Nes.init(rate);
-    nes.triangle_level = 0;
+    nes.voices[2].triangle_level = 0;
     nes.noteOn(0, 57, 15, .{});
     const square = try nesSecond(&nes);
     defer std.testing.allocator.free(square);
@@ -519,7 +519,7 @@ test "the NES triangle sounds an octave lower than a pulse on the same timer, an
 
 test "the NES noise is shorter for higher notes and goes silent with its envelope" {
     var nes = nes_module.Nes.init(rate);
-    nes.triangle_level = 0;
+    nes.voices[2].triangle_level = 0;
     // O3's C is the longest period, O4's D# the shortest; the notes beyond take the ends.
     try std.testing.expectEqual(@as(usize, 15), nes_module.noiseIndex(36));
     try std.testing.expectEqual(@as(usize, 15), nes_module.noiseIndex(12));
@@ -532,9 +532,9 @@ test "the NES noise is shorter for higher notes and goes silent with its envelop
         previous = nes_module.noiseIndex(@intCast(note));
     }
     nes.noteOn(3, 51, 15, .{});
-    const high_period = nes.noise_period;
+    const high_period = nes.voices[3].noise_period;
     nes.noteOn(3, 40, 15, .{});
-    try std.testing.expect(nes.noise_period > high_period);
+    try std.testing.expect(nes.voices[3].noise_period > high_period);
     var low: f32 = 1;
     var high: f32 = 0;
     for (0..rate / 10) |_| {
@@ -924,7 +924,6 @@ test "SFX plays a sample once beside the music, on any chip, and a stop ends it"
 // ---- S4b: several chips together ----
 
 test "the chips CHIPS takes, and the voices numbered across them" {
-    const Chips = engine_module.Chips;
     const msx_scc = Chips.fromMask(1 | 16).?;
     try std.testing.expectEqual(@as(usize, 8), msx_scc.voiceCount());
     try std.testing.expectEqual(@as(?engine_module.Chip, null), msx_scc.only());
@@ -936,8 +935,8 @@ test "the chips CHIPS takes, and the voices numbered across them" {
     const nes_amiga = Chips.fromMask(4 | 32).?;
     try std.testing.expectEqual(engine_module.Chip.amiga, nes_amiga.place(4).?.chip);
     try std.testing.expectEqual(engine_module.Chip.nes, Chips.fromMask(4).?.only().?);
-    // None, unknown bits, both PSGs, more than 8 voices.
-    for ([_]i64{ 0, -1, 64, 1 | 2, 16 | 32, 4 | 8 | 16 }) |mask| try std.testing.expect(Chips.fromMask(mask) == null);
+    // None, and unknown bits.
+    for ([_]i64{ 0, -1, 64 }) |mask| try std.testing.expect(Chips.fromMask(mask) == null);
 }
 
 test "the MSX's PSG and the SCC play one PLAY of 8 voices together" {
@@ -951,10 +950,147 @@ test "the MSX's PSG and the SCC play one PLAY of 8 voices together" {
     // Voice 1 on the PSG with the ROM's period, voice 8 on the SCC's fifth voice.
     try std.testing.expectEqual(@as(u8, 254), engine.psg.read(0));
     try std.testing.expectEqual(@as(u8, 8), engine.psg.read(8));
-    try std.testing.expect(engine.scc.voices[4].increment > 0);
-    try std.testing.expectEqual(@as(f32, 0), engine.scc.voices[0].increment);
+    try std.testing.expect(engine.scc.voices[7].increment > 0);
+    try std.testing.expectEqual(@as(f32, 0), engine.scc.voices[3].increment);
     for ([_]usize{ 1, 8 }) |n| try std.testing.expect(engine.isPlaying(n));
     try std.testing.expect(!engine.isPlaying(2));
     player.play(1000);
     try std.testing.expect(!engine.isPlaying(0));
+}
+
+// ---- S8: the voices and the chips' sounds ----
+
+const Chips = engine_module.Chips;
+
+fn engineWith(chips: u8, instruments: []const struct { u8, parts.Instrument }) Engine {
+    var engine = Engine.init(.ay8910, psg_module.msx_clock, rate);
+    std.debug.assert(engine.putCommand(engine.chipsCommand(Chips.fromMask(chips).?)));
+    for (instruments) |item| std.debug.assert(engine.putCommand(.{ .instrument = .{ .index = item[0], .value = item[1] } }));
+    return engine;
+}
+
+test "the voices after a chip's own sound like the last chip, and CHIPS takes any chips" {
+    try std.testing.expectEqual(engine_module.Chip.nes, Chips.fromMask(4).?.chipOf(5));
+    try std.testing.expectEqual(engine_module.Chip.scc, Chips.fromMask(1 | 16).?.chipOf(7));
+    try std.testing.expectEqual(engine_module.Chip.msx, Chips.fromMask(1).?.chipOf(7));
+    try std.testing.expectEqual(@as(?usize, 3), Chips.fromMask(1 | 4).?.firstVoice(.nes));
+    try std.testing.expectEqual(@as(?usize, null), Chips.fromMask(1).?.firstVoice(.nes));
+    // Both PSGs, and more than 8 voices (the voices past the 8th are not played).
+    try std.testing.expect(Chips.fromMask(1 | 2) != null);
+    try std.testing.expect(Chips.fromMask(4 | 8 | 16) != null);
+    try std.testing.expectEqual(@as(?usize, null), Chips.fromMask(4 | 8 | 16 | 32).?.firstVoice(.amiga));
+}
+
+test "an instrument with STYLE sounds like its chip on any voice, beside the voices' own" {
+    var engine = engineWith(1, &.{
+        .{ 1, .{ .style = .nes, .wave = .triangle } },
+        .{ 2, .{ .style = .scc, .wave = .saw } },
+        .{ 3, .{ .style = .c64, .wave = .saw } },
+        .{ 4, .{ .style = .amiga } },
+    });
+    var voices: [engine_module.max_voices]mml.Voice = @splat(.{});
+    var player: Player = .{ .engine = &engine };
+    player.play(10);
+    try std.testing.expect(!engine.active.has(.nes));
+    try engine_module.putPlay(&engine, &voices, &.{ "A", "@1 A", "@2 A", "@3 A", "@4 A" }, &player, Player.wait);
+    player.play(30);
+    try std.testing.expectEqual(@as(u8, 8), engine.psg.read(8));
+    try std.testing.expectEqual(@as(u8, 0), engine.psg.read(9));
+    try std.testing.expectEqual(nes_module.Role.triangle, engine.nes.voices[1].role);
+    try std.testing.expect(engine.scc.voices[2].increment > 0);
+    try std.testing.expectEqual(parts.Wave.saw, engine.c64.voices[3].instrument.wave);
+    try std.testing.expect(engine.amiga.voices[4].uses_table);
+    for ([_]engine_module.Chip{ .nes, .scc, .c64, .amiga }) |chip| try std.testing.expect(engine.active.has(chip));
+    try std.testing.expect(engine.chips.only().? == .msx);
+    // A stop leaves only the voices' own chips.
+    std.debug.assert(engine.putCommand(engine.resetCommand(false)));
+    player.play(10);
+    try std.testing.expect(!engine.active.has(.nes));
+    try std.testing.expectEqual(@as(?engine_module.Chip, null), engine.current[1]);
+}
+
+test "a note on another chip ends the voice's note on the chip before" {
+    var engine = engineWith(1, &.{ .{ 1, .{ .style = .nes } }, .{ 2, .{ .style = .scc } } });
+    var voices: [engine_module.max_voices]mml.Voice = @splat(.{});
+    var player: Player = .{ .engine = &engine };
+    player.play(10);
+    try engine_module.putPlay(&engine, &voices, &.{"T255 L4 @1 C @2 C @0 C"}, &player, Player.wait);
+    player.play(30);
+    try std.testing.expect(engine.nes.voices[0].on);
+    player.play(230);
+    try std.testing.expect(!engine.nes.voices[0].on);
+    try std.testing.expectEqual(engine_module.Chip.scc, engine.current[0].?);
+    try std.testing.expectEqual(@as(u8, 0), engine.psg.read(8));
+    player.play(230);
+    try std.testing.expectEqual(engine_module.Chip.msx, engine.current[0].?);
+    try std.testing.expect(engine.psg.read(8) != 0);
+    try std.testing.expect(engine.scc.voices[0].adsr.stage == .release or engine.scc.voices[0].adsr.stage == .idle);
+}
+
+test "a NES voice of the chip's own keeps its role, unless the instrument has STYLE" {
+    var engine = engineWith(4, &.{ .{ 1, .{ .style = .nes, .wave = .square } }, .{ 2, .{ .wave = .noise } } });
+    var voices: [engine_module.max_voices]mml.Voice = @splat(.{});
+    var player: Player = .{ .engine = &engine };
+    player.play(10);
+    // Voice 3 is the triangle whatever a plain instrument says; voice 5 is not the chip's,
+    // so its instrument's wave chooses.
+    try engine_module.putPlay(&engine, &voices, &.{ "", "", "@2 A", "", "@2 A" }, &player, Player.wait);
+    player.play(20);
+    try std.testing.expectEqual(nes_module.Role.triangle, engine.nes.voices[2].role);
+    try std.testing.expectEqual(nes_module.Role.noise, engine.nes.voices[4].role);
+    player.play(1000);
+    try engine_module.putPlay(&engine, &voices, &.{ "", "", "@1 A" }, &player, Player.wait);
+    player.play(20);
+    try std.testing.expectEqual(nes_module.Role.pulse, engine.nes.voices[2].role);
+}
+
+test "the NES keeps no constant level when no voice is its own, and two noises are apart" {
+    var nes = nes_module.Nes.init(rate);
+    nes.place(null);
+    try std.testing.expectEqual(@as(f32, 0), nes.sample());
+    nes.noteOnWave(5, 40, 15, .{ .wave = .noise });
+    nes.noteOnWave(6, 51, 15, .{ .wave = .noise });
+    try std.testing.expect(nes.voices[6].noise_period < nes.voices[5].noise_period);
+    var highest: f32 = 0;
+    for (0..rate / 10) |_| highest = @max(highest, nes.sample());
+    try std.testing.expect(highest > 0.1);
+}
+
+test "the C64's ring goes round its own voices, wherever they are" {
+    var c64 = c64_module.C64.init(rate);
+    try std.testing.expectEqual(@as(u8, 2), c64.before[0]);
+    c64.place(3);
+    try std.testing.expectEqual(@as(u8, 5), c64.before[3]);
+    try std.testing.expectEqual(@as(u8, 3), c64.before[4]);
+    try std.testing.expectEqual(@as(u8, 1), c64.before[2]);
+    c64.place(null);
+    try std.testing.expectEqual(@as(u8, 7), c64.before[0]);
+}
+
+test "the Amiga's sides start from its first voice" {
+    var amiga = amiga_module.Amiga.init(rate);
+    for ([_]bool{ true, false, false, true, true, false, false, true }, 0..) |left, v| try std.testing.expectEqual(left, amiga.voices[v].left);
+    amiga.place(3);
+    for ([_]bool{ false, false, true, true, false, false, true, true }, 0..) |left, v| try std.testing.expectEqual(left, amiga.voices[v].left);
+}
+
+test "the PSG's sound on every voice: three voices to a PSG, and the MSX's beside the ST's" {
+    var engine = engineWith(1, &.{.{ 1, .{ .style = .atari_st } }});
+    var voices: [engine_module.max_voices]mml.Voice = @splat(.{});
+    var player: Player = .{ .engine = &engine };
+    player.play(10);
+    try engine_module.putPlay(&engine, &voices, &.{ "A", "", "", "A", "", "", "", "@1 A" }, &player, Player.wait);
+    player.play(30);
+    // Voice 4 is the first of the second PSG; voice 8 the second of the ST's third.
+    try std.testing.expectEqual(@as(u8, 254), engine.psg_extra[0].read(0));
+    try std.testing.expectEqual(@as(u8, 8), engine.psg_extra[0].read(8));
+    try std.testing.expectEqual(psg_module.Model.ym2149, engine.psg_extra[4].model);
+    try std.testing.expectEqual(@as(u8, 8), engine.psg_extra[4].read(9));
+    try std.testing.expectEqual(@as(u8, 0b10001), engine.psg_used);
+    // With both chips the first PSG is the MSX's, as SOUND's.
+    std.debug.assert(engine.putCommand(engine.chipsCommand(Chips.fromMask(1 | 2).?)));
+    player.play(10);
+    try std.testing.expectEqual(psg_module.Model.ay8910, engine.psg.model);
+    try std.testing.expectEqual(engine_module.Chip.atari_st, engine.chips.chipOf(3));
+    try std.testing.expectEqual(@as(u8, 0), engine.psg_used);
 }

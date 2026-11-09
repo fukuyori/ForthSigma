@@ -237,30 +237,41 @@ TUNE
 | `REQUIRE-AUDIO` | ( -- ) | 音の語を読み込む（最初の1回だけ）。`REQUIRE-GRAPHICS` と同じく解析器が扱う語で、定義の中では使えない。 |
 | `PLAY` | ( c-addr u -- ) | MML を声部Aで鳴らす。音符のない声部BとCも、次の `PLAY` をAと同時に始める。 |
 | `PLAY2`、`PLAY3` | ( c-addr1 u1 c-addr2 u2 -- )、( c-addr1 u1 c-addr2 u2 c-addr3 u3 -- ) | 声部AとB、またはA、B、Cを同時に鳴らし始める。 |
-| `PLAYS` | ( c-addr1 u1 ... c-addrn un n -- ) | 選んでいる機種の、最初の n 声を同時に鳴らし始める。n は1から声部の数まで。 |
-| `PLAY?` | ( n -- flag ) | 声部 n（0 ならいずれか）に、まだ鳴らす音符があるか。MSX BASIC の `PLAY(n)`。音符のない声部も、`PLAY` の区切りを音のスレッドが受け取るまで（1/50秒以内）は真になる。 |
+| `PLAYS` | ( c-addr1 u1 ... c-addrn un n -- ) | 最初の n 声を同時に鳴らし始める。n は 1〜8。 |
+| `PLAY?` | ( n -- flag ) | 声部 n（1〜8。0 ならいずれか）に、まだ鳴らす音符があるか。MSX BASIC の `PLAY(n)`。音符のない声部も、`PLAY` の区切りを音のスレッドが受け取るまで（1/50秒以内）は真になる。 |
 | `SOUND` | ( reg value -- ) | PSG のレジスタ 0〜13 に値 0〜255 を書く（MSX BASIC の `SOUND`）。PSG は、どの機種を選んでいても鳴る。 |
 | `BEEP` | ( -- ) | 音楽を止め、PSG と声部の設定を初めの状態にして、ビープ音（約1316 Hz、40 ms）を鳴らす。音のスレッドが音楽を止めてから戻る。 |
 | `AUDIO?` | ( -- flag ) | 音が出力装置に届くか。実行中に出力が失敗すると（Linuxで音を流すコマンドが終わるなど）偽になり、プログラムを起動し直すまで音は出ない。 |
 
 ### 機種と音色
 
-`PLAY` は1つの機種で鳴らします。`CHIPS` を使うと、いくつかの機種を同時に鳴らせます。機種を選ぶと、`BEEP` と同じく音楽が止まります（ビープ音は鳴りません）。音色のある機種では、MML の `@n` で音色 n を選びます。機種にない値はその機種で一番近い値になり、機種にできないことは無視します。
+`PLAY` は8声あり、音符ごとにどの機種の音でも鳴らせます。`STYLE` を指定した音色は、どの声部で鳴らしてもその機種の音になります。それ以外の音符は、声部の機種の音になります。声部の機種は `MSX-SOUND` などの語や `CHIPS` で決めます。これらの語を実行すると、`BEEP` と同じく音楽が止まります（ビープ音は鳴りません）。MML の `@n` で音色 n を選びます。機種にない値はその機種で一番近い値になり、機種にできないことは無視します。
+
+```forth
+1 INSTRUMENT  NES STYLE  PULSE 25 DUTY  0 4 8 2 ADSR
+2 INSTRUMENT  SCC STYLE  SAW
+3 INSTRUMENT  C64 STYLE  SAW  1 700 10 FILTER
+4 INSTRUMENT  NES STYLE  TRIANGLE
+S" @1 CDEF" S" @2 EGAB" S" @3 O3 C2G2" S" @4 O2 C1" 4 PLAYS
+```
+
+同じ機種の声部は、どの声部であっても、その機種のミキサーを通り、機種が共有するものを共有します（NES のミキサー、C64 のフィルター、Amiga の出力フィルター）。MSX と Atari ST の声部は、3声ごとに1つの PSG を使い（声部1〜3、4〜6、7と8）、エンベロープはその中で共有します。声部の直前の音符と違う機種の音符を鳴らすと、直前の音符は終わります。機種ごとの音量は変えていないので、1つの機種に多くの声部を割り当てると、出力の上限で音が歪むことがあります。
 
 | ワード | スタック | 説明 |
 | --- | --- | --- |
-| `MSX-SOUND` | ( -- ) | MSX の AY-3-8910（3声）。音の高さは MSX の ROM のとおり。起動したときはこの機種。 |
+| `MSX-SOUND` | ( -- ) | 声部を MSX の AY-3-8910（機種自身の声部は3声）の音にする。音の高さは MSX の ROM のとおり。起動したときはこの機種。この表の「機種自身の声部」は先頭の声部で、それより後ろの声部も同じ機種の音になるが、波形は固定されない。 |
 | `ST-SOUND` | ( -- ) | Atari ST の YM2149（2 MHz、3声）。エンベロープの音量は32段。 |
-| `NES-SOUND` | ( -- ) | NES（4声）。矩形波2つ（デューティは 12.5、25、50、75%）、三角波（音量はなく、`V0` で無音）、ノイズ。ノイズの声部では、`O3 C` から `O4 D#` の音符が、16種類の音を低いものから高いものへ選ぶ。 |
+| `NES-SOUND` | ( -- ) | NES（機種自身の声部は4声）。矩形波2つ（デューティは 12.5、25、50、75%）、三角波（音量はなく、`V0` で無音）、ノイズ。ノイズの声部では、`O3 C` から `O4 D#` の音符が、16種類の音を低いものから高いものへ選ぶ。この4声は、音色に `STYLE` がない限り、音色の波形によらず波形が固定される。 |
 | `C64-SOUND` | ( -- ) | C64 の SID（3声）。三角波、のこぎり波、パルス、ノイズ。`RING`、`SYNC`、`FILTER` が使える。 |
 | `SCC-SOUND` | ( -- ) | コナミの SCC（5声）。それぞれ、音色の32段の波形を鳴らす。 |
 | `AMIGA-SOUND` | ( -- ) | Amiga の Paula（4声、左・右・右・左）。音色の標本を鳴らす。 |
-| `CHIPS` | ( mask -- ) | いくつかの機種を同時に使う。`MSX`（1）、`ST`（2）、`NES`（4）、`C64`（8）、`SCC`（16）、`AMIGA`（32）を `OR` で足して渡す。声部はこの順に番号が付く。例えば `MSX SCC OR CHIPS` では、声部1〜3が PSG、4〜8が SCC。合計8声まで。`MSX` と `ST` は同じ PSG なので一緒には使えない。条件に合わないと `NUMBER ERROR !`。 |
+| `CHIPS` | ( mask -- ) | 声部にいくつかの機種を割り当てる。`MSX`（1）、`ST`（2）、`NES`（4）、`C64`（8）、`SCC`（16）、`AMIGA`（32）を `OR` で足して渡す。声部はこの順に番号が付く。例えば `MSX SCC OR CHIPS` では、声部1〜3が PSG、4〜8が SCC。最後の機種の声部より後ろの声部は、最後の機種の音になる。機種の声部の合計が8を超えると、9声目以降は鳴らない。機種が1つもないときと、未知のビットがあるときは `NUMBER ERROR !`。`MSX` と `ST` の両方を選ぶと、`SOUND` と `BEEP` は MSX の PSG を使う。 |
 | `INSTRUMENT` | ( n -- ) | 下の語で変える音色 n（0〜63）を選ぶ。 |
+| `STYLE` | ( chip -- ) | どの声部で鳴らしても、音色をその機種の音にする。`MSX`、`ST`、`NES`、`C64`、`SCC`、`AMIGA` のどれか。0（初めの値）は、鳴らす声部の機種の音にする。これら以外は `NUMBER ERROR !`。NES では、`TRIANGLE` が三角波、`NOISE` がノイズ、ほかの波形は矩形波になる。PSG では音色の波形を使わない。 |
 | `SQUARE`、`PULSE`、`TRIANGLE`、`SAW`、`NOISE` | ( -- ) | 音色の波形。C64 はそれぞれを使う。NES の矩形波は `PULSE` のデューティを使う。SCC と Amiga は、その形の32段の波形を作る。初めは `SQUARE`。 |
 | `DUTY` | ( percent -- ) | `PULSE` の幅 0〜100（初め50）。 |
 | `ADSR` | ( a d s r -- ) | エンベロープ。各 0〜15 で、SID と同じ。アタックは 2 ms〜8 s、ディケイとリリースはその3倍、サステインの大きさは s / 15。初めは `0 0 15 0`。音符が終わるとリリースが始まる。 |
-| `RING`、`SYNC` | ( flag -- ) | C64 で、音色の三角波を1つ前の声部（声部1には声部3）で変調する。または、その声部の周期ごとに波形を最初に戻す。 |
+| `RING`、`SYNC` | ( flag -- ) | C64 で、音色の三角波を1つ前の声部で変調する。または、その声部の周期ごとに波形を最初に戻す。C64 自身の3声は巡回する（1声目には3声目）。それ以外の声部は、番号が1つ小さい声部を使う（声部1には声部8）。 |
 | `FILTER` | ( mode cutoff resonance -- ) | C64 で、音色をフィルターに通す。mode は 0 なし、1 ローパス、2 バンドパス、3 ハイパス。cutoff は 0〜2047（約 30 Hz〜12 kHz）、resonance は 0〜15。フィルターは全声部で1つで、フィルターを使う音符が鳴り始めるたびにその設定になる。 |
 | `SCC-WAVE` | ( c-addr n -- ) | c-addr からの符号付きの32バイトを、SCC（と Amiga）での音色 n の波形にする。設定しないときは、音色の波形の語の形になる。 |
 
@@ -302,8 +313,8 @@ TUNE
 
 `BEEP`、機種を選ぶ語、`CHIPS`、`FREE-SAMPLES`、`PLAY` が待っている間の Ctrl+C は、音楽、効果音、モジュールを止めます。音の状態（音色、標本、待ち行列）は辞書に含まれません。`SAVE` と `SAVESYS` は音の語とそれを使う語を保存しますが、音色の設定や標本の読み込みは、プログラムが起動してから行ってください。音の語を読み込んだ辞書は `SIGIMG35` で保存します。
 
-`SND-` の語は、ライブラリを書くための基本の語です: `SND-PLAY`、`SND-PLAYS`、`SND-SOUND`、`SND-BEEP`、`SND-PLAYING`、`SND-DEVICE`、`SND-CHIP`、`SND-CHIPS`、`SND-INSTRUMENT`、`SND-WAVE`、`SND-DUTY`、`SND-ADSR`、`SND-RING`、`SND-SYNC`、`SND-FILTER`、`SND-WAVETABLE`、`SND-LOAD-SAMPLE`、`SND-SAMPLE`、`SND-LOOP-SAMPLE`、`SND-SAMPLE-INSTRUMENT`、`SND-SFX`、`SND-AMIGA-FILTER`、`SND-FREE-SAMPLES`、`SND-LOAD-MOD`、`SND-PLAY-MOD`、`SND-STOP-MOD`、`SND-MOD-PLAYING`。それぞれの説明は `HELP` で見られます。`SND-LOAD-SAMPLE` と `SND-LOAD-MOD` は、エラーを THROW せずに ior を返します。
+`SND-` の語は、ライブラリを書くための基本の語です: `SND-PLAY`、`SND-PLAYS`、`SND-SOUND`、`SND-BEEP`、`SND-PLAYING`、`SND-DEVICE`、`SND-CHIP`、`SND-CHIPS`、`SND-INSTRUMENT`、`SND-WAVE`、`SND-DUTY`、`SND-ADSR`、`SND-RING`、`SND-SYNC`、`SND-FILTER`、`SND-WAVETABLE`、`SND-LOAD-SAMPLE`、`SND-SAMPLE`、`SND-LOOP-SAMPLE`、`SND-SAMPLE-INSTRUMENT`、`SND-SFX`、`SND-AMIGA-FILTER`、`SND-FREE-SAMPLES`、`SND-LOAD-MOD`、`SND-PLAY-MOD`、`SND-STOP-MOD`、`SND-MOD-PLAYING`、`SND-STYLE`。それぞれの説明は `HELP` で見られます。`SND-LOAD-SAMPLE` と `SND-LOAD-MOD` は、エラーを THROW せずに ior を返します。
 
 エラー: `-Daudio=false` の版の `REQUIRE-AUDIO` は `AUDIO UNAVAILABLE !`（THROW -275）、範囲外の数は `NUMBER ERROR !`、音のスレッドを持たないホストでは `HOST FUNCTION UNAVAILABLE !` です。`REQUIRE-GRAPHICS` と同じく、ライブラリの読み込みに失敗したときは加えたものを取り除き、`FORGET` や `MARKER` で消したあとは `REQUIRE-AUDIO` でもう一度読み込めます。
 
-`examples/music.fs` は、各機種で短い曲を鳴らし、`SAMPLE` で作った効果音を鳴らします。
+`examples/music.fs` は、各機種で短い曲を鳴らし、いくつかの機種を1つの `PLAY` で鳴らし、`SAMPLE` で作った効果音を鳴らします。

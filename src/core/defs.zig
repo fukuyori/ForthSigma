@@ -660,6 +660,7 @@ pub const Builtin = enum {
     snd_play_mod,
     snd_stop_mod,
     snd_mod_playing,
+    snd_style,
 };
 
 pub const HeapResult = union(enum) { address: Cell, no_memory, bad_pointer };

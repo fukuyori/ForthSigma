@@ -21,6 +21,7 @@
 \   SND-SAMPLE-INSTRUMENT ( n -- )  SND-SFX ( n -- )  SND-AMIGA-FILTER ( flag -- )
 \   SND-FREE-SAMPLES ( -- )  SND-CHIPS ( mask -- )  SND-LOAD-MOD ( c-addr u -- ior )
 \   SND-PLAY-MOD ( flag -- )  SND-STOP-MOD ( -- )  SND-MOD-PLAYING ( -- flag )
+\   SND-STYLE ( chip -- )
 \
 \ The sound is MSX BASIC's: an AY-3-8910 at the MSX's clock, played by the host's audio
 \ thread. PLAY takes MSX BASIC's music macro language (MML) and returns as soon as the
@@ -38,8 +39,9 @@
 
 \ ---- Chips ----------------------------------------------------------------------
 \
-\ PLAY plays on one chip at a time. Choosing one stops the music, as BEEP does without
-\ its sound; the PSG of SOUND and BEEP sounds with every chip.
+\ PLAY has 8 voices. These words say which chip the voices sound like; an instrument
+\ with STYLE sounds like its own chip on any voice. Choosing them stops the music, as
+\ BEEP does without its sound; the PSG of SOUND and BEEP sounds with every chip.
 
 : MSX-SOUND ( -- )   0 SND-CHIP ;     \ the MSX's AY-3-8910, 3 voices (at start)
 : ST-SOUND ( -- )   1 SND-CHIP ;      \ the Atari ST's YM2149 at 2 MHz, 3 voices
@@ -50,12 +52,17 @@
 : PLAYS ( c-addr1 u1 ... c-addrn un n -- )   SND-PLAYS ;
 
 \ Several chips together: CHIPS takes their bits, e.g. MSX SCC OR CHIPS, and numbers
-\ the voices in this order (there voices 1 to 3 are the PSG's, 4 to 8 the SCC's). At
-\ most 8 voices in all, and not MSX and ST together (they are one PSG).
+\ the voices in this order (there voices 1 to 3 are the PSG's, 4 to 8 the SCC's). The
+\ voices after the last chip's own sound like the last chip; voices past the 8th are
+\ not played.
 
 1 CONSTANT MSX   2 CONSTANT ST   4 CONSTANT NES   8 CONSTANT C64
 16 CONSTANT SCC   32 CONSTANT AMIGA
 : CHIPS ( mask -- )   SND-CHIPS ;
+
+\ The chip the instrument INSTRUMENT chose sounds like, on any voice: one of the
+\ constants above, or 0 for the chip of the voice that plays it.
+: STYLE ( chip -- )   SND-STYLE ;
 
 \ ---- Instruments ----------------------------------------------------------------
 \

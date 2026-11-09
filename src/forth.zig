@@ -226,8 +226,6 @@ pub const State = struct {
     audio_library: []const u8 = if (defs.audio_enabled) words_audio.library else "",
     /// What each voice of PLAY keeps from one PLAY to the next; BEEP resets it.
     audio_voices: [sound_engine.max_voices]sound_mml.Voice = @splat(.{}),
-    /// The chips CHIPS (or MSX-SOUND and the others) chose, as the audio thread has them.
-    audio_chips: sound_engine.Chips = sound_engine.Chips.one(.msx),
     /// The instruments, as the audio thread has them, and the one INSTRUMENT chose to
     /// change.
     audio_instruments: [sound_mml.instrument_count]sound_engine.Instrument = @splat(.{}),

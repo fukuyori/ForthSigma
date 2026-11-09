@@ -13,6 +13,8 @@ const parts = @import("sound_parts.zig");
 /// The MSX's clock, which the SCC counts.
 pub const clock: u32 = 3_579_545;
 
+/// The chip's voices, which set its level in the mix; `Scc.voices` has a place for every
+/// voice of PLAY.
 pub const voice_count = 5;
 
 /// The period register for a note.
@@ -31,7 +33,7 @@ const Voice = struct {
 
 pub const Scc = struct {
     sample_rate: u32,
-    voices: [voice_count]Voice = @splat(.{}),
+    voices: [parts.voice_slots]Voice = @splat(.{}),
 
     pub fn init(sample_rate: u32) Scc {
         return .{ .sample_rate = sample_rate };

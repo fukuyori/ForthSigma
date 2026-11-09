@@ -11,8 +11,18 @@ const std = @import("std");
 /// with fixed waves takes what fits (the NES's pulse voices take the duty).
 pub const Wave = enum(u8) { square, pulse, triangle, saw, noise };
 
+/// The chips whose sound a voice can have.
+pub const Chip = enum(u8) { msx, atari_st, nes, c64, scc, amiga };
+
+/// The voices PLAY has. Each chip's sound (sound_nes.zig and the others) has this many
+/// places, numbered as the voices are, so that any voice can sound like any chip.
+pub const voice_slots = 8;
+
 /// An instrument (INSTRUMENT and the words after it; MML's `@` chooses one).
 pub const Instrument = struct {
+    /// STYLE: the chip this instrument sounds like; without one, the chip the voice
+    /// has from NES-SOUND, CHIPS, and the others.
+    style: ?Chip = null,
     wave: Wave = .square,
     /// The pulse's high part, 0 to 100 percent (PULSE).
     duty: u8 = 50,
