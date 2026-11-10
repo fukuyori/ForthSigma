@@ -297,6 +297,38 @@ VARIABLE SCROLL
 
 The words under them are `GFX-PIXEL` ( img x y -- rgb | -1 ), the color of a pixel of any image, and `GFX-TILEMAP` ( addr cols rows img tw th sx sy x y w h key -- ), which draws a map of tile bytes at any address. The structures are in the dictionary, so `SAVE` and `SAVESYS` keep them; their image handles are no longer valid after a restore, so a program makes its images and sets `SPRITE-IMAGE` and `TILEMAP-IMAGE` again after it starts.
 
+### Palettes and effects on rows
+
+These are game words too. A palette is 256 cells, the colors of the numbers 0 to 255; a picture of color numbers has one byte for each pixel. Changing a color of the palette changes every pixel of that number the next time the picture is drawn, which is how running water or lights were made by turning colors. The effects on rows change the image drawn on after it is drawn, each row by its own cell of a table, as the video chips that changed a register on each scan line did. How many colors, how many sprites on a line, and what the table holds are the program's numbers.
+
+| Word | Stack | What it does |
+|---|---|---|
+| `PALETTE:` | ( "name" -- ) | Define a palette, all black. name gives its address. |
+| `PALETTE!`, `PALETTE@` | ( rgb n pal -- ), ( n pal -- rgb ) | Set and read the color of number n. Outside 0 to 255, `NUMBER ERROR !`. |
+| `ROTATE-PALETTE` | ( first count pal -- ) | Turn the colors of the numbers first to first + count - 1 one place up: each takes the color of the number below it, and the first that of the last. |
+| `INDEXED:` | ( w h "name" -- ) | Define a picture of w by h color numbers, all 0. Its fields are `INDEXED-W` and `INDEXED-H`, and its bytes, row by row, are at `INDEXED-DATA` ( pic -- addr ). |
+| `INDEX@`, `INDEX!` | ( x y pic -- n ), ( n x y pic -- ) | Read and set the color number of a pixel. Outside the picture, `NUMBER ERROR !`. |
+| `DRAW-INDEXED` | ( x y pic pal key -- ) | Draw a picture at x y of the image drawn on with the colors of a palette, leaving out the pixels of number key (-1 for none). |
+| `RASTER-SCROLL` | ( table x y w h -- ) | Move each row of the w by h rectangle at x y to the right by its cell of a table of h cells (a negative cell moves it left); what leaves on one side comes in on the other. |
+| `RASTER-COLOR` | ( table rgb x y w h -- ) | Give the pixels of color rgb in each row of the rectangle the color in its cell of the table. |
+| `DRAW-SPRITES` | ( array n limit -- ) | Draw n sprites of an array of `/SPRITE` structures in order, but on each row only the first limit sprites shown on that row; the later ones lose that row. A limit of 0 draws them all. |
+
+```forth
+REQUIRE-GAME  ALSO GRAPHICS ALSO GAME
+256 192 GFX-INIT
+PALETTE: PAL   16 16 INDEXED: WAVE
+$0000AA 1 PAL PALETTE!  $3355FF 2 PAL PALETTE!  $AACCFF 3 PAL PALETTE!
+: MAKE-WAVE ( -- )   16 0 DO 16 0 DO  I J + 3 MOD 1+  I J WAVE INDEX!  LOOP LOOP ;  MAKE-WAVE
+CREATE WOBBLE 192 CELLS ALLOT
+: STEP ( n -- )
+   192 0 DO  DUP I + 8 / 1 AND 2*  WOBBLE I CELLS + !  LOOP DROP
+   1 3 PAL ROTATE-PALETTE
+   0 GFX-CLS  100 80 WAVE PAL 0 DRAW-INDEXED
+   WOBBLE 0 0 256 192 RASTER-SCROLL  SHOW 16 FRAME ;
+```
+
+The words under them are `GFX-INDEXED` ( addr w h palette x y key -- ), which draws color numbers at any address with any 256 cells of colors, `GFX-ROW-SHIFT` ( table x y w h -- ), and `GFX-ROW-COLOR` ( table rgb x y w h -- ).
+
 ### Mathematical coordinates and graphs
 
 In a build with the floating-point words, the library also draws in mathematical coordinates (`src/graphics/graphics_float.fs`; a build with `-Dfloat=false` leaves these words out). `X-RANGE` and `Y-RANGE` say which part of the plane the image shows: x grows to the right, from the left edge to the right one, and y grows upward, from the bottom edge to the top one. Both start as -1 to 1. A point is drawn at the pixel nearest to it.

@@ -18,7 +18,7 @@ const Cell = memory_map.Cell;
 const RuntimeError = defs.RuntimeError;
 const State = forth.State;
 
-pub const words = [_]Builtin{ .gfx_image_new, .gfx_image_free, .gfx_image_size, .gfx_target, .gfx_target_query, .gfx_copy, .gfx_image_load, .gfx_pixel, .gfx_tilemap };
+pub const words = [_]Builtin{ .gfx_image_new, .gfx_image_free, .gfx_image_size, .gfx_target, .gfx_target_query, .gfx_copy, .gfx_image_load, .gfx_pixel, .gfx_tilemap, .gfx_indexed, .gfx_row_shift, .gfx_row_color };
 
 pub const max_side = words_graphics.max_side;
 
@@ -109,6 +109,24 @@ pub fn execute(self: *State, builtin: Builtin) RuntimeError!void {
                 view[at] = try self.pop();
             }
             try drawTilemap(self, view);
+        },
+        .gfx_indexed => {
+            var args: [7]Cell = undefined;
+            var at: usize = args.len;
+            while (at > 0) {
+                at -= 1;
+                args[at] = try self.pop();
+            }
+            try drawIndexed(self, args);
+        },
+        .gfx_row_shift, .gfx_row_color => {
+            const h = try self.pop();
+            const w = try self.pop();
+            const y = try self.pop();
+            const x = try self.pop();
+            const color: ?Cell = if (builtin == .gfx_row_color) try self.pop() else null;
+            const table = try self.pop();
+            try rowEffect(self, table, color, x, y, w, h);
         },
         else => unreachable,
     }
@@ -331,6 +349,82 @@ fn drawTilemap(self: *State, view: [13]Cell) RuntimeError!void {
                 if (pixel & rgb_mask == color) continue;
             }
             target_row[@intCast(px)] = pixel;
+        }
+    }
+}
+
+/// GFX-INDEXED ( addr w h palette x y key -- ): draws a picture of w × h color numbers,
+/// one byte each, row by row, at addr in logical memory, at x y of the image drawn on;
+/// each number is the color in that cell of the 256 cells at `palette`. Pixels of the
+/// number `key` are left out (none when it is negative); so is what falls outside.
+fn drawIndexed(self: *State, args: [7]Cell) RuntimeError!void {
+    const w = args[1];
+    const h = args[2];
+    if (w < 0 or w > max_side or h < 0 or h > max_side) return error.InvalidNumber;
+    const width: usize = @intCast(w);
+    const height: usize = @intCast(h);
+    const start = try self.memoryAddress(args[0], width * height);
+    const bytes = self.memory[start..][0 .. width * height];
+    var palette: [256]u32 = undefined;
+    const palette_start = try self.memoryAddress(args[3], 256 * memory_map.cell_size);
+    for (&palette, 0..) |*color, index| {
+        const cell = std.mem.readInt(i64, self.memory[palette_start + index * memory_map.cell_size ..][0..8], .little);
+        color.* = opaque_black | (@as(u32, @truncate(@as(u64, @bitCast(cell)))) & rgb_mask);
+    }
+    const to = try target(self);
+    const key: ?u8 = if (args[6] < 0 or args[6] > 255) null else @intCast(args[6]);
+    const columns = range(w, 1, args[4], to.width, 0, width, false) orelse return;
+    const rows = range(h, 1, args[5], to.height, 0, height, false) orelse return;
+    var step: usize = 0;
+    while (step < rows.count) : (step += 1) {
+        const j: usize = @intCast(rows.offset(step));
+        const target_y: usize = @intCast(args[5] + @as(Cell, @intCast(j)));
+        var column: usize = 0;
+        while (column < columns.count) : (column += 1) {
+            const i: usize = @intCast(columns.offset(column));
+            const number = bytes[j * width + i];
+            if (key) |left_out| {
+                if (number == left_out) continue;
+            }
+            to.pixels[target_y * to.width + @as(usize, @intCast(args[4] + @as(Cell, @intCast(i))))] = palette[number];
+        }
+    }
+}
+
+/// GFX-ROW-SHIFT ( table x y w h -- ) and GFX-ROW-COLOR ( table rgb x y w h -- ): an
+/// effect on each row of the w × h rectangle at x y of the image drawn on, after it is
+/// drawn, with the cell of `table` for that row (the first cell for the top row): the
+/// row moves that many pixels to the right inside the rectangle, those that leave it
+/// coming in again on the left (a negative number moves it left), or, with a color, the
+/// pixels of that color in the row take the color in the table. The rows and columns of
+/// the rectangle outside the image are left out.
+fn rowEffect(self: *State, table: Cell, color: ?Cell, x: Cell, y: Cell, w: Cell, h: Cell) RuntimeError!void {
+    if (w <= 0 or h <= 0) return;
+    if (h > max_side) return error.InvalidNumber;
+    const table_start = try self.memoryAddress(table, @as(usize, @intCast(h)) * memory_map.cell_size);
+    const to = try target(self);
+    const x0: i128 = @max(x, 0);
+    const x1: i128 = @min(@as(i128, x) + w, @as(i128, @intCast(to.width)));
+    const y0: i128 = @max(y, 0);
+    const y1: i128 = @min(@as(i128, y) + h, @as(i128, @intCast(to.height)));
+    if (x0 >= x1 or y0 >= y1) return;
+    const from: usize = @intCast(x0);
+    const span: usize = @intCast(x1 - x0);
+    const old: u32 = if (color) |value| @as(u32, @truncate(@as(u64, @bitCast(value)))) & rgb_mask else 0;
+    var row = y0;
+    while (row < y1) : (row += 1) {
+        const offset: usize = @intCast(row - y);
+        const cell = std.mem.readInt(i64, self.memory[table_start + offset * memory_map.cell_size ..][0..8], .little);
+        const pixels = to.pixels[@as(usize, @intCast(row)) * to.width + from ..][0..span];
+        if (color != null) {
+            const new = opaque_black | (@as(u32, @truncate(@as(u64, @bitCast(cell)))) & rgb_mask);
+            for (pixels) |*pixel| {
+                if (pixel.* & rgb_mask == old) pixel.* = new;
+            }
+        } else {
+            // Moving right by n is turning the row left by span - n.
+            const right: usize = @intCast(@mod(@as(i128, cell), @as(i128, @intCast(span))));
+            std.mem.rotate(u32, pixels, (span - right) % span);
         }
     }
 }

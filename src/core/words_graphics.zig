@@ -59,6 +59,9 @@ pub const definitions = [_]struct { []const u8, Builtin }{
     .{ "GFX-MOUSE-EVENT", .gfx_mouse_event },
     .{ "GFX-PIXEL", .gfx_pixel },
     .{ "GFX-TILEMAP", .gfx_tilemap },
+    .{ "GFX-INDEXED", .gfx_indexed },
+    .{ "GFX-ROW-SHIFT", .gfx_row_shift },
+    .{ "GFX-ROW-COLOR", .gfx_row_color },
 };
 
 /// The words of the graphics library that HELP describes; the help test checks that the
@@ -88,7 +91,7 @@ const rgb_mask: u32 = 0x00ff_ffff;
 pub fn execute(self: *State, builtin: Builtin) RuntimeError!void {
     switch (builtin) {
         .gfx_gamepad_poll, .gfx_gamepad_query, .gfx_gamepad_name, .gfx_gamepad_map, .gfx_gamepad_guid => try @import("gamepad.zig").execute(self, builtin),
-        .gfx_image_new, .gfx_image_free, .gfx_image_size, .gfx_target, .gfx_target_query, .gfx_copy, .gfx_image_load, .gfx_pixel, .gfx_tilemap => try graphics_images.execute(self, builtin),
+        .gfx_image_new, .gfx_image_free, .gfx_image_size, .gfx_target, .gfx_target_query, .gfx_copy, .gfx_image_load, .gfx_pixel, .gfx_tilemap, .gfx_indexed, .gfx_row_shift, .gfx_row_color => try graphics_images.execute(self, builtin),
         .gfx_init => {
             const height = try self.pop();
             const width = try self.pop();

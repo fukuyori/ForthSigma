@@ -132,3 +132,79 @@ END-STRUCTURE
    map TILEMAP-DATA  map TILEMAP-COLS @  map TILEMAP-ROWS @
    map TILEMAP-IMAGE @  map TILEMAP-TW @  map TILEMAP-TH @
    sx sy x y w h  map TILEMAP-KEY @  GFX-TILEMAP ;
+
+\ ---- Palettes and pictures of color numbers -------------------------------------------
+
+\ A palette: 256 cells, the colors of the numbers 0 to 255, all black at first.
+: PALETTE: ( "name" -- )   CREATE HERE 256 CELLS ALLOT 256 CELLS ERASE ;
+: (COLOR#) ( n pal -- addr )   SWAP DUP 0 256 WITHIN 0= IF -24 THROW THEN CELLS + ;
+: PALETTE! ( rgb n pal -- )   (COLOR#) SWAP $FFFFFF AND SWAP ! ;
+: PALETTE@ ( n pal -- rgb )   (COLOR#) @ ;
+
+\ Turns the colors of the numbers first to first + count - 1 one place up: each takes
+\ the color of the number below it, and the first the color of the last, as palettes
+\ were turned to make water flow or lights run. Draw again to see it.
+: ROTATE-PALETTE { first count pal | last -- }
+   count 2 < IF EXIT THEN
+   first count + 1- pal PALETTE@ TO last
+   first pal (COLOR#)  DUP CELL+  count 1- CELLS MOVE
+   last first pal PALETTE! ;
+
+\ A picture of color numbers: its size, and one byte for each pixel, row by row.
+BEGIN-STRUCTURE /INDEXED
+   FIELD: INDEXED-W  FIELD: INDEXED-H
+END-STRUCTURE
+: INDEXED-DATA ( pic -- addr )   /INDEXED + ;
+\ Defines a picture of w by h pixels, all color number 0.
+: INDEXED: { w h | pic -- }
+   w 0 16385 WITHIN h 0 16385 WITHIN AND 0= IF -24 THROW THEN
+   CREATE  HERE TO pic  /INDEXED w h * + ALLOT ALIGN
+   w pic INDEXED-W !  h pic INDEXED-H !  pic INDEXED-DATA w h * ERASE ;
+: (INDEX-ADDR) { x y pic -- addr }
+   x 0 pic INDEXED-W @ WITHIN  y 0 pic INDEXED-H @ WITHIN  AND 0= IF -24 THROW THEN
+   pic INDEXED-DATA  y pic INDEXED-W @ * +  x + ;
+\ The color number of pixel x y, and setting it; NUMBER ERROR outside the picture.
+: INDEX@ ( x y pic -- n )   (INDEX-ADDR) C@ ;
+: INDEX! ( n x y pic -- )   (INDEX-ADDR) C! ;
+\ Draws a picture at x y of the image drawn on with the colors of a palette; the pixels
+\ of color number key are left out (-1 for none).
+: DRAW-INDEXED { x y pic pal key -- }
+   pic INDEXED-DATA  pic INDEXED-W @  pic INDEXED-H @  pal  x y key  GFX-INDEXED ;
+
+\ ---- Effects on each row -------------------------------------------------------------
+
+\ After drawing, as the video chips that changed a register on each scan line: the rows
+\ of the w by h rectangle at x y of the image drawn on, each with its cell of a table of
+\ h cells. RASTER-SCROLL moves each row to the right by its cell inside the rectangle
+\ (what leaves on the right comes in on the left); RASTER-COLOR gives the pixels of one
+\ color in each row the color in its cell.
+: RASTER-SCROLL ( table x y w h -- )   GFX-ROW-SHIFT ;
+: RASTER-COLOR ( table rgb x y w h -- )   GFX-ROW-COLOR ;
+
+\ ---- Sprites on a line -----------------------------------------------------------------
+
+\ Draws n sprites of an array of /SPRITE structures in order, but on each row of the
+\ image drawn on only the first `limit` sprites shown on that row: the later ones lose
+\ that row, as on the video chips that could show only so many sprites on a scan line.
+\ A limit of 0 draws them all.
+VARIABLE (ON-LINE)
+: (SPRITE-ROW) { row spr | sy -- }
+   spr SPRITE-FLIP @ 2 AND IF spr SPRITE-H @ 1- row - ELSE row THEN  spr SPRITE-SY @ + TO sy
+   spr SPRITE-IMAGE @  spr (FRAME-X)  sy  spr SPRITE-W @  1
+   spr SPRITE-X @  spr SPRITE-Y @ row +  spr SPRITE-KEY @  spr SPRITE-FLIP @ 1 AND  0 128 1 GFX-COPY ;
+: DRAW-SPRITES { array n limit | lines spr y -- }
+   limit 0= IF  n 0 ?DO array I /SPRITE * + DRAW-SPRITE LOOP  EXIT THEN
+   GFX-HEIGHT TO lines
+   lines CELLS ALLOCATE THROW (ON-LINE) !  (ON-LINE) @ lines CELLS ERASE
+   n 0 ?DO
+      array I /SPRITE * + TO spr
+      spr SPRITE-SHOWN @ IF
+         spr SPRITE-H @ 0 ?DO
+            spr SPRITE-Y @ I + TO y
+            y 0 lines WITHIN IF
+               (ON-LINE) @ y CELLS +  DUP @ limit < IF  1 SWAP +!  I spr (SPRITE-ROW)  ELSE DROP THEN
+            THEN
+         LOOP
+      THEN
+   LOOP
+   (ON-LINE) @ FREE THROW ;

@@ -1,5 +1,5 @@
 //! The game words: REQUIRE-GAME, which loads them. They are Forth (src/graphics/game.fs)
-//! over two GFX- words, GFX-PIXEL and GFX-TILEMAP: the group has no built-in words of
+//! over GFX- words (GFX-PIXEL, GFX-TILEMAP, GFX-INDEXED, GFX-ROW-SHIFT, GFX-ROW-COLOR): the group has no built-in words of
 //! its own, so a dictionary with them is saved as one with the graphics words, and
 //! REQUIRE-GAME loads the graphics words first.
 
@@ -19,7 +19,7 @@ pub const library_name = "*game library*";
 
 /// The words of the library that HELP describes; the help test checks that the library
 /// defines each of them.
-pub const library_words = [_][]const u8{ "/SPRITE", "SPRITE-X", "SPRITE-Y", "SPRITE-IMAGE", "SPRITE-SX", "SPRITE-SY", "SPRITE-W", "SPRITE-H", "SPRITE-FRAMES", "SPRITE-FRAME", "SPRITE-DELAY", "SPRITE-TICK", "SPRITE-FLIP", "SPRITE-KEY", "SPRITE-SHOWN", "INIT-SPRITE", "SPRITE:", "PUT-SPRITE", "SPRITE-ANIM", "ANIMATE", "DRAW-SPRITE", "HIT?", "SPRITE-PIXEL?", "PIXEL-HIT?", "/TILEMAP", "TILEMAP-IMAGE", "TILEMAP-TW", "TILEMAP-TH", "TILEMAP-COLS", "TILEMAP-ROWS", "TILEMAP-KEY", "TILEMAP-DATA", "TILEMAP:", "TILE@", "TILE!", ">TILE", "DRAW-TILEMAP" };
+pub const library_words = [_][]const u8{ "/SPRITE", "SPRITE-X", "SPRITE-Y", "SPRITE-IMAGE", "SPRITE-SX", "SPRITE-SY", "SPRITE-W", "SPRITE-H", "SPRITE-FRAMES", "SPRITE-FRAME", "SPRITE-DELAY", "SPRITE-TICK", "SPRITE-FLIP", "SPRITE-KEY", "SPRITE-SHOWN", "INIT-SPRITE", "SPRITE:", "PUT-SPRITE", "SPRITE-ANIM", "ANIMATE", "DRAW-SPRITE", "HIT?", "SPRITE-PIXEL?", "PIXEL-HIT?", "/TILEMAP", "TILEMAP-IMAGE", "TILEMAP-TW", "TILEMAP-TH", "TILEMAP-COLS", "TILEMAP-ROWS", "TILEMAP-KEY", "TILEMAP-DATA", "TILEMAP:", "TILE@", "TILE!", ">TILE", "DRAW-TILEMAP", "PALETTE:", "PALETTE!", "PALETTE@", "ROTATE-PALETTE", "/INDEXED", "INDEXED-W", "INDEXED-H", "INDEXED-DATA", "INDEXED:", "INDEX@", "INDEX!", "DRAW-INDEXED", "RASTER-SCROLL", "RASTER-COLOR", "DRAW-SPRITES" };
 
 pub const group: library_loading.Group(@TypeOf(words_graphics.definitions[0])) = .{
     .vocabulary = "GAME",

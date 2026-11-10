@@ -181,3 +181,85 @@ test "sprites and maps are data in the dictionary, which an image keeps" {
     try restored.interpretLine("S SPRITE-X @ S SPRITE-Y @ 2 1 M TILE@");
     try expectStack(restored, &.{ 5, 6, 3 });
 }
+
+test "a palette gives the colors of a picture of color numbers, and turns" {
+    try skipWithout(&.{.graphics});
+    var output = Output{};
+    const machine = try gameMachine(&output);
+    defer destroyMachine(machine);
+    try machine.interpretLine("PALETTE: P  $FF0000 1 P PALETTE! $00FF00 2 P PALETTE! $10000FF 3 P PALETTE! 1 P PALETTE@ 0 P PALETTE@ 3 P PALETTE@");
+    try expectStack(machine, &.{ R, 0, B });
+    machine.data_depth = 0;
+    try std.testing.expectError(error.InvalidNumber, machine.interpretLine("256 P PALETTE@"));
+    machine.data_depth = 0;
+    try std.testing.expectError(error.InvalidNumber, machine.interpretLine("0 -1 P PALETTE!"));
+    machine.data_depth = 0;
+    // A picture of 3 by 2: 1 2 0 / 0 0 3.
+    try machine.interpretLine("3 2 INDEXED: PIC  1 0 0 PIC INDEX! 2 1 0 PIC INDEX! 3 2 1 PIC INDEX! 2 1 PIC INDEX@ 0 1 PIC INDEX@ PIC INDEXED-W @ PIC INDEXED-H @");
+    try expectStack(machine, &.{ 3, 0, 3, 2 });
+    machine.data_depth = 0;
+    try std.testing.expectError(error.InvalidNumber, machine.interpretLine("3 0 PIC INDEX@"));
+    machine.data_depth = 0;
+    // Color number 0 left out, and none left out with the picture partly off the image.
+    try machine.interpretLine("$777777 GFX-CLS 1 1 PIC P 0 DRAW-INDEXED 1 1 GFX-PGET 2 1 GFX-PGET 3 1 GFX-PGET 1 2 GFX-PGET 3 2 GFX-PGET");
+    try expectStack(machine, &.{ R, G, 0x777777, 0x777777, B });
+    machine.data_depth = 0;
+    try machine.interpretLine("-1 -1 PIC P -1 DRAW-INDEXED 0 0 GFX-PGET 1 0 GFX-PGET 2 0 GFX-PGET");
+    try expectStack(machine, &.{ K, B, 0x777777 });
+    machine.data_depth = 0;
+    // Turning numbers 1 to 3: each takes the color of the one below, 1 that of 3.
+    try machine.interpretLine("1 3 P ROTATE-PALETTE 1 P PALETTE@ 2 P PALETTE@ 3 P PALETTE@ 0 P PALETTE@ 1 1 P ROTATE-PALETTE 1 P PALETTE@");
+    try expectStack(machine, &.{ B, R, G, 0, B });
+    machine.data_depth = 0;
+    try std.testing.expectError(error.InvalidNumber, machine.interpretLine("254 3 P ROTATE-PALETTE"));
+    machine.data_depth = 0;
+    try std.testing.expectError(error.InvalidAddress, machine.interpretLine("PIC INDEXED-DATA 3 2 -8 0 0 -1 GFX-INDEXED"));
+    machine.data_depth = 0;
+    try std.testing.expectError(error.InvalidNumber, machine.interpretLine("PIC INDEXED-DATA -1 2 P 0 0 -1 GFX-INDEXED"));
+}
+
+test "each row of a rectangle moves, or changes a color, by its cell of a table" {
+    try skipWithout(&.{.graphics});
+    var output = Output{};
+    const machine = try gameMachine(&output);
+    defer destroyMachine(machine);
+    try machine.interpretLine("CREATE T 0 , 1 , 2 , -1 , 16 , 17 , 0 , 0 ,");
+    try machine.interpretLine("0 GFX-CLS $FF0000 COLOR! 0 0 1 8 FILL-RECT T 0 0 16 8 RASTER-SCROLL");
+    try machine.interpretLine("0 0 GFX-PGET 1 1 GFX-PGET 2 2 GFX-PGET 15 3 GFX-PGET 0 4 GFX-PGET 1 5 GFX-PGET 0 1 GFX-PGET");
+    try expectStack(machine, &.{ R, R, R, R, R, R, 0 });
+    machine.data_depth = 0;
+    // Inside a rectangle partly off the image: only its columns on the image turn.
+    try machine.interpretLine("0 GFX-CLS 0 0 1 8 FILL-RECT T CELL+ -1 0 3 4 RASTER-SCROLL 1 0 GFX-PGET 0 1 GFX-PGET 1 2 GFX-PGET 2 0 GFX-PGET");
+    try expectStack(machine, &.{ R, R, R, 0 });
+    machine.data_depth = 0;
+    try machine.interpretLine("CREATE C $111111 , $222222 ,  0 GFX-CLS $FF0000 COLOR! 9 0 1 3 FILL-RECT C 0 0 0 16 2 RASTER-COLOR");
+    try machine.interpretLine("5 0 GFX-PGET 5 1 GFX-PGET 5 2 GFX-PGET 9 0 GFX-PGET");
+    try expectStack(machine, &.{ 0x111111, 0x222222, 0, R });
+    machine.data_depth = 0;
+    // Empty and outside rectangles do nothing; the table must be in memory.
+    try machine.interpretLine("T 0 0 0 8 RASTER-SCROLL T 100 0 4 4 RASTER-SCROLL");
+    try std.testing.expectError(error.InvalidAddress, machine.interpretLine("-8 0 0 4 4 RASTER-SCROLL"));
+    machine.data_depth = 0;
+    try std.testing.expectError(error.InvalidNumber, machine.interpretLine("T 0 0 4 16385 RASTER-SCROLL"));
+}
+
+test "DRAW-SPRITES shows only so many sprites on each row" {
+    try skipWithout(&.{.graphics});
+    var output = Output{};
+    const machine = try gameMachine(&output);
+    defer destroyMachine(machine);
+    try machine.interpretLine("CREATE THREE 3 /SPRITE * ALLOT : SP ( n -- spr ) /SPRITE * THREE + ;");
+    try machine.interpretLine("SHEET 0 0 4 4 0 SP INIT-SPRITE SHEET 4 0 4 4 1 SP INIT-SPRITE SHEET 0 4 4 4 2 SP INIT-SPRITE");
+    // Rows 0-3, 2-5, and 1-4: on rows 2 and 3 the third is the third sprite there.
+    try machine.interpretLine("0 0 0 SP PUT-SPRITE 5 2 1 SP PUT-SPRITE 10 1 2 SP PUT-SPRITE");
+    try machine.interpretLine("$777777 GFX-CLS THREE 3 2 DRAW-SPRITES 10 1 GFX-PGET 10 2 GFX-PGET 10 3 GFX-PGET 10 4 GFX-PGET 5 5 GFX-PGET 0 0 GFX-PGET");
+    try expectStack(machine, &.{ B, 0x777777, 0x777777, B, G, K });
+    machine.data_depth = 0;
+    try machine.interpretLine("$777777 GFX-CLS THREE 3 0 DRAW-SPRITES 10 2 GFX-PGET");
+    try expectStack(machine, &.{B});
+    machine.data_depth = 0;
+    // Flipped both ways, row by row, a hidden sprite takes no place on a row.
+    try machine.interpretLine("3 0 SP SPRITE-FLIP ! 0 0 SP SPRITE-KEY ! FALSE 1 SP SPRITE-SHOWN !");
+    try machine.interpretLine("$777777 GFX-CLS THREE 3 2 DRAW-SPRITES 3 3 GFX-PGET 0 0 GFX-PGET 10 2 GFX-PGET 5 5 GFX-PGET");
+    try expectStack(machine, &.{ 0x777777, R, B, 0x777777 });
+}

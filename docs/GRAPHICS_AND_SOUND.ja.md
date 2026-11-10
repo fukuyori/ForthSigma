@@ -297,6 +297,38 @@ VARIABLE SCROLL
 
 下にある語は、任意の画像の画素の色を返す `GFX-PIXEL` ( img x y -- rgb | -1 ) と、任意のアドレスにあるタイルのバイトの地図を描く `GFX-TILEMAP` ( addr cols rows img tw th sx sy x y w h key -- ) です。構造体は辞書にあるので、`SAVE` と `SAVESYS` で保存されます。ただし、画像のハンドルは復元の後は無効なので、プログラムは起動後に画像を作り、`SPRITE-IMAGE` と `TILEMAP-IMAGE` を設定し直します。
 
+### パレットと行ごとの効果
+
+これもゲーム用の語です。パレットは256セルで、色番号0〜255の色を持ちます。色番号の絵は、画素ごとに1バイトを持ちます。パレットの色を変えると、次にその絵を描いたとき、その番号の画素がすべて変わります。色を順に回して水の流れや光の動きを表すのは、この方法です。行ごとの効果は、描いた後の描画先を、行ごとに表の自分のセルの値で変えます。走査線ごとにレジスタを書き換えたビデオチップと同じ効果です。色の数、1行に表示するスプライトの数、表の中身は、プログラムが決める数です。
+
+| 語 | スタック | 動作 |
+|---|---|---|
+| `PALETTE:` | ( "name" -- ) | パレットを定義します（すべて黒）。name はそのアドレスを返します。 |
+| `PALETTE!`、`PALETTE@` | ( rgb n pal -- )、( n pal -- rgb ) | 番号 n の色を設定する、読む。0〜255 の外は `NUMBER ERROR !`。 |
+| `ROTATE-PALETTE` | ( first count pal -- ) | 番号 first から first + count - 1 の色を1つずつ上へ回します。各番号は1つ下の番号の色になり、first は最後の番号の色になります。 |
+| `INDEXED:` | ( w h "name" -- ) | w×h の色番号の絵を定義します（すべて0）。フィールドは `INDEXED-W` と `INDEXED-H` で、バイトは行ごとに `INDEXED-DATA` ( pic -- addr ) にあります。 |
+| `INDEX@`、`INDEX!` | ( x y pic -- n )、( n x y pic -- ) | 画素の色番号を読む、設定する。絵の外は `NUMBER ERROR !`。 |
+| `DRAW-INDEXED` | ( x y pic pal key -- ) | 絵を描画先の x y に、パレットの色で描きます。番号 key の画素は描きません（なしは -1）。 |
+| `RASTER-SCROLL` | ( table x y w h -- ) | x y にある w×h の長方形の各行を、h セルの表の自分のセルの数だけ右へずらします（負の数なら左）。片側から出た画素は反対側から入ります。 |
+| `RASTER-COLOR` | ( table rgb x y w h -- ) | 長方形の各行で、色 rgb の画素を、表の自分のセルの色にします。 |
+| `DRAW-SPRITES` | ( array n limit -- ) | `/SPRITE` 構造体の配列の n 個のスプライトを順に描きます。ただし各行には、その行に表示する最初の limit 個だけを描き、後のスプライトはその行が欠けます。limit が0なら、すべて描きます。 |
+
+```forth
+REQUIRE-GAME  ALSO GRAPHICS ALSO GAME
+256 192 GFX-INIT
+PALETTE: PAL   16 16 INDEXED: WAVE
+$0000AA 1 PAL PALETTE!  $3355FF 2 PAL PALETTE!  $AACCFF 3 PAL PALETTE!
+: MAKE-WAVE ( -- )   16 0 DO 16 0 DO  I J + 3 MOD 1+  I J WAVE INDEX!  LOOP LOOP ;  MAKE-WAVE
+CREATE WOBBLE 192 CELLS ALLOT
+: STEP ( n -- )
+   192 0 DO  DUP I + 8 / 1 AND 2*  WOBBLE I CELLS + !  LOOP DROP
+   1 3 PAL ROTATE-PALETTE
+   0 GFX-CLS  100 80 WAVE PAL 0 DRAW-INDEXED
+   WOBBLE 0 0 256 192 RASTER-SCROLL  SHOW 16 FRAME ;
+```
+
+下にある語は、任意のアドレスの色番号を任意の256セルの色で描く `GFX-INDEXED` ( addr w h palette x y key -- )、`GFX-ROW-SHIFT` ( table x y w h -- )、`GFX-ROW-COLOR` ( table rgb x y w h -- ) です。
+
 ### 数学座標と関数のグラフ
 
 浮動小数点数の語がある版では、ライブラリは数学の座標でも描けます（`src/graphics/graphics_float.fs`。`-Dfloat=false` の版には、これらの語はありません）。`X-RANGE` と `Y-RANGE` で、画像に平面のどの部分を映すかを決めます。x は左端から右端へ向かって増え、y は下端から上端へ向かって増えます。どちらも初めは -1 から 1 です。点は、いちばん近い画素に描きます。
