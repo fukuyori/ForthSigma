@@ -6,7 +6,7 @@ This project implements the language core of FORTH/Σ (FORTH/Sigma) as a native 
 
 ## Current implementation
 
-- It uses 64-bit cells and 2 MiB of logical memory (the upper half holds the `ALLOCATE` heap and the local-variable area). The true value is -1, and division is floored.
+- It uses 64-bit cells and a logical memory of 64 MiB by default: 32 MiB for the dictionary (80 KiB of it for the system, the rest for the data area), an `ALLOCATE` heap of the same size, and 64 KiB for local variables. Each stack holds 4096 entries. The sizes can be chosen when Sigma starts, with the options of gforth (`-m`, `-d`, `-r`, `-f`, `-l`). The true value is -1, and division is floored.
 - Floating-point numbers (double precision) are handled on a separate stack. A number that contains `E`, such as `1E` or `1.5e0`, is a floating-point number, and the F words such as `F+`, `F.`, `FSQRT`, and `FCONSTANT` are available.
 - It supports interactive input, dictionary search, number input, and word definition and compilation.
 - Stack operations, arithmetic, comparison, and logical operations, memory operations, and variables, constants, values, and arrays are available.
@@ -33,7 +33,7 @@ At present, LIST, source file and editor operations, the CP/M file functions, th
 
 ### Graphics modes
 
-There are no numbered screen modes, such as `SCREEN 1` of BASIC. A program makes one image of any size with `GFX-INIT` ( w h -- ), 1 to 8192 pixels a side, and chooses separately where `SHOW` shows it and with how many colors. The image itself always keeps full color, and files are saved in full color.
+There are no numbered screen modes, such as `SCREEN 1` of BASIC. A program makes one image of any size with `GFX-INIT` ( w h -- ), 1 to 16384 pixels a side, and chooses separately where `SHOW` shows it and with how many colors. The image itself always keeps full color, and files are saved in full color.
 
 | Where `SHOW` shows the image | Words | Where it works |
 | --- | --- | --- |

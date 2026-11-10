@@ -41,11 +41,11 @@ Coordinates start at 0 0 in the top left corner, and everything drawn outside th
 | `SAVE-PPM`, `SAVE-BMP`, `SAVE-PNG` | ( c-addr u -- ) | Write the image to a new file as a binary PPM (P6), a 24-bit BMP, or a PNG, and `THROW` the error of the file operation if there is one. The PNG has 8-bit red, green, and blue and is not compressed, so it is about as large as the BMP; any program that reads PNG files reads it. |
 | `SHOW` | ( -- ) | Show the image: in a window when the host has one (Windows), else in the Tk window on a desktop when `wish` starts (Linux, macOS; see the [graphics modes](GRAPHICS_MODES.md)), else on the terminal; or where `DISPLAY-TERMINAL`, `DISPLAY-WINDOW`, or `DISPLAY-TK` said. |
 | `DISPLAY-TERMINAL`, `DISPLAY-WINDOW` | ( -- ) | Make `SHOW` use the terminal, or the window. `DISPLAY-WINDOW` gives `HOST FUNCTION UNAVAILABLE !` when the host has no window. |
-| `WINDOW-SIZE` | ( w h -- ) | From the next `SHOW`, show the image in the window (and in the Tk window of `DISPLAY-TK`) in an area w by h pixels large, each side 1 to 8192; 0 0 (the default) for the image's own size. The image keeps its proportions, as large as fits, in the middle with black around it; for example `160 120 GFX-INIT 640 480 WINDOW-SIZE` shows each pixel as 4 by 4. It does not change the image, nor the terminal. |
+| `WINDOW-SIZE` | ( w h -- ) | From the next `SHOW`, show the image in the window (and in the Tk window of `DISPLAY-TK`) in an area w by h pixels large, each side 1 to 16384; 0 0 (the default) for the image's own size. The image keeps its proportions, as large as fits, in the middle with black around it; for example `160 120 GFX-INIT 640 480 WINDOW-SIZE` shows each pixel as 4 by 4. It does not change the image, nor the terminal. |
 | `TERMINAL-BLOCKS`, `TERMINAL-SIXEL` | ( -- ) | Show the image on the terminal with half block characters (the default), or as Sixel graphics. |
 | `DISPLAY-COLORS` | ( n -- ) | Make `SHOW` use full color (0, the default), or 2, 16, or 256 colors, for terminals that show fewer colors or for the look of older computers. 2 is black and white by brightness, 16 the ANSI colors (escapes 30 to 37 and 90 to 97; the nearest is chosen as xterm shows them by default, and other terminals may show them differently), 256 xterm's 6 × 6 × 6 cube and 24 grays (`ESC [ 38 ; 5 ; n m`). Sixel and the window use the same colors. The image keeps its colors, so files are saved in full color. Other values give `NUMBER ERROR !`. |
 | `DITHER` | ( flag -- ) | With fewer colors, mix them in a 4 × 4 Bayer pattern (true) instead of taking the nearest (false, the default). The pattern stays in place, so animation does not flicker. |
-| `GFX-INIT` | ( w h -- ) | Make a new black image. Each side is 1 to 8192 pixels and the image at most 64 MiB (4 bytes a pixel, so 4096 by 4096 at most for a square). The previous image stays when the new one cannot be made. |
+| `GFX-INIT` | ( w h -- ) | Make a new black image. Each side is 1 to 16384 pixels, so the image is at most 1 GiB (4 bytes a pixel). The previous image stays when the new one cannot be made. |
 | `GFX-WIDTH`, `GFX-HEIGHT` | ( -- n ) | The size of the image, 0 before `GFX-INIT`. |
 | `GFX-PSET` | ( x y rgb -- ) | Set one pixel to the color rgb. |
 | `GFX-PGET` | ( x y -- rgb ) | The color of one pixel, -1 outside the image. |
@@ -279,7 +279,7 @@ The chips are made of common parts and imitate them by their documented behavior
 
 ### Recorded sound
 
-Samples 0 to 63 are recorded sound kept in a pool of 16 MiB outside the dictionary's memory. The pool only grows: loading a sample again takes new room, and `FREE-SAMPLES` empties it.
+Samples 0 to 63 are recorded sound kept in a pool of 64 MiB outside the dictionary's memory. The pool only grows: loading a sample again takes new room, and `FREE-SAMPLES` empties it.
 
 | Word | Stack | Description |
 | --- | --- | --- |
@@ -311,7 +311,7 @@ The module plays on Paula's periods, panned and filtered as the Amiga's (`AMIGA-
 | Linux (a build that can load libraries) | PulseAudio, then ALSA, then the commands above. |
 | macOS | An AudioQueue of AudioToolbox on the default output device, 48 kHz 16-bit stereo (about 80 ms); the framework is loaded when the program runs. |
 
-`BEEP`, the chip words, `CHIPS`, `FREE-SAMPLES`, and Ctrl+C while `PLAY` waits stop the music, the sound effects, and the module. The sound (instruments, samples, queues) is not part of the dictionary: `SAVE` and `SAVESYS` keep the audio words and the words that use them, but a program sets its instruments and loads its samples after it starts. A dictionary that has loaded the audio words is saved as `SIGIMG35`.
+`BEEP`, the chip words, `CHIPS`, `FREE-SAMPLES`, and Ctrl+C while `PLAY` waits stop the music, the sound effects, and the module. The sound (instruments, samples, queues) is not part of the dictionary: `SAVE` and `SAVESYS` keep the audio words and the words that use them, but a program sets its instruments and loads its samples after it starts. A dictionary that has loaded the audio words is saved as `SIGIMG44`.
 
 The `SND-` words are the base the library is written with: `SND-PLAY`, `SND-PLAYS`, `SND-SOUND`, `SND-BEEP`, `SND-PLAYING`, `SND-DEVICE`, `SND-CHIP`, `SND-CHIPS`, `SND-INSTRUMENT`, `SND-WAVE`, `SND-DUTY`, `SND-ADSR`, `SND-RING`, `SND-SYNC`, `SND-FILTER`, `SND-WAVETABLE`, `SND-LOAD-SAMPLE`, `SND-SAMPLE`, `SND-LOOP-SAMPLE`, `SND-SAMPLE-INSTRUMENT`, `SND-SFX`, `SND-AMIGA-FILTER`, `SND-FREE-SAMPLES`, `SND-LOAD-MOD`, `SND-PLAY-MOD`, `SND-STOP-MOD`, `SND-MOD-PLAYING`, and `SND-STYLE`. `HELP` describes each of them. `SND-LOAD-SAMPLE` and `SND-LOAD-MOD` return an ior instead of throwing.
 

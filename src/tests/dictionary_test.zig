@@ -619,4 +619,38 @@ test "the sizes of a machine are its limits" {
     try machine.interpretLine("4202495 C@");
     try expectStack(machine, &.{0});
     machine.data_depth = 0;
+    try std.testing.expectError(error.InvalidAddress, machine.interpretLine("4202496 C@"));
+    machine.data_depth = 0;
+}
+
+test "a machine with the default sizes has them as its limits" {
+    var output = Output{};
+    const sizes = forth.Sizes.default;
+    const machine = try support.createMachineWith(&output, sizes);
+    defer destroyMachine(machine);
+    try std.testing.expectEqual(sizes.memorySize(), machine.memory.len);
+    try std.testing.expectEqual(sizes.float_stack, machine.float_stack.len);
+    try machine.interpretLine("S\" STACK-CELLS\" ENVIRONMENT? DROP S\" RETURN-STACK-CELLS\" ENVIRONMENT? DROP UNUSED");
+    try expectStack(machine, &.{ @intCast(sizes.data_stack), @intCast(sizes.return_stack), sizes.dataLimit() - forth.data_start });
+}
+
+test "the sizes a machine may have, at their bounds" {
+    const Sizes = forth.Sizes;
+    // m at least 1 MiB, l at least 4 KiB, both whole cells, and 2m + l below 4 GiB.
+    try std.testing.expect(Sizes.validLayout(1 << 20, 4096));
+    try std.testing.expect(!Sizes.validLayout((1 << 20) - 8, 4096));
+    try std.testing.expect(!Sizes.validLayout(1 << 20, 4088));
+    try std.testing.expect(!Sizes.validLayout((1 << 20) + 4, 4096));
+    try std.testing.expect(!Sizes.validLayout(1 << 20, 4100));
+    // 2m + l is 4 GiB - 4 KiB, then exactly 4 GiB.
+    try std.testing.expect(Sizes.validLayout((1 << 31) - 4096, 4096));
+    try std.testing.expect(!Sizes.validLayout(1 << 31, 4096));
+    try std.testing.expect(!Sizes.validLayout((1 << 31) - 2048, 4096));
+    // Each stack 16 to 2^27 elements.
+    try std.testing.expect(Sizes.validStack(16));
+    try std.testing.expect(!Sizes.validStack(15));
+    try std.testing.expect(Sizes.validStack(1 << 27));
+    try std.testing.expect(!Sizes.validStack((1 << 27) + 1));
+    try std.testing.expect(Sizes.small.valid());
+    try std.testing.expect(Sizes.default.valid());
 }

@@ -20,7 +20,7 @@ The three are independent: any image size goes with any place and any number of 
 
 ## The image
 
-`GFX-INIT` ( w h -- ) makes a new black image, each side 1 to 8192 pixels and the image at most 64 MiB (4 bytes a pixel, so 4096 by 4096 at most for a square). There is one image at a time; a new `GFX-INIT` replaces it. Coordinates start at 0 0 in the top left corner.
+`GFX-INIT` ( w h -- ) makes a new black image, each side 1 to 16384 pixels, so the image is at most 1 GiB (4 bytes a pixel). There is one image at a time; a new `GFX-INIT` replaces it. Coordinates start at 0 0 in the top left corner.
 
 The size can be chosen to look like an older computer, for example 320 by 200 or 640 by 400, or to suit the program. `WINDOW-SIZE` (below) then shows a small image larger.
 
@@ -93,7 +93,7 @@ Other values give `NUMBER ERROR !`, and the colors stay as they were.
 
 ## The size it is shown at
 
-`WINDOW-SIZE` ( w h -- ) shows the image, from the next `SHOW`, in an area w by h pixels large in the window and in the Tk window, each side 1 to 8192. 0 0 (the default) shows the image at its own size. The image keeps its proportions, as large as fits, in the middle with black around it. It does not change the image, nor the terminal.
+`WINDOW-SIZE` ( w h -- ) shows the image, from the next `SHOW`, in an area w by h pixels large in the window and in the Tk window, each side 1 to 16384. 0 0 (the default) shows the image at its own size. The image keeps its proportions, as large as fits, in the middle with black around it. It does not change the image, nor the terminal.
 
 ## Examples
 

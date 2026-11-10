@@ -41,11 +41,11 @@ PREVIOUS
 | `SAVE-PPM`、`SAVE-BMP`、`SAVE-PNG` | ( c-addr u -- ) | 画像を新しいファイルに、2進のPPM（P6）、24ビットのBMP、またはPNGで書きます。ファイル操作のエラーは `THROW` します。PNGは赤・緑・青の各8ビットで圧縮しないので、大きさはBMPとほぼ同じです。PNGを読めるプログラムなら読めます。 |
 | `SHOW` | ( -- ) | 画像を表示します。ホストにウィンドウがあれば（Windows）ウィンドウに、なければデスクトップで `wish` が起動できればTkのウィンドウに（Linux、macOS。[グラフィックモードのマニュアル](GRAPHICS_MODES.ja.md)を参照）、それもだめなら端末に、または `DISPLAY-TERMINAL`・`DISPLAY-WINDOW`・`DISPLAY-TK` で決めた先に表示します。 |
 | `DISPLAY-TERMINAL`、`DISPLAY-WINDOW` | ( -- ) | `SHOW` の表示先を端末、またはウィンドウにします。ホストにウィンドウがなければ、`DISPLAY-WINDOW` は `HOST FUNCTION UNAVAILABLE !` になります。 |
-| `WINDOW-SIZE` | ( w h -- ) | 次の `SHOW` から、ウィンドウ（と `DISPLAY-TK` のTkのウィンドウ）で、画像を w×h 画素の大きさの領域に表示します。各辺は1〜8192で、0 0（初めの値）なら画像と同じ大きさです。画像は縦横の比を保って入る最大の大きさで中央に描き、余りは黒にします。たとえば `160 120 GFX-INIT 640 480 WINDOW-SIZE` で、1画素を4×4で表示します。画像そのものと端末への表示は変えません。 |
+| `WINDOW-SIZE` | ( w h -- ) | 次の `SHOW` から、ウィンドウ（と `DISPLAY-TK` のTkのウィンドウ）で、画像を w×h 画素の大きさの領域に表示します。各辺は1〜16384で、0 0（初めの値）なら画像と同じ大きさです。画像は縦横の比を保って入る最大の大きさで中央に描き、余りは黒にします。たとえば `160 120 GFX-INIT 640 480 WINDOW-SIZE` で、1画素を4×4で表示します。画像そのものと端末への表示は変えません。 |
 | `TERMINAL-BLOCKS`、`TERMINAL-SIXEL` | ( -- ) | 端末への表示を、半角ブロック（既定）またはSixelにします。 |
 | `DISPLAY-COLORS` | ( n -- ) | `SHOW` の色数を、フルカラー（0、既定）か、2、16、256色にします。色数の少ない端末や、昔のパソコンのような見た目のためです。2は明るさによる白黒、16はANSIの色（エスケープの30〜37と90〜97。近い色はxtermの既定の見え方で選ぶので、端末によっては違って見えます）、256はxtermの6×6×6の色と24段階の灰色（`ESC [ 38 ; 5 ; n m`）です。Sixelとウィンドウも同じ色を使います。画像の色は変わらないので、ファイルにはフルカラーで保存されます。ほかの値は `NUMBER ERROR !` になります。 |
 | `DITHER` | ( flag -- ) | 色数を減らすとき、4×4のBayerの模様で色を混ぜる（真）か、いちばん近い色にする（偽、既定）かを決めます。模様は位置で決まるので、アニメーションでもちらつきません。 |
-| `GFX-INIT` | ( w h -- ) | 新しい黒い画像を作ります。幅・高さは各1〜8192画素、画像は64 MiBまでです（1画素4バイトなので、正方形なら4096×4096まで）。新しい画像を作れなかったときは、前の画像が残ります。 |
+| `GFX-INIT` | ( w h -- ) | 新しい黒い画像を作ります。幅・高さは各1〜16384画素で、画像は1 GiBまでです（1画素4バイト）。新しい画像を作れなかったときは、前の画像が残ります。 |
 | `GFX-WIDTH`、`GFX-HEIGHT` | ( -- n ) | 画像の大きさ。`GFX-INIT` の前は0です。 |
 | `GFX-PSET` | ( x y rgb -- ) | 1画素を色 rgb で塗ります。 |
 | `GFX-PGET` | ( x y -- rgb ) | 1画素の色。画像の外は-1です。 |
@@ -279,7 +279,7 @@ S" @1 CDEF" S" @2 EGAB" S" @3 O3 C2G2" S" @4 O2 C1" 4 PLAYS
 
 ### 録音した音
 
-標本 0〜63 は、辞書のメモリーとは別の 16 MiB の領域に置く、録音した音です。この領域は増えるだけで、標本を読み直すと新しい場所を使います。`FREE-SAMPLES` で空にします。
+標本 0〜63 は、辞書のメモリーとは別の 64 MiB の領域に置く、録音した音です。この領域は増えるだけで、標本を読み直すと新しい場所を使います。`FREE-SAMPLES` で空にします。
 
 | ワード | スタック | 説明 |
 | --- | --- | --- |
@@ -311,7 +311,7 @@ S" @1 CDEF" S" @2 EGAB" S" @3 O3 C2G2" S" @4 O2 C1" 4 PLAYS
 | Linux（ライブラリを読み込める版） | PulseAudio、次に ALSA、次に上のコマンド。 |
 | macOS | AudioToolbox の AudioQueue で、既定の出力装置に送る。48 kHz 16ビット ステレオ（約80 ms）。フレームワークは実行時に読み込む。 |
 
-`BEEP`、機種を選ぶ語、`CHIPS`、`FREE-SAMPLES`、`PLAY` が待っている間の Ctrl+C は、音楽、効果音、モジュールを止めます。音の状態（音色、標本、待ち行列）は辞書に含まれません。`SAVE` と `SAVESYS` は音の語とそれを使う語を保存しますが、音色の設定や標本の読み込みは、プログラムが起動してから行ってください。音の語を読み込んだ辞書は `SIGIMG35` で保存します。
+`BEEP`、機種を選ぶ語、`CHIPS`、`FREE-SAMPLES`、`PLAY` が待っている間の Ctrl+C は、音楽、効果音、モジュールを止めます。音の状態（音色、標本、待ち行列）は辞書に含まれません。`SAVE` と `SAVESYS` は音の語とそれを使う語を保存しますが、音色の設定や標本の読み込みは、プログラムが起動してから行ってください。音の語を読み込んだ辞書は `SIGIMG44` で保存します。
 
 `SND-` の語は、ライブラリを書くための基本の語です: `SND-PLAY`、`SND-PLAYS`、`SND-SOUND`、`SND-BEEP`、`SND-PLAYING`、`SND-DEVICE`、`SND-CHIP`、`SND-CHIPS`、`SND-INSTRUMENT`、`SND-WAVE`、`SND-DUTY`、`SND-ADSR`、`SND-RING`、`SND-SYNC`、`SND-FILTER`、`SND-WAVETABLE`、`SND-LOAD-SAMPLE`、`SND-SAMPLE`、`SND-LOOP-SAMPLE`、`SND-SAMPLE-INSTRUMENT`、`SND-SFX`、`SND-AMIGA-FILTER`、`SND-FREE-SAMPLES`、`SND-LOAD-MOD`、`SND-PLAY-MOD`、`SND-STOP-MOD`、`SND-MOD-PLAYING`、`SND-STYLE`。それぞれの説明は `HELP` で見られます。`SND-LOAD-SAMPLE` と `SND-LOAD-MOD` は、エラーを THROW せずに ior を返します。
 
