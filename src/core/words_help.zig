@@ -51,7 +51,7 @@ fn isLineEnd(byte: u8) bool {
 /// word the user defined. An unknown name is an error, as everywhere else.
 fn describe(self: *State, name: []const u8) RuntimeError!void {
     if (self.lookup(name)) |id| {
-        const group_word = words_graphics.isGraphicsWord(self, self.words[id]) or words_audio.isAudioWord(self, self.words[id]);
+        const group_word = words_graphics.isGraphicsWord(self, self.words[id]) or words_audio.isAudioWord(self, self.words[id]) or @import("words_gui.zig").isGuiWord(self, self.words[id]);
         if (id >= self.builtin_count and !(group_word and entry(name) != null)) {
             const word = self.words[id];
             const word_name = self.wordName(word);
@@ -129,6 +129,10 @@ fn isExcludedName(comptime name: []const u8) bool {
     }
     for (words_graphics.definitions) |definition| {
         if (std.mem.eql(u8, definition[0], name)) return defs.isExcludedBuiltin(definition[1]);
+    }
+    if (std.mem.eql(u8, name, "REQUIRE-GUI")) return !defs.graphics_enabled;
+    for (@import("words_gui.zig").library_words) |library_word| {
+        if (std.mem.eql(u8, library_word, name)) return !defs.graphics_enabled;
     }
     if (std.mem.eql(u8, name, "REQUIRE-AUDIO")) return !defs.audio_enabled;
     for (words_audio.library_words) |library_word| {

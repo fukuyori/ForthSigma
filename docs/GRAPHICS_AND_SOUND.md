@@ -198,6 +198,68 @@ To find the pixel under the mouse on the terminal, Sigma asks the terminal where
 
 A `SHOW` on the terminal draws over the image it drew last when nothing was written in between, so an animation stays in place instead of scrolling; anything written in between (such as the prompt) starts a new picture below. With Sixel, the rows the picture takes are counted from the cell height, which may not match every terminal.
 
+### GUI
+
+`REQUIRE-GUI` loads the GUI words into the `GUI` vocabulary (and the graphics words first, if they are not loaded); `ALSO GUI` makes them usable. The words are Forth only, so a dictionary with them is saved as one with the graphics words. They draw buttons, check boxes, text fields, lists, a menu bar with pull-down menus, a function key bar, panels, and dialogs into the image drawn on (`DRAW-TO`), with a flat look whose colors and line widths are settings. Every name starts with `GUI-`, so none hides a word of the program.
+
+The parts are drawn again each frame: between `GUI-BEGIN` and `GUI-END`, the word of each part draws it and gives what the user did to it in this frame. What a part shows (a check box's flag, a field's text, a list's choice) is in the program's own variables. `GUI-BEGIN` reads the mouse (`MOUSE-EVENT`, so a click between frames is not lost), the keys, and the first gamepad once; the keys no part takes can be read with `GUI-KEY` until the next `GUI-BEGIN`. The keys go to the part with the focus: a click gives it the focus, Tab gives it to the next part, and without a part that has it, the first part that can take it has it. The first gamepad works as keys: its D-pad as the arrows, A as Enter, and B as Esc.
+
+| Word | Stack | What it does |
+|---|---|---|
+| `GUI-BEGIN`, `GUI-END` | ( -- ) | Start and end the GUI of a frame. `GUI-END` draws the open pull-down menu over the other parts. |
+| `GUI-BUTTON` | ( c-addr u x y -- flag ) | A button; true when it was clicked, or Enter or Space was pressed while it has the focus. `GUI-BUTTON-SIZE` ( c-addr u -- w h ) gives its size. |
+| `GUI-CHECK` | ( addr c-addr u x y -- flag ) | A check box with a label: the flag at addr changes when it (or its label) is clicked, or with Space or Enter; true when it changed. |
+| `GUI-FIELD` | ( buf room len-addr x y w -- flag ) | A field of one line, w pixels wide, editing the text at buf (at most room bytes, its length at len-addr): the bytes of text that `INKEY` gives (UTF-8 too), Backspace, Delete, the left and right arrows, Home, and End. True when Enter was pressed in it. |
+| `GUI-LIST` | ( c-addr u var x y w -- flag ) | A list "a\|b\|c", one item under another, w pixels wide (0: as wide as the widest). The cell at var is the chosen item: the mouse over an item chooses it, and so do the up and down arrows with the focus. True when an item was clicked, or Enter or Space was pressed. |
+| `GUI-MENUBAR` | ( c-addr u -- n ) | A bar across the top with the titles "a\|b\|c". A click on a title opens its menu (and closes it again); with a menu open, the mouse over another title, or the left and right arrows, open that one, and Esc closes it. Gives the open menu, -1 for none. Call it first after `GUI-BEGIN`. |
+| `GUI-MENU` | ( c-addr u -- item \| -1 ) | The items of the open menu, right after `GUI-MENUBAR`: "-" is a line between items, and an item that starts with `~` is shown grey and cannot be chosen. Gives the item chosen by a click or Enter in this frame, else -1; up and down move between the items. A click outside the menu closes it. While a menu is open, it takes the keys and the mouse over it. |
+| `GUI-FKEYS` | ( c-addr u -- n \| -1 ) | A bar along the bottom with the labels "a\|b\|c" of F1, F2, ...; gives the key, 0 for F1, that was pressed or whose label was clicked, else -1. |
+| `GUI-PANEL` | ( x y w h -- ) | A panel: the background of a group of parts, with its border. |
+| `GUI-TILES` | ( img size -- ) | Draw panels with 9 tiles of an image instead, each size pixels square, three by three from the image's top left corner (corners, edges, and middle). `0 0 GUI-TILES` draws borders again. |
+| `GUI-LABEL` | ( c-addr u x y -- ) | Text in the color of `GUI-TEXT`. |
+| `GUI-ENABLE` | ( flag -- ) | The parts made after false are drawn grey and take no input, until true (or the next `GUI-BEGIN`). |
+| `GUI-KEY` | ( -- key \| -1 ) | The next key of the frame that no part took. |
+| `GUI-DIALOG` | ( c-addr u c-addr2 u2 -- n \| -1 ) | A dialog in the middle with a message and the buttons "a\|b": gives the button chosen in this frame, 0 for the first, else -1. Esc chooses the last. |
+| `GUI-YES-NO` | ( c-addr u -- n ) | A dialog with Yes and No: 1 for yes, 0 for no (also Esc), -1 while there is no answer. |
+| `GUI-ASK` | ( c-addr u -- flag ) | Ask with Yes and No and wait for the answer: true for yes. |
+| `GUI-MESSAGE` | ( c-addr u -- ) | Show a message with OK and wait until it is closed (OK, Enter, or Esc). |
+| `GUI-CHOOSE` | ( c-addr u -- n ) | Show a list "a\|b\|c" in the middle and wait for a choice: 0 for the first, -1 for Esc. |
+
+`GUI-ASK`, `GUI-MESSAGE`, and `GUI-CHOOSE` draw on the screen and show it each frame (`SHOW`, `16 FRAME`) until there is an answer, over what the screen had when they started, which they then put back; meanwhile the program does not run. Ctrl+C stops them (`USER INTERRUPT`).
+
+```forth
+REQUIRE-GUI  ALSO GRAPHICS ALSO GUI
+320 200 GFX-INIT
+VARIABLE SOUND-ON   CREATE NAME 16 ALLOT  VARIABLE NAME-LEN
+: SETTINGS ( -- )
+   BEGIN
+      GUI-BACKGROUND GUI-COLOR@ GFX-CLS
+      GUI-BEGIN
+      SOUND-ON S" Sound" 10 10 GUI-CHECK DROP
+      NAME 16 NAME-LEN 10 30 120 GUI-FIELD DROP
+      S" OK" 10 60 GUI-BUTTON
+      GUI-END  SHOW  16 FRAME
+   UNTIL ;
+```
+
+The colors are roles that `GUI-COLOR!` ( rgb role -- ) sets and `GUI-COLOR@` ( role -- rgb ) gives; `GUI-DEFAULT` puts every color and width back.
+
+| Role | For | At the start |
+|---|---|---|
+| `GUI-BACKGROUND` | panels, dialogs, menus, and the bars | F0F0F0 |
+| `GUI-FACE` | buttons | E1E1E1 |
+| `GUI-HOVER` | a button under the mouse | EBEBEB |
+| `GUI-PRESSED` | a button held down | C8C8C8 |
+| `GUI-TEXT` | text | 000000 |
+| `GUI-DISABLED` | the text of parts that cannot be used | 8C8C8C |
+| `GUI-BORDER` | borders and lines | 8A8A8A |
+| `GUI-FIELD-FACE` | text fields and check boxes | FFFFFF |
+| `GUI-FOCUS` | the border of the part with the focus | 3A73D9 |
+| `GUI-SELECTION` | the chosen item of a list or a menu | 3A73D9 |
+| `GUI-SELECTED-TEXT` | the text of the chosen item | FFFFFF |
+
+`GUI-BORDER-WIDTH` ( n -- ) and `GUI-FOCUS-WIDTH` ( n -- ) set the widths of the borders and of the focus border, 0 to 8 pixels (1 at the start); other values give `NUMBER ERROR !`. The text uses the font and the scale of `TEXT`, and the sizes of the parts follow `TEXT-HEIGHT`. A field shows the text from where its cursor can be seen; an input method (IME) has not been tried. Like the other graphics words, the GUI keeps nothing outside the dictionary, and its settings and the choices in the program's variables are saved with it.
+
 ### Mathematical coordinates and graphs
 
 In a build with the floating-point words, the library also draws in mathematical coordinates (`src/graphics/graphics_float.fs`; a build with `-Dfloat=false` leaves these words out). `X-RANGE` and `Y-RANGE` say which part of the plane the image shows: x grows to the right, from the left edge to the right one, and y grows upward, from the bottom edge to the top one. Both start as -1 to 1. A point is drawn at the pixel nearest to it.
