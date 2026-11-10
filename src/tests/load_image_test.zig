@@ -113,5 +113,14 @@ test "LOAD-IMAGE refuses damaged files and changes nothing" {
     support.setFakeFile(&output, 0, "P6 16385 1 255\n");
     try std.testing.expectError(error.InvalidNumber, machine.interpretLine("S\" a.txt\" LOAD-IMAGE"));
     machine.data_depth = 0;
+    // A BMP of 2147483647 by 2147483647 pixels of 32 bits: refused before the size of its
+    // rows is reckoned, which would not fit in 64 bits.
+    @memcpy(buffer[0..bmp.len], bmp);
+    std.mem.writeInt(i32, buffer[18..22], std.math.maxInt(i32), .little);
+    std.mem.writeInt(i32, buffer[22..26], std.math.maxInt(i32), .little);
+    std.mem.writeInt(u16, buffer[28..30], 32, .little);
+    support.setFakeFile(&output, 0, buffer[0..bmp.len]);
+    try std.testing.expectError(error.InvalidNumber, machine.interpretLine("S\" a.txt\" LOAD-IMAGE"));
+    machine.data_depth = 0;
     try std.testing.expectEqual(@as(usize, 0), output.images_live);
 }

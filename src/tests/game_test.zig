@@ -262,4 +262,12 @@ test "DRAW-SPRITES shows only so many sprites on each row" {
     try machine.interpretLine("3 0 SP SPRITE-FLIP ! 0 0 SP SPRITE-KEY ! FALSE 1 SP SPRITE-SHOWN !");
     try machine.interpretLine("$777777 GFX-CLS THREE 3 2 DRAW-SPRITES 3 3 GFX-PGET 0 0 GFX-PGET 10 2 GFX-PGET 5 5 GFX-PGET");
     try expectStack(machine, &.{ 0x777777, R, B, 0x777777 });
+    machine.data_depth = 0;
+    // A sprite of an invalid image: the error comes through, and the counts of the rows
+    // (8 cells for the 8 rows) are freed, so the next block of that size is the same.
+    try machine.interpretLine("VARIABLE BLOCK 12345 2 SP SPRITE-IMAGE !  8 CELLS ALLOCATE THROW DUP BLOCK ! FREE THROW");
+    try std.testing.expectError(error.InvalidImageHandle, machine.interpretLine("THREE 3 2 DRAW-SPRITES"));
+    machine.data_depth = 0;
+    try machine.interpretLine("8 CELLS ALLOCATE THROW BLOCK @ =");
+    try expectStack(machine, &.{-1});
 }

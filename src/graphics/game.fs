@@ -192,10 +192,8 @@ VARIABLE (ON-LINE)
    spr SPRITE-FLIP @ 2 AND IF spr SPRITE-H @ 1- row - ELSE row THEN  spr SPRITE-SY @ + TO sy
    spr SPRITE-IMAGE @  spr (FRAME-X)  sy  spr SPRITE-W @  1
    spr SPRITE-X @  spr SPRITE-Y @ row +  spr SPRITE-KEY @  spr SPRITE-FLIP @ 1 AND  0 128 1 GFX-COPY ;
-: DRAW-SPRITES { array n limit | lines spr y -- }
-   limit 0= IF  n 0 ?DO array I /SPRITE * + DRAW-SPRITE LOOP  EXIT THEN
-   GFX-HEIGHT TO lines
-   lines CELLS ALLOCATE THROW (ON-LINE) !  (ON-LINE) @ lines CELLS ERASE
+\ The sprites, with the counts of the rows at (ON-LINE).
+: (DRAW-LIMITED) { array n limit lines | spr y -- }
    n 0 ?DO
       array I /SPRITE * + TO spr
       spr SPRITE-SHOWN @ IF
@@ -206,5 +204,12 @@ VARIABLE (ON-LINE)
             THEN
          LOOP
       THEN
-   LOOP
-   (ON-LINE) @ FREE THROW ;
+   LOOP ;
+\ The counts are freed also when drawing fails (an invalid image of a sprite).
+: DRAW-SPRITES { array n limit | lines -- }
+   limit 0= IF  n 0 ?DO array I /SPRITE * + DRAW-SPRITE LOOP  EXIT THEN
+   GFX-HEIGHT TO lines
+   lines CELLS ALLOCATE THROW (ON-LINE) !  (ON-LINE) @ lines CELLS ERASE
+   array n limit lines ['] (DRAW-LIMITED) CATCH
+   (ON-LINE) @ FREE DROP
+   ?DUP IF  NIP NIP NIP NIP THROW  THEN ;

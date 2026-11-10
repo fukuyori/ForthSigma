@@ -365,6 +365,9 @@ fn decodeBmp(self: *State, file: []u8, transparent: u32) RuntimeError!Cell {
     const top_down = height < 0;
     const rows: u64 = @abs(height);
     if (width <= 0 or rows == 0) return error.ImageInvalid;
+    // Larger than an image may be is NUMBER ERROR, as for NEW-IMAGE; checked before the
+    // size of the rows is reckoned, which then cannot overflow.
+    if (width > graphics_images.max_side or rows > graphics_images.max_side) return error.InvalidNumber;
     var red = Mask{};
     var green = Mask{};
     var blue = Mask{};
