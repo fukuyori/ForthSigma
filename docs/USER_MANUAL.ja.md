@@ -20,7 +20,7 @@ zig build
 対話プロンプトの前に、次の2行（`-Dhelp=false` の版では1行目だけ）を表示します。版番号はルートの `VERSION` ファイルの値です。
 
 ```text
-FORTH/Sigma 0.8.0  MIT License
+FORTH/Sigma 0.9.0  MIT License
 Type `help' for basic help
 ```
 

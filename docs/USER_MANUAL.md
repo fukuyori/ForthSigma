@@ -20,7 +20,7 @@ Building with `zig build -Dfloat=false` gives a smaller version without floating
 Before the interactive prompt, it prints the following two lines (only the first in a build with `-Dhelp=false`). The version number is the value of the `VERSION` file at the root.
 
 ```text
-FORTH/Sigma 0.8.0  MIT License
+FORTH/Sigma 0.9.0  MIT License
 Type `help' for basic help
 ```
 
