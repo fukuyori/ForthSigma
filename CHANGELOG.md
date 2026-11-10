@@ -1,5 +1,11 @@
 # Changelog
 
+## [Unreleased]
+
+### Changed
+
+- `examples/pinball.fs` is now Ninth Inning, a pinball table of a ballpark on painted wood, laid out after a picture of an old table: ABCD lanes that raise the bonus multiplier and move with the flippers, a BASE bank of drop targets, three targets, a dugout hole and a kickout hole, an extra ball, runners on a diamond who score runs, and outlanes that lead under the flippers to the drain. Wyrm's Delve, the table of a dungeon that was there before, is removed.
+
 ## [0.9.0] - 2026-11-10
 
 ### Added
