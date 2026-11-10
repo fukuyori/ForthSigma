@@ -217,10 +217,12 @@ pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
                 .defining = self.defining,
                 .local_count = self.local_count,
             };
+            const trace_depth = self.trace_depth;
             if (self.executeWord(xt)) |_| {
                 try self.push(0);
             } else |err| {
                 if (err == error.Quit or err == error.StepLimit) return err;
+                self.trace_depth = trace_depth;
                 const code = self.throwCodeOf(err);
                 self.abort_message = null;
                 self.restoreCatchFrame(frame);

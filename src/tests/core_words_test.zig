@@ -273,7 +273,7 @@ test "C\" ABORT\" BUFFER: 2LITERAL 2VALUE and the double-cell words work as in g
     // Without CATCH, ABORT" shows its text, as gforth does.
     try std.testing.expectError(error.Thrown, machine.interpretLine(": CHK ABORT\" bad value\" ; 1 CHK 2"));
     machine.report(error.Thrown);
-    try std.testing.expectEqualStrings("bad value\nBACKTRACE:\n  CHK\nSTACK: <0> \n", output.written());
+    try std.testing.expectEqualStrings("bad value\n" ++ support.backtrace("BACKTRACE:\n  CHK\nSTACK: <0> \n"), output.written());
     try std.testing.expectError(error.CompileOnly, machine.interpretLine("C\" x\""));
     try std.testing.expectError(error.CompileOnly, machine.interpretLine("1 ABORT\" x\""));
     output.len = 0;

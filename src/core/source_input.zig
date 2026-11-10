@@ -254,6 +254,7 @@ pub fn interpretIncludedFile(self: *State) RuntimeError!void {
     const pending_before = self.pending;
     while (!self.halted) {
         const line = try self.readIncludeLine() orelse break;
+        if (defs.debug_enabled and self.line_trace) @import("words_debug.zig").showLine(self);
         try self.interpretSource(line, .file);
     }
     if (self.halted) return;

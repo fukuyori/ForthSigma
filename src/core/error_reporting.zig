@@ -22,7 +22,8 @@ pub fn report(self: *State, err: anyerror) void {
     const kept_data = self.data_depth;
     const kept_floats = self.float_depth;
     defer self.clearBacktrace();
-    defer if (self.show_backtrace and self.backtrace_total != 0 and err != error.Aborted and err != error.Quit) showBacktrace(self, kept_data, kept_floats);
+    self.trace_depth = 0;
+    defer if (defs.debug_enabled and self.show_backtrace and self.backtrace_total != 0 and err != error.Aborted and err != error.Quit) showBacktrace(self, kept_data, kept_floats);
     defer if (err == error.Quit) {
         self.data_depth = kept_data;
         self.float_depth = kept_floats;
@@ -141,6 +142,20 @@ fn showBacktrace(self: *State, data_depth: usize, float_depth: usize) void {
     }
 }
 
+/// "NAME file:line" of the operation at `pc`, for the callers that ~~BT shows.
+pub fn describePlace(self: *State, pc: u16, writer: *@import("words_debug.zig").LineWriter) void {
+    const owner = codeOwner(self, pc) orelse return writer.add("?");
+    const word = self.words[owner];
+    const name = self.wordName(word);
+    writer.add(if (name.len == 0) ":NONAME" else name);
+    if (word.source_file != 0 and self.code_lines[pc] != 0) {
+        writer.add(" ");
+        writer.add(self.sourceFileName(word.source_file - 1));
+        writer.add(":");
+        writer.number(self.code_lines[pc]);
+    }
+}
+
 /// The colon definition whose code holds `pc`: the innermost one, and for the code after
 /// DOES> the defining word.
 fn codeOwner(self: *const State, pc: u16) ?u16 {
@@ -161,7 +176,7 @@ fn writeWordName(self: *State, id: u16) void {
 /// place came `times` times in a row, and the end of the line.
 fn writePlace(self: *State, word: defs.Word, pc: u16, times: usize) void {
     var text: [24]u8 = undefined;
-    if (defs.tools_enabled and word.source_file != 0 and self.code_lines[pc] != 0) {
+    if (word.source_file != 0 and self.code_lines[pc] != 0) {
         self.write(" ");
         self.write(self.sourceFileName(word.source_file - 1));
         self.write(std.fmt.bufPrint(&text, ":{d}", .{self.code_lines[pc]}) catch unreachable);

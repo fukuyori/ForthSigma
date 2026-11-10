@@ -140,14 +140,14 @@ pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
             if (self.compiling) {
                 try self.compileCountedString(text, .string_literal);
                 try self.compileCall(@intCast(self.builtinWord(.debug_tilde_run)));
-            } else try showPlace(self, text);
+            } else try showPlace(self, text, null);
         },
         .debug_tilde_run => {
             const place = try self.memoryRange();
             var copy: [max_name + 64]u8 = undefined;
             const length = @min(place.len, copy.len);
             @memcpy(copy[0..length], place[0..length]);
-            try showPlace(self, copy[0..length]);
+            try showPlace(self, copy[0..length], null);
         },
         // ASSERT( code ) ( -- ): the code up to ) must leave true; when it leaves false,
         // where the ) is (file:line:column: failed assertion) is shown and THROW -2 with
@@ -333,7 +333,7 @@ fn stringBytes(self: *State, buffer: Cell, length: usize) RuntimeError![]u8 {
 }
 
 /// "file:line:column:" of the word that ends `back` characters before >IN.
-fn placeText(self: *State, buffer: []u8, back: usize) RuntimeError![]const u8 {
+pub fn placeText(self: *State, buffer: []u8, back: usize) RuntimeError![]const u8 {
     const name: []const u8 = if (self.currentFileFrame()) |frame|
         self.sourceFileName(frame.file_index)
     else if (self.source_kind == .evaluate) memory_map.evaluate_source_name else memory_map.terminal_source_name;
@@ -353,17 +353,23 @@ fn placeAddress(self: *State, text: []const u8) RuntimeError!Cell {
     return takeSlot(self, buffer);
 }
 
-/// ~~'s line on standard error: the place and the data stack, as <n> #a #b.
-fn showPlace(self: *State, place: []const u8) RuntimeError!void {
+/// ~~'s line on standard error: the place and the data stack, as <n> #a #b, and after
+/// them `name for the value that a TO of a ~~VALUE is about to change.
+pub fn showPlace(self: *State, place: []const u8, name: ?[]const u8) RuntimeError!void {
     var line: [256]u8 = undefined;
     writeError(self, std.fmt.bufPrint(&line, "\n{s}<{d}> ", .{ place, self.data_depth }) catch place);
     for (self.data_stack[0..self.data_depth]) |value| {
         writeError(self, std.fmt.bufPrint(&line, "#{d} ", .{value}) catch "");
     }
+    if (name) |text| {
+        writeError(self, "`");
+        writeError(self, text);
+        writeError(self, " ");
+    }
     writeError(self, "\n");
 }
 
-fn writeError(self: *State, bytes: []const u8) void {
+pub fn writeError(self: *State, bytes: []const u8) void {
     if (self.writer.file_ops) |files| {
         _ = files.write(self.writer.context, memory_map.stderr_fileid, bytes);
     } else self.write(bytes);

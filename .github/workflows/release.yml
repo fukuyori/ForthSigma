@@ -37,7 +37,7 @@ jobs:
       # The build without floating-point words (-Dfloat=false).
       - run: zig build test -Dfloat=false --summary all
       # The build without any of the word groups that can be left out.
-      - run: zig build test -Dfloat=false -Dfiles=false -Dhelp=false -Dtools=false -Dimage=false -Dgraphics=false --summary all
+      - run: zig build test -Dfloat=false -Dfiles=false -Dhelp=false -Dtools=false -Dimage=false -Dgraphics=false -Ddebug=false --summary all
 
   build:
     name: Build ${{ matrix.platform.name }}${{ matrix.variant.suffix }}

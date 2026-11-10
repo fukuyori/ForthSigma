@@ -16,6 +16,7 @@ fn fail(machine: *forth.State, line: []const u8, expected: anyerror) !void {
 }
 
 test "an error in compiled code shows the words that were running and the stack" {
+    try support.skipWithout(&.{.debug});
     var output = Output{};
     const machine = try createMachine(&output);
     defer destroyMachine(machine);
@@ -37,6 +38,7 @@ test "an error in compiled code shows the words that were running and the stack"
 }
 
 test "the backtrace names inlined words, :NONAME definitions, and the definer of DOES> code" {
+    try support.skipWithout(&.{.debug});
     var output = Output{};
     const machine = try createMachine(&output);
     defer destroyMachine(machine);
@@ -55,6 +57,7 @@ test "the backtrace names inlined words, :NONAME definitions, and the definer of
 
 test "the backtrace shows the floating-point stack when it holds something" {
     try support.skipWithoutFloat();
+    try support.skipWithout(&.{.debug});
     var output = Output{};
     const machine = try createMachine(&output);
     defer destroyMachine(machine);
@@ -65,7 +68,7 @@ test "the backtrace shows the floating-point stack when it holds something" {
 }
 
 test "the backtrace gives the file and line of code compiled from a file" {
-    try support.skipWithout(&.{ .files, .tools });
+    try support.skipWithout(&.{ .files, .debug });
     var output = Output{};
     setFakeFile(&output, 0, ": AVERAGE ( sum n -- avg )\n  DUP DROP\n  / ;\n: REPORT\n  AVERAGE\n  . ;\n");
     const machine = try createMachine(&output);
@@ -76,6 +79,7 @@ test "the backtrace gives the file and line of code compiled from a file" {
 }
 
 test "a recursion is one line of the backtrace, and the callers that do not fit are counted" {
+    try support.skipWithout(&.{.debug});
     var output = Output{};
     const machine = try createMachine(&output);
     defer destroyMachine(machine);
@@ -86,6 +90,7 @@ test "a recursion is one line of the backtrace, and the callers that do not fit 
 }
 
 test "CATCH drops the backtrace of the error it catches, and show_backtrace turns it off" {
+    try support.skipWithout(&.{.debug});
     var output = Output{};
     const machine = try createMachine(&output);
     defer destroyMachine(machine);
@@ -107,7 +112,7 @@ test "CATCH drops the backtrace of the error it catches, and show_backtrace turn
 }
 
 test "the step limit ends compiled code that CATCH would keep running" {
-    try support.skipWithout(&.{.tools});
+    try support.skipWithout(&.{.debug});
     var output = Output{};
     const machine = try createMachine(&output);
     defer destroyMachine(machine);
@@ -134,7 +139,7 @@ test "the step limit ends compiled code that CATCH would keep running" {
 }
 
 test "code that LOAD adds has no lines, also where removed code had them" {
-    try support.skipWithout(&.{ .files, .tools, .image });
+    try support.skipWithout(&.{ .files, .debug, .image });
     var output = Output{};
     setFakeFile(&output, 0, ": OLD\n\n\n  1 2 3 4 5 6 7 8 2DROP 2DROP 2DROP 2DROP ;\n");
     setFakeFile(&output, 1, ": BAD\n  1 0 / ;\n");

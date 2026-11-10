@@ -1,6 +1,7 @@
 //! Defining words: the names they wait for and the words they make.
 
 const defs = @import("defs.zig");
+const words_debug = @import("words_debug.zig");
 const forth = @import("../forth.zig");
 const local_variables = @import("local_variables.zig");
 const memory_map = @import("memory_map.zig");
@@ -39,6 +40,11 @@ pub fn finishPending(self: *State, token: []const u8) RuntimeError!void {
         .variable_name, .value_name => {
             const id = try self.appendDataWord(token, if (pending == .value_name) .value else .variable, cell_size);
             try self.writeCell(self.words[id].value, if (pending == .value_name) self.pending_constant else 0);
+            // ~~VALUE: the TOs of this value are shown.
+            if (defs.debug_enabled and self.pending_watched) {
+                self.pending_watched = false;
+                try words_debug.watch(self, id);
+            }
             // A variable can take a DOES> part, as in gforth, where VARIABLE is CREATE 0 ,.
             if (pending == .variable_name) self.last_created_word = id;
         },
@@ -96,6 +102,7 @@ pub fn finishPending(self: *State, token: []const u8) RuntimeError!void {
             const id = self.synonymTarget(try self.lookupOrFail(token));
             const kind = self.words[id].kind;
             if (kind != .value and kind != .fvalue and kind != .two_value and kind != .deferred) return error.InvalidDefinition;
+            if (defs.debug_enabled and words_debug.isWatched(self, id)) try words_debug.watchStore(self, id, token.len);
             if (self.compiling) {
                 _ = try self.emit(.{ .kind = .store_value, .value = id });
             } else switch (kind) {

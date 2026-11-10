@@ -276,7 +276,8 @@ fn restore(self: *State, image: []const u8, memory_is_fresh: bool) RuntimeError!
     // The recorded uses are not in the image.
     self.use_count = 0;
     // Nor are the lines the code was compiled from.
-    if (defs.tools_enabled) @memset(&self.code_lines, 0);
+    if (defs.debug_enabled) @memset(&self.code_lines, 0);
+    self.watched_count = 0;
     self.code_count = @intCast(code_count);
     // Old and new images store ordinary calls; rebuild dispatch information
     // only after the word entries and counts have been restored.
@@ -395,7 +396,7 @@ pub fn appendImage(self: *State, source: *const State) RuntimeError!void {
         self.code[code_base + offset] = op;
         // The lines the code was compiled from are not in an image; the ones here
         // would be those of code that FORGET or a MARKER removed.
-        if (defs.tools_enabled) self.code_lines[code_base + offset] = 0;
+        if (defs.debug_enabled) self.code_lines[code_base + offset] = 0;
     }
     const data_from: usize = @intCast(data_start);
     const data_to: usize = @intCast(self.data_here);

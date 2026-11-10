@@ -15,6 +15,7 @@ pub fn build(b: *std.Build) void {
     const image = b.option(bool, "image", "Include SAVE, LOAD, and SAVESYS (default: on)") orelse true;
     const graphics = b.option(bool, "graphics", "Include REQUIRE-GRAPHICS and the GFX- words (default: on)") orelse true;
     const audio = b.option(bool, "audio", "Include REQUIRE-AUDIO and the SND- words (default: on)") orelse true;
+    const debug = b.option(bool, "debug", "Include the debugging features: the backtrace after an error, --max-steps, --trace, and the debugging words (default: on)") orelse true;
     const options = b.addOptions();
     options.addOption(bool, "float", float);
     options.addOption(bool, "files", files);
@@ -23,6 +24,7 @@ pub fn build(b: *std.Build) void {
     options.addOption(bool, "image", image);
     options.addOption(bool, "graphics", graphics);
     options.addOption(bool, "audio", audio);
+    options.addOption(bool, "debug", debug);
     options.addOption(usize, "memory_mib", b.option(usize, "memory-mib", "The default size of the data area, and of the heap, in MiB (default: 32)") orelse 32);
     options.addOption(usize, "locals_kib", b.option(usize, "locals-kib", "The default size of the area for local variables, in KiB (default: 64)") orelse 64);
     options.addOption(usize, "stack_cells", b.option(usize, "stack-cells", "The default size of each stack, in elements (default: 4096)") orelse 4096);

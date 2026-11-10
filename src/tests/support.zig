@@ -8,8 +8,8 @@ pub fn skipWithoutFloat() error{SkipZigTest}!void {
 }
 
 /// Skips a test that uses a word group the build leaves out (-Dfiles=false, -Dhelp=false,
-/// -Dtools=false, or -Dimage=false); several groups may be named.
-pub fn skipWithout(comptime groups: []const enum { files, help, tools, image, graphics, audio }) error{SkipZigTest}!void {
+/// -Dtools=false, -Dimage=false, or -Ddebug=false); several groups may be named.
+pub fn skipWithout(comptime groups: []const enum { files, help, tools, image, graphics, audio, debug }) error{SkipZigTest}!void {
     const options = @import("build_options");
     inline for (groups) |group| {
         if (!@field(options, @tagName(group))) return error.SkipZigTest;
@@ -21,6 +21,12 @@ pub fn skipWithout(comptime groups: []const enum { files, help, tools, image, gr
 /// the test still runs without the tools.
 pub inline fn see(comptime text: []const u8) []const u8 {
     return if (@import("build_options").tools) text else "";
+}
+
+/// `text` in a build with the debugging features, and nothing in one without them
+/// (-Ddebug=false): a test puts in it the backtrace that follows an error message.
+pub inline fn backtrace(comptime text: []const u8) []const u8 {
+    return if (@import("build_options").debug) text else "";
 }
 const forth = @import("../forth.zig");
 

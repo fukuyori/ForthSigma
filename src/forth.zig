@@ -44,6 +44,7 @@ const words_stack = @import("core/words_stack.zig");
 const words_strings = @import("core/words_strings.zig");
 const words_system = @import("core/words_system.zig");
 const words_tools = @import("core/words_tools.zig");
+const words_debug = @import("core/words_debug.zig");
 const words_xchar = @import("core/words_xchar.zig");
 const Builtin = defs.Builtin;
 pub const Cell = memory_map.Cell;
@@ -266,12 +267,29 @@ pub const State = struct {
     /// Whether `report` shows the backtrace and the stack after the message.
     show_backtrace: bool = true,
     /// The line of the included file each operation was compiled from, 0 for the others,
-    /// for the backtrace (none with -Dtools=false). Not part of an image.
-    code_lines: if (defs.tools_enabled) [max_code]u32 else void = if (defs.tools_enabled) @splat(0) else {},
+    /// for the backtrace (none with -Ddebug=false). Not part of an image.
+    code_lines: if (defs.debug_enabled) [max_code]u32 else void = if (defs.debug_enabled) @splat(0) else {},
     /// --max-steps: how many operations compiled code may run (0: any number), and how
     /// many are left. The host sets `steps_left` again with `resetSteps`.
     step_limit: u64 = 0,
     steps_left: u64 = 0,
+    /// --trace: whether the words are shown as they start and end, how many lines the
+    /// trace may have (--trace-limit, 0: any number) and has, and how deep the traced
+    /// words are nested.
+    tracing: bool = false,
+    trace_limit: u64 = 0,
+    trace_lines: u64 = 0,
+    trace_depth: usize = 0,
+    /// +LTRACE: each line of an included file is shown before it is interpreted.
+    line_trace: bool = false,
+    /// The values of ~~VALUE, whose TOs are shown, and whether the VALUE being defined
+    /// is one. Not part of an image.
+    watched: [32]u16 = undefined,
+    watched_count: usize = 0,
+    pending_watched: bool = false,
+    /// After the operation of compiled code that last called a word or a built-in word
+    /// through the host, 0 when the interpreter did: who starts an executeOperations.
+    outer_pc: u16 = 0,
     last_unknown_word: ?[]const u8 = null,
     throw_code: Cell = 0,
     /// The counted string of the ABORT" that threw -2, for its message.
@@ -607,6 +625,9 @@ pub const State = struct {
             .{ "LATEST", .latest },              .{ "LATESTXT", .latestxt },           .{ ">NAME", .to_name },               .{ "ID.", .id_dot },                  .{ ".NAME", .id_dot },
             .{ "ALIAS", .alias },                .{ "~~", .debug_tilde },              .{ "(~~)", .debug_tilde_run },        .{ "ASSERT(", .assert_paren },        .{ "(ASSERT)", .assert_run },
             .{ "EMIT?", .emit_question },        .{ "(LOCAL)", .paren_local },
+            .{ "+LTRACE", .ltrace_on },          .{ "-LTRACE", .ltrace_off },          .{ "ONCE", .once },                   .{ "(ONCE)", .once_run },
+            .{ "~~BT", .debug_tilde_bt },        .{ "(~~BT)", .debug_tilde_bt_run },   .{ "~~1BT", .debug_tilde_one_bt },    .{ "~~VALUE", .define_watched_value },
+            .{ "(~~TO)", .watch_run },
         };
 
     fn installBuiltins(self: *State) void {
@@ -636,7 +657,7 @@ pub const State = struct {
 
     fn isImmediateBuiltin(builtin: Builtin) bool {
         return switch (builtin) {
-            .compile_if, .compile_else, .compile_ahead, .compile_then, .compile_begin, .compile_end, .compile_again, .compile_while, .compile_repeat, .compile_do, .compile_q_do, .compile_loop, .compile_plus_loop, .compile_does, .compile_case, .compile_of, .compile_endof, .compile_endcase, .compile_exit, .compile_recurse, .leave, .bracket_if, .bracket_else, .bracket_then, .bracket_defined, .bracket_undefined, .bracket_ifdef, .bracket_ifundef, .bracket_do, .bracket_q_do, .bracket_loop, .bracket_plus_loop, .bracket_i, .bracket_begin, .bracket_until, .bracket_again, .bracket_while, .bracket_repeat, .bracket_for, .bracket_next, .end_definition, .literal, .fliteral, .sliteral, .two_literal, .defers, .bracket_compile, .question_exit, .question_leave, .compile_question_of, .compile_contof, .compile_next_case, .debug_tilde, .assert_paren => true,
+            .compile_if, .compile_else, .compile_ahead, .compile_then, .compile_begin, .compile_end, .compile_again, .compile_while, .compile_repeat, .compile_do, .compile_q_do, .compile_loop, .compile_plus_loop, .compile_does, .compile_case, .compile_of, .compile_endof, .compile_endcase, .compile_exit, .compile_recurse, .leave, .bracket_if, .bracket_else, .bracket_then, .bracket_defined, .bracket_undefined, .bracket_ifdef, .bracket_ifundef, .bracket_do, .bracket_q_do, .bracket_loop, .bracket_plus_loop, .bracket_i, .bracket_begin, .bracket_until, .bracket_again, .bracket_while, .bracket_repeat, .bracket_for, .bracket_next, .end_definition, .literal, .fliteral, .sliteral, .two_literal, .defers, .bracket_compile, .question_exit, .question_leave, .compile_question_of, .compile_contof, .compile_next_case, .debug_tilde, .assert_paren, .once, .debug_tilde_bt, .debug_tilde_one_bt => true,
             else => false,
         };
     }
@@ -770,6 +791,7 @@ pub const State = struct {
     /// Takes word `id` and every later word out of the dictionary and the index of the
     /// names; the caller gives back their code, data, and names.
     pub fn dropWordsFrom(self: *State, id: u16) void {
+        if (defs.debug_enabled) words_debug.unwatchFrom(self, id);
         wordlists.unindexFrom(self, id);
         self.word_count = id;
     }
@@ -958,6 +980,8 @@ pub const State = struct {
         if (self.compiling and !self.words[id].immediate) {
             try self.compileCall(id);
         } else {
+            // Compiled code that starts here has no caller for ~~BT to show.
+            if (defs.debug_enabled) self.outer_pc = 0;
             try self.executeWord(id);
         }
     }
@@ -1045,7 +1069,7 @@ pub const State = struct {
         if (self.code_count == max_code) return error.CodeFull;
         const at = self.code_count;
         self.code[at] = op;
-        if (defs.tools_enabled) self.code_lines[at] = if (self.currentFileFrame()) |frame| frame.line else 0;
+        if (defs.debug_enabled) self.code_lines[at] = if (self.currentFileFrame()) |frame| frame.line else 0;
         self.code_count += 1;
         return at;
     }
@@ -1196,6 +1220,13 @@ pub const State = struct {
         }
     }
 
+    /// --trace: shows the definition that `running` runs as it starts or ends. Code after
+    /// DOES> has no word of its own and is not shown.
+    fn traceRunning(self: *State, running: Running, enter: bool) void {
+        if (!self.tracing) return;
+        if (running.defining_word) |id| words_debug.traceWord(self, id, enter);
+    }
+
     fn addBacktrace(self: *State, pc: u16) void {
         if (self.backtrace_count < max_backtrace) {
             self.backtrace[self.backtrace_count] = pc;
@@ -1204,8 +1235,9 @@ pub const State = struct {
         self.backtrace_total += 1;
     }
 
-    /// Runs compiled code. With a step limit (--max-steps) the loop that counts the
-    /// operations runs it, so that the usual loop does not pay for the count.
+    /// Runs compiled code. With a step limit (--max-steps) or the trace (--trace), the
+    /// loop that counts the operations and shows the words runs it, so that the usual
+    /// loop does not pay for them.
     fn executeOperations(self: *State, start_pc: u16, end_pc: u16, defining_word: ?u16) RuntimeError!void {
         // A colon definition that compiled code calls runs in the loop of runOperations,
         // its caller kept in `frames`, instead of in a host call of its own: three calls
@@ -1220,9 +1252,17 @@ pub const State = struct {
             self.call_depth = entry_call_depth;
             self.locals_top = entry_locals_top;
         }
+        // For ~~BT, the place that started this code lies under its frames, marked by an
+        // end of 0. There is room: the caller counted this nesting in `call_depth`, which
+        // the frames never exceed.
+        if (defs.debug_enabled) {
+            self.frames[self.frame_depth] = .{ .pc = self.outer_pc, .end_pc = 0, .defining_word = null };
+            self.frame_depth += 1;
+        }
+        const loop_frames = self.frame_depth;
         // Before the frames are given back: they are the callers of the backtrace.
-        errdefer self.recordBacktrace(self.failed_pc, entry_frames, entry_call_depth);
-        if (defs.tools_enabled and self.step_limit != 0) return self.runOperations(true, start_pc, end_pc, defining_word);
+        errdefer if (defs.debug_enabled) self.recordBacktrace(self.failed_pc, loop_frames, entry_call_depth);
+        if (defs.debug_enabled and (self.step_limit != 0 or self.tracing)) return self.runOperations(true, start_pc, end_pc, defining_word);
         return self.runOperations(false, start_pc, end_pc, defining_word);
     }
 
@@ -1230,16 +1270,20 @@ pub const State = struct {
         var running: Running = .{ .pc = start_pc, .end_pc = end_pc, .defining_word = defining_word };
         const entry_frames = self.frame_depth;
         // All that an error does here, since every `try` of the loop repeats it; the rest
-        // is in executeOperations.
-        errdefer self.failed_pc = running.pc;
+        // is in executeOperations. A build without the debugging features does nothing.
+        errdefer if (defs.debug_enabled) {
+            self.failed_pc = running.pc;
+        };
+        if (counted) self.traceRunning(running, true);
         while (!self.halted) {
             if (running.pc >= running.end_pc) {
+                if (counted) self.traceRunning(running, false);
                 if (!self.returnToCaller(&running, entry_frames)) return;
                 continue;
             }
             const op = self.code[running.pc];
             running.pc += 1;
-            if (counted) {
+            if (counted and self.step_limit != 0) {
                 if (self.steps_left == 0) return error.StepLimit;
                 self.steps_left -= 1;
             }
@@ -1268,11 +1312,13 @@ pub const State = struct {
                         },
                         .variable, .created => {
                             if (word.has_does) {
+                                if (defs.debug_enabled) self.outer_pc = running.pc;
                                 try self.executeWord(id);
                             } else try self.push(word.value);
                             continue;
                         },
                         else => {
+                            if (defs.debug_enabled) self.outer_pc = running.pc;
                             try self.executeWord(id);
                             continue;
                         },
@@ -1282,9 +1328,11 @@ pub const State = struct {
                     self.frames[self.frame_depth] = running;
                     self.frame_depth += 1;
                     running = .{ .pc = word.code_start, .end_pc = word.code_end, .defining_word = id };
+                    if (counted) self.traceRunning(running, true);
                 },
                 .call_builtin => {
                     if (op.value < 0 or op.value >= self.builtin_count) return error.InvalidExecutionToken;
+                    if (defs.debug_enabled) self.outer_pc = running.pc;
                     try self.executeBuiltin(self.words[@intCast(op.value)].builtin);
                 },
                 // These tags directly select the implementation: no dictionary
@@ -1298,7 +1346,10 @@ pub const State = struct {
                     try self.requireCompiling();
                     try self.compileCall(try self.wordId(op.value));
                 },
-                .builtin => try self.executeBuiltin(@enumFromInt(op.value)),
+                .builtin => {
+                    if (defs.debug_enabled) self.outer_pc = running.pc;
+                    try self.executeBuiltin(@enumFromInt(op.value));
+                },
                 .literal, .execution_token => try self.push(op.value),
                 .float_literal => try self.fpush(bitsFloat(op.value)),
                 .store_value => {
@@ -1372,9 +1423,13 @@ pub const State = struct {
                     self.words[created_id].has_does = true;
                     self.last_created_word = null;
                     // The defining word ends here, as at EXIT.
+                    if (counted) self.traceRunning(running, false);
                     if (!self.returnToCaller(&running, entry_frames)) return;
                 },
-                .exit => if (!self.returnToCaller(&running, entry_frames)) return,
+                .exit => {
+                    if (counted) self.traceRunning(running, false);
+                    if (!self.returnToCaller(&running, entry_frames)) return;
+                },
                 .local_frame => if (running.locals_frame == 0) {
                     const size = self.words[try self.wordId(op.value)].locals_size;
                     if (self.sizes.localsEnd() - self.locals_top < size) return error.ReturnStackOverflow;
@@ -1392,7 +1447,10 @@ pub const State = struct {
                         .local_store => try self.storeLocal(address, kind),
                         .local_fetch => try self.fetchLocal(address, kind),
                         .local_address => try self.push(address),
-                        .local_execute => try self.executeWord(try self.wordId(try self.readCell(address))),
+                        .local_execute => {
+                            if (defs.debug_enabled) self.outer_pc = running.pc;
+                            try self.executeWord(try self.wordId(try self.readCell(address)));
+                        },
                         else => unreachable,
                     }
                 },
@@ -1416,7 +1474,7 @@ pub const State = struct {
         }
     }
 
-    const word_modules = .{ words_stack, words_arithmetic, words_memory, words_output, words_input, words_compiling, words_float, words_pictured, words_dictionary, words_system, words_files, words_strings, words_help, words_defining, words_graphics, words_audio, words_xchar, words_tools };
+    const word_modules = .{ words_stack, words_arithmetic, words_memory, words_output, words_input, words_compiling, words_float, words_pictured, words_dictionary, words_system, words_files, words_strings, words_help, words_defining, words_graphics, words_audio, words_xchar, words_tools, words_debug };
 
     /// For each built-in word, the index in `word_modules` of the file that executes it.
     const word_owner = blk: {

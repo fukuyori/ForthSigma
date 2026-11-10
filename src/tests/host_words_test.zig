@@ -111,7 +111,7 @@ test "host failures in MS and UTIME are reported and leave a clean stack" {
     machine.report(error.HostFailed);
     try std.testing.expectError(error.HostFailed, machine.interpretLine(": T UTIME ; T"));
     machine.report(error.HostFailed);
-    try std.testing.expectEqualStrings("HOST FUNCTION ERROR !\nHOST FUNCTION ERROR !\nBACKTRACE:\n  T\nSTACK: <0> \n", output.written());
+    try std.testing.expectEqualStrings("HOST FUNCTION ERROR !\nHOST FUNCTION ERROR !\n" ++ support.backtrace("BACKTRACE:\n  T\nSTACK: <0> \n"), output.written());
     try std.testing.expectEqual(@as(forth.Cell, -1), output.slept);
     try expectStack(machine, &.{});
 }
@@ -138,7 +138,7 @@ test "THROW ignores zero, aborts on -1, and reports other codes in decimal" {
         try std.testing.expectError(expected, machine.interpretLine(line));
         machine.report(expected);
     }
-    try std.testing.expectEqualStrings("STACK UNDER FLOW !\nNO SUCH FILE OR DIRECTORY !\nFILE I/O EXCEPTION !\nBACKTRACE:\n  T\nSTACK: <0> \nERROR #5 !\n", output.written());
+    try std.testing.expectEqualStrings("STACK UNDER FLOW !\nNO SUCH FILE OR DIRECTORY !\nFILE I/O EXCEPTION !\n" ++ support.backtrace("BACKTRACE:\n  T\nSTACK: <0> \n") ++ "ERROR #5 !\n", output.written());
 }
 
 test "ARGC, ARGV, ARG, SHIFT-ARGS, and NEXT-ARG see the arguments the host set, as in gforth" {

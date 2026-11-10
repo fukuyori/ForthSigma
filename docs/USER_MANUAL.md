@@ -15,7 +15,7 @@ zig build
 .\zig-out\bin\sigma.exe
 ```
 
-Building with `zig build -Dfloat=false` gives a smaller version without floating-point numbers (see the chapter [Floating-point numbers](#floating-point-numbers)). In the same way, `-Dfiles=false` leaves out the words that open, read, write, or include files (such as `INCLUDE`, `REQUIRE`, `OPEN-FILE`, `STDIN`, `SLURP-FILE`, and the `$...SLURP` words), `-Dhelp=false` leaves out `HELP` and `LICENSE`, `-Dtools=false` leaves out `SEE`, `LOCATE`, and `WHERE`, `-Dimage=false` leaves out `SAVE`, `LOAD`, and `SAVESYS`, and `-Dgraphics=false` leaves out `REQUIRE-GRAPHICS` and the graphics words (see [Graphics](#graphics)). The words left out are not in the dictionary (their names give the error `name ?`). The groups are independent: without the file words, `SAVE`, `LOAD`, and `SAVESYS` still write and read image files, and `LOCATE` still reads the source file. Every build gives each built-in word the same execution token, so an image saved by one build loads into a build with other groups; running a word that build left out gives the error `INVALID EXECUTION TOKEN`, and `SEE` shows it by its name. An image saved by an earlier build that left a group out (such as `-Dfloat=false`) gives `INVALID IMAGE`, since its built-in words had other execution tokens.
+Building with `zig build -Dfloat=false` gives a smaller version without floating-point numbers (see the chapter [Floating-point numbers](#floating-point-numbers)). In the same way, `-Dfiles=false` leaves out the words that open, read, write, or include files (such as `INCLUDE`, `REQUIRE`, `OPEN-FILE`, `STDIN`, `SLURP-FILE`, and the `$...SLURP` words), `-Dhelp=false` leaves out `HELP` and `LICENSE`, `-Dtools=false` leaves out `SEE`, `LOCATE`, and `WHERE`, `-Dimage=false` leaves out `SAVE`, `LOAD`, and `SAVESYS`, `-Dgraphics=false` leaves out `REQUIRE-GRAPHICS` and the graphics words (see [Graphics](#graphics)), and `-Ddebug=false` leaves out the debugging features (see [Errors in compiled code](#errors-in-compiled-code)). The words left out are not in the dictionary (their names give the error `name ?`). The groups are independent: without the file words, `SAVE`, `LOAD`, and `SAVESYS` still write and read image files, and `LOCATE` still reads the source file. Every build gives each built-in word the same execution token, so an image saved by one build loads into a build with other groups; running a word that build left out gives the error `INVALID EXECUTION TOKEN`, and `SEE` shows it by its name. An image saved by an earlier build that left a group out (such as `-Dfloat=false`) gives `INVALID IMAGE`, since its built-in words had other execution tokens.
 
 Before the interactive prompt, it prints the following two lines (only the first in a build with `-Dhelp=false`). The version number is the value of the `VERSION` file at the root.
 
@@ -71,13 +71,45 @@ The lines after `BACKTRACE:` are the definitions that were running, the innermos
 - Code after `DOES>` is shown under the name of the defining word, and a definition made by `:NONAME` as `:NONAME`.
 - A place that follows itself, as in a recursion, is shown once with the number of times (`DEEP prog.fs:4 *32`). The innermost 32 places are kept; `... 4064 MORE` counts the callers beyond them.
 - An error outside a definition, `ABORT`, and `QUIT` show no backtrace, and neither does an error that `CATCH` caught.
-- A build without the tools (`-Dtools=false`) shows the names without the files and lines.
+- A build without the debugging features (`zig build -Ddebug=false`) shows only the message, as versions before this did.
 
-`--max-steps N` (or `--max-steps=N`), among the options at the start of the command line, ends a program that does not end by itself: compiled code may run `N` operations (a word of a definition, a number, or a jump of a control structure each count as one) for each argument and for each line typed. After that the error `STEP LIMIT !` (THROW code -280) ends it with its backtrace, which shows where the program was. `CATCH` does not catch this error. `0` is no limit, which is the default; with a limit the program runs somewhat slower. A build without the tools does not have the option.
+`--max-steps N` (or `--max-steps=N`), among the options at the start of the command line, ends a program that does not end by itself: compiled code may run `N` operations (a word of a definition, a number, or a jump of a control structure each count as one) for each argument and for each line typed. After that the error `STEP LIMIT !` (THROW code -280) ends it with its backtrace, which shows where the program was. `CATCH` does not catch this error. `0` is no limit, which is the default; with a limit the program runs somewhat slower. A build without the debugging features (`-Ddebug=false`) does not have the option.
 
 ```powershell
 .\zig-out\bin\sigma.exe --max-steps 100000000 prog.fs -e "MAIN BYE"
 ```
+
+### Tracing and the debugging words
+
+`--trace`, among the options at the start of the command line, shows on standard error each colon definition as it starts (`>`) and as it ends (`<`), with the depth of the data stack and its top nine items, indented by how deep the words are nested:
+
+```text
+> SUMSQ <2> 3 4
+  > SQUARE <2> 3 4
+  < SQUARE <2> 3 16
+  > SQUARE <2> 16 3
+  < SQUARE <2> 16 9
+< SUMSQ <1> 25
+```
+
+`--trace-limit N` (or `--trace-limit=N`) ends the trace after `N` lines with the line `TRACE LIMIT`; the program goes on. A word that an error ends has no line for its end. The code after `DOES>` is not shown as a word. With `--trace`, short definitions are called instead of being copied into their callers, and the program runs slower.
+
+```powershell
+.\zig-out\bin\sigma.exe --trace --trace-limit 200 prog.fs -e "MAIN BYE" 2> trace.txt
+```
+
+These words of gforth also write to standard error:
+
+| Word | Stack | Action |
+|---|---|---|
+| `~~BT` | `( -- )` | As `~~` (the place and the data stack), and then `BACKTRACE:` and the words that called the definition, innermost first, as after an error. |
+| `~~1BT` | `( -- )` | As `~~BT`, the first time only. |
+| `ONCE` | `( -- )` | In a definition: what follows, up to `THEN`, runs only the first time (`ONCE ~~ THEN`). |
+| `~~VALUE` | `( x "name" -- )` | Defines a `VALUE` whose every `TO` is shown: the place of the `TO`, the data stack with the new value on top, and `` `name ``. |
+| `+LTRACE` | `( -- )` | From the next line on, shows each line of an included file before it is interpreted, as `~~` at its start would (`file:line:1:` and the data stack). |
+| `-LTRACE` | `( -- )` | Ends what `+LTRACE` started. |
+
+The trace and these words are not in a build without the debugging features (`-Ddebug=false`).
 
 `HELP` shows the basic usage, and `HELP name` shows the stack effect of a word and a one-line description in English (example: `HELP DUP`). The name is read from the same line (also in an `EVALUATE` string, it does not read past a line end). `HELP` written in a definition reads the name when that definition runs. For a word defined by the user, it suggests viewing its contents with `SEE`. An unknown name gives the error `name ?`. `LICENSE` shows the full text of the license and the copyright notice of the included CORE-MATH.
 

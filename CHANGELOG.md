@@ -6,9 +6,13 @@
 
 - An error in compiled code that no `CATCH` caught is followed by a backtrace and the stack: the definitions that were running, innermost first, each with the file and line it was at when it was compiled from a file, then the data stack as the error left it (and the floating-point stack when it holds something). Short definitions copied into their callers are marked `(INLINE)`, and a recursion is one line with the number of times.
 - `--max-steps N`, among the options at the start of the command line, ends a program after its compiled code has run `N` operations for an argument or a line, with the new error `STEP LIMIT !` (-280) and its backtrace; `CATCH` does not catch it. It is for finding where a program that does not end is running.
+- `--trace` shows on standard error each colon definition as it starts and ends, with the data stack, indented by the nesting; `--trace-limit N` ends the trace after `N` lines.
+- The debugging words of gforth `~~BT`, `~~1BT`, `ONCE`, `~~VALUE`, `+LTRACE`, and `-LTRACE`.
+- The build option `-Ddebug=false` leaves out the debugging features (the backtrace, `--max-steps`, the trace, and the debugging words above).
 
 ### Changed
 
+- The new built-in words change the numbers of the words after them, so a dictionary image saved by an earlier version is refused with `INVALID IMAGE`.
 - `examples/pinball.fs` is now Ninth Inning, a pinball table of a ballpark on painted wood, laid out after a picture of an old table: ABCD lanes that raise the bonus multiplier and move with the flippers, a BASE bank of drop targets, three targets, a dugout hole and a kickout hole, an extra ball, runners on a diamond who score runs, and outlanes that lead under the flippers to the drain. Wyrm's Delve, the table of a dungeon that was there before, is removed.
 
 ## [0.9.0] - 2026-11-10

@@ -742,10 +742,18 @@ const StartOptions = struct {
     /// --max-steps: how many operations compiled code may run for each argument and each
     /// line of input; 0 is any number.
     max_steps: u64 = 0,
+    /// --trace and --trace-limit: whether the words are shown as they start and end, and
+    /// how many lines of that are shown; 0 is any number.
+    trace: bool = false,
+    trace_limit: u64 = 0,
     next: usize = 1,
 };
 
-const max_steps_option = "--max-steps";
+/// The options that take a plain decimal number (not in a build with -Ddebug=false).
+const number_options = [_]struct { name: []const u8, field: enum { max_steps, trace_limit } }{
+    .{ .name = "--max-steps", .field = .max_steps },
+    .{ .name = "--trace-limit", .field = .trace_limit },
+};
 
 const StartOption = struct { short: []const u8, long: []const u8, field: enum { m, l, data_stack, return_stack, float_stack } };
 
@@ -797,19 +805,34 @@ fn parseStartOptions(args: []const []const u8, failed: *[]const u8) error{ Missi
             index += 1;
             break;
         }
-        // --max-steps N or --max-steps=N: a decimal number of operations, not a size.
-        // A build without the tools (-Dtools=false) does not have it.
-        if (@import("build_options").tools and (std.mem.eql(u8, argument, max_steps_option) or std.mem.startsWith(u8, argument, max_steps_option ++ "="))) {
-            failed.* = max_steps_option;
-            var text: []const u8 = undefined;
-            if (argument.len == max_steps_option.len) {
-                if (index + 1 >= args.len) return error.MissingValue;
+        // --max-steps N or --max-steps=N, and --trace-limit: a decimal number, not a
+        // size. --trace takes no value. A build without the debugging features
+        // (-Ddebug=false) has none of them.
+        if (@import("build_options").debug) {
+            if (std.mem.eql(u8, argument, "--trace")) {
+                options.trace = true;
                 index += 1;
-                text = args[index];
-            } else text = argument[max_steps_option.len + 1 ..];
-            options.max_steps = std.fmt.parseUnsigned(u64, text, 10) catch return error.InvalidNumber;
-            index += 1;
-            continue;
+                continue;
+            }
+            const number_option = for (number_options) |option| {
+                if (std.mem.eql(u8, argument, option.name) or (std.mem.startsWith(u8, argument, option.name) and argument.len > option.name.len and argument[option.name.len] == '=')) break option;
+            } else null;
+            if (number_option) |option| {
+                failed.* = option.name;
+                var text: []const u8 = undefined;
+                if (argument.len == option.name.len) {
+                    if (index + 1 >= args.len) return error.MissingValue;
+                    index += 1;
+                    text = args[index];
+                } else text = argument[option.name.len + 1 ..];
+                const value = std.fmt.parseUnsigned(u64, text, 10) catch return error.InvalidNumber;
+                switch (option.field) {
+                    .max_steps => options.max_steps = value,
+                    .trace_limit => options.trace_limit = value,
+                }
+                index += 1;
+                continue;
+            }
         }
         var value: ?[]const u8 = null;
         var needs_next = false;
@@ -1275,8 +1298,11 @@ fn run(init: std.process.Init.Minimal) !u8 {
     defer if (graphics) {
         _ = host_process.stop(null);
     };
-    if (embedded) |image| machine.restoreFreshImage(image) catch machine.write("INVALID IMAGE !\n");
+    // Before the image: with the trace, its short definitions stay calls.
     machine.step_limit = start.max_steps;
+    machine.tracing = start.trace;
+    machine.trace_limit = start.trace_limit;
+    if (embedded) |image| machine.restoreFreshImage(image) catch machine.write("INVALID IMAGE !\n");
 
     // The other arguments go into Forth memory, where ARGC, ARGV, ARG, and NEXT-ARG see
     // them, after the program's name. This comes after the image is restored, since
@@ -1587,7 +1613,7 @@ test "the size options are read at the start of the arguments" {
     try std.testing.expectEqual(@as(?usize, 1), zero.return_stack);
 
     // --max-steps takes a plain number, in either form.
-    if (@import("build_options").tools) {
+    if (@import("build_options").debug) {
         const steps = try parseStartOptions(&.{ "sigma", "--max-steps", "5000", "-d", "1000", "x.fs" }, &failed);
         try std.testing.expectEqual(@as(u64, 5000), steps.max_steps);
         try std.testing.expectEqual(@as(?usize, 1000), steps.data_stack);
@@ -1596,6 +1622,11 @@ test "the size options are read at the start of the arguments" {
         try std.testing.expectError(error.InvalidNumber, parseStartOptions(&.{ "sigma", "--max-steps=1k" }, &failed));
         try std.testing.expectEqualStrings("--max-steps", failed);
         try std.testing.expectError(error.MissingValue, parseStartOptions(&.{ "sigma", "--max-steps" }, &failed));
+        const traced = try parseStartOptions(&.{ "sigma", "--trace", "--trace-limit=200", "x.fs" }, &failed);
+        try std.testing.expect(traced.trace);
+        try std.testing.expectEqual(@as(u64, 200), traced.trace_limit);
+        try std.testing.expectEqual(@as(usize, 3), traced.next);
+        try std.testing.expect(!steps.trace);
     }
 
     try std.testing.expectError(error.MissingValue, parseStartOptions(&.{ "sigma", "-d" }, &failed));

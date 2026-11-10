@@ -21,6 +21,10 @@ pub const files_enabled = build_options.files;
 pub const help_enabled = build_options.help;
 /// False with -Dtools=false, which leaves out SEE, LOCATE, and WHERE.
 pub const tools_enabled = build_options.tools;
+/// False with -Ddebug=false, which leaves out the debugging features: the backtrace after
+/// an error (and the lines of the code, which it shows), the step limit (--max-steps),
+/// the trace (--trace), and the words of words_debug.zig.
+pub const debug_enabled = build_options.debug;
 /// False with -Dimage=false, which leaves out SAVE, LOAD, and SAVESYS.
 pub const image_enabled = build_options.image;
 /// False with -Dgraphics=false, which leaves out REQUIRE-GRAPHICS and the GFX- words.
@@ -57,6 +61,7 @@ const tool_builtins = builtinSet(&.{&.{ .see, .locate, .where }});
 const image_builtins = builtinSet(&.{&.{ .load, .save, .savesys }});
 const graphics_builtins = builtinSet(&.{&@import("words_graphics.zig").words});
 const audio_builtins = builtinSet(&.{&@import("words_audio.zig").words});
+const debug_builtins = builtinSet(&.{&@import("words_debug.zig").words});
 
 const excluded_builtins = blk: {
     var table: [builtin_count]bool = undefined;
@@ -64,7 +69,7 @@ const excluded_builtins = blk: {
         excluded.* = (!float_enabled and float_builtins[index]) or (!files_enabled and file_builtins[index]) or
             (!help_enabled and help_builtins[index]) or (!tools_enabled and tool_builtins[index]) or
             (!image_enabled and image_builtins[index]) or (!graphics_enabled and graphics_builtins[index]) or
-            (!audio_enabled and audio_builtins[index]);
+            (!audio_enabled and audio_builtins[index]) or (!debug_enabled and debug_builtins[index]);
     }
     break :blk table;
 };
@@ -693,6 +698,16 @@ pub const Builtin = enum {
     assert_run,
     emit_question,
     paren_local,
+    // The debugging words (not in a build with -Ddebug=false).
+    ltrace_on,
+    ltrace_off,
+    once,
+    once_run,
+    debug_tilde_bt,
+    debug_tilde_bt_run,
+    debug_tilde_one_bt,
+    define_watched_value,
+    watch_run,
 };
 
 pub const HeapResult = union(enum) { address: Cell, no_memory, bad_pointer };
