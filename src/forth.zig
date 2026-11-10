@@ -253,6 +253,25 @@ pub const State = struct {
     /// (see executeOperations).
     frames: []CallFrame,
     frame_depth: usize = 0,
+    /// Where the compiled code was when the last error came up: the operation that
+    /// failed and the calls that led to it, innermost first (see recordBacktrace).
+    /// `backtrace_total` also counts the ones that did not fit, and `backtrace_level` is
+    /// the nesting depth of the executeOperations that added the last ones.
+    backtrace: [max_backtrace]u16 = undefined,
+    backtrace_count: usize = 0,
+    backtrace_total: usize = 0,
+    backtrace_level: usize = 0,
+    /// After the operation at which the innermost loop of compiled code failed.
+    failed_pc: u16 = 0,
+    /// Whether `report` shows the backtrace and the stack after the message.
+    show_backtrace: bool = true,
+    /// The line of the included file each operation was compiled from, 0 for the others,
+    /// for the backtrace (none with -Dtools=false). Not part of an image.
+    code_lines: if (defs.tools_enabled) [max_code]u32 else void = if (defs.tools_enabled) @splat(0) else {},
+    /// --max-steps: how many operations compiled code may run (0: any number), and how
+    /// many are left. The host sets `steps_left` again with `resetSteps`.
+    step_limit: u64 = 0,
+    steps_left: u64 = 0,
     last_unknown_word: ?[]const u8 = null,
     throw_code: Cell = 0,
     /// The counted string of the ABORT" that threw -2, for its message.
@@ -1026,6 +1045,7 @@ pub const State = struct {
         if (self.code_count == max_code) return error.CodeFull;
         const at = self.code_count;
         self.code[at] = op;
+        if (defs.tools_enabled) self.code_lines[at] = if (self.currentFileFrame()) |frame| frame.line else 0;
         self.code_count += 1;
         return at;
     }
@@ -1146,13 +1166,52 @@ pub const State = struct {
         return true;
     }
 
+    pub const max_backtrace = 32;
+
+    pub fn clearBacktrace(self: *State) void {
+        self.backtrace_count = 0;
+        self.backtrace_total = 0;
+    }
+
+    /// Lets compiled code run `step_limit` operations again.
+    pub fn resetSteps(self: *State) void {
+        self.steps_left = self.step_limit;
+    }
+
+    /// Keeps where an executeOperations was when an error ended it: `pc` is after the
+    /// operation that failed, and `frames` from `entry_frames` up are its callers. An
+    /// error passes from the innermost executeOperations to the ones around it, whose
+    /// `level` (the nesting depth they were entered at) is lower each time; one that
+    /// comes from the same level or a deeper one is a new error, after one that did not
+    /// reach `report` or CATCH.
+    fn recordBacktrace(self: *State, pc: u16, entry_frames: usize, level: usize) void {
+        @branchHint(.cold);
+        if (self.backtrace_total != 0 and level >= self.backtrace_level) self.clearBacktrace();
+        self.backtrace_level = level;
+        self.addBacktrace(pc -| 1);
+        var index = self.frame_depth;
+        while (index > entry_frames) {
+            index -= 1;
+            self.addBacktrace(self.frames[index].pc -| 1);
+        }
+    }
+
+    fn addBacktrace(self: *State, pc: u16) void {
+        if (self.backtrace_count < max_backtrace) {
+            self.backtrace[self.backtrace_count] = pc;
+            self.backtrace_count += 1;
+        }
+        self.backtrace_total += 1;
+    }
+
+    /// Runs compiled code. With a step limit (--max-steps) the loop that counts the
+    /// operations runs it, so that the usual loop does not pay for the count.
     fn executeOperations(self: *State, start_pc: u16, end_pc: u16, defining_word: ?u16) RuntimeError!void {
-        var running: Running = .{ .pc = start_pc, .end_pc = end_pc, .defining_word = defining_word };
-        // A colon definition that compiled code calls runs in this loop, its caller kept
-        // in `frames`, instead of in a host call of its own: three calls and returns per
-        // call made word nesting slow. Whatever ends the loop, an error included, leaves
-        // the nesting depth, the frames, and the local-variable area as they were on entry,
-        // as the calls of their own did.
+        // A colon definition that compiled code calls runs in the loop of runOperations,
+        // its caller kept in `frames`, instead of in a host call of its own: three calls
+        // and returns per call made word nesting slow. Whatever ends the loop, an error
+        // included, leaves the nesting depth, the frames, and the local-variable area as
+        // they were on entry, as the calls of their own did.
         const entry_frames = self.frame_depth;
         const entry_call_depth = self.call_depth;
         const entry_locals_top = self.locals_top;
@@ -1161,6 +1220,18 @@ pub const State = struct {
             self.call_depth = entry_call_depth;
             self.locals_top = entry_locals_top;
         }
+        // Before the frames are given back: they are the callers of the backtrace.
+        errdefer self.recordBacktrace(self.failed_pc, entry_frames, entry_call_depth);
+        if (defs.tools_enabled and self.step_limit != 0) return self.runOperations(true, start_pc, end_pc, defining_word);
+        return self.runOperations(false, start_pc, end_pc, defining_word);
+    }
+
+    fn runOperations(self: *State, comptime counted: bool, start_pc: u16, end_pc: u16, defining_word: ?u16) RuntimeError!void {
+        var running: Running = .{ .pc = start_pc, .end_pc = end_pc, .defining_word = defining_word };
+        const entry_frames = self.frame_depth;
+        // All that an error does here, since every `try` of the loop repeats it; the rest
+        // is in executeOperations.
+        errdefer self.failed_pc = running.pc;
         while (!self.halted) {
             if (running.pc >= running.end_pc) {
                 if (!self.returnToCaller(&running, entry_frames)) return;
@@ -1168,6 +1239,10 @@ pub const State = struct {
             }
             const op = self.code[running.pc];
             running.pc += 1;
+            if (counted) {
+                if (self.steps_left == 0) return error.StepLimit;
+                self.steps_left -= 1;
+            }
             switch (op.kind) {
                 inline .call, .call_colon => |call_kind| {
                     if (call_kind == .call_colon and inline_calls.isInline(op)) {

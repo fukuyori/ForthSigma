@@ -737,6 +737,7 @@ pub const error_codes = [_]struct { RuntimeError, Cell }{
     .{ error.FontUnavailable, -272 },     .{ error.TclFailed, -273 },        .{ error.InvalidMml, -274 },
     .{ error.AudioUnavailable, -275 },     .{ error.SampleInvalid, -276 },
     .{ error.ModInvalid, -277 },            .{ error.InvalidImageHandle, -278 }, .{ error.ImageInvalid, -279 },
+    .{ error.StepLimit, -280 },
 };
 
 pub const throw_code_undefined_word: Cell = -13;
@@ -905,6 +906,8 @@ pub const RuntimeError = error{
     InvalidImageHandle,
     /// A file LOAD-IMAGE cannot read: not a PNG, BMP, or PPM/PGM file it knows, or damaged.
     ImageInvalid,
+    /// Compiled code ran more operations than --max-steps allows; CATCH does not catch it.
+    StepLimit,
 };
 
 pub fn floatBits(value: Float) Cell {

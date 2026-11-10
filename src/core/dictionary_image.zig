@@ -275,6 +275,8 @@ fn restore(self: *State, image: []const u8, memory_is_fresh: bool) RuntimeError!
     wordlists.rebuildIndex(self);
     // The recorded uses are not in the image.
     self.use_count = 0;
+    // Nor are the lines the code was compiled from.
+    if (defs.tools_enabled) @memset(&self.code_lines, 0);
     self.code_count = @intCast(code_count);
     // Old and new images store ordinary calls; rebuild dispatch information
     // only after the word entries and counts have been restored.

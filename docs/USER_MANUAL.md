@@ -53,6 +53,32 @@ Options at the start of the command line choose the sizes of the memory and the 
 
 `UNUSED` gives the bytes left in the data area, and `ENVIRONMENT?` with `STACK-CELLS`, `RETURN-STACK-CELLS`, and `FLOATING-STACK` gives the stack sizes. The system reserves the whole memory at the start, but gives it physical memory only as the program fills it. The defaults can be changed when building, with `-Dmemory-mib=` (the `-m` size in MiB), `-Dlocals-kib=`, and `-Dstack-cells=`. The number of dictionary entries (`-Dwords=`, 1024 to 65535, by default 65535) and the area for their names (`-Dnames-kib=`, by default 1024) are chosen only when building.
 
+### Errors in compiled code
+
+When an error that no `CATCH` caught comes up while a colon definition runs, the message is followed by a backtrace and the stack:
+
+```text
+prog.fs:42: DIVISION BY ZERO !
+BACKTRACE:
+  AVERAGE prog.fs:12
+  REPORT prog.fs:30
+STACK: <2> 10 20
+```
+
+The lines after `BACKTRACE:` are the definitions that were running, the innermost first: the one where the error came up, then the one that called it, and so on. Each has the file and line of the word it was at, when the definition was compiled from a file; a definition typed at the prompt or given to `-e` has only its name. The place the outermost one was called from is the `file:line:` before the message. `STACK:` shows the data stack as the error left it, in the form of `.S` (the error then empties the stacks, as before), and `FLOAT STACK:` follows it when the floating-point stack holds something.
+
+- A short definition whose code was copied into its caller instead of being called is marked `(INLINE)`.
+- Code after `DOES>` is shown under the name of the defining word, and a definition made by `:NONAME` as `:NONAME`.
+- A place that follows itself, as in a recursion, is shown once with the number of times (`DEEP prog.fs:4 *32`). The innermost 32 places are kept; `... 4064 MORE` counts the callers beyond them.
+- An error outside a definition, `ABORT`, and `QUIT` show no backtrace, and neither does an error that `CATCH` caught.
+- A build without the tools (`-Dtools=false`) shows the names without the files and lines.
+
+`--max-steps N` (or `--max-steps=N`), among the options at the start of the command line, ends a program that does not end by itself: compiled code may run `N` operations (a word of a definition, a number, or a jump of a control structure each count as one) for each argument and for each line typed. After that the error `STEP LIMIT !` (THROW code -280) ends it with its backtrace, which shows where the program was. `CATCH` does not catch this error. `0` is no limit, which is the default; with a limit the program runs somewhat slower. A build without the tools does not have the option.
+
+```powershell
+.\zig-out\bin\sigma.exe --max-steps 100000000 prog.fs -e "MAIN BYE"
+```
+
 `HELP` shows the basic usage, and `HELP name` shows the stack effect of a word and a one-line description in English (example: `HELP DUP`). The name is read from the same line (also in an `EVALUATE` string, it does not read past a line end). `HELP` written in a definition reads the name when that definition runs. For a word defined by the user, it suggests viewing its contents with `SEE`. An unknown name gives the error `name ?`. `LICENSE` shows the full text of the license and the copyright notice of the included CORE-MATH.
 
 When an input line has been processed successfully, `OK` is printed. For example, the following input prints the square of 12.

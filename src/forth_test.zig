@@ -26,4 +26,5 @@ comptime {
     _ = @import("tests/sound_test.zig");
     _ = @import("tests/audio_test.zig");
     _ = @import("tests/gforth_rest_test.zig");
+    _ = @import("tests/debug_test.zig");
 }

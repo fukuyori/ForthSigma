@@ -149,7 +149,7 @@ test "$TMP captures output, nests, and restores output after an error" {
     machine.report(error.UnknownWord);
     try std.testing.expectError(error.StackUnderflow, machine.interpretLine(": FAIL .\" hidden\" DROP ; ' FAIL $TMP"));
     machine.report(error.StackUnderflow);
-    try std.testing.expectEqualStrings(" <in7 >MISSING ?\nSTACK UNDER FLOW !\n", output.written());
+    try std.testing.expectEqualStrings(" <in7 >MISSING ?\nSTACK UNDER FLOW !\nBACKTRACE:\n  FAIL\nSTACK: <0> \n", output.written());
 }
 
 test "string arrays store, fetch, count, map, print, and free elements" {

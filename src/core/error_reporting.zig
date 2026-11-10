@@ -3,6 +3,7 @@
 const std = @import("std");
 const defs = @import("defs.zig");
 const forth = @import("../forth.zig");
+const inline_calls = @import("inline_calls.zig");
 const memory_map = @import("memory_map.zig");
 const CatchFrame = defs.CatchFrame;
 const Cell = memory_map.Cell;
@@ -20,6 +21,8 @@ pub fn report(self: *State, err: anyerror) void {
     // QUIT keeps both data stacks and shows nothing, as gforth does.
     const kept_data = self.data_depth;
     const kept_floats = self.float_depth;
+    defer self.clearBacktrace();
+    defer if (self.show_backtrace and self.backtrace_total != 0 and err != error.Aborted and err != error.Quit) showBacktrace(self, kept_data, kept_floats);
     defer if (err == error.Quit) {
         self.data_depth = kept_data;
         self.float_depth = kept_floats;
@@ -70,8 +73,100 @@ pub fn report(self: *State, err: anyerror) void {
         self.write("NESTING ERROR !\n");
         return;
     }
-    const message: []const u8 = if (err == error.StackUnderflow) "STACK UNDER FLOW !" else if (err == error.ReturnStackUnderflow) "RETURN STACK UNDER FLOW !" else if (err == error.StackOverflow) "STACK OVER FLOW !" else if (err == error.ReturnStackOverflow) "RETURN STACK OVER FLOW !" else if (err == error.FloatStackUnderflow) "FLOATING-POINT STACK UNDER FLOW !" else if (err == error.FloatStackOverflow) "FLOATING-POINT STACK OVER FLOW !" else if (err == error.DictionaryFull) "OUT OF DICTIONARY !" else if (err == error.CodeFull) "OUT OF CODE SPACE !" else if (err == error.InvalidDefinition) "DEFINITION ERROR !" else if (err == error.CommentUnclosed) "END OF COMMENT MUST BE \")\" !" else if (err == error.ControlMismatch) "CONTROL STRUCTURE ERROR !" else if (err == error.CompileOnly) "COMPILE MODE ERROR !" else if (err == error.UnknownWord) "?" else if (err == error.InvalidNumber) "NUMBER ERROR !" else if (err == error.DivisionByZero) "DIVISION BY ZERO !" else if (err == error.ResultOutOfRange) "RESULT OUT OF RANGE !" else if (err == error.LoopMismatch) "LOOP ERROR !" else if (err == error.InvalidBase) "BASE ERROR !" else if (err == error.InvalidExecutionToken) "INVALID EXECUTION TOKEN !" else if (err == error.InvalidAddress) "INVALID MEMORY ADDRESS !" else if (err == error.PicturedNumericOverflow) "PICTURED NUMERIC OUTPUT ERROR !" else if (err == error.MemoryExhausted) "OUT OF MEMORY !" else if (err == error.InputUnavailable) "INPUT ERROR !" else if (err == error.FileUnavailable) "FILE ERROR !" else if (err == error.InvalidImage) "INVALID IMAGE !" else if (err == error.HostUnavailable) "HOST FUNCTION UNAVAILABLE !" else if (err == error.HostFailed) "HOST FUNCTION ERROR !" else if (err == error.StringTooLong) "STRING TOO LONG !" else if (err == error.IncludeNesting) "INCLUDE NESTING ERROR !" else if (err == error.TooManySourceFiles) "TOO MANY SOURCE FILES !" else if (err == error.SearchOrderOverflow) "SEARCH ORDER OVER FLOW !" else if (err == error.SearchOrderUnderflow) "SEARCH ORDER UNDER FLOW !" else if (err == error.InvalidWordlist) "INVALID WORDLIST !" else if (err == error.GraphicsUnavailable) "GRAPHICS UNAVAILABLE !" else if (err == error.NoCanvas) "NO GRAPHICS IMAGE !" else if (err == error.UserInterrupt) "USER INTERRUPT !" else if (err == error.FontUnavailable) "FONT ERROR !" else if (err == error.TclFailed) "TCL ERROR !" else if (err == error.InvalidMml) "INVALID MML !" else if (err == error.AudioUnavailable) "AUDIO UNAVAILABLE !" else if (err == error.SampleInvalid) "SAMPLE ERROR !" else if (err == error.ModInvalid) "MOD ERROR !" else if (err == error.InvalidImageHandle) "INVALID IMAGE HANDLE !" else if (err == error.ImageInvalid) "IMAGE FORMAT ERROR !" else "FORTH ERROR !";
+    const message: []const u8 = if (err == error.StackUnderflow) "STACK UNDER FLOW !" else if (err == error.ReturnStackUnderflow) "RETURN STACK UNDER FLOW !" else if (err == error.StackOverflow) "STACK OVER FLOW !" else if (err == error.ReturnStackOverflow) "RETURN STACK OVER FLOW !" else if (err == error.FloatStackUnderflow) "FLOATING-POINT STACK UNDER FLOW !" else if (err == error.FloatStackOverflow) "FLOATING-POINT STACK OVER FLOW !" else if (err == error.DictionaryFull) "OUT OF DICTIONARY !" else if (err == error.CodeFull) "OUT OF CODE SPACE !" else if (err == error.InvalidDefinition) "DEFINITION ERROR !" else if (err == error.CommentUnclosed) "END OF COMMENT MUST BE \")\" !" else if (err == error.ControlMismatch) "CONTROL STRUCTURE ERROR !" else if (err == error.CompileOnly) "COMPILE MODE ERROR !" else if (err == error.UnknownWord) "?" else if (err == error.InvalidNumber) "NUMBER ERROR !" else if (err == error.DivisionByZero) "DIVISION BY ZERO !" else if (err == error.ResultOutOfRange) "RESULT OUT OF RANGE !" else if (err == error.LoopMismatch) "LOOP ERROR !" else if (err == error.InvalidBase) "BASE ERROR !" else if (err == error.InvalidExecutionToken) "INVALID EXECUTION TOKEN !" else if (err == error.InvalidAddress) "INVALID MEMORY ADDRESS !" else if (err == error.PicturedNumericOverflow) "PICTURED NUMERIC OUTPUT ERROR !" else if (err == error.MemoryExhausted) "OUT OF MEMORY !" else if (err == error.InputUnavailable) "INPUT ERROR !" else if (err == error.FileUnavailable) "FILE ERROR !" else if (err == error.InvalidImage) "INVALID IMAGE !" else if (err == error.HostUnavailable) "HOST FUNCTION UNAVAILABLE !" else if (err == error.HostFailed) "HOST FUNCTION ERROR !" else if (err == error.StringTooLong) "STRING TOO LONG !" else if (err == error.IncludeNesting) "INCLUDE NESTING ERROR !" else if (err == error.TooManySourceFiles) "TOO MANY SOURCE FILES !" else if (err == error.SearchOrderOverflow) "SEARCH ORDER OVER FLOW !" else if (err == error.SearchOrderUnderflow) "SEARCH ORDER UNDER FLOW !" else if (err == error.InvalidWordlist) "INVALID WORDLIST !" else if (err == error.GraphicsUnavailable) "GRAPHICS UNAVAILABLE !" else if (err == error.NoCanvas) "NO GRAPHICS IMAGE !" else if (err == error.UserInterrupt) "USER INTERRUPT !" else if (err == error.FontUnavailable) "FONT ERROR !" else if (err == error.TclFailed) "TCL ERROR !" else if (err == error.InvalidMml) "INVALID MML !" else if (err == error.AudioUnavailable) "AUDIO UNAVAILABLE !" else if (err == error.SampleInvalid) "SAMPLE ERROR !" else if (err == error.ModInvalid) "MOD ERROR !" else if (err == error.InvalidImageHandle) "INVALID IMAGE HANDLE !" else if (err == error.ImageInvalid) "IMAGE FORMAT ERROR !" else if (err == error.StepLimit) "STEP LIMIT !" else "FORTH ERROR !";
     self.write(message);
+    self.write("\n");
+}
+
+/// After the message of an error that came up in compiled code: the words that were
+/// running, innermost first, each with the file and line of the operation it was at when
+/// that is known, and the stacks as the error left them (`report` has emptied them).
+///
+///     BACKTRACE:
+///       AVERAGE prog.fs:12
+///       REPORT prog.fs:30
+///     STACK: <3> 10 20 0
+///
+/// A word whose body was copied into its caller instead of called is marked (INLINE),
+/// and a place that follows itself, as in a recursion, is shown once with the number of
+/// times (`DEEP prog.fs:4 *32`).
+fn showBacktrace(self: *State, data_depth: usize, float_depth: usize) void {
+    self.write("BACKTRACE:\n");
+    var index: usize = 0;
+    while (index < self.backtrace_count) {
+        const pc = self.backtrace[index];
+        var times: usize = 1;
+        while (index + times < self.backtrace_count and self.backtrace[index + times] == pc) times += 1;
+        index += times;
+        const owner = codeOwner(self, pc) orelse {
+            self.write("  ?\n");
+            continue;
+        };
+        const word = self.words[owner];
+        // The inline guards whose copied bodies hold the operation, outermost first.
+        var guards: [16]u16 = undefined;
+        var guard_count: usize = 0;
+        for (self.code[word.code_start..pc], word.code_start..) |op, at| {
+            if (inline_calls.isInline(op) and pc - at < inline_calls.span(op.value) and guard_count < guards.len) {
+                guards[guard_count] = inline_calls.wordId(op.value);
+                guard_count += 1;
+            }
+        }
+        while (guard_count > 0) {
+            guard_count -= 1;
+            self.write("  ");
+            writeWordName(self, guards[guard_count]);
+            self.write(" (INLINE)");
+            writePlace(self, word, pc, times);
+        }
+        self.write("  ");
+        writeWordName(self, owner);
+        writePlace(self, word, pc, times);
+    }
+    if (self.backtrace_total > self.backtrace_count) {
+        var text: [40]u8 = undefined;
+        self.write(std.fmt.bufPrint(&text, "  ... {d} MORE\n", .{self.backtrace_total - self.backtrace_count}) catch unreachable);
+    }
+    self.write("STACK: ");
+    self.data_depth = data_depth;
+    self.executeBuiltin(.dot_s) catch {};
+    self.data_depth = 0;
+    self.write("\n");
+    if (defs.float_enabled and float_depth != 0) {
+        self.write("FLOAT STACK: ");
+        self.float_depth = float_depth;
+        self.executeBuiltin(.f_dot_s) catch {};
+        self.float_depth = 0;
+        self.write("\n");
+    }
+}
+
+/// The colon definition whose code holds `pc`: the innermost one, and for the code after
+/// DOES> the defining word.
+fn codeOwner(self: *const State, pc: u16) ?u16 {
+    var found: ?u16 = null;
+    for (self.words[self.builtin_count..self.word_count], self.builtin_count..) |word, id| {
+        if (word.kind != .colon or pc < word.code_start or pc >= word.code_end) continue;
+        if (found == null or word.code_start >= self.words[found.?].code_start) found = @intCast(id);
+    }
+    return found;
+}
+
+fn writeWordName(self: *State, id: u16) void {
+    const name = if (id < self.word_count) self.wordName(self.words[id]) else "?";
+    self.write(if (name.len == 0) ":NONAME" else name);
+}
+
+/// " file:line" of the operation at `pc` when it was compiled from a file, " *n" when the
+/// place came `times` times in a row, and the end of the line.
+fn writePlace(self: *State, word: defs.Word, pc: u16, times: usize) void {
+    var text: [24]u8 = undefined;
+    if (defs.tools_enabled and word.source_file != 0 and self.code_lines[pc] != 0) {
+        self.write(" ");
+        self.write(self.sourceFileName(word.source_file - 1));
+        self.write(std.fmt.bufPrint(&text, ":{d}", .{self.code_lines[pc]}) catch unreachable);
+    }
+    if (times > 1) self.write(std.fmt.bufPrint(&text, " *{d}", .{times}) catch unreachable);
     self.write("\n");
 }
 
@@ -161,4 +256,5 @@ pub fn restoreCatchFrame(self: *State, frame: CatchFrame) void {
     self.setCompiling(frame.compiling);
     self.last_unknown_word = null;
     self.error_location = null;
+    self.clearBacktrace();
 }

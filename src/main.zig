@@ -739,8 +739,13 @@ const StartOptions = struct {
     data_stack: ?usize = null,
     return_stack: ?usize = null,
     float_stack: ?usize = null,
+    /// --max-steps: how many operations compiled code may run for each argument and each
+    /// line of input; 0 is any number.
+    max_steps: u64 = 0,
     next: usize = 1,
 };
+
+const max_steps_option = "--max-steps";
 
 const StartOption = struct { short: []const u8, long: []const u8, field: enum { m, l, data_stack, return_stack, float_stack } };
 
@@ -783,7 +788,7 @@ fn parseSize(text: []const u8, element: usize) ?usize {
 /// `-dSIZE`, `--data-stack-size SIZE`, and `--data-stack-size=SIZE`; `--` ends them, and
 /// so does anything else. A size of 0 keeps the default. On an error, `failed` is the
 /// option at fault.
-fn parseStartOptions(args: []const []const u8, failed: *[]const u8) error{ MissingValue, InvalidSize }!StartOptions {
+fn parseStartOptions(args: []const []const u8, failed: *[]const u8) error{ MissingValue, InvalidSize, InvalidNumber }!StartOptions {
     var options = StartOptions{};
     var index: usize = 1;
     while (index < args.len) {
@@ -791,6 +796,20 @@ fn parseStartOptions(args: []const []const u8, failed: *[]const u8) error{ Missi
         if (std.mem.eql(u8, argument, "--")) {
             index += 1;
             break;
+        }
+        // --max-steps N or --max-steps=N: a decimal number of operations, not a size.
+        // A build without the tools (-Dtools=false) does not have it.
+        if (@import("build_options").tools and (std.mem.eql(u8, argument, max_steps_option) or std.mem.startsWith(u8, argument, max_steps_option ++ "="))) {
+            failed.* = max_steps_option;
+            var text: []const u8 = undefined;
+            if (argument.len == max_steps_option.len) {
+                if (index + 1 >= args.len) return error.MissingValue;
+                index += 1;
+                text = args[index];
+            } else text = argument[max_steps_option.len + 1 ..];
+            options.max_steps = std.fmt.parseUnsigned(u64, text, 10) catch return error.InvalidNumber;
+            index += 1;
+            continue;
         }
         var value: ?[]const u8 = null;
         var needs_next = false;
@@ -1142,6 +1161,7 @@ fn lineByte() ?u8 {
 }
 
 fn interpretAndPrompt(machine: *forth.State, line: []const u8) void {
+    machine.resetSteps();
     machine.interpretLine(line) catch |err| {
         machine.report(err);
         return;
@@ -1214,7 +1234,11 @@ fn run(init: std.process.Init.Minimal) !u8 {
     var failed_option: []const u8 = "";
     const start = parseStartOptions(argument_list.items, &failed_option) catch |err| {
         terminalWrite(null, failed_option);
-        terminalWrite(null, if (err == error.MissingValue) ": OPTION REQUIRES AN ARGUMENT !\n" else ": INVALID SIZE !\n");
+        terminalWrite(null, switch (err) {
+            error.MissingValue => ": OPTION REQUIRES AN ARGUMENT !\n",
+            error.InvalidSize => ": INVALID SIZE !\n",
+            error.InvalidNumber => ": INVALID NUMBER !\n",
+        });
         return 1;
     };
     const embedded = readEmbeddedImage(executable_path, allocator);
@@ -1252,6 +1276,7 @@ fn run(init: std.process.Init.Minimal) !u8 {
         _ = host_process.stop(null);
     };
     if (embedded) |image| machine.restoreFreshImage(image) catch machine.write("INVALID IMAGE !\n");
+    machine.step_limit = start.max_steps;
 
     // The other arguments go into Forth memory, where ARGC, ARGV, ARG, and NEXT-ARG see
     // them, after the program's name. This comes after the image is restored, since
@@ -1269,6 +1294,7 @@ fn run(init: std.process.Init.Minimal) !u8 {
     // BYE ends it with status 0; otherwise the interactive session follows.
     var argument_text: [4096]u8 = undefined;
     while (true) {
+        machine.resetSteps();
         const option = nextArgument(machine, &argument_text) catch |err| {
             machine.report(err);
             return 1;
@@ -1559,6 +1585,18 @@ test "the size options are read at the start of the arguments" {
     const zero = try parseStartOptions(&.{ "sigma", "-d", "0", "-r", "7b" }, &failed);
     try std.testing.expectEqual(@as(?usize, null), zero.data_stack);
     try std.testing.expectEqual(@as(?usize, 1), zero.return_stack);
+
+    // --max-steps takes a plain number, in either form.
+    if (@import("build_options").tools) {
+        const steps = try parseStartOptions(&.{ "sigma", "--max-steps", "5000", "-d", "1000", "x.fs" }, &failed);
+        try std.testing.expectEqual(@as(u64, 5000), steps.max_steps);
+        try std.testing.expectEqual(@as(?usize, 1000), steps.data_stack);
+        try std.testing.expectEqual(@as(usize, 5), steps.next);
+        try std.testing.expectEqual(@as(u64, 70), (try parseStartOptions(&.{ "sigma", "--max-steps=70" }, &failed)).max_steps);
+        try std.testing.expectError(error.InvalidNumber, parseStartOptions(&.{ "sigma", "--max-steps=1k" }, &failed));
+        try std.testing.expectEqualStrings("--max-steps", failed);
+        try std.testing.expectError(error.MissingValue, parseStartOptions(&.{ "sigma", "--max-steps" }, &failed));
+    }
 
     try std.testing.expectError(error.MissingValue, parseStartOptions(&.{ "sigma", "-d" }, &failed));
     try std.testing.expectEqualStrings("-d", failed);
