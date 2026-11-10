@@ -262,8 +262,6 @@ pub const State = struct {
     system_status: Cell = 0,
     capture_failed: bool = false,
     tmp_string_index: usize = 0,
-    /// The first local variable of the declarations (LOCAL) is making, until 0 0 ends them.
-    paren_local_first: ?usize = null,
     locals: [max_locals]Local = undefined,
     local_count: usize = 0,
     /// Frame bytes used so far by the definition being compiled.

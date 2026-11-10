@@ -160,7 +160,6 @@ pub fn endDefinition(self: *State) RuntimeError!void {
         if (self.words[self.current_word].source_file == frame.file_index + 1) self.words[self.current_word].source_end_line = frame.line;
     }
     self.local_count = 0;
-    self.paren_local_first = null;
     self.setCompiling(false);
     self.defining = false;
 }

@@ -42,10 +42,11 @@ pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
             const text_address = try self.pop();
             const name_at = try self.memoryAddress(name_address, name_length);
             const text_at = try self.memoryAddress(text_address, text_length);
-            const node = try self.heapAllocate(3 * cell_size + name_length + text_length) orelse return self.throwIor(errno_no_memory);
+            const size = std.math.add(usize, 3 * cell_size + name_length, text_length) catch return self.throwIor(errno_no_memory);
+            const node = try self.heapAllocate(size) orelse return self.throwIor(errno_no_memory);
             const node_at: usize = @intCast(node + 3 * cell_size);
-            @memcpy(self.memory[node_at..][0..name_length], self.memory[name_at..][0..name_length]);
-            @memcpy(self.memory[node_at + name_length ..][0..text_length], self.memory[text_at..][0..text_length]);
+            @memmove(self.memory[node_at..][0..name_length], self.memory[name_at..][0..name_length]);
+            @memmove(self.memory[node_at + name_length ..][0..text_length], self.memory[text_at..][0..text_length]);
             try self.writeCell(node + cell_size, @intCast(name_length));
             try self.writeCell(node + 2 * cell_size, @intCast(text_length));
             try removeReplacement(self, self.memory[node_at..][0..name_length]);
@@ -62,7 +63,10 @@ pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
             const buffer = try self.pop();
             const source = try self.memoryRange();
             const out_at = try self.memoryAddress(buffer, room);
-            const result = try substituteInto(self, source, self.memory[out_at..][0..room]);
+            // An input that the output overlaps is read from a copy, as gforth does.
+            const input = try Input.of(self, source, out_at, room);
+            defer input.free(self);
+            const result = try substituteInto(self, input.bytes, self.memory[out_at..][0..room]);
             try self.push(buffer);
             try self.push(@intCast(@min(result.length, room)));
             try self.push(if (result.length > room) substitute_overflow else result.count);
@@ -85,7 +89,9 @@ pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
             const source = try self.memoryRange();
             const length = unescapedLength(source);
             const out_at = try self.memoryAddress(buffer, length);
-            unescapeInto(source, self.memory[out_at..][0..length]);
+            const input = try Input.of(self, source, out_at, length);
+            defer input.free(self);
+            unescapeInto(input.bytes, self.memory[out_at..][0..length]);
             try self.push(buffer);
             try self.push(@intCast(length));
         },
@@ -178,22 +184,40 @@ pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
             if (!self.defining) return error.CompileOnly;
             const length = try self.popLength();
             const address = try self.pop();
-            if (length == 0) {
-                const first = self.paren_local_first orelse return;
-                self.paren_local_first = null;
-                try self.compileLocalInitialization(self.locals[first..self.local_count]);
-                return;
-            }
+            if (length == 0) return;
             const at = try self.memoryAddress(address, length);
             var name: [max_name]u8 = undefined;
             if (length > max_name) return error.NameTooLong;
             @memcpy(name[0..length], self.memory[at..][0..length]);
-            if (self.paren_local_first == null) self.paren_local_first = self.local_count;
-            _ = try self.addLocal(name[0..length], .cell, false);
+            // Its store is compiled at once: the first declared takes the top of the stack,
+            // and the declarations work without 0 0 too, as in gforth.
+            const local = try self.addLocal(name[0..length], .cell, false);
+            try self.compileLocalInitialization(&.{local});
         },
         else => unreachable,
     }
 }
+
+/// The input of SUBSTITUTE or UNESCAPE: the string itself, or a copy in the heap when
+/// the output (out_length bytes at out_at) overlaps it.
+const Input = struct {
+    bytes: []const u8,
+    copy: ?Cell,
+
+    fn of(self: *State, source: []const u8, out_at: usize, out_length: usize) RuntimeError!Input {
+        const start = @intFromPtr(source.ptr) - @intFromPtr(self.memory.ptr);
+        const overlaps = source.len != 0 and out_length != 0 and start < out_at + out_length and out_at < start + source.len;
+        if (!overlaps) return .{ .bytes = source, .copy = null };
+        const copy = try self.heapAllocate(source.len) orelse return self.throwIor(errno_no_memory);
+        const at = try self.memoryAddress(copy, source.len);
+        @memmove(self.memory[at..][0..source.len], source);
+        return .{ .bytes = self.memory[at..][0..source.len], .copy = copy };
+    }
+
+    fn free(input: Input, self: *State) void {
+        if (input.copy) |copy| _ = self.heapFree(copy) catch {};
+    }
+};
 
 /// The text REPLACES gave the name, or null.
 fn replacement(self: *State, name: []const u8) RuntimeError!?[]const u8 {
@@ -238,10 +262,10 @@ fn substituteInto(self: *State, text: []const u8, out: ?[]u8) RuntimeError!Subst
             if (target) |buffer| {
                 if (at.* < buffer.len) {
                     const n = @min(data.len, buffer.len - at.*);
-                    @memcpy(buffer[at.*..][0..n], data[0..n]);
+                    @memmove(buffer[at.*..][0..n], data[0..n]);
                 }
             }
-            at.* += data.len;
+            at.* +|= data.len;
         }
     }.bytes;
     var i: usize = 0;
@@ -287,7 +311,8 @@ fn unescapeInto(text: []const u8, out: []u8) void {
 
 /// A new string of `length` bytes in the heap (its length cell, then the bytes).
 fn newString(self: *State, length: usize) RuntimeError!Cell {
-    const buffer = try self.heapAllocate(cell_size + length) orelse return self.throwIor(errno_no_memory);
+    const size = std.math.add(usize, cell_size, length) catch return self.throwIor(errno_no_memory);
+    const buffer = try self.heapAllocate(size) orelse return self.throwIor(errno_no_memory);
     try self.writeCell(buffer, @intCast(length));
     return buffer;
 }

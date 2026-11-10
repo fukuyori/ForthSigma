@@ -55,6 +55,12 @@ test "SUBSTITUTE replaces %name%, keeps what it does not know, and tells an over
     try std.testing.expectEqualStrings("[Monday]", try stringResult(machine, "S\" [%day%]\" BUF 80 SUBSTITUTE DROP"));
     try machine.interpretLine("S\" %day%\" BUF 5 SUBSTITUTE NIP NIP  S\" %day%\" BUF 6 SUBSTITUTE NIP NIP  S\" ab\" BUF 0 SUBSTITUTE NIP NIP");
     try expectStack(machine, &.{ -78, 1, -78 });
+    machine.data_depth = 0;
+    // The output over the input: the input is read from a copy (gforth gives the same).
+    try machine.interpretLine("S\" Sunday\" S\" day\" REPLACES  S\" a%day%b\" BUF SWAP MOVE");
+    try std.testing.expectEqualStrings("aSundayb", try stringResult(machine, "BUF 7 BUF 80 SUBSTITUTE DROP"));
+    try machine.interpretLine("S\" x%y\" BUF SWAP MOVE");
+    try std.testing.expectEqualStrings("x%%y", try stringResult(machine, "BUF 3 BUF UNESCAPE"));
 }
 
 test "UNESCAPE doubles %, and the $ words give strings of their own" {
@@ -152,7 +158,9 @@ test "EMIT? is true, and (LOCAL) declares locals as LOCALS| does" {
     try machine.interpretLine("EMIT?");
     try machine.interpretLine(": T [ S\" X\" (LOCAL) S\" Y\" (LOCAL) 0 0 (LOCAL) ] X Y ; 1 2 T");
     try machine.interpretLine(": T2 [ S\" A\" (LOCAL) 0 0 (LOCAL) ] A 1+ TO A A ; 5 T2");
-    try expectStack(machine, &.{ -1, 2, 1, 6 });
+    // Without 0 0 the declarations work too, as in gforth.
+    try machine.interpretLine(": T3 [ S\" Q\" (LOCAL) ] Q ; 5 T3");
+    try expectStack(machine, &.{ -1, 2, 1, 6, 5 });
     machine.data_depth = 0;
     try std.testing.expectError(error.CompileOnly, machine.interpretLine("S\" Z\" (LOCAL)"));
 }
