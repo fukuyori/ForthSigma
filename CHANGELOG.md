@@ -13,6 +13,8 @@
 
 - The startup options of gforth choose the sizes of the memory and the stacks: `-m` (`--dictionary-size`), `-d` (`--data-stack-size`), `-r` (`--return-stack-size`), `-f` (`--fp-stack-size`), and `-l` (`--locals-stack-size`), with gforth's units (`e`, `b`, `k`, `M`, `G`, `T`). They come before the other arguments, and `--` ends them. The build options `-Dmemory-mib`, `-Dlocals-kib`, and `-Dstack-cells` change the defaults, and `-Dwords` and `-Dnames-kib` the size of the dictionary.
 
+- Images besides the screen, as the pages of the MSX2 and the blitter of the Amiga: `NEW-IMAGE`, `FREE-IMAGE`, `IMAGE-SIZE`, `SCREEN`, `DRAW-TO` and `DRAWING` (the drawing words, `GFX-WIDTH`, `GFX-HEIGHT`, and the `SAVE-` words use the image drawn on; `SHOW` shows the screen), `COPY-RECT` and `PUT-IMAGE` with `TRANSPARENT` and `IMAGE-FLIP`. At most 256 images and 1 GiB in all; a handle that names no image gives the new error `INVALID IMAGE HANDLE` (-278).
+
 ### Fixed
 
 - The games in `examples` (`shmup.fs`, `hopper.fs`, `runner.fs`, and `paddle.fs`) left their window open when they ended; they now end Sigma, which closes it. Run from the interactive prompt with `INCLUDE`, they end Sigma too.

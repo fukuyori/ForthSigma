@@ -15,6 +15,8 @@ const graphics_palette = @import("graphics_palette.zig");
 const tcl = @import("tcl.zig");
 const graphics_terminal = @import("graphics_terminal.zig");
 const library_loading = @import("library_loading.zig");
+const graphics_images = @import("graphics_images.zig");
+const Canvas = graphics_images.Canvas;
 const memory_map = @import("memory_map.zig");
 const Builtin = defs.Builtin;
 const Cell = memory_map.Cell;
@@ -24,7 +26,7 @@ const graphics_image_address = memory_map.graphics_image_address;
 const graphics_vocabulary_address = memory_map.graphics_vocabulary_address;
 
 /// The built-in words this file executes; executeBuiltin dispatches by this list.
-pub const words = [_]Builtin{ .gfx_init, .gfx_width, .gfx_height, .gfx_pset, .gfx_pget, .gfx_hline, .gfx_cls, .gfx_save_ppm, .gfx_save_bmp, .gfx_show_blocks, .gfx_show_sixel, .gfx_show_window, .gfx_window_query, .gfx_save_png, .gfx_inkey, .gfx_mouse, .gfx_mouse_mode, .gfx_glyph_load, .gfx_glyph_box, .gfx_glyph_alpha, .gfx_font_height, .gfx_font_builtin, .gfx_font_load, .gfx_font_system, .gfx_color_mode, .gfx_tcl, .gfx_tcl_error, .gfx_tcl_event, .gfx_tcl_program, .gfx_tcl_stop, .gfx_show_tk, .gfx_key_held, .gfx_window_size, .gfx_gamepad_poll, .gfx_gamepad_query, .gfx_gamepad_name, .gfx_gamepad_map, .gfx_gamepad_guid };
+pub const words = [_]Builtin{ .gfx_init, .gfx_width, .gfx_height, .gfx_pset, .gfx_pget, .gfx_hline, .gfx_cls, .gfx_save_ppm, .gfx_save_bmp, .gfx_show_blocks, .gfx_show_sixel, .gfx_show_window, .gfx_window_query, .gfx_save_png, .gfx_inkey, .gfx_mouse, .gfx_mouse_mode, .gfx_glyph_load, .gfx_glyph_box, .gfx_glyph_alpha, .gfx_font_height, .gfx_font_builtin, .gfx_font_load, .gfx_font_system, .gfx_color_mode, .gfx_tcl, .gfx_tcl_error, .gfx_tcl_event, .gfx_tcl_program, .gfx_tcl_stop, .gfx_show_tk, .gfx_key_held, .gfx_window_size, .gfx_gamepad_poll, .gfx_gamepad_query, .gfx_gamepad_name, .gfx_gamepad_map, .gfx_gamepad_guid } ++ graphics_images.words;
 
 /// The GFX- words in the order REQUIRE-GRAPHICS appends them, right after the GRAPHICS
 /// vocabulary. The order is part of the dictionary that images keep: add new words at
@@ -47,11 +49,17 @@ pub const definitions = [_]struct { []const u8, Builtin }{
     .{ "GFX-GAMEPAD-NAME", .gfx_gamepad_name },
     .{ "GFX-GAMEPAD-MAP", .gfx_gamepad_map },
     .{ "GFX-GAMEPAD-GUID", .gfx_gamepad_guid },
+    .{ "GFX-IMAGE-NEW", .gfx_image_new },
+    .{ "GFX-IMAGE-FREE", .gfx_image_free },
+    .{ "GFX-IMAGE-SIZE", .gfx_image_size },
+    .{ "GFX-TARGET", .gfx_target },
+    .{ "GFX-TARGET@", .gfx_target_query },
+    .{ "GFX-COPY", .gfx_copy },
 };
 
 /// The words of the graphics library that HELP describes; the help test checks that the
 /// library defines each of them.
-pub const library_words = [_][]const u8{ "RGB", "COLOR", "COLOR!", "COLOR@", "PSET", "CLS", "LINE", "RECT", "FILL-RECT", "CIRCLE", "FILL-CIRCLE", "PAINT", "SAVE-PPM", "SAVE-BMP", "SAVE-PNG", "SHOW", "DISPLAY-TERMINAL", "DISPLAY-WINDOW", "TERMINAL-BLOCKS", "TERMINAL-SIXEL", "DISPLAY-COLORS", "DITHER", "TCL", "TCL-EVAL", "TCL-ERROR$", "TCL-EVENT", "TCL-PROGRAM", "TCL-STOP", "DISPLAY-TK", "INKEY", "KEY-HELD?", "MOUSE", "WINDOW-SIZE", "MOUSE-ON", "MOUSE-OFF", "FRAME", "TEXT", "TEXT-SCALE", "TEXT-WIDTH", "TEXT-HEIGHT", "BUILTIN-FONT", "LOAD-FONT", "SYSTEM-FONT", "K-UP", "K-DOWN", "K-LEFT", "K-RIGHT", "K-HOME", "K-END", "K-PRIOR", "K-NEXT", "K-INSERT", "K-DELETE", "K-F1", "K-F2", "K-F3", "K-F4", "K-F5", "K-F6", "K-F7", "K-F8", "K-F9", "K-F10", "K-F11", "K-F12", "GAMEPAD-POLL", "GAMEPAD?", "GAMEPAD-ID", "GAMEPAD-BUTTONS", "GAMEPAD-MAPPED?", "GAMEPAD-AXES", "GAMEPAD-BUTTON-COUNT", "GAMEPAD-HATS", "GAMEPAD-AXIS", "GAMEPAD-HAT", "GAMEPAD-BUTTON?", "GAMEPAD-NAME", "GAMEPAD-MAP", "GAMEPAD-GUID" };
+pub const library_words = [_][]const u8{ "RGB", "COLOR", "COLOR!", "COLOR@", "PSET", "CLS", "LINE", "RECT", "FILL-RECT", "CIRCLE", "FILL-CIRCLE", "PAINT", "SAVE-PPM", "SAVE-BMP", "SAVE-PNG", "SHOW", "DISPLAY-TERMINAL", "DISPLAY-WINDOW", "TERMINAL-BLOCKS", "TERMINAL-SIXEL", "DISPLAY-COLORS", "DITHER", "TCL", "TCL-EVAL", "TCL-ERROR$", "TCL-EVENT", "TCL-PROGRAM", "TCL-STOP", "DISPLAY-TK", "INKEY", "KEY-HELD?", "MOUSE", "WINDOW-SIZE", "MOUSE-ON", "MOUSE-OFF", "FRAME", "TEXT", "TEXT-SCALE", "TEXT-WIDTH", "TEXT-HEIGHT", "BUILTIN-FONT", "LOAD-FONT", "SYSTEM-FONT", "K-UP", "K-DOWN", "K-LEFT", "K-RIGHT", "K-HOME", "K-END", "K-PRIOR", "K-NEXT", "K-INSERT", "K-DELETE", "K-F1", "K-F2", "K-F3", "K-F4", "K-F5", "K-F6", "K-F7", "K-F8", "K-F9", "K-F10", "K-F11", "K-F12", "GAMEPAD-POLL", "GAMEPAD?", "GAMEPAD-ID", "GAMEPAD-BUTTONS", "GAMEPAD-MAPPED?", "GAMEPAD-AXES", "GAMEPAD-BUTTON-COUNT", "GAMEPAD-HATS", "GAMEPAD-AXIS", "GAMEPAD-HAT", "GAMEPAD-BUTTON?", "GAMEPAD-NAME", "GAMEPAD-MAP", "GAMEPAD-GUID", "SCREEN", "NEW-IMAGE", "FREE-IMAGE", "IMAGE-SIZE", "DRAW-TO", "DRAWING", "TRANSPARENT", "IMAGE-FLIP", "COPY-RECT", "PUT-IMAGE" };
 
 /// The words of the part of the library that uses floating-point numbers, which a build
 /// without them leaves out.
@@ -76,6 +84,7 @@ const rgb_mask: u32 = 0x00ff_ffff;
 pub fn execute(self: *State, builtin: Builtin) RuntimeError!void {
     switch (builtin) {
         .gfx_gamepad_poll, .gfx_gamepad_query, .gfx_gamepad_name, .gfx_gamepad_map, .gfx_gamepad_guid => try @import("gamepad.zig").execute(self, builtin),
+        .gfx_image_new, .gfx_image_free, .gfx_image_size, .gfx_target, .gfx_target_query, .gfx_copy => try graphics_images.execute(self, builtin),
         .gfx_init => {
             const height = try self.pop();
             const width = try self.pop();
@@ -93,49 +102,51 @@ pub fn execute(self: *State, builtin: Builtin) RuntimeError!void {
             self.gfx_width = width;
             self.gfx_height = height;
         },
-        .gfx_width => try self.push(self.gfx_width),
-        .gfx_height => try self.push(self.gfx_height),
+        // These draw on, and measure, the image drawn on: the screen or an image of the pool.
+        .gfx_width => try self.push(@intCast((try graphics_images.imageSize(self, self.gfx_target))[0])),
+        .gfx_height => try self.push(@intCast((try graphics_images.imageSize(self, self.gfx_target))[1])),
         .gfx_pset => {
             const rgb = try self.pop();
             const y = try self.pop();
             const x = try self.pop();
-            try requireImage(self);
-            if (pixelIndex(self, x, y)) |index| self.gfx_pixels[index] = color(rgb);
+            const canvas = try graphics_images.target(self);
+            if (canvas.index(x, y)) |index| canvas.pixels[index] = color(rgb);
         },
         .gfx_pget => {
             const y = try self.pop();
             const x = try self.pop();
-            try requireImage(self);
-            const index = pixelIndex(self, x, y) orelse return self.push(-1);
-            try self.push(self.gfx_pixels[index] & rgb_mask);
+            const canvas = try graphics_images.target(self);
+            const index = canvas.index(x, y) orelse return self.push(-1);
+            try self.push(canvas.pixels[index] & rgb_mask);
         },
         .gfx_hline => {
             const rgb = try self.pop();
             const y = try self.pop();
             const x2 = try self.pop();
             const x1 = try self.pop();
-            try requireImage(self);
-            if (y < 0 or y >= self.gfx_height) return;
+            const canvas = try graphics_images.target(self);
+            const width: Cell = @intCast(canvas.width);
+            if (y < 0 or y >= canvas.height) return;
             const left = @max(@min(x1, x2), 0);
-            const right = @min(@max(x1, x2), self.gfx_width - 1);
+            const right = @min(@max(x1, x2), width - 1);
             if (left > right) return;
-            const row: usize = @intCast(y * self.gfx_width);
-            @memset(self.gfx_pixels[row + @as(usize, @intCast(left)) .. row + @as(usize, @intCast(right)) + 1], color(rgb));
+            const row: usize = @intCast(y * width);
+            @memset(canvas.pixels[row + @as(usize, @intCast(left)) .. row + @as(usize, @intCast(right)) + 1], color(rgb));
         },
         .gfx_cls => {
             const rgb = try self.pop();
-            try requireImage(self);
-            @memset(self.gfx_pixels, color(rgb));
+            const canvas = try graphics_images.target(self);
+            @memset(canvas.pixels, color(rgb));
         },
         .gfx_save_ppm, .gfx_save_bmp, .gfx_save_png => {
             const name = try self.memoryRange();
-            try requireImage(self);
+            const canvas = try graphics_images.target(self);
             const format: ImageFormat = switch (builtin) {
                 .gfx_save_ppm => .ppm,
                 .gfx_save_bmp => .bmp,
                 else => .png,
             };
-            try self.push(try saveImage(self, name, format));
+            try self.push(try saveImage(self, canvas, name, format));
         },
         .gfx_show_blocks => {
             try requireImage(self);
@@ -261,11 +272,6 @@ fn requireImage(self: *const State) RuntimeError!void {
     if (self.gfx_pixels.len == 0) return error.NoCanvas;
 }
 
-fn pixelIndex(self: *const State, x: Cell, y: Cell) ?usize {
-    if (x < 0 or y < 0 or x >= self.gfx_width or y >= self.gfx_height) return null;
-    return @intCast(y * self.gfx_width + x);
-}
-
 /// A pixel from a color cell: its low 24 bits are 0xRRGGBB, the rest is ignored.
 fn color(rgb: Cell) u32 {
     return opaque_alpha | (@as(u32, @truncate(@as(u64, @bitCast(rgb)))) & rgb_mask);
@@ -275,16 +281,16 @@ const ImageFormat = enum { ppm, bmp, png };
 
 /// Writes the image to a new file and returns the ior: 0, or the first failure of
 /// opening, writing, or closing the file.
-fn saveImage(self: *State, name: []const u8, format: ImageFormat) RuntimeError!Cell {
+fn saveImage(self: *State, canvas: Canvas, name: []const u8, format: ImageFormat) RuntimeError!Cell {
     const files = try self.fileOps();
     const opened = files.open(self.writer.context, name, .write_only, true);
     if (opened.ior != 0) return opened.ior;
     const fileid: Cell = @bitCast(opened.value);
     var output = FileOutput{ .self = self, .fileid = fileid };
     switch (format) {
-        .ppm => writePpm(self, &output),
-        .bmp => writeBmp(self, &output),
-        .png => writePng(self, output.sink(), null),
+        .ppm => writePpm(canvas, &output),
+        .bmp => writeBmp(canvas, &output),
+        .png => writePng(canvas, output.sink(), null),
     }
     output.flush();
     const closed = files.close(self.writer.context, fileid);
@@ -438,9 +444,9 @@ pub fn pngLength(width: u64, height: u64) u64 {
 
 /// PNG with 8-bit red, green, and blue and no compression; each row starts with
 /// filter type 0 (none). With a color mode, each pixel as SHOW shows it.
-pub fn writePng(self: *const State, output: ByteSink, mode: ?graphics_palette.ColorMode) void {
-    const width: usize = @intCast(self.gfx_width);
-    const height: usize = @intCast(self.gfx_height);
+pub fn writePng(canvas: Canvas, output: ByteSink, mode: ?graphics_palette.ColorMode) void {
+    const width = canvas.width;
+    const height = canvas.height;
     output.bytes("\x89PNG\r\n\x1a\n");
     var header: [13]u8 = undefined;
     std.mem.writeInt(u32, header[0..4], @intCast(width), .big);
@@ -461,7 +467,7 @@ pub fn writePng(self: *const State, output: ByteSink, mode: ?graphics_palette.Co
     var row: [1 + 3 * max_side]u8 = undefined;
     for (0..height) |y| {
         row[0] = 0;
-        for (self.gfx_pixels[y * width ..][0..width], 0..) |source, x| {
+        for (canvas.pixels[y * width ..][0..width], 0..) |source, x| {
             const pixel = if (mode) |colors| graphics_palette.convert(colors, x, y, source) else source;
             row[1 + 3 * x] = @truncate(pixel >> 16);
             row[2 + 3 * x] = @truncate(pixel >> 8);
@@ -478,10 +484,10 @@ pub fn writePng(self: *const State, output: ByteSink, mode: ?graphics_palette.Co
 }
 
 /// Binary PPM (P6): a text header, then red, green, and blue bytes, top row first.
-fn writePpm(self: *const State, output: *FileOutput) void {
+fn writePpm(canvas: Canvas, output: *FileOutput) void {
     var header: [32]u8 = undefined;
-    output.bytes(std.fmt.bufPrint(&header, "P6\n{d} {d}\n255\n", .{ self.gfx_width, self.gfx_height }) catch unreachable);
-    for (self.gfx_pixels) |pixel| {
+    output.bytes(std.fmt.bufPrint(&header, "P6\n{d} {d}\n255\n", .{ canvas.width, canvas.height }) catch unreachable);
+    for (canvas.pixels) |pixel| {
         output.byte(@truncate(pixel >> 16));
         output.byte(@truncate(pixel >> 8));
         output.byte(@truncate(pixel));
@@ -490,9 +496,9 @@ fn writePpm(self: *const State, output: *FileOutput) void {
 
 /// A 24-bit BMP without compression: blue, green, and red bytes, bottom row first, each
 /// row padded to a multiple of 4 bytes.
-fn writeBmp(self: *const State, output: *FileOutput) void {
-    const width: u32 = @intCast(self.gfx_width);
-    const height: u32 = @intCast(self.gfx_height);
+fn writeBmp(canvas: Canvas, output: *FileOutput) void {
+    const width: u32 = @intCast(canvas.width);
+    const height: u32 = @intCast(canvas.height);
     const row_size = (width * 3 + 3) & ~@as(u32, 3);
     const header_size = 14 + 40;
     output.bytes("BM");
@@ -514,7 +520,7 @@ fn writeBmp(self: *const State, output: *FileOutput) void {
     var row = height;
     while (row > 0) {
         row -= 1;
-        for (self.gfx_pixels[row * width ..][0..width]) |pixel| {
+        for (canvas.pixels[row * width ..][0..width]) |pixel| {
             output.byte(@truncate(pixel));
             output.byte(@truncate(pixel >> 8));
             output.byte(@truncate(pixel >> 16));

@@ -192,6 +192,18 @@ fn graphicsBuffer(context: ?*anyopaque, pixels: usize) ?[]u32 {
     return buffer;
 }
 
+/// An image of the pool (NEW-IMAGE), kept until imageFree; the core frees what is left
+/// when the program ends (graphics_images.releaseAll).
+fn imageAlloc(context: ?*anyopaque, pixels: usize) ?[]u32 {
+    const host = hostContext(context) catch return null;
+    return host.allocator.alloc(u32, pixels) catch null;
+}
+
+fn imageFree(context: ?*anyopaque, pixels: []u32) void {
+    const host = hostContext(context) catch return;
+    host.allocator.free(pixels);
+}
+
 /// A buffer for a font LOAD-FONT reads, kept until fontFree.
 fn fontBuffer(context: ?*anyopaque, words: usize) ?[]u64 {
     const host = hostContext(context) catch return null;
@@ -1227,8 +1239,10 @@ fn run(init: std.process.Init.Minimal) !u8 {
         return 1;
     };
     defer storage.free(std.heap.page_allocator);
-    machine.init(.{ .gamepad_ops = if (graphics) &host_gamepad.ops else null, .context = @ptrCast(&host), .write_fn = terminalWrite, .read_fn = terminalRead, .load_fn = loadDictionary, .save_fn = saveDictionary, .savesys_fn = saveExecutableImage, .key_fn = terminalKey, .key_ready_fn = terminalKeyReady, .unread_fn = terminalUnread, .sleep_fn = sleepMilliseconds, .utime_fn = microsecondsSinceEpoch, .local_time_fn = localTime, .getenv_fn = environmentValue, .system_fn = runShellCommand, .file_ops = &file_ops, .framebuffer_fn = graphicsBuffer, .terminal_size_fn = terminalSize, .terminal_utf8_fn = terminalUtf8, .window_fn = if (host_window.available) host_window.show else null, .input_fn = inputEvent, .mouse_fn = mouseMode, .cursor_fn = cursorPosition, .font_buffer_fn = if (graphics) fontBuffer else null, .font_free_fn = if (graphics) fontFree else null, .system_font_fn = if (graphics and host_font.available) host_font.select else null, .system_glyph_fn = if (graphics and host_font.available) host_font.glyph else null, .process_start_fn = if (graphics) host_process.start else null, .process_write_fn = if (graphics) host_process.write else null, .process_read_fn = if (graphics) host_process.read else null, .process_stop_fn = if (graphics) host_process.stop else null, .audio_fn = if (audio) host_audio.start else null, .audio_device_fn = if (audio) host_audio.hasDevice else null, .audio_wait_fn = if (audio) audioWait else null }, storage);
+    machine.init(.{ .gamepad_ops = if (graphics) &host_gamepad.ops else null, .context = @ptrCast(&host), .write_fn = terminalWrite, .read_fn = terminalRead, .load_fn = loadDictionary, .save_fn = saveDictionary, .savesys_fn = saveExecutableImage, .key_fn = terminalKey, .key_ready_fn = terminalKeyReady, .unread_fn = terminalUnread, .sleep_fn = sleepMilliseconds, .utime_fn = microsecondsSinceEpoch, .local_time_fn = localTime, .getenv_fn = environmentValue, .system_fn = runShellCommand, .file_ops = &file_ops, .framebuffer_fn = graphicsBuffer, .image_alloc_fn = if (graphics) imageAlloc else null, .image_free_fn = if (graphics) imageFree else null, .terminal_size_fn = terminalSize, .terminal_utf8_fn = terminalUtf8, .window_fn = if (host_window.available) host_window.show else null, .input_fn = inputEvent, .mouse_fn = mouseMode, .cursor_fn = cursorPosition, .font_buffer_fn = if (graphics) fontBuffer else null, .font_free_fn = if (graphics) fontFree else null, .system_font_fn = if (graphics and host_font.available) host_font.select else null, .system_glyph_fn = if (graphics and host_font.available) host_font.glyph else null, .process_start_fn = if (graphics) host_process.start else null, .process_write_fn = if (graphics) host_process.write else null, .process_read_fn = if (graphics) host_process.read else null, .process_stop_fn = if (graphics) host_process.stop else null, .audio_fn = if (audio) host_audio.start else null, .audio_device_fn = if (audio) host_audio.hasDevice else null, .audio_wait_fn = if (audio) audioWait else null }, storage);
     defer closeAllFiles();
+    // The images of the pool, when the session ends without BYE.
+    defer forth.releaseImages(machine);
     defer host_window.close();
     defer if (graphics) host_gamepad.close();
     // The terminal gets its line input back (and stops reporting the mouse) at the end.

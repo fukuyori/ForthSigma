@@ -25,6 +25,7 @@ const words_dictionary = @import("core/words_dictionary.zig");
 const words_files = @import("core/words_files.zig");
 const words_float = @import("core/words_float.zig");
 const words_graphics = @import("core/words_graphics.zig");
+const graphics_images = @import("core/graphics_images.zig");
 const words_audio = @import("core/words_audio.zig");
 const sound_mml = @import("core/sound_mml.zig");
 const sound_engine = @import("core/sound_engine.zig");
@@ -180,6 +181,9 @@ pub const Storage = struct {
 
 pub const Sizes = memory_map.Sizes;
 
+/// Frees the images of the pool through the host; the host calls it when the session ends.
+pub const releaseImages = graphics_images.releaseAll;
+
 pub const State = struct {
     writer: Writer,
     sizes: Sizes,
@@ -267,6 +271,12 @@ pub const State = struct {
     gfx_pixels: []u32 = &.{},
     gfx_width: Cell = 0,
     gfx_height: Cell = 0,
+    /// The images of the pool (graphics_images.zig), the bytes they have in all, and the
+    /// handle of the image the drawing words draw on (0, the screen, at first). Not part
+    /// of the dictionary either.
+    gfx_images: [graphics_images.max_images]graphics_images.Slot = @splat(.{}),
+    gfx_images_bytes: usize = 0,
+    gfx_target: Cell = graphics_images.screen,
     /// The Forth source REQUIRE-GRAPHICS interprets; tests put other source here.
     /// Empty in a build without graphics, which leaves the library text out.
     graphics_library: []const u8 = if (defs.graphics_enabled) words_graphics.library else "",

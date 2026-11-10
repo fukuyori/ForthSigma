@@ -46,7 +46,7 @@ Coordinates start at 0 0 in the top left corner, and everything drawn outside th
 | `DISPLAY-COLORS` | ( n -- ) | Make `SHOW` use full color (0, the default), or 2, 16, or 256 colors, for terminals that show fewer colors or for the look of older computers. 2 is black and white by brightness, 16 the ANSI colors (escapes 30 to 37 and 90 to 97; the nearest is chosen as xterm shows them by default, and other terminals may show them differently), 256 xterm's 6 × 6 × 6 cube and 24 grays (`ESC [ 38 ; 5 ; n m`). Sixel and the window use the same colors. The image keeps its colors, so files are saved in full color. Other values give `NUMBER ERROR !`. |
 | `DITHER` | ( flag -- ) | With fewer colors, mix them in a 4 × 4 Bayer pattern (true) instead of taking the nearest (false, the default). The pattern stays in place, so animation does not flicker. |
 | `GFX-INIT` | ( w h -- ) | Make a new black image. Each side is 1 to 16384 pixels, so the image is at most 1 GiB (4 bytes a pixel). The previous image stays when the new one cannot be made. |
-| `GFX-WIDTH`, `GFX-HEIGHT` | ( -- n ) | The size of the image, 0 before `GFX-INIT`. |
+| `GFX-WIDTH`, `GFX-HEIGHT` | ( -- n ) | The size of the image drawn on (see [Images](#images)), 0 for the screen before `GFX-INIT`. |
 | `GFX-PSET` | ( x y rgb -- ) | Set one pixel to the color rgb. |
 | `GFX-PGET` | ( x y -- rgb ) | The color of one pixel, -1 outside the image. |
 | `GFX-HLINE` | ( x1 x2 y rgb -- ) | A horizontal line from x1 to x2, both included. |
@@ -67,6 +67,35 @@ On the terminal, each character shows two pixels, one above the other, with 24-b
 On Windows, the window has a thread of its own: while Forth waits for input it can be moved, resized (the image is stretched to fit), and closed, and the keyboard stays with the console. Each `SHOW` draws the current image in it again and fits the window to a new image size, or to the size `WINDOW-SIZE` gave (without it, an image larger than 1600 by 1200 pixels is shown smaller). When the window is resized, the image keeps its proportions in it, with black around it, and `MOUSE` gives the pixel of the image under the mouse. A window that was closed is opened again by the next `SHOW` (an image shown at the very moment the window is being closed may not appear until then). Linux and macOS have no window yet; `SHOW` uses the Tk window there on a desktop with Tcl/Tk, and the terminal otherwise.
 
 The image is not part of the dictionary: `SAVE` and `SAVESYS` keep the graphics words and the words that use them, but not the pixels, so a program makes its image with `GFX-INIT` after it starts. A dictionary keeps the graphics library it loaded: `REQUIRE-GRAPHICS` does not add the words of a newer library to it, so build such a dictionary again from its source to use them.
+
+### Images
+
+Besides the image of `GFX-INIT`, the screen, a program can make images to draw on and copy from, as the pages of the MSX2 and the blitter of the Amiga do: sprites, tiles, a background, or a picture drawn once and copied many times. A handle names each image, and `SCREEN` (0) names the screen. The drawing words (`PSET`, `LINE`, `TEXT`, `PAINT`, and so on), `GFX-WIDTH`, `GFX-HEIGHT`, and the `SAVE-` words use the image `DRAW-TO` chose; `SHOW` always shows the screen.
+
+| Word | Stack | What it does |
+|---|---|---|
+| `NEW-IMAGE` | ( w h -- img ) | Make a black image, each side 1 to 16384. At most 256 images, 1 GiB in all (the screen not counted); more gives `OUT OF MEMORY !`. |
+| `FREE-IMAGE` | ( img -- ) | Free an image. Its handle no longer names an image; when it was drawn on, drawing goes back to the screen. |
+| `IMAGE-SIZE` | ( img -- w h ) | The width and height of an image, or of the screen (0 0 before `GFX-INIT`). |
+| `SCREEN` | ( -- 0 ) | The handle of the screen. |
+| `DRAW-TO` | ( img -- ) | Draw on an image from now on; `SCREEN DRAW-TO` draws on the screen again. |
+| `DRAWING` | ( -- img ) | The handle of the image drawn on. |
+| `COPY-RECT` | ( src sx sy w h dx dy -- ) | Copy the w by h rectangle at sx sy of image src to dx dy of the image drawn on. Parts outside either image are left out. Within one image the two rectangles may overlap; each pixel is read before it is written over. |
+| `PUT-IMAGE` | ( src x y -- ) | Copy the whole image src to x y of the image drawn on. |
+| `TRANSPARENT` | ( rgb\|-1 -- ) | `COPY-RECT` and `PUT-IMAGE` leave out the pixels of this color; -1 (the start) leaves out none. |
+| `IMAGE-FLIP` | ( n -- ) | `COPY-RECT` and `PUT-IMAGE` flip the rectangle: 0 not (the start), 1 left and right, 2 top and bottom, 3 both. Other values give `NUMBER ERROR !`. |
+
+```forth
+REQUIRE-GRAPHICS  ALSO GRAPHICS
+320 200 GFX-INIT
+16 16 NEW-IMAGE CONSTANT BALL
+BALL DRAW-TO  $FF00FF GFX-CLS  255 255 0 COLOR  8 8 7 FILL-CIRCLE  SCREEN DRAW-TO
+$FF00FF TRANSPARENT
+: BALLS ( -- )   10 0 DO  BALL I 30 * 10 + 90 PUT-IMAGE  LOOP ;
+BALLS  1 IMAGE-FLIP BALL 0 0 PUT-IMAGE  0 IMAGE-FLIP  SHOW
+```
+
+A handle that names no image (never made, freed, or kept from before `SAVE` or `SAVESYS`) gives `INVALID IMAGE HANDLE !` (THROW -278). Flipping a rectangle onto an overlapping place of the same image gives `NUMBER ERROR !`; copy it through another image. Images are not part of the dictionary, like the screen: restoring a dictionary (and starting an executable made by `SAVESYS`) frees them all, so a program makes its images after it starts. A handle kept in a variable of a saved dictionary may then name a new image by chance, when the new image has the same place and generation; make the images again rather than keep their handles. `TRANSPARENT` and `IMAGE-FLIP` are variables of the library, saved with the dictionary as `COLOR` is. The `GFX-` words underneath are `GFX-IMAGE-NEW` ( w h -- img ), `GFX-IMAGE-FREE` ( img -- ), `GFX-IMAGE-SIZE` ( img -- w h ), `GFX-TARGET` ( img -- ), `GFX-TARGET@` ( -- img ), and `GFX-COPY` ( src sx sy w h dx dy key flip -- ), whose key is the transparent color or a negative number for none.
 
 ### Text
 

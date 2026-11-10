@@ -294,6 +294,8 @@ fn restore(self: *State, image: []const u8, memory_is_fresh: bool) RuntimeError!
     self.pending = .none;
     // The image is not part of the dictionary: the restored program makes its own.
     words_graphics.clearImage(self);
+    // The images of the pool go too, and drawing goes to the screen.
+    @import("graphics_images.zig").releaseAll(self);
     // The Tcl strings were in the heap the image replaced.
     if (defs.graphics_enabled) @import("tcl.zig").forgetHeap(self);
 }

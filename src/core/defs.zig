@@ -661,6 +661,14 @@ pub const Builtin = enum {
     snd_stop_mod,
     snd_mod_playing,
     snd_style,
+    // The images of the pool (graphics_images.zig), added after the SND- words so that
+    // the execution tokens of the words before stay as they were.
+    gfx_image_new,
+    gfx_image_free,
+    gfx_image_size,
+    gfx_target,
+    gfx_target_query,
+    gfx_copy,
 };
 
 pub const HeapResult = union(enum) { address: Cell, no_memory, bad_pointer };
@@ -704,7 +712,7 @@ pub const error_codes = [_]struct { RuntimeError, Cell }{
     .{ error.GraphicsUnavailable, -270 },   .{ error.NoCanvas, -271 },          .{ error.UserInterrupt, -28 },
     .{ error.FontUnavailable, -272 },     .{ error.TclFailed, -273 },        .{ error.InvalidMml, -274 },
     .{ error.AudioUnavailable, -275 },     .{ error.SampleInvalid, -276 },
-    .{ error.ModInvalid, -277 },
+    .{ error.ModInvalid, -277 },            .{ error.InvalidImageHandle, -278 },
 };
 
 pub const throw_code_undefined_word: Cell = -13;
@@ -869,6 +877,8 @@ pub const RuntimeError = error{
     SampleInvalid,
     /// A file LOAD-MOD cannot read: not a ProTracker module of four channels.
     ModInvalid,
+    /// A handle that names no image of the pool: never made, freed, or from before a restore.
+    InvalidImageHandle,
 };
 
 pub fn floatBits(value: Float) Cell {

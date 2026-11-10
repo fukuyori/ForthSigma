@@ -11,6 +11,7 @@ const defs = @import("defs.zig");
 const forth = @import("../forth.zig");
 const graphics_input = @import("graphics_input.zig");
 const words_graphics = @import("words_graphics.zig");
+const graphics_images = @import("graphics_images.zig");
 const Cell = forth.Cell;
 const RuntimeError = defs.RuntimeError;
 const State = forth.State;
@@ -398,7 +399,8 @@ const Base64Writer = struct {
 
 fn writeImage(self: *State) RuntimeError!void {
     var writer = Base64Writer{ .self = self };
-    words_graphics.writePng(self, writer.sink(), self.gfx_color_mode);
+    // Tk shows the screen, whatever image the drawing words draw on.
+    words_graphics.writePng(try graphics_images.screenCanvas(self), writer.sink(), self.gfx_color_mode);
     writer.finish();
     if (writer.failure) |failure| return failure;
 }

@@ -59,6 +59,8 @@ pub const Output = struct {
     framebuffer_fails: bool = false,
     /// Gives one pixel less than asked, as a host that breaks its contract would.
     framebuffer_short: bool = false,
+    image_fails: bool = false,
+    images_live: usize = 0,
     /// When not 0, the write to a file (not STDOUT) with this number, counted from 1,
     /// fails with the ior of errno 28 (no space).
     write_fails_at: usize = 0,
@@ -272,6 +274,23 @@ pub const Output = struct {
         output.window_first_pixel = pixels[0];
     }
 
+    /// Images of the pool from the testing allocator, so that a test that leaves one
+    /// behind fails; `image_fails` refuses them, and `images_live` counts those not freed.
+    pub fn imageAlloc(context: ?*anyopaque, pixels: usize) ?[]u32 {
+        const output: *Output = @ptrCast(@alignCast(context.?));
+        if (output.image_fails) return null;
+        const buffer = std.testing.allocator.alloc(u32, pixels) catch return null;
+        @memset(buffer, 0x12345678);
+        output.images_live += 1;
+        return buffer;
+    }
+
+    pub fn imageFree(context: ?*anyopaque, pixels: []u32) void {
+        const output: *Output = @ptrCast(@alignCast(context.?));
+        std.testing.allocator.free(pixels);
+        output.images_live -= 1;
+    }
+
     pub fn framebuffer(context: ?*anyopaque, pixels: usize) ?[]u32 {
         const output: *Output = @ptrCast(@alignCast(context.?));
         if (output.framebuffer_fails or pixels > framebuffer_capacity) return null;
@@ -290,7 +309,7 @@ pub const Output = struct {
     }
 
     pub fn writer(self: *Output) forth.Writer {
-        return .{ .context = @ptrCast(self), .write_fn = write, .read_fn = read, .save_fn = saveImage, .savesys_fn = saveImage, .key_fn = key, .key_ready_fn = keyReady, .unread_fn = unread, .sleep_fn = sleep, .utime_fn = utime, .local_time_fn = localTime, .getenv_fn = getenv, .system_fn = system, .file_ops = &fake_file_ops, .framebuffer_fn = framebuffer, .terminal_size_fn = terminalSize, .terminal_utf8_fn = terminalUtf8, .window_fn = if (self.has_window) window else null, .input_fn = input, .mouse_fn = mouse, .cursor_fn = cursor, .font_buffer_fn = fontBuffer, .font_free_fn = fontFree, .system_font_fn = if (self.has_system_fonts) systemFont else null, .system_glyph_fn = if (self.has_system_fonts) systemGlyph else null, .process_start_fn = processStart, .process_write_fn = processWrite, .process_read_fn = processRead, .process_stop_fn = processStop, .audio_fn = audioEngine, .audio_device_fn = audioDevice, .audio_wait_fn = audioWait };
+        return .{ .context = @ptrCast(self), .write_fn = write, .read_fn = read, .save_fn = saveImage, .savesys_fn = saveImage, .key_fn = key, .key_ready_fn = keyReady, .unread_fn = unread, .sleep_fn = sleep, .utime_fn = utime, .local_time_fn = localTime, .getenv_fn = getenv, .system_fn = system, .file_ops = &fake_file_ops, .framebuffer_fn = framebuffer, .image_alloc_fn = imageAlloc, .image_free_fn = imageFree, .terminal_size_fn = terminalSize, .terminal_utf8_fn = terminalUtf8, .window_fn = if (self.has_window) window else null, .input_fn = input, .mouse_fn = mouse, .cursor_fn = cursor, .font_buffer_fn = fontBuffer, .font_free_fn = fontFree, .system_font_fn = if (self.has_system_fonts) systemFont else null, .system_glyph_fn = if (self.has_system_fonts) systemGlyph else null, .process_start_fn = processStart, .process_write_fn = processWrite, .process_read_fn = processRead, .process_stop_fn = processStop, .audio_fn = audioEngine, .audio_device_fn = audioDevice, .audio_wait_fn = audioWait };
     }
 
     pub fn audioEngine(context: ?*anyopaque) ?*@import("../core/sound_engine.zig").Engine {
@@ -591,6 +610,7 @@ pub fn fillDictionary(machine: *forth.State, free: usize) !void {
 }
 
 pub fn destroyMachine(machine: *forth.State) void {
+    forth.releaseImages(machine);
     machine.storage().free(std.testing.allocator);
     std.testing.allocator.destroy(machine);
 }

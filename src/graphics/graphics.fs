@@ -487,3 +487,31 @@ VARIABLE (TEXT-SCALE)  1 (TEXT-SCALE) !
 : TCL-STOP ( -- )   GFX-TCL-STOP ;
 \ Make SHOW show the image in a Tk window, from which INKEY and MOUSE also read.
 : DISPLAY-TK ( -- )   3 (DISPLAY) ! ;
+
+\ ---- Images ----------------------------------------------------------------------
+
+\ Images besides the screen, outside the dictionary's memory: at most 256, and 1 GiB
+\ in all. A handle names one; SCREEN is the screen. The drawing words, GFX-WIDTH,
+\ GFX-HEIGHT, and the SAVE- words use the image DRAW-TO chose; SHOW always shows the
+\ screen. FREE-IMAGE, or a handle from before SAVE or SAVESYS, makes a handle invalid
+\ (INVALID IMAGE HANDLE, THROW -278).
+\   GFX-IMAGE-NEW ( w h -- img )  GFX-IMAGE-FREE ( img -- )  GFX-IMAGE-SIZE ( img -- w h )
+\   GFX-TARGET ( img -- )  GFX-TARGET@ ( -- img )
+\   GFX-COPY ( src sx sy w h dx dy key flip -- )
+0 CONSTANT SCREEN
+: NEW-IMAGE ( w h -- img )   GFX-IMAGE-NEW ;
+: FREE-IMAGE ( img -- )   GFX-IMAGE-FREE ;
+: IMAGE-SIZE ( img -- w h )   GFX-IMAGE-SIZE ;
+: DRAW-TO ( img -- )   GFX-TARGET ;
+: DRAWING ( -- img )   GFX-TARGET@ ;
+
+VARIABLE (TRANSPARENT)  -1 (TRANSPARENT) !
+VARIABLE (FLIP)  0 (FLIP) !
+\ The color COPY-RECT and PUT-IMAGE leave out, or -1 for none.
+: TRANSPARENT ( rgb|-1 -- )   DUP 0< IF DROP -1 ELSE $FFFFFF AND THEN (TRANSPARENT) ! ;
+\ How COPY-RECT and PUT-IMAGE flip: 0 not, 1 left and right, 2 top and bottom, 3 both.
+: IMAGE-FLIP ( n -- )   DUP 0 4 WITHIN 0= IF DROP -24 THROW THEN (FLIP) ! ;
+\ Copy the w by h rectangle at sx sy of image src to dx dy of the image drawn on.
+: COPY-RECT ( src sx sy w h dx dy -- )   (TRANSPARENT) @ (FLIP) @ GFX-COPY ;
+\ Copy the whole image src to x y of the image drawn on.
+: PUT-IMAGE { src x y | w h -- }   src IMAGE-SIZE TO h TO w  src 0 0 w h x y COPY-RECT ;

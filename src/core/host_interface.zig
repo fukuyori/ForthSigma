@@ -123,6 +123,12 @@ pub const Writer = struct {
     /// failure it returns null and keeps the buffer it gave before. A buffer of another
     /// length is an error, after which the core uses no image.
     framebuffer_fn: ?*const fn (?*anyopaque, usize) ?[]u32 = null,
+    /// Gives an image of the pool (NEW-IMAGE), that many 32-bit pixels outside logical
+    /// memory, or null when there is none. It stays until image_free_fn frees it; the host
+    /// frees what is left when the program ends.
+    image_alloc_fn: ?*const fn (?*anyopaque, usize) ?[]u32 = null,
+    /// Frees an image image_alloc_fn gave.
+    image_free_fn: ?*const fn (?*anyopaque, []u32) void = null,
     /// The size of the terminal that output goes to, or null when it is not a terminal
     /// (the graphics words then assume 80 columns and 24 rows).
     terminal_size_fn: ?*const fn (?*anyopaque) ?TerminalSize = null,

@@ -247,6 +247,19 @@ G2の後にCodexのレビューで、半径4などで円が対角線に対称に
 
 G3の後にCodexのレビューで、(1) ウィンドウのスレッドが生きているのに依頼を送れないと、`SHOW` がそのスレッドの終わりを無期限に待つ、(2) 終了時の待ちが時間切れでも終わったものとして扱う、と指摘され、上のとおり直した。`SHOW` を100,000回続けて呼ぶ間にウィンドウを3回閉じても止まらないことを確かめた。端末への出力のバッファが4096バイトを超える1回の書き込みを受けられない点（今の呼び出しでは起きない）も直した。また、`REQUIRE-GRAPHICS` は読み込み済みの辞書を更新しないので、古い版のライブラリを読み込んで保存した辞書には、新しい版で加えた語（G2で保存した辞書の `SHOW` など）は加わらない。必要なら、その辞書をソースから作り直す（0.6.0より前のグラフィックスは配布していない）。
 
+#### G5a: オフスクリーン画像（#429、2026-11-10、利用者の決定）
+
+仕様は `docs/MEMORY_AND_GRAPHICS_PLAN.md` の「画像プールの仕様」による。
+
+| 項目 | 決定 |
+|---|---|
+| 語の名前 | `NEW-IMAGE` ( w h -- img )、`FREE-IMAGE` ( img -- )、`IMAGE-SIZE` ( img -- w h )、`SCREEN` ( -- 0 )、`DRAW-TO` ( img -- )、`DRAWING` ( -- img )、`COPY-RECT` ( src sx sy w h dx dy -- )、`PUT-IMAGE` ( src x y -- )、`TRANSPARENT` ( rgb\|-1 -- )、`IMAGE-FLIP` ( n -- )。`GRAPHICS` の語は利用者の同名の語より先に見つかるので、サンプルが定義している `BLIT`、`FLIP`、`MIRROR`（`examples/pinball.fs`）は使わない。下の組み込み語は `GFX-IMAGE-NEW`、`GFX-IMAGE-FREE`、`GFX-IMAGE-SIZE`、`GFX-TARGET`、`GFX-TARGET@`、`GFX-COPY`。`Builtin` の最後に加え、それより前の語の実行トークンは変えない。 |
+| 描画先 | 描画の語、`GFX-WIDTH`、`GFX-HEIGHT`、`SAVE-` の語は描画先の画像を使う。`SHOW` と Tk への表示は常に画面。 |
+| 透明色と反転 | `COLOR` と同じく状態として持ち、`TRANSPARENT` と `IMAGE-FLIP` で設定する。値はライブラリの変数で、`GFX-COPY` に引数として渡す。透明色は下位24ビットで比べ、負の数は透明色なし。 |
+| 写す範囲 | どちらかの画像からはみ出す部分は写さない。範囲の計算は128ビットで行い、2^63 に近い値でもあふれない。同じ画像で重なる写しは、memmove と同じく各画素を上書きの前に読む順で写す。同じ画像の重なる場所への反転は `NUMBER ERROR`（-24）とする（別の画像を経由すれば写せる）。 |
+| エラー | 無効なハンドルは新しいエラー `INVALID IMAGE HANDLE`（-278）。枚数・合計容量の超過とホストの確保の失敗は `OUT OF MEMORY`（-257）、ホストに画像の機能がなければ `HOST FUNCTION UNAVAILABLE`（-21）。 |
+| ホスト | `image_alloc_fn` と `image_free_fn` を加えた。コアは解放のときと復元のときに `image_free_fn` を呼び、ホストは終了時に `releaseImages` で残りを解放する。 |
+
 #### KEY-HELD? と WINDOW-SIZE のレビューへの対応（2026-11-06）
 
 `b600afb`〜`b699e15` のCodexのレビュー（`.work/codex-review-g5/review.md`）の R01〜R06、懸念 C01、文書の指摘を、利用者の指示で直した。前回の R01・R02・C01・C02 は対処済みと評価された。
