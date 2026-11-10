@@ -283,6 +283,10 @@ pub const State = struct {
     trace_depth: usize = 0,
     /// --profile: the counts of the run, in memory of the host's; null without it.
     profile: ?*Profile = null,
+    /// Short definitions are called instead of copied into their callers: the trace and
+    /// the profile note a word when it is called and when it returns. The host sets it
+    /// with --trace or --profile, also in the State that LOAD restores an image in.
+    plain_calls: bool = false,
     /// +LTRACE: each line of an included file is shown before it is interpreted.
     line_trace: bool = false,
     /// The values of ~~VALUE, whose TOs are shown. Not part of an image.
@@ -792,7 +796,11 @@ pub const State = struct {
     /// Takes word `id` and every later word out of the dictionary and the index of the
     /// names; the caller gives back their code, data, and names.
     pub fn dropWordsFrom(self: *State, id: u16) void {
-        if (defs.debug_enabled) words_debug.unwatchFrom(self, id);
+        if (defs.debug_enabled) {
+            words_debug.unwatchFrom(self, id);
+            // The words that take these places start their counts at 0.
+            if (self.profile) |profile| profile.forgetWords(id, self.word_count);
+        }
         wordlists.unindexFrom(self, id);
         self.word_count = id;
     }
@@ -1072,7 +1080,11 @@ pub const State = struct {
         if (self.code_count == max_code) return error.CodeFull;
         const at = self.code_count;
         self.code[at] = op;
-        if (defs.debug_enabled) self.code_lines[at] = if (self.currentFileFrame()) |frame| frame.line else 0;
+        if (defs.debug_enabled) {
+            self.code_lines[at] = if (self.currentFileFrame()) |frame| frame.line else 0;
+            // The count of an operation that FORGET or a MARKER removed is not this one's.
+            if (self.profile) |profile| profile.op_counts[at] = 0;
+        }
         self.code_count += 1;
         return at;
     }
@@ -1233,10 +1245,9 @@ pub const State = struct {
         }
     }
 
-    /// Whether short definitions are called instead of copied into their callers: the
-    /// trace and the profile note a word when it is called and when it returns.
+    /// Whether short definitions are called instead of copied into their callers.
     pub fn keepsCalls(self: *const State) bool {
-        return defs.debug_enabled and (self.tracing or self.profile != null);
+        return defs.debug_enabled and self.plain_calls;
     }
 
     fn addBacktrace(self: *State, pc: u16) void {

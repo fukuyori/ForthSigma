@@ -25,6 +25,7 @@ test "the trace shows each word with the stack as it starts and as it ends" {
 
     // With the trace on, SQUARE is called, not copied into SUMSQ.
     machine.tracing = true;
+    machine.plain_calls = true;
     try machine.interpretLine(": SQUARE DUP * ; : SUMSQ SQUARE SWAP SQUARE + ; 3 4 SUMSQ");
     try expectStack(machine, &.{25});
     try std.testing.expectEqualStrings(
@@ -57,6 +58,7 @@ test "the trace ends after the lines of its limit, and the program goes on" {
     defer destroyMachine(machine);
 
     machine.tracing = true;
+    machine.plain_calls = true;
     machine.trace_limit = 3;
     try machine.interpretLine(": SQUARE DUP * ; : SUMSQ SQUARE SWAP SQUARE + ; 3 4 SUMSQ");
     try expectStack(machine, &.{25});
@@ -80,6 +82,7 @@ test "the trace works together with the step limit" {
     defer destroyMachine(machine);
 
     machine.tracing = true;
+    machine.plain_calls = true;
     machine.trace_limit = 2;
     machine.step_limit = 50;
     machine.resetSteps();
@@ -202,6 +205,7 @@ test "the profile counts the calls and the operations of each word" {
     defer std.testing.allocator.destroy(profile);
     profile.reset();
     machine.profile = profile;
+    machine.plain_calls = true;
 
     // SQUARE is 3 operations (DUP, *, the end), SUMSQ 5 of its own, RUN 54.
     try machine.interpretLine(": SQUARE DUP * ; : SUMSQ SQUARE SWAP SQUARE + ; : RUN 10 0 DO I I SUMSQ DROP LOOP ; RUN");
@@ -233,6 +237,7 @@ test "the profile counts a recursion once, and ends the words that an error ende
     defer std.testing.allocator.destroy(profile);
     profile.reset();
     machine.profile = profile;
+    machine.plain_calls = true;
 
     try machine.interpretLine(": DOWN DUP IF 1- RECURSE THEN ; 5 DOWN DROP");
     const down = machine.lookup("DOWN").?;
@@ -250,4 +255,50 @@ test "the profile counts a recursion once, and ends the words that an error ende
     try std.testing.expectEqual(@as(usize, 1), profile.depth);
     machine.report(error.DivisionByZero);
     try std.testing.expectEqual(@as(usize, 0), profile.depth);
+}
+
+test "a word that takes the place of a removed one starts its profile at 0" {
+    try support.skipWithout(&.{.debug});
+    var output = Output{};
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
+    const profile = try std.testing.allocator.create(forth.Profile);
+    defer std.testing.allocator.destroy(profile);
+    profile.reset();
+    machine.profile = profile;
+    machine.plain_calls = true;
+
+    try machine.interpretLine(": OLD 1 DROP ; OLD FORGET OLD : NEW 2 DROP ; NEW");
+    const new = machine.lookup("NEW").?;
+    try std.testing.expectEqual(@as(u64, 1), profile.calls[new]);
+    try std.testing.expectEqual(@as(u64, 3), profile.total[new]);
+    // What OLD ran stays in the whole.
+    try std.testing.expectEqual(@as(u64, 6), profile.operations);
+    profile.show(machine);
+    try std.testing.expect(std.mem.endsWith(u8, shown(&output), "         1           3           3  NEW\n"));
+}
+
+test "the short definitions of a loaded image stay calls for the trace" {
+    try support.skipWithout(&.{ .debug, .image });
+    var output = Output{};
+    const source = try createMachine(&output);
+    defer destroyMachine(source);
+    try source.interpretLine(": SQUARE DUP * ; : RUN 3 SQUARE DROP ;");
+    const image = try std.testing.allocator.alloc(u8, forth.State.imageCapacity(.small));
+    defer std.testing.allocator.free(image);
+    const length = try source.encodeImage(image);
+
+    // As LOAD does: the image is restored in a State of its own, which the host gives
+    // the setting of the one it is added to.
+    const target = try createMachine(&output);
+    defer destroyMachine(target);
+    target.tracing = true;
+    target.plain_calls = true;
+    const loaded = try createMachine(&output);
+    defer destroyMachine(loaded);
+    loaded.plain_calls = target.plain_calls;
+    try loaded.restoreImage(image[0..length]);
+    try target.appendImage(loaded);
+    try target.interpretLine("RUN");
+    try std.testing.expectEqualStrings("> RUN <0>\n  > SQUARE <1> 3\n  < SQUARE <1> 9\n< RUN <0>\n", shown(&output));
 }

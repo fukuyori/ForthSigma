@@ -936,6 +936,8 @@ fn loadDictionary(context: ?*anyopaque, input_path: []const u8, machine: *forth.
     const loaded_storage = forth.Storage.allocate(std.heap.page_allocator, true, sizes) catch return error.MemoryExhausted;
     defer loaded_storage.free(std.heap.page_allocator);
     loaded.init(machine.writer, loaded_storage);
+    // With the trace or the profile, the short definitions of the image stay calls too.
+    loaded.plain_calls = machine.plain_calls;
     try loaded.restoreFreshImage(bytes);
     try machine.appendImage(loaded);
 }
@@ -1309,6 +1311,7 @@ fn run(init: std.process.Init.Minimal) !u8 {
     machine.step_limit = start.max_steps;
     machine.tracing = start.trace;
     machine.trace_limit = start.trace_limit;
+    machine.plain_calls = start.trace or start.profile;
     // The profile is shown however the program ends: BYE, an error, or the end of input.
     const profile: ?*forth.Profile = if (start.profile) std.heap.page_allocator.create(forth.Profile) catch {
         terminalWrite(null, "OUT OF MEMORY !\n");

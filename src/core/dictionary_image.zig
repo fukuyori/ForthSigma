@@ -396,7 +396,10 @@ pub fn appendImage(self: *State, source: *const State) RuntimeError!void {
         self.code[code_base + offset] = op;
         // The lines the code was compiled from are not in an image; the ones here
         // would be those of code that FORGET or a MARKER removed.
-        if (defs.debug_enabled) self.code_lines[code_base + offset] = 0;
+        if (defs.debug_enabled) {
+            self.code_lines[code_base + offset] = 0;
+            if (self.profile) |profile| profile.op_counts[code_base + offset] = 0;
+        }
     }
     const data_from: usize = @intCast(data_start);
     const data_to: usize = @intCast(self.data_here);

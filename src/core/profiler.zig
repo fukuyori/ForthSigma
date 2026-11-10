@@ -45,6 +45,14 @@ pub const Profile = struct {
         self.operations = 0;
     }
 
+    /// Drops the counts of the words `from` to `end`, which FORGET or a MARKER removes.
+    /// The operations they ran stay in `operations`.
+    pub fn forgetWords(self: *Profile, from: usize, end: usize) void {
+        if (from >= end) return;
+        @memset(self.calls[from..end], 0);
+        @memset(self.total[from..end], 0);
+    }
+
     pub inline fn countOperation(self: *Profile, pc: u16) void {
         self.op_counts[pc] +%= 1;
         self.operations +%= 1;
