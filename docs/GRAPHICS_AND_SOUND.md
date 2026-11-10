@@ -260,6 +260,43 @@ The colors are roles that `GUI-COLOR!` ( rgb role -- ) sets and `GUI-COLOR@` ( r
 
 `GUI-BORDER-WIDTH` ( n -- ) and `GUI-FOCUS-WIDTH` ( n -- ) set the widths of the borders and of the focus border, 0 to 8 pixels (1 at the start); other values give `NUMBER ERROR !`. The text uses the font and the scale of `TEXT`, and the sizes of the parts follow `TEXT-HEIGHT`. A field shows the text from where its cursor can be seen; an input method (IME) has not been tried. Like the other graphics words, the GUI keeps nothing outside the dictionary, and its settings and the choices in the program's variables are saved with it.
 
+### Sprites and tile maps
+
+`REQUIRE-GAME` loads the game words into the `GAME` vocabulary (and the graphics words first, if they are not loaded); `ALSO GAME` makes them usable. They are small Forth words over data the program makes and keeps: a sprite or a map is a structure in the dictionary, made with `SPRITE:` or `TILEMAP:` (or `INIT-SPRITE` on `/SPRITE` bytes of an array), whose fields the program reads and sets with `@` and `!`. The program's own loop decides what to move, draw, and test, and when; nothing calls the program back.
+
+| Word | Stack | What it does |
+|---|---|---|
+| `SPRITE:` | ( img sx sy w h "name" -- ) | Define a sprite showing the w by h rectangle at sx sy of image img: at 0 0, shown, one frame, not flipped, no transparent color. name gives its address. |
+| `INIT-SPRITE` | ( img sx sy w h spr -- ) | The same for the `/SPRITE` bytes at spr, as in an array: `CREATE ENEMIES 8 /SPRITE * ALLOT`. |
+| `PUT-SPRITE` | ( x y spr -- ) | Put a sprite at x y. |
+| `SPRITE-ANIM` | ( n delay spr -- ) | An animation of n frames side by side to the right of the first, each shown for delay calls of `ANIMATE`. |
+| `ANIMATE` | ( spr -- ) | One step of the animation. |
+| `DRAW-SPRITE` | ( spr -- ) | Draw a shown sprite on the image drawn on, with its frame, flip, and transparent color. |
+| `HIT?` | ( spr1 spr2 -- flag ) | Whether the rectangles of two shown sprites overlap. |
+| `PIXEL-HIT?` | ( spr1 spr2 -- flag ) | Whether two shown sprites show a pixel at the same place (their transparent colors left out). |
+| `SPRITE-PIXEL?` | ( x y spr -- flag ) | Whether a sprite shows a pixel at x y. |
+| `TILEMAP:` | ( img tw th cols rows "name" -- ) | Define a map of cols by rows tiles, all tile 0. Tile n is the tw by th rectangle of image img that is n tiles from its top left corner, counted along its rows. name gives its address. |
+| `TILE@`, `TILE!` | ( col row map -- n ), ( n col row map -- ) | Read and set a tile, 0 to 255. Outside the map, `NUMBER ERROR !`. |
+| `>TILE` | ( x y map -- col row ) | The tile under pixel x y of the map. |
+| `DRAW-TILEMAP` | ( sx sy x y w h map -- ) | Draw the w by h rectangle at x y of the image drawn on with the map seen from its pixel sx sy. Only that rectangle is drawn, and only the tiles in it are reckoned. What lies outside the map, and the pixels of the map's transparent color, are left as they are. |
+
+The fields of a sprite (each gives an address) are `SPRITE-X`, `SPRITE-Y`, `SPRITE-IMAGE`, `SPRITE-SX`, `SPRITE-SY`, `SPRITE-W`, `SPRITE-H`, `SPRITE-FRAMES`, `SPRITE-FRAME`, `SPRITE-DELAY`, `SPRITE-TICK`, `SPRITE-FLIP` (as `IMAGE-FLIP`), `SPRITE-KEY` (the transparent color, -1 for none), and `SPRITE-SHOWN`; those of a map are `TILEMAP-IMAGE`, `TILEMAP-TW`, `TILEMAP-TH`, `TILEMAP-COLS`, `TILEMAP-ROWS`, and `TILEMAP-KEY`, with its tile bytes, row by row, at `TILEMAP-DATA` ( map -- addr ). Two playfields, as on the Amiga, are two maps: draw the back one, then the front one with a transparent color. Scrolling is changing sx and sy.
+
+```forth
+REQUIRE-GAME  ALSO GRAPHICS ALSO GAME
+256 192 GFX-INIT
+S" tiles.png" LOAD-IMAGE CONSTANT SHEET
+SHEET 16 16 32 12 TILEMAP: LEVEL
+SHEET 0 32 16 16 SPRITE: HERO   4 6 HERO SPRITE-ANIM
+VARIABLE SCROLL
+: STEP ( -- )
+   1 SCROLL +!  HERO ANIMATE
+   SCROLL @ 0  0 0 256 192 LEVEL DRAW-TILEMAP
+   HERO DRAW-SPRITE  SHOW 16 FRAME ;
+```
+
+The words under them are `GFX-PIXEL` ( img x y -- rgb | -1 ), the color of a pixel of any image, and `GFX-TILEMAP` ( addr cols rows img tw th sx sy x y w h key -- ), which draws a map of tile bytes at any address. The structures are in the dictionary, so `SAVE` and `SAVESYS` keep them; their image handles are no longer valid after a restore, so a program makes its images and sets `SPRITE-IMAGE` and `TILEMAP-IMAGE` again after it starts.
+
 ### Mathematical coordinates and graphs
 
 In a build with the floating-point words, the library also draws in mathematical coordinates (`src/graphics/graphics_float.fs`; a build with `-Dfloat=false` leaves these words out). `X-RANGE` and `Y-RANGE` say which part of the plane the image shows: x grows to the right, from the left edge to the right one, and y grows upward, from the bottom edge to the top one. Both start as -1 to 1. A point is drawn at the pixel nearest to it.

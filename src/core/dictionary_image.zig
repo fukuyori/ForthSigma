@@ -307,6 +307,7 @@ pub fn appendImage(self: *State, source: *const State) RuntimeError!void {
     const graphics_loaded = words_graphics.graphicsLoaded(self);
     const audio_loaded = words_audio.audioLoaded(self);
     const gui_loaded = @import("words_gui.zig").guiLoaded(self);
+    const game_loaded = @import("words_game.zig").gameLoaded(self);
     const code_base: usize = self.code_count;
     const code_count: usize = source.code_count;
     if (word_base + added_words > max_words) return error.DictionaryFull;
@@ -435,4 +436,5 @@ pub fn appendImage(self: *State, source: *const State) RuntimeError!void {
     try library_loading.appendLoaded(self, source, words_graphics.group, graphics_loaded, word_base);
     try library_loading.appendLoaded(self, source, words_audio.group, audio_loaded, word_base);
     try library_loading.appendLoaded(self, source, @import("words_gui.zig").group, gui_loaded, word_base);
+    try library_loading.appendLoaded(self, source, @import("words_game.zig").group, game_loaded, word_base);
 }

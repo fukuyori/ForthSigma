@@ -282,6 +282,8 @@ pub const State = struct {
     graphics_library: []const u8 = if (defs.graphics_enabled) words_graphics.library else "",
     /// The Forth source REQUIRE-GUI interprets (empty in a build without graphics).
     gui_library: []const u8 = if (defs.graphics_enabled) @import("core/words_gui.zig").library else "",
+    /// The Forth source REQUIRE-GAME interprets (empty in a build without graphics).
+    game_library: []const u8 = if (defs.graphics_enabled) @import("core/words_game.zig").library else "",
     /// The Forth source REQUIRE-AUDIO interprets (empty in a build without audio).
     audio_library: []const u8 = if (defs.audio_enabled) words_audio.library else "",
     /// What each voice of PLAY keeps from one PLAY to the next; BEEP resets it.
@@ -867,6 +869,9 @@ pub const State = struct {
         // the same built-in words as older builds.
         if (asciiEqlIgnoreCase(token, "REQUIRE-GRAPHICS")) {
             return words_graphics.requireGraphics(self);
+        }
+        if (asciiEqlIgnoreCase(token, "REQUIRE-GAME")) {
+            return @import("core/words_game.zig").requireGame(self);
         }
         if (asciiEqlIgnoreCase(token, "REQUIRE-GUI")) {
             return @import("core/words_gui.zig").requireGui(self);

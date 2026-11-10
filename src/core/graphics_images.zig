@@ -18,7 +18,7 @@ const Cell = memory_map.Cell;
 const RuntimeError = defs.RuntimeError;
 const State = forth.State;
 
-pub const words = [_]Builtin{ .gfx_image_new, .gfx_image_free, .gfx_image_size, .gfx_target, .gfx_target_query, .gfx_copy, .gfx_image_load };
+pub const words = [_]Builtin{ .gfx_image_new, .gfx_image_free, .gfx_image_size, .gfx_target, .gfx_target_query, .gfx_copy, .gfx_image_load, .gfx_pixel, .gfx_tilemap };
 
 pub const max_side = words_graphics.max_side;
 
@@ -93,6 +93,22 @@ pub fn execute(self: *State, builtin: Builtin) RuntimeError!void {
             const key = try self.pop();
             const name = try self.memoryRange();
             for (try @import("graphics_decode.zig").loadImage(self, name, key)) |value| try self.push(value);
+        },
+        .gfx_pixel => {
+            const y = try self.pop();
+            const x = try self.pop();
+            const canvas = try canvasOf(self, try self.pop());
+            const index = canvas.index(x, y) orelse return self.push(-1);
+            try self.push(canvas.pixels[index] & rgb_mask);
+        },
+        .gfx_tilemap => {
+            var view: [13]Cell = undefined;
+            var at: usize = view.len;
+            while (at > 0) {
+                at -= 1;
+                view[at] = try self.pop();
+            }
+            try drawTilemap(self, view);
         },
         else => unreachable,
     }
@@ -257,6 +273,64 @@ fn copyRect(self: *State, source: Cell, sx: Cell, sy: Cell, w: Cell, h: Cell, dx
             }
             const place: usize = @intCast(dx + i);
             target_row[place] = combine(mode, alpha, target_row[place], pixel);
+        }
+    }
+}
+
+/// GFX-TILEMAP ( addr cols rows img tw th sx sy x y w h key -- ): draws the part of a
+/// map that a view shows. The map is cols × rows bytes at addr in logical memory, a tile
+/// number in each, row by row; tile n is the tw × th rectangle of image img that is n
+/// tiles from its top left corner, counted along its rows. The view is the w × h
+/// rectangle at x y of the image drawn on, showing the map from its pixel sx sy; what
+/// lies outside the map is left as it is, and so are the pixels of color `key` (none when
+/// it is negative), so that one map can be drawn over another. Only the pixels inside
+/// both the view and the image drawn on are reckoned.
+fn drawTilemap(self: *State, view: [13]Cell) RuntimeError!void {
+    const address = view[0];
+    const cols = view[1];
+    const rows = view[2];
+    const tw = view[4];
+    const th = view[5];
+    if (cols < 0 or rows < 0 or tw < 1 or tw > max_side or th < 1 or th > max_side) return error.InvalidNumber;
+    const count = std.math.mul(u64, @intCast(cols), @intCast(rows)) catch return error.InvalidNumber;
+    const start = try self.memoryAddress(address, std.math.cast(usize, count) orelse return error.InvalidAddress);
+    const map = self.memory[start..][0..@intCast(count)];
+    const from = try canvasOf(self, view[3]);
+    const to = try target(self);
+    const sheet_cols: usize = from.width / @as(usize, @intCast(tw));
+    if (sheet_cols == 0 or map.len == 0) return;
+    const transparent: ?u32 = if (view[12] < 0) null else @as(u32, @truncate(@as(u64, @bitCast(view[12])))) & rgb_mask;
+    const x: i128 = view[8];
+    const y: i128 = view[9];
+    // The view inside the image drawn on.
+    const x0: i128 = @max(x, 0);
+    const x1: i128 = @min(x + @max(view[10], 0), @as(i128, @intCast(to.width)));
+    const y0: i128 = @max(y, 0);
+    const y1: i128 = @min(y + @max(view[11], 0), @as(i128, @intCast(to.height)));
+    if (x0 >= x1 or y0 >= y1) return;
+    const map_w: i128 = @as(i128, cols) * tw;
+    const map_h: i128 = @as(i128, rows) * th;
+    var py = y0;
+    while (py < y1) : (py += 1) {
+        const wy = @as(i128, view[7]) + (py - y);
+        if (wy < 0 or wy >= map_h) continue;
+        const row: usize = @intCast(@divFloor(wy, th));
+        const ty: usize = @intCast(@mod(wy, th));
+        const target_row = to.pixels[@as(usize, @intCast(py)) * to.width ..][0..to.width];
+        var px = x0;
+        while (px < x1) : (px += 1) {
+            const wx = @as(i128, view[6]) + (px - x);
+            if (wx < 0 or wx >= map_w) continue;
+            const col: usize = @intCast(@divFloor(wx, tw));
+            const tile: usize = map[row * @as(usize, @intCast(cols)) + col];
+            const source_x = (tile % sheet_cols) * @as(usize, @intCast(tw)) + @as(usize, @intCast(@mod(wx, tw)));
+            const source_y = (tile / sheet_cols) * @as(usize, @intCast(th)) + ty;
+            if (source_y >= from.height) continue;
+            const pixel = from.pixels[source_y * from.width + source_x];
+            if (transparent) |color| {
+                if (pixel & rgb_mask == color) continue;
+            }
+            target_row[@intCast(px)] = pixel;
         }
     }
 }

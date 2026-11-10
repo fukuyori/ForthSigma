@@ -671,6 +671,8 @@ pub const Builtin = enum {
     gfx_copy,
     gfx_image_load,
     gfx_mouse_event,
+    gfx_pixel,
+    gfx_tilemap,
 };
 
 pub const HeapResult = union(enum) { address: Cell, no_memory, bad_pointer };

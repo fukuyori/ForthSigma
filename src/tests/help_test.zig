@@ -62,6 +62,16 @@ test "HELP has a description for every built-in word, and only for words that ex
             }
         }
     }
+    // The game library's words.
+    if (@import("build_options").graphics) {
+        try machine.interpretLine("REQUIRE-GAME ALSO GAME");
+        for (@import("../core/words_game.zig").library_words) |name| {
+            if (machine.lookup(name) == null or words_help.entry(name) == null) {
+                std.debug.print("game library word without help or definition: {s}\n", .{name});
+                return error.TestExpectedEqual;
+            }
+        }
+    }
     // The same for the SND- words and the audio library.
     if (@import("build_options").audio) {
         try machine.interpretLine("REQUIRE-AUDIO ALSO AUDIO");
@@ -79,7 +89,7 @@ test "HELP has a description for every built-in word, and only for words that ex
         }
     }
     // The parser handles these without dictionary entries.
-    const parser_words = [_][]const u8{ "(", "\\", ".(", "[", "]", "[']", "CHAR", "[CHAR]", "POSTPONE", "TO", "IS", "+TO", "ACTION-OF", ":NONAME", "{", "{:", "LOCALS|", "S\"", "S\\\"", ".\"", ".\\\"", "\"", "C\"", "ABORT\"", "FORGET", "REQUIRE-GRAPHICS", "REQUIRE-GUI", "REQUIRE-AUDIO" };
+    const parser_words = [_][]const u8{ "(", "\\", ".(", "[", "]", "[']", "CHAR", "[CHAR]", "POSTPONE", "TO", "IS", "+TO", "ACTION-OF", ":NONAME", "{", "{:", "LOCALS|", "S\"", "S\\\"", ".\"", ".\\\"", "\"", "C\"", "ABORT\"", "FORGET", "REQUIRE-GRAPHICS", "REQUIRE-GUI", "REQUIRE-GAME", "REQUIRE-AUDIO" };
     for (words_help.help_entries, 0..) |entry, index| {
         const known = machine.lookup(entry.name) != null or for (parser_words) |parser_word| {
             if (std.mem.eql(u8, parser_word, entry.name)) break true;

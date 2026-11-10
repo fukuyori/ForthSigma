@@ -260,6 +260,43 @@ VARIABLE SOUND-ON   CREATE NAME 16 ALLOT  VARIABLE NAME-LEN
 
 `GUI-BORDER-WIDTH` ( n -- ) と `GUI-FOCUS-WIDTH` ( n -- ) で、枠とフォーカスの枠の太さを0〜8画素で設定します（初めは1）。ほかの値は `NUMBER ERROR !` です。文字は `TEXT` の字体と倍率を使い、部品の大きさは `TEXT-HEIGHT` に合わせます。入力欄は、カーソルが見える位置から文字を表示します。日本語入力（IME）での動作は試していません。ほかのグラフィックスの語と同じく、GUI は辞書の外に何も持たず、設定とプログラムの変数の値は辞書と一緒に保存されます。
 
+### スプライトとタイルマップ
+
+`REQUIRE-GAME` はゲーム用の語を `GAME` 語彙に読み込みます（グラフィックスの語が読み込まれていなければ、先に読み込みます）。`ALSO GAME` で使えるようになります。語は、プログラムが作って持つデータを扱う小さな Forth の語です。スプライトと地図は辞書の中の構造体で、`SPRITE:` か `TILEMAP:` で作ります（配列なら `/SPRITE` バイトの領域に `INIT-SPRITE`）。そのフィールドは、プログラムが `@` と `!` で読み書きします。何をいつ動かし、描き、調べるかはプログラムのループが決め、ライブラリがプログラムを呼び返すことはありません。
+
+| 語 | スタック | 動作 |
+|---|---|---|
+| `SPRITE:` | ( img sx sy w h "name" -- ) | 画像 img の sx sy にある w×h の長方形を表示するスプライトを定義します。位置は0 0、表示する、1コマ、反転なし、透明色なしで始まります。name はそのアドレスを返します。 |
+| `INIT-SPRITE` | ( img sx sy w h spr -- ) | 同じことを spr の `/SPRITE` バイトに行います。配列で使います: `CREATE ENEMIES 8 /SPRITE * ALLOT`。 |
+| `PUT-SPRITE` | ( x y spr -- ) | スプライトを x y に置きます。 |
+| `SPRITE-ANIM` | ( n delay spr -- ) | 最初のコマの右に並んだ n コマのアニメーション。各コマを `ANIMATE` の delay 回分表示します。 |
+| `ANIMATE` | ( spr -- ) | アニメーションを1段進めます。 |
+| `DRAW-SPRITE` | ( spr -- ) | 表示するスプライトを、コマ、反転、透明色に従って描画先に描きます。 |
+| `HIT?` | ( spr1 spr2 -- flag ) | 表示する2つのスプライトの長方形が重なっているか。 |
+| `PIXEL-HIT?` | ( spr1 spr2 -- flag ) | 表示する2つのスプライトが、同じ場所に画素を表示しているか（透明色は除きます）。 |
+| `SPRITE-PIXEL?` | ( x y spr -- flag ) | スプライトが x y に画素を表示しているか。 |
+| `TILEMAP:` | ( img tw th cols rows "name" -- ) | cols×rows タイルの地図を定義します（すべてタイル0）。タイル n は、画像 img の左上から行に沿って n 枚目の tw×th の長方形です。name はそのアドレスを返します。 |
+| `TILE@`、`TILE!` | ( col row map -- n )、( n col row map -- ) | タイル（0〜255）を読む、設定する。地図の外は `NUMBER ERROR !`。 |
+| `>TILE` | ( x y map -- col row ) | 地図の画素 x y の下にあるタイル。 |
+| `DRAW-TILEMAP` | ( sx sy x y w h map -- ) | 描画先の x y にある w×h の長方形に、地図をその画素 sx sy から見た絵を描きます。描くのはその長方形だけで、その中のタイルだけを計算します。地図の外と、地図の透明色の画素は、元のままにします。 |
+
+スプライトのフィールド（それぞれアドレスを返します）は、`SPRITE-X`、`SPRITE-Y`、`SPRITE-IMAGE`、`SPRITE-SX`、`SPRITE-SY`、`SPRITE-W`、`SPRITE-H`、`SPRITE-FRAMES`、`SPRITE-FRAME`、`SPRITE-DELAY`、`SPRITE-TICK`、`SPRITE-FLIP`（`IMAGE-FLIP` と同じ）、`SPRITE-KEY`（透明色、なしは -1）、`SPRITE-SHOWN` です。地図のフィールドは `TILEMAP-IMAGE`、`TILEMAP-TW`、`TILEMAP-TH`、`TILEMAP-COLS`、`TILEMAP-ROWS`、`TILEMAP-KEY` で、タイルのバイトは行ごとに `TILEMAP-DATA` ( map -- addr ) にあります。Amiga のような2枚の背景は、2つの地図で作ります。奥の地図を描き、次に手前の地図を透明色付きで描きます。スクロールは sx と sy を変えるだけです。
+
+```forth
+REQUIRE-GAME  ALSO GRAPHICS ALSO GAME
+256 192 GFX-INIT
+S" tiles.png" LOAD-IMAGE CONSTANT SHEET
+SHEET 16 16 32 12 TILEMAP: LEVEL
+SHEET 0 32 16 16 SPRITE: HERO   4 6 HERO SPRITE-ANIM
+VARIABLE SCROLL
+: STEP ( -- )
+   1 SCROLL +!  HERO ANIMATE
+   SCROLL @ 0  0 0 256 192 LEVEL DRAW-TILEMAP
+   HERO DRAW-SPRITE  SHOW 16 FRAME ;
+```
+
+下にある語は、任意の画像の画素の色を返す `GFX-PIXEL` ( img x y -- rgb | -1 ) と、任意のアドレスにあるタイルのバイトの地図を描く `GFX-TILEMAP` ( addr cols rows img tw th sx sy x y w h key -- ) です。構造体は辞書にあるので、`SAVE` と `SAVESYS` で保存されます。ただし、画像のハンドルは復元の後は無効なので、プログラムは起動後に画像を作り、`SPRITE-IMAGE` と `TILEMAP-IMAGE` を設定し直します。
+
 ### 数学座標と関数のグラフ
 
 浮動小数点数の語がある版では、ライブラリは数学の座標でも描けます（`src/graphics/graphics_float.fs`。`-Dfloat=false` の版には、これらの語はありません）。`X-RANGE` と `Y-RANGE` で、画像に平面のどの部分を映すかを決めます。x は左端から右端へ向かって増え、y は下端から上端へ向かって増えます。どちらも初めは -1 から 1 です。点は、いちばん近い画素に描きます。
