@@ -21,29 +21,56 @@ const max_wordlists = memory_map.max_wordlists;
 const wordlist_count_address = memory_map.wordlist_count_address;
 
 /// One word group. `definitions` lists its built-in words, as { name, Builtin }, in the
-/// order they are appended: the order is part of the dictionary that images keep.
+/// order they are appended: the order is part of the dictionary that images keep. A
+/// group may have none, and be a library of Forth only.
 pub fn Group(comptime Definition: type) type {
     return struct {
         vocabulary: []const u8,
         definitions: []const Definition,
         /// The library's name in the source file table, for LOCATE and error messages.
         library_name: []const u8,
-        /// The cell that keeps the vocabulary's word number, and the cell that says the
-        /// group was loaded (the image's format then changes).
+        /// The cell that keeps the vocabulary's word number.
         vocabulary_address: Cell,
-        image_address: Cell,
+        /// The cell that says the group was loaded, for a group whose built-in words
+        /// change the image's format; null for a group without built-in words, whose
+        /// images any build with its prerequisites reads.
+        image_address: ?Cell = null,
+        /// Groups loaded first; the library finds their words, after its own.
+        prerequisites: []const Prerequisite = &.{},
     };
 }
 
+/// A group another group needs: how to load it, and the cell of its vocabulary.
+pub const Prerequisite = struct {
+    require: *const fn (*State) RuntimeError!void,
+    vocabulary_address: Cell,
+};
+
 /// Whether the group was loaded and is still in the dictionary (FORGET and MARKER can
-/// remove it): its vocabulary, followed by its first built-in word.
-pub fn isLoaded(self: *const State, vocabulary_address: Cell, first: Builtin) bool {
-    const recorded = self.readCellConst(vocabulary_address);
+/// remove it): its vocabulary, followed by its first built-in word, or, for a library of
+/// Forth only, by a word the library defined.
+pub fn isLoaded(self: *const State, comptime group: anytype) bool {
+    const recorded = self.readCellConst(group.vocabulary_address);
     // Compared before adding 1, since the cell may hold any value.
     if (recorded < self.builtin_count or recorded >= @as(Cell, self.word_count) - 1) return false;
     const vocabulary = self.words[@intCast(recorded)];
     const word = self.words[@intCast(recorded + 1)];
-    return vocabulary.kind == .vocabulary and word.kind == .builtin and word.builtin == first;
+    if (vocabulary.kind != .vocabulary) return false;
+    if (comptime group.definitions.len != 0) return word.kind == .builtin and word.builtin == group.definitions[0][1];
+    return word.kind != .builtin and isGroupWord(self, word, group.library_name);
+}
+
+/// LOAD: the group of an appended image counts as loaded here too, at its vocabulary's
+/// new number, unless this dictionary had it already (`was_loaded`, taken before the
+/// words were appended). `word_base` is where the image's first word went.
+pub fn appendLoaded(self: *State, source: *const State, comptime group: anytype, was_loaded: bool, word_base: usize) RuntimeError!void {
+    if (group.image_address) |address| {
+        if (source.readCellConst(address) != 0) try self.writeCell(address, 1);
+    }
+    if (!was_loaded and isLoaded(source, group)) {
+        const vocabulary = source.readCellConst(group.vocabulary_address) - source.builtin_count;
+        try self.writeCell(group.vocabulary_address, @as(Cell, @intCast(word_base)) + vocabulary);
+    }
 }
 
 /// Whether a word is one the group added: one of its built-in words (any built-in word
@@ -58,7 +85,9 @@ pub fn isGroupWord(self: *const State, word: defs.Word, library_name: []const u8
 
 pub fn require(self: *State, comptime group: anytype, library: []const u8) RuntimeError!void {
     if (self.defining) return error.InvalidDefinition;
-    if (isLoaded(self, group.vocabulary_address, group.definitions[0][1])) return;
+    if (isLoaded(self, group)) return;
+    // The groups it needs stay loaded, also when this one fails.
+    inline for (group.prerequisites) |prerequisite| try prerequisite.require(self);
     const wordlists = self.wordlistCount();
     if (wordlists == max_wordlists) return error.DictionaryFull;
     var order_buffer: [max_search_order]Cell = undefined;
@@ -103,7 +132,7 @@ pub fn require(self: *State, comptime group: anytype, library: []const u8) Runti
     self.writeCell(current_wordlist_address, current) catch unreachable;
     self.setSearchOrder(order[0..depth]);
     self.writeCell(group.vocabulary_address, first_word) catch unreachable;
-    self.writeCell(group.image_address, 1) catch unreachable;
+    if (group.image_address) |address| self.writeCell(address, 1) catch unreachable;
 }
 
 fn loadWords(self: *State, comptime group: anytype, library: []const u8, wid: Cell) RuntimeError!void {
@@ -112,13 +141,19 @@ fn loadWords(self: *State, comptime group: anytype, library: []const u8, wid: Ce
     try self.writeCell(wordlist_count_address, wid);
     try self.writeCell(current_wordlist_address, wid);
     for (group.definitions) |definition| _ = try self.appendWord(definition[0], .builtin, definition[1], 0);
-    // The library defines into the vocabulary and finds the built-in words first.
+    // The library defines into the vocabulary and finds the built-in words first, then
+    // the words of the groups it needs.
     var order_buffer: [max_search_order]Cell = undefined;
     const order = self.searchOrder(&order_buffer);
-    if (order.len == max_search_order) return error.SearchOrderOverflow;
+    const added = 1 + group.prerequisites.len;
+    if (order.len + added > max_search_order) return error.SearchOrderOverflow;
     var library_order: [max_search_order]Cell = undefined;
     library_order[0] = wid;
-    @memcpy(library_order[1 .. order.len + 1], order);
-    self.setSearchOrder(library_order[0 .. order.len + 1]);
+    inline for (group.prerequisites, 1..) |prerequisite, index| {
+        const vocabulary = self.readCellConst(prerequisite.vocabulary_address);
+        library_order[index] = self.words[@intCast(vocabulary)].value;
+    }
+    @memcpy(library_order[added .. order.len + added], order);
+    self.setSearchOrder(library_order[0 .. order.len + added]);
     try self.includeEmbedded(group.library_name, library);
 }

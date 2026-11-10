@@ -52,7 +52,7 @@ pub const library = @embedFile("../audio/audio.fs");
 /// The name the library has in the source file table, for LOCATE and error messages.
 pub const library_name = "*audio library*";
 
-const group: library_loading.Group(@TypeOf(definitions[0])) = .{
+pub const group: library_loading.Group(@TypeOf(definitions[0])) = .{
     .vocabulary = "AUDIO",
     .definitions = &definitions,
     .library_name = library_name,
@@ -69,7 +69,7 @@ pub fn requireAudio(self: *State) RuntimeError!void {
 
 /// Whether REQUIRE-AUDIO has loaded the audio words and they are still in the dictionary.
 pub fn audioLoaded(self: *const State) bool {
-    return library_loading.isLoaded(self, memory_map.audio_vocabulary_address, definitions[0][1]);
+    return library_loading.isLoaded(self, group);
 }
 
 /// Whether a word is one REQUIRE-AUDIO added (HELP describes these).

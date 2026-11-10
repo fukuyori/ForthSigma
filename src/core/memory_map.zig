@@ -214,6 +214,11 @@ pub const graphics_image_address: Cell = 0x02d8;
 pub const audio_vocabulary_address: Cell = 0x02e0;
 pub const audio_image_address: Cell = 0x02e8;
 
+/// The word numbers of the GUI and GAME vocabularies that REQUIRE-GUI and REQUIRE-GAME
+/// make, or 0. Their libraries are Forth only, so no cell marks the image's format.
+pub const gui_vocabulary_address: Cell = 0x02f0;
+pub const game_vocabulary_address: Cell = 0x02f8;
+
 /// Words that are also in the Root word list, so they stay usable after ONLY.
 pub const root_word_names = [_][]const u8{ "FORTH", "FORTH-WORDLIST", "ONLY", "ALSO", "PREVIOUS", "ORDER", "DEFINITIONS", "GET-ORDER", "SET-ORDER", "WORDS" };
 

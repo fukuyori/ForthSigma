@@ -532,10 +532,10 @@ pub fn isGraphicsWord(self: *const State, word: defs.Word) bool {
 /// Whether REQUIRE-GRAPHICS has loaded the graphics words and they are still in the
 /// dictionary (FORGET and MARKER can remove them).
 pub fn graphicsLoaded(self: *const State) bool {
-    return library_loading.isLoaded(self, graphics_vocabulary_address, definitions[0][1]);
+    return library_loading.isLoaded(self, group);
 }
 
-const group: library_loading.Group(@TypeOf(definitions[0])) = .{
+pub const group: library_loading.Group(@TypeOf(definitions[0])) = .{
     .vocabulary = "GRAPHICS",
     .definitions = &definitions,
     .library_name = library_name,

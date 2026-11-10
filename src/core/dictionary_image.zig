@@ -8,6 +8,7 @@ const forth = @import("../forth.zig");
 const memory_map = @import("memory_map.zig");
 const words_graphics = @import("words_graphics.zig");
 const words_audio = @import("words_audio.zig");
+const library_loading = @import("library_loading.zig");
 const Cell = memory_map.Cell;
 const Op = defs.Op;
 const RuntimeError = defs.RuntimeError;
@@ -424,14 +425,6 @@ pub fn appendImage(self: *State, source: *const State) RuntimeError!void {
     self.last_created_word = null;
     // The loaded image's graphics words count as loaded here too, unless this dictionary
     // has its own; either way, images saved from now on are SIGIMG43.
-    if (source.readCellConst(graphics_image_address) != 0) try self.writeCell(graphics_image_address, 1);
-    if (!graphics_loaded and words_graphics.graphicsLoaded(source)) {
-        const vocabulary = source.readCellConst(graphics_vocabulary_address) - source.builtin_count;
-        try self.writeCell(graphics_vocabulary_address, @as(Cell, @intCast(word_base)) + vocabulary);
-    }
-    if (source.readCellConst(memory_map.audio_image_address) != 0) try self.writeCell(memory_map.audio_image_address, 1);
-    if (!audio_loaded and words_audio.audioLoaded(source)) {
-        const vocabulary = source.readCellConst(memory_map.audio_vocabulary_address) - source.builtin_count;
-        try self.writeCell(memory_map.audio_vocabulary_address, @as(Cell, @intCast(word_base)) + vocabulary);
-    }
+    try library_loading.appendLoaded(self, source, words_graphics.group, graphics_loaded, word_base);
+    try library_loading.appendLoaded(self, source, words_audio.group, audio_loaded, word_base);
 }
