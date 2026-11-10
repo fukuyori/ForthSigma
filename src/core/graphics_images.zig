@@ -74,8 +74,12 @@ pub fn execute(self: *State, builtin: Builtin) RuntimeError!void {
         },
         .gfx_target_query => try self.push(self.gfx_target),
         .gfx_copy => {
-            const flip = try self.pop();
-            const key = try self.pop();
+            var style: Style = undefined;
+            style.scale = try self.pop();
+            style.alpha = try self.pop();
+            style.mode = try self.pop();
+            style.flip = try self.pop();
+            style.key = try self.pop();
             const dy = try self.pop();
             const dx = try self.pop();
             const h = try self.pop();
@@ -83,7 +87,7 @@ pub fn execute(self: *State, builtin: Builtin) RuntimeError!void {
             const sy = try self.pop();
             const sx = try self.pop();
             const source = try self.pop();
-            try copyRect(self, source, sx, sy, w, h, dx, dy, key, flip);
+            try copyRect(self, source, sx, sy, w, h, dx, dy, style);
         },
         .gfx_image_load => {
             const key = try self.pop();
@@ -193,37 +197,50 @@ pub fn releaseAll(self: *State) void {
     self.gfx_target = screen;
 }
 
-/// Copies the w × h rectangle at sx sy of image `source` to dx dy of the image drawn on.
-/// `key` is the transparent color (pixels of that color are not copied) or negative for
-/// none; `flip` 1 flips left and right, 2 top and bottom, 3 both. Parts outside either
-/// image are left out. Within one image the rectangles may overlap, but not when flipped.
-fn copyRect(self: *State, source: Cell, sx: Cell, sy: Cell, w: Cell, h: Cell, dx: Cell, dy: Cell, key: Cell, flip: Cell) RuntimeError!void {
-    if (flip < 0 or flip > 3) return error.InvalidNumber;
+/// How COPY-RECT puts the pixels: the transparent color (negative for none), the flip
+/// (1 left and right, 2 top and bottom, 3 both), the mode, the opacity of mode 3 (0 to
+/// 255), and the scale (1 to `max_scale`).
+const Style = struct { key: Cell, flip: Cell, mode: Cell, alpha: Cell, scale: Cell };
+
+pub const max_scale = 16;
+
+const Mode = enum(u2) { copy, xor, add, blend };
+
+/// Copies the w × h rectangle at sx sy of image `source` to dx dy of the image drawn on,
+/// made `scale` times as large. Parts outside either image are left out. Within one image
+/// the rectangles may overlap, but not when flipped or scaled.
+fn copyRect(self: *State, source: Cell, sx: Cell, sy: Cell, w: Cell, h: Cell, dx: Cell, dy: Cell, style: Style) RuntimeError!void {
+    if (style.flip < 0 or style.flip > 3 or style.mode < 0 or style.mode > 3 or style.alpha < 0 or style.alpha > 255) return error.InvalidNumber;
+    if (style.scale < 1 or style.scale > max_scale) return error.InvalidNumber;
     const from = try canvasOf(self, source);
     const to = try target(self);
     if (w <= 0 or h <= 0) return;
-    const flip_x = flip & 1 != 0;
-    const flip_y = flip & 2 != 0;
+    const scale: i128 = style.scale;
+    const flip_x = style.flip & 1 != 0;
+    const flip_y = style.flip & 2 != 0;
+    const mode: Mode = @enumFromInt(style.mode);
     const same = from.pixels.ptr == to.pixels.ptr;
-    if (same and flip != 0 and overlaps(sx, sy, dx, dy, w, h)) return error.InvalidNumber;
-    // The columns i (0 to w) whose places in both images are inside them; in 128 bits,
-    // since the numbers come from the program.
-    const columns = range(w, dx, to.width, sx, from.width, flip_x) orelse return;
-    const rows = range(h, dy, to.height, sy, from.height, flip_y) orelse return;
-    const transparent: ?u32 = if (key < 0) null else @as(u32, @truncate(@as(u64, @bitCast(key)))) & rgb_mask;
-    // Within one image, rows and columns go the way that reads each pixel before it is
-    // written over, as memmove does.
+    if (same and (style.flip != 0 or scale != 1) and overlaps(sx, sy, dx, dy, w, h, scale)) return error.InvalidNumber;
+    // The places of the rectangle on the image drawn on, from 0 to w × scale, whose places
+    // in both images are inside them; in 128 bits, since the numbers come from the program.
+    const columns = range(w, scale, dx, to.width, sx, from.width, flip_x) orelse return;
+    const rows = range(h, scale, dy, to.height, sy, from.height, flip_y) orelse return;
+    const transparent: ?u32 = if (style.key < 0) null else @as(u32, @truncate(@as(u64, @bitCast(style.key)))) & rgb_mask;
+    const alpha: u32 = @intCast(style.alpha);
+    // Within one image (not flipped, not scaled), rows and columns go the way that reads
+    // each pixel before it is written over, as memmove does.
     const rows_backward = same and dy > sy;
     const columns_backward = same and dx > sx;
+    const plain = !flip_x and scale == 1 and transparent == null and mode == .copy;
     var step: usize = 0;
     while (step < rows.count) : (step += 1) {
         const j = rows.offset(if (rows_backward) rows.count - 1 - step else step);
-        const source_y = coordinate(sy, h, j, flip_y);
+        const source_y = coordinate(sy, h, @divFloor(j, scale), flip_y);
         // Inside the image, so it fits a usize also on a 32-bit host.
         const target_y: usize = @intCast(dy + j);
         const source_row = from.pixels[source_y * from.width ..][0..from.width];
         const target_row = to.pixels[target_y * to.width ..][0..to.width];
-        if (!flip_x and transparent == null) {
+        if (plain) {
             const first_x: usize = @intCast(dx + columns.first);
             const first_source = coordinate(sx, w, columns.first, false);
             const into = target_row[first_x..][0..columns.count];
@@ -233,52 +250,84 @@ fn copyRect(self: *State, source: Cell, sx: Cell, sy: Cell, w: Cell, h: Cell, dx
         }
         var column: usize = 0;
         while (column < columns.count) : (column += 1) {
-            const i = columns.offset(if (columns_backward and !flip_x) columns.count - 1 - column else column);
-            const pixel = source_row[coordinate(sx, w, i, flip_x)];
+            const i = columns.offset(if (columns_backward and !flip_x and scale == 1) columns.count - 1 - column else column);
+            const pixel = source_row[coordinate(sx, w, @divFloor(i, scale), flip_x)];
             if (transparent) |color| {
                 if (pixel & rgb_mask == color) continue;
             }
-            target_row[@intCast(dx + i)] = pixel;
+            const place: usize = @intCast(dx + i);
+            target_row[place] = combine(mode, alpha, target_row[place], pixel);
         }
     }
 }
 
-/// Offsets of the rectangle, from `first`; `first` may be as large as the rectangle (near
-/// 2^63), but `count` is at most a side of an image.
+/// A pixel of the source put on one of the image drawn on.
+fn combine(mode: Mode, alpha: u32, under: u32, over: u32) u32 {
+    return switch (mode) {
+        .copy => over,
+        .xor => opaque_black | ((under ^ over) & rgb_mask),
+        .add => blk: {
+            var result: u32 = opaque_black;
+            inline for (.{ 0, 8, 16 }) |shift| {
+                const sum = ((under >> shift) & 0xff) + ((over >> shift) & 0xff);
+                result |= @as(u32, @min(sum, 255)) << shift;
+            }
+            break :blk result;
+        },
+        .blend => blk: {
+            var result: u32 = opaque_black;
+            inline for (.{ 0, 8, 16 }) |shift| {
+                const mixed = (((over >> shift) & 0xff) * alpha + ((under >> shift) & 0xff) * (255 - alpha) + 127) / 255;
+                result |= mixed << shift;
+            }
+            break :blk result;
+        },
+    };
+}
+
+/// Places of the rectangle on the image drawn on, from `first`. `first` may be as large
+/// as the rectangle (beyond 2^63 when scaled), but `count` is at most a side of an image.
 const Span = struct {
-    first: Cell,
+    first: i128,
     count: usize,
 
-    fn offset(span: Span, step: usize) Cell {
-        return span.first + @as(Cell, @intCast(step));
+    fn offset(span: Span, step: usize) i128 {
+        return span.first + step;
     }
 };
 
 /// The source column (or row) that offset i of the rectangle copies.
-fn coordinate(start: Cell, size: Cell, i: Cell, flipped: bool) usize {
+fn coordinate(start: Cell, size: Cell, i: i128, flipped: bool) usize {
     return @intCast(if (flipped) @as(i128, start) + size - 1 - i else @as(i128, start) + i);
 }
 
-/// The offsets i, from 0 to `size`, with `to_start + i` inside 0 to `to_size` and the
-/// source place inside 0 to `from_size`; null when there are none.
-fn range(size: Cell, to_start: Cell, to_size: usize, from_start: Cell, from_size: usize, flipped: bool) ?Span {
+/// The places p, from 0 to `size` × `scale`, with `to_start + p` inside 0 to `to_size`
+/// and the source place of p ÷ `scale` inside 0 to `from_size`; null when there are none.
+fn range(size: Cell, scale: i128, to_start: Cell, to_size: usize, from_start: Cell, from_size: usize, flipped: bool) ?Span {
     const n: i128 = size;
     var first: i128 = @max(0, -@as(i128, to_start));
-    var last: i128 = @min(n, @as(i128, @intCast(to_size)) - to_start);
+    var last: i128 = @min(n * scale, @as(i128, @intCast(to_size)) - to_start);
+    // The offsets q = p ÷ scale of the source that are inside it, from low to high.
+    var low: i128 = undefined;
+    var high: i128 = undefined;
     if (flipped) {
-        // from_start + size - 1 - i inside 0 to from_size.
-        first = @max(first, @as(i128, from_start) + n - @as(i128, @intCast(from_size)));
-        last = @min(last, @as(i128, from_start) + n);
+        // from_start + size - 1 - q inside 0 to from_size.
+        low = @as(i128, from_start) + n - @as(i128, @intCast(from_size));
+        high = @as(i128, from_start) + n;
     } else {
-        first = @max(first, -@as(i128, from_start));
-        last = @min(last, @as(i128, @intCast(from_size)) - from_start);
+        low = -@as(i128, from_start);
+        high = @as(i128, @intCast(from_size)) - from_start;
     }
+    first = @max(first, low * scale);
+    last = @min(last, high * scale);
     if (first >= last) return null;
-    return .{ .first = @intCast(first), .count = @intCast(last - first) };
+    return .{ .first = first, .count = @intCast(last - first) };
 }
 
-fn overlaps(sx: Cell, sy: Cell, dx: Cell, dy: Cell, w: Cell, h: Cell) bool {
-    const apart_x = @as(i128, dx) >= @as(i128, sx) + w or @as(i128, sx) >= @as(i128, dx) + w;
-    const apart_y = @as(i128, dy) >= @as(i128, sy) + h or @as(i128, sy) >= @as(i128, dy) + h;
+/// Whether the source rectangle and the place it is copied to (`scale` times as large)
+/// share a pixel.
+fn overlaps(sx: Cell, sy: Cell, dx: Cell, dy: Cell, w: Cell, h: Cell, scale: i128) bool {
+    const apart_x = @as(i128, dx) >= @as(i128, sx) + w or @as(i128, sx) >= @as(i128, dx) + w * scale;
+    const apart_y = @as(i128, dy) >= @as(i128, sy) + h or @as(i128, sy) >= @as(i128, dy) + h * scale;
     return !apart_x and !apart_y;
 }

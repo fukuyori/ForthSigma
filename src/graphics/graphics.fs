@@ -497,7 +497,7 @@ VARIABLE (TEXT-SCALE)  1 (TEXT-SCALE) !
 \ (INVALID IMAGE HANDLE, THROW -278).
 \   GFX-IMAGE-NEW ( w h -- img )  GFX-IMAGE-FREE ( img -- )  GFX-IMAGE-SIZE ( img -- w h )
 \   GFX-TARGET ( img -- )  GFX-TARGET@ ( -- img )
-\   GFX-COPY ( src sx sy w h dx dy key flip -- )
+\   GFX-COPY ( src sx sy w h dx dy key flip mode alpha scale -- )
 0 CONSTANT SCREEN
 : NEW-IMAGE ( w h -- img )   GFX-IMAGE-NEW ;
 : FREE-IMAGE ( img -- )   GFX-IMAGE-FREE ;
@@ -512,7 +512,18 @@ VARIABLE (FLIP)  0 (FLIP) !
 \ How COPY-RECT and PUT-IMAGE flip: 0 not, 1 left and right, 2 top and bottom, 3 both.
 : IMAGE-FLIP ( n -- )   DUP 0 4 WITHIN 0= IF DROP -24 THROW THEN (FLIP) ! ;
 \ Copy the w by h rectangle at sx sy of image src to dx dy of the image drawn on.
-: COPY-RECT ( src sx sy w h dx dy -- )   (TRANSPARENT) @ (FLIP) @ GFX-COPY ;
+VARIABLE (MODE)  0 (MODE) !
+VARIABLE (ALPHA)  128 (ALPHA) !
+VARIABLE (SCALE)  1 (SCALE) !
+\ How COPY-RECT and PUT-IMAGE put the pixels: 0 over those there, 1 XOR, 2 added (each
+\ color at most 255), 3 mixed with them by IMAGE-ALPHA.
+: IMAGE-MODE ( n -- )   DUP 0 4 WITHIN 0= IF DROP -24 THROW THEN (MODE) ! ;
+\ How much of the copy mode 3 shows, 0 (none) to 255 (all); 128 at the start.
+: IMAGE-ALPHA ( n -- )   DUP 0 256 WITHIN 0= IF DROP -24 THROW THEN (ALPHA) ! ;
+\ COPY-RECT and PUT-IMAGE draw each pixel n by n, 1 to 16.
+: IMAGE-SCALE ( n -- )   DUP 1 17 WITHIN 0= IF DROP -24 THROW THEN (SCALE) ! ;
+: COPY-RECT ( src sx sy w h dx dy -- )
+   (TRANSPARENT) @ (FLIP) @ (MODE) @ (ALPHA) @ (SCALE) @ GFX-COPY ;
 \ Copy the whole image src to x y of the image drawn on.
 : PUT-IMAGE { src x y | w h -- }   src IMAGE-SIZE TO h TO w  src 0 0 w h x y COPY-RECT ;
 \ Read a PNG, BMP, or PPM/PGM file into a new image. Pixels more than half transparent

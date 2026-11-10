@@ -176,7 +176,7 @@ test "TRANSPARENT leaves out a color, and IMAGE-FLIP flips the copy" {
     machine.data_depth = 0;
     try std.testing.expectError(error.InvalidNumber, machine.interpretLine("-1 IMAGE-FLIP"));
     machine.data_depth = 0;
-    try std.testing.expectError(error.InvalidNumber, machine.interpretLine("S 0 0 1 1 0 0 -1 4 GFX-COPY"));
+    try std.testing.expectError(error.InvalidNumber, machine.interpretLine("S 0 0 1 1 0 0 -1 4 0 128 1 GFX-COPY"));
     machine.data_depth = 0;
 }
 
@@ -225,4 +225,60 @@ test "a host without the pool refuses NEW-IMAGE" {
     machine.writer.image_alloc_fn = null;
     try std.testing.expectError(error.HostUnavailable, machine.interpretLine("1 1 NEW-IMAGE"));
     machine.data_depth = 0;
+}
+
+test "IMAGE-MODE puts the pixels over, XORed, added, or mixed by IMAGE-ALPHA" {
+    try skipWithout(&.{.graphics});
+    var output = Output{};
+    const machine = try imageMachine(&output, "2 1");
+    defer destroyMachine(machine);
+    try machine.interpretLine("2 1 NEW-IMAGE CONSTANT S  S DRAW-TO  0 0 $F0A050 GFX-PSET  1 0 $204060 GFX-PSET  SCREEN DRAW-TO");
+    try machine.interpretLine("$103090 GFX-CLS 1 IMAGE-MODE S 0 0 PUT-IMAGE");
+    try expectPixels(machine, &.{ 0xF0A050 ^ 0x103090, 0x204060 ^ 0x103090 });
+    try machine.interpretLine("$103090 GFX-CLS 2 IMAGE-MODE S 0 0 PUT-IMAGE");
+    // Each color at most 255.
+    try expectPixels(machine, &.{ 0xFFD0E0, 0x3070F0 });
+    try machine.interpretLine("$103090 GFX-CLS 3 IMAGE-MODE S 0 0 PUT-IMAGE");
+    // 128 at the start: (over * 128 + under * 127 + 127) / 255 for each color.
+    try expectPixels(machine, &.{ 0x806870, 0x183878 });
+    try machine.interpretLine("$103090 GFX-CLS 0 IMAGE-ALPHA S 0 0 PUT-IMAGE");
+    try expectPixels(machine, &.{ 0x103090, 0x103090 });
+    try machine.interpretLine("255 IMAGE-ALPHA S 0 0 PUT-IMAGE");
+    try expectPixels(machine, &.{ 0xF0A050, 0x204060 });
+    // The transparent color is left out before the mode.
+    try machine.interpretLine("$103090 GFX-CLS 2 IMAGE-MODE $204060 TRANSPARENT S 0 0 PUT-IMAGE -1 TRANSPARENT 0 IMAGE-MODE");
+    try expectPixels(machine, &.{ 0xFFD0E0, 0x103090 });
+    for ([_][]const u8{ "4 IMAGE-MODE", "-1 IMAGE-MODE", "256 IMAGE-ALPHA", "-1 IMAGE-ALPHA", "S 0 0 1 1 0 0 -1 0 4 0 1 GFX-COPY", "S 0 0 1 1 0 0 -1 0 0 256 1 GFX-COPY" }) |line| {
+        try std.testing.expectError(error.InvalidNumber, machine.interpretLine(line));
+        machine.data_depth = 0;
+    }
+}
+
+test "IMAGE-SCALE draws each pixel n by n, also flipped and cut at the edges" {
+    try skipWithout(&.{.graphics});
+    var output = Output{};
+    const machine = try imageMachine(&output, "5 4");
+    defer destroyMachine(machine);
+    try machine.interpretLine("2 1 NEW-IMAGE CONSTANT S  S DRAW-TO  0 0 1 GFX-PSET  1 0 2 GFX-PSET  SCREEN DRAW-TO");
+    try machine.interpretLine("2 IMAGE-SCALE S 1 1 PUT-IMAGE");
+    try expectPixels(machine, &.{ 0, 0, 0, 0, 0, 0, 1, 1, 2, 2, 0, 1, 1, 2, 2, 0, 0, 0, 0, 0 });
+    // Flipped, the blocks change places; cut at the left and the bottom.
+    try machine.interpretLine("0 GFX-CLS 1 IMAGE-FLIP 3 IMAGE-SCALE S -1 2 PUT-IMAGE 0 IMAGE-FLIP");
+    try expectPixels(machine, &.{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 2, 1, 1, 1, 2, 2, 1, 1, 1 });
+    // A part of the source, transparent, and mixed.
+    try machine.interpretLine("7 GFX-CLS 1 TRANSPARENT 2 IMAGE-SCALE S 0 0 2 1 0 0 COPY-RECT -1 TRANSPARENT");
+    try expectPixels(machine, &.{ 7, 7, 2, 2, 7, 7, 7, 2, 2, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7 });
+    // Sizes near 2^63 scaled: the places beyond 2^63 are reckoned without overflow.
+    try machine.interpretLine("0 GFX-CLS 16 IMAGE-SCALE S -9223372036854775804 0 9223372036854775807 1 -9223372036854775807 0 COPY-RECT 1 IMAGE-SCALE");
+    try expectPixels(machine, &.{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 });
+    for ([_][]const u8{ "0 IMAGE-SCALE", "17 IMAGE-SCALE", "S 0 0 1 1 0 0 -1 0 0 128 0 GFX-COPY", "S 0 0 1 1 0 0 -1 0 0 128 17 GFX-COPY" }) |line| {
+        try std.testing.expectError(error.InvalidNumber, machine.interpretLine(line));
+        machine.data_depth = 0;
+    }
+    // Scaled within one image onto an overlapping place is refused; apart, it is copied.
+    try machine.interpretLine("0 GFX-CLS 0 0 5 GFX-PSET 2 IMAGE-SCALE");
+    try std.testing.expectError(error.InvalidNumber, machine.interpretLine("SCREEN 0 0 1 1 0 0 COPY-RECT"));
+    machine.data_depth = 0;
+    try machine.interpretLine("SCREEN 0 0 1 1 3 2 COPY-RECT 1 IMAGE-SCALE");
+    try expectPixels(machine, &.{ 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 5, 0, 0, 0, 5, 5 });
 }
