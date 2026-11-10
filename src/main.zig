@@ -746,9 +746,10 @@ fn parseSize(text: []const u8, element: usize) ?usize {
     var end: usize = 0;
     while (end < text.len and std.ascii.isDigit(text[end])) end += 1;
     if (end == 0) return null;
-    const value = std.fmt.parseUnsigned(usize, text[0..end], 10) catch return null;
+    // In 64 bits, so that `T` can be written also on a 32-bit host.
+    const value = std.fmt.parseUnsigned(u64, text[0..end], 10) catch return null;
     const unit = text[end..];
-    const scale: usize = if (unit.len == 0 or std.mem.eql(u8, unit, "e"))
+    const scale: u64 = if (unit.len == 0 or std.mem.eql(u8, unit, "e"))
         element
     else if (std.mem.eql(u8, unit, "b"))
         1
@@ -762,7 +763,8 @@ fn parseSize(text: []const u8, element: usize) ?usize {
         1 << 40
     else
         return null;
-    return std.math.mul(usize, value, scale) catch null;
+    const bytes = std.math.mul(u64, value, scale) catch return null;
+    return std.math.cast(usize, bytes);
 }
 
 /// Reads the size options at the start of the arguments, as gforth does: `-d SIZE`,
@@ -1515,7 +1517,8 @@ test "parseSize reads sizes as gforth does" {
     try std.testing.expectEqual(@as(?usize, 64 << 10), parseSize("64k", 8));
     try std.testing.expectEqual(@as(?usize, 1 << 20), parseSize("1M", 8));
     try std.testing.expectEqual(@as(?usize, 1 << 30), parseSize("1G", 8));
-    try std.testing.expectEqual(@as(?usize, 1 << 40), parseSize("1T", 8));
+    // A size a 32-bit host cannot hold is not a size there.
+    try std.testing.expectEqual(std.math.cast(usize, @as(u64, 1) << 40), parseSize("1T", 8));
     for ([_][]const u8{ "1K", "1m", "1g", "1.5k", "abc", "", "-5", "1kb" }) |bad| {
         try std.testing.expectEqual(@as(?usize, null), parseSize(bad, 8));
     }

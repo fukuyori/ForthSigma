@@ -646,6 +646,9 @@ test "the sizes a machine may have, at their bounds" {
     try std.testing.expect(Sizes.validLayout((1 << 31) - 4096, 4096));
     try std.testing.expect(!Sizes.validLayout(1 << 31, 4096));
     try std.testing.expect(!Sizes.validLayout((1 << 31) - 2048, 4096));
+    // A large l alone also makes the sum too large (it wraps in 32 bits).
+    try std.testing.expect(!Sizes.validLayout(1 << 30, 3 << 30));
+    try std.testing.expect(!Sizes.validLayout(1 << 20, (1 << 32) - 8));
     // Each stack 16 to 2^27 elements.
     try std.testing.expect(Sizes.validStack(16));
     try std.testing.expect(!Sizes.validStack(15));

@@ -101,8 +101,9 @@ pub const Sizes = struct {
     pub fn validLayout(m: usize, l: usize) bool {
         if (m < min_memory_m or l < min_memory_l) return false;
         if (m % cell_size != 0 or l % cell_size != 0) return false;
-        if (m >= memory_limit / 2 or l >= memory_limit) return false;
-        return 2 * m + l < memory_limit;
+        // In 64 bits, so that the sum cannot wrap on a 32-bit host; a valid layout then
+        // fits a usize.
+        return 2 * @as(u64, m) + @as(u64, l) < memory_limit;
     }
 
     pub fn validStack(elements: usize) bool {

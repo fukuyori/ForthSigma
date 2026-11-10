@@ -1058,7 +1058,7 @@ test "half block output longer than the output buffer comes out whole" {
     const machine = try libraryMachine(&output, "80 10");
     defer destroyMachine(machine);
     // Every pixel differs from its neighbors, so every cell has two color escapes.
-    for (machine.gfx_pixels, 0..) |*value, index| value.* = 0xff000000 | @as(u32, @intCast(index * 2654435761 & 0xffffff));
+    for (machine.gfx_pixels, 0..) |*value, index| value.* = 0xff000000 | @as(u32, @intCast(index *% 2654435761 & 0xffffff));
     output.len = 0;
     try machine.interpretLine("GFX-SHOW-BLOCKS");
     const text = output.written();
