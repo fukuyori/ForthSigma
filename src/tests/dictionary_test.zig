@@ -276,7 +276,9 @@ test "a full name area is a full dictionary, and the words before still work" {
     const machine = try createMachine(&output);
     defer destroyMachine(machine);
 
-    // Names of 255 characters fill the name area long before the word limit.
+    // Names of 255 characters fill the name area long before the word limit, unless the
+    // build has few words for its name area (-Dwords, -Dnames-kib).
+    if (machine.names.len / 255 + 100 > machine.words.len) return error.SkipZigTest;
     var line: [300]u8 = undefined;
     var count: usize = 0;
     while (true) : (count += 1) {

@@ -34,13 +34,59 @@ pub fn lookup(self: *State, name: []const u8) ?u16 {
 
 /// Finds the newest word named `name` in one word list.
 pub fn lookupIn(self: *State, name: []const u8, wid: Cell) ?u16 {
-    var i = self.word_count;
-    while (i > 0) {
-        i -= 1;
-        const word = self.words[i];
-        if (word.wordlist == wid and word.name_len != 0 and asciiEqlIgnoreCase(self.wordName(word), name)) return i;
+    var id = self.name_heads[nameBucket(name)];
+    while (id != no_word) : (id = self.name_next[id]) {
+        const word = self.words[id];
+        if (word.wordlist == wid and word.name_len != 0 and asciiEqlIgnoreCase(self.wordName(word), name)) return id;
     }
     return null;
+}
+
+// The index of the names: a hash table whose buckets are chains of word numbers, newest
+// first, so that a chain gives the words of a name in the order the dictionary would
+// be searched. Every word is in it, also one without a name. Word numbers are below
+// 65535, so that value ends a chain.
+
+pub const name_buckets = 1 << 14;
+pub const no_word: u16 = std.math.maxInt(u16);
+
+comptime {
+    if (memory_map.max_words > no_word) @compileError("word numbers must stay below the end of a chain");
+}
+
+/// The bucket of a name; names that differ only in the case of ASCII letters share one,
+/// as lookup does not tell them apart (FNV-1a of the upper-case bytes).
+pub fn nameBucket(name: []const u8) usize {
+    var hash: u32 = 2166136261;
+    for (name) |byte| {
+        hash ^= std.ascii.toUpper(byte);
+        hash *%= 16777619;
+    }
+    return hash & (name_buckets - 1);
+}
+
+/// Puts word `id`, the newest word, at the head of its name's chain.
+pub fn indexWord(self: *State, id: u16) void {
+    const bucket = nameBucket(self.wordName(self.words[id]));
+    self.name_next[id] = self.name_heads[bucket];
+    self.name_heads[bucket] = id;
+}
+
+/// Takes word `id` and every later word out of the index, newest first, so that each
+/// is the head of its chain when it goes.
+pub fn unindexFrom(self: *State, id: u16) void {
+    var word = self.word_count;
+    while (word > id) {
+        word -= 1;
+        const bucket = nameBucket(self.wordName(self.words[word]));
+        if (self.name_heads[bucket] == word) self.name_heads[bucket] = self.name_next[word];
+    }
+}
+
+/// Makes the index again for the whole dictionary, after an image replaced or added words.
+pub fn rebuildIndex(self: *State) void {
+    @memset(&self.name_heads, no_word);
+    for (0..self.word_count) |id| indexWord(self, @intCast(id));
 }
 
 pub fn wordlistCount(self: *State) Cell {

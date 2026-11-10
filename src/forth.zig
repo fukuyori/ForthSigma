@@ -186,6 +186,10 @@ pub const State = struct {
     memory: []u8,
     words: [max_words]Word = undefined,
     word_count: u16 = 0,
+    /// The index of the names (wordlists.zig): for each bucket the newest word whose
+    /// name falls in it, and for each word the next older word of its bucket.
+    name_heads: [wordlists.name_buckets]u16 = @splat(wordlists.no_word),
+    name_next: [max_words]u16 = undefined,
     builtin_count: u16 = 0,
     code: [max_code]Op = undefined,
     code_count: u16 = 0,
@@ -633,6 +637,7 @@ pub const State = struct {
         if (kind == .colon) word.code_start = self.code_count;
         self.words[id] = word;
         self.word_count += 1;
+        wordlists.indexWord(self, id);
         return id;
     }
 
@@ -720,8 +725,15 @@ pub const State = struct {
             if (created_id >= id) self.last_created_word = null;
         }
         self.names_used = self.words[id].name_start;
-        self.word_count = id;
+        self.dropWordsFrom(id);
         self.dropUsesFrom(id);
+    }
+
+    /// Takes word `id` and every later word out of the dictionary and the index of the
+    /// names; the caller gives back their code, data, and names.
+    pub fn dropWordsFrom(self: *State, id: u16) void {
+        wordlists.unindexFrom(self, id);
+        self.word_count = id;
     }
 
     pub fn pushInterpretLoop(self: *State, loop: InterpretLoop) RuntimeError!void {

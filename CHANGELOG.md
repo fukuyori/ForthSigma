@@ -21,6 +21,7 @@
 
 - `PLAY` now always has 8 voices: `PLAYS` takes 1 to 8 and `PLAY?` takes 0 to 8 on any chip, and the voices after a chip's own sound like the last chip chosen. `CHIPS` takes any chips, also both `MSX` and `ST` and chips with more than 8 voices (the ones past the 8th are not played). A program that does not use these sounds the same as before, sample for sample.
 - Larger limits: by default the dictionary has 32 MiB (before, 1 MiB) and the `ALLOCATE` heap 32 MiB (before, 896 KiB), each stack holds 4096 entries (before, 1024), and the dictionary holds 65535 words (before, 8192) with 1 MiB for their names (before, 256 KiB). An image may be 16384 pixels a side and 1 GiB (before, 8192 and 64 MiB), a font 64 MiB (before, 16 MiB), and the pool of samples is 64 MiB (before, 16 MiB). Physical memory is used only as a program fills the memory.
+- Words are found through a hash table of their names: defining 60,000 words takes about 0.06 seconds instead of about 8 seconds. Which word a name finds is unchanged.
 - Dictionary images are now `SIGIMG42` (`SIGIMG43` with the graphics words, `SIGIMG44` with the audio words) and record the `-m` and `-l` sizes they were saved with, since the input area moved in front of the dictionary. Images saved by 0.8.0 and earlier can no longer be loaded. `LOAD` reads an image saved with other sizes. An executable made by `SAVESYS` starts with the sizes it was saved with; `-m` and `-l` give it an error.
 
 ## [0.8.0] - 2026-11-09

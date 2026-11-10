@@ -9,6 +9,7 @@ const memory_map = @import("memory_map.zig");
 const words_graphics = @import("words_graphics.zig");
 const words_audio = @import("words_audio.zig");
 const library_loading = @import("library_loading.zig");
+const wordlists = @import("wordlists.zig");
 const Cell = memory_map.Cell;
 const Op = defs.Op;
 const RuntimeError = defs.RuntimeError;
@@ -271,6 +272,7 @@ fn restore(self: *State, image: []const u8, memory_is_fresh: bool) RuntimeError!
     }
     self.names_used = @intCast(own_names + added_names);
     self.word_count = @intCast(word_count);
+    wordlists.rebuildIndex(self);
     // The recorded uses are not in the image.
     self.use_count = 0;
     self.code_count = @intCast(code_count);
@@ -420,6 +422,8 @@ pub fn appendImage(self: *State, source: *const State) RuntimeError!void {
     @memcpy(self.names[name_base .. name_base + names_len], source.names[source_names_start..source.names_used]);
     self.names_used = @intCast(name_base + names_len);
     self.word_count = @intCast(word_base + added_words);
+    // The added words are the newest, so they go at the heads of their chains in order.
+    for (word_base..self.word_count) |id| wordlists.indexWord(self, @intCast(id));
     self.code_count = @intCast(code_base + code_count);
     self.data_here += data_len;
     self.last_created_word = null;

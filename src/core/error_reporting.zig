@@ -30,7 +30,7 @@ pub fn report(self: *State, err: anyerror) void {
     if (self.defining) {
         self.code_count = self.words[self.current_word].code_start;
         self.names_used = self.words[self.current_word].name_start;
-        self.word_count = self.current_word;
+        self.dropWordsFrom(self.current_word);
         self.dropUsesFrom(self.current_word);
         self.data_here = self.current_data_start;
     }
@@ -144,7 +144,7 @@ pub fn restoreCatchFrame(self: *State, frame: CatchFrame) void {
     if (self.defining and !frame.defining) {
         self.code_count = self.words[self.current_word].code_start;
         self.names_used = self.words[self.current_word].name_start;
-        self.word_count = self.current_word;
+        self.dropWordsFrom(self.current_word);
         self.dropUsesFrom(self.current_word);
         self.data_here = self.current_data_start;
         self.defining = false;

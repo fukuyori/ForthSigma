@@ -10,6 +10,109 @@ const createMachine = support.createMachine;
 const destroyMachine = support.destroyMachine;
 const expectStack = support.expectStack;
 
+/// Checks the index of the names against a search of the whole dictionary, newest
+/// first, for the name of every word in its own word list.
+fn expectIndexMatchesScan(machine: *forth.State) !void {
+    for (machine.words[0..machine.word_count]) |word| {
+        if (word.name_len == 0) continue;
+        const name = machine.wordName(word);
+        var expected: ?u16 = null;
+        var id = machine.word_count;
+        while (id > 0) {
+            id -= 1;
+            const other = machine.words[id];
+            if (other.wordlist == word.wordlist and other.name_len != 0 and std.ascii.eqlIgnoreCase(machine.wordName(other), name)) {
+                expected = id;
+                break;
+            }
+        }
+        try std.testing.expectEqual(expected, machine.lookupIn(name, word.wordlist));
+    }
+}
+
+test "the index of the names finds the newest word of a name as the dictionary changes" {
+    var output = Output{};
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
+    try expectIndexMatchesScan(machine);
+
+    // A newer word of the same name, in any case, hides the older; FORGET shows it again.
+    try machine.interpretLine(": dup-ish 1 ; : DUP-ISH 2 ; dup-ish FORGET Dup-Ish dup-ish");
+    try expectStack(machine, &.{ 2, 1 });
+    machine.data_depth = 0;
+    try expectIndexMatchesScan(machine);
+
+    // A definition that fails, by an error and inside CATCH, leaves nothing behind.
+    try std.testing.expectError(error.UnknownWord, machine.interpretLine(": BROKEN 1 NO-SUCH-WORD ;"));
+    machine.report(error.UnknownWord);
+    try machine.interpretLine("S\" : CAUGHT 1 NO-SUCH-WORD ;\" ' EVALUATE CATCH DROP 2DROP");
+    try std.testing.expect(machine.lookup("BROKEN") == null);
+    try std.testing.expect(machine.lookup("CAUGHT") == null);
+    try machine.interpretLine(": AFTER 3 ; AFTER");
+    try expectStack(machine, &.{3});
+    machine.data_depth = 0;
+    try expectIndexMatchesScan(machine);
+
+    // MARKER, and words of the same name in two word lists.
+    try machine.interpretLine("MARKER GONE : A1 ; : A2 ; GONE");
+    try std.testing.expect(machine.lookup("A1") == null);
+    try machine.interpretLine("VOCABULARY V ALSO V DEFINITIONS : X 1 ; PREVIOUS DEFINITIONS : X 2 ; X ALSO V X PREVIOUS");
+    try expectStack(machine, &.{ 2, 1 });
+    try expectIndexMatchesScan(machine);
+}
+
+test "the index of the names follows images that are restored and appended" {
+    try support.skipWithout(&.{.image});
+    var output = Output{};
+    const source = try createMachine(&output);
+    defer destroyMachine(source);
+    try source.interpretLine("VOCABULARY V ALSO V DEFINITIONS : SHARED 10 ; PREVIOUS DEFINITIONS : SHARED 20 ; : ONLY-SOURCE 30 ;");
+    const image = try std.testing.allocator.alloc(u8, source.encodedSize());
+    defer std.testing.allocator.free(image);
+    _ = try source.encodeImage(image);
+
+    const restored = try createMachine(&output);
+    defer destroyMachine(restored);
+    try restored.interpretLine(": REPLACED 1 ;");
+    try restored.restoreImage(image);
+    try std.testing.expect(restored.lookup("REPLACED") == null);
+    try restored.interpretLine("SHARED ONLY-SOURCE");
+    try expectStack(restored, &.{ 20, 30 });
+    try expectIndexMatchesScan(restored);
+
+    const target = try createMachine(&output);
+    defer destroyMachine(target);
+    try target.interpretLine(": SHARED 5 ; : ONLY-TARGET 6 ;");
+    try target.appendImage(restored);
+    try target.interpretLine("SHARED ONLY-TARGET ONLY-SOURCE");
+    try expectStack(target, &.{ 20, 6, 30 });
+    try expectIndexMatchesScan(target);
+}
+
+test "a full dictionary is searched through the index" {
+    var output = Output{};
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
+    const first = machine.word_count;
+    try support.fillDictionary(machine, 1);
+    try machine.interpretLine(": LAST-WORD 7 ; LAST-WORD");
+    try expectStack(machine, &.{7});
+    machine.data_depth = 0;
+    var name: [16]u8 = undefined;
+    // Places in the dictionary for any -Dwords: a half and a quarter of the way.
+    const late: u16 = @intCast(first + (machine.words.len - first) / 2);
+    const middle: u16 = @intCast(first + (machine.words.len - first) / 4);
+    try std.testing.expectEqual(@as(?u16, first), machine.lookup(try std.fmt.bufPrint(&name, "F{d}", .{first})));
+    try std.testing.expectEqual(@as(?u16, late), machine.lookup(try std.fmt.bufPrint(&name, "f{d}", .{late})));
+    // FORGET in the middle takes the later words out of the index.
+    machine.forgetFrom(middle);
+    try std.testing.expect(machine.lookup(try std.fmt.bufPrint(&name, "F{d}", .{late})) == null);
+    try std.testing.expect(machine.lookup("LAST-WORD") == null);
+    try std.testing.expectEqual(@as(?u16, middle - 1), machine.lookup(try std.fmt.bufPrint(&name, "F{d}", .{middle - 1})));
+    try machine.interpretLine(": NEW-WORD 8 ; NEW-WORD");
+    try expectStack(machine, &.{8});
+}
+
 test "VOCABULARY ONLY ALSO DEFINITIONS and ORDER follow the book's Level 16 example" {
     var output = Output{};
     const machine = try createMachine(&output);

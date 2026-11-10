@@ -2,7 +2,7 @@
 
 ## Architecture
 
-The runtime uses 64-bit cells, a separate 64-bit (IEEE binary64) floating-point stack, and a logical byte memory (64 MiB and 64 KiB by default) that holds the system area, the input buffers, the data area, the `ALLOCATE` heap, and the local-variable frames. Cell and float reads and writes use little-endian 8-byte layout. The dictionary is a bounded host-side table; colon definitions compile into a small host-independent operation stream. The operation stream represents calls, integer and float literals, branches, loops, and string output. No Z80 opcodes or machine addresses are executed.
+The runtime uses 64-bit cells, a separate 64-bit (IEEE binary64) floating-point stack, and a logical byte memory (64 MiB and 64 KiB by default) that holds the system area, the input buffers, the data area, the `ALLOCATE` heap, and the local-variable frames. Cell and float reads and writes use little-endian 8-byte layout. The dictionary is a bounded host-side table, searched through a hash table of the names whose chains hold the newest word first (`src/core/wordlists.zig`); colon definitions compile into a small host-independent operation stream. The operation stream represents calls, integer and float literals, branches, loops, and string output. No Z80 opcodes or machine addresses are executed.
 
 `State` owns the interpreter and receives output through a callback. The command-line adapter uses C standard input and output so the language core does not depend on a particular terminal API. File storage, cassette commands, the PC-8001 line editor, and CP/M monitor calls are outside this scope.
 
