@@ -142,25 +142,36 @@ VARIABLE (PAD-HELD)
 
 \ ---- Parts and focus ------------------------------------------------------------------
 
+\ Parts are numbered in the order the program makes them in a frame, from 1. What the
+\ GUI keeps from frame to frame is in the variables below whose names start with GUI-;
+\ the program may read them and set them, as it does BASE:
+\   GUI-FOCUSED     the part the keys go to, counted from 1 among the parts that take
+\                   it (buttons, check boxes, fields, and lists that can be used); out of
+\                   range, the first part takes it in the next frame
+\   GUI-ACTIVE      the part the left button went down on, until it goes up; 0 for none
+\   GUI-MENU-OPEN   the open menu of the bar, counted from 0; -1 for none
+\   GUI-MENU-ITEM   the highlighted item of the open menu
+\ A part that the program makes in some frames and not in others moves the numbers of
+\ the parts made after it.
 VARIABLE (ID)          \ the parts of this frame, counted
-VARIABLE (ACTIVE)      \ the part the left button went down on, 0 for none
-VARIABLE (FOCUS)       \ the part the keys go to, counted from 1 among those that take it
+VARIABLE GUI-ACTIVE
+VARIABLE GUI-FOCUSED
 VARIABLE (FOCUS-N)     \ the parts of this frame that take the focus
 VARIABLE (LAST-FOCUS-N)
 VARIABLE (ENABLED)
 \ The open pull-down menu takes the mouse inside it and all the keys.
 VARIABLE (BX)  VARIABLE (BY)  VARIABLE (BW)  VARIABLE (BH)
-VARIABLE (MENU-OPEN)   \ the open menu of the bar, -1 for none
+VARIABLE GUI-MENU-OPEN
 VARIABLE (MENU-X)      \ where its title is
-VARIABLE (MENU-ITEM)   \ its highlighted item
+VARIABLE GUI-MENU-ITEM
 2VARIABLE (PULL)       \ its items, drawn by GUI-END
 VARIABLE (CURSOR)      \ the place of the text cursor in the focused field
 VARIABLE (CURSOR-OF)   \ the part the cursor belongs to
--1 (MENU-OPEN) !
+-1 GUI-MENU-OPEN !
 
 : (IN) { px py x y w h -- flag }   px x - w U<  py y - h U< AND ;
 : (BLOCKED) ( px py -- flag )
-   (MENU-OPEN) @ 0< IF 2DROP FALSE EXIT THEN  (BX) @ (BY) @ (BW) @ (BH) @ (IN) ;
+   GUI-MENU-OPEN @ 0< IF 2DROP FALSE EXIT THEN  (BX) @ (BY) @ (BW) @ (BH) @ (IN) ;
 \ Whether the mouse, or the press, is over a part (and not over the open menu).
 : (HOT) { x y w h -- flag }
    (MX) @ (MY) @ (BLOCKED) IF FALSE EXIT THEN  (MX) @ (MY) @ x y w h (IN) ;
@@ -173,7 +184,7 @@ VARIABLE (CURSOR-OF)   \ the part the cursor belongs to
 \ number among those.
 : (NEW-PART) ( -- id )   1 (ID) +!  (ID) @ ;
 : (FOCUSABLE) ( -- n )   1 (FOCUS-N) +!  (FOCUS-N) @ ;
-: (FOCUSED?) ( n -- flag )   (FOCUS) @ =  (MENU-OPEN) @ 0< AND ;
+: (FOCUSED?) ( n -- flag )   GUI-FOCUSED @ =  GUI-MENU-OPEN @ 0< AND ;
 
 \ Parts made after GUI-ENABLE with false are drawn grey and take no input.
 : GUI-ENABLE ( flag -- )   0<> (ENABLED) ! ;
@@ -193,11 +204,11 @@ VARIABLE (CURSOR-OF)   \ the part the cursor belongs to
    BEGIN INKEY DUP 0< 0= WHILE (ADD-KEY) REPEAT DROP
    (PAD-KEYS)
    \ Tab gives the focus to the next part, also to the first after the last.
-   (MENU-OPEN) @ 0< IF  9 (TAKE) IF
-      (FOCUS) @ 1+  DUP (LAST-FOCUS-N) @ > IF DROP 1 THEN  (FOCUS) !
+   GUI-MENU-OPEN @ 0< IF  9 (TAKE) IF
+      GUI-FOCUSED @ 1+  DUP (LAST-FOCUS-N) @ > IF DROP 1 THEN  GUI-FOCUSED !
    THEN THEN
    \ Without a part that has it, the first part takes the focus.
-   (FOCUS) @ 1 < (FOCUS) @ (LAST-FOCUS-N) @ > OR IF 1 (FOCUS) ! THEN ;
+   GUI-FOCUSED @ 1 < GUI-FOCUSED @ (LAST-FOCUS-N) @ > OR IF 1 GUI-FOCUSED ! THEN ;
 
 \ ---- Panels -------------------------------------------------------------------------
 
@@ -242,11 +253,11 @@ VARIABLE (TILES)  VARIABLE (TILE)
    addr u GUI-BUTTON-SIZE TO h TO w  (NEW-PART) TO id  FALSE TO clicked
    (ENABLED) @ IF
       (FOCUSABLE) TO f
-      x y w h (PRESSED-ON) IF  id (ACTIVE) !  f (FOCUS) !  THEN
-      (ACTIVE) @ id = IF x y w h (RELEASED-ON) TO clicked THEN
+      x y w h (PRESSED-ON) IF  id GUI-ACTIVE !  f GUI-FOCUSED !  THEN
+      GUI-ACTIVE @ id = IF x y w h (RELEASED-ON) TO clicked THEN
       f (FOCUSED?) IF  13 (TAKE) 32 (TAKE) OR clicked OR TO clicked  THEN
       x y w h (HOT) TO hot
-      GUI-FACE  hot IF DROP GUI-HOVER THEN  hot (ACTIVE) @ id = AND IF DROP GUI-PRESSED THEN  TO face
+      GUI-FACE  hot IF DROP GUI-HOVER THEN  hot GUI-ACTIVE @ id = AND IF DROP GUI-PRESSED THEN  TO face
    ELSE  GUI-FACE TO face  0 TO f  THEN
    x y w h face GUI-BORDER (BORDER-W) @ (BOX)
    f (FOCUSED?) IF x y w h (FOCUS-RING) THEN
@@ -260,8 +271,8 @@ VARIABLE (TILES)  VARIABLE (TILE)
    TEXT-HEIGHT 2 + (BORDER-W) @ 2* + TO s  (NEW-PART) TO id  FALSE TO changed
    (ENABLED) @ IF
       (FOCUSABLE) TO f
-      x y s (PAD-X) + addr u TEXT-WIDTH + s (PRESSED-ON) IF  id (ACTIVE) !  f (FOCUS) !  THEN
-      (ACTIVE) @ id = IF x y s (PAD-X) + addr u TEXT-WIDTH + s (RELEASED-ON) TO changed THEN
+      x y s (PAD-X) + addr u TEXT-WIDTH + s (PRESSED-ON) IF  id GUI-ACTIVE !  f GUI-FOCUSED !  THEN
+      GUI-ACTIVE @ id = IF x y s (PAD-X) + addr u TEXT-WIDTH + s (RELEASED-ON) TO changed THEN
       f (FOCUSED?) IF  32 (TAKE) 13 (TAKE) OR changed OR TO changed  THEN
       changed IF flag-addr @ 0= flag-addr ! THEN
    ELSE 0 TO f THEN
@@ -312,7 +323,7 @@ VARIABLE (F-BUF)  VARIABLE (F-MAX)  VARIABLE (F-LEN)
    (ROW-H) TO h  (NEW-PART) TO id  FALSE TO entered  len-addr @ 0 MAX room MIN TO len
    (ENABLED) @ IF
       (FOCUSABLE) TO f
-      x y w h (PRESSED-ON) IF  f (FOCUS) !  THEN
+      x y w h (PRESSED-ON) IF  f GUI-FOCUSED !  THEN
    ELSE 0 TO f THEN
    f (FOCUSED?) IF
       (CURSOR-OF) @ id <> IF  len (CURSOR) !  id (CURSOR-OF) !  THEN
@@ -346,39 +357,46 @@ VARIABLE (F-BUF)  VARIABLE (F-MAX)  VARIABLE (F-LEN)
 
 \ ---- Lists ---------------------------------------------------------------------------
 
-\ A list of items "a|b|c", one under another, w pixels wide (0: as wide as the widest).
-\ The cell at var is the chosen item: the mouse over an item chooses it, and with the
-\ focus so do the up and down arrows (the gamepad's D-pad too). True when an item was
-\ clicked, or Enter or Space was pressed (A on the gamepad).
-: GUI-LIST { addr u var x y w | n h id f picked iy -- flag }
-   addr u (ITEMS) TO n  (ROW-H) TO h  (NEW-PART) TO id  FALSE TO picked
-   w 0= IF  0  n 0 DO addr u I (ITEM) TEXT-WIDTH MAX LOOP  (PAD-X) 2* + TO w  THEN
-   var @ 0 MAX n 1- MIN var !
+\ A list of n items, one under another, w pixels wide (0: as wide as the widest); xt
+\ gives item i ( i -- addr u ), so the items can be in any data of the program. The cell
+\ at var is the chosen item: the mouse over an item chooses it, and with the focus so do
+\ the up and down arrows (the gamepad's D-pad too). True when an item was clicked, or
+\ Enter or Space was pressed (A on the gamepad). With no items it draws nothing.
+: GUI-LIST-XT { xt n var x y w | h id f picked iy -- flag }
+   n 0 MAX TO n  (ROW-H) TO h  (NEW-PART) TO id  FALSE TO picked
+   w 0= IF  0  n 0 ?DO I xt EXECUTE TEXT-WIDTH MAX LOOP  (PAD-X) 2* + TO w  THEN
+   n IF var @ 0 MAX n 1- MIN var ! THEN
    (ENABLED) @ IF
       (FOCUSABLE) TO f
-      n 0 DO
+      n 0 ?DO
          (MOVED) @ IF  x y I h * + w h (HOT) IF I var ! THEN  THEN
-         x y I h * + w h (PRESSED-ON) IF  I var !  id (ACTIVE) !  f (FOCUS) !  THEN
-         (ACTIVE) @ id = IF x y I h * + w h (RELEASED-ON) IF  I var !  TRUE TO picked  THEN THEN
+         x y I h * + w h (PRESSED-ON) IF  I var !  id GUI-ACTIVE !  f GUI-FOCUSED !  THEN
+         GUI-ACTIVE @ id = IF x y I h * + w h (RELEASED-ON) IF  I var !  TRUE TO picked  THEN THEN
       LOOP
-      f (FOCUSED?) IF
+      f (FOCUSED?) n 0> AND IF
          BEGIN K-UP (TAKE) WHILE  var @ 1- DUP 0< IF DROP n 1- THEN var !  REPEAT
          BEGIN K-DOWN (TAKE) WHILE  var @ 1+ DUP n >= IF DROP 0 THEN var !  REPEAT
          13 (TAKE) 32 (TAKE) OR picked OR TO picked
       THEN
    ELSE 0 TO f THEN
-   n 0 DO
+   n 0 ?DO
       y I h * + TO iy
       I var @ = (ENABLED) @ AND IF
          GUI-SELECTION (USE)  x iy w h FILL-RECT
-         addr u I (ITEM)  x (PAD-X) +  iy (BORDER-W) @ + (PAD-Y) +  GUI-SELECTED-TEXT (TEXT)
+         I xt EXECUTE  x (PAD-X) +  iy (BORDER-W) @ + (PAD-Y) +  GUI-SELECTED-TEXT (TEXT)
       ELSE
-         addr u I (ITEM)  x (PAD-X) +  iy (BORDER-W) @ + (PAD-Y) +
+         I xt EXECUTE  x (PAD-X) +  iy (BORDER-W) @ + (PAD-Y) +
          (ENABLED) @ IF GUI-TEXT ELSE GUI-DISABLED THEN (TEXT)
       THEN
    LOOP
-   f (FOCUSED?) IF x y w n h * (FOCUS-RING) THEN
+   f (FOCUSED?) n 0> AND IF x y w n h * (FOCUS-RING) THEN
    picked ;
+
+\ The same with the items "a|b|c".
+2VARIABLE (LIST-ITEMS)
+: (LIST-ITEM) ( i -- addr u )   >R (LIST-ITEMS) 2@ R> (ITEM) ;
+: GUI-LIST { addr u var x y w -- flag }
+   addr u (LIST-ITEMS) 2!  ['] (LIST-ITEM) addr u (ITEMS) var x y w GUI-LIST-XT ;
 
 \ ---- The menu bar and pull-down menus -------------------------------------------------
 
@@ -387,15 +405,16 @@ VARIABLE (F-BUF)  VARIABLE (F-MAX)  VARIABLE (F-LEN)
 \ its items come from GUI-MENU right after.
 : GUI-MENUBAR { addr u | n h at tw -- open }
    addr u (ITEMS) TO n  (ROW-H) TO h
+   GUI-MENU-OPEN @ n < 0= IF -1 GUI-MENU-OPEN ! THEN
    0 0 GFX-WIDTH h GUI-BACKGROUND GUI-BACKGROUND 0 (BOX)
    GUI-BORDER (USE)  0 h 1- GFX-WIDTH 1- h 1- LINE
    0 TO at
    n 0 DO
       addr u I (ITEM) TEXT-WIDTH (PAD-X) 2* + TO tw
-      at 0 tw h (PRESSED-ON) IF  (MENU-OPEN) @ I = IF -1 ELSE I THEN (MENU-OPEN) !  0 (MENU-ITEM) !  THEN
+      at 0 tw h (PRESSED-ON) IF  GUI-MENU-OPEN @ I = IF -1 ELSE I THEN GUI-MENU-OPEN !  0 GUI-MENU-ITEM !  THEN
       \ With a menu open, the mouse over another title opens that one.
-      (MENU-OPEN) @ 0< 0= (MENU-OPEN) @ I <> AND IF  at 0 tw h (HOT) IF I (MENU-OPEN) ! 0 (MENU-ITEM) ! THEN  THEN
-      (MENU-OPEN) @ I = IF
+      GUI-MENU-OPEN @ 0< 0= GUI-MENU-OPEN @ I <> AND IF  at 0 tw h (HOT) IF I GUI-MENU-OPEN ! 0 GUI-MENU-ITEM ! THEN  THEN
+      GUI-MENU-OPEN @ I = IF
          at (MENU-X) !
          GUI-SELECTION (USE)  at 0 tw h 1- FILL-RECT
          addr u I (ITEM)  at (PAD-X) +  (BORDER-W) @ (PAD-Y) +  GUI-SELECTED-TEXT (TEXT)
@@ -405,15 +424,15 @@ VARIABLE (F-BUF)  VARIABLE (F-MAX)  VARIABLE (F-LEN)
       at tw + TO at
    LOOP
    \ The arrows go from menu to menu; Esc closes it.
-   (MENU-OPEN) @ 0< 0= IF
-      BEGIN K-LEFT (TAKE) WHILE  (MENU-OPEN) @ 1- DUP 0< IF DROP n 1- THEN (MENU-OPEN) ! 0 (MENU-ITEM) !  REPEAT
-      BEGIN K-RIGHT (TAKE) WHILE  (MENU-OPEN) @ 1+ DUP n >= IF DROP 0 THEN (MENU-OPEN) ! 0 (MENU-ITEM) !  REPEAT
-      27 (TAKE) IF -1 (MENU-OPEN) ! THEN
+   GUI-MENU-OPEN @ 0< 0= IF
+      BEGIN K-LEFT (TAKE) WHILE  GUI-MENU-OPEN @ 1- DUP 0< IF DROP n 1- THEN GUI-MENU-OPEN ! 0 GUI-MENU-ITEM !  REPEAT
+      BEGIN K-RIGHT (TAKE) WHILE  GUI-MENU-OPEN @ 1+ DUP n >= IF DROP 0 THEN GUI-MENU-OPEN ! 0 GUI-MENU-ITEM !  REPEAT
+      27 (TAKE) IF -1 GUI-MENU-OPEN ! THEN
       \ Its place again, as the titles may have moved it.
       0 TO at
-      n 0 DO  (MENU-OPEN) @ I = IF at (MENU-X) ! THEN  addr u I (ITEM) TEXT-WIDTH (PAD-X) 2* + at + TO at  LOOP
+      n 0 DO  GUI-MENU-OPEN @ I = IF at (MENU-X) ! THEN  addr u I (ITEM) TEXT-WIDTH (PAD-X) 2* + at + TO at  LOOP
    THEN
-   (MENU-OPEN) @ ;
+   GUI-MENU-OPEN @ ;
 
 \ An item of a pull-down menu: "-" is a line between items, and an item that starts
 \ with ~ cannot be chosen.
@@ -425,8 +444,9 @@ VARIABLE (F-BUF)  VARIABLE (F-MAX)  VARIABLE (F-LEN)
 \ frame by a click or Enter, else -1. A click elsewhere closes the menu. Up and down
 \ move between the items that can be chosen.
 : GUI-MENU { addr u | n w h iy chosen -- item | -1 }
-   -1 TO chosen  (MENU-OPEN) @ 0< IF -1 EXIT THEN
+   -1 TO chosen  GUI-MENU-OPEN @ 0< IF -1 EXIT THEN
    addr u (ITEMS) TO n
+   GUI-MENU-ITEM @ 0 n WITHIN 0= IF 0 GUI-MENU-ITEM ! THEN
    0  n 0 DO  addr u I (ITEM) DUP IF OVER C@ [CHAR] ~ = IF 1 /STRING THEN THEN TEXT-WIDTH MAX  LOOP
    (PAD-X) 4 * +  (BORDER-W) @ 2* + TO w
    (BORDER-W) @ 2*  n 0 DO addr u I (ITEM) (ITEM-H) + LOOP TO h
@@ -435,18 +455,18 @@ VARIABLE (F-BUF)  VARIABLE (F-MAX)  VARIABLE (F-LEN)
    (ROW-H) (BORDER-W) @ + TO iy
    n 0 DO
       addr u I (ITEM) 2DUP (SEPARATOR?) >R (DISABLED?) R> OR 0= IF
-         (MOVED) @ IF  (MX) @ (MY) @ (MENU-X) @ iy w (ROW-H) (IN) IF I (MENU-ITEM) ! THEN  THEN
+         (MOVED) @ IF  (MX) @ (MY) @ (MENU-X) @ iy w (ROW-H) (IN) IF I GUI-MENU-ITEM ! THEN  THEN
          (RELEASE) @ IF (RX) @ (RY) @ (MENU-X) @ iy w (ROW-H) (IN) IF I TO chosen THEN THEN
       THEN
       addr u I (ITEM) (ITEM-H) iy + TO iy
    LOOP
-   BEGIN K-UP (TAKE) WHILE  (MENU-ITEM) @  n 0 DO 1- DUP 0< IF DROP n 1- THEN  DUP addr u ROT (ITEM) 2DUP (SEPARATOR?) >R (DISABLED?) R> OR 0= IF LEAVE THEN LOOP  (MENU-ITEM) !  REPEAT
-   BEGIN K-DOWN (TAKE) WHILE  (MENU-ITEM) @  n 0 DO 1+ DUP n >= IF DROP 0 THEN  DUP addr u ROT (ITEM) 2DUP (SEPARATOR?) >R (DISABLED?) R> OR 0= IF LEAVE THEN LOOP  (MENU-ITEM) !  REPEAT
-   13 (TAKE) IF  addr u (MENU-ITEM) @ (ITEM) 2DUP (SEPARATOR?) >R (DISABLED?) R> OR 0= IF (MENU-ITEM) @ TO chosen THEN  THEN
+   BEGIN K-UP (TAKE) WHILE  GUI-MENU-ITEM @  n 0 DO 1- DUP 0< IF DROP n 1- THEN  DUP addr u ROT (ITEM) 2DUP (SEPARATOR?) >R (DISABLED?) R> OR 0= IF LEAVE THEN LOOP  GUI-MENU-ITEM !  REPEAT
+   BEGIN K-DOWN (TAKE) WHILE  GUI-MENU-ITEM @  n 0 DO 1+ DUP n >= IF DROP 0 THEN  DUP addr u ROT (ITEM) 2DUP (SEPARATOR?) >R (DISABLED?) R> OR 0= IF LEAVE THEN LOOP  GUI-MENU-ITEM !  REPEAT
+   13 (TAKE) IF  addr u GUI-MENU-ITEM @ (ITEM) 2DUP (SEPARATOR?) >R (DISABLED?) R> OR 0= IF GUI-MENU-ITEM @ TO chosen THEN  THEN
    \ A press outside the menu and the bar closes it.
-   (PRESS) @ IF  (PX) @ (PY) @ (BX) @ (BY) @ (BW) @ (BH) @ (IN)  (PY) @ (ROW-H) < OR 0= IF -1 (MENU-OPEN) ! THEN  THEN
+   (PRESS) @ IF  (PX) @ (PY) @ (BX) @ (BY) @ (BW) @ (BH) @ (IN)  (PY) @ (ROW-H) < OR 0= IF -1 GUI-MENU-OPEN ! THEN  THEN
    addr u (PULL) 2!
-   chosen 0< 0= IF -1 (MENU-OPEN) ! THEN
+   chosen 0< 0= IF -1 GUI-MENU-OPEN ! THEN
    chosen ;
 
 \ The open menu, over the other parts.
@@ -462,7 +482,7 @@ VARIABLE (F-BUF)  VARIABLE (F-MAX)  VARIABLE (F-LEN)
          2DUP (DISABLED?) IF
             1 /STRING  (BX) @ (BORDER-W) @ + (PAD-X) 2* +  iy (PAD-Y) +  GUI-DISABLED (TEXT)
          ELSE
-            I (MENU-ITEM) @ = IF
+            I GUI-MENU-ITEM @ = IF
                GUI-SELECTION (USE)  (BX) @ (BORDER-W) @ +  iy  (BW) @ (BORDER-W) @ 2* -  (ROW-H) FILL-RECT
                (BX) @ (BORDER-W) @ + (PAD-X) 2* +  iy (PAD-Y) +  GUI-SELECTED-TEXT (TEXT)
             ELSE
@@ -483,7 +503,7 @@ VARIABLE (F-BUF)  VARIABLE (F-MAX)  VARIABLE (F-LEN)
    GUI-BORDER (USE)  0 y GFX-WIDTH 1- y LINE
    n 0 DO
       I w * TO at
-      (MENU-OPEN) @ 0< IF  K-F1 I + (TAKE) IF I TO key THEN  THEN
+      GUI-MENU-OPEN @ 0< IF  K-F1 I + (TAKE) IF I TO key THEN  THEN
       at y w h (PRESSED-ON) IF I TO key THEN
       \ The key's number, then its label.
       <# I 1+ 0 #S [CHAR] F HOLD #>  at (PAD-X) +  y (BORDER-W) @ + (PAD-Y) +  GUI-SELECTION (TEXT)
@@ -518,9 +538,9 @@ VARIABLE (F-BUF)  VARIABLE (F-MAX)  VARIABLE (F-LEN)
 
 \ Ends the GUI of a frame: draws the open menu over the other parts.
 : GUI-END ( -- )
-   (MENU-OPEN) @ 0< 0= IF  (PULL) 2@ NIP IF (DRAW-PULL) THEN  THEN
+   GUI-MENU-OPEN @ 0< 0= IF  (PULL) 2@ NIP IF (DRAW-PULL) THEN  THEN
    0 0 (PULL) 2!
-   (RELEASE) @ IF 0 (ACTIVE) ! THEN
+   (RELEASE) @ IF 0 GUI-ACTIVE ! THEN
    (FOCUS-N) @ (LAST-FOCUS-N) ! ;
 
 \ ---- Waiting for an answer -----------------------------------------------------------
@@ -532,12 +552,12 @@ VARIABLE (SAVED)  VARIABLE (WAS-DRAWING)
    DRAWING (WAS-DRAWING) !  SCREEN DRAW-TO  0 (SAVED) !
    SCREEN IMAGE-SIZE ['] NEW-IMAGE CATCH IF 2DROP EXIT THEN
    DUP (SAVED) !  DRAW-TO  SCREEN 0 0 SCREEN IMAGE-SIZE 0 0 -1 0 0 128 1 GFX-COPY  SCREEN DRAW-TO
-   0 (LAST-FOCUS-N) !  0 (FOCUS) ! ;
+   0 (LAST-FOCUS-N) !  0 GUI-FOCUSED ! ;
 : (RESTORE-SCREEN) ( -- )
    (SAVED) @ ?DUP IF  0 0 SCREEN IMAGE-SIZE 0 0 -1 0 0 128 1 GFX-COPY  THEN ;
 : (END-WAIT) ( -- )
    (RESTORE-SCREEN)  SHOW  (SAVED) @ ?DUP IF FREE-IMAGE THEN  0 (SAVED) !
-   (WAS-DRAWING) @ DRAW-TO  0 (LAST-FOCUS-N) !  0 (FOCUS) ! ;
+   (WAS-DRAWING) @ DRAW-TO  0 (LAST-FOCUS-N) !  0 GUI-FOCUSED ! ;
 : (NEXT-FRAME) ( -- )   GUI-END SHOW 16 FRAME ;
 
 \ Asks a question with Yes and No and waits: true for yes. Esc answers no.
@@ -550,20 +570,24 @@ VARIABLE (SAVED)  VARIABLE (WAS-DRAWING)
    (SAVE-SCREEN)
    BEGIN  (RESTORE-SCREEN) GUI-BEGIN  2DUP S" OK" GUI-DIALOG  (NEXT-FRAME)  0< 0= UNTIL
    2DROP (END-WAIT) ;
-\ A list "a|b|c" in the middle of the screen: waits for a choice and gives it, 0 for
-\ the first, or -1 for Esc.
+\ A list of n items, given by xt ( i -- addr u ) as GUI-LIST-XT, in the middle of the
+\ screen: waits for a choice and gives it, 0 for the first, or -1 for Esc (at once
+\ without items).
 VARIABLE (CHOICE)
-: GUI-CHOOSE { addr u | w h x y chosen -- n }
+: GUI-CHOOSE-XT { xt n | w h x y chosen -- n }
+   n 1 < IF -1 EXIT THEN
    0 (CHOICE) !
-   0  addr u (ITEMS) 0 DO addr u I (ITEM) TEXT-WIDTH MAX LOOP  (PAD-X) 2* + TO w
-   addr u (ITEMS) (ROW-H) * TO h
+   0  n 0 DO I xt EXECUTE TEXT-WIDTH MAX LOOP  (PAD-X) 2* + TO w
+   n (ROW-H) * TO h
    GFX-WIDTH w - 2/ TO x  GFX-HEIGHT h - 2/ TO y
    (SAVE-SCREEN)
    BEGIN
       (RESTORE-SCREEN) GUI-BEGIN
       x 4 - y 4 - w 8 + h 8 + GUI-PANEL
-      addr u (CHOICE) x y w GUI-LIST IF (CHOICE) @ ELSE -2 THEN TO chosen
+      xt n (CHOICE) x y w GUI-LIST-XT IF (CHOICE) @ ELSE -2 THEN TO chosen
       27 (TAKE) IF -1 TO chosen THEN
       (NEXT-FRAME)
    chosen -2 <> UNTIL
    (END-WAIT)  chosen ;
+\ The same with the items "a|b|c".
+: GUI-CHOOSE ( addr u -- n )   2DUP (LIST-ITEMS) 2!  (ITEMS) ['] (LIST-ITEM) SWAP GUI-CHOOSE-XT ;

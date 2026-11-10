@@ -204,6 +204,8 @@ A `SHOW` on the terminal draws over the image it drew last when nothing was writ
 
 The parts are drawn again each frame: between `GUI-BEGIN` and `GUI-END`, the word of each part draws it and gives what the user did to it in this frame. What a part shows (a check box's flag, a field's text, a list's choice) is in the program's own variables. `GUI-BEGIN` reads the mouse (`MOUSE-EVENT`, so a click between frames is not lost), the keys, and the first gamepad once; the keys no part takes can be read with `GUI-KEY` until the next `GUI-BEGIN`. The keys go to the part with the focus: a click gives it the focus, Tab gives it to the next part, and without a part that has it, the first part that can take it has it. The first gamepad works as keys: its D-pad as the arrows, A as Enter, and B as Esc.
 
+Parts are numbered in the order the program makes them in a frame. What the GUI keeps from frame to frame is in four variables, which the program may read and set as it does `BASE`: `GUI-FOCUSED`, the part the keys go to, counted from 1 among the parts that can take the focus (out of range, the first takes it in the next frame); `GUI-ACTIVE`, the part the left button went down on, counted from 1 among all the parts, 0 for none; `GUI-MENU-OPEN`, the open menu of the bar, from 0, -1 for none; and `GUI-MENU-ITEM`, the highlighted item of the open menu. A part the program makes in some frames and not in others moves the numbers of the parts after it; a program that does this can set `GUI-FOCUSED` again, or make such parts last.
+
 | Word | Stack | What it does |
 |---|---|---|
 | `GUI-BEGIN`, `GUI-END` | ( -- ) | Start and end the GUI of a frame. `GUI-END` draws the open pull-down menu over the other parts. |
@@ -211,6 +213,7 @@ The parts are drawn again each frame: between `GUI-BEGIN` and `GUI-END`, the wor
 | `GUI-CHECK` | ( addr c-addr u x y -- flag ) | A check box with a label: the flag at addr changes when it (or its label) is clicked, or with Space or Enter; true when it changed. |
 | `GUI-FIELD` | ( buf room len-addr x y w -- flag ) | A field of one line, w pixels wide, editing the text at buf (at most room bytes, its length at len-addr): the bytes of text that `INKEY` gives (UTF-8 too), Backspace, Delete, the left and right arrows, Home, and End. True when Enter was pressed in it. |
 | `GUI-LIST` | ( c-addr u var x y w -- flag ) | A list "a\|b\|c", one item under another, w pixels wide (0: as wide as the widest). The cell at var is the chosen item: the mouse over an item chooses it, and so do the up and down arrows with the focus. True when an item was clicked, or Enter or Space was pressed. |
+| `GUI-LIST-XT` | ( xt n var x y w -- flag ) | The same with n items that xt ( i -- c-addr u ) gives, so they can be in any data of the program (an array of strings, a directory listing, ...) and may hold \|. With no items it draws nothing. |
 | `GUI-MENUBAR` | ( c-addr u -- n ) | A bar across the top with the titles "a\|b\|c". A click on a title opens its menu (and closes it again); with a menu open, the mouse over another title, or the left and right arrows, open that one, and Esc closes it. Gives the open menu, -1 for none. Call it first after `GUI-BEGIN`. |
 | `GUI-MENU` | ( c-addr u -- item \| -1 ) | The items of the open menu, right after `GUI-MENUBAR`: "-" is a line between items, and an item that starts with `~` is shown grey and cannot be chosen. Gives the item chosen by a click or Enter in this frame, else -1; up and down move between the items. A click outside the menu closes it. While a menu is open, it takes the keys and the mouse over it. |
 | `GUI-FKEYS` | ( c-addr u -- n \| -1 ) | A bar along the bottom with the labels "a\|b\|c" of F1, F2, ...; gives the key, 0 for F1, that was pressed or whose label was clicked, else -1. |
@@ -224,6 +227,7 @@ The parts are drawn again each frame: between `GUI-BEGIN` and `GUI-END`, the wor
 | `GUI-ASK` | ( c-addr u -- flag ) | Ask with Yes and No and wait for the answer: true for yes. |
 | `GUI-MESSAGE` | ( c-addr u -- ) | Show a message with OK and wait until it is closed (OK, Enter, or Esc). |
 | `GUI-CHOOSE` | ( c-addr u -- n ) | Show a list "a\|b\|c" in the middle and wait for a choice: 0 for the first, -1 for Esc. |
+| `GUI-CHOOSE-XT` | ( xt n -- n ) | The same with n items that xt ( i -- c-addr u ) gives; -1 at once without items. |
 
 `GUI-ASK`, `GUI-MESSAGE`, and `GUI-CHOOSE` draw on the screen and show it each frame (`SHOW`, `16 FRAME`) until there is an answer, over what the screen had when they started, which they then put back; meanwhile the program does not run. Ctrl+C stops them (`USER INTERRUPT`).
 

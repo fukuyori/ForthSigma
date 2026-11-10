@@ -323,3 +323,64 @@ test "the first gamepad moves a list and chooses with A, each press once" {
     try expectStack(machine, &.{ -1, 1 });
     pad = .{};
 }
+
+test "the focus, the pressed part, and the open menu are variables the program sets" {
+    try skipWithout(&.{.graphics});
+    var output = Output{};
+    const machine = try guiMachine(&output);
+    defer destroyMachine(machine);
+    try machine.interpretLine(": FRAME-1 GUI-BEGIN S\" OK\" 10 10 GUI-BUTTON S\" Cancel\" 60 10 GUI-BUTTON GUI-END ;");
+    // Pressed on Cancel and not released: it is the active part and has the focus.
+    const press = [_]forth.InputEvent{.{ .window_mouse = .{ .x = 62, .y = 12, .buttons = 1 } }};
+    events(&output, &press);
+    try machine.interpretLine("FRAME-1 GUI-ACTIVE @ GUI-FOCUSED @");
+    try expectStack(machine, &.{ 0, 0, 2, 2 });
+    machine.data_depth = 0;
+    // Released: no part is active. The program gives OK the focus; Enter clicks it.
+    const release = [_]forth.InputEvent{.{ .window_mouse = .{ .x = 150, .y = 100, .buttons = 0 } }};
+    events(&output, &release);
+    try machine.interpretLine("FRAME-1 GUI-ACTIVE @");
+    try expectStack(machine, &.{ 0, 0, 0 });
+    machine.data_depth = 0;
+    const enter = [_]forth.InputEvent{key(13)};
+    events(&output, &enter);
+    try machine.interpretLine("1 GUI-FOCUSED ! FRAME-1");
+    try expectStack(machine, &.{ -1, 0 });
+    machine.data_depth = 0;
+    // The program opens a menu and highlights an item; Enter chooses it. A menu number
+    // the bar does not have closes it.
+    try machine.interpretLine(": FRAME-2 GUI-BEGIN S\" File|Edit\" GUI-MENUBAR 0 = IF S\" New|Open|Quit\" GUI-MENU ELSE -9 THEN GUI-END ;");
+    events(&output, &enter);
+    try machine.interpretLine("0 GUI-MENU-OPEN ! 2 GUI-MENU-ITEM ! FRAME-2 GUI-MENU-OPEN @");
+    try expectStack(machine, &.{ 2, -1 });
+    machine.data_depth = 0;
+    try machine.interpretLine("0 GUI-MENU-OPEN ! 7 GUI-MENU-ITEM ! FRAME-2 GUI-MENU-ITEM @ 5 GUI-MENU-OPEN ! FRAME-2 GUI-MENU-OPEN @");
+    try expectStack(machine, &.{ -1, 0, -9, -1 });
+}
+
+test "a list and a choice take their items from a word" {
+    try skipWithout(&.{.graphics});
+    var output = Output{ .has_window = true };
+    const machine = try guiMachine(&output);
+    defer destroyMachine(machine);
+    try machine.interpretLine(": COLOR-NAME ( i -- c-addr u ) DUP 0= IF DROP S\" Red\" EXIT THEN 1 = IF S\" Green\" ELSE S\" Blue|Black\" THEN ;");
+    try machine.interpretLine("VARIABLE PICK : FRAME-1 GUI-BEGIN ['] COLOR-NAME 3 PICK 10 10 0 GUI-LIST-XT GUI-END ;");
+    // An item may hold |; Down twice and Enter choose it.
+    const keys = [_]forth.InputEvent{ key(257), key(257), key(13) };
+    events(&output, &keys);
+    try machine.interpretLine("FRAME-1 PICK @");
+    try expectStack(machine, &.{ -1, 2 });
+    machine.data_depth = 0;
+    // Without items the list draws nothing, keeps var, and still counts for the focus.
+    const on_ok = click(12, 62);
+    events(&output, &on_ok);
+    try machine.interpretLine("GUI-BEGIN ['] COLOR-NAME 0 PICK 10 10 60 GUI-LIST-XT S\" OK\" 10 60 GUI-BUTTON GUI-END PICK @ GUI-FOCUSED @");
+    try expectStack(machine, &.{ 0, -1, 2, 2 });
+    machine.data_depth = 0;
+    try machine.interpretLine("DRAWING FREE-IMAGE DISPLAY-WINDOW");
+    const down_enter = [_]forth.InputEvent{ key(257), key(13) };
+    events(&output, &down_enter);
+    try machine.interpretLine("['] COLOR-NAME 3 GUI-CHOOSE-XT ['] COLOR-NAME 0 GUI-CHOOSE-XT");
+    try expectStack(machine, &.{ 1, -1 });
+    try std.testing.expectEqual(@as(usize, 0), output.images_live);
+}

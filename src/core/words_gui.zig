@@ -18,7 +18,7 @@ pub const library_name = "*gui library*";
 
 /// The words of the library that HELP describes; the help test checks that the library
 /// defines each of them.
-pub const library_words = [_][]const u8{ "GUI-BACKGROUND", "GUI-FACE", "GUI-HOVER", "GUI-PRESSED", "GUI-TEXT", "GUI-DISABLED", "GUI-BORDER", "GUI-FIELD-FACE", "GUI-FOCUS", "GUI-SELECTION", "GUI-SELECTED-TEXT", "GUI-DEFAULT", "GUI-COLOR!", "GUI-COLOR@", "GUI-BORDER-WIDTH", "GUI-FOCUS-WIDTH", "GUI-KEY", "GUI-ENABLE", "GUI-BEGIN", "GUI-END", "GUI-TILES", "GUI-PANEL", "GUI-LABEL", "GUI-BUTTON-SIZE", "GUI-BUTTON", "GUI-CHECK", "GUI-FIELD", "GUI-LIST", "GUI-MENUBAR", "GUI-MENU", "GUI-FKEYS", "GUI-DIALOG", "GUI-YES-NO", "GUI-ASK", "GUI-MESSAGE", "GUI-CHOOSE" };
+pub const library_words = [_][]const u8{ "GUI-BACKGROUND", "GUI-FACE", "GUI-HOVER", "GUI-PRESSED", "GUI-TEXT", "GUI-DISABLED", "GUI-BORDER", "GUI-FIELD-FACE", "GUI-FOCUS", "GUI-SELECTION", "GUI-SELECTED-TEXT", "GUI-DEFAULT", "GUI-COLOR!", "GUI-COLOR@", "GUI-BORDER-WIDTH", "GUI-FOCUS-WIDTH", "GUI-KEY", "GUI-ENABLE", "GUI-BEGIN", "GUI-END", "GUI-TILES", "GUI-PANEL", "GUI-LABEL", "GUI-BUTTON-SIZE", "GUI-BUTTON", "GUI-CHECK", "GUI-FIELD", "GUI-LIST", "GUI-LIST-XT", "GUI-MENUBAR", "GUI-MENU", "GUI-FKEYS", "GUI-DIALOG", "GUI-YES-NO", "GUI-ASK", "GUI-MESSAGE", "GUI-CHOOSE", "GUI-CHOOSE-XT", "GUI-FOCUSED", "GUI-ACTIVE", "GUI-MENU-OPEN", "GUI-MENU-ITEM" };
 
 pub const group: library_loading.Group(@TypeOf(words_graphics.definitions[0])) = .{
     .vocabulary = "GUI",
