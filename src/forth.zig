@@ -282,11 +282,9 @@ pub const State = struct {
     trace_depth: usize = 0,
     /// +LTRACE: each line of an included file is shown before it is interpreted.
     line_trace: bool = false,
-    /// The values of ~~VALUE, whose TOs are shown, and whether the VALUE being defined
-    /// is one. Not part of an image.
+    /// The values of ~~VALUE, whose TOs are shown. Not part of an image.
     watched: [32]u16 = undefined,
     watched_count: usize = 0,
-    pending_watched: bool = false,
     /// After the operation of compiled code that last called a word or a built-in word
     /// through the host, 0 when the interpreter did: who starts an executeOperations.
     outer_pc: u16 = 0,
@@ -980,8 +978,10 @@ pub const State = struct {
         if (self.compiling and !self.words[id].immediate) {
             try self.compileCall(id);
         } else {
-            // Compiled code that starts here has no caller for ~~BT to show.
-            if (defs.debug_enabled) self.outer_pc = 0;
+            // Compiled code that starts here has no caller for ~~BT to show, unless a
+            // definition is interpreting this text (EVALUATE, INCLUDED): then the
+            // caller is the one that called that word.
+            if (defs.debug_enabled and self.call_depth == 0) self.outer_pc = 0;
             try self.executeWord(id);
         }
     }

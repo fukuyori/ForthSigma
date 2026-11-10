@@ -37,14 +37,11 @@ pub fn finishPending(self: *State, token: []const u8) RuntimeError!void {
         .colon_name => {
             self.beginDefinition(try self.appendWord(token, .colon, .drop, 0));
         },
-        .variable_name, .value_name => {
-            const id = try self.appendDataWord(token, if (pending == .value_name) .value else .variable, cell_size);
-            try self.writeCell(self.words[id].value, if (pending == .value_name) self.pending_constant else 0);
+        .variable_name, .value_name, .watched_value_name => {
+            const id = try self.appendDataWord(token, if (pending == .variable_name) .variable else .value, cell_size);
+            try self.writeCell(self.words[id].value, if (pending == .variable_name) 0 else self.pending_constant);
             // ~~VALUE: the TOs of this value are shown.
-            if (defs.debug_enabled and self.pending_watched) {
-                self.pending_watched = false;
-                try words_debug.watch(self, id);
-            }
+            if (defs.debug_enabled and pending == .watched_value_name) try words_debug.watch(self, id);
             // A variable can take a DOES> part, as in gforth, where VARIABLE is CREATE 0 ,.
             if (pending == .variable_name) self.last_created_word = id;
         },
@@ -183,7 +180,7 @@ pub fn bodyAddress(self: *State, id: u16) RuntimeError!Cell {
 
 pub fn isDefiningBuiltin(builtin: Builtin) bool {
     return switch (builtin) {
-        .define_colon, .define_variable, .define_fvariable, .define_constant, .define_value, .define_two_variable, .define_two_constant, .define_fconstant, .define_fvalue, .define_two_value, .define_buffer, .define_array => true,
+        .define_colon, .define_variable, .define_fvariable, .define_constant, .define_value, .define_two_variable, .define_two_constant, .define_fconstant, .define_fvalue, .define_two_value, .define_buffer, .define_array, .define_watched_value => true,
         else => false,
     };
 }
@@ -213,6 +210,10 @@ pub fn definingPending(self: *State, builtin: Builtin) RuntimeError!Pending {
         .define_value => blk: {
             self.pending_constant = try self.pop();
             break :blk .value_name;
+        },
+        .define_watched_value => blk: {
+            self.pending_constant = try self.pop();
+            break :blk .watched_value_name;
         },
         .define_two_variable => .two_variable_name,
         .define_two_constant => blk: {

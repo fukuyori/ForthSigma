@@ -56,12 +56,9 @@ pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
             try compileTildeBt(self, 5);
             try self.compileThen();
         } else try compileTildeBt(self, 5),
-        // ~~VALUE ( x "name" -- ): a VALUE whose every TO is shown.
-        .define_watched_value => {
-            self.pending_constant = try self.pop();
-            self.pending_watched = true;
-            self.pending = .value_name;
-        },
+        // ~~VALUE ( x "name" -- ): a VALUE whose every TO is shown. As the other
+        // defining words, it reads the name at once when a definition runs it.
+        .define_watched_value => try self.runDefiningWord(builtin),
         // (~~TO) ( x c-addr u xt -- x ): c-addr u is where the TO is, xt the value.
         .watch_run => {
             const id = try self.wordId(try self.pop());

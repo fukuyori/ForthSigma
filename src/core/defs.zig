@@ -851,7 +851,7 @@ pub const Control = struct { kind: ControlKind, address: u16, locals: u16 = 0, l
 
 pub const Loop = struct { index: Cell, limit: Cell, exit_pc: u16, exit_after_first: bool = false };
 
-pub const Pending = enum { none, colon_name, variable_name, constant_name, array_name, forget_name, tick_name, value_name, to_name, char_name, postpone_name, fconstant_name, fvalue_name, fvariable_name, two_constant_name, two_value_name, two_variable_name, buffer_name, plus_to_name, action_of_name };
+pub const Pending = enum { none, colon_name, variable_name, constant_name, array_name, forget_name, tick_name, value_name, watched_value_name, to_name, char_name, postpone_name, fconstant_name, fvalue_name, fvariable_name, two_constant_name, two_value_name, two_variable_name, buffer_name, plus_to_name, action_of_name };
 
 pub const StringWord = enum { s_quote, s_escape_quote, print_escape, print_paren, c_quote, abort_quote };
 

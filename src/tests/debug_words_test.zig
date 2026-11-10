@@ -150,6 +150,37 @@ test "~~VALUE shows every TO of its value" {
     try std.testing.expectEqualStrings("", shown(&output));
 }
 
+test "~~VALUE in a definition reads its name at once, and a failed one leaves nothing" {
+    try support.skipWithout(&.{.debug});
+    var output = Output{};
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
+
+    // As VALUE: the word exists when the rest of the definition runs.
+    try machine.interpretLine(": MAKE ~~VALUE LATESTXT ; 7 MAKE V ' V = V");
+    try expectStack(machine, &.{ -1, 7 });
+    try machine.interpretLine("2DROP 8 TO V");
+    try std.testing.expectEqualStrings("\n*the terminal*:0:12:<1> #8 `V \n", shown(&output));
+
+    // A ~~VALUE without a name is an error, and the VALUE after it is an ordinary one.
+    try machine.interpretLine(": BAD S\" 7 ~~VALUE\" EVALUATE ; ' BAD CATCH DROP 1 VALUE NORMAL 2 TO NORMAL NORMAL");
+    try std.testing.expectEqual(@as(forth.Cell, 2), try machine.pop());
+    try std.testing.expectEqualStrings("", shown(&output));
+}
+
+test "~~BT shows the callers beyond an EVALUATE" {
+    try support.skipWithout(&.{.debug});
+    var output = Output{};
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
+
+    try machine.interpretLine(": INNER ~~BT ; : OUTER S\" INNER\" EVALUATE ; : TOP OUTER ; TOP");
+    try std.testing.expectEqualStrings("\n*the terminal*:0:9:<0> \nBACKTRACE:\n  OUTER\n  TOP\n", shown(&output));
+    // The interpreter itself has no caller, also after that.
+    try machine.interpretLine("INNER");
+    try std.testing.expectEqualStrings("\n*the terminal*:0:9:<0> \nBACKTRACE:\n", shown(&output));
+}
+
 test "+LTRACE shows the lines of an included file before they are interpreted" {
     try support.skipWithout(&.{ .debug, .files });
     var output = Output{};
