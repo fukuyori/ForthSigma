@@ -698,6 +698,8 @@ pub const entries = [_]Entry{
     .{ .name = "IMAGE-FLIP", .stack = "( n -- )", .text = "How COPY-RECT and PUT-IMAGE flip: 0 not, 1 left and right, 2 top and bottom, 3 both (FORTH/Sigma graphics)." },
     .{ .name = "COPY-RECT", .stack = "( src sx sy w h dx dy -- )", .text = "Copy the w by h rectangle at sx sy of image src to dx dy of the image drawn on, with TRANSPARENT and IMAGE-FLIP; parts outside are left out (FORTH/Sigma graphics)." },
     .{ .name = "PUT-IMAGE", .stack = "( src x y -- )", .text = "Copy the whole image src to x y of the image drawn on, as COPY-RECT does (FORTH/Sigma graphics)." },
+    .{ .name = "LOAD-IMAGE", .stack = "( c-addr u -- img )", .text = "Read a PNG, BMP, or PPM/PGM file into a new image; pixels more than half transparent get the TRANSPARENT color, black when none. IMAGE FORMAT ERROR (-279) for a file it cannot read (FORTH/Sigma graphics)." },
+    .{ .name = "GFX-IMAGE-LOAD", .stack = "( c-addr u key -- img ior )", .text = "Primitive for LOAD-IMAGE: key is the color of the transparent pixels, negative for black; ior of opening or reading the file, img 0 then (FORTH/Sigma)." },
     .{ .name = "GFX-IMAGE-NEW", .stack = "( w h -- img )", .text = "Primitive for NEW-IMAGE (FORTH/Sigma)." },
     .{ .name = "GFX-IMAGE-FREE", .stack = "( img -- )", .text = "Primitive for FREE-IMAGE (FORTH/Sigma)." },
     .{ .name = "GFX-IMAGE-SIZE", .stack = "( img -- w h )", .text = "Primitive for IMAGE-SIZE (FORTH/Sigma)." },

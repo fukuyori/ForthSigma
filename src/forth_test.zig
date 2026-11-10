@@ -19,6 +19,7 @@ comptime {
     _ = @import("tests/graphics_test.zig");
     _ = @import("tests/library_loading_test.zig");
     _ = @import("tests/graphics_images_test.zig");
+    _ = @import("tests/load_image_test.zig");
     _ = @import("tests/gamepad_test.zig");
     _ = @import("tests/sound_test.zig");
     _ = @import("tests/audio_test.zig");

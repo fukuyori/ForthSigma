@@ -18,7 +18,9 @@ const Cell = memory_map.Cell;
 const RuntimeError = defs.RuntimeError;
 const State = forth.State;
 
-pub const words = [_]Builtin{ .gfx_image_new, .gfx_image_free, .gfx_image_size, .gfx_target, .gfx_target_query, .gfx_copy };
+pub const words = [_]Builtin{ .gfx_image_new, .gfx_image_free, .gfx_image_size, .gfx_target, .gfx_target_query, .gfx_copy, .gfx_image_load };
+
+pub const max_side = words_graphics.max_side;
 
 /// At most this many images, and this many bytes of them in all; the screen is not counted.
 pub const max_images = 256;
@@ -83,6 +85,11 @@ pub fn execute(self: *State, builtin: Builtin) RuntimeError!void {
             const source = try self.pop();
             try copyRect(self, source, sx, sy, w, h, dx, dy, key, flip);
         },
+        .gfx_image_load => {
+            const key = try self.pop();
+            const name = try self.memoryRange();
+            for (try @import("graphics_decode.zig").loadImage(self, name, key)) |value| try self.push(value);
+        },
         else => unreachable,
     }
 }
@@ -126,6 +133,16 @@ pub fn imageSize(self: *State, handle: Cell) RuntimeError![2]usize {
     if (handle == screen) return .{ @intCast(self.gfx_width), @intCast(self.gfx_height) };
     const slot = try slotOf(self, handle);
     return .{ slot.width, slot.height };
+}
+
+/// Makes a black image of the pool, as NEW-IMAGE does, and returns its handle.
+pub fn createImage(self: *State, width: Cell, height: Cell) RuntimeError!Cell {
+    return newImage(self, width, height);
+}
+
+/// Frees an image that was just made, when filling it failed.
+pub fn freeHandle(self: *State, handle: Cell) void {
+    freeImage(self, handle) catch {};
 }
 
 fn newImage(self: *State, width: Cell, height: Cell) RuntimeError!Cell {

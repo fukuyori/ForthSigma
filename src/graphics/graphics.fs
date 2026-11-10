@@ -515,3 +515,7 @@ VARIABLE (FLIP)  0 (FLIP) !
 : COPY-RECT ( src sx sy w h dx dy -- )   (TRANSPARENT) @ (FLIP) @ GFX-COPY ;
 \ Copy the whole image src to x y of the image drawn on.
 : PUT-IMAGE { src x y | w h -- }   src IMAGE-SIZE TO h TO w  src 0 0 w h x y COPY-RECT ;
+\ Read a PNG, BMP, or PPM/PGM file into a new image. Pixels more than half transparent
+\ get the TRANSPARENT color (black when there is none); IMAGE FORMAT ERROR (-279) for
+\ a file it cannot read.
+: LOAD-IMAGE ( c-addr u -- img )   (TRANSPARENT) @ GFX-IMAGE-LOAD THROW ;

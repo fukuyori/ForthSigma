@@ -669,6 +669,7 @@ pub const Builtin = enum {
     gfx_target,
     gfx_target_query,
     gfx_copy,
+    gfx_image_load,
 };
 
 pub const HeapResult = union(enum) { address: Cell, no_memory, bad_pointer };
@@ -712,7 +713,7 @@ pub const error_codes = [_]struct { RuntimeError, Cell }{
     .{ error.GraphicsUnavailable, -270 },   .{ error.NoCanvas, -271 },          .{ error.UserInterrupt, -28 },
     .{ error.FontUnavailable, -272 },     .{ error.TclFailed, -273 },        .{ error.InvalidMml, -274 },
     .{ error.AudioUnavailable, -275 },     .{ error.SampleInvalid, -276 },
-    .{ error.ModInvalid, -277 },            .{ error.InvalidImageHandle, -278 },
+    .{ error.ModInvalid, -277 },            .{ error.InvalidImageHandle, -278 }, .{ error.ImageInvalid, -279 },
 };
 
 pub const throw_code_undefined_word: Cell = -13;
@@ -879,6 +880,8 @@ pub const RuntimeError = error{
     ModInvalid,
     /// A handle that names no image of the pool: never made, freed, or from before a restore.
     InvalidImageHandle,
+    /// A file LOAD-IMAGE cannot read: not a PNG, BMP, or PPM/PGM file it knows, or damaged.
+    ImageInvalid,
 };
 
 pub fn floatBits(value: Float) Cell {

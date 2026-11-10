@@ -55,11 +55,12 @@ pub const definitions = [_]struct { []const u8, Builtin }{
     .{ "GFX-TARGET", .gfx_target },
     .{ "GFX-TARGET@", .gfx_target_query },
     .{ "GFX-COPY", .gfx_copy },
+    .{ "GFX-IMAGE-LOAD", .gfx_image_load },
 };
 
 /// The words of the graphics library that HELP describes; the help test checks that the
 /// library defines each of them.
-pub const library_words = [_][]const u8{ "RGB", "COLOR", "COLOR!", "COLOR@", "PSET", "CLS", "LINE", "RECT", "FILL-RECT", "CIRCLE", "FILL-CIRCLE", "PAINT", "SAVE-PPM", "SAVE-BMP", "SAVE-PNG", "SHOW", "DISPLAY-TERMINAL", "DISPLAY-WINDOW", "TERMINAL-BLOCKS", "TERMINAL-SIXEL", "DISPLAY-COLORS", "DITHER", "TCL", "TCL-EVAL", "TCL-ERROR$", "TCL-EVENT", "TCL-PROGRAM", "TCL-STOP", "DISPLAY-TK", "INKEY", "KEY-HELD?", "MOUSE", "WINDOW-SIZE", "MOUSE-ON", "MOUSE-OFF", "FRAME", "TEXT", "TEXT-SCALE", "TEXT-WIDTH", "TEXT-HEIGHT", "BUILTIN-FONT", "LOAD-FONT", "SYSTEM-FONT", "K-UP", "K-DOWN", "K-LEFT", "K-RIGHT", "K-HOME", "K-END", "K-PRIOR", "K-NEXT", "K-INSERT", "K-DELETE", "K-F1", "K-F2", "K-F3", "K-F4", "K-F5", "K-F6", "K-F7", "K-F8", "K-F9", "K-F10", "K-F11", "K-F12", "GAMEPAD-POLL", "GAMEPAD?", "GAMEPAD-ID", "GAMEPAD-BUTTONS", "GAMEPAD-MAPPED?", "GAMEPAD-AXES", "GAMEPAD-BUTTON-COUNT", "GAMEPAD-HATS", "GAMEPAD-AXIS", "GAMEPAD-HAT", "GAMEPAD-BUTTON?", "GAMEPAD-NAME", "GAMEPAD-MAP", "GAMEPAD-GUID", "SCREEN", "NEW-IMAGE", "FREE-IMAGE", "IMAGE-SIZE", "DRAW-TO", "DRAWING", "TRANSPARENT", "IMAGE-FLIP", "COPY-RECT", "PUT-IMAGE" };
+pub const library_words = [_][]const u8{ "RGB", "COLOR", "COLOR!", "COLOR@", "PSET", "CLS", "LINE", "RECT", "FILL-RECT", "CIRCLE", "FILL-CIRCLE", "PAINT", "SAVE-PPM", "SAVE-BMP", "SAVE-PNG", "SHOW", "DISPLAY-TERMINAL", "DISPLAY-WINDOW", "TERMINAL-BLOCKS", "TERMINAL-SIXEL", "DISPLAY-COLORS", "DITHER", "TCL", "TCL-EVAL", "TCL-ERROR$", "TCL-EVENT", "TCL-PROGRAM", "TCL-STOP", "DISPLAY-TK", "INKEY", "KEY-HELD?", "MOUSE", "WINDOW-SIZE", "MOUSE-ON", "MOUSE-OFF", "FRAME", "TEXT", "TEXT-SCALE", "TEXT-WIDTH", "TEXT-HEIGHT", "BUILTIN-FONT", "LOAD-FONT", "SYSTEM-FONT", "K-UP", "K-DOWN", "K-LEFT", "K-RIGHT", "K-HOME", "K-END", "K-PRIOR", "K-NEXT", "K-INSERT", "K-DELETE", "K-F1", "K-F2", "K-F3", "K-F4", "K-F5", "K-F6", "K-F7", "K-F8", "K-F9", "K-F10", "K-F11", "K-F12", "GAMEPAD-POLL", "GAMEPAD?", "GAMEPAD-ID", "GAMEPAD-BUTTONS", "GAMEPAD-MAPPED?", "GAMEPAD-AXES", "GAMEPAD-BUTTON-COUNT", "GAMEPAD-HATS", "GAMEPAD-AXIS", "GAMEPAD-HAT", "GAMEPAD-BUTTON?", "GAMEPAD-NAME", "GAMEPAD-MAP", "GAMEPAD-GUID", "SCREEN", "NEW-IMAGE", "FREE-IMAGE", "IMAGE-SIZE", "DRAW-TO", "DRAWING", "TRANSPARENT", "IMAGE-FLIP", "COPY-RECT", "PUT-IMAGE", "LOAD-IMAGE" };
 
 /// The words of the part of the library that uses floating-point numbers, which a build
 /// without them leaves out.
@@ -84,7 +85,7 @@ const rgb_mask: u32 = 0x00ff_ffff;
 pub fn execute(self: *State, builtin: Builtin) RuntimeError!void {
     switch (builtin) {
         .gfx_gamepad_poll, .gfx_gamepad_query, .gfx_gamepad_name, .gfx_gamepad_map, .gfx_gamepad_guid => try @import("gamepad.zig").execute(self, builtin),
-        .gfx_image_new, .gfx_image_free, .gfx_image_size, .gfx_target, .gfx_target_query, .gfx_copy => try graphics_images.execute(self, builtin),
+        .gfx_image_new, .gfx_image_free, .gfx_image_size, .gfx_target, .gfx_target_query, .gfx_copy, .gfx_image_load => try graphics_images.execute(self, builtin),
         .gfx_init => {
             const height = try self.pop();
             const width = try self.pop();

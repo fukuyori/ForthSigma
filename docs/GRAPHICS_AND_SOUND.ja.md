@@ -84,6 +84,9 @@ Windowsのウィンドウは専用のスレッドで動くので、Forthが入�
 | `PUT-IMAGE` | ( src x y -- ) | 画像 src 全体を、描画先の x y に写します。 |
 | `TRANSPARENT` | ( rgb\|-1 -- ) | `COPY-RECT` と `PUT-IMAGE` は、この色の画素を写しません。-1（初めの値）なら、すべて写します。 |
 | `IMAGE-FLIP` | ( n -- ) | `COPY-RECT` と `PUT-IMAGE` で長方形を反転します。0は反転なし（初めの値）、1は左右、2は上下、3は両方です。ほかの値は `NUMBER ERROR !` です。 |
+| `LOAD-IMAGE` | ( c-addr u -- img ) | PNG、BMP、PPM/PGM のファイルを新しい画像に読み込みます（下を参照）。 |
+
+`LOAD-IMAGE` が読める形式は次のとおりです。PNG はすべての色の種類とビット深度で、インターレース（Adam7）も読めます。BMP は1、4、8、16、24、32ビットで、行が下からのものも上からのものも、色のマスク（`BI_BITFIELDS`）のものも、古い12バイトの見出しのものも読めます。RLE で圧縮したものは読めません。PPM と PGM は、2進（P6、P5）とテキスト（P3、P2）で、最大値は65535までのどの値でも読めます。16ビットの値は上位8ビットを使い、8ビットより少ない値は0〜255に広げます。画像は不透明なので、半分以上透明な画素（アルファが128未満。アルファの値、PNG の `tRNS`、BMP のアルファのマスクによる）は `TRANSPARENT` で決めた色にします。-1 なら黒にします。`TRANSPARENT` の後でスプライトを読み込めば、`PUT-IMAGE` は透明な部分を写しません。開けない・読めないファイルは、その ior で `THROW` します。ほかの形式や壊れたファイル（PNG は各チャンクの CRC と圧縮データのチェックサムを確かめます）は `IMAGE FORMAT ERROR !`（THROW -279）、各辺が16384より大きい絵は `NUMBER ERROR !` です。ファイル全体を一時的に辞書の外のメモリーに読むので、ファイルは2 GiBまでです。`-Dfiles=false` の版でも使えます。
 
 ```forth
 REQUIRE-GRAPHICS  ALSO GRAPHICS
@@ -95,7 +98,7 @@ $FF00FF TRANSPARENT
 BALLS  1 IMAGE-FLIP BALL 0 0 PUT-IMAGE  0 IMAGE-FLIP  SHOW
 ```
 
-画像を指さないハンドル（作っていない、解放した、`SAVE` や `SAVESYS` の前から持っていた）は `INVALID IMAGE HANDLE !`（THROW -278）です。同じ画像の重なる場所へ反転して写すと `NUMBER ERROR !` になるので、別の画像を経由して写してください。画像は画面と同じく辞書の一部ではありません。辞書を復元すると（`SAVESYS` で作った実行ファイルの起動も）すべて解放されるので、プログラムは起動後に画像を作ります。保存した辞書の変数に残したハンドルは、新しい画像が同じ位置と世代番号になると、偶然その画像を指すことがあります。ハンドルを残さずに、画像を作り直してください。`TRANSPARENT` と `IMAGE-FLIP` の値は、`COLOR` と同じくライブラリの変数で、辞書と一緒に保存されます。下にある `GFX-` の語は、`GFX-IMAGE-NEW` ( w h -- img )、`GFX-IMAGE-FREE` ( img -- )、`GFX-IMAGE-SIZE` ( img -- w h )、`GFX-TARGET` ( img -- )、`GFX-TARGET@` ( -- img )、`GFX-COPY` ( src sx sy w h dx dy key flip -- ) です。key は透明色で、負の数なら透明色なしです。
+画像を指さないハンドル（作っていない、解放した、`SAVE` や `SAVESYS` の前から持っていた）は `INVALID IMAGE HANDLE !`（THROW -278）です。同じ画像の重なる場所へ反転して写すと `NUMBER ERROR !` になるので、別の画像を経由して写してください。画像は画面と同じく辞書の一部ではありません。辞書を復元すると（`SAVESYS` で作った実行ファイルの起動も）すべて解放されるので、プログラムは起動後に画像を作ります。保存した辞書の変数に残したハンドルは、新しい画像が同じ位置と世代番号になると、偶然その画像を指すことがあります。ハンドルを残さずに、画像を作り直してください。`TRANSPARENT` と `IMAGE-FLIP` の値は、`COLOR` と同じくライブラリの変数で、辞書と一緒に保存されます。下にある `GFX-` の語は、`GFX-IMAGE-NEW` ( w h -- img )、`GFX-IMAGE-FREE` ( img -- )、`GFX-IMAGE-SIZE` ( img -- w h )、`GFX-TARGET` ( img -- )、`GFX-TARGET@` ( -- img )、`GFX-COPY` ( src sx sy w h dx dy key flip -- )、`GFX-IMAGE-LOAD` ( c-addr u key -- img ior ) です。`GFX-COPY` の key は透明色で、負の数なら透明色なしです。`GFX-IMAGE-LOAD` の key は透明な画素に付ける色です。
 
 ### 文字
 
