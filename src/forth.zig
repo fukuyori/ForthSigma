@@ -43,6 +43,7 @@ const words_pictured = @import("core/words_pictured.zig");
 const words_stack = @import("core/words_stack.zig");
 const words_strings = @import("core/words_strings.zig");
 const words_system = @import("core/words_system.zig");
+const words_tools = @import("core/words_tools.zig");
 const words_xchar = @import("core/words_xchar.zig");
 const Builtin = defs.Builtin;
 pub const Cell = memory_map.Cell;
@@ -261,6 +262,8 @@ pub const State = struct {
     system_status: Cell = 0,
     capture_failed: bool = false,
     tmp_string_index: usize = 0,
+    /// The first local variable of the declarations (LOCAL) is making, until 0 0 ends them.
+    paren_local_first: ?usize = null,
     locals: [max_locals]Local = undefined,
     local_count: usize = 0,
     /// Frame bytes used so far by the definition being compiled.
@@ -583,6 +586,10 @@ pub const State = struct {
             .{ "XC!+?", .xc_store_plus_question }, .{ "XC,", .xc_comma },                .{ "XCHAR+", .xchar_plus },           .{ "XCHAR-", .xchar_minus },          .{ "XEMIT", .xemit },
             .{ "XKEY", .xkey },                    .{ "XKEY?", .xkey_question },         .{ "X-WIDTH", .x_width },             .{ "XC-WIDTH", .xc_width },           .{ "+X/STRING", .plus_x_string },
             .{ "X\\STRING-", .x_string_minus },.{ "-TRAILING-GARBAGE", .minus_trailing_garbage }, .{ "XHOLD", .xhold }, .{ "EKEY>XCHAR", .ekey_to_xchar }, .{ "X@+/STRING", .x_fetch_plus_string },
+            .{ "SUBSTITUTE", .substitute },      .{ "REPLACES", .replaces },           .{ "UNESCAPE", .unescape },           .{ "$SUBSTITUTE", .string_substitute }, .{ "$UNESCAPE", .string_unescape },
+            .{ "LATEST", .latest },              .{ "LATESTXT", .latestxt },           .{ ">NAME", .to_name },               .{ "ID.", .id_dot },                  .{ ".NAME", .id_dot },
+            .{ "ALIAS", .alias },                .{ "~~", .debug_tilde },              .{ "(~~)", .debug_tilde_run },        .{ "ASSERT(", .assert_paren },        .{ "(ASSERT)", .assert_run },
+            .{ "EMIT?", .emit_question },        .{ "(LOCAL)", .paren_local },
         };
 
     fn installBuiltins(self: *State) void {
@@ -612,7 +619,7 @@ pub const State = struct {
 
     fn isImmediateBuiltin(builtin: Builtin) bool {
         return switch (builtin) {
-            .compile_if, .compile_else, .compile_ahead, .compile_then, .compile_begin, .compile_end, .compile_again, .compile_while, .compile_repeat, .compile_do, .compile_q_do, .compile_loop, .compile_plus_loop, .compile_does, .compile_case, .compile_of, .compile_endof, .compile_endcase, .compile_exit, .compile_recurse, .leave, .bracket_if, .bracket_else, .bracket_then, .bracket_defined, .bracket_undefined, .bracket_ifdef, .bracket_ifundef, .bracket_do, .bracket_q_do, .bracket_loop, .bracket_plus_loop, .bracket_i, .bracket_begin, .bracket_until, .bracket_again, .bracket_while, .bracket_repeat, .bracket_for, .bracket_next, .end_definition, .literal, .fliteral, .sliteral, .two_literal, .defers, .bracket_compile, .question_exit, .question_leave, .compile_question_of, .compile_contof, .compile_next_case => true,
+            .compile_if, .compile_else, .compile_ahead, .compile_then, .compile_begin, .compile_end, .compile_again, .compile_while, .compile_repeat, .compile_do, .compile_q_do, .compile_loop, .compile_plus_loop, .compile_does, .compile_case, .compile_of, .compile_endof, .compile_endcase, .compile_exit, .compile_recurse, .leave, .bracket_if, .bracket_else, .bracket_then, .bracket_defined, .bracket_undefined, .bracket_ifdef, .bracket_ifundef, .bracket_do, .bracket_q_do, .bracket_loop, .bracket_plus_loop, .bracket_i, .bracket_begin, .bracket_until, .bracket_again, .bracket_while, .bracket_repeat, .bracket_for, .bracket_next, .end_definition, .literal, .fliteral, .sliteral, .two_literal, .defers, .bracket_compile, .question_exit, .question_leave, .compile_question_of, .compile_contof, .compile_next_case, .debug_tilde, .assert_paren => true,
             else => false,
         };
     }
@@ -1336,7 +1343,7 @@ pub const State = struct {
         }
     }
 
-    const word_modules = .{ words_stack, words_arithmetic, words_memory, words_output, words_input, words_compiling, words_float, words_pictured, words_dictionary, words_system, words_files, words_strings, words_help, words_defining, words_graphics, words_audio, words_xchar };
+    const word_modules = .{ words_stack, words_arithmetic, words_memory, words_output, words_input, words_compiling, words_float, words_pictured, words_dictionary, words_system, words_files, words_strings, words_help, words_defining, words_graphics, words_audio, words_xchar, words_tools };
 
     /// For each built-in word, the index in `word_modules` of the file that executes it.
     const word_owner = blk: {

@@ -51,6 +51,9 @@ pub const Output = struct {
     files: [5]FakeFile = .{ .{}, .{}, .{}, .{}, .{} },
     stdout_bytes: [64]u8 = undefined,
     stdout_len: usize = 0,
+    /// What was written to STDERR (as ~~ does), as far as it fits.
+    stderr_bytes: [512]u8 = undefined,
+    stderr_len: usize = 0,
     /// Two graphics images in turn, so that a new one is given while the old one stays;
     /// an image of more than `framebuffer_capacity` pixels fails, as does any image when
     /// `framebuffer_fails` is set.
@@ -485,6 +488,13 @@ pub fn fakeWrite(context: ?*anyopaque, fileid: forth.Cell, bytes: []const u8) fo
         const output = fakeOutput(context);
         @memcpy(output.stdout_bytes[output.stdout_len .. output.stdout_len + bytes.len], bytes);
         output.stdout_len += bytes.len;
+        return 0;
+    }
+    if (fileid == forth.stderr_fileid) {
+        const output = fakeOutput(context);
+        const count = @min(bytes.len, output.stderr_bytes.len - output.stderr_len);
+        @memcpy(output.stderr_bytes[output.stderr_len..][0..count], bytes[0..count]);
+        output.stderr_len += count;
         return 0;
     }
     const file = fakeFile(context, fileid) orelse return forth.errnoIor(forth.errno_bad_file);

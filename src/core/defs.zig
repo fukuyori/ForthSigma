@@ -676,6 +676,23 @@ pub const Builtin = enum {
     gfx_indexed,
     gfx_row_shift,
     gfx_row_color,
+    // The rest of gforth's words (#417): text substitution, tools, EMIT?, (LOCAL).
+    substitute,
+    replaces,
+    unescape,
+    string_substitute,
+    string_unescape,
+    latest,
+    latestxt,
+    to_name,
+    id_dot,
+    alias,
+    debug_tilde,
+    debug_tilde_run,
+    assert_paren,
+    assert_run,
+    emit_question,
+    paren_local,
 };
 
 pub const HeapResult = union(enum) { address: Cell, no_memory, bad_pointer };

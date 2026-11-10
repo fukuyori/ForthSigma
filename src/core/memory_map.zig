@@ -234,6 +234,14 @@ pub const terminal_source_name_address: Cell = 0x0d00;
 
 pub const evaluate_source_name_address: Cell = 0x0d20;
 
+/// The first of the replacements REPLACES made (0 for none), a list in the heap that
+/// SUBSTITUTE reads: each block holds the next one, the name's length, the text's length,
+/// the name, and the text. In memory, so that images keep it.
+pub const replacements_address: Cell = 0x0380;
+
+/// The counted string ASSERT( gives THROW -2 ("assertion failed").
+pub const assert_message_address: Cell = 0x0388;
+
 /// Results of NAME>STRING, eight 256-byte buffers used in turn, and the WORD buffer.
 pub const name_buffer_base: Cell = 0x0400;
 

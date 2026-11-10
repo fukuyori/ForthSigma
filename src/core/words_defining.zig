@@ -64,7 +64,7 @@ pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
         // NAME>COMPILE ( nt -- xt1 xt2 ): xt2 is EXECUTE for an immediate word, COMPILE, for others.
         .name_to_compile => {
             const id = try self.validNameToken(try self.pop());
-            try self.push(id);
+            try self.push(self.synonymTarget(id));
             try self.push(self.builtinWord(if (self.words[id].immediate) .execute else .compile_comma));
         },
         // BEGIN-STRUCTURE name ( -- addr 0 ): name is a VALUE that END-STRUCTURE sets to

@@ -23,6 +23,7 @@
 - `REQUIRE-GUI` loads a GUI written in Forth into the `GUI` vocabulary: buttons, check boxes, one-line text fields, lists, a menu bar with pull-down menus, a function key bar, panels (also from 9 tiles of an image), and dialogs, drawn each frame between `GUI-BEGIN` and `GUI-END`, and `GUI-ASK`, `GUI-MESSAGE`, and `GUI-CHOOSE`, which wait for the answer. The mouse, the keys (Tab moves the focus), and the first gamepad work them. The look is flat; every color is a role `GUI-COLOR!` sets, and the line widths are `GUI-BORDER-WIDTH` and `GUI-FOCUS-WIDTH`.
 - `MOUSE-EVENT ( -- x y button kind true | false )` gives each press, release, and notch of the wheel in order, from the terminal, the window, and the Tk window, so that a click between two reads is not lost as it is with `MOUSE`. The oldest of 64 are dropped when more come. The window and the Windows console now report the wheel.
 - `IMAGE-MODE` puts the pixels of `COPY-RECT` and `PUT-IMAGE` over, XORed, added, or mixed by `IMAGE-ALPHA` with those there, and `IMAGE-SCALE` draws them 1 to 16 times as large.
+- The rest of the gforth words chosen in #417: text substitution (`SUBSTITUTE`, `REPLACES`, `UNESCAPE`, `$SUBSTITUTE`, `$UNESCAPE`), the tools for names and debugging (`LATEST`, `LATESTXT`, `>NAME`, `ID.`, `.NAME`, `ALIAS`, `~~`, `ASSERT(`), `EMIT?`, and `(LOCAL)`. They behave as in gforth 0.7.9; `EMIT?`, which gforth lacks, follows the standard.
 
 ### Fixed
 
@@ -30,6 +31,7 @@
 
 ### Changed
 
+- `'`, `[']`, `NAME>INT`, and `NAME>COMPILE` of a `SYNONYM` word give the execution token of the original word, as in gforth.
 - `PLAY` now always has 8 voices: `PLAYS` takes 1 to 8 and `PLAY?` takes 0 to 8 on any chip, and the voices after a chip's own sound like the last chip chosen. `CHIPS` takes any chips, also both `MSX` and `ST` and chips with more than 8 voices (the ones past the 8th are not played). A program that does not use these sounds the same as before, sample for sample.
 - Larger limits: by default the dictionary has 32 MiB (before, 1 MiB) and the `ALLOCATE` heap 32 MiB (before, 896 KiB), each stack holds 4096 entries (before, 1024), and the dictionary holds 65535 words (before, 8192) with 1 MiB for their names (before, 256 KiB). An image may be 16384 pixels a side and 1 GiB (before, 8192 and 64 MiB), a font 64 MiB (before, 16 MiB), and the pool of samples is 64 MiB (before, 16 MiB). Physical memory is used only as a program fills the memory.
 - Words are found through a hash table of their names: defining 60,000 words takes about 0.06 seconds instead of about 8 seconds. Which word a name finds is unchanged.

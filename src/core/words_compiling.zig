@@ -96,7 +96,7 @@ pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
         .end_definition => try self.endDefinition(),
         .tick => {
             const name = (try self.nextSourceToken()) orelse return error.InvalidDefinition;
-            try self.push(try self.lookupOrFail(name));
+            try self.push(self.synonymTarget(try self.lookupOrFail(name)));
         },
         .to_body => try self.push(try self.bodyAddress(try self.wordId(try self.pop()))),
         // Compile the value on the stack into the definition (`[ 2 3 * ] LITERAL`).

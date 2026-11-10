@@ -88,7 +88,7 @@ pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
             if (found) |id| self.recordUse(id);
             try self.push(if (found) |id| @as(Cell, id) + 1 else 0);
         },
-        .name_to_int => try self.push(try self.validNameToken(try self.pop())),
+        .name_to_int => try self.push(self.synonymTarget(try self.validNameToken(try self.pop()))),
         .name_to_string => {
             const word = self.words[try self.validNameToken(try self.pop())];
             const slot = name_buffer_base + @as(Cell, @intCast(self.name_buffer_index)) * (max_name + 1);

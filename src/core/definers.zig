@@ -80,7 +80,7 @@ pub fn finishPending(self: *State, token: []const u8) RuntimeError!void {
             self.forgetFrom(id);
         },
         .tick_name => {
-            const id = try self.lookupOrFail(token);
+            const id = self.synonymTarget(try self.lookupOrFail(token));
             if (self.compiling) {
                 _ = try self.emit(.{ .kind = .execution_token, .value = id });
             } else try self.push(id);
@@ -160,6 +160,7 @@ pub fn endDefinition(self: *State) RuntimeError!void {
         if (self.words[self.current_word].source_file == frame.file_index + 1) self.words[self.current_word].source_end_line = frame.line;
     }
     self.local_count = 0;
+    self.paren_local_first = null;
     self.setCompiling(false);
     self.defining = false;
 }
