@@ -1381,6 +1381,59 @@ test "MOUSE gives the pixel under the mouse on the terminal and in the window, a
     try std.testing.expectEqualStrings("+-", output.mouse_calls[0..output.mouse_count]);
 }
 
+test "MOUSE-EVENT gives each press, release, and notch of the wheel in order" {
+    try skipWithout(&.{.graphics});
+    var output = Output{ .terminal_columns = 80, .terminal_rows = 24 };
+    const machine = try libraryMachine(&output, "8 4");
+    defer destroyMachine(machine);
+    output.cursor_row = 10;
+    try machine.interpretLine("MOUSE-ON DISPLAY-TERMINAL SHOW MOUSE-EVENT");
+    try expectStack(machine, &.{0});
+    machine.data_depth = 0;
+    // On the terminal: left pressed at pixel 2 1, moved, right pressed, both released at
+    // once by a move with no button, a notch of the wheel up and one down (one sideways
+    // is not told), and a key, which waits for INKEY.
+    const terminal = byteEvents("\x1b[<0;3;9M\x1b[<32;4;9M\x1b[<2;5;9M\x1b[<35;6;9M\x1b[<64;7;9M\x1b[<65;7;9M\x1b[<66;7;9Mk");
+    output.events = &terminal;
+    output.event_index = 0;
+    try machine.interpretLine(": EVENTS BEGIN MOUSE-EVENT WHILE REPEAT ; EVENTS INKEY");
+    try expectStack(machine, &.{
+        2, 1, 1, 1,
+        4, 1, 2, 1,
+        5, 1, 1, 2,
+        5, 1, 2, 2,
+        6, 1, 1, 3,
+        6, 1, -1, 3,
+        'k',
+    });
+    machine.data_depth = 0;
+
+    // A window: a click between two reads is not lost, and the wheel comes as notches.
+    const window = [_]forth.InputEvent{
+        .{ .window_mouse = .{ .x = 5, .y = 3, .buttons = 1 } },
+        .{ .window_mouse = .{ .x = 6, .y = 3, .buttons = 0 } },
+        .{ .window_mouse = .{ .x = 6, .y = 2, .buttons = 0, .wheel = -1 } },
+        .{ .window_mouse = .{ .x = 7, .y = 2, .buttons = 4 } },
+    };
+    output.events = &window;
+    output.event_index = 0;
+    try machine.interpretLine("EVENTS MOUSE");
+    try expectStack(machine, &.{ 5, 3, 1, 1, 6, 3, 1, 2, 6, 2, -1, 3, 7, 2, 4, 1, 7, 2, 4 });
+    machine.data_depth = 0;
+
+    // More than 64 events: the oldest are dropped.
+    var many: [70]forth.InputEvent = undefined;
+    for (&many, 0..) |*event, index| event.* = .{ .window_mouse = .{ .x = @intCast(index), .y = 0, .buttons = if (index % 2 == 0) 0 else 1 } };
+    output.events = &many;
+    output.event_index = 0;
+    // The window's last event above held the middle button: the first here releases it.
+    try machine.interpretLine("MOUSE DROP DROP DROP MOUSE-EVENT");
+    try expectStack(machine, &.{ 6, 0, 1, 2, -1 });
+    machine.data_depth = 0;
+    try machine.interpretLine(": COUNT-EVENTS 0 BEGIN MOUSE-EVENT WHILE 2DROP 2DROP 1+ REPEAT ; COUNT-EVENTS");
+    try expectStack(machine, &.{63});
+}
+
 test "SHOW on the terminal draws over the image it drew last when nothing was written since" {
     try skipWithout(&.{.graphics});
     var output = Output{ .terminal_columns = 80, .terminal_rows = 24 };
@@ -1875,6 +1928,17 @@ test "TCL-EVAL sends a script to the Tcl program it starts, and gives its result
     try machine.interpretLine("TCL-EVENT . TYPE TCL-EVENT . INKEY INKEY INKEY");
     try std.testing.expectEqualStrings("-1 first0 ", output.written());
     try expectStack(machine, &.{ 258, 97, -1 });
+}
+
+test "MOUSE-EVENT reads the presses and the wheel the Tcl program sends" {
+    try skipWithout(&.{.graphics});
+    var output = Output{};
+    const machine = try libraryMachine(&output, "4 4");
+    defer destroyMachine(machine);
+    // Pressed, released, and a notch down at 2 3, then up; a fifth number is ignored.
+    output.process_replies = "R 0 0\n" ++ "M 0 5\n1 1 1M 0 5\n2 3 0M 0 8\n2 3 0 -1M 0 9\n2 3 0 1 9";
+    try machine.interpretLine("S\" sigma_show\" TCL : EVENTS BEGIN MOUSE-EVENT WHILE REPEAT ; EVENTS");
+    try expectStack(machine, &.{ 1, 1, 1, 1, 2, 3, 1, 2, 2, 3, -1, 3, 2, 3, 1, 3 });
 }
 
 test "TCL-EVENT and MOUSE read what the Tcl program sends without waiting, and a lost program starts again" {

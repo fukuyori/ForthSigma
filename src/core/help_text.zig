@@ -732,6 +732,8 @@ pub const entries = [_]Entry{
     .{ .name = "MOUSE", .stack = "( -- x y buttons )", .text = "The pixel of the image under the mouse, -1 -1 when not known, and the buttons held: 1 left, 2 right, 4 middle (FORTH/Sigma graphics)." },
     .{ .name = "MOUSE-ON", .stack = "( -- )", .text = "Have the terminal report the mouse, for MOUSE (FORTH/Sigma graphics)." },
     .{ .name = "MOUSE-OFF", .stack = "( -- )", .text = "Stop the terminal's mouse reports (FORTH/Sigma graphics)." },
+    .{ .name = "MOUSE-EVENT", .stack = "( -- x y button kind true | false )", .text = "The oldest mouse event not yet read, without waiting: kind 1 pressed, 2 released (button 1 left, 2 right, 4 middle), 3 the wheel (button 1 up, -1 down); 64 are kept, the oldest dropped (FORTH/Sigma graphics)." },
+    .{ .name = "GFX-MOUSE-EVENT", .stack = "( -- x y button kind true | false )", .text = "Primitive for MOUSE-EVENT (FORTH/Sigma)." },
     .{ .name = "FRAME", .stack = "( ms -- )", .text = "Wait until ms milliseconds have passed since the last FRAME, then SHOW, for animation at a steady pace (FORTH/Sigma graphics)." },
     .{ .name = "K-UP", .stack = "( -- key )", .text = "The code INKEY gives for the Up arrow key (FORTH/Sigma graphics)." },
     .{ .name = "K-DOWN", .stack = "( -- key )", .text = "The code INKEY gives for the Down arrow key (FORTH/Sigma graphics)." },

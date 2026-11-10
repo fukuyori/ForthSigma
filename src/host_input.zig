@@ -380,13 +380,18 @@ const windows = struct {
                 },
                 mouse_event => {
                     const flags = std.mem.readInt(u32, data[12..16], .little);
-                    if (flags & (mouse_wheeled | mouse_hwheeled) != 0) continue;
+                    if (flags & mouse_hwheeled != 0) continue;
                     const x = std.mem.readInt(i16, data[0..2], .little);
                     const y = std.mem.readInt(i16, data[2..4], .little);
+                    const state = std.mem.readInt(u32, data[4..8], .little);
                     // 1 left, 2 right, 4 the second from the left (middle), as in InputEvent.
-                    const buttons: u8 = @truncate(std.mem.readInt(u32, data[4..8], .little) & 7);
+                    const buttons: u8 = @truncate(state & 7);
+                    // The wheel: the high word of the button state is the distance, above
+                    // 0 up (away from the user).
+                    const distance: i16 = @bitCast(@as(u16, @truncate(state >> 16)));
+                    const wheel: i8 = if (flags & mouse_wheeled == 0 or distance == 0) 0 else if (distance > 0) 1 else -1;
                     const info = screen() orelse return null;
-                    return .{ .terminal_mouse = .{ .column = @as(i32, x) - info.window[0], .row = @as(i32, y) - info.window[1], .buttons = buttons } };
+                    return .{ .terminal_mouse = .{ .column = @as(i32, x) - info.window[0], .row = @as(i32, y) - info.window[1], .buttons = buttons, .wheel = wheel } };
                 },
                 // The console lost the focus: the keys down will not tell their release.
                 focus_event => {

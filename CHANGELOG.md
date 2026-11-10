@@ -15,6 +15,7 @@
 
 - Images besides the screen, as the pages of the MSX2 and the blitter of the Amiga: `NEW-IMAGE`, `FREE-IMAGE`, `IMAGE-SIZE`, `SCREEN`, `DRAW-TO` and `DRAWING` (the drawing words, `GFX-WIDTH`, `GFX-HEIGHT`, and the `SAVE-` words use the image drawn on; `SHOW` shows the screen), `COPY-RECT` and `PUT-IMAGE` with `TRANSPARENT` and `IMAGE-FLIP`. At most 256 images and 1 GiB in all; a handle that names no image gives the new error `INVALID IMAGE HANDLE` (-278).
 - `LOAD-IMAGE ( c-addr u -- img )` reads a PNG (every color type and bit depth, also interlaced), BMP (1 to 32 bits, not RLE), or PPM/PGM (binary and plain) file into a new image; pixels more than half transparent get the `TRANSPARENT` color. A file it cannot read gives the new error `IMAGE FORMAT ERROR` (-279). PNG data is inflated with the decompressor of Zig's standard library; no C library was added.
+- `MOUSE-EVENT ( -- x y button kind true | false )` gives each press, release, and notch of the wheel in order, from the terminal, the window, and the Tk window, so that a click between two reads is not lost as it is with `MOUSE`. The oldest of 64 are dropped when more come. The window and the Windows console now report the wheel.
 - `IMAGE-MODE` puts the pixels of `COPY-RECT` and `PUT-IMAGE` over, XORed, added, or mixed by `IMAGE-ALPHA` with those there, and `IMAGE-SCALE` draws them 1 to 16 times as large.
 
 ### Fixed

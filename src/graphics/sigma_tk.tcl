@@ -6,7 +6,8 @@
 # for an error, whose result is the message) and sends, whenever they happen, events
 # "E 0 <length>\n<text>" (sigma_event), keys "K 0 <length>\n<codes>" (the codes INKEY
 # gives, separated by spaces), releases "U 0 <length>\n<code>" of keys that went down
-# (also when the window loses the focus), and the mouse "M 0 <length>\n<x> <y> <buttons>".
+# (also when the window loses the focus), and the mouse "M 0 <length>\n<x> <y> <buttons>",
+# followed by " 1" or " -1" for a notch of the wheel up or down.
 
 wm withdraw .
 fconfigure stdin -translation binary -blocking 0
@@ -83,6 +84,9 @@ proc sigma_show {w h data} {
         bind .sigma <Motion> {sigma_mouse %x %y}
         bind .sigma <ButtonPress> {sigma_button %b 1 %x %y}
         bind .sigma <ButtonRelease> {sigma_button %b 0 %x %y}
+        # The wheel goes to the window with the focus on some systems: it is bound on ".",
+        # which the image fills.
+        bind . <MouseWheel> {sigma_wheel %D %x %y}
         bind . <KeyPress> {sigma_key %K %A %k}
         bind . <KeyRelease> {sigma_key_release %k}
         bind . <FocusOut> {sigma_keys_released}
@@ -148,6 +152,8 @@ proc sigma_button {button down x y} {
         1 { set bit 1 }
         2 { set bit 4 }
         3 { set bit 2 }
+        4 { if {$down} { sigma_mouse $x $y 1 }; return }
+        5 { if {$down} { sigma_mouse $x $y -1 }; return }
         default { return }
     }
     if {$down} {
@@ -158,13 +164,25 @@ proc sigma_button {button down x y} {
     sigma_mouse $x $y
 }
 
-# The pixel of the image under a point of the label, where the copy is in the middle.
-proc sigma_mouse {x y} {
+# The wheel: %D is a multiple of 120 on Windows and smaller numbers on macOS; each event
+# is one notch, up when it is above 0. X11 gives buttons 4 and 5 instead (sigma_button).
+proc sigma_wheel {delta x y} {
+    if {$delta == 0} return
+    sigma_mouse $x $y [expr {$delta > 0 ? 1 : -1}]
+}
+
+# The pixel of the image under a point of the label, where the copy is in the middle, and
+# a notch of the wheel (1 up, -1 down) when it turned.
+proc sigma_mouse {x y {wheel 0}} {
     set left [expr {([winfo width .sigma] - [image width sigma_view]) / 2}]
     set top [expr {([winfo height .sigma] - [image height sigma_view]) / 2}]
     set x [expr {($x - $left) * $::sigma_sub / $::sigma_zoom}]
     set y [expr {($y - $top) * $::sigma_sub / $::sigma_zoom}]
-    sigma_send M 0 "$x $y $::sigma_buttons"
+    if {$wheel == 0} {
+        sigma_send M 0 "$x $y $::sigma_buttons"
+    } else {
+        sigma_send M 0 "$x $y $::sigma_buttons $wheel"
+    }
 }
 
 # A key pressed: its name, its character, and the keyboard's code of the key, by which

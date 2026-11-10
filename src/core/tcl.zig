@@ -251,9 +251,11 @@ fn dispatch(self: *State, message: Message) RuntimeError!void {
                     if (message.kind == 'K') try graphics_input.windowKey(self, key, .tk) else graphics_input.windowKeyRelease(self, key, .tk);
                 }
             } else {
-                var values: [3]i32 = .{ -1, -1, 0 };
+                // x y buttons, and the wheel (1 up, -1 down) when it turned.
+                var values: [4]i32 = .{ -1, -1, 0, 0 };
                 for (&values) |*value| value.* = std.fmt.parseInt(i32, numbers.next() orelse "", 10) catch value.*;
-                graphics_input.windowMouse(self, values[0], values[1], @intCast(values[2] & 7));
+                const wheel: i8 = if (values[3] > 0) 1 else if (values[3] < 0) -1 else 0;
+                graphics_input.windowMouse(self, values[0], values[1], @intCast(values[2] & 7), wheel);
             }
         },
         else => freeText(self, &text),

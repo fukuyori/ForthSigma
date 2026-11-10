@@ -108,6 +108,7 @@ const win32 = struct {
     const wm_mouse_move = 0x0200;
     const wm_left_down = 0x0201;
     const wm_middle_up = 0x0208;
+    const wm_mouse_wheel = 0x020A;
     const button_left: usize = 0x0001;
     const button_right: usize = 0x0002;
     const button_middle: usize = 0x0010;
@@ -163,6 +164,26 @@ const win32 = struct {
     var mouse_y: i32 = -1;
     var mouse_buttons: u8 = 0;
     var mouse_changed = false;
+    /// The changes of the buttons and the notches of the wheel, in order, so that a click
+    /// between two reads is not lost (MOUSE-EVENT); the oldest is dropped when it is full.
+    /// Moves are only the last place above. `queued_buttons` are the buttons of the last
+    /// change queued, and `wheel_rest` the part of a notch the wheel has turned.
+    var mouse_queue: [64]MouseItem = undefined;
+    var mouse_head: usize = 0;
+    var mouse_count: usize = 0;
+    var queued_buttons: u8 = 0;
+    var wheel_rest: i32 = 0;
+
+    const MouseItem = struct { x: i32, y: i32, buttons: u8, wheel: i8 };
+
+    fn queueMouse(item: MouseItem) void {
+        if (mouse_count == mouse_queue.len) {
+            mouse_head = (mouse_head + 1) % mouse_queue.len;
+            mouse_count -= 1;
+        }
+        mouse_queue[(mouse_head + mouse_count) % mouse_queue.len] = item;
+        mouse_count += 1;
+    }
 
     // Used only by the thread that runs Forth.
     var thread: ?Handle = null;
@@ -236,6 +257,14 @@ const win32 = struct {
             const old = code.* - 1;
             code.* = 0;
             return .{ .window_key_release = old };
+        }
+        // The queued changes first; the last place comes after them, so the core ends
+        // with the mouse as it is now.
+        if (mouse_count != 0) {
+            const item = mouse_queue[mouse_head];
+            mouse_head = (mouse_head + 1) % mouse_queue.len;
+            mouse_count -= 1;
+            return .{ .window_mouse = .{ .x = item.x, .y = item.y, .buttons = item.buttons, .wheel = item.wheel } };
         }
         if (!mouse_changed) return null;
         mouse_changed = false;
@@ -337,6 +366,24 @@ const win32 = struct {
         if (wparam & button_middle != 0) buttons |= 4;
         mouse_buttons = buttons;
         mouse_changed = true;
+        if (buttons != queued_buttons) {
+            queueMouse(.{ .x = mouse_x, .y = mouse_y, .buttons = buttons, .wheel = 0 });
+            queued_buttons = buttons;
+        }
+    }
+
+    /// WM_MOUSEWHEEL: the high word of wparam is the distance, 120 a notch, above 0 up. A
+    /// notch is told at the last place of the mouse in the window.
+    fn wheelTurned(wparam: usize) void {
+        const distance: i16 = @bitCast(@as(u16, @truncate(wparam >> 16)));
+        AcquireSRWLockExclusive(&lock);
+        defer ReleaseSRWLockExclusive(&lock);
+        wheel_rest += distance;
+        while (wheel_rest >= 120 or wheel_rest <= -120) {
+            const notch: i8 = if (wheel_rest > 0) 1 else -1;
+            wheel_rest -= @as(i32, notch) * 120;
+            queueMouse(.{ .x = mouse_x, .y = mouse_y, .buttons = mouse_buttons, .wheel = notch });
+        }
     }
 
     /// Only called when there is no window: the old thread, if any, is ending (after
@@ -480,6 +527,10 @@ const win32 = struct {
                 if (wparam & (button_left | button_right | button_middle) != 0) {
                     if (message != wm_mouse_move) _ = SetCapture(handle);
                 } else _ = ReleaseCapture();
+                return 0;
+            },
+            wm_mouse_wheel => {
+                wheelTurned(wparam);
                 return 0;
             },
             wm_new_image => {

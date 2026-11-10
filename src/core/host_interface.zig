@@ -64,9 +64,12 @@ pub const InputEvent = union(enum) {
     window_key_release: u32,
     /// The mouse on the terminal: its character cell (column and row from 0, counted on
     /// the screen as `cursor_fn` counts them) and the buttons held.
-    terminal_mouse: struct { column: i32, row: i32, buttons: MouseButtons },
-    /// The mouse in the window: the pixel of the image under it and the buttons held.
-    window_mouse: struct { x: i32, y: i32, buttons: MouseButtons },
+    /// `wheel` is 1 for a notch of the wheel up (away from the user), -1 down, else 0.
+    terminal_mouse: struct { column: i32, row: i32, buttons: MouseButtons, wheel: i8 = 0 },
+    /// The mouse in the window: the pixel of the image under it, the buttons held, and
+    /// the wheel as above. A host gives each press and release, also when the program
+    /// reads them later (MOUSE-EVENT); moves may be given only as the last place.
+    window_mouse: struct { x: i32, y: i32, buttons: MouseButtons, wheel: i8 = 0 },
     /// The terminal gives single keys again after its line input: what the graphics
     /// words kept of the terminal's input before (keys not yet read, a sequence not
     /// ended, buttons held) is dropped, as the host dropped its own.

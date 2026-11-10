@@ -75,7 +75,57 @@ pub const InputState = struct {
     /// The keys KEY-HELD? holds, the most recently pressed last.
     held: [16]Held = undefined,
     held_count: usize = 0,
+    /// Presses, releases, and turns of the wheel not yet read by MOUSE-EVENT, the oldest
+    /// at `mouse_head`; when it is full, the oldest is dropped. `event_buttons` are the
+    /// buttons the events of the terminal (0) and of a window (1) have told so far.
+    mouse_events: [mouse_event_capacity]MouseEvent = undefined,
+    mouse_head: usize = 0,
+    mouse_count: usize = 0,
+    event_buttons: [2]u8 = .{ 0, 0 },
 };
+
+pub const mouse_event_capacity = 64;
+
+/// What MOUSE-EVENT gives: the pixel of the image under the mouse, the button (1 left, 2
+/// right, 4 middle; for the wheel 1 up, -1 down), and the kind.
+pub const MouseEvent = struct { x: Cell, y: Cell, button: Cell, kind: MouseEventKind };
+
+pub const MouseEventKind = enum(u8) { press = 1, release = 2, wheel = 3 };
+
+fn pushMouseEvent(input: *InputState, event: MouseEvent) void {
+    if (input.mouse_count == input.mouse_events.len) {
+        input.mouse_head = (input.mouse_head + 1) % input.mouse_events.len;
+        input.mouse_count -= 1;
+    }
+    input.mouse_events[(input.mouse_head + input.mouse_count) % input.mouse_events.len] = event;
+    input.mouse_count += 1;
+}
+
+/// The events of a report of the mouse from the terminal (source 0) or a window (1):
+/// a press or a release for each button that changed since its last report, then the
+/// wheel.
+fn mouseEvents(input: *InputState, source: usize, x: Cell, y: Cell, buttons: u8, wheel: i8) void {
+    const before = input.event_buttons[source];
+    inline for (.{ 1, 2, 4 }) |bit| {
+        if ((buttons ^ before) & bit != 0) {
+            pushMouseEvent(input, .{ .x = x, .y = y, .button = bit, .kind = if (buttons & bit != 0) .press else .release });
+        }
+    }
+    input.event_buttons[source] = buttons;
+    if (wheel != 0) pushMouseEvent(input, .{ .x = x, .y = y, .button = wheel, .kind = .wheel });
+}
+
+/// MOUSE-EVENT: reads what the host has (keys wait for INKEY) and gives the oldest event
+/// of the mouse not yet read, or null.
+pub fn nextMouseEvent(self: *State) RuntimeError!?MouseEvent {
+    try readInput(self, false);
+    const input = &self.gfx_input;
+    if (input.mouse_count == 0) return null;
+    const event = input.mouse_events[input.mouse_head];
+    input.mouse_head = (input.mouse_head + 1) % input.mouse_events.len;
+    input.mouse_count -= 1;
+    return event;
+}
 
 /// A key that is held: until its host tells it was released (`until` null: a Windows
 /// console, a window, the Tk window), or, as a terminal does not tell, until a while
@@ -98,7 +148,7 @@ pub const terminal_repeat_us = 120_000;
 /// What a complete sequence of bytes from the terminal stands for.
 const Decoded = union(enum) {
     key: u32,
-    mouse: struct { column: i32, row: i32, buttons: u8 },
+    mouse: struct { column: i32, row: i32, buttons: u8, wheel: i8 = 0 },
     /// A sequence that stands for nothing INKEY gives (it is dropped).
     nothing,
 };
@@ -213,7 +263,13 @@ fn controlSequence(parameter_bytes: []const u8, final: u8, buttons: *u8) Decoded
         }
         const column: i32 = @intCast(@min(numbers[1], 1 << 20));
         const row: i32 = @intCast(@min(numbers[2], 1 << 20));
-        return .{ .mouse = .{ .column = column - 1, .row = row - 1, .buttons = buttons.* } };
+        // The wheel: 64 up, 65 down (66 and 67, sideways, are not told), when pressed.
+        const wheel: i8 = if (code & 64 == 0 or final != 'M') 0 else switch (code & 3) {
+            0 => 1,
+            1 => -1,
+            else => 0,
+        };
+        return .{ .mouse = .{ .column = column - 1, .row = row - 1, .buttons = buttons.*, .wheel = wheel } };
     }
     if (final == '~') return if (tildeKey(parameters(parameter_bytes)[0])) |key| .{ .key = key } else .nothing;
     return if (letterKey(final)) |key| .{ .key = key } else .nothing;
@@ -251,6 +307,8 @@ fn restart(input: *InputState) void {
     input.pending_len = 0;
     input.terminal_buttons = 0;
     if (input.mouse_from_terminal) input.mouse_buttons = 0;
+    // Its next report starts again from no button; the events read so far stay.
+    input.event_buttons[0] = 0;
     // Keys released while the terminal had its line input were not seen.
     forgetSource(input, .terminal);
 }
@@ -348,11 +406,13 @@ fn apply(self: *State, decoded: Decoded) RuntimeError!void {
             const shown = input.shown orelse {
                 input.mouse_x = -1;
                 input.mouse_y = -1;
+                mouseEvents(input, 0, -1, -1, mouse.buttons, mouse.wheel);
                 return;
             };
             const position = terminalPixel(shown, mouse.column, mouse.row) orelse [2]Cell{ -1, -1 };
             input.mouse_x = position[0];
             input.mouse_y = position[1];
+            mouseEvents(input, 0, position[0], position[1], mouse.buttons, mouse.wheel);
         },
         .nothing => {},
     }
@@ -431,8 +491,8 @@ fn readInput(self: *State, until_key: bool) RuntimeError!void {
             .window_key => |key| try windowKey(self, key, .window),
             .key_release => |key| release(input, key, .terminal),
             .window_key_release => |key| release(input, key, .window),
-            .terminal_mouse => |mouse| try apply(self, .{ .mouse = .{ .column = mouse.column, .row = mouse.row, .buttons = mouse.buttons } }),
-            .window_mouse => |mouse| windowMouse(self, mouse.x, mouse.y, mouse.buttons),
+            .terminal_mouse => |mouse| try apply(self, .{ .mouse = .{ .column = mouse.column, .row = mouse.row, .buttons = mouse.buttons, .wheel = mouse.wheel } }),
+            .window_mouse => |mouse| windowMouse(self, mouse.x, mouse.y, mouse.buttons, mouse.wheel),
         }
     }
     // A sequence not ended yet waits for its other bytes, for a while.
@@ -474,13 +534,15 @@ pub fn keyHeld(self: *State, code: Cell) RuntimeError!bool {
     return false;
 }
 
-/// The mouse over such a window: the pixel of the image under it and the buttons.
-pub fn windowMouse(self: *State, x: i32, y: i32, buttons: u8) void {
+/// The mouse over such a window: the pixel of the image under it, the buttons, and the
+/// wheel (1 a notch up, -1 down, 0 none).
+pub fn windowMouse(self: *State, x: i32, y: i32, buttons: u8, wheel: i8) void {
     const input = &self.gfx_input;
     input.mouse_x = x;
     input.mouse_y = y;
     input.mouse_buttons = buttons;
     input.mouse_from_terminal = false;
+    mouseEvents(input, 1, x, y, buttons, wheel);
 }
 
 /// INKEY: the next key without waiting, or -1 when none has been pressed.

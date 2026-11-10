@@ -344,6 +344,10 @@ VARIABLE (DITHER)  0 (DITHER) !
 : MOUSE ( -- x y buttons )   GFX-MOUSE ;
 : MOUSE-ON ( -- )   TRUE GFX-MOUSE-MODE ;
 : MOUSE-OFF ( -- )   FALSE GFX-MOUSE-MODE ;
+\ The oldest press, release, or notch of the wheel not yet read, without waiting: kind 1
+\ pressed, 2 released (button 1 left, 2 right, 4 middle), 3 the wheel (button 1 up, -1
+\ down), at the pixel x y of the image. 64 are kept; when more come, the oldest go.
+: MOUSE-EVENT ( -- x y button kind true | false )   GFX-MOUSE-EVENT ;
 
 \ FRAME waits until ms milliseconds have passed since the last FRAME, and shows the
 \ image: a loop that draws and calls FRAME runs at a steady pace. When the drawing took
