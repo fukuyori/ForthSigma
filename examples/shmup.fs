@@ -16,12 +16,16 @@
 \ P capsules raise the weapon to level 5, B capsules give a bomb, and gems are points.
 \ Kills in quick succession raise the chain, which multiplies the score.
 \
-\ How it stays fast: pictures are turned into lists of one-color runs when the file
-\ loads, and each run is one GFX-HLINE; the backgrounds are run-length strips made for
-\ each stage. The game advances in fixed steps of 16 ms however fast the display is, up
-\ to four steps a frame, so a slow display costs frames and not speed.
+\ How it is drawn: the pictures are painted when the file loads and kept on a sheet,
+\ each a sprite of the game words (REQUIRE-GAME) that DRAW-SPRITE copies; a shot hits
+\ an enemy where their pictures' pixels meet (PIXEL-HIT?). Each stage's background is a
+\ picture of color numbers with a palette (DRAW-INDEXED), whose water colors turn on the
+\ ocean (ROTATE-PALETTE). Clouds are half seen, explosions, lasers, and shots glow by
+\ adding their light, and a bomb or a boss blowing up ripples the rows of the screen
+\ (RASTER-SCROLL). The game advances in fixed steps of 16 ms however fast the display
+\ is, up to four steps a frame, so a slow display costs frames and not speed.
 
-REQUIRE-GRAPHICS  ALSO GRAPHICS
+REQUIRE-GAME  ALSO GRAPHICS ALSO GAME
 
 240 CONSTANT W   320 CONSTANT H
 W H GFX-INIT
@@ -245,45 +249,88 @@ VARIABLE AIM-X  VARIABLE AIM-Y
 : CLAMP ( n lo hi -- n' )   ROT MIN MAX ;
 : N>S ( n -- c-addr u )   S>D <# #S #> ;
 : N>S0 ( n digits -- c-addr u )   >R S>D <# R> 0 ?DO # LOOP #> ;
+\ A color n/256 of the way from c1 to c2.
+: MIX-RGB { c1 c2 n | c -- rgb }
+   0 TO c
+   3 0 DO
+      c1 I 8 * RSHIFT 255 AND  c2 I 8 * RSHIFT 255 AND  OVER - n * 256 / +
+      I 8 * LSHIFT c OR TO c
+   LOOP  c ;
 
-\ ---- Pictures as lists of runs ----------------------------------------------------
-\ A sprite is a count and then, for each run, x1 x2 y rgb relative to its center. To
-\ make one, it is drawn on the image and captured from there, before the game starts.
+\ ---- Pictures ----------------------------------------------------------------------
+\ A picture is a sprite of the game words on a sheet of pictures, and where its top left
+\ corner is from its center. It is painted on the screen and captured from there, before
+\ the game starts. A second sheet has every picture in white, for a hit enemy's flash.
 
 $FF00FE CONSTANT CLEAR                  \ the color that means "nothing here"
 : CANVAS ( -- )   CLEAR GFX-CLS ;
-VARIABLE SPANS
-: SPAN, { x1 x2 y c -- }   x1 , x2 , y , c ,  1 SPANS +! ;
 
-: CAPTURE { x0 y0 ww hh cx cy | start col p -- spr }
-   HERE 0 ,  0 SPANS !
-   hh 0 DO
-      -1 TO start  CLEAR TO col
-      ww 1+ 0 DO
-         I ww < IF  x0 I +  y0 J +  GFX-PGET  ELSE CLEAR THEN  TO p
-         p col <> IF
-            col CLEAR <> IF
-               x0 start + cx -   x0 I + 1- cx -   y0 J + cy -   col  SPAN,
-            THEN
-            p TO col  I TO start
-         THEN
-      LOOP
-   LOOP
-   SPANS @ OVER ! ;
+1024 CONSTANT SHEET-W   256 CONSTANT SHEET-H
+SHEET-W SHEET-H NEW-IMAGE CONSTANT SHEET
+SHEET-W SHEET-H NEW-IMAGE CONSTANT SHADOW
+SHEET DRAW-TO CANVAS  SHADOW DRAW-TO CANVAS  SCREEN DRAW-TO
+VARIABLE SHELF-X  VARIABLE SHELF-Y  VARIABLE SHELF-H   \ where the next picture goes
+
+BEGIN-STRUCTURE /PIC
+   /SPRITE +FIELD PIC-SPRITE            \ first, so that a picture is a sprite
+   FIELD: PIC-DX  FIELD: PIC-DY
+END-STRUCTURE
+
+: PAINTED? ( rgb -- flag )   DUP CLEAR <> SWAP 0>= AND ;
+\ The smallest rectangle of the ww by hh one at x0 y0 of the screen that holds all its
+\ painted pixels; 0 by 0 when there are none.
+: PAINTED-AREA { x0 y0 ww hh | l r t b -- x y w h }
+   ww TO l  -1 TO r  hh TO t  -1 TO b
+   hh 0 ?DO  ww 0 ?DO
+      x0 I + y0 J + GFX-PGET PAINTED? IF
+         I l MIN TO l  I r MAX TO r  J t MIN TO t  J b MAX TO b
+      THEN
+   LOOP  LOOP
+   r 0< IF  x0 y0 0 0 EXIT  THEN
+   x0 l +  y0 t +  r l - 1+  b t - 1+ ;
+\ A place for a w by h picture on the sheets, in rows from the top left.
+: SHELF ( w h -- x y )
+   OVER SHELF-X @ + SHEET-W > IF  0 SHELF-X !  SHELF-H @ SHELF-Y +!  0 SHELF-H !  THEN
+   SHELF-Y @ OVER + SHEET-H > ABORT" the sheet of pictures is full"
+   SHELF-H @ MAX SHELF-H !
+   SHELF-X @ SHELF-Y @  ROT SHELF-X +! ;
+
+\ The painted pixels of the ww by hh rectangle at x0 y0 of the screen as a picture whose
+\ center is at cx cy.
+: CAPTURE { x0 y0 ww hh cx cy | x y w h sx sy pic -- pic }
+   x0 y0 ww hh PAINTED-AREA TO h TO w TO y TO x
+   w h SHELF TO sy TO sx
+   SHEET DRAW-TO  SCREEN x y w h sx sy -1 0 0 128 1 GFX-COPY
+   SHADOW DRAW-TO
+   h 0 ?DO  w 0 ?DO
+      SCREEN x I + y J + GFX-PIXEL PAINTED? IF  sx I + sy J + $FFFFFF GFX-PSET  THEN
+   LOOP  LOOP
+   SCREEN DRAW-TO
+   ALIGN HERE TO pic  /PIC ALLOT
+   SHEET sx sy w h pic INIT-SPRITE  CLEAR pic SPRITE-KEY !
+   x cx - pic PIC-DX !  y cy - pic PIC-DY !
+   pic ;
 
 VARIABLE SHX  VARIABLE SHY              \ the screen shake
 
-: BLIT { x y a -- }
-   x SHX @ + TO x  y SHY @ + TO y
-   a 8 +  a @ 32 * OVER +  SWAP ?DO
-      x I @ +  x I 8 + @ +  y I 16 + @ +  I 24 + @  GFX-HLINE
-   32 +LOOP ;
-
-: BLIT-FLAT { x y a c -- }
-   x SHX @ + TO x  y SHY @ + TO y
-   a 8 +  a @ 32 * OVER +  SWAP ?DO
-      x I @ +  x I 8 + @ +  y I 16 + @ +  c  GFX-HLINE
-   32 +LOOP ;
+\ A picture with its center at x y of the screen, moved by the shake.
+: PUT-PIC { x y pic -- }   x pic PIC-DX @ + SHX @ +  y pic PIC-DY @ + SHY @ +  pic PUT-SPRITE ;
+: BLIT ( x y pic -- )   DUP >R PUT-PIC R> DRAW-SPRITE ;
+\ The same in white, from the second sheet.
+: BLIT-WHITE { x y pic -- }
+   x y pic PUT-PIC  SHADOW pic SPRITE-IMAGE !  pic DRAW-SPRITE  SHEET pic SPRITE-IMAGE ! ;
+\ The same put on the screen in a mode of IMAGE-MODE: 2 adds its light, 3 mixes it in by
+\ alpha (0 to 255).
+: BLIT-AS { x y pic mode alpha -- }
+   x y pic PUT-PIC
+   pic SPRITE-IMAGE @  pic SPRITE-SX @  pic SPRITE-SY @  pic SPRITE-W @  pic SPRITE-H @
+   pic SPRITE-X @  pic SPRITE-Y @  CLEAR 0 mode alpha 1 GFX-COPY ;
+\ Whether picture a with its center at x1 y1 and picture b with its center at x2 y2 show
+\ a pixel at the same place.
+: PICS-HIT? { x1 y1 a x2 y2 b -- flag }
+   x1 a PIC-DX @ +  y1 a PIC-DY @ +  a PUT-SPRITE
+   x2 b PIC-DX @ +  y2 b PIC-DY @ +  b PUT-SPRITE
+   a b PIXEL-HIT? ;
 
 \ A filled rectangle by runs, and a disc from a table of half widths.
 : BAR-RECT { x y ww hh c -- }
@@ -669,6 +716,45 @@ BAKE-ORBS
 CREATE NEEDLE-R  ROT-NEEDLE-R , 2 ,
 CREATE NEEDLE-B  ROT-NEEDLE-B , 2 ,
 
+\ Glows: images of a round light that fades to black at its edge, added to what is on
+\ the screen (mode 2), so that they brighten it and show nothing where they are dark.
+: BAKE-GLOW { r c | side img d s -- img }
+   r 2* 1+ TO side
+   side side NEW-IMAGE TO img  img DRAW-TO  0 GFX-CLS
+   side 0 DO  side 0 DO
+      I r - DUP *  J r - DUP * +  ISQRT  256 * r 1+ /  TO d
+      d 256 < IF
+         256 d - DUP * 256 / TO s
+         I J  0 c s MIX-RGB  GFX-PSET
+      THEN
+   LOOP  LOOP
+   SCREEN DRAW-TO  img ;
+: GLOW { x y img | side -- }
+   img IMAGE-SIZE DROP TO side
+   img 0 0 side side  x side 2/ - SHX @ +  y side 2/ - SHY @ +  -1 0 2 255 1 GFX-COPY ;
+
+\ A glow for each kind of round shot, of its light color, and for fire of five sizes.
+CREATE ORB-GLOWS  18 CELLS ALLOT
+: BAKE-ORB-GLOWS ( -- )
+   3 0 DO  6 0 DO
+      J CELLS ORB-RADII + @ 2* 1+  I CELLS ORB-LIGHT + @ $FEFEFE AND 1 RSHIFT  BAKE-GLOW
+      J 6 * I + CELLS ORB-GLOWS + !
+   LOOP  LOOP ;
+BAKE-ORB-GLOWS
+\ The glow of a kind of shot, 0 for none (needles).
+: KIND-GLOW ( kind -- img|0 )
+   ORBS -  DUP 0 18 2* CELLS WITHIN IF  2/ ORB-GLOWS + @  ELSE DROP 0 THEN ;
+CREATE FIRE-GLOWS  5 CELLS ALLOT
+CREATE FIRE-SIZES  8 , 14 , 22 , 32 , 46 ,
+: BAKE-FIRE-GLOWS ( -- )
+   5 0 DO  I CELLS FIRE-SIZES + @ $C05818 BAKE-GLOW  I CELLS FIRE-GLOWS + !  LOOP ;
+BAKE-FIRE-GLOWS
+\ The glow of fire that reaches about r pixels.
+: FIRE-GLOW ( r -- img )
+   4  4 0 DO  OVER I CELLS FIRE-SIZES + @ <= IF DROP I LEAVE THEN  LOOP
+   NIP CELLS FIRE-GLOWS + @ ;
+20 $D04010 BAKE-GLOW CONSTANT LASER-GLOW
+
 \ ---- Spinners, hulls, and clouds ----------------------------------------------------
 
 8 CONSTANT SPIN-FRAMES
@@ -821,7 +907,7 @@ VARIABLE SCORE  VARIABLE HI-SCORE VARIABLE LIVES  VARIABLE BOMBS    VARIABLE POW
 VARIABLE CHAIN  VARIABLE CHAIN-T  VARIABLE NEXT-EXT  VARIABLE GRAZE  VARIABLE KILLS
 VARIABLE PL-X   VARIABLE PL-Y     VARIABLE PL-TURN   VARIABLE PL-SLOW
 VARIABLE INV    VARIABLE DEAD     VARIABLE FIRE-T    VARIABLE BOMB-T
-VARIABLE SHAKE  VARIABLE FLASH
+VARIABLE SHAKE  VARIABLE FLASH  VARIABLE WOBBLE     \ WOBBLE: steps of rippling rows
 VARIABLE SCROLL VARIABLE SCROLL-V
 VARIABLE IN-L VARIABLE IN-R VARIABLE IN-U VARIABLE IN-D VARIABLE IN-FIRE VARIABLE IN-SLOW
 VARIABLE PRESS-FIRE  VARIABLE PRESS-BOMB  VARIABLE PRESS-START
@@ -894,6 +980,7 @@ VARIABLE X-CUR
    p 150 < IF
       x y r $E04818 DISC    x y r 3 * 4 / $FF9820 DISC
       x y r 2/ $FFE870 DISC    p 70 < IF x y r 4 / $FFFFFF DISC THEN
+      x y  r 3 * 2/ FIRE-GLOW  GLOW
    ELSE
       x y r $702818 DISC   x y r 2 * 3 / $A83818 DISC
       x y r p 150 - * 200 / $180C10 DISC
@@ -906,7 +993,7 @@ VARIABLE X-CUR
 320 CONSTANT MAX-B
 : B-FIELD ( "name" -- )   CREATE MAX-B CELLS ALLOT  DOES> SWAP CELLS + ;
 B-FIELD BX  B-FIELD BY  B-FIELD BVX  B-FIELD BVY  B-FIELD BAX  B-FIELD BAY
-B-FIELD BSP  B-FIELD BR  B-FIELD BGZ
+B-FIELD BSP  B-FIELD BR  B-FIELD BGZ  B-FIELD BGL     \ BGL: its glow, or 0
 VARIABLE B-CUR  VARIABLE LAST-B
 
 : NEW-B ( -- b )
@@ -921,7 +1008,8 @@ VARIABLE B-CUR  VARIABLE LAST-B
    spd ang POLAR  b BVY !  b BVX !
    0 b BAX !  0 b BAY !  0 b BGZ !
    kind CELL+ @ b BR !
-   kind @  kind NEEDLE-R =  kind NEEDLE-B = OR IF ang ROT-SPR THEN  b BSP ! ;
+   kind @  kind NEEDLE-R =  kind NEEDLE-B = OR IF ang ROT-SPR THEN  b BSP !
+   kind KIND-GLOW b BGL ! ;
 
 : LAST-ACCEL ( ax ay -- )   LAST-B @ BAY !  LAST-B @ BAX ! ;
 
@@ -1110,20 +1198,20 @@ CREATE LZY MAX-LZ CELLS ALLOT   CREATE LZT MAX-LZ CELLS ALLOT
 
 \ Boss one.
 : B1-P0 ( -- )
-   46 QUICKER 0 EVERY?  IF  0 NOSE 5 14 420 RANKED AIMED NEEDLE-B FAN  THEN
-   12 6 EVERY?  IF
+   84 QUICKER 0 EVERY?  IF  0 NOSE 3 14 420 RANKED AIMED NEEDLE-B FAN  THEN
+   24 6 EVERY?  IF
       MX @ 28 PX> -  MY @  400 RANKED AIMED O-S C-RED ORBK SHOOT
       MX @ 28 PX> +  MY @  400 RANKED AIMED O-S C-RED ORBK SHOOT
    THEN ;
 : B1-P1 ( -- )
-   3 0 EVERY? IF
+   7 0 EVERY? IF
       10 NOSE 300 RANKED MT @ 7 *  O-S C-BLU ORBK SHOOT
       10 NOSE 300 RANKED MT @ 7 * 128 + O-S C-PNK ORBK SHOOT
    THEN
-   70 QUICKER 0 EVERY? IF  0 NOSE 3 20 500 RANKED AIMED NEEDLE-R FAN  THEN ;
+   124 QUICKER 0 EVERY? IF  0 NOSE 3 20 500 RANKED AIMED NEEDLE-R FAN  THEN ;
 : B1-P2 ( -- )
-   50 QUICKER 0 EVERY? IF  0 NOSE 14 300 RANKED MT @ O-M C-RED ORBK BURST  THEN
-   50 QUICKER 25 EVERY? IF 0 NOSE 14 300 RANKED MT @ 9 + O-M C-BLU ORBK BURST  THEN
+   90 QUICKER 0 EVERY? IF  0 NOSE 8 300 RANKED MT @ O-M C-RED ORBK BURST  THEN
+   90 QUICKER 45 EVERY? IF 0 NOSE 8 300 RANKED MT @ 9 + O-M C-BLU ORBK BURST  THEN
    240 120 EVERY? IF  MX @ MY @ 16 PX> +  MX @ PL-X @ < IF 110 ELSE -110 THEN  LASER  THEN ;
 : AI-B1 ( -- )
    64 BOSS-IN? IF EXIT THEN
@@ -1132,28 +1220,28 @@ CREATE LZY MAX-LZ CELLS ALLOT   CREATE LZT MAX-LZ CELLS ALLOT
 
 \ Boss two.
 : B2-P0 ( -- )
-   5 0 EVERY? IF
+   11 0 EVERY? IF
       W PX> RND  -6 PX>  260 RANKED 64 NEEDLE-B SHOOT   0 6 LAST-ACCEL
    THEN
-   66 QUICKER 0 EVERY? IF  0 NOSE 7 12 380 RANKED AIMED O-M C-ORG ORBK FAN  THEN ;
+   116 QUICKER 0 EVERY? IF  0 NOSE 4 12 380 RANKED AIMED O-M C-ORG ORBK FAN  THEN ;
 : B2-P1 ( -- )
    170 40 EVERY? IF
       MX @ 34 PX> -  MY @   80 LASER
       MX @ 34 PX> +  MY @  -80 LASER
    THEN
-   5 0 EVERY? IF  8 NOSE 340 RANKED MT @ 11 * O-S C-PNK ORBK SHOOT  THEN ;
+   11 0 EVERY? IF  8 NOSE 340 RANKED MT @ 11 * O-S C-PNK ORBK SHOOT  THEN ;
 : WALL ( -- )
    \ a row of falling shots with a gap above the player
    PL-X @ >PX 16 / { gap }
    16 0 DO
-      I gap - ABS 1 > IF
+      I gap - ABS 2 > IF
          I 16 * 8 + PX>  -6 PX>  330 RANKED 64 O-M C-RED ORBK SHOOT
       THEN
    LOOP ;
 : B2-P2 ( -- )
-   88 QUICKER 0 EVERY? IF WALL THEN
-   44 QUICKER 13 EVERY? IF  0 NOSE 14 340 RANKED MT @ 3 * O-M C-ORG ORBK BURST  THEN
-   7 0 EVERY? IF  14 NOSE 480 RANKED AIMED NEEDLE-R SHOOT  THEN ;
+   150 QUICKER 0 EVERY? IF WALL THEN
+   84 QUICKER 13 EVERY? IF  0 NOSE 8 340 RANKED MT @ 3 * O-M C-ORG ORBK BURST  THEN
+   15 0 EVERY? IF  14 NOSE 480 RANKED AIMED NEEDLE-R SHOOT  THEN ;
 : AI-B2 ( -- )
    72 BOSS-IN? IF EXIT THEN
    44 SWAY
@@ -1161,24 +1249,24 @@ CREATE LZY MAX-LZ CELLS ALLOT   CREATE LZT MAX-LZ CELLS ALLOT
 
 \ Boss three.
 : B3-P0 ( -- )
-   2 0 EVERY? IF
+   4 0 EVERY? IF
       MT @ SIN 40 * 1024 / MT @ 3 * +
       DUP  0 NOSE 280 RANKED ROT O-S C-GRN ORBK SHOOT
       128 + 0 NOSE 280 RANKED ROT O-S C-YEL ORBK SHOOT
    THEN
-   60 QUICKER 0 EVERY? IF  0 NOSE 5 16 440 RANKED AIMED NEEDLE-R FAN  THEN ;
+   110 QUICKER 0 EVERY? IF  0 NOSE 3 16 440 RANKED AIMED NEEDLE-R FAN  THEN ;
 : B3-P1 ( -- )
    220 30 EVERY? IF
       MX @  MY @  0 LASER
       PL-X @ 56 PX> -  MY @  60 LASER
       PL-X @ 56 PX> +  MY @ -60 LASER
    THEN
-   30 QUICKER 0 EVERY? IF  0 NOSE 24 300 RANKED MT @ 2* O-M C-PNK ORBK BURST  THEN ;
+   58 QUICKER 0 EVERY? IF  0 NOSE 12 300 RANKED MT @ 2* O-M C-PNK ORBK BURST  THEN ;
 : B3-P2 ( -- )
-   3 0 EVERY? IF
+   7 0 EVERY? IF
       MT @ 9 *  3 0 DO  DUP I 85 * +  0 NOSE ROT 300 RANKED SWAP O-S C-YEL ORBK SHOOT  LOOP  DROP
    THEN
-   44 QUICKER 0 EVERY? IF  0 NOSE 28 360 RANKED MT @ O-M C-RED ORBK BURST  THEN
+   84 QUICKER 0 EVERY? IF  0 NOSE 14 360 RANKED MT @ O-M C-RED ORBK BURST  THEN
    300 150 EVERY? IF  MX @ 40 PX> -  MY @  70 LASER   MX @ 40 PX> +  MY @  -70 LASER  THEN ;
 : AI-B3 ( -- )
    70 BOSS-IN? IF EXIT THEN
@@ -1195,7 +1283,7 @@ CREATE LZY MAX-LZ CELLS ALLOT   CREATE LZT MAX-LZ CELLS ALLOT
    PARENT-GONE? IF FREE-ME EXIT THEN
    ME @ EPAR @ EX @ MA @ + MX !
    ME @ EPAR @ EY @ MB @ + MY !
-   76 QUICKER MC @ EVERY?  ME @ EPAR @ EIMM @ 0= AND IF
+   130 QUICKER MC @ EVERY?  ME @ EPAR @ EIMM @ 0= AND IF
       HERE-AT 3 14 400 RANKED AIMED O-M C-PNK ORBK FAN
    THEN ;
 
@@ -1205,7 +1293,7 @@ CREATE LZY MAX-LZ CELLS ALLOT   CREATE LZT MAX-LZ CELLS ALLOT
    MC @ MA +!
    ME @ EPAR @ EX @  MB @ PX> MA @ 16 / COS * 1024 / +  MX !
    ME @ EPAR @ EY @  MB @ PX> MA @ 16 / SIN * 1024 / +  MY !
-   64 QUICKER MB @ EVERY?  ME @ EPAR @ EIMM @ 0= AND IF
+   110 QUICKER MB @ EVERY?  ME @ EPAR @ EIMM @ 0= AND IF
       HERE-AT 440 RANKED AIMED O-M C-GRN ORBK SHOOT
    THEN ;
 
@@ -1234,9 +1322,9 @@ T-DART T-DART-F !
 0 0 1 ' MINE-BURST 400 6 7 3 SPR-MINE ' AI-MINE ETYPE: T-MINE
 ' TURRET-BARREL F-GROUND 2 0 800 7 7 6 SPR-TURRET ' AI-TURRET ETYPE: T-TURRET
 0 0 12 0 12000 22 36 150 SPR-CARRIER ' AI-CARRIER ETYPE: T-CARRIER
-' BOSS-EXTRA F-BOSS 0 0 50000 30 62 1000 SPR-BOSS1 ' AI-B1 ETYPE: T-BOSS1
-' BOSS-EXTRA F-BOSS 0 0 80000 32 54 1300 SPR-BOSS2 ' AI-B2 ETYPE: T-BOSS2
-' BOSS-EXTRA F-BOSS 0 0 120000 34 44 1500 SPR-BOSS3 ' AI-B3 ETYPE: T-BOSS3
+' BOSS-EXTRA F-BOSS 0 0 50000 30 62 750 SPR-BOSS1 ' AI-B1 ETYPE: T-BOSS1
+' BOSS-EXTRA F-BOSS 0 0 80000 32 54 950 SPR-BOSS2 ' AI-B2 ETYPE: T-BOSS2
+' BOSS-EXTRA F-BOSS 0 0 120000 34 44 1100 SPR-BOSS3 ' AI-B3 ETYPE: T-BOSS3
 0 F-PART 4 0 6000 9 8 70 SPR-CANNON ' AI-CANNON ETYPE: T-CANNON
 0 F-PART 3 0 5000 8 8 50 SPR-ORBITER ' AI-ORBIT ETYPE: T-ORBITER
 
@@ -1352,45 +1440,30 @@ CREATE STAGE-TUNES   TUNE-1 , TUNE-2 , TUNE-3 ,
       S" " ROT
    ENDCASE ;
 
-\ ---- Backgrounds: run-length strips made for each stage ------------------------------
+\ ---- Backgrounds: a picture of color numbers made for each stage ---------------------
+\ The background is a strip of W by STRIP color numbers that scrolls round, drawn with
+\ the colors of a palette.
 
 512 CONSTANT STRIP
-120000 CONSTANT BG-MAX
-CREATE BG-OFS  STRIP CELLS ALLOT
-CREATE BG-DATA BG-MAX ALLOT
-CREATE BG-PAL  16 CELLS ALLOT
-VARIABLE BGP
+W STRIP INDEXED: BACKDROP
+PALETTE: BG-PAL
 
-: BG-C, ( c -- )   BG-DATA BGP @ + C!  1 BGP +! ;
-
-: BAKE-STRIP { xt | cur c runs cp -- }
-   0 BGP !
+\ Fills the strip with the color numbers xt ( x y -- n ) gives.
+: BAKE-STRIP { xt | row -- }
    STRIP 0 DO
-      BGP @ I CELLS BG-OFS + !
-      BGP @ TO cp  0 BG-C,  0 TO runs
-      0 I xt EXECUTE TO cur
-      W 1 DO
-         I J xt EXECUTE TO c
-         c cur <> IF  I BG-C,  cur BG-C,  runs 1+ TO runs  c TO cur  THEN
-      LOOP
-      W BG-C,  cur BG-C,  runs 1+ TO runs
-      runs BG-DATA cp + C!
-      BGP @ BG-MAX 512 - > ABORT" background strip too large"
+      BACKDROP INDEXED-DATA I W * + TO row
+      W 0 DO  I J xt EXECUTE  row I + C!  LOOP
    LOOP ;
 
+\ The strip from where the scroll has come to, twice so that it goes round, and black
+\ where the shake leaves the screen uncovered.
 : DRAW-STRIP ( -- )
-   SCROLL @ >PX  SHX @ SHY @ { sc ox oy | p x0 end c rows -- }
-   H 0 DO
-      I oy - sc - STRIP 1- AND CELLS BG-OFS + @ BG-DATA + TO p
-      p C@ TO rows   p 1+ TO p   0 ox + TO x0
-      ox 0> IF  0 ox 1- I 0 GFX-HLINE  THEN
-      rows 0 ?DO
-         p C@ ox + TO end   p 1+ C@ CELLS BG-PAL + @ TO c   p 2 + TO p
-         x0  end 1-  J  c GFX-HLINE
-         end TO x0
-      LOOP
-      x0 W < IF  x0 W I 0 GFX-HLINE  THEN
-   LOOP ;
+   SCROLL @ >PX  SHX @ SHY @ { sc ox oy | y0 -- }
+   oy sc + STRIP 1- AND TO y0
+   ox y0 BACKDROP BG-PAL -1 DRAW-INDEXED
+   ox y0 STRIP - BACKDROP BG-PAL -1 DRAW-INDEXED
+   ox 0> IF  0 0 ox H 0 BAR-RECT  THEN
+   ox 0< IF  W ox + 0 ox NEGATE H 0 BAR-RECT  THEN ;
 
 \ Noise: smooth random values on a lattice, wrapped along the strip.
 CREATE NT 256 ALLOT
@@ -1411,11 +1484,28 @@ CREATE NT 256 ALLOT
 : PX-SPACE ( x y -- idx )   FBM 92 22 8 LEVEL ;
 CREATE PAL-SPACE  $06060F , $0A0A1C , $10102A , $181438 , $221846 , $301C52 , $40205C , $502864 ,
 
+\ The water of each depth has eight color numbers, 16 + 8 * depth on, by the height of
+\ the noise: lines of the same height, which shine when their colors turn.
+: WATER ( v depth -- idx )   8 * 16 +  SWAP 4 / 7 AND + ;
 : PX-OCEAN ( x y -- idx )
-   FBM  DUP 104 < IF DROP 0 EXIT THEN  DUP 118 < IF DROP 1 EXIT THEN  DUP 128 < IF DROP 2 EXIT THEN
+   FBM  DUP 104 < IF 0 WATER EXIT THEN  DUP 118 < IF 1 WATER EXIT THEN  DUP 128 < IF 2 WATER EXIT THEN
    DUP 134 < IF DROP 3 EXIT THEN  DUP 150 < IF DROP 4 EXIT THEN  DUP 166 < IF DROP 5 EXIT THEN
    178 < IF 6 ELSE 7 THEN ;
 CREATE PAL-OCEAN  $103870 , $185090 , $2878B0 , $D8C890 , $58A048 , $387838 , $706858 , $E8ECF0 ,
+\ The eight colors of each depth: its own, and two that shine.
+: WATER-COLORS ( -- )
+   3 0 DO
+      I CELLS PAL-OCEAN + @ { base }
+      8 0 DO
+         base $FFFFFF  I 0= IF 56 ELSE I 1 = IF 20 ELSE 0 THEN THEN  MIX-RGB
+         16 J 8 * + I + BG-PAL PALETTE!
+      LOOP
+   LOOP ;
+\ The water's colors turn by one each few steps.
+: TURN-WATER ( -- )
+   STG @ 1 =  CLOCK @ 5 MOD 0= AND IF
+      3 0 DO  16 I 8 * + 8 BG-PAL ROTATE-PALETTE  LOOP
+   THEN ;
 
 : HASH2 ( ix iy -- v )   16 MOD 57 * + 7 * 251 MOD NT + C@ ;
 : PX-FORT { x y | tx ty u v r d -- idx }
@@ -1437,6 +1527,7 @@ CREATE STAGE-PALS  PAL-SPACE , PAL-OCEAN , PAL-FORT ,
 : BAKE-STAGE ( -- )
    777 SEED !  INIT-NOISE
    STG @ CELLS STAGE-PALS + @  BG-PAL  8 CELLS MOVE
+   STG @ 1 = IF WATER-COLORS THEN
    STG @ CELLS STAGE-PIX + @ BAKE-STRIP
    CLOCK @ 12345 + SEED ! ;
 
@@ -1463,7 +1554,7 @@ CREATE STAR-X MAX-STAR CELLS ALLOT   CREATE STAR-Y MAX-STAR CELLS ALLOT
    MAX-CLOUD 0 DO
       I 53 * 17 + 300 MOD 30 -
       SCROLL @ >PX 2* I 97 * + 460 MOD 90 -
-      I 1 AND IF SPR-CLOUD1 ELSE SPR-CLOUD2 THEN  BLIT
+      I 1 AND IF SPR-CLOUD1 ELSE SPR-CLOUD2 THEN  3 176 BLIT-AS     \ two thirds seen
    LOOP ;
 
 : DRAW-FORT-LIGHTS ( -- )
@@ -1592,15 +1683,21 @@ DEFER BOSS-FALL
    e EHP @ 0> IF EXIT THEN
    e ETY @ T.FLAG @ F-BOSS AND IF  e BOSS-FALL  ELSE  e KILL-E  THEN ;
 
+\ A shot hits an enemy where their pictures show a pixel at the same place; the
+\ rectangles of the pictures are compared first, which is quicker.
+: E-STRUCK? { x y spr e | p -- flag }
+   e ESP @ TO p  p 0= IF FALSE EXIT THEN
+   x e EX @ - ABS >PX  p SPRITE-W @ spr SPRITE-W @ + >=  IF FALSE EXIT THEN
+   y e EY @ - ABS >PX  p SPRITE-H @ spr SPRITE-H @ + >=  IF FALSE EXIT THEN
+   x >PX y >PX spr  e EX @ >PX e EY @ >PX p  PICS-HIT? ;
+
 : SHOTS-HIT ( -- )
    MAX-S 0 DO
       I SSPR @ IF
          I { s } I SX @ I SY @ { x y }
          MAX-E 0 DO
             I EAI @ IF  I EWAIT @ 0=  I EIMM @ 0= AND IF
-               I ETY @ { t }
-               x I EX @ - ABS  t T.HW @ 2 + PX> <
-               y I EY @ - ABS  t T.HH @ 2 + PX> < AND IF
+               x y s SSPR @ I E-STRUCK? IF
                   x y 2 300 RAMP-ICE SPARKS
                   s SDMG @ I HIT-E
                   0 s SSPR !
@@ -1684,12 +1781,12 @@ DEFER BOSS-FALL
    MT @ 150 < IF
       6 0 EVERY? IF
          MX @ 110 RND 55 - PX> +   MY @ 60 RND 30 - PX> +  24 RND 14 +  BLAST
-         S-BOOM EFFECT  8 SHAKE!
+         S-BOOM EFFECT  8 SHAKE!  WOBBLE @ 16 MAX WOBBLE !
       THEN
    ELSE
       MX @ MY @ 48 BLAST   MX @ MY @ 60 1400 RAMP-FIRE SPARKS
       MX @ MY @ 60 1000 RAMP-GLD SPARKS
-      30 SHAKE!  20 FLASH !  S-BOMB EFFECT
+      30 SHAKE!  20 FLASH !  48 WOBBLE !  S-BOMB EFFECT
       MX @ MY @ 30 DROPS
       FREE-ME
       3 PHASE !  0 PHASE-T !
@@ -1787,7 +1884,7 @@ DEFER BOSS-FALL
 : FX-TICK ( -- )
    PARTICLES-TICK BLASTS-TICK LASERS-TICK
    SHAKE @ IF  -1 SHAKE +!  THEN
-   FLASH @ IF  -1 FLASH +!  THEN
+   FLASH @ IF  -1 FLASH +!  THEN   WOBBLE @ IF  -1 WOBBLE +!  THEN
    SCROLL-V @ SCROLL +! ;
 
 : UPDATE-SHAKE ( -- )
@@ -1900,7 +1997,7 @@ CREATE TICKERS  ' TITLE-TICK , ' INTRO-TICK , ' PLAY-TICK , ' CLEAR-TICK , ' GAM
 
 : TICK ( -- )
    1 CLOCK +!  1 MODE-T +!
-   UPDATE-SHAKE
+   UPDATE-SHAKE  TURN-WATER
    MODE @ CELLS TICKERS + @ EXECUTE
    FALSE PRESS-FIRE !  FALSE PRESS-BOMB !  FALSE PRESS-START ! ;
 
@@ -1910,7 +2007,7 @@ CREATE TICKERS  ' TITLE-TICK , ' INTRO-TICK , ' PLAY-TICK , ' CLEAR-TICK , ' GAM
 
 : DRAW-E { e | t x y -- }
    e ETY @ TO t   e EX @ >PX TO x   e EY @ >PX TO y
-   e EF @  t T.HH @ 16 < AND IF  x y e ESP @ $FFFFFF BLIT-FLAT  ELSE  x y e ESP @ BLIT  THEN
+   e EF @  t T.HH @ 16 < AND IF  x y e ESP @ BLIT-WHITE  ELSE  x y e ESP @ BLIT  THEN
    t T.EXTRA @ ?DUP IF
       t T-TURRET = IF  { xt } x y e EA @ xt EXECUTE
       ELSE  { xt } x y xt EXECUTE  THEN
@@ -1927,6 +2024,10 @@ CREATE TICKERS  ' TITLE-TICK , ' INTRO-TICK , ' PLAY-TICK , ' CLEAR-TICK , ' GAM
 : DRAW-BULLETS ( -- )
    MAX-B 0 DO
       I BSP @ ?DUP IF  >R I BX @ >PX  I BY @ >PX  R> BLIT  THEN
+   LOOP
+   \ Their light, over them all.
+   MAX-B 0 DO
+      I BSP @ IF  I BGL @ ?DUP IF  >R I BX @ >PX  I BY @ >PX  R> GLOW  THEN  THEN
    LOOP ;
 
 : DRAW-SHOTS ( -- )
@@ -1959,6 +2060,8 @@ CREATE TICKERS  ' TITLE-TICK , ' INTRO-TICK , ' PLAY-TICK , ' CLEAR-TICK , ' GAM
             x hw 2* 3 / -  y  hw 4 * 3 /  H y - $FF9040 BAR-RECT
             x hw 3 / -  y  hw 2* 3 /  H y - $FFFFE0 BAR-RECT
             x y 16 $FF9040 DISC  x y 9 $FFFFE0 DISC
+            \ Its light along the beam (the shake is already in x and y).
+            H y - 24 / 1+ 0 DO  x SHX @ -  y SHY @ - I 24 * +  LASER-GLOW GLOW  LOOP
          THEN
       THEN
    LOOP ;
@@ -1991,6 +2094,15 @@ CREATE TICKERS  ' TITLE-TICK , ' INTRO-TICK , ' PLAY-TICK , ' CLEAR-TICK , ' GAM
    CLOCK @ 1 AND IF
       v 16 LSHIFT v 8 LSHIFT OR v OR  GFX-CLS
    THEN ;
+
+\ A bomb, and a boss blowing up, ripple the rows of the screen: each row moves sideways
+\ by its cell of a table, along a wave that runs down the screen.
+CREATE RIPPLE-T  H CELLS ALLOT
+: RIPPLE ( -- )
+   BOMB-T @ 10 /  WOBBLE @ 6 /  MAX  { amp }
+   amp 0= IF EXIT THEN
+   H 0 DO  I 6 * CLOCK @ 8 * - SIN amp * 1024 /  RIPPLE-T I CELLS + !  LOOP
+   RIPPLE-T 0 0 W H RASTER-SCROLL ;
 
 \ The top line, the lives and bombs, and the boss's bar.
 : HUD ( -- )
@@ -2050,6 +2162,7 @@ VARIABLE T-TICK  VARIABLE T-DRAW  VARIABLE FPS  VARIABLE FPS-N  VARIABLE FPS-AT
    DRAW-BOMB-WAVE
    DRAW-BULLETS
    DRAW-FLASH
+   RIPPLE
    HUD
    WARNING-BAND ;
 
