@@ -132,7 +132,7 @@ test "an execution token compiled by ['] is relocated by LOAD, one compiled by L
     const source = try createMachine(&output);
     defer destroyMachine(source);
     try source.interpretLine(": TARGET 123 ; : A ['] TARGET EXECUTE ; : B [ ' TARGET ] LITERAL EXECUTE ;");
-    const image = try std.testing.allocator.alloc(u8, forth.State.imageCapacity());
+    const image = try std.testing.allocator.alloc(u8, forth.State.imageCapacity(.small));
     defer std.testing.allocator.free(image);
     const length = try source.encodeImage(image);
 

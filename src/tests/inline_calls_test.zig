@@ -188,7 +188,7 @@ test "saved inline padding consumes LOAD capacity and rejection leaves the targe
             try source.interpretLine("A");
         }
         try source.interpretLine(";");
-        const buffer = try std.testing.allocator.alloc(u8, forth.State.imageCapacity());
+        const buffer = try std.testing.allocator.alloc(u8, forth.State.imageCapacity(.small));
         defer std.testing.allocator.free(buffer);
         const length = try source.encodeImage(buffer);
         const restored = try support.createMachine(&output);
@@ -228,7 +228,7 @@ test "copied execution tokens relocate through repeated LOAD and another image r
     const source = try support.createMachine(&output);
     defer support.destroyMachine(source);
     try source.interpretLine(": T 5 ; : A ['] T ; : U A ; : C U EXECUTE ; : D ['] DUP ; : E D EXECUTE ;");
-    const buffer = try std.testing.allocator.alloc(u8, forth.State.imageCapacity());
+    const buffer = try std.testing.allocator.alloc(u8, forth.State.imageCapacity(.small));
     defer std.testing.allocator.free(buffer);
     const length = try source.encodeImage(buffer);
     const restored = try support.createMachine(&output);
@@ -288,10 +288,10 @@ test "inlining survives image normalization restoration and repeated relocation"
     const source = try support.createMachine(&output);
     defer support.destroyMachine(source);
     try source.interpretLine(": A 1+ ; : B A A ; : C B B ;");
-    const buffer = try std.testing.allocator.alloc(u8, forth.State.imageCapacity());
+    const buffer = try std.testing.allocator.alloc(u8, forth.State.imageCapacity(.small));
     defer std.testing.allocator.free(buffer);
     const length = try source.encodeImage(buffer);
-    try std.testing.expectEqualStrings("SIGIMG39", buffer[0..8]);
+    try std.testing.expectEqualStrings("SIGIMG42", buffer[0..8]);
     try std.testing.expect(inline_calls.isInline(first(source, "B")));
     const restored = try support.createMachine(&output);
     defer support.destroyMachine(restored);
@@ -331,7 +331,7 @@ test "SEE may omit empty old-image branches reconstructed as inline padding" {
     const execute = "10 0 Y 10 -1 Y 10 0 Z 10 -1 Z 10 W";
     try original.interpretLine(execute);
     try support.expectStack(original, &.{ 10, 11, 10, 11, 11 });
-    const buffer = try std.testing.allocator.alloc(u8, forth.State.imageCapacity());
+    const buffer = try std.testing.allocator.alloc(u8, forth.State.imageCapacity(.small));
     defer std.testing.allocator.free(buffer);
     var length = try original.encodeImage(buffer);
     const loaded = try support.createMachine(&output);

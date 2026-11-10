@@ -214,14 +214,14 @@ test "data allocation stops at the start of the heap without moving the allocati
     defer destroyMachine(machine);
 
     try machine.interpretLine("966656 ALLOT HERE");
-    const expected = [_]forth.Cell{forth.data_limit};
+    const expected = [_]forth.Cell{machine.sizes.dataLimit()};
     try expectStack(machine, &expected);
-    try std.testing.expectEqual(@as(forth.Cell, forth.data_limit), machine.data_here);
+    try std.testing.expectEqual(@as(forth.Cell, machine.sizes.dataLimit()), machine.data_here);
 
     const overflow = machine.interpretLine("1 ALLOT");
     try std.testing.expectError(error.MemoryExhausted, overflow);
     machine.report(error.MemoryExhausted);
-    try std.testing.expectEqual(@as(forth.Cell, forth.data_limit), machine.data_here);
+    try std.testing.expectEqual(@as(forth.Cell, machine.sizes.dataLimit()), machine.data_here);
 }
 
 test "cell access is 64-bit little-endian and rejects addresses outside logical memory" {
@@ -391,7 +391,7 @@ test "?DUP U< U> 2R@ ALIGN UNUSED .R and U.R work as in gforth" {
     machine.report(error.ReturnStackUnderflow);
     // UNUSED is what is left of the data space.
     try machine.interpretLine("UNUSED HERE + UNUSED 1000 ALLOT UNUSED - ");
-    try expectStack(machine, &.{ forth.data_limit, 1000 });
+    try expectStack(machine, &.{ machine.sizes.dataLimit(), 1000 });
 }
 
 test "*/ */MOD M* UM* UM/MOD FM/MOD and SM/REM work as in gforth" {

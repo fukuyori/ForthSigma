@@ -191,7 +191,7 @@ test "source locations and the REQUIRE history survive image restore and LOAD" {
     const source = try createMachine(&output);
     defer destroyMachine(source);
     try source.interpretLine("INCLUDE b.txt");
-    const image = try std.testing.allocator.alloc(u8, forth.State.imageCapacity());
+    const image = try std.testing.allocator.alloc(u8, forth.State.imageCapacity(.small));
     defer std.testing.allocator.free(image);
     const length = try source.encodeImage(image);
 
@@ -264,7 +264,7 @@ test "a MARKER loaded with LOAD restores the history it was made with" {
     const source = try createMachine(&output);
     defer destroyMachine(source);
     try source.interpretLine("INCLUDE a.txt MARKER M");
-    const image = try std.testing.allocator.alloc(u8, forth.State.imageCapacity());
+    const image = try std.testing.allocator.alloc(u8, forth.State.imageCapacity(.small));
     defer std.testing.allocator.free(image);
     const length = try source.encodeImage(image);
     const loaded = try createMachine(&output);

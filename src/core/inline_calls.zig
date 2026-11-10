@@ -35,7 +35,7 @@ fn body(self: *const forth.State, id: u16) ?[]const defs.Op {
         if (defs.isPrimitiveOp(op.kind)) continue;
         switch (op.kind) {
             .literal, .float_literal, .execution_token => {},
-            .call_colon => if (!isInline(op) or depth(op.value) >= limits.max_stack) return null,
+            .call_colon => if (!isInline(op) or depth(op.value) >= @min(self.frames.len, 65535)) return null,
             else => return null,
         }
     }

@@ -102,7 +102,7 @@ test "word lists and the search order survive image restore and LOAD renumbers t
     const source = try createMachine(&output);
     defer destroyMachine(source);
     try source.interpretLine("VOCABULARY TOOLS ALSO TOOLS DEFINITIONS : TOOL 7 ; MARKER M ONLY FORTH DEFINITIONS");
-    const image = try std.testing.allocator.alloc(u8, forth.State.imageCapacity());
+    const image = try std.testing.allocator.alloc(u8, forth.State.imageCapacity(.small));
     defer std.testing.allocator.free(image);
     const length = try source.encodeImage(image);
 
@@ -131,7 +131,7 @@ test "a MARKER made in reclaimed data space survives LOAD with old values in its
     try source.interpretLine("VOCABULARY TOOLS HERE CONSTANT A CREATE OLD 152 ALLOT 9223372036854775807 A 144 + ! FORGET OLD MARKER M A 144 + @");
     try expectStack(source, &.{0});
     source.data_depth = 0;
-    const image = try std.testing.allocator.alloc(u8, forth.State.imageCapacity());
+    const image = try std.testing.allocator.alloc(u8, forth.State.imageCapacity(.small));
     defer std.testing.allocator.free(image);
     const length = try source.encodeImage(image);
     const loaded = try createMachine(&output);
@@ -308,7 +308,7 @@ test "image restore keeps words of a vocabulary made with :NONAME and DOES>" {
     defer destroyMachine(source);
     try source.interpretLine("VOCABULARY TOOLS ALSO TOOLS DEFINITIONS :NONAME 40 + ; CONSTANT ADDER : HOLDER CREATE , DOES> @ ; 2 HOLDER TWO");
     try source.interpretLine("FORTH DEFINITIONS PREVIOUS");
-    const image = try std.testing.allocator.alloc(u8, forth.State.imageCapacity());
+    const image = try std.testing.allocator.alloc(u8, forth.State.imageCapacity(.small));
     defer std.testing.allocator.free(image);
     const length = try source.encodeImage(image);
     const loaded = try createMachine(&output);

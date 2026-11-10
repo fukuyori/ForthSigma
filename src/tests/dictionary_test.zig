@@ -74,7 +74,7 @@ test "a full restore keeps this build's built-in words when the image's built-in
     const dup: usize = source.lookup("DUP").?;
     const removed: usize = source.words[dup].name_len;
     const removed_at: usize = source.words[dup].name_start;
-    const header = 24;
+    const header = 32;
     const words_end = header + @as(usize, source.word_count) * @sizeOf(Word);
     const names_at = words_end + @as(usize, source.code_count) * @sizeOf(@TypeOf(source.code[0]));
     const image = try std.testing.allocator.alloc(u8, saved.len - removed);
@@ -120,7 +120,7 @@ test "a built-in word compiles to a direct call, and an image with plain calls s
     defer freeImage(image);
     const Word = @TypeOf(source.words[0]);
     const Op = @TypeOf(source.code[0]);
-    const code_at = 24 + @as(usize, source.word_count) * @sizeOf(Word);
+    const code_at = 32 + @as(usize, source.word_count) * @sizeOf(Word);
     var changed: usize = 0;
     for (0..source.code_count) |index| {
         const at = code_at + index * @sizeOf(Op) + @offsetOf(Op, "kind");
@@ -144,10 +144,10 @@ test "execution-only calls normalize on save and relocate on LOAD without changi
     try source.interpretLine(": SQ DUP * ; : FOUR SQ SQ ; : DOWN DUP IF 1- RECURSE THEN ; : ALIASES MINUS INVERT ;");
     const image = try saveImage(source);
     defer freeImage(image);
-    try std.testing.expectEqualStrings("SIGIMG39", image[0..8]);
+    try std.testing.expectEqualStrings("SIGIMG42", image[0..8]);
     const Word = @TypeOf(source.words[0]);
     const Op = @TypeOf(source.code[0]);
-    const code_at = 24 + @as(usize, source.word_count) * @sizeOf(Word);
+    const code_at = 32 + @as(usize, source.word_count) * @sizeOf(Word);
     var inline_end: usize = 0;
     for (source.code[0..source.code_count], 0..) |op, index| {
         const at = code_at + index * @sizeOf(Op);
@@ -300,13 +300,13 @@ test "an image keeps HERE's data, the used heap, and the source table, and nothi
     try source.interpretLine("VARIABLE S S\" kept on the heap\" S $! : SHOW S $@ TYPE ; CREATE BUF 4 ALLOT 1 BUF C!");
     // Bytes above HERE are not part of the image.
     try source.interpretLine("HERE 100 + 99 SWAP C!");
-    const image = try std.testing.allocator.alloc(u8, forth.State.imageCapacity());
+    const image = try std.testing.allocator.alloc(u8, forth.State.imageCapacity(.small));
     defer std.testing.allocator.free(image);
     const length = try source.encodeImage(image);
 
     const source_table_bytes = 64 * 256 + 64;
-    const expected = 24 + @as(usize, source.word_count) * @sizeOf(@TypeOf(source.words[0])) + @as(usize, source.code_count) * @sizeOf(@TypeOf(source.code[0])) +
-        source.names_used + @as(usize, @intCast(source.data_here - 0x10000)) + @as(usize, @intCast(source.heapTop() - forth.data_limit)) + source_table_bytes + 4;
+    const expected = 32 + @as(usize, source.word_count) * @sizeOf(@TypeOf(source.words[0])) + @as(usize, source.code_count) * @sizeOf(@TypeOf(source.code[0])) +
+        source.names_used + @as(usize, @intCast(source.data_here - 0x10000)) + @as(usize, @intCast(source.heapTop() - source.sizes.dataLimit())) + source_table_bytes + 4;
     try std.testing.expectEqual(expected, length);
     try std.testing.expect(length < 200_000);
 
@@ -358,7 +358,7 @@ test "LOAD gives the added words their names after the dictionary's own" {
     const source = try createMachine(&output);
     defer destroyMachine(source);
     try source.interpretLine(": FIRST-LOADED 10 ; : SECOND-LOADED FIRST-LOADED 1+ ;");
-    const image = try std.testing.allocator.alloc(u8, forth.State.imageCapacity());
+    const image = try std.testing.allocator.alloc(u8, forth.State.imageCapacity(.small));
     defer std.testing.allocator.free(image);
     const length = try source.encodeImage(image);
 
@@ -377,14 +377,14 @@ test "LOAD gives the added words their names after the dictionary's own" {
 }
 
 fn saveImage(machine: *forth.State) ![]u8 {
-    const image = try std.testing.allocator.alloc(u8, forth.State.imageCapacity());
+    const image = try std.testing.allocator.alloc(u8, forth.State.imageCapacity(.small));
     errdefer std.testing.allocator.free(image);
     const length = try machine.encodeImage(image);
     return image[0..length];
 }
 
 fn freeImage(image: []u8) void {
-    std.testing.allocator.free(image.ptr[0..forth.State.imageCapacity()]);
+    std.testing.allocator.free(image.ptr[0..forth.State.imageCapacity(.small)]);
 }
 
 /// Writes the checksum again after a test has changed an image, so that the checks
@@ -423,7 +423,7 @@ test "a damaged image, or one whose names are out of order or out of range, is r
         .{ 1, @offsetOf(Word, "kind"), 0x01 },
     };
     for (corruptions) |corruption| {
-        const at = 24 + corruption[0] * @sizeOf(Word) + corruption[1];
+        const at = 32 + corruption[0] * @sizeOf(Word) + corruption[1];
         const saved = image[at];
         image[at] = saved ^ corruption[2];
         resealImage(image);
@@ -433,13 +433,13 @@ test "a damaged image, or one whose names are out of order or out of range, is r
         try std.testing.expectEqual(before_words, loaded.word_count);
         try std.testing.expectEqual(before_names, loaded.names_used);
     }
-    // SIGIMG38 and earlier are not read: their user words have other numbers, or their addresses are of another layout.
-    for ([_]*const [8]u8{ "SIGIMG31", "SIGIMG32", "SIGIMG33", "SIGIMG34", "SIGIMG35", "SIGIMG36", "SIGIMG37", "SIGIMG38" }) |old| {
+    // SIGIMG41 and earlier are not read: their user words have other numbers, or their addresses are of another layout.
+    for ([_]*const [8]u8{ "SIGIMG31", "SIGIMG32", "SIGIMG33", "SIGIMG34", "SIGIMG35", "SIGIMG36", "SIGIMG37", "SIGIMG38", "SIGIMG39", "SIGIMG40", "SIGIMG41" }) |old| {
         @memcpy(image[0..8], old);
         resealImage(image);
         try std.testing.expectError(error.InvalidImage, loaded.restoreImage(image));
     }
-    @memcpy(image[0..8], "SIGIMG39");
+    @memcpy(image[0..8], "SIGIMG42");
     resealImage(image);
     // One damaged byte anywhere, here in the saved memory or in the checksum itself,
     // fails the checksum, and the dictionary, code, and memory stay as they were.
@@ -548,7 +548,7 @@ test "LOAD keeps a DEFER's action pointing to the loaded word" {
     const source = try createMachine(&output);
     defer destroyMachine(source);
     try source.interpretLine(": TWICE 2 * ; DEFER ACT ' TWICE IS ACT DEFER BUILTIN-ACT ' DUP IS BUILTIN-ACT");
-    const image = try std.testing.allocator.alloc(u8, forth.State.imageCapacity());
+    const image = try std.testing.allocator.alloc(u8, forth.State.imageCapacity(.small));
     defer std.testing.allocator.free(image);
     const length = try source.encodeImage(image);
 
@@ -561,4 +561,61 @@ test "LOAD keeps a DEFER's action pointing to the loaded word" {
     try target.appendImage(loaded);
     try target.interpretLine("4 ACT 3 BUILTIN-ACT ACTION-OF ACT ' TWICE =");
     try expectStack(target, &.{ 8, 3, 3, -1 });
+}
+
+test "an image records its layout and runs only with that layout" {
+    try support.skipWithout(&.{.image});
+    var output = Output{};
+    const sizes = forth.Sizes{ .m = 2 << 20, .l = 8192, .data_stack = 64, .return_stack = 128, .float_stack = 32 };
+    const source = try support.createMachineWith(&output, sizes);
+    defer destroyMachine(source);
+    try source.interpretLine(": KEEP 7 ; 100 ALLOT");
+    const image = try std.testing.allocator.alloc(u8, source.encodedSize());
+    defer std.testing.allocator.free(image);
+    try std.testing.expectEqual(image.len, try source.encodeImage(image));
+    const layout = forth.State.imageLayout(image).?;
+    try std.testing.expectEqual(sizes.m, layout[0]);
+    try std.testing.expectEqual(sizes.l, layout[1]);
+
+    const same = try support.createMachineWith(&output, sizes);
+    defer destroyMachine(same);
+    try same.restoreFreshImage(image);
+    try same.interpretLine("KEEP");
+    try expectStack(same, &.{7});
+
+    const other = try createMachine(&output);
+    defer destroyMachine(other);
+    try std.testing.expectError(error.InvalidImage, other.restoreImage(image));
+}
+
+test "LOAD's appendImage takes the words of an image with another layout" {
+    try support.skipWithout(&.{.image});
+    var output = Output{};
+    const sizes = forth.Sizes{ .m = 2 << 20, .l = 8192, .data_stack = 64, .return_stack = 128, .float_stack = 32 };
+    const source = try support.createMachineWith(&output, sizes);
+    defer destroyMachine(source);
+    try source.interpretLine("VARIABLE KEPT 42 KEPT ! : READ-KEPT KEPT @ ;");
+    const target = try createMachine(&output);
+    defer destroyMachine(target);
+    try target.interpretLine("VARIABLE OTHER");
+    try target.appendImage(source);
+    try target.interpretLine("READ-KEPT");
+    try expectStack(target, &.{42});
+}
+
+test "the sizes of a machine are its limits" {
+    var output = Output{};
+    const sizes = forth.Sizes{ .m = 2 << 20, .l = 8192, .data_stack = 64, .return_stack = 128, .float_stack = 32 };
+    const machine = try support.createMachineWith(&output, sizes);
+    defer destroyMachine(machine);
+    try std.testing.expectEqual(sizes.memorySize(), machine.memory.len);
+    try machine.interpretLine("S\" STACK-CELLS\" ENVIRONMENT? DROP S\" RETURN-STACK-CELLS\" ENVIRONMENT? DROP UNUSED");
+    try expectStack(machine, &.{ 64, 128, sizes.dataLimit() - forth.data_start });
+    machine.data_depth = 0;
+    try std.testing.expectError(error.StackOverflow, machine.interpretLine(": FILL-UP 100 0 DO 1 LOOP ; FILL-UP"));
+    machine.data_depth = 0;
+    // The last byte of the memory can be read; the next address cannot.
+    try machine.interpretLine("4202495 C@");
+    try expectStack(machine, &.{0});
+    machine.data_depth = 0;
 }

@@ -12,7 +12,6 @@ const RuntimeError = defs.RuntimeError;
 const State = forth.State;
 const WordKind = defs.WordKind;
 const cell_size = memory_map.cell_size;
-const data_limit = memory_map.data_limit;
 const floatBits = defs.floatBits;
 const float_size = memory_map.float_size;
 const localOperand = local_variables.localOperand;
@@ -63,7 +62,7 @@ pub fn finishPending(self: *State, token: []const u8) RuntimeError!void {
             try self.writeDouble(self.words[id].value, self.pending_double);
         },
         .buffer_name => {
-            if (self.pending_array_size < 0 or self.pending_array_size > data_limit) return error.MemoryExhausted;
+            if (self.pending_array_size < 0 or self.pending_array_size > self.sizes.dataLimit()) return error.MemoryExhausted;
             _ = try self.appendDataWord(token, .created, self.pending_array_size);
         },
         .two_variable_name, .two_constant_name => {
@@ -72,7 +71,7 @@ pub fn finishPending(self: *State, token: []const u8) RuntimeError!void {
             if (pending == .two_variable_name) self.last_created_word = id;
         },
         .array_name => {
-            if (self.pending_array_size < 0 or self.pending_array_size > data_limit / cell_size) return error.MemoryExhausted;
+            if (self.pending_array_size < 0 or self.pending_array_size > @divTrunc(self.sizes.dataLimit(), cell_size)) return error.MemoryExhausted;
             _ = try self.appendDataWord(token, .array, self.pending_array_size * cell_size);
         },
         .forget_name => {

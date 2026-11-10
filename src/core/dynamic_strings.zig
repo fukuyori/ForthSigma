@@ -10,9 +10,6 @@ const UCell = memory_map.UCell;
 const cell_size = memory_map.cell_size;
 const errno_invalid = memory_map.errno_invalid;
 const errno_no_memory = memory_map.errno_no_memory;
-const heap_base = memory_map.heap_base;
-const heap_end = memory_map.heap_end;
-const memory_size = memory_map.memory_size;
 
 pub const StringRef = struct { address: Cell, length: usize };
 
@@ -81,7 +78,7 @@ pub fn insertString(self: *State, string_var: Cell, offset: usize, source: Cell,
 pub fn appendString(self: *State, string_var: Cell, bytes: []const u8) RuntimeError!void {
     const memory_start = @intFromPtr(self.memory.ptr);
     const address = @intFromPtr(bytes.ptr);
-    if (address >= memory_start and address < memory_start + memory_size) {
+    if (address >= memory_start and address < memory_start + self.memory.len) {
         const end = (try self.fetchString(string_var)).length;
         return self.insertString(string_var, end, @intCast(address - memory_start), bytes.len, false);
     }
@@ -97,7 +94,7 @@ pub fn stringArrayCount(self: *State, array_var: Cell) RuntimeError!usize {
 
 /// Address of element `index`, growing the array with empty strings as needed.
 pub fn stringArrayElement(self: *State, array_var: Cell, index: usize) RuntimeError!Cell {
-    if (index >= (heap_end - heap_base) / cell_size) return self.throwIor(errno_no_memory);
+    if (index >= @divTrunc(self.sizes.heapEnd() - self.sizes.heapBase(), cell_size)) return self.throwIor(errno_no_memory);
     const needed = (index + 1) * cell_size;
     if ((try self.fetchString(array_var)).length < needed) _ = try self.setStringLength(array_var, needed);
     return (try self.fetchString(array_var)).address + @as(Cell, @intCast(index * cell_size));
@@ -168,7 +165,7 @@ fn readWholeFile(self: *State, fileid: Cell, string_var: ?Cell) RuntimeError!Str
     const files = try self.fileOps();
     const sized = files.size(self.writer.context, fileid);
     if (sized.ior != 0) return self.throwCode(sized.ior);
-    if (sized.value > @as(UCell, @intCast(heap_end - heap_base))) return self.throwIor(errno_no_memory);
+    if (sized.value > @as(UCell, @intCast(self.sizes.heapEnd() - self.sizes.heapBase()))) return self.throwIor(errno_no_memory);
     const size: usize = @intCast(sized.value);
     const address = if (string_var) |string|
         (try self.setStringLength(string, size)) + cell_size

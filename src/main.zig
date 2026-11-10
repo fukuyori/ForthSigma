@@ -697,22 +697,154 @@ fn writeU64(bytes: []u8, value: u64) void {
     writeU32(bytes[4..8], @truncate(value >> 32));
 }
 
-fn loadEmbeddedImage(path: [:0]const u8, machine: *forth.State, allocator: std.mem.Allocator) void {
-    const file = fopen(path.ptr, "rb") orelse return;
+/// The image `SAVESYS` put at the end of the executable, in a new allocation; null when
+/// there is none.
+fn readEmbeddedImage(path: [:0]const u8, allocator: std.mem.Allocator) ?[]u8 {
+    const file = fopen(path.ptr, "rb") orelse return null;
     defer _ = fclose(file);
-    if (fseek(file, 0, 2) != 0) return;
+    if (fseek(file, 0, 2) != 0) return null;
     const end = ftell(file);
-    if (end < image_footer_size or fseek(file, end - image_footer_size, 0) != 0) return;
+    if (end < image_footer_size or fseek(file, end - image_footer_size, 0) != 0) return null;
     var footer: [image_footer_size]u8 = undefined;
-    if (fread(&footer, 1, footer.len, file) != footer.len or !std.mem.eql(u8, footer[0..8], image_footer_magic)) return;
+    if (fread(&footer, 1, footer.len, file) != footer.len or !std.mem.eql(u8, footer[0..8], image_footer_magic)) return null;
     const image_len = readU32(footer[8..12]);
     const base_len = readU64(footer[12..20]);
-    if (base_len + image_len + image_footer_size != end or image_len > forth.State.imageCapacity()) return;
-    if (fseek(file, @intCast(base_len), 0) != 0) return;
-    const image = allocator.alloc(u8, image_len) catch return;
-    defer allocator.free(image);
-    if (fread(image.ptr, 1, image.len, file) != image.len) return;
-    machine.restoreImage(image) catch machine.write("INVALID IMAGE !\n");
+    if (base_len + image_len + image_footer_size != end) return null;
+    if (fseek(file, @intCast(base_len), 0) != 0) return null;
+    const image = allocator.alloc(u8, image_len) catch return null;
+    if (fread(image.ptr, 1, image.len, file) != image.len) {
+        allocator.free(image);
+        return null;
+    }
+    return image;
+}
+
+/// The sizes the command line asks for; null keeps the default. `next` is the index of
+/// the first argument after them.
+const StartOptions = struct {
+    m: ?usize = null,
+    l: ?usize = null,
+    data_stack: ?usize = null,
+    return_stack: ?usize = null,
+    float_stack: ?usize = null,
+    next: usize = 1,
+};
+
+const StartOption = struct { short: []const u8, long: []const u8, field: enum { m, l, data_stack, return_stack, float_stack } };
+
+const start_options = [_]StartOption{
+    .{ .short = "-m", .long = "--dictionary-size", .field = .m },
+    .{ .short = "-l", .long = "--locals-stack-size", .field = .l },
+    .{ .short = "-d", .long = "--data-stack-size", .field = .data_stack },
+    .{ .short = "-r", .long = "--return-stack-size", .field = .return_stack },
+    .{ .short = "-f", .long = "--fp-stack-size", .field = .float_stack },
+};
+
+/// The bytes of a size as gforth takes it: a decimal number and a unit, `b` (bytes), `e`
+/// (elements; also without a unit), `k`, `M`, `G`, or `T`. Null when it is not one.
+fn parseSize(text: []const u8, element: usize) ?usize {
+    var end: usize = 0;
+    while (end < text.len and std.ascii.isDigit(text[end])) end += 1;
+    if (end == 0) return null;
+    const value = std.fmt.parseUnsigned(usize, text[0..end], 10) catch return null;
+    const unit = text[end..];
+    const scale: usize = if (unit.len == 0 or std.mem.eql(u8, unit, "e"))
+        element
+    else if (std.mem.eql(u8, unit, "b"))
+        1
+    else if (std.mem.eql(u8, unit, "k"))
+        1 << 10
+    else if (std.mem.eql(u8, unit, "M"))
+        1 << 20
+    else if (std.mem.eql(u8, unit, "G"))
+        1 << 30
+    else if (std.mem.eql(u8, unit, "T"))
+        1 << 40
+    else
+        return null;
+    return std.math.mul(usize, value, scale) catch null;
+}
+
+/// Reads the size options at the start of the arguments, as gforth does: `-d SIZE`,
+/// `-dSIZE`, `--data-stack-size SIZE`, and `--data-stack-size=SIZE`; `--` ends them, and
+/// so does anything else. A size of 0 keeps the default. On an error, `failed` is the
+/// option at fault.
+fn parseStartOptions(args: []const []const u8, failed: *[]const u8) error{ MissingValue, InvalidSize }!StartOptions {
+    var options = StartOptions{};
+    var index: usize = 1;
+    while (index < args.len) {
+        const argument = args[index];
+        if (std.mem.eql(u8, argument, "--")) {
+            index += 1;
+            break;
+        }
+        var value: ?[]const u8 = null;
+        var needs_next = false;
+        const found: ?StartOption = for (start_options) |option| {
+            if (std.mem.eql(u8, argument, option.short) or std.mem.eql(u8, argument, option.long)) {
+                needs_next = true;
+                break option;
+            }
+            if (std.mem.startsWith(u8, argument, option.long) and argument.len > option.long.len and argument[option.long.len] == '=') {
+                value = argument[option.long.len + 1 ..];
+                break option;
+            }
+            if (argument.len > 2 and !std.mem.startsWith(u8, argument, "--") and std.mem.startsWith(u8, argument, option.short)) {
+                value = argument[2..];
+                break option;
+            }
+        } else null;
+        const option = found orelse break;
+        failed.* = argument;
+        if (needs_next) {
+            if (index + 1 >= args.len) return error.MissingValue;
+            index += 1;
+            value = args[index];
+        }
+        const bytes = parseSize(value.?, 8) orelse return error.InvalidSize;
+        index += 1;
+        // Memory is kept in whole cells, and stacks in whole elements.
+        const in_bytes = std.mem.alignForward(usize, bytes, 8);
+        const elements = in_bytes / 8;
+        if (bytes == 0) continue;
+        switch (option.field) {
+            .m => options.m = in_bytes,
+            .l => options.l = in_bytes,
+            .data_stack => options.data_stack = elements,
+            .return_stack => options.return_stack = elements,
+            .float_stack => options.float_stack = elements,
+        }
+    }
+    options.next = index;
+    return options;
+}
+
+/// The sizes to run with; null, with `failed` naming the option, when an option asks for
+/// a size that cannot be.
+fn startSizes(options: StartOptions, failed: *[]const u8) ?forth.Sizes {
+    var sizes = forth.Sizes.default;
+    if (options.m) |m| sizes.m = m;
+    if (options.l) |l| sizes.l = l;
+    if (options.data_stack) |value| sizes.data_stack = value;
+    if (options.return_stack) |value| sizes.return_stack = value;
+    if (options.float_stack) |value| sizes.float_stack = value;
+    if (!forth.Sizes.validLayout(sizes.m, sizes.l)) {
+        failed.* = if (options.m != null) "-m" else "-l";
+        return null;
+    }
+    if (!forth.Sizes.validStack(sizes.data_stack)) {
+        failed.* = "-d";
+        return null;
+    }
+    if (!forth.Sizes.validStack(sizes.return_stack)) {
+        failed.* = "-r";
+        return null;
+    }
+    if (!forth.Sizes.validStack(sizes.float_stack)) {
+        failed.* = "-f";
+        return null;
+    }
+    return sizes;
 }
 
 fn loadDictionary(context: ?*anyopaque, input_path: []const u8, machine: *forth.State) forth.RuntimeError!void {
@@ -725,17 +857,23 @@ fn loadDictionary(context: ?*anyopaque, input_path: []const u8, machine: *forth.
     defer _ = fclose(file);
     if (fseek(file, 0, 2) != 0) return error.FileUnavailable;
     const file_len_signed = ftell(file);
-    if (file_len_signed < 0 or file_len_signed > forth.State.imageCapacity() or fseek(file, 0, 0) != 0) return error.InvalidImage;
+    if (file_len_signed < 0 or file_len_signed > std.math.maxInt(u32) or fseek(file, 0, 0) != 0) return error.InvalidImage;
     const file_len: usize = @intCast(file_len_signed);
     const bytes = host.allocator.alloc(u8, file_len) catch return error.MemoryExhausted;
     defer host.allocator.free(bytes);
     if (fread(bytes.ptr, 1, bytes.len, file) != bytes.len) return error.FileUnavailable;
+    // The image is restored with the layout it was saved with; LOAD then moves its data
+    // to the end of this dictionary, whatever the layouts are.
+    const layout = forth.State.imageLayout(bytes) orelse return error.InvalidImage;
+    var sizes = machine.sizes;
+    sizes.m = layout[0];
+    sizes.l = layout[1];
     const loaded = host.allocator.create(forth.State) catch return error.MemoryExhausted;
     defer host.allocator.destroy(loaded);
-    const loaded_storage = forth.Storage.allocate(std.heap.page_allocator, true) catch return error.MemoryExhausted;
+    const loaded_storage = forth.Storage.allocate(std.heap.page_allocator, true, sizes) catch return error.MemoryExhausted;
     defer loaded_storage.free(std.heap.page_allocator);
     loaded.init(machine.writer, loaded_storage);
-    try loaded.restoreImage(bytes);
+    try loaded.restoreFreshImage(bytes);
     try machine.appendImage(loaded);
 }
 
@@ -747,7 +885,7 @@ fn saveDictionary(context: ?*anyopaque, output_path: []const u8, machine: *forth
     terminated_path[output_path.len] = 0;
     const file = fopen(&terminated_path, "wb") orelse return error.FileUnavailable;
     defer _ = fclose(file);
-    const image = host.allocator.alloc(u8, forth.State.imageCapacity()) catch return error.MemoryExhausted;
+    const image = host.allocator.alloc(u8, machine.encodedSize()) catch return error.MemoryExhausted;
     defer host.allocator.free(image);
     const length = try machine.encodeImage(image);
     if (fwrite(image.ptr, 1, length, file) != length or fflush(file) != 0) return error.FileUnavailable;
@@ -783,7 +921,7 @@ fn saveExecutableImage(context: ?*anyopaque, output_path: []const u8, machine: *
         if (amount != wanted or fwrite(&buffer, 1, amount, destination) != amount) return error.FileUnavailable;
         copied += amount;
     }
-    const image = allocator.alloc(u8, forth.State.imageCapacity()) catch return error.MemoryExhausted;
+    const image = allocator.alloc(u8, machine.encodedSize()) catch return error.MemoryExhausted;
     defer allocator.free(image);
     const image_len = try machine.encodeImage(image);
     if (fwrite(image.ptr, 1, image_len, destination) != image_len) return error.FileUnavailable;
@@ -1052,7 +1190,40 @@ fn run(init: std.process.Init.Minimal) !u8 {
     useBinaryStdin();
     utf8_console.begin();
     defer utf8_console.finish();
-    const storage = try forth.Storage.allocate(std.heap.page_allocator, true);
+    // The size options at the start of the arguments, as gforth reads them, come before
+    // anything else: the memory and the stacks are made from them.
+    var arguments = try std.process.Args.Iterator.initAllocator(init.args, allocator);
+    defer arguments.deinit();
+    var argument_list: std.ArrayList([]const u8) = .empty;
+    defer argument_list.deinit(allocator);
+    while (arguments.next()) |argument| try argument_list.append(allocator, argument);
+    var failed_option: []const u8 = "";
+    const start = parseStartOptions(argument_list.items, &failed_option) catch |err| {
+        terminalWrite(null, failed_option);
+        terminalWrite(null, if (err == error.MissingValue) ": OPTION REQUIRES AN ARGUMENT !\n" else ": INVALID SIZE !\n");
+        return 1;
+    };
+    const embedded = readEmbeddedImage(executable_path, allocator);
+    defer if (embedded) |image| allocator.free(image);
+    var sizes = startSizes(start, &failed_option) orelse {
+        terminalWrite(null, failed_option);
+        terminalWrite(null, ": INVALID SIZE !\n");
+        return 1;
+    };
+    // A saved program keeps addresses, so it runs with the layout it was saved with.
+    if (embedded) |image| if (forth.State.imageLayout(image)) |layout| {
+        if (start.m != null or start.l != null) {
+            terminalWrite(null, if (start.m != null) "-m" else "-l");
+            terminalWrite(null, ": A SAVED PROGRAM KEEPS ITS MEMORY LAYOUT !\n");
+            return 1;
+        }
+        sizes.m = layout[0];
+        sizes.l = layout[1];
+    };
+    const storage = forth.Storage.allocate(std.heap.page_allocator, true, sizes) catch {
+        terminalWrite(null, "OUT OF MEMORY !\n");
+        return 1;
+    };
     defer storage.free(std.heap.page_allocator);
     machine.init(.{ .gamepad_ops = if (graphics) &host_gamepad.ops else null, .context = @ptrCast(&host), .write_fn = terminalWrite, .read_fn = terminalRead, .load_fn = loadDictionary, .save_fn = saveDictionary, .savesys_fn = saveExecutableImage, .key_fn = terminalKey, .key_ready_fn = terminalKeyReady, .unread_fn = terminalUnread, .sleep_fn = sleepMilliseconds, .utime_fn = microsecondsSinceEpoch, .local_time_fn = localTime, .getenv_fn = environmentValue, .system_fn = runShellCommand, .file_ops = &file_ops, .framebuffer_fn = graphicsBuffer, .terminal_size_fn = terminalSize, .terminal_utf8_fn = terminalUtf8, .window_fn = if (host_window.available) host_window.show else null, .input_fn = inputEvent, .mouse_fn = mouseMode, .cursor_fn = cursorPosition, .font_buffer_fn = if (graphics) fontBuffer else null, .font_free_fn = if (graphics) fontFree else null, .system_font_fn = if (graphics and host_font.available) host_font.select else null, .system_glyph_fn = if (graphics and host_font.available) host_font.glyph else null, .process_start_fn = if (graphics) host_process.start else null, .process_write_fn = if (graphics) host_process.write else null, .process_read_fn = if (graphics) host_process.read else null, .process_stop_fn = if (graphics) host_process.stop else null, .audio_fn = if (audio) host_audio.start else null, .audio_device_fn = if (audio) host_audio.hasDevice else null, .audio_wait_fn = if (audio) audioWait else null }, storage);
     defer closeAllFiles();
@@ -1064,16 +1235,14 @@ fn run(init: std.process.Init.Minimal) !u8 {
     defer if (graphics) {
         _ = host_process.stop(null);
     };
-    loadEmbeddedImage(executable_path, machine, allocator);
+    if (embedded) |image| machine.restoreFreshImage(image) catch machine.write("INVALID IMAGE !\n");
 
-    // The arguments go into Forth memory, where ARGC, ARGV, ARG, and NEXT-ARG see them.
-    // This comes after the image is restored, since restoring clears that area.
-    var arguments = try std.process.Args.Iterator.initAllocator(init.args, allocator);
-    defer arguments.deinit();
-    var argument_list: std.ArrayList([]const u8) = .empty;
-    defer argument_list.deinit(allocator);
-    while (arguments.next()) |argument| try argument_list.append(allocator, argument);
-    machine.setArguments(argument_list.items) catch |err| {
+    // The other arguments go into Forth memory, where ARGC, ARGV, ARG, and NEXT-ARG see
+    // them, after the program's name. This comes after the image is restored, since
+    // restoring clears that area.
+    const kept_arguments = argument_list.items[start.next - 1 ..];
+    kept_arguments[0] = argument_list.items[0];
+    machine.setArguments(kept_arguments) catch |err| {
         machine.report(err);
         return 1;
     };
@@ -1167,7 +1336,7 @@ test "GETENV through the host accepts 3072 bytes and rejects 3073" {
     var host = HostContext{ .allocator = std.testing.allocator, .executable_path = "", .environ_map = &map };
     const machine = try std.testing.allocator.create(forth.State);
     defer std.testing.allocator.destroy(machine);
-    const storage = try forth.Storage.allocate(std.testing.allocator, false);
+    const storage = try forth.Storage.allocate(std.testing.allocator, false, .small);
     defer storage.free(std.testing.allocator);
     machine.init(.{ .context = @ptrCast(&host), .write_fn = discardOutput, .getenv_fn = environmentValue }, storage);
 
@@ -1211,7 +1380,7 @@ test "INCLUDE through the host reads CR LF lines and limits a line to 4096 bytes
     var host = HostContext{ .allocator = allocator, .executable_path = "", .environ_map = undefined };
     const machine = try allocator.create(forth.State);
     defer allocator.destroy(machine);
-    const storage = try forth.Storage.allocate(allocator, false);
+    const storage = try forth.Storage.allocate(allocator, false, .small);
     defer storage.free(allocator);
     machine.init(.{ .context = @ptrCast(&host), .write_fn = discardOutput, .file_ops = &file_ops }, storage);
     defer closeAllFiles();
@@ -1235,7 +1404,7 @@ test "SLURP-FILE through the host reads every byte as it is" {
     var host = HostContext{ .allocator = allocator, .executable_path = "", .environ_map = undefined };
     const machine = try allocator.create(forth.State);
     defer allocator.destroy(machine);
-    const storage = try forth.Storage.allocate(allocator, false);
+    const storage = try forth.Storage.allocate(allocator, false, .small);
     defer storage.free(allocator);
     machine.init(.{ .context = @ptrCast(&host), .write_fn = discardOutput, .file_ops = &file_ops }, storage);
     defer closeAllFiles();
@@ -1256,7 +1425,7 @@ test "file words through the host: position, resize, flush, status, rename over 
     var host = HostContext{ .allocator = allocator, .executable_path = "", .environ_map = undefined };
     const machine = try allocator.create(forth.State);
     defer allocator.destroy(machine);
-    const storage = try forth.Storage.allocate(allocator, false);
+    const storage = try forth.Storage.allocate(allocator, false, .small);
     defer storage.free(allocator);
     machine.init(.{ .context = @ptrCast(&host), .write_fn = discardOutput, .file_ops = &file_ops }, storage);
     defer closeAllFiles();
@@ -1286,7 +1455,7 @@ test "file names and commands other than ASCII: create, include, status, rename,
     var host = HostContext{ .allocator = allocator, .executable_path = "", .environ_map = undefined };
     const machine = try allocator.create(forth.State);
     defer allocator.destroy(machine);
-    const storage = try forth.Storage.allocate(allocator, false);
+    const storage = try forth.Storage.allocate(allocator, false, .small);
     defer storage.free(allocator);
     machine.init(.{ .context = @ptrCast(&host), .write_fn = discardOutput, .file_ops = &file_ops, .system_fn = runShellCommand }, storage);
     defer closeAllFiles();
@@ -1318,7 +1487,7 @@ test "SAVE and LOAD through the host keep the words, also when loaded twice" {
     const writer: forth.Writer = .{ .context = @ptrCast(&host), .write_fn = discardOutput, .load_fn = loadDictionary, .save_fn = saveDictionary };
     const source = try allocator.create(forth.State);
     defer allocator.destroy(source);
-    const source_storage = try forth.Storage.allocate(allocator, false);
+    const source_storage = try forth.Storage.allocate(allocator, false, .small);
     defer source_storage.free(allocator);
     source.init(writer, source_storage);
     try source.interpretLine(": SQ DUP * ; :NONAME 7 ; DROP VARIABLE V 11 V ! SAVE .zig-cache/sigma-load-test.sigma");
@@ -1326,7 +1495,7 @@ test "SAVE and LOAD through the host keep the words, also when loaded twice" {
     // LOAD builds a second State of several megabytes; it must not need a copy on the stack.
     const target = try allocator.create(forth.State);
     defer allocator.destroy(target);
-    const target_storage = try forth.Storage.allocate(allocator, false);
+    const target_storage = try forth.Storage.allocate(allocator, false, .small);
     defer target_storage.free(allocator);
     target.init(writer, target_storage);
     try target.interpretLine(": EARLIER 1 ; LOAD .zig-cache/sigma-load-test.sigma LOAD .zig-cache/sigma-load-test.sigma 6 SQ V @ EARLIER");
@@ -1337,4 +1506,64 @@ test {
     _ = host_input;
     _ = host_line;
     _ = host_process;
+}
+
+test "parseSize reads sizes as gforth does" {
+    try std.testing.expectEqual(@as(?usize, 8000), parseSize("1000", 8));
+    try std.testing.expectEqual(@as(?usize, 8000), parseSize("1000e", 8));
+    try std.testing.expectEqual(@as(?usize, 1000), parseSize("1000b", 8));
+    try std.testing.expectEqual(@as(?usize, 64 << 10), parseSize("64k", 8));
+    try std.testing.expectEqual(@as(?usize, 1 << 20), parseSize("1M", 8));
+    try std.testing.expectEqual(@as(?usize, 1 << 30), parseSize("1G", 8));
+    try std.testing.expectEqual(@as(?usize, 1 << 40), parseSize("1T", 8));
+    for ([_][]const u8{ "1K", "1m", "1g", "1.5k", "abc", "", "-5", "1kb" }) |bad| {
+        try std.testing.expectEqual(@as(?usize, null), parseSize(bad, 8));
+    }
+}
+
+test "the size options are read at the start of the arguments" {
+    var failed: []const u8 = "";
+    const all = try parseStartOptions(&.{ "sigma", "-d", "1000", "-r2000", "--fp-stack-size=3000", "--locals-stack-size", "1M", "-m", "8M", "--", "-e", "BYE" }, &failed);
+    try std.testing.expectEqual(@as(?usize, 1000), all.data_stack);
+    try std.testing.expectEqual(@as(?usize, 2000), all.return_stack);
+    try std.testing.expectEqual(@as(?usize, 3000), all.float_stack);
+    try std.testing.expectEqual(@as(?usize, 1 << 20), all.l);
+    try std.testing.expectEqual(@as(?usize, 8 << 20), all.m);
+    try std.testing.expectEqual(@as(usize, 10), all.next);
+
+    // Anything else ends them, as it does in gforth.
+    const stopped = try parseStartOptions(&.{ "sigma", "-e", "1", "-d", "1000" }, &failed);
+    try std.testing.expectEqual(@as(?usize, null), stopped.data_stack);
+    try std.testing.expectEqual(@as(usize, 1), stopped.next);
+    const file = try parseStartOptions(&.{ "sigma", "x.fs", "-d", "1000" }, &failed);
+    try std.testing.expectEqual(@as(usize, 1), file.next);
+
+    // 0 keeps the default, and a part of an element counts as a whole one.
+    const zero = try parseStartOptions(&.{ "sigma", "-d", "0", "-r", "7b" }, &failed);
+    try std.testing.expectEqual(@as(?usize, null), zero.data_stack);
+    try std.testing.expectEqual(@as(?usize, 1), zero.return_stack);
+
+    try std.testing.expectError(error.MissingValue, parseStartOptions(&.{ "sigma", "-d" }, &failed));
+    try std.testing.expectEqualStrings("-d", failed);
+    try std.testing.expectError(error.InvalidSize, parseStartOptions(&.{ "sigma", "-m", "abc" }, &failed));
+    try std.testing.expectEqualStrings("-m", failed);
+}
+
+test "startSizes keeps the defaults and refuses sizes that cannot be" {
+    var failed: []const u8 = "";
+    try std.testing.expectEqual(forth.Sizes.default, startSizes(.{}, &failed).?);
+    const chosen = startSizes(.{ .m = 8 << 20, .l = 1 << 20, .data_stack = 100 }, &failed).?;
+    try std.testing.expectEqual(@as(usize, 8 << 20), chosen.m);
+    try std.testing.expectEqual(@as(usize, 100), chosen.data_stack);
+    try std.testing.expectEqual(forth.Sizes.default.return_stack, chosen.return_stack);
+
+    try std.testing.expectEqual(@as(?forth.Sizes, null), startSizes(.{ .m = 4096 }, &failed));
+    try std.testing.expectEqualStrings("-m", failed);
+    try std.testing.expectEqual(@as(?forth.Sizes, null), startSizes(.{ .l = 8 }, &failed));
+    try std.testing.expectEqualStrings("-l", failed);
+    try std.testing.expectEqual(@as(?forth.Sizes, null), startSizes(.{ .m = 3 << 30 }, &failed));
+    try std.testing.expectEqual(@as(?forth.Sizes, null), startSizes(.{ .data_stack = 1 }, &failed));
+    try std.testing.expectEqualStrings("-d", failed);
+    try std.testing.expectEqual(@as(?forth.Sizes, null), startSizes(.{ .return_stack = 1 << 28 }, &failed));
+    try std.testing.expectEqualStrings("-r", failed);
 }

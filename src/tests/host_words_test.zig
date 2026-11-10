@@ -36,7 +36,7 @@ test "an execution token stored in a constant survives a full image restore" {
     const source = try createMachine(&output);
     defer destroyMachine(source);
     try source.interpretLine(":NONAME 42 ; CONSTANT ACTION");
-    const image = try std.testing.allocator.alloc(u8, forth.State.imageCapacity());
+    const image = try std.testing.allocator.alloc(u8, forth.State.imageCapacity(.small));
     defer std.testing.allocator.free(image);
     const length = try source.encodeImage(image);
 

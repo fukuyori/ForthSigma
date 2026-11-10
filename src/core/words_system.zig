@@ -24,10 +24,8 @@ const environment_buffer_size = memory_map.environment_buffer_size;
 const error_codes = defs.error_codes;
 const hold_bottom = memory_map.hold_bottom;
 const hold_top = memory_map.hold_top;
-const max_float_stack = memory_map.max_float_stack;
 const max_host_name = memory_map.max_host_name;
 const max_locals = memory_map.max_locals;
-const max_stack = memory_map.max_stack;
 const max_wordlists = memory_map.max_wordlists;
 const pad_address = memory_map.pad_address;
 const string_buffer_base = memory_map.string_buffer_base;
@@ -119,9 +117,9 @@ pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
                 .{ "MAX-CHAR", 255 },
                 .{ "MAX-N", std.math.maxInt(Cell) },
                 .{ "MAX-U", -1 },
-                .{ "RETURN-STACK-CELLS", max_stack },
-                .{ "STACK-CELLS", max_stack },
-                .{ "FLOATING-STACK", max_float_stack },
+                .{ "RETURN-STACK-CELLS", @intCast(self.return_stack.len) },
+                .{ "STACK-CELLS", @intCast(self.data_stack.len) },
+                .{ "FLOATING-STACK", @intCast(self.float_stack.len) },
                 .{ "#LOCALS", max_locals },
                 .{ "WORDLISTS", max_wordlists },
             };

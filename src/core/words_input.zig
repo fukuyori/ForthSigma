@@ -15,7 +15,6 @@ const UCell = memory_map.UCell;
 const doubleCells = defs.doubleCells;
 const in_address = memory_map.in_address;
 const max_gforth_string = memory_map.max_gforth_string;
-const max_stack = memory_map.max_stack;
 const tib_address = memory_map.tib_address;
 const tib_size = memory_map.tib_size;
 const true_flag = memory_map.true_flag;
@@ -125,7 +124,7 @@ pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
         // address for the terminal and EVALUATE, and by where it starts for a file.
         .save_input => {
             const place = self.saveInputPlace();
-            if (max_stack - self.data_depth < 5) return error.StackOverflow;
+            if (self.data_stack.len - self.data_depth < 5) return error.StackOverflow;
             for ([_]Cell{ place.id, place.cursor, place.mark, place.number, 4 }) |item| try self.push(item);
         },
         // RESTORE-INPUT ( x1..x4 4 -- flag ): false when the input went back.

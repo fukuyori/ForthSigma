@@ -553,9 +553,16 @@ pub fn createMachine(output: *Output) !*forth.State {
     return machine;
 }
 
+/// A machine with these sizes; `destroyMachine` destroys it.
+pub fn createMachineWith(output: *Output, sizes: forth.Sizes) !*forth.State {
+    const machine = try std.testing.allocator.create(forth.State);
+    machine.init(output.writer(), try forth.Storage.allocate(std.testing.allocator, false, sizes));
+    return machine;
+}
+
 /// The memory and the stacks of a machine that `destroyMachine` destroys.
 pub fn testStorage() !forth.Storage {
-    return forth.Storage.allocate(std.testing.allocator, false);
+    return forth.Storage.allocate(std.testing.allocator, false, .small);
 }
 
 /// Feeds a definition of `count` literals over several lines, since one input line holds

@@ -10,7 +10,6 @@ const RuntimeError = defs.RuntimeError;
 const State = forth.State;
 const StringWord = defs.StringWord;
 const max_gforth_string = memory_map.max_gforth_string;
-const memory_size = memory_map.memory_size;
 const tib_address = memory_map.tib_address;
 const tib_size = memory_map.tib_size;
 
@@ -22,7 +21,7 @@ pub fn remainingSource(self: *State) []const u8 {
 pub fn sourceInMemory(self: *State) bool {
     const start = @intFromPtr(self.memory.ptr);
     const address = @intFromPtr(self.source_line.ptr);
-    return self.source_line.len != 0 and address >= start and address < start + memory_size;
+    return self.source_line.len != 0 and address >= start and address < start + self.memory.len;
 }
 
 pub fn isDelimiter(byte: u8, delimiter: u8) bool {

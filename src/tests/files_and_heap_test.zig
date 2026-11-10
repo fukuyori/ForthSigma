@@ -355,7 +355,7 @@ test "heap strings survive a full image restore" {
     const source = try createMachine(&output);
     defer destroyMachine(source);
     try source.interpretLine("VARIABLE S S\" kept\" S $!");
-    const image = try std.testing.allocator.alloc(u8, forth.State.imageCapacity());
+    const image = try std.testing.allocator.alloc(u8, forth.State.imageCapacity(.small));
     defer std.testing.allocator.free(image);
     const length = try source.encodeImage(image);
 
@@ -384,7 +384,7 @@ test "S\" and S\\\" outside a definition keep each string in the heap, as gforth
     const here = machine.data_here;
     try machine.interpretLine("S\" x\" DROP");
     try std.testing.expectEqual(here, machine.data_here);
-    try std.testing.expect(machine.data_stack[machine.data_depth - 1] >= @import("../core/memory_map.zig").heap_base);
+    try std.testing.expect(machine.data_stack[machine.data_depth - 1] >= machine.sizes.heapBase());
     machine.data_depth = 0;
     // An empty string has a place too.
     try machine.interpretLine("S\" \" NIP");

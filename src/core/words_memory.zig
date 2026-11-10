@@ -10,11 +10,9 @@ const RuntimeError = defs.RuntimeError;
 const State = forth.State;
 const UCell = memory_map.UCell;
 const cell_size = memory_map.cell_size;
-const data_limit = memory_map.data_limit;
 const errnoIor = memory_map.errnoIor;
 const errno_invalid = memory_map.errno_invalid;
 const errno_no_memory = memory_map.errno_no_memory;
-const max_stack = memory_map.max_stack;
 const pad_address = memory_map.pad_address;
 const true_flag = memory_map.true_flag;
 
@@ -157,11 +155,11 @@ pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
         .time_and_date => {
             const local_time_fn = self.writer.local_time_fn orelse return error.HostUnavailable;
             const now = try local_time_fn(self.writer.context);
-            if (max_stack - self.data_depth < 6) return error.StackOverflow;
+            if (self.data_stack.len - self.data_depth < 6) return error.StackOverflow;
             for ([_]Cell{ now.second, now.minute, now.hour, now.day, now.month, now.year }) |part| try self.push(part);
         },
         // The bytes of data space left for ALLOT, , and the defining words.
-        .unused => try self.push(data_limit - self.data_here),
+        .unused => try self.push(self.sizes.dataLimit() - self.data_here),
         .allot => try self.reserveData(try self.pop()),
         .comma => {
             const value = try self.pop();

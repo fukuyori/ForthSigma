@@ -87,7 +87,6 @@ const bitsFloat = defs.bitsFloat;
 const cell_size = memory_map.cell_size;
 const cellsDouble = defs.cellsDouble;
 const current_wordlist_address = memory_map.current_wordlist_address;
-pub const data_limit = memory_map.data_limit;
 pub const data_start = memory_map.data_start;
 const dot_precision = memory_map.dot_precision;
 const doubleCells = defs.doubleCells;
@@ -103,25 +102,19 @@ const evaluate_source_name_address = memory_map.evaluate_source_name_address;
 pub const first_file_id = memory_map.first_file_id;
 const floatBits = defs.floatBits;
 const forth_wordlist = memory_map.forth_wordlist;
-const heap_base = memory_map.heap_base;
 const heap_top_address = memory_map.heap_top_address;
 const hold_top = memory_map.hold_top;
 const in_address = memory_map.in_address;
 pub const ior_errno_base = memory_map.ior_errno_base;
-const locals_base = memory_map.locals_base;
-const locals_end = memory_map.locals_end;
 const max_code = memory_map.max_code;
 const max_controls = memory_map.max_controls;
-const max_float_stack = memory_map.max_float_stack;
 const max_hold_nesting = memory_map.max_hold_nesting;
 const max_include_depth = memory_map.max_include_depth;
 const max_locals = memory_map.max_locals;
 const max_name = memory_map.max_name;
 const max_search_order = memory_map.max_search_order;
-const max_stack = memory_map.max_stack;
 const max_words = memory_map.max_words;
 const max_uses = memory_map.max_uses;
-pub const memory_size = memory_map.memory_size;
 const names_capacity = memory_map.names_capacity;
 pub const pad_address = memory_map.pad_address;
 const precision_address = memory_map.precision_address;
@@ -140,36 +133,43 @@ const wordlist_count_address = memory_map.wordlist_count_address;
 /// The logical memory and the stacks of a State, which its host allocates. Each has the
 /// size of its limit, and starts as zeros.
 pub const Storage = struct {
+    sizes: Sizes,
     memory: []u8,
     data_stack: []Cell,
     return_stack: []Cell,
     float_stack: []Float,
+    /// The DO loops and the callers of colon definitions nest as the return stack does,
+    /// so they have the size of the return stack.
     loop_stack: []Loop,
+    frames: []State.CallFrame,
 
     /// With `already_zero`, the allocator gives zeros by itself (fresh pages of the
     /// system), and they are not written, so pages never used take no physical memory.
     /// Zig's allocators mark new memory as undefined in the builds with safety checks,
     /// so those builds always write the zeros.
-    pub fn allocate(allocator: std.mem.Allocator, already_zero: bool) std.mem.Allocator.Error!Storage {
-        const memory = try allocator.alloc(u8, memory_size);
+    pub fn allocate(allocator: std.mem.Allocator, already_zero: bool, sizes: Sizes) std.mem.Allocator.Error!Storage {
+        const memory = try allocator.alloc(u8, sizes.memorySize());
         errdefer allocator.free(memory);
-        const data = try allocator.alloc(Cell, max_stack);
+        const data = try allocator.alloc(Cell, sizes.data_stack);
         errdefer allocator.free(data);
-        const ret = try allocator.alloc(Cell, max_stack);
+        const ret = try allocator.alloc(Cell, sizes.return_stack);
         errdefer allocator.free(ret);
-        const float = try allocator.alloc(Float, max_float_stack);
+        const float = try allocator.alloc(Float, sizes.float_stack);
         errdefer allocator.free(float);
-        const loops = try allocator.alloc(Loop, max_stack);
+        const loops = try allocator.alloc(Loop, sizes.return_stack);
+        errdefer allocator.free(loops);
+        const frames = try allocator.alloc(State.CallFrame, sizes.return_stack);
         if (!already_zero or std.debug.runtime_safety) {
             @memset(memory, 0);
             @memset(data, 0);
             @memset(ret, 0);
             @memset(float, 0);
         }
-        return .{ .memory = memory, .data_stack = data, .return_stack = ret, .float_stack = float, .loop_stack = loops };
+        return .{ .sizes = sizes, .memory = memory, .data_stack = data, .return_stack = ret, .float_stack = float, .loop_stack = loops, .frames = frames };
     }
 
     pub fn free(self: Storage, allocator: std.mem.Allocator) void {
+        allocator.free(self.frames);
         allocator.free(self.loop_stack);
         allocator.free(self.float_stack);
         allocator.free(self.return_stack);
@@ -178,8 +178,11 @@ pub const Storage = struct {
     }
 };
 
+pub const Sizes = memory_map.Sizes;
+
 pub const State = struct {
     writer: Writer,
+    sizes: Sizes,
     memory: []u8,
     words: [max_words]Word = undefined,
     word_count: u16 = 0,
@@ -239,7 +242,7 @@ pub const State = struct {
     call_depth: usize = 0,
     /// The callers of the colon definitions that compiled code is running, innermost last
     /// (see executeOperations).
-    frames: [max_stack]CallFrame = undefined,
+    frames: []CallFrame,
     frame_depth: usize = 0,
     last_unknown_word: ?[]const u8 = null,
     throw_code: Cell = 0,
@@ -254,7 +257,7 @@ pub const State = struct {
     local_count: usize = 0,
     /// Frame bytes used so far by the definition being compiled.
     locals_frame_size: u16 = 0,
-    locals_top: Cell = locals_base,
+    locals_top: Cell = 0,
     /// The graphics image that GFX-INIT got from the host, and its size; empty until then.
     /// It is not part of the dictionary, so images do not keep it.
     gfx_pixels: []u32 = &.{},
@@ -302,10 +305,10 @@ pub const State = struct {
     /// Sets up a State where it lies. The State is a few megabytes, so it is built in
     /// place rather than returned by value, which could need copies on the stack.
     pub fn init(self: *State, writer: Writer, given: Storage) void {
-        self.* = .{ .writer = writer, .memory = given.memory, .data_stack = given.data_stack, .return_stack = given.return_stack, .float_stack = given.float_stack, .loop_stack = given.loop_stack };
+        self.* = .{ .writer = writer, .sizes = given.sizes, .locals_top = given.sizes.localsBase(), .memory = given.memory, .data_stack = given.data_stack, .return_stack = given.return_stack, .float_stack = given.float_stack, .loop_stack = given.loop_stack, .frames = given.frames };
         self.writeCell(base_address, 10) catch unreachable;
         self.writeCell(precision_address, dot_precision) catch unreachable;
-        self.writeCell(heap_top_address, heap_base) catch unreachable;
+        self.writeCell(heap_top_address, self.sizes.heapBase()) catch unreachable;
         self.storeSourceName(terminal_source_name_address, terminal_source_name);
         self.storeSourceName(evaluate_source_name_address, evaluate_source_name);
         // gforth starts with the search order Forth Forth Root and defines into Forth.
@@ -317,7 +320,7 @@ pub const State = struct {
 
     /// The memory and the stacks given to `init`, for the host to free.
     pub fn storage(self: *const State) Storage {
-        return .{ .memory = self.memory, .data_stack = self.data_stack, .return_stack = self.return_stack, .float_stack = self.float_stack, .loop_stack = self.loop_stack };
+        return .{ .sizes = self.sizes, .memory = self.memory, .data_stack = self.data_stack, .return_stack = self.return_stack, .float_stack = self.float_stack, .loop_stack = self.loop_stack, .frames = self.frames };
     }
 
     /// Writes interpreter output, or appends it to the string being built by $TMP.
@@ -335,6 +338,9 @@ pub const State = struct {
     pub const imageCapacity = dictionary_image.imageCapacity;
     pub const encodeImage = dictionary_image.encodeImage;
     pub const restoreImage = dictionary_image.restoreImage;
+    pub const restoreFreshImage = dictionary_image.restoreFreshImage;
+    pub const imageLayout = dictionary_image.imageLayout;
+    pub const encodedSize = dictionary_image.encodedSize;
     pub const appendImage = dictionary_image.appendImage;
 
     pub const report = error_reporting.report;
@@ -355,7 +361,7 @@ pub const State = struct {
     pub fn sourceLineAddress(self: *const State) Cell {
         const start = @intFromPtr(self.memory.ptr);
         const address = @intFromPtr(self.source_line.ptr);
-        if (self.source_line.len == 0 or address < start or address >= start + memory_size) return 0;
+        if (self.source_line.len == 0 or address < start or address >= start + self.memory.len) return 0;
         return @intCast(address - start);
     }
 
@@ -788,7 +794,7 @@ pub const State = struct {
         if (asciiEqlIgnoreCase(token, ":NONAME")) {
             if (self.defining) return error.InvalidDefinition;
             // Check the stack first so a failure cannot leave an unterminated definition behind.
-            if (self.data_depth == max_stack) return error.StackOverflow;
+            if (self.data_depth == self.data_stack.len) return error.StackOverflow;
             const id = try self.appendAnonymousColon();
             self.beginDefinition(id);
             self.push(id) catch unreachable;
@@ -1004,7 +1010,7 @@ pub const State = struct {
             .variable, .created => {
                 try self.push(word.value);
                 if (word.has_does) {
-                    if (self.call_depth == max_stack) return error.ReturnStackOverflow;
+                    if (self.call_depth == self.frames.len) return error.ReturnStackOverflow;
                     self.call_depth += 1;
                     defer self.call_depth -= 1;
                     try self.executeOperations(word.does_code_start, word.does_code_end, null);
@@ -1022,7 +1028,7 @@ pub const State = struct {
                 }
                 // A DEFER that runs itself, directly or through other words, must end in
                 // an error, not in the host's stack overflow (gforth loops for ever).
-                if (self.call_depth == max_stack) return error.ReturnStackOverflow;
+                if (self.call_depth == self.frames.len) return error.ReturnStackOverflow;
                 self.call_depth += 1;
                 defer self.call_depth -= 1;
                 try self.executeWord(try self.wordId(action));
@@ -1049,7 +1055,7 @@ pub const State = struct {
     }
 
     fn executeColon(self: *State, id: u16, word: Word) RuntimeError!void {
-        if (self.call_depth == max_stack) return error.ReturnStackOverflow;
+        if (self.call_depth == self.frames.len) return error.ReturnStackOverflow;
         self.call_depth += 1;
         defer self.call_depth -= 1;
         try self.executeOperations(word.code_start, word.code_end, id);
@@ -1091,9 +1097,6 @@ pub const State = struct {
     /// The definition that is running and its callers' frames, as executeOperations keeps them.
     const Running = CallFrame;
 
-    comptime {
-        std.debug.assert(locals_base > 0);
-    }
 
     /// Ends the running definition and goes on in its caller; false when the definition
     /// executeOperations started with ends.
@@ -1137,7 +1140,7 @@ pub const State = struct {
                         if (inline_calls.wordId(op.value) >= self.word_count) return error.InvalidExecutionToken;
                         // The following straight-line operations are the copied
                         // body. Keep the original call-limit check without a frame.
-                        if (self.call_depth + inline_calls.depth(op.value) > max_stack) return error.ReturnStackOverflow;
+                        if (self.call_depth + inline_calls.depth(op.value) > self.frames.len) return error.ReturnStackOverflow;
                         continue;
                     }
                     const id = try self.wordId(op.value);
@@ -1162,7 +1165,7 @@ pub const State = struct {
                             continue;
                         },
                     };
-                    if (self.call_depth == max_stack) return error.ReturnStackOverflow;
+                    if (self.call_depth == self.frames.len) return error.ReturnStackOverflow;
                     self.call_depth += 1;
                     self.frames[self.frame_depth] = running;
                     self.frame_depth += 1;
@@ -1207,7 +1210,7 @@ pub const State = struct {
                         running.pc = exit_pc;
                         continue;
                     }
-                    if (self.loop_depth == max_stack) return error.StackOverflow;
+                    if (self.loop_depth == self.loop_stack.len) return error.StackOverflow;
                     self.loop_stack[self.loop_depth] = .{ .index = start, .limit = limit, .exit_pc = exit_pc, .exit_after_first = start == limit };
                     self.loop_depth += 1;
                 },
@@ -1262,7 +1265,7 @@ pub const State = struct {
                 .exit => if (!self.returnToCaller(&running, entry_frames)) return,
                 .local_frame => if (running.locals_frame == 0) {
                     const size = self.words[try self.wordId(op.value)].locals_size;
-                    if (locals_end - self.locals_top < size) return error.ReturnStackOverflow;
+                    if (self.sizes.localsEnd() - self.locals_top < size) return error.ReturnStackOverflow;
                     const start: usize = @intCast(self.locals_top);
                     @memset(self.memory[start .. start + size], 0);
                     running.locals_frame = self.locals_top;
@@ -1323,7 +1326,7 @@ pub const State = struct {
     /// Pops a byte count; negative counts are treated as 0 and huge ones as memory-sized.
     pub fn popLength(self: *State) RuntimeError!usize {
         const count = try self.pop();
-        return if (count < 0) 0 else @intCast(@min(count, memory_size));
+        return if (count < 0) 0 else @intCast(@min(count, self.memory.len));
     }
 
     pub fn writeMemory(self: *State, address: Cell, length: usize) void {
@@ -1466,7 +1469,7 @@ pub const State = struct {
     }
 
     pub fn push(self: *State, value: Cell) RuntimeError!void {
-        if (self.data_depth == max_stack) return error.StackOverflow;
+        if (self.data_depth == self.data_stack.len) return error.StackOverflow;
         self.data_stack[self.data_depth] = value;
         self.data_depth += 1;
     }
@@ -1487,7 +1490,7 @@ pub const State = struct {
     }
 
     pub fn fpush(self: *State, value: Float) RuntimeError!void {
-        if (self.float_depth == max_float_stack) return error.FloatStackOverflow;
+        if (self.float_depth == self.float_stack.len) return error.FloatStackOverflow;
         self.float_stack[self.float_depth] = value;
         self.float_depth += 1;
     }
@@ -1499,10 +1502,9 @@ pub const State = struct {
 
     /// Validates that `length` bytes starting at `address` lie inside logical memory.
     pub fn memoryAddress(self: *State, address: Cell, length: usize) RuntimeError!usize {
-        _ = self;
-        if (address < 0 or address > memory_size) return error.InvalidAddress;
+        if (address < 0 or address > @as(Cell, @intCast(self.memory.len))) return error.InvalidAddress;
         const start: usize = @intCast(address);
-        if (length > memory_size - start) return error.InvalidAddress;
+        if (length > self.memory.len - start) return error.InvalidAddress;
         return start;
     }
 
@@ -1549,7 +1551,7 @@ pub const State = struct {
 
     pub fn reserveData(self: *State, amount: Cell) RuntimeError!void {
         const next, const overflow = @addWithOverflow(self.data_here, amount);
-        if (overflow != 0 or next < data_start or next > data_limit) return error.MemoryExhausted;
+        if (overflow != 0 or next < data_start or next > self.sizes.dataLimit()) return error.MemoryExhausted;
         self.data_here = next;
     }
 

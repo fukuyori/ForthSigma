@@ -1,6 +1,7 @@
-//! Cell types, limits, and the layout of the 2 MiB logical memory.
+//! Cell types, limits, and the layout of the logical memory.
 
 const builtin_info = @import("builtin");
+const build_options = @import("build_options");
 
 pub const Cell = i64;
 
@@ -22,48 +23,95 @@ pub const max_uses = 65536;
 
 pub const max_code = 65535;
 
-pub const max_stack = 1024;
-
-pub const max_float_stack = 1024;
-
 pub const max_controls = 128;
 
 pub const max_name = 255;
 /// Bytes for the names of all dictionary entries, which are kept in one area.
 pub const names_capacity = 256 * 1024;
 
-// The layout of the logical memory, all of it computed here from two sizes:
+// The layout of the logical memory:
 //   0 .. system_end         the system area (see the addresses below)
 //   system_end .. data_start  the input area (a fixed size)
 //   data_start .. m         the data area (HERE)
 //   m .. 2m                 the ALLOCATE heap
 //   2m .. 2m + l            the frames of local variables
-// The checks after the input area's addresses keep the areas apart.
-
-/// `m`: where the data area ends, and the size of the heap.
-pub const layout_m = 1 << 20;
-
-/// `l`: the size of the area for the frames of local variables.
-pub const layout_l = 0x10000;
+// The first two have fixed addresses. The rest follow from `m` and `l` in `Sizes`.
 
 pub const system_end: Cell = 0x4000;
 
 pub const input_area_size = 0x10000;
 
-pub const memory_size = 2 * layout_m + layout_l;
+pub const min_memory_m = 1 << 20;
+pub const min_memory_l = 4096;
+/// Images keep HERE in four bytes, so the whole memory stays below 4 GiB.
+pub const memory_limit = 1 << 32;
+pub const min_stack = 16;
+pub const max_stack_limit = 1 << 27;
 
-/// The data area ends where the ALLOCATE heap begins.
-pub const data_limit: Cell = layout_m;
+/// The sizes a State runs with. `m` and `l` are in bytes; the stacks are in elements.
+pub const Sizes = struct {
+    /// Where the data area ends, and the size of the heap.
+    m: usize,
+    /// The size of the area for the frames of local variables.
+    l: usize,
+    data_stack: usize,
+    return_stack: usize,
+    float_stack: usize,
 
-pub const heap_base: Cell = data_limit;
+    /// The smallest usual sizes, which the tests and a freestanding host use.
+    pub const small: Sizes = .{ .m = 1 << 20, .l = 0x10000, .data_stack = 1024, .return_stack = 1024, .float_stack = 1024 };
 
-pub const heap_end: Cell = 2 * layout_m;
+    /// The sizes of the program when the command line does not give others.
+    pub const default: Sizes = .{
+        .m = build_options.memory_mib << 20,
+        .l = build_options.locals_kib << 10,
+        .data_stack = build_options.stack_cells,
+        .return_stack = build_options.stack_cells,
+        .float_stack = build_options.stack_cells,
+    };
 
-/// The frames of local variables come last, so variable-flavoured locals (`W^`, `F^`,
-/// ...) have addresses in logical memory.
-pub const locals_base: Cell = heap_end;
+    pub fn memorySize(self: Sizes) usize {
+        return 2 * self.m + self.l;
+    }
 
-pub const locals_end: Cell = memory_size;
+    /// The data area ends where the ALLOCATE heap begins.
+    pub fn dataLimit(self: Sizes) Cell {
+        return @intCast(self.m);
+    }
+
+    pub fn heapBase(self: Sizes) Cell {
+        return @intCast(self.m);
+    }
+
+    pub fn heapEnd(self: Sizes) Cell {
+        return @intCast(2 * self.m);
+    }
+
+    /// The frames of local variables come last, so variable-flavoured locals (`W^`,
+    /// `F^`, ...) have addresses in logical memory.
+    pub fn localsBase(self: Sizes) Cell {
+        return self.heapEnd();
+    }
+
+    pub fn localsEnd(self: Sizes) Cell {
+        return @intCast(self.memorySize());
+    }
+
+    pub fn validLayout(m: usize, l: usize) bool {
+        if (m < min_memory_m or l < min_memory_l) return false;
+        if (m % cell_size != 0 or l % cell_size != 0) return false;
+        if (m >= memory_limit / 2 or l >= memory_limit) return false;
+        return 2 * m + l < memory_limit;
+    }
+
+    pub fn validStack(elements: usize) bool {
+        return elements >= min_stack and elements <= max_stack_limit;
+    }
+
+    pub fn valid(self: Sizes) bool {
+        return validLayout(self.m, self.l) and validStack(self.data_stack) and validStack(self.return_stack) and validStack(self.float_stack);
+    }
+};
 
 /// Input buffers after the system area: the terminal input buffer first; the rest is
 /// kept for the line buffers of nested INCLUDE files.
@@ -116,9 +164,9 @@ comptime {
     if (argc_address % cell_size != 0 or argument_strings_end - argument_strings < 8192) @compileError("the argument area does not fit");
     if (environment_buffer_base + environment_buffer_size > system_end) @compileError("the system area does not fit");
     if (data_start != input_area_end or data_start % cell_size != 0) @compileError("the data area must follow the input area, aligned to a cell");
-    if (data_limit <= data_start or data_limit % cell_size != 0) @compileError("the data area is empty or not aligned");
-    if (heap_base != data_limit or heap_end <= heap_base or heap_end % cell_size != 0) @compileError("the heap must follow the data area, aligned to a cell");
-    if (locals_base != heap_end or locals_end <= locals_base or locals_end != memory_size) @compileError("the local variables must end the memory");
+    if (data_start >= min_memory_m) @compileError("the smallest data area is empty");
+    if (!Sizes.small.valid()) @compileError("the small sizes are not valid");
+    if (!Sizes.default.valid()) @compileError("the default sizes are not valid");
 }
 
 /// Word lists: ids 1 (Forth) and 2 (Root) exist from the start; WORDLIST and
@@ -245,16 +293,16 @@ pub const max_dot_s_items = 9;
 
 pub const fs_precision = 14;
 
-/// SIGIMG39 moved the input area below the data area, which changed the addresses in the
-/// data area and the parts of memory an image keeps, so SIGIMG38 and earlier images are
-/// not read.
-pub const image_magic = "SIGIMG39";
+/// SIGIMG42 records the layout of the logical memory (`m` and `l`) in its header. An image
+/// keeps addresses, so it runs only with the layout it was saved with. Images before it
+/// are not read.
+pub const image_magic = "SIGIMG42";
 /// The same layout as `image_magic`, for an image that has had the graphics words; builds
-/// that only know SIGIMG39 reject it.
-pub const graphics_image_magic = "SIGIMG40";
+/// that only know SIGIMG42 reject it.
+pub const graphics_image_magic = "SIGIMG43";
 /// The same layout again, for an image that has had the audio words (with or without the
-/// graphics words); builds that only know SIGIMG39 and SIGIMG40 reject it.
-pub const audio_image_magic = "SIGIMG41";
+/// graphics words); builds that only know SIGIMG42 and SIGIMG43 reject it.
+pub const audio_image_magic = "SIGIMG44";
 
 /// File ids of the standard streams; the host numbers opened files from `first_file_id`.
 pub const stdin_fileid: Cell = 1;

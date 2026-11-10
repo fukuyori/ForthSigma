@@ -9,8 +9,6 @@ const RuntimeError = defs.RuntimeError;
 const State = forth.State;
 const UCell = memory_map.UCell;
 const cell_size = memory_map.cell_size;
-const heap_base = memory_map.heap_base;
-const heap_end = memory_map.heap_end;
 const heap_header = memory_map.heap_header;
 const heap_top_address = memory_map.heap_top_address;
 
@@ -44,15 +42,15 @@ pub fn splitBlock(self: *State, block: Cell, size: Cell, need: Cell, used: bool)
     self.setBlock(block + heap_header + need, size - need - heap_header, false);
 }
 
-pub fn heapNeed(size: UCell) ?Cell {
-    if (size > heap_end - heap_base - heap_header) return null;
+pub fn heapNeed(self: *const State, size: UCell) ?Cell {
+    if (size > @as(UCell, @intCast(self.sizes.heapEnd() - self.sizes.heapBase() - heap_header))) return null;
     return @intCast((size + cell_size - 1) & ~@as(UCell, cell_size - 1));
 }
 
 pub fn heapAllocate(self: *State, size: UCell) RuntimeError!?Cell {
-    const need = heapNeed(size) orelse return null;
+    const need = self.heapNeed(size) orelse return null;
     const top = self.heapTop();
-    var block = heap_base;
+    var block = self.sizes.heapBase();
     while (block < top) {
         const size_here = try self.blockSize(block);
         if (!try self.blockUsed(block) and size_here >= need) {
@@ -61,7 +59,7 @@ pub fn heapAllocate(self: *State, size: UCell) RuntimeError!?Cell {
         }
         block += heap_header + size_here;
     }
-    if (heap_end - top < heap_header + need) return null;
+    if (self.sizes.heapEnd() - top < heap_header + need) return null;
     self.setBlock(top, need, true);
     self.writeCell(heap_top_address, top + heap_header + need) catch unreachable;
     return top + heap_header;
@@ -70,7 +68,7 @@ pub fn heapAllocate(self: *State, size: UCell) RuntimeError!?Cell {
 /// Finds the used block whose payload starts at `address`.
 pub fn findBlock(self: *State, address: Cell) RuntimeError!?Cell {
     const top = self.heapTop();
-    var block = heap_base;
+    var block = self.sizes.heapBase();
     while (block < top and block + heap_header <= address) {
         const size = try self.blockSize(block);
         if (block + heap_header == address) return if (try self.blockUsed(block)) block else null;
@@ -82,7 +80,7 @@ pub fn findBlock(self: *State, address: Cell) RuntimeError!?Cell {
 /// Merges neighbouring free blocks and gives a free last block back to the heap top.
 pub fn coalesceHeap(self: *State) RuntimeError!void {
     const top = self.heapTop();
-    var block = heap_base;
+    var block = self.sizes.heapBase();
     var last: ?Cell = null;
     while (block < top) {
         var size = try self.blockSize(block);
@@ -114,7 +112,7 @@ pub fn heapFree(self: *State, address: Cell) RuntimeError!bool {
 pub fn heapResize(self: *State, address: Cell, size: UCell) RuntimeError!HeapResult {
     if (address == 0) return if (try self.heapAllocate(size)) |fresh| .{ .address = fresh } else .no_memory;
     const block = try self.findBlock(address) orelse return .bad_pointer;
-    const need = heapNeed(size) orelse return .no_memory;
+    const need = self.heapNeed(size) orelse return .no_memory;
     const old_size = try self.blockSize(block);
     // Grow in place by absorbing following free blocks, or past the heap top.
     const top = self.heapTop();
@@ -129,7 +127,7 @@ pub fn heapResize(self: *State, address: Cell, size: UCell) RuntimeError!HeapRes
         try self.coalesceHeap();
         return .{ .address = address };
     }
-    if (next == top and heap_end - block - heap_header >= need) {
+    if (next == top and self.sizes.heapEnd() - block - heap_header >= need) {
         self.setBlock(block, need, true);
         self.writeCell(heap_top_address, block + heap_header + need) catch unreachable;
         return .{ .address = address };

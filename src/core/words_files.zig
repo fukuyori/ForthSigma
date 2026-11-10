@@ -22,7 +22,6 @@ const fam_read_only = memory_map.fam_read_only;
 const fam_read_write = memory_map.fam_read_write;
 const fam_write_only = memory_map.fam_write_only;
 const line_terminator = memory_map.line_terminator;
-const max_stack = memory_map.max_stack;
 const sourceFileEntry = source_input.sourceFileEntry;
 const stderr_fileid = memory_map.stderr_fileid;
 const stdin_fileid = memory_map.stdin_fileid;
@@ -91,7 +90,7 @@ pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
             const fileid = try self.pop();
             const buffer = try self.memoryRange();
             const files = try self.fileOps();
-            if (max_stack - self.data_depth < 3) return error.StackOverflow;
+            if (self.data_stack.len - self.data_depth < 3) return error.StackOverflow;
             const result = files.read_line(self.writer.context, fileid, buffer);
             try self.push(if (result.ior == 0) @intCast(result.length) else 0);
             try self.push(if (result.ior == 0) truth(result.found) else 0);
@@ -150,7 +149,7 @@ pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
             const fileid = try self.pop();
             const buffer = try self.memoryRange();
             const files = try self.fileOps();
-            if (max_stack - self.data_depth < 2) return error.StackOverflow;
+            if (self.data_stack.len - self.data_depth < 2) return error.StackOverflow;
             const result = files.read(self.writer.context, fileid, buffer);
             try self.push(if (result.ior == 0) @intCast(result.value) else 0);
             try self.push(result.ior);

@@ -8,7 +8,6 @@ const Builtin = defs.Builtin;
 const Cell = memory_map.Cell;
 const RuntimeError = defs.RuntimeError;
 const State = forth.State;
-const max_stack = memory_map.max_stack;
 
 /// The built-in words this file executes; executeBuiltin dispatches by this list.
 pub const words = [_]Builtin{
@@ -77,7 +76,7 @@ pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
         .depth => try self.push(@intCast(self.data_depth)),
         .to_r => {
             const value = try self.pop();
-            if (self.return_depth == max_stack) return error.ReturnStackOverflow;
+            if (self.return_depth == self.return_stack.len) return error.ReturnStackOverflow;
             self.return_stack[self.return_depth] = value;
             self.return_depth += 1;
         },
@@ -93,7 +92,7 @@ pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
         // Copies the pair 2>R moved, in the same order, and leaves it on the return stack.
         .two_r_fetch => {
             if (self.return_depth < 2) return error.ReturnStackUnderflow;
-            if (max_stack - self.data_depth < 2) return error.StackOverflow;
+            if (self.data_stack.len - self.data_depth < 2) return error.StackOverflow;
             try self.push(self.return_stack[self.return_depth - 2]);
             try self.push(self.return_stack[self.return_depth - 1]);
         },
@@ -112,7 +111,7 @@ pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
             const count = try self.peek(0);
             if (count < 0 or count >= self.data_depth) return error.StackUnderflow;
             const n: usize = @intCast(count);
-            if (max_stack - self.return_depth < n + 1) return error.ReturnStackOverflow;
+            if (self.return_stack.len - self.return_depth < n + 1) return error.ReturnStackOverflow;
             const base = self.data_depth - 1 - n;
             @memcpy(self.return_stack[self.return_depth .. self.return_depth + n + 1], self.data_stack[base .. base + n + 1]);
             self.return_depth += n + 1;
@@ -123,7 +122,7 @@ pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
             const count = self.return_stack[self.return_depth - 1];
             if (count < 0 or count >= self.return_depth) return error.ReturnStackUnderflow;
             const n: usize = @intCast(count);
-            if (max_stack - self.data_depth < n + 1) return error.StackOverflow;
+            if (self.data_stack.len - self.data_depth < n + 1) return error.StackOverflow;
             const base = self.return_depth - 1 - n;
             @memcpy(self.data_stack[self.data_depth .. self.data_depth + n + 1], self.return_stack[base .. base + n + 1]);
             self.data_depth += n + 1;
@@ -135,7 +134,7 @@ pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
         },
         .two_to_r => {
             try self.requireDepth(2);
-            if (max_stack - self.return_depth < 2) return error.ReturnStackOverflow;
+            if (self.return_stack.len - self.return_depth < 2) return error.ReturnStackOverflow;
             const second = try self.pop();
             const first = try self.pop();
             self.return_stack[self.return_depth] = first;
@@ -144,7 +143,7 @@ pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
         },
         .two_r_from => {
             if (self.return_depth < 2) return error.ReturnStackUnderflow;
-            if (max_stack - self.data_depth < 2) return error.StackOverflow;
+            if (self.data_stack.len - self.data_depth < 2) return error.StackOverflow;
             self.return_depth -= 2;
             try self.push(self.return_stack[self.return_depth]);
             try self.push(self.return_stack[self.return_depth + 1]);

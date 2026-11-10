@@ -13,7 +13,6 @@ const forth_wordlist = memory_map.forth_wordlist;
 const marker_snapshot_size = memory_map.marker_snapshot_size;
 const max_name = memory_map.max_name;
 const max_search_order = memory_map.max_search_order;
-const max_stack = memory_map.max_stack;
 const max_wordlists = memory_map.max_wordlists;
 const name_buffer_base = memory_map.name_buffer_base;
 const name_buffer_count = memory_map.name_buffer_count;
@@ -154,7 +153,7 @@ pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
         },
         .get_order => {
             const depth = self.searchOrderDepth();
-            if (max_stack - self.data_depth < depth + 1) return error.StackOverflow;
+            if (self.data_stack.len - self.data_depth < depth + 1) return error.StackOverflow;
             var index = depth;
             while (index > 0) {
                 index -= 1;

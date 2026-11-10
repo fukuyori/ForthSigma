@@ -17,10 +17,7 @@ const Word = defs.Word;
 const Builtin = defs.Builtin;
 const WordKind = defs.WordKind;
 const cell_size = memory_map.cell_size;
-const data_limit = memory_map.data_limit;
 const data_start = memory_map.data_start;
-const heap_base = memory_map.heap_base;
-const heap_end = memory_map.heap_end;
 const heap_top_address = memory_map.heap_top_address;
 const graphics_image_address = memory_map.graphics_image_address;
 const graphics_image_magic = memory_map.graphics_image_magic;
@@ -31,7 +28,6 @@ const max_search_order = memory_map.max_search_order;
 const max_source_files = memory_map.max_source_files;
 const max_wordlists = memory_map.max_wordlists;
 const max_words = memory_map.max_words;
-const memory_size = memory_map.memory_size;
 const names_capacity = memory_map.names_capacity;
 const root_wordlist = memory_map.root_wordlist;
 const source_file_count_address = memory_map.source_file_count_address;
@@ -51,27 +47,49 @@ pub fn readU32(input: []const u8) u32 {
     return @as(u32, input[0]) | (@as(u32, input[1]) << 8) | (@as(u32, input[2]) << 16) | (@as(u32, input[3]) << 24);
 }
 
-/// The header: the magic, then the word count, the operation count, HERE, and the bytes
-/// of names, four bytes each.
-const header_size = 24;
+/// The header: the magic, then the word count, the operation count, HERE, the bytes of
+/// names, and the layout's `m` and `l`, four bytes each.
+const header_size = 32;
 
 /// The image ends with the CRC-32 of all the bytes before it, four bytes. It finds
 /// accidental damage only; an image is trusted to come from SAVE or SAVESYS.
 const checksum_size = 4;
 
-/// The most bytes an image can have.
-pub fn imageCapacity() usize {
-    return header_size + max_words * @sizeOf(Word) + max_code * @sizeOf(Op) + names_capacity + memory_size + checksum_size;
+/// The most bytes an image of a machine with these sizes can have.
+pub fn imageCapacity(sizes: memory_map.Sizes) usize {
+    return header_size + max_words * @sizeOf(Word) + max_code * @sizeOf(Op) + names_capacity + sizes.memorySize() + checksum_size;
+}
+
+/// The bytes `encodeImage` needs for this machine as it is now.
+pub fn encodedSize(self: *State) usize {
+    const ranges = memoryRanges(self.sizes, self.data_here, self.heapTop());
+    return header_size + @as(usize, self.word_count) * @sizeOf(Word) + @as(usize, self.code_count) * @sizeOf(Op) + self.names_used + rangesLength(ranges) + checksum_size;
+}
+
+/// The layout an image was saved with, as `m` and `l`; null when the bytes are not an
+/// image this build reads, or the layout is not one a machine can have. It does not
+/// check the rest of the image: `restoreImage` does.
+pub fn imageLayout(image: []const u8) ?[2]usize {
+    if (image.len < header_size + checksum_size or !knownMagic(image)) return null;
+    const m: usize = readU32(image[24..28]);
+    const l: usize = readU32(image[28..32]);
+    return if (memory_map.Sizes.validLayout(m, l)) .{ m, l } else null;
+}
+
+fn knownMagic(image: []const u8) bool {
+    return for ([_]*const [8]u8{ image_magic, graphics_image_magic, memory_map.audio_image_magic }) |magic| {
+        if (std.mem.eql(u8, image[0..8], magic)) break true;
+    } else false;
 }
 
 /// The parts of memory an image keeps: the system area, the data space up to HERE, the
 /// used part of the heap, and the source file table with its loaded flags. The rest
 /// (input buffers, local frames, free space) starts as zeros when the image is restored.
-fn memoryRanges(data_here: Cell, heap_top: Cell) [4][2]usize {
+fn memoryRanges(sizes: memory_map.Sizes, data_here: Cell, heap_top: Cell) [4][2]usize {
     return .{
         .{ 0, @intCast(memory_map.system_end) },
         .{ @intCast(data_start), @intCast(data_here) },
-        .{ @intCast(heap_base), @intCast(heap_top) },
+        .{ @intCast(sizes.heapBase()), @intCast(heap_top) },
         .{ @intCast(source_file_table), @intCast(source_file_loaded_flags + max_source_files) },
     };
 }
@@ -136,15 +154,15 @@ fn rangesLength(ranges: [4][2]usize) usize {
 }
 
 pub fn encodeImage(self: *State, output: []u8) RuntimeError!usize {
-    const ranges = memoryRanges(self.data_here, self.heapTop());
+    const ranges = memoryRanges(self.sizes, self.data_here, self.heapTop());
     const word_bytes = std.mem.sliceAsBytes(self.words[0..self.word_count]);
     const code_bytes = std.mem.sliceAsBytes(self.code[0..self.code_count]);
     const name_bytes = self.names[0..self.names_used];
     const required = header_size + word_bytes.len + code_bytes.len + name_bytes.len + rangesLength(ranges) + checksum_size;
     if (output.len < required) return error.InvalidImage;
-    // A dictionary that has had the audio words is saved as SIGIMG41, one that has had
-    // the graphics words (and not the audio words) as SIGIMG40, which older builds
-    // reject; one that never had them stays SIGIMG39.
+    // A dictionary that has had the audio words is saved as SIGIMG44, one that has had
+    // the graphics words (and not the audio words) as SIGIMG43, which older builds
+    // reject; one that never had them stays SIGIMG42.
     const magic = if (self.readCellConst(memory_map.audio_image_address) != 0)
         memory_map.audio_image_magic
     else if (self.readCellConst(graphics_image_address) != 0)
@@ -156,6 +174,8 @@ pub fn encodeImage(self: *State, output: []u8) RuntimeError!usize {
     writeU32(output[12..16], self.code_count);
     writeU32(output[16..20], self.data_here);
     writeU32(output[20..24], self.names_used);
+    writeU32(output[24..28], @as(u32, @intCast(self.sizes.m)));
+    writeU32(output[28..32], @as(u32, @intCast(self.sizes.l)));
     var cursor: usize = header_size;
     for ([_][]const u8{ word_bytes, code_bytes, name_bytes }) |bytes| {
         @memcpy(output[cursor .. cursor + bytes.len], bytes);
@@ -190,18 +210,28 @@ pub fn encodeImage(self: *State, output: []u8) RuntimeError!usize {
 }
 
 pub fn restoreImage(self: *State, image: []const u8) RuntimeError!void {
+    return restore(self, image, false);
+}
+
+/// `restoreImage` for a machine that has run nothing since `init`: its memory outside
+/// what the image brings is zeros already, and stays untouched, so pages not in use take
+/// no physical memory.
+pub fn restoreFreshImage(self: *State, image: []const u8) RuntimeError!void {
+    return restore(self, image, true);
+}
+
+fn restore(self: *State, image: []const u8, memory_is_fresh: bool) RuntimeError!void {
     if (image.len < header_size + checksum_size) return error.InvalidImage;
-    const known = for ([_]*const [8]u8{ image_magic, graphics_image_magic, memory_map.audio_image_magic }) |magic| {
-        if (std.mem.eql(u8, image[0..8], magic)) break true;
-    } else false;
-    if (!known) return error.InvalidImage;
+    if (!knownMagic(image)) return error.InvalidImage;
     const input = image[0 .. image.len - checksum_size];
     if (readU32(image[input.len..]) != std.hash.Crc32.hash(input)) return error.InvalidImage;
+    // An image keeps addresses, so it runs only with the layout it was saved with.
+    if (readU32(input[24..28]) != self.sizes.m or readU32(input[28..32]) != self.sizes.l) return error.InvalidImage;
     const word_count = readU32(input[8..12]);
     const code_count = readU32(input[12..16]);
     const data_here = readU32(input[16..20]);
     const names_used = readU32(input[20..24]);
-    if (word_count < self.builtin_count or word_count > max_words or code_count > max_code or data_here < data_start or data_here > data_limit or names_used > names_capacity) return error.InvalidImage;
+    if (word_count < self.builtin_count or word_count > max_words or code_count > max_code or data_here < data_start or data_here > self.sizes.dataLimit() or names_used > names_capacity) return error.InvalidImage;
     const word_bytes_len = @as(usize, word_count) * @sizeOf(Word);
     const code_bytes_len = @as(usize, code_count) * @sizeOf(Op);
     const memory_at = header_size + word_bytes_len + code_bytes_len + names_used;
@@ -209,8 +239,8 @@ pub fn restoreImage(self: *State, image: []const u8) RuntimeError!void {
     const heap_top_at = memory_at + @as(usize, @intCast(heap_top_address));
     if (input.len < heap_top_at + cell_size) return error.InvalidImage;
     const heap_top: Cell = @bitCast(std.mem.readInt(u64, input[heap_top_at..][0..8], .little));
-    if (heap_top < heap_base or heap_top > heap_end) return error.InvalidImage;
-    const ranges = memoryRanges(data_here, heap_top);
+    if (heap_top < self.sizes.heapBase() or heap_top > self.sizes.heapEnd()) return error.InvalidImage;
+    const ranges = memoryRanges(self.sizes, data_here, heap_top);
     if (input.len != memory_at + rangesLength(ranges)) return error.InvalidImage;
     if (!namesAreConsecutive(input[header_size .. header_size + word_bytes_len], names_used)) return error.InvalidImage;
     const word_bytes = input[header_size .. header_size + word_bytes_len];
@@ -232,7 +262,7 @@ pub fn restoreImage(self: *State, image: []const u8) RuntimeError!void {
     cursor += code_bytes_len;
     @memcpy(self.names[own_names..][0..added_names], input[cursor + image_names .. cursor + names_used]);
     cursor += names_used;
-    @memset(self.memory, 0);
+    if (!memory_is_fresh) @memset(self.memory, 0);
     for (ranges) |range| {
         const length = range[1] - range[0];
         @memcpy(self.memory[range[0]..range[1]], input[cursor .. cursor + length]);
@@ -284,7 +314,7 @@ pub fn appendImage(self: *State, source: *const State) RuntimeError!void {
     const name_base: usize = self.names_used;
     if (source.data_here < data_start) return error.InvalidImage;
     const data_len = source.data_here - data_start;
-    if (self.data_here + data_len > data_limit) return error.MemoryExhausted;
+    if (self.data_here + data_len > self.sizes.dataLimit()) return error.MemoryExhausted;
     const data_delta = self.data_here - data_start;
     // User word lists of the loaded image get new ids after this dictionary's.
     const source_wordlists = std.math.clamp(source.readCellConst(wordlist_count_address), root_wordlist, max_wordlists);
@@ -393,7 +423,7 @@ pub fn appendImage(self: *State, source: *const State) RuntimeError!void {
     self.data_here += data_len;
     self.last_created_word = null;
     // The loaded image's graphics words count as loaded here too, unless this dictionary
-    // has its own; either way, images saved from now on are SIGIMG40.
+    // has its own; either way, images saved from now on are SIGIMG43.
     if (source.readCellConst(graphics_image_address) != 0) try self.writeCell(graphics_image_address, 1);
     if (!graphics_loaded and words_graphics.graphicsLoaded(source)) {
         const vocabulary = source.readCellConst(graphics_vocabulary_address) - source.builtin_count;

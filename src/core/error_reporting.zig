@@ -14,7 +14,6 @@ const errno_invalid = memory_map.errno_invalid;
 const errno_no_memory = memory_map.errno_no_memory;
 const error_codes = defs.error_codes;
 const ior_errno_base = memory_map.ior_errno_base;
-const locals_base = memory_map.locals_base;
 const throw_code_undefined_word = defs.throw_code_undefined_word;
 
 pub fn report(self: *State, err: anyerror) void {
@@ -27,7 +26,7 @@ pub fn report(self: *State, err: anyerror) void {
     };
     self.capture_target = null;
     self.local_count = 0;
-    self.locals_top = locals_base;
+    self.locals_top = self.sizes.localsBase();
     if (self.defining) {
         self.code_count = self.words[self.current_word].code_start;
         self.names_used = self.words[self.current_word].name_start;

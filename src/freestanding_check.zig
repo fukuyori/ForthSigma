@@ -19,7 +19,7 @@ export fn sigma_interpret_line(state: *forth.State, line: [*]const u8, length: u
 }
 
 export fn sigma_image_capacity() usize {
-    return forth.State.imageCapacity();
+    return forth.State.imageCapacity(.small);
 }
 
 /// The image's length, or 0 when it does not fit.

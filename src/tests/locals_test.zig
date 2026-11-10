@@ -128,7 +128,7 @@ test "locals survive a full image restore" {
     const source = try createMachine(&output);
     defer destroyMachine(source);
     try source.interpretLine(": SUB { a b } a b - ; :NONAME { F: x } x x F* ; CONSTANT SQ");
-    const image = try std.testing.allocator.alloc(u8, forth.State.imageCapacity());
+    const image = try std.testing.allocator.alloc(u8, forth.State.imageCapacity(.small));
     defer std.testing.allocator.free(image);
     const length = try source.encodeImage(image);
 
