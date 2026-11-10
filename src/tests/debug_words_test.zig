@@ -192,3 +192,62 @@ test "+LTRACE shows the lines of an included file before they are interpreted" {
     try expectStack(machine, &.{ 1, 2, 3 });
     try std.testing.expectEqualStrings("\na.txt:3:1:<1> #1 \n\na.txt:4:1:<2> #1 #2 \n", shown(&output));
 }
+
+test "the profile counts the calls and the operations of each word" {
+    try support.skipWithout(&.{.debug});
+    var output = Output{};
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
+    const profile = try std.testing.allocator.create(forth.Profile);
+    defer std.testing.allocator.destroy(profile);
+    profile.reset();
+    machine.profile = profile;
+
+    // SQUARE is 3 operations (DUP, *, the end), SUMSQ 5 of its own, RUN 54.
+    try machine.interpretLine(": SQUARE DUP * ; : SUMSQ SQUARE SWAP SQUARE + ; : RUN 10 0 DO I I SUMSQ DROP LOOP ; RUN");
+    const square = machine.lookup("SQUARE").?;
+    const sumsq = machine.lookup("SUMSQ").?;
+    try std.testing.expectEqual(@as(u64, 20), profile.calls[square]);
+    try std.testing.expectEqual(@as(u64, 60), profile.total[square]);
+    try std.testing.expectEqual(@as(u64, 10), profile.calls[sumsq]);
+    try std.testing.expectEqual(@as(u64, 110), profile.total[sumsq]);
+    try std.testing.expectEqual(@as(u64, 164), profile.operations);
+
+    profile.show(machine);
+    try std.testing.expectEqualStrings(
+        \\PROFILE: 164 OPERATIONS
+        \\     CALLS        SELF       TOTAL  WORD
+        \\        20          60          60  SQUARE
+        \\         1          54         164  RUN
+        \\        10          50         110  SUMSQ
+        \\
+    , shown(&output));
+}
+
+test "the profile counts a recursion once, and ends the words that an error ended" {
+    try support.skipWithout(&.{.debug});
+    var output = Output{};
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
+    const profile = try std.testing.allocator.create(forth.Profile);
+    defer std.testing.allocator.destroy(profile);
+    profile.reset();
+    machine.profile = profile;
+
+    try machine.interpretLine(": DOWN DUP IF 1- RECURSE THEN ; 5 DOWN DROP");
+    const down = machine.lookup("DOWN").?;
+    try std.testing.expectEqual(@as(u64, 6), profile.calls[down]);
+    try std.testing.expectEqual(profile.operations, profile.total[down]);
+
+    // BAD ends in an error that CATCH catches: its operations still count for TRY.
+    try machine.interpretLine(": BAD 1 0 / ; : TRY ['] BAD CATCH DROP ; TRY");
+    try std.testing.expectEqual(@as(usize, 0), profile.depth);
+    try std.testing.expectEqual(@as(u64, 3), profile.total[machine.lookup("BAD").?]);
+    try std.testing.expectEqual(@as(u64, 7), profile.total[machine.lookup("TRY").?]);
+
+    // One that reaches the host is ended by its report.
+    try std.testing.expectError(error.DivisionByZero, machine.interpretLine("BAD"));
+    try std.testing.expectEqual(@as(usize, 1), profile.depth);
+    machine.report(error.DivisionByZero);
+    try std.testing.expectEqual(@as(usize, 0), profile.depth);
+}

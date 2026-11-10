@@ -746,6 +746,8 @@ const StartOptions = struct {
     /// how many lines of that are shown; 0 is any number.
     trace: bool = false,
     trace_limit: u64 = 0,
+    /// --profile: the calls and the operations of each word are shown at the end.
+    profile: bool = false,
     next: usize = 1,
 };
 
@@ -806,11 +808,16 @@ fn parseStartOptions(args: []const []const u8, failed: *[]const u8) error{ Missi
             break;
         }
         // --max-steps N or --max-steps=N, and --trace-limit: a decimal number, not a
-        // size. --trace takes no value. A build without the debugging features
+        // size. --trace and --profile take no value. A build without the debugging features
         // (-Ddebug=false) has none of them.
         if (@import("build_options").debug) {
             if (std.mem.eql(u8, argument, "--trace")) {
                 options.trace = true;
+                index += 1;
+                continue;
+            }
+            if (std.mem.eql(u8, argument, "--profile")) {
+                options.profile = true;
                 index += 1;
                 continue;
             }
@@ -1302,6 +1309,19 @@ fn run(init: std.process.Init.Minimal) !u8 {
     machine.step_limit = start.max_steps;
     machine.tracing = start.trace;
     machine.trace_limit = start.trace_limit;
+    // The profile is shown however the program ends: BYE, an error, or the end of input.
+    const profile: ?*forth.Profile = if (start.profile) std.heap.page_allocator.create(forth.Profile) catch {
+        terminalWrite(null, "OUT OF MEMORY !\n");
+        return 1;
+    } else null;
+    defer if (profile) |counts| {
+        counts.show(machine);
+        std.heap.page_allocator.destroy(counts);
+    };
+    if (profile) |counts| {
+        counts.reset();
+        machine.profile = counts;
+    }
     if (embedded) |image| machine.restoreFreshImage(image) catch machine.write("INVALID IMAGE !\n");
 
     // The other arguments go into Forth memory, where ARGC, ARGV, ARG, and NEXT-ARG see
@@ -1627,6 +1647,8 @@ test "the size options are read at the start of the arguments" {
         try std.testing.expectEqual(@as(u64, 200), traced.trace_limit);
         try std.testing.expectEqual(@as(usize, 3), traced.next);
         try std.testing.expect(!steps.trace);
+        try std.testing.expect(!traced.profile);
+        try std.testing.expect((try parseStartOptions(&.{ "sigma", "--profile", "x.fs" }, &failed)).profile);
     }
 
     try std.testing.expectError(error.MissingValue, parseStartOptions(&.{ "sigma", "-d" }, &failed));

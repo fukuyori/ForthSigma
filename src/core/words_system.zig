@@ -218,11 +218,13 @@ pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
                 .local_count = self.local_count,
             };
             const trace_depth = self.trace_depth;
+            const profile_depth = if (self.profile) |profile| profile.depth else 0;
             if (self.executeWord(xt)) |_| {
                 try self.push(0);
             } else |err| {
                 if (err == error.Quit or err == error.StepLimit) return err;
                 self.trace_depth = trace_depth;
+                if (self.profile) |profile| profile.unwind(profile_depth);
                 const code = self.throwCodeOf(err);
                 self.abort_message = null;
                 self.restoreCatchFrame(frame);

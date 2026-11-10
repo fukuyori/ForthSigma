@@ -43,8 +43,8 @@ fn body(self: *const forth.State, id: u16) ?[]const defs.Op {
 }
 
 pub fn compile(self: *forth.State, id: u16) forth.RuntimeError!bool {
-    // The trace shows a word when it is called and when it returns.
-    if (defs.debug_enabled and self.tracing) return false;
+    // The trace and the profile note a word when it is called and when it returns.
+    if (self.keepsCalls()) return false;
     if (self.defining and id == self.current_word) return false;
     const ops = body(self, id) orelse return false;
     // Fall back to an ordinary call if expansion would exhaust the code area.
@@ -68,7 +68,7 @@ fn marked(targets: []const u8, target: usize) bool {
 /// Saved expansions are an ordinary call followed by branches over the reserved
 /// slots. Rebuild only exact padding spans with no other entry point inside them.
 pub fn restore(self: *forth.State) void {
-    if (defs.debug_enabled and self.tracing) return;
+    if (self.keepsCalls()) return;
     var targets: [(limits.max_code + 7) / 8]u8 = @splat(0);
     for (self.words[0..self.word_count]) |word| {
         if (word.kind == .colon) {

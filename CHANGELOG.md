@@ -7,8 +7,9 @@
 - An error in compiled code that no `CATCH` caught is followed by a backtrace and the stack: the definitions that were running, innermost first, each with the file and line it was at when it was compiled from a file, then the data stack as the error left it (and the floating-point stack when it holds something). Short definitions copied into their callers are marked `(INLINE)`, and a recursion is one line with the number of times.
 - `--max-steps N`, among the options at the start of the command line, ends a program after its compiled code has run `N` operations for an argument or a line, with the new error `STEP LIMIT !` (-280) and its backtrace; `CATCH` does not catch it. It is for finding where a program that does not end is running.
 - `--trace` shows on standard error each colon definition as it starts and ends, with the data stack, indented by the nesting; `--trace-limit N` ends the trace after `N` lines.
+- `--profile` shows on standard error, when the program ends, how often each colon definition was called and how many operations it ran, by itself and with the words it called.
 - The debugging words of gforth `~~BT`, `~~1BT`, `ONCE`, `~~VALUE`, `+LTRACE`, and `-LTRACE`.
-- The build option `-Ddebug=false` leaves out the debugging features (the backtrace, `--max-steps`, the trace, and the debugging words above).
+- The build option `-Ddebug=false` leaves out the debugging features (the backtrace, `--max-steps`, the trace, the profile, and the debugging words above).
 
 ### Changed
 

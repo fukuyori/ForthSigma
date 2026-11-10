@@ -111,6 +111,31 @@ These words of gforth also write to standard error:
 
 The trace and these words are not in a build without the debugging features (`-Ddebug=false`).
 
+### Profile
+
+`--profile`, among the options at the start of the command line, shows on standard error, when the program ends (by `BYE`, by an error, or at the end of the input), how often each colon definition was called and how many operations it ran:
+
+```text
+PROFILE: 164 OPERATIONS
+     CALLS        SELF       TOTAL  WORD
+        20          60          60  SQUARE prog.fs:1
+         1          54         164  RUN prog.fs:3
+        10          50         110  SUMSQ prog.fs:2
+```
+
+An operation is a word of a definition, a number, or a jump of a control structure, as for `--max-steps`; the profile counts operations, not time, so two runs of the same program give the same numbers. `SELF` is the operations of the definition's own code, `TOTAL` those between its start and its end, with the words it called. The definitions are in the order of `SELF`, the largest first, each with the file and line where it starts. Only definitions that were called or ran operations are shown.
+
+- A definition that calls itself counts its inner runs once in `TOTAL`.
+- The operations after `DOES>` count in the `SELF` of the defining word.
+- Built-in words are one operation each, whatever they do; time spent in them (drawing, waiting) is not in the profile.
+- With `--profile`, short definitions are called instead of being copied into their callers, and the program runs slower.
+
+```powershell
+.\zig-out\bin\sigma.exe --profile prog.fs -e "MAIN BYE" 2> profile.txt
+```
+
+A build without the debugging features (`-Ddebug=false`) does not have the option.
+
 `HELP` shows the basic usage, and `HELP name` shows the stack effect of a word and a one-line description in English (example: `HELP DUP`). The name is read from the same line (also in an `EVALUATE` string, it does not read past a line end). `HELP` written in a definition reads the name when that definition runs. For a word defined by the user, it suggests viewing its contents with `SEE`. An unknown name gives the error `name ?`. `LICENSE` shows the full text of the license and the copyright notice of the included CORE-MATH.
 
 When an input line has been processed successfully, `OK` is printed. For example, the following input prints the square of 12.

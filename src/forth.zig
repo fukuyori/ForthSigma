@@ -45,6 +45,7 @@ const words_strings = @import("core/words_strings.zig");
 const words_system = @import("core/words_system.zig");
 const words_tools = @import("core/words_tools.zig");
 const words_debug = @import("core/words_debug.zig");
+pub const Profile = @import("core/profiler.zig").Profile;
 const words_xchar = @import("core/words_xchar.zig");
 const Builtin = defs.Builtin;
 pub const Cell = memory_map.Cell;
@@ -280,6 +281,8 @@ pub const State = struct {
     trace_limit: u64 = 0,
     trace_lines: u64 = 0,
     trace_depth: usize = 0,
+    /// --profile: the counts of the run, in memory of the host's; null without it.
+    profile: ?*Profile = null,
     /// +LTRACE: each line of an included file is shown before it is interpreted.
     line_trace: bool = false,
     /// The values of ~~VALUE, whose TOs are shown. Not part of an image.
@@ -1220,11 +1223,20 @@ pub const State = struct {
         }
     }
 
-    /// --trace: shows the definition that `running` runs as it starts or ends. Code after
-    /// DOES> has no word of its own and is not shown.
+    /// --trace and --profile: shows or counts the definition that `running` runs as it
+    /// starts or ends. Code after DOES> has no word of its own and is passed over.
     fn traceRunning(self: *State, running: Running, enter: bool) void {
-        if (!self.tracing) return;
-        if (running.defining_word) |id| words_debug.traceWord(self, id, enter);
+        const id = running.defining_word orelse return;
+        if (self.tracing) words_debug.traceWord(self, id, enter);
+        if (self.profile) |profile| {
+            if (enter) profile.enter(id) else profile.leave();
+        }
+    }
+
+    /// Whether short definitions are called instead of copied into their callers: the
+    /// trace and the profile note a word when it is called and when it returns.
+    pub fn keepsCalls(self: *const State) bool {
+        return defs.debug_enabled and (self.tracing or self.profile != null);
     }
 
     fn addBacktrace(self: *State, pc: u16) void {
@@ -1235,9 +1247,9 @@ pub const State = struct {
         self.backtrace_total += 1;
     }
 
-    /// Runs compiled code. With a step limit (--max-steps) or the trace (--trace), the
-    /// loop that counts the operations and shows the words runs it, so that the usual
-    /// loop does not pay for them.
+    /// Runs compiled code. With a step limit (--max-steps), the trace (--trace), or the
+    /// profile (--profile), the loop that counts the operations and notes the words runs
+    /// it, so that the usual loop does not pay for them.
     fn executeOperations(self: *State, start_pc: u16, end_pc: u16, defining_word: ?u16) RuntimeError!void {
         // A colon definition that compiled code calls runs in the loop of runOperations,
         // its caller kept in `frames`, instead of in a host call of its own: three calls
@@ -1262,7 +1274,7 @@ pub const State = struct {
         const loop_frames = self.frame_depth;
         // Before the frames are given back: they are the callers of the backtrace.
         errdefer if (defs.debug_enabled) self.recordBacktrace(self.failed_pc, loop_frames, entry_call_depth);
-        if (defs.debug_enabled and (self.step_limit != 0 or self.tracing)) return self.runOperations(true, start_pc, end_pc, defining_word);
+        if (defs.debug_enabled and (self.step_limit != 0 or self.tracing or self.profile != null)) return self.runOperations(true, start_pc, end_pc, defining_word);
         return self.runOperations(false, start_pc, end_pc, defining_word);
     }
 
@@ -1287,6 +1299,7 @@ pub const State = struct {
                 if (self.steps_left == 0) return error.StepLimit;
                 self.steps_left -= 1;
             }
+            if (counted) if (self.profile) |profile| profile.countOperation(running.pc - 1);
             switch (op.kind) {
                 inline .call, .call_colon => |call_kind| {
                     if (call_kind == .call_colon and inline_calls.isInline(op)) {
