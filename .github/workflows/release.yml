@@ -1,12 +1,11 @@
-# Builds FORTH/Sigma for each target, with and without the floating-point words, and,
-# for a tag vX.Y.Z, attaches the ZIP files to a draft release. The Windows builds are
-# unsigned; replace them with the signed ZIPs of the same names and contents that
-# scripts/build-zip.ps1 -Sign makes before publishing.
+# Tests FORTH/Sigma and builds it for each target, with and without the floating-point
+# words, when it is started by hand (Actions > Release > Run workflow). It makes no
+# release: the ZIP files are kept as artifacts of the run, and releases are made by
+# hand. A tag does not start it. The Windows builds are unsigned; the signed ZIPs of the
+# same names and contents come from scripts/build-zip.ps1 -Sign.
 name: Release
 
 on:
-  push:
-    tags: ['v*']
   workflow_dispatch:
 
 permissions:
@@ -83,25 +82,3 @@ jobs:
           name: sigma-${{ matrix.platform.name }}${{ matrix.variant.suffix }}
           path: sigma-*.zip
           if-no-files-found: error
-
-  release:
-    name: Draft release
-    needs: build
-    if: startsWith(github.ref, 'refs/tags/')
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-    steps:
-      - uses: actions/download-artifact@v8
-        with:
-          path: dist
-          merge-multiple: true
-      - name: Create the draft release
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          gh release create "$GITHUB_REF_NAME" dist/*.zip \
-            --repo "$GITHUB_REPOSITORY" \
-            --draft \
-            --title "FORTH/Sigma $GITHUB_REF_NAME" \
-            --notes "Builds for Windows x86_64, Linux x86_64, arm32, and arm64, and macOS arm64. The -nofloat builds leave out the floating-point words for a smaller program."
