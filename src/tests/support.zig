@@ -580,6 +580,16 @@ pub fn interpretLiteralDefinition(machine: *forth.State, prefix: []const u8, cou
     try machine.interpretLine(";");
 }
 
+/// Fills the dictionary up to `free` entries before its end with words named F0, F1,
+/// ..., which run DROP. Defining them in Forth would search the whole dictionary for
+/// each, which is slow with tens of thousands of words.
+pub fn fillDictionary(machine: *forth.State, free: usize) !void {
+    var name: [16]u8 = undefined;
+    while (machine.word_count < machine.words.len - free) {
+        _ = try machine.appendWord(try std.fmt.bufPrint(&name, "F{d}", .{machine.word_count}), .builtin, .drop, 0);
+    }
+}
+
 pub fn destroyMachine(machine: *forth.State) void {
     machine.storage().free(std.testing.allocator);
     std.testing.allocator.destroy(machine);

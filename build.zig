@@ -26,6 +26,8 @@ pub fn build(b: *std.Build) void {
     options.addOption(usize, "memory_mib", b.option(usize, "memory-mib", "The default size of the data area, and of the heap, in MiB (default: 32)") orelse 32);
     options.addOption(usize, "locals_kib", b.option(usize, "locals-kib", "The default size of the area for local variables, in KiB (default: 64)") orelse 64);
     options.addOption(usize, "stack_cells", b.option(usize, "stack-cells", "The default size of each stack, in elements (default: 4096)") orelse 4096);
+    options.addOption(usize, "max_words", b.option(usize, "words", "The number of dictionary entries, at most 65535 (default: 65535)") orelse 65535);
+    options.addOption(usize, "names_kib", b.option(usize, "names-kib", "The size of the area for the names of the dictionary entries, in KiB (default: 1024)") orelse 1024);
 
     const exe = b.addExecutable(.{
         .name = "sigma",

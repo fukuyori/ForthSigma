@@ -65,9 +65,9 @@ pub const library = @embedFile("../graphics/graphics.fs") ++
 /// The name the library has in the source file table, for LOCATE and error messages.
 pub const library_name = "*graphics library*";
 
-/// Limits of an image: each side 1 to 8192 pixels and at most 64 MiB in all.
-pub const max_side = 8192;
-pub const max_bytes = 64 * 1024 * 1024;
+/// Limits of an image: each side 1 to 16384 pixels and at most 1 GiB in all.
+pub const max_side = 16384;
+pub const max_bytes = 1024 * 1024 * 1024;
 
 /// Every pixel is opaque: the alpha byte above the red, green, and blue bytes is 255.
 const opaque_alpha: u32 = 0xff00_0000;
@@ -237,7 +237,7 @@ fn executeFont(self: *State, builtin: Builtin) RuntimeError!void {
 }
 
 /// The pixel count of a width × height image, or NUMBER ERROR when a side is outside
-/// 1 to 8192 or the image is over 64 MiB.
+/// 1 to 16384 or the image is over 1 GiB.
 pub fn imagePixels(width: Cell, height: Cell) RuntimeError!usize {
     if (width < 1 or width > max_side or height < 1 or height > max_side) return error.InvalidNumber;
     const pixels = std.math.mul(u64, @intCast(width), @intCast(height)) catch return error.InvalidNumber;

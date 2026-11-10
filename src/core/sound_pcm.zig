@@ -2,7 +2,7 @@
 //! in the host's pool, the WAV files they come from, and a player that steps through
 //! them.
 //!
-//! The pool is one block of 16-bit samples that the host gives once (16 MiB). Samples are
+//! The pool is one block of 16-bit samples that the host gives once (64 MiB). Samples are
 //! only added at its end, and FREE-SAMPLES empties it after the music has stopped, so the
 //! audio thread never reads a part that changes.
 
@@ -11,8 +11,8 @@ const std = @import("std");
 /// The samples LOAD-SAMPLE and SAMPLE can define (0 to 63).
 pub const sample_count = 64;
 
-/// The pool's size in 16-bit samples: 16 MiB.
-pub const pool_samples = 8 * 1024 * 1024;
+/// The pool's size in 16-bit samples: 64 MiB.
+pub const pool_samples = 32 * 1024 * 1024;
 
 /// One sample in the pool: `length` frames from `start`, recorded at `rate` Hz, with a
 /// loop from `loop_start` to `loop_end` (none when they are equal).

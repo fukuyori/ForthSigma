@@ -18,8 +18,9 @@ const State = forth.State;
 /// The script the host gives the program.
 pub const script = @embedFile("../graphics/sigma_tk.tcl");
 
-/// The longest message Sigma takes from the program.
-const max_message = 64 * 1024 * 1024;
+/// The longest message Sigma takes from the program, and sends to it: the largest image
+/// in base64, as GFX-SHOW-TK sends it, with room for its command.
+const max_message = (words_graphics.pngLength(words_graphics.max_side, words_graphics.max_side) + 2) / 3 * 4 + 64;
 /// The events kept until TCL-EVENT takes them; later ones are dropped when it is full.
 const max_events = 64;
 

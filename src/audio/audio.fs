@@ -87,7 +87,7 @@
 
 \ ---- Samples --------------------------------------------------------------------
 \
-\ Samples 0 to 63 are recorded sound in the host's pool (16 MiB, outside the
+\ Samples 0 to 63 are recorded sound in the host's pool (64 MiB, outside the
 \ dictionary's memory). The Amiga plays an instrument's sample with its notes, O4's C
 \ at the sample's own rate; SFX plays one at once beside the music, on any chip.
 

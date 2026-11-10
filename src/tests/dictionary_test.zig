@@ -287,8 +287,9 @@ test "a full name area is a full dictionary, and the words before still work" {
             break;
         };
     }
-    try std.testing.expect(count > 1000 and count < machine.words.len);
-    try std.testing.expect(machine.names_used <= machine.names.len);
+    try std.testing.expect(count > 100 and machine.word_count < machine.words.len);
+    // Less than one more name of 255 bytes fits.
+    try std.testing.expect(machine.names_used <= machine.names.len and machine.names.len - machine.names_used < 255);
     try machine.interpretLine(try std.fmt.bufPrint(&line, "{s}{d:0>6}", .{ repeat("N", 249), count - 1 }));
     try expectStack(machine, &.{@as(forth.Cell, @intCast(count - 1))});
 }

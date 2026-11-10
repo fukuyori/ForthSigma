@@ -17,7 +17,8 @@ pub const cell_size = 8;
 
 pub const float_size = 8;
 
-pub const max_words = 8192;
+/// The dictionary's entries (-Dwords); word numbers are 16 bits.
+pub const max_words = build_options.max_words;
 /// Uses of words read from files that WHERE can list; later uses are not recorded.
 pub const max_uses = 65536;
 
@@ -26,8 +27,8 @@ pub const max_code = 65535;
 pub const max_controls = 128;
 
 pub const max_name = 255;
-/// Bytes for the names of all dictionary entries, which are kept in one area.
-pub const names_capacity = 256 * 1024;
+/// Bytes for the names of all dictionary entries, which are kept in one area (-Dnames-kib).
+pub const names_capacity = build_options.names_kib << 10;
 
 // The layout of the logical memory:
 //   0 .. system_end         the system area (see the addresses below)
@@ -167,6 +168,8 @@ comptime {
     if (data_start >= min_memory_m) @compileError("the smallest data area is empty");
     if (!Sizes.small.valid()) @compileError("the small sizes are not valid");
     if (!Sizes.default.valid()) @compileError("the default sizes are not valid");
+    if (max_words < 1024 or max_words > 65535) @compileError("-Dwords must be 1024 to 65535");
+    if (names_capacity < 64 << 10 or names_capacity > 1 << 31) @compileError("-Dnames-kib must be 64 to 2097152");
 }
 
 /// Word lists: ids 1 (Forth) and 2 (Root) exist from the start; WORDLIST and

@@ -98,7 +98,7 @@ fn fitted(width: u64, height: u64, max_width: u64, max_height: u64) [2]u64 {
 }
 
 /// The image made smaller to out_width × out_height (each at most the image's size).
-/// The sides are at most 8192, so their products fit a usize also on 32-bit hosts.
+/// The sides are at most 16384, so their products fit a usize also on 32-bit hosts.
 const Scaled = struct {
     self: *const State,
     width: usize,

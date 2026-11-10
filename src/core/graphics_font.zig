@@ -16,7 +16,7 @@ const State = forth.State;
 pub const max_height = 256;
 pub const max_box_width = 512;
 /// The largest BDF font LOAD-FONT keeps: its table of glyphs and their pixels.
-const max_font_bytes = 16 * 1024 * 1024;
+const max_font_bytes = 64 * 1024 * 1024;
 /// The THROW code (and ior) of a font that cannot be used: a file that is not a BDF
 /// font LOAD-FONT can read, or a name the system has no font of.
 pub const font_error: Cell = -272;

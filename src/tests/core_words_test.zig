@@ -549,20 +549,16 @@ test "dictionary capacity failure preserves existing words" {
     var output = Output{};
     const machine = try createMachine(&output);
     defer destroyMachine(machine);
-    var definition: [32]u8 = undefined;
-
     const limit: u16 = @intCast(machine.words.len);
-    while (machine.word_count < limit) {
-        const text = try std.fmt.bufPrint(&definition, ": W{d} 1 ;", .{machine.word_count});
-        try machine.interpretLine(text);
-    }
+    try support.fillDictionary(machine, 1);
+    try machine.interpretLine(": LAST-WORD 1 ;");
     try std.testing.expectEqual(limit, machine.word_count);
 
     const overflow = machine.interpretLine(": EXTRA 2 ;");
     try std.testing.expectError(error.DictionaryFull, overflow);
     machine.report(error.DictionaryFull);
     try std.testing.expectEqual(limit, machine.word_count);
-    try machine.interpretLine(try std.fmt.bufPrint(&definition, "W{d}", .{limit - 1}));
+    try machine.interpretLine("LAST-WORD");
     const expected = [_]forth.Cell{1};
     try expectStack(machine, &expected);
 }

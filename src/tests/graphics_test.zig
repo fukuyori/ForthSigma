@@ -91,13 +91,12 @@ test "GFX-INIT checks the size, clears the image, and keeps the old one when the
 
     try std.testing.expectError(error.InvalidNumber, machine.interpretLine("0 1 GFX-INIT"));
     try std.testing.expectError(error.InvalidNumber, machine.interpretLine("1 -1 GFX-INIT"));
-    try std.testing.expectError(error.InvalidNumber, machine.interpretLine("8193 1 GFX-INIT"));
-    try std.testing.expectError(error.InvalidNumber, machine.interpretLine("1 8193 GFX-INIT"));
-    // 8192 × 8192 pixels are 256 MiB, over the 64 MiB limit.
-    try std.testing.expectError(error.InvalidNumber, machine.interpretLine("8192 8192 GFX-INIT"));
-    try std.testing.expectEqual(@as(usize, 4096 * 4096), try words_graphics.imagePixels(4096, 4096));
-    try std.testing.expectEqual(@as(usize, 8192 * 2048), try words_graphics.imagePixels(8192, 2048));
-    try std.testing.expectError(error.InvalidNumber, words_graphics.imagePixels(4097, 4096));
+    try std.testing.expectError(error.InvalidNumber, machine.interpretLine("16385 1 GFX-INIT"));
+    try std.testing.expectError(error.InvalidNumber, machine.interpretLine("1 16385 GFX-INIT"));
+    // 16384 × 16384 pixels are 1 GiB, the most an image may have.
+    try std.testing.expectEqual(@as(usize, 16384 * 16384), try words_graphics.imagePixels(16384, 16384));
+    try std.testing.expectEqual(@as(usize, 16384 * 1), try words_graphics.imagePixels(16384, 1));
+    try std.testing.expectError(error.InvalidNumber, words_graphics.imagePixels(16385, 16384));
     try std.testing.expectEqual(@as(usize, 1), try words_graphics.imagePixels(1, 1));
 
     try machine.interpretLine("4 2 GFX-INIT 3 1 GFX-PGET 0 0 GFX-PGET");
@@ -2386,13 +2385,13 @@ test "WINDOW-SIZE gives the window the size to show the image in, from the next 
     try machine.interpretLine("SHOW");
     try std.testing.expectEqual([2]u32{ 640, 480 }, output.window_size);
     try std.testing.expectEqual(@as(u32, 4), output.window_width);
-    try machine.interpretLine("1 8192 WINDOW-SIZE SHOW");
-    try std.testing.expectEqual([2]u32{ 1, 8192 }, output.window_size);
+    try machine.interpretLine("1 16384 WINDOW-SIZE SHOW");
+    try std.testing.expectEqual([2]u32{ 1, 16384 }, output.window_size);
     try machine.interpretLine("0 0 WINDOW-SIZE SHOW");
     try std.testing.expectEqual([2]u32{ 0, 0 }, output.window_size);
-    // Each side 1 to 8192, or both 0; the size stays as it was.
+    // Each side 1 to 16384, or both 0; the size stays as it was.
     try machine.interpretLine("320 200 WINDOW-SIZE");
-    for ([_][]const u8{ "0 5", "5 0", "-1 5", "5 -1", "8193 1", "1 8193" }) |size| {
+    for ([_][]const u8{ "0 5", "5 0", "-1 5", "5 -1", "16385 1", "1 16385" }) |size| {
         machine.data_depth = 0;
         var line: [64]u8 = undefined;
         try std.testing.expectError(error.InvalidNumber, machine.interpretLine(try std.fmt.bufPrint(&line, "{s} WINDOW-SIZE", .{size})));
