@@ -621,7 +621,7 @@ File names are relative paths from the current directory. `REQUIRE` compares nam
 
 ## Graphics and sound
 
-The graphics words (`REQUIRE-GRAPHICS`: an image in memory, text, Tcl/Tk, keys, the mouse, and animation) and the sound words (`REQUIRE-AUDIO`: MSX BASIC's `PLAY`, `SOUND`, and `BEEP`, sound chips, recorded sound, and modules) are extensions of this port. They are described in the [graphics and sound manual](GRAPHICS_AND_SOUND.md).
+The graphics words (`REQUIRE-GRAPHICS`: an image in memory, more images to copy between, image files, text, Tcl/Tk, keys, the mouse, and animation; `REQUIRE-GUI`: buttons, fields, lists, menus, and dialogs; `REQUIRE-GAME`: sprites, tile maps, palettes, and effects on rows) and the sound words (`REQUIRE-AUDIO`: MSX BASIC's `PLAY`, `SOUND`, and `BEEP`, sound chips, recorded sound, and modules) are extensions of this port. They are described in the [graphics and sound manual](GRAPHICS_AND_SOUND.md).
 
 ## Saving the dictionary and stand-alone executables
 
@@ -632,7 +632,7 @@ SAVE words.sigma
 LOAD words.sigma
 ```
 
-`LOAD` adds the saved user-defined words to the end of the current dictionary. For words with the same name, the newly loaded definitions take precedence. Dictionary images saved by earlier versions (`SIGIMG01` to `SIGIMG38`, that is, by 0.8.0 and earlier) and damaged dictionary images cannot be loaded (`INVALID IMAGE !`): the input area moved in front of the dictionary, which changed the layout of the memory. This version saves `SIGIMG42`. A dictionary that has loaded the graphics words with `REQUIRE-GRAPHICS` is saved as `SIGIMG43`; this stays so even after the graphics words are removed with `FORGET` or a `MARKER`. A dictionary that has loaded the audio words with `REQUIRE-AUDIO` is saved as `SIGIMG44`, with or without the graphics words. Versions up to 0.8.0 cannot load any of them. An image records the `-m` and `-l` sizes it was saved with; `LOAD` also reads an image saved by a Sigma with other sizes. A dictionary image has a checksum, so accidental damage is found before loading. Load only files made by `SAVE` or `SAVESYS` of Sigma. Execution tokens stored in constants or variables (such as the result of `:NONAME`), and execution tokens or addresses compiled into a definition with `LITERAL` (such as `[ ' X ] LITERAL`), may point to another word or place after `LOAD` into a dictionary that already has user-defined words. Execution tokens compiled with `['] X` are relocated correctly. This problem does not occur in an executable made with `SAVESYS`.
+`LOAD` adds the saved user-defined words to the end of the current dictionary. For words with the same name, the newly loaded definitions take precedence. Dictionary images in the earlier formats (`SIGIMG41` and earlier) and damaged dictionary images cannot be loaded (`INVALID IMAGE !`): the input area moved in front of the dictionary, which changed the layout of the memory. This version saves `SIGIMG42`. A dictionary that has loaded the graphics words with `REQUIRE-GRAPHICS` is saved as `SIGIMG43`; this stays so even after the graphics words are removed with `FORGET` or a `MARKER`. A dictionary that has loaded the audio words with `REQUIRE-AUDIO` is saved as `SIGIMG44`, with or without the graphics words. Versions up to 0.8.0 cannot load any of them. An image records the `-m` and `-l` sizes it was saved with; `LOAD` also reads an image saved by a Sigma with other sizes. A dictionary image has a checksum, so accidental damage is found before loading. Load only files made by `SAVE` or `SAVESYS` of Sigma. Execution tokens stored in constants or variables (such as the result of `:NONAME`), and execution tokens or addresses compiled into a definition with `LITERAL` (such as `[ ' X ] LITERAL`), may point to another word or place after `LOAD` into a dictionary that already has user-defined words. Execution tokens compiled with `['] X` are relocated correctly. This problem does not occur in an executable made with `SAVESYS`.
 
 `SAVESYS` makes a stand-alone executable for the running environment that contains the current dictionary, the compiled definitions, and the data.
 
@@ -696,6 +696,8 @@ The following are syntax forms that can be used in Forth input, but they are not
 | Strings | `"..."`, `."..."` | A compile-time string, and the string output extension of the port. |
 | gforth strings | `S" ..."`, `S\" ..."`, `.\" ..."`, `.( ... )` | See the section "Strings". |
 | Graphics | `REQUIRE-GRAPHICS` | Load the graphics words into the `GRAPHICS` vocabulary. See the [graphics and sound manual](GRAPHICS_AND_SOUND.md). |
+| GUI | `REQUIRE-GUI` | Load the GUI words into the `GUI` vocabulary, after the graphics words. See the [graphics and sound manual](GRAPHICS_AND_SOUND.md). |
+| Games | `REQUIRE-GAME` | Load the game words into the `GAME` vocabulary, after the graphics words. See the [graphics and sound manual](GRAPHICS_AND_SOUND.md). |
 | Sound | `REQUIRE-AUDIO` | Load the sound words into the `AUDIO` vocabulary. See the [graphics and sound manual](GRAPHICS_AND_SOUND.md). |
 
 ## Features not implemented

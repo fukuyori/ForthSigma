@@ -95,39 +95,28 @@ VARIABLE SEED
    n 2 < IF n EXIT THEN
    n TO v  BEGIN  v n v / + 2/  DUP v < WHILE  TO v  REPEAT DROP  v ;
 
-\ ---- Sprites made of spans ---------------------------------------------------------
-\ A sprite: its number of spans, width, height, then a cell for each span with x1, x2,
-\ and y (12 bits each) and the color.
+\ ---- Sprites ------------------------------------------------------------------------
+\ A sprite: an image, its width, and its height. BAKE makes the image from xt
+\ ( x y -- rgb | -1 ), which reads the picture painted on the image drawn on; -1 is a
+\ hole, kept in the image as KEY-COLOR, which SPR leaves out.
 
-: SPAN, { x1 x2 y c -- }   x1  x2 12 LSHIFT OR  y 24 LSHIFT OR  c 36 LSHIFT OR  , ;
+$FF00FE CONSTANT KEY-COLOR
 
-: BAKE { bw bh xt | a x c x2 -- a }    \ xt ( x y -- rgb | -1 )
-   ALIGN HERE TO a   0 ,  bw ,  bh ,
-   bh 0 DO
-      0 TO x
-      BEGIN x bw < WHILE
-         x I xt EXECUTE TO c
-         x TO x2
-         BEGIN  x2 1+ bw < IF  x2 1+ I xt EXECUTE c =  ELSE FALSE THEN  WHILE  x2 1+ TO x2  REPEAT
-         c -1 <> IF  x x2 I c SPAN,  THEN
-         x2 1+ TO x
-      REPEAT
+: BAKE { pw ph xt | img old row a -- a }
+   pw 1 MAX ph 1 MAX NEW-IMAGE TO img  DRAWING TO old  pw 1 MAX CELLS ALLOCATE THROW TO row
+   ph 0 ?DO
+      pw 0 ?DO  I J xt EXECUTE  DUP 0< IF DROP KEY-COLOR THEN  row I CELLS + !  LOOP
+      img DRAW-TO  pw 0 ?DO  I J row I CELLS + @ GFX-PSET  LOOP  old DRAW-TO
    LOOP
-   HERE a - 1 CELLS / 3 -  a !   a ;
+   row FREE THROW
+   ALIGN HERE TO a  img , pw , ph ,  a ;
 
-: SPR { x y a | e v -- }
-   a 3 CELLS + DUP  a @ CELLS +  TO e
-   BEGIN DUP e < WHILE
-      DUP @ TO v
-      v $FFF AND x +   v 12 RSHIFT $FFF AND x +   v 24 RSHIFT $FFF AND y +   v 36 RSHIFT  GFX-HLINE
-      CELL+
-   REPEAT DROP ;
 : SPR-W ( a -- w )   CELL+ @ ;
 : SPR-H ( a -- h )   2 CELLS + @ ;
+: SPR { x y a -- }   a @ 0 0 a SPR-W a SPR-H x y KEY-COLOR 0 0 128 1 GFX-COPY ;
 
 \ ---- Painting tools ----------------------------------------------------------------
 
-$FF00FE CONSTANT KEY-COLOR
 $14304E CONSTANT C-BOARD   $1C3E60 CONSTANT C-GRID   $0C1E32 CONSTANT C-BAR
 $FFF4D6 CONSTANT C-TEXT    $8FB4D0 CONSTANT C-LABEL
 

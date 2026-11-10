@@ -15,7 +15,7 @@ FORTH/Σ（フォース・シグマ）の言語コアを、Zigで動くネイテ
 - HEX、DEC、OCTによる基数変更、数値・文字・文字列の出力に対応しています。
 - `S"` などの文字列、`123.` 形式の倍長整数（128ビット）、`<<# # #S #> #>>` による数値の書式、`ACCEPT`、`EVALUATE`、`KEY` を使えます。
 - WORDS、FORGET、BYEを対話用ワードとして提供します。
-- この移植版の拡張として、グラフィックス（`REQUIRE-GRAPHICS`）を使えます。メモリ上の画像に線、図形、塗りつぶし、グラフ、文字（組み込みのASCIIフォント、BDFフォント、Windowsではシステムのフォント）を描き、端末（半角ブロックかSixel）、Windowsのウィンドウ、Tkのウィンドウに表示します。キーとマウス（`INKEY`、`MOUSE`）と、Sigmaが起動する `wish` でのTcl/Tkのスクリプト（`TCL`、`TCL-EVAL`、`TCL-EVENT`）も使えます。Tcl/TkはSigmaにリンクしないので、TCL の語を使うにはTcl/Tkを入れておく必要があります。
+- この移植版の拡張として、グラフィックス（`REQUIRE-GRAPHICS`）を使えます。メモリ上の画像に線、図形、塗りつぶし、グラフ、文字（組み込みのASCIIフォント、BDFフォント、Windowsではシステムのフォント）を描き、端末（半角ブロックかSixel）、Windowsのウィンドウ、Tkのウィンドウに表示します。ほかにも画像を作って描いたり写し合ったりでき、PNG、BMP、PPM のファイルから読み込めます。キーとマウス（`INKEY`、`MOUSE`、`MOUSE-EVENT`）、毎フレーム描く GUI（`REQUIRE-GUI`）、ゲーム用のスプライト、タイルマップ、パレット（`REQUIRE-GAME`）と、Sigmaが起動する `wish` でのTcl/Tkのスクリプト（`TCL`、`TCL-EVAL`、`TCL-EVENT`）も使えます。Tcl/TkはSigmaにリンクしないので、TCL の語を使うにはTcl/Tkを入れておく必要があります。
 - この移植版の拡張として、サウンド（`REQUIRE-AUDIO`）を使えます。MSX BASIC の `PLAY`、`SOUND`、`BEEP` と MML を、音のスレッドがプログラムと並行して鳴らします。MSX、Atari ST、NES、C64、コナミの SCC、Amiga の音源を、1つずつ、またはいくつか同時に、音色を付けて鳴らせます。WAV ファイルの録音した音と効果音、ProTracker のモジュール（MOD ファイル）も鳴らせます。[サウンド](https://github.com/fukuyori/ForthSigma/blob/main/docs/GRAPHICS_AND_SOUND.ja.md#サウンド)と `examples/music.fs` を参照してください。
 - 辞書、コンパイル済み定義、メモリ、入出力をホスト環境から分離し、他のOS・CPUへ移植しやすい構成にしています。
 

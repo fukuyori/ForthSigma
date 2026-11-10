@@ -104,39 +104,30 @@ CREATE QUARTER  0 , 100 , 200 , 297 , 392 , 483 , 569 , 650 , 724 , 792 , 851 , 
    k 1+ SIN64 v0 - fr * 64 / v0 +  4 * ;
 : COST ( a -- v )   1024 + SINT ;
 
-\ ---- Sprites made of spans ---------------------------------------------------------
+\ ---- Sprites ------------------------------------------------------------------------
+\ A sprite: an image, its width, and its height. BAKE makes the image from xt
+\ ( x y -- rgb | -1 ), which reads the picture painted on the image drawn on; -1 is a
+\ hole, kept in the image as KEY-COLOR, which SPR leaves out.
 
-: SPAN, { x1 x2 y c -- }   x1  x2 12 LSHIFT OR  y 24 LSHIFT OR  c 36 LSHIFT OR  , ;
+$FF00FE CONSTANT KEY-COLOR
 
-: BAKE { pw ph xt | a x c x2 -- a }    \ xt ( x y -- rgb | -1 )
-   ALIGN HERE TO a   0 ,  pw ,  ph ,
-   ph 0 DO
-      0 TO x
-      BEGIN x pw < WHILE
-         x I xt EXECUTE TO c
-         x TO x2
-         BEGIN  x2 1+ pw < IF  x2 1+ I xt EXECUTE c =  ELSE FALSE THEN  WHILE  x2 1+ TO x2  REPEAT
-         c -1 <> IF  x x2 I c SPAN,  THEN
-         x2 1+ TO x
-      REPEAT
+: BAKE { pw ph xt | img old row a -- a }
+   pw 1 MAX ph 1 MAX NEW-IMAGE TO img  DRAWING TO old  pw 1 MAX CELLS ALLOCATE THROW TO row
+   ph 0 ?DO
+      pw 0 ?DO  I J xt EXECUTE  DUP 0< IF DROP KEY-COLOR THEN  row I CELLS + !  LOOP
+      img DRAW-TO  pw 0 ?DO  I J row I CELLS + @ GFX-PSET  LOOP  old DRAW-TO
    LOOP
-   HERE a - 1 CELLS / 3 -  a !   a ;
+   row FREE THROW
+   ALIGN HERE TO a  img , pw , ph ,  a ;
 
-: SPR { x y a | e v -- }
-   a 3 CELLS + DUP  a @ CELLS +  TO e
-   BEGIN DUP e < WHILE
-      DUP @ TO v
-      v $FFF AND x +   v 12 RSHIFT $FFF AND x +   v 24 RSHIFT $FFF AND y +   v 36 RSHIFT  GFX-HLINE
-      CELL+
-   REPEAT DROP ;
 : SPR-W ( a -- w )   CELL+ @ ;
 : SPR-H ( a -- h )   2 CELLS + @ ;
+: SPR { x y a -- }   a @ 0 0 a SPR-W a SPR-H x y KEY-COLOR 0 0 128 1 GFX-COPY ;
 : CENTERED { cx cy a -- }   cx a SPR-W 2/ -  cy a SPR-H 2/ -  a SPR ;
 
 \ ---- Painting tools ----------------------------------------------------------------
 \ Pictures are painted larger than they are shown, in units of 64 to CS pixels.
 
-$FF00FE CONSTANT KEY-COLOR
 $E0CFA8 CONSTANT C-PAPER    $3E2412 CONSTANT C-INK    $7A5A38 CONSTANT C-FADED
 $14121C CONSTANT C-DARK     $F0C060 CONSTANT C-GOLD
 
