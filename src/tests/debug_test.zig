@@ -132,3 +132,27 @@ test "the step limit ends compiled code that CATCH would keep running" {
     machine.resetSteps();
     try machine.interpretLine(": MANY 1000 0 DO LOOP ; MANY");
 }
+
+test "code that LOAD adds has no lines, also where removed code had them" {
+    try support.skipWithout(&.{ .files, .tools, .image });
+    var output = Output{};
+    setFakeFile(&output, 0, ": OLD\n\n\n  1 2 3 4 5 6 7 8 2DROP 2DROP 2DROP 2DROP ;\n");
+    setFakeFile(&output, 1, ": BAD\n  1 0 / ;\n");
+    const source = try createMachine(&output);
+    defer destroyMachine(source);
+    try source.interpretLine("INCLUDE b.txt");
+    const image = try std.testing.allocator.alloc(u8, forth.State.imageCapacity(.small));
+    defer std.testing.allocator.free(image);
+    const length = try source.encodeImage(image);
+    const loaded = try createMachine(&output);
+    defer destroyMachine(loaded);
+    try loaded.restoreImage(image[0..length]);
+
+    // OLD is compiled from line 4 of a.txt and removed; BAD takes its place.
+    const target = try createMachine(&output);
+    defer destroyMachine(target);
+    try target.interpretLine("MARKER M INCLUDE a.txt M");
+    try target.appendImage(loaded);
+    try fail(target, "BAD", error.DivisionByZero);
+    try std.testing.expectEqualStrings("DIVISION BY ZERO !\nBACKTRACE:\n  BAD\nSTACK: <0> \n", output.written());
+}
