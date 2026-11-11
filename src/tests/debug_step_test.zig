@@ -214,3 +214,103 @@ test "BREAK: and BREAK\" start the steps in the middle of a definition" {
     , try stepped(machine, &output, "\n\n", "DROP : OUTER WITHBREAK ; 5 DBG OUTER"));
     try std.testing.expectError(error.CompileOnly, machine.interpretLine("BREAK:"));
 }
+
+test "a BREAK: of a loaded image stops as one compiled here" {
+    try support.skipWithout(&.{ .debug, .image });
+    var output = Output{};
+    const source = try createMachine(&output);
+    defer destroyMachine(source);
+    try source.interpretLine(": T BREAK: 123 . ; : U BREAK\" there\" 7 . ;");
+    const image = try std.testing.allocator.alloc(u8, forth.State.imageCapacity(.small));
+    defer std.testing.allocator.free(image);
+    const length = try source.encodeImage(image);
+
+    // As LOAD does: restored in a State of its own, then added.
+    const loaded = try createMachine(&output);
+    defer destroyMachine(loaded);
+    try loaded.restoreImage(image[0..length]);
+    const target = try createMachine(&output);
+    defer destroyMachine(target);
+    try target.appendImage(loaded);
+    try std.testing.expectEqualStrings(
+        \\[ 0 ]
+        \\123            -> [ 1 ] 123
+        \\.              -> 123 [ 0 ]
+        \\;              ->
+    , try stepped(target, &output, "\n\n\n", "T"));
+    try std.testing.expectEqual(@as(usize, 3), output.key_index);
+
+    // And as a saved program starts: restored in the State that runs it.
+    const fresh = try createMachine(&output);
+    defer destroyMachine(fresh);
+    try fresh.restoreImage(image[0..length]);
+    try std.testing.expectEqualStrings(
+        \\BREAK AT: there
+        \\[ 0 ]
+        \\7              -> [ 1 ] 7
+        \\.              -> 7 [ 0 ]
+        \\;              ->
+    , try stepped(fresh, &output, "\n\n\n", "U"));
+}
+
+test "the steps that a BREAK: after DOES> started end with that code" {
+    try support.skipWithout(&.{.debug});
+    var output = Output{};
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
+
+    try machine.interpretLine(": MK CREATE DOES> BREAK: DROP 1 ; MK X : OTHER 42 . ;");
+    try std.testing.expectEqualStrings(
+        \\[ 1 ]
+    , (try stepped(machine, &output, "\n\n\n", "X"))[0..5]);
+    try std.testing.expect(machine.stepper == .off);
+    // OTHER asks for no key.
+    try std.testing.expectEqualStrings("42", try stepped(machine, &output, "", "OTHER"));
+}
+
+test "n goes into copied definitions inside copied definitions, and u out of each" {
+    try support.skipWithout(&.{.debug});
+    var output = Output{};
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
+
+    try machine.interpretLine(": A 1+ ; : B A 2* ; : C B 3 + ;");
+    // Into B, into A, 1+, then u at 2* runs the rest of B; the steps go on in C.
+    try std.testing.expectEqualStrings(
+        \\: C
+        \\[ 1 ] 4
+        \\B              ->
+        \\: B
+        \\[ 1 ] 4
+        \\A              ->
+        \\: A
+        \\[ 1 ] 4
+        \\1+             -> [ 1 ] 5
+        \\2*             ->
+        \\[ 1 ] 10
+        \\3              -> [ 2 ] 10 3
+        \\+              -> [ 1 ] 13
+        \\;              ->
+    , try stepped(machine, &output, "nn\nu\n\n\n", "4 DBG C"));
+    try std.testing.expectEqual(@as(usize, 7), output.key_index);
+}
+
+test "n goes into a colon definition called by another name" {
+    try support.skipWithout(&.{.debug});
+    var output = Output{};
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
+
+    try machine.interpretLine(": LONG 1+ 2* 1- 3 + 2 - ; SYNONYM ALSO-LONG LONG : C ALSO-LONG ;");
+    try std.testing.expectEqualStrings(
+        \\: C
+        \\[ 1 ] 4
+        \\ALSO-LONG      ->
+        \\: LONG
+        \\[ 1 ] 4
+        \\1+             -> [ 1 ] 5
+        \\2*             ->
+        \\[ 1 ] 10
+        \\;              ->
+    , try stepped(machine, &output, "n\nu\n", "4 DBG C"));
+}

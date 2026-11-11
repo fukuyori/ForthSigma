@@ -119,3 +119,26 @@ test "with a log, the trace and the profile go to it instead of standard error" 
     try std.testing.expectEqual(@as(usize, 0), output.stderr_len);
     try std.testing.expectEqualStrings("", output.written());
 }
+
+test "the log is UTF-8 also when a message is cut or a name is not" {
+    try support.skipWithout(&.{.debug});
+    var output = Output{};
+    const machine = try createLogged(&output);
+    defer destroyMachine(machine);
+
+    // 240 bytes of the message are kept: "a", 79 characters of 3 bytes, and 2 bytes of
+    // the next, which are left out.
+    const long = "a" ++ support.repeat("\xe6\x97\xa5", 81);
+    try std.testing.expectError(error.UnknownWord, machine.interpretLine(long));
+    machine.report(error.UnknownWord);
+    const text = logged();
+    try std.testing.expect(std.unicode.utf8ValidateSlice(text));
+    try std.testing.expect(std.mem.startsWith(u8, text, "{\"event\":\"error\",\"message\":\"a" ++ support.repeat("\xe6\x97\xa5", 79) ++ "\",\"code\":-13,"));
+
+    // A name with bytes that are not UTF-8.
+    try std.testing.expectError(error.DivisionByZero, machine.interpretLine(": X\xff\xc3Y 1 0 / ; X\xff\xc3Y"));
+    machine.report(error.DivisionByZero);
+    const named = logged();
+    try std.testing.expect(std.unicode.utf8ValidateSlice(named));
+    try std.testing.expect(std.mem.indexOf(u8, named, "{\"word\":\"X\xef\xbf\xbd\xef\xbf\xbdY\"}") != null);
+}

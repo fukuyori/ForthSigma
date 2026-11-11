@@ -265,6 +265,20 @@ fn runDbg(self: *State) RuntimeError!void {
     try self.executeWord(id);
 }
 
+/// After an image is restored: when its code has a BREAK: or a BREAK", compiled code
+/// runs in the loop that can stop for them, as after one is compiled here.
+pub fn noteBreakpoints(self: *State) void {
+    for (self.code[0..self.code_count]) |op| {
+        if (op.kind != .call and op.kind != .call_builtin) continue;
+        if (op.value < 0 or op.value >= self.builtin_count) continue;
+        const word = self.words[@intCast(op.value)];
+        if (word.kind == .builtin and (word.builtin == .break_run or word.builtin == .break_quote_run)) {
+            self.keep_counting = true;
+            return;
+        }
+    }
+}
+
 /// BREAK: and BREAK" compile this call; from here on the definition is stepped through.
 fn startStepping(self: *State) void {
     // A definition that was running before the first BREAK: or DBG was met runs in the
@@ -277,7 +291,7 @@ fn startStepping(self: *State) void {
     self.step_depth = self.call_depth;
     self.step_result = false;
     self.step_skip_end = 0;
-    self.step_inline_end = 0;
+    self.step_inline_count = 0;
     showStepStack(self);
 }
 
@@ -289,7 +303,7 @@ pub fn stepEnter(self: *State, id: u16) void {
     self.step_depth = self.call_depth;
     self.step_result = false;
     self.step_skip_end = 0;
-    self.step_inline_end = 0;
+    self.step_inline_count = 0;
     self.write(": ");
     self.write(decompiler.seeName(self, id));
     self.write("\n");
@@ -327,7 +341,8 @@ pub fn stepLeave(self: *State) void {
 pub fn step(self: *State, pc: u16, end_pc: u16) RuntimeError!void {
     if (pc < self.step_skip_end) return;
     self.step_skip_end = 0;
-    if (pc >= self.step_inline_end) self.step_inline_end = 0;
+    // The copied code that this operation is past has ended.
+    while (self.step_inline_count > 0 and pc >= self.step_inline_ends[self.step_inline_count - 1]) self.step_inline_count -= 1;
     if (self.step_result) showStepStack(self);
     self.step_result = true;
     var text: [max_name + 16]u8 = undefined;
@@ -353,8 +368,14 @@ pub fn step(self: *State, pc: u16, end_pc: u16) RuntimeError!void {
             'n', 'N' => {
                 const op = self.code[pc];
                 if (inline_calls.isInline(op)) {
-                    // The copied operations follow in this definition.
-                    self.step_inline_end = pc + inline_calls.span(op.value);
+                    // The copied operations follow in this definition. Deeper than the
+                    // ends that are kept, it is one step.
+                    if (self.step_inline_count == self.step_inline_ends.len) {
+                        self.step_skip_end = pc + inline_calls.span(op.value);
+                        return;
+                    }
+                    self.step_inline_ends[self.step_inline_count] = pc + inline_calls.span(op.value);
+                    self.step_inline_count += 1;
                     self.step_result = false;
                     self.write("\n: ");
                     self.write(decompiler.seeName(self, inline_calls.wordId(op.value)));
@@ -362,13 +383,17 @@ pub fn step(self: *State, pc: u16, end_pc: u16) RuntimeError!void {
                     showStepStack(self);
                     return;
                 }
+                // A name made by SYNONYM or ALIAS stands for its word.
                 const callee: ?u16 = switch (op.kind) {
-                    .call, .call_colon => if (!inline_calls.isInline(op) and op.value >= 0 and op.value < self.word_count and self.words[@intCast(op.value)].kind == .colon) @intCast(op.value) else null,
+                    .call, .call_colon => if (!inline_calls.isInline(op) and op.value >= 0 and op.value < self.word_count) blk: {
+                        const target = self.synonymTarget(@intCast(op.value));
+                        break :blk if (self.words[target].kind == .colon) target else null;
+                    } else null,
                     else => null,
                 };
                 if (callee) |id| {
                     self.step_skip_end = 0;
-                    self.step_inline_end = 0;
+                    self.step_inline_count = 0;
                     self.step_depth += 1;
                     self.step_result = false;
                     self.write("\n: ");
@@ -380,9 +405,9 @@ pub fn step(self: *State, pc: u16, end_pc: u16) RuntimeError!void {
             },
             'u', 'U' => {
                 self.write("\n");
-                if (self.step_inline_end != 0) {
+                if (self.step_inline_count != 0) {
                     // Out of the copied code of a short definition that `n` went into.
-                    self.step_skip_end = self.step_inline_end;
+                    self.step_skip_end = self.step_inline_ends[self.step_inline_count - 1];
                 } else if (self.step_depth > self.step_base) {
                     self.step_depth -= 1;
                 } else self.stepper = .off;

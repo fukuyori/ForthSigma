@@ -285,6 +285,8 @@ fn restore(self: *State, image: []const u8, memory_is_fresh: bool) RuntimeError!
         op.* = self.specializeCall(op.*);
     }
     inline_calls.restore(self);
+    // A BREAK: of the image stops as one compiled here does.
+    if (defs.debug_enabled) @import("words_debug.zig").noteBreakpoints(self);
     self.data_here = data_here;
     self.data_depth = 0;
     self.return_depth = 0;
@@ -304,6 +306,8 @@ fn restore(self: *State, image: []const u8, memory_is_fresh: bool) RuntimeError!
 }
 
 pub fn appendImage(self: *State, source: *const State) RuntimeError!void {
+    // The State the image was restored in has seen its BREAK:s.
+    if (defs.debug_enabled and source.keep_counting) self.keep_counting = true;
     if (source.builtin_count == 0 or source.builtin_count != self.builtin_count or source.word_count < source.builtin_count) return error.InvalidImage;
     const added_words: usize = source.word_count - source.builtin_count;
     const word_base: usize = self.word_count;

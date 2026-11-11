@@ -72,22 +72,35 @@ const Event = struct {
         }
     }
 
-    /// `text` as a JSON string. Bytes from 80 hexadecimal up are written as they are:
-    /// the names and the files are UTF-8.
+    /// `text` as a JSON string. The characters of UTF-8 are written as they are; a byte
+    /// that is not part of one (a name may hold any bytes, and a long message is cut
+    /// where it no longer fits) becomes U+FFFD, so that the log is always UTF-8.
     fn quoted(self: *Event, text: []const u8) void {
         self.raw("\"");
-        for (text) |byte| switch (byte) {
-            '"' => self.raw("\\\""),
-            '\\' => self.raw("\\\\"),
-            '\n' => self.raw("\\n"),
-            '\r' => self.raw("\\r"),
-            '\t' => self.raw("\\t"),
-            0...8, 11, 12, 14...31, 127 => {
-                var escape: [6]u8 = undefined;
-                self.raw(std.fmt.bufPrint(&escape, "\\u{x:0>4}", .{byte}) catch unreachable);
-            },
-            else => self.raw(&.{byte}),
-        };
+        var index: usize = 0;
+        while (index < text.len) {
+            const byte = text[index];
+            const length = characterLength(text[index..]);
+            if (length > 1) {
+                self.raw(text[index..][0..length]);
+                index += length;
+                continue;
+            }
+            index += 1;
+            switch (byte) {
+                '"' => self.raw("\\\""),
+                '\\' => self.raw("\\\\"),
+                '\n' => self.raw("\\n"),
+                '\r' => self.raw("\\r"),
+                '\t' => self.raw("\\t"),
+                0...8, 11, 12, 14...31, 127 => {
+                    var escape: [6]u8 = undefined;
+                    self.raw(std.fmt.bufPrint(&escape, "\\u{x:0>4}", .{byte}) catch unreachable);
+                },
+                0x80...0xff => self.raw("\xef\xbf\xbd"),
+                else => self.raw(&.{byte}),
+            }
+        }
         self.raw("\"");
     }
 
@@ -151,6 +164,46 @@ const Event = struct {
     }
 };
 
+/// The bytes of the UTF-8 character that `text` starts with: 1 for an ASCII character,
+/// and also for a byte that starts no well-formed character (too short, a wrong
+/// continuation, an overlong form, a surrogate, or past U+10FFFF).
+fn characterLength(text: []const u8) usize {
+    const first = text[0];
+    const length: usize = switch (first) {
+        0xc2...0xdf => 2,
+        0xe0...0xef => 3,
+        0xf0...0xf4 => 4,
+        else => return 1,
+    };
+    if (text.len < length) return 1;
+    for (text[1..length]) |byte| {
+        if (byte & 0xc0 != 0x80) return 1;
+    }
+    const second = text[1];
+    const well_formed = switch (first) {
+        0xe0 => second >= 0xa0,
+        0xed => second <= 0x9f,
+        0xf0 => second >= 0x90,
+        0xf4 => second <= 0x8f,
+        else => true,
+    };
+    return if (well_formed) length else 1;
+}
+
+/// `text` without the character that was cut at its end, when it filled the `capacity`
+/// bytes it was kept in.
+fn wholeCharacters(text: []const u8, capacity: usize) []const u8 {
+    if (text.len < capacity) return text;
+    // The last character starts at most three bytes before the end.
+    var start = text.len;
+    while (start > 0 and text.len - start < 4) {
+        start -= 1;
+        if (text[start] & 0xc0 != 0x80) break;
+    }
+    if (text[start] < 0x80) return text;
+    return if (characterLength(text[start..]) == text.len - start) text else text[0..start];
+}
+
 /// The first line of the log.
 pub fn logStart(self: *State, version: []const u8) void {
     var event = Event.begin(self, "start");
@@ -180,7 +233,7 @@ pub fn logTraceLimit(self: *State) void {
 /// line, and the stacks are as the error left them.
 pub fn logError(self: *State, err: anyerror, message: []const u8, location: ?defs.ErrorLocation, data_depth: usize, float_depth: usize) void {
     var event = Event.begin(self, "error");
-    event.string("message", std.mem.trimEnd(u8, message, "\n"));
+    event.string("message", std.mem.trimEnd(u8, wholeCharacters(message, self.report_text.len), "\n"));
     if (throwCode(self, err)) |code| event.number("code", code);
     if (location) |place| {
         event.string("file", self.sourceFileName(place.file_index));

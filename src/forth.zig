@@ -302,8 +302,10 @@ pub const State = struct {
     /// The end of the copied code of a short definition that the steps run through
     /// without stopping; 0 when there is none.
     step_skip_end: u16 = 0,
-    /// The end of the copied code that `n` went into, where `u` leads; 0 when none.
-    step_inline_end: u16 = 0,
+    /// The ends of the copied code of the short definitions that `n` went into, the
+    /// innermost last, where `u` leads.
+    step_inline_ends: [8]u16 = undefined,
+    step_inline_count: usize = 0,
     /// Whether the loop that counts operations runs the innermost compiled code, and
     /// whether all compiled code is to run in it from now on (after a DBG or a BREAK:).
     /// With that, a loop that does not count never runs inside one that does.
@@ -1271,14 +1273,14 @@ pub const State = struct {
     /// --trace and --profile: shows or counts the definition that `running` runs as it
     /// starts or ends. Code after DOES> has no word of its own and is passed over.
     fn traceRunning(self: *State, running: Running, enter: bool) void {
+        // The steps end with the code they started in, also code after DOES>.
+        if (!enter and self.stepper != .off) words_debug.stepLeave(self);
         const id = running.defining_word orelse return;
         if (self.tracing) words_debug.traceWord(self, id, enter);
         if (self.profile) |profile| {
             if (enter) profile.enter(id) else profile.leave();
         }
-        if (self.stepper != .off) {
-            if (enter) words_debug.stepEnter(self, id) else words_debug.stepLeave(self);
-        }
+        if (enter and self.stepper != .off) words_debug.stepEnter(self, id);
     }
 
     /// Whether short definitions are called instead of copied into their callers.
