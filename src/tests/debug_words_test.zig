@@ -472,3 +472,34 @@ test "~~VARIABLE shows every use of its name" {
     try machine.interpretLine("DROP 2 V !");
     try std.testing.expectEqualStrings("\n*the terminal*:0:8:<1> #2 `V \n", shown(&output));
 }
+
+test "WATCH sees what a defining word changes, before the next word runs" {
+    try support.skipWithout(&.{.debug});
+    var output = Output{};
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
+
+    // VARIABLE V sets the cell at HERE to 0; UNWATCH comes right after it.
+    try machine.interpretLine("HERE DUP DUP 7 SWAP ! WATCH VARIABLE V UNWATCH");
+    var expected: [96]u8 = undefined;
+    const address = machine.words[machine.lookup("V").?].value;
+    try std.testing.expectEqualStrings(try std.fmt.bufPrint(&expected, "WATCH: {d} changed from 7 to 0\n", .{address}), shown(&output));
+
+    // The last word of a line is looked at too.
+    try machine.interpretLine("V WATCH 5 V !");
+    try std.testing.expectEqualStrings(try std.fmt.bufPrint(&expected, "WATCH: {d} changed from 0 to 5\n", .{address}), shown(&output));
+}
+
+test "~~VARIABLE shows a use that a word made by POSTPONE compiles" {
+    try support.skipWithout(&.{.debug});
+    var output = Output{};
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
+
+    try machine.interpretLine("~~VARIABLE V : M POSTPONE V ; IMMEDIATE : T 3 M ! ; T V @");
+    try std.testing.expectEqual(@as(forth.Cell, 3), try machine.pop());
+    // The use in T, where M stands, and the one outside a definition.
+    const text = shown(&output);
+    try std.testing.expectEqual(@as(usize, 2), std.mem.count(u8, text, "`V \n"));
+    try std.testing.expect(std.mem.indexOf(u8, text, "<1> #3 `V \n") != null);
+}

@@ -516,6 +516,10 @@ pub const State = struct {
         var line = input;
         var cursor: usize = 0;
         while (true) {
+            // WATCH: what the word before this one changed, however it was handled
+            // (a word of its own, a name that a defining word was waiting for, a
+            // string).
+            if (defs.debug_enabled and self.cell_watch_count != 0) words_debug.checkWatches(self, null);
             const token = nextToken(line, &cursor) orelse break;
             self.source_line = line;
             self.token_start = @intFromPtr(token.ptr) - @intFromPtr(line.ptr);
@@ -552,8 +556,6 @@ pub const State = struct {
                 continue;
             }
             try self.handleToken(token);
-            // WATCH: what a word that the interpreter ran changed.
-            if (defs.debug_enabled and self.cell_watch_count != 0) words_debug.checkWatches(self, null);
             // gforth reports a negative >IN as a parsed string overflow; going back to
             // the start instead would run the line again and again.
             if (self.readCellConst(in_address) < 0) return error.StringTooLong;
@@ -1076,12 +1078,11 @@ pub const State = struct {
     pub const fetchLocal = local_variables.fetchLocal;
 
     fn handleWord(self: *State, id: u16) RuntimeError!void {
-        // ~~VARIABLE: each use of the name is shown (at once here, and from the
-        // definition it is compiled into when that runs).
-        if (defs.debug_enabled and self.watched_count != 0 and self.words[id].kind == .variable and words_debug.isWatched(self, id)) try words_debug.watchStore(self, id, self.words[id].name_len);
         if (self.compiling and !self.words[id].immediate) {
             try self.compileCall(id);
         } else {
+            // ~~VARIABLE: a use of the name outside a definition is shown at once.
+            if (self.isWatchedVariable(id)) try words_debug.watchStore(self, id, self.words[id].name_len);
             // Compiled code that starts here has no caller for ~~BT to show, unless a
             // definition is interpreting this text (EVALUATE, INCLUDED): then the
             // caller is the one that called that word.
@@ -1090,10 +1091,19 @@ pub const State = struct {
         }
     }
 
+    /// Whether the word is a variable of ~~VARIABLE.
+    fn isWatchedVariable(self: *const State, id: u16) bool {
+        return defs.debug_enabled and self.watched_count != 0 and self.words[id].kind == .variable and words_debug.isWatched(self, id);
+    }
+
     /// Compiles known colon targets and frequent built-ins to direct operations.
     /// Inline guards pack the original word id with their span and depth; ordinary
     /// calls keep the word id directly. Both preserve SEE and image relocation.
     pub fn compileCall(self: *State, id: u16) RuntimeError!void {
+        // ~~VARIABLE: a use compiled into a definition is shown when the definition
+        // runs. It is compiled here, where every call is: for the name in the
+        // definition, and for a word that POSTPONEs it.
+        if (self.isWatchedVariable(id)) try words_debug.watchStore(self, id, self.words[id].name_len);
         if (try inline_calls.compile(self, id)) return;
         _ = try self.emit(self.specializeCall(.{ .kind = .call, .value = id }));
     }
