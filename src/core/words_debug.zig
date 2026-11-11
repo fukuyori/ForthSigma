@@ -11,6 +11,7 @@ const words_tools = @import("words_tools.zig");
 const words_xchar = @import("words_xchar.zig");
 const decompiler = @import("decompiler.zig");
 const debug_log = @import("debug_log.zig");
+const coverage = @import("coverage.zig");
 const inline_calls = @import("inline_calls.zig");
 const truth = @import("integer_math.zig").truth;
 const Builtin = defs.Builtin;
@@ -24,6 +25,7 @@ const max_name = memory_map.max_name;
 pub const words = [_]Builtin{
     .ltrace_on, .ltrace_off, .once, .once_run, .debug_tilde_bt, .debug_tilde_bt_run, .debug_tilde_one_bt, .define_watched_value, .watch_run,
     .dbg,       .break_colon, .break_run, .break_quote, .break_quote_run,
+    .cover_raw, .cov_percent, .coverage,
 };
 
 /// How many of the top stack items a line of the trace shows, as .S.
@@ -73,6 +75,10 @@ pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
             @memcpy(copy[0..length], place[0..length]);
             try words_tools.showPlace(self, copy[0..length], self.wordName(self.words[id]));
         },
+        // The words of gforth's coverage.fs, on the counts of --coverage.
+        .cover_raw => try coverage.coverRaw(self),
+        .cov_percent => try coverage.covPercent(self),
+        .coverage => try coverage.coverage(self),
         .dbg => try runDbg(self),
         // BREAK: ( -- ): from here on, the definition is stepped through as with DBG.
         .break_colon => {

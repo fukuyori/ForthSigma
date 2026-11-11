@@ -24,7 +24,7 @@ test "a word group the build leaves out has no words in the dictionary, and its 
         .{ options.help, [_][]const u8{ "HELP", "LICENSE" }, Builtin.help },
         .{ options.tools, [_][]const u8{ "SEE", "LOCATE", "WHERE" }, Builtin.see },
         .{ options.image, [_][]const u8{ "SAVE", "LOAD", "SAVESYS" }, Builtin.save },
-        .{ options.debug, [_][]const u8{ "+LTRACE", "ONCE", "~~BT" }, Builtin.once_run },
+        .{ options.debug, [_][]const u8{ "+LTRACE", "ONCE", "~~BT", "COV%" }, Builtin.once_run },
     };
     inline for (groups) |group| {
         for (group[1]) |name| try std.testing.expectEqual(group[0], machine.lookup(name) != null);

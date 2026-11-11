@@ -748,6 +748,9 @@ const StartOptions = struct {
     trace_limit: u64 = 0,
     /// --profile: the calls and the operations of each word are shown at the end.
     profile: bool = false,
+    /// --coverage: the operations are counted, for the words .COVER-RAW, COV%, and
+    /// .COVERAGE; nothing is shown at the end.
+    coverage: bool = false,
     /// --lint: the definitions of the files are checked when the arguments are done,
     /// and there is no interactive session.
     lint: bool = false,
@@ -903,6 +906,11 @@ fn parseStartOptions(args: []const []const u8, failed: *[]const u8) error{ Missi
             }
             if (std.mem.eql(u8, argument, "--profile")) {
                 options.profile = true;
+                index += 1;
+                continue;
+            }
+            if (std.mem.eql(u8, argument, "--coverage")) {
+                options.coverage = true;
                 index += 1;
                 continue;
             }
@@ -1426,7 +1434,8 @@ fn run(init: std.process.Init.Minimal) !u8 {
     machine.step_limit = start.max_steps;
     machine.tracing = start.trace;
     machine.trace_limit = start.trace_limit;
-    machine.plain_calls = start.trace or start.profile;
+    machine.plain_calls = start.trace or start.profile or start.coverage;
+    machine.cover_blocks = start.coverage;
     if (start.debug_log) |path| {
         var terminated_path: [4096:0]u8 = undefined;
         if (path.len >= terminated_path.len) {
@@ -1462,12 +1471,13 @@ fn run(init: std.process.Init.Minimal) !u8 {
         std.heap.page_allocator.destroy(checks);
     };
     // The profile is shown however the program ends: BYE, an error, or the end of input.
-    const profile: ?*forth.Profile = if (start.profile) std.heap.page_allocator.create(forth.Profile) catch {
+    // --coverage keeps the same counts, for its words, and shows nothing at the end.
+    const profile: ?*forth.Profile = if (start.profile or start.coverage) std.heap.page_allocator.create(forth.Profile) catch {
         terminalWrite(null, "OUT OF MEMORY !\n");
         return 1;
     } else null;
     defer if (profile) |counts| {
-        counts.show(machine);
+        if (start.profile) counts.show(machine);
         std.heap.page_allocator.destroy(counts);
     };
     if (profile) |counts| {
@@ -1810,6 +1820,8 @@ test "the size options are read at the start of the arguments" {
         try std.testing.expectError(error.MissingValue, parseStartOptions(&.{ "sigma", "--debug-log=" }, &failed));
         try std.testing.expectEqual(@as(?[]const u8, null), traced.debug_log);
         try std.testing.expect(!traced.lint);
+        try std.testing.expect(!traced.coverage);
+        try std.testing.expect((try parseStartOptions(&.{ "sigma", "--coverage", "x.fs" }, &failed)).coverage);
         try std.testing.expect((try parseStartOptions(&.{ "sigma", "--lint", "x.fs" }, &failed)).lint);
         const formats = try parseStartOptions(&.{ "sigma", "--format", "--format-indent", "2", "x.fs", "y.fs" }, &failed);
         try std.testing.expect(formats.format == .write);

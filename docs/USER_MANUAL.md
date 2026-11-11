@@ -276,6 +276,28 @@ Only the blanks before the first and after the last character of a line change; 
 
 The words are known by their names: a program that defines its own `IF` is indented as if it were the usual one. A word of the program that reads the rest of its line, or the lines after it, as text (not with a closing `"`) may get other blanks at the start or the end of that text. A build without the debugging features (`-Ddebug=false`) does not have these options.
 
+### Coverage
+
+`--coverage`, among the options at the start of the command line, counts how often each part of the code runs, for the words of gforth's `coverage.fs`. The parts are the basic blocks, as in gforth: the code after the name of a colon definition, after `IF`, `ELSE`, `THEN`, `BEGIN`, `WHILE`, `REPEAT`, `UNTIL`, `AGAIN`, `DO`, `?DO`, `LOOP`, `+LOOP`, `CASE`, `OF`, `ENDOF`, `ENDCASE`, and `DOES>`, and from the start of each further line of a definition.
+
+```powershell
+.\zig-out\bin\sigma.exe --coverage prog.fs -e "RUN .COVER-RAW COV% CR .COVERAGE BYE"
+```
+
+| Word | Stack | Action |
+|---|---|---|
+| `.COVER-RAW` | `( -- )` | Shows each block as `file:line:column: count`. The column is that of the blank after the word that starts the block, counted from 1 (1 for the start of a line). |
+| `COV%` | `( -- )` | Shows the part of the blocks that ran at least once, as `88.8% coverage`. |
+| `.COVERAGE` | `( -- )` | Shows the text of each file, with ` ( count) ` after the word that starts each block. |
+
+```text
+: pick-one ( 1)  ( f -- n ) if ( 0)  1 else ( 1)  2 then ( 1)  ;
+```
+
+The blocks are those of the colon definitions of the files that were included; definitions typed at the prompt or given to `-e`, and those of the libraries that come with FORTH/Sigma, are not shown. Without `--coverage` the words give the error `no coverage: start with --coverage`.
+
+With `--coverage`, an operation that does nothing is compiled where a block starts, as gforth compiles a counter there after `require coverage.fs`; the program runs slower, and `SEE` shows these operations as `BRANCH n`. The places and counts are those gforth 0.7.9 gives for the same text, but that gforth shows the block after `ENDCASE` twice. `NOCOV[`, `]NOCOV`, `COV+`, `?COV+`, `BW-COVER`, `COLOR-COVER`, `ANNOTATE-COV`, `SAVE-COV`, and `LOAD-COV` are not implemented (the output is always the form of `BW-COVER`). A build without the debugging features (`-Ddebug=false`) has none of this.
+
 `HELP` shows the basic usage, and `HELP name` shows the stack effect of a word and a one-line description in English (example: `HELP DUP`). The name is read from the same line (also in an `EVALUATE` string, it does not read past a line end). `HELP` written in a definition reads the name when that definition runs. For a word defined by the user, it suggests viewing its contents with `SEE`. An unknown name gives the error `name ?`. `LICENSE` shows the full text of the license and the copyright notice of the included CORE-MATH.
 
 When an input line has been processed successfully, `OK` is printed. For example, the following input prints the square of 12.

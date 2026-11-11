@@ -131,7 +131,7 @@ Forthソースファイルは標準入力からも読み込めます。例:
 | `-Dimage=false` | `SAVE`、`LOAD`、`SAVESYS` | 1,031,680バイト |
 | `-Dgraphics=false` | `REQUIRE-GRAPHICS`、`GFX-` の語、グラフィックスのライブラリとそのフォント、Tcl/Tkの語 | 894,976バイト |
 | `-Daudio=false` | `REQUIRE-AUDIO`、`SND-` の語、音のライブラリ、音のスレッド | 955,904バイト |
-| `-Ddebug=false` | デバッグ機能（エラーの後のバックトレース、`--max-steps`、`--trace`、`--profile`、`--debug-log`、`--lint`、`--format`、語 `DBG` `BREAK:` `BREAK"` `~~BT` `~~1BT` `ONCE` `~~VALUE` `+LTRACE` `-LTRACE`） | 含む版より約15 KB小さい（2026-11-11に計測） |
+| `-Ddebug=false` | デバッグ機能（エラーの後のバックトレース、`--max-steps`、`--trace`、`--profile`、`--debug-log`、`--lint`、`--format`、`--coverage`、語 `.COVER-RAW` `COV%` `.COVERAGE` `DBG` `BREAK:` `BREAK"` `~~BT` `~~1BT` `ONCE` `~~VALUE` `+LTRACE` `-LTRACE`） | 含む版より約15 KB小さい（2026-11-11に計測） |
 | 7つすべて | `-Ddebug=false` を除く上のすべて | 299,008バイト |
 
 大きさは、サウンドの語を加えた0.6.1（コミット `d5de15b`）をリリースと同じ `-Doptimize=fast` でWindows x86_64向けにビルドしたものです（2026-11-07に測定）。オプションは組み合わせられます（例: `zig build -Doptimize=fast -Dfloat=false -Dhelp=false`）。

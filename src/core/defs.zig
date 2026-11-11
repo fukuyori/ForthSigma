@@ -713,6 +713,9 @@ pub const Builtin = enum {
     break_run,
     break_quote,
     break_quote_run,
+    cover_raw,
+    cov_percent,
+    coverage,
 };
 
 pub const HeapResult = union(enum) { address: Cell, no_memory, bad_pointer };

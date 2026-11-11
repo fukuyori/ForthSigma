@@ -302,3 +302,70 @@ test "the short definitions of a loaded image stay calls for the trace" {
     try target.interpretLine("RUN");
     try std.testing.expectEqualStrings("> RUN <0>\n  > SQUARE <1> 3\n  < SQUARE <1> 9\n< RUN <0>\n", shown(&output));
 }
+
+test "the coverage words show the blocks of the code as gforth's do" {
+    try support.skipWithout(&.{ .debug, .files });
+    var output = Output{};
+    // The program that gforth 0.7.9 was run with (after its `require coverage.fs`).
+    setFakeFile(&output, 0,
+        \\: square ( n -- n ) dup * ;
+        \\: sumsq ( a b -- n ) square swap square + ;
+        \\: pick-one ( f -- n ) if 1 else 2 then ;
+        \\: run ( -- ) 10 0 do i i sumsq drop loop 0 pick-one drop ;
+        \\run
+        \\
+    );
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
+    const profile = try std.testing.allocator.create(forth.Profile);
+    defer std.testing.allocator.destroy(profile);
+    profile.reset();
+    machine.profile = profile;
+    machine.plain_calls = true;
+    machine.cover_blocks = true;
+
+    try machine.interpretLine("INCLUDE a.txt .COVER-RAW");
+    try std.testing.expectEqualStrings("a.txt:1:9: 20 \na.txt:2:8: 10 \na.txt:3:11: 1 \na.txt:3:25: 0 \na.txt:3:32: 1 \na.txt:3:39: 1 \na.txt:4:6: 1 \na.txt:4:21: 10 \na.txt:4:41: 1 \n", output.written());
+
+    output.len = 0;
+    try machine.interpretLine("COV%");
+    try std.testing.expectEqualStrings("88.8% coverage", output.written());
+
+    output.len = 0;
+    try machine.interpretLine(".COVERAGE");
+    try std.testing.expectEqualStrings("\n" ++
+        ": square ( 20)  ( n -- n ) dup * ;\n" ++
+        ": sumsq ( 10)  ( a b -- n ) square swap square + ;\n" ++
+        ": pick-one ( 1)  ( f -- n ) if ( 0)  1 else ( 1)  2 then ( 1)  ;\n" ++
+        ": run ( 1)  ( -- ) 10 0 do ( 10)  i i sumsq drop loop ( 1)  0 pick-one drop ;\n" ++
+        "run\n", output.written());
+
+    // The other structures start blocks too, and so does each further line of a
+    // definition (gforth gives the same places and counts for this text, and the block
+    // after endcase twice). A definition typed in has no file and is not shown.
+    output.len = 0;
+    setFakeFile(&output, 1, ": loops ( n -- )\n   begin dup while 1- repeat drop\n   3 case 1 of 10 endof 3 of 30 endof endcase drop ;\n2 loops\n");
+    try machine.interpretLine(": TYPED IF 1 THEN ; INCLUDE b.txt .COVER-RAW");
+    try std.testing.expect(std.mem.endsWith(u8, output.written(), "b.txt:1:8: 1 \nb.txt:2:1: 1 \nb.txt:2:9: 3 \nb.txt:2:19: 2 \nb.txt:2:29: 1 \nb.txt:3:1: 1 \nb.txt:3:10: 1 \nb.txt:3:15: 0 \nb.txt:3:24: 1 \nb.txt:3:29: 1 \nb.txt:3:38: 0 \nb.txt:3:46: 1 \n"));
+    output.len = 0;
+    try machine.interpretLine("COV%");
+    // 18 of the 21 blocks of the two files.
+    try std.testing.expectEqualStrings("85.7% coverage", output.written());
+    try std.testing.expect(std.mem.indexOf(u8, output.written(), "TYPED") == null);
+}
+
+test "the coverage words need the counts" {
+    try support.skipWithout(&.{.debug});
+    var output = Output{};
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
+
+    try std.testing.expectError(error.Thrown, machine.interpretLine("COV%"));
+    machine.report(error.Thrown);
+    try std.testing.expectEqualStrings("no coverage: start with --coverage\n", output.written());
+    // Without the option no code is compiled for the blocks.
+    try machine.interpretLine(": T IF 1 THEN ;");
+    try std.testing.expectEqual(@as(u16, 3), machine.words[machine.lookup("T").?].code_end - machine.words[machine.lookup("T").?].code_start);
+    try std.testing.expectError(error.Thrown, machine.interpretLine(".COVER-RAW"));
+    try std.testing.expectError(error.Thrown, machine.interpretLine(".COVERAGE"));
+}

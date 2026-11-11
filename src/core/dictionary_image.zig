@@ -276,7 +276,10 @@ fn restore(self: *State, image: []const u8, memory_is_fresh: bool) RuntimeError!
     // The recorded uses are not in the image.
     self.use_count = 0;
     // Nor are the lines the code was compiled from.
-    if (defs.debug_enabled) @memset(&self.code_lines, 0);
+    if (defs.debug_enabled) {
+        @memset(&self.code_lines, 0);
+        @memset(&self.code_columns, 0);
+    }
     self.watched_count = 0;
     self.code_count = @intCast(code_count);
     // Old and new images store ordinary calls; rebuild dispatch information
@@ -402,6 +405,7 @@ pub fn appendImage(self: *State, source: *const State) RuntimeError!void {
         // would be those of code that FORGET or a MARKER removed.
         if (defs.debug_enabled) {
             self.code_lines[code_base + offset] = 0;
+            self.code_columns[code_base + offset] = 0;
             if (self.profile) |profile| profile.op_counts[code_base + offset] = 0;
         }
     }

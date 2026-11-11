@@ -272,6 +272,14 @@ pub const State = struct {
     /// The line of the included file each operation was compiled from, 0 for the others,
     /// for the backtrace (none with -Ddebug=false). Not part of an image.
     code_lines: if (defs.debug_enabled) [max_code]u32 else void = if (defs.debug_enabled) @splat(0) else {},
+    /// --coverage: an operation that does nothing is compiled where a block of the
+    /// coverage words starts, as gforth compiles a counter there; how often it runs is
+    /// the count of the block. `code_columns` has, for such an operation, the column of
+    /// the block (that of the blank after the word that starts it, counted from 1; 1
+    /// for the start of a line) and 0 for the other operations (none with
+    /// -Ddebug=false). Not part of an image.
+    cover_blocks: bool = false,
+    code_columns: if (defs.debug_enabled) [max_code]u16 else void = if (defs.debug_enabled) @splat(0) else {},
     /// --max-steps: how many operations compiled code may run (0: any number), and how
     /// many are left. The host sets `steps_left` again with `resetSteps`.
     step_limit: u64 = 0,
@@ -486,6 +494,9 @@ pub const State = struct {
         self.setSourceCursor(0);
         self.source_kind = source_kind;
         self.numberInputLine();
+        // --coverage: a line of a file that goes on with a definition starts a block,
+        // as in gforth.
+        if (defs.debug_enabled and self.cover_blocks and source_kind == .file and self.compiling and self.defining) self.markBlock(1);
         // A nested file or EVALUATE string runs inside the caller's work, so it must not
         // drop the word that a pending DOES> will attach to.
         if (source_kind == .terminal) self.last_created_word = null;
@@ -513,7 +524,7 @@ pub const State = struct {
                 // --lint: the comment after the name of a colon definition is its
                 // stack comment.
                 if (defs.debug_enabled) if (self.lint) |lint| {
-                    if (self.defining and self.compiling and self.words[self.current_word].kind == .colon and self.code_count == self.words[self.current_word].code_start) lint.declare(self.current_word, line[cursor..close]);
+                    if (self.defining and self.compiling and self.words[self.current_word].kind == .colon and self.code_count == self.words[self.current_word].code_start + @intFromBool(self.cover_blocks)) lint.declare(self.current_word, line[cursor..close]);
                 };
                 cursor = close + 1;
                 continue;
@@ -675,7 +686,8 @@ pub const State = struct {
             .{ "+LTRACE", .ltrace_on },          .{ "-LTRACE", .ltrace_off },          .{ "ONCE", .once },                   .{ "(ONCE)", .once_run },
             .{ "~~BT", .debug_tilde_bt },        .{ "(~~BT)", .debug_tilde_bt_run },   .{ "~~1BT", .debug_tilde_one_bt },    .{ "~~VALUE", .define_watched_value },
             .{ "(~~TO)", .watch_run },           .{ "DBG", .dbg },                     .{ "BREAK:", .break_colon },          .{ "(BREAK:)", .break_run },
-            .{ "BREAK\"", .break_quote },        .{ "(BREAK\")", .break_quote_run },
+            .{ "BREAK\"", .break_quote },        .{ "(BREAK\")", .break_quote_run },   .{ ".COVER-RAW", .cover_raw },        .{ "COV%", .cov_percent },
+            .{ ".COVERAGE", .coverage },
         };
 
     fn installBuiltins(self: *State) void {
@@ -1010,6 +1022,34 @@ pub const State = struct {
         self.current_data_start = self.words[id].data_here_before;
         self.setCompiling(true);
         self.defining = true;
+        // The code after the name is the first block of the definition.
+        self.markBlock(self.columnAfterWord());
+    }
+
+    /// --coverage: a block of the coverage words starts here. The operation that
+    /// counts it is a branch to the operation after it, which changes nothing.
+    pub fn markBlock(self: *State, column: u16) void {
+        if (!defs.debug_enabled or !self.cover_blocks) return;
+        const next: Cell = @as(Cell, self.code_count) + 1;
+        const at = self.emit(.{ .kind = .branch, .value = next }) catch return;
+        self.code_columns[at] = column;
+    }
+
+    /// The column of the blank after the word that was just read, counted from 1.
+    fn columnAfterWord(self: *const State) u16 {
+        // >IN is past the blank that ended the word, when one did.
+        var end = self.sourceCursor();
+        if (end > 0 and end <= self.source_line.len and std.ascii.isWhitespace(self.source_line[end - 1])) end -= 1;
+        return @intCast(@min(end + 1, std.math.maxInt(u16)));
+    }
+
+    /// A word of a control structure after which a block starts, as in gforth.
+    fn startsBlock(word: Word) bool {
+        if (word.kind != .builtin) return false;
+        return switch (word.builtin) {
+            .compile_if, .compile_else, .compile_then, .compile_begin, .compile_end, .compile_again, .compile_while, .compile_repeat, .compile_do, .compile_q_do, .compile_loop, .compile_plus_loop, .compile_does, .compile_case, .compile_of, .compile_question_of, .compile_endof, .compile_endcase, .compile_contof, .compile_next_case => true,
+            else => false,
+        };
     }
 
     /// Changes the compiler state and mirrors it in the STATE cell, so a saved
@@ -1037,7 +1077,9 @@ pub const State = struct {
             // definition is interpreting this text (EVALUATE, INCLUDED): then the
             // caller is the one that called that word.
             if (defs.debug_enabled and self.call_depth == 0) self.outer_pc = 0;
+            const starts_block = defs.debug_enabled and self.compiling and startsBlock(self.words[id]);
             try self.executeWord(id);
+            if (starts_block and self.compiling) self.markBlock(self.columnAfterWord());
         }
     }
 
@@ -1126,6 +1168,7 @@ pub const State = struct {
         self.code[at] = op;
         if (defs.debug_enabled) {
             self.code_lines[at] = if (self.currentFileFrame()) |frame| frame.line else 0;
+            self.code_columns[at] = 0;
             // The count of an operation that FORGET or a MARKER removed is not this one's.
             if (self.profile) |profile| profile.op_counts[at] = 0;
         }
