@@ -16,7 +16,7 @@ test "dynamic recursion reaches the call limit and recovers through CATCH" {
     const locals_top = machine.locals_top;
     const cases = .{
         .{ "VARIABLE XT : X DUP IF 1- XT @ EXECUTE THEN ; ' X XT !", "X", @as(usize, 1023) },
-        .{ "DEFER D : Y DUP IF 1- D THEN ; ' Y IS D", "Y", @as(usize, 511) },
+        .{ "DEFER D : Y DUP IF 1- D THEN ; ' Y IS D", "Y", @as(usize, 1023) },
         .{ "VARIABLE ZXT : Z DUP IF 1- ZXT @ CATCH THROW THEN ; ' Z ZXT !", "Z", @as(usize, 1023) },
     };
     inline for (cases) |case| {
@@ -108,4 +108,60 @@ test "CATCH abandons a definition started by the caught word" {
     try std.testing.expect(!machine.defining);
     try machine.interpretLine(": AFTER 3 ; AFTER");
     try expectStack(machine, &.{ -13, 0, 3 });
+}
+
+test "EXECUTE and a DEFER in compiled code run every kind of word" {
+    var output = Output{};
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
+
+    // A colon definition (called in the loop that runs the caller), a built-in word,
+    // a constant, a word made by a DOES> definer, a name made by SYNONYM, and a DEFER.
+    try machine.interpretLine(": TWICE 2* ; 7 CONSTANT SEVEN : ADDER CREATE , DOES> @ + ; 5 ADDER PLUS5 SYNONYM DOUBLE TWICE DEFER LATER ' TWICE IS LATER");
+    try machine.interpretLine(": RUN ( x xt -- y ) EXECUTE 1+ ;");
+    try machine.interpretLine("3 ' TWICE RUN  3 ' DUP RUN  ' SEVEN RUN  3 ' PLUS5 RUN  3 ' DOUBLE RUN  3 ' LATER RUN");
+    try expectStack(machine, &.{ 7, 3, 4, 8, 9, 7, 7 });
+    machine.data_depth = 0;
+
+    // A DEFER called by its name: a colon definition, then a built-in word, then
+    // another DEFER, then a name made by SYNONYM.
+    try machine.interpretLine("DEFER OTHER ' TWICE IS OTHER : VIA ( x -- y ) LATER 1+ ;");
+    try machine.interpretLine("3 VIA  ' NEGATE IS LATER 3 VIA  ' OTHER IS LATER 3 VIA  ' DOUBLE IS LATER 3 VIA");
+    try expectStack(machine, &.{ 7, -2, 7, 7 });
+    machine.data_depth = 0;
+
+    // One without an action warns and goes on, as before.
+    try machine.interpretLine("DEFER EMPTY : USES-EMPTY 1 EMPTY 2 ; USES-EMPTY");
+    try expectStack(machine, &.{ 1, 2 });
+    try std.testing.expectEqualStrings("WARNING: DEFERRED WORD EMPTY IS UNINITIALIZED\n", output.written());
+    machine.data_depth = 0;
+
+    // What is not an execution token is an error, and so is none.
+    try std.testing.expectError(error.InvalidExecutionToken, machine.interpretLine("-1 ' TWICE DROP RUN"));
+    machine.data_depth = 0;
+    try std.testing.expectError(error.StackUnderflow, machine.interpretLine(": BARE EXECUTE ; BARE"));
+    machine.data_depth = 0;
+
+    // The words called this way return to where they were called, also from a loop
+    // and with locals in the caller.
+    try machine.interpretLine(": SUM-TWICE { n -- sum } 0 n 0 DO I ['] TWICE EXECUTE + LOOP n + ; 4 SUM-TWICE");
+    try expectStack(machine, &.{16});
+}
+
+test "a definition with EXECUTE keeps it through SEE and a dictionary image" {
+    try support.skipWithout(&.{.image});
+    var output = Output{};
+    const source = try createMachine(&output);
+    defer destroyMachine(source);
+    try source.interpretLine(": TWICE 2* ; : RUN ( x xt -- y ) EXECUTE 1+ ;" ++ support.see(" SEE RUN"));
+    try std.testing.expectEqualStrings(support.see(": RUN\n  EXECUTE 1+\n;\n"), output.written());
+    const image = try std.testing.allocator.alloc(u8, forth.State.imageCapacity(.small));
+    defer std.testing.allocator.free(image);
+    const length = try source.encodeImage(image);
+
+    const loaded = try createMachine(&output);
+    defer destroyMachine(loaded);
+    try loaded.restoreImage(image[0..length]);
+    try loaded.interpretLine("3 ' TWICE RUN");
+    try expectStack(loaded, &.{7});
 }

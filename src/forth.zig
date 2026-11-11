@@ -1420,11 +1420,25 @@ pub const State = struct {
                         if (self.call_depth + inline_calls.depth(op.value) > self.frames.len) return error.ReturnStackOverflow;
                         continue;
                     }
-                    const id = try self.wordId(op.value);
-                    const word = &self.words[id];
+                    var id = try self.wordId(op.value);
+                    var word = &self.words[id];
                     if (call_kind == .call_colon) std.debug.assert(word.kind == .colon);
                     if (call_kind == .call) switch (word.kind) {
                         .colon => {},
+                        // A DEFER whose action is a colon definition is called in this
+                        // loop, as that definition is, instead of in a loop of its own;
+                        // any other action, and none, go the usual way.
+                        .deferred => {
+                            const action = try self.readCell(word.value);
+                            const target: ?u16 = if (action == words_defining.uninitialized_defer or action < 0 or action >= self.word_count) null else self.synonymTarget(@intCast(action));
+                            if (target == null or self.words[target.?].kind != .colon) {
+                                if (defs.debug_enabled) self.outer_pc = running.pc;
+                                try self.executeWord(id);
+                                continue;
+                            }
+                            id = target.?;
+                            word = &self.words[id];
+                        },
                         // Keep the word id in compiled code (SEE and image relocation
                         // use it), but avoid another dispatcher for simple data words.
                         .constant, .array => {
@@ -1444,6 +1458,24 @@ pub const State = struct {
                             continue;
                         },
                     };
+                    if (self.call_depth == self.frames.len) return error.ReturnStackOverflow;
+                    self.call_depth += 1;
+                    self.frames[self.frame_depth] = running;
+                    self.frame_depth += 1;
+                    running = .{ .pc = word.code_start, .end_pc = word.code_end, .defining_word = id };
+                    if (counted) self.traceRunning(running, true);
+                },
+                // EXECUTE of a colon definition is a call in this loop too: entering a
+                // loop of its own for each one took a quarter longer than before there
+                // were two loops.
+                .execute => {
+                    const id = self.synonymTarget(try self.wordId(try self.pop()));
+                    const word = &self.words[id];
+                    if (word.kind != .colon) {
+                        if (defs.debug_enabled) self.outer_pc = running.pc;
+                        try self.executeWord(id);
+                        continue;
+                    }
                     if (self.call_depth == self.frames.len) return error.ReturnStackOverflow;
                     self.call_depth += 1;
                     self.frames[self.frame_depth] = running;

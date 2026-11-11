@@ -816,6 +816,7 @@ pub const OpKind = enum {
     call_colon,
     dup, drop, swap, over, rot, nip, tuck, two_dup, two_drop, add, sub, mul, equal, not_equal, less, greater, zero_equal, zero_less, bit_and, bit_or, bit_xor, bit_complement, negate, one_plus, one_minus, to_r, from_r, r_fetch, fetch, store, cfetch, cstore, add_store, index, index_2, cells, cell_plus,
     two_star, two_slash, lshift, rshift, f_add, f_sub, f_mul, f_div, f_dup, f_drop, f_swap, f_over,
+    execute,
 };
 
 pub fn isPrimitiveOp(kind: OpKind) bool {
@@ -829,7 +830,7 @@ pub fn primitiveBuiltin(comptime kind: OpKind) Builtin {
 
 pub fn builtinOpKind(builtin: Builtin) OpKind {
     return switch (builtin) {
-        inline .dup, .drop, .swap, .over, .rot, .nip, .tuck, .two_dup, .two_drop, .add, .sub, .mul, .equal, .not_equal, .less, .greater, .zero_equal, .zero_less, .bit_and, .bit_or, .bit_xor, .bit_complement, .negate, .one_plus, .one_minus, .to_r, .from_r, .r_fetch, .fetch, .store, .cfetch, .cstore, .add_store, .index, .index_2, .cells, .cell_plus, .two_star, .two_slash, .lshift, .rshift, .f_add, .f_sub, .f_mul, .f_div, .f_dup, .f_drop, .f_swap, .f_over => |hot| @field(OpKind, @tagName(hot)),
+        inline .dup, .drop, .swap, .over, .rot, .nip, .tuck, .two_dup, .two_drop, .add, .sub, .mul, .equal, .not_equal, .less, .greater, .zero_equal, .zero_less, .bit_and, .bit_or, .bit_xor, .bit_complement, .negate, .one_plus, .one_minus, .to_r, .from_r, .r_fetch, .fetch, .store, .cfetch, .cstore, .add_store, .index, .index_2, .cells, .cell_plus, .two_star, .two_slash, .lshift, .rshift, .f_add, .f_sub, .f_mul, .f_div, .f_dup, .f_drop, .f_swap, .f_over, .execute => |hot| @field(OpKind, @tagName(hot)),
         else => .call_builtin,
     };
 }

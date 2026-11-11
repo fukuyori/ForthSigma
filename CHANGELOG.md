@@ -19,6 +19,7 @@
 ### Changed
 
 - The new built-in words change the numbers of the words after them, so a dictionary image saved by an earlier version is refused with `INVALID IMAGE`.
+- `EXECUTE` of a colon definition and a `DEFER` whose action is one are called as other definitions are, without a loop of their own: they take about 0.7 times the time they took in 0.9.0. A recursion through a `DEFER` now uses one level of the return stack for each call, as other calls do, where it used two.
 - `examples/pinball.fs` is now Ninth Inning, a pinball table of a ballpark on painted wood, laid out after a picture of an old table: ABCD lanes that raise the bonus multiplier and move with the flippers, a BASE bank of drop targets, three targets, a dugout hole and a kickout hole, an extra ball, runners on a diamond who score runs, and outlanes that lead under the flippers to the drain. Wyrm's Delve, the table of a dungeon that was there before, is removed.
 
 ## [0.9.0] - 2026-11-10

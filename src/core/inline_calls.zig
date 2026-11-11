@@ -32,6 +32,8 @@ fn body(self: *const forth.State, id: u16) ?[]const defs.Op {
     const ops = self.code[word.code_start .. word.code_end - 1];
     if (ops.len > max_body) return null;
     for (ops) |op| {
+        // EXECUTE runs any word; a definition with it stays a call.
+        if (op.kind == .execute) return null;
         if (defs.isPrimitiveOp(op.kind)) continue;
         switch (op.kind) {
             .literal, .float_literal, .execution_token => {},
