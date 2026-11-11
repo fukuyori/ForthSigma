@@ -123,15 +123,38 @@ fn report(on: bool) void {
     }
 }
 
+/// The terminal's settings of Linux and macOS (termios), with the room the C library's
+/// structure needs. On Linux, std.c.termios is the kernel's structure (44 bytes), but
+/// the C library's is 60 bytes: glibc's tcgetattr writes them all, over what follows a
+/// std.c.termios, and its tcsetattr reads the speeds there. The fields used here are at
+/// the same places in both. The room is copied with the settings, so that tcsetattr
+/// gets back what tcgetattr gave.
+pub const TerminalSettings = extern struct {
+    termios: std.c.termios,
+    room: [64]u8 = @splat(0),
+
+    /// Reads the settings of standard input; whether it did.
+    pub fn get(self: *TerminalSettings) bool {
+        self.room = @splat(0);
+        return std.c.tcgetattr(0, &self.termios) == 0;
+    }
+
+    /// Sets them at once; whether it did.
+    pub fn set(self: *const TerminalSettings) bool {
+        return std.c.tcsetattr(0, .NOW, &self.termios) == 0;
+    }
+};
+
 const posix = struct {
     extern "c" fn tcflush(c_int, c_int) c_int;
     const input_flush: c_int = if (builtin.os.tag.isDarwin()) 1 else 0;
 
-    var saved: std.c.termios = undefined;
+    var saved: TerminalSettings = undefined;
 
     fn enter() bool {
-        if (std.c.tcgetattr(0, &saved) != 0) return false;
-        var settings = saved;
+        if (!saved.get()) return false;
+        var changed = saved;
+        const settings = &changed.termios;
         settings.lflag.ICANON = false;
         settings.lflag.ECHO = false;
         settings.lflag.ISIG = false;
@@ -139,12 +162,12 @@ const posix = struct {
         settings.iflag.IXON = false;
         settings.cc[@intFromEnum(std.c.V.MIN)] = 0;
         settings.cc[@intFromEnum(std.c.V.TIME)] = 0;
-        return std.c.tcsetattr(0, .NOW, &settings) == 0;
+        return changed.set();
     }
 
     fn leave() void {
         _ = tcflush(0, input_flush);
-        _ = std.c.tcsetattr(0, .NOW, &saved);
+        _ = saved.set();
     }
 
     fn writeAll(bytes: []const u8) void {

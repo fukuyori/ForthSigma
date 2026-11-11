@@ -19,6 +19,7 @@
 const std = @import("std");
 const builtin = @import("builtin");
 const forth = @import("forth.zig");
+const TerminalSettings = @import("host_input.zig").TerminalSettings;
 
 /// The keys of the terminal's line input, from its settings.
 pub const Keys = struct {
@@ -207,11 +208,12 @@ fn characterWidth(character: []const u8) usize {
 // ---- The terminal ----
 
 const posix = struct {
-    var saved: std.c.termios = undefined;
+    var saved: TerminalSettings = undefined;
 
     fn enter(keys: *Keys) bool {
-        if (std.c.tcgetattr(0, &saved) != 0) return false;
-        var settings = saved;
+        if (!saved.get()) return false;
+        var changed = saved;
+        const settings = &changed.termios;
         const cc = &settings.cc;
         keys.* = .{
             .erase = character(cc, .ERASE, 0x7f),
@@ -228,7 +230,7 @@ const posix = struct {
         settings.lflag.IEXTEN = false;
         settings.cc[@intFromEnum(std.c.V.MIN)] = 1;
         settings.cc[@intFromEnum(std.c.V.TIME)] = 0;
-        return std.c.tcsetattr(0, .NOW, &settings) == 0;
+        return changed.set();
     }
 
     /// A key of the line input, or the usual one when it is turned off.
@@ -238,7 +240,7 @@ const posix = struct {
     }
 
     fn leave() void {
-        _ = std.c.tcsetattr(0, .NOW, &saved);
+        _ = saved.set();
     }
 
     fn writeAll(bytes: []const u8) void {
