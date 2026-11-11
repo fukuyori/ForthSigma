@@ -1044,9 +1044,8 @@ pub const State = struct {
     }
 
     /// A word of a control structure after which a block starts, as in gforth.
-    fn startsBlock(word: Word) bool {
-        if (word.kind != .builtin) return false;
-        return switch (word.builtin) {
+    fn startsBlock(builtin: Builtin) bool {
+        return switch (builtin) {
             .compile_if, .compile_else, .compile_then, .compile_begin, .compile_end, .compile_again, .compile_while, .compile_repeat, .compile_do, .compile_q_do, .compile_loop, .compile_plus_loop, .compile_does, .compile_case, .compile_of, .compile_question_of, .compile_endof, .compile_endcase, .compile_contof, .compile_next_case => true,
             else => false,
         };
@@ -1077,9 +1076,7 @@ pub const State = struct {
             // definition is interpreting this text (EVALUATE, INCLUDED): then the
             // caller is the one that called that word.
             if (defs.debug_enabled and self.call_depth == 0) self.outer_pc = 0;
-            const starts_block = defs.debug_enabled and self.compiling and startsBlock(self.words[id]);
             try self.executeWord(id);
-            if (starts_block and self.compiling) self.markBlock(self.columnAfterWord());
         }
     }
 
@@ -1593,6 +1590,10 @@ pub const State = struct {
             else
                 try word_modules[word_owner[@intFromEnum(word)]].execute(self, word),
         }
+        // --coverage: a block starts after a word of a control structure, however the
+        // word was reached: by its name, by another name (SYNONYM), or from a word
+        // that POSTPONEs it. The place is that of the word being read.
+        if (defs.debug_enabled and self.cover_blocks and self.compiling and startsBlock(builtin)) self.markBlock(self.columnAfterWord());
     }
 
     const word_modules = .{ words_stack, words_arithmetic, words_memory, words_output, words_input, words_compiling, words_float, words_pictured, words_dictionary, words_system, words_files, words_strings, words_help, words_defining, words_graphics, words_audio, words_xchar, words_tools, words_debug };

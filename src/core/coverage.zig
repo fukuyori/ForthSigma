@@ -75,10 +75,14 @@ pub fn covPercent(self: *State) RuntimeError!void {
     self.write(std.fmt.bufPrint(&text, "{d}.{d}% coverage", .{ tenths / 10, tenths % 10 }) catch unreachable);
 }
 
+/// The most blocks a line can have: a block starts at the start of the line or after a
+/// word, and a word and the blank after it are two characters or more.
+const max_line_blocks = tib_size / 2 + 2;
+
 /// The counts of the blocks of one line, by their columns.
 const LineCounts = struct {
-    columns: [32]u16 = undefined,
-    counts: [32]u64 = undefined,
+    columns: [max_line_blocks]u16 = undefined,
+    counts: [max_line_blocks]u64 = undefined,
     len: usize = 0,
 
     fn add(self: *LineCounts, column: u16, count: u64) void {

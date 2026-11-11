@@ -369,3 +369,44 @@ test "the coverage words need the counts" {
     try std.testing.expectError(error.Thrown, machine.interpretLine(".COVER-RAW"));
     try std.testing.expectError(error.Thrown, machine.interpretLine(".COVERAGE"));
 }
+
+test "a block starts after a word of a structure however the word is reached" {
+    try support.skipWithout(&.{ .debug, .files });
+    var output = Output{};
+    // IF through a word that POSTPONEs it, and THEN by another name.
+    setFakeFile(&output, 0, ": MYIF POSTPONE IF ; IMMEDIATE\nSYNONYM MYTHEN THEN\n: TEST MYIF 111 DROP MYTHEN ;\n0 TEST\n");
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
+    const profile = try std.testing.allocator.create(forth.Profile);
+    defer std.testing.allocator.destroy(profile);
+    profile.reset();
+    machine.profile = profile;
+    machine.plain_calls = true;
+    machine.cover_blocks = true;
+
+    // The blocks of TEST: after its name, after MYIF (not run), and after MYTHEN.
+    try machine.interpretLine("INCLUDE a.txt .COVER-RAW");
+    try std.testing.expectEqualStrings("a.txt:1:7: 1 \na.txt:3:7: 1 \na.txt:3:12: 0 \na.txt:3:28: 1 \n", output.written());
+    output.len = 0;
+    try machine.interpretLine("COV%");
+    try std.testing.expectEqualStrings("75.0% coverage", output.written());
+}
+
+test ".COVERAGE shows every block of a line with many" {
+    try support.skipWithout(&.{ .debug, .files });
+    var output = Output{};
+    setFakeFile(&output, 0, ": MANY " ++ support.repeat("1 IF THEN ", 17) ++ ";\nMANY\n");
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
+    const profile = try std.testing.allocator.create(forth.Profile);
+    defer std.testing.allocator.destroy(profile);
+    profile.reset();
+    machine.profile = profile;
+    machine.plain_calls = true;
+    machine.cover_blocks = true;
+
+    // The block after the name and two for each IF THEN: 35.
+    try machine.interpretLine("INCLUDE a.txt .COVERAGE");
+    try std.testing.expectEqual(@as(usize, 35), std.mem.count(u8, output.written(), " ( 1) "));
+    try std.testing.expect(std.mem.startsWith(u8, output.written(), "\n: MANY ( 1)  1 IF ( 1)  THEN ( 1)  1 IF ( 1)  THEN ( 1)  "));
+}
