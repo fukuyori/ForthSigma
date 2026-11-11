@@ -21,7 +21,7 @@ FORTH/Σ（フォース・シグマ）の言語コアを、Zigで動くネイテ
 
 対応ワードと移植上の判断は[実装ノート](https://github.com/fukuyori/ForthSigma/blob/main/docs/IMPLEMENTATION.md)、資料から整理した言語仕様は[FORTH/Σ仕様書](https://github.com/fukuyori/ForthSigma/blob/main/docs/SPEC.ja.md)を参照してください。実装は開発中であり、誌面の全ワードや機種固有機能には対応していません。
 
-使い方と現在登録されている組み込みワードの一覧は[ユーザーマニュアル](https://github.com/fukuyori/ForthSigma/blob/main/docs/USER_MANUAL.ja.md)を、グラフィックスとサウンドは[グラフィックスとサウンドのマニュアル](https://github.com/fukuyori/ForthSigma/blob/main/docs/GRAPHICS_AND_SOUND.ja.md)を参照してください。
+使い方と現在登録されている組み込みワードの一覧は[ユーザーマニュアル](https://github.com/fukuyori/ForthSigma/blob/main/docs/USER_MANUAL.ja.md)を、グラフィックスとサウンドは[グラフィックスとサウンドのマニュアル](https://github.com/fukuyori/ForthSigma/blob/main/docs/GRAPHICS_AND_SOUND.ja.md)を、プログラムの悪いところの調べ方は[デバッグの手引き](https://github.com/fukuyori/ForthSigma/blob/main/docs/DEBUGGING.ja.md)を参照してください。
 
 利用者がデータを持つワードを作る定義用語（BUILDS/DOES）にも対応しています。
 

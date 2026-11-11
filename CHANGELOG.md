@@ -8,6 +8,7 @@
 - `--max-steps N`, among the options at the start of the command line, ends a program after its compiled code has run `N` operations for an argument or a line, with the new error `STEP LIMIT !` (-280) and its backtrace; `CATCH` does not catch it. It is for finding where a program that does not end is running.
 - `--trace` shows on standard error each colon definition as it starts and ends, with the data stack, indented by the nesting; `--trace-limit N` ends the trace after `N` lines.
 - `--profile` shows on standard error, when the program ends, how often each colon definition was called and how many operations it ran, by itself and with the words it called.
+- A debugging guide, `docs/DEBUGGING.md` (and `DEBUGGING.ja.md`), ordered by what one wants to find out, with notes for agents.
 - `--lint` checks the definitions of the files after loading them: redefined and unused words, unreachable code, paths that meet with different stack depths, the return stack, and stack comments `( a b -- c )` that the code does not keep to. The exit status is 2 with findings.
 - `--format` sets the indentation of source files by their colon definitions and control structures and removes the blanks at the ends of lines, without running them; `--format-check` only says how many lines would change (exit status 2), and `--format-indent N` sets the blanks of a step (3).
 - `--coverage` counts how often each block of the code runs, for gforth's coverage words `.COVER-RAW`, `COV%`, and `.COVERAGE`; the places and counts are those of gforth.

@@ -21,7 +21,7 @@ This project implements the language core of FORTH/Σ (FORTH/Sigma) as a native 
 
 For the supported words and the porting decisions, see the [implementation notes](https://github.com/fukuyori/ForthSigma/blob/main/docs/IMPLEMENTATION.md). For the language specification compiled from the sources, see the [FORTH/Σ specification](https://github.com/fukuyori/ForthSigma/blob/main/docs/SPEC.md). The implementation is under development and does not support every word in the book or machine-specific features.
 
-For usage and the list of the built-in words registered now, see the [user manual](https://github.com/fukuyori/ForthSigma/blob/main/docs/USER_MANUAL.md); for the graphics and the sound, see the [graphics and sound manual](https://github.com/fukuyori/ForthSigma/blob/main/docs/GRAPHICS_AND_SOUND.md).
+For usage and the list of the built-in words registered now, see the [user manual](https://github.com/fukuyori/ForthSigma/blob/main/docs/USER_MANUAL.md); for the graphics and the sound, see the [graphics and sound manual](https://github.com/fukuyori/ForthSigma/blob/main/docs/GRAPHICS_AND_SOUND.md); for finding what is wrong with a program, see the [debugging guide](https://github.com/fukuyori/ForthSigma/blob/main/docs/DEBUGGING.md).
 
 The defining words (BUILDS/DOES) that let users make words that hold data are also supported.
 
