@@ -1373,8 +1373,11 @@ pub const State = struct {
         const loop_frames = self.frame_depth;
         // Before the frames are given back: they are the callers of the backtrace.
         errdefer if (defs.debug_enabled) self.recordBacktrace(self.failed_pc, loop_frames, entry_call_depth);
-        if (defs.debug_enabled and (self.step_limit != 0 or self.tracing or self.profile != null or self.keep_counting)) return self.runOperations(true, start_pc, end_pc, defining_word);
-        return self.runOperations(false, start_pc, end_pc, defining_word);
+        // The loops are called, not made a part of this function: as a part of it, with
+        // what is done here before and after them, the usual loop ran slower than before
+        // there were two (stack words 1.4 times as long; measured on 2026-11-11).
+        if (defs.debug_enabled and (self.step_limit != 0 or self.tracing or self.profile != null or self.keep_counting)) return @call(.never_inline, runOperations, .{ self, true, start_pc, end_pc, defining_word });
+        return @call(.never_inline, runOperations, .{ self, false, start_pc, end_pc, defining_word });
     }
 
     fn runOperations(self: *State, comptime counted: bool, start_pc: u16, end_pc: u16, defining_word: ?u16) RuntimeError!void {
