@@ -3,7 +3,7 @@
 //! profile go to the log instead of standard error, and each error that reaches the
 //! host is logged besides being shown. A build with -Ddebug=false has none of this.
 //!
-//!     {"event":"start","version":"0.9.0"}
+//!     {"event":"start","version":"0.10.0"}
 //!     {"event":"enter","word":"SUMSQ","depth":0,"stack_depth":2,"stack":[3,4]}
 //!     {"event":"exit","word":"SUMSQ","depth":0,"stack_depth":1,"stack":[25]}
 //!     {"event":"trace_limit","lines":200}

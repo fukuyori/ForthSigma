@@ -20,7 +20,7 @@ Building with `zig build -Dfloat=false` gives a smaller version without floating
 Before the interactive prompt, it prints the following two lines (only the first in a build with `-Dhelp=false`). The version number is the value of the `VERSION` file at the root.
 
 ```text
-FORTH/Sigma 0.9.0  MIT License
+FORTH/Sigma 0.10.0  MIT License
 Type `help' for basic help
 ```
 
@@ -203,7 +203,7 @@ The keys are read as `KEY` reads them, so they can also come from a pipe or a fi
 ```
 
 ```text
-{"event":"start","version":"0.9.0"}
+{"event":"start","version":"0.10.0"}
 {"event":"enter","word":"SUMSQ","depth":0,"stack_depth":2,"stack":[3,4]}
 {"event":"exit","word":"SUMSQ","depth":0,"stack_depth":1,"stack":[25]}
 {"event":"error","message":"top.fs:3: DIVISION BY ZERO !","code":-10,"file":"top.fs","line":3,"backtrace":[{"word":"AVERAGE","file":"bt.fs","line":3},{"word":"REPORT","file":"bt.fs","line":6}],"more":0,"stack_depth":2,"stack":[10,20],"float_stack_depth":0,"float_stack":[]}

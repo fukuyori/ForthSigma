@@ -20,7 +20,7 @@ zig build
 対話プロンプトの前に、次の2行（`-Dhelp=false` の版では1行目だけ）を表示します。版番号はルートの `VERSION` ファイルの値です。
 
 ```text
-FORTH/Sigma 0.9.0  MIT License
+FORTH/Sigma 0.10.0  MIT License
 Type `help' for basic help
 ```
 
@@ -203,7 +203,7 @@ LOOP           -> [ 0 ]
 ```
 
 ```text
-{"event":"start","version":"0.9.0"}
+{"event":"start","version":"0.10.0"}
 {"event":"enter","word":"SUMSQ","depth":0,"stack_depth":2,"stack":[3,4]}
 {"event":"exit","word":"SUMSQ","depth":0,"stack_depth":1,"stack":[25]}
 {"event":"error","message":"top.fs:3: DIVISION BY ZERO !","code":-10,"file":"top.fs","line":3,"backtrace":[{"word":"AVERAGE","file":"bt.fs","line":3},{"word":"REPORT","file":"bt.fs","line":6}],"more":0,"stack_depth":2,"stack":[10,20],"float_stack_depth":0,"float_stack":[]}

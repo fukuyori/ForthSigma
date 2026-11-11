@@ -1,6 +1,6 @@
 # Changelog
 
-## [Unreleased]
+## [0.10.0] - 2026-11-11
 
 ### Added
 
@@ -133,6 +133,7 @@
 - Updated the product version and startup examples to 0.6.1.
 - Added an optional SDL3 host backend. Builds can still run when SDL3 is unavailable; gamepad polling then reports that the backend is unavailable.
 
+[0.10.0]: https://github.com/fukuyori/ForthSigma/releases/tag/v0.10.0
 [0.9.0]: https://github.com/fukuyori/ForthSigma/releases/tag/v0.9.0
 [0.8.0]: https://github.com/fukuyori/ForthSigma/releases/tag/v0.8.0
 [0.7.0]: https://github.com/fukuyori/ForthSigma/releases/tag/v0.7.0
