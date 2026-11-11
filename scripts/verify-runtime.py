@@ -66,10 +66,12 @@ def main():
     executable = str(args.sigma.resolve(strict=True))
     newline = b"\r\n" if os.name == "nt" else b"\n"
     passed = []
+    # The deepest recursion that fits the default return stack of 4096 elements
+    # (-Dstack-cells); each call takes one of them.
     recursion = {
-        "execute": ("VARIABLE XT : X DUP IF 1- XT @ EXECUTE THEN ; ' X XT ! ", "X", 1023),
-        "defer": ("DEFER D : Y DUP IF 1- D THEN ; ' Y IS D ", "Y", 511),
-        "catch": ("VARIABLE XT : Z DUP IF 1- XT @ CATCH THROW THEN ; ' Z XT ! ", "Z", 1023),
+        "execute": ("VARIABLE XT : X DUP IF 1- XT @ EXECUTE THEN ; ' X XT ! ", "X", 4095),
+        "defer": ("DEFER D : Y DUP IF 1- D THEN ; ' Y IS D ", "Y", 4095),
+        "catch": ("VARIABLE XT : Z DUP IF 1- XT @ CATCH THROW THEN ; ' Z XT ! ", "Z", 4095),
     }
     for name, (definition, word, limit) in recursion.items():
         for depth in (limit, limit + 1):
