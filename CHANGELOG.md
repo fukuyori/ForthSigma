@@ -9,10 +9,11 @@
 - `--trace` shows on standard error each colon definition as it starts and ends, with the data stack, indented by the nesting; `--trace-limit N` ends the trace after `N` lines.
 - `--profile` shows on standard error, when the program ends, how often each colon definition was called and how many operations it ran, by itself and with the words it called.
 - `--lint` checks the definitions of the files after loading them: redefined and unused words, unreachable code, paths that meet with different stack depths, the return stack, and stack comments `( a b -- c )` that the code does not keep to. The exit status is 2 with findings.
+- `--format` sets the indentation of source files by their colon definitions and control structures and removes the blanks at the ends of lines, without running them; `--format-check` only says how many lines would change (exit status 2), and `--format-indent N` sets the blanks of a step (3).
 - `--debug-log FILE` writes the errors (with the backtrace and the stacks), the trace, and the profile to a file as JSON Lines, for programs to read.
 - The single-step debugger of gforth: `DBG name` runs a colon definition one operation at a time (Enter next, `n` into the called word, `u` out, `d` run the rest, `s` stop), and `BREAK:` and `BREAK" text"` start the steps inside a definition. The keys are read as `KEY` reads them, so they can come from a pipe.
 - The debugging words of gforth `~~BT`, `~~1BT`, `ONCE`, `~~VALUE`, `+LTRACE`, and `-LTRACE`.
-- The build option `-Ddebug=false` leaves out the debugging features (the backtrace, `--max-steps`, the trace, the profile, the log, the checks of `--lint`, and the debugging words above).
+- The build option `-Ddebug=false` leaves out the debugging features (the backtrace, `--max-steps`, the trace, the profile, the log, the checks of `--lint`, `--format`, and the debugging words above).
 
 ### Changed
 

@@ -15,7 +15,7 @@ pub fn build(b: *std.Build) void {
     const image = b.option(bool, "image", "Include SAVE, LOAD, and SAVESYS (default: on)") orelse true;
     const graphics = b.option(bool, "graphics", "Include REQUIRE-GRAPHICS and the GFX- words (default: on)") orelse true;
     const audio = b.option(bool, "audio", "Include REQUIRE-AUDIO and the SND- words (default: on)") orelse true;
-    const debug = b.option(bool, "debug", "Include the debugging features: the backtrace after an error, --max-steps, --trace, --profile, --debug-log, --lint, and the debugging words (DBG, BREAK:, ~~BT and others) (default: on)") orelse true;
+    const debug = b.option(bool, "debug", "Include the debugging features: the backtrace after an error, --max-steps, --trace, --profile, --debug-log, --lint, --format, and the debugging words (DBG, BREAK:, ~~BT and others) (default: on)") orelse true;
     const options = b.addOptions();
     options.addOption(bool, "float", float);
     options.addOption(bool, "files", files);

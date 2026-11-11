@@ -751,6 +751,11 @@ const StartOptions = struct {
     /// --lint: the definitions of the files are checked when the arguments are done,
     /// and there is no interactive session.
     lint: bool = false,
+    /// --format and --format-check: the files after the options are not run; their
+    /// indentation is set, or only compared with what it would be set to.
+    /// --format-indent is the number of blanks of one step.
+    format: enum { none, write, check } = .none,
+    format_indent: u64 = formatter.default_width,
     /// --debug-log: the file that the errors, the trace, and the profile are written
     /// to as lines of JSON.
     debug_log: ?[]const u8 = null,
@@ -758,6 +763,62 @@ const StartOptions = struct {
 };
 
 const debug_log_option = "--debug-log";
+const formatter = @import("format.zig");
+
+/// --format and --format-check: sets the indentation of each file, or says whether it
+/// is set. The files are read as text and not run. The exit status is 0, 1 when a
+/// file cannot be read or written, and with --format-check 2 when a file is not as
+/// --format would make it.
+fn formatFiles(allocator: std.mem.Allocator, paths: []const []const u8, check: bool, width: usize) u8 {
+    var status: u8 = 0;
+    for (paths) |path| {
+        const outcome = formatFile(allocator, path, check, width) catch {
+            terminalWrite(null, path);
+            terminalWrite(null, ": FILE ERROR !\n");
+            status = 1;
+            continue;
+        };
+        var text: [48]u8 = undefined;
+        terminalWrite(null, path);
+        if (outcome == 0) {
+            terminalWrite(null, ": FORMATTED ALREADY\n");
+        } else {
+            terminalWrite(null, std.fmt.bufPrint(&text, ": {d} LINES {s}\n", .{ outcome, if (check) "TO FORMAT" else "FORMATTED" }) catch unreachable);
+            if (check and status == 0) status = 2;
+        }
+    }
+    flushOutput();
+    return status;
+}
+
+/// Formats one file; gives the number of lines that change. The file is written only
+/// when lines change and `check` is false, as bytes, so that its line ends stay.
+fn formatFile(allocator: std.mem.Allocator, path: []const u8, check: bool, width: usize) !usize {
+    var terminated_path: [4096:0]u8 = undefined;
+    if (path.len >= terminated_path.len) return error.FileUnavailable;
+    @memcpy(terminated_path[0..path.len], path);
+    terminated_path[path.len] = 0;
+    const source = blk: {
+        const file = fopen(&terminated_path, "rb") orelse return error.FileUnavailable;
+        defer _ = fclose(file);
+        if (fseek(file, 0, 2) != 0) return error.FileUnavailable;
+        const size = ftell(file);
+        if (size < 0 or fseek(file, 0, 0) != 0) return error.FileUnavailable;
+        const bytes = try allocator.alloc(u8, @intCast(size));
+        errdefer allocator.free(bytes);
+        if (fread(bytes.ptr, 1, bytes.len, file) != bytes.len) return error.FileUnavailable;
+        break :blk bytes;
+    };
+    defer allocator.free(source);
+    const result = try formatter.format(allocator, source, width);
+    defer allocator.free(result.buffer);
+    if (result.changed != 0 and !check) {
+        const file = fopen(&terminated_path, "wb") orelse return error.FileUnavailable;
+        defer _ = fclose(file);
+        if (fwrite(result.text.ptr, 1, result.text.len, file) != result.text.len or fflush(file) != 0) return error.FileUnavailable;
+    }
+    return result.changed;
+}
 
 /// The findings of --lint, for the exit status: 2 when there are any and nothing else
 /// went wrong.
@@ -775,9 +836,10 @@ fn debugLogWrite(_: ?*anyopaque, bytes: []const u8) void {
 }
 
 /// The options that take a plain decimal number (not in a build with -Ddebug=false).
-const number_options = [_]struct { name: []const u8, field: enum { max_steps, trace_limit } }{
+const number_options = [_]struct { name: []const u8, field: enum { max_steps, trace_limit, format_indent } }{
     .{ .name = "--max-steps", .field = .max_steps },
     .{ .name = "--trace-limit", .field = .trace_limit },
+    .{ .name = "--format-indent", .field = .format_indent },
 };
 
 const StartOption = struct { short: []const u8, long: []const u8, field: enum { m, l, data_stack, return_stack, float_stack } };
@@ -849,6 +911,11 @@ fn parseStartOptions(args: []const []const u8, failed: *[]const u8) error{ Missi
                 index += 1;
                 continue;
             }
+            if (std.mem.eql(u8, argument, "--format") or std.mem.eql(u8, argument, "--format-check")) {
+                options.format = if (argument.len == "--format".len) .write else .check;
+                index += 1;
+                continue;
+            }
             // --debug-log FILE or --debug-log=FILE.
             if (std.mem.eql(u8, argument, debug_log_option)) {
                 failed.* = debug_log_option;
@@ -879,6 +946,8 @@ fn parseStartOptions(args: []const []const u8, failed: *[]const u8) error{ Missi
                 switch (option.field) {
                     .max_steps => options.max_steps = value,
                     .trace_limit => options.trace_limit = value,
+                    // More than 16 blanks a step is not an indentation.
+                    .format_indent => options.format_indent = if (value <= 16) value else return error.InvalidNumber,
                 }
                 index += 1;
                 continue;
@@ -1317,6 +1386,8 @@ fn run(init: std.process.Init.Minimal) !u8 {
         });
         return 1;
     };
+    // --format and --format-check read the files as text; nothing is run.
+    if (start.format != .none) return formatFiles(allocator, argument_list.items[start.next..], start.format == .check, @intCast(start.format_indent));
     const embedded = readEmbeddedImage(executable_path, allocator);
     defer if (embedded) |image| allocator.free(image);
     var sizes = startSizes(start, &failed_option) orelse {
@@ -1740,6 +1811,13 @@ test "the size options are read at the start of the arguments" {
         try std.testing.expectEqual(@as(?[]const u8, null), traced.debug_log);
         try std.testing.expect(!traced.lint);
         try std.testing.expect((try parseStartOptions(&.{ "sigma", "--lint", "x.fs" }, &failed)).lint);
+        const formats = try parseStartOptions(&.{ "sigma", "--format", "--format-indent", "2", "x.fs", "y.fs" }, &failed);
+        try std.testing.expect(formats.format == .write);
+        try std.testing.expectEqual(@as(u64, 2), formats.format_indent);
+        try std.testing.expectEqual(@as(usize, 4), formats.next);
+        try std.testing.expect((try parseStartOptions(&.{ "sigma", "--format-check", "x.fs" }, &failed)).format == .check);
+        try std.testing.expectError(error.InvalidNumber, parseStartOptions(&.{ "sigma", "--format-indent=40" }, &failed));
+        try std.testing.expect(traced.format == .none);
     }
 
     try std.testing.expectError(error.MissingValue, parseStartOptions(&.{ "sigma", "-d" }, &failed));

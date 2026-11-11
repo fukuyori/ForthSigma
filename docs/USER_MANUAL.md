@@ -238,6 +238,43 @@ How the stack checks work, and what they cannot see:
 - The words of the libraries that come with FORTH/Sigma are not reported.
 - A build without `HELP` (`-Dhelp=false`) knows no effect of a built-in word and makes only the other checks; a build without the debugging features (`-Ddebug=false`) does not have the option.
 
+### Formatting a program
+
+`--format`, among the options at the start of the command line, sets the indentation of the files given after it and removes the blanks at the ends of their lines. The files are read as text and not run. A file is written only when lines change, and a line is shown for each file:
+
+```powershell
+.\zig-out\bin\sigma.exe --format prog.fs lib.fs
+```
+
+```text
+prog.fs: 12 LINES FORMATTED
+lib.fs: FORMATTED ALREADY
+```
+
+`--format-check` writes nothing and says how many lines `--format` would change (`prog.fs: 12 LINES TO FORMAT`); its exit status is 2 when a file has such lines. The exit status of both is 1 when a file cannot be read or written. `--format-indent N` sets the blanks of one step, 3 without it (0 to 16).
+
+Only the blanks before the first and after the last character of a line change; everything between them stays byte for byte, so the words, strings, and comments of the program are the ones it had. (In FORTH/Sigma a string or a `( comment )` ends on its line, so no line is the inside of one.) The rules:
+
+```forth
+: CLASS ( n -- )
+   DUP 1 = IF
+      ONE
+   ELSE DUP 2 = IF
+      TWO
+   ELSE
+      MANY
+   THEN THEN DROP ;
+```
+
+- A line inside a colon definition or a control structure is indented by one step for each it is in. `IF`, `BEGIN`, `DO`, `?DO`, `CASE`, and `OF` open a structure; `THEN`, `UNTIL`, `AGAIN`, `REPEAT`, `LOOP`, `+LOOP`, `ENDOF`, and `ENDCASE` close one.
+- A line that starts with a word that closes, with `ELSE`, `WHILE`, `DOES>`, or with `;` stands one step out, and so does a line that gives the condition or the step of a loop before the word that takes it (`DONE @ UNTIL`, `2 +LOOP`, `DUP WHILE`).
+- The structures that one line opens are one step together (`h 0 DO  w 0 DO`, closed by `LOOP LOOP`), and a structure after `ELSE` on its line is no step of its own (`ELSE x IF`). After a line that ends in `x IF y ELSE`, the next line is indented when it was written further in, and left under it when it was not (a chain of conditions).
+- A line that starts with none of these words and was written further in than the line before it is the rest of a long line: it keeps its distance from that line.
+- A line outside every structure keeps its indentation (a table after `CREATE`), and `[IF]`, `[ELSE]`, `[THEN]` do not indent.
+- A tab in the indentation becomes blanks. The ends of the lines (LF or CR LF) stay as they are.
+
+The words are known by their names: a program that defines its own `IF` is indented as if it were the usual one. A word of the program that reads the rest of its line, or the lines after it, as text (not with a closing `"`) may get other blanks at the start or the end of that text. A build without the debugging features (`-Ddebug=false`) does not have these options.
+
 `HELP` shows the basic usage, and `HELP name` shows the stack effect of a word and a one-line description in English (example: `HELP DUP`). The name is read from the same line (also in an `EVALUATE` string, it does not read past a line end). `HELP` written in a definition reads the name when that definition runs. For a word defined by the user, it suggests viewing its contents with `SEE`. An unknown name gives the error `name ?`. `LICENSE` shows the full text of the license and the copyright notice of the included CORE-MATH.
 
 When an input line has been processed successfully, `OK` is printed. For example, the following input prints the square of 12.
