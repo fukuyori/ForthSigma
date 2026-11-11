@@ -131,7 +131,7 @@ Build options leave out groups of words, for a smaller program or for a host tha
 | `-Dimage=false` | `SAVE`, `LOAD`, and `SAVESYS` | 1,031,680 bytes |
 | `-Dgraphics=false` | `REQUIRE-GRAPHICS`, the `GFX-` words, the graphics library, its fonts, and the Tcl/Tk words | 894,976 bytes |
 | `-Daudio=false` | `REQUIRE-AUDIO`, the `SND-` words, the audio library, and the audio thread | 955,904 bytes |
-| `-Ddebug=false` | The debugging features: the backtrace after an error, `--max-steps`, `--trace`, `--profile`, and the words `~~BT`, `~~1BT`, `ONCE`, `~~VALUE`, `+LTRACE`, and `-LTRACE` | about 15 KB smaller than with them (measured on 2026-11-11) |
+| `-Ddebug=false` | The debugging features: the backtrace after an error, `--max-steps`, `--trace`, `--profile`, and the words `DBG`, `BREAK:`, `BREAK"`, `~~BT`, `~~1BT`, `ONCE`, `~~VALUE`, `+LTRACE`, and `-LTRACE` | about 15 KB smaller than with them (measured on 2026-11-11) |
 | All seven | All of the above but `-Ddebug=false` | 299,008 bytes |
 
 The sizes are those of 0.6.1 with the sound words (commit `d5de15b`) built with `-Doptimize=fast`, the same as the release, on Windows x86_64 (measured 2026-11-07). The options can be combined, for example `zig build -Doptimize=fast -Dfloat=false -Dhelp=false`.

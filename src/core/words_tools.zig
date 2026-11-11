@@ -384,8 +384,12 @@ fn assertRun(self: *State) RuntimeError!void {
     if (try self.pop() != 0) return;
     self.write(copy[0..length]);
     self.write(" failed assertion");
-    const message = "assertion failed";
-    const at = try self.memoryAddress(assert_message_address, message.len + 1);
+    return abortWith(self, "assertion failed");
+}
+
+/// THROW -2 with `message` as its text, as an ABORT" would have it.
+pub fn abortWith(self: *State, comptime message: []const u8) RuntimeError {
+    const at = self.memoryAddress(assert_message_address, message.len + 1) catch |err| return err;
     self.memory[at] = message.len;
     @memcpy(self.memory[at + 1 ..][0..message.len], message);
     self.abort_message = assert_message_address;

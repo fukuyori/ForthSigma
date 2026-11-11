@@ -1,5 +1,5 @@
-//! The debugging words taken from gforth (+LTRACE, -LTRACE, ONCE, ~~BT, ~~1BT, ~~VALUE)
-//! and the trace of --trace. A build with -Ddebug=false has none of them. Their output
+//! The debugging words taken from gforth (+LTRACE, -LTRACE, ONCE, ~~BT, ~~1BT, ~~VALUE,
+//! and the single-step debugger of DBG, BREAK:, and BREAK") and the trace of --trace. A build with -Ddebug=false has none of them. Their output
 //! goes to standard error, as that of ~~ does.
 
 const std = @import("std");
@@ -8,6 +8,9 @@ const forth = @import("../forth.zig");
 const memory_map = @import("memory_map.zig");
 const error_reporting = @import("error_reporting.zig");
 const words_tools = @import("words_tools.zig");
+const words_xchar = @import("words_xchar.zig");
+const decompiler = @import("decompiler.zig");
+const inline_calls = @import("inline_calls.zig");
 const truth = @import("integer_math.zig").truth;
 const Builtin = defs.Builtin;
 const Cell = memory_map.Cell;
@@ -19,6 +22,7 @@ const max_name = memory_map.max_name;
 /// The built-in words this file executes; executeBuiltin dispatches by this list.
 pub const words = [_]Builtin{
     .ltrace_on, .ltrace_off, .once, .once_run, .debug_tilde_bt, .debug_tilde_bt_run, .debug_tilde_one_bt, .define_watched_value, .watch_run,
+    .dbg,       .break_colon, .break_run, .break_quote, .break_quote_run,
 };
 
 /// How many of the top stack items a line of the trace shows, as .S.
@@ -67,6 +71,32 @@ pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
             const length = @min(place.len, copy.len);
             @memcpy(copy[0..length], place[0..length]);
             try words_tools.showPlace(self, copy[0..length], self.wordName(self.words[id]));
+        },
+        .dbg => try runDbg(self),
+        // BREAK: ( -- ): from here on, the definition is stepped through as with DBG.
+        .break_colon => {
+            try self.requireCompiling();
+            self.keep_counting = true;
+            try self.compileCall(@intCast(self.builtinWord(.break_run)));
+        },
+        .break_run => startStepping(self),
+        // BREAK" text" ( -- ): as BREAK:, after showing `BREAK AT: text`.
+        .break_quote => {
+            try self.requireCompiling();
+            const line = self.source_line;
+            const start = self.sourceCursor();
+            const close = std.mem.indexOfScalarPos(u8, line, start, '"') orelse return error.InvalidDefinition;
+            self.setSourceCursor(close + 1);
+            self.keep_counting = true;
+            try self.compileCountedString(line[start..close], .string_literal);
+            try self.compileCall(@intCast(self.builtinWord(.break_quote_run)));
+        },
+        .break_quote_run => {
+            const text = try self.memoryRange();
+            self.write("BREAK AT: ");
+            self.write(text);
+            self.write("\n");
+            startStepping(self);
         },
         else => @compileError(@tagName(builtin) ++ " is not in the words of this file"),
     }
@@ -187,6 +217,9 @@ pub const LineWriter = struct {
 pub fn traceWord(self: *State, id: u16, enter: bool) void {
     if (self.trace_limit != 0 and self.trace_lines >= self.trace_limit) {
         self.tracing = false;
+        // The loop that counts goes on running the code, so that one that does not
+        // count never runs inside it (see `in_counted`).
+        self.keep_counting = true;
         words_tools.writeError(self, "TRACE LIMIT\n");
         return;
     }
@@ -208,4 +241,212 @@ pub fn traceWord(self: *State, id: u16, enter: bool) void {
     line[writer.len] = '\n';
     words_tools.writeError(self, line[0 .. writer.len + 1]);
     if (enter) self.trace_depth += 1;
+}
+
+// ---- The single-step debugger (DBG, BREAK:, BREAK") ----
+
+/// DBG ( "name" -- ): runs the colon definition `name`, stopping before each of its
+/// operations.
+fn runDbg(self: *State) RuntimeError!void {
+    const name = (try self.nextSourceToken()) orelse return error.InvalidDefinition;
+    const id = self.synonymTarget(try self.lookupOrFail(name));
+    if (self.words[id].kind != .colon) return error.InvalidDefinition;
+    self.keep_counting = true;
+    self.stepper = .armed;
+    self.step_word = id;
+    defer self.stepper = .off;
+    try self.executeWord(id);
+}
+
+/// BREAK: and BREAK" compile this call; from here on the definition is stepped through.
+fn startStepping(self: *State) void {
+    // A definition that was running before the first BREAK: or DBG was met runs in the
+    // loop that does not stop.
+    if (!self.in_counted) return;
+    // Inside the steps, a BREAK: is one more step.
+    if (self.stepper == .on) return;
+    self.stepper = .on;
+    self.step_base = self.call_depth;
+    self.step_depth = self.call_depth;
+    self.step_result = false;
+    self.step_skip_end = 0;
+    self.step_inline_end = 0;
+    showStepStack(self);
+}
+
+/// The definition `id` starts: the one DBG named is stepped through from here.
+pub fn stepEnter(self: *State, id: u16) void {
+    if (self.stepper != .armed or id != self.step_word) return;
+    self.stepper = .on;
+    self.step_base = self.call_depth;
+    self.step_depth = self.call_depth;
+    self.step_result = false;
+    self.step_skip_end = 0;
+    self.step_inline_end = 0;
+    self.write(": ");
+    self.write(decompiler.seeName(self, id));
+    self.write("\n");
+    showStepStack(self);
+}
+
+/// The running definition ends: one entered with `n` gives the steps back to its
+/// caller, and the one the steps started in ends them.
+pub fn stepLeave(self: *State) void {
+    if (self.stepper != .on or self.call_depth != self.step_depth) return;
+    if (self.step_depth > self.step_base) {
+        self.step_depth -= 1;
+        self.write("\n");
+        showStepStack(self);
+        self.step_result = false;
+    } else self.stepper = .off;
+}
+
+/// Before the operation at `pc` of the definition that is stepped through: shows what
+/// the last one left, then this one, and waits for a key.
+///
+///     DUP            -> [ 2 ] 3 3
+///     *              -> [ 1 ] 9
+///     ;              ->
+///
+/// (each line ends where the key is awaited, after `-> `; what the operation writes and
+/// the stack follow it)
+///
+/// Enter goes on; `n` goes into the definition the operation calls; `u` runs the rest
+/// without stopping, back to the caller when `n` led here; `d` ends the steps and runs
+/// the rest; `s` ends the program's run with an error. The end of the input is as `d`.
+///
+/// A short definition whose code was copied into this one is one step, as a call is:
+/// its copied operations run without stopping, unless `n` goes into them.
+pub fn step(self: *State, pc: u16, end_pc: u16) RuntimeError!void {
+    if (pc < self.step_skip_end) return;
+    self.step_skip_end = 0;
+    if (pc >= self.step_inline_end) self.step_inline_end = 0;
+    if (self.step_result) showStepStack(self);
+    self.step_result = true;
+    var text: [max_name + 16]u8 = undefined;
+    const name = operationName(self, pc, end_pc, &text);
+    self.write(name);
+    for (name.len..@max(name.len, 14)) |_| self.write(" ");
+    self.write(" -> ");
+    while (true) {
+        const key = words_xchar.key(self) catch {
+            self.stepper = .off;
+            return;
+        };
+        // The line feed after a carriage return is the same Enter.
+        const after_cr = self.step_after_cr;
+        self.step_after_cr = key == '\r';
+        switch (key) {
+            '\n', '\r' => {
+                if (key == '\n' and after_cr) continue;
+                const op = self.code[pc];
+                if (inline_calls.isInline(op)) self.step_skip_end = pc + inline_calls.span(op.value);
+                return;
+            },
+            'n', 'N' => {
+                const op = self.code[pc];
+                if (inline_calls.isInline(op)) {
+                    // The copied operations follow in this definition.
+                    self.step_inline_end = pc + inline_calls.span(op.value);
+                    self.step_result = false;
+                    self.write("\n: ");
+                    self.write(decompiler.seeName(self, inline_calls.wordId(op.value)));
+                    self.write("\n");
+                    showStepStack(self);
+                    return;
+                }
+                const callee: ?u16 = switch (op.kind) {
+                    .call, .call_colon => if (!inline_calls.isInline(op) and op.value >= 0 and op.value < self.word_count and self.words[@intCast(op.value)].kind == .colon) @intCast(op.value) else null,
+                    else => null,
+                };
+                if (callee) |id| {
+                    self.step_skip_end = 0;
+                    self.step_inline_end = 0;
+                    self.step_depth += 1;
+                    self.step_result = false;
+                    self.write("\n: ");
+                    self.write(decompiler.seeName(self, id));
+                    self.write("\n");
+                    showStepStack(self);
+                }
+                return;
+            },
+            'u', 'U' => {
+                self.write("\n");
+                if (self.step_inline_end != 0) {
+                    // Out of the copied code of a short definition that `n` went into.
+                    self.step_skip_end = self.step_inline_end;
+                } else if (self.step_depth > self.step_base) {
+                    self.step_depth -= 1;
+                } else self.stepper = .off;
+                return;
+            },
+            'd', 'D' => {
+                self.write("\nDone...\n");
+                self.stepper = .off;
+                return;
+            },
+            's', 'S' => {
+                self.write("\n");
+                self.stepper = .off;
+                return words_tools.abortWith(self, "debugger aborted");
+            },
+            else => {},
+        }
+    }
+}
+
+/// `[ depth ] items` and the end of the line: the data stack between two steps.
+fn showStepStack(self: *State) void {
+    var text: [32]u8 = undefined;
+    self.write(std.fmt.bufPrint(&text, "[ {d} ]", .{self.data_depth}) catch unreachable);
+    for (self.data_stack[self.data_depth -| trace_items..self.data_depth]) |value| {
+        self.write(" ");
+        self.writeNumber(value);
+    }
+    self.write("\n");
+}
+
+/// What the operation at `pc` is called in a step: the word it runs, the number it
+/// pushes, or the control word it came from.
+fn operationName(self: *State, pc: u16, end_pc: u16, buffer: []u8) []const u8 {
+    const op = self.code[pc];
+    const named: struct { []const u8, ?Cell } = switch (op.kind) {
+        .call, .call_builtin, .call_colon => .{ "", if (inline_calls.isInline(op)) inline_calls.wordId(op.value) else op.value },
+        .compile_call => .{ "POSTPONE ", op.value },
+        .execution_token => .{ "['] ", op.value },
+        .store_value => .{ "TO ", op.value },
+        .add_value => .{ "+TO ", op.value },
+        .builtin => {
+            const builtin: Builtin = @enumFromInt(op.value);
+            for (self.words[0..self.builtin_count]) |*word| {
+                if (word.builtin == builtin and word.name_len != 0) return self.wordName(word.*);
+            }
+            return "<BUILT-IN>";
+        },
+        .literal => return std.fmt.bufPrint(buffer, "{d}", .{op.value}) catch "LITERAL",
+        .float_literal => .{ "FLITERAL", null },
+        .branch => .{ "BRANCH", null },
+        .branch_zero => .{ "?BRANCH", null },
+        .do_loop => .{ "DO", null },
+        .q_do_loop => .{ "?DO", null },
+        .loop => .{ "LOOP", null },
+        .plus_loop => .{ "+LOOP", null },
+        .leave => .{ "LEAVE", null },
+        .print_string => .{ ".\"", null },
+        .string_literal => .{ "S\"", null },
+        .counted_string => .{ "C\"", null },
+        .abort_string => .{ "ABORT\"", null },
+        .does => .{ "DOES>", null },
+        .exit => .{ if (pc + 1 == end_pc) ";" else "EXIT", null },
+        .local_frame => .{ "{", null },
+        .local_store => .{ "TO (LOCAL)", null },
+        .local_fetch => .{ "(LOCAL)", null },
+        .local_address => .{ "ADDR (LOCAL)", null },
+        .local_execute => .{ "EXECUTE (LOCAL)", null },
+        // The operations of the frequent built-in words keep the word's id.
+        else => .{ "", op.value },
+    };
+    const id = named[1] orelse return named[0];
+    return std.fmt.bufPrint(buffer, "{s}{s}", .{ named[0], decompiler.seeName(self, id) }) catch named[0];
 }

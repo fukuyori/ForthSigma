@@ -287,6 +287,27 @@ pub const State = struct {
     /// the profile note a word when it is called and when it returns. The host sets it
     /// with --trace or --profile, also in the State that LOAD restores an image in.
     plain_calls: bool = false,
+    /// The single-step debugger (DBG, BREAK:): `armed` until the word DBG named starts,
+    /// `on` while a definition is stepped through. The steps are those of the
+    /// definition running at the nesting depth `step_depth`, which `n` makes deeper
+    /// than `step_base`, where they started. `step_result` is whether the stack the
+    /// last operation left is still to be shown.
+    stepper: enum { off, armed, on } = .off,
+    step_word: u16 = 0,
+    step_depth: usize = 0,
+    step_base: usize = 0,
+    step_result: bool = false,
+    step_after_cr: bool = false,
+    /// The end of the copied code of a short definition that the steps run through
+    /// without stopping; 0 when there is none.
+    step_skip_end: u16 = 0,
+    /// The end of the copied code that `n` went into, where `u` leads; 0 when none.
+    step_inline_end: u16 = 0,
+    /// Whether the loop that counts operations runs the innermost compiled code, and
+    /// whether all compiled code is to run in it from now on (after a DBG or a BREAK:).
+    /// With that, a loop that does not count never runs inside one that does.
+    in_counted: bool = false,
+    keep_counting: bool = false,
     /// +LTRACE: each line of an included file is shown before it is interpreted.
     line_trace: bool = false,
     /// The values of ~~VALUE, whose TOs are shown. Not part of an image.
@@ -632,7 +653,8 @@ pub const State = struct {
             .{ "EMIT?", .emit_question },        .{ "(LOCAL)", .paren_local },
             .{ "+LTRACE", .ltrace_on },          .{ "-LTRACE", .ltrace_off },          .{ "ONCE", .once },                   .{ "(ONCE)", .once_run },
             .{ "~~BT", .debug_tilde_bt },        .{ "(~~BT)", .debug_tilde_bt_run },   .{ "~~1BT", .debug_tilde_one_bt },    .{ "~~VALUE", .define_watched_value },
-            .{ "(~~TO)", .watch_run },
+            .{ "(~~TO)", .watch_run },           .{ "DBG", .dbg },                     .{ "BREAK:", .break_colon },          .{ "(BREAK:)", .break_run },
+            .{ "BREAK\"", .break_quote },        .{ "(BREAK\")", .break_quote_run },
         };
 
     fn installBuiltins(self: *State) void {
@@ -662,7 +684,7 @@ pub const State = struct {
 
     fn isImmediateBuiltin(builtin: Builtin) bool {
         return switch (builtin) {
-            .compile_if, .compile_else, .compile_ahead, .compile_then, .compile_begin, .compile_end, .compile_again, .compile_while, .compile_repeat, .compile_do, .compile_q_do, .compile_loop, .compile_plus_loop, .compile_does, .compile_case, .compile_of, .compile_endof, .compile_endcase, .compile_exit, .compile_recurse, .leave, .bracket_if, .bracket_else, .bracket_then, .bracket_defined, .bracket_undefined, .bracket_ifdef, .bracket_ifundef, .bracket_do, .bracket_q_do, .bracket_loop, .bracket_plus_loop, .bracket_i, .bracket_begin, .bracket_until, .bracket_again, .bracket_while, .bracket_repeat, .bracket_for, .bracket_next, .end_definition, .literal, .fliteral, .sliteral, .two_literal, .defers, .bracket_compile, .question_exit, .question_leave, .compile_question_of, .compile_contof, .compile_next_case, .debug_tilde, .assert_paren, .once, .debug_tilde_bt, .debug_tilde_one_bt => true,
+            .compile_if, .compile_else, .compile_ahead, .compile_then, .compile_begin, .compile_end, .compile_again, .compile_while, .compile_repeat, .compile_do, .compile_q_do, .compile_loop, .compile_plus_loop, .compile_does, .compile_case, .compile_of, .compile_endof, .compile_endcase, .compile_exit, .compile_recurse, .leave, .bracket_if, .bracket_else, .bracket_then, .bracket_defined, .bracket_undefined, .bracket_ifdef, .bracket_ifundef, .bracket_do, .bracket_q_do, .bracket_loop, .bracket_plus_loop, .bracket_i, .bracket_begin, .bracket_until, .bracket_again, .bracket_while, .bracket_repeat, .bracket_for, .bracket_next, .end_definition, .literal, .fliteral, .sliteral, .two_literal, .defers, .bracket_compile, .question_exit, .question_leave, .compile_question_of, .compile_contof, .compile_next_case, .debug_tilde, .assert_paren, .once, .debug_tilde_bt, .debug_tilde_one_bt, .break_colon, .break_quote => true,
             else => false,
         };
     }
@@ -1243,6 +1265,9 @@ pub const State = struct {
         if (self.profile) |profile| {
             if (enter) profile.enter(id) else profile.leave();
         }
+        if (self.stepper != .off) {
+            if (enter) words_debug.stepEnter(self, id) else words_debug.stepLeave(self);
+        }
     }
 
     /// Whether short definitions are called instead of copied into their callers.
@@ -1258,9 +1283,10 @@ pub const State = struct {
         self.backtrace_total += 1;
     }
 
-    /// Runs compiled code. With a step limit (--max-steps), the trace (--trace), or the
-    /// profile (--profile), the loop that counts the operations and notes the words runs
-    /// it, so that the usual loop does not pay for them.
+    /// Runs compiled code. With a step limit (--max-steps), the trace (--trace), the
+    /// profile (--profile), or the single-step debugger (DBG, BREAK:), the loop that
+    /// counts the operations, notes the words, and stops for the steps runs it, so that
+    /// the usual loop does not pay for them.
     fn executeOperations(self: *State, start_pc: u16, end_pc: u16, defining_word: ?u16) RuntimeError!void {
         // A colon definition that compiled code calls runs in the loop of runOperations,
         // its caller kept in `frames`, instead of in a host call of its own: three calls
@@ -1285,7 +1311,7 @@ pub const State = struct {
         const loop_frames = self.frame_depth;
         // Before the frames are given back: they are the callers of the backtrace.
         errdefer if (defs.debug_enabled) self.recordBacktrace(self.failed_pc, loop_frames, entry_call_depth);
-        if (defs.debug_enabled and (self.step_limit != 0 or self.tracing or self.profile != null)) return self.runOperations(true, start_pc, end_pc, defining_word);
+        if (defs.debug_enabled and (self.step_limit != 0 or self.tracing or self.profile != null or self.keep_counting)) return self.runOperations(true, start_pc, end_pc, defining_word);
         return self.runOperations(false, start_pc, end_pc, defining_word);
     }
 
@@ -1296,6 +1322,11 @@ pub const State = struct {
         // is in executeOperations. A build without the debugging features does nothing.
         errdefer if (defs.debug_enabled) {
             self.failed_pc = running.pc;
+        };
+        const was_counted = self.in_counted;
+        if (counted) self.in_counted = true;
+        defer if (counted) {
+            self.in_counted = was_counted;
         };
         if (counted) self.traceRunning(running, true);
         while (!self.halted) {
@@ -1311,6 +1342,7 @@ pub const State = struct {
                 self.steps_left -= 1;
             }
             if (counted) if (self.profile) |profile| profile.countOperation(running.pc - 1);
+            if (counted and self.stepper == .on and self.call_depth == self.step_depth) try words_debug.step(self, running.pc - 1, running.end_pc);
             switch (op.kind) {
                 inline .call, .call_colon => |call_kind| {
                     if (call_kind == .call_colon and inline_calls.isInline(op)) {

@@ -224,6 +224,8 @@ pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
             } else |err| {
                 if (err == error.Quit or err == error.StepLimit) return err;
                 self.trace_depth = trace_depth;
+                // The definition that was stepped through is gone.
+                if (self.stepper == .on and self.step_depth > self.call_depth) self.stepper = .off;
                 if (self.profile) |profile| profile.unwind(profile_depth);
                 const code = self.throwCodeOf(err);
                 self.abort_message = null;

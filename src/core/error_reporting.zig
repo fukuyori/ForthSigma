@@ -23,6 +23,7 @@ pub fn report(self: *State, err: anyerror) void {
     const kept_floats = self.float_depth;
     defer self.clearBacktrace();
     self.trace_depth = 0;
+    self.stepper = .off;
     if (self.profile) |profile| profile.unwind(0);
     defer if (defs.debug_enabled and self.show_backtrace and self.backtrace_total != 0 and err != error.Aborted and err != error.Quit) showBacktrace(self, kept_data, kept_floats);
     defer if (err == error.Quit) {

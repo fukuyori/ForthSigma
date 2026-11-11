@@ -136,6 +136,44 @@ An operation is a word of a definition, a number, or a jump of a control structu
 
 A build without the debugging features (`-Ddebug=false`) does not have the option.
 
+### Single-step debugger
+
+`DBG name` runs the colon definition `name` one operation at a time, as gforth's debugger does. Before each operation it shows the operation and `->` and waits for a key; after the key the operation runs, and what it writes and the data stack (`[ depth ]` and the top nine items) follow on the same line.
+
+```text
+2 DBG BADWORD
+: BADWORD
+[ 1 ] 2
+0              -> [ 2 ] 2 0
+DO             -> [ 0 ]
+I              -> [ 1 ] 0
+INNER          -> [ 1 ] 1
+.              -> 1 [ 0 ]
+LOOP           -> [ 0 ]
+```
+
+| Key | Action |
+|---|---|
+| Enter | Runs the operation. A word it calls runs without stopping. |
+| `n` | Goes into the colon definition the operation calls: its name is shown after `:`, and its operations are stepped through. At its `;` the steps go on in the caller. For other operations, as Enter. |
+| `u` | Runs the rest of the definition without stopping. If `n` led into it, the steps go on in the caller; otherwise they end. |
+| `d` | Shows `Done...`, ends the steps, and runs the rest. |
+| `s` | Ends the run with the error `debugger aborted`. |
+
+The keys are read as `KEY` reads them, so they can also come from a pipe or a file: `printf '2 DBG BADWORD\n\n\n\nd' | sigma prog.fs`. At the end of the input the steps end as with `d`.
+
+`BREAK:` in a definition starts the steps there: when the definition reaches it, the data stack is shown and the operations after it are stepped through. `BREAK" text"` shows `BREAK AT: text` first.
+
+```forth
+: WITHBREAK ( n -- n ) 1+ BREAK: 2* ;
+```
+
+- The operations are the compiled ones: a number is shown as the number, `IF` and `WHILE` as `?BRANCH`, `ELSE`, `AGAIN`, and `REPEAT` as `BRANCH`, the end as `;`.
+- A short definition whose code was copied into its caller is one step, as a call is; `n` goes into the copied operations.
+- A definition that was already running when the first `DBG` or `BREAK:` of the session was met does not stop at a `BREAK:`.
+- Unlike in gforth, where the debugger works only in `gforth-itc`, the addresses of the operations are not shown, and the stack is shown in the current base without leading zeros.
+- These words are not in a build without the debugging features (`-Ddebug=false`).
+
 `HELP` shows the basic usage, and `HELP name` shows the stack effect of a word and a one-line description in English (example: `HELP DUP`). The name is read from the same line (also in an `EVALUATE` string, it does not read past a line end). `HELP` written in a definition reads the name when that definition runs. For a word defined by the user, it suggests viewing its contents with `SEE`. An unknown name gives the error `name ?`. `LICENSE` shows the full text of the license and the copyright notice of the included CORE-MATH.
 
 When an input line has been processed successfully, `OK` is printed. For example, the following input prints the square of 12.

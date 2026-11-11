@@ -708,6 +708,11 @@ pub const Builtin = enum {
     debug_tilde_one_bt,
     define_watched_value,
     watch_run,
+    dbg,
+    break_colon,
+    break_run,
+    break_quote,
+    break_quote_run,
 };
 
 pub const HeapResult = union(enum) { address: Cell, no_memory, bad_pointer };
