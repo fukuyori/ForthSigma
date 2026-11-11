@@ -21,7 +21,7 @@ const std = @import("std");
 const defs = @import("defs.zig");
 const forth = @import("../forth.zig");
 const memory_map = @import("memory_map.zig");
-const help_text = @import("help_text.zig");
+const words_help = @import("words_help.zig");
 const inline_calls = @import("inline_calls.zig");
 const debug_log = @import("debug_log.zig");
 const Builtin = defs.Builtin;
@@ -419,7 +419,9 @@ pub const Lint = struct {
         for (State.builtin_definitions) |definition| {
             const index = @intFromEnum(definition[1]);
             if (self.builtin_effects[index].known or !fixedEffect(definition[1])) continue;
-            for (help_text.entries) |entry| {
+            // The table HELP uses, without the words the build leaves out: the
+            // executable then holds one table, not that one and the whole one.
+            for (words_help.help_entries) |entry| {
                 if (!std.mem.eql(u8, entry.name, definition[0])) continue;
                 self.builtin_effects[index] = parseComments(entry.stack);
                 break;

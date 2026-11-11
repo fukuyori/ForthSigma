@@ -124,18 +124,18 @@ Forthソースファイルは標準入力からも読み込めます。例:
 | オプション | 除くもの | 大きさ |
 |---|---|---|
 | （なし） | — | 1,452,544バイト |
-| `-Dfloat=false` | 浮動小数点の語、浮動小数点数のリテラル（`1e` など）、`F:` `F^` のローカル変数、`ENVIRONMENT?` の `FLOATING-STACK` `MAX-FLOAT`、CORE-MATH、グラフを描くグラフィックスの語（`PLOT` など） | 1,063,936バイト |
-| `-Dfiles=false` | `INCLUDE`、`REQUIRE`、`OPEN-FILE`、`STDIN`、`SLURP-FILE`、`$...SLURP` の語など、ファイルを開く・読む・書く・取り込む語 | 1,449,984バイト |
+| `-Dfloat=false` | 浮動小数点の語、浮動小数点数のリテラル（`1e` など）、`F:` `F^` のローカル変数、`ENVIRONMENT?` の `FLOATING-STACK` `MAX-FLOAT`、CORE-MATH、グラフを描くグラフィックスの語（`PLOT` など） | 1,007,616バイト |
+| `-Dfiles=false` | `INCLUDE`、`REQUIRE`、`OPEN-FILE`、`STDIN`、`SLURP-FILE`、`$...SLURP` の語など、ファイルを開く・読む・書く・取り込む語 | 1,397,760バイト |
 | `-Dhelp=false` | `HELP`、`LICENSE` とその文章（起動時の表示も `help` を案内しなくなります） | 1,319,936バイト |
-| `-Dtools=false` | `SEE`、`LOCATE`、`WHERE` | 1,447,424バイト |
-| `-Dimage=false` | `SAVE`、`LOAD`、`SAVESYS` | 1,501,696バイト |
-| `-Dgraphics=false` | `REQUIRE-GRAPHICS`、`GFX-` の語、グラフィックスのライブラリとそのフォント、Tcl/Tkの語 | 1,270,272バイト |
-| `-Daudio=false` | `REQUIRE-AUDIO`、`SND-` の語、音のライブラリ、音のスレッド | 1,428,480バイト |
+| `-Dtools=false` | `SEE`、`LOCATE`、`WHERE` | 1,397,248バイト |
+| `-Dimage=false` | `SAVE`、`LOAD`、`SAVESYS` | 1,451,520バイト |
+| `-Dgraphics=false` | `REQUIRE-GRAPHICS`、`GFX-` の語、グラフィックスのライブラリとそのフォント、Tcl/Tkの語 | 1,192,448バイト |
+| `-Daudio=false` | `REQUIRE-AUDIO`、`SND-` の語、音のライブラリ、音のスレッド | 1,371,136バイト |
 | `-Ddebug=false` | デバッグ機能（エラーの後のバックトレース、`--max-steps`、`--trace`、`--profile`、`--debug-log`、`--lint`、`--format`、`--coverage`、語 `WATCH` `UNWATCH` `.COVER-RAW` `COV%` `.COVERAGE` `DBG` `BREAK:` `BREAK"` `~~BT` `~~1BT` `ONCE` `~~VALUE` `~~VARIABLE` `+LTRACE` `-LTRACE`） | 1,245,184バイト |
 | `-Ddebug=false` より上の7つ | デバッグ機能を除く上のすべて | 517,632バイト |
 | 8つすべて | 上のすべて | 363,520バイト |
 
-大きさは、0.10.0（コミット `96308b4`）をリリースと同じ `-Doptimize=fast -Dcpu=baseline` でWindows x86_64向けにビルドしたものです（2026-11-11に測定）。リリースの実行ファイルは、署名の分だけ約10 KB大きくなります。グループを1つ除いても、小さくなるとは限りません。`SAVE`、`LOAD`、`SAVESYS` を除いた版は、すべてを含む版より大きくなりました。オプションは組み合わせられます（例: `zig build -Doptimize=fast -Dfloat=false -Dhelp=false`）。
+大きさは、0.10.0 の後のソースをリリースと同じ `-Doptimize=fast -Dcpu=baseline` でWindows x86_64向けにビルドしたものです（2026-11-11に測定）。リリースの実行ファイルは、署名の分だけ約10 KB大きくなります。0.10.0 そのものでは、`HELP` とデバッグ機能以外のグループを除いた版は、この表より50〜78 KB大きくなります。オプションは組み合わせられます（例: `zig build -Doptimize=fast -Dfloat=false -Dhelp=false`）。
 
 除いたグループの語は辞書になく、`HELP` の説明もありません。グループはそれぞれ独立しているので、ファイルの語を除いても、`SAVE`・`LOAD`・`SAVESYS` はイメージのファイルを書き読みし、`LOCATE` はソースファイルを読みます（それぞれのグループも除いた場合を除きます）。組み込み語の実行トークンはどの版でも同じなので、ある版で保存したイメージは、グループの違う版でも読み込めます。その版で除いた語を実行すると `INVALID EXECUTION TOKEN` のエラーになり、`SEE` はその語を名前で表示します。グループを除いた以前の版（`-Dfloat=false` など）で保存したイメージは、組み込み語の実行トークンが違うので `INVALID IMAGE` になります。
 

@@ -1,5 +1,11 @@
 # Changelog
 
+## [Unreleased]
+
+### Changed
+
+- A build that leaves out a group of words (`-Dfloat=false` and the like, but for `-Dhelp=false` and `-Ddebug=false`) is 50 to 78 KB smaller: its executable held the table of the `HELP` texts twice, once for `HELP` without the words left out and once whole for `--lint`. `--lint` now reads the table `HELP` uses. The build with every group is as it was.
+
 ## [0.10.0] - 2026-11-11
 
 ### Added
