@@ -326,6 +326,11 @@ pub const State = struct {
     report_text: [240]u8 = undefined,
     report_len: usize = 0,
     report_capturing: bool = false,
+    /// The cells of WATCH, each with the value it had when it was last looked at. The
+    /// loop that counts operations looks at them after each operation. Not part of an
+    /// image.
+    cell_watches: [8]struct { address: Cell, value: Cell } = undefined,
+    cell_watch_count: usize = 0,
     /// +LTRACE: each line of an included file is shown before it is interpreted.
     line_trace: bool = false,
     /// The values of ~~VALUE, whose TOs are shown. Not part of an image.
@@ -547,6 +552,8 @@ pub const State = struct {
                 continue;
             }
             try self.handleToken(token);
+            // WATCH: what a word that the interpreter ran changed.
+            if (defs.debug_enabled and self.cell_watch_count != 0) words_debug.checkWatches(self, null);
             // gforth reports a negative >IN as a parsed string overflow; going back to
             // the start instead would run the line again and again.
             if (self.readCellConst(in_address) < 0) return error.StringTooLong;
@@ -687,7 +694,7 @@ pub const State = struct {
             .{ "~~BT", .debug_tilde_bt },        .{ "(~~BT)", .debug_tilde_bt_run },   .{ "~~1BT", .debug_tilde_one_bt },    .{ "~~VALUE", .define_watched_value },
             .{ "(~~TO)", .watch_run },           .{ "DBG", .dbg },                     .{ "BREAK:", .break_colon },          .{ "(BREAK:)", .break_run },
             .{ "BREAK\"", .break_quote },        .{ "(BREAK\")", .break_quote_run },   .{ ".COVER-RAW", .cover_raw },        .{ "COV%", .cov_percent },
-            .{ ".COVERAGE", .coverage },
+            .{ ".COVERAGE", .coverage },         .{ "~~VARIABLE", .define_watched_variable }, .{ "WATCH", .watch_cell },    .{ "UNWATCH", .unwatch_cell },
         };
 
     fn installBuiltins(self: *State) void {
@@ -1069,6 +1076,9 @@ pub const State = struct {
     pub const fetchLocal = local_variables.fetchLocal;
 
     fn handleWord(self: *State, id: u16) RuntimeError!void {
+        // ~~VARIABLE: each use of the name is shown (at once here, and from the
+        // definition it is compiled into when that runs).
+        if (defs.debug_enabled and self.watched_count != 0 and self.words[id].kind == .variable and words_debug.isWatched(self, id)) try words_debug.watchStore(self, id, self.words[id].name_len);
         if (self.compiling and !self.words[id].immediate) {
             try self.compileCall(id);
         } else {
@@ -1394,13 +1404,20 @@ pub const State = struct {
             self.in_counted = was_counted;
         };
         if (counted) self.traceRunning(running, true);
+        // The operation that ran last in this loop, for WATCH.
+        var ran: ?u16 = null;
         while (!self.halted) {
+            // WATCH: what the last operation changed.
+            if (counted and self.cell_watch_count != 0) {
+                if (ran) |pc| words_debug.checkWatches(self, pc);
+            }
             if (running.pc >= running.end_pc) {
                 if (counted) self.traceRunning(running, false);
                 if (!self.returnToCaller(&running, entry_frames)) return;
                 continue;
             }
             const op = self.code[running.pc];
+            if (counted) ran = running.pc;
             running.pc += 1;
             if (counted and self.step_limit != 0) {
                 if (self.steps_left == 0) return error.StepLimit;

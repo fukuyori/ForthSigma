@@ -410,3 +410,65 @@ test ".COVERAGE shows every block of a line with many" {
     try std.testing.expectEqual(@as(usize, 35), std.mem.count(u8, output.written(), " ( 1) "));
     try std.testing.expect(std.mem.startsWith(u8, output.written(), "\n: MANY ( 1)  1 IF ( 1)  THEN ( 1)  1 IF ( 1)  THEN ( 1)  "));
 }
+
+test "WATCH shows each change of a cell, with the word that made it" {
+    try support.skipWithout(&.{ .debug, .files });
+    var output = Output{};
+    setFakeFile(&output, 0,
+        \\VARIABLE SCORE
+        \\CREATE TABLE 4 CELLS ALLOT
+        \\: BUMP ( -- ) 1 SCORE +! ;
+        \\: CLOBBER ( -- ) TABLE 4 CELLS -1 FILL ;
+        \\: INDIRECT ( -- ) 9 TABLE 2 CELLS + ! ;
+        \\: UNTOUCHED ( -- ) SCORE @ DROP ;
+        \\: MAIN ( -- ) BUMP UNTOUCHED BUMP INDIRECT CLOBBER ;
+        \\
+    );
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
+    try machine.interpretLine("INCLUDE a.txt SCORE TABLE 2 CELLS +");
+    const cell = try machine.pop();
+    const score = try machine.pop();
+
+    // A store through the name, one to an address worked out, and FILL over the cell.
+    try machine.interpretLine("SCORE WATCH  TABLE 2 CELLS + WATCH  MAIN");
+    var expected: [512]u8 = undefined;
+    try std.testing.expectEqualStrings(try std.fmt.bufPrint(&expected, "WATCH: {d} changed from 0 to 1\n  in BUMP a.txt:3\n" ++
+        "WATCH: {d} changed from 1 to 2\n  in BUMP a.txt:3\n" ++
+        "WATCH: {d} changed from 0 to 9\n  in INDIRECT a.txt:5\n" ++
+        "WATCH: {d} changed from 9 to -1\n  in CLOBBER a.txt:4\n", .{ score, score, cell, cell }), shown(&output));
+
+    // A word that the interpreter runs has no definition to name. After UNWATCH the
+    // cell is not looked at, and the other one still is.
+    try machine.interpretLine("7 SCORE !  SCORE UNWATCH  8 SCORE !  BUMP  INDIRECT");
+    try std.testing.expectEqualStrings(try std.fmt.bufPrint(&expected, "WATCH: {d} changed from 2 to 7\n" ++
+        "WATCH: {d} changed from -1 to 9\n  in INDIRECT a.txt:5\n", .{ score, cell }), shown(&output));
+    try std.testing.expectEqualStrings("", output.written());
+
+    // Eight cells at most, and an address that is one.
+    try machine.interpretLine("TABLE 2 CELLS + UNWATCH : W8 8 0 DO HERE WATCH 0 , LOOP ; W8");
+    try std.testing.expectError(error.Thrown, machine.interpretLine("HERE WATCH"));
+    machine.report(error.Thrown);
+    try std.testing.expectEqualStrings("too many watched cells\n", output.written());
+    try std.testing.expectError(error.InvalidAddress, machine.interpretLine("-8 WATCH"));
+}
+
+test "~~VARIABLE shows every use of its name" {
+    try support.skipWithout(&.{.debug});
+    var output = Output{};
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
+
+    // At once outside a definition, and from a definition when it runs.
+    try machine.interpretLine("~~VARIABLE SEEN 3 SEEN ! : USES 5 SEEN ! SEEN @ ; USES");
+    try expectStack(machine, &.{5});
+    try std.testing.expectEqualStrings("\n*the terminal*:0:19:<1> #3 `SEEN \n\n*the terminal*:0:35:<1> #5 `SEEN \n\n*the terminal*:0:42:<0> `SEEN \n", shown(&output));
+
+    // In a definition its name is read at once, as that of VARIABLE. The name after '
+    // is read, not used, and an ordinary VARIABLE says nothing.
+    try machine.interpretLine("DROP : MAKE ~~VARIABLE LATESTXT ; MAKE V ' V = VARIABLE PLAIN 1 PLAIN !");
+    try expectStack(machine, &.{-1});
+    try std.testing.expectEqualStrings("", shown(&output));
+    try machine.interpretLine("DROP 2 V !");
+    try std.testing.expectEqualStrings("\n*the terminal*:0:8:<1> #2 `V \n", shown(&output));
+}

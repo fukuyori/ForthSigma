@@ -106,10 +106,30 @@ These words of gforth also write to standard error:
 | `~~1BT` | `( -- )` | As `~~BT`, the first time only. |
 | `ONCE` | `( -- )` | In a definition: what follows, up to `THEN`, runs only the first time (`ONCE ~~ THEN`). |
 | `~~VALUE` | `( x "name" -- )` | Defines a `VALUE` whose every `TO` is shown: the place of the `TO`, the data stack with the new value on top, and `` `name ``. |
+| `~~VARIABLE` | `( "name" -- )` | Defines a `VARIABLE` whose every use by name is shown, before its address is given: the place of the name, the data stack, and `` `name ``. The name after `'` or `[']` is not a use. |
 | `+LTRACE` | `( -- )` | From the next line on, shows each line of an included file before it is interpreted, as `~~` at its start would (`file:line:1:` and the data stack). |
 | `-LTRACE` | `( -- )` | Ends what `+LTRACE` started. |
 
 The trace and these words are not in a build without the debugging features (`-Ddebug=false`).
+
+### Watching memory
+
+`WATCH ( a-addr -- )` shows on standard error, from then on, each change of the cell at `a-addr`, with the definition that made it and the file and line of its word:
+
+```text
+WATCH: 1048632 changed from 7 to 9
+  in UPDATE prog.fs:12
+```
+
+A change is found however it is made: by a store through the name of a variable, by one to an address worked out, or by `MOVE`, `FILL`, and the like over the cell. It is for finding what changes a cell that should not change. A change made by a word typed at the prompt (or outside a definition in a file) has no second line. `UNWATCH ( a-addr -- )` ends it for that cell. Up to eight cells are watched; one more gives the error `too many watched cells`. With `--debug-log`, each change is also an event `watch` of the log.
+
+```forth
+SCORE WATCH   MAIN   SCORE UNWATCH
+```
+
+- The cells are looked at after each operation of compiled code, so the program runs slower from the first `WATCH` on (also after `UNWATCH`).
+- A definition that was already running when the first `WATCH` of the session was run is not looked at: use `WATCH` before the program is started, outside a definition.
+- gforth has no such words; these are FORTH/Sigma's own. They are not in a build without the debugging features.
 
 ### Profile
 
@@ -199,6 +219,7 @@ The keys are read as `KEY` reads them, so they can also come from a pipe or a fi
 | `trace_limit` | With `--trace-limit`: the trace ends. | `lines` |
 | `lint` | With `--lint`: one for each finding. | `check`, `word`, `file`, `line`, `message` |
 | `lint_end` | With `--lint`: after the findings. | `findings`, `unchecked` (definitions not checked for their stack effect) |
+| `watch` | A cell of `WATCH` changed. | `address`, `old`, `new`, `in` (the definition and the place, as in the text; not for a change by the interpreter) |
 | `profile` | With `--profile`: once, when the program ends. | `operations` |
 | `profile_word` | After `profile`: one for each definition, in the order of the profile. | `word`, `file` and `line` (where it starts, when known), `calls`, `self`, `total` |
 

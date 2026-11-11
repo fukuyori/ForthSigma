@@ -142,3 +142,17 @@ test "the log is UTF-8 also when a message is cut or a name is not" {
     try std.testing.expect(std.unicode.utf8ValidateSlice(named));
     try std.testing.expect(std.mem.indexOf(u8, named, "{\"word\":\"X\xef\xbf\xbd\xef\xbf\xbdY\"}") != null);
 }
+
+test "a change of a watched cell is logged" {
+    try support.skipWithout(&.{.debug});
+    var output = Output{};
+    const machine = try createLogged(&output);
+    defer destroyMachine(machine);
+
+    try machine.interpretLine("VARIABLE SCORE : BUMP 1 SCORE +! ; SCORE DUP WATCH");
+    const score = try machine.pop();
+    try machine.interpretLine("BUMP 4 SCORE !");
+    var expected: [256]u8 = undefined;
+    try std.testing.expectEqualStrings(try std.fmt.bufPrint(&expected, "{{\"event\":\"watch\",\"address\":{d},\"old\":0,\"new\":1,\"in\":\"BUMP\"}}\n" ++
+        "{{\"event\":\"watch\",\"address\":{d},\"old\":1,\"new\":4}}\n", .{ score, score }), logged());
+}

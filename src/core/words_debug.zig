@@ -1,5 +1,6 @@
 //! The debugging words taken from gforth (+LTRACE, -LTRACE, ONCE, ~~BT, ~~1BT, ~~VALUE,
-//! and the single-step debugger of DBG, BREAK:, and BREAK") and the trace of --trace. A build with -Ddebug=false has none of them. Their output
+//! ~~VARIABLE, and the single-step debugger of DBG, BREAK:, and BREAK"), the trace of
+//! --trace, and WATCH and UNWATCH, which gforth does not have. A build with -Ddebug=false has none of them. Their output
 //! goes to standard error, as that of ~~ does.
 
 const std = @import("std");
@@ -26,6 +27,7 @@ pub const words = [_]Builtin{
     .ltrace_on, .ltrace_off, .once, .once_run, .debug_tilde_bt, .debug_tilde_bt_run, .debug_tilde_one_bt, .define_watched_value, .watch_run,
     .dbg,       .break_colon, .break_run, .break_quote, .break_quote_run,
     .cover_raw, .cov_percent, .coverage,
+    .define_watched_variable, .watch_cell, .unwatch_cell,
 };
 
 /// How many of the top stack items a line of the trace shows, as .S.
@@ -74,6 +76,35 @@ pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
             const length = @min(place.len, copy.len);
             @memcpy(copy[0..length], place[0..length]);
             try words_tools.showPlace(self, copy[0..length], self.wordName(self.words[id]));
+        },
+        // ~~VARIABLE ( "name" -- ): a VARIABLE whose every use by name is shown.
+        .define_watched_variable => try self.runDefiningWord(builtin),
+        // WATCH ( a-addr -- ): from now on, each change of the cell at a-addr is shown,
+        // with the word that made it.
+        .watch_cell => {
+            const address = try self.pop();
+            const value = try self.readCell(address);
+            const slot = for (self.cell_watches[0..self.cell_watch_count]) |*watched| {
+                if (watched.address == address) break watched;
+            } else blk: {
+                if (self.cell_watch_count == self.cell_watches.len) return words_tools.abortWith(self, "too many watched cells");
+                self.cell_watch_count += 1;
+                break :blk &self.cell_watches[self.cell_watch_count - 1];
+            };
+            slot.* = .{ .address = address, .value = value };
+            // The loop that counts operations is the one that looks at the cells.
+            self.keep_counting = true;
+        },
+        // UNWATCH ( a-addr -- ): ends what WATCH started for that cell.
+        .unwatch_cell => {
+            const address = try self.pop();
+            var kept: usize = 0;
+            for (self.cell_watches[0..self.cell_watch_count]) |watched| {
+                if (watched.address == address) continue;
+                self.cell_watches[kept] = watched;
+                kept += 1;
+            }
+            self.cell_watch_count = kept;
         },
         // The words of gforth's coverage.fs, on the counts of --coverage.
         .cover_raw => try coverage.coverRaw(self),
@@ -152,6 +183,41 @@ pub fn unwatchFrom(self: *State, id: u16) void {
         kept += 1;
     }
     self.watched_count = kept;
+}
+
+/// Looks at the cells of WATCH after an operation of compiled code (`pc`), or after a
+/// word that the interpreter ran (null): each one that changed is shown on standard
+/// error, with the definition and the place of the operation that changed it,
+///
+///     WATCH: 1048632 changed from 7 to 9
+///       in UPDATE prog.fs:12
+///
+/// and written to the log of --debug-log.
+pub fn checkWatches(self: *State, pc: ?u16) void {
+    for (self.cell_watches[0..self.cell_watch_count]) |*watched| {
+        const now = self.readCell(watched.address) catch continue;
+        if (now == watched.value) continue;
+        var line: [max_name + 200]u8 = undefined;
+        var writer = LineWriter{ .buffer = &line };
+        writer.add("WATCH: ");
+        writer.number(watched.address);
+        writer.add(" changed from ");
+        writer.number(watched.value);
+        writer.add(" to ");
+        writer.number(now);
+        writer.add("\n");
+        var place: [max_name + 96]u8 = undefined;
+        var where = LineWriter{ .buffer = &place };
+        if (pc) |at| {
+            error_reporting.describePlace(self, at, &where);
+            writer.add("  in ");
+            writer.add(where.text());
+            writer.add("\n");
+        }
+        words_tools.writeError(self, writer.text());
+        if (debug_log.enabled(self)) debug_log.logWatch(self, watched.address, watched.value, now, where.text());
+        watched.value = now;
+    }
 }
 
 /// What TO does for a watched value before it stores: shown at once outside a

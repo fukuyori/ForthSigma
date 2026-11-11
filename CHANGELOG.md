@@ -13,7 +13,8 @@
 - `--coverage` counts how often each block of the code runs, for gforth's coverage words `.COVER-RAW`, `COV%`, and `.COVERAGE`; the places and counts are those of gforth.
 - `--debug-log FILE` writes the errors (with the backtrace and the stacks), the trace, and the profile to a file as JSON Lines, for programs to read.
 - The single-step debugger of gforth: `DBG name` runs a colon definition one operation at a time (Enter next, `n` into the called word, `u` out, `d` run the rest, `s` stop), and `BREAK:` and `BREAK" text"` start the steps inside a definition. The keys are read as `KEY` reads them, so they can come from a pipe.
-- The debugging words of gforth `~~BT`, `~~1BT`, `ONCE`, `~~VALUE`, `+LTRACE`, and `-LTRACE`.
+- The debugging words of gforth `~~BT`, `~~1BT`, `ONCE`, `~~VALUE`, `~~VARIABLE`, `+LTRACE`, and `-LTRACE`.
+- `WATCH ( a-addr -- )` shows each change of a cell, with the definition and the place of the word that made it, however the change is made; `UNWATCH` ends it. Up to eight cells.
 - The build option `-Ddebug=false` leaves out the debugging features (the backtrace, `--max-steps`, the trace, the profile, the log, the checks of `--lint`, `--format`, and the debugging words above).
 
 ### Changed

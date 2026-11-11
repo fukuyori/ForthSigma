@@ -37,13 +37,14 @@ pub fn finishPending(self: *State, token: []const u8) RuntimeError!void {
         .colon_name => {
             self.beginDefinition(try self.appendWord(token, .colon, .drop, 0));
         },
-        .variable_name, .value_name, .watched_value_name => {
-            const id = try self.appendDataWord(token, if (pending == .variable_name) .variable else .value, cell_size);
-            try self.writeCell(self.words[id].value, if (pending == .variable_name) 0 else self.pending_constant);
-            // ~~VALUE: the TOs of this value are shown.
-            if (defs.debug_enabled and pending == .watched_value_name) try words_debug.watch(self, id);
+        .variable_name, .value_name, .watched_value_name, .watched_variable_name => {
+            const variable = pending == .variable_name or pending == .watched_variable_name;
+            const id = try self.appendDataWord(token, if (variable) .variable else .value, cell_size);
+            try self.writeCell(self.words[id].value, if (variable) 0 else self.pending_constant);
+            // ~~VALUE: the TOs of this value are shown; ~~VARIABLE: the uses of its name.
+            if (defs.debug_enabled and (pending == .watched_value_name or pending == .watched_variable_name)) try words_debug.watch(self, id);
             // A variable can take a DOES> part, as in gforth, where VARIABLE is CREATE 0 ,.
-            if (pending == .variable_name) self.last_created_word = id;
+            if (variable) self.last_created_word = id;
         },
         .fvariable_name => {
             const id = try self.appendDataWord(token, .variable, float_size);
@@ -180,7 +181,7 @@ pub fn bodyAddress(self: *State, id: u16) RuntimeError!Cell {
 
 pub fn isDefiningBuiltin(builtin: Builtin) bool {
     return switch (builtin) {
-        .define_colon, .define_variable, .define_fvariable, .define_constant, .define_value, .define_two_variable, .define_two_constant, .define_fconstant, .define_fvalue, .define_two_value, .define_buffer, .define_array, .define_watched_value => true,
+        .define_colon, .define_variable, .define_fvariable, .define_constant, .define_value, .define_two_variable, .define_two_constant, .define_fconstant, .define_fvalue, .define_two_value, .define_buffer, .define_array, .define_watched_value, .define_watched_variable => true,
         else => false,
     };
 }
@@ -215,6 +216,7 @@ pub fn definingPending(self: *State, builtin: Builtin) RuntimeError!Pending {
             self.pending_constant = try self.pop();
             break :blk .watched_value_name;
         },
+        .define_watched_variable => .watched_variable_name,
         .define_two_variable => .two_variable_name,
         .define_two_constant => blk: {
             self.pending_double = try self.popDouble();

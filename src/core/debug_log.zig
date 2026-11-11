@@ -10,6 +10,7 @@
 //!     {"event":"error","message":"DIVISION BY ZERO !","code":-10,"file":"top.fs","line":3,
 //!      "backtrace":[{"word":"AVERAGE","file":"bt.fs","line":3}],"more":0,
 //!      "stack_depth":2,"stack":[10,20],"float_stack_depth":0,"float_stack":[]}
+//!     {"event":"watch","address":1048632,"old":7,"new":9,"in":"UPDATE prog.fs:12"}
 //!     {"event":"lint","check":"UNUSED","word":"HELPER","file":"prog.fs","line":3,"message":"HELPER is not used in the files"}
 //!     {"event":"lint_end","findings":1,"unchecked":0}
 //!     {"event":"profile","operations":177}
@@ -311,6 +312,17 @@ fn throwCode(self: *const State, err: anyerror) ?Cell {
         if (entry[0] == err) return entry[1];
     }
     return null;
+}
+
+/// A cell of WATCH changed; `place` is the definition and the place of the operation
+/// that changed it ("NAME file:line"), empty when the interpreter ran the word.
+pub fn logWatch(self: *State, address: Cell, old: Cell, new: Cell, place: []const u8) void {
+    var event = Event.begin(self, "watch");
+    event.number("address", address);
+    event.number("old", old);
+    event.number("new", new);
+    if (place.len != 0) event.string("in", place);
+    event.end();
 }
 
 /// A finding of --lint.

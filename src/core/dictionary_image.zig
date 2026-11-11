@@ -281,6 +281,7 @@ fn restore(self: *State, image: []const u8, memory_is_fresh: bool) RuntimeError!
         @memset(&self.code_columns, 0);
     }
     self.watched_count = 0;
+    self.cell_watch_count = 0;
     self.code_count = @intCast(code_count);
     // Old and new images store ordinary calls; rebuild dispatch information
     // only after the word entries and counts have been restored.
