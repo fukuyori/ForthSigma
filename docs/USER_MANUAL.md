@@ -251,7 +251,7 @@ prog.fs: 12 LINES FORMATTED
 lib.fs: FORMATTED ALREADY
 ```
 
-`--format-check` writes nothing and says how many lines `--format` would change (`prog.fs: 12 LINES TO FORMAT`); its exit status is 2 when a file has such lines. The exit status of both is 1 when a file cannot be read or written. `--format-indent N` sets the blanks of one step, 3 without it (0 to 16).
+`--format-check` writes nothing and says how many lines `--format` would change (`prog.fs: 12 LINES TO FORMAT`); its exit status is 2 when a file has such lines. The exit status of both is 1 when a file cannot be read or written. `--format-indent N` sets the blanks of one step, 3 without it (0 to 16; with 0 the lines of a structure stand under the line that opened it).
 
 Only the blanks before the first and after the last character of a line change; everything between them stays byte for byte, so the words, strings, and comments of the program are the ones it had. (In FORTH/Sigma a string or a `( comment )` ends on its line, so no line is the inside of one.) The rules:
 
@@ -266,12 +266,13 @@ Only the blanks before the first and after the last character of a line change; 
    THEN THEN DROP ;
 ```
 
-- A line inside a colon definition or a control structure is indented by one step for each it is in. `IF`, `BEGIN`, `DO`, `?DO`, `CASE`, and `OF` open a structure; `THEN`, `UNTIL`, `AGAIN`, `REPEAT`, `LOOP`, `+LOOP`, `ENDOF`, and `ENDCASE` close one.
-- A line that starts with a word that closes, with `ELSE`, `WHILE`, `DOES>`, or with `;` stands one step out, and so does a line that gives the condition or the step of a loop before the word that takes it (`DONE @ UNTIL`, `2 +LOOP`, `DUP WHILE`).
-- The structures that one line opens are one step together (`h 0 DO  w 0 DO`, closed by `LOOP LOOP`), and a structure after `ELSE` on its line is no step of its own (`ELSE x IF`). After a line that ends in `x IF y ELSE`, the next line is indented when it was written further in, and left under it when it was not (a chain of conditions).
-- A line that starts with none of these words and was written further in than the line before it is the rest of a long line: it keeps its distance from that line.
+- A line inside a colon definition or a control structure stands one step further in than the line that opened it. `IF`, `BEGIN`, `DO`, `?DO`, `CASE`, and `OF` open a structure; `THEN`, `UNTIL`, `AGAIN`, `REPEAT`, `LOOP`, `+LOOP`, `ENDOF`, and `ENDCASE` close one.
+- A line that starts with a word that closes, with `ELSE`, `WHILE`, `DOES>`, or with `;` stands under the line that opened the structure, and so does a line that gives the condition or the step of a loop before the word that takes it (`DONE @ UNTIL`, `2 +LOOP`, `DUP WHILE`).
+- The structures that one line opens are one step together (`h 0 DO  w 0 DO`, closed by `LOOP LOOP`); what the line of a definition's name opens is a step of its own (`: T ( -- )   10 0 DO`, closed by `   LOOP ;`). After a line that ends in `x IF y ELSE`, the lines stand under it, not a step in (a chain of conditions).
+- A line that starts with none of these words and was written further in than the line before it is the rest of a long line: it keeps its distance from that line. (After a line that opened or closed a structure, only a distance of three steps or more is one; less is the indentation of a text written with other steps.)
 - A line outside every structure keeps its indentation (a table after `CREATE`), and `[IF]`, `[ELSE]`, `[THEN]` do not indent.
-- A tab in the indentation becomes blanks. The ends of the lines (LF or CR LF) stay as they are.
+- A tab in the indentation becomes blanks: one step inside a structure, to the next multiple of eight outside. The ends of the lines (LF or CR LF) stay as they are.
+- Formatting a file that is formatted changes nothing.
 
 The words are known by their names: a program that defines its own `IF` is indented as if it were the usual one. A word of the program that reads the rest of its line, or the lines after it, as text (not with a closing `"`) may get other blanks at the start or the end of that text. A build without the debugging features (`-Ddebug=false`) does not have these options.
 
