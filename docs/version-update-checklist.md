@@ -17,6 +17,8 @@
 ## リリース時
 
 - [ ] `VERSION` の値を公開する版番号へ更新する。
+- [ ] `python scripts/check-docs.py` を実行し、`findings: 0` を確かめる。前のタグの後に加えた組み込み語（HELP と互換性の一覧）とオプション（利用者マニュアルと変更履歴）、英語版と日本語版の構成、版番号を書いている箇所を、ソースと照合する。
+- [ ] 機能を除くビルドのオプション（`-Ddebug=false` など）の説明、試験のファイルの一覧、表の行の名前のように、仲間を列挙している文を検索して読み直す（スクリプトは見ない）。除いた版の説明は、その版をビルドして実行で確かめる。
 - [ ] 公開する版番号とタグ名を決める。タグ作成・pushは別途明示された場合だけ行う。
 - [ ] `scripts/build-installer.ps1` で作ったインストーラー名と製品情報を確認する。
 - [ ] 署名付き配布物を作る場合は `CODESIGN_CERT` を確認し、`scripts/build-installer.ps1 -Sign` を使う。署名にはタイムスタンプが付く（既定のサーバーは `http://timestamp.digicert.com`、`CODESIGN_TIMESTAMP_URL` で変更できる）。署名した実行ファイルの `Get-AuthenticodeSignature` で `TimeStamperCertificate` があることを確かめる。
