@@ -76,6 +76,12 @@ jobs:
           dir="sigma-$version-${{ matrix.platform.name }}${{ matrix.variant.suffix }}"
           mkdir "$dir"
           cp "out/bin/${{ matrix.platform.exe }}" LICENSE THIRD_PARTY_NOTICES.md README.md "$dir/"
+          # The example programs, in the ZIP of the version with floating-point words
+          # (some of them need those words).
+          if [ "${{ matrix.variant.float }}" = "true" ]; then
+            mkdir "$dir/examples"
+            cp examples/*.fs "$dir/examples/"
+          fi
           zip -r "$dir.zip" "$dir"
       - uses: actions/upload-artifact@v7
         with:

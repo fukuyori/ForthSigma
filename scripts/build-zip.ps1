@@ -11,7 +11,9 @@ param(
 
 # Builds the Windows x86_64 ZIPs that .github/workflows/release.yml makes,
 # sigma-VERSION-windows-x86_64.zip and sigma-VERSION-windows-x86_64-nofloat.zip, and
-# signs the executables with -Sign.
+# signs the executables with -Sign. The ZIP of the version with floating-point words
+# also holds the example programs (examples\*.fs); some of them need those words, so
+# the -nofloat ZIP does not.
 
 $ErrorActionPreference = 'Stop'
 $repositoryRoot = Split-Path -Parent $PSScriptRoot
@@ -46,10 +48,16 @@ if ($Sign) {
 
 $packages = @()
 if ($Variant -ne 'NoFloat') {
-    $packages += @{ Name = "sigma-$Version-windows-x86_64"; Directory = $releaseDirectory }
+    $packages += @{ Name = "sigma-$Version-windows-x86_64"; Directory = $releaseDirectory; Examples = $true }
 }
 if ($Variant -ne 'Float') {
-    $packages += @{ Name = "sigma-$Version-windows-x86_64-nofloat"; Directory = $noFloatReleaseDirectory }
+    $packages += @{ Name = "sigma-$Version-windows-x86_64-nofloat"; Directory = $noFloatReleaseDirectory; Examples = $false }
+}
+
+$examplesDirectory = Join-Path $repositoryRoot 'examples'
+$exampleFiles = @(Get-ChildItem -LiteralPath $examplesDirectory -Filter '*.fs' -File | Sort-Object Name)
+if ($exampleFiles.Count -eq 0) {
+    throw "No example programs in $examplesDirectory"
 }
 
 New-Item -ItemType Directory -Path $outputPath -Force | Out-Null
@@ -75,6 +83,15 @@ foreach ($package in $packages) {
     )
     foreach ($file in $files) {
         Copy-Item -LiteralPath $file -Destination $packageDirectory
+    }
+    # The example programs go in a folder examples, as README.md names them
+    # (sigma.exe examples\demo.fs).
+    if ($package.Examples) {
+        $packageExamples = Join-Path $packageDirectory 'examples'
+        New-Item -ItemType Directory -Path $packageExamples -Force | Out-Null
+        foreach ($example in $exampleFiles) {
+            Copy-Item -LiteralPath $example.FullName -Destination $packageExamples
+        }
     }
 
     $zipPath = Join-Path $outputPath "$packageName.zip"
