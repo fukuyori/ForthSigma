@@ -65,9 +65,14 @@ In an environment with Zig 0.17.0 installed, run these commands from the root of
     zig build
     ./zig-out/bin/sigma.exe
 
+On Linux and macOS, the same `zig build` builds the program, and the executable is `zig-out/bin/sigma`.
+
+    zig build
+    ./zig-out/bin/sigma
+
 The core regression tests run with zig build test.
 
-On Linux and macOS, run the generated zig-out/bin/sigma. To specify another Zig target, use zig build -Dtarget=<triple>.
+To specify another Zig target, use zig build -Dtarget=<triple>.
 
 The current product version is recorded in [`VERSION`](https://github.com/fukuyori/ForthSigma/blob/main/VERSION). The Windows release build and the Inno Setup installer are made with the following PowerShell scripts. The installer (`dist\installer\sigma-<version>-windows-x86_64-setup.exe`) uses the value in `VERSION`; if needed, `-Version MAJOR.MINOR.PATCH` overrides it.
 
@@ -81,9 +86,26 @@ To sign, set `CODESIGN_CERT` to the subject of the certificate in the certificat
     .\scripts\build-release.ps1 -Sign
     .\scripts\build-installer.ps1 -Sign
 
+On Linux and macOS, the following script makes the release build. As `build-release.ps1` does, it builds both the version with the floating-point words (`dist/release/bin/sigma`) and the version without them (`dist/release-nofloat/bin/sigma`). `--variant float` or `--variant nofloat` builds only one of them, and `--output` and `--nofloat-output` change the output directories. Even when `--target` is not given, the CPU is baseline (`-Dcpu=baseline`). `--help` lists all the options.
+
+    ./scripts/build-release.sh
+
+For another target, give `--target`. Zig builds for other operating systems and CPUs too, so any of them can be made on any operating system. The targets GitHub Actions uses are `x86_64-linux-musl` for Linux x86_64, `arm-linux-musleabihf` for arm32, `aarch64-linux-musl` for arm64, and `aarch64-macos` for macOS arm64. A Linux executable uses no shared libraries, so it runs on any distribution.
+
+    ./scripts/build-release.sh --target aarch64-linux-musl
+
+Linux has no installer: copy the executable to a directory on the `PATH`. On macOS the executable can be copied the same way, but to distribute it, use the installer package below.
+
+    sudo install -m 755 dist/release/bin/sigma /usr/local/bin/sigma
+
 GitHub Actions (`.github/workflows/release.yml`), started by hand (Actions > Release > Run workflow), tests and builds on Windows x86_64, Linux x86_64, arm32, and arm64, and macOS arm64, and keeps each ZIP (the executable, LICENSE, THIRD_PARTY_NOTICES.md, and README.md, whose links lead to the manuals on GitHub; the ZIP of the version with the floating-point words also has the example programs in a folder `examples`) as an artifact of the run. Pushing a tag does not start it, and it makes no release: releases are made by hand, with the tag `v` and the version of `VERSION` (such as `v0.10.0`). Each target has two ZIPs: the version with the floating-point words (`sigma-<version>-<target>.zip`) and the version without them (`sigma-<version>-<target>-nofloat.zip`). The tests run on real machines for Windows x86_64, Linux x86_64 and arm64, and macOS arm64. The Windows build from CI is not signed, so the Windows ZIPs of a release are signed ZIPs that have the same names and the same contents (`dist\zip\sigma-<version>-windows-x86_64.zip` and `dist\zip\sigma-<version>-windows-x86_64-nofloat.zip`), made with the following script. `-Variant Float` or `-Variant NoFloat` makes only one of them.
 
     .\scripts\build-zip.ps1 -Sign
+
+For Linux and macOS, the following script makes ZIPs with the same names and the same contents as those of GitHub Actions (`dist/zip/sigma-<version>-<target>.zip` and `dist/zip/sigma-<version>-<target>-nofloat.zip`). The target is that of the machine unless `--platform` names `linux-x86_64`, `linux-arm32`, `linux-arm64`, `macos-arm64`, or all of them (`all`). `--variant float` or `--variant nofloat` makes only one of them, `--output` changes the output directory, and `--version` the version. It needs the `zip` command. The macOS executable is not signed with a Developer ID.
+
+    ./scripts/build-zip.sh
+    ./scripts/build-zip.sh --platform all
 
 On macOS, the following script builds an installer package (`dist/pkg/sigma-<version>-macos-universal.pkg`), signs it, has Apple notarize it, and staples the ticket to it. The package puts a universal executable (arm64 and x86_64, for macOS 11 or later) in `/usr/local/bin/sigma` and the documents in `/usr/local/share/doc/sigma`. The executable is signed with the hardened runtime using the "Developer ID Application" certificate in the keychain, and the package using the "Developer ID Installer" certificate; `--identity` and `--installer-identity` choose other ones. The notary credentials are the keychain profile `notarytool`, `sigma`, or `notary`, whichever exists, or the one `--profile` names, or `--apple-id`, `--team-id`, and `--password`. `--variant nofloat` or `--variant both` also makes the build without floating-point words, `--arch arm64` or `--arch x86_64` makes a package for one architecture, and `--skip-notarize` only signs. `--help` lists all the options.
 

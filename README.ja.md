@@ -65,9 +65,14 @@ Zig 0.17.0をインストールした環境で、リポジトリのルートか�
     zig build
     ./zig-out/bin/sigma.exe
 
+LinuxとmacOSでも同じ `zig build` でビルドし、実行ファイルは `zig-out/bin/sigma` です。
+
+    zig build
+    ./zig-out/bin/sigma
+
 コアの回帰テストはzig build testで実行できます。
 
-Linux/macOSでは、生成されたzig-out/bin/sigmaを実行してください。別のZigターゲットを指定する場合はzig build -Dtarget=<triple>を使います。
+別のZigターゲットを指定する場合はzig build -Dtarget=<triple>を使います。
 
 現在の製品バージョンは [`VERSION`](https://github.com/fukuyori/ForthSigma/blob/main/VERSION) に記載しています。Windows向けリリースビルドとInno Setupインストーラーは次のPowerShellスクリプトで作成できます。インストーラー（`dist\installer\sigma-版番号-windows-x86_64-setup.exe`）は `VERSION` の値を使い、必要なら `-Version MAJOR.MINOR.PATCH` で上書きできます。
 
@@ -81,9 +86,26 @@ Linux/macOSでは、生成されたzig-out/bin/sigmaを実行してください�
     .\scripts\build-release.ps1 -Sign
     .\scripts\build-installer.ps1 -Sign
 
+LinuxとmacOSでは、リリースビルドを次のスクリプトで作ります。`build-release.ps1` と同じく、浮動小数点の語を含む版（`dist/release/bin/sigma`）と除いた版（`dist/release-nofloat/bin/sigma`）の両方をビルドします。`--variant float` または `--variant nofloat` で片方だけにでき、出力先は `--output` と `--nofloat-output` で変えられます。`--target` を指定しないときもCPUはbaseline（`-Dcpu=baseline`）です。オプションの一覧は `--help` で表示します。
+
+    ./scripts/build-release.sh
+
+別の対象向けには `--target` を付けます。Zigは別のOSやCPU向けにもビルドできるので、どのOSでも作れます。GitHub Actionsが使う対象は、Linux x86_64が `x86_64-linux-musl`、arm32が `arm-linux-musleabihf`、arm64が `aarch64-linux-musl`、macOS arm64が `aarch64-macos` です。Linux向けは、共有ライブラリを使わない実行ファイルになり、どのディストリビューションでも動きます。
+
+    ./scripts/build-release.sh --target aarch64-linux-musl
+
+Linuxにはインストーラーがないので、実行ファイルを `PATH` のディレクトリにコピーします。macOSでも同じようにコピーして使えますが、配布するときは下のインストーラーパッケージを使います。
+
+    sudo install -m 755 dist/release/bin/sigma /usr/local/bin/sigma
+
 GitHub Actions（`.github/workflows/release.yml`）は、手で起動すると（Actions > Release > Run workflow）、Windows x86_64、Linux x86_64・arm32・arm64、macOS arm64でテストとビルドを行い、各ZIP（実行ファイル、LICENSE、THIRD_PARTY_NOTICES.md、README.md。マニュアルは README のリンクから GitHub で読む。浮動小数点の語を含む版のZIPには、サンプルのプログラムも `examples` フォルダーに入る）を実行の成果物（artifact）として残します。タグのプッシュでは起動せず、リリースも作りません。リリースは、`v0.10.0` のように `VERSION` と同じ版番号のタグで、手で作ります。ZIPは対象ごとに、浮動小数点の語を含む版（`sigma-版番号-対象.zip`）と除いた版（`sigma-版番号-対象-nofloat.zip`）の2つです。テストはWindows x86_64、Linux x86_64・arm64、macOS arm64の実機で実行します。CIのWindows版は署名なしなので、リリースのWindows版には、次のスクリプトで作った同じ名前・同じ中身の署名付きZIP（`dist\zip\sigma-版番号-windows-x86_64.zip` と `dist\zip\sigma-版番号-windows-x86_64-nofloat.zip`）を使います。`-Variant Float` または `-Variant NoFloat` で片方だけ作ることもできます。
 
     .\scripts\build-zip.ps1 -Sign
+
+LinuxとmacOSのZIPは、次のスクリプトでGitHub Actionsと同じ名前・同じ中身のもの（`dist/zip/sigma-版番号-対象.zip` と `dist/zip/sigma-版番号-対象-nofloat.zip`）を作ります。対象は、指定しなければそのマシンのもので、`--platform` で `linux-x86_64`、`linux-arm32`、`linux-arm64`、`macos-arm64`、または全部（`all`）を選びます。`--variant float` または `--variant nofloat` で片方だけ作り、`--output` で出力先を、`--version` で版番号を変えます。`zip` コマンドが必要です。macOS向けの実行ファイルにDeveloper IDの署名は付きません。
+
+    ./scripts/build-zip.sh
+    ./scripts/build-zip.sh --platform all
 
 macOSでは、次のスクリプトでインストーラーパッケージ（`dist/pkg/sigma-版番号-macos-universal.pkg`）を作り、署名し、Appleの公証を受けてチケットを添付（staple）します。パッケージは、ユニバーサルの実行ファイル（arm64とx86_64、macOS 11以降）を `/usr/local/bin/sigma` に、文書を `/usr/local/share/doc/sigma` に入れます。実行ファイルはキーチェーンの「Developer ID Application」の証明書でHardened Runtimeを付けて署名し、パッケージは「Developer ID Installer」の証明書で署名します。別の証明書は `--identity` と `--installer-identity` で指定します。公証の資格情報は、キーチェーンのプロファイル `notarytool`、`sigma`、`notary` のうちあるもの、`--profile` で指定したもの、または `--apple-id`、`--team-id`、`--password` です。`--variant nofloat` または `--variant both` で浮動小数点の語を除いた版も作り、`--arch arm64` または `--arch x86_64` で片方のアーキテクチャだけにし、`--skip-notarize` で署名だけにします。オプションの一覧は `--help` で表示します。
 

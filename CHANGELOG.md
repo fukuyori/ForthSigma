@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+### Added
+
+- `scripts/build-release.sh` and `scripts/build-zip.sh` make the release build and the ZIPs on Linux and macOS, as `build-release.ps1` and `build-zip.ps1` do on Windows: the version with the floating-point words and the one without, for this machine or for the target `--target` or `--platform` names.
+
+### Fixed
+
+- On Linux, a program built with `-Doptimize=fast` (or `safe` or `small`) against glibc and started from a terminal got keys from `INKEY` that nobody pressed (`0 150 0 0`), so a game that reads the keys before its first `SHOW`, such as `examples/hopper.fs`, never opened its window. Reading the terminal's settings wrote 16 bytes past the place for them, over the keys waiting for `INKEY`. The ZIPs of the releases, which do not use glibc, were not affected.
+
 ### Changed
 
 - A build that leaves out a group of words (`-Dfloat=false` and the like, but for `-Dhelp=false` and `-Ddebug=false`) is 50 to 78 KB smaller: its executable held the table of the `HELP` texts twice, once for `HELP` without the words left out and once whole for `--lint`. `--lint` now reads the table `HELP` uses. The build with every group is as it was.
