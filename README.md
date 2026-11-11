@@ -123,18 +123,19 @@ Build options leave out groups of words, for a smaller program or for a host tha
 
 | Option | Leaves out | Size |
 |---|---|---|
-| (none) | — | 1,033,728 bytes |
-| `-Dfloat=false` | The floating-point words, floating-point literals (such as `1e`), the `F:` and `F^` local variables, `FLOATING-STACK` and `MAX-FLOAT` of `ENVIRONMENT?`, CORE-MATH, and the graphics words that draw graphs (`PLOT` and others) | 644,096 bytes |
-| `-Dfiles=false` | The words that open, read, write, or include files, such as `INCLUDE`, `REQUIRE`, `OPEN-FILE`, `STDIN`, `SLURP-FILE`, and the `$...SLURP` words | 997,888 bytes |
-| `-Dhelp=false` | `HELP`, `LICENSE`, and their texts (the banner no longer mentions `help`) | 935,936 bytes |
-| `-Dtools=false` | `SEE`, `LOCATE`, and `WHERE` | 974,848 bytes |
-| `-Dimage=false` | `SAVE`, `LOAD`, and `SAVESYS` | 1,031,680 bytes |
-| `-Dgraphics=false` | `REQUIRE-GRAPHICS`, the `GFX-` words, the graphics library, its fonts, and the Tcl/Tk words | 894,976 bytes |
-| `-Daudio=false` | `REQUIRE-AUDIO`, the `SND-` words, the audio library, and the audio thread | 955,904 bytes |
-| `-Ddebug=false` | The debugging features: the backtrace after an error, `--max-steps`, `--trace`, `--profile`, `--debug-log`, `--lint`, `--format`, `--coverage`, and the words `WATCH`, `UNWATCH`, `.COVER-RAW`, `COV%`, `.COVERAGE`, `DBG`, `BREAK:`, `BREAK"`, `~~BT`, `~~1BT`, `ONCE`, `~~VALUE`, `~~VARIABLE`, `+LTRACE`, and `-LTRACE` | about 15 KB smaller than with them (measured on 2026-11-11) |
-| The seven above `-Ddebug=false` | All of the above but the debugging features | 299,008 bytes |
+| (none) | — | 1,452,544 bytes |
+| `-Dfloat=false` | The floating-point words, floating-point literals (such as `1e`), the `F:` and `F^` local variables, `FLOATING-STACK` and `MAX-FLOAT` of `ENVIRONMENT?`, CORE-MATH, and the graphics words that draw graphs (`PLOT` and others) | 1,063,936 bytes |
+| `-Dfiles=false` | The words that open, read, write, or include files, such as `INCLUDE`, `REQUIRE`, `OPEN-FILE`, `STDIN`, `SLURP-FILE`, and the `$...SLURP` words | 1,449,984 bytes |
+| `-Dhelp=false` | `HELP`, `LICENSE`, and their texts (the banner no longer mentions `help`) | 1,319,936 bytes |
+| `-Dtools=false` | `SEE`, `LOCATE`, and `WHERE` | 1,447,424 bytes |
+| `-Dimage=false` | `SAVE`, `LOAD`, and `SAVESYS` | 1,501,696 bytes |
+| `-Dgraphics=false` | `REQUIRE-GRAPHICS`, the `GFX-` words, the graphics library, its fonts, and the Tcl/Tk words | 1,270,272 bytes |
+| `-Daudio=false` | `REQUIRE-AUDIO`, the `SND-` words, the audio library, and the audio thread | 1,428,480 bytes |
+| `-Ddebug=false` | The debugging features: the backtrace after an error, `--max-steps`, `--trace`, `--profile`, `--debug-log`, `--lint`, `--format`, `--coverage`, and the words `WATCH`, `UNWATCH`, `.COVER-RAW`, `COV%`, `.COVERAGE`, `DBG`, `BREAK:`, `BREAK"`, `~~BT`, `~~1BT`, `ONCE`, `~~VALUE`, `~~VARIABLE`, `+LTRACE`, and `-LTRACE` | 1,245,184 bytes |
+| The seven above `-Ddebug=false` | All of the above but the debugging features | 517,632 bytes |
+| All eight | All of the above | 363,520 bytes |
 
-The sizes are those of 0.6.1 with the sound words (commit `d5de15b`) built with `-Doptimize=fast`, the same as the release, on Windows x86_64 (measured 2026-11-07). The options can be combined, for example `zig build -Doptimize=fast -Dfloat=false -Dhelp=false`.
+The sizes are those of 0.10.0 (commit `96308b4`) built with `-Doptimize=fast -Dcpu=baseline`, the same as the release, on Windows x86_64 (measured 2026-11-11); the executables of the release are about 10 KB larger with their signature. Leaving out one group does not always give a smaller program: the build without `SAVE`, `LOAD`, and `SAVESYS` came out larger than the one with everything. The options can be combined, for example `zig build -Doptimize=fast -Dfloat=false -Dhelp=false`.
 
 The words of a group left out are not in the dictionary, and `HELP` has no entries for them. The groups are independent: without the file words, `SAVE`, `LOAD`, and `SAVESYS` still write and read image files, and `LOCATE` still reads the source file, unless their own groups are left out too. Every build gives each built-in word the same execution token, so an image saved by one build loads into a build with other groups; running a word that build left out gives the error `INVALID EXECUTION TOKEN`, and `SEE` shows it by its name. An image saved by an earlier build that left a group out (such as `-Dfloat=false`) gives `INVALID IMAGE`, since its built-in words had other execution tokens.
 
