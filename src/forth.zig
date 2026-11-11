@@ -843,6 +843,7 @@ pub const State = struct {
             words_debug.unwatchFrom(self, id);
             // The words that take these places start their counts at 0.
             if (self.profile) |profile| profile.forgetWords(id, self.word_count);
+            if (self.lint) |lint| lint.forgetWords(id, self.word_count);
         }
         wordlists.unindexFrom(self, id);
         self.word_count = id;

@@ -60,8 +60,9 @@ pub const Declared = struct {
     single_out: i16 = 0,
 };
 
-/// The depths of the three stacks at a place in a definition, from its start.
-const Depths = struct { data: i16 = 0, float: i16 = 0, returns: i16 = 0 };
+/// The depths of the three stacks at a place in a definition, from its start. They are
+/// wide enough for any code: at most 65535 operations, each of an effect of 16 bits.
+const Depths = struct { data: i64 = 0, float: i64 = 0, returns: i64 = 0 };
 
 /// What the checks keep; the host gives the memory (about 1.5 MiB) with --lint.
 pub const Lint = struct {
@@ -86,6 +87,12 @@ pub const Lint = struct {
         self.checking = 0;
         self.findings = 0;
         self.unchecked = 0;
+    }
+
+    /// Drops the stack comments of the words `from` to `end`, which FORGET, a MARKER,
+    /// or an error removes: the words that take their numbers have their own.
+    pub fn forgetWords(self: *Lint, from: usize, end: usize) void {
+        if (from < end) @memset(self.declared[from..end], .{});
     }
 
     /// The stack comment that follows the name of the definition `id`; `body` is the
@@ -125,7 +132,9 @@ pub const Lint = struct {
             if (word.kind == .colon) {
                 if (result.unreached) |pc| self.finding(machine, "UNREACHABLE", id, lineOf(machine, pc), "code in {s} that is never reached", .{name(machine, id)});
                 if (result.uneven) |pc| self.finding(machine, "STACK DEPTH", id, lineOf(machine, pc), "paths in {s} meet with different stack depths", .{name(machine, id)});
-                if (!result.effect.known) {
+                if (result.return_short) {
+                    self.finding(machine, "RETURN STACK", id, 0, "{s} takes a cell from the return stack that it did not put there", .{name(machine, id)});
+                } else if (!result.effect.known) {
                     if (result.uneven == null) self.unchecked += 1;
                 } else {
                     const returns = result.effect.return_net;
@@ -149,13 +158,13 @@ pub const Lint = struct {
         const as_doubles = effect.net == declared.out - declared.in and effect.takes <= declared.in;
         const as_singles = effect.net == declared.single_out - declared.single_in and effect.takes <= declared.single_in;
         if (!as_doubles and !as_singles) {
-            const in = @max(effect.takes, declared.in);
+            const in: i32 = @max(effect.takes, declared.in);
             self.finding(machine, "STACK EFFECT", id, 0, "{s} is declared ( {d} -- {d} ) but its code is ( {d} -- {d} )", .{ name(machine, id), declared.in, declared.out, in, in + effect.net });
         }
         // A comment without ( F: ... ) says nothing of the floating-point stack.
         if (!declared.has_float) return;
         if (effect.float_net != declared.float_out - declared.float_in or effect.float_takes > declared.float_in) {
-            const in = @max(effect.float_takes, declared.float_in);
+            const in: i32 = @max(effect.float_takes, declared.float_in);
             self.finding(machine, "STACK EFFECT", id, 0, "{s} is declared ( F: {d} -- {d} ) but its code is ( F: {d} -- {d} )", .{ name(machine, id), declared.float_in, declared.float_out, in, in + effect.float_net });
         }
     }
@@ -201,6 +210,8 @@ pub const Lint = struct {
         unreached: ?u16 = null,
         /// An operation where paths meet with different depths.
         uneven: ?u16 = null,
+        /// The return stack was below its depth at the start.
+        return_short: bool = false,
     };
 
     /// Follows every path of the code of the definition `id`.
@@ -286,8 +297,21 @@ pub const Lint = struct {
         // With an operation whose effect is not known, the depths are not the real ones.
         if (!known) result.uneven = null;
         const last = exit orelse return result;
-        if (!known or result.uneven != null or least.returns < 0) return result;
-        result.effect = .{ .known = true, .takes = -least.data, .net = last.data, .float_takes = -least.float, .float_net = last.float, .return_net = last.returns };
+        if (!known or result.uneven != null) return result;
+        // A definition that takes from the return stack what it did not put there.
+        if (least.returns < 0) {
+            result.return_short = true;
+            return result;
+        }
+        // An effect too large to count (definitions that call definitions that push)
+        // is not known. Each number is checked before the effect is given: a result that
+        // is left when one does not fit must not say that it is known.
+        const takes = std.math.cast(i16, -least.data) orelse return result;
+        const net = std.math.cast(i16, last.data) orelse return result;
+        const float_takes = std.math.cast(i16, -least.float) orelse return result;
+        const float_net = std.math.cast(i16, last.float) orelse return result;
+        const return_net = std.math.cast(i16, last.returns) orelse return result;
+        result.effect = .{ .known = true, .takes = takes, .net = net, .float_takes = float_takes, .float_net = float_net, .return_net = return_net };
         return result;
     }
 
@@ -533,7 +557,9 @@ fn parseGroup(body: []const u8, counts: *Counts, double_cells: i16) bool {
             after = true;
             continue;
         }
-        if (std.mem.indexOfScalar(u8, token, '|') != null or std.mem.indexOf(u8, token, "...") != null or std.mem.indexOf(u8, token, "*x") != null) return false;
+        // Alternatives, and a number of items that is not fixed (`...`, and `..` as in
+        // the HELP texts of N>R and NR>).
+        if (std.mem.indexOfScalar(u8, token, '|') != null or std.mem.indexOf(u8, token, "..") != null or std.mem.indexOf(u8, token, "*x") != null) return false;
         // What is read from the input is not on a stack.
         if (std.mem.indexOfScalar(u8, token, '"') != null or token[0] == '<') continue;
         const cells: i16 = if (stack == .data and isDouble(token)) double_cells else 1;
@@ -584,6 +610,7 @@ test "stack comments are counted" {
     try std.testing.expect(reads.takes == 1 and reads.net == -1);
     try std.testing.expect(!parseComments("( x -- 0 | x x )").known);
     try std.testing.expect(!parseComments("( xu ... x0 u -- xu ... x0 xu )").known);
+    try std.testing.expect(!parseComments("( x1 .. xn n -- ) ( R: -- x1 .. xn n )").known);
     try std.testing.expect(!parseComments("no comment").known);
     try std.testing.expect(!isDouble("dx") and isDouble("ud2") and isDouble("d"));
     try std.testing.expect(isDouble("-d") and isDouble("ud'") and !isDouble("-") and !isDouble("dest"));

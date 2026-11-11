@@ -123,3 +123,69 @@ test "definitions without a fixed stack effect are counted, and floats are check
         \\
     , &output, lint));
 }
+
+test "an effect too large to count is not known, and does not end the checks" {
+    try support.skipWithout(&.{ .debug, .files, .help });
+    var output = Output{};
+    const lint = try std.testing.allocator.create(forth.Lint);
+    defer std.testing.allocator.destroy(lint);
+
+    // G15 would leave 32768 cells: each G calls the one before it twice.
+    var source: [1024]u8 = undefined;
+    var length: usize = 0;
+    length += (try std.fmt.bufPrint(source[length..], ": G0 1 ;\n", .{})).len;
+    for (1..16) |index| {
+        length += (try std.fmt.bufPrint(source[length..], ": G{d} G{d} G{d} ;\n", .{ index, index - 1, index - 1 })).len;
+    }
+    length += (try std.fmt.bufPrint(source[length..], "' G15 DROP\n", .{})).len;
+    const report = try findings(source[0..length], &output, lint);
+    try std.testing.expect(std.mem.endsWith(u8, report, "LINT: 1 DEFINITIONS WITHOUT A FIXED STACK EFFECT WERE NOT CHECKED FOR IT\nLINT: NO FINDINGS\n"));
+    try std.testing.expectEqualStrings("LINT: 1 DEFINITIONS WITHOUT A FIXED STACK EFFECT WERE NOT CHECKED FOR IT\nLINT: NO FINDINGS\n", report);
+}
+
+test "a definition that takes from the return stack what it did not put there is found" {
+    try support.skipWithout(&.{ .debug, .files, .help });
+    var output = Output{};
+    const lint = try std.testing.allocator.create(forth.Lint);
+    defer std.testing.allocator.destroy(lint);
+
+    try std.testing.expectEqualStrings(
+        \\a.txt:1: RETURN STACK: POPPER takes a cell from the return stack that it did not put there
+        \\LINT: 1 FINDINGS
+        \\
+    , try findings(
+        \\: POPPER ( -- n ) R> ;
+        \\: FINE ( n -- n ) >R R> ;
+        \\' POPPER DROP ' FINE DROP
+        \\
+    , &output, lint));
+}
+
+test "words that move a number of cells that is not fixed are not counted" {
+    try support.skipWithout(&.{ .debug, .files, .help });
+    var output = Output{};
+    const lint = try std.testing.allocator.create(forth.Lint);
+    defer std.testing.allocator.destroy(lint);
+
+    // N>R and NR> are ( x1 .. xn n -- ) in their HELP texts.
+    try std.testing.expectEqualStrings("LINT: 1 DEFINITIONS WITHOUT A FIXED STACK EFFECT WERE NOT CHECKED FOR IT\nLINT: NO FINDINGS\n", try findings(
+        \\: SAVEONE ( n -- n ) 1 N>R NR> DROP ;
+        \\' SAVEONE DROP
+        \\
+    , &output, lint));
+}
+
+test "a word that takes the place of a removed one has its own stack comment" {
+    try support.skipWithout(&.{ .debug, .files, .help });
+    var output = Output{};
+    const lint = try std.testing.allocator.create(forth.Lint);
+    defer std.testing.allocator.destroy(lint);
+
+    try std.testing.expectEqualStrings("LINT: NO FINDINGS\n", try findings(
+        \\: OLD ( -- n ) 1 ;
+        \\FORGET OLD
+        \\: NEW ( -- ) ;
+        \\' NEW DROP
+        \\
+    , &output, lint));
+}

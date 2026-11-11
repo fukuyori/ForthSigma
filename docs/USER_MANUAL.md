@@ -223,7 +223,7 @@ LINT: 6 FINDINGS
 | `REDEFINED` | A word with the name of an earlier word of the same word list, a built-in word included. |
 | `UNREACHABLE` | Code of a colon definition that no path reaches, such as words after `EXIT` or `AGAIN`. |
 | `STACK DEPTH` | Paths of a definition that meet with different depths of a stack, such as an `IF` that leaves a cell and has no `ELSE`. |
-| `RETURN STACK` | A definition that ends with more or fewer cells on the return stack than it started with (`>R` without `R>`). |
+| `RETURN STACK` | A definition that ends with more or fewer cells on the return stack than it started with (`>R` without `R>`), or that takes a cell from it that it did not put there (`R>` without `>R`). |
 | `STACK EFFECT` | A definition whose code does not keep to the stack comment after its name: it changes the depth by another number, or needs more cells than the comment names. With a second comment `( F: r1 -- r2 )`, the floating-point stack is checked too. |
 | `UNUSED` | A word that no file uses. A word used only from the command line (`-e`) or the prompt is found too. |
 
@@ -231,9 +231,9 @@ The exit status is 0 without findings, 2 with findings, and 1 when a file gave a
 
 How the stack checks work, and what they cannot see:
 
-- The stack comment is the first comment after the name: `: NAME ( a b -- c )`. Each item counts as one cell; `d`, `ud`, and `xd` (with a number after them or none) count as two, and the comment is also accepted when they count as one (a `d` may be a name like any other). Items in quotes or angle brackets (`"name"`) are read from the input and not counted. A comment with `|` or `...` gives no numbers and is not checked.
+- The stack comment is the first comment after the name: `: NAME ( a b -- c )`. Each item counts as one cell; `d`, `ud`, and `xd` (with a number after them or none) count as two, and the comment is also accepted when they count as one (a `d` may be a name like any other). Items in quotes or angle brackets (`"name"`) are read from the input and not counted. A comment with `|`, `...`, or `..` gives no numbers and is not checked.
 - The effect of the code is worked out from its words: the built-in words by the stack comments of their `HELP` texts, the words it calls by their own code.
-- A definition with a word whose effect is not fixed is not checked for `STACK DEPTH`, `RETURN STACK`, and `STACK EFFECT`: `EXECUTE`, `CATCH`, `EVALUATE`, `?DUP`, `PICK`, a `DEFER`, a word made by a `DOES>` definer, a recursion, a loop without an end. The report counts these (`LINT: 12 DEFINITIONS WITHOUT A FIXED STACK EFFECT WERE NOT CHECKED FOR IT`). The definitions that call such a definition take it at its stack comment, when it has one.
+- A definition with a word whose effect is not fixed is not checked for `STACK DEPTH`, `RETURN STACK`, and `STACK EFFECT`: `EXECUTE`, `CATCH`, `EVALUATE`, `?DUP`, `PICK`, `N>R`, a `DEFER`, a word made by a `DOES>` definer, a recursion, a loop without an end. The report counts these (`LINT: 12 DEFINITIONS WITHOUT A FIXED STACK EFFECT WERE NOT CHECKED FOR IT`). The definitions that call such a definition take it at its stack comment, when it has one.
 - `ABORT`, `QUIT`, `BYE`, and `THROW` after a number other than 0 (`1 THROW`) end a path.
 - The words of the libraries that come with FORTH/Sigma are not reported.
 - A build without `HELP` (`-Dhelp=false`) knows no effect of a built-in word and makes only the other checks; a build without the debugging features (`-Ddebug=false`) does not have the option.
