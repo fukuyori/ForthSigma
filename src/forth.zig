@@ -46,6 +46,7 @@ const words_system = @import("core/words_system.zig");
 const words_tools = @import("core/words_tools.zig");
 const words_debug = @import("core/words_debug.zig");
 pub const Profile = @import("core/profiler.zig").Profile;
+pub const Lint = @import("core/lint.zig").Lint;
 pub const logStart = @import("core/debug_log.zig").logStart;
 const words_xchar = @import("core/words_xchar.zig");
 const Builtin = defs.Builtin;
@@ -284,6 +285,8 @@ pub const State = struct {
     trace_depth: usize = 0,
     /// --profile: the counts of the run, in memory of the host's; null without it.
     profile: ?*Profile = null,
+    /// --lint: what the checks keep, in memory of the host's; null without it.
+    lint: ?*Lint = null,
     /// Short definitions are called instead of copied into their callers: the trace and
     /// the profile note a word when it is called and when it returns. The host sets it
     /// with --trace or --profile, also in the State that LOAD restores an image in.
@@ -507,6 +510,11 @@ pub const State = struct {
             }
             if (std.mem.eql(u8, token, "(")) {
                 const close = std.mem.indexOfScalarPos(u8, line, cursor, ')') orelse return error.CommentUnclosed;
+                // --lint: the comment after the name of a colon definition is its
+                // stack comment.
+                if (defs.debug_enabled) if (self.lint) |lint| {
+                    if (self.defining and self.compiling and self.words[self.current_word].kind == .colon and self.code_count == self.words[self.current_word].code_start) lint.declare(self.current_word, line[cursor..close]);
+                };
                 cursor = close + 1;
                 continue;
             }

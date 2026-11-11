@@ -10,6 +10,8 @@
 //!     {"event":"error","message":"DIVISION BY ZERO !","code":-10,"file":"top.fs","line":3,
 //!      "backtrace":[{"word":"AVERAGE","file":"bt.fs","line":3}],"more":0,
 //!      "stack_depth":2,"stack":[10,20],"float_stack_depth":0,"float_stack":[]}
+//!     {"event":"lint","check":"UNUSED","word":"HELPER","file":"prog.fs","line":3,"message":"HELPER is not used in the files"}
+//!     {"event":"lint_end","findings":1,"unchecked":0}
 //!     {"event":"profile","operations":177}
 //!     {"event":"profile_word","word":"SQUARE","file":"tr.fs","line":1,"calls":21,"self":63,"total":63}
 //!
@@ -309,6 +311,26 @@ fn throwCode(self: *const State, err: anyerror) ?Cell {
         if (entry[0] == err) return entry[1];
     }
     return null;
+}
+
+/// A finding of --lint.
+pub fn logLint(self: *State, check: []const u8, word: []const u8, file: []const u8, line: u32, message: []const u8) void {
+    var event = Event.begin(self, "lint");
+    event.string("check", check);
+    event.string("word", word);
+    event.string("file", file);
+    event.number("line", line);
+    event.string("message", message);
+    event.end();
+}
+
+/// The end of the checks of --lint: how many findings there were, and how many
+/// definitions were not checked for their stack effect.
+pub fn logLintEnd(self: *State, findings: usize, unchecked: usize) void {
+    var event = Event.begin(self, "lint_end");
+    event.number("findings", findings);
+    event.number("unchecked", unchecked);
+    event.end();
 }
 
 /// The profile: a line of the whole and a line for each word, in the order of the

@@ -197,10 +197,46 @@ The keys are read as `KEY` reads them, so they can also come from a pipe or a fi
 | `error` | An error reaches the interpreter (not `ABORT` or `QUIT`, nor an error that `CATCH` caught). The error is also shown as without a log. | `message` (as shown, with the `file:line:` before it when there is one), `code` (the THROW code), `file` and `line` (the input line, when it is in a file), `backtrace` (innermost first; each with `word`, and `file` and `line` when known, `inline` true for a short definition copied into its caller, `times` when the place came several times in a row), `more` (callers beyond those kept), `stack_depth` and `stack`, `float_stack_depth` and `float_stack` |
 | `enter`, `exit` | With `--trace`: a colon definition starts or ends. | `word`, `depth` (how deep the traced words are nested), `stack_depth`, `stack` |
 | `trace_limit` | With `--trace-limit`: the trace ends. | `lines` |
+| `lint` | With `--lint`: one for each finding. | `check`, `word`, `file`, `line`, `message` |
+| `lint_end` | With `--lint`: after the findings. | `findings`, `unchecked` (definitions not checked for their stack effect) |
 | `profile` | With `--profile`: once, when the program ends. | `operations` |
 | `profile_word` | After `profile`: one for each definition, in the order of the profile. | `word`, `file` and `line` (where it starts, when known), `calls`, `self`, `total` |
 
 `stack` holds the top items of the data stack, the top last: nine in `enter` and `exit`, 64 in `error`; `stack_depth` is the depth of the whole stack. With a log, the trace and the profile are written to it and not to standard error. Other members and events may be added later; a program that reads the log should pass over those it does not know. A build without the debugging features (`-Ddebug=false`) does not have the option.
+
+### Checking a program (lint)
+
+`--lint`, among the options at the start of the command line, checks the definitions of the files given after it. Forth source cannot be read without running it, so the files are loaded as usual (code outside definitions runs); then, instead of the interactive prompt, the findings are shown, one on a line, as `file:line: CHECK: text`:
+
+```text
+prog.fs:1: UNUSED: SQUARE is not used in the files
+prog.fs:2: REDEFINED: SQUARE was defined at prog.fs:1
+prog.fs:4: UNREACHABLE: code in AFTER that is never reached
+prog.fs:5: STACK DEPTH: paths in UNEVEN meet with different stack depths
+prog.fs:6: RETURN STACK: KEEPS ends with 1 more on the return stack
+prog.fs:7: STACK EFFECT: WRONG is declared ( 2 -- 1 ) but its code is ( 2 -- 2 )
+LINT: 6 FINDINGS
+```
+
+| Check | What it finds |
+|---|---|
+| `REDEFINED` | A word with the name of an earlier word of the same word list, a built-in word included. |
+| `UNREACHABLE` | Code of a colon definition that no path reaches, such as words after `EXIT` or `AGAIN`. |
+| `STACK DEPTH` | Paths of a definition that meet with different depths of a stack, such as an `IF` that leaves a cell and has no `ELSE`. |
+| `RETURN STACK` | A definition that ends with more or fewer cells on the return stack than it started with (`>R` without `R>`). |
+| `STACK EFFECT` | A definition whose code does not keep to the stack comment after its name: it changes the depth by another number, or needs more cells than the comment names. With a second comment `( F: r1 -- r2 )`, the floating-point stack is checked too. |
+| `UNUSED` | A word that no file uses. A word used only from the command line (`-e`) or the prompt is found too. |
+
+The exit status is 0 without findings, 2 with findings, and 1 when a file gave an error. With `--debug-log`, each finding is also an event `lint` in the log, and `lint_end` gives their number.
+
+How the stack checks work, and what they cannot see:
+
+- The stack comment is the first comment after the name: `: NAME ( a b -- c )`. Each item counts as one cell; `d`, `ud`, and `xd` (with a number after them or none) count as two, and the comment is also accepted when they count as one (a `d` may be a name like any other). Items in quotes or angle brackets (`"name"`) are read from the input and not counted. A comment with `|` or `...` gives no numbers and is not checked.
+- The effect of the code is worked out from its words: the built-in words by the stack comments of their `HELP` texts, the words it calls by their own code.
+- A definition with a word whose effect is not fixed is not checked for `STACK DEPTH`, `RETURN STACK`, and `STACK EFFECT`: `EXECUTE`, `CATCH`, `EVALUATE`, `?DUP`, `PICK`, a `DEFER`, a word made by a `DOES>` definer, a recursion, a loop without an end. The report counts these (`LINT: 12 DEFINITIONS WITHOUT A FIXED STACK EFFECT WERE NOT CHECKED FOR IT`). The definitions that call such a definition take it at its stack comment, when it has one.
+- `ABORT`, `QUIT`, `BYE`, and `THROW` after a number other than 0 (`1 THROW`) end a path.
+- The words of the libraries that come with FORTH/Sigma are not reported.
+- A build without `HELP` (`-Dhelp=false`) knows no effect of a built-in word and makes only the other checks; a build without the debugging features (`-Ddebug=false`) does not have the option.
 
 `HELP` shows the basic usage, and `HELP name` shows the stack effect of a word and a one-line description in English (example: `HELP DUP`). The name is read from the same line (also in an `EVALUATE` string, it does not read past a line end). `HELP` written in a definition reads the name when that definition runs. For a word defined by the user, it suggests viewing its contents with `SEE`. An unknown name gives the error `name ?`. `LICENSE` shows the full text of the license and the copyright notice of the included CORE-MATH.
 

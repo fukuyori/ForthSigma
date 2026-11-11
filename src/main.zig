@@ -748,6 +748,9 @@ const StartOptions = struct {
     trace_limit: u64 = 0,
     /// --profile: the calls and the operations of each word are shown at the end.
     profile: bool = false,
+    /// --lint: the definitions of the files are checked when the arguments are done,
+    /// and there is no interactive session.
+    lint: bool = false,
     /// --debug-log: the file that the errors, the trace, and the profile are written
     /// to as lines of JSON.
     debug_log: ?[]const u8 = null,
@@ -755,6 +758,10 @@ const StartOptions = struct {
 };
 
 const debug_log_option = "--debug-log";
+
+/// The findings of --lint, for the exit status: 2 when there are any and nothing else
+/// went wrong.
+var lint_findings: usize = 0;
 
 /// The file of --debug-log, open while the program runs.
 var debug_log_file: ?*anyopaque = null;
@@ -834,6 +841,11 @@ fn parseStartOptions(args: []const []const u8, failed: *[]const u8) error{ Missi
             }
             if (std.mem.eql(u8, argument, "--profile")) {
                 options.profile = true;
+                index += 1;
+                continue;
+            }
+            if (std.mem.eql(u8, argument, "--lint")) {
+                options.lint = true;
                 index += 1;
                 continue;
             }
@@ -1251,12 +1263,13 @@ fn nextArgument(machine: *forth.State, buffer: []u8) !?[]const u8 {
 /// Init.Minimal gives the arguments and the environment, decoded from UTF-16 on Windows,
 /// without setting up std.Io (see HostContext).
 pub fn main(init: std.process.Init.Minimal) u8 {
-    return run(init) catch |err| {
+    const status = run(init) catch |err| {
         // As the standard library reports an error returned from main.
         var message: [128]u8 = undefined;
         _ = writeStandardError(std.fmt.bufPrint(&message, "error: {s}\n", .{@errorName(err)}) catch "error\n");
         return 1;
     };
+    return if (status == 0 and lint_findings != 0) 2 else status;
 }
 
 /// Returns the exit status: 1 when an argument fails, as in gforth, and 0 otherwise.
@@ -1358,10 +1371,24 @@ fn run(init: std.process.Init.Minimal) !u8 {
         machine.writer.log_fn = debugLogWrite;
         forth.logStart(machine, version);
     }
-    // After the profile has been written to it.
+    // The checks of --lint are made however the program ends, as the profile is shown.
+    const lint: ?*forth.Lint = if (start.lint) std.heap.page_allocator.create(forth.Lint) catch {
+        terminalWrite(null, "OUT OF MEMORY !\n");
+        return 1;
+    } else null;
+    if (lint) |checks| {
+        checks.reset();
+        machine.lint = checks;
+    }
+    // After the profile and the findings have been written to it.
     defer if (debug_log_file) |file| {
         _ = fclose(file);
         debug_log_file = null;
+    };
+    defer if (lint) |checks| {
+        checks.report(machine);
+        lint_findings = checks.findings;
+        std.heap.page_allocator.destroy(checks);
     };
     // The profile is shown however the program ends: BYE, an error, or the end of input.
     const profile: ?*forth.Profile = if (start.profile) std.heap.page_allocator.create(forth.Profile) catch {
@@ -1429,6 +1456,8 @@ fn run(init: std.process.Init.Minimal) !u8 {
         if (machine.halted) return 0;
     }
 
+    // With --lint, the findings take the place of the interactive session.
+    if (start.lint) return 0;
     // The banner comes after the arguments, as in gforth.
     machine.write(banner);
     var line: [4096]u8 = undefined;
@@ -1709,6 +1738,8 @@ test "the size options are read at the start of the arguments" {
         try std.testing.expectError(error.MissingValue, parseStartOptions(&.{ "sigma", "--debug-log" }, &failed));
         try std.testing.expectError(error.MissingValue, parseStartOptions(&.{ "sigma", "--debug-log=" }, &failed));
         try std.testing.expectEqual(@as(?[]const u8, null), traced.debug_log);
+        try std.testing.expect(!traced.lint);
+        try std.testing.expect((try parseStartOptions(&.{ "sigma", "--lint", "x.fs" }, &failed)).lint);
     }
 
     try std.testing.expectError(error.MissingValue, parseStartOptions(&.{ "sigma", "-d" }, &failed));

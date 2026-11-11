@@ -1,0 +1,125 @@
+//! Tests of the checks of --lint.
+
+const std = @import("std");
+const forth = @import("../forth.zig");
+const support = @import("support.zig");
+const Output = support.Output;
+const createMachine = support.createMachine;
+const destroyMachine = support.destroyMachine;
+const setFakeFile = support.setFakeFile;
+
+/// Includes a.txt with the checks on, and gives the report of the checks.
+fn findings(source: []const u8, output: *Output, lint: *forth.Lint) ![]const u8 {
+    setFakeFile(output, 0, source);
+    const machine = try createMachine(output);
+    defer destroyMachine(machine);
+    lint.reset();
+    machine.lint = lint;
+    try machine.interpretLine("INCLUDE a.txt");
+    output.len = 0;
+    lint.report(machine);
+    return output.written();
+}
+
+test "each check finds what it is for" {
+    try support.skipWithout(&.{ .debug, .files, .help });
+    var output = Output{};
+    const lint = try std.testing.allocator.create(forth.Lint);
+    defer std.testing.allocator.destroy(lint);
+
+    // USES, which calls them all, has no finding of its own: UNEVEN is taken at its
+    // stack comment, and what KEEPS leaves on the return stack is the finding of KEEPS.
+    try std.testing.expectEqualStrings(
+        \\a.txt:1: UNUSED: SQUARE is not used in the files
+        \\a.txt:2: REDEFINED: SQUARE was defined at a.txt:1
+        \\a.txt:3: REDEFINED: NIP is a built-in word
+        \\a.txt:4: UNREACHABLE: code in AFTER that is never reached
+        \\a.txt:5: STACK DEPTH: paths in UNEVEN meet with different stack depths
+        \\a.txt:6: RETURN STACK: KEEPS ends with 1 more on the return stack
+        \\a.txt:7: STACK EFFECT: WRONG is declared ( 2 -- 1 ) but its code is ( 2 -- 2 )
+        \\a.txt:8: STACK EFFECT: NEEDS-MORE is declared ( 1 -- 1 ) but its code is ( 2 -- 1 )
+        \\a.txt:9: UNUSED: SPARE is not used in the files
+        \\LINT: 9 FINDINGS
+        \\
+    , try findings(
+        \\: SQUARE ( n -- n ) DUP * ;
+        \\: SQUARE ( n -- n ) DUP DUP * * ;
+        \\: NIP ( a b -- b ) SWAP DROP ;
+        \\: AFTER ( -- n ) 1 EXIT 2 ;
+        \\: UNEVEN ( flag -- ) IF 1 THEN ;
+        \\: KEEPS ( n -- ) >R ;
+        \\: WRONG ( a b -- c ) + DUP ;
+        \\: NEEDS-MORE ( a -- b ) + ;
+        \\VARIABLE SPARE
+        \\: USES 3 SQUARE 1 2 NIP AFTER UNEVEN KEEPS WRONG NEEDS-MORE ;
+        \\USES
+        \\
+    , &output, lint));
+    try std.testing.expectEqual(@as(usize, 9), lint.findings);
+}
+
+test "code that keeps to its stack comments has no findings" {
+    try support.skipWithout(&.{ .debug, .files, .help });
+    var output = Output{};
+    const lint = try std.testing.allocator.create(forth.Lint);
+    defer std.testing.allocator.destroy(lint);
+
+    // Loops, both sides of an IF, LEAVE, the return stack, doubles, strings, values,
+    // locals, words that call words, paths that THROW or ABORT ends, a comment whose d
+    // is not a double, CASE, and a loop without an end. FOREVER never ends, so
+    // it has no stack effect of its own; USES, which calls it, takes it at its comment.
+    try std.testing.expectEqualStrings("LINT: 1 DEFINITIONS WITHOUT A FIXED STACK EFFECT WERE NOT CHECKED FOR IT\nLINT: NO FINDINGS\n", try findings(
+        \\VARIABLE COUNTER
+        \\7 VALUE LIMIT
+        \\: GOOD ( a b -- sum ) + ;
+        \\: LOOPS ( n -- ) 0 ?DO I DROP LOOP ;
+        \\: STEPS ( n -- ) 0 DO I 5 = IF LEAVE THEN 2 +LOOP ;
+        \\: CHOOSES ( flag -- n ) IF 1 ELSE 2 THEN ;
+        \\: WHILES ( n -- ) BEGIN DUP WHILE 1- REPEAT DROP ;
+        \\: UNTILS ( n -- ) BEGIN 1- DUP 0= UNTIL DROP ;
+        \\: SAVES ( a b -- b a ) >R >R 2R> SWAP ;
+        \\: DOUBLES ( d1 d2 -- d3 ) D+ ;
+        \\: TEXT ( -- c-addr u ) S" hello" ;
+        \\: SETS ( n -- ) TO LIMIT ;
+        \\: PASSES ( a b c -- a n ) GOOD ;
+        \\: NAMED { a b -- sum } a b + ;
+        \\: CHECKED ( n -- n ) DUP 0< IF DROP 1 THROW THEN ;
+        \\: STOPS ( flag -- ) IF ABORT THEN ;
+        \\: OPPOSITE ( n -- -n ) S>D DNEGATE DROP ;
+        \\: DISTANCE ( i -- d ) DUP * ;
+        \\: PICKS ( char -- n ) CASE [CHAR] A OF 1 ENDOF [CHAR] B OF 2 ENDOF 0 SWAP ENDCASE ;
+        \\: FOREVER ( -- ) BEGIN COUNTER @ DROP AGAIN ;
+        \\: USES 1 2 GOOD LOOPS 3 STEPS 0 CHOOSES WHILES 4 UNTILS 5 6 SAVES 2DROP 1. 2. DOUBLES 2DROP TEXT 2DROP 8 SETS 1 2 3 PASSES 2DROP 1 2 NAMED DROP
+        \\  1 CHECKED 0 STOPS OPPOSITE DISTANCE PICKS DROP FOREVER ;
+        \\' USES DROP
+        \\
+    , &output, lint));
+}
+
+test "definitions without a fixed stack effect are counted, and floats are checked when named" {
+    try support.skipWithout(&.{ .debug, .files, .help });
+    try support.skipWithoutFloat();
+    var output = Output{};
+    const lint = try std.testing.allocator.create(forth.Lint);
+    defer std.testing.allocator.destroy(lint);
+
+    // DYNAMIC and MAYBE have no fixed effect; VIA, which calls DYNAMIC, takes it at its
+    // stack comment and is checked. A comment without ( F: ... ) says nothing of the
+    // floating-point stack.
+    try std.testing.expectEqualStrings(
+        \\a.txt:4: STACK EFFECT: MIXED is declared ( F: 2 -- 1 ) but its code is ( F: 2 -- 2 )
+        \\LINT: 2 DEFINITIONS WITHOUT A FIXED STACK EFFECT WERE NOT CHECKED FOR IT
+        \\LINT: 1 FINDINGS
+        \\
+    , try findings(
+        \\: DYNAMIC ( xt -- ) EXECUTE ;
+        \\: MAYBE ( x -- 0 | x x ) ?DUP ;
+        \\: VIA ( xt -- n ) DYNAMIC 1 ;
+        \\: MIXED ( n -- ) ( F: r1 r2 -- r3 ) DROP F+ FDUP ;
+        \\: QUIET ( n -- n ) 1.5E FDROP ;
+        \\: SUMS ( F: r1 r2 -- r3 ) F+ ;
+        \\: USES ['] DYNAMIC DROP ['] MAYBE DROP ['] VIA DROP 1 MIXED 2 QUIET DROP SUMS FDROP ;
+        \\' USES DROP
+        \\
+    , &output, lint));
+}

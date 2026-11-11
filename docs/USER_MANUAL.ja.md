@@ -197,10 +197,46 @@ LOOP           -> [ 0 ]
 | `error` | エラーがインタプリタまで届いたとき（`ABORT`、`QUIT`、`CATCH` が捕まえたエラーは書かない）。エラーは、ログがないときと同じように画面にも表示する。 | `message`（表示と同じ文。入力の `ファイル名:行:` があればそれを前に含む）、`code`（THROW の番号）、`file` と `line`（入力の行がファイルの中のとき）、`backtrace`（内側が先。それぞれ `word`、分かるときは `file` と `line`、呼び出し元に写した短い定義では `inline` が true、同じ場所が続いたときは `times`）、`more`（保持した分より外側の呼び出し元の数）、`stack_depth` と `stack`、`float_stack_depth` と `float_stack` |
 | `enter`、`exit` | `--trace` のとき、コロン定義が始まるときと終わるとき。 | `word`、`depth`（トレースした語の入れ子の深さ）、`stack_depth`、`stack` |
 | `trace_limit` | `--trace-limit` でトレースが終わったとき。 | `lines` |
+| `lint` | `--lint` のとき、指摘ごとに1つ。 | `check`、`word`、`file`、`line`、`message` |
+| `lint_end` | `--lint` のとき、指摘の後。 | `findings`、`unchecked`（スタックの効果を検査しなかった定義の数） |
 | `profile` | `--profile` のとき、プログラムが終わるときに1回。 | `operations` |
 | `profile_word` | `profile` の後に、定義ごとに1つ。プロファイルと同じ順。 | `word`、`file` と `line`（定義の始まる場所。分かるとき）、`calls`、`self`、`total` |
 
 `stack` はデータスタックの上のほうの値で、いちばん上が最後です。`enter` と `exit` では9個まで、`error` では64個までで、`stack_depth` がスタック全体の深さです。ログがあるときは、トレースとプロファイルはログに書き、標準エラーには書きません。項目や `event` は後から増えることがあるので、ログを読むプログラムは、知らないものを読み飛ばしてください。デバッグ機能を除いた版（`-Ddebug=false`）には、このオプションはありません。
+
+### プログラムの検査（lint）
+
+コマンドラインの先頭のオプション `--lint` は、その後に指定したファイルの定義を検査します。Forth のソースは実行しないと読めないので、ファイルはふだんどおりに読み込みます（定義の外のコードは実行されます）。その後、対話プロンプトに入る代わりに、指摘を1行に1つ、`ファイル名:行: 検査名: 説明` の形で表示します。
+
+```text
+prog.fs:1: UNUSED: SQUARE is not used in the files
+prog.fs:2: REDEFINED: SQUARE was defined at prog.fs:1
+prog.fs:4: UNREACHABLE: code in AFTER that is never reached
+prog.fs:5: STACK DEPTH: paths in UNEVEN meet with different stack depths
+prog.fs:6: RETURN STACK: KEEPS ends with 1 more on the return stack
+prog.fs:7: STACK EFFECT: WRONG is declared ( 2 -- 1 ) but its code is ( 2 -- 2 )
+LINT: 6 FINDINGS
+```
+
+| 検査 | 見つけるもの |
+|---|---|
+| `REDEFINED` | 同じ語彙の、前からある語（組み込み語を含む）と同じ名前の語。 |
+| `UNREACHABLE` | コロン定義の中の、どの経路からも届かないコード。`EXIT` や `AGAIN` の後の語など。 |
+| `STACK DEPTH` | 定義の中で、スタックの深さが違う経路が合流するところ。`ELSE` のない `IF` がセルを1つ残す、など。 |
+| `RETURN STACK` | 終わったときに、リターンスタックのセルが始まったときより多い、または少ない定義（`R>` のない `>R`）。 |
+| `STACK EFFECT` | 名前の後のスタックコメントとコードが合わない定義。深さの変化が違うか、コメントにある数より多くのセルを必要とする。2つ目のコメント `( F: r1 -- r2 )` があれば、浮動小数点スタックも検査する。 |
+| `UNUSED` | どのファイルからも使われていない語。コマンドライン（`-e`）やプロンプトからだけ使う語も、指摘される。 |
+
+終了コードは、指摘がなければ0、指摘があれば2、ファイルがエラーになれば1です。`--debug-log` を付けると、指摘はログの `lint` という出来事にもなり、`lint_end` がその数を示します。
+
+スタックの検査の方法と、検査できないものは次のとおりです。
+
+- スタックコメントは、名前の後の最初のコメントです（`: NAME ( a b -- c )`）。項目1つを1セルと数えます。`d`、`ud`、`xd`（後ろに数字が付いてもよい）は2セルと数えますが、1セルと数えて合う場合も指摘しません（`d` はふつうの名前のこともあるため）。引用符や山かっこで囲んだ項目（`"name"`）は入力から読むものなので、数えません。`|` や `...` のあるコメントは数が決まらないので、検査しません。
+- コードの効果は、その中の語から求めます。組み込み語は `HELP` のスタックコメントから、呼び出す語はその語のコードから求めます。
+- 効果が決まらない語を含む定義は、`STACK DEPTH`、`RETURN STACK`、`STACK EFFECT` を検査しません。`EXECUTE`、`CATCH`、`EVALUATE`、`?DUP`、`PICK`、`DEFER` の語、`DOES>` の定義語で作った語、再帰、終わりのないループなどです。その数は最後に表示します（`LINT: 12 DEFINITIONS WITHOUT A FIXED STACK EFFECT WERE NOT CHECKED FOR IT`）。そのような定義を呼ぶ定義は、スタックコメントがあれば、そのコメントのとおりと見なして検査します。
+- `ABORT`、`QUIT`、`BYE`、0以外の数の後の `THROW`（`1 THROW`）で、経路は終わります。
+- FORTH/Sigma に付属するライブラリの語は、指摘しません。
+- `HELP` を除いた版（`-Dhelp=false`）は組み込み語の効果が分からないので、ほかの検査だけを行います。デバッグ機能を除いた版（`-Ddebug=false`）には、このオプションはありません。
 
 `HELP` は基本的な使い方を、`HELP 語名` は語のスタックの変化と1行の説明を英語で表示します（例: `HELP DUP`）。名前は同じ行から読みます（`EVALUATE` の文字列でも、改行の先は読みません）。定義の中に書いた `HELP` は、その定義を実行したときに名前を読みます。利用者が定義した語は、`SEE` で中身を見るよう案内します。知らない名前は `名前 ?` のエラーです。`LICENSE` はライセンスの全文と、組み込んでいるCORE-MATHの著作権表示を表示します。
 
