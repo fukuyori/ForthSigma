@@ -102,6 +102,7 @@ These words of gforth also write to standard error:
 
 | Word | Stack | Action |
 |---|---|---|
+| `~~` | `( -- )` | In a definition: when it runs, shows where it is in the source (`file:line:column:`) and the data stack. |
 | `~~BT` | `( -- )` | As `~~` (the place and the data stack), and then `BACKTRACE:` and the words that called the definition, innermost first, as after an error. |
 | `~~1BT` | `( -- )` | As `~~BT`, the first time only. |
 | `ONCE` | `( -- )` | In a definition: what follows, up to `THEN`, runs only the first time (`ONCE ~~ THEN`). |
@@ -109,8 +110,11 @@ These words of gforth also write to standard error:
 | `~~VARIABLE` | `( "name" -- )` | Defines a `VARIABLE` whose every use by name is shown, before its address is given: the place of the name, the data stack, and `` `name ``. The name after `'` or `[']` is not a use. |
 | `+LTRACE` | `( -- )` | From the next line on, shows each line of an included file before it is interpreted, as `~~` at its start would (`file:line:1:` and the data stack). |
 | `-LTRACE` | `( -- )` | Ends what `+LTRACE` started. |
+| `ASSERT(` | `( "code)" -- )` | In a definition: the code up to `)` must leave true. When it leaves false, the place of the `)` is shown and the program ends with `THROW` -2 (assertion failed). |
 
-The trace and these words are not in a build without the debugging features (`-Ddebug=false`).
+What these words do when the definition runs is in words with parentheses, which they compile: `(~~)`, `(ASSERT)`, `(ONCE)`, `(~~BT)`, `(~~TO)`, and, for the single-step debugger below, `(BREAK:)` and `(BREAK")`. `WORDS` lists them; a program does not use them by itself.
+
+The trace and these words are not in a build without the debugging features (`-Ddebug=false`), but for `~~` and `ASSERT(`, which stay.
 
 ### Watching memory
 
@@ -547,6 +551,7 @@ S" Forth" TUCK BUF SWAP MOVE BUF SWAP TYPE
 | `EVALUATE` | ( addr u -- ) | Interpret a string as Forth input. |
 | `KEY` | ( -- c ) | Read one byte (a character other than ASCII comes as its UTF-8 bytes; `XKEY` reads it whole). |
 | `KEY?` | ( -- flag ) | Return whether a character can be read. On an interactive terminal it waits for input. |
+| `EMIT?` | ( -- flag ) | Whether `EMIT` can go on without waiting. It is always true. |
 | `EKEY`, `EKEY?`, `EKEY>CHAR` | ( -- u ), ( -- flag ), ( u -- u false \| c true ) | `EKEY` and `EKEY?` are the same as `KEY` and `KEY?` (function keys and the like are not interpreted). `EKEY>CHAR` returns true with the character for 0 to 255. |
 | `>NUMBER` | ( ud addr u -- ud2 addr2 u2 ) | Convert digits, returning the part that could not be converted. |
 | `S>NUMBER?` | ( addr u -- d flag ) | Convert a string to an integer (double cell) and return whether it succeeded. |
@@ -647,6 +652,9 @@ S" dir" SYSTEM
 | `SKIP` | ( addr u c -- addr' u' ) | Pass the c's at the start of a string and return the rest. |
 | `STR=` | ( addr1 u1 addr2 u2 -- flag ) | True if the two strings are the same. |
 | `STRING-PREFIX?` | ( addr1 u1 addr2 u2 -- flag ) | True if the first string starts with the second string. |
+| `REPLACES` | ( addr1 u1 addr2 u2 -- ) | Make `%name%`, with the name addr2 u2, stand for the text addr1 u1 in `SUBSTITUTE`. A name given again takes its new text. |
+| `SUBSTITUTE` | ( addr1 u1 addr2 u2 -- addr2 u3 n ) | Copy the text addr1 u1 into the buffer addr2 u2 with each `%name%` of `REPLACES` replaced by its text; `%%` gives `%`. n is how many names were replaced, or -78 when the result did not fit. |
+| `UNESCAPE` | ( addr1 u1 addr2 -- addr2 u2 ) | Copy the text into the buffer at addr2 with each `%` doubled, so that `SUBSTITUTE` gives the text back. |
 | `+PLACE` | ( addr u c-addr -- ) | Append a string to a counted string. It stops at 255 bytes in all. |
 | `SLITERAL` | compile time ( addr u -- ), run time ( -- addr u ) | Used inside a definition; compile a string (up to 255 bytes) into the definition. |
 | `STATE` | ( -- addr ) | The address of a cell that holds -1 while compiling and 0 while interpreting. Writing to it does not change the state. |
@@ -691,6 +699,7 @@ Names written between `{` and `}` let you use the values on the stack by those n
 | `W^`, `D^`, `F^`, `C^`, `XT^` | Writing the name pushes the address of the place that holds the value. Read and write it with `@`, `!`, `F@`, and so on. |
 | `{: a b :}` | The standard Forth notation. The same as `{ }`. |
 | `LOCALS\| a b \|` | The older standard Forth notation. The first name (a) receives the top of the stack. |
+| `(LOCAL)` | The standard word under these notations, ( addr u -- ): while compiling, it declares a local variable of that name, and `0 0` ends the declarations. The first name declared receives the top of the stack. |
 
 Local variables can also be declared in the middle of a definition or inside a control structure. A name can be used only where every path reaches it through its declaration (the same as gforth). For example, a name declared inside `IF` cannot be used in the `ELSE` part or after `THEN`. A name declared in the body of `BEGIN ... UNTIL` or `DO ... LOOP` can be used after the loop too (a name declared after `?DO` or `WHILE` cannot). In recursive calls, each call has its own values. An address obtained from an address type becomes invalid when the definition is left. Local variables cannot be used outside a definition.
 
@@ -770,6 +779,8 @@ A string variable is made with `VARIABLE`. Its contents are placed on the heap a
 | `$SPLIT` | ( addr u c -- addr u1 addr2 u2 ) | Split a string before and after the first character c. |
 | `$ITER` | ( $var c xt -- ) | Run xt on each part ( addr u ) separated by the character c. |
 | `$TMP` | ( xt -- addr u ) | Run xt and return what it printed as a string. |
+| `$SUBSTITUTE` | ( addr1 u1 -- addr2 u2 n ) | `SUBSTITUTE` into a string of its own, one of those `$TMP` uses in turn. |
+| `$UNESCAPE` | ( addr1 u1 -- addr2 u2 ) | `UNESCAPE` into a string of its own, one of those `$TMP` uses in turn. |
 | `$EXEC` | ( xt $var -- ) | Run xt and append what it prints to the end of the dynamic string. The output goes back to where it was even if xt does `THROW`. |
 | `$+!LEN` | ( u $var -- addr ) | Lengthen the string by u bytes and return the address of the added part. |
 | `$OFF` | ( $var -- ) | The same as `$FREE` (the old name in gforth). |
@@ -810,6 +821,11 @@ When exchanging saved images with versions from before short-call inlining, `SEE
 | `SYNONYM new old` | ( -- ) | Make another name for the old word. If the old word is immediate, the new name is immediate too, and `TO` and `>BODY` also act on the old word. |
 | `TRAVERSE-WORDLIST` | ( xt wid -- ) | Run xt ( nt -- flag ) for each word of the word list, newest first, passing its name token. It stops when false is returned. |
 | `NAME>INTERPRET` | ( nt -- xt ) | The same as `NAME>INT`. |
+| `LATEST` | ( -- nt ) | The name token of the newest word; 0 when the newest definition has no name. |
+| `LATESTXT` | ( -- xt ) | The execution token of the newest definition, with or without a name. |
+| `>NAME` | ( xt -- nt \| 0 ) | The name token of the word with that execution token; 0 when it has no name. |
+| `ID.`, `.NAME` | ( nt -- ) | Show the name of the word, and a space. The two are the same. |
+| `ALIAS` | ( xt "name" -- ) | Define name to do what xt does; `' name` gives xt. The new word is not immediate. |
 | `FIND` | ( c-addr -- c-addr 0 \| xt 1 \| xt -1 ) | Find the name given as a counted string. 1 for an immediate word, -1 for others. Parsing words such as `:` and `TO` are not found. |
 | `PARSE` | ( c -- addr u ) | Return the rest of the input up to the character c. |
 | `SOURCE` | ( -- addr u ) | The address and length of the current input line (the string, for `EVALUATE`). |
@@ -916,13 +932,13 @@ The following table lists the built-in words that are registered in the dictiona
 | --- | --- |
 | Stack operations | `DROP`, `DUP`, `SWAP`, `OVER`, `ROT`, `-ROT`, `NIP`, `TUCK`, `PICK`, `ROLL`, `2DUP`, `2DROP`, `2SWAP`, `2OVER`, `DEPTH`, `>R`, `R>`, `R@`, `2>R`, `2R>`, `2R@`, `?DUP`, `2ROT`, `N>R`, `NR>` |
 | Arithmetic | `+`, `-`, `*`, `/`, `MOD`, `/MOD`, `*/`, `*/MOD`, `MINUS`, `NEGATE`, `ABS`, `1+`, `1-`, `2*`, `2/`, `MAX`, `MIN`, `UNDER+` |
-| Comparison, logic, and bits | `=`, `<>`, `<`, `>`, `<=`, `>=`, `NOT`, `0=`, `0<`, `0>`, `0>=`, `0<>`, `AND`, `OR`, `XOR`, `COM`, `INVERT`, `NAND`, `NOR`, `SWAB`, `LSHIFT`, `RSHIFT`, `TRUE`, `FALSE` |
+| Comparison, logic, and bits | `=`, `<>`, `<`, `>`, `<=`, `>=`, `NOT`, `0=`, `0<`, `0>`, `0>=`, `0<>`, `AND`, `OR`, `XOR`, `COM`, `INVERT`, `NAND`, `NOR`, `SWAB`, `LSHIFT`, `RSHIFT`, `TRUE`, `FALSE`, `U<`, `U>` |
 | Constants and address arithmetic | `BL`, `CELL`, `CELLS`, `CELL+`, `ALIGNED`, `ALIGN`, `UNUSED`, `WITHIN`, `BUFFER:`, `DUMP` |
 | Memory and arrays | `@`, `!`, `,`, `C,`, `C@`, `C!`, `+!`, `1+!`, `1-!`, `OSET`, `ON`, `OFF`, `?`, `A@`, `A!`, `ERASE`, `FILL`, `MOVE`, `CMOVE`, `HERE`, `ALLOT`, `CELL-` |
 | Loops | `I`, `J`, `K`, `LEAVE`, `UNLOOP` |
-| Input and output | `.`, `U.`, `.R`, `U.R`, `C.`, `.S`, `ECHO`, `EMIT`, `CR`, `SPACE`, `SPCES`, `SPACES`, `TYPE`, `INPUT` |
+| Input and output | `.`, `U.`, `.R`, `U.R`, `C.`, `.S`, `ECHO`, `EMIT`, `CR`, `SPACE`, `SPCES`, `SPACES`, `TYPE`, `INPUT`, `EMIT?` |
 | Number base | `HEX`, `DEC`, `DECIMAL`, `OCT`, `BASE` |
-| Definition helpers, dictionary, and execution | `<BUILDS`, `CREATE`, `IMMEDIATE`, `WORDS`, `BYE`, `LOAD`, `SAVE`, `SAVESYS`, `EXECUTE`, `SEE`, `FIND`, `FIND-NAME`, `NAME>INT`, `NAME>STRING`, `MARKER`, `LOCATE`, `WHERE`, `PERFORM`, `NOOP`, `DEFER`, `IS`, `ACTION-OF`, `DEFER!`, `DEFER@`, `DEFERS`, `COMPILE,`, `[COMPILE]`, `NAME>COMPILE`, `BEGIN-STRUCTURE`, `END-STRUCTURE`, `+FIELD`, `FIELD:`, `CFIELD:`, `FFIELD:`, `SFFIELD:`, `DFFIELD:`, `STRUCT`, `FIELD`, `END-STRUCT`, `CELL%`, `CHAR%`, `FLOAT%`, `DOUBLE%`, `SFLOAT%`, `DFLOAT%`, `%SIZE`, `%ALIGNMENT`, `%ALIGN`, `%ALLOT`, `%ALLOC`, `%ALLOCATE` |
+| Definition helpers, dictionary, and execution | `<BUILDS`, `CREATE`, `IMMEDIATE`, `WORDS`, `BYE`, `LOAD`, `SAVE`, `SAVESYS`, `EXECUTE`, `SEE`, `FIND`, `FIND-NAME`, `NAME>INT`, `NAME>STRING`, `MARKER`, `LOCATE`, `WHERE`, `PERFORM`, `NOOP`, `DEFER`, `DEFER!`, `DEFER@`, `DEFERS`, `COMPILE,`, `[COMPILE]`, `NAME>COMPILE`, `BEGIN-STRUCTURE`, `END-STRUCTURE`, `+FIELD`, `FIELD:`, `CFIELD:`, `FFIELD:`, `SFFIELD:`, `DFFIELD:`, `STRUCT`, `FIELD`, `END-STRUCT`, `CELL%`, `CHAR%`, `FLOAT%`, `DOUBLE%`, `SFLOAT%`, `DFLOAT%`, `%SIZE`, `%ALIGNMENT`, `%ALIGN`, `%ALLOT`, `%ALLOC`, `%ALLOCATE`, `LATEST`, `LATESTXT`, `>NAME`, `ID.`, `.NAME`, `ALIAS` |
 | Control structures (immediate words) | `IF`, `ELSE`, `AHEAD`, `THEN`, `CS-PICK`, `CS-ROLL`, `ENDIF`, `BEGIN`, `END`, `UNTIL`, `AGAIN`, `WHILE`, `REPEAT`, `DO`, `?DO`, `LOOP`, `+LOOP`, `DOES>`, `CASE`, `OF`, `?OF`, `ENDOF`, `CONTOF`, `ENDCASE`, `NEXT-CASE`, `EXIT`, `?EXIT`, `?LEAVE`, `RECURSE` |
 | Floating-point stack | `FDROP`, `FDUP`, `FSWAP`, `FOVER`, `FROT`, `F-ROT`, `FNIP`, `FTUCK`, `FPICK`, `FDEPTH`, `F.S` |
 | Floating-point arithmetic and functions | `F+`, `F-`, `F*`, `F/`, `FNEGATE`, `FMINUS`, `FABS`, `FMAX`, `FMIN`, `FSQRT`, `FEXP`, `FLN`, `FSIN`, `FCOS`, `FTAN`, `FSINCOS`, `FASIN`, `FACOS`, `FATAN`, `FATAN2`, `FSINH`, `FCOSH`, `FTANH`, `FASINH`, `FACOSH`, `FATANH`, `FEXPM1`, `FLNP1`, `FLOG`, `FALOG`, `F**`, `FLOOR`, `FTRUNC`, `FROUND` |
@@ -931,16 +947,17 @@ The following table lists the built-in words that are registered in the dictiona
 | Double-cell integers | `S>D`, `D>S`, `D+`, `D-`, `DNEGATE`, `DABS`, `D0=`, `D0<`, `D=`, `D<`, `DU<`, `DMAX`, `DMIN`, `D2*`, `D2/`, `M+`, `M*/`, `D.`, `D.R`, `M*`, `UM*`, `UM/MOD`, `FM/MOD`, `SM/REM`, `2@`, `2!`, `2VALUE`, `2LITERAL`, `D>F`, `F>D` |
 | Strings and input | `COUNT`, `PAD`, `ACCEPT`, `EVALUATE`, `KEY`, `KEY?`, `>NUMBER`, `S>NUMBER?`, `>FLOAT`, `WORD`, `PARSE`, `PARSE-NAME`, `SOURCE`, `>IN`, `SOURCE-ID`, `REFILL`, `SAVE-INPUT`, `RESTORE-INPUT`, `EKEY`, `EKEY?`, `EKEY>CHAR`, `XC-SIZE`, `X-SIZE`, `XC@+`, `XC@`, `XC!+`, `XC!+?`, `XC,`, `XCHAR+`, `XCHAR-`, `XEMIT`, `XKEY`, `XKEY?`, `X-WIDTH`, `XC-WIDTH`, `+X/STRING`, `X\STRING-`, `-TRAILING-GARBAGE`, `X@+/STRING`, `XHOLD`, `EKEY>XCHAR` |
 | Number formatting | `<#`, `<<#`, `#`, `#S`, `#>`, `#>>`, `HOLD`, `HOLDS`, `SIGN` |
-| String storage, comparison, state, and abort | `PLACE`, `+PLACE`, `COMPARE`, `SEARCH`, `/STRING`, `-TRAILING`, `CHAR+`, `CHARS`, `BOUNDS`, `BLANK`, `CMOVE>`, `SCAN`, `SKIP`, `STR=`, `STRING-PREFIX?`, `SLITERAL`, `STATE`, `ABORT` |
+| String storage, comparison, state, and abort | `PLACE`, `+PLACE`, `COMPARE`, `SEARCH`, `/STRING`, `-TRAILING`, `CHAR+`, `CHARS`, `BOUNDS`, `BLANK`, `CMOVE>`, `SCAN`, `SKIP`, `STR=`, `STRING-PREFIX?`, `SLITERAL`, `STATE`, `ABORT`, `SUBSTITUTE`, `REPLACES`, `UNESCAPE` |
 | Time, screen, and OS | `MS`, `UTIME`, `TIME&DATE`, `PAGE`, `AT-XY`, `GETENV`, `ARGC`, `ARGV`, `ARG`, `SHIFT-ARGS`, `NEXT-ARG`, `SYSTEM`, `ENVIRONMENT?`, `QUIT` |
 | Word lists and conditional compilation | `ONLY`, `ALSO`, `PREVIOUS`, `FORTH`, `DEFINITIONS`, `SYNONYM`, `TRAVERSE-WORDLIST`, `NAME>INTERPRET`, `ORDER`, `GET-ORDER`, `SET-ORDER`, `>ORDER`, `GET-CURRENT`, `SET-CURRENT`, `VOCABULARY`, `WORDLIST`, `FORTH-WORDLIST`, `SEARCH-WORDLIST`, `[IF]`, `[ELSE]`, `[THEN]`, `[DEFINED]`, `[UNDEFINED]`, `[IFDEF]`, `[IFUNDEF]`, `[ENDIF]`, `[DO]`, `[?DO]`, `[LOOP]`, `[+LOOP]`, `[I]`, `[BEGIN]`, `[UNTIL]`, `[AGAIN]`, `[WHILE]`, `[REPEAT]`, `[FOR]`, `[NEXT]` |
 | Loading source | `INCLUDE`, `INCLUDED`, `REQUIRE`, `REQUIRED`, `NEEDS`, `INCLUDED?`, `SOURCEFILENAME`, `SOURCELINE#` |
 | Files and exceptions | `THROW`, `CATCH`, `R/O`, `W/O`, `R/W`, `STDIN`, `STDOUT`, `STDERR`, `OPEN-FILE`, `CREATE-FILE`, `CLOSE-FILE`, `READ-LINE`, `READ-FILE`, `FILE-POSITION`, `RESIZE-FILE`, `FLUSH-FILE`, `DELETE-FILE`, `RENAME-FILE`, `FILE-STATUS`, `BIN`, `INCLUDE-FILE`, `WRITE-LINE`, `WRITE-FILE`, `FILE-SIZE`, `SLURP-FILE`, `REPOSITION-FILE` |
-| Defining words and compilation | `:`, `;`, `VARIABLE`, `VAR`, `FVARIABLE`, `2VARIABLE`, `CONSTANT`, `CONST`, `FCONSTANT`, `2CONSTANT`, `VALUE`, `FVALUE`, `ARRAY`, `FARRAY`, `'`, `>BODY`, `LITERAL`, `FLITERAL` |
+| Defining words and compilation | `:`, `;`, `VARIABLE`, `VAR`, `FVARIABLE`, `2VARIABLE`, `CONSTANT`, `CONST`, `FCONSTANT`, `2CONSTANT`, `VALUE`, `FVALUE`, `ARRAY`, `FARRAY`, `'`, `>BODY`, `LITERAL`, `FLITERAL`, `(LOCAL)` |
 | Constants and help | `PI`, `HELP`, `LICENSE` |
-| Dynamic memory and dynamic strings | `ALLOCATE`, `FREE`, `RESIZE`, `$!`, `$@`, `$@LEN`, `$!LEN`, `$+!`, `C$+!`, `$.`, `$DEL`, `$INS`, `$OVER`, `$FREE`, `$INIT`, `$SPLIT`, `$ITER`, `$TMP`, `$SLURP-FILE`, `$[]`, `$[]!`, `$[]@`, `$[]#`, `$[].`, `$[]MAP`, `$[]FREE`, `$[]SLURP`, `$[]SLURP-FILE`, `$SLURP`, `$+SLURP`, `$+SLURP-FILE`, `$SLURP-LINE`, `$+!LEN`, `$[]+!`, `$+[]!`, `$EXEC`, `$OFF`, `$VARIABLE`, `$[]VARIABLE`, `$?` |
+| Dynamic memory and dynamic strings | `ALLOCATE`, `FREE`, `RESIZE`, `$!`, `$@`, `$@LEN`, `$!LEN`, `$+!`, `C$+!`, `$.`, `$DEL`, `$INS`, `$OVER`, `$FREE`, `$INIT`, `$SPLIT`, `$ITER`, `$TMP`, `$SLURP-FILE`, `$[]`, `$[]!`, `$[]@`, `$[]#`, `$[].`, `$[]MAP`, `$[]FREE`, `$[]SLURP`, `$[]SLURP-FILE`, `$SLURP`, `$+SLURP`, `$+SLURP-FILE`, `$SLURP-LINE`, `$+!LEN`, `$[]+!`, `$+[]!`, `$EXEC`, `$OFF`, `$VARIABLE`, `$[]VARIABLE`, `$?`, `$SUBSTITUTE`, `$UNESCAPE` |
+| Debugging | `~~`, `(~~)`, `ASSERT(`, `(ASSERT)`, `~~BT`, `(~~BT)`, `~~1BT`, `ONCE`, `(ONCE)`, `~~VALUE`, `(~~TO)`, `~~VARIABLE`, `+LTRACE`, `-LTRACE`, `DBG`, `BREAK:`, `(BREAK:)`, `BREAK"`, `(BREAK")`, `WATCH`, `UNWATCH`, `.COVER-RAW`, `COV%`, `.COVERAGE` |
 
-At start-up, the Forth word list has **516** built-in words (aliases such as `MINUS`/`NEGATE` are each counted as one word). In addition, 10 words such as `FORTH` and `ONLY` are also registered in the Root word list.
+At start-up, the Forth word list has **578** built-in words (aliases such as `MINUS`/`NEGATE` are each counted as one word). In addition, 10 words such as `FORTH` and `ONLY` are also registered in the Root word list.
 
 ### Syntax and defining forms
 
@@ -951,6 +968,7 @@ The following are syntax forms that can be used in Forth input, but they are not
 | Definitions | `: name ... ;`, `:NONAME ... ;` | Make a compiled user-defined word. `:NONAME` makes a definition without a name and pushes its execution token. |
 | Definition and removal | `VARIABLE name`, `VAR name`, `CONSTANT name`, `CONST name`, `value VALUE name`, `FORGET name` | Register a variable, a constant, or a value, or remove words up to the end of the dictionary. |
 | Changing a value | `TO name` | Change the value of a word made by `VALUE`. It can also be used inside a definition. |
+| Deferred words | `xt IS name`, `ACTION-OF name` | Set, and get, the word that a word made by `DEFER` runs. See the section "Deferred words and compiling words". |
 | Floating-point definitions | `FVARIABLE name`, `FCONSTANT name` | Register a floating-point variable or constant. |
 | Double-cell definitions | `2VARIABLE name`, `2CONSTANT name`, `2VALUE name` | Register a double-cell variable, constant, or value. |
 | Arrays | `count ARRAY name`, `count FARRAY name` | Take the number of elements from the stack and register an array. |
@@ -970,4 +988,4 @@ The following are syntax forms that can be used in Forth input, but they are not
 
 `EDIT`, `LIST`, the edit-buffer versions of `LOAD`/`SAVE`, CP/M file operations, the monitor functions of the PC-8001, and `MCODE` or running Z80 machine code are not supported at present. Sigma is not a Z80 emulator.
 
-Of the gforth words, string substitution such as `SUBSTITUTE` and `$SUBSTITUTE`, UTF-8 character words such as `XC@+`, and `TRY` … `ENDTRY` and the like are not implemented. Words related to the start-up of gforth, such as `CODE` and `SAVESYSTEM`, are out of scope. For details, see the [compatibility list](COMPATIBILITY.md).
+Of the gforth words, `TRY` … `ENDTRY`, `]]` … `[[`, the block words such as `BLOCK`, and the like are not implemented. Words related to the start-up of gforth, such as `CODE` and `SAVESYSTEM`, are out of scope. For details, see the [compatibility list](COMPATIBILITY.md).

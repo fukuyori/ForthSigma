@@ -15,6 +15,9 @@ checks:
   4. Each file with the version of VERSION is named in
      docs/version-update-checklist.md, and no start-up line or start event of
      the log in a document shows another version.
+  5. Each built-in word, whenever it was added, is in docs/USER_MANUAL.md and
+     docs/USER_MANUAL.ja.md, and in the table of registered words of each;
+     that table has no word that is not a built-in word.
 
 The exit status is 1 when something is found, 0 otherwise.
 """
@@ -115,6 +118,28 @@ for path in git('ls-files', 'README*.md', 'docs/USER_MANUAL*.md', 'docs/DEBUGGIN
             other = match.group(1) or match.group(2)
             if other != version:
                 found('%s:%d shows %s' % (path, number, other))
+
+# 5. The user manual has every built-in word.
+every = sorted(word_names(read('src/forth.zig')))
+print('built-in words: %d' % len(every))
+for document, heading in [('docs/USER_MANUAL.md', '\n## Registered words'), ('docs/USER_MANUAL.ja.md', '\n## 登録済みワード一覧')]:
+    manual = read(document)
+    if heading not in manual:
+        found('%s has no section%s' % (document, heading.replace('\n', ' ')))
+        continue
+    # The table of registered words: the rows up to the next heading, which is
+    # that of the forms that are not words of the dictionary (TO, IS, S" ...).
+    start = manual.index(heading)
+    end = manual.find('\n#', start + len(heading))
+    rows = [line for line in manual[start:end if end >= 0 else len(manual)].split('\n') if line.startswith('|')]
+    registered = set(re.findall(r'`([^`]+)`', '\n'.join(rows[2:])))
+    for word in every:
+        if not mentions(manual, word):
+            found('%s is not in %s' % (word, document))
+        elif word not in registered:
+            found('%s is not in the registered words of %s' % (word, document))
+    for word in sorted(registered - set(every)):
+        found('%s is in the registered words of %s and is not a built-in word' % (word, document))
 
 print('findings: %d' % len(findings))
 sys.exit(1 if findings else 0)
