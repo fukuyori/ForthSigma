@@ -6,7 +6,10 @@
 
 - `VERSION`: 製品バージョンの基準値。
 - `README.md`、`README.ja.md`: 起動時の表示とリリースタグの例。
-- `docs/USER_MANUAL.md`、`docs/USER_MANUAL.ja.md`: 起動時の表示例。
+- `docs/USER_MANUAL.md`、`docs/USER_MANUAL.ja.md`: 起動時の表示例と、ログの例の `start` の行（`"version"`）。
+- `docs/DEBUGGING.md`、`docs/DEBUGGING.ja.md`: 起動時の表示例と、ログの例の `start` の行（`"version"`）。
+- `src/core/debug_log.zig`: 先頭のコメントにあるログの例の `start` の行。
+- `CHANGELOG.md`: その版の見出し（`## [版番号] - 日付`）と、末尾のリンク。
 - `docs/DEVELOPMENT_SCHEDULE.md`: 今回の版番号更新と変更内容の記録。
 
 過去の変更履歴や実測値に付けた版番号は、その時点の記録として残す。`build.zig`、インストーラー、リリーススクリプトは `VERSION` を参照するため、固定の版番号を追加しない。

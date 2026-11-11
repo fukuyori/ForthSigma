@@ -268,7 +268,7 @@ With a log, the trace and the profile go to the log and not to standard error; a
 
 The usual loop that runs compiled code does none of this: without these options and words a program runs as fast as without the features. `--max-steps`, `--trace`, `--profile`, `--coverage`, a `DBG`, a compiled `BREAK:`, and a `WATCH` make the program run in a second loop that counts operations, which is slower; `--trace`, `--profile`, and `--coverage` also call short definitions instead of copying them into their callers.
 
-`zig build -Ddebug=false` builds FORTH/Σ without any of these features: no backtrace, none of the options, none of the words. Use it for a program that is delivered, when the size of the executable matters.
+`zig build -Ddebug=false` builds FORTH/Σ without any of these features: no backtrace, none of the options, and none of the words but `~~` and `ASSERT(`. Use it for a program that is delivered, when the size of the executable matters.
 
 ## Reference
 
