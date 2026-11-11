@@ -93,10 +93,10 @@ STACK: <0>
   < SUMSQ <1> 25
   > AVERAGE <2> 25 5
   < AVERAGE <1> 5
-< REPORT <0>
+5 < REPORT <0>
 ```
 
-語の終わりの行は、その語が残したものを示します。間違った値を残す語は、`<` の行が最初におかしくなる語です。`--trace-limit N` は、`N` 行を表示したところで `TRACE LIMIT` と表示してトレースを終え、プログラムは続きます。ループのあるプログラムでは必ず付けてください。エラーで終わった語には、`<` の行がありません。
+語の終わりの行は、その語が残したものを示します。間違った値を残す語は、`<` の行が最初におかしくなる語です。`--trace-limit N` は、`N` 行を表示したところで `TRACE LIMIT` と表示してトレースを終え、プログラムは続きます。ループのあるプログラムでは必ず付けてください。エラーで終わった語には、`<` の行がありません。最後の行の前の `5 ` は、プログラム自身が標準出力に書いたものです。
 
 ## ある場所でのスタック: `~~` と `~~BT`
 
@@ -167,7 +167,7 @@ WATCH: 81920 changed from 1 to 7
 
 ```text
 > sigma --profile prog.fs -e "3 4 5 REPORT BYE"
-PROFILE: 19 OPERATIONS
+5 PROFILE: 19 OPERATIONS
      CALLS        SELF       TOTAL  WORD
          2           6           6  SQUARE prog.fs:1
          1           6          19  REPORT prog.fs:4
@@ -175,7 +175,7 @@ PROFILE: 19 OPERATIONS
          1           2           2  AVERAGE prog.fs:3
 ```
 
-`SELF` はその定義自身のコードが実行した命令の数、`TOTAL` はその定義が始まってから終わるまでの命令の数で、呼び出した語の分を含みます。数えるのは時間ではなく命令の数なので、2回実行すれば同じ数になり、変更の前後を正確に比べられます。組み込み語は、何をする語でも1命令です。描画や待ちに使った時間は、プロファイルに表れません。
+`SELF` はその定義自身のコードが実行した命令の数、`TOTAL` はその定義が始まってから終わるまでの命令の数で、呼び出した語の分を含みます。数えるのは時間ではなく命令の数なので、2回実行すれば同じ数になり、変更の前後を正確に比べられます。組み込み語は、何をする語でも1命令です。描画や待ちに使った時間は、プロファイルに表れません。`PROFILE:` の前の `5 ` は、プログラム自身が標準出力に書いたものです。
 
 ## 実行されなかったのはどこか: `--coverage`
 
@@ -240,6 +240,11 @@ prog.fs: FORMATTED ALREADY
 
 ```text
 > sigma --debug-log run.jsonl --trace --profile prog.fs -e "3 4 0 REPORT"
+DIVISION BY ZERO !
+BACKTRACE:
+  AVERAGE prog.fs:3
+  REPORT prog.fs:5
+STACK: <0>
 ```
 
 ```text
@@ -251,6 +256,7 @@ prog.fs: FORMATTED ALREADY
 {"event":"error","message":"DIVISION BY ZERO !","code":-10,"backtrace":[{"word":"AVERAGE","file":"prog.fs","line":3},{"word":"REPORT","file":"prog.fs","line":5}],"more":0,"stack_depth":0,"stack":[],"float_stack_depth":0,"float_stack":[]}
 {"event":"profile","operations":16}
 {"event":"profile_word","word":"SQUARE","file":"prog.fs","line":1,"calls":2,"self":6,"total":6}
+...
 ```
 
 ログがあるときは、トレースとプロファイルはログに書き、標準エラーには書きません。エラーは、ログがないときと同じように表示もします。出来事の種類は、`start`、`error`、`enter`、`exit`、`trace_limit`、`watch`、`lint`、`lint_end`、`profile`、`profile_word` です。それぞれの項目は、[ユーザーマニュアル](USER_MANUAL.ja.md)に一覧があります。ログを読むプログラムは、知らない項目や出来事を読み飛ばしてください。

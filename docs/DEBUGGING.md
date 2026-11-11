@@ -93,10 +93,10 @@ The count starts again for each file, each `-e`, and each line typed. An agent t
   < SUMSQ <1> 25
   > AVERAGE <2> 25 5
   < AVERAGE <1> 5
-< REPORT <0>
+5 < REPORT <0>
 ```
 
-The line of a word's end shows what it left, so a word that leaves the wrong thing is the one whose `<` line first looks wrong. `--trace-limit N` ends the trace after `N` lines with the line `TRACE LIMIT`, and the program goes on; give it whenever the program has a loop. A word that an error ended has no `<` line.
+The line of a word's end shows what it left, so a word that leaves the wrong thing is the one whose `<` line first looks wrong. `--trace-limit N` ends the trace after `N` lines with the line `TRACE LIMIT`, and the program goes on; give it whenever the program has a loop. A word that an error ended has no `<` line. The `5 ` before the last line is what the program itself wrote, on standard output.
 
 ## The stack at one place: `~~` and `~~BT`
 
@@ -167,7 +167,7 @@ The second change was made at the prompt, so it has no definition. `a-addr UNWAT
 
 ```text
 > sigma --profile prog.fs -e "3 4 5 REPORT BYE"
-PROFILE: 19 OPERATIONS
+5 PROFILE: 19 OPERATIONS
      CALLS        SELF       TOTAL  WORD
          2           6           6  SQUARE prog.fs:1
          1           6          19  REPORT prog.fs:4
@@ -175,7 +175,7 @@ PROFILE: 19 OPERATIONS
          1           2           2  AVERAGE prog.fs:3
 ```
 
-`SELF` is the operations of the definition's own code, `TOTAL` those between its start and its end with the words it called. The counts are of operations, not of time, so two runs give the same numbers and a change can be compared exactly. A built-in word is one operation whatever it does: time spent drawing or waiting is not in the profile.
+`SELF` is the operations of the definition's own code, `TOTAL` those between its start and its end with the words it called. The counts are of operations, not of time, so two runs give the same numbers and a change can be compared exactly. A built-in word is one operation whatever it does: time spent drawing or waiting is not in the profile. The `5 ` before `PROFILE:` is what the program itself wrote, on standard output.
 
 ## What never ran: `--coverage`
 
@@ -240,6 +240,11 @@ Format before reading a program whose indentation does not match its structure: 
 
 ```text
 > sigma --debug-log run.jsonl --trace --profile prog.fs -e "3 4 0 REPORT"
+DIVISION BY ZERO !
+BACKTRACE:
+  AVERAGE prog.fs:3
+  REPORT prog.fs:5
+STACK: <0>
 ```
 
 ```text
@@ -251,6 +256,7 @@ Format before reading a program whose indentation does not match its structure: 
 {"event":"error","message":"DIVISION BY ZERO !","code":-10,"backtrace":[{"word":"AVERAGE","file":"prog.fs","line":3},{"word":"REPORT","file":"prog.fs","line":5}],"more":0,"stack_depth":0,"stack":[],"float_stack_depth":0,"float_stack":[]}
 {"event":"profile","operations":16}
 {"event":"profile_word","word":"SQUARE","file":"prog.fs","line":1,"calls":2,"self":6,"total":6}
+...
 ```
 
 With a log, the trace and the profile go to the log and not to standard error; an error is still shown as without one. The events are `start`, `error`, `enter`, `exit`, `trace_limit`, `watch`, `lint`, `lint_end`, `profile`, and `profile_word`; the [user manual](USER_MANUAL.md) lists the members of each. A reader should pass over members and events it does not know.
