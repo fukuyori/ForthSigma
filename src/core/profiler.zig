@@ -8,6 +8,7 @@ const forth = @import("../forth.zig");
 const memory_map = @import("memory_map.zig");
 const words_debug = @import("words_debug.zig");
 const words_tools = @import("words_tools.zig");
+const debug_log = @import("debug_log.zig");
 const State = forth.State;
 const max_code = memory_map.max_code;
 const max_name = memory_map.max_name;
@@ -93,14 +94,6 @@ pub const Profile = struct {
     /// the defining word), TOTAL those between its start and its end.
     pub fn show(self: *Profile, machine: *State) void {
         self.unwind(0);
-        var line: [max_name + 160]u8 = undefined;
-        {
-            var writer = words_debug.LineWriter{ .buffer = &line };
-            writer.add("PROFILE: ");
-            writer.number(self.operations);
-            writer.add(" OPERATIONS\n");
-            words_tools.writeError(machine, writer.text());
-        }
         var count: usize = 0;
         for (machine.words[machine.builtin_count..machine.word_count], machine.builtin_count..) |word, id| {
             if (word.kind != .colon) continue;
@@ -108,7 +101,6 @@ pub const Profile = struct {
             self.order[count] = @intCast(id);
             count += 1;
         }
-        if (count == 0) return;
         const Context = struct {
             profile: *Profile,
             machine: *State,
@@ -120,6 +112,17 @@ pub const Profile = struct {
             }
         };
         std.mem.sort(u16, self.order[0..count], Context{ .profile = self, .machine = machine }, Context.before);
+        // With a log (--debug-log), the profile goes there, as lines of JSON.
+        if (debug_log.enabled(machine)) return debug_log.logProfile(machine, self, self.order[0..count]);
+        var line: [max_name + 160]u8 = undefined;
+        {
+            var writer = words_debug.LineWriter{ .buffer = &line };
+            writer.add("PROFILE: ");
+            writer.number(self.operations);
+            writer.add(" OPERATIONS\n");
+            words_tools.writeError(machine, writer.text());
+        }
+        if (count == 0) return;
         words_tools.writeError(machine, "     CALLS        SELF       TOTAL  WORD\n");
         for (self.order[0..count]) |id| {
             const word = machine.words[id];
@@ -143,7 +146,7 @@ pub const Profile = struct {
 };
 
 /// The operations that the code of the definition `id` ran.
-fn selfOperations(profile: *const Profile, machine: *const State, id: u16) u64 {
+pub fn selfOperations(profile: *const Profile, machine: *const State, id: u16) u64 {
     const word = machine.words[id];
     if (word.code_end < word.code_start or word.code_end > machine.code_count) return 0;
     var sum: u64 = 0;

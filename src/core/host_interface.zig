@@ -102,6 +102,8 @@ pub const Writer = struct {
     gamepad_ops: ?*const @import("gamepad.zig").Ops = null,
     context: ?*anyopaque,
     write_fn: *const fn (?*anyopaque, []const u8) void,
+    /// Writes to the log of --debug-log (lines of JSON); null without one.
+    log_fn: ?*const fn (?*anyopaque, []const u8) void = null,
     read_fn: ?*const fn (?*anyopaque, []u8) ?[]const u8 = null,
     load_fn: ?*const fn (?*anyopaque, []const u8, *State) RuntimeError!void = null,
     save_fn: ?*const fn (?*anyopaque, []const u8, *State) RuntimeError!void = null,

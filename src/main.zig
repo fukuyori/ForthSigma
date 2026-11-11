@@ -748,8 +748,24 @@ const StartOptions = struct {
     trace_limit: u64 = 0,
     /// --profile: the calls and the operations of each word are shown at the end.
     profile: bool = false,
+    /// --debug-log: the file that the errors, the trace, and the profile are written
+    /// to as lines of JSON.
+    debug_log: ?[]const u8 = null,
     next: usize = 1,
 };
+
+const debug_log_option = "--debug-log";
+
+/// The file of --debug-log, open while the program runs.
+var debug_log_file: ?*anyopaque = null;
+
+/// Writes to the log; each event ends its line, and is then given to the system, so
+/// that the log is whole also when the program ends badly.
+fn debugLogWrite(_: ?*anyopaque, bytes: []const u8) void {
+    const file = debug_log_file orelse return;
+    _ = fwrite(bytes.ptr, 1, bytes.len, file);
+    if (bytes.len != 0 and bytes[bytes.len - 1] == '\n') _ = fflush(file);
+}
 
 /// The options that take a plain decimal number (not in a build with -Ddebug=false).
 const number_options = [_]struct { name: []const u8, field: enum { max_steps, trace_limit } }{
@@ -818,6 +834,21 @@ fn parseStartOptions(args: []const []const u8, failed: *[]const u8) error{ Missi
             }
             if (std.mem.eql(u8, argument, "--profile")) {
                 options.profile = true;
+                index += 1;
+                continue;
+            }
+            // --debug-log FILE or --debug-log=FILE.
+            if (std.mem.eql(u8, argument, debug_log_option)) {
+                failed.* = debug_log_option;
+                if (index + 1 >= args.len) return error.MissingValue;
+                options.debug_log = args[index + 1];
+                index += 2;
+                continue;
+            }
+            if (std.mem.startsWith(u8, argument, debug_log_option ++ "=")) {
+                failed.* = debug_log_option;
+                if (argument.len == debug_log_option.len + 1) return error.MissingValue;
+                options.debug_log = argument[debug_log_option.len + 1 ..];
                 index += 1;
                 continue;
             }
@@ -1312,6 +1343,26 @@ fn run(init: std.process.Init.Minimal) !u8 {
     machine.tracing = start.trace;
     machine.trace_limit = start.trace_limit;
     machine.plain_calls = start.trace or start.profile;
+    if (start.debug_log) |path| {
+        var terminated_path: [4096:0]u8 = undefined;
+        if (path.len >= terminated_path.len) {
+            terminalWrite(null, debug_log_option ++ ": FILE ERROR !\n");
+            return 1;
+        }
+        @memcpy(terminated_path[0..path.len], path);
+        terminated_path[path.len] = 0;
+        debug_log_file = fopen(&terminated_path, "wb") orelse {
+            terminalWrite(null, debug_log_option ++ ": FILE ERROR !\n");
+            return 1;
+        };
+        machine.writer.log_fn = debugLogWrite;
+        forth.logStart(machine, version);
+    }
+    // After the profile has been written to it.
+    defer if (debug_log_file) |file| {
+        _ = fclose(file);
+        debug_log_file = null;
+    };
     // The profile is shown however the program ends: BYE, an error, or the end of input.
     const profile: ?*forth.Profile = if (start.profile) std.heap.page_allocator.create(forth.Profile) catch {
         terminalWrite(null, "OUT OF MEMORY !\n");
@@ -1652,6 +1703,12 @@ test "the size options are read at the start of the arguments" {
         try std.testing.expect(!steps.trace);
         try std.testing.expect(!traced.profile);
         try std.testing.expect((try parseStartOptions(&.{ "sigma", "--profile", "x.fs" }, &failed)).profile);
+        const logged = try parseStartOptions(&.{ "sigma", "--debug-log", "log.jsonl", "--debug-log=other.jsonl", "x.fs" }, &failed);
+        try std.testing.expectEqualStrings("other.jsonl", logged.debug_log.?);
+        try std.testing.expectEqual(@as(usize, 4), logged.next);
+        try std.testing.expectError(error.MissingValue, parseStartOptions(&.{ "sigma", "--debug-log" }, &failed));
+        try std.testing.expectError(error.MissingValue, parseStartOptions(&.{ "sigma", "--debug-log=" }, &failed));
+        try std.testing.expectEqual(@as(?[]const u8, null), traced.debug_log);
     }
 
     try std.testing.expectError(error.MissingValue, parseStartOptions(&.{ "sigma", "-d" }, &failed));

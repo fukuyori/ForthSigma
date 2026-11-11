@@ -10,6 +10,7 @@ const error_reporting = @import("error_reporting.zig");
 const words_tools = @import("words_tools.zig");
 const words_xchar = @import("words_xchar.zig");
 const decompiler = @import("decompiler.zig");
+const debug_log = @import("debug_log.zig");
 const inline_calls = @import("inline_calls.zig");
 const truth = @import("integer_math.zig").truth;
 const Builtin = defs.Builtin;
@@ -220,11 +221,17 @@ pub fn traceWord(self: *State, id: u16, enter: bool) void {
         // The loop that counts goes on running the code, so that one that does not
         // count never runs inside it (see `in_counted`).
         self.keep_counting = true;
-        words_tools.writeError(self, "TRACE LIMIT\n");
+        if (debug_log.enabled(self)) debug_log.logTraceLimit(self) else words_tools.writeError(self, "TRACE LIMIT\n");
         return;
     }
     self.trace_lines += 1;
     if (!enter) self.trace_depth -|= 1;
+    // With a log (--debug-log), the trace goes there, as lines of JSON.
+    if (debug_log.enabled(self)) {
+        debug_log.logTrace(self, id, enter, self.trace_depth);
+        if (enter) self.trace_depth += 1;
+        return;
+    }
     var line: [max_name + 400]u8 = undefined;
     var writer = LineWriter{ .buffer = line[0 .. line.len - 1] };
     for (0..@min(self.trace_depth, 40)) |_| writer.add("  ");

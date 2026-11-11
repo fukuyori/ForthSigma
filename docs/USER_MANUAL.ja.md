@@ -174,6 +174,34 @@ LOOP           -> [ 0 ]
 - gforth（デバッガーは `gforth-itc` でだけ動きます）と違い、命令のアドレスは表示せず、スタックは現在の基数で、先頭の0を付けずに表示します。
 - デバッグ機能を除いた版（`-Ddebug=false`）には、これらの語はありません。
 
+### プログラム向けのログ
+
+コマンドラインの先頭のオプション `--debug-log FILE`（または `--debug-log=FILE`）は、デバッグ機能が表示する内容を、JSON Lines の形（1行に1つの JSON オブジェクト）で `FILE` に書きます。プログラム（やエージェント）が読むためのものです。ファイルは起動時に新しく作り、各行はその出来事が起きたときに書き出します。
+
+```powershell
+.\zig-out\bin\sigma.exe --debug-log run.jsonl --trace --profile prog.fs -e "MAIN BYE"
+```
+
+```text
+{"event":"start","version":"0.9.0"}
+{"event":"enter","word":"SUMSQ","depth":0,"stack_depth":2,"stack":[3,4]}
+{"event":"exit","word":"SUMSQ","depth":0,"stack_depth":1,"stack":[25]}
+{"event":"error","message":"top.fs:3: DIVISION BY ZERO !","code":-10,"file":"top.fs","line":3,"backtrace":[{"word":"AVERAGE","file":"bt.fs","line":3},{"word":"REPORT","file":"bt.fs","line":6}],"more":0,"stack_depth":2,"stack":[10,20],"float_stack_depth":0,"float_stack":[]}
+{"event":"profile","operations":177}
+{"event":"profile_word","word":"SQUARE","file":"tr.fs","line":1,"calls":21,"self":63,"total":63}
+```
+
+| `event` | 書くとき | 項目 |
+|---|---|---|
+| `start` | ログを開いたとき。 | `version` |
+| `error` | エラーがインタプリタまで届いたとき（`ABORT`、`QUIT`、`CATCH` が捕まえたエラーは書かない）。エラーは、ログがないときと同じように画面にも表示する。 | `message`（表示と同じ文。入力の `ファイル名:行:` があればそれを前に含む）、`code`（THROW の番号）、`file` と `line`（入力の行がファイルの中のとき）、`backtrace`（内側が先。それぞれ `word`、分かるときは `file` と `line`、呼び出し元に写した短い定義では `inline` が true、同じ場所が続いたときは `times`）、`more`（保持した分より外側の呼び出し元の数）、`stack_depth` と `stack`、`float_stack_depth` と `float_stack` |
+| `enter`、`exit` | `--trace` のとき、コロン定義が始まるときと終わるとき。 | `word`、`depth`（トレースした語の入れ子の深さ）、`stack_depth`、`stack` |
+| `trace_limit` | `--trace-limit` でトレースが終わったとき。 | `lines` |
+| `profile` | `--profile` のとき、プログラムが終わるときに1回。 | `operations` |
+| `profile_word` | `profile` の後に、定義ごとに1つ。プロファイルと同じ順。 | `word`、`file` と `line`（定義の始まる場所。分かるとき）、`calls`、`self`、`total` |
+
+`stack` はデータスタックの上のほうの値で、いちばん上が最後です。`enter` と `exit` では9個まで、`error` では64個までで、`stack_depth` がスタック全体の深さです。ログがあるときは、トレースとプロファイルはログに書き、標準エラーには書きません。項目や `event` は後から増えることがあるので、ログを読むプログラムは、知らないものを読み飛ばしてください。デバッグ機能を除いた版（`-Ddebug=false`）には、このオプションはありません。
+
 `HELP` は基本的な使い方を、`HELP 語名` は語のスタックの変化と1行の説明を英語で表示します（例: `HELP DUP`）。名前は同じ行から読みます（`EVALUATE` の文字列でも、改行の先は読みません）。定義の中に書いた `HELP` は、その定義を実行したときに名前を読みます。利用者が定義した語は、`SEE` で中身を見るよう案内します。知らない名前は `名前 ?` のエラーです。`LICENSE` はライセンスの全文と、組み込んでいるCORE-MATHの著作権表示を表示します。
 
 入力行を処理すると、成功時には `OK` が表示されます。たとえば次の入力は、12の二乗を表示します。

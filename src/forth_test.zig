@@ -29,4 +29,5 @@ comptime {
     _ = @import("tests/debug_test.zig");
     _ = @import("tests/debug_words_test.zig");
     _ = @import("tests/debug_step_test.zig");
+    _ = @import("tests/debug_log_test.zig");
 }

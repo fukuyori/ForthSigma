@@ -8,9 +8,10 @@
 - `--max-steps N`, among the options at the start of the command line, ends a program after its compiled code has run `N` operations for an argument or a line, with the new error `STEP LIMIT !` (-280) and its backtrace; `CATCH` does not catch it. It is for finding where a program that does not end is running.
 - `--trace` shows on standard error each colon definition as it starts and ends, with the data stack, indented by the nesting; `--trace-limit N` ends the trace after `N` lines.
 - `--profile` shows on standard error, when the program ends, how often each colon definition was called and how many operations it ran, by itself and with the words it called.
+- `--debug-log FILE` writes the errors (with the backtrace and the stacks), the trace, and the profile to a file as JSON Lines, for programs to read.
 - The single-step debugger of gforth: `DBG name` runs a colon definition one operation at a time (Enter next, `n` into the called word, `u` out, `d` run the rest, `s` stop), and `BREAK:` and `BREAK" text"` start the steps inside a definition. The keys are read as `KEY` reads them, so they can come from a pipe.
 - The debugging words of gforth `~~BT`, `~~1BT`, `ONCE`, `~~VALUE`, `+LTRACE`, and `-LTRACE`.
-- The build option `-Ddebug=false` leaves out the debugging features (the backtrace, `--max-steps`, the trace, the profile, and the debugging words above).
+- The build option `-Ddebug=false` leaves out the debugging features (the backtrace, `--max-steps`, the trace, the profile, the log, and the debugging words above).
 
 ### Changed
 

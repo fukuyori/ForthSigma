@@ -4,6 +4,7 @@ const std = @import("std");
 const defs = @import("defs.zig");
 const forth = @import("../forth.zig");
 const inline_calls = @import("inline_calls.zig");
+const debug_log = @import("debug_log.zig");
 const memory_map = @import("memory_map.zig");
 const CatchFrame = defs.CatchFrame;
 const Cell = memory_map.Cell;
@@ -26,6 +27,18 @@ pub fn report(self: *State, err: anyerror) void {
     self.stepper = .off;
     if (self.profile) |profile| profile.unwind(0);
     defer if (defs.debug_enabled and self.show_backtrace and self.backtrace_total != 0 and err != error.Aborted and err != error.Quit) showBacktrace(self, kept_data, kept_floats);
+    // With a log (--debug-log), the error goes there too, with the message that is
+    // written from here on; this runs before the backtrace is shown.
+    const logged = defs.debug_enabled and debug_log.enabled(self) and err != error.Aborted and err != error.Quit;
+    const failed_at = self.error_location;
+    if (logged) {
+        self.report_len = 0;
+        self.report_capturing = true;
+    }
+    defer if (logged) {
+        self.report_capturing = false;
+        debug_log.logError(self, err, self.report_text[0..self.report_len], failed_at, kept_data, kept_floats);
+    };
     defer if (err == error.Quit) {
         self.data_depth = kept_data;
         self.float_depth = kept_floats;
@@ -160,7 +173,7 @@ pub fn describePlace(self: *State, pc: u16, writer: *@import("words_debug.zig").
 
 /// The colon definition whose code holds `pc`: the innermost one, and for the code after
 /// DOES> the defining word.
-fn codeOwner(self: *const State, pc: u16) ?u16 {
+pub fn codeOwner(self: *const State, pc: u16) ?u16 {
     var found: ?u16 = null;
     for (self.words[self.builtin_count..self.word_count], self.builtin_count..) |word, id| {
         if (word.kind != .colon or pc < word.code_start or pc >= word.code_end) continue;

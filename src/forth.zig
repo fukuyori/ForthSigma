@@ -46,6 +46,7 @@ const words_system = @import("core/words_system.zig");
 const words_tools = @import("core/words_tools.zig");
 const words_debug = @import("core/words_debug.zig");
 pub const Profile = @import("core/profiler.zig").Profile;
+pub const logStart = @import("core/debug_log.zig").logStart;
 const words_xchar = @import("core/words_xchar.zig");
 const Builtin = defs.Builtin;
 pub const Cell = memory_map.Cell;
@@ -308,6 +309,10 @@ pub const State = struct {
     /// With that, a loop that does not count never runs inside one that does.
     in_counted: bool = false,
     keep_counting: bool = false,
+    /// What `report` writes for an error while it is kept for the log (--debug-log).
+    report_text: [240]u8 = undefined,
+    report_len: usize = 0,
+    report_capturing: bool = false,
     /// +LTRACE: each line of an included file is shown before it is interpreted.
     line_trace: bool = false,
     /// The values of ~~VALUE, whose TOs are shown. Not part of an image.
@@ -412,6 +417,12 @@ pub const State = struct {
                 self.capture_failed = true;
             };
             return;
+        }
+        // The message of an error, for the log of --debug-log.
+        if (defs.debug_enabled and self.report_capturing) {
+            const count = @min(bytes.len, self.report_text.len - self.report_len);
+            @memcpy(self.report_text[self.report_len..][0..count], bytes[0..count]);
+            self.report_len += count;
         }
         self.output_count +%= bytes.len;
         self.writer.write(bytes);

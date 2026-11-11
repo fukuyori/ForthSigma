@@ -174,6 +174,34 @@ The keys are read as `KEY` reads them, so they can also come from a pipe or a fi
 - Unlike in gforth, where the debugger works only in `gforth-itc`, the addresses of the operations are not shown, and the stack is shown in the current base without leading zeros.
 - These words are not in a build without the debugging features (`-Ddebug=false`).
 
+### Log for programs
+
+`--debug-log FILE` (or `--debug-log=FILE`), among the options at the start of the command line, writes what the debugging features show to `FILE` as JSON Lines: one JSON object on each line, for a program (or an agent) to read. The file is made anew at the start, and each line is written out when its event happens.
+
+```powershell
+.\zig-out\bin\sigma.exe --debug-log run.jsonl --trace --profile prog.fs -e "MAIN BYE"
+```
+
+```text
+{"event":"start","version":"0.9.0"}
+{"event":"enter","word":"SUMSQ","depth":0,"stack_depth":2,"stack":[3,4]}
+{"event":"exit","word":"SUMSQ","depth":0,"stack_depth":1,"stack":[25]}
+{"event":"error","message":"top.fs:3: DIVISION BY ZERO !","code":-10,"file":"top.fs","line":3,"backtrace":[{"word":"AVERAGE","file":"bt.fs","line":3},{"word":"REPORT","file":"bt.fs","line":6}],"more":0,"stack_depth":2,"stack":[10,20],"float_stack_depth":0,"float_stack":[]}
+{"event":"profile","operations":177}
+{"event":"profile_word","word":"SQUARE","file":"tr.fs","line":1,"calls":21,"self":63,"total":63}
+```
+
+| `event` | When | Members |
+|---|---|---|
+| `start` | The log is opened. | `version` |
+| `error` | An error reaches the interpreter (not `ABORT` or `QUIT`, nor an error that `CATCH` caught). The error is also shown as without a log. | `message` (as shown, with the `file:line:` before it when there is one), `code` (the THROW code), `file` and `line` (the input line, when it is in a file), `backtrace` (innermost first; each with `word`, and `file` and `line` when known, `inline` true for a short definition copied into its caller, `times` when the place came several times in a row), `more` (callers beyond those kept), `stack_depth` and `stack`, `float_stack_depth` and `float_stack` |
+| `enter`, `exit` | With `--trace`: a colon definition starts or ends. | `word`, `depth` (how deep the traced words are nested), `stack_depth`, `stack` |
+| `trace_limit` | With `--trace-limit`: the trace ends. | `lines` |
+| `profile` | With `--profile`: once, when the program ends. | `operations` |
+| `profile_word` | After `profile`: one for each definition, in the order of the profile. | `word`, `file` and `line` (where it starts, when known), `calls`, `self`, `total` |
+
+`stack` holds the top items of the data stack, the top last: nine in `enter` and `exit`, 64 in `error`; `stack_depth` is the depth of the whole stack. With a log, the trace and the profile are written to it and not to standard error. Other members and events may be added later; a program that reads the log should pass over those it does not know. A build without the debugging features (`-Ddebug=false`) does not have the option.
+
 `HELP` shows the basic usage, and `HELP name` shows the stack effect of a word and a one-line description in English (example: `HELP DUP`). The name is read from the same line (also in an `EVALUATE` string, it does not read past a line end). `HELP` written in a definition reads the name when that definition runs. For a word defined by the user, it suggests viewing its contents with `SEE`. An unknown name gives the error `name ?`. `LICENSE` shows the full text of the license and the copyright notice of the included CORE-MATH.
 
 When an input line has been processed successfully, `OK` is printed. For example, the following input prints the square of 12.
