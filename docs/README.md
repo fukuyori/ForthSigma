@@ -20,3 +20,5 @@ For the project overview, how to build, the current features, the differences fr
 - [Version update checklist](version-update-checklist.md): what to update when the version changes, and the release steps (in Japanese)
 
 - [S01 review and validation](S01_REVIEW.md): Claude Code findings, fixes, and measured comparisons (Japanese).
+
+- [P01 review and validation](P01_REVIEW.md): Claude Code findings, documentation fixes, and measured return-stack differences (Japanese).

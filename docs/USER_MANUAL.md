@@ -382,6 +382,8 @@ On a terminal on Linux and macOS, Sigma edits the lines of the interactive promp
 
 For example, `1 2 3 4 2TUCK` leaves `3 4 1 2 3 4`. `: T 10 >R 20 >R RDROP R> ; T` leaves 10. Balance return-stack transfers inside the definition and loop where they occur. Sigma keeps user return-stack cells separate from call frames and DO-loop indices; balanced drops leave I/J intact. Insufficient data or return-stack input throws -4 or -6. 2TUCK checks its two-cell growth before moving any cells.
 
+`RDROP`/`2RDROP` operate only on user return-stack cells in Sigma. They do not remove DO-loop control records or call frames. The low-level Gforth idiom `2RDROP EXIT` for leaving a DO loop is therefore not portable here; use `UNLOOP EXIT`. With no user return-stack cells, the former throws -6 in Sigma.
+
 ## Numbers
 
 Integers are 64-bit signed values. Addition, subtraction, and multiplication that go out of range wrap around. `/`, `MOD`, and `/MOD` use floored division (rounding toward negative infinity): `-7 2 /` is `-4`, and `-7 2 MOD` is `1`. Dividing by 0 gives the error `DIVISION BY ZERO !`. Dividing the minimum value (-9223372036854775808) by -1 gives `RESULT OUT OF RANGE !` (exception code -11), also for `MOD`, because the quotient does not fit in one cell (the same as gforth).
@@ -693,7 +695,7 @@ S" dir" SYSTEM
 | `WITHIN` | ( n lo hi -- flag ) | True if lo ≦ n < hi. The range is checked with unsigned differences, so when the upper and lower limits are reversed, the range is treated as one that wraps around. |
 | `2>R`, `2R>` | ( x1 x2 -- ), ( -- x1 x2 ) | Move two cells to or from the return stack, keeping their order. |
 | `2R@` | ( -- x1 x2 ) | Copy the two cells moved by `2>R`, leaving them on the return stack. |
-| `N>R`, `NR>`, `2NIP`, `2TUCK`, `THIRD`, `FOURTH`, `RDROP`, `2RDROP` | ( x1 … xn n -- ), ( -- x1 … xn n ) | Move n cells and their count n to or from the return stack, keeping their order. |
+| `N>R`, `NR>` | ( x1 … xn n -- ), ( -- x1 … xn n ) | Move n cells and their count n to or from the return stack, keeping their order. |
 | `ALIGN`, `UNUSED` | ( -- ), ( -- u ) | `ALIGN` rounds HERE up to a multiple of the cell size. `UNUSED` is the number of bytes left in the data area. |
 | `PLACE` | ( addr u c-addr -- ) | Store a string at c-addr with its length in the first byte. At most 255 characters. |
 | `C" ..."` | ( -- c-addr ) | Used inside a definition; push the address of a string with its length in the first byte (outside a definition, `COMPILE MODE ERROR !`). |
@@ -1025,7 +1027,7 @@ The following table lists the built-in words that are registered in the dictiona
 | Floating-point arithmetic and functions | `F+`, `F-`, `F*`, `F/`, `FNEGATE`, `FMINUS`, `FABS`, `FMAX`, `FMIN`, `FSQRT`, `FEXP`, `FLN`, `FSIN`, `FCOS`, `FTAN`, `FSINCOS`, `FASIN`, `FACOS`, `FATAN`, `FATAN2`, `FSINH`, `FCOSH`, `FTANH`, `FASINH`, `FACOSH`, `FATANH`, `FEXPM1`, `FLNP1`, `FLOG`, `FALOG`, `F**`, `FLOOR`, `FTRUNC`, `FROUND` |
 | Floating-point comparison | `F=`, `F<>`, `F<`, `F>`, `F<=`, `F>=`, `F0=`, `F0<>`, `F0<`, `F0>`, `F0<=`, `F0>=`, `F~` |
 | Floating-point memory, conversion, and input/output | `F@`, `F!`, `F,`, `FA@`, `FA!`, `F+!`, `F?`, `FLOATS`, `FLOAT+`, `DF@`, `DF!`, `DFLOATS`, `DFLOAT+`, `SF@`, `SF!`, `SFLOATS`, `SFLOAT+`, `FALIGN`, `FALIGNED`, `DFALIGN`, `DFALIGNED`, `SFALIGN`, `SFALIGNED`, `S>F`, `F>S`, `F.`, `FE.`, `FS.`, `REPRESENT`, `PRECISION`, `SET-PRECISION`, `FINPUT`, `F.RDP`, `F>STR-RDP`, `F>BUF-RDP` |
-| Double-cell integers | `S>D`, `D>S`, `D+`, `D-`, `DNEGATE`, `DABS`, `D0=`, `D0<`, `D0<=`, `D0<>`, `D0>`, `D0>=`, `D=`, `D<`, `D<=`, `D<>`, `D>`, `D>=`, `DU<`, `DU<=`, `DU>`, `DU>=`, `DU<`, `DMAX`, `DMIN`, `D2*`, `D2/`, `M+`, `M*/`, `D.`, `D.R`, `M*`, `UM*`, `UM/MOD`, `FM/MOD`, `SM/REM`, `2@`, `2!`, `2VALUE`, `2LITERAL`, `D>F`, `F>D` |
+| Double-cell integers | `S>D`, `D>S`, `D+`, `D-`, `DNEGATE`, `DABS`, `D0=`, `D0<`, `D0<=`, `D0<>`, `D0>`, `D0>=`, `D=`, `D<`, `D<=`, `D<>`, `D>`, `D>=`, `DU<`, `DU<=`, `DU>`, `DU>=`, `DMAX`, `DMIN`, `D2*`, `D2/`, `M+`, `M*/`, `D.`, `D.R`, `M*`, `UM*`, `UM/MOD`, `FM/MOD`, `SM/REM`, `2@`, `2!`, `2VALUE`, `2LITERAL`, `D>F`, `F>D` |
 | Strings and input | `COUNT`, `PAD`, `ACCEPT`, `EVALUATE`, `KEY`, `KEY?`, `>NUMBER`, `S>NUMBER?`, `>FLOAT`, `WORD`, `PARSE`, `PARSE-NAME`, `SOURCE`, `>IN`, `SOURCE-ID`, `REFILL`, `SAVE-INPUT`, `RESTORE-INPUT`, `EKEY`, `EKEY?`, `EKEY>CHAR`, `XC-SIZE`, `X-SIZE`, `XC@+`, `XC@`, `XC!+`, `XC!+?`, `XC,`, `XCHAR+`, `XCHAR-`, `XEMIT`, `XKEY`, `XKEY?`, `X-WIDTH`, `XC-WIDTH`, `+X/STRING`, `X\STRING-`, `-TRAILING-GARBAGE`, `X@+/STRING`, `XHOLD`, `EKEY>XCHAR` |
 | Number formatting | `<#`, `<<#`, `#`, `#S`, `#>`, `#>>`, `HOLD`, `HOLDS`, `SIGN` |
 | String storage, comparison, state, and abort | `PLACE`, `+PLACE`, `COMPARE`, `SEARCH`, `/STRING`, `-TRAILING`, `CHAR+`, `CHARS`, `BOUNDS`, `BLANK`, `CMOVE>`, `SCAN`, `SKIP`, `STR=`, `STRING-PREFIX?`, `SLITERAL`, `STATE`, `ABORT`, `SUBSTITUTE`, `REPLACES`, `UNESCAPE` |

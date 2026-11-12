@@ -375,6 +375,8 @@ LinuxとmacOSの端末では、対話プロンプトと `ACCEPT` の行は、Sig
 
 `1 2 3 4 2TUCK`は`3 4 1 2 3 4`を残します。`: T 10 >R 20 >R RDROP R> ; T`は10を残します。リターンスタックの出し入れは同じ定義・ループ内で釣り合わせてください。Sigmaでは利用者のリターンスタックと呼出フレーム・DOループの添字は別管理のため、釣り合った削除はI/Jを変更しません。データ不足は-4、リターンスタック不足は-6をTHROWします。2TUCKは移動前に2セル分の空きを確認します。
 
+Sigmaの`RDROP`/`2RDROP`は利用者のリターンスタックだけを操作し、DOループ制御情報や呼出フレームは除きません。Gforthの内部配置を利用してDOループから`2RDROP EXIT`で抜ける書き方には互換性がありません。`UNLOOP EXIT`を使ってください。利用者セルがない場合、前者はSigmaでは-6をTHROWします。
+
 ## 数値
 
 整数は64ビットの符号付き値です。範囲を超えた加算・減算・乗算は折り返します。`/`、`MOD`、`/MOD` は床関数除算（負の無限大方向への切り捨て）で、`-7 2 /` は `-4`、`-7 2 MOD` は `1` です。0で割るとエラー `DIVISION BY ZERO !` になります。最小値（-9223372036854775808）を-1で割ると、商が1セルに収まらないため、`MOD` も含めて `RESULT OUT OF RANGE !`（例外コード-11）になります（Gforthと同じ）。
@@ -686,7 +688,7 @@ S" dir" SYSTEM
 | `WITHIN` | ( n lo hi -- flag ) | lo ≦ n < hi なら真を返します。範囲は符号なしの差で判定するため、上限と下限が逆でも一周する範囲として扱います。 |
 | `2>R`, `2R>` | ( x1 x2 -- )、( -- x1 x2 ) | 2個のセルを順序を保ってリターンスタックとの間で移します。 |
 | `2R@` | ( -- x1 x2 ) | `2>R` で移した2個のセルを、リターンスタックに残したまま複写します。 |
-| `N>R`, `NR>`, `2NIP`, `2TUCK`, `THIRD`, `FOURTH`, `RDROP`, `2RDROP` | ( x1 … xn n -- )、( -- x1 … xn n ) | n個のセルと個数nを、順序を保ってリターンスタックとの間で移します。 |
+| `N>R`, `NR>` | ( x1 … xn n -- )、( -- x1 … xn n ) | n個のセルと個数nを、順序を保ってリターンスタックとの間で移します。 |
 | `ALIGN`, `UNUSED` | ( -- )、( -- u ) | `ALIGN` はHEREをセルの大きさの倍数に切り上げます。`UNUSED` はデータ領域の残りのバイト数です。 |
 | `PLACE` | ( addr u c-addr -- ) | 文字列を、先頭バイトに長さを持つ形でc-addrへ格納します。最大255文字です。 |
 | `C" ..."` | ( -- c-addr ) | 定義の中で使い、先頭バイトに長さを持つ文字列のアドレスを積みます（定義の外では `COMPILE MODE ERROR !`）。 |
@@ -1016,7 +1018,7 @@ SAVESYS demo.exe
 | 浮動小数点算術・関数 | `F+`, `F-`, `F*`, `F/`, `FNEGATE`, `FMINUS`, `FABS`, `FMAX`, `FMIN`, `FSQRT`, `FEXP`, `FLN`, `FSIN`, `FCOS`, `FTAN`, `FSINCOS`, `FASIN`, `FACOS`, `FATAN`, `FATAN2`, `FSINH`, `FCOSH`, `FTANH`, `FASINH`, `FACOSH`, `FATANH`, `FEXPM1`, `FLNP1`, `FLOG`, `FALOG`, `F**`, `FLOOR`, `FTRUNC`, `FROUND` |
 | 浮動小数点比較 | `F=`, `F<>`, `F<`, `F>`, `F<=`, `F>=`, `F0=`, `F0<>`, `F0<`, `F0>`, `F0<=`, `F0>=`, `F~` |
 | 浮動小数点メモリ・変換・入出力 | `F@`, `F!`, `F,`, `FA@`, `FA!`, `F+!`, `F?`, `FLOATS`, `FLOAT+`, `DF@`, `DF!`, `DFLOATS`, `DFLOAT+`, `SF@`, `SF!`, `SFLOATS`, `SFLOAT+`, `FALIGN`, `FALIGNED`, `DFALIGN`, `DFALIGNED`, `SFALIGN`, `SFALIGNED`, `S>F`, `F>S`, `F.`, `FE.`, `FS.`, `REPRESENT`, `PRECISION`, `SET-PRECISION`, `FINPUT`, `F.RDP`, `F>STR-RDP`, `F>BUF-RDP` |
-| 倍長整数 | `S>D`, `D>S`, `D+`, `D-`, `DNEGATE`, `DABS`, `D0=`, `D0<`, `D0<=`, `D0<>`, `D0>`, `D0>=`, `D=`, `D<`, `D<=`, `D<>`, `D>`, `D>=`, `DU<`, `DU<=`, `DU>`, `DU>=`, `DU<`, `DMAX`, `DMIN`, `D2*`, `D2/`, `M+`, `M*/`, `D.`, `D.R`, `M*`, `UM*`, `UM/MOD`, `FM/MOD`, `SM/REM`, `2@`, `2!`, `2VALUE`, `2LITERAL`, `D>F`, `F>D` |
+| 倍長整数 | `S>D`, `D>S`, `D+`, `D-`, `DNEGATE`, `DABS`, `D0=`, `D0<`, `D0<=`, `D0<>`, `D0>`, `D0>=`, `D=`, `D<`, `D<=`, `D<>`, `D>`, `D>=`, `DU<`, `DU<=`, `DU>`, `DU>=`, `DMAX`, `DMIN`, `D2*`, `D2/`, `M+`, `M*/`, `D.`, `D.R`, `M*`, `UM*`, `UM/MOD`, `FM/MOD`, `SM/REM`, `2@`, `2!`, `2VALUE`, `2LITERAL`, `D>F`, `F>D` |
 | 文字列・入力 | `COUNT`, `PAD`, `ACCEPT`, `EVALUATE`, `KEY`, `KEY?`, `>NUMBER`, `S>NUMBER?`, `>FLOAT`, `WORD`, `PARSE`, `PARSE-NAME`, `SOURCE`, `>IN`, `SOURCE-ID`, `REFILL`, `SAVE-INPUT`, `RESTORE-INPUT`, `EKEY`, `EKEY?`, `EKEY>CHAR`, `XC-SIZE`, `X-SIZE`, `XC@+`, `XC@`, `XC!+`, `XC!+?`, `XC,`, `XCHAR+`, `XCHAR-`, `XEMIT`, `XKEY`, `XKEY?`, `X-WIDTH`, `XC-WIDTH`, `+X/STRING`, `X\STRING-`, `-TRAILING-GARBAGE`, `X@+/STRING`, `XHOLD`, `EKEY>XCHAR` |
 | 数値の書式 | `<#`, `<<#`, `#`, `#S`, `#>`, `#>>`, `HOLD`, `HOLDS`, `SIGN` |
 | 文字列格納・比較・状態・中断 | `PLACE`, `+PLACE`, `COMPARE`, `SEARCH`, `/STRING`, `-TRAILING`, `CHAR+`, `CHARS`, `BOUNDS`, `BLANK`, `CMOVE>`, `SCAN`, `SKIP`, `STR=`, `STRING-PREFIX?`, `SLITERAL`, `STATE`, `ABORT`, `SUBSTITUTE`, `REPLACES`, `UNESCAPE` |

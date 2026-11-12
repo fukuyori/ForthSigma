@@ -20,3 +20,5 @@
 - [バージョン更新チェックリスト](version-update-checklist.md): 版番号を変えるときに直すものと、リリースの手順
 
 - [S01レビュー・検証記録](S01_REVIEW.md)：Claude Codeの指摘対応と比較実測。
+
+- [P01レビュー・検証記録](P01_REVIEW.md)：Claude Codeの指摘対応とリターンスタック差異の実測。

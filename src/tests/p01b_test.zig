@@ -125,3 +125,16 @@ test "compiled P01b words survive image restore and append" {
     try support.expectStack(target, &.{ 99, 3, 4, 3, 4, 4, 4 });
     try std.testing.expectEqual(@as(usize, 0), target.return_depth);
 }
+
+test "DO-loop exit uses UNLOOP instead of deleting user return-stack cells" {
+    var output = support.Output{};
+    const machine = try support.createMachine(&output);
+    defer support.destroyMachine(machine);
+    try machine.interpretLine(": PORTABLE 3 0 DO UNLOOP EXIT LOOP ; PORTABLE 77");
+    try support.expectStack(machine, &.{77});
+    machine.data_depth = 0;
+    try machine.interpretLine(": RAW 3 0 DO 2RDROP EXIT LOOP ; ' RAW CATCH");
+    try support.expectStack(machine, &.{-6});
+    try std.testing.expectEqual(@as(usize, 0), machine.return_depth);
+    try std.testing.expectEqual(@as(usize, 0), machine.loop_depth);
+}
