@@ -3,6 +3,7 @@ const builtin = @import("builtin");
 const forth = @import("forth.zig");
 
 extern "c" fn getchar() c_int;
+extern "c" fn ttyname(c_int) ?[*:0]const u8;
 extern "c" fn putchar(c_int) c_int;
 extern "c" fn fflush(?*anyopaque) c_int;
 extern "c" fn fclose(?*anyopaque) c_int;
@@ -297,6 +298,7 @@ fn runShellCommand(_: ?*anyopaque, command: []const u8) forth.RuntimeError!forth
     // On POSIX systems this is the wait status, as gforth's $? gives; on Windows, the exit code.
     utf8_console.pause();
     const status = system(&terminated);
+    output_cursor.unknown();
     utf8_console.@"resume"();
     if (status == -1) return error.HostFailed;
     return status;
@@ -1142,8 +1144,10 @@ fn writeStandardError(bytes: []const u8) bool {
             const written = std.c.write(2, rest.ptr, rest.len);
             if (written < 0) {
                 if (std.c._errno().* == @intFromEnum(std.c.E.INTR)) continue;
+                if (stderr_shares_output) output_cursor.unknown();
                 return false;
             }
+            if (stderr_shares_output) output_cursor.feed(rest[0..@intCast(written)]);
             rest = rest[@intCast(written)..];
         }
     }
@@ -1189,8 +1193,24 @@ var output_buffer: [4096]u8 = undefined;
 var output_used: usize = 0;
 /// Whether standard output is a terminal (set at start-up).
 var output_is_terminal = false;
+/// Tracks output without issuing cursor queries that would interleave with keyboard input.
+var output_cursor = host_line.OutputCursor{};
+var stderr_shares_output = false;
+
+fn stderrSharesOutput() bool {
+    if (builtin.os.tag == .windows or !output_is_terminal) return false;
+    const output_name = std.mem.span(ttyname(1) orelse return false);
+    var copy: [4096]u8 = undefined;
+    if (output_name.len > copy.len) return false;
+    // ttyname may reuse its buffer, so retain stdout's name before asking for stderr.
+    @memcpy(copy[0..output_name.len], output_name);
+    const length = output_name.len;
+    const error_name = std.mem.span(ttyname(2) orelse return false);
+    return std.mem.eql(u8, copy[0..length], error_name);
+}
 
 fn terminalWrite(_: ?*anyopaque, bytes: []const u8) void {
+    if (builtin.os.tag != .windows and output_is_terminal) output_cursor.feed(bytes);
     var rest = bytes;
     while (rest.len > 0) {
         if (output_used == output_buffer.len) flushOutput();
@@ -1229,6 +1249,7 @@ fn readByte() c_int {
     // has read the byte ahead and the program wrote in between.
     flushOutput();
     host_input.leave();
+    output_cursor.unknown();
     if (lookahead) |byte| {
         lookahead = null;
         return byte;
@@ -1250,6 +1271,7 @@ fn terminalKeyReady(_: ?*anyopaque) bool {
     flushOutput();
     host_input.leave();
     if (lookahead != null) return true;
+    output_cursor.unknown();
     const ch = standardInputByte();
     if (ch < 0) return false;
     lookahead = @intCast(ch);
@@ -1274,7 +1296,7 @@ fn cursorPosition(_: ?*anyopaque) ?forth.CursorPosition {
 }
 
 fn terminalRead(_: ?*anyopaque, buffer: []u8) ?[]const u8 {
-    if (editedLine(buffer)) |result| return result.line;
+    if (editedLine(buffer, null)) |result| return result.line;
     var used: usize = 0;
     while (true) {
         const ch = readByte();
@@ -1294,17 +1316,38 @@ fn terminalRead(_: ?*anyopaque, buffer: []u8) ?[]const u8 {
 /// Whether lines typed on the terminal are edited by Sigma; cleared if the terminal cannot
 /// be set for it.
 var line_editing = true;
+var line_history = host_line.History{};
 
 /// On a terminal on Linux and macOS, Sigma edits the line itself, so that Backspace takes
 /// back as many columns as the character is wide (see host_line.zig). Null when the line
 /// is to be read as it comes. The terminal's line input is given back first if INKEY had
 /// taken it.
-fn editedLine(buffer: []u8) ?host_line.Result {
+fn editedLine(buffer: []u8, history: ?*host_line.History) ?host_line.Result {
     if (builtin.os.tag == .windows or !line_editing or !output_is_terminal or !host_input.input_is_terminal) return null;
     host_input.leave();
-    if (host_line.read(buffer, lineByte, flushOutput)) |result| return result;
+    const width = editingWidth(terminalSize(null));
+    output_cursor.resize(width);
+    var columns = width;
+    if (output_cursor.position()) |column| {
+        // Keep room for a full-width character plus the reserved right margin.
+        if (column <= width - @min(width, @as(usize, 3))) {
+            columns -= column;
+        } else terminalWrite(null, "\n");
+    } else {
+        // External output and unsupported cursor controls make the origin unknown.
+        terminalWrite(null, "\n");
+    }
+    if (host_line.read(buffer, lineByte, flushOutput, history, columns)) |result| {
+        if (result.line != null) output_cursor.newline() else output_cursor.unknown();
+        return result;
+    }
     line_editing = false;
     return null;
+}
+
+fn editingWidth(size: ?forth.TerminalSize) usize {
+    const columns = if (size) |value| value.columns else 0;
+    return if (columns < 2) 80 else columns;
 }
 
 fn lineByte() ?u8 {
@@ -1367,6 +1410,9 @@ fn run(init: std.process.Init.Minimal) !u8 {
     const machine = try allocator.create(forth.State);
     defer allocator.destroy(machine);
     output_is_terminal = isTerminal(1);
+    stderr_shares_output = stderrSharesOutput();
+    output_cursor = .{};
+    output_cursor.resize(editingWidth(terminalSize(null)));
     host_input.output_is_terminal = output_is_terminal;
     host_input.input_is_terminal = isTerminal(0);
     host_input.flush_output = flushOutput;
@@ -1545,7 +1591,7 @@ fn run(init: std.process.Init.Minimal) !u8 {
     var used: usize = 0;
     var discarding_line = false;
     while (!machine.halted) {
-        if (editedLine(&line)) |result| {
+        if (editedLine(&line, &line_history)) |result| {
             const text = result.line orelse break;
             if (result.overflow) machine.write("LINE TOO LONG\n") else interpretAndPrompt(machine, text);
             continue;
@@ -1855,4 +1901,11 @@ test "startSizes keeps the defaults and refuses sizes that cannot be" {
     try std.testing.expectEqualStrings("-d", failed);
     try std.testing.expectEqual(@as(?forth.Sizes, null), startSizes(.{ .return_stack = 1 << 28 }, &failed));
     try std.testing.expectEqualStrings("-r", failed);
+}
+
+test "line editing uses a bounded default for missing or unusable terminal widths" {
+    try std.testing.expectEqual(@as(usize, 80), editingWidth(null));
+    try std.testing.expectEqual(@as(usize, 80), editingWidth(.{ .columns = 0, .rows = 24 }));
+    try std.testing.expectEqual(@as(usize, 80), editingWidth(.{ .columns = 1, .rows = 24 }));
+    try std.testing.expectEqual(@as(usize, 12), editingWidth(.{ .columns = 12, .rows = 24 }));
 }

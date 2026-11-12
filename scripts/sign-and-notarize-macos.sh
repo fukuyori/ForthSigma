@@ -39,8 +39,10 @@
 #   dist/pkg/sigma-<version>-macos-<arch>[-nofloat].pkg  (signed, notarized, stapled)
 
 set -euo pipefail
-# Run from the repository root regardless of where the script lives
-cd "$(dirname "$0")/.."
+# Keep an absolute script path so --help also works from scripts/ or another cwd.
+SCRIPT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
+SCRIPT_PATH="$SCRIPT_DIR/$(basename "${BASH_SOURCE[0]}")"
+cd "$SCRIPT_DIR/.."
 
 VERSION=""
 ARCH=universal
@@ -59,17 +61,25 @@ WORK_DIR=.work/pkg
 
 while [[ $# -gt 0 ]]; do
     case "$1" in
-        --version)            VERSION="$2"; shift 2 ;;
-        --arch)               ARCH="$2"; shift 2 ;;
-        --variant)            VARIANT="$2"; shift 2 ;;
-        --identity)           IDENTITY="$2"; shift 2 ;;
-        --installer-identity) INSTALLER_IDENTITY="$2"; shift 2 ;;
-        --profile)            PROFILE="$2"; shift 2 ;;
-        --apple-id)           APPLE_ID="$2"; shift 2 ;;
-        --team-id)            TEAM_ID="$2"; shift 2 ;;
-        --password)           APP_PASSWORD="$2"; shift 2 ;;
+        --version|--arch|--variant|--identity|--installer-identity|--profile|--apple-id|--team-id|--password)
+            if [[ $# -lt 2 || -z "$2" || "$2" == --* ]]; then
+                echo "Error: $1 needs a value." >&2
+                exit 1
+            fi
+            case "$1" in
+                --version)            VERSION="$2" ;;
+                --arch)               ARCH="$2" ;;
+                --variant)            VARIANT="$2" ;;
+                --identity)           IDENTITY="$2" ;;
+                --installer-identity) INSTALLER_IDENTITY="$2" ;;
+                --profile)            PROFILE="$2" ;;
+                --apple-id)           APPLE_ID="$2" ;;
+                --team-id)            TEAM_ID="$2" ;;
+                --password)           APP_PASSWORD="$2" ;;
+            esac
+            shift 2 ;;
         --skip-notarize)      SKIP_NOTARIZE=1; shift ;;
-        -h|--help)            sed -n '2,39p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
+        -h|--help)            sed -n '2,/^set -euo pipefail/{ /^set -euo pipefail/d; p; }' "$SCRIPT_PATH" | sed 's/^# \{0,1\}//'; exit 0 ;;
         *) echo "Error: unknown option: $1" >&2; exit 1 ;;
     esac
 done
@@ -81,6 +91,10 @@ if [[ -z "$VERSION" ]]; then
 fi
 if ! [[ "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
     echo "Error: invalid version '$VERSION'. Expected MAJOR.MINOR.PATCH." >&2
+    exit 1
+fi
+if ! [[ "$MACOS_MIN" =~ ^[0-9]+(\.[0-9]+){0,2}$ ]]; then
+    echo "Error: invalid SIGMA_MACOS_MIN '$MACOS_MIN'. Expected a macOS version such as 11.0." >&2
     exit 1
 fi
 case "$ARCH" in
@@ -95,7 +109,10 @@ case "$VARIANT" in
     both)    VARIANTS="float nofloat" ;;
     *) echo "Error: invalid --variant '$VARIANT'. Expected float, nofloat or both." >&2; exit 1 ;;
 esac
-for tool in zig lipo pkgbuild productbuild codesign xcrun; do
+required_tools=(zig lipo pkgbuild productbuild codesign pkgutil xattr shasum)
+if [[ -z "$IDENTITY" || -z "$INSTALLER_IDENTITY" ]]; then required_tools+=(security); fi
+if [[ $SKIP_NOTARIZE -eq 0 ]]; then required_tools+=(xcrun spctl /usr/bin/python3); fi
+for tool in "${required_tools[@]}"; do
     if ! command -v "$tool" > /dev/null; then
         echo "Error: $tool not found in PATH." >&2
         exit 1
@@ -130,13 +147,10 @@ fi
 notary_args=()
 if [[ $SKIP_NOTARIZE -eq 0 ]]; then
     if [[ -z "$PROFILE" && -z "$APPLE_ID" && -z "$TEAM_ID" && -z "$APP_PASSWORD" ]]; then
-        # notarytool profiles live in the data-protection keychain, which the
-        # `security` CLI cannot enumerate — probe common profile names instead.
-        # A missing profile fails instantly, so this only costs one network
-        # round-trip for the profile that exists.
+        # Only select a profile when the credential check succeeds. Network or
+        # authentication failures must not be treated as evidence of a valid profile.
         for candidate in notarytool sigma notary; do
-            if ! xcrun notarytool history --keychain-profile "$candidate" 2>&1 \
-                | grep -q "No Keychain password item found"; then
+            if xcrun notarytool history --keychain-profile "$candidate" > /dev/null 2>&1; then
                 PROFILE="$candidate"
                 echo "Auto-detected notary profile: $PROFILE"
                 break
@@ -157,6 +171,13 @@ fi
 
 mkdir -p "$OUTPUT_DIR" "$WORK_DIR"
 PKG_FILES=()
+PKG_ROOT=""
+cleanup() {
+    if [[ -n "$PKG_ROOT" ]]; then rm -rf "$PKG_ROOT"; fi
+}
+trap cleanup EXIT
+trap 'exit 130' INT
+trap 'exit 143' TERM
 
 for this_variant in $VARIANTS; do
     if [[ "$this_variant" == float ]]; then
@@ -188,10 +209,16 @@ for this_variant in $VARIANTS; do
     codesign --force --timestamp --options runtime \
         --identifier "$PKG_IDENTIFIER" --sign "$IDENTITY" "$BINARY"
     codesign --verify --strict --verbose=2 "$BINARY"
-    # The program must still run after lipo and signing.
-    if [[ "$("$BINARY" '1 2 + . BYE' | tr -d ' ')" != "3" ]]; then
-        echo "Error: the signed binary does not run: $BINARY" >&2
-        exit 1
+    # Run a slice for this host; a package for the other architecture cannot be
+    # smoke-tested here without an emulator. Both the status and output must match.
+    HOST_ARCH=$(uname -m)
+    if [[ ",$HOST_ARCHS," == *",$HOST_ARCH,"* ]]; then
+        if ! smoke_output=$("$BINARY" -e '1 2 + . BYE') || [[ "$smoke_output" != "3 " ]]; then
+            echo "Error: the signed binary does not run: $BINARY" >&2
+            exit 1
+        fi
+    else
+        echo "Skipping execution check: $HOST_ARCH is not in $HOST_ARCHS."
     fi
     echo "Signature OK"
 
@@ -217,6 +244,7 @@ for this_variant in $VARIANTS; do
         --ownership recommended \
         "$COMPONENT"
     rm -rf "$PKG_ROOT"
+    PKG_ROOT=""
 
     # The distribution adds the title, the license page and the system checks.
     RESOURCES="$WORK_DIR/resources"

@@ -33,6 +33,31 @@ The program sees the arguments with `ARGC`, `ARGV`, `ARG`, `SHIFT-ARGS`, and `NE
 .\zig-out\bin\sigma.exe -e "12 DUP * . BYE"     # prints 144 and exits
 ```
 
+### Interactive line editing
+
+On macOS and Linux, the interactive prompt supports the following keys. Windows
+continues to use the console's native line editing.
+
+| Key | Action |
+| --- | --- |
+| Up / Down | Recall older / newer input; Down past the newest entry restores the unfinished line and its cursor |
+| Left / Right | Move by a UTF-8 character |
+| Home / End, Ctrl+A / Ctrl+E | Move to the beginning / end |
+| Backspace / Delete | Delete before / after the cursor |
+| Ctrl+K | Delete from the cursor to the end |
+| Ctrl+U / Ctrl+W | Clear the line / delete the word before the cursor |
+| Ctrl+D | End input on an empty line; otherwise delete after the cursor |
+
+Typing inserts at the cursor. Long interactive lines and `ACCEPT` answers scroll
+horizontally within the space remaining after any prompt. Missing or unusable terminal
+widths use an 80-column default. Sigma tracks the starting column from its own output without sending cursor queries.
+If external output or unsupported cursor controls make the position unknown, or the
+remaining space cannot show a full-width character, editing starts on a fresh row. History keeps the latest 128 nonempty input lines during this process
+only; consecutive duplicates and overflowing lines are omitted. It is never saved to
+a file and is not part of a dictionary image. Command-line `-e` expressions, source
+files, pipes, and answers entered by `ACCEPT` do not enter command history. `ACCEPT`
+still supports line editing when its input and output are terminals.
+
 ### Memory and stack sizes
 
 Options at the start of the command line choose the sizes of the memory and the stacks, with the names and units of gforth. They are read only before the first other argument; `--` ends them, and the arguments after it are taken as usual. `ARGC` and `ARGV` do not see the options.

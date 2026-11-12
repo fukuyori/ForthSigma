@@ -148,6 +148,7 @@ pub const Storage = struct {
     /// so they have the size of the return stack.
     loop_stack: []Loop,
     frames: []State.CallFrame,
+    catches: []State.CatchContinuation,
 
     /// With `already_zero`, the allocator gives zeros by itself (fresh pages of the
     /// system), and they are not written, so pages never used take no physical memory.
@@ -165,16 +166,19 @@ pub const Storage = struct {
         const loops = try allocator.alloc(Loop, sizes.return_stack);
         errdefer allocator.free(loops);
         const frames = try allocator.alloc(State.CallFrame, sizes.return_stack);
+        errdefer allocator.free(frames);
+        const catches = try allocator.alloc(State.CatchContinuation, sizes.return_stack);
         if (!already_zero or std.debug.runtime_safety) {
             @memset(memory, 0);
             @memset(data, 0);
             @memset(ret, 0);
             @memset(float, 0);
         }
-        return .{ .sizes = sizes, .memory = memory, .data_stack = data, .return_stack = ret, .float_stack = float, .loop_stack = loops, .frames = frames };
+        return .{ .sizes = sizes, .memory = memory, .data_stack = data, .return_stack = ret, .float_stack = float, .loop_stack = loops, .frames = frames, .catches = catches };
     }
 
     pub fn free(self: Storage, allocator: std.mem.Allocator) void {
+        allocator.free(self.catches);
         allocator.free(self.frames);
         allocator.free(self.loop_stack);
         allocator.free(self.float_stack);
@@ -257,6 +261,9 @@ pub const State = struct {
     /// (see executeOperations).
     frames: []CallFrame,
     frame_depth: usize = 0,
+    /// CATCH continuations, bounded by the same call limit as colon definitions.
+    catches: []CatchContinuation,
+    catch_depth: usize = 0,
     /// Where the compiled code was when the last error came up: the operation that
     /// failed and the calls that led to it, innermost first (see recordBacktrace).
     /// `backtrace_total` also counts the ones that did not fit, and `backtrace_level` is
@@ -410,7 +417,7 @@ pub const State = struct {
     /// Sets up a State where it lies. The State is a few megabytes, so it is built in
     /// place rather than returned by value, which could need copies on the stack.
     pub fn init(self: *State, writer: Writer, given: Storage) void {
-        self.* = .{ .writer = writer, .sizes = given.sizes, .locals_top = given.sizes.localsBase(), .memory = given.memory, .data_stack = given.data_stack, .return_stack = given.return_stack, .float_stack = given.float_stack, .loop_stack = given.loop_stack, .frames = given.frames };
+        self.* = .{ .writer = writer, .sizes = given.sizes, .locals_top = given.sizes.localsBase(), .memory = given.memory, .data_stack = given.data_stack, .return_stack = given.return_stack, .float_stack = given.float_stack, .loop_stack = given.loop_stack, .frames = given.frames, .catches = given.catches };
         self.writeCell(base_address, 10) catch unreachable;
         self.writeCell(precision_address, dot_precision) catch unreachable;
         self.writeCell(heap_top_address, self.sizes.heapBase()) catch unreachable;
@@ -425,7 +432,7 @@ pub const State = struct {
 
     /// The memory and the stacks given to `init`, for the host to free.
     pub fn storage(self: *const State) Storage {
-        return .{ .sizes = self.sizes, .memory = self.memory, .data_stack = self.data_stack, .return_stack = self.return_stack, .float_stack = self.float_stack, .loop_stack = self.loop_stack, .frames = self.frames };
+        return .{ .sizes = self.sizes, .memory = self.memory, .data_stack = self.data_stack, .return_stack = self.return_stack, .float_stack = self.float_stack, .loop_stack = self.loop_stack, .frames = self.frames, .catches = self.catches };
     }
 
     /// Writes interpreter output, or appends it to the string being built by $TMP.
@@ -1297,15 +1304,131 @@ pub const State = struct {
     /// The definition that is running and its callers' frames, as executeOperations keeps them.
     const Running = CallFrame;
 
+    pub const CatchContinuation = struct {
+        context: words_system.CatchContext,
+        frame_depth: usize,
+        call_depth: usize,
+        locals_top: Cell,
+    };
+
+    /// A CATCH of compiled code enters the existing loop, rather than nesting a host
+    /// interpreter call (whose Debug stack frame alone can take several kilobytes).
+    fn enterCatch(self: *State, comptime counted: bool, running: *Running) RuntimeError!bool {
+        const xt = try self.pop();
+        var id = self.synonymTarget(try self.wordId(xt));
+        const context = words_system.CatchContext.init(self);
+        var deferred_depth: usize = 0;
+        while (self.words[id].kind == .deferred) {
+            const action = self.readCell(self.words[id].value) catch |err| {
+                try context.handleError(self, err);
+                return true;
+            };
+            if (action == words_defining.uninitialized_defer) {
+                try self.push(xt);
+                return false;
+            }
+            if (self.call_depth + deferred_depth == self.frames.len) {
+                try context.handleError(self, error.ReturnStackOverflow);
+                return true;
+            }
+            deferred_depth += 1;
+            id = self.synonymTarget(self.wordId(action) catch |err| {
+                try context.handleError(self, err);
+                return true;
+            });
+        }
+        const word = self.words[id];
+        const does = (word.kind == .created or word.kind == .variable) and word.has_does;
+        if (word.kind != .colon and !does) {
+            try self.push(xt);
+            return false;
+        }
+        if (does) self.push(word.value) catch |err| {
+            try context.handleError(self, err);
+            return true;
+        };
+        if (self.call_depth + deferred_depth == self.frames.len) {
+            try context.handleError(self, error.ReturnStackOverflow);
+            return true;
+        }
+        self.catches[self.catch_depth] = .{
+            .context = context,
+            .frame_depth = self.frame_depth,
+            .call_depth = self.call_depth,
+            .locals_top = self.locals_top,
+        };
+        self.catch_depth += 1;
+        self.frames[self.frame_depth] = running.*;
+        self.frame_depth += 1;
+        self.call_depth += deferred_depth + 1;
+        running.* = if (does)
+            .{ .pc = word.does_code_start, .end_pc = word.does_code_end, .defining_word = null }
+        else
+            .{ .pc = word.code_start, .end_pc = word.code_end, .defining_word = id };
+        if (counted) self.traceRunning(running.*, true);
+        return true;
+    }
+
+    fn builtinInLoop(self: *State, comptime counted: bool, builtin: Builtin, running: *Running) RuntimeError!void {
+        if (builtin == .catch_word and try self.enterCatch(counted, running)) return;
+        try self.executeBuiltin(builtin);
+    }
+
+    fn wordInLoop(self: *State, comptime counted: bool, id: u16, running: *Running) RuntimeError!void {
+        var target_id = self.synonymTarget(id);
+        var deferred_depth: usize = 0;
+        while (self.words[target_id].kind == .deferred) {
+            const action = try self.readCell(self.words[target_id].value);
+            if (action == words_defining.uninitialized_defer) return self.executeWord(id);
+            if (self.call_depth + deferred_depth == self.frames.len) return error.ReturnStackOverflow;
+            deferred_depth += 1;
+            target_id = self.synonymTarget(try self.wordId(action));
+        }
+        const target = self.words[target_id];
+        if (target.kind == .builtin and target.builtin == .catch_word) {
+            const call_depth = self.call_depth;
+            const catch_depth = self.catch_depth;
+            self.call_depth += deferred_depth;
+            self.builtinInLoop(counted, target.builtin, running) catch |err| {
+                self.call_depth = call_depth;
+                return err;
+            };
+            // A deferred CATCH stays counted while its callee runs, then returns
+            // directly to this caller, including the deferred calls it went through.
+            if (self.catch_depth > catch_depth) {
+                self.catches[self.catch_depth - 1].call_depth = call_depth;
+            } else self.call_depth = call_depth;
+        } else if (target.kind == .builtin and deferred_depth == 0) {
+            try self.builtinInLoop(counted, target.builtin, running);
+        } else {
+            try self.executeWord(id);
+        }
+    }
+
+    /// Discard the callee's frames and locals, and resume just after CATCH.
+    fn resumeCatch(self: *State, running: *Running) words_system.CatchContext {
+        self.catch_depth -= 1;
+        const caught = self.catches[self.catch_depth];
+        running.* = self.frames[caught.frame_depth];
+        self.frame_depth = caught.frame_depth;
+        self.call_depth = caught.call_depth;
+        self.locals_top = caught.locals_top;
+        return caught.context;
+    }
 
     /// Ends the running definition and goes on in its caller; false when the definition
     /// executeOperations started with ends.
-    inline fn returnToCaller(self: *State, running: *Running, entry_frames: usize) bool {
+    inline fn returnToCaller(self: *State, running: *Running, entry_frames: usize) RuntimeError!bool {
         if (self.frame_depth == entry_frames) return false;
         if (running.locals_frame != 0) self.locals_top = running.locals_frame;
         self.frame_depth -= 1;
         running.* = self.frames[self.frame_depth];
         self.call_depth -= 1;
+        if (self.catch_depth != 0 and self.catches[self.catch_depth - 1].frame_depth == self.frame_depth) {
+            self.catch_depth -= 1;
+            self.call_depth = self.catches[self.catch_depth].call_depth;
+            try self.push(0);
+        }
         return true;
     }
 
@@ -1403,27 +1526,53 @@ pub const State = struct {
     fn runOperations(self: *State, comptime counted: bool, start_pc: u16, end_pc: u16, defining_word: ?u16) RuntimeError!void {
         var running: Running = .{ .pc = start_pc, .end_pc = end_pc, .defining_word = defining_word };
         const entry_frames = self.frame_depth;
-        // All that an error does here, since every `try` of the loop repeats it; the rest
-        // is in executeOperations. A build without the debugging features does nothing.
-        errdefer if (defs.debug_enabled) {
-            self.failed_pc = running.pc;
-        };
+        const entry_catches = self.catch_depth;
+        defer self.catch_depth = entry_catches;
         const was_counted = self.in_counted;
         if (counted) self.in_counted = true;
         defer if (counted) {
             self.in_counted = was_counted;
         };
         if (counted) self.traceRunning(running, true);
+        while (true) {
+            self.runOperationsLoop(counted, &running, entry_frames, entry_catches) catch |err| {
+                var failure = err;
+                while (true) {
+                    if (failure == error.Quit or failure == error.StepLimit or self.catch_depth == entry_catches) return failure;
+                    const context = self.resumeCatch(&running);
+                    context.handleError(self, failure) catch |next| {
+                        failure = next;
+                        continue;
+                    };
+                    if (counted and self.cell_watch_count != 0) words_debug.checkWatches(self, running.pc -| 1);
+                    break;
+                }
+                continue;
+            };
+            return;
+        }
+    }
+
+    fn runOperationsLoop(self: *State, comptime counted: bool, running: *Running, entry_frames: usize, entry_catches: usize) RuntimeError!void {
+        errdefer if (defs.debug_enabled) {
+            self.failed_pc = running.pc;
+        };
         // The operation that ran last in this loop, for WATCH.
         var ran: ?u16 = null;
-        while (!self.halted) {
+        while (true) {
+            if (self.halted) {
+                if (self.catch_depth == entry_catches) return;
+                _ = self.resumeCatch(running);
+                try self.push(0);
+                continue;
+            }
             // WATCH: what the last operation changed.
             if (counted and self.cell_watch_count != 0) {
                 if (ran) |pc| words_debug.checkWatches(self, pc);
             }
             if (running.pc >= running.end_pc) {
-                if (counted) self.traceRunning(running, false);
-                if (!self.returnToCaller(&running, entry_frames)) return;
+                if (counted) self.traceRunning(running.*, false);
+                if (!try self.returnToCaller(running, entry_frames)) return;
                 continue;
             }
             const op = self.code[running.pc];
@@ -1460,7 +1609,7 @@ pub const State = struct {
                             const target: ?u16 = if (action == words_defining.uninitialized_defer or action < 0 or action >= self.word_count) null else self.synonymTarget(@intCast(action));
                             if (target == null or self.words[target.?].kind != .colon) {
                                 if (defs.debug_enabled) self.outer_pc = running.pc;
-                                try self.executeWord(id);
+                                try self.wordInLoop(counted, id, running);
                                 continue;
                             }
                             id = target.?;
@@ -1475,22 +1624,22 @@ pub const State = struct {
                         .variable, .created => {
                             if (word.has_does) {
                                 if (defs.debug_enabled) self.outer_pc = running.pc;
-                                try self.executeWord(id);
+                                try self.wordInLoop(counted, id, running);
                             } else try self.push(word.value);
                             continue;
                         },
                         else => {
                             if (defs.debug_enabled) self.outer_pc = running.pc;
-                            try self.executeWord(id);
+                            try self.wordInLoop(counted, id, running);
                             continue;
                         },
                     };
                     if (self.call_depth == self.frames.len) return error.ReturnStackOverflow;
                     self.call_depth += 1;
-                    self.frames[self.frame_depth] = running;
+                    self.frames[self.frame_depth] = running.*;
                     self.frame_depth += 1;
-                    running = .{ .pc = word.code_start, .end_pc = word.code_end, .defining_word = id };
-                    if (counted) self.traceRunning(running, true);
+                    running.* = .{ .pc = word.code_start, .end_pc = word.code_end, .defining_word = id };
+                    if (counted) self.traceRunning(running.*, true);
                 },
                 // EXECUTE of a colon definition is a call in this loop too: entering a
                 // loop of its own for each one took a quarter longer than before there
@@ -1500,20 +1649,20 @@ pub const State = struct {
                     const word = &self.words[id];
                     if (word.kind != .colon) {
                         if (defs.debug_enabled) self.outer_pc = running.pc;
-                        try self.executeWord(id);
+                        try self.wordInLoop(counted, id, running);
                         continue;
                     }
                     if (self.call_depth == self.frames.len) return error.ReturnStackOverflow;
                     self.call_depth += 1;
-                    self.frames[self.frame_depth] = running;
+                    self.frames[self.frame_depth] = running.*;
                     self.frame_depth += 1;
-                    running = .{ .pc = word.code_start, .end_pc = word.code_end, .defining_word = id };
-                    if (counted) self.traceRunning(running, true);
+                    running.* = .{ .pc = word.code_start, .end_pc = word.code_end, .defining_word = id };
+                    if (counted) self.traceRunning(running.*, true);
                 },
                 .call_builtin => {
                     if (op.value < 0 or op.value >= self.builtin_count) return error.InvalidExecutionToken;
                     if (defs.debug_enabled) self.outer_pc = running.pc;
-                    try self.executeBuiltin(self.words[@intCast(op.value)].builtin);
+                    try self.builtinInLoop(counted, self.words[@intCast(op.value)].builtin, running);
                 },
                 // These tags directly select the implementation: no dictionary
                 // lookup or second runtime switch for frequent primitive words.
@@ -1528,7 +1677,7 @@ pub const State = struct {
                 },
                 .builtin => {
                     if (defs.debug_enabled) self.outer_pc = running.pc;
-                    try self.executeBuiltin(@enumFromInt(op.value));
+                    try self.builtinInLoop(counted, @enumFromInt(op.value), running);
                 },
                 .literal, .execution_token => try self.push(op.value),
                 .float_literal => try self.fpush(bitsFloat(op.value)),
@@ -1603,12 +1752,12 @@ pub const State = struct {
                     self.words[created_id].has_does = true;
                     self.last_created_word = null;
                     // The defining word ends here, as at EXIT.
-                    if (counted) self.traceRunning(running, false);
-                    if (!self.returnToCaller(&running, entry_frames)) return;
+                    if (counted) self.traceRunning(running.*, false);
+                    if (!try self.returnToCaller(running, entry_frames)) return;
                 },
                 .exit => {
-                    if (counted) self.traceRunning(running, false);
-                    if (!self.returnToCaller(&running, entry_frames)) return;
+                    if (counted) self.traceRunning(running.*, false);
+                    if (!try self.returnToCaller(running, entry_frames)) return;
                 },
                 .local_frame => if (running.locals_frame == 0) {
                     const size = self.words[try self.wordId(op.value)].locals_size;
@@ -1629,7 +1778,7 @@ pub const State = struct {
                         .local_address => try self.push(address),
                         .local_execute => {
                             if (defs.debug_enabled) self.outer_pc = running.pc;
-                            try self.executeWord(try self.wordId(try self.readCell(address)));
+                            try self.wordInLoop(counted, try self.wordId(try self.readCell(address)), running);
                         },
                         else => unreachable,
                     }

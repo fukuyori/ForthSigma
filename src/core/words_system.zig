@@ -85,6 +85,43 @@ fn pushArgument(self: *State, index: Cell) RuntimeError!void {
     try self.push(@intCast(found[1]));
 }
 
+/// Shared by interpreted CATCH and catches kept by the compiled-code loop.
+pub const CatchContext = struct {
+    frame: CatchFrame,
+    trace_depth: usize,
+    profile_depth: usize,
+
+    pub fn init(self: *const State) CatchContext {
+        return .{
+            .frame = .{
+                .data_depth = self.data_depth,
+                .float_depth = self.float_depth,
+                .return_depth = self.return_depth,
+                .loop_depth = self.loop_depth,
+                .control_depth = self.control_depth,
+                .interpret_loop_depth = self.interpret_loop_depth,
+                .pending = self.pending,
+                .compiling = self.compiling,
+                .defining = self.defining,
+                .local_count = self.local_count,
+            },
+            .trace_depth = self.trace_depth,
+            .profile_depth = if (self.profile) |profile| profile.depth else 0,
+        };
+    }
+
+    pub fn handleError(context: CatchContext, self: *State, err: RuntimeError) RuntimeError!void {
+        if (err == error.Quit or err == error.StepLimit) return err;
+        self.trace_depth = context.trace_depth;
+        if (self.stepper == .on and self.step_depth > self.call_depth) self.stepper = .off;
+        if (self.profile) |profile| profile.unwind(context.profile_depth);
+        const code = self.throwCodeOf(err);
+        self.abort_message = null;
+        self.restoreCatchFrame(context.frame);
+        try self.push(code);
+    }
+};
+
 pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
     switch (builtin) {
         .argc => try self.push(memory_map.argc_address),
@@ -205,32 +242,11 @@ pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
         },
         .catch_word => {
             const xt = try self.wordId(try self.pop());
-            const frame = CatchFrame{
-                .data_depth = self.data_depth,
-                .float_depth = self.float_depth,
-                .return_depth = self.return_depth,
-                .loop_depth = self.loop_depth,
-                .control_depth = self.control_depth,
-                .interpret_loop_depth = self.interpret_loop_depth,
-                .pending = self.pending,
-                .compiling = self.compiling,
-                .defining = self.defining,
-                .local_count = self.local_count,
-            };
-            const trace_depth = self.trace_depth;
-            const profile_depth = if (self.profile) |profile| profile.depth else 0;
+            const context = CatchContext.init(self);
             if (self.executeWord(xt)) |_| {
                 try self.push(0);
             } else |err| {
-                if (err == error.Quit or err == error.StepLimit) return err;
-                self.trace_depth = trace_depth;
-                // The definition that was stepped through is gone.
-                if (self.stepper == .on and self.step_depth > self.call_depth) self.stepper = .off;
-                if (self.profile) |profile| profile.unwind(profile_depth);
-                const code = self.throwCodeOf(err);
-                self.abort_message = null;
-                self.restoreCatchFrame(frame);
-                try self.push(code);
+                try context.handleError(self, err);
             }
         },
         else => @compileError(@tagName(builtin) ++ " is not in the words of this file"),

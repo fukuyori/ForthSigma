@@ -41,6 +41,168 @@ test "dynamic recursion reaches the call limit and recovers through CATCH" {
     }
 }
 
+test "CATCH uses the configured call stack without host recursion" {
+    var output = Output{};
+    var sizes = forth.Sizes.small;
+    sizes.return_stack = 4096;
+    const machine = try support.createMachineWith(&output, sizes);
+    defer destroyMachine(machine);
+    const locals_top = machine.locals_top;
+    try machine.interpretLine("VARIABLE XT : Z DUP IF 1- XT @ CATCH THROW THEN ; ' Z XT !");
+    // Exercise both execution loops, and a larger stack than the small test host's.
+    for ([_]bool{ false, true }) |counted| {
+        machine.keep_counting = counted;
+        for ([_]usize{ 4095, 4096, 4097 }) |depth| {
+            var buffer: [80]u8 = undefined;
+            try machine.interpretLine(try std.fmt.bufPrint(&buffer, "{d} ' Z CATCH", .{ depth }));
+            try std.testing.expectEqual(@as(forth.Cell, if (depth == 4095) 0 else -5), try machine.pop());
+            try std.testing.expectEqual(@as(usize, 1), machine.data_depth);
+            try std.testing.expectEqual(@as(usize, 0), machine.catch_depth);
+            try std.testing.expectEqual(@as(usize, 0), machine.call_depth);
+            try std.testing.expectEqual(@as(usize, 0), machine.frame_depth);
+            try std.testing.expectEqual(locals_top, machine.locals_top);
+            try machine.interpretLine("DROP 40 2 +");
+            try expectStack(machine, &.{42});
+            machine.data_depth = 0;
+        }
+    }
+}
+
+test "deep CATCH resolves deferred and DOES> targets within the call limit" {
+    var output = Output{};
+    var sizes = forth.Sizes.small;
+    sizes.return_stack = 4096;
+    const machine = try support.createMachineWith(&output, sizes);
+    defer destroyMachine(machine);
+    try machine.interpretLine("DEFER D : Z DUP IF 1- ['] D CATCH THROW THEN ; ' Z IS D");
+    // Each CATCH of D enters both the DEFER and the colon definition Z.
+    try machine.interpretLine("2047 ' D CATCH");
+    try expectStack(machine, &.{ 0, 0 });
+    machine.data_depth = 0;
+    try machine.interpretLine("2048 ' D CATCH");
+    try std.testing.expectEqual(@as(forth.Cell, -5), try machine.pop());
+    machine.data_depth = 0;
+    try machine.interpretLine(": DEF CREATE DOES> DROP DUP IF 1- ['] D CATCH THROW THEN ; DEF CHILD ' CHILD IS D");
+    try machine.interpretLine("2047 ' D CATCH");
+    try expectStack(machine, &.{ 0, 0 });
+    machine.data_depth = 0;
+    try machine.interpretLine("2048 ' D CATCH");
+    try std.testing.expectEqual(@as(forth.Cell, -5), try machine.pop());
+    try std.testing.expectEqual(@as(usize, 0), machine.catch_depth);
+    try std.testing.expectEqual(@as(usize, 0), machine.call_depth);
+}
+
+test "a deferred CATCH also keeps its callee in the execution loop" {
+    var output = Output{};
+    var sizes = forth.Sizes.small;
+    sizes.return_stack = 4096;
+    const machine = try support.createMachineWith(&output, sizes);
+    defer destroyMachine(machine);
+    try machine.interpretLine("DEFER CA ' CATCH IS CA VARIABLE XT : Z DUP IF 1- XT @ CA THROW THEN ; ' Z XT !");
+    try machine.interpretLine("2047 ' Z CATCH");
+    try expectStack(machine, &.{ 0, 0 });
+    machine.data_depth = 0;
+    try machine.interpretLine("2048 ' Z CATCH");
+    try std.testing.expectEqual(@as(forth.Cell, -5), try machine.pop());
+    try std.testing.expectEqual(@as(usize, 0), machine.catch_depth);
+    try std.testing.expectEqual(@as(usize, 0), machine.call_depth);
+}
+
+test "an uninitialized DEFER still warns at the call limit, including through CATCH" {
+    var output = Output{};
+    var sizes = forth.Sizes.small;
+    sizes.return_stack = 16;
+    const machine = try support.createMachineWith(&output, sizes);
+    defer destroyMachine(machine);
+    try machine.interpretLine("DEFER EMPTY : Z DUP IF 1- RECURSE ELSE ['] EMPTY CATCH THEN ; 15 ' Z CATCH");
+    try expectStack(machine, &.{ 0, 0, 0 });
+    machine.data_depth = 0;
+    try machine.interpretLine(": Y DUP IF 1- RECURSE ELSE EMPTY THEN ; 15 ' Y CATCH");
+    try expectStack(machine, &.{ 0, 0 });
+    try std.testing.expectEqualStrings("WARNING: DEFERRED WORD EMPTY IS UNINITIALIZED\n" ++
+        "WARNING: DEFERRED WORD EMPTY IS UNINITIALIZED\n", output.written());
+}
+
+test "compiled CATCH restores nested callers, loops, and locals" {
+    var output = Output{};
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
+    const locals_top = machine.locals_top;
+    try machine.interpretLine(": FAIL 99 >R 3 0 DO 7 { x } x THROW LOOP ;");
+    try machine.interpretLine(": INNER 11 { a } ['] FAIL CATCH a + ; : OUTER ['] INNER CATCH ; OUTER");
+    try expectStack(machine, &.{ 18, 0 });
+    try std.testing.expectEqual(@as(usize, 0), machine.return_depth);
+    try std.testing.expectEqual(@as(usize, 0), machine.loop_depth);
+    try std.testing.expectEqual(@as(usize, 0), machine.catch_depth);
+    try std.testing.expectEqual(locals_top, machine.locals_top);
+    machine.data_depth = 0;
+    // EXIT and DOES> return through the same CATCH continuation as the end of a word.
+    try machine.interpretLine(": EARLY 3 EXIT 4 ; : DEF CREATE DOES> DROP 5 ; DEF DATA");
+    try machine.interpretLine(": RUN ['] EARLY CATCH ['] DATA CATCH ; RUN");
+    try expectStack(machine, &.{ 3, 0, 5, 0 });
+    machine.data_depth = 0;
+    // A CATCH reached by EXECUTE or a SYNONYM must also enter the existing loop.
+    try machine.interpretLine("SYNONYM CA CATCH : ALIAS ['] FAIL CA ; : DYNAMIC ['] FAIL ['] CATCH EXECUTE ; ALIAS DYNAMIC");
+    try expectStack(machine, &.{ 7, 7 });
+    try std.testing.expectEqual(locals_top, machine.locals_top);
+    try std.testing.expectEqual(@as(usize, 0), machine.catch_depth);
+}
+
+test "BYE unwinds compiled CATCH continuations" {
+    var output = Output{};
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
+    try machine.interpretLine(": STOP BYE ; : INNER ['] STOP CATCH ; : OUTER ['] INNER CATCH ; OUTER");
+    try expectStack(machine, &.{ 0, 0 });
+    try std.testing.expect(machine.halted);
+    try std.testing.expectEqual(@as(usize, 0), machine.catch_depth);
+    try std.testing.expectEqual(@as(usize, 0), machine.call_depth);
+    try std.testing.expectEqual(@as(usize, 0), machine.frame_depth);
+}
+
+test "a successful CATCH without room for zero throws to its caller" {
+    var output = Output{};
+    var sizes = forth.Sizes.small;
+    sizes.data_stack = 16;
+    const machine = try support.createMachineWith(&output, sizes);
+    defer destroyMachine(machine);
+    try machine.interpretLine(": FULL 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 ; : INNER ['] FULL CATCH ; : OUTER ['] INNER CATCH ; OUTER");
+    try expectStack(machine, &.{-3});
+    try std.testing.expectEqual(@as(usize, 0), machine.catch_depth);
+    try std.testing.expectEqual(@as(usize, 0), machine.call_depth);
+}
+
+test "compiled CATCH consumes an invalid xt before propagating its error" {
+    var output = Output{};
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
+    try machine.interpretLine(": BAD -1 CATCH ;");
+    try std.testing.expectError(error.InvalidExecutionToken, machine.interpretLine("BAD"));
+    try expectStack(machine, &.{});
+    try std.testing.expectEqual(@as(usize, 0), machine.catch_depth);
+}
+
+test "QUIT and step limits escape compiled CATCH and discard its continuation" {
+    var output = Output{};
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
+    try machine.interpretLine(": Q QUIT ; : RUN-Q ['] Q CATCH ;");
+    try std.testing.expectError(error.Quit, machine.interpretLine("RUN-Q"));
+    try std.testing.expectEqual(@as(usize, 0), machine.catch_depth);
+    try std.testing.expectEqual(@as(usize, 0), machine.call_depth);
+    if (@import("../core/defs.zig").debug_enabled) {
+        try machine.interpretLine(": FOREVER BEGIN AGAIN ; : RUN-LIMIT ['] FOREVER CATCH ;");
+        machine.step_limit = 20;
+        machine.resetSteps();
+        try std.testing.expectError(error.StepLimit, machine.interpretLine("RUN-LIMIT"));
+        try std.testing.expectEqual(@as(usize, 0), machine.catch_depth);
+        try std.testing.expectEqual(@as(usize, 0), machine.call_depth);
+        machine.step_limit = 0;
+    }
+    try machine.interpretLine("40 2 +");
+    try expectStack(machine, &.{42});
+}
+
 test "CATCH returns 0 or the THROW code and restores the stack depths like gforth" {
     try support.skipWithoutFloat();
     var output = Output{};
