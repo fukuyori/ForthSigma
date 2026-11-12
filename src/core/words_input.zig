@@ -53,7 +53,7 @@ pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
             try self.push(@intCast(length));
         },
         .evaluate => try self.interpretSource(try self.memoryRange(), .evaluate),
-        .ekey_question => try self.push(truth(@import("event_input.zig").ready(self))),
+        .ekey_question => try self.push(truth(try @import("event_input.zig").ready(self))),
         .ekey => try self.push(try @import("event_input.zig").read(self)),
         .key => try self.push(try words_xchar.key(self)),
         .key_question => {
@@ -144,7 +144,7 @@ pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
             if (count == 2 and self.source_kind == .block) {
                 const cursor = try self.pop();
                 const block = try self.pop();
-                if (cursor < 0 or cursor > 1024 or block < 1 or block >= @import("blocks.zig").block_limit) return self.push(true_flag);
+                if (cursor < 0 or cursor > 1024 or block < 0 or block >= @import("blocks.zig").block_limit) return self.push(true_flag);
                 self.source_line = try @import("blocks.zig").selectSource(self, block);
                 self.setSourceCursor(@intCast(cursor));
                 return self.push(0);

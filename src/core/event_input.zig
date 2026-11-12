@@ -5,8 +5,11 @@ const keys = @import("standard_keys.zig");
 const xchar = @import("words_xchar.zig");
 const Cell = forth.Cell;
 
-fn next(self: *forth.State, timeout: i32) ?Cell {
+fn next(self: *forth.State, timeout: i32) forth.RuntimeError!?Cell {
     if (self.pending_key != null or self.pending_event_count != 0) return xchar.key(self) catch null;
+    if (self.writer.buffered_key_fn) |buffered| {
+        if (try buffered(self.writer.context)) |byte| return byte;
+    }
     if (self.pending_standard_event) |event| {
         self.pending_standard_event = null;
         return event;
@@ -24,7 +27,8 @@ fn unread(self: *forth.State, bytes: []const u8) void {
     var index = bytes.len;
     while (index != 0) {
         index -= 1;
-        if (self.writer.unread_fn) |callback| callback(self.writer.context, bytes[index]) else {
+        const ordered_host = self.pending_standard_event == null or self.writer.buffered_key_fn != null;
+        if (ordered_host and self.writer.unread_fn != null) self.writer.unread_fn.?(self.writer.context, bytes[index]) else {
             self.pending_event_bytes[self.pending_event_count] = bytes[index];
             self.pending_event_count += 1;
         }
@@ -33,9 +37,12 @@ fn unread(self: *forth.State, bytes: []const u8) void {
 
 fn letter(byte: u8) ?Cell {
     return switch (byte) {
-        'D' => keys.special, 'C' => keys.special + 1,
-        'A' => keys.special + 2, 'B' => keys.special + 3,
-        'H' => keys.special + 4, 'F' => keys.special + 5,
+        'D' => keys.special,
+        'C' => keys.special + 1,
+        'A' => keys.special + 2,
+        'B' => keys.special + 3,
+        'H' => keys.special + 4,
+        'F' => keys.special + 5,
         'P'...'S' => keys.special + 11 + byte - 'P',
         else => null,
     };
@@ -60,9 +67,12 @@ fn sequence(bytes: []const u8) ?Cell {
     }
     if (numbers.next() != null) return null;
     const base: Cell = if (final == '~') switch (number) {
-        1, 7 => keys.special + 4, 4, 8 => keys.special + 5,
-        5 => keys.special + 6, 6 => keys.special + 7,
-        2 => keys.special + 8, 3 => keys.special + 9,
+        1, 7 => keys.special + 4,
+        4, 8 => keys.special + 5,
+        5 => keys.special + 6,
+        6 => keys.special + 7,
+        2 => keys.special + 8,
+        3 => keys.special + 9,
         11...15 => keys.special + 11 + number - 11,
         17...21 => keys.special + 16 + number - 17,
         23, 24 => keys.special + 21 + number - 23,
@@ -71,9 +81,9 @@ fn sequence(bytes: []const u8) ?Cell {
     return base | modifiers;
 }
 
-pub fn ready(self: *forth.State) bool {
+pub fn ready(self: *forth.State) forth.RuntimeError!bool {
     if (self.pending_key != null or self.pending_event_count != 0 or self.pending_standard_event != null) return true;
-    const event = next(self, 0) orelse return false;
+    const event = (try next(self, 0)) orelse return false;
     if (event >= 0 and event <= 255) {
         const byte = [_]u8{@intCast(event)};
         unread(self, &byte);
@@ -82,7 +92,7 @@ pub fn ready(self: *forth.State) bool {
 }
 
 pub fn read(self: *forth.State) forth.RuntimeError!Cell {
-    const first = next(self, -1) orelse return error.InputUnavailable;
+    const first = (try next(self, -1)) orelse return error.InputUnavailable;
     if (first > 255) return first;
     var bytes: [32]u8 = undefined;
     bytes[0] = @intCast(first);
@@ -92,7 +102,10 @@ pub fn read(self: *forth.State) forth.RuntimeError!Cell {
         var length: usize = 1;
         while (length < bytes.len) {
             const remaining: i32 = if (clock) |now| @intCast(@max(0, deadline - now(self.writer.context))) else 50;
-            const value = next(self, remaining) orelse break;
+            const value = (next(self, remaining) catch |err| {
+                unread(self, bytes[0..length]);
+                return err;
+            }) orelse break;
             // Special events are never continuation bytes of a terminal sequence.
             if (value > 255) {
                 self.pending_standard_event = value;
@@ -109,14 +122,22 @@ pub fn read(self: *forth.State) forth.RuntimeError!Cell {
         unread(self, bytes[1..length]);
         return 27;
     }
-    const count: usize = switch (first) { 0xc0...0xdf => 2, 0xe0...0xef => 3, 0xf0...0xf7 => 4, else => 1 };
+    const count: usize = switch (first) {
+        0xc0...0xdf => 2,
+        0xe0...0xef => 3,
+        0xf0...0xf7 => 4,
+        else => 1,
+    };
     var length: usize = 1;
     while (length < count) {
-        const value = next(self, -1) orelse break;
+        const value = (next(self, -1) catch |err| {
+            unread(self, bytes[0..length]);
+            return err;
+        }) orelse break;
         if (value > 255) {
-                self.pending_standard_event = value;
-                break;
-            }
+            self.pending_standard_event = value;
+            break;
+        }
         if (value & 0xc0 != 0x80) {
             const byte = [_]u8{@intCast(value)};
             unread(self, &byte);

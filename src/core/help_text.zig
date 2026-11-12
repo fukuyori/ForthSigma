@@ -242,7 +242,7 @@ pub const entries = [_]Entry{
     .{ .name = "SAVE-BUFFERS", .stack = "( -- )", .text = "Write modified block buffers to storage." },
     .{ .name = "EMPTY-BUFFERS", .stack = "( -- )", .text = "Discard block buffers without writing modified contents." },
     .{ .name = "FLUSH", .stack = "( -- )", .text = "Save modified block buffers and unassign all buffers." },
-    .{ .name = "EKEY", .stack = "( -- u )", .text = "Wait for a Unicode character or a standard special-key event." },
+    .{ .name = "EKEY", .stack = "( -- u )", .text = "Wait for a Unicode character or standard special key; terminal Ctrl+C throws -28." },
     .{ .name = "EKEY?", .stack = "( -- flag )", .text = "True if a standard keyboard byte or event is waiting, without blocking." },
     .{ .name = "EKEY>CHAR", .stack = "( u -- u false | c true )", .text = "True if the event is a byte character (0..255)." },
     .{ .name = "WORD", .stack = "( c -- c-addr )", .text = "Read the next word delimited by c from the input, as a counted string." },

@@ -748,8 +748,9 @@ pub const State = struct {
             } else unreachable;
             self.addBuiltin(name, builtin) catch unreachable;
         }
+        _ = self.appendEntry("EKEYS", .vocabulary, .noop, memory_map.ekeys_wordlist) catch unreachable;
         self.writeCell(current_wordlist_address, forth_wordlist) catch unreachable;
-        _ = self.appendWord("EKEYS", .vocabulary, .noop, memory_map.ekeys_wordlist) catch unreachable;
+        _ = self.appendEntry("EKEYS", .vocabulary, .noop, memory_map.ekeys_wordlist) catch unreachable;
         self.writeCell(current_wordlist_address, memory_map.ekeys_wordlist) catch unreachable;
         for (@import("core/standard_keys.zig").constants) |entry| {
             _ = self.appendWord(entry[0], .constant, .noop, entry[1]) catch unreachable;

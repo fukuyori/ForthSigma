@@ -40,6 +40,7 @@ pub const words = [_]Builtin{ .block, .block_buffer, .block_update, .save_buffer
 
 pub const Storage = struct {
     file: ?Cell = null,
+    read_only: bool = false,
     buffers: [buffer_count]Buffer = @splat(.{}),
     current: ?usize = null,
 };
@@ -53,10 +54,22 @@ fn open(self: *forth.State) RuntimeError!Cell {
     const files = try self.fileOps();
     var result = files.open(self.writer.context, default_file, .read_write, false);
     // Only a missing file authorizes CREATE; a permission error must not truncate it.
-    if (result.ior == map.errnoIor(2)) result = files.open(self.writer.context, default_file, .read_write, true);
+    var read_only = false;
+    if (result.ior == map.errnoIor(2)) {
+        result = files.open(self.writer.context, default_file, .read_write, true);
+    } else if (result.ior == map.errnoIor(13) or result.ior == map.errnoIor(1) or result.ior == map.errnoIor(30)) {
+        // Retry only permission/read-only failures, without hiding the original
+        // failure if read-only access is also denied.
+        const readonly = files.open(self.writer.context, default_file, .read_only, false);
+        if (readonly.ior == 0) {
+            result = readonly;
+            read_only = true;
+        }
+    }
     try check(self, result.ior);
     const file: Cell = @bitCast(result.value);
     self.block_storage.file = file;
+    self.block_storage.read_only = read_only;
     return file;
 }
 
@@ -74,6 +87,7 @@ fn save(self: *forth.State, index: usize) RuntimeError!void {
     if (!buffer.modified) return;
     const block = buffer.number orelse return;
     const file = try open(self);
+    if (self.block_storage.read_only) return self.throwCode(map.errnoIor(13));
     const files = try self.fileOps();
     try check(self, files.reposition(self.writer.context, file, @as(u64, block) * block_size));
     try check(self, files.write(self.writer.context, file, bytes(self, index)));
@@ -146,7 +160,7 @@ pub fn execute(self: *forth.State, comptime builtin: Builtin) RuntimeError!void 
 /// Each nested LOAD owns a logical source snapshot, so a colliding BLOCK or
 /// nested LOAD cannot overwrite the caller's still-active input.
 pub fn selectSource(self: *forth.State, value: Cell) RuntimeError![]const u8 {
-    _ = try number(value, true);
+    _ = try number(value, false);
     if (self.block_depth == 0) return error.InputUnavailable;
     const source = try get(self, value);
     const target: usize = @intCast(map.block_source_base + @as(Cell, @intCast((self.block_depth - 1) * block_size)));
@@ -166,7 +180,7 @@ pub fn currentSource(self: *forth.State) RuntimeError![]const u8 {
 
 pub fn refill(self: *forth.State) RuntimeError![]const u8 {
     const current = self.readCellConst(map.blk_address);
-    if (current < 1 or current >= block_limit - 1) return error.InvalidBlockNumber;
+    if (current < 0 or current >= block_limit - 1) return error.InvalidBlockNumber;
     return selectSource(self, current + 1);
 }
 

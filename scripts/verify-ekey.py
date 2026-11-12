@@ -21,6 +21,7 @@ for program, data, expected in [
     ("EKEY . KEY . BYE", b"\x1b[99~", b"27 91 "),
     ("EKEY . EKEY . BYE", "日é".encode(), b"26085 233 "),
     ("EKEY? . KEY . BYE", b"A", b"-1 65 "),
+    ("EKEY . BYE", b"\x03", b"3 "),
 ]:
     result = subprocess.run([exe, "-e", program], input=data, stdout=subprocess.PIPE, timeout=3, check=True)
     assert result.stdout == expected, (program, result.stdout)
@@ -29,6 +30,10 @@ if os.name == "posix":
     import pty
     for program, data, expected in [
         ("EKEY . BYE", b"\x1b", b"27 "),
+        ("KEY . EKEY . BYE", "Aé\n".encode(), b"65 233 "),
+        ("300 MS EKEY? . EKEY . BYE", b"A", b"-1 65 "),
+        ("\' EKEY CATCH . BYE", b"\x03", b"-28 "),
+        ("EKEY? DROP 300 MS \' EKEY? CATCH . BYE", b"\x03", b"-28 "),
         ("EKEY . PAD 16 ACCEPT PAD SWAP TYPE BYE", b"\x1b[xyz\n", b"27 [xyz"),
         ("EKEY . KEY . BYE", b"Aq\n", b"65 113 "),
     ]:
@@ -49,4 +54,36 @@ if os.name == "posix":
             if p.poll() is None:
                 p.kill()
             p.wait()
+    # Exercise ACCEPT with both streams attached to a terminal, enabling line editing.
+    import errno
+    import select
+    master, slave = pty.openpty()
+    program = 'EKEY DROP PAD 16 ACCEPT PAD SWAP S" [xyz" COMPARE . BYE'
+    p = subprocess.Popen([exe, "--max-steps", "100000", "-e", program], stdin=slave, stdout=slave, stderr=slave)
+    os.close(slave)
+    captured = b""
+    try:
+        time.sleep(0.15)
+        os.write(master, b"\x1b[xyz\n")
+        deadline = time.monotonic() + 3
+        while time.monotonic() < deadline:
+            if select.select([master], [], [], 0.1)[0]:
+                try:
+                    chunk = os.read(master, 4096)
+                except OSError as error:
+                    if error.errno == errno.EIO:
+                        break
+                    raise
+                if not chunk:
+                    break
+                captured += chunk
+            if p.poll() is not None:
+                break
+        p.wait(timeout=1)
+        assert p.returncode == 0 and captured.endswith(b"\r\n0 "), captured
+    finally:
+        os.close(master)
+        if p.poll() is None:
+            p.kill()
+        p.wait()
 print("EKEY pipe checks passed; " + ("POSIX PTY checks passed" if os.name == "posix" else "PTY checks skipped"))

@@ -609,7 +609,7 @@ S" 日本語" +X/STRING TYPE        \ 本語
 | `XHOLD` | ( xc -- ) | Add xc to the start of the pictured numeric output. |
 | `EKEY>XCHAR` | ( u -- u false \| xc true ) | True for a Unicode scalar character event, false for special keys. |
 
-Standard keyboard constants live in `EKEYS`, searched after FORTH and before ROOT at startup. Use `ONLY FORTH ALSO EKEYS` to restore them after ONLY. `ALSO GRAPHICS` selects the existing GRAPHICS key values. Standard modifier masks: Shift `0x10000000`, Alt `0x20000000`, Ctrl `0x40000000`. A lone Esc waits up to 50 ms for a recognized sequence; unknown or incomplete sequences preserve their remaining bytes.
+Standard keyboard constants live in `EKEYS`, searched after FORTH and before ROOT at startup. Use `ONLY FORTH ALSO EKEYS` to restore them after ONLY. EKEYS is also visible in Root, so `ONLY ALSO EKEYS` selects the constants directly. `ALSO GRAPHICS` selects the existing GRAPHICS key values. Standard modifier masks: Shift `0x10000000`, Alt `0x20000000`, Ctrl `0x40000000`. A lone Esc waits up to 50 ms for a recognized sequence; unknown or incomplete sequences preserve their remaining bytes.
 
 Well-formed UTF-8 gives the same values as in gforth, and so do overlong forms and surrogates. Anything else follows one rule: a byte that cannot start a character, a character cut short (by a byte that does not continue it or by the end of the string), or a value above U+10FFFF is U+FFFD, and only the start byte and the bytes that continue it are taken (one byte for a byte that cannot start a character). A code point above U+10FFFF is written as U+FFFD (3 bytes). The widths come from the Unicode Character Database 15.1.0 and are the same as gforth's on Linux (glibc 2.39) for every code point.
 
@@ -932,6 +932,8 @@ File names are relative paths from the current directory. `REQUIRE` compares nam
 
 The graphics words (`REQUIRE-GRAPHICS`: an image in memory, more images to copy between, image files, text, Tcl/Tk, keys, the mouse, and animation; `REQUIRE-GUI`: buttons, fields, lists, menus, and dialogs; `REQUIRE-GAME`: sprites, tile maps, palettes, and effects on rows) and the sound words (`REQUIRE-AUDIO`: MSX BASIC's `PLAY`, `SOUND`, and `BEEP`, sound chips, recorded sound, and modules) are extensions of this port. They are described in the [graphics and sound manual](GRAPHICS_AND_SOUND.md).
 
+On a terminal, Ctrl+C during EKEY/EKEY? raises `UserInterrupt` (THROW -28), as selected by the user after comparison with Gforth. A byte 3 from a pipe/file remains character value 3. GRAPHICS input behavior is unchanged.
+
 ## Standard block storage
 
 `LOAD` executes a numbered block; dictionary images use `LOAD-DICTIONARY filename`.
@@ -944,11 +946,11 @@ The graphics words (`REQUIRE-GRAPHICS`: an image in memory, more images to copy 
 | `BLK`, `SCR` | `( -- addr )` | Current input block (zero otherwise); last block shown by LIST. |
 | `LOAD`, `THRU`, `LIST` | `( u -- )`, `( first last -- )`, `( u -- )` | Execute one block; execute an inclusive range; display 16 numbered lines of 64 characters. |
 
-The default file is `blocks.fb` in the working directory, opened or created on first access. Missing bytes at EOF are filled with spaces. BLOCK/BUFFER accept 0 through 0x1fffff; LOAD/THRU require 1 through 0x1fffff. Invalid numbers throw -35. A reversed THRU range executes no blocks. Buffers share a slot when their numbers have the same remainder modulo 32; replacing a modified buffer saves it first. Call UPDATE after editing. File errors propagate as ior throws, retaining dirty buffers when saving fails.
+The default file is `blocks.fb` in the working directory, opened or created on first access. Missing bytes at EOF are filled with spaces. Existing filesystem holes contain NUL bytes, as in Gforth; they are not executable blank blocks. Initialize a block explicitly with `1 BLOCK 1024 BL FILL UPDATE` before using it as blank source. Existing read-only block files can be read; saving modifications throws a permission error. BLOCK/BUFFER accept 0 through 0x1fffff; LOAD/THRU require 1 through 0x1fffff. Invalid numbers throw -35. A reversed THRU range executes no blocks. Buffers share a slot when their numbers have the same remainder modulo 32; replacing a modified buffer saves it first. Call UPDATE after editing. File errors propagate as ior throws, retaining dirty buffers when saving fails.
 
 During LOAD, SOURCE-ID is 2 and SOURCE contains 1024 bytes. Backslash comments end at the next 64-character boundary. REFILL selects the next block. SAVE-INPUT returns `( blk cursor 2 )`; RESTORE-INPUT accepts that form during block input. Nested LOAD and THROW restore the caller's input and BLK. EVALUATE temporarily sets BLK to zero.
 
-BYE and normal EOF termination save changes, including executables made with SAVESYS. Writeback failures are reported; a batch process exits with status 1. Unsaved changes are not guaranteed after abnormal termination. Runtime block buffers and source snapshots are excluded from dictionary images; dictionary restore within a process preserves that process's unsaved buffers. The reserved runtime area is 40 KiB before dictionary data. USE and other Gforth-specific block extensions remain unimplemented.
+BYE and normal EOF termination save changes, including executables made with SAVESYS. Writeback failures are reported; a batch process exits with status 1. Unsaved changes are not guaranteed after abnormal termination, including an uncaught error in `-e` or a source file, or termination by a signal. Runtime block buffers and source snapshots are excluded from dictionary images; dictionary restore within a process preserves that process's unsaved buffers. The reserved runtime area is 40 KiB before dictionary data. USE and other Gforth-specific block extensions remain unimplemented.
 
 ## Saving the dictionary and stand-alone executables
 

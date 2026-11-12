@@ -54,19 +54,23 @@ pub fn next() ?InputEvent {
         restarted = false;
         return .restarted;
     }
+    if (takePendingByte()) |byte| return .{ .byte = byte };
     if (is_windows) {
         return windows.next(false);
     } else {
-        if (queued_len != 0) {
-            const byte = queued[queued_head];
-            queued_head = (queued_head + 1) % queued.len;
-            queued_len -= 1;
-            return .{ .byte = byte };
-        }
         var byte: [1]u8 = undefined;
         if (std.c.read(0, &byte, 1) == 1) return .{ .byte = byte[0] };
         return null;
     }
+}
+
+/// Bytes already read from the terminal must also precede canonical KEY/ACCEPT.
+pub fn takePendingByte() ?u8 {
+    if (queued_len == 0) return null;
+    const byte = queued[queued_head];
+    queued_head = (queued_head + 1) % queued.len;
+    queued_len -= 1;
+    return byte;
 }
 
 /// A standard keyboard byte or event, without changing GRAPHICS key values.
@@ -74,12 +78,13 @@ pub fn nextStandard() ?forth.Cell {
     standard_keyboard = true;
     if (!enter()) return null;
     if (is_windows) {
+        if (takePendingByte()) |byte| return byte;
         while (windows.next(true)) |event| {
             switch (event) { .key => |code| return code, else => {} }
         }
         return null;
     }
-    if (next()) |event| switch (event) { .byte => |byte| return byte, else => {} };
+    while (next()) |event| switch (event) { .byte => |byte| return byte, else => {} };
     return null;
 }
 
@@ -318,7 +323,9 @@ const windows = struct {
 
     fn leave() void {
         const console = input orelse return;
-        if (!standard_keyboard) _ = FlushConsoleInputBuffer(console);
+        if (!standard_keyboard) _ = FlushConsoleInputBuffer(console) else {
+            for (pending[0..pending_len]) |byte| queue(byte);
+        }
         _ = SetConsoleMode(console, saved_mode);
         pending_len = 0;
         high_surrogate = 0;
@@ -465,4 +472,17 @@ test "a DSR reply gives the cursor's place only for positions from 1" {
     try std.testing.expectEqual(@as(i32, 4), place.column);
     const wrong = [_][]const u8{ "\x1b[0;5R", "\x1b[12;0R", "\x1b[-2147483648;1R", "\x1b[99999999999;1R", "\x1b[100001;1R", "\x1b[12R", "\x1b[a;bR", "\x1b[;R" };
     for (wrong) |reply| try std.testing.expect(posix.parseReply(reply) == null);
+}
+
+test "terminal read-ahead is shared in FIFO order with canonical input" {
+    queued_head = 0;
+    queued_len = 0;
+    defer { queued_head = 0; queued_len = 0; }
+    queue(0xe6);
+    queue(0x97);
+    queue(0xa5);
+    try std.testing.expectEqual(@as(?u8, 0xe6), takePendingByte());
+    try std.testing.expectEqual(@as(?u8, 0x97), takePendingByte());
+    try std.testing.expectEqual(@as(?u8, 0xa5), takePendingByte());
+    try std.testing.expect(takePendingByte() == null);
 }

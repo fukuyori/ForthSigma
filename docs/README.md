@@ -18,3 +18,5 @@ For the project overview, how to build, the current features, the differences fr
 - [Memory and graphics plan](MEMORY_AND_GRAPHICS_PLAN.md): the plan for setting the memory limits at start-up and at build time, and for the GUI, sprite, and image words modeled on the MSX, the NES, and the Amiga (in Japanese)
 - [Development schedule](DEVELOPMENT_SCHEDULE.md): the record of the work (in Japanese)
 - [Version update checklist](version-update-checklist.md): what to update when the version changes, and the release steps (in Japanese)
+
+- [S01 review and validation](S01_REVIEW.md): Claude Code findings, fixes, and measured comparisons (Japanese).

@@ -641,6 +641,13 @@ const utf8_console = if (builtin.os.tag != .windows) struct {
     }
 
     /// The next byte of a console's input, or -1 at its end.
+    fn takePendingByte() ?u8 {
+        if (start == end) return null;
+        const byte = bytes[start];
+        start += 1;
+        return byte;
+    }
+
     fn readByte() c_int {
         while (start == end) {
             if (ended or !fill()) {
@@ -691,6 +698,17 @@ fn standardInputByte() c_int {
             return if (ReadFile(handle, &byte, 1, &count, null) != 0 and count == 1) byte[0] else -1;
         }
         return if (std.c.read(0, &byte, 1) == 1) byte[0] else -1;
+    }
+    // POSIX terminal and EKEY must share the descriptor: getchar's read-ahead
+    // would hide the rest of a canonical line from the raw EKEY reader.
+    if (builtin.os.tag != .windows) {
+        var byte: [1]u8 = undefined;
+        while (true) {
+            const count = std.c.read(0, &byte, 1);
+            if (count == 1) return byte[0];
+            if (count < 0 and std.c._errno().* == @intFromEnum(std.c.E.INTR)) continue;
+            return -1;
+        }
     }
     return getchar();
 }
@@ -1278,6 +1296,7 @@ fn readByte() c_int {
         _ = popLookahead();
         return byte;
     }
+    if (host_input.takePendingByte()) |byte| return byte;
     return standardInputByte();
 }
 
@@ -1305,15 +1324,22 @@ fn redirectedInputReady() bool {
 }
 
 /// EKEY uses the raw terminal, with a bounded wait for escape continuations.
-fn terminalEventKey(_: ?*anyopaque, timeout_ms: i32) ?forth.Cell {
+fn terminalEventKey(_: ?*anyopaque, timeout_ms: i32) forth.RuntimeError!?forth.Cell {
     flushOutput();
     output_cursor.unknown();
-    if (lookahead != null) return popLookahead().?;
+    if (try terminalBufferedKey(null)) |byte| return byte;
+    if (builtin.os.tag == .windows) if (utf8_console.takePendingByte()) |byte| {
+        if (byte == 3) return error.UserInterrupt;
+        return byte;
+    };
     const start = monotonicMilliseconds(null);
 
     while (true) {
         if (host_input.input_is_terminal) {
-            if (host_input.nextStandard()) |event| return event;
+            if (host_input.nextStandard()) |event| {
+                if (event == 3) return error.UserInterrupt;
+                return event;
+            }
         } else if (redirectedInputReady()) {
             const byte = standardInputByte();
             return if (byte < 0) null else byte;
@@ -1322,13 +1348,15 @@ fn terminalEventKey(_: ?*anyopaque, timeout_ms: i32) ?forth.Cell {
             const now = monotonicMilliseconds(null);
             if (now - start >= timeout_ms) return null;
         }
-        sleepMilliseconds(null, 1) catch return null;
+        try sleepMilliseconds(null, 1);
     }
 }
 
 /// XKEY gives back a byte it read: it becomes the byte read ahead, as KEY? leaves one.
 fn terminalUnread(_: ?*anyopaque, byte: u8) void {
     if (lookahead) |old| {
+        // EKEY restores at most 31 consumed bytes; XKEY and READ-LINE restore
+        // one consumed byte. They cannot grow this stack beyond that read-ahead.
         std.debug.assert(unread_count < unread_bytes.len);
         unread_bytes[unread_count] = old;
         unread_count += 1;
@@ -1336,10 +1364,20 @@ fn terminalUnread(_: ?*anyopaque, byte: u8) void {
     lookahead = byte;
 }
 
+fn terminalBufferedKey(_: ?*anyopaque) forth.RuntimeError!?u8 {
+    const byte = popLookahead() orelse return null;
+    if (host_input.input_is_terminal and byte == 3) return error.UserInterrupt;
+    return byte;
+}
+
 fn terminalKeyReady(_: ?*anyopaque) bool {
     flushOutput();
     host_input.leave();
     if (lookahead != null) return true;
+    if (host_input.takePendingByte()) |byte| {
+        lookahead = byte;
+        return true;
+    }
     output_cursor.unknown();
     const ch = standardInputByte();
     if (ch < 0) return false;
@@ -1533,7 +1571,7 @@ fn run(init: std.process.Init.Minimal) !u8 {
         return 1;
     };
     defer storage.free(std.heap.page_allocator);
-    machine.init(.{ .gamepad_ops = if (graphics) &host_gamepad.ops else null, .context = @ptrCast(&host), .write_fn = terminalWrite, .read_fn = terminalRead, .load_fn = loadDictionary, .save_fn = saveDictionary, .savesys_fn = saveExecutableImage, .key_fn = terminalKey, .event_key_fn = terminalEventKey, .monotonic_ms_fn = monotonicMilliseconds, .key_ready_fn = terminalKeyReady, .unread_fn = terminalUnread, .sleep_fn = sleepMilliseconds, .utime_fn = microsecondsSinceEpoch, .local_time_fn = localTime, .getenv_fn = environmentValue, .system_fn = runShellCommand, .file_ops = &file_ops, .framebuffer_fn = graphicsBuffer, .image_alloc_fn = if (graphics) imageAlloc else null, .image_free_fn = if (graphics) imageFree else null, .terminal_size_fn = terminalSize, .terminal_utf8_fn = terminalUtf8, .window_fn = if (host_window.available) host_window.show else null, .input_fn = inputEvent, .mouse_fn = mouseMode, .cursor_fn = cursorPosition, .font_buffer_fn = if (graphics) fontBuffer else null, .font_free_fn = if (graphics) fontFree else null, .system_font_fn = if (graphics and host_font.available) host_font.select else null, .system_glyph_fn = if (graphics and host_font.available) host_font.glyph else null, .process_start_fn = if (graphics) host_process.start else null, .process_write_fn = if (graphics) host_process.write else null, .process_read_fn = if (graphics) host_process.read else null, .process_stop_fn = if (graphics) host_process.stop else null, .audio_fn = if (audio) host_audio.start else null, .audio_device_fn = if (audio) host_audio.hasDevice else null, .audio_wait_fn = if (audio) audioWait else null }, storage);
+    machine.init(.{ .gamepad_ops = if (graphics) &host_gamepad.ops else null, .context = @ptrCast(&host), .write_fn = terminalWrite, .read_fn = terminalRead, .load_fn = loadDictionary, .save_fn = saveDictionary, .savesys_fn = saveExecutableImage, .key_fn = terminalKey, .event_key_fn = terminalEventKey, .monotonic_ms_fn = monotonicMilliseconds, .key_ready_fn = terminalKeyReady, .buffered_key_fn = terminalBufferedKey, .unread_fn = terminalUnread, .sleep_fn = sleepMilliseconds, .utime_fn = microsecondsSinceEpoch, .local_time_fn = localTime, .getenv_fn = environmentValue, .system_fn = runShellCommand, .file_ops = &file_ops, .framebuffer_fn = graphicsBuffer, .image_alloc_fn = if (graphics) imageAlloc else null, .image_free_fn = if (graphics) imageFree else null, .terminal_size_fn = terminalSize, .terminal_utf8_fn = terminalUtf8, .window_fn = if (host_window.available) host_window.show else null, .input_fn = inputEvent, .mouse_fn = mouseMode, .cursor_fn = cursorPosition, .font_buffer_fn = if (graphics) fontBuffer else null, .font_free_fn = if (graphics) fontFree else null, .system_font_fn = if (graphics and host_font.available) host_font.select else null, .system_glyph_fn = if (graphics and host_font.available) host_font.glyph else null, .process_start_fn = if (graphics) host_process.start else null, .process_write_fn = if (graphics) host_process.write else null, .process_read_fn = if (graphics) host_process.read else null, .process_stop_fn = if (graphics) host_process.stop else null, .audio_fn = if (audio) host_audio.start else null, .audio_device_fn = if (audio) host_audio.hasDevice else null, .audio_wait_fn = if (audio) audioWait else null }, storage);
     defer closeAllFiles();
     // The images of the pool, when the session ends without BYE.
     defer forth.releaseImages(machine);

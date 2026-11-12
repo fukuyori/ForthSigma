@@ -112,7 +112,10 @@ pub const Writer = struct {
     /// Monotonic milliseconds for the total escape-sequence deadline.
     monotonic_ms_fn: ?*const fn (?*anyopaque) i64 = null,
     /// A byte or standard special key. timeout_ms < 0 waits; 0 polls.
-    event_key_fn: ?*const fn (?*anyopaque, i32) ?Cell = null,
+    event_key_fn: ?*const fn (?*anyopaque, i32) RuntimeError!?Cell = null,
+    /// Take only bytes held by unread_fn, without polling/reading the device.
+    /// These bytes precede any deferred special event from EKEY.
+    buffered_key_fn: ?*const fn (?*anyopaque) RuntimeError!?u8 = null,
     key_ready_fn: ?*const fn (?*anyopaque) bool = null,
     /// Gives back a byte that key_fn gave and XKEY did not take (one that does not
     /// continue a character): the next read of the terminal input, by any word, gets it

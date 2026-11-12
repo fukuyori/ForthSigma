@@ -18,3 +18,5 @@
 - [メモリとグラフィックスの計画](MEMORY_AND_GRAPHICS_PLAN.md): メモリの上限を起動時とビルド時に指定する計画と、MSX、NES、Amiga を手本にした GUI、スプライト、画像の語の計画
 - [開発の記録](DEVELOPMENT_SCHEDULE.md): 作業の経緯
 - [バージョン更新チェックリスト](version-update-checklist.md): 版番号を変えるときに直すものと、リリースの手順
+
+- [S01レビュー・検証記録](S01_REVIEW.md)：Claude Codeの指摘対応と比較実測。

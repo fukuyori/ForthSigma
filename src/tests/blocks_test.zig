@@ -284,3 +284,66 @@ test "a block ending while a defining word waits for a name cannot consume calle
     try support.expectStack(machine, &.{ machine.throwCodeOf(error.InvalidDefinition), 77 });
     try std.testing.expectEqual(@as(forth.Cell, 0), machine.readCellConst(@import("../core/memory_map.zig").blk_address));
 }
+
+test "read-only block files can be loaded but dirty writeback fails without losing data" {
+    try support.skipWithout(&.{.files});
+    const ReadOnly = struct {
+        fn openFile(context: ?*anyopaque, name: []const u8, access: forth.FileAccess, create: bool) forth.FileResult {
+            if (access != .read_only or create) return .{ .ior = forth.errnoIor(13) };
+            return open(context, name, access, false);
+        }
+    };
+    var readonly_ops = ops;
+    readonly_ops.open = ReadOnly.openFile;
+    var output = support.Output{};
+    setBlock(&output, 1, "42");
+    const machine = try support.createMachine(&output);
+    defer support.destroyMachine(machine);
+    machine.writer.file_ops = &readonly_ops;
+    try machine.interpretLine("1 LOAD 1 BLOCK 65 SWAP C! UPDATE ' SAVE-BUFFERS CATCH");
+    try support.expectStack(machine, &.{ 42, forth.errnoIor(13) });
+    try std.testing.expect(machine.block_storage.buffers[1].modified);
+    try std.testing.expectEqual(@as(usize, 0), output.file_writes);
+}
+
+test "block parser clamps an out-of-range input cursor before WORD" {
+    try support.skipWithout(&.{.files});
+    var output = support.Output{};
+    setBlock(&output, 1, "PROBE");
+    const machine = try support.createMachine(&output);
+    defer support.destroyMachine(machine);
+    machine.writer.file_ops = &ops;
+    try machine.interpretLine(": PROBE 2000 >IN ! BL WORD COUNT NIP ; 1 LOAD");
+    try support.expectStack(machine, &.{0});
+}
+
+test "BLK may select block zero inside LOAD while LOAD zero remains invalid" {
+    try support.skipWithout(&.{.files});
+    var output = support.Output{};
+    setBlock(&output, 0, "        55");
+    setBlock(&output, 1, "0 BLK ! 99");
+    const machine = try support.createMachine(&output);
+    defer support.destroyMachine(machine);
+    machine.writer.file_ops = &ops;
+    try machine.interpretLine("1 LOAD BLK @ 0 ' LOAD CATCH");
+    try support.expectStack(machine, &.{ 55, 0, 0, -35 });
+}
+
+test "unrelated block open failures do not attempt read-only fallback" {
+    try support.skipWithout(&.{.files});
+    const Failing = struct {
+        fn openFile(context: ?*anyopaque, _: []const u8, access: forth.FileAccess, _: bool) forth.FileResult {
+            if (access == .read_only) support.fakeOutput(context).file_writes += 1;
+            return .{ .ior = forth.errnoIor(24) };
+        }
+    };
+    var failing_ops = ops;
+    failing_ops.open = Failing.openFile;
+    var output = support.Output{};
+    const machine = try support.createMachine(&output);
+    defer support.destroyMachine(machine);
+    machine.writer.file_ops = &failing_ops;
+    try machine.interpretLine(": BAD 1 BLOCK DROP ; ' BAD CATCH");
+    try support.expectStack(machine, &.{forth.errnoIor(24)});
+    try std.testing.expectEqual(@as(usize, 0), output.file_writes);
+}

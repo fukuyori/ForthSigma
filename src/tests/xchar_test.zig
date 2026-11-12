@@ -49,18 +49,19 @@ test "XHOLD, EKEY>XCHAR, X-WIDTH, and XC-WIDTH" {
 test "the width table matches the runs gforth gave at their edges" {
     // A few edges of the runs, from gforth's xc-width under WSL (glibc 2.39).
     const cases = [_]struct { u64, i8 }{
-        .{ 0x1F, -1 }, .{ 0x20, 1 }, .{ 0xA0, 1 }, .{ 0xAD, 1 }, .{ 0x300, 0 }, .{ 0x600, 1 }, .{ 0x1160, 0 },
-        .{ 0x1100, 2 }, .{ 0x200B, 0 }, .{ 0x2028, -1 }, .{ 0x3248, 2 }, .{ 0x4DC0, 2 }, .{ 0xD800, -1 },
-        .{ 0xE000, 1 }, .{ 0xFF61, 1 }, .{ 0x1F600, 2 }, .{ 0x10FFFD, 1 }, .{ 0x10FFFE, -1 },
+        .{ 0x1F, -1 },  .{ 0x20, 1 },    .{ 0xA0, 1 },     .{ 0xAD, 1 },      .{ 0x300, 0 },  .{ 0x600, 1 },   .{ 0x1160, 0 },
+        .{ 0x1100, 2 }, .{ 0x200B, 0 },  .{ 0x2028, -1 },  .{ 0x3248, 2 },    .{ 0x4DC0, 2 }, .{ 0xD800, -1 }, .{ 0xE000, 1 },
+        .{ 0xFF61, 1 }, .{ 0x1F600, 2 }, .{ 0x10FFFD, 1 }, .{ 0x10FFFE, -1 },
     };
     for (cases) |case| try std.testing.expectEqual(case[1], char_width.width(case[0]));
 }
 
 test "malformed UTF-8 follows one rule: U+FFFD, taking the start byte and the bytes that continue it" {
     const cases = [_]struct { []const u8, u21, usize }{
-        .{ "\xE6\x97A", 0xFFFD, 2 }, .{ "\xFFA", 0xFFFD, 1 }, .{ "\x80A", 0xFFFD, 1 },
+        .{ "\xE6\x97A", 0xFFFD, 2 },        .{ "\xFFA", 0xFFFD, 1 },                .{ "\x80A", 0xFFFD, 1 },
         .{ "\xF4\x90\x80\x80", 0xFFFD, 4 }, .{ "\xF8\x88\x80\x80\x80", 0xFFFD, 1 }, .{ "\xFE", 0xFFFD, 1 },
-        .{ "\xE6", 0xFFFD, 1 }, .{ "\xF0\x9F\x98", 0xFFFD, 3 }, .{ "\xE0\x80\x80", 0, 3 }, .{ "\xC1\xBF", 0x7F, 2 },
+        .{ "\xE6", 0xFFFD, 1 },             .{ "\xF0\x9F\x98", 0xFFFD, 3 },         .{ "\xE0\x80\x80", 0, 3 },
+        .{ "\xC1\xBF", 0x7F, 2 },
     };
     for (cases) |case| {
         const found = words_xchar.decode(case[0]);
@@ -120,7 +121,6 @@ test "standard key vocabulary can be restored after ONLY and GRAPHICS wins when 
     try expectOutput("REQUIRE-GRAPHICS K-UP . ALSO GRAPHICS K-UP . PREVIOUS K-UP .", "2147483650 256 2147483650 ");
 }
 
-
 test "EKEY? does not consume bytes needed by KEY" {
     var output = Output{ .keys = "AB" };
     const machine = try createMachine(&output);
@@ -137,7 +137,7 @@ test "EKEY escape continuation timeout is a total monotonic budget" {
             const self: *@This() = @ptrCast(@alignCast(context.?));
             return self.elapsed;
         }
-        fn event(context: ?*anyopaque, timeout: i32) ?forth.Cell {
+        fn event(context: ?*anyopaque, timeout: i32) forth.RuntimeError!?forth.Cell {
             const self: *@This() = @ptrCast(@alignCast(context.?));
             if (timeout >= 0 and timeout < 20) {
                 self.elapsed += timeout;
@@ -163,4 +163,82 @@ test "EKEY escape continuation timeout is a total monotonic budget" {
     try std.testing.expectEqual(@as(i64, 70), timed.elapsed);
     try std.testing.expectEqual(@as(u8, '['), try words_xchar.key(machine));
     try std.testing.expectEqual(@as(u8, '1'), try words_xchar.key(machine));
+}
+
+test "ONLY ALSO EKEYS selects standard constants from Root" {
+    var output = Output{};
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
+    try machine.interpretLine("ONLY ALSO EKEYS K-UP");
+    try expectStack(machine, &.{2147483650});
+}
+
+test "a deferred special key follows all pushed-back prefix bytes" {
+    const Input = struct {
+        index: usize = 0,
+        pushed: [4]u8 = undefined,
+        count: usize = 0,
+        fn buffered(context: ?*anyopaque) ?u8 {
+            const self: *@This() = @ptrCast(@alignCast(context.?));
+            if (self.count == 0) return null;
+            self.count -= 1;
+            return self.pushed[self.count];
+        }
+        fn probe(context: ?*anyopaque) forth.RuntimeError!?u8 {
+            return buffered(context);
+        }
+        fn unread(context: ?*anyopaque, byte: u8) void {
+            const self: *@This() = @ptrCast(@alignCast(context.?));
+            self.pushed[self.count] = byte;
+            self.count += 1;
+        }
+        fn event(context: ?*anyopaque, _: i32) forth.RuntimeError!?forth.Cell {
+            if (buffered(context)) |byte| return byte;
+            const self: *@This() = @ptrCast(@alignCast(context.?));
+            const events = [_]forth.Cell{ 27, '[', '1', 2147483650, 'x' };
+            if (self.index == events.len) return null;
+            defer self.index += 1;
+            return events[self.index];
+        }
+    };
+    var output = Output{};
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
+    var input = Input{};
+    machine.writer.context = &input;
+    machine.writer.event_key_fn = Input.event;
+    machine.writer.buffered_key_fn = Input.probe;
+    machine.writer.unread_fn = Input.unread;
+    machine.writer.key_fn = Input.buffered;
+    const events = @import("../core/event_input.zig");
+    try std.testing.expectEqual(@as(forth.Cell, 27), try events.read(machine));
+    try std.testing.expectEqual(@as(u8, '['), try words_xchar.key(machine));
+    try std.testing.expectEqual(@as(forth.Cell, '1'), try events.read(machine));
+    try std.testing.expectEqual(@as(forth.Cell, 2147483650), try events.read(machine));
+    try std.testing.expectEqual(@as(forth.Cell, 'x'), try events.read(machine));
+}
+
+test "interruption during an EKEY sequence preserves already read bytes" {
+    const Input = struct {
+        index: usize = 0,
+        fn event(context: ?*anyopaque, _: i32) forth.RuntimeError!?forth.Cell {
+            const self: *@This() = @ptrCast(@alignCast(context.?));
+            defer self.index += 1;
+            return switch (self.index) {
+                0 => 27,
+                1 => '[',
+                else => error.UserInterrupt,
+            };
+        }
+    };
+    var output = Output{};
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
+    var input = Input{};
+    machine.writer.context = &input;
+    machine.writer.event_key_fn = Input.event;
+    machine.writer.unread_fn = null;
+    try std.testing.expectError(error.UserInterrupt, @import("../core/event_input.zig").read(machine));
+    try std.testing.expectEqual(@as(u8, 27), try words_xchar.key(machine));
+    try std.testing.expectEqual(@as(u8, '['), try words_xchar.key(machine));
 }

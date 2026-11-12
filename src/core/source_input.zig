@@ -175,7 +175,7 @@ pub fn restoreInputPlace(self: *State, place: InputPlace) RuntimeError!bool {
     if (place.id != current or place.cursor < 0) return false;
     switch (self.source_kind) {
         .block => {
-            if (place.number != self.block_depth or place.mark < 1 or place.mark >= @import("blocks.zig").block_limit or place.cursor > 1024) return false;
+            if (place.number != self.block_depth or place.mark < 0 or place.mark >= @import("blocks.zig").block_limit or place.cursor > 1024) return false;
             self.source_line = try @import("blocks.zig").selectSource(self, place.mark);
         },
         .terminal, .evaluate => {
