@@ -13,7 +13,7 @@ const State = forth.State;
 pub const words = [_]Builtin{
     .drop, .dup, .swap, .over, .rot, .minus_rot, .nip, .tuck, .pick, .roll, .two_dup, .two_drop,
     .two_swap, .two_over, .depth, .to_r, .from_r, .r_fetch, .two_to_r, .two_r_from, .two_r_fetch,
-    .question_dup, .two_rot, .n_to_r, .n_r_from,
+    .question_dup, .two_rot, .n_to_r, .n_r_from, .two_nip, .two_r_drop, .two_tuck, .fourth, .r_drop, .third,
 };
 
 pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
@@ -72,6 +72,31 @@ pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
             const third = try self.peek(2);
             try self.push(fourth);
             try self.push(third);
+        },
+        .two_nip => {
+            try self.requireDepth(4);
+            const base = self.data_depth - 4;
+            self.data_stack[base] = self.data_stack[base + 2];
+            self.data_stack[base + 1] = self.data_stack[base + 3];
+            self.data_depth -= 2;
+        },
+        .two_tuck => {
+            try self.requireDepth(4);
+            if (self.data_stack.len - self.data_depth < 2) return error.StackOverflow;
+            const base = self.data_depth - 4;
+            const third = self.data_stack[base + 2];
+            const fourth = self.data_stack[base + 3];
+            std.mem.copyBackwards(Cell, self.data_stack[base + 2 .. base + 6], self.data_stack[base .. base + 4]);
+            self.data_stack[base] = third;
+            self.data_stack[base + 1] = fourth;
+            self.data_depth += 2;
+        },
+        .third => try self.push(try self.peek(2)),
+        .fourth => try self.push(try self.peek(3)),
+        .r_drop, .two_r_drop => {
+            const count: usize = if (builtin == .r_drop) 1 else 2;
+            if (self.return_depth < count) return error.ReturnStackUnderflow;
+            self.return_depth -= count;
         },
         .depth => try self.push(@intCast(self.data_depth)),
         .to_r => {

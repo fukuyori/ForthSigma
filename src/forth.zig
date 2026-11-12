@@ -741,6 +741,12 @@ pub const State = struct {
             .{ "U>=", .u_greater_equal },
             .{ "UMAX", .u_max },
             .{ "UMIN", .u_min },
+            .{ "2NIP", .two_nip },
+            .{ "2RDROP", .two_r_drop },
+            .{ "2TUCK", .two_tuck },
+            .{ "FOURTH", .fourth },
+            .{ "RDROP", .r_drop },
+            .{ "THIRD", .third },
     };
 
     fn installBuiltins(self: *State) void {

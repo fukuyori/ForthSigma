@@ -1,3 +1,17 @@
+## 現在地：P01aをpush済み、P01b完了（未コミット）
+
+利用者の依頼によりP01aを`cd715dc`としてコミットし、origin/mainへpush済み。その後P01b 555の6語（2NIP、2TUCK、THIRD、FOURTH、RDROP、2RDROP）を実装し、辞書・HELP・英日マニュアル・互換性一覧へ反映した。P01bはまだコミットしていない。
+
+`src/tests/p01b_test.zig`で下位スタック保持、セル順序・符号境界、入力不足、2TUCKの容量1セル不足／ちょうど2セル空き、THIRD/FOURTHの容量不足、入れ子DOループ、CATCH/THROW・ローカル変数、イメージ復元/追加を確認。通常のzig build testと全機能群無効構成が成功。ログは`.zig-cache/p01b-test.log`と`.zig-cache/p01b-minimal.log`。
+
+`python3 scripts/verify-p01b.py zig-out/bin/sigma --gforth-build .work/gforth-audit/gforth-build --report .work/p01b-check/results.json`で、P00の6ケースと境界・コンパイル・リターンスタック4,054ケース（計4,060）がSigma・指定Gforthとも一致。リターンスタック語のGforth比較は、同じコロン定義で移した利用者セルだけを除く形で実施した。Windows/Linux確認はここでは行っていない。
+
+tque 555を完了にした。554も完了済み。親544 P01の残りは556 P01c（2,、ROL、ROR）の3語。進捗はauto。今回リリース用パッケージ作成・版番号変更は行っていない。
+
+以下はP01a以前の記録。現在の実装地点はこの節を優先する。
+
+---
+
 ## 現在地：P01a完了（未コミット）
 
 P01a 554の比較・最小最大16語を実装。追加語は0<=、D0<=、D0<>、D0>、D0>=、D<=、D<>、D>、D>=、DU<=、DU>、DU>=、U<=、U>=、UMAX、UMIN。既存組込タグをずらさず末尾へ追加し、整数演算モジュールと辞書・HELPに登録した。英日マニュアル・互換性一覧・フェーズ資料を更新。

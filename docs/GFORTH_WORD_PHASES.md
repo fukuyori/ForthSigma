@@ -126,6 +126,8 @@ FACILITY EXTのキー4語とBLOCK/BLOCK EXTの10語を優先する。既存の�
 
 #### P01b 基本スタック操作
 
+2026-11-13 完了（tque 555）。6語を実装し、既存6ケースと境界・コンパイル・リターンスタック4,054ケース、合計4,060ケースでSigmaと指定Gforthが一致した。通常・全機能群無効構成、スタック不足／容量境界、入れ子DOループ、CATCH/THROW・ローカル変数、イメージ復元・追加後の実行を確認。再実行は`python3 scripts/verify-p01b.py zig-out/bin/sigma --gforth-build .work/gforth-audit/gforth-build`。Gforth未指定時はSigmaの期待値検査のみ。
+
 対象 6語。tque ID: 555。
 
 `2NIP`, `2RDROP`, `2TUCK`, `FOURTH`, `RDROP`, `THIRD`

@@ -369,6 +369,19 @@ On a terminal on Linux and macOS, Sigma edits the lines of the interactive promp
 
 `( ... )` skips text up to `)` on the same line as a comment, and `\` skips to the end of the line.
 
+## Additional stack operations
+
+| Words | Stack effect | Meaning |
+|---|---|---|
+| `2NIP` | `( x1 x2 x3 x4 -- x3 x4 )` | Remove the pair immediately below the top pair. |
+| `2TUCK` | `( x1 x2 x3 x4 -- x3 x4 x1 x2 x3 x4 )` | Copy the top pair below the preceding pair. |
+| `THIRD` | `( x1 x2 x3 -- x1 x2 x3 x1 )` | Copy the third cell from the top. |
+| `FOURTH` | `( x1 x2 x3 x4 -- x1 x2 x3 x4 x1 )` | Copy the fourth cell from the top. |
+| `RDROP` | `( -- ) ( R: x -- )` | Discard one user return-stack cell. |
+| `2RDROP` | `( -- ) ( R: x1 x2 -- )` | Discard two user return-stack cells. |
+
+For example, `1 2 3 4 2TUCK` leaves `3 4 1 2 3 4`. `: T 10 >R 20 >R RDROP R> ; T` leaves 10. Balance return-stack transfers inside the definition and loop where they occur. Sigma keeps user return-stack cells separate from call frames and DO-loop indices; balanced drops leave I/J intact. Insufficient data or return-stack input throws -4 or -6. 2TUCK checks its two-cell growth before moving any cells.
+
 ## Numbers
 
 Integers are 64-bit signed values. Addition, subtraction, and multiplication that go out of range wrap around. `/`, `MOD`, and `/MOD` use floored division (rounding toward negative infinity): `-7 2 /` is `-4`, and `-7 2 MOD` is `1`. Dividing by 0 gives the error `DIVISION BY ZERO !`. Dividing the minimum value (-9223372036854775808) by -1 gives `RESULT OUT OF RANGE !` (exception code -11), also for `MOD`, because the quotient does not fit in one cell (the same as gforth).
@@ -674,7 +687,7 @@ S" dir" SYSTEM
 | `WITHIN` | ( n lo hi -- flag ) | True if lo ≦ n < hi. The range is checked with unsigned differences, so when the upper and lower limits are reversed, the range is treated as one that wraps around. |
 | `2>R`, `2R>` | ( x1 x2 -- ), ( -- x1 x2 ) | Move two cells to or from the return stack, keeping their order. |
 | `2R@` | ( -- x1 x2 ) | Copy the two cells moved by `2>R`, leaving them on the return stack. |
-| `N>R`, `NR>` | ( x1 … xn n -- ), ( -- x1 … xn n ) | Move n cells and their count n to or from the return stack, keeping their order. |
+| `N>R`, `NR>`, `2NIP`, `2TUCK`, `THIRD`, `FOURTH`, `RDROP`, `2RDROP` | ( x1 … xn n -- ), ( -- x1 … xn n ) | Move n cells and their count n to or from the return stack, keeping their order. |
 | `ALIGN`, `UNUSED` | ( -- ), ( -- u ) | `ALIGN` rounds HERE up to a multiple of the cell size. `UNUSED` is the number of bytes left in the data area. |
 | `PLACE` | ( addr u c-addr -- ) | Store a string at c-addr with its length in the first byte. At most 255 characters. |
 | `C" ..."` | ( -- c-addr ) | Used inside a definition; push the address of a string with its length in the first byte (outside a definition, `COMPILE MODE ERROR !`). |
@@ -992,7 +1005,7 @@ The following table lists the built-in words that are registered in the dictiona
 
 | Category | Registered words |
 | --- | --- |
-| Stack operations | `DROP`, `DUP`, `SWAP`, `OVER`, `ROT`, `-ROT`, `NIP`, `TUCK`, `PICK`, `ROLL`, `2DUP`, `2DROP`, `2SWAP`, `2OVER`, `DEPTH`, `>R`, `R>`, `R@`, `2>R`, `2R>`, `2R@`, `?DUP`, `2ROT`, `N>R`, `NR>` |
+| Stack operations | `DROP`, `DUP`, `SWAP`, `OVER`, `ROT`, `-ROT`, `NIP`, `TUCK`, `PICK`, `ROLL`, `2DUP`, `2DROP`, `2SWAP`, `2OVER`, `DEPTH`, `>R`, `R>`, `R@`, `2>R`, `2R>`, `2R@`, `?DUP`, `2ROT`, `N>R`, `NR>`, `2NIP`, `2TUCK`, `THIRD`, `FOURTH`, `RDROP`, `2RDROP` |
 | Arithmetic | `+`, `-`, `*`, `/`, `MOD`, `/MOD`, `*/`, `*/MOD`, `MINUS`, `NEGATE`, `ABS`, `1+`, `1-`, `2*`, `2/`, `MAX`, `MIN`, `UNDER+` |
 | Comparison, logic, and bits | `=`, `<>`, `<`, `>`, `<=`, `>=`, `NOT`, `0=`, `0<`, `0>`, `0>=`, `0<=`, `0<>`, `AND`, `OR`, `XOR`, `COM`, `INVERT`, `NAND`, `NOR`, `SWAB`, `LSHIFT`, `RSHIFT`, `TRUE`, `FALSE`, `U<`, `U>`, `U<=`, `U>=`, `UMAX`, `UMIN` |
 | Constants and address arithmetic | `BL`, `CELL`, `CELLS`, `CELL+`, `ALIGNED`, `ALIGN`, `UNUSED`, `WITHIN`, `BUFFER:`, `DUMP` |
