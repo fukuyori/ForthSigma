@@ -1,193 +1,128 @@
-## 現在地：P01コミット・Claude Codeレビュー対応済み
-
-P01a=`cd715dc`、P01b=`c8fedf1`、P01c=`4021a83`をorigin/mainへpush済み。全25語をClaude Code Sonnetでレビューし、P0/P1/P2・実装の論理バグはなし。P3の文書誤記3件（マニュアル2件・引き継ぎ1件）を修正し、RDROP/2RDROPによるループ制御情報の直接破棄はSigmaでは対応しないことをGforth比較実測の上で明記した。DOループからはUNLOOP EXITを使う。詳細は[レビュー記録](P01_REVIEW.md)。
-
-旧S01ビルドで40利用者定義を保存したSIGIMG42（667語、現在組込652語以上）を-264で拒否し、既存語KEEP=77を保持することも確認。通常・全機能群無効テスト成功。再レビューでは文書3件と要確認1件をすべて解消、新たな具体的問題なし。レビュー修正と追加回帰はtque 612（auto）で管理する。修正コミットIDはgit logで確認する。原文と実測は`.work/p01-review/`。Windows/Linuxはここでは未確認。
-
-P01 544と子554/555/556は完了のまま。次の実装はP02a 557（親545）。新しい保存形式・再配置表は後続フェーズ。
-
-以下はP01実装時点の記録。現在の状態はこの節を優先する。
-
----
-
-## P01実装のコミット状態（レビュー修正前）
-
-利用者の依頼によりP01bを`c8fedf1`としてコミットし、origin/mainへpush済み（P01aは`cd715dc`）。続いてP01c 556の3語（2,、ROL、ROR）を実装。2,は2!同様に上位セルを低いアドレスへ格納し、16バイトを事前確保してから書く。自動整列・生セルの自動再配置は行わない。ROL/RORはu64のビット列を回転し、回転数の下位6ビットを使う。0/64以上/負の生セル境界を指定Gforthで実測済み。
-
-`src/tests/p01c_test.zig`で格納順・未整列HERE・容量が1セル不足/2セルちょうど・入力不足・MARKER・回転境界・コンパイル・イメージ復元/追加とアドレスに見える生セルの非再配置を確認。通常のzig build testと全機能群無効構成が成功。ログは`.zig-cache/p01c-test.log`、`.zig-cache/p01c-minimal.log`。
-
-`verify-p01c.py`は既存5＋境界/コンパイル/格納4,548＝4,553ケースでSigma・指定Gforthとも一致。現ビルドでverify-p01a.py（1,177）とverify-p01b.py（4,060）も再実行し、P01全25語で合計9,790ケース一致。結果JSONは`.work/p01a-check/`、`.work/p01b-check/`、`.work/p01c-check/`。各スクリプトは`--gforth-build .work/gforth-audit/gforth-build`を指定すると比較元でも検証する。比較元GPLコードの転用はしていない。
-
-英日マニュアル/互換性一覧、HELP、実装フェーズを更新。tque 556と親544を完了にした。進捗はauto。次は推奨順のP02a 557（整数除算とビット演算32語、親P02 545）。P03/P07系もP01依存が解消するため、状態はtqueで確認する。Windows/Linux確認はここでは未実施。
-
-P01cは`4021a83`でコミット・push済み。P01a=`cd715dc`、P01b=`c8fedf1`。版番号・リリース用パッケージは変更/作成していない。
-
-以下はP01b以前の記録。現在の実装地点はこの節を優先する。
-
----
-
-## 現在地：P01aをpush済み、P01b完了（未コミット）
-
-利用者の依頼によりP01aを`cd715dc`としてコミットし、origin/mainへpush済み。その後P01b 555の6語（2NIP、2TUCK、THIRD、FOURTH、RDROP、2RDROP）を実装し、辞書・HELP・英日マニュアル・互換性一覧へ反映した。P01bはまだコミットしていない。
-
-`src/tests/p01b_test.zig`で下位スタック保持、セル順序・符号境界、入力不足、2TUCKの容量1セル不足／ちょうど2セル空き、THIRD/FOURTHの容量不足、入れ子DOループ、CATCH/THROW・ローカル変数、イメージ復元/追加を確認。通常のzig build testと全機能群無効構成が成功。ログは`.zig-cache/p01b-test.log`と`.zig-cache/p01b-minimal.log`。
-
-`python3 scripts/verify-p01b.py zig-out/bin/sigma --gforth-build .work/gforth-audit/gforth-build --report .work/p01b-check/results.json`で、P00の6ケースと境界・コンパイル・リターンスタック4,054ケース（計4,060）がSigma・指定Gforthとも一致。リターンスタック語のGforth比較は、同じコロン定義で移した利用者セルだけを除く形で実施した。Windows/Linux確認はここでは行っていない。
-
-tque 555を完了にした。554も完了済み。親544 P01の残りは556 P01c（2,、ROL、ROR）の3語。進捗はauto。今回リリース用パッケージ作成・版番号変更は行っていない。
-
-以下はP01a以前の記録。現在の実装地点はこの節を優先する。
-
----
-
-## 現在地：P01a完了（未コミット）
-
-P01a 554の比較・最小最大16語を実装。追加語は0<=、D0<=、D0<>、D0>、D0>=、D<=、D<>、D>、D>=、DU<=、DU>、DU>=、U<=、U>=、UMAX、UMIN。既存組込タグをずらさず末尾へ追加し、整数演算モジュールと辞書・HELPに登録した。英日マニュアル・互換性一覧・フェーズ資料を更新。
-
-`src/tests/p01a_test.zig`で64/128ビットの符号境界・最小最大・低位セルと高位セルの順序・真=-1・解釈/コンパイル・スタック不足・イメージ復元/追加後の実行を確認。通常のzig build testと、float/graphics/audio/files/image/help/tools/debugをすべて無効にした構成が成功。ログは`.zig-cache/p01a-test.log`、`.zig-cache/p01a-minimal.log`。
-
-`python3 scripts/verify-p01a.py zig-out/bin/sigma --gforth-build .work/gforth-audit/gforth-build --report .work/p01a-check/results.json`で、P00の33ケースと境界/コンパイル済み1,144ケース（計1,177）がSigma・指定Gforthとも期待値に一致。比較元は既存P00の作業用Gforthコピーで、GPLコードの転用はしていない。Windows/Linux確認はここでは行っていない。
-
-tque 554を完了にした。親544 P01は未完了で、次は555 P01b（基本スタック6語）、その後556 P01c（2,と回転）。進捗はauto。今回のP01aについてコミット・push・版番号変更・パッケージ作成は依頼されておらず、行っていない。
-
-以下はS01以前の記録。現在の実装地点はこの節を優先する。
-
----
-
-## 現在地：S01コミット・Claude Codeレビュー対応済み
-
-S01初回コミット`fac0e8f`をorigin/mainへpushした後、Claude Code Sonnetへ読取専用レビューを依頼。P0/P1なし、P2 1件・P3 7件に対応し、再レビューと追加4点の最終確認はいずれも新たな具体的バグなし。修正内容・比較根拠・検証は[レビュー記録](S01_REVIEW.md)を参照。レビュー修正もmainへ追加する。最終コミットIDはgit logで確認する。
-
-主な修正：Root EKEYS、未読文字と特殊キーの順序、KEY→EKEYの先読み停止、初回EKEY?、Windows既読UTF-8保持、読み取り専用ブロック読込、BLKによるブロック0選択。利用者の明示選択により端末EKEY/EKEY?のCtrl+Cを割込み（-28）とし、pipeのバイト3は文字のまま維持。割込み時は未完入力列を保持する。Gforthも疎ファイルの穴をNULとするため、その動作は変更せず文書化・回帰確認した。
-
-通常・機能削減のzig build test、verify-ekey.py、verify-blocks.pyが成功。旧13eddbaで実際に作ったイメージの拒否と既存辞書維持も確認。原文と比較ログは`.work/s01-review/`、成果はdocs/S01_REVIEW.md。Windows/Linux実機確認607はここでは未実施、Windowsでの新しい入力経路のコンパイル・errno対応・未読順序も607で確認する。アドレス再配置形式は後続フェーズのまま。次の実装はP01a 554。レビュー管理はtque 611（auto）。
-
-以下は完了までの途中記録。状態が異なる記述はこの現在地を優先する。
-
----
-
-## 現在地：2026-11-13 S01完了（未コミット）
-
-S01a 580、S01b 581、親S01 579をtqueで完了にした。S01bの子608/609/610も完了。進捗モードはauto。Windows/Linux実機確認は利用者の指示でここでは実施せず、P10配下607（依存580/581）へ分離した。
-
-610ではBYEと通常EOF終了の変更済みブロック書戻しを接続。SAVESYS実行体も共通の終了処理を使う。書戻し失敗は報告し、バッチ終了コードは1。BYEの保存失敗はCATCH可能で、成功前にhaltしない。辞書読込はLOAD-DICTIONARY。英日README/マニュアル/互換性、HELP、実装ノートを更新し、サンプル・スクリプトの旧辞書LOADが残っていないことを確認した（Gforth比較元の標準LOADと誌面仕様の歴史的LOADは維持）。
-
-検証：通常のzig build test、files/image無効構成、graphics/audio/float/image無効構成が成功。`python3 scripts/verify-blocks.py zig-out/bin/sigma`でBYE/EOFの実ファイル保存、ブロック入力、LOAD-DICTIONARY、SAVESYS実行体のEOF保存が成功。ログは`.zig-cache/s01b-test.log`、`.zig-cache/s01b-disabled.log`、`.zig-cache/s01b-minimal.log`。
-
-次はP01 544（S01依存は解消）、最初の作業P01a 554（比較・最小最大16語）。P01aは未着手。新形式SIGIMG45/46/47とアドレス再配置は未実装で、後続フェーズの要件として残る。現在のイメージは追加済み組込語と新しいデータ開始位置を前提とし、S01前のイメージとの互換はない。版番号変更、リリース用パッケージ作成、コミット、タグ、pushはしていない。
-
-以下は今回の途中記録と前回のP00引き継ぎ。
-
----
-
-## 2026-11-13 S01b入力統合完了（未コミット）
-
-tque 609完了。BLK/SCR、標準LOAD、THRU/LISTを登録。辞書読込の登録名はLOAD-DICTIONARYへ変更し、ホストの辞書読込テストとHELPも追従済み。LOADは固定論理メモリー内の入れ子用入力スナップショットを使い、衝突するBLOCKや内側のLOADによる入力破壊を防ぐ。BLK変数は0x0d40、SCRは0x0d48。SourceKind.blockを追加。ブロックのSOURCE-IDは2、SOURCE長は1024、SAVE-INPUTはblk/cursor/2、REFILLは次ブロック。EVALUATE/ファイル/端末の解釈中はBLK=0とし、終了/THROW後に呼出元へ戻す。バックスラッシュコメントは64文字境界まで。
-
-通常テスト、`-Dfiles=false -Dimage=false`、macOS実ファイルのLOAD/入れ子/コメント/THROW/REFILLを確認済み。未保存バッファーは引き続き辞書復元時に保持する。
-
-次は610：BYE/通常バッチ終了/SAVESYS実行体終了時の書戻しと失敗扱い、LOAD-DICTIONARY改名に伴う残りの文書/サンプル/メッセージ更新、ブロック語のマニュアル/互換性一覧、統合回帰。581全体は未完了。Windows/Linux実機確認はここでは行わない。
-
----
-
-## 2026-11-13 S01b保存基盤完了（未コミット）
-
-tque 608完了。BLOCK/BUFFER/UPDATE/SAVE-BUFFERS/EMPTY-BUFFERS/FLUSHを実装。`src/core/blocks.zig`と`src/tests/blocks_test.zig`。32×1024バイトを入力領域直後の固定論理領域に予約し、辞書データ開始位置を移動。バッファー内容はイメージへ含めず、既存プロセスで辞書復元する場合は未保存内容とファイル識別子を維持する。errno=2の場合だけblocks.fbを作成し、読込不足分は空白で埋める。書込・flush失敗時は変更フラグを残し、読込失敗時は旧内容を維持する。
-
-通常の`zig build test`、`-Dfiles=false`、macOS実ファイルでの作成/保存/再読込が成功。ログは`.zig-cache/s01b-test.log`と`.zig-cache/s01b-nofiles.log`。追加テストはルートから取り込み済み。
-
-次はtque 609（入力統合、依存543/608）、続いて610（改名・終了保存・文書・統合、依存543/609）。BLK/SCR/LOAD/THRU/LISTはまだ未実装。BYE/バッチ終了時保存と辞書LOADの改名も未実装。S01b 581全体は未完了。進捗管理はauto。
-
----
-
-## 2026-11-13 S01a作業中（未コミット）
-
-標準キー定数のEKEYS語彙、EKEYのUTF-8/端末エスケープ列解釈、EKEY>FKEYと修飾マスク、EKEY>XCHARのコードポイント判定を追加中。GRAPHICSライブラリーの読込中はEKEYSを検索順から外し、終了後に元へ戻す。固定語彙ID 3を追加読込時の再配置対象から除外した。回帰テストを追加し、既存ORDERテストを新しい初期検索順へ更新した。
-
-EKEY?のパイプ非ブロック性、単調時計によるEscの合計50 ms、EKEYからKEY/ACCEPTへの未読バイト保持を修正。macOSのパイプ・PTY試験は `python3 scripts/verify-ekey.py zig-out/bin/sigma` で成功。Windows x86_64・Linux x86_64のクロスビルド成功（実機確認ではない）。英日マニュアルと互換性一覧を更新。GRAPHICSなし構成でも標準キー定数のHELPを残す。
-
-利用者の指示により、tque 580（S01a）は完了。Windows/Linuxの実端末確認は、ここでは実行せず、P10配下の別タスク607（依存580）へ分離した。Windowsのキー修飾、UTF-16入力、KEY/ACCEPT/行編集との切替、Linuxの実端末確認は607で行う。新イメージ形式45/46/47と再配置表の実装はまだ行っていない。S01bは保存基盤608まで完了。入力統合609と改名・終了処理610が残る。
-
-テストログは `.zig-cache/s01-test.log`。`.zig-global-cache/`は検証用キャッシュで成果物へ含めない。コミット・pushは未実行。
-
----
-
 # Gforth対応の引き継ぎ
 
-2026-11-12時点。P00の仕様確定とClaude Codeレビューは完了。次はS01の実装から再開する。今回の作業ではSigmaのワード本体は変更していない。
+更新日：2026-11-13。P00・S01・P01とClaude Codeレビュー対応は完了。次の推奨作業は **P02a（tque 557）**。
+
+更新前の確認ではmainとorigin/mainの両方が`a8f06e909c4fc03f5fc221b758233339d16afdcc`で、作業ツリーはクリーンだった。この引き継ぎ更新自体のコミット・pushは依頼されていない。再開時はgit statusとgit logで最新状態を確認する。
 
 ## 最初に読む資料
 
-- [実装フェーズ](GFORTH_WORD_PHASES.md)：フェーズ・対象語・依存・完了条件・tque ID。
+- [実装フェーズ](GFORTH_WORD_PHASES.md)：対象語・依存・完了条件・tque ID。
 - [P00仕様](GFORTH_P00_SPEC.md)：確定した互換方針、再配置設計、比較元との差。
-- [ワード分類](gforth-word-plan.tsv)：931語のA〜E分類、380語の実装先、Forth 2012の語群・節番号。
+- [ワード分類](gforth-word-plan.tsv)：931語のA〜E分類と380語の実装先。
 - [仕様索引](gforth-p00-spec-cases.tsv)：未対応380語＋既存構文4語のスタック効果と参照元。
-- [実測結果](gforth-p00-runtime-cases.tsv)：470ケース。Sigmaの実装済み一覧ではない。
-- [比較スクリプトの手順](../scripts/gforth-p00/README.md)。
+- [実測結果](gforth-p00-runtime-cases.tsv)：比較元の470ケース。Sigmaの実装済み一覧ではない。改行を含むCSVレコードなので物理行数で数えない。
+- [比較手順](../scripts/gforth-p00/README.md)、[キー定数](gforth-p00-key-constants.tsv)。
+- [S01レビュー記録](S01_REVIEW.md)、[P01レビュー記録](P01_REVIEW.md)。
 
-## 利用者が確定した方針
+## タスク管理と次の作業
 
-1. Forth 2012の標準語を優先する。標準キー4語・標準ブロック10語をAに上げ、S01で先行実装する。
-2. 辞書イメージ読込の現行LOADはLOAD-DICTIONARYへ改名する。LOADは標準ブロック実行にする。途中案のLOAD-IMAGEは、既存のGRAPHICSの画像読込語と衝突するため撤回した。GRAPHICS LOAD-IMAGEは維持する。
-3. 旧辞書イメージとの互換は考慮しない。新形式へ更新し、旧形式は安全に拒否する。
-4. GRAPHICSのキー値は維持する。標準用定数は別語彙EKEYSへ置く。起動時は標準定数を使える検索順にし、ALSO GRAPHICS時は既存GRAPHICS定数を優先する。
-5. 乱数は同じ種でSigma内の同じ列を再現する。Gforthとの列一致は要求しない。
-6. A,やアドレス専用の定義語で保存した値は追加読込時に自動再配置する。普通のカンマで保存した数値は再配置しない。
-7. アセンブラーは今回に含めず、対応方針を別途検討する。
-8. 確認が必要な仕様を推測で決めたり、未決のまま完了扱いにしない。
+tqueで管理し、進捗モードは**auto**とする。階層はForthSigma 121 → 次のフェーズ415 → 実装計画542。542全体は未完了。
 
-EKEYのコードポイント化、Escの50 ms判定、F*+の融合、ブロックの32バッファー、再配置表の構造と検証等の技術設計はP00仕様に記載済み。設計と実装結果を区別する。
-
-## 次の作業 S01
-
-tqueの階層はForthSigma 121 → 次のフェーズ415 → 実装計画542。
-
-|タスク|状態と扱い|
+|タスク|確認した状態・次の扱い|
 |---|---|
-|543 P00|完了。384語・470ケースの比較とレビュー済み|
-|579 S01|完了。Windows/Linux実機確認は607へ分離|
-|580 S01a|完了。実装・macOS検証済み。Windows/Linux実端末確認はP10配下607へ分離|
-|581 S01b|完了。子608/609/610も完了|
-|544 P01|基本語25語。579完了により着手可能。最初は554 P01a|
-|457 P07先行|550配下。IS/ACTION-OF/TO/+TOの辞書化。544の後|
-|570 P07a|457と544の後|
-|582|アセンブラーの別途方針検討。542の完了条件には含めない|
-|583|TRY系の保留D。542の実装対象には含めない|
-|584|Gforth固有ブロック拡張9語の保留D。581の後に必要性を再検討|
+|543 P00|完了。384語・470ケースの仕様確認とレビュー済み|
+|579 S01|完了。580 S01a、581 S01b、子608/609/610も完了|
+|611 S01レビュー|完了。修正`2f5dad8`までpush済み|
+|544 P01|完了。554 P01a、555 P01b、556 P01cの全25語が完了|
+|612 P01レビュー|完了。修正`a8f06e9`までpush済み、指摘解消|
+|545 P02 / 557 P02a|未着手。557のP01依存は解消し、着手可能。次の推奨作業|
+|546 P03 / 550 P07|未着手。P01依存は解消。推奨順ではP02aを先に進める|
+|457 P07先行|550配下。IS/ACTION-OF/TO/+TOの辞書登録。既存IDを使う|
+|570 P07a|457と544に依存。457を飛ばさない|
+|553 P10|未完了。P02〜P09の依存が残る|
+|607 Windows/Linux別環境確認|未実施。553配下、544/580/581依存は解消。ここでは実施しない。既存537〜540と連携|
 
-440は削除済み。内容は実装フェーズと583・584へ移管した。440を再作成したり、完了済み417を再開したりしない。457も別IDで重複登録しない。
+440は削除済みで再作成しない。完了済み417を再開しない。582はアセンブラー方針の別途検討、583はTRY系の保留D、584はGforth固有ブロック拡張9語の保留D。これらを自動的に今回の実装対象へ加えない。
 
-S01では新しい名前の追加だけでなく、既存語への影響も実装する。EKEY/EKEY>CHAR/EKEY>XCHAR、標準K-*定数、LOADの改名、ブロック中のSOURCE/SOURCE-ID/REFILL/SAVE-INPUT/RESTORE-INPUT/EVALUATE、コメント境界、THROW時の入力復元が対象。既存同名語があることを意味互換の根拠にしない。
+P02aの対象32語：
 
-## P00の検証とレビュー
+`*/F`、`*/MODF`、`*/MODS`、`*/S`、`/F`、`/MODF`、`/MODS`、`/S`、`>POW2`、`ARSHIFT`、`CTZ`、`DARSHIFT`、`DLSHIFT`、`DROL`、`DROR`、`DRSHIFT`、`DU/MOD`、`LOG2`、`LROL`、`LROR`、`MODF`、`MODS`、`MUX`、`POW2?`、`U*/`、`U*/MOD`、`U/`、`U/MOD`、`UD/MOD`、`UMOD`、`WROL`、`WROR`。
 
-- 指定された比較元は`/Users/fuk/source/forth/gforth/`、コミット`c479e1eec66dd57a2441c3020177267ba70d3bdc`。
-- 当初の生成済み実行版は0.7.9_20260610で、一部のソース上の語が未登録だった。元リポジトリをビルド場所にせず、`.work/gforth-audit/gforth-build/`のコピーでGCC 16を使って再構築した。新しい実行版はソースのconfigure.acに従い1.0.1 arm64。
-- macOS arm64の比較環境で470ケースが成功し、仕様索引の384語全てをカバー。新しいSigma機能が成功したという意味ではない。
-- Claude Code Sonnetの初回レビューでは未完了と判定。RANDOM等の参照誤り、改名の衝突、キーの語彙、ブロック入力、再配置設計、具体的な比較ケースを修正した。
-- 再レビューでは「P00は完了にできる」「完了を妨げる具体的な不備なし」。軽微な文書指摘も処理した。
-- ケース数はCSVとして470レコード。引用された入力に改行があるため、物理行数で数えない。run.pyが件数・失敗・網羅・重複IDを検査する。
-- BUFFERはGforth同様に既存内容を取得する。標準が初期内容を要求しないこととは区別する。
-- Gforthの0除算の動作とWHEREGの-e入力からの不正メモリーアクセスには比較元固有の差がある。Sigmaへ不正動作を移さず、P00仕様に従う。
-- EDITOR=true等は検証プロセス限定。実エディターは起動していない。
+実装前に仕様索引・P00仕様・保存済み実測のスタック効果を読む。床／切捨て除算、負数、ゼロ除算、オーバーフロー、シフト・回転境界を確認する。Gforthの一部のゼロ除算結果をそのまま取り込まず、Sigmaの既存方針（ゼロ除算は-10）と確定仕様に従う。不明な仕様は先に利用者へ問い合わせる。
 
-セッション内のレビュー原文とビルドログは`.work/p00-review/`、`.work/gforth-audit/`。これらはGit管理外なので、新しいチェックアウトに存在するとは限らない。確定事項と再実行手順はdocsとscriptsへ保存済み。
+## 完了した実装と注意点
 
-## 作業ツリーとGit
+### S01：入力・標準ブロック
 
-基点HEADは`f1140c76814fb31b71c91743ca6cb7d99ad05054`。このコミットは以前の依頼でpush済み。この引き継ぎ作成後、利用者から計画・P00資料・比較スクリプト・引き継ぎのコミットとpushが指示された。後続コミットのIDと作業ツリーの状態はgit logとgit statusで確認する。
+初回`fac0e8f`、レビュー修正`2f5dad8`をpush済み。レビューと再確認の詳細は[S01レビュー記録](S01_REVIEW.md)。
 
-変更済みの既存ファイルはCOMPATIBILITY英日版、DECISIONS、docs/README英日版。新規ファイルはGFORTH_WORD_PHASES.md、GFORTH_P00_SPEC.md、分類・仕様・実測・キー定数のTSV、scripts/gforth-p00配下、およびこの引き継ぎ。
+- EKEYはUTF-8コードポイントと特殊キーを扱う。EKEY>CHARは0〜255、EKEY>XCHARはUnicodeスカラー値を判定する。EKEY?は非ブロック。単独Escは単調時計で合計50 ms判定し、不明・未完入力を保持する。
+- 標準キー定数は固定語彙EKEYS（ID 3）。初期検索順はForth Forth EKEYS Root。RootにもEKEYSがあり、ONLY ALSO EKEYSで復帰できる。GRAPHICSのキー値は維持し、ALSO GRAPHICSではそちらが優先される。
+- **利用者の選択により端末EKEY/EKEY?のCtrl+CはUserInterrupt（THROW -28）**。pipe/fileのバイト3は文字3。GRAPHICS INKEYは変更していない。割込み時にも未完入力を保持する。
+- KEY/EKEY/ACCEPTは先読みを共有する。POSIXではstdio先読みによる停止を避けるためdescriptor読込を使う。Writerにevent_key_fn、buffered_key_fn、monotonic_ms_fnを追加。
+- 標準LOAD/THRU/LISTとBLK/SCRを実装。**辞書イメージ読込はLOAD-DICTIONARY**。GRAPHICS LOAD-IMAGEは従来どおり。
+- blocks.fbを遅延open/createし、1024バイト×32バッファーを使う。EOF不足分は空白。既存疎ファイルの穴はGforth実測同様NUL。読み取り専用fallbackは権限／読取専用エラーに限定する。
+- UPDATEは現在バッファーを変更済みにする。SAVE-BUFFERSは保存、FLUSHは保存して割当解除、EMPTY-BUFFERSは破棄。保存失敗時はdirtyを保持し、読込失敗時は旧バッファーを保持する。
+- BYE・通常EOF・SAVESYS実行体の通常終了で書き戻す。バッチ保存失敗は終了コード1。異常終了・シグナル時の保存保証はない。
+- LOADは8段の入力スナップショットでキャッシュ衝突を防ぐ。SOURCE-ID=2、SOURCE長1024、REFILLは次ブロック、SAVE-INPUTはblk/cursor/2。コメントは64文字境界まで。THROW/EVALUATE後にBLKと入力を復元する。
+- BLOCK/BUFFERは0〜0x1fffff、初回LOADは1〜0x1fffff（範囲外-35）。0 BLK !でブロック0を選べるが、0 LOADは無効。
+- BLK=0x0d40、SCR=0x0d48、データ開始位置=0x1e000。ブロックキャッシュ32 KiBと入力スナップショット8 KiBはイメージ対象外。既存プロセスで辞書復元しても未保存バッファーを維持し、BLKは0へ戻す。
 
-未追跡の資料も成果物なので、git cleanやresetで破棄しない。`.work`のGforthコピー、Git情報、バイナリ、既存パッケージのコピー、ログ等をコミット対象へ混ぜない。
+### P01：基本25語
+
+|範囲|コミット|追加語|
+|---|---|---|
+|P01a|cd715dc|0<=、D0<=、D0<>、D0>、D0>=、D<=、D<>、D>、D>=、DU<=、DU>、DU>=、U<=、U>=、UMAX、UMIN|
+|P01b|c8fedf1|2NIP、2RDROP、2TUCK、FOURTH、RDROP、THIRD|
+|P01c|4021a83|2,、ROL、ROR|
+|レビュー修正|a8f06e9|文書誤記・リターンスタック互換性説明・追加回帰|
+
+既存組込enumタグを維持して末尾へ追加。Cell/UCellは64ビット、Double/UDoubleは128ビット、真=-1・偽=0。二倍長数は下位セルの上に上位セルを置く。2@/2!のメモリー順は低いアドレスに上位セル。
+
+2,はHEREに16バイトを確保し、上位／上側セルx2、続いてx1を格納する。自動整列しない。容量不足時はHERE・データ・入力スタックを変更しない。生セルはアドレスに見えても自動再配置しない。
+
+ROL/RORはu64ビット列を回転し、回転数の下位6ビットを使う。0/64/128は恒等、負の生セルも下位6ビットで扱う。2TUCKは入力4セルと空き2セルを事前確認する。
+
+**利用者リターンスタックは呼出しフレーム・DOループスタックと別**。釣り合ったRDROP/2RDROPはGforthと一致するが、Gforthの`2RDROP EXIT`でループ制御情報を直接捨てる用法は非対応（利用者スタックが空なら-6）。ループからは`UNLOOP EXIT`を使う。比較実測とCATCH時のループ復元回帰を追加済み。
+
+Claude Codeの初回レビューはP0/P1/P2・実装論理バグなし。P3文書誤記3件とリターンスタック互換性の確認事項を処理し、再レビューは全件解消・新たな具体的問題なし。[P01レビュー記録](P01_REVIEW.md)を参照。
+
+旧S01ビルドで40利用者定義を保存したSIGIMG42を-264で拒否し、既存KEEP=77を保持することも確認した。検証時の旧イメージ語数667は当時の組込652以上であり、単純な語数不足だけによる拒否試験ではない。
+
+## 検証済み範囲と再実行
+
+通常構成と全機能群無効構成のテスト成功。Zig実行環境は0.17.1。次の形式を使う（--global-cache-dirではなく環境変数）。
+
+```sh
+ZIG_GLOBAL_CACHE_DIR="$PWD/.zig-global-cache" zig build test --cache-dir .zig-cache
+ZIG_GLOBAL_CACHE_DIR="$PWD/.zig-global-cache" zig build test \
+  -Dfloat=false -Dgraphics=false -Daudio=false -Dfiles=false \
+  -Dimage=false -Dhelp=false -Dtools=false -Ddebug=false \
+  --cache-dir .zig-cache
+```
+
+zig build testにはfreestanding objectの確認も含むが、実機実行ではない。実行体を使う比較前にはzig buildを行う。
+
+```sh
+python3 scripts/verify-p01a.py zig-out/bin/sigma --gforth-build .work/gforth-audit/gforth-build --report .work/p01a-check/results.json
+python3 scripts/verify-p01b.py zig-out/bin/sigma --gforth-build .work/gforth-audit/gforth-build --report .work/p01b-check/results.json
+python3 scripts/verify-p01c.py zig-out/bin/sigma --gforth-build .work/gforth-audit/gforth-build --report .work/p01c-check/results.json
+python3 scripts/verify-ekey.py zig-out/bin/sigma
+python3 scripts/verify-blocks.py zig-out/bin/sigma
+```
+
+P01a 1,177、P01b 4,060、P01c 4,553、計9,790ケースがSigma・指定Gforthとも一致。リターンスタックの意図した差は別途実測した。--gforth-buildを省略するとSigmaの期待値検証のみ。EKEYはpipe/PTY/端末行編集/Ctrl+C、ブロックは実ファイル・入力復元・BYE/EOF・SAVESYS終了を確認済み。
+
+比較元は指定Gforthコミット`c479e1eec66dd57a2441c3020177267ba70d3bdc`。元リポジトリではなく`.work/gforth-audit/gforth-build/`のコピーをGCC 16で再構築したGforth 1.0.1 arm64を使う。当初の生成済み0.7.9_20260610は一部の語が未登録だった。
+
+原文・実測は`.work/s01-review/`、`.work/p01-review/`、`.work/p01*-check/`、`.work/gforth-audit/`。最終テストログは`.zig-cache/p01-review-test.log`と`p01-review-minimal.log`。これらはGit管理外で、新しいチェックアウトに存在する保証はない。確定事項はdocsとscriptsを参照する。
+
+**Windows/Linuxの確認はここでは行わない**。607で入力切替・特殊キー・Ctrl+C、ブロック終了保存/SAVESYS、64/128ビット比較・リターンスタック/DO・2,/ROL/RORを確認する。S01初期のクロスビルド成功は実機確認でも、後続変更の検証でもない。
+
+## 確定方針と後続要件
+
+- Forth 2012標準語を優先する。仕様未確定のまま実装・完了扱いにしない。
+- 旧辞書イメージ互換は要求しない。安全に拒否する。**現形式はSIGIMG42/43/44で、新形式SIGIMG45/46/47と再配置表は未実装**。P03/P08/P10等の後続要件はP00仕様に従う。
+- A,/ACONSTANT/AVARIABLE/AVALUE等のアドレス専用機構による追加読込時の自動再配置は後続作業。通常のカンマや2,の生数値を推測で再配置しない。
+- F*+は融合したf64演算。乱数は同じ種でSigma内の同じ列を再現し、Gforthとの列一致は要求しない。
+- Gforthのゼロ除算やWHEREGの不正アクセス等、比較元固有の不正動作を取り込まない。GPLコードの転用はしていない。今後もライセンスを確認する。
 
 ## 作業上の制約
 
-- Planモードは使わない。仕様の不明点は実装前に確認する。
-- 質問にはまず回答し、修正・実装の依頼がない質問だけでコードを変更しない。
-- コミット・タグ・pushは、その依頼で明示された場合だけ行う。
-- パッケージ作成はスクリプト動作確認以外では行わない。版番号を変える場合は[チェックリスト](version-update-checklist.md)に従う。
-- リポジトリ外・外部データへのアクセスは利用者のアクセス許可ルールに従う。当セッションでは指定Gforth/tque等へのアクセス許可があった。
-- tqueは既存CLIを使う。`tque ls --all --json`で状態を確認し、保存結果が不明な変更は再読込してから判断する。`rm`は確認なし・Undoなし。
-- GforthのGPLコードは参照元として扱い、実装コードの転用はライセンスを確認する。
-- 実装後のWindows・Linux・macOS確認は別途必要。クロスビルドを実機検証として扱わない。Windowsの既存確認537〜540も維持する。
+- Planモードは使わない。質問にはまず回答し、修正依頼のない質問だけでコードを変更しない。
+- コミット・タグ・pushは、その依頼で明示された場合だけ行う。版番号・リリース用パッケージは今回変更／作成していない。
+- パッケージ作成はスクリプト動作確認以外では行わない。版番号変更時は[チェックリスト](version-update-checklist.md)に従う。
+- リポジトリ外・外部データへのアクセスは利用者の許可ルールに従う。当セッションでは指定Gforth・tque・Gitリモート・Claude Codeレビューへのアクセスが認められていた。
+- tqueは既存CLIを使い、tque ls --all --jsonで確認する。変更後は再読込で保存結果を確認する。rmには確認・Undoがないため注意する。進捗はautoを維持する。
+- 未追跡の成果物をgit clean/resetで破棄しない。.workのコピー・バイナリ・ログ、キャッシュをコミットへ混ぜない。
+- cargo testが必要な場合は利用者指定どおりPowerShellから実行する。Git Bash経由では実行しない。
