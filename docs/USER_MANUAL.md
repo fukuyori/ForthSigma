@@ -388,6 +388,19 @@ A prefix before a number selects its base, whatever the current base is.
 | `'a'`, `'a` | The code point of one character (UTF-8: `'日` is 26085); the closing `'` may be left out, and `''` is the quote itself |
 
 A `-` may come before the prefix or after it (`-$10`, `$-10`, `-0x10`, `0x-10`, `-'a`), but not both.
+### Additional integer comparisons
+
+| Words | Stack effect | Meaning |
+|---|---|---|
+| `0<=` | `( n -- flag )` | Signed cell is zero or negative. |
+| `U<=`, `U>=` | `( u1 u2 -- flag )` | Unsigned comparisons, including the high bit in the magnitude. |
+| `UMAX`, `UMIN` | `( u1 u2 -- u )` | Unsigned larger/smaller operand; the raw cell bits are preserved. |
+| `D0<=`, `D0<>`, `D0>`, `D0>=` | `( d -- flag )` | Signed double-cell zero comparisons. |
+| `D<=`, `D<>`, `D>`, `D>=` | `( d1 d2 -- flag )` | Signed 128-bit comparisons. |
+| `DU<=`, `DU>`, `DU>=` | `( ud1 ud2 -- flag )` | Unsigned 128-bit comparisons. |
+
+Comparison flags are -1 for true and 0 for false. Double-cell values use the existing low-cell/high-cell stack order. These words are available without floating-point, file, graphics, or image support.
+
 ### Double-cell integers
 
 A number with a `.` among its digits is a double-cell integer (128 bits). It is pushed as two cells, the low cell first and then the high cell. `123.` is 123, and `12345.123` is 12345123 (the position of the dot is not recorded).
@@ -404,7 +417,7 @@ BIGNUM 2@ D.                                      \ 30792422974944119506
 | --- | --- |
 | Conversion | `S>D`, `D>S`, `D>F`, `F>D` |
 | Arithmetic | `D+`, `D-`, `DNEGATE`, `DABS` |
-| Comparison | `D0=`, `D0<`, `D=`, `D<` |
+| Comparison | `D0=`, `D0<`, `D0<=`, `D0<>`, `D0>`, `D0>=`, `D=`, `D<`, `D<=`, `D<>`, `D>`, `D>=`, `DU<`, `DU<=`, `DU>`, `DU>=` |
 | Output | `D.` |
 | Mixed single and double multiplication and division | `M*` (( n1 n2 -- d )), `UM*` (( u1 u2 -- ud )), `UM/MOD` (( ud u -- rem quot ), unsigned), `FM/MOD` (( d n -- rem quot ), floored division), `SM/REM` (( d n -- rem quot ), rounding toward 0) |
 
@@ -981,7 +994,7 @@ The following table lists the built-in words that are registered in the dictiona
 | --- | --- |
 | Stack operations | `DROP`, `DUP`, `SWAP`, `OVER`, `ROT`, `-ROT`, `NIP`, `TUCK`, `PICK`, `ROLL`, `2DUP`, `2DROP`, `2SWAP`, `2OVER`, `DEPTH`, `>R`, `R>`, `R@`, `2>R`, `2R>`, `2R@`, `?DUP`, `2ROT`, `N>R`, `NR>` |
 | Arithmetic | `+`, `-`, `*`, `/`, `MOD`, `/MOD`, `*/`, `*/MOD`, `MINUS`, `NEGATE`, `ABS`, `1+`, `1-`, `2*`, `2/`, `MAX`, `MIN`, `UNDER+` |
-| Comparison, logic, and bits | `=`, `<>`, `<`, `>`, `<=`, `>=`, `NOT`, `0=`, `0<`, `0>`, `0>=`, `0<>`, `AND`, `OR`, `XOR`, `COM`, `INVERT`, `NAND`, `NOR`, `SWAB`, `LSHIFT`, `RSHIFT`, `TRUE`, `FALSE`, `U<`, `U>` |
+| Comparison, logic, and bits | `=`, `<>`, `<`, `>`, `<=`, `>=`, `NOT`, `0=`, `0<`, `0>`, `0>=`, `0<=`, `0<>`, `AND`, `OR`, `XOR`, `COM`, `INVERT`, `NAND`, `NOR`, `SWAB`, `LSHIFT`, `RSHIFT`, `TRUE`, `FALSE`, `U<`, `U>`, `U<=`, `U>=`, `UMAX`, `UMIN` |
 | Constants and address arithmetic | `BL`, `CELL`, `CELLS`, `CELL+`, `ALIGNED`, `ALIGN`, `UNUSED`, `WITHIN`, `BUFFER:`, `DUMP` |
 | Memory and arrays | `@`, `!`, `,`, `C,`, `C@`, `C!`, `+!`, `1+!`, `1-!`, `OSET`, `ON`, `OFF`, `?`, `A@`, `A!`, `ERASE`, `FILL`, `MOVE`, `CMOVE`, `HERE`, `ALLOT`, `CELL-` |
 | Loops | `I`, `J`, `K`, `LEAVE`, `UNLOOP` |
@@ -993,7 +1006,7 @@ The following table lists the built-in words that are registered in the dictiona
 | Floating-point arithmetic and functions | `F+`, `F-`, `F*`, `F/`, `FNEGATE`, `FMINUS`, `FABS`, `FMAX`, `FMIN`, `FSQRT`, `FEXP`, `FLN`, `FSIN`, `FCOS`, `FTAN`, `FSINCOS`, `FASIN`, `FACOS`, `FATAN`, `FATAN2`, `FSINH`, `FCOSH`, `FTANH`, `FASINH`, `FACOSH`, `FATANH`, `FEXPM1`, `FLNP1`, `FLOG`, `FALOG`, `F**`, `FLOOR`, `FTRUNC`, `FROUND` |
 | Floating-point comparison | `F=`, `F<>`, `F<`, `F>`, `F<=`, `F>=`, `F0=`, `F0<>`, `F0<`, `F0>`, `F0<=`, `F0>=`, `F~` |
 | Floating-point memory, conversion, and input/output | `F@`, `F!`, `F,`, `FA@`, `FA!`, `F+!`, `F?`, `FLOATS`, `FLOAT+`, `DF@`, `DF!`, `DFLOATS`, `DFLOAT+`, `SF@`, `SF!`, `SFLOATS`, `SFLOAT+`, `FALIGN`, `FALIGNED`, `DFALIGN`, `DFALIGNED`, `SFALIGN`, `SFALIGNED`, `S>F`, `F>S`, `F.`, `FE.`, `FS.`, `REPRESENT`, `PRECISION`, `SET-PRECISION`, `FINPUT`, `F.RDP`, `F>STR-RDP`, `F>BUF-RDP` |
-| Double-cell integers | `S>D`, `D>S`, `D+`, `D-`, `DNEGATE`, `DABS`, `D0=`, `D0<`, `D=`, `D<`, `DU<`, `DMAX`, `DMIN`, `D2*`, `D2/`, `M+`, `M*/`, `D.`, `D.R`, `M*`, `UM*`, `UM/MOD`, `FM/MOD`, `SM/REM`, `2@`, `2!`, `2VALUE`, `2LITERAL`, `D>F`, `F>D` |
+| Double-cell integers | `S>D`, `D>S`, `D+`, `D-`, `DNEGATE`, `DABS`, `D0=`, `D0<`, `D0<=`, `D0<>`, `D0>`, `D0>=`, `D=`, `D<`, `D<=`, `D<>`, `D>`, `D>=`, `DU<`, `DU<=`, `DU>`, `DU>=`, `DU<`, `DMAX`, `DMIN`, `D2*`, `D2/`, `M+`, `M*/`, `D.`, `D.R`, `M*`, `UM*`, `UM/MOD`, `FM/MOD`, `SM/REM`, `2@`, `2!`, `2VALUE`, `2LITERAL`, `D>F`, `F>D` |
 | Strings and input | `COUNT`, `PAD`, `ACCEPT`, `EVALUATE`, `KEY`, `KEY?`, `>NUMBER`, `S>NUMBER?`, `>FLOAT`, `WORD`, `PARSE`, `PARSE-NAME`, `SOURCE`, `>IN`, `SOURCE-ID`, `REFILL`, `SAVE-INPUT`, `RESTORE-INPUT`, `EKEY`, `EKEY?`, `EKEY>CHAR`, `XC-SIZE`, `X-SIZE`, `XC@+`, `XC@`, `XC!+`, `XC!+?`, `XC,`, `XCHAR+`, `XCHAR-`, `XEMIT`, `XKEY`, `XKEY?`, `X-WIDTH`, `XC-WIDTH`, `+X/STRING`, `X\STRING-`, `-TRAILING-GARBAGE`, `X@+/STRING`, `XHOLD`, `EKEY>XCHAR` |
 | Number formatting | `<#`, `<<#`, `#`, `#S`, `#>`, `#>>`, `HOLD`, `HOLDS`, `SIGN` |
 | String storage, comparison, state, and abort | `PLACE`, `+PLACE`, `COMPARE`, `SEARCH`, `/STRING`, `-TRAILING`, `CHAR+`, `CHARS`, `BOUNDS`, `BLANK`, `CMOVE>`, `SCAN`, `SKIP`, `STR=`, `STRING-PREFIX?`, `SLITERAL`, `STATE`, `ABORT`, `SUBSTITUTE`, `REPLACES`, `UNESCAPE` |

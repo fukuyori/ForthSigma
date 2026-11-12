@@ -725,7 +725,23 @@ pub const State = struct {
             .{ "(~~TO)", .watch_run },           .{ "DBG", .dbg },                     .{ "BREAK:", .break_colon },          .{ "(BREAK:)", .break_run },
             .{ "BREAK\"", .break_quote },        .{ "(BREAK\")", .break_quote_run },   .{ ".COVER-RAW", .cover_raw },        .{ "COV%", .cov_percent },
             .{ ".COVERAGE", .coverage },         .{ "~~VARIABLE", .define_watched_variable }, .{ "WATCH", .watch_cell },    .{ "UNWATCH", .unwatch_cell },
-        };
+            .{ "0<=", .zero_less_equal },
+            .{ "D0<=", .d_zero_less_equal },
+            .{ "D0<>", .d_zero_not_equal },
+            .{ "D0>", .d_zero_greater },
+            .{ "D0>=", .d_zero_greater_equal },
+            .{ "D<=", .d_less_equal },
+            .{ "D<>", .d_not_equal },
+            .{ "D>", .d_greater },
+            .{ "D>=", .d_greater_equal },
+            .{ "DU<=", .du_less_equal },
+            .{ "DU>", .du_greater },
+            .{ "DU>=", .du_greater_equal },
+            .{ "U<=", .u_less_equal },
+            .{ "U>=", .u_greater_equal },
+            .{ "UMAX", .u_max },
+            .{ "UMIN", .u_min },
+    };
 
     fn installBuiltins(self: *State) void {
         const definitions = builtin_definitions;

@@ -381,6 +381,19 @@ LinuxとmacOSの端末では、対話プロンプトと `ACCEPT` の行は、Sig
 | `'a'`、`'a` | 1文字のコードポイント（UTF-8なので `'日` は26085）。閉じる `'` は省けます。`''` は引用符そのものです |
 
 `-` は接頭辞の前にも後にも付けられます（`-$10`、`$-10`、`-0x10`、`0x-10`、`-'a`）。両方には付けられません。
+### 整数比較の追加語
+
+| 語 | スタック効果 | 動作 |
+|---|---|---|
+| `0<=` | `( n -- flag )` | 符号付きセルが0以下なら真。 |
+| `U<=`、`U>=` | `( u1 u2 -- flag )` | 最上位ビットも大きさとして扱う符号なし比較。 |
+| `UMAX`、`UMIN` | `( u1 u2 -- u )` | 符号なしの最大／最小。元のセルのビット列を保持する。 |
+| `D0<=`、`D0<>`、`D0>`、`D0>=` | `( d -- flag )` | 符号付き倍長整数と0を比較する。 |
+| `D<=`、`D<>`、`D>`、`D>=` | `( d1 d2 -- flag )` | 符号付き128ビット比較。 |
+| `DU<=`、`DU>`、`DU>=` | `( ud1 ud2 -- flag )` | 符号なし128ビット比較。 |
+
+比較結果は真が-1、偽が0です。倍長整数は既存と同じ下位セル・上位セルの順で積みます。浮動小数点・ファイル・描画・イメージ機能を除いた構成でも利用できます。
+
 ### 倍長整数
 
 数字の間に `.` を含む数は倍長整数（128ビット）になり、スタックに下位セル、上位セルの順で2個積まれます。`123.` は123、`12345.123` は12345123です（小数点の位置は記録しません）。
@@ -397,7 +410,7 @@ BIGNUM 2@ D.                                      \ 30792422974944119506
 | --- | --- |
 | 変換 | `S>D`, `D>S`, `D>F`, `F>D` |
 | 算術 | `D+`, `D-`, `DNEGATE`, `DABS` |
-| 比較 | `D0=`, `D0<`, `D=`, `D<` |
+| 比較 | `D0=`, `D0<`, `D0<=`, `D0<>`, `D0>`, `D0>=`, `D=`, `D<`, `D<=`, `D<>`, `D>`, `D>=`, `DU<`, `DU<=`, `DU>`, `DU>=` |
 | 表示 | `D.` |
 | 単長と倍長の乗除算 | `M*`（( n1 n2 -- d )）、`UM*`（( u1 u2 -- ud )）、`UM/MOD`（( ud u -- 余り 商 )、符号なし）、`FM/MOD`（( d n -- 余り 商 )、床関数除算）、`SM/REM`（( d n -- 余り 商 )、0方向への切り捨て） |
 
@@ -972,7 +985,7 @@ SAVESYS demo.exe
 | --- | --- |
 | スタック操作 | `DROP`, `DUP`, `SWAP`, `OVER`, `ROT`, `-ROT`, `NIP`, `TUCK`, `PICK`, `ROLL`, `2DUP`, `2DROP`, `2SWAP`, `2OVER`, `DEPTH`, `>R`, `R>`, `R@`, `2>R`, `2R>`, `2R@`, `?DUP`, `2ROT`, `N>R`, `NR>` |
 | 算術 | `+`, `-`, `*`, `/`, `MOD`, `/MOD`, `*/`, `*/MOD`, `MINUS`, `NEGATE`, `ABS`, `1+`, `1-`, `2*`, `2/`, `MAX`, `MIN`, `UNDER+` |
-| 比較・論理・ビット | `=`, `<>`, `<`, `>`, `<=`, `>=`, `NOT`, `0=`, `0<`, `0>`, `0>=`, `0<>`, `AND`, `OR`, `XOR`, `COM`, `INVERT`, `NAND`, `NOR`, `SWAB`, `LSHIFT`, `RSHIFT`, `TRUE`, `FALSE`, `U<`, `U>` |
+| 比較・論理・ビット | `=`, `<>`, `<`, `>`, `<=`, `>=`, `NOT`, `0=`, `0<`, `0>`, `0>=`, `0<=`, `0<>`, `AND`, `OR`, `XOR`, `COM`, `INVERT`, `NAND`, `NOR`, `SWAB`, `LSHIFT`, `RSHIFT`, `TRUE`, `FALSE`, `U<`, `U>`, `U<=`, `U>=`, `UMAX`, `UMIN` |
 | 定数・アドレス計算 | `BL`, `CELL`, `CELLS`, `CELL+`, `ALIGNED`, `ALIGN`, `UNUSED`, `WITHIN`, `BUFFER:`, `DUMP` |
 | メモリ・配列 | `@`, `!`, `,`, `C,`, `C@`, `C!`, `+!`, `1+!`, `1-!`, `OSET`, `ON`, `OFF`, `?`, `A@`, `A!`, `ERASE`, `FILL`, `MOVE`, `CMOVE`, `HERE`, `ALLOT`, `CELL-` |
 | ループ関連 | `I`, `J`, `K`, `LEAVE`, `UNLOOP` |
@@ -984,7 +997,7 @@ SAVESYS demo.exe
 | 浮動小数点算術・関数 | `F+`, `F-`, `F*`, `F/`, `FNEGATE`, `FMINUS`, `FABS`, `FMAX`, `FMIN`, `FSQRT`, `FEXP`, `FLN`, `FSIN`, `FCOS`, `FTAN`, `FSINCOS`, `FASIN`, `FACOS`, `FATAN`, `FATAN2`, `FSINH`, `FCOSH`, `FTANH`, `FASINH`, `FACOSH`, `FATANH`, `FEXPM1`, `FLNP1`, `FLOG`, `FALOG`, `F**`, `FLOOR`, `FTRUNC`, `FROUND` |
 | 浮動小数点比較 | `F=`, `F<>`, `F<`, `F>`, `F<=`, `F>=`, `F0=`, `F0<>`, `F0<`, `F0>`, `F0<=`, `F0>=`, `F~` |
 | 浮動小数点メモリ・変換・入出力 | `F@`, `F!`, `F,`, `FA@`, `FA!`, `F+!`, `F?`, `FLOATS`, `FLOAT+`, `DF@`, `DF!`, `DFLOATS`, `DFLOAT+`, `SF@`, `SF!`, `SFLOATS`, `SFLOAT+`, `FALIGN`, `FALIGNED`, `DFALIGN`, `DFALIGNED`, `SFALIGN`, `SFALIGNED`, `S>F`, `F>S`, `F.`, `FE.`, `FS.`, `REPRESENT`, `PRECISION`, `SET-PRECISION`, `FINPUT`, `F.RDP`, `F>STR-RDP`, `F>BUF-RDP` |
-| 倍長整数 | `S>D`, `D>S`, `D+`, `D-`, `DNEGATE`, `DABS`, `D0=`, `D0<`, `D=`, `D<`, `DU<`, `DMAX`, `DMIN`, `D2*`, `D2/`, `M+`, `M*/`, `D.`, `D.R`, `M*`, `UM*`, `UM/MOD`, `FM/MOD`, `SM/REM`, `2@`, `2!`, `2VALUE`, `2LITERAL`, `D>F`, `F>D` |
+| 倍長整数 | `S>D`, `D>S`, `D+`, `D-`, `DNEGATE`, `DABS`, `D0=`, `D0<`, `D0<=`, `D0<>`, `D0>`, `D0>=`, `D=`, `D<`, `D<=`, `D<>`, `D>`, `D>=`, `DU<`, `DU<=`, `DU>`, `DU>=`, `DU<`, `DMAX`, `DMIN`, `D2*`, `D2/`, `M+`, `M*/`, `D.`, `D.R`, `M*`, `UM*`, `UM/MOD`, `FM/MOD`, `SM/REM`, `2@`, `2!`, `2VALUE`, `2LITERAL`, `D>F`, `F>D` |
 | 文字列・入力 | `COUNT`, `PAD`, `ACCEPT`, `EVALUATE`, `KEY`, `KEY?`, `>NUMBER`, `S>NUMBER?`, `>FLOAT`, `WORD`, `PARSE`, `PARSE-NAME`, `SOURCE`, `>IN`, `SOURCE-ID`, `REFILL`, `SAVE-INPUT`, `RESTORE-INPUT`, `EKEY`, `EKEY?`, `EKEY>CHAR`, `XC-SIZE`, `X-SIZE`, `XC@+`, `XC@`, `XC!+`, `XC!+?`, `XC,`, `XCHAR+`, `XCHAR-`, `XEMIT`, `XKEY`, `XKEY?`, `X-WIDTH`, `XC-WIDTH`, `+X/STRING`, `X\STRING-`, `-TRAILING-GARBAGE`, `X@+/STRING`, `XHOLD`, `EKEY>XCHAR` |
 | 数値の書式 | `<#`, `<<#`, `#`, `#S`, `#>`, `#>>`, `HOLD`, `HOLDS`, `SIGN` |
 | 文字列格納・比較・状態・中断 | `PLACE`, `+PLACE`, `COMPARE`, `SEARCH`, `/STRING`, `-TRAILING`, `CHAR+`, `CHARS`, `BOUNDS`, `BLANK`, `CMOVE>`, `SCAN`, `SKIP`, `STR=`, `STRING-PREFIX?`, `SLITERAL`, `STATE`, `ABORT`, `SUBSTITUTE`, `REPLACES`, `UNESCAPE` |

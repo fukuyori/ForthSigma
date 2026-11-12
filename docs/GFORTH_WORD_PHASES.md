@@ -116,6 +116,8 @@ FACILITY EXTのキー4語とBLOCK/BLOCK EXTの10語を優先する。既存の�
 
 #### P01a 比較と最小最大
 
+2026-11-13 完了（tque 554）。16語を実装し、既存33ケースと境界・コンパイル済み1,144ケース、合計1,177ケースでSigmaと指定Gforthが一致した。通常構成と全機能群無効構成のテスト、スタック不足、イメージ復元・追加後の実行を確認。再実行は`python3 scripts/verify-p01a.py zig-out/bin/sigma --gforth-build .work/gforth-audit/gforth-build`（比較用Gforthがある場合）。Gforthを指定しない場合はSigmaの期待値検査のみ行う。
+
 対象 16語。tque ID: 554。
 
 `0<=`, `D0<=`, `D0<>`, `D0>`, `D0>=`, `D<=`, `D<>`, `D>`, `D>=`, `DU<=`, `DU>`, `DU>=`, `U<=`, `U>=`, `UMAX`, `UMIN`

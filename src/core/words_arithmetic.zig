@@ -26,11 +26,12 @@ pub const words = [_]Builtin{
     .d_equal, .d_less, .within, .u_less, .u_greater, .star_slash, .star_slash_mod, .m_star, .um_star,
     .um_slash_mod, .fm_slash_mod, .sm_slash_rem, .d_two_star, .d_two_slash, .d_max, .d_min, .m_plus,
     .du_less, .m_star_slash,
+    .zero_less_equal, .d_zero_less_equal, .d_zero_not_equal, .d_zero_greater, .d_zero_greater_equal, .d_less_equal, .d_not_equal, .d_greater, .d_greater_equal, .du_less_equal, .du_greater, .du_greater_equal, .u_less_equal, .u_greater_equal, .u_max, .u_min,
 };
 
 pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
     switch (builtin) {
-        .add, .sub, .mul, .div, .mod, .max, .min, .equal, .not_equal, .less, .greater, .less_equal, .greater_equal, .bit_and, .bit_or, .bit_xor, .bit_nand, .bit_nor, .lshift, .rshift, .u_less, .u_greater => try self.binary(builtin),
+        .add, .sub, .mul, .div, .mod, .max, .min, .equal, .not_equal, .less, .greater, .less_equal, .greater_equal, .bit_and, .bit_or, .bit_xor, .bit_nand, .bit_nor, .lshift, .rshift, .u_less, .u_greater, .u_less_equal, .u_greater_equal, .u_max, .u_min => try self.binary(builtin),
         .div_mod => {
             const divisor = try self.pop();
             const dividend = try self.pop();
@@ -87,10 +88,14 @@ pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
             const product = @as(i256, number) * factor;
             try self.pushDouble(@truncate(@divFloor(product, @as(i256, divisor))));
         },
-        .du_less => {
+        .du_less, .du_less_equal, .du_greater, .du_greater_equal => {
             const b: UDouble = @bitCast(try self.popDouble());
             const a: UDouble = @bitCast(try self.popDouble());
-            try self.push(truth(a < b));
+            try self.push(truth(switch (builtin) {
+                .du_less => a < b, .du_less_equal => a <= b,
+                .du_greater => a > b, .du_greater_equal => a >= b,
+                else => unreachable,
+            }));
         },
         .fm_slash_mod, .sm_slash_rem => {
             const divisor = try self.pop();
@@ -111,6 +116,7 @@ pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
         .logical_not, .zero_equal => try self.push(truth(try self.pop() == 0)),
         .zero_less => try self.push(truth(try self.pop() < 0)),
         .zero_greater => try self.push(truth(try self.pop() > 0)),
+        .zero_less_equal => try self.push(truth(try self.pop() <= 0)),
         .zero_greater_equal => try self.push(truth(try self.pop() >= 0)),
         // UNDER+ ( n1 n2 n3 -- n1+n3 n2 )
         .under_plus => {
@@ -139,10 +145,18 @@ pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
         },
         .d_zero_equal => try self.push(truth(try self.popDouble() == 0)),
         .d_zero_less => try self.push(truth(try self.popDouble() < 0)),
-        .d_equal, .d_less => {
+        .d_zero_less_equal => try self.push(truth(try self.popDouble() <= 0)),
+        .d_zero_not_equal => try self.push(truth(try self.popDouble() != 0)),
+        .d_zero_greater => try self.push(truth(try self.popDouble() > 0)),
+        .d_zero_greater_equal => try self.push(truth(try self.popDouble() >= 0)),
+        .d_equal, .d_less, .d_less_equal, .d_not_equal, .d_greater, .d_greater_equal => {
             const b = try self.popDouble();
             const a = try self.popDouble();
-            try self.push(truth(if (builtin == .d_equal) a == b else a < b));
+            try self.push(truth(switch (builtin) {
+                .d_equal => a == b, .d_less => a < b, .d_less_equal => a <= b,
+                .d_not_equal => a != b, .d_greater => a > b, .d_greater_equal => a >= b,
+                else => unreachable,
+            }));
         },
         .within => {
             const upper = try self.pop();

@@ -1,3 +1,17 @@
+## 現在地：P01a完了（未コミット）
+
+P01a 554の比較・最小最大16語を実装。追加語は0<=、D0<=、D0<>、D0>、D0>=、D<=、D<>、D>、D>=、DU<=、DU>、DU>=、U<=、U>=、UMAX、UMIN。既存組込タグをずらさず末尾へ追加し、整数演算モジュールと辞書・HELPに登録した。英日マニュアル・互換性一覧・フェーズ資料を更新。
+
+`src/tests/p01a_test.zig`で64/128ビットの符号境界・最小最大・低位セルと高位セルの順序・真=-1・解釈/コンパイル・スタック不足・イメージ復元/追加後の実行を確認。通常のzig build testと、float/graphics/audio/files/image/help/tools/debugをすべて無効にした構成が成功。ログは`.zig-cache/p01a-test.log`、`.zig-cache/p01a-minimal.log`。
+
+`python3 scripts/verify-p01a.py zig-out/bin/sigma --gforth-build .work/gforth-audit/gforth-build --report .work/p01a-check/results.json`で、P00の33ケースと境界/コンパイル済み1,144ケース（計1,177）がSigma・指定Gforthとも期待値に一致。比較元は既存P00の作業用Gforthコピーで、GPLコードの転用はしていない。Windows/Linux確認はここでは行っていない。
+
+tque 554を完了にした。親544 P01は未完了で、次は555 P01b（基本スタック6語）、その後556 P01c（2,と回転）。進捗はauto。今回のP01aについてコミット・push・版番号変更・パッケージ作成は依頼されておらず、行っていない。
+
+以下はS01以前の記録。現在の実装地点はこの節を優先する。
+
+---
+
 ## 現在地：S01コミット・Claude Codeレビュー対応済み
 
 S01初回コミット`fac0e8f`をorigin/mainへpushした後、Claude Code Sonnetへ読取専用レビューを依頼。P0/P1なし、P2 1件・P3 7件に対応し、再レビューと追加4点の最終確認はいずれも新たな具体的バグなし。修正内容・比較根拠・検証は[レビュー記録](S01_REVIEW.md)を参照。レビュー修正もmainへ追加する。最終コミットIDはgit logで確認する。
