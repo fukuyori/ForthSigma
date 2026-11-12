@@ -1,11 +1,13 @@
 # Tests FORTH/Sigma and builds it for each target, with and without the floating-point
-# words, when it is started by hand (Actions > Release > Run workflow). It makes no
-# release: the ZIP files are kept as artifacts of the run, and releases are made by
-# hand. A tag does not start it. The Windows builds are unsigned; the signed ZIPs of the
-# same names and contents come from scripts/build-zip.ps1 -Sign.
+# words. A vVERSION tag also publishes the Linux x86_64 ZIPs to a GitHub Release. The
+# other ZIPs remain run artifacts; the Windows builds are unsigned, and signed Windows
+# ZIPs come from scripts/build-zip.ps1 -Sign.
 name: Release
 
 on:
+  push:
+    tags:
+      - 'v*'
   workflow_dispatch:
 
 permissions:
@@ -88,3 +90,38 @@ jobs:
           name: sigma-${{ matrix.platform.name }}${{ matrix.variant.suffix }}
           path: sigma-*.zip
           if-no-files-found: error
+
+  release-linux-x86_64:
+    name: Publish Linux x86_64 release
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/download-artifact@v7
+        with:
+          pattern: sigma-linux-x86_64*
+          path: release-assets
+          merge-multiple: true
+      - name: Verify version and publish Linux x86_64 ZIPs
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+          version="$(tr -d '\r\n' < VERSION)"
+          if [[ "$RELEASE_TAG" != "v$version" ]]; then
+            echo "The tag $RELEASE_TAG does not match VERSION ($version)." >&2
+            exit 1
+          fi
+          cd release-assets
+          assets=("sigma-$version-linux-x86_64.zip" "sigma-$version-linux-x86_64-nofloat.zip")
+          for asset in "${assets[@]}"; do
+            [[ -s "$asset" ]] || { echo "Missing release asset: $asset" >&2; exit 1; }
+            sha256sum "$asset" > "$asset.sha256"
+          done
+          gh release create "$RELEASE_TAG" "${assets[@]}" "${assets[0]}.sha256" "${assets[1]}.sha256" \
+            --repo "$GH_REPO" --verify-tag --title "FORTH/Sigma $RELEASE_TAG" --generate-notes
