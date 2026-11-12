@@ -1,6 +1,8 @@
 //! Root of the core test suite: each file under tests/ holds the tests of one subject.
 
 comptime {
+    _ = @import("core/blocks.zig");
+    _ = @import("tests/blocks_test.zig");
     _ = @import("tests/core_words_test.zig");
     // The floating-point tests need the floating-point words (not in -Dfloat=false).
     if (@import("build_options").float) _ = @import("tests/float_test.zig");

@@ -124,6 +124,10 @@ fn nextKey(self: *State) RuntimeError!u8 {
         self.pending_key = null;
         return byte;
     }
+    if (self.pending_event_count != 0) {
+        self.pending_event_count -= 1;
+        return self.pending_event_bytes[self.pending_event_count];
+    }
     const key_fn = self.writer.key_fn orelse return error.InputUnavailable;
     return key_fn(self.writer.context) orelse error.InputUnavailable;
 }
@@ -265,13 +269,10 @@ pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
             var buffer: [4]u8 = undefined;
             try self.holdBytes(encode(try self.pop(), &buffer));
         },
-        // EKEY gives the bytes of a character one by one, so only an ASCII byte is a
-        // whole character; other events above 0xFF (none from the terminal) are taken
-        // as code points.
         .ekey_to_xchar => {
             const event = try self.pop();
             try self.push(event);
-            try self.push(truth(event >= 0 and (event < 0x80 or (event > 0xFF and event <= 0x10FFFF))));
+            try self.push(truth(@import("standard_keys.zig").isCharacter(event)));
         },
         .x_fetch_plus_string => {
             const count = try self.pop();

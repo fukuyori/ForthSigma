@@ -213,7 +213,8 @@ test "data allocation stops at the start of the heap without moving the allocati
     const machine = try createMachine(&output);
     defer destroyMachine(machine);
 
-    try machine.interpretLine("966656 ALLOT HERE");
+    try machine.push(machine.sizes.dataLimit() - machine.data_here);
+    try machine.interpretLine("ALLOT HERE");
     const expected = [_]forth.Cell{machine.sizes.dataLimit()};
     try expectStack(machine, &expected);
     try std.testing.expectEqual(@as(forth.Cell, machine.sizes.dataLimit()), machine.data_here);

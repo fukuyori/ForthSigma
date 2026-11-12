@@ -247,6 +247,8 @@ pub const State = struct {
     source_line: []const u8 = &.{},
     /// Where the current input came from; only terminal input reads further lines.
     source_kind: SourceKind = .terminal,
+    block_depth: usize = 0,
+    block_source_numbers: [memory_map.max_include_depth]Cell = @splat(0),
     include_stack: [max_include_depth]IncludeFrame = undefined,
     include_depth: usize = 0,
     error_location: ?ErrorLocation = null,
@@ -256,6 +258,10 @@ pub const State = struct {
     /// A byte KEY read for XKEY that did not continue the character, kept here when the
     /// host has no unread_fn; KEY gives it next.
     pending_key: ?u8 = null,
+    pending_event_bytes: [32]u8 = undefined,
+    pending_event_count: usize = 0,
+    pending_standard_event: ?Cell = null,
+    block_storage: @import("core/blocks.zig").Storage = .{},
     call_depth: usize = 0,
     /// The callers of the colon definitions that compiled code is running, innermost last
     /// (see executeOperations).
@@ -424,9 +430,9 @@ pub const State = struct {
         self.storeSourceName(terminal_source_name_address, terminal_source_name);
         self.storeSourceName(evaluate_source_name_address, evaluate_source_name);
         // gforth starts with the search order Forth Forth Root and defines into Forth.
-        self.writeCell(wordlist_count_address, root_wordlist) catch unreachable;
+        self.writeCell(wordlist_count_address, memory_map.ekeys_wordlist) catch unreachable;
         self.writeCell(current_wordlist_address, forth_wordlist) catch unreachable;
-        self.setSearchOrder(&.{ forth_wordlist, forth_wordlist, root_wordlist });
+        self.setSearchOrder(&.{ forth_wordlist, forth_wordlist, memory_map.ekeys_wordlist, root_wordlist });
         self.installBuiltins();
     }
 
@@ -501,6 +507,8 @@ pub const State = struct {
         const previous_line = self.source_line;
         const previous_cursor = self.sourceCursor();
         const previous_kind = self.source_kind;
+        const previous_blk = self.readCellConst(memory_map.blk_address);
+        if (source_kind != .block) try self.writeCell(memory_map.blk_address, 0);
         const previous_serial = self.input_line_serial;
         self.source_line = input;
         self.setSourceCursor(0);
@@ -517,6 +525,7 @@ pub const State = struct {
             self.source_line = previous_line;
             self.setSourceCursor(previous_cursor);
             self.source_kind = previous_kind;
+            self.writeCell(memory_map.blk_address, previous_blk) catch unreachable;
             self.input_line_serial = previous_serial;
         }
         self.last_unknown_word = null;
@@ -527,6 +536,10 @@ pub const State = struct {
             // (a word of its own, a name that a defining word was waiting for, a
             // string).
             if (defs.debug_enabled and self.cell_watch_count != 0) words_debug.checkWatches(self, null);
+            if (self.source_kind == .block) {
+                self.source_line = try @import("core/blocks.zig").currentSource(self);
+                line = self.source_line;
+            }
             const token = nextToken(line, &cursor) orelse break;
             self.source_line = line;
             self.token_start = @intFromPtr(token.ptr) - @intFromPtr(line.ptr);
@@ -545,7 +558,12 @@ pub const State = struct {
                 cursor = close + 1;
                 continue;
             }
-            if (std.mem.eql(u8, token, "\\")) break;
+            if (std.mem.eql(u8, token, "\\")) {
+                if (self.source_kind != .block) break;
+                cursor = @min(line.len, (self.token_start / 64 + 1) * 64);
+                self.setSourceCursor(cursor);
+                continue;
+            }
             if (std.mem.eql(u8, token, "\"")) {
                 try self.handleStringToken(token, line, &cursor, false);
                 self.setSourceCursor(cursor);
@@ -572,7 +590,7 @@ pub const State = struct {
         }
         // An EVALUATE string cannot read past its end, so a parsing word such as
         // VARIABLE or : left waiting for its name must not take the caller's next word.
-        if (source_kind == .evaluate and pending_before == .none and self.pending != .none) {
+        if ((source_kind == .evaluate or source_kind == .block) and pending_before == .none and self.pending != .none) {
             self.pending = .none;
             return error.InvalidDefinition;
         }
@@ -602,7 +620,7 @@ pub const State = struct {
             .{ "OCT", .oct },                .{ "BASE", .base },              .{ "HERE", .here },             .{ "ALLOT", .allot },              .{ "I", .index },
             .{ "J", .index_2 },              .{ "K", .index_3 },              .{ "LEAVE", .leave },           .{ "UNLOOP", .unloop },            .{ "WORDS", .words },
             .{ "BYE", .bye },                .{ "INPUT", .input },            .{ "<BUILDS", .builds },        .{ "CREATE", .builds },            .{ "IMMEDIATE", .immediate },
-            .{ "LOAD", .load },              .{ "SAVE", .save },              .{ "SAVESYS", .savesys },       .{ "IF", .compile_if },            .{ "ELSE", .compile_else },
+            .{ "LOAD-DICTIONARY", .load },              .{ "SAVE", .save },              .{ "SAVESYS", .savesys },       .{ "IF", .compile_if },            .{ "ELSE", .compile_else },
             .{ "THEN", .compile_then },      .{ "BEGIN", .compile_begin },    .{ "END", .compile_end },       .{ "UNTIL", .compile_end },        .{ "AGAIN", .compile_again },
             .{ "WHILE", .compile_while },    .{ "REPEAT", .compile_repeat },  .{ "DO", .compile_do },         .{ "?DO", .compile_q_do },         .{ "LOOP", .compile_loop },
             .{ "+LOOP", .compile_plus_loop }, .{ "DOES>", .compile_does },    .{ "CASE", .compile_case },     .{ "OF", .compile_of },            .{ "ENDOF", .compile_endof },
@@ -620,6 +638,9 @@ pub const State = struct {
             .{ "D>S", .d_to_s },             .{ "D+", .d_add },               .{ "D-", .d_sub },              .{ "DNEGATE", .d_negate },         .{ "DABS", .d_abs },
             .{ "D0=", .d_zero_equal },       .{ "D0<", .d_zero_less },        .{ "D=", .d_equal },            .{ "D<", .d_less },                .{ "D.", .d_dot },
             .{ "2@", .two_fetch },           .{ "2!", .two_store },           .{ "D>F", .d_to_f },            .{ "F>D", .f_to_d },               .{ "COUNT", .count },
+            .{ "BLK", .blk }, .{ "SCR", .scr }, .{ "LOAD", .load_block }, .{ "THRU", .thru }, .{ "LIST", .list_block },
+            .{ "BLOCK", .block }, .{ "BUFFER", .block_buffer }, .{ "UPDATE", .block_update },
+            .{ "SAVE-BUFFERS", .save_buffers }, .{ "EMPTY-BUFFERS", .empty_buffers }, .{ "FLUSH", .flush_buffers },
             .{ "PAD", .pad },                .{ "ACCEPT", .accept },          .{ "EVALUATE", .evaluate },     .{ "KEY", .key },                  .{ "KEY?", .key_question },
             .{ "<#", .hold_start },          .{ "<<#", .hold_nest },          .{ "#", .hold_digit },          .{ "#S", .hold_digits },           .{ "#>", .hold_finish },
             .{ "#>>", .hold_release },       .{ "HOLD", .hold },              .{ "HOLDS", .holds },           .{ "SIGN", .sign },                .{ ">NUMBER", .to_number },
@@ -681,7 +702,7 @@ pub const State = struct {
             .{ ">IN", .to_in },                    .{ "SOURCE", .source },               .{ "SOURCE-ID", .source_id },         .{ "REFILL", .refill },
             .{ "AHEAD", .compile_ahead },          .{ "N>R", .n_to_r },                  .{ "NR>", .n_r_from },                .{ "AT-XY", .at_xy },                 .{ "TIME&DATE", .time_and_date },
             .{ "SYNONYM", .synonym },              .{ "TRAVERSE-WORDLIST", .traverse_wordlist }, .{ "NAME>INTERPRET", .name_to_int }, .{ "CS-PICK", .cs_pick },     .{ "CS-ROLL", .cs_roll },
-            .{ "EKEY", .key },                     .{ "EKEY?", .key_question },          .{ "EKEY>CHAR", .ekey_to_char },      .{ "ENVIRONMENT?", .environment_query }, .{ "QUIT", .quit },
+            .{ "EKEY", .ekey },                     .{ "EKEY?", .ekey_question },          .{ "EKEY>CHAR", .ekey_to_char }, .{ "EKEY>FKEY", .ekey_to_fkey },      .{ "ENVIRONMENT?", .environment_query }, .{ "QUIT", .quit },
             .{ "BIN", .bin },                      .{ "FILE-POSITION", .file_position }, .{ "RESIZE-FILE", .resize_file },     .{ "FLUSH-FILE", .flush_file },       .{ "DELETE-FILE", .delete_file },
             .{ "RENAME-FILE", .rename_file },      .{ "FILE-STATUS", .file_status },     .{ "INCLUDE-FILE", .include_file },
             .{ "SAVE-INPUT", .save_input },        .{ "RESTORE-INPUT", .restore_input },
@@ -726,6 +747,12 @@ pub const State = struct {
                 if (std.mem.eql(u8, definition[0], name)) break definition[1];
             } else unreachable;
             self.addBuiltin(name, builtin) catch unreachable;
+        }
+        self.writeCell(current_wordlist_address, forth_wordlist) catch unreachable;
+        _ = self.appendWord("EKEYS", .vocabulary, .noop, memory_map.ekeys_wordlist) catch unreachable;
+        self.writeCell(current_wordlist_address, memory_map.ekeys_wordlist) catch unreachable;
+        for (@import("core/standard_keys.zig").constants) |entry| {
+            _ = self.appendWord(entry[0], .constant, .noop, entry[1]) catch unreachable;
         }
         self.writeCell(current_wordlist_address, forth_wordlist) catch unreachable;
         self.builtin_count = self.word_count;
@@ -1807,7 +1834,7 @@ pub const State = struct {
         if (defs.debug_enabled and self.cover_blocks and self.compiling and startsBlock(builtin)) self.markBlock(self.columnAfterWord());
     }
 
-    const word_modules = .{ words_stack, words_arithmetic, words_memory, words_output, words_input, words_compiling, words_float, words_pictured, words_dictionary, words_system, words_files, words_strings, words_help, words_defining, words_graphics, words_audio, words_xchar, words_tools, words_debug };
+    const word_modules = .{ words_stack, words_arithmetic, words_memory, words_output, words_input, words_compiling, words_float, words_pictured, words_dictionary, words_system, @import("core/blocks.zig"), words_files, words_strings, words_help, words_defining, words_graphics, words_audio, words_xchar, words_tools, words_debug };
 
     /// For each built-in word, the index in `word_modules` of the file that executes it.
     const word_owner = blk: {

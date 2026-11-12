@@ -23,7 +23,7 @@ const word_buffer_address = memory_map.word_buffer_address;
 
 /// The built-in words this file executes; executeBuiltin dispatches by this list.
 pub const words = [_]Builtin{
-    .input, .accept, .evaluate, .key, .key_question, .word_parse, .parse, .parse_name, .to_in, .source, .source_id, .refill, .save_input, .restore_input,
+    .input, .accept, .evaluate, .key, .ekey, .ekey_question, .key_question, .word_parse, .parse, .parse_name, .to_in, .source, .source_id, .refill, .save_input, .restore_input,
 };
 
 pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
@@ -53,9 +53,11 @@ pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
             try self.push(@intCast(length));
         },
         .evaluate => try self.interpretSource(try self.memoryRange(), .evaluate),
+        .ekey_question => try self.push(truth(@import("event_input.zig").ready(self))),
+        .ekey => try self.push(try @import("event_input.zig").read(self)),
         .key => try self.push(try words_xchar.key(self)),
         .key_question => {
-            const ready = self.pending_key != null or if (self.writer.key_ready_fn) |ready_fn| ready_fn(self.writer.context) else false;
+            const ready = self.pending_key != null or self.pending_event_count != 0 or if (self.writer.key_ready_fn) |ready_fn| ready_fn(self.writer.context) else false;
             try self.push(truth(ready));
         },
         .word_parse => {
@@ -87,6 +89,7 @@ pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
         .to_in => try self.push(in_address),
         // SOURCE: the current line (or EVALUATE string) in logical memory.
         .source => {
+            if (self.source_kind == .block) self.source_line = try @import("blocks.zig").currentSource(self);
             if (!self.sourceInMemory()) {
                 try self.push(0);
                 try self.push(0);
@@ -99,6 +102,7 @@ pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
         .source_id => try self.push(switch (self.source_kind) {
             .terminal => 0,
             .evaluate => -1,
+            .block => 2,
             .file => self.include_stack[self.include_depth - 1].fileid,
         }),
         // REFILL: the next line of the terminal or the file becomes the input, read from
@@ -106,6 +110,7 @@ pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
         .refill => {
             const line: ?[]const u8 = switch (self.source_kind) {
                 .evaluate => null,
+                .block => try @import("blocks.zig").refill(self),
                 .file => try self.readIncludeLine(),
                 .terminal => blk: {
                     const read_fn = self.writer.read_fn orelse break :blk null;
@@ -123,6 +128,12 @@ pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
         // SAVE-INPUT ( -- source-id >in line-mark line-number 4 ): the line is marked by its
         // address for the terminal and EVALUATE, and by where it starts for a file.
         .save_input => {
+            if (self.source_kind == .block) {
+                if (self.data_stack.len - self.data_depth < 3) return error.StackOverflow;
+                try self.push(self.readCellConst(memory_map.blk_address));
+                try self.push(@intCast(self.sourceCursor()));
+                return self.push(2);
+            }
             const place = self.saveInputPlace();
             if (self.data_stack.len - self.data_depth < 5) return error.StackOverflow;
             for ([_]Cell{ place.id, place.cursor, place.mark, place.number, 4 }) |item| try self.push(item);
@@ -130,6 +141,14 @@ pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
         // RESTORE-INPUT ( x1..x4 4 -- flag ): false when the input went back.
         .restore_input => {
             const count = try self.pop();
+            if (count == 2 and self.source_kind == .block) {
+                const cursor = try self.pop();
+                const block = try self.pop();
+                if (cursor < 0 or cursor > 1024 or block < 1 or block >= @import("blocks.zig").block_limit) return self.push(true_flag);
+                self.source_line = try @import("blocks.zig").selectSource(self, block);
+                self.setSourceCursor(@intCast(cursor));
+                return self.push(0);
+            }
             if (count != 4) {
                 if (count > 0 and count <= self.data_depth) self.data_depth -= @intCast(count);
                 return self.push(true_flag);

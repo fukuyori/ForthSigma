@@ -15,7 +15,7 @@ zig build
 .\zig-out\bin\sigma.exe
 ```
 
-Building with `zig build -Dfloat=false` gives a smaller version without floating-point numbers (see the chapter [Floating-point numbers](#floating-point-numbers)). In the same way, `-Dfiles=false` leaves out the words that open, read, write, or include files (such as `INCLUDE`, `REQUIRE`, `OPEN-FILE`, `STDIN`, `SLURP-FILE`, and the `$...SLURP` words), `-Dhelp=false` leaves out `HELP` and `LICENSE`, `-Dtools=false` leaves out `SEE`, `LOCATE`, and `WHERE`, `-Dimage=false` leaves out `SAVE`, `LOAD`, and `SAVESYS`, `-Dgraphics=false` leaves out `REQUIRE-GRAPHICS` and the graphics words (see [Graphics](#graphics)), and `-Ddebug=false` leaves out the debugging features (see [Errors in compiled code](#errors-in-compiled-code)). The words left out are not in the dictionary (their names give the error `name ?`). The groups are independent: without the file words, `SAVE`, `LOAD`, and `SAVESYS` still write and read image files, and `LOCATE` still reads the source file. Every build gives each built-in word the same execution token, so an image saved by one build loads into a build with other groups; running a word that build left out gives the error `INVALID EXECUTION TOKEN`, and `SEE` shows it by its name. An image saved by an earlier build that left a group out (such as `-Dfloat=false`) gives `INVALID IMAGE`, since its built-in words had other execution tokens.
+Building with `zig build -Dfloat=false` gives a smaller version without floating-point numbers (see the chapter [Floating-point numbers](#floating-point-numbers)). In the same way, `-Dfiles=false` leaves out the words that open, read, write, or include files (such as `INCLUDE`, `REQUIRE`, `OPEN-FILE`, `STDIN`, `SLURP-FILE`, and the `$...SLURP` words), `-Dhelp=false` leaves out `HELP` and `LICENSE`, `-Dtools=false` leaves out `SEE`, `LOCATE`, and `WHERE`, `-Dimage=false` leaves out `SAVE`, `LOAD-DICTIONARY`, and `SAVESYS`, `-Dgraphics=false` leaves out `REQUIRE-GRAPHICS` and the graphics words (see [Graphics](#graphics)), and `-Ddebug=false` leaves out the debugging features (see [Errors in compiled code](#errors-in-compiled-code)). The words left out are not in the dictionary (their names give the error `name ?`). The groups are independent: without the file words, `SAVE`, `LOAD-DICTIONARY`, and `SAVESYS` still write and read image files, and `LOCATE` still reads the source file. Every build gives each built-in word the same execution token, so an image saved by one build loads into a build with other groups; running a word that build left out gives the error `INVALID EXECUTION TOKEN`, and `SEE` shows it by its name. An image saved by an earlier build that left a group out (such as `-Dfloat=false`) gives `INVALID IMAGE`, since its built-in words had other execution tokens.
 
 Before the interactive prompt, it prints the following two lines (only the first in a build with `-Dhelp=false`). The version number is the value of the `VERSION` file at the root.
 
@@ -64,7 +64,7 @@ Options at the start of the command line choose the sizes of the memory and the 
 
 | Option | What it sizes | Default |
 |---|---|---|
-| `-m SIZE`, `--dictionary-size=SIZE` | The dictionary: the system area (16 KiB), the input area (64 KiB), and the data area that `HERE` uses. The `ALLOCATE` heap has the same size. At least 1 MiB. | 32 MiB |
+| `-m SIZE`, `--dictionary-size=SIZE` | The dictionary: the system area (16 KiB), the input area (64 KiB), runtime block storage (40 KiB), and the data area that `HERE` uses. The `ALLOCATE` heap has the same size. At least 1 MiB. | 32 MiB |
 | `-d SIZE`, `--data-stack-size=SIZE` | The data stack | 4096 cells |
 | `-r SIZE`, `--return-stack-size=SIZE` | The return stack | 4096 cells |
 | `-f SIZE`, `--fp-stack-size=SIZE` | The floating-point stack | 4096 numbers |
@@ -577,7 +577,7 @@ S" Forth" TUCK BUF SWAP MOVE BUF SWAP TYPE
 | `KEY` | ( -- c ) | Read one byte (a character other than ASCII comes as its UTF-8 bytes; `XKEY` reads it whole). |
 | `KEY?` | ( -- flag ) | Return whether a character can be read. On an interactive terminal it waits for input. |
 | `EMIT?` | ( -- flag ) | Whether `EMIT` can go on without waiting. It is always true. |
-| `EKEY`, `EKEY?`, `EKEY>CHAR` | ( -- u ), ( -- flag ), ( u -- u false \| c true ) | `EKEY` and `EKEY?` are the same as `KEY` and `KEY?` (function keys and the like are not interpreted). `EKEY>CHAR` returns true with the character for 0 to 255. |
+| `EKEY`, `EKEY?`, `EKEY>CHAR`, `EKEY>FKEY` | ( -- u ), ( -- flag ), ( u -- u false \| c true ), ( u -- u false \| fkey true ) | EKEY returns a UTF-8 code point or a standard special key. EKEY? polls without waiting. EKEY>CHAR recognizes 0..255; EKEY>FKEY recognizes special keys, retaining modifier masks. KEY remains byte input. |
 | `>NUMBER` | ( ud addr u -- ud2 addr2 u2 ) | Convert digits, returning the part that could not be converted. |
 | `S>NUMBER?` | ( addr u -- d flag ) | Convert a string to an integer (double cell) and return whether it succeeded. |
 | `>FLOAT` | ( addr u -- flag ) ( f: -- r ) | Convert a string to a floating-point number. The `E` may be omitted. The number is pushed on the floating-point stack only on success. |
@@ -607,7 +607,9 @@ S" 日本語" +X/STRING TYPE        \ 本語
 | `-TRAILING-GARBAGE` | ( addr u -- addr u2 ) | Remove an incomplete character from the end of the string. |
 | `X@+/STRING` | ( addr u -- addr2 u2 xc ) | Take the first character of the string. |
 | `XHOLD` | ( xc -- ) | Add xc to the start of the pictured numeric output. |
-| `EKEY>XCHAR` | ( u -- u false \| xc true ) | Whether a keyboard event is a whole character. `EKEY` gives the bytes of a character one by one, so only an ASCII byte is one. |
+| `EKEY>XCHAR` | ( u -- u false \| xc true ) | True for a Unicode scalar character event, false for special keys. |
+
+Standard keyboard constants live in `EKEYS`, searched after FORTH and before ROOT at startup. Use `ONLY FORTH ALSO EKEYS` to restore them after ONLY. `ALSO GRAPHICS` selects the existing GRAPHICS key values. Standard modifier masks: Shift `0x10000000`, Alt `0x20000000`, Ctrl `0x40000000`. A lone Esc waits up to 50 ms for a recognized sequence; unknown or incomplete sequences preserve their remaining bytes.
 
 Well-formed UTF-8 gives the same values as in gforth, and so do overlong forms and surrogates. Anything else follows one rule: a byte that cannot start a character, a character cut short (by a byte that does not continue it or by the end of the string), or a value above U+10FFFF is U+FFFD, and only the start byte and the bytes that continue it are taken (one byte for a byte that cannot start a character). A code point above U+10FFFF is written as U+FFFD (3 bytes). The widths come from the Unicode Character Database 15.1.0 and are the same as gforth's on Linux (glibc 2.39) for every code point.
 
@@ -821,7 +823,7 @@ A string variable is made with `VARIABLE`. Its contents are placed on the heap a
 | `$SLURP`, `$+SLURP` | ( fileid $var -- ) | Read an open file from the current position to the end, replacing the dynamic string (`$+SLURP` appends to it). The file is not closed. |
 | `$SLURP-LINE` | ( fileid $var -- flag ) | Read the next line (without its line break) into a dynamic string. At the end of the file, flag is 0 and the string is empty. |
 
-The heap is as large as the `-m` size, 32 MiB by default (see [Memory and stack sizes](#memory-and-stack-sizes)). An executable made with `SAVESYS` also keeps the contents of the heap, but `LOAD` does not carry them over.
+The heap is as large as the `-m` size, 32 MiB by default (see [Memory and stack sizes](#memory-and-stack-sizes)). An executable made with `SAVESYS` also keeps the contents of the heap, but `LOAD-DICTIONARY` does not carry them over.
 
 ## Dictionary search and input parsing
 
@@ -930,16 +932,36 @@ File names are relative paths from the current directory. `REQUIRE` compares nam
 
 The graphics words (`REQUIRE-GRAPHICS`: an image in memory, more images to copy between, image files, text, Tcl/Tk, keys, the mouse, and animation; `REQUIRE-GUI`: buttons, fields, lists, menus, and dialogs; `REQUIRE-GAME`: sprites, tile maps, palettes, and effects on rows) and the sound words (`REQUIRE-AUDIO`: MSX BASIC's `PLAY`, `SOUND`, and `BEEP`, sound chips, recorded sound, and modules) are extensions of this port. They are described in the [graphics and sound manual](GRAPHICS_AND_SOUND.md).
 
+## Standard block storage
+
+`LOAD` executes a numbered block; dictionary images use `LOAD-DICTIONARY filename`.
+
+| Words | Stack effect | Behavior |
+|---|---|---|
+| `BLOCK`, `BUFFER` | `( u -- addr )` | Read 1024 bytes into one of 32 buffers; BUFFER also reads existing contents. |
+| `UPDATE` | `( -- )` | Mark the most recently selected buffer modified. |
+| `SAVE-BUFFERS`, `FLUSH`, `EMPTY-BUFFERS` | `( -- )` | Save changes; save and unassign; discard without saving. |
+| `BLK`, `SCR` | `( -- addr )` | Current input block (zero otherwise); last block shown by LIST. |
+| `LOAD`, `THRU`, `LIST` | `( u -- )`, `( first last -- )`, `( u -- )` | Execute one block; execute an inclusive range; display 16 numbered lines of 64 characters. |
+
+The default file is `blocks.fb` in the working directory, opened or created on first access. Missing bytes at EOF are filled with spaces. BLOCK/BUFFER accept 0 through 0x1fffff; LOAD/THRU require 1 through 0x1fffff. Invalid numbers throw -35. A reversed THRU range executes no blocks. Buffers share a slot when their numbers have the same remainder modulo 32; replacing a modified buffer saves it first. Call UPDATE after editing. File errors propagate as ior throws, retaining dirty buffers when saving fails.
+
+During LOAD, SOURCE-ID is 2 and SOURCE contains 1024 bytes. Backslash comments end at the next 64-character boundary. REFILL selects the next block. SAVE-INPUT returns `( blk cursor 2 )`; RESTORE-INPUT accepts that form during block input. Nested LOAD and THROW restore the caller's input and BLK. EVALUATE temporarily sets BLK to zero.
+
+BYE and normal EOF termination save changes, including executables made with SAVESYS. Writeback failures are reported; a batch process exits with status 1. Unsaved changes are not guaranteed after abnormal termination. Runtime block buffers and source snapshots are excluded from dictionary images; dictionary restore within a process preserves that process's unsaved buffers. The reserved runtime area is 40 KiB before dictionary data. USE and other Gforth-specific block extensions remain unimplemented.
+
 ## Saving the dictionary and stand-alone executables
 
-`SAVE` and `LOAD` of this port handle a dictionary image of the user-defined words. They differ from the edit-buffer operations of the book.
+`SAVE` and `LOAD-DICTIONARY` of this port handle a dictionary image of the user-defined words. They differ from the edit-buffer operations of the book.
 
 ```forth
 SAVE words.sigma
-LOAD words.sigma
+LOAD-DICTIONARY words.sigma
 ```
 
-`LOAD` adds the saved user-defined words to the end of the current dictionary. For words with the same name, the newly loaded definitions take precedence. Dictionary images in the earlier formats (`SIGIMG41` and earlier) and damaged dictionary images cannot be loaded (`INVALID IMAGE !`): the input area moved in front of the dictionary, which changed the layout of the memory. This version saves `SIGIMG42`. A dictionary that has loaded the graphics words with `REQUIRE-GRAPHICS` is saved as `SIGIMG43`; this stays so even after the graphics words are removed with `FORGET` or a `MARKER`. A dictionary that has loaded the audio words with `REQUIRE-AUDIO` is saved as `SIGIMG44`, with or without the graphics words. Versions up to 0.8.0 cannot load any of them. An image records the `-m` and `-l` sizes it was saved with; `LOAD` also reads an image saved by a Sigma with other sizes. A dictionary image has a checksum, so accidental damage is found before loading. Load only files made by `SAVE` or `SAVESYS` of Sigma. Execution tokens stored in constants or variables (such as the result of `:NONAME`), and execution tokens or addresses compiled into a definition with `LITERAL` (such as `[ ' X ] LITERAL`), may point to another word or place after `LOAD` into a dictionary that already has user-defined words. Execution tokens compiled with `['] X` are relocated correctly. This problem does not occur in an executable made with `SAVESYS`.
+`LOAD-DICTIONARY` adds the saved user-defined words to the end of the current dictionary. For words with the same name, the newly loaded definitions take precedence. Dictionary images in the earlier formats (`SIGIMG41` and earlier) and damaged dictionary images cannot be loaded (`INVALID IMAGE !`): the input area moved in front of the dictionary, which changed the layout of the memory. This version saves `SIGIMG42`. A dictionary that has loaded the graphics words with `REQUIRE-GRAPHICS` is saved as `SIGIMG43`; this stays so even after the graphics words are removed with `FORGET` or a `MARKER`. A dictionary that has loaded the audio words with `REQUIRE-AUDIO` is saved as `SIGIMG44`, with or without the graphics words. Versions up to 0.8.0 cannot load any of them. An image records the `-m` and `-l` sizes it was saved with; `LOAD-DICTIONARY` also reads an image saved by a Sigma with other sizes. A dictionary image has a checksum, so accidental damage is found before loading. Load only files made by `SAVE` or `SAVESYS` of Sigma. Execution tokens stored in constants or variables (such as the result of `:NONAME`), and execution tokens or addresses compiled into a definition with `LITERAL` (such as `[ ' X ] LITERAL`), may point to another word or place after `LOAD-DICTIONARY` into a dictionary that already has user-defined words. Execution tokens compiled with `['] X` are relocated correctly. This problem does not occur in an executable made with `SAVESYS`.
+
+Images created before the S01 builtin and memory-layout changes are rejected; recreate them with this build. The planned address-relocation format is a separate later phase.
 
 `SAVESYS` makes a stand-alone executable for the running environment that contains the current dictionary, the compiled definitions, and the data.
 
@@ -963,7 +985,7 @@ The following table lists the built-in words that are registered in the dictiona
 | Loops | `I`, `J`, `K`, `LEAVE`, `UNLOOP` |
 | Input and output | `.`, `U.`, `.R`, `U.R`, `C.`, `.S`, `ECHO`, `EMIT`, `CR`, `SPACE`, `SPCES`, `SPACES`, `TYPE`, `INPUT`, `EMIT?` |
 | Number base | `HEX`, `DEC`, `DECIMAL`, `OCT`, `BASE` |
-| Definition helpers, dictionary, and execution | `<BUILDS`, `CREATE`, `IMMEDIATE`, `WORDS`, `BYE`, `LOAD`, `SAVE`, `SAVESYS`, `EXECUTE`, `SEE`, `FIND`, `FIND-NAME`, `NAME>INT`, `NAME>STRING`, `MARKER`, `LOCATE`, `WHERE`, `PERFORM`, `NOOP`, `DEFER`, `DEFER!`, `DEFER@`, `DEFERS`, `COMPILE,`, `[COMPILE]`, `NAME>COMPILE`, `BEGIN-STRUCTURE`, `END-STRUCTURE`, `+FIELD`, `FIELD:`, `CFIELD:`, `FFIELD:`, `SFFIELD:`, `DFFIELD:`, `STRUCT`, `FIELD`, `END-STRUCT`, `CELL%`, `CHAR%`, `FLOAT%`, `DOUBLE%`, `SFLOAT%`, `DFLOAT%`, `%SIZE`, `%ALIGNMENT`, `%ALIGN`, `%ALLOT`, `%ALLOC`, `%ALLOCATE`, `LATEST`, `LATESTXT`, `>NAME`, `ID.`, `.NAME`, `ALIAS` |
+| Definition helpers, dictionary, and execution | `<BUILDS`, `CREATE`, `IMMEDIATE`, `WORDS`, `BYE`, `LOAD-DICTIONARY`, `SAVE`, `SAVESYS`, `EXECUTE`, `SEE`, `FIND`, `FIND-NAME`, `NAME>INT`, `NAME>STRING`, `MARKER`, `LOCATE`, `WHERE`, `PERFORM`, `NOOP`, `DEFER`, `DEFER!`, `DEFER@`, `DEFERS`, `COMPILE,`, `[COMPILE]`, `NAME>COMPILE`, `BEGIN-STRUCTURE`, `END-STRUCTURE`, `+FIELD`, `FIELD:`, `CFIELD:`, `FFIELD:`, `SFFIELD:`, `DFFIELD:`, `STRUCT`, `FIELD`, `END-STRUCT`, `CELL%`, `CHAR%`, `FLOAT%`, `DOUBLE%`, `SFLOAT%`, `DFLOAT%`, `%SIZE`, `%ALIGNMENT`, `%ALIGN`, `%ALLOT`, `%ALLOC`, `%ALLOCATE`, `LATEST`, `LATESTXT`, `>NAME`, `ID.`, `.NAME`, `ALIAS` |
 | Control structures (immediate words) | `IF`, `ELSE`, `AHEAD`, `THEN`, `CS-PICK`, `CS-ROLL`, `ENDIF`, `BEGIN`, `END`, `UNTIL`, `AGAIN`, `WHILE`, `REPEAT`, `DO`, `?DO`, `LOOP`, `+LOOP`, `DOES>`, `CASE`, `OF`, `?OF`, `ENDOF`, `CONTOF`, `ENDCASE`, `NEXT-CASE`, `EXIT`, `?EXIT`, `?LEAVE`, `RECURSE` |
 | Floating-point stack | `FDROP`, `FDUP`, `FSWAP`, `FOVER`, `FROT`, `F-ROT`, `FNIP`, `FTUCK`, `FPICK`, `FDEPTH`, `F.S` |
 | Floating-point arithmetic and functions | `F+`, `F-`, `F*`, `F/`, `FNEGATE`, `FMINUS`, `FABS`, `FMAX`, `FMIN`, `FSQRT`, `FEXP`, `FLN`, `FSIN`, `FCOS`, `FTAN`, `FSINCOS`, `FASIN`, `FACOS`, `FATAN`, `FATAN2`, `FSINH`, `FCOSH`, `FTANH`, `FASINH`, `FACOSH`, `FATANH`, `FEXPM1`, `FLNP1`, `FLOG`, `FALOG`, `F**`, `FLOOR`, `FTRUNC`, `FROUND` |
@@ -1011,6 +1033,6 @@ The following are syntax forms that can be used in Forth input, but they are not
 
 ## Features not implemented
 
-`EDIT`, `LIST`, the edit-buffer versions of `LOAD`/`SAVE`, CP/M file operations, the monitor functions of the PC-8001, and `MCODE` or running Z80 machine code are not supported at present. Sigma is not a Z80 emulator.
+`EDIT`, the book-specific edit-buffer operations, CP/M file operations, PC-8001 monitor functions, and Z80 machine-code execution remain unsupported. Standard block LOAD and LIST are available.
 
-Of the gforth words, `TRY` … `ENDTRY`, `]]` … `[[`, the block words such as `BLOCK`, and the like are not implemented. Words related to the start-up of gforth, such as `CODE` and `SAVESYSTEM`, are out of scope. For details, see the [compatibility list](COMPATIBILITY.md).
+Gforth extensions such as `TRY` … `ENDTRY` and `]]` … `[[` remain unimplemented. See the [compatibility list](COMPATIBILITY.md).

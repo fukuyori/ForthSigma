@@ -25,7 +25,7 @@ pub const tools_enabled = build_options.tools;
 /// an error (and the lines of the code, which it shows), the step limit (--max-steps),
 /// the trace (--trace), and the words of words_debug.zig.
 pub const debug_enabled = build_options.debug;
-/// False with -Dimage=false, which leaves out SAVE, LOAD, and SAVESYS.
+/// False with -Dimage=false, which leaves out SAVE, LOAD-DICTIONARY, and SAVESYS.
 pub const image_enabled = build_options.image;
 /// False with -Dgraphics=false, which leaves out REQUIRE-GRAPHICS and the GFX- words.
 pub const graphics_enabled = build_options.graphics;
@@ -55,7 +55,7 @@ fn builtinSet(comptime lists: []const []const Builtin) [builtin_count]bool {
 }
 
 const float_builtins = builtinSet(&.{ &@import("words_float.zig").words, &.{ .field_float, .field_sfloat, .field_dfloat, .float_percent, .sfloat_percent, .dfloat_percent, .define_fvariable, .define_fconstant, .define_fvalue, .fliteral } });
-const file_builtins = builtinSet(&.{ &@import("words_files.zig").words, &.{ .string_slurp, .string_plus_slurp, .string_slurp_file, .string_plus_slurp_file, .string_slurp_line, .string_array_slurp, .string_array_slurp_file } });
+const file_builtins = builtinSet(&.{ &@import("words_files.zig").words, &@import("blocks.zig").words, &.{ .string_slurp, .string_plus_slurp, .string_slurp_file, .string_plus_slurp_file, .string_slurp_line, .string_array_slurp, .string_array_slurp_file } });
 const help_builtins = builtinSet(&.{&.{ .help, .license }});
 const tool_builtins = builtinSet(&.{&.{ .see, .locate, .where }});
 const image_builtins = builtinSet(&.{&.{ .load, .save, .savesys }});
@@ -177,6 +177,9 @@ pub const Builtin = enum {
     cs_pick,
     cs_roll,
     ekey_to_char,
+    ekey_to_fkey,
+    ekey_question,
+    ekey,
     environment_query,
     quit,
     dot,
@@ -719,11 +722,12 @@ pub const Builtin = enum {
     define_watched_variable,
     watch_cell,
     unwatch_cell,
+    block, block_buffer, block_update, save_buffers, empty_buffers, flush_buffers, blk, scr, load_block, thru, list_block,
 };
 
 pub const HeapResult = union(enum) { address: Cell, no_memory, bad_pointer };
 
-pub const SourceKind = enum { terminal, evaluate, file };
+pub const SourceKind = enum { terminal, evaluate, file, block };
 
 /// `line_start` is the file position where the current line began, for RESTORE-INPUT.
 /// A place in the input, as SAVE-INPUT gives it: the source id, >IN, the line's mark
@@ -749,7 +753,7 @@ pub const ErrorLocation = struct { file_index: u8, line: u32 };
 /// because its message needs the word that was not found.
 pub const error_codes = [_]struct { RuntimeError, Cell }{
     .{ error.StackOverflow, -3 },           .{ error.StackUnderflow, -4 },          .{ error.ReturnStackOverflow, -5 },
-    .{ error.ReturnStackUnderflow, -6 },    .{ error.DictionaryFull, -8 },          .{ error.InvalidAddress, -9 },
+    .{ error.ReturnStackUnderflow, -6 },    .{ error.DictionaryFull, -8 },          .{ error.InvalidAddress, -9 }, .{ error.InvalidBlockNumber, -35 },
     .{ error.DivisionByZero, -10 },         .{ error.ResultOutOfRange, -11 },       .{ error.CompileOnly, -14 },            .{ error.PicturedNumericOverflow, -17 },
     .{ error.StringTooLong, -18 },          .{ error.NameTooLong, -19 },            .{ error.HostUnavailable, -21 },
     .{ error.ControlMismatch, -22 },        .{ error.InvalidNumber, -24 },          .{ error.LoopMismatch, -26 },
@@ -894,6 +898,7 @@ pub const RuntimeError = error{
     InvalidBase,
     InvalidExecutionToken,
     InvalidAddress,
+    InvalidBlockNumber,
     PicturedNumericOverflow,
     MemoryExhausted,
     InputUnavailable,

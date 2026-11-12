@@ -41,7 +41,7 @@ test "XCHAR+, XCHAR-, +X/STRING, X\\STRING-, -TRAILING-GARBAGE, and X@+/STRING" 
 
 test "XHOLD, EKEY>XCHAR, X-WIDTH, and XC-WIDTH" {
     try expectOutput("<# 26085 XHOLD 65 HOLD 128512 XHOLD 0 0 #> TYPE", "😀A日");
-    try expectOutput("26085 EKEY>XCHAR . . 65 EKEY>XCHAR . . 230 EKEY>XCHAR . .", "-1 26085 -1 65 0 230 ");
+    try expectOutput("26085 EKEY>XCHAR . . 65 EKEY>XCHAR . . 230 EKEY>XCHAR . .", "-1 26085 -1 65 -1 230 ");
     try expectOutput("S\" a日😀é\" X-WIDTH . S\" ｱｲｳ\" X-WIDTH . S\\\" a\\x07b\" X-WIDTH .", "6 3 2 ");
     try expectOutput("65 XC-WIDTH . 26085 XC-WIDTH . 128512 XC-WIDTH . 769 XC-WIDTH . 0 XC-WIDTH . 7 XC-WIDTH . 127 XC-WIDTH . 888 XC-WIDTH . 12288 XC-WIDTH . $110000 XC-WIDTH . -1 XC-WIDTH .", "1 2 2 0 0 -1 -1 -1 2 -1 -1 ");
 }
@@ -89,4 +89,78 @@ test "without the host's unread_fn, the byte XKEY leaves still comes first to KE
     machine.writer.unread_fn = null;
     try machine.interpretLine("XKEY XKEY? KEY KEY");
     try expectStack(machine, &.{ 0xFFFD, -1, 'A', 'B' });
+}
+
+test "EKEY decodes UTF-8 and modified function keys without changing KEY bytes" {
+    var output = Output{ .keys = "é日😀\x1b[A\x1b[1;6D\x1b[24~x" };
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
+    try machine.interpretLine("EKEY EKEY EKEY EKEY K-UP = EKEY K-LEFT K-SHIFT-MASK OR K-CTRL-MASK OR = EKEY K-F12 = KEY");
+    try expectStack(machine, &.{ 233, 26085, 128512, -1, -1, -1, 'x' });
+}
+
+test "unknown and incomplete EKEY sequences preserve input for KEY" {
+    const cases = [_][]const u8{ "\x1b[", "\x1b[99~", "\x1bx" };
+    for (cases) |bytes| {
+        var output = Output{ .keys = bytes };
+        const machine = try createMachine(&output);
+        defer destroyMachine(machine);
+        try machine.interpretLine("EKEY");
+        try expectStack(machine, &.{27});
+        for (bytes[1..]) |byte| {
+            try machine.interpretLine("KEY");
+            try std.testing.expectEqual(@as(forth.Cell, byte), try machine.pop());
+        }
+    }
+}
+
+test "standard key vocabulary can be restored after ONLY and GRAPHICS wins when selected" {
+    try expectOutput("K-UP . K-ALT-MASK . ONLY FORTH ALSO EKEYS K-UP .", "2147483650 536870912 2147483650 ");
+    try support.skipWithout(&.{.graphics});
+    try expectOutput("REQUIRE-GRAPHICS K-UP . ALSO GRAPHICS K-UP . PREVIOUS K-UP .", "2147483650 256 2147483650 ");
+}
+
+
+test "EKEY? does not consume bytes needed by KEY" {
+    var output = Output{ .keys = "AB" };
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
+    try machine.interpretLine("EKEY? EKEY? KEY EKEY EKEY?");
+    try expectStack(machine, &.{ -1, -1, 'A', 'B', 0 });
+}
+
+test "EKEY escape continuation timeout is a total monotonic budget" {
+    const Timed = struct {
+        elapsed: i64 = 0,
+        index: usize = 0,
+        fn clock(context: ?*anyopaque) i64 {
+            const self: *@This() = @ptrCast(@alignCast(context.?));
+            return self.elapsed;
+        }
+        fn event(context: ?*anyopaque, timeout: i32) ?forth.Cell {
+            const self: *@This() = @ptrCast(@alignCast(context.?));
+            if (timeout >= 0 and timeout < 20) {
+                self.elapsed += timeout;
+                return null;
+            }
+            const input = "\x1b[1;6A";
+            if (self.index == input.len) return null;
+            self.elapsed += 20;
+            defer self.index += 1;
+            return input[self.index];
+        }
+    };
+    var output = Output{};
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
+    var timed = Timed{};
+    machine.writer.context = &timed;
+    machine.writer.event_key_fn = Timed.event;
+    machine.writer.monotonic_ms_fn = Timed.clock;
+    machine.writer.unread_fn = null;
+    const event = try @import("../core/event_input.zig").read(machine);
+    try std.testing.expectEqual(@as(forth.Cell, 27), event);
+    try std.testing.expectEqual(@as(i64, 70), timed.elapsed);
+    try std.testing.expectEqual(@as(u8, '['), try words_xchar.key(machine));
+    try std.testing.expectEqual(@as(u8, '1'), try words_xchar.key(machine));
 }

@@ -128,6 +128,7 @@ pub fn searchOrder(self: *State, buffer: *[max_search_order]Cell) []Cell {
 pub fn writeWordlistName(self: *State, wid: Cell) void {
     if (wid == forth_wordlist) return self.write("Forth");
     if (wid == root_wordlist) return self.write("Root");
+    if (wid == memory_map.ekeys_wordlist) return self.write("EKEYS");
     for ([_]WordKind{ .vocabulary, .constant }) |kind| {
         var i = self.word_count;
         while (i > self.builtin_count) {

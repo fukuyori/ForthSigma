@@ -1,4 +1,4 @@
-//! Saving the dictionary as an image, restoring it, and appending it with LOAD.
+//! Saving the dictionary as an image, restoring it, and appending it with LOAD-DICTIONARY.
 
 const std = @import("std");
 const inline_calls = @import("inline_calls.zig");
@@ -97,7 +97,7 @@ fn memoryRanges(sizes: memory_map.Sizes, data_here: Cell, heap_top: Cell) [4][2]
 }
 
 /// Whether the names of the saved words lie one after another from the start of the name
-/// area to `names_used`, as appendEntry places them; FORGET and LOAD rely on that order.
+/// area to `names_used`, as appendEntry places them; FORGET and LOAD-DICTIONARY rely on that order.
 /// A word without a name takes no bytes. The fields are read from the bytes, so nothing
 /// is changed before an image is accepted.
 fn namesAreConsecutive(word_bytes: []const u8, names_used: usize) bool {
@@ -264,12 +264,18 @@ fn restore(self: *State, image: []const u8, memory_is_fresh: bool) RuntimeError!
     cursor += code_bytes_len;
     @memcpy(self.names[own_names..][0..added_names], input[cursor + image_names .. cursor + names_used]);
     cursor += names_used;
-    if (!memory_is_fresh) @memset(self.memory, 0);
+    if (!memory_is_fresh) {
+        // Block storage is a runtime resource, like its open file; restoring a
+        // dictionary must preserve unsaved buffers belonging to this process.
+        @memset(self.memory[0..@intCast(memory_map.block_buffer_base)], 0);
+        @memset(self.memory[@intCast(memory_map.block_buffer_end)..], 0);
+    }
     for (ranges) |range| {
         const length = range[1] - range[0];
         @memcpy(self.memory[range[0]..range[1]], input[cursor .. cursor + length]);
         cursor += length;
     }
+    try self.writeCell(memory_map.blk_address, 0);
     self.names_used = @intCast(own_names + added_names);
     self.word_count = @intCast(word_count);
     wordlists.rebuildIndex(self);
@@ -335,12 +341,12 @@ pub fn appendImage(self: *State, source: *const State) RuntimeError!void {
     if (self.data_here + data_len > self.sizes.dataLimit()) return error.MemoryExhausted;
     const data_delta = self.data_here - data_start;
     // User word lists of the loaded image get new ids after this dictionary's.
-    const source_wordlists = std.math.clamp(source.readCellConst(wordlist_count_address), root_wordlist, max_wordlists);
+    const source_wordlists = std.math.clamp(source.readCellConst(wordlist_count_address), memory_map.ekeys_wordlist, max_wordlists);
     const wordlist_base = self.wordlistCount();
-    if (wordlist_base + source_wordlists - root_wordlist > max_wordlists) return error.DictionaryFull;
+    if (wordlist_base + source_wordlists - memory_map.ekeys_wordlist > max_wordlists) return error.DictionaryFull;
     const mapWordlist = struct {
         fn map(wid: Cell, base: Cell) Cell {
-            return if (wid <= root_wordlist) wid else base +% wid -% root_wordlist;
+            return if (wid <= memory_map.ekeys_wordlist) wid else base +% wid -% memory_map.ekeys_wordlist;
         }
     }.map;
 
@@ -440,7 +446,7 @@ pub fn appendImage(self: *State, source: *const State) RuntimeError!void {
             try self.writeCell(at, mapWordlist(try self.readCell(at), wordlist_base));
         }
     }
-    try self.writeCell(wordlist_count_address, wordlist_base + source_wordlists - root_wordlist);
+    try self.writeCell(wordlist_count_address, wordlist_base + source_wordlists - memory_map.ekeys_wordlist);
     @memcpy(self.names[name_base .. name_base + names_len], source.names[source_names_start..source.names_used]);
     self.names_used = @intCast(name_base + names_len);
     self.word_count = @intCast(word_base + added_words);

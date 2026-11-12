@@ -119,6 +119,9 @@ pub const help_entries = blk: {
 /// A name of a built-in word the build leaves out, or of an F: or F^ local without
 /// floating-point words.
 fn isExcludedName(comptime name: []const u8) bool {
+    for (@import("standard_keys.zig").constants) |constant| {
+        if (std.mem.eql(u8, name, constant[0])) return false;
+    }
     if (!defs.float_enabled and (std.mem.eql(u8, name, "F:") or std.mem.eql(u8, name, "F^"))) return true;
     if (std.mem.eql(u8, name, "REQUIRE-GRAPHICS")) return !defs.graphics_enabled;
     for (words_graphics.library_words) |library_word| {

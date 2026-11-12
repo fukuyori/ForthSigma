@@ -6,7 +6,7 @@ This project implements the language core of FORTH/Σ (FORTH/Sigma) as a native 
 
 ## Current implementation
 
-- It uses 64-bit cells and a logical memory of 64 MiB by default: 32 MiB for the dictionary (80 KiB of it for the system, the rest for the data area), an `ALLOCATE` heap of the same size, and 64 KiB for local variables. Each stack holds 4096 entries. The sizes can be chosen when Sigma starts, with the options of gforth (`-m`, `-d`, `-r`, `-f`, `-l`). The true value is -1, and division is floored.
+- It uses 64-bit cells and a logical memory of 64 MiB by default: 32 MiB for the dictionary (120 KiB of it reserved for the system, input, and block buffers, the rest for the data area), an `ALLOCATE` heap of the same size, and 64 KiB for local variables. Each stack holds 4096 entries. The sizes can be chosen when Sigma starts, with the options of gforth (`-m`, `-d`, `-r`, `-f`, `-l`). The true value is -1, and division is floored.
 - Floating-point numbers (double precision) are handled on a separate stack. A number that contains `E`, such as `1E` or `1.5e0`, is a floating-point number, and the F words such as `F+`, `F.`, `FSQRT`, and `FCONSTANT` are available.
 - It supports interactive input, dictionary search, number input, and word definition and compilation.
 - Stack operations, arithmetic, comparison, and logical operations, memory operations, and variables, constants, values, and arrays are available.
@@ -25,7 +25,9 @@ For usage and the list of the built-in words registered now, see the [user manua
 
 The defining words (BUILDS/DOES) that let users make words that hold data are also supported.
 
-`SAVE filename` and `LOAD filename` save user-defined words and load them additionally. A standalone executable is made with a separate extension word, `SAVESYS filename.exe`.
+`SAVE filename` and `LOAD-DICTIONARY filename` save user-defined words and load them additionally. A standalone executable is made with a separate extension word, `SAVESYS filename.exe`.
+Standard `LOAD` executes numbered blocks in `blocks.fb`; `LOAD-DICTIONARY filename` loads a saved dictionary image.
+
 
 For the support status of each word, see the [compatibility list](https://github.com/fukuyori/ForthSigma/blob/main/docs/COMPATIBILITY.md). For the distinction between the specification settled by the sources and the porting decisions, see [decisions and open issues](https://github.com/fukuyori/ForthSigma/blob/main/docs/DECISIONS.md).
 
@@ -132,7 +134,7 @@ Forth source files can also be read from standard input. Example:
 
     sigma.exe < examples/calculator.fs
 
-In this port, `SAVE filename` and `LOAD filename` save user-defined words as a dictionary image and load them additionally. For words with the same name, the newer definition takes precedence; when `FORGET` removes the newer one, the older definition comes back. `LOAD` and `SAVE` in the book are edit-buffer operations, and that function is not implemented. A standalone executable that contains the registered words is made with `SAVESYS`.
+In this port, `SAVE filename` and `LOAD-DICTIONARY filename` save user-defined words as a dictionary image and load them additionally. For words with the same name, the newer definition takes precedence; when `FORGET` removes the newer one, the older definition comes back. `LOAD` and `SAVE` in the book are edit-buffer operations, and that function is not implemented. A standalone executable that contains the registered words is made with `SAVESYS`.
 
     SAVE words.sigma
     SAVESYS demo.exe
@@ -150,7 +152,7 @@ Build options leave out groups of words, for a smaller program or for a host tha
 | `-Dfiles=false` | The words that open, read, write, or include files, such as `INCLUDE`, `REQUIRE`, `OPEN-FILE`, `STDIN`, `SLURP-FILE`, and the `$...SLURP` words | 1,397,760 bytes |
 | `-Dhelp=false` | `HELP`, `LICENSE`, and their texts (the banner no longer mentions `help`) | 1,319,936 bytes |
 | `-Dtools=false` | `SEE`, `LOCATE`, and `WHERE` | 1,397,248 bytes |
-| `-Dimage=false` | `SAVE`, `LOAD`, and `SAVESYS` | 1,451,520 bytes |
+| `-Dimage=false` | `SAVE`, `LOAD-DICTIONARY`, and `SAVESYS` | 1,451,520 bytes |
 | `-Dgraphics=false` | `REQUIRE-GRAPHICS`, the `GFX-` words, the graphics library, its fonts, and the Tcl/Tk words | 1,192,448 bytes |
 | `-Daudio=false` | `REQUIRE-AUDIO`, the `SND-` words, the audio library, and the audio thread | 1,371,136 bytes |
 | `-Ddebug=false` | The debugging features: the backtrace after an error, `--max-steps`, `--trace`, `--profile`, `--debug-log`, `--lint`, `--format`, `--coverage`, and the words `WATCH`, `UNWATCH`, `.COVER-RAW`, `COV%`, `.COVERAGE`, `DBG`, `BREAK:`, `BREAK"`, `~~BT`, `~~1BT`, `ONCE`, `~~VALUE`, `~~VARIABLE`, `+LTRACE`, and `-LTRACE` | 1,245,184 bytes |
@@ -159,7 +161,7 @@ Build options leave out groups of words, for a smaller program or for a host tha
 
 The sizes are those of the source after 0.10.0 built with `-Doptimize=fast -Dcpu=baseline`, the same as the release, on Windows x86_64 (measured 2026-11-11); the executables of a release are about 10 KB larger with their signature. In 0.10.0 itself, a build that leaves out a group other than `HELP` or the debugging features is 50 to 78 KB larger than in this table. The options can be combined, for example `zig build -Doptimize=fast -Dfloat=false -Dhelp=false`.
 
-The words of a group left out are not in the dictionary, and `HELP` has no entries for them. The groups are independent: without the file words, `SAVE`, `LOAD`, and `SAVESYS` still write and read image files, and `LOCATE` still reads the source file, unless their own groups are left out too. Every build gives each built-in word the same execution token, so an image saved by one build loads into a build with other groups; running a word that build left out gives the error `INVALID EXECUTION TOKEN`, and `SEE` shows it by its name. An image saved by an earlier build that left a group out (such as `-Dfloat=false`) gives `INVALID IMAGE`, since its built-in words had other execution tokens.
+The words of a group left out are not in the dictionary, and `HELP` has no entries for them. The groups are independent: without the file words, `SAVE`, `LOAD-DICTIONARY`, and `SAVESYS` still write and read image files, and `LOCATE` still reads the source file, unless their own groups are left out too. Every build gives each built-in word the same execution token, so an image saved by one build loads into a build with other groups; running a word that build left out gives the error `INVALID EXECUTION TOKEN`, and `SEE` shows it by its name. An image saved by an earlier build that left a group out (such as `-Dfloat=false`) gives `INVALID IMAGE`, since its built-in words had other execution tokens.
 
 The tests run with the same options, for example `zig build test -Dfloat=false`; the tests that use a group left out are skipped.
 

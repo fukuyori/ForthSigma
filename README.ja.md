@@ -6,7 +6,7 @@ FORTH/Σ（フォース・シグマ）の言語コアを、Zigで動くネイテ
 
 ## 現在の実装
 
-- 64ビットセルと、既定で64 MiBの論理メモリ（辞書の32 MiB（うち80 KiBはシステム用で、残りがデータ領域）、同じ大きさの `ALLOCATE` のヒープ、64 KiBのローカル変数の領域）を使います。スタックは各4096要素です。大きさは、gforthと同じオプション（`-m`、`-d`、`-r`、`-f`、`-l`）で起動時に指定できます。真の値は-1で、除算は床関数除算です。
+- 64ビットセルと、既定で64 MiBの論理メモリ（辞書の32 MiB（うち120 KiBはシステム・入力・ブロック用で、残りがデータ領域）、同じ大きさの `ALLOCATE` のヒープ、64 KiBのローカル変数の領域）を使います。スタックは各4096要素です。大きさは、gforthと同じオプション（`-m`、`-d`、`-r`、`-f`、`-l`）で起動時に指定できます。真の値は-1で、除算は床関数除算です。
 - 浮動小数点数（倍精度）を専用スタックで扱えます。`1E`、`1.5e0` のように `E` を含む数が浮動小数点数になり、`F+`、`F.`、`FSQRT`、`FCONSTANT` などのF系ワードを使えます。
 - 対話入力、辞書検索、数値入力、ワード定義とコンパイルに対応しています。
 - スタック操作、算術・比較・論理演算、メモリ操作、変数・定数・値・配列を使えます。
@@ -25,7 +25,9 @@ FORTH/Σ（フォース・シグマ）の言語コアを、Zigで動くネイテ
 
 利用者がデータを持つワードを作る定義用語（BUILDS/DOES）にも対応しています。
 
-`SAVE filename`／`LOAD filename` で利用者定義語を保存・追加読み込みできます。単独実行ファイルは別の拡張語 `SAVESYS filename.exe` で作成します。
+`SAVE filename`／`LOAD-DICTIONARY filename` で利用者定義語を保存・追加読み込みできます。単独実行ファイルは別の拡張語 `SAVESYS filename.exe` で作成します。
+標準の`LOAD`は`blocks.fb`の番号付きブロックを実行します。保存済み辞書の読込は`LOAD-DICTIONARY filename`です。
+
 
 ワードごとの対応状況は[互換性一覧](https://github.com/fukuyori/ForthSigma/blob/main/docs/COMPATIBILITY.ja.md)、資料で確定した仕様と移植上の判断の区別は[決定事項・保留事項](https://github.com/fukuyori/ForthSigma/blob/main/docs/DECISIONS.md)を参照してください。
 
@@ -132,7 +134,7 @@ Forthソースファイルは標準入力からも読み込めます。例:
 
     sigma.exe < examples/calculator.fs
 
-この移植版の `SAVE filename`／`LOAD filename` は利用者定義語を辞書イメージとして保存・追加読み込みします。同名語は新しい定義が優先され、`FORGET` で新しい方を削除すると古い定義に戻ります。誌面の `LOAD`／`SAVE` はエディットバッファ操作であり、その機能は実装していません。登録語を含む単独実行ファイルは `SAVESYS` で作成します。
+この移植版の `SAVE filename`／`LOAD-DICTIONARY filename` は利用者定義語を辞書イメージとして保存・追加読み込みします。同名語は新しい定義が優先され、`FORGET` で新しい方を削除すると古い定義に戻ります。誌面の `LOAD`／`SAVE` はエディットバッファ操作であり、その機能は実装していません。登録語を含む単独実行ファイルは `SAVESYS` で作成します。
 
     SAVE words.sigma
     SAVESYS demo.exe
@@ -150,7 +152,7 @@ Forthソースファイルは標準入力からも読み込めます。例:
 | `-Dfiles=false` | `INCLUDE`、`REQUIRE`、`OPEN-FILE`、`STDIN`、`SLURP-FILE`、`$...SLURP` の語など、ファイルを開く・読む・書く・取り込む語 | 1,397,760バイト |
 | `-Dhelp=false` | `HELP`、`LICENSE` とその文章（起動時の表示も `help` を案内しなくなります） | 1,319,936バイト |
 | `-Dtools=false` | `SEE`、`LOCATE`、`WHERE` | 1,397,248バイト |
-| `-Dimage=false` | `SAVE`、`LOAD`、`SAVESYS` | 1,451,520バイト |
+| `-Dimage=false` | `SAVE`、`LOAD-DICTIONARY`、`SAVESYS` | 1,451,520バイト |
 | `-Dgraphics=false` | `REQUIRE-GRAPHICS`、`GFX-` の語、グラフィックスのライブラリとそのフォント、Tcl/Tkの語 | 1,192,448バイト |
 | `-Daudio=false` | `REQUIRE-AUDIO`、`SND-` の語、音のライブラリ、音のスレッド | 1,371,136バイト |
 | `-Ddebug=false` | デバッグ機能（エラーの後のバックトレース、`--max-steps`、`--trace`、`--profile`、`--debug-log`、`--lint`、`--format`、`--coverage`、語 `WATCH` `UNWATCH` `.COVER-RAW` `COV%` `.COVERAGE` `DBG` `BREAK:` `BREAK"` `~~BT` `~~1BT` `ONCE` `~~VALUE` `~~VARIABLE` `+LTRACE` `-LTRACE`） | 1,245,184バイト |
@@ -159,7 +161,7 @@ Forthソースファイルは標準入力からも読み込めます。例:
 
 大きさは、0.10.0 の後のソースをリリースと同じ `-Doptimize=fast -Dcpu=baseline` でWindows x86_64向けにビルドしたものです（2026-11-11に測定）。リリースの実行ファイルは、署名の分だけ約10 KB大きくなります。0.10.0 そのものでは、`HELP` とデバッグ機能以外のグループを除いた版は、この表より50〜78 KB大きくなります。オプションは組み合わせられます（例: `zig build -Doptimize=fast -Dfloat=false -Dhelp=false`）。
 
-除いたグループの語は辞書になく、`HELP` の説明もありません。グループはそれぞれ独立しているので、ファイルの語を除いても、`SAVE`・`LOAD`・`SAVESYS` はイメージのファイルを書き読みし、`LOCATE` はソースファイルを読みます（それぞれのグループも除いた場合を除きます）。組み込み語の実行トークンはどの版でも同じなので、ある版で保存したイメージは、グループの違う版でも読み込めます。その版で除いた語を実行すると `INVALID EXECUTION TOKEN` のエラーになり、`SEE` はその語を名前で表示します。グループを除いた以前の版（`-Dfloat=false` など）で保存したイメージは、組み込み語の実行トークンが違うので `INVALID IMAGE` になります。
+除いたグループの語は辞書になく、`HELP` の説明もありません。グループはそれぞれ独立しているので、ファイルの語を除いても、`SAVE`・`LOAD-DICTIONARY`・`SAVESYS` はイメージのファイルを書き読みし、`LOCATE` はソースファイルを読みます（それぞれのグループも除いた場合を除きます）。組み込み語の実行トークンはどの版でも同じなので、ある版で保存したイメージは、グループの違う版でも読み込めます。その版で除いた語を実行すると `INVALID EXECUTION TOKEN` のエラーになり、`SEE` はその語を名前で表示します。グループを除いた以前の版（`-Dfloat=false` など）で保存したイメージは、組み込み語の実行トークンが違うので `INVALID IMAGE` になります。
 
 テストも同じオプションで実行でき（例: `zig build test -Dfloat=false`）、除いたグループを使うテストは飛ばします。
 

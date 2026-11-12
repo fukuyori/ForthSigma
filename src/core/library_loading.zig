@@ -153,7 +153,14 @@ fn loadWords(self: *State, comptime group: anytype, library: []const u8, wid: Ce
         const vocabulary = self.readCellConst(prerequisite.vocabulary_address);
         library_order[index] = self.words[@intCast(vocabulary)].value;
     }
-    @memcpy(library_order[added .. order.len + added], order);
-    self.setSearchOrder(library_order[0 .. order.len + added]);
+    // GRAPHICS defines its own key constants; standard keyboard constants are
+    // restored with the caller's order after loading the library.
+    var length: usize = added;
+    for (order) |entry| {
+        if (entry == @import("memory_map.zig").ekeys_wordlist) continue;
+        library_order[length] = entry;
+        length += 1;
+    }
+    self.setSearchOrder(library_order[0..length]);
     try self.includeEmbedded(group.library_name, library);
 }

@@ -34,7 +34,7 @@ const true_flag = memory_map.true_flag;
 /// The built-in words this file executes; executeBuiltin dispatches by this list.
 pub const words = [_]Builtin{
     .bye, .load, .save, .savesys, .abort, .ms, .utime, .getenv, .system, .throw, .catch_word,
-    .ekey_to_char, .environment_query, .quit, .noop, .perform, .argc, .argv, .arg,
+    .ekey_to_char, .ekey_to_fkey, .environment_query, .quit, .noop, .perform, .argc, .argv, .arg,
     .shift_args, .next_arg,
 };
 
@@ -133,13 +133,21 @@ pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
             try pushArgument(self, 1);
             try shiftArguments(self);
         },
-        .bye => self.halted = true,
+        .bye => {
+            try @import("blocks.zig").saveAll(self);
+            self.halted = true;
+        },
         .quit => return error.Quit,
-        // EKEY gives what KEY gives, so every event is a character.
+        // Byte characters and extended characters share the standard event representation.
         .ekey_to_char => {
             const event = try self.pop();
             try self.push(event);
             try self.push(if (event >= 0 and event < 256) true_flag else 0);
+        },
+        .ekey_to_fkey => {
+            const event = try self.pop();
+            try self.push(event);
+            try self.push(if (@import("standard_keys.zig").isFunction(event)) true_flag else 0);
         },
         // ENVIRONMENT? answers the queries about this system's sizes; others, and the
         // obsolescent word set names, give false.

@@ -27,6 +27,7 @@ fn noFlush() void {}
 /// Whether the terminal is in raw mode, whether MOUSE-ON asked for the mouse, and
 /// whether the terminal is reporting it now (only in raw mode).
 var raw = false;
+var standard_keyboard = false;
 var mouse_wanted = false;
 var mouse_reporting = false;
 
@@ -54,7 +55,7 @@ pub fn next() ?InputEvent {
         return .restarted;
     }
     if (is_windows) {
-        return windows.next();
+        return windows.next(false);
     } else {
         if (queued_len != 0) {
             const byte = queued[queued_head];
@@ -66,6 +67,20 @@ pub fn next() ?InputEvent {
         if (std.c.read(0, &byte, 1) == 1) return .{ .byte = byte[0] };
         return null;
     }
+}
+
+/// A standard keyboard byte or event, without changing GRAPHICS key values.
+pub fn nextStandard() ?forth.Cell {
+    standard_keyboard = true;
+    if (!enter()) return null;
+    if (is_windows) {
+        while (windows.next(true)) |event| {
+            switch (event) { .key => |code| return code, else => {} }
+        }
+        return null;
+    }
+    if (next()) |event| switch (event) { .byte => |byte| return byte, else => {} };
+    return null;
 }
 
 /// MOUSE-ON and MOUSE-OFF: the terminal reports the mouse while it is in raw mode.
@@ -94,7 +109,8 @@ pub fn leave() void {
     if (mouse_reporting) report(false);
     if (is_windows) windows.leave() else posix.leave();
     raw = false;
-    queued_len = 0;
+    if (!standard_keyboard) queued_len = 0;
+    standard_keyboard = false;
 }
 
 /// Whether the terminal gives single keys now (Ctrl+C is then a key, not a signal).
@@ -166,7 +182,7 @@ const posix = struct {
     }
 
     fn leave() void {
-        _ = tcflush(0, input_flush);
+        if (!standard_keyboard) _ = tcflush(0, input_flush);
         _ = saved.set();
     }
 
@@ -302,7 +318,7 @@ const windows = struct {
 
     fn leave() void {
         const console = input orelse return;
-        _ = FlushConsoleInputBuffer(console);
+        if (!standard_keyboard) _ = FlushConsoleInputBuffer(console);
         _ = SetConsoleMode(console, saved_mode);
         pending_len = 0;
         high_surrogate = 0;
@@ -345,7 +361,7 @@ const windows = struct {
         };
     }
 
-    fn next() ?InputEvent {
+    fn next(standard: bool) ?InputEvent {
         if (after) |event| {
             after = null;
             return event;
@@ -383,7 +399,22 @@ const windows = struct {
                         return .{ .key_release = code };
                     }
                     const unit = std.mem.readInt(u16, data[10..12], .little);
-                    if (keyCode(virtual_key)) |key| return press(virtual_key, key, .{ .key = key });
+                    if (keyCode(virtual_key)) |key| {
+                        if (standard) {
+                            const base: u32 = switch (key) {
+                                256 => 0x80000002, 257 => 0x80000003,
+                                258 => 0x80000000, 259 => 0x80000001,
+                                266...277 => 0x8000000b + key - 266,
+                                else => 0x80000004 + key - 260,
+                            };
+                            const control = std.mem.readInt(u32, data[12..16], .little);
+                            const masks: u32 = (if (control & 0x10 != 0) @as(u32, 0x10000000) else 0) |
+                                (if (control & 0x03 != 0) @as(u32, 0x20000000) else 0) |
+                                (if (control & 0x0c != 0) @as(u32, 0x40000000) else 0);
+                            return .{ .key = base | masks };
+                        }
+                        return press(virtual_key, key, .{ .key = key });
+                    }
                     if (unit == 0) continue;
                     if (unit >= 0xD800 and unit < 0xDC00) {
                         high_surrogate = unit;
@@ -420,7 +451,7 @@ const windows = struct {
                 focus_event => {
                     if (std.mem.readInt(i32, data[0..4], .little) != 0) continue;
                     releasing = true;
-                    return windows.next();
+                    return windows.next(standard);
                 },
                 else => continue,
             }

@@ -197,7 +197,9 @@ test "the graphics library loads into GRAPHICS, and a failure removes everything
     try std.testing.expectEqual(wordlists_before, failing.wordlistCount());
     try std.testing.expect(!words_graphics.graphicsLoaded(failing));
     try failing.interpretLine("ORDER");
-    try std.testing.expectEqualStrings(order_before, output.written());
+    const warning = if (@import("build_options").files) "WARNING: SAME NAME WORD EXISTS\n" else "";
+    try std.testing.expect(std.mem.startsWith(u8, output.written(), warning));
+    try std.testing.expectEqualStrings(order_before, output.written()[warning.len..]);
     const image = try saveImage(failing);
     defer freeImage(image);
     try std.testing.expectEqualStrings("SIGIMG42", image[0..8]);

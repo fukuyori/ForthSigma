@@ -90,6 +90,8 @@ Forth 2012の標準語は、P00で仕様を確定後、S01で先に対応する�
 
 ### S01 Forth 2012の標準語を優先対応
 
+2026-11-13 実装とmacOS検証完了（tque 579/580/581、S01b子608/609/610完了）。利用者の指示によりWindows/Linux実機確認はP10配下607へ分離し、ここでは行わない。終了時保存を含む実ファイル検証は`python3 scripts/verify-blocks.py zig-out/bin/sigma`、キー入力は`python3 scripts/verify-ekey.py zig-out/bin/sigma`で再実行できる。辞書読込の現在名はLOAD-DICTIONARY、標準LOADはブロック実行である。P01は着手可能。
+
 FACILITY EXTのキー4語とBLOCK/BLOCK EXTの10語を優先する。既存の入力・ファイル・ヒープ基盤を利用し、Gforth拡張の追加を待たずに進める。
 
 #### S01a 標準の特殊キーと修飾マスク

@@ -109,10 +109,15 @@ pub const Writer = struct {
     save_fn: ?*const fn (?*anyopaque, []const u8, *State) RuntimeError!void = null,
     savesys_fn: ?*const fn (?*anyopaque, []const u8, *State) RuntimeError!void = null,
     key_fn: ?*const fn (?*anyopaque) ?u8 = null,
+    /// Monotonic milliseconds for the total escape-sequence deadline.
+    monotonic_ms_fn: ?*const fn (?*anyopaque) i64 = null,
+    /// A byte or standard special key. timeout_ms < 0 waits; 0 polls.
+    event_key_fn: ?*const fn (?*anyopaque, i32) ?Cell = null,
     key_ready_fn: ?*const fn (?*anyopaque) bool = null,
     /// Gives back a byte that key_fn gave and XKEY did not take (one that does not
     /// continue a character): the next read of the terminal input, by any word, gets it
-    /// first. Without it, only KEY and XKEY get the byte back.
+    /// first. Repeated calls push bytes back in reverse order.
+    /// Without it, only KEY, XKEY and EKEY get the bytes back.
     unread_fn: ?*const fn (?*anyopaque, u8) void = null,
     sleep_fn: ?*const fn (?*anyopaque, Cell) RuntimeError!void = null,
     /// Microseconds since the Unix epoch.

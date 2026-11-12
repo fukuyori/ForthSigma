@@ -208,7 +208,7 @@ pub fn isSeparator(byte: u8) bool {
 /// that ends it, so PARSE starts right after that separator.
 pub fn nextToken(input: []const u8, cursor: *usize) ?[]const u8 {
     while (cursor.* < input.len and isSeparator(input[cursor.*])) cursor.* += 1;
-    if (cursor.* == input.len) return null;
+    if (cursor.* >= input.len) return null;
     const start = cursor.*;
     while (cursor.* < input.len and !isSeparator(input[cursor.*])) cursor.* += 1;
     const token = input[start..cursor.*];
@@ -228,7 +228,7 @@ pub fn nextSourceToken(self: *State) RuntimeError!?[]const u8 {
             return found;
         }
         const line = switch (self.source_kind) {
-            .evaluate => return null,
+            .evaluate, .block => return null,
             .file => try self.readIncludeLine() orelse return null,
             .terminal => blk: {
                 const read_fn = self.writer.read_fn orelse return null;

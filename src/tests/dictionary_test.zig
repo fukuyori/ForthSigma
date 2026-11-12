@@ -20,10 +20,10 @@ test "a word group the build leaves out has no words in the dictionary, and its 
 
     const options = @import("build_options");
     const groups = .{
-        .{ options.files, [_][]const u8{ "INCLUDE", "REQUIRE", "OPEN-FILE", "READ-LINE", "STDIN", "SLURP-FILE", "$SLURP-FILE", "$[]SLURP" }, Builtin.include },
+        .{ options.files, [_][]const u8{ "INCLUDE", "REQUIRE", "OPEN-FILE", "READ-LINE", "STDIN", "SLURP-FILE", "$SLURP-FILE", "$[]SLURP", "BLOCK", "BUFFER", "BLK", "SCR", "LOAD", "THRU", "LIST", "UPDATE", "SAVE-BUFFERS", "EMPTY-BUFFERS", "FLUSH" }, Builtin.include },
         .{ options.help, [_][]const u8{ "HELP", "LICENSE" }, Builtin.help },
         .{ options.tools, [_][]const u8{ "SEE", "LOCATE", "WHERE" }, Builtin.see },
-        .{ options.image, [_][]const u8{ "SAVE", "LOAD", "SAVESYS" }, Builtin.save },
+        .{ options.image, [_][]const u8{ "SAVE", "LOAD-DICTIONARY", "SAVESYS" }, Builtin.save },
         .{ options.debug, [_][]const u8{ "+LTRACE", "ONCE", "~~BT", "COV%", "WATCH", "~~VARIABLE" }, Builtin.once_run },
     };
     inline for (groups) |group| {
@@ -310,7 +310,7 @@ test "an image keeps HERE's data, the used heap, and the source table, and nothi
 
     const source_table_bytes = 64 * 256 + 64;
     const expected = 32 + @as(usize, source.word_count) * @sizeOf(@TypeOf(source.words[0])) + @as(usize, source.code_count) * @sizeOf(@TypeOf(source.code[0])) +
-        source.names_used + @as(usize, @intCast(source.data_here - 0x10000)) + @as(usize, @intCast(source.heapTop() - source.sizes.dataLimit())) + source_table_bytes + 4;
+        source.names_used + @as(usize, @intCast(@import("../core/memory_map.zig").system_end)) + @as(usize, @intCast(source.data_here - @import("../core/memory_map.zig").data_start)) + @as(usize, @intCast(source.heapTop() - source.sizes.dataLimit())) + source_table_bytes + 4;
     try std.testing.expectEqual(expected, length);
     try std.testing.expect(length < 200_000);
 

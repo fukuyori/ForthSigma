@@ -123,7 +123,7 @@ test "VOCABULARY ONLY ALSO DEFINITIONS and ORDER follow the book's Level 16 exam
     machine.report(error.UnknownWord);
     try machine.interpretLine("ORDER CR DEFINITIONS ORDER CR ONLY FORTH ALSO MY-WORDS HELLO CR ONLY ORDER FORTH CR" ++ support.see(" SEE MY-WORDS"));
     try std.testing.expectEqualStrings(
-        "Forth Forth Root     Forth \nMY-WORDS Forth Root     MY-WORDS \nHELLO ?\n" ++
+        "Forth Forth EKEYS Root     Forth \nMY-WORDS Forth Root     MY-WORDS \nHELLO ?\n" ++
             "Forth Root     MY-WORDS \nForth Root     Forth \nHello\nRoot Root     Forth \n" ++ support.see("VOCABULARY MY-WORDS\n"),
         output.written(),
     );
@@ -139,7 +139,7 @@ test "WORDLIST SET-CURRENT and >ORDER build modules and shadow words by order" {
     try machine.interpretLine(": MAIN { x -- } x ADD2 SQUARE SHOW ; 3 MAIN ORDER ONLY FORTH");
     try machine.interpretLine("WORDLIST CONSTANT W1 WORDLIST CONSTANT W2 W1 SET-CURRENT : PRINT .\" W1\" ; W2 SET-CURRENT : PRINT .\" W2\" ;");
     try machine.interpretLine("W1 >ORDER W2 >ORDER PRINT ONLY FORTH W2 >ORDER W1 >ORDER PRINT ONLY FORTH DEFINITIONS");
-    try std.testing.expectEqualStrings("Result: 25 IO MATH Forth Forth Root     Forth W2W1", output.written());
+    try std.testing.expectEqualStrings("Result: 25 IO MATH Forth Forth EKEYS Root     Forth W2W1", output.written());
     try std.testing.expectError(error.UnknownWord, machine.interpretLine("3 ADD2"));
 }
 
@@ -148,8 +148,8 @@ test "GET-ORDER SET-ORDER PREVIOUS and the search order limits" {
     const machine = try createMachine(&output);
     defer destroyMachine(machine);
 
-    try machine.interpretLine("GET-ORDER WORDLIST SWAP 1+ SET-ORDER GET-ORDER NIP NIP NIP NIP PREVIOUS GET-ORDER");
-    try expectStack(machine, &.{ 4, 2, 1, 1, 3 });
+    try machine.interpretLine("GET-ORDER WORDLIST SWAP 1+ SET-ORDER GET-ORDER NIP NIP NIP NIP NIP PREVIOUS GET-ORDER");
+    try expectStack(machine, &.{ 5, 2, 3, 1, 1, 4 });
     machine.data_depth = 0;
     try machine.interpretLine("GET-CURRENT -1 SET-ORDER GET-ORDER FORTH-WORDLIST");
     try expectStack(machine, &.{ 1, 2, 2, 2, 1 });
@@ -195,7 +195,7 @@ test "MARKER restores the search order and the current word list" {
     defer destroyMachine(machine);
 
     try machine.interpretLine("MARKER M VOCABULARY V ALSO V DEFINITIONS : X ; M ORDER");
-    try std.testing.expectEqualStrings("Forth Forth Root     Forth ", output.written());
+    try std.testing.expectEqualStrings("Forth Forth EKEYS Root     Forth ", output.written());
     try machine.interpretLine("S\" X\" FIND-NAME S\" V\" FIND-NAME");
     try expectStack(machine, &.{ 0, 0 });
 }
@@ -224,7 +224,7 @@ test "word lists and the search order survive image restore and LOAD renumbers t
     try target.interpretLine("ALSO TOOLS TOOL ALSO MINE OWN M ORDER");
     try expectStack(loaded, &.{7});
     try expectStack(target, &.{ 7, 1 });
-    try std.testing.expectEqualStrings("TOOLS Forth Root     Forth TOOLS Forth Forth Root     TOOLS ", output.written());
+    try std.testing.expectEqualStrings("TOOLS Forth Root     Forth TOOLS Forth Forth EKEYS Root     TOOLS ", output.written());
 }
 
 test "a MARKER made in reclaimed data space survives LOAD with old values in its unused slots" {
@@ -246,7 +246,7 @@ test "a MARKER made in reclaimed data space survives LOAD with old values in its
     try target.interpretLine("VOCABULARY MINE");
     try target.appendImage(loaded);
     try target.interpretLine("ALSO TOOLS M ORDER");
-    try std.testing.expectEqualStrings("Forth Forth Root     Forth ", output.written());
+    try std.testing.expectEqualStrings("Forth Forth EKEYS Root     Forth ", output.written());
 }
 
 test "[DEFINED] and [UNDEFINED] see local variables while compiling" {
@@ -422,5 +422,5 @@ test "image restore keeps words of a vocabulary made with :NONAME and DOES>" {
     loaded.report(error.UnknownWord);
     try loaded.interpretLine("ALSO TOOLS TWO ADDER EXECUTE S\" TWO\" FIND-NAME 0<> ORDER");
     try expectStack(loaded, &.{ 42, -1 });
-    try std.testing.expectEqualStrings("TWO ?\nTOOLS Forth Forth Root     Forth ", output.written());
+    try std.testing.expectEqualStrings("TWO ?\nTOOLS Forth Forth EKEYS Root     Forth ", output.written());
 }

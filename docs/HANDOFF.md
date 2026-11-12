@@ -1,3 +1,49 @@
+## 現在地：2026-11-13 S01完了（未コミット）
+
+S01a 580、S01b 581、親S01 579をtqueで完了にした。S01bの子608/609/610も完了。進捗モードはauto。Windows/Linux実機確認は利用者の指示でここでは実施せず、P10配下607（依存580/581）へ分離した。
+
+610ではBYEと通常EOF終了の変更済みブロック書戻しを接続。SAVESYS実行体も共通の終了処理を使う。書戻し失敗は報告し、バッチ終了コードは1。BYEの保存失敗はCATCH可能で、成功前にhaltしない。辞書読込はLOAD-DICTIONARY。英日README/マニュアル/互換性、HELP、実装ノートを更新し、サンプル・スクリプトの旧辞書LOADが残っていないことを確認した（Gforth比較元の標準LOADと誌面仕様の歴史的LOADは維持）。
+
+検証：通常のzig build test、files/image無効構成、graphics/audio/float/image無効構成が成功。`python3 scripts/verify-blocks.py zig-out/bin/sigma`でBYE/EOFの実ファイル保存、ブロック入力、LOAD-DICTIONARY、SAVESYS実行体のEOF保存が成功。ログは`.zig-cache/s01b-test.log`、`.zig-cache/s01b-disabled.log`、`.zig-cache/s01b-minimal.log`。
+
+次はP01 544（S01依存は解消）、最初の作業P01a 554（比較・最小最大16語）。P01aは未着手。新形式SIGIMG45/46/47とアドレス再配置は未実装で、後続フェーズの要件として残る。現在のイメージは追加済み組込語と新しいデータ開始位置を前提とし、S01前のイメージとの互換はない。版番号変更、リリース用パッケージ作成、コミット、タグ、pushはしていない。
+
+以下は今回の途中記録と前回のP00引き継ぎ。
+
+---
+
+## 2026-11-13 S01b入力統合完了（未コミット）
+
+tque 609完了。BLK/SCR、標準LOAD、THRU/LISTを登録。辞書読込の登録名はLOAD-DICTIONARYへ変更し、ホストの辞書読込テストとHELPも追従済み。LOADは固定論理メモリー内の入れ子用入力スナップショットを使い、衝突するBLOCKや内側のLOADによる入力破壊を防ぐ。BLK変数は0x0d40、SCRは0x0d48。SourceKind.blockを追加。ブロックのSOURCE-IDは2、SOURCE長は1024、SAVE-INPUTはblk/cursor/2、REFILLは次ブロック。EVALUATE/ファイル/端末の解釈中はBLK=0とし、終了/THROW後に呼出元へ戻す。バックスラッシュコメントは64文字境界まで。
+
+通常テスト、`-Dfiles=false -Dimage=false`、macOS実ファイルのLOAD/入れ子/コメント/THROW/REFILLを確認済み。未保存バッファーは引き続き辞書復元時に保持する。
+
+次は610：BYE/通常バッチ終了/SAVESYS実行体終了時の書戻しと失敗扱い、LOAD-DICTIONARY改名に伴う残りの文書/サンプル/メッセージ更新、ブロック語のマニュアル/互換性一覧、統合回帰。581全体は未完了。Windows/Linux実機確認はここでは行わない。
+
+---
+
+## 2026-11-13 S01b保存基盤完了（未コミット）
+
+tque 608完了。BLOCK/BUFFER/UPDATE/SAVE-BUFFERS/EMPTY-BUFFERS/FLUSHを実装。`src/core/blocks.zig`と`src/tests/blocks_test.zig`。32×1024バイトを入力領域直後の固定論理領域に予約し、辞書データ開始位置を移動。バッファー内容はイメージへ含めず、既存プロセスで辞書復元する場合は未保存内容とファイル識別子を維持する。errno=2の場合だけblocks.fbを作成し、読込不足分は空白で埋める。書込・flush失敗時は変更フラグを残し、読込失敗時は旧内容を維持する。
+
+通常の`zig build test`、`-Dfiles=false`、macOS実ファイルでの作成/保存/再読込が成功。ログは`.zig-cache/s01b-test.log`と`.zig-cache/s01b-nofiles.log`。追加テストはルートから取り込み済み。
+
+次はtque 609（入力統合、依存543/608）、続いて610（改名・終了保存・文書・統合、依存543/609）。BLK/SCR/LOAD/THRU/LISTはまだ未実装。BYE/バッチ終了時保存と辞書LOADの改名も未実装。S01b 581全体は未完了。進捗管理はauto。
+
+---
+
+## 2026-11-13 S01a作業中（未コミット）
+
+標準キー定数のEKEYS語彙、EKEYのUTF-8/端末エスケープ列解釈、EKEY>FKEYと修飾マスク、EKEY>XCHARのコードポイント判定を追加中。GRAPHICSライブラリーの読込中はEKEYSを検索順から外し、終了後に元へ戻す。固定語彙ID 3を追加読込時の再配置対象から除外した。回帰テストを追加し、既存ORDERテストを新しい初期検索順へ更新した。
+
+EKEY?のパイプ非ブロック性、単調時計によるEscの合計50 ms、EKEYからKEY/ACCEPTへの未読バイト保持を修正。macOSのパイプ・PTY試験は `python3 scripts/verify-ekey.py zig-out/bin/sigma` で成功。Windows x86_64・Linux x86_64のクロスビルド成功（実機確認ではない）。英日マニュアルと互換性一覧を更新。GRAPHICSなし構成でも標準キー定数のHELPを残す。
+
+利用者の指示により、tque 580（S01a）は完了。Windows/Linuxの実端末確認は、ここでは実行せず、P10配下の別タスク607（依存580）へ分離した。Windowsのキー修飾、UTF-16入力、KEY/ACCEPT/行編集との切替、Linuxの実端末確認は607で行う。新イメージ形式45/46/47と再配置表の実装はまだ行っていない。S01bは保存基盤608まで完了。入力統合609と改名・終了処理610が残る。
+
+テストログは `.zig-cache/s01-test.log`。`.zig-global-cache/`は検証用キャッシュで成果物へ含めない。コミット・pushは未実行。
+
+---
+
 # Gforth対応の引き継ぎ
 
 2026-11-12時点。P00の仕様確定とClaude Codeレビューは完了。次はS01の実装から再開する。今回の作業ではSigmaのワード本体は変更していない。
@@ -31,10 +77,10 @@ tqueの階層はForthSigma 121 → 次のフェーズ415 → 実装計画542。
 |タスク|状態と扱い|
 |---|---|
 |543 P00|完了。384語・470ケースの比較とレビュー済み|
-|579 S01|未完了、依存543は解消済み|
-|580 S01a|EKEY>FKEY、K-ALT-MASK、K-CTRL-MASK、K-SHIFT-MASK。着手可能|
-|581 S01b|BLK BLOCK BUFFER EMPTY-BUFFERS FLUSH LIST SAVE-BUFFERS SCR THRU UPDATE。着手可能|
-|544 P01|基本語25語。579の後|
+|579 S01|完了。Windows/Linux実機確認は607へ分離|
+|580 S01a|完了。実装・macOS検証済み。Windows/Linux実端末確認はP10配下607へ分離|
+|581 S01b|完了。子608/609/610も完了|
+|544 P01|基本語25語。579完了により着手可能。最初は554 P01a|
 |457 P07先行|550配下。IS/ACTION-OF/TO/+TOの辞書化。544の後|
 |570 P07a|457と544の後|
 |582|アセンブラーの別途方針検討。542の完了条件には含めない|

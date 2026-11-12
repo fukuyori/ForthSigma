@@ -15,7 +15,9 @@ zig build
 .\zig-out\bin\sigma.exe
 ```
 
-`zig build -Dfloat=false` でビルドすると、浮動小数点数を扱わない小さい版になります（[浮動小数点数](#浮動小数点数)の章を参照）。同じように、`-Dfiles=false` はファイルを開く・読む・書く・取り込む語（`INCLUDE`、`REQUIRE`、`OPEN-FILE`、`STDIN`、`SLURP-FILE`、`$...SLURP` の語など）を、`-Dhelp=false` は `HELP` と `LICENSE` を、`-Dtools=false` は `SEE`、`LOCATE`、`WHERE` を、`-Dimage=false` は `SAVE`、`LOAD`、`SAVESYS` を、`-Dgraphics=false` は `REQUIRE-GRAPHICS` とグラフィックスの語（[グラフィックス](#グラフィックス)を参照）を、`-Ddebug=false` はデバッグ機能（[コンパイルしたコードの中のエラー](#コンパイルしたコードの中のエラー)を参照）を除きます。除いた語は辞書になく、名前は `名前 ?` のエラーになります。グループはそれぞれ独立しているので、ファイルの語を除いても、`SAVE`・`LOAD`・`SAVESYS` はイメージのファイルを書き読みし、`LOCATE` はソースファイルを読みます。組み込み語の実行トークンはどの版でも同じなので、ある版で保存したイメージは、グループの違う版でも読み込めます。その版で除いた語を実行すると `INVALID EXECUTION TOKEN` のエラーになり、`SEE` はその語を名前で表示します。グループを除いた以前の版（`-Dfloat=false` など）で保存したイメージは、組み込み語の実行トークンが違うので `INVALID IMAGE` になります。
+`zig build -Dfloat=false` でビルドすると、浮動小数点数を扱わない小さい版になります（[浮動小数点数](#浮動小数点数)の章を参照）。同じように、`-Dfiles=false` はファイルを開く・読む・書く・取り込む語（`INCLUDE`、`REQUIRE`、`OPEN-FILE`、`STDIN`、`SLURP-FILE`、`$...SLURP` の語など）を、`-Dhelp=false` は `HELP` と `LICENSE` を、`-Dtools=false` は `SEE`、`LOCATE`、`WHERE` を、`-Dimage=false` は `SAVE`、`LOAD-DICTIONARY`、`SAVESYS` を、`-Dgraphics=false` は `REQUIRE-GRAPHICS` とグラフィックスの語（[グラフィックス](#グラフィックス)を参照）を、`-Ddebug=false` はデバッグ機能（[コンパイルしたコードの中のエラー](#コンパイルしたコードの中のエラー)を参照）を除きます。除いた語は辞書になく、名前は `名前 ?` のエラーになります。グループはそれぞれ独立しているので、ファイルの語を除いても、`SAVE`・`LOAD-DICTIONARY`・S01の組込辞書・メモリー配置変更前のイメージは拒否します。このビルドで作り直してください。アドレス再配置用の新形式は後続フェーズの作業です。
+
+`SAVESYS` はイメージのファイルを書き読みし、`LOCATE` はソースファイルを読みます。組み込み語の実行トークンはどの版でも同じなので、ある版で保存したイメージは、グループの違う版でも読み込めます。その版で除いた語を実行すると `INVALID EXECUTION TOKEN` のエラーになり、`SEE` はその語を名前で表示します。グループを除いた以前の版（`-Dfloat=false` など）で保存したイメージは、組み込み語の実行トークンが違うので `INVALID IMAGE` になります。
 
 対話プロンプトの前に、次の2行（`-Dhelp=false` の版では1行目だけ）を表示します。版番号はルートの `VERSION` ファイルの値です。
 
@@ -55,7 +57,7 @@ macOSとLinuxの対話プロンプトでは、次のキーを使えます。Wind
 
 | オプション | 指定する大きさ | 既定値 |
 |---|---|---|
-| `-m SIZE`、`--dictionary-size=SIZE` | 辞書（システム領域16 KiB、入力領域64 KiB、`HERE` が使うデータ領域）。`ALLOCATE` のヒープも同じ大きさになります。1 MiB以上 | 32 MiB |
+| `-m SIZE`、`--dictionary-size=SIZE` | 辞書（システム領域16 KiB、入力領域64 KiB、実行時ブロック領域40 KiB、`HERE` が使うデータ領域）。`ALLOCATE` のヒープも同じ大きさになります。1 MiB以上 | 32 MiB |
 | `-d SIZE`、`--data-stack-size=SIZE` | データスタック | 4096セル |
 | `-r SIZE`、`--return-stack-size=SIZE` | リターンスタック | 4096セル |
 | `-f SIZE`、`--fp-stack-size=SIZE` | 浮動小数点スタック | 4096個 |
@@ -568,7 +570,7 @@ S" Forth" TUCK BUF SWAP MOVE BUF SWAP TYPE
 | `KEY` | ( -- c ) | 1バイト読み取ります（ASCII以外の文字はUTF-8のバイトで届きます。1文字まとめて読むのは `XKEY` です）。 |
 | `KEY?` | ( -- flag ) | 読み取れる文字があるかを返します。対話端末では入力があるまで待ちます。 |
 | `EMIT?` | ( -- flag ) | `EMIT` が待たずに出力できるかを返します。常に真です。 |
-| `EKEY`, `EKEY?`, `EKEY>CHAR` | ( -- u )、( -- flag )、( u -- u false \| c true ) | `EKEY` と `EKEY?` は `KEY` と `KEY?` と同じです（ファンクションキーなどは解釈しません）。`EKEY>CHAR` は0〜255なら文字として真を返します。 |
+| `EKEY`, `EKEY?`, `EKEY>CHAR`, `EKEY>FKEY` | ( -- u ), ( -- flag ), ( u -- u false \| c true ), ( u -- u false \| fkey true ) | EKEYはUTF-8コードポイントまたは標準特殊キーを返します。EKEY?は待たずに入力の有無を返します。EKEY>CHARは0〜255、EKEY>FKEYは修飾マスクを保持した特殊キーを判定します。KEYは従来どおりバイト入力です。 |
 | `>NUMBER` | ( ud addr u -- ud2 addr2 u2 ) | 数字を変換し、変換できなかった残りを返します。 |
 | `S>NUMBER?` | ( addr u -- d flag ) | 文字列を整数（倍長）に変換し、成否を返します。 |
 | `>FLOAT` | ( addr u -- flag ) ( f: -- r ) | 文字列を浮動小数点数に変換します。`E` は省略できます。成功時だけ浮動小数点スタックに積みます。 |
@@ -598,7 +600,9 @@ S" 日本語" +X/STRING TYPE        \ 本語
 | `-TRAILING-GARBAGE` | ( addr u -- addr u2 ) | 文字列の末尾の欠けた文字を除きます。 |
 | `X@+/STRING` | ( addr u -- addr2 u2 xc ) | 文字列の先頭の文字を取り出します。 |
 | `XHOLD` | ( xc -- ) | 数値の書式の先頭にxcを加えます。 |
-| `EKEY>XCHAR` | ( u -- u false \| xc true ) | キーボードのイベントが1文字かどうかを返します。`EKEY` は文字のバイトを1つずつ返すので、1文字になるのはASCIIのバイトだけです。 |
+| `EKEY>XCHAR` | ( u -- u false \| xc true ) | Unicodeスカラー値の文字イベントなら真、特殊キーなら偽を返します。 |
+
+標準キー定数は`EKEYS`語彙にあり、起動時はFORTHの後、ROOTの前に検索します。ONLYの後は`ONLY FORTH ALSO EKEYS`で戻せます。`ALSO GRAPHICS`では従来のGRAPHICSキー値を優先します。標準修飾マスクはShift `0x10000000`、Alt `0x20000000`、Ctrl `0x40000000`です。単独Escは既知の列を合計最大50 ms待ちます。不明・未完の列の残りのバイトは保持します。
 
 正しいUTF-8は、gforthと同じ値になります。冗長な形やサロゲートも同じです。それ以外は1つの規則に従います。先頭になれないバイト、途中で切れた文字（続きでないバイトか文字列の終わりで切れたもの）、U+10FFFFを超える値はU+FFFDとし、先頭のバイトとその続きのバイトだけを読み進めます（先頭になれないバイトは1バイト）。U+10FFFFを超えるコードポイントは、U+FFFD（3バイト）として書きます。桁数はUnicode Character Database 15.1.0から作り、すべてのコードポイントでLinux（glibc 2.39）のgforthと同じです。
 
@@ -812,7 +816,7 @@ NAMES $[].                      \ Alice と Bob を1行ずつ表示
 | `$SLURP`, `$+SLURP` | ( fileid $var -- ) | 開いたファイルを今の位置から終わりまで読み、動的文字列と置き換えます（`$+SLURP` は後ろに加えます）。ファイルは閉じません。 |
 | `$SLURP-LINE` | ( fileid $var -- flag ) | 次の1行を（改行を除いて）動的文字列に読み込みます。ファイルの終わりではflagが0で、文字列は空になります。 |
 
-ヒープは `-m` の大きさと同じで、既定で32 MiBです（[メモリとスタックの大きさ](#メモリとスタックの大きさ)を参照）。`SAVESYS` で作った実行ファイルにはヒープの内容も保存されますが、`LOAD` では引き継がれません。
+ヒープは `-m` の大きさと同じで、既定で32 MiBです（[メモリとスタックの大きさ](#メモリとスタックの大きさ)を参照）。`SAVESYS` で作った実行ファイルにはヒープの内容も保存されますが、`LOAD-DICTIONARY` では引き継がれません。
 
 ## 辞書の探索と入力の解析
 
@@ -921,16 +925,34 @@ MARKER SAFE  : TEMP ." Hello" ;  SAFE   \ TEMP は消えます
 
 グラフィックスの語（`REQUIRE-GRAPHICS`: メモリ上の画像、写し合う画像、画像ファイル、文字、Tcl/Tk、キー、マウス、アニメーション。`REQUIRE-GUI`: ボタン、入力欄、リスト、メニュー、ダイアログ。`REQUIRE-GAME`: スプライト、タイルマップ、パレット、行ごとの効果）と、サウンドの語（`REQUIRE-AUDIO`: MSX BASIC の `PLAY`、`SOUND`、`BEEP`、音源、録音した音、モジュール）は、この移植版の拡張です。[グラフィックスとサウンドのマニュアル](GRAPHICS_AND_SOUND.ja.md)で説明します。
 
+## 標準ブロック操作
+
+`LOAD`は番号付きブロックを実行します。辞書イメージの読込は`LOAD-DICTIONARY filename`です。
+
+| 語 | スタック効果 | 動作 |
+|---|---|---|
+| `BLOCK`、`BUFFER` | `( u -- addr )` | 1024バイトを32バッファーのいずれかへ読み込みます。BUFFERも既存内容を読みます。 |
+| `UPDATE` | `( -- )` | 最後に選択したバッファーを変更済みにします。 |
+| `SAVE-BUFFERS`、`FLUSH`、`EMPTY-BUFFERS` | `( -- )` | 変更を保存／保存して割当解除／保存せず破棄します。 |
+| `BLK`、`SCR` | `( -- addr )` | 実行中のブロック番号（それ以外は0）／最後にLISTした番号の変数です。 |
+| `LOAD`、`THRU`、`LIST` | `( u -- )`、`( first last -- )`、`( u -- )` | 単独ブロック実行／両端を含む範囲実行／64文字×16行を行番号付きで表示します。 |
+
+既定ファイルは作業ディレクトリの`blocks.fb`で、初回アクセス時に開くか作成します。EOFで不足するバイトは空白にします。BLOCK/BUFFERは0〜0x1fffff、LOAD/THRUは1〜0x1fffffを受け付け、範囲外はTHROW -35です。THRUの開始が終了を超える場合は何も実行しません。番号を32で割った剰余が同じバッファーを共有し、変更済みなら再利用前に保存します。編集後はUPDATEが必要です。入出力エラーはiorをTHROWし、保存失敗時は変更状態を保持します。
+
+LOAD中のSOURCE-IDは2、SOURCEは1024バイトです。バックスラッシュコメントは次の64文字境界までです。REFILLは次のブロックを選択します。SAVE-INPUTは`( blk cursor 2 )`を返し、ブロック入力中のRESTORE-INPUTはこの形式を受け付けます。入れ子のLOADやTHROW後は呼出元の入力とBLKを復元し、EVALUATE中はBLKを0にします。
+
+BYEと入力終端による通常終了では変更を書き戻します。SAVESYSで作った実行体も同じです。書戻し失敗は報告し、バッチ処理の終了コードは1になります。異常終了時の未保存内容は保証しません。バッファーと入力スナップショットは辞書イメージに含めず、同じプロセス内の辞書復元では現在の未保存バッファーを保持します。辞書データの前に40 KiBを予約します。USEなどGforth固有のブロック拡張は未実装です。
+
 ## 辞書の保存と単独実行ファイル
 
-この移植版の `SAVE` と `LOAD` は利用者定義語の辞書イメージを扱います。誌面のエディットバッファ操作とは異なります。
+この移植版の `SAVE` と `LOAD-DICTIONARY` は利用者定義語の辞書イメージを扱います。誌面のエディットバッファ操作とは異なります。
 
 ```forth
 SAVE words.sigma
-LOAD words.sigma
+LOAD-DICTIONARY words.sigma
 ```
 
-`LOAD` は保存した利用者定義語を現在の辞書の後ろに追加します。同名語は読み込んだ新しい定義が優先されます。以前の形式の辞書イメージ（`SIGIMG41` 以前）と、壊れた辞書イメージは読み込めません（`INVALID IMAGE !`）。入力領域を辞書の前に移し、メモリの配置が変わったためです。この版は `SIGIMG42` で保存します。`REQUIRE-GRAPHICS` でグラフィックスの語を読み込んだ辞書は `SIGIMG43` で保存し、`FORGET` や `MARKER` でグラフィックスの語を消したあとも同じです。`REQUIRE-AUDIO` で音の語を読み込んだ辞書は、グラフィックスの語の有無によらず `SIGIMG44` で保存します。どれも0.8.0までの版では読み込めません。辞書イメージには保存したときの `-m` と `-l` の大きさを記録します。`LOAD` は、大きさの違うSigmaで保存したイメージも読み込めます。辞書イメージにはチェックサムが付いており、偶然の破損は読み込む前に見つかります。読み込むのは、Sigmaの `SAVE`・`SAVESYS` で作ったファイルだけにしてください。定数や変数に保存した実行トークン（`:NONAME` の結果など）と、`LITERAL` で定義に埋め込んだ実行トークンやアドレス（`[ ' X ] LITERAL` など）は、すでに利用者定義語がある辞書へ `LOAD` すると別の語や場所を指すことがあります。`['] X` で埋め込んだ実行トークンは正しく付け替えられます。`SAVESYS` で作った実行ファイルではこの問題は起きません。
+`LOAD-DICTIONARY` は保存した利用者定義語を現在の辞書の後ろに追加します。同名語は読み込んだ新しい定義が優先されます。以前の形式の辞書イメージ（`SIGIMG41` 以前）と、壊れた辞書イメージは読み込めません（`INVALID IMAGE !`）。入力領域を辞書の前に移し、メモリの配置が変わったためです。この版は `SIGIMG42` で保存します。`REQUIRE-GRAPHICS` でグラフィックスの語を読み込んだ辞書は `SIGIMG43` で保存し、`FORGET` や `MARKER` でグラフィックスの語を消したあとも同じです。`REQUIRE-AUDIO` で音の語を読み込んだ辞書は、グラフィックスの語の有無によらず `SIGIMG44` で保存します。どれも0.8.0までの版では読み込めません。辞書イメージには保存したときの `-m` と `-l` の大きさを記録します。`LOAD-DICTIONARY` は、大きさの違うSigmaで保存したイメージも読み込めます。辞書イメージにはチェックサムが付いており、偶然の破損は読み込む前に見つかります。読み込むのは、Sigmaの `SAVE`・`SAVESYS` で作ったファイルだけにしてください。定数や変数に保存した実行トークン（`:NONAME` の結果など）と、`LITERAL` で定義に埋め込んだ実行トークンやアドレス（`[ ' X ] LITERAL` など）は、すでに利用者定義語がある辞書へ `LOAD-DICTIONARY` すると別の語や場所を指すことがあります。`['] X` で埋め込んだ実行トークンは正しく付け替えられます。`SAVESYS` で作った実行ファイルではこの問題は起きません。
 
 `SAVESYS` は、現在の辞書・コンパイル済み定義・データを含む、実行中環境向けの単独実行ファイルを作ります。
 
@@ -954,7 +976,7 @@ SAVESYS demo.exe
 | ループ関連 | `I`, `J`, `K`, `LEAVE`, `UNLOOP` |
 | 入出力 | `.`, `U.`, `.R`, `U.R`, `C.`, `.S`, `ECHO`, `EMIT`, `CR`, `SPACE`, `SPCES`, `SPACES`, `TYPE`, `INPUT`, `EMIT?` |
 | 基数 | `HEX`, `DEC`, `DECIMAL`, `OCT`, `BASE` |
-| 定義補助・辞書・実行 | `<BUILDS`, `CREATE`, `IMMEDIATE`, `WORDS`, `BYE`, `LOAD`, `SAVE`, `SAVESYS`, `EXECUTE`, `SEE`, `FIND`, `FIND-NAME`, `NAME>INT`, `NAME>STRING`, `MARKER`, `LOCATE`, `WHERE`, `PERFORM`, `NOOP`, `DEFER`, `DEFER!`, `DEFER@`, `DEFERS`, `COMPILE,`, `[COMPILE]`, `NAME>COMPILE`, `BEGIN-STRUCTURE`, `END-STRUCTURE`, `+FIELD`, `FIELD:`, `CFIELD:`, `FFIELD:`, `SFFIELD:`, `DFFIELD:`, `STRUCT`, `FIELD`, `END-STRUCT`, `CELL%`, `CHAR%`, `FLOAT%`, `DOUBLE%`, `SFLOAT%`, `DFLOAT%`, `%SIZE`, `%ALIGNMENT`, `%ALIGN`, `%ALLOT`, `%ALLOC`, `%ALLOCATE`, `LATEST`, `LATESTXT`, `>NAME`, `ID.`, `.NAME`, `ALIAS` |
+| 定義補助・辞書・実行 | `<BUILDS`, `CREATE`, `IMMEDIATE`, `WORDS`, `BYE`, `LOAD-DICTIONARY`, `SAVE`, `SAVESYS`, `EXECUTE`, `SEE`, `FIND`, `FIND-NAME`, `NAME>INT`, `NAME>STRING`, `MARKER`, `LOCATE`, `WHERE`, `PERFORM`, `NOOP`, `DEFER`, `DEFER!`, `DEFER@`, `DEFERS`, `COMPILE,`, `[COMPILE]`, `NAME>COMPILE`, `BEGIN-STRUCTURE`, `END-STRUCTURE`, `+FIELD`, `FIELD:`, `CFIELD:`, `FFIELD:`, `SFFIELD:`, `DFFIELD:`, `STRUCT`, `FIELD`, `END-STRUCT`, `CELL%`, `CHAR%`, `FLOAT%`, `DOUBLE%`, `SFLOAT%`, `DFLOAT%`, `%SIZE`, `%ALIGNMENT`, `%ALIGN`, `%ALLOT`, `%ALLOC`, `%ALLOCATE`, `LATEST`, `LATESTXT`, `>NAME`, `ID.`, `.NAME`, `ALIAS` |
 | 制御構造（即時語） | `IF`, `ELSE`, `AHEAD`, `THEN`, `CS-PICK`, `CS-ROLL`, `ENDIF`, `BEGIN`, `END`, `UNTIL`, `AGAIN`, `WHILE`, `REPEAT`, `DO`, `?DO`, `LOOP`, `+LOOP`, `DOES>`, `CASE`, `OF`, `?OF`, `ENDOF`, `CONTOF`, `ENDCASE`, `NEXT-CASE`, `EXIT`, `?EXIT`, `?LEAVE`, `RECURSE` |
 | 浮動小数点スタック | `FDROP`, `FDUP`, `FSWAP`, `FOVER`, `FROT`, `F-ROT`, `FNIP`, `FTUCK`, `FPICK`, `FDEPTH`, `F.S` |
 | 浮動小数点算術・関数 | `F+`, `F-`, `F*`, `F/`, `FNEGATE`, `FMINUS`, `FABS`, `FMAX`, `FMIN`, `FSQRT`, `FEXP`, `FLN`, `FSIN`, `FCOS`, `FTAN`, `FSINCOS`, `FASIN`, `FACOS`, `FATAN`, `FATAN2`, `FSINH`, `FCOSH`, `FTANH`, `FASINH`, `FACOSH`, `FATANH`, `FEXPM1`, `FLNP1`, `FLOG`, `FALOG`, `F**`, `FLOOR`, `FTRUNC`, `FROUND` |
@@ -1002,6 +1024,6 @@ SAVESYS demo.exe
 
 ## 実装していない機能
 
-現在は `EDIT`、`LIST`、エディットバッファ版の `LOAD`／`SAVE`、CP/Mファイル操作、PC-8001のモニター機能、`MCODE`やZ80機械語実行に対応していません。Z80をエミュレートする処理系ではありません。
+誌面固有の編集操作、`EDIT`、CP/Mファイル操作、PC-8001モニター機能、Z80機械語実行には対応していません。標準ブロックのLOADとLISTは実装済みです。
 
-Gforthのワードのうち、`TRY` … `ENDTRY`、`]]` … `[[`、`BLOCK` などのブロックの語などは未実装です。`CODE` や `SAVESYSTEM` などGforthの起動処理に関わる語は対象外です。詳しくは[互換性一覧](COMPATIBILITY.ja.md)を参照してください。
+Gforth拡張の`TRY` … `ENDTRY`、`]]` … `[[`などは未実装です。詳しくは[互換性一覧](COMPATIBILITY.ja.md)を参照してください。

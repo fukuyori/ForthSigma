@@ -32,7 +32,8 @@ pub const names_capacity = build_options.names_kib << 10;
 
 // The layout of the logical memory:
 //   0 .. system_end         the system area (see the addresses below)
-//   system_end .. data_start  the input area (a fixed size)
+//   system_end .. input_area_end  the input area (a fixed size)
+//   input_area_end .. data_start  runtime block buffers and source snapshots
 //   data_start .. m         the data area (HERE)
 //   m .. 2m                 the ALLOCATE heap
 //   2m .. 2m + l            the frames of local variables
@@ -165,7 +166,8 @@ pub const argument_strings_end: Cell = input_area_end;
 comptime {
     if (argc_address % cell_size != 0 or argument_strings_end - argument_strings < 8192) @compileError("the argument area does not fit");
     if (environment_buffer_base + environment_buffer_size > system_end) @compileError("the system area does not fit");
-    if (data_start != input_area_end or data_start % cell_size != 0) @compileError("the data area must follow the input area, aligned to a cell");
+    if (data_start != block_source_end or data_start % cell_size != 0) @compileError("the data area must follow the input area, aligned to a cell");
+    if (blk_address < evaluate_source_name_address + evaluate_source_name.len or scr_address != blk_address + cell_size or scr_address + cell_size > hold_bottom) @compileError("block variables overlap system buffers");
     if (data_start >= min_memory_m) @compileError("the smallest data area is empty");
     if (!Sizes.small.valid()) @compileError("the small sizes are not valid");
     if (!Sizes.default.valid()) @compileError("the default sizes are not valid");
@@ -180,6 +182,9 @@ comptime {
 pub const forth_wordlist: Cell = 1;
 
 pub const root_wordlist: Cell = 2;
+
+/// Standard keyboard constants; user wordlists start after this fixed list.
+pub const ekeys_wordlist: Cell = 3;
 
 pub const max_wordlists = 64;
 
@@ -293,7 +298,14 @@ pub const max_counted_string = 127;
 
 pub const max_gforth_string = 255;
 
-pub const data_start: Cell = input_area_end;
+/// Runtime block buffers are outside the ranges serialized by dictionary images.
+pub const block_buffer_base: Cell = input_area_end;
+pub const block_buffer_end: Cell = block_buffer_base + 32 * 1024;
+pub const block_source_base: Cell = block_buffer_end;
+pub const block_source_end: Cell = block_source_base + max_include_depth * 1024;
+pub const data_start: Cell = block_source_end;
+pub const blk_address: Cell = 0x0d40;
+pub const scr_address: Cell = 0x0d48;
 
 pub const true_flag: Cell = -1;
 

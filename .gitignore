@@ -4,3 +4,4 @@ dist/
 .work/
 /try/
 /reference/
+/.zig-global-cache/

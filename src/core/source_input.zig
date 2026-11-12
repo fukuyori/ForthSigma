@@ -154,6 +154,7 @@ pub fn saveInputPlace(self: *State) InputPlace {
     const id: Cell, const mark: Cell, const number: Cell = switch (self.source_kind) {
         .terminal => .{ 0, self.sourceLineAddress(), self.input_line_serial },
         .evaluate => .{ -1, self.sourceLineAddress(), self.input_line_serial },
+        .block => .{ 2, self.readCellConst(memory_map.blk_address), @intCast(self.block_depth) },
         .file => blk: {
             const frame = self.include_stack[self.include_depth - 1];
             break :blk .{ frame.fileid, @bitCast(frame.line_start), frame.line };
@@ -168,10 +169,15 @@ pub fn restoreInputPlace(self: *State, place: InputPlace) RuntimeError!bool {
     const current: Cell = switch (self.source_kind) {
         .terminal => 0,
         .evaluate => -1,
+        .block => 2,
         .file => self.include_stack[self.include_depth - 1].fileid,
     };
     if (place.id != current or place.cursor < 0) return false;
     switch (self.source_kind) {
+        .block => {
+            if (place.number != self.block_depth or place.mark < 1 or place.mark >= @import("blocks.zig").block_limit or place.cursor > 1024) return false;
+            self.source_line = try @import("blocks.zig").selectSource(self, place.mark);
+        },
         .terminal, .evaluate => {
             // The terminal buffer holds each new line, so the line's number tells them apart.
             if (place.mark != self.sourceLineAddress() or place.number != self.input_line_serial) return false;
