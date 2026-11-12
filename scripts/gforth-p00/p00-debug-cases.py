@@ -1,0 +1,42 @@
+from p00_runner import run, BUILD, SOURCE
+from pathlib import Path
+import tempfile
+with tempfile.TemporaryDirectory(dir=Path('.work/gforth-audit').resolve()) as td:
+ d=Path(td);f=d/'defs.fs';f.write_text(': ZZZ 7 ;\n: USEZZ ZZZ ;\n: BADZZ -99 THROW ;\n');(d/'enter').write_text('\n');(d/'query.fs').write_text('WHEREG ZZZ\n')
+ setup='S" '+str(f)+'" INCLUDED \' NOOP IS AFTER-L '
+ c=[]
+ def a(n,s,e='-1'):c.append((n,s,e))
+ def display(n,body,expected='-1'):
+  a(n,setup+body.replace("[']","'"),'CONTAINS:'+('index=' if n in ['WW','NW','BW','TT','NT','BT'] else 'USEZZ' if n in ['UNUSED-WORDS','PREPEND-WHERE'] else 'defs.fs'))
+ a('BEFORE-LOCATE','BEFORE-LOCATE .','3');a('AFTER-LOCATE','AFTER-LOCATE .','12')
+ a('ASSERT-LEVEL','ASSERT-LEVEL @ 0>= .')
+ for n in ['ASSERT0(','ASSERT1(','ASSERT2(','ASSERT3(']:a(n,': S '+n+' TRUE ) ; S DEPTH .','0')
+ a(')',': S ASSERT0( TRUE ) ; S DEPTH .','0')
+ a('?IOR','0 ?IOR DEPTH .','0');a('?ERRNO-THROW','FALSE ?ERRNO-THROW DEPTH .','0')
+ a('CATCH-NOBT',': BAD -99 THROW ; \' BAD CATCH-NOBT .','-99')
+ a('FAST-THROW',': BAD -99 FAST-THROW ; \' BAD CATCH .','-99')
+ a('NOTHROW',': BAD -99 THROW ; \' BAD CATCH DROP NOTHROW DEPTH .','0')
+ a('EXCEPTION','S" testing" EXCEPTION 0< .')
+ a('EXCEPTIONS',': ERR DROP S" testing" ; \' ERR 2 EXCEPTIONS 0< .')
+ a('WARNINGS','WARNINGS DUP @ SWAP ! DEPTH .','0')
+ a('WARNING"',': S FALSE WARNING" testing" ; S DEPTH .','0')
+ a('CLEARSTACK','1 2 CLEARSTACK DEPTH .','0')
+ a('CLEARSTACKS','1 2 1e CLEARSTACKS DEPTH .','0')
+ a('FCLEARSTACK','1e 2e FCLEARSTACK FDEPTH .','0')
+ a('F.S-PRECISION','F.S-PRECISION 0> .')
+ a('MAXDEPTH-.S','MAXDEPTH-.S @ 0> .')
+ a('...',': OUT 1 2 ... 2DROP ; \' OUT >STRING-EXECUTE OVER >R NIP 0> . R> FREE THROW')
+ a('\\G','S" : S 7 \\G comment\n ; S ." EVALUATE','7')
+ display('XT-LOCATE',"['] ZZZ XT-LOCATE")
+ for n in ['B','N','L']:display(n,"['] ZZZ XT-LOCATE "+n)
+ display('BROWSE','S" BROWSE ZZZ" EVALUATE')
+ for n in ['SHORT-WHERE','EXPAND-WHERE','PREPEND-WHERE']:display(n,n+' S" WHERE ZZZ" EVALUATE')
+ for n,body in [('WW','0 WW'),('NW','NW'),('BW','BW')]:display(n,'S" BROWSE ZZZ" EVALUATE '+body)
+ for n in ['LL','GG']:a(n,setup+n+' DEPTH .','0')
+ display('UNUSED-WORDS','UNUSED-WORDS')
+ for n,body in [('TT','0 TT'),('NT','NT'),('BT','BT')]:display(n,"['] BADZZ CATCH DROP "+body)
+ a('G',setup+"' ZZZ NAME-SET-LOCATED-VIEW G DEPTH .",'0')
+ a('EDIT',setup+'EDIT ZZZ DEPTH .','0')
+ a('WHEREG',setup+'S" '+str(d/'query.fs')+'" INCLUDED DEPTH .','0')
+ a('FANCY-AFTER-L',': S S" abc" 7 FANCY-AFTER-L . TYPE SPACE ; S" '+str(d/'enter')+'" R/O OPEN-FILE THROW DUP >R \' S SWAP INFILE-EXECUTE R> CLOSE-FILE THROW','7 abc')
+ run('P09',c)

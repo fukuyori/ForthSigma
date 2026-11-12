@@ -107,6 +107,8 @@ The build made with `zig build -Dfloat=false` does not have the floating-point w
 
 Implementation choices and capacities are recorded in the [implementation notes](IMPLEMENTATION.md). For the descriptions in the book, including the stack effect of each word, see [SPEC.md](SPEC.md).
 
+The 2026-11-12 [implementation plan](GFORTH_WORD_PHASES.md) prioritizes standard key and block words. Assembly support remains a separate policy review. The [P00 specification](GFORTH_P00_SPEC.md) records future implementation decisions; it does not mark them as implemented (both documents are in Japanese).
+
 ## Not implemented and machine-specific
 
 | Word or feature | Status | Main reason and source |

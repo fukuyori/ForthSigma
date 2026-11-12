@@ -12,6 +12,8 @@
 - [サウンドの調査](SOUND_RESEARCH.md): MSX、Atari ST、C64、NES、Amiga の音源、MSX BASIC の音の語、各システムの音の出力と、その出典
 - [実装ノート](IMPLEMENTATION.md): Zig移植版の構成、実装判断、未実装機能
 - [ワード互換性一覧](COMPATIBILITY.ja.md): 誌面掲載ワードと現在の実装状況
+- [Gforth未対応ワードの実装フェーズ](GFORTH_WORD_PHASES.md): Forth 2012の標準語を優先する、重要度A〜Cの380語と既存4語の辞書化の実装順序、完了条件、tqueタスクとの対応
+- [P00の仕様と比較ケース](GFORTH_P00_SPEC.md): 利用者が確定した互換方針、保存時の再配置設計、Gforthによる実測と再実行方法
 - [決定事項・保留事項](DECISIONS.md): 原資料の仕様と移植判断の区分
 - [メモリとグラフィックスの計画](MEMORY_AND_GRAPHICS_PLAN.md): メモリの上限を起動時とビルド時に指定する計画と、MSX、NES、Amiga を手本にした GUI、スプライト、画像の語の計画
 - [開発の記録](DEVELOPMENT_SCHEDULE.md): 作業の経緯

@@ -12,6 +12,8 @@ For the project overview, how to build, the current features, the differences fr
 - [Sound research](SOUND_RESEARCH.md): the sound chips of the MSX, the Atari ST, the C64, the NES, and the Amiga, MSX BASIC's sound, and the audio output of each system, with the sources (in Japanese)
 - [Implementation notes](IMPLEMENTATION.md): the structure of the Zig port, implementation decisions, features not implemented
 - [Word compatibility list](COMPATIBILITY.md): the words published in the book and their current implementation status
+- [Gforth word implementation phases](GFORTH_WORD_PHASES.md): implementation order, acceptance criteria, and tque tasks for 380 priority A–C words and dictionary registration of four existing syntax words, prioritizing Forth 2012 words (in Japanese)
+- [P00 specification and reference cases](GFORTH_P00_SPEC.md): compatibility decisions, address relocation design, and reproducible Gforth comparisons (in Japanese)
 - [Decisions and open issues](DECISIONS.md): the division between the specification of the original sources and the porting decisions (in Japanese)
 - [Memory and graphics plan](MEMORY_AND_GRAPHICS_PLAN.md): the plan for setting the memory limits at start-up and at build time, and for the GUI, sprite, and image words modeled on the MSX, the NES, and the Amiga (in Japanese)
 - [Development schedule](DEVELOPMENT_SCHEDULE.md): the record of the work (in Japanese)
