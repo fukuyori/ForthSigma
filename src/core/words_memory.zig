@@ -24,7 +24,7 @@ pub const words = [_]Builtin{
     .place, .compare, .search, .slash_string, .minus_trailing, .char_plus, .chars, .bounds,
     .blank_fill, .cmove_up, .scan, .skip, .str_equal, .string_prefix_query, .plus_place, .align_here,
     .unused, .dump, .time_and_date,
-    .allocate, .free, .resize,
+    .allocate, .free, .resize, .two_comma,
 };
 
 pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
@@ -166,6 +166,13 @@ pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
             const address = self.data_here;
             try self.reserveData(cell_size);
             try self.writeCell(address, value);
+        },
+        .two_comma => {
+            try self.requireDepth(2);
+            const address = self.data_here;
+            // Reserve both cells before either is written or consumed.
+            try self.reserveData(2 * cell_size);
+            try self.writeDouble(address, try self.popDouble());
         },
         .c_comma => {
             const value = try self.pop();

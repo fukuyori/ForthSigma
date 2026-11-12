@@ -747,6 +747,9 @@ pub const State = struct {
             .{ "FOURTH", .fourth },
             .{ "RDROP", .r_drop },
             .{ "THIRD", .third },
+            .{ "2,", .two_comma },
+            .{ "ROL", .rol },
+            .{ "ROR", .ror },
     };
 
     fn installBuiltins(self: *State) void {

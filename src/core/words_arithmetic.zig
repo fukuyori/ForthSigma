@@ -25,13 +25,13 @@ pub const words = [_]Builtin{
     .false_value, .s_to_d, .d_to_s, .d_add, .d_sub, .d_negate, .d_abs, .d_zero_equal, .d_zero_less,
     .d_equal, .d_less, .within, .u_less, .u_greater, .star_slash, .star_slash_mod, .m_star, .um_star,
     .um_slash_mod, .fm_slash_mod, .sm_slash_rem, .d_two_star, .d_two_slash, .d_max, .d_min, .m_plus,
-    .du_less, .m_star_slash,
+    .du_less, .m_star_slash, .rol, .ror,
     .zero_less_equal, .d_zero_less_equal, .d_zero_not_equal, .d_zero_greater, .d_zero_greater_equal, .d_less_equal, .d_not_equal, .d_greater, .d_greater_equal, .du_less_equal, .du_greater, .du_greater_equal, .u_less_equal, .u_greater_equal, .u_max, .u_min,
 };
 
 pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
     switch (builtin) {
-        .add, .sub, .mul, .div, .mod, .max, .min, .equal, .not_equal, .less, .greater, .less_equal, .greater_equal, .bit_and, .bit_or, .bit_xor, .bit_nand, .bit_nor, .lshift, .rshift, .u_less, .u_greater, .u_less_equal, .u_greater_equal, .u_max, .u_min => try self.binary(builtin),
+        .add, .sub, .mul, .div, .mod, .max, .min, .equal, .not_equal, .less, .greater, .less_equal, .greater_equal, .bit_and, .bit_or, .bit_xor, .bit_nand, .bit_nor, .lshift, .rshift, .u_less, .u_greater, .u_less_equal, .u_greater_equal, .u_max, .u_min, .rol, .ror => try self.binary(builtin),
         .div_mod => {
             const divisor = try self.pop();
             const dividend = try self.pop();

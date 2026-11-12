@@ -43,6 +43,15 @@ pub inline fn binary(self: *State, comptime builtin: Builtin) RuntimeError!void 
         .bit_xor => a ^ b,
         .bit_nand => ~(a & b),
         .bit_nor => ~(a | b),
+        .rol, .ror => blk: {
+            const bits: UCell = @bitCast(a);
+            const amount: u6 = @truncate(@as(UCell, @bitCast(b)));
+            const reverse: u6 = 0 -% amount;
+            break :blk @bitCast(if (builtin == .rol)
+                (bits << amount) | (bits >> reverse)
+            else
+                (bits >> amount) | (bits << reverse));
+        },
         .lshift, .rshift => blk: {
             const bits: UCell = @bitCast(a);
             if (b < 0 or b >= 64) break :blk 0;

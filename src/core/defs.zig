@@ -726,6 +726,7 @@ pub const Builtin = enum {
     // P01a: append tags so existing builtin enum values remain stable.
     zero_less_equal, d_zero_less_equal, d_zero_not_equal, d_zero_greater, d_zero_greater_equal, d_less_equal, d_not_equal, d_greater, d_greater_equal, du_less_equal, du_greater, du_greater_equal, u_less_equal, u_greater_equal, u_max, u_min,
     two_nip, two_r_drop, two_tuck, fourth, r_drop, third,
+    two_comma, rol, ror,
 };
 
 pub const HeapResult = union(enum) { address: Cell, no_memory, bad_pointer };

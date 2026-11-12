@@ -441,6 +441,12 @@ BIGNUM 2@ D.                                      \ 30792422974944119506
 | Memory and definitions | `2@`, `2!`, `2VARIABLE name`, `value 2CONSTANT name`, `value 2VALUE name`, `2LITERAL` | The name of a `2VALUE` pushes its value, and `value TO name` changes it. `2LITERAL` compiles a double-cell integer into a definition. |
 | Others | `D2*`, `D2/`, `DMAX`, `DMIN`, `M+`, `M*/`, `DU<`, `2ROT`, `D.R` | `M*/` (( d1 n1 +n2 -- d2 )) computes d1×n1 in three cells and then divides by n2 (floored division; as in gforth, n2 is treated as unsigned, and the quotient wraps when it does not fit in two cells). `D2/` rounds toward negative infinity (arithmetic shift). `M+` adds a single-cell integer to a double-cell integer. `DU<` compares unsigned. `2ROT` moves the third pair of cells to the top. `D.R` (( d width -- )) prints right-aligned in width characters, without a space after it. |
 
+### Pair storage and cell rotations
+
+`2,` `( x1 x2 -- )` reserves 16 bytes at HERE and stores x2 first, then x1, using the same layout as 2!. It does not add alignment: an unaligned HERE stays unaligned. Both cells are reserved before either is written, so capacity failure leaves HERE and the original data unchanged. The pair is dictionary data reclaimed by FORGET/MARKER; raw values, even address-like values, are not automatically relocated by an appending dictionary load.
+
+`ROL` and `ROR` `( u count -- u2 )` rotate a 64-bit cell left/right, treating the cell as an unsigned bit pattern. The count is reduced modulo 64, so 0/64/128 preserve the value; a raw negative count uses the same low six bits. For example, `1 65 ROL` gives 2 and `1 -1 ROR` gives 2. These boundary results match the designated 64-bit Gforth comparison build. Unlike shifts, rotated-out bits return at the other end.
+
 ## Defining words and the dictionary
 
 A user-defined word is made with `: name ... ;`. Word names are matched by the whole name, without distinguishing upper and lower case of ASCII letters. Redefining an existing name prints a warning, but the new definition takes precedence. A definition with the same name as a built-in word also takes precedence over the built-in word.
@@ -1007,7 +1013,7 @@ The following table lists the built-in words that are registered in the dictiona
 | --- | --- |
 | Stack operations | `DROP`, `DUP`, `SWAP`, `OVER`, `ROT`, `-ROT`, `NIP`, `TUCK`, `PICK`, `ROLL`, `2DUP`, `2DROP`, `2SWAP`, `2OVER`, `DEPTH`, `>R`, `R>`, `R@`, `2>R`, `2R>`, `2R@`, `?DUP`, `2ROT`, `N>R`, `NR>`, `2NIP`, `2TUCK`, `THIRD`, `FOURTH`, `RDROP`, `2RDROP` |
 | Arithmetic | `+`, `-`, `*`, `/`, `MOD`, `/MOD`, `*/`, `*/MOD`, `MINUS`, `NEGATE`, `ABS`, `1+`, `1-`, `2*`, `2/`, `MAX`, `MIN`, `UNDER+` |
-| Comparison, logic, and bits | `=`, `<>`, `<`, `>`, `<=`, `>=`, `NOT`, `0=`, `0<`, `0>`, `0>=`, `0<=`, `0<>`, `AND`, `OR`, `XOR`, `COM`, `INVERT`, `NAND`, `NOR`, `SWAB`, `LSHIFT`, `RSHIFT`, `TRUE`, `FALSE`, `U<`, `U>`, `U<=`, `U>=`, `UMAX`, `UMIN` |
+| Comparison, logic, and bits | `=`, `<>`, `<`, `>`, `<=`, `>=`, `NOT`, `0=`, `0<`, `0>`, `0>=`, `0<=`, `0<>`, `AND`, `OR`, `XOR`, `COM`, `INVERT`, `NAND`, `NOR`, `SWAB`, `LSHIFT`, `RSHIFT`, `ROL`, `ROR`, `TRUE`, `FALSE`, `U<`, `U>`, `U<=`, `U>=`, `UMAX`, `UMIN` |
 | Constants and address arithmetic | `BL`, `CELL`, `CELLS`, `CELL+`, `ALIGNED`, `ALIGN`, `UNUSED`, `WITHIN`, `BUFFER:`, `DUMP` |
 | Memory and arrays | `@`, `!`, `,`, `C,`, `C@`, `C!`, `+!`, `1+!`, `1-!`, `OSET`, `ON`, `OFF`, `?`, `A@`, `A!`, `ERASE`, `FILL`, `MOVE`, `CMOVE`, `HERE`, `ALLOT`, `CELL-` |
 | Loops | `I`, `J`, `K`, `LEAVE`, `UNLOOP` |
