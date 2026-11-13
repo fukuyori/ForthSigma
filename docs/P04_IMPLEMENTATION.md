@@ -1,6 +1,6 @@
 # P04 implementation and validation
 
-2026-11-13. P04 (547) is in progress. P04a (563) is split into basic/borrowed strings (632, 21 words) and owned/editing/Unicode access (633, seven words). P04b (564, five words) remains pending. The previous P03 review fixes remain uncommitted; no Git operation was requested for this turn.
+2026-11-13. P04 (547) is in progress. P04a (563) is split into basic/borrowed strings (632, 21 words) and owned/editing/Unicode access (633: six implemented, XC@+? pending an empty-input decision). P04b (564, five words) remains pending. P03 review fixes and the first 21 P04a words were committed/pushed as a6ab243. The subsequent edit-word changes are uncommitted.
 
 ## Basic characters and borrowed strings (632)
 
@@ -27,6 +27,22 @@ Gforth sources were consulted only to confirm behavior; no GPL implementation wa
 
 ## Remaining work
 
-633: APPEND, CSTRING>SSTRING, DELETE, INSERT, S+, STRING,, XC@+?. Check ownership, allocator failures, overlap, dictionary lifetime and malformed/truncated UTF-8. Then complete 563 and proceed to 564 ($VALUE, .SUBSTITUTE, MACRO:, MACROS-WORDLIST, REPLACER:). Keep 547 and 542 incomplete until their actual remaining work is finished.
+633: APPEND, CSTRING>SSTRING, DELETE, INSERT, S+ and STRING, are implemented (see below). XC@+? is pending a user decision about empty input. Check malformed/truncated UTF-8 before completing it. Then complete 563 and proceed to 564 ($VALUE, .SUBSTITUTE, MACRO:, MACROS-WORDLIST, REPLACER:). Keep 547 and 542 incomplete until their actual remaining work is finished.
 
 The P04 changes are uncommitted.
+
+## Owned and editing strings (633, six words implemented)
+
+src/core/words_string_edit.zig implements S+, APPEND, CSTRING>SSTRING, DELETE, INSERT and STRING,. Tags and startup words are appended without renumbering existing words.
+
+- S+ allocates an owned concatenation; FREE releases it. APPEND resizes the first owned block and returns its new address. NULL with length zero is accepted. Update external owners with the returned address.
+- APPEND preserves a source inside the first allocation across movement. If overlap extends into bytes that resizing would discard, a temporary copy is used before resizing. Errors free temporary allocations and leave the original block intact.
+- INSERT clips the source length to the fixed destination size, shifts the destination right, then reads/copies the source. When source aliases destination, it observes that preceding shift, matching the designated Gforth. DELETE clips the deletion length, shifts left and fills the tail with blanks.
+- CSTRING>SSTRING scans to NUL within logical memory and returns a borrowed slice; an absent terminator is InvalidAddress.
+- STRING, writes the low-byte count before copying every source byte to dictionary space. Lengths above 255 still allocate/copy all bytes, as the reference does. No implicit alignment is added. Overlap observes the prefix-before-copy order.
+
+address_registry.preflightCopies simulates registration keys across compound copies. INSERT checks both stages before modifying bytes, including metadata created by its first stage. STRING, preflights before changing HERE/count. S+ cleans up a new destination if either copy cannot fit the registry; APPEND checks capacity before resizing the original. Existing types and partial-write damage remain connected to the P03 registry.
+
+Eight regressions cover forced APPEND movement/self overlap, sequential INSERT overlap, clamped deletion, long/overlapping STRING,, bounded NUL scanning, compound metadata exhaustion, input/owner/HERE preservation and failed-allocation cleanup. Normal/minimal zig build test and the normal build pass. Logs: .zig-cache/p04a-edit-test.log, p04a-edit-minimal.log, p04a-edit-build.log. verify-p04a-edit.py passes 48 cases against the designated Gforth; report .work/p04a-edit-check/results.json.
+
+XC@+? empty-input policy was asked through the user-input tool and has not yet been answered. The designated Gforth advances one byte and returns remaining length -1 even for empty input; Sigma's existing X@+/STRING advances similarly but returns U+FFFD without reading a byte. This behavior must be settled before implementing the new word. Keep 633/563/547 incomplete.

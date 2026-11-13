@@ -285,3 +285,33 @@ pub fn relocateBlock(self: *State, destination: Cell, source: Cell, length: usiz
     self.addresses.index_dirty = true;
     self.addresses.stable_writes = 0;
 }
+
+pub const CopySpec = struct { destination: Cell, source: Cell, length: usize };
+/// Simulate registration keys for compound MOVE operations before touching bytes.
+/// Values/status do not affect whether a full source cell consumes a new slot.
+pub fn preflightCopies(self: *const State, copies: []const CopySpec) RuntimeError!void {
+    const Key = struct { kind: Kind, slot: Cell };
+    var keys: [capacity]Key = undefined;
+    var count = self.addresses.count;
+    for (self.addresses.records[0..count], 0..) |record, i| keys[i] = .{ .kind = record.kind, .slot = record.slot };
+    for (copies) |copy_spec| {
+        const before = count;
+        for (0..before) |i| {
+            const key = keys[i];
+            if (key.kind != .memory or key.slot < copy_spec.source or @as(i128, key.slot) + 8 > @as(i128, copy_spec.source) + copy_spec.length) continue;
+            const slot = copy_spec.destination + (key.slot - copy_spec.source);
+            var found = false;
+            for (keys[0..count]) |existing| {
+                if (existing.kind == .memory and existing.slot == slot) {
+                    found = true;
+                    break;
+                }
+            }
+            if (!found) {
+                if (count == capacity) return error.MemoryExhausted;
+                keys[count] = .{ .kind = .memory, .slot = slot };
+                count += 1;
+            }
+        }
+    }
+}

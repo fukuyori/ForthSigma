@@ -907,6 +907,12 @@ pub const State = struct {
             .{ "SCAN-BACK", .scan_back },
             .{ "NOSPLIT?", .no_split },
             .{ "TYPEWHITE", .type_white },
+            .{ "S+", .string_concat },
+            .{ "APPEND", .string_append_owned },
+            .{ "CSTRING>SSTRING", .cstring_to_sstring },
+            .{ "DELETE", .delete_bytes },
+            .{ "INSERT", .insert_bytes },
+            .{ "STRING,", .string_comma },
     };
 
     fn installBuiltins(self: *State) void {
@@ -2019,7 +2025,7 @@ pub const State = struct {
         if (defs.debug_enabled and self.cover_blocks and self.compiling and startsBlock(builtin)) self.markBlock(self.columnAfterWord());
     }
 
-    const word_modules = .{ @import("core/words_text.zig"), @import("core/words_buffers.zig"), @import("core/words_data.zig"), @import("core/words_width.zig"), words_stack, words_arithmetic, @import("core/words_numeric.zig"), words_memory, words_output, words_input, words_compiling, words_float, words_pictured, words_dictionary, words_system, @import("core/blocks.zig"), words_files, words_strings, words_help, words_defining, words_graphics, words_audio, words_xchar, words_tools, words_debug };
+    const word_modules = .{ @import("core/words_string_edit.zig"), @import("core/words_text.zig"), @import("core/words_buffers.zig"), @import("core/words_data.zig"), @import("core/words_width.zig"), words_stack, words_arithmetic, @import("core/words_numeric.zig"), words_memory, words_output, words_input, words_compiling, words_float, words_pictured, words_dictionary, words_system, @import("core/blocks.zig"), words_files, words_strings, words_help, words_defining, words_graphics, words_audio, words_xchar, words_tools, words_debug };
 
     /// For each built-in word, the index in `word_modules` of the file that executes it.
     const word_owner = blk: {

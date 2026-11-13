@@ -1,8 +1,8 @@
 # Gforth対応の引き継ぎ
 
-更新日：2026-11-13。P00・S01・P01・P02とP03の65語（P03a/b/c）まで実装・検証完了。次は **P04a残り7語（633）の所有文字列編集・UTF-8取得**。Windows/Linux確認はここでは行わず607に残す。
+更新日：2026-11-13。P00・S01・P01・P02とP03の65語（P03a/b/c）まで実装・検証完了。次は **P04aのXC@+?（633、空入力の仕様回答待ち）**。Windows/Linux確認はここでは行わず607に残す。
 
-P03c was committed and pushed as `98be4f8`. P03 and task 562 are complete. Claude Code review fixes are uncommitted; tque 631 is complete (auto), with no new concrete defect found in the final review. See [P03 review](P03_REVIEW.md). Check git status and git log before resuming.
+P03c was committed and pushed as `98be4f8`. P03 and task 562 are complete. Claude Code review fixes and the first 21 P04a words were committed/pushed as a6ab243. Task 631 is complete (auto), with no new concrete defect found in the final review. See [P03 review](P03_REVIEW.md). Check git status and git log before resuming.
 
 ## 最初に読む資料
 

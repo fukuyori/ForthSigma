@@ -1,6 +1,6 @@
 # P03 review
 
-P03cは`98be4f8`でコミット・プッシュ済みです。Claude Codeの指摘を修正し、再レビューと最終確認で新たな具体的不具合がないことを確認しました。通常・全機能群無効構成のテスト、専用10回帰、指定Gforthとの1,742ケース比較が成功しています。修正分は未コミット、tque 631は完了（auto）です。
+P03cは`98be4f8`でコミット・プッシュ済みです。Claude Codeの指摘を修正し、再レビューと最終確認で新たな具体的不具合がないことを確認しました。通常・全機能群無効構成のテスト、専用10回帰、指定Gforthとの1,742ケース比較が成功しています。修正分はa6ab243でコミット・push済み、tque 631は完了（auto）です。
 
 P03c was committed and pushed as 98be4f8. Claude Code Sonnet reviewed the cumulative changes from 1c39b75 using Read/Grep/Glob only. Execution, modification, Git operations, external access and delegation were disabled. Codex performed reproduction, fixes and validation.
 
@@ -28,4 +28,4 @@ Validation: ten dedicated review regressions, normal/minimal zig build test and 
 
 A single identical CLI measurement with 1,000 registrations and 100,000 stores improved from about 0.50 to 0.03 seconds in the final version. A mixed workload with 1,000 registrations and 10,000 string replacements/stores improved from about 0.50 to 0.31 seconds. This is a reference measurement, not a general performance guarantee. Logs: .zig-cache/p03-review-*.log; reports and measurements: .work/p03-review/.
 
-Fixes are uncommitted. Task 631 is complete with auto progress. Final reports: followup-sonnet.txt and final-sonnet.txt under .work/p03-review/. No version or release package was changed.
+Fixes were committed and pushed as a6ab243. Task 631 is complete with auto progress. Final reports: followup-sonnet.txt and final-sonnet.txt under .work/p03-review/. No version or release package was changed.

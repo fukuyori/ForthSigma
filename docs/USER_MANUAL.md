@@ -1132,3 +1132,9 @@ A,/ACONSTANT may register invalid values, but saving rejects them. A complete ! 
 #BELL/#BS/#CR/#DEL/#EOF/#ESC/#FF/#LF/#TAB return 7/8/13/127/4/27/12/10/9. INVALID-CHAR returns U+FFFD. NEWLINE returns a borrowed one-byte LF string.
 
 TOUPPER folds ASCII a-z only. CAPSCOMPARE and CAPSSTRING-PREFIX? compare with ASCII folding; CAPSSEARCH returns the first matching borrowed suffix, or the original string and false. STR< and STRING-SUFFIX? compare bytes. SAFE/STRING clamps its skip; SCAN-BACK returns the prefix through the last matching byte. NOSPLIT? retains both descriptors and tests the empty suffix at the end. TYPEWHITE replaces each byte by a space while keeping TAB. These operations do not allocate owned strings. See [P04 details](P04_IMPLEMENTATION.md).
+
+### P04a owned and editing strings
+
+S+ allocates an owned concatenation, released with FREE. APPEND resizes its first owned string; use its returned address after possible movement. It preserves a source that aliases the first block. CSTRING>SSTRING returns a borrowed NUL-terminated string without the terminator, or InvalidAddress if none exists in logical memory.
+
+INSERT shifts its fixed-size destination right, then copies the clipped source prefix; an aliased source observes the shift. DELETE removes a clipped prefix and blank-fills the fixed buffer's tail. STRING, stores the low-byte count followed by all bytes, without alignment; counts above 255 wrap while all bytes are still copied. Compound metadata checks precede destination changes. XC@+? remains pending. [Details](P04_IMPLEMENTATION.md).

@@ -2,7 +2,7 @@
 
 2026-11-13。P03a（560）の44語とP03b（561）の15語・型/寿命追跡・新形式保存/復元/追加は実装・検証完了。P03c（562）の6語も実装・検証完了。以下の段階別記録には当時の暫定制限も残すが、現在の状態は次節を優先する。
 
-## 現在の統合状態（630、今回未コミット）
+## 現在の統合状態（630、bcf625fでpush済み）
 
 公開SAVE/SAVESYS、State.encodeImage/restoreImage/restoreFreshImage/appendImageとLOAD-DICTIONARYをSIGIMG45/46/47へ接続した。旧SIGIMG44以前を拒否する。明示登録と到達可能ヒープを保持し、2回追加では独立したヒープへ配置する。型付き参照を一律に拒否していた暫定制限は解除済み。
 
@@ -243,8 +243,8 @@ BUFFER%の配置は長さ・番地・容量の順。入力/ローカルの一時
 
 p03c_test.zigの6回帰でコピー・拡大結果、強制移動・縮小・保存復元、上限値/実ヒープ不足の入力保持、NULL/不正番地の解放、型付きコピーの解放、表満杯時の非変更を確認した。通常／全機能群無効のzig build testと通常ビルドが成功。verify-p03c.pyの60ケースが指定Gforthと一致。
 
-ログは.zig-cache/p03c-test.log、p03c-minimal.log、p03c-build.log。比較結果は.work/p03c-check/results.json。今回のP03cは未コミット。Windows/Linuxはここでは実施しない。
+ログは.zig-cache/p03c-test.log、p03c-minimal.log、p03c-build.log。比較結果は.work/p03c-check/results.json。P03cは98be4f8でpush済み。Windows/Linuxはここでは実施しない。
 
 ## P03 Claude Code review
 
-P03c was pushed as 98be4f8, then Claude Code reviewed all P03 changes. Findings were corrected and the final read-only review found no new concrete defect. See [P03 review](P03_REVIEW.md). Ten review regressions, normal/minimal tests, the normal build, 1,742 designated-Gforth comparison cases and targeted CLI checks passed. Fixes remain uncommitted; task 631 is complete with auto progress.
+P03c was pushed as 98be4f8, then Claude Code reviewed all P03 changes. Findings were corrected and the final read-only review found no new concrete defect. See [P03 review](P03_REVIEW.md). Ten review regressions, normal/minimal tests, the normal build, 1,742 designated-Gforth comparison cases and targeted CLI checks passed. Review fixes were committed/pushed as a6ab243; task 631 is complete with auto progress.

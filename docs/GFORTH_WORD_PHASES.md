@@ -210,7 +210,7 @@ FACILITY EXTのキー4語とBLOCK/BLOCK EXTの10語を優先する。既存の�
 
 #### P04a 文字列操作とUnicode
 
-対象28語。tque ID: 563。基本/借用文字列21語（632）は実装・323ケース比較と回帰済み。所有文字列編集/UTF-8取得の7語（633）は未実装。親563/547は未完了。[記録](P04_IMPLEMENTATION.md)。
+対象28語。tque ID: 563。基本/借用文字列21語（632）は実装・323ケース比較と回帰済み。633の編集/所有文字列6語も実装し48ケース比較済み。XC@+?は空入力仕様の回答待ち。親563/547は未完了。[記録](P04_IMPLEMENTATION.md)。
 
 `#BELL`, `#BS`, `#CR`, `#DEL`, `#EOF`, `#ESC`, `#FF`, `#LF`, `#TAB`, `APPEND`, `CAPSCOMPARE`, `CAPSSEARCH`, `CAPSSTRING-PREFIX?`, `CSTRING>SSTRING`, `DELETE`, `INSERT`, `INVALID-CHAR`, `NEWLINE`, `NOSPLIT?`, `S+`, `SAFE/STRING`, `SCAN-BACK`, `STR<`, `STRING,`, `STRING-SUFFIX?`, `TOUPPER`, `TYPEWHITE`, `XC@+?`
 
