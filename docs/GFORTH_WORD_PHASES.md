@@ -198,7 +198,7 @@ FACILITY EXTのキー4語とBLOCK/BLOCK EXTの10語を優先する。既存の�
 
 #### P03c ヒープと伸長バッファー
 
-対象 6語。tque ID: 562。
+対象6語。tque ID: 562。実装済み。指定Gforthとの60ケース比較、通常/全機能群無効テスト、所有権・失敗保持・移動/縮小・型/保存復元の6回帰が成功。[記録](P03_IMPLEMENTATION.md)。
 
 `ADJUST-BUFFER`, `BUFFER%`, `EXTEND-MEM`, `FREE-MEM-VAR`, `INIT-BUFFER`, `SAVE-MEM`
 

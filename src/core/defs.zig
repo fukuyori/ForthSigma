@@ -735,6 +735,7 @@ pub const Builtin = enum {
     exchange_store, star_align, star_aligned, add_exchange, slash_l, slash_w, slash_x, c_to_s, cell_slash, char_minus, dfloat_slash, float_size_word, float_slash, l_store, l_to_s, l_fetch, l_align, l_aligned, l_be, l_le, max_aligned, sfloat_slash, th, th_store, th_fetch, w_store, w_to_s, w_fetch, w_align, w_aligned, w_be, w_le, x_store, x_to_s, x_fetch, x_align, x_aligned, x_be, xd_store, xd_to_s, xd_fetch, xd_be, xd_le, x_le,
     to_here, two_field, l_comma, l_field, max_align, mem_comma, save_mem_dict, w_comma, w_field, x_comma, xd_comma, x_field,
     a_comma, define_aconstant, define_avariable,
+    save_mem, extend_mem, free_mem_var, buffer_percent, init_buffer, adjust_buffer,
 };
 
 pub const HeapResult = union(enum) { address: Cell, no_memory, bad_pointer };

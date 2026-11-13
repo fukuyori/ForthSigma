@@ -9,6 +9,7 @@ comptime {
     _ = @import("tests/p03a_test.zig");
     _ = @import("tests/p03b_data_test.zig");
     _ = @import("tests/p03b_address_test.zig");
+    _ = @import("tests/p03c_test.zig");
     _ = @import("tests/p01b_test.zig");
     _ = @import("tests/p01a_test.zig");
     _ = @import("core/blocks.zig");

@@ -1112,3 +1112,11 @@ MEM, ( addr u -- ) copies bytes to HERE with overlap handling; SAVE-MEM-DICT ( a
 A, ( addr -- ), ACONSTANT ( addr "name" -- ), and AVARIABLE ( "name" -- ) explicitly register addresses. AVARIABLE starts at zero. Raw numerical cells are never inferred to be addresses. Full-cell updates retain the type; partial writes damage it. MOVE words transfer types for complete registered cells; FREE, shrinking, FORGET/MARKER and HERE rollback track lifetimes. Reusing an address does not revive a stale reference. The per-VM registration limit is 2,048.
 
 Explicitly typed references are saved, restored and appended in SIGIMG45/46/47. Only reachable heap objects are included; raw cells are never inferred to be addresses. Damaged/invalid references fail with -9; malformed images or conflicting fixed-system registrations with -264. Formats through SIGIMG44 are rejected. See [format](IMAGE_FORMAT45.md) and [P03 record](P03_IMPLEMENTATION.md).
+
+### Heap copies and growing buffers (P03c)
+
+SAVE-MEM ( addr1 u -- addr2 u ) returns an owned heap copy. EXTEND-MEM ( addr1 u1 u -- addr addr2 u2 ) grows it by u and returns the appended region, new block and total length. Use the returned address after growth and release the owned block with FREE.
+
+BUFFER% ( -- alignment size ) returns 8 and 24. Its three cells hold length, address and capacity. INIT-BUFFER ( descriptor -- ) initializes a fresh descriptor; ADJUST-BUFFER ( u descriptor -- ) changes its length. Growth preserves contents; shortening keeps the allocation and capacity. The address cell is explicitly typed for image persistence.
+
+FREE-MEM-VAR ( descriptor -- ) frees the block in the first two cells and clears them; a NULL address is a no-op. It leaves a third capacity cell untouched, so reinitialize a buffer before reuse. INIT-BUFFER does not free old storage. Allocation failures THROW the allocator IOR while preserving the original block and descriptor.
