@@ -20,6 +20,10 @@ pub const LineResult = struct { length: usize = 0, found: bool = false, ior: Cel
 
 /// Host file operations. Ids are opaque cells; the standard streams use the fixed ids above.
 pub const FileOps = struct {
+    /// Writes a NUL-terminated cwd; value excludes NUL. Failure uses a nonzero ior.
+    get_dir: ?*const fn (?*anyopaque, []u8) FileResult = null,
+    /// Changes process cwd to the supplied expanded byte path.
+    set_dir: ?*const fn (?*anyopaque, []const u8) Cell = null,
     /// Home directory (empty user means current); null means unknown/unsupported.
     user_home: ?*const fn (?*anyopaque, []const u8, []u8) RuntimeError!?usize = null,
     /// Opens an existing file, or creates and truncates one when `create` is set.

@@ -392,6 +392,43 @@ fn userHome(context: ?*anyopaque, user: []const u8, buffer: []u8) forth.RuntimeE
     return home.len;
 }
 
+fn getDirectory(_: ?*anyopaque, buffer: []u8) forth.FileResult {
+    if (buffer.len == 0) return .{ .ior = forth.errnoIor(forth.errno_invalid) };
+    clearErrno();
+    if (builtin.os.tag == .windows) {
+        var wide: [32768]u16 = undefined;
+        const found = @import("c_file")._wgetcwd(&wide, wide.len);
+        if (found == null) return .{ .ior = lastIor() };
+        const text = std.mem.span(found);
+        var iterator = std.unicode.Utf16LeIterator.init(text);
+        var length: usize = 0;
+        while (iterator.nextCodepoint() catch return .{ .ior = forth.errnoIor(wide_c.errno_illegal_sequence) }) |c| {
+            length += std.unicode.utf8CodepointSequenceLength(c) catch unreachable;
+        }
+        if (length >= buffer.len) return .{ .ior = forth.errnoIor(34) };
+        _ = std.unicode.utf16LeToUtf8(buffer[0..length], text) catch return .{ .ior = forth.errnoIor(wide_c.errno_illegal_sequence) };
+        buffer[length] = 0;
+        return .{ .value = @intCast(length) };
+    }
+    if (@import("c_file").getcwd(buffer.ptr, buffer.len) == null) return .{ .ior = lastIor() };
+    const length = std.mem.indexOfScalar(u8, buffer, 0) orelse return .{ .ior = forth.errnoIor(forth.errno_invalid) };
+    return .{ .value = @intCast(length) };
+}
+
+fn setDirectory(_: ?*anyopaque, name: []const u8) forth.Cell {
+    var path: [4096:0]u8 = undefined;
+    if (name.len >= path.len or std.mem.indexOfScalar(u8, name, 0) != null) return forth.errnoIor(forth.errno_invalid);
+    @memcpy(path[0..name.len], name);
+    path[name.len] = 0;
+    clearErrno();
+    const status = if (builtin.os.tag == .windows) native: {
+        var wide: [8192]u16 = undefined;
+        const terminated = wide_c.from(&path, &wide) orelse return lastIor();
+        break :native @import("c_file")._wchdir(terminated);
+    } else @import("c_file").chdir(&path);
+    return if (status == 0) 0 else lastIor();
+}
+
 fn fileOpen(_: ?*anyopaque, name: []const u8, access: forth.FileAccess, create: bool) forth.FileResult {
     return fileOpenMode(name, access, create, null);
 }
@@ -802,7 +839,7 @@ fn fileStdinByte(wait: bool) forth.RuntimeError!?u8 {
     }
 }
 
-const file_ops = forth.FileOps{ .user_home = userHome, .open = fileOpen, .close = fileClose, .read_line = fileReadLine, .read = fileRead, .write = fileWrite, .size = fileSize, .reposition = fileReposition, .position = filePosition, .resize = fileResize, .flush = fileFlush, .delete = fileDelete, .rename = fileRename, .status = fileStatus, .key = fileKey, .ready = fileReady, .eof = fileEof, .create_mode = fileCreateMode };
+const file_ops = forth.FileOps{ .get_dir = getDirectory, .set_dir = setDirectory, .user_home = userHome, .open = fileOpen, .close = fileClose, .read_line = fileReadLine, .read = fileRead, .write = fileWrite, .size = fileSize, .reposition = fileReposition, .position = filePosition, .resize = fileResize, .flush = fileFlush, .delete = fileDelete, .rename = fileRename, .status = fileStatus, .key = fileKey, .ready = fileReady, .eof = fileEof, .create_mode = fileCreateMode };
 
 /// Lets the Windows console interpret the ANSI sequences written by PAGE.
 fn enableVirtualTerminal() void {

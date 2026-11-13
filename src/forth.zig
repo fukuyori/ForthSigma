@@ -946,6 +946,8 @@ pub const State = struct {
             .{ "BASENAME", .basename },
             .{ "DIRNAME", .dirname },
             .{ "FILENAME-MATCH", .filename_match },
+            .{ "GET-DIR", .get_dir },
+            .{ "SET-DIR", .set_dir },
             .{ "\\\\\\", .triple_backslash },
     };
 

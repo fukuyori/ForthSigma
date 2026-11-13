@@ -237,6 +237,8 @@ pub const entries = [_]Entry{
     .{ .name = "ALSO-PATH", .stack = "( addr u path -- )", .text = "Append directory bytes to a path, adding a NUL separator when nonempty." },
     .{ .name = ".PATH", .stack = "( path -- )", .text = "Display components with trailing spaces; stop at the first empty component." },
     .{ .name = "PATH+", .stack = "( path \"dir\" -- )", .text = "Parse and append one directory token." },
+    .{ .name = "GET-DIR", .stack = "( addr capacity -- addr u | 0 0 )", .text = "Write the current process directory with NUL termination. Capacity must include NUL; length excludes it. Failure returns 0 0." },
+    .{ .name = "SET-DIR", .stack = "( addr u -- ior )", .text = "Change process working directory; expand ~, ~user and ~+/. Relative names use cwd, not the source directory. NUL is rejected." },
     .{ .name = "FILENAME-MATCH", .stack = "( name u pattern u2 -- flag )", .text = "Case-sensitive UTF-8 glob: *, ?, brackets, ranges, negation and escapes. POSIX classes are ASCII; slash/dot are ordinary. NUL is rejected." },
     .{ .name = "BASENAME", .stack = "( addr u -- addr2 u2 )", .text = "Borrow the suffix after the final slash; a trailing slash gives an empty suffix. Backslash is ordinary text." },
     .{ .name = "DIRNAME", .stack = "( addr u -- addr u2 )", .text = "Borrow the prefix through the final slash, or an empty prefix when absent. No normalization or allocation." },

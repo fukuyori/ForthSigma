@@ -176,7 +176,7 @@ fn candidate(self: *State, directory: ?[]const u8, name: []const u8) RuntimeErro
     return normalize(expanded.text());
 }
 
-fn openedName(self: *State, text: []const u8) RuntimeError!Buffer {
+pub fn openedName(self: *State, text: []const u8) RuntimeError!Buffer {
     var result = Buffer{};
     if (text.len == 0 or text[0] != '~') {
         try result.append(text);
@@ -184,7 +184,10 @@ fn openedName(self: *State, text: []const u8) RuntimeError!Buffer {
     }
     const end = std.mem.indexOfScalar(u8, text, '/') orelse text.len;
     const user = text[1..end];
-    if (std.mem.eql(u8, user, "+")) return result;
+    if (std.mem.eql(u8, user, "+")) {
+        if (end < text.len) try result.append(text[end + 1 ..]);
+        return result;
+    }
     var home: [capacity]u8 = undefined;
     const length = if ((try self.fileOps()).user_home) |lookup|
         try lookup(self.writer.context, user, &home)

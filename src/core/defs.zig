@@ -750,6 +750,7 @@ pub const Builtin = enum {
     open_path_file, file_to_path,
     basename, dirname,
     filename_match,
+    get_dir, set_dir,
 };
 
 pub const HeapResult = union(enum) { address: Cell, no_memory, bad_pointer };

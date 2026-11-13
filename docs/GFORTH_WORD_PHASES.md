@@ -238,7 +238,7 @@ FACILITY EXTのキー4語とBLOCK/BLOCK EXTの10語を優先する。既存の�
 
 #### P05b ディレクトリと時刻
 
-対象 14語。tque ID: 566。663のBASENAME/DIRNAMEを実装し、3回帰・108 Gforth比較・通常/最小構成を確認（b9e5099でpush済み）。664のFILENAME-MATCHも共通UTF-8方針で実装し、5回帰・3,325比較・意図したロケール差5件・通常/最小構成を確認（未コミット）。3/14語で566は未完了。次は665ディレクトリ7語・666時刻4語。[記録](P05_IMPLEMENTATION.md)。
+対象 14語。tque ID: 566。663のBASENAME/DIRNAMEを実装し、3回帰・108 Gforth比較・通常/最小構成を確認（b9e5099でpush済み）。664のFILENAME-MATCHも共通UTF-8方針で実装し、5回帰・3,325比較・意図したロケール差5件・通常/最小構成を確認（544f823でpush済み）。668のGET-DIR/SET-DIRも5回帰・25比較・通常/最小構成で確認（未コミット）。5/14語で566は未完了。次は669作成2語・670列挙3語（親665）、666時刻4語。[記録](P05_IMPLEMENTATION.md)。
 
 `=MKDIR`, `>TIME&DATE&TZ`, `BASENAME`, `CLOSE-DIR`, `CPUTIME`, `DIRNAME`, `FILENAME-MATCH`, `GET-DIR`, `MKDIR-PARENTS`, `NS`, `NTIME`, `OPEN-DIR`, `READ-DIR`, `SET-DIR`
 
