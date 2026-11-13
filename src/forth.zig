@@ -218,6 +218,7 @@ pub const State = struct {
     control_stack: [max_controls]Control = undefined,
     control_depth: usize = 0,
     random_state: u64 = 0,
+    addresses: @import("core/address_registry.zig").Registry = .{},
     /// The loops of [DO], [FOR], and [BEGIN] that are running.
     interpret_loops: [16]InterpretLoop = undefined,
     interpret_loop_depth: usize = 0,
@@ -875,6 +876,9 @@ pub const State = struct {
             .{ "X,", .x_comma },
             .{ "XD,", .xd_comma },
             .{ "XFIELD:", .x_field },
+            .{ "A,", .a_comma },
+            .{ "ACONSTANT", .define_aconstant },
+            .{ "AVARIABLE", .define_avariable },
     };
 
     fn installBuiltins(self: *State) void {
@@ -1027,6 +1031,7 @@ pub const State = struct {
 
     /// Removes word `id` and every later word, reclaiming their code and data areas.
     pub fn forgetFrom(self: *State, id: u16) void {
+        @import("core/address_registry.zig").discardRange(self, self.words[id].data_here_before, self.data_here, .data, true);
         self.data_here = self.words[id].data_here_before;
         var first_removed_code = self.code_count;
         for (self.words[id..self.word_count]) |word| {
@@ -1045,6 +1050,7 @@ pub const State = struct {
     /// Takes word `id` and every later word out of the dictionary and the index of the
     /// names; the caller gives back their code, data, and names.
     pub fn dropWordsFrom(self: *State, id: u16) void {
+        @import("core/address_registry.zig").forgetWords(self, id);
         if (defs.debug_enabled) {
             words_debug.unwatchFrom(self, id);
             // The words that take these places start their counts at 0.
@@ -2015,12 +2021,8 @@ pub const State = struct {
         self.write(self.memory[start .. start + length]);
     }
 
-    pub fn copyMemory(self: *State, destination: Cell, source: Cell, length: usize) void {
-        const to: usize = @intCast(destination);
-        const from: usize = @intCast(source);
-        if (to <= from) {
-            std.mem.copyForwards(u8, self.memory[to .. to + length], self.memory[from .. from + length]);
-        } else std.mem.copyBackwards(u8, self.memory[to .. to + length], self.memory[from .. from + length]);
+    pub fn copyMemory(self: *State, destination: Cell, source: Cell, length: usize) RuntimeError!void {
+        try @import("core/address_registry.zig").copy(self, destination, source, length, .move);
     }
 
     // ALLOCATE heap: blocks laid out from `heap_base` to the top stored at
@@ -2220,6 +2222,7 @@ pub const State = struct {
     pub fn writeCell(self: *State, address: Cell, value: Cell) RuntimeError!void {
         const start = try self.memoryAddress(address, cell_size);
         std.mem.writeInt(Cell, self.memory[start..][0..cell_size], value, .little);
+        if (self.addresses.count != 0) @import("core/address_registry.zig").written(self, address, cell_size, true);
     }
 
     pub fn readFloat(self: *State, address: Cell) RuntimeError!Float {
@@ -2233,6 +2236,7 @@ pub const State = struct {
     pub fn reserveData(self: *State, amount: Cell) RuntimeError!void {
         const next, const overflow = @addWithOverflow(self.data_here, amount);
         if (overflow != 0 or next < data_start or next > self.sizes.dataLimit()) return error.MemoryExhausted;
+        if (next < self.data_here) @import("core/address_registry.zig").discardRange(self, next, self.data_here, .data, true);
         self.data_here = next;
     }
 

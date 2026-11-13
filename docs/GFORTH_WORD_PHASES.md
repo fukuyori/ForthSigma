@@ -182,7 +182,7 @@ FACILITY EXTのキー4語とBLOCK/BLOCK EXTの10語を優先する。既存の�
 
 #### P03a 幅と整列と特殊メモリーアクセス
 
-対象 44語。tque ID: 560。2026-11-13に実装、[実装・検証記録](P03_IMPLEMENTATION.md)。P03bはデータ配置12語まで実装、型付き再配置とP03cは未実装。
+対象 44語。tque ID: 560。2026-11-13に実装、[実装・検証記録](P03_IMPLEMENTATION.md)。P03bは15語の実行・型付き参照追跡まで実装。新イメージと再配置、P03cは未実装。
 
 `!@`, `*ALIGN`, `*ALIGNED`, `+!@`, `/L`, `/W`, `/X`, `C>S`, `CELL/`, `CHAR-`, `DFLOAT/`, `FLOAT`, `FLOAT/`, `L!`, `L>S`, `L@`, `LALIGN`, `LALIGNED`, `LBE`, `LLE`, `MAXALIGNED`, `SFLOAT/`, `TH`, `TH!`, `TH@`, `W!`, `W>S`, `W@`, `WALIGN`, `WALIGNED`, `WBE`, `WLE`, `X!`, `X>S`, `X@`, `XALIGN`, `XALIGNED`, `XBE`, `XD!`, `XD>S`, `XD@`, `XDBE`, `XDLE`, `XLE`
 
@@ -190,7 +190,7 @@ FACILITY EXTのキー4語とBLOCK/BLOCK EXTの10語を優先する。既存の�
 
 #### P03b 辞書データと構造体
 
-対象 15語。tque ID: 561。データ配置12語（子615）は実装・検証済み。型付きアドレスと新形式・再配置は子616/617に分けて未実装。親561は未完了。[記録](P03_IMPLEMENTATION.md)。
+対象 15語。tque ID: 561。データ配置12語（子615）と型付きアドレス3語・寿命追跡（子616）は実装・検証済み。新形式・再配置（子617）は未実装で、型付き参照の保存等は暫定拒否。親561は未完了。[記録](P03_IMPLEMENTATION.md)。
 
 `->HERE`, `2FIELD:`, `A,`, `ACONSTANT`, `AVARIABLE`, `L,`, `LFIELD:`, `MAXALIGN`, `MEM,`, `SAVE-MEM-DICT`, `W,`, `WFIELD:`, `X,`, `XD,`, `XFIELD:`
 

@@ -180,6 +180,7 @@ pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
             const bytes = encode(try self.pop(), &buffer);
             const start = try self.memoryAddress(address, bytes.len);
             @memcpy(self.memory[start .. start + bytes.len], bytes);
+            @import("address_registry.zig").written(self, @intCast(start), bytes.len, false);
             try self.push(address + @as(Cell, @intCast(bytes.len)));
         },
         .xc_store_plus_question => {
@@ -194,6 +195,7 @@ pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
             }
             const start = try self.memoryAddress(address, bytes.len);
             @memcpy(self.memory[start .. start + bytes.len], bytes);
+            @import("address_registry.zig").written(self, @intCast(start), bytes.len, false);
             try self.push(address + @as(Cell, @intCast(bytes.len)));
             try self.push(room - @as(Cell, @intCast(bytes.len)));
             try self.push(memory_map.true_flag);
@@ -205,6 +207,7 @@ pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
             try self.reserveData(@intCast(bytes.len));
             const start: usize = @intCast(address);
             @memcpy(self.memory[start .. start + bytes.len], bytes);
+            @import("address_registry.zig").written(self, @intCast(start), bytes.len, false);
         },
         .xchar_plus => {
             const address = try self.pop();

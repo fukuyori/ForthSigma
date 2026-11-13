@@ -1105,4 +1105,10 @@ W/L/X access 16/32/64-bit little-endian logical memory, including unaligned addr
 
 W,/L,/X, append the low 16/32/64 bits without alignment. XD, consumes a double and appends only its low 64 bits, eight bytes. WFIELD:/LFIELD:/XFIELD: define naturally aligned 2/4/8-byte fields; 2FIELD: defines a 16-byte field with 8-byte alignment. MAXALIGN aligns HERE to eight bytes.
 
-MEM, ( addr u -- ) copies bytes to HERE with overlap handling; SAVE-MEM-DICT ( addr1 u -- addr2 u ) also returns the destination. ->HERE ( addr -- ) sets HERE inside data space without deleting dictionary entries; do not use it to reclaim named words. Capacity, input and range failures preserve HERE and input operands. Automatic address inference and typed relocation remain unimplemented. See [P03 details](P03_IMPLEMENTATION.md) (Japanese).
+MEM, ( addr u -- ) copies bytes to HERE with overlap handling; SAVE-MEM-DICT ( addr1 u -- addr2 u ) also returns the destination. ->HERE ( addr -- ) sets HERE inside data space without deleting dictionary entries; do not use it to reclaim named words. Capacity, input and range failures preserve HERE and input operands. Raw numbers are never inferred to be addresses; typed address persistence remains unimplemented. See [P03 details](P03_IMPLEMENTATION.md) (Japanese).
+
+### Explicit address types (P03b; persistence pending)
+
+A, ( addr -- ), ACONSTANT ( addr "name" -- ), and AVARIABLE ( "name" -- ) explicitly register addresses. AVARIABLE starts at zero. Raw numerical cells are never inferred to be addresses. Full-cell updates retain the type; partial writes damage it. MOVE words transfer types for complete registered cells; FREE, shrinking, FORGET/MARKER and HERE rollback track lifetimes. Reusing an address does not revive a stale reference. The per-VM registration limit is 2,048.
+
+**Until the new image format is implemented, saving, restoring or appending dictionaries with typed references is rejected** (-264 for valid registrations, -9 for damaged/invalid references). Existing untyped image operations remain available. Task 617 implements persistence. See [P03 details](P03_IMPLEMENTATION.md) (Japanese).

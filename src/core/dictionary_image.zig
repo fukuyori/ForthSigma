@@ -156,6 +156,7 @@ fn rangesLength(ranges: [4][2]usize) usize {
 }
 
 pub fn encodeImage(self: *State, output: []u8) RuntimeError!usize {
+    try @import("address_registry.zig").requireLegacyImage(self);
     const ranges = memoryRanges(self.sizes, self.data_here, self.heapTop());
     const word_bytes = std.mem.sliceAsBytes(self.words[0..self.word_count]);
     const code_bytes = std.mem.sliceAsBytes(self.code[0..self.code_count]);
@@ -212,6 +213,7 @@ pub fn encodeImage(self: *State, output: []u8) RuntimeError!usize {
 }
 
 pub fn restoreImage(self: *State, image: []const u8) RuntimeError!void {
+    try @import("address_registry.zig").requireLegacyImage(self);
     return restore(self, image, false);
 }
 
@@ -219,6 +221,7 @@ pub fn restoreImage(self: *State, image: []const u8) RuntimeError!void {
 /// what the image brings is zeros already, and stays untouched, so pages not in use take
 /// no physical memory.
 pub fn restoreFreshImage(self: *State, image: []const u8) RuntimeError!void {
+    try @import("address_registry.zig").requireLegacyImage(self);
     return restore(self, image, true);
 }
 
@@ -316,6 +319,8 @@ fn restore(self: *State, image: []const u8, memory_is_fresh: bool) RuntimeError!
 }
 
 pub fn appendImage(self: *State, source: *const State) RuntimeError!void {
+    try @import("address_registry.zig").requireLegacyImage(self);
+    if (source.addresses.count != 0) return error.InvalidImage;
     // The State the image was restored in has seen its BREAK:s.
     if (defs.debug_enabled and source.keep_counting) self.keep_counting = true;
     if (source.builtin_count == 0 or source.builtin_count != self.builtin_count or source.word_count < source.builtin_count) return error.InvalidImage;

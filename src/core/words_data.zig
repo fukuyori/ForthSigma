@@ -10,12 +10,22 @@ const Cell = map.Cell;
 const UCell = map.UCell;
 
 pub const words = [_]Builtin{
+    .a_comma,
     .to_here,       .two_field, .l_comma, .l_field, .max_align, .mem_comma,
     .save_mem_dict, .w_comma,   .w_field, .x_comma, .xd_comma,  .x_field,
 };
 
 pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
     switch (builtin) {
+        .a_comma => {
+            const value = try self.peek(0);
+            const address = self.data_here;
+            try @import("address_registry.zig").ensureRoom(self, .memory, address);
+            try self.reserveData(8);
+            try self.writeCell(address, value);
+            try @import("address_registry.zig").registerMemory(self, address);
+            _ = try self.pop();
+        },
         .to_here => {
             const next = try self.peek(0);
             const amount = std.math.sub(Cell, next, self.data_here) catch return error.MemoryExhausted;
@@ -39,6 +49,7 @@ pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
             try self.reserveData(width);
             const T = if (width == 2) u16 else if (width == 4) u32 else u64;
             std.mem.writeInt(T, self.memory[at..][0..width], @truncate(value), .little);
+            @import("address_registry.zig").written(self, @intCast(at), width, width == 8);
             self.data_depth -= count;
         },
         .mem_comma, .save_mem_dict => {
@@ -48,9 +59,12 @@ pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
             const length: usize = @intCast(count);
             const from = try self.memoryAddress(try self.peek(1), length);
             const destination = self.data_here;
-            const to: usize = @intCast(destination);
+
             try self.reserveData(@intCast(length));
-            if (to <= from) std.mem.copyForwards(u8, self.memory[to..][0..length], self.memory[from..][0..length]) else std.mem.copyBackwards(u8, self.memory[to..][0..length], self.memory[from..][0..length]);
+            self.copyMemory(destination, @intCast(from), length) catch |err| {
+                self.data_here = destination;
+                return err;
+            };
             self.data_depth -= 2;
             if (builtin == .save_mem_dict) {
                 try self.push(destination);

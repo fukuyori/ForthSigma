@@ -54,6 +54,16 @@ pub fn finishPending(self: *State, token: []const u8) RuntimeError!void {
         .constant_name => {
             _ = try self.appendWord(token, .constant, .drop, self.pending_constant);
         },
+        .aconstant_name => {
+            const id = try self.appendWord(token, .constant, .drop, self.pending_constant);
+            try @import("address_registry.zig").registerWord(self, id);
+        },
+        .avariable_name => {
+            const id = try self.appendDataWord(token, .variable, cell_size);
+            try self.writeCell(self.words[id].value, 0);
+            try @import("address_registry.zig").registerMemory(self, self.words[id].value);
+            self.last_created_word = id;
+        },
         .fconstant_name => {
             _ = try self.appendWord(token, .fconstant, .drop, floatBits(self.pending_float));
         },
@@ -119,7 +129,7 @@ pub fn finishPending(self: *State, token: []const u8) RuntimeError!void {
                         else => .add,
                     };
                     _ = try self.emit(.{ .kind = .local_fetch, .value = localOperand(local) });
-                    _ = try self.emit(.{ .kind = .builtin, .value = @intFromEnum(add) });
+                    _ = try self.emit(.{ .kind = .builtin, .value = @backingInt(add) });
                     _ = try self.emit(.{ .kind = .local_store, .value = localOperand(local) });
                     return;
                 }
@@ -137,7 +147,7 @@ pub fn finishPending(self: *State, token: []const u8) RuntimeError!void {
             if (self.words[id].kind != .deferred) return error.InvalidDefinition;
             if (self.compiling) {
                 _ = try self.emit(.{ .kind = .execution_token, .value = id });
-                _ = try self.emit(.{ .kind = .builtin, .value = @intFromEnum(Builtin.defer_fetch) });
+                _ = try self.emit(.{ .kind = .builtin, .value = @backingInt(Builtin.defer_fetch) });
             } else try self.push(try self.readCell(self.words[id].value));
         },
         // The code point of the first character, as in gforth (CHAR 日 is 26085).
@@ -181,7 +191,7 @@ pub fn bodyAddress(self: *State, id: u16) RuntimeError!Cell {
 
 pub fn isDefiningBuiltin(builtin: Builtin) bool {
     return switch (builtin) {
-        .define_colon, .define_variable, .define_fvariable, .define_constant, .define_value, .define_two_variable, .define_two_constant, .define_fconstant, .define_fvalue, .define_two_value, .define_buffer, .define_array, .define_watched_value, .define_watched_variable => true,
+        .define_colon, .define_variable, .define_fvariable, .define_constant, .define_value, .define_two_variable, .define_two_constant, .define_fconstant, .define_fvalue, .define_two_value, .define_buffer, .define_array, .define_watched_value, .define_watched_variable, .define_aconstant, .define_avariable => true,
         else => false,
     };
 }
@@ -201,6 +211,15 @@ pub fn definingPending(self: *State, builtin: Builtin) RuntimeError!Pending {
         .define_colon => blk: {
             if (self.defining) return error.InvalidDefinition;
             break :blk .colon_name;
+        },
+        .define_aconstant => blk: {
+            try @import("address_registry.zig").ensureRoom(self, .word, self.word_count);
+            self.pending_constant = try self.pop();
+            break :blk .aconstant_name;
+        },
+        .define_avariable => blk: {
+            try @import("address_registry.zig").ensureRoom(self, .memory, self.data_here);
+            break :blk .avariable_name;
         },
         .define_variable => .variable_name,
         .define_fvariable => .fvariable_name,

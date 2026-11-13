@@ -50,6 +50,7 @@ pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
             const length: usize = @min(input.len, @as(usize, @intCast(@max(capacity, 0))));
             const start = try self.memoryAddress(address, length);
             @memcpy(self.memory[start .. start + length], input[0..length]);
+            @import("address_registry.zig").written(self, address, length, false);
             try self.push(@intCast(length));
         },
         .evaluate => try self.interpretSource(try self.memoryRange(), .evaluate),
@@ -68,6 +69,7 @@ pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
             // The text may lie in the buffer of an earlier WORD result.
             std.mem.copyForwards(u8, self.memory[start + 1 .. start + 1 + text.len], text);
             self.memory[start] = @intCast(text.len);
+            @import("address_registry.zig").written(self, @intCast(start), text.len + 1, false);
             try self.push(word_buffer_address);
         },
         .parse => {

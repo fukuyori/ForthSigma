@@ -35,6 +35,7 @@ pub fn setStringLength(self: *State, string_var: Cell, length: usize) RuntimeErr
     if (length > old_length) {
         const start: usize = @intCast(buffer + cell_size);
         @memset(self.memory[start + old_length .. start + length], 0);
+        @import("address_registry.zig").written(self, @intCast(start + old_length), length - old_length, false);
     }
     return buffer;
 }
@@ -57,8 +58,8 @@ pub fn insertString(self: *State, string_var: Cell, offset: usize, source: Cell,
     };
     if (inside and length != 0) {
         const copy = try self.heapAllocate(length) orelse return self.throwIor(errno_no_memory);
-        self.copyMemory(copy, source, length);
         detached = copy;
+        try self.copyMemory(copy, source, length);
         from = copy;
     }
     const at = if (overwrite) offset else @min(offset, old.length);
@@ -67,11 +68,14 @@ pub fn insertString(self: *State, string_var: Cell, offset: usize, source: Cell,
     const text = buffer + cell_size;
     if (overwrite) {
         // $OVER past the end pads the gap with blanks, as gforth does.
-        if (at > old.length) @memset(self.memory[@intCast(text + @as(Cell, @intCast(old.length)))..@intCast(text + @as(Cell, @intCast(at)))], ' ');
+        if (at > old.length) {
+            @memset(self.memory[@intCast(text + @as(Cell, @intCast(old.length)))..@intCast(text + @as(Cell, @intCast(at)))], ' ');
+            @import("address_registry.zig").written(self, text + @as(Cell, @intCast(old.length)), at - old.length, false);
+        }
     } else {
-        self.copyMemory(text + @as(Cell, @intCast(at + length)), text + @as(Cell, @intCast(at)), old.length - at);
+        try self.copyMemory(text + @as(Cell, @intCast(at + length)), text + @as(Cell, @intCast(at)), old.length - at);
     }
-    self.copyMemory(text + @as(Cell, @intCast(at)), from, length);
+    try self.copyMemory(text + @as(Cell, @intCast(at)), from, length);
 }
 
 /// Appends output bytes to a string (used while $TMP captures output).
@@ -86,6 +90,7 @@ pub fn appendString(self: *State, string_var: Cell, bytes: []const u8) RuntimeEr
     const buffer = try self.setStringLength(string_var, end + bytes.len);
     const start: usize = @intCast(buffer + cell_size);
     @memcpy(self.memory[start + end .. start + end + bytes.len], bytes);
+    @import("address_registry.zig").written(self, @intCast(start + end), bytes.len, false);
 }
 
 pub fn stringArrayCount(self: *State, array_var: Cell) RuntimeError!usize {

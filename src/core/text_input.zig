@@ -101,6 +101,7 @@ pub fn handleStringToken(self: *State, token: []const u8, input: []const u8, cur
         const start: usize = @intCast(address);
         self.memory[start] = @intCast(bytes.len);
         @memcpy(self.memory[start + 1 .. start + 1 + bytes.len], bytes);
+        @import("address_registry.zig").written(self, @intCast(start), bytes.len + 1, false);
         _ = try self.emit(.{ .kind = if (immediate) .print_string else .string_literal, .value = address });
     } else self.write(bytes);
 }
@@ -128,6 +129,7 @@ pub fn handleParsedString(self: *State, kind: StringWord, input: []const u8, cur
             const address = (try self.heapAllocate(@max(bytes.len, 1))) orelse return error.MemoryExhausted;
             const start: usize = @intCast(address);
             @memcpy(self.memory[start .. start + bytes.len], bytes);
+            @import("address_registry.zig").written(self, @intCast(start), bytes.len, false);
             try self.push(address);
             try self.push(@intCast(bytes.len));
         },
@@ -140,6 +142,7 @@ pub fn compileCountedString(self: *State, bytes: []const u8, kind: OpKind) Runti
     const start: usize = @intCast(address);
     self.memory[start] = @intCast(bytes.len);
     @memcpy(self.memory[start + 1 .. start + 1 + bytes.len], bytes);
+    @import("address_registry.zig").written(self, @intCast(start), bytes.len + 1, false);
     _ = try self.emit(.{ .kind = kind, .value = address });
 }
 

@@ -18,13 +18,11 @@ const true_flag = memory_map.true_flag;
 
 /// The built-in words this file executes; executeBuiltin dispatches by this list.
 pub const words = [_]Builtin{
-    .blank, .cell, .cells, .cell_plus, .cell_minus, .aligned, .fetch, .store, .cfetch, .cstore, .add_store,
-    .inc_store, .dec_store, .zero_store, .off, .on, .question, .array_fetch, .array_store, .erase,
-    .fill, .move, .cmove, .here, .allot, .comma, .c_comma, .two_fetch, .two_store, .count, .pad,
-    .place, .compare, .search, .slash_string, .minus_trailing, .char_plus, .chars, .bounds,
-    .blank_fill, .cmove_up, .scan, .skip, .str_equal, .string_prefix_query, .plus_place, .align_here,
-    .unused, .dump, .time_and_date,
-    .allocate, .free, .resize, .two_comma,
+    .blank,               .cell,         .cells,          .cell_plus, .cell_minus, .aligned,       .fetch,       .store,       .cfetch, .cstore,    .add_store,
+    .inc_store,           .dec_store,    .zero_store,     .off,       .on,         .question,      .array_fetch, .array_store, .erase,  .fill,      .move,
+    .cmove,               .here,         .allot,          .comma,     .c_comma,    .two_fetch,     .two_store,   .count,       .pad,    .place,     .compare,
+    .search,              .slash_string, .minus_trailing, .char_plus, .chars,      .bounds,        .blank_fill,  .cmove_up,    .scan,   .skip,      .str_equal,
+    .string_prefix_query, .plus_place,   .align_here,     .unused,    .dump,       .time_and_date, .allocate,    .free,        .resize, .two_comma,
 };
 
 pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
@@ -55,6 +53,7 @@ pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
             const address = try self.memoryAddress(try self.pop(), 1);
             const value = try self.pop();
             self.memory[address] = @truncate(@as(UCell, @bitCast(value)));
+            @import("address_registry.zig").written(self, @intCast(address), 1, false);
         },
         .add_store => {
             const address = try self.pop();
@@ -90,6 +89,7 @@ pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
             };
             const bytes = try self.memoryRange();
             @memset(bytes, byte);
+            @import("address_registry.zig").written(self, @intCast(@intFromPtr(bytes.ptr) - @intFromPtr(self.memory.ptr)), bytes.len, false);
         },
         .move, .cmove => {
             const count = try self.pop();
@@ -99,11 +99,9 @@ pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
             const length: usize = @intCast(count);
             const to = try self.memoryAddress(destination, length);
             const from = try self.memoryAddress(source, length);
-            if (builtin == .cmove or to <= from) {
-                for (0..length) |offset| self.memory[to + offset] = self.memory[from + offset];
-            } else {
-                std.mem.copyBackwards(u8, self.memory[to .. to + length], self.memory[from .. from + length]);
-            }
+            _ = to;
+            _ = from;
+            try @import("address_registry.zig").copy(self, destination, source, length, if (builtin == .cmove) .forward else .move);
         },
         .cmove_up => {
             const count = try self.pop();
@@ -113,12 +111,9 @@ pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
             const length: usize = @intCast(count);
             const to = try self.memoryAddress(destination, length);
             const from = try self.memoryAddress(source, length);
-            // Byte by byte from the highest address down, as the standard defines it.
-            var offset = length;
-            while (offset > 0) {
-                offset -= 1;
-                self.memory[to + offset] = self.memory[from + offset];
-            }
+            _ = to;
+            _ = from;
+            try @import("address_registry.zig").copy(self, destination, source, length, .backward);
         },
         .here => try self.push(self.data_here),
         .align_here => {
@@ -179,6 +174,7 @@ pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
             const address = self.data_here;
             try self.reserveData(1);
             self.memory[@intCast(address)] = @truncate(@as(UCell, @bitCast(value)));
+            @import("address_registry.zig").written(self, address, 1, false);
         },
         .two_fetch => try self.pushDouble(try self.readDouble(try self.pop())),
         .two_store => {
@@ -205,6 +201,7 @@ pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
             const bytes = self.memory[from .. from + length];
             if (to + 1 <= from) std.mem.copyForwards(u8, target, bytes) else std.mem.copyBackwards(u8, target, bytes);
             self.memory[to] = @intCast(length);
+            @import("address_registry.zig").written(self, destination, length + 1, false);
         },
         // A negative length counts as an empty string, as in TYPE and the other string words.
         .compare => {
@@ -286,8 +283,9 @@ pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
             const length: usize = @intCast(std.math.clamp(count, 0, @as(Cell, @intCast(255 - old))));
             _ = try self.memoryAddress(destination, 1 + old + length);
             _ = try self.memoryAddress(source, length);
-            self.copyMemory(destination + 1 + @as(Cell, @intCast(old)), source, length);
+            try self.copyMemory(destination + 1 + @as(Cell, @intCast(old)), source, length);
             self.memory[to] = @intCast(old + length);
+            @import("address_registry.zig").written(self, destination, 1, false);
         },
         .allocate => {
             const size: UCell = @bitCast(try self.pop());

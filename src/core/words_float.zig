@@ -254,6 +254,7 @@ pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
                 const name: []const u8 = if (std.math.isNan(value)) "NaN" else if (value < 0) "-infinity" else "infinity";
                 const shown = @min(name.len, out.len);
                 @memcpy(out[0..shown], name[0..shown]);
+                @import("address_registry.zig").written(self, address, shown, false);
                 try self.push(0);
                 try self.push(truth(!std.math.isNan(value) and value < 0));
                 return self.push(0);
@@ -263,6 +264,7 @@ pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
             const shown = @min(digits, out.len);
             @memcpy(out[0..shown], rep.digits[0..shown]);
             @memset(out[shown..], '0');
+            @import("address_registry.zig").written(self, address, length, false);
             try self.push(rep.exponent);
             try self.push(truth(rep.negative));
             try self.push(true_flag);
@@ -313,6 +315,7 @@ pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
             const at = try self.memoryAddress(try self.pop(), 4);
             const value: f32 = @floatCast(try self.fpop());
             std.mem.writeInt(u32, self.memory[at..][0..4], @bitCast(value), .little);
+            @import("address_registry.zig").written(self, @intCast(at), 4, false);
         },
         .df_fetch => try self.fpush(try self.readFloat(try self.pop())),
         .df_store => {
@@ -414,6 +417,7 @@ pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
                 .f_to_buf_rdp => {
                     const start = try self.memoryAddress(destination.?, formatted.len);
                     @memcpy(self.memory[start .. start + formatted.len], formatted);
+                    @import("address_registry.zig").written(self, @intCast(start), formatted.len, false);
                 },
                 else => {
                     // Like gforth, the text goes just below the pictured numeric output
@@ -422,6 +426,7 @@ pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
                     if (self.hold_ptr - hold_bottom < length) return error.PicturedNumericOverflow;
                     const start: usize = @intCast(self.hold_ptr - length);
                     @memcpy(self.memory[start .. start + formatted.len], formatted);
+                    @import("address_registry.zig").written(self, @intCast(start), formatted.len, false);
                     try self.push(self.hold_ptr - length);
                     try self.push(length);
                 },

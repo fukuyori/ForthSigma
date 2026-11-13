@@ -48,6 +48,7 @@ pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
             const at = try self.memoryAddress(try self.pop(), width);
             const value: UCell = if (builtin == .xd_store) @truncate(@as(map.UDouble, @bitCast(try self.popDouble()))) else @bitCast(try self.pop());
             std.mem.writeInt((if (width == 2) u16 else if (width == 4) u32 else u64), self.memory[at..][0..width], @truncate(value), .little);
+            @import("address_registry.zig").written(self, @intCast(at), width, width == 8);
         },
         .exchange_store, .add_exchange => {
             try self.requireDepth(2);

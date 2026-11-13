@@ -34,6 +34,7 @@ pub fn holdBytes(self: *State, bytes: []const u8) RuntimeError!void {
     self.hold_ptr -= length;
     const start: usize = @intCast(self.hold_ptr);
     @memcpy(self.memory[start .. start + bytes.len], bytes);
+    @import("address_registry.zig").written(self, @intCast(start), bytes.len, false);
 }
 
 /// `#`: prepends the least-significant digit of `value` and returns the remaining quotient.

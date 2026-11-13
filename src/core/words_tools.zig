@@ -392,6 +392,7 @@ pub fn abortWith(self: *State, comptime message: []const u8) RuntimeError {
     const at = self.memoryAddress(assert_message_address, message.len + 1) catch |err| return err;
     self.memory[at] = message.len;
     @memcpy(self.memory[at + 1 ..][0..message.len], message);
+    @import("address_registry.zig").written(self, @intCast(at), message.len + 1, false);
     self.abort_message = assert_message_address;
     return self.throwCode(-2);
 }

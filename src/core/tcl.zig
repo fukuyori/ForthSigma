@@ -219,6 +219,7 @@ fn readMessage(self: *State, wait: bool) RuntimeError!?Message {
     while (tcl.received < message.text.length) {
         const byte = try readByte(self, wait) orelse return null;
         self.memory[start + tcl.received] = byte;
+        @import("address_registry.zig").written(self, @intCast(start + tcl.received), 1, false);
         tcl.received += 1;
     }
     tcl.partial = null;

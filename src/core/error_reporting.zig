@@ -51,6 +51,7 @@ pub fn report(self: *State, err: anyerror) void {
         self.names_used = self.words[self.current_word].name_start;
         self.dropWordsFrom(self.current_word);
         self.dropUsesFrom(self.current_word);
+        @import("address_registry.zig").discardRange(self, self.current_data_start, self.data_here, .data, true);
         self.data_here = self.current_data_start;
     }
     self.setCompiling(false);
@@ -271,6 +272,7 @@ pub fn restoreCatchFrame(self: *State, frame: CatchFrame) void {
         self.names_used = self.words[self.current_word].name_start;
         self.dropWordsFrom(self.current_word);
         self.dropUsesFrom(self.current_word);
+        @import("address_registry.zig").discardRange(self, self.current_data_start, self.data_here, .data, true);
         self.data_here = self.current_data_start;
         self.defining = false;
     }

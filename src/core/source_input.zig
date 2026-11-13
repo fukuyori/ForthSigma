@@ -24,6 +24,7 @@ const tib_size = memory_map.tib_size;
 pub fn storeSourceName(self: *State, address: Cell, name: []const u8) void {
     const start: usize = @intCast(address);
     @memcpy(self.memory[start .. start + name.len], name);
+    @import("address_registry.zig").written(self, @intCast(start), name.len, false);
 }
 
 pub fn currentFileFrame(self: *State) ?IncludeFrame {
@@ -59,6 +60,7 @@ pub fn sourceFileLoaded(self: *const State, index: usize) bool {
 
 pub fn setSourceFileLoaded(self: *State, index: usize, loaded: bool) void {
     self.memory[sourceFileLoadedFlag(index)] = @intFromBool(loaded);
+    @import("address_registry.zig").written(self, @intCast(sourceFileLoadedFlag(index)), 1, false);
 }
 
 pub fn findSourceEntry(self: *State, name: []const u8) ?u8 {
@@ -83,6 +85,7 @@ pub fn sourceFileEntryIndex(self: *State, name: []const u8) RuntimeError!u8 {
     const at = sourceFileEntry(count);
     self.memory[at] = @intCast(name.len);
     @memcpy(self.memory[at + 1 .. at + 1 + name.len], name);
+    @import("address_registry.zig").written(self, @intCast(at), name.len + 1, false);
     self.setSourceFileLoaded(count, false);
     self.setSourceFileCount(count + 1);
     return @intCast(count);

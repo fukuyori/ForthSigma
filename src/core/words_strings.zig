@@ -36,7 +36,7 @@ pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
             _ = try self.memoryAddress(source, length);
             // A fresh buffer keeps the source intact even when it lies in the old string.
             const buffer = try self.heapAllocate(cell_size + length) orelse return self.throwIor(errno_no_memory);
-            self.copyMemory(buffer + cell_size, source, length);
+            try self.copyMemory(buffer + cell_size, source, length);
             try self.writeCell(buffer, @intCast(length));
             const old = try self.readCell(string_var);
             if (!try self.heapFree(old)) {
@@ -68,6 +68,7 @@ pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
             const length = (try self.fetchString(string_var)).length;
             const buffer = try self.setStringLength(string_var, length + 1);
             self.memory[@intCast(buffer + cell_size + @as(Cell, @intCast(length)))] = char;
+            @import("address_registry.zig").written(self, buffer + cell_size + @as(Cell, @intCast(length)), 1, false);
         },
         .string_dot => {
             const string = try self.fetchString(try self.pop());
@@ -80,8 +81,7 @@ pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
             const string = try self.fetchString(string_var);
             const start = @min(offset, string.length);
             const removed = @min(count, string.length - start);
-            const base: usize = @intCast(string.address);
-            std.mem.copyForwards(u8, self.memory[base + start .. base + string.length - removed], self.memory[base + start + removed .. base + string.length]);
+            try @import("address_registry.zig").copy(self, string.address + @as(Cell, @intCast(start)), string.address + @as(Cell, @intCast(start + removed)), string.length - start - removed, .forward);
             _ = try self.setStringLength(string_var, string.length - removed);
         },
         .string_insert, .string_over => {

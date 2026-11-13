@@ -1,6 +1,6 @@
 # P03 メモリーとデータ配置の実装記録
 
-2026-11-13。P03（tque 546）のうち、P03a（560）の44語を実装。P03b（561）はデータ配置12語（子615）まで実装し、型付きアドレス3語・再配置（子616/617）は未実装。P03c（562）のヒープ・伸長バッファーは未着手。対象語と完了条件は[実装フェーズ](GFORTH_WORD_PHASES.md)、確定設計は[P00仕様](GFORTH_P00_SPEC.md)。
+2026-11-13。P03（tque 546）のうち、P03a（560）の44語を実装。P03b（561）はデータ配置12語（子615）と型付きアドレス3語・寿命追跡（子616）を実装。新イメージ・再配置（子617）は未実装。P03c（562）のヒープ・伸長バッファーは未着手。対象語と完了条件は[実装フェーズ](GFORTH_WORD_PHASES.md)、確定設計は[P00仕様](GFORTH_P00_SPEC.md)。
 
 ## P03aの幅とスタック表現
 
@@ -49,7 +49,7 @@ python3 scripts/verify-p03a.py zig-out/bin/sigma --gforth-build .work/gforth-aud
 
 ## P03b データ配置基盤（12語、子615）
 
-実装はsrc/core/words_data.zig。親561は未完了で、A,/ACONSTANT/AVARIABLEはまだ登録していない。
+実装はsrc/core/words_data.zig。親561は未完了。A,/ACONSTANT/AVARIABLEと追跡は後述の子616で追加した。
 
 |語|仕様|
 |---|---|
@@ -64,7 +64,7 @@ python3 scripts/verify-p03a.py zig-out/bin/sigma --gforth-build .work/gforth-aud
 
 幅付きカンマ、MEM,/SAVE-MEM-DICT、->HEREは、入力不足・範囲外・容量不足を変更前に検査し、失敗時にHEREと入力を保持する。書込前に失敗する場合は格納内容も保持する。コピーした生セルをアドレスと推測しない。復元・追加後もフィールドオフセットを維持し、X,で格納した生の数値を自動再配置しないことを確認した。
 
-->HEREで名前付き語が使っている領域を回収しないこと。これはFORGET/MARKERの代用ではない。型付き参照の寿命追跡との統合は子616で行う。
+->HEREで名前付き語が使っている領域を回収しないこと。これはFORGET/MARKERの代用ではない。型付き参照の寿命追跡は子616で接続した。
 
 検証：通常／全機能群無効のzig build test成功。src/tests/p03b_data_test.zigで格納順・容量不足・入力保持・重複コピー・フィールド・辞書復元追加を確認。verify-p03b-data.pyは基本12＋境界/コンパイル等276＝288ケースでSigma・指定Gforthとも成功。
 
@@ -72,10 +72,51 @@ python3 scripts/verify-p03a.py zig-out/bin/sigma --gforth-build .work/gforth-aud
 python3 scripts/verify-p03b-data.py zig-out/bin/sigma --gforth-build .work/gforth-audit/gforth-build --report .work/p03b-data-check/results.json
 ```
 
-ログは.zig-cache/p03b-data-test.log、p03b-data-minimal.log。JSONは.work/p03b-data-check/。P03aは737b660でpush済み、今回の12語は未コミット。
+ログは.zig-cache/p03b-data-test.log、p03b-data-minimal.log。JSONは.work/p03b-data-check/。P03aは737b660、データ配置12語はad34fefでpush済み。
+
+## P03b 型付きアドレス登録・寿命追跡（3語、子616）
+
+実装はsrc/core/address_registry.zig。生数値からの型推測はしない。
+
+- `A, ( addr -- )`は8バイトをHEREへ格納し、そのセルをアドレスとして明示登録する。
+- `ACONSTANT ( addr "name" -- )`は定数の辞書項目の値を登録する。
+- `AVARIABLE ( "name" -- )`は0初期化の8バイト変数を作り、その値セルを登録する。名前入力は既存の定義処理を使い、複数行・コンパイルされた定義語でも使える。
+
+登録表はVMごとに最大2,048件。格納位置（メモリー／辞書項目）、値、参照先の領域、状態（有効／部分破損／無効）を分けて保持する。これは実行中の内部表であり、P00の32バイトのディスクレコードとは別である。表が満杯ならMemoryExhausted。A,とMOVE等は容量をデータ変更前に検査し、型情報を捨てて処理を続行しない。
+
+NULL、固定システム領域、辞書データ、使用中ヒープの参照を区別する。入力バッファー・ローカルフレーム・範囲外等は無効参照となる。HEREへの参照は後続確保の前にも登録できる。格納位置自身も永続化対象の領域内でなければ有効にならない。
+
+全セル幅の!、X!、XD!、F!/DF!等で既存の型付きセルを更新すると型を保ち、値を再検証する。部分書込みは、同じバイトを書いただけでも破損状態にする。全セル更新で修復できる。新たな通常のカンマには型を付けない。COPYは明示登録のあるセルだけを引き継ぐ。
+
+MOVE/CMOVE/CMOVE>はコピー前の登録を退避して処理し、全登録セルが含まれる場合に型も複製する。部分セル・破損元のコピーは有効な参照へ昇格させない。CMOVEの重なりで実際の値が元の登録値と変わった場合も破損扱い。重なる格納セルは検証で拒否する。登録がない通常のコピーは大きな退避バッファーを使わない経路を通る。
+
+FREEとRESIZEの縮小は消えた格納位置を除去し、残った参照先が消えた場合は無効にする。番地が再利用されても無効参照は復活しない。RESIZEで移動した場合、呼出元は返却アドレスを型付きセルへ書き戻す必要がある。FORGET/MARKER、負のALLOT、->HERE、コンパイル失敗時の巻戻しも追跡する。
+
+メモリー・幅付きアクセスのほか、文字列、文字／浮動小数点の部分格納、ACCEPT、ファイル読込、書式変換等の書込みも登録へ通知する。キャッシュした値と実際のセルも検証し、不一致を黙認しない。
+
+### 永続化の暫定制限
+
+**新形式が未実装なので、型付き登録が1件でもある辞書のSAVE/SAVESYS/LOAD-DICTIONARY、直接のencode/restore/appendは暫定的に拒否する。** 有効な型付き登録でもInvalidImage（-264）。部分破損・解放済み等の無効参照はInvalidAddress（-9）。型情報なしの既存の辞書は従来どおり保存・復元できる。
+
+Forthの保存・読込入口でホスト処理前に検査し、Tcl資源解放やファイル変更の前に失敗する。SAVE/SAVESYSが既存ファイルを変更しないことをCLIでも確認した。617で新形式の検証・保存に置き換えるまで、旧形式へ型情報を落として保存しない。
+
+### 検証
+
+- src/tests/p03b_address_test.zigの11回帰：明示型と生セルの区別、部分破損と修復、重複／方向付きコピー、解放後の同番地再利用、縮小、MARKER/HERE巻戻し、失敗した定義の掃除、容量不足時の変更前失敗、未確保領域にコピーした型の非復活、旧形式の保存拒否、複数行／コンパイルされた定義語。
+- verify-p03b-address.pyは基本3＋実行／定義／コピー15＝18ケースで指定Gforthと一致。型・寿命・保存のSigma固有検証は上記のZig回帰とCLIで行う。
+- 通常／全機能群無効のzig build test成功。P03a 1,376とデータ配置288ケースも現在の実行体で再確認。
+- CLIでSAVE/SAVESYSの-264、部分破損SAVEの-9と既存ファイル保持を確認。
+
+```sh
+python3 scripts/verify-p03b-address.py zig-out/bin/sigma --gforth-build .work/gforth-audit/gforth-build --report .work/p03b-address-check/results.json
+```
+
+ログは.zig-cache/p03b-address-test.log、p03b-address-minimal.log。JSONは.work/p03b-address-check/（legacy-guard.jsonも含む）。子616の変更は未コミット。
 
 ## 後続のP03b / P03c
 
-A,等のアドレス登録と新イメージSIGIMG45/46/47は未実装。現時点の形式はSIGIMG42/43/44のまま。今回の新語も古い組込表のイメージとは互換でなく、既存の検証で安全に拒否する。
+子617は616に依存する新イメージ・追加読込・事前検証。現時点の形式はSIGIMG42/43/44のまま。SIGIMG45/46/47と、P00指定の32バイト再配置表・到達可能ヒープオブジェクト表を実装する。
 
-子616は型付きアドレスの登録・書込み・寿命追跡、子617は616に依存する新イメージ・追加読込・事前検証。P03bを完了にするには、P00の再配置表・到達可能ヒープ・部分書込み・MOVE・FREE・FORGET/MARKER・破損表の事前検証をまとめて満たす必要がある。writeCellだけでなく、words_width.zigとwords_data.zigの直接書込みも追跡対象に接続する。アドレスに見える生数値の自動再配置は行わない。
+617では動的文字列等の既存内部ポインターを明示登録し、ホスト資源・入力・ローカル等の除外を保存時にも検証する。現在の暫定拒否はwords_system.zigとdictionary_image.zigのrequireLegacyImageにある。型付き新形式を保存・復元できるように置き換える際、ファイルopenより前の検証・容量確保、Tcl資源解放との順序も確認する。
+
+空／既存データありの追加、同一イメージ2回追加、再保存、NULL/固定/データ/ヒープ相互参照、破損表、容量不足、部分書込み・MOVE・FREE・FORGET/MARKERをまとめて検証するまで親561を完了にしない。P03c（562）は引き続き未着手。

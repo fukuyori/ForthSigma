@@ -104,7 +104,9 @@ pub fn coalesceHeap(self: *State) RuntimeError!void {
 pub fn heapFree(self: *State, address: Cell) RuntimeError!bool {
     if (address == 0) return true;
     const block = try self.findBlock(address) orelse return false;
-    self.setBlock(block, try self.blockSize(block), false);
+    const old_size = try self.blockSize(block);
+    @import("address_registry.zig").discardRange(self, address, address + old_size, .heap, false);
+    self.setBlock(block, old_size, false);
     try self.coalesceHeap();
     return true;
 }
@@ -123,6 +125,7 @@ pub fn heapResize(self: *State, address: Cell, size: UCell) RuntimeError!HeapRes
         next = block + heap_header + available;
     }
     if (available >= need) {
+        if (need < old_size) @import("address_registry.zig").discardRange(self, address + need, address + old_size, .heap, false);
         self.splitBlock(block, available, need, true);
         try self.coalesceHeap();
         return .{ .address = address };
@@ -133,7 +136,8 @@ pub fn heapResize(self: *State, address: Cell, size: UCell) RuntimeError!HeapRes
         return .{ .address = address };
     }
     const moved = try self.heapAllocate(size) orelse return .no_memory;
-    self.copyMemory(moved, address, @intCast(old_size));
+    errdefer _ = self.heapFree(moved) catch false;
+    try self.copyMemory(moved, address, @intCast(old_size));
     _ = try self.heapFree(address);
     return .{ .address = moved };
 }

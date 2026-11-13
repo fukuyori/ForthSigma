@@ -95,6 +95,7 @@ pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
             self.name_buffer_index = (self.name_buffer_index + 1) % name_buffer_count;
             const start: usize = @intCast(slot);
             @memcpy(self.memory[start .. start + word.name_len], self.wordName(word));
+            @import("address_registry.zig").written(self, @intCast(start), word.name_len, false);
             try self.push(slot);
             try self.push(word.name_len);
         },

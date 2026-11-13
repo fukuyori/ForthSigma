@@ -50,6 +50,7 @@ pub fn setArguments(self: *State, arguments: []const []const u8) RuntimeError!vo
         const start: usize = @intCast(at);
         @memcpy(self.memory[start .. start + text.len], text);
         self.memory[start + text.len] = 0;
+        @import("address_registry.zig").written(self, @intCast(start), text.len + 1, false);
         try self.writeCell(memory_map.argument_vector + @as(Cell, @intCast(index)) * memory_map.cell_size, at);
         at += @intCast(text.len + 1);
     }
@@ -188,17 +189,20 @@ pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
         .load => {
             const path = (try self.nextSourceToken()) orelse return error.InputUnavailable;
             const load_fn = self.writer.load_fn orelse return error.FileUnavailable;
+            try @import("address_registry.zig").requireLegacyImage(self);
             try load_fn(self.writer.context, path, self);
         },
         .save => {
             const path = (try self.nextSourceToken()) orelse return error.InputUnavailable;
             const save_fn = self.writer.save_fn orelse return error.FileUnavailable;
+            try @import("address_registry.zig").requireLegacyImage(self);
             releaseTclStrings(self);
             try save_fn(self.writer.context, path, self);
         },
         .savesys => {
             const path = (try self.nextSourceToken()) orelse return error.InputUnavailable;
             const savesys_fn = self.writer.savesys_fn orelse return error.FileUnavailable;
+            try @import("address_registry.zig").requireLegacyImage(self);
             releaseTclStrings(self);
             try savesys_fn(self.writer.context, path, self);
         },
