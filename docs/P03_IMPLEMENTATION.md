@@ -151,9 +151,21 @@ src/core/image_encoder.zigにmeasure/encodeと呼出元Workspaceを追加。到�
 
 名前・システム・使用中データ・ソース表に再配置表と到達可能ヒープを加え、CRCを付け、生成物を構造パーサーで検査する。Stateと出力は別領域を使うこと。measureのWorkspace内グラフはState.memoryを借用する。encodeは毎回収集し直す。
 
-src/tests/image_encoder_test.zigの3回帰で実Stateの定義・動的文字列・アドレス定数、同一出力の決定性、実行コードの保持、短い出力の保持、破損参照拒否、共有循環・内部参照・孤立ブロック除外と3種類のマジックを確認。通常／全機能群無効のzig build testが成功。ログは.zig-cache/p03b-encoder-test.logとp03b-encoder-minimal.log。623は完了（auto）。今回の変更は未コミット。
+src/tests/image_encoder_test.zigの3回帰で実Stateの定義・動的文字列・アドレス定数、同一出力の決定性、実行コードの保持、短い出力の保持、破損参照拒否、共有循環・内部参照・孤立ブロック除外と3種類のマジックを確認。通常／全機能群無効のzig build testが成功。ログは.zig-cache/p03b-encoder-test.logとp03b-encoder-minimal.log。623は完了（auto）、033e335でpush済み。
 
 公開SAVE/LOADやState.encodeImageはまだ旧実装のまま。この段階では新形式を復元できるとは扱わない。624で組込語照合・容量確保・復元/追加・ホスト保存経路を統合するまで暫定拒否を維持する。620と親617/561/546は未完了。
+
+## P03b 完全復元の非変更事前検証（624配下625）
+
+src/core/image_restore_plan.zigにprepareと呼出元Planを追加。構造パーサーの後、対象Stateとメモリー構成m/l・組込語数・組込語のkind/builtin番号を照合し、名前・語・コードの容量を検査する。組込語の名前は対象ビルドのものを維持する従来方針に合わせ、利用者の名前を置く位置を計算する。
+
+到達可能ヒープオブジェクトを対象ヒープ先頭から詰めて配置する計画を作り、各オブジェクトの新番地、heap_top、型付きセルの新格納位置・新参照値を算出する。オブジェクト内部への参照や循環を保持し、NULL・固定・データ参照はそれぞれの規則で解決する。対象の既存登録や資源は変更しない。
+
+Planは入力と自身のWorkspaceを借用するためコピーせず、prepare成功後だけ参照する。適用前に対象Stateを変更しない。失敗時のPlanの内容は使用しない。
+
+src/tests/image_restore_plan_test.zigの2回帰で孤立プレフィックスを除いたヒープ配置、内部参照と循環の新番地、組込語不一致・CRC破損・名前容量不足の拒否と対象の辞書・HERE・スタック保持を確認。通常／全機能群無効のzig build testが成功。ログは.zig-cache/p03b-restore-plan-test.logとp03b-restore-plan-minimal.log。625は完了（auto）。今回の変更は未コミット。
+
+これは検証と配置計画のみ。626で反映・追加読込・公開経路への接続を行う。SAVE/LOADの切替や復元完了とは扱わず、型付き登録の暫定拒否を維持する。
 
 ## 後続のP03b / P03c
 

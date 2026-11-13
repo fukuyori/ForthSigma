@@ -49,5 +49,6 @@ comptime {
 comptime {
     _ = @import("tests/image_graph_test.zig");
     _ = @import("tests/image_encoder_test.zig");
+    _ = @import("tests/image_restore_plan_test.zig");
     _ = @import("tests/internal_pointer_test.zig");
 }
