@@ -22,3 +22,5 @@ For the project overview, how to build, the current features, the differences fr
 - [S01 review and validation](S01_REVIEW.md): Claude Code findings, fixes, and measured comparisons (Japanese).
 
 - [P01 review and validation](P01_REVIEW.md): Claude Code findings, documentation fixes, and measured return-stack differences (Japanese).
+
+- [Async tasks and event queue overview](ASYNC_OVERVIEW.md): proposal, three issues to resolve before implementation, and open design questions; details undecided (in Japanese).
