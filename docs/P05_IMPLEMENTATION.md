@@ -1,6 +1,6 @@
 # P05 implementation and validation
 
-Updated2026-11-14. P05 (548) is in progress. P05a (565) has fourteen of sixteen words implemented:653 stream helpers,654 input/EOF,655 modes/history/source termination and659 path descriptors. P05a, P05 and 542 remain incomplete. Task653 was committed/pushed as d8da5e7. Task654 was committed/pushed as7964014. Task655 was committed/pushed as2b97309. Task659 is implemented and validated, uncommitted.
+Updated2026-11-14. P05a (565) has all sixteen words implemented and validated. Tasks653/654/655 were pushed as d8da5e7/7964014/2b97309;659 was pushed as3af3c9f. Task660 is implemented and validated, uncommitted. P05 (548) and542 remain incomplete: P05b566 and separate INCLUDE/REQUIRE integration661 remain pending. Native Windows/Linux checks are tracked separately under607.
 
 ## File output and stream slurp (653)
 
@@ -20,7 +20,7 @@ scripts/verify-p05a-stream.py passes 29 designated-Gforth comparisons: low-byte 
 
 ## Remaining work
 
-- 656 remains incomplete:659 implements six descriptor words;660 implements the remaining OPEN-PATH-FILE/FILE>PATH after search order, tilde/source-relative expansion, normalization, borrowed result lifetime and INCLUDE/REQUIRE interactions are settled.
+- 661: separately design INCLUDE/REQUIRE integration; the user approved keeping existing source loading unchanged in660.
 - 566: P05b directory/time fourteen words remain pending.
 
 Task progress remains auto. Windows/Linux native verification is not performed here (607). No version bump or release package was made. Task653 was committed/pushed as d8da5e7.
@@ -73,7 +73,7 @@ scripts/verify-p05a-misc.py compares3,072 mode values (512 modes across six acce
 Tasks653/654/655 are complete (auto). P05a now has8/16 words implemented; remaining eight path words are656. Keep565/548/542 incomplete; P05b566 is pending. Task655 was committed/pushed as2b97309. No version bump or release package was made.
 
 
-## Path descriptors (659, 2026-11-14, uncommitted)
+## Path descriptors (659, 2026-11-14, 3af3c9f pushed)
 
 Six words are implemented in core/paths.zig through the files dispatch/feature group. Path addresses are ordinary initialized dynamic-string owner cells (e.g. VARIABLE P), with NUL-separated directory bytes. They interoperate with $@/$@LEN/$FREE and existing typed owner/image relocation; no new dictionary kind or OS resource is introduced.
 
@@ -84,4 +84,18 @@ Six words are implemented in core/paths.zig through the files dispatch/feature g
 
 Seven regressions in p05a_path_test.zig cover binary separators, Unicode/spaces, compiled parsing and source preservation, empty components, self-append, heap/metadata failure atomicity, full-stack CLEAR-PATH, self-captured display, repeated append/restore, prefix classification and safe empty spans. Normal/minimal tests and normal build pass. scripts/verify-p05a-path.py passes37 Gforth comparisons; report .work/p05a-path-check/comparison.json and logs .zig-cache/p05a-path-{test,minimal,build}.log. No GPL implementation code was copied.
 
-659 is complete (auto);656 remains incomplete with660 pending. P05a now has14/16 words implemented. OPEN-PATH-FILE/FILE>PATH are not implemented, and these descriptor words do not change existing INCLUDE/REQUIRE search behavior. Resolve result lifetime, source-directory handling, ~+ and home expansion, candidate normalization/failure ordering before implementing660. Keep565/548/542 incomplete. No commit/push, version or package change was made for659; native Windows/Linux checks remain outside this session in607.
+659 is complete (auto), committed/pushed as3af3c9f. Task660 completion follows below.
+
+## Path lookup (660, 2026-11-14, uncommitted)
+
+The user approved Gforth-style ordered search and expansion, borrowed results, and separate INCLUDE/REQUIRE integration. OPEN-PATH-FILE ( addr u path -- fid addr2 u2 0 | ior ) opens the first successful candidate read-only. On failure it returns only the last open ior; an empty path or initial empty component returns -37. Empty interior components stop search. Names classified by ABSOLUTE-FILE? bypass the list without dereferencing the path owner. FILE>PATH ( addr u path -- addr2 u2 ) opens and closes the file, throwing open/close errors. No failing operation follows a successful open that could lose its handle.
+
+Leading ./ is expanded using the current physical source file's directory, or the current working directory for terminal/EVALUATE contexts. ~+/ selects the working directory. Other relative names follow path order, including ../ and embedded slashes. Lexical normalization removes repeated slashes, ./ components and cancellable x/../ components without realpath or symlink resolution; leading ../ and /../ are retained, as are terminal x/. and x/.. spellings in the designated Gforth. Existing INCLUDE/REQUIRE behavior is unchanged (661).
+
+The returned spelling retains ~. Opening expands ~/ through HOME; Windows falls back to HOMEDRIVE+HOMEPATH, TEMP and TMP when unset. The native host follows the designated Gforth's writable-home selection; hosts without a home callback use the available environment value. Missing current-home values expand to an empty prefix. Named ~user uses optional FileOps.user_home; the native POSIX host uses getpwnam, while unknown/unsupported users retain their literal spelling. Native Windows/Linux verification remains662 under607. The designated Gforth leaks an extra stack cell for bare ~+; Sigma retains the documented single-ior failure stack instead. The script records this one intentional difference separately. No GPL implementation code was copied.
+
+Resolved and expanded candidates are limited to1,024 bytes. Longer names raise StringTooLong before that candidate is opened; embedded NUL returns an invalid-argument ior without opening a truncated name. Inputs and successful-output stack room are checked before host I/O. Each candidate checks the VM work budget. Borrowed returned bytes occupy the previously unused system string buffers at0x3000..0x3400; they are valid until the next path lookup (also invalid across image restoration/reset). Copy them if longer retention is needed; do not FREE them. Lookup has no heap allocation or persistent typed owner, and does not alter descriptors or input strings. This avoids additional fixed image roots. Failure may leave the old scratch bytes, but callers must not rely on their lifetime after another lookup.
+
+Eight regressions in p05a_search_test.zig cover read-only order and returned spelling, empty-component termination/last ior, native versus returned tilde names, close-error cleanup, stack/range/length preflight, result aliases and image restoration, embedded-NUL rejection, and lookup with no free heap/no extra image root. Normal/minimal zig build test and normal zig build pass. scripts/verify-p05a-search.py passes42 designated-Gforth comparisons covering Unicode/spaces, order, bypass, source-relative paths, home/named-home expansion and lexical compaction, including EVALUATE inside a file. Report: .work/p05a-search-check/comparison.json; logs: .zig-cache/p05a-search-{test,minimal,build}.log.
+
+660/656/565 are complete with progress auto. P05a is16/16. Next planned word group is P05b566 (directory/time); P05/542 remain incomplete. Changes for660 are uncommitted. No release package, version change or native Windows/Linux check was performed.

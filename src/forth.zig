@@ -941,6 +941,8 @@ pub const State = struct {
             .{ ".PATH", .dot_path },
             .{ "PATH+", .path_plus },
             .{ "PATH=", .path_equals },
+            .{ "OPEN-PATH-FILE", .open_path_file },
+            .{ "FILE>PATH", .file_to_path },
             .{ "\\\\\\", .triple_backslash },
     };
 

@@ -285,9 +285,8 @@ pub const hold_top: Cell = 0x2000;
 
 pub const pad_address: Cell = 0x2000;
 
-/// Four buffers of 256 bytes that S" outside a definition once used in turn. Since S"
-/// keeps each string in the heap (as gforth), the area is not used; it stays, so that
-/// PAD's size (/PAD) and the places after it do not change.
+/// Four former S" buffers, now the 1024-byte borrowed path-lookup result.
+/// Reused by OPEN-PATH-FILE/FILE>PATH; no heap owner or image relocation root.
 pub const string_buffer_base: Cell = 0x3000;
 
 pub const string_buffer_size = 256;

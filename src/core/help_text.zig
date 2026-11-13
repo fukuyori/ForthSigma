@@ -237,6 +237,8 @@ pub const entries = [_]Entry{
     .{ .name = "ALSO-PATH", .stack = "( addr u path -- )", .text = "Append directory bytes to a path, adding a NUL separator when nonempty." },
     .{ .name = ".PATH", .stack = "( path -- )", .text = "Display components with trailing spaces; stop at the first empty component." },
     .{ .name = "PATH+", .stack = "( path \"dir\" -- )", .text = "Parse and append one directory token." },
+    .{ .name = "OPEN-PATH-FILE", .stack = "( addr u path -- fid addr2 u2 0 | ior )", .text = "Search in order and open read-only. Borrow the resolved path until the next path lookup; empty path returns -37." },
+    .{ .name = "FILE>PATH", .stack = "( addr u path -- addr2 u2 )", .text = "Search and close the file; THROW on open or close error. Borrow the path until the next lookup." },
     .{ .name = "PATH=", .stack = "( path \"dirs\" -- )", .text = "Replace from one token, translating | separators to NUL without modifying input source." },
     .{ .name = "+FMODE", .stack = "( fam mode -- fam2 )", .text = "Encode nine rwxrwxrwx permission bits for CREATE-FILE, subject to umask; OPEN-FILE ignores those bits." },
     .{ .name = ".INCLUDED", .stack = "( -- )", .text = "List loaded source names in registration order, each preceded by a newline; honor MARKER history." },

@@ -46,7 +46,7 @@ pub fn build(b: *std.Build) void {
     addEmbeddedTexts(b, exe.root_module);
     addCTime(b, exe.root_module, target, optimize);
     const c_file = b.addTranslateC(.{
-        .root_source_file = b.addWriteFiles().add("c_file.h", "#include <stdio.h>\n#include <fcntl.h>\n#include <sys/stat.h>\n#ifdef _WIN32\n#include <io.h>\n#else\n#include <errno.h>\n#endif\n"),
+        .root_source_file = b.addWriteFiles().add("c_file.h", "#include <stdio.h>\n#include <fcntl.h>\n#include <sys/stat.h>\n#ifdef _WIN32\n#include <io.h>\n#else\n#include <errno.h>\n#include <pwd.h>\n#include <unistd.h>\n#endif\n"),
         .target = target,
         .optimize = optimize,
     });

@@ -1,6 +1,6 @@
 # Gforth対応の引き継ぎ
 
-更新日：2026-11-14。P00・S01・P01・P02とP03の65語（P03a/b/c）まで実装・検証完了。P04の33語まで実装・検証完了。現在は **P05a ファイル補助とパス検索（565）**。EMIT-FILE/SLURP-FID（653）はd8da5e7でpush済み。654の入力3語は7964014でpush済み。655は2b97309でpush済み。659のパス記述子6語も実装・検証済み（未コミット）。P05aは14/16語、次は検索2語（660、親656）。Windows/Linux確認はここでは行わず607に残す。
+更新日：2026-11-14。P00・S01・P01・P02・P03・P04に続き、P05aの16語（565）も実装・検証完了。659は3af3c9fでpush済み。660の検索2語は実装・検証済み（未コミット）。次はP05b（566）のディレクトリ・時刻14語。INCLUDE/REQUIRE接続は661へ分離。Windows/Linux確認はここでは行わず607（パス検索は662）へ残す。P05/542は未完了。
 
 P03c was committed and pushed as `98be4f8`. P03 and task 562 are complete. Claude Code review fixes and the first 21 P04a words were committed/pushed as a6ab243. Task 631 is complete (auto), with no new concrete defect found in the final review. See [P03 review](P03_REVIEW.md). The six additional P04a edit/owned-string words were committed/pushed as 5b2c8a4. XC@+? was committed/pushed as fa2afe9 and P04a is complete. P04b $VALUE/MACRO: were committed/pushed as 33bb55a (634); the macro vocabulary/callback words (635) were committed/pushed as 6a9c4e3. Check git status and git log before resuming.
 
@@ -14,9 +14,13 @@ Task654 is complete (auto): KEY-FILE/KEY?-FILE/FILE-EOF? were committed/pushed a
 
 +FMODE, .INCLUDED and the immediate three-backslash source terminator are implemented. The user confirmed safe non-file no-op behavior and listing each registered filename once (Gforth can list repeated includes). POSIX modes use creation-time open plus fdopen, respecting umask without changing existing permissions. Windows uses CRT owner read/write semantics;658 tracks native checks. Nine regressions, normal/minimal tests, normal build,3,072 mode-value comparisons,29 permission cases, two history stages and three file-source comparisons pass. See [P05 record](P05_IMPLEMENTATION.md). Committed/pushed as2b97309. Path descriptor task659 is recorded below; keep565/548/542 incomplete.
 
-## P05a path descriptors (659, uncommitted)
+## P05a path descriptors (659, 3af3c9f pushed)
 
-ABSOLUTE-FILE?/CLEAR-PATH/ALSO-PATH/.PATH/PATH+/PATH= are implemented with ordinary dynamic-string owners and NUL separators. Seven regressions, normal/minimal tests, normal build and37 designated-Gforth comparisons pass. Updates preserve old contents on failure, parsing preserves source bytes, self-captured display snapshots input, and typed owners survive repeated append/restore. See [P05 record](P05_IMPLEMENTATION.md). Next is660: actual file search, source/home expansion, normalization, result lifetime and INCLUDE integration. Neither OPEN-PATH-FILE nor FILE>PATH is implemented yet. 659 is complete (auto);656/565/548/542 remain incomplete. Changes are uncommitted.
+ABSOLUTE-FILE?/CLEAR-PATH/ALSO-PATH/.PATH/PATH+/PATH= are complete with seven regressions and37 comparisons. Committed/pushed as3af3c9f. See [P05 record](P05_IMPLEMENTATION.md).
+
+## P05a path lookup (660, uncommitted)
+
+OPEN-PATH-FILE and FILE>PATH complete P05a16/16. Eight regressions,42 designated-Gforth comparisons, normal/minimal tests and normal build pass. Ordered read-only search, ./ source-directory expansion, ~+/ working-directory selection, tilde/native home expansion and lexical compaction are implemented. Returned spelling borrows a1,024-byte system scratch area until the next lookup/reset; no persistent owner root or heap allocation is added. FILE>PATH closes and propagates errors. INCLUDE/REQUIRE remains unchanged by user-approved scope;661 tracks integration. 660/656/565 are complete(auto);566 is next,548/542 remain incomplete. Native Windows/Linux path checks are662 under607. See [P05 record](P05_IMPLEMENTATION.md) for platform limits and HOME behavior.
 
 ## P04a completion
 
@@ -60,7 +64,7 @@ tqueで管理し、進捗モードは**auto**とする。階層はForthSigma 121
 |546 P03|完了。560 P03a 44語、561 P03b 15語と永続化、562 P03c 6語が完了|
 |563 P04a|完了。28語の文字列操作/Unicode|
 |564 P04b / 547 P04|完了。文字列値・マクロ5語、合計33語。635は6a9c4e3でpush済み|
-|548 P05 / 565 P05a|進行中。653の2語を実装・検証、d8da5e7でpush済み。654は7964014でpush済み、655は2b97309でpush済み。659の6語を実装（未コミット）、残り2語は660（656配下）|
+|548 P05 / 565 P05a|進行中。653の2語を実装・検証、d8da5e7でpush済み。654は7964014でpush済み、655は2b97309でpush済み。659は3af3c9fでpush済み。660の2語を実装・検証済み（未コミット）、565は完了、次は566。661は接続を別途設計|
 |561 P03b|完了。15語の実行・型/寿命追跡と新形式保存/復元/追加を統合|
 |550 P07|未着手。P01依存は解消。457を先行させる|
 |457 P07先行|550配下。IS/ACTION-OF/TO/+TOの辞書登録。既存IDを使う|

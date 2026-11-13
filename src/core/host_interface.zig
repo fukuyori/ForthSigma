@@ -20,6 +20,8 @@ pub const LineResult = struct { length: usize = 0, found: bool = false, ior: Cel
 
 /// Host file operations. Ids are opaque cells; the standard streams use the fixed ids above.
 pub const FileOps = struct {
+    /// Home directory (empty user means current); null means unknown/unsupported.
+    user_home: ?*const fn (?*anyopaque, []const u8, []u8) RuntimeError!?usize = null,
     /// Opens an existing file, or creates and truncates one when `create` is set.
     open: *const fn (?*anyopaque, []const u8, FileAccess, bool) FileResult,
     close: *const fn (?*anyopaque, Cell) Cell,

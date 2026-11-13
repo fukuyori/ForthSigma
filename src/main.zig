@@ -343,6 +343,55 @@ fn openedFile(fileid: forth.Cell) ?*anyopaque {
     return open_files[@intCast(fileid - forth.first_file_id)];
 }
 
+fn copyWritableHome(value: []const u8, buffer: []u8) forth.RuntimeError!?usize {
+    var path: [4096:0]u8 = undefined;
+    if (value.len >= path.len or std.mem.indexOfScalar(u8, value, 0) != null) return null;
+    @memcpy(path[0..value.len], value);
+    path[value.len] = 0;
+    const accessible = if (builtin.os.tag == .windows) native: {
+        var wide: [8192]u16 = undefined;
+        const name = wide_c.from(&path, &wide) orelse return null;
+        break :native @import("c_file")._waccess(name, 2) == 0;
+    } else @import("c_file").access(&path, 2) == 0;
+    if (!accessible) return null;
+    if (value.len > buffer.len) return error.StringTooLong;
+    @memcpy(buffer[0..value.len], value);
+    return value.len;
+}
+
+fn userHome(context: ?*anyopaque, user: []const u8, buffer: []u8) forth.RuntimeError!?usize {
+    if (user.len == 0) {
+        const host = try hostContext(context);
+        if (host.environ_map.get("HOME")) |value| if (try copyWritableHome(value, buffer)) |n| return n;
+        if (comptime builtin.os.tag == .windows) {
+            if (host.environ_map.get("HOMEDRIVE")) |drive| {
+                if (host.environ_map.get("HOMEPATH")) |tail| {
+                    var joined: [4096]u8 = undefined;
+                    if (drive.len + tail.len > joined.len) return error.StringTooLong;
+                    @memcpy(joined[0..drive.len], drive);
+                    @memcpy(joined[drive.len..][0..tail.len], tail);
+                    if (try copyWritableHome(joined[0 .. drive.len + tail.len], buffer)) |n| return n;
+                }
+            }
+            for ([_][]const u8{ "TEMP", "TMP" }) |key| {
+                if (host.environ_map.get(key)) |value| if (try copyWritableHome(value, buffer)) |n| return n;
+            }
+        }
+        return 0;
+    }
+    if (comptime builtin.os.tag == .windows) return null;
+    var name: [1024:0]u8 = undefined;
+    if (user.len >= name.len or std.mem.indexOfScalar(u8, user, 0) != null) return null;
+    @memcpy(name[0..user.len], user);
+    name[user.len] = 0;
+    const entry = @import("c_file").getpwnam(&name);
+    if (entry == null) return null;
+    const home = std.mem.span(entry.*.pw_dir);
+    if (home.len > buffer.len) return error.StringTooLong;
+    @memcpy(buffer[0..home.len], home);
+    return home.len;
+}
+
 fn fileOpen(_: ?*anyopaque, name: []const u8, access: forth.FileAccess, create: bool) forth.FileResult {
     return fileOpenMode(name, access, create, null);
 }
@@ -753,7 +802,7 @@ fn fileStdinByte(wait: bool) forth.RuntimeError!?u8 {
     }
 }
 
-const file_ops = forth.FileOps{ .open = fileOpen, .close = fileClose, .read_line = fileReadLine, .read = fileRead, .write = fileWrite, .size = fileSize, .reposition = fileReposition, .position = filePosition, .resize = fileResize, .flush = fileFlush, .delete = fileDelete, .rename = fileRename, .status = fileStatus, .key = fileKey, .ready = fileReady, .eof = fileEof, .create_mode = fileCreateMode };
+const file_ops = forth.FileOps{ .user_home = userHome, .open = fileOpen, .close = fileClose, .read_line = fileReadLine, .read = fileRead, .write = fileWrite, .size = fileSize, .reposition = fileReposition, .position = filePosition, .resize = fileResize, .flush = fileFlush, .delete = fileDelete, .rename = fileRename, .status = fileStatus, .key = fileKey, .ready = fileReady, .eof = fileEof, .create_mode = fileCreateMode };
 
 /// Lets the Windows console interpret the ANSI sequences written by PAGE.
 fn enableVirtualTerminal() void {
