@@ -117,6 +117,8 @@ extern "kernel32" fn GetFileType(*anyopaque) callconv(.winapi) u32;
 extern "kernel32" fn GetTickCount64() callconv(.winapi) u64;
 extern "kernel32" fn Sleep(u32) callconv(.winapi) void;
 extern "kernel32" fn GetSystemTimePreciseAsFileTime(*u64) callconv(.winapi) void;
+extern "kernel32" fn GetCurrentProcess() callconv(.winapi) *anyopaque;
+extern "kernel32" fn GetProcessTimes(*anyopaque, *u64, *u64, *u64, *u64) callconv(.winapi) c_int;
 extern "kernel32" fn GetConsoleMode(*anyopaque, *u32) callconv(.winapi) c_int;
 extern "kernel32" fn SetConsoleMode(*anyopaque, u32) callconv(.winapi) c_int;
 extern "kernel32" fn GetConsoleScreenBufferInfo(*anyopaque, *ConsoleScreenBufferInfo) callconv(.winapi) c_int;
@@ -267,6 +269,35 @@ fn microsecondsSinceEpoch(_: ?*anyopaque) forth.RuntimeError!forth.Double {
     var now: std.c.timespec = undefined;
     if (std.c.clock_gettime(std.c.CLOCK.REALTIME, &now) != 0) return error.HostFailed;
     return @as(forth.Double, now.sec) * std.time.us_per_s + @divFloor(@as(forth.Double, now.nsec), std.time.ns_per_us);
+}
+
+/// Nanoseconds since the Unix epoch, at the host wall clock's actual resolution.
+fn nanosecondsSinceEpoch(_: ?*anyopaque) forth.RuntimeError!forth.Double {
+    if (builtin.os.tag == .windows) {
+        var ticks: u64 = 0;
+        GetSystemTimePreciseAsFileTime(&ticks);
+        return (@as(forth.Double, ticks) - 116_444_736_000_000_000) * 100;
+    }
+    var now: std.c.timespec = undefined;
+    if (std.c.clock_gettime(std.c.CLOCK.REALTIME, &now) != 0) return error.HostFailed;
+    return @as(forth.Double, now.sec) * std.time.ns_per_s + @as(forth.Double, now.nsec);
+}
+
+fn processCpuTimes(_: ?*anyopaque) forth.RuntimeError!forth.CpuTimes {
+    if (builtin.os.tag == .windows) {
+        var creation: u64 = undefined;
+        var exit: u64 = undefined;
+        var kernel: u64 = undefined;
+        var user: u64 = undefined;
+        if (GetProcessTimes(GetCurrentProcess(), &creation, &exit, &kernel, &user) == 0) return error.HostFailed;
+        return .{ .user = @divTrunc(@as(forth.Double, user), 10), .system = @divTrunc(@as(forth.Double, kernel), 10) };
+    }
+    var usage: c_time.struct_rusage = undefined;
+    if (c_time.getrusage(c_time.RUSAGE_SELF, &usage) != 0) return error.HostFailed;
+    return .{
+        .user = @as(forth.Double, usage.ru_utime.tv_sec) * std.time.us_per_s + usage.ru_utime.tv_usec,
+        .system = @as(forth.Double, usage.ru_stime.tv_sec) * std.time.us_per_s + usage.ru_stime.tv_usec,
+    };
 }
 
 /// The C library's time.h, translated by build.zig (see addCTime).
@@ -1908,7 +1939,7 @@ fn run(init: std.process.Init.Minimal) !u8 {
         return 1;
     };
     defer storage.free(std.heap.page_allocator);
-    machine.init(.{ .gamepad_ops = if (graphics) &host_gamepad.ops else null, .context = @ptrCast(&host), .write_fn = terminalWrite, .read_fn = terminalRead, .load_fn = loadDictionary, .save_fn = saveDictionary, .savesys_fn = saveExecutableImage, .key_fn = terminalKey, .event_key_fn = terminalEventKey, .monotonic_ms_fn = monotonicMilliseconds, .key_ready_fn = terminalKeyReady, .buffered_key_fn = terminalBufferedKey, .unread_fn = terminalUnread, .sleep_fn = sleepMilliseconds, .utime_fn = microsecondsSinceEpoch, .local_time_fn = localTime, .getenv_fn = environmentValue, .system_fn = runShellCommand, .file_ops = &file_ops, .framebuffer_fn = graphicsBuffer, .image_alloc_fn = if (graphics) imageAlloc else null, .image_free_fn = if (graphics) imageFree else null, .terminal_size_fn = terminalSize, .terminal_utf8_fn = terminalUtf8, .window_fn = if (host_window.available) host_window.show else null, .input_fn = inputEvent, .mouse_fn = mouseMode, .cursor_fn = cursorPosition, .font_buffer_fn = if (graphics) fontBuffer else null, .font_free_fn = if (graphics) fontFree else null, .system_font_fn = if (graphics and host_font.available) host_font.select else null, .system_glyph_fn = if (graphics and host_font.available) host_font.glyph else null, .process_start_fn = if (graphics) host_process.start else null, .process_write_fn = if (graphics) host_process.write else null, .process_read_fn = if (graphics) host_process.read else null, .process_stop_fn = if (graphics) host_process.stop else null, .audio_fn = if (audio) host_audio.start else null, .audio_device_fn = if (audio) host_audio.hasDevice else null, .audio_wait_fn = if (audio) audioWait else null }, storage);
+    machine.init(.{ .gamepad_ops = if (graphics) &host_gamepad.ops else null, .context = @ptrCast(&host), .write_fn = terminalWrite, .read_fn = terminalRead, .load_fn = loadDictionary, .save_fn = saveDictionary, .savesys_fn = saveExecutableImage, .key_fn = terminalKey, .event_key_fn = terminalEventKey, .monotonic_ms_fn = monotonicMilliseconds, .key_ready_fn = terminalKeyReady, .buffered_key_fn = terminalBufferedKey, .unread_fn = terminalUnread, .sleep_fn = sleepMilliseconds, .utime_fn = microsecondsSinceEpoch, .ntime_fn = nanosecondsSinceEpoch, .cputime_fn = processCpuTimes, .local_time_fn = localTime, .getenv_fn = environmentValue, .system_fn = runShellCommand, .file_ops = &file_ops, .framebuffer_fn = graphicsBuffer, .image_alloc_fn = if (graphics) imageAlloc else null, .image_free_fn = if (graphics) imageFree else null, .terminal_size_fn = terminalSize, .terminal_utf8_fn = terminalUtf8, .window_fn = if (host_window.available) host_window.show else null, .input_fn = inputEvent, .mouse_fn = mouseMode, .cursor_fn = cursorPosition, .font_buffer_fn = if (graphics) fontBuffer else null, .font_free_fn = if (graphics) fontFree else null, .system_font_fn = if (graphics and host_font.available) host_font.select else null, .system_glyph_fn = if (graphics and host_font.available) host_font.glyph else null, .process_start_fn = if (graphics) host_process.start else null, .process_write_fn = if (graphics) host_process.write else null, .process_read_fn = if (graphics) host_process.read else null, .process_stop_fn = if (graphics) host_process.stop else null, .audio_fn = if (audio) host_audio.start else null, .audio_device_fn = if (audio) host_audio.hasDevice else null, .audio_wait_fn = if (audio) audioWait else null }, storage);
     defer closeAllFiles();
     defer host_directories.closeAll();
     // The images of the pool, when the session ends without BYE.
@@ -2442,4 +2473,22 @@ test "file key readiness mixes with READ-FILE READ-LINE and file size" {
     try std.testing.expectEqual(@as(forth.UCell, 0), fileEof(null, id).value);
     try std.testing.expect(!fileReadLine(null, id, &line).found);
     try std.testing.expectEqual(@as(forth.UCell, 1), fileEof(null, id).value);
+}
+
+test "P05b native clocks have Unix ns units and nondecreasing process CPU counters" {
+    const before = try microsecondsSinceEpoch(null);
+    const now = try nanosecondsSinceEpoch(null);
+    const after = try microsecondsSinceEpoch(null);
+    try std.testing.expect(now >= before * 1000);
+    try std.testing.expect(now < (after + 1) * 1000);
+    const first = try processCpuTimes(null);
+    try std.testing.expect(first.user >= 0 and first.system >= 0);
+    var result: u64 = 1;
+    for (0..100000) |i| {
+        result = result *% 6364136223846793005 +% @as(u64, @intCast(i));
+        std.mem.doNotOptimizeAway(result);
+    }
+    const second = try processCpuTimes(null);
+    try std.testing.expect(second.user >= first.user);
+    try std.testing.expect(second.system >= first.system);
 }

@@ -54,6 +54,7 @@ pub const Cell = memory_map.Cell;
 const Control = defs.Control;
 pub const Double = memory_map.Double;
 const ErrorLocation = defs.ErrorLocation;
+pub const CpuTimes = host_interface.CpuTimes;
 pub const FileAccess = host_interface.FileAccess;
 pub const FileOps = host_interface.FileOps;
 pub const FileKeyResult = host_interface.FileKeyResult;
@@ -953,6 +954,8 @@ pub const State = struct {
             .{ "OPEN-DIR", .open_dir },
             .{ "READ-DIR", .read_dir },
             .{ "CLOSE-DIR", .close_dir },
+            .{ "NTIME", .ntime },
+            .{ "CPUTIME", .cputime },
             .{ "\\\\\\", .triple_backslash },
     };
 

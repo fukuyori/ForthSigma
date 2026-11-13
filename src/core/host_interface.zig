@@ -9,6 +9,8 @@ const RuntimeError = defs.RuntimeError;
 const State = forth.State;
 const UCell = memory_map.UCell;
 
+pub const CpuTimes = struct { user: Double, system: Double };
+
 pub const FileAccess = enum { read_only, write_only, read_write };
 
 pub const FileResult = struct { value: UCell = 0, ior: Cell = 0 };
@@ -151,6 +153,10 @@ pub const Writer = struct {
     sleep_fn: ?*const fn (?*anyopaque, Cell) RuntimeError!void = null,
     /// Microseconds since the Unix epoch.
     utime_fn: ?*const fn (?*anyopaque) RuntimeError!Double = null,
+    /// Unix epoch nanoseconds from the wall clock, not a monotonic deadline.
+    ntime_fn: ?*const fn (?*anyopaque) RuntimeError!Double = null,
+    /// Cumulative process user/system microseconds; includes threads, excludes children.
+    cputime_fn: ?*const fn (?*anyopaque) RuntimeError!CpuTimes = null,
     local_time_fn: ?*const fn (?*anyopaque) RuntimeError!LocalTime = null,
     /// Copies the variable's value into the buffer and returns its length, or null when unset.
     getenv_fn: ?*const fn (?*anyopaque, []const u8, []u8) RuntimeError!?usize = null,
