@@ -50,15 +50,31 @@ pub fn storeString(self: *State, source: Cell, length: usize, string_var: Cell) 
     _ = try self.memoryAddress(source, length);
     const reserved = try reservePointer(self, string_var);
     errdefer cancelPointer(self, string_var, reserved);
-    const size = @import("std").math.add(usize, cell_size, length) catch return self.throwIor(errno_no_memory);
-    const buffer = try self.heapAllocate(size) orelse return self.throwIor(errno_no_memory);
-    errdefer _ = self.heapFree(buffer) catch false;
-    try self.copyMemory(buffer + cell_size, source, length);
-    try self.writeCell(buffer, @intCast(length));
     const old = try self.readCell(string_var);
-    if (!try self.heapFree(old)) return self.throwIor(errno_invalid);
-    try self.writeCell(string_var, buffer);
-    try registerPointer(self, string_var);
+    if (old != 0) {
+        const block = (try self.findBlock(old)) orelse return self.throwIor(errno_invalid);
+        const end = old + try self.blockSize(block);
+        if (@as(i128, string_var) < end and @as(i128, string_var) + cell_size > block) return self.throwIor(errno_invalid);
+    }
+    const buffer = transaction: {
+        const size = @import("std").math.add(usize, cell_size, length) catch return self.throwIor(errno_no_memory);
+        const allocated = try self.heapAllocate(size) orelse return self.throwIor(errno_no_memory);
+        errdefer _ = self.heapFree(allocated) catch false;
+        const block = (try self.findBlock(allocated)).?;
+        const end = allocated + try self.blockSize(block);
+        // Reject owners inside the block they would own, including an unallocated
+        // logical owner whose address happens to fall in the new allocation.
+        if (@as(i128, string_var) < end and @as(i128, string_var) + cell_size > block) return self.throwIor(errno_invalid);
+        try self.copyMemory(allocated + cell_size, source, length);
+        try self.writeCell(allocated, @intCast(length));
+        if (!try self.heapFree(old)) return self.throwIor(errno_invalid);
+        break :transaction allocated;
+    };
+    // Commit has no fallible operations: the logical cell was range-checked,
+    // is outside both freed/new blocks, and its metadata entry was reserved
+    // before copying. The failed-buffer errdefer ended with the transaction.
+    self.writeCell(string_var, buffer) catch unreachable;
+    registerPointer(self, string_var) catch unreachable;
 }
 
 pub fn fetchString(self: *State, string_var: Cell) RuntimeError!StringRef {
@@ -99,6 +115,8 @@ pub fn freeString(self: *State, string_var: Cell) RuntimeError!void {
 /// Inserts (or, for $OVER, overwrites) `length` bytes from `source` at `offset`.
 /// A source inside the same string is copied out first, since resizing may move it.
 pub fn insertString(self: *State, string_var: Cell, offset: usize, source: Cell, length: usize, overwrite: bool) RuntimeError!void {
+    const reserved = try reservePointer(self, string_var);
+    errdefer cancelPointer(self, string_var, reserved);
     _ = try self.memoryAddress(source, length);
     const old = try self.fetchString(string_var);
     const inside = old.address != 0 and source + @as(Cell, @intCast(length)) > old.address - cell_size and source < old.address + @as(Cell, @intCast(old.length));
@@ -114,7 +132,19 @@ pub fn insertString(self: *State, string_var: Cell, offset: usize, source: Cell,
         from = copy;
     }
     const at = if (overwrite) offset else @min(offset, old.length);
-    const new_length = if (overwrite) @max(old.length, at + length) else old.length + length;
+    const end = @import("std").math.add(usize, at, length) catch return self.throwIor(errno_no_memory);
+    const new_length = if (overwrite) @max(old.length, end) else @import("std").math.add(usize, old.length, length) catch return self.throwIor(errno_no_memory);
+    const allocation_size = @import("std").math.add(usize, cell_size, new_length) catch return self.throwIor(errno_no_memory);
+    const new_size: usize = @intCast(self.heapNeed(allocation_size) orelse return self.throwIor(errno_no_memory));
+    const old_buffer = try self.readCell(string_var);
+    const old_size: usize = if (old_buffer == 0) 0 else @intCast(try self.blockSize((try self.findBlock(old_buffer)) orelse return self.throwIor(errno_invalid)));
+    const position = old_buffer + cell_size + @as(Cell, @intCast(at));
+    // Model both copies after resize, including metadata created by the tail shift.
+    // Capacity failure must precede owner, length and byte changes (+TO included).
+    try registry.preflightResizeCopies(self, old_buffer, old_size, new_size, &.{
+        .{ .destination = position + @as(Cell, @intCast(length)), .source = position, .length = if (overwrite) 0 else old.length - at },
+        .{ .destination = position, .source = from, .length = length },
+    });
     const buffer = try self.setStringLength(string_var, new_length);
     const text = buffer + cell_size;
     if (overwrite) {

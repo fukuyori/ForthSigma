@@ -56,12 +56,14 @@ pub const Captured = struct {
         if (output.buffer == 0 or length > output.capacity) {
             const capacity = @max(length, @max(64, output.capacity *| 2));
             const size = std.math.add(usize, map.cell_size, capacity) catch return self.throwIor(map.errno_no_memory);
-            output.buffer = switch (try self.heapResize(output.buffer, size)) {
+            var resized = try self.heapResize(output.buffer, size);
+            if (resized == .no_memory and capacity != length) resized = try self.heapResize(output.buffer, std.math.add(usize, map.cell_size, length) catch return self.throwIor(map.errno_no_memory));
+            output.buffer = switch (resized) {
                 .address => |address| address,
                 .no_memory => return self.throwIor(map.errno_no_memory),
                 .bad_pointer => return error.InvalidAddress,
             };
-            output.capacity = capacity;
+            output.capacity = @intCast((try self.blockSize((try self.findBlock(output.buffer)).?)) - map.cell_size);
         }
         const at: usize = @intCast(output.buffer + map.cell_size + @as(Cell, @intCast(output.length)));
         @memmove(self.memory[at..][0..data.len], data);
@@ -89,6 +91,14 @@ pub fn capture(self: *State, source: []const u8) RuntimeError!Captured {
     if (self.capture_failed) return self.throwIor(map.errno_no_memory);
     // Empty output still needs a valid length-prefixed buffer for $TMP.
     if (output.buffer == 0) try output.put(self, "");
+    if (output.capacity != output.length) {
+        output.buffer = switch (try self.heapResize(output.buffer, map.cell_size + output.length)) {
+            .address => |address| address,
+            .no_memory => return self.throwIor(map.errno_no_memory),
+            .bad_pointer => return error.InvalidAddress,
+        };
+        output.capacity = output.length;
+    }
     try self.writeCell(output.buffer, @intCast(output.length));
     return output;
 }

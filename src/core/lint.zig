@@ -178,7 +178,9 @@ pub const Lint = struct {
         while (index > 0) {
             index -= 1;
             const earlier = machine.words[index];
-            if (earlier.wordlist != word.wordlist or !std.ascii.eqlIgnoreCase(machine.wordName(earlier), text)) continue;
+            if (earlier.wordlist != word.wordlist) continue;
+            const same_name = if (word.wordlist == memory_map.macros_wordlist) std.mem.eql(u8, machine.wordName(earlier), text) else std.ascii.eqlIgnoreCase(machine.wordName(earlier), text);
+            if (!same_name) continue;
             if (index < machine.builtin_count) {
                 self.finding(machine, "REDEFINED", id, 0, "{s} is a built-in word", .{text});
             } else if (earlier.source_file != 0) {

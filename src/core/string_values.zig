@@ -20,6 +20,17 @@ pub fn define(self: *State, name: []const u8, source: map.Cell, count: map.Cell)
     const old_names = self.names_used;
     const old_here = self.data_here;
     const old_created = self.last_created_word;
+    var actual_source = source;
+    var snapshot: ?map.Cell = null;
+    defer if (snapshot) |copy| {
+        _ = self.heapFree(copy) catch {};
+    };
+    if (@as(i128, source) < @as(i128, old_here) + 8 and @as(i128, source) + length > old_here) {
+        const copy = try self.heapAllocate(length) orelse return self.throwIor(map.errno_no_memory);
+        snapshot = copy;
+        try self.copyMemory(copy, source, length);
+        actual_source = copy;
+    }
     const id = try self.appendDataWord(name, .string_value, 8);
     errdefer {
         registry.discardRange(self, old_here, self.data_here, .data, false);
@@ -31,7 +42,7 @@ pub fn define(self: *State, name: []const u8, source: map.Cell, count: map.Cell)
         @import("wordlists.zig").rebuildIndex(self);
     }
     try self.writeCell(self.words[id].value, 0);
-    try strings.storeString(self, source, length, self.words[id].value);
+    try strings.storeString(self, actual_source, length, self.words[id].value);
 }
 pub fn fetch(self: *State, owner: map.Cell) RuntimeError!void {
     if (self.data_depth > self.data_stack.len - 2) return error.StackOverflow;

@@ -713,8 +713,8 @@ S" dir" SYSTEM
 | `SKIP` | ( addr u c -- addr' u' ) | Pass the c's at the start of a string and return the rest. |
 | `STR=` | ( addr1 u1 addr2 u2 -- flag ) | True if the two strings are the same. |
 | `STRING-PREFIX?` | ( addr1 u1 addr2 u2 -- flag ) | True if the first string starts with the second string. |
-| `REPLACES` | ( addr1 u1 addr2 u2 -- ) | Make `%name%`, with the name addr2 u2, stand for the text addr1 u1 in `SUBSTITUTE`. A name given again takes its new text. |
-| `SUBSTITUTE` | ( addr1 u1 addr2 u2 -- addr2 u3 n ) | Copy the text addr1 u1 into the buffer addr2 u2 with each `%name%` of `REPLACES` replaced by its text; `%%` gives `%`. n is how many names were replaced, or -78 when the result did not fit. |
+| `REPLACES` | ( addr1 u1 addr2 u2 -- ) | Create/update an owned value in case-sensitive MACROS-WORDLIST; warn and retain hard-coded callbacks. |
+| `SUBSTITUTE` | ( addr1 u1 addr2 u2 -- addr2 u3 n ) | Execute each macro occurrence once, capturing its output and returned string into the bounded buffer; clip with -78 on overflow. Callback THROW propagates. |
 | `UNESCAPE` | ( addr1 u1 addr2 -- addr2 u2 ) | Copy the text into the buffer at addr2 with each `%` doubled, so that `SUBSTITUTE` gives the text back. |
 | `+PLACE` | ( addr u c-addr -- ) | Append a string to a counted string. It stops at 255 bytes in all. |
 | `SLITERAL` | compile time ( addr u -- ), run time ( -- addr u ) | Used inside a definition; compile a string (up to 255 bytes) into the definition. |
@@ -1153,3 +1153,5 @@ S" initial" $VALUE NAME defines an owned copy. NAME returns borrowed addr/u; S" 
 `MACROS-WORDLIST ( -- wid )` gives the case-sensitive macro namespace. `REPLACER: NAME ... ;` defines a callback `( -- addr u )` there, restoring the caller's CURRENT before compiling the body. `REPLACES` creates/updates owned macro values; hard-coded callbacks are retained with a warning if REPLACES tries to update them. To create a MACRO: value there directly, save CURRENT, set it to MACROS-WORDLIST, define the value and restore CURRENT. Include this list in the search order to use TO/+TO on its values. Names follow Sigma's dictionary limit of 1–255 bytes.
 
 `.SUBSTITUTE ( addr u -- n )` prints the substituted text and returns the replacement count. `%%` emits a literal percent; unknown or unclosed names remain literal. Each occurrence executes once. Callback THROW propagates through all three substitution APIs. Streaming output preceding an exception remains visible; owned/bounded output is committed only on success. `$SUBSTITUTE` and `SUBSTITUTE` also capture callback output (TYPE, etc.), support nested `$TMP`, and snapshot the input before callbacks. Bounded output returns -78 when clipped, but still executes all occurrences; it temporarily holds the complete result in VM heap memory. Macro definitions, owned values and callbacks survive dictionary save/restore and repeated loads.
+
+Callbacks must preserve existing caller stack values and keep the SUBSTITUTE destination alive. Runtime checks cover stack depth and returned ranges; they do not isolate existing stack cells from arbitrary Forth code. Names containing % may exist in the dictionary, but cannot be referenced by the %name% delimiter syntax. Raw writes may alias owner cells; image validation does not guarantee exclusive ownership.

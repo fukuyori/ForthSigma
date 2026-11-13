@@ -189,3 +189,17 @@ test "a word that takes the place of a removed one has its own stack comment" {
         \\
     , &output, lint));
 }
+
+test "macro lint redefinition distinguishes exact case but still detects identical names" {
+    try support.skipWithout(&.{ .debug, .files, .help });
+    var output = Output{};
+    const lint = try std.testing.allocator.create(forth.Lint);
+    defer std.testing.allocator.destroy(lint);
+    const text = try findings(
+        "REPLACER: Case S\" upper\" ;\nREPLACER: case S\" lower\" ;\nREPLACER: Case S\" again\" ;\n",
+        &output,
+        lint,
+    );
+    try std.testing.expect(std.mem.indexOf(u8, text, "a.txt:2: REDEFINED") == null);
+    try std.testing.expect(std.mem.indexOf(u8, text, "a.txt:3: REDEFINED: Case was defined at a.txt:1") != null);
+}

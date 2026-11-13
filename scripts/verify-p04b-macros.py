@@ -30,6 +30,8 @@ cases += [
     ('replace-value', 'S" old" S" X" REPLACES S" new" S" X" REPLACES S" %X%" .SUBSTITUTE .'),
     ('current', 'GET-CURRENT REPLACER: X S" hi" ; GET-CURRENT = . S" %X%" .SUBSTITUTE .'),
     ('macro-value', 'GET-CURRENT MACROS-WORDLIST SET-CURRENT S" owned" MACRO: X SET-CURRENT MACROS-WORDLIST >ORDER S" !" +TO X PREVIOUS S" %X%" .SUBSTITUTE .'),
+    ('percent-in-name', 'S" unreachable" S" X%Y" REPLACES S" %X%Y%" .SUBSTITUTE .'),
+    ('long-unknown-name', 'CREATE TEXT 302 ALLOT TEXT 302 120 FILL 37 TEXT C! 37 TEXT 301 + C! TEXT 302 .SUBSTITUTE .'),
     ('callback-output', 'REPLACER: X ." emitted" S" returned" ; S" a%X%b" $SUBSTITUTE . TYPE'),
     ('nested', 'S" inner" S" I" REPLACES REPLACER: X S" <%I%>" $SUBSTITUTE DROP ; S" %X%" $SUBSTITUTE . TYPE'),
 ]

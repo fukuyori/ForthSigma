@@ -287,31 +287,62 @@ pub fn relocateBlock(self: *State, destination: Cell, source: Cell, length: usiz
 }
 
 pub const CopySpec = struct { destination: Cell, source: Cell, length: usize };
+const CopyKey = struct { kind: Kind, slot: Cell };
 /// Simulate registration keys for compound MOVE operations before touching bytes.
 /// Values/status do not affect whether a full source cell consumes a new slot.
 pub fn preflightCopies(self: *const State, copies: []const CopySpec) RuntimeError!void {
-    const Key = struct { kind: Kind, slot: Cell };
-    var keys: [capacity]Key = undefined;
+    var keys: [capacity]CopyKey = undefined;
     var count = self.addresses.count;
     for (self.addresses.records[0..count], 0..) |record, i| keys[i] = .{ .kind = record.kind, .slot = record.slot };
+    for (copies) |copy_spec| try preflightCopyKeys(&keys, &count, copy_spec);
+}
+
+/// APPEND must model the resized allocation, not its old numerical extent: an
+/// occupied neighbour can force RESIZE to move. Use a private virtual range for
+/// retained keys, preserving internal aliases without borrowing neighbour slots.
+pub fn preflightAppend(self: *const State, block: Cell, old_size: usize, new_size: usize, prefix: usize, source: Cell, length: usize) RuntimeError!void {
+    try preflightResizeCopies(self, block, old_size, new_size, &.{.{ .destination = block + @as(Cell, @intCast(prefix)), .source = source, .length = length }});
+}
+
+/// Copies target the future block using offsets from its old base. Sources within
+/// retained old storage follow relocation; external source addresses stay fixed.
+pub fn preflightResizeCopies(self: *const State, block: Cell, old_size: usize, new_size: usize, copies: []const CopySpec) RuntimeError!void {
+    const virtual: Cell = -@as(Cell, @intCast(self.memory.len)) - 1;
+    var keys: [capacity]CopyKey = undefined;
+    var count: usize = 0;
+    for (self.addresses.records[0..self.addresses.count]) |record| {
+        var slot = record.slot;
+        if (record.kind == .memory) {
+            if (new_size < old_size and @as(i128, slot) < @as(i128, block) + old_size and @as(i128, slot) + 8 > @as(i128, block) + new_size) continue;
+            if (slot >= block and @as(i128, slot) + 8 <= @as(i128, block) + old_size) slot = virtual + (slot - block);
+        }
+        keys[count] = .{ .kind = record.kind, .slot = slot };
+        count += 1;
+    }
     for (copies) |copy_spec| {
-        const before = count;
-        for (0..before) |i| {
-            const key = keys[i];
-            if (key.kind != .memory or key.slot < copy_spec.source or @as(i128, key.slot) + 8 > @as(i128, copy_spec.source) + copy_spec.length) continue;
-            const slot = copy_spec.destination + (key.slot - copy_spec.source);
-            var found = false;
-            for (keys[0..count]) |existing| {
-                if (existing.kind == .memory and existing.slot == slot) {
-                    found = true;
-                    break;
-                }
+        const source = copy_spec.source;
+        const moved_source = if (source >= block and @as(i128, source) + copy_spec.length <= @as(i128, block) + @min(old_size, new_size)) virtual + (source - block) else source;
+        try preflightCopyKeys(&keys, &count, .{ .destination = virtual + (copy_spec.destination - block), .source = moved_source, .length = copy_spec.length });
+    }
+}
+
+fn preflightCopyKeys(keys: *[capacity]CopyKey, count: *usize, copy_spec: CopySpec) RuntimeError!void {
+    const before = count.*;
+    for (0..before) |i| {
+        const key = keys[i];
+        if (key.kind != .memory or key.slot < copy_spec.source or @as(i128, key.slot) + 8 > @as(i128, copy_spec.source) + copy_spec.length) continue;
+        const slot = copy_spec.destination + (key.slot - copy_spec.source);
+        var found = false;
+        for (keys[0..count.*]) |existing| {
+            if (existing.kind == .memory and existing.slot == slot) {
+                found = true;
+                break;
             }
-            if (!found) {
-                if (count == capacity) return error.MemoryExhausted;
-                keys[count] = .{ .kind = .memory, .slot = slot };
-                count += 1;
-            }
+        }
+        if (!found) {
+            if (count.* == capacity) return error.MemoryExhausted;
+            keys[count.*] = .{ .kind = .memory, .slot = slot };
+            count.* += 1;
         }
     }
 }

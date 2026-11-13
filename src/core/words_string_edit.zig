@@ -112,7 +112,7 @@ fn append(self: *State, first: Cell, n1: usize, second: Cell, n2: usize, total: 
         try self.copyMemory(copy, second, n2);
         source = copy;
     }
-    try registry.preflightCopies(self, &.{.{ .destination = first + @as(Cell, @intCast(n1)), .source = source, .length = n2 }});
+    try registry.preflightAppend(self, first, old_size, @intCast(self.heapNeed(total).?), n1, source, n2);
     const moved = switch (try self.heapResize(first, total)) {
         .address => |address| address,
         .no_memory => return self.throwIor(map.errno_no_memory),

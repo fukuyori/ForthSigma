@@ -2,15 +2,19 @@
 
 更新日：2026-11-13。P00・S01・P01・P02とP03の65語（P03a/b/c）まで実装・検証完了。P04の33語まで実装・検証完了。次は **P05a ファイル補助とパス検索（565）**。Windows/Linux確認はここでは行わず607に残す。
 
-P03c was committed and pushed as `98be4f8`. P03 and task 562 are complete. Claude Code review fixes and the first 21 P04a words were committed/pushed as a6ab243. Task 631 is complete (auto), with no new concrete defect found in the final review. See [P03 review](P03_REVIEW.md). The six additional P04a edit/owned-string words were committed/pushed as 5b2c8a4. XC@+? was committed/pushed as fa2afe9 and P04a is complete. P04b $VALUE/MACRO: were committed/pushed as 33bb55a (634); the macro vocabulary/callback words (635) are implemented and validated, uncommitted. Check git status and git log before resuming.
+P03c was committed and pushed as `98be4f8`. P03 and task 562 are complete. Claude Code review fixes and the first 21 P04a words were committed/pushed as a6ab243. Task 631 is complete (auto), with no new concrete defect found in the final review. See [P03 review](P03_REVIEW.md). The six additional P04a edit/owned-string words were committed/pushed as 5b2c8a4. XC@+? was committed/pushed as fa2afe9 and P04a is complete. P04b $VALUE/MACRO: were committed/pushed as 33bb55a (634); the macro vocabulary/callback words (635) were committed/pushed as 6a9c4e3. Check git status and git log before resuming.
 
 ## P04a completion
 
 All 28 P04a words are implemented. Normal/minimal tests, 18 regressions, 672 Gforth comparisons and three Sigma-specific empty cases pass. P04a tasks 632/633/563 are complete (auto). P04b 564 and P04 547 are complete; 542 remains incomplete. See [P04 record](P04_IMPLEMENTATION.md).
 
-## P04b macros complete (uncommitted)
+## P04 review
 
-635 implements MACROS-WORDLIST, REPLACER: and .SUBSTITUTE, integrating REPLACES/SUBSTITUTE/$SUBSTITUTE with the case-sensitive dictionary. User approved recommended exception propagation and hard-coded update retention. Each occurrence executes once, including callback emissions captured by the owned/bounded APIs; nested TMP captures restore their output targets. Twelve regressions, 48 designated-Gforth comparisons, normal/minimal tests, normal build and CLI SAVE/two LOAD-DICTIONARY calls pass. See [P04 record](P04_IMPLEMENTATION.md), `macro_substitute.zig`, `p04b_macros_test.zig`, `.work/p04b-macros-check/`. 635/564/547 are complete (auto). Macro changes are uncommitted; next is 565 under P05/548. Keep 542 incomplete and native Windows/Linux checks in 607.
+P04 is committed/pushed through 6a9c4e3. Claude Code review task636 is complete (auto). Initial findings and an independently reproduced APPEND failure are fixed: +TO metadata preflight, allocation fallback/shrink, HERE overlap, owner commit and macro lint. Nine review regressions, normal/minimal suites, 125 affected Gforth comparisons and CLI persistence pass. Follow-up found no blocking defect. Fixes are included with the review record; check git log for their commit id. See [P04 review](P04_REVIEW.md).
+
+## P04b macros complete
+
+635 implements MACROS-WORDLIST, REPLACER: and .SUBSTITUTE, integrating REPLACES/SUBSTITUTE/$SUBSTITUTE with the case-sensitive dictionary. User approved recommended exception propagation and hard-coded update retention. Each occurrence executes once, including callback emissions captured by the owned/bounded APIs; nested TMP captures restore their output targets. Twelve regressions, 50 designated-Gforth comparisons (48 initial plus two review boundary cases), normal/minimal tests, normal build and CLI SAVE/two LOAD-DICTIONARY calls pass. See [P04 record](P04_IMPLEMENTATION.md), `macro_substitute.zig`, `p04b_macros_test.zig`, `.work/p04b-macros-check/`. 635/564/547 are complete (auto). Macro changes were committed/pushed as 6a9c4e3. P04 review task636 is complete; next is P05a/565. Keep 542 incomplete and native Windows/Linux checks in 607.
 
 ## P04b string values
 
@@ -41,7 +45,7 @@ tqueで管理し、進捗モードは**auto**とする。階層はForthSigma 121
 |614 P02レビュー|初回P2 1件・P3 8件と要確認事項を解消。再レビューで新たな具体的問題なし。進捗auto|
 |546 P03|完了。560 P03a 44語、561 P03b 15語と永続化、562 P03c 6語が完了|
 |563 P04a|完了。28語の文字列操作/Unicode|
-|564 P04b / 547 P04|完了。文字列値・マクロ5語、合計33語。635の変更は未コミット|
+|564 P04b / 547 P04|完了。文字列値・マクロ5語、合計33語。635は6a9c4e3でpush済み|
 |548 P05 / 565 P05a|次の作業。ファイル補助とパス検索16語|
 |561 P03b|完了。15語の実行・型/寿命追跡と新形式保存/復元/追加を統合|
 |550 P07|未着手。P01依存は解消。457を先行させる|

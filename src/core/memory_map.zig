@@ -245,9 +245,8 @@ pub const evaluate_source_name_address: Cell = 0x0d20;
 /// Borrowed LF returned by NEWLINE; below BLK/SCR and after source-name text.
 pub const newline_address: Cell = 0x0d38;
 
-/// The first of the replacements REPLACES made (0 for none), a list in the heap that
-/// SUBSTITUTE reads: each block holds the next one, the name's length, the text's length,
-/// the name, and the text. In memory, so that images keep it.
+/// Reserved former replacement-list slot. REPLACES now uses owned string values
+/// in MACROS-WORDLIST. Keep this address reserved to preserve the system layout.
 pub const replacements_address: Cell = 0x0380;
 
 /// The counted string ASSERT( gives THROW -2 ("assertion failed").
