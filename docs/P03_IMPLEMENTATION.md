@@ -183,9 +183,17 @@ src/core/image_append_plan.zigにprepareを追加。完全復元の構造・組�
 
 利用者確認により、追加元の固定システム格納セルが追加先の既存型付き登録と重複・部分重複する場合はInvalidImage。既存の参照を上書きしない。未登録位置への追加は計画できる。この方針はP00にも追記した。
 
-src/tests/image_append_plan_test.zigの2回帰で語/データ/ヒープの新番地、既存辞書・HERE・ヒープ・スタックの保持、システム登録競合とヒープ末尾容量不足の変更前拒否を確認する。Planは入力と自身のWorkspaceを借用し、コピーしない。成功後に対象Stateを変更すると計画は無効になる。通常／全機能群無効のzig build testが成功。ログは.zig-cache/p03b-append-plan-test.logとp03b-append-plan-minimal.log。629は完了（auto）。今回の変更は未コミット。
+src/tests/image_append_plan_test.zigの2回帰で語/データ/ヒープの新番地、既存辞書・HERE・ヒープ・スタックの保持、システム登録競合とヒープ末尾容量不足の変更前拒否を確認する。Planは入力と自身のWorkspaceを借用し、コピーしない。成功後に対象Stateを変更すると計画は無効になる。通常／全機能群無効のzig build testが成功。ログは.zig-cache/p03b-append-plan-test.logとp03b-append-plan-minimal.log。629は完了（auto）、bcf4459でpush済み。
 
 630で実際の追加反映と公開保存・読込へ接続する。語/コード/ソースファイル/ワードリスト等の反映、同一イメージ2回追加と再保存、ファイルopen前の検証を完了するまで親628/626/624/620/617/561を完了にしない。公開入口は引き続き旧実装。
+
+## P03b 追加する語・コードの変換（630着手中）
+
+image_append_plan.zigにrelocatedWord/relocatedOperation/relocatedWordlistを追加。新しい名前位置、定義開始HERE、語ID、colon/DOESコード範囲、分岐先、文字列の辞書番地、ユーザーワードリストを計画に沿って変換する。アドレス定数は明示登録の再配置値を使い、生の定数や数値リテラルを推測で変換しない。組込語IDは固定のままとする。範囲外の語/Opインデックスは拒否する。
+
+image_append_plan_test.zigに1回帰を追加し、既存の2回帰と合わせて追加配置・競合/容量不足・語/コード変換を確認する。変換結果のsource_fileは、後続のソース表マージで別途対応付ける。MARKERの保存情報、DEFERのアクション、ライブラリー読込状態の反映も未接続。
+
+通常／全機能群無効のzig build testが成功。ログは.zig-cache/p03b-append-transform-test.logとp03b-append-transform-minimal.log。630は未完了（auto）。反映処理と公開SAVE/LOADの切替を実装したとは扱わない。今回の変換部は未コミット。
 
 ## 後続のP03b / P03c
 

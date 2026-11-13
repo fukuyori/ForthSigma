@@ -13,6 +13,7 @@ pub const Plan = struct {
     name_base: usize = 0,
     data_delta: map.Cell = 0,
     data_here: map.Cell = 0,
+    wordlist_base: map.Cell = 0,
 };
 
 /// Input must be separate from State. A successful plan borrows input and itself,
@@ -33,6 +34,7 @@ pub fn prepare(state: *forth.State, bytes: []const u8, plan: *Plan) RuntimeError
     const saved_lists = cell(view.memory, map.wordlist_count_address);
     const own_lists = state.wordlistCount();
     if (saved_lists - map.ekeys_wordlist > map.max_wordlists - own_lists) return error.DictionaryFull;
+    plan.wordlist_base = own_lists;
     plan.word_base = state.word_count;
     plan.code_base = state.code_count;
     plan.name_base = state.names_used;
@@ -81,4 +83,55 @@ fn heapAddress(plan: *const Plan, offset: u64, width: usize) RuntimeError!map.Ce
 }
 fn cell(bytes: []const u8, address: map.Cell) map.Cell {
     return @import("std").mem.readInt(map.Cell, bytes[@intCast(address)..][0..8], .little);
+}
+
+/// Relocate an already structurally validated entry without touching target State.
+/// Source-file IDs are mapped separately when merging the source-file table.
+pub fn relocatedWord(plan: *const Plan, index: usize) RuntimeError!defs.Word {
+    const view = plan.image.view;
+    const h = view.header;
+    if (index < h.builtin_count or index >= h.word_count) return error.InvalidImage;
+    var word = @import("std").mem.bytesToValue(defs.Word, view.words[index * @sizeOf(defs.Word) ..][0..@sizeOf(defs.Word)]);
+    word.name_start = @intCast(plan.name_base + word.name_start - plan.image.image_names);
+    word.data_here_before += plan.data_delta;
+    word.wordlist = @intCast(relocatedWordlist(plan, word.wordlist));
+    if (word.kind == .vocabulary) word.value = relocatedWordlist(plan, word.value);
+    if (word.kind == .synonym) word.value = relocatedId(plan, word.value);
+    if (word.kind == .colon) {
+        word.code_start += @intCast(plan.code_base);
+        word.code_end += @intCast(plan.code_base);
+    }
+    if (word.has_does) {
+        word.does_code_start += @intCast(plan.code_base);
+        word.does_code_end += @intCast(plan.code_base);
+    }
+    switch (word.kind) {
+        .variable, .array, .created, .value, .fvalue, .two_constant, .two_value, .marker, .deferred => word.value += plan.data_delta,
+        else => {},
+    }
+    // Address constants use explicit type records; raw constants stay unchanged.
+    for (plan.image.records[0..h.relocation_count]) |record| {
+        if (record.kind == .word and record.slot == relocatedId(plan, @intCast(index))) word.value = record.value;
+    }
+    return word;
+}
+
+pub fn relocatedOperation(plan: *const Plan, index: usize) RuntimeError!defs.Op {
+    const view = plan.image.view;
+    if (index >= view.header.code_count) return error.InvalidImage;
+    var op = @import("std").mem.bytesToValue(defs.Op, view.code[index * @sizeOf(defs.Op) ..][0..@sizeOf(defs.Op)]);
+    switch (op.kind) {
+        .call, .compile_call, .execution_token, .store_value, .add_value, .local_frame => op.value = relocatedId(plan, op.value),
+        .branch, .branch_zero, .do_loop, .q_do_loop, .loop, .plus_loop => op.value += @intCast(plan.code_base),
+        .print_string, .string_literal, .counted_string, .abort_string => op.value += plan.data_delta,
+        else => {},
+    }
+    return op;
+}
+
+pub fn relocatedWordlist(plan: *const Plan, wid: map.Cell) map.Cell {
+    return if (wid <= map.ekeys_wordlist) wid else plan.wordlist_base + wid - map.ekeys_wordlist;
+}
+fn relocatedId(plan: *const Plan, id: map.Cell) map.Cell {
+    return if (id < plan.image.view.header.builtin_count) id else @as(map.Cell, @intCast(plan.word_base)) + id - plan.image.view.header.builtin_count;
 }
