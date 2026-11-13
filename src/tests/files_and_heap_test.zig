@@ -10,7 +10,7 @@ const destroyMachine = support.destroyMachine;
 const expectStack = support.expectStack;
 
 test "file access methods and standard stream ids follow gforth" {
-    try support.skipWithout(&.{ .files });
+    try support.skipWithout(&.{.files});
     var output = Output{};
     const machine = try createMachine(&output);
     defer destroyMachine(machine);
@@ -20,7 +20,7 @@ test "file access methods and standard stream ids follow gforth" {
 }
 
 test "files are created, written, sized, repositioned, read by line, and closed" {
-    try support.skipWithout(&.{ .files });
+    try support.skipWithout(&.{.files});
     var output = Output{};
     const machine = try createMachine(&output);
     defer destroyMachine(machine);
@@ -41,7 +41,7 @@ test "files are created, written, sized, repositioned, read by line, and closed"
 }
 
 test "file errors are returned as iors without changing the stack shape" {
-    try support.skipWithout(&.{ .files });
+    try support.skipWithout(&.{.files});
     var output = Output{};
     const machine = try createMachine(&output);
     defer destroyMachine(machine);
@@ -56,7 +56,7 @@ test "file errors are returned as iors without changing the stack shape" {
 }
 
 test "WRITE-LINE to STDOUT reaches the host" {
-    try support.skipWithout(&.{ .files });
+    try support.skipWithout(&.{.files});
     var output = Output{};
     const machine = try createMachine(&output);
     defer destroyMachine(machine);
@@ -68,7 +68,7 @@ test "WRITE-LINE to STDOUT reaches the host" {
 }
 
 test "file words report an error when the host has no file support" {
-    try support.skipWithout(&.{ .files });
+    try support.skipWithout(&.{.files});
     var output = Output{};
     const machine = try std.testing.allocator.create(forth.State);
     defer destroyMachine(machine);
@@ -163,7 +163,7 @@ test "string arrays store, fetch, count, map, print, and free elements" {
 }
 
 test "$[]SLURP and $[]SLURP-FILE read a file line by line" {
-    try support.skipWithout(&.{ .files });
+    try support.skipWithout(&.{.files});
     var output = Output{};
     const long = repeat("x", 300);
     const text = "one\n\n" ++ long ++ "\nlast";
@@ -184,7 +184,7 @@ test "$[]SLURP and $[]SLURP-FILE read a file line by line" {
 }
 
 test "$SLURP $+SLURP $+SLURP-FILE and $SLURP-LINE read files as in gforth" {
-    try support.skipWithout(&.{ .files });
+    try support.skipWithout(&.{.files});
     var output = Output{};
     const text = "line1\r\nline22\n\nlast";
     @memcpy(output.files[1].data[0..text.len], text);
@@ -226,7 +226,7 @@ test "$+!LEN $[]+! $+[]! $EXEC $OFF and $VARIABLE work as in gforth" {
 }
 
 test "SLURP-FILE and $SLURP-FILE read a whole file as it is and close it" {
-    try support.skipWithout(&.{ .files });
+    try support.skipWithout(&.{.files});
     var output = Output{};
     const text = "one\r\ntwo\n\x00end";
     @memcpy(output.files[1].data[0..text.len], text);
@@ -264,7 +264,7 @@ test "SLURP-FILE and $SLURP-FILE read a whole file as it is and close it" {
 }
 
 test "RESTORE-INPUT goes back to a saved line of a file or place in a string, as in gforth" {
-    try support.skipWithout(&.{ .files });
+    try support.skipWithout(&.{.files});
     var output = Output{};
     support.setFakeFile(&output, 0,
         \\VARIABLE C 0 C !
@@ -294,7 +294,7 @@ test "RESTORE-INPUT goes back to a saved line of a file or place in a string, as
 }
 
 test "SOURCE-ID gives the file id and REFILL the next line of an included file" {
-    try support.skipWithout(&.{ .files });
+    try support.skipWithout(&.{.files});
     var output = Output{};
     support.setFakeFile(&output, 0, ": NL REFILL . SOURCE TYPE SOURCE NIP >IN ! ; SOURCE-ID 0> . NL\nthis line is read by REFILL\nSOURCE-ID 0> .\n");
     const machine = try createMachine(&output);
@@ -305,7 +305,7 @@ test "SOURCE-ID gives the file id and REFILL the next line of an included file" 
 }
 
 test "PARSE-NAME reads the next name from a file being included" {
-    try support.skipWithout(&.{ .files });
+    try support.skipWithout(&.{.files});
     var output = Output{};
     support.setFakeFile(&output, 0, ": NEXT-NAME PARSE-NAME ; : LAST-NAME NEXT-NAME NIP . ;\nNEXT-NAME \t  abc TYPE\nLAST-NAME\n");
     const machine = try createMachine(&output);
@@ -316,7 +316,7 @@ test "PARSE-NAME reads the next name from a file being included" {
 }
 
 test "FILE-POSITION RESIZE-FILE FLUSH-FILE FILE-STATUS RENAME-FILE DELETE-FILE BIN and INCLUDE-FILE work as in gforth" {
-    try support.skipWithout(&.{ .files });
+    try support.skipWithout(&.{.files});
     var output = Output{};
     support.setFakeFile(&output, 2, "1 2 + .\n");
     const machine = try createMachine(&output);
@@ -336,7 +336,7 @@ test "FILE-POSITION RESIZE-FILE FLUSH-FILE FILE-STATUS RENAME-FILE DELETE-FILE B
 }
 
 test "READ-FILE reads bytes as they are and gives 0 at the end of the file" {
-    try support.skipWithout(&.{ .files });
+    try support.skipWithout(&.{.files});
     var output = Output{};
     support.setFakeFile(&output, 1, "abcd\r\nef");
     const machine = try createMachine(&output);
@@ -350,19 +350,16 @@ test "READ-FILE reads bytes as they are and gives 0 at the end of the file" {
     try expectStack(machine, &.{ 0, forth.errnoIor(forth.errno_bad_file) });
 }
 
-test "heap strings survive a full image restore" {
+test "typed heap strings reject legacy images until new-format integration" {
     var output = Output{};
     const source = try createMachine(&output);
     defer destroyMachine(source);
     try source.interpretLine("VARIABLE S S\" kept\" S $!");
     const image = try std.testing.allocator.alloc(u8, forth.State.imageCapacity(.small));
     defer std.testing.allocator.free(image);
-    const length = try source.encodeImage(image);
-
-    const loaded = try createMachine(&output);
-    defer destroyMachine(loaded);
-    try loaded.restoreImage(image[0..length]);
-    try loaded.interpretLine("S $. S\" !\" S $+! S $.");
+    // Task 620 will replace this guard with the new-format restore regression.
+    try std.testing.expectError(error.InvalidImage, source.encodeImage(image));
+    try source.interpretLine("S $. S\" !\" S $+! S $.");
     try std.testing.expectEqualStrings("keptkept!", output.written());
 }
 

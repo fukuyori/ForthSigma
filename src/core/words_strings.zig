@@ -1,6 +1,7 @@
 //! Dynamic string words ($! and its relatives).
 
 const std = @import("std");
+const strings = @import("dynamic_strings.zig");
 const defs = @import("defs.zig");
 const forth = @import("../forth.zig");
 const memory_map = @import("memory_map.zig");
@@ -18,13 +19,13 @@ const tmp_string_count = memory_map.tmp_string_count;
 
 /// The built-in words this file executes; executeBuiltin dispatches by this list.
 pub const words = [_]Builtin{
-    .string_store, .string_fetch, .string_fetch_len, .string_store_len, .string_append,
-    .char_append, .string_dot, .string_delete, .string_insert, .string_over, .string_free,
-    .string_init, .string_split, .string_iter, .string_tmp, .string_array, .string_array_store,
-    .string_array_fetch, .string_array_count, .string_array_dot, .string_array_map,
-    .string_array_free, .string_array_slurp, .string_array_slurp_file, .string_slurp_file,
-    .string_slurp, .string_plus_slurp, .string_plus_slurp_file, .string_slurp_line,
-    .string_plus_store_len, .string_array_append, .string_append_array, .string_exec, .system_status,
+    .string_store,        .string_fetch,        .string_fetch_len,       .string_store_len,        .string_append,
+    .char_append,         .string_dot,          .string_delete,          .string_insert,           .string_over,
+    .string_free,         .string_init,         .string_split,           .string_iter,             .string_tmp,
+    .string_array,        .string_array_store,  .string_array_fetch,     .string_array_count,      .string_array_dot,
+    .string_array_map,    .string_array_free,   .string_array_slurp,     .string_array_slurp_file, .string_slurp_file,
+    .string_slurp,        .string_plus_slurp,   .string_plus_slurp_file, .string_slurp_line,       .string_plus_store_len,
+    .string_array_append, .string_append_array, .string_exec,            .system_status,
 };
 
 pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
@@ -34,6 +35,7 @@ pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
             const length = try self.popLength();
             const source = try self.pop();
             _ = try self.memoryAddress(source, length);
+            try strings.preparePointer(self, string_var);
             // A fresh buffer keeps the source intact even when it lies in the old string.
             const buffer = try self.heapAllocate(cell_size + length) orelse return self.throwIor(errno_no_memory);
             try self.copyMemory(buffer + cell_size, source, length);
@@ -44,6 +46,7 @@ pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
                 return self.throwIor(errno_invalid);
             }
             try self.writeCell(string_var, buffer);
+            try strings.registerPointer(self, string_var);
         },
         .string_fetch => {
             const string = try self.fetchString(try self.pop());
@@ -97,9 +100,11 @@ pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
         },
         .string_init => {
             const string_var = try self.pop();
+            try strings.preparePointer(self, string_var);
             const buffer = try self.heapAllocate(cell_size) orelse return self.throwIor(errno_no_memory);
             try self.writeCell(buffer, 0);
             try self.writeCell(string_var, buffer);
+            try strings.registerPointer(self, string_var);
         },
         .string_split => {
             const separator: u8 = @truncate(@as(UCell, @bitCast(try self.pop())));

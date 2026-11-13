@@ -125,8 +125,8 @@ test "a built-in word compiles to a direct call, and an image with plain calls s
     var changed: usize = 0;
     for (0..source.code_count) |index| {
         const at = code_at + index * @sizeOf(Op) + @offsetOf(Op, "kind");
-        if (image[at] != @intFromEnum(defs.OpKind.call_builtin)) continue;
-        image[at] = @intFromEnum(defs.OpKind.call);
+        if (image[at] != @backingInt(defs.OpKind.call_builtin)) continue;
+        image[at] = @backingInt(defs.OpKind.call);
         changed += 1;
     }
     try std.testing.expect(changed >= 2);
@@ -154,7 +154,7 @@ test "execution-only calls normalize on save and relocate on LOAD without changi
         const at = code_at + index * @sizeOf(Op);
         const tag = image[at + @offsetOf(Op, "kind")];
         const expected = if (index < inline_end) defs.OpKind.branch else if (op.kind == .call_colon) defs.OpKind.call else if (defs.isPrimitiveOp(op.kind)) defs.OpKind.call_builtin else op.kind;
-        try std.testing.expectEqual(@intFromEnum(expected), tag);
+        try std.testing.expectEqual(@backingInt(expected), tag);
         if (index >= inline_end and inline_calls.isInline(op))
             inline_end = index + inline_calls.span(op.value);
     }
@@ -301,7 +301,7 @@ test "an image keeps HERE's data, the used heap, and the source table, and nothi
     var output = Output{};
     const source = try createMachine(&output);
     defer destroyMachine(source);
-    try source.interpretLine("VARIABLE S S\" kept on the heap\" S $! : SHOW S $@ TYPE ; CREATE BUF 4 ALLOT 1 BUF C!");
+    try source.interpretLine("S\" kept on the heap\" 2CONSTANT S : SHOW S TYPE ; CREATE BUF 4 ALLOT 1 BUF C!");
     // Bytes above HERE are not part of the image.
     try source.interpretLine("HERE 100 + 99 SWAP C!");
     const image = try std.testing.allocator.alloc(u8, forth.State.imageCapacity(.small));

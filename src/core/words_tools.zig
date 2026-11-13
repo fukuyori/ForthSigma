@@ -5,6 +5,8 @@
 //! standard.
 
 const std = @import("std");
+const registry = @import("address_registry.zig");
+const strings = @import("dynamic_strings.zig");
 const defs = @import("defs.zig");
 const forth = @import("../forth.zig");
 const memory_map = @import("memory_map.zig");
@@ -23,9 +25,9 @@ const tmp_string_count = memory_map.tmp_string_count;
 
 /// The built-in words this file executes; executeBuiltin dispatches by this list.
 pub const words = [_]Builtin{
-    .substitute,  .replaces,        .unescape,     .string_substitute, .string_unescape, .latest,
-    .latestxt,    .to_name,         .id_dot,       .alias,             .debug_tilde,     .debug_tilde_run,
-    .assert_paren, .assert_run,     .emit_question, .paren_local,
+    .substitute,   .replaces,   .unescape,      .string_substitute, .string_unescape, .latest,
+    .latestxt,     .to_name,    .id_dot,        .alias,             .debug_tilde,     .debug_tilde_run,
+    .assert_paren, .assert_run, .emit_question, .paren_local,
 };
 
 /// The THROW code of SUBSTITUTE when the result does not fit (as gforth gives).
@@ -43,6 +45,8 @@ pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
             const name_at = try self.memoryAddress(name_address, name_length);
             const text_at = try self.memoryAddress(text_address, text_length);
             const size = std.math.add(usize, 3 * cell_size + name_length, text_length) catch return self.throwIor(errno_no_memory);
+            const needed: usize = if (registry.index(self, .memory, replacements_address) == null) 2 else 1;
+            if (registry.capacity - self.addresses.count < needed) return error.MemoryExhausted;
             const node = try self.heapAllocate(size) orelse return self.throwIor(errno_no_memory);
             const node_at: usize = @intCast(node + 3 * cell_size);
             @memmove(self.memory[node_at..][0..name_length], self.memory[name_at..][0..name_length]);
@@ -51,7 +55,9 @@ pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
             try self.writeCell(node + 2 * cell_size, @intCast(text_length));
             try removeReplacement(self, self.memory[node_at..][0..name_length]);
             try self.writeCell(node, try self.readCell(replacements_address));
+            try registry.registerMemory(self, node);
             try self.writeCell(replacements_address, node);
+            try registry.registerMemory(self, replacements_address);
         },
         // SUBSTITUTE ( c-addr1 u1 c-addr2 u2 -- c-addr2 u3 n ): the text with each %name%
         // that REPLACES gave replaced, in the buffer c-addr2 u2; n is how many were, or -78
@@ -311,6 +317,8 @@ fn unescapeInto(text: []const u8, out: []u8) void {
 
 /// A new string of `length` bytes in the heap (its length cell, then the bytes).
 fn newString(self: *State, length: usize) RuntimeError!Cell {
+    const slot = tmp_string_base + @as(Cell, @intCast(self.tmp_string_index % tmp_string_count)) * cell_size;
+    try strings.preparePointer(self, slot);
     const size = std.math.add(usize, cell_size, length) catch return self.throwIor(errno_no_memory);
     const buffer = try self.heapAllocate(size) orelse return self.throwIor(errno_no_memory);
     try self.writeCell(buffer, @intCast(length));
@@ -324,6 +332,7 @@ fn takeSlot(self: *State, buffer: Cell) RuntimeError!Cell {
     self.tmp_string_index += 1;
     try self.freeString(slot);
     try self.writeCell(slot, buffer);
+    try strings.registerPointer(self, slot);
     return buffer + cell_size;
 }
 

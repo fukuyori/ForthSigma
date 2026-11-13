@@ -78,7 +78,7 @@ test "UNESCAPE doubles %, and the $ words give strings of their own" {
     try std.testing.expectEqualStrings("100% %day%", try stringResult(machine, "S\" 100% %day%\" $UNESCAPE BUF 80 SUBSTITUTE DROP"));
 }
 
-test "the replacements are in the heap, which a dictionary image keeps" {
+test "typed replacement links reject legacy images until new-format integration" {
     try skipWithout(&.{.image});
     var output = Output{};
     const machine = try createMachine(&output);
@@ -86,11 +86,9 @@ test "the replacements are in the heap, which a dictionary image keeps" {
     try machine.interpretLine("S\" Sunday\" S\" day\" REPLACES");
     const image = try std.testing.allocator.alloc(u8, machine.encodedSize());
     defer std.testing.allocator.free(image);
-    _ = try machine.encodeImage(image);
-    const restored = try createMachine(&output);
-    defer destroyMachine(restored);
-    try restored.restoreImage(image);
-    try std.testing.expectEqualStrings("Sunday", try stringResult(restored, "S\" %day%\" PAD 80 SUBSTITUTE DROP"));
+    // Task 620 restores the round-trip test with the typed format.
+    try std.testing.expectError(error.InvalidImage, machine.encodeImage(image));
+    try std.testing.expectEqualStrings("Sunday", try stringResult(machine, "S\" %day%\" PAD 80 SUBSTITUTE DROP"));
 }
 
 test "LATEST, LATESTXT, >NAME, ID., and .NAME" {

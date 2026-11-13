@@ -11,7 +11,19 @@ const cell_size = memory_map.cell_size;
 const errno_invalid = memory_map.errno_invalid;
 const errno_no_memory = memory_map.errno_no_memory;
 
+const registry = @import("address_registry.zig");
+
 pub const StringRef = struct { address: Cell, length: usize };
+
+/// Only persistent logical slots participate in images. Input/local slots remain
+/// usable at runtime, but cannot become image roots merely by holding a string.
+pub fn preparePointer(self: *State, slot: Cell) RuntimeError!void {
+    _ = try self.memoryAddress(slot, cell_size);
+    if (registry.classify(self, slot) != .invalid) try registry.ensureRoom(self, .memory, slot);
+}
+pub fn registerPointer(self: *State, slot: Cell) RuntimeError!void {
+    if (registry.classify(self, slot) != .invalid) try registry.registerMemory(self, slot);
+}
 
 pub fn fetchString(self: *State, string_var: Cell) RuntimeError!StringRef {
     const buffer = try self.readCell(string_var);
@@ -24,6 +36,7 @@ pub fn fetchString(self: *State, string_var: Cell) RuntimeError!StringRef {
 
 /// Resizes the string buffer; new bytes are zero. Returns the (possibly moved) buffer.
 pub fn setStringLength(self: *State, string_var: Cell, length: usize) RuntimeError!Cell {
+    try preparePointer(self, string_var);
     const old_length = (try self.fetchString(string_var)).length;
     const buffer = switch (try self.heapResize(try self.readCell(string_var), cell_size + length)) {
         .address => |moved| moved,
@@ -31,6 +44,7 @@ pub fn setStringLength(self: *State, string_var: Cell, length: usize) RuntimeErr
         .bad_pointer => return self.throwIor(errno_invalid),
     };
     try self.writeCell(string_var, buffer);
+    try registerPointer(self, string_var);
     try self.writeCell(buffer, @intCast(length));
     if (length > old_length) {
         const start: usize = @intCast(buffer + cell_size);
