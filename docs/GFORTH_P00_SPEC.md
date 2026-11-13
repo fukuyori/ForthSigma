@@ -158,3 +158,7 @@ P00は実装仕様と比較基準の確定である。新語の実装、新形�
 - 無効な値の明示登録は保存時に拒否する。登録時点での一律拒否には変更しない。LOAD-DICTIONARYは保持する既存表を全件検査し、SAVEは到達可能な表のみ検査する。
 - サイズ0の割当は最低1セルの所有可能な領域を確保し、その返却番地の明示登録を認める。
 - 生のヒープ番地はSAVE/SAVESYSを越える有効性を保証しない。生セルを走査して推測したり、保存方式を元番地固定へ戻したりしない。
+
+### XC@+? empty input (user confirmation, 2026-11-13)
+
+XC@+? shares Sigma X@+/STRING decoding. For an empty valid span, it reads no memory, returns U+FFFD, advances one byte and returns remaining length -1. This retains existing Sigma behavior and intentionally differs from designated Gforth code point 0. Input validation and extra output capacity are checked before operands are consumed.

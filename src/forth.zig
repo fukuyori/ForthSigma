@@ -913,6 +913,7 @@ pub const State = struct {
             .{ "DELETE", .delete_bytes },
             .{ "INSERT", .insert_bytes },
             .{ "STRING,", .string_comma },
+            .{ "XC@+?", .xc_fetch_plus_query },
     };
 
     fn installBuiltins(self: *State) void {

@@ -13,6 +13,7 @@ comptime {
     _ = @import("tests/p03_review_test.zig");
     _ = @import("tests/p04a_basic_test.zig");
     _ = @import("tests/p04a_edit_test.zig");
+    _ = @import("tests/p04a_xc_test.zig");
     _ = @import("tests/p01b_test.zig");
     _ = @import("tests/p01a_test.zig");
     _ = @import("core/blocks.zig");

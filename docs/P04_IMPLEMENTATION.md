@@ -1,6 +1,6 @@
 # P04 implementation and validation
 
-2026-11-13. P04 (547) is in progress. P04a (563) is split into basic/borrowed strings (632, 21 words) and owned/editing/Unicode access (633: six implemented, XC@+? pending an empty-input decision). P04b (564, five words) remains pending. P03 review fixes and the first 21 P04a words were committed/pushed as a6ab243. The subsequent edit-word changes are uncommitted.
+2026-11-13. P04 (547) is in progress. P04a (563) is implemented: basic/borrowed strings (632, 21 words) and owned/editing/Unicode access (633, seven words). P04b (564, five words) remains pending. P03 review fixes and the first 21 P04a words were committed/pushed as a6ab243. The six edit/owned-string words were committed/pushed as 5b2c8a4.
 
 ## Basic characters and borrowed strings (632)
 
@@ -27,9 +27,9 @@ Gforth sources were consulted only to confirm behavior; no GPL implementation wa
 
 ## Remaining work
 
-633: APPEND, CSTRING>SSTRING, DELETE, INSERT, S+ and STRING, are implemented (see below). XC@+? is pending a user decision about empty input. Check malformed/truncated UTF-8 before completing it. Then complete 563 and proceed to 564 ($VALUE, .SUBSTITUTE, MACRO:, MACROS-WORDLIST, REPLACER:). Keep 547 and 542 incomplete until their actual remaining work is finished.
+633: APPEND, CSTRING>SSTRING, DELETE, INSERT, S+ and STRING, are implemented (see below). XC@+? is implemented with the confirmed empty-input rule (see below). P04a is complete; proceed to 564 ($VALUE, .SUBSTITUTE, MACRO:, MACROS-WORDLIST, REPLACER:). Keep 547 and 542 incomplete until their actual remaining work is finished.
 
-The P04 changes are uncommitted.
+The basic words are in a6ab243; the six edit words are in 5b2c8a4.
 
 ## Owned and editing strings (633, six words implemented)
 
@@ -45,4 +45,18 @@ address_registry.preflightCopies simulates registration keys across compound cop
 
 Eight regressions cover forced APPEND movement/self overlap, sequential INSERT overlap, clamped deletion, long/overlapping STRING,, bounded NUL scanning, compound metadata exhaustion, input/owner/HERE preservation and failed-allocation cleanup. Normal/minimal zig build test and the normal build pass. Logs: .zig-cache/p04a-edit-test.log, p04a-edit-minimal.log, p04a-edit-build.log. verify-p04a-edit.py passes 48 cases against the designated Gforth; report .work/p04a-edit-check/results.json.
 
-XC@+? empty-input policy was asked through the user-input tool and has not yet been answered. The designated Gforth advances one byte and returns remaining length -1 even for empty input; Sigma's existing X@+/STRING advances similarly but returns U+FFFD without reading a byte. This behavior must be settled before implementing the new word. Keep 633/563/547 incomplete.
+The XC@+? empty-input decision was confirmed by the user on 2026-11-13. The designated Gforth advances one byte and returns remaining length -1 even for empty input; Sigma's existing X@+/STRING advances similarly but returns U+FFFD without reading a byte. The implemented word follows the confirmed Sigma rule; 633 and 563 are complete. Keep 547 incomplete until P04b is finished.
+
+An additional 12-case probe compared Sigma X@+/STRING with the designated Gforth XC@+?. All 11 nonempty inputs matched, including truncated/invalid UTF-8, overlong encodings and surrogates. Empty input alone differed in the returned code point (Sigma U+FFFD, Gforth 0); both advanced one byte and returned remaining length -1. Results: .work/p04a-edit-check/xc-probe.json. The subsequent implementation follows the confirmed Sigma empty-input rule.
+
+## XC@+? (633, final word)
+
+XC@+? ( addr u -- addr2 u2 xc ) shares the existing bounded UTF-8 decoder with X@+/STRING. Valid, truncated and malformed nonempty input follows the established Sigma rules, including overlong encodings and surrogates. The caller receives the remaining borrowed span and decoded code point.
+
+The user confirmed empty input returns U+FFFD, advances one byte and leaves remaining length -1, without reading memory. It is safe even when the original empty span starts at logical memory's end. Consumers must not pass a negative remaining length back as a valid string. This deliberately differs from the designated Gforth's empty-input code point 0.
+
+Both entry points now check input ranges and the extra output cell before consuming operands. The new builtin is appended after the other six edit words, preserving prior execution-token numbers. HELP documents the empty-input rule.
+
+Four regressions in p04a_xc_test.zig cover 11 UTF-8 forms, empty input at memory end, range/capacity preservation, compilation and save/restore/append execution. Normal/minimal zig build test and the normal build pass. Logs: .zig-cache/p04a-xc-test.log, p04a-xc-minimal.log, p04a-xc-build.log. verify-p04a-xc.py passes 301 nonempty comparisons with designated Gforth and three Sigma-specific empty cases. Report: .work/p04a-xc-check/results.json.
+
+P04a totals: 28 words, 672 nonempty/general Gforth comparison cases (323+48+301), three separate empty-input cases and 18 regression tests. XC@+? and the current documentation update are uncommitted. P04b (564) is next; P04 (547) and 542 remain incomplete.

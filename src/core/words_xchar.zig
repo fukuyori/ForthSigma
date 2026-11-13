@@ -28,7 +28,7 @@ pub const words = [_]Builtin{
     .xc_size,     .x_size,         .xc_fetch_plus, .xc_fetch,  .xc_store_plus,          .xc_store_plus_question,
     .xc_comma,    .xchar_plus,     .xchar_minus,   .xemit,     .xkey,                   .xkey_question,
     .x_width,     .xc_width,       .plus_x_string, .x_string_minus, .minus_trailing_garbage, .xhold,
-    .ekey_to_xchar, .x_fetch_plus_string,
+    .ekey_to_xchar, .x_fetch_plus_string, .xc_fetch_plus_query,
 };
 
 pub const Decoded = struct { code: u21, length: usize, valid: bool };
@@ -277,11 +277,14 @@ pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
             try self.push(event);
             try self.push(truth(@import("standard_keys.zig").isCharacter(event)));
         },
-        .x_fetch_plus_string => {
-            const count = try self.pop();
-            const address = try self.pop();
+        .x_fetch_plus_string, .xc_fetch_plus_query => {
+            try self.requireDepth(2);
+            if (self.data_depth == self.data_stack.len) return error.StackOverflow;
+            const count = try self.peek(0);
+            const address = try self.peek(1);
             const bytes = try stringBytes(self, address, count);
             const found: Decoded = if (bytes.len == 0) .{ .code = replacement, .length = 1, .valid = false } else decode(bytes);
+            self.data_depth -= 2;
             try self.push(address + @as(Cell, @intCast(found.length)));
             try self.push(count - @as(Cell, @intCast(found.length)));
             try self.push(found.code);

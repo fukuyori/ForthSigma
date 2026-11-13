@@ -230,6 +230,7 @@ pub const entries = [_]Entry{
     .{ .name = "DELETE", .stack = "( addr u n -- )", .text = "Delete a clamped prefix from the fixed-size buffer, shifting left and blank-filling its tail." },
     .{ .name = "INSERT", .stack = "( addr1 u1 addr2 u2 -- )", .text = "Shift the fixed-size second buffer right, then copy a clamped source prefix into it." },
     .{ .name = "STRING,", .stack = "( addr u -- )", .text = "Append a low-byte count and all u bytes to dictionary data without alignment." },
+    .{ .name = "XC@+?", .stack = "( addr u -- addr2 u2 xc )", .text = "Decode one bounded UTF-8 character. Empty input returns U+FFFD, advances one byte and leaves length -1 without reading memory." },
     .{ .name = "ROL", .stack = "( u count -- u2 )", .text = "Rotate a 64-bit cell left; the unsigned count is reduced modulo 64." },
     .{ .name = "ROR", .stack = "( u count -- u2 )", .text = "Rotate a 64-bit cell right; the unsigned count is reduced modulo 64." },
     .{ .name = "2NIP", .stack = "( x1 x2 x3 x4 -- x3 x4 )", .text = "Remove the pair below the top pair." },
