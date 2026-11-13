@@ -182,7 +182,7 @@ FACILITY EXTのキー4語とBLOCK/BLOCK EXTの10語を優先する。既存の�
 
 #### P03a 幅と整列と特殊メモリーアクセス
 
-対象 44語。tque ID: 560。
+対象 44語。tque ID: 560。2026-11-13に実装、[実装・検証記録](P03_IMPLEMENTATION.md)。P03b/cは未着手。
 
 `!@`, `*ALIGN`, `*ALIGNED`, `+!@`, `/L`, `/W`, `/X`, `C>S`, `CELL/`, `CHAR-`, `DFLOAT/`, `FLOAT`, `FLOAT/`, `L!`, `L>S`, `L@`, `LALIGN`, `LALIGNED`, `LBE`, `LLE`, `MAXALIGNED`, `SFLOAT/`, `TH`, `TH!`, `TH@`, `W!`, `W>S`, `W@`, `WALIGN`, `WALIGNED`, `WBE`, `WLE`, `X!`, `X>S`, `X@`, `XALIGN`, `XALIGNED`, `XBE`, `XD!`, `XD>S`, `XD@`, `XDBE`, `XDLE`, `XLE`
 

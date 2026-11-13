@@ -1094,3 +1094,9 @@ BASE-EXECUTE restores BASE on success or THROW. DEC. is signed decimal; DEC.R is
 SEED! sets the VM's raw 64-bit seed, including zero. RND returns a raw cell, RANDOM an unsigned result below its bound (zero for bound zero). Equal seeds reproduce Sigma's sequence; Gforth sequence compatibility is not required. Random state is not saved in dictionary images.
 
 P02 review notes: the initial random seed comes from the host clock, falling back to zero when unavailable. RND exposes a raw LCG state with weak low bits; use RANDOM for a bounded choice. In debug-enabled builds, long V*/FAXPY and DEC.R/UD.R loops also obey --max-steps (one unit per at most 256 iterations). The default zero remains unlimited; changes before interruption are not rolled back. FP. also appends a space after NaN/infinity. Under HEX, write $E./$DEC. when those tokens are intended as numbers.
+
+## Fixed-width memory operations (P03a)
+
+`!@`, `*ALIGN`, `*ALIGNED`, `+!@`, `/L`, `/W`, `/X`, `C>S`, `CELL/`, `CHAR-`, `DFLOAT/`, `FLOAT`, `FLOAT/`, `L!`, `L>S`, `L@`, `LALIGN`, `LALIGNED`, `LBE`, `LLE`, `MAXALIGNED`, `SFLOAT/`, `TH`, `TH!`, `TH@`, `W!`, `W>S`, `W@`, `WALIGN`, `WALIGNED`, `WBE`, `WLE`, `X!`, `X>S`, `X@`, `XALIGN`, `XALIGNED`, `XBE`, `XD!`, `XD>S`, `XD@`, `XDBE`, `XDLE`, `XLE`
+
+W/L/X access 16/32/64-bit little-endian logical memory, including unaligned addresses. Fetches zero-extend; stores truncate and validate the entire range before writing. XD@/XD! also access only eight bytes, using a double-cell stack value. XD>S sign-extends one cell to a double. BE reverses the low unit bytes; LE is identity. !@/+!@ return the old cell before replacement/addition; they are not atomic operations. TH words use base+index*8. W/L/X alignment is 2/4/8 bytes, with maximum alignment 8; explicit alignment requires a nonzero power of two. HELP gives stack effects; see [P03 details](P03_IMPLEMENTATION.md) (Japanese) for boundaries and validation.

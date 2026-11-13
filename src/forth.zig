@@ -819,6 +819,50 @@ pub const State = struct {
             .{ "HEX.", .hex_dot },
             .{ "UD.", .ud_dot },
             .{ "UD.R", .ud_dot_r },
+            .{ "!@", .exchange_store },
+            .{ "*ALIGN", .star_align },
+            .{ "*ALIGNED", .star_aligned },
+            .{ "+!@", .add_exchange },
+            .{ "/L", .slash_l },
+            .{ "/W", .slash_w },
+            .{ "/X", .slash_x },
+            .{ "C>S", .c_to_s },
+            .{ "CELL/", .cell_slash },
+            .{ "CHAR-", .char_minus },
+            .{ "DFLOAT/", .dfloat_slash },
+            .{ "FLOAT", .float_size_word },
+            .{ "FLOAT/", .float_slash },
+            .{ "L!", .l_store },
+            .{ "L>S", .l_to_s },
+            .{ "L@", .l_fetch },
+            .{ "LALIGN", .l_align },
+            .{ "LALIGNED", .l_aligned },
+            .{ "LBE", .l_be },
+            .{ "LLE", .l_le },
+            .{ "MAXALIGNED", .max_aligned },
+            .{ "SFLOAT/", .sfloat_slash },
+            .{ "TH", .th },
+            .{ "TH!", .th_store },
+            .{ "TH@", .th_fetch },
+            .{ "W!", .w_store },
+            .{ "W>S", .w_to_s },
+            .{ "W@", .w_fetch },
+            .{ "WALIGN", .w_align },
+            .{ "WALIGNED", .w_aligned },
+            .{ "WBE", .w_be },
+            .{ "WLE", .w_le },
+            .{ "X!", .x_store },
+            .{ "X>S", .x_to_s },
+            .{ "X@", .x_fetch },
+            .{ "XALIGN", .x_align },
+            .{ "XALIGNED", .x_aligned },
+            .{ "XBE", .x_be },
+            .{ "XD!", .xd_store },
+            .{ "XD>S", .xd_to_s },
+            .{ "XD@", .xd_fetch },
+            .{ "XDBE", .xd_be },
+            .{ "XDLE", .xd_le },
+            .{ "XLE", .x_le },
     };
 
     fn installBuiltins(self: *State) void {
@@ -1929,7 +1973,7 @@ pub const State = struct {
         if (defs.debug_enabled and self.cover_blocks and self.compiling and startsBlock(builtin)) self.markBlock(self.columnAfterWord());
     }
 
-    const word_modules = .{ words_stack, words_arithmetic, @import("core/words_numeric.zig"), words_memory, words_output, words_input, words_compiling, words_float, words_pictured, words_dictionary, words_system, @import("core/blocks.zig"), words_files, words_strings, words_help, words_defining, words_graphics, words_audio, words_xchar, words_tools, words_debug };
+    const word_modules = .{ @import("core/words_width.zig"), words_stack, words_arithmetic, @import("core/words_numeric.zig"), words_memory, words_output, words_input, words_compiling, words_float, words_pictured, words_dictionary, words_system, @import("core/blocks.zig"), words_files, words_strings, words_help, words_defining, words_graphics, words_audio, words_xchar, words_tools, words_debug };
 
     /// For each built-in word, the index in `word_modules` of the file that executes it.
     const word_owner = blk: {
