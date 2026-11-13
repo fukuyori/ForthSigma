@@ -141,9 +141,19 @@ words_tools.zigのREPLACES連結リストは固定ルートと各nodeのnextを�
 
 heapAllocate/heapResize呼出箇所を確認。text_input.zigの解釈時S"、words_defining.zig/words_memory.zigの割当は生アドレスを返すので自動で根にしない。Tcl受信バッファーはState内のホスト実行状態が所有し、登録せず到達しないものを収集しない。入力・ローカル領域の一時所有セルも保存用登録から除外する。ホストの数値をポインターとして推測しない。利用者が除外領域へのアドレスを明示登録した場合は保存前検査で拒否する。
 
-src/tests/internal_pointer_test.zigの4回帰で文字列の移動・置換・解放、配列の移動・縮小・解放、入力所有セルの除外、ローカル/範囲外アドレスの分類、表満杯時の確保前失敗、置換リスト更新と一時スロットの到達性を確認する。通常／全機能群無効のzig build testが成功。ログは.zig-cache/p03b-internal-test.logとp03b-internal-minimal.log。622と親619は完了（auto）。今回の変更は未コミット。
+src/tests/internal_pointer_test.zigの4回帰で文字列の移動・置換・解放、配列の移動・縮小・解放、入力所有セルの除外、ローカル/範囲外アドレスの分類、表満杯時の確保前失敗、置換リスト更新と一時スロットの到達性を確認する。通常／全機能群無効のzig build testが成功。ログは.zig-cache/p03b-internal-test.logとp03b-internal-minimal.log。622と親619は完了（auto）。622は5bf62a3でpush済み。
 
 型付き登録が増えるため、動的文字列・置換リストも旧形式では保存拒否となる。既存2件の往復回帰は暫定拒否と実行時の内容保持を検証する形へ変更した。620で新形式の往復検証へ戻す。通常の旧形式メモリー節検証は生のヒープ文字列を使って維持した。公開SAVE/LOADへの統合は引き続き620で行う。
+
+## P03b Stateから新形式へのエンコード（620配下623）
+
+src/core/image_encoder.zigにmeasure/encodeと呼出元Workspaceを追加。到達可能グラフを収集して正確な必要長を求め、出力不足はバイト列の変更前に拒否する。型付き参照の破損等も収集時に検査する。Word/Opを618の正規化ライターで書き、インライン化・call_colon・プリミティブ特殊化を保存用のcall/branch/call_builtinへ戻す。実行中のコードは変更しない。
+
+名前・システム・使用中データ・ソース表に再配置表と到達可能ヒープを加え、CRCを付け、生成物を構造パーサーで検査する。Stateと出力は別領域を使うこと。measureのWorkspace内グラフはState.memoryを借用する。encodeは毎回収集し直す。
+
+src/tests/image_encoder_test.zigの3回帰で実Stateの定義・動的文字列・アドレス定数、同一出力の決定性、実行コードの保持、短い出力の保持、破損参照拒否、共有循環・内部参照・孤立ブロック除外と3種類のマジックを確認。通常／全機能群無効のzig build testが成功。ログは.zig-cache/p03b-encoder-test.logとp03b-encoder-minimal.log。623は完了（auto）。今回の変更は未コミット。
+
+公開SAVE/LOADやState.encodeImageはまだ旧実装のまま。この段階では新形式を復元できるとは扱わない。624で組込語照合・容量確保・復元/追加・ホスト保存経路を統合するまで暫定拒否を維持する。620と親617/561/546は未完了。
 
 ## 後続のP03b / P03c
 
