@@ -1100,3 +1100,9 @@ P02 review notes: the initial random seed comes from the host clock, falling bac
 `!@`, `*ALIGN`, `*ALIGNED`, `+!@`, `/L`, `/W`, `/X`, `C>S`, `CELL/`, `CHAR-`, `DFLOAT/`, `FLOAT`, `FLOAT/`, `L!`, `L>S`, `L@`, `LALIGN`, `LALIGNED`, `LBE`, `LLE`, `MAXALIGNED`, `SFLOAT/`, `TH`, `TH!`, `TH@`, `W!`, `W>S`, `W@`, `WALIGN`, `WALIGNED`, `WBE`, `WLE`, `X!`, `X>S`, `X@`, `XALIGN`, `XALIGNED`, `XBE`, `XD!`, `XD>S`, `XD@`, `XDBE`, `XDLE`, `XLE`
 
 W/L/X access 16/32/64-bit little-endian logical memory, including unaligned addresses. Fetches zero-extend; stores truncate and validate the entire range before writing. XD@/XD! also access only eight bytes, using a double-cell stack value. XD>S sign-extends one cell to a double. BE reverses the low unit bytes; LE is identity. !@/+!@ return the old cell before replacement/addition; they are not atomic operations. TH words use base+index*8. W/L/X alignment is 2/4/8 bytes, with maximum alignment 8; explicit alignment requires a nonzero power of two. HELP gives stack effects; see [P03 details](P03_IMPLEMENTATION.md) (Japanese) for boundaries and validation.
+
+### Dictionary data placement (implemented P03b subset)
+
+W,/L,/X, append the low 16/32/64 bits without alignment. XD, consumes a double and appends only its low 64 bits, eight bytes. WFIELD:/LFIELD:/XFIELD: define naturally aligned 2/4/8-byte fields; 2FIELD: defines a 16-byte field with 8-byte alignment. MAXALIGN aligns HERE to eight bytes.
+
+MEM, ( addr u -- ) copies bytes to HERE with overlap handling; SAVE-MEM-DICT ( addr1 u -- addr2 u ) also returns the destination. ->HERE ( addr -- ) sets HERE inside data space without deleting dictionary entries; do not use it to reclaim named words. Capacity, input and range failures preserve HERE and input operands. Automatic address inference and typed relocation remain unimplemented. See [P03 details](P03_IMPLEMENTATION.md) (Japanese).

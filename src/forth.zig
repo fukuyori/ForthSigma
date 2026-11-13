@@ -863,6 +863,18 @@ pub const State = struct {
             .{ "XDBE", .xd_be },
             .{ "XDLE", .xd_le },
             .{ "XLE", .x_le },
+            .{ "->HERE", .to_here },
+            .{ "2FIELD:", .two_field },
+            .{ "L,", .l_comma },
+            .{ "LFIELD:", .l_field },
+            .{ "MAXALIGN", .max_align },
+            .{ "MEM,", .mem_comma },
+            .{ "SAVE-MEM-DICT", .save_mem_dict },
+            .{ "W,", .w_comma },
+            .{ "WFIELD:", .w_field },
+            .{ "X,", .x_comma },
+            .{ "XD,", .xd_comma },
+            .{ "XFIELD:", .x_field },
     };
 
     fn installBuiltins(self: *State) void {
@@ -1973,7 +1985,7 @@ pub const State = struct {
         if (defs.debug_enabled and self.cover_blocks and self.compiling and startsBlock(builtin)) self.markBlock(self.columnAfterWord());
     }
 
-    const word_modules = .{ @import("core/words_width.zig"), words_stack, words_arithmetic, @import("core/words_numeric.zig"), words_memory, words_output, words_input, words_compiling, words_float, words_pictured, words_dictionary, words_system, @import("core/blocks.zig"), words_files, words_strings, words_help, words_defining, words_graphics, words_audio, words_xchar, words_tools, words_debug };
+    const word_modules = .{ @import("core/words_data.zig"), @import("core/words_width.zig"), words_stack, words_arithmetic, @import("core/words_numeric.zig"), words_memory, words_output, words_input, words_compiling, words_float, words_pictured, words_dictionary, words_system, @import("core/blocks.zig"), words_files, words_strings, words_help, words_defining, words_graphics, words_audio, words_xchar, words_tools, words_debug };
 
     /// For each built-in word, the index in `word_modules` of the file that executes it.
     const word_owner = blk: {
