@@ -328,13 +328,13 @@ pub const fs_precision = 14;
 /// SIGIMG42 records the layout of the logical memory (`m` and `l`) in its header. An image
 /// keeps addresses, so it runs only with the layout it was saved with. Images before it
 /// are not read.
-pub const image_magic = "SIGIMG42";
+pub const image_magic = "SIGIMG45";
 /// The same layout as `image_magic`, for an image that has had the graphics words; builds
 /// that only know SIGIMG42 reject it.
-pub const graphics_image_magic = "SIGIMG43";
+pub const graphics_image_magic = "SIGIMG46";
 /// The same layout again, for an image that has had the audio words (with or without the
 /// graphics words); builds that only know SIGIMG42 and SIGIMG43 reject it.
-pub const audio_image_magic = "SIGIMG44";
+pub const audio_image_magic = "SIGIMG47";
 
 /// File ids of the standard streams; the host numbers opened files from `first_file_id`.
 pub const stdin_fileid: Cell = 1;

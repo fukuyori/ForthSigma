@@ -97,6 +97,14 @@ fn discover(state: *forth.State, graph: *Graph, address: Cell) RuntimeError!void
         const size = try state.blockSize(block);
         const payload = block + map.heap_header;
         if (address >= payload and address < payload + size and try state.blockUsed(block)) {
+            if (@import("defs.zig").graphics_enabled) {
+                const tcl = &state.tcl;
+                if (payload == tcl.result.address or payload == tcl.error_text.address or payload == tcl.event.address) return error.InvalidAddress;
+                if (tcl.partial) |message| if (payload == message.text.address) return error.InvalidAddress;
+                for (0..tcl.event_count) |i| {
+                    if (payload == tcl.events[(tcl.event_head + i) % tcl.events.len].address) return error.InvalidAddress;
+                }
+            }
             const offset: u64 = @intCast(payload - state.sizes.heapBase());
             for (graph.objects[0..graph.object_count]) |object| if (object.payload_offset == offset) return;
             if (graph.object_count == capacity) return error.MemoryExhausted;

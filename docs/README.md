@@ -30,3 +30,5 @@ For the project overview, how to build, the current features, the differences fr
 - [P02 review and validation](P02_REVIEW.md): Claude Code findings, fixes, and targeted comparisons (Japanese).
 
 - [P03 memory implementation](P03_IMPLEMENTATION.md): P03a widths, alignment, endian conversion, and validation; relocation and heap stages remain pending (Japanese).
+
+- [SIGIMG45/46/47 image format](IMAGE_FORMAT45.md)

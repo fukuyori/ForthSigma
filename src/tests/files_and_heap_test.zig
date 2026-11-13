@@ -350,15 +350,15 @@ test "READ-FILE reads bytes as they are and gives 0 at the end of the file" {
     try expectStack(machine, &.{ 0, forth.errnoIor(forth.errno_bad_file) });
 }
 
-test "typed heap strings reject legacy images until new-format integration" {
+test "typed heap strings survive public image restore" {
     var output = Output{};
     const source = try createMachine(&output);
     defer destroyMachine(source);
     try source.interpretLine("VARIABLE S S\" kept\" S $!");
     const image = try std.testing.allocator.alloc(u8, forth.State.imageCapacity(.small));
     defer std.testing.allocator.free(image);
-    // Task 620 will replace this guard with the new-format restore regression.
-    try std.testing.expectError(error.InvalidImage, source.encodeImage(image));
+    const length = try source.encodeImage(image);
+    try source.restoreImage(image[0..length]);
     try source.interpretLine("S $. S\" !\" S $+! S $.");
     try std.testing.expectEqualStrings("keptkept!", output.written());
 }

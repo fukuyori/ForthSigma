@@ -202,7 +202,7 @@ test "the graphics library loads into GRAPHICS, and a failure removes everything
     try std.testing.expectEqualStrings(order_before, output.written()[warning.len..]);
     const image = try saveImage(failing);
     defer freeImage(image);
-    try std.testing.expectEqualStrings("SIGIMG42", image[0..8]);
+    try std.testing.expectEqualStrings("SIGIMG45", image[0..8]);
 
     // The built-in library loads after the failure.
     failing.graphics_library = words_graphics.library;
@@ -210,7 +210,7 @@ test "the graphics library loads into GRAPHICS, and a failure removes everything
     try std.testing.expect(words_graphics.graphicsLoaded(failing));
 }
 
-test "an image is SIGIMG42 until the graphics words are loaded, and SIGIMG43 from then on" {
+test "an image is SIGIMG45 until the graphics words are loaded, and SIGIMG46 from then on" {
     try skipWithout(&.{ .graphics, .image });
     var output = Output{};
     const machine = try createMachine(&output);
@@ -218,12 +218,12 @@ test "an image is SIGIMG42 until the graphics words are loaded, and SIGIMG43 fro
     try machine.interpretLine(": BEFORE 7 ; MARKER -GFX");
     const plain = try saveImage(machine);
     defer freeImage(plain);
-    try std.testing.expectEqualStrings("SIGIMG42", plain[0..8]);
+    try std.testing.expectEqualStrings("SIGIMG45", plain[0..8]);
 
     try machine.interpretLine("REQUIRE-GRAPHICS ALSO GRAPHICS : DRAW 2 2 GFX-INIT 1 1 $123456 GFX-PSET 1 1 GFX-PGET ; PREVIOUS");
     const with_graphics = try saveImage(machine);
     defer freeImage(with_graphics);
-    try std.testing.expectEqualStrings("SIGIMG43", with_graphics[0..8]);
+    try std.testing.expectEqualStrings("SIGIMG46", with_graphics[0..8]);
 
     // Restored, the words run, the image is made again, and REQUIRE-GRAPHICS adds nothing.
     const restored = try createMachine(&output);
@@ -236,16 +236,16 @@ test "an image is SIGIMG42 until the graphics words are loaded, and SIGIMG43 fro
     try expectStack(restored, &.{ 7, 0x123456 });
 
     // After the marker removes the graphics words they load again, at a new place, and
-    // images stay SIGIMG43.
+    // images stay SIGIMG46.
     try machine.interpretLine("-GFX");
     try std.testing.expect(!words_graphics.graphicsLoaded(machine));
     const forgotten = try saveImage(machine);
     defer freeImage(forgotten);
-    try std.testing.expectEqualStrings("SIGIMG43", forgotten[0..8]);
+    try std.testing.expectEqualStrings("SIGIMG46", forgotten[0..8]);
     try machine.interpretLine(": PAD-WORD ; REQUIRE-GRAPHICS");
     try std.testing.expect(words_graphics.graphicsLoaded(machine));
 
-    // A SIGIMG42 image restores as before and can load the graphics words.
+    // A SIGIMG45 image restores as before and can load the graphics words.
     const old = try createMachine(&output);
     defer destroyMachine(old);
     try old.restoreImage(plain);
@@ -270,7 +270,7 @@ test "LOAD of an image with the graphics words adds them, renumbered, as loaded"
     try target.interpretLine(": EXISTING 99 ; VOCABULARY OTHER");
     const plain = try saveImage(target);
     defer freeImage(plain);
-    try std.testing.expectEqualStrings("SIGIMG42", plain[0..8]);
+    try std.testing.expectEqualStrings("SIGIMG45", plain[0..8]);
     try target.appendImage(loaded);
     try std.testing.expect(words_graphics.graphicsLoaded(target));
     const words_after = target.word_count;
@@ -279,7 +279,7 @@ test "LOAD of an image with the graphics words adds them, renumbered, as loaded"
     try expectStack(target, &.{ 3, 99 });
     const appended = try saveImage(target);
     defer freeImage(appended);
-    try std.testing.expectEqualStrings("SIGIMG43", appended[0..8]);
+    try std.testing.expectEqualStrings("SIGIMG46", appended[0..8]);
     try std.testing.expectEqual(@as(forth.Cell, 1), target.readCellConst(memory_map.graphics_image_address));
 }
 
@@ -326,7 +326,7 @@ test "a library that fails inside a definition leaves nothing behind, also after
         output.len = 0;
         const image = try saveImage(machine);
         defer freeImage(image);
-        try std.testing.expectEqualStrings("SIGIMG42", image[0..8]);
+        try std.testing.expectEqualStrings("SIGIMG45", image[0..8]);
         try machine.interpretLine(": AFTER 5 ; AFTER");
         try expectStack(machine, &.{5});
 
@@ -431,7 +431,7 @@ test "saving an image larger than the write buffer, and the first ior when a wri
     }
 }
 
-test "a build without graphics loads a SIGIMG43 image and refuses to run its GFX- words" {
+test "a build without graphics loads a SIGIMG46 image and refuses to run its GFX- words" {
     if (@import("build_options").graphics) return error.SkipZigTest;
     try skipWithout(&.{.image});
     var output = Output{};
@@ -443,7 +443,7 @@ test "a build without graphics loads a SIGIMG43 image and refuses to run its GFX
     try source.writeCell(memory_map.graphics_image_address, 1);
     const image = try saveImage(source);
     defer freeImage(image);
-    try std.testing.expectEqualStrings("SIGIMG43", image[0..8]);
+    try std.testing.expectEqualStrings("SIGIMG46", image[0..8]);
     const restored = try createMachine(&output);
     defer destroyMachine(restored);
     try restored.restoreImage(image);

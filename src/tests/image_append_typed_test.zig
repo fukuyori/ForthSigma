@@ -18,11 +18,10 @@ test "typed append twice retains independent strings and constants then resaves"
     const target = try support.createMachine(&output);
     defer support.destroyMachine(target);
     try target.interpretLine("CREATE FILLER 32 ALLOT AVARIABLE OWN 77");
-    var work: append.Workspace = undefined;
-    try append.append(target, bytes, &work);
+    try target.appendImage(source);
     const first = target.words[target.lookup("TEXT").?].value;
     const first_buffer = try target.readCell(first);
-    try append.append(target, bytes, &work);
+    try target.appendImage(source);
     const second = target.words[target.lookup("TEXT").?].value;
     try std.testing.expect(first != second);
     try std.testing.expect(first_buffer != try target.readCell(second));

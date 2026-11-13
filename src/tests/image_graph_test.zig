@@ -65,3 +65,21 @@ test "image graph rejects freed damaged and transient references without changin
     try std.testing.expectError(error.InvalidAddress, graph.collect(machine, &collected));
     try std.testing.expectEqual(@as(map.Cell, 0), try machine.readCell(root));
 }
+
+test "typed references into host-owned Tcl buffers fail before save releases resources" {
+    if (comptime !@import("../core/defs.zig").graphics_enabled) return error.SkipZigTest;
+    try support.skipWithout(&.{ .graphics, .image });
+    var output = support.Output{};
+    const machine = try support.createMachine(&output);
+    defer support.destroyMachine(machine);
+    try machine.interpretLine("AVARIABLE ROOT");
+    const buffer = (try machine.heapAllocate(16)).?;
+    machine.tcl.result = .{ .address = buffer, .length = 8 };
+    const root = machine.words[machine.lookup("ROOT").?].value;
+    try machine.writeCell(root, buffer + 1);
+    var collected: graph.Graph = undefined;
+    try std.testing.expectError(error.InvalidAddress, graph.collect(machine, &collected));
+    try std.testing.expectError(error.InvalidAddress, machine.interpretLine("SAVE unused.sigma"));
+    try std.testing.expectEqual(buffer, machine.tcl.result.address);
+    try std.testing.expectEqual(@as(usize, 0), output.saves);
+}

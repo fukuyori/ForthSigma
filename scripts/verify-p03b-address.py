@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""P03b address word runtime compatibility; image relocation is not yet implemented."""
+"""P03b address word runtime compatibility; typed image relocation is verified by the Zig regression suite."""
 import argparse,csv,json,pathlib,subprocess,re
 parser=argparse.ArgumentParser()
 parser.add_argument("sigma",nargs="?",default="zig-out/bin/sigma")

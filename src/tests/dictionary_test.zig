@@ -75,7 +75,7 @@ test "a full restore keeps this build's built-in words when the image's built-in
     const dup: usize = source.lookup("DUP").?;
     const removed: usize = source.words[dup].name_len;
     const removed_at: usize = source.words[dup].name_start;
-    const header = 32;
+    const header = 112;
     const words_end = header + @as(usize, source.word_count) * @sizeOf(Word);
     const names_at = words_end + @as(usize, source.code_count) * @sizeOf(@TypeOf(source.code[0]));
     const image = try std.testing.allocator.alloc(u8, saved.len - removed);
@@ -83,6 +83,7 @@ test "a full restore keeps this build's built-in words when the image's built-in
     @memcpy(image[0 .. names_at + removed_at], saved[0 .. names_at + removed_at]);
     @memcpy(image[names_at + removed_at ..], saved[names_at + removed_at + removed ..]);
     std.mem.writeInt(u32, image[20..24], source.names_used - @as(u32, @intCast(removed)), .little);
+    std.mem.writeInt(u64, image[64..72], source.names_used - removed, .little);
     image[header + dup * @sizeOf(Word) + @offsetOf(Word, "name_len")] = 0;
     for (dup + 1..source.word_count) |id| {
         const at = header + id * @sizeOf(Word) + @offsetOf(Word, "name_start");
@@ -121,7 +122,7 @@ test "a built-in word compiles to a direct call, and an image with plain calls s
     defer freeImage(image);
     const Word = @TypeOf(source.words[0]);
     const Op = @TypeOf(source.code[0]);
-    const code_at = 32 + @as(usize, source.word_count) * @sizeOf(Word);
+    const code_at = 112 + @as(usize, source.word_count) * @sizeOf(Word);
     var changed: usize = 0;
     for (0..source.code_count) |index| {
         const at = code_at + index * @sizeOf(Op) + @offsetOf(Op, "kind");
@@ -145,10 +146,10 @@ test "execution-only calls normalize on save and relocate on LOAD without changi
     try source.interpretLine(": SQ DUP * ; : FOUR SQ SQ ; : DOWN DUP IF 1- RECURSE THEN ; : ALIASES MINUS INVERT ;");
     const image = try saveImage(source);
     defer freeImage(image);
-    try std.testing.expectEqualStrings("SIGIMG42", image[0..8]);
+    try std.testing.expectEqualStrings("SIGIMG45", image[0..8]);
     const Word = @TypeOf(source.words[0]);
     const Op = @TypeOf(source.code[0]);
-    const code_at = 32 + @as(usize, source.word_count) * @sizeOf(Word);
+    const code_at = 112 + @as(usize, source.word_count) * @sizeOf(Word);
     var inline_end: usize = 0;
     for (source.code[0..source.code_count], 0..) |op, index| {
         const at = code_at + index * @sizeOf(Op);
@@ -301,7 +302,7 @@ test "an image keeps HERE's data, the used heap, and the source table, and nothi
     var output = Output{};
     const source = try createMachine(&output);
     defer destroyMachine(source);
-    try source.interpretLine("S\" kept on the heap\" 2CONSTANT S : SHOW S TYPE ; CREATE BUF 4 ALLOT 1 BUF C!");
+    try source.interpretLine("VARIABLE S S\" kept on the heap\" S $! : SHOW S $@ TYPE ; CREATE BUF 4 ALLOT 1 BUF C!");
     // Bytes above HERE are not part of the image.
     try source.interpretLine("HERE 100 + 99 SWAP C!");
     const image = try std.testing.allocator.alloc(u8, forth.State.imageCapacity(.small));
@@ -309,8 +310,8 @@ test "an image keeps HERE's data, the used heap, and the source table, and nothi
     const length = try source.encodeImage(image);
 
     const source_table_bytes = 64 * 256 + 64;
-    const expected = 32 + @as(usize, source.word_count) * @sizeOf(@TypeOf(source.words[0])) + @as(usize, source.code_count) * @sizeOf(@TypeOf(source.code[0])) +
-        source.names_used + @as(usize, @intCast(@import("../core/memory_map.zig").system_end)) + @as(usize, @intCast(source.data_here - @import("../core/memory_map.zig").data_start)) + @as(usize, @intCast(source.heapTop() - source.sizes.dataLimit())) + source_table_bytes + 4;
+    const expected = 112 + @as(usize, source.word_count) * @sizeOf(@TypeOf(source.words[0])) + @as(usize, source.code_count) * @sizeOf(@TypeOf(source.code[0])) +
+        source.names_used + @as(usize, @intCast(@import("../core/memory_map.zig").system_end)) + @as(usize, @intCast(source.data_here - @import("../core/memory_map.zig").data_start)) + 32 + 24 + 24 + source_table_bytes + 4;
     try std.testing.expectEqual(expected, length);
     try std.testing.expect(length < 200_000);
 
@@ -427,7 +428,7 @@ test "a damaged image, or one whose names are out of order or out of range, is r
         .{ 1, @offsetOf(Word, "kind"), 0x01 },
     };
     for (corruptions) |corruption| {
-        const at = 32 + corruption[0] * @sizeOf(Word) + corruption[1];
+        const at = 112 + corruption[0] * @sizeOf(Word) + corruption[1];
         const saved = image[at];
         image[at] = saved ^ corruption[2];
         resealImage(image);
@@ -438,12 +439,12 @@ test "a damaged image, or one whose names are out of order or out of range, is r
         try std.testing.expectEqual(before_names, loaded.names_used);
     }
     // SIGIMG41 and earlier are not read: their user words have other numbers, or their addresses are of another layout.
-    for ([_]*const [8]u8{ "SIGIMG31", "SIGIMG32", "SIGIMG33", "SIGIMG34", "SIGIMG35", "SIGIMG36", "SIGIMG37", "SIGIMG38", "SIGIMG39", "SIGIMG40", "SIGIMG41" }) |old| {
+    for ([_]*const [8]u8{ "SIGIMG31", "SIGIMG32", "SIGIMG33", "SIGIMG34", "SIGIMG35", "SIGIMG36", "SIGIMG37", "SIGIMG38", "SIGIMG39", "SIGIMG40", "SIGIMG41", "SIGIMG42", "SIGIMG43", "SIGIMG44" }) |old| {
         @memcpy(image[0..8], old);
         resealImage(image);
         try std.testing.expectError(error.InvalidImage, loaded.restoreImage(image));
     }
-    @memcpy(image[0..8], "SIGIMG42");
+    @memcpy(image[0..8], "SIGIMG45");
     resealImage(image);
     // One damaged byte anywhere, here in the saved memory or in the checksum itself,
     // fails the checksum, and the dictionary, code, and memory stay as they were.

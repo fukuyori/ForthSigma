@@ -82,21 +82,21 @@ test "P03b FORGET and HERE rollback remove source registrations and invalidate s
     try registry.validate(machine);
 }
 
-test "P03b typed metadata cannot silently pass through the legacy image format" {
+test "P03b typed metadata survives public image save restore and damaged references fail" {
     try support.skipWithout(&.{.image});
     var output = support.Output{};
     const machine = try support.createMachine(&output);
     defer support.destroyMachine(machine);
-    const bytes = try std.testing.allocator.alloc(u8, machine.encodedSize() + 64);
+    const bytes = try std.testing.allocator.alloc(u8, @import("../forth.zig").State.imageCapacity(.small));
     defer std.testing.allocator.free(bytes);
-    _ = try machine.encodeImage(bytes);
     try machine.interpretLine("AVARIABLE AV");
     const count = machine.word_count;
-    try std.testing.expectError(error.InvalidImage, machine.encodeImage(bytes));
-    try std.testing.expectError(error.InvalidImage, machine.restoreImage(bytes));
+    const length = try machine.encodeImage(bytes);
+    try machine.restoreImage(bytes[0..length]);
     try std.testing.expectEqual(count, machine.word_count);
-    try std.testing.expectError(error.InvalidImage, machine.interpretLine("SAVE ignored.sigma"));
-    try std.testing.expectEqual(@as(usize, 0), output.saves);
+    try std.testing.expectEqual(@as(usize, 1), machine.addresses.count);
+    try machine.interpretLine("SAVE ignored.sigma");
+    try std.testing.expectEqual(@as(usize, 1), output.saves);
     try machine.interpretLine("AV DUP C@ SWAP C!");
     try std.testing.expectError(error.InvalidAddress, machine.encodeImage(bytes));
 }

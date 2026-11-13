@@ -30,3 +30,5 @@
 - [P02レビュー・検証記録](P02_REVIEW.md)：Claude Codeの指摘対応と追加比較・回帰。
 
 - [P03メモリー操作の実装記録](P03_IMPLEMENTATION.md)：P03aの幅・整列・エンディアンと検証。再配置・ヒープの段階は未着手。
+
+- [SIGIMG45/46/47 image format](IMAGE_FORMAT45.md)

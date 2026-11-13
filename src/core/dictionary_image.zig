@@ -2,7 +2,6 @@
 
 const std = @import("std");
 const inline_calls = @import("inline_calls.zig");
-const native_endian = @import("builtin").cpu.arch.endian();
 const defs = @import("defs.zig");
 const forth = @import("../forth.zig");
 const memory_map = @import("memory_map.zig");
@@ -51,7 +50,7 @@ pub fn readU32(input: []const u8) u32 {
 
 /// The header: the magic, then the word count, the operation count, HERE, the bytes of
 /// names, and the layout's `m` and `l`, four bytes each.
-const header_size = 32;
+const header_size = @import("image_format.zig").header_size;
 
 /// The image ends with the CRC-32 of all the bytes before it, four bytes. It finds
 /// accidental damage only; an image is trusted to come from SAVE or SAVESYS.
@@ -59,13 +58,11 @@ const checksum_size = 4;
 
 /// The most bytes an image of a machine with these sizes can have.
 pub fn imageCapacity(sizes: memory_map.Sizes) usize {
-    return header_size + max_words * @sizeOf(Word) + max_code * @sizeOf(Op) + names_capacity + sizes.memorySize() + checksum_size;
+    return @import("image_format.zig").header_size + max_words * @sizeOf(Word) + max_code * @sizeOf(Op) + names_capacity + sizes.memorySize() + 2048 * 56 + checksum_size;
 }
-
-/// The bytes `encodeImage` needs for this machine as it is now.
 pub fn encodedSize(self: *State) usize {
-    const ranges = memoryRanges(self.sizes, self.data_here, self.heapTop());
-    return header_size + @as(usize, self.word_count) * @sizeOf(Word) + @as(usize, self.code_count) * @sizeOf(Op) + self.names_used + rangesLength(ranges) + checksum_size;
+    var workspace: @import("image_encoder.zig").Workspace = undefined;
+    return @import("image_encoder.zig").measure(self, &workspace) catch imageCapacity(self.sizes);
 }
 
 /// The layout an image was saved with, as `m` and `l`; null when the bytes are not an
@@ -84,245 +81,40 @@ fn knownMagic(image: []const u8) bool {
     } else false;
 }
 
-/// The parts of memory an image keeps: the system area, the data space up to HERE, the
-/// used part of the heap, and the source file table with its loaded flags. The rest
-/// (input buffers, local frames, free space) starts as zeros when the image is restored.
-fn memoryRanges(sizes: memory_map.Sizes, data_here: Cell, heap_top: Cell) [4][2]usize {
-    return .{
-        .{ 0, @intCast(memory_map.system_end) },
-        .{ @intCast(data_start), @intCast(data_here) },
-        .{ @intCast(sizes.heapBase()), @intCast(heap_top) },
-        .{ @intCast(source_file_table), @intCast(source_file_loaded_flags + max_source_files) },
-    };
-}
-
-/// Whether the names of the saved words lie one after another from the start of the name
-/// area to `names_used`, as appendEntry places them; FORGET and LOAD-DICTIONARY rely on that order.
-/// A word without a name takes no bytes. The fields are read from the bytes, so nothing
-/// is changed before an image is accepted.
-fn namesAreConsecutive(word_bytes: []const u8, names_used: usize) bool {
-    var next: usize = 0;
-    var at: usize = 0;
-    while (at < word_bytes.len) : (at += @sizeOf(Word)) {
-        const start = std.mem.readInt(u32, word_bytes[at + @offsetOf(Word, "name_start") ..][0..4], native_endian);
-        const length = word_bytes[at + @offsetOf(Word, "name_len")];
-        if (start != next) return false;
-        next += length;
-    }
-    return next == names_used;
-}
-
-/// Whether the saved dictionary starts with this build's built-in words at the same
-/// places, so that the image's execution tokens of built-in words mean the same words.
-/// A word group a build leaves out keeps its places (installBuiltins), so builds with
-/// other groups match; an image of a build that dropped those places does not.
-fn builtinsMatch(self: *const State, word_bytes: []const u8) bool {
-    if (word_bytes.len < @as(usize, self.builtin_count) * @sizeOf(Word)) return false;
-    for (self.words[0..self.builtin_count], 0..) |own, index| {
-        const at = index * @sizeOf(Word);
-        if (savedTag(WordKind, word_bytes[at + @offsetOf(Word, "kind") ..]) != @intFromEnum(own.kind)) return false;
-        if (savedTag(Builtin, word_bytes[at + @offsetOf(Word, "builtin") ..]) != @intFromEnum(own.builtin)) return false;
-    }
-    return true;
-}
-
-/// Where the names of this build's built-in words end; the names lie one after another.
-fn builtinNamesEnd(self: *const State) usize {
-    if (self.builtin_count == 0) return 0;
-    const last = self.words[self.builtin_count - 1];
-    return @as(usize, last.name_start) + last.name_len;
-}
-
-/// Where the names of the image's built-in words end, read from the saved words, which
-/// namesAreConsecutive has checked.
-fn savedBuiltinNamesEnd(word_bytes: []const u8, builtins: usize) usize {
-    if (builtins == 0) return 0;
-    const at = (builtins - 1) * @sizeOf(Word);
-    const start = std.mem.readInt(u32, word_bytes[at + @offsetOf(Word, "name_start") ..][0..4], native_endian);
-    return @as(usize, start) + word_bytes[at + @offsetOf(Word, "name_len")];
-}
-
-/// The tag of an enum field read from the bytes, without making an enum of a value the
-/// bytes may not hold.
-fn savedTag(comptime E: type, bytes: []const u8) @typeInfo(E).@"enum".tag_type {
-    const Storage = @Int(.unsigned, @sizeOf(E) * 8);
-    return @truncate(std.mem.readInt(Storage, bytes[0..@sizeOf(E)], native_endian));
-}
-
-fn rangesLength(ranges: [4][2]usize) usize {
-    var total: usize = 0;
-    for (ranges) |range| total += range[1] - range[0];
-    return total;
-}
-
 pub fn encodeImage(self: *State, output: []u8) RuntimeError!usize {
-    try @import("address_registry.zig").requireLegacyImage(self);
-    const ranges = memoryRanges(self.sizes, self.data_here, self.heapTop());
-    const word_bytes = std.mem.sliceAsBytes(self.words[0..self.word_count]);
-    const code_bytes = std.mem.sliceAsBytes(self.code[0..self.code_count]);
-    const name_bytes = self.names[0..self.names_used];
-    const required = header_size + word_bytes.len + code_bytes.len + name_bytes.len + rangesLength(ranges) + checksum_size;
-    if (output.len < required) return error.InvalidImage;
-    // A dictionary that has had the audio words is saved as SIGIMG44, one that has had
-    // the graphics words (and not the audio words) as SIGIMG43, which older builds
-    // reject; one that never had them stays SIGIMG42.
-    const magic = if (self.readCellConst(memory_map.audio_image_address) != 0)
-        memory_map.audio_image_magic
-    else if (self.readCellConst(graphics_image_address) != 0)
-        graphics_image_magic
-    else
-        image_magic;
-    @memcpy(output[0..8], magic);
-    writeU32(output[8..12], self.word_count);
-    writeU32(output[12..16], self.code_count);
-    writeU32(output[16..20], self.data_here);
-    writeU32(output[20..24], self.names_used);
-    writeU32(output[24..28], @as(u32, @intCast(self.sizes.m)));
-    writeU32(output[28..32], @as(u32, @intCast(self.sizes.l)));
-    var cursor: usize = header_size;
-    for ([_][]const u8{ word_bytes, code_bytes, name_bytes }) |bytes| {
-        @memcpy(output[cursor .. cursor + bytes.len], bytes);
-        cursor += bytes.len;
-    }
-    // Save the operations unspecialized: the specialization is only an execution detail,
-    // redone after restoring. Do not change the running machine's operations.
-    var inline_end: usize = 0;
-    for (self.code[0..self.code_count], 0..) |original, index| {
-        var op = original;
-        if (index < inline_end) {
-            op = .{ .kind = .branch, .value = @intCast(inline_end) };
-        } else if (inline_calls.isInline(op)) {
-            inline_end = index + inline_calls.span(op.value);
-            op = .{ .kind = .call, .value = inline_calls.wordId(op.value) };
-        } else if (op.kind == .call_colon) {
-            op.kind = .call;
-        } else if (defs.isPrimitiveOp(op.kind)) {
-            op.kind = .call_builtin;
-        }
-        const at = header_size + word_bytes.len + index * @sizeOf(Op);
-        @memcpy(output[at + @offsetOf(Op, "kind") ..][0..@sizeOf(defs.OpKind)], std.mem.asBytes(&op.kind));
-        @memcpy(output[at + @offsetOf(Op, "value") ..][0..@sizeOf(Cell)], std.mem.asBytes(&op.value));
-    }
-    for (ranges) |range| {
-        const length = range[1] - range[0];
-        @memcpy(output[cursor .. cursor + length], self.memory[range[0]..range[1]]);
-        cursor += length;
-    }
-    writeU32(output[cursor..][0..checksum_size], std.hash.Crc32.hash(output[0..cursor]));
-    return required;
+    var workspace: @import("image_encoder.zig").Workspace = undefined;
+    return @import("image_encoder.zig").encode(self, output, &workspace);
 }
-
 pub fn restoreImage(self: *State, image: []const u8) RuntimeError!void {
-    try @import("address_registry.zig").requireLegacyImage(self);
-    return restore(self, image, false);
+    var plan: @import("image_restore_plan.zig").Plan = undefined;
+    return @import("image_restore.zig").restore(self, image, &plan);
 }
-
-/// `restoreImage` for a machine that has run nothing since `init`: its memory outside
-/// what the image brings is zeros already, and stays untouched, so pages not in use take
-/// no physical memory.
 pub fn restoreFreshImage(self: *State, image: []const u8) RuntimeError!void {
-    try @import("address_registry.zig").requireLegacyImage(self);
-    return restore(self, image, true);
-}
-
-fn restore(self: *State, image: []const u8, memory_is_fresh: bool) RuntimeError!void {
-    if (image.len < header_size + checksum_size) return error.InvalidImage;
-    if (!knownMagic(image)) return error.InvalidImage;
-    const input = image[0 .. image.len - checksum_size];
-    if (readU32(image[input.len..]) != std.hash.Crc32.hash(input)) return error.InvalidImage;
-    // An image keeps addresses, so it runs only with the layout it was saved with.
-    if (readU32(input[24..28]) != self.sizes.m or readU32(input[28..32]) != self.sizes.l) return error.InvalidImage;
-    const word_count = readU32(input[8..12]);
-    const code_count = readU32(input[12..16]);
-    const data_here = readU32(input[16..20]);
-    const names_used = readU32(input[20..24]);
-    if (word_count < self.builtin_count or word_count > max_words or code_count > max_code or data_here < data_start or data_here > self.sizes.dataLimit() or names_used > names_capacity) return error.InvalidImage;
-    const word_bytes_len = @as(usize, word_count) * @sizeOf(Word);
-    const code_bytes_len = @as(usize, code_count) * @sizeOf(Op);
-    const memory_at = header_size + word_bytes_len + code_bytes_len + names_used;
-    // The heap's end is a cell of the saved system area; check it before changing anything.
-    const heap_top_at = memory_at + @as(usize, @intCast(heap_top_address));
-    if (input.len < heap_top_at + cell_size) return error.InvalidImage;
-    const heap_top: Cell = @bitCast(std.mem.readInt(u64, input[heap_top_at..][0..8], .little));
-    if (heap_top < self.sizes.heapBase() or heap_top > self.sizes.heapEnd()) return error.InvalidImage;
-    const ranges = memoryRanges(self.sizes, data_here, heap_top);
-    if (input.len != memory_at + rangesLength(ranges)) return error.InvalidImage;
-    if (!namesAreConsecutive(input[header_size .. header_size + word_bytes_len], names_used)) return error.InvalidImage;
-    const word_bytes = input[header_size .. header_size + word_bytes_len];
-    if (!builtinsMatch(self, word_bytes)) return error.InvalidImage;
-    // The built-in words stay this build's own, with their names: an image of a build with
-    // other word groups has the same built-in words at the same places, but names only for
-    // the groups that build has. The image's own words and names follow this build's
-    // built-in names, so their name places move by the difference.
-    const builtins: usize = self.builtin_count;
-    const own_names = builtinNamesEnd(self);
-    const image_names = savedBuiltinNamesEnd(word_bytes, builtins);
-    const added_names = names_used - image_names;
-    if (added_names > names_capacity - own_names) return error.DictionaryFull;
-    var cursor: usize = header_size + builtins * @sizeOf(Word);
-    @memcpy(std.mem.sliceAsBytes(self.words[builtins..word_count]), input[cursor .. header_size + word_bytes_len]);
-    for (self.words[builtins..word_count]) |*word| word.name_start = @intCast(word.name_start - image_names + own_names);
-    cursor = header_size + word_bytes_len;
-    @memcpy(std.mem.sliceAsBytes(self.code[0..code_count]), input[cursor .. cursor + code_bytes_len]);
-    cursor += code_bytes_len;
-    @memcpy(self.names[own_names..][0..added_names], input[cursor + image_names .. cursor + names_used]);
-    cursor += names_used;
-    if (!memory_is_fresh) {
-        // Block storage is a runtime resource, like its open file; restoring a
-        // dictionary must preserve unsaved buffers belonging to this process.
-        @memset(self.memory[0..@intCast(memory_map.block_buffer_base)], 0);
-        @memset(self.memory[@intCast(memory_map.block_buffer_end)..], 0);
-    }
-    for (ranges) |range| {
-        const length = range[1] - range[0];
-        @memcpy(self.memory[range[0]..range[1]], input[cursor .. cursor + length]);
-        cursor += length;
-    }
-    try self.writeCell(memory_map.blk_address, 0);
-    self.names_used = @intCast(own_names + added_names);
-    self.word_count = @intCast(word_count);
-    wordlists.rebuildIndex(self);
-    // The recorded uses are not in the image.
-    self.use_count = 0;
-    // Nor are the lines the code was compiled from.
-    if (defs.debug_enabled) {
-        @memset(&self.code_lines, 0);
-        @memset(&self.code_columns, 0);
-    }
-    self.watched_count = 0;
-    self.cell_watch_count = 0;
-    self.code_count = @intCast(code_count);
-    // Old and new images store ordinary calls; rebuild dispatch information
-    // only after the word entries and counts have been restored.
-    for (self.code[0..self.code_count]) |*op| {
-        op.* = self.specializeCall(op.*);
-    }
-    inline_calls.restore(self);
-    // A BREAK: of the image stops as one compiled here does.
-    if (defs.debug_enabled) @import("words_debug.zig").noteBreakpoints(self);
-    self.data_here = data_here;
-    self.data_depth = 0;
-    self.return_depth = 0;
-    self.float_depth = 0;
-    self.control_depth = 0;
-    self.loop_depth = 0;
-    self.resetHold();
-    self.setCompiling(false);
-    self.defining = false;
-    self.pending = .none;
-    // The image is not part of the dictionary: the restored program makes its own.
-    words_graphics.clearImage(self);
-    // The images of the pool go too, and drawing goes to the screen.
-    @import("graphics_images.zig").releaseAll(self);
-    // The Tcl strings were in the heap the image replaced.
-    if (defs.graphics_enabled) @import("tcl.zig").forgetHeap(self);
+    var plan: @import("image_restore_plan.zig").Plan = undefined;
+    return @import("image_restore.zig").restoreFresh(self, image, &plan);
 }
 
 pub fn appendImage(self: *State, source: *const State) RuntimeError!void {
-    try @import("address_registry.zig").requireLegacyImage(self);
-    if (source.addresses.count != 0) return error.InvalidImage;
-    // The State the image was restored in has seen its BREAK:s.
-    if (defs.debug_enabled and source.keep_counting) self.keep_counting = true;
+    if (self == source) return error.InvalidImage;
+    const registry = @import("address_registry.zig");
+    try registry.validate(self);
+    var graph: @import("image_graph.zig").Graph = undefined;
+    try @import("image_graph.zig").collect(@constCast(source), &graph);
+    if (graph.record_count > registry.capacity - self.addresses.count) return error.MemoryExhausted;
+    var heap_addresses: [registry.capacity]Cell = undefined;
+    var new_top = self.heapTop();
+    for (graph.objects[0..graph.object_count], 0..) |object, i| {
+        const need: Cell = @intCast(memory_map.heap_header + object.bytes.len);
+        if (need > self.sizes.heapEnd() - new_top) return error.MemoryExhausted;
+        heap_addresses[i] = new_top + memory_map.heap_header;
+        new_top += need;
+    }
+    for (graph.records[0..graph.record_count]) |record| {
+        if (record.storage != .system) continue;
+        for (self.addresses.records[0..self.addresses.count]) |own| {
+            if (own.kind == .memory and @as(i128, own.slot) < @as(i128, record.slot_offset) + 8 and @as(i128, record.slot_offset) < @as(i128, own.slot) + 8) return error.InvalidImage;
+        }
+    }
     if (source.builtin_count == 0 or source.builtin_count != self.builtin_count or source.word_count < source.builtin_count) return error.InvalidImage;
     const added_words: usize = source.word_count - source.builtin_count;
     const word_base: usize = self.word_count;
@@ -466,4 +258,39 @@ pub fn appendImage(self: *State, source: *const State) RuntimeError!void {
     try library_loading.appendLoaded(self, source, words_audio.group, audio_loaded, word_base);
     try library_loading.appendLoaded(self, source, @import("words_gui.zig").group, gui_loaded, word_base);
     try library_loading.appendLoaded(self, source, @import("words_game.zig").group, game_loaded, word_base);
+    for (graph.objects[0..graph.object_count], 0..) |object, i| {
+        const at = heap_addresses[i];
+        self.setBlock(at - memory_map.heap_header, @intCast(object.bytes.len), true);
+        @memcpy(self.memory[@intCast(at)..][0..object.bytes.len], object.bytes);
+    }
+    try self.writeCell(heap_top_address, new_top);
+    for (graph.records[0..graph.record_count]) |wire| {
+        const slot: Cell = switch (wire.storage) {
+            .word => @intCast(word_base + wire.word_id - source.builtin_count),
+            .system => @intCast(wire.slot_offset),
+            .data => data_start + data_delta + @as(Cell, @intCast(wire.slot_offset)),
+            .heap => mappedHeap(&graph, &heap_addresses, wire.slot_offset),
+        };
+        const value: Cell = switch (wire.target) {
+            .null_address => 0,
+            .system => @intCast(wire.target_offset),
+            .data => data_start + data_delta + @as(Cell, @intCast(wire.target_offset)),
+            .heap => mappedHeap(&graph, &heap_addresses, wire.target_offset),
+        };
+        if (wire.storage == .word) {
+            self.words[@intCast(slot)].value = value;
+            try registry.registerWord(self, @intCast(slot));
+        } else {
+            try self.writeCell(slot, value);
+            try registry.registerMemory(self, slot);
+        }
+    }
+    if (defs.debug_enabled and source.keep_counting) self.keep_counting = true;
+}
+
+fn mappedHeap(graph: *const @import("image_graph.zig").Graph, addresses: *const [2048]Cell, offset: u64) Cell {
+    for (graph.objects[0..graph.object_count], 0..) |object, i| {
+        if (offset >= object.payload_offset and offset - object.payload_offset < object.bytes.len) return addresses[i] + @as(Cell, @intCast(offset - object.payload_offset));
+    }
+    unreachable;
 }

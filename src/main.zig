@@ -247,7 +247,7 @@ fn sleepMilliseconds(_: ?*anyopaque, milliseconds: forth.Cell) forth.RuntimeErro
     var remaining: std.c.timespec = undefined;
     // A signal can end the wait early; it goes on with the time that is left.
     while (std.c.nanosleep(&request, &remaining) != 0) {
-        if (std.c._errno().* != @intFromEnum(std.c.E.INTR)) return error.HostFailed;
+        if (std.c._errno().* != @backingInt(std.c.E.INTR)) return error.HostFailed;
         request = remaining;
     }
 }
@@ -706,7 +706,7 @@ fn standardInputByte() c_int {
         while (true) {
             const count = std.c.read(0, &byte, 1);
             if (count == 1) return byte[0];
-            if (count < 0 and std.c._errno().* == @intFromEnum(std.c.E.INTR)) continue;
+            if (count < 0 and std.c._errno().* == @backingInt(std.c.E.INTR)) continue;
             return -1;
         }
     }
@@ -1101,11 +1101,12 @@ fn saveDictionary(context: ?*anyopaque, output_path: []const u8, machine: *forth
     var terminated_path: [4096:0]u8 = undefined;
     @memcpy(terminated_path[0..output_path.len], output_path);
     terminated_path[output_path.len] = 0;
-    const file = fopen(&terminated_path, "wb") orelse return error.FileUnavailable;
-    defer _ = fclose(file);
     const image = host.allocator.alloc(u8, machine.encodedSize()) catch return error.MemoryExhausted;
     defer host.allocator.free(image);
     const length = try machine.encodeImage(image);
+    const file = fopen(&terminated_path, "wb") orelse return error.FileUnavailable;
+    defer _ = fclose(file);
+
     if (fwrite(image.ptr, 1, length, file) != length or fflush(file) != 0) return error.FileUnavailable;
 }
 
@@ -1129,6 +1130,9 @@ fn saveExecutableImage(context: ?*anyopaque, output_path: []const u8, machine: *
         }
     }
     if (fseek(source, 0, 0) != 0) return error.FileUnavailable;
+    const image = allocator.alloc(u8, machine.encodedSize()) catch return error.MemoryExhausted;
+    defer allocator.free(image);
+    const image_len = try machine.encodeImage(image);
     const destination = fopen(&terminated_output, "wb") orelse return error.FileUnavailable;
     defer _ = fclose(destination);
     var buffer: [8192]u8 = undefined;
@@ -1139,9 +1143,7 @@ fn saveExecutableImage(context: ?*anyopaque, output_path: []const u8, machine: *
         if (amount != wanted or fwrite(&buffer, 1, amount, destination) != amount) return error.FileUnavailable;
         copied += amount;
     }
-    const image = allocator.alloc(u8, machine.encodedSize()) catch return error.MemoryExhausted;
-    defer allocator.free(image);
-    const image_len = try machine.encodeImage(image);
+
     if (fwrite(image.ptr, 1, image_len, destination) != image_len) return error.FileUnavailable;
     var footer: [image_footer_size]u8 = undefined;
     @memcpy(footer[0..8], image_footer_magic);
@@ -1174,7 +1176,7 @@ fn writeStandardError(bytes: []const u8) bool {
         } else {
             const written = std.c.write(2, rest.ptr, rest.len);
             if (written < 0) {
-                if (std.c._errno().* == @intFromEnum(std.c.E.INTR)) continue;
+                if (std.c._errno().* == @backingInt(std.c.E.INTR)) continue;
                 if (stderr_shares_output) output_cursor.unknown();
                 return false;
             }

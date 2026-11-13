@@ -78,7 +78,7 @@ test "UNESCAPE doubles %, and the $ words give strings of their own" {
     try std.testing.expectEqualStrings("100% %day%", try stringResult(machine, "S\" 100% %day%\" $UNESCAPE BUF 80 SUBSTITUTE DROP"));
 }
 
-test "typed replacement links reject legacy images until new-format integration" {
+test "typed replacement links survive public image restore" {
     try skipWithout(&.{.image});
     var output = Output{};
     const machine = try createMachine(&output);
@@ -86,8 +86,8 @@ test "typed replacement links reject legacy images until new-format integration"
     try machine.interpretLine("S\" Sunday\" S\" day\" REPLACES");
     const image = try std.testing.allocator.alloc(u8, machine.encodedSize());
     defer std.testing.allocator.free(image);
-    // Task 620 restores the round-trip test with the typed format.
-    try std.testing.expectError(error.InvalidImage, machine.encodeImage(image));
+    const length = try machine.encodeImage(image);
+    try machine.restoreImage(image[0..length]);
     try std.testing.expectEqualStrings("Sunday", try stringResult(machine, "S\" %day%\" PAD 80 SUBSTITUTE DROP"));
 }
 

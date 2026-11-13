@@ -11,12 +11,16 @@ const RuntimeError = defs.RuntimeError;
 /// and commit share one borrowed view without allocating during commit.
 pub fn restore(state: *forth.State, image: []const u8, plan: *preflight.Plan) RuntimeError!void {
     try preflight.prepare(state, image, plan);
-    apply(state, plan);
+    apply(state, plan, false);
 }
 
 /// No fallible operations remain after successful preflight. Keep this private:
 /// applying an out-of-date or failed plan is not supported.
-fn apply(state: *forth.State, plan: *const preflight.Plan) void {
+pub fn restoreFresh(state: *forth.State, image: []const u8, plan: *preflight.Plan) RuntimeError!void {
+    try preflight.prepare(state, image, plan);
+    apply(state, plan, true);
+}
+fn apply(state: *forth.State, plan: *const preflight.Plan, memory_is_fresh: bool) void {
     const view = plan.view;
     const h = view.header;
     const builtins = state.builtin_count;
@@ -31,8 +35,10 @@ fn apply(state: *forth.State, plan: *const preflight.Plan) void {
     @memcpy(std.mem.sliceAsBytes(state.code[0..h.code_count]), view.code);
     @memcpy(state.names[plan.own_names..plan.names_used], view.names[plan.image_names..]);
     // Runtime block buffers survive restore, along with their host-side file state.
-    @memset(state.memory[0..@intCast(map.block_buffer_base)], 0);
-    @memset(state.memory[@intCast(map.block_buffer_end)..], 0);
+    if (!memory_is_fresh) {
+        @memset(state.memory[0..@intCast(map.block_buffer_base)], 0);
+        @memset(state.memory[@intCast(map.block_buffer_end)..], 0);
+    }
     var cursor: usize = 0;
     for ([_][2]usize{
         .{ 0, @intCast(map.system_end) },

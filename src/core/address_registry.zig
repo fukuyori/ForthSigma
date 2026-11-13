@@ -211,10 +211,3 @@ pub fn validateRecord(self: *State, record: Record) RuntimeError!void {
     };
     if (actual != record.value or classify(self, actual) != record.target) return error.InvalidAddress;
 }
-
-/// Until task 617 implements the new image format, never silently save/append a
-/// dictionary whose explicit types cannot be represented by the old format.
-pub fn requireLegacyImage(self: *State) RuntimeError!void {
-    try validate(self);
-    if (self.addresses.count != 0) return error.InvalidImage;
-}

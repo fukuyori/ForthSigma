@@ -6,9 +6,9 @@ const forth = @import("../forth.zig");
 const memory_map = @import("memory_map.zig");
 const text_input = @import("text_input.zig");
 
-/// The strings of the TCL words are freed before the dictionary is saved, so that the
-/// image does not keep heap blocks nobody owns.
-fn releaseTclStrings(self: *forth.State) void {
+fn prepareSave(self: *forth.State) RuntimeError!void {
+    var graph: @import("image_graph.zig").Graph = undefined;
+    try @import("image_graph.zig").collect(self, &graph);
     if (defs.graphics_enabled) @import("tcl.zig").releaseHeap(self);
 }
 const Builtin = defs.Builtin;
@@ -33,9 +33,8 @@ const true_flag = memory_map.true_flag;
 
 /// The built-in words this file executes; executeBuiltin dispatches by this list.
 pub const words = [_]Builtin{
-    .bye, .load, .save, .savesys, .abort, .ms, .utime, .getenv, .system, .throw, .catch_word,
-    .ekey_to_char, .ekey_to_fkey, .environment_query, .quit, .noop, .perform, .argc, .argv, .arg,
-    .shift_args, .next_arg,
+    .bye,          .load,         .save,              .savesys, .abort, .ms,      .utime, .getenv, .system, .throw,      .catch_word,
+    .ekey_to_char, .ekey_to_fkey, .environment_query, .quit,    .noop,  .perform, .argc,  .argv,   .arg,    .shift_args, .next_arg,
 };
 
 /// Writes the command-line arguments into the argument area (see `argc_address`), with
@@ -189,21 +188,19 @@ pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
         .load => {
             const path = (try self.nextSourceToken()) orelse return error.InputUnavailable;
             const load_fn = self.writer.load_fn orelse return error.FileUnavailable;
-            try @import("address_registry.zig").requireLegacyImage(self);
+            try @import("address_registry.zig").validate(self);
             try load_fn(self.writer.context, path, self);
         },
         .save => {
             const path = (try self.nextSourceToken()) orelse return error.InputUnavailable;
             const save_fn = self.writer.save_fn orelse return error.FileUnavailable;
-            try @import("address_registry.zig").requireLegacyImage(self);
-            releaseTclStrings(self);
+            try prepareSave(self);
             try save_fn(self.writer.context, path, self);
         },
         .savesys => {
             const path = (try self.nextSourceToken()) orelse return error.InputUnavailable;
             const savesys_fn = self.writer.savesys_fn orelse return error.FileUnavailable;
-            try @import("address_registry.zig").requireLegacyImage(self);
-            releaseTclStrings(self);
+            try prepareSave(self);
             try savesys_fn(self.writer.context, path, self);
         },
         .abort => return error.Aborted,
