@@ -79,3 +79,28 @@ test "P02b vector range failure precedes writes and handles stride arithmetic ov
         try std.testing.expectError(error.FloatStackUnderflow, machine.interpretLine(word));
     }
 }
+
+test "P02 native vector loops obey the step limit even with two zero strides" {
+    if (!enabled) return error.SkipZigTest;
+    try support.skipWithout(&.{.debug});
+    var output = support.Output{};
+    const machine = try support.createMachine(&output);
+    defer support.destroyMachine(machine);
+    try machine.interpretLine("CREATE X 1e F,");
+    machine.step_limit = 1;
+    for ([_][]const u8{ "X 0 X 0 -1 V*", "1e X 0 X 0 -1 FAXPY" }) |source| {
+        machine.data_depth = 0;
+        machine.float_depth = 0;
+        machine.resetSteps();
+        try std.testing.expectError(error.StepLimit, machine.interpretLine(source));
+    }
+}
+
+test "P02 FP dot separates nonfinite outputs with trailing spaces" {
+    if (!enabled) return error.SkipZigTest;
+    var output = support.Output{};
+    const machine = try support.createMachine(&output);
+    defer support.destroyMachine(machine);
+    try machine.interpretLine("NAN FP. INF FP. -INF FP.");
+    try std.testing.expectEqualStrings("NaN infinity -infinity ", output.written());
+}

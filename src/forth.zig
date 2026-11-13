@@ -425,6 +425,8 @@ pub const State = struct {
     /// place rather than returned by value, which could need copies on the stack.
     pub fn init(self: *State, writer: Writer, given: Storage) void {
         self.* = .{ .writer = writer, .sizes = given.sizes, .locals_top = given.sizes.localsBase(), .memory = given.memory, .data_stack = given.data_stack, .return_stack = given.return_stack, .float_stack = given.float_stack, .loop_stack = given.loop_stack, .frames = given.frames, .catches = given.catches };
+        // P00: use host epoch microseconds when available; a clockless/failing host uses 0.
+        if (writer.utime_fn) |now| self.random_state = @truncate(@as(u128, @bitCast(now(writer.context) catch 0)));
         self.writeCell(base_address, 10) catch unreachable;
         self.writeCell(precision_address, dot_precision) catch unreachable;
         self.writeCell(memory_map.dpl_address, -1) catch unreachable;

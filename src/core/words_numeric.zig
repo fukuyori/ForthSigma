@@ -67,10 +67,26 @@ pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
                 buffer[start] = if (negative) '-' else '$';
             }
             var padding = width -| @as(i64, @intCast(buffer.len - start));
-            while (padding > 0) : (padding -= 1) self.write(" ");
+            var written: u64 = 0;
+            while (padding > 0) : (padding -= 1) {
+                if (written & 255 == 0) try checkWorkBlock(self);
+                self.write(" ");
+                written += 1;
+            }
             self.write(buffer[start..]);
             if (builtin != .decimal_dot_r and builtin != .ud_dot_r) self.write(" ");
         },
         else => @compileError(@tagName(builtin) ++ " is not in the words of this file"),
+    }
+}
+
+/// One budget unit per at most 256 native-loop iterations. The VM's compiled hot
+/// loop is unchanged; direct numeric calls also respect an enabled --max-steps.
+pub fn checkWorkBlock(self: *State) RuntimeError!void {
+    if (comptime defs.debug_enabled) {
+        if (self.step_limit != 0) {
+            if (self.steps_left == 0) return error.StepLimit;
+            self.steps_left -= 1;
+        }
     }
 }

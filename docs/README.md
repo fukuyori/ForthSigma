@@ -26,3 +26,5 @@ For the project overview, how to build, the current features, the differences fr
 - [Async tasks and event queue overview](ASYNC_OVERVIEW.md): proposal, three issues to resolve before implementation, and open design questions; details undecided (in Japanese).
 
 - [P02 numeric extensions](P02_IMPLEMENTATION.md): integer, floating-point, conversion/output and random semantics, reference differences, and validation (Japanese).
+
+- [P02 review and validation](P02_REVIEW.md): Claude Code findings, fixes, and targeted comparisons (Japanese).

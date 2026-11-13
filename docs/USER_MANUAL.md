@@ -1092,3 +1092,5 @@ BASE-EXECUTE restores BASE on success or THROW. DEC. is signed decimal; DEC.R is
 >FLOAT1 takes a decimal separator character. E. prints a compact round-trip value; E.EXACT prints its exact decimal value; E.P takes 1..1000 significant digits (otherwise -11). These three leave no trailing space. FP. uses engineering notation and SI prefixes with a trailing space.
 
 SEED! sets the VM's raw 64-bit seed, including zero. RND returns a raw cell, RANDOM an unsigned result below its bound (zero for bound zero). Equal seeds reproduce Sigma's sequence; Gforth sequence compatibility is not required. Random state is not saved in dictionary images.
+
+P02 review notes: the initial random seed comes from the host clock, falling back to zero when unavailable. RND exposes a raw LCG state with weak low bits; use RANDOM for a bounded choice. In debug-enabled builds, long V*/FAXPY and DEC.R/UD.R loops also obey --max-steps (one unit per at most 256 iterations). The default zero remains unlimited; changes before interruption are not rolled back. FP. also appends a space after NaN/infinity. Under HEX, write $E./$DEC. when those tokens are intended as numbers.

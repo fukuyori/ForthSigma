@@ -131,6 +131,7 @@ pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
             var total: Float = 0;
             var i: memory_map.UCell = 0;
             while (i < count) : (i += 1) {
+                if (i & 255 == 0) try @import("words_numeric.zig").checkWorkBlock(self);
                 const ax: Cell = @intCast(@as(i128, x) + @as(i128, stride_x) * i);
                 const ay: Cell = @intCast(@as(i128, y) + @as(i128, stride_y) * i);
                 const vx = try self.readFloat(ax);
@@ -498,6 +499,7 @@ fn writeCompactFloat(self: *State, value: Float, comptime mode: Builtin, count: 
 fn writePrefixFloat(self: *State, value: Float) RuntimeError!void {
     if (std.math.isNan(value) or std.math.isInf(value)) {
         self.writeNonFinite(value, "infinity");
+        self.write(" ");
         return;
     }
     const rep = float_format.represent(value, self.floatPrecision());

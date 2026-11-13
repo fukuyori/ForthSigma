@@ -45,6 +45,22 @@ for count in [0,1,2,3]:
         k=len(cases)
         prefix=f"CREATE X{k} 1e F, 2e F, 3e F, CREATE Y{k} 4e F, 5e F, 6e F, "
         add(prefix+f"X{k} {offsetx} + {sx} Y{k} {offsety} + {sy} {count} V* {expected}e F= .",[-1])
+# FAXPY is sequential even for repeated destinations and overlapping source/destination.
+for sx,sy in [(8,8),(-8,8),(8,-8),(0,8),(8,0),(0,0)]:
+    for count in [0,1,2,3]:
+        k=len(cases); x=[1,2,3]; y=[4,5,6]
+        ox=16 if sx<0 else 0;oy=16 if sy<0 else 0
+        for i in range(count):y[(oy+i*sy)//8]=2*x[(ox+i*sx)//8]+y[(oy+i*sy)//8]
+        source=f"CREATE AX{k} 1e F, 2e F, 3e F, CREATE AY{k} 4e F, 5e F, 6e F, 2e AX{k} {ox} + {sx} AY{k} {oy} + {sy} {count} FAXPY "
+        source+=' '.join(f"AY{k} {i*8} + F@ {v}e F= ." for i,v in enumerate(y))
+        add(source,[-1]*3)
+for ox,oy,sx,sy,count in [(0,8,8,8,2),(16,0,-8,8,3),(0,0,0,0,3)]:
+    k=len(cases);v=[1,2,3]
+    for i in range(count):v[(oy+i*sy)//8]=2*v[(ox+i*sx)//8]+v[(oy+i*sy)//8]
+    source=f"CREATE OV{k} 1e F, 2e F, 3e F, 2e OV{k} {ox} + {sx} OV{k} {oy} + {sy} {count} FAXPY "
+    source+=' '.join(f"OV{k} {i*8} + F@ {a}e F= ." for i,a in enumerate(v))
+    add(source,[-1]*3)
+
 commands = {"sigma": [str(pathlib.Path(args.sigma).resolve()), "--max-steps", "100000", "-e"]}
 if args.gforth_build:
     build = args.gforth_build.resolve()

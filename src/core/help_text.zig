@@ -97,7 +97,7 @@ pub const entries = [_]Entry{
     .{ .name = "U*/MOD", .stack = "( u1 u2 u3 -- u4 u5 )", .text = "Unsigned division; remainder precedes quotient. Zero divisor throws -10; a cell quotient overflow throws -11." },
     .{ .name = "U/", .stack = "( u1 u2 -- u )", .text = "Unsigned division; remainder precedes quotient. Zero divisor throws -10; a cell quotient overflow throws -11." },
     .{ .name = "U/MOD", .stack = "( u1 u2 -- u3 u4 )", .text = "Unsigned division; remainder precedes quotient. Zero divisor throws -10; a cell quotient overflow throws -11." },
-    .{ .name = "UD/MOD", .stack = "( ud1 u2 -- urem udquot )", .text = "Unsigned division; remainder precedes quotient. Zero divisor throws -10; a cell quotient overflow throws -11." },
+    .{ .name = "UD/MOD", .stack = "( ud1 u2 -- urem udquot )", .text = "Divide an unsigned double by a cell; return remainder then full double quotient. Zero divisor throws -10." },
     .{ .name = "UMOD", .stack = "( u1 u2 -- u )", .text = "Unsigned division; remainder precedes quotient. Zero divisor throws -10; a cell quotient overflow throws -11." },
     .{ .name = "WROL", .stack = "( u1 u -- u2 )", .text = "Rotate low 16 bits left; count modulo 16; upper bits cleared." },
     .{ .name = "WROR", .stack = "( u1 u -- u2 )", .text = "Rotate low 16 bits right; count modulo 16; upper bits cleared." },

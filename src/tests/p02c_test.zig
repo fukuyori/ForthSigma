@@ -128,3 +128,42 @@ test "P02c precision output rounds before choosing compact layout" {
     try std.testing.expectEqualStrings("1e3 1234e .00001e", output.written());
     try std.testing.expectError(error.ResultOutOfRange, machine.interpretLine("1e 0 E.P"));
 }
+
+test "P02 seed initialization uses the host clock with a zero fallback" {
+    var output = support.Output{ .time = 123456789 };
+    const machine = try support.createMachine(&output);
+    defer support.destroyMachine(machine);
+    try std.testing.expectEqual(@as(u64, 123456789), machine.random_state);
+    const storage = machine.storage();
+    var writer = output.writer();
+    writer.utime_fn = null;
+    machine.init(writer, storage);
+    try std.testing.expectEqual(@as(u64, 0), machine.random_state);
+    output.host_fails = true;
+    machine.init(output.writer(), storage);
+    try std.testing.expectEqual(@as(u64, 0), machine.random_state);
+}
+
+test "P02 nested BASE EXECUTE restores each base through CATCH" {
+    var output = support.Output{};
+    const machine = try support.createMachine(&output);
+    defer support.destroyMachine(machine);
+    try machine.interpretLine(": INNER BASE @ -99 THROW ; : OUTER ['] INNER 2 BASE-EXECUTE ; : RUN ['] OUTER 16 BASE-EXECUTE ; ' RUN CATCH BASE @");
+    try support.expectStack(machine, &.{ -99, 10 });
+    machine.data_depth = 0;
+    try machine.interpretLine(": CAUGHT ['] INNER CATCH BASE @ ; ' CAUGHT 16 BASE-EXECUTE BASE @");
+    try support.expectStack(machine, &.{ -99, 16, 10 });
+}
+
+test "P02 large padded fields obey the step limit" {
+    try support.skipWithout(&.{.debug});
+    var output = support.Output{};
+    const machine = try support.createMachine(&output);
+    defer support.destroyMachine(machine);
+    machine.step_limit = 1;
+    for ([_][]const u8{ "1 $4000000000000000 DEC.R", "1. $4000000000000000 UD.R" }) |source| {
+        machine.data_depth = 0;
+        machine.resetSteps();
+        try std.testing.expectError(error.StepLimit, machine.interpretLine(source));
+    }
+}
