@@ -20,6 +20,11 @@ pub const LineResult = struct { length: usize = 0, found: bool = false, ior: Cel
 
 /// Host file operations. Ids are opaque cells; the standard streams use the fixed ids above.
 pub const FileOps = struct {
+    open_dir: ?*const fn (?*anyopaque, []const u8) FileResult = null,
+    /// Copies exactly length bytes, even on truncation; no NUL is added.
+    /// found=false/ior=0 means EOF and leaves the buffer untouched.
+    read_dir: ?*const fn (?*anyopaque, Cell, []u8) LineResult = null,
+    close_dir: ?*const fn (?*anyopaque, Cell) Cell = null,
     /// Create one directory. POSIX applies mode at creation subject to umask;
     /// Windows CRT ignores it. Existing names return errnoIor(17).
     mkdir: ?*const fn (?*anyopaque, []const u8, Cell) Cell = null,

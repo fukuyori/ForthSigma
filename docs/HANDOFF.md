@@ -1,6 +1,6 @@
 # Gforth対応の引き継ぎ
 
-更新日：2026-11-14。P00・S01・P01・P02・P03・P04に続き、P05aの16語（565）も実装・検証完了。659は3af3c9fでpush済み。660は9d57d8eでpush済み。P05b（566）の最初の2語BASENAME/DIRNAME（663）はb9e5099でpush済み。664は544f823でpush済み。668はfba6e32でpush済み。669の=MKDIR/MKDIR-PARENTSを実装・検証済み（未コミット）。P05bは7/14語、次は670のディレクトリ列挙3語（親665）。INCLUDE/REQUIRE接続は661へ分離。Windows/Linux確認はここでは行わず607（パス検索は662）へ残す。P05/542は未完了。
+更新日：2026-11-14。P00・S01・P01・P02・P03・P04に続き、P05aの16語（565）も実装・検証完了。659は3af3c9fでpush済み。660は9d57d8eでpush済み。P05b（566）の最初の2語BASENAME/DIRNAME（663）はb9e5099でpush済み。664は544f823でpush済み。668はfba6e32でpush済み。669は7c21790でpush済み。670の列挙3語を実装・検証済み（未コミット）で665は完了。P05bは10/14語、次は666の時刻4語。INCLUDE/REQUIRE接続は661へ分離。Windows/Linux確認はここでは行わず607（パス検索は662）へ残す。P05/542は未完了。
 
 P03c was committed and pushed as `98be4f8`. P03 and task 562 are complete. Claude Code review fixes and the first 21 P04a words were committed/pushed as a6ab243. Task 631 is complete (auto), with no new concrete defect found in the final review. See [P03 review](P03_REVIEW.md). The six additional P04a edit/owned-string words were committed/pushed as 5b2c8a4. XC@+? was committed/pushed as fa2afe9 and P04a is complete. P04b $VALUE/MACRO: were committed/pushed as 33bb55a (634); the macro vocabulary/callback words (635) were committed/pushed as 6a9c4e3. Check git status and git log before resuming.
 
@@ -34,9 +34,13 @@ User-approved portable FILENAME-MATCH is implemented in core/filename_match.zig:
 
 GET-DIR/SET-DIR are implemented through optional FileOps callbacks. GET-DIR writes a NUL-terminated cwd, returns length without NUL, or0 0 on failure/short capacity. SET-DIR expands homes, preserves native relative/symlink semantics and changes process cwd; it shares the existing1,024-byte path-helper limit. No VM heap/owner/root is required. POSIX uses getcwd/chdir; Windows uses wide CRT APIs and UTF-8 conversion. Five regressions, normal/minimal tests, normal build and25 designated-Gforth comparisons pass. Cwd changes in comparisons are confined to child processes. See [P05 record](P05_IMPLEMENTATION.md) for host contracts, typed-write damage and limits. 668 is complete(auto);665 remains incomplete at2/7 words and566 at5/14. Next is669 directory creation2, then670 iteration3 and666 time4. Native Windows/Linux cwd checks remain671 under607. Changes were committed/pushed asfba6e32.
 
-## P05b directory creation (669, uncommitted)
+## P05b directory creation (669, 7c21790 pushed)
 
-=MKDIR/MKDIR-PARENTS are implemented through optional FileOps.mkdir. Prefixes are split on forward slash; intermediate EEXIST is ignored, final EEXIST is returned, and earlier creations remain on error. Raw ./, .. and home expansion preserve native semantics; no normalization or chmod. POSIX uses creation-time mode/umask, Windows wide CRT ignores POSIX mode. Five regressions, normal/minimal tests, normal build and61 Gforth comparisons of return values, trees and permissions pass. See [P05 record](P05_IMPLEMENTATION.md) for trailing-slash/~+ behavior and length/error contracts. 669 is complete(auto),665 is4/7 and566 is7/14, both incomplete. Next is670 directory iteration3, then666 time4. Native Windows/Linux checks remain672 under607. Changes are uncommitted.
+=MKDIR/MKDIR-PARENTS are implemented through optional FileOps.mkdir. Prefixes are split on forward slash; intermediate EEXIST is ignored, final EEXIST is returned, and earlier creations remain on error. Raw ./, .. and home expansion preserve native semantics; no normalization or chmod. POSIX uses creation-time mode/umask, Windows wide CRT ignores POSIX mode. Five regressions, normal/minimal tests, normal build and61 Gforth comparisons of return values, trees and permissions pass. See [P05 record](P05_IMPLEMENTATION.md) for trailing-slash/~+ behavior and length/error contracts. 669 is complete(auto),665 is4/7 and566 is7/14, both incomplete. Next is670 directory iteration3, then666 time4. Native Windows/Linux checks remain672 under607. Changes were committed/pushed as7c21790.
+
+## P05b directory iteration (670, uncommitted)
+
+OPEN-DIR/READ-DIR/CLOSE-DIR are implemented through optional host callbacks and host_directories.zig. Names are copied as bytes without NUL; truncation consumes the entry and reports copied length/true/ENAMETOOLONG, EOF leaves the buffer unchanged. Native errors are reported. A64-slot runtime table uses fresh monotonic IDs, rejecting stale/foreign/double-close tokens; process-exit cleanup releases leftovers without resetting IDs. POSIX and Windows wide CRT backends are implemented, but native Windows/Linux checks are deferred to673 under607. Seven regressions (five core/two native), normal/minimal tests, normal build and21 Gforth comparisons pass. See [P05 record](P05_IMPLEMENTATION.md) for ownership, image limitations, native order/dot entries and byte/UTF-8 behavior. 670/665 are complete(auto);566 is10/14 and incomplete. Next is666 NTIME/NS/CPUTIME/>TIME&DATE&TZ: investigate units, ranges and clock/CPU scope before implementation. Changes are uncommitted.
 
 ## P04a completion
 
@@ -80,7 +84,7 @@ tqueで管理し、進捗モードは**auto**とする。階層はForthSigma 121
 |546 P03|完了。560 P03a 44語、561 P03b 15語と永続化、562 P03c 6語が完了|
 |563 P04a|完了。28語の文字列操作/Unicode|
 |564 P04b / 547 P04|完了。文字列値・マクロ5語、合計33語。635は6a9c4e3でpush済み|
-|548 P05 / 565 P05a|進行中。653の2語を実装・検証、d8da5e7でpush済み。654は7964014でpush済み、655は2b97309でpush済み。659は3af3c9fでpush済み。660は9d57d8eでpush済み、565は完了。566の663（2語）はb9e5099でpush済み、664は544f823でpush済み。668はfba6e32でpush済み。669の作成2語を実装・検証済み（未コミット）、次は670。661は接続を別途設計|
+|548 P05 / 565 P05a|進行中。653の2語を実装・検証、d8da5e7でpush済み。654は7964014でpush済み、655は2b97309でpush済み。659は3af3c9fでpush済み。660は9d57d8eでpush済み、565は完了。566の663（2語）はb9e5099でpush済み、664は544f823でpush済み。668はfba6e32でpush済み。669は7c21790でpush済み。670の列挙3語を実装・検証済み（未コミット）、665は完了、次は666。661は接続を別途設計|
 |561 P03b|完了。15語の実行・型/寿命追跡と新形式保存/復元/追加を統合|
 |550 P07|未着手。P01依存は解消。457を先行させる|
 |457 P07先行|550配下。IS/ACTION-OF/TO/+TOの辞書登録。既存IDを使う|

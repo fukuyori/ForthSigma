@@ -950,6 +950,9 @@ pub const State = struct {
             .{ "SET-DIR", .set_dir },
             .{ "=MKDIR", .equals_mkdir },
             .{ "MKDIR-PARENTS", .mkdir_parents },
+            .{ "OPEN-DIR", .open_dir },
+            .{ "READ-DIR", .read_dir },
+            .{ "CLOSE-DIR", .close_dir },
             .{ "\\\\\\", .triple_backslash },
     };
 

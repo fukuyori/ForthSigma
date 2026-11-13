@@ -6,6 +6,7 @@ const map = @import("memory_map.zig");
 const registry = @import("address_registry.zig");
 
 pub fn execute(self: *forth.State, comptime builtin: defs.Builtin) defs.RuntimeError!void {
+    if (builtin == .open_dir or builtin == .read_dir or builtin == .close_dir) return iterate(self, builtin);
     if (builtin == .equals_mkdir or builtin == .mkdir_parents) return create(self, builtin == .mkdir_parents);
     try self.requireDepth(2);
     const length = std.math.cast(usize, try self.peek(0)) orelse return error.InvalidAddress;
@@ -67,4 +68,44 @@ fn create(self: *forth.State, parents: bool) defs.RuntimeError!void {
     };
     self.data_depth -= 3;
     try self.push(result);
+}
+
+fn iterate(self: *forth.State, comptime builtin: defs.Builtin) defs.RuntimeError!void {
+    try self.requireDepth(if (builtin == .read_dir) 3 else if (builtin == .open_dir) 2 else 1);
+    switch (builtin) {
+        .close_dir => {
+            const close = (try self.fileOps()).close_dir orelse return error.FileUnavailable;
+            const ior = close(self.writer.context, try self.peek(0));
+            self.data_stack[self.data_depth - 1] = ior;
+        },
+        .open_dir => {
+            const length = std.math.cast(usize, try self.peek(0)) orelse return error.InvalidAddress;
+            const at = try self.memoryAddress(try self.peek(1), length);
+            const text = self.memory[at..][0..length];
+            const files = try self.fileOps();
+            const open = files.open_dir orelse return error.FileUnavailable;
+            _ = files.close_dir orelse return error.FileUnavailable;
+            const result = if (std.mem.indexOfScalar(u8, text, 0) != null) forth.FileResult{ .ior = forth.errnoIor(map.errno_invalid) } else opened: {
+                const name = try @import("paths.zig").openedName(self, text);
+                if (std.mem.indexOfScalar(u8, name.bytes[0..name.len], 0) != null) break :opened forth.FileResult{ .ior = forth.errnoIor(map.errno_invalid) };
+                break :opened open(self.writer.context, name.bytes[0..name.len]);
+            };
+            self.data_stack[self.data_depth - 2] = if (result.ior == 0) @bitCast(result.value) else 0;
+            self.data_stack[self.data_depth - 1] = result.ior;
+        },
+        .read_dir => {
+            const length = std.math.cast(usize, try self.peek(1)) orelse return error.InvalidAddress;
+            const address = try self.peek(2);
+            const at = try self.memoryAddress(address, length);
+            const read = (try self.fileOps()).read_dir orelse return error.FileUnavailable;
+            const result = read(self.writer.context, try self.peek(0), self.memory[at..][0..length]);
+            const valid = result.length <= length and (result.found or result.length == 0);
+            registry.written(self, address, if (valid) result.length else length, false);
+            if (!valid) return error.InvalidAddress;
+            self.data_stack[self.data_depth - 3] = @intCast(result.length);
+            self.data_stack[self.data_depth - 2] = if (result.found) -1 else 0;
+            self.data_stack[self.data_depth - 1] = result.ior;
+        },
+        else => unreachable,
+    }
 }

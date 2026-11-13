@@ -238,7 +238,7 @@ FACILITY EXTのキー4語とBLOCK/BLOCK EXTの10語を優先する。既存の�
 
 #### P05b ディレクトリと時刻
 
-対象 14語。tque ID: 566。663のBASENAME/DIRNAMEを実装し、3回帰・108 Gforth比較・通常/最小構成を確認（b9e5099でpush済み）。664のFILENAME-MATCHも共通UTF-8方針で実装し、5回帰・3,325比較・意図したロケール差5件・通常/最小構成を確認（544f823でpush済み）。668のGET-DIR/SET-DIRも5回帰・25比較・通常/最小構成で確認（fba6e32でpush済み）。669の作成2語も5回帰・61件の返却値/ツリー/権限比較・通常/最小構成で確認（未コミット）。7/14語で566は未完了。次は670列挙3語（親665）、666時刻4語。[記録](P05_IMPLEMENTATION.md)。
+対象 14語。tque ID: 566。663のBASENAME/DIRNAMEを実装し、3回帰・108 Gforth比較・通常/最小構成を確認（b9e5099でpush済み）。664のFILENAME-MATCHも共通UTF-8方針で実装し、5回帰・3,325比較・意図したロケール差5件・通常/最小構成を確認（544f823でpush済み）。668のGET-DIR/SET-DIRも5回帰・25比較・通常/最小構成で確認（fba6e32でpush済み）。669の作成2語も5回帰・61件の返却値/ツリー/権限比較・通常/最小構成で確認（7c21790でpush済み）。670の列挙3語も7回帰・21比較・通常/最小構成で確認（未コミット）。665は完了、10/14語で566は未完了。次は666時刻4語。[記録](P05_IMPLEMENTATION.md)。
 
 `=MKDIR`, `>TIME&DATE&TZ`, `BASENAME`, `CLOSE-DIR`, `CPUTIME`, `DIRNAME`, `FILENAME-MATCH`, `GET-DIR`, `MKDIR-PARENTS`, `NS`, `NTIME`, `OPEN-DIR`, `READ-DIR`, `SET-DIR`
 

@@ -853,7 +853,8 @@ fn fileStdinByte(wait: bool) forth.RuntimeError!?u8 {
     }
 }
 
-const file_ops = forth.FileOps{ .mkdir = makeDirectory, .get_dir = getDirectory, .set_dir = setDirectory, .user_home = userHome, .open = fileOpen, .close = fileClose, .read_line = fileReadLine, .read = fileRead, .write = fileWrite, .size = fileSize, .reposition = fileReposition, .position = filePosition, .resize = fileResize, .flush = fileFlush, .delete = fileDelete, .rename = fileRename, .status = fileStatus, .key = fileKey, .ready = fileReady, .eof = fileEof, .create_mode = fileCreateMode };
+const host_directories = @import("host_directories.zig");
+const file_ops = forth.FileOps{ .open_dir = host_directories.open, .read_dir = host_directories.read, .close_dir = host_directories.close, .mkdir = makeDirectory, .get_dir = getDirectory, .set_dir = setDirectory, .user_home = userHome, .open = fileOpen, .close = fileClose, .read_line = fileReadLine, .read = fileRead, .write = fileWrite, .size = fileSize, .reposition = fileReposition, .position = filePosition, .resize = fileResize, .flush = fileFlush, .delete = fileDelete, .rename = fileRename, .status = fileStatus, .key = fileKey, .ready = fileReady, .eof = fileEof, .create_mode = fileCreateMode };
 
 /// Lets the Windows console interpret the ANSI sequences written by PAGE.
 fn enableVirtualTerminal() void {
@@ -1909,6 +1910,7 @@ fn run(init: std.process.Init.Minimal) !u8 {
     defer storage.free(std.heap.page_allocator);
     machine.init(.{ .gamepad_ops = if (graphics) &host_gamepad.ops else null, .context = @ptrCast(&host), .write_fn = terminalWrite, .read_fn = terminalRead, .load_fn = loadDictionary, .save_fn = saveDictionary, .savesys_fn = saveExecutableImage, .key_fn = terminalKey, .event_key_fn = terminalEventKey, .monotonic_ms_fn = monotonicMilliseconds, .key_ready_fn = terminalKeyReady, .buffered_key_fn = terminalBufferedKey, .unread_fn = terminalUnread, .sleep_fn = sleepMilliseconds, .utime_fn = microsecondsSinceEpoch, .local_time_fn = localTime, .getenv_fn = environmentValue, .system_fn = runShellCommand, .file_ops = &file_ops, .framebuffer_fn = graphicsBuffer, .image_alloc_fn = if (graphics) imageAlloc else null, .image_free_fn = if (graphics) imageFree else null, .terminal_size_fn = terminalSize, .terminal_utf8_fn = terminalUtf8, .window_fn = if (host_window.available) host_window.show else null, .input_fn = inputEvent, .mouse_fn = mouseMode, .cursor_fn = cursorPosition, .font_buffer_fn = if (graphics) fontBuffer else null, .font_free_fn = if (graphics) fontFree else null, .system_font_fn = if (graphics and host_font.available) host_font.select else null, .system_glyph_fn = if (graphics and host_font.available) host_font.glyph else null, .process_start_fn = if (graphics) host_process.start else null, .process_write_fn = if (graphics) host_process.write else null, .process_read_fn = if (graphics) host_process.read else null, .process_stop_fn = if (graphics) host_process.stop else null, .audio_fn = if (audio) host_audio.start else null, .audio_device_fn = if (audio) host_audio.hasDevice else null, .audio_wait_fn = if (audio) audioWait else null }, storage);
     defer closeAllFiles();
+    defer host_directories.closeAll();
     // The images of the pool, when the session ends without BYE.
     defer forth.releaseImages(machine);
     defer host_window.close();
@@ -2135,6 +2137,7 @@ test "INCLUDE through the host reads CR LF lines and limits a line to 4096 bytes
     defer storage.free(allocator);
     machine.init(.{ .context = @ptrCast(&host), .write_fn = discardOutput, .file_ops = &file_ops }, storage);
     defer closeAllFiles();
+    defer host_directories.closeAll();
 
     try machine.interpretLine("INCLUDE .zig-cache/sigma-include-fit.fs SOURCELINE#");
     try std.testing.expectEqualSlices(forth.Cell, &.{ 1, 2, 3, 4, 0 }, machine.data_stack[0..machine.data_depth]);
@@ -2159,6 +2162,7 @@ test "SLURP-FILE through the host reads every byte as it is" {
     defer storage.free(allocator);
     machine.init(.{ .context = @ptrCast(&host), .write_fn = discardOutput, .file_ops = &file_ops }, storage);
     defer closeAllFiles();
+    defer host_directories.closeAll();
 
     try machine.interpretLine("S\" .zig-cache/sigma-slurp.txt\" SLURP-FILE S\" .zig-cache/sigma-slurp-empty.txt\" SLURP-FILE NIP");
     try std.testing.expectEqual(@as(usize, 3), machine.data_depth);
@@ -2180,6 +2184,7 @@ test "file words through the host: position, resize, flush, status, rename over 
     defer storage.free(allocator);
     machine.init(.{ .context = @ptrCast(&host), .write_fn = discardOutput, .file_ops = &file_ops }, storage);
     defer closeAllFiles();
+    defer host_directories.closeAll();
 
     try machine.interpretLine("S\" .zig-cache/sigma-files-a.txt\" W/O BIN CREATE-FILE THROW VALUE F S\" hello world\" F WRITE-FILE F FILE-POSITION F FLUSH-FILE");
     try machine.interpretLine("5 0 F RESIZE-FILE F FILE-SIZE F FILE-POSITION F CLOSE-FILE");
@@ -2210,6 +2215,7 @@ test "file names and commands other than ASCII: create, include, status, rename,
     defer storage.free(allocator);
     machine.init(.{ .context = @ptrCast(&host), .write_fn = discardOutput, .file_ops = &file_ops, .system_fn = runShellCommand }, storage);
     defer closeAllFiles();
+    defer host_directories.closeAll();
 
     try machine.interpretLine("S\" .zig-cache/sigma-日本語.fs\" W/O CREATE-FILE THROW VALUE F S\" 6 7 *\" F WRITE-FILE F CLOSE-FILE");
     try machine.interpretLine("S\" .zig-cache/sigma-日本語.fs\" INCLUDED S\" .zig-cache/sigma-日本語.fs\" FILE-STATUS NIP");
