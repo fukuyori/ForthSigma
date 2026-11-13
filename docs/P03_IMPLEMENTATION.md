@@ -193,7 +193,17 @@ image_append_plan.zigにrelocatedWord/relocatedOperation/relocatedWordlistを追
 
 image_append_plan_test.zigに1回帰を追加し、既存の2回帰と合わせて追加配置・競合/容量不足・語/コード変換を確認する。変換結果のsource_fileは、後続のソース表マージで別途対応付ける。MARKERの保存情報、DEFERのアクション、ライブラリー読込状態の反映も未接続。
 
-通常／全機能群無効のzig build testが成功。ログは.zig-cache/p03b-append-transform-test.logとp03b-append-transform-minimal.log。630は未完了（auto）。反映処理と公開SAVE/LOADの切替を実装したとは扱わない。今回の変換部は未コミット。
+通常／全機能群無効のzig build testが成功。ログは.zig-cache/p03b-append-transform-test.logとp03b-append-transform-minimal.log。630は未完了（auto）。反映処理と公開SAVE/LOADの切替を実装したとは扱わない。語・コード変換部は8a24e1cでpush済み。
+
+## P03b 新形式の追加反映（630作業中）
+
+src/core/image_append.zigにappendを追加。非変更計画が成功した後、新しいデータ・ヒープ・語・コード・名前と型付き登録を反映する。既存ヒープは保持し、追加オブジェクトは末尾へ新規確保する。追加分の語とコードは変換済みの値を使い、語索引と実行時特殊化を再構築する。
+
+ソースファイル表は反映前に対応を計算する。既存名を再利用し、新しい名前は空き項目へ配置する。表が満杯のときは従来どおりソース位置IDを0にし、辞書を追加できる方針を維持。読込済みフラグを統合し、DEFERのアクションとMARKERの読込履歴・ワードリストを対応付ける。グラフィックス・音声・GUI・ゲームのライブラリー状態は従来の認識条件で引き継ぐ。
+
+image_append_typed_test.zigの3回帰で、2回追加時のヒープ独立性、文字列/定数/コードの実行、再保存と復元、ソース位置・DEFER・MARKER、破損時の辞書/スタック保持、グラフィックス語群の重複登録防止を確認。通常／全機能群無効のzig build testが成功。ログは.zig-cache/p03b-typed-append-test.logとp03b-typed-append-minimal.log。今回の追加反映部は未コミット。
+
+630は引き続き未完了。内部の新形式appendは追加したが、公開State.appendImage/SAVE/LOADは旧実装。次は公開入口の切替、必要長/容量の確保、ホストのファイルopen前検証、旧形式拒否、既存回帰の新形式への更新を行う。親タスクを完了にしない。
 
 ## 後続のP03b / P03c
 

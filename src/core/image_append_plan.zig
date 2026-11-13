@@ -33,6 +33,8 @@ pub fn prepare(state: *forth.State, bytes: []const u8, plan: *Plan) RuntimeError
     if (h.relocation_count > registry.capacity - state.addresses.count) return error.MemoryExhausted;
     const saved_lists = cell(view.memory, map.wordlist_count_address);
     const own_lists = state.wordlistCount();
+    const own_files = state.readCellConst(map.source_file_count_address);
+    if (own_lists < map.ekeys_wordlist or own_lists > map.max_wordlists or own_files < 0 or own_files > map.max_source_files) return error.InvalidAddress;
     if (saved_lists - map.ekeys_wordlist > map.max_wordlists - own_lists) return error.DictionaryFull;
     plan.wordlist_base = own_lists;
     plan.word_base = state.word_count;
