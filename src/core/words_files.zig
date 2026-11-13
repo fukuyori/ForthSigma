@@ -37,11 +37,27 @@ pub const words = [_]Builtin{
     .stderr,             .open_file,   .create_file,     .close_file,  .read_line,      .write_line,
     .write_file,         .file_size,   .reposition_file, .slurp_file,  .read_file,      .bin,
     .file_position,      .resize_file, .flush_file,      .delete_file, .rename_file,    .file_status,
-    .include_file,
+    .include_file, .emit_file, .slurp_fid,
 };
 
 pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
     switch (builtin) {
+        .emit_file => {
+            try self.requireDepth(2);
+            const fileid = try self.peek(0);
+            const byte: u8 = @truncate(@as(memory_map.UCell, @bitCast(try self.peek(1))));
+            const ior = (try self.fileOps()).write(self.writer.context, fileid, &.{byte});
+            self.data_depth -= 2;
+            try self.push(ior);
+        },
+        .slurp_fid => {
+            const fileid = try self.peek(0);
+            if (self.data_depth == self.data_stack.len) return error.StackOverflow;
+            const text = try @import("file_streams.zig").slurp(self, fileid);
+            self.data_depth -= 1;
+            try self.push(text.address);
+            try self.push(@intCast(text.length));
+        },
         .include, .require => {
             const name = (try self.nextSourceToken()) orelse return error.InputUnavailable;
             if (builtin == .include) try self.includeFile(name) else try self.requireFile(name);

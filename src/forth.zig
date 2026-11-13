@@ -927,6 +927,8 @@ pub const State = struct {
             .{ "MACROS-WORDLIST", .macros_wordlist },
             .{ "REPLACER:", .define_replacer },
             .{ ".SUBSTITUTE", .dot_substitute },
+            .{ "EMIT-FILE", .emit_file },
+            .{ "SLURP-FID", .slurp_fid },
     };
 
     fn installBuiltins(self: *State) void {

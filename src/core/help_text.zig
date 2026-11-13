@@ -232,6 +232,8 @@ pub const entries = [_]Entry{
     .{ .name = "STRING,", .stack = "( addr u -- )", .text = "Append a low-byte count and all u bytes to dictionary data without alignment." },
     .{ .name = "XC@+?", .stack = "( addr u -- addr2 u2 xc )", .text = "Decode one bounded UTF-8 character. Empty input returns U+FFFD, advances one byte and leaves length -1 without reading memory." },
     .{ .name = "$VALUE", .stack = "( addr u \"name\" -- )", .text = "Define an owned string value. Execution borrows addr/u, TO replaces and +TO appends; image operations preserve its owner." },
+    .{ .name = "EMIT-FILE", .stack = "( c fileid -- ior )", .text = "Write the low byte of c to the open file, without closing or flushing it." },
+    .{ .name = "SLURP-FID", .stack = "( fileid -- addr u )", .text = "Read from the current position through EOF into an owned allocation; FREE addr afterwards. Keep the file open; propagate read/allocation errors with THROW." },
     .{ .name = "MACROS-WORDLIST", .stack = "( -- wid )", .text = "The fixed case-sensitive wordlist for substitution macros." },
     .{ .name = "REPLACER:", .stack = "( \"name\" -- )", .text = "Start a colon macro (-- addr u) in MACROS-WORDLIST; restore CURRENT before compiling its body." },
     .{ .name = ".SUBSTITUTE", .stack = "( addr u -- n )", .text = "Print substituted text; execute each macro occurrence once. Callback THROW propagates." },

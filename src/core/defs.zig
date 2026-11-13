@@ -743,6 +743,7 @@ pub const Builtin = enum {
     macros_wordlist,
     define_replacer,
     dot_substitute,
+    emit_file, slurp_fid,
 };
 
 pub const HeapResult = union(enum) { address: Cell, no_memory, bad_pointer };
