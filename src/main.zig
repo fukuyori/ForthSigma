@@ -344,6 +344,42 @@ fn openedFile(fileid: forth.Cell) ?*anyopaque {
 }
 
 fn fileOpen(_: ?*anyopaque, name: []const u8, access: forth.FileAccess, create: bool) forth.FileResult {
+    return fileOpenMode(name, access, create, null);
+}
+
+fn fileCreateMode(_: ?*anyopaque, name: []const u8, access: forth.FileAccess, permissions: u16) forth.FileResult {
+    if (permissions > 0o777) return .{ .ior = forth.errnoIor(forth.errno_invalid) };
+    return fileOpenMode(name, access, true, permissions);
+}
+
+// fdopen transfers descriptor ownership only on success.
+const descriptorStream = if (builtin.os.tag == .windows) struct {
+    extern "c" fn _fdopen(c_int, [*:0]const u8) ?*anyopaque;
+}._fdopen else struct {
+    extern "c" fn fdopen(c_int, [*:0]const u8) ?*anyopaque;
+}.fdopen;
+
+fn openCreatedMode(path: [*:0]const u8, mode: [*:0]const u8, access: forth.FileAccess, permissions: u16) ?*anyopaque {
+    const c = @import("c_file");
+    const descriptor = if (builtin.os.tag == .windows) created: {
+        var wide: [8192]u16 = undefined;
+        const name = wide_c.from(path, &wide) orelse return null;
+        const flags = c._O_CREAT | c._O_TRUNC | c._O_BINARY | (if (access == .write_only) c._O_WRONLY else c._O_RDWR);
+        // Windows CRT permissions represent owner read/write, not POSIX ACLs.
+        const native_mode: c_int = (if (permissions & 0o400 != 0) @as(c_int, c._S_IREAD) else 0) |
+            (if (permissions & 0o200 != 0) @as(c_int, c._S_IWRITE) else 0);
+        break :created c._wopen(name, @as(c_int, flags), native_mode);
+    } else c.open(path, @as(c_int, c.O_CREAT | c.O_TRUNC | (if (access == .write_only) c.O_WRONLY else c.O_RDWR)), @as(c_uint, permissions));
+    if (descriptor < 0) return null;
+    return descriptorStream(descriptor, mode) orelse {
+        const saved_errno = std.c._errno().*;
+        if (builtin.os.tag == .windows) _ = c._close(descriptor) else _ = std.c.close(descriptor);
+        std.c._errno().* = saved_errno;
+        return null;
+    };
+}
+
+fn fileOpenMode(name: []const u8, access: forth.FileAccess, create: bool, permissions: ?u16) forth.FileResult {
     var path: [4096:0]u8 = undefined;
     if (name.len >= path.len or std.mem.indexOfScalar(u8, name, 0) != null) return .{ .ior = forth.errnoIor(forth.errno_invalid) };
     const slot = for (open_files, 0..) |file, index| {
@@ -358,7 +394,7 @@ fn fileOpen(_: ?*anyopaque, name: []const u8, access: forth.FileAccess, create: 
         .write_only, .read_write => "r+b",
     };
     clearErrno();
-    const file = fopen(&path, mode) orelse return .{ .ior = lastIor() };
+    const file = (if (permissions) |bits| openCreatedMode(&path, mode, access, bits) else fopen(&path, mode)) orelse return .{ .ior = lastIor() };
     // POSIX probes preserve normal stdio buffering. Windows disk reads can be
     // probed directly; only pipe streams need unbuffered reads so PeekNamedPipe
     // plus explicit query pushback accounts for every unread byte.
@@ -717,7 +753,7 @@ fn fileStdinByte(wait: bool) forth.RuntimeError!?u8 {
     }
 }
 
-const file_ops = forth.FileOps{ .open = fileOpen, .close = fileClose, .read_line = fileReadLine, .read = fileRead, .write = fileWrite, .size = fileSize, .reposition = fileReposition, .position = filePosition, .resize = fileResize, .flush = fileFlush, .delete = fileDelete, .rename = fileRename, .status = fileStatus, .key = fileKey, .ready = fileReady, .eof = fileEof };
+const file_ops = forth.FileOps{ .open = fileOpen, .close = fileClose, .read_line = fileReadLine, .read = fileRead, .write = fileWrite, .size = fileSize, .reposition = fileReposition, .position = filePosition, .resize = fileResize, .flush = fileFlush, .delete = fileDelete, .rename = fileRename, .status = fileStatus, .key = fileKey, .ready = fileReady, .eof = fileEof, .create_mode = fileCreateMode };
 
 /// Lets the Windows console interpret the ANSI sequences written by PAGE.
 fn enableVirtualTerminal() void {

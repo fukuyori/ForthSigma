@@ -1,6 +1,6 @@
 # P05 implementation and validation
 
-2026-11-13. P05 (548) is in progress. P05a (565) has five of sixteen words implemented: task653 EMIT-FILE/SLURP-FID and task654 KEY-FILE/KEY?-FILE/FILE-EOF?. P05a, P05 and 542 remain incomplete. Task653 was committed/pushed as d8da5e7. Task654 is complete (auto), implemented and validated, uncommitted.
+2026-11-13. P05 (548) is in progress. P05a (565) has eight of sixteen words implemented:653 stream helpers,654 input/EOF and655 modes/history/source termination. P05a, P05 and 542 remain incomplete. Task653 was committed/pushed as d8da5e7. Task654 was committed/pushed as7964014. Task655 is implemented and validated, uncommitted.
 
 ## File output and stream slurp (653)
 
@@ -20,7 +20,6 @@ scripts/verify-p05a-stream.py passes 29 designated-Gforth comparisons: low-byte 
 
 ## Remaining work
 
-- 655: +FMODE, .INCLUDED and the three-backslash source terminator. Investigate permission-mode representation, source-file listing and nested-input behavior before implementation.
 - 656: eight path words. Determine path descriptor ownership, search order, borrowed/owned resolved filenames, failures, and integration with INCLUDE/REQUIRE. ABSOLUTE-FILE? is part of this group.
 - 566: P05b directory/time fourteen words remain pending.
 
@@ -38,7 +37,7 @@ Gforth documents raw one-key input for KEY-FILE on STDIN. Sigma's current termin
 A further designated-Gforth probe (`buffered-ready-probe.json`) with AB prints `-1 65 0 66`: readiness is initially true, KEY-FILE reads A, readiness becomes false, yet KEY-FILE immediately returns B. The local non-LEGACY implementation queries descriptor FIONREAD and reads via fgetc, which explains the buffered-byte mismatch. This is not the documented "a character can be read without blocking" goal. The user also approved the documented readiness semantics including already-buffered bytes, rather than reproducing this designated-build quirk.
 
 
-## File input / EOF implementation (654, uncommitted)
+## File input / EOF implementation (654, 7964014 pushed)
 
 - KEY-FILE ( fileid -- c ) returns a byte 0..255 or -1 on EOF. I/O errors THROW. STDIN reads raw terminal bytes, interrupts on terminal Ctrl+C, and shares host lookahead/pending input with existing APIs. Redirected byte3 remains binary data. On a Windows console, character bytes are UTF-8; extended non-character key events are skipped (use EKEY for those).
 - KEY?-FILE ( fileid -- flag ) does not wait for future input, consume a byte, or change the semantic EOF indication. Library-buffered and unread bytes count as ready. This deliberately fixes the measured Gforth false-readiness case.
@@ -54,4 +53,21 @@ scripts/verify-p05a-input.py passes 258 Gforth comparisons (257 regular-file byt
 
 A restoration check initially reported a termios mismatch. A separate probe showed existing EKEY and new KEY-FILE both restore all settings apart from Darwin's transient PENDIN bit. The PTY check ignores that one driver-maintained bit and checks all stable settings. Evidence: terminal-state-probe.json under the same report directory; no terminal-control implementation was changed to mask this test result.
 
-P05a now has5/16 words implemented (653/654). Its remaining11 words are655/656; P05b566 is pending. Keep565/548/542 incomplete. Progress remains auto. No native Windows/Linux checks, version bump, package creation, commit or push were performed for654.
+At completion of654, P05a had5/16 words implemented. Task655 completion is recorded below; P05b566 is pending. Keep565/548/542 incomplete. Progress remains auto. No native Windows/Linux checks, version bump or package creation were performed for654; it was subsequently committed/pushed as7964014.
+
+
+## Modes, included names and source termination (655, uncommitted)
+
++FMODE ( fam mode -- fam2 ) packs a nine-bit rwxrwxrwx value into the existing fam, following Gforth's OR/XOR encoding (default438 decimal /0666). R/O, R/W, W/O and BIN retain their values. OPEN-FILE accepts and ignores permission fields; CREATE-FILE decodes them. The default mode uses the existing open callback, while nondefault permissions require optional FileOps.create_mode; unsupported requests return an ior before creating/truncating anything. The old error regression used fam99, which now has a valid permission encoding; it now tests reserved bit3 (fam8).
+
+The main host creates explicit-mode files with open/_wopen and fdopen, rather than chmod after creation. POSIX permissions are applied at creation subject to umask, and the supplied mode does not replace an existing file's permissions during truncation. Windows maps owner read/write bits to CRT permissions; group/execute bits do not provide POSIX permissions or ACL management there. The existing CREATE-FILE access-mode mapping is retained. Descriptor ownership transfers to the C stream, with cleanup on fdopen failure and slot checks before creation. Native Windows/Linux checks are in658 under607 and were not performed here.
+
+.INCLUDED ( -- ) displays each currently loaded registered name once, in source-table registration order. Each name is preceded by a newline; there is no added trailing newline. MARKER's existing loaded flags control visibility. Names opened before a source interpretation error remain registered under the existing REQUIRE-history policy. Saved/restored/appended source metadata supplies the same list. The user explicitly approved unique names: Gforth lists repeated INCLUDE occurrences, whereas Sigma's source table and existing MARKER/image mechanisms manage distinct registered names. Path normalization remains part of656.
+
+The immediate three-backslash word ( -- ) seeks the current physical source file to its end, observes/drains EOF without replacing the current source buffer, and skips the rest of the current line. The caller resumes normally and the include owner closes the skipped file. Size/seek/read failures propagate; nonseekable sources can therefore report an I/O error. Embedded source files advance their embedded offset without host I/O. Per the user's confirmed policy, terminal, EVALUATE and block sources do nothing with no stack changes; EVALUATE inside a file does not terminate the outer file. This avoids the designated Gforth build's extra SOURCE-ID stack cell / invalid handle access outside physical files. Existing incomplete-definition checks are retained.
+
+Validation: nine regressions in p05a_misc_test.zig cover interpreted/compiled mode transport, unsupported hosts without truncation, existing permissions, unique loaded history/MARKER/error history, append/restore listing, immediate/no-op contexts, nested/embedded/evaluated sources, POSTPONE and all three skip I/O failures with handle cleanup. Normal/minimal tests and normal build pass. Logs: .zig-cache/p05a-misc-{test,minimal,build}.log.
+
+scripts/verify-p05a-misc.py compares3,072 mode values (512 modes across six access/BIN combinations),29 POSIX permission/umask/existing-file cases, two history stages and three file-source cases with the designated Gforth. It separately checks the confirmed non-file no-op policy and intentional duplicate-history difference. Report: .work/p05a-misc-check/comparison.json. The umask is set only in child processes. Earlier probes are in initial-probes.json in the same directory. No GPL implementation code was copied.
+
+Tasks653/654/655 are complete (auto). P05a now has8/16 words implemented; remaining eight path words are656. Keep565/548/542 incomplete; P05b566 is pending. Task655 changes are uncommitted. No version bump or release package was made.

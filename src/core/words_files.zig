@@ -37,11 +37,26 @@ pub const words = [_]Builtin{
     .stderr,             .open_file,   .create_file,     .close_file,  .read_line,      .write_line,
     .write_file,         .file_size,   .reposition_file, .slurp_file,  .read_file,      .bin,
     .file_position,      .resize_file, .flush_file,      .delete_file, .rename_file,    .file_status,
-    .include_file, .emit_file, .slurp_fid, .key_file, .key_query_file, .file_eof_query,
+    .include_file, .emit_file, .slurp_fid, .key_file, .key_query_file, .file_eof_query, .plus_fmode, .dot_included, .triple_backslash,
 };
 
 pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
     switch (builtin) {
+        .plus_fmode => {
+            try self.requireDepth(2);
+            const fam: memory_map.UCell = @bitCast(try self.peek(1));
+            const mode: memory_map.UCell = @bitCast(try self.peek(0));
+            self.data_stack[self.data_depth - 2] = @bitCast(fam | ((mode ^ 0o666) << 4));
+            self.data_depth -= 1;
+        },
+        .dot_included => {
+            for (0..self.sourceFileCount()) |index| {
+                if (!self.sourceFileLoaded(index)) continue;
+                self.write("\n");
+                self.write(self.sourceFileName(index));
+            }
+        },
+        .triple_backslash => try source_input.endSourceFile(self),
         .key_file, .key_query_file, .file_eof_query => {
             const fileid = try self.peek(0);
             const files = try self.fileOps();
@@ -107,13 +122,20 @@ pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
             const name = try self.memoryRange();
             const files = try self.fileOps();
             // BIN changes nothing: files are always read and written as bytes.
-            const access: ?FileAccess = switch (fam & ~@as(Cell, 1)) {
+            const access: ?FileAccess = switch (fam & ~@as(Cell, (0o777 << 4) | 1)) {
                 fam_read_only => .read_only,
                 fam_write_only => .write_only,
                 fam_read_write => .read_write,
                 else => null,
             };
-            const result = if (access) |mode| files.open(self.writer.context, name, mode, builtin == .create_file) else FileResult{ .ior = errnoIor(errno_invalid) };
+            const result = if (access) |mode| result: {
+                const encoded = @as(memory_map.UCell, @bitCast(fam)) >> 4;
+                if (builtin == .create_file and encoded != 0) {
+                    const create_mode = files.create_mode orelse break :result FileResult{ .ior = errnoIor(errno_invalid) };
+                    break :result create_mode(self.writer.context, name, mode, @intCast(encoded ^ 0o666));
+                }
+                break :result files.open(self.writer.context, name, mode, builtin == .create_file);
+            } else FileResult{ .ior = errnoIor(errno_invalid) };
             try self.push(if (result.ior == 0) @bitCast(result.value) else 0);
             try self.push(result.ior);
         },

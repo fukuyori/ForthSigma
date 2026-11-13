@@ -230,7 +230,7 @@ FACILITY EXTのキー4語とBLOCK/BLOCK EXTの10語を優先する。既存の�
 
 #### P05a ファイル補助とパス検索
 
-対象16語。tque ID: 565。EMIT-FILE/SLURP-FID（653）の2語を実装し、7回帰・29比較と通常/最小構成を確認（d8da5e7でpush済み）。654の入力3語も実装・7回帰、258比較、未読判定の意図した差1件、PTY5件/FIFO1件を確認（未コミット）。残り11語は655/656、565/548は未完了。[記録](P05_IMPLEMENTATION.md)。
+対象16語。tque ID: 565。EMIT-FILE/SLURP-FID（653）の2語を実装し、7回帰・29比較と通常/最小構成を確認（d8da5e7でpush済み）。654の入力3語も実装・7回帰、258比較、未読判定の意図した差1件、PTY5件/FIFO1件を確認（7964014でpush済み）。655の3語も9回帰・3,072モード値・権限29件・一覧/ファイル終了比較を確認（未コミット）。残り8語は656、565/548は未完了。[記録](P05_IMPLEMENTATION.md)。
 
 `+FMODE`, `.INCLUDED`, `.PATH`, `ABSOLUTE-FILE?`, `ALSO-PATH`, `CLEAR-PATH`, `EMIT-FILE`, `FILE-EOF?`, `FILE>PATH`, `KEY-FILE`, `KEY?-FILE`, `OPEN-PATH-FILE`, `PATH+`, `PATH=`, `SLURP-FID`, `\\\`
 

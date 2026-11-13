@@ -48,7 +48,8 @@ test "file errors are returned as iors without changing the stack shape" {
     const bad = forth.errnoIor(forth.errno_bad_file);
     const invalid = forth.errnoIor(forth.errno_invalid);
 
-    try machine.interpretLine("S\" b.txt\" R/O OPEN-FILE S\" a.txt\" 99 OPEN-FILE 99 FILE-SIZE PAD 4 99 READ-LINE");
+    // 99 now encodes a valid permission-bearing fam; bit3 remains reserved.
+    try machine.interpretLine("S\" b.txt\" R/O OPEN-FILE S\" a.txt\" 8 OPEN-FILE 99 FILE-SIZE PAD 4 99 READ-LINE");
     try expectStack(machine, &.{ 0, forth.errnoIor(2), 0, invalid, 0, 0, bad, 0, 0, bad });
     machine.data_depth = 0;
     try machine.interpretLine("S\" a.txt\" W/O CREATE-FILE DROP -1 0 2 PICK REPOSITION-FILE NIP");

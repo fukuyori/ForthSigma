@@ -39,6 +39,9 @@ pub const FileOps = struct {
     rename: *const fn (?*anyopaque, []const u8, []const u8) Cell,
     /// Whether the named file exists; the value is R/O, W/O, or R/W, as it can be opened.
     status: *const fn (?*anyopaque, []const u8) FileResult,
+    /// CREATE-FILE with explicit nine-bit permissions, subject to the host umask.
+    /// This must apply during creation, not chmod an existing file after truncation.
+    create_mode: ?*const fn (?*anyopaque, []const u8, FileAccess, u16) FileResult = null,
     /// STDIN is raw byte input; terminal Ctrl+C may return UserInterrupt.
     key: ?*const fn (?*anyopaque, Cell) RuntimeError!FileKeyResult = null,
     /// Nonblocking byte readiness, including unread/library-buffered data.

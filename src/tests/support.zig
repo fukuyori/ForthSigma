@@ -424,6 +424,7 @@ pub const FakeFile = struct {
     open: bool = false,
     exists: bool = false,
     eof: bool = false,
+    permissions: u16 = 0o666,
 };
 
 /// The last name is long, for WHERE lines whose place takes more than 80 columns.
@@ -435,7 +436,7 @@ pub fn setFakeFile(output: *Output, index: usize, text: []const u8) void {
     output.files[index].exists = true;
 }
 
-pub const fake_file_ops = forth.FileOps{ .open = fakeOpen, .close = fakeClose, .read_line = fakeReadLine, .read = fakeRead, .write = fakeWrite, .size = fakeSize, .reposition = fakeReposition, .position = fakePosition, .resize = fakeResize, .flush = fakeFlush, .delete = fakeDelete, .rename = fakeRename, .status = fakeStatus, .key = fakeKey, .ready = fakeReady, .eof = fakeEof };
+pub const fake_file_ops = forth.FileOps{ .open = fakeOpen, .close = fakeClose, .read_line = fakeReadLine, .read = fakeRead, .write = fakeWrite, .size = fakeSize, .reposition = fakeReposition, .position = fakePosition, .resize = fakeResize, .flush = fakeFlush, .delete = fakeDelete, .rename = fakeRename, .status = fakeStatus, .key = fakeKey, .ready = fakeReady, .eof = fakeEof, .create_mode = fakeCreateMode };
 
 pub fn fakeOutput(context: ?*anyopaque) *Output {
     return @ptrCast(@alignCast(context.?));
@@ -454,12 +455,23 @@ pub fn fakeOpen(context: ?*anyopaque, name: []const u8, _: forth.FileAccess, cre
     } else return .{ .ior = forth.errnoIor(2) };
     const file = &fakeOutput(context).files[index];
     if (!create and !file.exists) return .{ .ior = forth.errnoIor(2) };
-    if (create) file.len = 0;
+    if (create) {
+        if (!file.exists) file.permissions = 0o666;
+        file.len = 0;
+    }
     file.exists = true;
     file.open = true;
     file.position = 0;
     file.eof = false;
     return .{ .value = @intCast(forth.first_file_id + @as(forth.Cell, @intCast(index))) };
+}
+
+pub fn fakeCreateMode(context: ?*anyopaque, name: []const u8, access: forth.FileAccess, permissions: u16) forth.FileResult {
+    const index = fakeIndex(name) orelse return .{ .ior = forth.errnoIor(2) };
+    const existed = fakeOutput(context).files[index].exists;
+    const result = fakeOpen(context, name, access, true);
+    if (result.ior == 0 and !existed) fakeOutput(context).files[index].permissions = permissions;
+    return result;
 }
 
 pub fn fakeClose(context: ?*anyopaque, fileid: forth.Cell) forth.Cell {

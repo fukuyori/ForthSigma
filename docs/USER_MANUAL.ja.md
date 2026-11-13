@@ -1160,3 +1160,16 @@ S" initial" $VALUE NAMEは入力をコピーして所有する文字列値を定
 `KEY?-FILE ( fileid -- flag )`は待機せず、未読・Cバッファ内の文字も考慮して判定します。入力を消費せず、EOF指示子も変更しません。指定Gforthで観測した未読文字の誤判定は再現しません。`FILE-EOF? ( fileid -- flag )`は読取で観測したEOFを返します。最後の1バイトを読んだだけではEOFにならず、末尾を越える読取で真になります。通常ファイルでは成功したREPOSITION-FILEで解除され、FILE-SIZEや長さ0の読取では保たれます。STDINは共有の入力・先読み状態を追跡します。
 
 3語はfiles機能群に属し、`-Dfiles=false`では除外されます。カスタムホストはFileOpsのkey/ready/eofを実装してください。未対応フックはFileUnavailableとなり、ブロッキング読取や位置比較で代用しません。主ホストは通常ファイルのバッファリングを保ち、Windowsパイプのみ待機判定用のstdio設定を使います。WindowsのSTDIN以外の文字デバイスでは待機判定に未対応のI/Oエラーを返す場合があります。[実装・検証記録](P05_IMPLEMENTATION.md)。
+
+
+### 作成権限と読込履歴・ファイル終了（P05a）
+
+`+FMODE ( fam mode -- fam2 )`は、R/O・R/W・W/O（BIN併用可）へ9ビットのrwxrwxrwxを指定します。例：384（十進数、八進数0600）は所有者の読書きです。CREATE-FILEではPOSIXのumaskに従って作成時に適用し、既存ファイルの権限を指定値へ変更しません。OPEN-FILEでは権限フィールドを無視します。WindowsはCRTの所有者read/writeへの対応で、POSIXのgroup/executeやACL設定とは異なります。カスタムホストはFileOps.create_modeが必要です（標準0666以外の指定）。
+
+`.INCLUDED ( -- )`は現在の読込済み登録名を各1回、登録順で表示します。各名前の前に改行を置き、末尾には追加しません。MARKER・保存・復元・追加読込の既存履歴に従います。Gforthのように同じ名前をINCLUDE回数分表示しない方針です。
+
+バックスラッシュ3個の即時ワードは、読込中のファイルを末尾へ進め、現在行を含む残りを読み飛ばします。親ファイル・呼出元は続行します。埋込ソースにも対応し、端末・EVALUATE・ブロックではスタックを変えず何もしません。シーク等ができないファイルではI/Oエラーが伝播します。ファイル内で開始した未完の定義を許さない既存規則は変わりません。[P05記録](P05_IMPLEMENTATION.md)。
+
+```forth
+\\\  ( source-file terminator )
+```

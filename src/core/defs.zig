@@ -745,6 +745,7 @@ pub const Builtin = enum {
     dot_substitute,
     emit_file, slurp_fid,
     key_file, key_query_file, file_eof_query,
+    plus_fmode, dot_included, triple_backslash,
 };
 
 pub const HeapResult = union(enum) { address: Cell, no_memory, bad_pointer };

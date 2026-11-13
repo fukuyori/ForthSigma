@@ -456,3 +456,31 @@ fn isWide(code: u21) bool {
 pub fn sourceAddress(self: *State) Cell {
     return @intCast(@intFromPtr(self.source_line.ptr) - @intFromPtr(self.memory.ptr) + self.sourceCursor());
 }
+
+/// End only the current physical/embedded source file. Non-file sources are a
+/// deliberate no-op; do not leak SOURCE-ID values or treat them as host handles.
+pub fn endSourceFile(self: *State) RuntimeError!void {
+    if (self.source_kind != .file or self.include_depth == 0) return;
+    const frame = &self.include_stack[self.include_depth - 1];
+    if (frame.fileid == embedded_source_fileid) {
+        frame.next_offset = self.embedded_source.len;
+    } else {
+        const files = try self.fileOps();
+        const size = files.size(self.writer.context, frame.fileid);
+        if (size.ior != 0) return self.throwCode(size.ior);
+        if (size.value > std.math.maxInt(i64)) return self.throwIor(memory_map.errno_invalid);
+        const moved = files.reposition(self.writer.context, frame.fileid, size.value);
+        if (moved != 0) return self.throwCode(moved);
+        // Observe EOF too, as a refill would, without overwriting the current
+        // source buffer. If the producer appended meanwhile, discard those bytes.
+        var discard: [1024]u8 = undefined;
+        while (true) {
+            try @import("words_numeric.zig").checkWorkBlock(self);
+            const read = files.read(self.writer.context, frame.fileid, &discard);
+            if (read.ior != 0) return self.throwCode(read.ior);
+            if (read.value > discard.len) return error.InvalidAddress;
+            if (read.value == 0) break;
+        }
+    }
+    self.setSourceCursor(self.source_line.len);
+}
