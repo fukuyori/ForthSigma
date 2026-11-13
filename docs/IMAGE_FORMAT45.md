@@ -1,6 +1,6 @@
 # SIGIMG45/46/47 構造コーデック
 
-2026-11-13。P03b子618の実装記録。[P00仕様](GFORTH_P00_SPEC.md)、[P03記録](P03_IMPLEMENTATION.md)。実装はsrc/core/image_format.zig。Stateエンコードは子623のimage_encoder.zig、完全復元の非変更事前検証は子625のimage_restore_plan.zigへ追加済み。公開SAVE/LOADへの組込みは子624で行うため、現行の保存形式はまだ変更しない。
+2026-11-13。P03b子618の実装記録。[P00仕様](GFORTH_P00_SPEC.md)、[P03記録](P03_IMPLEMENTATION.md)。実装はsrc/core/image_format.zig。Stateエンコードは子623のimage_encoder.zig、完全復元の非変更事前検証は子625のimage_restore_plan.zigへ追加済み。新形式の完全復元反映は子627のimage_restore.zigへ追加済み。公開SAVE/LOADへの組込みは子628で行うため、現行の保存形式はまだ変更しない。
 
 ファイルはヘッダー、Word列、Op列、名前、論理メモリー、再配置表、ヒープオブジェクト列、CRC32の順。フレーミングの整数はLE。Word/OpのみネイティブABIを使用し、書込み時にパディングをゼロ化する。
 

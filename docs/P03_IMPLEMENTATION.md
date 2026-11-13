@@ -163,9 +163,19 @@ src/core/image_restore_plan.zigにprepareと呼出元Planを追加。構造パ�
 
 Planは入力と自身のWorkspaceを借用するためコピーせず、prepare成功後だけ参照する。適用前に対象Stateを変更しない。失敗時のPlanの内容は使用しない。
 
-src/tests/image_restore_plan_test.zigの2回帰で孤立プレフィックスを除いたヒープ配置、内部参照と循環の新番地、組込語不一致・CRC破損・名前容量不足の拒否と対象の辞書・HERE・スタック保持を確認。通常／全機能群無効のzig build testが成功。ログは.zig-cache/p03b-restore-plan-test.logとp03b-restore-plan-minimal.log。625は完了（auto）。今回の変更は未コミット。
+src/tests/image_restore_plan_test.zigの2回帰で孤立プレフィックスを除いたヒープ配置、内部参照と循環の新番地、組込語不一致・CRC破損・名前容量不足の拒否と対象の辞書・HERE・スタック保持を確認。通常／全機能群無効のzig build testが成功。ログは.zig-cache/p03b-restore-plan-test.logとp03b-restore-plan-minimal.log。625は完了（auto）、8bbdb29でpush済み。
 
 これは検証と配置計画のみ。626で反映・追加読込・公開経路への接続を行う。SAVE/LOADの切替や復元完了とは扱わず、型付き登録の暫定拒否を維持する。
+
+## P03b 新形式の完全復元反映（626配下627）
+
+src/core/image_restore.zigに新形式のrestoreを追加。prepare成功後に辞書・コード・名前・保存メモリーを反映し、詰め直したヒープに管理ヘッダーとペイロードを構築する。計画内の新格納位置へ参照値を書き戻し、型付き登録を復元する。反映部は非公開で、検証後に失敗する処理を残さない。
+
+対象の既存登録を外して反映し、語の索引・コード特殊化・インライン化・デバッグ位置・スタック等の実行状態を従来の完全復元と同様に再構築する。ブロックバッファーとそのホスト側管理は保持し、グラフィックス画像資源とTclの旧ヒープ参照は解除する。入力イメージはStateの格納領域と別に確保すること。
+
+src/tests/image_restore_typed_test.zigの3回帰で動的文字列・文字列配列・アドレス定数と実行コードの往復、復元後の更新・再保存・再復元、詰め直した循環・内部参照、破損時の型付き辞書とスタック保持、システムルートの置換リスト、一時文字列、ブロックバッファー保持を確認。通常／全機能群無効のzig build testが成功。ログは.zig-cache/p03b-typed-restore-test.logとp03b-typed-restore-minimal.log。627は完了（auto）。今回の変更は未コミット。
+
+このrestoreは直接呼び出す内部実装であり、State.restoreImageや公開SAVE/LOADはまだ旧実装のまま。628で追加読込と公開経路を統合する。暫定拒否の2回帰も公開経路の切替時に新形式往復へ戻す。
 
 ## 後続のP03b / P03c
 
