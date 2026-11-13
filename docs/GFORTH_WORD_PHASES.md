@@ -210,7 +210,7 @@ FACILITY EXTのキー4語とBLOCK/BLOCK EXTの10語を優先する。既存の�
 
 #### P04a 文字列操作とUnicode
 
-対象28語。tque ID: 563。基本/借用文字列21語（632）は実装・323ケース比較と回帰済み。633の7語も実装し、編集48ケース・XC@+?非空301ケースとSigma空入力3ケースが成功。563は完了、547はP04bが残る。[記録](P04_IMPLEMENTATION.md)。
+対象28語。tque ID: 563。基本/借用文字列21語（632）は実装・323ケース比較と回帰済み。633の7語も実装し、編集48ケース・XC@+?非空301ケースとSigma空入力3ケースが成功。563/547は完了。[記録](P04_IMPLEMENTATION.md)。
 
 `#BELL`, `#BS`, `#CR`, `#DEL`, `#EOF`, `#ESC`, `#FF`, `#LF`, `#TAB`, `APPEND`, `CAPSCOMPARE`, `CAPSSEARCH`, `CAPSSTRING-PREFIX?`, `CSTRING>SSTRING`, `DELETE`, `INSERT`, `INVALID-CHAR`, `NEWLINE`, `NOSPLIT?`, `S+`, `SAFE/STRING`, `SCAN-BACK`, `STR<`, `STRING,`, `STRING-SUFFIX?`, `TOUPPER`, `TYPEWHITE`, `XC@+?`
 
@@ -218,7 +218,7 @@ FACILITY EXTのキー4語とBLOCK/BLOCK EXTの10語を優先する。既存の�
 
 #### P04b 文字列値と置換
 
-対象5語。tque ID: 564。単位内の先行作業: P04a（完了）。$VALUE/MACRO:（634）は実装・27ケース比較・9回帰済み。残り3語は635。親564/547は未完了。[記録](P04_IMPLEMENTATION.md)。
+対象5語。tque ID: 564。単位内の先行作業: P04a（完了）。$VALUE/MACRO:（634）は27ケース比較・9回帰、マクロ語彙/置換3語（635）は48ケース比較・12回帰と保存/追加読込を確認。564/547は完了（auto）。635は未コミット。[記録](P04_IMPLEMENTATION.md)。
 
 `$VALUE`, `.SUBSTITUTE`, `MACRO:`, `MACROS-WORDLIST`, `REPLACER:`
 

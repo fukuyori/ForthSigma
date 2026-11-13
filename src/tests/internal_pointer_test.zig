@@ -72,7 +72,7 @@ test "transient input owners do not register image roots and full registry fails
     try std.testing.expectEqual(@as(map.Cell, 0), try machine.readCell(owner));
 }
 
-test "replacement links and temporary string owners are explicit graph roots" {
+test "macro string values and temporary string owners are explicit graph roots" {
     var output = support.Output{};
     const machine = try support.createMachine(&output);
     defer support.destroyMachine(machine);

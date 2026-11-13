@@ -188,7 +188,7 @@ test "image45 native word and operation tags are checked before enum decoding" {
     defer std.testing.allocator.free(original);
     for ([_]usize{ @offsetOf(defs.Word, "kind"), @offsetOf(defs.Word, "builtin"), @offsetOf(defs.Word, "immediate"), @offsetOf(defs.Word, "has_does"), @offsetOf(defs.Word, "name_start"), @offsetOf(defs.Word, "wordlist") }) |field| {
         @memcpy(f.bytes, original);
-        f.bytes[f.word_at + field] = 0xff;
+        f.bytes[f.word_at + field] = if (field == @offsetOf(defs.Word, "wordlist")) 0xfe else 0xff;
         if (field == @offsetOf(defs.Word, "builtin")) @memset(f.bytes[f.word_at + field ..][0..@sizeOf(defs.Builtin)], 0xff);
         try rejected(f.bytes, scratch);
     }

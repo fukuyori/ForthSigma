@@ -132,7 +132,7 @@ pub fn relocatedOperation(plan: *const Plan, index: usize) RuntimeError!defs.Op 
 }
 
 pub fn relocatedWordlist(plan: *const Plan, wid: map.Cell) map.Cell {
-    return if (wid <= map.ekeys_wordlist) wid else plan.wordlist_base + wid - map.ekeys_wordlist;
+    return if (wid <= map.ekeys_wordlist or wid == map.macros_wordlist) wid else plan.wordlist_base + wid - map.ekeys_wordlist;
 }
 fn relocatedId(plan: *const Plan, id: map.Cell) map.Cell {
     return if (id < plan.image.view.header.builtin_count) id else @as(map.Cell, @intCast(plan.word_base)) + id - plan.image.view.header.builtin_count;

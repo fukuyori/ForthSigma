@@ -302,7 +302,7 @@ fn validateWords(v: View) RuntimeError!void {
         const word = std.mem.bytesToValue(defs.Word, bytes);
         if (word.name_start != next or word.name_len > v.names.len - next) return error.InvalidImage;
         next += word.name_len;
-        if (word.wordlist < 1 or word.wordlist > wordlists or word.source_file > files or word.locals_size > v.header.l) return error.InvalidImage;
+        if ((word.wordlist != map.macros_wordlist and (word.wordlist < 1 or word.wordlist > wordlists)) or word.source_file > files or word.locals_size > v.header.l) return error.InvalidImage;
         if (word.data_here_before < map.data_start or word.data_here_before > v.header.data_here) return error.InvalidImage;
         if (word.kind == .colon and (word.code_start > word.code_end or word.code_end > v.header.code_count)) return error.InvalidImage;
         if (word.has_does and (word.does_code_start > word.does_code_end or word.does_code_end > v.header.code_count)) return error.InvalidImage;
@@ -312,7 +312,7 @@ fn validateWords(v: View) RuntimeError!void {
             .marker => try dataCell(v, word.value, map.marker_snapshot_size),
             .created, .array => try dataCell(v, word.value, 0),
             .synonym => if (word.value < 0 or word.value >= v.header.word_count) return error.InvalidImage,
-            .vocabulary => if (word.value < 1 or word.value > wordlists) return error.InvalidImage,
+            .vocabulary => if ((word.value != map.macros_wordlist and (word.value < 1 or word.value > wordlists))) return error.InvalidImage,
             else => {},
         }
     }

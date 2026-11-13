@@ -18,16 +18,17 @@ const State = forth.State;
 const cell_size = memory_map.cell_size;
 const errno_no_memory = memory_map.errno_no_memory;
 const max_name = memory_map.max_name;
-const replacements_address = memory_map.replacements_address;
+const macros = @import("macro_substitute.zig");
 const assert_message_address = memory_map.assert_message_address;
 const tmp_string_base = memory_map.tmp_string_base;
 const tmp_string_count = memory_map.tmp_string_count;
 
 /// The built-in words this file executes; executeBuiltin dispatches by this list.
 pub const words = [_]Builtin{
-    .substitute,   .replaces,   .unescape,      .string_substitute, .string_unescape, .latest,
-    .latestxt,     .to_name,    .id_dot,        .alias,             .debug_tilde,     .debug_tilde_run,
-    .assert_paren, .assert_run, .emit_question, .paren_local,
+    .substitute,     .replaces,   .unescape,      .string_substitute, .string_unescape, .latest,
+    .latestxt,       .to_name,    .id_dot,        .alias,             .debug_tilde,     .debug_tilde_run,
+    .assert_paren,   .assert_run, .emit_question, .paren_local,       .macros_wordlist, .define_replacer,
+    .dot_substitute,
 };
 
 /// The THROW code of SUBSTITUTE when the result does not fit (as gforth gives).
@@ -37,56 +38,40 @@ pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
     switch (builtin) {
         // REPLACES ( c-addr1 u1 c-addr2 u2 -- ): %name% (c-addr2 u2) stands for the text
         // c-addr1 u1 in SUBSTITUTE. A name given again takes its new text.
-        .replaces => {
-            const name_length = try self.popLength();
-            const name_address = try self.pop();
-            const text_length = try self.popLength();
-            const text_address = try self.pop();
-            const name_at = try self.memoryAddress(name_address, name_length);
-            const text_at = try self.memoryAddress(text_address, text_length);
-            const size = std.math.add(usize, 3 * cell_size + name_length, text_length) catch return self.throwIor(errno_no_memory);
-            const needed: usize = if (registry.index(self, .memory, replacements_address) == null) 2 else 1;
-            if (registry.capacity - self.addresses.count < needed) return error.MemoryExhausted;
-            const node = try self.heapAllocate(size) orelse return self.throwIor(errno_no_memory);
-            const node_at: usize = @intCast(node + 3 * cell_size);
-            @memmove(self.memory[node_at..][0..name_length], self.memory[name_at..][0..name_length]);
-            @memmove(self.memory[node_at + name_length ..][0..text_length], self.memory[text_at..][0..text_length]);
-            try self.writeCell(node + cell_size, @intCast(name_length));
-            try self.writeCell(node + 2 * cell_size, @intCast(text_length));
-            try removeReplacement(self, self.memory[node_at..][0..name_length]);
-            try self.writeCell(node, try self.readCell(replacements_address));
-            try registry.registerMemory(self, node);
-            try self.writeCell(replacements_address, node);
-            try registry.registerMemory(self, replacements_address);
+        .replaces => try macros.replaces(self),
+        .macros_wordlist => try self.push(memory_map.macros_wordlist),
+        .define_replacer => try self.runDefiningWord(.define_replacer),
+        .dot_substitute => {
+            const source = try self.memoryRange();
+            try self.push(try macros.print(self, source));
         },
-        // SUBSTITUTE ( c-addr1 u1 c-addr2 u2 -- c-addr2 u3 n ): the text with each %name%
-        // that REPLACES gave replaced, in the buffer c-addr2 u2; n is how many were, or -78
-        // when the result did not fit (it is then cut at the end of the buffer). %% gives
-        // one %; a %name% without a replacement, and a % that is not closed, stay as they
-        // are.
         .substitute => {
             const room = try self.popLength();
             const buffer = try self.pop();
             const source = try self.memoryRange();
+            _ = try self.memoryAddress(buffer, room);
+            const result = try macros.capture(self, source);
+            defer result.free(self);
+            // Revalidate: a callback may have changed host/heap state.
             const out_at = try self.memoryAddress(buffer, room);
-            // An input that the output overlaps is read from a copy, as gforth does.
-            const input = try Input.of(self, source, out_at, room);
-            defer input.free(self);
-            const result = try substituteInto(self, input.bytes, self.memory[out_at..][0..room]);
+            const length = @min(result.length, room);
+            @memmove(self.memory[out_at..][0..length], result.bytes(self)[0..length]);
+            registry.written(self, buffer, length, false);
             try self.push(buffer);
-            try self.push(@intCast(@min(result.length, room)));
+            try self.push(@intCast(length));
             try self.push(if (result.length > room) substitute_overflow else result.count);
         },
-        // $SUBSTITUTE ( c-addr1 u1 -- c-addr2 u2 n ): the same, into a string of its own,
-        // one of those $TMP uses in turn.
         .string_substitute => {
             const source = try self.memoryRange();
-            const measured = try substituteInto(self, source, null);
-            const buffer = try newString(self, measured.length);
-            _ = try substituteInto(self, source, try stringBytes(self, buffer, measured.length));
-            try self.push(try takeSlot(self, buffer));
-            try self.push(@intCast(measured.length));
-            try self.push(measured.count);
+            if (self.data_depth > self.data_stack.len - 3) return error.StackOverflow;
+            const result = try macros.capture(self, source);
+            errdefer result.free(self);
+            // Callbacks can rotate the temporary slots, so reserve the final slot now.
+            const slot = tmp_string_base + @as(Cell, @intCast(self.tmp_string_index % tmp_string_count)) * cell_size;
+            try strings.preparePointer(self, slot);
+            try self.push(try takeSlot(self, result.buffer));
+            try self.push(@intCast(result.length));
+            try self.push(result.count);
         },
         // UNESCAPE ( c-addr1 u1 c-addr2 -- c-addr2 u2 ): the text with each % doubled, so
         // that SUBSTITUTE gives it back.
@@ -205,7 +190,7 @@ pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
     }
 }
 
-/// The input of SUBSTITUTE or UNESCAPE: the string itself, or a copy in the heap when
+/// The input of UNESCAPE: the string itself, or a copy in the heap when
 /// the output (out_length bytes at out_at) overlaps it.
 const Input = struct {
     bytes: []const u8,
@@ -225,81 +210,6 @@ const Input = struct {
         if (input.copy) |copy| _ = self.heapFree(copy) catch {};
     }
 };
-
-/// The text REPLACES gave the name, or null.
-fn replacement(self: *State, name: []const u8) RuntimeError!?[]const u8 {
-    var node = try self.readCell(replacements_address);
-    while (node != 0) {
-        const name_length: usize = @intCast(try self.readCell(node + cell_size));
-        const text_length: usize = @intCast(try self.readCell(node + 2 * cell_size));
-        const at = try self.memoryAddress(node + 3 * cell_size, name_length + text_length);
-        if (std.mem.eql(u8, self.memory[at..][0..name_length], name)) return self.memory[at + name_length ..][0..text_length];
-        node = try self.readCell(node);
-    }
-    return null;
-}
-
-/// Takes the replacement of that name out of the list, if there is one.
-fn removeReplacement(self: *State, name: []const u8) RuntimeError!void {
-    var link: Cell = replacements_address;
-    var node = try self.readCell(link);
-    while (node != 0) {
-        const name_length: usize = @intCast(try self.readCell(node + cell_size));
-        const at = try self.memoryAddress(node + 3 * cell_size, name_length);
-        const next = try self.readCell(node);
-        if (std.mem.eql(u8, self.memory[at..][0..name_length], name)) {
-            try self.writeCell(link, next);
-            _ = try self.heapFree(node);
-            return;
-        }
-        link = node;
-        node = next;
-    }
-}
-
-const Substituted = struct { length: usize, count: Cell };
-
-/// Substitutes the text into `out` as far as it holds (all of it when it is null, to
-/// measure), giving the whole length and the number of replacements.
-fn substituteInto(self: *State, text: []const u8, out: ?[]u8) RuntimeError!Substituted {
-    var length: usize = 0;
-    var count: Cell = 0;
-    const put = struct {
-        fn bytes(machine: *State, target: ?[]u8, at: *usize, data: []const u8) void {
-            if (target) |buffer| {
-                if (at.* < buffer.len) {
-                    const n = @min(data.len, buffer.len - at.*);
-                    @memmove(buffer[at.*..][0..n], data[0..n]);
-                    registry.written(machine, @intCast(@intFromPtr(buffer.ptr) + at.* - @intFromPtr(machine.memory.ptr)), n, false);
-                }
-            }
-            at.* +|= data.len;
-        }
-    }.bytes;
-    var i: usize = 0;
-    while (i < text.len) {
-        if (text[i] != '%') {
-            put(self, out, &length, text[i .. i + 1]);
-            i += 1;
-            continue;
-        }
-        if (i + 1 < text.len and text[i + 1] == '%') {
-            put(self, out, &length, "%");
-            i += 2;
-            continue;
-        }
-        const close = std.mem.indexOfScalarPos(u8, text, i + 1, '%') orelse {
-            put(self, out, &length, text[i..]);
-            break;
-        };
-        if (try replacement(self, text[i + 1 .. close])) |value| {
-            put(self, out, &length, value);
-            count += 1;
-        } else put(self, out, &length, text[i .. close + 1]);
-        i = close + 1;
-    }
-    return .{ .length = length, .count = count };
-}
 
 fn unescapedLength(text: []const u8) usize {
     return text.len + std.mem.count(u8, text, "%");

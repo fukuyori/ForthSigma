@@ -37,7 +37,7 @@ pub fn lookupIn(self: *State, name: []const u8, wid: Cell) ?u16 {
     var id = self.name_heads[nameBucket(name)];
     while (id != no_word) : (id = self.name_next[id]) {
         const word = self.words[id];
-        if (word.wordlist == wid and word.name_len != 0 and asciiEqlIgnoreCase(self.wordName(word), name)) return id;
+        if (word.wordlist == wid and word.name_len != 0 and (if (wid == memory_map.macros_wordlist) std.mem.eql(u8, self.wordName(word), name) else asciiEqlIgnoreCase(self.wordName(word), name))) return id;
     }
     return null;
 }
@@ -94,7 +94,7 @@ pub fn wordlistCount(self: *State) Cell {
 }
 
 pub fn validWordlist(self: *State, wid: Cell) RuntimeError!Cell {
-    if (wid < forth_wordlist or wid > self.wordlistCount()) return error.InvalidWordlist;
+    if (wid != memory_map.macros_wordlist and (wid < forth_wordlist or wid > self.wordlistCount())) return error.InvalidWordlist;
     return wid;
 }
 
@@ -126,6 +126,7 @@ pub fn searchOrder(self: *State, buffer: *[max_search_order]Cell) []Cell {
 /// Writes a word list's name for ORDER: Forth and Root, the name of a VOCABULARY,
 /// or of a constant holding the id (as gforth shows `WORDLIST CONSTANT X`), else the id.
 pub fn writeWordlistName(self: *State, wid: Cell) void {
+    if (wid == memory_map.macros_wordlist) return self.write("Macros");
     if (wid == forth_wordlist) return self.write("Forth");
     if (wid == root_wordlist) return self.write("Root");
     if (wid == memory_map.ekeys_wordlist) return self.write("EKEYS");

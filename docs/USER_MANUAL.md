@@ -1145,4 +1145,11 @@ XC@+? ( addr u -- addr2 u2 xc ) decodes the first bounded UTF-8 character like X
 
 S" initial" $VALUE NAME defines an owned copy. NAME returns borrowed addr/u; S" new" TO NAME replaces it and S" more" +TO NAME appends, including inside compiled definitions. MACRO: is an alias of $VALUE in the current wordlist. TO/+TO failures retain the previous owner and contents; replacement invalidates explicit references into the old block.
 
-' NAME >BODY gives the owner cell, which can be passed to $FREE. FORGET/MARKER remove dictionary storage and its persistence root; free owned storage first if it is no longer needed. Explicitly reachable heap objects survive images and repeated loads. MACROS-WORDLIST, REPLACER: and .SUBSTITUTE remain pending. [Details](P04_IMPLEMENTATION.md).
+' NAME >BODY gives the owner cell, which can be passed to $FREE. FORGET/MARKER remove dictionary storage and its persistence root; free owned storage first if it is no longer needed. Explicitly reachable heap objects survive images and repeated loads. MACROS-WORDLIST, REPLACER: and .SUBSTITUTE are also available (below). [Details](P04_IMPLEMENTATION.md).
+
+
+### Substitution macros
+
+`MACROS-WORDLIST ( -- wid )` gives the case-sensitive macro namespace. `REPLACER: NAME ... ;` defines a callback `( -- addr u )` there, restoring the caller's CURRENT before compiling the body. `REPLACES` creates/updates owned macro values; hard-coded callbacks are retained with a warning if REPLACES tries to update them. To create a MACRO: value there directly, save CURRENT, set it to MACROS-WORDLIST, define the value and restore CURRENT. Include this list in the search order to use TO/+TO on its values. Names follow Sigma's dictionary limit of 1–255 bytes.
+
+`.SUBSTITUTE ( addr u -- n )` prints the substituted text and returns the replacement count. `%%` emits a literal percent; unknown or unclosed names remain literal. Each occurrence executes once. Callback THROW propagates through all three substitution APIs. Streaming output preceding an exception remains visible; owned/bounded output is committed only on success. `$SUBSTITUTE` and `SUBSTITUTE` also capture callback output (TYPE, etc.), support nested `$TMP`, and snapshot the input before callbacks. Bounded output returns -78 when clipped, but still executes all occurrences; it temporarily holds the complete result in VM heap memory. Macro definitions, owned values and callbacks survive dictionary save/restore and repeated loads.

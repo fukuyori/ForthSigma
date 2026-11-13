@@ -33,3 +33,5 @@ parseは入力と呼出元Workspaceを借用し、Stateを変更しない。戻�
 The ABI signature includes the complete builtin enum. Adding builtin tags may invalidate older files using the same magic. Startup builtin count and tag matching are also strict; stable execution-token numbers alone do not guarantee acceptance across implementation revisions.
 
 A string_value WordKind has an eight-byte data-space owner field. Its memory relocation is mandatory. A non-NULL pointer must name the start of a reachable heap payload whose first eight bytes contain a length no larger than the remaining payload. This validates known ownership without guessing pointer types from raw cells.
+
+Macro words use the fixed case-sensitive namespace id 255, distinct from regular wordlists 1 through wordlist_count (at most 64). Word/vocabulary validation permits that fixed id; both append paths preserve it. REPLACES now uses string_value data owners as roots instead of a fixed system replacement-list head. Private in-progress capture buffers and capture targets are not persisted. Older builtin tables/ABI signatures remain incompatible even with the same image magic.

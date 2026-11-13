@@ -186,6 +186,8 @@ pub const root_wordlist: Cell = 2;
 
 /// Standard keyboard constants; user wordlists start after this fixed list.
 pub const ekeys_wordlist: Cell = 3;
+/// Fixed, case-sensitive macro namespace; does not consume a user WORDLIST id.
+pub const macros_wordlist: Cell = 0xff;
 
 pub const max_wordlists = 64;
 

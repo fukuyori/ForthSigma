@@ -262,12 +262,15 @@ pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
 /// Runs xt with its output appended to the string variable, for $TMP and $EXEC.
 fn captureOutput(self: *State, xt: u16, string_var: Cell) RuntimeError!void {
     const previous_target = self.capture_target;
+    const previous_sink = self.capture_sink;
+    self.capture_sink = null;
     const previous_failed = self.capture_failed;
     self.capture_target = string_var;
     self.capture_failed = false;
     const result = self.executeWord(xt);
     const failed = self.capture_failed;
     self.capture_target = previous_target;
+    self.capture_sink = previous_sink;
     self.capture_failed = previous_failed;
     try result;
     if (failed) return self.throwIor(errno_no_memory);

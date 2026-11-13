@@ -15,6 +15,7 @@ comptime {
     _ = @import("tests/p04a_edit_test.zig");
     _ = @import("tests/p04a_xc_test.zig");
     _ = @import("tests/p04b_values_test.zig");
+    _ = @import("tests/p04b_macros_test.zig");
     _ = @import("tests/p01b_test.zig");
     _ = @import("tests/p01a_test.zig");
     _ = @import("core/blocks.zig");

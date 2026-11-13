@@ -740,6 +740,9 @@ pub const Builtin = enum {
     string_concat, string_append_owned, cstring_to_sstring, delete_bytes, insert_bytes, string_comma,
     xc_fetch_plus_query,
     define_string_value,
+    macros_wordlist,
+    define_replacer,
+    dot_substitute,
 };
 
 pub const HeapResult = union(enum) { address: Cell, no_memory, bad_pointer };
@@ -884,7 +887,7 @@ pub const Control = struct { kind: ControlKind, address: u16, locals: u16 = 0, l
 
 pub const Loop = struct { index: Cell, limit: Cell, exit_pc: u16, exit_after_first: bool = false };
 
-pub const Pending = enum { none, colon_name, variable_name, constant_name, array_name, forget_name, tick_name, value_name, watched_value_name, watched_variable_name, to_name, char_name, postpone_name, fconstant_name, fvalue_name, fvariable_name, two_constant_name, two_value_name, two_variable_name, buffer_name, plus_to_name, action_of_name, aconstant_name, avariable_name, string_value_name };
+pub const Pending = enum { none, colon_name, variable_name, constant_name, array_name, forget_name, tick_name, value_name, watched_value_name, watched_variable_name, to_name, char_name, postpone_name, fconstant_name, fvalue_name, fvariable_name, two_constant_name, two_value_name, two_variable_name, buffer_name, plus_to_name, action_of_name, aconstant_name, avariable_name, string_value_name, replacer_name };
 
 pub const StringWord = enum { s_quote, s_escape_quote, print_escape, print_paren, c_quote, abort_quote };
 

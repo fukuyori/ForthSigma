@@ -143,7 +143,7 @@ pub fn appendImage(self: *State, source: *const State) RuntimeError!void {
     if (wordlist_base + source_wordlists - memory_map.ekeys_wordlist > max_wordlists) return error.DictionaryFull;
     const mapWordlist = struct {
         fn map(wid: Cell, base: Cell) Cell {
-            return if (wid <= memory_map.ekeys_wordlist) wid else base +% wid -% memory_map.ekeys_wordlist;
+            return if (wid <= memory_map.ekeys_wordlist or wid == memory_map.macros_wordlist) wid else base +% wid -% memory_map.ekeys_wordlist;
         }
     }.map;
 

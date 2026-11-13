@@ -34,6 +34,12 @@ pub fn finishPending(self: *State, token: []const u8) RuntimeError!void {
     self.pending = .none;
     switch (pending) {
         .none => unreachable,
+        .replacer_name => {
+            const previous = self.currentWordlist();
+            try self.writeCell(memory_map.current_wordlist_address, memory_map.macros_wordlist);
+            defer self.writeCell(memory_map.current_wordlist_address, previous) catch unreachable;
+            self.beginDefinition(try self.appendWord(token, .colon, .drop, 0));
+        },
         .colon_name => {
             self.beginDefinition(try self.appendWord(token, .colon, .drop, 0));
         },
@@ -196,7 +202,7 @@ pub fn bodyAddress(self: *State, id: u16) RuntimeError!Cell {
 
 pub fn isDefiningBuiltin(builtin: Builtin) bool {
     return switch (builtin) {
-        .define_colon, .define_variable, .define_fvariable, .define_constant, .define_value, .define_two_variable, .define_two_constant, .define_fconstant, .define_fvalue, .define_two_value, .define_buffer, .define_array, .define_watched_value, .define_watched_variable, .define_aconstant, .define_avariable, .define_string_value => true,
+        .define_colon, .define_variable, .define_fvariable, .define_constant, .define_value, .define_two_variable, .define_two_constant, .define_fconstant, .define_fvalue, .define_two_value, .define_buffer, .define_array, .define_watched_value, .define_watched_variable, .define_aconstant, .define_avariable, .define_string_value, .define_replacer => true,
         else => false,
     };
 }
@@ -213,6 +219,10 @@ pub fn runDefiningWord(self: *State, builtin: Builtin) RuntimeError!void {
 /// Takes a defining word's value from the stack and returns what its name makes.
 pub fn definingPending(self: *State, builtin: Builtin) RuntimeError!Pending {
     return switch (builtin) {
+        .define_replacer => blk: {
+            if (self.defining) return error.InvalidDefinition;
+            break :blk .replacer_name;
+        },
         .define_colon => blk: {
             if (self.defining) return error.InvalidDefinition;
             break :blk .colon_name;

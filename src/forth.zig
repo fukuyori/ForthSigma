@@ -359,6 +359,8 @@ pub const State = struct {
     /// The counted string of the ABORT" that threw -2, for its message.
     abort_message: ?Cell = null,
     capture_target: ?Cell = null,
+    /// Private, nestable macro output capture; never serialized.
+    capture_sink: ?*@import("core/macro_substitute.zig").Captured = null,
     /// The status of the last SYSTEM, for $?.
     system_status: Cell = 0,
     capture_failed: bool = false,
@@ -449,6 +451,12 @@ pub const State = struct {
 
     /// Writes interpreter output, or appends it to the string being built by $TMP.
     pub fn write(self: *State, bytes: []const u8) void {
+        if (self.capture_sink) |sink| {
+            if (!self.capture_failed) sink.put(self, bytes) catch {
+                self.capture_failed = true;
+            };
+            return;
+        }
         if (self.capture_target) |target| {
             self.appendString(target, bytes) catch {
                 self.capture_failed = true;
@@ -916,6 +924,9 @@ pub const State = struct {
             .{ "XC@+?", .xc_fetch_plus_query },
             .{ "$VALUE", .define_string_value },
             .{ "MACRO:", .define_string_value },
+            .{ "MACROS-WORDLIST", .macros_wordlist },
+            .{ "REPLACER:", .define_replacer },
+            .{ ".SUBSTITUTE", .dot_substitute },
     };
 
     fn installBuiltins(self: *State) void {
@@ -965,7 +976,7 @@ pub const State = struct {
     pub fn appendWord(self: *State, name: []const u8, kind: WordKind, builtin: Builtin, value: Cell) RuntimeError!u16 {
         if (self.word_count == max_words) return error.DictionaryFull;
         if (name.len == 0 or name.len > max_name) return error.NameTooLong;
-        if (kind != .builtin and self.lookup(name) != null) {
+        if (kind != .builtin and (if (self.currentWordlist() == memory_map.macros_wordlist) self.lookupIn(name, memory_map.macros_wordlist) else self.lookup(name)) != null) {
             self.write("WARNING: SAME NAME WORD EXISTS\n");
         }
         return self.appendEntry(name, kind, builtin, value);
