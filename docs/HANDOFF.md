@@ -1,6 +1,6 @@
 # Gforth対応の引き継ぎ
 
-更新日：2026-11-14。P00・S01・P01・P02・P03・P04に続き、P05aの16語（565）も実装・検証完了。659は3af3c9fでpush済み。660の検索2語は実装・検証済み（未コミット）。次はP05b（566）のディレクトリ・時刻14語。INCLUDE/REQUIRE接続は661へ分離。Windows/Linux確認はここでは行わず607（パス検索は662）へ残す。P05/542は未完了。
+更新日：2026-11-14。P00・S01・P01・P02・P03・P04に続き、P05aの16語（565）も実装・検証完了。659は3af3c9fでpush済み。660は9d57d8eでpush済み。P05b（566）の最初の2語BASENAME/DIRNAME（663）を実装・検証済み（未コミット）。次は664のFILENAME-MATCH。INCLUDE/REQUIRE接続は661へ分離。Windows/Linux確認はここでは行わず607（パス検索は662）へ残す。P05/542は未完了。
 
 P03c was committed and pushed as `98be4f8`. P03 and task 562 are complete. Claude Code review fixes and the first 21 P04a words were committed/pushed as a6ab243. Task 631 is complete (auto), with no new concrete defect found in the final review. See [P03 review](P03_REVIEW.md). The six additional P04a edit/owned-string words were committed/pushed as 5b2c8a4. XC@+? was committed/pushed as fa2afe9 and P04a is complete. P04b $VALUE/MACRO: were committed/pushed as 33bb55a (634); the macro vocabulary/callback words (635) were committed/pushed as 6a9c4e3. Check git status and git log before resuming.
 
@@ -18,9 +18,13 @@ Task654 is complete (auto): KEY-FILE/KEY?-FILE/FILE-EOF? were committed/pushed a
 
 ABSOLUTE-FILE?/CLEAR-PATH/ALSO-PATH/.PATH/PATH+/PATH= are complete with seven regressions and37 comparisons. Committed/pushed as3af3c9f. See [P05 record](P05_IMPLEMENTATION.md).
 
-## P05a path lookup (660, uncommitted)
+## P05a path lookup (660, 9d57d8e pushed)
 
-OPEN-PATH-FILE and FILE>PATH complete P05a16/16. Eight regressions,42 designated-Gforth comparisons, normal/minimal tests and normal build pass. Ordered read-only search, ./ source-directory expansion, ~+/ working-directory selection, tilde/native home expansion and lexical compaction are implemented. Returned spelling borrows a1,024-byte system scratch area until the next lookup/reset; no persistent owner root or heap allocation is added. FILE>PATH closes and propagates errors. INCLUDE/REQUIRE remains unchanged by user-approved scope;661 tracks integration. 660/656/565 are complete(auto);566 is next,548/542 remain incomplete. Native Windows/Linux path checks are662 under607. See [P05 record](P05_IMPLEMENTATION.md) for platform limits and HOME behavior.
+OPEN-PATH-FILE and FILE>PATH complete P05a16/16. Eight regressions,42 designated-Gforth comparisons, normal/minimal tests and normal build pass. Ordered read-only search, ./ source-directory expansion, ~+/ working-directory selection, tilde/native home expansion and lexical compaction are implemented. Returned spelling borrows a1,024-byte system scratch area until the next lookup/reset; no persistent owner root or heap allocation is added. FILE>PATH closes and propagates errors. INCLUDE/REQUIRE remains unchanged by user-approved scope;661 tracks integration. 660/656/565 are complete(auto), pushed as9d57d8e;566 is in progress,548/542 remain incomplete. Native Windows/Linux path checks are662 under607. See [P05 record](P05_IMPLEMENTATION.md) for platform limits and HOME behavior.
+
+## P05b path splitting (663, uncommitted)
+
+BASENAME/DIRNAME borrow byte spans split at the last forward slash, preserving trailing slash behavior, source bytes, and backslashes as ordinary text. Three regressions,108 designated-Gforth comparisons, normal/minimal tests and normal build pass. 663 is complete(auto);566 has2/14 words complete. Next is664 FILENAME-MATCH, then665 directory7 and666 time4. Investigate fnmatch syntax/Unicode and host differences before implementing664. See [P05 record](P05_IMPLEMENTATION.md). Changes are uncommitted.
 
 ## P04a completion
 
@@ -64,7 +68,7 @@ tqueで管理し、進捗モードは**auto**とする。階層はForthSigma 121
 |546 P03|完了。560 P03a 44語、561 P03b 15語と永続化、562 P03c 6語が完了|
 |563 P04a|完了。28語の文字列操作/Unicode|
 |564 P04b / 547 P04|完了。文字列値・マクロ5語、合計33語。635は6a9c4e3でpush済み|
-|548 P05 / 565 P05a|進行中。653の2語を実装・検証、d8da5e7でpush済み。654は7964014でpush済み、655は2b97309でpush済み。659は3af3c9fでpush済み。660の2語を実装・検証済み（未コミット）、565は完了、次は566。661は接続を別途設計|
+|548 P05 / 565 P05a|進行中。653の2語を実装・検証、d8da5e7でpush済み。654は7964014でpush済み、655は2b97309でpush済み。659は3af3c9fでpush済み。660は9d57d8eでpush済み、565は完了。566の663（2語）を実装・検証済み（未コミット）、次は664。661は接続を別途設計|
 |561 P03b|完了。15語の実行・型/寿命追跡と新形式保存/復元/追加を統合|
 |550 P07|未着手。P01依存は解消。457を先行させる|
 |457 P07先行|550配下。IS/ACTION-OF/TO/+TOの辞書登録。既存IDを使う|

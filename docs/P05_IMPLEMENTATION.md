@@ -1,6 +1,6 @@
 # P05 implementation and validation
 
-Updated2026-11-14. P05a (565) has all sixteen words implemented and validated. Tasks653/654/655 were pushed as d8da5e7/7964014/2b97309;659 was pushed as3af3c9f. Task660 is implemented and validated, uncommitted. P05 (548) and542 remain incomplete: P05b566 and separate INCLUDE/REQUIRE integration661 remain pending. Native Windows/Linux checks are tracked separately under607.
+Updated2026-11-14. P05a (565) has all sixteen words implemented and validated. Tasks653/654/655 were pushed as d8da5e7/7964014/2b97309;659 was pushed as3af3c9f. Task660 was committed/pushed as9d57d8e. P05b task663 implements the first two of fourteen words, uncommitted. P05 (548) and542 remain incomplete: P05b566 and separate INCLUDE/REQUIRE integration661 remain pending. Native Windows/Linux checks are tracked separately under607.
 
 ## File output and stream slurp (653)
 
@@ -86,7 +86,7 @@ Seven regressions in p05a_path_test.zig cover binary separators, Unicode/spaces,
 
 659 is complete (auto), committed/pushed as3af3c9f. Task660 completion follows below.
 
-## Path lookup (660, 2026-11-14, uncommitted)
+## Path lookup (660, 2026-11-14, 9d57d8e pushed)
 
 The user approved Gforth-style ordered search and expansion, borrowed results, and separate INCLUDE/REQUIRE integration. OPEN-PATH-FILE ( addr u path -- fid addr2 u2 0 | ior ) opens the first successful candidate read-only. On failure it returns only the last open ior; an empty path or initial empty component returns -37. Empty interior components stop search. Names classified by ABSOLUTE-FILE? bypass the list without dereferencing the path owner. FILE>PATH ( addr u path -- addr2 u2 ) opens and closes the file, throwing open/close errors. No failing operation follows a successful open that could lose its handle.
 
@@ -98,4 +98,14 @@ Resolved and expanded candidates are limited to1,024 bytes. Longer names raise S
 
 Eight regressions in p05a_search_test.zig cover read-only order and returned spelling, empty-component termination/last ior, native versus returned tilde names, close-error cleanup, stack/range/length preflight, result aliases and image restoration, embedded-NUL rejection, and lookup with no free heap/no extra image root. Normal/minimal zig build test and normal zig build pass. scripts/verify-p05a-search.py passes42 designated-Gforth comparisons covering Unicode/spaces, order, bypass, source-relative paths, home/named-home expansion and lexical compaction, including EVALUATE inside a file. Report: .work/p05a-search-check/comparison.json; logs: .zig-cache/p05a-search-{test,minimal,build}.log.
 
-660/656/565 are complete with progress auto. P05a is16/16. Next planned word group is P05b566 (directory/time); P05/542 remain incomplete. Changes for660 are uncommitted. No release package, version change or native Windows/Linux check was performed.
+660/656/565 are complete with progress auto. P05a is16/16. Next planned word group is P05b566 (directory/time); P05/542 remain incomplete. Changes for660 were committed/pushed as9d57d8e. No release package, version change or native Windows/Linux check was performed.
+
+## Path splitting (P05b663, 2026-11-14, uncommitted)
+
+BASENAME ( addr u -- addr2 u2 ) borrows the suffix after the last /; DIRNAME ( addr u -- addr u2 ) borrows the prefix including that /. No slash gives an empty directory prefix. A trailing slash gives an empty basename. Backslash, drive syntax, dot/dot-dot, NUL and Unicode bytes receive no special treatment. This is the designated Gforth's byte-oriented splitting, not POSIX basename/dirname normalization or OS path canonicalization.
+
+Both words validate depth and the complete input range before replacing the two operands in place. Empty input at the memory endpoint is valid. They allocate nothing, preserve source bytes and need no extra stack room. Borrowed bytes have the lifetime of the caller's original source. Builtin tags/startup entries are appended and the files feature group owns both words. HELP and both user manuals are updated. No GPL implementation code was copied.
+
+Three regressions in p05b_path_parts_test.zig cover exact addresses/lengths and unchanged binary/Unicode input, invalid depth/ranges with preserved operands, full-stack operation and compiled calls with no free heap. Normal/minimal tests and normal build pass. scripts/verify-p05b-path-parts.py passes108 Gforth comparisons of text, length, address displacement and final stack balance. Report: .work/p05b-path-parts-check/comparison.json; logs: .zig-cache/p05b-path-parts-{test,minimal,build}.log.
+
+663 is complete(auto);566 remains incomplete at2/14 words. Next is664 FILENAME-MATCH (investigate libc pattern syntax and platform differences before implementation). The seven directory words are665; four time words are666. Windows/Linux native checks remain outside this session under607. No commit/push, version bump or release package was made for663.

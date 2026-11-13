@@ -10,6 +10,16 @@ const State = forth.State;
 
 pub fn execute(self: *State, comptime builtin: defs.Builtin) RuntimeError!void {
     switch (builtin) {
+        .basename, .dirname => {
+            try self.requireDepth(2);
+            const count = std.math.cast(usize, try self.peek(0)) orelse return error.InvalidAddress;
+            const address = try self.peek(1);
+            const at = try self.memoryAddress(address, count);
+            const text = self.memory[at..][0..count];
+            const prefix = if (std.mem.lastIndexOfScalar(u8, text, '/')) |index| index + 1 else 0;
+            self.data_stack[self.data_depth - 2] = if (builtin == .basename) address + @as(map.Cell, @intCast(prefix)) else address;
+            self.data_stack[self.data_depth - 1] = @intCast(if (builtin == .basename) count - prefix else prefix);
+        },
         .open_path_file, .file_to_path => try search(self, builtin == .file_to_path),
         .absolute_file_query => {
             try self.requireDepth(2);

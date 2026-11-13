@@ -38,12 +38,12 @@ pub const words = [_]Builtin{
     .write_file,         .file_size,   .reposition_file, .slurp_file,  .read_file,      .bin,
     .file_position,      .resize_file, .flush_file,      .delete_file, .rename_file,    .file_status,
     .include_file, .emit_file, .slurp_fid, .key_file, .key_query_file, .file_eof_query, .plus_fmode, .dot_included, .triple_backslash,
-    .absolute_file_query, .clear_path, .also_path, .dot_path, .path_plus, .path_equals, .open_path_file, .file_to_path,
+    .absolute_file_query, .clear_path, .also_path, .dot_path, .path_plus, .path_equals, .open_path_file, .file_to_path, .basename, .dirname,
 };
 
 pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
     switch (builtin) {
-        .absolute_file_query, .clear_path, .also_path, .dot_path, .path_plus, .path_equals, .open_path_file, .file_to_path => try @import("paths.zig").execute(self, builtin),
+        .absolute_file_query, .clear_path, .also_path, .dot_path, .path_plus, .path_equals, .open_path_file, .file_to_path, .basename, .dirname => try @import("paths.zig").execute(self, builtin),
         .plus_fmode => {
             try self.requireDepth(2);
             const fam: memory_map.UCell = @bitCast(try self.peek(1));

@@ -1197,3 +1197,7 @@ P .PATH prints each component followed by a space, stopping at the first empty c
 Leading /, ~, ./ and drive forms bypass the path list. ./ is relative to the current physical source file's directory (working directory in terminal/EVALUATE); ~+/ selects the working directory. ~/ is expanded through HOME when opening, and POSIX ~user uses the host user database. Returned text keeps the tilde spelling. The native host follows Gforth's writable-home selection. Windows uses HOME, then HOMEDRIVE+HOMEPATH, TEMP or TMP; named-user lookup is unsupported there. Lexical compaction does not resolve symlinks.
 
 The result borrows a1,024-byte system buffer until the next path lookup; reset/image restoration also invalidates it. Copy it for longer retention and do not FREE it. Overlong candidates raise StringTooLong; NUL-containing filenames are rejected. These words do not change INCLUDE/REQUIRE. [Details](P05_IMPLEMENTATION.md).
+
+### Filename components
+
+`BASENAME ( addr u -- addr2 u2 )` returns the suffix after the last forward slash. `DIRNAME ( addr u -- addr u2 )` returns the prefix including that slash. Both borrow the original bytes without changing or allocating them; keep the source alive while using the result. For `a/b`, the results are `b` and `a/`; for `a/`, they are empty and `a/`; for `file`, they are `file` and empty. No normalization is performed. Backslash is ordinary text even on Windows, following Gforth's definitions.
