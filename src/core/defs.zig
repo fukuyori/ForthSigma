@@ -751,6 +751,7 @@ pub const Builtin = enum {
     basename, dirname,
     filename_match,
     get_dir, set_dir,
+    equals_mkdir, mkdir_parents,
 };
 
 pub const HeapResult = union(enum) { address: Cell, no_memory, bad_pointer };

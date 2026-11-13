@@ -948,6 +948,8 @@ pub const State = struct {
             .{ "FILENAME-MATCH", .filename_match },
             .{ "GET-DIR", .get_dir },
             .{ "SET-DIR", .set_dir },
+            .{ "=MKDIR", .equals_mkdir },
+            .{ "MKDIR-PARENTS", .mkdir_parents },
             .{ "\\\\\\", .triple_backslash },
     };
 

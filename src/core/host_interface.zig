@@ -20,6 +20,9 @@ pub const LineResult = struct { length: usize = 0, found: bool = false, ior: Cel
 
 /// Host file operations. Ids are opaque cells; the standard streams use the fixed ids above.
 pub const FileOps = struct {
+    /// Create one directory. POSIX applies mode at creation subject to umask;
+    /// Windows CRT ignores it. Existing names return errnoIor(17).
+    mkdir: ?*const fn (?*anyopaque, []const u8, Cell) Cell = null,
     /// Writes a NUL-terminated cwd; value excludes NUL. Failure uses a nonzero ior.
     get_dir: ?*const fn (?*anyopaque, []u8) FileResult = null,
     /// Changes process cwd to the supplied expanded byte path.

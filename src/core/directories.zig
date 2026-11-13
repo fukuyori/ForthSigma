@@ -6,6 +6,7 @@ const map = @import("memory_map.zig");
 const registry = @import("address_registry.zig");
 
 pub fn execute(self: *forth.State, comptime builtin: defs.Builtin) defs.RuntimeError!void {
+    if (builtin == .equals_mkdir or builtin == .mkdir_parents) return create(self, builtin == .mkdir_parents);
     try self.requireDepth(2);
     const length = std.math.cast(usize, try self.peek(0)) orelse return error.InvalidAddress;
     const address = try self.peek(1);
@@ -36,4 +37,34 @@ pub fn execute(self: *forth.State, comptime builtin: defs.Builtin) defs.RuntimeE
         },
         else => unreachable,
     }
+}
+
+fn create(self: *forth.State, parents: bool) defs.RuntimeError!void {
+    try self.requireDepth(3);
+    const length = std.math.cast(usize, try self.peek(1)) orelse return error.InvalidAddress;
+    const at = try self.memoryAddress(try self.peek(2), length);
+    const name = self.memory[at..][0..length];
+    const mode = try self.peek(0);
+    const mkdir = (try self.fileOps()).mkdir orelse return error.FileUnavailable;
+    const result = if (std.mem.indexOfScalar(u8, name, 0) != null) forth.errnoIor(map.errno_invalid) else created: {
+        // Preflight the final expansion before any parent can be created.
+        const final = try @import("paths.zig").openedName(self, name);
+        if (std.mem.indexOfScalar(u8, final.bytes[0..final.len], 0) != null) break :created forth.errnoIor(map.errno_invalid);
+        if (parents) {
+            var start: usize = 1;
+            while (start < name.len) {
+                const end = std.mem.indexOfScalarPos(u8, name, start, '/') orelse break;
+                const prefix = try @import("paths.zig").openedName(self, name[0..end]);
+                if (std.mem.indexOfScalar(u8, prefix.bytes[0..prefix.len], 0) != null) break :created forth.errnoIor(map.errno_invalid);
+                try @import("words_numeric.zig").checkWorkBlock(self);
+                const ior = mkdir(self.writer.context, prefix.bytes[0..prefix.len], mode);
+                if (ior != 0 and ior != forth.errnoIor(17)) break :created ior;
+                start = end + 1;
+            }
+        }
+        try @import("words_numeric.zig").checkWorkBlock(self);
+        break :created mkdir(self.writer.context, final.bytes[0..final.len], mode);
+    };
+    self.data_depth -= 3;
+    try self.push(result);
 }

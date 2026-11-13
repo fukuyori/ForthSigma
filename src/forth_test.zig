@@ -25,6 +25,7 @@ comptime {
     _ = @import("tests/p05b_path_parts_test.zig");
     _ = @import("tests/p05b_filename_match_test.zig");
     _ = @import("tests/p05b_cwd_test.zig");
+    _ = @import("tests/p05b_mkdir_test.zig");
     _ = @import("tests/p01b_test.zig");
     _ = @import("tests/p01a_test.zig");
     _ = @import("core/blocks.zig");
