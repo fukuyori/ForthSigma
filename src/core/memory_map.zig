@@ -261,6 +261,9 @@ pub const heap_header = 2 * cell_size;
 
 pub const base_address: Cell = 0x0200;
 
+/// Decimal places of the latest integer conversion (-1 for a single-cell number).
+pub const dpl_address: Cell = 0x0d50;
+
 pub const state_address: Cell = 0x0208;
 
 /// The end of the used part of the heap; kept in memory so images preserve it.

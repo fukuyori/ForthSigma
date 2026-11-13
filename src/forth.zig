@@ -217,6 +217,7 @@ pub const State = struct {
     float_depth: usize = 0,
     control_stack: [max_controls]Control = undefined,
     control_depth: usize = 0,
+    random_state: u64 = 0,
     /// The loops of [DO], [FOR], and [BEGIN] that are running.
     interpret_loops: [16]InterpretLoop = undefined,
     interpret_loop_depth: usize = 0,
@@ -426,6 +427,7 @@ pub const State = struct {
         self.* = .{ .writer = writer, .sizes = given.sizes, .locals_top = given.sizes.localsBase(), .memory = given.memory, .data_stack = given.data_stack, .return_stack = given.return_stack, .float_stack = given.float_stack, .loop_stack = given.loop_stack, .frames = given.frames, .catches = given.catches };
         self.writeCell(base_address, 10) catch unreachable;
         self.writeCell(precision_address, dot_precision) catch unreachable;
+        self.writeCell(memory_map.dpl_address, -1) catch unreachable;
         self.writeCell(heap_top_address, self.sizes.heapBase()) catch unreachable;
         self.storeSourceName(terminal_source_name_address, terminal_source_name);
         self.storeSourceName(evaluate_source_name_address, evaluate_source_name);
@@ -750,6 +752,71 @@ pub const State = struct {
             .{ "2,", .two_comma },
             .{ "ROL", .rol },
             .{ "ROR", .ror },
+            .{ "*/F", .star_slash_f },
+            .{ "*/MODF", .star_slash_mod_f },
+            .{ "*/MODS", .star_slash_mod_s },
+            .{ "*/S", .star_slash_s },
+            .{ "/F", .slash_f },
+            .{ "/MODF", .slash_mod_f },
+            .{ "/MODS", .slash_mod_s },
+            .{ "/S", .slash_s },
+            .{ ">POW2", .to_pow2 },
+            .{ "CTZ", .ctz },
+            .{ "DROL", .drol },
+            .{ "DROR", .dror },
+            .{ "DU/MOD", .du_slash_mod },
+            .{ "LOG2", .log2 },
+            .{ "LROL", .lrol },
+            .{ "LROR", .lror },
+            .{ "MODF", .mod_f },
+            .{ "MODS", .mod_s },
+            .{ "MUX", .mux },
+            .{ "POW2?", .pow2_query },
+            .{ "U*/", .u_star_slash },
+            .{ "U*/MOD", .u_star_slash_mod },
+            .{ "U/", .u_slash },
+            .{ "U/MOD", .u_slash_mod },
+            .{ "UD/MOD", .ud_slash_mod },
+            .{ "UMOD", .u_mod },
+            .{ "WROL", .wrol },
+            .{ "WROR", .wror },
+            .{ "-INF", .negative_inf },
+            .{ "-INFINITY", .negative_infinity },
+            .{ "1/F", .f_reciprocal },
+            .{ "F*+", .f_mul_add },
+            .{ "F2*", .f_two_star },
+            .{ "F2/", .f_two_slash },
+            .{ "FAXPY", .faxpy },
+            .{ "FCOPYSIGN", .f_copysign },
+            .{ "FFOURTH", .f_fourth },
+            .{ "FTHIRD", .f_third },
+            .{ "F~ABS", .f_approx_abs },
+            .{ "F~REL", .f_approx_rel },
+            .{ "INF", .positive_inf },
+            .{ "INFINITY", .positive_infinity },
+            .{ "NAN", .nan_value },
+            .{ "V*", .vector_dot },
+            .{ "ARSHIFT", .arshift },
+            .{ "DARSHIFT", .darshift },
+            .{ "DLSHIFT", .dlshift },
+            .{ "DRSHIFT", .drshift },
+            .{ "RANDOM", .random },
+            .{ "RND", .rnd },
+            .{ "SEED!", .seed_store },
+            .{ ">FLOAT1", .to_float1 },
+            .{ "BASE-EXECUTE", .base_execute },
+            .{ "CONVERT", .convert },
+            .{ "DEC.", .decimal_dot },
+            .{ "DEC.R", .decimal_dot_r },
+            .{ "DPL", .dpl },
+            .{ "E.", .e_dot },
+            .{ "E.EXACT", .e_exact },
+            .{ "E.P", .e_precision },
+            .{ "FP.", .f_prefix_dot },
+            .{ "H.", .h_dot },
+            .{ "HEX.", .hex_dot },
+            .{ "UD.", .ud_dot },
+            .{ "UD.R", .ud_dot_r },
     };
 
     fn installBuiltins(self: *State) void {
@@ -1860,7 +1927,7 @@ pub const State = struct {
         if (defs.debug_enabled and self.cover_blocks and self.compiling and startsBlock(builtin)) self.markBlock(self.columnAfterWord());
     }
 
-    const word_modules = .{ words_stack, words_arithmetic, words_memory, words_output, words_input, words_compiling, words_float, words_pictured, words_dictionary, words_system, @import("core/blocks.zig"), words_files, words_strings, words_help, words_defining, words_graphics, words_audio, words_xchar, words_tools, words_debug };
+    const word_modules = .{ words_stack, words_arithmetic, @import("core/words_numeric.zig"), words_memory, words_output, words_input, words_compiling, words_float, words_pictured, words_dictionary, words_system, @import("core/blocks.zig"), words_files, words_strings, words_help, words_defining, words_graphics, words_audio, words_xchar, words_tools, words_debug };
 
     /// For each built-in word, the index in `word_modules` of the file that executes it.
     const word_owner = blk: {

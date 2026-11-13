@@ -51,22 +51,101 @@ const unary = float_math.unary;
 
 /// The built-in words this file executes; executeBuiltin dispatches by this list.
 pub const words = [_]Builtin{
-    .f_input, .f_drop, .f_dup, .f_swap, .f_over, .f_rot, .f_minus_rot, .f_nip, .f_tuck, .f_pick,
-    .f_depth, .f_dot_s, .f_add, .f_sub, .f_mul, .f_div, .f_max, .f_min, .f_negate, .f_abs, .f_sqrt,
-    .f_exp, .f_ln, .f_sin, .f_cos, .f_tan, .f_equal, .f_not_equal, .f_less, .f_greater,
-    .f_less_equal, .f_greater_equal, .f_zero_equal, .f_zero_not_equal, .f_zero_less,
-    .f_zero_greater, .f_zero_less_equal, .f_zero_greater_equal, .f_fetch, .f_store, .f_comma,
-    .f_array_fetch, .f_array_store, .f_add_store, .f_question, .floats, .float_plus, .s_to_f,
-    .f_to_s, .pi, .f_dot, .d_to_f, .f_to_d, .to_float, .f_dot_rdp, .f_to_str_rdp, .f_to_buf_rdp,
-    .f_floor, .f_trunc, .f_round, .f_e_dot, .f_s_dot, .precision, .set_precision, .f_proximate,
-    .sf_fetch, .sf_store, .df_fetch, .df_store, .sfloats, .dfloats, .sfloat_plus, .dfloat_plus,
-    .f_align, .f_aligned, .sf_align, .sf_aligned, .df_align, .df_aligned, .f_sincos, .f_asin,
-    .f_acos, .f_atan, .f_atan2, .f_sinh, .f_cosh, .f_tanh, .f_asinh, .f_acosh, .f_atanh,
-    .f_expm1, .f_lnp1, .f_log, .f_alog, .f_power, .represent,
+    .f_input,      .f_drop,          .f_dup,             .f_swap,           .f_over,            .f_rot,          .f_minus_rot,       .f_nip,                .f_tuck,     .f_pick,
+    .f_depth,      .f_dot_s,         .f_add,             .f_sub,            .f_mul,             .f_div,          .f_max,             .f_min,                .f_negate,   .f_abs,
+    .f_sqrt,       .f_exp,           .f_ln,              .f_sin,            .f_cos,             .f_tan,          .f_equal,           .f_not_equal,          .f_less,     .f_greater,
+    .f_less_equal, .f_greater_equal, .f_zero_equal,      .f_zero_not_equal, .f_zero_less,       .f_zero_greater, .f_zero_less_equal, .f_zero_greater_equal, .f_fetch,    .f_store,
+    .f_comma,      .f_array_fetch,   .f_array_store,     .f_add_store,      .f_question,        .floats,         .float_plus,        .s_to_f,               .f_to_s,     .pi,
+    .f_dot,        .d_to_f,          .f_to_d,            .to_float,         .f_dot_rdp,         .f_to_str_rdp,   .f_to_buf_rdp,      .f_floor,              .f_trunc,    .f_round,
+    .f_e_dot,      .f_s_dot,         .precision,         .set_precision,    .f_proximate,       .sf_fetch,       .sf_store,          .df_fetch,             .df_store,   .sfloats,
+    .dfloats,      .sfloat_plus,     .dfloat_plus,       .f_align,          .f_aligned,         .sf_align,       .sf_aligned,        .df_align,             .df_aligned, .f_sincos,
+    .f_asin,       .f_acos,          .f_atan,            .f_atan2,          .f_sinh,            .f_cosh,         .f_tanh,            .f_asinh,              .f_acosh,    .f_atanh,
+    .f_expm1,      .f_lnp1,          .f_log,             .f_alog,           .f_power,           .represent,      .to_float1,         .e_dot,                .e_exact,    .e_precision,
+    .f_prefix_dot, .negative_inf,    .negative_infinity, .f_reciprocal,     .f_mul_add,         .f_two_star,     .f_two_slash,       .faxpy,                .f_copysign, .f_fourth,
+    .f_third,      .f_approx_abs,    .f_approx_rel,      .positive_inf,     .positive_infinity, .nan_value,      .vector_dot,
 };
 
 pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
     switch (builtin) {
+        .to_float1 => {
+            const separator = try self.pop();
+            const text = try self.memoryRange();
+            if (text.len > 1190 or separator < 0 or separator > 255) {
+                try self.push(0);
+                return;
+            }
+            var buffer: [1200]u8 = undefined;
+            const sep: u8 = @intCast(separator);
+            for (text, 0..) |byte, i| buffer[i] = if (byte == sep) '.' else if (byte == '.') 0 else byte;
+            const normalized = buffer[0..text.len];
+            const blank = std.mem.indexOfNone(u8, normalized, " ") == null;
+            const parsed = if (blank) @as(?Float, 0) else parseFloat(normalized, false);
+            if (parsed) |value| try self.fpush(value);
+            try self.push(truth(parsed != null));
+        },
+        .e_dot, .e_exact, .e_precision => {
+            const count = if (builtin == .e_precision) try self.pop() else 0;
+            if (builtin == .e_precision and (count < 1 or count > max_float_precision)) return error.ResultOutOfRange;
+            try writeCompactFloat(self, try self.fpop(), builtin, count);
+        },
+        .f_prefix_dot => try writePrefixFloat(self, try self.fpop()),
+        .negative_inf, .negative_infinity => try self.fpush(-std.math.inf(Float)),
+        .positive_inf, .positive_infinity => try self.fpush(std.math.inf(Float)),
+        .nan_value => try self.fpush(std.math.nan(Float)),
+        .f_third => try self.fpush(try self.fpeek(2)),
+        .f_fourth => try self.fpush(try self.fpeek(3)),
+        .f_reciprocal => try self.fpush(1.0 / try self.fpop()),
+        .f_two_star => try self.fpush((try self.fpop()) * 2.0),
+        .f_two_slash => try self.fpush((try self.fpop()) * 0.5),
+        .f_mul_add => {
+            const c = try self.fpop();
+            const b = try self.fpop();
+            const a = try self.fpop();
+            try self.fpush(@mulAdd(Float, b, c, a));
+        },
+        .f_copysign => {
+            const sign = try self.fpop();
+            const magnitude = try self.fpop();
+            try self.fpush(std.math.copysign(magnitude, sign));
+        },
+        .f_approx_abs, .f_approx_rel => {
+            const tolerance = try self.fpop();
+            const b = try self.fpop();
+            const a = try self.fpop();
+            const bound = if (builtin == .f_approx_abs) tolerance else tolerance * (@abs(a) + @abs(b));
+            try self.push(truth(@abs(a - b) < bound));
+        },
+        .faxpy, .vector_dot => {
+            try self.requireDepth(5);
+            if (builtin == .faxpy) try self.requireFloatDepth(1);
+            if (builtin == .vector_dot and self.float_depth == self.float_stack.len) return error.FloatStackOverflow;
+            const count: memory_map.UCell = @bitCast(try self.pop());
+            const stride_y = try self.pop();
+            const y = try self.pop();
+            const stride_x = try self.pop();
+            const x = try self.pop();
+            // Validate both complete progressions before FAXPY writes any element.
+            try validateVector(self, x, stride_x, count);
+            try validateVector(self, y, stride_y, count);
+            const scale: Float = if (builtin == .faxpy) try self.fpop() else 0;
+            var total: Float = 0;
+            var i: memory_map.UCell = 0;
+            while (i < count) : (i += 1) {
+                const ax: Cell = @intCast(@as(i128, x) + @as(i128, stride_x) * i);
+                const ay: Cell = @intCast(@as(i128, y) + @as(i128, stride_y) * i);
+                const vx = try self.readFloat(ax);
+                const vy = try self.readFloat(ay);
+                if (builtin == .faxpy) {
+                    // Only F*+ promises fused rounding; array operations use separate steps.
+                    const product = scale * vx;
+                    try self.writeFloat(ay, product + vy);
+                } else {
+                    const product = vx * vy;
+                    total += product;
+                }
+            }
+            if (builtin == .vector_dot) try self.fpush(total);
+        },
         .f_input => {
             var line: [4096]u8 = undefined;
             while (true) {
@@ -113,7 +192,7 @@ pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
             // gforth shows each item as 14 0 17 F.RDP does: exponential notation
             // filling 14 characters (3.0000000000E0).
             var field: [max_rdp_width]u8 = undefined;
-            for (self.float_stack[self.float_depth -| max_dot_s_items .. self.float_depth]) |value| {
+            for (self.float_stack[self.float_depth -| max_dot_s_items..self.float_depth]) |value| {
                 self.write(formatRdp(value, 14, 0, 17, &field) catch unreachable);
                 self.write(" ");
             }
@@ -348,5 +427,96 @@ pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
             }
         },
         else => @compileError(@tagName(builtin) ++ " is not in the words of this file"),
+    }
+}
+
+/// Byte strides may be negative or zero; zero elements do not access either address.
+fn validateVector(self: *State, address: Cell, stride: Cell, count: memory_map.UCell) RuntimeError!void {
+    if (count == 0) return;
+    const last = @as(i128, address) + @as(i128, stride) * (count - 1);
+    const end = std.math.cast(Cell, last) orelse return error.InvalidAddress;
+    _ = try self.memoryAddress(address, float_size);
+    _ = try self.memoryAddress(end, float_size);
+}
+
+/// Compact decimal output built from Sigma's exact binary-to-decimal conversion.
+fn writeCompactFloat(self: *State, value: Float, comptime mode: Builtin, count: Cell) RuntimeError!void {
+    if (std.math.isNan(value)) return self.write("NaN");
+    if (std.math.isInf(value)) return self.write(if (value < 0) "-inf" else "inf");
+    var scratch: [float_format.max_rdp_width + 400]u8 = undefined;
+    var digits: usize = if (mode == .e_exact) 800 else if (mode == .e_precision) @intCast(count) else 17;
+    // Find the smallest rounded significand which reconstructs the original binary64.
+    if (mode == .e_dot) {
+        var n: usize = 1;
+        while (n < 17) : (n += 1) {
+            const candidate = try float_format.representDecimal(@abs(value), n, &scratch);
+            var text: [80]u8 = undefined;
+            const formatted = std.fmt.bufPrint(&text, "{s}e{d}", .{ candidate.digits, candidate.exponent - @as(i32, @intCast(n)) }) catch unreachable;
+            const reconstructed = std.fmt.parseFloat(Float, formatted) catch unreachable;
+            if (reconstructed == @abs(value)) {
+                digits = n;
+                break;
+            }
+        }
+    }
+    var rep = try float_format.representDecimal(@abs(value), digits, &scratch);
+    // One extra digit may avoid an exponent for the precision-limited format.
+    if (mode == .e_precision and digits <= 308 and @abs(value) >= std.math.pow(Float, 10, @floatFromInt(digits)) and @abs(value) < std.math.pow(Float, 10, @floatFromInt(digits + 1))) {
+        digits += 1;
+        rep = try float_format.representDecimal(@abs(value), digits, &scratch);
+    }
+    var len = rep.digits.len;
+    while (len > 1 and rep.digits[len - 1] == '0') len -= 1;
+    const significant = rep.digits[0..len];
+    if (std.math.signbit(value)) self.write("-");
+    const exp: i64 = rep.exponent;
+    if (exp > 0 and exp <= digits) {
+        const split: usize = @intCast(@min(exp, @as(i64, @intCast(len))));
+        self.write(significant[0..split]);
+        self.writeZeros(exp - @as(i64, @intCast(len)));
+        if (split < len) {
+            self.write(".");
+            self.write(significant[split..]);
+        }
+        self.write("e");
+    } else if (exp <= 0 and exp > -5) {
+        self.write(".");
+        self.writeZeros(-exp);
+        self.write(significant);
+        self.write("e");
+    } else {
+        self.write(significant[0..1]);
+        if (len > 1) {
+            self.write(".");
+            self.write(significant[1..]);
+        }
+        self.write("e");
+        self.writeNumberDecimal(exp - 1);
+    }
+}
+
+fn writePrefixFloat(self: *State, value: Float) RuntimeError!void {
+    if (std.math.isNan(value) or std.math.isInf(value)) {
+        self.writeNonFinite(value, "infinity");
+        return;
+    }
+    const rep = float_format.represent(value, self.floatPrecision());
+    const exponent = @divFloor(rep.exponent - 1, 3) * 3;
+    const before: usize = @intCast(rep.exponent - exponent);
+    if (rep.negative) self.write("-");
+    self.write(rep.digits[0..@min(before, rep.len)]);
+    self.writeZeros(@as(i64, @intCast(before)) - @as(i64, @intCast(rep.len)));
+    self.write(".");
+    if (before < rep.len) self.write(rep.digits[before..rep.len]);
+    // The SI prefix for 10^0 is a space; micro uses ASCII u.
+    const prefixes = "qryzafpnum kMGTPEZYRQ";
+    if (exponent >= -30 and exponent <= 30) {
+        const index: usize = @intCast(@divExact(exponent, 3) + 10);
+        self.write(prefixes[index..][0..1]);
+        self.write(" ");
+    } else {
+        self.write("E");
+        self.writeNumberDecimal(exponent);
+        self.write(" ");
     }
 }

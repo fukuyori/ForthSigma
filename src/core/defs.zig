@@ -727,6 +727,10 @@ pub const Builtin = enum {
     zero_less_equal, d_zero_less_equal, d_zero_not_equal, d_zero_greater, d_zero_greater_equal, d_less_equal, d_not_equal, d_greater, d_greater_equal, du_less_equal, du_greater, du_greater_equal, u_less_equal, u_greater_equal, u_max, u_min,
     two_nip, two_r_drop, two_tuck, fourth, r_drop, third,
     two_comma, rol, ror,
+    star_slash_f, star_slash_mod_f, star_slash_mod_s, star_slash_s, slash_f, slash_mod_f, slash_mod_s, slash_s, to_pow2, ctz, drol, dror, du_slash_mod, log2, lrol, lror, mod_f, mod_s, mux, pow2_query, u_star_slash, u_star_slash_mod, u_slash, u_slash_mod, ud_slash_mod, u_mod, wrol, wror,
+    negative_inf, negative_infinity, f_reciprocal, f_mul_add, f_two_star, f_two_slash, faxpy, f_copysign, f_fourth, f_third, f_approx_abs, f_approx_rel, positive_inf, positive_infinity, nan_value, vector_dot,
+    arshift, darshift, dlshift, drshift,
+    random, rnd, seed_store, to_float1, base_execute, convert, decimal_dot, decimal_dot_r, dpl, e_dot, e_exact, e_precision, f_prefix_dot, h_dot, hex_dot, ud_dot, ud_dot_r,
 };
 
 pub const HeapResult = union(enum) { address: Cell, no_memory, bad_pointer };

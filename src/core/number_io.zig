@@ -64,6 +64,15 @@ pub fn currentBase(self: *State) Cell {
 /// As in gforth, a number that the base cannot read may also start with `0x` or `0X`
 /// for hexadecimal (`0xFF`, `-0x10`, `0x-5`; in base 36, `0x10` is a base-36 number).
 pub fn parseNumber(self: *State, token: []const u8) RuntimeError!?ParsedNumber {
+    const parsed = try parseNumberInner(self, token);
+    const places: Cell = if (parsed) |number|
+        if (number.double) @intCast(token.len - std.mem.lastIndexOfScalar(u8, token, '.').? - 1) else -1
+    else -1;
+    try self.writeCell(memory_map.dpl_address, places);
+    return parsed;
+}
+
+fn parseNumberInner(self: *State, token: []const u8) RuntimeError!?ParsedNumber {
     if (characterLiteral(token)) |value| return .{ .value = value, .double = false };
     const base = try self.validBase();
     if (parseDigits(token, base)) |number| return number;
@@ -141,7 +150,7 @@ fn parseDigits(token: []const u8, current_base: Cell) ?ParsedNumber {
 /// Recognizes a decimal float. Source literals require an exponent marker (`1E`, `1.5e-3`);
 /// FINPUT and >FLOAT also accept plain decimal numbers.
 pub fn parseFloat(token: []const u8, require_exponent: bool) ?Float {
-    var normalized: [80]u8 = undefined;
+    var normalized: [1200]u8 = undefined;
     var used: usize = 0;
     var i: usize = 0;
     if (i < token.len and (token[i] == '-' or token[i] == '+')) {

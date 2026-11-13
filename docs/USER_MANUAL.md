@@ -1072,3 +1072,23 @@ The following are syntax forms that can be used in Forth input, but they are not
 `EDIT`, the book-specific edit-buffer operations, CP/M file operations, PC-8001 monitor functions, and Z80 machine-code execution remain unsupported. Standard block LOAD and LIST are available.
 
 Gforth extensions such as `TRY` … `ENDTRY` and `]]` … `[[` remain unimplemented. See the [compatibility list](COMPATIBILITY.md).
+
+## Numeric extensions (P02)
+
+The following words are built in; the floating-point words require a build with floats. HELP gives each stack effect. Floating operands use the separate F stack. [Implementation details and validation](P02_IMPLEMENTATION.md) (Japanese) record the boundary rules and reference differences.
+
+- **Integer division and bits**: `*/F`, `*/MODF`, `*/MODS`, `*/S`, `/F`, `/MODF`, `/MODS`, `/S`, `>POW2`, `ARSHIFT`, `CTZ`, `DARSHIFT`, `DLSHIFT`, `DROL`, `DROR`, `DRSHIFT`, `DU/MOD`, `LOG2`, `LROL`, `LROR`, `MODF`, `MODS`, `MUX`, `POW2?`, `U*/`, `U*/MOD`, `U/`, `U/MOD`, `UD/MOD`, `UMOD`, `WROL`, `WROR`.
+- **Floating-point operations**: `-INF`, `-INFINITY`, `1/F`, `F*+`, `F2*`, `F2/`, `FAXPY`, `FCOPYSIGN`, `FFOURTH`, `FTHIRD`, `F~ABS`, `F~REL`, `INF`, `INFINITY`, `NAN`, `V*`.
+- **Conversion, output and randoms**: `RANDOM`, `RND`, `SEED!`, `>FLOAT1`, `BASE-EXECUTE`, `CONVERT`, `DEC.`, `DEC.R`, `DPL`, `E.`, `E.EXACT`, `E.P`, `FP.`, `H.`, `HEX.`, `UD.`, `UD.R`.
+
+F division rounds toward minus infinity; S division truncates toward zero. Remainders precede quotients. Zero divisors throw -10, oversized cell quotients -11. DU/MOD takes a signed double and unsigned divisor; UD/MOD returns a double unsigned quotient.
+
+Shift counts at or above the width (64/128) produce zero for logical shifts, sign fill for arithmetic shifts. Rotations reduce counts modulo their width; W/L rotations clear upper bits. These choices differ from some Gforth boundary results.
+
+F*+ computes r1+r2*r3 with fused f64 rounding. F~ABS and F~REL use strict tolerances; relative tolerance scales by abs(r1)+abs(r2). V* and FAXPY take signed byte strides, permit negative/zero strides, and access no memory for zero elements. FAXPY validates both vectors before writing; overlapping elements are processed sequentially.
+
+BASE-EXECUTE restores BASE on success or THROW. DEC. is signed decimal; DEC.R is unsigned decimal, following the reference documentation rather than its negative-cell runtime result. H./HEX. include a $ prefix. These explicit-base words preserve BASE. UD./UD.R display the full unsigned 128-bit range. Right-aligned integer output has no trailing space. CONVERT skips the first byte; DPL reports the number of places after the latest integer conversion's final decimal point, or -1.
+
+>FLOAT1 takes a decimal separator character. E. prints a compact round-trip value; E.EXACT prints its exact decimal value; E.P takes 1..1000 significant digits (otherwise -11). These three leave no trailing space. FP. uses engineering notation and SI prefixes with a trailing space.
+
+SEED! sets the VM's raw 64-bit seed, including zero. RND returns a raw cell, RANDOM an unsigned result below its bound (zero for bound zero). Equal seeds reproduce Sigma's sequence; Gforth sequence compatibility is not required. Random state is not saved in dictionary images.
