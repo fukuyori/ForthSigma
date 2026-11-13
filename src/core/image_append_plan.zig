@@ -108,7 +108,7 @@ pub fn relocatedWord(plan: *const Plan, index: usize) RuntimeError!defs.Word {
         word.does_code_end += @intCast(plan.code_base);
     }
     switch (word.kind) {
-        .variable, .array, .created, .value, .fvalue, .two_constant, .two_value, .marker, .deferred => word.value += plan.data_delta,
+        .variable, .array, .created, .value, .fvalue, .two_constant, .two_value, .marker, .deferred, .string_value => word.value += plan.data_delta,
         else => {},
     }
     // Address constants use explicit type records; raw constants stay unchanged.

@@ -31,3 +31,5 @@ ABI配置署名はWord/Opのサイズ・アラインメント、Word全フィー
 parseは入力と呼出元Workspaceを借用し、Stateを変更しない。戻りViewは両方の寿命に依存する。これは構造検査であり、実行可能な辞書の復元完了を意味しない。Stateからの到達可能ヒープ収集は619配下621のimage_graph.zigへ追加済み。内部ポインター生成更新の接続も622で追加済み。容量確保・組込語照合・保存/復元/追加は620〜630で公開経路へ統合済み。
 
 The ABI signature includes the complete builtin enum. Adding builtin tags may invalidate older files using the same magic. Startup builtin count and tag matching are also strict; stable execution-token numbers alone do not guarantee acceptance across implementation revisions.
+
+A string_value WordKind has an eight-byte data-space owner field. Its memory relocation is mandatory. A non-NULL pointer must name the start of a reachable heap payload whose first eight bytes contain a length no larger than the remaining payload. This validates known ownership without guessing pointer types from raw cells.

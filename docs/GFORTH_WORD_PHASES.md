@@ -218,7 +218,7 @@ FACILITY EXTのキー4語とBLOCK/BLOCK EXTの10語を優先する。既存の�
 
 #### P04b 文字列値と置換
 
-対象 5語。tque ID: 564。単位内の先行作業: P04a。
+対象5語。tque ID: 564。単位内の先行作業: P04a（完了）。$VALUE/MACRO:（634）は実装・27ケース比較・9回帰済み。残り3語は635。親564/547は未完了。[記録](P04_IMPLEMENTATION.md)。
 
 `$VALUE`, `.SUBSTITUTE`, `MACRO:`, `MACROS-WORDLIST`, `REPLACER:`
 

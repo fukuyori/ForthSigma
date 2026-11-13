@@ -1140,3 +1140,9 @@ S+ allocates an owned concatenation, released with FREE. APPEND resizes its firs
 INSERT shifts its fixed-size destination right, then copies the clipped source prefix; an aliased source observes the shift. DELETE removes a clipped prefix and blank-fills the fixed buffer's tail. STRING, stores the low-byte count followed by all bytes, without alignment; counts above 255 wrap while all bytes are still copied. Compound metadata checks precede destination changes. XC@+? is implemented (see below). [Details](P04_IMPLEMENTATION.md).
 
 XC@+? ( addr u -- addr2 u2 xc ) decodes the first bounded UTF-8 character like X@+/STRING. Empty input reads no memory, returns U+FFFD, advances the address by one and returns remaining length -1 (user-selected Sigma behavior). A negative remaining length is not a valid input string. Input range and output capacity errors preserve the operands. The designated Gforth agrees on nonempty inputs, including the tested malformed forms, but returns code point 0 for empty input.
+
+### String values (P04b)
+
+S" initial" $VALUE NAME defines an owned copy. NAME returns borrowed addr/u; S" new" TO NAME replaces it and S" more" +TO NAME appends, including inside compiled definitions. MACRO: is an alias of $VALUE in the current wordlist. TO/+TO failures retain the previous owner and contents; replacement invalidates explicit references into the old block.
+
+' NAME >BODY gives the owner cell, which can be passed to $FREE. FORGET/MARKER remove dictionary storage and its persistence root; free owned storage first if it is no longer needed. Explicitly reachable heap objects survive images and repeated loads. MACROS-WORDLIST, REPLACER: and .SUBSTITUTE remain pending. [Details](P04_IMPLEMENTATION.md).

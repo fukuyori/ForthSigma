@@ -44,6 +44,23 @@ pub fn cancelPointer(self: *State, slot: Cell, reserved: bool) void {
     self.addresses.stable_writes = 0;
 }
 
+/// Replace one owner without using transient data-stack cells. The old string
+/// stays owned until allocation, typed copying and length initialization succeed.
+pub fn storeString(self: *State, source: Cell, length: usize, string_var: Cell) RuntimeError!void {
+    _ = try self.memoryAddress(source, length);
+    const reserved = try reservePointer(self, string_var);
+    errdefer cancelPointer(self, string_var, reserved);
+    const size = @import("std").math.add(usize, cell_size, length) catch return self.throwIor(errno_no_memory);
+    const buffer = try self.heapAllocate(size) orelse return self.throwIor(errno_no_memory);
+    errdefer _ = self.heapFree(buffer) catch false;
+    try self.copyMemory(buffer + cell_size, source, length);
+    try self.writeCell(buffer, @intCast(length));
+    const old = try self.readCell(string_var);
+    if (!try self.heapFree(old)) return self.throwIor(errno_invalid);
+    try self.writeCell(string_var, buffer);
+    try registerPointer(self, string_var);
+}
+
 pub fn fetchString(self: *State, string_var: Cell) RuntimeError!StringRef {
     const buffer = try self.readCell(string_var);
     if (buffer == 0) return .{ .address = 0, .length = 0 };

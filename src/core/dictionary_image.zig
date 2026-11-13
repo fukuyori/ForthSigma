@@ -175,7 +175,7 @@ pub fn appendImage(self: *State, source: *const State) RuntimeError!void {
             word.does_code_start = @intCast(@as(usize, word.does_code_start) + code_base);
             word.does_code_end = @intCast(@as(usize, word.does_code_end) + code_base);
         }
-        if (word.kind == .variable or word.kind == .array or word.kind == .created or word.kind == .value or word.kind == .fvalue or word.kind == .two_constant or word.kind == .two_value or word.kind == .marker or word.kind == .deferred)
+        if (word.kind == .variable or word.kind == .array or word.kind == .created or word.kind == .value or word.kind == .fvalue or word.kind == .two_constant or word.kind == .two_value or word.kind == .marker or word.kind == .deferred or word.kind == .string_value)
             word.value += data_delta;
         self.words[word_base + offset] = word;
     }

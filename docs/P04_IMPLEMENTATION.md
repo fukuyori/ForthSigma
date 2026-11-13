@@ -1,6 +1,6 @@
 # P04 implementation and validation
 
-2026-11-13. P04 (547) is in progress. P04a (563) is implemented: basic/borrowed strings (632, 21 words) and owned/editing/Unicode access (633, seven words). P04b (564, five words) remains pending. P03 review fixes and the first 21 P04a words were committed/pushed as a6ab243. The six edit/owned-string words were committed/pushed as 5b2c8a4.
+2026-11-13. P04 (547) is in progress. P04a (563) is implemented: basic/borrowed strings (632, 21 words) and owned/editing/Unicode access (633, seven words). P04b (564) is in progress: $VALUE/MACRO: (634) are implemented; macro vocabulary/callback substitution (635, three words) remains pending. P03 review fixes and the first 21 P04a words were committed/pushed as a6ab243. The six edit/owned-string words were committed/pushed as 5b2c8a4.
 
 ## Basic characters and borrowed strings (632)
 
@@ -59,4 +59,20 @@ Both entry points now check input ranges and the extra output cell before consum
 
 Four regressions in p04a_xc_test.zig cover 11 UTF-8 forms, empty input at memory end, range/capacity preservation, compilation and save/restore/append execution. Normal/minimal zig build test and the normal build pass. Logs: .zig-cache/p04a-xc-test.log, p04a-xc-minimal.log, p04a-xc-build.log. verify-p04a-xc.py passes 301 nonempty comparisons with designated Gforth and three Sigma-specific empty cases. Report: .work/p04a-xc-check/results.json.
 
-P04a totals: 28 words, 672 nonempty/general Gforth comparison cases (323+48+301), three separate empty-input cases and 18 regression tests. XC@+? and the current documentation update are uncommitted. P04b (564) is next; P04 (547) and 542 remain incomplete.
+P04a totals: 28 words, 672 nonempty/general Gforth comparison cases (323+48+301), three separate empty-input cases and 18 regression tests. XC@+? was committed/pushed as fa2afe9. P04b (564) is now in progress; P04 (547) and 542 remain incomplete.
+
+## String values (634, two words)
+
+$VALUE ( addr u "name" -- ) copies its input into an owned dynamic string. Executing the value returns a borrowed addr/u. TO replaces the string and +TO appends; both work interpreted and compiled. MACRO: is an alias for the same defining behavior in the current wordlist. It does not, by itself, change the current wordlist.
+
+A new string_value WordKind is appended without renumbering existing kinds. Its eight-byte dictionary body owns an explicitly registered heap pointer; >BODY returns that owner cell. The runtime, compiled store/add operations, image data-field relocation, decompiler and linter recognize its two-cell stack effects. Multiline names and defining words containing $VALUE use the existing pending-definition mechanism.
+
+Replacement allocates and copies before releasing the old string. Setters preserve their operands and prior contents on allocation/range/metadata failures. Failed creation restores word count, names, HERE and lookup state. Borrowed addresses remain subject to normal lifetime invalidation when the underlying block is replaced or freed.
+
+FORGET/MARKER remove the value and its registered dictionary owner. They do not automatically free arbitrary dynamic heap blocks, consistent with existing dynamic-string ownership. To release storage before forgetting, use ' name >BODY $FREE. Unrooted blocks are omitted from subsequent images; surviving explicit references retain their reachable objects.
+
+Image validation requires a string_value owner to have an explicit relocation record. A non-NULL owner must point to the beginning of a reachable heap payload with a valid eight-byte length header and sufficient bytes. Missing type records and corrupt headers fail before restore changes the target. A freed/null string owner remains valid.
+
+Nine regressions in p04b_values_test.zig cover interpreted/compiled replacement and append, self assignment, MACRO: and multiline definers, allocation/capacity/range preservation, creation rollback, two independent appended copies and re-save/restore, borrowed-alias invalidation, MARKER roots and malformed owner images. Normal/minimal zig build test and normal build pass. Logs: .zig-cache/p04b-values-test.log, p04b-values-minimal.log, p04b-values-build.log. verify-p04b-values.py passes 27 cases against designated Gforth. CLI save/repeated load and compiled setters also pass; reports in .work/p04b-values-check/.
+
+These changes are uncommitted. P04b and P04 remain incomplete. Next is 635: MACROS-WORDLIST, REPLACER: and .SUBSTITUTE, including case-sensitive macro lookup, existing REPLACES/SUBSTITUTE integration, callback stack ownership and persistence.

@@ -230,6 +230,7 @@ pub fn parse(image: []const u8, workspace: *Workspace) RuntimeError!View {
         }
     }
     for (workspace.reached[0..h.object_count]) |reached| if (!reached) return error.InvalidImage;
+    try validateStringValues(view, workspace);
     return view;
 }
 
@@ -306,7 +307,7 @@ fn validateWords(v: View) RuntimeError!void {
         if (word.kind == .colon and (word.code_start > word.code_end or word.code_end > v.header.code_count)) return error.InvalidImage;
         if (word.has_does and (word.does_code_start > word.does_code_end or word.does_code_end > v.header.code_count)) return error.InvalidImage;
         switch (word.kind) {
-            .variable, .value, .fvalue, .deferred => try dataCell(v, word.value, 8),
+            .variable, .value, .fvalue, .deferred, .string_value => try dataCell(v, word.value, 8),
             .two_constant, .two_value => try dataCell(v, word.value, 16),
             .marker => try dataCell(v, word.value, map.marker_snapshot_size),
             .created, .array => try dataCell(v, word.value, 0),
@@ -339,6 +340,44 @@ fn validateCode(v: View) RuntimeError!void {
         }
     }
 }
+/// A string value is an explicit owning structure, not an arbitrary raw cell.
+/// Its owner must be registered and name either NULL or a complete length-prefixed
+/// heap allocation; otherwise a forged image could silently lose its contents.
+fn validateStringValues(v: View, workspace: *Workspace) RuntimeError!void {
+    const keys = workspace.slots[0..v.header.relocation_count];
+    std.mem.sort(u64, keys, {}, struct {
+        fn before(_: void, a: u64, b: u64) bool {
+            return a < b;
+        }
+    }.before);
+    for (0..v.header.word_count) |i| {
+        const word = std.mem.bytesToValue(defs.Word, v.words[i * @sizeOf(defs.Word) ..][0..@sizeOf(defs.Word)]);
+        if (word.kind != .string_value) continue;
+        const key: u64 = @intCast(word.value);
+        var low: usize = 0;
+        var high = keys.len;
+        while (low < high) {
+            const mid = low + (high - low) / 2;
+            if (keys[mid] < key) low = mid + 1 else high = mid;
+        }
+        if (low == keys.len or keys[low] != key) return error.InvalidImage;
+        const at: usize = @intCast(@as(map.Cell, map.system_end) + word.value - map.data_start);
+        const owner = get(u64, v.memory[at..]);
+        if (owner == 0) continue;
+        if (owner < v.header.m) return error.InvalidImage;
+        const offset = owner - v.header.m;
+        low = 0;
+        high = v.objects.len;
+        while (low < high) {
+            const mid = low + (high - low) / 2;
+            if (v.objects[mid].payload_offset < offset) low = mid + 1 else high = mid;
+        }
+        if (low == v.objects.len or v.objects[low].payload_offset != offset) return error.InvalidImage;
+        const bytes = v.objects[low].bytes;
+        if (bytes.len < 8 or get(u64, bytes) > bytes.len - 8) return error.InvalidImage;
+    }
+}
+
 fn dataCell(v: View, address: map.Cell, width: usize) RuntimeError!void {
     if (address < map.data_start or address > v.header.data_here or width > @as(u64, @intCast(@as(map.Cell, v.header.data_here) - address))) return error.InvalidImage;
 }

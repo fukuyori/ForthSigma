@@ -80,6 +80,13 @@ pub fn seeWord(self: *State, id: u16) RuntimeError!void {
             self.write(if (word.kind == .fvalue) " FVALUE " else " FCONSTANT ");
             self.write(name);
         },
+        .string_value => {
+            const text = try self.fetchString(word.value);
+            self.write("S\" ");
+            self.writeMemory(text.address, text.length);
+            self.write("\" $VALUE ");
+            self.write(name);
+        },
         .two_constant, .two_value => {
             self.writeNumber(try self.readDouble(word.value));
             self.write(if (word.kind == .two_value) ". 2VALUE " else ". 2CONSTANT ");
@@ -224,7 +231,7 @@ pub fn seeOperation(self: *State, out: *SeeOutput, pc: usize, role: SeeRole, sta
         .store_value => out.text(&.{ "TO ", self.seeName(op.value) }),
         .add_value => out.text(&.{ "+TO ", self.seeName(op.value) }),
         .builtin => {
-            const builtin: Builtin = @enumFromInt(op.value);
+            const builtin: Builtin = @fromBackingInt(@intCast(op.value));
             const name = for (self.words[0..self.builtin_count]) |*word| {
                 if (word.builtin == builtin and word.name_len != 0) break self.wordName(word.*);
             } else builtinName(builtin);

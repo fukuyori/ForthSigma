@@ -71,6 +71,10 @@ pub fn finishPending(self: *State, token: []const u8) RuntimeError!void {
             const id = try self.appendDataWord(token, .fvalue, float_size);
             try self.writeFloat(self.words[id].value, self.pending_float);
         },
+        .string_value_name => {
+            const cells = defs.doubleCells(self.pending_double);
+            try @import("string_values.zig").define(self, token, cells.low, cells.high);
+        },
         .two_value_name => {
             const id = try self.appendDataWord(token, .two_value, 2 * cell_size);
             try self.writeDouble(self.words[id].value, self.pending_double);
@@ -109,13 +113,14 @@ pub fn finishPending(self: *State, token: []const u8) RuntimeError!void {
             }
             const id = self.synonymTarget(try self.lookupOrFail(token));
             const kind = self.words[id].kind;
-            if (kind != .value and kind != .fvalue and kind != .two_value and kind != .deferred) return error.InvalidDefinition;
+            if (kind != .value and kind != .fvalue and kind != .two_value and kind != .string_value and kind != .deferred) return error.InvalidDefinition;
             if (defs.debug_enabled and words_debug.isWatched(self, id)) try words_debug.watchStore(self, id, token.len);
             if (self.compiling) {
                 _ = try self.emit(.{ .kind = .store_value, .value = id });
             } else switch (kind) {
                 .fvalue => try self.writeFloat(self.words[id].value, try self.fpop()),
                 .two_value => try self.writeDouble(self.words[id].value, try self.popDouble()),
+                .string_value => try @import("string_values.zig").store(self, id, false),
                 else => try self.writeCell(self.words[id].value, try self.pop()),
             }
         },
@@ -136,7 +141,7 @@ pub fn finishPending(self: *State, token: []const u8) RuntimeError!void {
             }
             const id = self.synonymTarget(try self.lookupOrFail(token));
             const kind = self.words[id].kind;
-            if (kind != .value and kind != .fvalue and kind != .two_value) return error.InvalidDefinition;
+            if (kind != .value and kind != .fvalue and kind != .two_value and kind != .string_value) return error.InvalidDefinition;
             if (self.compiling) {
                 _ = try self.emit(.{ .kind = .add_value, .value = id });
             } else try self.addToValue(id);
@@ -184,14 +189,14 @@ pub fn endDefinition(self: *State) RuntimeError!void {
 pub fn bodyAddress(self: *State, id: u16) RuntimeError!Cell {
     const word = self.words[self.synonymTarget(id)];
     return switch (word.kind) {
-        .variable, .array, .created, .value, .fvalue, .two_constant, .two_value, .deferred => word.value,
+        .variable, .array, .created, .value, .fvalue, .two_constant, .two_value, .deferred, .string_value => word.value,
         else => error.InvalidExecutionToken,
     };
 }
 
 pub fn isDefiningBuiltin(builtin: Builtin) bool {
     return switch (builtin) {
-        .define_colon, .define_variable, .define_fvariable, .define_constant, .define_value, .define_two_variable, .define_two_constant, .define_fconstant, .define_fvalue, .define_two_value, .define_buffer, .define_array, .define_watched_value, .define_watched_variable, .define_aconstant, .define_avariable => true,
+        .define_colon, .define_variable, .define_fvariable, .define_constant, .define_value, .define_two_variable, .define_two_constant, .define_fconstant, .define_fvalue, .define_two_value, .define_buffer, .define_array, .define_watched_value, .define_watched_variable, .define_aconstant, .define_avariable, .define_string_value => true,
         else => false,
     };
 }
@@ -226,6 +231,10 @@ pub fn definingPending(self: *State, builtin: Builtin) RuntimeError!Pending {
         .define_constant => blk: {
             self.pending_constant = try self.pop();
             break :blk .constant_name;
+        },
+        .define_string_value => blk: {
+            self.pending_double = try self.popDouble();
+            break :blk .string_value_name;
         },
         .define_value => blk: {
             self.pending_constant = try self.pop();

@@ -34,18 +34,7 @@ pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
             const string_var = try self.pop();
             const length = try self.popLength();
             const source = try self.pop();
-            _ = try self.memoryAddress(source, length);
-            const reserved = try strings.reservePointer(self, string_var);
-            errdefer strings.cancelPointer(self, string_var, reserved);
-            // A fresh buffer keeps the source intact even when it lies in the old string.
-            const buffer = try self.heapAllocate(cell_size + length) orelse return self.throwIor(errno_no_memory);
-            errdefer _ = self.heapFree(buffer) catch false;
-            try self.copyMemory(buffer + cell_size, source, length);
-            try self.writeCell(buffer, @intCast(length));
-            const old = try self.readCell(string_var);
-            if (!try self.heapFree(old)) return self.throwIor(errno_invalid);
-            try self.writeCell(string_var, buffer);
-            try strings.registerPointer(self, string_var);
+            try strings.storeString(self, source, length, string_var);
         },
         .string_fetch => {
             const string = try self.fetchString(try self.pop());

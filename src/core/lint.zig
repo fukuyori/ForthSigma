@@ -354,7 +354,7 @@ pub const Lint = struct {
                 if (op.value < 0 or op.value >= machine.word_count) return unknown;
                 return switch (machine.words[@intCast(op.value)].kind) {
                     .fvalue => .{ .known = true, .float_takes = 1, .float_net = -1 },
-                    .two_value => fixed(2, 0),
+                    .two_value, .string_value => fixed(2, 0),
                     else => fixed(1, 0),
                 };
             },
@@ -394,7 +394,7 @@ pub const Lint = struct {
             } else self.declaredEffect(id),
             .constant, .array, .value => fixed(0, 1),
             .variable, .created => if (word.has_does) Effect{} else fixed(0, 1),
-            .two_constant, .two_value => fixed(0, 2),
+            .two_constant, .two_value, .string_value => fixed(0, 2),
             .fconstant, .fvalue => .{ .known = true, .float_net = 1 },
             .field => fixed(1, 1),
             else => .{},

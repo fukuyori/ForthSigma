@@ -1,12 +1,16 @@
 # Gforth対応の引き継ぎ
 
-更新日：2026-11-13。P00・S01・P01・P02とP03の65語（P03a/b/c）まで実装・検証完了。次は **P04b（564）の文字列値と置換**。Windows/Linux確認はここでは行わず607に残す。
+更新日：2026-11-13。P00・S01・P01・P02とP03の65語（P03a/b/c）まで実装・検証完了。次は **P04bのマクロ語彙・置換コールバック3語（635）**。Windows/Linux確認はここでは行わず607に残す。
 
-P03c was committed and pushed as `98be4f8`. P03 and task 562 are complete. Claude Code review fixes and the first 21 P04a words were committed/pushed as a6ab243. Task 631 is complete (auto), with no new concrete defect found in the final review. See [P03 review](P03_REVIEW.md). The six additional P04a edit/owned-string words were committed/pushed as 5b2c8a4. XC@+? now follows the confirmed Sigma empty rule (U+FFFD, advance 1, remaining -1); its implementation and the current documentation update are uncommitted. P04a is complete; P04b is next. Check git status and git log before resuming.
+P03c was committed and pushed as `98be4f8`. P03 and task 562 are complete. Claude Code review fixes and the first 21 P04a words were committed/pushed as a6ab243. Task 631 is complete (auto), with no new concrete defect found in the final review. See [P03 review](P03_REVIEW.md). The six additional P04a edit/owned-string words were committed/pushed as 5b2c8a4. XC@+? was committed/pushed as fa2afe9 and P04a is complete. P04b $VALUE/MACRO: are implemented (634, uncommitted); the macro vocabulary/callback words (635) remain. Check git status and git log before resuming.
 
 ## P04a completion
 
 All 28 P04a words are implemented. Normal/minimal tests, 18 regressions, 672 Gforth comparisons and three Sigma-specific empty cases pass. P04a tasks 632/633/563 are complete (auto). P04b 564 and parent 547/542 remain incomplete. See [P04 record](P04_IMPLEMENTATION.md).
+
+## P04b string values
+
+$VALUE/MACRO: (634) now support borrowed execution, interpreted/compiled TO/+TO, typed ownership, rollback, images and repeated append. Nine regressions, normal/minimal tests, normal build, 27 Gforth comparisons and CLI save/load pass. Sources: string_values.zig and shared dynamic_strings.storeString. Image validation checks required owner metadata and length headers. Changes are uncommitted. Next is 635 (three words); keep 564/547/542 incomplete. See [P04 details](P04_IMPLEMENTATION.md).
 
 ## 最初に読む資料
 

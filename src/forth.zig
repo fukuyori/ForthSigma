@@ -914,6 +914,8 @@ pub const State = struct {
             .{ "INSERT", .insert_bytes },
             .{ "STRING,", .string_comma },
             .{ "XC@+?", .xc_fetch_plus_query },
+            .{ "$VALUE", .define_string_value },
+            .{ "MACRO:", .define_string_value },
     };
 
     fn installBuiltins(self: *State) void {
@@ -1430,6 +1432,7 @@ pub const State = struct {
             .builtin => try self.executeBuiltin(word.builtin),
             .constant, .array => try self.push(word.value),
             .value => try self.push(try self.readCell(word.value)),
+            .string_value => try @import("core/string_values.zig").fetch(self, word.value),
             .fconstant => try self.fpush(bitsFloat(word.value)),
             .fvalue => try self.fpush(try self.readFloat(word.value)),
             .two_constant, .two_value => try self.pushDouble(try self.readDouble(word.value)),
@@ -1494,6 +1497,7 @@ pub const State = struct {
             .fvalue => try self.writeFloat(word.value, (try self.readFloat(word.value)) + try self.fpop()),
             .two_value => try self.writeDouble(word.value, (try self.readDouble(word.value)) +% try self.popDouble()),
             .value => try self.writeCell(word.value, (try self.readCell(word.value)) +% try self.pop()),
+            .string_value => try @import("core/string_values.zig").store(self, id, true),
             else => return error.InvalidDefinition,
         }
     }
@@ -1905,6 +1909,7 @@ pub const State = struct {
                     switch (word.kind) {
                         .fvalue => try self.writeFloat(word.value, try self.fpop()),
                         .two_value => try self.writeDouble(word.value, try self.popDouble()),
+                        .string_value => try @import("core/string_values.zig").store(self, try self.wordId(op.value), false),
                         else => try self.writeCell(word.value, try self.pop()),
                     }
                 },
@@ -2026,7 +2031,7 @@ pub const State = struct {
         if (defs.debug_enabled and self.cover_blocks and self.compiling and startsBlock(builtin)) self.markBlock(self.columnAfterWord());
     }
 
-    const word_modules = .{ @import("core/words_string_edit.zig"), @import("core/words_text.zig"), @import("core/words_buffers.zig"), @import("core/words_data.zig"), @import("core/words_width.zig"), words_stack, words_arithmetic, @import("core/words_numeric.zig"), words_memory, words_output, words_input, words_compiling, words_float, words_pictured, words_dictionary, words_system, @import("core/blocks.zig"), words_files, words_strings, words_help, words_defining, words_graphics, words_audio, words_xchar, words_tools, words_debug };
+    const word_modules = .{ @import("core/string_values.zig"), @import("core/words_string_edit.zig"), @import("core/words_text.zig"), @import("core/words_buffers.zig"), @import("core/words_data.zig"), @import("core/words_width.zig"), words_stack, words_arithmetic, @import("core/words_numeric.zig"), words_memory, words_output, words_input, words_compiling, words_float, words_pictured, words_dictionary, words_system, @import("core/blocks.zig"), words_files, words_strings, words_help, words_defining, words_graphics, words_audio, words_xchar, words_tools, words_debug };
 
     /// For each built-in word, the index in `word_modules` of the file that executes it.
     const word_owner = blk: {
