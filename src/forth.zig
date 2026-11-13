@@ -935,6 +935,12 @@ pub const State = struct {
             .{ "FILE-EOF?", .file_eof_query },
             .{ "+FMODE", .plus_fmode },
             .{ ".INCLUDED", .dot_included },
+            .{ "ABSOLUTE-FILE?", .absolute_file_query },
+            .{ "CLEAR-PATH", .clear_path },
+            .{ "ALSO-PATH", .also_path },
+            .{ ".PATH", .dot_path },
+            .{ "PATH+", .path_plus },
+            .{ "PATH=", .path_equals },
             .{ "\\\\\\", .triple_backslash },
     };
 

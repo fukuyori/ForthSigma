@@ -1173,3 +1173,10 @@ S" initial" $VALUE NAMEは入力をコピーして所有する文字列値を定
 ```forth
 \\\  ( source-file terminator )
 ```
+
+
+### パス記述子（P05a）
+
+`VARIABLE P`等の動的文字列所有セルをパスとして使います。`P CLEAR-PATH`で空にし、`P PATH= one|two`で全体を設定、`P PATH+ three`や`S" a dir" P ALSO-PATH`で追加できます。内部はNUL区切りで、`P $@`で借用参照できます。変更後の借用領域は無効になるため、不要な所有領域は`P $FREE`で解放してください。PATH=は入力ソースを変更しません。
+
+`P .PATH`は各成分と空白を表示し、最初の空成分で終了します。`ABSOLUTE-FILE? ( addr u -- flag )`は先頭/・~・./、または3バイト以上で第2文字が:かを調べるGforthの構文判定です。OS上の絶対パス正規化ではありません。空文字列はメモリーを読まず偽です。実際の検索2語OPEN-PATH-FILE/FILE>PATHは未実装で、INCLUDE/REQUIREの検索方法もまだ変更しません。[P05記録](P05_IMPLEMENTATION.md)。

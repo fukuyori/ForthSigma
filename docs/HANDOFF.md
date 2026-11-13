@@ -1,6 +1,6 @@
 # Gforth対応の引き継ぎ
 
-更新日：2026-11-13。P00・S01・P01・P02とP03の65語（P03a/b/c）まで実装・検証完了。P04の33語まで実装・検証完了。現在は **P05a ファイル補助とパス検索（565）**。EMIT-FILE/SLURP-FID（653）はd8da5e7でpush済み。654の入力3語は7964014でpush済み。655の3語も実装・検証済み（未コミット）。P05aは8/16語、次はパス検索8語（656）。Windows/Linux確認はここでは行わず607に残す。
+更新日：2026-11-14。P00・S01・P01・P02とP03の65語（P03a/b/c）まで実装・検証完了。P04の33語まで実装・検証完了。現在は **P05a ファイル補助とパス検索（565）**。EMIT-FILE/SLURP-FID（653）はd8da5e7でpush済み。654の入力3語は7964014でpush済み。655は2b97309でpush済み。659のパス記述子6語も実装・検証済み（未コミット）。P05aは14/16語、次は検索2語（660、親656）。Windows/Linux確認はここでは行わず607に残す。
 
 P03c was committed and pushed as `98be4f8`. P03 and task 562 are complete. Claude Code review fixes and the first 21 P04a words were committed/pushed as a6ab243. Task 631 is complete (auto), with no new concrete defect found in the final review. See [P03 review](P03_REVIEW.md). The six additional P04a edit/owned-string words were committed/pushed as 5b2c8a4. XC@+? was committed/pushed as fa2afe9 and P04a is complete. P04b $VALUE/MACRO: were committed/pushed as 33bb55a (634); the macro vocabulary/callback words (635) were committed/pushed as 6a9c4e3. Check git status and git log before resuming.
 
@@ -10,9 +10,13 @@ Task653 implements EMIT-FILE and SLURP-FID (2/16 words in565). Seven regressions
 
 Task654 is complete (auto): KEY-FILE/KEY?-FILE/FILE-EOF? were committed/pushed as7964014, with both recommended policies confirmed by the user. FileOps adds optional byte/readiness/EOF hooks; host lookahead and semantic EOF are preserved across queries and FILE-SIZE. Seven regressions, normal/minimal suites, normal build, 258 Gforth comparisons, one intentional buffered-readiness correction, five PTY cases and one FIFO case pass. See [P05 record](P05_IMPLEMENTATION.md) and `.work/p05a-input-check/`. Native Windows/Linux checks are657 under607 and were not run here. Task655 completion is recorded below; keep565/548/542 incomplete.
 
-## P05a modes/history/source termination (655, uncommitted)
+## P05a modes/history/source termination (655, 2b97309 pushed)
 
-+FMODE, .INCLUDED and the immediate three-backslash source terminator are implemented. The user confirmed safe non-file no-op behavior and listing each registered filename once (Gforth can list repeated includes). POSIX modes use creation-time open plus fdopen, respecting umask without changing existing permissions. Windows uses CRT owner read/write semantics;658 tracks native checks. Nine regressions, normal/minimal tests, normal build,3,072 mode-value comparisons,29 permission cases, two history stages and three file-source comparisons pass. See [P05 record](P05_IMPLEMENTATION.md). Next is656 (eight path words); keep565/548/542 incomplete. Changes are uncommitted.
++FMODE, .INCLUDED and the immediate three-backslash source terminator are implemented. The user confirmed safe non-file no-op behavior and listing each registered filename once (Gforth can list repeated includes). POSIX modes use creation-time open plus fdopen, respecting umask without changing existing permissions. Windows uses CRT owner read/write semantics;658 tracks native checks. Nine regressions, normal/minimal tests, normal build,3,072 mode-value comparisons,29 permission cases, two history stages and three file-source comparisons pass. See [P05 record](P05_IMPLEMENTATION.md). Committed/pushed as2b97309. Path descriptor task659 is recorded below; keep565/548/542 incomplete.
+
+## P05a path descriptors (659, uncommitted)
+
+ABSOLUTE-FILE?/CLEAR-PATH/ALSO-PATH/.PATH/PATH+/PATH= are implemented with ordinary dynamic-string owners and NUL separators. Seven regressions, normal/minimal tests, normal build and37 designated-Gforth comparisons pass. Updates preserve old contents on failure, parsing preserves source bytes, self-captured display snapshots input, and typed owners survive repeated append/restore. See [P05 record](P05_IMPLEMENTATION.md). Next is660: actual file search, source/home expansion, normalization, result lifetime and INCLUDE integration. Neither OPEN-PATH-FILE nor FILE>PATH is implemented yet. 659 is complete (auto);656/565/548/542 remain incomplete. Changes are uncommitted.
 
 ## P04a completion
 
@@ -56,7 +60,7 @@ tqueで管理し、進捗モードは**auto**とする。階層はForthSigma 121
 |546 P03|完了。560 P03a 44語、561 P03b 15語と永続化、562 P03c 6語が完了|
 |563 P04a|完了。28語の文字列操作/Unicode|
 |564 P04b / 547 P04|完了。文字列値・マクロ5語、合計33語。635は6a9c4e3でpush済み|
-|548 P05 / 565 P05a|進行中。653の2語を実装・検証、d8da5e7でpush済み。654は7964014でpush済み、655も実装済み（未コミット）。残り8語は656|
+|548 P05 / 565 P05a|進行中。653の2語を実装・検証、d8da5e7でpush済み。654は7964014でpush済み、655は2b97309でpush済み。659の6語を実装（未コミット）、残り2語は660（656配下）|
 |561 P03b|完了。15語の実行・型/寿命追跡と新形式保存/復元/追加を統合|
 |550 P07|未着手。P01依存は解消。457を先行させる|
 |457 P07先行|550配下。IS/ACTION-OF/TO/+TOの辞書登録。既存IDを使う|

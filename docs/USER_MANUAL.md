@@ -1182,3 +1182,10 @@ The immediate three-backslash word skips the rest of the current source file, in
 ```forth
 \\\  ( source-file terminator )
 ```
+
+
+### Path descriptors (P05a)
+
+Use a dynamic-string owner such as VARIABLE P. P CLEAR-PATH empties it, P PATH= one|two replaces it, and P PATH+ three or S" a dir" P ALSO-PATH appends. Internal separators are NUL; P $@ returns borrowed bytes invalidated by later changes. Release owned storage with P $FREE. PATH= preserves source text.
+
+P .PATH prints each component followed by a space, stopping at the first empty component. ABSOLUTE-FILE? ( addr u -- flag ) is Gforth's syntactic classifier for leading /, ~, ./ or a second-character colon in names longer than two bytes, not OS canonicalization. Empty spans are false without a read. OPEN-PATH-FILE/FILE>PATH are still pending; existing INCLUDE/REQUIRE lookup is unchanged. [Details](P05_IMPLEMENTATION.md).

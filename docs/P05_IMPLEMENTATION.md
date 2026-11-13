@@ -1,6 +1,6 @@
 # P05 implementation and validation
 
-2026-11-13. P05 (548) is in progress. P05a (565) has eight of sixteen words implemented:653 stream helpers,654 input/EOF and655 modes/history/source termination. P05a, P05 and 542 remain incomplete. Task653 was committed/pushed as d8da5e7. Task654 was committed/pushed as7964014. Task655 is implemented and validated, uncommitted.
+Updated2026-11-14. P05 (548) is in progress. P05a (565) has fourteen of sixteen words implemented:653 stream helpers,654 input/EOF,655 modes/history/source termination and659 path descriptors. P05a, P05 and 542 remain incomplete. Task653 was committed/pushed as d8da5e7. Task654 was committed/pushed as7964014. Task655 was committed/pushed as2b97309. Task659 is implemented and validated, uncommitted.
 
 ## File output and stream slurp (653)
 
@@ -20,7 +20,7 @@ scripts/verify-p05a-stream.py passes 29 designated-Gforth comparisons: low-byte 
 
 ## Remaining work
 
-- 656: eight path words. Determine path descriptor ownership, search order, borrowed/owned resolved filenames, failures, and integration with INCLUDE/REQUIRE. ABSOLUTE-FILE? is part of this group.
+- 656 remains incomplete:659 implements six descriptor words;660 implements the remaining OPEN-PATH-FILE/FILE>PATH after search order, tilde/source-relative expansion, normalization, borrowed result lifetime and INCLUDE/REQUIRE interactions are settled.
 - 566: P05b directory/time fourteen words remain pending.
 
 Task progress remains auto. Windows/Linux native verification is not performed here (607). No version bump or release package was made. Task653 was committed/pushed as d8da5e7.
@@ -56,7 +56,7 @@ A restoration check initially reported a termios mismatch. A separate probe show
 At completion of654, P05a had5/16 words implemented. Task655 completion is recorded below; P05b566 is pending. Keep565/548/542 incomplete. Progress remains auto. No native Windows/Linux checks, version bump or package creation were performed for654; it was subsequently committed/pushed as7964014.
 
 
-## Modes, included names and source termination (655, uncommitted)
+## Modes, included names and source termination (655, 2b97309 pushed)
 
 +FMODE ( fam mode -- fam2 ) packs a nine-bit rwxrwxrwx value into the existing fam, following Gforth's OR/XOR encoding (default438 decimal /0666). R/O, R/W, W/O and BIN retain their values. OPEN-FILE accepts and ignores permission fields; CREATE-FILE decodes them. The default mode uses the existing open callback, while nondefault permissions require optional FileOps.create_mode; unsupported requests return an ior before creating/truncating anything. The old error regression used fam99, which now has a valid permission encoding; it now tests reserved bit3 (fam8).
 
@@ -70,4 +70,18 @@ Validation: nine regressions in p05a_misc_test.zig cover interpreted/compiled mo
 
 scripts/verify-p05a-misc.py compares3,072 mode values (512 modes across six access/BIN combinations),29 POSIX permission/umask/existing-file cases, two history stages and three file-source cases with the designated Gforth. It separately checks the confirmed non-file no-op policy and intentional duplicate-history difference. Report: .work/p05a-misc-check/comparison.json. The umask is set only in child processes. Earlier probes are in initial-probes.json in the same directory. No GPL implementation code was copied.
 
-Tasks653/654/655 are complete (auto). P05a now has8/16 words implemented; remaining eight path words are656. Keep565/548/542 incomplete; P05b566 is pending. Task655 changes are uncommitted. No version bump or release package was made.
+Tasks653/654/655 are complete (auto). P05a now has8/16 words implemented; remaining eight path words are656. Keep565/548/542 incomplete; P05b566 is pending. Task655 was committed/pushed as2b97309. No version bump or release package was made.
+
+
+## Path descriptors (659, 2026-11-14, uncommitted)
+
+Six words are implemented in core/paths.zig through the files dispatch/feature group. Path addresses are ordinary initialized dynamic-string owner cells (e.g. VARIABLE P), with NUL-separated directory bytes. They interoperate with $@/$@LEN/$FREE and existing typed owner/image relocation; no new dictionary kind or OS resource is introduced.
+
+- ABSOLUTE-FILE? is Gforth's syntactic search-bypass test, not OS realpath: leading slash/tilde/./ or a second-character colon in a name longer than two bytes. Other embedded slashes and ../ are relative. Empty spans return false without reading memory, even at the memory endpoint.
+- CLEAR-PATH replaces with an owned empty string. ALSO-PATH appends raw directory bytes, inserting one NUL when the old string has nonzero length. PATH+ parses one token and appends; PATH= replaces from one token, translating | to NUL in a private copy. PATH= retains the caller's original source bytes. These two parsing words work when called by compiled helpers.
+- .PATH prints each nonempty component followed by a space, stopping at the first empty component as the reference does. This includes leading/interior empty components; it does not reinterpret them as the working directory.
+- Updates assemble privately and commit once. Known full-cell type metadata follows copies; separator and | conversions notify partial-write damage. Allocation/metadata failures preserve the old owner/content. Borrowed $@ bytes expire on replacement/clear. Display snapshots input when output capture could grow the source owner, including self-capture via $EXEC.
+
+Seven regressions in p05a_path_test.zig cover binary separators, Unicode/spaces, compiled parsing and source preservation, empty components, self-append, heap/metadata failure atomicity, full-stack CLEAR-PATH, self-captured display, repeated append/restore, prefix classification and safe empty spans. Normal/minimal tests and normal build pass. scripts/verify-p05a-path.py passes37 Gforth comparisons; report .work/p05a-path-check/comparison.json and logs .zig-cache/p05a-path-{test,minimal,build}.log. No GPL implementation code was copied.
+
+659 is complete (auto);656 remains incomplete with660 pending. P05a now has14/16 words implemented. OPEN-PATH-FILE/FILE>PATH are not implemented, and these descriptor words do not change existing INCLUDE/REQUIRE search behavior. Resolve result lifetime, source-directory handling, ~+ and home expansion, candidate normalization/failure ordering before implementing660. Keep565/548/542 incomplete. No commit/push, version or package change was made for659; native Windows/Linux checks remain outside this session in607.
