@@ -56,6 +56,7 @@ pub const Double = memory_map.Double;
 const ErrorLocation = defs.ErrorLocation;
 pub const FileAccess = host_interface.FileAccess;
 pub const FileOps = host_interface.FileOps;
+pub const FileKeyResult = host_interface.FileKeyResult;
 pub const FileResult = host_interface.FileResult;
 pub const Float = memory_map.Float;
 const IncludeFrame = defs.IncludeFrame;
@@ -929,6 +930,9 @@ pub const State = struct {
             .{ ".SUBSTITUTE", .dot_substitute },
             .{ "EMIT-FILE", .emit_file },
             .{ "SLURP-FID", .slurp_fid },
+            .{ "KEY-FILE", .key_file },
+            .{ "KEY?-FILE", .key_query_file },
+            .{ "FILE-EOF?", .file_eof_query },
     };
 
     fn installBuiltins(self: *State) void {

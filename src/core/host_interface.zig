@@ -12,6 +12,8 @@ const UCell = memory_map.UCell;
 pub const FileAccess = enum { read_only, write_only, read_write };
 
 pub const FileResult = struct { value: UCell = 0, ior: Cell = 0 };
+/// null byte means EOF; an I/O error has a nonzero ior instead.
+pub const FileKeyResult = struct { byte: ?u8 = null, ior: Cell = 0 };
 
 /// `found` is false only at the end of the file with nothing read.
 pub const LineResult = struct { length: usize = 0, found: bool = false, ior: Cell = 0 };
@@ -37,6 +39,13 @@ pub const FileOps = struct {
     rename: *const fn (?*anyopaque, []const u8, []const u8) Cell,
     /// Whether the named file exists; the value is R/O, W/O, or R/W, as it can be opened.
     status: *const fn (?*anyopaque, []const u8) FileResult,
+    /// STDIN is raw byte input; terminal Ctrl+C may return UserInterrupt.
+    key: ?*const fn (?*anyopaque, Cell) RuntimeError!FileKeyResult = null,
+    /// Nonblocking byte readiness, including unread/library-buffered data.
+    /// Querying must not consume a byte or change the EOF indication.
+    ready: ?*const fn (?*anyopaque, Cell) RuntimeError!FileResult = null,
+    /// The observed EOF indication, not an offset/size comparison.
+    eof: ?*const fn (?*anyopaque, Cell) FileResult = null,
 };
 
 /// A terminal's size in characters, and in pixels when the host knows it (0 otherwise).

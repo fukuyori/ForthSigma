@@ -37,11 +37,29 @@ pub const words = [_]Builtin{
     .stderr,             .open_file,   .create_file,     .close_file,  .read_line,      .write_line,
     .write_file,         .file_size,   .reposition_file, .slurp_file,  .read_file,      .bin,
     .file_position,      .resize_file, .flush_file,      .delete_file, .rename_file,    .file_status,
-    .include_file, .emit_file, .slurp_fid,
+    .include_file, .emit_file, .slurp_fid, .key_file, .key_query_file, .file_eof_query,
 };
 
 pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
     switch (builtin) {
+        .key_file, .key_query_file, .file_eof_query => {
+            const fileid = try self.peek(0);
+            const files = try self.fileOps();
+            const value: Cell = if (builtin == .key_file) result: {
+                const key = files.key orelse return error.FileUnavailable;
+                const result = try key(self.writer.context, fileid);
+                if (result.ior != 0) return self.throwCode(result.ior);
+                break :result if (result.byte) |byte| byte else -1;
+            } else result: {
+                const result = if (builtin == .key_query_file)
+                    try (files.ready orelse return error.FileUnavailable)(self.writer.context, fileid)
+                else
+                    (files.eof orelse return error.FileUnavailable)(self.writer.context, fileid);
+                if (result.ior != 0) return self.throwCode(result.ior);
+                break :result truth(result.value != 0);
+            };
+            self.data_stack[self.data_depth - 1] = value;
+        },
         .emit_file => {
             try self.requireDepth(2);
             const fileid = try self.peek(0);

@@ -1160,3 +1160,12 @@ Callbacks must preserve existing caller stack values and keep the SUBSTITUTE des
 ### P05a file-stream helpers
 
 `EMIT-FILE ( c fileid -- ior )` writes the low eight bits as one byte and returns the host error, without newline, flush or close. `SLURP-FID ( fileid -- addr u )` reads from the current position through EOF into a new owned heap block, leaving the file open. FREE addr afterwards; even empty input returns a FREE-able block. Size/seek support is unnecessary, and positive short reads are accumulated. Errors THROW and release partial allocations; file-position changes already made are not rolled back. Both words are excluded with -Dfiles=false. [P05 record](P05_IMPLEMENTATION.md).
+
+
+### File input and EOF (P05a)
+
+`KEY-FILE ( fileid -- c )` reads a byte0..255, returns -1 at EOF, and throws on I/O errors. STDIN reads without Enter; terminal Ctrl+C interrupts like EKEY. Redirected byte3 remains ordinary data. Windows console characters are UTF-8 bytes; extended non-character events are skipped (use EKEY for those).
+
+`KEY?-FILE ( fileid -- flag )` queries without waiting or consuming input, including unread/libc-buffered bytes. It preserves the EOF indication, correcting the designated Gforth buffered-readiness mismatch. `FILE-EOF? ( fileid -- flag )` reports EOF observed by a read, not an offset/size comparison: reading the last byte alone does not set it. Successful REPOSITION-FILE clears it; FILE-SIZE and zero-length reads preserve it. STDIN tracks shared input/lookahead state.
+
+All three belong to the files feature group. Custom hosts supply optional FileOps key/ready/eof hooks; missing hooks raise FileUnavailable instead of a blocking/position-based approximation. The main host retains ordinary-file buffering and uses special stdio settings only for Windows pipes. Readiness on other Windows character devices apart from STDIN can return an unsupported I/O error. [Implementation and validation](P05_IMPLEMENTATION.md).

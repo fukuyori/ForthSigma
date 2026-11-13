@@ -214,4 +214,4 @@ The current tests check the main paths. They do not cover every word, every capa
 
 P02 name additions mean E./DEC. resolve as words before numeric parsing under HEX; use $E./$DEC. for numbers. Sample-local RND/RANDOM definitions still take precedence, but can produce redefinition warnings and lint REDEFINED. RND exposes weak low LCG bits; the initial seed uses host time (zero if unavailable). See the [P02 review](P02_REVIEW.md) for details.
 
-P05a: EMIT-FILE/SLURP-FID (653) are implemented with seven regressions, 29 Gforth comparisons and normal/minimal checks passing. Fourteen words remain pending. [Details](P05_IMPLEMENTATION.md).
+P05a: EMIT-FILE/SLURP-FID (653) are implemented with seven regressions, 29 Gforth comparisons and normal/minimal checks passing. Three input/EOF words (654) additionally pass seven regressions, 258 Gforth comparisons, one intentional buffered-readiness correction, five PTY cases and one FIFO case. Eleven words remain pending. Windows/Linux checks remain in657. [Details](P05_IMPLEMENTATION.md).

@@ -80,11 +80,39 @@ pub fn nextStandard() ?forth.Cell {
     if (is_windows) {
         if (takePendingByte()) |byte| return byte;
         while (windows.next(true)) |event| {
-            switch (event) { .key => |code| return code, else => {} }
+            switch (event) {
+                .key => |code| return code,
+                else => {},
+            }
         }
         return null;
     }
-    while (next()) |event| switch (event) { .byte => |byte| return byte, else => {} };
+    while (next()) |event| switch (event) {
+        .byte => |byte| return byte,
+        else => {},
+    };
+    return null;
+}
+
+/// One terminal byte in raw mode. Extended Windows key events are not bytes;
+/// ignore them just as mouse/release events are ignored by character input.
+pub fn nextByte() ?u8 {
+    standard_keyboard = true;
+    if (!enter()) return null;
+    if (is_windows) {
+        if (takePendingByte()) |byte| return byte;
+        while (windows.next(true)) |event| switch (event) {
+            .key => |code| if (code <= 255) {
+                return @intCast(code);
+            },
+            else => {},
+        };
+        return null;
+    }
+    while (next()) |event| switch (event) {
+        .byte => |byte| return byte,
+        else => {},
+    };
     return null;
 }
 
@@ -181,8 +209,8 @@ const posix = struct {
         settings.lflag.ISIG = false;
         settings.lflag.IEXTEN = false;
         settings.iflag.IXON = false;
-        settings.cc[@intFromEnum(std.c.V.MIN)] = 0;
-        settings.cc[@intFromEnum(std.c.V.TIME)] = 0;
+        settings.cc[@backingInt(std.c.V.MIN)] = 0;
+        settings.cc[@backingInt(std.c.V.TIME)] = 0;
         return changed.set();
     }
 
@@ -196,7 +224,7 @@ const posix = struct {
         while (rest.len != 0) {
             const written = std.c.write(1, rest.ptr, rest.len);
             if (written <= 0) {
-                if (written < 0 and std.c._errno().* == @intFromEnum(std.c.E.INTR)) continue;
+                if (written < 0 and std.c._errno().* == @backingInt(std.c.E.INTR)) continue;
                 return;
             }
             rest = rest[@intCast(written)..];
@@ -409,8 +437,10 @@ const windows = struct {
                     if (keyCode(virtual_key)) |key| {
                         if (standard) {
                             const base: u32 = switch (key) {
-                                256 => 0x80000002, 257 => 0x80000003,
-                                258 => 0x80000000, 259 => 0x80000001,
+                                256 => 0x80000002,
+                                257 => 0x80000003,
+                                258 => 0x80000000,
+                                259 => 0x80000001,
                                 266...277 => 0x8000000b + key - 266,
                                 else => 0x80000004 + key - 260,
                             };
@@ -477,7 +507,10 @@ test "a DSR reply gives the cursor's place only for positions from 1" {
 test "terminal read-ahead is shared in FIFO order with canonical input" {
     queued_head = 0;
     queued_len = 0;
-    defer { queued_head = 0; queued_len = 0; }
+    defer {
+        queued_head = 0;
+        queued_len = 0;
+    }
     queue(0xe6);
     queue(0x97);
     queue(0xa5);

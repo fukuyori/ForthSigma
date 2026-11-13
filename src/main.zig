@@ -14,6 +14,10 @@ extern "c" fn fwrite([*]const u8, usize, usize, ?*anyopaque) usize;
 extern "c" fn getc(?*anyopaque) c_int;
 extern "c" fn ungetc(c_int, ?*anyopaque) c_int;
 extern "c" fn ferror(?*anyopaque) c_int;
+extern "c" fn feof(?*anyopaque) c_int;
+extern "c" fn setvbuf(?*anyopaque, ?[*]u8, c_int, usize) c_int;
+extern "c" fn fcntl(c_int, c_int, ...) c_int;
+extern "c" fn _get_osfhandle(c_int) isize;
 extern "c" fn clearerr(?*anyopaque) void;
 extern "c" fn rename([*:0]const u8, [*:0]const u8) c_int;
 
@@ -312,6 +316,14 @@ const max_open_files = 64;
 const errno_io = 5;
 const errno_too_many_files = 24;
 var open_files: [max_open_files]?*anyopaque = @splat(null);
+// Semantic EOF is independent of temporary seek/peek operations on C streams.
+var file_eof: [max_open_files]bool = @splat(false);
+var file_peeked: [max_open_files]bool = @splat(false);
+var stdin_eof: bool = false;
+
+fn fileSlot(fileid: forth.Cell) usize {
+    return @intCast(fileid - forth.first_file_id);
+}
 
 fn clearErrno() void {
     std.c._errno().* = 0;
@@ -347,7 +359,24 @@ fn fileOpen(_: ?*anyopaque, name: []const u8, access: forth.FileAccess, create: 
     };
     clearErrno();
     const file = fopen(&path, mode) orelse return .{ .ior = lastIor() };
+    // POSIX probes preserve normal stdio buffering. Windows disk reads can be
+    // probed directly; only pipe streams need unbuffered reads so PeekNamedPipe
+    // plus explicit query pushback accounts for every unread byte.
+    if (builtin.os.tag == .windows) {
+        const native = _get_osfhandle(file_number(file));
+        if (native == -1) {
+            _ = fclose(file);
+            return .{ .ior = badFileIor() };
+        }
+        const handle: *anyopaque = @ptrFromInt(@as(usize, @bitCast(native)));
+        if (GetFileType(handle) == 3 and setvbuf(file, null, @import("c_file")._IONBF, 0) != 0) {
+            _ = fclose(file);
+            return .{ .ior = forth.errnoIor(errno_io) };
+        }
+    }
     open_files[slot] = file;
+    file_eof[slot] = false;
+    file_peeked[slot] = false;
     return .{ .value = @intCast(forth.first_file_id + @as(forth.Cell, @intCast(slot))) };
 }
 
@@ -363,20 +392,30 @@ fn fileClose(_: ?*anyopaque, fileid: forth.Cell) forth.Cell {
 /// the byte read ahead by KEY? is not lost.
 const LineSource = struct {
     file: ?*anyopaque,
+    fileid: forth.Cell,
 
     fn get(self: LineSource) c_int {
-        return if (self.file) |file| getc(file) else readByte();
+        if (self.file) |file| {
+            if (file_eof[fileSlot(self.fileid)]) return -1;
+            file_peeked[fileSlot(self.fileid)] = false;
+            const byte = getc(file);
+            file_eof[fileSlot(self.fileid)] = feof(file) != 0;
+            return byte;
+        }
+        return readByte();
     }
 
     fn unget(self: LineSource, byte: c_int) void {
         if (self.file) |file| {
             _ = ungetc(byte, file);
+            file_peeked[fileSlot(self.fileid)] = true;
+            file_eof[fileSlot(self.fileid)] = false;
         } else terminalUnread(null, @intCast(byte));
     }
 };
 
 fn fileReadLine(_: ?*anyopaque, fileid: forth.Cell, buffer: []u8) forth.LineResult {
-    const source = LineSource{ .file = if (fileid == forth.stdin_fileid) null else openedFile(fileid) orelse return .{ .ior = badFileIor() } };
+    const source = LineSource{ .fileid = fileid, .file = if (fileid == forth.stdin_fileid) null else openedFile(fileid) orelse return .{ .ior = badFileIor() } };
     clearErrno();
     var length: usize = 0;
     while (length < buffer.len) {
@@ -416,7 +455,10 @@ fn fileRead(_: ?*anyopaque, fileid: forth.Cell, buffer: []u8) forth.FileResult {
     }
     const file = openedFile(fileid) orelse return .{ .ior = badFileIor() };
     clearErrno();
+    if (buffer.len == 0 or file_eof[fileSlot(fileid)]) return .{};
+    file_peeked[fileSlot(fileid)] = false;
     const count = fread(buffer.ptr, 1, buffer.len, file);
+    file_eof[fileSlot(fileid)] = feof(file) != 0;
     if (count < buffer.len and ferror(file) != 0) {
         clearerr(file);
         return .{ .ior = lastIor() };
@@ -440,6 +482,7 @@ fn fileSize(_: ?*anyopaque, fileid: forth.Cell) forth.FileResult {
     clearErrno();
     const position = tell64(file);
     if (position < 0 or seek64(file, 0, 2) != 0) return .{ .ior = lastIor() };
+    file_peeked[fileSlot(fileid)] = false; // seek discards libc query pushback
     const end = tell64(file);
     if (end < 0 or seek64(file, position, 0) != 0) return .{ .ior = lastIor() };
     return .{ .value = @intCast(end) };
@@ -448,7 +491,10 @@ fn fileSize(_: ?*anyopaque, fileid: forth.Cell) forth.FileResult {
 fn fileReposition(_: ?*anyopaque, fileid: forth.Cell, position: forth.UCell) forth.Cell {
     const file = openedFile(fileid) orelse return badFileIor();
     clearErrno();
-    return if (seek64(file, @intCast(position), 0) == 0) 0 else lastIor();
+    if (seek64(file, @intCast(position), 0) != 0) return lastIor();
+    file_eof[fileSlot(fileid)] = false;
+    file_peeked[fileSlot(fileid)] = false;
+    return 0;
 }
 
 fn filePosition(_: ?*anyopaque, fileid: forth.Cell) forth.FileResult {
@@ -543,7 +589,135 @@ fn closeAllFiles() void {
     }
 }
 
-const file_ops = forth.FileOps{ .open = fileOpen, .close = fileClose, .read_line = fileReadLine, .read = fileRead, .write = fileWrite, .size = fileSize, .reposition = fileReposition, .position = filePosition, .resize = fileResize, .flush = fileFlush, .delete = fileDelete, .rename = fileRename, .status = fileStatus };
+/// Return a byte without changing the caller's ownership of the stream.
+fn fileKey(_: ?*anyopaque, fileid: forth.Cell) forth.RuntimeError!forth.FileKeyResult {
+    flushOutput();
+    if (fileid == forth.stdin_fileid) return .{ .byte = try fileStdinByte(true) };
+    const file = openedFile(fileid) orelse return .{ .ior = badFileIor() };
+    clearErrno();
+    if (file_eof[fileSlot(fileid)]) return .{};
+    file_peeked[fileSlot(fileid)] = false;
+    const byte = getc(file);
+    file_eof[fileSlot(fileid)] = feof(file) != 0;
+    if (byte < 0) {
+        if (ferror(file) != 0) {
+            const ior = lastIor();
+            clearerr(file);
+            return .{ .ior = ior };
+        }
+        return .{};
+    }
+    return .{ .byte = @intCast(byte) };
+}
+
+fn fileEof(_: ?*anyopaque, fileid: forth.Cell) forth.FileResult {
+    if (fileid == forth.stdin_fileid) return .{ .value = @intFromBool(stdin_eof) };
+    if (fileid == forth.stdout_fileid or fileid == forth.stderr_fileid) return .{};
+    _ = openedFile(fileid) orelse return .{ .ior = badFileIor() };
+    return .{ .value = @intFromBool(file_eof[fileSlot(fileid)]) };
+}
+
+/// Probe the C stream itself, including bytes it prefetched before this query.
+/// Keep semantic EOF unchanged and return every peeked byte with ungetc.
+fn fileReady(_: ?*anyopaque, fileid: forth.Cell) forth.RuntimeError!forth.FileResult {
+    flushOutput();
+    if (fileid == forth.stdin_fileid) {
+        const previous_eof = stdin_eof;
+        defer stdin_eof = previous_eof;
+        if (try fileStdinByte(false)) |byte| {
+            terminalUnread(null, byte);
+            return .{ .value = 1 };
+        }
+        return .{};
+    }
+    const file = openedFile(fileid) orelse return .{ .ior = badFileIor() };
+    const slot = fileSlot(fileid);
+    if (file_eof[slot]) return .{};
+    clearErrno();
+    if (builtin.os.tag == .windows) {
+        if (file_peeked[slot]) return .{ .value = 1 };
+        const native = _get_osfhandle(file_number(file));
+        if (native == -1) return .{ .ior = badFileIor() };
+        const handle: *anyopaque = @ptrFromInt(@as(usize, @bitCast(native)));
+        switch (GetFileType(handle)) {
+            1 => {}, // A disk-file read cannot wait for a producer.
+            3 => {
+                var available: u32 = 0;
+                if (PeekNamedPipe(handle, null, 0, null, &available, null) == 0) {
+                    if (GetLastError() != 109) return .{ .ior = forth.errnoIor(errno_io) };
+                } else if (available == 0) return .{};
+            },
+            else => return .{ .ior = forth.errnoIor(forth.errno_invalid) },
+        }
+    }
+    const old_flags = if (builtin.os.tag == .windows) 0 else fcntl(file_number(file), @import("c_file").F_GETFL);
+    if (builtin.os.tag != .windows) {
+        if (old_flags < 0 or fcntl(file_number(file), @import("c_file").F_SETFL, @as(c_int, old_flags | @import("c_file").O_NONBLOCK)) < 0) return .{ .ior = lastIor() };
+    }
+    const byte = getc(file);
+    const failed = ferror(file) != 0;
+    const read_errno = std.c._errno().*;
+    // A query must not leave a speculative EOF/error on the underlying stream.
+    if (byte < 0) clearerr(file);
+    const restored = builtin.os.tag == .windows or fcntl(file_number(file), @import("c_file").F_SETFL, @as(c_int, old_flags)) >= 0;
+    const restore_ior = if (restored) 0 else lastIor();
+    if (byte >= 0) {
+        if (ungetc(byte, file) < 0) return .{ .ior = forth.errnoIor(errno_io) };
+        file_peeked[slot] = true;
+    }
+    if (!restored) return .{ .ior = restore_ior };
+    if (byte >= 0) return .{ .value = 1 };
+    if (failed) {
+        if (read_errno == 0) return .{ .ior = forth.errnoIor(errno_io) };
+        if (builtin.os.tag != .windows and (read_errno == @import("c_file").EAGAIN or read_errno == @import("c_file").EINTR)) return .{};
+        return .{ .ior = forth.errnoIor(read_errno) };
+    }
+    return .{};
+}
+
+/// Shared ahead/pending bytes precede new raw input. Only terminal Ctrl+C is an
+/// interrupt: redirected byte 3 remains ordinary binary input.
+fn fileStdinByte(wait: bool) forth.RuntimeError!?u8 {
+    output_cursor.unknown();
+    while (true) {
+        const byte: ?u8 = if (popLookahead()) |ahead| ahead else if (host_input.takePendingByte()) |queued| queued else next: {
+            if (builtin.os.tag == .windows) if (utf8_console.takePendingByte()) |pending| break :next pending;
+            if (host_input.input_is_terminal) {
+                if (host_input.nextByte()) |raw| break :next raw;
+                if (!host_input.isRaw()) return error.HostFailed;
+                if (builtin.os.tag != .windows) {
+                    var descriptor = [_]std.c.pollfd{.{ .fd = 0, .events = std.c.POLL.IN, .revents = 0 }};
+                    if (std.c.poll(&descriptor, 1, 0) > 0 and descriptor[0].revents & std.c.POLL.HUP != 0) {
+                        if (wait) stdin_eof = true;
+                        return null;
+                    }
+                }
+                break :next null;
+            }
+            if (!redirectedInputReady()) break :next null;
+            clearErrno();
+            const read = rawStandardInputByte();
+            if (read < 0) {
+                if (std.c._errno().* != 0) {
+                    if (builtin.os.tag != .windows and std.c._errno().* == @intFromEnum(std.c.E.INTR)) break :next null;
+                    return error.HostFailed;
+                }
+                if (wait) stdin_eof = true;
+                return null;
+            }
+            break :next @intCast(read);
+        };
+        if (byte) |value| {
+            if (host_input.input_is_terminal and value == 3) return error.UserInterrupt;
+            if (wait) stdin_eof = false;
+            return value;
+        }
+        if (!wait) return null;
+        try sleepMilliseconds(null, 1);
+    }
+}
+
+const file_ops = forth.FileOps{ .open = fileOpen, .close = fileClose, .read_line = fileReadLine, .read = fileRead, .write = fileWrite, .size = fileSize, .reposition = fileReposition, .position = filePosition, .resize = fileResize, .flush = fileFlush, .delete = fileDelete, .rename = fileRename, .status = fileStatus, .key = fileKey, .ready = fileReady, .eof = fileEof };
 
 /// Lets the Windows console interpret the ANSI sequences written by PAGE.
 fn enableVirtualTerminal() void {
@@ -689,13 +863,28 @@ const utf8_console = if (builtin.os.tag != .windows) struct {
 
 /// One byte of standard input: from the console as UTF-8, or from the C library.
 fn standardInputByte() c_int {
+    clearErrno();
+    const byte = rawStandardInputByte();
+    if (byte >= 0) stdin_eof = false else if (std.c._errno().* == 0) stdin_eof = true;
+    return byte;
+}
+
+fn rawStandardInputByte() c_int {
     if (builtin.os.tag == .windows and utf8_console.input != null) return utf8_console.readByte();
     if (!host_input.input_is_terminal) {
         var byte: [1]u8 = undefined;
         if (builtin.os.tag == .windows) {
-            const handle = GetStdHandle(@bitCast(@as(i32, -10))) orelse return -1;
+            const handle = GetStdHandle(@bitCast(@as(i32, -10))) orelse {
+                std.c._errno().* = forth.errno_bad_file;
+                return -1;
+            };
             var count: u32 = 0;
-            return if (ReadFile(handle, &byte, 1, &count, null) != 0 and count == 1) byte[0] else -1;
+            if (ReadFile(handle, &byte, 1, &count, null) == 0) {
+                const code = GetLastError();
+                if (code != 109 and code != 38) std.c._errno().* = errno_io; // broken pipe / EOF
+                return -1;
+            }
+            return if (count == 1) byte[0] else -1;
         }
         return if (std.c.read(0, &byte, 1) == 1) byte[0] else -1;
     }
@@ -704,6 +893,7 @@ fn standardInputByte() c_int {
     if (builtin.os.tag != .windows) {
         var byte: [1]u8 = undefined;
         while (true) {
+            clearErrno();
             const count = std.c.read(0, &byte, 1);
             if (count == 1) return byte[0];
             if (count < 0 and std.c._errno().* == @backingInt(std.c.E.INTR)) continue;
@@ -1296,9 +1486,13 @@ fn readByte() c_int {
     output_cursor.unknown();
     if (lookahead) |byte| {
         _ = popLookahead();
+        stdin_eof = false;
         return byte;
     }
-    if (host_input.takePendingByte()) |byte| return byte;
+    if (host_input.takePendingByte()) |byte| {
+        stdin_eof = false;
+        return byte;
+    }
     return standardInputByte();
 }
 
@@ -1332,6 +1526,7 @@ fn terminalEventKey(_: ?*anyopaque, timeout_ms: i32) forth.RuntimeError!?forth.C
     if (try terminalBufferedKey(null)) |byte| return byte;
     if (builtin.os.tag == .windows) if (utf8_console.takePendingByte()) |byte| {
         if (byte == 3) return error.UserInterrupt;
+        stdin_eof = false;
         return byte;
     };
     const start = monotonicMilliseconds(null);
@@ -1340,6 +1535,7 @@ fn terminalEventKey(_: ?*anyopaque, timeout_ms: i32) forth.RuntimeError!?forth.C
         if (host_input.input_is_terminal) {
             if (host_input.nextStandard()) |event| {
                 if (event == 3) return error.UserInterrupt;
+                stdin_eof = false;
                 return event;
             }
         } else if (redirectedInputReady()) {
@@ -1356,6 +1552,7 @@ fn terminalEventKey(_: ?*anyopaque, timeout_ms: i32) forth.RuntimeError!?forth.C
 
 /// XKEY gives back a byte it read: it becomes the byte read ahead, as KEY? leaves one.
 fn terminalUnread(_: ?*anyopaque, byte: u8) void {
+    stdin_eof = false;
     if (lookahead) |old| {
         // EKEY restores at most 31 consumed bytes; XKEY and READ-LINE restore
         // one consumed byte. They cannot grow this stack beyond that read-ahead.
@@ -1369,6 +1566,7 @@ fn terminalUnread(_: ?*anyopaque, byte: u8) void {
 fn terminalBufferedKey(_: ?*anyopaque) forth.RuntimeError!?u8 {
     const byte = popLookahead() orelse return null;
     if (host_input.input_is_terminal and byte == 3) return error.UserInterrupt;
+    stdin_eof = false;
     return byte;
 }
 
@@ -2044,4 +2242,62 @@ test "normal termination reports block writeback failure with nonzero status" {
     try std.testing.expect(machine.block_storage.buffers[1].modified);
     output.write_fails_at = 0;
     try std.testing.expectEqual(@as(u8, 0), finishBlocks(machine));
+}
+
+test "file key readiness sees stdio buffered bytes and preserves flags and EOF" {
+    const path = ".zig-cache/sigma-file-key-ready.bin";
+    defer _ = fileDelete(null, path);
+    const opened = fileOpen(null, path, .read_write, true);
+    try std.testing.expectEqual(@as(forth.Cell, 0), opened.ior);
+    const id: forth.Cell = @bitCast(opened.value);
+    defer _ = fileClose(null, id);
+    try std.testing.expectEqual(@as(forth.Cell, 0), fileWrite(null, id, "AB"));
+    try std.testing.expectEqual(@as(forth.Cell, 0), fileReposition(null, id, 0));
+    const file = openedFile(id).?;
+    const flags = if (builtin.os.tag == .windows) 0 else fcntl(file_number(file), @import("c_file").F_GETFL);
+    try std.testing.expectEqual(@as(u8, 'A'), (try fileKey(null, id)).byte.?);
+    for (0..2) |_| {
+        try std.testing.expectEqual(@as(forth.UCell, 1), (try fileReady(null, id)).value);
+        try std.testing.expectEqual(@as(forth.UCell, 1), filePosition(null, id).value);
+        try std.testing.expectEqual(@as(forth.UCell, 0), fileEof(null, id).value);
+    }
+    if (builtin.os.tag != .windows) try std.testing.expectEqual(flags, fcntl(file_number(file), @import("c_file").F_GETFL));
+    try std.testing.expectEqual(@as(u8, 'B'), (try fileKey(null, id)).byte.?);
+    try std.testing.expectEqual(@as(forth.UCell, 0), (try fileReady(null, id)).value);
+    try std.testing.expectEqual(@as(forth.UCell, 0), fileEof(null, id).value);
+    try std.testing.expect((try fileKey(null, id)).byte == null);
+    try std.testing.expectEqual(@as(forth.UCell, 1), fileEof(null, id).value);
+    try std.testing.expectEqual(@as(forth.Cell, 0), fileSize(null, id).ior);
+    var empty: [0]u8 = .{};
+    try std.testing.expectEqual(@as(forth.Cell, 0), fileRead(null, id, &empty).ior);
+    try std.testing.expectEqual(@as(forth.UCell, 1), fileEof(null, id).value);
+    try std.testing.expectEqual(@as(forth.UCell, 0), (try fileReady(null, id)).value);
+    try std.testing.expect((try fileKey(null, id)).byte == null);
+    try std.testing.expectEqual(@as(forth.Cell, 0), fileReposition(null, id, 0));
+    try std.testing.expectEqual(@as(forth.UCell, 0), fileEof(null, id).value);
+}
+
+test "file key readiness mixes with READ-FILE READ-LINE and file size" {
+    const path = ".zig-cache/sigma-file-key-mixed.bin";
+    defer _ = fileDelete(null, path);
+    const opened = fileOpen(null, path, .read_write, true);
+    try std.testing.expectEqual(@as(forth.Cell, 0), opened.ior);
+    const id: forth.Cell = @bitCast(opened.value);
+    defer _ = fileClose(null, id);
+    try std.testing.expectEqual(@as(forth.Cell, 0), fileWrite(null, id, "AB\nC"));
+    try std.testing.expectEqual(@as(forth.Cell, 0), fileReposition(null, id, 0));
+    try std.testing.expectEqual(@as(forth.UCell, 1), (try fileReady(null, id)).value);
+    try std.testing.expectEqual(@as(forth.UCell, 4), fileSize(null, id).value);
+    var byte: [1]u8 = undefined;
+    try std.testing.expectEqual(@as(forth.UCell, 1), fileRead(null, id, &byte).value);
+    try std.testing.expectEqual(@as(u8, 'A'), byte[0]);
+    try std.testing.expectEqual(@as(forth.UCell, 1), (try fileReady(null, id)).value);
+    var line: [8]u8 = undefined;
+    const result = fileReadLine(null, id, &line);
+    try std.testing.expectEqual(@as(usize, 1), result.length);
+    try std.testing.expectEqualStrings("B", line[0..result.length]);
+    try std.testing.expectEqual(@as(u8, 'C'), (try fileKey(null, id)).byte.?);
+    try std.testing.expectEqual(@as(forth.UCell, 0), fileEof(null, id).value);
+    try std.testing.expect(!fileReadLine(null, id, &line).found);
+    try std.testing.expectEqual(@as(forth.UCell, 1), fileEof(null, id).value);
 }

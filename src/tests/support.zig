@@ -423,6 +423,7 @@ pub const FakeFile = struct {
     position: usize = 0,
     open: bool = false,
     exists: bool = false,
+    eof: bool = false,
 };
 
 /// The last name is long, for WHERE lines whose place takes more than 80 columns.
@@ -434,7 +435,7 @@ pub fn setFakeFile(output: *Output, index: usize, text: []const u8) void {
     output.files[index].exists = true;
 }
 
-pub const fake_file_ops = forth.FileOps{ .open = fakeOpen, .close = fakeClose, .read_line = fakeReadLine, .read = fakeRead, .write = fakeWrite, .size = fakeSize, .reposition = fakeReposition, .position = fakePosition, .resize = fakeResize, .flush = fakeFlush, .delete = fakeDelete, .rename = fakeRename, .status = fakeStatus };
+pub const fake_file_ops = forth.FileOps{ .open = fakeOpen, .close = fakeClose, .read_line = fakeReadLine, .read = fakeRead, .write = fakeWrite, .size = fakeSize, .reposition = fakeReposition, .position = fakePosition, .resize = fakeResize, .flush = fakeFlush, .delete = fakeDelete, .rename = fakeRename, .status = fakeStatus, .key = fakeKey, .ready = fakeReady, .eof = fakeEof };
 
 pub fn fakeOutput(context: ?*anyopaque) *Output {
     return @ptrCast(@alignCast(context.?));
@@ -457,6 +458,7 @@ pub fn fakeOpen(context: ?*anyopaque, name: []const u8, _: forth.FileAccess, cre
     file.exists = true;
     file.open = true;
     file.position = 0;
+    file.eof = false;
     return .{ .value = @intCast(forth.first_file_id + @as(forth.Cell, @intCast(index))) };
 }
 
@@ -468,7 +470,11 @@ pub fn fakeClose(context: ?*anyopaque, fileid: forth.Cell) forth.Cell {
 
 pub fn fakeReadLine(context: ?*anyopaque, fileid: forth.Cell, buffer: []u8) forth.LineResult {
     const file = fakeFile(context, fileid) orelse return .{ .ior = forth.errnoIor(forth.errno_bad_file) };
-    if (file.position >= file.len) return .{};
+    if (file.position >= file.len) {
+        if (buffer.len != 0) file.eof = true;
+        return .{};
+    }
+    if (file.eof) return .{};
     var length: usize = 0;
     while (length < buffer.len and file.position < file.len) {
         const byte = file.data[file.position];
@@ -478,15 +484,32 @@ pub fn fakeReadLine(context: ?*anyopaque, fileid: forth.Cell, buffer: []u8) fort
         buffer[length] = byte;
         length += 1;
     }
+    if (length < buffer.len and file.position == file.len and file.data[file.len - 1] != '\n') file.eof = true;
     return .{ .length = length, .found = true };
 }
 
 pub fn fakeRead(context: ?*anyopaque, fileid: forth.Cell, buffer: []u8) forth.FileResult {
     const file = fakeFile(context, fileid) orelse return .{ .ior = forth.errnoIor(forth.errno_bad_file) };
+    if (buffer.len == 0 or file.eof) return .{};
     const count = @min(buffer.len, file.len -| file.position);
     @memcpy(buffer[0..count], file.data[file.position .. file.position + count]);
     file.position += count;
+    if (count < buffer.len) file.eof = true;
     return .{ .value = count };
+}
+
+pub fn fakeKey(context: ?*anyopaque, fileid: forth.Cell) forth.RuntimeError!forth.FileKeyResult {
+    var byte: [1]u8 = undefined;
+    const read = fakeRead(context, fileid, &byte);
+    return .{ .byte = if (read.value == 1 and read.ior == 0) byte[0] else null, .ior = read.ior };
+}
+pub fn fakeReady(context: ?*anyopaque, fileid: forth.Cell) forth.RuntimeError!forth.FileResult {
+    const file = fakeFile(context, fileid) orelse return .{ .ior = forth.errnoIor(forth.errno_bad_file) };
+    return .{ .value = @intFromBool(!file.eof and file.position < file.len) };
+}
+pub fn fakeEof(context: ?*anyopaque, fileid: forth.Cell) forth.FileResult {
+    const file = fakeFile(context, fileid) orelse return .{ .ior = forth.errnoIor(forth.errno_bad_file) };
+    return .{ .value = @intFromBool(file.eof) };
 }
 
 pub fn fakeWrite(context: ?*anyopaque, fileid: forth.Cell, bytes: []const u8) forth.Cell {
@@ -572,6 +595,7 @@ pub fn fakeStatus(context: ?*anyopaque, name: []const u8) forth.FileResult {
 pub fn fakeReposition(context: ?*anyopaque, fileid: forth.Cell, position: forth.UCell) forth.Cell {
     const file = fakeFile(context, fileid) orelse return forth.errnoIor(forth.errno_bad_file);
     file.position = @intCast(position);
+    file.eof = false;
     const output: *Output = @ptrCast(@alignCast(context.?));
     if (output.swap_file) |swap| {
         if (file == &output.files[swap.index]) {

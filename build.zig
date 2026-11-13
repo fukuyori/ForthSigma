@@ -45,6 +45,12 @@ pub fn build(b: *std.Build) void {
     if (float) addCoreMath(b, exe.root_module);
     addEmbeddedTexts(b, exe.root_module);
     addCTime(b, exe.root_module, target, optimize);
+    const c_file = b.addTranslateC(.{
+        .root_source_file = b.addWriteFiles().add("c_file.h", "#include <stdio.h>\n#ifndef _WIN32\n#include <fcntl.h>\n#include <errno.h>\n#endif\n"),
+        .target = target,
+        .optimize = optimize,
+    });
+    exe.root_module.addImport("c_file", c_file.createModule());
     // Each function and constant in its own section, so that the linker drops the ones
     // nothing calls, also from the C files.
     exe.link_function_sections = true;
