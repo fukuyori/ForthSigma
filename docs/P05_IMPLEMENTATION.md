@@ -1,6 +1,6 @@
 # P05 implementation and validation
 
-Updated2026-11-14. P05a (565) has all sixteen words implemented and validated. Tasks653/654/655 were pushed as d8da5e7/7964014/2b97309;659 was pushed as3af3c9f. Task660 was committed/pushed as9d57d8e. P05b task663 implements the first two of fourteen words, uncommitted. P05 (548) and542 remain incomplete: P05b566 and separate INCLUDE/REQUIRE integration661 remain pending. Native Windows/Linux checks are tracked separately under607.
+Updated2026-11-14. P05a (565) has all sixteen words implemented and validated. Tasks653/654/655 were pushed as d8da5e7/7964014/2b97309;659 was pushed as3af3c9f. Task660 was committed/pushed as9d57d8e. P05b task663 implements the first two of fourteen words, committed/pushed as b9e5099. Task664 adds FILENAME-MATCH, uncommitted; P05b is3/14. P05 (548) and542 remain incomplete: P05b566 and separate INCLUDE/REQUIRE integration661 remain pending. Native Windows/Linux checks are tracked separately under607.
 
 ## File output and stream slurp (653)
 
@@ -100,7 +100,7 @@ Eight regressions in p05a_search_test.zig cover read-only order and returned spe
 
 660/656/565 are complete with progress auto. P05a is16/16. Next planned word group is P05b566 (directory/time); P05/542 remain incomplete. Changes for660 were committed/pushed as9d57d8e. No release package, version change or native Windows/Linux check was performed.
 
-## Path splitting (P05b663, 2026-11-14, uncommitted)
+## Path splitting (P05b663, 2026-11-14, b9e5099 pushed)
 
 BASENAME ( addr u -- addr2 u2 ) borrows the suffix after the last /; DIRNAME ( addr u -- addr u2 ) borrows the prefix including that /. No slash gives an empty directory prefix. A trailing slash gives an empty basename. Backslash, drive syntax, dot/dot-dot, NUL and Unicode bytes receive no special treatment. This is the designated Gforth's byte-oriented splitting, not POSIX basename/dirname normalization or OS path canonicalization.
 
@@ -108,4 +108,24 @@ Both words validate depth and the complete input range before replacing the two 
 
 Three regressions in p05b_path_parts_test.zig cover exact addresses/lengths and unchanged binary/Unicode input, invalid depth/ranges with preserved operands, full-stack operation and compiled calls with no free heap. Normal/minimal tests and normal build pass. scripts/verify-p05b-path-parts.py passes108 Gforth comparisons of text, length, address displacement and final stack balance. Report: .work/p05b-path-parts-check/comparison.json; logs: .zig-cache/p05b-path-parts-{test,minimal,build}.log.
 
-663 is complete(auto);566 remains incomplete at2/14 words. Next is664 FILENAME-MATCH (investigate libc pattern syntax and platform differences before implementation). The seven directory words are665; four time words are666. Windows/Linux native checks remain outside this session under607. No commit/push, version bump or release package was made for663.
+At663 completion,566 had2/14 words. Task664 investigation and completion follow below. The seven directory words are665; four time words are666. Windows/Linux native checks remain outside this session under607. Task663 was committed/pushed as b9e5099. No version bump or release package was made.
+
+## Filename matching investigation (664, before implementation)
+
+The designated Gforth calls libc fnmatch with flags0 and initializes its locale from the environment. Forty probes (20 cases in each of C and en_US.UTF-8) are recorded in .work/p05b-filename-match-check/initial-probes.json. Both locales match / and leading . through wildcards, distinguish case, support bracket ranges, !/^ negation, POSIX named classes and backslash escaping. A trailing backslash does not match. Empty text matches * but not ?.
+
+Unicode behavior differs: Japanese text matches nine question marks in C, three in UTF-8; é matches two question marks in C, one in UTF-8. The alpha class matches é only in the UTF-8 probe. Native fnmatch is therefore not an OS-independent character policy. The bundled Gforth fallback is GPL; it must not be copied into Sigma's implementation.
+
+Before implementation, the native locale-dependent behavior and a portable documented policy were presented to the user. The recommendation presented is a common UTF-8 codepoint matcher across OSes, with ASCII POSIX named classes, case-sensitive literal matching, slash/dot matching through wildcards, bracket/range/negation/escape support, invalid UTF-8 treated one byte at a time, and embedded NUL rejected. Unicode classes and locale collation would be documented differences. The user approved proceeding with this recommendation. Implementation and validation follow below. Progress remains auto; Windows/Linux native execution remains outside this session.
+
+## Portable filename matching (664, 2026-11-14, uncommitted)
+
+FILENAME-MATCH ( name u pattern u2 -- flag ) performs case-sensitive filename globbing without host calls, heap allocation or locale changes. The user approved the portable UTF-8 policy after the investigation above. * matches zero or more codepoints and ? matches one; both include slash and a leading dot. Valid UTF-8 is decoded into codepoints, with no normalization, case folding or grapheme clustering. Each invalid byte is a distinct single unit, separate from all valid Unicode values. Backslash escapes the next codepoint, including bracket and wildcard characters. A terminal backslash never matches.
+
+Bracket expressions support literal members, inclusive codepoint ranges, leading !/^ negation, a literal initial ], and leading/trailing or escaped hyphen. The twelve POSIX named classes (alnum, alpha, blank, cntrl, digit, graph, lower, print, punct, space, upper, xdigit) have ASCII definitions. Unknown classes and unsupported locale collating/equivalence constructs make that bracket fail; malformed/unclosed brackets do not match. Escape [ to match it literally. A named class cannot serve as a range endpoint. Embedded NUL in either argument raises the invalid-argument ior instead of silently truncating a C string.
+
+Core implementation is filename_match.zig through the files feature group. Builtin tags/startup entries are appended. Input depth and both memory spans are validated before mutation. Errors/work-budget exhaustion preserve the four operands; the result replaces them only on success. Iterative star checkpoints avoid recursion and exponential branching. Repeated suffix comparisons can be quadratic, and native loops/bracket traversal check the existing work budget. A disabled debug/step-limit build retains its existing unlimited-execution policy. There is no fixed name-length cap beyond valid VM memory and no new image owner/root. No GPL implementation code was copied.
+
+Five regressions in p05b_filename_match_test.zig cover wildcard/backtracking/bracket syntax, valid and invalid UTF-8, all twelve classes, malformed/NUL/range/stack checks with unchanged operands, full-stack empty spans, compiled execution without host hooks/free heap, and work-budget termination. Normal/minimal zig build test and normal zig build pass. scripts/verify-p05b-filename-match.py passes3,325 designated-Gforth comparisons under LC_CTYPE=en_US.UTF-8 and LC_COLLATE=C, plus verifies five intentional policy differences: C-locale character counting (two cases), Unicode alpha/print class membership (two), and native locale collation of A in [a-c] (one). The separate initial40 probes and malformed-bracket probes are retained. Report: .work/p05b-filename-match-check/comparison.json; logs: .zig-cache/p05b-filename-match-{test,minimal,build}.log.
+
+664 is complete(auto), uncommitted. P05b566 is3/14 words and remains incomplete; next is665 directory operations7, then666 time4. Native Windows/Linux verification is667 under607 and was not performed here. P05/542 remain incomplete. No commit/push, version bump or release package was made for664.

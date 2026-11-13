@@ -1201,3 +1201,9 @@ The result borrows a1,024-byte system buffer until the next path lookup; reset/i
 ### Filename components
 
 `BASENAME ( addr u -- addr2 u2 )` returns the suffix after the last forward slash. `DIRNAME ( addr u -- addr u2 )` returns the prefix including that slash. Both borrow the original bytes without changing or allocating them; keep the source alive while using the result. For `a/b`, the results are `b` and `a/`; for `a/`, they are empty and `a/`; for `file`, they are `file` and empty. No normalization is performed. Backslash is ordinary text even on Windows, following Gforth's definitions.
+
+### Filename patterns
+
+`FILENAME-MATCH ( name u pattern u2 -- flag )` tests a whole filename without accessing the filesystem. It is case sensitive. `*` matches zero or more UTF-8 codepoints and `?` matches one, including slash and a leading dot. Brackets accept members, ranges such as `[a-z]`, leading `!`/`^` negation, and ASCII POSIX classes such as `[[:digit:]]`. Backslash escapes a literal wildcard or bracket. A trailing backslash, unclosed bracket, unknown class or unsupported locale collation/equivalence construct does not match. Escape `[` when it is literal.
+
+The twelve ASCII classes are alnum, alpha, blank, cntrl, digit, graph, lower, print, punct, space, upper and xdigit. Ranges use codepoint order, independent of OS locale. `日本語` matches `???`; `é` matches `?` but not `[[:alpha:]]`. Combining marks count separately; no normalization or case folding is performed. Each invalid UTF-8 byte is one separate unit. NUL in either argument throws an invalid-argument error. No heap allocation or host service is needed; enabled execution budgets also bound matching work.
