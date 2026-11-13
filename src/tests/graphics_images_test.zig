@@ -207,7 +207,7 @@ test "restoring an image frees the images of the pool" {
     const machine = try imageMachine(&output, "2 2");
     defer destroyMachine(machine);
     try machine.interpretLine("1 1 NEW-IMAGE CONSTANT A  A DRAW-TO  2 2 NEW-IMAGE DROP");
-    const image = try std.testing.allocator.alloc(u8, machine.encodedSize());
+    const image = try std.testing.allocator.alloc(u8, try machine.encodedSize());
     defer std.testing.allocator.free(image);
     _ = try machine.encodeImage(image);
     try machine.restoreImage(image);

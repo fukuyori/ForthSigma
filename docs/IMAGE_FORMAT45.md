@@ -18,7 +18,7 @@
 |100/102|各2|Word/Opのサイズ|
 |104|8|ABI配置署名|
 
-ABI配置署名はWord/Opのサイズ・アラインメント、Word全フィールドのオフセットとサイズ、Opのkind/valueオフセットをFNV-1aで畳み込む。これはネイティブ配置の照合であり、組込語の意味やIDの互換性を保証しない。組込語一覧との照合はローダー側の責務。
+ABI配置署名はWord/Opのサイズ・アラインメント、Word全フィールドのオフセットとサイズ、Opのkind/valueオフセットに加え、WordKind/OpKind/Builtinのフィールド名とタグ値をFNV-1aで畳み込む。これはネイティブ配置の照合であり、組込語の意味やIDの互換性を保証しない。組込語一覧との照合はローダー側の責務。
 
 メモリー節は固定システム領域、data_startからHEREまでのデータ、ソースファイル表と読込フラグ。ヒープ全体をこの節へコピーしない。
 
@@ -29,3 +29,5 @@ ABI配置署名はWord/Opのサイズ・アラインメント、Word全フィー
 末尾4バイトは、それ以外の全バイトに対するCRC32。パーサーは節長の整合・オーバーフロー・ABI・列挙値・語/コード/データ範囲・予約領域・再配置の重複や実値との一致を検査する。明示登録だけをたどり、非ヒープのルートから到達するオブジェクトのみ許可する。ルート付き循環は有効、孤立循環は無効。生セルをアドレスと推測しない。
 
 parseは入力と呼出元Workspaceを借用し、Stateを変更しない。戻りViewは両方の寿命に依存する。これは構造検査であり、実行可能な辞書の復元完了を意味しない。Stateからの到達可能ヒープ収集は619配下621のimage_graph.zigへ追加済み。内部ポインター生成更新の接続も622で追加済み。容量確保・組込語照合・保存/復元/追加は620〜630で公開経路へ統合済み。
+
+The ABI signature includes the complete builtin enum. Adding builtin tags may invalidate older files using the same magic. Startup builtin count and tag matching are also strict; stable execution-token numbers alone do not guarantee acceptance across implementation revisions.

@@ -64,7 +64,8 @@ pub fn execute(self: *forth.State, comptime builtin: defs.Builtin) RuntimeError!
             const length: map.UCell = @bitCast(try self.peek(1));
             _ = try self.memoryAddress(descriptor, 24);
             if (self.heapNeed(length) == null) return self.throwIor(map.errno_no_memory);
-            try pointers.preparePointer(self, descriptor + 8);
+            const reserved = try pointers.reservePointer(self, descriptor + 8);
+            errdefer pointers.cancelPointer(self, descriptor + 8, reserved);
             const capacity = try self.readCell(descriptor + 16);
             if (capacity < 0) return error.InvalidAddress;
             if (length > @as(map.UCell, @intCast(capacity))) {

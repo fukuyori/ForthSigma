@@ -172,7 +172,7 @@ test "sprites and maps are data in the dictionary, which an image keeps" {
     const machine = try gameMachine(&output);
     defer destroyMachine(machine);
     try machine.interpretLine("SHEET 0 0 4 4 SPRITE: S 5 6 S PUT-SPRITE SHEET 4 4 3 2 TILEMAP: M 3 2 1 M TILE!");
-    const image = try std.testing.allocator.alloc(u8, machine.encodedSize());
+    const image = try std.testing.allocator.alloc(u8, try machine.encodedSize());
     defer std.testing.allocator.free(image);
     _ = try machine.encodeImage(image);
     const restored = try createMachine(&output);

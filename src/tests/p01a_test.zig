@@ -152,7 +152,7 @@ test "compiled P01a calls survive dictionary restore and append" {
     const source = try support.createMachine(&output);
     defer support.destroyMachine(source);
     try source.interpretLine(": P01-SAVED -1 0 U<= 0 -1 UMAX 1. 2. D<= -1. 0. DU> ;");
-    const image = try std.testing.allocator.alloc(u8, source.encodedSize());
+    const image = try std.testing.allocator.alloc(u8, try source.encodedSize());
     defer std.testing.allocator.free(image);
     _ = try source.encodeImage(image);
     const restored = try support.createMachine(&output);

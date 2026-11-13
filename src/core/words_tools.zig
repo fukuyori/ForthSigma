@@ -98,6 +98,7 @@ pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
             const input = try Input.of(self, source, out_at, length);
             defer input.free(self);
             unescapeInto(input.bytes, self.memory[out_at..][0..length]);
+            registry.written(self, buffer, length, false);
             try self.push(buffer);
             try self.push(@intCast(length));
         },
@@ -264,11 +265,12 @@ fn substituteInto(self: *State, text: []const u8, out: ?[]u8) RuntimeError!Subst
     var length: usize = 0;
     var count: Cell = 0;
     const put = struct {
-        fn bytes(target: ?[]u8, at: *usize, data: []const u8) void {
+        fn bytes(machine: *State, target: ?[]u8, at: *usize, data: []const u8) void {
             if (target) |buffer| {
                 if (at.* < buffer.len) {
                     const n = @min(data.len, buffer.len - at.*);
                     @memmove(buffer[at.*..][0..n], data[0..n]);
+                    registry.written(machine, @intCast(@intFromPtr(buffer.ptr) + at.* - @intFromPtr(machine.memory.ptr)), n, false);
                 }
             }
             at.* +|= data.len;
@@ -277,23 +279,23 @@ fn substituteInto(self: *State, text: []const u8, out: ?[]u8) RuntimeError!Subst
     var i: usize = 0;
     while (i < text.len) {
         if (text[i] != '%') {
-            put(out, &length, text[i .. i + 1]);
+            put(self, out, &length, text[i .. i + 1]);
             i += 1;
             continue;
         }
         if (i + 1 < text.len and text[i + 1] == '%') {
-            put(out, &length, "%");
+            put(self, out, &length, "%");
             i += 2;
             continue;
         }
         const close = std.mem.indexOfScalarPos(u8, text, i + 1, '%') orelse {
-            put(out, &length, text[i..]);
+            put(self, out, &length, text[i..]);
             break;
         };
         if (try replacement(self, text[i + 1 .. close])) |value| {
-            put(out, &length, value);
+            put(self, out, &length, value);
             count += 1;
-        } else put(out, &length, text[i .. close + 1]);
+        } else put(self, out, &length, text[i .. close + 1]);
         i = close + 1;
     }
     return .{ .length = length, .count = count };

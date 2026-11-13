@@ -35,16 +35,15 @@ pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
             const length = try self.popLength();
             const source = try self.pop();
             _ = try self.memoryAddress(source, length);
-            try strings.preparePointer(self, string_var);
+            const reserved = try strings.reservePointer(self, string_var);
+            errdefer strings.cancelPointer(self, string_var, reserved);
             // A fresh buffer keeps the source intact even when it lies in the old string.
             const buffer = try self.heapAllocate(cell_size + length) orelse return self.throwIor(errno_no_memory);
+            errdefer _ = self.heapFree(buffer) catch false;
             try self.copyMemory(buffer + cell_size, source, length);
             try self.writeCell(buffer, @intCast(length));
             const old = try self.readCell(string_var);
-            if (!try self.heapFree(old)) {
-                _ = try self.heapFree(buffer);
-                return self.throwIor(errno_invalid);
-            }
+            if (!try self.heapFree(old)) return self.throwIor(errno_invalid);
             try self.writeCell(string_var, buffer);
             try strings.registerPointer(self, string_var);
         },
@@ -139,6 +138,7 @@ pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
         .string_tmp => {
             const xt = try self.wordId(try self.pop());
             const slot = tmp_string_base + @as(Cell, @intCast(self.tmp_string_index % tmp_string_count)) * cell_size;
+            try strings.preparePointer(self, slot);
             self.tmp_string_index += 1;
             try self.freeString(slot);
             try captureOutput(self, xt, slot);
@@ -158,6 +158,7 @@ pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
         .string_array_store => {
             const array_var = try self.pop();
             const index = try self.popLength();
+            try strings.prepareArrayElement(self, array_var, index);
             const element = try self.stringArrayElement(array_var, index);
             try self.push(element);
             try self.executeBuiltin(.string_store);
@@ -260,6 +261,7 @@ pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
         .string_array_append, .string_append_array => {
             const array_var = try self.pop();
             const index = if (builtin == .string_array_append) try self.popLength() else try self.stringArrayCount(array_var);
+            try strings.prepareArrayElement(self, array_var, index);
             try self.push(try self.stringArrayElement(array_var, index));
             try self.executeBuiltin(if (builtin == .string_array_append) .string_append else .string_store);
         },

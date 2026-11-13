@@ -19,10 +19,29 @@ pub const StringRef = struct { address: Cell, length: usize };
 /// usable at runtime, but cannot become image roots merely by holding a string.
 pub fn preparePointer(self: *State, slot: Cell) RuntimeError!void {
     _ = try self.memoryAddress(slot, cell_size);
-    if (registry.classify(self, slot) != .invalid) try registry.ensureRoom(self, .memory, slot);
+    if (registry.classify(self, slot) == .data and !registry.storageValid(self, slot)) return error.InvalidAddress;
+    if (registry.storageValid(self, slot)) try registry.ensureRoom(self, .memory, slot);
 }
 pub fn registerPointer(self: *State, slot: Cell) RuntimeError!void {
-    if (registry.classify(self, slot) != .invalid) try registry.registerMemory(self, slot);
+    if (registry.storageValid(self, slot)) try registry.registerMemory(self, slot);
+}
+
+/// Reserve a previously untyped owner before operations that can create other
+/// registrations. On failure, remove only this newly reserved metadata entry.
+pub fn reservePointer(self: *State, slot: Cell) RuntimeError!bool {
+    try preparePointer(self, slot);
+    if (!registry.storageValid(self, slot) or registry.index(self, .memory, slot) != null) return false;
+    try registry.registerMemory(self, slot);
+    return true;
+}
+pub fn cancelPointer(self: *State, slot: Cell, reserved: bool) void {
+    if (!reserved) return;
+    const at = registry.index(self, .memory, slot) orelse return;
+    var i = at;
+    while (i + 1 < self.addresses.count) : (i += 1) self.addresses.records[i] = self.addresses.records[i + 1];
+    self.addresses.count -= 1;
+    self.addresses.index_dirty = true;
+    self.addresses.stable_writes = 0;
 }
 
 pub fn fetchString(self: *State, string_var: Cell) RuntimeError!StringRef {
@@ -36,7 +55,8 @@ pub fn fetchString(self: *State, string_var: Cell) RuntimeError!StringRef {
 
 /// Resizes the string buffer; new bytes are zero. Returns the (possibly moved) buffer.
 pub fn setStringLength(self: *State, string_var: Cell, length: usize) RuntimeError!Cell {
-    try preparePointer(self, string_var);
+    const reserved = try reservePointer(self, string_var);
+    errdefer cancelPointer(self, string_var, reserved);
     const old_length = (try self.fetchString(string_var)).length;
     const buffer = switch (try self.heapResize(try self.readCell(string_var), cell_size + length)) {
         .address => |moved| moved,
@@ -111,6 +131,16 @@ pub fn stringArrayCount(self: *State, array_var: Cell) RuntimeError!usize {
     return (try self.fetchString(array_var)).length / cell_size;
 }
 
+/// Check ownership metadata before growing an array for a string-producing word.
+pub fn prepareArrayElement(self: *State, array_var: Cell, index: usize) RuntimeError!void {
+    try preparePointer(self, array_var);
+    const array = try fetchString(self, array_var);
+    const owner_needed: usize = if (registry.storageValid(self, array_var) and registry.index(self, .memory, array_var) == null) 1 else 0;
+    const existing = index < array.length / cell_size and registry.index(self, .memory, array.address + @as(Cell, @intCast(index * cell_size))) != null;
+    const needed = owner_needed + @as(usize, if (existing) 0 else 1);
+    if (needed > registry.capacity - self.addresses.count) return error.MemoryExhausted;
+}
+
 /// Address of element `index`, growing the array with empty strings as needed.
 pub fn stringArrayElement(self: *State, array_var: Cell, index: usize) RuntimeError!Cell {
     if (index >= @divTrunc(self.sizes.heapEnd() - self.sizes.heapBase(), cell_size)) return self.throwIor(errno_no_memory);
@@ -122,7 +152,11 @@ pub fn stringArrayElement(self: *State, array_var: Cell, index: usize) RuntimeEr
 /// Reads the file line by line into the string array, replacing its contents.
 pub fn slurpLines(self: *State, fileid: Cell, array_var: Cell) RuntimeError!void {
     var count: usize = 0;
-    while (try slurpLine(self, fileid, try self.stringArrayElement(array_var, count))) count += 1;
+    while (true) {
+        try prepareArrayElement(self, array_var, count);
+        if (!try slurpLine(self, fileid, try self.stringArrayElement(array_var, count))) break;
+        count += 1;
+    }
     const total = try self.stringArrayCount(array_var);
     for (count..total) |index| try self.freeString(try self.stringArrayElement(array_var, index));
     _ = try self.setStringLength(array_var, count * cell_size);
@@ -132,19 +166,36 @@ pub fn slurpLines(self: *State, fileid: Cell, array_var: Cell) RuntimeError!void
 /// $SLURP-LINE and $[]SLURP. At the end of the file it gives false and, as in gforth,
 /// leaves an empty string.
 pub fn slurpLine(self: *State, fileid: Cell, string_var: Cell) RuntimeError!bool {
+    const reserved = try reservePointer(self, string_var);
+    errdefer cancelPointer(self, string_var, reserved);
     const files = try self.fileOps();
     var chunk: [256]u8 = undefined;
-    try self.freeString(string_var);
+    var temporary: Cell = 0;
+    var length: usize = 0;
+    errdefer _ = self.heapFree(temporary) catch false;
     var found = false;
     while (true) {
         const result = files.read_line(self.writer.context, fileid, &chunk);
         if (result.ior != 0) return self.throwCode(result.ior);
         if (!result.found) break;
         found = true;
-        try self.appendString(string_var, chunk[0..result.length]);
+        length += result.length;
+        temporary = switch (try self.heapResize(temporary, cell_size + length)) {
+            .address => |moved| moved,
+            .no_memory => return self.throwIor(errno_no_memory),
+            .bad_pointer => return self.throwIor(errno_invalid),
+        };
+        const at: usize = @intCast(temporary + cell_size + @as(Cell, @intCast(length - result.length)));
+        @memcpy(self.memory[at..][0..result.length], chunk[0..result.length]);
+        registry.written(self, @intCast(at), result.length, false);
         if (result.length < chunk.len) break;
     }
-    if ((try self.fetchString(string_var)).address == 0) try self.executeStringInit(string_var);
+    if (temporary == 0) temporary = try self.heapAllocate(cell_size) orelse return self.throwIor(errno_no_memory);
+    try self.writeCell(temporary, @intCast(length));
+    const previous = try self.readCell(string_var);
+    if (!try self.heapFree(previous)) return self.throwIor(errno_invalid);
+    try self.writeCell(string_var, temporary);
+    try registerPointer(self, string_var);
     return found;
 }
 

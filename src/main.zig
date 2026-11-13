@@ -1101,7 +1101,7 @@ fn saveDictionary(context: ?*anyopaque, output_path: []const u8, machine: *forth
     var terminated_path: [4096:0]u8 = undefined;
     @memcpy(terminated_path[0..output_path.len], output_path);
     terminated_path[output_path.len] = 0;
-    const image = host.allocator.alloc(u8, machine.encodedSize()) catch return error.MemoryExhausted;
+    const image = host.allocator.alloc(u8, try machine.encodedSize()) catch return error.MemoryExhausted;
     defer host.allocator.free(image);
     const length = try machine.encodeImage(image);
     const file = fopen(&terminated_path, "wb") orelse return error.FileUnavailable;
@@ -1130,7 +1130,7 @@ fn saveExecutableImage(context: ?*anyopaque, output_path: []const u8, machine: *
         }
     }
     if (fseek(source, 0, 0) != 0) return error.FileUnavailable;
-    const image = allocator.alloc(u8, machine.encodedSize()) catch return error.MemoryExhausted;
+    const image = allocator.alloc(u8, try machine.encodedSize()) catch return error.MemoryExhausted;
     defer allocator.free(image);
     const image_len = try machine.encodeImage(image);
     const destination = fopen(&terminated_output, "wb") orelse return error.FileUnavailable;

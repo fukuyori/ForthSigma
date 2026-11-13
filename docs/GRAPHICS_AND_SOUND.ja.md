@@ -482,7 +482,7 @@ S" @1 CDEF" S" @2 EGAB" S" @3 O3 C2G2" S" @4 O2 C1" 4 PLAYS
 | Linux（ライブラリを読み込める版） | PulseAudio、次に ALSA、次に上のコマンド。 |
 | macOS | AudioToolbox の AudioQueue で、既定の出力装置に送る。48 kHz 16ビット ステレオ（約80 ms）。フレームワークは実行時に読み込む。 |
 
-`BEEP`、機種を選ぶ語、`CHIPS`、`FREE-SAMPLES`、`PLAY` が待っている間の Ctrl+C は、音楽、効果音、モジュールを止めます。音の状態（音色、標本、待ち行列）は辞書に含まれません。`SAVE` と `SAVESYS` は音の語とそれを使う語を保存しますが、音色の設定や標本の読み込みは、プログラムが起動してから行ってください。音の語を読み込んだ辞書は `SIGIMG44` で保存します。
+`BEEP`、機種を選ぶ語、`CHIPS`、`FREE-SAMPLES`、`PLAY` が待っている間の Ctrl+C は、音楽、効果音、モジュールを止めます。音の状態（音色、標本、待ち行列）は辞書に含まれません。`SAVE` と `SAVESYS` は音の語とそれを使う語を保存しますが、音色の設定や標本の読み込みは、プログラムが起動してから行ってください。音の語を読み込んだ辞書は `SIGIMG47` で保存します。
 
 `SND-` の語は、ライブラリを書くための基本の語です: `SND-PLAY`、`SND-PLAYS`、`SND-SOUND`、`SND-BEEP`、`SND-PLAYING`、`SND-DEVICE`、`SND-CHIP`、`SND-CHIPS`、`SND-INSTRUMENT`、`SND-WAVE`、`SND-DUTY`、`SND-ADSR`、`SND-RING`、`SND-SYNC`、`SND-FILTER`、`SND-WAVETABLE`、`SND-LOAD-SAMPLE`、`SND-SAMPLE`、`SND-LOOP-SAMPLE`、`SND-SAMPLE-INSTRUMENT`、`SND-SFX`、`SND-AMIGA-FILTER`、`SND-FREE-SAMPLES`、`SND-LOAD-MOD`、`SND-PLAY-MOD`、`SND-STOP-MOD`、`SND-MOD-PLAYING`、`SND-STYLE`。それぞれの説明は `HELP` で見られます。`SND-LOAD-SAMPLE` と `SND-LOAD-MOD` は、エラーを THROW せずに ior を返します。
 

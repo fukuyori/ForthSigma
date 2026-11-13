@@ -67,7 +67,7 @@ test "the index of the names follows images that are restored and appended" {
     const source = try createMachine(&output);
     defer destroyMachine(source);
     try source.interpretLine("VOCABULARY V ALSO V DEFINITIONS : SHARED 10 ; PREVIOUS DEFINITIONS : SHARED 20 ; : ONLY-SOURCE 30 ;");
-    const image = try std.testing.allocator.alloc(u8, source.encodedSize());
+    const image = try std.testing.allocator.alloc(u8, try source.encodedSize());
     defer std.testing.allocator.free(image);
     _ = try source.encodeImage(image);
 

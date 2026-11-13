@@ -482,7 +482,7 @@ The module plays on Paula's periods, panned and filtered as the Amiga's (`AMIGA-
 | Linux (a build that can load libraries) | PulseAudio, then ALSA, then the commands above. |
 | macOS | An AudioQueue of AudioToolbox on the default output device, 48 kHz 16-bit stereo (about 80 ms); the framework is loaded when the program runs. |
 
-`BEEP`, the chip words, `CHIPS`, `FREE-SAMPLES`, and Ctrl+C while `PLAY` waits stop the music, the sound effects, and the module. The sound (instruments, samples, queues) is not part of the dictionary: `SAVE` and `SAVESYS` keep the audio words and the words that use them, but a program sets its instruments and loads its samples after it starts. A dictionary that has loaded the audio words is saved as `SIGIMG44`.
+`BEEP`, the chip words, `CHIPS`, `FREE-SAMPLES`, and Ctrl+C while `PLAY` waits stop the music, the sound effects, and the module. The sound (instruments, samples, queues) is not part of the dictionary: `SAVE` and `SAVESYS` keep the audio words and the words that use them, but a program sets its instruments and loads its samples after it starts. A dictionary that has loaded the audio words is saved as `SIGIMG47`.
 
 The `SND-` words are the base the library is written with: `SND-PLAY`, `SND-PLAYS`, `SND-SOUND`, `SND-BEEP`, `SND-PLAYING`, `SND-DEVICE`, `SND-CHIP`, `SND-CHIPS`, `SND-INSTRUMENT`, `SND-WAVE`, `SND-DUTY`, `SND-ADSR`, `SND-RING`, `SND-SYNC`, `SND-FILTER`, `SND-WAVETABLE`, `SND-LOAD-SAMPLE`, `SND-SAMPLE`, `SND-LOOP-SAMPLE`, `SND-SAMPLE-INSTRUMENT`, `SND-SFX`, `SND-AMIGA-FILTER`, `SND-FREE-SAMPLES`, `SND-LOAD-MOD`, `SND-PLAY-MOD`, `SND-STOP-MOD`, `SND-MOD-PLAYING`, and `SND-STYLE`. `HELP` describes each of them. `SND-LOAD-SAMPLE` and `SND-LOAD-MOD` return an ior instead of throwing.
 

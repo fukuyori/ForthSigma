@@ -100,7 +100,7 @@ test "P03a width word calls survive dictionary restore and append" {
     defer support.destroyMachine(source);
     try source.interpretLine(": WIDTHS /W /L /X FLOAT ; : SIGNED $FFFF W>S ;");
     // No logical addresses are embedded in these definitions.
-    const image = try std.testing.allocator.alloc(u8, source.encodedSize());
+    const image = try std.testing.allocator.alloc(u8, try source.encodedSize());
     defer std.testing.allocator.free(image);
     _ = try source.encodeImage(image);
     const restored = try support.createMachine(&output);

@@ -141,7 +141,7 @@ test "dictionary restore preserves this process's unsaved runtime block buffer" 
     defer support.destroyMachine(machine);
     machine.writer.file_ops = &ops;
     try machine.interpretLine("1 BLOCK 83 SWAP C! UPDATE");
-    const image = try std.testing.allocator.alloc(u8, machine.encodedSize());
+    const image = try std.testing.allocator.alloc(u8, try machine.encodedSize());
     defer std.testing.allocator.free(image);
     _ = try machine.encodeImage(image);
     try machine.restoreImage(image);

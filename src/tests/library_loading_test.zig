@@ -85,7 +85,7 @@ test "an image keeps a library of Forth only loaded, also when appended" {
     const source = try machineWithSmallGraphics(&output);
     defer destroyMachine(source);
     try library_loading.require(source, test_group, ": GOOD 1 ;\n");
-    const image = try std.testing.allocator.alloc(u8, source.encodedSize());
+    const image = try std.testing.allocator.alloc(u8, try source.encodedSize());
     defer std.testing.allocator.free(image);
     _ = try source.encodeImage(image);
     // Its format is that of the graphics words: the library has no built-in words.

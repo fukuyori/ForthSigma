@@ -575,7 +575,7 @@ test "an image records its layout and runs only with that layout" {
     const source = try support.createMachineWith(&output, sizes);
     defer destroyMachine(source);
     try source.interpretLine(": KEEP 7 ; 100 ALLOT");
-    const image = try std.testing.allocator.alloc(u8, source.encodedSize());
+    const image = try std.testing.allocator.alloc(u8, try source.encodedSize());
     defer std.testing.allocator.free(image);
     try std.testing.expectEqual(image.len, try source.encodeImage(image));
     const layout = forth.State.imageLayout(image).?;

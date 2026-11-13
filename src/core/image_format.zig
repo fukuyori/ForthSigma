@@ -363,7 +363,7 @@ fn put(comptime T: type, bytes: []u8, value: T) void {
 // Sizes alone do not identify a native struct ABI: two targets can reorder fields
 // differently while retaining the same total size. Hash field offsets and widths.
 fn layoutSignature() u64 {
-    @setEvalBranchQuota(10000);
+    @setEvalBranchQuota(1000000);
     var hash: u64 = 14695981039346656037;
     for ([_]u64{ @sizeOf(defs.Word), @alignOf(defs.Word), @sizeOf(defs.Op), @alignOf(defs.Op) }) |value| hashValue(&hash, value);
     inline for (word_fields) |name| {
@@ -372,6 +372,13 @@ fn layoutSignature() u64 {
     }
     hashValue(&hash, @offsetOf(defs.Op, "kind"));
     hashValue(&hash, @offsetOf(defs.Op, "value"));
+    inline for (.{ defs.WordKind, defs.OpKind, defs.Builtin }) |E| {
+        inline for (@typeInfo(E).@"enum".field_names) |name| {
+            hashValue(&hash, @backingInt(@field(E, name)));
+            for (name) |byte| hashValue(&hash, byte);
+            hashValue(&hash, 0);
+        }
+    }
     return hash;
 }
 fn hashValue(hash: *u64, value: u64) void {

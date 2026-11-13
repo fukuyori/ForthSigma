@@ -25,6 +25,8 @@ fn apply(state: *forth.State, plan: *const preflight.Plan, memory_is_fresh: bool
     const h = view.header;
     const builtins = state.builtin_count;
     state.addresses.count = 0;
+    state.addresses.index_dirty = true;
+    state.addresses.stable_writes = 0;
     state.watched_count = 0;
     state.cell_watch_count = 0;
     for (builtins..h.word_count) |i| {
@@ -82,11 +84,14 @@ fn apply(state: *forth.State, plan: *const preflight.Plan, memory_is_fresh: bool
     state.setCompiling(false);
     state.defining = false;
     state.pending = .none;
+    state.last_created_word = null;
     @import("words_graphics.zig").clearImage(state);
     @import("graphics_images.zig").releaseAll(state);
     if (defs.graphics_enabled) @import("tcl.zig").forgetHeap(state);
     @memcpy(state.addresses.records[0..h.relocation_count], plan.records[0..h.relocation_count]);
     state.addresses.count = h.relocation_count;
+    state.addresses.index_dirty = true;
+    state.addresses.stable_writes = 0;
 }
 fn putCell(state: *forth.State, address: map.Cell, value: map.Cell) void {
     std.mem.writeInt(map.Cell, state.memory[@intCast(address)..][0..8], value, .little);

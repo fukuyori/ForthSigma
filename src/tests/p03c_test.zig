@@ -34,7 +34,7 @@ test "P03c buffers grow move shrink and persist with explicit owner registration
     try std.testing.expectEqual(@as(forth.Cell, 200), try machine.readCell(descriptor + 16));
     try std.testing.expectEqual(moved, try machine.readCell(descriptor + 8));
     try registry.validate(machine);
-    const bytes = try std.testing.allocator.alloc(u8, machine.encodedSize());
+    const bytes = try std.testing.allocator.alloc(u8, try machine.encodedSize());
     defer std.testing.allocator.free(bytes);
     const length = try machine.encodeImage(bytes);
     try machine.restoreImage(bytes[0..length]);

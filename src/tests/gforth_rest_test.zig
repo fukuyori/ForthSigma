@@ -84,7 +84,7 @@ test "typed replacement links survive public image restore" {
     const machine = try createMachine(&output);
     defer destroyMachine(machine);
     try machine.interpretLine("S\" Sunday\" S\" day\" REPLACES");
-    const image = try std.testing.allocator.alloc(u8, machine.encodedSize());
+    const image = try std.testing.allocator.alloc(u8, try machine.encodedSize());
     defer std.testing.allocator.free(image);
     const length = try machine.encodeImage(image);
     try machine.restoreImage(image[0..length]);

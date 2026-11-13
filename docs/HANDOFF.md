@@ -1,8 +1,8 @@
 # Gforth対応の引き継ぎ
 
-更新日：2026-11-13。P00・S01・P01・P02とP03の65語（P03a/b/c）まで実装・検証完了。次は **P04a（563）の文字列操作とUnicode**。Windows/Linux確認はここでは行わず607に残す。
+更新日：2026-11-13。P00・S01・P01・P02とP03の65語（P03a/b/c）まで実装・検証完了。次は **P04a残り7語（633）の所有文字列編集・UTF-8取得**。Windows/Linux確認はここでは行わず607に残す。
 
-P03bの公開経路統合は`bcf625f`でコミット・push済み。今回P03cの6語を実装・検証し、562とP03全体546を完了（auto）にした。今回のP03c・回帰・文書変更は未コミット。git statusとgit logで確認する。
+P03c was committed and pushed as `98be4f8`. P03 and task 562 are complete. Claude Code review fixes are uncommitted; tque 631 is complete (auto), with no new concrete defect found in the final review. See [P03 review](P03_REVIEW.md). Check git status and git log before resuming.
 
 ## 最初に読む資料
 
@@ -44,7 +44,7 @@ P03bは15語の実行・型/寿命追跡と、617〜630の新形式保存/復元
 
 ## 完了した実装と注意点
 
-### P03c所有ヒープと伸長バッファー（562、未コミット）
+### P03c (562, 98be4f8 pushed)
 
 words_buffers.zigでSAVE-MEM/EXTEND-MEM/FREE-MEM-VAR/BUFFER%/INIT-BUFFER/ADJUST-BUFFERを末尾登録し、既存IDを維持。BUFFER%は長さ・番地・容量の24バイト。伸長は内容を保ち、縮小は容量を保持。番地セルを明示登録して保存復元に対応。NULLのFREE-MEM-VARは長さも変更しない。バッファー解放後はINIT-BUFFERで再初期化してから再使用する。
 
@@ -67,7 +67,7 @@ words_width.zigを追加し、既存組込タグを保って44語を末尾登録
 
 利用者の選択でXD>Sは1セル入力→2セルの符号拡張（64ビットGforthのS>D相当）。XD@/XD!のメモリー幅は8バイトで、スタックは2セル。論理バイト順は常にLE。未整列を許し、全幅検査後に格納。!@/+!@は原子操作ではない。明示整列は非0の2累乗、最大整列8。詳細は[P03記録](P03_IMPLEMENTATION.md)。
 
-P03bの新形式・再配置、P03cは未実装。P03全体546は完了にしない。Windows/Linux確認は607へ追加しここでは未実施。ログは`.zig-cache/p03a-test.log`、`p03a-minimal.log`、JSONは`.work/p03a-check/results.json`。P03aは737b660でコミット・push済み。Claude Codeレビューは未依頼で行っていない。
+Historical P03a verification: 737b660 was pushed. P03b/c and typed image persistence were completed subsequently. P03 review is tracked by 631; see [review record](P03_REVIEW.md).
 
 ### P02：数値演算・数値入出力65語（初回c3cde8aをpush済み）
 
@@ -75,7 +75,7 @@ P03bの新形式・再配置、P03cは未実装。P03全体546は完了にしな
 
 利用者の「おすすめで」により、幅以上の論理シフトは0、算術シフトは符号埋め、回転数は幅で剰余を取り、16/32ビット回転は上位を0にする。DEC.Rは文書上の符号なし10進契約を採用。指定Gforthの境界実装・負の生セル表示との差は記録済み。
 
-F*+は融合丸め、E.EXACTは完全な十進値を保持し、最小サブノーマル値まで往復確認。DPLは0x0d50。乱数はVMごとの64ビット状態で同じ種から再現し、Gforth列との一致は要求しない。初期種はP00どおりホストepochマイクロ秒（取得口なし／失敗時0）。RNDの生LCG状態は下位ビットが弱いので範囲選択にはRANDOMを使う。新組込語のタグは既存の末尾に追加。復元・追加イメージで新語の呼出しを検証した。新再配置形式は未実装のまま。
+Historical P02 record (typed persistence was subsequently implemented in P03): F*+は融合丸め、E.EXACTは完全な十進値を保持し、最小サブノーマル値まで往復確認。DPLは0x0d50。乱数はVMごとの64ビット状態で同じ種から再現し、Gforth列との一致は要求しない。初期種はP00どおりホストepochマイクロ秒（取得口なし／失敗時0）。RNDの生LCG状態は下位ビットが弱いので範囲選択にはRANDOMを使う。新組込語のタグは既存の末尾に追加。復元・追加イメージで新語の呼出しを検証した。新再配置形式は未実装のまま。
 
 ログは`.zig-cache/p02-test.log`、`p02-minimal.log`。JSONは`.work/p02a-check/`、`p02b-check/`、`p02c-check/`。Windows/Linux確認は607へP02を追加し、ここでは未実施。Claude Code初回はP0/P1なし、P2 1件・P3 8件。時刻種、長い処理のステップ制限、非有限FP.空白、HELPを修正し、Gforth比較とテストを補強。再レビューも全件解消・新たな具体的問題なし。レビュー後のログは`.zig-cache/p02-review-test.log`、`p02-review-minimal.log`、原文と追加実測は`.work/p02-review/`。
 

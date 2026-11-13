@@ -69,7 +69,7 @@ test "P03b field offsets align naturally and field definitions survive images" {
     try machine.interpretLine("CREATE RAW HERE X, : GETFIELD 100 FD ;");
     const original = machine.words[machine.lookup("RAW").?].value;
     if (!@import("build_options").image) return;
-    const bytes = try std.testing.allocator.alloc(u8, machine.encodedSize());
+    const bytes = try std.testing.allocator.alloc(u8, try machine.encodedSize());
     defer std.testing.allocator.free(bytes);
     _ = try machine.encodeImage(bytes);
     const restored = try support.createMachine(&output);

@@ -434,6 +434,7 @@ pub const State = struct {
         self.writeCell(heap_top_address, self.sizes.heapBase()) catch unreachable;
         self.storeSourceName(terminal_source_name_address, terminal_source_name);
         self.storeSourceName(evaluate_source_name_address, evaluate_source_name);
+        self.memory[@intCast(memory_map.newline_address)] = 10;
         // gforth starts with the search order Forth Forth Root and defines into Forth.
         self.writeCell(wordlist_count_address, memory_map.ekeys_wordlist) catch unreachable;
         self.writeCell(current_wordlist_address, forth_wordlist) catch unreachable;
@@ -885,6 +886,27 @@ pub const State = struct {
             .{ "BUFFER%", .buffer_percent },
             .{ "INIT-BUFFER", .init_buffer },
             .{ "ADJUST-BUFFER", .adjust_buffer },
+            .{ "#BELL", .number_bell },
+            .{ "#BS", .number_bs },
+            .{ "#CR", .number_cr },
+            .{ "#DEL", .number_del },
+            .{ "#EOF", .number_eof },
+            .{ "#ESC", .number_esc },
+            .{ "#FF", .number_ff },
+            .{ "#LF", .number_lf },
+            .{ "#TAB", .number_tab },
+            .{ "INVALID-CHAR", .invalid_char },
+            .{ "NEWLINE", .newline },
+            .{ "TOUPPER", .to_upper },
+            .{ "CAPSCOMPARE", .caps_compare },
+            .{ "CAPSSEARCH", .caps_search },
+            .{ "CAPSSTRING-PREFIX?", .caps_prefix },
+            .{ "STR<", .str_less },
+            .{ "STRING-SUFFIX?", .string_suffix },
+            .{ "SAFE/STRING", .safe_slash_string },
+            .{ "SCAN-BACK", .scan_back },
+            .{ "NOSPLIT?", .no_split },
+            .{ "TYPEWHITE", .type_white },
     };
 
     fn installBuiltins(self: *State) void {
@@ -1997,7 +2019,7 @@ pub const State = struct {
         if (defs.debug_enabled and self.cover_blocks and self.compiling and startsBlock(builtin)) self.markBlock(self.columnAfterWord());
     }
 
-    const word_modules = .{ @import("core/words_buffers.zig"), @import("core/words_data.zig"), @import("core/words_width.zig"), words_stack, words_arithmetic, @import("core/words_numeric.zig"), words_memory, words_output, words_input, words_compiling, words_float, words_pictured, words_dictionary, words_system, @import("core/blocks.zig"), words_files, words_strings, words_help, words_defining, words_graphics, words_audio, words_xchar, words_tools, words_debug };
+    const word_modules = .{ @import("core/words_text.zig"), @import("core/words_buffers.zig"), @import("core/words_data.zig"), @import("core/words_width.zig"), words_stack, words_arithmetic, @import("core/words_numeric.zig"), words_memory, words_output, words_input, words_compiling, words_float, words_pictured, words_dictionary, words_system, @import("core/blocks.zig"), words_files, words_strings, words_help, words_defining, words_graphics, words_audio, words_xchar, words_tools, words_debug };
 
     /// For each built-in word, the index in `word_modules` of the file that executes it.
     const word_owner = blk: {

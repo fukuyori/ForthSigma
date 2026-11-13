@@ -108,7 +108,7 @@ test "compiled P01b words survive image restore and append" {
     const source = try support.createMachine(&output);
     defer support.destroyMachine(source);
     try source.interpretLine(": ST-P 1 2 3 4 2TUCK 2NIP THIRD FOURTH ; : ST-R 1 >R 2 >R 3 >R 2RDROP RDROP ;");
-    const image = try std.testing.allocator.alloc(u8, source.encodedSize());
+    const image = try std.testing.allocator.alloc(u8, try source.encodedSize());
     defer std.testing.allocator.free(image);
     _ = try source.encodeImage(image);
     const restored = try support.createMachine(&output);

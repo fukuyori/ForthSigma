@@ -74,6 +74,7 @@ pub fn execute(self: *forth.State, word: defs.Builtin) defs.RuntimeError!void {
             const source: []const u8 = if (word == .gfx_gamepad_guid) &pad.guid else pad.name[0..@min(pad.name_len, pad.name.len)];
             const n = @min(dest.len, source.len);
             @memcpy(dest[0..n], source[0..n]);
+            @import("address_registry.zig").written(self, @intCast(@intFromPtr(dest.ptr) - @intFromPtr(self.memory.ptr)), n, false);
             try self.push(@intCast(n));
         },
         .gfx_gamepad_map => {

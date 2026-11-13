@@ -44,7 +44,7 @@ pub fn splitBlock(self: *State, block: Cell, size: Cell, need: Cell, used: bool)
 
 pub fn heapNeed(self: *const State, size: UCell) ?Cell {
     if (size > @as(UCell, @intCast(self.sizes.heapEnd() - self.sizes.heapBase() - heap_header))) return null;
-    return @intCast((size + cell_size - 1) & ~@as(UCell, cell_size - 1));
+    return @intCast(@max(cell_size, (size + cell_size - 1) & ~@as(UCell, cell_size - 1)));
 }
 
 pub fn heapAllocate(self: *State, size: UCell) RuntimeError!?Cell {
@@ -137,7 +137,7 @@ pub fn heapResize(self: *State, address: Cell, size: UCell) RuntimeError!HeapRes
     }
     const moved = try self.heapAllocate(size) orelse return .no_memory;
     errdefer _ = self.heapFree(moved) catch false;
-    try self.copyMemory(moved, address, @intCast(old_size));
+    try @import("address_registry.zig").relocateBlock(self, moved, address, @intCast(old_size));
     _ = try self.heapFree(address);
     return .{ .address = moved };
 }

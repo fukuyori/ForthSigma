@@ -60,9 +60,9 @@ const checksum_size = 4;
 pub fn imageCapacity(sizes: memory_map.Sizes) usize {
     return @import("image_format.zig").header_size + max_words * @sizeOf(Word) + max_code * @sizeOf(Op) + names_capacity + sizes.memorySize() + 2048 * 56 + checksum_size;
 }
-pub fn encodedSize(self: *State) usize {
+pub fn encodedSize(self: *State) RuntimeError!usize {
     var workspace: @import("image_encoder.zig").Workspace = undefined;
-    return @import("image_encoder.zig").measure(self, &workspace) catch imageCapacity(self.sizes);
+    return @import("image_encoder.zig").measure(self, &workspace);
 }
 
 /// The layout an image was saved with, as `m` and `l`; null when the bytes are not an
@@ -253,7 +253,7 @@ pub fn appendImage(self: *State, source: *const State) RuntimeError!void {
     self.data_here += data_len;
     self.last_created_word = null;
     // The loaded image's graphics words count as loaded here too, unless this dictionary
-    // has its own; either way, images saved from now on are SIGIMG43.
+    // has its own; either way, images saved from now on are SIGIMG46.
     try library_loading.appendLoaded(self, source, words_graphics.group, graphics_loaded, word_base);
     try library_loading.appendLoaded(self, source, words_audio.group, audio_loaded, word_base);
     try library_loading.appendLoaded(self, source, @import("words_gui.zig").group, gui_loaded, word_base);

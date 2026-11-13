@@ -736,6 +736,7 @@ pub const Builtin = enum {
     to_here, two_field, l_comma, l_field, max_align, mem_comma, save_mem_dict, w_comma, w_field, x_comma, xd_comma, x_field,
     a_comma, define_aconstant, define_avariable,
     save_mem, extend_mem, free_mem_var, buffer_percent, init_buffer, adjust_buffer,
+    number_bell, number_bs, number_cr, number_del, number_eof, number_esc, number_ff, number_lf, number_tab, invalid_char, newline, to_upper, caps_compare, caps_search, caps_prefix, str_less, string_suffix, safe_slash_string, scan_back, no_split, type_white,
 };
 
 pub const HeapResult = union(enum) { address: Cell, no_memory, bad_pointer };

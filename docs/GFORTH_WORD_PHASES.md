@@ -182,7 +182,7 @@ FACILITY EXTのキー4語とBLOCK/BLOCK EXTの10語を優先する。既存の�
 
 #### P03a 幅と整列と特殊メモリーアクセス
 
-対象 44語。tque ID: 560。2026-11-13に実装、[実装・検証記録](P03_IMPLEMENTATION.md)。P03bは15語の実行・型付き参照追跡まで実装。新イメージと再配置、P03cは未実装。
+対象 44語。tque ID: 560。2026-11-13に実装、[実装・検証記録](P03_IMPLEMENTATION.md)。P03bの型付き永続化とP03cの6語も実装済み。
 
 `!@`, `*ALIGN`, `*ALIGNED`, `+!@`, `/L`, `/W`, `/X`, `C>S`, `CELL/`, `CHAR-`, `DFLOAT/`, `FLOAT`, `FLOAT/`, `L!`, `L>S`, `L@`, `LALIGN`, `LALIGNED`, `LBE`, `LLE`, `MAXALIGNED`, `SFLOAT/`, `TH`, `TH!`, `TH@`, `W!`, `W>S`, `W@`, `WALIGN`, `WALIGNED`, `WBE`, `WLE`, `X!`, `X>S`, `X@`, `XALIGN`, `XALIGNED`, `XBE`, `XD!`, `XD>S`, `XD@`, `XDBE`, `XDLE`, `XLE`
 
@@ -210,7 +210,7 @@ FACILITY EXTのキー4語とBLOCK/BLOCK EXTの10語を優先する。既存の�
 
 #### P04a 文字列操作とUnicode
 
-対象 28語。tque ID: 563。
+対象28語。tque ID: 563。基本/借用文字列21語（632）は実装・323ケース比較と回帰済み。所有文字列編集/UTF-8取得の7語（633）は未実装。親563/547は未完了。[記録](P04_IMPLEMENTATION.md)。
 
 `#BELL`, `#BS`, `#CR`, `#DEL`, `#EOF`, `#ESC`, `#FF`, `#LF`, `#TAB`, `APPEND`, `CAPSCOMPARE`, `CAPSSEARCH`, `CAPSSTRING-PREFIX?`, `CSTRING>SSTRING`, `DELETE`, `INSERT`, `INVALID-CHAR`, `NEWLINE`, `NOSPLIT?`, `S+`, `SAFE/STRING`, `SCAN-BACK`, `STR<`, `STRING,`, `STRING-SUFFIX?`, `TOUPPER`, `TYPEWHITE`, `XC@+?`
 

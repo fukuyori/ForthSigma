@@ -101,7 +101,7 @@ test "2, data and rotation calls survive image restore and append" {
     try source.interpretLine("CREATE PAIR 11 22 2, : GET PAIR 2@ ; : ROTATE 1 65 ROL 1 ROR ;");
     const raw_address = source.data_here;
     try source.interpretLine("CREATE RAW-PAIR HERE DUP 2,");
-    const image = try std.testing.allocator.alloc(u8, source.encodedSize());
+    const image = try std.testing.allocator.alloc(u8, try source.encodedSize());
     defer std.testing.allocator.free(image);
     _ = try source.encodeImage(image);
     const restored = try support.createMachine(&output);

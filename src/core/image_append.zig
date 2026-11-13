@@ -104,6 +104,8 @@ fn apply(state: *forth.State, work: *Workspace) void {
     }
     @memcpy(state.addresses.records[state.addresses.count..][0..h.relocation_count], plan.image.records[0..h.relocation_count]);
     state.addresses.count += h.relocation_count;
+    state.addresses.index_dirty = true;
+    state.addresses.stable_writes = 0;
     state.names_used = @intCast(plan.name_base + new_names.len);
     state.word_count = @intCast(plan.word_base + h.word_count - h.builtin_count);
     state.code_count = @intCast(plan.code_base + h.code_count);

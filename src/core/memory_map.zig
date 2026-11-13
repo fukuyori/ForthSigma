@@ -168,6 +168,7 @@ comptime {
     if (environment_buffer_base + environment_buffer_size > system_end) @compileError("the system area does not fit");
     if (data_start != block_source_end or data_start % cell_size != 0) @compileError("the data area must follow the input area, aligned to a cell");
     if (blk_address < evaluate_source_name_address + evaluate_source_name.len or scr_address != blk_address + cell_size or scr_address + cell_size > hold_bottom) @compileError("block variables overlap system buffers");
+    if (newline_address < evaluate_source_name_address + 1 + evaluate_source_name.len or newline_address + 1 > blk_address) @compileError("NEWLINE overlaps system variables or source names");
     if (data_start >= min_memory_m) @compileError("the smallest data area is empty");
     if (!Sizes.small.valid()) @compileError("the small sizes are not valid");
     if (!Sizes.default.valid()) @compileError("the default sizes are not valid");
@@ -238,6 +239,9 @@ pub const evaluate_source_name = "*evaluated string*";
 pub const terminal_source_name_address: Cell = 0x0d00;
 
 pub const evaluate_source_name_address: Cell = 0x0d20;
+
+/// Borrowed LF returned by NEWLINE; below BLK/SCR and after source-name text.
+pub const newline_address: Cell = 0x0d38;
 
 /// The first of the replacements REPLACES made (0 for none), a list in the heap that
 /// SUBSTITUTE reads: each block holds the next one, the name's length, the text's length,
@@ -325,15 +329,15 @@ pub const max_dot_s_items = 9;
 
 pub const fs_precision = 14;
 
-/// SIGIMG42 records the layout of the logical memory (`m` and `l`) in its header. An image
+/// SIGIMG45 records the layout of the logical memory (`m` and `l`) in its header. An image
 /// keeps addresses, so it runs only with the layout it was saved with. Images before it
 /// are not read.
 pub const image_magic = "SIGIMG45";
 /// The same layout as `image_magic`, for an image that has had the graphics words; builds
-/// that only know SIGIMG42 reject it.
+/// that only know SIGIMG45 reject it.
 pub const graphics_image_magic = "SIGIMG46";
 /// The same layout again, for an image that has had the audio words (with or without the
-/// graphics words); builds that only know SIGIMG42 and SIGIMG43 reject it.
+/// graphics words); builds that only know SIGIMG45 and SIGIMG46 reject it.
 pub const audio_image_magic = "SIGIMG47";
 
 /// File ids of the standard streams; the host numbers opened files from `first_file_id`.

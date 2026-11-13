@@ -244,3 +244,7 @@ BUFFER%の配置は長さ・番地・容量の順。入力/ローカルの一時
 p03c_test.zigの6回帰でコピー・拡大結果、強制移動・縮小・保存復元、上限値/実ヒープ不足の入力保持、NULL/不正番地の解放、型付きコピーの解放、表満杯時の非変更を確認した。通常／全機能群無効のzig build testと通常ビルドが成功。verify-p03c.pyの60ケースが指定Gforthと一致。
 
 ログは.zig-cache/p03c-test.log、p03c-minimal.log、p03c-build.log。比較結果は.work/p03c-check/results.json。今回のP03cは未コミット。Windows/Linuxはここでは実施しない。
+
+## P03 Claude Code review
+
+P03c was pushed as 98be4f8, then Claude Code reviewed all P03 changes. Findings were corrected and the final read-only review found no new concrete defect. See [P03 review](P03_REVIEW.md). Ten review regressions, normal/minimal tests, the normal build, 1,742 designated-Gforth comparison cases and targeted CLI checks passed. Fixes remain uncommitted; task 631 is complete with auto progress.

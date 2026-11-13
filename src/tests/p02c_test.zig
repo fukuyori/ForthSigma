@@ -99,7 +99,7 @@ test "P02 definitions keep their builtin calls across dictionary restore and app
     defer support.destroyMachine(source);
     try source.interpretLine(": P02-DIV -7 3 /MODS ; : P02-SHIFT 1. 64 DLSHIFT ; : P02-RANDOM 123 SEED! 1 RANDOM ;");
     if (enabled) try source.interpretLine(": P02-FLOAT -1e 1.000000007450580596923828125e 0.999999992549419403076171875e F*+ ;");
-    const image = try std.testing.allocator.alloc(u8, source.encodedSize());
+    const image = try std.testing.allocator.alloc(u8, try source.encodedSize());
     defer std.testing.allocator.free(image);
     _ = try source.encodeImage(image);
     const restored = try support.createMachine(&output);
