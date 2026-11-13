@@ -195,15 +195,21 @@ pub fn validate(self: *State) RuntimeError!void {
                 if (other.kind == .memory and overlaps(record.slot, 8, other.slot)) return error.InvalidAddress;
             }
         }
-        const actual = if (record.kind == .word) blk: {
-            if (record.slot < 0 or record.slot >= self.word_count) return error.InvalidAddress;
-            break :blk self.words[@intCast(record.slot)].value;
-        } else blk: {
-            if (!storageValid(self, record.slot)) return error.InvalidAddress;
-            break :blk try self.readCell(record.slot);
-        };
-        if (actual != record.value or classify(self, actual) != record.target) return error.InvalidAddress;
+        try validateRecord(self, record);
     }
+}
+
+/// Validate one selected graph edge without scanning unreachable heap records.
+pub fn validateRecord(self: *State, record: Record) RuntimeError!void {
+    if (record.status != .valid) return error.InvalidAddress;
+    const actual = if (record.kind == .word) blk: {
+        if (record.slot < 0 or record.slot >= self.word_count) return error.InvalidAddress;
+        break :blk self.words[@intCast(record.slot)].value;
+    } else blk: {
+        if (!storageValid(self, record.slot)) return error.InvalidAddress;
+        break :blk try self.readCell(record.slot);
+    };
+    if (actual != record.value or classify(self, actual) != record.target) return error.InvalidAddress;
 }
 
 /// Until task 617 implements the new image format, never silently save/append a

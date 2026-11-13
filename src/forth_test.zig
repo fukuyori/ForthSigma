@@ -45,3 +45,7 @@ comptime {
     _ = @import("core/lint.zig");
     _ = @import("tests/lint_test.zig");
 }
+
+comptime {
+    _ = @import("tests/image_graph_test.zig");
+}
