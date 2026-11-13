@@ -1,6 +1,6 @@
 # P03 メモリーとデータ配置の実装記録
 
-2026-11-13。P03（tque 546）のうち、P03a（560）の44語を実装。P03b（561）はデータ配置12語（子615）と型付きアドレス3語・寿命追跡（子616）を実装。新イメージ・再配置（子617）は未実装。P03c（562）のヒープ・伸長バッファーは未着手。対象語と完了条件は[実装フェーズ](GFORTH_WORD_PHASES.md)、確定設計は[P00仕様](GFORTH_P00_SPEC.md)。
+2026-11-13。P03（tque 546）のうち、P03a（560）の44語を実装。P03b（561）はデータ配置12語（子615）と型付きアドレス3語・寿命追跡（子616）を実装。新イメージ・再配置（子617）は構造コーデック（子618）まで実装し、保存・復元への統合は未実装。P03c（562）のヒープ・伸長バッファーは未着手。対象語と完了条件は[実装フェーズ](GFORTH_WORD_PHASES.md)、確定設計は[P00仕様](GFORTH_P00_SPEC.md)。
 
 ## P03aの幅とスタック表現
 
@@ -96,7 +96,7 @@ FREEとRESIZEの縮小は消えた格納位置を除去し、残った参照先�
 
 ### 永続化の暫定制限
 
-**新形式が未実装なので、型付き登録が1件でもある辞書のSAVE/SAVESYS/LOAD-DICTIONARY、直接のencode/restore/appendは暫定的に拒否する。** 有効な型付き登録でもInvalidImage（-264）。部分破損・解放済み等の無効参照はInvalidAddress（-9）。型情報なしの既存の辞書は従来どおり保存・復元できる。
+**新形式の保存・復元への統合前なので、型付き登録が1件でもある辞書のSAVE/SAVESYS/LOAD-DICTIONARY、直接のencode/restore/appendは暫定的に拒否する。** 有効な型付き登録でもInvalidImage（-264）。部分破損・解放済み等の無効参照はInvalidAddress（-9）。型情報なしの既存の辞書は従来どおり保存・復元できる。
 
 Forthの保存・読込入口でホスト処理前に検査し、Tcl資源解放やファイル変更の前に失敗する。SAVE/SAVESYSが既存ファイルを変更しないことをCLIでも確認した。617で新形式の検証・保存に置き換えるまで、旧形式へ型情報を落として保存しない。
 
@@ -111,11 +111,21 @@ Forthの保存・読込入口でホスト処理前に検査し、Tcl資源解放
 python3 scripts/verify-p03b-address.py zig-out/bin/sigma --gforth-build .work/gforth-audit/gforth-build --report .work/p03b-address-check/results.json
 ```
 
-ログは.zig-cache/p03b-address-test.log、p03b-address-minimal.log。JSONは.work/p03b-address-check/（legacy-guard.jsonも含む）。子616の変更は未コミット。
+ログは.zig-cache/p03b-address-test.log、p03b-address-minimal.log。JSONは.work/p03b-address-check/（legacy-guard.jsonも含む）。子616は16862f1でpush済み。
+
+## P03b 新形式コーデック・構造検証（子618）
+
+src/core/image_format.zigにSIGIMG45/46/47の読み書き部品と、Stateを書き換えない構造パーサーを追加。[形式の記録](IMAGE_FORMAT45.md)。112バイトヘッダー、32バイト再配置、24バイトのヒープオブジェクトヘッダー、CRCを扱う。Word/Opのパディングはゼロ化し、ネイティブABIのサイズ・配置・エンディアンを検査する。
+
+長さ・個数・予約領域・enum・範囲・重複セル・参照値の一致と、明示登録をたどったヒープ到達可能性を検査する。ルートのある循環参照は許し、孤立オブジェクトを拒否する。生の数値から型を推測しない。
+
+src/tests/image_format_test.zigの10テストで3種類のマジック、破損ヘッダー／レコード／コード、境界参照、循環、重複、標準バイト列と128件のビット変異を確認。通常／全機能群無効のzig build testが成功。ログは.zig-cache/p03b-format-test.logとp03b-format-minimal.log。freestanding_checkはコンパイル確認であり、Windows/Linux実機確認ではない。
+
+この部品は入力とWorkspaceを借用し、辞書をインストールしない。組込語一覧との照合、Stateからの収集、容量確保と保存・復元・追加は後続619/620で行う。公開SAVE/LOADはSIGIMG42/43/44のままで、型付き登録の暫定拒否を維持する。子618の変更は未コミット。
 
 ## 後続のP03b / P03c
 
-子617は616に依存する新イメージ・追加読込・事前検証。現時点の形式はSIGIMG42/43/44のまま。SIGIMG45/46/47と、P00指定の32バイト再配置表・到達可能ヒープオブジェクト表を実装する。
+子617は616に依存する新イメージ・追加読込・事前検証。現時点の形式はSIGIMG42/43/44のまま。構造コーデックは618で実装済み。619で到達可能ヒープ収集・内部ポインター登録を行い、620で保存・復元・追加へ統合する。
 
 617では動的文字列等の既存内部ポインターを明示登録し、ホスト資源・入力・ローカル等の除外を保存時にも検証する。現在の暫定拒否はwords_system.zigとdictionary_image.zigのrequireLegacyImageにある。型付き新形式を保存・復元できるように置き換える際、ファイルopenより前の検証・容量確保、Tcl資源解放との順序も確認する。
 

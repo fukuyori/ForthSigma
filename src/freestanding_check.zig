@@ -43,3 +43,9 @@ const sound = @import("core/sound_engine.zig");
 export fn sigma_sound_render(engine: *sound.Engine, output: [*]i16, length: usize) void {
     engine.render(output[0..length]);
 }
+
+// Structural validation is independent of dictionary installation and OS services.
+export fn sigma_check_image45_format(image: [*]const u8, length: usize, workspace: *@import("core/image_format.zig").Workspace) bool {
+    _ = @import("core/image_format.zig").parse(image[0..length], workspace) catch return false;
+    return true;
+}
