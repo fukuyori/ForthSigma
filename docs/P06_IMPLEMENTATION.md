@@ -1,6 +1,6 @@
 # P06 implementation and validation
 
-Current status: P06a567(5/5), P06b568(9/9), P06c569(15/15) and P06 root549(29/29) are complete. Next is457 P07 prework;542 remains incomplete. Progress is auto. SH-GET was committed/pushed as07095f0; P06c is uncommitted. The sections below retain per-chunk historical state and validation.
+Current status: P06a567(5/5), P06b568(9/9), P06c569(15/15) and P06 root549(29/29) are complete. Next is457 P07 prework;542 remains incomplete. Progress is auto. SH-GET was committed/pushed as07095f0; P06c was committed/pushed as78f79ae. P06 review and fixes are recorded in [P06 review](P06_REVIEW.md). The sections below retain per-chunk historical state and validation.
 
 ## Owned output capture (684)
 

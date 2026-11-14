@@ -1290,6 +1290,8 @@ Empty FPATH uses raw cwd-relative lookup; configured FPATH uses source search. P
 
 `OPEN-PIPE ( addr u fam -- fileid ior )` opens a command for R/O or W/O (BIN accepted; R/W rejected). Use file read/write/key APIs or INFILE/OUTFILE with the result. `CLOSE-PIPE ( fileid -- status ior )` closes it and waits for the command, returning native status without changing `$?`. Close with CLOSE-PIPE, not CLOSE-FILE; mismatched closes return an error and retain ownership. Size/seek/resize are unavailable. Live pipes are not saved in images; shutdown closes remaining owned pipes.
 
+Pipe commands share the process terminal state: OPEN-PIPE and SH-GET do not hand terminal ownership to the child. After KEY/EKEY/KEY-IOR, an inherited terminal input may remain raw. Use SYSTEM/SH for foreground interactive commands; a live pipe does not coordinate competing reads from the terminal.
+
 `BROKEN-PIPE-ERROR` returns Sigma's EPIPE ior-544. This intentionally differs from Gforth's-2049. Pipe writes do not terminate Sigma on SIGPIPE; native writer pipes report write failures without stdio buffering. Native commands support up to4095 UTF-8 bytes, without NUL. Pipe operations require files support and custom FileOps open_pipe/close_pipe hooks. [Details](P06_IMPLEMENTATION.md).
 
 

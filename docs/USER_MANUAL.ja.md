@@ -1282,6 +1282,8 @@ addr/uは取得可能なOS/CRTのTZ名を最大256バイトで借用し、次の
 
 `OPEN-PIPE ( addr u fam -- fileid ior )`はコマンドをR/OまたはW/Oで開きます。BINは使用でき、R/Wはエラーです。通常のファイル読書き・キー入力やINFILE/OUTFILEで利用できます。`CLOSE-PIPE ( fileid -- status ior )`は閉じてコマンドの終了を待ち、ネイティブ終了値を返します。`$?`は変更しません。CLOSE-FILEではなくCLOSE-PIPEで解放してください。種類の異なるクローズはエラーとなり、所有権は残ります。サイズ・seek・resizeには対応しません。実行中パイプはイメージに保存せず、終了時に残ったパイプは閉じます。
 
+パイプのコマンドはプロセスの端末状態を共有し、OPEN-PIPE・SH-GETは子へ端末の所有権を引き渡しません。KEY/EKEY/KEY-IORの後では、継承した端末入力がrawのままになる場合があります。対話型の前景コマンドにはSYSTEM/SHを使用してください。実行中のパイプと親との端末読み取り競合は調停しません。
+
 `BROKEN-PIPE-ERROR`はSigmaのEPIPEである-544を返し、Gforthの-2049とは意図的に異なります。SIGPIPEでSigmaを終了させず、書込パイプはstdioのバッファリングを無効にしてエラーを返します。ネイティブコマンドはNULを含まないUTF-8で4095バイトまでです。files機能と、カスタムFileOpsのopen_pipe/close_pipeが必要です。[記録](P06_IMPLEMENTATION.md)。
 
 

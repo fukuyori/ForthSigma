@@ -571,6 +571,8 @@ fn fileOpenPipe(_: ?*anyopaque, command: []const u8, access: forth.FileAccess) f
         if (file == null) break index;
     } else return .{ .ior = forth.errnoIor(errno_too_many_files) };
     flushOutput();
+    // A child may write inherited stdout/stderr without passing through us.
+    output_cursor.unknown();
     clearErrno();
     const file = (if (builtin.os.tag == .windows) native: {
         var wide: [8192]u16 = undefined;
@@ -603,6 +605,7 @@ fn fileClosePipe(_: ?*anyopaque, fileid: forth.Cell) forth.FileResult {
     file_peeked[slot] = false;
     clearErrno();
     const status = nativePipeClose(file);
+    output_cursor.unknown();
     var ior: forth.Cell = if (status == -1) lastIor() else 0;
     if (!scope.end() and ior == 0) ior = forth.errnoIor(errno_io);
     return .{ .value = @bitCast(@as(forth.Cell, status)), .ior = ior };
@@ -2665,4 +2668,24 @@ test "native pipe shutdown reaps writers and rejects foreign closes and seeks" {
     try std.testing.expectEqual(@as(forth.UCell, 4), read.value);
     try std.testing.expectEqualStrings("kept", bytes[0..4]);
     try std.testing.expectEqual(@as(forth.Cell, 0), fileClose(null, regular_id));
+}
+
+test "native pipe lifetime invalidates untracked child output cursor positions" {
+    if (builtin.os.tag == .windows) return error.SkipZigTest;
+    const previous = output_cursor;
+    defer output_cursor = previous;
+    defer closeAllFiles();
+    output_cursor.newline();
+    output_cursor.feed("parent");
+    const opened = fileOpenPipe(null, "printf x", .read_only);
+    try std.testing.expectEqual(@as(forth.Cell, 0), opened.ior);
+    try std.testing.expect(output_cursor.position() == null);
+    // Parent output can establish a fresh row while the child is still live.
+    output_cursor.newline();
+    output_cursor.feed("new prompt");
+    var byte: [1]u8 = undefined;
+    const id: forth.Cell = @bitCast(opened.value);
+    try std.testing.expectEqual(@as(forth.UCell, 1), fileRead(null, id, &byte).value);
+    try std.testing.expectEqual(@as(forth.Cell, 0), fileClosePipe(null, id).ior);
+    try std.testing.expect(output_cursor.position() == null);
 }

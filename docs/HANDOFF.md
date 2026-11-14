@@ -4,10 +4,10 @@
 
 ## 現在状態
 
-- ブランチはmain。最新コミットは`07095f0`（SH-GET）、origin/mainへpush済み。P06cとHANDOFF整理は未コミット。再開時に`git status -sb`と`git log -3 --oneline`で確認する。
-- P00・S01・P01〜P05、P06全29語（a5・b9・c15）は完了。P05レビューも完了。
-- P06cは一括承認の15語を実装し、通常/最小テスト、74実測比較・PTY6件・既存入力回帰が通過。次は457（P07先行4語）。
-- tque階層は121 → 415 → 542。569・549は完了、542は未完了。進捗はauto。
+- ブランチはmain。P06cは`78f79ae`でorigin/mainへpush済み。P06レビュー修正のコミットはgit履歴で確認する。再開時に`git status -sb`と`git log -3 --oneline`で確認する。
+- P00・S01・P01〜P05、P06全29語（a5・b9・c15）は完了。P05・P06レビューも完了。
+- P06cは一括承認の15語を実装し、通常/最小テスト、74実測比較・PTY6件・既存入力回帰が通過。P06レビューでSTDOUT描画判定とパイプのカーソル追跡を修正。次は457（P07先行4語）。
+- tque階層は121 → 415 → 542。569・549・レビュー697は完了、542は未完了。既存の明示出力経路の描画判定は698で別管理。進捗はauto。
 - P06の仕様・意図した差・検証結果は[P06実装記録](P06_IMPLEMENTATION.md)。SH-GETは次回呼出しまでの借用で、FREEしない。パイプはR/O・W/Oのみ、EPIPEは-544。
 
 ## 次の作業と進め方
@@ -36,4 +36,4 @@
 
 - [基本仕様・比較方針](GFORTH_P00_SPEC.md)、[フェーズ表](GFORTH_WORD_PHASES.md)、[決定事項](DECISIONS.md)
 - [S01レビュー](S01_REVIEW.md)、[P01レビュー](P01_REVIEW.md)、[P02記録](P02_IMPLEMENTATION.md)、[P03記録](P03_IMPLEMENTATION.md)、[P04記録](P04_IMPLEMENTATION.md)
-- [P05記録](P05_IMPLEMENTATION.md)・[レビュー](P05_REVIEW.md)、[P06記録](P06_IMPLEMENTATION.md)、[イメージ形式](IMAGE_FORMAT45.md)
+- [P05記録](P05_IMPLEMENTATION.md)・[レビュー](P05_REVIEW.md)、[P06記録](P06_IMPLEMENTATION.md)・[レビュー](P06_REVIEW.md)、[イメージ形式](IMAGE_FORMAT45.md)

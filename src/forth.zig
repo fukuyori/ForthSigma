@@ -485,6 +485,9 @@ pub const State = struct {
                 return;
             };
             const ior = files.write(self.writer.context, fileid, bytes);
+            // Explicit STDOUT still changes the terminal that SHOW tracks.
+            // Count even a failed write: the host may have emitted a prefix.
+            if (fileid == memory_map.stdout_fileid) self.output_count +%= bytes.len;
             if (ior != 0) self.output_error = ior;
             return;
         }

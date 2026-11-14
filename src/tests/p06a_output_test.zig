@@ -84,3 +84,23 @@ test "P06a output invalid tokens and closed files restore prior state without cl
     m.data_depth = m.data_stack.len;
     try std.testing.expectError(error.StackOverflow, m.executeBuiltin(.outfile_id));
 }
+
+test "P06a explicit STDOUT output prevents SHOW from overwriting intervening text" {
+    try support.skipWithout(&.{ .files, .graphics });
+    var out = support.Output{ .terminal_columns = 80, .terminal_rows = 24 };
+    const m = try support.createMachine(&out);
+    defer support.destroyMachine(m);
+    try setup(m);
+    try m.interpretLine("REQUIRE-GRAPHICS ALSO GRAPHICS 2 2 GFX-INIT : TXT 65 EMIT ; GFX-SHOW-BLOCKS");
+    const mark = m.output_count;
+    try m.interpretLine("' TXT A OUTFILE-EXECUTE");
+    try std.testing.expectEqual(mark, m.output_count);
+    try m.interpretLine("' TXT >STRING-EXECUTE DROP FREE THROW");
+    try std.testing.expectEqual(mark, m.output_count);
+    try m.interpretLine("' TXT STDOUT OUTFILE-EXECUTE");
+    try std.testing.expectEqualStrings("A", out.stdout_bytes[0..out.stdout_len]);
+    try std.testing.expectEqual(mark + 1, m.output_count);
+    out.len = 0;
+    try m.interpretLine("GFX-SHOW-BLOCKS");
+    try std.testing.expect(std.mem.indexOf(u8, out.written(), "\x1b[1A") == null);
+}
