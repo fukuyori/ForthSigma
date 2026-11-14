@@ -24,7 +24,7 @@ pub fn convert(_: ?*anyopaque, seconds: forth.Double, buffer: []u8) forth.Runtim
     var local: c.struct_tm = undefined;
     var utc: c.struct_tm = undefined;
     if (windows) {
-        const code = c.localtime_s(&local, &instant);
+        const code = c._localtime64_s(&local, &instant);
         if (code != 0) return if (code == 22 or code == 34) error.ResultOutOfRange else error.HostFailed;
     } else {
         std.c._errno().* = 0;
@@ -33,7 +33,7 @@ pub fn convert(_: ?*anyopaque, seconds: forth.Double, buffer: []u8) forth.Runtim
     if (local.tm_isdst < 0) return error.HostFailed;
     const offset: forth.Cell = if (@hasField(c.struct_tm, "tm_gmtoff")) @intCast(local.tm_gmtoff) else if (@hasField(c.struct_tm, "__tm_gmtoff")) @intCast(local.__tm_gmtoff) else computed: {
         if (windows) {
-            const code = c.gmtime_s(&utc, &instant);
+            const code = c._gmtime64_s(&utc, &instant);
             if (code != 0) return if (code == 22 or code == 34) error.ResultOutOfRange else error.HostFailed;
         } else {
             std.c._errno().* = 0;

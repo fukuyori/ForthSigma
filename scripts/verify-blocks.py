@@ -27,9 +27,9 @@ with tempfile.TemporaryDirectory(dir=pathlib.Path(".zig-cache"), prefix="verify-
     assert run(": BAD 1 LOAD ; ' BAD CATCH . BYE") == b"-13 "
 
     data = [b"", b"BLK @ . SOURCE-ID . SOURCE NIP . 2 LOAD 11 .", b"22 .",
-            b"7 . \\ ignored 999".ljust(64) + b"8 .", b"-99 THROW", b"NEXT", b"66 ."]
+            b"7 . \\ ignored 999".ljust(64) + b"8 .", b"-99 THROW", b"BLOCK-NEXT", b"66 ."]
     (work / "blocks.fb").write_bytes(b"".join(x.ljust(1024, b" ") for x in data))
-    result = run(": NEXT REFILL DROP ; 1 LOAD BLK @ . 3 LOAD : BAD 4 LOAD ; ' BAD CATCH . BLK @ . 5 LOAD BYE")
+    result = run(": BLOCK-NEXT REFILL DROP ; 1 LOAD BLK @ . 3 LOAD : BAD 4 LOAD ; ' BAD CATCH . BLK @ . 5 LOAD BYE")
     assert result == b"1 2 1024 22 11 0 7 8 -99 0 66 ", result
     assert run(": KEPT 42 ; SAVE words.sigma LOAD-DICTIONARY words.sigma KEPT . BYE").endswith(b"42 ")
 

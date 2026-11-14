@@ -101,6 +101,13 @@ class Session:
         self.output = bytearray()
         try:
             self.until(b"Type `help' for basic help\r\n")
+            # The banner is flushed before the editor switches off canonical
+            # input/echo. Sending immediately can race that transition on Linux.
+            deadline = time.monotonic() + 5
+            while termios.tcgetattr(self.slave)[3] & (termios.ICANON | termios.ECHO):
+                if self.child.poll() is not None or time.monotonic() >= deadline:
+                    raise AssertionError('line editor did not enter raw input mode')
+                time.sleep(0.001)
         except BaseException:
             self.close()
             raise
@@ -223,7 +230,7 @@ class LineEditorTests(unittest.TestCase):
         row = s.screen.row
         s.send(' ' * 100 + '7 .')
         s.drain()
-        self.assertEqual(s.screen.row, row)
+        self.assertEqual(s.screen.row, row, bytes(s.output))
         s.send('\r')
         s.until(b'\r\n7  OK\r\n')
         s.send('BYE\r')

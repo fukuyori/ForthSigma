@@ -1035,8 +1035,47 @@ SAVESYS demo.exe
 | 定数・説明 | `PI`, `HELP`, `LICENSE` |
 | 動的メモリ・動的文字列 | `ALLOCATE`, `FREE`, `RESIZE`, `$!`, `$@`, `$@LEN`, `$!LEN`, `$+!`, `C$+!`, `$.`, `$DEL`, `$INS`, `$OVER`, `$FREE`, `$INIT`, `$SPLIT`, `$ITER`, `$TMP`, `$SLURP-FILE`, `$[]`, `$[]!`, `$[]@`, `$[]#`, `$[].`, `$[]MAP`, `$[]FREE`, `$[]SLURP`, `$[]SLURP-FILE`, `$SLURP`, `$+SLURP`, `$+SLURP-FILE`, `$SLURP-LINE`, `$+!LEN`, `$[]+!`, `$+[]!`, `$EXEC`, `$OFF`, `$VARIABLE`, `$[]VARIABLE`, `$?`, `$SUBSTITUTE`, `$UNESCAPE` |
 | デバッグ | `~~`, `(~~)`, `ASSERT(`, `(ASSERT)`, `~~BT`, `(~~BT)`, `~~1BT`, `ONCE`, `(ONCE)`, `~~VALUE`, `(~~TO)`, `~~VARIABLE`, `+LTRACE`, `-LTRACE`, `DBG`, `BREAK:`, `(BREAK:)`, `BREAK"`, `(BREAK")`, `WATCH`, `UNWATCH`, `.COVER-RAW`, `COV%`, `.COVERAGE` |
+| P01c | `2,` |
+| P02a | `*/F`, `*/MODF`, `*/MODS`, `*/S`, `/F`, `/MODF`, `/MODS`, `/S`, `>POW2`, `ARSHIFT`, `CTZ`, `DARSHIFT` |
+| P02a | `DLSHIFT`, `DROL`, `DROR`, `DRSHIFT`, `DU/MOD`, `LOG2`, `LROL`, `LROR`, `MODF`, `MODS`, `MUX`, `POW2?` |
+| P02a | `U*/`, `U*/MOD`, `U/`, `U/MOD`, `UD/MOD`, `UMOD`, `WROL`, `WROR` |
+| P02b | `-INF`, `-INFINITY`, `1/F`, `F*+`, `F2*`, `F2/`, `FAXPY`, `FCOPYSIGN`, `FFOURTH`, `FTHIRD`, `F~ABS`, `F~REL` |
+| P02b | `INF`, `INFINITY`, `NAN`, `V*` |
+| P02c | `>FLOAT1`, `BASE-EXECUTE`, `CONVERT`, `DEC.`, `DEC.R`, `DPL`, `E.`, `E.EXACT`, `E.P`, `FP.`, `H.`, `HEX.` |
+| P02c | `RANDOM`, `RND`, `SEED!`, `UD.`, `UD.R` |
+| P03a | `!@`, `*ALIGN`, `*ALIGNED`, `+!@`, `/L`, `/W`, `/X`, `C>S`, `CELL/`, `CHAR-`, `DFLOAT/`, `FLOAT` |
+| P03a | `FLOAT/`, `L!`, `L>S`, `L@`, `LALIGN`, `LALIGNED`, `LBE`, `LLE`, `MAXALIGNED`, `SFLOAT/`, `TH`, `TH!` |
+| P03a | `TH@`, `W!`, `W>S`, `W@`, `WALIGN`, `WALIGNED`, `WBE`, `WLE`, `X!`, `X>S`, `X@`, `XALIGN` |
+| P03a | `XALIGNED`, `XBE`, `XD!`, `XD>S`, `XD@`, `XDBE`, `XDLE`, `XLE` |
+| P03b | `->HERE`, `2FIELD:`, `A,`, `ACONSTANT`, `AVARIABLE`, `L,`, `LFIELD:`, `MAXALIGN`, `MEM,`, `SAVE-MEM-DICT`, `W,`, `WFIELD:` |
+| P03b | `X,`, `XD,`, `XFIELD:` |
+| P03c | `ADJUST-BUFFER`, `BUFFER%`, `EXTEND-MEM`, `FREE-MEM-VAR`, `INIT-BUFFER`, `SAVE-MEM` |
+| P04a | `#BELL`, `#BS`, `#CR`, `#DEL`, `#EOF`, `#ESC`, `#FF`, `#LF`, `#TAB`, `APPEND`, `CAPSCOMPARE`, `CAPSSEARCH` |
+| P04a | `CAPSSTRING-PREFIX?`, `CSTRING>SSTRING`, `DELETE`, `INSERT`, `INVALID-CHAR`, `NEWLINE`, `NOSPLIT?`, `S+`, `SAFE/STRING`, `SCAN-BACK`, `STR<`, `STRING,` |
+| P04a | `STRING-SUFFIX?`, `TOUPPER`, `TYPEWHITE`, `XC@+?` |
+| P04b | `$VALUE`, `.SUBSTITUTE`, `MACRO:`, `MACROS-WORDLIST`, `REPLACER:` |
+| P05a | `+FMODE`, `.INCLUDED`, `.PATH`, `ABSOLUTE-FILE?`, `ALSO-PATH`, `CLEAR-PATH`, `EMIT-FILE`, `FILE-EOF?`, `FILE>PATH`, `KEY-FILE`, `KEY?-FILE`, `OPEN-PATH-FILE` |
+| P05a | `PATH+`, `PATH=`, `SLURP-FID`, `\\\` |
+| P05b | `=MKDIR`, `>TIME&DATE&TZ`, `BASENAME`, `CLOSE-DIR`, `CPUTIME`, `DIRNAME`, `FILENAME-MATCH`, `GET-DIR`, `MKDIR-PARENTS`, `NS`, `NTIME`, `OPEN-DIR` |
+| P05b | `READ-DIR`, `SET-DIR` |
+| P06a | `>STRING-EXECUTE`, `INFILE-EXECUTE`, `INFILE-ID`, `OUTFILE-EXECUTE`, `OUTFILE-ID` |
+| P06b | `.QUOTED-CSV`, `BROKEN-PIPE-ERROR`, `CLOSE-PIPE`, `CSV-QUOTE`, `CSV-SEPARATOR`, `OPEN-PIPE`, `READ-CSV`, `SH`, `SH-GET` |
+| P06c | `AT-DELTAXY`, `FKEY.`, `FORM`, `KEY-IOR`, `SIMPLE-FKEY-STRING` |
+| P07d | `.UNRESOLVED`, `EXECUTE-PARSING`, `EXECUTE-PARSING-FILE`, `FORWARD`, `NAME`, `PARSE-WORD`, `RECURSIVE`, `STRING-PARSE` |
+| P08a | `.ID`, `.VOC`, `COMPILE-ONLY?`, `CONTEXT`, `CS-VOCABULARY`, `CS-WORDLIST`, `CURRENT`, `FIND-NAME-IN`, `IN`, `IN-WORDLIST`, `LATESTNT`, `MAP-VOCS` |
+| P08a | `MWORDS`, `NAME>LINK`, `NEXTNAME`, `OBSOLETE?`, `ROOT`, `SEAL`, `TABLE`, `VLIST`, `VOCS`, `WORDLIST-WORDS`, `XT>NAME` |
+| P08b | `:IS`, `ADDR`, `ADDRESSABLE:`, `AVALUE`, `PRESERVE`, `WRAP-XT` |
+| P09a | `)`, `?ERRNO-THROW`, `?IOR`, `ASSERT-LEVEL`, `ASSERT0(`, `ASSERT1(`, `ASSERT2(`, `ASSERT3(`, `CATCH-NOBT`, `EXCEPTION`, `EXCEPTIONS`, `FAST-THROW` |
+| P09a | `NOTHROW`, `WARNING"`, `WARNINGS` |
+| P09b | `...`, `AFTER-LOCATE`, `B`, `BEFORE-LOCATE`, `BROWSE`, `BT`, `BW`, `CLEARSTACK`, `CLEARSTACKS`, `EDIT`, `EXPAND-WHERE`, `F.S-PRECISION` |
+| P09b | `FANCY-AFTER-L`, `FCLEARSTACK`, `G`, `GG`, `L`, `LL`, `MAXDEPTH-.S`, `N`, `NT`, `NW`, `PREPEND-WHERE`, `SHORT-WHERE` |
+| P09b | `TT`, `UNUSED-WORDS`, `WHEREG`, `WW`, `XT-LOCATE`, `\G` |
+| P09c | `F>R`, `FR>`, `FR@`, `R'@`, `RPICK` |
+| S01a | `EKEY>FKEY` |
+| S01b | `BLK`, `BLOCK`, `BUFFER`, `EMPTY-BUFFERS`, `FLUSH`, `LIST`, `SAVE-BUFFERS`, `SCR`, `THRU`, `UPDATE` |
+| 追加登録語 | `FPATH`, `LOAD` |
 
-起動時点でForth語彙に **578語** の組み込み語があります（`MINUS`/`NEGATE` のような別名もそれぞれ1語と数えます）。このほかRoot語彙に、`FORTH` `ONLY` などの10語が重ねて登録されています。
+全機能を有効にしたビルドでは、起動時のForth語彙に **950語** の組み込み名があります（`MINUS`/`NEGATE`のような別名もそれぞれ1語と数えます）。これに`EKEYS`の語彙項目が加わるため、利用者定義やライブラリを読み込む前の`WORDS`は951項目を表示します。Root語彙には`FORTH`・`ONLY`など10語が重ねて登録されます。機能を除外したビルドでは対象の名前が省かれます。
 
 ### 構文・定義形式
 
@@ -1062,12 +1101,14 @@ SAVESYS demo.exe
 | GUI | `REQUIRE-GUI` | グラフィックスの語の後に、GUI の語を `GUI` 語彙に読み込みます。[グラフィックスとサウンドのマニュアル](GRAPHICS_AND_SOUND.ja.md)を参照してください。 |
 | ゲーム | `REQUIRE-GAME` | グラフィックスの語の後に、ゲーム用の語を `GAME` 語彙に読み込みます。[グラフィックスとサウンドのマニュアル](GRAPHICS_AND_SOUND.ja.md)を参照してください。 |
 | サウンド | `REQUIRE-AUDIO` | サウンドの語を `AUDIO` 語彙に読み込みます。[グラフィックスとサウンドのマニュアル](GRAPHICS_AND_SOUND.ja.md)を参照してください。 |
+| S01a | `EKEY>FKEY` |
+| S01b | `BLK`, `BLOCK`, `BUFFER`, `EMPTY-BUFFERS`, `FLUSH`, `LIST`, `SAVE-BUFFERS`, `SCR`, `THRU`, `UPDATE` |
 
 ## 実装していない機能
 
-誌面固有の編集操作、`EDIT`、CP/Mファイル操作、PC-8001モニター機能、Z80機械語実行には対応していません。標準ブロックのLOADとLISTは実装済みです。
+誌面固有の編集バッファ操作、CP/Mファイル操作、PC-8001モニター機能、Z80機械語実行には対応していません。標準ブロックのLOADとLISTは実装済みです。P09の`EDIT`は外部ソースエディタを起動する語で、誌面の編集操作とは異なります。
 
-Gforth拡張の`TRY` … `ENDTRY`、`]]` … `[[`などは未実装です。詳しくは[互換性一覧](COMPATIBILITY.ja.md)を参照してください。
+Gforth拡張の`TRY` … `ENDTRY`などは保留中です。P07の`]]` … `[[`は実装済みで、後述の解析構文に関する制限があります。詳しくは[互換性一覧](COMPATIBILITY.ja.md)を参照してください。
 
 ## 数値演算・数値入出力の拡張（P02）
 
@@ -1284,7 +1325,7 @@ addr/uは取得可能なOS/CRTのTZ名を最大256バイトで借用し、次の
 
 パイプのコマンドはプロセスの端末状態を共有し、OPEN-PIPE・SH-GETは子へ端末の所有権を引き渡しません。KEY/EKEY/KEY-IORの後では、継承した端末入力がrawのままになる場合があります。対話型の前景コマンドにはSYSTEM/SHを使用してください。実行中のパイプと親との端末読み取り競合は調停しません。
 
-`BROKEN-PIPE-ERROR`はSigmaのEPIPEである-544を返し、Gforthの-2049とは意図的に異なります。SIGPIPEでSigmaを終了させず、書込パイプはstdioのバッファリングを無効にしてエラーを返します。ネイティブコマンドはNULを含まないUTF-8で4095バイトまでです。files機能と、カスタムFileOpsのopen_pipe/close_pipeが必要です。[記録](P06_IMPLEMENTATION.md)。
+`BROKEN-PIPE-ERROR`はSigmaのEPIPEである-544を返し、Gforthの-2049とは意図的に異なります。Windows CRTでは閉じたパイプへの書込みがEINVAL（-534）になる場合があり、すべての書込みエラーがこの定数と一致するわけではありません。SIGPIPEでSigmaを終了させず、書込パイプはstdioのバッファリングを無効にしてエラーを返します。ネイティブコマンドはNULを含まないUTF-8で4095バイトまでです。files機能と、カスタムFileOpsのopen_pipe/close_pipeが必要です。[記録](P06_IMPLEMENTATION.md)。
 
 
 ### シェル出力の借用（P06b）
@@ -1342,6 +1383,16 @@ MEM+DO/MEM-DOはLOOPで閉じ、正の刻み幅を要求します。0／負の�
 
 ## P07d 入力の一時切り替えと前方参照
 
+| 語 | スタック効果と動作 |
+| --- | --- |
+| NAME / PARSE-WORD | `( -- addr u )`。PARSE-NAMEの別名。 |
+| STRING-PARSE | `( delim-addr delim-u -- addr u )`。区切り文字列の直前までを返し、区切りも消費する。区切りがなければ残り全部、空の区切りなら入力を進めず空を返す。 |
+| EXECUTE-PARSING | `( ... addr u xt -- ... )`。文字列を一時的な入力源としてxtを1回実行する。文字列を自動で解釈はしない。 |
+| EXECUTE-PARSING-FILE | `( ... fid xt -- ... )`。空の初期入力バッファーを持つファイル入力でxtを実行し、REFILLで行を読む。ファイル機能が必要。 |
+| FORWARD | `( "name" -- )`。同じ語彙で後から完成させるコロン定義を宣言する。 |
+| .UNRESOLVED | `( -- )`。未解決の前方宣言を表示する。 |
+| RECURSIVE | `( -- )`。コンパイル専用の印。Sigmaの暗黙の自己参照も引き続き使える。 |
+
 NAME・PARSE-WORD `( -- addr u )` はPARSE-NAMEの別名。STRING-PARSE `( delim-addr delim-u -- addr u )` は最初のバイト列区切りまでを返し、区切りも消費する。見つからなければ残り全部、空区切りなら空文字列を返して位置を進めない。
 
 EXECUTE-PARSING `( ... addr u xt -- ... )` は一時的な文字列入力でxtを1回実行する。文字列自体を自動解釈しない。文字列領域は呼出し中有効に保つ。EXECUTE-PARSING-FILE `( ... fid xt -- ... )` は最初は空のファイル入力で実行し、REFILLで行を読む（files機能が必要）。検証後にファイル所有権を引き受け、成功・例外の双方で閉じる。コールバックは同じハンドルを閉じたり再利用したりしない。コールバックのエラーをcloseエラーより優先する。両語ともSOURCE・生の>IN・入力種別・BLK・ソース位置を成功時とTHROW時に復元する。
@@ -1355,6 +1406,32 @@ P07レビュー補足：EXECUTE-PARSING-FILEには、呼出し側が排他的に
 `]]`内で扱うのは辞書のコンパイルトークン、リテラル、ローカル変数、`[`・`]`と既述の文字列構文。辞書にない解析専用構文（`[']`・`[CHAR]`・`CHAR`・`POSTPONE`・ローカル宣言・`:NONAME`・`FORGET`・`REQUIRE-*`）は未対応で未定義語エラーとなる。Gforthとの互換性制限である。SEE・ステップ表示には補助語名を表示し、coverageはP07cの拡張制御語も計測する。[レビュー](P07_REVIEW.md)。
 
 ## P08a 名前トークンと語彙
+
+| 語 | スタック効果 | 意味 |
+| --- | --- | --- |
+| `.ID` | `( nt -- )` | 有効な名前トークンの名前を表示する。 |
+| `.VOC` | `( wid -- )` | 有効な語彙の名前を表示する。 |
+| `COMPILE-ONLY?` | `( nt -- flag )` | コンパイル専用フラグを調べる。 |
+| `CONTEXT` | `( -- addr )` | 最初に検索する語彙のセルアドレスを返す。 |
+| `CS-VOCABULARY` | `( "name" -- )` | 大小文字を区別する語彙を作る。 |
+| `CS-WORDLIST` | `( -- wid )` | 大小文字を区別する語彙を割り当てる。 |
+| `CURRENT` | `( -- addr )` | 定義先の語彙を保持するセルアドレスを返す。 |
+| `FIND-NAME-IN` | `( addr u wid -- nt\|0 )` | 指定した語彙から名前トークンを検索する。 |
+| `IN` | `( "vocabulary" "word" -- )` | 次の1語だけ、指定した語彙を定義先として実行する。 |
+| `IN-WORDLIST` | `( wid "word" -- )` | 次の1語だけ、widを定義先として実行する。 |
+| `LATESTNT` | `( -- nt )` | 無名定義を含む最後の定義の名前トークンを返す。 |
+| `MAP-VOCS` | `( ... xt -- ... )` | 割当て済み語彙のスナップショットを使い、各widを渡してxtを呼ぶ。 |
+| `MWORDS` | `( "pattern" -- )` | 最初の語彙で、省略可能なパターンを含む名前を古い順に表示する。 |
+| `NAME>LINK` | `( nt -- previous-nt\|0 )` | 同じ語彙の前の名前付き項目を返し、なければ0を返す。 |
+| `NEXTNAME` | `( addr u -- )` | 次の定義操作で使う名前をコピーし、その操作での名前解析を省略する。 |
+| `OBSOLETE?` | `( nt -- flag )` | 廃止扱いを調べる。現在のSigmaには廃止指定された定義はない。 |
+| `ROOT` | `( -- )` | 検索順の先頭をRootに置き換える。 |
+| `SEAL` | `( -- )` | 検索順の先頭だけを残す。 |
+| `TABLE` | `( -- wid )` | 大小文字を区別し、再定義警告を出さない語彙を割り当てる。 |
+| `VLIST` | `( -- )` | SigmaのWORDSの別名。 |
+| `VOCS` | `( -- )` | 割当て済み語彙と固定Macros名前空間を表示する。 |
+| `WORDLIST-WORDS` | `( wid -- )` | 指定した語彙の名前をSigmaの順序で表示する。 |
+| `XT>NAME` | `( xt -- nt )` | 無名定義を含む有効な実行トークンを名前トークンへ変換する。 |
 
 追加23語：`.ID`・`.VOC`・`COMPILE-ONLY?`・`CONTEXT`・`CS-VOCABULARY`・`CS-WORDLIST`・`CURRENT`・`FIND-NAME-IN`・`IN`・`IN-WORDLIST`・`LATESTNT`・`MAP-VOCS`・`MWORDS`・`NAME>LINK`・`NEXTNAME`・`OBSOLETE?`・`ROOT`・`SEAL`・`TABLE`・`VLIST`・`VOCS`・`WORDLIST-WORDS`・`XT>NAME`。スタック効果は各語のHELPと[実装記録](P08_IMPLEMENTATION.md)を参照する。
 
@@ -1371,6 +1448,15 @@ MWORDSは大小文字を区別する部分文字列一致で絞り込み、省�
 NAME>LINKは同じ語彙の前の名前付き項目を返す。LATESTNT・XT>NAMEは無名定義も扱う。nt・xtの寿命は辞書項目が残る間だけで、FORGETや辞書置換後の古い数値を再利用しない。辞書追加では語彙定義の参照とケース設定を再配置するが、通常のセル・定数に保持した生のwidは自動変換しない。builtin ABIが変わるため旧ABIのイメージは再作成する。
 
 ## P08b アドレス可能な値と遅延語
+
+| 語 | スタック効果 | 動作 |
+| --- | --- | --- |
+| AVALUE | `( addr "name" -- )` | 論理アドレスを明示追跡する格納領域を持つVALUEを定義する。 |
+| ADDRESSABLE: | `( -- )` | 互換用の指定。Sigmaの値には既に安定した格納領域がある。 |
+| ADDR | `( "name" -- addr )` | 値、またはコンパイル中の値型ローカルの格納先を返す。 |
+| :IS | `( "deferred" -- )` | 正常なセミコロンでDEFERに代入する無名定義を開始する。 |
+| PRESERVE | `( compilation: "deferred" -- ; runtime: -- )` | コンパイル時に記録した動作へ戻す。呼出し時の動作へ戻す指定ではない。 |
+| WRAP-XT | `( ... action deferred callback -- ... )` | 動作を一時変更してコールバックを実行し、呼出し時の動作へ戻す。 |
 
 - AVALUE `( addr "name" -- )`：論理アドレスを明示追跡するVALUEを定義する。参照先の確保・解放は行わない。TO・+TO・セル全体の書込みで登録を更新し、部分書込みで破損した登録は完全なセル更新で修復するまで保存できない。xt・widではなく論理データアドレスを使う。
 - ADDRESSABLE: `( -- )`：互換用の指定。Sigmaの値には既に安定した格納領域があり、次の定義への保留状態や警告は追加しない。

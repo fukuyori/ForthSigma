@@ -898,3 +898,9 @@ F>R/FR>/FR@は64ビットの論理戻りセルへビット単位で転送し、R
 ### P09 review: hidden exception storage and diagnostic callbacks
 
 Negative ALLOT must reject a rewind through a live EXCEPTION(S) message record with-259 before changing HERE or address metadata; FORGET/MARKER remove the record together with its dictionary entry. Message formatters run above the original failure's data/float entries and preserve its active backtrace for the same image generation. They remain best-effort callbacks, with existing depth-only CATCH semantics and numeric fallback when argument capacity is exhausted. Windows quoted EDITOR executable prefixes require native confirmation under702; no unverified shell rewrite is introduced here.
+
+## P10の検証範囲とパイプエラー（2026-11-14）
+
+単独機能除外はfloat/files/help/tools/image/graphics/audio/debugの8構成をそれぞれ確認する。これは複数機能を同時除外する全256構成の網羅を意味しない。保存・復元の統合検証はSIGIMG45/46/47、型付き参照、マクロ、無名定義、FORGET/MARKERと例外巻戻しを対象とし、実行ケースとOS別の証跡を[P10実施記録](P10_IMPLEMENTATION.md)に残す。WindowsでLinux用にビルドした実行体のWSL実行と、Linux版Zigのビルドランナー実行は区別する。macOSの今回のP10確認は752で別途管理する。
+
+BROKEN-PIPE-ERRORはSigmaのEPIPE定数-544を返す。Windows CRTの閉じたパイプへの書込みではEINVAL（-534）になる場合もあるため、すべての書込み失敗がこの定数と一致するとは説明しない。HELPと英日マニュアル・互換性一覧に同じ区別を記載する。定数やCRTの実際のエラーを変更する仕様変更は行わない。

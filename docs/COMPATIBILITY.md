@@ -131,7 +131,7 @@ S01 standard keys and blocks were implemented on 2026-11-13. Dictionary loading 
 | PC-8001 editing, display, and monitor functions | Machine-specific | Need the input and output and the monitor specific to the PC-8001. See the book. |
 | The remaining gforth string words such as `$VALUE` | Not implemented | gforth words (survey of 2026-10-30). |
 | gforth exception syntax: TRY, ENDTRY, RESTORE, IFERROR | Not implemented | `CATCH` can do the same (survey of 2026-10-30). Left out after the review of #417 (2026-11-10). |
-| gforth tool words: ]], [[ | Not implemented | Survey of 2026-10-30. A mode in which the words are postponed; left for later in the review of #417 (2026-11-10). |
+| gforth tool words: ]], [[ | Implemented with restrictions | P07b implements postponing/macro mode. Dictionary compilation tokens, literals and the documented string forms are supported; parser-only forms such as ['] are not accepted inside ]]. See P07b below. |
 | EKEY>FKEY, K-SHIFT-MASK, K-CTRL-MASK, K-ALT-MASK | Implemented; native Windows/Linux validation pending | EKEYS contains standard constants; GRAPHICS values are unchanged. macOS pipe/PTY checks: `python3 scripts/verify-ekey.py zig-out/bin/sigma`. |
 | Standard block words: BLK, BLOCK, BUFFER, EMPTY-BUFFERS, FLUSH, LIST, LOAD, SAVE-BUFFERS, SCR, THRU, UPDATE | Implemented (S01b, 2026-11-13) | 1024-byte blocks in blocks.fb; 32 buffers. macOS unit and real-file tests passed. Windows/Linux native checks are separate. Dictionary loading is LOAD-DICTIONARY. |
 | CODE, ;CODE, ASSEMBLER, EDITOR (standard TOOLS-EXT) | Out of scope | Assembler and editor. Out of scope, like `CODE` of gforth. |
@@ -234,7 +234,7 @@ NS follows the approved signed-double policy: nonpositive returns immediately, p
 
 FPATH is now supported (2026-11-14): empty/unset deliberately preserves Sigma direct-cwd/raw-history includes, differing from an empty Gforth search path. Nonempty settings opt into P05a lookup, source-relative ./, lexical returned-name history and open-before-dedup REQUIRE. INCLUDED? remains exact; absolute/symlink aliases can be distinct. SAVE/full restore retains configuration; append preserves destination configuration. No FPATH aliases or environment startup paths were added. [Details](P05_IMPLEMENTATION.md).
 
-P06b pipes use the approved one-way R/O/W/O subset (R/W rejected) and Sigma errno EPIPE (-544) for BROKEN-PIPE-ERROR, differing from designated Gforth (-2049). CLOSE-PIPE returns native status/ior and leaves $? unchanged; resource-kind close mismatches are rejected. Native Windows/Linux verification remains695 under607. [Details](P06_IMPLEMENTATION.md).
+P06b pipes use the approved one-way R/O/W/O subset (R/W rejected) and Sigma errno EPIPE (-544) for BROKEN-PIPE-ERROR, differing from designated Gforth (-2049). Windows CRT may return EINVAL (-534) when writing to a closed pipe. CLOSE-PIPE returns native status/ior and leaves $? unchanged; resource-kind close mismatches are rejected. Native Windows/WSL verification under607 is complete; see [Windows results](WINDOWS_VALIDATION.md) and [WSL results](WSL_VALIDATION.md). [Details](P06_IMPLEMENTATION.md).
 
 P06c adds ten EKEYS constants and five terminal/key words. Approved change: EKEY EOF now returns K-EOF; KEY retains -262, KEY-IOR returns -512 at EOF and EKEY? is false. GRAPHICS/plain control-byte values are unchanged. FORM uses24/80 fallback or1/max-signed-cell for capture; AT-DELTAXY is unsupported(-21) during string capture. Names/modifier formatting match the recorded standard table. Windows/Linux native verification is696 under607. [Details](P06_IMPLEMENTATION.md).
 
@@ -281,3 +281,46 @@ P09b30/30 and P09c5/5 are implemented (P09 total50/50). P09b verification covers
 Sigma retains its plain LOCATE/.S/F.S/WHERE formatting, uses one-based bounded source windows and preserves source settings on append. BROWSE follows Sigma MWORDS; UNUSED-WORDS uses CURRENT and recorded file uses, with a saturation error. Editor commands use explicit EDITOR/+line configuration and wait for it; missing configuration gives-21. Inspection copies are temporary; Windows cmd path restrictions and GUI wait options are documented. Saved traces are bounded VM frames from reported exceptions, invalidated on deletion/restore; CATCH's existing clearing policy remains. Smart xts stay numeric because they are ordinal cells; FANCY-AFTER-L is a plain-browser compatibility hook. Return extensions expose only logical user cells and preserve float bits; native loop/call/local frames are separate. All added builtins change the image ABI; recreate old images. [Exact policies, scope and evidence](P09_IMPLEMENTATION.md).
 
 P09 review: negative ALLOT cannot truncate live EXCEPTION(S) records (-259, no HERE change); FORGET/MARKER own their removal. `\G` respects 64-column LOAD lines. Windows quoted EDITOR executable prefixes require native verification under tque702; this platform concern is unconfirmed here. See [P09 review](P09_REVIEW.md).
+
+## Implemented extension index
+
+The following startup words are implemented. Entries are grouped by the validated phase; see the corresponding P01–P09 sections and the user manual for stack effects, policies and feature exclusions. This is an implementation index, not a claim that all Gforth semantics are identical.
+
+| Phase | Implemented words |
+| --- | --- |
+| Additional | `BYE` |
+| P02a | `*/F`, `*/MODF`, `*/MODS`, `*/S`, `/F`, `/MODF`, `/MODS`, `/S`, `>POW2`, `ARSHIFT`, `CTZ`, `DARSHIFT` |
+| P02a | `DLSHIFT`, `DROL`, `DROR`, `DRSHIFT`, `DU/MOD`, `LOG2`, `LROL`, `LROR`, `MODF`, `MODS`, `MUX`, `POW2?` |
+| P02a | `U*/`, `U*/MOD`, `U/`, `U/MOD`, `UD/MOD`, `UMOD`, `WROL`, `WROR` |
+| P02b | `-INF`, `-INFINITY`, `1/F`, `F*+`, `F2*`, `F2/`, `FAXPY`, `FCOPYSIGN`, `FFOURTH`, `FTHIRD`, `F~ABS`, `F~REL` |
+| P02b | `INF`, `INFINITY`, `NAN`, `V*` |
+| P02c | `>FLOAT1`, `BASE-EXECUTE`, `CONVERT`, `DEC.`, `DEC.R`, `DPL`, `E.EXACT`, `E.P`, `FP.`, `H.`, `HEX.`, `RANDOM` |
+| P02c | `RND`, `SEED!`, `UD.`, `UD.R` |
+| P03a | `!@`, `*ALIGN`, `*ALIGNED`, `+!@`, `/L`, `/X`, `C>S`, `CELL/`, `DFLOAT/`, `FLOAT/`, `L!`, `L>S` |
+| P03a | `L@`, `LALIGN`, `LALIGNED`, `LBE`, `LLE`, `MAXALIGNED`, `SFLOAT/`, `TH!`, `TH@`, `W!`, `W>S`, `W@` |
+| P03a | `WALIGN`, `WALIGNED`, `WBE`, `WLE`, `X>S`, `XALIGNED`, `XBE`, `XD!`, `XD>S`, `XD@`, `XDBE`, `XDLE` |
+| P03a | `XLE` |
+| P04a | `#BELL`, `#BS`, `#CR`, `#DEL`, `#EOF`, `#ESC`, `#FF`, `#LF`, `#TAB`, `APPEND`, `CAPSCOMPARE`, `CAPSSEARCH` |
+| P04a | `CAPSSTRING-PREFIX?`, `CSTRING>SSTRING`, `DELETE`, `INSERT`, `INVALID-CHAR`, `NEWLINE`, `NOSPLIT?`, `S+`, `SAFE/STRING`, `SCAN-BACK`, `STR<`, `STRING-SUFFIX?` |
+| P04a | `TOUPPER`, `TYPEWHITE`, `XC@+?` |
+| P04b | `.SUBSTITUTE`, `MACRO:`, `MACROS-WORDLIST`, `REPLACER:` |
+| P05a | `+FMODE`, `.INCLUDED`, `.PATH`, `ABSOLUTE-FILE?`, `ALSO-PATH`, `CLEAR-PATH`, `EMIT-FILE`, `FILE-EOF?`, `FILE>PATH`, `KEY-FILE`, `KEY?-FILE`, `OPEN-PATH-FILE` |
+| P05a | `PATH+`, `PATH=`, `SLURP-FID`, `\\\` |
+| P05b | `=MKDIR`, `>TIME&DATE&TZ`, `BASENAME`, `CLOSE-DIR`, `CPUTIME`, `DIRNAME`, `FILENAME-MATCH`, `GET-DIR`, `MKDIR-PARENTS`, `NTIME`, `OPEN-DIR`, `READ-DIR` |
+| P05b | `SET-DIR` |
+| P06a | `>STRING-EXECUTE`, `INFILE-EXECUTE`, `INFILE-ID`, `OUTFILE-EXECUTE`, `OUTFILE-ID` |
+| P06b | `.QUOTED-CSV`, `CSV-QUOTE`, `CSV-SEPARATOR`, `OPEN-PIPE`, `READ-CSV`, `SH-GET` |
+| P06c | `FKEY.`, `SIMPLE-FKEY-STRING` |
+| P07a | `COMP'`, `COMPILE-ONLY`, `EXECUTE-EXIT`, `[COMP']` |
+| P07b | `;]`, `IN-COLON-DEF?`, `[:` |
+| P07c | `+DO`, `-DO`, `-LOOP`, `-[DO`, `?DUP-0=-IF`, `?DUP-IF`, `ARRAY>MEM`, `CS-DROP`, `DELTA-I`, `DONE`, `FOR`, `I'` |
+| P07c | `MEM+DO`, `MEM-DO`, `U+DO`, `U-DO`, `U-[DO` |
+| P07d | `.UNRESOLVED`, `EXECUTE-PARSING`, `EXECUTE-PARSING-FILE`, `FORWARD`, `PARSE-WORD`, `RECURSIVE`, `STRING-PARSE` |
+| P08a | `.ID`, `.VOC`, `COMPILE-ONLY?`, `CONTEXT`, `CS-VOCABULARY`, `CS-WORDLIST`, `FIND-NAME-IN`, `IN-WORDLIST`, `LATESTNT`, `MAP-VOCS`, `MWORDS`, `NAME>LINK` |
+| P08a | `NEXTNAME`, `OBSOLETE?`, `ROOT`, `SEAL`, `TABLE`, `VLIST`, `VOCS`, `WORDLIST-WORDS`, `XT>NAME` |
+| P08b | `:IS`, `ADDR`, `ADDRESSABLE:`, `AVALUE`, `PRESERVE`, `WRAP-XT` |
+| P09a | `?ERRNO-THROW`, `?IOR`, `ASSERT-LEVEL`, `ASSERT0(`, `ASSERT1(`, `ASSERT2(`, `ASSERT3(`, `CATCH-NOBT`, `EXCEPTION`, `EXCEPTIONS`, `FAST-THROW`, `NOTHROW` |
+| P09a | `WARNING"`, `WARNINGS` |
+| P09b | `AFTER-LOCATE`, `BEFORE-LOCATE`, `BROWSE`, `BW`, `CLEARSTACK`, `CLEARSTACKS`, `EXPAND-WHERE`, `F.S-PRECISION`, `FANCY-AFTER-L`, `FCLEARSTACK`, `GG`, `MAXDEPTH-.S` |
+| P09b | `NW`, `PREPEND-WHERE`, `SHORT-WHERE`, `TT`, `UNUSED-WORDS`, `WHEREG`, `WW`, `XT-LOCATE` |
+| P09c | `F>R`, `FR>`, `FR@`, `R'@`, `RPICK` |

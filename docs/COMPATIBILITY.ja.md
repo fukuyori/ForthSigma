@@ -131,7 +131,7 @@
 | PC-8001の編集、表示、モニター機能 | 機種依存 | PC-8001固有の入出力とモニターを必要とします。誌面参照。 |
 | Gforthの `$VALUE` などの残りの文字列語 | 未実装 | Gforthの語（2026-10-30の調査）。 |
 | Gforthの例外の書き方: TRY, ENDTRY, RESTORE, IFERROR | 未実装 | `CATCH` で同じことができます（2026-10-30の調査）。#417 の検討で見送りました（2026-11-10）。 |
-| Gforthの道具の語: ]], [[ | 未実装 | 2026-10-30の調査。語を後回しにして続けるモードで、#417 の検討で後回しにしました（2026-11-10）。 |
+| Gforthの道具の語: ]], [[ | 制限付きで実装済み | P07bで後回しコンパイル・マクロのモードを実装。辞書のコンパイルトークン・リテラル・記載した文字列形式を扱う。内部で[']等の解析専用構文は使えない。後述のP07bを参照。 |
 | EKEY>FKEY, K-SHIFT-MASK, K-CTRL-MASK, K-ALT-MASK | 実装済み・Windows/Linux実機確認待ち | 標準定数はEKEYSに配置。GRAPHICS値は維持。macOSのパイプ・擬似端末確認は`python3 scripts/verify-ekey.py zig-out/bin/sigma`で再実行できます。 |
 | 標準ブロック語: BLK, BLOCK, BUFFER, EMPTY-BUFFERS, FLUSH, LIST, LOAD, SAVE-BUFFERS, SCR, THRU, UPDATE | 実装済み（S01b、2026-11-13） | blocks.fbの1024バイトブロック、32バッファー。macOSの単体・実ファイル試験済み。Windows/Linux実機確認は別環境。辞書読込はLOAD-DICTIONARYへ改名。 |
 | CODE, ;CODE, ASSEMBLER, EDITOR（標準のTOOLS-EXT） | 対象外 | アセンブラとエディター。Gforthの `CODE` と同じく対象外です。 |
@@ -234,7 +234,7 @@ NSは承認済みの符号付きダブルセル仕様で、0以下は即時終�
 
 FPATH is now supported (2026-11-14): empty/unset deliberately preserves Sigma direct-cwd/raw-history includes, differing from an empty Gforth search path. Nonempty settings opt into P05a lookup, source-relative ./, lexical returned-name history and open-before-dedup REQUIRE. INCLUDED? remains exact; absolute/symlink aliases can be distinct. SAVE/full restore retains configuration; append preserves destination configuration. No FPATH aliases or environment startup paths were added. [Details](P05_IMPLEMENTATION.md).
 
-P06b pipes use the approved one-way R/O/W/O subset (R/W rejected) and Sigma errno EPIPE (-544) for BROKEN-PIPE-ERROR, differing from designated Gforth (-2049). CLOSE-PIPE returns native status/ior and leaves $? unchanged; resource-kind close mismatches are rejected. Native Windows/Linux verification remains695 under607. [Details](P06_IMPLEMENTATION.md).
+P06bのパイプは承認済みの単方向R/O・W/Oに対応し、R/Wは拒否します。BROKEN-PIPE-ERROR はSigmaのEPIPE（-544）で、指定Gforthの-2049とは異なります。Windows CRTでは閉じたパイプへの書込みがEINVAL（-534）になる場合があります。CLOSE-PIPE はネイティブ終了状態とiorを返し、$?を変更しません。資源種別と閉じ方の不一致は拒否します。607配下のWindows・WSL検証は完了しています。[Windows記録](WINDOWS_VALIDATION.md)・[WSL記録](WSL_VALIDATION.md)・[詳細](P06_IMPLEMENTATION.md)。
 
 P06c adds ten EKEYS constants and five terminal/key words. Approved change: EKEY EOF now returns K-EOF; KEY retains -262, KEY-IOR returns -512 at EOF and EKEY? is false. GRAPHICS/plain control-byte values are unchanged. FORM uses24/80 fallback or1/max-signed-cell for capture; AT-DELTAXY is unsupported(-21) during string capture. Names/modifier formatting match the recorded standard table. Windows/Linux native verification is696 under607. [Details](P06_IMPLEMENTATION.md).
 
@@ -281,3 +281,46 @@ P09b30/30語、P09c5/5語を実装し、P09全50語が完了。P09bはGforth一�
 従来の平文表示と1始まり・上限付きのソース表示を維持し、追加読込みでは表示設定を保つ。BROWSEはSigma MWORDS方式、UNUSED-WORDSはCURRENTとファイル使用記録を対象にする。EDITOR未設定は-21、GUIには待機設定が必要。一時コピーは取り込まず削除し、Windowsのcmdパス制限を明記する。保存する例外位置は報告済みVMフレームで、削除・復元時に無効化し、CATCHの従来の消去方針は保つ。xtの推測表示は行わず、FANCY-AFTER-Lは平文用の互換フック。戻り操作は論理ユーザーセルだけを扱い、浮動小数点のビットを保持する。呼出し・ループ・ローカルの内部フレームは公開しない。組込み語追加によりABIが変わるため旧イメージは再作成する。[差異・制約・検証](P09_IMPLEMENTATION.md)。
 
 P09レビュー対応：生存中のEXCEPTION(S)レコードを切り詰める負のALLOTは-259で拒否し、HEREを変えない。削除はFORGET/MARKERで行う。`\G`はLOADの64桁行境界に対応した。Windowsの引用符付きEDITOR実行パスは未確認で、tque702の実機確認対象。[P09レビュー](P09_REVIEW.md)参照。
+
+## 実装済み拡張語の索引
+
+以下は起動時に登録される実装済みの語。検証したフェーズ別に整理した。スタック効果・仕様差・機能除外条件は対応するP01〜P09の節とユーザーマニュアルを参照する。実装状況の索引であり、Gforthとのすべての意味互換を示すものではない。
+
+| フェーズ | 実装済みの語 |
+| --- | --- |
+| P02a | `*/F`, `*/MODF`, `*/MODS`, `*/S`, `/F`, `/MODF`, `/MODS`, `/S`, `>POW2`, `ARSHIFT`, `CTZ`, `DARSHIFT` |
+| P02a | `DLSHIFT`, `DROL`, `DROR`, `DRSHIFT`, `DU/MOD`, `LOG2`, `LROL`, `LROR`, `MODF`, `MODS`, `MUX`, `POW2?` |
+| P02a | `U*/`, `U*/MOD`, `U/`, `U/MOD`, `UD/MOD`, `UMOD`, `WROL`, `WROR` |
+| P02b | `-INF`, `-INFINITY`, `1/F`, `F*+`, `F2*`, `F2/`, `FAXPY`, `FCOPYSIGN`, `FFOURTH`, `FTHIRD`, `F~ABS`, `F~REL` |
+| P02b | `INF`, `INFINITY`, `NAN`, `V*` |
+| P02c | `>FLOAT1`, `BASE-EXECUTE`, `CONVERT`, `DEC.`, `DEC.R`, `DPL`, `E.EXACT`, `E.P`, `FP.`, `H.`, `HEX.`, `RANDOM` |
+| P02c | `RND`, `SEED!`, `UD.`, `UD.R` |
+| P03a | `!@`, `*ALIGN`, `*ALIGNED`, `+!@`, `/L`, `/X`, `C>S`, `CELL/`, `DFLOAT/`, `FLOAT/`, `L!`, `L>S` |
+| P03a | `L@`, `LALIGN`, `LALIGNED`, `LBE`, `LLE`, `MAXALIGNED`, `SFLOAT/`, `TH!`, `TH@`, `W!`, `W>S`, `W@` |
+| P03a | `WALIGN`, `WALIGNED`, `WBE`, `WLE`, `X>S`, `XALIGNED`, `XBE`, `XD!`, `XD>S`, `XD@`, `XDBE`, `XDLE` |
+| P03a | `XLE` |
+| P04a | `#BELL`, `#BS`, `#CR`, `#DEL`, `#EOF`, `#ESC`, `#FF`, `#LF`, `#TAB`, `APPEND`, `CAPSCOMPARE`, `CAPSSEARCH` |
+| P04a | `CAPSSTRING-PREFIX?`, `CSTRING>SSTRING`, `DELETE`, `INSERT`, `INVALID-CHAR`, `NEWLINE`, `NOSPLIT?`, `S+`, `SAFE/STRING`, `SCAN-BACK`, `STR<`, `STRING-SUFFIX?` |
+| P04a | `TOUPPER`, `TYPEWHITE`, `XC@+?` |
+| P04b | `.SUBSTITUTE`, `MACRO:`, `MACROS-WORDLIST`, `REPLACER:` |
+| P05a | `+FMODE`, `.INCLUDED`, `.PATH`, `ABSOLUTE-FILE?`, `ALSO-PATH`, `CLEAR-PATH`, `EMIT-FILE`, `FILE-EOF?`, `FILE>PATH`, `KEY-FILE`, `KEY?-FILE`, `OPEN-PATH-FILE` |
+| P05a | `PATH+`, `PATH=`, `SLURP-FID`, `\\\` |
+| P05b | `=MKDIR`, `>TIME&DATE&TZ`, `BASENAME`, `CLOSE-DIR`, `CPUTIME`, `DIRNAME`, `FILENAME-MATCH`, `GET-DIR`, `MKDIR-PARENTS`, `NTIME`, `OPEN-DIR`, `READ-DIR` |
+| P05b | `SET-DIR` |
+| P06a | `>STRING-EXECUTE`, `INFILE-EXECUTE`, `INFILE-ID`, `OUTFILE-EXECUTE`, `OUTFILE-ID` |
+| P06b | `.QUOTED-CSV`, `CSV-QUOTE`, `CSV-SEPARATOR`, `OPEN-PIPE`, `READ-CSV`, `SH-GET` |
+| P06c | `FKEY.`, `SIMPLE-FKEY-STRING` |
+| P07a | `COMP'`, `COMPILE-ONLY`, `EXECUTE-EXIT`, `[COMP']` |
+| P07b | `;]`, `IN-COLON-DEF?`, `[:` |
+| P07c | `+DO`, `-DO`, `-LOOP`, `-[DO`, `?DUP-0=-IF`, `?DUP-IF`, `ARRAY>MEM`, `CS-DROP`, `DELTA-I`, `DONE`, `FOR`, `I'` |
+| P07c | `MEM+DO`, `MEM-DO`, `U+DO`, `U-DO`, `U-[DO` |
+| P07d | `.UNRESOLVED`, `EXECUTE-PARSING`, `EXECUTE-PARSING-FILE`, `FORWARD`, `PARSE-WORD`, `RECURSIVE`, `STRING-PARSE` |
+| P08a | `.ID`, `.VOC`, `COMPILE-ONLY?`, `CONTEXT`, `CS-VOCABULARY`, `CS-WORDLIST`, `FIND-NAME-IN`, `IN-WORDLIST`, `LATESTNT`, `MAP-VOCS`, `MWORDS`, `NAME>LINK` |
+| P08a | `NEXTNAME`, `OBSOLETE?`, `ROOT`, `SEAL`, `TABLE`, `VLIST`, `VOCS`, `WORDLIST-WORDS`, `XT>NAME` |
+| P08b | `:IS`, `ADDR`, `ADDRESSABLE:`, `AVALUE`, `PRESERVE`, `WRAP-XT` |
+| P09a | `?ERRNO-THROW`, `?IOR`, `ASSERT-LEVEL`, `ASSERT0(`, `ASSERT1(`, `ASSERT2(`, `ASSERT3(`, `CATCH-NOBT`, `EXCEPTION`, `EXCEPTIONS`, `FAST-THROW`, `NOTHROW` |
+| P09a | `WARNING"`, `WARNINGS` |
+| P09b | `AFTER-LOCATE`, `BEFORE-LOCATE`, `BROWSE`, `BW`, `CLEARSTACK`, `CLEARSTACKS`, `EXPAND-WHERE`, `F.S-PRECISION`, `FANCY-AFTER-L`, `FCLEARSTACK`, `GG`, `MAXDEPTH-.S` |
+| P09b | `NW`, `PREPEND-WHERE`, `SHORT-WHERE`, `TT`, `UNUSED-WORDS`, `WHEREG`, `WW`, `XT-LOCATE` |
+| P09c | `F>R`, `FR>`, `FR@`, `R'@`, `RPICK` |
+| 追加登録語 | `BYE` |

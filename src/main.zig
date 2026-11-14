@@ -348,14 +348,33 @@ fn runShellCommand(_: ?*anyopaque, command: []const u8) forth.RuntimeError!forth
     terminated[command.len] = 0;
     // The command gets the terminal with its line input.
     host_input.leave();
+    // A child cmd.exe may change shared console input/output mode bits even
+    // for a silent command. Restore the cooked modes before re-entering raw input.
+    var console_handles: [2]?*anyopaque = .{ null, null };
+    var console_modes: [2]u32 = .{ 0, 0 };
+    if (builtin.os.tag == .windows) {
+        for ([_]i32{ -10, -11 }, 0..) |which, index| {
+            if (GetStdHandle(@bitCast(which))) |handle| {
+                if (GetConsoleMode(handle, &console_modes[index]) != 0) console_handles[index] = handle;
+            }
+        }
+    }
     // The command's output comes after what Forth wrote before it.
     flushOutput();
     // On POSIX systems this is the wait status, as gforth's $? gives; on Windows, the exit code.
     utf8_console.pause();
     const status = system(&terminated);
+    var restored = true;
+    if (builtin.os.tag == .windows) {
+        for (console_handles, console_modes) |handle, mode| {
+            if (handle) |console| if (SetConsoleMode(console, mode) == 0) {
+                restored = false;
+            };
+        }
+    }
     output_cursor.unknown();
     utf8_console.@"resume"();
-    if (status == -1) return error.HostFailed;
+    if (status == -1 or !restored) return error.HostFailed;
     return status;
 }
 
@@ -521,7 +540,12 @@ fn openCreatedMode(path: [*:0]const u8, mode: [*:0]const u8, access: forth.FileA
         // Windows CRT permissions represent owner read/write, not POSIX ACLs.
         const native_mode: c_int = (if (permissions & 0o400 != 0) @as(c_int, c._S_IREAD) else 0) |
             (if (permissions & 0o200 != 0) @as(c_int, c._S_IWRITE) else 0);
-        break :created c._wopen(name, @as(c_int, flags), native_mode);
+        // Applying O_CREAT permissions while truncating an existing file can
+        // change its readonly attribute on Windows. Create exclusively first;
+        // if it already exists, open it without a creation mode.
+        const fresh = c._wopen(name, @as(c_int, flags | c._O_EXCL), native_mode);
+        if (fresh >= 0 or std.c._errno().* != 17) break :created fresh; // Windows CRT EEXIST.
+        break :created c._wopen(name, @as(c_int, flags & ~@as(c_int, c._O_CREAT)));
     } else c.open(path, @as(c_int, c.O_CREAT | c.O_TRUNC | (if (access == .write_only) c.O_WRONLY else c.O_RDWR)), @as(c_uint, permissions));
     if (descriptor < 0) return null;
     return descriptorStream(descriptor, mode) orelse {
@@ -2610,6 +2634,52 @@ test "P05b native clocks have Unix ns units and nondecreasing process CPU counte
     const second = try processCpuTimes(null);
     try std.testing.expect(second.user >= first.user);
     try std.testing.expect(second.system >= first.system);
+}
+
+test "native process CPU includes a busy worker thread" {
+    if (builtin.os.tag != .windows and builtin.os.tag != .linux) return error.SkipZigTest;
+    const Worker = struct {
+        extern "kernel32" fn GetCurrentThread() callconv(.winapi) *anyopaque;
+        extern "kernel32" fn GetThreadTimes(*anyopaque, *u64, *u64, *u64, *u64) callconv(.winapi) c_int;
+        fn cpu() ?u64 {
+            if (builtin.os.tag == .linux) {
+                var instant: std.c.timespec = undefined;
+                if (std.c.clock_gettime(.THREAD_CPUTIME_ID, &instant) != 0) return null;
+                return @as(u64, @intCast(instant.sec)) * 1_000_000 + @as(u64, @intCast(instant.nsec)) / 1000;
+            }
+            var creation: u64 = 0;
+            var exit: u64 = 0;
+            var kernel: u64 = 0;
+            var user: u64 = 0;
+            if (GetThreadTimes(GetCurrentThread(), &creation, &exit, &kernel, &user) == 0) return null;
+            return (kernel + user) / 10;
+        }
+        fn milliseconds() u64 {
+            if (builtin.os.tag == .windows) return GetTickCount64();
+            var instant: std.c.timespec = undefined;
+            if (std.c.clock_gettime(.MONOTONIC, &instant) != 0) return 0;
+            return @as(u64, @intCast(instant.sec)) * 1000 + @as(u64, @intCast(instant.nsec)) / 1_000_000;
+        }
+        fn run(result: *u64) void {
+            const before = cpu() orelse return;
+            const start = milliseconds();
+            var value: u64 = 1;
+            while (milliseconds() - start < 200) {
+                for (0..10000) |i| {
+                    value = value *% 6364136223846793005 +% i;
+                    std.mem.doNotOptimizeAway(value);
+                }
+            }
+            result.* = (cpu() orelse return) - before;
+        }
+    };
+    const before = try processCpuTimes(null);
+    var worker_us: u64 = 0;
+    const thread = try std.Thread.spawn(.{}, Worker.run, .{&worker_us});
+    thread.join();
+    const after = try processCpuTimes(null);
+    try std.testing.expect(worker_us > 0);
+    try std.testing.expect(after.user + after.system - before.user - before.system + 1000 >= worker_us);
 }
 
 test "native one-way pipes read status ownership and invalid modes" {

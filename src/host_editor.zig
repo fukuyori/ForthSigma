@@ -57,6 +57,10 @@ pub fn commandLine(is_windows: bool, prefix: []const u8, path: []const u8, line:
         quoted[n] = '\'';
         n += 1;
     }
+    // cmd /c strips the first and last quotes when a command starts with a
+    // quoted executable. Supply an outer pair so each argument keeps its quotes.
+    if (is_windows and prefix.len != 0 and prefix[0] == '"')
+        return std.fmt.bufPrint(buffer, "\"{s} +{d} {s}\"", .{ prefix, line, quoted[0..n] }) catch error.StringTooLong;
     return std.fmt.bufPrint(buffer, "{s} +{d} {s}", .{ prefix, line, quoted[0..n] }) catch error.StringTooLong;
 }
 
@@ -179,6 +183,7 @@ test "editor command quotes source paths independently from trusted editor argum
     var buffer: [4095]u8 = undefined;
     try std.testing.expectEqualStrings("code --wait +12 '/tmp/a b'\\''$(echo nope).fs'", try commandLine(false, "code --wait", "/tmp/a b'$(echo nope).fs", 12, &buffer));
     try std.testing.expectEqualStrings("editor +3 \"C:\\a&b\\日本語.fs\"", try commandLine(true, "editor", "C:\\a&b\\日本語.fs", 3, &buffer));
+    try std.testing.expectEqualStrings("\"\"C:\\Program Files\\editor.exe\" --wait +3 \"C:\\a&b\\日本語.fs\"\"", try commandLine(true, "\"C:\\Program Files\\editor.exe\" --wait", "C:\\a&b\\日本語.fs", 3, &buffer));
     try std.testing.expectError(error.InvalidAddress, commandLine(true, "editor", "C:\\%NAME%.fs", 1, &buffer));
     try std.testing.expectError(error.InvalidAddress, commandLine(true, "editor", "C:\\x!y.fs", 1, &buffer));
     try std.testing.expectError(error.InvalidAddress, commandLine(false, "editor", "x\x00y", 1, &buffer));

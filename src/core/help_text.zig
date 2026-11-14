@@ -250,7 +250,7 @@ pub const entries = [_]Entry{
     .{ .name = ">STRING-EXECUTE", .stack = "( xt -- addr u )", .text = "Run xt and return its output in caller-owned memory; FREE addr. Restore output capture on success or exception." },
     .{ .name = "OPEN-PIPE", .stack = "( addr u fam -- fileid ior )", .text = "Open a shell command as an R/O or W/O pipe; BIN is accepted, R/W rejected. Close with CLOSE-PIPE." },
     .{ .name = "CLOSE-PIPE", .stack = "( fileid -- status ior )", .text = "Close an owned pipe and wait for the process status. Does not change $?." },
-    .{ .name = "BROKEN-PIPE-ERROR", .stack = "( -- ior )", .text = "Sigma EPIPE ior (-544), matching failed pipe writes. Intentionally differs from Gforth's dedicated signal error." },
+    .{ .name = "BROKEN-PIPE-ERROR", .stack = "( -- ior )", .text = "Sigma EPIPE ior (-544). Windows CRT can report EINVAL (-534) on a closed pipe. Intentionally differs from Gforth's dedicated signal error." },
     .{ .name = "K-BACKSPACE", .stack = "( -- event )", .text = "EKEYS: Backspace special event (plain Backspace remains a byte). GRAPHICS encodings are independent." },
     .{ .name = "K-ENTER", .stack = "( -- event )", .text = "EKEYS: Enter special event, including modified Enter. GRAPHICS encodings are independent." },
     .{ .name = "K-EOF", .stack = "( -- event )", .text = "EKEYS: Standard EKEY end-of-input event. GRAPHICS encodings are independent." },

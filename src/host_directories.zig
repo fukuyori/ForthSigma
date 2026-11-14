@@ -5,7 +5,7 @@ const builtin = @import("builtin");
 const c = @import("c_file");
 const forth = @import("forth.zig");
 const windows = builtin.os.tag == .windows;
-const FindData = if (windows) @typeInfo(@typeInfo(@TypeOf(c._wfindfirst64)).@"fn".params[1].type.?).pointer.child else void;
+const FindData = if (windows) @typeInfo(@typeInfo(@TypeOf(c._wfindfirst64)).@"fn".param_types[1].?).pointer.child else void;
 const Stream = if (windows) struct { handle: isize, data: FindData, pending: bool, ended: bool } else *c.DIR;
 const Slot = struct { id: forth.Cell = 0, stream: ?Stream = null };
 const capacity = 64;
@@ -59,7 +59,7 @@ pub fn open(_: ?*anyopaque, name: []const u8) forth.FileResult {
         while (stat_length > 1 and (path[stat_length - 1] == '/' or path[stat_length - 1] == '\\') and !(stat_length == 3 and path[1] == ':')) stat_length -= 1;
         path[stat_length] = 0;
         const native = wide(&path, &utf16) orelse return .{ .ior = errnoResult() };
-        const Stat = @typeInfo(@typeInfo(@TypeOf(c._wstat64)).@"fn".params[1].type.?).pointer.child;
+        const Stat = @typeInfo(@typeInfo(@TypeOf(c._wstat64)).@"fn".param_types[1].?).pointer.child;
         var info: Stat = undefined;
         if (c._wstat64(native, &info) != 0) return .{ .ior = errnoResult() };
         if (info.st_mode & c._S_IFDIR == 0) return .{ .ior = forth.errnoIor(20) };

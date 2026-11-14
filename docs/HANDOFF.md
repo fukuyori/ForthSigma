@@ -4,24 +4,39 @@
 
 ## 現在状態
 
+- P10の742は作業中。追加確認749〜751はWindows・WSLとも通常37件＋8単独機能除外268件＋構成間イメージ読込7件、各OS312件が成功。通常版最終ビルドとHELP・英日文書整合も完了、文書チェック指摘0件。[P10実施記録](P10_IMPLEMENTATION.md)。今回のP10で残るOS確認はmacOSの752。
+
+- Windows確認は完了。通常1058成功・10 skip、最小582成功・457 skip、通常ビルド/freestanding、統合24件、追加境界378件、コンソール36件と既存ブロック/EKEY/ランタイム13件が成功。利用者のIME変換・全角/絵文字編集・表示確認も「ok」の回答で完了。tque537〜540・718・719とWindows専用確認はdone(auto)。[Windows検証記録](WINDOWS_VALIDATION.md)。
+- Windows追加修正は既存ファイルのCRT属性保持とSYSTEM後のコンソールモード復元。WSL専用728〜741も今回すべて完了(auto)とし、全子の完了を再照会して607を完了にした。P10・542全体の統合条件は残る。[タスク対応表](PLATFORM_TASK_AUDIT.md)。
+- WSL2 Ubuntuは最新ソースで通常1062成功・6 skip、最小586成功・453 skip、境界482件、PTY/FIFO24件、P01〜P03行列15,371件、CLI9件、EKEYのパイプ/PTY、SHOW PTY20件、POSIX統合10件等が成功。行編集18件の前回成功記録も維持。初期スタック1MiBでCLI/ランタイム/保存実行統合が成功。WindowsでLinux用にコンパイルしてWSLで実行した。指定Gforth比較・Linux版Zigのビルドランナーは今回の結果に含めない。[WSL検証記録](WSL_VALIDATION.md)。
 - P00・S01・P01〜P09と依頼済みレビューは完了。P09は全50語、tque576・577・578・552・701が完了(auto)。P09レビュー修正は`a76d000`、追加examples・文書は`7ce9a4f`でpush済み。[実装記録](P09_IMPLEMENTATION.md)・[レビュー](P09_REVIEW.md)。
 - 698も調査・修正・検証が完了(auto)。明示STDOUT書込みとSYSTEM/SH/エディタ実行後にSHOWが文字を上書きする問題を修正した。修正と本引継ぎは対応するコミットに含む（git履歴参照）。[修正記録](OUTPUT_ACTIVITY_FIX.md)。
-- 最新検証は通常1061件通過（6 skip）、最小構成585件通過（453 skip）、freestanding確認、通常ビルド、半ブロック/SixelのmacOS疑似端末20ケース、P09b比較・エディタ・保存復元確認が通過。証跡は`.work/698-*`。Windows/Linux実機確認は含まない。
-- tque階層121 → 415 → 542。次は553（P10）。進捗はauto。Windows/Linux確認は607配下、引用符付きEDITOR実行パスの未確認事項は702で管理する。
+- macOSの698修正時の検証は通常1061件通過（6 skip）、最小構成585件通過（453 skip）、freestanding確認、通常ビルド、半ブロック/SixelのmacOS疑似端末20ケース、P09b比較・エディタ・保存復元確認が通過。証跡は`.work/698-*`。Windows/Linux実機確認は含まない。
+- tque階層121 → 415 → 542 → 553（P10）→ 742。742は未完了、子タスクからの自動進捗90%。743〜751はdone、752はtodo（今回再照会）。Windows/Linuxの基礎確認607と引用符付きEDITORの702は完了。
 - `docs/NATIVE_WINDOW_STUDY.md`と`examples/graphs.fs`・`graphs-tk.fs`および関連文書はコミット済み。ネイティブウィンドウの実装検討は後回し。
 
 ## 次の作業と進め方
 
-1. 次は553（P10、統合と互換性の確認）。[完了条件](GFORTH_WORD_PHASES.md#p10-統合と互換性の確認)を確認し、macOSで複合機能、SAVE/LOAD/SAVESYS、FORGET/MARKER、エラー巻戻し、機能除外ビルドの未確認範囲を洗い出して進める。P09追加の組込み語によるABI変更があり、以前のイメージは再作成する。698修正による追加ABI変更はない。
-2. Windows/Linux実機確認607配下はここでは実施しない。macOSでの確認結果と区別し、未確認条件を残したままP10全体や親542を完了にしない。
-3. チャンク途中はコード・テスト・HELP・検証スクリプトだけを更新する。英日マニュアル、互換性一覧、フェーズ表、P0x記録、tqueはサブフェーズ完了時に一括更新する。チャンクの区切りだけで応答を終えず、依頼された作業の完了まで継続する。
-4. HANDOFFは現在状態・次の作業・制約だけを保ち、経緯はフェーズ記録とgit履歴へ任せる。
+1. 次は752：macOS実機で今回のP10統合・単独機能除外・構成間保存読込を確認する。このWindows環境では未実施。過去のmacOS検証やクロスコンパイル成功を今回の実機結果として扱わない。`verify-feature-matrix.py`はWindows/WSL用で、macOS用オーケストレーションは未対応。
+2. Windows・WSL追加確認749〜751は完了。追加ケースの全構成再実行、WSL構成間イメージ読込、HELP変更後ビルド・文書整合を再び未実施扱いにしない。検証範囲と証跡は[P10実施記録](P10_IMPLEMENTATION.md)を参照する。
+3. 作業が完了した時点で証跡を文書へ記録し、該当するtqueタスクをdoneにする。タスク名は作業内容だけとし、「実施済」「未実施」「残件」などの状態を付けない。状態は完了フラグ、進捗はautoで管理する。752が残る742・553・542は完了にしない。
+4. P09追加の組込み語によるABI変更があり、以前のイメージは再作成する。698修正による追加ABI変更はない。HANDOFFは現在状態・次の作業・制約に絞り、詳細は各検証記録へ記載する。
+
+## 再開時の成果物と実行方法
+
+- 未コミットのソース修正、英日マニュアル・互換性一覧修正、新規検証スクリプトと検証記録が作業ツリーにある。今回の引き継ぎ作成ではコミット・タグ・pushを行っていない。開始時に`git status --short`で確認し、既存変更を保持する。
+- P10用スクリプト：`scripts/verify-p10.py`（通常/除外版統合）、`scripts/verify-feature-matrix.py`（8構成のビルド・単体・統合）、`scripts/verify-p10-cross-build.py`（通常版→除外版の保存イメージ読込）。
+- 既存除外版実行体：`.work/p10/windows/no-<機能>/bin/sigma.exe`、`.work/p10/linux/no-<機能>/bin/sigma`。機能は`float files help tools image graphics audio debug`。再実行前に対象ソースとビルド時点を照合する。
+- 統合検証：`python scripts/verify-p10.py --sigma <実行体> --disabled <除外機能> --output <JSON>`。通常版では`--disabled`を省略。Linux実行体はWSLからLinux側のパスで指定する。
+- 構成間読込：`python scripts/verify-p10-cross-build.py --default <通常版実行体> --matrix <.work/p10/windows または linux>`。WSLではWSL側のPythonから実行する。
+- 証跡：`.work/p10/windows-default.json`、`linux-default.json`、両OSの`matrix.json`と構成別ログ、Windowsの`cross-build.json`、`.work/p10-docs.log`。`complete: true`と件数、実際のログを照合する。
+- 今回は追加の実行検証まで完了。`.work/p10-refresh.log`と更新済みJSONが最新のWindows・WSL追加確認結果。最終ビルドは`.work/p10-windows-final-build.log`・`.work/p10-linux-final-build.log`、最終文書チェックは`.work/p10-docs-final.log`。
 
 ## 制約
 
 - コミット・タグ・pushは、その依頼で明示された場合だけ行う。通常の実装継続からは推定しない。
-- **Windows/Linux実機確認はここでは行わない。** 607配下で別管理し、パイプ/SH-GETは695、P06cは696。freestandingビルド確認は実機実行ではない。
-- 実装の未決事項は推奨案を選んで継続する（利用者の最新指示）。比較用Gforth固有の不正アクセスや未定義動作は模倣しない。GPL実装コードを転用しない。
+- Windows/Linux確認は607配下で別管理し、パイプ/SH-GETは695、P06cは696。Windowsでの今回の確認範囲は上記記録を参照。freestandingビルド確認は実機実行ではない。
+- 仕様や意図に不明点がある場合は実装前に問い合わせる。質問は通常のメッセージで行い、Queued follow-up inputsや専用質問ツールを使わない。比較用Gforth固有の不正アクセスや未定義動作は模倣しない。GPL実装コードを転用しない。
 - 標準EKEYS（固定wid3）とGRAPHICSのキー値・検索順を混同しない。端末EKEY/EKEY?/KEY-IORのCtrl+Cは割込み(-28)、ファイル/パイプのバイト3は文字3。EKEY EOFは承認によりK-EOFへ変更済み（KEYは-262、KEY-IORは-512）。
 - 辞書イメージはSIGIMG45/46/47。旧形式・不一致ABIは拒否する。アドレスは明示的な型付き登録で再配置し、生セルから推測しない。
 - パッケージはスクリプト確認以外で作成しない。版番号を変える場合は[更新チェックリスト](version-update-checklist.md)に従う。

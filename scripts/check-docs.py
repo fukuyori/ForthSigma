@@ -132,7 +132,8 @@ for document, heading in [('docs/USER_MANUAL.md', '\n## Registered words'), ('do
     start = manual.index(heading)
     end = manual.find('\n#', start + len(heading))
     rows = [line for line in manual[start:end if end >= 0 else len(manual)].split('\n') if line.startswith('|')]
-    registered = set(re.findall(r'`([^`]+)`', '\n'.join(rows[2:])))
+    # A literal pipe must be escaped in a Markdown table, including inline code.
+    registered = {word.replace('\\|', '|') for word in re.findall(r'`([^`]+)`', '\n'.join(rows[2:]))}
     for word in every:
         if not mentions(manual, word):
             found('%s is not in %s' % (word, document))
@@ -140,6 +141,12 @@ for document, heading in [('docs/USER_MANUAL.md', '\n## Registered words'), ('do
             found('%s is not in the registered words of %s' % (word, document))
     for word in sorted(registered - set(every)):
         found('%s is in the registered words of %s and is not a built-in word' % (word, document))
+
+# A complete release check includes old words as well as those added since BASE.
+for word in every:
+    quoted = word.replace('\\', '\\\\').replace('"', '\\"')
+    if ('.name = "%s"' % quoted) not in help_text:
+        found('%s has no HELP text' % word)
 
 print('findings: %d' % len(findings))
 sys.exit(1 if findings else 0)

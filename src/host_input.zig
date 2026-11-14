@@ -500,7 +500,9 @@ const windows = struct {
                     return press(virtual_key, if (code_point < 0x80) code_point else 0x80, .{ .key = bytes[0] });
                 },
                 size_event => {
-                    if (standard) @import("host_resize.zig").record();
+                    // Deliver the notification before consuming the next key.
+                    // Deferring it here lets next() return that key first.
+                    if (standard) return .{ .key = @intCast(@import("core/standard_keys.zig").winch) };
                     continue;
                 },
                 mouse_event => {

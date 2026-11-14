@@ -1043,8 +1043,47 @@ The following table lists the built-in words registered at start-up and listed b
 | Constants and help | `PI`, `HELP`, `LICENSE` |
 | Dynamic memory and dynamic strings | `ALLOCATE`, `FREE`, `RESIZE`, `$!`, `$@`, `$@LEN`, `$!LEN`, `$+!`, `C$+!`, `$.`, `$DEL`, `$INS`, `$OVER`, `$FREE`, `$INIT`, `$SPLIT`, `$ITER`, `$TMP`, `$SLURP-FILE`, `$[]`, `$[]!`, `$[]@`, `$[]#`, `$[].`, `$[]MAP`, `$[]FREE`, `$[]SLURP`, `$[]SLURP-FILE`, `$SLURP`, `$+SLURP`, `$+SLURP-FILE`, `$SLURP-LINE`, `$+!LEN`, `$[]+!`, `$+[]!`, `$EXEC`, `$OFF`, `$VARIABLE`, `$[]VARIABLE`, `$?`, `$SUBSTITUTE`, `$UNESCAPE` |
 | Debugging | `~~`, `(~~)`, `ASSERT(`, `(ASSERT)`, `~~BT`, `(~~BT)`, `~~1BT`, `ONCE`, `(ONCE)`, `~~VALUE`, `(~~TO)`, `~~VARIABLE`, `+LTRACE`, `-LTRACE`, `DBG`, `BREAK:`, `(BREAK:)`, `BREAK"`, `(BREAK")`, `WATCH`, `UNWATCH`, `.COVER-RAW`, `COV%`, `.COVERAGE` |
+| Additional | `FPATH`, `LOAD` |
+| P01c | `2,` |
+| P02a | `*/F`, `*/MODF`, `*/MODS`, `*/S`, `/F`, `/MODF`, `/MODS`, `/S`, `>POW2`, `ARSHIFT`, `CTZ`, `DARSHIFT` |
+| P02a | `DLSHIFT`, `DROL`, `DROR`, `DRSHIFT`, `DU/MOD`, `LOG2`, `LROL`, `LROR`, `MODF`, `MODS`, `MUX`, `POW2?` |
+| P02a | `U*/`, `U*/MOD`, `U/`, `U/MOD`, `UD/MOD`, `UMOD`, `WROL`, `WROR` |
+| P02b | `-INF`, `-INFINITY`, `1/F`, `F*+`, `F2*`, `F2/`, `FAXPY`, `FCOPYSIGN`, `FFOURTH`, `FTHIRD`, `F~ABS`, `F~REL` |
+| P02b | `INF`, `INFINITY`, `NAN`, `V*` |
+| P02c | `>FLOAT1`, `BASE-EXECUTE`, `CONVERT`, `DEC.`, `DEC.R`, `DPL`, `E.`, `E.EXACT`, `E.P`, `FP.`, `H.`, `HEX.` |
+| P02c | `RANDOM`, `RND`, `SEED!`, `UD.`, `UD.R` |
+| P03a | `!@`, `*ALIGN`, `*ALIGNED`, `+!@`, `/L`, `/W`, `/X`, `C>S`, `CELL/`, `CHAR-`, `DFLOAT/`, `FLOAT` |
+| P03a | `FLOAT/`, `L!`, `L>S`, `L@`, `LALIGN`, `LALIGNED`, `LBE`, `LLE`, `MAXALIGNED`, `SFLOAT/`, `TH`, `TH!` |
+| P03a | `TH@`, `W!`, `W>S`, `W@`, `WALIGN`, `WALIGNED`, `WBE`, `WLE`, `X!`, `X>S`, `X@`, `XALIGN` |
+| P03a | `XALIGNED`, `XBE`, `XD!`, `XD>S`, `XD@`, `XDBE`, `XDLE`, `XLE` |
+| P03b | `->HERE`, `2FIELD:`, `A,`, `ACONSTANT`, `AVARIABLE`, `L,`, `LFIELD:`, `MAXALIGN`, `MEM,`, `SAVE-MEM-DICT`, `W,`, `WFIELD:` |
+| P03b | `X,`, `XD,`, `XFIELD:` |
+| P03c | `ADJUST-BUFFER`, `BUFFER%`, `EXTEND-MEM`, `FREE-MEM-VAR`, `INIT-BUFFER`, `SAVE-MEM` |
+| P04a | `#BELL`, `#BS`, `#CR`, `#DEL`, `#EOF`, `#ESC`, `#FF`, `#LF`, `#TAB`, `APPEND`, `CAPSCOMPARE`, `CAPSSEARCH` |
+| P04a | `CAPSSTRING-PREFIX?`, `CSTRING>SSTRING`, `DELETE`, `INSERT`, `INVALID-CHAR`, `NEWLINE`, `NOSPLIT?`, `S+`, `SAFE/STRING`, `SCAN-BACK`, `STR<`, `STRING,` |
+| P04a | `STRING-SUFFIX?`, `TOUPPER`, `TYPEWHITE`, `XC@+?` |
+| P04b | `$VALUE`, `.SUBSTITUTE`, `MACRO:`, `MACROS-WORDLIST`, `REPLACER:` |
+| P05a | `+FMODE`, `.INCLUDED`, `.PATH`, `ABSOLUTE-FILE?`, `ALSO-PATH`, `CLEAR-PATH`, `EMIT-FILE`, `FILE-EOF?`, `FILE>PATH`, `KEY-FILE`, `KEY?-FILE`, `OPEN-PATH-FILE` |
+| P05a | `PATH+`, `PATH=`, `SLURP-FID`, `\\\` |
+| P05b | `=MKDIR`, `>TIME&DATE&TZ`, `BASENAME`, `CLOSE-DIR`, `CPUTIME`, `DIRNAME`, `FILENAME-MATCH`, `GET-DIR`, `MKDIR-PARENTS`, `NS`, `NTIME`, `OPEN-DIR` |
+| P05b | `READ-DIR`, `SET-DIR` |
+| P06a | `>STRING-EXECUTE`, `INFILE-EXECUTE`, `INFILE-ID`, `OUTFILE-EXECUTE`, `OUTFILE-ID` |
+| P06b | `.QUOTED-CSV`, `BROKEN-PIPE-ERROR`, `CLOSE-PIPE`, `CSV-QUOTE`, `CSV-SEPARATOR`, `OPEN-PIPE`, `READ-CSV`, `SH`, `SH-GET` |
+| P06c | `AT-DELTAXY`, `FKEY.`, `FORM`, `KEY-IOR`, `SIMPLE-FKEY-STRING` |
+| P07d | `.UNRESOLVED`, `EXECUTE-PARSING`, `EXECUTE-PARSING-FILE`, `FORWARD`, `NAME`, `PARSE-WORD`, `RECURSIVE`, `STRING-PARSE` |
+| P08a | `.ID`, `.VOC`, `COMPILE-ONLY?`, `CONTEXT`, `CS-VOCABULARY`, `CS-WORDLIST`, `CURRENT`, `FIND-NAME-IN`, `IN`, `IN-WORDLIST`, `LATESTNT`, `MAP-VOCS` |
+| P08a | `MWORDS`, `NAME>LINK`, `NEXTNAME`, `OBSOLETE?`, `ROOT`, `SEAL`, `TABLE`, `VLIST`, `VOCS`, `WORDLIST-WORDS`, `XT>NAME` |
+| P08b | `:IS`, `ADDR`, `ADDRESSABLE:`, `AVALUE`, `PRESERVE`, `WRAP-XT` |
+| P09a | `)`, `?ERRNO-THROW`, `?IOR`, `ASSERT-LEVEL`, `ASSERT0(`, `ASSERT1(`, `ASSERT2(`, `ASSERT3(`, `CATCH-NOBT`, `EXCEPTION`, `EXCEPTIONS`, `FAST-THROW` |
+| P09a | `NOTHROW`, `WARNING"`, `WARNINGS` |
+| P09b | `...`, `AFTER-LOCATE`, `B`, `BEFORE-LOCATE`, `BROWSE`, `BT`, `BW`, `CLEARSTACK`, `CLEARSTACKS`, `EDIT`, `EXPAND-WHERE`, `F.S-PRECISION` |
+| P09b | `FANCY-AFTER-L`, `FCLEARSTACK`, `G`, `GG`, `L`, `LL`, `MAXDEPTH-.S`, `N`, `NT`, `NW`, `PREPEND-WHERE`, `SHORT-WHERE` |
+| P09b | `TT`, `UNUSED-WORDS`, `WHEREG`, `WW`, `XT-LOCATE`, `\G` |
+| P09c | `F>R`, `FR>`, `FR@`, `R'@`, `RPICK` |
+| S01a | `EKEY>FKEY` |
+| S01b | `BLK`, `BLOCK`, `BUFFER`, `EMPTY-BUFFERS`, `FLUSH`, `LIST`, `SAVE-BUFFERS`, `SCR`, `THRU`, `UPDATE` |
 
-At start-up, the Forth word list has **578** built-in words (aliases such as `MINUS`/`NEGATE` are each counted as one word). In addition, 10 words such as `FORTH` and `ONLY` are also registered in the Root word list.
+In a build with all features enabled, the Forth word list starts with **950** built-in names (aliases such as `MINUS`/`NEGATE` each count separately), plus the `EKEYS` vocabulary entry. `WORDS` therefore lists951 entries before user definitions or libraries are loaded. Root also repeats10 names such as `FORTH` and `ONLY`. Feature-excluded builds omit the affected names.
 
 ### Syntax and defining forms
 
@@ -1070,12 +1109,14 @@ The following are usage forms in Forth input, including registered parsing words
 | GUI | `REQUIRE-GUI` | Load the GUI words into the `GUI` vocabulary, after the graphics words. See the [graphics and sound manual](GRAPHICS_AND_SOUND.md). |
 | Games | `REQUIRE-GAME` | Load the game words into the `GAME` vocabulary, after the graphics words. See the [graphics and sound manual](GRAPHICS_AND_SOUND.md). |
 | Sound | `REQUIRE-AUDIO` | Load the sound words into the `AUDIO` vocabulary. See the [graphics and sound manual](GRAPHICS_AND_SOUND.md). |
+| S01a | `EKEY>FKEY` |
+| S01b | `BLK`, `BLOCK`, `BUFFER`, `EMPTY-BUFFERS`, `FLUSH`, `LIST`, `SAVE-BUFFERS`, `SCR`, `THRU`, `UPDATE` |
 
 ## Features not implemented
 
-`EDIT`, the book-specific edit-buffer operations, CP/M file operations, PC-8001 monitor functions, and Z80 machine-code execution remain unsupported. Standard block LOAD and LIST are available.
+The book-specific edit-buffer operations, CP/M file operations, PC-8001 monitor functions, and Z80 machine-code execution remain unsupported. Standard block LOAD and LIST are available. P09 `EDIT` invokes an external source editor and is different from the book's edit-buffer operation.
 
-Gforth extensions such as `TRY` … `ENDTRY` and `]]` … `[[` remain unimplemented. See the [compatibility list](COMPATIBILITY.md).
+Gforth extensions such as `TRY` … `ENDTRY` remain deferred. P07 `]]` … `[[` is implemented with the parsing restrictions described below. See the [compatibility list](COMPATIBILITY.md).
 
 ## Numeric extensions (P02)
 
@@ -1292,7 +1333,7 @@ Empty FPATH uses raw cwd-relative lookup; configured FPATH uses source search. P
 
 Pipe commands share the process terminal state: OPEN-PIPE and SH-GET do not hand terminal ownership to the child. After KEY/EKEY/KEY-IOR, an inherited terminal input may remain raw. Use SYSTEM/SH for foreground interactive commands; a live pipe does not coordinate competing reads from the terminal.
 
-`BROKEN-PIPE-ERROR` returns Sigma's EPIPE ior-544. This intentionally differs from Gforth's-2049. Pipe writes do not terminate Sigma on SIGPIPE; native writer pipes report write failures without stdio buffering. Native commands support up to4095 UTF-8 bytes, without NUL. Pipe operations require files support and custom FileOps open_pipe/close_pipe hooks. [Details](P06_IMPLEMENTATION.md).
+`BROKEN-PIPE-ERROR` returns Sigma's EPIPE ior-544. This intentionally differs from Gforth's-2049. Windows CRT can return EINVAL (-534) for a write to a closed pipe; the constant does not guarantee that every closed-pipe write returns -544. Pipe writes do not terminate Sigma on SIGPIPE; native writer pipes report write failures without stdio buffering. Native commands support up to4095 UTF-8 bytes, without NUL. Pipe operations require files support and custom FileOps open_pipe/close_pipe hooks. [Details](P06_IMPLEMENTATION.md).
 
 
 ### Borrowed shell output (P06b)
