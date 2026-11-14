@@ -893,3 +893,8 @@ WRAP-XTの旧動作が削除された場合、再利用IDを書き戻さず未�
 エディタはEDITOR/+行番号方式で同期起動し、未設定は-21。GG/LLで1回または既定の表示先を設定する。ホストへはファイル・テキストを型付きで渡し、一時コピーを排他的に作って終了後に消す。シェルのコマンド設定とファイル名を分離し、Windowsのcmdで安全に表せないパスは拒否する。例外表示はVM・インラインの位置を最大32件保存し、ブラウザーのエラーでは失わず、辞書削除・完全復元・NOTHROWで無効にする。整数と同じ表現のxtは診断で推測せず、FANCY-AFTER-Lは平文用フックとする。
 
 F>R/FR>/FR@は64ビットの論理戻りセルへビット単位で転送し、RPICK/R'@はユーザー戻り項目だけを見る。OSの戻りアドレスやループ・ローカルの内部配置は公開しない。新規転送は失敗時に入力を残し、不正なRPICKは-6とする。[実測・検証・既存動作との差異](P09_IMPLEMENTATION.md)。
+
+
+### P09 review: hidden exception storage and diagnostic callbacks
+
+Negative ALLOT must reject a rewind through a live EXCEPTION(S) message record with-259 before changing HERE or address metadata; FORGET/MARKER remove the record together with its dictionary entry. Message formatters run above the original failure's data/float entries and preserve its active backtrace for the same image generation. They remain best-effort callbacks, with existing depth-only CATCH semantics and numeric fallback when argument capacity is exhausted. Windows quoted EDITOR executable prefixes require native confirmation under702; no unverified shell rewrite is introduced here.

@@ -70,13 +70,15 @@ fn where(self: *forth.State) forth.RuntimeError!void {
         self.capture_target = null;
         self.capture_sink = &output;
         self.capture_failed = false;
-        try self.writeCell(map.where_style_address, 1);
+        var style_changed = false;
         defer {
             self.capture_target = old_target;
             self.capture_sink = old_sink;
             self.capture_failed = old_failed;
-            if (self.image_generation == generation) self.writeCell(map.where_style_address, old_style) catch unreachable;
+            if (style_changed and self.image_generation == generation) self.writeCell(map.where_style_address, old_style) catch unreachable;
         }
+        try self.writeCell(map.where_style_address, 1);
+        style_changed = true;
         try input.listUses(self, id);
         if (self.image_generation != generation) return error.InvalidExecutionToken;
         if (self.capture_failed) return self.throwIor(map.errno_no_memory);

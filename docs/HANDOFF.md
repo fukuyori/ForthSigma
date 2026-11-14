@@ -4,9 +4,9 @@
 
 ## 現在状態
 
-- mainの最新P09 pushは`6fe6ab3`（P09実装完了）。P00・S01・P01〜P08と依頼済みレビューは完了。
-- P09は全50語（P09a15・P09b30・P09c5）の実装・検証・文書更新が完了。tque576・577・578・552は完了(auto)。追加実装と最終文書はコミット・push済み。[実装記録](P09_IMPLEMENTATION.md)。P09のClaude Codeレビューは701で実施中。
-- 最終テストは通常1053件、debug無効993件、float無効988件、最小構成584件が通過。通常ビルドとP09a/b/c比較検証も通過。Windows/Linux実機確認は含まない。
+- mainの最新pushは`7ce9a4f`（P09実装完了は`6fe6ab3`、追加examples・文書もpush済み）。P00・S01・P01〜P08と依頼済みレビューは完了。
+- P09は全50語（P09a15・P09b30・P09c5）の実装・検証・文書更新が完了。tque576・577・578・552は完了(auto)。追加実装と最終文書はコミット・push済み。[実装記録](P09_IMPLEMENTATION.md)。P09のClaude Codeレビューと指摘反映は701で完了。[レビュー記録](P09_REVIEW.md)。レビュー修正・記録は対応するコミットに含む（git履歴参照）。
+- P09レビュー修正の通常・最小構成テスト、freestanding確認、ビルド、P09a/b/c比較、native診断・ブロック・保存復元確認が通過。詳細はレビュー記録。Windows/Linux実機確認は含まない。引用符付きEDITOR実行パスの未確認事項は702（607配下）。
 - tque階層121 → 415 → 542。次は553（P10）。既存の明示出力経路の描画判定は698で別管理。進捗はauto。
 - 利用者からコミット漏れの指摘があり、CHANGELOG、GRAPHICS_AND_SOUND英日、README英日、`docs/NATIVE_WINDOW_STUDY.md`、`examples/graphs.fs`・`graphs-tk.fs`も追加コミット対象とした。ネイティブウィンドウの実装検討は後回し。
 

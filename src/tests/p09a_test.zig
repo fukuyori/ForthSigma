@@ -182,3 +182,61 @@ test "P09a failing exception converters retain the original error and forgetting
     try std.testing.expectEqual(next, try m.pop());
     try std.testing.expect(!registry.writeMessage(m, code));
 }
+
+test "P09 review exception converters preserve the reported failure stacks" {
+    try support.skipWithout(&.{.debug});
+    var out = support.Output{};
+    const m = try support.createMachine(&out);
+    defer support.destroyMachine(m);
+    try m.interpretLine(": REPORT-MESSAGE DROP S\" custom\" ; ' REPORT-MESSAGE 1 EXCEPTIONS CONSTANT REPORT-CODE : REPORT-FAIL 11 22 REPORT-CODE THROW ;");
+    try std.testing.expectError(error.Thrown, m.interpretLine("REPORT-FAIL"));
+    m.report(error.Thrown);
+    try std.testing.expect(std.mem.indexOf(u8, out.written(), "custom\nBACKTRACE:") != null);
+    try std.testing.expect(std.mem.indexOf(u8, out.written(), "STACK: <2> 11 22 ") != null);
+    try std.testing.expectEqual(@as(usize, 0), m.data_depth);
+    try std.testing.expectEqual(@as(usize, 0), m.float_depth);
+    if (@import("build_options").float) {
+        out.len = 0;
+        try m.interpretLine(": FLOAT-MESSAGE DROP 9E FDROP S\" floating\" ; ' FLOAT-MESSAGE 1 EXCEPTIONS CONSTANT FLOAT-CODE : FLOAT-FAIL 1.25E FLOAT-CODE THROW ;");
+        try std.testing.expectError(error.Thrown, m.interpretLine("FLOAT-FAIL"));
+        m.report(error.Thrown);
+        try std.testing.expect(std.mem.indexOf(u8, out.written(), "floating\nBACKTRACE:") != null);
+        try std.testing.expect(std.mem.indexOf(u8, out.written(), "1.25") != null);
+        try std.testing.expectEqual(@as(usize, 0), m.float_depth);
+    }
+}
+
+test "P09 review exception formatter CATCH cannot erase the original backtrace" {
+    try support.skipWithout(&.{.debug});
+    var out = support.Output{};
+    const m = try support.createMachine(&out);
+    defer support.destroyMachine(m);
+    try m.interpretLine(": FORMAT-INNER -123 THROW ; : FORMAT-CATCH DROP ['] FORMAT-INNER CATCH DROP S\" caught-format\" ; ' FORMAT-CATCH 1 EXCEPTIONS CONSTANT FORMAT-CODE : ORIGINAL-FAIL 11 22 FORMAT-CODE THROW ;");
+    try std.testing.expectError(error.Thrown, m.interpretLine("ORIGINAL-FAIL"));
+    m.report(error.Thrown);
+    try std.testing.expect(std.mem.indexOf(u8, out.written(), "caught-format\nBACKTRACE:") != null);
+    try std.testing.expect(std.mem.indexOf(u8, out.written(), "ORIGINAL-FAIL") != null);
+    try std.testing.expect(std.mem.indexOf(u8, out.written(), "STACK: <2> 11 22 ") != null);
+    try std.testing.expect(std.mem.indexOf(u8, out.written(), "FORMAT-INNER") == null);
+    try std.testing.expectEqual(@as(usize, 0), m.data_depth);
+}
+
+test "P09 review negative ALLOT cannot truncate live exception records" {
+    var out = support.Output{};
+    const m = try support.createMachine(&out);
+    defer support.destroyMachine(m);
+    try m.interpretLine(": BEFORE-EXCEPTION ; S\" saved\" EXCEPTION DROP");
+    const here = m.data_here;
+    const words = m.word_count;
+    try std.testing.expectError(error.InvalidDefinition, m.reserveData(-1));
+    try std.testing.expectEqual(here, m.data_here);
+    try std.testing.expectEqual(words, m.word_count);
+    try registry.validateState(m);
+    try m.reserveData(16);
+    try m.reserveData(-16);
+    try std.testing.expectEqual(here, m.data_here);
+    try m.interpretLine("FORGET BEFORE-EXCEPTION");
+    try registry.validateState(m);
+    try m.reserveData(16);
+    try m.reserveData(-16);
+}

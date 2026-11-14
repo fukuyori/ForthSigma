@@ -2333,7 +2333,10 @@ pub const State = struct {
     pub fn reserveData(self: *State, amount: Cell) RuntimeError!void {
         const next, const overflow = @addWithOverflow(self.data_here, amount);
         if (overflow != 0 or next < data_start or next > self.sizes.dataLimit()) return error.MemoryExhausted;
-        if (next < self.data_here) @import("core/address_registry.zig").discardRange(self, next, self.data_here, .data, true);
+        if (next < self.data_here) {
+            try @import("core/exception_registry.zig").checkRewind(self, next);
+            @import("core/address_registry.zig").discardRange(self, next, self.data_here, .data, true);
+        }
         self.data_here = next;
     }
 };

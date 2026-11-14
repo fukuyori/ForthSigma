@@ -1,0 +1,27 @@
+# P09 review
+
+Claude Code Sonnet reviewed the complete50-word P09 implementation at `6fe6ab3`, including earlier P09a/b work and shared integration. An omitted-path pass covered image encoding/restoration, native callbacks, float formatting, capacity checks and editor platform paths. Separate static passes reviewed the reporting fixes and the source/record/capture fixes. Access was restricted to Read/Grep/Glob: no commands, edits, delegation, outside-repository reads or external-resource access. Codex reproduced issues and ran validation. Prompts/reports are under `.work/p09-review/` (not tracked). Task: tque701, progress auto.
+
+## Findings and changes
+
+- **Medium: documentation comments in LOAD blocks.** `\G` searched only for LF, so space-padded block input lost all later64-column lines. It now uses the same next-line boundary as the existing block `\` handler. The regression covers code before/after comments, an all-comment line, the final block line and return to the caller. Non-block LF behavior is unchanged.
+- **Low: negative ALLOT truncated hidden exception records.** Native execution reproduced successful rewind followed by INVALID IMAGE on SAVE. Rewinds through a live EXCEPTION(S) record now return-259 before changing HERE or discarding address metadata. Allocation/reclaim above records remains available; FORGET/MARKER remove entries with their storage. The regression checks rejection, unchanged HERE/word count, record validity, allowed reclaim and FORGET. Native SAVE/restore after a caught rejection retains the message.
+- **Low, defensive cleanup: WHEREG capture setup.** The restoring defer is registered before the style write; a successful-write flag controls style restoration. No practical failure of that fixed in-range write was demonstrated. Capture fields can no longer escape the local scope through that setup error path.
+- **Codex reproduction: lazy formatters overwrote diagnostic stacks.** Reporting had reset stack depths before executing EXCEPTIONS callbacks, so an ordinary addr/length result replaced failure cells in the later stack display; float temporaries did the same. The original entries now stay below balanced formatter arguments. Stack depths are cleared on return. This preserves established CATCH semantics; arbitrary destructive formatter side effects are not sandboxed. If no argument capacity remains, formatting falls back to the numeric exception.
+- **Codex reproduction: formatter CATCH erased the original trace.** A caught formatter error cleared the active trace despite capture suppression. Trace contents/count/total/level are saved and restored for the same image generation. A full restore does not reinstall old trace addresses. The regression verifies the original failing word and stack rather than the formatter's caught failure.
+
+The two source/record regressions failed before their fixes in `reviewer-before.log`; the diagnostic-stack regression failed in `before.log`. Native before/after observations are also retained. The fix re-reviews reported no remaining actionable findings in those paths. Claude made no runtime verification claims.
+
+## Platform concern and review limits
+
+The coverage pass identified a possible Windows cmd.exe/system quoting issue when EDITOR starts with a quoted executable path (for example Program Files). This is an unverified hypothesis here. Windows/Linux native checks are explicitly excluded from this session, so task702 under607 records the required check; manuals state the limitation and suggest a command available on PATH without a quoted executable prefix until verified. No speculative Windows shell behavior change was made.
+
+The review was static and not exhaustive. Script coverage was mostly grep-based rather than a proof of every expected result. Generic file callbacks outside cwd/home, every compiler rollback assignment, and every host callback side effect were not traced end to end. Native Windows/Linux execution and interactive editor testing remain deferred; the macOS editor checks use a recording stand-in. The source-fix review's claim that its then-current test covered the final block line was inaccurate; that explicit final-line case was added before final validation.
+
+## Validation
+
+Normal tests and build pass. After all functional fixes, normal testing passed1057 tests with6 skips; the final last-line test refinement reran995 core tests with5 skips while the unchanged host-test artifact was cached (62 host tests had passed with1 skip). Final minimal configuration passes585 tests with449 skips; freestanding checks also pass; see `final-test.log`, `final-minimal.log` and `final-build.log`. A float-disabled pass after the reporting fixes passed990 tests with45 skips (`nofloat.log`).
+
+P09a passes55 reference comparisons/15 Sigma policies/2 native image checks; P09b passes80 comparisons/6 basic policies plus source/listing/trace checks,11 editor stand-in checks and image routes; P09c passes21 comparisons/5 policies/2 native image checks. Logs: `final-verify-{a,b,c}.log`. Three native formatter checks and three source/record checks pass in `native-after.json` and `source-native-after.json`.
+
+These changes add no builtin entries or wire ABI changes. No package/version change or Windows/Linux native execution was performed. P09 implementation was committed/pushed as`6fe6ab3`; remaining examples/documentation were committed/pushed as`7ce9a4f`. Review fixes and this record are in the corresponding follow-up commit; see git history.

@@ -81,6 +81,15 @@ pub fn report(self: *State, err: anyerror) void {
         self.error_location = null;
     }
     if (err == error.Thrown) {
+        // A lazy EXCEPTIONS formatter runs Forth and uses both stacks. Keep the
+        // failure's cells below its arguments so a balanced formatter cannot
+        // overwrite the values still needed by the deferred backtrace/log.
+        self.data_depth = kept_data;
+        self.float_depth = kept_floats;
+        defer {
+            self.data_depth = 0;
+            self.float_depth = 0;
+        }
         self.writeThrowMessage(self.throw_code);
         return;
     }

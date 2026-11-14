@@ -347,3 +347,22 @@ test "unrelated block open failures do not attempt read-only fallback" {
     try support.expectStack(machine, &.{forth.errnoIor(24)});
     try std.testing.expectEqual(@as(usize, 0), output.file_writes);
 }
+
+test "P09 review documentation comments end at the next 64 column block line" {
+    try support.skipWithout(&.{.files});
+    var output = support.Output{};
+    var source: [1024]u8 = @splat(' ');
+    const first = "11 \\G ignored 99";
+    @memcpy(source[0..first.len], first);
+    @memcpy(source[64..][0..2], "22");
+    @memcpy(source[128..][0..2], "\\G");
+    @memcpy(source[192..][0..2], "33");
+    const last = "55 \\G ignored 66";
+    @memcpy(source[960..][0..last.len], last);
+    setBlock(&output, 1, &source);
+    const m = try support.createMachine(&output);
+    defer support.destroyMachine(m);
+    m.writer.file_ops = &ops;
+    try m.interpretLine("1 LOAD 44");
+    try support.expectStack(m, &.{ 11, 22, 33, 55, 44 });
+}

@@ -44,6 +44,15 @@ pub fn checkRange(self: *const forth.State, first: map.Cell, count: map.Cell) fo
         if (overlaps(try read(self, w), first, count)) return error.InvalidImage;
     };
 }
+/// Hidden records cannot be reclaimed by ALLOT while their dictionary entries
+/// remain live. FORGET/MARKER remove those entries together with their storage.
+pub fn checkRewind(self: *const forth.State, next: map.Cell) forth.RuntimeError!void {
+    for (self.words[0..self.word_count]) |word| {
+        if (word.kind != .exception_entry) continue;
+        const record = try read(self, word);
+        if (next < record.address + header_size + @as(map.Cell, @intCast(record.length))) return error.InvalidDefinition;
+    }
+}
 pub fn execute(self: *forth.State, comptime builtin: defs.Builtin) forth.RuntimeError!void {
     try self.requireDepth(2);
     const callback: map.Cell = if (builtin == .exceptions_word) try self.wordId(try self.peek(1)) else -1;
@@ -93,6 +102,11 @@ pub fn writeMessage(self: *forth.State, code: map.Cell) bool {
         const generation = self.image_generation;
         const suppression = self.backtrace_suppression;
         const no_trace = self.throw_nobt;
+        const trace_count = self.backtrace_count;
+        const trace_total = self.backtrace_total;
+        const trace_level = self.backtrace_level;
+        var trace: [forth.State.max_backtrace]u16 = undefined;
+        @memcpy(trace[0..trace_count], self.backtrace[0..trace_count]);
         var guard: scopes.Guard = undefined;
         scopes.pushGuard(self, &guard, @intCast(r.callback)) catch return false;
         defer scopes.popGuard(self, &guard);
@@ -103,6 +117,12 @@ pub fn writeMessage(self: *forth.State, code: map.Cell) bool {
             self.throw_code = old_throw;
             self.abort_message = old_abort;
             if (self.image_generation == generation) {
+                // CATCH/NOTHROW in a formatter may clear the active trace even
+                // under suppression. It belongs to the original exception.
+                @memcpy(self.backtrace[0..trace_count], trace[0..trace_count]);
+                self.backtrace_count = trace_count;
+                self.backtrace_total = trace_total;
+                self.backtrace_level = trace_level;
                 self.data_depth = data;
                 self.float_depth = floats;
                 self.return_depth = returns;

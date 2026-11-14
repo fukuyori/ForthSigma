@@ -66,3 +66,8 @@ All50 P09 words are implemented; tque577,578 and parent552 are complete with aut
 P09a comparison passed55 reference cases and15 Sigma policies; P09b passed80 reference cases,6 basic policies, listing/search/navigation/diagnostic checks and11 native editor stand-in checks; P09c passed21 reference cases and5 boundary policies. Native image checks passed for each suite, including the editor paths. Evidence is in `.work/p09a-final-verify.log`, `.work/p09b-final-verify.log` and `.work/p09c-verify.log`. Windows/Linux native execution remains deferred; no interactive editor or Claude Code review is claimed.
 
 Builtin initialization now preflights dictionary capacity at compile time. Both `-Dwords=1024` and2048 built and started with1011 builtin entries;1024 is sufficient for this revision. A formatting API probe also passed for the diagnostic used by the insufficient-capacity branch. No package or version change was made.
+
+
+## P09 review follow-up (701)
+
+The requested complete review and omitted-path pass are recorded in [P09_REVIEW.md](P09_REVIEW.md). Fixes preserve64-column block comment boundaries, reject negative ALLOT through live hidden exception records before mutation, register WHEREG cleanup before style changes, and preserve original diagnostic stacks/traces across lazy message formatting. Four new regressions cover these reproduced paths. Normal/minimal tests, build, P09a/b/c comparisons and native checks pass. Windows quoted EDITOR prefixes remain an explicitly unverified platform concern under702/607. No builtin or wire ABI change was added by the fixes.

@@ -31,8 +31,13 @@ pub fn execute(self: *forth.State, comptime word: defs.Builtin) forth.RuntimeErr
         .xt_locate => try self.locateWord(try self.wordId(try self.pop())),
         .source_l, .source_n, .source_b => try show(self, word),
         .documentation_comment => {
-            const end = std.mem.indexOfScalarPos(u8, self.source_line, self.sourceCursor(), '\n');
-            self.setSourceCursor(if (end) |at| at + 1 else self.source_line.len);
+            if (self.source_kind == .block) {
+                // LOAD sources have sixteen space-padded 64-column lines, not LF.
+                self.setSourceCursor(@min(self.source_line.len, (self.token_start / 64 + 1) * 64));
+            } else {
+                const end = std.mem.indexOfScalarPos(u8, self.source_line, self.sourceCursor(), '\n');
+                self.setSourceCursor(if (end) |at| at + 1 else self.source_line.len);
+            }
         },
         else => unreachable,
     }
