@@ -278,9 +278,9 @@ FACILITY EXTのキー4語とBLOCK/BLOCK EXTの10語を優先する。既存の�
 
 #### P07先行 既存構文4語の辞書化
 
-対象は`IS`・`ACTION-OF`・`TO`・`+TO`。tque ID: 457。先行フェーズはP01。P07aはこの作業の完了後に進める。
+対象は`IS`・`ACTION-OF`・`TO`・`+TO`。tque ID: 457、4/4完了(auto)。先行フェーズはP01。次はP07a570。[実装・検証](P07_IMPLEMENTATION.md)。
 
-現在のSigmaでは通常の代入と`ACTION-OF`は動くが、4語は辞書に登録されていない。Gforthとの実行比較では、`' IS`、`POSTPONE TO`、`POSTPONE IS`、`POSTPONE ACTION-OF`、`POSTPONE +TO`がGforthで成功し、Sigmaでは未定義語となった。
+辞書化前のSigmaでは通常の代入と`ACTION-OF`は動くが、4語は辞書に登録されていなかった。Gforthとの実行比較では、`' IS`、`POSTPONE TO`、`POSTPONE IS`、`POSTPONE ACTION-OF`、`POSTPONE +TO`がGforthで成功し、Sigmaでは未定義語となった。
 
 Gforthの`kernel/comp.fs`では`TO`・`IS`・`+TO`が解釈動作とコンパイル動作を分けて定義されている。次の例はGforthで`2 0`を表示し、コンパイル中でも`' TO`から取得した解釈動作がその場で値を更新することを確認できる。
 
@@ -292,7 +292,7 @@ Gforthの`kernel/comp.fs`では`TO`・`IS`・`+TO`が解釈動作とコンパイ
 V . DEPTH .
 ```
 
-設計案は、通常の名前解釈、`'`・`[']`・`NAME>INTERPRET`、`POSTPONE`・`NAME>COMPILE`が使う動作選択を共通化し、解釈とコンパイルを区別すること。既存の値代入・ローカル変数・DEFER処理を再利用する。即時語の登録とSTATEによる分岐だけで対応済みとしない。
+実装では、通常の名前解釈、`'`・`[']`・`NAME>INTERPRET`、`POSTPONE`・`NAME>COMPILE`が使う動作選択を共通化し、解釈とコンパイルを区別した。既存の値代入・ローカル変数・DEFER処理を再利用し、STATE分岐だけに依存しない。
 
 辞書化では組み込み辞書の境界が変わる。現在のイメージ読込は組み込み語の位置と種類を照合するため、既存語の番号を維持する配置案だけでは旧イメージの互換を保証できない。保存形式の改訂と旧形式の扱いはP00で確定し、P10でも確認する。
 

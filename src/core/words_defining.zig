@@ -17,16 +17,31 @@ pub const uninitialized_defer: Cell = -1;
 
 /// The built-in words this file executes; executeBuiltin dispatches by this list.
 pub const words = [_]Builtin{
-    .define_defer, .defer_store, .defer_fetch, .defers, .compile_comma, .bracket_compile,
-    .name_to_compile, .begin_structure, .end_structure, .plus_field, .field_cell, .field_char,
-    .field_float, .field_sfloat, .field_dfloat, .struct_start, .end_struct, .struct_field,
-    .cell_percent, .char_percent, .float_percent, .double_percent, .sfloat_percent,
-    .dfloat_percent, .percent_size, .percent_alignment, .percent_align, .percent_allot,
-    .percent_alloc, .percent_allocate,
+    .define_defer,           .defer_store,                  .defer_fetch,    .defers,               .compile_comma,     .bracket_compile,
+    .name_to_compile,        .begin_structure,              .end_structure,  .plus_field,           .field_cell,        .field_char,
+    .field_float,            .field_sfloat,                 .field_dfloat,   .struct_start,         .end_struct,        .struct_field,
+    .cell_percent,           .char_percent,                 .float_percent,  .double_percent,       .sfloat_percent,    .dfloat_percent,
+    .percent_size,           .percent_alignment,            .percent_align,  .percent_allot,        .percent_alloc,     .percent_allocate,
+    .assign_to,              .assign_is,                    .assign_plus_to, .assignment_action_of, .compile_assign_to, .compile_assign_is,
+    .compile_assign_plus_to, .compile_assignment_action_of,
 };
 
 pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
     switch (builtin) {
+        .assign_to, .assign_is, .assign_plus_to, .assignment_action_of, .compile_assign_to, .compile_assign_is, .compile_assign_plus_to, .compile_assignment_action_of => {
+            const compile = switch (builtin) {
+                .compile_assign_to, .compile_assign_is, .compile_assign_plus_to, .compile_assignment_action_of => true,
+                else => false,
+            };
+            if (compile and !self.defining) return error.CompileOnly;
+            const name = (try self.nextSourceToken()) orelse return error.InvalidDefinition;
+            const pending: defs.Pending = switch (builtin) {
+                .assign_plus_to, .compile_assign_plus_to => .plus_to_name,
+                .assignment_action_of, .compile_assignment_action_of => .action_of_name,
+                else => .to_name,
+            };
+            try @import("definers.zig").finishAssignment(self, pending, name, compile);
+        },
         .define_defer => {
             const name = (try self.nextSourceToken()) orelse return error.InvalidDefinition;
             const id = try self.appendDataWord(name, .deferred, cell_size);
@@ -53,19 +68,20 @@ pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
             if (!self.defining) return error.CompileOnly;
             try self.compileCall(try self.wordId(try self.pop()));
         },
-        // [COMPILE] name appends name's execution, for an immediate word as for any other.
+        // [COMPILE] preserves ordinary execution, selecting the compiler action of a combined word.
         .bracket_compile => {
             try self.requireCompiling();
             const name = (try self.nextSourceToken()) orelse return error.InputUnavailable;
             // A local variable is not a dictionary word; gforth does not compile one either.
             if (self.findLocal(name) != null) return error.InvalidDefinition;
-            try self.compileCall(try self.lookupOrFail(name));
+            try self.compileCall(@import("word_semantics.zig").compilation(self, try self.lookupOrFail(name)).target);
         },
-        // NAME>COMPILE ( nt -- xt1 xt2 ): xt2 is EXECUTE for an immediate word, COMPILE, for others.
+        // NAME>COMPILE selects a combined compiler action, or ordinary EXECUTE/COMPILE, semantics.
         .name_to_compile => {
             const id = try self.validNameToken(try self.pop());
-            try self.push(self.synonymTarget(id));
-            try self.push(self.builtinWord(if (self.words[id].immediate) .execute else .compile_comma));
+            const action = @import("word_semantics.zig").compilation(self, id);
+            try self.push(@import("word_semantics.zig").interpretation(self, action.target));
+            try self.push(self.builtinWord(if (action.execute) .execute else .compile_comma));
         },
         // BEGIN-STRUCTURE name ( -- addr 0 ): name is a VALUE that END-STRUCTURE sets to
         // the size, as in gforth.

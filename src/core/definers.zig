@@ -104,63 +104,12 @@ pub fn finishPending(self: *State, token: []const u8) RuntimeError!void {
             self.forgetFrom(id);
         },
         .tick_name => {
-            const id = self.synonymTarget(try self.lookupOrFail(token));
+            const id = @import("word_semantics.zig").interpretation(self, try self.lookupOrFail(token));
             if (self.compiling) {
                 _ = try self.emit(.{ .kind = .execution_token, .value = id });
             } else try self.push(id);
         },
-        .to_name => {
-            if (self.compiling) {
-                if (self.findLocal(token)) |local| {
-                    if (local.variable) return error.InvalidDefinition;
-                    _ = try self.emit(.{ .kind = .local_store, .value = localOperand(local) });
-                    return;
-                }
-            }
-            const id = self.synonymTarget(try self.lookupOrFail(token));
-            const kind = self.words[id].kind;
-            if (kind != .value and kind != .fvalue and kind != .two_value and kind != .string_value and kind != .deferred) return error.InvalidDefinition;
-            if (defs.debug_enabled and words_debug.isWatched(self, id)) try words_debug.watchStore(self, id, token.len);
-            if (self.compiling) {
-                _ = try self.emit(.{ .kind = .store_value, .value = id });
-            } else switch (kind) {
-                .fvalue => try self.writeFloat(self.words[id].value, try self.fpop()),
-                .two_value => try self.writeDouble(self.words[id].value, try self.popDouble()),
-                .string_value => try @import("string_values.zig").store(self, id, false),
-                else => try self.writeCell(self.words[id].value, try self.pop()),
-            }
-        },
-        .plus_to_name => {
-            if (self.compiling) {
-                if (self.findLocal(token)) |local| {
-                    if (local.variable) return error.InvalidDefinition;
-                    const add: Builtin = switch (local.kind) {
-                        .float => .f_add,
-                        .double => .d_add,
-                        else => .add,
-                    };
-                    _ = try self.emit(.{ .kind = .local_fetch, .value = localOperand(local) });
-                    _ = try self.emit(.{ .kind = .builtin, .value = @backingInt(add) });
-                    _ = try self.emit(.{ .kind = .local_store, .value = localOperand(local) });
-                    return;
-                }
-            }
-            const id = self.synonymTarget(try self.lookupOrFail(token));
-            const kind = self.words[id].kind;
-            if (kind != .value and kind != .fvalue and kind != .two_value and kind != .string_value) return error.InvalidDefinition;
-            if (self.compiling) {
-                _ = try self.emit(.{ .kind = .add_value, .value = id });
-            } else try self.addToValue(id);
-        },
-        // ACTION-OF name gives the DEFER's action; compiled, as DEFER@ when the definition runs.
-        .action_of_name => {
-            const id = self.synonymTarget(try self.lookupOrFail(token));
-            if (self.words[id].kind != .deferred) return error.InvalidDefinition;
-            if (self.compiling) {
-                _ = try self.emit(.{ .kind = .execution_token, .value = id });
-                _ = try self.emit(.{ .kind = .builtin, .value = @backingInt(Builtin.defer_fetch) });
-            } else try self.push(try self.readCell(self.words[id].value));
-        },
+        .to_name, .plus_to_name, .action_of_name => try finishAssignment(self, pending, token, self.compiling),
         // The code point of the first character, as in gforth (CHAR 日 is 26085).
         .char_name => {
             const code = words_xchar.decode(token).code;
@@ -170,8 +119,8 @@ pub fn finishPending(self: *State, token: []const u8) RuntimeError!void {
         },
         .postpone_name => {
             if (!self.compiling) return error.CompileOnly;
-            const id = try self.lookupOrFail(token);
-            _ = try self.emit(.{ .kind = if (self.words[id].immediate) .call else .compile_call, .value = id });
+            const action = @import("word_semantics.zig").compilation(self, try self.lookupOrFail(token));
+            _ = try self.emit(.{ .kind = if (action.execute) .call else .compile_call, .value = action.target });
         },
     }
 }
@@ -287,4 +236,63 @@ pub fn definingPending(self: *State, builtin: Builtin) RuntimeError!Pending {
 pub fn startInterpretPending(self: *State, pending: Pending) RuntimeError!void {
     if (self.compiling) return error.CompileOnly;
     self.pending = pending;
+}
+
+/// Shared assignment mechanics; an EXECUTEd interpretation token never compiles.
+pub fn finishAssignment(self: *State, pending: Pending, token: []const u8, compile: bool) RuntimeError!void {
+    switch (pending) {
+        .to_name => {
+            if (compile) {
+                if (self.findLocal(token)) |local| {
+                    if (local.variable) return error.InvalidDefinition;
+                    _ = try self.emit(.{ .kind = .local_store, .value = localOperand(local) });
+                    return;
+                }
+            }
+            const id = self.synonymTarget(try self.lookupOrFail(token));
+            const kind = self.words[id].kind;
+            if (kind != .value and kind != .fvalue and kind != .two_value and kind != .string_value and kind != .deferred) return error.InvalidDefinition;
+            if (defs.debug_enabled and words_debug.isWatched(self, id)) try words_debug.watchStoreAction(self, id, token.len, compile);
+            if (compile) {
+                _ = try self.emit(.{ .kind = .store_value, .value = id });
+            } else switch (kind) {
+                .fvalue => try self.writeFloat(self.words[id].value, try self.fpop()),
+                .two_value => try self.writeDouble(self.words[id].value, try self.popDouble()),
+                .string_value => try @import("string_values.zig").store(self, id, false),
+                else => try self.writeCell(self.words[id].value, try self.pop()),
+            }
+        },
+        .plus_to_name => {
+            if (compile) {
+                if (self.findLocal(token)) |local| {
+                    if (local.variable) return error.InvalidDefinition;
+                    const add: Builtin = switch (local.kind) {
+                        .float => .f_add,
+                        .double => .d_add,
+                        else => .add,
+                    };
+                    _ = try self.emit(.{ .kind = .local_fetch, .value = localOperand(local) });
+                    _ = try self.emit(.{ .kind = .builtin, .value = @backingInt(add) });
+                    _ = try self.emit(.{ .kind = .local_store, .value = localOperand(local) });
+                    return;
+                }
+            }
+            const id = self.synonymTarget(try self.lookupOrFail(token));
+            const kind = self.words[id].kind;
+            if (kind != .value and kind != .fvalue and kind != .two_value and kind != .string_value) return error.InvalidDefinition;
+            if (compile) {
+                _ = try self.emit(.{ .kind = .add_value, .value = id });
+            } else try self.addToValue(id);
+        },
+        // ACTION-OF name gives the DEFER's action; compiled, as DEFER@ when the definition runs.
+        .action_of_name => {
+            const id = self.synonymTarget(try self.lookupOrFail(token));
+            if (self.words[id].kind != .deferred) return error.InvalidDefinition;
+            if (compile) {
+                _ = try self.emit(.{ .kind = .execution_token, .value = id });
+                _ = try self.emit(.{ .kind = .builtin, .value = @backingInt(Builtin.defer_fetch) });
+            } else try self.push(try self.readCell(self.words[id].value));
+        },
+        else => unreachable,
+    }
 }

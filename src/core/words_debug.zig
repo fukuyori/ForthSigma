@@ -24,10 +24,9 @@ const max_name = memory_map.max_name;
 
 /// The built-in words this file executes; executeBuiltin dispatches by this list.
 pub const words = [_]Builtin{
-    .ltrace_on, .ltrace_off, .once, .once_run, .debug_tilde_bt, .debug_tilde_bt_run, .debug_tilde_one_bt, .define_watched_value, .watch_run,
-    .dbg,       .break_colon, .break_run, .break_quote, .break_quote_run,
-    .cover_raw, .cov_percent, .coverage,
-    .define_watched_variable, .watch_cell, .unwatch_cell,
+    .ltrace_on,  .ltrace_off,   .once,      .once_run,    .debug_tilde_bt,  .debug_tilde_bt_run, .debug_tilde_one_bt, .define_watched_value, .watch_run,
+    .dbg,        .break_colon,  .break_run, .break_quote, .break_quote_run, .cover_raw,          .cov_percent,        .coverage,             .define_watched_variable,
+    .watch_cell, .unwatch_cell,
 };
 
 /// How many of the top stack items a line of the trace shows, as .S.
@@ -223,9 +222,14 @@ pub fn checkWatches(self: *State, pc: ?u16) void {
 /// What TO does for a watched value before it stores: shown at once outside a
 /// definition, compiled inside one. `name_length` is the length of the name after TO.
 pub fn watchStore(self: *State, id: u16, name_length: usize) RuntimeError!void {
+    return watchStoreAction(self, id, name_length, self.compiling);
+}
+
+/// An explicit interpretation/compilation token chooses its own watch action.
+pub fn watchStoreAction(self: *State, id: u16, name_length: usize, compile: bool) RuntimeError!void {
     var place: [max_name + 64]u8 = undefined;
     const text = try words_tools.placeText(self, &place, name_length);
-    if (self.compiling) {
+    if (compile) {
         try self.compileCountedString(text, .string_literal);
         _ = try self.emit(.{ .kind = .execution_token, .value = id });
         try self.compileCall(@intCast(self.builtinWord(.watch_run)));
@@ -522,7 +526,7 @@ fn operationName(self: *State, pc: u16, end_pc: u16, buffer: []u8) []const u8 {
         .store_value => .{ "TO ", op.value },
         .add_value => .{ "+TO ", op.value },
         .builtin => {
-            const builtin: Builtin = @enumFromInt(op.value);
+            const builtin: Builtin = @fromBackingInt(@intCast(op.value));
             for (self.words[0..self.builtin_count]) |*word| {
                 if (word.builtin == builtin and word.name_len != 0) return self.wordName(word.*);
             }

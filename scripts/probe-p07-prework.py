@@ -49,6 +49,9 @@ add('ACTION-OF:runtime-action', "DEFER D : A 1 ; : B 2 ; ' A IS D : T ACTION-OF 
 add('ACTION-OF:value', '1 VALUE V ACTION-OF V . : T ACTION-OF V ; 2 TO V T .')
 add('IS:string', 'S" a" $VALUE V S" b" IS V V TYPE')
 add('search-order-shadow', 'WORDLIST CONSTANT W W SET-CURRENT : TO 55 ; FORTH-WORDLIST SET-CURRENT W >ORDER TO . PREVIOUS 1 VALUE V 2 TO V V .')
+add('bracket-compile-combined', '1 VALUE V : M [COMPILE] TO ; IMMEDIATE : T 2 M V ; V . T V .')
+add('compile-comma-interpretation', "1 VALUE V : T [ ' TO COMPILE, ] ; 3 T V V .")
+add('compile-action-with-STATE-false', '1 VALUE V : M [ S" TO" FIND-NAME NAME>COMPILE SWAP ] LITERAL LITERAL EXECUTE ; : T 3 [ M V ] ; T V .')
 results = []
 for name, source in cases:
     row={'case':name,'source':source,'runs':{}}

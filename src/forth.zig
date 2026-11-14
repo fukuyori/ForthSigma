@@ -805,7 +805,9 @@ pub const State = struct {
         .{ "OUTFILE-EXECUTE", .outfile_execute },     .{ "INFILE-ID", .infile_id },                   .{ "INFILE-EXECUTE", .infile_execute },       .{ "CSV-QUOTE", .csv_quote },                .{ "CSV-SEPARATOR", .csv_separator },
         .{ ".QUOTED-CSV", .dot_quoted_csv },          .{ "READ-CSV", .read_csv },                     .{ "SH", .sh },                               .{ "OPEN-PIPE", .open_pipe },                .{ "CLOSE-PIPE", .close_pipe },
         .{ "BROKEN-PIPE-ERROR", .broken_pipe_error }, .{ "SH-GET", .sh_get },                         .{ "KEY-IOR", .key_ior },                     .{ "FORM", .form },                          .{ "AT-DELTAXY", .at_deltaxy },
-        .{ "FKEY.", .fkey_dot },                      .{ "SIMPLE-FKEY-STRING", .simple_fkey_string }, .{ "\\\\\\", .triple_backslash },
+        .{ "FKEY.", .fkey_dot },                      .{ "SIMPLE-FKEY-STRING", .simple_fkey_string }, .{ "TO", .assign_to },                        .{ "IS", .assign_is },                       .{ "+TO", .assign_plus_to },
+        .{ "ACTION-OF", .assignment_action_of },      .{ "", .compile_assign_to },                    .{ "", .compile_assign_is },                  .{ "", .compile_assign_plus_to },            .{ "", .compile_assignment_action_of },
+        .{ "\\\\\\", .triple_backslash },
     };
 
     fn installBuiltins(self: *State) void {
@@ -814,7 +816,7 @@ pub const State = struct {
             // A word of a group the build leaves out keeps its place without a name, which
             // lookup never finds: every build gives each built-in word the same execution
             // token, so an image moves between builds and its excluded words do not run.
-            if (defs.isExcludedBuiltin(definition[1])) {
+            if (definition[0].len == 0 or defs.isExcludedBuiltin(definition[1])) {
                 const id = self.appendEntry("", .builtin, definition[1], 0) catch unreachable;
                 self.words[id].immediate = isImmediateBuiltin(definition[1]);
                 // Keep fixed VALUE shape stable across files-enabled/disabled images.
@@ -847,7 +849,7 @@ pub const State = struct {
 
     fn isImmediateBuiltin(builtin: Builtin) bool {
         return switch (builtin) {
-            .compile_if, .compile_else, .compile_ahead, .compile_then, .compile_begin, .compile_end, .compile_again, .compile_while, .compile_repeat, .compile_do, .compile_q_do, .compile_loop, .compile_plus_loop, .compile_does, .compile_case, .compile_of, .compile_endof, .compile_endcase, .compile_exit, .compile_recurse, .leave, .bracket_if, .bracket_else, .bracket_then, .bracket_defined, .bracket_undefined, .bracket_ifdef, .bracket_ifundef, .bracket_do, .bracket_q_do, .bracket_loop, .bracket_plus_loop, .bracket_i, .bracket_begin, .bracket_until, .bracket_again, .bracket_while, .bracket_repeat, .bracket_for, .bracket_next, .end_definition, .literal, .fliteral, .sliteral, .two_literal, .defers, .bracket_compile, .question_exit, .question_leave, .compile_question_of, .compile_contof, .compile_next_case, .debug_tilde, .assert_paren, .once, .debug_tilde_bt, .debug_tilde_one_bt, .break_colon, .break_quote, .triple_backslash => true,
+            .assign_to, .assign_is, .assign_plus_to, .assignment_action_of, .compile_if, .compile_else, .compile_ahead, .compile_then, .compile_begin, .compile_end, .compile_again, .compile_while, .compile_repeat, .compile_do, .compile_q_do, .compile_loop, .compile_plus_loop, .compile_does, .compile_case, .compile_of, .compile_endof, .compile_endcase, .compile_exit, .compile_recurse, .leave, .bracket_if, .bracket_else, .bracket_then, .bracket_defined, .bracket_undefined, .bracket_ifdef, .bracket_ifundef, .bracket_do, .bracket_q_do, .bracket_loop, .bracket_plus_loop, .bracket_i, .bracket_begin, .bracket_until, .bracket_again, .bracket_while, .bracket_repeat, .bracket_for, .bracket_next, .end_definition, .literal, .fliteral, .sliteral, .two_literal, .defers, .bracket_compile, .question_exit, .question_leave, .compile_question_of, .compile_contof, .compile_next_case, .debug_tilde, .assert_paren, .once, .debug_tilde_bt, .debug_tilde_one_bt, .break_colon, .break_quote, .triple_backslash => true,
             else => false,
         };
     }
@@ -1041,6 +1043,10 @@ pub const State = struct {
         const found = self.lookup(token);
         if (found) |id| {
             self.recordUse(id);
+            if (@import("core/word_semantics.zig").pending(self, id)) |pending| {
+                self.pending = pending;
+                return;
+            }
             if (id >= self.builtin_count) return self.handleWord(id);
             // Defining words are dictionary words, found through the search order. One
             // compiled into a definition reads its name when that runs; interpreted, it
@@ -1094,19 +1100,6 @@ pub const State = struct {
         if (asciiEqlIgnoreCase(token, "POSTPONE")) {
             if (!self.compiling) return error.CompileOnly;
             self.pending = .postpone_name;
-            return;
-        }
-        // IS sets a DEFER as TO sets a VALUE; in gforth both work on either.
-        if (asciiEqlIgnoreCase(token, "TO") or asciiEqlIgnoreCase(token, "IS")) {
-            self.pending = .to_name;
-            return;
-        }
-        if (asciiEqlIgnoreCase(token, "+TO")) {
-            self.pending = .plus_to_name;
-            return;
-        }
-        if (asciiEqlIgnoreCase(token, "ACTION-OF")) {
-            self.pending = .action_of_name;
             return;
         }
         if (asciiEqlIgnoreCase(token, "FORGET")) {
@@ -1205,8 +1198,9 @@ pub const State = struct {
     pub const fetchLocal = local_variables.fetchLocal;
 
     fn handleWord(self: *State, id: u16) RuntimeError!void {
-        if (self.compiling and !self.words[id].immediate) {
-            try self.compileCall(id);
+        const action = @import("core/word_semantics.zig").compilation(self, id);
+        if (self.compiling and !action.execute) {
+            try self.compileCall(action.target);
         } else {
             // ~~VARIABLE: a use of the name outside a definition is shown at once.
             if (self.isWatchedVariable(id)) try words_debug.watchStore(self, id, self.words[id].name_len);
@@ -1214,7 +1208,7 @@ pub const State = struct {
             // definition is interpreting this text (EVALUATE, INCLUDED): then the
             // caller is the one that called that word.
             if (defs.debug_enabled and self.call_depth == 0) self.outer_pc = 0;
-            try self.executeWord(id);
+            try self.executeWord(if (self.compiling) action.target else id);
         }
     }
 

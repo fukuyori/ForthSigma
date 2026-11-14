@@ -972,6 +972,14 @@ pub const Builtin = enum {
     at_deltaxy,
     fkey_dot,
     simple_fkey_string,
+    assign_to,
+    assign_is,
+    assign_plus_to,
+    assignment_action_of,
+    compile_assign_to,
+    compile_assign_is,
+    compile_assign_plus_to,
+    compile_assignment_action_of,
 };
 
 pub const HeapResult = union(enum) { address: Cell, no_memory, bad_pointer };

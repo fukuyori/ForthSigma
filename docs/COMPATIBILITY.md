@@ -237,3 +237,7 @@ FPATH is now supported (2026-11-14): empty/unset deliberately preserves Sigma di
 P06b pipes use the approved one-way R/O/W/O subset (R/W rejected) and Sigma errno EPIPE (-544) for BROKEN-PIPE-ERROR, differing from designated Gforth (-2049). CLOSE-PIPE returns native status/ior and leaves $? unchanged; resource-kind close mismatches are rejected. Native Windows/Linux verification remains695 under607. [Details](P06_IMPLEMENTATION.md).
 
 P06c adds ten EKEYS constants and five terminal/key words. Approved change: EKEY EOF now returns K-EOF; KEY retains -262, KEY-IOR returns -512 at EOF and EKEY? is false. GRAPHICS/plain control-byte values are unchanged. FORM uses24/80 fallback or1/max-signed-cell for capture; AT-DELTAXY is unsupported(-21) during string capture. Names/modifier formatting match the recorded standard table. Windows/Linux native verification is696 under607. [Details](P06_IMPLEMENTATION.md).
+
+## P07 prework (457)
+
+IS/ACTION-OF/TO/+TO are dictionary words with separate interpretation and compilation actions. Tick/EXECUTE, POSTPONE, NAME>COMPILE, SYNONYM, shadowing and image round trips are supported. Sigma retains IS on FVALUE/2VALUE/$VALUE and InvalidDefinition(-259) for unsupported targets/missing names; these differ from designated Gforth. Comparison:51 matching cases plus12 approved difference checks; native SAVE/LOAD and SAVESYS2 checks. Normal/minimal tests and build pass. Previous builtin ABI images are rejected. [Details](P07_IMPLEMENTATION.md).

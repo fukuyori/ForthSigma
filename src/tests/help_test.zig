@@ -121,7 +121,7 @@ test "HELP shows the basic help, a word's description, or where to look for a de
     try std.testing.expectEqual(@as(usize, 0), output.input_index);
     output.len = 0;
     try machine.interpretLine("help dup HELP to : SQ DUP * ; HELP sq");
-    try std.testing.expectEqualStrings("DUP ( x -- x x )\n  Copy the top cell.\nTO ( x \"name\" -- )\n  Change a VALUE or a local variable.\n" ++
+    try std.testing.expectEqualStrings("DUP ( x -- x x )\n  Copy the top cell.\nTO ( x \"name\" -- )\n  Change a value, DEFER action, or compiled local. Tick executes interpretation even during compilation; POSTPONE selects compilation.\n" ++
         (if (@import("build_options").tools) "SQ is a word defined after start-up; SEE SQ shows its definition.\n" else "SQ is a word defined after start-up.\n"), output.written());
     try std.testing.expectError(error.UnknownWord, machine.interpretLine("HELP NO-SUCH-WORD"));
     machine.report(error.UnknownWord);

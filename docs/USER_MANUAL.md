@@ -472,7 +472,7 @@ A user-defined word is made with `: name ... ;`. Word names are matched by the w
 | `DEFER!`, `DEFER@` | ( xt2 xt1 -- ), ( xt1 -- xt2 ) | Set, or fetch, the action of the DEFER word given by an execution token. |
 | `DEFERS name` | ( -- ) | Inside a definition, compile the word that the DEFER word runs at that time. It is an error for a DEFER whose action has not been set (gforth compiles a word that prints a warning). |
 | `COMPILE,` | ( xt -- ) | Append the execution of xt to the definition being compiled. |
-| `[COMPILE] name` | ( -- ) | Append the execution of name to the definition being compiled (also for an immediate word). It cannot be used for local variables or for parsing words that are not in a word list, such as `S"` and `TO`. |
+| `[COMPILE] name` | ( -- ) | Append execution of an ordinary or immediate word. For TO/IS/+TO/ACTION-OF, select compilation behavior. Local variables and syntax absent from the dictionary remain unavailable. |
 | `NAME>COMPILE` | ( nt -- xt1 xt2 ) | Running xt2 on xt1 compiles the name (xt2 is `COMPILE,`, or `EXECUTE` for an immediate word). |
 | `value +TO name` | ( n -- ) | Add a value to a VALUE or a local variable (a floating-point number for an FVALUE or a floating-point local variable, a double-cell integer for a 2VALUE or a double-cell local variable). |
 | `PERFORM`, `NOOP` | ( addr -- ), ( -- ) | `PERFORM` runs the execution token stored at addr (`@ EXECUTE`). `NOOP` does nothing. |
@@ -887,7 +887,7 @@ When exchanging saved images with versions from before short-call inlining, `SEE
 | `>NAME` | ( xt -- nt \| 0 ) | The name token of the word with that execution token; 0 when it has no name. |
 | `ID.`, `.NAME` | ( nt -- ) | Show the name of the word, and a space. The two are the same. |
 | `ALIAS` | ( xt "name" -- ) | Define name to do what xt does; `' name` gives xt. The new word is not immediate. |
-| `FIND` | ( c-addr -- c-addr 0 \| xt 1 \| xt -1 ) | Find the name given as a counted string. 1 for an immediate word, -1 for others. Parsing words such as `:` and `TO` are not found. |
+| `FIND` | ( c-addr -- c-addr 0 \| xt 1 \| xt -1 ) | Find the name given as a counted string. 1 for an immediate word, -1 for others. TO, IS, +TO and ACTION-OF are searchable dictionary words with immediate flag1. |
 | `PARSE` | ( c -- addr u ) | Return the rest of the input up to the character c. |
 | `SOURCE` | ( -- addr u ) | The address and length of the current input line (the string, for `EVALUATE`). |
 | `>IN` | ( -- addr ) | The address of the cell that holds the position to read next in the input line (bytes from the start). Changing it moves the reading position (a value at or beyond the length of the line skips the rest of the line, and a negative value gives `STRING TOO LONG !`). |
@@ -935,7 +935,7 @@ Words belong to word lists, and they are looked up in the word lists arranged in
 | `[BEGIN]` … `[UNTIL]`, `[AGAIN]`, `[WHILE]` … `[REPEAT]` | ( flag -- ) and so on | Indefinite loops while interpreting. |
 | `[FOR]` … `[NEXT]` | ( n -- ) | Repeat n+1 times, with the index going down from n to 0. |
 
-The search order has up to 16 entries. `WORDS` shows only the words of the first word list in the search order. Even after `ONLY`, `FORTH`, `ONLY`, `ALSO`, `ORDER`, and the like can be used. Parsing words such as `:` and `TO` can always be used, whatever the search order.
+The search order has up to 16 entries. `WORDS` shows only the words of the first word list in the search order. Even after `ONLY`, `FORTH`, `ONLY`, `ALSO`, `ORDER`, and the like can be used. TO, IS, +TO and ACTION-OF follow the search order and can be shadowed by new definitions.
 
 ## Loading source files
 
@@ -1013,7 +1013,7 @@ The generated file starts with that dictionary and takes the same command-line a
 
 ## Registered words
 
-The following table lists the built-in words that are registered in the dictionary at start-up and listed by `WORDS`. Parsing words such as `TO`, `S"`, and `{` are listed separately in "Syntax and defining forms" below. Words defined by the user are not included in this table.
+The following table lists the built-in words registered at start-up and listed by `WORDS`. Usage forms for parsing words also appear under "Syntax and defining forms" below. User definitions are not included.
 
 | Category | Registered words |
 | --- | --- |
@@ -1025,7 +1025,7 @@ The following table lists the built-in words that are registered in the dictiona
 | Loops | `I`, `J`, `K`, `LEAVE`, `UNLOOP` |
 | Input and output | `.`, `U.`, `.R`, `U.R`, `C.`, `.S`, `ECHO`, `EMIT`, `CR`, `SPACE`, `SPCES`, `SPACES`, `TYPE`, `INPUT`, `EMIT?` |
 | Number base | `HEX`, `DEC`, `DECIMAL`, `OCT`, `BASE` |
-| Definition helpers, dictionary, and execution | `<BUILDS`, `CREATE`, `IMMEDIATE`, `WORDS`, `BYE`, `LOAD-DICTIONARY`, `SAVE`, `SAVESYS`, `EXECUTE`, `SEE`, `FIND`, `FIND-NAME`, `NAME>INT`, `NAME>STRING`, `MARKER`, `LOCATE`, `WHERE`, `PERFORM`, `NOOP`, `DEFER`, `DEFER!`, `DEFER@`, `DEFERS`, `COMPILE,`, `[COMPILE]`, `NAME>COMPILE`, `BEGIN-STRUCTURE`, `END-STRUCTURE`, `+FIELD`, `FIELD:`, `CFIELD:`, `FFIELD:`, `SFFIELD:`, `DFFIELD:`, `STRUCT`, `FIELD`, `END-STRUCT`, `CELL%`, `CHAR%`, `FLOAT%`, `DOUBLE%`, `SFLOAT%`, `DFLOAT%`, `%SIZE`, `%ALIGNMENT`, `%ALIGN`, `%ALLOT`, `%ALLOC`, `%ALLOCATE`, `LATEST`, `LATESTXT`, `>NAME`, `ID.`, `.NAME`, `ALIAS` |
+| Definition helpers, dictionary, and execution | `<BUILDS`, `CREATE`, `IMMEDIATE`, `WORDS`, `BYE`, `LOAD-DICTIONARY`, `SAVE`, `SAVESYS`, `EXECUTE`, `SEE`, `FIND`, `FIND-NAME`, `NAME>INT`, `NAME>STRING`, `MARKER`, `LOCATE`, `WHERE`, `PERFORM`, `NOOP`, `DEFER`, `DEFER!`, `DEFER@`, `DEFERS`, `COMPILE,`, `[COMPILE]`, `NAME>COMPILE`, `TO`, `IS`, `+TO`, `ACTION-OF`, `BEGIN-STRUCTURE`, `END-STRUCTURE`, `+FIELD`, `FIELD:`, `CFIELD:`, `FFIELD:`, `SFFIELD:`, `DFFIELD:`, `STRUCT`, `FIELD`, `END-STRUCT`, `CELL%`, `CHAR%`, `FLOAT%`, `DOUBLE%`, `SFLOAT%`, `DFLOAT%`, `%SIZE`, `%ALIGNMENT`, `%ALIGN`, `%ALLOT`, `%ALLOC`, `%ALLOCATE`, `LATEST`, `LATESTXT`, `>NAME`, `ID.`, `.NAME`, `ALIAS` |
 | Control structures (immediate words) | `IF`, `ELSE`, `AHEAD`, `THEN`, `CS-PICK`, `CS-ROLL`, `ENDIF`, `BEGIN`, `END`, `UNTIL`, `AGAIN`, `WHILE`, `REPEAT`, `DO`, `?DO`, `LOOP`, `+LOOP`, `DOES>`, `CASE`, `OF`, `?OF`, `ENDOF`, `CONTOF`, `ENDCASE`, `NEXT-CASE`, `EXIT`, `?EXIT`, `?LEAVE`, `RECURSE` |
 | Floating-point stack | `FDROP`, `FDUP`, `FSWAP`, `FOVER`, `FROT`, `F-ROT`, `FNIP`, `FTUCK`, `FPICK`, `FDEPTH`, `F.S` |
 | Floating-point arithmetic and functions | `F+`, `F-`, `F*`, `F/`, `FNEGATE`, `FMINUS`, `FABS`, `FMAX`, `FMIN`, `FSQRT`, `FEXP`, `FLN`, `FSIN`, `FCOS`, `FTAN`, `FSINCOS`, `FASIN`, `FACOS`, `FATAN`, `FATAN2`, `FSINH`, `FCOSH`, `FTANH`, `FASINH`, `FACOSH`, `FATANH`, `FEXPM1`, `FLNP1`, `FLOG`, `FALOG`, `F**`, `FLOOR`, `FTRUNC`, `FROUND` |
@@ -1048,7 +1048,7 @@ At start-up, the Forth word list has **578** built-in words (aliases such as `MI
 
 ### Syntax and defining forms
 
-The following are syntax forms that can be used in Forth input, but they are not built-in dictionary words listed by `WORDS`.
+The following are usage forms in Forth input, including registered parsing words such as TO, IS, +TO and ACTION-OF.
 
 | Kind | Words and forms | Description |
 | --- | --- | --- |
@@ -1313,3 +1313,9 @@ EKEYS adds K-ENTER, K-WINCH, K-PAUSE, K-MUTE, K-VOLUP, K-VOLDOWN, K-BACKSPACE, K
 | AT-DELTAXY | `( dx dy -- )` | ANSI relative movement, horizontal then vertical; string capture THROWs -21. |
 
 EKEY now returns K-EOF at EOF; KEY keeps its existing -262 error and EKEY? stays false. Unicode and file/pipe byte3 behavior are unchanged. Names require no heap allocation and must not be modified or FREEd. POSIX resize handling preserves sigaction and restarts ordinary byte/line reads; native Windows/Linux checks remain deferred. [Details](P06_IMPLEMENTATION.md).
+
+## P07 prework: dictionary assignment words
+
+TO, IS, +TO and ACTION-OF are dictionary words supporting lookup, SYNONYM, redefinition and search order. Tokens from tick, bracket-tick and NAME>INTERPRET always execute interpretation, even during compilation. POSTPONE, NAME>COMPILE and [COMPILE] select compilation actions. COMPILE, directly compiles execution of the supplied interpretation token.
+
+Existing Sigma IS assignments to FVALUE, 2VALUE and $VALUE and existing error codes are retained; ACTION-OF remains DEFER-only. Image framing remains SIGIMG45/46/47, but the builtin ABI changes: recreate images made with the previous ABI. [Implementation and validation](P07_IMPLEMENTATION.md).

@@ -465,7 +465,7 @@ BIGNUM 2@ D.                                      \ 30792422974944119506
 | `DEFER!`, `DEFER@` | ( xt2 xt1 -- )、( xt1 -- xt2 ) | 実行トークンで指定したDEFERの語の動作を設定し、または取り出します。 |
 | `DEFERS 名前` | ( -- ) | 定義の中で、DEFERの語がそのとき実行する語を埋め込みます。動作を決めていないDEFERではエラーです（Gforthは警告を出す語を埋め込みます）。 |
 | `COMPILE,` | ( xt -- ) | 作成中の定義に、xtの実行を加えます。 |
-| `[COMPILE] 名前` | ( -- ) | 作成中の定義に、名前の実行を加えます（即時語でも）。ローカル変数と、`S"` `TO` のような語彙にない構文語には使えません。 |
+| `[COMPILE] 名前` | ( -- ) | 通常語・即時語の実行を定義へ追加します。TO・IS・+TO・ACTION-OFにはコンパイル動作を選びます。ローカル変数や辞書にない構文には使えません。 |
 | `NAME>COMPILE` | ( nt -- xt1 xt2 ) | xt1に対してxt2を実行すると名前をコンパイルできます（xt2は `COMPILE,`、即時語では `EXECUTE`）。 |
 | `値 +TO 名前` | ( n -- ) | VALUEやローカル変数に値を足します（FVALUEと浮動小数点のローカル変数は浮動小数点数、2VALUEと倍長のローカル変数は倍長整数）。 |
 | `PERFORM`, `NOOP` | ( addr -- )、( -- ) | `PERFORM` はaddrにある実行トークンを実行します（`@ EXECUTE`）。`NOOP` は何もしません。 |
@@ -880,7 +880,7 @@ SHOW ANSWER                        \ 42
 | `>NAME` | ( xt -- nt \| 0 ) | その実行トークンを持つ語の名前トークンを返します。名前がなければ0です。 |
 | `ID.`, `.NAME` | ( nt -- ) | 語の名前と空白1つを表示します。2つは同じです。 |
 | `ALIAS` | ( xt "name" -- ) | xt と同じことをする語 name を定義します。`' name` は xt を返します。新しい語は即時語になりません。 |
-| `FIND` | ( c-addr -- c-addr 0 \| xt 1 \| xt -1 ) | 数え付き文字列の名前を探します。即時語なら1、それ以外は-1です。`:` や `TO` などの構文語は見つかりません。 |
+| `FIND` | ( c-addr -- c-addr 0 \| xt 1 \| xt -1 ) | 数え付き文字列の名前を探します。即時語なら1、それ以外は-1です。TO・IS・+TO・ACTION-OFも辞書検索でき、即時フラグ1を返します。 |
 | `PARSE` | ( c -- addr u ) | 入力の続きを文字cの手前まで返します。 |
 | `SOURCE` | ( -- addr u ) | 今の入力行（`EVALUATE` では文字列）のアドレスと長さです。 |
 | `>IN` | ( -- addr ) | 入力行の中で次に読む位置（先頭からのバイト数）を持つセルのアドレスです。書き換えると、読む位置が変わります（行の長さ以上なら行の残りを読み飛ばし、負の値は `STRING TOO LONG !`）。 |
@@ -928,7 +928,7 @@ UTIL >ORDER 5 TWICE .   \ 10
 | `[BEGIN]` … `[UNTIL]`, `[AGAIN]`, `[WHILE]` … `[REPEAT]` | ( flag -- ) など | 解釈中の不定回の繰り返しです。 |
 | `[FOR]` … `[NEXT]` | ( n -- ) | 添字をnから0まで減らしながら、n+1回繰り返します。 |
 
-検索順序は16段までです。`WORDS` は検索順序の先頭の語彙の語だけを表示します。`ONLY` の後でも `FORTH` `ONLY` `ALSO` `ORDER` などは使えます。`:` や `TO` などの構文語は、検索順序によらずいつでも使えます。
+検索順序は16段までです。`WORDS` は検索順序の先頭の語彙の語だけを表示します。`ONLY` の後でも `FORTH` `ONLY` `ALSO` `ORDER` などは使えます。TO・IS・+TO・ACTION-OFは検索順序に従い、同名の定義で上書きできます。
 
 ## ソースファイルの読み込み
 
@@ -1005,7 +1005,7 @@ SAVESYS demo.exe
 
 ## 登録済みワード一覧
 
-次の表は、起動時に辞書へ登録され、`WORDS`で表示される組み込みワードです。`TO`、`S"`、`{` などの構文語は別途、次の「構文・定義形式」に記載します。利用者が定義した語は、この表には含まれません。
+次の表は、起動時に辞書へ登録され、`WORDS`で表示される組み込みワードです。名前を解析する語の使用形式は、次の「構文・定義形式」にも記載します。利用者の定義は含みません。
 
 | 分類 | 登録語 |
 | --- | --- |
@@ -1017,7 +1017,7 @@ SAVESYS demo.exe
 | ループ関連 | `I`, `J`, `K`, `LEAVE`, `UNLOOP` |
 | 入出力 | `.`, `U.`, `.R`, `U.R`, `C.`, `.S`, `ECHO`, `EMIT`, `CR`, `SPACE`, `SPCES`, `SPACES`, `TYPE`, `INPUT`, `EMIT?` |
 | 基数 | `HEX`, `DEC`, `DECIMAL`, `OCT`, `BASE` |
-| 定義補助・辞書・実行 | `<BUILDS`, `CREATE`, `IMMEDIATE`, `WORDS`, `BYE`, `LOAD-DICTIONARY`, `SAVE`, `SAVESYS`, `EXECUTE`, `SEE`, `FIND`, `FIND-NAME`, `NAME>INT`, `NAME>STRING`, `MARKER`, `LOCATE`, `WHERE`, `PERFORM`, `NOOP`, `DEFER`, `DEFER!`, `DEFER@`, `DEFERS`, `COMPILE,`, `[COMPILE]`, `NAME>COMPILE`, `BEGIN-STRUCTURE`, `END-STRUCTURE`, `+FIELD`, `FIELD:`, `CFIELD:`, `FFIELD:`, `SFFIELD:`, `DFFIELD:`, `STRUCT`, `FIELD`, `END-STRUCT`, `CELL%`, `CHAR%`, `FLOAT%`, `DOUBLE%`, `SFLOAT%`, `DFLOAT%`, `%SIZE`, `%ALIGNMENT`, `%ALIGN`, `%ALLOT`, `%ALLOC`, `%ALLOCATE`, `LATEST`, `LATESTXT`, `>NAME`, `ID.`, `.NAME`, `ALIAS` |
+| 定義補助・辞書・実行 | `<BUILDS`, `CREATE`, `IMMEDIATE`, `WORDS`, `BYE`, `LOAD-DICTIONARY`, `SAVE`, `SAVESYS`, `EXECUTE`, `SEE`, `FIND`, `FIND-NAME`, `NAME>INT`, `NAME>STRING`, `MARKER`, `LOCATE`, `WHERE`, `PERFORM`, `NOOP`, `DEFER`, `DEFER!`, `DEFER@`, `DEFERS`, `COMPILE,`, `[COMPILE]`, `NAME>COMPILE`, `TO`, `IS`, `+TO`, `ACTION-OF`, `BEGIN-STRUCTURE`, `END-STRUCTURE`, `+FIELD`, `FIELD:`, `CFIELD:`, `FFIELD:`, `SFFIELD:`, `DFFIELD:`, `STRUCT`, `FIELD`, `END-STRUCT`, `CELL%`, `CHAR%`, `FLOAT%`, `DOUBLE%`, `SFLOAT%`, `DFLOAT%`, `%SIZE`, `%ALIGNMENT`, `%ALIGN`, `%ALLOT`, `%ALLOC`, `%ALLOCATE`, `LATEST`, `LATESTXT`, `>NAME`, `ID.`, `.NAME`, `ALIAS` |
 | 制御構造（即時語） | `IF`, `ELSE`, `AHEAD`, `THEN`, `CS-PICK`, `CS-ROLL`, `ENDIF`, `BEGIN`, `END`, `UNTIL`, `AGAIN`, `WHILE`, `REPEAT`, `DO`, `?DO`, `LOOP`, `+LOOP`, `DOES>`, `CASE`, `OF`, `?OF`, `ENDOF`, `CONTOF`, `ENDCASE`, `NEXT-CASE`, `EXIT`, `?EXIT`, `?LEAVE`, `RECURSE` |
 | 浮動小数点スタック | `FDROP`, `FDUP`, `FSWAP`, `FOVER`, `FROT`, `F-ROT`, `FNIP`, `FTUCK`, `FPICK`, `FDEPTH`, `F.S` |
 | 浮動小数点算術・関数 | `F+`, `F-`, `F*`, `F/`, `FNEGATE`, `FMINUS`, `FABS`, `FMAX`, `FMIN`, `FSQRT`, `FEXP`, `FLN`, `FSIN`, `FCOS`, `FTAN`, `FSINCOS`, `FASIN`, `FACOS`, `FATAN`, `FATAN2`, `FSINH`, `FCOSH`, `FTANH`, `FASINH`, `FACOSH`, `FATANH`, `FEXPM1`, `FLNP1`, `FLOG`, `FALOG`, `F**`, `FLOOR`, `FTRUNC`, `FROUND` |
@@ -1040,7 +1040,7 @@ SAVESYS demo.exe
 
 ### 構文・定義形式
 
-以下はForth入力で使える構文ですが、`WORDS`が列挙する組み込み辞書語ではありません。
+以下はForth入力での使用形式です。TO・IS・+TO・ACTION-OFなど、辞書に登録された解析語も含みます。
 
 | 種類 | 語・形式 | 説明 |
 | --- | --- | --- |
@@ -1305,3 +1305,9 @@ EKEYSにK-ENTER・K-WINCH・K-PAUSE・K-MUTE・K-VOLUP・K-VOLDOWN・K-BACKSPACE
 | AT-DELTAXY | `( dx dy -- )` | 水平→垂直のANSI相対移動。文字列キャプチャ中は-21。 |
 
 承認方針によりEKEYのEOFはK-EOFへ変更しました。KEYの既存エラー-262と、EOFでのEKEY?の偽は維持します。Unicodeやファイル・パイプのバイト3の扱いも維持します。名前はヒープ確保せず、書換え・FREEはしません。POSIXのリサイズ処理は元のsigactionを復元し、通常の文字・行入力を中断しません。Windows/Linux実機確認は別管理です。[記録](P06_IMPLEMENTATION.md)。
+
+## P07先行：代入語の辞書化
+
+TO・IS・+TO・ACTION-OFは辞書に登録され、通常入力、検索、SYNONYM、再定義に対応します。`'`・`[']`・NAME>INTERPRETで得たトークンは、コンパイル中でもその場で解釈動作を実行します。POSTPONE・NAME>COMPILE・[COMPILE]はコンパイル動作を選びます。COMPILE,は渡された解釈用トークンの実行をそのまま組み込みます。
+
+既存SigmaのISによるFVALUE・2VALUE・$VALUE代入とエラー番号を維持します。ACTION-OFはDEFER専用です。保存形式名はSIGIMG45/46/47のままですが、組み込みABIが変わるため、以前のABIのイメージは作り直してください。[実装と検証](P07_IMPLEMENTATION.md)。
