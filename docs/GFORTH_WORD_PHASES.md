@@ -332,7 +332,7 @@ V . DEPTH .
 
 ### P08 辞書と定義機能
 
-名前トークンと語彙を基盤に、定義名の指定、アドレス可能な値、遅延語を追加する。P08a23/23語・P08b6/6語、全体29/29語を実装完了。551は完了(auto)。P08のClaude Codeレビューと指摘修正も完了（700、auto）。[レビュー記録](P08_REVIEW.md)。次の実装候補は576 P09a。[実装記録](P08_IMPLEMENTATION.md)。
+名前トークンと語彙を基盤に、定義名の指定、アドレス可能な値、遅延語を追加する。P08a23/23語・P08b6/6語、全体29/29語を実装完了。551は完了(auto)。P08のClaude Codeレビューと指摘修正も完了（700、auto）。[レビュー記録](P08_REVIEW.md)。P09aも完了し、次は577 P09b。[実装記録](P08_IMPLEMENTATION.md)。
 
 #### P08a 名前トークンと語彙
 
@@ -352,11 +352,11 @@ V . DEPTH .
 
 ### P09 診断と開発支援
 
-例外診断、アサーション、位置情報の表示を既存デバッガーに接続する。
+例外診断、アサーション、位置情報の表示を既存デバッガーに接続する。P09a15/15語を実装、P09全体15/50語。次は577（P09b）。[実装記録](P09_IMPLEMENTATION.md)。
 
 #### P09a 例外とアサーション
 
-対象 15語。tque ID: 576。
+対象 15語。tque ID: 576。実装・検証完了（auto）。
 
 `)`, `?ERRNO-THROW`, `?IOR`, `ASSERT-LEVEL`, `ASSERT0(`, `ASSERT1(`, `ASSERT2(`, `ASSERT3(`, `CATCH-NOBT`, `EXCEPTION`, `EXCEPTIONS`, `FAST-THROW`, `NOTHROW`, `WARNING"`, `WARNINGS`
 

@@ -61,7 +61,7 @@ const tool_builtins = builtinSet(&.{&.{ .see, .locate, .where }});
 const image_builtins = builtinSet(&.{&.{ .load, .save, .savesys }});
 const graphics_builtins = builtinSet(&.{&@import("words_graphics.zig").words});
 const audio_builtins = builtinSet(&.{&@import("words_audio.zig").words});
-const debug_builtins = builtinSet(&.{&@import("words_debug.zig").words});
+const debug_builtins = builtinSet(&.{ &@import("words_debug.zig").words, &.{ .assert_close, .assert_level, .assert_zero, .assert_one, .assert_two, .assert_three } });
 
 const excluded_builtins = blk: {
     var table: [builtin_count]bool = undefined;
@@ -1054,6 +1054,22 @@ pub const Builtin = enum {
     colon_is,
     preserve,
     wrap_xt,
+    assert_close,
+    errno_throw,
+    question_ior,
+    assert_level,
+    assert_zero,
+    assert_one,
+    assert_two,
+    assert_three,
+    catch_nobt,
+    exception_word,
+    exceptions_word,
+    fast_throw,
+    nothrow,
+    warning_quote,
+    warnings,
+    warning_run,
 };
 
 pub const HeapResult = union(enum) { address: Cell, no_memory, bad_pointer };
@@ -1098,7 +1114,7 @@ pub const error_codes = [_]struct { RuntimeError, Cell }{
     .{ error.NoCanvas, -271 },              .{ error.UserInterrupt, -28 },           .{ error.FontUnavailable, -272 },
     .{ error.TclFailed, -273 },             .{ error.InvalidMml, -274 },             .{ error.AudioUnavailable, -275 },
     .{ error.SampleInvalid, -276 },         .{ error.ModInvalid, -277 },             .{ error.InvalidImageHandle, -278 },
-    .{ error.ImageInvalid, -279 },          .{ error.StepLimit, -280 },
+    .{ error.ImageInvalid, -279 },          .{ error.StepLimit, -280 },              .{ error.WarningError, -281 },
 };
 
 pub const throw_code_undefined_word: Cell = -13;
@@ -1123,7 +1139,7 @@ pub const CatchFrame = struct {
     next_name: [@import("memory_map.zig").max_name]u8,
 };
 
-pub const WordKind = enum { builtin, colon, variable, constant, array, created, value, fconstant, fvalue, two_constant, two_value, marker, vocabulary, synonym, deferred, field, string_value, forward };
+pub const WordKind = enum { builtin, colon, variable, constant, array, created, value, fconstant, fvalue, two_constant, two_value, marker, vocabulary, synonym, deferred, field, string_value, forward, exception_entry };
 
 pub const Word = struct {
     /// Where the name is in `State.names`.
@@ -1363,6 +1379,7 @@ pub const RuntimeError = error{
     ImageInvalid,
     /// Compiled code ran more operations than --max-steps allows; CATCH does not catch it.
     StepLimit,
+    WarningError,
 };
 
 pub fn floatBits(value: Float) Cell {

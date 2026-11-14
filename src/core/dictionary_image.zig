@@ -96,6 +96,13 @@ pub fn restoreFreshImage(self: *State, image: []const u8) RuntimeError!void {
 
 pub fn appendImage(self: *State, source: *const State) RuntimeError!void {
     if (self == source) return error.InvalidImage;
+    const exceptions = @import("exception_registry.zig");
+    try exceptions.validateState(self);
+    try exceptions.validateState(source);
+    for (source.words[0..source.word_count]) |word| if (word.kind == .exception_entry) {
+        const record = try exceptions.read(source, word);
+        try exceptions.checkRange(self, record.first, record.count);
+    };
     const registry = @import("address_registry.zig");
     try registry.validate(self);
     var graph: @import("image_graph.zig").Graph = undefined;
@@ -175,7 +182,7 @@ pub fn appendImage(self: *State, source: *const State) RuntimeError!void {
             word.does_code_start = @intCast(@as(usize, word.does_code_start) + code_base);
             word.does_code_end = @intCast(@as(usize, word.does_code_end) + code_base);
         }
-        if (word.kind == .variable or word.kind == .array or word.kind == .created or word.kind == .value or word.kind == .fvalue or word.kind == .two_constant or word.kind == .two_value or word.kind == .marker or word.kind == .deferred or word.kind == .string_value)
+        if (word.kind == .variable or word.kind == .array or word.kind == .created or word.kind == .value or word.kind == .fvalue or word.kind == .two_constant or word.kind == .two_value or word.kind == .marker or word.kind == .deferred or word.kind == .string_value or word.kind == .exception_entry)
             word.value += data_delta;
         self.words[word_base + offset] = word;
     }
@@ -219,11 +226,13 @@ pub fn appendImage(self: *State, source: *const State) RuntimeError!void {
     @memcpy(self.memory[data_to .. data_to + length], source.memory[data_from .. data_from + length]);
     // A loaded DEFER whose action is a loaded word follows that word's new number.
     for (self.words[word_base .. word_base + added_words]) |word| {
-        if (word.kind != .deferred) continue;
-        const action = self.readCellConst(word.value);
+        if (word.kind != .deferred and word.kind != .exception_entry) continue;
+        const slot = word.value + @as(Cell, if (word.kind == .exception_entry) 16 else 0);
+        const action = self.readCellConst(slot);
         if (action >= source.builtin_count and action < source.word_count)
-            try self.writeCell(word.value, @intCast(word_base + @as(usize, @intCast(action - source.builtin_count))));
+            try self.writeCell(slot, @intCast(word_base + @as(usize, @intCast(action - source.builtin_count))));
     }
+    try self.writeCell(memory_map.exception_next_address, @min(self.readCellConst(memory_map.exception_next_address), source.readCellConst(memory_map.exception_next_address)));
     // A loaded MARKER keeps this dictionary's REQUIRE history plus the files the saved
     // one had loaded, and its word lists are renumbered like the words.
     for (self.words[word_base .. word_base + added_words]) |word| {

@@ -19,7 +19,7 @@ pub const words = [_]defs.Builtin{ .quote_open, .quote_close, .noname, .in_colon
 
 pub fn latest(self: *const forth.State) u16 {
     var id = self.word_count - 1;
-    while (id != 0 and self.words[id].quotation) id -= 1;
+    while (id != 0 and (self.words[id].quotation or self.words[id].kind == .exception_entry)) id -= 1;
     return id;
 }
 pub fn definitionName(self: *forth.State) forth.RuntimeError!?[]const u8 {

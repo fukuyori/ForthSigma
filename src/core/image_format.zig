@@ -335,6 +335,7 @@ fn validateWords(v: View) RuntimeError!void {
         }
     }
     if (next != v.names.len) return error.InvalidImage;
+    try validateExceptions(v);
 }
 fn validateCode(v: View) RuntimeError!void {
     for (0..v.header.code_count) |i| {
@@ -441,4 +442,37 @@ fn layoutSignature() u64 {
 }
 fn hashValue(hash: *u64, value: u64) void {
     for (0..8) |i| hash.* = (hash.* ^ @as(u8, @truncate(value >> @as(u6, @intCast(i * 8))))) *% 1099511628211;
+}
+
+fn exceptionCell(v: View, address: map.Cell) map.Cell {
+    const at: usize = @intCast(if (address < map.system_end) address else map.system_end + address - map.data_start);
+    return get(map.Cell, v.memory[at..]);
+}
+fn validateExceptions(v: View) RuntimeError!void {
+    const registry = @import("exception_registry.zig");
+    const next = exceptionCell(v, map.exception_next_address);
+    if (next > registry.first_code or next < registry.limit) return error.InvalidImage;
+    for (0..v.header.word_count) |i| {
+        const word = std.mem.bytesToValue(defs.Word, v.words[i * @sizeOf(defs.Word) ..][0..@sizeOf(defs.Word)]);
+        if (word.kind != .exception_entry) continue;
+        try dataCell(v, word.value, registry.header_size);
+        const first = exceptionCell(v, word.value);
+        const count = exceptionCell(v, word.value + 8);
+        const callback = exceptionCell(v, word.value + 16);
+        const length = std.math.cast(usize, exceptionCell(v, word.value + 24)) orelse return error.InvalidImage;
+        if (word.name_len != 0 or first > registry.first_code or first <= registry.limit or count < 1 or count > registry.capacity or first - count + 1 <= next or length > registry.max_text) return error.InvalidImage;
+        try dataCell(v, word.value + registry.header_size, length);
+        switch (word.builtin) {
+            .exception_word => if (callback != -1 or count != 1) return error.InvalidImage,
+            .exceptions_word => if (callback < 0 or callback >= v.header.word_count or length != 0) return error.InvalidImage,
+            else => return error.InvalidImage,
+        }
+        for (0..i) |j| {
+            const prior = std.mem.bytesToValue(defs.Word, v.words[j * @sizeOf(defs.Word) ..][0..@sizeOf(defs.Word)]);
+            if (prior.kind != .exception_entry) continue;
+            const pf = exceptionCell(v, prior.value);
+            const pc = exceptionCell(v, prior.value + 8);
+            if (pf >= first - count + 1 and first >= pf - pc + 1) return error.InvalidImage;
+        }
+    }
 }

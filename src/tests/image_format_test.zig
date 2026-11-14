@@ -53,6 +53,7 @@ fn fixture(kind: format.FileKind) !Fixture {
     // A raw cell with an address-looking value deliberately has no record.
     put(u64, bytes[memory_at + @as(usize, @intCast(map.system_end)) + 8 ..], @intCast(map.data_start + 8));
     put(u64, bytes[memory_at + @as(usize, @intCast(map.wordlist_count_address)) ..], @intCast(map.ekeys_wordlist));
+    put(map.Cell, bytes[memory_at + @as(usize, @intCast(map.exception_next_address)) ..], @import("../core/exception_registry.zig").first_code);
     const records_at = memory_at + @as(usize, @intCast(h.memory_bytes));
     const records = [_]format.Relocation{
         .{ .storage = .word, .target = .data, .word_id = 0, .target_offset = 8 },

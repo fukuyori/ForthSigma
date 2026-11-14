@@ -278,6 +278,9 @@ pub const csv_separator_address: Cell = 0x0d68;
 /// Bits wid-1 for persistent case sensitivity and table warning policy.
 pub const case_wordlists_address: Cell = 0x0d70;
 pub const silent_wordlists_address: Cell = 0x0d78;
+pub const warnings_address: Cell = 0x0d80;
+pub const assert_level_address: Cell = 0x0d88;
+pub const exception_next_address: Cell = 0x0d90;
 
 /// Dedicated borrowed >TIME&DATE&TZ text; no owned pointer or relocation root.
 pub const timezone_buffer_address: Cell = 0x0e00;

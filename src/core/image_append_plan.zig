@@ -28,6 +28,13 @@ pub fn prepare(state: *forth.State, bytes: []const u8, plan: *Plan) RuntimeError
     try registry.validate(state);
     const view = plan.image.view;
     const h = view.header;
+    try @import("exception_registry.zig").validateState(state);
+    for (h.builtin_count..h.word_count) |i| {
+        const word = @import("std").mem.bytesToValue(defs.Word, view.words[i * @sizeOf(defs.Word) ..][0..@sizeOf(defs.Word)]);
+        if (word.kind != .exception_entry) continue;
+        const at = map.system_end + word.value - map.data_start;
+        try @import("exception_registry.zig").checkRange(state, cell(view.memory, at), cell(view.memory, at + 8));
+    }
     const added_words = h.word_count - h.builtin_count;
     const added_names = h.names_used - plan.image.image_names;
     const added_data = @as(map.Cell, h.data_here) - map.data_start;
@@ -117,7 +124,7 @@ pub fn relocatedWord(plan: *const Plan, index: usize) RuntimeError!defs.Word {
         word.does_code_end += @intCast(plan.code_base);
     }
     switch (word.kind) {
-        .variable, .array, .created, .value, .fvalue, .two_constant, .two_value, .marker, .deferred, .string_value => word.value += plan.data_delta,
+        .variable, .array, .created, .value, .fvalue, .two_constant, .two_value, .marker, .deferred, .string_value, .exception_entry => word.value += plan.data_delta,
         else => {},
     }
     // Address constants use explicit type records; raw constants stay unchanged.

@@ -223,6 +223,9 @@ pub const State = struct {
     quote_closing: bool = false,
     quote_root: u16 = 0,
     image_generation: u64 = 0,
+    backtrace_suppression: usize = 0,
+    throw_nobt: bool = false,
+    assert_depth: usize = 0,
     wrap_guard: ?*@import("core/words_value_extensions.zig").Guard = null,
     colon_is_word: ?u16 = null,
     colon_is_target: u16 = 0,
@@ -458,6 +461,9 @@ pub const State = struct {
         self.writeCell(memory_map.csv_separator_address, 44) catch unreachable;
         self.writeCell(memory_map.case_wordlists_address, 0) catch unreachable;
         self.writeCell(memory_map.silent_wordlists_address, 0) catch unreachable;
+        self.writeCell(memory_map.warnings_address, -1) catch unreachable;
+        self.writeCell(memory_map.assert_level_address, 1) catch unreachable;
+        self.writeCell(memory_map.exception_next_address, @import("core/exception_registry.zig").first_code) catch unreachable;
         for (@import("core/standard_keys.zig").names, 0..) |name, index| {
             const at: usize = @intCast(memory_map.key_name_base + @as(Cell, @intCast(@import("core/standard_keys.zig").nameOffset(index))));
             @memcpy(self.memory[at..][0..name.len], name);
@@ -846,7 +852,11 @@ pub const State = struct {
         .{ "MAP-VOCS", .map_vocs },                   .{ "MWORDS", .mwords },                         .{ "NAME>LINK", .name_to_link },                    .{ "NEXTNAME", .nextname },                    .{ "OBSOLETE?", .obsolete_query },
         .{ "ROOT", .root_vocabulary },                .{ "SEAL", .seal },                             .{ "TABLE", .table_wordlist },                      .{ "VLIST", .vlist },                          .{ "VOCS", .vocs },
         .{ "WORDLIST-WORDS", .wordlist_words },       .{ "XT>NAME", .xt_to_name },                    .{ "AVALUE", .avalue },                             .{ "ADDRESSABLE:", .addressable },             .{ "ADDR", .addr },
-        .{ "", .compile_addr },                       .{ ":IS", .colon_is },                          .{ "PRESERVE", .preserve },                         .{ "WRAP-XT", .wrap_xt },                      .{ "\\\\\\", .triple_backslash },
+        .{ "", .compile_addr },                       .{ ":IS", .colon_is },                          .{ "PRESERVE", .preserve },                         .{ "WRAP-XT", .wrap_xt },                      .{ ")", .assert_close },
+        .{ "?ERRNO-THROW", .errno_throw },            .{ "?IOR", .question_ior },                     .{ "ASSERT-LEVEL", .assert_level },                 .{ "ASSERT0(", .assert_zero },                 .{ "ASSERT1(", .assert_one },
+        .{ "ASSERT2(", .assert_two },                 .{ "ASSERT3(", .assert_three },                 .{ "CATCH-NOBT", .catch_nobt },                     .{ "EXCEPTION", .exception_word },             .{ "EXCEPTIONS", .exceptions_word },
+        .{ "FAST-THROW", .fast_throw },               .{ "NOTHROW", .nothrow },                       .{ "WARNING\"", .warning_quote },                   .{ "WARNINGS", .warnings },                    .{ "", .warning_run },
+        .{ "\\\\\\", .triple_backslash },
     };
 
     fn installBuiltins(self: *State) void {
@@ -889,6 +899,7 @@ pub const State = struct {
 
     fn isCompileOnlyBuiltin(builtin: Builtin) bool {
         return switch (builtin) {
+            .warning_quote => true,
             .compile_if, .compile_else, .compile_ahead, .compile_then, .compile_begin, .compile_end, .compile_again, .compile_while, .compile_repeat, .compile_do, .compile_q_do, .compile_loop, .compile_plus_loop, .literal, .two_literal, .sliteral, .compile_case, .compile_of, .compile_question_of, .compile_endof, .compile_endcase, .compile_contof, .compile_next_case, .compile_exit, .end_definition, .leave, .question_leave, .question_exit, .recursive_word, .positive_do, .unsigned_positive_do, .negative_do, .unsigned_negative_do, .inclusive_negative_do, .unsigned_inclusive_negative_do, .negative_loop, .for_word, .next_word, .memory_up_do, .memory_down_do, .done, .question_dup_if, .question_dup_zero_if, .bracket_comp_tick, .execute_exit => true,
             else => false,
         };
@@ -896,6 +907,7 @@ pub const State = struct {
 
     fn isImmediateBuiltin(builtin: Builtin) bool {
         return switch (builtin) {
+            .assert_close, .assert_zero, .assert_one, .assert_two, .assert_three, .warning_quote => true,
             .addr, .preserve => true,
             .recursive_word, .positive_do, .unsigned_positive_do, .negative_do, .unsigned_negative_do, .inclusive_negative_do, .unsigned_inclusive_negative_do, .negative_loop, .for_word, .next_word, .memory_up_do, .memory_down_do, .done, .question_dup_if, .question_dup_zero_if, .quote_open, .quote_close, .postpone_open, .bracket_comp_tick, .execute_exit, .assign_to, .assign_is, .assign_plus_to, .assignment_action_of, .compile_if, .compile_else, .compile_ahead, .compile_then, .compile_begin, .compile_end, .compile_again, .compile_while, .compile_repeat, .compile_do, .compile_q_do, .compile_loop, .compile_plus_loop, .compile_does, .compile_case, .compile_of, .compile_endof, .compile_endcase, .compile_exit, .compile_recurse, .leave, .bracket_if, .bracket_else, .bracket_then, .bracket_defined, .bracket_undefined, .bracket_ifdef, .bracket_ifundef, .bracket_do, .bracket_q_do, .bracket_loop, .bracket_plus_loop, .bracket_i, .bracket_begin, .bracket_until, .bracket_again, .bracket_while, .bracket_repeat, .bracket_for, .bracket_next, .end_definition, .literal, .fliteral, .sliteral, .two_literal, .defers, .bracket_compile, .question_exit, .question_leave, .compile_question_of, .compile_contof, .compile_next_case, .debug_tilde, .assert_paren, .once, .debug_tilde_bt, .debug_tilde_one_bt, .break_colon, .break_quote, .triple_backslash => true,
             else => false,
@@ -923,7 +935,10 @@ pub const State = struct {
         const forward = @import("core/words_parsing.zig").unresolved(self, name, self.currentWordlist());
         if (forward != null and kind != .colon) return error.InvalidDefinition;
         if (forward == null and kind != .builtin and !wordlists.silent(self, self.currentWordlist()) and (if (wordlists.caseSensitive(self, self.currentWordlist())) self.lookupIn(name, self.currentWordlist()) else self.lookup(name)) != null) {
-            self.write("WARNING: SAME NAME WORD EXISTS\n");
+            if (self.readCellConst(memory_map.warnings_address) != 0) {
+                self.write("WARNING: SAME NAME WORD EXISTS\n");
+                if (self.readCellConst(memory_map.warnings_address) == -4) return error.WarningError;
+            }
         }
         return self.appendEntry(name, kind, builtin, value);
     }
@@ -932,6 +947,18 @@ pub const State = struct {
     pub fn appendAnonymousColon(self: *State) RuntimeError!u16 {
         if (self.word_count == max_words) return error.DictionaryFull;
         return self.appendEntry("", .colon, .drop, 0);
+    }
+
+    pub fn appendException(self: *State, size: Cell) RuntimeError!u16 {
+        if (self.word_count == max_words) return error.DictionaryFull;
+        const start = self.data_here;
+        try self.reserveData(size);
+        const id = self.appendEntry("", .exception_entry, .drop, start) catch |err| {
+            self.data_here = start;
+            return err;
+        };
+        self.words[id].data_here_before = start;
+        return id;
     }
 
     fn appendEntry(self: *State, name: []const u8, kind: WordKind, builtin: Builtin, value: Cell) RuntimeError!u16 {
@@ -1387,6 +1414,7 @@ pub const State = struct {
         }
         const word = self.words[id];
         switch (word.kind) {
+            .exception_entry => return error.InvalidExecutionToken,
             .forward => {
                 if (word.value < 0) return error.InvalidDefinition;
                 try self.executeWord(try self.wordId(word.value));
@@ -1502,10 +1530,15 @@ pub const State = struct {
 
     /// A CATCH of compiled code enters the existing loop, rather than nesting a host
     /// interpreter call (whose Debug stack frame alone can take several kilobytes).
-    fn enterCatch(self: *State, comptime counted: bool, running: *Running) RuntimeError!bool {
+    fn enterCatch(self: *State, comptime counted: bool, running: *Running, nobt: bool) RuntimeError!bool {
         const xt = try self.pop();
         var id = self.synonymTarget(try self.wordId(xt));
         const context = words_system.CatchContext.init(self);
+        var handed = false;
+        if (nobt) self.backtrace_suppression += 1;
+        defer if (!handed) {
+            self.backtrace_suppression = context.backtrace_suppression;
+        };
         var deferred_depth: usize = 0;
         while (self.words[id].kind == .deferred) {
             const action = self.readCell(self.words[id].value) catch |err| {
@@ -1547,6 +1580,7 @@ pub const State = struct {
             .locals_top = self.locals_top,
         };
         self.catch_depth += 1;
+        handed = true;
         self.frames[self.frame_depth] = running.*;
         self.frame_depth += 1;
         self.call_depth += deferred_depth + 1;
@@ -1559,7 +1593,7 @@ pub const State = struct {
     }
 
     fn builtinInLoop(self: *State, comptime counted: bool, builtin: Builtin, running: *Running) RuntimeError!void {
-        if (builtin == .catch_word and try self.enterCatch(counted, running)) return;
+        if ((builtin == .catch_word or builtin == .catch_nobt) and try self.enterCatch(counted, running, builtin == .catch_nobt)) return;
         try self.executeBuiltin(builtin);
     }
 
@@ -1574,7 +1608,7 @@ pub const State = struct {
             target_id = self.synonymTarget(try self.wordId(action));
         }
         const target = self.words[target_id];
-        if (target.kind == .builtin and target.builtin == .catch_word) {
+        if (target.kind == .builtin and (target.builtin == .catch_word or target.builtin == .catch_nobt)) {
             const call_depth = self.call_depth;
             const catch_depth = self.catch_depth;
             self.call_depth += deferred_depth;
@@ -1615,6 +1649,7 @@ pub const State = struct {
         self.call_depth -= 1;
         if (self.catch_depth != 0 and self.catches[self.catch_depth - 1].frame_depth == self.frame_depth) {
             self.catch_depth -= 1;
+            self.backtrace_suppression = self.catches[self.catch_depth].context.backtrace_suppression;
             self.call_depth = self.catches[self.catch_depth].call_depth;
             try self.push(0);
         }
@@ -1626,6 +1661,7 @@ pub const State = struct {
     pub fn clearBacktrace(self: *State) void {
         self.backtrace_count = 0;
         self.backtrace_total = 0;
+        self.throw_nobt = false;
     }
 
     /// Lets compiled code run `step_limit` operations again.
@@ -1641,6 +1677,8 @@ pub const State = struct {
     /// reach `report` or CATCH.
     fn recordBacktrace(self: *State, pc: u16, entry_frames: usize, level: usize) void {
         @branchHint(.cold);
+        if (self.backtrace_suppression != 0) self.throw_nobt = true;
+        if (self.throw_nobt) return;
         if (self.backtrace_total != 0 and level >= self.backtrace_level) self.clearBacktrace();
         self.backtrace_level = level;
         self.addBacktrace(pc -| 1);
@@ -1715,6 +1753,8 @@ pub const State = struct {
     fn runOperations(self: *State, comptime counted: bool, start_pc: u16, end_pc: u16, defining_word: ?u16) RuntimeError!void {
         var running: Running = .{ .pc = start_pc, .end_pc = end_pc, .defining_word = defining_word };
         const entry_frames = self.frame_depth;
+        const entry_suppression = self.backtrace_suppression;
+        defer self.backtrace_suppression = entry_suppression;
         const entry_catches = self.catch_depth;
         defer self.catch_depth = entry_catches;
         const was_counted = self.in_counted;
@@ -1727,7 +1767,10 @@ pub const State = struct {
             self.runOperationsLoop(counted, &running, entry_frames, entry_catches) catch |err| {
                 var failure = err;
                 while (true) {
-                    if (failure == error.Quit or failure == error.StepLimit or self.catch_depth == entry_catches) return failure;
+                    if (failure == error.Quit or failure == error.StepLimit or self.catch_depth == entry_catches) {
+                        if (self.backtrace_suppression != 0) self.throw_nobt = true;
+                        return failure;
+                    }
                     const context = self.resumeCatch(&running);
                     context.handleError(self, failure) catch |next| {
                         failure = next;
@@ -2022,7 +2065,7 @@ pub const State = struct {
         if (defs.debug_enabled and self.cover_blocks and self.compiling and startsBlock(builtin)) self.markBlock(self.columnAfterWord());
     }
 
-    const word_modules = .{ @import("core/words_value_extensions.zig"), @import("core/words_names.zig"), @import("core/words_parsing.zig"), @import("core/words_loops.zig"), @import("core/quotations.zig"), @import("core/words_compilation_tokens.zig"), @import("core/words_terminal.zig"), @import("core/string_values.zig"), @import("core/words_string_edit.zig"), @import("core/words_text.zig"), @import("core/words_buffers.zig"), @import("core/words_data.zig"), @import("core/words_width.zig"), words_stack, words_arithmetic, @import("core/words_numeric.zig"), words_memory, words_output, words_input, words_compiling, words_float, words_pictured, words_dictionary, words_system, @import("core/blocks.zig"), words_files, words_strings, words_help, words_defining, words_graphics, words_audio, words_xchar, words_tools, words_debug };
+    const word_modules = .{ @import("core/exception_registry.zig"), @import("core/words_diagnostics.zig"), @import("core/words_value_extensions.zig"), @import("core/words_names.zig"), @import("core/words_parsing.zig"), @import("core/words_loops.zig"), @import("core/quotations.zig"), @import("core/words_compilation_tokens.zig"), @import("core/words_terminal.zig"), @import("core/string_values.zig"), @import("core/words_string_edit.zig"), @import("core/words_text.zig"), @import("core/words_buffers.zig"), @import("core/words_data.zig"), @import("core/words_width.zig"), words_stack, words_arithmetic, @import("core/words_numeric.zig"), words_memory, words_output, words_input, words_compiling, words_float, words_pictured, words_dictionary, words_system, @import("core/blocks.zig"), words_files, words_strings, words_help, words_defining, words_graphics, words_audio, words_xchar, words_tools, words_debug };
 
     /// For each built-in word, the index in `word_modules` of the file that executes it.
     const word_owner = blk: {

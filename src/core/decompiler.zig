@@ -58,6 +58,7 @@ pub fn seeWord(self: *State, id: u16) RuntimeError!void {
     const word = self.words[id];
     const name = self.wordName(word);
     switch (word.kind) {
+        .exception_entry => self.write("<EXCEPTION-RECORD>"),
         .forward => {
             self.write("FORWARD ");
             self.write(name);

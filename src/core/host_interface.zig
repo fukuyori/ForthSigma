@@ -175,6 +175,8 @@ pub const Writer = struct {
     zoned_time_fn: ?*const fn (?*anyopaque, Double, []u8) RuntimeError!ZonedTime = null,
     /// Copies the variable's value into the buffer and returns its length, or null when unset.
     getenv_fn: ?*const fn (?*anyopaque, []const u8, []u8) RuntimeError!?usize = null,
+    /// Current host C errno, read without changing it.
+    errno_fn: ?*const fn (?*anyopaque) Cell = null,
     /// Runs a shell command and returns the status `system` gave; a non-zero status is not an error.
     system_fn: ?*const fn (?*anyopaque, []const u8) RuntimeError!Cell = null,
     file_ops: ?*const FileOps = null,

@@ -57,3 +57,7 @@ AVALUEはVALUEの格納セルを既存の型付きメモリ登録に加える。
 ## P08レビュー補正
 
 成功した完全復元の適用時だけ実行時の辞書世代を進め、一時CURRENTの復帰が旧widで上書きしないようにする。失敗した事前検証では世代を変えない。MAP-VOCSとWRAP-XTのガードは対象語と捕捉動作の寿命を監視し、これらも世代値も保存しない。ライブラリ失敗時は割当て数とケース/TABLEマスクを同じ時点へ戻す。Word/Op・辞書エントリ・wire ABIの追加変更はない。[レビュー](P08_REVIEW.md)。
+
+## P09a exception records
+
+The P09a builtin additions and `exception_entry` WordKind change the ABI fingerprint; recreate prior images. System cells0x0d80/0x0d88/0x0d90 store WARNINGS, ASSERT-LEVEL and the next exception code. An anonymous exception dictionary entry points into data space: first-code, count, callback-xt (-1 for a copied message), byte-length (four64-bit cells), then message bytes. Validators check code/counter bounds, nonoverlap, message bounds and callback IDs. Full restore restores settings/counter. Both append paths relocate the body and group callback, preserve destination warning/assert settings, merge next-code by minimum and reject overlapping code ranges before mutation. No native function pointer is serialized.

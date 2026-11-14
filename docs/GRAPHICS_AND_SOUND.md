@@ -488,4 +488,4 @@ The `SND-` words are the base the library is written with: `SND-PLAY`, `SND-PLAY
 
 Errors: `REQUIRE-AUDIO` in a build with `-Daudio=false` gives `AUDIO UNAVAILABLE !` (THROW -275); a number out of its range gives `NUMBER ERROR !`; a host without an audio thread gives `HOST FUNCTION UNAVAILABLE !`. As with `REQUIRE-GRAPHICS`, a library that fails to load is removed again, and `REQUIRE-AUDIO` loads it again after `FORGET` or a `MARKER` removed it.
 
-`examples/music.fs` plays a short tune on each chip, several chips in one `PLAY`, and a sound effect made with `SAMPLE`.
+`examples/music.fs` plays a short tune on each chip, several chips in one `PLAY`, and a sound effect made with `SAMPLE`. `examples/fur-elise.fs` plays the theme, the first episode, and the theme again of Beethoven's Für Elise (bars 1 to 58) on the Amiga's Paula, with a piano of samples that the program makes itself. `examples/fur-elise-simple.fs` is a short program that plays the theme alone on two voices with `PLAY2`. `examples/pastoral.fs` plays the exposition of the first movement of Beethoven's Symphony No. 6 (bars 1 to 138) on 8 voices, with waves for the strings and the winds that it makes.

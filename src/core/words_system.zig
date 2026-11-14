@@ -91,6 +91,7 @@ pub const CatchContext = struct {
     frame: CatchFrame,
     trace_depth: usize,
     profile_depth: usize,
+    backtrace_suppression: usize,
 
     pub fn init(self: *const State) CatchContext {
         return .{
@@ -112,12 +113,15 @@ pub const CatchContext = struct {
                 .next_name_len = self.next_name_len,
                 .next_name = self.next_name,
             },
+            .backtrace_suppression = self.backtrace_suppression,
             .trace_depth = self.trace_depth,
             .profile_depth = if (self.profile) |profile| profile.depth else 0,
         };
     }
 
     pub fn handleError(context: CatchContext, self: *State, err: RuntimeError) RuntimeError!void {
+        if (self.backtrace_suppression > context.backtrace_suppression) self.throw_nobt = true;
+        self.backtrace_suppression = context.backtrace_suppression;
         if (err == error.Quit or err == error.StepLimit) return err;
         self.trace_depth = context.trace_depth;
         if (self.stepper == .on and self.step_depth > self.call_depth) self.stepper = .off;
@@ -272,15 +276,19 @@ pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
             self.throw_code = code;
             return error.Thrown;
         },
-        .catch_word => {
-            const xt = try self.wordId(try self.pop());
-            const context = CatchContext.init(self);
-            if (self.executeWord(xt)) |_| {
-                try self.push(0);
-            } else |err| {
-                try context.handleError(self, err);
-            }
-        },
+        .catch_word => try runCatch(self, false),
         else => @compileError(@tagName(builtin) ++ " is not in the words of this file"),
+    }
+}
+
+pub fn runCatch(self: *State, nobt: bool) RuntimeError!void {
+    const xt = try self.wordId(try self.pop());
+    const context = CatchContext.init(self);
+    if (nobt) self.backtrace_suppression += 1;
+    defer self.backtrace_suppression = context.backtrace_suppression;
+    if (self.executeWord(xt)) |_| {
+        try self.push(0);
+    } else |err| {
+        try context.handleError(self, err);
     }
 }

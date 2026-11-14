@@ -1430,3 +1430,13 @@ PRESERVE requires compilation and captures a fixed action, including the uniniti
 Six public words and one hidden ADDR compilation action change builtin ABI/count. Recreate earlier-ABI images. [Implementation and validation](P08_IMPLEMENTATION.md).
 
 P08 review follow-up: lazy REQUIRE-* loading preserves NEXTNAME/NONAME on success and failure, and failed loading rolls back its case/table masks while retaining successful prerequisites. A successful full dictionary restore inside IN/IN-WORDLIST keeps the restored CURRENT; failed restore preflight still restores the previous CURRENT. MAP-VOCS stops with -261 if its callback handle is removed/reused, including on the final Macros callback. MAP-VOCS and WRAP-XT share a64-level guarded callback limit. If a WRAP-XT entry action is forgotten while its target survives, the target becomes uninitialized and normal return throws-261; a callback error retains priority. [Review and evidence](P08_REVIEW.md).
+
+## P09a exception diagnostics
+
+`CATCH-NOBT ( xt -- 0 | n )` runs like CATCH while suppressing backtrace capture; `FAST-THROW ( n -- )` throws without capture (0 does nothing), and `NOTHROW ( -- )` clears pending trace information. `?IOR ( n -- )` checks host errno only for-1; `?ERRNO-THROW ( flag -- )` checks it for a nonzero flag. A nonzero errno maps to-512-errno.
+
+`ASSERT-LEVEL ( -- addr )` initially contains1. `ASSERT0(` through `ASSERT3(` parse a current-line body through matching `)` and enable it when its level is no greater than ASSERT-LEVEL at compilation. ASSERT( uses level1; false assertions throw-2. Bodies are limited to512 bytes, nesting to16. New assertion controls require the debug group; legacy ASSERT( stays available.
+
+`EXCEPTION ( addr u -- code )` copies a message (maximum4096 bytes). `EXCEPTIONS ( xt count -- first-code )` allocates a consecutive descending range; xt receives a zero-based index and returns addr u. Message records follow dictionary lifetime; removed codes are never reused during that VM lifetime. Images preserve records and rebase callback references; appending overlapping code ranges fails. Formatter errors retain the original numeric exception.
+
+`WARNINGS ( -- addr )` contains-1 initially;0 suppresses warnings and-4 makes them throw-281. `WARNING" text"` is compile-only and consumes a runtime flag: true emits the text to stderr under the current warning policy. Redefinition warnings retain their existing output channel; with-4 the old definition is preserved. [Policies and validation](P09_IMPLEMENTATION.md).

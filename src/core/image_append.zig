@@ -69,14 +69,16 @@ fn apply(state: *forth.State, work: *Workspace) void {
         @memcpy(state.memory[@intCast(at)..][0..object.bytes.len], object.bytes);
     }
     put(state, map.heap_top_address, plan.image.heap_top);
+    put(state, map.exception_next_address, @min(state.readCellConst(map.exception_next_address), savedCell(work, map.exception_next_address)));
     for (h.builtin_count..h.word_count) |i| {
         var word = planner.relocatedWord(plan, i) catch unreachable;
         if (word.source_file != 0) word.source_file = work.file_map[word.source_file - 1];
         const id = plan.word_base + i - h.builtin_count;
         state.words[id] = word;
-        if (word.kind == .deferred) {
-            const action = state.readCellConst(word.value);
-            if (action >= h.builtin_count and action < h.word_count) put(state, word.value, @as(map.Cell, @intCast(plan.word_base)) + action - h.builtin_count);
+        if (word.kind == .deferred or word.kind == .exception_entry) {
+            const slot = word.value + @as(map.Cell, if (word.kind == .exception_entry) 16 else 0);
+            const action = state.readCellConst(slot);
+            if (action >= h.builtin_count and action < h.word_count) put(state, slot, @as(map.Cell, @intCast(plan.word_base)) + action - h.builtin_count);
         }
         if (word.kind == .marker) relocateMarker(state, work, word.value);
     }

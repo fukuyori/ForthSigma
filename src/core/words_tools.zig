@@ -144,28 +144,7 @@ pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
         // ASSERT( code ) ( -- ): the code up to ) must leave true; when it leaves false,
         // where the ) is (file:line:column: failed assertion) is shown and THROW -2 with
         // "assertion failed" follows.
-        .assert_paren => {
-            const line = self.source_line;
-            const start = self.sourceCursor();
-            const close = std.mem.indexOfScalarPos(u8, line, start, ')') orelse return error.InvalidDefinition;
-            self.setSourceCursor(close + 1);
-            var place: [max_name + 64]u8 = undefined;
-            const text = try placeText(self, &place, 1);
-            var code: [512]u8 = undefined;
-            if (close - start > code.len) return error.StringTooLong;
-            @memcpy(code[0 .. close - start], line[start..close]);
-            const cursor = self.sourceCursor();
-            try self.interpretSource(code[0 .. close - start], .evaluate);
-            self.setSourceCursor(cursor);
-            if (self.compiling) {
-                try self.compileCountedString(text, .string_literal);
-                try self.compileCall(@intCast(self.builtinWord(.assert_run)));
-            } else {
-                try self.push(try placeAddress(self, text));
-                try self.push(@intCast(text.len));
-                try assertRun(self);
-            }
-        },
+        .assert_paren => try assertion(self, 1),
         .assert_run => try assertRun(self),
         // EMIT? ( -- flag ): whether EMIT can go on without waiting; it always can here.
         .emit_question => try self.push(truth(true)),
@@ -316,4 +295,55 @@ pub fn abortWith(self: *State, comptime message: []const u8) RuntimeError {
     @import("address_registry.zig").written(self, @intCast(at), message.len + 1, false);
     self.abort_message = assert_message_address;
     return self.throwCode(-2);
+}
+
+pub fn assertion(self: *State, level: Cell) RuntimeError!void {
+    if (self.assert_depth == 16) return error.ControlMismatch;
+    self.assert_depth += 1;
+    defer self.assert_depth -= 1;
+    const line = self.source_line;
+    const start = self.sourceCursor();
+    var end = start;
+    var nesting: usize = 1;
+    while (end < line.len) : (end += 1) {
+        // Parenthesized comments do not interpret quotes or nest.
+        if (line[end] == '(' and (end == start or std.ascii.isWhitespace(line[end - 1]))) {
+            end = std.mem.indexOfScalarPos(u8, line, end + 1, ')') orelse return error.InvalidDefinition;
+            continue;
+        }
+        if (line[end] == '"') {
+            const escaped = end >= 2 and line[end - 1] == '\\' and (line[end - 2] == 'S' or line[end - 2] == 's');
+            end += 1;
+            while (end < line.len and line[end] != '"') : (end += 1) {
+                if (escaped and line[end] == '\\' and end + 1 < line.len) end += 1;
+            }
+            if (end == line.len) return error.InvalidDefinition;
+            continue;
+        }
+        if (line[end] == '(') nesting += 1;
+        if (line[end] == ')') {
+            nesting -= 1;
+            if (nesting == 0) break;
+        }
+    }
+    if (nesting != 0) return error.InvalidDefinition;
+    const close = end;
+    self.setSourceCursor(close + 1);
+    if (level > self.readCellConst(@import("memory_map.zig").assert_level_address)) return;
+    var place: [max_name + 64]u8 = undefined;
+    const text = try placeText(self, &place, 1);
+    var code: [512]u8 = undefined;
+    if (close - start > code.len) return error.StringTooLong;
+    @memcpy(code[0 .. close - start], line[start..close]);
+    const cursor = self.sourceCursor();
+    try self.interpretSource(code[0 .. close - start], .evaluate);
+    self.setSourceCursor(cursor);
+    if (self.compiling) {
+        try self.compileCountedString(text, .string_literal);
+        try self.compileCall(@intCast(self.builtinWord(.assert_run)));
+    } else {
+        try self.push(try placeAddress(self, text));
+        try self.push(@intCast(text.len));
+        try assertRun(self);
+    }
 }
