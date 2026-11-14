@@ -274,7 +274,7 @@ FACILITY EXTのキー4語とBLOCK/BLOCK EXTの10語を優先する。既存の�
 
 ### P07 コンパイラーと制御構文
 
-コンパイルトークン、無名定義、後回しコンパイル、ループを整える。
+コンパイルトークン、無名定義、後回しコンパイル、ループ、入力切替・前方参照を実装済み。新規40/40項目＋先行4/4語、550は完了(auto)。外部レビューは未実施。
 
 #### P07先行 既存構文4語の辞書化
 
@@ -324,7 +324,7 @@ V . DEPTH .
 
 #### P07d 入力の一時切り替えと前方参照
 
-対象 8語。tque ID: 573。単位内の先行作業: P07a。
+対象 8語。tque ID: 573、8/8完了(auto)。単位内の先行作業: P07a。通常/最小テスト、50比較・4方針確認・native保存2件が通過。[記録](P07_IMPLEMENTATION.md)。
 
 `.UNRESOLVED`, `EXECUTE-PARSING`, `EXECUTE-PARSING-FILE`, `FORWARD`, `NAME`, `PARSE-WORD`, `RECURSIVE`, `STRING-PARSE`
 

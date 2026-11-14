@@ -1347,3 +1347,19 @@ MEM+DO/MEM-DO end with LOOP and require positive stride. Zero/negative stride or
 ?DUP-IF and ?DUP-0=-IF compose with ELSE/THEN. CS-PICK/CS-ROLL/CS-DROP work in an open definition, including [ ... ]; MEM control entries cannot be picked/rolled. DONE resolves LEAVEs; its destination needs explicit UNLOOP cleanup. Existing work limits still interrupt zero-step loops and bypass CATCH. Native EOF rejects unfinished colon definitions.
 
 The new operation/builtin tags change the ABI; recreate earlier-ABI images. Full restore, both dictionary append routes and SAVESYS are verified. [Details](P07_IMPLEMENTATION.md).
+
+## P07d: scoped parsing and forward references
+
+| Word | Stack effect and behavior |
+| --- | --- |
+| NAME / PARSE-WORD | `( -- addr u )`; PARSE-NAME aliases. |
+| STRING-PARSE | `( delim-addr delim-u -- addr u )`; return source before the first byte-string delimiter and consume it. Missing delimiter consumes the rest; empty delimiter returns empty without advancing. |
+| EXECUTE-PARSING | `( ... addr u xt -- ... )`; execute xt once with a temporary string source, without interpreting the string automatically. |
+| EXECUTE-PARSING-FILE | `( ... fid xt -- ... )`; execute xt with an initially empty file source; REFILL reads lines. Available with file support. |
+| FORWARD | `( "name" -- )`; declare a colon definition to be supplied later in the same wordlist. |
+| .UNRESOLVED | `( -- )`; diagnose unresolved forward declarations. |
+| RECURSIVE | `( -- )`; compile-only marker. Existing Sigma implicit self-reference remains available. |
+
+Scoped parsing restores SOURCE, raw >IN, source kind, BLK and source position on success or THROW. String storage is borrowed and must remain valid during the callback. File execution takes ownership after validation and closes once on success or error; the callback must not close/reuse the handle. Callback errors take priority over close errors.
+
+Unresolved execution throws -259. A matching completed colon definition binds FORWARD; duplicate declarations and non-colon replacements are errors. Previously obtained xts retain their identity and execute the bound definition. FORGET of the target makes surviving references unresolved so they can bind again. RECURSIVE outside compilation throws -14. New builtin/WordKind tags change the ABI; recreate earlier-ABI images. [Details](P07_IMPLEMENTATION.md).

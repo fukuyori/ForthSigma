@@ -318,6 +318,13 @@ fn validateWords(v: View) RuntimeError!void {
             .two_constant, .two_value => try dataCell(v, word.value, 16),
             .marker => try dataCell(v, word.value, map.marker_snapshot_size),
             .created, .array => try dataCell(v, word.value, 0),
+            .forward => {
+                if (word.value != -1) {
+                    if (word.value < v.header.builtin_count or word.value >= v.header.word_count) return error.InvalidImage;
+                    const destination = v.words[@as(usize, @intCast(word.value)) * @sizeOf(defs.Word) ..][0..@sizeOf(defs.Word)];
+                    if (enumTag(defs.WordKind, destination[@offsetOf(defs.Word, "kind")..]) != @backingInt(defs.WordKind.colon) or destination[@offsetOf(defs.Word, "wordlist")] != word.wordlist) return error.InvalidImage;
+                }
+            },
             .synonym => if (word.value < 0 or word.value >= v.header.word_count) return error.InvalidImage,
             .vocabulary => if ((word.value != map.macros_wordlist and (word.value < 1 or word.value > wordlists))) return error.InvalidImage,
             else => {},

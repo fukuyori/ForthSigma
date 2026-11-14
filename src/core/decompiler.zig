@@ -58,6 +58,10 @@ pub fn seeWord(self: *State, id: u16) RuntimeError!void {
     const word = self.words[id];
     const name = self.wordName(word);
     switch (word.kind) {
+        .forward => {
+            self.write("FORWARD ");
+            self.write(name);
+        },
         .builtin => {
             self.write("BUILT-IN ");
             self.write(name);

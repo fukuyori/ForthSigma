@@ -1,6 +1,6 @@
 # P07 implementation and validation
 
-Current: prework457 and P07a570/P07b571/P07c572 are complete. New words32/40; next573 P07d. P07c implementation is included in the corresponding commit; see git history.
+Current: prework457 and P07a570/P07b571/P07c572/P07d573 are complete(auto). All40 new items and4 prework words are implemented. P07c was pushed as493e68c; P07d is included in the corresponding commit; see git history. P07 external review has not been performed.
 
 ## Prework: dictionary assignment words (457)
 
@@ -109,3 +109,30 @@ The existing ABI signature includes the new OpKind/Builtin tags, so earlier ABI 
 Thirteen Zig regressions cover signed/unsigned/equal bounds, -LOOP magnitudes and zero steps, FOR/nested loops/body locals, helper limit/delta reads, memory order and non-multiple lengths, invalid stride/range argument preservation, ARRAY>MEM and combined IF, DONE/UNLOOP, CS operations, THROW/EXIT cleanup, all3 image paths, malformed control kinds, SEE and work-limit interruption. StepLimit deliberately bypasses CATCH as before; report recovery clears the loop frames.
 
 Normal/minimal tests (all optional groups disabled, including the freestanding object) and normal build pass. Final probe:162 observations, all bounded potentially long loops, no timeouts. verify-p07c.py passes149 Gforth comparisons,13 Sigma policy/error checks,2 native SAVE/LOAD/SAVESYS checks and2 native unfinished-loop EOF checks. Earlier prework/P07a/P07b comparisons and native image checks also pass. Logs: .zig-cache/p07c-*.log; reports: .work/p07c-check/. Gforth's invalid-control crashes and helper return-address values are observations, not passing conformance requirements. No Windows/Linux native checks, package/version changes or GPL implementation reuse.
+
+## P07d: scoped input and forward references (573)
+
+Status: all8 words complete(auto). P07 now has40/40 new items and4/4 prework words implemented. P07c was pushed as493e68c; P07d changes are included in the corresponding commit; see git history. No P07 Claude Code review has been performed.
+
+| Word | Stack effect and behavior |
+| --- | --- |
+| NAME / PARSE-WORD | `( -- addr u )`; PARSE-NAME aliases. |
+| STRING-PARSE | `( delim-addr delim-u -- addr u )`; return source before the first byte-string delimiter and consume it. Missing delimiter consumes the rest; empty delimiter returns empty without advancing. |
+| EXECUTE-PARSING | `( ... addr u xt -- ... )`; execute xt once with a temporary string source, without interpreting the string automatically. |
+| EXECUTE-PARSING-FILE | `( ... fid xt -- ... )`; execute xt with an initially empty file source; REFILL reads lines. Available with file support. |
+| FORWARD | `( "name" -- )`; declare a colon definition to be supplied later in the same wordlist. |
+| .UNRESOLVED | `( -- )`; diagnose unresolved forward declarations. |
+| RECURSIVE | `( -- )`; compile-only marker. Existing Sigma implicit self-reference remains available. |
+
+Scoped parsing restores SOURCE, raw >IN, source kind, BLK and source position on success or THROW. String storage is borrowed and must remain valid during the callback. File execution takes ownership after validation and closes once on success or error; the callback must not close/reuse the handle. Callback errors take priority over close errors.
+
+Unresolved execution throws -259. A matching completed colon definition binds FORWARD; duplicate declarations and non-colon replacements are errors. Previously obtained xts retain their identity and execute the bound definition. FORGET of the target makes surviving references unresolved so they can bind again. RECURSIVE outside compilation throws -14. New builtin/WordKind tags change the ABI; recreate earlier-ABI images. [Details](P07_IMPLEMENTATION.md).
+
+
+### Implementation and validation
+
+The source scope preserves raw >IN even outside the source length and restores nested sources with defer. File scopes use separate include-depth buffers, preserve file error locations, and validate before taking ownership. Forward declarations use a new WordKind.forward with -1 for unresolved or a colon word ID for resolved entries. Binding patches direct call/compile-call sites while preserving execution-token identities. FORGET restores surviving references to the forward stub. Matching respects wordlist identity and MACROS wordlist case sensitivity.
+
+Image validation checks target range, colon kind and wordlist, using raw validated tags rather than interpreting an unchecked target record. Full restore and both append routes preserve resolved and unresolved declarations; append relocates positive target IDs. Decompilation exposes forward entries. Framing remains SIGIMG45/46/47; enum ABI signatures change.
+
+scripts/probe-p07d.py records54 observations. scripts/verify-p07d.py passes50 matching cases,4 Sigma policy checks and2 native SAVE/LOAD-DICTIONARY/SAVESYS checks. Thirteen Zig regressions cover nested/error source restoration, raw input state, file ownership/error precedence, binary delimiters, forward binding/xt identity/FORGET, recursion, all image routes and malformed target rejection without dictionary mutation. Normal tests, minimal tests with optional groups disabled, normal build and all prior P07 verifiers pass. Artifacts: .work/p07d-check/; logs: .zig-cache/p07d-*.log. Windows/Linux native execution remains deferred under607. No GPL implementation code was copied.

@@ -107,7 +107,7 @@ pub fn relocatedWord(plan: *const Plan, index: usize) RuntimeError!defs.Word {
     word.data_here_before += plan.data_delta;
     word.wordlist = @intCast(relocatedWordlist(plan, word.wordlist));
     if (word.kind == .vocabulary) word.value = relocatedWordlist(plan, word.value);
-    if (word.kind == .synonym) word.value = relocatedId(plan, word.value);
+    if (word.kind == .synonym or (word.kind == .forward and word.value >= 0)) word.value = relocatedId(plan, word.value);
     if (word.kind == .colon) {
         word.code_start += @intCast(plan.code_base);
         word.code_end += @intCast(plan.code_base);

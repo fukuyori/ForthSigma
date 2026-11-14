@@ -55,7 +55,7 @@ fn builtinSet(comptime lists: []const []const Builtin) [builtin_count]bool {
 }
 
 const float_builtins = builtinSet(&.{ &@import("words_float.zig").words, &.{ .field_float, .field_sfloat, .field_dfloat, .float_percent, .sfloat_percent, .dfloat_percent, .define_fvariable, .define_fconstant, .define_fvalue, .fliteral } });
-const file_builtins = builtinSet(&.{ &@import("words_files.zig").words, &@import("blocks.zig").words, &.{ .string_slurp, .string_plus_slurp, .string_slurp_file, .string_plus_slurp_file, .string_slurp_line, .string_array_slurp, .string_array_slurp_file } });
+const file_builtins = builtinSet(&.{ &@import("words_files.zig").words, &@import("blocks.zig").words, &.{ .execute_parsing_file, .string_slurp, .string_plus_slurp, .string_slurp_file, .string_plus_slurp_file, .string_slurp_line, .string_array_slurp, .string_array_slurp_file } });
 const help_builtins = builtinSet(&.{&.{ .help, .license }});
 const tool_builtins = builtinSet(&.{&.{ .see, .locate, .where }});
 const image_builtins = builtinSet(&.{&.{ .load, .save, .savesys }});
@@ -1016,6 +1016,14 @@ pub const Builtin = enum {
     done,
     question_dup_if,
     question_dup_zero_if,
+    execute_parsing,
+    execute_parsing_file,
+    string_parse,
+    parse_word,
+    name_word,
+    forward_word,
+    dot_unresolved,
+    recursive_word,
 };
 
 pub const HeapResult = union(enum) { address: Cell, no_memory, bad_pointer };
@@ -1081,7 +1089,7 @@ pub const CatchFrame = struct {
     postponing: bool,
 };
 
-pub const WordKind = enum { builtin, colon, variable, constant, array, created, value, fconstant, fvalue, two_constant, two_value, marker, vocabulary, synonym, deferred, field, string_value };
+pub const WordKind = enum { builtin, colon, variable, constant, array, created, value, fconstant, fvalue, two_constant, two_value, marker, vocabulary, synonym, deferred, field, string_value, forward };
 
 pub const Word = struct {
     /// Where the name is in `State.names`.

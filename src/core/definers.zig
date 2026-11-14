@@ -135,6 +135,7 @@ pub fn endDefinition(self: *State) RuntimeError!void {
     if (self.currentFileFrame()) |frame| {
         if (self.words[self.current_word].source_file == frame.file_index + 1) self.words[self.current_word].source_end_line = frame.line;
     }
+    @import("words_parsing.zig").resolve(self, self.current_word);
     self.local_count = 0;
     self.setCompiling(false);
     self.defining = false;

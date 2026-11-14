@@ -253,3 +253,7 @@ Six quotation/anonymous-definition/postponing items are implemented. Nested/inte
 ## P07c (572)
 
 All18 loop/control words are implemented. Verification passes149 matching Gforth cases plus13 Sigma policy checks,13 Zig regressions,2 native image checks and2 unfinished-loop EOF checks. Memory strides must be positive; wrapped ranges throw-24, and short reverse ranges skip. I'/DELTA-I use VM frames through helpers. DONE uses explicit UNLOOP cleanup; CS operations accept temporary interpretation in an open definition. Normal/minimal tests, build and prior P07 verifiers pass. New OpKind/Builtin tags change the ABI. [Details](P07_IMPLEMENTATION.md).
+
+## P07d (573)
+
+All8 scoped-input/forward-reference words are implemented. Validation:50 matching Gforth cases,4 Sigma policy checks,13 Zig regressions and2 native image checks; normal/minimal tests and all prior P07 verifiers pass. Scoped callbacks restore input even on THROW; file callbacks own and close their validated file. FORWARD resolves only to a completed colon in the same wordlist; old xts remain callable. Sigma retains implicit recursion and rejects RECURSIVE outside compilation(-14). Earlier-ABI images must be recreated. P07 totals40 new items plus4 prework words; external review is pending. [Details](P07_IMPLEMENTATION.md).

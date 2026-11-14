@@ -253,3 +253,7 @@ Six quotation/anonymous-definition/postponing items are implemented. Nested/inte
 ## P07c（572）
 
 ループ・制御18語を実装しました。Gforth一致149件、Sigma方針13件、Zig回帰13件、native保存2件・未完ループEOF2件が通過しています。MEM刻み幅は正のみ、範囲の桁あふれは-24、短い降順範囲は0回です。I'/DELTA-Iは補助語からもVMフレームを参照します。DONEには明示的なUNLOOPが必要です。CS操作は開いた定義内の一時解釈中も許可します。通常/最小構成・ビルド・既存P07検証も通過しました。OpKind/Builtin追加でABIが変わります。[詳細](P07_IMPLEMENTATION.md)。
+
+## P07d（573）
+
+入力切替・前方参照の8語を実装。Gforth一致50件、Sigma方針4件、Zig回帰13件、native保存2件と通常・最小テスト、P07の既存検証が通過。一時入力はTHROW時にも復元し、ファイル版は検証後に所有権を引き受けて閉じる。FORWARDは同じwordlistの完了したコロン定義に解決し、古いxtも実行可能。既存の暗黙再帰を維持し、定義外RECURSIVEは-14。旧ABIのイメージは再作成する。P07は新規40項目と先行4語が実装完了。外部レビューは未実施。[記録](P07_IMPLEMENTATION.md)。

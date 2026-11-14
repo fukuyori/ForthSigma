@@ -41,3 +41,7 @@ P07a adds the Word compile_only boolean to the serialized fields and ABI layout 
 P07b adds Word.quotation for nested anonymous compiler entries. The byte must be0/1 and true only for unnamed colon words. The field and new helpers change the ABI signature. Completed bodies/macros persist; active quotation/postponing state is rejected by image graph collection and reset on full restore. Earlier ABIs remain unsupported under the same framing magic.
 
 P07c adds eleven loop operation tags and eighteen builtin tags. DONE marks bit32 on an entry's exit target. Validation permits the known flag and an in-range code destination; append relocates the destination while retaining the flag. Inlining/lint/SEE understand the marker. Runtime Loop mode/stride/cleanup fields are not saved. OpKind/Builtin changes invalidate earlier ABIs under the same framing magic.
+
+## P07dの前方参照
+
+WordKind.forwardを追加。value=-1は未解決、それ以外は同じwordlistのユーザーcolonの語ID。復元時は範囲・種類・wordlistを検証し、未検証レコードを型付き値として先読みしない。辞書追加では正の対象IDを再配置する。FORGETした対象への参照は未解決に戻す。8個のBuiltin追加とWordKind追加でABI署名が変わる。SIGIMG45/46/47のフレーミングは維持するが、旧ABIイメージは再作成が必要。
