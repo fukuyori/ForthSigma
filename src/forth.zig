@@ -794,7 +794,7 @@ pub const State = struct {
         .{ "OPEN-DIR", .open_dir },                  .{ "READ-DIR", .read_dir },                     .{ "CLOSE-DIR", .close_dir },                 .{ "NTIME", .ntime },                        .{ "CPUTIME", .cputime },
         .{ "NS", .ns },                              .{ ">TIME&DATE&TZ", .to_time_date_tz },         .{ "FPATH", .fpath },                         .{ ">STRING-EXECUTE", .to_string_execute },  .{ "OUTFILE-ID", .outfile_id },
         .{ "OUTFILE-EXECUTE", .outfile_execute },    .{ "INFILE-ID", .infile_id },                   .{ "INFILE-EXECUTE", .infile_execute },       .{ "CSV-QUOTE", .csv_quote },                .{ "CSV-SEPARATOR", .csv_separator },
-        .{ ".QUOTED-CSV", .dot_quoted_csv },         .{ "\\\\\\", .triple_backslash },
+        .{ ".QUOTED-CSV", .dot_quoted_csv },         .{ "READ-CSV", .read_csv },                     .{ "\\\\\\", .triple_backslash },
     };
 
     fn installBuiltins(self: *State) void {

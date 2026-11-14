@@ -248,6 +248,7 @@ pub const entries = [_]Entry{
     .{ .name = "BASENAME", .stack = "( addr u -- addr2 u2 )", .text = "Borrow the suffix after the final slash; a trailing slash gives an empty suffix. Backslash is ordinary text." },
     .{ .name = "DIRNAME", .stack = "( addr u -- addr u2 )", .text = "Borrow the prefix through the final slash, or an empty prefix when absent. No normalization or allocation." },
     .{ .name = ">STRING-EXECUTE", .stack = "( xt -- addr u )", .text = "Run xt and return its output in caller-owned memory; FREE addr. Restore output capture on success or exception." },
+    .{ .name = "READ-CSV", .stack = "( addr u xt -- )", .text = "Read a named CSV file, calling xt ( field-addr field-u column row -- ) for each borrowed decoded field. Column starts0, logical row starts1. Close the file and restore parser source on success or exception." },
     .{ .name = "CSV-QUOTE", .stack = "( -- char )", .text = "CSV quote VALUE, initially34 (double quote); change with TO." },
     .{ .name = "CSV-SEPARATOR", .stack = "( -- char )", .text = "CSV separator VALUE, initially44 (comma); change with TO." },
     .{ .name = ".QUOTED-CSV", .stack = "( addr u -- )", .text = "Print enclosing CSV quote characters and double matching quotes inside. No newline or separator is added." },

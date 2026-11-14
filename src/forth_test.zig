@@ -25,6 +25,7 @@ comptime {
     _ = @import("tests/p06a_output_test.zig");
     _ = @import("tests/p06a_input_test.zig");
     _ = @import("tests/p06b_csv_output_test.zig");
+    _ = @import("tests/p06b_csv_input_test.zig");
     _ = @import("tests/p05a_search_test.zig");
     _ = @import("tests/p05b_path_parts_test.zig");
     _ = @import("tests/p05b_filename_match_test.zig");

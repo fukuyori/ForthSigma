@@ -961,6 +961,7 @@ pub const Builtin = enum {
     csv_quote,
     csv_separator,
     dot_quoted_csv,
+    read_csv,
 };
 
 pub const HeapResult = union(enum) { address: Cell, no_memory, bad_pointer };

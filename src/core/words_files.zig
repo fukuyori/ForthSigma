@@ -42,11 +42,12 @@ pub const words = [_]Builtin{
     .dot_path,           .path_plus,      .path_equals,      .open_path_file,      .file_to_path,   .basename,
     .dirname,            .filename_match, .get_dir,          .set_dir,             .equals_mkdir,   .mkdir_parents,
     .open_dir,           .read_dir,       .close_dir,        .fpath,               .outfile_id,     .outfile_execute,
-    .infile_id,          .infile_execute, .csv_quote,        .csv_separator,       .dot_quoted_csv,
+    .infile_id,          .infile_execute, .csv_quote,        .csv_separator,       .dot_quoted_csv, .read_csv,
 };
 
 pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
     switch (builtin) {
+        .read_csv => try @import("csv_reader.zig").read(self),
         .csv_quote, .csv_separator, .dot_quoted_csv => try @import("csv.zig").execute(self, builtin),
         .infile_id => try self.push(self.input_file orelse memory_map.stdin_fileid),
         .infile_execute => try @import("input_redirect.zig").run(self),

@@ -1272,3 +1272,10 @@ File ACCEPT retains Sigma's no-echo line read: drain LF/CRLF/CR through line end
 ### CSV settings and field output (P06b)
 
 `CSV-QUOTE` and `CSV-SEPARATOR` return VALUEs, initially34 (double quote) and44 (comma). Change them with TO, including in definitions. `.QUOTED-CSV ( addr u -- )` encloses a field in quote characters and doubles matching quotes inside. It adds no separator/newline and preserves binary/UTF-8 bytes. Example: `S" hello" .QUOTED-CSV`. These three words require files support. Full images preserve settings; dictionary append retains destination settings. Output capture supports aliased input; ordinary output needs no heap allocation. [Details](P06_IMPLEMENTATION.md).
+
+
+### CSV input (P06b)
+
+`READ-CSV ( filename-addr filename-u xt -- )` calls xt `( field-addr field-u column row -- )` for each decoded field. Columns start0; logical record numbers start1. Field bytes are borrowed only during the callback: copy them for retention and do not FREE them. The reader closes its file and restores the parser source on success/exception. Nested readers preserve outer field storage. CSV settings changed by callbacks persist.
+
+Empty FPATH uses raw cwd-relative lookup; configured FPATH uses source search. Physical lines are limited to4096 bytes and source names to255 bytes. The data file is recorded as a source without marking it REQUIRE-loaded. Blank lines yield an empty field; a trailing separator adds no final empty field. Quoted multiline boundaries become LF. For compatibility, malformed quoting is permissive, including a final LF in an unterminated quoted field at EOF; this is not strict RFC validation. Callbacks must consume their four inputs, preserve caller data and leave active CSV parser buffers intact. [Details](P06_IMPLEMENTATION.md).
