@@ -10,6 +10,7 @@ For the project overview, how to build, the current features, the differences fr
 - [Graphics and sound manual](GRAPHICS_AND_SOUND.md): the graphics words (drawing, text, Tcl/Tk, keys, the mouse, animation) and the sound words (MSX BASIC's PLAY, sound chips, recorded sound, modules)
 - [Graphics modes](GRAPHICS_MODES.md): where `SHOW` shows the image (terminal, Sixel, window, Tk window), the number of colors, and the size it is shown at
 - [Sound research](SOUND_RESEARCH.md): the sound chips of the MSX, the Atari ST, the C64, the NES, and the Amiga, MSX BASIC's sound, and the audio output of each system, with the sources (in Japanese)
+- [Native windows on Windows, macOS, and Linux: a study](NATIVE_WINDOW_STUDY.md): proposed shared criteria for `SHOW` and macOS/Linux backends, dependencies, and validation criteria (under consideration; in Japanese)
 - [Implementation notes](IMPLEMENTATION.md): the structure of the Zig port, implementation decisions, features not implemented
 - [Word compatibility list](COMPATIBILITY.md): the words published in the book and their current implementation status
 - [Gforth word implementation phases](GFORTH_WORD_PHASES.md): implementation order, acceptance criteria, and tque tasks for 380 priority A–C words and dictionary registration of four existing syntax words, prioritizing Forth 2012 words (in Japanese)

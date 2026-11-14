@@ -8,6 +8,8 @@
 - `scripts/build-release.sh` and `scripts/build-zip.sh` make the release build and the ZIPs on Linux and macOS, as `build-release.ps1` and `build-zip.ps1` do on Windows: the version with the floating-point words and the one without, for this machine or for the target `--target` or `--platform` names.
 - Added `examples/fur-elise.fs`, which plays the theme, the first episode, and the theme again of Beethoven's Für Elise (bars 1 to 58) on the Amiga's Paula, with a piano of samples that the program makes itself, and `examples/fur-elise-simple.fs`, a short program that plays the theme alone on two voices with `PLAY2`.
 - Added `examples/pastoral.fs`, which plays the exposition of the first movement of Beethoven's Symphony No. 6 (bars 1 to 138) on the 8 voices of the Amiga's Paula, with waves for the strings and the winds that the program makes itself.
+- Added `examples/graphs.fs`, a demonstration that draws eight graphs one after another, each growing into place: a bar chart, a line chart, a pie chart, a scatter plot with its least-squares line, a histogram, the graph of a function, a Lissajous figure, and a rose in polar coordinates.
+- Added `examples/graphs-tk.fs`, the same eight graphs drawn on a Tk canvas as its lines, rectangles, arcs, ovals, and text.
 
 ### Fixed
 

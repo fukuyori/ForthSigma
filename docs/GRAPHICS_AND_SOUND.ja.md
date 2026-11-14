@@ -145,7 +145,7 @@ S" button .b -text Press -command {sigma_event pressed}; pack .b; wm deiconify .
 WAIT-PRESS                                       \ ボタンを押すと pressed
 ```
 
-`examples/calculator.fs` は、まとまったプログラムの例です。ボタンとキーはTkで、計算はForthで行う電卓です（`sigma.exe < examples/calculator.fs`）。
+`examples/calculator.fs` は、まとまったプログラムの例です。ボタンとキーはTkで、計算はForthで行う電卓です（`sigma.exe < examples/calculator.fs`）。 `examples/graphs-tk.fs` は、`examples/graphs.fs` と同じ8つのグラフを、Tkのcanvasに線、長方形、扇形、円、文字として描きます。位置の計算はForthで行い、1コマ分のTclのスクリプトをまとめて送ります。
 
 | 語 | スタック | 説明 |
 | --- | --- | --- |
@@ -348,7 +348,7 @@ REQUIRE-GRAPHICS  ALSO GRAPHICS
 SHOW
 ```
 
-`examples/trig.fs` は、sin x・cos x・tan x のグラフを、格子、目盛りの文字、凡例とともに描きます。tan x が画像よりはるかに大きい所では `PLOT` に NaN を返し、漸近線のところでグラフを切ります（`sigma.exe examples/trig.fs`）。
+`examples/trig.fs` は、sin x・cos x・tan x のグラフを、格子、目盛りの文字、凡例とともに描きます。tan x が画像よりはるかに大きい所では `PLOT` に NaN を返し、漸近線のところでグラフを切ります（`sigma.exe examples/trig.fs`）。`examples/graphs.fs` は、棒グラフ、折れ線グラフ、円グラフ、散布図と回帰直線、ヒストグラム、関数のグラフ、リサージュ図形、極座標のバラ曲線の8つを、描き進めるアニメーションで順に表示します（Space か Enter で次へ、Q か Esc で終了）。
 
 | 語 | スタック | 説明 |
 | --- | --- | --- |

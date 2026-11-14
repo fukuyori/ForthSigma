@@ -10,6 +10,7 @@
 - [グラフィックスとサウンドのマニュアル](GRAPHICS_AND_SOUND.ja.md): グラフィックスの語（描画、文字、Tcl/Tk、キー、マウス、アニメーション）とサウンドの語（MSX BASIC の PLAY、音源、録音した音、モジュール）
 - [グラフィックモード](GRAPHICS_MODES.ja.md): `SHOW` の表示先（端末、Sixel、ウィンドウ、Tkのウィンドウ）、色数、表示の大きさ
 - [サウンドの調査](SOUND_RESEARCH.md): MSX、Atari ST、C64、NES、Amiga の音源、MSX BASIC の音の語、各システムの音の出力と、その出典
+- [ネイティブウィンドウの検討（Windows・macOS・Linux）](NATIVE_WINDOW_STUDY.md): `SHOW` の共通条件の案と、macOS・Linux の表示方式・依存・検証条件（検討段階）
 - [実装ノート](IMPLEMENTATION.md): Zig移植版の構成、実装判断、未実装機能
 - [ワード互換性一覧](COMPATIBILITY.ja.md): 誌面掲載ワードと現在の実装状況
 - [Gforth未対応ワードの実装フェーズ](GFORTH_WORD_PHASES.md): Forth 2012の標準語を優先する、重要度A〜Cの380語と既存4語の辞書化の実装順序、完了条件、tqueタスクとの対応

@@ -145,7 +145,7 @@ S" button .b -text Press -command {sigma_event pressed}; pack .b; wm deiconify .
 WAIT-PRESS                                       \ pressed, after the button is pressed
 ```
 
-`examples/calculator.fs` is a whole program: a calculator whose buttons and keys are Tk's and whose arithmetic is Forth's (`sigma.exe < examples/calculator.fs`).
+`examples/calculator.fs` is a whole program: a calculator whose buttons and keys are Tk's and whose arithmetic is Forth's (`sigma.exe < examples/calculator.fs`). `examples/graphs-tk.fs` draws the eight graphs of `examples/graphs.fs` on a Tk canvas, as its lines, rectangles, arcs, ovals, and text: Forth works out where everything goes and sends the Tcl script of each frame in one piece.
 
 | Word | Stack | Description |
 | --- | --- | --- |
@@ -348,7 +348,7 @@ REQUIRE-GRAPHICS  ALSO GRAPHICS
 SHOW
 ```
 
-`examples/trig.fs` draws sin x, cos x, and tan x with a grid, labels, and a legend; it gives `PLOT` NaN where tan x is far beyond the image, so that the graph has gaps at the asymptotes (`sigma.exe examples/trig.fs`).
+`examples/trig.fs` draws sin x, cos x, and tan x with a grid, labels, and a legend; it gives `PLOT` NaN where tan x is far beyond the image, so that the graph has gaps at the asymptotes (`sigma.exe examples/trig.fs`). `examples/graphs.fs` shows eight graphs one after another, each growing into place: a bar chart, a line chart, a pie chart, a scatter plot with its least-squares line, a histogram, the graph of a function, a Lissajous figure, and a rose in polar coordinates (Space or Enter for the next, Q or Esc to end).
 
 | Word | Stack | Description |
 | --- | --- | --- |
