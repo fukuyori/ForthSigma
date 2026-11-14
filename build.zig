@@ -203,7 +203,7 @@ fn fmaHeader(b: *std.Build) []const u8 {
 /// and localtime are the ones each target uses (32-bit musl and Windows rename them).
 fn addCTime(b: *std.Build, module: *std.Build.Module, target: std.Build.ResolvedTarget, optimize: std.builtin.Optimize) void {
     const c_time = b.addTranslateC(.{
-        .root_source_file = b.addWriteFiles().add("c_time.h", "#include <time.h>\n#ifndef _WIN32\n#include <sys/resource.h>\n#endif\n"),
+        .root_source_file = b.addWriteFiles().add("c_time.h", "#include <time.h>\n#include <errno.h>\n#ifndef _WIN32\n#include <sys/resource.h>\n#endif\n"),
         .target = target,
         .optimize = optimize,
     });

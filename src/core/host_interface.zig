@@ -114,6 +114,7 @@ pub const CursorPosition = struct { column: i32, row: i32 };
 
 /// The local date and time, for TIME&DATE: month 1 to 12, the full year.
 pub const LocalTime = struct { second: Cell, minute: Cell, hour: Cell, day: Cell, month: Cell, year: Cell };
+pub const ZonedTime = struct { local: LocalTime, dst: bool, offset: Cell, zone_length: usize };
 
 /// What audio_wait_fn saw while it waited.
 pub const AudioWait = enum {
@@ -160,6 +161,8 @@ pub const Writer = struct {
     /// Cumulative process user/system microseconds; includes threads, excludes children.
     cputime_fn: ?*const fn (?*anyopaque) RuntimeError!CpuTimes = null,
     local_time_fn: ?*const fn (?*anyopaque) RuntimeError!LocalTime = null,
+    /// Convert signed Unix seconds and copy a non-NUL-terminated zone name.
+    zoned_time_fn: ?*const fn (?*anyopaque, Double, []u8) RuntimeError!ZonedTime = null,
     /// Copies the variable's value into the buffer and returns its length, or null when unset.
     getenv_fn: ?*const fn (?*anyopaque, []const u8, []u8) RuntimeError!?usize = null,
     /// Runs a shell command and returns the status `system` gave; a non-zero status is not an error.

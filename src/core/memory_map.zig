@@ -168,6 +168,7 @@ comptime {
     if (environment_buffer_base + environment_buffer_size > system_end) @compileError("the system area does not fit");
     if (data_start != block_source_end or data_start % cell_size != 0) @compileError("the data area must follow the input area, aligned to a cell");
     if (blk_address < evaluate_source_name_address + evaluate_source_name.len or scr_address != blk_address + cell_size or scr_address + cell_size > hold_bottom) @compileError("block variables overlap system buffers");
+    if (timezone_buffer_address < dpl_address + cell_size or timezone_buffer_address + timezone_buffer_size > hold_bottom) @compileError("timezone buffer overlaps system variables or pictured output");
     if (newline_address < evaluate_source_name_address + 1 + evaluate_source_name.len or newline_address + 1 > blk_address) @compileError("NEWLINE overlaps system variables or source names");
     if (data_start >= min_memory_m) @compileError("the smallest data area is empty");
     if (!Sizes.small.valid()) @compileError("the small sizes are not valid");
@@ -268,6 +269,10 @@ pub const base_address: Cell = 0x0200;
 
 /// Decimal places of the latest integer conversion (-1 for a single-cell number).
 pub const dpl_address: Cell = 0x0d50;
+
+/// Dedicated borrowed >TIME&DATE&TZ text; no owned pointer or relocation root.
+pub const timezone_buffer_address: Cell = 0x0e00;
+pub const timezone_buffer_size = 256;
 
 pub const state_address: Cell = 0x0208;
 

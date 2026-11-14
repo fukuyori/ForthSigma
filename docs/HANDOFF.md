@@ -1,6 +1,6 @@
 # Gforth対応の引き継ぎ
 
-更新日：2026-11-14。P00・S01・P01・P02・P03・P04に続き、P05aの16語（565）も実装・検証完了。659は3af3c9fでpush済み。660は9d57d8eでpush済み。P05b（566）の最初の2語BASENAME/DIRNAME（663）はb9e5099でpush済み。664は544f823でpush済み。668はfba6e32でpush済み。669は7c21790でpush済み。670は1a21d47でpush済み、665は完了。674は031d224でpush済み。675 NSはf848b09でpush済み。P05bは13/14語。676はTZ実測済みで、実際の時差/TZ名と借用寿命・失敗方針の確認待ち（親666）。INCLUDE/REQUIRE接続は661へ分離。Windows/Linux確認はここでは行わず607（パス検索は662）へ残す。P05/542は未完了。
+更新日：2026-11-14。P00・S01・P01・P02・P03・P04に続き、P05a16語とP05b14語の実装・検証が完了。675 NSはf848b09、676の調査文書は144737aでpush済み。676 >TIME&DATE&TZを実時差/TZ名方針で実装・検証済み（未コミット）。676/666/566は完了。P05/542は別タスク661（INCLUDE/REQUIREパス接続）の設計・実装を残して未完了。次は661の仕様調査。Windows/Linux実機確認は行わず607配下（今回679）へ残す。
 
 P03c was committed and pushed as `98be4f8`. P03 and task 562 are complete. Claude Code review fixes and the first 21 P04a words were committed/pushed as a6ab243. Task 631 is complete (auto), with no new concrete defect found in the final review. See [P03 review](P03_REVIEW.md). The six additional P04a edit/owned-string words were committed/pushed as 5b2c8a4. XC@+? was committed/pushed as fa2afe9 and P04a is complete. P04b $VALUE/MACRO: were committed/pushed as 33bb55a (634); the macro vocabulary/callback words (635) were committed/pushed as 6a9c4e3. Check git status and git log before resuming.
 
@@ -50,9 +50,9 @@ NTIME/CPUTIME are implemented through optional host clock hooks in the always-av
 
 The user approved nonpositive immediate return, signed64-bit seconds bound, monotonic split waits, Ctrl+C interruption/other input retention and unchanged MS. NS is implemented through Writer.sleep_ns_fn and host_wait.zig:128-bit deadline, <=20ms sleeps, scoped SIGINT/termios or Windows console handler/mode, no input reads. Original state is restored; raw non-Ctrl+C signal characters remain input. One native wait can be active at a time. Five regressions, normal/minimal tests and normal build pass. Script validation covers16 duration checks,2 range,4 redirected/buffered input,4 signal/recovery(including >2^64ns) and5 Sigma PTY cases. See [P05 record](P05_IMPLEMENTATION.md) for ownership, cleanup and native-platform limits. 675 is complete(auto);666/566 remain incomplete at13/14. Next is676 >TIME&DATE&TZ: investigate time_t range, DST/offset, borrowed zone-text lifetime and errors. Native Windows/Linux NS checks remain678 under607. Changes were committed/pushed asf848b09.
 
-## P05b timezone investigation (676, no code yet)
+## P05b datetime/timezone (676, uncommitted)
 
-Twenty-one Gforth probes show correct TZ-dependent calendar/DST fields but offset0/empty zone name even in Tokyo/New York; source inspection identifies the __USE_MISC fallback. The recommended actual-offset/name policy, checked conversion errors with unchanged state, and a dedicated borrowed TZ buffer are pending user approval. No implementation has started. See [P05 record](P05_IMPLEMENTATION.md) and .work/p05b-timezone-check/initial-probes.json. Keep676/666/566 incomplete at13/14 until the policy is settled and implemented. Existing TIME&DATE should remain unchanged. Investigation changes are uncommitted.
+The user directed commit/push and proceeding after the actual-offset/name recommendation. Investigation docs were pushed as144737a. >TIME&DATE&TZ is implemented through a checked host hook, returning local fields/DST, actual east-positive UTC offset and available zone text. Names borrow a dedicated256-byte system buffer until the next successful conversion/reset/restore; failures preserve operands and previous text. Existing TIME&DATE/GETENV/path buffers are unchanged. Seven regressions, normal/minimal tests, normal build,105 Gforth calendar/DST comparisons,105 Python zoneinfo offset/name checks and4 native-range checks pass. See [P05 record](P05_IMPLEMENTATION.md) for native OS/CRT limits, empty/UTF-8 names and the intentional designated-build zero/empty difference. 676/666/566 are complete(auto): P05b14/14, P05 word set30/30. Keep548/542 incomplete because661 INCLUDE/REQUIRE path integration remains. Next is661 investigation/specification; do not silently change source search defaults/deduplication. Native Windows/Linux timezone checks remain679 under607. Implementation changes are uncommitted.
 
 ## P04a completion
 
@@ -96,7 +96,7 @@ tqueで管理し、進捗モードは**auto**とする。階層はForthSigma 121
 |546 P03|完了。560 P03a 44語、561 P03b 15語と永続化、562 P03c 6語が完了|
 |563 P04a|完了。28語の文字列操作/Unicode|
 |564 P04b / 547 P04|完了。文字列値・マクロ5語、合計33語。635は6a9c4e3でpush済み|
-|548 P05 / 565 P05a|進行中。653の2語を実装・検証、d8da5e7でpush済み。654は7964014でpush済み、655は2b97309でpush済み。659は3af3c9fでpush済み。660は9d57d8eでpush済み、565は完了。566の663（2語）はb9e5099でpush済み、664は544f823でpush済み。668はfba6e32でpush済み。669は7c21790でpush済み。670は1a21d47でpush済み、665は完了。674は031d224でpush済み。675 NSはf848b09でpush済み。676のTZ方針を確認中。661は接続を別途設計|
+|548 P05 / 565 P05a|進行中。653の2語を実装・検証、d8da5e7でpush済み。654は7964014でpush済み、655は2b97309でpush済み。659は3af3c9fでpush済み。660は9d57d8eでpush済み、565は完了。566の663（2語）はb9e5099でpush済み、664は544f823でpush済み。668はfba6e32でpush済み。669は7c21790でpush済み。670は1a21d47でpush済み、665は完了。674は031d224でpush済み。675 NSはf848b09でpush済み。676日時/TZを実装・検証済み（未コミット）、566は完了。次は661パス接続の設計。661は接続を別途設計|
 |561 P03b|完了。15語の実行・型/寿命追跡と新形式保存/復元/追加を統合|
 |550 P07|未着手。P01依存は解消。457を先行させる|
 |457 P07先行|550配下。IS/ACTION-OF/TO/+TOの辞書登録。既存IDを使う|

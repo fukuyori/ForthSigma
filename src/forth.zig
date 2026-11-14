@@ -78,6 +78,7 @@ pub const UDouble = memory_map.UDouble;
 const Word = defs.Word;
 const WordKind = defs.WordKind;
 pub const LocalTime = host_interface.LocalTime;
+pub const ZonedTime = host_interface.ZonedTime;
 pub const TerminalSize = host_interface.TerminalSize;
 pub const InputEvent = host_interface.InputEvent;
 pub const AudioWait = host_interface.AudioWait;
@@ -957,6 +958,7 @@ pub const State = struct {
             .{ "NTIME", .ntime },
             .{ "CPUTIME", .cputime },
             .{ "NS", .ns },
+            .{ ">TIME&DATE&TZ", .to_time_date_tz },
             .{ "\\\\\\", .triple_backslash },
     };
 

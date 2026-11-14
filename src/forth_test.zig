@@ -29,6 +29,7 @@ comptime {
     _ = @import("tests/p05b_dir_iterator_test.zig");
     _ = @import("tests/p05b_clocks_test.zig");
     _ = @import("tests/p05b_ns_test.zig");
+    _ = @import("tests/p05b_timezone_test.zig");
     _ = @import("tests/p01b_test.zig");
     _ = @import("tests/p01a_test.zig");
     _ = @import("core/blocks.zig");

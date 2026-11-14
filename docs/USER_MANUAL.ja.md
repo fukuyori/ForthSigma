@@ -1228,3 +1228,9 @@ ASCII文字クラスはalnum・alpha・blank・cntrl・digit・graph・lower・p
 `NS ( dnanoseconds -- )`は符号付きダブルセルのナノ秒数を消費します。0以下は即時終了し、`1000000. NS`はOSのスケジューリングに従って少なくとも1ms待機します。正値は単調時計を基準に分割待機し、端末のCtrl+CをUserInterrupt(-28)として返します。他の入力は既存のキューに保持し、NS自身は標準入力の読み取りやイベント処理を行いません。端末・コンソール設定とハンドラを復元し、MSの既存動作も変更しません。
 
 上限は(2^63-1)秒+999,999,999nsで、超過はResultOutOfRange(-11)です。実際の精度はOSに依存し、Windowsの正のSleep区間はミリ秒へ切り上げます。正値にはホストのsleep_nsフックが必要で、未提供ならHostUnavailableです。ネイティブ待機はプロセス内で同時に1個のみで、並行・入れ子呼び出しはHostFailedになります。通常のcanonical編集は維持し、raw入力から新たに有効になるCtrl+C以外のシグナル文字は一時無効にしてキーを保持します。すでにキューにあるrawのバイト3も読み取りません。files/float無効構成でも利用でき、VMヒープ確保は不要です。
+
+### Unix秒から日時・タイムゾーンへの変換
+
+`>TIME&DATE&TZ ( dseconds -- second minute hour day month year dst offset addr u )`は符号付きUnix秒を変換します。epochなら`0. >TIME&DATE&TZ`です。NTIMEのナノ秒値は先に1,000,000,000で除算してください。月は1..12、年は西暦全体、dstはOSのDST判定によるForthフラグです。offsetはDST込みのUTCから東向き正の秒数で、東京は通常32400、ニューヨークは通常-18000または-14400です。
+
+addr/uは取得可能なOS/CRTのTZ名を最大256バイトで借用し、次の成功した変換・リセット・イメージ復元まで有効です。長く保持する場合はコピーし、FREEやNUL終端の想定はしないでください。名前は略称・表示名の場合があり、取得不能なら空も許容します。GETENV・パス検索とは専用バッファを分けています。日付範囲とTZ環境変数の構文はOS/CRTに依存します。範囲外・OS暦範囲超過はResultOutOfRange、その他の失敗はHostFailed、フック未提供はHostUnavailableです。エラーでは入力セルと前回のTZ名を保持します。追加スタック8セルが必要ですがVMヒープ確保は不要で、files/float無効構成でも利用できます。既存TIME&DATEは変更しません。
