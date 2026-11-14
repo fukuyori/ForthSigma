@@ -241,3 +241,7 @@ P06c adds ten EKEYS constants and five terminal/key words. Approved change: EKEY
 ## P07 prework (457)
 
 IS/ACTION-OF/TO/+TO are dictionary words with separate interpretation and compilation actions. Tick/EXECUTE, POSTPONE, NAME>COMPILE, SYNONYM, shadowing and image round trips are supported. Sigma retains IS on FVALUE/2VALUE/$VALUE and InvalidDefinition(-259) for unsupported targets/missing names; these differ from designated Gforth. Comparison:51 matching cases plus12 approved difference checks; native SAVE/LOAD and SAVESYS2 checks. Normal/minimal tests and build pass. Previous builtin ABI images are rejected. [Details](P07_IMPLEMENTATION.md).
+
+## P07a (570)
+
+All8 compilation-token/execution words are implemented. Final comparisons:57 matching Gforth cases plus13 strict Sigma error-policy checks; native image checks2. COMPILE-ONLY/RESTRICT reject ordinary interpretation(-14), retaining explicit xt use and compilation. [NOOP] is non-immediate and SELECT accepts any nonzero flag. Normal/minimal tests and full restore/both append routes pass. The compile_only Word attribute changes the ABI; earlier ABI images remain unsupported. [Details](P07_IMPLEMENTATION.md).

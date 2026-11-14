@@ -849,3 +849,7 @@ Forth 2012の標準語を優先する[実装計画](GFORTH_WORD_PHASES.md)と[P0
 ## P07先行4語の方針（2026-11-14）
 
 利用者は一括確認に対して「おすすめで進めて」と承認した。IS・ACTION-OF・TO・+TOを辞書化し、Gforth同様に解釈トークンとコンパイル動作を分離する。既存SigmaのISによるFVALUE・2VALUE・$VALUE代入と、不正対象・入力終端のInvalidDefinition(-259)は維持する。ACTION-OFはDEFER専用。SIGIMG45/46/47の枠組みは維持し、組み込みABIが異なるイメージは従来どおり拒否する。新しい8 builtinタグ/項目によるABI変更を旧イメージ移行とは扱わない。[実装記録](P07_IMPLEMENTATION.md)。
+
+## P07aの解釈制限（2026-11-14）
+
+利用者は一括確認へ「おすすめで進めて」と回答した。COMPILE-ONLY/RESTRICTで制限した語の通常解釈はCompileOnly(-14)で停止し、コンパイルと明示的なxt取得・実行を許可する。既存の本体側実行条件は緩めない。[COMP']・EXECUTE-EXITはコンパイル状態専用、POSTPONE,は定義外でエラー。Gforthの警告後継続は模倣しない。Wordのcompile_only属性は保存/検証し、旧ABIイメージは従来の厳密チェックで拒否する。[実装・比較](P07_IMPLEMENTATION.md)。

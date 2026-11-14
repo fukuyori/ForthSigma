@@ -1017,7 +1017,7 @@ SAVESYS demo.exe
 | ループ関連 | `I`, `J`, `K`, `LEAVE`, `UNLOOP` |
 | 入出力 | `.`, `U.`, `.R`, `U.R`, `C.`, `.S`, `ECHO`, `EMIT`, `CR`, `SPACE`, `SPCES`, `SPACES`, `TYPE`, `INPUT`, `EMIT?` |
 | 基数 | `HEX`, `DEC`, `DECIMAL`, `OCT`, `BASE` |
-| 定義補助・辞書・実行 | `<BUILDS`, `CREATE`, `IMMEDIATE`, `WORDS`, `BYE`, `LOAD-DICTIONARY`, `SAVE`, `SAVESYS`, `EXECUTE`, `SEE`, `FIND`, `FIND-NAME`, `NAME>INT`, `NAME>STRING`, `MARKER`, `LOCATE`, `WHERE`, `PERFORM`, `NOOP`, `DEFER`, `DEFER!`, `DEFER@`, `DEFERS`, `COMPILE,`, `[COMPILE]`, `NAME>COMPILE`, `TO`, `IS`, `+TO`, `ACTION-OF`, `BEGIN-STRUCTURE`, `END-STRUCTURE`, `+FIELD`, `FIELD:`, `CFIELD:`, `FFIELD:`, `SFFIELD:`, `DFFIELD:`, `STRUCT`, `FIELD`, `END-STRUCT`, `CELL%`, `CHAR%`, `FLOAT%`, `DOUBLE%`, `SFLOAT%`, `DFLOAT%`, `%SIZE`, `%ALIGNMENT`, `%ALIGN`, `%ALLOT`, `%ALLOC`, `%ALLOCATE`, `LATEST`, `LATESTXT`, `>NAME`, `ID.`, `.NAME`, `ALIAS` |
+| 定義補助・辞書・実行 | `<BUILDS`, `CREATE`, `IMMEDIATE`, `WORDS`, `BYE`, `LOAD-DICTIONARY`, `SAVE`, `SAVESYS`, `EXECUTE`, `SEE`, `FIND`, `FIND-NAME`, `NAME>INT`, `NAME>STRING`, `MARKER`, `LOCATE`, `WHERE`, `PERFORM`, `NOOP`, `DEFER`, `DEFER!`, `DEFER@`, `DEFERS`, `COMPILE,`, `[COMPILE]`, `NAME>COMPILE`, `COMP'`, `[COMP']`, `POSTPONE,`, `COMPILE-ONLY`, `RESTRICT`, `EXECUTE-EXIT`, `SELECT`, `[NOOP]`, `TO`, `IS`, `+TO`, `ACTION-OF`, `BEGIN-STRUCTURE`, `END-STRUCTURE`, `+FIELD`, `FIELD:`, `CFIELD:`, `FFIELD:`, `SFFIELD:`, `DFFIELD:`, `STRUCT`, `FIELD`, `END-STRUCT`, `CELL%`, `CHAR%`, `FLOAT%`, `DOUBLE%`, `SFLOAT%`, `DFLOAT%`, `%SIZE`, `%ALIGNMENT`, `%ALIGN`, `%ALLOT`, `%ALLOC`, `%ALLOCATE`, `LATEST`, `LATESTXT`, `>NAME`, `ID.`, `.NAME`, `ALIAS` |
 | 制御構造（即時語） | `IF`, `ELSE`, `AHEAD`, `THEN`, `CS-PICK`, `CS-ROLL`, `ENDIF`, `BEGIN`, `END`, `UNTIL`, `AGAIN`, `WHILE`, `REPEAT`, `DO`, `?DO`, `LOOP`, `+LOOP`, `DOES>`, `CASE`, `OF`, `?OF`, `ENDOF`, `CONTOF`, `ENDCASE`, `NEXT-CASE`, `EXIT`, `?EXIT`, `?LEAVE`, `RECURSE` |
 | 浮動小数点スタック | `FDROP`, `FDUP`, `FSWAP`, `FOVER`, `FROT`, `F-ROT`, `FNIP`, `FTUCK`, `FPICK`, `FDEPTH`, `F.S` |
 | 浮動小数点算術・関数 | `F+`, `F-`, `F*`, `F/`, `FNEGATE`, `FMINUS`, `FABS`, `FMAX`, `FMIN`, `FSQRT`, `FEXP`, `FLN`, `FSIN`, `FCOS`, `FTAN`, `FSINCOS`, `FASIN`, `FACOS`, `FATAN`, `FATAN2`, `FSINH`, `FCOSH`, `FTANH`, `FASINH`, `FACOSH`, `FATANH`, `FEXPM1`, `FLNP1`, `FLOG`, `FALOG`, `F**`, `FLOOR`, `FTRUNC`, `FROUND` |
@@ -1311,3 +1311,11 @@ EKEYSにK-ENTER・K-WINCH・K-PAUSE・K-MUTE・K-VOLUP・K-VOLDOWN・K-BACKSPACE
 TO・IS・+TO・ACTION-OFは辞書に登録され、通常入力、検索、SYNONYM、再定義に対応します。`'`・`[']`・NAME>INTERPRETで得たトークンは、コンパイル中でもその場で解釈動作を実行します。POSTPONE・NAME>COMPILE・[COMPILE]はコンパイル動作を選びます。COMPILE,は渡された解釈用トークンの実行をそのまま組み込みます。
 
 既存SigmaのISによるFVALUE・2VALUE・$VALUE代入とエラー番号を維持します。ACTION-OFはDEFER専用です。保存形式名はSIGIMG45/46/47のままですが、組み込みABIが変わるため、以前のABIのイメージは作り直してください。[実装と検証](P07_IMPLEMENTATION.md)。
+
+## P07a：コンパイルトークン
+
+COMP'は名前を解析してコンパイルトークン`( xt1 xt2 )`を返します。[COMP']は定義内で名前を読み、そのペアを実行時に返すコードを生成します。POSTPONE,はペアが表すコンパイル動作を作成中の定義へ追加します。EXECUTE-EXITは、実行時にxtを実行して現在の定義を終了するコードを生成します。ループから抜ける場合のUNLOOPは呼出側の責任です。
+
+COMPILE-ONLYとRESTRICTは最後の名前付き利用者定義を制限します。通常の名前解釈は-14で停止しますが、コンパイルや明示的なxt取得・実行は可能です。SYNONYMは制限も引き継ぎます。語本体が持つ実行条件は維持します。[COMP']とEXECUTE-EXITはコンパイル状態専用、POSTPONE,は定義の外ではエラーです。Gforthが警告後に継続する場合もSigmaは停止します。
+
+SELECT `( u1 u2 flag -- u )`は非ゼロならu1、ゼロならu2を返します。[NOOP]は何もしない通常語で、xtを積みません。即時語ではありません。compile_only属性の追加によりWord ABIが変わるため、以前のABIの辞書イメージは作り直してください。[検証記録](P07_IMPLEMENTATION.md)。

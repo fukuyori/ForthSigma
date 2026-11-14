@@ -300,7 +300,7 @@ V . DEPTH .
 
 #### P07a コンパイルトークンと実行
 
-対象 8語。tque ID: 570。単位内の先行作業: 457の辞書化。
+対象 8語。tque ID: 570、8/8完了(auto)。単位内の先行作業: 457の辞書化。通常/最小テスト、57比較・13承認済み差分・native保存2件が通過。次は571 P07b。[実装記録](P07_IMPLEMENTATION.md)。
 
 `COMP'`, `COMPILE-ONLY`, `EXECUTE-EXIT`, `POSTPONE,`, `RESTRICT`, `SELECT`, `[COMP']`, `[NOOP]`
 

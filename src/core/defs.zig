@@ -980,6 +980,14 @@ pub const Builtin = enum {
     compile_assign_is,
     compile_assign_plus_to,
     compile_assignment_action_of,
+    comp_tick,
+    bracket_comp_tick,
+    compile_only,
+    restrict_word,
+    execute_exit,
+    postpone_comma,
+    select_word,
+    bracket_noop,
 };
 
 pub const HeapResult = union(enum) { address: Cell, no_memory, bad_pointer };
@@ -1052,6 +1060,7 @@ pub const Word = struct {
     kind: WordKind = .builtin,
     builtin: Builtin = .drop,
     immediate: bool = false,
+    compile_only: bool = false,
     has_does: bool = false,
     value: Cell = 0,
     code_start: u16 = 0,

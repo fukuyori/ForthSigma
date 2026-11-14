@@ -39,6 +39,7 @@ pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
             const target = self.synonymTarget(try self.lookupOrFail(old_name));
             const id = try self.appendWord(new_name[0..new_token.len], .synonym, .drop, target);
             self.words[id].immediate = self.words[target].immediate;
+            self.words[id].compile_only = self.words[target].compile_only;
         },
         // TRAVERSE-WORDLIST ( xt wid -- ): xt ( nt -- flag ) for each word of the list,
         // newest first, until it gives false.

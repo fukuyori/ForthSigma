@@ -13,6 +13,7 @@ cmd = [str(b/'gforth-ditc'), '-p', str(b)+':~+', '-i', str(b/'gforth.fi'), '-e']
 cases = []
 def add(name, source): cases.append((name, source))
 for word in ("COMP'", 'COMPILE-ONLY', 'EXECUTE-EXIT', 'POSTPONE,', 'RESTRICT', 'SELECT', "[COMP']", '[NOOP]'):
+    add('immediate-flag:'+word, f'BL WORD {word} FIND NIP .')
     add('lookup:'+word, f'S" {word}" FIND-NAME DUP 0<> . NAME>INTERPRET 0<> .')
 for flag in (0, -1, 1, 2, -2, 255):
     add('select:'+str(flag), f'11 22 {flag} SELECT .')

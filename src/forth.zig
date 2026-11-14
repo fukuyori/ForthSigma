@@ -807,7 +807,8 @@ pub const State = struct {
         .{ "BROKEN-PIPE-ERROR", .broken_pipe_error }, .{ "SH-GET", .sh_get },                         .{ "KEY-IOR", .key_ior },                     .{ "FORM", .form },                          .{ "AT-DELTAXY", .at_deltaxy },
         .{ "FKEY.", .fkey_dot },                      .{ "SIMPLE-FKEY-STRING", .simple_fkey_string }, .{ "TO", .assign_to },                        .{ "IS", .assign_is },                       .{ "+TO", .assign_plus_to },
         .{ "ACTION-OF", .assignment_action_of },      .{ "", .compile_assign_to },                    .{ "", .compile_assign_is },                  .{ "", .compile_assign_plus_to },            .{ "", .compile_assignment_action_of },
-        .{ "\\\\\\", .triple_backslash },
+        .{ "COMP'", .comp_tick },                     .{ "[COMP']", .bracket_comp_tick },             .{ "COMPILE-ONLY", .compile_only },           .{ "RESTRICT", .restrict_word },             .{ "EXECUTE-EXIT", .execute_exit },
+        .{ "POSTPONE,", .postpone_comma },            .{ "SELECT", .select_word },                    .{ "[NOOP]", .bracket_noop },                 .{ "\\\\\\", .triple_backslash },
     };
 
     fn installBuiltins(self: *State) void {
@@ -849,7 +850,7 @@ pub const State = struct {
 
     fn isImmediateBuiltin(builtin: Builtin) bool {
         return switch (builtin) {
-            .assign_to, .assign_is, .assign_plus_to, .assignment_action_of, .compile_if, .compile_else, .compile_ahead, .compile_then, .compile_begin, .compile_end, .compile_again, .compile_while, .compile_repeat, .compile_do, .compile_q_do, .compile_loop, .compile_plus_loop, .compile_does, .compile_case, .compile_of, .compile_endof, .compile_endcase, .compile_exit, .compile_recurse, .leave, .bracket_if, .bracket_else, .bracket_then, .bracket_defined, .bracket_undefined, .bracket_ifdef, .bracket_ifundef, .bracket_do, .bracket_q_do, .bracket_loop, .bracket_plus_loop, .bracket_i, .bracket_begin, .bracket_until, .bracket_again, .bracket_while, .bracket_repeat, .bracket_for, .bracket_next, .end_definition, .literal, .fliteral, .sliteral, .two_literal, .defers, .bracket_compile, .question_exit, .question_leave, .compile_question_of, .compile_contof, .compile_next_case, .debug_tilde, .assert_paren, .once, .debug_tilde_bt, .debug_tilde_one_bt, .break_colon, .break_quote, .triple_backslash => true,
+            .bracket_comp_tick, .execute_exit, .assign_to, .assign_is, .assign_plus_to, .assignment_action_of, .compile_if, .compile_else, .compile_ahead, .compile_then, .compile_begin, .compile_end, .compile_again, .compile_while, .compile_repeat, .compile_do, .compile_q_do, .compile_loop, .compile_plus_loop, .compile_does, .compile_case, .compile_of, .compile_endof, .compile_endcase, .compile_exit, .compile_recurse, .leave, .bracket_if, .bracket_else, .bracket_then, .bracket_defined, .bracket_undefined, .bracket_ifdef, .bracket_ifundef, .bracket_do, .bracket_q_do, .bracket_loop, .bracket_plus_loop, .bracket_i, .bracket_begin, .bracket_until, .bracket_again, .bracket_while, .bracket_repeat, .bracket_for, .bracket_next, .end_definition, .literal, .fliteral, .sliteral, .two_literal, .defers, .bracket_compile, .question_exit, .question_leave, .compile_question_of, .compile_contof, .compile_next_case, .debug_tilde, .assert_paren, .once, .debug_tilde_bt, .debug_tilde_one_bt, .break_colon, .break_quote, .triple_backslash => true,
             else => false,
         };
     }
@@ -857,6 +858,7 @@ pub const State = struct {
     fn addBuiltin(self: *State, name: []const u8, builtin: Builtin) RuntimeError!void {
         const id = try self.appendWord(name, .builtin, builtin, 0);
         self.words[id].immediate = isImmediateBuiltin(builtin);
+        self.words[id].compile_only = builtin == .bracket_comp_tick or builtin == .execute_exit;
         if (builtin == .csv_quote or builtin == .csv_separator) {
             self.words[id].kind = .value;
             self.words[id].value = if (builtin == .csv_quote) memory_map.csv_quote_address else memory_map.csv_separator_address;
@@ -1043,6 +1045,7 @@ pub const State = struct {
         const found = self.lookup(token);
         if (found) |id| {
             self.recordUse(id);
+            if (!self.compiling and self.words[id].compile_only) return error.CompileOnly;
             if (@import("core/word_semantics.zig").pending(self, id)) |pending| {
                 self.pending = pending;
                 return;
@@ -1942,7 +1945,7 @@ pub const State = struct {
         if (defs.debug_enabled and self.cover_blocks and self.compiling and startsBlock(builtin)) self.markBlock(self.columnAfterWord());
     }
 
-    const word_modules = .{ @import("core/words_terminal.zig"), @import("core/string_values.zig"), @import("core/words_string_edit.zig"), @import("core/words_text.zig"), @import("core/words_buffers.zig"), @import("core/words_data.zig"), @import("core/words_width.zig"), words_stack, words_arithmetic, @import("core/words_numeric.zig"), words_memory, words_output, words_input, words_compiling, words_float, words_pictured, words_dictionary, words_system, @import("core/blocks.zig"), words_files, words_strings, words_help, words_defining, words_graphics, words_audio, words_xchar, words_tools, words_debug };
+    const word_modules = .{ @import("core/words_compilation_tokens.zig"), @import("core/words_terminal.zig"), @import("core/string_values.zig"), @import("core/words_string_edit.zig"), @import("core/words_text.zig"), @import("core/words_buffers.zig"), @import("core/words_data.zig"), @import("core/words_width.zig"), words_stack, words_arithmetic, @import("core/words_numeric.zig"), words_memory, words_output, words_input, words_compiling, words_float, words_pictured, words_dictionary, words_system, @import("core/blocks.zig"), words_files, words_strings, words_help, words_defining, words_graphics, words_audio, words_xchar, words_tools, words_debug };
 
     /// For each built-in word, the index in `word_modules` of the file that executes it.
     const word_owner = blk: {
