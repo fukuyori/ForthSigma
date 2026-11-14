@@ -11,11 +11,10 @@ const RuntimeError = defs.RuntimeError;
 const State = forth.State;
 const UCell = memory_map.UCell;
 const base_address = memory_map.base_address;
-const max_dot_s_items = memory_map.max_dot_s_items;
 
 /// The built-in words this file executes; executeBuiltin dispatches by this list.
 pub const words = [_]Builtin{
-    .dot, .u_dot, .dot_r, .u_dot_r, .d_dot_r, .at_xy, .c_dot, .dot_s, .echo, .cr, .space, .spaces, .type, .hex, .dec, .oct, .base,
+    .dot,   .u_dot, .dot_r, .u_dot_r, .d_dot_r, .at_xy, .c_dot, .dot_s, .echo, .cr, .space, .spaces, .type, .hex, .dec, .oct, .base,
     .d_dot, .page,
 };
 
@@ -48,9 +47,10 @@ pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
             self.write(" ");
         },
         .dot_s => {
+            const visible = try @import("words_stack_display.zig").visibleItems(self, self.data_depth);
             self.writeDepth(self.data_depth);
             // Like gforth, only the top items are shown below the depth.
-            for (self.data_stack[self.data_depth -| max_dot_s_items .. self.data_depth]) |value| {
+            for (self.data_stack[self.data_depth - visible .. self.data_depth]) |value| {
                 self.writeNumber(value);
                 self.write(" ");
             }

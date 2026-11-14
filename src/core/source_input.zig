@@ -286,21 +286,32 @@ pub fn requireFile(self: *State, name: []const u8) RuntimeError!void {
 /// LOCATE: prints where a word was defined and the lines of its definition.
 pub fn locateWord(self: *State, id: u16) RuntimeError!void {
     const word = self.words[id];
+    self.source_navigation.length = 0;
     if (word.source_file == 0 or word.source_file > self.sourceFileCount()) {
         self.write(self.wordName(word));
         self.write(": NO FILE INFORMATION\n");
         return;
     }
+    @import("source_navigation.zig").select(self, word.source_file - 1, word.source_line);
     const name = self.sourceFileName(word.source_file - 1);
     var line_text: [24]u8 = undefined;
     self.write(name);
     self.write(std.fmt.bufPrint(&line_text, ":{d}\n", .{word.source_line}) catch unreachable);
-    const last = @min(word.source_end_line, word.source_line + 19);
+    try listSourceLines(self, name, word.source_line, @min(word.source_end_line, word.source_line +| 19));
+}
+
+/// Display a bounded physical source range, opening a file only once per view.
+pub fn listSourceLines(self: *State, name: []const u8, first: u32, last: u32) RuntimeError!void {
+    if (first == 0 or last < first) return;
+
     if (embeddedSource(self, name)) |source| {
-        for (word.source_line..@as(usize, last) + 1) |number| {
-            const line = embeddedLine(source, @intCast(number)) orelse return;
+        var number = first;
+        while (true) {
+            const line = embeddedLine(source, number) orelse return;
             self.write(line);
             self.write("\n");
+            if (number == last) break;
+            number += 1;
         }
         return;
     }
@@ -323,7 +334,7 @@ pub fn locateWord(self: *State, id: u16) RuntimeError!void {
         }
         number += 1;
         if (too_long) continue;
-        if (number >= word.source_line) {
+        if (number >= first) {
             self.write(chunk[0..result.length]);
             self.write("\n");
         }

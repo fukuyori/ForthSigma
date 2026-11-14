@@ -313,8 +313,8 @@ fn validateWords(v: View) RuntimeError!void {
         if (word.has_does and (word.does_code_start > word.does_code_end or word.does_code_end > v.header.code_count)) return error.InvalidImage;
         switch (word.kind) {
             .value => {
-                if (i < v.header.builtin_count and (word.builtin == .csv_quote or word.builtin == .csv_separator)) {
-                    const expected = if (word.builtin == .csv_quote) map.csv_quote_address else map.csv_separator_address;
+                if (i < v.header.builtin_count and defs.builtinValueAddress(word.builtin) != null) {
+                    const expected = defs.builtinValueAddress(word.builtin).?;
                     if (word.value != expected) return error.InvalidImage;
                 } else try dataCell(v, word.value, 8);
             },

@@ -30,7 +30,7 @@ test "P04b each API executes callbacks once per occurrence including overflow" {
     var output = support.Output{};
     const m = try support.createMachine(&output);
     defer support.destroyMachine(m);
-    try m.interpretLine("VARIABLE N REPLACER: X 1 N +! S\" abc\" ; CREATE BUF 2 ALLOT S\" %X%%X%\" $SUBSTITUTE . TYPE N @ . S\" %X%%X%\" BUF 2 SUBSTITUTE . TYPE N @ . S\" %X%\" .SUBSTITUTE . N @ .");
+    try m.interpretLine("VARIABLE TEST-COUNT REPLACER: X 1 TEST-COUNT +! S\" abc\" ; CREATE BUF 2 ALLOT S\" %X%%X%\" $SUBSTITUTE . TYPE TEST-COUNT @ . S\" %X%%X%\" BUF 2 SUBSTITUTE . TYPE TEST-COUNT @ . S\" %X%\" .SUBSTITUTE . TEST-COUNT @ .");
     try std.testing.expectEqualStrings("2 abcabc2 -78 ab4 abc1 5 ", output.written());
     try support.expectStack(m, &.{});
     try registry.validate(m);

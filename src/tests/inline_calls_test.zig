@@ -43,8 +43,8 @@ test "short calls inline with nested depth guards and retain original word ident
     var output = support.Output{};
     const machine = try support.createMachine(&output);
     defer support.destroyMachine(machine);
-    try machine.interpretLine(": A 1+ ; : B A A ; : C B B ;");
-    try std.testing.expect(inline_calls.isInline(first(machine, "B")));
+    try machine.interpretLine(": A 1+ ; : TEST-BUF A A ; : C TEST-BUF TEST-BUF ;");
+    try std.testing.expect(inline_calls.isInline(first(machine, "TEST-BUF")));
     try std.testing.expect(inline_calls.isInline(first(machine, "C")));
     const c = machine.words[machine.lookup("C").?];
     try std.testing.expectEqual(@as(u16, 2), inline_calls.depth(machine.code[c.code_start + 1].value));
@@ -52,16 +52,16 @@ test "short calls inline with nested depth guards and retain original word ident
     try support.expectStack(machine, &.{ 4, 4, 100 });
     try std.testing.expectEqualStrings("WARNING: SAME NAME WORD EXISTS\n", output.written());
     output.len = 0;
-    try machine.interpretLine(support.see("SEE B SEE C"));
-    try std.testing.expectEqualStrings(support.see(": B\n  A A\n;\n: C\n  B B\n;\n"), output.written());
+    try machine.interpretLine(support.see("SEE TEST-BUF SEE C"));
+    try std.testing.expectEqualStrings(support.see(": TEST-BUF\n  A A\n;\n: C\n  TEST-BUF TEST-BUF\n;\n"), output.written());
 }
 
 test "inlined calls reject words removed during execution by FORGET or MARKER" {
     for ([_][]const u8{
         ": A 1+ ; : P S\" FORGET A\" EVALUATE 10 A . ;",
         "MARKER M : A 1+ ; : P M 10 A . ;",
-        ": A 1+ ; : B A A ; : P S\" FORGET A\" EVALUATE 10 B . ;",
-        "MARKER M : A 1+ ; : B A A ; : P M 10 B . ;",
+        ": A 1+ ; : TEST-BUF A A ; : P S\" FORGET A\" EVALUATE 10 TEST-BUF . ;",
+        "MARKER M : A 1+ ; : TEST-BUF A A ; : P M 10 TEST-BUF . ;",
     }) |source| {
         for ([_]bool{ false, true }) |ordinary| {
             var output = support.Output{};
@@ -92,7 +92,7 @@ test "inlined calls preserve call-limit and stack-error ordering" {
     defer support.destroyMachine(optimized);
     const control = try support.createMachine(&output);
     defer support.destroyMachine(control);
-    const source = ": A 1+ ; : B A A ; : C B B ; : Q DROP A ; : R Q ;";
+    const source = ": A 1+ ; : TEST-BUF A A ; : C TEST-BUF TEST-BUF ; : Q DROP A ; : R Q ;";
     try optimized.interpretLine(source);
     try control.interpretLine(source);
     ordinaryCalls(control);
@@ -122,8 +122,8 @@ test "recursive branching local dynamic and large definitions stay as calls" {
     const machine = try support.createMachine(&output);
     defer support.destroyMachine(machine);
     try machine.interpretLine(": REC RECURSE ; : BR IF 1 THEN ; : LOCAL { x } x ; : DYN EXECUTE ; : LONG 1+ 1+ 1+ 1+ 1+ ; : EARLY EXIT ;");
-    try machine.interpretLine(": R REC ; : B BR ; : L LOCAL ; : D DYN ; : G LONG ; : E EARLY ;");
-    for ([_][]const u8{ "REC", "R", "B", "L", "D", "G", "E" }) |name| {
+    try machine.interpretLine(": R REC ; : TEST-BUF BR ; : TEST-LINES LOCAL ; : D DYN ; : G LONG ; : E EARLY ;");
+    for ([_][]const u8{ "REC", "R", "TEST-BUF", "TEST-LINES", "D", "G", "E" }) |name| {
         try std.testing.expect(!inline_calls.isInline(first(machine, name)));
     }
     try machine.interpretLine(": A 1+ ;");
@@ -181,7 +181,7 @@ test "saved inline padding consumes LOAD capacity and rejection leaves the targe
         var output = support.Output{};
         const source = try support.createMachine(&output);
         defer support.destroyMachine(source);
-        try source.interpretLine(": A 1+ 1+ 1+ 1+ ; : B");
+        try source.interpretLine(": A 1+ 1+ 1+ 1+ ; : TEST-BUF");
         if (ordinary) {
             _ = try source.emit(.{ .kind = .call_colon, .value = source.lookup("A").? });
         } else {
@@ -195,7 +195,7 @@ test "saved inline padding consumes LOAD capacity and rejection leaves the targe
         defer support.destroyMachine(restored);
         try restored.restoreImage(buffer[0..length]);
         try std.testing.expectEqual(@as(u16, if (ordinary) 7 else 11), restored.code_count);
-        try std.testing.expectEqual(!ordinary, inline_calls.isInline(first(restored, "B")));
+        try std.testing.expectEqual(!ordinary, inline_calls.isInline(first(restored, "TEST-BUF")));
         const target = try support.createMachine(&output);
         defer support.destroyMachine(target);
         try target.interpretLine(": PREFIX 99 ;");
@@ -207,7 +207,7 @@ test "saved inline padding consumes LOAD capacity and rejection leaves the targe
         if (ordinary) {
             try target.appendImage(restored);
             try std.testing.expectEqual(target.code.len, target.code_count);
-            try target.interpretLine("10 B PREFIX");
+            try target.interpretLine("10 TEST-BUF PREFIX");
             try support.expectStack(target, &.{ 14, 99 });
         } else {
             try std.testing.expectError(error.CodeFull, target.appendImage(restored));
@@ -216,7 +216,7 @@ test "saved inline padding consumes LOAD capacity and rejection leaves the targe
             try std.testing.expectEqual(names_used, target.names_used);
             try std.testing.expectEqual(data_here, target.data_here);
             try std.testing.expect(target.lookup("A") == null);
-            try std.testing.expect(target.lookup("B") == null);
+            try std.testing.expect(target.lookup("TEST-BUF") == null);
             try target.interpretLine("PREFIX");
             try support.expectStack(target, &.{99});
         }
@@ -287,16 +287,16 @@ test "inlining survives image normalization restoration and repeated relocation"
     var output = support.Output{};
     const source = try support.createMachine(&output);
     defer support.destroyMachine(source);
-    try source.interpretLine(": A 1+ ; : B A A ; : C B B ;");
+    try source.interpretLine(": A 1+ ; : TEST-BUF A A ; : C TEST-BUF TEST-BUF ;");
     const buffer = try std.testing.allocator.alloc(u8, forth.State.imageCapacity(.small));
     defer std.testing.allocator.free(buffer);
     const length = try source.encodeImage(buffer);
     try std.testing.expectEqualStrings("SIGIMG45", buffer[0..8]);
-    try std.testing.expect(inline_calls.isInline(first(source, "B")));
+    try std.testing.expect(inline_calls.isInline(first(source, "TEST-BUF")));
     const restored = try support.createMachine(&output);
     defer support.destroyMachine(restored);
     try restored.restoreImage(buffer[0..length]);
-    try std.testing.expect(inline_calls.isInline(first(restored, "B")));
+    try std.testing.expect(inline_calls.isInline(first(restored, "TEST-BUF")));
     try std.testing.expect(inline_calls.isInline(first(restored, "C")));
     try restored.interpretLine("0 C");
     try support.expectStack(restored, &.{4});
@@ -310,7 +310,7 @@ test "inlining survives image normalization restoration and repeated relocation"
     }
     try support.expectStack(target, &.{ 4, 99, 4, 99 });
     try target.interpretLine(support.see("SEE C"));
-    try std.testing.expectEqualStrings(support.see(": C\n  B B\n;\n"), output.written());
+    try std.testing.expectEqualStrings(support.see(": C\n  TEST-BUF TEST-BUF\n;\n"), output.written());
 }
 
 test "SEE may omit empty old-image branches reconstructed as inline padding" {
@@ -356,12 +356,12 @@ test "image inlining does not hide a branch into reserved padding" {
     var output = support.Output{};
     const machine = try support.createMachine(&output);
     defer support.destroyMachine(machine);
-    try machine.interpretLine(": A 1+ ; : B A A ; : C B B ;");
+    try machine.interpretLine(": A 1+ ; : TEST-BUF A A ; : C TEST-BUF TEST-BUF ;");
     ordinaryCalls(machine);
-    const b = machine.words[machine.lookup("B").?];
+    const b = machine.words[machine.lookup("TEST-BUF").?];
     _ = try machine.emit(.{ .kind = .branch, .value = b.code_start + 1 });
     inline_calls.restore(machine);
-    try std.testing.expect(!inline_calls.isInline(first(machine, "B")));
+    try std.testing.expect(!inline_calls.isInline(first(machine, "TEST-BUF")));
     try std.testing.expect(!inline_calls.isInline(first(machine, "C")));
     try machine.interpretLine("0 C");
     try support.expectStack(machine, &.{4});

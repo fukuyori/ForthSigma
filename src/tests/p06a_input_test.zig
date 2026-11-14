@@ -5,7 +5,7 @@ const map = @import("../core/memory_map.zig");
 fn setup(m: *@import("../forth.zig").State, out: *support.Output, first: []const u8, second: []const u8) !void {
     support.setFakeFile(out, 0, first);
     support.setFakeFile(out, 1, second);
-    try m.interpretLine("S\" a.txt\" R/O OPEN-FILE THROW CONSTANT A S\" b.txt\" R/O OPEN-FILE THROW CONSTANT B");
+    try m.interpretLine("S\" a.txt\" R/O OPEN-FILE THROW CONSTANT A S\" b.txt\" R/O OPEN-FILE THROW CONSTANT TEST-BUF");
 }
 
 test "P06a borrowed input nests IDs and keeps terminal pending bytes isolated" {
@@ -16,7 +16,7 @@ test "P06a borrowed input nests IDs and keeps terminal pending bytes isolated" {
     try setup(m, &out, "AC", "B");
     m.pending_key = 'Z';
     m.pending_standard_event = 1234;
-    try m.interpretLine(": INNER INFILE-ID B = KEY ; : OUTER INFILE-ID A = KEY ['] INNER B INFILE-EXECUTE KEY ; INFILE-ID STDIN = ' OUTER A INFILE-EXECUTE INFILE-ID STDIN = KEY");
+    try m.interpretLine(": INNER INFILE-ID TEST-BUF = KEY ; : OUTER INFILE-ID A = KEY ['] INNER TEST-BUF INFILE-EXECUTE KEY ; INFILE-ID STDIN = ' OUTER A INFILE-EXECUTE INFILE-ID STDIN = KEY");
     try support.expectStack(m, &.{ -1, -1, 65, -1, 66, 67, -1, 90 });
     try std.testing.expectEqual(@as(?@import("../forth.zig").Cell, 1234), m.pending_standard_event);
     try std.testing.expect(out.files[0].open and out.files[1].open);
@@ -50,7 +50,7 @@ test "P06a Unicode and unread byte stay in borrowed file across selection scopes
     const m = try support.createMachine(&out);
     defer support.destroyMachine(m);
     try setup(m, &out, "日\xc3Z", "\x1b[A");
-    try m.interpretLine(": U EKEY ; : X XKEY ; ' U A INFILE-EXECUTE ' X A INFILE-EXECUTE A KEY-FILE : ESC EKEY EKEY EKEY ; ' ESC B INFILE-EXECUTE");
+    try m.interpretLine(": U EKEY ; : X XKEY ; ' U A INFILE-EXECUTE ' X A INFILE-EXECUTE A KEY-FILE : ESC EKEY EKEY EKEY ; ' ESC TEST-BUF INFILE-EXECUTE");
     try support.expectStack(m, &.{ 26085, 0xfffd, 90, 27, 91, 65 });
     try std.testing.expectEqual(@as(usize, 0), out.key_index);
 }
@@ -61,7 +61,7 @@ test "P06a input readiness EOF and invalid operands do not change ownership" {
     const m = try support.createMachine(&out);
     defer support.destroyMachine(m);
     try setup(m, &out, "A", "");
-    try m.interpretLine(": R KEY? EKEY? KEY XKEY? ; ' R A INFILE-EXECUTE : K KEY ; : EOF-RUN ['] K B INFILE-EXECUTE ; ' EOF-RUN CATCH");
+    try m.interpretLine(": R KEY? EKEY? KEY XKEY? ; ' R A INFILE-EXECUTE : K KEY ; : EOF-RUN ['] K TEST-BUF INFILE-EXECUTE ; ' EOF-RUN CATCH");
     try support.expectStack(m, &.{ -1, -1, 65, 0, -262 });
     m.data_depth = 0;
     try m.push(-1);
@@ -85,7 +85,7 @@ test "P06a selected terminal REFILL and parser continuation read the borrowed st
     try std.testing.expectEqualStrings("next line", m.source_line);
     try std.testing.expect(m.input_file == null);
     m.data_depth = 0;
-    try m.interpretLine(": EV S\" REFILL\" EVALUATE ; ' EV B INFILE-EXECUTE");
+    try m.interpretLine(": EV S\" REFILL\" EVALUATE ; ' EV TEST-BUF INFILE-EXECUTE");
     try support.expectStack(m, &.{0});
 }
 
@@ -99,7 +99,7 @@ test "P06a input errors missing hooks and same-stream nesting restore state" {
     const m = try support.createMachine(&out);
     defer support.destroyMachine(m);
     try setup(m, &out, "AB", "");
-    try m.interpretLine(": K KEY ; : N KEY ['] K A INFILE-EXECUTE ; ' N A INFILE-EXECUTE");
+    try m.interpretLine(": K KEY ; : TEST-COUNT KEY ['] K A INFILE-EXECUTE ; ' TEST-COUNT A INFILE-EXECUTE");
     try support.expectStack(m, &.{ 65, 66 });
     m.data_depth = 0;
     var ops = support.fake_file_ops;

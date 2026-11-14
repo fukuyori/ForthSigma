@@ -338,9 +338,9 @@ test "SEE handles nested and empty branches and CASE" {
     const machine = try createMachine(&output);
     defer destroyMachine(machine);
 
-    try machine.interpretLine(": N IF IF 1 THEN ELSE THEN ; SEE N : E IF THEN BEGIN UNTIL ; SEE E : C CASE 1 OF 10 ENDOF 20 SWAP ENDCASE ; SEE C");
+    try machine.interpretLine(": TEST-COUNT IF IF 1 THEN ELSE THEN ; SEE TEST-COUNT : E IF THEN BEGIN UNTIL ; SEE E : C CASE 1 OF 10 ENDOF 20 SWAP ENDCASE ; SEE C");
     try std.testing.expectEqualStrings(
-        ": N\n  IF IF 1 THEN ELSE THEN\n;\n: E\n  IF THEN BEGIN UNTIL\n;\n: C\n  1 OVER = IF DROP 10 ELSE 20 SWAP DROP THEN\n;\n",
+        ": TEST-COUNT\n  IF IF 1 THEN ELSE THEN\n;\n: E\n  IF THEN BEGIN UNTIL\n;\n: C\n  1 OVER = IF DROP 10 ELSE 20 SWAP DROP THEN\n;\n",
         output.written(),
     );
 }

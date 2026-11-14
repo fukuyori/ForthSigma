@@ -37,7 +37,6 @@ const floatToDouble = integer_math.floatToDouble;
 const float_size = memory_map.float_size;
 const formatRdp = float_format.formatRdp;
 const hold_bottom = memory_map.hold_bottom;
-const max_dot_s_items = memory_map.max_dot_s_items;
 const max_float_precision = memory_map.max_float_precision;
 const max_rdp_width = float_format.max_rdp_width;
 const parseFloat = number_io.parseFloat;
@@ -189,12 +188,15 @@ pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
         },
         .f_depth => try self.push(@intCast(self.float_depth)),
         .f_dot_s => {
+            const visible = try @import("words_stack_display.zig").visibleItems(self, self.float_depth);
+            const width = self.readCellConst(memory_map.f_s_precision_address);
+            if (width < 1) return error.InvalidNumber;
+            if (width > max_rdp_width) return error.StringTooLong;
             self.writeDepth(self.float_depth);
-            // gforth shows each item as 14 0 17 F.RDP does: exponential notation
-            // filling 14 characters (3.0000000000E0).
+            // Preserve Sigma's established field format (default 14 0 17 F.RDP).
             var field: [max_rdp_width]u8 = undefined;
-            for (self.float_stack[self.float_depth -| max_dot_s_items..self.float_depth]) |value| {
-                self.write(formatRdp(value, 14, 0, 17, &field) catch unreachable);
+            for (self.float_stack[self.float_depth - visible .. self.float_depth]) |value| {
+                self.write(try formatRdp(value, width, 0, width + 3, &field));
                 self.write(" ");
             }
         },

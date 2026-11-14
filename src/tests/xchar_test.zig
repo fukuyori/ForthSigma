@@ -24,7 +24,7 @@ test "CHAR, [CHAR], and 'c' give the code point of a UTF-8 character" {
 test "XC-SIZE, X-SIZE, XC@+, XC!+, XC!+?, XC,, and XEMIT as in gforth" {
     try expectOutput("0 XC-SIZE . 127 XC-SIZE . 128 XC-SIZE . 2047 XC-SIZE . 2048 XC-SIZE . 65535 XC-SIZE . 65536 XC-SIZE . 1114111 XC-SIZE .", "1 1 2 2 3 3 4 4 ");
     try expectOutput("S\" a日😀\" X-SIZE . S\" 日本\" X-SIZE . S\" 😀x\" X-SIZE . S\" \" X-SIZE .", "1 3 4 1 ");
-    try expectOutput("CREATE B 8 ALLOT 26085 B XC!+ B - . B 3 TYPE 26085 B 2 XC!+? . . B - . 128512 B 4 XC!+? . . B - . B 4 TYPE", "3 日0 2 0 -1 0 4 😀");
+    try expectOutput("CREATE TEST-BUF 8 ALLOT 26085 TEST-BUF XC!+ TEST-BUF - . TEST-BUF 3 TYPE 26085 TEST-BUF 2 XC!+? . . TEST-BUF - . 128512 TEST-BUF 4 XC!+? . . TEST-BUF - . TEST-BUF 4 TYPE", "3 日0 2 0 -1 0 4 😀");
     try expectOutput("HERE 26085 XC, HERE SWAP - . HERE 65 XC, HERE SWAP - . HERE 128512 XC, HERE SWAP - .", "3 1 4 ");
     try expectOutput("26085 XEMIT 128512 XEMIT 65 XEMIT 233 XEMIT $7FF XEMIT", "日😀Aé\u{7FF}");
     try expectOutput("S\" 日本\" DROP XC@ . S\" 😀\" DROP DUP XC@+ . SWAP - . S\" 日本語\" DROP 3 + XC@ .", "26085 128512 4 26412 ");

@@ -644,7 +644,7 @@ test "+LOOP ends when the index crosses the limit also across the largest cell, 
     try machine.interpretLine(": UP 9223372036854775807 9223372036854775806 DO I 2 +LOOP ; : DOWN -9223372036854775808 -9223372036854775807 DO I -2 +LOOP ; UP DOWN");
     try machine.interpretLine(": EDGE 0 1 DO I -1 +LOOP ; EDGE");
     // A step of 0 does not end the loop; LEAVE does.
-    try machine.interpretLine("VARIABLE N 0 N ! : STILL 5 0 DO I N @ 1+ DUP N ! 3 = IF LEAVE THEN 0 +LOOP ; STILL");
+    try machine.interpretLine("VARIABLE TEST-COUNT 0 TEST-COUNT ! : STILL 5 0 DO I TEST-COUNT @ 1+ DUP TEST-COUNT ! 3 = IF LEAVE THEN 0 +LOOP ; STILL");
     try expectStack(machine, &.{ 9223372036854775806, -9223372036854775807, 1, 0, 0, 0, 0 });
     machine.data_depth = 0;
     try machine.interpretLine("9223372036854775807 9223372036854775806 [DO] [I] 2 [+LOOP] -9223372036854775808 -9223372036854775807 [DO] [I] -2 [+LOOP] 0 1 [DO] [I] -1 [+LOOP]");
@@ -908,7 +908,7 @@ test "a DEFER that runs itself, +TO of locals, and DEFERs of forgotten words, af
     // A DEFER that runs itself ends with an error that CATCH takes; gforth loops for ever.
     try expectOutput("DEFER D ' D IS D ' D CATCH . DEFER P DEFER Q ' Q IS P ' P IS Q ' P CATCH .", "-5 -5 ");
     // A DEFER that ran a forgotten word has no action, so a new word with its number is not run.
-    try expectOutput("DEFER F : A 42 ; ' A IS F FORGET A : B 99 ; F ' F DEFER@ . MARKER M : C 7 ; ' C IS F M F", "WARNING: DEFERRED WORD F IS UNINITIALIZED\n-1 WARNING: DEFERRED WORD F IS UNINITIALIZED\n");
+    try expectOutput("DEFER F : A 42 ; ' A IS F FORGET A : TEST-BUF 99 ; F ' F DEFER@ . MARKER M : C 7 ; ' C IS F M F", "WARNING: DEFERRED WORD F IS UNINITIALIZED\n-1 WARNING: DEFERRED WORD F IS UNINITIALIZED\n");
     var output = Output{};
     const machine = try createMachine(&output);
     defer destroyMachine(machine);

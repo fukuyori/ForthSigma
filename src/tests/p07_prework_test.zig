@@ -28,10 +28,10 @@ test "P07 interpretation actions execute immediately during compilation without 
     try m.interpretLine("1 VALUE V ' TO CONSTANT SET ' +TO CONSTANT ADD : M 2 SET EXECUTE ; IMMEDIATE : T M V V ; V T ' TO ' SET DROP DROP");
     try support.expectStack(m, &.{ 2, 2 });
     m.data_depth = 0;
-    try m.interpretLine(": N 3 ADD EXECUTE ; IMMEDIATE : U N V V ; V U");
+    try m.interpretLine(": TEST-COUNT 3 ADD EXECUTE ; IMMEDIATE : U TEST-COUNT V V ; V U");
     try support.expectStack(m, &.{ 5, 5 });
     m.data_depth = 0;
-    try m.interpretLine("DEFER D : A 8 ; ' IS CONSTANT BIND : B ['] A BIND EXECUTE ; IMMEDIATE : C B D D ; C ' ACTION-OF CONSTANT ACTION : GET ACTION EXECUTE POSTPONE LITERAL ; IMMEDIATE : Q GET D ; Q EXECUTE STATE @");
+    try m.interpretLine("DEFER D : A 8 ; ' IS CONSTANT BIND : TEST-BUF ['] A BIND EXECUTE ; IMMEDIATE : C TEST-BUF D D ; C ' ACTION-OF CONSTANT ACTION : GET ACTION EXECUTE POSTPONE LITERAL ; IMMEDIATE : Q GET D ; Q EXECUTE STATE @");
     try support.expectStack(m, &.{ 8, 8, 0 });
 }
 
@@ -39,10 +39,10 @@ test "P07 POSTPONE and NAME COMPILE choose compilation actions including aliases
     var out = support.Output{};
     const m = try support.createMachine(&out);
     defer support.destroyMachine(m);
-    try m.interpretLine("1 VALUE V SYNONYM SET TO SYNONYM ADD +TO : M POSTPONE SET ; IMMEDIATE : N POSTPONE ADD ; IMMEDIATE : T 3 M V 4 N V ; V T V");
+    try m.interpretLine("1 VALUE V SYNONYM SET TO SYNONYM ADD +TO : M POSTPONE SET ; IMMEDIATE : TEST-COUNT POSTPONE ADD ; IMMEDIATE : T 3 M V 4 TEST-COUNT V ; V T V");
     try support.expectStack(m, &.{ 1, 7 });
     m.data_depth = 0;
-    try m.interpretLine("DEFER D : A 9 ; SYNONYM BIND IS SYNONYM ACTION ACTION-OF : B POSTPONE BIND ; IMMEDIATE : G POSTPONE ACTION ; IMMEDIATE : R ['] A B D G D ; R EXECUTE");
+    try m.interpretLine("DEFER D : A 9 ; SYNONYM BIND IS SYNONYM ACTION ACTION-OF : TEST-BUF POSTPONE BIND ; IMMEDIATE : G POSTPONE ACTION ; IMMEDIATE : R ['] A TEST-BUF D G D ; R EXECUTE");
     try support.expectStack(m, &.{9});
     m.data_depth = 0;
     try m.interpretLine(": CT [ S\" TO\" FIND-NAME NAME>COMPILE SWAP ] LITERAL LITERAL EXECUTE ; IMMEDIATE : X 42 CT V ; X V");
@@ -67,7 +67,7 @@ test "P07 assignments retain scalar double string float and local behavior" {
     var out = support.Output{};
     const m = try support.createMachine(&out);
     defer support.destroyMachine(m);
-    try m.interpretLine("1. 2VALUE D S\" a\" $VALUE S 3. IS D S\" b\" IS S : T 4. TO D S\" c\" +TO S ; T D S TYPE : L { x -- } 2 TO x 3 +TO x x ; 1 L");
+    try m.interpretLine("1. 2VALUE D S\" a\" $VALUE S 3. IS D S\" b\" IS S : T 4. TO D S\" c\" +TO S ; T D S TYPE : TEST-LINES { x -- } 2 TO x 3 +TO x x ; 1 TEST-LINES");
     try support.expectStack(m, &.{ 4, 0, 5 });
     try std.testing.expectEqualStrings("bc", out.written());
     if (@import("build_options").float) {

@@ -7,7 +7,7 @@ test "P08a name tokens cover anonymous words links aliases restrictions and forg
     var out = support.Output{};
     const m = try support.createMachine(&out);
     defer support.destroyMachine(m);
-    try m.interpretLine("WORDLIST CONSTANT W W SET-CURRENT : A 1 ; : B 2 ; FORTH-WORDLIST SET-CURRENT S\" B\" W FIND-NAME-IN NAME>LINK NAME>STRING TYPE : F 7 ; COMPILE-ONLY S\" F\" FIND-NAME COMPILE-ONLY? :NONAME 8 ; DUP XT>NAME NAME>INTERPRET = LATESTNT NAME>STRING NIP");
+    try m.interpretLine("WORDLIST CONSTANT W W SET-CURRENT : A 1 ; : TEST-BUF 2 ; FORTH-WORDLIST SET-CURRENT S\" TEST-BUF\" W FIND-NAME-IN NAME>LINK NAME>STRING TYPE : F 7 ; COMPILE-ONLY S\" F\" FIND-NAME COMPILE-ONLY? :NONAME 8 ; DUP XT>NAME NAME>INTERPRET = LATESTNT NAME>STRING NIP");
     try support.expectStack(m, &.{ -1, -1, 0 });
     try std.testing.expectEqualStrings("A", out.written());
     try m.interpretLine(": G 9 ;");

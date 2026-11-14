@@ -17,7 +17,7 @@ test "P07d execute parsing does not interpret the string and supports defining c
     var out = support.Output{};
     const m = try support.createMachine(&out);
     defer support.destroyMachine(m);
-    try m.interpretLine(": P 9 ; S\" UNKNOWN\" ' P EXECUTE-PARSING 5 S\" FOO\" ' CONSTANT EXECUTE-PARSING FOO : A NAME TYPE ; : B PARSE-WORD TYPE ; A abc B xyz");
+    try m.interpretLine(": P 9 ; S\" UNKNOWN\" ' P EXECUTE-PARSING 5 S\" FOO\" ' CONSTANT EXECUTE-PARSING FOO : A NAME TYPE ; : TEST-BUF PARSE-WORD TYPE ; A abc TEST-BUF xyz");
     try support.expectStack(m, &.{ 9, 5 });
     try std.testing.expectEqualStrings("abcxyz", out.written());
 }
@@ -30,7 +30,7 @@ test "P07d string parse handles empty missing overlapping and binary delimiters"
     try support.expectStack(m, &.{ 5, 0, 0 });
     try std.testing.expectEqualStrings("abc", out.written());
     m.data_depth = 0;
-    try m.interpretLine(": N S\" xxx\" STRING-PARSE NIP >IN @ ; S\" ab\" ' N EXECUTE-PARSING");
+    try m.interpretLine(": TEST-COUNT S\" xxx\" STRING-PARSE NIP >IN @ ; S\" ab\" ' TEST-COUNT EXECUTE-PARSING");
     try support.expectStack(m, &.{ 2, 2 });
 }
 

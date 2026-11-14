@@ -272,6 +272,7 @@ pub const State = struct {
     include_stack: [max_include_depth]IncludeFrame = undefined,
     include_depth: usize = 0,
     error_location: ?ErrorLocation = null,
+    source_navigation: @import("core/source_navigation.zig").Navigation = .{},
     name_buffer_index: usize = 0,
     last_created_word: ?u16 = null,
     halted: bool = false,
@@ -464,6 +465,10 @@ pub const State = struct {
         self.writeCell(memory_map.warnings_address, -1) catch unreachable;
         self.writeCell(memory_map.assert_level_address, 1) catch unreachable;
         self.writeCell(memory_map.exception_next_address, @import("core/exception_registry.zig").first_code) catch unreachable;
+        self.writeCell(memory_map.maxdepth_dot_s_address, memory_map.max_dot_s_items) catch unreachable;
+        self.writeCell(memory_map.f_s_precision_address, memory_map.fs_precision) catch unreachable;
+        self.writeCell(memory_map.before_locate_address, 3) catch unreachable;
+        self.writeCell(memory_map.after_locate_address, 12) catch unreachable;
         for (@import("core/standard_keys.zig").names, 0..) |name, index| {
             const at: usize = @intCast(memory_map.key_name_base + @as(Cell, @intCast(@import("core/standard_keys.zig").nameOffset(index))));
             @memcpy(self.memory[at..][0..name.len], name);
@@ -856,7 +861,9 @@ pub const State = struct {
         .{ "?ERRNO-THROW", .errno_throw },            .{ "?IOR", .question_ior },                     .{ "ASSERT-LEVEL", .assert_level },                 .{ "ASSERT0(", .assert_zero },                 .{ "ASSERT1(", .assert_one },
         .{ "ASSERT2(", .assert_two },                 .{ "ASSERT3(", .assert_three },                 .{ "CATCH-NOBT", .catch_nobt },                     .{ "EXCEPTION", .exception_word },             .{ "EXCEPTIONS", .exceptions_word },
         .{ "FAST-THROW", .fast_throw },               .{ "NOTHROW", .nothrow },                       .{ "WARNING\"", .warning_quote },                   .{ "WARNINGS", .warnings },                    .{ "", .warning_run },
-        .{ "\\\\\\", .triple_backslash },
+        .{ "CLEARSTACK", .clear_stack },              .{ "CLEARSTACKS", .clear_stacks },              .{ "FCLEARSTACK", .f_clear_stack },                 .{ "MAXDEPTH-.S", .maxdepth_dot_s },           .{ "F.S-PRECISION", .f_s_precision },
+        .{ "BEFORE-LOCATE", .before_locate },         .{ "AFTER-LOCATE", .after_locate },             .{ "XT-LOCATE", .xt_locate },                       .{ "L", .source_l },                           .{ "N", .source_n },
+        .{ "B", .source_b },                          .{ "\\G", .documentation_comment },             .{ "\\\\\\", .triple_backslash },
     };
 
     fn installBuiltins(self: *State) void {
@@ -870,9 +877,9 @@ pub const State = struct {
                 self.words[id].immediate = isImmediateBuiltin(definition[1]);
                 self.words[id].compile_only = isCompileOnlyBuiltin(definition[1]);
                 // Keep fixed VALUE shape stable across files-enabled/disabled images.
-                if (definition[1] == .csv_quote or definition[1] == .csv_separator) {
+                if (defs.builtinValueAddress(definition[1])) |address| {
                     self.words[id].kind = .value;
-                    self.words[id].value = if (definition[1] == .csv_quote) memory_map.csv_quote_address else memory_map.csv_separator_address;
+                    self.words[id].value = address;
                 }
                 continue;
             }
@@ -907,7 +914,7 @@ pub const State = struct {
 
     fn isImmediateBuiltin(builtin: Builtin) bool {
         return switch (builtin) {
-            .assert_close, .assert_zero, .assert_one, .assert_two, .assert_three, .warning_quote => true,
+            .documentation_comment, .assert_close, .assert_zero, .assert_one, .assert_two, .assert_three, .warning_quote => true,
             .addr, .preserve => true,
             .recursive_word, .positive_do, .unsigned_positive_do, .negative_do, .unsigned_negative_do, .inclusive_negative_do, .unsigned_inclusive_negative_do, .negative_loop, .for_word, .next_word, .memory_up_do, .memory_down_do, .done, .question_dup_if, .question_dup_zero_if, .quote_open, .quote_close, .postpone_open, .bracket_comp_tick, .execute_exit, .assign_to, .assign_is, .assign_plus_to, .assignment_action_of, .compile_if, .compile_else, .compile_ahead, .compile_then, .compile_begin, .compile_end, .compile_again, .compile_while, .compile_repeat, .compile_do, .compile_q_do, .compile_loop, .compile_plus_loop, .compile_does, .compile_case, .compile_of, .compile_endof, .compile_endcase, .compile_exit, .compile_recurse, .leave, .bracket_if, .bracket_else, .bracket_then, .bracket_defined, .bracket_undefined, .bracket_ifdef, .bracket_ifundef, .bracket_do, .bracket_q_do, .bracket_loop, .bracket_plus_loop, .bracket_i, .bracket_begin, .bracket_until, .bracket_again, .bracket_while, .bracket_repeat, .bracket_for, .bracket_next, .end_definition, .literal, .fliteral, .sliteral, .two_literal, .defers, .bracket_compile, .question_exit, .question_leave, .compile_question_of, .compile_contof, .compile_next_case, .debug_tilde, .assert_paren, .once, .debug_tilde_bt, .debug_tilde_one_bt, .break_colon, .break_quote, .triple_backslash => true,
             else => false,
@@ -918,9 +925,9 @@ pub const State = struct {
         const id = try self.appendWord(name, .builtin, builtin, 0);
         self.words[id].immediate = isImmediateBuiltin(builtin);
         self.words[id].compile_only = isCompileOnlyBuiltin(builtin);
-        if (builtin == .csv_quote or builtin == .csv_separator) {
+        if (defs.builtinValueAddress(builtin)) |address| {
             self.words[id].kind = .value;
-            self.words[id].value = if (builtin == .csv_quote) memory_map.csv_quote_address else memory_map.csv_separator_address;
+            self.words[id].value = address;
         }
     }
 
@@ -2065,7 +2072,7 @@ pub const State = struct {
         if (defs.debug_enabled and self.cover_blocks and self.compiling and startsBlock(builtin)) self.markBlock(self.columnAfterWord());
     }
 
-    const word_modules = .{ @import("core/exception_registry.zig"), @import("core/words_diagnostics.zig"), @import("core/words_value_extensions.zig"), @import("core/words_names.zig"), @import("core/words_parsing.zig"), @import("core/words_loops.zig"), @import("core/quotations.zig"), @import("core/words_compilation_tokens.zig"), @import("core/words_terminal.zig"), @import("core/string_values.zig"), @import("core/words_string_edit.zig"), @import("core/words_text.zig"), @import("core/words_buffers.zig"), @import("core/words_data.zig"), @import("core/words_width.zig"), words_stack, words_arithmetic, @import("core/words_numeric.zig"), words_memory, words_output, words_input, words_compiling, words_float, words_pictured, words_dictionary, words_system, @import("core/blocks.zig"), words_files, words_strings, words_help, words_defining, words_graphics, words_audio, words_xchar, words_tools, words_debug };
+    const word_modules = .{ @import("core/source_navigation.zig"), @import("core/words_stack_display.zig"), @import("core/exception_registry.zig"), @import("core/words_diagnostics.zig"), @import("core/words_value_extensions.zig"), @import("core/words_names.zig"), @import("core/words_parsing.zig"), @import("core/words_loops.zig"), @import("core/quotations.zig"), @import("core/words_compilation_tokens.zig"), @import("core/words_terminal.zig"), @import("core/string_values.zig"), @import("core/words_string_edit.zig"), @import("core/words_text.zig"), @import("core/words_buffers.zig"), @import("core/words_data.zig"), @import("core/words_width.zig"), words_stack, words_arithmetic, @import("core/words_numeric.zig"), words_memory, words_output, words_input, words_compiling, words_float, words_pictured, words_dictionary, words_system, @import("core/blocks.zig"), words_files, words_strings, words_help, words_defining, words_graphics, words_audio, words_xchar, words_tools, words_debug };
 
     /// For each built-in word, the index in `word_modules` of the file that executes it.
     const word_owner = blk: {

@@ -218,7 +218,7 @@ test "CATCH returns 0 or the THROW code and restores the stack depths like gfort
     try machine.interpretLine("1 2 ' + CATCH : V 1 0 / ; ' V CATCH ' ABORT CATCH S\" NOSUCHWORD\" ' EVALUATE CATCH NIP NIP");
     try expectStack(machine, &.{ 3, 0, -10, -1, -13 });
     machine.data_depth = 0;
-    try machine.interpretLine("1E 2E : X FDROP FDROP 3 THROW ; ' X CATCH : W 1 >R 2 >R 7 THROW ; ' W CATCH : L 10 0 DO I 5 = IF 8 THROW THEN LOOP ; ' L CATCH");
+    try machine.interpretLine("1E 2E : X FDROP FDROP 3 THROW ; ' X CATCH : W 1 >R 2 >R 7 THROW ; ' W CATCH : TEST-LINES 10 0 DO I 5 = IF 8 THROW THEN LOOP ; ' TEST-LINES CATCH");
     try expectStack(machine, &.{ 3, 7, 8 });
     try expectFloatStack(machine, &.{ 1, 2 });
     try std.testing.expectEqual(@as(usize, 0), machine.return_depth);

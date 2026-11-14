@@ -54,10 +54,10 @@ fn builtinSet(comptime lists: []const []const Builtin) [builtin_count]bool {
     return table;
 }
 
-const float_builtins = builtinSet(&.{ &@import("words_float.zig").words, &.{ .field_float, .field_sfloat, .field_dfloat, .float_percent, .sfloat_percent, .dfloat_percent, .define_fvariable, .define_fconstant, .define_fvalue, .fliteral } });
+const float_builtins = builtinSet(&.{ &@import("words_float.zig").words, &@import("words_stack_display.zig").float_words, &.{ .field_float, .field_sfloat, .field_dfloat, .float_percent, .sfloat_percent, .dfloat_percent, .define_fvariable, .define_fconstant, .define_fvalue, .fliteral } });
 const file_builtins = builtinSet(&.{ &@import("words_files.zig").words, &@import("blocks.zig").words, &.{ .execute_parsing_file, .string_slurp, .string_plus_slurp, .string_slurp_file, .string_plus_slurp_file, .string_slurp_line, .string_array_slurp, .string_array_slurp_file } });
 const help_builtins = builtinSet(&.{&.{ .help, .license }});
-const tool_builtins = builtinSet(&.{&.{ .see, .locate, .where }});
+const tool_builtins = builtinSet(&.{ &.{ .see, .locate, .where }, &@import("source_navigation.zig").tool_words });
 const image_builtins = builtinSet(&.{&.{ .load, .save, .savesys }});
 const graphics_builtins = builtinSet(&.{&@import("words_graphics.zig").words});
 const audio_builtins = builtinSet(&.{&@import("words_audio.zig").words});
@@ -1070,6 +1070,18 @@ pub const Builtin = enum {
     warning_quote,
     warnings,
     warning_run,
+    clear_stack,
+    clear_stacks,
+    f_clear_stack,
+    maxdepth_dot_s,
+    f_s_precision,
+    before_locate,
+    after_locate,
+    xt_locate,
+    source_l,
+    source_n,
+    source_b,
+    documentation_comment,
 };
 
 pub const HeapResult = union(enum) { address: Cell, no_memory, bad_pointer };
@@ -1400,4 +1412,16 @@ pub fn doubleCells(value: Double) DoubleCells {
 pub fn cellsDouble(low: Cell, high: Cell) Double {
     const bits = (@as(UDouble, @as(UCell, @bitCast(high))) << 64) | @as(UCell, @bitCast(low));
     return @bitCast(bits);
+}
+
+/// Built-in VALUEs backed by fixed system cells; also checked by image validation.
+pub fn builtinValueAddress(word: Builtin) ?Cell {
+    return switch (word) {
+        .csv_quote => memory_map.csv_quote_address,
+        .csv_separator => memory_map.csv_separator_address,
+        .f_s_precision => memory_map.f_s_precision_address,
+        .before_locate => memory_map.before_locate_address,
+        .after_locate => memory_map.after_locate_address,
+        else => null,
+    };
 }

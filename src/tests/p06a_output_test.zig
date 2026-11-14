@@ -3,7 +3,7 @@ const support = @import("support.zig");
 const map = @import("../core/memory_map.zig");
 
 fn setup(m: *@import("../forth.zig").State) !void {
-    try m.interpretLine("S\" a.txt\" W/O CREATE-FILE THROW CONSTANT A S\" b.txt\" W/O CREATE-FILE THROW CONSTANT B");
+    try m.interpretLine("S\" a.txt\" W/O CREATE-FILE THROW CONSTANT A S\" b.txt\" W/O CREATE-FILE THROW CONSTANT TEST-BUF");
 }
 
 test "P06a output IDs nested destinations and borrowed handles" {
@@ -12,7 +12,7 @@ test "P06a output IDs nested destinations and borrowed handles" {
     const m = try support.createMachine(&out);
     defer support.destroyMachine(m);
     try setup(m);
-    try m.interpretLine(": INNER OUTFILE-ID B = 66 EMIT ; : OUTER OUTFILE-ID A = 65 EMIT ['] INNER B OUTFILE-EXECUTE OUTFILE-ID A = 67 EMIT ; OUTFILE-ID STDOUT = ' OUTER A OUTFILE-EXECUTE OUTFILE-ID STDOUT =");
+    try m.interpretLine(": INNER OUTFILE-ID TEST-BUF = 66 EMIT ; : OUTER OUTFILE-ID A = 65 EMIT ['] INNER TEST-BUF OUTFILE-EXECUTE OUTFILE-ID A = 67 EMIT ; OUTFILE-ID STDOUT = ' OUTER A OUTFILE-EXECUTE OUTFILE-ID STDOUT =");
     try support.expectStack(m, &.{ -1, -1, -1, -1, -1 });
     try std.testing.expectEqualStrings("AC", out.files[0].data[0..out.files[0].len]);
     try std.testing.expectEqualStrings("B", out.files[1].data[0..out.files[1].len]);
@@ -43,7 +43,7 @@ test "P06a output nesting composes with caller-owned capture in both directions"
     try std.testing.expectEqualStrings("X", out.files[0].data[0..out.files[0].len]);
     try std.testing.expectEqualStrings("Y", out.written());
     out.len = 0;
-    try m.interpretLine(": CAPTURE ['] TXT >STRING-EXECUTE OVER >R TYPE R> FREE THROW ; ' CAPTURE B OUTFILE-EXECUTE");
+    try m.interpretLine(": CAPTURE ['] TXT >STRING-EXECUTE OVER >R TYPE R> FREE THROW ; ' CAPTURE TEST-BUF OUTFILE-EXECUTE");
     try std.testing.expectEqualStrings("X", out.files[1].data[0..out.files[1].len]);
     try std.testing.expectEqualStrings("", out.written());
 }

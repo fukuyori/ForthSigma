@@ -158,8 +158,8 @@ test "string arrays store, fetch, count, map, print, and free elements" {
     const machine = try createMachine(&output);
     defer destroyMachine(machine);
 
-    try machine.interpretLine("VARIABLE N S\" Alice\" 0 N $[]! S\" Bob\" 1 N $[]! S\" Charlie\" 3 N $[]! 1 N $[]@ TYPE SPACE N $[]# . 2 N $[]@ . DROP 9 N $[]@ . DROP N $[]# . CR");
-    try machine.interpretLine(": SHOW TYPE [CHAR] ; EMIT ; N ' SHOW $[]MAP CR N $[]. N $[]FREE N @ .");
+    try machine.interpretLine("VARIABLE TEST-COUNT S\" Alice\" 0 TEST-COUNT $[]! S\" Bob\" 1 TEST-COUNT $[]! S\" Charlie\" 3 TEST-COUNT $[]! 1 TEST-COUNT $[]@ TYPE SPACE TEST-COUNT $[]# . 2 TEST-COUNT $[]@ . DROP 9 TEST-COUNT $[]@ . DROP TEST-COUNT $[]# . CR");
+    try machine.interpretLine(": SHOW TYPE [CHAR] ; EMIT ; TEST-COUNT ' SHOW $[]MAP CR TEST-COUNT $[]. TEST-COUNT $[]FREE TEST-COUNT @ .");
     try std.testing.expectEqualStrings("Bob 4 0 0 4 \nAlice;Bob;;Charlie;\nAlice\nBob\n\nCharlie\n0 ", output.written());
 }
 
@@ -174,13 +174,13 @@ test "$[]SLURP and $[]SLURP-FILE read a file line by line" {
     const machine = try createMachine(&output);
     defer destroyMachine(machine);
 
-    try machine.interpretLine("VARIABLE L S\" b.txt\" R/O OPEN-FILE THROW DUP L $[]SLURP CLOSE-FILE THROW L $[]# 0 L $[]@ TYPE 1 L $[]@ NIP 2 L $[]@ NIP 3 L $[]@ TYPE");
+    try machine.interpretLine("VARIABLE TEST-LINES S\" b.txt\" R/O OPEN-FILE THROW DUP TEST-LINES $[]SLURP CLOSE-FILE THROW TEST-LINES $[]# 0 TEST-LINES $[]@ TYPE 1 TEST-LINES $[]@ NIP 2 TEST-LINES $[]@ NIP 3 TEST-LINES $[]@ TYPE");
     try expectStack(machine, &.{ 4, 0, 300 });
     try std.testing.expectEqualStrings("onelast", output.written());
     machine.data_depth = 0;
-    try machine.interpretLine("S\" b.txt\" L $[]SLURP-FILE L $[]#");
+    try machine.interpretLine("S\" b.txt\" TEST-LINES $[]SLURP-FILE TEST-LINES $[]#");
     try expectStack(machine, &.{4});
-    try std.testing.expectError(error.Thrown, machine.interpretLine("S\" none.txt\" L $[]SLURP-FILE"));
+    try std.testing.expectError(error.Thrown, machine.interpretLine("S\" none.txt\" TEST-LINES $[]SLURP-FILE"));
     try std.testing.expectEqual(forth.errnoIor(2), machine.throw_code);
 }
 
@@ -194,11 +194,11 @@ test "$SLURP $+SLURP $+SLURP-FILE and $SLURP-LINE read files as in gforth" {
     const machine = try createMachine(&output);
     defer destroyMachine(machine);
 
-    try machine.interpretLine("VARIABLE A VARIABLE B S\" b.txt\" R/O OPEN-FILE THROW CONSTANT F F A $SLURP A $@LEN F FILE-POSITION THROW D>S");
-    try machine.interpretLine("F A $SLURP A @ 0<> A $@LEN 0. F REPOSITION-FILE THROW S\" X:\" B $! F B $+SLURP B $@LEN");
+    try machine.interpretLine("VARIABLE A VARIABLE TEST-BUF S\" b.txt\" R/O OPEN-FILE THROW CONSTANT F F A $SLURP A $@LEN F FILE-POSITION THROW D>S");
+    try machine.interpretLine("F A $SLURP A @ 0<> A $@LEN 0. F REPOSITION-FILE THROW S\" X:\" TEST-BUF $! F TEST-BUF $+SLURP TEST-BUF $@LEN");
     try expectStack(machine, &.{ 19, 19, -1, 0, 21 });
     machine.data_depth = 0;
-    try machine.interpretLine("0. F REPOSITION-FILE THROW : L F A $SLURP-LINE A $@ TYPE .\" |\" ; L L L L L A @ 0<> F CLOSE-FILE THROW");
+    try machine.interpretLine("0. F REPOSITION-FILE THROW : TEST-LINES F A $SLURP-LINE A $@ TYPE .\" |\" ; TEST-LINES TEST-LINES TEST-LINES TEST-LINES TEST-LINES A @ 0<> F CLOSE-FILE THROW");
     try expectStack(machine, &.{ -1, -1, -1, -1, 0, -1 });
     try std.testing.expectEqualStrings("line1|line22||last||", output.written());
     machine.data_depth = 0;
@@ -221,9 +221,9 @@ test "$+!LEN $[]+! $+[]! $EXEC $OFF and $VARIABLE work as in gforth" {
     machine.data_depth = 0;
     output.len = 0;
     // The output goes back to where it went before, also when xt throws.
-    try machine.interpretLine(": HI .\" hi\" 42 EMIT ; $VARIABLE B : NEST .\" in\" ['] HI B $EXEC .\" out\" ; S\" >\" A $! ' NEST A $EXEC A $@ TYPE B $. ");
-    try machine.interpretLine(": BAD .\" partial\" 5 THROW ; S\" \" A $! ' BAD A ' $EXEC CATCH . A $. A $OFF A @ ." ++ support.see(" SEE B"));
-    try std.testing.expectEqualStrings(">inouthi*5 partial0 " ++ support.see("VARIABLE B\n"), output.written());
+    try machine.interpretLine(": HI .\" hi\" 42 EMIT ; $VARIABLE TEST-BUF : NEST .\" in\" ['] HI TEST-BUF $EXEC .\" out\" ; S\" >\" A $! ' NEST A $EXEC A $@ TYPE TEST-BUF $. ");
+    try machine.interpretLine(": BAD .\" partial\" 5 THROW ; S\" \" A $! ' BAD A ' $EXEC CATCH . A $. A $OFF A @ ." ++ support.see(" SEE TEST-BUF"));
+    try std.testing.expectEqualStrings(">inouthi*5 partial0 " ++ support.see("VARIABLE TEST-BUF\n"), output.written());
 }
 
 test "SLURP-FILE and $SLURP-FILE read a whole file as it is and close it" {

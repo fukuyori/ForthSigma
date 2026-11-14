@@ -281,6 +281,10 @@ pub const silent_wordlists_address: Cell = 0x0d78;
 pub const warnings_address: Cell = 0x0d80;
 pub const assert_level_address: Cell = 0x0d88;
 pub const exception_next_address: Cell = 0x0d90;
+pub const maxdepth_dot_s_address: Cell = 0x0d98;
+pub const f_s_precision_address: Cell = 0x0da0;
+pub const before_locate_address: Cell = 0x0da8;
+pub const after_locate_address: Cell = 0x0db0;
 
 /// Dedicated borrowed >TIME&DATE&TZ text; no owned pointer or relocation root.
 pub const timezone_buffer_address: Cell = 0x0e00;
