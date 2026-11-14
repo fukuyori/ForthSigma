@@ -436,6 +436,7 @@ pub const State = struct {
         self.writeCell(base_address, 10) catch unreachable;
         self.writeCell(precision_address, dot_precision) catch unreachable;
         self.writeCell(memory_map.dpl_address, -1) catch unreachable;
+        self.writeCell(memory_map.fpath_address, 0) catch unreachable;
         self.writeCell(heap_top_address, self.sizes.heapBase()) catch unreachable;
         self.storeSourceName(terminal_source_name_address, terminal_source_name);
         self.storeSourceName(evaluate_source_name_address, evaluate_source_name);
@@ -959,6 +960,7 @@ pub const State = struct {
             .{ "CPUTIME", .cputime },
             .{ "NS", .ns },
             .{ ">TIME&DATE&TZ", .to_time_date_tz },
+            .{ "FPATH", .fpath },
             .{ "\\\\\\", .triple_backslash },
     };
 

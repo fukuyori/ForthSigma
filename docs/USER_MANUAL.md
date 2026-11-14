@@ -960,9 +960,13 @@ MARKER SAFE  : TEMP ." Hello" ;  SAFE   \ TEMP is removed
 | `WHERE name` | ( -- ) | List the places in the loaded files where the word was used, in the form `file:line:column: text of the line` (as in gforth, each line is 80 columns wide, with a serial number at the right end). This includes places where the name was looked up by `'` or `[DEFINED]`. Uses at the terminal or in an `EVALUATE` string are not recorded. |
 | `MARKER name` | ( -- ) | Running the name removes that word and the definitions after it, and marks the files loaded after it as not loaded. |
 
-File names are relative paths from the current directory. `REQUIRE` compares names as they are written, so `./a.fs` and `a.fs` are treated as different files. When an error occurs while loading, it is shown with the file name and line number, as in `mylib.fs:3: ...`. A definition started in a file must be finished in the same file. Nesting goes up to 8 levels, and up to 64 files can be recorded.
+With empty/unset `FPATH`, file names are relative to the current directory and `REQUIRE` compares raw names, so `./a.fs` and `a.fs` are distinct. When an error occurs while loading, it is shown with the file name and line number, as in `mylib.fs:3: ...`. A definition started in a file must be finished in the same file. Nesting goes up to 8 levels, and up to 64 files can be recorded.
 
 ## Graphics and sound
+
+`FPATH ( -- owner )` returns a dynamic-string owner for optional source search. For example, `FPATH PATH= ~+|lib` searches cwd then `lib`; use `FPATH .PATH` to display it, `FPATH PATH+ other` to append, and `FPATH CLEAR-PATH` to restore legacy loading. No startup/environment path is installed. A nonempty configuration uses the same lookup as `OPEN-PATH-FILE`: `./` is relative to the current source file (cwd outside files), ordinary names follow configured order, an empty component ends search, and there is no extra fallback.
+
+Configured `REQUIRE` opens first and compares the returned lexically normalized spelling. A duplicate handle is closed; a removed file can therefore cause an error even when previously loaded. No symlink, inode or case-fold identity is used, and relative/absolute spellings can remain distinct. `INCLUDED?` queries the exact recorded spelling. Source names remain limited to255 bytes. `SAVE`/full restoration retains the setting; `LOAD-DICTIONARY` preserves the destination setting, including for imported words referring to `FPATH`.
 
 The graphics words (`REQUIRE-GRAPHICS`: an image in memory, more images to copy between, image files, text, Tcl/Tk, keys, the mouse, and animation; `REQUIRE-GUI`: buttons, fields, lists, menus, and dialogs; `REQUIRE-GAME`: sprites, tile maps, palettes, and effects on rows) and the sound words (`REQUIRE-AUDIO`: MSX BASIC's `PLAY`, `SOUND`, and `BEEP`, sound chips, recorded sound, and modules) are extensions of this port. They are described in the [graphics and sound manual](GRAPHICS_AND_SOUND.md).
 

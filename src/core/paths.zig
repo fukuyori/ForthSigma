@@ -112,7 +112,7 @@ fn store(self: *State, owner: map.Cell, input: []const u8, replace: bool) Runtim
 }
 
 const capacity = map.string_buffer_count * map.string_buffer_size;
-const Buffer = struct {
+pub const Buffer = struct {
     bytes: [capacity]u8 = undefined,
     len: usize = 0,
     fn append(b: *Buffer, value: []const u8) RuntimeError!void {
@@ -120,7 +120,7 @@ const Buffer = struct {
         @memcpy(b.bytes[b.len..][0..value.len], value);
         b.len += value.len;
     }
-    fn text(b: *const Buffer) []const u8 {
+    pub fn text(b: *const Buffer) []const u8 {
         return b.bytes[0..b.len];
     }
 };
@@ -225,11 +225,34 @@ fn search(self: *State, close: bool) RuntimeError!void {
     const count = std.math.cast(usize, try self.peek(1)) orelse return error.InvalidAddress;
     const at = try self.memoryAddress(try self.peek(2), count);
     const name = self.memory[at..][0..count];
+    const result = try openInPath(self, name, try self.peek(0));
+    self.data_depth -= 3;
+    if (result.file.ior != 0) {
+        if (close) return self.throwCode(result.file.ior);
+        return self.push(result.file.ior);
+    }
+    const fid: map.Cell = @bitCast(result.file.value);
+    if (close) {
+        const ior = (try self.fileOps()).close(self.writer.context, fid);
+        if (ior != 0) return self.throwCode(ior);
+    }
+    const destination: usize = @intCast(map.string_buffer_base);
+    @memcpy(self.memory[destination..][0..result.name.len], result.name.text());
+    registry.written(self, map.string_buffer_base, result.name.len, false);
+    if (!close) try self.push(fid);
+    try self.push(map.string_buffer_base);
+    try self.push(@intCast(result.name.len));
+    if (!close) try self.push(0);
+}
+
+/// Opens without using the Forth stack or publishing a transient string buffer.
+/// On success the caller owns the file handle.
+pub fn openInPath(self: *State, name: []const u8, owner: map.Cell) RuntimeError!struct { file: forth.FileResult, name: Buffer } {
     const files = try self.fileOps();
     const bypass = absolute(name);
     var remaining: []const u8 = "";
     if (!bypass) {
-        const path = try self.fetchString(try self.peek(0));
+        const path = try self.fetchString(owner);
         remaining = self.memory[@intCast(path.address)..][0..path.length];
     }
     var last: map.Cell = -37;
@@ -250,28 +273,8 @@ fn search(self: *State, close: bool) RuntimeError!void {
         else
             files.open(self.writer.context, native.text(), .read_only, false);
         last = opened.ior;
-        if (last == 0) {
-            const fid: map.Cell = @bitCast(opened.value);
-            if (close) {
-                const ior = files.close(self.writer.context, fid);
-                if (ior != 0) {
-                    self.data_depth -= 3;
-                    return self.throwCode(ior);
-                }
-            }
-            const destination: usize = @intCast(map.string_buffer_base);
-            @memcpy(self.memory[destination..][0..resolved.len], resolved.text());
-            registry.written(self, map.string_buffer_base, resolved.len, false);
-            self.data_depth -= 3;
-            if (!close) try self.push(fid);
-            try self.push(map.string_buffer_base);
-            try self.push(@intCast(resolved.len));
-            if (!close) try self.push(0);
-            return;
-        }
+        if (last == 0) return .{ .file = opened, .name = resolved };
         if (bypass) break;
     }
-    self.data_depth -= 3;
-    if (close) return self.throwCode(last);
-    try self.push(last);
+    return .{ .file = .{ .ior = last }, .name = .{} };
 }

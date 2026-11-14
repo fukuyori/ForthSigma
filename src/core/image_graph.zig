@@ -18,10 +18,21 @@ pub const Graph = struct {
 /// The output borrows State.memory. The caller must keep State unchanged while
 /// consuming it. All temporary traversal state lives in the caller's Graph.
 pub fn collect(state: *forth.State, output: *Graph) RuntimeError!void {
+    return collectInternal(state, output, false);
+}
+/// Dictionary addition imports definitions, not the source VM's global setting.
+pub fn collectForAppend(state: *forth.State, output: *Graph) RuntimeError!void {
+    return collectInternal(state, output, true);
+}
+fn collectInternal(state: *forth.State, output: *Graph, preserve_fpath: bool) RuntimeError!void {
     output.object_count = 0;
     output.record_count = 0;
     // Roots are typed slots outside the heap; raw cells are never scanned.
     for (state.addresses.records[0..state.addresses.count]) |record| {
+        if (preserve_fpath and record.kind == .memory and record.slot == map.fpath_address) {
+            try validateRecord(state, record);
+            continue;
+        }
         if (record.kind == .memory and record.slot >= state.sizes.heapBase() and record.slot < state.heapTop()) continue;
         try appendRecord(state, output, record);
     }
@@ -46,11 +57,14 @@ pub fn collect(state: *forth.State, output: *Graph) RuntimeError!void {
     }
 }
 
-fn appendRecord(state: *forth.State, graph: *Graph, record: registry.Record) RuntimeError!void {
+fn validateRecord(state: *forth.State, record: registry.Record) RuntimeError!void {
     try registry.validateRecord(state, record);
     for (state.addresses.records[0..state.addresses.count]) |other| {
         if (record.kind == .memory and other.kind == .memory and record.slot != other.slot and @as(i128, record.slot) < @as(i128, other.slot) + 8 and @as(i128, other.slot) < @as(i128, record.slot) + 8) return error.InvalidAddress;
     }
+}
+fn appendRecord(state: *forth.State, graph: *Graph, record: registry.Record) RuntimeError!void {
+    try validateRecord(state, record);
     if (graph.record_count == capacity) return error.MemoryExhausted;
     const source: format.Storage = if (record.kind == .word) .word else switch (registry.classify(state, record.slot)) {
         .system => .system,

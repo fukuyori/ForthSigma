@@ -8,6 +8,11 @@ const RuntimeError = defs.RuntimeError;
 
 pub const Plan = struct {
     image: full.Plan = undefined,
+    keep_records: [registry.capacity]bool = @splat(false),
+    keep_objects: [registry.capacity]bool = @splat(false),
+    object_queue: [registry.capacity]u16 = undefined,
+    retained_records: usize = 0,
+    retained_objects: usize = 0,
     word_base: usize = 0,
     code_base: usize = 0,
     name_base: usize = 0,
@@ -30,7 +35,8 @@ pub fn prepare(state: *forth.State, bytes: []const u8, plan: *Plan) RuntimeError
     if (h.code_count > state.code.len - state.code_count) return error.CodeFull;
     if (added_names > state.names.len - state.names_used) return error.DictionaryFull;
     if (added_data > state.sizes.dataLimit() - state.data_here) return error.MemoryExhausted;
-    if (h.relocation_count > registry.capacity - state.addresses.count) return error.MemoryExhausted;
+    try selectGraph(plan);
+    if (plan.retained_records > registry.capacity - state.addresses.count) return error.MemoryExhausted;
     const saved_lists = cell(view.memory, map.wordlist_count_address);
     const own_lists = state.wordlistCount();
     const own_files = state.readCellConst(map.source_file_count_address);
@@ -47,6 +53,7 @@ pub fn prepare(state: *forth.State, bytes: []const u8, plan: *Plan) RuntimeError
     var top = state.heapTop();
     if (top < state.sizes.heapBase() or top > state.sizes.heapEnd()) return error.InvalidAddress;
     for (view.objects, 0..) |object, i| {
+        if (!plan.keep_objects[i]) continue;
         const needed: map.Cell = @intCast(map.heap_header + object.bytes.len);
         if (needed > state.sizes.heapEnd() - top) return error.MemoryExhausted;
         plan.image.object_addresses[i] = top + map.heap_header;
@@ -54,6 +61,7 @@ pub fn prepare(state: *forth.State, bytes: []const u8, plan: *Plan) RuntimeError
     }
     plan.image.heap_top = top;
     for (0..h.relocation_count) |i| {
+        if (!plan.keep_records[i]) continue;
         const wire = try view.relocation(i);
         var record = &plan.image.records[i];
         record.slot = switch (wire.storage) {
@@ -79,6 +87,7 @@ pub fn prepare(state: *forth.State, bytes: []const u8, plan: *Plan) RuntimeError
 }
 fn heapAddress(plan: *const Plan, offset: u64, width: usize) RuntimeError!map.Cell {
     for (plan.image.view.objects, 0..) |object, i| {
+        if (!plan.keep_objects[i]) continue;
         if (offset >= object.payload_offset and offset - object.payload_offset <= object.bytes.len and width <= object.bytes.len - (offset - object.payload_offset)) return plan.image.object_addresses[i] + @as(map.Cell, @intCast(offset - object.payload_offset));
     }
     return error.InvalidImage;
@@ -136,4 +145,43 @@ pub fn relocatedWordlist(plan: *const Plan, wid: map.Cell) map.Cell {
 }
 fn relocatedId(plan: *const Plan, id: map.Cell) map.Cell {
     return if (id < plan.image.view.header.builtin_count) id else @as(map.Cell, @intCast(plan.word_base)) + id - plan.image.view.header.builtin_count;
+}
+
+fn selectGraph(plan: *Plan) RuntimeError!void {
+    plan.keep_records = @splat(false);
+    plan.keep_objects = @splat(false);
+    plan.retained_records = 0;
+    plan.retained_objects = 0;
+    const view = plan.image.view;
+    for (0..view.header.relocation_count) |i| {
+        const wire = try view.relocation(i);
+        if (wire.storage == .heap or (wire.storage == .system and wire.slot_offset == map.fpath_address)) continue;
+        try retainRecord(plan, i);
+    }
+    var visited: usize = 0;
+    while (visited < plan.retained_objects) : (visited += 1) {
+        const object = view.objects[plan.object_queue[visited]];
+        for (0..view.header.relocation_count) |i| {
+            const wire = try view.relocation(i);
+            if (wire.storage == .heap and wire.slot_offset >= object.payload_offset and wire.slot_offset - object.payload_offset < object.bytes.len) try retainRecord(plan, i);
+        }
+    }
+}
+fn retainRecord(plan: *Plan, i: usize) RuntimeError!void {
+    if (plan.keep_records[i]) return;
+    plan.keep_records[i] = true;
+    plan.retained_records += 1;
+    const wire = try plan.image.view.relocation(i);
+    if (wire.target != .heap) return;
+    for (plan.image.view.objects, 0..) |object, id| {
+        if (wire.target_offset >= object.payload_offset and wire.target_offset - object.payload_offset < object.bytes.len) {
+            if (!plan.keep_objects[id]) {
+                plan.keep_objects[id] = true;
+                plan.object_queue[plan.retained_objects] = @intCast(id);
+                plan.retained_objects += 1;
+            }
+            return;
+        }
+    }
+    return error.InvalidImage;
 }

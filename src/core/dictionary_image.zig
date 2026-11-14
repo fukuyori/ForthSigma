@@ -99,7 +99,7 @@ pub fn appendImage(self: *State, source: *const State) RuntimeError!void {
     const registry = @import("address_registry.zig");
     try registry.validate(self);
     var graph: @import("image_graph.zig").Graph = undefined;
-    try @import("image_graph.zig").collect(@constCast(source), &graph);
+    try @import("image_graph.zig").collectForAppend(@constCast(source), &graph);
     if (graph.record_count > registry.capacity - self.addresses.count) return error.MemoryExhausted;
     var heap_addresses: [registry.capacity]Cell = undefined;
     var new_top = self.heapTop();

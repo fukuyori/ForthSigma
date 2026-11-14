@@ -203,6 +203,7 @@ pub fn restoreInputPlace(self: *State, place: InputPlace) RuntimeError!bool {
 }
 
 pub fn includeFile(self: *State, name: []const u8) RuntimeError!void {
+    if ((try self.fetchString(memory_map.fpath_address)).length != 0) return includeSearched(self, name, false);
     if (self.include_depth == max_include_depth) return error.IncludeNesting;
     if (name.len >= source_file_entry_size) return error.StringTooLong;
     // The name may lie in a line buffer that the include overwrites.
@@ -218,8 +219,11 @@ pub fn includeFile(self: *State, name: []const u8) RuntimeError!void {
 /// Interprets a file that is open already, then closes it: INCLUDED after opening it,
 /// and INCLUDE-FILE, whose file has no name (it is recorded as `*file*`).
 pub fn includeOpenFile(self: *State, fileid: Cell, file_name: []const u8) RuntimeError!void {
-    if (self.include_depth == max_include_depth) return error.IncludeNesting;
     const files = try self.fileOps();
+    if (self.include_depth == max_include_depth) {
+        _ = files.close(self.writer.context, fileid);
+        return error.IncludeNesting;
+    }
     const file_index = self.recordSourceFile(file_name) catch |err| {
         _ = files.close(self.writer.context, fileid);
         return err;
@@ -274,6 +278,7 @@ pub fn interpretIncludedFile(self: *State) RuntimeError!void {
 }
 
 pub fn requireFile(self: *State, name: []const u8) RuntimeError!void {
+    if ((try self.fetchString(memory_map.fpath_address)).length != 0) return includeSearched(self, name, true);
     if (self.findSourceFile(name) == null) try self.includeFile(name);
 }
 
@@ -441,9 +446,9 @@ fn characterAt(text: []const u8, at: usize) struct { length: usize, columns: usi
 /// East Asian wide and fullwidth characters, which a terminal shows in two columns.
 fn isWide(code: u21) bool {
     const ranges = [_][2]u21{
-        .{ 0x1100, 0x115F }, .{ 0x2E80, 0x303E }, .{ 0x3041, 0x33FF }, .{ 0x3400, 0x4DBF },
-        .{ 0x4E00, 0x9FFF }, .{ 0xA000, 0xA4CF }, .{ 0xAC00, 0xD7A3 }, .{ 0xF900, 0xFAFF },
-        .{ 0xFE30, 0xFE4F }, .{ 0xFF00, 0xFF60 }, .{ 0xFFE0, 0xFFE6 }, .{ 0x1F300, 0x1F64F },
+        .{ 0x1100, 0x115F },   .{ 0x2E80, 0x303E },   .{ 0x3041, 0x33FF }, .{ 0x3400, 0x4DBF },
+        .{ 0x4E00, 0x9FFF },   .{ 0xA000, 0xA4CF },   .{ 0xAC00, 0xD7A3 }, .{ 0xF900, 0xFAFF },
+        .{ 0xFE30, 0xFE4F },   .{ 0xFF00, 0xFF60 },   .{ 0xFFE0, 0xFFE6 }, .{ 0x1F300, 0x1F64F },
         .{ 0x1F900, 0x1F9FF }, .{ 0x20000, 0x3FFFD },
     };
     for (ranges) |range| {
@@ -483,4 +488,23 @@ pub fn endSourceFile(self: *State) RuntimeError!void {
         }
     }
     self.setSourceCursor(self.source_line.len);
+}
+
+/// Configured REQUIRE resolves before testing the exact normalized history key.
+fn includeSearched(self: *State, name: []const u8, once: bool) RuntimeError!void {
+    if (!once and self.include_depth == max_include_depth) return error.IncludeNesting;
+    const result = try @import("paths.zig").openInPath(self, name, memory_map.fpath_address);
+    if (result.file.ior != 0) return self.throwCode(result.file.ior);
+    const fileid: Cell = @bitCast(result.file.value);
+    const files = try self.fileOps();
+    if (result.name.len >= source_file_entry_size) {
+        _ = files.close(self.writer.context, fileid);
+        return error.StringTooLong;
+    }
+    if (once and self.findSourceFile(result.name.text()) != null) {
+        const closed = files.close(self.writer.context, fileid);
+        if (closed != 0) return self.throwCode(closed);
+        return;
+    }
+    return self.includeOpenFile(fileid, result.name.text());
 }

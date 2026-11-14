@@ -62,6 +62,7 @@ fn apply(state: *forth.State, work: *Workspace) void {
     const data_length = h.data_here - @as(u32, @intCast(map.data_start));
     @memcpy(state.memory[@intCast(state.data_here)..][0..data_length], view.memory[@intCast(map.system_end)..][0..data_length]);
     for (view.objects, 0..) |object, i| {
+        if (!plan.keep_objects[i]) continue;
         const at = plan.image.object_addresses[i];
         put(state, at - map.heap_header, @intCast(object.bytes.len));
         put(state, at - map.cell_size, 1);
@@ -99,11 +100,12 @@ fn apply(state: *forth.State, work: *Workspace) void {
     }
     put(state, map.source_file_count_address, @intCast(work.file_count));
     put(state, map.wordlist_count_address, plan.wordlist_base + savedCell(work, map.wordlist_count_address) - map.ekeys_wordlist);
-    for (plan.image.records[0..h.relocation_count]) |record| {
+    for (plan.image.records[0..h.relocation_count], 0..) |record, i| {
+        if (!plan.keep_records[i]) continue;
         if (record.kind == .word) state.words[@intCast(record.slot)].value = record.value else put(state, record.slot, record.value);
+        state.addresses.records[state.addresses.count] = record;
+        state.addresses.count += 1;
     }
-    @memcpy(state.addresses.records[state.addresses.count..][0..h.relocation_count], plan.image.records[0..h.relocation_count]);
-    state.addresses.count += h.relocation_count;
     state.addresses.index_dirty = true;
     state.addresses.stable_writes = 0;
     state.names_used = @intCast(plan.name_base + new_names.len);

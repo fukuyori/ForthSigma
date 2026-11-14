@@ -756,6 +756,7 @@ pub const Builtin = enum {
     ntime, cputime,
     ns,
     to_time_date_tz,
+    fpath,
 };
 
 pub const HeapResult = union(enum) { address: Cell, no_memory, bad_pointer };
