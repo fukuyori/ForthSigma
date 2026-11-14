@@ -1017,7 +1017,7 @@ SAVESYS demo.exe
 | ループ関連 | `I`, `J`, `K`, `LEAVE`, `UNLOOP` |
 | 入出力 | `.`, `U.`, `.R`, `U.R`, `C.`, `.S`, `ECHO`, `EMIT`, `CR`, `SPACE`, `SPCES`, `SPACES`, `TYPE`, `INPUT`, `EMIT?` |
 | 基数 | `HEX`, `DEC`, `DECIMAL`, `OCT`, `BASE` |
-| 定義補助・辞書・実行 | `<BUILDS`, `CREATE`, `IMMEDIATE`, `WORDS`, `BYE`, `LOAD-DICTIONARY`, `SAVE`, `SAVESYS`, `EXECUTE`, `SEE`, `FIND`, `FIND-NAME`, `NAME>INT`, `NAME>STRING`, `MARKER`, `LOCATE`, `WHERE`, `PERFORM`, `NOOP`, `DEFER`, `DEFER!`, `DEFER@`, `DEFERS`, `COMPILE,`, `[COMPILE]`, `NAME>COMPILE`, `COMP'`, `[COMP']`, `POSTPONE,`, `COMPILE-ONLY`, `RESTRICT`, `EXECUTE-EXIT`, `SELECT`, `[NOOP]`, `[:`, `;]`, `NONAME`, `IN-COLON-DEF?`, `]]`, `TO`, `IS`, `+TO`, `ACTION-OF`, `BEGIN-STRUCTURE`, `END-STRUCTURE`, `+FIELD`, `FIELD:`, `CFIELD:`, `FFIELD:`, `SFFIELD:`, `DFFIELD:`, `STRUCT`, `FIELD`, `END-STRUCT`, `CELL%`, `CHAR%`, `FLOAT%`, `DOUBLE%`, `SFLOAT%`, `DFLOAT%`, `%SIZE`, `%ALIGNMENT`, `%ALIGN`, `%ALLOT`, `%ALLOC`, `%ALLOCATE`, `LATEST`, `LATESTXT`, `>NAME`, `ID.`, `.NAME`, `ALIAS` |
+| 定義補助・辞書・実行 | `<BUILDS`, `CREATE`, `IMMEDIATE`, `WORDS`, `BYE`, `LOAD-DICTIONARY`, `SAVE`, `SAVESYS`, `EXECUTE`, `SEE`, `FIND`, `FIND-NAME`, `NAME>INT`, `NAME>STRING`, `MARKER`, `LOCATE`, `WHERE`, `PERFORM`, `NOOP`, `DEFER`, `DEFER!`, `DEFER@`, `DEFERS`, `COMPILE,`, `[COMPILE]`, `NAME>COMPILE`, `COMP'`, `[COMP']`, `POSTPONE,`, `COMPILE-ONLY`, `RESTRICT`, `EXECUTE-EXIT`, `SELECT`, `[NOOP]`, `+DO`, `U+DO`, `-DO`, `U-DO`, `-[DO`, `U-[DO`, `-LOOP`, `FOR`, `NEXT`, `MEM+DO`, `MEM-DO`, `ARRAY>MEM`, `I'`, `DELTA-I`, `CS-DROP`, `DONE`, `?DUP-IF`, `?DUP-0=-IF`, `[:`, `;]`, `NONAME`, `IN-COLON-DEF?`, `]]`, `TO`, `IS`, `+TO`, `ACTION-OF`, `BEGIN-STRUCTURE`, `END-STRUCTURE`, `+FIELD`, `FIELD:`, `CFIELD:`, `FFIELD:`, `SFFIELD:`, `DFFIELD:`, `STRUCT`, `FIELD`, `END-STRUCT`, `CELL%`, `CHAR%`, `FLOAT%`, `DOUBLE%`, `SFLOAT%`, `DFLOAT%`, `%SIZE`, `%ALIGNMENT`, `%ALIGN`, `%ALLOT`, `%ALLOC`, `%ALLOCATE`, `LATEST`, `LATESTXT`, `>NAME`, `ID.`, `.NAME`, `ALIAS` |
 | 制御構造（即時語） | `IF`, `ELSE`, `AHEAD`, `THEN`, `CS-PICK`, `CS-ROLL`, `ENDIF`, `BEGIN`, `END`, `UNTIL`, `AGAIN`, `WHILE`, `REPEAT`, `DO`, `?DO`, `LOOP`, `+LOOP`, `DOES>`, `CASE`, `OF`, `?OF`, `ENDOF`, `CONTOF`, `ENDCASE`, `NEXT-CASE`, `EXIT`, `?EXIT`, `?LEAVE`, `RECURSE` |
 | 浮動小数点スタック | `FDROP`, `FDUP`, `FSWAP`, `FOVER`, `FROT`, `F-ROT`, `FNIP`, `FTUCK`, `FPICK`, `FDEPTH`, `F.S` |
 | 浮動小数点算術・関数 | `F+`, `F-`, `F*`, `F/`, `FNEGATE`, `FMINUS`, `FABS`, `FMAX`, `FMIN`, `FSQRT`, `FEXP`, `FLN`, `FSIN`, `FCOS`, `FTAN`, `FSINCOS`, `FASIN`, `FACOS`, `FATAN`, `FATAN2`, `FSINH`, `FCOSH`, `FTANH`, `FASINH`, `FACOSH`, `FATANH`, `FEXPM1`, `FLNP1`, `FLOG`, `FALOG`, `F**`, `FLOOR`, `FTRUNC`, `FROUND` |
@@ -1329,3 +1329,13 @@ NONAMEは次の定義語に名前を読ませず、無名の語を作ります�
 `]] ... [[`は開いた定義内でコンパイル動作を後回しにします。数値リテラルとセル・浮動小数点・倍長ローカルの値を対象の定義へ組み込み、XT型ローカルは格納した語をコンパイルします。文字列を読む語はマクロ実行時に入力を読むため、例えば`: M ]] S" [[ ; IMMEDIATE : T M text" ;`と書きます。[[はこの状態だけの終端記号で、通常の辞書語ではありません。定義外の]]や未完の引用はエラーです。
 
 引用・マクロは保存と辞書追加に対応します。内部Word属性の追加でABIが変わるため、以前のABIのイメージは作り直してください。作成途中の引用・後回し状態は保存しません。[検証記録](P07_IMPLEMENTATION.md)。
+
+## P07c：ループと制御スタック
+
++DO/U+DOはstart<limit、-DO/U-DOはstart>limitを符号あり／なしで判定します。-[DO/U-[DOは初期値が等しい場合も実行します。負の+LOOPは下限を含み、-LOOPは符号なしの減分を受け取って下限を含まずに終了します。FOR/NEXTはnから0まで、n+1回実行します。I'は内側ループの上限、DELTA-Iは上限と添字の差を返し、補助語からもVMフレームを参照できます。
+
+MEM+DO/MEM-DOはLOOPで閉じ、正の刻み幅を要求します。0／負の刻み幅やaddr+bytesの桁あふれは、引数を消費せず-24にします。MEM-DOでbytes<strideなら0回です。bytes=5・stride=2では、相対位置は昇順0,2,4、降順3,1です。読み書き自体には通常のVMアドレス検査が働きます。ARRAY>MEMの乗算はセル幅で折り返します。
+
+?DUP-IF・?DUP-0=-IFはELSE/THENと組み合わせます。CS-PICK/CS-ROLL/CS-DROPは開いた定義内なら[ ... ]中でも使えます。MEMループの制御項目は複製・移動できません。DONEはLEAVEの行先を解決し、その行先で明示的なUNLOOPが必要です。実行上限の割込みは既存どおりCATCHを越えて伝わります。未完のコロン定義を残したEOFもエラーです。
+
+命令・組み込みタグの追加でABIが変わるため、以前のABIのイメージは作り直してください。全体復元、両追加読込、SAVESYSを検証済みです。[記録](P07_IMPLEMENTATION.md)。

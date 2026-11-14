@@ -1,6 +1,7 @@
 //! Root of the core test suite: each file under tests/ holds the tests of one subject.
 
 comptime {
+    _ = @import("tests/p07c_test.zig");
     _ = @import("tests/p07b_test.zig");
     _ = @import("tests/p07a_test.zig");
     _ = @import("tests/p07_prework_test.zig");

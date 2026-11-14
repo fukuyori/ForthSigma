@@ -195,10 +195,12 @@ pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
         },
         // CS-PICK and CS-ROLL ( u -- ) copy or move the u-th control-flow entry to the top.
         .cs_pick, .cs_roll => {
+            if (!self.defining) return error.CompileOnly;
             const position = try self.pop();
             if (position < 0 or position >= self.control_depth) return error.ControlMismatch;
             const at = self.control_depth - 1 - @as(usize, @intCast(position));
             const item = self.control_stack[at];
+            if (item.kind == .do_loop and @import("words_loops.zig").isMemory(self.code[item.address].kind)) return error.ControlMismatch;
             if (builtin == .cs_pick) {
                 if (self.control_depth == max_controls) return error.ControlStackOverflow;
                 self.control_stack[self.control_depth] = item;

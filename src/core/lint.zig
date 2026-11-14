@@ -262,7 +262,7 @@ pub const Lint = struct {
                         if (does_at == null or pc < does_at.?) does_at = pc;
                     },
                     .branch => next = target(op, start, end),
-                    .branch_zero, .q_do_loop, .loop, .plus_loop => other = target(op, start, end),
+                    .branch_zero, .q_do_loop, .loop, .plus_loop, .negative_loop, .next_loop, .positive_do, .unsigned_positive_do, .negative_do, .unsigned_negative_do, .inclusive_negative_do, .unsigned_inclusive_negative_do, .memory_up_do, .memory_down_do => other = target(op, start, end),
                     .leave => next = leaveTarget(machine, pc, start, end),
                     else => {},
                 }
@@ -349,9 +349,10 @@ pub const Lint = struct {
             .literal, .execution_token, .counted_string, .local_address => fixed(0, 1),
             .string_literal => fixed(0, 2),
             .float_literal => .{ .known = true, .float_net = 1 },
-            .branch, .leave, .loop, .print_string, .local_frame, .compile_call, .exit, .does => fixed(0, 0),
-            .branch_zero, .plus_loop, .abort_string => fixed(1, 0),
-            .do_loop, .q_do_loop => fixed(2, 0),
+            .branch, .leave, .loop, .next_loop, .print_string, .local_frame, .compile_call, .exit, .does => fixed(0, 0),
+            .branch_zero, .plus_loop, .negative_loop, .for_loop, .abort_string => fixed(1, 0),
+            .do_loop, .q_do_loop, .positive_do, .unsigned_positive_do, .negative_do, .unsigned_negative_do, .inclusive_negative_do, .unsigned_inclusive_negative_do => fixed(2, 0),
+            .memory_up_do, .memory_down_do => fixed(3, 0),
             .store_value, .add_value => {
                 if (op.value < 0 or op.value >= machine.word_count) return unknown;
                 return switch (machine.words[@intCast(op.value)].kind) {
@@ -361,7 +362,7 @@ pub const Lint = struct {
                 };
             },
             .local_store, .local_fetch => {
-                const kind: defs.LocalKind = @enumFromInt(op.value >> 32);
+                const kind: defs.LocalKind = @fromBackingInt(@intCast(op.value >> 32));
                 const store = op.kind == .local_store;
                 return switch (kind) {
                     .float => if (store) Effect{ .known = true, .float_takes = 1, .float_net = -1 } else Effect{ .known = true, .float_net = 1 },
@@ -374,7 +375,7 @@ pub const Lint = struct {
             // word's id.
             else => {
                 if (op.value < 0 or op.value >= machine.builtin_count) return unknown;
-                return self.builtin_effects[@intFromEnum(machine.words[@intCast(op.value)].builtin)];
+                return self.builtin_effects[@backingInt(machine.words[@intCast(op.value)].builtin)];
             },
         };
     }
@@ -383,7 +384,7 @@ pub const Lint = struct {
     fn wordEffect(self: *Lint, machine: *State, id: u16) Effect {
         const word = machine.words[id];
         return switch (word.kind) {
-            .builtin => self.builtin_effects[@intFromEnum(word.builtin)],
+            .builtin => self.builtin_effects[@backingInt(word.builtin)],
             // The words are checked in the order they were defined; one that is not
             // before the one in work (a recursion) has no effect yet. A definition
             // whose own effect is not fixed is taken at its stack comment.
@@ -419,7 +420,7 @@ pub const Lint = struct {
         @memset(&self.builtin_effects, .{});
         if (!defs.help_enabled) return;
         for (State.builtin_definitions) |definition| {
-            const index = @intFromEnum(definition[1]);
+            const index = @backingInt(definition[1]);
             if (self.builtin_effects[index].known or !fixedEffect(definition[1])) continue;
             // The table HELP uses, without the words the build leaves out: the
             // executable then holds one table, not that one and the whole one.
@@ -469,7 +470,7 @@ fn isChecked(machine: *State, word: defs.Word) bool {
 fn neverReturns(machine: *const State, pc: u16, start: u16) bool {
     const op = machine.code[pc];
     const builtin: Builtin = switch (op.kind) {
-        .builtin => if (op.value >= 0 and op.value < builtin_count) @enumFromInt(op.value) else return false,
+        .builtin => if (op.value >= 0 and op.value < builtin_count) @fromBackingInt(@intCast(op.value)) else return false,
         .call, .call_builtin => blk: {
             if (op.value < 0 or op.value >= machine.builtin_count) return false;
             const word = machine.words[@intCast(op.value)];
@@ -488,17 +489,19 @@ fn neverReturns(machine: *const State, pc: u16, start: u16) bool {
 
 /// Where a branch goes, when that is inside the definition.
 fn target(op: defs.Op, start: u16, end: u16) ?u16 {
-    if (op.value < start or op.value > end) return null;
-    return @intCast(op.value);
+    const destination = if (@import("words_loops.zig").isEntry(op.kind)) @import("words_loops.zig").target(op.value) else op.value;
+    if (destination < start or destination > end) return null;
+    return @intCast(destination);
 }
 
 /// Where LEAVE at `pc` goes: after the innermost DO loop around it.
 fn leaveTarget(machine: *const State, pc: u16, start: u16, end: u16) ?u16 {
     var found: ?u16 = null;
     for (machine.code[start..pc]) |op| {
-        if (op.kind != .do_loop and op.kind != .q_do_loop) continue;
-        if (op.value <= pc or op.value > end) continue;
-        found = @intCast(op.value);
+        if (!@import("words_loops.zig").isEntry(op.kind)) continue;
+        const destination = @import("words_loops.zig").target(op.value);
+        if (destination <= pc or destination > end) continue;
+        found = @intCast(destination);
     }
     return found;
 }

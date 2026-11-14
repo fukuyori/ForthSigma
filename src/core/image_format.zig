@@ -334,7 +334,8 @@ fn validateCode(v: View) RuntimeError!void {
             .call, .compile_call, .execution_token, .store_value, .add_value, .local_frame => if (op.value < 0 or op.value >= v.header.word_count) return error.InvalidImage,
             .call_builtin => if (op.value < 0 or op.value >= v.header.builtin_count) return error.InvalidImage,
             .builtin => if (op.value < 0 or op.value >= @typeInfo(defs.Builtin).@"enum".field_names.len) return error.InvalidImage,
-            .branch, .branch_zero, .do_loop, .q_do_loop, .loop, .plus_loop => if (op.value < 0 or op.value > v.header.code_count) return error.InvalidImage,
+            .branch, .branch_zero, .loop, .plus_loop, .negative_loop, .next_loop => if (op.value < 0 or op.value > v.header.code_count) return error.InvalidImage,
+            .do_loop, .q_do_loop, .positive_do, .unsigned_positive_do, .negative_do, .unsigned_negative_do, .inclusive_negative_do, .unsigned_inclusive_negative_do, .for_loop, .memory_up_do, .memory_down_do => if (op.value < 0 or @import("words_loops.zig").target(op.value) > v.header.code_count) return error.InvalidImage,
             .print_string, .string_literal, .counted_string, .abort_string => {
                 try dataCell(v, op.value, 1);
                 const at: usize = @intCast(@as(map.Cell, map.system_end) + op.value - map.data_start);

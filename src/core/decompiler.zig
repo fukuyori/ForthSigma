@@ -145,9 +145,18 @@ pub fn seeBody(self: *State, start: u16, end: u16) RuntimeError!void {
     var roles: [max_code]SeeRole = undefined;
     var thens: [max_code + 1]u16 = undefined;
     var begins: [max_code + 1]u16 = undefined;
+    var dones: [max_code + 1]u16 = undefined;
     @memset(roles[start..stop], .plain);
     @memset(thens[start .. stop + 1], 0);
     @memset(begins[start .. stop + 1], 0);
+    @memset(dones[start .. stop + 1], 0);
+    for (self.code[start..stop]) |op| {
+        const loops = @import("words_loops.zig");
+        if (loops.isEntry(op.kind) and op.value & loops.done_flag != 0) {
+            const at = loops.target(op.value);
+            if (at >= start and at <= stop) dones[@intCast(at)] += 1;
+        }
+    }
     for (start..stop) |pc| {
         const op = self.code[pc];
         if (op.kind != .branch_zero) continue;
@@ -191,6 +200,7 @@ pub fn seeBody(self: *State, start: u16, end: u16) RuntimeError!void {
     var pc: usize = start;
     while (true) : (pc += 1) {
         for (0..thens[pc]) |_| out.text(&.{"THEN"});
+        for (0..dones[pc]) |_| out.text(&.{"DONE"});
         if (pc == stop) break;
         for (0..begins[pc]) |_| out.text(&.{"BEGIN"});
         try self.seeOperation(&out, pc, roles[pc], start);
@@ -256,6 +266,17 @@ pub fn seeOperation(self: *State, out: *SeeOutput, pc: usize, role: SeeRole, sta
                 out.text(&.{ if (op.kind == .branch) "BRANCH " else "?BRANCH ", label });
             },
         },
+        .positive_do => out.text(&.{"+DO"}),
+        .unsigned_positive_do => out.text(&.{"U+DO"}),
+        .negative_do => out.text(&.{"-DO"}),
+        .unsigned_negative_do => out.text(&.{"U-DO"}),
+        .inclusive_negative_do => out.text(&.{"-[DO"}),
+        .unsigned_inclusive_negative_do => out.text(&.{"U-[DO"}),
+        .for_loop => out.text(&.{"FOR"}),
+        .memory_up_do => out.text(&.{"MEM+DO"}),
+        .memory_down_do => out.text(&.{"MEM-DO"}),
+        .negative_loop => out.text(&.{"-LOOP"}),
+        .next_loop => out.text(&.{"NEXT"}),
         .do_loop => out.text(&.{"DO"}),
         .q_do_loop => out.text(&.{"?DO"}),
         .loop => out.text(&.{"LOOP"}),

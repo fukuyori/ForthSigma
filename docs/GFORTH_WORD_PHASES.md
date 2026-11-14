@@ -316,7 +316,7 @@ V . DEPTH .
 
 #### P07c ループと制御スタック
 
-対象 18語。tque ID: 572。単位内の先行作業: P07a。
+対象 18語。tque ID: 572、18/18完了(auto)。単位内の先行作業: P07a。通常/最小テスト、149比較・13方針確認・native保存2件・EOF2件が通過。次は573 P07d。[記録](P07_IMPLEMENTATION.md)。
 
 `+DO`, `-DO`, `-LOOP`, `-[DO`, `?DUP-0=-IF`, `?DUP-IF`, `ARRAY>MEM`, `CS-DROP`, `DELTA-I`, `DONE`, `FOR`, `I'`, `MEM+DO`, `MEM-DO`, `NEXT`, `U+DO`, `U-DO`, `U-[DO`
 

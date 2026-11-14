@@ -117,13 +117,18 @@ pub fn compileDo(self: *State, conditional: bool) RuntimeError!void {
 }
 
 pub fn compileLoop(self: *State, plus: bool) RuntimeError!void {
+    try self.requireCompiling();
+    if (self.topControl() != .do_loop) return error.ControlMismatch;
+    const peek = self.control_stack[self.control_depth - 1];
+    const entry = self.code[peek.address].kind;
+    if (entry == .for_loop or (plus and @import("words_loops.zig").isMemory(entry))) return error.ControlMismatch;
     const loop = try self.popControl(.do_loop);
     const body: u16 = loop.address + 1;
     _ = try self.emit(.{ .kind = if (plus) .plus_loop else .loop, .value = body });
     self.patch(loop.address, self.code_count);
     // DO always runs the body, so its locals stay visible, except those a LEAVE can
     // skip; ?DO may skip the whole body.
-    if (self.code[loop.address].kind == .q_do_loop) {
+    if (self.code[loop.address].kind != .do_loop) {
         self.local_count = loop.locals;
     } else self.local_count = @min(self.local_count, loop.leave_locals);
 }
@@ -159,10 +164,10 @@ pub fn compileOf(self: *State) RuntimeError!void {
     try self.requireCompiling();
     const kind = self.topControl() orelse return error.ControlMismatch;
     if (kind != .case_start and kind != .endof_branch) return error.ControlMismatch;
-    _ = try self.emit(.{ .kind = .builtin, .value = @intFromEnum(Builtin.over) });
-    _ = try self.emit(.{ .kind = .builtin, .value = @intFromEnum(Builtin.equal) });
+    _ = try self.emit(.{ .kind = .builtin, .value = @backingInt(Builtin.over) });
+    _ = try self.emit(.{ .kind = .builtin, .value = @backingInt(Builtin.equal) });
     const at = try self.emit(.{ .kind = .branch_zero });
-    _ = try self.emit(.{ .kind = .builtin, .value = @intFromEnum(Builtin.drop) });
+    _ = try self.emit(.{ .kind = .builtin, .value = @backingInt(Builtin.drop) });
     try self.pushControl(.of_branch, at);
 }
 
@@ -216,7 +221,7 @@ pub fn compileEndof(self: *State) RuntimeError!void {
 
 pub fn compileEndcase(self: *State) RuntimeError!void {
     try self.requireCompiling();
-    _ = try self.emit(.{ .kind = .builtin, .value = @intFromEnum(Builtin.drop) });
+    _ = try self.emit(.{ .kind = .builtin, .value = @backingInt(Builtin.drop) });
     try closeCase(self);
 }
 

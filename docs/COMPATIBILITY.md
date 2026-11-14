@@ -249,3 +249,7 @@ All8 compilation-token/execution words are implemented. Final comparisons:57 mat
 ## P07b (571)
 
 Six quotation/anonymous-definition/postponing items are implemented. Nested/interpreted quotations isolate locals and controls; no closure capture. NONAME omits the next definition's name. [[ is only a postponing delimiter. Invalid quotes roll back the unfinished enclosing definition; Gforth invalid-memory/unfinished-state behavior is not copied. Validation:70 matching cases,6 Sigma error checks,2 native image checks,13 Zig regressions, normal/minimal tests and build. Word.quotation changes the ABI; completed bodies/macros survive restore and both append routes. [Details](P07_IMPLEMENTATION.md).
+
+## P07c (572)
+
+All18 loop/control words are implemented. Verification passes149 matching Gforth cases plus13 Sigma policy checks,13 Zig regressions,2 native image checks and2 unfinished-loop EOF checks. Memory strides must be positive; wrapped ranges throw-24, and short reverse ranges skip. I'/DELTA-I use VM frames through helpers. DONE uses explicit UNLOOP cleanup; CS operations accept temporary interpretation in an open definition. Normal/minimal tests, build and prior P07 verifiers pass. New OpKind/Builtin tags change the ABI. [Details](P07_IMPLEMENTATION.md).

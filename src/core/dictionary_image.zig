@@ -193,7 +193,7 @@ pub fn appendImage(self: *State, source: *const State) RuntimeError!void {
             .call, .compile_call, .execution_token, .store_value, .add_value, .local_frame => if (op.value >= source.builtin_count) {
                 op.value = @intCast(word_base + @as(usize, @intCast(op.value - source.builtin_count)));
             },
-            .branch, .branch_zero, .do_loop, .q_do_loop, .loop, .plus_loop => {
+            .branch, .branch_zero, .do_loop, .q_do_loop, .loop, .plus_loop, .positive_do, .unsigned_positive_do, .negative_do, .unsigned_negative_do, .inclusive_negative_do, .unsigned_inclusive_negative_do, .for_loop, .memory_up_do, .memory_down_do, .negative_loop, .next_loop => {
                 op.value += @intCast(code_base);
             },
             .print_string, .string_literal, .counted_string, .abort_string => {

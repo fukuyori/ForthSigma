@@ -249,3 +249,7 @@ All8 compilation-token/execution words are implemented. Final comparisons:57 mat
 ## P07b (571)
 
 Six quotation/anonymous-definition/postponing items are implemented. Nested/interpreted quotations isolate locals and controls; no closure capture. NONAME omits the next definition's name. [[ is only a postponing delimiter. Invalid quotes roll back the unfinished enclosing definition; Gforth invalid-memory/unfinished-state behavior is not copied. Validation:70 matching cases,6 Sigma error checks,2 native image checks,13 Zig regressions, normal/minimal tests and build. Word.quotation changes the ABI; completed bodies/macros survive restore and both append routes. [Details](P07_IMPLEMENTATION.md).
+
+## P07c（572）
+
+ループ・制御18語を実装しました。Gforth一致149件、Sigma方針13件、Zig回帰13件、native保存2件・未完ループEOF2件が通過しています。MEM刻み幅は正のみ、範囲の桁あふれは-24、短い降順範囲は0回です。I'/DELTA-Iは補助語からもVMフレームを参照します。DONEには明示的なUNLOOPが必要です。CS操作は開いた定義内の一時解釈中も許可します。通常/最小構成・ビルド・既存P07検証も通過しました。OpKind/Builtin追加でABIが変わります。[詳細](P07_IMPLEMENTATION.md)。

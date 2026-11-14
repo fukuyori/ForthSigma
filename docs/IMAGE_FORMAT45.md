@@ -39,3 +39,5 @@ Macro words use the fixed case-sensitive namespace id 255, distinct from regular
 P07a adds the Word compile_only boolean to the serialized fields and ABI layout signature. The byte must be0 or1 before decoding a Word. Full restore and both append routes retain user restrictions. Earlier builtin/Word ABI signatures are rejected even though the framing magic remains SIGIMG45/46/47.
 
 P07b adds Word.quotation for nested anonymous compiler entries. The byte must be0/1 and true only for unnamed colon words. The field and new helpers change the ABI signature. Completed bodies/macros persist; active quotation/postponing state is rejected by image graph collection and reset on full restore. Earlier ABIs remain unsupported under the same framing magic.
+
+P07c adds eleven loop operation tags and eighteen builtin tags. DONE marks bit32 on an entry's exit target. Validation permits the known flag and an in-range code destination; append relocates the destination while retaining the flag. Inlining/lint/SEE understand the marker. Runtime Loop mode/stride/cleanup fields are not saved. OpKind/Builtin changes invalidate earlier ABIs under the same framing magic.

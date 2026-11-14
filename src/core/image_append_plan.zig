@@ -133,7 +133,7 @@ pub fn relocatedOperation(plan: *const Plan, index: usize) RuntimeError!defs.Op 
     var op = @import("std").mem.bytesToValue(defs.Op, view.code[index * @sizeOf(defs.Op) ..][0..@sizeOf(defs.Op)]);
     switch (op.kind) {
         .call, .compile_call, .execution_token, .store_value, .add_value, .local_frame => op.value = relocatedId(plan, op.value),
-        .branch, .branch_zero, .do_loop, .q_do_loop, .loop, .plus_loop => op.value += @intCast(plan.code_base),
+        .branch, .branch_zero, .do_loop, .q_do_loop, .loop, .plus_loop, .positive_do, .unsigned_positive_do, .negative_do, .unsigned_negative_do, .inclusive_negative_do, .unsigned_inclusive_negative_do, .for_loop, .memory_up_do, .memory_down_do, .negative_loop, .next_loop => op.value += @intCast(plan.code_base),
         .print_string, .string_literal, .counted_string, .abort_string => op.value += plan.data_delta,
         else => {},
     }

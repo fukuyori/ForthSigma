@@ -1,5 +1,7 @@
 # P07 implementation and validation
 
+Current: prework457 and P07a570/P07b571/P07c572 are complete. New words32/40; next573 P07d. P07c implementation is included in the corresponding commit; see git history.
+
 ## Prework: dictionary assignment words (457)
 
 Status: IS, ACTION-OF, TO and +TO are dictionary words; prework457 is complete with auto progress. P07's40 new words remain separate; prework committed as96625de, followed by P07a below. Implementation, validation and documentation are included in the P07 prework commit; see git history.
@@ -24,7 +26,7 @@ Normal tests, minimal tests with all optional feature groups disabled (including
 
 ## P07a: compilation tokens and execution restrictions (570)
 
-Status: all8 words are implemented and validated;570 is complete(auto). Next is P07b571 (6 words). P07's new-word count is8/40; the four prework words are separate. P07a implementation and validation are included in the corresponding commit; see git history.
+Status: all8 words are implemented and validated;570 is complete(auto). P07a was committed asdbc344c; P07b follows below. P07's new-word count is8/40; the four prework words are separate. P07a implementation and validation are included in the corresponding commit; see git history.
 
 The user approved strict Sigma errors instead of Gforth's warning-and-continue behavior: ordinary interpretation of a COMPILE-ONLY/RESTRICT word throws CompileOnly(-14). Tick, NAME>INTERPRET and explicit EXECUTE remain available; the word body's own existing execution guards still apply. [COMP'] and EXECUTE-EXIT require compile state; POSTPONE, requires an open definition. A latest anonymous word or no user word gives InvalidDefinition(-259), following Sigma's existing defining-word error policy.
 
@@ -56,7 +58,7 @@ Normal/minimal tests (all optional groups disabled, including freestanding objec
 
 ## P07b: quotations, anonymous definitions and postponing (571)
 
-Status: all6 items are implemented;571 is complete(auto). P07 now has14/40 new words plus the four prework words. Next is P07c572. P07b implementation/documentation are included in the corresponding commit; the preceding P07a commit is dbc344c and the initial P07b probe is608e55c.
+Status: all6 items are implemented;571 is complete(auto). P07 now has14/40 new words plus the four prework words. P07b was committed as0bd77d8. P07b implementation/documentation are included in the corresponding commit; the preceding P07a commit is dbc344c and the initial P07b probe is608e55c.
 
 The user approved interpreted and nested quotations without outer-local capture, postponing only inside an open definition (also from temporary interpretation), and strict errors/rollback for malformed quotations. [[ is a postponing delimiter, not an ordinary dictionary word. Gforth's invalid-memory behavior and unfinished-compiler state on malformed inputs are not reproduced.
 
@@ -79,3 +81,31 @@ Malformed control flow, wrong quote terminators and errors inside an open quotat
 Thirteen Zig tests cover interpreted/nested/stable tokens, isolated controls/typed locals/recursion and parent restoration, callbacks/CATCH/IN-COLON-DEF?, NONAME defining operations, literals/parsing strings/macros/XT locals, rollback and caught errors, depth/resource bounds, complete images/both append routes, multiline/include EOF, data/name rollback and malformed metadata with repaired CRC.
 
 Normal tests, minimal tests with all optional groups disabled (including freestanding object), and normal build pass. The final whole-unit probe has76 observations; verification passes70 Gforth comparisons,6 explicit Sigma error checks and2 native SAVE/LOAD/SAVESYS execution checks. Two additional native EOF checks reject unfinished quotation/postponing state. Gforth's standalone ;] invalid-memory failure is an exploratory observation, not a passing conformance case. Prework and P07a comparisons and their native image checks also pass with the new ABI. Reports: .work/p07b-check/; logs: .zig-cache/p07b-*.log. No Windows/Linux native execution, package/version change or GPL implementation reuse.
+
+## P07c: counted loops and control-stack operations (572)
+
+Status: all18 words are implemented;572 is complete(auto). P07 now has32/40 new words plus the four prework words. Next is P07d573 (8 words). P07c implementation is included in the corresponding commit; see git history. Previous commits: P07b0bd77d8; P07c initial probe3b225fa.
+
+The user directed continued implementation with recommended choices and no pauses for undecided implementation details. Accordingly, valid loop behavior follows the measurements; invalid memory stride/range arithmetic uses Sigma errors, helper calls read VM loop frames rather than arbitrary return-stack cells, and CS operations accept temporary interpretation inside an open definition. Git operations still require an explicit request.
+
+### Words and boundaries
+
+- +DO/U+DO enter only when start<limit (signed/unsigned); -DO/U-DO require start>limit. -[DO/U-[DO allow start=limit. The ending still determines the termination border: a negative +LOOP includes the lower boundary; -LOOP subtracts an unsigned magnitude and stops at/crossing the lower boundary, excluding it. Zero -LOOP increments retain looping behavior; work limits and LEAVE remain available. ARRAY>MEM multiplies with cell-width wrapping and retains the element size.
+- FOR/NEXT count unsigned n down through0, giving n+1 body executions. I' is0 for FOR and DELTA-I is limit-index modulo cell width. Body locals initialized by FOR remain visible afterward unless a LEAVE can skip them. Existing plain DO's equal-bound behavior is retained; it is not imposed on the new inclusive loops (a zero-step equal-bound loop can repeat).
+- MEM+DO/MEM-DO require LOOP and a positive signed stride. They reject zero/negative stride and unsigned addr+bytes overflow with InvalidNumber(-24), before consuming arguments or creating a frame. Upward indices are addr, addr+stride,... while below the end; downward indices start at addr+bytes-stride and continue while at/above addr. bytes<stride gives no downward iterations. For bytes5/stride2 the offsets are0,2,4 upward and3,1 downward. The iterator itself does not dereference memory; ordinary memory words perform address checks.
+- I' and DELTA-I read the innermost VM loop frame and work through helper calls, consistently with Sigma I. A missing frame raises LoopMismatch. This deliberately avoids the unrelated return-address values observed in Gforth helper calls.
+- ?DUP-IF and ?DUP-0=-IF preserve a nonzero input on the selected path and compose with ordinary ELSE/THEN.
+- CS-DROP removes an orig/dest entry. CS-PICK/ROLL/DROP require an open definition but work during [ ... ]. MEM loop control entries reject CS-PICK/ROLL, matching the documented special do-sys restriction. Loop/control kind mismatches fail with ControlMismatch. FOR must end with NEXT, and MEM loops with LOOP.
+- DONE resolves LEAVE targets without generating runtime cleanup. Its destination must perform the required UNLOOP. A private flag on the entry target keeps the frame for that cleanup; ordinary loop endings and LEAVE behavior remain unchanged. Sigma's conditional DONE entry retains a cleanup frame on the skip path, avoiding an absent-frame pop. SEE reconstructs DONE from the target marker.
+
+### VM and images
+
+Eleven dedicated operation tags extend the VM, and Loop gains runtime mode/stride/cleanup fields. Regular LOOP keeps its existing fast path for ordinary frames; extended modes use bounded arithmetic. DONE marks bit32 on a loop-entry target; validation accepts only the flag plus an in-range code target. Both append routes relocate the target without altering the flag. Inline reconstruction marks these targets, and lint/decompilation/debug naming recognize the new operations. Runtime loop frames are not image state.
+
+The existing ABI signature includes the new OpKind/Builtin tags, so earlier ABI files are rejected even with SIGIMG45/46/47 framing. Completed definitions survive full restore, both append routes and SAVESYS. Native EOF now rejects any unfinished colon definition, including unfinished loops, instead of treating it as successful termination; multiline interactive definitions remain supported until EOF.
+
+### Validation
+
+Thirteen Zig regressions cover signed/unsigned/equal bounds, -LOOP magnitudes and zero steps, FOR/nested loops/body locals, helper limit/delta reads, memory order and non-multiple lengths, invalid stride/range argument preservation, ARRAY>MEM and combined IF, DONE/UNLOOP, CS operations, THROW/EXIT cleanup, all3 image paths, malformed control kinds, SEE and work-limit interruption. StepLimit deliberately bypasses CATCH as before; report recovery clears the loop frames.
+
+Normal/minimal tests (all optional groups disabled, including the freestanding object) and normal build pass. Final probe:162 observations, all bounded potentially long loops, no timeouts. verify-p07c.py passes149 Gforth comparisons,13 Sigma policy/error checks,2 native SAVE/LOAD/SAVESYS checks and2 native unfinished-loop EOF checks. Earlier prework/P07a/P07b comparisons and native image checks also pass. Logs: .zig-cache/p07c-*.log; reports: .work/p07c-check/. Gforth's invalid-control crashes and helper return-address values are observations, not passing conformance requirements. No Windows/Linux native checks, package/version changes or GPL implementation reuse.

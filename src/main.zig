@@ -2204,7 +2204,7 @@ fn run(init: std.process.Init.Minimal) !u8 {
 /// Successful termination shares the block writeback path, including EOF and
 /// saved executables. Errors remain visible and make the process fail.
 fn finishBlocks(machine: *forth.State) u8 {
-    if (machine.quote_depth != 0 or machine.postponing) {
+    if (machine.defining or machine.quote_depth != 0 or machine.postponing) {
         machine.report(error.InvalidDefinition);
         return 1;
     }

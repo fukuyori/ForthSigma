@@ -83,8 +83,9 @@ pub fn restore(self: *forth.State) void {
         }
     }
     for (self.code[0..self.code_count]) |op| switch (op.kind) {
-        .branch, .branch_zero, .do_loop, .q_do_loop, .loop, .plus_loop => {
-            if (op.value >= 0 and op.value <= self.code_count) mark(&targets, @intCast(op.value));
+        .branch, .branch_zero, .do_loop, .q_do_loop, .loop, .plus_loop, .positive_do, .unsigned_positive_do, .negative_do, .unsigned_negative_do, .inclusive_negative_do, .unsigned_inclusive_negative_do, .for_loop, .memory_up_do, .memory_down_do, .negative_loop, .next_loop => {
+            const destination = if (@import("words_loops.zig").isEntry(op.kind)) @import("words_loops.zig").target(op.value) else op.value;
+            if (destination >= 0 and destination <= self.code_count) mark(&targets, @intCast(destination));
         },
         else => {},
     };

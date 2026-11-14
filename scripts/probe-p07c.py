@@ -54,6 +54,8 @@ add('minus-do-minus-loop', ': T 0 3 -DO I . 1 -LOOP ; T')
 for opener in ('MEM+DO','MEM-DO'):
     for base,length,stride in [(9223372036854775806,4,1),(-2,4,1),(100,-1,1),(100,4,9223372036854775807)]:
         add(f'memory-boundary:{opener}:{base}:{length}:{stride}',prefix+f': T {base} {length} {stride} {opener} I {base} - . P07C-HIT IF LEAVE THEN LOOP ; T')
+add('inclusive-zero-step', prefix+': T 0 0 -[DO I . P07C-HIT IF LEAVE THEN 0 +LOOP ; T')
+add('for-body-local', ': T 1 FOR { x -- } NEXT x . ; 7 8 T')
 results=[]
 for name,source in cases:
     row={'case':name,'source':source}
