@@ -87,3 +87,19 @@ Seven regressions in p06b_csv_input_test.zig cover decoding/record numbering/tra
 690 completes four of nine P06b words; next is691 pipe/shell5. 568/549/542 remain incomplete. CSV-reader changes and investigation script are uncommitted. Native Windows/Linux verification remains outside this session under607. No version bump or packaging.
 
 Final CSV-reader validation: normal/minimal zig build test (including freestanding), normal build,19 reader and28 quoted-output Gforth comparisons pass. Task690 is complete(auto);568/549/542 remain incomplete.
+
+## SH parsing front end (692 under691)
+
+READ-CSV was committed/pushed as cb95b46. Pipe/shell task691 is split into692 SH,693 OPEN-PIPE/CLOSE-PIPE/BROKEN-PIPE-ERROR and694 SH-GET. The latter remains dependent on pipe support.
+
+`SH ( "command..." -- )` parses the current source remainder, emits a newline and invokes the existing SYSTEM host callback. It saves the returned platform status in `$?`: POSIX retains the wait status, Windows uses the existing command processor's exit code. It does not interpret command text as Forth. Like `0 PARSE`, a NUL ends the parsed command and leaves subsequent source available to the Forth parser. SH is an ordinary compiled word; invoking a compiled wrapper parses the caller's current source at runtime.
+
+The host implementation is unchanged: existing UTF-8/Windows wide-command behavior,4095-byte native command limit, terminal handoff, flushing and failure rules apply. Shell process output remains external host output; only the preliminary VM newline participates in OUTFILE/capture. A failed host call retains the previous `$?`; newline output already produced remains. If writing the newline fails, the error propagates before starting the shell. Missing SYSTEM capability fails before consuming source or emitting output. No new resource or persistent root is introduced. SH uses the system group and is available with files/float/graphics/audio disabled.
+
+Captured output can share an EVALUATE source owner. SH snapshots the parsed command before its newline can resize that owner, freeing the snapshot on success/error. Ordinary output requires no allocation or spare data-stack slots. Native SYSTEM still validates command length/embedded NUL; SH's parsing delimiter behavior is distinct from passing an embedded NUL directly to SYSTEM.
+
+Four regressions in p06b_sh_test.zig cover source consumption, whitespace/Unicode and compiled parsing, empty/NUL-delimited commands, host errors/status preservation and missing capability, output-error precedence, aliased capture/EVALUATE and full-stack execution. scripts/verify-p06b-sh.py passes eight Gforth comparisons of status values, external output order, Unicode, compiled invocation and capture. Report: .work/p06b-sh-check/comparison.json. Logs: .zig-cache/p06b-sh-{test,minimal,build}.log.
+
+692 completes five of nine P06b words;693 pipe support is next, then694 SH-GET. 691/568/549/542 remain incomplete(auto). SH changes are uncommitted. No Windows/Linux native verification, version bump or packages were performed.
+
+Final SH validation: normal/minimal zig build test (including freestanding), normal build and eight Gforth comparisons pass. Task692 is complete(auto).

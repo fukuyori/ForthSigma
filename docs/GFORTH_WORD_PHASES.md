@@ -258,7 +258,7 @@ FACILITY EXTのキー4語とBLOCK/BLOCK EXTの10語を優先する。既存の�
 
 #### P06b パイプとシェルとCSV
 
-対象 9語。tque ID: 568。単位内の先行作業: P06a。689のCSV設定2語と.QUOTED-CSVを実装・検証（3/9語）。690 READ-CSVも実装・検証（4/9語）。次は691パイプ/シェル5語。568/549は未完了。[記録](P06_IMPLEMENTATION.md)。
+対象 9語。tque ID: 568。単位内の先行作業: P06a。689のCSV設定2語と.QUOTED-CSVを実装・検証（3/9語）。690 READ-CSVも実装・検証（4/9語）。692 SHも実装・検証（5/9語）。次は693パイプ3語、694 SH-GET。691/568/549は未完了。[記録](P06_IMPLEMENTATION.md)。
 
 `.QUOTED-CSV`, `BROKEN-PIPE-ERROR`, `CLOSE-PIPE`, `CSV-QUOTE`, `CSV-SEPARATOR`, `OPEN-PIPE`, `READ-CSV`, `SH`, `SH-GET`
 

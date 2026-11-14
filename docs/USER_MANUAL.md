@@ -1279,3 +1279,8 @@ File ACCEPT retains Sigma's no-echo line read: drain LF/CRLF/CR through line end
 `READ-CSV ( filename-addr filename-u xt -- )` calls xt `( field-addr field-u column row -- )` for each decoded field. Columns start0; logical record numbers start1. Field bytes are borrowed only during the callback: copy them for retention and do not FREE them. The reader closes its file and restores the parser source on success/exception. Nested readers preserve outer field storage. CSV settings changed by callbacks persist.
 
 Empty FPATH uses raw cwd-relative lookup; configured FPATH uses source search. Physical lines are limited to4096 bytes and source names to255 bytes. The data file is recorded as a source without marking it REQUIRE-loaded. Blank lines yield an empty field; a trailing separator adds no final empty field. Quoted multiline boundaries become LF. For compatibility, malformed quoting is permissive, including a final LF in an unterminated quoted field at EOF; this is not strict RFC validation. Callbacks must consume their four inputs, preserve caller data and leave active CSV parser buffers intact. [Details](P06_IMPLEMENTATION.md).
+
+
+### Shell command line (P06b)
+
+`SH command...` prints a newline and executes the remaining source as a shell command using SYSTEM. `$?` holds the returned platform status (POSIX wait status; Windows command processor exit code). A compiled wrapper parses its caller's source at runtime. A NUL ends the command like `0 PARSE`. Host failure preserves the previous status; failure to print the newline prevents execution. Shell output uses host streams; OUTFILE/capture applies only to the VM newline. Existing SYSTEM command limits and terminal handoff apply. [Details](P06_IMPLEMENTATION.md).

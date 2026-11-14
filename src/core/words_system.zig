@@ -33,8 +33,9 @@ const true_flag = memory_map.true_flag;
 
 /// The built-in words this file executes; executeBuiltin dispatches by this list.
 pub const words = [_]Builtin{
-    .bye,          .load,         .save,              .savesys, .abort, .ms,      .utime, .getenv, .system, .throw,      .catch_word,
-    .ekey_to_char, .ekey_to_fkey, .environment_query, .quit,    .noop,  .perform, .argc,  .argv,   .arg,    .shift_args, .next_arg, .ntime, .cputime, .ns, .to_time_date_tz,
+    .bye,          .load,         .save,              .savesys, .abort, .ms,      .utime, .getenv, .system, .sh,         .throw,    .catch_word,
+    .ekey_to_char, .ekey_to_fkey, .environment_query, .quit,    .noop,  .perform, .argc,  .argv,   .arg,    .shift_args, .next_arg, .ntime,
+    .cputime,      .ns,           .to_time_date_tz,
 };
 
 /// Writes the command-line arguments into the argument area (see `argc_address`), with
@@ -124,6 +125,7 @@ pub const CatchContext = struct {
 
 pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
     switch (builtin) {
+        .sh => try @import("shell_line.zig").run(self),
         .argc => try self.push(memory_map.argc_address),
         .argv => try self.push(memory_map.argv_address),
         .arg => try pushArgument(self, try self.pop()),
