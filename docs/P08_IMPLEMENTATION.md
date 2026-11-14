@@ -1,6 +1,6 @@
 # P08 implementation and validation
 
-Current: P08a574 is complete(auto),23/29 words. Next:575 P08b (addressable values and deferred-word extensions). P07 review fixes and P08a are included in the corresponding commit; see git history.
+Current: P08a574 and P08b575 are complete(auto),29/29 words; parent551 is complete. P07 review fixes and P08a were pushed as39e5501; P08b is included in the corresponding commit; see git history. External P08 review has not been performed. Next implementation candidate:576 P09a.
 
 ## P08a: name tokens and wordlists (574)
 
@@ -59,4 +59,46 @@ scripts/probe-p08a.py records170 observations from the designated Gforth build. 
 
 Twelve Zig regressions cover named/anonymous tokens and forgetting, case/table warnings, copied and caught NEXTNAME state, scoped compilation destination/error restoration, writable VM context, finite traversal callbacks, listing/filter output, full restore/both append routes with rebasing, malformed policy validation without mutation, line-local MWORDS, control metadata/aliases and capacity/bit63 persistence. Normal/minimal tests (all optional groups disabled, including freestanding checks) and normal build pass. P07 prework/a/b/c/d comparison/image/EOF verifiers also pass after the code changes. Logs: .zig-cache/p08a-*.log.
 
-Windows/Linux native checks remain deferred under607. No package/release/version change, Git commit/push or unrequested external review was performed for this unit.
+Windows/Linux native checks remain deferred under607. No package/release/version change or unrequested external review was performed during implementation validation.
+
+## P08b: addressable values and deferred actions (575)
+
+All6 words complete(auto); P08 now has29/29 implemented words. P07 review fixes and P08a were committed/pushed as39e5501 before this unit. P08 external review has not been performed.
+
+| Word | Stack effect | Behavior |
+| --- | --- | --- |
+| AVALUE | `( addr "name" -- )` | Define a VALUE with explicitly tracked logical-address storage. |
+| ADDRESSABLE: | `( -- )` | Compatibility annotation; Sigma values already have stable backing storage. |
+| ADDR | `( "name" -- addr )` | Address a value or, during compilation, a value-flavoured local. |
+| :IS | `( "deferred" -- )` | Begin an anonymous definition assigned to the DEFER at successful semicolon. |
+| PRESERVE | `( compilation: "deferred" -- ; runtime: -- )` | Restore the action captured at compilation, not the action present on entry. |
+| WRAP-XT | `( ... action deferred callback -- ... )` | Temporarily install action, execute callback and restore the entry action. |
+
+AVALUE does not allocate/free its target. TO, +TO and full-cell stores refresh its typed address record; partial writes damage it and prevent image saving until repaired by a full-cell update. Use logical data addresses, not xt/wid handles. Invalid address values can be held at runtime but cannot be serialized as valid addresses.
+
+ADDR supports VALUE/AVALUE, FVALUE, 2VALUE, $VALUE and DEFER; it rejects constants, variables and variable-flavoured locals. Ordinary Sigma values need no annotation and produce no Gforth-style addressability warning. Compiled ADDR uses a relocatable word reference; its explicit interpretation token still returns an address immediately during compilation. Local addresses last only for that invocation's frame. To persist a raw returned address, use explicit address storage such as AVALUE, ACONSTANT or A!.
+
+:IS accepts only DEFER (including synonyms). Its old action remains available to DEFERS until the definition completes. An error leaves the old action intact. An active :IS compiler cannot be saved/imported; completed definitions survive images normally.
+
+PRESERVE requires compilation and captures a fixed action, including the uninitialized sentinel. WRAP-XT restores on normal return, THROW, interruption and work-limit errors; callback errors retain priority. Nested scopes are supported up to64. If FORGET/MARKER or successful full image restoration invalidates its target, cleanup never writes into the removed/reused cell; normal callback return then gives InvalidExecutionToken(-261), while an existing callback error is propagated. Forgetting unrelated later words does not invalidate the target. Runtime wrapper guards are not serialized; saving inside a valid scope snapshots the currently installed action.
+
+Six public words and one hidden ADDR compilation action change builtin ABI/count. Recreate earlier-ABI images. [Implementation and validation](P08_IMPLEMENTATION.md).
+
+
+### Implementation and decisions
+
+- words_value_extensions.zig provides the public words and a hidden compile_addr action. ADDR uses the same interpretation/compilation selector as assignment words. Dictionary addresses compile as typed execution_token + >BODY; local addresses use the existing local_address operation. No native pointers or inferred cell literals enter serialized code.
+- AVALUE reuses VALUE and the existing typed-memory registry. Full-cell writes already refresh records; damaged/invalid pointers fail image validation. SEE identifies registered value storage as AVALUE. No new Word fields/kinds are needed.
+- ADDRESSABLE: is deliberately a no-op annotation because all Sigma values already have backing storage. ADDR on ordinary values/locals is accepted without Gforth's warning. Variable-flavoured locals and non-value targets retain InvalidDefinition(-259). Runtime input parsing follows existing Sigma name rules; a missing name gives-259 rather than Gforth's-16.
+- :IS tracks its anonymous word and target only while compilation is active. endDefinition commits after all ordinary close checks/code emission. Nested quotations cannot commit the outer target early. Error cleanup, FORGET and full restore clear the pending assignment. Compilation into an already removed current word is rejected. Non-DEFER targets are rejected rather than emulating Gforth's obsolescent value-target access.
+- PRESERVE emits a captured typed xt (or raw-1 sentinel) and store_value. It is a fixed compile-time reset, not an automatic exception scope. Outside compilation it throws CompileOnly(-14), instead of emitting orphan code with Gforth warnings.
+- WRAP-XT validates all3 tokens before changing state or consuming arguments. A stack-local guard chain tracks live target ids; dropWordsFrom and successful full restore invalidate affected guards before ids/storage are reused. Defer cleanup restores only a still-valid slot, including callback failures. A removed target on normal return gives-261; callback errors retain priority. Guards survive failed restore preflight, and an unrelated tail FORGET leaves the target valid. Host callback nesting is bounded at64 with ReturnStackOverflow and full unwind.
+- WRAP-XT uses the existing InvalidExecutionToken error for a non-DEFER target (-261 vs Gforth-21). Existing uninitialized-DEFER warning placement is retained and verified, then normalized in two comparisons. Gforth incomplete compiler/banner and invalid-memory behavior are exploratory observations, not copied failure semantics.
+
+### Images and validation
+
+AVALUE's typed slot retains heap roots and data pointers through full restore and both append routes. Compiled ADDR, captured PRESERVE actions and completed anonymous :IS assignments use existing typed word-id relocation. Active :IS compilers cannot be encoded or used as append sources. Runtime guards are never serialized; a successful full restore invalidates live scopes only after preflight, while failed preflight leaves them intact. No new framing/Word/Op layout:7 appended Builtin tags/table entries change ABI/count, so old-ABI SIGIMG45/46/47 images must be recreated.
+
+scripts/probe-p08b.py records64 observations. scripts/verify-p08b.py passes54 matching stdout/exit cases plus10 explicit Sigma error/compiler policies. Native SAVE/LOAD-DICTIONARY into a nonempty dictionary/heap and SAVESYS execution both pass, exercising an AVALUE heap root, compiled ADDR and deferred-action relocation. Artifacts: .work/p08b-check/.
+
+Twelve Zig regressions pass: typed full/partial writes, separate ADDR actions and scalar/float/double/xt locals, :IS timing/rollback/active-save rejection, captured/uninitialized actions, nested/throwing/rebinding wrappers, same-id reuse and error priority, unrelated FORGET, successful/failed image restoration,64-level unwind and all3 image routes. Normal/minimal tests (all optional groups disabled, including freestanding checks) and build pass; P08a and every P07 verifier also pass. Logs: .zig-cache/p08b-*.log. No Windows/Linux native execution, version change, package creation or unrequested external review was performed.

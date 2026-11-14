@@ -21,6 +21,7 @@ pub fn restoreFresh(state: *forth.State, image: []const u8, plan: *preflight.Pla
     apply(state, plan, true);
 }
 fn apply(state: *forth.State, plan: *const preflight.Plan, memory_is_fresh: bool) void {
+    @import("words_value_extensions.zig").invalidate(state, 0);
     const view = plan.view;
     const h = view.header;
     const builtins = state.builtin_count;

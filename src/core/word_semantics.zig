@@ -22,6 +22,7 @@ pub fn compilation(self: *const forth.State, id: u16) Compilation {
     const target = interpretation(self, id);
     const word = self.words[target];
     const compiler: ?defs.Builtin = if (word.kind == .builtin) switch (word.builtin) {
+        .addr => .compile_addr,
         .assign_to => .compile_assign_to,
         .assign_is => .compile_assign_is,
         .assign_plus_to => .compile_assign_plus_to,

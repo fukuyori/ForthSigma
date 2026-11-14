@@ -76,7 +76,7 @@ pub fn seeWord(self: *State, id: u16) RuntimeError!void {
         },
         .constant, .value => {
             self.writeNumber(if (word.kind == .value) try self.readCell(word.value) else word.value);
-            self.write(if (word.kind == .value) " VALUE " else " CONSTANT ");
+            self.write(if (word.kind == .value) (if (@import("address_registry.zig").index(self, .memory, word.value) != null) " AVALUE " else " VALUE ") else " CONSTANT ");
             self.write(name);
         },
         .fconstant, .fvalue => {
@@ -228,6 +228,7 @@ pub fn builtinName(builtin: Builtin) []const u8 {
     // These entries intentionally have no searchable name. Display their action
     // rather than losing the operation in SEE and single-step output.
     switch (builtin) {
+        .compile_addr => return "POSTPONE ADDR",
         .compile_assign_to => return "POSTPONE TO",
         .compile_assign_is => return "POSTPONE IS",
         .compile_assign_plus_to => return "POSTPONE +TO",

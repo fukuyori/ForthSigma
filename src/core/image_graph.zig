@@ -25,7 +25,7 @@ pub fn collectForAppend(state: *forth.State, output: *Graph) RuntimeError!void {
     return collectInternal(state, output, true);
 }
 fn collectInternal(state: *forth.State, output: *Graph, preserve_fpath: bool) RuntimeError!void {
-    if (state.quote_depth != 0 or state.postponing) return error.InvalidDefinition;
+    if (state.quote_depth != 0 or state.postponing or state.colon_is_word != null) return error.InvalidDefinition;
     output.object_count = 0;
     output.record_count = 0;
     // Roots are typed slots outside the heap; raw cells are never scanned.

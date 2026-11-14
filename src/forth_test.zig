@@ -3,6 +3,7 @@
 comptime {
     _ = @import("tests/p07d_test.zig");
     _ = @import("tests/p08a_test.zig");
+    _ = @import("tests/p08b_test.zig");
     _ = @import("tests/p07c_test.zig");
     _ = @import("tests/p07b_test.zig");
     _ = @import("tests/p07a_test.zig");

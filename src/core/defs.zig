@@ -1047,6 +1047,13 @@ pub const Builtin = enum {
     vocs,
     wordlist_words,
     xt_to_name,
+    avalue,
+    addressable,
+    addr,
+    compile_addr,
+    colon_is,
+    preserve,
+    wrap_xt,
 };
 
 pub const HeapResult = union(enum) { address: Cell, no_memory, bad_pointer };

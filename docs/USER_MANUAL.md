@@ -1407,3 +1407,24 @@ COMPILE-ONLY? reads registered restrictions; control-word metadata is populated.
 MWORDS uses case-sensitive substring matching and reads its optional pattern only from the current line. VLIST and WORDLIST-WORDS retain Sigma's oldest-first listing. MAP-VOCS visits a snapshot in descending allocated-id order, then Macros; callbacks receive wid and may use the stack below it. VOCS includes unnamed allocated lists. System list sets and display spacing differ from Gforth.
 
 Name/execute tokens are valid only while their dictionary entries survive. NAME>LINK skips anonymous entries; LATESTNT and XT>NAME can identify anonymous definitions. Old numeric tokens must not be reused after FORGET or dictionary replacement. Vocabulary targets and case/table policy bits relocate on dictionary append; raw wid values stored as ordinary cells/constants are not automatically relocated. Earlier-builtin-ABI images must be recreated. [Implementation and validation](P08_IMPLEMENTATION.md).
+
+## P08b: addressable values and deferred actions
+
+| Word | Stack effect | Behavior |
+| --- | --- | --- |
+| AVALUE | `( addr "name" -- )` | Define a VALUE with explicitly tracked logical-address storage. |
+| ADDRESSABLE: | `( -- )` | Compatibility annotation; Sigma values already have stable backing storage. |
+| ADDR | `( "name" -- addr )` | Address a value or, during compilation, a value-flavoured local. |
+| :IS | `( "deferred" -- )` | Begin an anonymous definition assigned to the DEFER at successful semicolon. |
+| PRESERVE | `( compilation: "deferred" -- ; runtime: -- )` | Restore the action captured at compilation, not the action present on entry. |
+| WRAP-XT | `( ... action deferred callback -- ... )` | Temporarily install action, execute callback and restore the entry action. |
+
+AVALUE does not allocate/free its target. TO, +TO and full-cell stores refresh its typed address record; partial writes damage it and prevent image saving until repaired by a full-cell update. Use logical data addresses, not xt/wid handles. Invalid address values can be held at runtime but cannot be serialized as valid addresses.
+
+ADDR supports VALUE/AVALUE, FVALUE, 2VALUE, $VALUE and DEFER; it rejects constants, variables and variable-flavoured locals. Ordinary Sigma values need no annotation and produce no Gforth-style addressability warning. Compiled ADDR uses a relocatable word reference; its explicit interpretation token still returns an address immediately during compilation. Local addresses last only for that invocation's frame. To persist a raw returned address, use explicit address storage such as AVALUE, ACONSTANT or A!.
+
+:IS accepts only DEFER (including synonyms). Its old action remains available to DEFERS until the definition completes. An error leaves the old action intact. An active :IS compiler cannot be saved/imported; completed definitions survive images normally.
+
+PRESERVE requires compilation and captures a fixed action, including the uninitialized sentinel. WRAP-XT restores on normal return, THROW, interruption and work-limit errors; callback errors retain priority. Nested scopes are supported up to64. If FORGET/MARKER or successful full image restoration invalidates its target, cleanup never writes into the removed/reused cell; normal callback return then gives InvalidExecutionToken(-261), while an existing callback error is propagated. Forgetting unrelated later words does not invalidate the target. Runtime wrapper guards are not serialized; saving inside a valid scope snapshots the currently installed action.
+
+Six public words and one hidden ADDR compilation action change builtin ABI/count. Recreate earlier-ABI images. [Implementation and validation](P08_IMPLEMENTATION.md).

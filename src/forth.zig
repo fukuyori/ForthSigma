@@ -222,6 +222,9 @@ pub const State = struct {
     quote_depth: usize = 0,
     quote_closing: bool = false,
     quote_root: u16 = 0,
+    wrap_guard: ?*@import("core/words_value_extensions.zig").Guard = null,
+    colon_is_word: ?u16 = null,
+    colon_is_target: u16 = 0,
     noname_next: bool = false,
     next_name_len: u8 = 0,
     next_name: [memory_map.max_name]u8 = @splat(0),
@@ -841,7 +844,8 @@ pub const State = struct {
         .{ "CURRENT", .current_address },             .{ "FIND-NAME-IN", .find_name_in },             .{ "IN", .in_vocabulary },                          .{ "IN-WORDLIST", .in_wordlist },              .{ "LATESTNT", .latest_nt },
         .{ "MAP-VOCS", .map_vocs },                   .{ "MWORDS", .mwords },                         .{ "NAME>LINK", .name_to_link },                    .{ "NEXTNAME", .nextname },                    .{ "OBSOLETE?", .obsolete_query },
         .{ "ROOT", .root_vocabulary },                .{ "SEAL", .seal },                             .{ "TABLE", .table_wordlist },                      .{ "VLIST", .vlist },                          .{ "VOCS", .vocs },
-        .{ "WORDLIST-WORDS", .wordlist_words },       .{ "XT>NAME", .xt_to_name },                    .{ "\\\\\\", .triple_backslash },
+        .{ "WORDLIST-WORDS", .wordlist_words },       .{ "XT>NAME", .xt_to_name },                    .{ "AVALUE", .avalue },                             .{ "ADDRESSABLE:", .addressable },             .{ "ADDR", .addr },
+        .{ "", .compile_addr },                       .{ ":IS", .colon_is },                          .{ "PRESERVE", .preserve },                         .{ "WRAP-XT", .wrap_xt },                      .{ "\\\\\\", .triple_backslash },
     };
 
     fn installBuiltins(self: *State) void {
@@ -891,6 +895,7 @@ pub const State = struct {
 
     fn isImmediateBuiltin(builtin: Builtin) bool {
         return switch (builtin) {
+            .addr, .preserve => true,
             .recursive_word, .positive_do, .unsigned_positive_do, .negative_do, .unsigned_negative_do, .inclusive_negative_do, .unsigned_inclusive_negative_do, .negative_loop, .for_word, .next_word, .memory_up_do, .memory_down_do, .done, .question_dup_if, .question_dup_zero_if, .quote_open, .quote_close, .postpone_open, .bracket_comp_tick, .execute_exit, .assign_to, .assign_is, .assign_plus_to, .assignment_action_of, .compile_if, .compile_else, .compile_ahead, .compile_then, .compile_begin, .compile_end, .compile_again, .compile_while, .compile_repeat, .compile_do, .compile_q_do, .compile_loop, .compile_plus_loop, .compile_does, .compile_case, .compile_of, .compile_endof, .compile_endcase, .compile_exit, .compile_recurse, .leave, .bracket_if, .bracket_else, .bracket_then, .bracket_defined, .bracket_undefined, .bracket_ifdef, .bracket_ifundef, .bracket_do, .bracket_q_do, .bracket_loop, .bracket_plus_loop, .bracket_i, .bracket_begin, .bracket_until, .bracket_again, .bracket_while, .bracket_repeat, .bracket_for, .bracket_next, .end_definition, .literal, .fliteral, .sliteral, .two_literal, .defers, .bracket_compile, .question_exit, .question_leave, .compile_question_of, .compile_contof, .compile_next_case, .debug_tilde, .assert_paren, .once, .debug_tilde_bt, .debug_tilde_one_bt, .break_colon, .break_quote, .triple_backslash => true,
             else => false,
         };
@@ -1041,6 +1046,7 @@ pub const State = struct {
     /// Takes word `id` and every later word out of the dictionary and the index of the
     /// names; the caller gives back their code, data, and names.
     pub fn dropWordsFrom(self: *State, id: u16) void {
+        @import("core/words_value_extensions.zig").invalidate(self, id);
         @import("core/address_registry.zig").forgetWords(self, id);
         if (defs.debug_enabled) {
             words_debug.unwatchFrom(self, id);
@@ -2015,7 +2021,7 @@ pub const State = struct {
         if (defs.debug_enabled and self.cover_blocks and self.compiling and startsBlock(builtin)) self.markBlock(self.columnAfterWord());
     }
 
-    const word_modules = .{ @import("core/words_names.zig"), @import("core/words_parsing.zig"), @import("core/words_loops.zig"), @import("core/quotations.zig"), @import("core/words_compilation_tokens.zig"), @import("core/words_terminal.zig"), @import("core/string_values.zig"), @import("core/words_string_edit.zig"), @import("core/words_text.zig"), @import("core/words_buffers.zig"), @import("core/words_data.zig"), @import("core/words_width.zig"), words_stack, words_arithmetic, @import("core/words_numeric.zig"), words_memory, words_output, words_input, words_compiling, words_float, words_pictured, words_dictionary, words_system, @import("core/blocks.zig"), words_files, words_strings, words_help, words_defining, words_graphics, words_audio, words_xchar, words_tools, words_debug };
+    const word_modules = .{ @import("core/words_value_extensions.zig"), @import("core/words_names.zig"), @import("core/words_parsing.zig"), @import("core/words_loops.zig"), @import("core/quotations.zig"), @import("core/words_compilation_tokens.zig"), @import("core/words_terminal.zig"), @import("core/string_values.zig"), @import("core/words_string_edit.zig"), @import("core/words_text.zig"), @import("core/words_buffers.zig"), @import("core/words_data.zig"), @import("core/words_width.zig"), words_stack, words_arithmetic, @import("core/words_numeric.zig"), words_memory, words_output, words_input, words_compiling, words_float, words_pictured, words_dictionary, words_system, @import("core/blocks.zig"), words_files, words_strings, words_help, words_defining, words_graphics, words_audio, words_xchar, words_tools, words_debug };
 
     /// For each built-in word, the index in `word_modules` of the file that executes it.
     const word_owner = blk: {

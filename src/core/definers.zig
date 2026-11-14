@@ -128,6 +128,7 @@ pub fn finishPending(self: *State, token: []const u8) RuntimeError!void {
 pub fn endDefinition(self: *State) RuntimeError!void {
     if (self.quote_depth != 0 and !self.quote_closing) return error.ControlMismatch;
     if (!self.defining or !self.compiling) return error.CompileOnly;
+    if (self.current_word >= self.word_count) return error.InvalidDefinition;
     if (self.control_depth != 0) return error.ControlMismatch;
     _ = try self.emit(.{ .kind = .exit });
     self.words[self.current_word].code_end = self.code_count;
@@ -136,6 +137,7 @@ pub fn endDefinition(self: *State) RuntimeError!void {
         if (self.words[self.current_word].source_file == frame.file_index + 1) self.words[self.current_word].source_end_line = frame.line;
     }
     @import("words_parsing.zig").resolve(self, self.current_word);
+    try @import("words_value_extensions.zig").finishColon(self, self.current_word);
     self.local_count = 0;
     self.setCompiling(false);
     self.defining = false;
