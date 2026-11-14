@@ -1017,7 +1017,7 @@ SAVESYS demo.exe
 | ループ関連 | `I`, `J`, `K`, `LEAVE`, `UNLOOP` |
 | 入出力 | `.`, `U.`, `.R`, `U.R`, `C.`, `.S`, `ECHO`, `EMIT`, `CR`, `SPACE`, `SPCES`, `SPACES`, `TYPE`, `INPUT`, `EMIT?` |
 | 基数 | `HEX`, `DEC`, `DECIMAL`, `OCT`, `BASE` |
-| 定義補助・辞書・実行 | `<BUILDS`, `CREATE`, `IMMEDIATE`, `WORDS`, `BYE`, `LOAD-DICTIONARY`, `SAVE`, `SAVESYS`, `EXECUTE`, `SEE`, `FIND`, `FIND-NAME`, `NAME>INT`, `NAME>STRING`, `MARKER`, `LOCATE`, `WHERE`, `PERFORM`, `NOOP`, `DEFER`, `DEFER!`, `DEFER@`, `DEFERS`, `COMPILE,`, `[COMPILE]`, `NAME>COMPILE`, `COMP'`, `[COMP']`, `POSTPONE,`, `COMPILE-ONLY`, `RESTRICT`, `EXECUTE-EXIT`, `SELECT`, `[NOOP]`, `TO`, `IS`, `+TO`, `ACTION-OF`, `BEGIN-STRUCTURE`, `END-STRUCTURE`, `+FIELD`, `FIELD:`, `CFIELD:`, `FFIELD:`, `SFFIELD:`, `DFFIELD:`, `STRUCT`, `FIELD`, `END-STRUCT`, `CELL%`, `CHAR%`, `FLOAT%`, `DOUBLE%`, `SFLOAT%`, `DFLOAT%`, `%SIZE`, `%ALIGNMENT`, `%ALIGN`, `%ALLOT`, `%ALLOC`, `%ALLOCATE`, `LATEST`, `LATESTXT`, `>NAME`, `ID.`, `.NAME`, `ALIAS` |
+| 定義補助・辞書・実行 | `<BUILDS`, `CREATE`, `IMMEDIATE`, `WORDS`, `BYE`, `LOAD-DICTIONARY`, `SAVE`, `SAVESYS`, `EXECUTE`, `SEE`, `FIND`, `FIND-NAME`, `NAME>INT`, `NAME>STRING`, `MARKER`, `LOCATE`, `WHERE`, `PERFORM`, `NOOP`, `DEFER`, `DEFER!`, `DEFER@`, `DEFERS`, `COMPILE,`, `[COMPILE]`, `NAME>COMPILE`, `COMP'`, `[COMP']`, `POSTPONE,`, `COMPILE-ONLY`, `RESTRICT`, `EXECUTE-EXIT`, `SELECT`, `[NOOP]`, `[:`, `;]`, `NONAME`, `IN-COLON-DEF?`, `]]`, `TO`, `IS`, `+TO`, `ACTION-OF`, `BEGIN-STRUCTURE`, `END-STRUCTURE`, `+FIELD`, `FIELD:`, `CFIELD:`, `FFIELD:`, `SFFIELD:`, `DFFIELD:`, `STRUCT`, `FIELD`, `END-STRUCT`, `CELL%`, `CHAR%`, `FLOAT%`, `DOUBLE%`, `SFLOAT%`, `DFLOAT%`, `%SIZE`, `%ALIGNMENT`, `%ALIGN`, `%ALLOT`, `%ALLOC`, `%ALLOCATE`, `LATEST`, `LATESTXT`, `>NAME`, `ID.`, `.NAME`, `ALIAS` |
 | 制御構造（即時語） | `IF`, `ELSE`, `AHEAD`, `THEN`, `CS-PICK`, `CS-ROLL`, `ENDIF`, `BEGIN`, `END`, `UNTIL`, `AGAIN`, `WHILE`, `REPEAT`, `DO`, `?DO`, `LOOP`, `+LOOP`, `DOES>`, `CASE`, `OF`, `?OF`, `ENDOF`, `CONTOF`, `ENDCASE`, `NEXT-CASE`, `EXIT`, `?EXIT`, `?LEAVE`, `RECURSE` |
 | 浮動小数点スタック | `FDROP`, `FDUP`, `FSWAP`, `FOVER`, `FROT`, `F-ROT`, `FNIP`, `FTUCK`, `FPICK`, `FDEPTH`, `F.S` |
 | 浮動小数点算術・関数 | `F+`, `F-`, `F*`, `F/`, `FNEGATE`, `FMINUS`, `FABS`, `FMAX`, `FMIN`, `FSQRT`, `FEXP`, `FLN`, `FSIN`, `FCOS`, `FTAN`, `FSINCOS`, `FASIN`, `FACOS`, `FATAN`, `FATAN2`, `FSINH`, `FCOSH`, `FTANH`, `FASINH`, `FACOSH`, `FATANH`, `FEXPM1`, `FLNP1`, `FLOG`, `FALOG`, `F**`, `FLOOR`, `FTRUNC`, `FROUND` |
@@ -1319,3 +1319,13 @@ COMP'は名前を解析してコンパイルトークン`( xt1 xt2 )`を返し�
 COMPILE-ONLYとRESTRICTは最後の名前付き利用者定義を制限します。通常の名前解釈は-14で停止しますが、コンパイルや明示的なxt取得・実行は可能です。SYNONYMは制限も引き継ぎます。語本体が持つ実行条件は維持します。[COMP']とEXECUTE-EXITはコンパイル状態専用、POSTPONE,は定義の外ではエラーです。Gforthが警告後に継続する場合もSigmaは停止します。
 
 SELECT `( u1 u2 flag -- u )`は非ゼロならu1、ゼロならu2を返します。[NOOP]は何もしない通常語で、xtを積みません。即時語ではありません。compile_only属性の追加によりWord ABIが変わるため、以前のABIの辞書イメージは作り直してください。[検証記録](P07_IMPLEMENTATION.md)。
+
+## P07b：引用とマクロ
+
+`[: ... ;]`は無名定義の実行トークンを作ります。定義内では実行時にxtを返すコードを生成し、解釈中はその場でxtを返します。入れ子は16段までです。引用内のローカル変数・制御構造・RECURSEは独立し、外側のローカル変数を捕捉しません。引用内のエラーでは、作成途中の外側定義と内部の定義をまとめて破棄します。
+
+NONAMEは次の定義語に名前を読ませず、無名の語を作ります。xtはLATESTXTで取得し、LATESTは0を返します。IN-COLON-DEF?は作成中のコロン定義の有無を返し、[による一時解釈中も真です。
+
+`]] ... [[`は開いた定義内でコンパイル動作を後回しにします。数値リテラルとセル・浮動小数点・倍長ローカルの値を対象の定義へ組み込み、XT型ローカルは格納した語をコンパイルします。文字列を読む語はマクロ実行時に入力を読むため、例えば`: M ]] S" [[ ; IMMEDIATE : T M text" ;`と書きます。[[はこの状態だけの終端記号で、通常の辞書語ではありません。定義外の]]や未完の引用はエラーです。
+
+引用・マクロは保存と辞書追加に対応します。内部Word属性の追加でABIが変わるため、以前のABIのイメージは作り直してください。作成途中の引用・後回し状態は保存しません。[検証記録](P07_IMPLEMENTATION.md)。

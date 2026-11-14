@@ -43,6 +43,9 @@ pub fn report(self: *State, err: anyerror) void {
         self.data_depth = kept_data;
         self.float_depth = kept_floats;
     };
+    @import("quotations.zig").abort(self);
+    self.postponing = false;
+    self.noname_next = false;
     self.capture_target = null;
     self.local_count = 0;
     self.locals_top = self.sizes.localsBase();
@@ -280,12 +283,14 @@ pub fn restoreCatchFrame(self: *State, frame: CatchFrame) void {
     self.float_depth = frame.float_depth;
     self.return_depth = frame.return_depth;
     self.loop_depth = frame.loop_depth;
-    self.control_depth = frame.control_depth;
+    self.control_depth = if (self.defining or !frame.defining) frame.control_depth else 0;
     // Interpreted loops started inside the caught word end with it.
     self.interpret_loop_depth = @min(self.interpret_loop_depth, frame.interpret_loop_depth);
     self.pending = frame.pending;
-    self.local_count = frame.local_count;
-    self.setCompiling(frame.compiling);
+    self.noname_next = frame.noname_next;
+    self.postponing = frame.postponing and self.defining;
+    self.local_count = if (self.defining or !frame.defining) frame.local_count else 0;
+    self.setCompiling(frame.compiling and (self.defining or !frame.defining));
     self.last_unknown_word = null;
     self.error_location = null;
     self.clearBacktrace();

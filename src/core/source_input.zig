@@ -257,6 +257,7 @@ pub fn includeEmbedded(self: *State, name: []const u8, source: []const u8) Runti
 }
 
 pub fn interpretIncludedFile(self: *State) RuntimeError!void {
+    errdefer @import("quotations.zig").abort(self);
     // The innermost file records where an error happened, before its frame goes away.
     errdefer if (self.error_location == null) {
         const frame = self.include_stack[self.include_depth - 1];

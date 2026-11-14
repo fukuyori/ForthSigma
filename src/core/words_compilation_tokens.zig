@@ -25,8 +25,8 @@ pub fn execute(self: *forth.State, comptime word: defs.Builtin) forth.RuntimeErr
             }
         },
         .compile_only, .restrict_word => {
-            if (self.word_count == self.builtin_count or self.words[self.word_count - 1].name_len == 0) return error.InvalidDefinition;
-            self.words[self.word_count - 1].compile_only = true;
+            if (self.word_count == self.builtin_count or self.words[self.latestWord()].name_len == 0) return error.InvalidDefinition;
+            self.words[self.latestWord()].compile_only = true;
         },
         .execute_exit => {
             try self.requireCompiling();

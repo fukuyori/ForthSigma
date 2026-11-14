@@ -245,3 +245,7 @@ IS/ACTION-OF/TO/+TO are dictionary words with separate interpretation and compil
 ## P07a (570)
 
 All8 compilation-token/execution words are implemented. Final comparisons:57 matching Gforth cases plus13 strict Sigma error-policy checks; native image checks2. COMPILE-ONLY/RESTRICT reject ordinary interpretation(-14), retaining explicit xt use and compilation. [NOOP] is non-immediate and SELECT accepts any nonzero flag. Normal/minimal tests and full restore/both append routes pass. The compile_only Word attribute changes the ABI; earlier ABI images remain unsupported. [Details](P07_IMPLEMENTATION.md).
+
+## P07b (571)
+
+Six quotation/anonymous-definition/postponing items are implemented. Nested/interpreted quotations isolate locals and controls; no closure capture. NONAME omits the next definition's name. [[ is only a postponing delimiter. Invalid quotes roll back the unfinished enclosing definition; Gforth invalid-memory/unfinished-state behavior is not copied. Validation:70 matching cases,6 Sigma error checks,2 native image checks,13 Zig regressions, normal/minimal tests and build. Word.quotation changes the ABI; completed bodies/macros survive restore and both append routes. [Details](P07_IMPLEMENTATION.md).

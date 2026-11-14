@@ -71,6 +71,14 @@ for name,source in {
 add('quote-stable-token', ': T [: 7 ;] ; T T = .')
 add('quote-outer-local-restored', ': T { x -- } [: 7 ;] EXECUTE x ; 3 T . .')
 add('quote-callback-throw', ': T 4 [: -123 THROW ;] CATCH ; T . .')
+add('postpone-local-float', ': M { F: x -- } ]] x [[ ; IMMEDIATE : T [ 2.5e ] M ; T F.')
+add('postpone-local-double', ': M { D: x -- } ]] x [[ ; IMMEDIATE : T [ 7. ] M ; T D.')
+add('postpone-local-xt', ": M { XT: f -- } ]] f [[ ; IMMEDIATE : T [ ' DUP ] M ; 3 T . .")
+add('postpone-escaped-string', r': M ]] S\" [[ ; IMMEDIATE : T M a\nb" ; T TYPE')
+add('postpone-escaped-print', r': M ]] .\" [[ ; IMMEDIATE : T M a\nb" ; T')
+add('postpone-counted-string', ': M ]] C" [[ ; IMMEDIATE : T M text" ; T COUNT TYPE')
+add('postpone-abort-string', ": M ]] ABORT\" [[ ; IMMEDIATE : T -1 M fail\" ; ' T CATCH .")
+add('postpone-print-paren', ': M ]] .( [[ ; IMMEDIATE : T M text) ; T')
 results=[]
 for name,source in cases:
     row={'case':name,'source':source}

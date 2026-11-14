@@ -86,6 +86,9 @@ fn apply(state: *forth.State, plan: *const preflight.Plan, memory_is_fresh: bool
     state.resetHold();
     state.setCompiling(false);
     state.defining = false;
+    state.quote_depth = 0;
+    state.postponing = false;
+    state.noname_next = false;
     state.pending = .none;
     state.last_created_word = null;
     @import("words_graphics.zig").clearImage(state);

@@ -43,7 +43,7 @@ pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
             try @import("definers.zig").finishAssignment(self, pending, name, compile);
         },
         .define_defer => {
-            const name = (try self.nextSourceToken()) orelse return error.InvalidDefinition;
+            const name = (try @import("quotations.zig").definitionName(self)) orelse return error.InvalidDefinition;
             const id = try self.appendDataWord(name, .deferred, cell_size);
             try self.writeCell(self.words[id].value, uninitialized_defer);
         },
@@ -86,7 +86,7 @@ pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
         // BEGIN-STRUCTURE name ( -- addr 0 ): name is a VALUE that END-STRUCTURE sets to
         // the size, as in gforth.
         .begin_structure => {
-            const name = (try self.nextSourceToken()) orelse return error.InvalidDefinition;
+            const name = (try @import("quotations.zig").definitionName(self)) orelse return error.InvalidDefinition;
             const id = try self.appendDataWord(name, .value, cell_size);
             try self.writeCell(self.words[id].value, 0);
             try self.push(self.words[id].value);
@@ -128,7 +128,7 @@ pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
         .end_struct => {
             const size = try self.pop();
             const alignment = try self.pop();
-            const name = (try self.nextSourceToken()) orelse return error.InvalidDefinition;
+            const name = (try @import("quotations.zig").definitionName(self)) orelse return error.InvalidDefinition;
             const id = try self.appendDataWord(name, .two_constant, 2 * cell_size);
             try self.writeDouble(self.words[id].value, cellsDouble(alignment, alignUp(size, alignment)));
         },
@@ -187,7 +187,7 @@ pub fn deferAction(self: *State, xt: Cell) RuntimeError!Cell {
 /// Makes a field named by the next word that adds `offset` to an address, and pushes
 /// the offset after it.
 fn defineField(self: *State, offset: Cell, size: Cell) RuntimeError!void {
-    const name = (try self.nextSourceToken()) orelse return error.InvalidDefinition;
+    const name = (try @import("quotations.zig").definitionName(self)) orelse return error.InvalidDefinition;
     _ = try self.appendWord(name, .field, .drop, offset);
     try self.push(offset +% size);
 }

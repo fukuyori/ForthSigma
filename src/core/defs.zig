@@ -988,6 +988,16 @@ pub const Builtin = enum {
     postpone_comma,
     select_word,
     bracket_noop,
+    quote_open,
+    quote_close,
+    noname,
+    in_colon_def,
+    postpone_open,
+    postpone_s_quote,
+    postpone_print_quote,
+    postpone_left_bracket,
+    postpone_right_bracket,
+    postpone_parsed_string,
 };
 
 pub const HeapResult = union(enum) { address: Cell, no_memory, bad_pointer };
@@ -1049,6 +1059,8 @@ pub const CatchFrame = struct {
     compiling: bool,
     defining: bool,
     local_count: usize,
+    noname_next: bool,
+    postponing: bool,
 };
 
 pub const WordKind = enum { builtin, colon, variable, constant, array, created, value, fconstant, fvalue, two_constant, two_value, marker, vocabulary, synonym, deferred, field, string_value };
@@ -1061,6 +1073,7 @@ pub const Word = struct {
     builtin: Builtin = .drop,
     immediate: bool = false,
     compile_only: bool = false,
+    quotation: bool = false,
     has_does: bool = false,
     value: Cell = 0,
     code_start: u16 = 0,

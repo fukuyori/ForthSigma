@@ -126,6 +126,7 @@ pub fn finishPending(self: *State, token: []const u8) RuntimeError!void {
 }
 
 pub fn endDefinition(self: *State) RuntimeError!void {
+    if (self.quote_depth != 0 and !self.quote_closing) return error.ControlMismatch;
     if (!self.defining or !self.compiling) return error.CompileOnly;
     if (self.control_depth != 0) return error.ControlMismatch;
     _ = try self.emit(.{ .kind = .exit });
@@ -160,7 +161,7 @@ pub fn isDefiningBuiltin(builtin: Builtin) bool {
 /// reads the new word's name from the input, as interpreting the word would.
 pub fn runDefiningWord(self: *State, builtin: Builtin) RuntimeError!void {
     const pending = try self.definingPending(builtin);
-    const name = (try self.nextSourceToken()) orelse return error.InvalidDefinition;
+    const name = (try @import("quotations.zig").definitionName(self)) orelse return error.InvalidDefinition;
     self.pending = pending;
     try self.finishPending(name);
 }

@@ -105,6 +105,8 @@ pub const CatchContext = struct {
                 .compiling = self.compiling,
                 .defining = self.defining,
                 .local_count = self.local_count,
+                .noname_next = self.noname_next,
+                .postponing = self.postponing,
             },
             .trace_depth = self.trace_depth,
             .profile_depth = if (self.profile) |profile| profile.depth else 0,

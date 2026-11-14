@@ -218,6 +218,12 @@ pub const State = struct {
     return_depth: usize = 0,
     float_stack: []Float,
     float_depth: usize = 0,
+    quote_frames: [16]@import("core/quotations.zig").Frame = undefined,
+    quote_depth: usize = 0,
+    quote_closing: bool = false,
+    quote_root: u16 = 0,
+    noname_next: bool = false,
+    postponing: bool = false,
     control_stack: [max_controls]Control = undefined,
     control_depth: usize = 0,
     random_state: u64 = 0,
@@ -563,6 +569,8 @@ pub const State = struct {
         // drop the word that a pending DOES> will attach to.
         if (source_kind == .terminal) self.last_created_word = null;
         const pending_before = self.pending;
+        const quote_before = self.quote_depth;
+        errdefer @import("core/quotations.zig").abort(self);
         defer {
             self.source_line = previous_line;
             self.setSourceCursor(previous_cursor);
@@ -606,6 +614,11 @@ pub const State = struct {
                 self.setSourceCursor(cursor);
                 continue;
             }
+            if (self.postponing) {
+                try @import("core/quotations.zig").token(self, token);
+                cursor = self.sourceCursor();
+                continue;
+            }
             if (std.mem.eql(u8, token, "\"")) {
                 try self.handleStringToken(token, line, &cursor, false);
                 self.setSourceCursor(cursor);
@@ -630,6 +643,7 @@ pub const State = struct {
             cursor = self.sourceCursor();
             if (self.halted) break;
         }
+        if ((source_kind == .evaluate or source_kind == .block) and self.quote_depth > quote_before) return error.InvalidDefinition;
         // An EVALUATE string cannot read past its end, so a parsing word such as
         // VARIABLE or : left waiting for its name must not take the caller's next word.
         if ((source_kind == .evaluate or source_kind == .block) and pending_before == .none and self.pending != .none) {
@@ -808,7 +822,9 @@ pub const State = struct {
         .{ "FKEY.", .fkey_dot },                      .{ "SIMPLE-FKEY-STRING", .simple_fkey_string }, .{ "TO", .assign_to },                        .{ "IS", .assign_is },                       .{ "+TO", .assign_plus_to },
         .{ "ACTION-OF", .assignment_action_of },      .{ "", .compile_assign_to },                    .{ "", .compile_assign_is },                  .{ "", .compile_assign_plus_to },            .{ "", .compile_assignment_action_of },
         .{ "COMP'", .comp_tick },                     .{ "[COMP']", .bracket_comp_tick },             .{ "COMPILE-ONLY", .compile_only },           .{ "RESTRICT", .restrict_word },             .{ "EXECUTE-EXIT", .execute_exit },
-        .{ "POSTPONE,", .postpone_comma },            .{ "SELECT", .select_word },                    .{ "[NOOP]", .bracket_noop },                 .{ "\\\\\\", .triple_backslash },
+        .{ "POSTPONE,", .postpone_comma },            .{ "SELECT", .select_word },                    .{ "[NOOP]", .bracket_noop },                 .{ "[:", .quote_open },                      .{ ";]", .quote_close },
+        .{ "NONAME", .noname },                       .{ "IN-COLON-DEF?", .in_colon_def },            .{ "]]", .postpone_open },                    .{ "", .postpone_s_quote },                  .{ "", .postpone_print_quote },
+        .{ "", .postpone_left_bracket },              .{ "", .postpone_right_bracket },               .{ "", .postpone_parsed_string },             .{ "\\\\\\", .triple_backslash },
     };
 
     fn installBuiltins(self: *State) void {
@@ -850,7 +866,7 @@ pub const State = struct {
 
     fn isImmediateBuiltin(builtin: Builtin) bool {
         return switch (builtin) {
-            .bracket_comp_tick, .execute_exit, .assign_to, .assign_is, .assign_plus_to, .assignment_action_of, .compile_if, .compile_else, .compile_ahead, .compile_then, .compile_begin, .compile_end, .compile_again, .compile_while, .compile_repeat, .compile_do, .compile_q_do, .compile_loop, .compile_plus_loop, .compile_does, .compile_case, .compile_of, .compile_endof, .compile_endcase, .compile_exit, .compile_recurse, .leave, .bracket_if, .bracket_else, .bracket_then, .bracket_defined, .bracket_undefined, .bracket_ifdef, .bracket_ifundef, .bracket_do, .bracket_q_do, .bracket_loop, .bracket_plus_loop, .bracket_i, .bracket_begin, .bracket_until, .bracket_again, .bracket_while, .bracket_repeat, .bracket_for, .bracket_next, .end_definition, .literal, .fliteral, .sliteral, .two_literal, .defers, .bracket_compile, .question_exit, .question_leave, .compile_question_of, .compile_contof, .compile_next_case, .debug_tilde, .assert_paren, .once, .debug_tilde_bt, .debug_tilde_one_bt, .break_colon, .break_quote, .triple_backslash => true,
+            .quote_open, .quote_close, .postpone_open, .bracket_comp_tick, .execute_exit, .assign_to, .assign_is, .assign_plus_to, .assignment_action_of, .compile_if, .compile_else, .compile_ahead, .compile_then, .compile_begin, .compile_end, .compile_again, .compile_while, .compile_repeat, .compile_do, .compile_q_do, .compile_loop, .compile_plus_loop, .compile_does, .compile_case, .compile_of, .compile_endof, .compile_endcase, .compile_exit, .compile_recurse, .leave, .bracket_if, .bracket_else, .bracket_then, .bracket_defined, .bracket_undefined, .bracket_ifdef, .bracket_ifundef, .bracket_do, .bracket_q_do, .bracket_loop, .bracket_plus_loop, .bracket_i, .bracket_begin, .bracket_until, .bracket_again, .bracket_while, .bracket_repeat, .bracket_for, .bracket_next, .end_definition, .literal, .fliteral, .sliteral, .two_literal, .defers, .bracket_compile, .question_exit, .question_leave, .compile_question_of, .compile_contof, .compile_next_case, .debug_tilde, .assert_paren, .once, .debug_tilde_bt, .debug_tilde_one_bt, .break_colon, .break_quote, .triple_backslash => true,
             else => false,
         };
     }
@@ -867,6 +883,10 @@ pub const State = struct {
 
     pub fn appendWord(self: *State, name: []const u8, kind: WordKind, builtin: Builtin, value: Cell) RuntimeError!u16 {
         if (self.word_count == max_words) return error.DictionaryFull;
+        if (self.noname_next) {
+            self.noname_next = false;
+            return self.appendEntry("", kind, builtin, value);
+        }
         if (name.len == 0 or name.len > max_name) return error.NameTooLong;
         if (kind != .builtin and (if (self.currentWordlist() == memory_map.macros_wordlist) self.lookupIn(name, memory_map.macros_wordlist) else self.lookup(name)) != null) {
             self.write("WARNING: SAME NAME WORD EXISTS\n");
@@ -875,8 +895,9 @@ pub const State = struct {
     }
 
     /// Appends a colon definition without a name (`:NONAME`); lookup never finds it.
-    fn appendAnonymousColon(self: *State) RuntimeError!u16 {
+    pub fn appendAnonymousColon(self: *State) RuntimeError!u16 {
         if (self.word_count == max_words) return error.DictionaryFull;
+        self.noname_next = false;
         return self.appendEntry("", .colon, .drop, 0);
     }
 
@@ -898,6 +919,7 @@ pub const State = struct {
         return id;
     }
 
+    pub const latestWord = @import("core/quotations.zig").latest;
     pub const lookup = wordlists.lookup;
     pub const lookupIn = wordlists.lookupIn;
     pub const wordlistCount = wordlists.wordlistCount;
@@ -1057,6 +1079,7 @@ pub const State = struct {
             if (isDefiningBuiltin(self.words[id].builtin)) {
                 if (self.compiling) return self.handleWord(id);
                 self.pending = try self.definingPending(self.words[id].builtin);
+                if (self.noname_next) try self.finishPending("");
                 return;
             }
             // ' in a definition reads the name when the definition runs, as in standard
@@ -1945,7 +1968,7 @@ pub const State = struct {
         if (defs.debug_enabled and self.cover_blocks and self.compiling and startsBlock(builtin)) self.markBlock(self.columnAfterWord());
     }
 
-    const word_modules = .{ @import("core/words_compilation_tokens.zig"), @import("core/words_terminal.zig"), @import("core/string_values.zig"), @import("core/words_string_edit.zig"), @import("core/words_text.zig"), @import("core/words_buffers.zig"), @import("core/words_data.zig"), @import("core/words_width.zig"), words_stack, words_arithmetic, @import("core/words_numeric.zig"), words_memory, words_output, words_input, words_compiling, words_float, words_pictured, words_dictionary, words_system, @import("core/blocks.zig"), words_files, words_strings, words_help, words_defining, words_graphics, words_audio, words_xchar, words_tools, words_debug };
+    const word_modules = .{ @import("core/quotations.zig"), @import("core/words_compilation_tokens.zig"), @import("core/words_terminal.zig"), @import("core/string_values.zig"), @import("core/words_string_edit.zig"), @import("core/words_text.zig"), @import("core/words_buffers.zig"), @import("core/words_data.zig"), @import("core/words_width.zig"), words_stack, words_arithmetic, @import("core/words_numeric.zig"), words_memory, words_output, words_input, words_compiling, words_float, words_pictured, words_dictionary, words_system, @import("core/blocks.zig"), words_files, words_strings, words_help, words_defining, words_graphics, words_audio, words_xchar, words_tools, words_debug };
 
     /// For each built-in word, the index in `word_modules` of the file that executes it.
     const word_owner = blk: {

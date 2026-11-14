@@ -15,7 +15,7 @@ pub const FileKind = enum { normal, graphics, audio };
 pub const Storage = enum(u8) { system = 1, data = 2, heap = 3, word = 4 };
 pub const Target = enum(u8) { null_address = 0, system = 1, data = 2, heap = 3 };
 pub const no_object = std.math.maxInt(u16);
-const word_fields = .{ "name_start", "name_len", "kind", "builtin", "immediate", "compile_only", "has_does", "value", "code_start", "code_end", "does_code_start", "does_code_end", "data_here_before", "locals_size", "source_file", "source_line", "source_end_line", "wordlist" };
+const word_fields = .{ "name_start", "name_len", "kind", "builtin", "immediate", "compile_only", "quotation", "has_does", "value", "code_start", "code_end", "does_code_start", "does_code_end", "data_here_before", "locals_size", "source_file", "source_line", "source_end_line", "wordlist" };
 pub const abi_signature = layoutSignature();
 
 pub fn magic(kind: FileKind) *const [8]u8 {
@@ -298,8 +298,9 @@ fn validateWords(v: View) RuntimeError!void {
     for (0..v.header.word_count) |i| {
         const bytes = v.words[i * @sizeOf(defs.Word) ..][0..@sizeOf(defs.Word)];
         if (enumTag(defs.WordKind, bytes[@offsetOf(defs.Word, "kind")..]) >= @typeInfo(defs.WordKind).@"enum".field_names.len or enumTag(defs.Builtin, bytes[@offsetOf(defs.Word, "builtin")..]) >= @typeInfo(defs.Builtin).@"enum".field_names.len) return error.InvalidImage;
-        if (bytes[@offsetOf(defs.Word, "immediate")] > 1 or bytes[@offsetOf(defs.Word, "compile_only")] > 1 or bytes[@offsetOf(defs.Word, "has_does")] > 1) return error.InvalidImage;
+        if (bytes[@offsetOf(defs.Word, "immediate")] > 1 or bytes[@offsetOf(defs.Word, "compile_only")] > 1 or bytes[@offsetOf(defs.Word, "quotation")] > 1 or bytes[@offsetOf(defs.Word, "has_does")] > 1) return error.InvalidImage;
         const word = std.mem.bytesToValue(defs.Word, bytes);
+        if (word.quotation and (word.kind != .colon or word.name_len != 0)) return error.InvalidImage;
         if (word.name_start != next or word.name_len > v.names.len - next) return error.InvalidImage;
         next += word.name_len;
         if ((word.wordlist != map.macros_wordlist and (word.wordlist < 1 or word.wordlist > wordlists)) or word.source_file > files or word.locals_size > v.header.l) return error.InvalidImage;

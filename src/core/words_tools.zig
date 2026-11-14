@@ -99,12 +99,12 @@ pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
         // LATEST ( -- nt ): the name token of the newest word, 0 when the newest
         // definition has no name (:NONAME).
         .latest => {
-            const last = self.word_count - 1;
+            const last = self.latestWord();
             try self.push(if (self.words[last].name_len == 0) 0 else @as(Cell, last) + 1);
         },
         // LATESTXT ( -- xt ): the execution token of the newest definition, with or
         // without a name.
-        .latestxt => try self.push(@intCast(self.word_count - 1)),
+        .latestxt => try self.push(self.latestWord()),
         // >NAME ( xt -- nt | 0 ): the name token of the word with that execution token.
         .to_name => {
             const xt = try self.pop();
@@ -121,7 +121,7 @@ pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
         // immediate, even when xt's word is.
         .alias => {
             const target = self.synonymTarget(try self.wordId(try self.pop()));
-            const name = (try self.nextSourceToken()) orelse return error.InvalidDefinition;
+            const name = (try @import("quotations.zig").definitionName(self)) orelse return error.InvalidDefinition;
             _ = try self.appendWord(name, .synonym, .drop, target);
         },
         // ~~ ( -- ): shows on standard error where it is (file:line:column:) and the data

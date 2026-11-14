@@ -30,7 +30,7 @@ pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
     switch (builtin) {
         // SYNONYM newname oldname: newname stands for oldname, immediate if it is.
         .synonym => {
-            const new_token = (try self.nextSourceToken()) orelse return error.InvalidDefinition;
+            const new_token = (try @import("quotations.zig").definitionName(self)) orelse return error.InvalidDefinition;
             if (new_token.len > max_name) return error.NameTooLong;
             // The old name may be on the next line, which reuses the buffer of this one.
             var new_name: [max_name]u8 = undefined;
@@ -104,7 +104,7 @@ pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
             try self.seeWord(try self.lookupOrFail(name));
         },
         .marker => {
-            const name = (try self.nextSourceToken()) orelse return error.InvalidDefinition;
+            const name = (try @import("quotations.zig").definitionName(self)) orelse return error.InvalidDefinition;
             const id = try self.appendDataWord(name, .marker, marker_snapshot_size);
             try self.snapshotMarker(self.words[id].value);
         },
@@ -193,7 +193,7 @@ pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
             if (count == max_wordlists) return error.DictionaryFull;
             const wid = count + 1;
             if (builtin == .vocabulary) {
-                const name = (try self.nextSourceToken()) orelse return error.InvalidDefinition;
+                const name = (try @import("quotations.zig").definitionName(self)) orelse return error.InvalidDefinition;
                 _ = try self.appendWord(name, .vocabulary, .drop, wid);
             } else try self.push(wid);
             try self.writeCell(wordlist_count_address, wid);

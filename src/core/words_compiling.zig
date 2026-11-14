@@ -62,7 +62,7 @@ pub const words = [_]Builtin{
 pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
     switch (builtin) {
         .builds => {
-            const name = (try self.nextSourceToken()) orelse return error.InvalidDefinition;
+            const name = (try @import("quotations.zig").definitionName(self)) orelse return error.InvalidDefinition;
             const address = self.data_here;
             const id = try self.appendWord(name, .created, .drop, address);
             self.words[id].data_here_before = address;
@@ -70,7 +70,7 @@ pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
         },
         .immediate => {
             if (self.word_count == self.builtin_count) return error.InvalidDefinition;
-            self.words[self.word_count - 1].immediate = true;
+            self.words[self.latestWord()].immediate = true;
         },
         .execute => try self.executeWord(try self.wordId(try self.pop())),
         .index => try self.push((try self.loopFrame(1)).index),
