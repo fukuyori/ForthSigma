@@ -251,6 +251,7 @@ pub const entries = [_]Entry{
     .{ .name = "OPEN-PIPE", .stack = "( addr u fam -- fileid ior )", .text = "Open a shell command as an R/O or W/O pipe; BIN is accepted, R/W rejected. Close with CLOSE-PIPE." },
     .{ .name = "CLOSE-PIPE", .stack = "( fileid -- status ior )", .text = "Close an owned pipe and wait for the process status. Does not change $?." },
     .{ .name = "BROKEN-PIPE-ERROR", .stack = "( -- ior )", .text = "Sigma EPIPE ior (-544), matching failed pipe writes. Intentionally differs from Gforth's dedicated signal error." },
+    .{ .name = "SH-GET", .stack = "( addr u -- addr2 u2 )", .text = "Run a command and borrow its complete stdout until the next SH-GET or full image restore/reset. Do not FREE the result; copy it for retention. Store the successful close status in $?." },
     .{ .name = "SH", .stack = "( -- )", .text = "Execute the rest of the current input line as a shell command after printing a newline. Save the SYSTEM status in $?; a NUL ends parsing like 0 PARSE." },
     .{ .name = "READ-CSV", .stack = "( addr u xt -- )", .text = "Read a named CSV file, calling xt ( field-addr field-u column row -- ) for each borrowed decoded field. Column starts0, logical row starts1. Close the file and restore parser source on success or exception." },
     .{ .name = "CSV-QUOTE", .stack = "( -- char )", .text = "CSV quote VALUE, initially34 (double quote); change with TO." },

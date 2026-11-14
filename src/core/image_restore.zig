@@ -24,6 +24,9 @@ fn apply(state: *forth.State, plan: *const preflight.Plan, memory_is_fresh: bool
     const view = plan.view;
     const h = view.header;
     const builtins = state.builtin_count;
+    // This borrowed runtime buffer was not an implicit image root. Never free
+    // its old address after the restored heap has replaced the current one.
+    state.sh_get_result = null;
     state.addresses.count = 0;
     state.addresses.index_dirty = true;
     state.addresses.stable_writes = 0;

@@ -367,7 +367,9 @@ pub const State = struct {
     capture_target: ?Cell = null,
     /// Private, nestable macro output capture; never serialized.
     capture_sink: ?*@import("core/macro_substitute.zig").Captured = null,
-    /// The status of the last SYSTEM, for $?.
+    /// Borrowed SH-GET result; not an implicit image root.
+    sh_get_result: ?@import("core/dynamic_strings.zig").StringRef = null,
+    /// The status of the last successful SYSTEM/SH-GET, for $?.
     system_status: Cell = 0,
     capture_failed: bool = false,
     tmp_string_index: usize = 0,
@@ -795,7 +797,7 @@ pub const State = struct {
         .{ "NS", .ns },                               .{ ">TIME&DATE&TZ", .to_time_date_tz },         .{ "FPATH", .fpath },                         .{ ">STRING-EXECUTE", .to_string_execute },  .{ "OUTFILE-ID", .outfile_id },
         .{ "OUTFILE-EXECUTE", .outfile_execute },     .{ "INFILE-ID", .infile_id },                   .{ "INFILE-EXECUTE", .infile_execute },       .{ "CSV-QUOTE", .csv_quote },                .{ "CSV-SEPARATOR", .csv_separator },
         .{ ".QUOTED-CSV", .dot_quoted_csv },          .{ "READ-CSV", .read_csv },                     .{ "SH", .sh },                               .{ "OPEN-PIPE", .open_pipe },                .{ "CLOSE-PIPE", .close_pipe },
-        .{ "BROKEN-PIPE-ERROR", .broken_pipe_error }, .{ "\\\\\\", .triple_backslash },
+        .{ "BROKEN-PIPE-ERROR", .broken_pipe_error }, .{ "SH-GET", .sh_get },                         .{ "\\\\\\", .triple_backslash },
     };
 
     fn installBuiltins(self: *State) void {

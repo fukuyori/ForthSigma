@@ -1,6 +1,6 @@
 # P06 implementation and validation
 
-P06a567 covers five words. Task684 implements >STRING-EXECUTE; task685 retains INFILE-ID/OUTFILE-ID and their EXECUTE wrappers. P06a/P06 remain incomplete. Progress uses tque auto. P05 review fixes were committed/pushed as734e6d0 before this work.
+Current status: P06a567 (5/5) and P06b568 (9/9) are implemented and validated. Next is569 P06c;549/542 remain incomplete. Progress uses tque auto. Prior pipe work was committed/pushed as6418508; SH-GET is uncommitted. The sections below retain the implementation history and per-chunk validation.
 
 ## Owned output capture (684)
 
@@ -127,3 +127,19 @@ Four core regressions cover read/write integration, close status and retained `$
 693 completes eight of nine P06b words. Next is694 SH-GET, now unblocked. 691/568/549/542 remain incomplete(auto). Pipe implementation/investigation artifacts are uncommitted. No version bump or packages.
 
 Final pipe validation: normal/minimal tests (including freestanding), normal build, seven Gforth comparisons and three Sigma-specific checks pass. Task693 is complete(auto),694 is unblocked. Native Windows/Linux checks remain695 under607.
+
+## Borrowed shell output (694)
+
+One-way pipes were committed/pushed as6418508. `SH-GET ( command-addr command-u -- output-addr output-u )` opens an R/O pipe, reads complete stdout, closes/waits for the associated shell and stores the native status in `$?`. A nonzero process exit status is a valid result, not an I/O error. NUL/UTF-8 bytes and trailing newlines are retained exactly. Empty output also has a valid runtime-owned allocation. The result is borrowed: do not FREE it, and copy it for retention beyond the next valid SH-GET attempt or full restore/reset.
+
+The previous result remains live while the open hook consumes the command span, allowing that result to be the next command. After open returns, the previous buffer is released even when open failed; successful reads replace it. Missing capabilities, stack-depth or input-range preflight failures leave the old borrow intact. Command input ownership otherwise stays with its caller. Reading reuses SLURP-FID's size/seek-independent growth, exact-allocation fallback, work checks and error cleanup. No extra data-stack headroom is required because two operands become two result cells.
+
+Every successfully opened pipe is closed exactly once, including read/allocation/work-limit failures. Read errors take priority over cleanup-close errors; close failure after a successful read frees the unpublished result. `$?` changes only after successful read and close; failures retain its previous value. Callback-free acquisition/commit keeps the output cells and runtime result pointer consistent. Repeated calls release prior output rather than retaining an unbounded result history.
+
+The borrow is held in a runtime State field without an implicit image root. Full image restore clears it only after validation succeeds and before the restored heap replaces the current one; failed restore preserves it. Source/destination borrowed caches do not become settings imported by dictionary addition: both append routes retain the destination cache and do not clone a source cache unless ordinary explicit typed roots reach its buffer. Dictionary reset/VM initialization invalidates the borrow. Users requiring persistent data should copy it into explicitly owned storage. The new word belongs to files support; no external stream/process is serialized.
+
+Six regressions cover binary/empty output and status, repeated storage reuse and prior-result commands, read/close/open failure cleanup and retained status, full-image invalidation/failed-restore preservation/both append routes, missing-hook preflight/full-stack execution, allocation exhaustion and work-limit partial-buffer cleanup. Tests measuring reuse compile command literals into definitions so the existing caller-owned interpreted S-quote allocations do not obscure the result-buffer measurements. scripts/verify-p06b-sh-get.py passes eight Gforth comparisons plus one Sigma alias-safety check. Report: .work/p06b-sh-get-check/comparison.json. Logs: .zig-cache/p06b-sh-get-{test,minimal,build}.log.
+
+694/691/568 complete all nine P06b words. P06a567 is also complete; next is569 P06c, while549/542 remain incomplete. SH-GET changes are uncommitted. Native Windows/Linux pipe/SH-GET checks remain695 under607 and were not performed here. No version bump or packaging.
+
+Final SH-GET validation: normal/minimal tests (including freestanding), normal build, eight SH-GET Gforth comparisons plus one alias check, and seven existing pipe comparisons plus three Sigma checks pass. 694/691/568 are complete(auto);569 is next.

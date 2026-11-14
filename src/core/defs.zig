@@ -966,6 +966,7 @@ pub const Builtin = enum {
     open_pipe,
     close_pipe,
     broken_pipe_error,
+    sh_get,
 };
 
 pub const HeapResult = union(enum) { address: Cell, no_memory, bad_pointer };
