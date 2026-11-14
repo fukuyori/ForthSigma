@@ -144,6 +144,8 @@ pub const Writer = struct {
     save_fn: ?*const fn (?*anyopaque, []const u8, *State) RuntimeError!void = null,
     savesys_fn: ?*const fn (?*anyopaque, []const u8, *State) RuntimeError!void = null,
     key_fn: ?*const fn (?*anyopaque) ?u8 = null,
+    /// Byte/EOF/ior input shared with native KEY-FILE, with interrupts preserved.
+    key_ior_fn: ?*const fn (?*anyopaque) RuntimeError!FileKeyResult = null,
     /// Monotonic milliseconds for the total escape-sequence deadline.
     monotonic_ms_fn: ?*const fn (?*anyopaque) i64 = null,
     /// A byte or standard special key. timeout_ms < 0 waits; 0 polls.

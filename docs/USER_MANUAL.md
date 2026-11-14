@@ -1266,7 +1266,7 @@ Source display (LOCATE/WHERE) expands stored tilde names using the current home 
 
 `INFILE-ID ( -- fileid )` returns the selected input, normally STDIN. `INFILE-EXECUTE ( xt fileid -- )` runs xt with borrowed input and restores the previous selection/pending keys on success or exception. It neither closes the file nor rewinds consumed input. KEY/XKEY/EKEY/readiness, ACCEPT, numeric INPUT and terminal REFILL use the selection; INCLUDE and EVALUATE keep their parser-source rules. These two words require files support.
 
-File ACCEPT retains Sigma's no-echo line read: drain LF/CRLF/CR through line end and clip to the requested capacity and internal4096-byte limit. File EKEY treats escape bytes literally and uses Sigma Unicode decoding. First-byte KEY/EKEY EOF raises InputUnavailable(-262); readiness is false and ACCEPT returns0. These intentionally differ from the designated Gforth's editing/echo, Unicode quirk and EOF result. Pushback remains in the borrowed file for later reads. Custom FileOps hosts supply key/ready and, when lookahead must be returned, unread; missing capabilities throw FileUnavailable. [Details](P06_IMPLEMENTATION.md).
+File ACCEPT retains Sigma's no-echo line read: drain LF/CRLF/CR through line end and clip to the requested capacity and internal4096-byte limit. File EKEY treats escape bytes literally and uses Sigma Unicode decoding. First-byte KEY EOF raises InputUnavailable(-262); EKEY returns K-EOF, readiness is false and ACCEPT returns0. These intentionally differ from the designated Gforth's editing/echo, Unicode quirk and EOF result. Pushback remains in the borrowed file for later reads. Custom FileOps hosts supply key/ready and, when lookahead must be returned, unread; missing capabilities throw FileUnavailable. [Details](P06_IMPLEMENTATION.md).
 
 
 ### CSV settings and field output (P06b)
@@ -1296,3 +1296,18 @@ Empty FPATH uses raw cwd-relative lookup; configured FPATH uses source search. P
 ### Borrowed shell output (P06b)
 
 `SH-GET ( addr u -- addr2 u2 )` runs a command, reads complete stdout and returns a borrowed byte string. Do not FREE it. Copy it for retention beyond the next SH-GET attempt or full image restore/reset. Binary bytes and trailing newlines are preserved; an empty result is valid. `$?` receives the native exit status after successful read/close, including nonzero exits. I/O/allocation failures close the owned pipe, free partial output and retain the previous status. Preflight failures preserve the old borrow; after open begins a new attempt can invalidate it even if that attempt fails. The previous result can be used as the next command. Dictionary append retains the destination borrow; it is not an implicit image root. Files support and pipe hooks are required. [Details](P06_IMPLEMENTATION.md).
+
+
+### Standard terminal keys and geometry (P06c)
+
+EKEYS adds K-ENTER, K-WINCH, K-PAUSE, K-MUTE, K-VOLUP, K-VOLDOWN, K-BACKSPACE, K-TAB, K-SEL and K-EOF with standard event codes. They classify as function keys, including modifier masks. GRAPHICS encodings stay independent; plain Enter/Tab/Backspace remain ordinary bytes. Shift+Tab gives K-TAB K-SHIFT-MASK OR. Supported terminal resize events give K-WINCH; query FORM for current dimensions. Media-key events depend on the host.
+
+| Word | Stack | Behavior |
+|---|---|---|
+| KEY-IOR | `( -- byte-or-ior )` | Raw byte, negative I/O error or -512 at EOF; terminal Ctrl+C still THROWs -28. |
+| SIMPLE-FKEY-STRING | `( simple-event -- addr u )` | Stable read-only lower-case name, borrowed until reset/restore. Modifiers/unknown codes THROW -24. |
+| FKEY. | `( event -- )` | Name followed by shift/ctrl/alt mask expressions; no final newline/space. Unknown codes THROW -24. |
+| FORM | `( -- rows columns )` | Physical stdout dimensions, fallback24/80; string capture uses1/max-signed-cell. Redirected files use24/80. |
+| AT-DELTAXY | `( dx dy -- )` | ANSI relative movement, horizontal then vertical; string capture THROWs -21. |
+
+EKEY now returns K-EOF at EOF; KEY keeps its existing -262 error and EKEY? stays false. Unicode and file/pipe byte3 behavior are unchanged. Names require no heap allocation and must not be modified or FREEd. POSIX resize handling preserves sigaction and restarts ordinary byte/line reads; native Windows/Linux checks remain deferred. [Details](P06_IMPLEMENTATION.md).

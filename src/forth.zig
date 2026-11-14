@@ -444,6 +444,10 @@ pub const State = struct {
         self.writeCell(memory_map.fpath_address, 0) catch unreachable;
         self.writeCell(memory_map.csv_quote_address, 34) catch unreachable;
         self.writeCell(memory_map.csv_separator_address, 44) catch unreachable;
+        for (@import("core/standard_keys.zig").names, 0..) |name, index| {
+            const at: usize = @intCast(memory_map.key_name_base + @as(Cell, @intCast(@import("core/standard_keys.zig").nameOffset(index))));
+            @memcpy(self.memory[at..][0..name.len], name);
+        }
         self.writeCell(heap_top_address, self.sizes.heapBase()) catch unreachable;
         self.storeSourceName(terminal_source_name_address, terminal_source_name);
         self.storeSourceName(evaluate_source_name_address, evaluate_source_name);
@@ -797,7 +801,8 @@ pub const State = struct {
         .{ "NS", .ns },                               .{ ">TIME&DATE&TZ", .to_time_date_tz },         .{ "FPATH", .fpath },                         .{ ">STRING-EXECUTE", .to_string_execute },  .{ "OUTFILE-ID", .outfile_id },
         .{ "OUTFILE-EXECUTE", .outfile_execute },     .{ "INFILE-ID", .infile_id },                   .{ "INFILE-EXECUTE", .infile_execute },       .{ "CSV-QUOTE", .csv_quote },                .{ "CSV-SEPARATOR", .csv_separator },
         .{ ".QUOTED-CSV", .dot_quoted_csv },          .{ "READ-CSV", .read_csv },                     .{ "SH", .sh },                               .{ "OPEN-PIPE", .open_pipe },                .{ "CLOSE-PIPE", .close_pipe },
-        .{ "BROKEN-PIPE-ERROR", .broken_pipe_error }, .{ "SH-GET", .sh_get },                         .{ "\\\\\\", .triple_backslash },
+        .{ "BROKEN-PIPE-ERROR", .broken_pipe_error }, .{ "SH-GET", .sh_get },                         .{ "KEY-IOR", .key_ior },                     .{ "FORM", .form },                          .{ "AT-DELTAXY", .at_deltaxy },
+        .{ "FKEY.", .fkey_dot },                      .{ "SIMPLE-FKEY-STRING", .simple_fkey_string }, .{ "\\\\\\", .triple_backslash },
     };
 
     fn installBuiltins(self: *State) void {
@@ -1940,7 +1945,7 @@ pub const State = struct {
         if (defs.debug_enabled and self.cover_blocks and self.compiling and startsBlock(builtin)) self.markBlock(self.columnAfterWord());
     }
 
-    const word_modules = .{ @import("core/string_values.zig"), @import("core/words_string_edit.zig"), @import("core/words_text.zig"), @import("core/words_buffers.zig"), @import("core/words_data.zig"), @import("core/words_width.zig"), words_stack, words_arithmetic, @import("core/words_numeric.zig"), words_memory, words_output, words_input, words_compiling, words_float, words_pictured, words_dictionary, words_system, @import("core/blocks.zig"), words_files, words_strings, words_help, words_defining, words_graphics, words_audio, words_xchar, words_tools, words_debug };
+    const word_modules = .{ @import("core/words_terminal.zig"), @import("core/string_values.zig"), @import("core/words_string_edit.zig"), @import("core/words_text.zig"), @import("core/words_buffers.zig"), @import("core/words_data.zig"), @import("core/words_width.zig"), words_stack, words_arithmetic, @import("core/words_numeric.zig"), words_memory, words_output, words_input, words_compiling, words_float, words_pictured, words_dictionary, words_system, @import("core/blocks.zig"), words_files, words_strings, words_help, words_defining, words_graphics, words_audio, words_xchar, words_tools, words_debug };
 
     /// For each built-in word, the index in `word_modules` of the file that executes it.
     const word_owner = blk: {

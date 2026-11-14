@@ -71,6 +71,7 @@ fn sequence(bytes: []const u8) ?Cell {
         if (bits & 4 != 0) modifiers |= keys.ctrl;
     }
     if (numbers.next() != null) return null;
+    if (final == 'Z' and number == 1) return keys.tab | keys.shift | modifiers;
     const base: Cell = if (final == '~') switch (number) {
         1, 7 => keys.special + 4,
         4, 8 => keys.special + 5,
@@ -98,7 +99,7 @@ pub fn ready(self: *forth.State) forth.RuntimeError!bool {
 }
 
 pub fn read(self: *forth.State) forth.RuntimeError!Cell {
-    const first = (try next(self, -1)) orelse return error.InputUnavailable;
+    const first = (try next(self, -1)) orelse return keys.eof;
     if (first > 255) return first;
     var bytes: [32]u8 = undefined;
     bytes[0] = @intCast(first);

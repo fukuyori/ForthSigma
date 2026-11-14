@@ -246,7 +246,7 @@ FACILITY EXTのキー4語とBLOCK/BLOCK EXTの10語を優先する。既存の�
 
 ### P06 入出力の切り替えとホスト連携
 
-入力・出力先の入れ子と例外後の復元を共通化し、CSV、パイプ、特殊キーへ広げる。
+入力・出力先の入れ子と例外後の復元を共通化し、CSV、パイプ、特殊キーへ広げる。P06a5/5・P06b9/9・P06c15/15、計29/29語を実装・検証済み。549は完了、次は457 P07先行。
 
 #### P06a 入出力切り替えと出力の取り込み
 
@@ -266,7 +266,7 @@ FACILITY EXTのキー4語とBLOCK/BLOCK EXTの10語を優先する。既存の�
 
 #### P06c 特殊キーと端末情報
 
-対象 15語。tque ID: 569。
+対象 15語。tque ID: 569。全語の事前実測・一括承認後に実装。通常/最小テスト、74実測比較・PTY6件、既存入力回帰を確認し完了(auto)。Windows/Linux実機は696で別管理。[記録](P06_IMPLEMENTATION.md)。
 
 `AT-DELTAXY`, `FKEY.`, `FORM`, `K-BACKSPACE`, `K-ENTER`, `K-EOF`, `K-MUTE`, `K-PAUSE`, `K-SEL`, `K-TAB`, `K-VOLDOWN`, `K-VOLUP`, `K-WINCH`, `KEY-IOR`, `SIMPLE-FKEY-STRING`
 

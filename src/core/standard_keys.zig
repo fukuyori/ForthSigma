@@ -30,13 +30,45 @@ pub const constants = [_]struct { []const u8, Cell }{
     .{ "K-RIGHT", 2147483649 },
     .{ "K-SHIFT-MASK", 268435456 },
     .{ "K-UP", 2147483650 },
+    .{ "K-BACKSPACE", 2147483676 },
+    .{ "K-ENTER", 2147483658 },
+    .{ "K-EOF", 2147483681 },
+    .{ "K-MUTE", 2147483673 },
+    .{ "K-PAUSE", 2147483672 },
+    .{ "K-SEL", 2147483678 },
+    .{ "K-TAB", 2147483677 },
+    .{ "K-VOLDOWN", 2147483675 },
+    .{ "K-VOLUP", 2147483674 },
+    .{ "K-WINCH", 2147483671 },
 };
 
 pub fn isFunction(event: Cell) bool {
     const base = event & ~(shift | alt | ctrl);
-    return base >= special and base <= special + 22 and base != special + 10;
+    return base >= special and base <= special + 33;
 }
 
 pub fn isCharacter(event: Cell) bool {
     return event >= 0 and event <= 0x10ffff and !(event >= 0xd800 and event <= 0xdfff);
+}
+
+pub const names = [_][]const u8{
+    "k-left", "k-right", "k-up",    "k-down", "k-home",  "k-end",     "k-prior",     "k-next", "k-insert", "k-delete",  "k-enter",
+    "k-f1",   "k-f2",    "k-f3",    "k-f4",   "k-f5",    "k-f6",      "k-f7",        "k-f8",   "k-f9",     "k-f10",     "k-f11",
+    "k-f12",  "k-winch", "k-pause", "k-mute", "k-volup", "k-voldown", "k-backspace", "k-tab",  "k-sel",    "k-fgcolor", "k-bgcolor",
+    "k-eof",
+};
+pub const eof = special + 33;
+pub const winch = special + 23;
+pub const tab = special + 29;
+pub const name_bytes = bytes: {
+    var count: usize = 0;
+    for (names) |name| {
+        count += name.len;
+    }
+    break :bytes count;
+};
+pub fn nameOffset(index: usize) usize {
+    var offset: usize = 0;
+    for (names[0..index]) |name| offset += name.len;
+    return offset;
 }

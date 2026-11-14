@@ -1258,7 +1258,7 @@ addr/uは取得可能なOS/CRTのTZ名を最大256バイトで借用し、次の
 
 `INFILE-ID ( -- fileid )`は現在の入力先を返し、通常はSTDINです。`INFILE-EXECUTE ( xt fileid -- )`は借用入力でxtを実行し、正常終了・例外とも元の入力先と先読み状態へ戻します。ファイルは閉じず、読み進めた位置も戻しません。KEY/XKEY/EKEY・準備確認、ACCEPT、数値INPUT、端末ソースのREFILLに適用します。INCLUDE・EVALUATEの入力源規則は維持します。2語ともfiles機能が必要です。
 
-ファイルのACCEPTはエコーなしの行読取です。LF/CRLF/CRまで行全体を消費し、指定容量と内部4096バイト上限で切り詰めます。ファイルのEKEYはESCを単独のバイトとして扱い、Unicodeは既存Sigmaの復号を使います。KEY/EKEYの先頭バイトがEOFならInputUnavailable(-262)、準備確認は偽、ACCEPTは0を返します。指定Gforthの行編集・エコー、Unicodeの実測差、EOF値とは意図的に異なります。先読みで戻したバイトは借用ファイルに残り、後から読めます。カスタムFileOpsホストはkey/readyと、先読みを戻す場合のunreadを提供してください。必要な機能がない場合はFileUnavailableをTHROWします。[記録](P06_IMPLEMENTATION.md)。
+ファイルのACCEPTはエコーなしの行読取です。LF/CRLF/CRまで行全体を消費し、指定容量と内部4096バイト上限で切り詰めます。ファイルのEKEYはESCを単独のバイトとして扱い、Unicodeは既存Sigmaの復号を使います。KEYの先頭バイトがEOFならInputUnavailable(-262)、EKEYはK-EOF、準備確認は偽、ACCEPTは0を返します。指定Gforthの行編集・エコー、Unicodeの実測差、EOF値とは意図的に異なります。先読みで戻したバイトは借用ファイルに残り、後から読めます。カスタムFileOpsホストはkey/readyと、先読みを戻す場合のunreadを提供してください。必要な機能がない場合はFileUnavailableをTHROWします。[記録](P06_IMPLEMENTATION.md)。
 
 
 ### CSV設定とフィールド出力（P06b）
@@ -1288,3 +1288,18 @@ addr/uは取得可能なOS/CRTのTZ名を最大256バイトで借用し、次の
 ### シェル出力の借用（P06b）
 
 `SH-GET ( addr u -- addr2 u2 )`はコマンドを実行して標準出力全体を読み、借用バイト列で返します。FREEせず、次のSH-GETや全体復元・リセットを越えて保持する場合はコピーしてください。バイナリー・末尾改行を維持し、空の結果も有効です。読取・クローズ成功後に`$?`へネイティブ終了値を保存します。非ゼロ終了も正常な返却結果です。I/O・確保失敗ではパイプと途中出力を解放し、以前の終了値を維持します。事前検査失敗では旧結果を維持しますが、オープンを開始した呼出しでは失敗時も旧結果が無効になります。前回結果を次のコマンドとして使用できます。辞書追加読込は宛先の借用結果を維持し、結果を暗黙のイメージ保存対象にはしません。files機能とパイプ用ホスト機能が必要です。[記録](P06_IMPLEMENTATION.md)。
+
+
+### 標準特殊キーと端末情報（P06c）
+
+EKEYSにK-ENTER・K-WINCH・K-PAUSE・K-MUTE・K-VOLUP・K-VOLDOWN・K-BACKSPACE・K-TAB・K-SEL・K-EOFを追加しました。修飾マスク付きも特殊キーとして判定します。GRAPHICSの値は独立したままで、通常のEnter・Tab・Backspaceは従来のバイト値です。Shift+TabはK-TAB K-SHIFT-MASK ORになります。対応する端末リサイズはK-WINCHで通知し、FORMで新しい寸法を取得します。メディアキーの通知可否はホストに依存します。
+
+| ワード | スタック効果 | 動作 |
+|---|---|---|
+| KEY-IOR | `( -- byte-or-ior )` | 生バイト・負のI/Oエラー・EOFの-512を返す。端末Ctrl+Cは引き続き-28をTHROW。 |
+| SIMPLE-FKEY-STRING | `( simple-event -- addr u )` | 小文字名の読取専用借用参照。リセット・復元まで有効。修飾付き・未知コードは-24。 |
+| FKEY. | `( event -- )` | 名前、shift/ctrl/altのマスク式の順に表示。末尾空白・改行なし。未知コードは-24。 |
+| FORM | `( -- rows columns )` | 標準出力端末の寸法、取得不能時24/80。文字列キャプチャは1/最大符号付きセル、ファイル出力は24/80。 |
+| AT-DELTAXY | `( dx dy -- )` | 水平→垂直のANSI相対移動。文字列キャプチャ中は-21。 |
+
+承認方針によりEKEYのEOFはK-EOFへ変更しました。KEYの既存エラー-262と、EOFでのEKEY?の偽は維持します。Unicodeやファイル・パイプのバイト3の扱いも維持します。名前はヒープ確保せず、書換え・FREEはしません。POSIXのリサイズ処理は元のsigactionを復元し、通常の文字・行入力を中断しません。Windows/Linux実機確認は別管理です。[記録](P06_IMPLEMENTATION.md)。

@@ -836,7 +836,10 @@ fn closeAllFiles() void {
 /// Return a byte without changing the caller's ownership of the stream.
 fn fileKey(_: ?*anyopaque, fileid: forth.Cell) forth.RuntimeError!forth.FileKeyResult {
     flushOutput();
-    if (fileid == forth.stdin_fileid) return .{ .byte = try fileStdinByte(true) };
+    if (fileid == forth.stdin_fileid) return .{ .byte = fileStdinByte(true) catch |err| {
+        if (err == error.HostFailed) return .{ .ior = lastIor() };
+        return err;
+    } };
     const file = openedFile(fileid) orelse return .{ .ior = badFileIor() };
     clearErrno();
     if (file_eof[fileSlot(fileid)]) return .{};
@@ -864,6 +867,10 @@ fn fileUnread(_: ?*anyopaque, fileid: forth.Cell, byte: u8) forth.RuntimeError!v
     if (ungetc(byte, file) < 0) return error.HostFailed;
     file_peeked[fileSlot(fileid)] = true;
     file_eof[fileSlot(fileid)] = false;
+}
+
+fn terminalKeyIor(context: ?*anyopaque) forth.RuntimeError!forth.FileKeyResult {
+    return fileKey(context, forth.stdin_fileid);
 }
 
 fn fileEof(_: ?*anyopaque, fileid: forth.Cell) forth.FileResult {
@@ -1789,6 +1796,7 @@ fn terminalEventKey(_: ?*anyopaque, timeout_ms: i32) forth.RuntimeError!?forth.C
     const start = monotonicMilliseconds(null);
 
     while (true) {
+        if (host_input.input_is_terminal and @import("host_resize.zig").take()) return @import("core/standard_keys.zig").winch;
         if (host_input.input_is_terminal) {
             if (host_input.nextStandard()) |event| {
                 if (event == 3) return error.UserInterrupt;
@@ -1796,7 +1804,9 @@ fn terminalEventKey(_: ?*anyopaque, timeout_ms: i32) forth.RuntimeError!?forth.C
                 return event;
             }
         } else if (redirectedInputReady()) {
+            clearErrno();
             const byte = standardInputByte();
+            if (byte < 0 and std.c._errno().* != 0) return error.HostFailed;
             return if (byte < 0) null else byte;
         }
         if (timeout_ms >= 0) {
@@ -1980,6 +1990,8 @@ fn run(init: std.process.Init.Minimal) !u8 {
     host_input.output_is_terminal = output_is_terminal;
     host_input.input_is_terminal = isTerminal(0);
     host_input.flush_output = flushOutput;
+    var resize_scope = try @import("host_resize.zig").Scope.begin(host_input.input_is_terminal);
+    defer _ = resize_scope.end();
     // The output kept in the buffer goes out however the session ends.
     defer flushOutput();
 
@@ -2028,7 +2040,7 @@ fn run(init: std.process.Init.Minimal) !u8 {
         return 1;
     };
     defer storage.free(std.heap.page_allocator);
-    machine.init(.{ .gamepad_ops = if (graphics) &host_gamepad.ops else null, .context = @ptrCast(&host), .write_fn = terminalWrite, .read_fn = terminalRead, .load_fn = loadDictionary, .save_fn = saveDictionary, .savesys_fn = saveExecutableImage, .key_fn = terminalKey, .event_key_fn = terminalEventKey, .monotonic_ms_fn = monotonicMilliseconds, .key_ready_fn = terminalKeyReady, .buffered_key_fn = terminalBufferedKey, .unread_fn = terminalUnread, .sleep_fn = sleepMilliseconds, .sleep_ns_fn = sleepNanoseconds, .utime_fn = microsecondsSinceEpoch, .ntime_fn = nanosecondsSinceEpoch, .cputime_fn = processCpuTimes, .local_time_fn = localTime, .zoned_time_fn = @import("host_timezone.zig").convert, .getenv_fn = environmentValue, .system_fn = runShellCommand, .file_ops = &file_ops, .framebuffer_fn = graphicsBuffer, .image_alloc_fn = if (graphics) imageAlloc else null, .image_free_fn = if (graphics) imageFree else null, .terminal_size_fn = terminalSize, .terminal_utf8_fn = terminalUtf8, .window_fn = if (host_window.available) host_window.show else null, .input_fn = inputEvent, .mouse_fn = mouseMode, .cursor_fn = cursorPosition, .font_buffer_fn = if (graphics) fontBuffer else null, .font_free_fn = if (graphics) fontFree else null, .system_font_fn = if (graphics and host_font.available) host_font.select else null, .system_glyph_fn = if (graphics and host_font.available) host_font.glyph else null, .process_start_fn = if (graphics) host_process.start else null, .process_write_fn = if (graphics) host_process.write else null, .process_read_fn = if (graphics) host_process.read else null, .process_stop_fn = if (graphics) host_process.stop else null, .audio_fn = if (audio) host_audio.start else null, .audio_device_fn = if (audio) host_audio.hasDevice else null, .audio_wait_fn = if (audio) audioWait else null }, storage);
+    machine.init(.{ .gamepad_ops = if (graphics) &host_gamepad.ops else null, .context = @ptrCast(&host), .write_fn = terminalWrite, .read_fn = terminalRead, .load_fn = loadDictionary, .save_fn = saveDictionary, .savesys_fn = saveExecutableImage, .key_fn = terminalKey, .key_ior_fn = terminalKeyIor, .event_key_fn = terminalEventKey, .monotonic_ms_fn = monotonicMilliseconds, .key_ready_fn = terminalKeyReady, .buffered_key_fn = terminalBufferedKey, .unread_fn = terminalUnread, .sleep_fn = sleepMilliseconds, .sleep_ns_fn = sleepNanoseconds, .utime_fn = microsecondsSinceEpoch, .ntime_fn = nanosecondsSinceEpoch, .cputime_fn = processCpuTimes, .local_time_fn = localTime, .zoned_time_fn = @import("host_timezone.zig").convert, .getenv_fn = environmentValue, .system_fn = runShellCommand, .file_ops = &file_ops, .framebuffer_fn = graphicsBuffer, .image_alloc_fn = if (graphics) imageAlloc else null, .image_free_fn = if (graphics) imageFree else null, .terminal_size_fn = terminalSize, .terminal_utf8_fn = terminalUtf8, .window_fn = if (host_window.available) host_window.show else null, .input_fn = inputEvent, .mouse_fn = mouseMode, .cursor_fn = cursorPosition, .font_buffer_fn = if (graphics) fontBuffer else null, .font_free_fn = if (graphics) fontFree else null, .system_font_fn = if (graphics and host_font.available) host_font.select else null, .system_glyph_fn = if (graphics and host_font.available) host_font.glyph else null, .process_start_fn = if (graphics) host_process.start else null, .process_write_fn = if (graphics) host_process.write else null, .process_read_fn = if (graphics) host_process.read else null, .process_stop_fn = if (graphics) host_process.stop else null, .audio_fn = if (audio) host_audio.start else null, .audio_device_fn = if (audio) host_audio.hasDevice else null, .audio_wait_fn = if (audio) audioWait else null }, storage);
     defer closeAllFiles();
     defer host_directories.closeAll();
     // The images of the pool, when the session ends without BYE.

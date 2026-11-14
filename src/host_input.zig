@@ -75,6 +75,7 @@ pub fn takePendingByte() ?u8 {
 
 /// A standard keyboard byte or event, without changing GRAPHICS key values.
 pub fn nextStandard() ?forth.Cell {
+    if (@import("host_resize.zig").take()) return @import("core/standard_keys.zig").winch;
     standard_keyboard = true;
     if (!enter()) return null;
     if (is_windows) {
@@ -281,6 +282,25 @@ const posix = struct {
     }
 };
 
+fn standardExtraKey(virtual_key: u16, control: u32) ?u32 {
+    const keys = @import("core/standard_keys.zig");
+    const masks: u32 = (if (control & 0x10 != 0) @as(u32, @intCast(keys.shift)) else 0) |
+        (if (control & 0x03 != 0) @as(u32, @intCast(keys.alt)) else 0) |
+        (if (control & 0x0c != 0) @as(u32, @intCast(keys.ctrl)) else 0);
+    const offset: u32 = switch (virtual_key) {
+        8 => if (masks != 0) 28 else return null,
+        9 => if (masks != 0) 29 else return null,
+        13 => if (masks != 0) 10 else return null,
+        0x13 => 24,
+        0x29 => 30,
+        0xad => 25,
+        0xae => 27,
+        0xaf => 26,
+        else => return null,
+    };
+    return @as(u32, @intCast(keys.special)) + offset | masks;
+}
+
 const windows = struct {
     const Handle = *anyopaque;
     const Coord = extern struct { x: i16, y: i16 };
@@ -303,6 +323,7 @@ const windows = struct {
     const virtual_terminal_input: u32 = 0x0200;
     const key_event: u16 = 0x0001;
     const mouse_event: u16 = 0x0002;
+    const size_event: u16 = 0x0004;
     const focus_event: u16 = 0x0010;
     const mouse_wheeled: u32 = 0x0004;
     const mouse_hwheeled: u32 = 0x0008;
@@ -343,7 +364,7 @@ const windows = struct {
         if (GetConsoleMode(console, &saved_mode) == 0) return false;
         // Without line input, echo, and Ctrl+C handling (it comes as a key); without
         // the selection by the mouse, which would take the mouse's input.
-        raw_mode = (saved_mode & ~(processed_input | line_input | echo_input | quick_edit | virtual_terminal_input)) | extended_flags;
+        raw_mode = (saved_mode & ~(processed_input | line_input | echo_input | quick_edit | virtual_terminal_input)) | extended_flags | (if (standard_keyboard) @as(u32, 0x0008) else 0);
         if (SetConsoleMode(console, raw_mode) == 0) return false;
         input = console;
         return true;
@@ -417,6 +438,11 @@ const windows = struct {
             releasing = false;
         }
         const console = input orelse return null;
+        if (standard and raw_mode & 0x0008 == 0) {
+            const updated = raw_mode | 0x0008;
+            if (SetConsoleMode(console, updated) == 0) return null;
+            raw_mode = updated;
+        }
         while (true) {
             var count: u32 = 0;
             if (GetNumberOfConsoleInputEvents(console, &count) == 0 or count == 0) return null;
@@ -434,6 +460,10 @@ const windows = struct {
                         return .{ .key_release = code };
                     }
                     const unit = std.mem.readInt(u16, data[10..12], .little);
+                    if (standard) {
+                        const control = std.mem.readInt(u32, data[12..16], .little);
+                        if (standardExtraKey(virtual_key, control)) |event| return .{ .key = event };
+                    }
                     if (keyCode(virtual_key)) |key| {
                         if (standard) {
                             const base: u32 = switch (key) {
@@ -468,6 +498,10 @@ const windows = struct {
                     @memcpy(pending[0 .. length - 1], bytes[1..length]);
                     pending_len = length - 1;
                     return press(virtual_key, if (code_point < 0x80) code_point else 0x80, .{ .key = bytes[0] });
+                },
+                size_event => {
+                    if (standard) @import("host_resize.zig").record();
+                    continue;
                 },
                 mouse_event => {
                     const flags = std.mem.readInt(u32, data[12..16], .little);
@@ -518,4 +552,16 @@ test "terminal read-ahead is shared in FIFO order with canonical input" {
     try std.testing.expectEqual(@as(?u8, 0x97), takePendingByte());
     try std.testing.expectEqual(@as(?u8, 0xa5), takePendingByte());
     try std.testing.expect(takePendingByte() == null);
+}
+
+test "standard extra keys preserve plain controls and map modifiers media and pause" {
+    const keys = @import("core/standard_keys.zig");
+    try std.testing.expect(standardExtraKey(13, 0) == null);
+    try std.testing.expect(standardExtraKey(9, 0) == null);
+    try std.testing.expectEqual(@as(?u32, @intCast(keys.tab | keys.shift)), standardExtraKey(9, 0x10));
+    try std.testing.expectEqual(@as(?u32, @intCast(keys.special + 10 | keys.ctrl)), standardExtraKey(13, 0x08));
+    try std.testing.expectEqual(@as(?u32, @intCast(keys.special + 24)), standardExtraKey(0x13, 0));
+    try std.testing.expectEqual(@as(?u32, @intCast(keys.special + 25)), standardExtraKey(0xad, 0));
+    try std.testing.expectEqual(@as(?u32, @intCast(keys.special + 27)), standardExtraKey(0xae, 0));
+    try std.testing.expectEqual(@as(?u32, @intCast(keys.special + 26)), standardExtraKey(0xaf, 0));
 }

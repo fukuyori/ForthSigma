@@ -168,6 +168,7 @@ comptime {
     if (environment_buffer_base + environment_buffer_size > system_end) @compileError("the system area does not fit");
     if (data_start != block_source_end or data_start % cell_size != 0) @compileError("the data area must follow the input area, aligned to a cell");
     if (blk_address < evaluate_source_name_address + evaluate_source_name.len or scr_address != blk_address + cell_size or scr_address + cell_size > hold_bottom) @compileError("block variables overlap system buffers");
+    if (key_name_base < timezone_buffer_address + timezone_buffer_size or key_name_base + @import("standard_keys.zig").name_bytes > hold_bottom) @compileError("key names overlap system buffers");
     if (timezone_buffer_address < csv_separator_address + cell_size or timezone_buffer_address + timezone_buffer_size > hold_bottom) @compileError("timezone buffer overlaps system variables or pictured output");
     if (newline_address < evaluate_source_name_address + 1 + evaluate_source_name.len or newline_address + 1 > blk_address) @compileError("NEWLINE overlaps system variables or source names");
     if (data_start >= min_memory_m) @compileError("the smallest data area is empty");
@@ -278,6 +279,8 @@ pub const csv_separator_address: Cell = 0x0d68;
 /// Dedicated borrowed >TIME&DATE&TZ text; no owned pointer or relocation root.
 pub const timezone_buffer_address: Cell = 0x0e00;
 pub const timezone_buffer_size = 256;
+/// Stable borrowed standard function-key names.
+pub const key_name_base: Cell = 0x0f00;
 
 pub const state_address: Cell = 0x0208;
 
