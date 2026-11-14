@@ -25,11 +25,12 @@ pub const words = [_]Builtin{
     .string_array,        .string_array_store,  .string_array_fetch,     .string_array_count,      .string_array_dot,
     .string_array_map,    .string_array_free,   .string_array_slurp,     .string_array_slurp_file, .string_slurp_file,
     .string_slurp,        .string_plus_slurp,   .string_plus_slurp_file, .string_slurp_line,       .string_plus_store_len,
-    .string_array_append, .string_append_array, .string_exec,            .system_status,
+    .string_array_append, .string_append_array, .string_exec,            .system_status,           .to_string_execute,
 };
 
 pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
     switch (builtin) {
+        .to_string_execute => try captureOwned(self),
         .string_store => {
             const string_var = try self.pop();
             const length = try self.popLength();
@@ -274,4 +275,38 @@ fn captureOutput(self: *State, xt: u16, string_var: Cell) RuntimeError!void {
     self.capture_failed = previous_failed;
     try result;
     if (failed) return self.throwIor(errno_no_memory);
+}
+
+/// Capture callback output privately, then transfer a raw FREE-able allocation.
+fn captureOwned(self: *State) RuntimeError!void {
+    const xt = try self.wordId(try self.peek(0));
+    if (self.data_depth == self.data_stack.len) return error.StackOverflow;
+    var output = @import("macro_substitute.zig").Captured{};
+    errdefer output.free(self);
+    const previous_target = self.capture_target;
+    const previous_sink = self.capture_sink;
+    const previous_failed = self.capture_failed;
+    self.capture_target = null;
+    self.capture_sink = &output;
+    self.capture_failed = false;
+    defer {
+        self.capture_target = previous_target;
+        self.capture_sink = previous_sink;
+        self.capture_failed = previous_failed;
+    }
+    self.data_depth -= 1;
+    try self.executeWord(xt);
+    if (self.capture_failed) return self.throwIor(errno_no_memory);
+    if (self.data_depth > self.data_stack.len - 2) return error.StackOverflow;
+    // Even empty output has an independent allocation that FREE accepts.
+    if (output.buffer == 0) try output.put(self, "");
+    @memmove(self.memory[@intCast(output.buffer)..][0..output.length], output.bytes(self));
+    @import("address_registry.zig").written(self, output.buffer, output.length, false);
+    output.buffer = switch (try self.heapResize(output.buffer, output.length)) {
+        .address => |address| address,
+        .no_memory => return self.throwIor(errno_no_memory),
+        .bad_pointer => return error.InvalidAddress,
+    };
+    try self.push(output.buffer);
+    try self.push(@intCast(output.length));
 }

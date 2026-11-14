@@ -1251,3 +1251,8 @@ addr/u borrows up to256 bytes of available OS/CRT zone text until the next succe
 FPATH is an ordinary dynamic-string owner: raw writes that corrupt its pointer are outside its ownership contract. CLEAR-PATH is for a valid owner, not a repair operation for corrupted memory. Relative source names remain cwd-dependent after SET-DIR, including LOCATE/WHERE reopening; no load-time cwd is stored. KEY?-FILE retains ordinary input bytes, but terminal Ctrl+C is consumed as an interrupt (UserInterrupt/-28), including during readiness checks.
 
 Source display (LOCATE/WHERE) expands stored tilde names using the current home provider; it does not capture HOME or cwd at inclusion time. A literal tilde directory loaded in legacy mode can therefore display different source text. Missing or failed home expansion suppresses source text just like an unreadable file.
+
+
+### Owned output capture (P06a)
+
+`>STRING-EXECUTE ( xt -- addr u )` runs xt once and returns its printed output in an independent allocation. Release it with `FREE addr`, including empty output. Example: `: OUT S" hello" TYPE ; ' OUT >STRING-EXECUTE OVER >R TYPE R> FREE THROW`. Callback results remain below addr/u. Nested capture restores the enclosing output destination; THROW and allocation/result-stack errors free private output and restore capture state. Callback side effects remain. One extra stack slot is required before execution, and two return slots after the callback. [Details](P06_IMPLEMENTATION.md).

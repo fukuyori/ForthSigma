@@ -2,6 +2,8 @@
 
 更新日：2026-11-14。P00・S01・P01・P02・P03・P04に続き、P05a16語・P05b14語と661のFPATH統合も実装・検証完了。680/681/661/548は完了（auto）、542全体は未完了。次は567 P06a。676までの変更は1c6667aでpush済み。今回のFPATH変更は未コミット。Windows/Linux実機確認はここでは行わず、607配下682へ残す。以下の過去フェーズの記録より、この現在状態を優先する。
 
+P05レビュー修正は734e6d0でコミット・push済み。P06aに着手し、684の>STRING-EXECUTEを実装・検証。所有/空出力・入れ子・THROW/失敗復元を確認。次は685のINFILE/OUTFILE-IDとEXECUTE（4語）。567/549/542は未完了。P06aの変更は未コミット。[P06記録](P06_IMPLEMENTATION.md)。
+
 P05はe38b694でコミット・push済み。Claude Code初回レビュー683は高重大度の確定不具合なし。FPATHの~/ソースをLOCATE/WHEREが再読込できない指摘を再現・修正し、文書の古い記述を更新。通常/最小テスト・ビルド、FPATH13比較、入力258比較・PTY6件・FIFO1件は通過。再レビューの追加指摘（ホーム展開失敗時の例外）も修正・回帰確認済み。リテラルの~ディレクトリとHOME変更時のソース再表示制限を文書化。683は完了（auto）。修正は未コミット。[P05レビュー記録](P05_REVIEW.md)。
 
 P03c was committed and pushed as `98be4f8`. P03 and task 562 are complete. Claude Code review fixes and the first 21 P04a words were committed/pushed as a6ab243. Task 631 is complete (auto), with no new concrete defect found in the final review. See [P03 review](P03_REVIEW.md). The six additional P04a edit/owned-string words were committed/pushed as 5b2c8a4. XC@+? was committed/pushed as fa2afe9 and P04a is complete. P04b $VALUE/MACRO: were committed/pushed as 33bb55a (634); the macro vocabulary/callback words (635) were committed/pushed as 6a9c4e3. Check git status and git log before resuming.
