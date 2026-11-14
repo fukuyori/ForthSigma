@@ -325,3 +325,43 @@ test "FPATH rejects oversized names and full source tables after closing and nee
     try std.testing.expectError(error.TooManySourceFiles, m.includeFile("new.txt"));
     try std.testing.expect(!output.files[0].open);
 }
+
+fn homeIncludeOpen(context: ?*anyopaque, name: []const u8, access: @import("../forth.zig").FileAccess, create: bool) @import("../forth.zig").FileResult {
+    const prefix = "/home/lemon/lib/";
+    if (std.mem.startsWith(u8, name, prefix)) return support.fakeOpen(context, name[prefix.len..], access, create);
+    return .{ .ior = @import("../forth.zig").errnoIor(2) };
+}
+
+test "P05 review LOCATE and WHERE reopen tilde source names recorded through FPATH" {
+    try support.skipWithout(&.{ .files, .tools });
+    var output = support.Output{};
+    const m = try support.createMachine(&output);
+    defer support.destroyMachine(m);
+    var ops = support.fake_file_ops;
+    ops.open = homeIncludeOpen;
+    m.writer.file_ops = &ops;
+    support.setFakeFile(&output, 0, ": HOME-WORD 123 ;\n: HOME-USE HOME-WORD ;\n");
+    try m.interpretLine("FPATH PATH= ~/lib S\" a.txt\" INCLUDED S\" a.txt\" REQUIRED");
+    try std.testing.expect(m.findSourceFile("~/lib/a.txt") != null);
+    try m.interpretLine("LOCATE HOME-WORD");
+    try std.testing.expect(std.mem.indexOf(u8, output.written(), ": HOME-WORD 123 ;") != null);
+    output.len = 0;
+    try m.interpretLine("WHERE HOME-WORD");
+    try std.testing.expect(std.mem.indexOf(u8, output.written(), ": HOME-USE HOME-WORD ;") != null);
+    try std.testing.expect(!output.files[0].open);
+}
+
+test "P05 review unavailable home expansion leaves LOCATE and WHERE nonthrowing" {
+    try support.skipWithout(&.{ .files, .tools });
+    var output = support.Output{};
+    const m = try support.createMachine(&output);
+    defer support.destroyMachine(m);
+    var ops = support.fake_file_ops;
+    ops.open = homeIncludeOpen;
+    m.writer.file_ops = &ops;
+    support.setFakeFile(&output, 0, ": HOME-WORD 123 ;\n: HOME-USE HOME-WORD ;\n");
+    try m.interpretLine("FPATH PATH= ~/lib INCLUDE a.txt");
+    m.writer.getenv_fn = null;
+    try m.interpretLine("LOCATE HOME-WORD WHERE HOME-WORD");
+    try std.testing.expect(!output.files[0].open);
+}

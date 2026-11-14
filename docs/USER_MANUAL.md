@@ -1192,7 +1192,7 @@ The immediate three-backslash word skips the rest of the current source file, in
 
 Use a dynamic-string owner such as VARIABLE P. P CLEAR-PATH empties it, P PATH= one|two replaces it, and P PATH+ three or S" a dir" P ALSO-PATH appends. Internal separators are NUL; P $@ returns borrowed bytes invalidated by later changes. Release owned storage with P $FREE. PATH= preserves source text.
 
-P .PATH prints each component followed by a space, stopping at the first empty component. ABSOLUTE-FILE? ( addr u -- flag ) is Gforth's syntactic classifier for leading /, ~, ./ or a second-character colon in names longer than two bytes, not OS canonicalization. Empty spans are false without a read. OPEN-PATH-FILE/FILE>PATH are described below; existing INCLUDE/REQUIRE lookup is unchanged. [Details](P05_IMPLEMENTATION.md).
+P .PATH prints each component followed by a space, stopping at the first empty component. ABSOLUTE-FILE? ( addr u -- flag ) is Gforth's syntactic classifier for leading /, ~, ./ or a second-character colon in names longer than two bytes, not OS canonicalization. Empty spans are false without a read. OPEN-PATH-FILE/FILE>PATH are described below; INCLUDE/REQUIRE use this lookup only with nonempty FPATH. [Details](P05_IMPLEMENTATION.md).
 
 ### Searching a path
 
@@ -1200,7 +1200,7 @@ P .PATH prints each component followed by a space, stopping at the first empty c
 
 Leading /, ~, ./ and drive forms bypass the path list. ./ is relative to the current physical source file's directory (working directory in terminal/EVALUATE); ~+/ selects the working directory. ~/ is expanded through HOME when opening, and POSIX ~user uses the host user database. Returned text keeps the tilde spelling. The native host follows Gforth's writable-home selection. Windows uses HOME, then HOMEDRIVE+HOMEPATH, TEMP or TMP; named-user lookup is unsupported there. Lexical compaction does not resolve symlinks.
 
-The result borrows a1,024-byte system buffer until the next path lookup; reset/image restoration also invalidates it. Copy it for longer retention and do not FREE it. Overlong candidates raise StringTooLong; NUL-containing filenames are rejected. These words do not change INCLUDE/REQUIRE. [Details](P05_IMPLEMENTATION.md).
+The result borrows a 1,024-byte system buffer until the next path lookup; reset/image restoration also invalidates it. Copy it for longer retention and do not FREE it. Overlong candidates raise StringTooLong; NUL-containing filenames are rejected. Nonempty FPATH connects this lookup to INCLUDE/REQUIRE; empty FPATH keeps legacy loading. [Details](P05_IMPLEMENTATION.md).
 
 ### Filename components
 
@@ -1247,3 +1247,7 @@ The maximum is(2^63-1) seconds plus999,999,999ns; larger values throw ResultOutO
 `>TIME&DATE&TZ ( dseconds -- second minute hour day month year dst offset addr u )` converts signed Unix seconds, for example `0. >TIME&DATE&TZ` for the epoch. Divide NTIME's nanoseconds by1,000,000,000 first. Months are1..12 and year is the full year. dst is a Forth flag from the OS DST classification. offset is seconds east of UTC, including DST; Tokyo is normally32400, New York normally-18000 or-14400.
 
 addr/u borrows up to256 bytes of available OS/CRT zone text until the next successful conversion/reset/image restoration. Copy it for longer retention; do not FREE it or assume NUL termination. Labels may be abbreviations or display names, and an unavailable name can be empty. The dedicated buffer is separate from GETENV and path lookup. Supported dates and TZ environment syntax depend on the OS/CRT. Out-of-range input/native-calendar failure throws ResultOutOfRange; other host failures throw HostFailed, and missing hooks throw HostUnavailable. Errors leave input cells and previous zone text unchanged. The word needs eight extra stack slots, no VM heap, and remains available without file/float features. Existing TIME&DATE is unchanged.
+
+FPATH is an ordinary dynamic-string owner: raw writes that corrupt its pointer are outside its ownership contract. CLEAR-PATH is for a valid owner, not a repair operation for corrupted memory. Relative source names remain cwd-dependent after SET-DIR, including LOCATE/WHERE reopening; no load-time cwd is stored. KEY?-FILE retains ordinary input bytes, but terminal Ctrl+C is consumed as an interrupt (UserInterrupt/-28), including during readiness checks.
+
+Source display (LOCATE/WHERE) expands stored tilde names using the current home provider; it does not capture HOME or cwd at inclusion time. A literal tilde directory loaded in legacy mode can therefore display different source text. Missing or failed home expansion suppresses source text just like an unreadable file.

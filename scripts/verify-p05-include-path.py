@@ -35,6 +35,10 @@ cases = [
     ('empty-component', ': RUN S" item.fs" INCLUDED ; FPATH PATH= |cwd \' RUN CATCH .'),
     ('no-fallback', ': RUN S" cwd/item.fs" INCLUDED ; FPATH PATH= missing \' RUN CATCH .'),
 ]
+(root / 'other/lib').mkdir(parents=True, exist_ok=True)
+(root / 'lib/chdir.fs').write_text('S" other" SET-DIR THROW INCLUDE ./b.fs\n')
+(root / 'other/lib/b.fs').write_text('77 .\n')
+cases.append(('cwd-source-relative', 'FPATH PATH= lib INCLUDE chdir.fs'))
 results = []
 for title, source in cases:
     outputs = {}

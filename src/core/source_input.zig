@@ -304,7 +304,8 @@ pub fn locateWord(self: *State, id: u16) RuntimeError!void {
         return;
     }
     const files = try self.fileOps();
-    const opened = files.open(self.writer.context, name, .read_only, false);
+    const native = @import("paths.zig").openedName(self, name) catch return;
+    const opened = files.open(self.writer.context, native.text(), .read_only, false);
     if (opened.ior != 0) return;
     const fileid: Cell = @bitCast(opened.value);
     defer _ = files.close(self.writer.context, fileid);
@@ -387,7 +388,8 @@ fn embeddedLine(source: []const u8, wanted: u32) ?[]const u8 {
 fn readFileLine(self: *State, name: []const u8, wanted: u32, buffer: *[tib_size + 1]u8) RuntimeError!?[]const u8 {
     if (embeddedSource(self, name)) |source| return embeddedLine(source, wanted);
     const files = try self.fileOps();
-    const opened = files.open(self.writer.context, name, .read_only, false);
+    const native = @import("paths.zig").openedName(self, name) catch return null;
+    const opened = files.open(self.writer.context, native.text(), .read_only, false);
     if (opened.ior != 0) return null;
     const fileid: Cell = @bitCast(opened.value);
     defer _ = files.close(self.writer.context, fileid);

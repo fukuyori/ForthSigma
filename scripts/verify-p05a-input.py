@@ -60,6 +60,7 @@ if sys.platform != 'win32':
         ('utf8', 'STDIN KEY-FILE . STDIN KEY-FILE . STDIN KEY-FILE .', '日'.encode(), b'230 151 165 '),
         ('shared-key', 'STDIN KEY-FILE . STDIN KEY?-FILE . KEY .', b'AB', b'65 -1 66 '),
         ('interrupt', 'STDIN KEY-FILE .', b'\x03', None),
+        ('ready-interrupt', ': READY-WAIT BEGIN STDIN KEY?-FILE DROP 1 MS AGAIN ; READY-WAIT', b'\x03', None),
     ]
     for name, body, data, expected in variants:
         master, slave = pty.openpty()
