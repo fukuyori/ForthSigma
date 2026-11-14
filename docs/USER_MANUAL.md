@@ -1267,3 +1267,8 @@ Source display (LOCATE/WHERE) expands stored tilde names using the current home 
 `INFILE-ID ( -- fileid )` returns the selected input, normally STDIN. `INFILE-EXECUTE ( xt fileid -- )` runs xt with borrowed input and restores the previous selection/pending keys on success or exception. It neither closes the file nor rewinds consumed input. KEY/XKEY/EKEY/readiness, ACCEPT, numeric INPUT and terminal REFILL use the selection; INCLUDE and EVALUATE keep their parser-source rules. These two words require files support.
 
 File ACCEPT retains Sigma's no-echo line read: drain LF/CRLF/CR through line end and clip to the requested capacity and internal4096-byte limit. File EKEY treats escape bytes literally and uses Sigma Unicode decoding. First-byte KEY/EKEY EOF raises InputUnavailable(-262); readiness is false and ACCEPT returns0. These intentionally differ from the designated Gforth's editing/echo, Unicode quirk and EOF result. Pushback remains in the borrowed file for later reads. Custom FileOps hosts supply key/ready and, when lookahead must be returned, unread; missing capabilities throw FileUnavailable. [Details](P06_IMPLEMENTATION.md).
+
+
+### CSV settings and field output (P06b)
+
+`CSV-QUOTE` and `CSV-SEPARATOR` return VALUEs, initially34 (double quote) and44 (comma). Change them with TO, including in definitions. `.QUOTED-CSV ( addr u -- )` encloses a field in quote characters and doubles matching quotes inside. It adds no separator/newline and preserves binary/UTF-8 bytes. Example: `S" hello" .QUOTED-CSV`. These three words require files support. Full images preserve settings; dictionary append retains destination settings. Output capture supports aliased input; ordinary output needs no heap allocation. [Details](P06_IMPLEMENTATION.md).

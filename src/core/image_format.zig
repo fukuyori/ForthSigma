@@ -307,7 +307,13 @@ fn validateWords(v: View) RuntimeError!void {
         if (word.kind == .colon and (word.code_start > word.code_end or word.code_end > v.header.code_count)) return error.InvalidImage;
         if (word.has_does and (word.does_code_start > word.does_code_end or word.does_code_end > v.header.code_count)) return error.InvalidImage;
         switch (word.kind) {
-            .variable, .value, .fvalue, .deferred, .string_value => try dataCell(v, word.value, 8),
+            .value => {
+                if (i < v.header.builtin_count and (word.builtin == .csv_quote or word.builtin == .csv_separator)) {
+                    const expected = if (word.builtin == .csv_quote) map.csv_quote_address else map.csv_separator_address;
+                    if (word.value != expected) return error.InvalidImage;
+                } else try dataCell(v, word.value, 8);
+            },
+            .variable, .fvalue, .deferred, .string_value => try dataCell(v, word.value, 8),
             .two_constant, .two_value => try dataCell(v, word.value, 16),
             .marker => try dataCell(v, word.value, map.marker_snapshot_size),
             .created, .array => try dataCell(v, word.value, 0),

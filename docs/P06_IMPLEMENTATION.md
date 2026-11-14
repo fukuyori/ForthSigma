@@ -51,3 +51,21 @@ Eight regressions in p06a_input_test.zig cover nested/same-stream IDs, terminal 
 687/685/567 complete the five P06a words;549 P06 and542 remain incomplete because P06b/P06c remain. Next is568 P06b. Native Windows/Linux checks remain under607 and were not performed here. No version/package or commit/push is made in this approval turn; input implementation and investigation documents remain uncommitted.
 
 Final validation: normal/minimal tests (including freestanding), normal build, input8/output8/capture6 Gforth comparisons, three intentional input-difference checks and three native pushback checks pass. 687/685/567 are complete(auto). Windows/Linux native input verification is688 under607.
+
+## P06b CSV settings and quoted output (689)
+
+Input selection was committed/pushed as91c2adf before this work. P06b568 has nine words, split into689 (CSV settings/quoted output3),690 (READ-CSV1) and691 (pipe/shell5). 568/549/542 remain incomplete.
+
+`CSV-QUOTE ( -- char )` and `CSV-SEPARATOR ( -- char )` are VALUEs, initially34 (double quote) and44 (comma). Interpreted/compiled TO and +TO use ordinary VALUE semantics. They occupy fixed system cells0x0d60/0x0d68, before the dedicated timezone buffer. Full images preserve their contents; dictionary addition retains destination settings, including when imported definitions read or assign those builtin VALUEs. Image validation admits only these two named builtin tags at their exact fixed addresses; other VALUEs still require ordinary dictionary data cells. A checksum-correct image with a changed CSV builtin address is rejected before restoration.
+
+Both settings and `.QUOTED-CSV ( addr u -- )` belong to files support. Disabled builds retain unnamed fixed VALUE-shaped slots so the builtin table's shape remains consistent, while execution paths reject excluded CSV words. Enum tags are appended and startup entries precede the final three-backslash entry; earlier incompatible builtin tables remain unsupported.
+
+.QUOTED-CSV always emits a leading/trailing quote, doubles matching quote bytes in the content, and adds neither separator nor newline. It preserves raw binary/UTF-8 text. Quote comparison uses the full cell value while emission uses its low byte, matching the reference for unusual negative/out-of-byte settings. Separator does not change this single-field output. Input ranges/depth are validated before output/operand consumption. Negative lengths retain existing TYPE-style empty-span behavior. Periodic work checks interrupt large fields. File-write failures propagate through normal output-error handling; bytes emitted before a failure remain.
+
+When output capture is active, a private input snapshot prevents a captured append from invalidating an aliased input string during repeated writes. Snapshot storage is freed on success/error; ordinary terminal/file output allocates no VM heap. This implementation was written independently from observed public behavior; no GPL implementation code was copied.
+
+Six regressions cover defaults/TO/+TO, escaping/binary/Unicode/custom quotes, aliasing captured output, full images/both append routes/imported setters, checksum-repaired malformed builtin-address rejection, and omitted-feature slot shape/execution/restore. scripts/verify-p06b-csv-output.py passes28 Gforth comparisons across five quote values and empty/text/quotes/newlines/Unicode/binary fields plus setting operations. Report: .work/p06b-csv-output-check/comparison.json. Logs: .zig-cache/p06b-csv-output-{test,minimal,build}.log. Initial corruption-test construction hit the encoder's existing validation; the final regression instead mutates a valid encoded word and repairs its checksum before testing restoration.
+
+689 completes three of nine P06b words. Next is690 READ-CSV, then691 pipe/shell integration. CSV changes remain uncommitted. No Windows/Linux native checks, version bump or packages were performed.
+
+Final CSV-output validation: normal/minimal zig build test (including freestanding), normal build and28 Gforth comparisons pass. Task689 is complete(auto);568/549/542 remain incomplete. The disabled-slot regression locates a VALUE by its tag rather than the builtinWord helper, which intentionally only locates ordinary builtin-kind words.

@@ -440,6 +440,8 @@ pub const State = struct {
         self.writeCell(precision_address, dot_precision) catch unreachable;
         self.writeCell(memory_map.dpl_address, -1) catch unreachable;
         self.writeCell(memory_map.fpath_address, 0) catch unreachable;
+        self.writeCell(memory_map.csv_quote_address, 34) catch unreachable;
+        self.writeCell(memory_map.csv_separator_address, 44) catch unreachable;
         self.writeCell(heap_top_address, self.sizes.heapBase()) catch unreachable;
         self.storeSourceName(terminal_source_name_address, terminal_source_name);
         self.storeSourceName(evaluate_source_name_address, evaluate_source_name);
@@ -791,7 +793,8 @@ pub const State = struct {
         .{ "FILENAME-MATCH", .filename_match },      .{ "GET-DIR", .get_dir },                       .{ "SET-DIR", .set_dir },                     .{ "=MKDIR", .equals_mkdir },                .{ "MKDIR-PARENTS", .mkdir_parents },
         .{ "OPEN-DIR", .open_dir },                  .{ "READ-DIR", .read_dir },                     .{ "CLOSE-DIR", .close_dir },                 .{ "NTIME", .ntime },                        .{ "CPUTIME", .cputime },
         .{ "NS", .ns },                              .{ ">TIME&DATE&TZ", .to_time_date_tz },         .{ "FPATH", .fpath },                         .{ ">STRING-EXECUTE", .to_string_execute },  .{ "OUTFILE-ID", .outfile_id },
-        .{ "OUTFILE-EXECUTE", .outfile_execute },    .{ "INFILE-ID", .infile_id },                   .{ "INFILE-EXECUTE", .infile_execute },       .{ "\\\\\\", .triple_backslash },
+        .{ "OUTFILE-EXECUTE", .outfile_execute },    .{ "INFILE-ID", .infile_id },                   .{ "INFILE-EXECUTE", .infile_execute },       .{ "CSV-QUOTE", .csv_quote },                .{ "CSV-SEPARATOR", .csv_separator },
+        .{ ".QUOTED-CSV", .dot_quoted_csv },         .{ "\\\\\\", .triple_backslash },
     };
 
     fn installBuiltins(self: *State) void {
@@ -803,6 +806,11 @@ pub const State = struct {
             if (defs.isExcludedBuiltin(definition[1])) {
                 const id = self.appendEntry("", .builtin, definition[1], 0) catch unreachable;
                 self.words[id].immediate = isImmediateBuiltin(definition[1]);
+                // Keep fixed VALUE shape stable across files-enabled/disabled images.
+                if (definition[1] == .csv_quote or definition[1] == .csv_separator) {
+                    self.words[id].kind = .value;
+                    self.words[id].value = if (definition[1] == .csv_quote) memory_map.csv_quote_address else memory_map.csv_separator_address;
+                }
                 continue;
             }
             self.addBuiltin(definition[0], definition[1]) catch unreachable;
@@ -836,6 +844,10 @@ pub const State = struct {
     fn addBuiltin(self: *State, name: []const u8, builtin: Builtin) RuntimeError!void {
         const id = try self.appendWord(name, .builtin, builtin, 0);
         self.words[id].immediate = isImmediateBuiltin(builtin);
+        if (builtin == .csv_quote or builtin == .csv_separator) {
+            self.words[id].kind = .value;
+            self.words[id].value = if (builtin == .csv_quote) memory_map.csv_quote_address else memory_map.csv_separator_address;
+        }
     }
 
     pub fn appendWord(self: *State, name: []const u8, kind: WordKind, builtin: Builtin, value: Cell) RuntimeError!u16 {
@@ -1302,6 +1314,9 @@ pub const State = struct {
     }
 
     pub fn executeWord(self: *State, id: u16) RuntimeError!void {
+        if (comptime defs.isExcludedBuiltin(.csv_quote)) {
+            if (id < self.builtin_count and (self.words[id].builtin == .csv_quote or self.words[id].builtin == .csv_separator)) return error.InvalidExecutionToken;
+        }
         const word = self.words[id];
         switch (word.kind) {
             .synonym => try self.executeWord(try self.wordId(word.value)),
@@ -1369,6 +1384,9 @@ pub const State = struct {
     /// +TO: adds the top of the stack (or the float stack) to a VALUE, FVALUE, or 2VALUE.
     pub fn addToValue(self: *State, id: u16) RuntimeError!void {
         const word = self.words[id];
+        if (comptime defs.isExcludedBuiltin(.csv_quote)) {
+            if (word.builtin == .csv_quote or word.builtin == .csv_separator) return error.InvalidExecutionToken;
+        }
         switch (word.kind) {
             .fvalue => try self.writeFloat(word.value, (try self.readFloat(word.value)) + try self.fpop()),
             .two_value => try self.writeDouble(word.value, (try self.readDouble(word.value)) +% try self.popDouble()),
@@ -1782,6 +1800,9 @@ pub const State = struct {
                 .float_literal => try self.fpush(bitsFloat(op.value)),
                 .store_value => {
                     const word = self.words[try self.wordId(op.value)];
+                    if (comptime defs.isExcludedBuiltin(.csv_quote)) {
+                        if (word.builtin == .csv_quote or word.builtin == .csv_separator) return error.InvalidExecutionToken;
+                    }
                     switch (word.kind) {
                         .fvalue => try self.writeFloat(word.value, try self.fpop()),
                         .two_value => try self.writeDouble(word.value, try self.popDouble()),

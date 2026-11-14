@@ -1259,3 +1259,8 @@ addr/uは取得可能なOS/CRTのTZ名を最大256バイトで借用し、次の
 `INFILE-ID ( -- fileid )`は現在の入力先を返し、通常はSTDINです。`INFILE-EXECUTE ( xt fileid -- )`は借用入力でxtを実行し、正常終了・例外とも元の入力先と先読み状態へ戻します。ファイルは閉じず、読み進めた位置も戻しません。KEY/XKEY/EKEY・準備確認、ACCEPT、数値INPUT、端末ソースのREFILLに適用します。INCLUDE・EVALUATEの入力源規則は維持します。2語ともfiles機能が必要です。
 
 ファイルのACCEPTはエコーなしの行読取です。LF/CRLF/CRまで行全体を消費し、指定容量と内部4096バイト上限で切り詰めます。ファイルのEKEYはESCを単独のバイトとして扱い、Unicodeは既存Sigmaの復号を使います。KEY/EKEYの先頭バイトがEOFならInputUnavailable(-262)、準備確認は偽、ACCEPTは0を返します。指定Gforthの行編集・エコー、Unicodeの実測差、EOF値とは意図的に異なります。先読みで戻したバイトは借用ファイルに残り、後から読めます。カスタムFileOpsホストはkey/readyと、先読みを戻す場合のunreadを提供してください。必要な機能がない場合はFileUnavailableをTHROWします。[記録](P06_IMPLEMENTATION.md)。
+
+
+### CSV設定とフィールド出力（P06b）
+
+`CSV-QUOTE`・`CSV-SEPARATOR`はVALUEで、初期値は34（二重引用符）・44（コンマ）です。TOで変更でき、定義内からの変更にも対応します。`.QUOTED-CSV ( addr u -- )`はフィールド全体を引用符で囲み、内部の同じ引用符を二重にします。区切りや改行は追加せず、バイナリー・UTF-8のバイト列を維持します。例：`S" hello" .QUOTED-CSV`。3語ともfiles機能が必要です。全体保存・復元は設定を保存し、辞書追加読込は宛先設定を維持します。出力キャプチャの入力別名にも対応し、通常出力ではヒープ確保を行いません。[記録](P06_IMPLEMENTATION.md)。
