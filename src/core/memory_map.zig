@@ -285,6 +285,7 @@ pub const maxdepth_dot_s_address: Cell = 0x0d98;
 pub const f_s_precision_address: Cell = 0x0da0;
 pub const before_locate_address: Cell = 0x0da8;
 pub const after_locate_address: Cell = 0x0db0;
+pub const where_style_address: Cell = 0x0db8;
 
 /// Dedicated borrowed >TIME&DATE&TZ text; no owned pointer or relocation root.
 pub const timezone_buffer_address: Cell = 0x0e00;

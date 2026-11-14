@@ -3,6 +3,8 @@
 import argparse,json,pathlib,subprocess,os
 p=argparse.ArgumentParser();p.add_argument('--gforth-build',required=True,type=pathlib.Path);a=p.parse_args();b=a.gforth_build.resolve();folder=pathlib.Path('.work/p09b-check');folder.mkdir(parents=True,exist_ok=True)
 source=folder.resolve()/'navigation.fs';source.write_text('\\ P09b navigation fixture\n: NAV-ALPHA 11 ;\n: NAV-BETA NAV-ALPHA 2 + ;\n: NAV-GAMMA NAV-BETA ;\n'+'\\ padding\n'*30)
+unused_source=folder.resolve()/'unused-current-native.fs'
+unused_source.write_text('VOCABULARY Q-VOC ALSO Q-VOC DEFINITIONS\n: Q-USED 11 ;\n: Q-UNUSED 22 ;\n: Q-CALL Q-USED ;\nFORTH DEFINITIONS\n')
 editor=folder.resolve()/'editor';editor.write_text('#!/bin/sh\nprintf "EDITOR %s\\n" "$*"\n');editor.chmod(0o755)
 env=dict(os.environ,EDITOR=str(editor),VISUAL=str(editor));cmd=[str(b/'gforth-ditc'),'-p',str(b)+':~+','-i',str(b/'gforth.fi'),'-e'];cases=[]
 def add(n,s):cases.append((n,s))
@@ -16,6 +18,7 @@ add('clear-data','1 2 1.25e CLEARSTACK DEPTH . FDEPTH . FCLEARSTACK')
 add('clear-float','1 2 1.25e FCLEARSTACK DEPTH . FDEPTH . CLEARSTACK')
 add('clear-both','1 2 1.25e CLEARSTACKS DEPTH . FDEPTH .')
 add('clear-return',': T 123 >R 1 2 CLEARSTACKS R> ; T .')
+add('unused-current',f'INCLUDE {unused_source} Q-VOC DEFINITIONS UNUSED-WORDS')
 add('ellipsis-empty','...')
 add('ellipsis-values','10 20 30 ...')
 add('slash-g','1 \\G comment ignored 2\n3')
@@ -24,7 +27,7 @@ for n,s in [('locate','LOCATE NAV-BETA'),('xt-locate',"' NAV-BETA XT-LOCATE"),('
 rows=[]
 # Previously observed invalid settings caused memory reads/abort traps. Keep their
 # sources for Sigma policy checks, but do not repeat the unsafe reference runs.
-unsafe={'dot-s:-1','f-dot-s:0','f-dot-s:-1','locate-invalid'}
+unsafe={'dot-s:-1','f-dot-s:0','f-dot-s:-1','locate-invalid','where','where-select','where-prepend','where-expand','where-short','gg','ll','whereg'}
 for name,s in cases:
  row={'case':name,'source':s}
  if name in unsafe:

@@ -16,6 +16,7 @@ pub const Search = struct {
     wordlist: map.Cell = 0,
     pattern: [map.max_name]u8 = undefined,
     length: usize = 0,
+    last_file: ?usize = null,
 };
 
 pub fn beginUses(self: *forth.State, id: u16) void {
@@ -70,6 +71,7 @@ fn browse(self: *forth.State) forth.RuntimeError!void {
         if (word.source_file != 0 and word.source_file <= self.sourceFileCount() and word.source_line != 0) {
             try input.listLocation(self, word.source_file - 1, word.source_line, 1, number);
         } else {
+            self.source_search.last_file = null;
             self.write("\n");
             self.write(self.wordName(word));
             self.write(": NO FILE INFORMATION ");

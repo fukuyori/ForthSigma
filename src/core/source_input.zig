@@ -348,6 +348,7 @@ const where_columns = 80;
 /// the source line without its leading blanks, cut or padded to 80 columns, and the
 /// number of the use. A tab is written as it is, as gforth writes it.
 pub fn listUses(self: *State, id: u16) RuntimeError!void {
+    _ = try @import("source_listing.zig").style(self);
     @import("source_search.zig").beginUses(self, id);
     var number: usize = 0;
     for (self.uses[0..self.use_count]) |use| {
@@ -361,15 +362,27 @@ pub fn listUses(self: *State, id: u16) RuntimeError!void {
 pub fn listLocation(self: *State, file_index: usize, line_number: u32, column: u16, number: usize) RuntimeError!void {
     if (file_index >= self.sourceFileCount()) return;
     const name = self.sourceFileName(file_index);
+    const layout = try @import("source_listing.zig").style(self);
+    var absolute: @import("paths.zig").Buffer = undefined;
+    const shown = if (layout == .expanded and embeddedSource(self, name) == null) expanded: {
+        absolute = try @import("source_listing.zig").expanded(self, name);
+        break :expanded absolute.text();
+    } else name;
     var place_text: [48]u8 = undefined;
     const place = std.fmt.bufPrint(&place_text, ":{d}:{d}: ", .{ line_number, column }) catch unreachable;
     var number_text: [24]u8 = undefined;
     const digits = std.fmt.bufPrint(&number_text, "{d}", .{number}) catch unreachable;
     const limit = where_columns -| digits.len;
+    if (layout == .prepend and self.source_search.last_file != file_index) {
+        self.write("\n");
+        self.write(shown);
+        self.write(":");
+        self.source_search.last_file = file_index;
+    }
     self.write("\n");
-    self.write(name);
+    if (layout != .prepend) self.write(shown);
     self.write(place);
-    var width = textColumns(name) + place.len;
+    var width = (if (layout == .prepend) @as(usize, 0) else textColumns(shown)) + place.len;
     var chunk: [tib_size + 1]u8 = undefined;
     if (try readFileLine(self, name, line_number, &chunk)) |line| {
         const text = std.mem.trimStart(u8, line, " \t");

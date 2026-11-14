@@ -470,6 +470,7 @@ pub const State = struct {
         self.writeCell(memory_map.f_s_precision_address, memory_map.fs_precision) catch unreachable;
         self.writeCell(memory_map.before_locate_address, 3) catch unreachable;
         self.writeCell(memory_map.after_locate_address, 12) catch unreachable;
+        self.writeCell(memory_map.where_style_address, 0) catch unreachable;
         for (@import("core/standard_keys.zig").names, 0..) |name, index| {
             const at: usize = @intCast(memory_map.key_name_base + @as(Cell, @intCast(@import("core/standard_keys.zig").nameOffset(index))));
             @memcpy(self.memory[at..][0..name.len], name);
@@ -865,7 +866,8 @@ pub const State = struct {
         .{ "CLEARSTACK", .clear_stack },              .{ "CLEARSTACKS", .clear_stacks },              .{ "FCLEARSTACK", .f_clear_stack },                 .{ "MAXDEPTH-.S", .maxdepth_dot_s },           .{ "F.S-PRECISION", .f_s_precision },
         .{ "BEFORE-LOCATE", .before_locate },         .{ "AFTER-LOCATE", .after_locate },             .{ "XT-LOCATE", .xt_locate },                       .{ "L", .source_l },                           .{ "N", .source_n },
         .{ "B", .source_b },                          .{ "\\G", .documentation_comment },             .{ "WW", .where_select },                           .{ "NW", .where_next },                        .{ "BW", .where_back },
-        .{ "BROWSE", .browse },                       .{ "\\\\\\", .triple_backslash },
+        .{ "BROWSE", .browse },                       .{ "SHORT-WHERE", .short_where },               .{ "EXPAND-WHERE", .expand_where },                 .{ "PREPEND-WHERE", .prepend_where },          .{ "UNUSED-WORDS", .unused_words },
+        .{ "\\\\\\", .triple_backslash },
     };
 
     fn installBuiltins(self: *State) void {
@@ -2076,7 +2078,7 @@ pub const State = struct {
         if (defs.debug_enabled and self.cover_blocks and self.compiling and startsBlock(builtin)) self.markBlock(self.columnAfterWord());
     }
 
-    const word_modules = .{ @import("core/source_search.zig"), @import("core/source_navigation.zig"), @import("core/words_stack_display.zig"), @import("core/exception_registry.zig"), @import("core/words_diagnostics.zig"), @import("core/words_value_extensions.zig"), @import("core/words_names.zig"), @import("core/words_parsing.zig"), @import("core/words_loops.zig"), @import("core/quotations.zig"), @import("core/words_compilation_tokens.zig"), @import("core/words_terminal.zig"), @import("core/string_values.zig"), @import("core/words_string_edit.zig"), @import("core/words_text.zig"), @import("core/words_buffers.zig"), @import("core/words_data.zig"), @import("core/words_width.zig"), words_stack, words_arithmetic, @import("core/words_numeric.zig"), words_memory, words_output, words_input, words_compiling, words_float, words_pictured, words_dictionary, words_system, @import("core/blocks.zig"), words_files, words_strings, words_help, words_defining, words_graphics, words_audio, words_xchar, words_tools, words_debug };
+    const word_modules = .{ @import("core/source_listing.zig"), @import("core/source_search.zig"), @import("core/source_navigation.zig"), @import("core/words_stack_display.zig"), @import("core/exception_registry.zig"), @import("core/words_diagnostics.zig"), @import("core/words_value_extensions.zig"), @import("core/words_names.zig"), @import("core/words_parsing.zig"), @import("core/words_loops.zig"), @import("core/quotations.zig"), @import("core/words_compilation_tokens.zig"), @import("core/words_terminal.zig"), @import("core/string_values.zig"), @import("core/words_string_edit.zig"), @import("core/words_text.zig"), @import("core/words_buffers.zig"), @import("core/words_data.zig"), @import("core/words_width.zig"), words_stack, words_arithmetic, @import("core/words_numeric.zig"), words_memory, words_output, words_input, words_compiling, words_float, words_pictured, words_dictionary, words_system, @import("core/blocks.zig"), words_files, words_strings, words_help, words_defining, words_graphics, words_audio, words_xchar, words_tools, words_debug };
 
     /// For each built-in word, the index in `word_modules` of the file that executes it.
     const word_owner = blk: {

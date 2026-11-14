@@ -291,6 +291,8 @@ fn systemOffset(address: u64, width: u64, data_length: u64) RuntimeError!usize {
 }
 
 fn validateWords(v: View) RuntimeError!void {
+    const listing = get(map.Cell, v.memory[@intCast(map.where_style_address)..]);
+    if (listing < 0 or listing > 2) return error.InvalidImage;
     const wordlists = get(u64, v.memory[@intCast(map.wordlist_count_address)..]);
     const files = get(u64, v.memory[@intCast(map.source_file_count_address)..]);
     if (wordlists < map.ekeys_wordlist or wordlists > map.max_wordlists or files > map.max_source_files) return error.InvalidImage;
