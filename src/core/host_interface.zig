@@ -151,6 +151,8 @@ pub const Writer = struct {
     /// Without it, only KEY, XKEY and EKEY get the bytes back.
     unread_fn: ?*const fn (?*anyopaque, u8) void = null,
     sleep_fn: ?*const fn (?*anyopaque, Cell) RuntimeError!void = null,
+    /// Positive signed double-cell ns; interruptible, monotonic relative wait.
+    sleep_ns_fn: ?*const fn (?*anyopaque, Double) RuntimeError!void = null,
     /// Microseconds since the Unix epoch.
     utime_fn: ?*const fn (?*anyopaque) RuntimeError!Double = null,
     /// Unix epoch nanoseconds from the wall clock, not a monotonic deadline.

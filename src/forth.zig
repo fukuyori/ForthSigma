@@ -956,6 +956,7 @@ pub const State = struct {
             .{ "CLOSE-DIR", .close_dir },
             .{ "NTIME", .ntime },
             .{ "CPUTIME", .cputime },
+            .{ "NS", .ns },
             .{ "\\\\\\", .triple_backslash },
     };
 

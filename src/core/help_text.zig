@@ -783,6 +783,7 @@ pub const entries = [_]Entry{
     .{ .name = "CATCH", .stack = "( xt -- 0 | n )", .text = "Run xt; return 0, or the exception number with the stack depths restored." },
     .{ .name = "ABORT", .stack = "( -- )", .text = "Empty the stacks and return to the terminal without a message." },
     .{ .name = "MS", .stack = "( n -- )", .text = "Wait n milliseconds." },
+    .{ .name = "NS", .stack = "( dnanoseconds -- )", .text = "Interruptible monotonic relative wait. Nonpositive values return immediately; seconds must fit signed 64 bits. Terminal input is retained; MS is unchanged." },
     .{ .name = "NTIME", .stack = "( -- dtime )", .text = "Unix epoch nanoseconds as a double cell; wall time can jump. Precision is host-dependent." },
     .{ .name = "CPUTIME", .stack = "( -- duser dsystem )", .text = "Cumulative process user/system CPU time in microseconds as two double cells. All threads included, child processes excluded." },
     .{ .name = "UTIME", .stack = "( -- ud )", .text = "Microseconds since 1970-01-01, as a double cell." },

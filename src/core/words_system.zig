@@ -34,7 +34,7 @@ const true_flag = memory_map.true_flag;
 /// The built-in words this file executes; executeBuiltin dispatches by this list.
 pub const words = [_]Builtin{
     .bye,          .load,         .save,              .savesys, .abort, .ms,      .utime, .getenv, .system, .throw,      .catch_word,
-    .ekey_to_char, .ekey_to_fkey, .environment_query, .quit,    .noop,  .perform, .argc,  .argv,   .arg,    .shift_args, .next_arg, .ntime, .cputime,
+    .ekey_to_char, .ekey_to_fkey, .environment_query, .quit,    .noop,  .perform, .argc,  .argv,   .arg,    .shift_args, .next_arg, .ntime, .cputime, .ns,
 };
 
 /// Writes the command-line arguments into the argument area (see `argc_address`), with
@@ -209,6 +209,7 @@ pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
             const sleep_fn = self.writer.sleep_fn orelse return error.HostUnavailable;
             try sleep_fn(self.writer.context, @max(milliseconds, 0));
         },
+        .ns => try @import("nanosecond_wait.zig").execute(self),
         .ntime => {
             if (self.data_stack.len - self.data_depth < 2) return error.StackOverflow;
             const clock = self.writer.ntime_fn orelse return error.HostUnavailable;
