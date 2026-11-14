@@ -37,7 +37,7 @@ pub fn lookupIn(self: *State, name: []const u8, wid: Cell) ?u16 {
     var id = self.name_heads[nameBucket(name)];
     while (id != no_word) : (id = self.name_next[id]) {
         const word = self.words[id];
-        if (word.wordlist == wid and word.name_len != 0 and (if (wid == memory_map.macros_wordlist) std.mem.eql(u8, self.wordName(word), name) else asciiEqlIgnoreCase(self.wordName(word), name))) return id;
+        if (word.wordlist == wid and word.name_len != 0 and (if (caseSensitive(self, wid)) std.mem.eql(u8, self.wordName(word), name) else asciiEqlIgnoreCase(self.wordName(word), name))) return id;
     }
     return null;
 }
@@ -160,4 +160,25 @@ pub fn restoreMarker(self: *State, address: Cell) RuntimeError!void {
     self.restoreLoadedSourceFiles(mask);
     try self.writeCell(current_wordlist_address, current);
     self.setSearchOrder(order[0..depth]);
+}
+
+pub fn flag(self: *const State, address: Cell, wid: Cell) bool {
+    if (wid < 1 or wid > memory_map.max_wordlists) return false;
+    const bits: UCell = @bitCast(self.readCellConst(address));
+    return bits & (@as(UCell, 1) << @intCast(wid - 1)) != 0;
+}
+pub fn caseSensitive(self: *const State, wid: Cell) bool {
+    return wid == memory_map.macros_wordlist or flag(self, memory_map.case_wordlists_address, wid);
+}
+pub fn silent(self: *const State, wid: Cell) bool {
+    return flag(self, memory_map.silent_wordlists_address, wid);
+}
+pub fn mergeFlags(self: *State, address: Cell, saved: Cell, count: Cell, base: Cell) void {
+    var bits: UCell = @bitCast(self.readCellConst(address));
+    var wid: Cell = memory_map.ekeys_wordlist + 1;
+    while (wid <= count) : (wid += 1) {
+        if (@as(UCell, @bitCast(saved)) & (@as(UCell, 1) << @intCast(wid - 1)) != 0)
+            bits |= @as(UCell, 1) << @intCast(base + wid - memory_map.ekeys_wordlist - 1);
+    }
+    self.writeCell(address, @bitCast(bits)) catch unreachable;
 }

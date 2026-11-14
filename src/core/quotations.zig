@@ -23,7 +23,7 @@ pub fn latest(self: *const forth.State) u16 {
     return id;
 }
 pub fn definitionName(self: *forth.State) forth.RuntimeError!?[]const u8 {
-    return if (self.noname_next) "" else try self.nextSourceToken();
+    return if (self.noname_next) self.next_name[0..self.next_name_len] else try self.nextSourceToken();
 }
 pub fn abort(self: *forth.State) void {
     if (self.quote_depth == 0) return;
@@ -39,6 +39,7 @@ pub fn abort(self: *forth.State) void {
     self.quote_depth = 0;
     self.postponing = false;
     self.noname_next = false;
+    self.next_name_len = 0;
     self.defining = false;
     self.setCompiling(false);
     self.control_depth = 0;
@@ -48,7 +49,10 @@ pub fn abort(self: *forth.State) void {
 
 pub fn execute(self: *forth.State, comptime word: defs.Builtin) forth.RuntimeError!void {
     switch (word) {
-        .noname => self.noname_next = true,
+        .noname => {
+            self.noname_next = true;
+            self.next_name_len = 0;
+        },
         .in_colon_def => try self.push(if (self.defining) -1 else 0),
         .postpone_open => {
             if (!self.defining) return error.CompileOnly;

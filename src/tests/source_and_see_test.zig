@@ -84,11 +84,11 @@ test "EVALUATE does not read further terminal lines and input lines are limited 
 test "INCLUDE interprets a file across lines and reports its name and line" {
     try support.skipWithout(&.{ .files });
     var output = Output{};
-    setFakeFile(&output, 0, ": SQUARE ( n -- n^2 )\n\tDUP * ;\nSOURCEFILENAME TYPE SPACE SOURCELINE# .\nCREATE\n  TABLE 7 ,\n");
+    setFakeFile(&output, 0, ": SQUARE ( n -- n^2 )\n\tDUP * ;\nSOURCEFILENAME TYPE SPACE SOURCELINE# .\nCREATE\n  INCLUDED-TABLE 7 ,\n");
     const machine = try createMachine(&output);
     defer destroyMachine(machine);
 
-    try machine.interpretLine("INCLUDE a.txt 3 SQUARE TABLE @ S\" a.txt\" INCLUDED? S\" b.txt\" INCLUDED? SOURCELINE#");
+    try machine.interpretLine("INCLUDE a.txt 3 SQUARE INCLUDED-TABLE @ S\" a.txt\" INCLUDED? S\" b.txt\" INCLUDED? SOURCELINE#");
     try expectStack(machine, &.{ 9, 7, -1, 0, 0 });
     try machine.interpretLine("SPACE SOURCEFILENAME TYPE SPACE S\" SOURCEFILENAME TYPE\" EVALUATE");
     try std.testing.expectEqualStrings("a.txt 3  *the terminal* *evaluated string*", output.written());

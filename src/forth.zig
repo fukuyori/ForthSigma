@@ -223,6 +223,8 @@ pub const State = struct {
     quote_closing: bool = false,
     quote_root: u16 = 0,
     noname_next: bool = false,
+    next_name_len: u8 = 0,
+    next_name: [memory_map.max_name]u8 = @splat(0),
     postponing: bool = false,
     control_stack: [max_controls]Control = undefined,
     control_depth: usize = 0,
@@ -450,6 +452,8 @@ pub const State = struct {
         self.writeCell(memory_map.fpath_address, 0) catch unreachable;
         self.writeCell(memory_map.csv_quote_address, 34) catch unreachable;
         self.writeCell(memory_map.csv_separator_address, 44) catch unreachable;
+        self.writeCell(memory_map.case_wordlists_address, 0) catch unreachable;
+        self.writeCell(memory_map.silent_wordlists_address, 0) catch unreachable;
         for (@import("core/standard_keys.zig").names, 0..) |name, index| {
             const at: usize = @intCast(memory_map.key_name_base + @as(Cell, @intCast(@import("core/standard_keys.zig").nameOffset(index))));
             @memcpy(self.memory[at..][0..name.len], name);
@@ -832,7 +836,12 @@ pub const State = struct {
         .{ "FOR", .for_word },                        .{ "NEXT", .next_word },                        .{ "MEM+DO", .memory_up_do },                       .{ "MEM-DO", .memory_down_do },                .{ "ARRAY>MEM", .array_to_mem },
         .{ "I'", .index_limit },                      .{ "DELTA-I", .delta_index },                   .{ "CS-DROP", .cs_drop },                           .{ "DONE", .done },                            .{ "?DUP-IF", .question_dup_if },
         .{ "?DUP-0=-IF", .question_dup_zero_if },     .{ "EXECUTE-PARSING", .execute_parsing },       .{ "EXECUTE-PARSING-FILE", .execute_parsing_file }, .{ "STRING-PARSE", .string_parse },            .{ "PARSE-WORD", .parse_word },
-        .{ "NAME", .name_word },                      .{ "FORWARD", .forward_word },                  .{ ".UNRESOLVED", .dot_unresolved },                .{ "RECURSIVE", .recursive_word },             .{ "\\\\\\", .triple_backslash },
+        .{ "NAME", .name_word },                      .{ "FORWARD", .forward_word },                  .{ ".UNRESOLVED", .dot_unresolved },                .{ "RECURSIVE", .recursive_word },             .{ ".ID", .dot_id },
+        .{ ".VOC", .dot_voc },                        .{ "COMPILE-ONLY?", .compile_only_query },      .{ "CONTEXT", .context_address },                   .{ "CS-VOCABULARY", .cs_vocabulary },          .{ "CS-WORDLIST", .cs_wordlist },
+        .{ "CURRENT", .current_address },             .{ "FIND-NAME-IN", .find_name_in },             .{ "IN", .in_vocabulary },                          .{ "IN-WORDLIST", .in_wordlist },              .{ "LATESTNT", .latest_nt },
+        .{ "MAP-VOCS", .map_vocs },                   .{ "MWORDS", .mwords },                         .{ "NAME>LINK", .name_to_link },                    .{ "NEXTNAME", .nextname },                    .{ "OBSOLETE?", .obsolete_query },
+        .{ "ROOT", .root_vocabulary },                .{ "SEAL", .seal },                             .{ "TABLE", .table_wordlist },                      .{ "VLIST", .vlist },                          .{ "VOCS", .vocs },
+        .{ "WORDLIST-WORDS", .wordlist_words },       .{ "XT>NAME", .xt_to_name },                    .{ "\\\\\\", .triple_backslash },
     };
 
     fn installBuiltins(self: *State) void {
@@ -844,6 +853,7 @@ pub const State = struct {
             if (definition[0].len == 0 or defs.isExcludedBuiltin(definition[1])) {
                 const id = self.appendEntry("", .builtin, definition[1], 0) catch unreachable;
                 self.words[id].immediate = isImmediateBuiltin(definition[1]);
+                self.words[id].compile_only = isCompileOnlyBuiltin(definition[1]);
                 // Keep fixed VALUE shape stable across files-enabled/disabled images.
                 if (definition[1] == .csv_quote or definition[1] == .csv_separator) {
                     self.words[id].kind = .value;
@@ -872,6 +882,13 @@ pub const State = struct {
         self.builtin_count = self.word_count;
     }
 
+    fn isCompileOnlyBuiltin(builtin: Builtin) bool {
+        return switch (builtin) {
+            .compile_if, .compile_else, .compile_ahead, .compile_then, .compile_begin, .compile_end, .compile_again, .compile_while, .compile_repeat, .compile_do, .compile_q_do, .compile_loop, .compile_plus_loop, .literal, .two_literal, .sliteral, .compile_case, .compile_of, .compile_question_of, .compile_endof, .compile_endcase, .compile_contof, .compile_next_case, .compile_exit, .end_definition, .leave, .question_leave, .question_exit, .recursive_word, .positive_do, .unsigned_positive_do, .negative_do, .unsigned_negative_do, .inclusive_negative_do, .unsigned_inclusive_negative_do, .negative_loop, .for_word, .next_word, .memory_up_do, .memory_down_do, .done, .question_dup_if, .question_dup_zero_if, .bracket_comp_tick, .execute_exit => true,
+            else => false,
+        };
+    }
+
     fn isImmediateBuiltin(builtin: Builtin) bool {
         return switch (builtin) {
             .recursive_word, .positive_do, .unsigned_positive_do, .negative_do, .unsigned_negative_do, .inclusive_negative_do, .unsigned_inclusive_negative_do, .negative_loop, .for_word, .next_word, .memory_up_do, .memory_down_do, .done, .question_dup_if, .question_dup_zero_if, .quote_open, .quote_close, .postpone_open, .bracket_comp_tick, .execute_exit, .assign_to, .assign_is, .assign_plus_to, .assignment_action_of, .compile_if, .compile_else, .compile_ahead, .compile_then, .compile_begin, .compile_end, .compile_again, .compile_while, .compile_repeat, .compile_do, .compile_q_do, .compile_loop, .compile_plus_loop, .compile_does, .compile_case, .compile_of, .compile_endof, .compile_endcase, .compile_exit, .compile_recurse, .leave, .bracket_if, .bracket_else, .bracket_then, .bracket_defined, .bracket_undefined, .bracket_ifdef, .bracket_ifundef, .bracket_do, .bracket_q_do, .bracket_loop, .bracket_plus_loop, .bracket_i, .bracket_begin, .bracket_until, .bracket_again, .bracket_while, .bracket_repeat, .bracket_for, .bracket_next, .end_definition, .literal, .fliteral, .sliteral, .two_literal, .defers, .bracket_compile, .question_exit, .question_leave, .compile_question_of, .compile_contof, .compile_next_case, .debug_tilde, .assert_paren, .once, .debug_tilde_bt, .debug_tilde_one_bt, .break_colon, .break_quote, .triple_backslash => true,
@@ -882,7 +899,7 @@ pub const State = struct {
     fn addBuiltin(self: *State, name: []const u8, builtin: Builtin) RuntimeError!void {
         const id = try self.appendWord(name, .builtin, builtin, 0);
         self.words[id].immediate = isImmediateBuiltin(builtin);
-        self.words[id].compile_only = builtin == .bracket_comp_tick or builtin == .execute_exit;
+        self.words[id].compile_only = isCompileOnlyBuiltin(builtin);
         if (builtin == .csv_quote or builtin == .csv_separator) {
             self.words[id].kind = .value;
             self.words[id].value = if (builtin == .csv_quote) memory_map.csv_quote_address else memory_map.csv_separator_address;
@@ -893,12 +910,13 @@ pub const State = struct {
         if (self.word_count == max_words) return error.DictionaryFull;
         if (self.noname_next) {
             self.noname_next = false;
-            return self.appendEntry("", kind, builtin, value);
+            if (self.next_name_len == 0) return self.appendEntry("", kind, builtin, value);
+            return self.appendWord(self.next_name[0..self.next_name_len], kind, builtin, value);
         }
         if (name.len == 0 or name.len > max_name) return error.NameTooLong;
         const forward = @import("core/words_parsing.zig").unresolved(self, name, self.currentWordlist());
         if (forward != null and kind != .colon) return error.InvalidDefinition;
-        if (forward == null and kind != .builtin and (if (self.currentWordlist() == memory_map.macros_wordlist) self.lookupIn(name, memory_map.macros_wordlist) else self.lookup(name)) != null) {
+        if (forward == null and kind != .builtin and !wordlists.silent(self, self.currentWordlist()) and (if (wordlists.caseSensitive(self, self.currentWordlist())) self.lookupIn(name, self.currentWordlist()) else self.lookup(name)) != null) {
             self.write("WARNING: SAME NAME WORD EXISTS\n");
         }
         return self.appendEntry(name, kind, builtin, value);
@@ -907,12 +925,12 @@ pub const State = struct {
     /// Appends a colon definition without a name (`:NONAME`); lookup never finds it.
     pub fn appendAnonymousColon(self: *State) RuntimeError!u16 {
         if (self.word_count == max_words) return error.DictionaryFull;
-        self.noname_next = false;
         return self.appendEntry("", .colon, .drop, 0);
     }
 
     fn appendEntry(self: *State, name: []const u8, kind: WordKind, builtin: Builtin, value: Cell) RuntimeError!u16 {
         if (name.len > names_capacity - self.names_used) return error.DictionaryFull;
+        _ = try self.validWordlist(self.currentWordlist());
         const id = self.word_count;
         var word = Word{ .kind = kind, .builtin = builtin, .value = value, .name_start = self.names_used, .name_len = @intCast(name.len), .data_here_before = self.data_here, .wordlist = @intCast(self.currentWordlist()) };
         if (self.currentFileFrame()) |frame| {
@@ -1213,6 +1231,7 @@ pub const State = struct {
     fn startsBlock(builtin: Builtin) bool {
         return switch (builtin) {
             .compile_if, .compile_else, .compile_then, .compile_begin, .compile_end, .compile_again, .compile_while, .compile_repeat, .compile_do, .compile_q_do, .compile_loop, .compile_plus_loop, .compile_does, .compile_case, .compile_of, .compile_question_of, .compile_endof, .compile_endcase, .compile_contof, .compile_next_case => true,
+            .positive_do, .unsigned_positive_do, .negative_do, .unsigned_negative_do, .inclusive_negative_do, .unsigned_inclusive_negative_do, .for_word, .next_word, .memory_up_do, .memory_down_do, .negative_loop, .done, .question_dup_if, .question_dup_zero_if => true,
             else => false,
         };
     }
@@ -1996,7 +2015,7 @@ pub const State = struct {
         if (defs.debug_enabled and self.cover_blocks and self.compiling and startsBlock(builtin)) self.markBlock(self.columnAfterWord());
     }
 
-    const word_modules = .{ @import("core/words_parsing.zig"), @import("core/words_loops.zig"), @import("core/quotations.zig"), @import("core/words_compilation_tokens.zig"), @import("core/words_terminal.zig"), @import("core/string_values.zig"), @import("core/words_string_edit.zig"), @import("core/words_text.zig"), @import("core/words_buffers.zig"), @import("core/words_data.zig"), @import("core/words_width.zig"), words_stack, words_arithmetic, @import("core/words_numeric.zig"), words_memory, words_output, words_input, words_compiling, words_float, words_pictured, words_dictionary, words_system, @import("core/blocks.zig"), words_files, words_strings, words_help, words_defining, words_graphics, words_audio, words_xchar, words_tools, words_debug };
+    const word_modules = .{ @import("core/words_names.zig"), @import("core/words_parsing.zig"), @import("core/words_loops.zig"), @import("core/quotations.zig"), @import("core/words_compilation_tokens.zig"), @import("core/words_terminal.zig"), @import("core/string_values.zig"), @import("core/words_string_edit.zig"), @import("core/words_text.zig"), @import("core/words_buffers.zig"), @import("core/words_data.zig"), @import("core/words_width.zig"), words_stack, words_arithmetic, @import("core/words_numeric.zig"), words_memory, words_output, words_input, words_compiling, words_float, words_pictured, words_dictionary, words_system, @import("core/blocks.zig"), words_files, words_strings, words_help, words_defining, words_graphics, words_audio, words_xchar, words_tools, words_debug };
 
     /// For each built-in word, the index in `word_modules` of the file that executes it.
     const word_owner = blk: {

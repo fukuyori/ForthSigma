@@ -99,6 +99,8 @@ fn apply(state: *forth.State, work: *Workspace) void {
         state.memory[@intCast(map.source_file_loaded_flags + @as(map.Cell, @intCast(i)))] = @intFromBool(work.file_loaded[i]);
     }
     put(state, map.source_file_count_address, @intCast(work.file_count));
+    inline for (.{ map.case_wordlists_address, map.silent_wordlists_address }) |address|
+        @import("wordlists.zig").mergeFlags(state, address, savedCell(work, address), savedCell(work, map.wordlist_count_address), plan.wordlist_base);
     put(state, map.wordlist_count_address, plan.wordlist_base + savedCell(work, map.wordlist_count_address) - map.ekeys_wordlist);
     for (plan.image.records[0..h.relocation_count], 0..) |record, i| {
         if (!plan.keep_records[i]) continue;

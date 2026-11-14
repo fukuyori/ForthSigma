@@ -230,7 +230,7 @@ pub const gui_vocabulary_address: Cell = 0x02f0;
 pub const game_vocabulary_address: Cell = 0x02f8;
 
 /// Words that are also in the Root word list, so they stay usable after ONLY.
-pub const root_word_names = [_][]const u8{ "FORTH", "FORTH-WORDLIST", "ONLY", "ALSO", "PREVIOUS", "ORDER", "DEFINITIONS", "GET-ORDER", "SET-ORDER", "WORDS" };
+pub const root_word_names = [_][]const u8{ "FORTH", "FORTH-WORDLIST", "ONLY", "ALSO", "PREVIOUS", "ORDER", "DEFINITIONS", "GET-ORDER", "SET-ORDER", "WORDS", "ROOT", "SEAL", "VOCS" };
 
 /// Bytes a MARKER keeps: the loaded-file mask, the current list, the order depth, and the order.
 pub const marker_snapshot_size = (3 + max_search_order) * cell_size;
@@ -275,6 +275,9 @@ pub const dpl_address: Cell = 0x0d50;
 pub const fpath_address: Cell = 0x0d58;
 pub const csv_quote_address: Cell = 0x0d60;
 pub const csv_separator_address: Cell = 0x0d68;
+/// Bits wid-1 for persistent case sensitivity and table warning policy.
+pub const case_wordlists_address: Cell = 0x0d70;
+pub const silent_wordlists_address: Cell = 0x0d78;
 
 /// Dedicated borrowed >TIME&DATE&TZ text; no owned pointer or relocation root.
 pub const timezone_buffer_address: Cell = 0x0e00;

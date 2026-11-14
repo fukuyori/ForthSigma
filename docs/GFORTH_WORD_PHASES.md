@@ -274,7 +274,7 @@ FACILITY EXTのキー4語とBLOCK/BLOCK EXTの10語を優先する。既存の�
 
 ### P07 コンパイラーと制御構文
 
-コンパイルトークン、無名定義、後回しコンパイル、ループ、入力切替・前方参照を実装済み。新規40/40項目＋先行4/4語、550は完了(auto)。外部レビューは未実施。
+コンパイルトークン、無名定義、後回しコンパイル、ループ、入力切替・前方参照を実装済み。新規40/40項目＋先行4/4語、550は完了(auto)。Claude Codeレビューと指摘修正は699で管理。[レビュー記録](P07_REVIEW.md)。
 
 #### P07先行 既存構文4語の辞書化
 
@@ -332,11 +332,11 @@ V . DEPTH .
 
 ### P08 辞書と定義機能
 
-名前トークンと語彙を基盤に、定義名の指定、アドレス可能な値、遅延語を追加する。
+名前トークンと語彙を基盤に、定義名の指定、アドレス可能な値、遅延語を追加する。P08a23/23語を完了し、全体23/29語。次は575 P08b。[実装記録](P08_IMPLEMENTATION.md)。
 
 #### P08a 名前トークンと語彙
 
-対象 23語。tque ID: 574。
+対象 23語。tque ID: 574、23/23完了(auto)。通常・最小テスト、163比較・7方針確認・native保存2件が通過。次は575 P08b。[記録](P08_IMPLEMENTATION.md)。
 
 `.ID`, `.VOC`, `COMPILE-ONLY?`, `CONTEXT`, `CS-VOCABULARY`, `CS-WORDLIST`, `CURRENT`, `FIND-NAME-IN`, `IN`, `IN-WORDLIST`, `LATESTNT`, `MAP-VOCS`, `MWORDS`, `NAME>LINK`, `NEXTNAME`, `OBSOLETE?`, `ROOT`, `SEAL`, `TABLE`, `VLIST`, `VOCS`, `WORDLIST-WORDS`, `XT>NAME`
 

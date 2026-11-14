@@ -416,22 +416,22 @@ test "WATCH shows each change of a cell, with the word that made it" {
     var output = Output{};
     setFakeFile(&output, 0,
         \\VARIABLE SCORE
-        \\CREATE TABLE 4 CELLS ALLOT
+        \\CREATE WATCH-TABLE 4 CELLS ALLOT
         \\: BUMP ( -- ) 1 SCORE +! ;
-        \\: CLOBBER ( -- ) TABLE 4 CELLS -1 FILL ;
-        \\: INDIRECT ( -- ) 9 TABLE 2 CELLS + ! ;
+        \\: CLOBBER ( -- ) WATCH-TABLE 4 CELLS -1 FILL ;
+        \\: INDIRECT ( -- ) 9 WATCH-TABLE 2 CELLS + ! ;
         \\: UNTOUCHED ( -- ) SCORE @ DROP ;
         \\: MAIN ( -- ) BUMP UNTOUCHED BUMP INDIRECT CLOBBER ;
         \\
     );
     const machine = try createMachine(&output);
     defer destroyMachine(machine);
-    try machine.interpretLine("INCLUDE a.txt SCORE TABLE 2 CELLS +");
+    try machine.interpretLine("INCLUDE a.txt SCORE WATCH-TABLE 2 CELLS +");
     const cell = try machine.pop();
     const score = try machine.pop();
 
     // A store through the name, one to an address worked out, and FILL over the cell.
-    try machine.interpretLine("SCORE WATCH  TABLE 2 CELLS + WATCH  MAIN");
+    try machine.interpretLine("SCORE WATCH  WATCH-TABLE 2 CELLS + WATCH  MAIN");
     var expected: [512]u8 = undefined;
     try std.testing.expectEqualStrings(try std.fmt.bufPrint(&expected, "WATCH: {d} changed from 0 to 1\n  in BUMP a.txt:3\n" ++
         "WATCH: {d} changed from 1 to 2\n  in BUMP a.txt:3\n" ++
@@ -446,7 +446,7 @@ test "WATCH shows each change of a cell, with the word that made it" {
     try std.testing.expectEqualStrings("", output.written());
 
     // Eight cells at most, and an address that is one.
-    try machine.interpretLine("TABLE 2 CELLS + UNWATCH : W8 8 0 DO HERE WATCH 0 , LOOP ; W8");
+    try machine.interpretLine("WATCH-TABLE 2 CELLS + UNWATCH : W8 8 0 DO HERE WATCH 0 , LOOP ; W8");
     try std.testing.expectError(error.Thrown, machine.interpretLine("HERE WATCH"));
     machine.report(error.Thrown);
     try std.testing.expectEqualStrings("too many watched cells\n", output.written());

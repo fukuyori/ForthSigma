@@ -199,3 +199,49 @@ test "P07d malformed forward destination is rejected before dictionary replaceme
     try m.interpretLine("F");
     try support.expectStack(m, &.{7});
 }
+
+test "P07 review file scope rejects invalid and already owned sources before callback" {
+    try support.skipWithout(&.{.files});
+    var out = support.Output{};
+    const m = try support.createMachine(&out);
+    defer support.destroyMachine(m);
+    try m.interpretLine("VARIABLE CALLED : P 1 CALLED +! ;");
+    try m.push(99999);
+    try m.push(m.lookup("P").?);
+    try std.testing.expectError(error.Thrown, m.executeBuiltin(.execute_parsing_file));
+    try std.testing.expectEqual(map.errnoIor(map.errno_bad_file), m.throw_code);
+    try std.testing.expectEqual(@as(map.Cell, 0), try m.readCell(m.words[m.lookup("CALLED").?].value));
+    try std.testing.expectEqual(@as(usize, 2), m.data_depth);
+    m.data_depth = 0;
+    support.setFakeFile(&out, 0, "abc\n");
+    try m.interpretLine("S\" a.txt\" R/O OPEN-FILE THROW");
+    const id = try m.peek(0);
+    m.include_stack[0] = .{ .fileid = id, .file_index = 0, .line = 1 };
+    m.include_depth = 1;
+    try m.push(m.lookup("P").?);
+    try std.testing.expectError(error.Thrown, m.executeBuiltin(.execute_parsing_file));
+    try std.testing.expectEqual(map.errnoIor(map.errno_bad_file), m.throw_code);
+    try std.testing.expect(out.files[0].open);
+    try std.testing.expectEqual(@as(usize, 1), m.include_depth);
+    try std.testing.expectEqual(@as(map.Cell, 0), try m.readCell(m.words[m.lookup("CALLED").?].value));
+}
+
+test "P07 review file scope does not close an active redirected stream" {
+    try support.skipWithout(&.{.files});
+    var out = support.Output{};
+    const m = try support.createMachine(&out);
+    defer support.destroyMachine(m);
+    support.setFakeFile(&out, 0, "abc\n");
+    try m.interpretLine("S\" a.txt\" R/O OPEN-FILE THROW");
+    const id = try m.pop();
+    for (0..2) |mode| {
+        m.input_file = if (mode == 0) id else null;
+        m.output_file = if (mode == 1) id else null;
+        m.data_depth = 0;
+        try m.push(id);
+        try m.push(m.builtinWord(.noop));
+        try std.testing.expectError(error.Thrown, m.executeBuiltin(.execute_parsing_file));
+        try std.testing.expectEqual(map.errnoIor(map.errno_bad_file), m.throw_code);
+        try std.testing.expect(out.files[0].open);
+    }
+}

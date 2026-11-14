@@ -243,6 +243,8 @@ pub fn appendImage(self: *State, source: *const State) RuntimeError!void {
             try self.writeCell(at, mapWordlist(try self.readCell(at), wordlist_base));
         }
     }
+    inline for (.{ memory_map.case_wordlists_address, memory_map.silent_wordlists_address }) |address|
+        @import("wordlists.zig").mergeFlags(self, address, source.readCellConst(address), source_wordlists, wordlist_base);
     try self.writeCell(wordlist_count_address, wordlist_base + source_wordlists - memory_map.ekeys_wordlist);
     @memcpy(self.names[name_base .. name_base + names_len], source.names[source_names_start..source.names_used]);
     self.names_used = @intCast(name_base + names_len);

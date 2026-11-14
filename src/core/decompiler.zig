@@ -224,9 +224,23 @@ pub fn seeName(self: *State, id: Cell) []const u8 {
 }
 
 /// The name a built-in word is defined with, whether or not the build has it.
-fn builtinName(builtin: Builtin) []const u8 {
+pub fn builtinName(builtin: Builtin) []const u8 {
+    // These entries intentionally have no searchable name. Display their action
+    // rather than losing the operation in SEE and single-step output.
+    switch (builtin) {
+        .compile_assign_to => return "POSTPONE TO",
+        .compile_assign_is => return "POSTPONE IS",
+        .compile_assign_plus_to => return "POSTPONE +TO",
+        .compile_assignment_action_of => return "POSTPONE ACTION-OF",
+        .postpone_s_quote => return "POSTPONE S\"",
+        .postpone_print_quote => return "POSTPONE .\"",
+        .postpone_left_bracket => return "POSTPONE [",
+        .postpone_right_bracket => return "POSTPONE ]",
+        .postpone_parsed_string => return "POSTPONE (PARSED-STRING)",
+        else => {},
+    }
     for (State.builtin_definitions) |definition| {
-        if (definition[1] == builtin) return definition[0];
+        if (definition[1] == builtin and definition[0].len != 0) return definition[0];
     }
     return "<BUILT-IN>";
 }

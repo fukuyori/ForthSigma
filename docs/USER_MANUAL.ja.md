@@ -1349,3 +1349,23 @@ EXECUTE-PARSING `( ... addr u xt -- ... )` は一時的な文字列入力でxt�
 FORWARD `( "name" -- )` は同じwordlist内の後続コロン定義を宣言する。.UNRESOLVED `( -- )` は未解決名を診断出力する。未解決参照の実行は-259。重複宣言や非コロン定義による解決はエラー。古いxtは識別値を保ち、解決後の定義を実行する。対象のFORGET後は未解決に戻り、再定義で再解決できる。
 
 RECURSIVE `( -- )` はコンパイル専用の印で、既存Sigmaの暗黙の自己参照も維持する。定義外では-14。builtin・WordKindのABIが変わるため、旧ABIのイメージは再作成する。[詳細](P07_IMPLEMENTATION.md)。
+
+P07レビュー補足：EXECUTE-PARSING-FILEには、呼出し側が排他的に所有する、開いた読取り可能な通常ファイルを渡す。不正ID・標準ストリーム・使用中のinclude入力・現在の入出力リダイレクト先はコールバック前に拒否し、所有権を引き受けない。空読取りによる検証では入力・EOF・pushbackを変更しない。読取り権限と他の別名参照は呼出し側が管理し、パイプは専用のclose手順を使う。CATCHで未完の引用コンテキストが変わった場合、未完の外側定義も破棄する。内側のローカル変数・制御状態を親へ復元しない。完了済みの最上位引用は保持する。
+
+`]]`内で扱うのは辞書のコンパイルトークン、リテラル、ローカル変数、`[`・`]`と既述の文字列構文。辞書にない解析専用構文（`[']`・`[CHAR]`・`CHAR`・`POSTPONE`・ローカル宣言・`:NONAME`・`FORGET`・`REQUIRE-*`）は未対応で未定義語エラーとなる。Gforthとの互換性制限である。SEE・ステップ表示には補助語名を表示し、coverageはP07cの拡張制御語も計測する。[レビュー](P07_REVIEW.md)。
+
+## P08a 名前トークンと語彙
+
+追加23語：`.ID`・`.VOC`・`COMPILE-ONLY?`・`CONTEXT`・`CS-VOCABULARY`・`CS-WORDLIST`・`CURRENT`・`FIND-NAME-IN`・`IN`・`IN-WORDLIST`・`LATESTNT`・`MAP-VOCS`・`MWORDS`・`NAME>LINK`・`NEXTNAME`・`OBSOLETE?`・`ROOT`・`SEAL`・`TABLE`・`VLIST`・`VOCS`・`WORDLIST-WORDS`・`XT>NAME`。スタック効果は各語のHELPと[実装記録](P08_IMPLEMENTATION.md)を参照する。
+
+NEXTNAME `( addr u -- )` は最大255バイトの次の定義名をコピーし、名前解析を省略する。NONAMEとの後勝ちで指定を置き換える。:NONAME・引用は保留中の指定を消費しない。空文字列はSigmaでは無名定義として扱い、LATESTは0を返す。CATCHはコピー済みの指定を復元し、辞書の完全復元時は指定を解除する。
+
+IN `( "vocabulary" "word" -- )` とIN-WORDLIST `( wid "word" -- )` は、1語だけ定義先を一時変更して実行する。その語がコロン定義を開始した場合も、開始語の復帰直後にCURRENTを元へ戻す。例外時も復元する。INには語彙定義が必要で、widを格納した定数は渡せない。検索順は変更しない。
+
+CURRENT・CONTEXTは定義先・最初の検索先のセルアドレスを返す。有効なwidだけを書き込む。ROOTは検索順の先頭をRootへ置換し、SEALは先頭だけを残す（空ならエラー）。CS-WORDLIST・CS-VOCABULARYは名前のバイト列を区別し、TABLEは再定義警告も抑制する。通常の語彙は従来どおりASCIIの大小文字を同一視する。割当て可能な語彙は64個で、固定Macros名前空間は別枠。
+
+COMPILE-ONLY?は登録された制約フラグを返す。偽でも、語本体が開いた定義やコンパイル状態を要求する場合がある。制御語の属性も整備したが、`]]`は既存方針に従い定義内の一時解釈中にも使えるよう未指定を維持する。OBSOLETE?はntを検証して偽を返す（現時点で廃止予定の印はない）。
+
+MWORDSは大小文字を区別する部分文字列一致で絞り込み、省略可能なパターンは現在行だけから読む。VLIST・WORDLIST-WORDSはSigmaの古い語からの表示順を維持する。MAP-VOCSは割当て済みwidの降順スナップショットとMacrosを列挙し、コールバック `( ... wid -- ... )` を実行する。VOCSには無名の語彙も含める。標準の語彙集合と表示の空白はGforthと異なる。
+
+NAME>LINKは同じ語彙の前の名前付き項目を返す。LATESTNT・XT>NAMEは無名定義も扱う。nt・xtの寿命は辞書項目が残る間だけで、FORGETや辞書置換後の古い数値を再利用しない。辞書追加では語彙定義の参照とケース設定を再配置するが、通常のセル・定数に保持した生のwidは自動変換しない。builtin ABIが変わるため旧ABIのイメージは再作成する。

@@ -530,7 +530,7 @@ fn operationName(self: *State, pc: u16, end_pc: u16, buffer: []u8) []const u8 {
             for (self.words[0..self.builtin_count]) |*word| {
                 if (word.builtin == builtin and word.name_len != 0) return self.wordName(word.*);
             }
-            return "<BUILT-IN>";
+            return decompiler.builtinName(builtin);
         },
         .literal => return std.fmt.bufPrint(buffer, "{d}", .{op.value}) catch "LITERAL",
         .float_literal => .{ "FLITERAL", null },

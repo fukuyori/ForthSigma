@@ -294,6 +294,10 @@ fn validateWords(v: View) RuntimeError!void {
     const wordlists = get(u64, v.memory[@intCast(map.wordlist_count_address)..]);
     const files = get(u64, v.memory[@intCast(map.source_file_count_address)..]);
     if (wordlists < map.ekeys_wordlist or wordlists > map.max_wordlists or files > map.max_source_files) return error.InvalidImage;
+    const allocated: u64 = if (wordlists == 64) ~@as(u64, 0) else (@as(u64, 1) << @intCast(wordlists)) - 1;
+    const cases = get(u64, v.memory[@intCast(map.case_wordlists_address)..]);
+    const silent = get(u64, v.memory[@intCast(map.silent_wordlists_address)..]);
+    if ((cases | silent) & ~(allocated & ~@as(u64, 7)) != 0 or silent & ~cases != 0) return error.InvalidImage;
     var next: usize = 0;
     for (0..v.header.word_count) |i| {
         const bytes = v.words[i * @sizeOf(defs.Word) ..][0..@sizeOf(defs.Word)];

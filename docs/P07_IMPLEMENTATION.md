@@ -1,6 +1,6 @@
 # P07 implementation and validation
 
-Current: prework457 and P07a570/P07b571/P07c572/P07d573 are complete(auto). All40 new items and4 prework words are implemented. P07c was pushed as493e68c; P07d is included in the corresponding commit; see git history. P07 external review has not been performed.
+Current: prework457 and P07a570/P07b571/P07c572/P07d573 are complete(auto). All40 new items and4 prework words are implemented. P07c was pushed as493e68c; P07d is included in the corresponding commit; see git history. P07 Claude Code review and fixes are recorded in [P07_REVIEW.md](P07_REVIEW.md).
 
 ## Prework: dictionary assignment words (457)
 
@@ -68,7 +68,7 @@ The user approved interpreted and nested quotations without outer-local capture,
 - `NONAME ( -- )` makes the next defining operation omit name parsing and create an unnamed entry. Use LATESTXT to obtain it; LATEST returns0. Existing colon, data, deferred, field, vocabulary, marker and alias defining interfaces use the same name-selection helper. Repeating NONAME does not queue multiple requests. The pending request is runtime parser state and is not saved.
 - `IN-COLON-DEF? ( -- flag )` reports an unfinished colon definition, independently of STATE; ordinary runtime execution outside compilation returns false.
 - `]] ... [[` postpones word compilation semantics, including the prework combined assignment words. Integer, double and floating literals generate runtime compilation through LITERAL/2LITERAL/FLITERAL. Cell/float/double locals supply macro values; XT locals compile the stored word rather than executing it immediately. Variable-flavour local addresses retain their existing frame-bound lifetime; they are not shared or captured buffers.
-- Parsing strings (`S"`, escaped S/print forms, `."`, `C"`, `ABORT"`, `.(`) are parsed when the macro executes, from its caller's input. Thus `: M ]] S" [[ ; IMMEDIATE : T M text" ;` is the intended pattern; putting the text immediately after S" within the postponed macro is not that pattern. Square-bracket operations within postponing are also deferred. [[ ends postponing and resumes compilation. Outside postponing [[ remains an undefined name; ]] outside any open definition throws CompileOnly.
+- Parsing strings (`S"`, escaped S/print forms, `."`, `C"`, `ABORT"`, `.(`) are parsed when the macro executes, from its caller's input. Thus `: M ]] S" [[ ; IMMEDIATE : T M text" ;` is the intended pattern; putting the text immediately after S" within the postponed macro is not that pattern. The standalone [ and ] operations within postponing are also deferred. Parser-only syntax absent from the dictionary (including ['], [CHAR], CHAR, POSTPONE, local declarations, :NONAME, FORGET and REQUIRE-*) remains unsupported inside ]]; this is an explicit compatibility limitation. [[ ends postponing and resumes compilation. Outside postponing [[ remains an undefined name; ]] outside any open definition throws CompileOnly.
 
 ### Compiler state, rollback and persistence
 
@@ -112,7 +112,7 @@ Normal/minimal tests (all optional groups disabled, including the freestanding o
 
 ## P07d: scoped input and forward references (573)
 
-Status: all8 words complete(auto). P07 now has40/40 new items and4/4 prework words implemented. P07c was pushed as493e68c; P07d changes are included in the corresponding commit; see git history. No P07 Claude Code review has been performed.
+Status: all8 words complete(auto). P07 now has40/40 new items and4/4 prework words implemented. P07c was pushed as493e68c; P07d changes are included in the corresponding commit; see git history. P07 Claude Code review findings and fixes follow in [P07_REVIEW.md](P07_REVIEW.md).
 
 | Word | Stack effect and behavior |
 | --- | --- |
@@ -136,3 +136,7 @@ The source scope preserves raw >IN even outside the source length and restores n
 Image validation checks target range, colon kind and wordlist, using raw validated tags rather than interpreting an unchecked target record. Full restore and both append routes preserve resolved and unresolved declarations; append relocates positive target IDs. Decompilation exposes forward entries. Framing remains SIGIMG45/46/47; enum ABI signatures change.
 
 scripts/probe-p07d.py records54 observations. scripts/verify-p07d.py passes50 matching cases,4 Sigma policy checks and2 native SAVE/LOAD-DICTIONARY/SAVESYS checks. Thirteen Zig regressions cover nested/error source restoration, raw input state, file ownership/error precedence, binary delimiters, forward binding/xt identity/FORGET, recursion, all image routes and malformed target rejection without dictionary mutation. Normal tests, minimal tests with optional groups disabled, normal build and all prior P07 verifiers pass. Artifacts: .work/p07d-check/; logs: .zig-cache/p07d-*.log. Windows/Linux native execution remains deferred under607. No GPL implementation code was copied.
+
+## P07 review follow-up (699)
+
+P07d was committed and pushed ascae67e3 before the requested full P07 Claude Code review. Fixes add quote-context identity to CATCH restoration, reject invalid/active/standard file handles before owned parsing callbacks, share nonempty compiler-helper display names across SEE/stepping, and instrument extended control blocks for coverage. Eight regressions were added; seven failed before their respective fixes. Parser-only syntax inside ]] remains an explicitly documented limitation, with three Gforth success probes and Sigma error/cleanup tests. These review changes do not add dictionary entries or change wire ABI. [Findings, validation and review scope](P07_REVIEW.md).

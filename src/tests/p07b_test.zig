@@ -214,3 +214,78 @@ test "P07b malformed quotation metadata is rejected before replacing a dictionar
     try m.interpretLine("Q EXECUTE LATESTXT ' Q =");
     try support.expectStack(m, &.{ 7, -1 });
 }
+
+test "P07 review CATCH discards runtime-opened quotations before later definitions" {
+    var out = support.Output{};
+    const m = try support.createMachine(&out);
+    defer support.destroyMachine(m);
+    try m.interpretLine(": OPEN POSTPONE [: -123 THROW ; : RUN ['] OPEN CATCH ; RUN");
+    try support.expectStack(m, &.{-123});
+    try std.testing.expectEqual(@as(usize, 0), m.quote_depth);
+    try std.testing.expect(!m.defining and !m.compiling);
+    try m.interpretLine(": KEEP 42 ;");
+    const count = m.word_count;
+    try std.testing.expectError(error.UnknownWord, m.interpretLine("UNKNOWN"));
+    try std.testing.expectEqual(count, m.word_count);
+    try m.interpretLine("KEEP");
+    try support.expectStack(m, &.{ -123, 42 });
+}
+
+test "P07 review caught nested quote opening abandons its unfinished outer compiler" {
+    var out = support.Output{};
+    const m = try support.createMachine(&out);
+    defer support.destroyMachine(m);
+    try m.interpretLine(": OPEN POSTPONE [: POSTPONE [: -123 THROW ; : OUTER [ ' OPEN CATCH");
+    try support.expectStack(m, &.{-123});
+    try std.testing.expectEqual(@as(usize, 0), m.quote_depth);
+    try std.testing.expect(!m.defining and !m.compiling and m.control_depth == 0);
+    try std.testing.expect(m.lookup("OUTER") == null);
+    m.data_depth = 0;
+    try m.interpretLine(": BAD -77 THROW ; [: [ ' BAD CATCH DROP ] 7 ;] EXECUTE");
+    try support.expectStack(m, &.{7});
+}
+
+test "P07 review CATCH does not restore closed quote controls into its outer definition" {
+    var out = support.Output{};
+    const m = try support.createMachine(&out);
+    defer support.destroyMachine(m);
+    try m.interpretLine(": CLOSE POSTPONE ;] -123 THROW ; : TRY ['] CLOSE CATCH ; IMMEDIATE : OUTER { x -- } x IF [: { y -- } TRY");
+    try support.expectStack(m, &.{-123});
+    try std.testing.expect(!m.defining and !m.compiling);
+    try std.testing.expectEqual(@as(usize, 0), m.quote_depth);
+    try std.testing.expectEqual(@as(usize, 0), m.control_depth);
+    try std.testing.expectEqual(@as(usize, 0), m.local_count);
+    try std.testing.expect(m.lookup("OUTER") == null);
+    m.data_depth = 0;
+    try m.interpretLine("[: TRY : KEEP 42 ; KEEP");
+    try support.expectStack(m, &.{ -123, 42 });
+    try std.testing.expect(!m.defining and !m.compiling and m.quote_depth == 0);
+}
+
+test "P07 review SEE and stepping name postponed compiler helpers" {
+    try support.skipWithout(&.{ .tools, .debug });
+    var out = support.Output{};
+    const m = try support.createMachine(&out);
+    defer support.destroyMachine(m);
+    try m.interpretLine("1 VALUE V : M POSTPONE TO ; : S ]] S\" [[ ; SEE M SEE S");
+    try std.testing.expect(std.mem.indexOf(u8, out.written(), "POSTPONE TO") != null);
+    try std.testing.expect(std.mem.indexOf(u8, out.written(), "POSTPONE S\"") != null);
+    out.len = 0;
+    out.keys = "\n\n\n\n";
+    try m.interpretLine(": T [ DBG M V ] ;");
+    try std.testing.expect(std.mem.indexOf(u8, out.written(), "POSTPONE TO") != null);
+}
+
+test "P07 review postponing rejects parser-only tokens without leaving a compiler" {
+    const cases = [_][]const u8{ ": BAD ]] ['] DUP [[ ;", ": BAD ]] [CHAR] x [[ ;", ": BAD ]] POSTPONE DUP [[ ;" };
+    for (cases) |source| {
+        var out = support.Output{};
+        const m = try support.createMachine(&out);
+        defer support.destroyMachine(m);
+        // Parser-only syntax is not a dictionary compilation token in Sigma.
+        try std.testing.expectError(error.UnknownWord, m.interpretLine(source));
+        m.report(error.UnknownWord);
+        try std.testing.expect(!m.defining and !m.compiling and !m.postponing);
+        try std.testing.expect(m.lookup("BAD") == null);
+    }
+}

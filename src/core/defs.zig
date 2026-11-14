@@ -1024,6 +1024,29 @@ pub const Builtin = enum {
     forward_word,
     dot_unresolved,
     recursive_word,
+    dot_id,
+    dot_voc,
+    compile_only_query,
+    context_address,
+    cs_vocabulary,
+    cs_wordlist,
+    current_address,
+    find_name_in,
+    in_vocabulary,
+    in_wordlist,
+    latest_nt,
+    map_vocs,
+    mwords,
+    name_to_link,
+    nextname,
+    obsolete_query,
+    root_vocabulary,
+    seal,
+    table_wordlist,
+    vlist,
+    vocs,
+    wordlist_words,
+    xt_to_name,
 };
 
 pub const HeapResult = union(enum) { address: Cell, no_memory, bad_pointer };
@@ -1087,6 +1110,10 @@ pub const CatchFrame = struct {
     local_count: usize,
     noname_next: bool,
     postponing: bool,
+    quote_depth: usize,
+    quote_word: u16,
+    next_name_len: u8,
+    next_name: [@import("memory_map.zig").max_name]u8,
 };
 
 pub const WordKind = enum { builtin, colon, variable, constant, array, created, value, fconstant, fvalue, two_constant, two_value, marker, vocabulary, synonym, deferred, field, string_value, forward };

@@ -46,6 +46,7 @@ pub fn report(self: *State, err: anyerror) void {
     @import("quotations.zig").abort(self);
     self.postponing = false;
     self.noname_next = false;
+    self.next_name_len = 0;
     self.capture_target = null;
     self.local_count = 0;
     self.locals_top = self.sizes.localsBase();
@@ -270,7 +271,16 @@ pub fn throwCodeOf(self: *State, err: RuntimeError) Cell {
 /// the saved depths are left as they are, as in gforth. A definition that the caught
 /// word started is abandoned the same way `report` abandons one.
 pub fn restoreCatchFrame(self: *State, frame: CatchFrame) void {
-    if (self.defining and !frame.defining) {
+    // A runtime compiler can open [: without passing through interpretSource's
+    // errdefer. Abandon the unfinished quotation tree before rolling back words,
+    // or its frames would retain ids that a later definition can reuse.
+    const quote_changed = self.quote_depth != frame.quote_depth or
+        (self.quote_depth != 0 and self.current_word != frame.quote_word);
+    if (quote_changed and self.quote_depth != 0)
+        @import("quotations.zig").abort(self);
+    // Closing the last quotation restores its parent before the THROW. Its saved
+    // inner locals/controls must not be installed into that unfinished parent.
+    if (self.defining and (!frame.defining or quote_changed)) {
         self.code_count = self.words[self.current_word].code_start;
         self.names_used = self.words[self.current_word].name_start;
         self.dropWordsFrom(self.current_word);
@@ -288,6 +298,8 @@ pub fn restoreCatchFrame(self: *State, frame: CatchFrame) void {
     self.interpret_loop_depth = @min(self.interpret_loop_depth, frame.interpret_loop_depth);
     self.pending = frame.pending;
     self.noname_next = frame.noname_next;
+    self.next_name_len = frame.next_name_len;
+    self.next_name = frame.next_name;
     self.postponing = frame.postponing and self.defining;
     self.local_count = if (self.defining or !frame.defining) frame.local_count else 0;
     self.setCompiling(frame.compiling and (self.defining or !frame.defining));

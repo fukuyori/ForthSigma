@@ -1363,3 +1363,47 @@ The new operation/builtin tags change the ABI; recreate earlier-ABI images. Full
 Scoped parsing restores SOURCE, raw >IN, source kind, BLK and source position on success or THROW. String storage is borrowed and must remain valid during the callback. File execution takes ownership after validation and closes once on success or error; the callback must not close/reuse the handle. Callback errors take priority over close errors.
 
 Unresolved execution throws -259. A matching completed colon definition binds FORWARD; duplicate declarations and non-colon replacements are errors. Previously obtained xts retain their identity and execute the bound definition. FORGET of the target makes surviving references unresolved so they can bind again. RECURSIVE outside compilation throws -14. New builtin/WordKind tags change the ABI; recreate earlier-ABI images. [Details](P07_IMPLEMENTATION.md).
+
+P07 review clarifications: EXECUTE-PARSING-FILE requires an exclusively owned, open readable ordinary file. It rejects invalid ids, standard streams, active include sources and current input/output redirects before running the callback; those rejections retain caller ownership. An empty read validates the handle without consuming bytes or changing EOF/pushback. Read access and other aliases remain the caller's responsibility; pipes require their own close protocol. If CATCH changes an unfinished quotation context, the unfinished enclosing definition is abandoned; inner locals/controls are never restored into its parent. Completed top-level quotations remain valid.
+
+Inside `]]`, Sigma supports dictionary compilation tokens, literals, locals, `[`/`]` and the documented string forms. Parser-only syntax such as `[']`, `[CHAR]`, `CHAR`, `POSTPONE`, locals declarations, `:NONAME`, `FORGET` and `REQUIRE-*` is unsupported there and gives an undefined-word error. This is a compatibility limitation relative to Gforth. SEE and stepping display names for internal compiler helpers; coverage includes the extended P07c controls. [Review](P07_REVIEW.md).
+
+## P08a: name tokens and wordlists
+
+| Word | Stack effect | Meaning |
+| --- | --- | --- |
+| `.ID` | `( nt -- )` | Print a valid name token's name. |
+| `.VOC` | `( wid -- )` | Print a valid wordlist's name. |
+| `COMPILE-ONLY?` | `( nt -- flag )` | Test a name token's compile-only flag. |
+| `CONTEXT` | `( -- addr )` | Address of the first-searched wordlist cell. |
+| `CS-VOCABULARY` | `( "name" -- )` | Create a case-sensitive vocabulary. |
+| `CS-WORDLIST` | `( -- wid )` | Allocate a case-sensitive wordlist. |
+| `CURRENT` | `( -- addr )` | Address of the compilation wordlist cell. |
+| `FIND-NAME-IN` | `( addr u wid -- nt\|0 )` | Find a name token in one wordlist. |
+| `IN` | `( "vocabulary" "word" -- )` | Execute the next word with a vocabulary as one-shot compilation destination. |
+| `IN-WORDLIST` | `( wid "word" -- )` | Execute the next word with wid as one-shot compilation destination. |
+| `LATESTNT` | `( -- nt )` | Name token of the latest definition, including anonymous definitions. |
+| `MAP-VOCS` | `( ... xt -- ... )` | Call xt with each wordlist from a snapshot of allocated ids. |
+| `MWORDS` | `( "pattern" -- )` | List oldest-first names containing the optional pattern in the first wordlist. |
+| `NAME>LINK` | `( nt -- previous-nt\|0 )` | Previous named entry in the same wordlist, or zero. |
+| `NEXTNAME` | `( addr u -- )` | Copy a one-shot name for the next defining operation without parsing a name. |
+| `OBSOLETE?` | `( nt -- flag )` | Test obsolescence; Sigma currently marks no definitions obsolete. |
+| `ROOT` | `( -- )` | Replace the first search-order entry with Root. |
+| `SEAL` | `( -- )` | Keep only the first search-order entry. |
+| `TABLE` | `( -- wid )` | Allocate a case-sensitive wordlist without redefinition warnings. |
+| `VLIST` | `( -- )` | Alias of Sigma WORDS. |
+| `VOCS` | `( -- )` | List allocated wordlists and the fixed Macros namespace. |
+| `WORDLIST-WORDS` | `( wid -- )` | List names from the specified wordlist in Sigma order. |
+| `XT>NAME` | `( xt -- nt )` | Convert a valid execution token to a name token, including anonymous words. |
+
+NEXTNAME copies up to255 bytes and replaces any pending NONAME/name; NONAME replaces it with an anonymous definition. Neither parses a new name when the defining operation runs. :NONAME and quotations do not consume the pending choice. Empty NEXTNAME is treated as anonymous in Sigma (LATEST returns0). CATCH restores the pending copied name; a full image restore clears it.
+
+IN and IN-WORDLIST parse and execute one dictionary word with a temporary compilation destination. The old CURRENT is restored when that word returns or throws, even if it only starts a colon definition. IN requires a vocabulary; a constant holding a wid is not a vocabulary. Neither operation adds the destination to the search order.
+
+CONTEXT addresses the first-search cell; CURRENT addresses the compilation-list cell. Store valid wids only. ROOT replaces the first search entry; SEAL keeps only that entry and rejects an empty order. CS-WORDLIST/CS-VOCABULARY distinguish exact byte spelling; TABLE also suppresses redefinition warnings. Ordinary lists retain ASCII case-insensitive search. Up to64 allocated lists are supported, plus the fixed Macros namespace.
+
+COMPILE-ONLY? reads registered restrictions; control-word metadata is populated. A false result does not guarantee that a word can execute without an open compiler: body-specific guards still apply. Sigma leaves ]] unmarked so its existing use during temporary interpretation inside a definition remains available. OBSOLETE? validates nt and returns false: Sigma currently marks no words obsolete.
+
+MWORDS uses case-sensitive substring matching and reads its optional pattern only from the current line. VLIST and WORDLIST-WORDS retain Sigma's oldest-first listing. MAP-VOCS visits a snapshot in descending allocated-id order, then Macros; callbacks receive wid and may use the stack below it. VOCS includes unnamed allocated lists. System list sets and display spacing differ from Gforth.
+
+Name/execute tokens are valid only while their dictionary entries survive. NAME>LINK skips anonymous entries; LATESTNT and XT>NAME can identify anonymous definitions. Old numeric tokens must not be reused after FORGET or dictionary replacement. Vocabulary targets and case/table policy bits relocate on dictionary append; raw wid values stored as ordinary cells/constants are not automatically relocated. Earlier-builtin-ABI images must be recreated. [Implementation and validation](P08_IMPLEMENTATION.md).

@@ -32,7 +32,7 @@ pub fn resolve(self: *forth.State, id: u16) void {
     const word = self.words[id];
     if (word.name_len == 0) return;
     for (self.words[0..id], 0..) |*old, index| {
-        if (old.kind != .forward or old.value != -1 or old.wordlist != word.wordlist or !(if (word.wordlist == map.macros_wordlist) std.mem.eql(u8, self.wordName(old.*), self.wordName(word)) else std.ascii.eqlIgnoreCase(self.wordName(old.*), self.wordName(word)))) continue;
+        if (old.kind != .forward or old.value != -1 or old.wordlist != word.wordlist or !(if (@import("wordlists.zig").caseSensitive(self, word.wordlist)) std.mem.eql(u8, self.wordName(old.*), self.wordName(word)) else std.ascii.eqlIgnoreCase(self.wordName(old.*), self.wordName(word)))) continue;
         old.value = id;
         for (self.code[0..self.code_count]) |*op| {
             if ((op.kind == .call or op.kind == .compile_call) and op.value == index) op.value = id;
@@ -108,6 +108,24 @@ pub fn execute(self: *forth.State, comptime word: defs.Builtin) forth.RuntimeErr
             const id = try self.peek(1);
             const files = try self.fileOps();
             if (self.include_depth == map.max_include_depth) return error.IncludeNesting;
+            if (id == map.stdin_fileid or id == map.stdout_fileid or id == map.stderr_fileid)
+                return self.throwIor(map.errno_bad_file);
+            if (self.input_file) |borrowed| {
+                if (borrowed == id) return self.throwIor(map.errno_bad_file);
+            }
+            if (self.output_file) |borrowed| {
+                if (borrowed == id) return self.throwIor(map.errno_bad_file);
+            }
+            // An enclosing source owns its handle until its own cleanup. Taking
+            // it here would close it twice and break subsequent outer REFILLs.
+            for (self.include_stack[0..self.include_depth]) |frame| {
+                if (frame.fileid == id) return self.throwIor(map.errno_bad_file);
+            }
+            // A zero-byte read validates an open handle without consuming input,
+            // seeking, blocking for data or changing observed EOF/pushback.
+            var empty: [0]u8 = .{};
+            const checked = files.read(self.writer.context, id, &empty);
+            if (checked.ior != 0) return self.throwCode(checked.ior);
             const file_index = try self.sourceFileEntryIndex("*file*");
             const old = Source.save(self);
             defer old.restore(self);

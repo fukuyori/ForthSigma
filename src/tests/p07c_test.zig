@@ -179,3 +179,22 @@ test "P07c SEE reconstructs DONE and zero-step loops retain work-limit interrupt
         m.step_limit = 0;
     }
 }
+
+test "P07 review coverage includes entered skipped and conditional extended blocks" {
+    try support.skipWithout(&.{ .debug, .files });
+    var out = support.Output{};
+    const m = try support.createMachine(&out);
+    defer support.destroyMachine(m);
+    const Profile = @import("../forth.zig").Profile;
+    const profile = try std.testing.allocator.create(Profile);
+    defer std.testing.allocator.destroy(profile);
+    profile.reset();
+    m.profile = profile;
+    m.plain_calls = true;
+    m.cover_blocks = true;
+    support.setFakeFile(&out, 0, ": RUN 0 FOR I DROP NEXT 0 0 +DO 99 DROP LOOP 0 ?DUP-IF 99 DROP THEN ;\nRUN\n");
+    try m.interpretLine("INCLUDE a.txt .COVERAGE");
+    for ([_][]const u8{ "FOR ( 1)", "NEXT ( 1)", "+DO ( 0)", "LOOP ( 1)", "?DUP-IF ( 0)", "THEN ( 1)" }) |part|
+        try std.testing.expect(std.mem.indexOf(u8, out.written(), part) != null);
+    try support.expectStack(m, &.{});
+}

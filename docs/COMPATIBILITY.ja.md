@@ -256,4 +256,10 @@ Six quotation/anonymous-definition/postponing items are implemented. Nested/inte
 
 ## P07d（573）
 
-入力切替・前方参照の8語を実装。Gforth一致50件、Sigma方針4件、Zig回帰13件、native保存2件と通常・最小テスト、P07の既存検証が通過。一時入力はTHROW時にも復元し、ファイル版は検証後に所有権を引き受けて閉じる。FORWARDは同じwordlistの完了したコロン定義に解決し、古いxtも実行可能。既存の暗黙再帰を維持し、定義外RECURSIVEは-14。旧ABIのイメージは再作成する。P07は新規40項目と先行4語が実装完了。外部レビューは未実施。[記録](P07_IMPLEMENTATION.md)。
+入力切替・前方参照の8語を実装。Gforth一致50件、Sigma方針4件、Zig回帰13件、native保存2件と通常・最小テスト、P07の既存検証が通過。一時入力はTHROW時にも復元し、ファイル版は検証後に所有権を引き受けて閉じる。FORWARDは同じwordlistの完了したコロン定義に解決し、古いxtも実行可能。既存の暗黙再帰を維持し、定義外RECURSIVEは-14。旧ABIのイメージは再作成する。P07は新規40項目と先行4語が実装完了。外部レビューと指摘修正は[P07_REVIEW.md](P07_REVIEW.md)に記録。[記録](P07_IMPLEMENTATION.md)。
+
+P07レビューではCATCHの引用状態復元、ファイルIDの事前検証と使用中・標準ストリームの所有権保護、SEE・ステップの補助語名表示、拡張制御語のcoverageを修正した。`]]`内の解析専用構文（`[']`・`[CHAR]`・POSTPONE等）は未対応。既述の`[`・`]`と文字列構文は例外。比較用Gforthでは前記3構文の成功を実測済み。[レビュー・証拠](P07_REVIEW.md)。
+
+## P08a（574）
+
+名前トークン・語彙の23語を実装。比較163件、Sigma方針7件、Zig回帰12件、native保存実行2件と通常・最小テスト、P07全検証が通過。ケース区別・TABLE設定は保存と両辞書追加経路で再配置する。NEXTNAMEは名前をコピーしてCATCHで復元し、IN/IN-WORDLISTは解析した1語の復帰直後にCURRENTを戻す。空NEXTNAMEは無名扱い、表示順と標準語彙集合はSigmaを維持し、INへの非語彙指定はエラー。]]の定義内一時解釈対応も維持する。生のwidセルは自動再配置しない。旧builtin ABIのイメージは再作成する。[記録](P08_IMPLEMENTATION.md)。

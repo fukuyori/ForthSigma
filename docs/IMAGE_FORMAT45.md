@@ -45,3 +45,7 @@ P07c adds eleven loop operation tags and eighteen builtin tags. DONE marks bit32
 ## P07dの前方参照
 
 WordKind.forwardを追加。value=-1は未解決、それ以外は同じwordlistのユーザーcolonの語ID。復元時は範囲・種類・wordlistを検証し、未検証レコードを型付き値として先読みしない。辞書追加では正の対象IDを再配置する。FORGETした対象への参照は未解決に戻す。8個のBuiltin追加とWordKind追加でABI署名が変わる。SIGIMG45/46/47のフレーミングは維持するが、旧ABIイメージは再作成が必要。
+
+## P08aの語彙ポリシー
+
+システム領域0x0d70と0x0d78に、case-sensitiveとTABLEの警告抑制を64ビットマスクとして保持する（bit=wid-1）。固定Forth/Root/EKEYSのビットは0、Macrosは従来の別枠。未割当て語彙・固定語彙のビットや、case指定なしのsilent指定は復元前に拒否する。両辞書追加経路はユーザー語彙IDに合わせてビットを移し、追加先の設定を保持する。語彙定義のWord.valueも従来どおり再配置するが、通常のセル・定数の生widを推測して変換しない。NEXTNAMEの保留名は実行時状態であり、保存せず完全復元で解除する。追加23BuiltinとRoot項目によりABI・builtin数が変わる。フレーミングはSIGIMG45/46/47を維持し、旧ABIは拒否する。[検証](P08_IMPLEMENTATION.md)。
