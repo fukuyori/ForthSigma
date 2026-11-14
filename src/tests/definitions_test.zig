@@ -16,7 +16,7 @@ test "defining words compiled into a definition read their name when it runs" {
     defer destroyMachine(machine);
 
     try machine.interpretLine(": V VARIABLE ; V AA 5 AA ! AA @ . : C CONSTANT ; 7 C BB BB . : FV FVARIABLE ; FV CC 2E CC F! CC F@ F.");
-    try machine.interpretLine(": FC FCONSTANT ; 3E FC DD DD F. : VL VALUE ; 9 VL GG GG . 4 TO GG GG . : D2 2CONSTANT ; 1. D2 HH HH D.");
+    try machine.interpretLine(": FC FCONSTANT ; 3E FC DD DD F. : VL VALUE ; 9 VL TEST-DEF-VALUE TEST-DEF-VALUE . 4 TO TEST-DEF-VALUE TEST-DEF-VALUE . : D2 2CONSTANT ; 1. D2 HH HH D.");
     try machine.interpretLine(": V2 2VARIABLE ; V2 II 3. II 2! II 2@ D. : AR ARRAY ; 3 AR JJ 8 1 JJ A! 1 JJ A@ .");
     // Level 31 of the book: a word that starts a definition and one that ends it.
     try machine.interpretLine(": DEFINE-FUNCTION : ; : END-FUNCTION POSTPONE ; ; IMMEDIATE");

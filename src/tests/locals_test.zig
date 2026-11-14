@@ -48,7 +48,7 @@ test "variable-flavoured locals push addresses into the locals frame" {
     defer destroyMachine(machine);
 
     try machine.interpretLine(": SW { W^ a W^ b } a @ 2 * b @ 2 * a ! b ! a @ b @ ; 3 7 SW : FS { F^ a F^ b } a F@ b F@ a F! b F! a F@ b F@ ; 1.5E 2.5E FS");
-    try machine.interpretLine(": CH { C^ p } p 1 TYPE ; 72 CH 73 CH : G 0 { W^ s } S\" Hi\" s $! S\" !\" s $+! s $. ; G");
+    try machine.interpretLine(": CH { C^ p } p 1 TYPE ; 72 CH 73 CH : TEST-LOCAL-TEXT 0 { W^ s } S\" Hi\" s $! S\" !\" s $+! s $. ; TEST-LOCAL-TEXT");
     try expectStack(machine, &.{ 14, 6 });
     try expectFloatStack(machine, &.{ 2.5, 1.5 });
     try std.testing.expectEqualStrings("HIHi!", output.written());

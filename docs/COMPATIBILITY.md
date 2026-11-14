@@ -123,7 +123,7 @@ S01 standard keys and blocks were implemented on 2026-11-13. Dictionary loading 
 
 | Word or feature | Status | Main reason and source |
 | --- | --- | --- |
-| Book edit-buffer operations, EDIT, EXEC, CLB | Not implemented | The standard block LOAD/LIST are available; book-specific editor operations remain unsupported. |
+| Book edit-buffer operations, EDIT, EXEC, CLB | Not implemented | The standard block LOAD/LIST are available; book-specific editor operations remain unsupported. P09 EDIT opens an external source editor and has a different meaning. |
 | CLOAD, CSAVE | Not implemented | Machine-specific processing for cassettes and the like. |
 | MCODE | Machine-specific | Handles the Z80 machine code area. |
 | USR, PUHL, POHL, NEXT | Machine-specific | Related to Z80 registers, the calling convention, and machine code execution. See the book. |
@@ -273,3 +273,9 @@ P08 review follow-up: lazy REQUIRE-* loading preserves NEXTNAME/NONAME on succes
 ## P09a exceptions and assertions
 
 All15 words are implemented.55 matching Gforth cases,15 explicit Sigma policy checks and2 native image checks pass. Assertion selection is compile-time, errno conversion uses the host, and exception records survive restore/append with callback rebasing. Sigma preserves legacy assertion/redefinition diagnostics, uses warning error-281, treats FAST-THROW0 safely, rejects malformed/overlapping exception ranges, and retains ordinary CATCH trace clearing. Custom codes are engine-specific; WARNINGS defaults to-1 rather than this Gforth build's-2. New builtins and exception record kind change the image ABI; recreate old images. [Scope and evidence](P09_IMPLEMENTATION.md).
+
+## P09b/c completion
+
+P09b30/30 and P09c5/5 are implemented (P09 total50/50). P09b verification covers80 matching reference cases,6 explicit basic policies, source/query/listing/trace policies,11 native editor stand-in checks,4 reference editor-mode checks and native image routes. P09c covers21 reference cases,5 boundary policies and2 native image routes. Failed/unsafe Gforth navigation cases are recorded and not emulated.
+
+Sigma retains its plain LOCATE/.S/F.S/WHERE formatting, uses one-based bounded source windows and preserves source settings on append. BROWSE follows Sigma MWORDS; UNUSED-WORDS uses CURRENT and recorded file uses, with a saturation error. Editor commands use explicit EDITOR/+line configuration and wait for it; missing configuration gives-21. Inspection copies are temporary; Windows cmd path restrictions and GUI wait options are documented. Saved traces are bounded VM frames from reported exceptions, invalidated on deletion/restore; CATCH's existing clearing policy remains. Smart xts stay numeric because they are ordinal cells; FANCY-AFTER-L is a plain-browser compatibility hook. Return extensions expose only logical user cells and preserve float bits; native loop/call/local frames are separate. All added builtins change the image ABI; recreate old images. [Exact policies, scope and evidence](P09_IMPLEMENTATION.md).

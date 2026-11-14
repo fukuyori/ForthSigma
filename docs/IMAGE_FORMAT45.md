@@ -61,3 +61,9 @@ AVALUEはVALUEの格納セルを既存の型付きメモリ登録に加える。
 ## P09a exception records
 
 The P09a builtin additions and `exception_entry` WordKind change the ABI fingerprint; recreate prior images. System cells0x0d80/0x0d88/0x0d90 store WARNINGS, ASSERT-LEVEL and the next exception code. An anonymous exception dictionary entry points into data space: first-code, count, callback-xt (-1 for a copied message), byte-length (four64-bit cells), then message bytes. Validators check code/counter bounds, nonoverlap, message bounds and callback IDs. Full restore restores settings/counter. Both append paths relocate the body and group callback, preserve destination warning/assert settings, merge next-code by minimum and reject overlapping code ranges before mutation. No native function pointer is serialized.
+
+## P09b/c source diagnostics and return extensions
+
+The additional35 public builtins change the ABI fingerprint; recreate images from earlier/intermediate commits. Fixed64-bit cells0x0d98/0x0da0/0x0da8/0x0db0/0x0db8 hold MAXDEPTH-.S, F.S-PRECISION, BEFORE-LOCATE, AFTER-LOCATE and WHERE style (0 short,1 expanded,2 prepend). Fixed builtin VALUE addresses are checked by the shared mapping. WHERE style outside0..2 is rejected during save/parse. Full restore copies settings; append retains destination settings.
+
+Cursor paths/windows, WHERE/BROWSE snapshots, saved exception locations, editor destination modes, editor callbacks and inspection captures are runtime state and are not image roots. Full restore invalidates views by generation; an editor callback restoring a heap cannot free a previous capture at a reused address. Compiled return extension words use builtin IDs; no host/native return pointers are serialized. Existing image paths continue to omit stacks and recorded-use history.

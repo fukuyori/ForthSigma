@@ -20,7 +20,10 @@ pub fn execute(self: *forth.State, comptime word: defs.Builtin) forth.RuntimeErr
             try @import("words_tools.zig").assertion(self, level);
         },
         .catch_nobt => try @import("words_system.zig").runCatch(self, true),
-        .nothrow => self.clearBacktrace(),
+        .nothrow => {
+            self.clearBacktrace();
+            self.source_trace = .{};
+        },
         .fast_throw => {
             if (try self.peek(0) != 0) self.throw_nobt = true;
             try self.executeBuiltin(.throw);

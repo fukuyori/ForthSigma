@@ -10,6 +10,7 @@ pub const Navigation = struct {
     path: [255]u8 = undefined,
     length: u8 = 0,
     line: u32 = 1,
+    edit_line: u32 = 1,
     first: ?u32 = null,
     generation: u64 = 0,
 };
@@ -19,7 +20,7 @@ pub fn select(self: *forth.State, file_index: usize, line: u32) void {
     if (file_index >= self.sourceFileCount() or line == 0) return;
     const name = self.sourceFileName(file_index);
     if (name.len == 0 or name.len > 255) return;
-    self.source_navigation = .{ .length = @intCast(name.len), .line = line, .generation = self.image_generation };
+    self.source_navigation = .{ .length = @intCast(name.len), .line = line, .edit_line = line, .generation = self.image_generation };
     @memcpy(self.source_navigation.path[0..name.len], name);
 }
 
@@ -55,6 +56,7 @@ fn show(self: *forth.State, comptime word: defs.Builtin) forth.RuntimeError!void
         else => first,
     };
     nav.first = first;
+    if (word == .source_n or word == .source_b) nav.edit_line = first;
     const name = nav.path[0..nav.length];
     var text: [24]u8 = undefined;
     self.write(name);

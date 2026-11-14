@@ -54,14 +54,14 @@ fn builtinSet(comptime lists: []const []const Builtin) [builtin_count]bool {
     return table;
 }
 
-const float_builtins = builtinSet(&.{ &@import("words_float.zig").words, &@import("words_stack_display.zig").float_words, &.{ .field_float, .field_sfloat, .field_dfloat, .float_percent, .sfloat_percent, .dfloat_percent, .define_fvariable, .define_fconstant, .define_fvalue, .fliteral } });
+const float_builtins = builtinSet(&.{ &@import("words_float.zig").words, &@import("words_stack_display.zig").float_words, &@import("words_return_extensions.zig").float_words, &.{ .field_float, .field_sfloat, .field_dfloat, .float_percent, .sfloat_percent, .dfloat_percent, .define_fvariable, .define_fconstant, .define_fvalue, .fliteral } });
 const file_builtins = builtinSet(&.{ &@import("words_files.zig").words, &@import("blocks.zig").words, &.{ .execute_parsing_file, .string_slurp, .string_plus_slurp, .string_slurp_file, .string_plus_slurp_file, .string_slurp_line, .string_array_slurp, .string_array_slurp_file } });
 const help_builtins = builtinSet(&.{&.{ .help, .license }});
-const tool_builtins = builtinSet(&.{ &.{ .see, .locate, .where }, &@import("source_navigation.zig").tool_words, &@import("source_search.zig").words, &@import("source_listing.zig").words });
+const tool_builtins = builtinSet(&.{ &.{ .see, .locate, .where }, &@import("source_navigation.zig").tool_words, &@import("source_search.zig").words, &@import("source_listing.zig").words, &@import("source_editor.zig").words, &@import("source_diagnostics.zig").trace_words, &.{.fancy_after_l} });
 const image_builtins = builtinSet(&.{&.{ .load, .save, .savesys }});
 const graphics_builtins = builtinSet(&.{&@import("words_graphics.zig").words});
 const audio_builtins = builtinSet(&.{&@import("words_audio.zig").words});
-const debug_builtins = builtinSet(&.{ &@import("words_debug.zig").words, &.{ .assert_close, .assert_level, .assert_zero, .assert_one, .assert_two, .assert_three } });
+const debug_builtins = builtinSet(&.{ &@import("words_debug.zig").words, &.{ .assert_close, .assert_level, .assert_zero, .assert_one, .assert_two, .assert_three }, &@import("source_diagnostics.zig").trace_words });
 
 const excluded_builtins = blk: {
     @setEvalBranchQuota(builtin_count * 16);
@@ -1091,6 +1091,21 @@ pub const Builtin = enum {
     expand_where,
     prepend_where,
     unused_words,
+    edit_source,
+    source_g,
+    source_gg,
+    source_ll,
+    where_g,
+    smart_stacks,
+    trace_select,
+    trace_next,
+    trace_back,
+    fancy_after_l,
+    f_to_r,
+    f_r_from,
+    f_r_fetch,
+    r_second_fetch,
+    r_pick,
 };
 
 pub const HeapResult = union(enum) { address: Cell, no_memory, bad_pointer };

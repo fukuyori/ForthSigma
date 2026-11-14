@@ -4,15 +4,15 @@
 Source navigation retains Sigma LOCATE formatting and one-based line numbers.
 Sigma retains its existing F.S field format; Gforth's smart rendering differs.
 """
-import argparse,json,pathlib,subprocess,os
+import argparse,json,pathlib,subprocess,os,sys
 p=argparse.ArgumentParser();p.add_argument('--sigma',type=pathlib.Path,default=pathlib.Path('zig-out/bin/sigma'));p.add_argument('--reference',type=pathlib.Path,default=pathlib.Path('.work/p09b-check/spec-probes.json'));a=p.parse_args();sigma=str(a.sigma.resolve());rows=[]
 def run(source):return subprocess.run([sigma,'--max-steps','100000','-e',source],capture_output=True,input=b'',timeout=20)
 for c in json.loads(a.reference.read_text())['cases']:
  name=c['case']
- if not (name.startswith('dot-s:') and name!='dot-s:-1' or name in ['clear-data','clear-float','clear-both','clear-return','before-set','slash-g','unused-current']):continue
+ if not (name.startswith(('lookup:','immediate:')) or name.startswith('dot-s:') and name!='dot-s:-1' or name in ['clear-data','clear-float','clear-both','clear-return','before-set','slash-g','unused-current','ellipsis-empty','ellipsis-values','smart-values','smart-hex','smart-string','smart-float','smart-limit','fancy']):continue
  r=run(c['source']+' DEPTH . BYE');assert (r.returncode,r.stdout.decode())==(c['exit'],c['stdout']),(name,r.returncode,r.stdout,r.stderr,c)
  rows.append(name)
-policies=[('limits-default','MAXDEPTH-.S @ . F.S-PRECISION . DEPTH . BYE',0,b'9 14 0 '),('negative-limit','-1 MAXDEPTH-.S ! 10 .S',1,b'NUMBER ERROR !\n'),('float-width','8 TO F.S-PRECISION 1E 2E 1 MAXDEPTH-.S ! F.S DEPTH . BYE',0,b'<2> 2.0000E0 0 '),('float-invalid','0 TO F.S-PRECISION 1E F.S',1,b'NUMBER ERROR !\n'),('float-overflow','4097 TO F.S-PRECISION 1E F.S',1,b'STRING TOO LONG !\n')]
+policies=[('limits-default','MAXDEPTH-.S @ . F.S-PRECISION . DEPTH . BYE',0,b'9 14 0 '),('negative-limit','-1 MAXDEPTH-.S ! 10 .S',1,b'NUMBER ERROR !\n'),('float-width','8 TO F.S-PRECISION 1E 2E 1 MAXDEPTH-.S ! F.S DEPTH . BYE',0,b'<2> 2.0000E0 0 '),('float-invalid','0 TO F.S-PRECISION 1E F.S',1,b'NUMBER ERROR !\n'),('float-overflow','4097 TO F.S-PRECISION 1E F.S',1,b'STRING TOO LONG !\n'),('smart-ordinal',"' DUP ... DEPTH . BYE",0,b'<1> #1 1 ')]
 for n,s,status,expected in policies:
  r=run(s);assert (r.returncode,r.stdout)==(status,expected),(n,r.returncode,r.stdout,r.stderr)
 folder=a.reference.parent.resolve();image=folder/'stack.sigma';exe=folder/'stack-program'
@@ -50,4 +50,15 @@ assert r.returncode==0 and r.stdout.count((search_path+':').encode())==2,('short
 relative_search=os.path.relpath(search_source)
 r=run(f'INCLUDE {relative_search} EXPAND-WHERE WHERE QRY-TARGET BYE')
 assert r.returncode==0 and (str(pathlib.Path.cwd())+'/'+relative_search+':2:11:').encode() in r.stdout,('expanded-relative',r.returncode,r.stdout,r.stderr)
-report={'pass':True,'stage':'stack, navigation, search and listing (20/30 words)','listing_policy_checks':4,'search_checks':3,'navigation_checks':3,'comparisons':len(rows),'sigma_policy_checks':len(policies),'native_image_checks':2};a.reference.with_name('stack-comparison.json').write_text(json.dumps(report,indent=2)+'\n');print(json.dumps(report))
+r=run('0 WARNINGS ! BT NT 0 TT FANCY-AFTER-L DEPTH . BYE')
+assert r.returncode==0 and r.stdout==b'0 ',('trace-empty',r.returncode,r.stdout,r.stderr)
+trace_source=folder/'trace-native.fs';trace_source.write_text(': TRACE-FAIL -123 THROW ;\n: TRACE-OUTER TRACE-FAIL ;\n')
+trace_input=f'INCLUDE {trace_source}\nTRACE-OUTER\n.( TRACE-VIEW ) 0 TO BEFORE-LOCATE 0 TO AFTER-LOCATE 0 TT NT\nBYE\n'
+r=subprocess.run([sigma,'--max-steps','100000'],input=trace_input.encode(),capture_output=True,timeout=20)
+assert r.returncode in (0,1) and b'TRACE-VIEW' in r.stdout,('trace-session',r.returncode,r.stdout,r.stderr)
+view=r.stdout.split(b'TRACE-VIEW',1)[1]
+assert (str(trace_source)+':1\n: TRACE-FAIL -123 THROW ;').encode() in view and (str(trace_source)+':2\n: TRACE-OUTER TRACE-FAIL ;').encode() in view,('trace-selection',r.returncode,r.stdout,r.stderr)
+editor_check=subprocess.run([sys.executable,str(pathlib.Path(__file__).with_name('verify-p09b-editor.py')),'--sigma',sigma,'--reference',str(a.reference)],capture_output=True,text=True,timeout=120)
+assert editor_check.returncode==0,(editor_check.stdout,editor_check.stderr)
+editor_report=json.loads(editor_check.stdout)
+report={'pass':True,'stage':'P09b complete (30/30 words)','editor':editor_report,'listing_policy_checks':4,'search_checks':3,'navigation_checks':3,'diagnostic_policy_checks':2,'comparisons':len(rows),'sigma_policy_checks':len(policies),'native_image_checks':2};a.reference.with_name('stack-comparison.json').write_text(json.dumps(report,indent=2)+'\n');print(json.dumps(report))

@@ -661,3 +661,10 @@ test "the sizes a machine may have, at their bounds" {
     try std.testing.expect(Sizes.small.valid());
     try std.testing.expect(Sizes.default.valid());
 }
+
+test "dictionary capacity preflight accounts for all builtins root copies and keyboard constants" {
+    var output = support.Output{};
+    const machine = try support.createMachine(&output);
+    defer support.destroyMachine(machine);
+    try std.testing.expectEqual(@as(usize, forth.State.minimum_dictionary_words), @as(usize, machine.builtin_count));
+}

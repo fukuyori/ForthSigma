@@ -21,13 +21,18 @@ add('clear-return',': T 123 >R 1 2 CLEARSTACKS R> ; T .')
 add('unused-current',f'INCLUDE {unused_source} Q-VOC DEFINITIONS UNUSED-WORDS')
 add('ellipsis-empty','...')
 add('ellipsis-values','10 20 30 ...')
+add('smart-values','0 1 -1 10 65 255 65536 ...')
+add('smart-hex','HEX A FF -1 ...')
+add('smart-string','S\" abc\" ...')
+add('smart-float','1.25e ...')
+add('smart-limit','1 MAXDEPTH-.S ! 10 20 30 ...')
 add('slash-g','1 \\G comment ignored 2\n3')
 for n,s in [('before-set','1 TO BEFORE-LOCATE 2 TO AFTER-LOCATE BEFORE-LOCATE . AFTER-LOCATE .'),('fancy','FANCY-AFTER-L'),('bt-empty','BT'),('tt-empty','0 TT'),('nt-empty','NT'),('locate-invalid','-1 XT-LOCATE'),('l-empty','L'),('ww-empty','0 WW'),('bw-empty','BW'),('nw-empty','NW')]:add(n,s)
-for n,s in [('locate','LOCATE NAV-BETA'),('xt-locate',"' NAV-BETA XT-LOCATE"),('locate-next','LOCATE NAV-BETA N B L'),('browse','BROWSE NAV-'),('browse-select','BROWSE NAV- 0 WW'),('browse-next','BROWSE NAV- NW'),('browse-back','BROWSE NAV- BW'),('where','WHERE NAV-ALPHA'),('where-select','WHERE NAV-ALPHA 0 WW NW BW'),('where-prepend','PREPEND-WHERE WHERE NAV-ALPHA'),('where-expand','EXPAND-WHERE WHERE NAV-ALPHA'),('where-short','SHORT-WHERE WHERE NAV-ALPHA'),('edit','EDIT NAV-BETA'),('g','LOCATE NAV-BETA G'),('gg','WHERE NAV-ALPHA GG 0 WW'),('ll','WHERE NAV-ALPHA LL 0 WW'),('whereg','WHEREG NAV-ALPHA'),('unused','UNUSED-WORDS')]:add(n,f'INCLUDE {source} '+s)
+for n,s in [('locate','LOCATE NAV-BETA'),('xt-locate',"' NAV-BETA XT-LOCATE"),('locate-next','LOCATE NAV-BETA N B L'),('browse','BROWSE NAV-'),('browse-select','BROWSE NAV- 0 WW'),('browse-next','BROWSE NAV- NW'),('browse-back','BROWSE NAV- BW'),('where','WHERE NAV-ALPHA'),('where-select','WHERE NAV-ALPHA 0 WW NW BW'),('where-prepend','PREPEND-WHERE WHERE NAV-ALPHA'),('where-expand','EXPAND-WHERE WHERE NAV-ALPHA'),('where-short','SHORT-WHERE WHERE NAV-ALPHA'),('edit','EDIT NAV-BETA'),('g','LOCATE NAV-BETA G'),('gg','BROWSE NAV- GG 0 WW 1 WW'),('gg-default','BROWSE NAV- GG GG 0 WW 1 WW'),('ll','BROWSE NAV- LL 0 WW'),('ll-once','BROWSE NAV- GG GG LL 0 WW 1 WW'),('ll-default','BROWSE NAV- GG GG LL LL 0 WW 1 WW'),('g-after-l','LOCATE NAV-BETA L G'),('g-after-n','LOCATE NAV-BETA N G'),('whereg','WHEREG NAV-ALPHA'),('unused','UNUSED-WORDS')]:add(n,f'INCLUDE {source} '+s)
 rows=[]
 # Previously observed invalid settings caused memory reads/abort traps. Keep their
 # sources for Sigma policy checks, but do not repeat the unsafe reference runs.
-unsafe={'dot-s:-1','f-dot-s:0','f-dot-s:-1','locate-invalid','where','where-select','where-prepend','where-expand','where-short','gg','ll','whereg'}
+unsafe={'dot-s:-1','f-dot-s:0','f-dot-s:-1','locate-invalid','where','where-select','where-prepend','where-expand','where-short','whereg'}
 for name,s in cases:
  row={'case':name,'source':s}
  if name in unsafe:

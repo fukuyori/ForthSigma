@@ -5,6 +5,7 @@ const defs = @import("defs.zig");
 const map = @import("memory_map.zig");
 const navigation = @import("source_navigation.zig");
 const input = @import("source_input.zig");
+const editor = @import("source_editor.zig");
 pub const words = [_]defs.Builtin{ .where_select, .where_next, .where_back, .browse };
 pub const Search = struct {
     kind: enum { none, uses, definitions } = .none,
@@ -39,7 +40,7 @@ pub fn execute(self: *forth.State, comptime word: defs.Builtin) forth.RuntimeErr
             const index = try self.peek(0);
             if (index < 0) return error.InvalidNumber;
             _ = try self.pop();
-            try choose(self, std.math.cast(usize, index));
+            try choose(self, std.math.cast(usize, index), editor.takeDestination(self));
         },
         .where_next, .where_back => {
             if (self.source_search.generation != self.image_generation) self.source_search = .{};
@@ -50,7 +51,7 @@ pub fn execute(self: *forth.State, comptime word: defs.Builtin) forth.RuntimeErr
                 (if (word == .where_next) 0 else query.count - 1)
             else
                 null;
-            try choose(self, index);
+            try choose(self, index, editor.takeDestination(self));
         },
         else => unreachable,
     }
@@ -81,7 +82,7 @@ fn browse(self: *forth.State) forth.RuntimeError!void {
     }
 }
 
-fn choose(self: *forth.State, requested: ?usize) forth.RuntimeError!void {
+fn choose(self: *forth.State, requested: ?usize, destination: editor.Destination) forth.RuntimeError!void {
     if (self.source_search.generation != self.image_generation) self.source_search = .{};
     const query = &self.source_search;
     const index = requested orelse return noResult(self);
@@ -93,7 +94,7 @@ fn choose(self: *forth.State, requested: ?usize) forth.RuntimeError!void {
             if (number == index) {
                 query.current = index;
                 navigation.select(self, use.file_index, use.line);
-                return showSelected(self);
+                return showSelected(self, destination);
             }
             number += 1;
         },
@@ -104,7 +105,7 @@ fn choose(self: *forth.State, requested: ?usize) forth.RuntimeError!void {
                 const word = self.words[id];
                 if (word.source_file == 0) return noLocation(self);
                 navigation.select(self, word.source_file - 1, word.source_line);
-                return showSelected(self);
+                return showSelected(self, destination);
             }
             number += 1;
         },
@@ -112,9 +113,9 @@ fn choose(self: *forth.State, requested: ?usize) forth.RuntimeError!void {
     }
     return noResult(self);
 }
-fn showSelected(self: *forth.State) forth.RuntimeError!void {
+fn showSelected(self: *forth.State, destination: editor.Destination) forth.RuntimeError!void {
     if (self.source_navigation.length == 0) return navigation.noLocation(self);
-    try navigation.execute(self, .source_l);
+    if (destination == .editor) try editor.open(self) else try navigation.execute(self, .source_l);
 }
 fn noLocation(self: *forth.State) forth.RuntimeError!void {
     self.source_navigation.length = 0;

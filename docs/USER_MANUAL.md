@@ -76,7 +76,7 @@ Options at the start of the command line choose the sizes of the memory and the 
 .\zig-out\bin\sigma.exe -m 256M -d 64k examples\demo.fs   # 256 MiB, and a data stack of 64 KiB (8192 cells)
 ```
 
-`UNUSED` gives the bytes left in the data area, and `ENVIRONMENT?` with `STACK-CELLS`, `RETURN-STACK-CELLS`, and `FLOATING-STACK` gives the stack sizes. The system reserves the whole memory at the start, but gives it physical memory only as the program fills it. The defaults can be changed when building, with `-Dmemory-mib=` (the `-m` size in MiB), `-Dlocals-kib=`, and `-Dstack-cells=`. The number of dictionary entries (`-Dwords=`, 1024 to 65535, by default 65535) and the area for their names (`-Dnames-kib=`, by default 1024) are chosen only when building.
+`UNUSED` gives the bytes left in the data area, and `ENVIRONMENT?` with `STACK-CELLS`, `RETURN-STACK-CELLS`, and `FLOATING-STACK` gives the stack sizes. The system reserves the whole memory at the start, but gives it physical memory only as the program fills it. The defaults can be changed when building, with `-Dmemory-mib=` (the `-m` size in MiB), `-Dlocals-kib=`, and `-Dstack-cells=`. The number of dictionary entries (`-Dwords=`, 1024 to 65535 and enough to hold all builtins, by default 65535) and the area for their names (`-Dnames-kib=`, by default 1024) are chosen only when building.
 
 ### Errors in compiled code
 
@@ -1440,3 +1440,29 @@ P08 review follow-up: lazy REQUIRE-* loading preserves NEXTNAME/NONAME on succes
 `EXCEPTION ( addr u -- code )` copies a message (maximum4096 bytes). `EXCEPTIONS ( xt count -- first-code )` allocates a consecutive descending range; xt receives a zero-based index and returns addr u. Message records follow dictionary lifetime; removed codes are never reused during that VM lifetime. Images preserve records and rebase callback references; appending overlapping code ranges fails. Formatter errors retain the original numeric exception.
 
 `WARNINGS ( -- addr )` contains-1 initially;0 suppresses warnings and-4 makes them throw-281. `WARNING" text"` is compile-only and consumes a runtime flag: true emits the text to stderr under the current warning policy. Redefinition warnings retain their existing output channel; with-4 the old definition is preserved. [Policies and validation](P09_IMPLEMENTATION.md).
+
+## P09b stack display and source browsing
+
+`CLEARSTACK`, `FCLEARSTACK` and `CLEARSTACKS` clear data, floating-point, or both stacks; return/call/loop/local state stays intact. `MAXDEPTH-.S ( -- addr )` initially holds9 and limits .S/F.S/`...`; negative limits give-24. `F.S-PRECISION ( -- width )` is a VALUE initially14, changed with TO (display widths1..4096). F.S keeps Sigma's field formatting. `...` prints cells as #decimal regardless of BASE, quotes live VM text pairs with escaped control characters and an80-byte preview, and shows compact floats without changing either stack. Untyped ordinal xts remain numeric.
+
+`LOCATE name` and `XT-LOCATE ( xt -- )` select a definition. `L`, `N` and `B` show the current, next or previous source window. `BEFORE-LOCATE`/`AFTER-LOCATE` are VALUEs initially3/12, set with TO; a window has before+1+after lines, at most256, counting physical lines from1. `FANCY-AFTER-L` is the plain-browser presentation hook and adds no output. `\G` is an immediate comment through the current line; following lines in EVALUATE still run.
+
+`WHERE name` lists recorded file uses. `BROWSE pattern` lists case-sensitive substring matches in the first search wordlist, oldest first. `WW ( u -- )`, `NW` and `BW` select and immediately display a result; indices start at0, and each boundary passes through no selection before wrapping. Results exclude later additions and are invalidated by dictionary deletion/full restore. `SHORT-WHERE` prints recorded names on each row, `EXPAND-WHERE` fully qualifies file names (relative paths need host cwd support), and `PREPEND-WHERE` groups rows under file headings. `UNUSED-WORDS` lists named entries in CURRENT without recorded file uses; terminal/indirect use is not inferred. A saturated use table gives-259. Missing locations follow WARNINGS.
+
+`EDIT name` opens the definition; `G` opens the selected line or the start of the last N/B window. Set EDITOR to a command accepting `+line file`; configure a wait option or wrapper where needed. Unset/blank EDITOR gives-21; a failed command gives a host error. `GG` sends the next result/trace selection to the editor; `LL` sends it to Forth output. Repeat either twice to set the default. Explicit L/G/EDIT do not consume a pending choice. `WHEREG name` opens expanded uses in a private temporary file. Embedded source is also opened as a temporary copy. Edits to temporary copies are not imported, and the files are removed after the command returns. Editing a real source file does not automatically reload its definitions; include/reload it explicitly. Native Windows cmd paths containing quote, percent, exclamation or line breaks are unsupported.
+
+`TT ( u -- )`, `NT` and `BT` select an absolute, next or previous saved exception frame. Up to32 VM/inline frames survive reporting so their source can be browsed or opened through GG. New VM traces replace the saved trace; browser errors without a new trace preserve it. NOTHROW, dictionary deletion and full restore invalidate it. Caught/suppressed errors do not create saved traces. These three words require debug and tools; other source/editor words require tools. Display/clear words remain available independently, except the float-specific ones. [Exact policies and verification](P09_IMPLEMENTATION.md).
+
+## P09c user return-stack extensions
+
+| Word | Stack effect | Behavior |
+|---|---|---|
+| `F>R` | `( F: r -- R:r )` | Move all64 float bits to one user return cell. |
+| `FR>` | `( R:r -- F:r )` | Move a return cell back to the float stack. |
+| `FR@` | `( R:r -- R:r F:r )` | Copy the top return cell as a float. |
+| `R'@` | `( R:x1 x2 -- R:x1 x2 x1 )` | Copy the second return item to the data stack. |
+| `RPICK` | `( u -- x )` | Copy the zero-based user return item;0 is R@. |
+
+Integer/float values share untyped64-bit return cells. VM call addresses, loop frames and locals are separate and cannot be read with these words. Invalid RPICK indices give-6 without consuming u. Transfers check capacity before consuming input. Signed zero and NaN payloads are preserved. The floating trio is omitted with-Dfloat=false; R'@/RPICK remain. Recreate old-ABI dictionary images after these builtin additions.
+
+A dictionary capacity smaller than the builtin table (including hidden slots, Root copies and keyboard constants) is rejected at build time with the required minimum, rather than failing at startup.

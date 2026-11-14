@@ -135,6 +135,13 @@ pub const AudioWait = enum {
     read_input,
 };
 
+/// Synchronous editor request. Slices are borrowed only for this call; a text
+/// request is a temporary inspection copy, never imported back into the VM.
+pub const EditorRequest = union(enum) {
+    file: struct { path: []const u8, line: u32 },
+    text: struct { bytes: []const u8, line: u32 },
+};
+
 pub const Writer = struct {
     gamepad_ops: ?*const @import("gamepad.zig").Ops = null,
     context: ?*anyopaque,
@@ -179,6 +186,8 @@ pub const Writer = struct {
     errno_fn: ?*const fn (?*anyopaque) Cell = null,
     /// Runs a shell command and returns the status `system` gave; a non-zero status is not an error.
     system_fn: ?*const fn (?*anyopaque, []const u8) RuntimeError!Cell = null,
+    /// Open a source location or temporary text and wait for the configured editor.
+    editor_fn: ?*const fn (?*anyopaque, EditorRequest) RuntimeError!void = null,
     file_ops: ?*const FileOps = null,
     /// Gives a graphics image of that many 32-bit pixels, outside logical memory. On
     /// success the host releases the buffer it gave before and returns the new one; on

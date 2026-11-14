@@ -457,3 +457,272 @@ test "P09b listing style survives full restore and stays local on append with ma
     try source.writeCell(map.where_style_address, -1);
     try std.testing.expectError(error.InvalidImage, source.encodedSize());
 }
+
+const EditorProbe = struct {
+    out: support.Output = .{},
+    machine: ?*@import("../forth.zig").State = null,
+    calls: usize = 0,
+    path: [4096]u8 = undefined,
+    path_length: usize = 0,
+    text: [32768]u8 = undefined,
+    text_length: usize = 0,
+    line: u32 = 0,
+    inside_style: map.Cell = 0,
+    fail: bool = false,
+    restore: ?[]const u8 = null,
+    fn edit(context: ?*anyopaque, request: @import("../core/host_interface.zig").EditorRequest) @import("../forth.zig").RuntimeError!void {
+        const self: *@This() = @fieldParentPtr("out", support.fakeOutput(context));
+        self.calls += 1;
+        self.path_length = 0;
+        self.text_length = 0;
+        self.inside_style = self.machine.?.readCellConst(map.where_style_address);
+        switch (request) {
+            .file => |file| {
+                if (file.path.len > self.path.len) return error.StringTooLong;
+                @memcpy(self.path[0..file.path.len], file.path);
+                self.path_length = file.path.len;
+                self.line = file.line;
+            },
+            .text => |text| {
+                if (text.bytes.len > self.text.len) return error.StringTooLong;
+                @memcpy(self.text[0..text.bytes.len], text.bytes);
+                self.text_length = text.bytes.len;
+                self.line = text.line;
+            },
+        }
+        if (self.fail) return error.HostFailed;
+        if (self.restore) |image| {
+            try self.machine.?.restoreImage(image);
+            try self.machine.?.interpretLine("32 ALLOCATE THROW CONSTANT EDITOR-KEEPER");
+        }
+    }
+};
+fn editorMachine(probe: *EditorProbe) !*@import("../forth.zig").State {
+    const m = try support.createMachine(&probe.out);
+    probe.machine = m;
+    m.writer.file_ops = &listingOps;
+    m.writer.editor_fn = EditorProbe.edit;
+    return m;
+}
+
+test "P09b EDIT and G use the definition line until N or B changes the window" {
+    try support.skipWithout(&.{ .tools, .files });
+    var host = EditorProbe{};
+    support.setFakeFile(&host.out, 0, "\\ one\n\\ two\n: EDIT-TARGET 11 ;\n\\ four\n\\ five\n\\ six\n");
+    const m = try editorMachine(&host);
+    defer support.destroyMachine(m);
+    try m.interpretLine("1 TO BEFORE-LOCATE 1 TO AFTER-LOCATE INCLUDE a.txt EDIT EDIT-TARGET");
+    try std.testing.expectEqual(@as(usize, 1), host.calls);
+    try std.testing.expectEqualStrings("/work/a.txt", host.path[0..host.path_length]);
+    try std.testing.expectEqual(@as(u32, 3), host.line);
+    try std.testing.expectEqualStrings("", host.out.written());
+    try m.interpretLine("L G");
+    try std.testing.expectEqual(@as(u32, 3), host.line);
+    try m.interpretLine("N G");
+    try std.testing.expectEqual(@as(u32, 5), host.line);
+    try m.interpretLine("B G");
+    try std.testing.expectEqual(@as(u32, 2), host.line);
+    try std.testing.expectEqual(@as(usize, 0), m.data_depth);
+}
+
+test "P09b GG LL select one-shot and default destinations and consume missing-result selections" {
+    try support.skipWithout(&.{ .tools, .files });
+    var host = EditorProbe{};
+    support.setFakeFile(&host.out, 0, ": EDIT-TARGET 11 ;\n: EDIT-ONE EDIT-TARGET ;\n: EDIT-TWO EDIT-TARGET ;\n");
+    const m = try editorMachine(&host);
+    defer support.destroyMachine(m);
+    try m.interpretLine("INCLUDE a.txt WHERE EDIT-TARGET 0 TO BEFORE-LOCATE 0 TO AFTER-LOCATE GG 0 WW");
+    try std.testing.expectEqual(@as(usize, 1), host.calls);
+    try std.testing.expectEqual(@as(u32, 2), host.line);
+    host.out.len = 0;
+    try m.interpretLine("NW");
+    try std.testing.expectEqualStrings("a.txt:3\n: EDIT-TWO EDIT-TARGET ;\n", host.out.written());
+    try m.interpretLine("GG GG 0 WW 1 WW");
+    try std.testing.expectEqual(@as(usize, 3), host.calls);
+    try m.interpretLine("LL 0 WW 1 WW");
+    try std.testing.expectEqual(@as(usize, 4), host.calls);
+    try m.interpretLine("LL LL 0 WW 1 WW");
+    try std.testing.expectEqual(@as(usize, 4), host.calls);
+    try m.interpretLine("0 WARNINGS ! GG NW 0 WW");
+    try std.testing.expectEqual(@as(usize, 4), host.calls);
+    host.fail = true;
+    try std.testing.expectError(error.HostFailed, m.interpretLine("GG 0 WW"));
+    host.fail = false;
+    try m.interpretLine("1 WW");
+    try std.testing.expectEqual(@as(usize, 5), host.calls);
+}
+
+test "P09b WHEREG captures privately restores format and keeps result selection" {
+    try support.skipWithout(&.{ .tools, .files });
+    var host = EditorProbe{};
+    support.setFakeFile(&host.out, 0, ": EDIT-TARGET 11 ;\n: EDIT-ONE EDIT-TARGET ;\n");
+    const m = try editorMachine(&host);
+    defer support.destroyMachine(m);
+    try m.interpretLine("INCLUDE a.txt PREPEND-WHERE WHEREG EDIT-TARGET");
+    try std.testing.expectEqual(@as(usize, 1), host.calls);
+    try std.testing.expectEqual(@as(u32, 1), host.line);
+    try std.testing.expectEqualStrings("", host.out.written());
+    try std.testing.expect(std.mem.startsWith(u8, host.text[0..host.text_length], "/work/a.txt:2:12: : EDIT-ONE EDIT-TARGET ;"));
+    try std.testing.expectEqual(@as(map.Cell, 2), host.inside_style);
+    try std.testing.expect(m.capture_sink == null and m.capture_target == null and !m.capture_failed);
+    try std.testing.expectEqual(@as(map.Cell, 2), m.readCellConst(map.where_style_address));
+    try m.interpretLine("0 TO BEFORE-LOCATE 0 TO AFTER-LOCATE 0 WW");
+    try std.testing.expectEqualStrings("a.txt:2\n: EDIT-ONE EDIT-TARGET ;\n", host.out.written());
+    host.fail = true;
+    try std.testing.expectError(error.HostFailed, m.interpretLine("WHEREG EDIT-TARGET"));
+    try std.testing.expect(m.capture_sink == null and m.capture_target == null);
+    try std.testing.expectEqual(@as(map.Cell, 2), m.readCellConst(map.where_style_address));
+}
+
+test "P09b missing editors and locations do not launch and WHEREG restores state on capture failure" {
+    try support.skipWithout(&.{ .tools, .files });
+    var host = EditorProbe{};
+    support.setFakeFile(&host.out, 0, ": EDIT-TARGET 11 ;\n: EDIT-ONE EDIT-TARGET ;\n");
+    const m = try editorMachine(&host);
+    defer support.destroyMachine(m);
+    try m.interpretLine("0 WARNINGS ! G EDIT DUP");
+    try std.testing.expectEqual(@as(usize, 0), host.calls);
+    try m.interpretLine("INCLUDE a.txt LOCATE EDIT-TARGET");
+    m.writer.editor_fn = null;
+    try std.testing.expectError(error.HostUnavailable, m.interpretLine("G"));
+    m.writer.editor_fn = EditorProbe.edit;
+    m.writer.file_ops = &support.fake_file_ops;
+    try m.interpretLine("PREPEND-WHERE");
+    try std.testing.expectError(error.FileUnavailable, m.interpretLine("WHEREG EDIT-TARGET"));
+    try std.testing.expectEqual(@as(map.Cell, 2), m.readCellConst(map.where_style_address));
+    try std.testing.expect(m.capture_sink == null and m.capture_target == null);
+    m.writer.file_ops = &listingOps;
+    _ = (try m.heapAllocate(@intCast(m.sizes.heapEnd() - m.heapTop() - 16))).?;
+    try std.testing.expectError(error.Thrown, m.interpretLine("WHEREG EDIT-TARGET"));
+    try std.testing.expectEqual(@as(map.Cell, -524), m.throw_code);
+    try std.testing.expect(m.capture_sink == null and m.capture_target == null);
+    try std.testing.expectEqual(@as(usize, 0), host.calls);
+}
+
+test "P09b editor callbacks restoring an image do not free a new heap allocation" {
+    try support.skipWithout(&.{ .tools, .files, .image });
+    var host = EditorProbe{};
+    const m = try editorMachine(&host);
+    defer support.destroyMachine(m);
+    const image = try std.testing.allocator.alloc(u8, try m.encodedSize());
+    defer std.testing.allocator.free(image);
+    _ = try m.encodeImage(image);
+    host.restore = image;
+    support.setFakeFile(&host.out, 0, ": EDIT-TARGET 11 ;\n: EDIT-ONE EDIT-TARGET ;\n");
+    try m.interpretLine("INCLUDE a.txt GG GG WHEREG EDIT-TARGET");
+    try std.testing.expectEqual(@as(usize, 1), host.calls);
+    try m.interpretLine("EDITOR-KEEPER FREE");
+    try std.testing.expectEqual(@as(map.Cell, 0), try m.pop());
+    const mode = @import("../core/source_editor.zig");
+    try std.testing.expectEqual(mode.Destination.display, mode.takeDestination(m));
+}
+
+test "P09b embedded EDIT uses a temporary text request without file operations" {
+    try support.skipWithout(&.{ .tools, .graphics });
+    var host = EditorProbe{};
+    const m = try editorMachine(&host);
+    defer support.destroyMachine(m);
+    m.graphics_library = "\\ source\n: EDIT-EMBEDDED 11 ;\n";
+    try m.includeEmbedded(@import("../core/words_graphics.zig").library_name, m.graphics_library);
+    m.writer.file_ops = null;
+    try m.interpretLine("EDIT EDIT-EMBEDDED");
+    try std.testing.expectEqualStrings(m.graphics_library, host.text[0..host.text_length]);
+    try std.testing.expectEqual(@as(u32, 2), host.line);
+}
+
+test "P09b smart stack display preserves stacks and BASE and bounds readable string previews" {
+    var out = support.Output{};
+    const m = try support.createMachine(&out);
+    defer support.destroyMachine(m);
+    try m.interpretLine("0 1 -1 10 65 255 65536 HEX ...");
+    try std.testing.expectEqualStrings("<7> #0 #1 #-1 #10 #65 #255 #65536 ", out.written());
+    try support.expectStack(m, &.{ 0, 1, -1, 10, 65, 255, 65536 });
+    try std.testing.expectEqual(@as(map.Cell, 16), m.readCellConst(map.base_address));
+    try m.interpretLine("DECIMAL CLEARSTACK S\" abc\"");
+    out.len = 0;
+    try m.interpretLine("...");
+    try std.testing.expectEqualStrings("<2> \"abc\" ", out.written());
+    try m.interpretLine("CLEARSTACK : TEXT S\" compiled\" ; TEXT");
+    out.len = 0;
+    try m.interpretLine("...");
+    try std.testing.expectEqualStrings("<2> \"compiled\" ", out.written());
+    try m.interpretLine("CLEARSTACK 10 20 30 1 MAXDEPTH-.S !");
+    out.len = 0;
+    try m.interpretLine("...");
+    try std.testing.expectEqualStrings("<3> #30 ", out.written());
+    try m.interpretLine("CLEARSTACK 9 MAXDEPTH-.S ! S\\\" 日本語\\n\\e\\q\\\\\"");
+    out.len = 0;
+    try m.interpretLine("...");
+    try std.testing.expectEqualStrings("<2> \"日本語\\n\\x1b\\\"\\\\\" ", out.written());
+    try m.interpretLine("CLEARSTACK -1 4096");
+    out.len = 0;
+    try m.interpretLine("...");
+    try std.testing.expectEqualStrings("<2> #-1 #4096 ", out.written());
+}
+
+test "P09b smart float display is non-destructive and presentation hook leaves navigation untouched" {
+    try support.skipWithoutFloat();
+    var out = support.Output{};
+    const m = try support.createMachine(&out);
+    defer support.destroyMachine(m);
+    try m.interpretLine("1.25E -2.5E ...");
+    try std.testing.expectEqualStrings("<0> \nF:<2> 1.25e -2.5e ", out.written());
+    try std.testing.expectEqual(@as(usize, 2), m.float_depth);
+    if (!@import("build_options").tools) return;
+    out.len = 0;
+    try m.interpretLine("FANCY-AFTER-L");
+    try std.testing.expectEqualStrings("", out.written());
+    try std.testing.expectEqual(@as(u8, 0), m.source_navigation.length);
+}
+
+test "P09b reported exception frames remain available after report and support source selection" {
+    try support.skipWithout(&.{ .debug, .tools, .files });
+    var out = support.Output{};
+    support.setFakeFile(&out, 0, ": TRACE-FAIL -123 THROW ;\n: TRACE-OUTER TRACE-FAIL ;\n");
+    const m = try support.createMachine(&out);
+    defer support.destroyMachine(m);
+    try m.interpretLine("INCLUDE a.txt 0 TO BEFORE-LOCATE 0 TO AFTER-LOCATE");
+    try std.testing.expectError(error.Thrown, m.interpretLine("TRACE-OUTER"));
+    m.report(error.Thrown);
+    try std.testing.expect(m.source_trace.count >= 2);
+    try std.testing.expectEqual(@as(usize, 0), m.backtrace_count);
+    const saved_count = m.source_trace.count;
+    try std.testing.expectError(error.InvalidNumber, m.interpretLine("-1 TT"));
+    m.report(error.InvalidNumber);
+    try std.testing.expectEqual(saved_count, m.source_trace.count);
+    out.len = 0;
+    try m.interpretLine("0 TT NT");
+    try std.testing.expect(std.mem.indexOf(u8, out.written(), "a.txt:1\n: TRACE-FAIL -123 THROW ;\n") != null);
+    try std.testing.expect(std.mem.indexOf(u8, out.written(), "a.txt:2\n: TRACE-OUTER TRACE-FAIL ;\n") != null);
+    try m.interpretLine("0 WARNINGS ! 999 TT BT");
+    try std.testing.expectEqual(@as(?usize, m.source_trace.count - 1), m.source_trace.current);
+    try m.interpretLine("NOTHROW NT");
+    try std.testing.expectEqual(@as(usize, 0), m.source_trace.count);
+    try std.testing.expectEqual(@as(u8, 0), m.source_navigation.length);
+}
+
+test "P09b saved traces invalidate on FORGET restore and suppressed errors" {
+    try support.skipWithout(&.{ .debug, .tools, .files, .image });
+    var out = support.Output{};
+    support.setFakeFile(&out, 0, ": TRACE-FAIL -123 THROW ;\n");
+    const m = try support.createMachine(&out);
+    defer support.destroyMachine(m);
+    try m.interpretLine("INCLUDE a.txt");
+    const image = try std.testing.allocator.alloc(u8, try m.encodedSize());
+    defer std.testing.allocator.free(image);
+    _ = try m.encodeImage(image);
+    try std.testing.expectError(error.Thrown, m.interpretLine("TRACE-FAIL"));
+    m.report(error.Thrown);
+    try m.interpretLine("FORGET TRACE-FAIL 0 WARNINGS ! NT");
+    try std.testing.expectEqual(@as(usize, 0), m.source_trace.count);
+    try m.restoreImage(image);
+    try std.testing.expectError(error.Thrown, m.interpretLine("TRACE-FAIL"));
+    m.report(error.Thrown);
+    try std.testing.expect(m.source_trace.count != 0);
+    try m.restoreImage(image);
+    try m.interpretLine("0 WARNINGS ! NT");
+    try std.testing.expectEqual(@as(usize, 0), m.source_trace.count);
+    try std.testing.expectError(error.Thrown, m.interpretLine("-123 FAST-THROW"));
+    m.report(error.Thrown);
+    try std.testing.expectEqual(@as(usize, 0), m.source_trace.count);
+}

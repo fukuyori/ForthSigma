@@ -448,7 +448,7 @@ fn validateVector(self: *State, address: Cell, stride: Cell, count: memory_map.U
 }
 
 /// Compact decimal output built from Sigma's exact binary-to-decimal conversion.
-fn writeCompactFloat(self: *State, value: Float, comptime mode: Builtin, count: Cell) RuntimeError!void {
+pub fn writeCompactFloat(self: *State, value: Float, comptime mode: Builtin, count: Cell) RuntimeError!void {
     if (std.math.isNan(value)) return self.write("NaN");
     if (std.math.isInf(value)) return self.write(if (value < 0) "-inf" else "inf");
     var scratch: [float_format.max_rdp_width + 400]u8 = undefined;

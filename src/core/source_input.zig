@@ -397,7 +397,7 @@ pub fn listLocation(self: *State, file_index: usize, line_number: u32, column: u
 /// The text of a source that is part of the program (the graphics or audio library), which
 /// LOCATE and WHERE read instead of a file. It is this build's text: words restored from
 /// an image of another build may have come from other lines.
-fn embeddedSource(self: *const State, name: []const u8) ?[]const u8 {
+pub fn embeddedSource(self: *const State, name: []const u8) ?[]const u8 {
     if (std.mem.eql(u8, name, words_graphics.library_name)) return self.graphics_library;
     if (std.mem.eql(u8, name, @import("words_audio.zig").library_name)) return self.audio_library;
     return null;

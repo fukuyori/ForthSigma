@@ -274,6 +274,8 @@ pub const State = struct {
     error_location: ?ErrorLocation = null,
     source_navigation: @import("core/source_navigation.zig").Navigation = .{},
     source_search: @import("core/source_search.zig").Search = .{},
+    source_editor_mode: @import("core/source_editor.zig").Mode = .{},
+    source_trace: @import("core/source_diagnostics.zig").History = .{},
     name_buffer_index: usize = 0,
     last_created_word: ?u16 = null,
     halted: bool = false,
@@ -867,10 +869,17 @@ pub const State = struct {
         .{ "BEFORE-LOCATE", .before_locate },         .{ "AFTER-LOCATE", .after_locate },             .{ "XT-LOCATE", .xt_locate },                       .{ "L", .source_l },                           .{ "N", .source_n },
         .{ "B", .source_b },                          .{ "\\G", .documentation_comment },             .{ "WW", .where_select },                           .{ "NW", .where_next },                        .{ "BW", .where_back },
         .{ "BROWSE", .browse },                       .{ "SHORT-WHERE", .short_where },               .{ "EXPAND-WHERE", .expand_where },                 .{ "PREPEND-WHERE", .prepend_where },          .{ "UNUSED-WORDS", .unused_words },
+        .{ "EDIT", .edit_source },                    .{ "G", .source_g },                            .{ "GG", .source_gg },                              .{ "LL", .source_ll },                         .{ "WHEREG", .where_g },
+        .{ "...", .smart_stacks },                    .{ "TT", .trace_select },                       .{ "NT", .trace_next },                             .{ "BT", .trace_back },                        .{ "FANCY-AFTER-L", .fancy_after_l },
+        .{ "F>R", .f_to_r },                          .{ "FR>", .f_r_from },                          .{ "FR@", .f_r_fetch },                             .{ "R'@", .r_second_fetch },                   .{ "RPICK", .r_pick },
         .{ "\\\\\\", .triple_backslash },
     };
 
+    pub const minimum_dictionary_words = builtin_definitions.len + root_word_names.len + 2 + @import("core/standard_keys.zig").constants.len;
+
     fn installBuiltins(self: *State) void {
+        if (comptime max_words < minimum_dictionary_words)
+            @compileError(std.fmt.comptimePrint("-Dwords must be at least {d} to hold built-in dictionary entries", .{minimum_dictionary_words}));
         const definitions = builtin_definitions;
         for (definitions) |definition| {
             // A word of a group the build leaves out keeps its place without a name, which
@@ -1086,6 +1095,7 @@ pub const State = struct {
     /// Takes word `id` and every later word out of the dictionary and the index of the
     /// names; the caller gives back their code, data, and names.
     pub fn dropWordsFrom(self: *State, id: u16) void {
+        self.source_trace = .{};
         self.source_search = .{};
         @import("core/words_value_extensions.zig").invalidate(self, id);
         @import("core/address_registry.zig").forgetWords(self, id);
@@ -2078,7 +2088,7 @@ pub const State = struct {
         if (defs.debug_enabled and self.cover_blocks and self.compiling and startsBlock(builtin)) self.markBlock(self.columnAfterWord());
     }
 
-    const word_modules = .{ @import("core/source_listing.zig"), @import("core/source_search.zig"), @import("core/source_navigation.zig"), @import("core/words_stack_display.zig"), @import("core/exception_registry.zig"), @import("core/words_diagnostics.zig"), @import("core/words_value_extensions.zig"), @import("core/words_names.zig"), @import("core/words_parsing.zig"), @import("core/words_loops.zig"), @import("core/quotations.zig"), @import("core/words_compilation_tokens.zig"), @import("core/words_terminal.zig"), @import("core/string_values.zig"), @import("core/words_string_edit.zig"), @import("core/words_text.zig"), @import("core/words_buffers.zig"), @import("core/words_data.zig"), @import("core/words_width.zig"), words_stack, words_arithmetic, @import("core/words_numeric.zig"), words_memory, words_output, words_input, words_compiling, words_float, words_pictured, words_dictionary, words_system, @import("core/blocks.zig"), words_files, words_strings, words_help, words_defining, words_graphics, words_audio, words_xchar, words_tools, words_debug };
+    const word_modules = .{ @import("core/words_return_extensions.zig"), @import("core/source_diagnostics.zig"), @import("core/source_editor.zig"), @import("core/source_listing.zig"), @import("core/source_search.zig"), @import("core/source_navigation.zig"), @import("core/words_stack_display.zig"), @import("core/exception_registry.zig"), @import("core/words_diagnostics.zig"), @import("core/words_value_extensions.zig"), @import("core/words_names.zig"), @import("core/words_parsing.zig"), @import("core/words_loops.zig"), @import("core/quotations.zig"), @import("core/words_compilation_tokens.zig"), @import("core/words_terminal.zig"), @import("core/string_values.zig"), @import("core/words_string_edit.zig"), @import("core/words_text.zig"), @import("core/words_buffers.zig"), @import("core/words_data.zig"), @import("core/words_width.zig"), words_stack, words_arithmetic, @import("core/words_numeric.zig"), words_memory, words_output, words_input, words_compiling, words_float, words_pictured, words_dictionary, words_system, @import("core/blocks.zig"), words_files, words_strings, words_help, words_defining, words_graphics, words_audio, words_xchar, words_tools, words_debug };
 
     /// For each built-in word, the index in `word_modules` of the file that executes it.
     const word_owner = blk: {

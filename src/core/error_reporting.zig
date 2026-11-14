@@ -21,6 +21,7 @@ const throw_code_undefined_word = defs.throw_code_undefined_word;
 pub fn report(self: *State, err: anyerror) void {
     // QUIT keeps both data stacks and shows nothing, as gforth does.
     if (self.error_location) |location| @import("source_navigation.zig").select(self, location.file_index, location.line);
+    @import("source_diagnostics.zig").retain(self);
     const kept_data = self.data_depth;
     const kept_floats = self.float_depth;
     defer self.clearBacktrace();
