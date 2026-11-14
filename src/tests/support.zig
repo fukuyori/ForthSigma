@@ -436,7 +436,7 @@ pub fn setFakeFile(output: *Output, index: usize, text: []const u8) void {
     output.files[index].exists = true;
 }
 
-pub const fake_file_ops = forth.FileOps{ .open = fakeOpen, .close = fakeClose, .read_line = fakeReadLine, .read = fakeRead, .write = fakeWrite, .size = fakeSize, .reposition = fakeReposition, .position = fakePosition, .resize = fakeResize, .flush = fakeFlush, .delete = fakeDelete, .rename = fakeRename, .status = fakeStatus, .key = fakeKey, .ready = fakeReady, .eof = fakeEof, .create_mode = fakeCreateMode };
+pub const fake_file_ops = forth.FileOps{ .open = fakeOpen, .close = fakeClose, .read_line = fakeReadLine, .read = fakeRead, .write = fakeWrite, .size = fakeSize, .reposition = fakeReposition, .position = fakePosition, .resize = fakeResize, .flush = fakeFlush, .delete = fakeDelete, .rename = fakeRename, .status = fakeStatus, .key = fakeKey, .unread = fakeUnread, .ready = fakeReady, .eof = fakeEof, .create_mode = fakeCreateMode };
 
 pub fn fakeOutput(context: ?*anyopaque) *Output {
     return @ptrCast(@alignCast(context.?));
@@ -514,6 +514,12 @@ pub fn fakeKey(context: ?*anyopaque, fileid: forth.Cell) forth.RuntimeError!fort
     var byte: [1]u8 = undefined;
     const read = fakeRead(context, fileid, &byte);
     return .{ .byte = if (read.value == 1 and read.ior == 0) byte[0] else null, .ior = read.ior };
+}
+pub fn fakeUnread(context: ?*anyopaque, fileid: forth.Cell, byte: u8) forth.RuntimeError!void {
+    const file = fakeFile(context, fileid) orelse return error.InvalidAddress;
+    if (file.position == 0 or file.data[file.position - 1] != byte) return error.InvalidAddress;
+    file.position -= 1;
+    file.eof = false;
 }
 pub fn fakeReady(context: ?*anyopaque, fileid: forth.Cell) forth.RuntimeError!forth.FileResult {
     const file = fakeFile(context, fileid) orelse return .{ .ior = forth.errnoIor(forth.errno_bad_file) };

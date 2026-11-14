@@ -42,10 +42,13 @@ pub const words = [_]Builtin{
     .dot_path,           .path_plus,      .path_equals,      .open_path_file,      .file_to_path,   .basename,
     .dirname,            .filename_match, .get_dir,          .set_dir,             .equals_mkdir,   .mkdir_parents,
     .open_dir,           .read_dir,       .close_dir,        .fpath,               .outfile_id,     .outfile_execute,
+    .infile_id,          .infile_execute,
 };
 
 pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
     switch (builtin) {
+        .infile_id => try self.push(self.input_file orelse memory_map.stdin_fileid),
+        .infile_execute => try @import("input_redirect.zig").run(self),
         .outfile_id => try self.push(self.output_file orelse memory_map.stdout_fileid),
         .outfile_execute => try @import("output_redirect.zig").run(self),
         .fpath => try self.push(memory_map.fpath_address),

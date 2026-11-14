@@ -1253,3 +1253,9 @@ addr/uは取得可能なOS/CRTのTZ名を最大256バイトで借用し、次の
 ### 出力ファイルの切替（P06a）
 
 `OUTFILE-ID ( -- fileid )`は現在の出力ファイルを返し、通常はSTDOUTです。`OUTFILE-EXECUTE ( xt fileid -- )`はxtを1回実行して通常出力を借用ファイルへ送り、正常終了・例外とも元の出力先へ戻します。ファイルを閉じたりflushしたりせず、コールバックの結果と書込済みの内容は残ります。入れ子の出力切替・キャプチャも元へ戻します。書込エラーは出力ワード（コンパイル済みのドットクォートも含む）からTHROWし、コールバック内のCATCHで処理できます。WRITE-FILEは明示したファイルへ出力する既存APIのままです。2語ともfiles機能が必要です。[記録](P06_IMPLEMENTATION.md)。
+
+### 入力ファイルの切替（P06a）
+
+`INFILE-ID ( -- fileid )`は現在の入力先を返し、通常はSTDINです。`INFILE-EXECUTE ( xt fileid -- )`は借用入力でxtを実行し、正常終了・例外とも元の入力先と先読み状態へ戻します。ファイルは閉じず、読み進めた位置も戻しません。KEY/XKEY/EKEY・準備確認、ACCEPT、数値INPUT、端末ソースのREFILLに適用します。INCLUDE・EVALUATEの入力源規則は維持します。2語ともfiles機能が必要です。
+
+ファイルのACCEPTはエコーなしの行読取です。LF/CRLF/CRまで行全体を消費し、指定容量と内部4096バイト上限で切り詰めます。ファイルのEKEYはESCを単独のバイトとして扱い、Unicodeは既存Sigmaの復号を使います。KEY/EKEYの先頭バイトがEOFならInputUnavailable(-262)、準備確認は偽、ACCEPTは0を返します。指定Gforthの行編集・エコー、Unicodeの実測差、EOF値とは意図的に異なります。先読みで戻したバイトは借用ファイルに残り、後から読めます。カスタムFileOpsホストはkey/readyと、先読みを戻す場合のunreadを提供してください。必要な機能がない場合はFileUnavailableをTHROWします。[記録](P06_IMPLEMENTATION.md)。

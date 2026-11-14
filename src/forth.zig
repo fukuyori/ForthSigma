@@ -361,6 +361,7 @@ pub const State = struct {
     throw_code: Cell = 0,
     /// The counted string of the ABORT" that threw -2, for its message.
     abort_message: ?Cell = null,
+    input_file: ?Cell = null,
     output_file: ?Cell = null,
     output_error: ?Cell = null,
     capture_target: ?Cell = null,
@@ -790,7 +791,7 @@ pub const State = struct {
         .{ "FILENAME-MATCH", .filename_match },      .{ "GET-DIR", .get_dir },                       .{ "SET-DIR", .set_dir },                     .{ "=MKDIR", .equals_mkdir },                .{ "MKDIR-PARENTS", .mkdir_parents },
         .{ "OPEN-DIR", .open_dir },                  .{ "READ-DIR", .read_dir },                     .{ "CLOSE-DIR", .close_dir },                 .{ "NTIME", .ntime },                        .{ "CPUTIME", .cputime },
         .{ "NS", .ns },                              .{ ">TIME&DATE&TZ", .to_time_date_tz },         .{ "FPATH", .fpath },                         .{ ">STRING-EXECUTE", .to_string_execute },  .{ "OUTFILE-ID", .outfile_id },
-        .{ "OUTFILE-EXECUTE", .outfile_execute },    .{ "\\\\\\", .triple_backslash },
+        .{ "OUTFILE-EXECUTE", .outfile_execute },    .{ "INFILE-ID", .infile_id },                   .{ "INFILE-EXECUTE", .infile_execute },       .{ "\\\\\\", .triple_backslash },
     };
 
     fn installBuiltins(self: *State) void {

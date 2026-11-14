@@ -48,8 +48,7 @@ pub fn validNameToken(self: *State, nt: Cell) RuntimeError!u16 {
 }
 
 pub fn readInputToken(self: *State, line: *[4096]u8) RuntimeError!?[]const u8 {
-    const read_fn = self.writer.read_fn orelse return error.InputUnavailable;
-    const input = read_fn(self.writer.context, line) orelse return error.InputUnavailable;
+    const input = (try @import("input_redirect.zig").line(self, line)) orelse return error.InputUnavailable;
     var cursor: usize = 0;
     const token = nextToken(input, &cursor) orelse {
         self.write(" ?\n");
@@ -234,9 +233,8 @@ pub fn nextSourceToken(self: *State) RuntimeError!?[]const u8 {
             .evaluate, .block => return null,
             .file => try self.readIncludeLine() orelse return null,
             .terminal => blk: {
-                const read_fn = self.writer.read_fn orelse return null;
                 const start: usize = @intCast(tib_address);
-                break :blk read_fn(self.writer.context, self.memory[start .. start + tib_size]) orelse return null;
+                break :blk (try @import("input_redirect.zig").line(self, self.memory[start .. start + tib_size])) orelse return null;
             },
         };
         self.source_line = line;

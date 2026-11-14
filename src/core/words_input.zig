@@ -44,9 +44,9 @@ pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
         .accept => {
             const capacity = try self.pop();
             const address = try self.pop();
-            const read_fn = self.writer.read_fn orelse return error.InputUnavailable;
+            if (@import("input_redirect.zig").selected(self) == null and self.writer.read_fn == null) return error.InputUnavailable;
             var line: [4096]u8 = undefined;
-            const input = read_fn(self.writer.context, &line) orelse &.{};
+            const input = (try @import("input_redirect.zig").line(self, &line)) orelse &.{};
             const length: usize = @min(input.len, @as(usize, @intCast(@max(capacity, 0))));
             const start = try self.memoryAddress(address, length);
             @memcpy(self.memory[start .. start + length], input[0..length]);
@@ -58,7 +58,7 @@ pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
         .ekey => try self.push(try @import("event_input.zig").read(self)),
         .key => try self.push(try words_xchar.key(self)),
         .key_question => {
-            const ready = self.pending_key != null or self.pending_event_count != 0 or if (self.writer.key_ready_fn) |ready_fn| ready_fn(self.writer.context) else false;
+            const ready = try @import("input_redirect.zig").ready(self);
             try self.push(truth(ready));
         },
         .word_parse => {
@@ -115,9 +115,8 @@ pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
                 .block => try @import("blocks.zig").refill(self),
                 .file => try self.readIncludeLine(),
                 .terminal => blk: {
-                    const read_fn = self.writer.read_fn orelse break :blk null;
                     const start: usize = @intCast(tib_address);
-                    break :blk read_fn(self.writer.context, self.memory[start .. start + tib_size]);
+                    break :blk try @import("input_redirect.zig").line(self, self.memory[start .. start + tib_size]);
                 },
             };
             if (line) |text| {

@@ -25,9 +25,9 @@ pub const replacement: u21 = 0xFFFD;
 
 /// The built-in words this file executes; executeBuiltin dispatches by this list.
 pub const words = [_]Builtin{
-    .xc_size,     .x_size,         .xc_fetch_plus, .xc_fetch,  .xc_store_plus,          .xc_store_plus_question,
-    .xc_comma,    .xchar_plus,     .xchar_minus,   .xemit,     .xkey,                   .xkey_question,
-    .x_width,     .xc_width,       .plus_x_string, .x_string_minus, .minus_trailing_garbage, .xhold,
+    .xc_size,       .x_size,              .xc_fetch_plus,       .xc_fetch,       .xc_store_plus,          .xc_store_plus_question,
+    .xc_comma,      .xchar_plus,          .xchar_minus,         .xemit,          .xkey,                   .xkey_question,
+    .x_width,       .xc_width,            .plus_x_string,       .x_string_minus, .minus_trailing_garbage, .xhold,
     .ekey_to_xchar, .x_fetch_plus_string, .xc_fetch_plus_query,
 };
 
@@ -128,6 +128,7 @@ fn nextKey(self: *State) RuntimeError!u8 {
         self.pending_event_count -= 1;
         return self.pending_event_bytes[self.pending_event_count];
     }
+    if (@import("input_redirect.zig").selected(self) != null) return (try @import("input_redirect.zig").byte(self)) orelse error.InputUnavailable;
     const key_fn = self.writer.key_fn orelse return error.InputUnavailable;
     return key_fn(self.writer.context) orelse error.InputUnavailable;
 }
@@ -150,9 +151,12 @@ fn xkey(self: *State) RuntimeError!u21 {
     };
     var length: usize = 1;
     while (length <= more) : (length += 1) {
-        const byte = nextKey(self) catch break;
+        const byte = nextKey(self) catch |err| {
+            if (@import("input_redirect.zig").selected(self) != null and err != error.InputUnavailable) return err;
+            break;
+        };
         if (byte & 0xC0 != 0x80) {
-            if (self.writer.unread_fn) |unread| unread(self.writer.context, byte) else self.pending_key = byte;
+            if (@import("input_redirect.zig").selected(self) != null) try @import("input_redirect.zig").unread(self, byte) else if (self.writer.unread_fn) |unread| unread(self.writer.context, byte) else self.pending_key = byte;
             break;
         }
         bytes[length] = byte;
@@ -229,7 +233,7 @@ pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
         },
         .xkey => try self.push(try xkey(self)),
         .xkey_question => {
-            const ready = self.pending_key != null or if (self.writer.key_ready_fn) |ready_fn| ready_fn(self.writer.context) else false;
+            const ready = try @import("input_redirect.zig").ready(self);
             try self.push(truth(ready));
         },
         // Characters that are not shown (width -1) count as 0 columns, as in gforth.

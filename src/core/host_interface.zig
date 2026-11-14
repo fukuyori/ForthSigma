@@ -60,6 +60,8 @@ pub const FileOps = struct {
     create_mode: ?*const fn (?*anyopaque, []const u8, FileAccess, u16) FileResult = null,
     /// STDIN is raw byte input; terminal Ctrl+C may return UserInterrupt.
     key: ?*const fn (?*anyopaque, Cell) RuntimeError!FileKeyResult = null,
+    /// Push a byte back on the borrowed stream; clears observed EOF.
+    unread: ?*const fn (?*anyopaque, Cell, u8) RuntimeError!void = null,
     /// Nonblocking byte readiness, including unread/library-buffered data.
     /// Querying must not consume a byte or change the EOF indication.
     ready: ?*const fn (?*anyopaque, Cell) RuntimeError!FileResult = null,

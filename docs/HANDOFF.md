@@ -2,6 +2,10 @@
 
 更新日：2026-11-14。P00・S01・P01・P02・P03・P04に続き、P05a16語・P05b14語と661のFPATH統合も実装・検証完了。680/681/661/548は完了（auto）、542全体は未完了。次は567 P06a。676までの変更は1c6667aでpush済み。今回のFPATH変更は未コミット。Windows/Linux実機確認はここでは行わず、607配下682へ残す。以下の過去フェーズの記録より、この現在状態を優先する。
 
+最新：利用者がSigmaの行読取/Unicode方針を承認し、687のINFILE-ID/INFILE-EXECUTEを実装・検証。P06aは5/5語、687/685/567は完了(auto)。次は568 P06b。入力先・先読みの復元、借用維持、ネイティブpushbackを確認。入力変更は未コミット。549/542は未完了。[P06記録](P06_IMPLEMENTATION.md)。
+
+最新：出力切替2語はd34bcb6でコミット・push済み。687入力切替は調査中。GforthのファイルACCEPTは行編集/エコーを伴い、EKEYのUTF-8結果にも差があったため、Sigma既存の行読取/Unicode動作を維持する推奨案を質問中。入力コード変更前の回答待ち。調査文書・再現スクリプトは未コミット。[P06記録](P06_IMPLEMENTATION.md)。
+
 最新：>STRING-EXECUTEは4b68762でコミット・push済み。686のOUTFILE-ID/OUTFILE-EXECUTEを実装し、借用・入れ子・例外/書込エラー復元とGforth8比較を確認。出力側変更は未コミット。P06aは3/5語、次は687の入力切替2語。567/685/549/542は未完了。[P06記録](P06_IMPLEMENTATION.md)。
 
 P05レビュー修正は734e6d0でコミット・push済み。P06aに着手し、684の>STRING-EXECUTEを実装・検証。所有/空出力・入れ子・THROW/失敗復元を確認。次は685のINFILE/OUTFILE-IDとEXECUTE（4語）。567/549/542は未完了。P06aの変更は未コミット。[P06記録](P06_IMPLEMENTATION.md)。

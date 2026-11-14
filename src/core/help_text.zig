@@ -248,6 +248,8 @@ pub const entries = [_]Entry{
     .{ .name = "BASENAME", .stack = "( addr u -- addr2 u2 )", .text = "Borrow the suffix after the final slash; a trailing slash gives an empty suffix. Backslash is ordinary text." },
     .{ .name = "DIRNAME", .stack = "( addr u -- addr u2 )", .text = "Borrow the prefix through the final slash, or an empty prefix when absent. No normalization or allocation." },
     .{ .name = ">STRING-EXECUTE", .stack = "( xt -- addr u )", .text = "Run xt and return its output in caller-owned memory; FREE addr. Restore output capture on success or exception." },
+    .{ .name = "INFILE-ID", .stack = "( -- fileid )", .text = "Current input file, STDIN outside INFILE-EXECUTE." },
+    .{ .name = "INFILE-EXECUTE", .stack = "( xt fileid -- )", .text = "Run xt using borrowed input fileid. Restore prior input and pending keys on exit; do not close the file. Retain Sigma line and Unicode behavior." },
     .{ .name = "OUTFILE-ID", .stack = "( -- fileid )", .text = "Current output file, STDOUT outside OUTFILE-EXECUTE." },
     .{ .name = "OUTFILE-EXECUTE", .stack = "( xt fileid -- )", .text = "Run xt with normal output sent to borrowed fileid. Restore the prior output on success or exception; do not close the file." },
     .{ .name = "FPATH", .stack = "( -- owner )", .text = "Include search-path owner. Empty retains legacy cwd/raw-name behavior; nonempty opts into path search. Use PATH=/PATH+/CLEAR-PATH/.PATH. Image append preserves the destination setting." },

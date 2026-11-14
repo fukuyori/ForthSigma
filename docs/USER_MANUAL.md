@@ -1261,3 +1261,9 @@ Source display (LOCATE/WHERE) expands stored tilde names using the current home 
 ### Output-file selection (P06a)
 
 `OUTFILE-ID ( -- fileid )` returns the selected file, normally STDOUT. `OUTFILE-EXECUTE ( xt fileid -- )` runs xt once with normal output sent to the borrowed file and restores the previous destination on success or exception. It does not close/flush the file; callback results and already-written bytes remain. Nested selection/capture restores enclosing scopes. Write errors THROW at the output word, including compiled dot-quote, so a callback CATCH can handle them. Explicit WRITE-FILE keeps its own file argument. Both words require the files feature. [Details](P06_IMPLEMENTATION.md).
+
+### Input-file selection (P06a)
+
+`INFILE-ID ( -- fileid )` returns the selected input, normally STDIN. `INFILE-EXECUTE ( xt fileid -- )` runs xt with borrowed input and restores the previous selection/pending keys on success or exception. It neither closes the file nor rewinds consumed input. KEY/XKEY/EKEY/readiness, ACCEPT, numeric INPUT and terminal REFILL use the selection; INCLUDE and EVALUATE keep their parser-source rules. These two words require files support.
+
+File ACCEPT retains Sigma's no-echo line read: drain LF/CRLF/CR through line end and clip to the requested capacity and internal4096-byte limit. File EKEY treats escape bytes literally and uses Sigma Unicode decoding. First-byte KEY/EKEY EOF raises InputUnavailable(-262); readiness is false and ACCEPT returns0. These intentionally differ from the designated Gforth's editing/echo, Unicode quirk and EOF result. Pushback remains in the borrowed file for later reads. Custom FileOps hosts supply key/ready and, when lookahead must be returned, unread; missing capabilities throw FileUnavailable. [Details](P06_IMPLEMENTATION.md).

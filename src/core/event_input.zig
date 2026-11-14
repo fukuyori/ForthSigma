@@ -7,6 +7,7 @@ const Cell = forth.Cell;
 
 fn next(self: *forth.State, timeout: i32) forth.RuntimeError!?Cell {
     if (self.pending_key != null or self.pending_event_count != 0) return xchar.key(self) catch null;
+    if (@import("input_redirect.zig").selected(self) != null) return if (timeout >= 0 and !try @import("input_redirect.zig").ready(self)) null else if (try @import("input_redirect.zig").byte(self)) |value| @as(Cell, value) else null;
     if (self.writer.buffered_key_fn) |buffered| {
         if (try buffered(self.writer.context)) |byte| return byte;
     }
@@ -23,10 +24,14 @@ fn next(self: *forth.State, timeout: i32) forth.RuntimeError!?Cell {
     return @as(Cell, callback(self.writer.context) orelse return null);
 }
 
-fn unread(self: *forth.State, bytes: []const u8) void {
+fn unread(self: *forth.State, bytes: []const u8) forth.RuntimeError!void {
     var index = bytes.len;
     while (index != 0) {
         index -= 1;
+        if (@import("input_redirect.zig").selected(self) != null) {
+            try @import("input_redirect.zig").unread(self, bytes[index]);
+            continue;
+        }
         const ordered_host = self.pending_standard_event == null or self.writer.buffered_key_fn != null;
         if (ordered_host and self.writer.unread_fn != null) self.writer.unread_fn.?(self.writer.context, bytes[index]) else {
             self.pending_event_bytes[self.pending_event_count] = bytes[index];
@@ -82,11 +87,12 @@ fn sequence(bytes: []const u8) ?Cell {
 }
 
 pub fn ready(self: *forth.State) forth.RuntimeError!bool {
+    if (@import("input_redirect.zig").selected(self) != null) return @import("input_redirect.zig").ready(self);
     if (self.pending_key != null or self.pending_event_count != 0 or self.pending_standard_event != null) return true;
     const event = (try next(self, 0)) orelse return false;
     if (event >= 0 and event <= 255) {
         const byte = [_]u8{@intCast(event)};
-        unread(self, &byte);
+        try unread(self, &byte);
     } else self.pending_standard_event = event;
     return true;
 }
@@ -96,14 +102,14 @@ pub fn read(self: *forth.State) forth.RuntimeError!Cell {
     if (first > 255) return first;
     var bytes: [32]u8 = undefined;
     bytes[0] = @intCast(first);
-    if (first == 27) {
+    if (first == 27 and @import("input_redirect.zig").selected(self) == null) {
         const clock = self.writer.monotonic_ms_fn;
         const deadline = if (clock) |now| now(self.writer.context) + 50 else 0;
         var length: usize = 1;
         while (length < bytes.len) {
             const remaining: i32 = if (clock) |now| @intCast(@max(0, deadline - now(self.writer.context))) else 50;
             const value = (next(self, remaining) catch |err| {
-                unread(self, bytes[0..length]);
+                try unread(self, bytes[0..length]);
                 return err;
             }) orelse break;
             // Special events are never continuation bytes of a terminal sequence.
@@ -119,7 +125,7 @@ pub fn read(self: *forth.State) forth.RuntimeError!Cell {
                 break;
             }
         }
-        unread(self, bytes[1..length]);
+        try unread(self, bytes[1..length]);
         return 27;
     }
     const count: usize = switch (first) {
@@ -131,7 +137,7 @@ pub fn read(self: *forth.State) forth.RuntimeError!Cell {
     var length: usize = 1;
     while (length < count) {
         const value = (next(self, -1) catch |err| {
-            unread(self, bytes[0..length]);
+            try unread(self, bytes[0..length]);
             return err;
         }) orelse break;
         if (value > 255) {
@@ -140,7 +146,7 @@ pub fn read(self: *forth.State) forth.RuntimeError!Cell {
         }
         if (value & 0xc0 != 0x80) {
             const byte = [_]u8{@intCast(value)};
-            unread(self, &byte);
+            try unread(self, &byte);
             break;
         }
         bytes[length] = @intCast(value);

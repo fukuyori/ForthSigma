@@ -782,6 +782,18 @@ fn fileKey(_: ?*anyopaque, fileid: forth.Cell) forth.RuntimeError!forth.FileKeyR
     return .{ .byte = @intCast(byte) };
 }
 
+fn fileUnread(_: ?*anyopaque, fileid: forth.Cell, byte: u8) forth.RuntimeError!void {
+    if (fileid == forth.stdin_fileid) {
+        terminalUnread(null, byte);
+        stdin_eof = false;
+        return;
+    }
+    const file = openedFile(fileid) orelse return error.InvalidAddress;
+    if (ungetc(byte, file) < 0) return error.HostFailed;
+    file_peeked[fileSlot(fileid)] = true;
+    file_eof[fileSlot(fileid)] = false;
+}
+
 fn fileEof(_: ?*anyopaque, fileid: forth.Cell) forth.FileResult {
     if (fileid == forth.stdin_fileid) return .{ .value = @intFromBool(stdin_eof) };
     if (fileid == forth.stdout_fileid or fileid == forth.stderr_fileid) return .{};
@@ -871,7 +883,7 @@ fn fileStdinByte(wait: bool) forth.RuntimeError!?u8 {
             const read = rawStandardInputByte();
             if (read < 0) {
                 if (std.c._errno().* != 0) {
-                    if (builtin.os.tag != .windows and std.c._errno().* == @intFromEnum(std.c.E.INTR)) break :next null;
+                    if (builtin.os.tag != .windows and std.c._errno().* == @backingInt(std.c.E.INTR)) break :next null;
                     return error.HostFailed;
                 }
                 if (wait) stdin_eof = true;
@@ -890,7 +902,7 @@ fn fileStdinByte(wait: bool) forth.RuntimeError!?u8 {
 }
 
 const host_directories = @import("host_directories.zig");
-const file_ops = forth.FileOps{ .open_dir = host_directories.open, .read_dir = host_directories.read, .close_dir = host_directories.close, .mkdir = makeDirectory, .get_dir = getDirectory, .set_dir = setDirectory, .user_home = userHome, .open = fileOpen, .close = fileClose, .read_line = fileReadLine, .read = fileRead, .write = fileWrite, .size = fileSize, .reposition = fileReposition, .position = filePosition, .resize = fileResize, .flush = fileFlush, .delete = fileDelete, .rename = fileRename, .status = fileStatus, .key = fileKey, .ready = fileReady, .eof = fileEof, .create_mode = fileCreateMode };
+const file_ops = forth.FileOps{ .open_dir = host_directories.open, .read_dir = host_directories.read, .close_dir = host_directories.close, .mkdir = makeDirectory, .get_dir = getDirectory, .set_dir = setDirectory, .user_home = userHome, .open = fileOpen, .close = fileClose, .read_line = fileReadLine, .read = fileRead, .write = fileWrite, .size = fileSize, .reposition = fileReposition, .position = filePosition, .resize = fileResize, .flush = fileFlush, .delete = fileDelete, .rename = fileRename, .status = fileStatus, .key = fileKey, .unread = fileUnread, .ready = fileReady, .eof = fileEof, .create_mode = fileCreateMode };
 
 /// Lets the Windows console interpret the ANSI sequences written by PAGE.
 fn enableVirtualTerminal() void {
