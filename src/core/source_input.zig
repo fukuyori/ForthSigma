@@ -348,31 +348,35 @@ const where_columns = 80;
 /// the source line without its leading blanks, cut or padded to 80 columns, and the
 /// number of the use. A tab is written as it is, as gforth writes it.
 pub fn listUses(self: *State, id: u16) RuntimeError!void {
+    @import("source_search.zig").beginUses(self, id);
     var number: usize = 0;
-    for (0..self.use_count) |at| {
-        const use = self.uses[at];
+    for (self.uses[0..self.use_count]) |use| {
         if (use.word != id) continue;
-        const name = self.sourceFileName(use.file_index);
-        var place_text: [48]u8 = undefined;
-        const place = std.fmt.bufPrint(&place_text, ":{d}:{d}: ", .{ use.line, use.column }) catch unreachable;
-        var number_text: [24]u8 = undefined;
-        const digits = std.fmt.bufPrint(&number_text, "{d}", .{number}) catch unreachable;
-        const limit = where_columns -| digits.len;
-        // As in gforth, each line starts with a newline, and the last one ends without.
-        self.write("\n");
-        self.write(name);
-        self.write(place);
-        var width = textColumns(name) + place.len;
-        var chunk: [tib_size + 1]u8 = undefined;
-        if (try readFileLine(self, name, use.line, &chunk)) |line| {
-            const text = std.mem.trimStart(u8, line, " \t");
-            // When the place alone is wider than the line, gforth writes all of the text.
-            if (width > limit) self.write(text) else width = writeColumns(self, text, width, limit);
-        }
-        while (width < limit) : (width += 1) self.write(" ");
-        self.write(digits);
+        try listLocation(self, use.file_index, use.line, use.column, number);
         number += 1;
     }
+}
+
+/// WHERE and BROWSE share one numbered source-line layout.
+pub fn listLocation(self: *State, file_index: usize, line_number: u32, column: u16, number: usize) RuntimeError!void {
+    if (file_index >= self.sourceFileCount()) return;
+    const name = self.sourceFileName(file_index);
+    var place_text: [48]u8 = undefined;
+    const place = std.fmt.bufPrint(&place_text, ":{d}:{d}: ", .{ line_number, column }) catch unreachable;
+    var number_text: [24]u8 = undefined;
+    const digits = std.fmt.bufPrint(&number_text, "{d}", .{number}) catch unreachable;
+    const limit = where_columns -| digits.len;
+    self.write("\n");
+    self.write(name);
+    self.write(place);
+    var width = textColumns(name) + place.len;
+    var chunk: [tib_size + 1]u8 = undefined;
+    if (try readFileLine(self, name, line_number, &chunk)) |line| {
+        const text = std.mem.trimStart(u8, line, " \t");
+        if (width > limit) self.write(text) else width = writeColumns(self, text, width, limit);
+    }
+    while (width < limit) : (width += 1) self.write(" ");
+    self.write(digits);
 }
 
 /// Reads line `wanted` (counting from 1) of the named file into the buffer, or gives

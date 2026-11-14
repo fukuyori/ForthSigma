@@ -29,4 +29,16 @@ assert r.returncode==0 and r.stdout==expected,('navigation',r.returncode,r.stdou
 r=run('0 WARNINGS ! L N B 3 TO BEFORE-LOCATE 12 TO AFTER-LOCATE BEFORE-LOCATE . AFTER-LOCATE . BYE')
 assert r.returncode==0 and r.stdout==b'3 12 ',('no-location',r.returncode,r.stdout,r.stderr)
 r=run('1 \\G ignore 2\n3 . . BYE');assert r.returncode==0 and r.stdout==b'3 1 ',('documentation-comment',r.returncode,r.stdout,r.stderr)
-report={'pass':True,'stage':'stack and source navigation (12/30 words)','navigation_checks':3,'comparisons':len(rows),'sigma_policy_checks':len(policies),'native_image_checks':2};a.reference.with_name('stack-comparison.json').write_text(json.dumps(report,indent=2)+'\n');print(json.dumps(report))
+search_source=folder/'search-native.fs'
+search_source.write_text(': QRY-TARGET 11 ;\n: QRY-ONE QRY-TARGET ;\n: QRY-TWO QRY-TARGET ;\n')
+search_path=str(search_source);search_header=lambda n:(search_path+':'+str(n)+'\n').encode()
+# Capture only cursor output, preserving WHERE's existing line layout separately.
+s=f'INCLUDE {search_path} 0 TO BEFORE-LOCATE 0 TO AFTER-LOCATE WHERE QRY-TARGET 0 WARNINGS ! 0 WW NW NW L BW BYE'
+r=run(s);assert r.returncode==0,(r.stdout,r.stderr)
+cursor=search_header(2)+b': QRY-ONE QRY-TARGET ;\n'+search_header(3)+b': QRY-TWO QRY-TARGET ;\n'+search_header(3)+b': QRY-TWO QRY-TARGET ;\n'
+assert r.stdout.endswith(cursor),('where-cursor',r.stdout,r.stderr,cursor)
+s=f'INCLUDE {search_path} 0 TO BEFORE-LOCATE 0 TO AFTER-LOCATE BROWSE QRY- 2 WW BYE'
+r=run(s);assert r.returncode==0 and r.stdout.endswith(search_header(3)+b': QRY-TWO QRY-TARGET ;\n'),('browse-cursor',r.returncode,r.stdout,r.stderr)
+r=run(f'INCLUDE {search_path} WHERE QRY-TARGET FORGET QRY-ONE 0 WARNINGS ! NW L BYE')
+assert r.returncode==0 and r.stdout.endswith(b'1'),('forgotten-results',r.returncode,r.stdout,r.stderr)
+report={'pass':True,'stage':'stack, source navigation and search (16/30 words)','search_checks':3,'navigation_checks':3,'comparisons':len(rows),'sigma_policy_checks':len(policies),'native_image_checks':2};a.reference.with_name('stack-comparison.json').write_text(json.dumps(report,indent=2)+'\n');print(json.dumps(report))

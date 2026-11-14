@@ -273,6 +273,7 @@ pub const State = struct {
     include_depth: usize = 0,
     error_location: ?ErrorLocation = null,
     source_navigation: @import("core/source_navigation.zig").Navigation = .{},
+    source_search: @import("core/source_search.zig").Search = .{},
     name_buffer_index: usize = 0,
     last_created_word: ?u16 = null,
     halted: bool = false,
@@ -863,7 +864,8 @@ pub const State = struct {
         .{ "FAST-THROW", .fast_throw },               .{ "NOTHROW", .nothrow },                       .{ "WARNING\"", .warning_quote },                   .{ "WARNINGS", .warnings },                    .{ "", .warning_run },
         .{ "CLEARSTACK", .clear_stack },              .{ "CLEARSTACKS", .clear_stacks },              .{ "FCLEARSTACK", .f_clear_stack },                 .{ "MAXDEPTH-.S", .maxdepth_dot_s },           .{ "F.S-PRECISION", .f_s_precision },
         .{ "BEFORE-LOCATE", .before_locate },         .{ "AFTER-LOCATE", .after_locate },             .{ "XT-LOCATE", .xt_locate },                       .{ "L", .source_l },                           .{ "N", .source_n },
-        .{ "B", .source_b },                          .{ "\\G", .documentation_comment },             .{ "\\\\\\", .triple_backslash },
+        .{ "B", .source_b },                          .{ "\\G", .documentation_comment },             .{ "WW", .where_select },                           .{ "NW", .where_next },                        .{ "BW", .where_back },
+        .{ "BROWSE", .browse },                       .{ "\\\\\\", .triple_backslash },
     };
 
     fn installBuiltins(self: *State) void {
@@ -1036,6 +1038,7 @@ pub const State = struct {
     /// Drops what refers to word `id` and every later word, whose numbers new words
     /// will reuse: the recorded uses, and the actions of the DEFERs that are kept.
     pub fn dropUsesFrom(self: *State, id: u16) void {
+        self.source_search = .{};
         @import("core/words_parsing.zig").forgetTargets(self, id);
         for (self.words[0..@min(id, self.word_count)]) |word| {
             if (word.kind != .deferred) continue;
@@ -1081,6 +1084,7 @@ pub const State = struct {
     /// Takes word `id` and every later word out of the dictionary and the index of the
     /// names; the caller gives back their code, data, and names.
     pub fn dropWordsFrom(self: *State, id: u16) void {
+        self.source_search = .{};
         @import("core/words_value_extensions.zig").invalidate(self, id);
         @import("core/address_registry.zig").forgetWords(self, id);
         if (defs.debug_enabled) {
@@ -2072,7 +2076,7 @@ pub const State = struct {
         if (defs.debug_enabled and self.cover_blocks and self.compiling and startsBlock(builtin)) self.markBlock(self.columnAfterWord());
     }
 
-    const word_modules = .{ @import("core/source_navigation.zig"), @import("core/words_stack_display.zig"), @import("core/exception_registry.zig"), @import("core/words_diagnostics.zig"), @import("core/words_value_extensions.zig"), @import("core/words_names.zig"), @import("core/words_parsing.zig"), @import("core/words_loops.zig"), @import("core/quotations.zig"), @import("core/words_compilation_tokens.zig"), @import("core/words_terminal.zig"), @import("core/string_values.zig"), @import("core/words_string_edit.zig"), @import("core/words_text.zig"), @import("core/words_buffers.zig"), @import("core/words_data.zig"), @import("core/words_width.zig"), words_stack, words_arithmetic, @import("core/words_numeric.zig"), words_memory, words_output, words_input, words_compiling, words_float, words_pictured, words_dictionary, words_system, @import("core/blocks.zig"), words_files, words_strings, words_help, words_defining, words_graphics, words_audio, words_xchar, words_tools, words_debug };
+    const word_modules = .{ @import("core/source_search.zig"), @import("core/source_navigation.zig"), @import("core/words_stack_display.zig"), @import("core/exception_registry.zig"), @import("core/words_diagnostics.zig"), @import("core/words_value_extensions.zig"), @import("core/words_names.zig"), @import("core/words_parsing.zig"), @import("core/words_loops.zig"), @import("core/quotations.zig"), @import("core/words_compilation_tokens.zig"), @import("core/words_terminal.zig"), @import("core/string_values.zig"), @import("core/words_string_edit.zig"), @import("core/words_text.zig"), @import("core/words_buffers.zig"), @import("core/words_data.zig"), @import("core/words_width.zig"), words_stack, words_arithmetic, @import("core/words_numeric.zig"), words_memory, words_output, words_input, words_compiling, words_float, words_pictured, words_dictionary, words_system, @import("core/blocks.zig"), words_files, words_strings, words_help, words_defining, words_graphics, words_audio, words_xchar, words_tools, words_debug };
 
     /// For each built-in word, the index in `word_modules` of the file that executes it.
     const word_owner = blk: {

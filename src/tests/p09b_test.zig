@@ -202,3 +202,125 @@ test "P09b embedded navigation works without file operations and saturates line 
     try std.testing.expectEqual(@as(?u32, std.math.maxInt(u32)), m.source_navigation.first);
     try std.testing.expect(std.mem.endsWith(u8, out.written(), ":4294967295\n"));
 }
+
+test "P09b WHERE selection walks results with an empty boundary state" {
+    try support.skipWithout(&.{ .tools, .files });
+    var out = support.Output{};
+    support.setFakeFile(&out, 0, ": TARGET 11 ;\n: USE-ONE TARGET ;\n: USE-TWO TARGET ;\n");
+    const m = try support.createMachine(&out);
+    defer support.destroyMachine(m);
+    try m.interpretLine("INCLUDE a.txt 0 TO BEFORE-LOCATE 0 TO AFTER-LOCATE WHERE TARGET");
+    try std.testing.expectEqual(@as(usize, 2), m.source_search.count);
+    out.len = 0;
+    try m.interpretLine("0 WW NW 0 WARNINGS ! NW L NW BW L BW");
+    try std.testing.expectEqualStrings("a.txt:2\n: USE-ONE TARGET ;\na.txt:3\n: USE-TWO TARGET ;\na.txt:2\n: USE-ONE TARGET ;\na.txt:3\n: USE-TWO TARGET ;\n", out.written());
+    try std.testing.expectEqual(@as(?usize, 1), m.source_search.current);
+    try std.testing.expectEqual(@as(usize, 0), m.data_depth);
+    try std.testing.expectError(error.InvalidNumber, m.interpretLine("-1 WW"));
+    try std.testing.expectEqual(@as(?usize, 1), m.source_search.current);
+    try std.testing.expectEqual(@as(map.Cell, -1), try m.pop());
+    try m.interpretLine("999999 WW");
+    try std.testing.expect(m.source_search.current == null);
+    try std.testing.expectEqual(@as(u8, 0), m.source_navigation.length);
+}
+
+test "P09b WHERE snapshots ignore later uses and invalidate on dictionary deletion" {
+    try support.skipWithout(&.{ .tools, .files });
+    var out = support.Output{};
+    support.setFakeFile(&out, 0, ": TARGET 11 ;\n: USE-ONE TARGET ;\n");
+    support.setFakeFile(&out, 1, ": USE-TWO TARGET ;\n");
+    const m = try support.createMachine(&out);
+    defer support.destroyMachine(m);
+    try m.interpretLine("INCLUDE a.txt WHERE TARGET INCLUDE b.txt 0 WARNINGS !");
+    try std.testing.expectEqual(@as(usize, 1), m.source_search.count);
+    try m.interpretLine("0 WW NW");
+    try std.testing.expect(m.source_search.current == null);
+    try m.interpretLine("WHERE TARGET");
+    try std.testing.expectEqual(@as(usize, 2), m.source_search.count);
+    try m.interpretLine("FORGET USE-TWO : USE-TWO 99 ; NW");
+    try std.testing.expectEqual(@as(usize, 0), m.source_search.count);
+    try std.testing.expectEqual(@as(u8, 0), m.source_navigation.length);
+}
+
+test "P09b BROWSE copies its pattern and selects definitions in the first search wordlist" {
+    try support.skipWithout(&.{ .tools, .files });
+    var out = support.Output{};
+    support.setFakeFile(&out, 0, ": NAV-ONE 11 ;\n: NAV-TWO 22 ;\nVOCABULARY OTHER-NAV ALSO OTHER-NAV DEFINITIONS\n: NAV-OTHER 33 ;\nFORTH DEFINITIONS PREVIOUS\n");
+    const m = try support.createMachine(&out);
+    defer support.destroyMachine(m);
+    try m.interpretLine("INCLUDE a.txt 0 TO BEFORE-LOCATE 0 TO AFTER-LOCATE BROWSE NAV-");
+    // Matching uses a case-sensitive substring, like Sigma MWORDS.
+    try std.testing.expectEqual(@as(usize, 2), m.source_search.count);
+    try std.testing.expect(std.mem.indexOf(u8, out.written(), ": NAV-ONE 11 ;") != null);
+    try std.testing.expect(std.mem.indexOf(u8, out.written(), ": NAV-OTHER 33 ;") == null);
+    out.len = 0;
+    try m.interpretLine("0 WW NW");
+    try std.testing.expectEqualStrings("a.txt:1\n: NAV-ONE 11 ;\na.txt:2\n: NAV-TWO 22 ;\n", out.written());
+    try m.interpretLine("ALSO OTHER-NAV BROWSE NAV-");
+    try std.testing.expectEqual(@as(usize, 1), m.source_search.count);
+    out.len = 0;
+    try m.interpretLine("0 WW PREVIOUS");
+    try std.testing.expectEqualStrings("a.txt:4\n: NAV-OTHER 33 ;\n", out.written());
+    try m.interpretLine("BROWSE nav-");
+    try std.testing.expectEqual(@as(usize, 0), m.source_search.count);
+}
+
+test "P09b BROWSE has explicit no-file rows and no-result warnings obey policy" {
+    try support.skipWithout(&.{.tools});
+    var out = support.Output{};
+    const m = try support.createMachine(&out);
+    defer support.destroyMachine(m);
+    try m.interpretLine(": NAV-TERMINAL 11 ; BROWSE NAV-TERMINAL");
+    try std.testing.expectEqualStrings("\nNAV-TERMINAL: NO FILE INFORMATION 0", out.written());
+    try m.interpretLine("0 WARNINGS ! 0 WW L");
+    try std.testing.expectEqual(@as(?usize, 0), m.source_search.current);
+    try m.interpretLine("-4 WARNINGS !");
+    try std.testing.expectError(error.WarningError, m.interpretLine("NW"));
+    try std.testing.expect(m.source_search.current == null);
+}
+
+test "P09b full image restore invalidates WHERE snapshots before using old indices" {
+    try support.skipWithout(&.{ .tools, .files, .image });
+    var out = support.Output{};
+    support.setFakeFile(&out, 0, ": TARGET 11 ;\n: USE-ONE TARGET ;\n");
+    const m = try support.createMachine(&out);
+    defer support.destroyMachine(m);
+    const image = try std.testing.allocator.alloc(u8, try m.encodedSize());
+    defer std.testing.allocator.free(image);
+    _ = try m.encodeImage(image);
+    try m.interpretLine("INCLUDE a.txt WHERE TARGET 0 WW");
+    try m.restoreImage(image);
+    out.len = 0;
+    try m.interpretLine("0 WARNINGS ! 0 WW NW BW L");
+    try std.testing.expectEqualStrings("", out.written());
+    try std.testing.expectEqual(@as(usize, 0), m.source_search.count);
+    try std.testing.expectEqual(@as(u8, 0), m.source_navigation.length);
+}
+
+test "P09b BROWSE snapshots remain bounded across definition growth and both append routes" {
+    try support.skipWithout(&.{ .tools, .files, .image });
+    var out = support.Output{};
+    support.setFakeFile(&out, 0, ": QRY-OLD 11 ;\n");
+    const source = try support.createMachine(&out);
+    defer support.destroyMachine(source);
+    try source.interpretLine(": QRY-IMPORTED 22 ;");
+    const image = try std.testing.allocator.alloc(u8, try source.encodedSize());
+    defer std.testing.allocator.free(image);
+    _ = try source.encodeImage(image);
+    for (0..2) |mode| {
+        const m = try support.createMachine(&out);
+        defer support.destroyMachine(m);
+        try m.interpretLine("INCLUDE a.txt 0 TO BEFORE-LOCATE 0 TO AFTER-LOCATE 0 WARNINGS ! BROWSE QRY-");
+        if (mode == 0) try m.appendImage(source) else {
+            var work: @import("../core/image_append.zig").Workspace = undefined;
+            try @import("../core/image_append.zig").append(m, image, &work);
+        }
+        try m.interpretLine(": QRY-NEW 33 ;");
+        try std.testing.expectEqual(@as(usize, 1), m.source_search.count);
+        out.len = 0;
+        try m.interpretLine("0 WW NW");
+        try std.testing.expectEqualStrings("a.txt:1\n: QRY-OLD 11 ;\n", out.written());
+        try m.interpretLine("BROWSE QRY-");
+        try std.testing.expectEqual(@as(usize, 3), m.source_search.count);
+    }
+}

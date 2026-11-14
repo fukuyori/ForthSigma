@@ -45,11 +45,7 @@ fn show(self: *forth.State, comptime word: defs.Builtin) forth.RuntimeError!void
     const nav = &self.source_navigation;
     if (nav.length == 0 or nav.generation != self.image_generation) {
         nav.length = 0;
-        if (self.readCellConst(map.warnings_address) != 0) {
-            @import("words_tools.zig").writeError(self, "WARNING: NO CURRENT LOCATION\n");
-            if (self.readCellConst(map.warnings_address) == -4) return error.WarningError;
-        }
-        return;
+        return noLocation(self);
     }
     const count: u32 = @intCast(before + 1 + after);
     var first = nav.first orelse @max(1, nav.line -| @as(u32, @intCast(before)));
@@ -64,4 +60,10 @@ fn show(self: *forth.State, comptime word: defs.Builtin) forth.RuntimeError!void
     self.write(name);
     self.write(std.fmt.bufPrint(&text, ":{d}\n", .{first}) catch unreachable);
     try input.listSourceLines(self, name, first, first +| (count - 1));
+}
+
+pub fn noLocation(self: *forth.State) forth.RuntimeError!void {
+    if (self.readCellConst(map.warnings_address) == 0) return;
+    @import("words_tools.zig").writeError(self, "WARNING: NO CURRENT LOCATION\n");
+    if (self.readCellConst(map.warnings_address) == -4) return error.WarningError;
 }
