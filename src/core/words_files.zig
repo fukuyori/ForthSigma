@@ -176,8 +176,8 @@ pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
             const fileid = try self.pop();
             const bytes = try self.memoryRange();
             const files = try self.fileOps();
-            var ior = files.write(self.writer.context, fileid, bytes);
-            if (ior == 0 and builtin == .write_line) ior = files.write(self.writer.context, fileid, line_terminator);
+            var ior = self.writeFile(files, fileid, bytes);
+            if (ior == 0 and builtin == .write_line) ior = self.writeFile(files, fileid, line_terminator);
             try self.push(ior);
         },
         .file_size => {

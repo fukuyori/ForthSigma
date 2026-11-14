@@ -360,7 +360,7 @@ const FileOutput = struct {
     fn flush(output: *FileOutput) void {
         if (output.used != 0 and output.ior == 0) {
             const files = output.self.writer.file_ops.?;
-            output.ior = files.write(output.self.writer.context, output.fileid, output.buffer[0..output.used]);
+            output.ior = output.self.writeFile(files, output.fileid, output.buffer[0..output.used]);
         }
         output.used = 0;
     }

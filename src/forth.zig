@@ -447,8 +447,8 @@ pub const State = struct {
     gamepads: @import("core/gamepad.zig").Snapshot = .{},
     /// TEXT's font and the glyph it loaded last (none in a build without graphics).
     gfx_font: if (defs.graphics_enabled) graphics_font.FontState else void = if (defs.graphics_enabled) .{} else {},
-    /// The bytes written to the host so far: SHOW draws over its last image on the
-    /// terminal when nothing was written after it.
+    /// Output activity marker: byte counts for known STDOUT writes and one tick
+    /// for external output of unknown length. SHOW reuses its image only when equal.
     output_count: u64 = 0,
 
     /// Sets up a State where it lies. The State is a few megabytes, so it is built in
@@ -513,10 +513,7 @@ pub const State = struct {
                 self.output_error = memory_map.errnoIor(memory_map.errno_bad_file);
                 return;
             };
-            const ior = files.write(self.writer.context, fileid, bytes);
-            // Explicit STDOUT still changes the terminal that SHOW tracks.
-            // Count even a failed write: the host may have emitted a prefix.
-            if (fileid == memory_map.stdout_fileid) self.output_count +%= bytes.len;
+            const ior = self.writeFile(files, fileid, bytes);
             if (ior != 0) self.output_error = ior;
             return;
         }
@@ -528,6 +525,20 @@ pub const State = struct {
         }
         self.output_count +%= bytes.len;
         self.writer.write(bytes);
+    }
+
+    /// Explicit file writes bypass capture/redirection, but STDOUT still affects
+    /// SHOW. An error can follow a partial write, so count the attempted bytes.
+    pub fn writeFile(self: *State, files: *const FileOps, fileid: Cell, bytes: []const u8) Cell {
+        const ior = files.write(self.writer.context, fileid, bytes);
+        if (fileid == memory_map.stdout_fileid) self.output_count +%= bytes.len;
+        return ior;
+    }
+
+    /// A host command/editor may have emitted text even on failure. Its exact
+    /// byte count and destination are unknown; conservatively separate frames.
+    pub fn noteExternalOutput(self: *State) void {
+        self.output_count +%= 1;
     }
 
     pub const imageCapacity = dictionary_image.imageCapacity;

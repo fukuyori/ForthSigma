@@ -50,9 +50,11 @@ pub fn open(self: *forth.State) forth.RuntimeError!void {
     const edit = self.writer.editor_fn orelse return error.HostUnavailable;
     const name = selected.path[0..selected.length];
     if (input.embeddedSource(self, name)) |text| {
+        self.noteExternalOutput();
         return edit(self.writer.context, .{ .text = .{ .bytes = text, .line = selected.edit_line } });
     }
     const absolute = try @import("source_listing.zig").expanded(self, name);
+    self.noteExternalOutput();
     return edit(self.writer.context, .{ .file = .{ .path = absolute.text(), .line = selected.edit_line } });
 }
 fn where(self: *forth.State) forth.RuntimeError!void {
@@ -88,5 +90,6 @@ fn where(self: *forth.State) forth.RuntimeError!void {
     // The callback must consume the borrowed text before it returns. A host that
     // restores a dictionary must copy it first; the generation guard avoids freeing
     // an allocation at the same address in the newly restored heap.
+    self.noteExternalOutput();
     try edit(self.writer.context, .{ .text = .{ .bytes = text, .line = 1 } });
 }

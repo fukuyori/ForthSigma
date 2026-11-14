@@ -263,6 +263,7 @@ pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
         .system => {
             const command = try self.memoryRange();
             const system_fn = self.writer.system_fn orelse return error.HostUnavailable;
+            self.noteExternalOutput();
             self.system_status = try system_fn(self.writer.context, command);
         },
         .throw => {

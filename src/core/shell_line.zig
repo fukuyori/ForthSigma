@@ -22,5 +22,6 @@ pub fn run(self: *forth.State) forth.RuntimeError!void {
     self.setSourceCursor(self.sourceCursor() + length + @intFromBool(length < rest.len));
     self.write("\n");
     try self.checkOutputError();
+    self.noteExternalOutput();
     self.system_status = try callback(self.writer.context, command);
 }

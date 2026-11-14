@@ -196,7 +196,7 @@ On Linux and macOS, the keys that are not characters come from the terminal as e
 
 To find the pixel under the mouse on the terminal, Sigma asks the terminal where the cursor is after `SHOW` draws the image (only after `MOUSE-ON`), so the position is known from the first `SHOW` after `MOUSE-ON`. With half blocks, each character is two pixels; with Sixel the cell size comes from the terminal, or 10 by 20 pixels is assumed.
 
-A `SHOW` on the terminal draws over the image it drew last when nothing was written in between, so an animation stays in place instead of scrolling; anything written in between (such as the prompt) starts a new picture below. With Sixel, the rows the picture takes are counted from the cell height, which may not match every terminal.
+A `SHOW` on the terminal draws over the image it drew last when nothing was written in between, so an animation stays in place instead of scrolling; anything written in between (such as the prompt) starts a new picture below. With Sixel, the rows the picture takes are counted from the cell height, which may not match every terminal. Direct `STDOUT WRITE-FILE`/`WRITE-LINE` output also starts a new picture; writes to other files and private string captures do not. `SYSTEM`, `SH` and external editor callbacks conservatively start a new picture even when silent or unsuccessful, because their terminal output is not counted by the VM.
 
 ### GUI
 

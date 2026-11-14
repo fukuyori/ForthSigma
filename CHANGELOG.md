@@ -13,6 +13,8 @@
 
 ### Fixed
 
+- Terminal `SHOW` no longer rewinds over intervening direct STDOUT file writes or external command/editor output. Silent or failing external callbacks also separate frames conservatively; private captures and ordinary file output retain frame reuse.
+
 - The macOS PKG script now uses `-e` for its signed-binary execution check, checks the exit status, and skips execution when building only for another architecture. It reports missing option values, selects only a working notary profile, and removes temporary package contents on failure.
 - Deep recursion through `CATCH` could exhaust the native stack before reaching Sigma's return-stack limit, particularly in Debug builds. Compiled catches of colon definitions and `DOES>` words now keep their continuations in Sigma's call stack and return the caught error normally at the limit.
 - On Linux, a program built with `-Doptimize=fast` (or `safe` or `small`) against glibc and started from a terminal got keys from `INKEY` that nobody pressed (`0 150 0 0`), so a game that reads the keys before its first `SHOW`, such as `examples/hopper.fs`, never opened its window. Reading the terminal's settings wrote 16 bytes past the place for them, over the keys waiting for `INKEY`. The ZIPs of the releases, which do not use glibc, were not affected.
