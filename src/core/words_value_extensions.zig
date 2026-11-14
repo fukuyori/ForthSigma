@@ -7,11 +7,31 @@ pub const words = [_]defs.Builtin{ .avalue, .addressable, .addr, .compile_addr, 
 
 /// Linked only while a host scope is on the stack. Dictionary invalidation must
 /// not let cleanup store an old action into a removed/reused deferred cell.
-pub const Guard = struct { previous: ?*Guard, target: u16, valid: bool = true, depth: u8 };
+pub const Guard = struct {
+    previous: ?*Guard,
+    target: u16,
+    valid: bool = true,
+    saved_action: map.Cell = -1,
+    saved_valid: bool = true,
+    depth: u8,
+};
+pub fn pushGuard(self: *forth.State, guard: *Guard, target: u16) forth.RuntimeError!void {
+    const depth = if (self.wrap_guard) |previous| previous.depth else 0;
+    if (depth == 64) return error.ReturnStackOverflow;
+    guard.* = .{ .previous = self.wrap_guard, .target = target, .depth = depth + 1 };
+    self.wrap_guard = guard;
+}
+pub fn popGuard(self: *forth.State, guard: *const Guard) void {
+    self.wrap_guard = guard.previous;
+}
 pub fn invalidate(self: *forth.State, first: u16) void {
     var guard = self.wrap_guard;
     while (guard) |g| : (guard = g.previous) {
         if (g.target >= first) g.valid = false;
+        if (g.saved_action >= first) {
+            g.saved_action = -1;
+            g.saved_valid = false;
+        }
     }
     if (self.colon_is_word) |id| {
         if (id >= first or self.colon_is_target >= first) self.colon_is_word = null;
@@ -91,18 +111,18 @@ pub fn execute(self: *forth.State, comptime word: defs.Builtin) forth.RuntimeErr
             const callback = try self.wordId(try self.peek(0));
             const slot = self.words[target].value;
             const old = try self.readCell(slot);
-            const depth = if (self.wrap_guard) |p| p.depth else 0;
-            if (depth == 64) return error.ReturnStackOverflow;
-            var guard = Guard{ .previous = self.wrap_guard, .target = target, .depth = depth + 1 };
-            self.wrap_guard = &guard;
+            if (old != -1) _ = try self.wordId(old);
+            var guard: Guard = undefined;
+            try pushGuard(self, &guard, target);
+            guard.saved_action = old;
             defer {
-                if (guard.valid) self.writeCell(slot, old) catch unreachable;
-                self.wrap_guard = guard.previous;
+                if (guard.valid) self.writeCell(slot, guard.saved_action) catch unreachable;
+                popGuard(self, &guard);
             }
             try self.writeCell(slot, action);
             self.data_depth -= 3;
             try self.executeWord(callback);
-            if (!guard.valid) return error.InvalidExecutionToken;
+            if (!guard.valid or !guard.saved_valid) return error.InvalidExecutionToken;
         },
         else => unreachable,
     }

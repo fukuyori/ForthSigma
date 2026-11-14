@@ -222,6 +222,7 @@ pub const State = struct {
     quote_depth: usize = 0,
     quote_closing: bool = false,
     quote_root: u16 = 0,
+    image_generation: u64 = 0,
     wrap_guard: ?*@import("core/words_value_extensions.zig").Guard = null,
     colon_is_word: ?u16 = null,
     colon_is_target: u16 = 0,

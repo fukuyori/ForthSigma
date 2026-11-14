@@ -86,9 +86,23 @@ pub fn isGroupWord(self: *const State, word: defs.Word, library_name: []const u8
 pub fn require(self: *State, comptime group: anytype, library: []const u8) RuntimeError!void {
     if (self.defining) return error.InvalidDefinition;
     if (isLoaded(self, group)) return;
+    // Internal vocabulary/word creation must not consume the caller's one-shot
+    // definition name; prerequisites and failures obey the same isolation.
+    const noname = self.noname_next;
+    const name_len = self.next_name_len;
+    const name = self.next_name;
+    self.noname_next = false;
+    self.next_name_len = 0;
+    defer {
+        self.noname_next = noname;
+        self.next_name_len = name_len;
+        self.next_name = name;
+    }
     // The groups it needs stay loaded, also when this one fails.
     inline for (group.prerequisites) |prerequisite| try prerequisite.require(self);
     const wordlists = self.wordlistCount();
+    const case_lists = self.readCellConst(memory_map.case_wordlists_address);
+    const silent_lists = self.readCellConst(memory_map.silent_wordlists_address);
     if (wordlists == max_wordlists) return error.DictionaryFull;
     var order_buffer: [max_search_order]Cell = undefined;
     const saved_order = self.searchOrder(&order_buffer);
@@ -124,6 +138,8 @@ pub fn require(self: *State, comptime group: anytype, library: []const u8) Runti
         }
         if (self.word_count > first_word) self.forgetFrom(first_word);
         self.writeCell(wordlist_count_address, wordlists) catch unreachable;
+        self.writeCell(memory_map.case_wordlists_address, case_lists) catch unreachable;
+        self.writeCell(memory_map.silent_wordlists_address, silent_lists) catch unreachable;
         self.writeCell(current_wordlist_address, current) catch unreachable;
         self.setSearchOrder(order[0..depth]);
         self.restoreLoadedSourceFiles(loaded_files);

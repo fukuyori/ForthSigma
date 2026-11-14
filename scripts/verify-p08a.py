@@ -3,7 +3,9 @@
 import argparse,json,pathlib,subprocess
 p=argparse.ArgumentParser();p.add_argument('--sigma',type=pathlib.Path,default=pathlib.Path('zig-out/bin/sigma'));p.add_argument('--reference',type=pathlib.Path,default=pathlib.Path('.work/p08a-check/spec-probes.json'));a=p.parse_args();sigma=str(a.sigma.resolve());rows=[]
 policies={'compile-only:]]':(0,'0 0 '),'nextname-empty':(0,'0 0 7 0 '),'empty-name-link':(0,'0 0 0 '),'in-constant':(1,'DEFINITION ERROR !\n'),'wordlist-words':(0,'Alpha Beta 0'),'vlist':(0,'Alpha Beta 0'),'vocs':(0,'Named EKEYS Root Forth Macros 0')}
-for c in json.loads(a.reference.read_text())['cases']:
+cases=json.loads(a.reference.read_text())['cases']
+assert set(policies) <= {c['case'] for c in cases}, 'unmatched policy override'
+for c in cases:
  name=c['case'];code,expected=policies.get(name,(c['exit'],c['stdout']))
  r=subprocess.run([sigma,'--max-steps','100000','-e',c['source']+' DEPTH . BYE'],capture_output=True,input=b'',timeout=10)
  actual=r.stdout.decode(errors='replace')

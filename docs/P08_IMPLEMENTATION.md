@@ -1,6 +1,6 @@
 # P08 implementation and validation
 
-Current: P08a574 and P08b575 are complete(auto),29/29 words; parent551 is complete. P07 review fixes and P08a were pushed as39e5501; P08b is included in the corresponding commit; see git history. External P08 review has not been performed. Next implementation candidate:576 P09a.
+Current: P08a574 and P08b575 are complete(auto),29/29 words; parent551 is complete. P07 review fixes and P08a were pushed as39e5501; P08b was pushed as4033ef1. P08 Claude Code review and fixes are complete under700; review changes are included in the corresponding commit; see git history. [Review](P08_REVIEW.md). Next implementation candidate:576 P09a.
 
 ## P08a: name tokens and wordlists (574)
 
@@ -63,7 +63,7 @@ Windows/Linux native checks remain deferred under607. No package/release/version
 
 ## P08b: addressable values and deferred actions (575)
 
-All6 words complete(auto); P08 now has29/29 implemented words. P07 review fixes and P08a were committed/pushed as39e5501 before this unit. P08 external review has not been performed.
+All6 words complete(auto); P08 now has29/29 implemented words. P07 review fixes and P08a were committed/pushed as39e5501 before this unit. P08 external review and fixes are recorded in [P08_REVIEW.md](P08_REVIEW.md).
 
 | Word | Stack effect | Behavior |
 | --- | --- | --- |
@@ -102,3 +102,7 @@ AVALUE's typed slot retains heap roots and data pointers through full restore an
 scripts/probe-p08b.py records64 observations. scripts/verify-p08b.py passes54 matching stdout/exit cases plus10 explicit Sigma error/compiler policies. Native SAVE/LOAD-DICTIONARY into a nonempty dictionary/heap and SAVESYS execution both pass, exercising an AVALUE heap root, compiled ADDR and deferred-action relocation. Artifacts: .work/p08b-check/.
 
 Twelve Zig regressions pass: typed full/partial writes, separate ADDR actions and scalar/float/double/xt locals, :IS timing/rollback/active-save rejection, captured/uninitialized actions, nested/throwing/rebinding wrappers, same-id reuse and error priority, unrelated FORGET, successful/failed image restoration,64-level unwind and all3 image routes. Normal/minimal tests (all optional groups disabled, including freestanding checks) and build pass; P08a and every P07 verifier also pass. Logs: .zig-cache/p08b-*.log. No Windows/Linux native execution, version change, package creation or unrequested external review was performed.
+
+## P08 review follow-up (700)
+
+The requested full review found saved-action lifetime, lazy naming and callback-reuse bugs; Codex additionally reproduced stale CURRENT after full restore and leaked masks after failed loading. Five regressions failed before fixes; eight final regressions pass, along with normal/minimal tests, build, P08/P07 verifiers and3 native before/after checks. Guarded MAP/WRAP scopes now share64 levels; invalidated saved actions become uninitialized, and a full-restore generation prevents reinstalling old CURRENT. Library naming/masks are isolated with prerequisite preservation. Verifiers reject unmatched policy names. No wire ABI changes. [Findings, scope and evidence](P08_REVIEW.md).

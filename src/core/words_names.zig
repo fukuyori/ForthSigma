@@ -4,6 +4,7 @@ const forth = @import("../forth.zig");
 const defs = @import("defs.zig");
 const map = @import("memory_map.zig");
 const lists = @import("wordlists.zig");
+const scopes = @import("words_value_extensions.zig");
 pub const words = [_]defs.Builtin{ .dot_id, .dot_voc, .compile_only_query, .context_address, .cs_vocabulary, .cs_wordlist, .current_address, .find_name_in, .in_vocabulary, .in_wordlist, .latest_nt, .map_vocs, .mwords, .name_to_link, .nextname, .obsolete_query, .root_vocabulary, .seal, .table_wordlist, .vlist, .vocs, .wordlist_words, .xt_to_name };
 fn displayWords(self: *forth.State, wid: map.Cell, pattern: ?[]const u8) void {
     // Keep Sigma WORDS ordering and layout; MWORDS is also oldest first.
@@ -21,8 +22,13 @@ fn oneShot(self: *forth.State, wid: map.Cell) forth.RuntimeError!void {
     const token = (try self.nextSourceToken()) orelse return error.InvalidDefinition;
     const xt = try self.lookupOrFail(token);
     const old = self.currentWordlist();
+    const generation = self.image_generation;
     try self.writeCell(map.current_wordlist_address, wid);
-    defer self.writeCell(map.current_wordlist_address, old) catch unreachable;
+    // A successful full restore owns the new CURRENT. Never install a wid from
+    // the replaced dictionary, even when the same number was allocated again.
+    defer if (self.image_generation == generation) {
+        self.writeCell(map.current_wordlist_address, old) catch unreachable;
+    };
     try self.executeWord(xt);
 }
 pub fn execute(self: *forth.State, comptime word: defs.Builtin) forth.RuntimeError!void {
@@ -124,15 +130,22 @@ pub fn execute(self: *forth.State, comptime word: defs.Builtin) forth.RuntimeErr
             self.write(" ");
         },
         .vocs, .map_vocs => {
-            const xt = if (word == .map_vocs) try self.wordId(try self.pop()) else 0;
+            const xt = if (word == .map_vocs) try self.wordId(try self.peek(0)) else 0;
             const count = self.wordlistCount();
             if (count < map.ekeys_wordlist or count > map.max_wordlists) return error.InvalidWordlist;
+            var guard: scopes.Guard = undefined;
+            if (word == .map_vocs) {
+                try scopes.pushGuard(self, &guard, xt);
+                self.data_depth -= 1;
+            }
+            defer if (word == .map_vocs) scopes.popGuard(self, &guard);
             // Snapshot the bound; lists allocated by callbacks are for the next pass.
             var wid = count;
             while (wid > 0) : (wid -= 1) {
                 if (word == .map_vocs) {
                     try self.push(wid);
                     try self.executeWord(xt);
+                    if (!guard.valid) return error.InvalidExecutionToken;
                 } else {
                     self.writeWordlistName(wid);
                     self.write(" ");
@@ -141,6 +154,7 @@ pub fn execute(self: *forth.State, comptime word: defs.Builtin) forth.RuntimeErr
             if (word == .map_vocs) {
                 try self.push(map.macros_wordlist);
                 try self.executeWord(xt);
+                if (!guard.valid) return error.InvalidExecutionToken;
             } else self.write("Macros \n");
         },
         .wordlist_words => displayWords(self, try self.validWordlist(try self.pop()), null),
