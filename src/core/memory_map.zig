@@ -378,6 +378,7 @@ pub const errno_bad_file: Cell = 9;
 pub const errno_no_memory: Cell = 12;
 
 pub const errno_invalid: Cell = 22;
+pub const errno_broken_pipe: Cell = 32;
 
 pub const line_terminator = if (builtin_info.os.tag == .windows) "\r\n" else "\n";
 

@@ -22,6 +22,10 @@ pub const LineResult = struct { length: usize = 0, found: bool = false, ior: Cel
 
 /// Host file operations. Ids are opaque cells; the standard streams use the fixed ids above.
 pub const FileOps = struct {
+    /// Borrowable file stream connected to a shell command; only one-way access.
+    open_pipe: ?*const fn (?*anyopaque, []const u8, FileAccess) FileResult = null,
+    /// Wait for/close the owned pipe; value is a bit-cast signed process status.
+    close_pipe: ?*const fn (?*anyopaque, Cell) FileResult = null,
     open_dir: ?*const fn (?*anyopaque, []const u8) FileResult = null,
     /// Copies exactly length bytes, even on truncation; no NUL is added.
     /// found=false/ior=0 means EOF and leaves the buffer untouched.

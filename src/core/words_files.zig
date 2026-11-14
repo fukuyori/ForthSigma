@@ -32,21 +32,23 @@ const truth = integer_math.truth;
 
 /// The built-in words this file executes; executeBuiltin dispatches by this list.
 pub const words = [_]Builtin{
-    .include,            .require,        .included,         .required,            .included_query, .source_file_name,
-    .source_line_number, .read_only,      .write_only,       .read_write,          .stdin,          .stdout,
-    .stderr,             .open_file,      .create_file,      .close_file,          .read_line,      .write_line,
-    .write_file,         .file_size,      .reposition_file,  .slurp_file,          .read_file,      .bin,
-    .file_position,      .resize_file,    .flush_file,       .delete_file,         .rename_file,    .file_status,
-    .include_file,       .emit_file,      .slurp_fid,        .key_file,            .key_query_file, .file_eof_query,
-    .plus_fmode,         .dot_included,   .triple_backslash, .absolute_file_query, .clear_path,     .also_path,
-    .dot_path,           .path_plus,      .path_equals,      .open_path_file,      .file_to_path,   .basename,
-    .dirname,            .filename_match, .get_dir,          .set_dir,             .equals_mkdir,   .mkdir_parents,
-    .open_dir,           .read_dir,       .close_dir,        .fpath,               .outfile_id,     .outfile_execute,
-    .infile_id,          .infile_execute, .csv_quote,        .csv_separator,       .dot_quoted_csv, .read_csv,
+    .include,            .require,        .included,          .required,            .included_query, .source_file_name,
+    .source_line_number, .read_only,      .write_only,        .read_write,          .stdin,          .stdout,
+    .stderr,             .open_file,      .create_file,       .close_file,          .read_line,      .write_line,
+    .write_file,         .file_size,      .reposition_file,   .slurp_file,          .read_file,      .bin,
+    .file_position,      .resize_file,    .flush_file,        .delete_file,         .rename_file,    .file_status,
+    .include_file,       .emit_file,      .slurp_fid,         .key_file,            .key_query_file, .file_eof_query,
+    .plus_fmode,         .dot_included,   .triple_backslash,  .absolute_file_query, .clear_path,     .also_path,
+    .dot_path,           .path_plus,      .path_equals,       .open_path_file,      .file_to_path,   .basename,
+    .dirname,            .filename_match, .get_dir,           .set_dir,             .equals_mkdir,   .mkdir_parents,
+    .open_dir,           .read_dir,       .close_dir,         .fpath,               .outfile_id,     .outfile_execute,
+    .infile_id,          .infile_execute, .csv_quote,         .csv_separator,       .dot_quoted_csv, .read_csv,
+    .open_pipe,          .close_pipe,     .broken_pipe_error,
 };
 
 pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
     switch (builtin) {
+        .open_pipe, .close_pipe, .broken_pipe_error => try @import("pipes.zig").execute(self, builtin),
         .read_csv => try @import("csv_reader.zig").read(self),
         .csv_quote, .csv_separator, .dot_quoted_csv => try @import("csv.zig").execute(self, builtin),
         .infile_id => try self.push(self.input_file orelse memory_map.stdin_fileid),

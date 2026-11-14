@@ -28,12 +28,16 @@ const libc = struct {
     extern "c" fn fopen([*:0]const u8, [*:0]const u8) ?*anyopaque;
     extern "c" fn remove([*:0]const u8) c_int;
     extern "c" fn system(?[*:0]const u8) c_int;
+    extern "c" fn popen([*:0]const u8, [*:0]const u8) ?*anyopaque;
+    extern "c" fn pclose(?*anyopaque) c_int;
 };
 
 const wide_c = struct {
     extern "c" fn _wfopen([*:0]const u16, [*:0]const u16) ?*anyopaque;
     extern "c" fn _wremove([*:0]const u16) c_int;
     extern "c" fn _wsystem(?[*:0]const u16) c_int;
+    extern "c" fn _wpopen([*:0]const u16, [*:0]const u16) ?*anyopaque;
+    extern "c" fn _pclose(?*anyopaque) c_int;
     extern "kernel32" fn MoveFileExW([*:0]const u16, [*:0]const u16, u32) callconv(.winapi) c_int;
     const errno_illegal_sequence = 42;
     const errno_name_too_long = 38;
@@ -352,6 +356,8 @@ const max_open_files = 64;
 const errno_io = 5;
 const errno_too_many_files = 24;
 var open_files: [max_open_files]?*anyopaque = @splat(null);
+var file_is_pipe: [max_open_files]bool = @splat(false);
+const PipeSignalScope = @import("host_pipe_signal.zig").Scope;
 // Semantic EOF is independent of temporary seek/peek operations on C streams.
 var file_eof: [max_open_files]bool = @splat(false);
 var file_peeked: [max_open_files]bool = @splat(false);
@@ -547,14 +553,65 @@ fn fileOpenMode(name: []const u8, access: forth.FileAccess, create: bool, permis
         }
     }
     open_files[slot] = file;
+    file_is_pipe[slot] = false;
     file_eof[slot] = false;
     file_peeked[slot] = false;
     return .{ .value = @intCast(forth.first_file_id + @as(forth.Cell, @intCast(slot))) };
 }
 
+fn nativePipeClose(file: *anyopaque) c_int {
+    return if (builtin.os.tag == .windows) wide_c._pclose(file) else libc.pclose(file);
+}
+
+fn fileOpenPipe(_: ?*anyopaque, command: []const u8, access: forth.FileAccess) forth.FileResult {
+    if (access == .read_write) return .{ .ior = forth.errnoIor(forth.errno_invalid) };
+    var path: [4096:0]u8 = undefined;
+    const text = cPath(command, &path) orelse return .{ .ior = forth.errnoIor(forth.errno_invalid) };
+    const slot = for (open_files, 0..) |file, index| {
+        if (file == null) break index;
+    } else return .{ .ior = forth.errnoIor(errno_too_many_files) };
+    flushOutput();
+    clearErrno();
+    const file = (if (builtin.os.tag == .windows) native: {
+        var wide: [8192]u16 = undefined;
+        break :native wide_c._wpopen(wide_c.from(text, &wide) orelse return .{ .ior = lastIor() }, if (access == .read_only) &[_:0]u16{ 'r', 'b' } else &[_:0]u16{ 'w', 'b' });
+    } else libc.popen(text, if (access == .read_only) "r" else "w")) orelse return .{ .ior = lastIor() };
+    // Immediate writes report EPIPE at the operation that caused it. Windows
+    // reads also need this so PeekNamedPipe observes all unconsumed input.
+    if (access == .write_only or builtin.os.tag == .windows) {
+        if (setvbuf(file, null, @import("c_file")._IONBF, 0) != 0) {
+            _ = nativePipeClose(file);
+            return .{ .ior = forth.errnoIor(errno_io) };
+        }
+    }
+    open_files[slot] = file;
+    file_is_pipe[slot] = true;
+    file_eof[slot] = false;
+    file_peeked[slot] = false;
+    return .{ .value = @intCast(forth.first_file_id + @as(forth.Cell, @intCast(slot))) };
+}
+
+fn fileClosePipe(_: ?*anyopaque, fileid: forth.Cell) forth.FileResult {
+    const failure: forth.FileResult = .{ .value = @bitCast(@as(forth.Cell, -1)), .ior = badFileIor() };
+    const file = openedFile(fileid) orelse return failure;
+    const slot = fileSlot(fileid);
+    if (!file_is_pipe[slot]) return failure;
+    var scope = PipeSignalScope.begin(true) catch return .{ .value = failure.value, .ior = forth.errnoIor(errno_io) };
+    open_files[slot] = null;
+    file_is_pipe[slot] = false;
+    file_eof[slot] = false;
+    file_peeked[slot] = false;
+    clearErrno();
+    const status = nativePipeClose(file);
+    var ior: forth.Cell = if (status == -1) lastIor() else 0;
+    if (!scope.end() and ior == 0) ior = forth.errnoIor(errno_io);
+    return .{ .value = @bitCast(@as(forth.Cell, status)), .ior = ior };
+}
+
 fn fileClose(_: ?*anyopaque, fileid: forth.Cell) forth.Cell {
     if (fileid == forth.stdin_fileid or fileid == forth.stdout_fileid or fileid == forth.stderr_fileid) return 0;
     const file = openedFile(fileid) orelse return badFileIor();
+    if (file_is_pipe[fileSlot(fileid)]) return badFileIor();
     open_files[@intCast(fileid - forth.first_file_id)] = null;
     clearErrno();
     return if (fclose(file) == 0) 0 else lastIor();
@@ -645,12 +702,16 @@ fn fileWrite(context: ?*anyopaque, fileid: forth.Cell, bytes: []const u8) forth.
     }
     if (fileid == forth.stderr_fileid) return if (writeStandardError(bytes)) 0 else forth.errnoIor(errno_io);
     const file = openedFile(fileid) orelse return badFileIor();
+    var scope = PipeSignalScope.begin(file_is_pipe[fileSlot(fileid)]) catch return forth.errnoIor(errno_io);
     clearErrno();
-    return if (fwrite(bytes.ptr, 1, bytes.len, file) == bytes.len) 0 else lastIor();
+    var ior: forth.Cell = if (fwrite(bytes.ptr, 1, bytes.len, file) == bytes.len) 0 else lastIor();
+    if (!scope.end() and ior == 0) ior = forth.errnoIor(errno_io);
+    return ior;
 }
 
 fn fileSize(_: ?*anyopaque, fileid: forth.Cell) forth.FileResult {
     const file = openedFile(fileid) orelse return .{ .ior = badFileIor() };
+    if (file_is_pipe[fileSlot(fileid)]) return .{ .ior = forth.errnoIor(29) };
     clearErrno();
     const position = tell64(file);
     if (position < 0 or seek64(file, 0, 2) != 0) return .{ .ior = lastIor() };
@@ -662,6 +723,7 @@ fn fileSize(_: ?*anyopaque, fileid: forth.Cell) forth.FileResult {
 
 fn fileReposition(_: ?*anyopaque, fileid: forth.Cell, position: forth.UCell) forth.Cell {
     const file = openedFile(fileid) orelse return badFileIor();
+    if (file_is_pipe[fileSlot(fileid)]) return forth.errnoIor(29);
     clearErrno();
     if (seek64(file, @intCast(position), 0) != 0) return lastIor();
     file_eof[fileSlot(fileid)] = false;
@@ -671,6 +733,7 @@ fn fileReposition(_: ?*anyopaque, fileid: forth.Cell, position: forth.UCell) for
 
 fn filePosition(_: ?*anyopaque, fileid: forth.Cell) forth.FileResult {
     const file = openedFile(fileid) orelse return .{ .ior = badFileIor() };
+    if (file_is_pipe[fileSlot(fileid)]) return .{ .ior = forth.errnoIor(29) };
     clearErrno();
     const position = tell64(file);
     return if (position < 0) .{ .ior = lastIor() } else .{ .value = @intCast(position) };
@@ -679,6 +742,7 @@ fn filePosition(_: ?*anyopaque, fileid: forth.Cell) forth.FileResult {
 fn fileResize(_: ?*anyopaque, fileid: forth.Cell, size: forth.UCell) forth.Cell {
     const file = openedFile(fileid) orelse return badFileIor();
     if (size > std.math.maxInt(i64)) return forth.errnoIor(forth.errno_invalid);
+    if (file_is_pipe[fileSlot(fileid)]) return forth.errnoIor(29);
     clearErrno();
     if (fflush(file) != 0) return lastIor();
     // _chsize_s returns the error number itself; ftruncate returns -1 and sets errno.
@@ -691,8 +755,11 @@ fn fileFlush(_: ?*anyopaque, fileid: forth.Cell) forth.Cell {
     if (fileid == forth.stdout_fileid) flushOutput();
     if (fileid == forth.stdout_fileid or fileid == forth.stderr_fileid) return 0;
     const file = openedFile(fileid) orelse return badFileIor();
+    var scope = PipeSignalScope.begin(file_is_pipe[fileSlot(fileid)]) catch return forth.errnoIor(errno_io);
     clearErrno();
-    return if (fflush(file) == 0) 0 else lastIor();
+    var ior: forth.Cell = if (fflush(file) == 0) 0 else lastIor();
+    if (!scope.end() and ior == 0) ior = forth.errnoIor(errno_io);
+    return ior;
 }
 
 /// The name as a C string, or null when it is too long or holds a NUL.
@@ -755,9 +822,14 @@ fn fileStatus(_: ?*anyopaque, name: []const u8) forth.FileResult {
 }
 
 fn closeAllFiles() void {
-    for (&open_files) |*slot| {
-        if (slot.*) |file| _ = fclose(file);
+    for (&open_files, 0..) |*slot, index| {
+        if (slot.*) |file| {
+            if (file_is_pipe[index]) {
+                _ = fileClosePipe(null, forth.first_file_id + @as(forth.Cell, @intCast(index)));
+            } else _ = fclose(file);
+        }
         slot.* = null;
+        file_is_pipe[index] = false;
     }
 }
 
@@ -902,7 +974,7 @@ fn fileStdinByte(wait: bool) forth.RuntimeError!?u8 {
 }
 
 const host_directories = @import("host_directories.zig");
-const file_ops = forth.FileOps{ .open_dir = host_directories.open, .read_dir = host_directories.read, .close_dir = host_directories.close, .mkdir = makeDirectory, .get_dir = getDirectory, .set_dir = setDirectory, .user_home = userHome, .open = fileOpen, .close = fileClose, .read_line = fileReadLine, .read = fileRead, .write = fileWrite, .size = fileSize, .reposition = fileReposition, .position = filePosition, .resize = fileResize, .flush = fileFlush, .delete = fileDelete, .rename = fileRename, .status = fileStatus, .key = fileKey, .unread = fileUnread, .ready = fileReady, .eof = fileEof, .create_mode = fileCreateMode };
+const file_ops = forth.FileOps{ .open_pipe = fileOpenPipe, .close_pipe = fileClosePipe, .open_dir = host_directories.open, .read_dir = host_directories.read, .close_dir = host_directories.close, .mkdir = makeDirectory, .get_dir = getDirectory, .set_dir = setDirectory, .user_home = userHome, .open = fileOpen, .close = fileClose, .read_line = fileReadLine, .read = fileRead, .write = fileWrite, .size = fileSize, .reposition = fileReposition, .position = filePosition, .resize = fileResize, .flush = fileFlush, .delete = fileDelete, .rename = fileRename, .status = fileStatus, .key = fileKey, .unread = fileUnread, .ready = fileReady, .eof = fileEof, .create_mode = fileCreateMode };
 
 /// Lets the Windows console interpret the ANSI sequences written by PAGE.
 fn enableVirtualTerminal() void {
@@ -2508,4 +2580,77 @@ test "P05b native clocks have Unix ns units and nondecreasing process CPU counte
     const second = try processCpuTimes(null);
     try std.testing.expect(second.user >= first.user);
     try std.testing.expect(second.system >= first.system);
+}
+
+test "native one-way pipes read status ownership and invalid modes" {
+    if (builtin.os.tag == .windows) return error.SkipZigTest;
+    const opened = fileOpenPipe(null, "printf ABC; exit 3", .read_only);
+    try std.testing.expectEqual(@as(forth.Cell, 0), opened.ior);
+    const id: forth.Cell = @bitCast(opened.value);
+    defer closeAllFiles();
+    try std.testing.expectEqual(badFileIor(), fileClose(null, id));
+    var text: [8]u8 = undefined;
+    const read = fileRead(null, id, &text);
+    try std.testing.expectEqual(@as(forth.UCell, 3), read.value);
+    try std.testing.expectEqualStrings("ABC", text[0..3]);
+    const closed = fileClosePipe(null, id);
+    try std.testing.expectEqual(@as(forth.Cell, 0), closed.ior);
+    try std.testing.expectEqual(@as(forth.Cell, if (builtin.os.tag == .windows) 3 else 768), @as(forth.Cell, @bitCast(closed.value)));
+    try std.testing.expectEqual(badFileIor(), fileClosePipe(null, id).ior);
+    try std.testing.expectEqual(forth.errnoIor(forth.errno_invalid), fileOpenPipe(null, "exit 0", .read_write).ior);
+    try std.testing.expectEqual(forth.errnoIor(forth.errno_invalid), fileOpenPipe(null, "exit 0\x00bad", .read_only).ior);
+}
+
+test "native pipe write after child exit reports EPIPE and restores SIGPIPE disposition" {
+    if (builtin.os.tag == .windows) return error.SkipZigTest;
+    var before = std.mem.zeroes(std.c.Sigaction);
+    try std.testing.expectEqual(@as(c_int, 0), std.c.sigaction(.PIPE, null, &before));
+    const opened = fileOpenPipe(null, "exit 0", .write_only);
+    try std.testing.expectEqual(@as(forth.Cell, 0), opened.ior);
+    const id: forth.Cell = @bitCast(opened.value);
+    defer closeAllFiles();
+    var saw_broken = false;
+    for (0..100) |_| {
+        const ior = fileWrite(null, id, "x");
+        if (ior == forth.errnoIor(32)) {
+            saw_broken = true;
+            break;
+        }
+        try std.testing.expectEqual(@as(forth.Cell, 0), ior);
+        try sleepMilliseconds(null, 10);
+    }
+    try std.testing.expect(saw_broken);
+    var after = std.mem.zeroes(std.c.Sigaction);
+    try std.testing.expectEqual(@as(c_int, 0), std.c.sigaction(.PIPE, null, &after));
+    try std.testing.expectEqual(before.handler.handler, after.handler.handler);
+    try std.testing.expectEqual(before.flags, after.flags);
+    try std.testing.expectEqualSlices(u8, std.mem.asBytes(&before.mask), std.mem.asBytes(&after.mask));
+    try std.testing.expectEqual(@as(forth.Cell, 0), fileFlush(null, id));
+    try std.testing.expectEqual(@as(forth.Cell, 0), fileClosePipe(null, id).ior);
+}
+
+test "native pipe shutdown reaps writers and rejects foreign closes and seeks" {
+    if (builtin.os.tag == .windows) return error.SkipZigTest;
+    defer closeAllFiles();
+    const path = ".zig-cache/p06b-pipe-cleanup.txt";
+    defer _ = fileDelete(null, path);
+    const opened = fileOpenPipe(null, "cat > .zig-cache/p06b-pipe-cleanup.txt", .write_only);
+    try std.testing.expectEqual(@as(forth.Cell, 0), opened.ior);
+    const id: forth.Cell = @bitCast(opened.value);
+    try std.testing.expectEqual(forth.errnoIor(29), fileSize(null, id).ior);
+    try std.testing.expectEqual(forth.errnoIor(29), filePosition(null, id).ior);
+    try std.testing.expectEqual(forth.errnoIor(29), fileReposition(null, id, 0));
+    try std.testing.expectEqual(forth.errnoIor(29), fileResize(null, id, 0));
+    try std.testing.expectEqual(@as(forth.Cell, 0), fileWrite(null, id, "kept"));
+    closeAllFiles();
+    for (open_files) |file| try std.testing.expect(file == null);
+    const regular = fileOpen(null, path, .read_only, false);
+    try std.testing.expectEqual(@as(forth.Cell, 0), regular.ior);
+    const regular_id: forth.Cell = @bitCast(regular.value);
+    try std.testing.expectEqual(badFileIor(), fileClosePipe(null, regular_id).ior);
+    var bytes: [8]u8 = undefined;
+    const read = fileRead(null, regular_id, &bytes);
+    try std.testing.expectEqual(@as(forth.UCell, 4), read.value);
+    try std.testing.expectEqualStrings("kept", bytes[0..4]);
+    try std.testing.expectEqual(@as(forth.Cell, 0), fileClose(null, regular_id));
 }

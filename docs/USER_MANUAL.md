@@ -1284,3 +1284,10 @@ Empty FPATH uses raw cwd-relative lookup; configured FPATH uses source search. P
 ### Shell command line (P06b)
 
 `SH command...` prints a newline and executes the remaining source as a shell command using SYSTEM. `$?` holds the returned platform status (POSIX wait status; Windows command processor exit code). A compiled wrapper parses its caller's source at runtime. A NUL ends the command like `0 PARSE`. Host failure preserves the previous status; failure to print the newline prevents execution. Shell output uses host streams; OUTFILE/capture applies only to the VM newline. Existing SYSTEM command limits and terminal handoff apply. [Details](P06_IMPLEMENTATION.md).
+
+
+### One-way shell pipes (P06b)
+
+`OPEN-PIPE ( addr u fam -- fileid ior )` opens a command for R/O or W/O (BIN accepted; R/W rejected). Use file read/write/key APIs or INFILE/OUTFILE with the result. `CLOSE-PIPE ( fileid -- status ior )` closes it and waits for the command, returning native status without changing `$?`. Close with CLOSE-PIPE, not CLOSE-FILE; mismatched closes return an error and retain ownership. Size/seek/resize are unavailable. Live pipes are not saved in images; shutdown closes remaining owned pipes.
+
+`BROKEN-PIPE-ERROR` returns Sigma's EPIPE ior-544. This intentionally differs from Gforth's-2049. Pipe writes do not terminate Sigma on SIGPIPE; native writer pipes report write failures without stdio buffering. Native commands support up to4095 UTF-8 bytes, without NUL. Pipe operations require files support and custom FileOps open_pipe/close_pipe hooks. [Details](P06_IMPLEMENTATION.md).

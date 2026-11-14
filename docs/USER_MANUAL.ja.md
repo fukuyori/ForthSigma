@@ -1276,3 +1276,10 @@ addr/uは取得可能なOS/CRTのTZ名を最大256バイトで借用し、次の
 ### シェルコマンド行（P06b）
 
 `SH command...`は改行を出力し、残りの入力をSYSTEMでシェルコマンドとして実行します。`$?`に既存のプラットフォーム終了値（POSIXのwait状態、Windowsのコマンドプロセッサ終了コード）を保存します。定義内にコンパイルしたSHも実行時に呼出元の入力を解析します。NULは`0 PARSE`同様にコマンドの区切りです。ホスト実行失敗では以前の終了値を維持し、事前の改行出力に失敗した場合はコマンドを実行しません。シェルの出力はホストのストリームを使い、OUTFILEやキャプチャはVMの改行だけに適用します。SYSTEMの既存のコマンド長制限・端末引渡し規則を使います。[記録](P06_IMPLEMENTATION.md)。
+
+
+### 一方向シェルパイプ（P06b）
+
+`OPEN-PIPE ( addr u fam -- fileid ior )`はコマンドをR/OまたはW/Oで開きます。BINは使用でき、R/Wはエラーです。通常のファイル読書き・キー入力やINFILE/OUTFILEで利用できます。`CLOSE-PIPE ( fileid -- status ior )`は閉じてコマンドの終了を待ち、ネイティブ終了値を返します。`$?`は変更しません。CLOSE-FILEではなくCLOSE-PIPEで解放してください。種類の異なるクローズはエラーとなり、所有権は残ります。サイズ・seek・resizeには対応しません。実行中パイプはイメージに保存せず、終了時に残ったパイプは閉じます。
+
+`BROKEN-PIPE-ERROR`はSigmaのEPIPEである-544を返し、Gforthの-2049とは意図的に異なります。SIGPIPEでSigmaを終了させず、書込パイプはstdioのバッファリングを無効にしてエラーを返します。ネイティブコマンドはNULを含まないUTF-8で4095バイトまでです。files機能と、カスタムFileOpsのopen_pipe/close_pipeが必要です。[記録](P06_IMPLEMENTATION.md)。

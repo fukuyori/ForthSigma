@@ -963,6 +963,9 @@ pub const Builtin = enum {
     dot_quoted_csv,
     read_csv,
     sh,
+    open_pipe,
+    close_pipe,
+    broken_pipe_error,
 };
 
 pub const HeapResult = union(enum) { address: Cell, no_memory, bad_pointer };

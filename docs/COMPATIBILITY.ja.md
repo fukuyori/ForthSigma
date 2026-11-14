@@ -233,3 +233,5 @@ NSは承認済みの符号付きダブルセル仕様で、0以下は即時終�
 >TIME&DATE&TZは符号付きUnix秒から日時/DSTと実際の東向き正のUTC時差・取得可能なTZ名を返します。指定版の時差0/TZ空フォールバックは再現しません。time_t・OS暦範囲の超過は範囲エラー、変換エラーは入力と前回TZ名を保持します。TZ名は専用256バイト領域を次の成功変換/リセット/復元まで借用します。日付範囲・名前・TZ指定構文はOS/CRTに依存し、既存TIME&DATEは変更しません。実機確認は679（607配下）へ残します。[記録](P05_IMPLEMENTATION.md)。
 
 FPATH is now supported (2026-11-14): empty/unset deliberately preserves Sigma direct-cwd/raw-history includes, differing from an empty Gforth search path. Nonempty settings opt into P05a lookup, source-relative ./, lexical returned-name history and open-before-dedup REQUIRE. INCLUDED? remains exact; absolute/symlink aliases can be distinct. SAVE/full restore retains configuration; append preserves destination configuration. No FPATH aliases or environment startup paths were added. [Details](P05_IMPLEMENTATION.md).
+
+P06b pipes use the approved one-way R/O/W/O subset (R/W rejected) and Sigma errno EPIPE (-544) for BROKEN-PIPE-ERROR, differing from designated Gforth (-2049). CLOSE-PIPE returns native status/ior and leaves $? unchanged; resource-kind close mismatches are rejected. Native Windows/Linux verification remains695 under607. [Details](P06_IMPLEMENTATION.md).
