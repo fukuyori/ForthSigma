@@ -954,6 +954,8 @@ pub const Builtin = enum {
     to_time_date_tz,
     fpath,
     to_string_execute,
+    outfile_id,
+    outfile_execute,
 };
 
 pub const HeapResult = union(enum) { address: Cell, no_memory, bad_pointer };

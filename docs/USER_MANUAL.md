@@ -1256,3 +1256,8 @@ Source display (LOCATE/WHERE) expands stored tilde names using the current home 
 ### Owned output capture (P06a)
 
 `>STRING-EXECUTE ( xt -- addr u )` runs xt once and returns its printed output in an independent allocation. Release it with `FREE addr`, including empty output. Example: `: OUT S" hello" TYPE ; ' OUT >STRING-EXECUTE OVER >R TYPE R> FREE THROW`. Callback results remain below addr/u. Nested capture restores the enclosing output destination; THROW and allocation/result-stack errors free private output and restore capture state. Callback side effects remain. One extra stack slot is required before execution, and two return slots after the callback. [Details](P06_IMPLEMENTATION.md).
+
+
+### Output-file selection (P06a)
+
+`OUTFILE-ID ( -- fileid )` returns the selected file, normally STDOUT. `OUTFILE-EXECUTE ( xt fileid -- )` runs xt once with normal output sent to the borrowed file and restores the previous destination on success or exception. It does not close/flush the file; callback results and already-written bytes remain. Nested selection/capture restores enclosing scopes. Write errors THROW at the output word, including compiled dot-quote, so a callback CATCH can handle them. Explicit WRITE-FILE keeps its own file argument. Both words require the files feature. [Details](P06_IMPLEMENTATION.md).

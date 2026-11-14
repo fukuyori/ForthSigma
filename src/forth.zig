@@ -361,6 +361,8 @@ pub const State = struct {
     throw_code: Cell = 0,
     /// The counted string of the ABORT" that threw -2, for its message.
     abort_message: ?Cell = null,
+    output_file: ?Cell = null,
+    output_error: ?Cell = null,
     capture_target: ?Cell = null,
     /// Private, nestable macro output capture; never serialized.
     capture_sink: ?*@import("core/macro_substitute.zig").Captured = null,
@@ -465,6 +467,16 @@ pub const State = struct {
             self.appendString(target, bytes) catch {
                 self.capture_failed = true;
             };
+            return;
+        }
+        if (self.output_file) |fileid| {
+            if (self.output_error != null) return;
+            const files = self.fileOps() catch {
+                self.output_error = memory_map.errnoIor(memory_map.errno_bad_file);
+                return;
+            };
+            const ior = files.write(self.writer.context, fileid, bytes);
+            if (ior != 0) self.output_error = ior;
             return;
         }
         // The message of an error, for the log of --debug-log.
@@ -777,7 +789,8 @@ pub const State = struct {
         .{ "PATH=", .path_equals },                  .{ "OPEN-PATH-FILE", .open_path_file },         .{ "FILE>PATH", .file_to_path },              .{ "BASENAME", .basename },                  .{ "DIRNAME", .dirname },
         .{ "FILENAME-MATCH", .filename_match },      .{ "GET-DIR", .get_dir },                       .{ "SET-DIR", .set_dir },                     .{ "=MKDIR", .equals_mkdir },                .{ "MKDIR-PARENTS", .mkdir_parents },
         .{ "OPEN-DIR", .open_dir },                  .{ "READ-DIR", .read_dir },                     .{ "CLOSE-DIR", .close_dir },                 .{ "NTIME", .ntime },                        .{ "CPUTIME", .cputime },
-        .{ "NS", .ns },                              .{ ">TIME&DATE&TZ", .to_time_date_tz },         .{ "FPATH", .fpath },                         .{ ">STRING-EXECUTE", .to_string_execute },  .{ "\\\\\\", .triple_backslash },
+        .{ "NS", .ns },                              .{ ">TIME&DATE&TZ", .to_time_date_tz },         .{ "FPATH", .fpath },                         .{ ">STRING-EXECUTE", .to_string_execute },  .{ "OUTFILE-ID", .outfile_id },
+        .{ "OUTFILE-EXECUTE", .outfile_execute },    .{ "\\\\\\", .triple_backslash },
     };
 
     fn installBuiltins(self: *State) void {
@@ -1817,6 +1830,7 @@ pub const State = struct {
                     const length = self.memory[address];
                     const start = try self.memoryAddress(op.value + 1, length);
                     self.write(self.memory[start .. start + length]);
+                    try self.checkOutputError();
                 },
                 .counted_string => try self.push(op.value),
                 .abort_string => {
@@ -1875,18 +1889,26 @@ pub const State = struct {
 
     /// Runs a built-in word: each `words_*` file in src/core lists the words it executes,
     /// and every word must be in exactly one list.
+    pub fn checkOutputError(self: *State) RuntimeError!void {
+        if (self.output_error) |ior| {
+            self.output_error = null;
+            return self.throwCode(ior);
+        }
+    }
+
     pub fn executeBuiltin(self: *State, builtin: Builtin) RuntimeError!void {
         // The table of excluded words is computed while this switch is expanded.
         @setEvalBranchQuota(10_000);
-        switch (builtin) {
-            // The code of a word group the build leaves out (-Dfloat=false and the like) is
-            // not compiled in; such a word can only come from an image saved by a build
-            // that has it.
+        const result: RuntimeError!void = switch (builtin) {
             inline else => |word| if (comptime defs.isExcludedBuiltin(word))
-                return error.InvalidExecutionToken
+                error.InvalidExecutionToken
             else
-                try word_modules[word_owner[@backingInt(word)]].execute(self, word),
-        }
+                word_modules[word_owner[@backingInt(word)]].execute(self, word),
+        };
+        // write() cannot throw; surface its first file error at the word boundary
+        // so a callback's CATCH can handle it before continuing.
+        try self.checkOutputError();
+        try result;
         // --coverage: a block starts after a word of a control structure, however the
         // word was reached: by its name, by another name (SYNONYM), or from a word
         // that POSTPONEs it. The place is that of the word being read.
