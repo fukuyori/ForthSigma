@@ -1,6 +1,6 @@
 # Gforth対応の引き継ぎ
 
-更新日：2026-11-14。P00・S01・P01・P02・P03・P04に続き、P05aの16語（565）も実装・検証完了。659は3af3c9fでpush済み。660は9d57d8eでpush済み。P05b（566）の最初の2語BASENAME/DIRNAME（663）はb9e5099でpush済み。664は544f823でpush済み。668はfba6e32でpush済み。669は7c21790でpush済み。670は1a21d47でpush済み、665は完了。674は031d224でpush済み。675 NSを承認済み方針で実装・検証済み（未コミット）。P05bは13/14語、次は676の日時/TZ変換（親666）。INCLUDE/REQUIRE接続は661へ分離。Windows/Linux確認はここでは行わず607（パス検索は662）へ残す。P05/542は未完了。
+更新日：2026-11-14。P00・S01・P01・P02・P03・P04に続き、P05aの16語（565）も実装・検証完了。659は3af3c9fでpush済み。660は9d57d8eでpush済み。P05b（566）の最初の2語BASENAME/DIRNAME（663）はb9e5099でpush済み。664は544f823でpush済み。668はfba6e32でpush済み。669は7c21790でpush済み。670は1a21d47でpush済み、665は完了。674は031d224でpush済み。675 NSはf848b09でpush済み。P05bは13/14語。676はTZ実測済みで、実際の時差/TZ名と借用寿命・失敗方針の確認待ち（親666）。INCLUDE/REQUIRE接続は661へ分離。Windows/Linux確認はここでは行わず607（パス検索は662）へ残す。P05/542は未完了。
 
 P03c was committed and pushed as `98be4f8`. P03 and task 562 are complete. Claude Code review fixes and the first 21 P04a words were committed/pushed as a6ab243. Task 631 is complete (auto), with no new concrete defect found in the final review. See [P03 review](P03_REVIEW.md). The six additional P04a edit/owned-string words were committed/pushed as 5b2c8a4. XC@+? was committed/pushed as fa2afe9 and P04a is complete. P04b $VALUE/MACRO: were committed/pushed as 33bb55a (634); the macro vocabulary/callback words (635) were committed/pushed as 6a9c4e3. Check git status and git log before resuming.
 
@@ -46,9 +46,13 @@ OPEN-DIR/READ-DIR/CLOSE-DIR are implemented through optional host callbacks and 
 
 NTIME/CPUTIME are implemented through optional host clock hooks in the always-available system group. NTIME is signed double-cell Unix wall-clock nanoseconds; CPUTIME is process user/system microseconds (all threads, no children). POSIX uses CLOCK_REALTIME/getrusage(RUSAGE_SELF), Windows precise FILETIME/GetProcessTimes; no elapsed-time CPU fallback. Five regressions, normal/minimal tests and normal build pass. A four-contract script checks both Sigma/Gforth (eight runtime checks), explicitly not exact live-value comparisons. See [P05 record](P05_IMPLEMENTATION.md). 674 is complete(auto);666 and566 remain incomplete at12/14 words. Next is675 NS (investigate wait range/interrupt/deadline), then676 >TIME&DATE&TZ (range/DST/offset/borrowed-zone lifetime/errors). Native Windows/Linux checks remain677 under607. Changes were committed/pushed as031d224.
 
-## P05b NS (675, uncommitted)
+## P05b NS (675, f848b09 pushed)
 
-The user approved nonpositive immediate return, signed64-bit seconds bound, monotonic split waits, Ctrl+C interruption/other input retention and unchanged MS. NS is implemented through Writer.sleep_ns_fn and host_wait.zig:128-bit deadline, <=20ms sleeps, scoped SIGINT/termios or Windows console handler/mode, no input reads. Original state is restored; raw non-Ctrl+C signal characters remain input. One native wait can be active at a time. Five regressions, normal/minimal tests and normal build pass. Script validation covers16 duration checks,2 range,4 redirected/buffered input,4 signal/recovery(including >2^64ns) and5 Sigma PTY cases. See [P05 record](P05_IMPLEMENTATION.md) for ownership, cleanup and native-platform limits. 675 is complete(auto);666/566 remain incomplete at13/14. Next is676 >TIME&DATE&TZ: investigate time_t range, DST/offset, borrowed zone-text lifetime and errors. Native Windows/Linux NS checks remain678 under607. Changes are uncommitted.
+The user approved nonpositive immediate return, signed64-bit seconds bound, monotonic split waits, Ctrl+C interruption/other input retention and unchanged MS. NS is implemented through Writer.sleep_ns_fn and host_wait.zig:128-bit deadline, <=20ms sleeps, scoped SIGINT/termios or Windows console handler/mode, no input reads. Original state is restored; raw non-Ctrl+C signal characters remain input. One native wait can be active at a time. Five regressions, normal/minimal tests and normal build pass. Script validation covers16 duration checks,2 range,4 redirected/buffered input,4 signal/recovery(including >2^64ns) and5 Sigma PTY cases. See [P05 record](P05_IMPLEMENTATION.md) for ownership, cleanup and native-platform limits. 675 is complete(auto);666/566 remain incomplete at13/14. Next is676 >TIME&DATE&TZ: investigate time_t range, DST/offset, borrowed zone-text lifetime and errors. Native Windows/Linux NS checks remain678 under607. Changes were committed/pushed asf848b09.
+
+## P05b timezone investigation (676, no code yet)
+
+Twenty-one Gforth probes show correct TZ-dependent calendar/DST fields but offset0/empty zone name even in Tokyo/New York; source inspection identifies the __USE_MISC fallback. The recommended actual-offset/name policy, checked conversion errors with unchanged state, and a dedicated borrowed TZ buffer are pending user approval. No implementation has started. See [P05 record](P05_IMPLEMENTATION.md) and .work/p05b-timezone-check/initial-probes.json. Keep676/666/566 incomplete at13/14 until the policy is settled and implemented. Existing TIME&DATE should remain unchanged. Investigation changes are uncommitted.
 
 ## P04a completion
 
@@ -92,7 +96,7 @@ tqueで管理し、進捗モードは**auto**とする。階層はForthSigma 121
 |546 P03|完了。560 P03a 44語、561 P03b 15語と永続化、562 P03c 6語が完了|
 |563 P04a|完了。28語の文字列操作/Unicode|
 |564 P04b / 547 P04|完了。文字列値・マクロ5語、合計33語。635は6a9c4e3でpush済み|
-|548 P05 / 565 P05a|進行中。653の2語を実装・検証、d8da5e7でpush済み。654は7964014でpush済み、655は2b97309でpush済み。659は3af3c9fでpush済み。660は9d57d8eでpush済み、565は完了。566の663（2語）はb9e5099でpush済み、664は544f823でpush済み。668はfba6e32でpush済み。669は7c21790でpush済み。670は1a21d47でpush済み、665は完了。674は031d224でpush済み。675 NSを実装・検証済み（未コミット）、次は676。661は接続を別途設計|
+|548 P05 / 565 P05a|進行中。653の2語を実装・検証、d8da5e7でpush済み。654は7964014でpush済み、655は2b97309でpush済み。659は3af3c9fでpush済み。660は9d57d8eでpush済み、565は完了。566の663（2語）はb9e5099でpush済み、664は544f823でpush済み。668はfba6e32でpush済み。669は7c21790でpush済み。670は1a21d47でpush済み、665は完了。674は031d224でpush済み。675 NSはf848b09でpush済み。676のTZ方針を確認中。661は接続を別途設計|
 |561 P03b|完了。15語の実行・型/寿命追跡と新形式保存/復元/追加を統合|
 |550 P07|未着手。P01依存は解消。457を先行させる|
 |457 P07先行|550配下。IS/ACTION-OF/TO/+TOの辞書登録。既存IDを使う|
