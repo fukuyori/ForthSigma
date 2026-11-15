@@ -6,6 +6,7 @@ For the project overview, how to build, the current features, the differences fr
 
 - [FORTH/Σ specification](SPEC.md): the specification compiled from the magazine sources, and where it comes from
 - [User manual](USER_MANUAL.md): how to start, basic operation, the list of the words registered now
+- [Complete word reference](WORD_REFERENCE.md): individual stack effects and descriptions for all current words, syntax, standard keys and library helpers; [reading guide and checked examples](WORD_REFERENCE_GUIDE.md)
 - [Debugging guide](DEBUGGING.md): how to find what is wrong with a program, from the command line and for agents (backtrace, trace, single steps, watching memory, profile, coverage, lint, formatter, the log as JSON Lines)
 - [Graphics and sound manual](GRAPHICS_AND_SOUND.md): the graphics words (drawing, text, Tcl/Tk, keys, the mouse, animation) and the sound words (MSX BASIC's PLAY, sound chips, recorded sound, modules)
 - [Graphics modes](GRAPHICS_MODES.md): where `SHOW` shows the image (terminal, Sixel, window, Tk window), the number of colors, and the size it is shown at

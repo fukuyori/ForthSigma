@@ -1,0 +1,254 @@
+{
+  "GAME:(ON-LINE)": [
+    "Address of the temporary per-row sprite-count pointer. Valid only while DRAW-SPRITES runs; its array is freed afterwards and the slot is not cleared.",
+    "DRAW-SPRITES実行中の行別スプライト数配列へのポインターを保持するセルの番地です。配列は終了時に解放され、セルは0に戻りません。呼出し外では参照しません。"
+  ],
+  "GRAPHICS:(ALPHA)": [
+    "Address of the image-copy alpha value, initially 128.",
+    "画像コピーの混合率を保持するセルの番地です。初期値128です。"
+  ],
+  "GRAPHICS:(CIRCLE-LIMIT)": [
+    "Integer circle-coordinate limit, 1073741824; its square fits a cell.",
+    "円の座標制限1073741824を返します。その平方が1セルに収まる範囲です。"
+  ],
+  "GRAPHICS:(COLOR)": [
+    "Address of the current 24-bit drawing color, initially white.",
+    "現在の24ビット描画色を保持するセルの番地です。初期色は白です。"
+  ],
+  "GRAPHICS:(COLORS)": [
+    "Address of SHOW's output color-count setting; zero means full color.",
+    "SHOWの表示色数を保持するセルの番地です。0はフルカラーです。"
+  ],
+  "GRAPHICS:(DISPLAY)": [
+    "Address of SHOW's destination selector: 0 automatic, 1 terminal, 2 native window, 3 Tk.",
+    "SHOWの表示先を保持するセルの番地です。0は自動、1端末、2ネイティブ窓、3Tkです。"
+  ],
+  "GRAPHICS:(DITHER)": [
+    "Address of the reduced-color display dithering flag.",
+    "減色表示でディザを使うフラグを保持するセルの番地です。"
+  ],
+  "GRAPHICS:(F-LIMIT)": [
+    "Floating-point pixel-coordinate clamp magnitude, 2^61.",
+    "浮動小数点から画素座標へ変換するときの制限値2^61を返します。"
+  ],
+  "GRAPHICS:(FLIP)": [
+    "Address of the image-copy flip selector.",
+    "画像コピーの反転設定を保持するセルの番地です。"
+  ],
+  "GRAPHICS:(FRAME-TIME)": [
+    "Address of FRAME's microsecond scheduling timestamp. Each call stores the greater of its target time and the observed current time.",
+    "FRAMEのマイクロ秒単位のスケジュール時刻を保持するセルの番地です。呼出しごとに、目標時刻と取得した現在時刻の大きい方を格納します。"
+  ],
+  "GRAPHICS:(LIMIT)": [
+    "Integer line/rectangle coordinate clamp magnitude, 2^61.",
+    "線・長方形の整数座標を制限する値2^61を返します。"
+  ],
+  "GRAPHICS:(MODE)": [
+    "Address of IMAGE-MODE's copy-compositing selector, initially overwrite (0).",
+    "IMAGE-MODEの合成方法を保持するセルの番地です。初期値0は上書きです。"
+  ],
+  "GRAPHICS:(P-SIZE)": [
+    "Address of PAINT's seed-stack capacity in coordinate pairs.",
+    "PAINTの種スタックの容量を、座標組の個数で保持するセルの番地です。"
+  ],
+  "GRAPHICS:(P-STACK)": [
+    "Address of the pointer to PAINT's owned seed-stack allocation.",
+    "PAINTの種スタック用所有領域へのポインターを保持するセルの番地です。"
+  ],
+  "GRAPHICS:(P-TARGET)": [
+    "Address of PAINT's original target color.",
+    "PAINTで置換する元の色を保持するセルの番地です。"
+  ],
+  "GRAPHICS:(P-USED)": [
+    "Address of PAINT's current seed-stack coordinate-pair count.",
+    "PAINTの種スタックで使用中の座標組数を保持するセルの番地です。"
+  ],
+  "GRAPHICS:(SCALE)": [
+    "Address of the image-copy scale, initially one.",
+    "画像コピーの倍率を保持するセルの番地です。初期値1です。"
+  ],
+  "GRAPHICS:(TERMINAL-MODE)": [
+    "Address of the terminal output selector: 0 half blocks, 1 Sixel.",
+    "端末出力方式を保持するセルの番地です。0は半ブロック、1はSixelです。"
+  ],
+  "GRAPHICS:(TEXT-SCALE)": [
+    "Address of TEXT's integer glyph-pixel scale.",
+    "TEXTの字形画素の整数倍率を保持するセルの番地です。"
+  ],
+  "GRAPHICS:(TRANSPARENT)": [
+    "Address of the copy transparency color; minus one disables transparency.",
+    "コピーの透明色を保持するセルの番地です。-1は透明色なしです。"
+  ],
+  "GRAPHICS:(X-MAX)": [
+    "Address of the floating-point right boundary of mathematical coordinates.",
+    "数学座標の右端を保持する浮動小数点変数の番地です。"
+  ],
+  "GRAPHICS:(X-MIN)": [
+    "Address of the floating-point left boundary of mathematical coordinates.",
+    "数学座標の左端を保持する浮動小数点変数の番地です。"
+  ],
+  "GRAPHICS:(Y-MAX)": [
+    "Address of the floating-point top boundary of mathematical coordinates.",
+    "数学座標の上端を保持する浮動小数点変数の番地です。"
+  ],
+  "GRAPHICS:(Y-MIN)": [
+    "Address of the floating-point bottom boundary of mathematical coordinates.",
+    "数学座標の下端を保持する浮動小数点変数の番地です。"
+  ],
+  "GUI:(BH)": [
+    "Address of the open menu's blocking rectangle height.",
+    "開いたメニューが入力を遮る長方形の高さを保持するセルの番地です。"
+  ],
+  "GUI:(BORDER-W)": [
+    "Address of the GUI border width in pixels.",
+    "GUIの枠幅を画素数で保持するセルの番地です。"
+  ],
+  "GUI:(BW)": [
+    "Address of the open menu's blocking rectangle width.",
+    "開いたメニューが入力を遮る長方形の幅を保持するセルの番地です。"
+  ],
+  "GUI:(BX)": [
+    "Address of the open menu's blocking rectangle x coordinate.",
+    "開いたメニューが入力を遮る長方形のx座標を保持するセルの番地です。"
+  ],
+  "GUI:(BY)": [
+    "Address of the open menu's blocking rectangle y coordinate.",
+    "開いたメニューが入力を遮る長方形のy座標を保持するセルの番地です。"
+  ],
+  "GUI:(CHOICE)": [
+    "Address of the modal selection's current chosen index.",
+    "選択ダイアログの現在の選択番号を保持するセルの番地です。"
+  ],
+  "GUI:(CURSOR)": [
+    "Address of the focused field's byte cursor offset.",
+    "フォーカス中の入力欄のバイト単位カーソル位置を保持するセルの番地です。"
+  ],
+  "GUI:(CURSOR-OF)": [
+    "Address of the identifier of the field owning the cursor.",
+    "カーソル位置を所有する入力欄の識別番号を保持するセルの番地です。"
+  ],
+  "GUI:(ENABLED)": [
+    "Address of the enabled flag for subsequent GUI parts.",
+    "後続GUI部品の入力を有効にするフラグを保持するセルの番地です。"
+  ],
+  "GUI:(F-BUF)": [
+    "Address of the pointer to the focused field's byte buffer.",
+    "編集中の入力欄のバイトバッファーへのポインターを保持するセルの番地です。"
+  ],
+  "GUI:(F-LEN)": [
+    "Address of the pointer to the focused field's length cell.",
+    "編集中の入力欄の長さセルへのポインターを保持するセルの番地です。"
+  ],
+  "GUI:(F-MAX)": [
+    "Address of the focused field's byte capacity.",
+    "編集中の入力欄のバイト容量を保持するセルの番地です。"
+  ],
+  "GUI:(FOCUS-N)": [
+    "Address of the current frame's focusable-part counter.",
+    "現在フレームのフォーカス可能部品数を保持するセルの番地です。"
+  ],
+  "GUI:(FOCUS-W)": [
+    "Address of the focus-ring width in pixels.",
+    "フォーカス枠の画素幅を保持するセルの番地です。"
+  ],
+  "GUI:(GUI-COLORS)": [
+    "Base address of the eleven GUI color-role cells.",
+    "11個のGUI色役割セルを並べた配列の先頭番地です。"
+  ],
+  "GUI:(ID)": [
+    "Address of the current frame's all-part counter.",
+    "現在フレームの全部品の連番を保持するセルの番地です。"
+  ],
+  "GUI:(KEY-COUNT)": [
+    "Address of the number of unconsumed frame keys.",
+    "フレーム内の未消費キー数を保持するセルの番地です。"
+  ],
+  "GUI:(KEY-ROOM)": [
+    "Capacity of the frame-key array: 32 cells.",
+    "フレームのキー配列の容量32を返します。"
+  ],
+  "GUI:(KEYS)": [
+    "Base address of the 32-cell frame-key array.",
+    "フレームのキーを保持する32セル配列の先頭番地です。"
+  ],
+  "GUI:(LAST-FOCUS-N)": [
+    "Address of the preceding frame's focusable-part count.",
+    "前フレームのフォーカス可能部品数を保持するセルの番地です。"
+  ],
+  "GUI:(LIST-ITEMS)": [
+    "Address of the two-cell item callback state shared by GUI-CHOOSE and GUI-LIST.",
+    "GUI-CHOOSEとGUI-LISTが項目コールバックに使う2セルの状態領域の番地です。"
+  ],
+  "GUI:(MENU-X)": [
+    "Address of the open menu title's x coordinate.",
+    "開いたメニューの見出しx座標を保持するセルの番地です。"
+  ],
+  "GUI:(MOVED)": [
+    "Address of the current frame's mouse-movement flag.",
+    "現在フレームでマウスが移動したフラグを保持するセルの番地です。"
+  ],
+  "GUI:(MX)": [
+    "Address of the current mouse x coordinate.",
+    "現在のマウスx座標を保持するセルの番地です。"
+  ],
+  "GUI:(MY)": [
+    "Address of the current mouse y coordinate.",
+    "現在のマウスy座標を保持するセルの番地です。"
+  ],
+  "GUI:(PAD-HELD)": [
+    "Address of the previous gamepad button mask used to detect new presses.",
+    "新しい押下の検出に使う前回のゲームパッドボタンマスクを保持するセルの番地です。"
+  ],
+  "GUI:(PRESS)": [
+    "Address of the frame's new-left-button-press flag.",
+    "フレーム内の新しい左ボタン押下フラグを保持するセルの番地です。"
+  ],
+  "GUI:(PULL)": [
+    "Address of the borrowed address/length descriptor of the open pull-down menu's items.",
+    "開いたプルダウンメニューの借用項目文字列を保持する2セル記述子の番地です。"
+  ],
+  "GUI:(PX)": [
+    "Address of the last left-button-press x coordinate.",
+    "左ボタンを押した位置のx座標を保持するセルの番地です。"
+  ],
+  "GUI:(PY)": [
+    "Address of the last left-button-press y coordinate.",
+    "左ボタンを押した位置のy座標を保持するセルの番地です。"
+  ],
+  "GUI:(RELEASE)": [
+    "Address of the frame's left-button-release flag.",
+    "フレーム内の左ボタン解放フラグを保持するセルの番地です。"
+  ],
+  "GUI:(ROLES)": [
+    "Number of GUI color roles: eleven.",
+    "GUIの色役割数11を返します。"
+  ],
+  "GUI:(RX)": [
+    "Address of the last left-button-release x coordinate.",
+    "左ボタンを離した位置のx座標を保持するセルの番地です。"
+  ],
+  "GUI:(RY)": [
+    "Address of the last left-button-release y coordinate.",
+    "左ボタンを離した位置のy座標を保持するセルの番地です。"
+  ],
+  "GUI:(SAVED)": [
+    "Address of the temporary saved-screen image handle used by modal dialogs; zero means none.",
+    "待機ダイアログ用に保存した一時画面画像のハンドルを保持するセルの番地です。0は保存なしです。"
+  ],
+  "GUI:(TILE)": [
+    "Address of the panel-tile side length in pixels.",
+    "パネル用タイルの1辺の画素数を保持するセルの番地です。"
+  ],
+  "GUI:(TILES)": [
+    "Address of the panel-tile source image handle.",
+    "パネル用タイルの元画像ハンドルを保持するセルの番地です。"
+  ],
+  "GUI:(WAS-DRAWING)": [
+    "Address of the drawing-target handle to restore after a modal dialog.",
+    "待機ダイアログの終了後に戻す描画先ハンドルを保持するセルの番地です。"
+  ],
+  "GUI:(WHEEL)": [
+    "Address of the frame's accumulated mouse-wheel delta.",
+    "フレーム内のマウスホイール移動量を保持するセルの番地です。"
+  ]
+}

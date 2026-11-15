@@ -23,6 +23,8 @@ FORTH/Σ（フォース・シグマ）の言語コアを、Zigで動くネイテ
 
 使い方と現在登録されている組み込みワードの一覧は[ユーザーマニュアル](https://github.com/fukuyori/ForthSigma/blob/main/docs/USER_MANUAL.ja.md)を、グラフィックスとサウンドは[グラフィックスとサウンドのマニュアル](https://github.com/fukuyori/ForthSigma/blob/main/docs/GRAPHICS_AND_SOUND.ja.md)を、プログラムの悪いところの調べ方は[デバッグの手引き](https://github.com/fukuyori/ForthSigma/blob/main/docs/DEBUGGING.ja.md)を参照してください。
 
+現在の全語・構文の日本語説明・使用例・注意点は[全ワードリファレンス](docs/WORD_REFERENCE.ja.md)と[読み方・使用例](docs/WORD_REFERENCE_GUIDE.ja.md)を参照してください。
+
 利用者がデータを持つワードを作る定義用語（BUILDS/DOES）にも対応しています。
 
 `SAVE filename`／`LOAD-DICTIONARY filename` で利用者定義語を保存・追加読み込みできます。単独実行ファイルは別の拡張語 `SAVESYS filename.exe` で作成します。

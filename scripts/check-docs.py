@@ -18,6 +18,8 @@ checks:
   5. Each built-in word, whenever it was added, is in docs/USER_MANUAL.md and
      docs/USER_MANUAL.ja.md, and in the table of registered words of each;
      that table has no word that is not a built-in word.
+  6. The complete word reference matches all current registration/HELP sources,
+     including old words, optional libraries, standard keys and parser forms.
 
 The exit status is 1 when something is found, 0 otherwise.
 """
@@ -86,7 +88,7 @@ for option in options:
             found('%s is not in %s' % (option, document))
 
 # 3. The two languages.
-japanese = [path for path in git('ls-files', '*.ja.md').split('\n') if path]
+japanese = [path for path in git('ls-files', '--cached', '--others', '--exclude-standard', '*.ja.md').split('\n') if path]
 print('documents with a Japanese version: %d' % len(japanese))
 for path in japanese:
     english = path[:-len('.ja.md')] + '.md'
@@ -147,6 +149,13 @@ for word in every:
     quoted = word.replace('\\', '\\\\').replace('"', '\\"')
     if ('.name = "%s"' % quoted) not in help_text:
         found('%s has no HELP text' % word)
+
+# 6. Full inventory, independent of BASE. --check does not build or run a binary.
+reference_check = subprocess.run([sys.executable, os.path.join(ROOT, 'scripts', 'word-reference.py'), '--check'], cwd=ROOT, capture_output=True, text=True, encoding='utf-8')
+print(reference_check.stdout, end='')
+if reference_check.returncode:
+    found('complete word reference is missing, stale, or has an undocumented registration')
+    print(reference_check.stderr, end='')
 
 print('findings: %d' % len(findings))
 sys.exit(1 if findings else 0)

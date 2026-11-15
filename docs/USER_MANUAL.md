@@ -559,7 +559,7 @@ A number without `E`, such as `1.5`, is not treated as a floating-point number.
 
 | Use | Words | Description |
 | --- | --- | --- |
-| Output | `F.`, `FE.`, `FS.`, `F.S`, `F?` | `F.` prints `PRECISION` digits (initially 15) without an exponent and appends a space (`3.`, `0.5`). `FS.` prints one leading digit, the point, and an exponent (`1.23456780000000E4`), and `FE.` makes the exponent a multiple of 3 (`12.3456780000000E3`); both print `PRECISION` digits, trailing zeros included. Infinity and NaN print only their names (`infinity`, `NaN`), without a space (the same as gforth). `F.S` prints the count and then the top 9 items, each in the same form as `14 0 17 F.RDP` (`3.0000000000E0`). |
+| Output | `F.`, `FE.`, `FS.`, `F.S`, `F?` | `F.` prints `PRECISION` digits (initially 15) without an exponent and appends a space (`3.`, `0.5`). `FS.` prints one leading digit, the point, and an exponent (`1.23456780000000E4`), and `FE.` makes the exponent a multiple of 3 (`12.3456780000000E3`); both print `PRECISION` digits, trailing zeros included. FE./FS. print infinity and NaN by name (`infinity`, `NaN`) without a trailing space; F. and FP. append a space even for these values. `F.S` prints the count and then up to MAXDEPTH-.S top items (initial limit 9), with width F.S-PRECISION (initially 14), initially the same form as `14 0 17 F.RDP` (`3.0000000000E0`). |
 | Stack | `FDROP`, `FDUP`, `FSWAP`, `FOVER`, `FROT`, `F-ROT`, `FNIP`, `FTUCK`, `FPICK`, `FDEPTH` | The position for `FPICK` and the result of `FDEPTH` use the integer stack. |
 | Arithmetic | `F+`, `F-`, `F*`, `F/`, `FNEGATE`/`FMINUS`, `FABS`, `FMAX`, `FMIN` | Dividing by 0 gives infinity or NaN. |
 | Functions | `FSQRT`, `FEXP`, `FLN`, `FSIN`, `FCOS`, `FTAN`, `FSINCOS`, `FASIN`, `FACOS`, `FATAN`, `FATAN2`, `FSINH`, `FCOSH`, `FTANH`, `FASINH`, `FACOSH`, `FATANH`, `FEXPM1`, `FLNP1`, `FLOG`, `FALOG`, `F**` | Trigonometric functions use radians. `FSINCOS` is ( f: r -- sine cosine ), `FATAN2` is ( f: y x -- angle ), `F**` is ( f: x y -- x to the power y ), `FLOG` is the common logarithm, `FALOG` is 10 to the power r, `FEXPM1` is e^r - 1, and `FLNP1` is ln(1 + r). All except `FSQRT` give correctly rounded values, with the same results on every OS. |
@@ -576,7 +576,7 @@ A number without `E`, such as `1.5`, is not treated as a floating-point number.
 
 | Use | Words | Description |
 | --- | --- | --- |
-| Number output | `.`, `U.`, `C.`, `?`, `.S`, `.R`, `U.R` | All except `.R` and `U.R` append a space after the number. `.R` (( n width -- )) and `U.R` (( u width -- )) print right-aligned in width characters, without a space. A number longer than the width is printed as it is. `U.` prints unsigned, `C.` the low 8 bits, `?` the contents of an address, and `.S` the count and the top 9 items (`<depth> value ...`). No zero padding is done. |
+| Number output | `.`, `U.`, `C.`, `?`, `.S`, `.R`, `U.R` | All except `.R` and `U.R` append a space after the number. `.R` (( n width -- )) and `U.R` (( u width -- )) print right-aligned in width characters, without a space. A number longer than the width is printed as it is. `U.` prints unsigned, `C.` the low 8 bits, `?` the contents of an address, and `.S` the count and up to MAXDEPTH-.S top items (initial limit 9) (`<depth> value ...`). No zero padding is done. |
 | Character output | `ECHO`/`EMIT`, `XEMIT` | `EMIT` outputs the low 8 bits of the top of the stack as one byte; `XEMIT` outputs a character in UTF-8 (see [Characters (UTF-8)](#characters-utf-8)). |
 | String output | `TYPE`, `."..."` | `TYPE` takes an address and a character count and outputs the string. `."..."` is an extension of the port. |
 | Line breaks and spaces | `CR`, `SPACE`, `SPCES`/`SPACES`, `BL` | Output a line break, one space, or the given number of spaces. `BL` pushes the character code of a space. |
@@ -889,14 +889,14 @@ When exchanging saved images with versions from before short-call inlining, `SEE
 | `ALIAS` | ( xt "name" -- ) | Define name to do what xt does; `' name` gives xt. The new word is not immediate. |
 | `FIND` | ( c-addr -- c-addr 0 \| xt 1 \| xt -1 ) | Find the name given as a counted string. 1 for an immediate word, -1 for others. TO, IS, +TO and ACTION-OF are searchable dictionary words with immediate flag1. |
 | `PARSE` | ( c -- addr u ) | Return the rest of the input up to the character c. |
-| `SOURCE` | ( -- addr u ) | The address and length of the current input line (the string, for `EVALUATE`). |
+| `SOURCE` | ( -- addr u ) | The address and length of the current input line (the string for `EVALUATE`, the full 1024-byte buffer for block input). |
 | `>IN` | ( -- addr ) | The address of the cell that holds the position to read next in the input line (bytes from the start). Changing it moves the reading position (a value at or beyond the length of the line skips the rest of the line, and a negative value gives `STRING TOO LONG !`). |
-| `SOURCE-ID` | ( -- n ) | 0 for the terminal, -1 for `EVALUATE`, and the number of the file while a file is being loaded. |
-| `REFILL` | ( -- flag ) | Read the next line from the terminal or from the file being loaded, make it the input, and return true. False at the end of the input and inside `EVALUATE`. |
-| `SAVE-INPUT`, `RESTORE-INPUT` | ( -- x1 x2 x3 x4 4 ), ( x1 x2 x3 x4 4 -- flag ) | Save the place in the input (the source, `>IN`, and the line), and go back to it. flag is false when it could go back. For a file, the saved line is read again; for the terminal and `EVALUATE`, it can go back only within the same line. |
+| `SOURCE-ID` | ( -- n ) | 0 for the terminal, -1 for `EVALUATE`, 2 for block input, or the loaded file ID. |
+| `REFILL` | ( -- flag ) | Read the next line from the terminal or from the file being loaded, make it the input, and return true. False at EOF and inside `EVALUATE`. Block input selects the next block; an invalid next block throws. |
+| `SAVE-INPUT`, `RESTORE-INPUT` | ( -- x1 ... xn n ), ( x1 ... xn n -- flag ) | Save and restore input position: block input uses block-number cursor 2; other sources use source-id cursor mark line-number 4. flag is false when it could go back. For a file, the saved line is read again; for the terminal and `EVALUATE`, it can go back only within the same line. |
 | `PARSE-NAME` | ( "name" -- addr u ) | Pass spaces and tabs, and return the next name in the input. At the end of the line, the length is 0. |
 
-`WORD`, `PARSE`, and `PARSE-NAME` read the rest of the line on which the word is written. They do not read across lines.
+`WORD`, `PARSE`, and `PARSE-NAME` read the rest of the line on which the word is written. They do not cross source buffers; for block input the buffer is the entire 1024-byte block.
 
 ## Word lists and conditional compilation
 
@@ -1012,6 +1012,8 @@ SAVESYS demo.exe
 The generated file starts with that dictionary and takes the same command-line arguments as Sigma (see [Starting and input](#starting-and-input)): without arguments it opens the interactive prompt. The generated file is for the same runtime environment as the one that made it. It starts with the `-m` and `-l` sizes it was saved with: the stack sizes (`-d`, `-r`, `-f`) can be given, but `-m` or `-l` ends it with exit status 1 and `A SAVED PROGRAM KEEPS ITS MEMORY LAYOUT !`.
 
 ## Registered words
+
+For individual stack effects, behavior descriptions, syntax and optional-library words, see the [complete word reference](WORD_REFERENCE.md) and its [reading guide and examples](WORD_REFERENCE_GUIDE.md).
 
 The following table lists the built-in words registered at start-up and listed by `WORDS`. Usage forms for parsing words also appear under "Syntax and defining forms" below. User definitions are not included.
 
@@ -1237,7 +1239,7 @@ P .PATH prints each component followed by a space, stopping at the first empty c
 
 ### Searching a path
 
-`S" name" P OPEN-PATH-FILE` returns `( fid addr u 0 )` on success or only an ior on failure. The file is opened read-only; close it with CLOSE-FILE. Search stops at the first success or empty component. An empty path returns -37. `S" name" P FILE>PATH` returns `( addr u )`, closes the file and throws on open/close failure.
+`S" name" P OPEN-PATH-FILE` returns `( fid addr u 0 )` on success or only an ior on failure. The file is opened read-only; close it with CLOSE-FILE. Search stops at the first success or empty component. An empty path returns -37 only for a relative name; explicit names described below bypass it. `S" name" P FILE>PATH` returns `( addr u )`, closes the file and throws on open/close failure.
 
 Leading /, ~, ./ and drive forms bypass the path list. ./ is relative to the current physical source file's directory (working directory in terminal/EVALUATE); ~+/ selects the working directory. ~/ is expanded through HOME when opening, and POSIX ~user uses the host user database. Returned text keeps the tilde spelling. The native host follows Gforth's writable-home selection. Windows uses HOME, then HOMEDRIVE+HOMEPATH, TEMP or TMP; named-user lookup is unsupported there. Lexical compaction does not resolve symlinks.
 

@@ -1,0 +1,35 @@
+## Scope and navigation
+
+The [complete word reference](WORD_REFERENCE.md) inventories current registration sources, including both old and newly added words. Entries are grouped under FORTH, Root, EKEYS, GRAPHICS, GUI, GAME and AUDIO. Parser forms and local declarations appear under Syntax. Public words precede private helpers within each vocabulary. Private helpers are not a stable API. Arbitrary user-defined names and unimplemented words are outside this inventory.
+
+Every entry includes its stack effect, behavior description, usage example, caution, kind and sources. The Japanese companion provides Japanese explanations and retains the English explanations in collapsible sections. Follow the related manuals and library definitions as well. Source excerpts require the setup, input and expectations at their linked locations; they are distinct from standalone runnable examples. Internal operations may use an indirect example of the public syntax that compiles them.
+
+The reviewed translation sources are fingerprinted in `docs/word-reference/translation-sources.json`. Changed descriptions, stack effects, attributes or definitions fail validation. Review/update the Japanese explanations before recording new fingerprints with `python scripts/word-reference.py --record-reviewed-sources`. This option does not automatically translate anything.
+
+Test excerpts include successful cases and deliberately invalid inputs used to check error conditions. Consult the linked test for expected exceptions and its stack, file and host setup. BYE exits the process. Examples reading STDIN consume input until EOF.
+
+## Stack notation
+
+`( before -- after )` lists stack items from bottom to top, left to right. `( x1 x2 -- x2 x1 )` exchanges the top item x2 with x1 below it. Lower items omitted from the notation remain unchanged. `"name"` and `"text"` indicate input parsed from the source stream, rather than items passed on the data stack.
+
+`n` is a signed 64-bit integer, `u` an unsigned 64-bit integer, `x` one cell, `flag` normally 0 (false) or -1 (true), and `addr`/`c-addr` an address in logical memory. A cell is eight bytes. Double-cell integers place the low cell below the high cell. `addr u` is an address and a byte length, not necessarily a UTF-8 character count.
+
+`F:` denotes the floating-point stack and `R:` the user return stack. Floating-point literals require E, as in `1e` or `1.5E3`. Do not confuse the data and floating-point stacks. `compilation:` and `runtime:` distinguish compile-time and execution effects. A helper's `{ ... | ... -- ... }` is its implementation's local declaration; temporary locals after `|` are not caller-supplied arguments.
+
+## Definitions, syntax and search order
+
+`immediate` marks a built-in executed during compilation; `compile-only` marks a built-in restricted to definition compilation. Syntax without such a flag may still require compilation: follow its description. Looking up `HELP IF` is different from executing IF at the prompt.
+
+Load an optional library with `REQUIRE-GRAPHICS`, for example, and add it to the search order with `ALSO GRAPHICS`. REQUIRE alone preserves the caller's search order. GUI and GAME require GRAPHICS, but programs using both sets of names should select both, for example `ALSO GRAPHICS ALSO GUI`. PREVIOUS removes the first search-order entry. DEFINITIONS changes the destination of new definitions; it is unnecessary for merely looking up names.
+
+The standard `EKEYS K-LEFT` and `GRAPHICS K-LEFT` have different values. Use standard values with EKEY/EKEY>FKEY and graphics values with INKEY. Search order determines which same-named word is found. Do not treat the two encodings as interchangeable.
+
+## Ownership, errors and optional features
+
+Check a returned `ior` or pass it to THROW; zero means success. CATCH also returns zero for normal completion. File/pipe EOF and the K-EOF event returned by terminal EKEY are different interfaces. Terminal Ctrl+C interrupts; byte 3 from a file or pipe is a character.
+
+Release owned regions returned by ALLOCATE, SAVE-MEM or S+ through the corresponding mechanism. Borrowed strings are not owned allocations and may become invalid after subsequent operations. Persist addresses in dictionary images using explicit typed references such as ACONSTANT, AVARIABLE or A,. Relocation never guesses addresses from ordinary numeric cells.
+
+The inventory assumes the full build. Feature-disabled builds such as `-Dfloat=false` omit their corresponding words. Listing GUI or audio words does not imply identical display or sound device support on all OSes. See [graphics and sound](GRAPHICS_AND_SOUND.md) for prerequisites and limits.
+
+Implementation-source fingerprints also detect Zig-body changes. This is a change-detection review gate, not proof of translation or semantic correctness. Private storage roles are maintained in private-storage.json. KEY-IOR returns a byte OR a negative I/O result in one cell: do not pass an ordinary byte to THROW. RECURSE and local declarations require definition compilation.
