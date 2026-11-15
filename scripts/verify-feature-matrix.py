@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build/test each individually excluded group on Windows, native Linux, or WSL."""
+"""Build/test each individually excluded group on Windows, macOS, native Linux, or WSL."""
 import argparse
 import json
 from pathlib import Path
@@ -9,12 +9,13 @@ import subprocess
 import sys
 
 p = argparse.ArgumentParser(description=__doc__)
-p.add_argument('--platform', choices=['windows', 'linux'], required=True)
+p.add_argument('--platform', choices=['windows', 'linux', 'macos'], required=True)
 p.add_argument('--groups', nargs='+', default=['float', 'files', 'help', 'tools', 'image', 'graphics', 'audio', 'debug'])
 a = p.parse_args()
 via_wsl = a.platform == 'linux' and sys.platform == 'win32'
 if not via_wsl and ((a.platform == 'linux' and sys.platform != 'linux') or
-                    (a.platform == 'windows' and sys.platform != 'win32')):
+                    (a.platform == 'windows' and sys.platform != 'win32') or
+                    (a.platform == 'macos' and sys.platform != 'darwin')):
     p.error('--platform must match the host, except Linux via WSL on Windows')
 root = Path.cwd().resolve()
 folder = root / '.work/p10' / a.platform
