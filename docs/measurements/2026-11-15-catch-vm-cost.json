@@ -1,0 +1,3934 @@
+{
+  "recorded_utc": "2026-11-15T05:52:02.705760+00:00",
+  "source_commit": "257504759fd22e7453f9e96798e755f1ea589f79",
+  "scope": "read-only native/GDB observations and Callgrind instruction counts on Linux fast symbol-bearing binary; no optimization implemented",
+  "routing": {
+    "source_commit": "257504759fd22e7453f9e96798e755f1ea589f79",
+    "executable": ".work/vm-investigation-20261115/current-symbols/bin/sigma",
+    "sha256": "d7c8c88e0dd175231f1c35cf37a7c71358e2e595924e7b6b9a02d93d99b2a028",
+    "collection_root": "forth.State.runOperations__func_180",
+    "method": "100/200 iterations, subtract and divide by 100; collect outer driver so THROW restoration outside the loop is included; own instruction counts, not inclusive attribution or elapsed time",
+    "cases": {
+      "success": {
+        "definition": ": B-WORK 1+ ; : BENCH-RUN 0 BENCH-ITERATIONS 0 DO ['] B-WORK CATCH DROP LOOP ;",
+        "ops": {
+          "start": 2,
+          "end": 11,
+          "ops": [
+            {
+              "pc": 2,
+              "kind": "literal",
+              "tag": 3,
+              "value": 0
+            },
+            {
+              "pc": 3,
+              "kind": "call",
+              "tag": 0,
+              "value": 1011,
+              "target": "BENCH-ITERATIONS",
+              "target_kind": "constant",
+              "target_value": 100
+            },
+            {
+              "pc": 4,
+              "kind": "literal",
+              "tag": 3,
+              "value": 0
+            },
+            {
+              "pc": 5,
+              "kind": "do_loop",
+              "tag": 9,
+              "value": 10
+            },
+            {
+              "pc": 6,
+              "kind": "execution_token",
+              "tag": 5,
+              "value": 1012,
+              "target": "B-WORK",
+              "target_kind": "colon",
+              "target_value": 0
+            },
+            {
+              "pc": 7,
+              "kind": "call_builtin",
+              "tag": 37,
+              "value": 282,
+              "target": "CATCH",
+              "target_kind": "builtin",
+              "target_value": 0
+            },
+            {
+              "pc": 8,
+              "kind": "drop",
+              "tag": 40,
+              "value": 0
+            },
+            {
+              "pc": 9,
+              "kind": "loop",
+              "tag": 11,
+              "value": 6
+            },
+            {
+              "pc": 10,
+              "kind": "exit",
+              "tag": 19,
+              "value": 0
+            }
+          ]
+        },
+        "profiles": [
+          {
+            "summary": {
+              "Ir": 64106,
+              "Dr": 18970,
+              "Dw": 14442,
+              "I1mr": 55,
+              "D1mr": 22,
+              "D1mw": 25,
+              "ILmr": 55,
+              "DLmr": 7,
+              "DLmw": 22
+            },
+            "self_counts": {
+              "forth.State.builtinInLoop__func_183": {
+                "Ir": 19500,
+                "Dr": 6800,
+                "Dw": 6700,
+                "I1mr": 22,
+                "D1mr": 2,
+                "D1mw": 6,
+                "ILmr": 22,
+                "DLmr": 0,
+                "DLmw": 6
+              },
+              "forth.State.runOperationsLoop__func_181": {
+                "Ir": 17771,
+                "Dr": 6559,
+                "Dw": 2427,
+                "I1mr": 29,
+                "D1mr": 15,
+                "D1mw": 4,
+                "ILmr": 29,
+                "DLmr": 7,
+                "DLmw": 3
+              },
+              "forth.State.runOperations__func_180": {
+                "Ir": 35,
+                "Dr": 11,
+                "Dw": 15,
+                "I1mr": 4,
+                "D1mr": 2,
+                "D1mw": 3,
+                "ILmr": 4,
+                "DLmr": 0,
+                "DLmw": 1
+              },
+              "memcpy": {
+                "Ir": 26800,
+                "Dr": 5600,
+                "Dw": 5300,
+                "I1mr": 0,
+                "D1mr": 3,
+                "D1mw": 12,
+                "ILmr": 0,
+                "DLmr": 0,
+                "DLmw": 12
+              }
+            },
+            "calls": {
+              "_start_c -> (below main)": 1,
+              "0x00000000010c4170 -> _start_c": 1,
+              "forth.State.executeWord -> forth.State.executeOperations": 1,
+              "forth.State.builtinInLoop__func_183 -> memcpy": 300,
+              "forth.State.interpretLine -> forth.State.interpretSource": 1,
+              "forth.State.interpretSource -> forth.State.handleWord": 15,
+              "forth.State.runOperationsLoop__func_181 -> forth.State.builtinInLoop__func_183": 100,
+              "forth.State.runOperations__func_180 -> forth.State.runOperationsLoop__func_181": 1,
+              "forth.State.handleWord -> forth.State.executeWord": 11,
+              "forth.State.executeOperations -> forth.State.runOperations__func_180": 1,
+              "main -> main.run": 1,
+              "(below main) -> libc_start_main_stage2": 1,
+              "libc_start_main_stage2 -> main": 1,
+              "main.run -> forth.State.interpretLine": 1
+            }
+          },
+          {
+            "summary": {
+              "Ir": 128006,
+              "Dr": 37870,
+              "Dw": 28842,
+              "I1mr": 55,
+              "D1mr": 22,
+              "D1mw": 25,
+              "ILmr": 55,
+              "DLmr": 7,
+              "DLmw": 22
+            },
+            "self_counts": {
+              "forth.State.builtinInLoop__func_183": {
+                "Ir": 39000,
+                "Dr": 13600,
+                "Dw": 13400,
+                "I1mr": 22,
+                "D1mr": 2,
+                "D1mw": 6,
+                "ILmr": 22,
+                "DLmr": 0,
+                "DLmw": 6
+              },
+              "forth.State.runOperationsLoop__func_181": {
+                "Ir": 35371,
+                "Dr": 13059,
+                "Dw": 4827,
+                "I1mr": 29,
+                "D1mr": 15,
+                "D1mw": 4,
+                "ILmr": 29,
+                "DLmr": 7,
+                "DLmw": 3
+              },
+              "forth.State.runOperations__func_180": {
+                "Ir": 35,
+                "Dr": 11,
+                "Dw": 15,
+                "I1mr": 4,
+                "D1mr": 2,
+                "D1mw": 3,
+                "ILmr": 4,
+                "DLmr": 0,
+                "DLmw": 1
+              },
+              "memcpy": {
+                "Ir": 53600,
+                "Dr": 11200,
+                "Dw": 10600,
+                "I1mr": 0,
+                "D1mr": 3,
+                "D1mw": 12,
+                "ILmr": 0,
+                "DLmr": 0,
+                "DLmw": 12
+              }
+            },
+            "calls": {
+              "_start_c -> (below main)": 1,
+              "0x00000000010c4170 -> _start_c": 1,
+              "forth.State.executeWord -> forth.State.executeOperations": 1,
+              "forth.State.builtinInLoop__func_183 -> memcpy": 600,
+              "forth.State.interpretLine -> forth.State.interpretSource": 1,
+              "forth.State.interpretSource -> forth.State.handleWord": 15,
+              "forth.State.runOperationsLoop__func_181 -> forth.State.builtinInLoop__func_183": 200,
+              "forth.State.runOperations__func_180 -> forth.State.runOperationsLoop__func_181": 1,
+              "forth.State.handleWord -> forth.State.executeWord": 11,
+              "forth.State.executeOperations -> forth.State.runOperations__func_180": 1,
+              "main -> main.run": 1,
+              "(below main) -> libc_start_main_stage2": 1,
+              "libc_start_main_stage2 -> main": 1,
+              "main.run -> forth.State.interpretLine": 1
+            }
+          }
+        ],
+        "per_iteration": {
+          "Ir": 639.0,
+          "Dr": 189.0,
+          "Dw": 144.0
+        },
+        "self_counts_per_iteration": {
+          "forth.State.builtinInLoop__func_183": {
+            "Ir": 195.0,
+            "Dr": 68.0,
+            "Dw": 67.0
+          },
+          "forth.State.runOperationsLoop__func_181": {
+            "Ir": 176.0,
+            "Dr": 65.0,
+            "Dw": 24.0
+          },
+          "memcpy": {
+            "Ir": 268.0,
+            "Dr": 56.0,
+            "Dw": 53.0
+          }
+        },
+        "calls_per_iteration": {
+          "forth.State.builtinInLoop__func_183 -> memcpy": 3.0,
+          "forth.State.runOperationsLoop__func_181 -> forth.State.builtinInLoop__func_183": 1.0
+        }
+      },
+      "nested-64": {
+        "definition": ": B-NEST DUP IF 1- ['] B-NEST CATCH THROW ELSE DROP THEN ; : BENCH-RUN 0 BENCH-ITERATIONS 0 DO 64 ['] B-NEST CATCH + LOOP ;",
+        "ops": {
+          "start": 9,
+          "end": 19,
+          "ops": [
+            {
+              "pc": 9,
+              "kind": "literal",
+              "tag": 3,
+              "value": 0
+            },
+            {
+              "pc": 10,
+              "kind": "call",
+              "tag": 0,
+              "value": 1011,
+              "target": "BENCH-ITERATIONS",
+              "target_kind": "constant",
+              "target_value": 100
+            },
+            {
+              "pc": 11,
+              "kind": "literal",
+              "tag": 3,
+              "value": 0
+            },
+            {
+              "pc": 12,
+              "kind": "do_loop",
+              "tag": 9,
+              "value": 18
+            },
+            {
+              "pc": 13,
+              "kind": "literal",
+              "tag": 3,
+              "value": 64
+            },
+            {
+              "pc": 14,
+              "kind": "execution_token",
+              "tag": 5,
+              "value": 1012,
+              "target": "B-NEST",
+              "target_kind": "colon",
+              "target_value": 0
+            },
+            {
+              "pc": 15,
+              "kind": "call_builtin",
+              "tag": 37,
+              "value": 282,
+              "target": "CATCH",
+              "target_kind": "builtin",
+              "target_value": 0
+            },
+            {
+              "pc": 16,
+              "kind": "add",
+              "tag": 48,
+              "value": 18
+            },
+            {
+              "pc": 17,
+              "kind": "loop",
+              "tag": 11,
+              "value": 13
+            },
+            {
+              "pc": 18,
+              "kind": "exit",
+              "tag": 19,
+              "value": 0
+            }
+          ]
+        },
+        "profiles": [
+          {
+            "summary": {
+              "Ir": 4833006,
+              "Dr": 1455470,
+              "Dw": 1058642,
+              "I1mr": 67,
+              "D1mr": 828,
+              "D1mw": 2693,
+              "ILmr": 67,
+              "DLmr": 10,
+              "DLmw": 414
+            },
+            "self_counts": {
+              "forth.State.builtinInLoop__func_183": {
+                "Ir": 1408300,
+                "Dr": 480400,
+                "Dw": 473900,
+                "I1mr": 23,
+                "D1mr": 2,
+                "D1mw": 638,
+                "ILmr": 23,
+                "DLmr": 0,
+                "DLmw": 143
+              },
+              "forth.State.runOperationsLoop__func_181": {
+                "Ir": 1407471,
+                "Dr": 515059,
+                "Dw": 189027,
+                "I1mr": 35,
+                "D1mr": 719,
+                "D1mw": 3,
+                "ILmr": 35,
+                "DLmr": 8,
+                "DLmw": 2
+              },
+              "core.words_system.execute__func_530": {
+                "Ir": 102400,
+                "Dr": 38400,
+                "Dw": 12800,
+                "I1mr": 3,
+                "D1mr": 1,
+                "D1mw": 0,
+                "ILmr": 3,
+                "DLmr": 1
+              },
+              "forth.State.runOperations__func_180": {
+                "Ir": 35,
+                "Dr": 11,
+                "Dw": 15,
+                "I1mr": 4,
+                "D1mr": 2,
+                "D1mw": 2,
+                "ILmr": 4,
+                "DLmr": 0,
+                "DLmw": 1
+              },
+              "forth.State.executeBuiltin": {
+                "Ir": 172800,
+                "Dr": 57600,
+                "Dw": 38400,
+                "I1mr": 2,
+                "D1mr": 101,
+                "D1mw": 0,
+                "ILmr": 2,
+                "DLmr": 1
+              },
+              "memcpy": {
+                "Ir": 1742000,
+                "Dr": 364000,
+                "Dw": 344500,
+                "I1mr": 0,
+                "D1mr": 3,
+                "D1mw": 2050,
+                "ILmr": 0,
+                "DLmr": 0,
+                "DLmw": 268
+              }
+            },
+            "calls": {
+              "_start_c -> (below main)": 1,
+              "0x00000000010c4170 -> _start_c": 1,
+              "forth.State.interpretSource -> forth.State.handleWord": 22,
+              "forth.State.interpretLine -> forth.State.interpretSource": 1,
+              "forth.State.builtinInLoop__func_183 -> memcpy": 19500,
+              "forth.State.builtinInLoop__func_183 -> forth.State.executeBuiltin": 6400,
+              "forth.State.runOperationsLoop__func_181 -> forth.State.builtinInLoop__func_183": 12900,
+              "forth.State.executeWord -> forth.State.executeOperations": 1,
+              "forth.State.runOperations__func_180 -> forth.State.runOperationsLoop__func_181": 1,
+              "forth.State.handleWord -> forth.State.executeWord": 14,
+              "forth.State.executeBuiltin -> core.words_system.execute__func_530": 6400,
+              "forth.State.executeOperations -> forth.State.runOperations__func_180": 1,
+              "main -> main.run": 1,
+              "(below main) -> libc_start_main_stage2": 1,
+              "libc_start_main_stage2 -> main": 1,
+              "main.run -> forth.State.interpretLine": 1
+            }
+          },
+          {
+            "summary": {
+              "Ir": 9665806,
+              "Dr": 2910870,
+              "Dw": 2117242,
+              "I1mr": 67,
+              "D1mr": 1628,
+              "D1mw": 4993,
+              "ILmr": 67,
+              "DLmr": 10,
+              "DLmw": 414
+            },
+            "self_counts": {
+              "forth.State.builtinInLoop__func_183": {
+                "Ir": 2816600,
+                "Dr": 960800,
+                "Dw": 947800,
+                "I1mr": 23,
+                "D1mr": 2,
+                "D1mw": 1138,
+                "ILmr": 23,
+                "DLmr": 0,
+                "DLmw": 143
+              },
+              "forth.State.runOperationsLoop__func_181": {
+                "Ir": 2814771,
+                "Dr": 1030059,
+                "Dw": 378027,
+                "I1mr": 35,
+                "D1mr": 1419,
+                "D1mw": 3,
+                "ILmr": 35,
+                "DLmr": 8,
+                "DLmw": 2
+              },
+              "core.words_system.execute__func_530": {
+                "Ir": 204800,
+                "Dr": 76800,
+                "Dw": 25600,
+                "I1mr": 3,
+                "D1mr": 1,
+                "D1mw": 0,
+                "ILmr": 3,
+                "DLmr": 1
+              },
+              "forth.State.runOperations__func_180": {
+                "Ir": 35,
+                "Dr": 11,
+                "Dw": 15,
+                "I1mr": 4,
+                "D1mr": 2,
+                "D1mw": 2,
+                "ILmr": 4,
+                "DLmr": 0,
+                "DLmw": 1
+              },
+              "forth.State.executeBuiltin": {
+                "Ir": 345600,
+                "Dr": 115200,
+                "Dw": 76800,
+                "I1mr": 2,
+                "D1mr": 201,
+                "D1mw": 0,
+                "ILmr": 2,
+                "DLmr": 1
+              },
+              "memcpy": {
+                "Ir": 3484000,
+                "Dr": 728000,
+                "Dw": 689000,
+                "I1mr": 0,
+                "D1mr": 3,
+                "D1mw": 3850,
+                "ILmr": 0,
+                "DLmr": 0,
+                "DLmw": 268
+              }
+            },
+            "calls": {
+              "_start_c -> (below main)": 1,
+              "0x00000000010c4170 -> _start_c": 1,
+              "forth.State.interpretSource -> forth.State.handleWord": 22,
+              "forth.State.interpretLine -> forth.State.interpretSource": 1,
+              "forth.State.builtinInLoop__func_183 -> memcpy": 39000,
+              "forth.State.builtinInLoop__func_183 -> forth.State.executeBuiltin": 12800,
+              "forth.State.runOperationsLoop__func_181 -> forth.State.builtinInLoop__func_183": 25800,
+              "forth.State.executeWord -> forth.State.executeOperations": 1,
+              "forth.State.runOperations__func_180 -> forth.State.runOperationsLoop__func_181": 1,
+              "forth.State.handleWord -> forth.State.executeWord": 14,
+              "forth.State.executeBuiltin -> core.words_system.execute__func_530": 12800,
+              "forth.State.executeOperations -> forth.State.runOperations__func_180": 1,
+              "main -> main.run": 1,
+              "(below main) -> libc_start_main_stage2": 1,
+              "libc_start_main_stage2 -> main": 1,
+              "main.run -> forth.State.interpretLine": 1
+            }
+          }
+        ],
+        "per_iteration": {
+          "Ir": 48328.0,
+          "Dr": 14554.0,
+          "Dw": 10586.0
+        },
+        "self_counts_per_iteration": {
+          "forth.State.runOperationsLoop__func_181": {
+            "Ir": 14073.0,
+            "Dr": 5150.0,
+            "Dw": 1890.0
+          },
+          "memcpy": {
+            "Ir": 17420.0,
+            "Dr": 3640.0,
+            "Dw": 3445.0
+          },
+          "forth.State.builtinInLoop__func_183": {
+            "Ir": 14083.0,
+            "Dr": 4804.0,
+            "Dw": 4739.0
+          },
+          "forth.State.executeBuiltin": {
+            "Ir": 1728.0,
+            "Dr": 576.0,
+            "Dw": 384.0
+          },
+          "core.words_system.execute__func_530": {
+            "Ir": 1024.0,
+            "Dr": 384.0,
+            "Dw": 128.0
+          }
+        },
+        "calls_per_iteration": {
+          "forth.State.builtinInLoop__func_183 -> memcpy": 195.0,
+          "forth.State.builtinInLoop__func_183 -> forth.State.executeBuiltin": 64.0,
+          "forth.State.runOperationsLoop__func_181 -> forth.State.builtinInLoop__func_183": 129.0,
+          "forth.State.executeBuiltin -> core.words_system.execute__func_530": 64.0
+        }
+      },
+      "nested-256": {
+        "definition": ": B-NEST DUP IF 1- ['] B-NEST CATCH THROW ELSE DROP THEN ; : BENCH-RUN 0 BENCH-ITERATIONS 0 DO 256 ['] B-NEST CATCH + LOOP ;",
+        "ops": {
+          "start": 9,
+          "end": 19,
+          "ops": [
+            {
+              "pc": 9,
+              "kind": "literal",
+              "tag": 3,
+              "value": 0
+            },
+            {
+              "pc": 10,
+              "kind": "call",
+              "tag": 0,
+              "value": 1011,
+              "target": "BENCH-ITERATIONS",
+              "target_kind": "constant",
+              "target_value": 100
+            },
+            {
+              "pc": 11,
+              "kind": "literal",
+              "tag": 3,
+              "value": 0
+            },
+            {
+              "pc": 12,
+              "kind": "do_loop",
+              "tag": 9,
+              "value": 18
+            },
+            {
+              "pc": 13,
+              "kind": "literal",
+              "tag": 3,
+              "value": 256
+            },
+            {
+              "pc": 14,
+              "kind": "execution_token",
+              "tag": 5,
+              "value": 1012,
+              "target": "B-NEST",
+              "target_kind": "colon",
+              "target_value": 0
+            },
+            {
+              "pc": 15,
+              "kind": "call_builtin",
+              "tag": 37,
+              "value": 282,
+              "target": "CATCH",
+              "target_kind": "builtin",
+              "target_value": 0
+            },
+            {
+              "pc": 16,
+              "kind": "add",
+              "tag": 48,
+              "value": 18
+            },
+            {
+              "pc": 17,
+              "kind": "loop",
+              "tag": 11,
+              "value": 13
+            },
+            {
+              "pc": 18,
+              "kind": "exit",
+              "tag": 19,
+              "value": 0
+            }
+          ]
+        },
+        "profiles": [
+          {
+            "summary": {
+              "Ir": 19117806,
+              "Dr": 5756270,
+              "Dw": 4188242,
+              "I1mr": 67,
+              "D1mr": 28522,
+              "D1mw": 146429,
+              "ILmr": 67,
+              "DLmr": 10,
+              "DLmw": 1590
+            },
+            "self_counts": {
+              "forth.State.builtinInLoop__func_183": {
+                "Ir": 5574700,
+                "Dr": 1901200,
+                "Dw": 1875500,
+                "I1mr": 23,
+                "D1mr": 101,
+                "D1mw": 48170,
+                "ILmr": 23,
+                "DLmr": 0,
+                "DLmw": 551
+              },
+              "forth.State.runOperationsLoop__func_181": {
+                "Ir": 5554671,
+                "Dr": 2031859,
+                "Dw": 745827,
+                "I1mr": 35,
+                "D1mr": 28015,
+                "D1mw": 3,
+                "ILmr": 35,
+                "DLmr": 8,
+                "DLmw": 2
+              },
+              "core.words_system.execute__func_530": {
+                "Ir": 409600,
+                "Dr": 153600,
+                "Dw": 51200,
+                "I1mr": 3,
+                "D1mr": 100,
+                "D1mw": 0,
+                "ILmr": 3,
+                "DLmr": 1
+              },
+              "forth.State.runOperations__func_180": {
+                "Ir": 35,
+                "Dr": 11,
+                "Dw": 15,
+                "I1mr": 4,
+                "D1mr": 3,
+                "D1mw": 2,
+                "ILmr": 4,
+                "DLmr": 0,
+                "DLmw": 1
+              },
+              "forth.State.executeBuiltin": {
+                "Ir": 691200,
+                "Dr": 230400,
+                "Dw": 153600,
+                "I1mr": 2,
+                "D1mr": 300,
+                "D1mw": 0,
+                "ILmr": 2,
+                "DLmr": 1
+              },
+              "memcpy": {
+                "Ir": 6887600,
+                "Dr": 1439200,
+                "Dw": 1362100,
+                "I1mr": 0,
+                "D1mr": 3,
+                "D1mw": 98254,
+                "ILmr": 0,
+                "DLmr": 0,
+                "DLmw": 1036
+              }
+            },
+            "calls": {
+              "_start_c -> (below main)": 1,
+              "0x00000000010c4170 -> _start_c": 1,
+              "forth.State.interpretSource -> forth.State.handleWord": 22,
+              "forth.State.interpretLine -> forth.State.interpretSource": 1,
+              "forth.State.builtinInLoop__func_183 -> memcpy": 77100,
+              "forth.State.builtinInLoop__func_183 -> forth.State.executeBuiltin": 25600,
+              "forth.State.runOperationsLoop__func_181 -> forth.State.builtinInLoop__func_183": 51300,
+              "forth.State.executeWord -> forth.State.executeOperations": 1,
+              "forth.State.runOperations__func_180 -> forth.State.runOperationsLoop__func_181": 1,
+              "forth.State.handleWord -> forth.State.executeWord": 14,
+              "forth.State.executeBuiltin -> core.words_system.execute__func_530": 25600,
+              "forth.State.executeOperations -> forth.State.runOperations__func_180": 1,
+              "main -> main.run": 1,
+              "(below main) -> libc_start_main_stage2": 1,
+              "libc_start_main_stage2 -> main": 1,
+              "main.run -> forth.State.interpretLine": 1
+            }
+          },
+          {
+            "summary": {
+              "Ir": 38235406,
+              "Dr": 11512470,
+              "Dw": 8376442,
+              "I1mr": 67,
+              "D1mr": 57022,
+              "D1mw": 292729,
+              "ILmr": 67,
+              "DLmr": 10,
+              "DLmw": 1590
+            },
+            "self_counts": {
+              "forth.State.builtinInLoop__func_183": {
+                "Ir": 11149400,
+                "Dr": 3802400,
+                "Dw": 3751000,
+                "I1mr": 23,
+                "D1mr": 201,
+                "D1mw": 96270,
+                "ILmr": 23,
+                "DLmr": 0,
+                "DLmw": 551
+              },
+              "forth.State.runOperationsLoop__func_181": {
+                "Ir": 11109171,
+                "Dr": 4063659,
+                "Dw": 1491627,
+                "I1mr": 35,
+                "D1mr": 56015,
+                "D1mw": 3,
+                "ILmr": 35,
+                "DLmr": 8,
+                "DLmw": 2
+              },
+              "core.words_system.execute__func_530": {
+                "Ir": 819200,
+                "Dr": 307200,
+                "Dw": 102400,
+                "I1mr": 3,
+                "D1mr": 200,
+                "D1mw": 0,
+                "ILmr": 3,
+                "DLmr": 1
+              },
+              "forth.State.runOperations__func_180": {
+                "Ir": 35,
+                "Dr": 11,
+                "Dw": 15,
+                "I1mr": 4,
+                "D1mr": 3,
+                "D1mw": 2,
+                "ILmr": 4,
+                "DLmr": 0,
+                "DLmw": 1
+              },
+              "forth.State.executeBuiltin": {
+                "Ir": 1382400,
+                "Dr": 460800,
+                "Dw": 307200,
+                "I1mr": 2,
+                "D1mr": 600,
+                "D1mw": 0,
+                "ILmr": 2,
+                "DLmr": 1
+              },
+              "memcpy": {
+                "Ir": 13775200,
+                "Dr": 2878400,
+                "Dw": 2724200,
+                "I1mr": 0,
+                "D1mr": 3,
+                "D1mw": 196454,
+                "ILmr": 0,
+                "DLmr": 0,
+                "DLmw": 1036
+              }
+            },
+            "calls": {
+              "_start_c -> (below main)": 1,
+              "0x00000000010c4170 -> _start_c": 1,
+              "forth.State.interpretSource -> forth.State.handleWord": 22,
+              "forth.State.interpretLine -> forth.State.interpretSource": 1,
+              "forth.State.builtinInLoop__func_183 -> memcpy": 154200,
+              "forth.State.builtinInLoop__func_183 -> forth.State.executeBuiltin": 51200,
+              "forth.State.runOperationsLoop__func_181 -> forth.State.builtinInLoop__func_183": 102600,
+              "forth.State.executeWord -> forth.State.executeOperations": 1,
+              "forth.State.runOperations__func_180 -> forth.State.runOperationsLoop__func_181": 1,
+              "forth.State.handleWord -> forth.State.executeWord": 14,
+              "forth.State.executeBuiltin -> core.words_system.execute__func_530": 51200,
+              "forth.State.executeOperations -> forth.State.runOperations__func_180": 1,
+              "main -> main.run": 1,
+              "(below main) -> libc_start_main_stage2": 1,
+              "libc_start_main_stage2 -> main": 1,
+              "main.run -> forth.State.interpretLine": 1
+            }
+          }
+        ],
+        "per_iteration": {
+          "Ir": 191176.0,
+          "Dr": 57562.0,
+          "Dw": 41882.0
+        },
+        "self_counts_per_iteration": {
+          "forth.State.runOperationsLoop__func_181": {
+            "Ir": 55545.0,
+            "Dr": 20318.0,
+            "Dw": 7458.0
+          },
+          "memcpy": {
+            "Ir": 68876.0,
+            "Dr": 14392.0,
+            "Dw": 13621.0
+          },
+          "forth.State.builtinInLoop__func_183": {
+            "Ir": 55747.0,
+            "Dr": 19012.0,
+            "Dw": 18755.0
+          },
+          "forth.State.executeBuiltin": {
+            "Ir": 6912.0,
+            "Dr": 2304.0,
+            "Dw": 1536.0
+          },
+          "core.words_system.execute__func_530": {
+            "Ir": 4096.0,
+            "Dr": 1536.0,
+            "Dw": 512.0
+          }
+        },
+        "calls_per_iteration": {
+          "forth.State.builtinInLoop__func_183 -> memcpy": 771.0,
+          "forth.State.builtinInLoop__func_183 -> forth.State.executeBuiltin": 256.0,
+          "forth.State.runOperationsLoop__func_181 -> forth.State.builtinInLoop__func_183": 513.0,
+          "forth.State.executeBuiltin -> core.words_system.execute__func_530": 256.0
+        }
+      },
+      "execute": {
+        "definition": ": B-WORK 1+ ; : BENCH-RUN 0 BENCH-ITERATIONS 0 DO ['] B-WORK ['] CATCH EXECUTE DROP LOOP ;",
+        "ops": {
+          "start": 2,
+          "end": 12,
+          "ops": [
+            {
+              "pc": 2,
+              "kind": "literal",
+              "tag": 3,
+              "value": 0
+            },
+            {
+              "pc": 3,
+              "kind": "call",
+              "tag": 0,
+              "value": 1011,
+              "target": "BENCH-ITERATIONS",
+              "target_kind": "constant",
+              "target_value": 100
+            },
+            {
+              "pc": 4,
+              "kind": "literal",
+              "tag": 3,
+              "value": 0
+            },
+            {
+              "pc": 5,
+              "kind": "do_loop",
+              "tag": 9,
+              "value": 11
+            },
+            {
+              "pc": 6,
+              "kind": "execution_token",
+              "tag": 5,
+              "value": 1012,
+              "target": "B-WORK",
+              "target_kind": "colon",
+              "target_value": 0
+            },
+            {
+              "pc": 7,
+              "kind": "execution_token",
+              "tag": 5,
+              "value": 282,
+              "target": "CATCH",
+              "target_kind": "builtin",
+              "target_value": 0
+            },
+            {
+              "pc": 8,
+              "kind": "execute",
+              "tag": 88,
+              "value": 65
+            },
+            {
+              "pc": 9,
+              "kind": "drop",
+              "tag": 40,
+              "value": 0
+            },
+            {
+              "pc": 10,
+              "kind": "loop",
+              "tag": 11,
+              "value": 6
+            },
+            {
+              "pc": 11,
+              "kind": "exit",
+              "tag": 19,
+              "value": 0
+            }
+          ]
+        },
+        "profiles": [
+          {
+            "summary": {
+              "Ir": 72106,
+              "Dr": 21470,
+              "Dw": 15642,
+              "I1mr": 61,
+              "D1mr": 23,
+              "D1mw": 24,
+              "ILmr": 61,
+              "DLmr": 8,
+              "DLmw": 22
+            },
+            "self_counts": {
+              "forth.State.builtinInLoop__func_183": {
+                "Ir": 19500,
+                "Dr": 6800,
+                "Dw": 6700,
+                "I1mr": 21,
+                "D1mr": 2,
+                "D1mw": 6,
+                "ILmr": 21,
+                "DLmr": 0,
+                "DLmw": 6
+              },
+              "forth.State.runOperationsLoop__func_181": {
+                "Ir": 20971,
+                "Dr": 7959,
+                "Dw": 2827,
+                "I1mr": 29,
+                "D1mr": 16,
+                "D1mw": 3,
+                "ILmr": 29,
+                "DLmr": 8,
+                "DLmw": 2
+              },
+              "forth.State.runOperations__func_180": {
+                "Ir": 35,
+                "Dr": 11,
+                "Dw": 15,
+                "I1mr": 4,
+                "D1mr": 2,
+                "D1mw": 2,
+                "ILmr": 4,
+                "DLmr": 0,
+                "DLmw": 1
+              },
+              "forth.State.wordInLoop__func_182": {
+                "Ir": 4800,
+                "Dr": 1100,
+                "Dw": 800,
+                "I1mr": 7,
+                "D1mr": 0,
+                "D1mw": 1,
+                "ILmr": 7,
+                "DLmr": 0,
+                "DLmw": 1
+              },
+              "memcpy": {
+                "Ir": 26800,
+                "Dr": 5600,
+                "Dw": 5300,
+                "I1mr": 0,
+                "D1mr": 3,
+                "D1mw": 12,
+                "ILmr": 0,
+                "DLmr": 0,
+                "DLmw": 12
+              }
+            },
+            "calls": {
+              "_start_c -> (below main)": 1,
+              "0x00000000010c4170 -> _start_c": 1,
+              "forth.State.builtinInLoop__func_183 -> memcpy": 300,
+              "forth.State.handleWord -> forth.State.executeWord": 11,
+              "forth.State.executeWord -> forth.State.executeOperations": 1,
+              "forth.State.runOperationsLoop__func_181 -> forth.State.wordInLoop__func_182": 100,
+              "forth.State.runOperations__func_180 -> forth.State.runOperationsLoop__func_181": 1,
+              "forth.State.interpretLine -> forth.State.interpretSource": 1,
+              "forth.State.interpretSource -> forth.State.handleWord": 15,
+              "forth.State.executeOperations -> forth.State.runOperations__func_180": 1,
+              "forth.State.wordInLoop__func_182 -> forth.State.builtinInLoop__func_183": 100,
+              "main -> main.run": 1,
+              "(below main) -> libc_start_main_stage2": 1,
+              "libc_start_main_stage2 -> main": 1,
+              "main.run -> forth.State.interpretLine": 1
+            }
+          },
+          {
+            "summary": {
+              "Ir": 144006,
+              "Dr": 42870,
+              "Dw": 31242,
+              "I1mr": 61,
+              "D1mr": 23,
+              "D1mw": 24,
+              "ILmr": 61,
+              "DLmr": 8,
+              "DLmw": 22
+            },
+            "self_counts": {
+              "forth.State.builtinInLoop__func_183": {
+                "Ir": 39000,
+                "Dr": 13600,
+                "Dw": 13400,
+                "I1mr": 21,
+                "D1mr": 2,
+                "D1mw": 6,
+                "ILmr": 21,
+                "DLmr": 0,
+                "DLmw": 6
+              },
+              "forth.State.runOperationsLoop__func_181": {
+                "Ir": 41771,
+                "Dr": 15859,
+                "Dw": 5627,
+                "I1mr": 29,
+                "D1mr": 16,
+                "D1mw": 3,
+                "ILmr": 29,
+                "DLmr": 8,
+                "DLmw": 2
+              },
+              "forth.State.runOperations__func_180": {
+                "Ir": 35,
+                "Dr": 11,
+                "Dw": 15,
+                "I1mr": 4,
+                "D1mr": 2,
+                "D1mw": 2,
+                "ILmr": 4,
+                "DLmr": 0,
+                "DLmw": 1
+              },
+              "forth.State.wordInLoop__func_182": {
+                "Ir": 9600,
+                "Dr": 2200,
+                "Dw": 1600,
+                "I1mr": 7,
+                "D1mr": 0,
+                "D1mw": 1,
+                "ILmr": 7,
+                "DLmr": 0,
+                "DLmw": 1
+              },
+              "memcpy": {
+                "Ir": 53600,
+                "Dr": 11200,
+                "Dw": 10600,
+                "I1mr": 0,
+                "D1mr": 3,
+                "D1mw": 12,
+                "ILmr": 0,
+                "DLmr": 0,
+                "DLmw": 12
+              }
+            },
+            "calls": {
+              "_start_c -> (below main)": 1,
+              "0x00000000010c4170 -> _start_c": 1,
+              "forth.State.builtinInLoop__func_183 -> memcpy": 600,
+              "forth.State.handleWord -> forth.State.executeWord": 11,
+              "forth.State.executeWord -> forth.State.executeOperations": 1,
+              "forth.State.runOperationsLoop__func_181 -> forth.State.wordInLoop__func_182": 200,
+              "forth.State.runOperations__func_180 -> forth.State.runOperationsLoop__func_181": 1,
+              "forth.State.interpretLine -> forth.State.interpretSource": 1,
+              "forth.State.interpretSource -> forth.State.handleWord": 15,
+              "forth.State.executeOperations -> forth.State.runOperations__func_180": 1,
+              "forth.State.wordInLoop__func_182 -> forth.State.builtinInLoop__func_183": 200,
+              "main -> main.run": 1,
+              "(below main) -> libc_start_main_stage2": 1,
+              "libc_start_main_stage2 -> main": 1,
+              "main.run -> forth.State.interpretLine": 1
+            }
+          }
+        ],
+        "per_iteration": {
+          "Ir": 719.0,
+          "Dr": 214.0,
+          "Dw": 156.0
+        },
+        "self_counts_per_iteration": {
+          "forth.State.runOperationsLoop__func_181": {
+            "Ir": 208.0,
+            "Dr": 79.0,
+            "Dw": 28.0
+          },
+          "memcpy": {
+            "Ir": 268.0,
+            "Dr": 56.0,
+            "Dw": 53.0
+          },
+          "forth.State.builtinInLoop__func_183": {
+            "Ir": 195.0,
+            "Dr": 68.0,
+            "Dw": 67.0
+          },
+          "forth.State.wordInLoop__func_182": {
+            "Ir": 48.0,
+            "Dr": 11.0,
+            "Dw": 8.0
+          }
+        },
+        "calls_per_iteration": {
+          "forth.State.runOperationsLoop__func_181 -> forth.State.wordInLoop__func_182": 1.0,
+          "forth.State.builtinInLoop__func_183 -> memcpy": 3.0,
+          "forth.State.wordInLoop__func_182 -> forth.State.builtinInLoop__func_183": 1.0
+        }
+      },
+      "defer": {
+        "definition": "DEFER B-CATCH ' CATCH IS B-CATCH : B-WORK 1+ ; : BENCH-RUN 0 BENCH-ITERATIONS 0 DO ['] B-WORK B-CATCH DROP LOOP ;",
+        "ops": {
+          "start": 2,
+          "end": 11,
+          "ops": [
+            {
+              "pc": 2,
+              "kind": "literal",
+              "tag": 3,
+              "value": 0
+            },
+            {
+              "pc": 3,
+              "kind": "call",
+              "tag": 0,
+              "value": 1011,
+              "target": "BENCH-ITERATIONS",
+              "target_kind": "constant",
+              "target_value": 100
+            },
+            {
+              "pc": 4,
+              "kind": "literal",
+              "tag": 3,
+              "value": 0
+            },
+            {
+              "pc": 5,
+              "kind": "do_loop",
+              "tag": 9,
+              "value": 10
+            },
+            {
+              "pc": 6,
+              "kind": "execution_token",
+              "tag": 5,
+              "value": 1013,
+              "target": "B-WORK",
+              "target_kind": "colon",
+              "target_value": 0
+            },
+            {
+              "pc": 7,
+              "kind": "call",
+              "tag": 0,
+              "value": 1012,
+              "target": "B-CATCH",
+              "target_kind": "deferred",
+              "target_value": 122880
+            },
+            {
+              "pc": 8,
+              "kind": "drop",
+              "tag": 40,
+              "value": 0
+            },
+            {
+              "pc": 9,
+              "kind": "loop",
+              "tag": 11,
+              "value": 6
+            },
+            {
+              "pc": 10,
+              "kind": "exit",
+              "tag": 19,
+              "value": 0
+            }
+          ]
+        },
+        "profiles": [
+          {
+            "summary": {
+              "Ir": 75906,
+              "Dr": 21670,
+              "Dw": 15242,
+              "I1mr": 63,
+              "D1mr": 24,
+              "D1mw": 25,
+              "ILmr": 63,
+              "DLmr": 8,
+              "DLmw": 23
+            },
+            "self_counts": {
+              "forth.State.builtinInLoop__func_183": {
+                "Ir": 19500,
+                "Dr": 6800,
+                "Dw": 6700,
+                "I1mr": 21,
+                "D1mr": 2,
+                "D1mw": 7,
+                "ILmr": 21,
+                "DLmr": 0,
+                "DLmw": 7
+              },
+              "forth.State.runOperationsLoop__func_181": {
+                "Ir": 20971,
+                "Dr": 7259,
+                "Dw": 2427,
+                "I1mr": 29,
+                "D1mr": 17,
+                "D1mw": 3,
+                "ILmr": 29,
+                "DLmr": 8,
+                "DLmw": 2
+              },
+              "forth.State.wordInLoop__func_182": {
+                "Ir": 8600,
+                "Dr": 2000,
+                "Dw": 800,
+                "I1mr": 9,
+                "D1mr": 0,
+                "D1mw": 1,
+                "ILmr": 9,
+                "DLmr": 0,
+                "DLmw": 1
+              },
+              "forth.State.runOperations__func_180": {
+                "Ir": 35,
+                "Dr": 11,
+                "Dw": 15,
+                "I1mr": 4,
+                "D1mr": 2,
+                "D1mw": 2,
+                "ILmr": 4,
+                "DLmr": 0,
+                "DLmw": 1
+              },
+              "memcpy": {
+                "Ir": 26800,
+                "Dr": 5600,
+                "Dw": 5300,
+                "I1mr": 0,
+                "D1mr": 3,
+                "D1mw": 12,
+                "ILmr": 0,
+                "DLmr": 0,
+                "DLmw": 12
+              }
+            },
+            "calls": {
+              "_start_c -> (below main)": 1,
+              "0x00000000010c4170 -> _start_c": 1,
+              "forth.State.handleWord -> forth.State.executeWord": 12,
+              "forth.State.executeWord -> forth.State.executeOperations": 1,
+              "forth.State.builtinInLoop__func_183 -> memcpy": 300,
+              "forth.State.runOperationsLoop__func_181 -> forth.State.wordInLoop__func_182": 100,
+              "forth.State.interpretLine -> forth.State.interpretSource": 1,
+              "forth.State.interpretSource -> forth.State.handleWord": 16,
+              "forth.State.wordInLoop__func_182 -> forth.State.builtinInLoop__func_183": 100,
+              "forth.State.runOperations__func_180 -> forth.State.runOperationsLoop__func_181": 1,
+              "forth.State.executeOperations -> forth.State.runOperations__func_180": 1,
+              "main -> main.run": 1,
+              "(below main) -> libc_start_main_stage2": 1,
+              "libc_start_main_stage2 -> main": 1,
+              "main.run -> forth.State.interpretLine": 1
+            }
+          },
+          {
+            "summary": {
+              "Ir": 151606,
+              "Dr": 43270,
+              "Dw": 30442,
+              "I1mr": 63,
+              "D1mr": 24,
+              "D1mw": 25,
+              "ILmr": 63,
+              "DLmr": 8,
+              "DLmw": 23
+            },
+            "self_counts": {
+              "forth.State.builtinInLoop__func_183": {
+                "Ir": 39000,
+                "Dr": 13600,
+                "Dw": 13400,
+                "I1mr": 21,
+                "D1mr": 2,
+                "D1mw": 7,
+                "ILmr": 21,
+                "DLmr": 0,
+                "DLmw": 7
+              },
+              "forth.State.runOperationsLoop__func_181": {
+                "Ir": 41771,
+                "Dr": 14459,
+                "Dw": 4827,
+                "I1mr": 29,
+                "D1mr": 17,
+                "D1mw": 3,
+                "ILmr": 29,
+                "DLmr": 8,
+                "DLmw": 2
+              },
+              "forth.State.wordInLoop__func_182": {
+                "Ir": 17200,
+                "Dr": 4000,
+                "Dw": 1600,
+                "I1mr": 9,
+                "D1mr": 0,
+                "D1mw": 1,
+                "ILmr": 9,
+                "DLmr": 0,
+                "DLmw": 1
+              },
+              "forth.State.runOperations__func_180": {
+                "Ir": 35,
+                "Dr": 11,
+                "Dw": 15,
+                "I1mr": 4,
+                "D1mr": 2,
+                "D1mw": 2,
+                "ILmr": 4,
+                "DLmr": 0,
+                "DLmw": 1
+              },
+              "memcpy": {
+                "Ir": 53600,
+                "Dr": 11200,
+                "Dw": 10600,
+                "I1mr": 0,
+                "D1mr": 3,
+                "D1mw": 12,
+                "ILmr": 0,
+                "DLmr": 0,
+                "DLmw": 12
+              }
+            },
+            "calls": {
+              "_start_c -> (below main)": 1,
+              "0x00000000010c4170 -> _start_c": 1,
+              "forth.State.handleWord -> forth.State.executeWord": 12,
+              "forth.State.executeWord -> forth.State.executeOperations": 1,
+              "forth.State.builtinInLoop__func_183 -> memcpy": 600,
+              "forth.State.runOperationsLoop__func_181 -> forth.State.wordInLoop__func_182": 200,
+              "forth.State.interpretLine -> forth.State.interpretSource": 1,
+              "forth.State.interpretSource -> forth.State.handleWord": 16,
+              "forth.State.wordInLoop__func_182 -> forth.State.builtinInLoop__func_183": 200,
+              "forth.State.runOperations__func_180 -> forth.State.runOperationsLoop__func_181": 1,
+              "forth.State.executeOperations -> forth.State.runOperations__func_180": 1,
+              "main -> main.run": 1,
+              "(below main) -> libc_start_main_stage2": 1,
+              "libc_start_main_stage2 -> main": 1,
+              "main.run -> forth.State.interpretLine": 1
+            }
+          }
+        ],
+        "per_iteration": {
+          "Ir": 757.0,
+          "Dr": 216.0,
+          "Dw": 152.0
+        },
+        "self_counts_per_iteration": {
+          "forth.State.runOperationsLoop__func_181": {
+            "Ir": 208.0,
+            "Dr": 72.0,
+            "Dw": 24.0
+          },
+          "memcpy": {
+            "Ir": 268.0,
+            "Dr": 56.0,
+            "Dw": 53.0
+          },
+          "forth.State.builtinInLoop__func_183": {
+            "Ir": 195.0,
+            "Dr": 68.0,
+            "Dw": 67.0
+          },
+          "forth.State.wordInLoop__func_182": {
+            "Ir": 86.0,
+            "Dr": 20.0,
+            "Dw": 8.0
+          }
+        },
+        "calls_per_iteration": {
+          "forth.State.runOperationsLoop__func_181 -> forth.State.wordInLoop__func_182": 1.0,
+          "forth.State.builtinInLoop__func_183 -> memcpy": 3.0,
+          "forth.State.wordInLoop__func_182 -> forth.State.builtinInLoop__func_183": 1.0
+        }
+      },
+      "synonym": {
+        "definition": "SYNONYM B-CATCH CATCH : B-WORK 1+ ; : BENCH-RUN 0 BENCH-ITERATIONS 0 DO ['] B-WORK B-CATCH DROP LOOP ;",
+        "ops": {
+          "start": 2,
+          "end": 11,
+          "ops": [
+            {
+              "pc": 2,
+              "kind": "literal",
+              "tag": 3,
+              "value": 0
+            },
+            {
+              "pc": 3,
+              "kind": "call",
+              "tag": 0,
+              "value": 1011,
+              "target": "BENCH-ITERATIONS",
+              "target_kind": "constant",
+              "target_value": 100
+            },
+            {
+              "pc": 4,
+              "kind": "literal",
+              "tag": 3,
+              "value": 0
+            },
+            {
+              "pc": 5,
+              "kind": "do_loop",
+              "tag": 9,
+              "value": 10
+            },
+            {
+              "pc": 6,
+              "kind": "execution_token",
+              "tag": 5,
+              "value": 1013,
+              "target": "B-WORK",
+              "target_kind": "colon",
+              "target_value": 0
+            },
+            {
+              "pc": 7,
+              "kind": "call",
+              "tag": 0,
+              "value": 1012,
+              "target": "B-CATCH",
+              "target_kind": "synonym",
+              "target_value": 282
+            },
+            {
+              "pc": 8,
+              "kind": "drop",
+              "tag": 40,
+              "value": 0
+            },
+            {
+              "pc": 9,
+              "kind": "loop",
+              "tag": 11,
+              "value": 6
+            },
+            {
+              "pc": 10,
+              "kind": "exit",
+              "tag": 19,
+              "value": 0
+            }
+          ]
+        },
+        "profiles": [
+          {
+            "summary": {
+              "Ir": 70606,
+              "Dr": 20470,
+              "Dw": 15242,
+              "I1mr": 58,
+              "D1mr": 23,
+              "D1mw": 24,
+              "ILmr": 58,
+              "DLmr": 8,
+              "DLmw": 22
+            },
+            "self_counts": {
+              "forth.State.runOperations__func_180": {
+                "Ir": 35,
+                "Dr": 11,
+                "Dw": 15,
+                "I1mr": 4,
+                "D1mr": 2,
+                "D1mw": 2,
+                "ILmr": 4,
+                "DLmr": 0,
+                "DLmw": 1
+              },
+              "forth.State.builtinInLoop__func_183": {
+                "Ir": 19500,
+                "Dr": 6800,
+                "Dw": 6700,
+                "I1mr": 21,
+                "D1mr": 2,
+                "D1mw": 6,
+                "ILmr": 21,
+                "DLmr": 0,
+                "DLmw": 6
+              },
+              "forth.State.runOperationsLoop__func_181": {
+                "Ir": 18371,
+                "Dr": 6659,
+                "Dw": 2427,
+                "I1mr": 26,
+                "D1mr": 15,
+                "D1mw": 3,
+                "ILmr": 26,
+                "DLmr": 8,
+                "DLmw": 2
+              },
+              "forth.State.wordInLoop__func_182": {
+                "Ir": 5900,
+                "Dr": 1400,
+                "Dw": 800,
+                "I1mr": 7,
+                "D1mr": 1,
+                "D1mw": 1,
+                "ILmr": 7,
+                "DLmr": 0,
+                "DLmw": 1
+              },
+              "memcpy": {
+                "Ir": 26800,
+                "Dr": 5600,
+                "Dw": 5300,
+                "I1mr": 0,
+                "D1mr": 3,
+                "D1mw": 12,
+                "ILmr": 0,
+                "DLmr": 0,
+                "DLmw": 12
+              }
+            },
+            "calls": {
+              "_start_c -> (below main)": 1,
+              "0x00000000010c4170 -> _start_c": 1,
+              "forth.State.handleWord -> forth.State.executeWord": 12,
+              "forth.State.executeWord -> forth.State.executeOperations": 1,
+              "forth.State.runOperations__func_180 -> forth.State.runOperationsLoop__func_181": 1,
+              "forth.State.builtinInLoop__func_183 -> memcpy": 300,
+              "forth.State.runOperationsLoop__func_181 -> forth.State.wordInLoop__func_182": 100,
+              "forth.State.interpretLine -> forth.State.interpretSource": 1,
+              "forth.State.interpretSource -> forth.State.handleWord": 16,
+              "forth.State.wordInLoop__func_182 -> forth.State.builtinInLoop__func_183": 100,
+              "forth.State.executeOperations -> forth.State.runOperations__func_180": 1,
+              "main -> main.run": 1,
+              "(below main) -> libc_start_main_stage2": 1,
+              "libc_start_main_stage2 -> main": 1,
+              "main.run -> forth.State.interpretLine": 1
+            }
+          },
+          {
+            "summary": {
+              "Ir": 141006,
+              "Dr": 40870,
+              "Dw": 30442,
+              "I1mr": 58,
+              "D1mr": 23,
+              "D1mw": 24,
+              "ILmr": 58,
+              "DLmr": 8,
+              "DLmw": 22
+            },
+            "self_counts": {
+              "forth.State.runOperations__func_180": {
+                "Ir": 35,
+                "Dr": 11,
+                "Dw": 15,
+                "I1mr": 4,
+                "D1mr": 2,
+                "D1mw": 2,
+                "ILmr": 4,
+                "DLmr": 0,
+                "DLmw": 1
+              },
+              "forth.State.builtinInLoop__func_183": {
+                "Ir": 39000,
+                "Dr": 13600,
+                "Dw": 13400,
+                "I1mr": 21,
+                "D1mr": 2,
+                "D1mw": 6,
+                "ILmr": 21,
+                "DLmr": 0,
+                "DLmw": 6
+              },
+              "forth.State.runOperationsLoop__func_181": {
+                "Ir": 36571,
+                "Dr": 13259,
+                "Dw": 4827,
+                "I1mr": 26,
+                "D1mr": 15,
+                "D1mw": 3,
+                "ILmr": 26,
+                "DLmr": 8,
+                "DLmw": 2
+              },
+              "forth.State.wordInLoop__func_182": {
+                "Ir": 11800,
+                "Dr": 2800,
+                "Dw": 1600,
+                "I1mr": 7,
+                "D1mr": 1,
+                "D1mw": 1,
+                "ILmr": 7,
+                "DLmr": 0,
+                "DLmw": 1
+              },
+              "memcpy": {
+                "Ir": 53600,
+                "Dr": 11200,
+                "Dw": 10600,
+                "I1mr": 0,
+                "D1mr": 3,
+                "D1mw": 12,
+                "ILmr": 0,
+                "DLmr": 0,
+                "DLmw": 12
+              }
+            },
+            "calls": {
+              "_start_c -> (below main)": 1,
+              "0x00000000010c4170 -> _start_c": 1,
+              "forth.State.handleWord -> forth.State.executeWord": 12,
+              "forth.State.executeWord -> forth.State.executeOperations": 1,
+              "forth.State.runOperations__func_180 -> forth.State.runOperationsLoop__func_181": 1,
+              "forth.State.builtinInLoop__func_183 -> memcpy": 600,
+              "forth.State.runOperationsLoop__func_181 -> forth.State.wordInLoop__func_182": 200,
+              "forth.State.interpretLine -> forth.State.interpretSource": 1,
+              "forth.State.interpretSource -> forth.State.handleWord": 16,
+              "forth.State.wordInLoop__func_182 -> forth.State.builtinInLoop__func_183": 200,
+              "forth.State.executeOperations -> forth.State.runOperations__func_180": 1,
+              "main -> main.run": 1,
+              "(below main) -> libc_start_main_stage2": 1,
+              "libc_start_main_stage2 -> main": 1,
+              "main.run -> forth.State.interpretLine": 1
+            }
+          }
+        ],
+        "per_iteration": {
+          "Ir": 704.0,
+          "Dr": 204.0,
+          "Dw": 152.0
+        },
+        "self_counts_per_iteration": {
+          "forth.State.runOperationsLoop__func_181": {
+            "Ir": 182.0,
+            "Dr": 66.0,
+            "Dw": 24.0
+          },
+          "memcpy": {
+            "Ir": 268.0,
+            "Dr": 56.0,
+            "Dw": 53.0
+          },
+          "forth.State.builtinInLoop__func_183": {
+            "Ir": 195.0,
+            "Dr": 68.0,
+            "Dw": 67.0
+          },
+          "forth.State.wordInLoop__func_182": {
+            "Ir": 59.0,
+            "Dr": 14.0,
+            "Dw": 8.0
+          }
+        },
+        "calls_per_iteration": {
+          "forth.State.runOperationsLoop__func_181 -> forth.State.wordInLoop__func_182": 1.0,
+          "forth.State.builtinInLoop__func_183 -> memcpy": 3.0,
+          "forth.State.wordInLoop__func_182 -> forth.State.builtinInLoop__func_183": 1.0
+        }
+      },
+      "throw": {
+        "definition": ": B-WORK 77 THROW ; : BENCH-RUN 0 BENCH-ITERATIONS 0 DO ['] B-WORK CATCH + LOOP ;",
+        "ops": {
+          "start": 3,
+          "end": 12,
+          "ops": [
+            {
+              "pc": 3,
+              "kind": "literal",
+              "tag": 3,
+              "value": 0
+            },
+            {
+              "pc": 4,
+              "kind": "call",
+              "tag": 0,
+              "value": 1011,
+              "target": "BENCH-ITERATIONS",
+              "target_kind": "constant",
+              "target_value": 100
+            },
+            {
+              "pc": 5,
+              "kind": "literal",
+              "tag": 3,
+              "value": 0
+            },
+            {
+              "pc": 6,
+              "kind": "do_loop",
+              "tag": 9,
+              "value": 11
+            },
+            {
+              "pc": 7,
+              "kind": "execution_token",
+              "tag": 5,
+              "value": 1012,
+              "target": "B-WORK",
+              "target_kind": "colon",
+              "target_value": 0
+            },
+            {
+              "pc": 8,
+              "kind": "call_builtin",
+              "tag": 37,
+              "value": 282,
+              "target": "CATCH",
+              "target_kind": "builtin",
+              "target_value": 0
+            },
+            {
+              "pc": 9,
+              "kind": "add",
+              "tag": 48,
+              "value": 18
+            },
+            {
+              "pc": 10,
+              "kind": "loop",
+              "tag": 11,
+              "value": 7
+            },
+            {
+              "pc": 11,
+              "kind": "exit",
+              "tag": 19,
+              "value": 0
+            }
+          ]
+        },
+        "profiles": [
+          {
+            "summary": {
+              "Ir": 120210,
+              "Dr": 33171,
+              "Dw": 27543,
+              "I1mr": 75,
+              "D1mr": 23,
+              "D1mw": 33,
+              "ILmr": 75,
+              "DLmr": 8,
+              "DLmw": 26
+            },
+            "self_counts": {
+              "core.words_system.execute__func_530": {
+                "Ir": 1600,
+                "Dr": 500,
+                "Dw": 300,
+                "I1mr": 3,
+                "D1mr": 0,
+                "D1mw": 1,
+                "ILmr": 3
+              },
+              "forth.State.builtinInLoop__func_183": {
+                "Ir": 21700,
+                "Dr": 7400,
+                "Dw": 7300,
+                "I1mr": 23,
+                "D1mr": 2,
+                "D1mw": 6,
+                "ILmr": 23,
+                "DLmr": 0,
+                "DLmw": 6
+              },
+              "forth.State.executeBuiltin": {
+                "Ir": 2400,
+                "Dr": 800,
+                "Dw": 600,
+                "I1mr": 2,
+                "D1mr": 1,
+                "D1mw": 0,
+                "ILmr": 2,
+                "DLmr": 1
+              },
+              "forth.State.runOperationsLoop__func_181": {
+                "Ir": 18771,
+                "Dr": 6459,
+                "Dw": 2727,
+                "I1mr": 26,
+                "D1mr": 15,
+                "D1mw": 4,
+                "ILmr": 26,
+                "DLmr": 7,
+                "DLmw": 2
+              },
+              "forth.State.runOperations__func_180": {
+                "Ir": 4339,
+                "Dr": 1012,
+                "Dw": 816,
+                "I1mr": 6,
+                "D1mr": 2,
+                "D1mw": 2,
+                "ILmr": 6,
+                "DLmr": 0,
+                "DLmw": 1
+              },
+              "core.words_system.CatchContext.handleError": {
+                "Ir": 15900,
+                "Dr": 5100,
+                "Dw": 4500,
+                "I1mr": 15,
+                "D1mr": 0,
+                "D1mw": 2,
+                "ILmr": 15,
+                "DLmr": 0,
+                "DLmw": 1
+              },
+              "memcpy": {
+                "Ir": 55500,
+                "Dr": 11900,
+                "Dw": 11300,
+                "I1mr": 0,
+                "D1mr": 3,
+                "D1mw": 18,
+                "ILmr": 0,
+                "DLmr": 0,
+                "DLmw": 16
+              }
+            },
+            "calls": {
+              "_start_c -> (below main)": 1,
+              "0x00000000010c4170 -> _start_c": 1,
+              "forth.State.executeWord -> forth.State.executeOperations": 1,
+              "forth.State.handleWord -> forth.State.executeWord": 11,
+              "forth.State.builtinInLoop__func_183 -> memcpy": 300,
+              "forth.State.builtinInLoop__func_183 -> forth.State.executeBuiltin": 100,
+              "forth.State.interpretLine -> forth.State.interpretSource": 1,
+              "forth.State.interpretSource -> forth.State.handleWord": 15,
+              "forth.State.executeBuiltin -> core.words_system.execute__func_530": 100,
+              "forth.State.runOperationsLoop__func_181 -> forth.State.builtinInLoop__func_183": 200,
+              "forth.State.runOperations__func_180 -> forth.State.runOperationsLoop__func_181": 101,
+              "forth.State.runOperations__func_180 -> memcpy": 100,
+              "forth.State.runOperations__func_180 -> core.words_system.CatchContext.handleError": 100,
+              "forth.State.executeOperations -> forth.State.runOperations__func_180": 1,
+              "main -> main.run": 1,
+              "core.words_system.CatchContext.handleError -> memcpy": 200,
+              "(below main) -> libc_start_main_stage2": 1,
+              "libc_start_main_stage2 -> main": 1,
+              "main.run -> forth.State.interpretLine": 1
+            }
+          },
+          {
+            "summary": {
+              "Ir": 240210,
+              "Dr": 66271,
+              "Dw": 55043,
+              "I1mr": 75,
+              "D1mr": 23,
+              "D1mw": 33,
+              "ILmr": 75,
+              "DLmr": 8,
+              "DLmw": 26
+            },
+            "self_counts": {
+              "core.words_system.execute__func_530": {
+                "Ir": 3200,
+                "Dr": 1000,
+                "Dw": 600,
+                "I1mr": 3,
+                "D1mr": 0,
+                "D1mw": 1,
+                "ILmr": 3
+              },
+              "forth.State.builtinInLoop__func_183": {
+                "Ir": 43400,
+                "Dr": 14800,
+                "Dw": 14600,
+                "I1mr": 23,
+                "D1mr": 2,
+                "D1mw": 6,
+                "ILmr": 23,
+                "DLmr": 0,
+                "DLmw": 6
+              },
+              "forth.State.executeBuiltin": {
+                "Ir": 4800,
+                "Dr": 1600,
+                "Dw": 1200,
+                "I1mr": 2,
+                "D1mr": 1,
+                "D1mw": 0,
+                "ILmr": 2,
+                "DLmr": 1
+              },
+              "forth.State.runOperationsLoop__func_181": {
+                "Ir": 37371,
+                "Dr": 12859,
+                "Dw": 5427,
+                "I1mr": 26,
+                "D1mr": 15,
+                "D1mw": 4,
+                "ILmr": 26,
+                "DLmr": 7,
+                "DLmw": 2
+              },
+              "forth.State.runOperations__func_180": {
+                "Ir": 8639,
+                "Dr": 2012,
+                "Dw": 1616,
+                "I1mr": 6,
+                "D1mr": 2,
+                "D1mw": 2,
+                "ILmr": 6,
+                "DLmr": 0,
+                "DLmw": 1
+              },
+              "core.words_system.CatchContext.handleError": {
+                "Ir": 31800,
+                "Dr": 10200,
+                "Dw": 9000,
+                "I1mr": 15,
+                "D1mr": 0,
+                "D1mw": 2,
+                "ILmr": 15,
+                "DLmr": 0,
+                "DLmw": 1
+              },
+              "memcpy": {
+                "Ir": 111000,
+                "Dr": 23800,
+                "Dw": 22600,
+                "I1mr": 0,
+                "D1mr": 3,
+                "D1mw": 18,
+                "ILmr": 0,
+                "DLmr": 0,
+                "DLmw": 16
+              }
+            },
+            "calls": {
+              "_start_c -> (below main)": 1,
+              "0x00000000010c4170 -> _start_c": 1,
+              "forth.State.executeWord -> forth.State.executeOperations": 1,
+              "forth.State.handleWord -> forth.State.executeWord": 11,
+              "forth.State.builtinInLoop__func_183 -> memcpy": 600,
+              "forth.State.builtinInLoop__func_183 -> forth.State.executeBuiltin": 200,
+              "forth.State.interpretLine -> forth.State.interpretSource": 1,
+              "forth.State.interpretSource -> forth.State.handleWord": 15,
+              "forth.State.executeBuiltin -> core.words_system.execute__func_530": 200,
+              "forth.State.runOperationsLoop__func_181 -> forth.State.builtinInLoop__func_183": 400,
+              "forth.State.runOperations__func_180 -> forth.State.runOperationsLoop__func_181": 201,
+              "forth.State.runOperations__func_180 -> memcpy": 200,
+              "forth.State.runOperations__func_180 -> core.words_system.CatchContext.handleError": 200,
+              "forth.State.executeOperations -> forth.State.runOperations__func_180": 1,
+              "main -> main.run": 1,
+              "core.words_system.CatchContext.handleError -> memcpy": 400,
+              "(below main) -> libc_start_main_stage2": 1,
+              "libc_start_main_stage2 -> main": 1,
+              "main.run -> forth.State.interpretLine": 1
+            }
+          }
+        ],
+        "per_iteration": {
+          "Ir": 1200.0,
+          "Dr": 331.0,
+          "Dw": 275.0
+        },
+        "self_counts_per_iteration": {
+          "core.words_system.CatchContext.handleError": {
+            "Ir": 159.0,
+            "Dr": 51.0,
+            "Dw": 45.0
+          },
+          "forth.State.runOperationsLoop__func_181": {
+            "Ir": 186.0,
+            "Dr": 64.0,
+            "Dw": 27.0
+          },
+          "memcpy": {
+            "Ir": 555.0,
+            "Dr": 119.0,
+            "Dw": 113.0
+          },
+          "forth.State.builtinInLoop__func_183": {
+            "Ir": 217.0,
+            "Dr": 74.0,
+            "Dw": 73.0
+          },
+          "forth.State.executeBuiltin": {
+            "Ir": 24.0,
+            "Dr": 8.0,
+            "Dw": 6.0
+          },
+          "core.words_system.execute__func_530": {
+            "Ir": 16.0,
+            "Dr": 5.0,
+            "Dw": 3.0
+          },
+          "forth.State.runOperations__func_180": {
+            "Ir": 43.0,
+            "Dr": 10.0,
+            "Dw": 8.0
+          }
+        },
+        "calls_per_iteration": {
+          "core.words_system.CatchContext.handleError -> memcpy": 2.0,
+          "forth.State.builtinInLoop__func_183 -> memcpy": 3.0,
+          "forth.State.builtinInLoop__func_183 -> forth.State.executeBuiltin": 1.0,
+          "forth.State.runOperationsLoop__func_181 -> forth.State.builtinInLoop__func_183": 2.0,
+          "forth.State.executeBuiltin -> core.words_system.execute__func_530": 1.0,
+          "forth.State.runOperations__func_180 -> forth.State.runOperationsLoop__func_181": 1.0,
+          "forth.State.runOperations__func_180 -> core.words_system.CatchContext.handleError": 1.0,
+          "forth.State.runOperations__func_180 -> memcpy": 1.0
+        }
+      },
+      "fast-throw": {
+        "definition": ": B-WORK 77 FAST-THROW ; : BENCH-RUN 0 BENCH-ITERATIONS 0 DO ['] B-WORK CATCH + LOOP ;",
+        "ops": {
+          "start": 3,
+          "end": 12,
+          "ops": [
+            {
+              "pc": 3,
+              "kind": "literal",
+              "tag": 3,
+              "value": 0
+            },
+            {
+              "pc": 4,
+              "kind": "call",
+              "tag": 0,
+              "value": 1011,
+              "target": "BENCH-ITERATIONS",
+              "target_kind": "constant",
+              "target_value": 100
+            },
+            {
+              "pc": 5,
+              "kind": "literal",
+              "tag": 3,
+              "value": 0
+            },
+            {
+              "pc": 6,
+              "kind": "do_loop",
+              "tag": 9,
+              "value": 11
+            },
+            {
+              "pc": 7,
+              "kind": "execution_token",
+              "tag": 5,
+              "value": 1012,
+              "target": "B-WORK",
+              "target_kind": "colon",
+              "target_value": 0
+            },
+            {
+              "pc": 8,
+              "kind": "call_builtin",
+              "tag": 37,
+              "value": 282,
+              "target": "CATCH",
+              "target_kind": "builtin",
+              "target_value": 0
+            },
+            {
+              "pc": 9,
+              "kind": "add",
+              "tag": 48,
+              "value": 18
+            },
+            {
+              "pc": 10,
+              "kind": "loop",
+              "tag": 11,
+              "value": 7
+            },
+            {
+              "pc": 11,
+              "kind": "exit",
+              "tag": 19,
+              "value": 0
+            }
+          ]
+        },
+        "profiles": [
+          {
+            "summary": {
+              "Ir": 122210,
+              "Dr": 33871,
+              "Dw": 28043,
+              "I1mr": 76,
+              "D1mr": 22,
+              "D1mw": 33,
+              "ILmr": 76,
+              "DLmr": 8,
+              "DLmw": 26
+            },
+            "self_counts": {
+              "core.words_diagnostics.execute__func_1132": {
+                "Ir": 2000,
+                "Dr": 700,
+                "Dw": 500,
+                "I1mr": 2,
+                "D1mr": 0,
+                "D1mw": 0,
+                "ILmr": 2
+              },
+              "forth.State.builtinInLoop__func_183": {
+                "Ir": 21700,
+                "Dr": 7400,
+                "Dw": 7300,
+                "I1mr": 23,
+                "D1mr": 2,
+                "D1mw": 6,
+                "ILmr": 23,
+                "DLmr": 0,
+                "DLmw": 6
+              },
+              "forth.State.executeBuiltin": {
+                "Ir": 2400,
+                "Dr": 800,
+                "Dw": 600,
+                "I1mr": 1,
+                "D1mr": 1,
+                "D1mw": 0,
+                "ILmr": 1,
+                "DLmr": 1
+              },
+              "forth.State.runOperationsLoop__func_181": {
+                "Ir": 18771,
+                "Dr": 6459,
+                "Dw": 2727,
+                "I1mr": 26,
+                "D1mr": 14,
+                "D1mw": 4,
+                "ILmr": 26,
+                "DLmr": 7,
+                "DLmw": 2
+              },
+              "core.words_system.execute__func_530": {
+                "Ir": 1600,
+                "Dr": 500,
+                "Dw": 300,
+                "I1mr": 3,
+                "D1mr": 0,
+                "D1mw": 1,
+                "ILmr": 3
+              },
+              "forth.State.runOperations__func_180": {
+                "Ir": 4339,
+                "Dr": 1012,
+                "Dw": 816,
+                "I1mr": 6,
+                "D1mr": 2,
+                "D1mw": 2,
+                "ILmr": 6,
+                "DLmr": 0,
+                "DLmw": 1
+              },
+              "core.words_system.CatchContext.handleError": {
+                "Ir": 15900,
+                "Dr": 5100,
+                "Dw": 4500,
+                "I1mr": 15,
+                "D1mr": 0,
+                "D1mw": 2,
+                "ILmr": 15,
+                "DLmr": 0,
+                "DLmw": 1
+              },
+              "memcpy": {
+                "Ir": 55500,
+                "Dr": 11900,
+                "Dw": 11300,
+                "I1mr": 0,
+                "D1mr": 3,
+                "D1mw": 18,
+                "ILmr": 0,
+                "DLmr": 0,
+                "DLmw": 16
+              }
+            },
+            "calls": {
+              "_start_c -> (below main)": 1,
+              "0x00000000010c4170 -> _start_c": 1,
+              "core.words_diagnostics.execute__func_1132 -> core.words_system.execute__func_530": 100,
+              "forth.State.executeWord -> forth.State.executeOperations": 1,
+              "forth.State.handleWord -> forth.State.executeWord": 11,
+              "forth.State.builtinInLoop__func_183 -> memcpy": 300,
+              "forth.State.builtinInLoop__func_183 -> forth.State.executeBuiltin": 100,
+              "forth.State.interpretLine -> forth.State.interpretSource": 1,
+              "forth.State.interpretSource -> forth.State.handleWord": 15,
+              "forth.State.executeBuiltin -> core.words_diagnostics.execute__func_1132": 100,
+              "forth.State.runOperationsLoop__func_181 -> forth.State.builtinInLoop__func_183": 200,
+              "forth.State.runOperations__func_180 -> forth.State.runOperationsLoop__func_181": 101,
+              "forth.State.runOperations__func_180 -> memcpy": 100,
+              "forth.State.runOperations__func_180 -> core.words_system.CatchContext.handleError": 100,
+              "forth.State.executeOperations -> forth.State.runOperations__func_180": 1,
+              "main -> main.run": 1,
+              "core.words_system.CatchContext.handleError -> memcpy": 200,
+              "(below main) -> libc_start_main_stage2": 1,
+              "libc_start_main_stage2 -> main": 1,
+              "main.run -> forth.State.interpretLine": 1
+            }
+          },
+          {
+            "summary": {
+              "Ir": 244210,
+              "Dr": 67671,
+              "Dw": 56043,
+              "I1mr": 76,
+              "D1mr": 22,
+              "D1mw": 33,
+              "ILmr": 76,
+              "DLmr": 8,
+              "DLmw": 26
+            },
+            "self_counts": {
+              "core.words_diagnostics.execute__func_1132": {
+                "Ir": 4000,
+                "Dr": 1400,
+                "Dw": 1000,
+                "I1mr": 2,
+                "D1mr": 0,
+                "D1mw": 0,
+                "ILmr": 2
+              },
+              "forth.State.builtinInLoop__func_183": {
+                "Ir": 43400,
+                "Dr": 14800,
+                "Dw": 14600,
+                "I1mr": 23,
+                "D1mr": 2,
+                "D1mw": 6,
+                "ILmr": 23,
+                "DLmr": 0,
+                "DLmw": 6
+              },
+              "forth.State.executeBuiltin": {
+                "Ir": 4800,
+                "Dr": 1600,
+                "Dw": 1200,
+                "I1mr": 1,
+                "D1mr": 1,
+                "D1mw": 0,
+                "ILmr": 1,
+                "DLmr": 1
+              },
+              "forth.State.runOperationsLoop__func_181": {
+                "Ir": 37371,
+                "Dr": 12859,
+                "Dw": 5427,
+                "I1mr": 26,
+                "D1mr": 14,
+                "D1mw": 4,
+                "ILmr": 26,
+                "DLmr": 7,
+                "DLmw": 2
+              },
+              "core.words_system.execute__func_530": {
+                "Ir": 3200,
+                "Dr": 1000,
+                "Dw": 600,
+                "I1mr": 3,
+                "D1mr": 0,
+                "D1mw": 1,
+                "ILmr": 3
+              },
+              "forth.State.runOperations__func_180": {
+                "Ir": 8639,
+                "Dr": 2012,
+                "Dw": 1616,
+                "I1mr": 6,
+                "D1mr": 2,
+                "D1mw": 2,
+                "ILmr": 6,
+                "DLmr": 0,
+                "DLmw": 1
+              },
+              "core.words_system.CatchContext.handleError": {
+                "Ir": 31800,
+                "Dr": 10200,
+                "Dw": 9000,
+                "I1mr": 15,
+                "D1mr": 0,
+                "D1mw": 2,
+                "ILmr": 15,
+                "DLmr": 0,
+                "DLmw": 1
+              },
+              "memcpy": {
+                "Ir": 111000,
+                "Dr": 23800,
+                "Dw": 22600,
+                "I1mr": 0,
+                "D1mr": 3,
+                "D1mw": 18,
+                "ILmr": 0,
+                "DLmr": 0,
+                "DLmw": 16
+              }
+            },
+            "calls": {
+              "_start_c -> (below main)": 1,
+              "0x00000000010c4170 -> _start_c": 1,
+              "core.words_diagnostics.execute__func_1132 -> core.words_system.execute__func_530": 200,
+              "forth.State.executeWord -> forth.State.executeOperations": 1,
+              "forth.State.handleWord -> forth.State.executeWord": 11,
+              "forth.State.builtinInLoop__func_183 -> memcpy": 600,
+              "forth.State.builtinInLoop__func_183 -> forth.State.executeBuiltin": 200,
+              "forth.State.interpretLine -> forth.State.interpretSource": 1,
+              "forth.State.interpretSource -> forth.State.handleWord": 15,
+              "forth.State.executeBuiltin -> core.words_diagnostics.execute__func_1132": 200,
+              "forth.State.runOperationsLoop__func_181 -> forth.State.builtinInLoop__func_183": 400,
+              "forth.State.runOperations__func_180 -> forth.State.runOperationsLoop__func_181": 201,
+              "forth.State.runOperations__func_180 -> memcpy": 200,
+              "forth.State.runOperations__func_180 -> core.words_system.CatchContext.handleError": 200,
+              "forth.State.executeOperations -> forth.State.runOperations__func_180": 1,
+              "main -> main.run": 1,
+              "core.words_system.CatchContext.handleError -> memcpy": 400,
+              "(below main) -> libc_start_main_stage2": 1,
+              "libc_start_main_stage2 -> main": 1,
+              "main.run -> forth.State.interpretLine": 1
+            }
+          }
+        ],
+        "per_iteration": {
+          "Ir": 1220.0,
+          "Dr": 338.0,
+          "Dw": 280.0
+        },
+        "self_counts_per_iteration": {
+          "core.words_system.CatchContext.handleError": {
+            "Ir": 159.0,
+            "Dr": 51.0,
+            "Dw": 45.0
+          },
+          "forth.State.runOperationsLoop__func_181": {
+            "Ir": 186.0,
+            "Dr": 64.0,
+            "Dw": 27.0
+          },
+          "forth.State.runOperations__func_180": {
+            "Ir": 43.0,
+            "Dr": 10.0,
+            "Dw": 8.0
+          },
+          "forth.State.executeBuiltin": {
+            "Ir": 24.0,
+            "Dr": 8.0,
+            "Dw": 6.0
+          },
+          "memcpy": {
+            "Ir": 555.0,
+            "Dr": 119.0,
+            "Dw": 113.0
+          },
+          "forth.State.builtinInLoop__func_183": {
+            "Ir": 217.0,
+            "Dr": 74.0,
+            "Dw": 73.0
+          },
+          "core.words_diagnostics.execute__func_1132": {
+            "Ir": 20.0,
+            "Dr": 7.0,
+            "Dw": 5.0
+          },
+          "core.words_system.execute__func_530": {
+            "Ir": 16.0,
+            "Dr": 5.0,
+            "Dw": 3.0
+          }
+        },
+        "calls_per_iteration": {
+          "core.words_system.CatchContext.handleError -> memcpy": 2.0,
+          "forth.State.builtinInLoop__func_183 -> memcpy": 3.0,
+          "forth.State.builtinInLoop__func_183 -> forth.State.executeBuiltin": 1.0,
+          "forth.State.runOperationsLoop__func_181 -> forth.State.builtinInLoop__func_183": 2.0,
+          "forth.State.runOperations__func_180 -> forth.State.runOperationsLoop__func_181": 1.0,
+          "forth.State.executeBuiltin -> core.words_diagnostics.execute__func_1132": 1.0,
+          "core.words_diagnostics.execute__func_1132 -> core.words_system.execute__func_530": 1.0,
+          "forth.State.runOperations__func_180 -> core.words_system.CatchContext.handleError": 1.0,
+          "forth.State.runOperations__func_180 -> memcpy": 1.0
+        }
+      },
+      "nobt-throw": {
+        "definition": ": B-WORK 77 THROW ; : BENCH-RUN 0 BENCH-ITERATIONS 0 DO ['] B-WORK CATCH-NOBT + LOOP ;",
+        "ops": {
+          "start": 3,
+          "end": 12,
+          "ops": [
+            {
+              "pc": 3,
+              "kind": "literal",
+              "tag": 3,
+              "value": 0
+            },
+            {
+              "pc": 4,
+              "kind": "call",
+              "tag": 0,
+              "value": 1011,
+              "target": "BENCH-ITERATIONS",
+              "target_kind": "constant",
+              "target_value": 100
+            },
+            {
+              "pc": 5,
+              "kind": "literal",
+              "tag": 3,
+              "value": 0
+            },
+            {
+              "pc": 6,
+              "kind": "do_loop",
+              "tag": 9,
+              "value": 11
+            },
+            {
+              "pc": 7,
+              "kind": "execution_token",
+              "tag": 5,
+              "value": 1012,
+              "target": "B-WORK",
+              "target_kind": "colon",
+              "target_value": 0
+            },
+            {
+              "pc": 8,
+              "kind": "call_builtin",
+              "tag": 37,
+              "value": 917,
+              "target": "CATCH-NOBT",
+              "target_kind": "builtin",
+              "target_value": 0
+            },
+            {
+              "pc": 9,
+              "kind": "add",
+              "tag": 48,
+              "value": 18
+            },
+            {
+              "pc": 10,
+              "kind": "loop",
+              "tag": 11,
+              "value": 7
+            },
+            {
+              "pc": 11,
+              "kind": "exit",
+              "tag": 19,
+              "value": 0
+            }
+          ]
+        },
+        "profiles": [
+          {
+            "summary": {
+              "Ir": 120410,
+              "Dr": 33271,
+              "Dw": 27743,
+              "I1mr": 75,
+              "D1mr": 22,
+              "D1mw": 33,
+              "ILmr": 75,
+              "DLmr": 8,
+              "DLmw": 26
+            },
+            "self_counts": {
+              "forth.State.builtinInLoop__func_183": {
+                "Ir": 21800,
+                "Dr": 7500,
+                "Dw": 7400,
+                "I1mr": 23,
+                "D1mr": 2,
+                "D1mw": 6,
+                "ILmr": 23,
+                "DLmr": 0,
+                "DLmw": 6
+              },
+              "forth.State.executeBuiltin": {
+                "Ir": 2400,
+                "Dr": 800,
+                "Dw": 600,
+                "I1mr": 2,
+                "D1mr": 1,
+                "D1mw": 0,
+                "ILmr": 2,
+                "DLmr": 1
+              },
+              "forth.State.runOperationsLoop__func_181": {
+                "Ir": 18771,
+                "Dr": 6459,
+                "Dw": 2727,
+                "I1mr": 26,
+                "D1mr": 14,
+                "D1mw": 4,
+                "ILmr": 26,
+                "DLmr": 7,
+                "DLmw": 2
+              },
+              "core.words_system.execute__func_530": {
+                "Ir": 1600,
+                "Dr": 500,
+                "Dw": 300,
+                "I1mr": 3,
+                "D1mr": 0,
+                "D1mw": 1,
+                "ILmr": 3
+              },
+              "forth.State.runOperations__func_180": {
+                "Ir": 4339,
+                "Dr": 1012,
+                "Dw": 816,
+                "I1mr": 6,
+                "D1mr": 2,
+                "D1mw": 2,
+                "ILmr": 6,
+                "DLmr": 0,
+                "DLmw": 1
+              },
+              "core.words_system.CatchContext.handleError": {
+                "Ir": 16000,
+                "Dr": 5100,
+                "Dw": 4600,
+                "I1mr": 15,
+                "D1mr": 0,
+                "D1mw": 2,
+                "ILmr": 15,
+                "DLmr": 0,
+                "DLmw": 1
+              },
+              "memcpy": {
+                "Ir": 55500,
+                "Dr": 11900,
+                "Dw": 11300,
+                "I1mr": 0,
+                "D1mr": 3,
+                "D1mw": 18,
+                "ILmr": 0,
+                "DLmr": 0,
+                "DLmw": 16
+              }
+            },
+            "calls": {
+              "_start_c -> (below main)": 1,
+              "0x00000000010c4170 -> _start_c": 1,
+              "forth.State.executeWord -> forth.State.executeOperations": 1,
+              "forth.State.handleWord -> forth.State.executeWord": 11,
+              "forth.State.builtinInLoop__func_183 -> memcpy": 300,
+              "forth.State.builtinInLoop__func_183 -> forth.State.executeBuiltin": 100,
+              "forth.State.interpretLine -> forth.State.interpretSource": 1,
+              "forth.State.interpretSource -> forth.State.handleWord": 15,
+              "forth.State.executeBuiltin -> core.words_system.execute__func_530": 100,
+              "forth.State.runOperationsLoop__func_181 -> forth.State.builtinInLoop__func_183": 200,
+              "forth.State.runOperations__func_180 -> forth.State.runOperationsLoop__func_181": 101,
+              "forth.State.runOperations__func_180 -> memcpy": 100,
+              "forth.State.runOperations__func_180 -> core.words_system.CatchContext.handleError": 100,
+              "forth.State.executeOperations -> forth.State.runOperations__func_180": 1,
+              "main -> main.run": 1,
+              "core.words_system.CatchContext.handleError -> memcpy": 200,
+              "(below main) -> libc_start_main_stage2": 1,
+              "libc_start_main_stage2 -> main": 1,
+              "main.run -> forth.State.interpretLine": 1
+            }
+          },
+          {
+            "summary": {
+              "Ir": 240610,
+              "Dr": 66471,
+              "Dw": 55443,
+              "I1mr": 75,
+              "D1mr": 22,
+              "D1mw": 33,
+              "ILmr": 75,
+              "DLmr": 8,
+              "DLmw": 26
+            },
+            "self_counts": {
+              "forth.State.builtinInLoop__func_183": {
+                "Ir": 43600,
+                "Dr": 15000,
+                "Dw": 14800,
+                "I1mr": 23,
+                "D1mr": 2,
+                "D1mw": 6,
+                "ILmr": 23,
+                "DLmr": 0,
+                "DLmw": 6
+              },
+              "forth.State.executeBuiltin": {
+                "Ir": 4800,
+                "Dr": 1600,
+                "Dw": 1200,
+                "I1mr": 2,
+                "D1mr": 1,
+                "D1mw": 0,
+                "ILmr": 2,
+                "DLmr": 1
+              },
+              "forth.State.runOperationsLoop__func_181": {
+                "Ir": 37371,
+                "Dr": 12859,
+                "Dw": 5427,
+                "I1mr": 26,
+                "D1mr": 14,
+                "D1mw": 4,
+                "ILmr": 26,
+                "DLmr": 7,
+                "DLmw": 2
+              },
+              "core.words_system.execute__func_530": {
+                "Ir": 3200,
+                "Dr": 1000,
+                "Dw": 600,
+                "I1mr": 3,
+                "D1mr": 0,
+                "D1mw": 1,
+                "ILmr": 3
+              },
+              "forth.State.runOperations__func_180": {
+                "Ir": 8639,
+                "Dr": 2012,
+                "Dw": 1616,
+                "I1mr": 6,
+                "D1mr": 2,
+                "D1mw": 2,
+                "ILmr": 6,
+                "DLmr": 0,
+                "DLmw": 1
+              },
+              "core.words_system.CatchContext.handleError": {
+                "Ir": 32000,
+                "Dr": 10200,
+                "Dw": 9200,
+                "I1mr": 15,
+                "D1mr": 0,
+                "D1mw": 2,
+                "ILmr": 15,
+                "DLmr": 0,
+                "DLmw": 1
+              },
+              "memcpy": {
+                "Ir": 111000,
+                "Dr": 23800,
+                "Dw": 22600,
+                "I1mr": 0,
+                "D1mr": 3,
+                "D1mw": 18,
+                "ILmr": 0,
+                "DLmr": 0,
+                "DLmw": 16
+              }
+            },
+            "calls": {
+              "_start_c -> (below main)": 1,
+              "0x00000000010c4170 -> _start_c": 1,
+              "forth.State.executeWord -> forth.State.executeOperations": 1,
+              "forth.State.handleWord -> forth.State.executeWord": 11,
+              "forth.State.builtinInLoop__func_183 -> memcpy": 600,
+              "forth.State.builtinInLoop__func_183 -> forth.State.executeBuiltin": 200,
+              "forth.State.interpretLine -> forth.State.interpretSource": 1,
+              "forth.State.interpretSource -> forth.State.handleWord": 15,
+              "forth.State.executeBuiltin -> core.words_system.execute__func_530": 200,
+              "forth.State.runOperationsLoop__func_181 -> forth.State.builtinInLoop__func_183": 400,
+              "forth.State.runOperations__func_180 -> forth.State.runOperationsLoop__func_181": 201,
+              "forth.State.runOperations__func_180 -> memcpy": 200,
+              "forth.State.runOperations__func_180 -> core.words_system.CatchContext.handleError": 200,
+              "forth.State.executeOperations -> forth.State.runOperations__func_180": 1,
+              "main -> main.run": 1,
+              "core.words_system.CatchContext.handleError -> memcpy": 400,
+              "(below main) -> libc_start_main_stage2": 1,
+              "libc_start_main_stage2 -> main": 1,
+              "main.run -> forth.State.interpretLine": 1
+            }
+          }
+        ],
+        "per_iteration": {
+          "Ir": 1202.0,
+          "Dr": 332.0,
+          "Dw": 277.0
+        },
+        "self_counts_per_iteration": {
+          "core.words_system.CatchContext.handleError": {
+            "Ir": 160.0,
+            "Dr": 51.0,
+            "Dw": 46.0
+          },
+          "forth.State.runOperationsLoop__func_181": {
+            "Ir": 186.0,
+            "Dr": 64.0,
+            "Dw": 27.0
+          },
+          "memcpy": {
+            "Ir": 555.0,
+            "Dr": 119.0,
+            "Dw": 113.0
+          },
+          "forth.State.builtinInLoop__func_183": {
+            "Ir": 218.0,
+            "Dr": 75.0,
+            "Dw": 74.0
+          },
+          "forth.State.executeBuiltin": {
+            "Ir": 24.0,
+            "Dr": 8.0,
+            "Dw": 6.0
+          },
+          "core.words_system.execute__func_530": {
+            "Ir": 16.0,
+            "Dr": 5.0,
+            "Dw": 3.0
+          },
+          "forth.State.runOperations__func_180": {
+            "Ir": 43.0,
+            "Dr": 10.0,
+            "Dw": 8.0
+          }
+        },
+        "calls_per_iteration": {
+          "core.words_system.CatchContext.handleError -> memcpy": 2.0,
+          "forth.State.builtinInLoop__func_183 -> memcpy": 3.0,
+          "forth.State.builtinInLoop__func_183 -> forth.State.executeBuiltin": 1.0,
+          "forth.State.runOperationsLoop__func_181 -> forth.State.builtinInLoop__func_183": 2.0,
+          "forth.State.executeBuiltin -> core.words_system.execute__func_530": 1.0,
+          "forth.State.runOperations__func_180 -> forth.State.runOperationsLoop__func_181": 1.0,
+          "forth.State.runOperations__func_180 -> core.words_system.CatchContext.handleError": 1.0,
+          "forth.State.runOperations__func_180 -> memcpy": 1.0
+        }
+      }
+    }
+  },
+  "copy_probes": {
+    "success": {
+      "driver_entries": 1,
+      "maximum_driver_nesting": 1,
+      "copies": [
+        {
+          "caller": "core.words_system.CatchContext.init",
+          "return_pc": "0x1108d55",
+          "length": 255,
+          "source": "0x7ffff7d39d94",
+          "destination": "0x7fffffff4010",
+          "next_name_len": 0
+        },
+        {
+          "caller": "forth.State.enterCatch__func_191",
+          "return_pc": "0x1108dc6",
+          "length": 255,
+          "source": "0x7ffff7d39d94",
+          "destination": "0x7fffffff3f10",
+          "next_name_len": 0
+        },
+        {
+          "caller": "forth.State.enterCatch__func_191",
+          "return_pc": "0x1109535",
+          "length": 255,
+          "source": "0x7fffffff4010",
+          "destination": "0x7ffff35a0048",
+          "next_name_len": 0
+        }
+      ],
+      "exits": [
+        {
+          "data_depth": 1,
+          "frame_depth": 1,
+          "catch_depth": 0,
+          "call_depth": 1,
+          "next_name_len": 0
+        }
+      ]
+    },
+    "execute": {
+      "driver_entries": 1,
+      "maximum_driver_nesting": 1,
+      "copies": [
+        {
+          "caller": "core.words_system.CatchContext.init",
+          "return_pc": "0x1108d55",
+          "length": 255,
+          "source": "0x7ffff7d39d94",
+          "destination": "0x7fffffff3fd0",
+          "next_name_len": 0
+        },
+        {
+          "caller": "forth.State.enterCatch__func_191",
+          "return_pc": "0x1108dc6",
+          "length": 255,
+          "source": "0x7ffff7d39d94",
+          "destination": "0x7fffffff3ed0",
+          "next_name_len": 0
+        },
+        {
+          "caller": "forth.State.enterCatch__func_191",
+          "return_pc": "0x1109535",
+          "length": 255,
+          "source": "0x7fffffff3fd0",
+          "destination": "0x7ffff35a0048",
+          "next_name_len": 0
+        }
+      ],
+      "exits": [
+        {
+          "data_depth": 1,
+          "frame_depth": 1,
+          "catch_depth": 0,
+          "call_depth": 1,
+          "next_name_len": 0
+        }
+      ]
+    },
+    "defer": {
+      "driver_entries": 1,
+      "maximum_driver_nesting": 1,
+      "copies": [
+        {
+          "caller": "core.words_system.CatchContext.init",
+          "return_pc": "0x1108d55",
+          "length": 255,
+          "source": "0x7ffff7d39d94",
+          "destination": "0x7fffffff3fc0",
+          "next_name_len": 0
+        },
+        {
+          "caller": "forth.State.enterCatch__func_191",
+          "return_pc": "0x1108dc6",
+          "length": 255,
+          "source": "0x7ffff7d39d94",
+          "destination": "0x7fffffff3ec0",
+          "next_name_len": 0
+        },
+        {
+          "caller": "forth.State.enterCatch__func_191",
+          "return_pc": "0x1109535",
+          "length": 255,
+          "source": "0x7fffffff3fc0",
+          "destination": "0x7ffff35a0048",
+          "next_name_len": 0
+        }
+      ],
+      "exits": [
+        {
+          "data_depth": 1,
+          "frame_depth": 1,
+          "catch_depth": 0,
+          "call_depth": 1,
+          "next_name_len": 0
+        }
+      ]
+    },
+    "synonym": {
+      "driver_entries": 1,
+      "maximum_driver_nesting": 1,
+      "copies": [
+        {
+          "caller": "core.words_system.CatchContext.init",
+          "return_pc": "0x1108d55",
+          "length": 255,
+          "source": "0x7ffff7d39d94",
+          "destination": "0x7fffffff3fc0",
+          "next_name_len": 0
+        },
+        {
+          "caller": "forth.State.enterCatch__func_191",
+          "return_pc": "0x1108dc6",
+          "length": 255,
+          "source": "0x7ffff7d39d94",
+          "destination": "0x7fffffff3ec0",
+          "next_name_len": 0
+        },
+        {
+          "caller": "forth.State.enterCatch__func_191",
+          "return_pc": "0x1109535",
+          "length": 255,
+          "source": "0x7fffffff3fc0",
+          "destination": "0x7ffff35a0048",
+          "next_name_len": 0
+        }
+      ],
+      "exits": [
+        {
+          "data_depth": 1,
+          "frame_depth": 1,
+          "catch_depth": 0,
+          "call_depth": 1,
+          "next_name_len": 0
+        }
+      ]
+    },
+    "throw": {
+      "driver_entries": 1,
+      "maximum_driver_nesting": 1,
+      "copies": [
+        {
+          "caller": "core.words_system.CatchContext.init",
+          "return_pc": "0x1108d55",
+          "length": 255,
+          "source": "0x7ffff7d39d94",
+          "destination": "0x7fffffff4010",
+          "next_name_len": 0
+        },
+        {
+          "caller": "forth.State.enterCatch__func_191",
+          "return_pc": "0x1108dc6",
+          "length": 255,
+          "source": "0x7ffff7d39d94",
+          "destination": "0x7fffffff3f10",
+          "next_name_len": 0
+        },
+        {
+          "caller": "forth.State.enterCatch__func_191",
+          "return_pc": "0x1109535",
+          "length": 255,
+          "source": "0x7fffffff4010",
+          "destination": "0x7ffff35a0048",
+          "next_name_len": 0
+        },
+        {
+          "caller": "forth.State.resumeCatch",
+          "return_pc": "0x110187a",
+          "length": 352,
+          "source": "0x7ffff35a0000",
+          "destination": "0x7fffffff4930",
+          "next_name_len": 0
+        },
+        {
+          "caller": "core.words_system.CatchContext.handleError",
+          "return_pc": "0x11019ed",
+          "length": 255,
+          "source": "0x7fffffff4978",
+          "destination": "0x7fffffff47a8",
+          "next_name_len": 0
+        },
+        {
+          "caller": "core.error_reporting.restoreCatchFrame",
+          "return_pc": "0x1101dab",
+          "length": 255,
+          "source": "0x7fffffff47a8",
+          "destination": "0x7ffff7d39d94",
+          "next_name_len": 0
+        }
+      ],
+      "exits": [
+        {
+          "data_depth": 1,
+          "frame_depth": 1,
+          "catch_depth": 0,
+          "call_depth": 1,
+          "next_name_len": 0
+        }
+      ]
+    },
+    "fast-throw": {
+      "driver_entries": 1,
+      "maximum_driver_nesting": 1,
+      "copies": [
+        {
+          "caller": "core.words_system.CatchContext.init",
+          "return_pc": "0x1108d55",
+          "length": 255,
+          "source": "0x7ffff7d39d94",
+          "destination": "0x7fffffff4000",
+          "next_name_len": 0
+        },
+        {
+          "caller": "forth.State.enterCatch__func_191",
+          "return_pc": "0x1108dc6",
+          "length": 255,
+          "source": "0x7ffff7d39d94",
+          "destination": "0x7fffffff3f00",
+          "next_name_len": 0
+        },
+        {
+          "caller": "forth.State.enterCatch__func_191",
+          "return_pc": "0x1109535",
+          "length": 255,
+          "source": "0x7fffffff4000",
+          "destination": "0x7ffff35a0048",
+          "next_name_len": 0
+        },
+        {
+          "caller": "forth.State.resumeCatch",
+          "return_pc": "0x110187a",
+          "length": 352,
+          "source": "0x7ffff35a0000",
+          "destination": "0x7fffffff4920",
+          "next_name_len": 0
+        },
+        {
+          "caller": "core.words_system.CatchContext.handleError",
+          "return_pc": "0x11019ed",
+          "length": 255,
+          "source": "0x7fffffff4968",
+          "destination": "0x7fffffff4798",
+          "next_name_len": 0
+        },
+        {
+          "caller": "core.error_reporting.restoreCatchFrame",
+          "return_pc": "0x1101dab",
+          "length": 255,
+          "source": "0x7fffffff4798",
+          "destination": "0x7ffff7d39d94",
+          "next_name_len": 0
+        }
+      ],
+      "exits": [
+        {
+          "data_depth": 1,
+          "frame_depth": 1,
+          "catch_depth": 0,
+          "call_depth": 1,
+          "next_name_len": 0
+        }
+      ]
+    },
+    "nobt-throw": {
+      "driver_entries": 1,
+      "maximum_driver_nesting": 1,
+      "copies": [
+        {
+          "caller": "core.words_system.CatchContext.init",
+          "return_pc": "0x1108d55",
+          "length": 255,
+          "source": "0x7ffff7d39d94",
+          "destination": "0x7fffffff4000",
+          "next_name_len": 0
+        },
+        {
+          "caller": "forth.State.enterCatch__func_191",
+          "return_pc": "0x1108dc6",
+          "length": 255,
+          "source": "0x7ffff7d39d94",
+          "destination": "0x7fffffff3f00",
+          "next_name_len": 0
+        },
+        {
+          "caller": "forth.State.enterCatch__func_191",
+          "return_pc": "0x1109535",
+          "length": 255,
+          "source": "0x7fffffff4000",
+          "destination": "0x7ffff35a0048",
+          "next_name_len": 0
+        },
+        {
+          "caller": "forth.State.resumeCatch",
+          "return_pc": "0x110187a",
+          "length": 352,
+          "source": "0x7ffff35a0000",
+          "destination": "0x7fffffff4920",
+          "next_name_len": 0
+        },
+        {
+          "caller": "core.words_system.CatchContext.handleError",
+          "return_pc": "0x11019ed",
+          "length": 255,
+          "source": "0x7fffffff4968",
+          "destination": "0x7fffffff4798",
+          "next_name_len": 0
+        },
+        {
+          "caller": "core.error_reporting.restoreCatchFrame",
+          "return_pc": "0x1101dab",
+          "length": 255,
+          "source": "0x7fffffff4798",
+          "destination": "0x7ffff7d39d94",
+          "next_name_len": 0
+        }
+      ],
+      "exits": [
+        {
+          "data_depth": 1,
+          "frame_depth": 1,
+          "catch_depth": 0,
+          "call_depth": 1,
+          "next_name_len": 0
+        }
+      ]
+    }
+  },
+  "copy_summary": {
+    "success": {
+      "entry_memcpy_calls": 3,
+      "entry_memcpy_bytes": 765,
+      "all_memcpy_calls": 3,
+      "all_memcpy_bytes": 765
+    },
+    "execute": {
+      "entry_memcpy_calls": 3,
+      "entry_memcpy_bytes": 765,
+      "all_memcpy_calls": 3,
+      "all_memcpy_bytes": 765
+    },
+    "defer": {
+      "entry_memcpy_calls": 3,
+      "entry_memcpy_bytes": 765,
+      "all_memcpy_calls": 3,
+      "all_memcpy_bytes": 765
+    },
+    "synonym": {
+      "entry_memcpy_calls": 3,
+      "entry_memcpy_bytes": 765,
+      "all_memcpy_calls": 3,
+      "all_memcpy_bytes": 765
+    },
+    "throw": {
+      "entry_memcpy_calls": 3,
+      "entry_memcpy_bytes": 765,
+      "all_memcpy_calls": 6,
+      "all_memcpy_bytes": 1627
+    },
+    "fast-throw": {
+      "entry_memcpy_calls": 3,
+      "entry_memcpy_bytes": 765,
+      "all_memcpy_calls": 6,
+      "all_memcpy_bytes": 1627
+    },
+    "nobt-throw": {
+      "entry_memcpy_calls": 3,
+      "entry_memcpy_bytes": 765,
+      "all_memcpy_calls": 6,
+      "all_memcpy_bytes": 1627
+    }
+  },
+  "boundary_probes": {
+    "return-unhandled-normal": {
+      "source": ": FULL 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 ; : INNER ['] FULL CATCH ; INNER BYE",
+      "args": [
+        "-d",
+        "16",
+        "-e",
+        ": FULL 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 ; : INNER ['] FULL CATCH ; INNER BYE"
+      ],
+      "native_returncode": 1,
+      "stdout": "STACK OVER FLOW !\nBACKTRACE:\n  INNER\nSTACK: <16> 8 9 10 11 12 13 14 15 16 \n",
+      "stderr": "",
+      "gdb": {
+        "driver_entries": [
+          {
+            "data_depth": 0,
+            "frame_depth": 1,
+            "catch_depth": 0,
+            "call_depth": 1,
+            "failed_pc": 0,
+            "backtrace_suppression": 0,
+            "locals_top": 67108864,
+            "halted": false,
+            "data": []
+          }
+        ],
+        "driver_exits": [
+          {
+            "data_depth": 16,
+            "frame_depth": 1,
+            "catch_depth": 0,
+            "call_depth": 1,
+            "failed_pc": 19,
+            "backtrace_suppression": 0,
+            "locals_top": 67108864,
+            "halted": false,
+            "data": [
+              1,
+              2,
+              3,
+              4,
+              5,
+              6,
+              7,
+              8,
+              9,
+              10,
+              11,
+              12,
+              13,
+              14,
+              15,
+              16
+            ],
+            "raw_error": 31
+          }
+        ],
+        "backtrace_entries": [
+          {
+            "data_depth": 16,
+            "frame_depth": 1,
+            "catch_depth": 0,
+            "call_depth": 1,
+            "failed_pc": 19,
+            "backtrace_suppression": 0,
+            "locals_top": 67108864,
+            "halted": false,
+            "data": [
+              1,
+              2,
+              3,
+              4,
+              5,
+              6,
+              7,
+              8,
+              9,
+              10,
+              11,
+              12,
+              13,
+              14,
+              15,
+              16
+            ],
+            "pc_argument": 19,
+            "operation_before_pc": "call_builtin",
+            "containing_words": [
+              "INNER"
+            ]
+          }
+        ]
+      }
+    },
+    "return-unhandled-counted": {
+      "source": ": FULL 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 ; : INNER ['] FULL CATCH ; INNER BYE",
+      "args": [
+        "-d",
+        "16",
+        "--max-steps=100000000",
+        "-e",
+        ": FULL 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 ; : INNER ['] FULL CATCH ; INNER BYE"
+      ],
+      "native_returncode": 1,
+      "stdout": "STACK OVER FLOW !\nBACKTRACE:\n  INNER\nSTACK: <16> 8 9 10 11 12 13 14 15 16 \n",
+      "stderr": "",
+      "gdb": {
+        "driver_entries": [
+          {
+            "data_depth": 0,
+            "frame_depth": 1,
+            "catch_depth": 0,
+            "call_depth": 1,
+            "failed_pc": 0,
+            "backtrace_suppression": 0,
+            "locals_top": 67108864,
+            "halted": false,
+            "data": []
+          }
+        ],
+        "driver_exits": [
+          {
+            "data_depth": 16,
+            "frame_depth": 1,
+            "catch_depth": 0,
+            "call_depth": 1,
+            "failed_pc": 19,
+            "backtrace_suppression": 0,
+            "locals_top": 67108864,
+            "halted": false,
+            "data": [
+              1,
+              2,
+              3,
+              4,
+              5,
+              6,
+              7,
+              8,
+              9,
+              10,
+              11,
+              12,
+              13,
+              14,
+              15,
+              16
+            ],
+            "raw_error": 31
+          }
+        ],
+        "backtrace_entries": [
+          {
+            "data_depth": 16,
+            "frame_depth": 1,
+            "catch_depth": 0,
+            "call_depth": 1,
+            "failed_pc": 19,
+            "backtrace_suppression": 0,
+            "locals_top": 67108864,
+            "halted": false,
+            "data": [
+              1,
+              2,
+              3,
+              4,
+              5,
+              6,
+              7,
+              8,
+              9,
+              10,
+              11,
+              12,
+              13,
+              14,
+              15,
+              16
+            ],
+            "pc_argument": 19,
+            "operation_before_pc": "call_builtin",
+            "containing_words": [
+              "INNER"
+            ]
+          }
+        ]
+      }
+    },
+    "return-outer-normal": {
+      "source": ": FULL 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 ; : INNER ['] FULL CATCH ;  : OUTER ['] INNER CATCH ; OUTER . DEPTH . BYE",
+      "args": [
+        "-d",
+        "16",
+        "-e",
+        ": FULL 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 ; : INNER ['] FULL CATCH ;  : OUTER ['] INNER CATCH ; OUTER . DEPTH . BYE"
+      ],
+      "native_returncode": 0,
+      "stdout": "-3 0 ",
+      "stderr": "",
+      "gdb": {
+        "driver_entries": [
+          {
+            "data_depth": 0,
+            "frame_depth": 1,
+            "catch_depth": 0,
+            "call_depth": 1,
+            "failed_pc": 0,
+            "backtrace_suppression": 0,
+            "locals_top": 67108864,
+            "halted": false,
+            "data": []
+          }
+        ],
+        "driver_exits": [
+          {
+            "data_depth": 1,
+            "frame_depth": 1,
+            "catch_depth": 0,
+            "call_depth": 1,
+            "failed_pc": 19,
+            "backtrace_suppression": 0,
+            "locals_top": 67108864,
+            "halted": false,
+            "data": [
+              -3
+            ],
+            "raw_error": 0
+          }
+        ],
+        "backtrace_entries": []
+      }
+    },
+    "return-outer-counted": {
+      "source": ": FULL 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 ; : INNER ['] FULL CATCH ;  : OUTER ['] INNER CATCH ; OUTER . DEPTH . BYE",
+      "args": [
+        "-d",
+        "16",
+        "--max-steps=100000000",
+        "-e",
+        ": FULL 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 ; : INNER ['] FULL CATCH ;  : OUTER ['] INNER CATCH ; OUTER . DEPTH . BYE"
+      ],
+      "native_returncode": 0,
+      "stdout": "-3 0 ",
+      "stderr": "",
+      "gdb": {
+        "driver_entries": [
+          {
+            "data_depth": 0,
+            "frame_depth": 1,
+            "catch_depth": 0,
+            "call_depth": 1,
+            "failed_pc": 0,
+            "backtrace_suppression": 0,
+            "locals_top": 67108864,
+            "halted": false,
+            "data": []
+          }
+        ],
+        "driver_exits": [
+          {
+            "data_depth": 1,
+            "frame_depth": 1,
+            "catch_depth": 0,
+            "call_depth": 1,
+            "failed_pc": 19,
+            "backtrace_suppression": 0,
+            "locals_top": 67108864,
+            "halted": false,
+            "data": [
+              -3
+            ],
+            "raw_error": 0
+          }
+        ],
+        "backtrace_entries": []
+      }
+    },
+    "bye-unhandled-normal": {
+      "source": ": FULL 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 BYE ; : INNER ['] FULL CATCH ; INNER BYE",
+      "args": [
+        "-d",
+        "16",
+        "-e",
+        ": FULL 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 BYE ; : INNER ['] FULL CATCH ; INNER BYE"
+      ],
+      "native_returncode": 1,
+      "stdout": "STACK OVER FLOW !\nBACKTRACE:\n  INNER\nSTACK: <16> 8 9 10 11 12 13 14 15 16 \n",
+      "stderr": "",
+      "gdb": {
+        "driver_entries": [
+          {
+            "data_depth": 0,
+            "frame_depth": 1,
+            "catch_depth": 0,
+            "call_depth": 1,
+            "failed_pc": 0,
+            "backtrace_suppression": 0,
+            "locals_top": 67108864,
+            "halted": false,
+            "data": []
+          }
+        ],
+        "driver_exits": [
+          {
+            "data_depth": 16,
+            "frame_depth": 1,
+            "catch_depth": 0,
+            "call_depth": 1,
+            "failed_pc": 20,
+            "backtrace_suppression": 0,
+            "locals_top": 67108864,
+            "halted": true,
+            "data": [
+              1,
+              2,
+              3,
+              4,
+              5,
+              6,
+              7,
+              8,
+              9,
+              10,
+              11,
+              12,
+              13,
+              14,
+              15,
+              16
+            ],
+            "raw_error": 31
+          }
+        ],
+        "backtrace_entries": [
+          {
+            "data_depth": 16,
+            "frame_depth": 1,
+            "catch_depth": 0,
+            "call_depth": 1,
+            "failed_pc": 20,
+            "backtrace_suppression": 0,
+            "locals_top": 67108864,
+            "halted": true,
+            "data": [
+              1,
+              2,
+              3,
+              4,
+              5,
+              6,
+              7,
+              8,
+              9,
+              10,
+              11,
+              12,
+              13,
+              14,
+              15,
+              16
+            ],
+            "pc_argument": 20,
+            "operation_before_pc": "call_builtin",
+            "containing_words": [
+              "INNER"
+            ]
+          }
+        ]
+      }
+    },
+    "bye-unhandled-counted": {
+      "source": ": FULL 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 BYE ; : INNER ['] FULL CATCH ; INNER BYE",
+      "args": [
+        "-d",
+        "16",
+        "--max-steps=100000000",
+        "-e",
+        ": FULL 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 BYE ; : INNER ['] FULL CATCH ; INNER BYE"
+      ],
+      "native_returncode": 1,
+      "stdout": "STACK OVER FLOW !\nBACKTRACE:\n  INNER\nSTACK: <16> 8 9 10 11 12 13 14 15 16 \n",
+      "stderr": "",
+      "gdb": {
+        "driver_entries": [
+          {
+            "data_depth": 0,
+            "frame_depth": 1,
+            "catch_depth": 0,
+            "call_depth": 1,
+            "failed_pc": 0,
+            "backtrace_suppression": 0,
+            "locals_top": 67108864,
+            "halted": false,
+            "data": []
+          }
+        ],
+        "driver_exits": [
+          {
+            "data_depth": 16,
+            "frame_depth": 1,
+            "catch_depth": 0,
+            "call_depth": 1,
+            "failed_pc": 20,
+            "backtrace_suppression": 0,
+            "locals_top": 67108864,
+            "halted": true,
+            "data": [
+              1,
+              2,
+              3,
+              4,
+              5,
+              6,
+              7,
+              8,
+              9,
+              10,
+              11,
+              12,
+              13,
+              14,
+              15,
+              16
+            ],
+            "raw_error": 31
+          }
+        ],
+        "backtrace_entries": [
+          {
+            "data_depth": 16,
+            "frame_depth": 1,
+            "catch_depth": 0,
+            "call_depth": 1,
+            "failed_pc": 20,
+            "backtrace_suppression": 0,
+            "locals_top": 67108864,
+            "halted": true,
+            "data": [
+              1,
+              2,
+              3,
+              4,
+              5,
+              6,
+              7,
+              8,
+              9,
+              10,
+              11,
+              12,
+              13,
+              14,
+              15,
+              16
+            ],
+            "pc_argument": 20,
+            "operation_before_pc": "call_builtin",
+            "containing_words": [
+              "INNER"
+            ]
+          }
+        ]
+      }
+    },
+    "bye-outer-normal": {
+      "source": ": FULL 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 BYE ; : INNER ['] FULL CATCH ;  : OUTER ['] INNER CATCH ; OUTER . DEPTH . BYE",
+      "args": [
+        "-d",
+        "16",
+        "-e",
+        ": FULL 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 BYE ; : INNER ['] FULL CATCH ;  : OUTER ['] INNER CATCH ; OUTER . DEPTH . BYE"
+      ],
+      "native_returncode": 0,
+      "stdout": "",
+      "stderr": "",
+      "gdb": {
+        "driver_entries": [
+          {
+            "data_depth": 0,
+            "frame_depth": 1,
+            "catch_depth": 0,
+            "call_depth": 1,
+            "failed_pc": 0,
+            "backtrace_suppression": 0,
+            "locals_top": 67108864,
+            "halted": false,
+            "data": []
+          }
+        ],
+        "driver_exits": [
+          {
+            "data_depth": 1,
+            "frame_depth": 1,
+            "catch_depth": 0,
+            "call_depth": 1,
+            "failed_pc": 20,
+            "backtrace_suppression": 0,
+            "locals_top": 67108864,
+            "halted": true,
+            "data": [
+              -3
+            ],
+            "raw_error": 0
+          }
+        ],
+        "backtrace_entries": []
+      }
+    },
+    "bye-outer-counted": {
+      "source": ": FULL 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 BYE ; : INNER ['] FULL CATCH ;  : OUTER ['] INNER CATCH ; OUTER . DEPTH . BYE",
+      "args": [
+        "-d",
+        "16",
+        "--max-steps=100000000",
+        "-e",
+        ": FULL 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 BYE ; : INNER ['] FULL CATCH ;  : OUTER ['] INNER CATCH ; OUTER . DEPTH . BYE"
+      ],
+      "native_returncode": 0,
+      "stdout": "",
+      "stderr": "",
+      "gdb": {
+        "driver_entries": [
+          {
+            "data_depth": 0,
+            "frame_depth": 1,
+            "catch_depth": 0,
+            "call_depth": 1,
+            "failed_pc": 0,
+            "backtrace_suppression": 0,
+            "locals_top": 67108864,
+            "halted": false,
+            "data": []
+          }
+        ],
+        "driver_exits": [
+          {
+            "data_depth": 1,
+            "frame_depth": 1,
+            "catch_depth": 0,
+            "call_depth": 1,
+            "failed_pc": 20,
+            "backtrace_suppression": 0,
+            "locals_top": 67108864,
+            "halted": true,
+            "data": [
+              -3
+            ],
+            "raw_error": 0
+          }
+        ],
+        "backtrace_entries": []
+      }
+    }
+  },
+  "pending_name_probes": {
+    "4": {
+      "source": ": BAD S\" Temporary\" NEXTNAME -123 THROW ; : RUN S\" Kept\" NEXTNAME ['] BAD CATCH DROP ; RUN : 10 ; Kept . S\" Temporary\" FIND-NAME . DEPTH . BYE",
+      "stdout": "10 0 0 ",
+      "copies": {
+        "driver_entries": 2,
+        "maximum_driver_nesting": 1,
+        "copies": [
+          {
+            "caller": "core.words_names.execute__func_1105",
+            "return_pc": "0x1124ceb",
+            "length": 4,
+            "source": "0x7ffff377e00b",
+            "destination": "0x7ffff7d39d94",
+            "next_name_len": 0
+          },
+          {
+            "caller": "core.words_system.CatchContext.init",
+            "return_pc": "0x1108d55",
+            "length": 255,
+            "source": "0x7ffff7d39d94",
+            "destination": "0x7fffffff4010",
+            "next_name_len": 4
+          },
+          {
+            "caller": "forth.State.enterCatch__func_191",
+            "return_pc": "0x1108dc6",
+            "length": 255,
+            "source": "0x7ffff7d39d94",
+            "destination": "0x7fffffff3f10",
+            "next_name_len": 4
+          },
+          {
+            "caller": "forth.State.enterCatch__func_191",
+            "return_pc": "0x1109535",
+            "length": 255,
+            "source": "0x7fffffff4010",
+            "destination": "0x7ffff35a0048",
+            "next_name_len": 4
+          },
+          {
+            "caller": "core.words_names.execute__func_1105",
+            "return_pc": "0x1124ceb",
+            "length": 9,
+            "source": "0x7ffff377e001",
+            "destination": "0x7ffff7d39d94",
+            "next_name_len": 4
+          },
+          {
+            "caller": "forth.State.resumeCatch",
+            "return_pc": "0x110187a",
+            "length": 352,
+            "source": "0x7ffff35a0000",
+            "destination": "0x7fffffff4930",
+            "next_name_len": 9
+          },
+          {
+            "caller": "core.words_system.CatchContext.handleError",
+            "return_pc": "0x11019ed",
+            "length": 255,
+            "source": "0x7fffffff4978",
+            "destination": "0x7fffffff47a8",
+            "next_name_len": 9
+          },
+          {
+            "caller": "core.error_reporting.restoreCatchFrame",
+            "return_pc": "0x1101dab",
+            "length": 255,
+            "source": "0x7fffffff47a8",
+            "destination": "0x7ffff7d39d94",
+            "next_name_len": 4
+          }
+        ],
+        "exits": [
+          {
+            "data_depth": 0,
+            "frame_depth": 1,
+            "catch_depth": 0,
+            "call_depth": 1,
+            "next_name_len": 4
+          },
+          {
+            "data_depth": 1,
+            "frame_depth": 1,
+            "catch_depth": 0,
+            "call_depth": 1,
+            "next_name_len": 4
+          }
+        ]
+      }
+    },
+    "255": {
+      "source": ": BAD S\" Temporary\" NEXTNAME -123 THROW ; : RUN S\" KKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKK\" NEXTNAME ['] BAD CATCH DROP ; RUN : 10 ; KKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKK . S\" Temporary\" FIND-NAME . DEPTH . BYE",
+      "stdout": "10 0 0 ",
+      "copies": {
+        "driver_entries": 2,
+        "maximum_driver_nesting": 1,
+        "copies": [
+          {
+            "caller": "core.words_names.execute__func_1105",
+            "return_pc": "0x1124ceb",
+            "length": 255,
+            "source": "0x7ffff377e00b",
+            "destination": "0x7ffff7d39d94",
+            "next_name_len": 0
+          },
+          {
+            "caller": "core.words_system.CatchContext.init",
+            "return_pc": "0x1108d55",
+            "length": 255,
+            "source": "0x7ffff7d39d94",
+            "destination": "0x7fffffff3e10",
+            "next_name_len": 255
+          },
+          {
+            "caller": "forth.State.enterCatch__func_191",
+            "return_pc": "0x1108dc6",
+            "length": 255,
+            "source": "0x7ffff7d39d94",
+            "destination": "0x7fffffff3d10",
+            "next_name_len": 255
+          },
+          {
+            "caller": "forth.State.enterCatch__func_191",
+            "return_pc": "0x1109535",
+            "length": 255,
+            "source": "0x7fffffff3e10",
+            "destination": "0x7ffff35a0048",
+            "next_name_len": 255
+          },
+          {
+            "caller": "core.words_names.execute__func_1105",
+            "return_pc": "0x1124ceb",
+            "length": 9,
+            "source": "0x7ffff377e001",
+            "destination": "0x7ffff7d39d94",
+            "next_name_len": 255
+          },
+          {
+            "caller": "forth.State.resumeCatch",
+            "return_pc": "0x110187a",
+            "length": 352,
+            "source": "0x7ffff35a0000",
+            "destination": "0x7fffffff4730",
+            "next_name_len": 9
+          },
+          {
+            "caller": "core.words_system.CatchContext.handleError",
+            "return_pc": "0x11019ed",
+            "length": 255,
+            "source": "0x7fffffff4778",
+            "destination": "0x7fffffff45a8",
+            "next_name_len": 9
+          },
+          {
+            "caller": "core.error_reporting.restoreCatchFrame",
+            "return_pc": "0x1101dab",
+            "length": 255,
+            "source": "0x7fffffff45a8",
+            "destination": "0x7ffff7d39d94",
+            "next_name_len": 255
+          }
+        ],
+        "exits": [
+          {
+            "data_depth": 0,
+            "frame_depth": 1,
+            "catch_depth": 0,
+            "call_depth": 1,
+            "next_name_len": 255
+          },
+          {
+            "data_depth": 1,
+            "frame_depth": 1,
+            "catch_depth": 0,
+            "call_depth": 1,
+            "next_name_len": 255
+          }
+        ]
+      }
+    }
+  },
+  "script_sha256": {
+    "catch-routing.py": "0297876d9b6584283906bf157d70d0a688efafa76b600051b7aefa17bae9973b",
+    "capture-copies.py": "5c78810029fbb75e46fac25579612825d0de99863a62817ad6fe5bbddcf890ed",
+    "probe-copies.py": "8c0e65d83a8e019ffcf6e98db37b47dc1857a10d2d6c68ebe08ad644a9857c75",
+    "capture-boundaries.py": "51a5b10c29ba23e26350ba4fb3cd6460c0e27b40c8d3a3e11854d4bf51399b69",
+    "probe-boundaries.py": "b92ca6e6a008b8313334b6c4060ee9d2a11b244a33542899d7a1bbe03e5d95d7",
+    "probe-pending-name.py": "90b1caf7a6271295b34274d34089e6bc480778c3bc5b895eddf0257f38389f81",
+    "save-catch-investigation.py": "833b43a49471bb68b924b6514c2650d9ece9181cb02e1a5d52e744b637302b39"
+  }
+}

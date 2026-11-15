@@ -1,0 +1,168 @@
+{
+  "reviewed_source_sha256": "b66e0264ab57e3fac91e3a06613ad19376430845408dd5e4e29fe535c1099559",
+  "current_source_sha256": "7fd2af5e237e423d86e336ef30667b84c1ffa2cc8cb1af8c2683761b46ef1fe2",
+  "product_code_equal_after_removing_comment_lines": true,
+  "initial_windows_uncached_test_result": "1067 passed; 10 skipped; core 1008/1013; host 59/64; freestanding success",
+  "tests": [
+    {
+      "label": "windows",
+      "source_sha256": "7fd2af5e237e423d86e336ef30667b84c1ffa2cc8cb1af8c2683761b46ef1fe2",
+      "command": [
+        "zig",
+        "build",
+        "test",
+        "--summary",
+        "all"
+      ],
+      "exit": 0,
+      "summary": "Build Summary: 21/21 steps succeeded",
+      "cached_run_lines": [
+        "+- run test cached",
+        "+- run test cached"
+      ]
+    },
+    {
+      "label": "windows-no-debug",
+      "source_sha256": "7fd2af5e237e423d86e336ef30667b84c1ffa2cc8cb1af8c2683761b46ef1fe2",
+      "command": [
+        "zig",
+        "build",
+        "test",
+        "-Ddebug=false",
+        "--summary",
+        "all"
+      ],
+      "exit": 0,
+      "summary": "Build Summary: 21/21 steps succeeded; 1001/1077 tests passed (76 skipped)",
+      "cached_run_lines": []
+    },
+    {
+      "label": "windows-no-float",
+      "source_sha256": "7fd2af5e237e423d86e336ef30667b84c1ffa2cc8cb1af8c2683761b46ef1fe2",
+      "command": [
+        "zig",
+        "build",
+        "test",
+        "-Dfloat=false",
+        "--summary",
+        "all"
+      ],
+      "exit": 0,
+      "summary": "Build Summary: 21/21 steps succeeded; 1002/1051 tests passed (49 skipped)",
+      "cached_run_lines": []
+    },
+    {
+      "label": "windows-minimal",
+      "source_sha256": "7fd2af5e237e423d86e336ef30667b84c1ffa2cc8cb1af8c2683761b46ef1fe2",
+      "command": [
+        "zig",
+        "build",
+        "test",
+        "-Ddebug=false",
+        "-Dfloat=false",
+        "-Dfiles=false",
+        "-Dgraphics=false",
+        "-Daudio=false",
+        "-Dhelp=false",
+        "-Dtools=false",
+        "-Dimage=false",
+        "--summary",
+        "all"
+      ],
+      "exit": 0,
+      "summary": "Build Summary: 11/11 steps succeeded; 587/1048 tests passed (461 skipped)",
+      "cached_run_lines": []
+    },
+    {
+      "label": "linux-Debug",
+      "source_sha256": "7fd2af5e237e423d86e336ef30667b84c1ffa2cc8cb1af8c2683761b46ef1fe2",
+      "command": [
+        "zig",
+        "build",
+        "test",
+        "-Dtarget=x86_64-linux-musl",
+        "-Doptimize=Debug",
+        "--summary",
+        "all"
+      ],
+      "cross_exit": 1,
+      "native": [
+        {
+          "exit": 0,
+          "summary": "63 passed; 1 skipped; 0 failed."
+        },
+        {
+          "exit": 0,
+          "summary": "1008 passed; 5 skipped; 0 failed."
+        }
+      ]
+    },
+    {
+      "label": "linux-fast",
+      "source_sha256": "7fd2af5e237e423d86e336ef30667b84c1ffa2cc8cb1af8c2683761b46ef1fe2",
+      "command": [
+        "zig",
+        "build",
+        "test",
+        "-Dtarget=x86_64-linux-musl",
+        "-Doptimize=fast",
+        "--summary",
+        "all"
+      ],
+      "cross_exit": 1,
+      "native": [
+        {
+          "exit": 0,
+          "summary": "63 passed; 1 skipped; 0 failed."
+        },
+        {
+          "exit": 0,
+          "summary": "1008 passed; 5 skipped; 0 failed."
+        }
+      ]
+    }
+  ],
+  "build_and_protocol": [
+    {
+      "label": "windows-protocol",
+      "exit": 0,
+      "command": [
+        "python",
+        "tests/scripts/test-benchmark-runtime.py"
+      ]
+    },
+    {
+      "label": "linux-protocol",
+      "exit": 0,
+      "command": [
+        "wsl",
+        "--cd",
+        "/mnt/d/home/source/zig/forthz",
+        "--exec",
+        "python3",
+        "tests/scripts/test-benchmark-runtime.py"
+      ]
+    },
+    {
+      "label": "linux-fast-build",
+      "exit": 0,
+      "command": [
+        "zig",
+        "build",
+        "-Dtarget=x86_64-linux-musl",
+        "-Doptimize=fast",
+        "-Dcpu=baseline",
+        "-Dstrip=true",
+        "--prefix",
+        "D:\\home\\source\\zig\\forthz\\.work\\pc-review-validation-20261115\\linux-fast",
+        "--summary",
+        "all"
+      ]
+    },
+    {
+      "linux_binary_matches_measured_candidate": true,
+      "sha256": "67cd25c6ae9ef119493f5cb0513fb67053bf090132410381943780d6c6b07aa5",
+      "source_sha256": "7fd2af5e237e423d86e336ef30667b84c1ffa2cc8cb1af8c2683761b46ef1fe2"
+    }
+  ]
+}

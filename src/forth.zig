@@ -1798,7 +1798,7 @@ pub const State = struct {
         };
         if (counted) self.traceRunning(running, true);
         while (true) {
-            self.runOperationsLoop(counted, &running, entry_frames, entry_catches) catch |err| {
+            self.runOperationsLoop(counted, running, entry_frames, entry_catches) catch |err| {
                 var failure = err;
                 while (true) {
                     if (failure == error.Quit or failure == error.StepLimit or self.catch_depth == entry_catches) {
@@ -1819,37 +1819,70 @@ pub const State = struct {
         }
     }
 
-    fn runOperationsLoop(self: *State, comptime counted: bool, running: *Running, entry_frames: usize, entry_catches: usize) RuntimeError!void {
+    // PC/end_pc are independent wide loop locals. The saved
+    // frame and all external protocols retain the existing representation.
+    inline fn frameWithLoopPCs(frame: Running, pc: usize, end_pc: usize) Running {
+        var result = frame;
+        result.pc = @intCast(pc);
+        result.end_pc = @intCast(end_pc);
+        return result;
+    }
+
+    fn runOperationsLoop(self: *State, comptime counted: bool, initial_running: Running, entry_frames: usize, entry_catches: usize) RuntimeError!void {
+        // The loop owns its current frame. After an error, the driver restores
+        // its next input from the saved CATCH frame rather than this local.
+        var running = initial_running;
+        // Between boundaries, running.pc/end_pc may be stale. Use only its
+        // other fields; materialize frameWithLoopPCs before passing a full frame.
+        // Read its PCs only immediately after assigning a new/restored frame.
+        var pc: usize = initial_running.pc;
+        var end_pc: usize = initial_running.end_pc;
         errdefer if (defs.debug_enabled) {
-            self.failed_pc = running.pc;
+            self.failed_pc = @as(u16, @intCast(pc));
         };
         // The operation that ran last in this loop, for WATCH.
         var ran: ?u16 = null;
         while (true) {
             if (self.halted) {
                 if (self.catch_depth == entry_catches) return;
-                _ = self.resumeCatch(running);
+                {
+                    var boundary_running = frameWithLoopPCs(running, pc, end_pc);
+                    defer {
+                        running = boundary_running;
+                        pc = boundary_running.pc;
+                        end_pc = boundary_running.end_pc;
+                    }
+                    _ = self.resumeCatch(&boundary_running);
+                }
                 try self.push(0);
                 continue;
             }
             // WATCH: what the last operation changed.
             if (counted and self.cell_watch_count != 0) {
-                if (ran) |pc| words_debug.checkWatches(self, pc);
+                if (ran) |watch_pc| words_debug.checkWatches(self, watch_pc);
             }
-            if (running.pc >= running.end_pc) {
-                if (counted) self.traceRunning(running.*, false);
-                if (!try self.returnToCaller(running, entry_frames)) return;
+            if (pc >= end_pc) {
+                if (counted) self.traceRunning(frameWithLoopPCs(running, pc, end_pc), false);
+                {
+                    var boundary_running = frameWithLoopPCs(running, pc, end_pc);
+                    defer {
+                        running = boundary_running;
+                        pc = boundary_running.pc;
+                        end_pc = boundary_running.end_pc;
+                    }
+                    if (!try self.returnToCaller(&boundary_running, entry_frames)) return;
+                }
                 continue;
             }
-            const op = self.code[running.pc];
-            if (counted) ran = running.pc;
-            running.pc += 1;
+            const op = self.code[pc];
+            if (counted) ran = @intCast(pc);
+            pc = @as(u16, @intCast(pc + 1));
             if (counted and self.step_limit != 0) {
                 if (self.steps_left == 0) return error.StepLimit;
                 self.steps_left -= 1;
             }
-            if (counted) if (self.profile) |profile| profile.countOperation(running.pc - 1);
-            if (counted and self.stepper == .on and self.call_depth == self.step_depth) try words_debug.step(self, running.pc - 1, running.end_pc);
+            if (counted) if (self.profile) |profile| profile.countOperation(@intCast(pc - 1));
+            if (counted and self.stepper == .on and self.call_depth == self.step_depth) try words_debug.step(self, @intCast(pc - 1), @intCast(end_pc));
             switch (op.kind) {
                 inline .call, .call_colon => |call_kind| {
                     if (call_kind == .call_colon and inline_calls.isInline(op)) {
@@ -1865,6 +1898,15 @@ pub const State = struct {
                     var id = try self.wordId(op.value);
                     var word = &self.words[id];
                     if (call_kind == .call_colon) std.debug.assert(word.kind == .colon);
+                    // Handle simple data words before the kind dispatcher.
+                    // Retain the measured fallback switch, including its DOES> helper path.
+                    if (call_kind == .call and
+                        (word.kind == .constant or word.kind == .array or
+                            ((word.kind == .variable or word.kind == .created) and !word.has_does)))
+                    {
+                        try self.push(word.value);
+                        continue;
+                    }
                     if (call_kind == .call) switch (word.kind) {
                         .colon => {},
                         // A DEFER whose action is a colon definition is called in this
@@ -1874,8 +1916,17 @@ pub const State = struct {
                             const action = try self.readCell(word.value);
                             const target: ?u16 = if (action == words_defining.uninitialized_defer or action < 0 or action >= self.word_count) null else self.synonymTarget(@intCast(action));
                             if (target == null or self.words[target.?].kind != .colon) {
-                                if (defs.debug_enabled) self.outer_pc = running.pc;
-                                try self.wordInLoop(counted, id, running);
+                                if (defs.debug_enabled) self.outer_pc = @as(u16, @intCast(pc));
+                                {
+                                    var boundary_running = frameWithLoopPCs(running, pc, end_pc);
+                                    // Reflect helper updates before failed_pc is recorded on error.
+                                    defer {
+                                        running = boundary_running;
+                                        pc = boundary_running.pc;
+                                        end_pc = boundary_running.end_pc;
+                                    }
+                                    try self.wordInLoop(counted, id, &boundary_running);
+                                }
                                 continue;
                             }
                             id = target.?;
@@ -1889,23 +1940,43 @@ pub const State = struct {
                         },
                         .variable, .created => {
                             if (word.has_does) {
-                                if (defs.debug_enabled) self.outer_pc = running.pc;
-                                try self.wordInLoop(counted, id, running);
+                                if (defs.debug_enabled) self.outer_pc = @as(u16, @intCast(pc));
+                                {
+                                    var boundary_running = frameWithLoopPCs(running, pc, end_pc);
+                                    // Reflect helper updates before failed_pc is recorded on error.
+                                    defer {
+                                        running = boundary_running;
+                                        pc = boundary_running.pc;
+                                        end_pc = boundary_running.end_pc;
+                                    }
+                                    try self.wordInLoop(counted, id, &boundary_running);
+                                }
                             } else try self.push(word.value);
                             continue;
                         },
                         else => {
-                            if (defs.debug_enabled) self.outer_pc = running.pc;
-                            try self.wordInLoop(counted, id, running);
+                            if (defs.debug_enabled) self.outer_pc = @as(u16, @intCast(pc));
+                            {
+                                var boundary_running = frameWithLoopPCs(running, pc, end_pc);
+                                // Reflect helper updates before failed_pc is recorded on error.
+                                defer {
+                                    running = boundary_running;
+                                    pc = boundary_running.pc;
+                                    end_pc = boundary_running.end_pc;
+                                }
+                                try self.wordInLoop(counted, id, &boundary_running);
+                            }
                             continue;
                         },
                     };
                     if (self.call_depth == self.frames.len) return error.ReturnStackOverflow;
                     self.call_depth += 1;
-                    self.frames[self.frame_depth] = running.*;
+                    self.frames[self.frame_depth] = frameWithLoopPCs(running, pc, end_pc);
                     self.frame_depth += 1;
-                    running.* = .{ .pc = word.code_start, .end_pc = word.code_end, .defining_word = id };
-                    if (counted) self.traceRunning(running.*, true);
+                    running = .{ .pc = word.code_start, .end_pc = word.code_end, .defining_word = id };
+                    pc = running.pc;
+                    end_pc = running.end_pc;
+                    if (counted) self.traceRunning(frameWithLoopPCs(running, pc, end_pc), true);
                 },
                 // EXECUTE of a colon definition is a call in this loop too: entering a
                 // loop of its own for each one took a quarter longer than before there
@@ -1914,21 +1985,41 @@ pub const State = struct {
                     const id = self.synonymTarget(try self.wordId(try self.pop()));
                     const word = &self.words[id];
                     if (word.kind != .colon) {
-                        if (defs.debug_enabled) self.outer_pc = running.pc;
-                        try self.wordInLoop(counted, id, running);
+                        if (defs.debug_enabled) self.outer_pc = @as(u16, @intCast(pc));
+                        {
+                            var boundary_running = frameWithLoopPCs(running, pc, end_pc);
+                            // Reflect helper updates before failed_pc is recorded on error.
+                            defer {
+                                running = boundary_running;
+                                pc = boundary_running.pc;
+                                end_pc = boundary_running.end_pc;
+                            }
+                            try self.wordInLoop(counted, id, &boundary_running);
+                        }
                         continue;
                     }
                     if (self.call_depth == self.frames.len) return error.ReturnStackOverflow;
                     self.call_depth += 1;
-                    self.frames[self.frame_depth] = running.*;
+                    self.frames[self.frame_depth] = frameWithLoopPCs(running, pc, end_pc);
                     self.frame_depth += 1;
-                    running.* = .{ .pc = word.code_start, .end_pc = word.code_end, .defining_word = id };
-                    if (counted) self.traceRunning(running.*, true);
+                    running = .{ .pc = word.code_start, .end_pc = word.code_end, .defining_word = id };
+                    pc = running.pc;
+                    end_pc = running.end_pc;
+                    if (counted) self.traceRunning(frameWithLoopPCs(running, pc, end_pc), true);
                 },
                 .call_builtin => {
                     if (op.value < 0 or op.value >= self.builtin_count) return error.InvalidExecutionToken;
-                    if (defs.debug_enabled) self.outer_pc = running.pc;
-                    try self.builtinInLoop(counted, self.words[@intCast(op.value)].builtin, running);
+                    if (defs.debug_enabled) self.outer_pc = @as(u16, @intCast(pc));
+                    {
+                        var boundary_running = frameWithLoopPCs(running, pc, end_pc);
+                        // Reflect helper updates before failed_pc is recorded on error.
+                        defer {
+                            running = boundary_running;
+                            pc = boundary_running.pc;
+                            end_pc = boundary_running.end_pc;
+                        }
+                        try self.builtinInLoop(counted, self.words[@intCast(op.value)].builtin, &boundary_running);
+                    }
                 },
                 // These tags directly select the implementation: no dictionary
                 // lookup or second runtime switch for frequent primitive words.
@@ -1942,8 +2033,17 @@ pub const State = struct {
                     try self.compileCall(try self.wordId(op.value));
                 },
                 .builtin => {
-                    if (defs.debug_enabled) self.outer_pc = running.pc;
-                    try self.builtinInLoop(counted, @fromBackingInt(@intCast(op.value)), running);
+                    if (defs.debug_enabled) self.outer_pc = @as(u16, @intCast(pc));
+                    {
+                        var boundary_running = frameWithLoopPCs(running, pc, end_pc);
+                        // Reflect helper updates before failed_pc is recorded on error.
+                        defer {
+                            running = boundary_running;
+                            pc = boundary_running.pc;
+                            end_pc = boundary_running.end_pc;
+                        }
+                        try self.builtinInLoop(counted, @fromBackingInt(@intCast(op.value)), &boundary_running);
+                    }
                 },
                 .literal, .execution_token => try self.push(op.value),
                 .float_literal => try self.fpush(bitsFloat(op.value)),
@@ -1960,9 +2060,9 @@ pub const State = struct {
                     }
                 },
                 .add_value => try self.addToValue(try self.wordId(op.value)),
-                .branch => running.pc = @intCast(op.value),
+                .branch => pc = @as(u16, @intCast(op.value)),
                 .branch_zero => {
-                    if (try self.pop() == 0) running.pc = @intCast(op.value);
+                    if (try self.pop() == 0) pc = @as(u16, @intCast(op.value));
                 },
                 .do_loop, .q_do_loop => {
                     const start = try self.pop();
@@ -1970,26 +2070,26 @@ pub const State = struct {
                     const exit_pc: u16 = @intCast(@import("core/words_loops.zig").target(op.value));
                     const keep = op.value & @import("core/words_loops.zig").done_flag != 0;
                     if (op.kind == .q_do_loop and start == limit and !keep) {
-                        running.pc = exit_pc;
+                        pc = exit_pc;
                         continue;
                     }
                     if (self.loop_depth == self.loop_stack.len) return error.StackOverflow;
                     self.loop_stack[self.loop_depth] = .{ .index = start, .limit = limit, .exit_pc = exit_pc, .exit_after_first = start == limit, .leave_keeps_frame = keep };
                     self.loop_depth += 1;
-                    if (op.kind == .q_do_loop and start == limit) running.pc = exit_pc;
+                    if (op.kind == .q_do_loop and start == limit) pc = exit_pc;
                 },
                 .positive_do, .unsigned_positive_do, .negative_do, .unsigned_negative_do, .inclusive_negative_do, .unsigned_inclusive_negative_do, .for_loop, .memory_up_do, .memory_down_do => {
-                    if (try @import("core/words_loops.zig").enter(self, op.kind, op.value)) running.pc = @intCast(@import("core/words_loops.zig").target(op.value));
+                    if (try @import("core/words_loops.zig").enter(self, op.kind, op.value)) pc = @as(u16, @intCast(@import("core/words_loops.zig").target(op.value)));
                 },
                 .negative_loop, .next_loop => {
-                    if (try @import("core/words_loops.zig").finish(self, op.kind)) running.pc = @intCast(op.value);
+                    if (try @import("core/words_loops.zig").finish(self, op.kind)) pc = @as(u16, @intCast(op.value));
                 },
                 // Specialize the two loop endings: ordinary LOOP needs neither
                 // a data-stack pop nor +LOOP's boundary-crossing calculation.
                 inline .loop, .plus_loop => |loop_kind| {
                     if (self.loop_depth == 0) return error.LoopMismatch;
                     if (self.loop_stack[self.loop_depth - 1].mode != .normal) {
-                        if (try @import("core/words_loops.zig").finish(self, op.kind)) running.pc = @intCast(op.value);
+                        if (try @import("core/words_loops.zig").finish(self, op.kind)) pc = @as(u16, @intCast(op.value));
                         continue;
                     }
                     const step: Cell = if (loop_kind == .plus_loop) try self.pop() else 1;
@@ -1998,7 +2098,7 @@ pub const State = struct {
                     frame.index +%= step;
                     const again = if (frame.exit_after_first) false else if (loop_kind == .loop) frame.index != frame.limit else !crossed;
                     if (again) {
-                        running.pc = @intCast(op.value);
+                        pc = @as(u16, @intCast(op.value));
                     } else {
                         self.loop_depth -= 1;
                     }
@@ -2007,7 +2107,7 @@ pub const State = struct {
                     if (self.loop_depth == 0) return error.LoopMismatch;
                     const frame = self.loop_stack[self.loop_depth - 1];
                     if (!frame.leave_keeps_frame) self.loop_depth -= 1;
-                    running.pc = frame.exit_pc;
+                    pc = frame.exit_pc;
                 },
                 .print_string => {
                     const address = try self.memoryAddress(op.value, 1);
@@ -2031,17 +2131,33 @@ pub const State = struct {
                 .does => {
                     const created_id = self.last_created_word orelse return error.InvalidDefinition;
                     const defining_id = running.defining_word orelse return error.InvalidDefinition;
-                    self.words[created_id].does_code_start = running.pc;
+                    self.words[created_id].does_code_start = @intCast(pc);
                     self.words[created_id].does_code_end = self.words[defining_id].code_end;
                     self.words[created_id].has_does = true;
                     self.last_created_word = null;
                     // The defining word ends here, as at EXIT.
-                    if (counted) self.traceRunning(running.*, false);
-                    if (!try self.returnToCaller(running, entry_frames)) return;
+                    if (counted) self.traceRunning(frameWithLoopPCs(running, pc, end_pc), false);
+                    {
+                        var boundary_running = frameWithLoopPCs(running, pc, end_pc);
+                        defer {
+                            running = boundary_running;
+                            pc = boundary_running.pc;
+                            end_pc = boundary_running.end_pc;
+                        }
+                        if (!try self.returnToCaller(&boundary_running, entry_frames)) return;
+                    }
                 },
                 .exit => {
-                    if (counted) self.traceRunning(running.*, false);
-                    if (!try self.returnToCaller(running, entry_frames)) return;
+                    if (counted) self.traceRunning(frameWithLoopPCs(running, pc, end_pc), false);
+                    {
+                        var boundary_running = frameWithLoopPCs(running, pc, end_pc);
+                        defer {
+                            running = boundary_running;
+                            pc = boundary_running.pc;
+                            end_pc = boundary_running.end_pc;
+                        }
+                        if (!try self.returnToCaller(&boundary_running, entry_frames)) return;
+                    }
                 },
                 .local_frame => if (running.locals_frame == 0) {
                     const size = self.words[try self.wordId(op.value)].locals_size;
@@ -2061,8 +2177,17 @@ pub const State = struct {
                         .local_fetch => try self.fetchLocal(address, kind),
                         .local_address => try self.push(address),
                         .local_execute => {
-                            if (defs.debug_enabled) self.outer_pc = running.pc;
-                            try self.wordInLoop(counted, try self.wordId(try self.readCell(address)), running);
+                            if (defs.debug_enabled) self.outer_pc = @as(u16, @intCast(pc));
+                            {
+                                var boundary_running = frameWithLoopPCs(running, pc, end_pc);
+                                // Reflect helper updates before failed_pc is recorded on error.
+                                defer {
+                                    running = boundary_running;
+                                    pc = boundary_running.pc;
+                                    end_pc = boundary_running.end_pc;
+                                }
+                                try self.wordInLoop(counted, try self.wordId(try self.readCell(address)), &boundary_running);
+                            }
                         },
                         else => unreachable,
                     }

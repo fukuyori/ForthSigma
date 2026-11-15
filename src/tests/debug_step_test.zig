@@ -41,6 +41,20 @@ fn stepped(machine: *forth.State, output: *Output, keys: []const u8, line: []con
     return plain(output.written());
 }
 
+test "DBG continues in the caller after compiled CATCH recovery" {
+    try support.skipWithout(&.{.debug});
+    var output = Output{};
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
+    try machine.interpretLine(": BAD 77 THROW ; : TRY ['] BAD CATCH DROP 42 ;");
+    const text = try stepped(machine, &output, support.repeat("\n", 128), "DBG TRY");
+    try expectStack(machine, &.{42});
+    try std.testing.expect(std.mem.indexOf(u8, text, "CATCH") != null);
+    try std.testing.expect(std.mem.indexOf(u8, text, "42") != null);
+    try std.testing.expectEqual(@as(usize, 0), machine.catch_depth);
+    try std.testing.expectEqual(@as(usize, 0), machine.call_depth);
+}
+
 test "DBG stops before each operation and shows the stack it leaves" {
     try support.skipWithout(&.{.debug});
     var output = Output{};

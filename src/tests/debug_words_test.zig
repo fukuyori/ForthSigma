@@ -51,6 +51,59 @@ test "the trace shows each word with the stack as it starts and as it ends" {
     try std.testing.expectEqualStrings("", output.written());
 }
 
+test "deferred and synonym CATCH keep matching counted trace events" {
+    try support.skipWithout(&.{.debug});
+    var output = Output{};
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
+    machine.tracing = true;
+    machine.plain_calls = true;
+    try machine.interpretLine("DEFER CA ' CATCH IS CA SYNONYM SA CATCH : OK 42 ; : RUN ['] OK CA ['] OK SA ; RUN");
+    try expectStack(machine, &.{ 42, 0, 42, 0 });
+    try std.testing.expectEqualStrings(
+        \\> RUN <0>
+        \\  > OK <0>
+        \\  < OK <1> 42
+        \\  > OK <2> 42 0
+        \\  < OK <3> 42 0 42
+        \\< RUN <4> 42 0 42 0
+        \\
+    , shown(&output));
+    try std.testing.expectEqual(@as(usize, 0), machine.trace_depth);
+    try std.testing.expectEqual(@as(usize, 0), machine.catch_depth);
+    try std.testing.expectEqual(@as(usize, 0), machine.call_depth);
+}
+
+test "compiled data words retain trace and profile operation counts" {
+    try support.skipWithout(&.{.debug});
+    var output = Output{};
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
+    machine.plain_calls = true;
+    try machine.interpretLine("7 CONSTANT K VARIABLE V CREATE RAW 2 ARRAY A : DATA K DROP V DROP RAW DROP A DROP ;");
+    const caller = try machine.lookupOrFail("DATA");
+    const word = machine.words[caller];
+    const profile = try std.testing.allocator.create(forth.Profile);
+    defer std.testing.allocator.destroy(profile);
+    profile.reset();
+    machine.profile = profile;
+    machine.tracing = true;
+    try machine.executeWord(caller);
+    try expectStack(machine, &.{});
+    try std.testing.expectEqual(@as(u64, 1), profile.calls[caller]);
+    try std.testing.expectEqual(@as(u64, 9), profile.operations);
+    try std.testing.expectEqual(@as(u64, 9), profile.total[caller]);
+    for (profile.op_counts[word.code_start..word.code_end]) |count| try std.testing.expectEqual(@as(u64, 1), count);
+    for ([_][]const u8{ "K", "V", "RAW", "A" }) |name| try std.testing.expectEqual(@as(u64, 0), profile.calls[try machine.lookupOrFail(name)]);
+    try std.testing.expectEqualStrings(
+        \\> DATA <0>
+        \\< DATA <0>
+        \\
+    , shown(&output));
+    try std.testing.expectEqual(@as(usize, 0), profile.depth);
+    try std.testing.expectEqual(@as(usize, 0), machine.trace_depth);
+}
+
 test "the trace ends after the lines of its limit, and the program goes on" {
     try support.skipWithout(&.{.debug});
     var output = Output{};
@@ -409,6 +462,22 @@ test ".COVERAGE shows every block of a line with many" {
     try machine.interpretLine("INCLUDE a.txt .COVERAGE");
     try std.testing.expectEqual(@as(usize, 35), std.mem.count(u8, output.written(), " ( 1) "));
     try std.testing.expect(std.mem.startsWith(u8, output.written(), "\n: MANY ( 1)  1 IF ( 1)  THEN ( 1)  1 IF ( 1)  THEN ( 1)  "));
+}
+
+test "WATCH keeps caller locations across compiled CATCH recovery" {
+    try support.skipWithout(&.{.debug});
+    var output = Output{};
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
+    try machine.interpretLine("VARIABLE SCORE : BAD { n } n SCORE ! -77 THROW ; : RUN 11 ['] BAD CATCH DROP DROP 22 SCORE ! ; SCORE WATCH RUN SCORE @");
+    try expectStack(machine, &.{22});
+    const text = shown(&output);
+    const first = std.mem.indexOf(u8, text, "changed from 0 to 11").?;
+    const second = std.mem.indexOf(u8, text, "changed from 11 to 22").?;
+    try std.testing.expect(first < second);
+    try std.testing.expect(std.mem.indexOf(u8, text[first..second], "in BAD") != null);
+    try std.testing.expect(std.mem.indexOf(u8, text[second..], "in RUN") != null);
+    try std.testing.expectEqual(@as(usize, 0), machine.catch_depth);
 }
 
 test "WATCH shows each change of a cell, with the word that made it" {

@@ -173,6 +173,119 @@ test "a successful CATCH without room for zero throws to its caller" {
     try std.testing.expectEqual(@as(usize, 0), machine.call_depth);
 }
 
+test "CATCH result overflow keeps the restored caller PC and BYE state" {
+    for ([_]bool{ false, true }) |counted| {
+        for ([_]bool{ false, true }) |bye| {
+            for ([_]bool{ false, true }) |outer| {
+                var output = Output{};
+                var sizes = forth.Sizes.small;
+                sizes.data_stack = 16;
+                const machine = try createMachineWith(&output, sizes);
+                defer destroyMachine(machine);
+                machine.keep_counting = counted;
+                try machine.interpretLine(if (bye)
+                    ": FULL 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 BYE ;"
+                else
+                    ": FULL 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 ;");
+                try machine.interpretLine(": INNER ['] FULL CATCH ; : OUTER ['] INNER CATCH ;");
+                const inner = machine.words[try machine.lookupOrFail("INNER")];
+                // CATCH is followed by EXIT. If pushing its success code fails,
+                // the saved PC must already be back in INNER, just after CATCH.
+                const expected_pc = inner.code_end - 1;
+                if (outer) {
+                    try machine.interpretLine("OUTER");
+                    try expectStack(machine, &.{-3});
+                } else {
+                    try std.testing.expectError(error.StackOverflow, machine.interpretLine("INNER"));
+                    try std.testing.expectEqual(@as(usize, 16), machine.data_depth);
+                    for (machine.data_stack[0..16], 1..) |value, expected| {
+                        try std.testing.expectEqual(@as(forth.Cell, @intCast(expected)), value);
+                    }
+                    if (@import("../core/defs.zig").debug_enabled) {
+                        try std.testing.expectEqual(expected_pc, machine.failed_pc);
+                        try std.testing.expect(machine.backtrace_count != 0);
+                        // Backtrace entries name the failing operation itself.
+                        try std.testing.expectEqual(expected_pc - 1, machine.backtrace[0]);
+                    }
+                }
+                try std.testing.expectEqual(bye, machine.halted);
+                try std.testing.expectEqual(@as(usize, 0), machine.catch_depth);
+                try std.testing.expectEqual(@as(usize, 0), machine.frame_depth);
+                try std.testing.expectEqual(@as(usize, 0), machine.call_depth);
+            }
+        }
+    }
+}
+
+test "helper failures keep the caller PC and the innermost backtrace PC" {
+    try support.skipWithout(&.{.debug});
+    const cases = .{
+        .{ "DEFER D ' DROP IS D : RUN D ;", "RUN", false },
+        .{ ": RUN { XT: action } action ;", "' DROP RUN", false },
+        .{ ": DEF CREATE DOES> DROP DROP ; DEF CHILD : RUN CHILD ;", "RUN", true },
+    };
+    inline for (cases) |case| {
+        for ([_]bool{ false, true }) |counted| {
+            var output = Output{};
+            const machine = try createMachine(&output);
+            defer destroyMachine(machine);
+            machine.keep_counting = counted;
+            try machine.interpretLine(case[0]);
+            const caller = machine.words[try machine.lookupOrFail("RUN")];
+            const failed_operation = if (case[2])
+                machine.words[try machine.lookupOrFail("CHILD")].does_code_end - 2
+            else
+                caller.code_end - 2;
+            try std.testing.expectError(error.StackUnderflow, machine.interpretLine(case[1]));
+            try std.testing.expectEqual(caller.code_end - 1, machine.failed_pc);
+            try std.testing.expect(machine.backtrace_count != 0);
+            try std.testing.expectEqual(failed_operation, machine.backtrace[0]);
+            try std.testing.expectEqual(@as(usize, 0), machine.call_depth);
+            try std.testing.expectEqual(@as(usize, 0), machine.frame_depth);
+            try std.testing.expectEqual(@as(usize, 0), machine.catch_depth);
+        }
+    }
+}
+
+test "PC at the u16 code limit branches and returns through both loop exits" {
+    for ([_]bool{ false, true }) |counted| {
+        var output = Output{};
+        const machine = try createMachine(&output);
+        defer destroyMachine(machine);
+        machine.keep_counting = counted;
+        try machine.interpretLine(": EDGE DUP IF DROP 41 ELSE DROP 42 THEN ; : CALL 0 ;");
+        const edge_id = try machine.lookupOrFail("EDGE");
+        const caller = machine.words[try machine.lookupOrFail("CALL")];
+        const edge = machine.words[edge_id];
+        const end = @import("../core/memory_map.zig").max_code;
+        const start: u16 = @intCast(end - (edge.code_end - edge.code_start));
+        @memcpy(machine.code[start..end], machine.code[edge.code_start..edge.code_end]);
+        for (machine.code[start..end]) |*op| {
+            if (op.kind == .branch or op.kind == .branch_zero) op.value += start - edge.code_start;
+        }
+        machine.words[edge_id].code_start = start;
+        machine.words[edge_id].code_end = end;
+        machine.code_count = end;
+        // An ordinary call ensures returning from the top of the code area
+        // restores the low-address caller instead of ending the whole loop.
+        machine.code[caller.code_start] = .{ .kind = .call, .value = edge_id };
+        const last = machine.code[end - 1];
+        try std.testing.expectEqual(@import("../core/defs.zig").OpKind.exit, last.kind);
+        for ([_]bool{ false, true }) |implicit| {
+            machine.code[end - 1] = if (implicit) .{ .kind = .literal, .value = 7 } else last;
+            for ([_]forth.Cell{ 0, 1 }) |flag| {
+                try machine.push(flag);
+                try machine.executeWord(try machine.lookupOrFail("CALL"));
+                if (implicit) try std.testing.expectEqual(@as(forth.Cell, 7), try machine.pop());
+                try expectStack(machine, &.{if (flag == 0) 42 else 41});
+                machine.data_depth = 0;
+                try std.testing.expectEqual(@as(usize, 0), machine.call_depth);
+                try std.testing.expectEqual(@as(usize, 0), machine.frame_depth);
+            }
+        }
+    }
+}
+
 test "compiled CATCH consumes an invalid xt before propagating its error" {
     var output = Output{};
     const machine = try createMachine(&output);
@@ -181,6 +294,52 @@ test "compiled CATCH consumes an invalid xt before propagating its error" {
     try std.testing.expectError(error.InvalidExecutionToken, machine.interpretLine("BAD"));
     try expectStack(machine, &.{});
     try std.testing.expectEqual(@as(usize, 0), machine.catch_depth);
+}
+
+test "host output reentry preserves an outer CATCH and its locals" {
+    const Reentry = struct {
+        machine: *forth.State,
+        inner: u16,
+        entered: bool = false,
+        restored: bool = false,
+        failure: ?anyerror = null,
+
+        fn write(context: ?*anyopaque, bytes: []const u8) void {
+            const self: *@This() = @ptrCast(@alignCast(context.?));
+            if (self.entered or bytes.len == 0) return;
+            self.entered = true;
+            const m = self.machine;
+            const catches = m.catch_depth;
+            const frames = m.frame_depth;
+            const calls = m.call_depth;
+            const locals = m.locals_top;
+            const counted = m.in_counted;
+            m.executeWord(self.inner) catch |err| {
+                self.failure = err;
+                return;
+            };
+            self.restored = m.catch_depth == catches and m.frame_depth == frames and
+                m.call_depth == calls and m.locals_top == locals and m.in_counted == counted;
+        }
+    };
+    for ([_]bool{ false, true }) |counted| {
+        var output = Output{};
+        const machine = try createMachine(&output);
+        defer destroyMachine(machine);
+        machine.keep_counting = counted;
+        try machine.interpretLine(": FAIL { n } n -77 THROW ; : INNER 100 ['] FAIL CATCH DROP DROP ; : CALLEE { n } 65 EMIT n 2 + ; : RUN 40 ['] CALLEE CATCH ;");
+        var reentry = Reentry{ .machine = machine, .inner = try machine.lookupOrFail("INNER") };
+        const writer = machine.writer;
+        defer machine.writer = writer;
+        machine.writer = .{ .context = &reentry, .write_fn = Reentry.write };
+        try machine.interpretLine("RUN");
+        try std.testing.expect(reentry.entered and reentry.restored);
+        try std.testing.expect(reentry.failure == null);
+        try expectStack(machine, &.{ 42, 0 });
+        try std.testing.expectEqual(@as(usize, 0), machine.catch_depth);
+        try std.testing.expectEqual(@as(usize, 0), machine.call_depth);
+        try std.testing.expectEqual(@as(usize, 0), machine.frame_depth);
+    }
 }
 
 test "QUIT and step limits escape compiled CATCH and discard its continuation" {

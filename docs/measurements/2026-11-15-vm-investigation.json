@@ -1,0 +1,1288 @@
+{
+  "aa_delta_percent": {
+    "arithmetic": 0.4215462632916799,
+    "stacks": 0.6937604798907749,
+    "calls": 0.7352674440124642,
+    "variables": 1.5400237821168972,
+    "loops": 0.29209658102463854,
+    "plus-loop": 1.4661077579104547,
+    "extended": 0.8984259488316375,
+    "float": 1.7807712326931948
+  },
+  "builds": {
+    "before": {
+      "sha256": "01eabfd94a816eba97978a24ced2ed85fd82212266c8f902cb4782abb9ff4755",
+      "bytes": 7334608,
+      "symbols": [
+        {
+          "name": "forth.State.runOperations__func_112",
+          "address": "00000000010d0d50",
+          "bytes": 7677,
+          "instruction_lines": 1505,
+          "direct_calls": [
+            "compiler_rt.fastMemset",
+            "compiler_rt.memcpy.memcpyFast",
+            "core.dynamic_strings.appendString",
+            "core.local_variables.fetchLocal",
+            "core.local_variables.storeLocal",
+            "forth.State.addToValue",
+            "forth.State.compileCall",
+            "forth.State.executeBuiltin",
+            "forth.State.executeWord",
+            "mem.rotate__func_116"
+          ]
+        },
+        {
+          "name": "forth.State.runOperations__func_111",
+          "address": "00000000010d34f0",
+          "bytes": 12271,
+          "instruction_lines": 2477,
+          "direct_calls": [
+            "compiler_rt.fastMemset",
+            "compiler_rt.memcpy.memcpyFast",
+            "core.decompiler.seeName",
+            "core.dynamic_strings.appendString",
+            "core.local_variables.fetchLocal",
+            "core.local_variables.storeLocal",
+            "core.words_debug.checkWatches",
+            "core.words_debug.showStepStack",
+            "fmt.bufPrint__func_133",
+            "forth.State.addToValue",
+            "forth.State.compileCall",
+            "forth.State.executeBuiltin",
+            "forth.State.executeWord",
+            "forth.State.traceRunning",
+            "forth.State.write",
+            "mem.rotate__func_116"
+          ]
+        }
+      ]
+    },
+    "after": {
+      "sha256": "19c33035f48d0e72dc951d327d9b2496c574496a5be2186eac052b14250c47e0",
+      "bytes": 7411216,
+      "symbols": [
+        {
+          "name": "forth.State.runOperations__func_113",
+          "address": "00000000010d2920",
+          "bytes": 334,
+          "instruction_lines": 82,
+          "direct_calls": [
+            "core.words_system.CatchContext.handleError",
+            "forth.State.runOperationsLoop__func_116"
+          ]
+        },
+        {
+          "name": "forth.State.runOperationsLoop__func_116",
+          "address": "00000000010d2f30",
+          "bytes": 7961,
+          "instruction_lines": 1539,
+          "direct_calls": [
+            "compiler_rt.fastMemset",
+            "compiler_rt.memcpy.memcpyFast",
+            "core.dynamic_strings.appendString",
+            "core.local_variables.fetchLocal",
+            "core.local_variables.storeLocal",
+            "forth.State.addToValue",
+            "forth.State.builtinInLoop__func_124",
+            "forth.State.compileCall",
+            "forth.State.wordInLoop__func_123",
+            "mem.rotate__func_126"
+          ]
+        },
+        {
+          "name": "forth.State.builtinInLoop__func_124",
+          "address": "00000000010d5720",
+          "bytes": 1665,
+          "instruction_lines": 358,
+          "direct_calls": [
+            "core.words_system.CatchContext.handleError"
+          ]
+        },
+        {
+          "name": "forth.State.wordInLoop__func_123",
+          "address": "00000000010d5db0",
+          "bytes": 521,
+          "instruction_lines": 137,
+          "direct_calls": [
+            "forth.State.builtinInLoop__func_124"
+          ]
+        },
+        {
+          "name": "forth.State.runOperations__func_112",
+          "address": "00000000010d6090",
+          "bytes": 421,
+          "instruction_lines": 110,
+          "direct_calls": [
+            "core.words_debug.checkWatches",
+            "core.words_system.CatchContext.handleError",
+            "forth.State.runOperationsLoop__func_134",
+            "forth.State.traceRunning"
+          ]
+        },
+        {
+          "name": "forth.State.runOperationsLoop__func_134",
+          "address": "00000000010d6240",
+          "bytes": 12322,
+          "instruction_lines": 2472,
+          "direct_calls": [
+            "compiler_rt.fastMemset",
+            "compiler_rt.memcpy.memcpyFast",
+            "core.decompiler.seeName",
+            "core.dynamic_strings.appendString",
+            "core.local_variables.fetchLocal",
+            "core.local_variables.storeLocal",
+            "core.words_debug.checkWatches",
+            "core.words_debug.showStepStack",
+            "fmt.bufPrint__func_142",
+            "forth.State.addToValue",
+            "forth.State.builtinInLoop__func_137",
+            "forth.State.compileCall",
+            "forth.State.traceRunning",
+            "forth.State.wordInLoop__func_136",
+            "forth.State.write",
+            "mem.rotate__func_126"
+          ]
+        },
+        {
+          "name": "forth.State.builtinInLoop__func_137",
+          "address": "00000000010d9270",
+          "bytes": 1684,
+          "instruction_lines": 361,
+          "direct_calls": [
+            "core.words_system.CatchContext.handleError",
+            "forth.State.traceRunning"
+          ]
+        },
+        {
+          "name": "forth.State.wordInLoop__func_136",
+          "address": "00000000010d9910",
+          "bytes": 521,
+          "instruction_lines": 137,
+          "direct_calls": [
+            "forth.State.builtinInLoop__func_137"
+          ]
+        }
+      ]
+    },
+    "current": {
+      "sha256": "d7c8c88e0dd175231f1c35cf37a7c71358e2e595924e7b6b9a02d93d99b2a028",
+      "bytes": 8924752,
+      "symbols": [
+        {
+          "name": "forth.State.runOperations__func_180",
+          "address": "00000000011017c0",
+          "bytes": 385,
+          "instruction_lines": 103,
+          "direct_calls": [
+            "compiler_rt.memcpy.memcpyFast",
+            "core.words_system.CatchContext.handleError",
+            "forth.State.runOperationsLoop__func_181"
+          ]
+        },
+        {
+          "name": "forth.State.runOperationsLoop__func_181",
+          "address": "0000000001101e90",
+          "bytes": 8550,
+          "instruction_lines": 1647,
+          "direct_calls": [
+            "compiler_rt.fastMemset",
+            "core.address_registry.written",
+            "core.dynamic_strings.storeString",
+            "core.local_variables.fetchLocal",
+            "core.local_variables.storeLocal",
+            "core.words_loops.enter",
+            "core.words_loops.finish",
+            "forth.State.addToValue",
+            "forth.State.builtinInLoop__func_183",
+            "forth.State.compileCall",
+            "forth.State.wordInLoop__func_182",
+            "forth.State.write",
+            "mem.rotate__func_186"
+          ]
+        },
+        {
+          "name": "forth.State.builtinInLoop__func_183",
+          "address": "0000000001108bb0",
+          "bytes": 2663,
+          "instruction_lines": 520,
+          "direct_calls": [
+            "compiler_rt.memcpy.memcpyFast",
+            "core.words_system.CatchContext.handleError"
+          ]
+        },
+        {
+          "name": "forth.State.wordInLoop__func_182",
+          "address": "0000000001109620",
+          "bytes": 510,
+          "instruction_lines": 132,
+          "direct_calls": [
+            "forth.State.builtinInLoop__func_183"
+          ]
+        },
+        {
+          "name": "forth.State.runOperations__func_179",
+          "address": "000000000110a2b0",
+          "bytes": 497,
+          "instruction_lines": 129,
+          "direct_calls": [
+            "compiler_rt.memcpy.memcpyFast",
+            "core.words_debug.checkWatches",
+            "core.words_system.CatchContext.handleError",
+            "forth.State.runOperationsLoop__func_195",
+            "forth.State.traceRunning"
+          ]
+        },
+        {
+          "name": "forth.State.runOperationsLoop__func_195",
+          "address": "000000000110a4b0",
+          "bytes": 11283,
+          "instruction_lines": 2272,
+          "direct_calls": [
+            "compiler_rt.fastMemset",
+            "compiler_rt.memcpy.memcpyFast",
+            "core.address_registry.written",
+            "core.decompiler.builtinName",
+            "core.decompiler.seeName",
+            "core.dynamic_strings.storeString",
+            "core.local_variables.fetchLocal",
+            "core.local_variables.storeLocal",
+            "core.words_debug.checkWatches",
+            "core.words_debug.showStepStack",
+            "core.words_loops.enter",
+            "core.words_loops.finish",
+            "core.words_xchar.key",
+            "fmt.bufPrint__func_204",
+            "forth.State.addToValue",
+            "forth.State.builtinInLoop__func_197",
+            "forth.State.compileCall",
+            "forth.State.traceRunning",
+            "forth.State.wordInLoop__func_196",
+            "forth.State.write",
+            "mem.rotate__func_186"
+          ]
+        },
+        {
+          "name": "forth.State.builtinInLoop__func_197",
+          "address": "000000000110dcd0",
+          "bytes": 2662,
+          "instruction_lines": 522,
+          "direct_calls": [
+            "compiler_rt.memcpy.memcpyFast",
+            "core.words_system.CatchContext.handleError",
+            "forth.State.traceRunning"
+          ]
+        },
+        {
+          "name": "forth.State.wordInLoop__func_196",
+          "address": "00000000011105b0",
+          "bytes": 510,
+          "instruction_lines": 132,
+          "direct_calls": [
+            "forth.State.builtinInLoop__func_197"
+          ]
+        }
+      ]
+    }
+  },
+  "see": {
+    "before": {
+      "arithmetic": ": BENCH-RUN\n  1 BENCH-ITERATIONS 0 DO 3 * 7 + 65535 AND LOOP\n;\n",
+      "stacks": ": BENCH-RUN\n  1 2 3 BENCH-ITERATIONS 0 DO ROT SWAP OVER + 65535 AND DUP NIP LOOP + +\n;\n",
+      "calls": ": BENCH-RUN\n  0 BENCH-ITERATIONS 0 DO BENCH-C LOOP\n;\n",
+      "variables": ": BENCH-RUN\n  0 BENCH-V ! BENCH-ITERATIONS 0 DO BENCH-K BENCH-V +! LOOP BENCH-V @\n;\n",
+      "loops": ": BENCH-RUN\n  0 BENCH-ITERATIONS 0 DO I 7 AND + LOOP\n;\n",
+      "plus-loop": ": BENCH-RUN\n  0 BENCH-ITERATIONS 0 DO I 7 AND + 2 +LOOP\n;\n",
+      "extended": ": BENCH-RUN\n  1 BENCH-ITERATIONS 0 DO 2* 1+ DUP 3 RSHIFT XOR 65535 AND LOOP\n;\n",
+      "float": ": BENCH-RUN\n  0e BENCH-ITERATIONS 0 DO 1e F+ 1e F* LOOP F>S\n;\n"
+    },
+    "after": {
+      "arithmetic": ": BENCH-RUN\n  1 BENCH-ITERATIONS 0 DO 3 * 7 + 65535 AND LOOP\n;\n",
+      "stacks": ": BENCH-RUN\n  1 2 3 BENCH-ITERATIONS 0 DO ROT SWAP OVER + 65535 AND DUP NIP LOOP + +\n;\n",
+      "calls": ": BENCH-RUN\n  0 BENCH-ITERATIONS 0 DO BENCH-C LOOP\n;\n",
+      "variables": ": BENCH-RUN\n  0 BENCH-V ! BENCH-ITERATIONS 0 DO BENCH-K BENCH-V +! LOOP BENCH-V @\n;\n",
+      "loops": ": BENCH-RUN\n  0 BENCH-ITERATIONS 0 DO I 7 AND + LOOP\n;\n",
+      "plus-loop": ": BENCH-RUN\n  0 BENCH-ITERATIONS 0 DO I 7 AND + 2 +LOOP\n;\n",
+      "extended": ": BENCH-RUN\n  1 BENCH-ITERATIONS 0 DO 2* 1+ DUP 3 RSHIFT XOR 65535 AND LOOP\n;\n",
+      "float": ": BENCH-RUN\n  0e BENCH-ITERATIONS 0 DO 1e F+ 1e F* LOOP F>S\n;\n"
+    },
+    "current": {
+      "arithmetic": ": BENCH-RUN\n  1 BENCH-ITERATIONS 0 DO 3 * 7 + 65535 AND LOOP\n;\n",
+      "stacks": ": BENCH-RUN\n  1 2 3 BENCH-ITERATIONS 0 DO ROT SWAP OVER + 65535 AND DUP NIP LOOP + +\n;\n",
+      "calls": ": BENCH-RUN\n  0 BENCH-ITERATIONS 0 DO BENCH-C LOOP\n;\n",
+      "variables": ": BENCH-RUN\n  0 BENCH-V ! BENCH-ITERATIONS 0 DO BENCH-K BENCH-V +! LOOP BENCH-V @\n;\n",
+      "loops": ": BENCH-RUN\n  0 BENCH-ITERATIONS 0 DO I 7 AND + LOOP\n;\n",
+      "plus-loop": ": BENCH-RUN\n  0 BENCH-ITERATIONS 0 DO I 7 AND + 2 +LOOP\n;\n",
+      "extended": ": BENCH-RUN\n  1 BENCH-ITERATIONS 0 DO 2* 1+ DUP 3 RSHIFT XOR 65535 AND LOOP\n;\n",
+      "float": ": BENCH-RUN\n  0e BENCH-ITERATIONS 0 DO 1e F+ 1e F* LOOP F>S\n;\n"
+    }
+  },
+  "see_all_equal": true,
+  "aa_series": [
+    {
+      "schema_version": 2,
+      "timing": "child process CPU clock between READY and DONE; startup/compilation excluded; boundary I/O included",
+      "platform": "Linux-6.18.33.2-microsoft-standard-WSL2-x86_64-with-glibc2.43",
+      "cpu_affinity": [
+        0
+      ],
+      "iterations": 20000000,
+      "rounds": 5,
+      "engines": [
+        {
+          "label": "A1",
+          "path": "/mnt/d/home/source/zig/forthz/.work/measure-20261115/x86_64-linux-musl-full/bin/sigma",
+          "kind": "sigma",
+          "sha256": "5ff80c55b17444d3d091699b61b4552b516cabfa15fc133416aa6736fc0f2592"
+        },
+        {
+          "label": "A2",
+          "path": "/mnt/d/home/source/zig/forthz/.work/measure-20261115/x86_64-linux-musl-full/bin/sigma",
+          "kind": "sigma",
+          "sha256": "5ff80c55b17444d3d091699b61b4552b516cabfa15fc133416aa6736fc0f2592"
+        }
+      ],
+      "cases": {
+        "arithmetic": {
+          "checksum": 513,
+          "engines": {
+            "A1": {
+              "median_us": 230247.94,
+              "min_us": 228021.551,
+              "max_us": 231111.75,
+              "samples_us": [
+                230859.505,
+                231111.75,
+                228021.551,
+                230247.94,
+                228352.44
+              ],
+              "monotonic_wall_samples_us": [
+                230983.741,
+                231202.721,
+                228146.706,
+                230387.101,
+                228458.327
+              ],
+              "total_process_cpu_samples_us": [
+                233342.00000000003,
+                233387.99999999985,
+                230407.00000000017,
+                232429.99999999983,
+                230913.99999999977
+              ]
+            },
+            "A2": {
+              "median_us": 229601.452,
+              "min_us": 226595.988,
+              "max_us": 229884.434,
+              "samples_us": [
+                229777.46,
+                226595.988,
+                228941.824,
+                229601.452,
+                229884.434
+              ],
+              "monotonic_wall_samples_us": [
+                231464.298,
+                226705.373,
+                229093.84,
+                229728.13,
+                231404.179
+              ],
+              "total_process_cpu_samples_us": [
+                232049.0,
+                228843.00000000006,
+                231221.99999999974,
+                232044.99999999974,
+                232105.00000000015
+              ]
+            }
+          }
+        },
+        "stacks": {
+          "checksum": 50054,
+          "engines": {
+            "A1": {
+              "median_us": 282296.771,
+              "min_us": 278445.027,
+              "max_us": 285572.964,
+              "samples_us": [
+                280548.252,
+                282570.886,
+                282296.771,
+                278445.027,
+                285572.964
+              ],
+              "monotonic_wall_samples_us": [
+                280686.154,
+                282727.051,
+                282392.991,
+                278561.796,
+                285679.074
+              ],
+              "total_process_cpu_samples_us": [
+                282970.0000000001,
+                284901.99999999953,
+                284643.9999999991,
+                280792.9999999999,
+                287877.9999999999
+              ]
+            },
+            "A2": {
+              "median_us": 280351.801,
+              "min_us": 278912.697,
+              "max_us": 285079.08,
+              "samples_us": [
+                280107.501,
+                282224.929,
+                285079.08,
+                278912.697,
+                280351.801
+              ],
+              "monotonic_wall_samples_us": [
+                280219.282,
+                283953.32,
+                285159.061,
+                279192.016,
+                280456.207
+              ],
+              "total_process_cpu_samples_us": [
+                282483.99999999965,
+                284640.00000000023,
+                287402.00000000006,
+                281329.00000000023,
+                282577.9999999998
+              ]
+            }
+          }
+        },
+        "calls": {
+          "checksum": 80000000,
+          "engines": {
+            "A1": {
+              "median_us": 417451.567,
+              "min_us": 413354.757,
+              "max_us": 425438.85,
+              "samples_us": [
+                417451.567,
+                413709.47,
+                425401.939,
+                413354.757,
+                425438.85
+              ],
+              "monotonic_wall_samples_us": [
+                417629.202,
+                413877.335,
+                425513.78,
+                413501.169,
+                425555.379
+              ],
+              "total_process_cpu_samples_us": [
+                419808.99999999977,
+                416026.99999999994,
+                427710.9999999997,
+                415719.99999999965,
+                427741.00000000064
+              ]
+            },
+            "A2": {
+              "median_us": 414404.585,
+              "min_us": 410079.134,
+              "max_us": 417242.601,
+              "samples_us": [
+                414981.145,
+                410079.134,
+                414404.585,
+                412986.628,
+                417242.601
+              ],
+              "monotonic_wall_samples_us": [
+                415124.233,
+                411748.76,
+                414565.957,
+                413140.094,
+                418830.774
+              ],
+              "total_process_cpu_samples_us": [
+                417274.0000000007,
+                412431.99999999837,
+                416726.9999999992,
+                415453.99999999977,
+                419534.0000000001
+              ]
+            }
+          }
+        },
+        "variables": {
+          "checksum": 140000000,
+          "engines": {
+            "A1": {
+              "median_us": 141915.254,
+              "min_us": 141369.633,
+              "max_us": 142700.572,
+              "samples_us": [
+                142700.572,
+                141369.633,
+                141915.254,
+                141428.59,
+                142068.335
+              ],
+              "monotonic_wall_samples_us": [
+                142843.902,
+                141465.464,
+                143659.049,
+                141532.791,
+                142164.753
+              ],
+              "total_process_cpu_samples_us": [
+                145118.00000000076,
+                143656.00000000067,
+                144293.99999999983,
+                143797.99999999782,
+                144426.0000000007
+              ]
+            },
+            "A2": {
+              "median_us": 142276.086,
+              "min_us": 141233.019,
+              "max_us": 146585.796,
+              "samples_us": [
+                141233.019,
+                142276.086,
+                141399.52,
+                146585.796,
+                143221.846
+              ],
+              "monotonic_wall_samples_us": [
+                141330.172,
+                142382.937,
+                141496.081,
+                146696.367,
+                143354.977
+              ],
+              "total_process_cpu_samples_us": [
+                143710.0000000011,
+                144487.99999999886,
+                143663.00000000038,
+                149042.00000000073,
+                145669.99999999945
+              ]
+            }
+          }
+        },
+        "loops": {
+          "checksum": 70000000,
+          "engines": {
+            "A1": {
+              "median_us": 164452.122,
+              "min_us": 163374.382,
+              "max_us": 166885.6,
+              "samples_us": [
+                164028.999,
+                164649.066,
+                164452.122,
+                163374.382,
+                166885.6
+              ],
+              "monotonic_wall_samples_us": [
+                164143.639,
+                164763.136,
+                166065.928,
+                163491.485,
+                167082.983
+              ],
+              "total_process_cpu_samples_us": [
+                166368.0000000008,
+                167100.00000000218,
+                166851.99999999983,
+                166002.00000000003,
+                169491.99999999956
+              ]
+            },
+            "A2": {
+              "median_us": 163973.162,
+              "min_us": 161762.213,
+              "max_us": 166739.617,
+              "samples_us": [
+                166739.617,
+                161762.213,
+                163973.162,
+                164075.046,
+                163793.808
+              ],
+              "monotonic_wall_samples_us": [
+                166836.444,
+                161884.559,
+                164085.407,
+                164186.179,
+                163942.942
+              ],
+              "total_process_cpu_samples_us": [
+                169069.00000000017,
+                164069.99999999965,
+                166353.99999999916,
+                166444.9999999991,
+                166334.00000000047
+              ]
+            }
+          }
+        },
+        "plus-loop": {
+          "checksum": 30000000,
+          "engines": {
+            "A1": {
+              "median_us": 95493.447,
+              "min_us": 93355.196,
+              "max_us": 96497.199,
+              "samples_us": [
+                95493.447,
+                96497.199,
+                95908.475,
+                94548.913,
+                93355.196
+              ],
+              "monotonic_wall_samples_us": [
+                95581.871,
+                96622.973,
+                96003.371,
+                94655.39,
+                94712.889
+              ],
+              "total_process_cpu_samples_us": [
+                98069.9999999994,
+                98939.99999999988,
+                98214.99999999886,
+                96906.999999999,
+                95684.99999999971
+              ]
+            },
+            "A2": {
+              "median_us": 94664.593,
+              "min_us": 93927.192,
+              "max_us": 95953.551,
+              "samples_us": [
+                95661.619,
+                94646.669,
+                93927.192,
+                94664.593,
+                95953.551
+              ],
+              "monotonic_wall_samples_us": [
+                95786.221,
+                94751.725,
+                94010.756,
+                94754.148,
+                96023.509
+              ],
+              "total_process_cpu_samples_us": [
+                98094.99999999885,
+                97171.00000000017,
+                96278.99999999825,
+                97072.9999999991,
+                98340.00000000124
+              ]
+            }
+          }
+        },
+        "extended": {
+          "checksum": 59859,
+          "engines": {
+            "A1": {
+              "median_us": 282236.06,
+              "min_us": 277160.149,
+              "max_us": 283729.396,
+              "samples_us": [
+                282236.06,
+                283052.16,
+                277160.149,
+                283729.396,
+                278573.158
+              ],
+              "monotonic_wall_samples_us": [
+                282362.346,
+                283191.28,
+                277251.989,
+                283861.413,
+                278690.856
+              ],
+              "total_process_cpu_samples_us": [
+                284569.0000000017,
+                285622.0000000005,
+                279624.00000000175,
+                286259.9999999985,
+                281016.9999999984
+              ]
+            },
+            "A2": {
+              "median_us": 284771.742,
+              "min_us": 278554.156,
+              "max_us": 294446.216,
+              "samples_us": [
+                278554.156,
+                284771.742,
+                280717.34,
+                294446.216,
+                288264.597
+              ],
+              "monotonic_wall_samples_us": [
+                278652.538,
+                284921.813,
+                282922.735,
+                294632.296,
+                288402.924
+              ],
+              "total_process_cpu_samples_us": [
+                281033.9999999987,
+                287043.99999999796,
+                283162.0000000007,
+                296858.0000000002,
+                290753.99999999965
+              ]
+            }
+          }
+        },
+        "float": {
+          "checksum": 20000000,
+          "engines": {
+            "A1": {
+              "median_us": 167310.205,
+              "min_us": 164578.332,
+              "max_us": 169567.578,
+              "samples_us": [
+                169567.578,
+                167310.205,
+                165456.791,
+                168308.84,
+                164578.332
+              ],
+              "monotonic_wall_samples_us": [
+                169944.124,
+                167759.532,
+                165825.077,
+                168792.831,
+                164945.537
+              ],
+              "total_process_cpu_samples_us": [
+                172367.99999999945,
+                169623.0000000021,
+                167878.00000000265,
+                170872.00000000015,
+                166926.99999999785
+              ]
+            },
+            "A2": {
+              "median_us": 170289.617,
+              "min_us": 166742.237,
+              "max_us": 172984.78,
+              "samples_us": [
+                166742.237,
+                170963.375,
+                172984.78,
+                170289.617,
+                167291.606
+              ],
+              "monotonic_wall_samples_us": [
+                167088.679,
+                172746.552,
+                173349.583,
+                170699.503,
+                167670.723
+              ],
+              "total_process_cpu_samples_us": [
+                169090.0000000013,
+                173358.00000000105,
+                175595.9999999995,
+                172732.00000000023,
+                169715.00000000017
+              ]
+            }
+          }
+        }
+      }
+    },
+    {
+      "schema_version": 2,
+      "timing": "child process CPU clock between READY and DONE; startup/compilation excluded; boundary I/O included",
+      "platform": "Linux-6.18.33.2-microsoft-standard-WSL2-x86_64-with-glibc2.43",
+      "cpu_affinity": [
+        0
+      ],
+      "iterations": 20000000,
+      "rounds": 5,
+      "engines": [
+        {
+          "label": "A2",
+          "path": "/mnt/d/home/source/zig/forthz/.work/measure-20261115/x86_64-linux-musl-full/bin/sigma",
+          "kind": "sigma",
+          "sha256": "5ff80c55b17444d3d091699b61b4552b516cabfa15fc133416aa6736fc0f2592"
+        },
+        {
+          "label": "A1",
+          "path": "/mnt/d/home/source/zig/forthz/.work/measure-20261115/x86_64-linux-musl-full/bin/sigma",
+          "kind": "sigma",
+          "sha256": "5ff80c55b17444d3d091699b61b4552b516cabfa15fc133416aa6736fc0f2592"
+        }
+      ],
+      "cases": {
+        "arithmetic": {
+          "checksum": 513,
+          "engines": {
+            "A2": {
+              "median_us": 229458.089,
+              "min_us": 227630.107,
+              "max_us": 230153.512,
+              "samples_us": [
+                230153.512,
+                230116.931,
+                227630.107,
+                229458.089,
+                228626.55
+              ],
+              "monotonic_wall_samples_us": [
+                231702.44,
+                230273.405,
+                227736.616,
+                229565.221,
+                228728.42
+              ],
+              "total_process_cpu_samples_us": [
+                232376.00000000003,
+                232590.0000000002,
+                229849.0000000003,
+                231843.9999999996,
+                231270.9999999994
+              ]
+            },
+            "A1": {
+              "median_us": 230425.361,
+              "min_us": 229031.08,
+              "max_us": 231678.098,
+              "samples_us": [
+                230425.361,
+                231188.106,
+                231678.098,
+                229635.276,
+                229031.08
+              ],
+              "monotonic_wall_samples_us": [
+                230598.515,
+                231317.388,
+                231845.772,
+                229759.518,
+                229141.484
+              ],
+              "total_process_cpu_samples_us": [
+                232799.99999999994,
+                233529.0,
+                234149.00000000006,
+                232036.99999999994,
+                231438.0000000001
+              ]
+            }
+          }
+        },
+        "stacks": {
+          "checksum": 50054,
+          "engines": {
+            "A2": {
+              "median_us": 282157.131,
+              "min_us": 279576.338,
+              "max_us": 287915.538,
+              "samples_us": [
+                282157.131,
+                287915.538,
+                282211.273,
+                279576.338,
+                281924.328
+              ],
+              "monotonic_wall_samples_us": [
+                283602.577,
+                288013.448,
+                282317.364,
+                279691.846,
+                282033.131
+              ],
+              "total_process_cpu_samples_us": [
+                284544.00000000047,
+                290214.0000000002,
+                284593.9999999989,
+                282015.0,
+                284195.0
+              ]
+            },
+            "A1": {
+              "median_us": 282291.756,
+              "min_us": 281452.813,
+              "max_us": 293025.489,
+              "samples_us": [
+                282291.756,
+                284297.015,
+                282088.69,
+                281452.813,
+                293025.489
+              ],
+              "monotonic_wall_samples_us": [
+                282443.003,
+                284433.947,
+                282231.404,
+                281604.098,
+                293120.392
+              ],
+              "total_process_cpu_samples_us": [
+                284627.99999999965,
+                286679.99999999965,
+                284528.9999999998,
+                283803.9999999995,
+                295350.9999999997
+              ]
+            }
+          }
+        },
+        "calls": {
+          "checksum": 80000000,
+          "engines": {
+            "A2": {
+              "median_us": 410952.243,
+              "min_us": 410194.865,
+              "max_us": 418888.382,
+              "samples_us": [
+                410194.865,
+                411328.347,
+                410952.243,
+                410278.944,
+                418888.382
+              ],
+              "monotonic_wall_samples_us": [
+                410331.064,
+                411455.447,
+                411088.9,
+                410371.731,
+                419011.913
+              ],
+              "total_process_cpu_samples_us": [
+                412705.9999999998,
+                413627.0000000007,
+                413375.000000001,
+                412543.0000000002,
+                421340.00000000105
+              ]
+            },
+            "A1": {
+              "median_us": 410890.576,
+              "min_us": 409346.097,
+              "max_us": 413227.383,
+              "samples_us": [
+                411587.321,
+                413227.383,
+                409346.097,
+                409691.863,
+                410890.576
+              ],
+              "monotonic_wall_samples_us": [
+                411734.686,
+                414791.471,
+                409475.463,
+                409803.983,
+                412433.204
+              ],
+              "total_process_cpu_samples_us": [
+                413821.0000000003,
+                415536.0000000002,
+                411759.0000000007,
+                412158.99999999977,
+                413286.0000000007
+              ]
+            }
+          }
+        },
+        "variables": {
+          "checksum": 140000000,
+          "engines": {
+            "A2": {
+              "median_us": 143417.006,
+              "min_us": 142132.557,
+              "max_us": 152960.087,
+              "samples_us": [
+                143102.46,
+                144313.93,
+                142132.557,
+                143417.006,
+                152960.087
+              ],
+              "monotonic_wall_samples_us": [
+                143189.718,
+                144403.573,
+                142239.833,
+                143524.773,
+                153078.252
+              ],
+              "total_process_cpu_samples_us": [
+                145422.0000000006,
+                146871.999999999,
+                144432.00000000073,
+                145827.0000000012,
+                155215.99999999924
+              ]
+            },
+            "A1": {
+              "median_us": 145625.662,
+              "min_us": 140966.301,
+              "max_us": 155930.526,
+              "samples_us": [
+                145625.662,
+                140966.301,
+                142376.91,
+                155930.526,
+                154558.96
+              ],
+              "monotonic_wall_samples_us": [
+                145744.259,
+                141075.101,
+                142470.921,
+                157421.648,
+                154684.971
+              ],
+              "total_process_cpu_samples_us": [
+                148054.00000000096,
+                143553.9999999993,
+                144768.99999999988,
+                158311.99999999857,
+                157072.0000000011
+              ]
+            }
+          }
+        },
+        "loops": {
+          "checksum": 70000000,
+          "engines": {
+            "A2": {
+              "median_us": 163387.87,
+              "min_us": 161508.932,
+              "max_us": 164582.38,
+              "samples_us": [
+                163387.87,
+                164241.107,
+                162733.814,
+                161508.932,
+                164582.38
+              ],
+              "monotonic_wall_samples_us": [
+                163509.694,
+                164349.969,
+                162894.916,
+                161638.536,
+                164680.662
+              ],
+              "total_process_cpu_samples_us": [
+                165694.00000000012,
+                166565.99999999945,
+                165005.00000000055,
+                164023.9999999993,
+                167060.9999999998
+              ]
+            },
+            "A1": {
+              "median_us": 163405.269,
+              "min_us": 161595.36,
+              "max_us": 164008.665,
+              "samples_us": [
+                163405.269,
+                164008.665,
+                161765.514,
+                163448.721,
+                161595.36
+              ],
+              "monotonic_wall_samples_us": [
+                163509.685,
+                164114.583,
+                161886.411,
+                163556.854,
+                161694.767
+              ],
+              "total_process_cpu_samples_us": [
+                165670.99999999956,
+                166404.99999999942,
+                164175.0,
+                165833.99999999962,
+                163870.99999999968
+              ]
+            }
+          }
+        },
+        "plus-loop": {
+          "checksum": 30000000,
+          "engines": {
+            "A2": {
+              "median_us": 94577.632,
+              "min_us": 93771.351,
+              "max_us": 95997.004,
+              "samples_us": [
+                94219.721,
+                95997.004,
+                94577.632,
+                95017.659,
+                93771.351
+              ],
+              "monotonic_wall_samples_us": [
+                94317.936,
+                96133.592,
+                94678.603,
+                95104.42,
+                93856.221
+              ],
+              "total_process_cpu_samples_us": [
+                96599.99999999885,
+                98388.00000000009,
+                96913.00000000022,
+                97319.00000000115,
+                96075.99999999796
+              ]
+            },
+            "A1": {
+              "median_us": 95964.242,
+              "min_us": 94808.787,
+              "max_us": 96818.079,
+              "samples_us": [
+                95964.242,
+                94808.787,
+                95875.858,
+                96031.33,
+                96818.079
+              ],
+              "monotonic_wall_samples_us": [
+                97449.791,
+                94898.335,
+                95964.565,
+                96119.705,
+                96947.201
+              ],
+              "total_process_cpu_samples_us": [
+                98362.0,
+                97179.00000000074,
+                98210.00000000007,
+                98415.99999999875,
+                99266.0000000016
+              ]
+            }
+          }
+        },
+        "extended": {
+          "checksum": 59859,
+          "engines": {
+            "A2": {
+              "median_us": 280042.177,
+              "min_us": 276818.229,
+              "max_us": 280664.134,
+              "samples_us": [
+                280042.177,
+                279717.752,
+                280664.134,
+                280564.355,
+                276818.229
+              ],
+              "monotonic_wall_samples_us": [
+                280199.701,
+                281156.448,
+                280785.68,
+                280681.56,
+                276910.358
+              ],
+              "total_process_cpu_samples_us": [
+                282372.99999999994,
+                281975.9999999994,
+                282998.99999999674,
+                282894.99999999994,
+                279126.99999999907
+              ]
+            },
+            "A1": {
+              "median_us": 280110.036,
+              "min_us": 277268.824,
+              "max_us": 283876.525,
+              "samples_us": [
+                280110.036,
+                279110.087,
+                277268.824,
+                283876.525,
+                281054.229
+              ],
+              "monotonic_wall_samples_us": [
+                280215.541,
+                279204.841,
+                277412.732,
+                284104.222,
+                281247.829
+              ],
+              "total_process_cpu_samples_us": [
+                282452.9999999997,
+                281512.99999999953,
+                279628.0000000025,
+                286278.00000000297,
+                283598.9999999989
+              ]
+            }
+          }
+        },
+        "float": {
+          "checksum": 20000000,
+          "engines": {
+            "A2": {
+              "median_us": 169145.88,
+              "min_us": 166889.974,
+              "max_us": 175184.118,
+              "samples_us": [
+                166889.974,
+                175184.118,
+                168068.141,
+                169145.88,
+                169761.647
+              ],
+              "monotonic_wall_samples_us": [
+                167395.259,
+                175586.337,
+                168448.51,
+                169541.485,
+                170115.685
+              ],
+              "total_process_cpu_samples_us": [
+                169335.99999999776,
+                177492.00000000093,
+                170355.99999999822,
+                171576.00000000178,
+                172370.99999999997
+              ]
+            },
+            "A1": {
+              "median_us": 170522.183,
+              "min_us": 166671.75,
+              "max_us": 174006.674,
+              "samples_us": [
+                171526.49,
+                166671.75,
+                169914.467,
+                174006.674,
+                170522.183
+              ],
+              "monotonic_wall_samples_us": [
+                171920.324,
+                167036.197,
+                170410.937,
+                174390.675,
+                170872.041
+              ],
+              "total_process_cpu_samples_us": [
+                173924.00000000314,
+                169035.99999999846,
+                172461.00000000204,
+                176396.0000000005,
+                172979.00000000323
+              ]
+            }
+          }
+        }
+      }
+    }
+  ],
+  "source_commit": "257504759fd22e7453f9e96798e755f1ea589f79"
+}

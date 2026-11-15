@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
-"""Linux tests for the external process-clock benchmark protocol."""
+"""Tests for the external process-clock benchmark protocol on Linux/Windows."""
 
 import importlib.util
+import os
 from pathlib import Path
 import sys
 import tempfile
@@ -25,7 +26,7 @@ class BenchmarkProtocolTests(unittest.TestCase):
         # Invoking Python directly with -e fails before the protocol can run.
         path.write_text("#!" + sys.executable + "\n" + source, encoding="utf-8")
         path.chmod(0o700)
-        return str(path)
+        return [sys.executable, str(path)] if os.name == "nt" else str(path)
 
     def test_excludes_startup_teardown_and_sleep_from_execution_cpu(self):
         child = self.child('''import sys, time

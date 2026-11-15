@@ -1,0 +1,271 @@
+{
+  "status": "verified",
+  "baseline_source_sha256": "3fedbd1601a1ebd3fa61f99bf2a3ce06fd876af1b7047bb8a86057b0e3ca5191",
+  "adopted_source_sha256": "d2c101033474ba348c6cd148249bd81afb6ae4e7656ae5bb0c40326806182195",
+  "input_differences_before_apply": [
+    "src/forth.zig"
+  ],
+  "head": "257504759fd22e7453f9e96798e755f1ea589f79",
+  "git_status_before": " M docs/VM_PERFORMANCE_PLAN.md\n M scripts/benchmark-runtime.py\n M src/tests/catch_test.zig\n M src/tests/core_words_test.zig\n M src/tests/debug_step_test.zig\n M src/tests/debug_words_test.zig\n M tests/scripts/test-benchmark-runtime.py\n?? docs/VM_ADDITIONAL_MEASURES_SELECTION.md\n?? docs/VM_ALL_VALIDATION.md\n?? docs/VM_ALL_VALIDATION_METHOD.md\n?? docs/VM_CATCH_COST_AND_BOUNDARIES.md\n?? docs/VM_DATA_CALL_ROUTE_CLAUDE_REVIEW.md\n?? docs/VM_DATA_CALL_ROUTE_EXPERIMENT.md\n?? docs/VM_DATA_CALL_ROUTE_REVIEW_FOLLOWUP.md\n?? docs/VM_DATA_CALL_ROUTE_REVIEW_RESPONSE.md\n?? docs/VM_PC_SCALAR_CLAUDE_REVIEW.md\n?? docs/VM_PC_SCALAR_EXPERIMENT.md\n?? docs/VM_PC_SCALAR_REVIEW_RESPONSE.md\n?? docs/VM_PC_SCALAR_WINDOWS.md\n?? docs/VM_PERFORMANCE_A_CLAUDE_REVIEW.md\n?? docs/VM_PERFORMANCE_A_EXPERIMENT.md\n?? docs/VM_PERFORMANCE_A_FOLLOWUP.md\n?? docs/VM_PERFORMANCE_INVESTIGATION.md\n?? docs/VM_PRIORITY_VALIDATION.md\n?? docs/VM_WINDOWS_VARIABLE_INVESTIGATION.md\n?? docs/measurements/2026-11-15-catch-vm-cost.json\n?? docs/measurements/2026-11-15-vm-a-experiment.json\n?? docs/measurements/2026-11-15-vm-a-followup.json\n?? docs/measurements/2026-11-15-vm-all-validation-method.json\n?? docs/measurements/2026-11-15-vm-all-validation.json\n?? docs/measurements/2026-11-15-vm-data-call-route.json\n?? docs/measurements/2026-11-15-vm-data-route-review-validation.json\n?? docs/measurements/2026-11-15-vm-investigation-followup.json\n?? docs/measurements/2026-11-15-vm-investigation.json\n?? docs/measurements/2026-11-15-vm-pc-review-validation.json\n?? docs/measurements/2026-11-15-vm-pc-scalars.json\n?? docs/measurements/2026-11-15-vm-pc-windows.json\n?? docs/measurements/2026-11-15-vm-priority-validation.json\n?? docs/measurements/2026-11-15-vm-stage0.json\n?? docs/measurements/2026-11-15-vm-windows-variables.json\n",
+  "commands": [
+    {
+      "label": "root-windows-debug",
+      "command": [
+        "zig",
+        "build",
+        "test",
+        "--cache-dir",
+        "D:\\home\\source\\zig\\forthz\\.work\\vm-data-route-adoption-20261115\\cache-root-debug",
+        "--summary",
+        "all"
+      ],
+      "exit": 0,
+      "summary": "Build Summary: 21/21 steps succeeded; 1070/1080 tests passed (10 skipped)",
+      "cached_run_lines": []
+    },
+    {
+      "label": "root-linux-fast",
+      "command": [
+        "zig",
+        "build",
+        "-Dtarget=x86_64-linux-musl",
+        "-Doptimize=fast",
+        "-Dcpu=baseline",
+        "-Dstrip=true",
+        "--prefix",
+        "D:\\home\\source\\zig\\forthz\\.work\\vm-data-route-adoption-20261115\\linux",
+        "--cache-dir",
+        "D:\\home\\source\\zig\\forthz\\.work\\vm-data-route-adoption-20261115\\cache-linux",
+        "--summary",
+        "all"
+      ],
+      "exit": 0,
+      "summary": "Build Summary: 10/10 steps succeeded",
+      "cached_run_lines": []
+    },
+    {
+      "label": "root-windows-fast",
+      "command": [
+        "zig",
+        "build",
+        "-Dtarget=x86_64-windows-gnu",
+        "-Doptimize=fast",
+        "-Dcpu=baseline",
+        "-Dstrip=true",
+        "--prefix",
+        "D:\\home\\source\\zig\\forthz\\zig-out",
+        "--cache-dir",
+        "D:\\home\\source\\zig\\forthz\\.work\\vm-data-route-adoption-20261115\\cache-windows-fast",
+        "--summary",
+        "all"
+      ],
+      "exit": 0,
+      "summary": "Build Summary: 10/10 steps succeeded",
+      "cached_run_lines": []
+    }
+  ],
+  "builds": [
+    {
+      "platform": "windows",
+      "path": "D:\\home\\source\\zig\\forthz\\zig-out\\bin\\sigma.exe",
+      "sha256": "379d6c6c069b9c3072da22fa6cea8b7deff77c5ed78ef9bbd070f92a724337bf",
+      "bytes": 1809408,
+      "matches_measured": true
+    },
+    {
+      "platform": "linux",
+      "path": "D:\\home\\source\\zig\\forthz\\.work\\vm-data-route-adoption-20261115\\linux\\bin\\sigma",
+      "sha256": "bdb6eb7a0ac59d27d23281708f89538631950d39654837cfd1cfa8d0e78b73fa",
+      "bytes": 1891456,
+      "matches_measured": true
+    }
+  ],
+  "smoke": [
+    {
+      "platform": "windows",
+      "command": [
+        "D:\\home\\source\\zig\\forthz\\zig-out\\bin\\sigma.exe",
+        "-e",
+        "7 CONSTANT ROUTE-K VARIABLE ROUTE-V CREATE ROUTE-RAW 19 , 2 ARRAY ROUTE-A : ROUTE-RUN ROUTE-K ROUTE-V ! ROUTE-RAW @ ROUTE-V @ + ROUTE-A DROP ; ROUTE-RUN . BYE"
+      ],
+      "exit": 0,
+      "stdout": "26 ",
+      "stderr": ""
+    },
+    {
+      "platform": "linux",
+      "command": [
+        "wsl",
+        "--exec",
+        "/mnt/d/home/source/zig/forthz/.work/vm-data-route-adoption-20261115/linux/bin/sigma",
+        "-e",
+        "7 CONSTANT ROUTE-K VARIABLE ROUTE-V CREATE ROUTE-RAW 19 , 2 ARRAY ROUTE-A : ROUTE-RUN ROUTE-K ROUTE-V ! ROUTE-RAW @ ROUTE-V @ + ROUTE-A DROP ; ROUTE-RUN . BYE"
+      ],
+      "exit": 0,
+      "stdout": "26 ",
+      "stderr": ""
+    }
+  ],
+  "completed_utc": "2026-11-15T13:44:25.413458+00:00",
+  "measured_source_sha256": "da41857dec7c5c164667152c83b129546e5ff4a9471af46fb01e733e77cfd357",
+  "post_measurement_source_changes": "Zig formatting and two explanatory comments only; runtime binary identity to be reverified",
+  "format_delta_verified_comments_and_indentation_only": true,
+  "format_check_exit": 0,
+  "post_format_commands": [
+    {
+      "label": "formatted-root-windows-debug",
+      "command": [
+        "zig",
+        "build",
+        "test",
+        "--cache-dir",
+        "D:\\home\\source\\zig\\forthz\\.work\\vm-data-route-adoption-20261115\\cache-root-debug",
+        "--summary",
+        "all"
+      ],
+      "exit": 0,
+      "summary": "Build Summary: 21/21 steps succeeded; 1070/1080 tests passed (10 skipped)",
+      "cached_run_lines": []
+    },
+    {
+      "label": "formatted-root-linux-fast",
+      "command": [
+        "zig",
+        "build",
+        "-Dtarget=x86_64-linux-musl",
+        "-Doptimize=fast",
+        "-Dcpu=baseline",
+        "-Dstrip=true",
+        "--prefix",
+        "D:\\home\\source\\zig\\forthz\\.work\\vm-data-route-adoption-20261115\\linux",
+        "--cache-dir",
+        "D:\\home\\source\\zig\\forthz\\.work\\vm-data-route-adoption-20261115\\cache-linux",
+        "--summary",
+        "all"
+      ],
+      "exit": 0,
+      "summary": "Build Summary: 10/10 steps succeeded",
+      "cached_run_lines": []
+    },
+    {
+      "label": "formatted-root-windows-fast",
+      "command": [
+        "zig",
+        "build",
+        "-Dtarget=x86_64-windows-gnu",
+        "-Doptimize=fast",
+        "-Dcpu=baseline",
+        "-Dstrip=true",
+        "--prefix",
+        "D:\\home\\source\\zig\\forthz\\zig-out",
+        "--cache-dir",
+        "D:\\home\\source\\zig\\forthz\\.work\\vm-data-route-adoption-20261115\\cache-windows-fast",
+        "--summary",
+        "all"
+      ],
+      "exit": 0,
+      "summary": "Build Summary: 10/10 steps succeeded",
+      "cached_run_lines": []
+    }
+  ],
+  "pre_format_builds": [
+    {
+      "platform": "windows",
+      "path": "D:\\home\\source\\zig\\forthz\\zig-out\\bin\\sigma.exe",
+      "sha256": "379d6c6c069b9c3072da22fa6cea8b7deff77c5ed78ef9bbd070f92a724337bf",
+      "bytes": 1809408,
+      "matches_measured": true
+    },
+    {
+      "platform": "linux",
+      "path": "D:\\home\\source\\zig\\forthz\\.work\\vm-data-route-adoption-20261115\\linux\\bin\\sigma",
+      "sha256": "bdb6eb7a0ac59d27d23281708f89538631950d39654837cfd1cfa8d0e78b73fa",
+      "bytes": 1891456,
+      "matches_measured": true
+    }
+  ],
+  "post_format_smoke": [
+    {
+      "platform": "windows",
+      "command": [
+        "D:\\home\\source\\zig\\forthz\\zig-out\\bin\\sigma.exe",
+        "-e",
+        "7 CONSTANT ROUTE-K VARIABLE ROUTE-V CREATE ROUTE-RAW 19 , 2 ARRAY ROUTE-A : ROUTE-RUN ROUTE-K ROUTE-V ! ROUTE-RAW @ ROUTE-V @ + ROUTE-A DROP ; ROUTE-RUN . BYE"
+      ],
+      "exit": 0,
+      "stdout": "26 ",
+      "stderr": ""
+    },
+    {
+      "platform": "linux",
+      "command": [
+        "wsl",
+        "--exec",
+        "/mnt/d/home/source/zig/forthz/.work/vm-data-route-adoption-20261115/linux/bin/sigma",
+        "-e",
+        "7 CONSTANT ROUTE-K VARIABLE ROUTE-V CREATE ROUTE-RAW 19 , 2 ARRAY ROUTE-A : ROUTE-RUN ROUTE-K ROUTE-V ! ROUTE-RAW @ ROUTE-V @ + ROUTE-A DROP ; ROUTE-RUN . BYE"
+      ],
+      "exit": 0,
+      "stdout": "26 ",
+      "stderr": ""
+    }
+  ],
+  "format_patch": "diff --git \"a/D:\\\\home\\\\source\\\\zig\\\\forthz\\\\.work\\\\vm-data-route-adoption-20261115\\\\forth-before-format.zig\" \"b/D:\\\\home\\\\source\\\\zig\\\\forthz\\\\src\\\\forth.zig\"\nindex c2dcf5a..7ad9e56 100644\n--- \"a/D:\\\\home\\\\source\\\\zig\\\\forthz\\\\.work\\\\vm-data-route-adoption-20261115\\\\forth-before-format.zig\"\n+++ \"b/D:\\\\home\\\\source\\\\zig\\\\forthz\\\\src\\\\forth.zig\"\n@@ -1898,11 +1898,11 @@ pub const State = struct {\n                     var id = try self.wordId(op.value);\n                     var word = &self.words[id];\n                     if (call_kind == .call_colon) std.debug.assert(word.kind == .colon);\n-                    // Experiment: handle simple data words before the kind dispatcher.\n-                    // DOES> words retain their existing helper path.\n+                    // Handle simple data words before the kind dispatcher.\n+                    // Retain the measured fallback switch, including its DOES> helper path.\n                     if (call_kind == .call and\n                         (word.kind == .constant or word.kind == .array or\n-                        ((word.kind == .variable or word.kind == .created) and !word.has_does)))\n+                            ((word.kind == .variable or word.kind == .created) and !word.has_does)))\n                     {\n                         try self.push(word.value);\n                         continue;\n",
+  "logs": {
+    "formatted-root-linux-fast.log": "Build Summary: 10/10 steps succeeded\ninstall success\n+- install sigma success\n|  +- compile exe sigma fast x86_64-linux-musl success 24s MaxRSS:474M\n|     +- options cached\n|     +- translate-c cached 8ms MaxRSS:18M\n|     |  +- WriteFile c_time.h cached\n|     +- translate-c cached 10ms MaxRSS:18M\n|        +- WriteFile c_file.h cached\n+- install LICENSE to LICENSE cached\n+- install THIRD_PARTY_NOTICES.md to THIRD_PARTY_NOTICES.md cached\n\n",
+    "formatted-root-windows-debug.log": "Build Summary: 21/21 steps succeeded; 1070/1080 tests passed (10 skipped)\ntest success\n+- run test 1011 pass, 5 skip (1016 total) 5s MaxRSS:89M\n|  +- compile test debug native success 19s MaxRSS:1G\n|     +- options cached\n+- run test 59 pass, 5 skip (64 total) 563ms MaxRSS:36M\n|  +- compile test debug native success 15s MaxRSS:765M\n|     +- options (reused)\n|     +- translate-c cached 10ms MaxRSS:18M\n|     |  +- WriteFile c_time.h cached\n|     +- translate-c cached 10ms MaxRSS:18M\n|        +- WriteFile c_file.h cached\n+- compile obj sigma-freestanding small thumb-freestanding-eabi success 10s MaxRSS:330M\n|  +- options (reused)\n+- run exe sigma success 178ms\n|  +- compile exe sigma debug native success 15s MaxRSS:785M\n|     +- options (reused)\n|     +- translate-c (+1 more reused dependencies)\n|     +- translate-c (+1 more reused dependencies)\n+- run exe sigma success 212ms\n|  +- compile exe sigma debug native (+3 more reused dependencies)\n+- run exe sigma success 235ms\n|  +- compile exe sigma debug native (+3 more reused dependencies)\n+- run exe sigma success 231ms\n|  +- compile exe sigma debug native (+3 more reused dependencies)\n+- run exe sigma success 194ms\n|  +- compile exe sigma debug native (+3 more reused dependencies)\n+- run exe sigma success 202ms\n|  +- compile exe sigma debug native (+3 more reused dependencies)\n+- run exe sigma success 216ms\n|  +- compile exe sigma debug native (+3 more reused dependencies)\n+- run exe sigma success 231ms\n|  +- compile exe sigma debug native (+3 more reused dependencies)\n+- run exe sigma success 178ms\n   +- compile exe sigma debug native (+3 more reused dependencies)\n\n",
+    "formatted-root-windows-fast.log": "Build Summary: 10/10 steps succeeded\ninstall success\n+- install sigma success\n|  +- compile exe sigma fast x86_64-windows-gnu success 22s MaxRSS:472M\n|     +- options cached\n|     +- translate-c cached 9ms MaxRSS:18M\n|     |  +- WriteFile c_time.h cached\n|     +- translate-c cached 8ms MaxRSS:18M\n|        +- WriteFile c_file.h cached\n+- install LICENSE to LICENSE cached\n+- install THIRD_PARTY_NOTICES.md to THIRD_PARTY_NOTICES.md cached\n\n",
+    "root-linux-fast.log": "Build Summary: 10/10 steps succeeded\ninstall success\n+- install sigma success\n|  +- compile exe sigma fast x86_64-linux-musl success 25s MaxRSS:488M\n|     +- options success\n|     +- translate-c success 244ms MaxRSS:19M\n|     |  +- WriteFile c_time.h success\n|     +- translate-c success 144ms MaxRSS:19M\n|        +- WriteFile c_file.h success\n+- install LICENSE to LICENSE success\n+- install THIRD_PARTY_NOTICES.md to THIRD_PARTY_NOTICES.md success\n\n",
+    "root-windows-debug.log": "Build Summary: 21/21 steps succeeded; 1070/1080 tests passed (10 skipped)\ntest success\n+- run test 1011 pass, 5 skip (1016 total) 5s MaxRSS:89M\n|  +- compile test debug native success 22s MaxRSS:1G\n|     +- options success\n+- run test 59 pass, 5 skip (64 total) 629ms MaxRSS:36M\n|  +- compile test debug native success 18s MaxRSS:768M\n|     +- options (reused)\n|     +- translate-c success 250ms MaxRSS:19M\n|     |  +- WriteFile c_time.h success\n|     +- translate-c success 263ms MaxRSS:19M\n|        +- WriteFile c_file.h success\n+- compile obj sigma-freestanding small thumb-freestanding-eabi success 11s MaxRSS:334M\n|  +- options (reused)\n+- run exe sigma success 340ms\n|  +- compile exe sigma debug native success 18s MaxRSS:789M\n|     +- options (reused)\n|     +- translate-c (+1 more reused dependencies)\n|     +- translate-c (+1 more reused dependencies)\n+- run exe sigma success 305ms\n|  +- compile exe sigma debug native (+3 more reused dependencies)\n+- run exe sigma success 359ms\n|  +- compile exe sigma debug native (+3 more reused dependencies)\n+- run exe sigma success 305ms\n|  +- compile exe sigma debug native (+3 more reused dependencies)\n+- run exe sigma success 329ms\n|  +- compile exe sigma debug native (+3 more reused dependencies)\n+- run exe sigma success 440ms\n|  +- compile exe sigma debug native (+3 more reused dependencies)\n+- run exe sigma success 334ms\n|  +- compile exe sigma debug native (+3 more reused dependencies)\n+- run exe sigma success 329ms\n|  +- compile exe sigma debug native (+3 more reused dependencies)\n+- run exe sigma success 312ms\n   +- compile exe sigma debug native (+3 more reused dependencies)\n\n",
+    "root-windows-fast.log": "Build Summary: 10/10 steps succeeded\ninstall success\n+- install sigma success\n|  +- compile exe sigma fast x86_64-windows-gnu success 23s MaxRSS:484M\n|     +- options success\n|     +- translate-c success 114ms MaxRSS:19M\n|     |  +- WriteFile c_time.h success\n|     +- translate-c success 83ms MaxRSS:19M\n|        +- WriteFile c_file.h success\n+- install LICENSE to LICENSE cached\n+- install THIRD_PARTY_NOTICES.md to THIRD_PARTY_NOTICES.md cached\n\n"
+  },
+  "input_vm_sources_by_phase": {
+    "measurement_and_initial_apply": "da41857dec7c5c164667152c83b129546e5ff4a9471af46fb01e733e77cfd357",
+    "final_format": "d2c101033474ba348c6cd148249bd81afb6ae4e7656ae5bb0c40326806182195"
+  },
+  "reproduction": [
+    {
+      "platform": "windows",
+      "command": [
+        "zig",
+        "build",
+        "-Dtarget=x86_64-windows-gnu",
+        "-Doptimize=fast",
+        "-Dcpu=baseline",
+        "-Dstrip=true",
+        "--prefix",
+        "D:\\home\\source\\zig\\forthz\\.work\\vm-data-route-reproduction-20261115\\windows",
+        "--cache-dir",
+        "D:\\home\\source\\zig\\forthz\\.work\\vm-data-route-reproduction-20261115\\cache-windows",
+        "--summary",
+        "all"
+      ],
+      "exit": 0,
+      "sha256": "379d6c6c069b9c3072da22fa6cea8b7deff77c5ed78ef9bbd070f92a724337bf",
+      "bytes": 1809408,
+      "matches_measured_binary": true
+    },
+    {
+      "platform": "linux",
+      "command": [
+        "zig",
+        "build",
+        "-Dtarget=x86_64-linux-musl",
+        "-Doptimize=fast",
+        "-Dcpu=baseline",
+        "-Dstrip=true",
+        "--prefix",
+        "D:\\home\\source\\zig\\forthz\\.work\\vm-data-route-reproduction-20261115\\linux",
+        "--cache-dir",
+        "D:\\home\\source\\zig\\forthz\\.work\\vm-data-route-reproduction-20261115\\cache-linux",
+        "--summary",
+        "all"
+      ],
+      "exit": 0,
+      "sha256": "bdb6eb7a0ac59d27d23281708f89538631950d39654837cfd1cfa8d0e78b73fa",
+      "bytes": 1891456,
+      "matches_measured_binary": true
+    }
+  ],
+  "source_backup_sha256": "3fedbd1601a1ebd3fa61f99bf2a3ce06fd876af1b7047bb8a86057b0e3ca5191"
+}

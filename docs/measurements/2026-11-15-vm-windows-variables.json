@@ -1,0 +1,4268 @@
+{
+  "purpose": "Windows mixed constant/variable regression diagnosis; no production VM change",
+  "evidence": {
+    "inputs.json": {
+      "head": "257504759fd22e7453f9e96798e755f1ea589f79",
+      "source_sha256": "3fedbd1601a1ebd3fa61f99bf2a3ce06fd876af1b7047bb8a86057b0e3ca5191",
+      "binaries": {
+        "baseline": {
+          "path": ".work\\vm-pc-windows-20261115\\baseline\\bin\\sigma.exe",
+          "sha256": "49b7c673d42f8c0d7fda06feab7fd7f008934109358b4771ec2daaf9f33468b8",
+          "bytes": 1806848
+        },
+        "candidate": {
+          "path": ".work\\vm-pc-windows-20261115\\candidate\\bin\\sigma.exe",
+          "sha256": "4ee7ee6c13609367f640648ba8ad3b249406dbf99c26ee77f43f3865e5e27a14",
+          "bytes": 1809408
+        }
+      }
+    },
+    "symbol-builds.json": [
+      {
+        "label": "baseline",
+        "command": [
+          "zig",
+          "build",
+          "-Dtarget=x86_64-windows-gnu",
+          "-Doptimize=fast",
+          "-Dcpu=baseline",
+          "-Dstrip=false",
+          "--prefix",
+          "D:\\home\\source\\zig\\forthz\\.work\\vm-windows-variable-investigation-20261115\\baseline-symbols",
+          "--summary",
+          "all"
+        ],
+        "source_sha256": "3fedbd1601a1ebd3fa61f99bf2a3ce06fd876af1b7047bb8a86057b0e3ca5191",
+        "exe_sha256": "1d441aa45aceadd3d44cdd0ee41de0532f5e7410cc6ea78398f4b21e0c0a8d6b"
+      },
+      {
+        "label": "candidate",
+        "command": [
+          "zig",
+          "build",
+          "-Dtarget=x86_64-windows-gnu",
+          "-Doptimize=fast",
+          "-Dcpu=baseline",
+          "-Dstrip=false",
+          "--prefix",
+          "D:\\home\\source\\zig\\forthz\\.work\\vm-windows-variable-investigation-20261115\\candidate-symbols",
+          "--summary",
+          "all"
+        ],
+        "source_sha256": "7fd2af5e237e423d86e336ef30667b84c1ffa2cc8cb1af8c2683761b46ef1fe2",
+        "exe_sha256": "c31a58812118d7279c49248b952cc55bb20803220651d3ac9156ad3b9465398e"
+      }
+    ],
+    "loop-map.json": {
+      "baseline": [
+        {
+          "name": "runOperationsLoop__func_153",
+          "address": "0x140045f10",
+          "rva": "0x45f10",
+          "bytes": 11730,
+          "tag": 5,
+          "strip_address": "0x1400456d0",
+          "instruction_lines": 2284,
+          "strip_instruction_lines": 2284,
+          "normalized_equal": false,
+          "differences": [
+            {
+              "symbol": [
+                491,
+                "lea    rcx,[rip+0x191186]        # EXTERNAL"
+              ],
+              "strip": [
+                491,
+                "lea    rcx,[rip+0xf8952]        # EXTERNAL"
+              ]
+            },
+            {
+              "symbol": [
+                556,
+                "lea    rcx,[rip+0x133923]        # EXTERNAL"
+              ],
+              "strip": [
+                556,
+                "lea    rcx,[rip+0x10cceb]        # EXTERNAL"
+              ]
+            },
+            {
+              "symbol": [
+                638,
+                "lea    rcx,[rip+0x1338d5]        # EXTERNAL"
+              ],
+              "strip": [
+                638,
+                "lea    rcx,[rip+0x10cc9d]        # EXTERNAL"
+              ]
+            },
+            {
+              "symbol": [
+                680,
+                "lea    rcx,[rip+0x1338ab]        # EXTERNAL"
+              ],
+              "strip": [
+                680,
+                "lea    rcx,[rip+0x10cc73]        # EXTERNAL"
+              ]
+            },
+            {
+              "symbol": [
+                781,
+                "lea    rcx,[rip+0x133846]        # EXTERNAL"
+              ],
+              "strip": [
+                781,
+                "lea    rcx,[rip+0x10cc0e]        # EXTERNAL"
+              ]
+            },
+            {
+              "symbol": [
+                797,
+                "lea    rcx,[rip+0x191054]        # EXTERNAL"
+              ],
+              "strip": [
+                797,
+                "lea    rcx,[rip+0xf8820]        # EXTERNAL"
+              ]
+            },
+            {
+              "symbol": [
+                1026,
+                "lea    rdx,[rip+0x190e0b]        # EXTERNAL"
+              ],
+              "strip": [
+                1026,
+                "lea    rdx,[rip+0xf85d7]        # EXTERNAL"
+              ]
+            },
+            {
+              "symbol": [
+                1066,
+                "lea    rax,[rip+0x124437]        # EXTERNAL"
+              ],
+              "strip": [
+                1066,
+                "lea    rax,[rip+0xfd827]        # EXTERNAL"
+              ]
+            },
+            {
+              "symbol": [
+                1091,
+                "lea    rax,[rip+0x12441e]        # EXTERNAL"
+              ],
+              "strip": [
+                1091,
+                "lea    rax,[rip+0xfd80e]        # EXTERNAL"
+              ]
+            },
+            {
+              "symbol": [
+                1100,
+                "lea    rax,[rip+0x12c737]        # EXTERNAL"
+              ],
+              "strip": [
+                1100,
+                "lea    rax,[rip+0x105b07]        # EXTERNAL"
+              ]
+            },
+            {
+              "symbol": [
+                1112,
+                "lea    rax,[rip+0x12c73a]        # EXTERNAL"
+              ],
+              "strip": [
+                1112,
+                "lea    rax,[rip+0x105b0a]        # EXTERNAL"
+              ]
+            },
+            {
+              "symbol": [
+                1124,
+                "lea    rax,[rip+0x12c735]        # EXTERNAL"
+              ],
+              "strip": [
+                1124,
+                "lea    rax,[rip+0x105b05]        # EXTERNAL"
+              ]
+            },
+            {
+              "symbol": [
+                1136,
+                "lea    rax,[rip+0x1325ac]        # EXTERNAL"
+              ],
+              "strip": [
+                1136,
+                "lea    rax,[rip+0x10b974]        # EXTERNAL"
+              ]
+            },
+            {
+              "symbol": [
+                1148,
+                "lea    rax,[rip+0x12c70d]        # EXTERNAL"
+              ],
+              "strip": [
+                1148,
+                "lea    rax,[rip+0x105add]        # EXTERNAL"
+              ]
+            },
+            {
+              "symbol": [
+                1160,
+                "lea    rax,[rip+0x12c6f5]        # EXTERNAL"
+              ],
+              "strip": [
+                1160,
+                "lea    rax,[rip+0x105ac5]        # EXTERNAL"
+              ]
+            },
+            {
+              "symbol": [
+                1172,
+                "lea    rax,[rip+0x12b360]        # EXTERNAL"
+              ],
+              "strip": [
+                1172,
+                "lea    rax,[rip+0x104730]        # EXTERNAL"
+              ]
+            },
+            {
+              "symbol": [
+                1190,
+                "lea    rax,[rip+0x132563]        # EXTERNAL"
+              ],
+              "strip": [
+                1190,
+                "lea    rax,[rip+0x10b92b]        # EXTERNAL"
+              ]
+            },
+            {
+              "symbol": [
+                1209,
+                "lea    rax,[rip+0x13255f]        # EXTERNAL"
+              ],
+              "strip": [
+                1209,
+                "lea    rax,[rip+0x10b927]        # EXTERNAL"
+              ]
+            },
+            {
+              "symbol": [
+                1234,
+                "lea    rax,[rip+0x132569]        # EXTERNAL"
+              ],
+              "strip": [
+                1234,
+                "lea    rax,[rip+0x10b931]        # EXTERNAL"
+              ]
+            },
+            {
+              "symbol": [
+                1259,
+                "lea    rax,[rip+0x12b283]        # EXTERNAL"
+              ],
+              "strip": [
+                1259,
+                "lea    rax,[rip+0x104653]        # EXTERNAL"
+              ]
+            },
+            {
+              "symbol": [
+                1271,
+                "lea    rax,[rip+0x12bee6]        # EXTERNAL"
+              ],
+              "strip": [
+                1271,
+                "lea    rax,[rip+0x1052b6]        # EXTERNAL"
+              ]
+            },
+            {
+              "symbol": [
+                1280,
+                "lea    rax,[rip+0x132528]        # EXTERNAL"
+              ],
+              "strip": [
+                1280,
+                "lea    rax,[rip+0x10b8f0]        # EXTERNAL"
+              ]
+            },
+            {
+              "symbol": [
+                1418,
+                "lea    rax,[rip+0x12b26e]        # EXTERNAL"
+              ],
+              "strip": [
+                1418,
+                "lea    rax,[rip+0x10463e]        # EXTERNAL"
+              ]
+            },
+            {
+              "symbol": [
+                1430,
+                "lea    rax,[rip+0x12c5dd]        # EXTERNAL"
+              ],
+              "strip": [
+                1430,
+                "lea    rax,[rip+0x1059ad]        # EXTERNAL"
+              ]
+            },
+            {
+              "symbol": [
+                1442,
+                "lea    rax,[rip+0x124ffa]        # EXTERNAL"
+              ],
+              "strip": [
+                1442,
+                "lea    rax,[rip+0xfe3ca]        # EXTERNAL"
+              ]
+            },
+            {
+              "symbol": [
+                1498,
+                "lea    rax,[rip+0x12b898]        # EXTERNAL"
+              ],
+              "strip": [
+                1498,
+                "lea    rax,[rip+0x104c68]        # EXTERNAL"
+              ]
+            },
+            {
+              "symbol": [
+                1515,
+                "lea    rax,[rip+0x12b218]        # EXTERNAL"
+              ],
+              "strip": [
+                1515,
+                "lea    rax,[rip+0x1045e8]        # EXTERNAL"
+              ]
+            },
+            {
+              "symbol": [
+                1535,
+                "lea    rcx,[rip+0x12b80f]        # EXTERNAL"
+              ],
+              "strip": [
+                1535,
+                "lea    rcx,[rip+0x104bdf]        # EXTERNAL"
+              ]
+            },
+            {
+              "symbol": [
+                1542,
+                "lea    rdx,[rip+0x12b219]        # EXTERNAL"
+              ],
+              "strip": [
+                1542,
+                "lea    rdx,[rip+0x1045e9]        # EXTERNAL"
+              ]
+            },
+            {
+              "symbol": [
+                1573,
+                "lea    rax,[rip+0x124f87]        # EXTERNAL"
+              ],
+              "strip": [
+                1573,
+                "lea    rax,[rip+0xfe357]        # EXTERNAL"
+              ]
+            },
+            {
+              "symbol": [
+                1585,
+                "lea    rax,[rip+0x12c53e]        # EXTERNAL"
+              ],
+              "strip": [
+                1585,
+                "lea    rax,[rip+0x10590e]        # EXTERNAL"
+              ]
+            },
+            {
+              "symbol": [
+                1597,
+                "lea    rax,[rip+0x12c53b]        # EXTERNAL"
+              ],
+              "strip": [
+                1597,
+                "lea    rax,[rip+0x10590b]        # EXTERNAL"
+              ]
+            },
+            {
+              "symbol": [
+                1615,
+                "lea    rax,[rip+0x12b82b]        # EXTERNAL"
+              ],
+              "strip": [
+                1615,
+                "lea    rax,[rip+0x104bfb]        # EXTERNAL"
+              ]
+            },
+            {
+              "symbol": [
+                1634,
+                "lea    rax,[rip+0x1323b1]        # EXTERNAL"
+              ],
+              "strip": [
+                1634,
+                "lea    rax,[rip+0x10b779]        # EXTERNAL"
+              ]
+            },
+            {
+              "symbol": [
+                1718,
+                "lea    r15,[rip+0x12aef6]        # EXTERNAL"
+              ],
+              "strip": [
+                1718,
+                "lea    r15,[rip+0x1042c6]        # EXTERNAL"
+              ]
+            },
+            {
+              "symbol": [
+                1735,
+                "lea    r15,[rip+0x12aee5]        # EXTERNAL"
+              ],
+              "strip": [
+                1735,
+                "lea    r15,[rip+0x1042b5]        # EXTERNAL"
+              ]
+            },
+            {
+              "symbol": [
+                1762,
+                "lea    r15,[rip+0x12aed4]        # EXTERNAL"
+              ],
+              "strip": [
+                1762,
+                "lea    r15,[rip+0x1042a4]        # EXTERNAL"
+              ]
+            },
+            {
+              "symbol": [
+                1774,
+                "lea    rax,[rip+0x132333]        # EXTERNAL"
+              ],
+              "strip": [
+                1774,
+                "lea    rax,[rip+0x10b6fb]        # EXTERNAL"
+              ]
+            },
+            {
+              "symbol": [
+                1783,
+                "lea    rax,[rip+0x12b0fa]        # EXTERNAL"
+              ],
+              "strip": [
+                1783,
+                "lea    rax,[rip+0x1044ca]        # EXTERNAL"
+              ]
+            },
+            {
+              "symbol": [
+                1792,
+                "lea    rax,[rip+0x124ebd]        # EXTERNAL"
+              ],
+              "strip": [
+                1792,
+                "lea    rax,[rip+0xfe28d]        # EXTERNAL"
+              ]
+            },
+            {
+              "symbol": [
+                1817,
+                "lea    rax,[rip+0x12b0e4]        # EXTERNAL"
+              ],
+              "strip": [
+                1817,
+                "lea    rax,[rip+0x1044b4]        # EXTERNAL"
+              ]
+            },
+            {
+              "symbol": [
+                1842,
+                "lea    rax,[rip+0x124e7f]        # EXTERNAL"
+              ],
+              "strip": [
+                1842,
+                "lea    rax,[rip+0xfe24f]        # EXTERNAL"
+              ]
+            },
+            {
+              "symbol": [
+                1867,
+                "lea    rax,[rip+0x124e6f]        # EXTERNAL"
+              ],
+              "strip": [
+                1867,
+                "lea    rax,[rip+0xfe23f]        # EXTERNAL"
+              ]
+            },
+            {
+              "symbol": [
+                1892,
+                "lea    rax,[rip+0x1322cc]        # EXTERNAL"
+              ],
+              "strip": [
+                1892,
+                "lea    rax,[rip+0x10b694]        # EXTERNAL"
+              ]
+            },
+            {
+              "symbol": [
+                1917,
+                "lea    rax,[rip+0x12c3e9]        # EXTERNAL"
+              ],
+              "strip": [
+                1917,
+                "lea    rax,[rip+0x1057b9]        # EXTERNAL"
+              ]
+            },
+            {
+              "symbol": [
+                1942,
+                "lea    rax,[rip+0x12c3d4]        # EXTERNAL"
+              ],
+              "strip": [
+                1942,
+                "lea    rax,[rip+0x1057a4]        # EXTERNAL"
+              ]
+            },
+            {
+              "symbol": [
+                1951,
+                "lea    rax,[rip+0x12c3ee]        # EXTERNAL"
+              ],
+              "strip": [
+                1951,
+                "lea    rax,[rip+0x1057be]        # EXTERNAL"
+              ]
+            },
+            {
+              "symbol": [
+                1976,
+                "lea    rax,[rip+0x132290]        # EXTERNAL"
+              ],
+              "strip": [
+                1976,
+                "lea    rax,[rip+0x10b658]        # EXTERNAL"
+              ]
+            },
+            {
+              "symbol": [
+                2039,
+                "lea    rax,[rip+0x124d4a]        # EXTERNAL"
+              ],
+              "strip": [
+                2039,
+                "lea    rax,[rip+0xfe11a]        # EXTERNAL"
+              ]
+            },
+            {
+              "symbol": [
+                2508,
+                "lea    r12,[rip+0x12a79a]        # EXTERNAL"
+              ],
+              "strip": [
+                2508,
+                "lea    r12,[rip+0x103b6a]        # EXTERNAL"
+              ]
+            },
+            {
+              "symbol": [
+                2563,
+                "lea    rdx,[rip+0x131fd2]        # EXTERNAL"
+              ],
+              "strip": [
+                2563,
+                "lea    rdx,[rip+0x10b398]        # EXTERNAL"
+              ]
+            },
+            {
+              "symbol": [
+                2647,
+                "lea    rcx,[rip+0x19091a]        # EXTERNAL"
+              ],
+              "strip": [
+                2647,
+                "lea    rcx,[rip+0xf80e6]        # EXTERNAL"
+              ]
+            },
+            {
+              "symbol": [
+                2692,
+                "lea    rcx,[rip+0x190a51]        # EXTERNAL"
+              ],
+              "strip": [
+                2692,
+                "lea    rcx,[rip+0xf821d]        # EXTERNAL"
+              ]
+            },
+            {
+              "symbol": [
+                2823,
+                "lea    rdx,[rip+0x1907a2]        # EXTERNAL"
+              ],
+              "strip": [
+                2823,
+                "lea    rdx,[rip+0xf7f6e]        # EXTERNAL"
+              ]
+            },
+            {
+              "symbol": [
+                2918,
+                "lea    rcx,[rip+0x19080b]        # EXTERNAL"
+              ],
+              "strip": [
+                2918,
+                "lea    rcx,[rip+0xf7fd7]        # EXTERNAL"
+              ]
+            },
+            {
+              "symbol": [
+                3088,
+                "lea    rdx,[rip+0x12a558]        # EXTERNAL"
+              ],
+              "strip": [
+                3088,
+                "lea    rdx,[rip+0x103928]        # EXTERNAL"
+              ]
+            },
+            {
+              "symbol": [
+                3143,
+                "lea    rcx,[rip+0x19072a]        # EXTERNAL"
+              ],
+              "strip": [
+                3143,
+                "lea    rcx,[rip+0xf7ef6]        # EXTERNAL"
+              ]
+            },
+            {
+              "symbol": [
+                3236,
+                "lea    rcx,[rip+0x1906cd]        # EXTERNAL"
+              ],
+              "strip": [
+                3236,
+                "lea    rcx,[rip+0xf7e99]        # EXTERNAL"
+              ]
+            },
+            {
+              "symbol": [
+                3268,
+                "lea    rdx,[rip+0x131d1a]        # EXTERNAL"
+              ],
+              "strip": [
+                3268,
+                "lea    rdx,[rip+0x10b0e0]        # EXTERNAL"
+              ]
+            },
+            {
+              "symbol": [
+                3299,
+                "lea    rcx,[rip+0x19068e]        # EXTERNAL"
+              ],
+              "strip": [
+                3299,
+                "lea    rcx,[rip+0xf7e5a]        # EXTERNAL"
+              ]
+            },
+            {
+              "symbol": [
+                3472,
+                "lea    rdx,[rip+0x131c4a]        # EXTERNAL"
+              ],
+              "strip": [
+                3472,
+                "lea    rdx,[rip+0x10b010]        # EXTERNAL"
+              ]
+            },
+            {
+              "symbol": [
+                3518,
+                "lea    rdx,[rip+0x12a3aa]        # EXTERNAL"
+              ],
+              "strip": [
+                3518,
+                "lea    rdx,[rip+0x10377a]        # EXTERNAL"
+              ]
+            },
+            {
+              "symbol": [
+                3550,
+                "lea    rcx,[rip+0x190593]        # EXTERNAL"
+              ],
+              "strip": [
+                3550,
+                "lea    rcx,[rip+0xf7d5f]        # EXTERNAL"
+              ]
+            },
+            {
+              "symbol": [
+                3616,
+                "lea    rcx,[rip+0x190551]        # EXTERNAL"
+              ],
+              "strip": [
+                3616,
+                "lea    rcx,[rip+0xf7d1d]        # EXTERNAL"
+              ]
+            },
+            {
+              "symbol": [
+                3673,
+                "lea    rdx,[rip+0x131b81]        # EXTERNAL"
+              ],
+              "strip": [
+                3673,
+                "lea    rdx,[rip+0x10af47]        # EXTERNAL"
+              ]
+            },
+            {
+              "symbol": [
+                3701,
+                "lea    rax,[rip+0x12a737]        # EXTERNAL"
+              ],
+              "strip": [
+                3701,
+                "lea    rax,[rip+0x103b07]        # EXTERNAL"
+              ]
+            },
+            {
+              "symbol": [
+                3779,
+                "lea    rax,[rip+0x12a6f3]        # EXTERNAL"
+              ],
+              "strip": [
+                3779,
+                "lea    rax,[rip+0x103ac3]        # EXTERNAL"
+              ]
+            },
+            {
+              "symbol": [
+                3820,
+                "lea    rdx,[rip+0x12a27c]        # EXTERNAL"
+              ],
+              "strip": [
+                3820,
+                "lea    rdx,[rip+0x10364c]        # EXTERNAL"
+              ]
+            },
+            {
+              "symbol": [
+                3852,
+                "lea    rcx,[rip+0x190465]        # EXTERNAL"
+              ],
+              "strip": [
+                3852,
+                "lea    rcx,[rip+0xf7c31]        # EXTERNAL"
+              ]
+            },
+            {
+              "symbol": [
+                6517,
+                "lea    r8,[rip+0x18fb70]        # EXTERNAL"
+              ],
+              "strip": [
+                6517,
+                "lea    r8,[rip+0xf733c]        # EXTERNAL"
+              ]
+            },
+            {
+              "symbol": [
+                7832,
+                "lea    rcx,[rip+0x131cb7]        # EXTERNAL"
+              ],
+              "strip": [
+                7832,
+                "lea    rcx,[rip+0x10b07f]        # EXTERNAL"
+              ]
+            },
+            {
+              "symbol": [
+                7914,
+                "lea    rcx,[rip+0x131c69]        # EXTERNAL"
+              ],
+              "strip": [
+                7914,
+                "lea    rcx,[rip+0x10b031]        # EXTERNAL"
+              ]
+            },
+            {
+              "symbol": [
+                7956,
+                "lea    rcx,[rip+0x131c3f]        # EXTERNAL"
+              ],
+              "strip": [
+                7956,
+                "lea    rcx,[rip+0x10b007]        # EXTERNAL"
+              ]
+            },
+            {
+              "symbol": [
+                8053,
+                "lea    rcx,[rip+0x131bde]        # EXTERNAL"
+              ],
+              "strip": [
+                8053,
+                "lea    rcx,[rip+0x10afa6]        # EXTERNAL"
+              ]
+            },
+            {
+              "symbol": [
+                11218,
+                "lea    rdx,[rip+0x128596]        # EXTERNAL"
+              ],
+              "strip": [
+                11218,
+                "lea    rdx,[rip+0x101966]        # EXTERNAL"
+              ]
+            },
+            {
+              "symbol": [
+                11288,
+                "movups xmm0,XMMWORD PTR [rip+0x12fdd0]        # EXTERNAL"
+              ],
+              "strip": [
+                11288,
+                "movups xmm0,XMMWORD PTR [rip+0x109196]        # EXTERNAL"
+              ]
+            },
+            {
+              "symbol": [
+                11324,
+                "movupd xmm0,XMMWORD PTR [rip+0x12fdbc]        # EXTERNAL"
+              ],
+              "strip": [
+                11324,
+                "movupd xmm0,XMMWORD PTR [rip+0x109184]        # EXTERNAL"
+              ]
+            }
+          ]
+        },
+        {
+          "name": "runOperationsLoop__func_124",
+          "address": "0x14003d620",
+          "rva": "0x3d620",
+          "bytes": 8743,
+          "tag": 5,
+          "strip_address": "0x14003cde0",
+          "instruction_lines": 1676,
+          "strip_instruction_lines": 1676,
+          "normalized_equal": false,
+          "differences": [
+            {
+              "symbol": [
+                47,
+                "lea    r11,[rip+0x1998a6]        # EXTERNAL"
+              ],
+              "strip": [
+                47,
+                "lea    r11,[rip+0x101072]        # EXTERNAL"
+              ]
+            },
+            {
+              "symbol": [
+                54,
+                "lea    r10,[rip+0x13c409]        # EXTERNAL"
+              ],
+              "strip": [
+                54,
+                "lea    r10,[rip+0x1157d1]        # EXTERNAL"
+              ]
+            },
+            {
+              "symbol": [
+                338,
+                "lea    r11,[rip+0x199783]        # EXTERNAL"
+              ],
+              "strip": [
+                338,
+                "lea    r11,[rip+0x100f4f]        # EXTERNAL"
+              ]
+            },
+            {
+              "symbol": [
+                345,
+                "lea    r10,[rip+0x13c2e6]        # EXTERNAL"
+              ],
+              "strip": [
+                345,
+                "lea    r10,[rip+0x1156ae]        # EXTERNAL"
+              ]
+            },
+            {
+              "symbol": [
+                448,
+                "lea    rcx,[rip+0x13c283]        # EXTERNAL"
+              ],
+              "strip": [
+                448,
+                "lea    rcx,[rip+0x11564b]        # EXTERNAL"
+              ]
+            },
+            {
+              "symbol": [
+                490,
+                "lea    rcx,[rip+0x13c259]        # EXTERNAL"
+              ],
+              "strip": [
+                490,
+                "lea    rcx,[rip+0x115621]        # EXTERNAL"
+              ]
+            },
+            {
+              "symbol": [
+                591,
+                "lea    rcx,[rip+0x13c1f4]        # EXTERNAL"
+              ],
+              "strip": [
+                591,
+                "lea    rcx,[rip+0x1155bc]        # EXTERNAL"
+              ]
+            },
+            {
+              "symbol": [
+                628,
+                "lea    rcx,[rip+0x1997c5]        # EXTERNAL"
+              ],
+              "strip": [
+                628,
+                "lea    rcx,[rip+0x100f91]        # EXTERNAL"
+              ]
+            },
+            {
+              "symbol": [
+                732,
+                "lea    r11,[rip+0x1995f9]        # EXTERNAL"
+              ],
+              "strip": [
+                732,
+                "lea    r11,[rip+0x100dc5]        # EXTERNAL"
+              ]
+            },
+            {
+              "symbol": [
+                739,
+                "lea    r10,[rip+0x13c15c]        # EXTERNAL"
+              ],
+              "strip": [
+                739,
+                "lea    r10,[rip+0x115524]        # EXTERNAL"
+              ]
+            },
+            {
+              "symbol": [
+                952,
+                "lea    r10,[rip+0x13c087]        # EXTERNAL"
+              ],
+              "strip": [
+                952,
+                "lea    r10,[rip+0x11544f]        # EXTERNAL"
+              ]
+            },
+            {
+              "symbol": [
+                2798,
+                "lea    r10,[rip+0x13b951]        # EXTERNAL"
+              ],
+              "strip": [
+                2798,
+                "lea    r10,[rip+0x114d19]        # EXTERNAL"
+              ]
+            },
+            {
+              "symbol": [
+                2805,
+                "lea    r11,[rip+0x198de0]        # EXTERNAL"
+              ],
+              "strip": [
+                2805,
+                "lea    r11,[rip+0x1005ac]        # EXTERNAL"
+              ]
+            },
+            {
+              "symbol": [
+                3155,
+                "lea    r8,[rip+0x198df6]        # EXTERNAL"
+              ],
+              "strip": [
+                3155,
+                "lea    r8,[rip+0x1005c2]        # EXTERNAL"
+              ]
+            },
+            {
+              "symbol": [
+                3206,
+                "lea    r11,[rip+0x198c4f]        # EXTERNAL"
+              ],
+              "strip": [
+                3206,
+                "lea    r11,[rip+0x10041b]        # EXTERNAL"
+              ]
+            },
+            {
+              "symbol": [
+                3213,
+                "lea    r10,[rip+0x13b7b2]        # EXTERNAL"
+              ],
+              "strip": [
+                3213,
+                "lea    r10,[rip+0x114b7a]        # EXTERNAL"
+              ]
+            },
+            {
+              "symbol": [
+                4069,
+                "lea    r10,[rip+0x13b45a]        # EXTERNAL"
+              ],
+              "strip": [
+                4069,
+                "lea    r10,[rip+0x114822]        # EXTERNAL"
+              ]
+            },
+            {
+              "symbol": [
+                4076,
+                "lea    r11,[rip+0x1988e9]        # EXTERNAL"
+              ],
+              "strip": [
+                4076,
+                "lea    r11,[rip+0x1000b5]        # EXTERNAL"
+              ]
+            },
+            {
+              "symbol": [
+                4521,
+                "lea    rax,[rip+0x13b29a]        # EXTERNAL"
+              ],
+              "strip": [
+                4521,
+                "lea    rax,[rip+0x114662]        # EXTERNAL"
+              ]
+            },
+            {
+              "symbol": [
+                5137,
+                "lea    rax,[rip+0x13b02e]        # EXTERNAL"
+              ],
+              "strip": [
+                5137,
+                "lea    rax,[rip+0x1143f6]        # EXTERNAL"
+              ]
+            },
+            {
+              "symbol": [
+                7082,
+                "lea    r10,[rip+0x13a895]        # EXTERNAL"
+              ],
+              "strip": [
+                7082,
+                "lea    r10,[rip+0x113c5d]        # EXTERNAL"
+              ]
+            },
+            {
+              "symbol": [
+                7089,
+                "lea    r11,[rip+0x197d24]        # EXTERNAL"
+              ],
+              "strip": [
+                7089,
+                "lea    r11,[rip+0xff4f0]        # EXTERNAL"
+              ]
+            },
+            {
+              "symbol": [
+                7258,
+                "lea    r10,[rip+0x13a7e5]        # EXTERNAL"
+              ],
+              "strip": [
+                7258,
+                "lea    r10,[rip+0x113bad]        # EXTERNAL"
+              ]
+            },
+            {
+              "symbol": [
+                7265,
+                "lea    r11,[rip+0x197c74]        # EXTERNAL"
+              ],
+              "strip": [
+                7265,
+                "lea    r11,[rip+0xff440]        # EXTERNAL"
+              ]
+            },
+            {
+              "symbol": [
+                7551,
+                "lea    r10,[rip+0x13a6c0]        # EXTERNAL"
+              ],
+              "strip": [
+                7551,
+                "lea    r10,[rip+0x113a88]        # EXTERNAL"
+              ]
+            },
+            {
+              "symbol": [
+                7558,
+                "lea    r11,[rip+0x197b4f]        # EXTERNAL"
+              ],
+              "strip": [
+                7558,
+                "lea    r11,[rip+0xff31b]        # EXTERNAL"
+              ]
+            }
+          ]
+        }
+      ],
+      "candidate": [
+        {
+          "name": "runOperationsLoop__func_153",
+          "address": "0x1400462c0",
+          "rva": "0x462c0",
+          "bytes": 13057,
+          "tag": 5,
+          "strip_address": "0x140045a80",
+          "instruction_lines": 2510,
+          "strip_instruction_lines": 2510,
+          "normalized_equal": false,
+          "differences": [
+            {
+              "symbol": [
+                95,
+                "lea    rax,[rip+0x134740]        # EXTERNAL"
+              ],
+              "strip": [
+                95,
+                "lea    rax,[rip+0x10db08]        # EXTERNAL"
+              ]
+            },
+            {
+              "symbol": [
+                570,
+                "lea    rcx,[rip+0x191d87]        # EXTERNAL"
+              ],
+              "strip": [
+                570,
+                "lea    rcx,[rip+0xf9553]        # EXTERNAL"
+              ]
+            },
+            {
+              "symbol": [
+                887,
+                "lea    rax,[rip+0x13442c]        # EXTERNAL"
+              ],
+              "strip": [
+                887,
+                "lea    rax,[rip+0x10d7f4]        # EXTERNAL"
+              ]
+            },
+            {
+              "symbol": [
+                912,
+                "lea    rcx,[rip+0x191c31]        # EXTERNAL"
+              ],
+              "strip": [
+                912,
+                "lea    rcx,[rip+0xf93fd]        # EXTERNAL"
+              ]
+            },
+            {
+              "symbol": [
+                1132,
+                "lea    rdx,[rip+0x1919f1]        # EXTERNAL"
+              ],
+              "strip": [
+                1132,
+                "lea    rdx,[rip+0xf91bd]        # EXTERNAL"
+              ]
+            },
+            {
+              "symbol": [
+                1172,
+                "lea    rax,[rip+0x12501d]        # EXTERNAL"
+              ],
+              "strip": [
+                1172,
+                "lea    rax,[rip+0xfe40d]        # EXTERNAL"
+              ]
+            },
+            {
+              "symbol": [
+                1197,
+                "lea    rax,[rip+0x125004]        # EXTERNAL"
+              ],
+              "strip": [
+                1197,
+                "lea    rax,[rip+0xfe3f4]        # EXTERNAL"
+              ]
+            },
+            {
+              "symbol": [
+                1206,
+                "lea    rax,[rip+0x12d31d]        # EXTERNAL"
+              ],
+              "strip": [
+                1206,
+                "lea    rax,[rip+0x1066ed]        # EXTERNAL"
+              ]
+            },
+            {
+              "symbol": [
+                1218,
+                "lea    rax,[rip+0x12d320]        # EXTERNAL"
+              ],
+              "strip": [
+                1218,
+                "lea    rax,[rip+0x1066f0]        # EXTERNAL"
+              ]
+            },
+            {
+              "symbol": [
+                1230,
+                "lea    rax,[rip+0x12d31b]        # EXTERNAL"
+              ],
+              "strip": [
+                1230,
+                "lea    rax,[rip+0x1066eb]        # EXTERNAL"
+              ]
+            },
+            {
+              "symbol": [
+                1242,
+                "lea    rax,[rip+0x133192]        # EXTERNAL"
+              ],
+              "strip": [
+                1242,
+                "lea    rax,[rip+0x10c55a]        # EXTERNAL"
+              ]
+            },
+            {
+              "symbol": [
+                1254,
+                "lea    rax,[rip+0x12d2f3]        # EXTERNAL"
+              ],
+              "strip": [
+                1254,
+                "lea    rax,[rip+0x1066c3]        # EXTERNAL"
+              ]
+            },
+            {
+              "symbol": [
+                1266,
+                "lea    rax,[rip+0x12d2db]        # EXTERNAL"
+              ],
+              "strip": [
+                1266,
+                "lea    rax,[rip+0x1066ab]        # EXTERNAL"
+              ]
+            },
+            {
+              "symbol": [
+                1278,
+                "lea    rax,[rip+0x12bf46]        # EXTERNAL"
+              ],
+              "strip": [
+                1278,
+                "lea    rax,[rip+0x105316]        # EXTERNAL"
+              ]
+            },
+            {
+              "symbol": [
+                1296,
+                "lea    rax,[rip+0x133149]        # EXTERNAL"
+              ],
+              "strip": [
+                1296,
+                "lea    rax,[rip+0x10c511]        # EXTERNAL"
+              ]
+            },
+            {
+              "symbol": [
+                1315,
+                "lea    rax,[rip+0x133145]        # EXTERNAL"
+              ],
+              "strip": [
+                1315,
+                "lea    rax,[rip+0x10c50d]        # EXTERNAL"
+              ]
+            },
+            {
+              "symbol": [
+                1340,
+                "lea    rax,[rip+0x13314f]        # EXTERNAL"
+              ],
+              "strip": [
+                1340,
+                "lea    rax,[rip+0x10c517]        # EXTERNAL"
+              ]
+            },
+            {
+              "symbol": [
+                1365,
+                "lea    rax,[rip+0x12be69]        # EXTERNAL"
+              ],
+              "strip": [
+                1365,
+                "lea    rax,[rip+0x105239]        # EXTERNAL"
+              ]
+            },
+            {
+              "symbol": [
+                1377,
+                "lea    rax,[rip+0x12cacc]        # EXTERNAL"
+              ],
+              "strip": [
+                1377,
+                "lea    rax,[rip+0x105e9c]        # EXTERNAL"
+              ]
+            },
+            {
+              "symbol": [
+                1386,
+                "lea    rax,[rip+0x13310e]        # EXTERNAL"
+              ],
+              "strip": [
+                1386,
+                "lea    rax,[rip+0x10c4d6]        # EXTERNAL"
+              ]
+            },
+            {
+              "symbol": [
+                1524,
+                "lea    rax,[rip+0x12be54]        # EXTERNAL"
+              ],
+              "strip": [
+                1524,
+                "lea    rax,[rip+0x105224]        # EXTERNAL"
+              ]
+            },
+            {
+              "symbol": [
+                1536,
+                "lea    rax,[rip+0x12d1c3]        # EXTERNAL"
+              ],
+              "strip": [
+                1536,
+                "lea    rax,[rip+0x106593]        # EXTERNAL"
+              ]
+            },
+            {
+              "symbol": [
+                1548,
+                "lea    rax,[rip+0x125be0]        # EXTERNAL"
+              ],
+              "strip": [
+                1548,
+                "lea    rax,[rip+0xfefb0]        # EXTERNAL"
+              ]
+            },
+            {
+              "symbol": [
+                1604,
+                "lea    rax,[rip+0x12c47e]        # EXTERNAL"
+              ],
+              "strip": [
+                1604,
+                "lea    rax,[rip+0x10584e]        # EXTERNAL"
+              ]
+            },
+            {
+              "symbol": [
+                1621,
+                "lea    rax,[rip+0x12bdfe]        # EXTERNAL"
+              ],
+              "strip": [
+                1621,
+                "lea    rax,[rip+0x1051ce]        # EXTERNAL"
+              ]
+            },
+            {
+              "symbol": [
+                1646,
+                "lea    rcx,[rip+0x12c3f0]        # EXTERNAL"
+              ],
+              "strip": [
+                1646,
+                "lea    rcx,[rip+0x1057c0]        # EXTERNAL"
+              ]
+            },
+            {
+              "symbol": [
+                1653,
+                "lea    rdx,[rip+0x12bdfa]        # EXTERNAL"
+              ],
+              "strip": [
+                1653,
+                "lea    rdx,[rip+0x1051ca]        # EXTERNAL"
+              ]
+            },
+            {
+              "symbol": [
+                1684,
+                "lea    rax,[rip+0x125b68]        # EXTERNAL"
+              ],
+              "strip": [
+                1684,
+                "lea    rax,[rip+0xfef38]        # EXTERNAL"
+              ]
+            },
+            {
+              "symbol": [
+                1696,
+                "lea    rax,[rip+0x12d11f]        # EXTERNAL"
+              ],
+              "strip": [
+                1696,
+                "lea    rax,[rip+0x1064ef]        # EXTERNAL"
+              ]
+            },
+            {
+              "symbol": [
+                1708,
+                "lea    rax,[rip+0x12d11c]        # EXTERNAL"
+              ],
+              "strip": [
+                1708,
+                "lea    rax,[rip+0x1064ec]        # EXTERNAL"
+              ]
+            },
+            {
+              "symbol": [
+                1726,
+                "lea    rax,[rip+0x12c40c]        # EXTERNAL"
+              ],
+              "strip": [
+                1726,
+                "lea    rax,[rip+0x1057dc]        # EXTERNAL"
+              ]
+            },
+            {
+              "symbol": [
+                1745,
+                "lea    rax,[rip+0x132f92]        # EXTERNAL"
+              ],
+              "strip": [
+                1745,
+                "lea    rax,[rip+0x10c35a]        # EXTERNAL"
+              ]
+            },
+            {
+              "symbol": [
+                1850,
+                "lea    rax,[rip+0x12bac2]        # EXTERNAL"
+              ],
+              "strip": [
+                1850,
+                "lea    rax,[rip+0x104e92]        # EXTERNAL"
+              ]
+            },
+            {
+              "symbol": [
+                1864,
+                "lea    rax,[rip+0x125a49]        # EXTERNAL"
+              ],
+              "strip": [
+                1864,
+                "lea    rax,[rip+0xfee19]        # EXTERNAL"
+              ]
+            },
+            {
+              "symbol": [
+                2318,
+                "lea    rax,[rip+0x12b8f8]        # EXTERNAL"
+              ],
+              "strip": [
+                2318,
+                "lea    rax,[rip+0x104cc8]        # EXTERNAL"
+              ]
+            },
+            {
+              "symbol": [
+                2330,
+                "lea    rax,[rip+0x132d57]        # EXTERNAL"
+              ],
+              "strip": [
+                2330,
+                "lea    rax,[rip+0x10c11f]        # EXTERNAL"
+              ]
+            },
+            {
+              "symbol": [
+                2339,
+                "lea    rax,[rip+0x12bb1e]        # EXTERNAL"
+              ],
+              "strip": [
+                2339,
+                "lea    rax,[rip+0x104eee]        # EXTERNAL"
+              ]
+            },
+            {
+              "symbol": [
+                2348,
+                "lea    rax,[rip+0x1258e1]        # EXTERNAL"
+              ],
+              "strip": [
+                2348,
+                "lea    rax,[rip+0xfecb1]        # EXTERNAL"
+              ]
+            },
+            {
+              "symbol": [
+                2373,
+                "lea    rax,[rip+0x12bb08]        # EXTERNAL"
+              ],
+              "strip": [
+                2373,
+                "lea    rax,[rip+0x104ed8]        # EXTERNAL"
+              ]
+            },
+            {
+              "symbol": [
+                2395,
+                "lea    rax,[rip+0x1258a6]        # EXTERNAL"
+              ],
+              "strip": [
+                2395,
+                "lea    rax,[rip+0xfec76]        # EXTERNAL"
+              ]
+            },
+            {
+              "symbol": [
+                2417,
+                "lea    rax,[rip+0x125899]        # EXTERNAL"
+              ],
+              "strip": [
+                2417,
+                "lea    rax,[rip+0xfec69]        # EXTERNAL"
+              ]
+            },
+            {
+              "symbol": [
+                2439,
+                "lea    rax,[rip+0x132cf9]        # EXTERNAL"
+              ],
+              "strip": [
+                2439,
+                "lea    rax,[rip+0x10c0c1]        # EXTERNAL"
+              ]
+            },
+            {
+              "symbol": [
+                2461,
+                "lea    rax,[rip+0x12ce19]        # EXTERNAL"
+              ],
+              "strip": [
+                2461,
+                "lea    rax,[rip+0x1061e9]        # EXTERNAL"
+              ]
+            },
+            {
+              "symbol": [
+                2483,
+                "lea    rax,[rip+0x12ce07]        # EXTERNAL"
+              ],
+              "strip": [
+                2483,
+                "lea    rax,[rip+0x1061d7]        # EXTERNAL"
+              ]
+            },
+            {
+              "symbol": [
+                2492,
+                "lea    rax,[rip+0x12ce21]        # EXTERNAL"
+              ],
+              "strip": [
+                2492,
+                "lea    rax,[rip+0x1061f1]        # EXTERNAL"
+              ]
+            },
+            {
+              "symbol": [
+                2551,
+                "lea    r12,[rip+0x12b3bf]        # EXTERNAL"
+              ],
+              "strip": [
+                2551,
+                "lea    r12,[rip+0x10478f]        # EXTERNAL"
+              ]
+            },
+            {
+              "symbol": [
+                2611,
+                "lea    rdx,[rip+0x132bf2]        # EXTERNAL"
+              ],
+              "strip": [
+                2611,
+                "lea    rdx,[rip+0x10bfb8]        # EXTERNAL"
+              ]
+            },
+            {
+              "symbol": [
+                2695,
+                "lea    rcx,[rip+0x19153a]        # EXTERNAL"
+              ],
+              "strip": [
+                2695,
+                "lea    rcx,[rip+0xf8d06]        # EXTERNAL"
+              ]
+            },
+            {
+              "symbol": [
+                2764,
+                "lea    rcx,[rip+0x191659]        # EXTERNAL"
+              ],
+              "strip": [
+                2764,
+                "lea    rcx,[rip+0xf8e25]        # EXTERNAL"
+              ]
+            },
+            {
+              "symbol": [
+                2883,
+                "lea    rdx,[rip+0x1913b6]        # EXTERNAL"
+              ],
+              "strip": [
+                2883,
+                "lea    rdx,[rip+0xf8b82]        # EXTERNAL"
+              ]
+            },
+            {
+              "symbol": [
+                2981,
+                "lea    rcx,[rip+0x19141c]        # EXTERNAL"
+              ],
+              "strip": [
+                2981,
+                "lea    rcx,[rip+0xf8be8]        # EXTERNAL"
+              ]
+            },
+            {
+              "symbol": [
+                3314,
+                "lea    rdx,[rip+0x12b0c6]        # EXTERNAL"
+              ],
+              "strip": [
+                3314,
+                "lea    rdx,[rip+0x104496]        # EXTERNAL"
+              ]
+            },
+            {
+              "symbol": [
+                3369,
+                "lea    rcx,[rip+0x191298]        # EXTERNAL"
+              ],
+              "strip": [
+                3369,
+                "lea    rcx,[rip+0xf8a64]        # EXTERNAL"
+              ]
+            },
+            {
+              "symbol": [
+                3479,
+                "lea    rcx,[rip+0x19122a]        # EXTERNAL"
+              ],
+              "strip": [
+                3479,
+                "lea    rcx,[rip+0xf89f6]        # EXTERNAL"
+              ]
+            },
+            {
+              "symbol": [
+                3511,
+                "lea    rdx,[rip+0x132877]        # EXTERNAL"
+              ],
+              "strip": [
+                3511,
+                "lea    rdx,[rip+0x10bc3d]        # EXTERNAL"
+              ]
+            },
+            {
+              "symbol": [
+                3542,
+                "lea    rcx,[rip+0x1911eb]        # EXTERNAL"
+              ],
+              "strip": [
+                3542,
+                "lea    rcx,[rip+0xf89b7]        # EXTERNAL"
+              ]
+            },
+            {
+              "symbol": [
+                3733,
+                "lea    rdx,[rip+0x132795]        # EXTERNAL"
+              ],
+              "strip": [
+                3733,
+                "lea    rdx,[rip+0x10bb5b]        # EXTERNAL"
+              ]
+            },
+            {
+              "symbol": [
+                3779,
+                "lea    rdx,[rip+0x12aef5]        # EXTERNAL"
+              ],
+              "strip": [
+                3779,
+                "lea    rdx,[rip+0x1042c5]        # EXTERNAL"
+              ]
+            },
+            {
+              "symbol": [
+                3818,
+                "lea    rcx,[rip+0x1910d7]        # EXTERNAL"
+              ],
+              "strip": [
+                3818,
+                "lea    rcx,[rip+0xf88a3]        # EXTERNAL"
+              ]
+            },
+            {
+              "symbol": [
+                3891,
+                "lea    rcx,[rip+0x19108e]        # EXTERNAL"
+              ],
+              "strip": [
+                3891,
+                "lea    rcx,[rip+0xf885a]        # EXTERNAL"
+              ]
+            },
+            {
+              "symbol": [
+                3914,
+                "lea    rax,[rip+0x13274e]        # EXTERNAL"
+              ],
+              "strip": [
+                3914,
+                "lea    rax,[rip+0x10bb16]        # EXTERNAL"
+              ]
+            },
+            {
+              "symbol": [
+                4001,
+                "lea    rdx,[rip+0x132689]        # EXTERNAL"
+              ],
+              "strip": [
+                4001,
+                "lea    rdx,[rip+0x10ba4f]        # EXTERNAL"
+              ]
+            },
+            {
+              "symbol": [
+                4029,
+                "lea    rax,[rip+0x12b23f]        # EXTERNAL"
+              ],
+              "strip": [
+                4029,
+                "lea    rax,[rip+0x10460f]        # EXTERNAL"
+              ]
+            },
+            {
+              "symbol": [
+                4138,
+                "lea    rax,[rip+0x12b1dc]        # EXTERNAL"
+              ],
+              "strip": [
+                4138,
+                "lea    rax,[rip+0x1045ac]        # EXTERNAL"
+              ]
+            },
+            {
+              "symbol": [
+                4179,
+                "lea    rdx,[rip+0x12ad65]        # EXTERNAL"
+              ],
+              "strip": [
+                4179,
+                "lea    rdx,[rip+0x104135]        # EXTERNAL"
+              ]
+            },
+            {
+              "symbol": [
+                4205,
+                "lea    rcx,[rip+0x190f54]        # EXTERNAL"
+              ],
+              "strip": [
+                4205,
+                "lea    rcx,[rip+0xf8720]        # EXTERNAL"
+              ]
+            },
+            {
+              "symbol": [
+                7136,
+                "lea    r9,[rip+0x190555]        # EXTERNAL"
+              ],
+              "strip": [
+                7136,
+                "lea    r9,[rip+0xf7d21]        # EXTERNAL"
+              ]
+            },
+            {
+              "symbol": [
+                9250,
+                "lea    rax,[rip+0x13237d]        # EXTERNAL"
+              ],
+              "strip": [
+                9250,
+                "lea    rax,[rip+0x10b745]        # EXTERNAL"
+              ]
+            },
+            {
+              "symbol": [
+                10894,
+                "lea    rax,[rip+0x131d15]        # EXTERNAL"
+              ],
+              "strip": [
+                10894,
+                "lea    rax,[rip+0x10b0dd]        # EXTERNAL"
+              ]
+            },
+            {
+              "symbol": [
+                12680,
+                "lea    rdx,[rip+0x128c30]        # EXTERNAL"
+              ],
+              "strip": [
+                12680,
+                "lea    rdx,[rip+0x102000]        # EXTERNAL"
+              ]
+            },
+            {
+              "symbol": [
+                12750,
+                "movups xmm0,XMMWORD PTR [rip+0x13046a]        # EXTERNAL"
+              ],
+              "strip": [
+                12750,
+                "movups xmm0,XMMWORD PTR [rip+0x109830]        # EXTERNAL"
+              ]
+            },
+            {
+              "symbol": [
+                12786,
+                "movups xmm0,XMMWORD PTR [rip+0x130457]        # EXTERNAL"
+              ],
+              "strip": [
+                12786,
+                "movups xmm0,XMMWORD PTR [rip+0x10981f]        # EXTERNAL"
+              ]
+            }
+          ]
+        },
+        {
+          "name": "runOperationsLoop__func_124",
+          "address": "0x14003d650",
+          "rva": "0x3d650",
+          "bytes": 9553,
+          "tag": 5,
+          "strip_address": "0x14003ce10",
+          "instruction_lines": 1936,
+          "strip_instruction_lines": 1936,
+          "normalized_equal": false,
+          "differences": [
+            {
+              "symbol": [
+                74,
+                "lea    rax,[rip+0x13d3c5]        # EXTERNAL"
+              ],
+              "strip": [
+                74,
+                "lea    rax,[rip+0x11678d]        # EXTERNAL"
+              ]
+            },
+            {
+              "symbol": [
+                351,
+                "lea    rdx,[rip+0x19a746]        # EXTERNAL"
+              ],
+              "strip": [
+                351,
+                "lea    rdx,[rip+0x101f12]        # EXTERNAL"
+              ]
+            },
+            {
+              "symbol": [
+                685,
+                "lea    rax,[rip+0x13d166]        # EXTERNAL"
+              ],
+              "strip": [
+                685,
+                "lea    rax,[rip+0x11652e]        # EXTERNAL"
+              ]
+            },
+            {
+              "symbol": [
+                732,
+                "lea    r8,[rip+0x19a72d]        # EXTERNAL"
+              ],
+              "strip": [
+                732,
+                "lea    r8,[rip+0x101ef9]        # EXTERNAL"
+              ]
+            },
+            {
+              "symbol": [
+                3875,
+                "lea    r8,[rip+0x199af6]        # EXTERNAL"
+              ],
+              "strip": [
+                3875,
+                "lea    r8,[rip+0x1012c2]        # EXTERNAL"
+              ]
+            },
+            {
+              "symbol": [
+                5295,
+                "lea    rax,[rip+0x13bf60]        # EXTERNAL"
+              ],
+              "strip": [
+                5295,
+                "lea    rax,[rip+0x115328]        # EXTERNAL"
+              ]
+            },
+            {
+              "symbol": [
+                5757,
+                "lea    rax,[rip+0x13bd92]        # EXTERNAL"
+              ],
+              "strip": [
+                5757,
+                "lea    rax,[rip+0x11515a]        # EXTERNAL"
+              ]
+            },
+            {
+              "symbol": [
+                7322,
+                "lea    rax,[rip+0x13b779]        # EXTERNAL"
+              ],
+              "strip": [
+                7322,
+                "lea    rax,[rip+0x114b41]        # EXTERNAL"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "dispatch-targets.json": {
+      "baseline": {
+        "call": "0x14003d9fd",
+        "literal": "0x14003d074",
+        "loop": "0x14003d8ee",
+        "call_colon": "0x14003e387"
+      },
+      "candidate": {
+        "call": "0x14003dcee",
+        "literal": "0x14003d123",
+        "loop": "0x14003db9a",
+        "call_colon": "0x14003e6dd"
+      }
+    },
+    "word-kind-targets.json": {
+      "baseline": {
+        "colon": "0x14003eae2",
+        "variable": "0x14003da43",
+        "constant": "0x14003e8cf",
+        "array": "0x14003e8cf"
+      },
+      "candidate": {
+        "colon": "0x14003f11d",
+        "variable": "0x14003dd43",
+        "constant": "0x14003ed3a",
+        "array": "0x14003ed3a"
+      }
+    },
+    "memory-op-targets.json": {
+      "baseline": {
+        "fetch": "0x14003eb85",
+        "store": "0x14003e63d",
+        "add_store": "0x14003d58f"
+      },
+      "candidate": {
+        "fetch": "0x14003d9f0",
+        "store": "0x14003e9a1",
+        "add_store": "0x14003d748"
+      }
+    },
+    "split-cases.json": {
+      "combined": {
+        "definition": "VARIABLE BENCH-V 7 CONSTANT BENCH-K : BENCH-RUN 0 BENCH-V ! BENCH-ITERATIONS 0 DO BENCH-K BENCH-V +! LOOP BENCH-V @ ;",
+        "checksum_per_iteration": 7,
+        "see_equal": true
+      },
+      "literal-sum": {
+        "definition": "VARIABLE BENCH-V 7 CONSTANT BENCH-K : BENCH-RUN 0 BENCH-ITERATIONS 0 DO 7 + LOOP ;",
+        "checksum_per_iteration": 7,
+        "see_equal": true
+      },
+      "constant-sum": {
+        "definition": "VARIABLE BENCH-V 7 CONSTANT BENCH-K : BENCH-RUN 0 BENCH-ITERATIONS 0 DO BENCH-K + LOOP ;",
+        "checksum_per_iteration": 7,
+        "see_equal": true
+      },
+      "address-drop": {
+        "definition": "VARIABLE BENCH-V 7 CONSTANT BENCH-K : BENCH-RUN 0 BENCH-ITERATIONS 0 DO BENCH-V DROP 1+ LOOP ;",
+        "checksum_per_iteration": 1,
+        "see_equal": true
+      },
+      "fetch-sum": {
+        "definition": "VARIABLE BENCH-V 7 CONSTANT BENCH-K : BENCH-RUN 0 BENCH-ITERATIONS 0 DO BENCH-V @ + LOOP ;",
+        "checksum_per_iteration": 0,
+        "see_equal": true
+      },
+      "literal-update": {
+        "definition": "VARIABLE BENCH-V 7 CONSTANT BENCH-K : BENCH-RUN 0 BENCH-V ! BENCH-ITERATIONS 0 DO 7 BENCH-V +! LOOP BENCH-V @ ;",
+        "checksum_per_iteration": 7,
+        "see_equal": true
+      },
+      "compiled-update": {
+        "definition": "VARIABLE BENCH-V 7 CONSTANT BENCH-K : BENCH-RUN 0 BENCH-V ! BENCH-ITERATIONS 0 DO 7 [ BENCH-V ] LITERAL +! LOOP BENCH-V @ ;",
+        "checksum_per_iteration": 7,
+        "see_equal": true
+      },
+      "constant-compiled-update": {
+        "definition": "VARIABLE BENCH-V 7 CONSTANT BENCH-K : BENCH-RUN 0 BENCH-V ! BENCH-ITERATIONS 0 DO BENCH-K [ BENCH-V ] LITERAL +! LOOP BENCH-V @ ;",
+        "checksum_per_iteration": 7,
+        "see_equal": true
+      }
+    },
+    "split-calibration.json": {
+      "combined": {
+        "definition": "VARIABLE BENCH-V 7 CONSTANT BENCH-K : BENCH-RUN 0 BENCH-V ! BENCH-ITERATIONS 0 DO BENCH-K BENCH-V +! LOOP BENCH-V @ ;",
+        "checksum_per_iteration": 7,
+        "see_equal": true,
+        "iterations": 130000000,
+        "calibration": [
+          {
+            "iterations": 100000000,
+            "cpu_us": 984375.0,
+            "wall_us": 1011684.4
+          },
+          {
+            "iterations": 130000000,
+            "cpu_us": 1296875.0,
+            "wall_us": 1315177.9
+          }
+        ]
+      },
+      "literal-sum": {
+        "definition": "VARIABLE BENCH-V 7 CONSTANT BENCH-K : BENCH-RUN 0 BENCH-ITERATIONS 0 DO 7 + LOOP ;",
+        "checksum_per_iteration": 7,
+        "see_equal": true,
+        "iterations": 230000000,
+        "calibration": [
+          {
+            "iterations": 100000000,
+            "cpu_us": 531250.0,
+            "wall_us": 541219.0
+          },
+          {
+            "iterations": 230000000,
+            "cpu_us": 1156250.0,
+            "wall_us": 1241881.8
+          }
+        ]
+      },
+      "constant-sum": {
+        "definition": "VARIABLE BENCH-V 7 CONSTANT BENCH-K : BENCH-RUN 0 BENCH-ITERATIONS 0 DO BENCH-K + LOOP ;",
+        "checksum_per_iteration": 7,
+        "see_equal": true,
+        "iterations": 220000000,
+        "calibration": [
+          {
+            "iterations": 100000000,
+            "cpu_us": 562500.0,
+            "wall_us": 563421.0
+          },
+          {
+            "iterations": 220000000,
+            "cpu_us": 1187500.0,
+            "wall_us": 1232806.6
+          }
+        ]
+      },
+      "address-drop": {
+        "definition": "VARIABLE BENCH-V 7 CONSTANT BENCH-K : BENCH-RUN 0 BENCH-ITERATIONS 0 DO BENCH-V DROP 1+ LOOP ;",
+        "checksum_per_iteration": 1,
+        "see_equal": true,
+        "iterations": 160000000,
+        "calibration": [
+          {
+            "iterations": 100000000,
+            "cpu_us": 796875.0,
+            "wall_us": 807213.4
+          },
+          {
+            "iterations": 160000000,
+            "cpu_us": 1234375.0,
+            "wall_us": 1288619.5
+          }
+        ]
+      },
+      "fetch-sum": {
+        "definition": "VARIABLE BENCH-V 7 CONSTANT BENCH-K : BENCH-RUN 0 BENCH-ITERATIONS 0 DO BENCH-V @ + LOOP ;",
+        "checksum_per_iteration": 0,
+        "see_equal": true,
+        "iterations": 150000000,
+        "calibration": [
+          {
+            "iterations": 100000000,
+            "cpu_us": 812500.0,
+            "wall_us": 857268.8
+          },
+          {
+            "iterations": 150000000,
+            "cpu_us": 1203125.0,
+            "wall_us": 1279873.6
+          }
+        ]
+      },
+      "literal-update": {
+        "definition": "VARIABLE BENCH-V 7 CONSTANT BENCH-K : BENCH-RUN 0 BENCH-V ! BENCH-ITERATIONS 0 DO 7 BENCH-V +! LOOP BENCH-V @ ;",
+        "checksum_per_iteration": 7,
+        "see_equal": true,
+        "iterations": 160000000,
+        "calibration": [
+          {
+            "iterations": 100000000,
+            "cpu_us": 765625.0,
+            "wall_us": 859088.4
+          },
+          {
+            "iterations": 160000000,
+            "cpu_us": 1250000.0,
+            "wall_us": 1369059.5
+          }
+        ]
+      },
+      "compiled-update": {
+        "definition": "VARIABLE BENCH-V 7 CONSTANT BENCH-K : BENCH-RUN 0 BENCH-V ! BENCH-ITERATIONS 0 DO 7 [ BENCH-V ] LITERAL +! LOOP BENCH-V @ ;",
+        "checksum_per_iteration": 7,
+        "see_equal": true,
+        "iterations": 210000000,
+        "calibration": [
+          {
+            "iterations": 100000000,
+            "cpu_us": 593750.0,
+            "wall_us": 692735.3
+          },
+          {
+            "iterations": 210000000,
+            "cpu_us": 1375000.0,
+            "wall_us": 1451999.8
+          }
+        ]
+      },
+      "constant-compiled-update": {
+        "definition": "VARIABLE BENCH-V 7 CONSTANT BENCH-K : BENCH-RUN 0 BENCH-V ! BENCH-ITERATIONS 0 DO BENCH-K [ BENCH-V ] LITERAL +! LOOP BENCH-V @ ;",
+        "checksum_per_iteration": 7,
+        "see_equal": true,
+        "iterations": 190000000,
+        "calibration": [
+          {
+            "iterations": 100000000,
+            "cpu_us": 656250.0,
+            "wall_us": 737941.3
+          },
+          {
+            "iterations": 190000000,
+            "cpu_us": 1328125.0,
+            "wall_us": 1403465.9
+          }
+        ]
+      }
+    },
+    "split-1.json": {
+      "series": 1,
+      "pid": 27300,
+      "rounds": 5,
+      "cpu_affinity": [
+        0
+      ],
+      "purpose": "Diagnostic decomposition, not adoption testing",
+      "engines": {
+        "baseline": {
+          "path": "D:\\home\\source\\zig\\forthz\\.work\\vm-pc-windows-20261115\\baseline\\bin\\sigma.exe",
+          "sha256": "49b7c673d42f8c0d7fda06feab7fd7f008934109358b4771ec2daaf9f33468b8"
+        },
+        "candidate": {
+          "path": "D:\\home\\source\\zig\\forthz\\.work\\vm-pc-windows-20261115\\candidate\\bin\\sigma.exe",
+          "sha256": "4ee7ee6c13609367f640648ba8ad3b249406dbf99c26ee77f43f3865e5e27a14"
+        }
+      },
+      "cases": {
+        "combined": {
+          "definition": "VARIABLE BENCH-V 7 CONSTANT BENCH-K : BENCH-RUN 0 BENCH-V ! BENCH-ITERATIONS 0 DO BENCH-K BENCH-V +! LOOP BENCH-V @ ;",
+          "iterations": 130000000,
+          "checksum": 910000000,
+          "orders": [
+            [
+              "baseline",
+              "candidate"
+            ],
+            [
+              "candidate",
+              "baseline"
+            ],
+            [
+              "baseline",
+              "candidate"
+            ],
+            [
+              "candidate",
+              "baseline"
+            ],
+            [
+              "baseline",
+              "candidate"
+            ],
+            [
+              "candidate",
+              "baseline"
+            ]
+          ],
+          "engines": {
+            "baseline": {
+              "samples_us": [
+                1265625.0,
+                1296875.0,
+                1296875.0,
+                1296875.0,
+                1281250.0
+              ],
+              "median_us": 1296875.0,
+              "min_us": 1265625.0,
+              "max_us": 1296875.0,
+              "wall_samples_us": [
+                1315461.2,
+                1306072.8,
+                1335734.0,
+                1311836.8,
+                1310812.1
+              ]
+            },
+            "candidate": {
+              "samples_us": [
+                2562500.0,
+                2671875.0,
+                2703125.0,
+                2703125.0,
+                2703125.0
+              ],
+              "median_us": 2703125.0,
+              "min_us": 2562500.0,
+              "max_us": 2703125.0,
+              "wall_samples_us": [
+                2750486.3,
+                2748070.5,
+                2760856.1,
+                2746782.3,
+                2749813.7
+              ]
+            }
+          },
+          "change_percent": 108.43373493975903
+        },
+        "literal-sum": {
+          "definition": "VARIABLE BENCH-V 7 CONSTANT BENCH-K : BENCH-RUN 0 BENCH-ITERATIONS 0 DO 7 + LOOP ;",
+          "iterations": 230000000,
+          "checksum": 1610000000,
+          "orders": [
+            [
+              "baseline",
+              "candidate"
+            ],
+            [
+              "candidate",
+              "baseline"
+            ],
+            [
+              "baseline",
+              "candidate"
+            ],
+            [
+              "candidate",
+              "baseline"
+            ],
+            [
+              "baseline",
+              "candidate"
+            ],
+            [
+              "candidate",
+              "baseline"
+            ]
+          ],
+          "engines": {
+            "baseline": {
+              "samples_us": [
+                1156250.0,
+                1046875.0,
+                1218750.0,
+                1218750.0,
+                1187500.0
+              ],
+              "median_us": 1187500.0,
+              "min_us": 1046875.0,
+              "max_us": 1218750.0,
+              "wall_samples_us": [
+                1294233.2,
+                1239812.0,
+                1236076.5,
+                1234649.6,
+                1235192.4
+              ]
+            },
+            "candidate": {
+              "samples_us": [
+                796875.0,
+                1000000.0,
+                828125.0,
+                843750.0,
+                828125.0
+              ],
+              "median_us": 828125.0,
+              "min_us": 796875.0,
+              "max_us": 1000000.0,
+              "wall_samples_us": [
+                886621.8,
+                1060467.6,
+                852738.5,
+                867058.8,
+                857294.2
+              ]
+            }
+          },
+          "change_percent": -30.263157894736842
+        },
+        "constant-sum": {
+          "definition": "VARIABLE BENCH-V 7 CONSTANT BENCH-K : BENCH-RUN 0 BENCH-ITERATIONS 0 DO BENCH-K + LOOP ;",
+          "iterations": 220000000,
+          "checksum": 1540000000,
+          "orders": [
+            [
+              "baseline",
+              "candidate"
+            ],
+            [
+              "candidate",
+              "baseline"
+            ],
+            [
+              "baseline",
+              "candidate"
+            ],
+            [
+              "candidate",
+              "baseline"
+            ],
+            [
+              "baseline",
+              "candidate"
+            ],
+            [
+              "candidate",
+              "baseline"
+            ]
+          ],
+          "engines": {
+            "baseline": {
+              "samples_us": [
+                1156250.0,
+                1093750.0,
+                1156250.0,
+                1140625.0,
+                1156250.0
+              ],
+              "median_us": 1156250.0,
+              "min_us": 1093750.0,
+              "max_us": 1156250.0,
+              "wall_samples_us": [
+                1283513.1,
+                1238840.0,
+                1231382.8,
+                1231208.0,
+                1228780.7
+              ]
+            },
+            "candidate": {
+              "samples_us": [
+                812500.0,
+                906250.0,
+                890625.0,
+                843750.0,
+                890625.0
+              ],
+              "median_us": 890625.0,
+              "min_us": 812500.0,
+              "max_us": 906250.0,
+              "wall_samples_us": [
+                948901.5,
+                949131.6,
+                960312.5,
+                949123.5,
+                949756.4
+              ]
+            }
+          },
+          "change_percent": -22.972972972972972
+        },
+        "address-drop": {
+          "definition": "VARIABLE BENCH-V 7 CONSTANT BENCH-K : BENCH-RUN 0 BENCH-ITERATIONS 0 DO BENCH-V DROP 1+ LOOP ;",
+          "iterations": 160000000,
+          "checksum": 160000000,
+          "orders": [
+            [
+              "baseline",
+              "candidate"
+            ],
+            [
+              "candidate",
+              "baseline"
+            ],
+            [
+              "baseline",
+              "candidate"
+            ],
+            [
+              "candidate",
+              "baseline"
+            ],
+            [
+              "baseline",
+              "candidate"
+            ],
+            [
+              "candidate",
+              "baseline"
+            ]
+          ],
+          "engines": {
+            "baseline": {
+              "samples_us": [
+                1234375.0,
+                1265625.0,
+                1281250.0,
+                1265625.0,
+                1265625.0
+              ],
+              "median_us": 1265625.0,
+              "min_us": 1234375.0,
+              "max_us": 1281250.0,
+              "wall_samples_us": [
+                1291854.5,
+                1289960.1,
+                1287845.5,
+                1296998.8,
+                1287961.7
+              ]
+            },
+            "candidate": {
+              "samples_us": [
+                796875.0,
+                781250.0,
+                796875.0,
+                796875.0,
+                828125.0
+              ],
+              "median_us": 796875.0,
+              "min_us": 781250.0,
+              "max_us": 828125.0,
+              "wall_samples_us": [
+                813093.4,
+                821644.7,
+                821974.7,
+                822015.1,
+                841206.1
+              ]
+            }
+          },
+          "change_percent": -37.03703703703704
+        },
+        "fetch-sum": {
+          "definition": "VARIABLE BENCH-V 7 CONSTANT BENCH-K : BENCH-RUN 0 BENCH-ITERATIONS 0 DO BENCH-V @ + LOOP ;",
+          "iterations": 150000000,
+          "checksum": 0,
+          "orders": [
+            [
+              "baseline",
+              "candidate"
+            ],
+            [
+              "candidate",
+              "baseline"
+            ],
+            [
+              "baseline",
+              "candidate"
+            ],
+            [
+              "candidate",
+              "baseline"
+            ],
+            [
+              "baseline",
+              "candidate"
+            ],
+            [
+              "candidate",
+              "baseline"
+            ]
+          ],
+          "engines": {
+            "baseline": {
+              "samples_us": [
+                1265625.0,
+                1218750.0,
+                1265625.0,
+                1234375.0,
+                1218750.0
+              ],
+              "median_us": 1234375.0,
+              "min_us": 1218750.0,
+              "max_us": 1265625.0,
+              "wall_samples_us": [
+                1283021.1,
+                1288032.8,
+                1283646.9,
+                1286942.5,
+                1284068.8
+              ]
+            },
+            "candidate": {
+              "samples_us": [
+                875000.0,
+                843750.0,
+                843750.0,
+                781250.0,
+                843750.0
+              ],
+              "median_us": 843750.0,
+              "min_us": 781250.0,
+              "max_us": 875000.0,
+              "wall_samples_us": [
+                883797.2,
+                871772.8,
+                868000.8,
+                891373.9,
+                939489.6
+              ]
+            }
+          },
+          "change_percent": -31.645569620253166
+        },
+        "literal-update": {
+          "definition": "VARIABLE BENCH-V 7 CONSTANT BENCH-K : BENCH-RUN 0 BENCH-V ! BENCH-ITERATIONS 0 DO 7 BENCH-V +! LOOP BENCH-V @ ;",
+          "iterations": 160000000,
+          "checksum": 1120000000,
+          "orders": [
+            [
+              "baseline",
+              "candidate"
+            ],
+            [
+              "candidate",
+              "baseline"
+            ],
+            [
+              "baseline",
+              "candidate"
+            ],
+            [
+              "candidate",
+              "baseline"
+            ],
+            [
+              "baseline",
+              "candidate"
+            ],
+            [
+              "candidate",
+              "baseline"
+            ]
+          ],
+          "engines": {
+            "baseline": {
+              "samples_us": [
+                1359375.0,
+                1328125.0,
+                1218750.0,
+                1218750.0,
+                1343750.0
+              ],
+              "median_us": 1328125.0,
+              "min_us": 1218750.0,
+              "max_us": 1359375.0,
+              "wall_samples_us": [
+                1369251.4,
+                1365918.9,
+                1365974.6,
+                1363613.1,
+                1376235.8
+              ]
+            },
+            "candidate": {
+              "samples_us": [
+                843750.0,
+                890625.0,
+                875000.0,
+                859375.0,
+                812500.0
+              ],
+              "median_us": 859375.0,
+              "min_us": 812500.0,
+              "max_us": 890625.0,
+              "wall_samples_us": [
+                917455.4,
+                917864.0,
+                946764.0,
+                933657.6,
+                928200.0
+              ]
+            }
+          },
+          "change_percent": -35.294117647058826
+        },
+        "compiled-update": {
+          "definition": "VARIABLE BENCH-V 7 CONSTANT BENCH-K : BENCH-RUN 0 BENCH-V ! BENCH-ITERATIONS 0 DO 7 [ BENCH-V ] LITERAL +! LOOP BENCH-V @ ;",
+          "iterations": 210000000,
+          "checksum": 1470000000,
+          "orders": [
+            [
+              "baseline",
+              "candidate"
+            ],
+            [
+              "candidate",
+              "baseline"
+            ],
+            [
+              "baseline",
+              "candidate"
+            ],
+            [
+              "candidate",
+              "baseline"
+            ],
+            [
+              "baseline",
+              "candidate"
+            ],
+            [
+              "candidate",
+              "baseline"
+            ]
+          ],
+          "engines": {
+            "baseline": {
+              "samples_us": [
+                1281250.0,
+                1437500.0,
+                1343750.0,
+                1328125.0,
+                1359375.0
+              ],
+              "median_us": 1343750.0,
+              "min_us": 1281250.0,
+              "max_us": 1437500.0,
+              "wall_samples_us": [
+                1453772.2,
+                1454815.1,
+                1447788.6,
+                1463322.1,
+                1465306.3
+              ]
+            },
+            "candidate": {
+              "samples_us": [
+                968750.0,
+                1062500.0,
+                968750.0,
+                1031250.0,
+                1046875.0
+              ],
+              "median_us": 1031250.0,
+              "min_us": 968750.0,
+              "max_us": 1062500.0,
+              "wall_samples_us": [
+                1037046.1,
+                1057491.1,
+                1039348.4,
+                1035671.6,
+                1054323.7
+              ]
+            }
+          },
+          "change_percent": -23.25581395348837
+        },
+        "constant-compiled-update": {
+          "definition": "VARIABLE BENCH-V 7 CONSTANT BENCH-K : BENCH-RUN 0 BENCH-V ! BENCH-ITERATIONS 0 DO BENCH-K [ BENCH-V ] LITERAL +! LOOP BENCH-V @ ;",
+          "iterations": 190000000,
+          "checksum": 1330000000,
+          "orders": [
+            [
+              "baseline",
+              "candidate"
+            ],
+            [
+              "candidate",
+              "baseline"
+            ],
+            [
+              "baseline",
+              "candidate"
+            ],
+            [
+              "candidate",
+              "baseline"
+            ],
+            [
+              "baseline",
+              "candidate"
+            ],
+            [
+              "candidate",
+              "baseline"
+            ]
+          ],
+          "engines": {
+            "baseline": {
+              "samples_us": [
+                1359375.0,
+                1359375.0,
+                1390625.0,
+                1375000.0,
+                1328125.0
+              ],
+              "median_us": 1359375.0,
+              "min_us": 1328125.0,
+              "max_us": 1390625.0,
+              "wall_samples_us": [
+                1403363.6,
+                1400619.3,
+                1406497.1,
+                1393307.9,
+                1397838.8
+              ]
+            },
+            "candidate": {
+              "samples_us": [
+                1000000.0,
+                1000000.0,
+                1031250.0,
+                1031250.0,
+                1000000.0
+              ],
+              "median_us": 1000000.0,
+              "min_us": 1000000.0,
+              "max_us": 1031250.0,
+              "wall_samples_us": [
+                1033886.1,
+                1025391.8,
+                1026044.9,
+                1027631.6,
+                1023031.6
+              ]
+            }
+          },
+          "change_percent": -26.436781609195403
+        }
+      }
+    },
+    "split-2.json": {
+      "series": 2,
+      "pid": 9952,
+      "rounds": 5,
+      "cpu_affinity": [
+        0
+      ],
+      "purpose": "Diagnostic decomposition, not adoption testing",
+      "engines": {
+        "baseline": {
+          "path": "D:\\home\\source\\zig\\forthz\\.work\\vm-pc-windows-20261115\\baseline\\bin\\sigma.exe",
+          "sha256": "49b7c673d42f8c0d7fda06feab7fd7f008934109358b4771ec2daaf9f33468b8"
+        },
+        "candidate": {
+          "path": "D:\\home\\source\\zig\\forthz\\.work\\vm-pc-windows-20261115\\candidate\\bin\\sigma.exe",
+          "sha256": "4ee7ee6c13609367f640648ba8ad3b249406dbf99c26ee77f43f3865e5e27a14"
+        }
+      },
+      "cases": {
+        "combined": {
+          "definition": "VARIABLE BENCH-V 7 CONSTANT BENCH-K : BENCH-RUN 0 BENCH-V ! BENCH-ITERATIONS 0 DO BENCH-K BENCH-V +! LOOP BENCH-V @ ;",
+          "iterations": 130000000,
+          "checksum": 910000000,
+          "orders": [
+            [
+              "candidate",
+              "baseline"
+            ],
+            [
+              "baseline",
+              "candidate"
+            ],
+            [
+              "candidate",
+              "baseline"
+            ],
+            [
+              "baseline",
+              "candidate"
+            ],
+            [
+              "candidate",
+              "baseline"
+            ],
+            [
+              "baseline",
+              "candidate"
+            ]
+          ],
+          "engines": {
+            "baseline": {
+              "samples_us": [
+                1296875.0,
+                1281250.0,
+                1281250.0,
+                1281250.0,
+                1281250.0
+              ],
+              "median_us": 1281250.0,
+              "min_us": 1281250.0,
+              "max_us": 1296875.0,
+              "wall_samples_us": [
+                1309644.3,
+                1309817.9,
+                1309973.2,
+                1311936.6,
+                1318134.4
+              ]
+            },
+            "candidate": {
+              "samples_us": [
+                2703125.0,
+                2656250.0,
+                2562500.0,
+                2453125.0,
+                2562500.0
+              ],
+              "median_us": 2562500.0,
+              "min_us": 2453125.0,
+              "max_us": 2703125.0,
+              "wall_samples_us": [
+                2748499.8,
+                2756226.8,
+                2756091.8,
+                2760755.2,
+                2748361.4
+              ]
+            }
+          },
+          "change_percent": 100.0
+        },
+        "literal-sum": {
+          "definition": "VARIABLE BENCH-V 7 CONSTANT BENCH-K : BENCH-RUN 0 BENCH-ITERATIONS 0 DO 7 + LOOP ;",
+          "iterations": 230000000,
+          "checksum": 1610000000,
+          "orders": [
+            [
+              "candidate",
+              "baseline"
+            ],
+            [
+              "baseline",
+              "candidate"
+            ],
+            [
+              "candidate",
+              "baseline"
+            ],
+            [
+              "baseline",
+              "candidate"
+            ],
+            [
+              "candidate",
+              "baseline"
+            ],
+            [
+              "baseline",
+              "candidate"
+            ]
+          ],
+          "engines": {
+            "baseline": {
+              "samples_us": [
+                1109375.0,
+                1187500.0,
+                1218750.0,
+                1218750.0,
+                1234375.0
+              ],
+              "median_us": 1218750.0,
+              "min_us": 1109375.0,
+              "max_us": 1234375.0,
+              "wall_samples_us": [
+                1237980.7,
+                1236710.7,
+                1237368.3,
+                1238949.9,
+                1239789.9
+              ]
+            },
+            "candidate": {
+              "samples_us": [
+                859375.0,
+                765625.0,
+                828125.0,
+                875000.0,
+                828125.0
+              ],
+              "median_us": 828125.0,
+              "min_us": 765625.0,
+              "max_us": 875000.0,
+              "wall_samples_us": [
+                854764.0,
+                856238.7,
+                850356.3,
+                879608.9,
+                861957.4
+              ]
+            }
+          },
+          "change_percent": -32.05128205128205
+        },
+        "constant-sum": {
+          "definition": "VARIABLE BENCH-V 7 CONSTANT BENCH-K : BENCH-RUN 0 BENCH-ITERATIONS 0 DO BENCH-K + LOOP ;",
+          "iterations": 220000000,
+          "checksum": 1540000000,
+          "orders": [
+            [
+              "candidate",
+              "baseline"
+            ],
+            [
+              "baseline",
+              "candidate"
+            ],
+            [
+              "candidate",
+              "baseline"
+            ],
+            [
+              "baseline",
+              "candidate"
+            ],
+            [
+              "candidate",
+              "baseline"
+            ],
+            [
+              "baseline",
+              "candidate"
+            ]
+          ],
+          "engines": {
+            "baseline": {
+              "samples_us": [
+                1218750.0,
+                1234375.0,
+                1187500.0,
+                1218750.0,
+                1234375.0
+              ],
+              "median_us": 1218750.0,
+              "min_us": 1187500.0,
+              "max_us": 1234375.0,
+              "wall_samples_us": [
+                1224058.4,
+                1230816.0,
+                1228625.1,
+                1242089.8,
+                1228479.8
+              ]
+            },
+            "candidate": {
+              "samples_us": [
+                968750.0,
+                906250.0,
+                1250000.0,
+                1046875.0,
+                890625.0
+              ],
+              "median_us": 968750.0,
+              "min_us": 890625.0,
+              "max_us": 1250000.0,
+              "wall_samples_us": [
+                955615.5,
+                949771.7,
+                1271350.2,
+                1069897.5,
+                948531.7
+              ]
+            }
+          },
+          "change_percent": -20.512820512820515
+        },
+        "address-drop": {
+          "definition": "VARIABLE BENCH-V 7 CONSTANT BENCH-K : BENCH-RUN 0 BENCH-ITERATIONS 0 DO BENCH-V DROP 1+ LOOP ;",
+          "iterations": 160000000,
+          "checksum": 160000000,
+          "orders": [
+            [
+              "candidate",
+              "baseline"
+            ],
+            [
+              "baseline",
+              "candidate"
+            ],
+            [
+              "candidate",
+              "baseline"
+            ],
+            [
+              "baseline",
+              "candidate"
+            ],
+            [
+              "candidate",
+              "baseline"
+            ],
+            [
+              "baseline",
+              "candidate"
+            ]
+          ],
+          "engines": {
+            "baseline": {
+              "samples_us": [
+                1156250.0,
+                1234375.0,
+                1250000.0,
+                1265625.0,
+                1218750.0
+              ],
+              "median_us": 1234375.0,
+              "min_us": 1156250.0,
+              "max_us": 1265625.0,
+              "wall_samples_us": [
+                1298039.5,
+                1284353.2,
+                1281219.0,
+                1290545.5,
+                1282118.4
+              ]
+            },
+            "candidate": {
+              "samples_us": [
+                734375.0,
+                781250.0,
+                765625.0,
+                796875.0,
+                828125.0
+              ],
+              "median_us": 781250.0,
+              "min_us": 734375.0,
+              "max_us": 828125.0,
+              "wall_samples_us": [
+                826836.6,
+                804625.8,
+                807003.8,
+                827321.4,
+                830774.2
+              ]
+            }
+          },
+          "change_percent": -36.70886075949367
+        },
+        "fetch-sum": {
+          "definition": "VARIABLE BENCH-V 7 CONSTANT BENCH-K : BENCH-RUN 0 BENCH-ITERATIONS 0 DO BENCH-V @ + LOOP ;",
+          "iterations": 150000000,
+          "checksum": 0,
+          "orders": [
+            [
+              "candidate",
+              "baseline"
+            ],
+            [
+              "baseline",
+              "candidate"
+            ],
+            [
+              "candidate",
+              "baseline"
+            ],
+            [
+              "baseline",
+              "candidate"
+            ],
+            [
+              "candidate",
+              "baseline"
+            ],
+            [
+              "baseline",
+              "candidate"
+            ]
+          ],
+          "engines": {
+            "baseline": {
+              "samples_us": [
+                1140625.0,
+                1156250.0,
+                1203125.0,
+                1234375.0,
+                1265625.0
+              ],
+              "median_us": 1203125.0,
+              "min_us": 1140625.0,
+              "max_us": 1265625.0,
+              "wall_samples_us": [
+                1374954.2,
+                1288027.0,
+                1288631.8,
+                1290515.0,
+                1290824.3
+              ]
+            },
+            "candidate": {
+              "samples_us": [
+                781250.0,
+                765625.0,
+                1015625.0,
+                828125.0,
+                1203125.0
+              ],
+              "median_us": 828125.0,
+              "min_us": 765625.0,
+              "max_us": 1203125.0,
+              "wall_samples_us": [
+                883886.7,
+                905343.0,
+                1070214.8,
+                868850.4,
+                1257023.4
+              ]
+            }
+          },
+          "change_percent": -31.16883116883117
+        },
+        "literal-update": {
+          "definition": "VARIABLE BENCH-V 7 CONSTANT BENCH-K : BENCH-RUN 0 BENCH-V ! BENCH-ITERATIONS 0 DO 7 BENCH-V +! LOOP BENCH-V @ ;",
+          "iterations": 160000000,
+          "checksum": 1120000000,
+          "orders": [
+            [
+              "candidate",
+              "baseline"
+            ],
+            [
+              "baseline",
+              "candidate"
+            ],
+            [
+              "candidate",
+              "baseline"
+            ],
+            [
+              "baseline",
+              "candidate"
+            ],
+            [
+              "candidate",
+              "baseline"
+            ],
+            [
+              "baseline",
+              "candidate"
+            ]
+          ],
+          "engines": {
+            "baseline": {
+              "samples_us": [
+                1265625.0,
+                1328125.0,
+                1296875.0,
+                1359375.0,
+                1359375.0
+              ],
+              "median_us": 1328125.0,
+              "min_us": 1265625.0,
+              "max_us": 1359375.0,
+              "wall_samples_us": [
+                1367338.1,
+                1368389.6,
+                1365248.4,
+                1360424.6,
+                1357179.1
+              ]
+            },
+            "candidate": {
+              "samples_us": [
+                859375.0,
+                890625.0,
+                890625.0,
+                875000.0,
+                921875.0
+              ],
+              "median_us": 890625.0,
+              "min_us": 859375.0,
+              "max_us": 921875.0,
+              "wall_samples_us": [
+                930374.0,
+                918508.1,
+                892949.7,
+                893424.2,
+                934572.3
+              ]
+            }
+          },
+          "change_percent": -32.94117647058823
+        },
+        "compiled-update": {
+          "definition": "VARIABLE BENCH-V 7 CONSTANT BENCH-K : BENCH-RUN 0 BENCH-V ! BENCH-ITERATIONS 0 DO 7 [ BENCH-V ] LITERAL +! LOOP BENCH-V @ ;",
+          "iterations": 210000000,
+          "checksum": 1470000000,
+          "orders": [
+            [
+              "candidate",
+              "baseline"
+            ],
+            [
+              "baseline",
+              "candidate"
+            ],
+            [
+              "candidate",
+              "baseline"
+            ],
+            [
+              "baseline",
+              "candidate"
+            ],
+            [
+              "candidate",
+              "baseline"
+            ],
+            [
+              "baseline",
+              "candidate"
+            ]
+          ],
+          "engines": {
+            "baseline": {
+              "samples_us": [
+                1406250.0,
+                1406250.0,
+                1421875.0,
+                1281250.0,
+                1343750.0
+              ],
+              "median_us": 1406250.0,
+              "min_us": 1281250.0,
+              "max_us": 1421875.0,
+              "wall_samples_us": [
+                1455337.1,
+                1459181.2,
+                1456176.0,
+                1454253.1,
+                1457671.6
+              ]
+            },
+            "candidate": {
+              "samples_us": [
+                1000000.0,
+                1015625.0,
+                906250.0,
+                1000000.0,
+                921875.0
+              ],
+              "median_us": 1000000.0,
+              "min_us": 906250.0,
+              "max_us": 1015625.0,
+              "wall_samples_us": [
+                1023425.2,
+                1036627.5,
+                1037385.9,
+                1039954.1,
+                1030710.1
+              ]
+            }
+          },
+          "change_percent": -28.88888888888889
+        },
+        "constant-compiled-update": {
+          "definition": "VARIABLE BENCH-V 7 CONSTANT BENCH-K : BENCH-RUN 0 BENCH-V ! BENCH-ITERATIONS 0 DO BENCH-K [ BENCH-V ] LITERAL +! LOOP BENCH-V @ ;",
+          "iterations": 190000000,
+          "checksum": 1330000000,
+          "orders": [
+            [
+              "candidate",
+              "baseline"
+            ],
+            [
+              "baseline",
+              "candidate"
+            ],
+            [
+              "candidate",
+              "baseline"
+            ],
+            [
+              "baseline",
+              "candidate"
+            ],
+            [
+              "candidate",
+              "baseline"
+            ],
+            [
+              "baseline",
+              "candidate"
+            ]
+          ],
+          "engines": {
+            "baseline": {
+              "samples_us": [
+                1375000.0,
+                1390625.0,
+                1343750.0,
+                1312500.0,
+                1265625.0
+              ],
+              "median_us": 1343750.0,
+              "min_us": 1265625.0,
+              "max_us": 1390625.0,
+              "wall_samples_us": [
+                1401032.5,
+                1408812.3,
+                1396651.7,
+                1413201.4,
+                1403735.3
+              ]
+            },
+            "candidate": {
+              "samples_us": [
+                1015625.0,
+                1000000.0,
+                937500.0,
+                1015625.0,
+                937500.0
+              ],
+              "median_us": 1000000.0,
+              "min_us": 937500.0,
+              "max_us": 1015625.0,
+              "wall_samples_us": [
+                1020456.1,
+                1027178.6,
+                1024576.9,
+                1023401.9,
+                1023507.1
+              ]
+            }
+          },
+          "change_percent": -25.58139534883721
+        }
+      }
+    },
+    "control-cases.json": {
+      "mixed-sum": {
+        "definition": "VARIABLE BENCH-V 7 CONSTANT BENCH-K : BENCH-RUN 0 BENCH-ITERATIONS 0 DO BENCH-K BENCH-V DROP + LOOP ;",
+        "checksum_per_iteration": 7,
+        "see_equal": true
+      },
+      "mixed-fetch": {
+        "definition": "VARIABLE BENCH-V 7 CONSTANT BENCH-K : BENCH-RUN 0 BENCH-ITERATIONS 0 DO BENCH-K BENCH-V @ + + LOOP ;",
+        "checksum_per_iteration": 7,
+        "see_equal": true
+      },
+      "constant-address": {
+        "definition": "ALIGN HERE 0 , CONSTANT BENCH-V 7 CONSTANT BENCH-K : BENCH-RUN 0 BENCH-V ! BENCH-ITERATIONS 0 DO BENCH-K BENCH-V +! LOOP BENCH-V @ ;",
+        "checksum_per_iteration": 7,
+        "see_equal": true
+      },
+      "both-variable": {
+        "definition": "VARIABLE BENCH-V VARIABLE BENCH-K 7 BENCH-K ! : BENCH-RUN 0 BENCH-V ! BENCH-ITERATIONS 0 DO BENCH-K @ BENCH-V +! LOOP BENCH-V @ ;",
+        "checksum_per_iteration": 7,
+        "see_equal": true
+      },
+      "reversed": {
+        "definition": "VARIABLE BENCH-V 7 CONSTANT BENCH-K : BENCH-RUN 0 BENCH-V ! BENCH-ITERATIONS 0 DO BENCH-V BENCH-K SWAP +! LOOP BENCH-V @ ;",
+        "checksum_per_iteration": 7,
+        "see_equal": true
+      }
+    },
+    "control-calibration.json": {
+      "mixed-sum": {
+        "definition": "VARIABLE BENCH-V 7 CONSTANT BENCH-K : BENCH-RUN 0 BENCH-ITERATIONS 0 DO BENCH-K BENCH-V DROP + LOOP ;",
+        "checksum_per_iteration": 7,
+        "see_equal": true,
+        "iterations": 100000000,
+        "calibration": [
+          {
+            "iterations": 100000000,
+            "cpu_us": 1078125.0,
+            "wall_us": 1205482.8
+          }
+        ]
+      },
+      "mixed-fetch": {
+        "definition": "VARIABLE BENCH-V 7 CONSTANT BENCH-K : BENCH-RUN 0 BENCH-ITERATIONS 0 DO BENCH-K BENCH-V @ + + LOOP ;",
+        "checksum_per_iteration": 7,
+        "see_equal": true,
+        "iterations": 100000000,
+        "calibration": [
+          {
+            "iterations": 100000000,
+            "cpu_us": 1312500.0,
+            "wall_us": 1359019.2
+          }
+        ]
+      },
+      "constant-address": {
+        "definition": "ALIGN HERE 0 , CONSTANT BENCH-V 7 CONSTANT BENCH-K : BENCH-RUN 0 BENCH-V ! BENCH-ITERATIONS 0 DO BENCH-K BENCH-V +! LOOP BENCH-V @ ;",
+        "checksum_per_iteration": 7,
+        "see_equal": true,
+        "iterations": 170000000,
+        "calibration": [
+          {
+            "iterations": 100000000,
+            "cpu_us": 734375.0,
+            "wall_us": 789488.0
+          },
+          {
+            "iterations": 170000000,
+            "cpu_us": 1250000.0,
+            "wall_us": 1345482.4
+          }
+        ]
+      },
+      "both-variable": {
+        "definition": "VARIABLE BENCH-V VARIABLE BENCH-K 7 BENCH-K ! : BENCH-RUN 0 BENCH-V ! BENCH-ITERATIONS 0 DO BENCH-K @ BENCH-V +! LOOP BENCH-V @ ;",
+        "checksum_per_iteration": 7,
+        "see_equal": true,
+        "iterations": 100000000,
+        "calibration": [
+          {
+            "iterations": 100000000,
+            "cpu_us": 1109375.0,
+            "wall_us": 1167437.5
+          }
+        ]
+      },
+      "reversed": {
+        "definition": "VARIABLE BENCH-V 7 CONSTANT BENCH-K : BENCH-RUN 0 BENCH-V ! BENCH-ITERATIONS 0 DO BENCH-V BENCH-K SWAP +! LOOP BENCH-V @ ;",
+        "checksum_per_iteration": 7,
+        "see_equal": true,
+        "iterations": 100000000,
+        "calibration": [
+          {
+            "iterations": 100000000,
+            "cpu_us": 1078125.0,
+            "wall_us": 1114943.9
+          }
+        ]
+      }
+    },
+    "control-1.json": {
+      "series": 1,
+      "pid": 44192,
+      "rounds": 5,
+      "cpu_affinity": [
+        0
+      ],
+      "purpose": "Diagnostic decomposition, not adoption testing",
+      "engines": {
+        "baseline": {
+          "path": "D:\\home\\source\\zig\\forthz\\.work\\vm-pc-windows-20261115\\baseline\\bin\\sigma.exe",
+          "sha256": "49b7c673d42f8c0d7fda06feab7fd7f008934109358b4771ec2daaf9f33468b8"
+        },
+        "candidate": {
+          "path": "D:\\home\\source\\zig\\forthz\\.work\\vm-pc-windows-20261115\\candidate\\bin\\sigma.exe",
+          "sha256": "4ee7ee6c13609367f640648ba8ad3b249406dbf99c26ee77f43f3865e5e27a14"
+        }
+      },
+      "cases": {
+        "mixed-sum": {
+          "definition": "VARIABLE BENCH-V 7 CONSTANT BENCH-K : BENCH-RUN 0 BENCH-ITERATIONS 0 DO BENCH-K BENCH-V DROP + LOOP ;",
+          "iterations": 100000000,
+          "checksum": 700000000,
+          "orders": [
+            [
+              "baseline",
+              "candidate"
+            ],
+            [
+              "candidate",
+              "baseline"
+            ],
+            [
+              "baseline",
+              "candidate"
+            ],
+            [
+              "candidate",
+              "baseline"
+            ],
+            [
+              "baseline",
+              "candidate"
+            ],
+            [
+              "candidate",
+              "baseline"
+            ]
+          ],
+          "engines": {
+            "baseline": {
+              "samples_us": [
+                1109375.0,
+                1125000.0,
+                1093750.0,
+                1125000.0,
+                1031250.0
+              ],
+              "median_us": 1109375.0,
+              "min_us": 1031250.0,
+              "max_us": 1125000.0,
+              "wall_samples_us": [
+                1138331.6,
+                1138040.9,
+                1127108.2,
+                1135452.1,
+                1123795.1
+              ]
+            },
+            "candidate": {
+              "samples_us": [
+                2156250.0,
+                2046875.0,
+                2109375.0,
+                2109375.0,
+                2078125.0
+              ],
+              "median_us": 2109375.0,
+              "min_us": 2046875.0,
+              "max_us": 2156250.0,
+              "wall_samples_us": [
+                2169834.5,
+                2176902.6,
+                2153798.9,
+                2169849.3,
+                2183049.4
+              ]
+            }
+          },
+          "change_percent": 90.14084507042253
+        },
+        "mixed-fetch": {
+          "definition": "VARIABLE BENCH-V 7 CONSTANT BENCH-K : BENCH-RUN 0 BENCH-ITERATIONS 0 DO BENCH-K BENCH-V @ + + LOOP ;",
+          "iterations": 100000000,
+          "checksum": 700000000,
+          "orders": [
+            [
+              "baseline",
+              "candidate"
+            ],
+            [
+              "candidate",
+              "baseline"
+            ],
+            [
+              "baseline",
+              "candidate"
+            ],
+            [
+              "candidate",
+              "baseline"
+            ],
+            [
+              "baseline",
+              "candidate"
+            ],
+            [
+              "candidate",
+              "baseline"
+            ]
+          ],
+          "engines": {
+            "baseline": {
+              "samples_us": [
+                1250000.0,
+                1250000.0,
+                1031250.0,
+                1156250.0,
+                1296875.0
+              ],
+              "median_us": 1250000.0,
+              "min_us": 1031250.0,
+              "max_us": 1296875.0,
+              "wall_samples_us": [
+                1300600.0,
+                1309615.8,
+                1307120.4,
+                1334020.8,
+                1321890.6
+              ]
+            },
+            "candidate": {
+              "samples_us": [
+                2234375.0,
+                2250000.0,
+                2125000.0,
+                2171875.0,
+                2281250.0
+              ],
+              "median_us": 2234375.0,
+              "min_us": 2125000.0,
+              "max_us": 2281250.0,
+              "wall_samples_us": [
+                2363183.4,
+                2359233.1,
+                2362591.5,
+                2382655.5,
+                2431331.4
+              ]
+            }
+          },
+          "change_percent": 78.75
+        },
+        "constant-address": {
+          "definition": "ALIGN HERE 0 , CONSTANT BENCH-V 7 CONSTANT BENCH-K : BENCH-RUN 0 BENCH-V ! BENCH-ITERATIONS 0 DO BENCH-K BENCH-V +! LOOP BENCH-V @ ;",
+          "iterations": 170000000,
+          "checksum": 1190000000,
+          "orders": [
+            [
+              "baseline",
+              "candidate"
+            ],
+            [
+              "candidate",
+              "baseline"
+            ],
+            [
+              "baseline",
+              "candidate"
+            ],
+            [
+              "candidate",
+              "baseline"
+            ],
+            [
+              "baseline",
+              "candidate"
+            ],
+            [
+              "candidate",
+              "baseline"
+            ]
+          ],
+          "engines": {
+            "baseline": {
+              "samples_us": [
+                1265625.0,
+                1265625.0,
+                1265625.0,
+                1281250.0,
+                1250000.0
+              ],
+              "median_us": 1265625.0,
+              "min_us": 1250000.0,
+              "max_us": 1281250.0,
+              "wall_samples_us": [
+                1328833.1,
+                1313267.9,
+                1324889.8,
+                1313481.5,
+                1317831.5
+              ]
+            },
+            "candidate": {
+              "samples_us": [
+                1000000.0,
+                1000000.0,
+                984375.0,
+                1000000.0,
+                1000000.0
+              ],
+              "median_us": 1000000.0,
+              "min_us": 984375.0,
+              "max_us": 1000000.0,
+              "wall_samples_us": [
+                1060818.3,
+                1040772.8,
+                1050626.6,
+                1043107.5,
+                1045657.3
+              ]
+            }
+          },
+          "change_percent": -20.987654320987655
+        },
+        "both-variable": {
+          "definition": "VARIABLE BENCH-V VARIABLE BENCH-K 7 BENCH-K ! : BENCH-RUN 0 BENCH-V ! BENCH-ITERATIONS 0 DO BENCH-K @ BENCH-V +! LOOP BENCH-V @ ;",
+          "iterations": 100000000,
+          "checksum": 700000000,
+          "orders": [
+            [
+              "baseline",
+              "candidate"
+            ],
+            [
+              "candidate",
+              "baseline"
+            ],
+            [
+              "baseline",
+              "candidate"
+            ],
+            [
+              "candidate",
+              "baseline"
+            ],
+            [
+              "baseline",
+              "candidate"
+            ],
+            [
+              "candidate",
+              "baseline"
+            ]
+          ],
+          "engines": {
+            "baseline": {
+              "samples_us": [
+                1078125.0,
+                1093750.0,
+                1125000.0,
+                1062500.0,
+                1125000.0
+              ],
+              "median_us": 1093750.0,
+              "min_us": 1062500.0,
+              "max_us": 1125000.0,
+              "wall_samples_us": [
+                1154765.8,
+                1159969.5,
+                1150344.8,
+                1154975.5,
+                1151172.8
+              ]
+            },
+            "candidate": {
+              "samples_us": [
+                734375.0,
+                750000.0,
+                718750.0,
+                734375.0,
+                718750.0
+              ],
+              "median_us": 734375.0,
+              "min_us": 718750.0,
+              "max_us": 750000.0,
+              "wall_samples_us": [
+                805228.8,
+                789498.3,
+                780354.9,
+                768451.4,
+                792107.4
+              ]
+            }
+          },
+          "change_percent": -32.857142857142854
+        },
+        "reversed": {
+          "definition": "VARIABLE BENCH-V 7 CONSTANT BENCH-K : BENCH-RUN 0 BENCH-V ! BENCH-ITERATIONS 0 DO BENCH-V BENCH-K SWAP +! LOOP BENCH-V @ ;",
+          "iterations": 100000000,
+          "checksum": 700000000,
+          "orders": [
+            [
+              "baseline",
+              "candidate"
+            ],
+            [
+              "candidate",
+              "baseline"
+            ],
+            [
+              "baseline",
+              "candidate"
+            ],
+            [
+              "candidate",
+              "baseline"
+            ],
+            [
+              "baseline",
+              "candidate"
+            ],
+            [
+              "candidate",
+              "baseline"
+            ]
+          ],
+          "engines": {
+            "baseline": {
+              "samples_us": [
+                1078125.0,
+                1078125.0,
+                1125000.0,
+                1046875.0,
+                1015625.0
+              ],
+              "median_us": 1078125.0,
+              "min_us": 1015625.0,
+              "max_us": 1125000.0,
+              "wall_samples_us": [
+                1102170.8,
+                1099929.2,
+                1172982.9,
+                1099466.4,
+                1096578.7
+              ]
+            },
+            "candidate": {
+              "samples_us": [
+                2156250.0,
+                2359375.0,
+                2328125.0,
+                2203125.0,
+                2234375.0
+              ],
+              "median_us": 2234375.0,
+              "min_us": 2156250.0,
+              "max_us": 2359375.0,
+              "wall_samples_us": [
+                2419570.3,
+                2423537.4,
+                2439819.6,
+                2422355.5,
+                2417843.6
+              ]
+            }
+          },
+          "change_percent": 107.2463768115942
+        }
+      }
+    },
+    "control-2.json": {
+      "series": 2,
+      "pid": 2952,
+      "rounds": 5,
+      "cpu_affinity": [
+        0
+      ],
+      "purpose": "Diagnostic decomposition, not adoption testing",
+      "engines": {
+        "baseline": {
+          "path": "D:\\home\\source\\zig\\forthz\\.work\\vm-pc-windows-20261115\\baseline\\bin\\sigma.exe",
+          "sha256": "49b7c673d42f8c0d7fda06feab7fd7f008934109358b4771ec2daaf9f33468b8"
+        },
+        "candidate": {
+          "path": "D:\\home\\source\\zig\\forthz\\.work\\vm-pc-windows-20261115\\candidate\\bin\\sigma.exe",
+          "sha256": "4ee7ee6c13609367f640648ba8ad3b249406dbf99c26ee77f43f3865e5e27a14"
+        }
+      },
+      "cases": {
+        "mixed-sum": {
+          "definition": "VARIABLE BENCH-V 7 CONSTANT BENCH-K : BENCH-RUN 0 BENCH-ITERATIONS 0 DO BENCH-K BENCH-V DROP + LOOP ;",
+          "iterations": 100000000,
+          "checksum": 700000000,
+          "orders": [
+            [
+              "candidate",
+              "baseline"
+            ],
+            [
+              "baseline",
+              "candidate"
+            ],
+            [
+              "candidate",
+              "baseline"
+            ],
+            [
+              "baseline",
+              "candidate"
+            ],
+            [
+              "candidate",
+              "baseline"
+            ],
+            [
+              "baseline",
+              "candidate"
+            ]
+          ],
+          "engines": {
+            "baseline": {
+              "samples_us": [
+                1062500.0,
+                1062500.0,
+                1093750.0,
+                1109375.0,
+                1093750.0
+              ],
+              "median_us": 1093750.0,
+              "min_us": 1062500.0,
+              "max_us": 1109375.0,
+              "wall_samples_us": [
+                1130780.4,
+                1121097.1,
+                1123029.3,
+                1133866.0,
+                1112109.7
+              ]
+            },
+            "candidate": {
+              "samples_us": [
+                2015625.0,
+                2078125.0,
+                2062500.0,
+                2109375.0,
+                2109375.0
+              ],
+              "median_us": 2078125.0,
+              "min_us": 2015625.0,
+              "max_us": 2109375.0,
+              "wall_samples_us": [
+                2154009.0,
+                2159351.8,
+                2163352.7,
+                2157164.4,
+                2159741.7
+              ]
+            }
+          },
+          "change_percent": 90.0
+        },
+        "mixed-fetch": {
+          "definition": "VARIABLE BENCH-V 7 CONSTANT BENCH-K : BENCH-RUN 0 BENCH-ITERATIONS 0 DO BENCH-K BENCH-V @ + + LOOP ;",
+          "iterations": 100000000,
+          "checksum": 700000000,
+          "orders": [
+            [
+              "candidate",
+              "baseline"
+            ],
+            [
+              "baseline",
+              "candidate"
+            ],
+            [
+              "candidate",
+              "baseline"
+            ],
+            [
+              "baseline",
+              "candidate"
+            ],
+            [
+              "candidate",
+              "baseline"
+            ],
+            [
+              "baseline",
+              "candidate"
+            ]
+          ],
+          "engines": {
+            "baseline": {
+              "samples_us": [
+                1234375.0,
+                1281250.0,
+                1281250.0,
+                1250000.0,
+                1281250.0
+              ],
+              "median_us": 1281250.0,
+              "min_us": 1234375.0,
+              "max_us": 1281250.0,
+              "wall_samples_us": [
+                1316025.6,
+                1311941.2,
+                1315390.2,
+                1303399.8,
+                1313482.7
+              ]
+            },
+            "candidate": {
+              "samples_us": [
+                2343750.0,
+                2343750.0,
+                2234375.0,
+                2187500.0,
+                2265625.0
+              ],
+              "median_us": 2265625.0,
+              "min_us": 2187500.0,
+              "max_us": 2343750.0,
+              "wall_samples_us": [
+                2353563.8,
+                2367046.2,
+                2357667.8,
+                2351239.0,
+                2348260.1
+              ]
+            }
+          },
+          "change_percent": 76.82926829268293
+        },
+        "constant-address": {
+          "definition": "ALIGN HERE 0 , CONSTANT BENCH-V 7 CONSTANT BENCH-K : BENCH-RUN 0 BENCH-V ! BENCH-ITERATIONS 0 DO BENCH-K BENCH-V +! LOOP BENCH-V @ ;",
+          "iterations": 170000000,
+          "checksum": 1190000000,
+          "orders": [
+            [
+              "candidate",
+              "baseline"
+            ],
+            [
+              "baseline",
+              "candidate"
+            ],
+            [
+              "candidate",
+              "baseline"
+            ],
+            [
+              "baseline",
+              "candidate"
+            ],
+            [
+              "candidate",
+              "baseline"
+            ],
+            [
+              "baseline",
+              "candidate"
+            ]
+          ],
+          "engines": {
+            "baseline": {
+              "samples_us": [
+                1281250.0,
+                1187500.0,
+                1171875.0,
+                1203125.0,
+                3265625.0
+              ],
+              "median_us": 1203125.0,
+              "min_us": 1171875.0,
+              "max_us": 3265625.0,
+              "wall_samples_us": [
+                1307759.0,
+                1311193.9,
+                1318598.2,
+                1307974.0,
+                3396596.1
+              ]
+            },
+            "candidate": {
+              "samples_us": [
+                968750.0,
+                1015625.0,
+                890625.0,
+                953125.0,
+                984375.0
+              ],
+              "median_us": 968750.0,
+              "min_us": 890625.0,
+              "max_us": 1015625.0,
+              "wall_samples_us": [
+                1036859.4,
+                1034857.3,
+                1048642.7,
+                1039005.8,
+                1037337.4
+              ]
+            }
+          },
+          "change_percent": -19.48051948051948
+        },
+        "both-variable": {
+          "definition": "VARIABLE BENCH-V VARIABLE BENCH-K 7 BENCH-K ! : BENCH-RUN 0 BENCH-V ! BENCH-ITERATIONS 0 DO BENCH-K @ BENCH-V +! LOOP BENCH-V @ ;",
+          "iterations": 100000000,
+          "checksum": 700000000,
+          "orders": [
+            [
+              "candidate",
+              "baseline"
+            ],
+            [
+              "baseline",
+              "candidate"
+            ],
+            [
+              "candidate",
+              "baseline"
+            ],
+            [
+              "baseline",
+              "candidate"
+            ],
+            [
+              "candidate",
+              "baseline"
+            ],
+            [
+              "baseline",
+              "candidate"
+            ]
+          ],
+          "engines": {
+            "baseline": {
+              "samples_us": [
+                1109375.0,
+                1140625.0,
+                1125000.0,
+                1156250.0,
+                1156250.0
+              ],
+              "median_us": 1140625.0,
+              "min_us": 1109375.0,
+              "max_us": 1156250.0,
+              "wall_samples_us": [
+                1166844.7,
+                1165555.7,
+                1157135.7,
+                1150927.3,
+                1162934.8
+              ]
+            },
+            "candidate": {
+              "samples_us": [
+                718750.0,
+                765625.0,
+                765625.0,
+                765625.0,
+                781250.0
+              ],
+              "median_us": 765625.0,
+              "min_us": 718750.0,
+              "max_us": 781250.0,
+              "wall_samples_us": [
+                814256.8,
+                773983.2,
+                791781.7,
+                780772.4,
+                778993.3
+              ]
+            }
+          },
+          "change_percent": -32.87671232876713
+        },
+        "reversed": {
+          "definition": "VARIABLE BENCH-V 7 CONSTANT BENCH-K : BENCH-RUN 0 BENCH-V ! BENCH-ITERATIONS 0 DO BENCH-V BENCH-K SWAP +! LOOP BENCH-V @ ;",
+          "iterations": 100000000,
+          "checksum": 700000000,
+          "orders": [
+            [
+              "candidate",
+              "baseline"
+            ],
+            [
+              "baseline",
+              "candidate"
+            ],
+            [
+              "candidate",
+              "baseline"
+            ],
+            [
+              "baseline",
+              "candidate"
+            ],
+            [
+              "candidate",
+              "baseline"
+            ],
+            [
+              "baseline",
+              "candidate"
+            ]
+          ],
+          "engines": {
+            "baseline": {
+              "samples_us": [
+                1078125.0,
+                1062500.0,
+                1093750.0,
+                1000000.0,
+                984375.0
+              ],
+              "median_us": 1062500.0,
+              "min_us": 984375.0,
+              "max_us": 1093750.0,
+              "wall_samples_us": [
+                1102310.0,
+                1107641.6,
+                1100801.3,
+                1099121.1,
+                1099739.9
+              ]
+            },
+            "candidate": {
+              "samples_us": [
+                2359375.0,
+                2390625.0,
+                2406250.0,
+                2312500.0,
+                2359375.0
+              ],
+              "median_us": 2359375.0,
+              "min_us": 2312500.0,
+              "max_us": 2406250.0,
+              "wall_samples_us": [
+                2416880.8,
+                2424766.4,
+                2420083.0,
+                2433072.1,
+                2412686.6
+              ]
+            }
+          },
+          "change_percent": 122.05882352941177
+        }
+      }
+    }
+  },
+  "scripts": {
+    "split.py": "from pathlib import Path\nimport importlib.util,json,statistics,sys,math,hashlib\nsys.dont_write_bytecode=True\nroot=Path(__file__).resolve().parents[2];out=Path(__file__).resolve().parent;spec=importlib.util.spec_from_file_location('bench',root/'scripts/benchmark-runtime.py');b=importlib.util.module_from_spec(spec);spec.loader.exec_module(b);b.cpu_affinity(0)\nbins={k:root/f'.work/vm-pc-windows-20261115/{k}/bin/sigma.exe' for k in ('baseline','candidate')};mode=sys.argv[1]\nif mode=='calibrate':\n cases=json.loads((out/'split-cases.json').read_text());record={}\n for name,c in cases.items():\n  n=100_000_000;samples=[]\n  for i in range(4):\n   source=f'{n} CONSTANT BENCH-ITERATIONS {c[\"definition\"]} '+'.\" BENCH-READY\" CR KEY DROP BENCH-RUN .\" BENCH-DONE \" . CR KEY DROP BYE';cpu,check,wall,total=b.sample(str(bins['baseline']),False,source);assert check==n*c['checksum_per_iteration'];samples.append({'iterations':n,'cpu_us':cpu,'wall_us':wall})\n   if cpu>=1_000_000:break\n   n=math.ceil(n*1_200_000/cpu/10_000_000)*10_000_000\n  assert cpu>=1_000_000\n  record[name]={**c,'iterations':n,'calibration':samples};(out/'split-calibration.json').write_text(json.dumps(record,indent=2)+'\\n');print(name,n,cpu,flush=True)\nelse:\n series=int(sys.argv[2]);cases=json.loads((out/'split-calibration.json').read_text());report={'series':series,'pid':__import__('os').getpid(),'rounds':5,'cpu_affinity':b.cpu_affinity(),'purpose':'Diagnostic decomposition, not adoption testing','engines':{k:{'path':str(v),'sha256':hashlib.sha256(v.read_bytes()).hexdigest()} for k,v in bins.items()},'cases':{}}\n for name,c in cases.items():\n  n=c['iterations'];source=f'{n} CONSTANT BENCH-ITERATIONS {c[\"definition\"]} '+'.\" BENCH-READY\" CR KEY DROP BENCH-RUN .\" BENCH-DONE \" . CR KEY DROP BYE';vals={k:[] for k in bins};walls={k:[] for k in bins};orders=[]\n  for index in range(6):\n   order=list(bins) if (series-1+index)%2==0 else list(reversed(bins));orders.append(order)\n   for label in order:\n    cpu,check,wall,total=b.sample(str(bins[label]),False,source);assert check==n*c['checksum_per_iteration'],(name,label,check)\n    if index:vals[label].append(cpu);walls[label].append(wall)\n  rows={k:{'samples_us':v,'median_us':statistics.median(v),'min_us':min(v),'max_us':max(v),'wall_samples_us':walls[k]} for k,v in vals.items()};change=100*(rows['candidate']['median_us']-rows['baseline']['median_us'])/rows['baseline']['median_us'];report['cases'][name]={'definition':c['definition'],'iterations':n,'checksum':n*c['checksum_per_iteration'],'orders':orders,'engines':rows,'change_percent':change};(out/f'split-{series}.json').write_text(json.dumps(report,indent=2)+'\\n');print(name,change,flush=True)\n",
+    "control.py": "from pathlib import Path\nimport importlib.util,json,statistics,sys,math,hashlib\nsys.dont_write_bytecode=True\nroot=Path(__file__).resolve().parents[2];out=Path(__file__).resolve().parent;spec=importlib.util.spec_from_file_location('bench',root/'scripts/benchmark-runtime.py');b=importlib.util.module_from_spec(spec);spec.loader.exec_module(b);b.cpu_affinity(0)\nbins={k:root/f'.work/vm-pc-windows-20261115/{k}/bin/sigma.exe' for k in ('baseline','candidate')};mode=sys.argv[1]\nif mode=='calibrate':\n cases=json.loads((out/'control-cases.json').read_text());record={}\n for name,c in cases.items():\n  n=100_000_000;samples=[]\n  for i in range(4):\n   source=f'{n} CONSTANT BENCH-ITERATIONS {c[\"definition\"]} '+'.\" BENCH-READY\" CR KEY DROP BENCH-RUN .\" BENCH-DONE \" . CR KEY DROP BYE';cpu,check,wall,total=b.sample(str(bins['baseline']),False,source);assert check==n*c['checksum_per_iteration'];samples.append({'iterations':n,'cpu_us':cpu,'wall_us':wall})\n   if cpu>=1_000_000:break\n   n=math.ceil(n*1_200_000/cpu/10_000_000)*10_000_000\n  assert cpu>=1_000_000\n  record[name]={**c,'iterations':n,'calibration':samples};(out/'control-calibration.json').write_text(json.dumps(record,indent=2)+'\\n');print(name,n,cpu,flush=True)\nelse:\n series=int(sys.argv[2]);cases=json.loads((out/'control-calibration.json').read_text());report={'series':series,'pid':__import__('os').getpid(),'rounds':5,'cpu_affinity':b.cpu_affinity(),'purpose':'Diagnostic decomposition, not adoption testing','engines':{k:{'path':str(v),'sha256':hashlib.sha256(v.read_bytes()).hexdigest()} for k,v in bins.items()},'cases':{}}\n for name,c in cases.items():\n  n=c['iterations'];source=f'{n} CONSTANT BENCH-ITERATIONS {c[\"definition\"]} '+'.\" BENCH-READY\" CR KEY DROP BENCH-RUN .\" BENCH-DONE \" . CR KEY DROP BYE';vals={k:[] for k in bins};walls={k:[] for k in bins};orders=[]\n  for index in range(6):\n   order=list(bins) if (series-1+index)%2==0 else list(reversed(bins));orders.append(order)\n   for label in order:\n    cpu,check,wall,total=b.sample(str(bins[label]),False,source);assert check==n*c['checksum_per_iteration'],(name,label,check)\n    if index:vals[label].append(cpu);walls[label].append(wall)\n  rows={k:{'samples_us':v,'median_us':statistics.median(v),'min_us':min(v),'max_us':max(v),'wall_samples_us':walls[k]} for k,v in vals.items()};change=100*(rows['candidate']['median_us']-rows['baseline']['median_us'])/rows['baseline']['median_us'];report['cases'][name]={'definition':c['definition'],'iterations':n,'checksum':n*c['checksum_per_iteration'],'orders':orders,'engines':rows,'change_percent':change};(out/f'control-{series}.json').write_text(json.dumps(report,indent=2)+'\\n');print(name,change,flush=True)\n",
+    "prepare-controls.py": "from pathlib import Path\nimport json,subprocess\nout=Path('.work/vm-windows-variable-investigation-20261115');original=': BENCH-RUN 0 BENCH-V ! BENCH-ITERATIONS 0 DO BENCH-K BENCH-V +! LOOP BENCH-V @ ;';v='VARIABLE BENCH-V 7 CONSTANT BENCH-K '\ncases={'mixed-sum':v+': BENCH-RUN 0 BENCH-ITERATIONS 0 DO BENCH-K BENCH-V DROP + LOOP ;','mixed-fetch':v+': BENCH-RUN 0 BENCH-ITERATIONS 0 DO BENCH-K BENCH-V @ + + LOOP ;','constant-address':'ALIGN HERE 0 , CONSTANT BENCH-V 7 CONSTANT BENCH-K '+original,'both-variable':'VARIABLE BENCH-V VARIABLE BENCH-K 7 BENCH-K ! : BENCH-RUN 0 BENCH-V ! BENCH-ITERATIONS 0 DO BENCH-K @ BENCH-V +! LOOP BENCH-V @ ;','reversed':v+': BENCH-RUN 0 BENCH-V ! BENCH-ITERATIONS 0 DO BENCH-V BENCH-K SWAP +! LOOP BENCH-V @ ;'}\nreport={}\nfor name,definition in cases.items():\n results=[]\n for label in ('baseline','candidate'):\n  binary=Path('.work/vm-pc-windows-20261115')/label/'bin/sigma.exe';source='10 CONSTANT BENCH-ITERATIONS '+definition+' BENCH-V . BENCH-K . HERE . SEE BENCH-RUN BENCH-RUN . DEPTH . BYE';r=subprocess.run([str(binary.resolve()),'-e',source],capture_output=True,check=True);assert not r.stderr and r.stdout.endswith(b'70 0 '),(name,r.stdout);results.append(r.stdout);(out/f'control-see-{label}-{name}.txt').write_bytes(r.stdout)\n assert results[0]==results[1];report[name]={'definition':definition,'checksum_per_iteration':7,'see_equal':True}\n(out/'control-cases.json').write_text(json.dumps(report,indent=2)+'\\n')\ns=(out/'split.py').read_text(encoding='utf-8-sig').replace(\"'split-cases.json'\",\"'control-cases.json'\").replace(\"'split-calibration.json'\",\"'control-calibration.json'\").replace(\"f'split-{series}.json'\",\"f'control-{series}.json'\");(out/'control.py').write_text(s,encoding='utf8')\ns=(out/'measure-split.py').read_text(encoding='utf-8-sig').replace(\"'split.py'\",\"'control.py'\").replace(\"'split-'\",\"'control-'\").replace(\"'split-commands.json'\",\"'control-commands.json'\");(out/'measure-control.py').write_text(s,encoding='utf8');print('5 controls: checksums/depth and SEE match')\n",
+    "map-loops.py": "from pathlib import Path\nimport re,json\nout=Path('.work/vm-windows-variable-investigation-20261115');syms=json.loads((out/'symbols.json').read_text());report={}\ndef ins(p):\n rows=[]\n for l in p.read_text(encoding='utf8').splitlines():\n  f=l.split('\\t');m=re.match(r'\\s*([0-9a-f]+):',f[0])\n  if m and len(f)>=3 and f[2].strip():rows.append((int(m[1],16),f[2].strip()))\n return rows\ndef norm(rows,start,size):\n result=[]\n for a,s in rows:\n  s=re.sub(r'\\s*<[^>]+>','',s);s=re.sub(r'(?<=\\s)([0-9a-f]{9,})(?=\\s|$)',r'0x\\1',s)\n  def addr(m):\n   n=int(m[0],16)\n   return 'LOCAL+'+hex(n-start) if start<=n<start+size else ('EXTERNAL' if 0x140000000<=n<0x150000000 else m[0])\n  result.append((a-start,re.sub(r'0x[0-9a-f]+',addr,s)))\n return result\nfor label in syms:\n sr=ins(out/f'{label}-symbols.asm');tr=ins(out/f'{label}-strip.asm');report[label]=[]\n for symbol in syms[label]['symbols']:\n  a=int(symbol['address'],16);size=symbol['bytes'];body=[x for x in sr if a<=x[0]<a+size];prefix=norm(body[:16],a,size)\n  hits=[i for i in range(len(tr)-16) if norm(tr[i:i+16],tr[i][0],size)==prefix];assert len(hits)==1,(label,symbol,len(hits));b=tr[hits[0]][0];tb=[x for x in tr if b<=x[0]<b+size]\n  diffs=[{'symbol':x,'strip':y} for x,y in zip(norm(body,a,size),norm(tb,b,size)) if x!=y];row={**symbol,'strip_address':hex(b),'instruction_lines':len(body),'strip_instruction_lines':len(tb),'normalized_equal':not diffs and len(body)==len(tb),'differences':diffs};report[label].append(row)\n  (out/f'{label}-{symbol[\"name\"]}-strip.txt').write_text('\\n'.join(f'{x:x}\\t{s}' for x,s in tb)+'\\n');print(label,symbol['name'],hex(b),size,len(body),'diffs',len(diffs))\n(out/'loop-map.json').write_text(json.dumps(report,indent=2)+'\\n')\n",
+    "symbols.py": "from pathlib import Path\nimport ctypes as c,json,struct,sys\nfrom ctypes import wintypes as w\nroot=Path.cwd();out=root/'.work/vm-windows-variable-investigation-20261115'\nclass Symbol(c.Structure):\n _fields_=[('SizeOfStruct',w.ULONG),('TypeIndex',w.ULONG),('Reserved',c.c_ulonglong*2),('Index',w.ULONG),('Size',w.ULONG),('ModBase',c.c_ulonglong),('Flags',w.ULONG),('Value',c.c_ulonglong),('Address',c.c_ulonglong),('Register',w.ULONG),('Scope',w.ULONG),('Tag',w.ULONG),('NameLen',w.ULONG),('MaxNameLen',w.ULONG),('Name',c.c_char*1)]\napi=c.WinDLL('dbghelp',use_last_error=True);handle=c.c_void_p(1)\napi.SymSetOptions.argtypes=[w.DWORD];api.SymSetOptions.restype=w.DWORD;api.SymSetOptions(0x4|0x200|0x400|0x1000|0x80000|0x02000000)\napi.SymInitialize.argtypes=[w.HANDLE,c.c_char_p,w.BOOL];api.SymInitialize.restype=w.BOOL\napi.SymCleanup.argtypes=[w.HANDLE];api.SymCleanup.restype=w.BOOL\napi.SymLoadModuleEx.argtypes=[w.HANDLE,w.HANDLE,c.c_char_p,c.c_char_p,c.c_ulonglong,w.DWORD,c.c_void_p,w.DWORD];api.SymLoadModuleEx.restype=c.c_ulonglong\ncallback=c.WINFUNCTYPE(w.BOOL,c.POINTER(Symbol),w.ULONG,c.c_void_p)\napi.SymEnumSymbols.argtypes=[w.HANDLE,c.c_ulonglong,c.c_char_p,callback,c.c_void_p];api.SymEnumSymbols.restype=w.BOOL\nrecords={}\nfor label in ('baseline','candidate'):\n exe=out/(label+'-symbols/bin/sigma.exe')\n if not exe.exists():continue\n data=exe.read_bytes();pe=struct.unpack_from('<I',data,0x3c)[0];imagebase=struct.unpack_from('<Q',data,pe+24+24)[0]\n assert api.SymInitialize(handle,str(exe.parent).encode(),False),c.get_last_error()\n try:\n  base=api.SymLoadModuleEx(handle,None,str(exe).encode(),None,imagebase,0,None,0);assert base,c.get_last_error();symbols=[]\n  @callback\n  def receive(ptr,size,context):\n   s=ptr.contents;name=c.string_at(c.addressof(s)+Symbol.Name.offset,s.NameLen).decode('utf8',errors='replace')\n   symbols.append({'name':name,'address':hex(s.Address),'rva':hex(s.Address-base),'bytes':s.Size,'tag':s.Tag});return True\n  assert api.SymEnumSymbols(handle,base,b'*runOperationsLoop*',receive,None),c.get_last_error()\n  records[label]={'imagebase':hex(imagebase),'symbols':symbols};print(label,symbols,flush=True)\n finally:api.SymCleanup(handle)\n(out/'symbols.json').write_text(json.dumps(records,indent=2)+'\\n')\n"
+  },
+  "preflight": {
+    "control-see-baseline-both-variable.txt": "122880 122888 122896 : BENCH-RUN\n  0 BENCH-V ! BENCH-ITERATIONS 0 DO BENCH-K @ BENCH-V +! LOOP BENCH-V @\n;\n70 0 ",
+    "control-see-baseline-constant-address.txt": "122880 7 122888 : BENCH-RUN\n  0 BENCH-V ! BENCH-ITERATIONS 0 DO BENCH-K BENCH-V +! LOOP BENCH-V @\n;\n70 0 ",
+    "control-see-baseline-mixed-fetch.txt": "122880 7 122888 : BENCH-RUN\n  0 BENCH-ITERATIONS 0 DO BENCH-K BENCH-V @ + + LOOP\n;\n70 0 ",
+    "control-see-baseline-mixed-sum.txt": "122880 7 122888 : BENCH-RUN\n  0 BENCH-ITERATIONS 0 DO BENCH-K BENCH-V DROP + LOOP\n;\n70 0 ",
+    "control-see-baseline-reversed.txt": "122880 7 122888 : BENCH-RUN\n  0 BENCH-V ! BENCH-ITERATIONS 0 DO BENCH-V BENCH-K SWAP +! LOOP BENCH-V\n  @\n;\n70 0 ",
+    "control-see-candidate-both-variable.txt": "122880 122888 122896 : BENCH-RUN\n  0 BENCH-V ! BENCH-ITERATIONS 0 DO BENCH-K @ BENCH-V +! LOOP BENCH-V @\n;\n70 0 ",
+    "control-see-candidate-constant-address.txt": "122880 7 122888 : BENCH-RUN\n  0 BENCH-V ! BENCH-ITERATIONS 0 DO BENCH-K BENCH-V +! LOOP BENCH-V @\n;\n70 0 ",
+    "control-see-candidate-mixed-fetch.txt": "122880 7 122888 : BENCH-RUN\n  0 BENCH-ITERATIONS 0 DO BENCH-K BENCH-V @ + + LOOP\n;\n70 0 ",
+    "control-see-candidate-mixed-sum.txt": "122880 7 122888 : BENCH-RUN\n  0 BENCH-ITERATIONS 0 DO BENCH-K BENCH-V DROP + LOOP\n;\n70 0 ",
+    "control-see-candidate-reversed.txt": "122880 7 122888 : BENCH-RUN\n  0 BENCH-V ! BENCH-ITERATIONS 0 DO BENCH-V BENCH-K SWAP +! LOOP BENCH-V\n  @\n;\n70 0 ",
+    "see-baseline-address-drop.txt": ": BENCH-RUN\n  0 BENCH-ITERATIONS 0 DO BENCH-V DROP 1+ LOOP\n;\n10 0 ",
+    "see-baseline-combined.txt": ": BENCH-RUN\n  0 BENCH-V ! BENCH-ITERATIONS 0 DO BENCH-K BENCH-V +! LOOP BENCH-V @\n;\n70 0 ",
+    "see-baseline-compiled-update.txt": ": BENCH-RUN\n  0 BENCH-V ! BENCH-ITERATIONS 0 DO 7 122880 +! LOOP BENCH-V @\n;\n70 0 ",
+    "see-baseline-constant-compiled-update.txt": ": BENCH-RUN\n  0 BENCH-V ! BENCH-ITERATIONS 0 DO BENCH-K 122880 +! LOOP BENCH-V @\n;\n70 0 ",
+    "see-baseline-constant-sum.txt": ": BENCH-RUN\n  0 BENCH-ITERATIONS 0 DO BENCH-K + LOOP\n;\n70 0 ",
+    "see-baseline-constant.txt": "WARNING: SAME NAME WORD EXISTS\n: RUN\n  0 2 0 DO K + LOOP\n;\n14 ",
+    "see-baseline-fetch-sum.txt": ": BENCH-RUN\n  0 BENCH-ITERATIONS 0 DO BENCH-V @ + LOOP\n;\n0 0 ",
+    "see-baseline-literal-sum.txt": ": BENCH-RUN\n  0 BENCH-ITERATIONS 0 DO 7 + LOOP\n;\n70 0 ",
+    "see-baseline-literal-update.txt": ": BENCH-RUN\n  0 BENCH-V ! BENCH-ITERATIONS 0 DO 7 BENCH-V +! LOOP BENCH-V @\n;\n70 0 ",
+    "see-baseline-variable.txt": ": RUN\n  0 2 0 DO V DROP 1+ LOOP\n;\n2 ",
+    "see-candidate-address-drop.txt": ": BENCH-RUN\n  0 BENCH-ITERATIONS 0 DO BENCH-V DROP 1+ LOOP\n;\n10 0 ",
+    "see-candidate-combined.txt": ": BENCH-RUN\n  0 BENCH-V ! BENCH-ITERATIONS 0 DO BENCH-K BENCH-V +! LOOP BENCH-V @\n;\n70 0 ",
+    "see-candidate-compiled-update.txt": ": BENCH-RUN\n  0 BENCH-V ! BENCH-ITERATIONS 0 DO 7 122880 +! LOOP BENCH-V @\n;\n70 0 ",
+    "see-candidate-constant-compiled-update.txt": ": BENCH-RUN\n  0 BENCH-V ! BENCH-ITERATIONS 0 DO BENCH-K 122880 +! LOOP BENCH-V @\n;\n70 0 ",
+    "see-candidate-constant-sum.txt": ": BENCH-RUN\n  0 BENCH-ITERATIONS 0 DO BENCH-K + LOOP\n;\n70 0 ",
+    "see-candidate-constant.txt": "WARNING: SAME NAME WORD EXISTS\n: RUN\n  0 2 0 DO K + LOOP\n;\n14 ",
+    "see-candidate-fetch-sum.txt": ": BENCH-RUN\n  0 BENCH-ITERATIONS 0 DO BENCH-V @ + LOOP\n;\n0 0 ",
+    "see-candidate-literal-sum.txt": ": BENCH-RUN\n  0 BENCH-ITERATIONS 0 DO 7 + LOOP\n;\n70 0 ",
+    "see-candidate-literal-update.txt": ": BENCH-RUN\n  0 BENCH-V ! BENCH-ITERATIONS 0 DO 7 BENCH-V +! LOOP BENCH-V @\n;\n70 0 ",
+    "see-candidate-variable.txt": ": RUN\n  0 2 0 DO V DROP 1+ LOOP\n;\n2 "
+  },
+  "production_source_sha256": "3fedbd1601a1ebd3fa61f99bf2a3ce06fd876af1b7047bb8a86057b0e3ca5191"
+}

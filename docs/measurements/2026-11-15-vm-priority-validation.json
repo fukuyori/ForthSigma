@@ -1,0 +1,3655 @@
+{
+  "records": {
+    "linux-commands.json": [
+      {
+        "case": "linux-nested",
+        "command": [
+          "wsl",
+          "--exec",
+          "python3",
+          "/mnt/d/home/source/zig/forthz/.work/vm-priority-validation-20261115/measure-linux-case.py",
+          "linux-nested"
+        ],
+        "exit": 0
+      },
+      {
+        "case": "linux-nobt",
+        "command": [
+          "wsl",
+          "--exec",
+          "python3",
+          "/mnt/d/home/source/zig/forthz/.work/vm-priority-validation-20261115/measure-linux-case.py",
+          "linux-nobt"
+        ],
+        "exit": 0
+      }
+    ],
+    "linux-nested-aa-history.json": [
+      {
+        "attempt": 0,
+        "tag": "linux-nested-pass0",
+        "delta_percent": 0.9611749854707984
+      }
+    ],
+    "linux-nested-config.json": {
+      "group": "catch",
+      "definition": ": B-NEST DUP IF 1- ['] B-NEST CATCH THROW ELSE DROP THEN ; : BENCH-RUN 0 BENCH-ITERATIONS 0 DO 256 ['] B-NEST CATCH + LOOP ;",
+      "iterations": 197128,
+      "checksum_per_iteration": 0,
+      "calibration_samples": [
+        {
+          "iterations": 98564,
+          "cpu_us": 1250000.0,
+          "wall_us": 1322523.1,
+          "checksum": 0
+        }
+      ]
+    },
+    "linux-nested-decision.json": {
+      "tag": "linux-nested-pass0",
+      "cpu": 0,
+      "delta_percent": 0.9611749854707984,
+      "iterations": 197128,
+      "changes_percent": [
+        -6.761089475658933,
+        -6.760363482332621
+      ],
+      "upper_limit_percent": 5,
+      "both_within_limit": true,
+      "both_exceed_limit": false
+    },
+    "linux-nested-pass0-aa-1.json": {
+      "stage": "aa",
+      "series": 1,
+      "pid": 420,
+      "platform": "Linux-6.18.33.2-microsoft-standard-WSL2-x86_64-with-glibc2.43",
+      "cpu_affinity": [
+        0
+      ],
+      "rounds": 7,
+      "case": {
+        "group": "catch",
+        "definition": ": B-NEST DUP IF 1- ['] B-NEST CATCH THROW ELSE DROP THEN ; : BENCH-RUN 0 BENCH-ITERATIONS 0 DO 256 ['] B-NEST CATCH + LOOP ;",
+        "iterations": 197128,
+        "checksum_per_iteration": 0,
+        "calibration_samples": [
+          {
+            "iterations": 98564,
+            "cpu_us": 1250000.0,
+            "wall_us": 1322523.1,
+            "checksum": 0
+          }
+        ]
+      },
+      "checksum": 0,
+      "orders": [
+        [
+          "A1",
+          "A2"
+        ],
+        [
+          "A2",
+          "A1"
+        ],
+        [
+          "A1",
+          "A2"
+        ],
+        [
+          "A2",
+          "A1"
+        ],
+        [
+          "A1",
+          "A2"
+        ],
+        [
+          "A2",
+          "A1"
+        ],
+        [
+          "A1",
+          "A2"
+        ],
+        [
+          "A2",
+          "A1"
+        ]
+      ],
+      "timing": "clock_getcpuclockid + clock_gettime READY/DONE CPU delta; startup/compilation excluded",
+      "engines": {
+        "A1": {
+          "path": "/mnt/d/home/source/zig/forthz/.work/vm-a-experiment/baseline-linux/bin/sigma",
+          "sha256": "93e1eefb8a8ed198ab1bd8355d3fd944426992527e1e80d534aef1a63adebd99",
+          "samples_us": [
+            1832336.616,
+            1819998.675,
+            1818992.601,
+            1810167.948,
+            1798916.502,
+            1828698.737,
+            2005928.683
+          ],
+          "median_us": 1819998.675,
+          "min_us": 1798916.502,
+          "max_us": 2005928.683,
+          "wall_samples_us": [
+            1834534.077,
+            1822026.417,
+            1821378.917,
+            1812473.96,
+            1800761.743,
+            1831207.173,
+            2006473.854
+          ]
+        },
+        "A2": {
+          "path": "/mnt/d/home/source/zig/forthz/.work/vm-a-experiment/baseline-linux/bin/sigma",
+          "sha256": "93e1eefb8a8ed198ab1bd8355d3fd944426992527e1e80d534aef1a63adebd99",
+          "samples_us": [
+            1837197.198,
+            1818521.764,
+            1860324.359,
+            1837977.193,
+            1820719.372,
+            1906249.96,
+            1837492.047
+          ],
+          "median_us": 1837492.047,
+          "min_us": 1818521.764,
+          "max_us": 1906249.96,
+          "wall_samples_us": [
+            1839351.068,
+            1820634.959,
+            1862366.22,
+            1838409.565,
+            1822560.346,
+            1908333.326,
+            1840320.32
+          ]
+        }
+      },
+      "change_percent": 0.9611749854707918,
+      "aa_delta_percent": 0.9611749854707984
+    },
+    "linux-nested-pass0-aa-2.json": {
+      "stage": "aa",
+      "series": 2,
+      "pid": 497,
+      "platform": "Linux-6.18.33.2-microsoft-standard-WSL2-x86_64-with-glibc2.43",
+      "cpu_affinity": [
+        0
+      ],
+      "rounds": 7,
+      "case": {
+        "group": "catch",
+        "definition": ": B-NEST DUP IF 1- ['] B-NEST CATCH THROW ELSE DROP THEN ; : BENCH-RUN 0 BENCH-ITERATIONS 0 DO 256 ['] B-NEST CATCH + LOOP ;",
+        "iterations": 197128,
+        "checksum_per_iteration": 0,
+        "calibration_samples": [
+          {
+            "iterations": 98564,
+            "cpu_us": 1250000.0,
+            "wall_us": 1322523.1,
+            "checksum": 0
+          }
+        ]
+      },
+      "checksum": 0,
+      "orders": [
+        [
+          "A2",
+          "A1"
+        ],
+        [
+          "A1",
+          "A2"
+        ],
+        [
+          "A2",
+          "A1"
+        ],
+        [
+          "A1",
+          "A2"
+        ],
+        [
+          "A2",
+          "A1"
+        ],
+        [
+          "A1",
+          "A2"
+        ],
+        [
+          "A2",
+          "A1"
+        ],
+        [
+          "A1",
+          "A2"
+        ]
+      ],
+      "timing": "clock_getcpuclockid + clock_gettime READY/DONE CPU delta; startup/compilation excluded",
+      "engines": {
+        "A1": {
+          "path": "/mnt/d/home/source/zig/forthz/.work/vm-a-experiment/baseline-linux/bin/sigma",
+          "sha256": "93e1eefb8a8ed198ab1bd8355d3fd944426992527e1e80d534aef1a63adebd99",
+          "samples_us": [
+            1832341.926,
+            1799551.152,
+            1820841.371,
+            1964849.695,
+            1872560.048,
+            1828905.832,
+            1825094.941
+          ],
+          "median_us": 1828905.832,
+          "min_us": 1799551.152,
+          "max_us": 1964849.695,
+          "wall_samples_us": [
+            1834273.859,
+            1799989.4,
+            1821262.691,
+            1966670.188,
+            1873090.998,
+            1829323.509,
+            1825528.431
+          ]
+        },
+        "A2": {
+          "path": "/mnt/d/home/source/zig/forthz/.work/vm-a-experiment/baseline-linux/bin/sigma",
+          "sha256": "93e1eefb8a8ed198ab1bd8355d3fd944426992527e1e80d534aef1a63adebd99",
+          "samples_us": [
+            2131374.882,
+            1829105.28,
+            1836502.437,
+            1809346.46,
+            1826201.882,
+            1832624.804,
+            2558238.742
+          ],
+          "median_us": 1832624.804,
+          "min_us": 1809346.46,
+          "max_us": 2558238.742,
+          "wall_samples_us": [
+            2131822.96,
+            1829563.627,
+            1836927.13,
+            1811264.292,
+            1826628.372,
+            1834474.169,
+            2563537.754
+          ]
+        }
+      },
+      "change_percent": 0.20334409431748135,
+      "aa_delta_percent": 0.20334409431748518
+    },
+    "linux-nested-pass0-compare-1.json": {
+      "stage": "compare",
+      "series": 1,
+      "pid": 531,
+      "platform": "Linux-6.18.33.2-microsoft-standard-WSL2-x86_64-with-glibc2.43",
+      "cpu_affinity": [
+        0
+      ],
+      "rounds": 7,
+      "case": {
+        "group": "catch",
+        "definition": ": B-NEST DUP IF 1- ['] B-NEST CATCH THROW ELSE DROP THEN ; : BENCH-RUN 0 BENCH-ITERATIONS 0 DO 256 ['] B-NEST CATCH + LOOP ;",
+        "iterations": 197128,
+        "checksum_per_iteration": 0,
+        "calibration_samples": [
+          {
+            "iterations": 98564,
+            "cpu_us": 1250000.0,
+            "wall_us": 1322523.1,
+            "checksum": 0
+          }
+        ]
+      },
+      "checksum": 0,
+      "orders": [
+        [
+          "baseline",
+          "candidate"
+        ],
+        [
+          "candidate",
+          "baseline"
+        ],
+        [
+          "baseline",
+          "candidate"
+        ],
+        [
+          "candidate",
+          "baseline"
+        ],
+        [
+          "baseline",
+          "candidate"
+        ],
+        [
+          "candidate",
+          "baseline"
+        ],
+        [
+          "baseline",
+          "candidate"
+        ],
+        [
+          "candidate",
+          "baseline"
+        ]
+      ],
+      "timing": "clock_getcpuclockid + clock_gettime READY/DONE CPU delta; startup/compilation excluded",
+      "engines": {
+        "baseline": {
+          "path": "/mnt/d/home/source/zig/forthz/.work/vm-a-experiment/baseline-linux/bin/sigma",
+          "sha256": "93e1eefb8a8ed198ab1bd8355d3fd944426992527e1e80d534aef1a63adebd99",
+          "samples_us": [
+            1808046.269,
+            1820193.536,
+            1824756.529,
+            1819268.465,
+            1846377.727,
+            1822673.305,
+            1894689.223
+          ],
+          "median_us": 1822673.305,
+          "min_us": 1808046.269,
+          "max_us": 1894689.223,
+          "wall_samples_us": [
+            1808504.343,
+            1820648.552,
+            1825181.932,
+            1819724.049,
+            1846792.982,
+            1823090.274,
+            1895172.458
+          ]
+        },
+        "candidate": {
+          "path": "/mnt/d/home/source/zig/forthz/.work/vm-data-call-route-20261115/linux/bin/sigma",
+          "sha256": "bdb6eb7a0ac59d27d23281708f89538631950d39654837cfd1cfa8d0e78b73fa",
+          "samples_us": [
+            1691054.714,
+            1701520.229,
+            1860657.569,
+            1847916.495,
+            1678355.32,
+            1660519.478,
+            1699440.732
+          ],
+          "median_us": 1699440.732,
+          "min_us": 1660519.478,
+          "max_us": 1860657.569,
+          "wall_samples_us": [
+            1692873.976,
+            1701959.402,
+            1861115.717,
+            1848368.931,
+            1678783.993,
+            1660959.567,
+            1699867.267
+          ]
+        }
+      },
+      "change_percent": -6.761089475658933,
+      "aa_delta_percent": null
+    },
+    "linux-nested-pass0-compare-2.json": {
+      "stage": "compare",
+      "series": 2,
+      "pid": 565,
+      "platform": "Linux-6.18.33.2-microsoft-standard-WSL2-x86_64-with-glibc2.43",
+      "cpu_affinity": [
+        0
+      ],
+      "rounds": 7,
+      "case": {
+        "group": "catch",
+        "definition": ": B-NEST DUP IF 1- ['] B-NEST CATCH THROW ELSE DROP THEN ; : BENCH-RUN 0 BENCH-ITERATIONS 0 DO 256 ['] B-NEST CATCH + LOOP ;",
+        "iterations": 197128,
+        "checksum_per_iteration": 0,
+        "calibration_samples": [
+          {
+            "iterations": 98564,
+            "cpu_us": 1250000.0,
+            "wall_us": 1322523.1,
+            "checksum": 0
+          }
+        ]
+      },
+      "checksum": 0,
+      "orders": [
+        [
+          "candidate",
+          "baseline"
+        ],
+        [
+          "baseline",
+          "candidate"
+        ],
+        [
+          "candidate",
+          "baseline"
+        ],
+        [
+          "baseline",
+          "candidate"
+        ],
+        [
+          "candidate",
+          "baseline"
+        ],
+        [
+          "baseline",
+          "candidate"
+        ],
+        [
+          "candidate",
+          "baseline"
+        ],
+        [
+          "baseline",
+          "candidate"
+        ]
+      ],
+      "timing": "clock_getcpuclockid + clock_gettime READY/DONE CPU delta; startup/compilation excluded",
+      "engines": {
+        "baseline": {
+          "path": "/mnt/d/home/source/zig/forthz/.work/vm-a-experiment/baseline-linux/bin/sigma",
+          "sha256": "93e1eefb8a8ed198ab1bd8355d3fd944426992527e1e80d534aef1a63adebd99",
+          "samples_us": [
+            1827198.055,
+            1815013.443,
+            2031722.538,
+            1806861.665,
+            1815749.193,
+            1812140.997,
+            1808853.46
+          ],
+          "median_us": 1815013.443,
+          "min_us": 1806861.665,
+          "max_us": 2031722.538,
+          "wall_samples_us": [
+            1827619.679,
+            1815430.191,
+            2032184.814,
+            1807491.243,
+            1816234.154,
+            1812608.509,
+            1809312.037
+          ]
+        },
+        "candidate": {
+          "path": "/mnt/d/home/source/zig/forthz/.work/vm-data-call-route-20261115/linux/bin/sigma",
+          "sha256": "bdb6eb7a0ac59d27d23281708f89538631950d39654837cfd1cfa8d0e78b73fa",
+          "samples_us": [
+            1858248.601,
+            1683667.161,
+            1666449.863,
+            1692311.937,
+            1697290.479,
+            1671802.329,
+            1902448.4
+          ],
+          "median_us": 1692311.937,
+          "min_us": 1666449.863,
+          "max_us": 1902448.4,
+          "wall_samples_us": [
+            1858647.197,
+            1684173.656,
+            1666889.75,
+            1692730.356,
+            1697728.567,
+            1672241.159,
+            1902890.149
+          ]
+        }
+      },
+      "change_percent": -6.760363482332621,
+      "aa_delta_percent": null
+    },
+    "linux-nobt-aa-history.json": [
+      {
+        "attempt": 0,
+        "tag": "linux-nobt-pass0",
+        "delta_percent": 1.772531350336571
+      }
+    ],
+    "linux-nobt-config.json": {
+      "group": "catch",
+      "definition": ": B-WORK 77 THROW ; : BENCH-RUN 0 BENCH-ITERATIONS 0 DO ['] B-WORK CATCH-NOBT + LOOP ;",
+      "iterations": 43461126,
+      "checksum_per_iteration": 77,
+      "calibration_samples": [
+        {
+          "iterations": 17825852,
+          "cpu_us": 984375.0,
+          "wall_us": 1082761.2,
+          "checksum": 1372590604
+        },
+        {
+          "iterations": 21730563,
+          "cpu_us": 1296875.0,
+          "wall_us": 1407158.1,
+          "checksum": 1673253351
+        }
+      ]
+    },
+    "linux-nobt-decision.json": {
+      "tag": "linux-nobt-pass0",
+      "cpu": 0,
+      "delta_percent": 1.772531350336571,
+      "iterations": 43461126,
+      "changes_percent": [
+        -2.5563194692932223,
+        0.09530728357349805
+      ],
+      "upper_limit_percent": 10,
+      "both_within_limit": true,
+      "both_exceed_limit": false
+    },
+    "linux-nobt-pass0-aa-1.json": {
+      "stage": "aa",
+      "series": 1,
+      "pid": 609,
+      "platform": "Linux-6.18.33.2-microsoft-standard-WSL2-x86_64-with-glibc2.43",
+      "cpu_affinity": [
+        0
+      ],
+      "rounds": 7,
+      "case": {
+        "group": "catch",
+        "definition": ": B-WORK 77 THROW ; : BENCH-RUN 0 BENCH-ITERATIONS 0 DO ['] B-WORK CATCH-NOBT + LOOP ;",
+        "iterations": 43461126,
+        "checksum_per_iteration": 77,
+        "calibration_samples": [
+          {
+            "iterations": 17825852,
+            "cpu_us": 984375.0,
+            "wall_us": 1082761.2,
+            "checksum": 1372590604
+          },
+          {
+            "iterations": 21730563,
+            "cpu_us": 1296875.0,
+            "wall_us": 1407158.1,
+            "checksum": 1673253351
+          }
+        ]
+      },
+      "checksum": 3346506702,
+      "orders": [
+        [
+          "A1",
+          "A2"
+        ],
+        [
+          "A2",
+          "A1"
+        ],
+        [
+          "A1",
+          "A2"
+        ],
+        [
+          "A2",
+          "A1"
+        ],
+        [
+          "A1",
+          "A2"
+        ],
+        [
+          "A2",
+          "A1"
+        ],
+        [
+          "A1",
+          "A2"
+        ],
+        [
+          "A2",
+          "A1"
+        ]
+      ],
+      "timing": "clock_getcpuclockid + clock_gettime READY/DONE CPU delta; startup/compilation excluded",
+      "engines": {
+        "A1": {
+          "path": "/mnt/d/home/source/zig/forthz/.work/vm-a-experiment/baseline-linux/bin/sigma",
+          "sha256": "93e1eefb8a8ed198ab1bd8355d3fd944426992527e1e80d534aef1a63adebd99",
+          "samples_us": [
+            2345464.312,
+            2352825.348,
+            2573778.026,
+            2374624.541,
+            2378139.239,
+            2346894.292,
+            2499004.705
+          ],
+          "median_us": 2374624.541,
+          "min_us": 2345464.312,
+          "max_us": 2573778.026,
+          "wall_samples_us": [
+            2346143.969,
+            2354914.633,
+            2574251.604,
+            2375064.902,
+            2378577.861,
+            2347413.743,
+            2499558.606
+          ]
+        },
+        "A2": {
+          "path": "/mnt/d/home/source/zig/forthz/.work/vm-a-experiment/baseline-linux/bin/sigma",
+          "sha256": "93e1eefb8a8ed198ab1bd8355d3fd944426992527e1e80d534aef1a63adebd99",
+          "samples_us": [
+            2333266.658,
+            2288463.967,
+            2280502.983,
+            2324462.081,
+            2536457.264,
+            2424355.204,
+            2390858.48
+          ],
+          "median_us": 2333266.658,
+          "min_us": 2280502.983,
+          "max_us": 2536457.264,
+          "wall_samples_us": [
+            2335180.802,
+            2288985.151,
+            2280981.231,
+            2324883.758,
+            2536986.949,
+            2424816.359,
+            2391374.519
+          ]
+        }
+      },
+      "change_percent": -1.7416598828960073,
+      "aa_delta_percent": 1.772531350336571
+    },
+    "linux-nobt-pass0-aa-2.json": {
+      "stage": "aa",
+      "series": 2,
+      "pid": 647,
+      "platform": "Linux-6.18.33.2-microsoft-standard-WSL2-x86_64-with-glibc2.43",
+      "cpu_affinity": [
+        0
+      ],
+      "rounds": 7,
+      "case": {
+        "group": "catch",
+        "definition": ": B-WORK 77 THROW ; : BENCH-RUN 0 BENCH-ITERATIONS 0 DO ['] B-WORK CATCH-NOBT + LOOP ;",
+        "iterations": 43461126,
+        "checksum_per_iteration": 77,
+        "calibration_samples": [
+          {
+            "iterations": 17825852,
+            "cpu_us": 984375.0,
+            "wall_us": 1082761.2,
+            "checksum": 1372590604
+          },
+          {
+            "iterations": 21730563,
+            "cpu_us": 1296875.0,
+            "wall_us": 1407158.1,
+            "checksum": 1673253351
+          }
+        ]
+      },
+      "checksum": 3346506702,
+      "orders": [
+        [
+          "A2",
+          "A1"
+        ],
+        [
+          "A1",
+          "A2"
+        ],
+        [
+          "A2",
+          "A1"
+        ],
+        [
+          "A1",
+          "A2"
+        ],
+        [
+          "A2",
+          "A1"
+        ],
+        [
+          "A1",
+          "A2"
+        ],
+        [
+          "A2",
+          "A1"
+        ],
+        [
+          "A1",
+          "A2"
+        ]
+      ],
+      "timing": "clock_getcpuclockid + clock_gettime READY/DONE CPU delta; startup/compilation excluded",
+      "engines": {
+        "A1": {
+          "path": "/mnt/d/home/source/zig/forthz/.work/vm-a-experiment/baseline-linux/bin/sigma",
+          "sha256": "93e1eefb8a8ed198ab1bd8355d3fd944426992527e1e80d534aef1a63adebd99",
+          "samples_us": [
+            2415962.909,
+            2534405.902,
+            2534622.432,
+            2334163.751,
+            2266134.227,
+            2356915.879,
+            2278631.939
+          ],
+          "median_us": 2356915.879,
+          "min_us": 2266134.227,
+          "max_us": 2534622.432,
+          "wall_samples_us": [
+            2416431.687,
+            2534901.434,
+            2535080.463,
+            2334591.422,
+            2270052.415,
+            2357396.879,
+            2279124.449
+          ]
+        },
+        "A2": {
+          "path": "/mnt/d/home/source/zig/forthz/.work/vm-a-experiment/baseline-linux/bin/sigma",
+          "sha256": "93e1eefb8a8ed198ab1bd8355d3fd944426992527e1e80d534aef1a63adebd99",
+          "samples_us": [
+            2554226.869,
+            2269554.412,
+            2330102.243,
+            2395033.504,
+            2330641.523,
+            2783844.955,
+            2339205.095
+          ],
+          "median_us": 2339205.095,
+          "min_us": 2269554.412,
+          "max_us": 2783844.955,
+          "wall_samples_us": [
+            2554729.099,
+            2269993.181,
+            2330593.794,
+            2395526.404,
+            2331138.697,
+            2784366.872,
+            2339698.909
+          ]
+        }
+      },
+      "change_percent": -0.7514389528197496,
+      "aa_delta_percent": 0.7571283098628846
+    },
+    "linux-nobt-pass0-compare-1.json": {
+      "stage": "compare",
+      "series": 1,
+      "pid": 681,
+      "platform": "Linux-6.18.33.2-microsoft-standard-WSL2-x86_64-with-glibc2.43",
+      "cpu_affinity": [
+        0
+      ],
+      "rounds": 7,
+      "case": {
+        "group": "catch",
+        "definition": ": B-WORK 77 THROW ; : BENCH-RUN 0 BENCH-ITERATIONS 0 DO ['] B-WORK CATCH-NOBT + LOOP ;",
+        "iterations": 43461126,
+        "checksum_per_iteration": 77,
+        "calibration_samples": [
+          {
+            "iterations": 17825852,
+            "cpu_us": 984375.0,
+            "wall_us": 1082761.2,
+            "checksum": 1372590604
+          },
+          {
+            "iterations": 21730563,
+            "cpu_us": 1296875.0,
+            "wall_us": 1407158.1,
+            "checksum": 1673253351
+          }
+        ]
+      },
+      "checksum": 3346506702,
+      "orders": [
+        [
+          "baseline",
+          "candidate"
+        ],
+        [
+          "candidate",
+          "baseline"
+        ],
+        [
+          "baseline",
+          "candidate"
+        ],
+        [
+          "candidate",
+          "baseline"
+        ],
+        [
+          "baseline",
+          "candidate"
+        ],
+        [
+          "candidate",
+          "baseline"
+        ],
+        [
+          "baseline",
+          "candidate"
+        ],
+        [
+          "candidate",
+          "baseline"
+        ]
+      ],
+      "timing": "clock_getcpuclockid + clock_gettime READY/DONE CPU delta; startup/compilation excluded",
+      "engines": {
+        "baseline": {
+          "path": "/mnt/d/home/source/zig/forthz/.work/vm-a-experiment/baseline-linux/bin/sigma",
+          "sha256": "93e1eefb8a8ed198ab1bd8355d3fd944426992527e1e80d534aef1a63adebd99",
+          "samples_us": [
+            2337829.212,
+            2330245.241,
+            2314243.543,
+            2349326.286,
+            2335942.777,
+            2317581.851,
+            2376863.899
+          ],
+          "median_us": 2335942.777,
+          "min_us": 2314243.543,
+          "max_us": 2376863.899,
+          "wall_samples_us": [
+            2338297.914,
+            2330707.554,
+            2314850.882,
+            2349812.963,
+            2336362.306,
+            2318006.657,
+            2377330.075
+          ]
+        },
+        "candidate": {
+          "path": "/mnt/d/home/source/zig/forthz/.work/vm-data-call-route-20261115/linux/bin/sigma",
+          "sha256": "bdb6eb7a0ac59d27d23281708f89538631950d39654837cfd1cfa8d0e78b73fa",
+          "samples_us": [
+            2236594.537,
+            2259363.172,
+            2415547.91,
+            2276228.617,
+            2718181.886,
+            2228357.195,
+            2330260.688
+          ],
+          "median_us": 2276228.617,
+          "min_us": 2228357.195,
+          "max_us": 2718181.886,
+          "wall_samples_us": [
+            2237076.166,
+            2259792.962,
+            2417422.918,
+            2276722.562,
+            2718675.562,
+            2228827.551,
+            2330707.401
+          ]
+        }
+      },
+      "change_percent": -2.5563194692932223,
+      "aa_delta_percent": null
+    },
+    "linux-nobt-pass0-compare-2.json": {
+      "stage": "compare",
+      "series": 2,
+      "pid": 715,
+      "platform": "Linux-6.18.33.2-microsoft-standard-WSL2-x86_64-with-glibc2.43",
+      "cpu_affinity": [
+        0
+      ],
+      "rounds": 7,
+      "case": {
+        "group": "catch",
+        "definition": ": B-WORK 77 THROW ; : BENCH-RUN 0 BENCH-ITERATIONS 0 DO ['] B-WORK CATCH-NOBT + LOOP ;",
+        "iterations": 43461126,
+        "checksum_per_iteration": 77,
+        "calibration_samples": [
+          {
+            "iterations": 17825852,
+            "cpu_us": 984375.0,
+            "wall_us": 1082761.2,
+            "checksum": 1372590604
+          },
+          {
+            "iterations": 21730563,
+            "cpu_us": 1296875.0,
+            "wall_us": 1407158.1,
+            "checksum": 1673253351
+          }
+        ]
+      },
+      "checksum": 3346506702,
+      "orders": [
+        [
+          "candidate",
+          "baseline"
+        ],
+        [
+          "baseline",
+          "candidate"
+        ],
+        [
+          "candidate",
+          "baseline"
+        ],
+        [
+          "baseline",
+          "candidate"
+        ],
+        [
+          "candidate",
+          "baseline"
+        ],
+        [
+          "baseline",
+          "candidate"
+        ],
+        [
+          "candidate",
+          "baseline"
+        ],
+        [
+          "baseline",
+          "candidate"
+        ]
+      ],
+      "timing": "clock_getcpuclockid + clock_gettime READY/DONE CPU delta; startup/compilation excluded",
+      "engines": {
+        "baseline": {
+          "path": "/mnt/d/home/source/zig/forthz/.work/vm-a-experiment/baseline-linux/bin/sigma",
+          "sha256": "93e1eefb8a8ed198ab1bd8355d3fd944426992527e1e80d534aef1a63adebd99",
+          "samples_us": [
+            2327985.764,
+            2375769.389,
+            2341217.846,
+            2336258.908,
+            2347511.036,
+            2353689.141,
+            2366270.832
+          ],
+          "median_us": 2347511.036,
+          "min_us": 2327985.764,
+          "max_us": 2375769.389,
+          "wall_samples_us": [
+            2328486.032,
+            2376186.465,
+            2341676.481,
+            2336705.007,
+            2347949.795,
+            2354188.348,
+            2366783.932
+          ]
+        },
+        "candidate": {
+          "path": "/mnt/d/home/source/zig/forthz/.work/vm-data-call-route-20261115/linux/bin/sigma",
+          "sha256": "bdb6eb7a0ac59d27d23281708f89538631950d39654837cfd1cfa8d0e78b73fa",
+          "samples_us": [
+            2382972.8,
+            2402413.46,
+            2221534.702,
+            2226112.25,
+            2222941.705,
+            2707252.466,
+            2349748.385
+          ],
+          "median_us": 2349748.385,
+          "min_us": 2221534.702,
+          "max_us": 2707252.466,
+          "wall_samples_us": [
+            2383548.028,
+            2406255.955,
+            2222009.012,
+            2226565.793,
+            2223442.225,
+            2707663.775,
+            2350199.077
+          ]
+        }
+      },
+      "change_percent": 0.09530728357349805,
+      "aa_delta_percent": null
+    },
+    "loop-aa-history.json": [
+      {
+        "attempt": 0,
+        "tag": "loop-pass0",
+        "delta_percent": 1.2048192771084338
+      }
+    ],
+    "loop-config.json": {
+      "group": "normal",
+      "definition": ": BENCH-RUN 0 BENCH-ITERATIONS 0 DO I 7 AND + LOOP ;",
+      "iterations": 320000000,
+      "calibration_samples": [
+        {
+          "iterations": 100000000,
+          "cpu_us": 796875.0,
+          "wall_us": 888722.9,
+          "checksum": 350000000
+        },
+        {
+          "iterations": 160000000,
+          "cpu_us": 1250000.0,
+          "wall_us": 1405640.8,
+          "checksum": 560000000
+        }
+      ]
+    },
+    "loop-decision.json": {
+      "tag": "loop-pass0",
+      "delta_percent": 1.2048192771084338,
+      "iterations": 320000000,
+      "changes_percent": [
+        -14.619883040935678,
+        -10.119047619047617
+      ],
+      "passes_loop_condition": true
+    },
+    "loop-pass0-aa-1.json": {
+      "stage": "aa",
+      "series": 1,
+      "pid": 35844,
+      "platform": "Windows-11-10.0.26300-SP0",
+      "cpu_affinity": [
+        0
+      ],
+      "rounds": 7,
+      "case": {
+        "group": "normal",
+        "definition": ": BENCH-RUN 0 BENCH-ITERATIONS 0 DO I 7 AND + LOOP ;",
+        "iterations": 320000000,
+        "calibration_samples": [
+          {
+            "iterations": 100000000,
+            "cpu_us": 796875.0,
+            "wall_us": 888722.9,
+            "checksum": 350000000
+          },
+          {
+            "iterations": 160000000,
+            "cpu_us": 1250000.0,
+            "wall_us": 1405640.8,
+            "checksum": 560000000
+          }
+        ]
+      },
+      "checksum": 1120000000,
+      "orders": [
+        [
+          "A1",
+          "A2"
+        ],
+        [
+          "A2",
+          "A1"
+        ],
+        [
+          "A1",
+          "A2"
+        ],
+        [
+          "A2",
+          "A1"
+        ],
+        [
+          "A1",
+          "A2"
+        ],
+        [
+          "A2",
+          "A1"
+        ],
+        [
+          "A1",
+          "A2"
+        ],
+        [
+          "A2",
+          "A1"
+        ]
+      ],
+      "timing": "GetProcessTimes READY/DONE CPU delta; startup/compilation excluded",
+      "engines": {
+        "A1": {
+          "path": "D:\\home\\source\\zig\\forthz\\.work\\vm-pc-windows-20261115\\baseline\\bin\\sigma.exe",
+          "sha256": "49b7c673d42f8c0d7fda06feab7fd7f008934109358b4771ec2daaf9f33468b8",
+          "samples_us": [
+            2593750.0,
+            2656250.0,
+            2625000.0,
+            2609375.0,
+            2593750.0,
+            2437500.0,
+            2546875.0
+          ],
+          "median_us": 2593750.0,
+          "min_us": 2437500.0,
+          "max_us": 2656250.0,
+          "wall_samples_us": [
+            2736061.3,
+            2717580.1,
+            2704460.0,
+            2710756.3,
+            2708366.1,
+            2709625.4,
+            2707894.0
+          ]
+        },
+        "A2": {
+          "path": "D:\\home\\source\\zig\\forthz\\.work\\vm-pc-windows-20261115\\baseline\\bin\\sigma.exe",
+          "sha256": "49b7c673d42f8c0d7fda06feab7fd7f008934109358b4771ec2daaf9f33468b8",
+          "samples_us": [
+            2750000.0,
+            2546875.0,
+            2640625.0,
+            2625000.0,
+            2625000.0,
+            2234375.0,
+            2515625.0
+          ],
+          "median_us": 2625000.0,
+          "min_us": 2234375.0,
+          "max_us": 2750000.0,
+          "wall_samples_us": [
+            2781258.9,
+            2711848.8,
+            2731718.8,
+            2723949.4,
+            2713986.4,
+            2712613.1,
+            2714354.6
+          ]
+        }
+      },
+      "change_percent": 1.2048192771084265,
+      "aa_delta_percent": 1.2048192771084338
+    },
+    "loop-pass0-aa-2.json": {
+      "stage": "aa",
+      "series": 2,
+      "pid": 3204,
+      "platform": "Windows-11-10.0.26300-SP0",
+      "cpu_affinity": [
+        0
+      ],
+      "rounds": 7,
+      "case": {
+        "group": "normal",
+        "definition": ": BENCH-RUN 0 BENCH-ITERATIONS 0 DO I 7 AND + LOOP ;",
+        "iterations": 320000000,
+        "calibration_samples": [
+          {
+            "iterations": 100000000,
+            "cpu_us": 796875.0,
+            "wall_us": 888722.9,
+            "checksum": 350000000
+          },
+          {
+            "iterations": 160000000,
+            "cpu_us": 1250000.0,
+            "wall_us": 1405640.8,
+            "checksum": 560000000
+          }
+        ]
+      },
+      "checksum": 1120000000,
+      "orders": [
+        [
+          "A2",
+          "A1"
+        ],
+        [
+          "A1",
+          "A2"
+        ],
+        [
+          "A2",
+          "A1"
+        ],
+        [
+          "A1",
+          "A2"
+        ],
+        [
+          "A2",
+          "A1"
+        ],
+        [
+          "A1",
+          "A2"
+        ],
+        [
+          "A2",
+          "A1"
+        ],
+        [
+          "A1",
+          "A2"
+        ]
+      ],
+      "timing": "GetProcessTimes READY/DONE CPU delta; startup/compilation excluded",
+      "engines": {
+        "A1": {
+          "path": "D:\\home\\source\\zig\\forthz\\.work\\vm-pc-windows-20261115\\baseline\\bin\\sigma.exe",
+          "sha256": "49b7c673d42f8c0d7fda06feab7fd7f008934109358b4771ec2daaf9f33468b8",
+          "samples_us": [
+            2609375.0,
+            2515625.0,
+            2562500.0,
+            2671875.0,
+            2625000.0,
+            2671875.0,
+            2656250.0
+          ],
+          "median_us": 2625000.0,
+          "min_us": 2515625.0,
+          "max_us": 2671875.0,
+          "wall_samples_us": [
+            2728568.9,
+            2706253.3,
+            2703792.4,
+            2709318.3,
+            2704831.3,
+            2738472.0,
+            2697984.9
+          ]
+        },
+        "A2": {
+          "path": "D:\\home\\source\\zig\\forthz\\.work\\vm-pc-windows-20261115\\baseline\\bin\\sigma.exe",
+          "sha256": "49b7c673d42f8c0d7fda06feab7fd7f008934109358b4771ec2daaf9f33468b8",
+          "samples_us": [
+            2625000.0,
+            2578125.0,
+            2671875.0,
+            2687500.0,
+            2640625.0,
+            2593750.0,
+            2390625.0
+          ],
+          "median_us": 2625000.0,
+          "min_us": 2390625.0,
+          "max_us": 2687500.0,
+          "wall_samples_us": [
+            2747948.5,
+            2755107.7,
+            2750346.0,
+            2718303.8,
+            2704394.0,
+            2719104.7,
+            2707725.6
+          ]
+        }
+      },
+      "change_percent": 0.0,
+      "aa_delta_percent": 0.0
+    },
+    "loop-pass0-compare-1.json": {
+      "stage": "compare",
+      "series": 1,
+      "pid": 4544,
+      "platform": "Windows-11-10.0.26300-SP0",
+      "cpu_affinity": [
+        0
+      ],
+      "rounds": 7,
+      "case": {
+        "group": "normal",
+        "definition": ": BENCH-RUN 0 BENCH-ITERATIONS 0 DO I 7 AND + LOOP ;",
+        "iterations": 320000000,
+        "calibration_samples": [
+          {
+            "iterations": 100000000,
+            "cpu_us": 796875.0,
+            "wall_us": 888722.9,
+            "checksum": 350000000
+          },
+          {
+            "iterations": 160000000,
+            "cpu_us": 1250000.0,
+            "wall_us": 1405640.8,
+            "checksum": 560000000
+          }
+        ]
+      },
+      "checksum": 1120000000,
+      "orders": [
+        [
+          "baseline",
+          "candidate"
+        ],
+        [
+          "candidate",
+          "baseline"
+        ],
+        [
+          "baseline",
+          "candidate"
+        ],
+        [
+          "candidate",
+          "baseline"
+        ],
+        [
+          "baseline",
+          "candidate"
+        ],
+        [
+          "candidate",
+          "baseline"
+        ],
+        [
+          "baseline",
+          "candidate"
+        ],
+        [
+          "candidate",
+          "baseline"
+        ]
+      ],
+      "timing": "GetProcessTimes READY/DONE CPU delta; startup/compilation excluded",
+      "engines": {
+        "baseline": {
+          "path": "D:\\home\\source\\zig\\forthz\\.work\\vm-pc-windows-20261115\\baseline\\bin\\sigma.exe",
+          "sha256": "49b7c673d42f8c0d7fda06feab7fd7f008934109358b4771ec2daaf9f33468b8",
+          "samples_us": [
+            2687500.0,
+            2671875.0,
+            2562500.0,
+            2609375.0,
+            2687500.0,
+            2671875.0,
+            2625000.0
+          ],
+          "median_us": 2671875.0,
+          "min_us": 2562500.0,
+          "max_us": 2687500.0,
+          "wall_samples_us": [
+            2709336.9,
+            2706450.7,
+            2709383.8,
+            2702830.5,
+            2739169.2,
+            2718929.7,
+            2720819.8
+          ]
+        },
+        "candidate": {
+          "path": "D:\\home\\source\\zig\\forthz\\.work\\vm-data-call-route-20261115\\windows\\bin\\sigma.exe",
+          "sha256": "379d6c6c069b9c3072da22fa6cea8b7deff77c5ed78ef9bbd070f92a724337bf",
+          "samples_us": [
+            2281250.0,
+            2375000.0,
+            2281250.0,
+            2656250.0,
+            2406250.0,
+            2265625.0,
+            2250000.0
+          ],
+          "median_us": 2281250.0,
+          "min_us": 2250000.0,
+          "max_us": 2656250.0,
+          "wall_samples_us": [
+            2377719.7,
+            2371976.1,
+            2359366.0,
+            2770649.1,
+            2455399.9,
+            2390779.7,
+            2396512.9
+          ]
+        }
+      },
+      "change_percent": -14.619883040935678,
+      "aa_delta_percent": null
+    },
+    "loop-pass0-compare-2.json": {
+      "stage": "compare",
+      "series": 2,
+      "pid": 18324,
+      "platform": "Windows-11-10.0.26300-SP0",
+      "cpu_affinity": [
+        0
+      ],
+      "rounds": 7,
+      "case": {
+        "group": "normal",
+        "definition": ": BENCH-RUN 0 BENCH-ITERATIONS 0 DO I 7 AND + LOOP ;",
+        "iterations": 320000000,
+        "calibration_samples": [
+          {
+            "iterations": 100000000,
+            "cpu_us": 796875.0,
+            "wall_us": 888722.9,
+            "checksum": 350000000
+          },
+          {
+            "iterations": 160000000,
+            "cpu_us": 1250000.0,
+            "wall_us": 1405640.8,
+            "checksum": 560000000
+          }
+        ]
+      },
+      "checksum": 1120000000,
+      "orders": [
+        [
+          "candidate",
+          "baseline"
+        ],
+        [
+          "baseline",
+          "candidate"
+        ],
+        [
+          "candidate",
+          "baseline"
+        ],
+        [
+          "baseline",
+          "candidate"
+        ],
+        [
+          "candidate",
+          "baseline"
+        ],
+        [
+          "baseline",
+          "candidate"
+        ],
+        [
+          "candidate",
+          "baseline"
+        ],
+        [
+          "baseline",
+          "candidate"
+        ]
+      ],
+      "timing": "GetProcessTimes READY/DONE CPU delta; startup/compilation excluded",
+      "engines": {
+        "baseline": {
+          "path": "D:\\home\\source\\zig\\forthz\\.work\\vm-pc-windows-20261115\\baseline\\bin\\sigma.exe",
+          "sha256": "49b7c673d42f8c0d7fda06feab7fd7f008934109358b4771ec2daaf9f33468b8",
+          "samples_us": [
+            2562500.0,
+            2515625.0,
+            2625000.0,
+            2578125.0,
+            2640625.0,
+            2671875.0,
+            2671875.0
+          ],
+          "median_us": 2625000.0,
+          "min_us": 2515625.0,
+          "max_us": 2671875.0,
+          "wall_samples_us": [
+            2727235.3,
+            2901861.2,
+            2747284.2,
+            2902641.8,
+            2711823.4,
+            2734261.8,
+            2718857.6
+          ]
+        },
+        "candidate": {
+          "path": "D:\\home\\source\\zig\\forthz\\.work\\vm-data-call-route-20261115\\windows\\bin\\sigma.exe",
+          "sha256": "379d6c6c069b9c3072da22fa6cea8b7deff77c5ed78ef9bbd070f92a724337bf",
+          "samples_us": [
+            2109375.0,
+            2218750.0,
+            2359375.0,
+            2328125.0,
+            2359375.0,
+            2375000.0,
+            2703125.0
+          ],
+          "median_us": 2359375.0,
+          "min_us": 2109375.0,
+          "max_us": 2703125.0,
+          "wall_samples_us": [
+            2595481.0,
+            2406753.7,
+            2562471.7,
+            2471381.4,
+            2422072.4,
+            2445858.8,
+            2756782.5
+          ]
+        }
+      },
+      "change_percent": -10.119047619047617,
+      "aa_delta_percent": null
+    },
+    "nobt-aa-history.json": [
+      {
+        "attempt": 0,
+        "tag": "nobt-pass0",
+        "delta_percent": 2.4691358024691357
+      },
+      {
+        "attempt": 1,
+        "tag": "nobt-pass1",
+        "delta_percent": 1.8518518518518519
+      }
+    ],
+    "nobt-config.json": {
+      "group": "catch",
+      "definition": ": B-WORK 77 THROW ; : BENCH-RUN 0 BENCH-ITERATIONS 0 DO ['] B-WORK CATCH-NOBT + LOOP ;",
+      "iterations": 86922252,
+      "checksum_per_iteration": 77,
+      "calibration_samples": [
+        {
+          "iterations": 17825852,
+          "cpu_us": 984375.0,
+          "wall_us": 1082761.2,
+          "checksum": 1372590604
+        },
+        {
+          "iterations": 21730563,
+          "cpu_us": 1296875.0,
+          "wall_us": 1407158.1,
+          "checksum": 1673253351
+        }
+      ]
+    },
+    "nobt-decision.json": {
+      "tag": "nobt-pass1",
+      "cpu": 0,
+      "delta_percent": 1.8518518518518519,
+      "iterations": 86922252,
+      "changes_percent": [
+        5.521472392638027,
+        3.658536585365857
+      ],
+      "upper_limit_percent": 10,
+      "both_within_limit": true,
+      "both_exceed_limit": false
+    },
+    "nobt-pass0-aa-1.json": {
+      "stage": "aa",
+      "series": 1,
+      "pid": 43112,
+      "platform": "Windows-11-10.0.26300-SP0",
+      "cpu_affinity": [
+        0
+      ],
+      "rounds": 7,
+      "case": {
+        "group": "catch",
+        "definition": ": B-WORK 77 THROW ; : BENCH-RUN 0 BENCH-ITERATIONS 0 DO ['] B-WORK CATCH-NOBT + LOOP ;",
+        "iterations": 43461126,
+        "checksum_per_iteration": 77,
+        "calibration_samples": [
+          {
+            "iterations": 17825852,
+            "cpu_us": 984375.0,
+            "wall_us": 1082761.2,
+            "checksum": 1372590604
+          },
+          {
+            "iterations": 21730563,
+            "cpu_us": 1296875.0,
+            "wall_us": 1407158.1,
+            "checksum": 1673253351
+          }
+        ]
+      },
+      "checksum": 3346506702,
+      "orders": [
+        [
+          "A1",
+          "A2"
+        ],
+        [
+          "A2",
+          "A1"
+        ],
+        [
+          "A1",
+          "A2"
+        ],
+        [
+          "A2",
+          "A1"
+        ],
+        [
+          "A1",
+          "A2"
+        ],
+        [
+          "A2",
+          "A1"
+        ],
+        [
+          "A1",
+          "A2"
+        ],
+        [
+          "A2",
+          "A1"
+        ]
+      ],
+      "timing": "GetProcessTimes READY/DONE CPU delta; startup/compilation excluded",
+      "engines": {
+        "A1": {
+          "path": "D:\\home\\source\\zig\\forthz\\.work\\vm-pc-windows-20261115\\baseline\\bin\\sigma.exe",
+          "sha256": "49b7c673d42f8c0d7fda06feab7fd7f008934109358b4771ec2daaf9f33468b8",
+          "samples_us": [
+            2531250.0,
+            2468750.0,
+            2562500.0,
+            2625000.0,
+            2515625.0,
+            2546875.0,
+            2437500.0
+          ],
+          "median_us": 2531250.0,
+          "min_us": 2437500.0,
+          "max_us": 2625000.0,
+          "wall_samples_us": [
+            2606933.9,
+            2632360.3,
+            2662479.6,
+            2704346.2,
+            2612993.4,
+            2614215.7,
+            2549645.5
+          ]
+        },
+        "A2": {
+          "path": "D:\\home\\source\\zig\\forthz\\.work\\vm-pc-windows-20261115\\baseline\\bin\\sigma.exe",
+          "sha256": "49b7c673d42f8c0d7fda06feab7fd7f008934109358b4771ec2daaf9f33468b8",
+          "samples_us": [
+            2625000.0,
+            2546875.0,
+            2593750.0,
+            2437500.0,
+            2093750.0,
+            2703125.0,
+            2593750.0
+          ],
+          "median_us": 2593750.0,
+          "min_us": 2093750.0,
+          "max_us": 2703125.0,
+          "wall_samples_us": [
+            2691204.6,
+            2649815.4,
+            2687653.7,
+            2662434.7,
+            2502171.1,
+            2729334.1,
+            2695687.0
+          ]
+        }
+      },
+      "change_percent": 2.4691358024691468,
+      "aa_delta_percent": 2.4691358024691357
+    },
+    "nobt-pass0-aa-2.json": {
+      "stage": "aa",
+      "series": 2,
+      "pid": 38740,
+      "platform": "Windows-11-10.0.26300-SP0",
+      "cpu_affinity": [
+        0
+      ],
+      "rounds": 7,
+      "case": {
+        "group": "catch",
+        "definition": ": B-WORK 77 THROW ; : BENCH-RUN 0 BENCH-ITERATIONS 0 DO ['] B-WORK CATCH-NOBT + LOOP ;",
+        "iterations": 43461126,
+        "checksum_per_iteration": 77,
+        "calibration_samples": [
+          {
+            "iterations": 17825852,
+            "cpu_us": 984375.0,
+            "wall_us": 1082761.2,
+            "checksum": 1372590604
+          },
+          {
+            "iterations": 21730563,
+            "cpu_us": 1296875.0,
+            "wall_us": 1407158.1,
+            "checksum": 1673253351
+          }
+        ]
+      },
+      "checksum": 3346506702,
+      "orders": [
+        [
+          "A2",
+          "A1"
+        ],
+        [
+          "A1",
+          "A2"
+        ],
+        [
+          "A2",
+          "A1"
+        ],
+        [
+          "A1",
+          "A2"
+        ],
+        [
+          "A2",
+          "A1"
+        ],
+        [
+          "A1",
+          "A2"
+        ],
+        [
+          "A2",
+          "A1"
+        ],
+        [
+          "A1",
+          "A2"
+        ]
+      ],
+      "timing": "GetProcessTimes READY/DONE CPU delta; startup/compilation excluded",
+      "engines": {
+        "A1": {
+          "path": "D:\\home\\source\\zig\\forthz\\.work\\vm-pc-windows-20261115\\baseline\\bin\\sigma.exe",
+          "sha256": "49b7c673d42f8c0d7fda06feab7fd7f008934109358b4771ec2daaf9f33468b8",
+          "samples_us": [
+            2468750.0,
+            2468750.0,
+            2468750.0,
+            2562500.0,
+            2546875.0,
+            2078125.0,
+            2437500.0
+          ],
+          "median_us": 2468750.0,
+          "min_us": 2078125.0,
+          "max_us": 2562500.0,
+          "wall_samples_us": [
+            2516076.2,
+            2571040.8,
+            2542938.8,
+            2595393.7,
+            2617834.0,
+            2492920.5,
+            2625361.3
+          ]
+        },
+        "A2": {
+          "path": "D:\\home\\source\\zig\\forthz\\.work\\vm-pc-windows-20261115\\baseline\\bin\\sigma.exe",
+          "sha256": "49b7c673d42f8c0d7fda06feab7fd7f008934109358b4771ec2daaf9f33468b8",
+          "samples_us": [
+            2484375.0,
+            2421875.0,
+            2484375.0,
+            2656250.0,
+            2531250.0,
+            2187500.0,
+            2640625.0
+          ],
+          "median_us": 2484375.0,
+          "min_us": 2187500.0,
+          "max_us": 2656250.0,
+          "wall_samples_us": [
+            2656816.4,
+            2539512.5,
+            2568754.4,
+            2694182.6,
+            2601421.9,
+            2471221.3,
+            2740292.8
+          ]
+        }
+      },
+      "change_percent": 0.6329113924050667,
+      "aa_delta_percent": 0.6329113924050633
+    },
+    "nobt-pass1-aa-1.json": {
+      "stage": "aa",
+      "series": 1,
+      "pid": 12428,
+      "platform": "Windows-11-10.0.26300-SP0",
+      "cpu_affinity": [
+        0
+      ],
+      "rounds": 7,
+      "case": {
+        "group": "catch",
+        "definition": ": B-WORK 77 THROW ; : BENCH-RUN 0 BENCH-ITERATIONS 0 DO ['] B-WORK CATCH-NOBT + LOOP ;",
+        "iterations": 86922252,
+        "checksum_per_iteration": 77,
+        "calibration_samples": [
+          {
+            "iterations": 17825852,
+            "cpu_us": 984375.0,
+            "wall_us": 1082761.2,
+            "checksum": 1372590604
+          },
+          {
+            "iterations": 21730563,
+            "cpu_us": 1296875.0,
+            "wall_us": 1407158.1,
+            "checksum": 1673253351
+          }
+        ]
+      },
+      "checksum": 6693013404,
+      "orders": [
+        [
+          "A1",
+          "A2"
+        ],
+        [
+          "A2",
+          "A1"
+        ],
+        [
+          "A1",
+          "A2"
+        ],
+        [
+          "A2",
+          "A1"
+        ],
+        [
+          "A1",
+          "A2"
+        ],
+        [
+          "A2",
+          "A1"
+        ],
+        [
+          "A1",
+          "A2"
+        ],
+        [
+          "A2",
+          "A1"
+        ]
+      ],
+      "timing": "GetProcessTimes READY/DONE CPU delta; startup/compilation excluded",
+      "engines": {
+        "A1": {
+          "path": "D:\\home\\source\\zig\\forthz\\.work\\vm-pc-windows-20261115\\baseline\\bin\\sigma.exe",
+          "sha256": "49b7c673d42f8c0d7fda06feab7fd7f008934109358b4771ec2daaf9f33468b8",
+          "samples_us": [
+            4812500.0,
+            5156250.0,
+            5078125.0,
+            5656250.0,
+            5218750.0,
+            5046875.0,
+            5156250.0
+          ],
+          "median_us": 5156250.0,
+          "min_us": 4812500.0,
+          "max_us": 5656250.0,
+          "wall_samples_us": [
+            4984412.5,
+            5279835.2,
+            5290523.3,
+            6207920.9,
+            5417873.8,
+            5350136.0,
+            5192609.8
+          ]
+        },
+        "A2": {
+          "path": "D:\\home\\source\\zig\\forthz\\.work\\vm-pc-windows-20261115\\baseline\\bin\\sigma.exe",
+          "sha256": "49b7c673d42f8c0d7fda06feab7fd7f008934109358b4771ec2daaf9f33468b8",
+          "samples_us": [
+            4781250.0,
+            5031250.0,
+            5046875.0,
+            5140625.0,
+            5062500.0,
+            5203125.0,
+            5250000.0
+          ],
+          "median_us": 5062500.0,
+          "min_us": 4781250.0,
+          "max_us": 5250000.0,
+          "wall_samples_us": [
+            4962961.5,
+            5284446.7,
+            5212771.5,
+            5330234.9,
+            5259000.5,
+            5303155.0,
+            5339433.8
+          ]
+        }
+      },
+      "change_percent": -1.8181818181818188,
+      "aa_delta_percent": 1.8518518518518519
+    },
+    "nobt-pass1-aa-2.json": {
+      "stage": "aa",
+      "series": 2,
+      "pid": 20912,
+      "platform": "Windows-11-10.0.26300-SP0",
+      "cpu_affinity": [
+        0
+      ],
+      "rounds": 7,
+      "case": {
+        "group": "catch",
+        "definition": ": B-WORK 77 THROW ; : BENCH-RUN 0 BENCH-ITERATIONS 0 DO ['] B-WORK CATCH-NOBT + LOOP ;",
+        "iterations": 86922252,
+        "checksum_per_iteration": 77,
+        "calibration_samples": [
+          {
+            "iterations": 17825852,
+            "cpu_us": 984375.0,
+            "wall_us": 1082761.2,
+            "checksum": 1372590604
+          },
+          {
+            "iterations": 21730563,
+            "cpu_us": 1296875.0,
+            "wall_us": 1407158.1,
+            "checksum": 1673253351
+          }
+        ]
+      },
+      "checksum": 6693013404,
+      "orders": [
+        [
+          "A2",
+          "A1"
+        ],
+        [
+          "A1",
+          "A2"
+        ],
+        [
+          "A2",
+          "A1"
+        ],
+        [
+          "A1",
+          "A2"
+        ],
+        [
+          "A2",
+          "A1"
+        ],
+        [
+          "A1",
+          "A2"
+        ],
+        [
+          "A2",
+          "A1"
+        ],
+        [
+          "A1",
+          "A2"
+        ]
+      ],
+      "timing": "GetProcessTimes READY/DONE CPU delta; startup/compilation excluded",
+      "engines": {
+        "A1": {
+          "path": "D:\\home\\source\\zig\\forthz\\.work\\vm-pc-windows-20261115\\baseline\\bin\\sigma.exe",
+          "sha256": "49b7c673d42f8c0d7fda06feab7fd7f008934109358b4771ec2daaf9f33468b8",
+          "samples_us": [
+            4765625.0,
+            4984375.0,
+            4875000.0,
+            4828125.0,
+            4953125.0,
+            5125000.0,
+            4828125.0
+          ],
+          "median_us": 4875000.0,
+          "min_us": 4765625.0,
+          "max_us": 5125000.0,
+          "wall_samples_us": [
+            5159990.3,
+            5196533.7,
+            5190500.2,
+            5072179.6,
+            5176746.0,
+            5325178.0,
+            4936439.5
+          ]
+        },
+        "A2": {
+          "path": "D:\\home\\source\\zig\\forthz\\.work\\vm-pc-windows-20261115\\baseline\\bin\\sigma.exe",
+          "sha256": "49b7c673d42f8c0d7fda06feab7fd7f008934109358b4771ec2daaf9f33468b8",
+          "samples_us": [
+            4812500.0,
+            4812500.0,
+            4953125.0,
+            4781250.0,
+            4656250.0,
+            4937500.0,
+            5140625.0
+          ],
+          "median_us": 4812500.0,
+          "min_us": 4656250.0,
+          "max_us": 5140625.0,
+          "wall_samples_us": [
+            5133392.9,
+            4980925.4,
+            5146859.2,
+            4952450.7,
+            5235302.6,
+            5125917.0,
+            5189305.1
+          ]
+        }
+      },
+      "change_percent": -1.2820512820512775,
+      "aa_delta_percent": 1.2987012987012987
+    },
+    "nobt-pass1-compare-1.json": {
+      "stage": "compare",
+      "series": 1,
+      "pid": 16528,
+      "platform": "Windows-11-10.0.26300-SP0",
+      "cpu_affinity": [
+        0
+      ],
+      "rounds": 7,
+      "case": {
+        "group": "catch",
+        "definition": ": B-WORK 77 THROW ; : BENCH-RUN 0 BENCH-ITERATIONS 0 DO ['] B-WORK CATCH-NOBT + LOOP ;",
+        "iterations": 86922252,
+        "checksum_per_iteration": 77,
+        "calibration_samples": [
+          {
+            "iterations": 17825852,
+            "cpu_us": 984375.0,
+            "wall_us": 1082761.2,
+            "checksum": 1372590604
+          },
+          {
+            "iterations": 21730563,
+            "cpu_us": 1296875.0,
+            "wall_us": 1407158.1,
+            "checksum": 1673253351
+          }
+        ]
+      },
+      "checksum": 6693013404,
+      "orders": [
+        [
+          "baseline",
+          "candidate"
+        ],
+        [
+          "candidate",
+          "baseline"
+        ],
+        [
+          "baseline",
+          "candidate"
+        ],
+        [
+          "candidate",
+          "baseline"
+        ],
+        [
+          "baseline",
+          "candidate"
+        ],
+        [
+          "candidate",
+          "baseline"
+        ],
+        [
+          "baseline",
+          "candidate"
+        ],
+        [
+          "candidate",
+          "baseline"
+        ]
+      ],
+      "timing": "GetProcessTimes READY/DONE CPU delta; startup/compilation excluded",
+      "engines": {
+        "baseline": {
+          "path": "D:\\home\\source\\zig\\forthz\\.work\\vm-pc-windows-20261115\\baseline\\bin\\sigma.exe",
+          "sha256": "49b7c673d42f8c0d7fda06feab7fd7f008934109358b4771ec2daaf9f33468b8",
+          "samples_us": [
+            5093750.0,
+            5140625.0,
+            4859375.0,
+            5015625.0,
+            4781250.0,
+            5296875.0,
+            5812500.0
+          ],
+          "median_us": 5093750.0,
+          "min_us": 4781250.0,
+          "max_us": 5812500.0,
+          "wall_samples_us": [
+            5351455.1,
+            5387052.2,
+            5317081.7,
+            5130631.7,
+            4949344.0,
+            5435845.3,
+            6258961.5
+          ]
+        },
+        "candidate": {
+          "path": "D:\\home\\source\\zig\\forthz\\.work\\vm-data-call-route-20261115\\windows\\bin\\sigma.exe",
+          "sha256": "379d6c6c069b9c3072da22fa6cea8b7deff77c5ed78ef9bbd070f92a724337bf",
+          "samples_us": [
+            5468750.0,
+            5031250.0,
+            5406250.0,
+            5375000.0,
+            5468750.0,
+            5296875.0,
+            5046875.0
+          ],
+          "median_us": 5375000.0,
+          "min_us": 5031250.0,
+          "max_us": 5468750.0,
+          "wall_samples_us": [
+            5634942.4,
+            5645929.5,
+            6445720.6,
+            5649860.0,
+            5641374.5,
+            5433607.6,
+            5563952.4
+          ]
+        }
+      },
+      "change_percent": 5.521472392638027,
+      "aa_delta_percent": null
+    },
+    "nobt-pass1-compare-2.json": {
+      "stage": "compare",
+      "series": 2,
+      "pid": 13456,
+      "platform": "Windows-11-10.0.26300-SP0",
+      "cpu_affinity": [
+        0
+      ],
+      "rounds": 7,
+      "case": {
+        "group": "catch",
+        "definition": ": B-WORK 77 THROW ; : BENCH-RUN 0 BENCH-ITERATIONS 0 DO ['] B-WORK CATCH-NOBT + LOOP ;",
+        "iterations": 86922252,
+        "checksum_per_iteration": 77,
+        "calibration_samples": [
+          {
+            "iterations": 17825852,
+            "cpu_us": 984375.0,
+            "wall_us": 1082761.2,
+            "checksum": 1372590604
+          },
+          {
+            "iterations": 21730563,
+            "cpu_us": 1296875.0,
+            "wall_us": 1407158.1,
+            "checksum": 1673253351
+          }
+        ]
+      },
+      "checksum": 6693013404,
+      "orders": [
+        [
+          "candidate",
+          "baseline"
+        ],
+        [
+          "baseline",
+          "candidate"
+        ],
+        [
+          "candidate",
+          "baseline"
+        ],
+        [
+          "baseline",
+          "candidate"
+        ],
+        [
+          "candidate",
+          "baseline"
+        ],
+        [
+          "baseline",
+          "candidate"
+        ],
+        [
+          "candidate",
+          "baseline"
+        ],
+        [
+          "baseline",
+          "candidate"
+        ]
+      ],
+      "timing": "GetProcessTimes READY/DONE CPU delta; startup/compilation excluded",
+      "engines": {
+        "baseline": {
+          "path": "D:\\home\\source\\zig\\forthz\\.work\\vm-pc-windows-20261115\\baseline\\bin\\sigma.exe",
+          "sha256": "49b7c673d42f8c0d7fda06feab7fd7f008934109358b4771ec2daaf9f33468b8",
+          "samples_us": [
+            5296875.0,
+            5250000.0,
+            5109375.0,
+            5078125.0,
+            5390625.0,
+            5062500.0,
+            5125000.0
+          ],
+          "median_us": 5125000.0,
+          "min_us": 5062500.0,
+          "max_us": 5390625.0,
+          "wall_samples_us": [
+            5406159.4,
+            5410170.5,
+            5253367.2,
+            5359583.6,
+            5610805.9,
+            5445265.3,
+            5738503.8
+          ]
+        },
+        "candidate": {
+          "path": "D:\\home\\source\\zig\\forthz\\.work\\vm-data-call-route-20261115\\windows\\bin\\sigma.exe",
+          "sha256": "379d6c6c069b9c3072da22fa6cea8b7deff77c5ed78ef9bbd070f92a724337bf",
+          "samples_us": [
+            5156250.0,
+            5328125.0,
+            5375000.0,
+            4906250.0,
+            5484375.0,
+            5312500.0,
+            5265625.0
+          ],
+          "median_us": 5312500.0,
+          "min_us": 4906250.0,
+          "max_us": 5484375.0,
+          "wall_samples_us": [
+            5542922.9,
+            5487619.8,
+            5756356.4,
+            5445658.8,
+            5677116.4,
+            5658454.8,
+            5390840.8
+          ]
+        }
+      },
+      "change_percent": 3.658536585365857,
+      "aa_delta_percent": null
+    },
+    "success-aa-history.json": [
+      {
+        "attempt": 0,
+        "tag": "success-pass0",
+        "delta_percent": 7.60233918128655
+      },
+      {
+        "attempt": 1,
+        "tag": "success-pass1",
+        "delta_percent": 0.8823529411764706
+      }
+    ],
+    "success-config.json": {
+      "group": "catch",
+      "definition": ": B-WORK 1+ ; : BENCH-RUN 0 BENCH-ITERATIONS 0 DO ['] B-WORK CATCH DROP LOOP ;",
+      "iterations": 187318748,
+      "checksum_per_iteration": 1,
+      "calibration_samples": [
+        {
+          "iterations": 46829687,
+          "cpu_us": 1328125.0,
+          "wall_us": 1326327.2
+        }
+      ],
+      "cpu_affinity": [
+        4
+      ]
+    },
+    "success-decision.json": {
+      "tag": "success-pass1",
+      "cpu": 4,
+      "delta_percent": 0.8823529411764706,
+      "iterations": 187318748,
+      "changes_percent": [
+        -5.014749262536878,
+        -5.309734513274334
+      ],
+      "upper_limit_percent": 5,
+      "both_within_limit": true,
+      "both_exceed_limit": false
+    },
+    "success-pass0-aa-1.json": {
+      "stage": "aa",
+      "series": 1,
+      "pid": 31632,
+      "platform": "Windows-11-10.0.26300-SP0",
+      "cpu_affinity": [
+        4
+      ],
+      "rounds": 15,
+      "case": {
+        "group": "catch",
+        "definition": ": B-WORK 1+ ; : BENCH-RUN 0 BENCH-ITERATIONS 0 DO ['] B-WORK CATCH DROP LOOP ;",
+        "iterations": 93659374,
+        "checksum_per_iteration": 1,
+        "calibration_samples": [
+          {
+            "iterations": 46829687,
+            "cpu_us": 1328125.0,
+            "wall_us": 1326327.2
+          }
+        ],
+        "cpu_affinity": [
+          4
+        ]
+      },
+      "checksum": 93659374,
+      "orders": [
+        [
+          "A1",
+          "A2"
+        ],
+        [
+          "A2",
+          "A1"
+        ],
+        [
+          "A1",
+          "A2"
+        ],
+        [
+          "A2",
+          "A1"
+        ],
+        [
+          "A1",
+          "A2"
+        ],
+        [
+          "A2",
+          "A1"
+        ],
+        [
+          "A1",
+          "A2"
+        ],
+        [
+          "A2",
+          "A1"
+        ],
+        [
+          "A1",
+          "A2"
+        ],
+        [
+          "A2",
+          "A1"
+        ],
+        [
+          "A1",
+          "A2"
+        ],
+        [
+          "A2",
+          "A1"
+        ],
+        [
+          "A1",
+          "A2"
+        ],
+        [
+          "A2",
+          "A1"
+        ],
+        [
+          "A1",
+          "A2"
+        ],
+        [
+          "A2",
+          "A1"
+        ]
+      ],
+      "timing": "GetProcessTimes READY/DONE CPU delta; startup/compilation excluded",
+      "engines": {
+        "A1": {
+          "path": "D:\\home\\source\\zig\\forthz\\.work\\vm-pc-windows-20261115\\baseline\\bin\\sigma.exe",
+          "sha256": "49b7c673d42f8c0d7fda06feab7fd7f008934109358b4771ec2daaf9f33468b8",
+          "samples_us": [
+            2640625.0,
+            2609375.0,
+            2656250.0,
+            2640625.0,
+            3312500.0,
+            3015625.0,
+            3296875.0,
+            2640625.0,
+            2656250.0,
+            2625000.0,
+            3156250.0,
+            3359375.0,
+            2671875.0,
+            2906250.0,
+            2671875.0
+          ],
+          "median_us": 2671875.0,
+          "min_us": 2609375.0,
+          "max_us": 3359375.0,
+          "wall_samples_us": [
+            2630040.1,
+            2614394.4,
+            2669703.4,
+            2654563.0,
+            3333667.5,
+            3018709.5,
+            3295632.1,
+            2658969.4,
+            2646020.8,
+            2643221.9,
+            3152282.2,
+            3359596.4,
+            2690618.7,
+            2910739.4,
+            2672316.3
+          ]
+        },
+        "A2": {
+          "path": "D:\\home\\source\\zig\\forthz\\.work\\vm-pc-windows-20261115\\baseline\\bin\\sigma.exe",
+          "sha256": "49b7c673d42f8c0d7fda06feab7fd7f008934109358b4771ec2daaf9f33468b8",
+          "samples_us": [
+            2609375.0,
+            3171875.0,
+            2687500.0,
+            2687500.0,
+            2609375.0,
+            3062500.0,
+            2640625.0,
+            3125000.0,
+            2703125.0,
+            2671875.0,
+            2609375.0,
+            2640625.0,
+            4531250.0,
+            2703125.0,
+            2640625.0
+          ],
+          "median_us": 2687500.0,
+          "min_us": 2609375.0,
+          "max_us": 4531250.0,
+          "wall_samples_us": [
+            2604150.5,
+            3167204.7,
+            2691136.3,
+            2691283.5,
+            2613140.6,
+            3066510.4,
+            2642032.9,
+            3123654.6,
+            2703874.2,
+            2682127.4,
+            2619043.3,
+            2646902.7,
+            4541585.9,
+            2694948.6,
+            2637468.1
+          ]
+        }
+      },
+      "change_percent": 0.5847953216374213,
+      "aa_delta_percent": 0.5847953216374269
+    },
+    "success-pass0-aa-2.json": {
+      "stage": "aa",
+      "series": 2,
+      "pid": 31952,
+      "platform": "Windows-11-10.0.26300-SP0",
+      "cpu_affinity": [
+        4
+      ],
+      "rounds": 15,
+      "case": {
+        "group": "catch",
+        "definition": ": B-WORK 1+ ; : BENCH-RUN 0 BENCH-ITERATIONS 0 DO ['] B-WORK CATCH DROP LOOP ;",
+        "iterations": 93659374,
+        "checksum_per_iteration": 1,
+        "calibration_samples": [
+          {
+            "iterations": 46829687,
+            "cpu_us": 1328125.0,
+            "wall_us": 1326327.2
+          }
+        ],
+        "cpu_affinity": [
+          4
+        ]
+      },
+      "checksum": 93659374,
+      "orders": [
+        [
+          "A2",
+          "A1"
+        ],
+        [
+          "A1",
+          "A2"
+        ],
+        [
+          "A2",
+          "A1"
+        ],
+        [
+          "A1",
+          "A2"
+        ],
+        [
+          "A2",
+          "A1"
+        ],
+        [
+          "A1",
+          "A2"
+        ],
+        [
+          "A2",
+          "A1"
+        ],
+        [
+          "A1",
+          "A2"
+        ],
+        [
+          "A2",
+          "A1"
+        ],
+        [
+          "A1",
+          "A2"
+        ],
+        [
+          "A2",
+          "A1"
+        ],
+        [
+          "A1",
+          "A2"
+        ],
+        [
+          "A2",
+          "A1"
+        ],
+        [
+          "A1",
+          "A2"
+        ],
+        [
+          "A2",
+          "A1"
+        ],
+        [
+          "A1",
+          "A2"
+        ]
+      ],
+      "timing": "GetProcessTimes READY/DONE CPU delta; startup/compilation excluded",
+      "engines": {
+        "A1": {
+          "path": "D:\\home\\source\\zig\\forthz\\.work\\vm-pc-windows-20261115\\baseline\\bin\\sigma.exe",
+          "sha256": "49b7c673d42f8c0d7fda06feab7fd7f008934109358b4771ec2daaf9f33468b8",
+          "samples_us": [
+            3093750.0,
+            2656250.0,
+            2890625.0,
+            2671875.0,
+            2671875.0,
+            3968750.0,
+            2609375.0,
+            2625000.0,
+            2640625.0,
+            3703125.0,
+            2656250.0,
+            2687500.0,
+            2656250.0,
+            2890625.0,
+            3687500.0
+          ],
+          "median_us": 2671875.0,
+          "min_us": 2609375.0,
+          "max_us": 3968750.0,
+          "wall_samples_us": [
+            3103356.3,
+            2655404.6,
+            2890844.7,
+            2693699.9,
+            2670662.8,
+            3985804.2,
+            2631679.6,
+            2619490.7,
+            2666060.1,
+            3700788.4,
+            2671732.2,
+            2692794.9,
+            2673310.7,
+            2896923.9,
+            3711146.4
+          ]
+        },
+        "A2": {
+          "path": "D:\\home\\source\\zig\\forthz\\.work\\vm-pc-windows-20261115\\baseline\\bin\\sigma.exe",
+          "sha256": "49b7c673d42f8c0d7fda06feab7fd7f008934109358b4771ec2daaf9f33468b8",
+          "samples_us": [
+            2656250.0,
+            3515625.0,
+            2687500.0,
+            2671875.0,
+            2640625.0,
+            2890625.0,
+            4906250.0,
+            3046875.0,
+            2640625.0,
+            3218750.0,
+            2515625.0,
+            4562500.0,
+            2875000.0,
+            2656250.0,
+            3515625.0
+          ],
+          "median_us": 2875000.0,
+          "min_us": 2515625.0,
+          "max_us": 4906250.0,
+          "wall_samples_us": [
+            2653587.3,
+            3518607.1,
+            2705790.2,
+            2694345.9,
+            2645706.3,
+            2900350.0,
+            4972096.0,
+            3036574.8,
+            2646757.5,
+            3250126.9,
+            2615418.4,
+            4614135.7,
+            2920922.8,
+            2653402.7,
+            3545474.3
+          ]
+        }
+      },
+      "change_percent": 7.602339181286544,
+      "aa_delta_percent": 7.60233918128655
+    },
+    "success-pass1-aa-1.json": {
+      "stage": "aa",
+      "series": 1,
+      "pid": 38476,
+      "platform": "Windows-11-10.0.26300-SP0",
+      "cpu_affinity": [
+        4
+      ],
+      "rounds": 15,
+      "case": {
+        "group": "catch",
+        "definition": ": B-WORK 1+ ; : BENCH-RUN 0 BENCH-ITERATIONS 0 DO ['] B-WORK CATCH DROP LOOP ;",
+        "iterations": 187318748,
+        "checksum_per_iteration": 1,
+        "calibration_samples": [
+          {
+            "iterations": 46829687,
+            "cpu_us": 1328125.0,
+            "wall_us": 1326327.2
+          }
+        ],
+        "cpu_affinity": [
+          4
+        ]
+      },
+      "checksum": 187318748,
+      "orders": [
+        [
+          "A1",
+          "A2"
+        ],
+        [
+          "A2",
+          "A1"
+        ],
+        [
+          "A1",
+          "A2"
+        ],
+        [
+          "A2",
+          "A1"
+        ],
+        [
+          "A1",
+          "A2"
+        ],
+        [
+          "A2",
+          "A1"
+        ],
+        [
+          "A1",
+          "A2"
+        ],
+        [
+          "A2",
+          "A1"
+        ],
+        [
+          "A1",
+          "A2"
+        ],
+        [
+          "A2",
+          "A1"
+        ],
+        [
+          "A1",
+          "A2"
+        ],
+        [
+          "A2",
+          "A1"
+        ],
+        [
+          "A1",
+          "A2"
+        ],
+        [
+          "A2",
+          "A1"
+        ],
+        [
+          "A1",
+          "A2"
+        ],
+        [
+          "A2",
+          "A1"
+        ]
+      ],
+      "timing": "GetProcessTimes READY/DONE CPU delta; startup/compilation excluded",
+      "engines": {
+        "A1": {
+          "path": "D:\\home\\source\\zig\\forthz\\.work\\vm-pc-windows-20261115\\baseline\\bin\\sigma.exe",
+          "sha256": "49b7c673d42f8c0d7fda06feab7fd7f008934109358b4771ec2daaf9f33468b8",
+          "samples_us": [
+            5359375.0,
+            5921875.0,
+            6890625.0,
+            5812500.0,
+            6000000.0,
+            5468750.0,
+            5281250.0,
+            5250000.0,
+            5171875.0,
+            7296875.0,
+            7218750.0,
+            5281250.0,
+            5281250.0,
+            5343750.0,
+            5265625.0
+          ],
+          "median_us": 5359375.0,
+          "min_us": 5171875.0,
+          "max_us": 7296875.0,
+          "wall_samples_us": [
+            5379263.0,
+            5951540.7,
+            6949344.0,
+            5822024.7,
+            6069951.0,
+            5512848.6,
+            5310313.2,
+            5283949.7,
+            5226832.6,
+            7339818.0,
+            7255716.1,
+            5308566.6,
+            5313340.8,
+            5365933.5,
+            5279746.9
+          ]
+        },
+        "A2": {
+          "path": "D:\\home\\source\\zig\\forthz\\.work\\vm-pc-windows-20261115\\baseline\\bin\\sigma.exe",
+          "sha256": "49b7c673d42f8c0d7fda06feab7fd7f008934109358b4771ec2daaf9f33468b8",
+          "samples_us": [
+            5875000.0,
+            5359375.0,
+            5312500.0,
+            5296875.0,
+            5312500.0,
+            5296875.0,
+            5250000.0,
+            5281250.0,
+            5390625.0,
+            5687500.0,
+            5328125.0,
+            5312500.0,
+            5421875.0,
+            5328125.0,
+            5234375.0
+          ],
+          "median_us": 5312500.0,
+          "min_us": 5234375.0,
+          "max_us": 5875000.0,
+          "wall_samples_us": [
+            5905235.3,
+            5434055.2,
+            5322138.6,
+            5353282.1,
+            5315384.5,
+            5330428.5,
+            5237408.3,
+            5292420.3,
+            5440504.2,
+            5711145.0,
+            5385351.3,
+            5343244.0,
+            5432559.9,
+            5351955.5,
+            5260176.7
+          ]
+        }
+      },
+      "change_percent": -0.8746355685131157,
+      "aa_delta_percent": 0.8823529411764706
+    },
+    "success-pass1-aa-2.json": {
+      "stage": "aa",
+      "series": 2,
+      "pid": 6244,
+      "platform": "Windows-11-10.0.26300-SP0",
+      "cpu_affinity": [
+        4
+      ],
+      "rounds": 15,
+      "case": {
+        "group": "catch",
+        "definition": ": B-WORK 1+ ; : BENCH-RUN 0 BENCH-ITERATIONS 0 DO ['] B-WORK CATCH DROP LOOP ;",
+        "iterations": 187318748,
+        "checksum_per_iteration": 1,
+        "calibration_samples": [
+          {
+            "iterations": 46829687,
+            "cpu_us": 1328125.0,
+            "wall_us": 1326327.2
+          }
+        ],
+        "cpu_affinity": [
+          4
+        ]
+      },
+      "checksum": 187318748,
+      "orders": [
+        [
+          "A2",
+          "A1"
+        ],
+        [
+          "A1",
+          "A2"
+        ],
+        [
+          "A2",
+          "A1"
+        ],
+        [
+          "A1",
+          "A2"
+        ],
+        [
+          "A2",
+          "A1"
+        ],
+        [
+          "A1",
+          "A2"
+        ],
+        [
+          "A2",
+          "A1"
+        ],
+        [
+          "A1",
+          "A2"
+        ],
+        [
+          "A2",
+          "A1"
+        ],
+        [
+          "A1",
+          "A2"
+        ],
+        [
+          "A2",
+          "A1"
+        ],
+        [
+          "A1",
+          "A2"
+        ],
+        [
+          "A2",
+          "A1"
+        ],
+        [
+          "A1",
+          "A2"
+        ],
+        [
+          "A2",
+          "A1"
+        ],
+        [
+          "A1",
+          "A2"
+        ]
+      ],
+      "timing": "GetProcessTimes READY/DONE CPU delta; startup/compilation excluded",
+      "engines": {
+        "A1": {
+          "path": "D:\\home\\source\\zig\\forthz\\.work\\vm-pc-windows-20261115\\baseline\\bin\\sigma.exe",
+          "sha256": "49b7c673d42f8c0d7fda06feab7fd7f008934109358b4771ec2daaf9f33468b8",
+          "samples_us": [
+            6218750.0,
+            5234375.0,
+            5328125.0,
+            6375000.0,
+            5718750.0,
+            5296875.0,
+            5781250.0,
+            6984375.0,
+            5203125.0,
+            5296875.0,
+            5250000.0,
+            6046875.0,
+            5375000.0,
+            5218750.0,
+            5281250.0
+          ],
+          "median_us": 5328125.0,
+          "min_us": 5203125.0,
+          "max_us": 6984375.0,
+          "wall_samples_us": [
+            6269206.1,
+            5317252.6,
+            5333422.9,
+            6464997.8,
+            5790241.9,
+            5359862.5,
+            5837696.3,
+            7061680.1,
+            5244542.1,
+            5306231.1,
+            5261561.1,
+            6076802.6,
+            5390892.4,
+            5325032.9,
+            5301601.6
+          ]
+        },
+        "A2": {
+          "path": "D:\\home\\source\\zig\\forthz\\.work\\vm-pc-windows-20261115\\baseline\\bin\\sigma.exe",
+          "sha256": "49b7c673d42f8c0d7fda06feab7fd7f008934109358b4771ec2daaf9f33468b8",
+          "samples_us": [
+            5265625.0,
+            5531250.0,
+            5359375.0,
+            5328125.0,
+            5343750.0,
+            5312500.0,
+            5234375.0,
+            7281250.0,
+            5296875.0,
+            5828125.0,
+            6203125.0,
+            5265625.0,
+            5281250.0,
+            6421875.0,
+            7390625.0
+          ],
+          "median_us": 5343750.0,
+          "min_us": 5234375.0,
+          "max_us": 7390625.0,
+          "wall_samples_us": [
+            5260520.2,
+            5542551.0,
+            5379536.8,
+            5389451.6,
+            5378382.9,
+            5308300.8,
+            5245892.8,
+            7403741.3,
+            5332545.9,
+            5841902.5,
+            6262309.8,
+            5323428.4,
+            5326079.5,
+            6468473.6,
+            7407614.3
+          ]
+        }
+      },
+      "change_percent": 0.2932551319648091,
+      "aa_delta_percent": 0.2932551319648094
+    },
+    "success-pass1-compare-1.json": {
+      "stage": "compare",
+      "series": 1,
+      "pid": 800,
+      "platform": "Windows-11-10.0.26300-SP0",
+      "cpu_affinity": [
+        4
+      ],
+      "rounds": 15,
+      "case": {
+        "group": "catch",
+        "definition": ": B-WORK 1+ ; : BENCH-RUN 0 BENCH-ITERATIONS 0 DO ['] B-WORK CATCH DROP LOOP ;",
+        "iterations": 187318748,
+        "checksum_per_iteration": 1,
+        "calibration_samples": [
+          {
+            "iterations": 46829687,
+            "cpu_us": 1328125.0,
+            "wall_us": 1326327.2
+          }
+        ],
+        "cpu_affinity": [
+          4
+        ]
+      },
+      "checksum": 187318748,
+      "orders": [
+        [
+          "baseline",
+          "candidate"
+        ],
+        [
+          "candidate",
+          "baseline"
+        ],
+        [
+          "baseline",
+          "candidate"
+        ],
+        [
+          "candidate",
+          "baseline"
+        ],
+        [
+          "baseline",
+          "candidate"
+        ],
+        [
+          "candidate",
+          "baseline"
+        ],
+        [
+          "baseline",
+          "candidate"
+        ],
+        [
+          "candidate",
+          "baseline"
+        ],
+        [
+          "baseline",
+          "candidate"
+        ],
+        [
+          "candidate",
+          "baseline"
+        ],
+        [
+          "baseline",
+          "candidate"
+        ],
+        [
+          "candidate",
+          "baseline"
+        ],
+        [
+          "baseline",
+          "candidate"
+        ],
+        [
+          "candidate",
+          "baseline"
+        ],
+        [
+          "baseline",
+          "candidate"
+        ],
+        [
+          "candidate",
+          "baseline"
+        ]
+      ],
+      "timing": "GetProcessTimes READY/DONE CPU delta; startup/compilation excluded",
+      "engines": {
+        "baseline": {
+          "path": "D:\\home\\source\\zig\\forthz\\.work\\vm-pc-windows-20261115\\baseline\\bin\\sigma.exe",
+          "sha256": "49b7c673d42f8c0d7fda06feab7fd7f008934109358b4771ec2daaf9f33468b8",
+          "samples_us": [
+            5421875.0,
+            5187500.0,
+            5296875.0,
+            5296875.0,
+            6109375.0,
+            6609375.0,
+            5406250.0,
+            5218750.0,
+            5234375.0,
+            5218750.0,
+            5281250.0,
+            5171875.0,
+            6890625.0,
+            6203125.0,
+            5250000.0
+          ],
+          "median_us": 5296875.0,
+          "min_us": 5171875.0,
+          "max_us": 6890625.0,
+          "wall_samples_us": [
+            5438696.5,
+            5224099.1,
+            5291183.1,
+            5326985.9,
+            6130047.0,
+            6718289.6,
+            5436374.6,
+            5259709.1,
+            5236526.3,
+            5309695.9,
+            5324068.2,
+            5245274.0,
+            6881968.5,
+            6192852.1,
+            5289454.0
+          ]
+        },
+        "candidate": {
+          "path": "D:\\home\\source\\zig\\forthz\\.work\\vm-data-call-route-20261115\\windows\\bin\\sigma.exe",
+          "sha256": "379d6c6c069b9c3072da22fa6cea8b7deff77c5ed78ef9bbd070f92a724337bf",
+          "samples_us": [
+            5109375.0,
+            5093750.0,
+            5031250.0,
+            4937500.0,
+            4937500.0,
+            5500000.0,
+            4921875.0,
+            5734375.0,
+            4953125.0,
+            5031250.0,
+            5140625.0,
+            5500000.0,
+            5015625.0,
+            5125000.0,
+            5000000.0
+          ],
+          "median_us": 5031250.0,
+          "min_us": 4921875.0,
+          "max_us": 5734375.0,
+          "wall_samples_us": [
+            5120502.8,
+            5143913.9,
+            5090472.8,
+            4999281.6,
+            4940138.2,
+            5502964.1,
+            4952028.0,
+            5759277.6,
+            4948262.7,
+            5048604.0,
+            5157719.3,
+            5496344.5,
+            5048198.4,
+            5120944.9,
+            4988788.6
+          ]
+        }
+      },
+      "change_percent": -5.014749262536878,
+      "aa_delta_percent": null
+    },
+    "success-pass1-compare-2.json": {
+      "stage": "compare",
+      "series": 2,
+      "pid": 29500,
+      "platform": "Windows-11-10.0.26300-SP0",
+      "cpu_affinity": [
+        4
+      ],
+      "rounds": 15,
+      "case": {
+        "group": "catch",
+        "definition": ": B-WORK 1+ ; : BENCH-RUN 0 BENCH-ITERATIONS 0 DO ['] B-WORK CATCH DROP LOOP ;",
+        "iterations": 187318748,
+        "checksum_per_iteration": 1,
+        "calibration_samples": [
+          {
+            "iterations": 46829687,
+            "cpu_us": 1328125.0,
+            "wall_us": 1326327.2
+          }
+        ],
+        "cpu_affinity": [
+          4
+        ]
+      },
+      "checksum": 187318748,
+      "orders": [
+        [
+          "candidate",
+          "baseline"
+        ],
+        [
+          "baseline",
+          "candidate"
+        ],
+        [
+          "candidate",
+          "baseline"
+        ],
+        [
+          "baseline",
+          "candidate"
+        ],
+        [
+          "candidate",
+          "baseline"
+        ],
+        [
+          "baseline",
+          "candidate"
+        ],
+        [
+          "candidate",
+          "baseline"
+        ],
+        [
+          "baseline",
+          "candidate"
+        ],
+        [
+          "candidate",
+          "baseline"
+        ],
+        [
+          "baseline",
+          "candidate"
+        ],
+        [
+          "candidate",
+          "baseline"
+        ],
+        [
+          "baseline",
+          "candidate"
+        ],
+        [
+          "candidate",
+          "baseline"
+        ],
+        [
+          "baseline",
+          "candidate"
+        ],
+        [
+          "candidate",
+          "baseline"
+        ],
+        [
+          "baseline",
+          "candidate"
+        ]
+      ],
+      "timing": "GetProcessTimes READY/DONE CPU delta; startup/compilation excluded",
+      "engines": {
+        "baseline": {
+          "path": "D:\\home\\source\\zig\\forthz\\.work\\vm-pc-windows-20261115\\baseline\\bin\\sigma.exe",
+          "sha256": "49b7c673d42f8c0d7fda06feab7fd7f008934109358b4771ec2daaf9f33468b8",
+          "samples_us": [
+            5484375.0,
+            6140625.0,
+            5296875.0,
+            5187500.0,
+            5234375.0,
+            6156250.0,
+            5218750.0,
+            6078125.0,
+            5234375.0,
+            5234375.0,
+            5296875.0,
+            5281250.0,
+            5328125.0,
+            5234375.0,
+            7093750.0
+          ],
+          "median_us": 5296875.0,
+          "min_us": 5187500.0,
+          "max_us": 7093750.0,
+          "wall_samples_us": [
+            5498570.9,
+            6206018.2,
+            5300840.3,
+            5235533.8,
+            5263825.2,
+            6223724.2,
+            5235748.1,
+            6098248.1,
+            5272881.1,
+            5239406.5,
+            5325420.8,
+            5319762.8,
+            5383412.2,
+            5270728.3,
+            7135124.2
+          ]
+        },
+        "candidate": {
+          "path": "D:\\home\\source\\zig\\forthz\\.work\\vm-data-call-route-20261115\\windows\\bin\\sigma.exe",
+          "sha256": "379d6c6c069b9c3072da22fa6cea8b7deff77c5ed78ef9bbd070f92a724337bf",
+          "samples_us": [
+            4968750.0,
+            5781250.0,
+            4937500.0,
+            5015625.0,
+            5125000.0,
+            4906250.0,
+            4875000.0,
+            5312500.0,
+            4906250.0,
+            4968750.0,
+            5031250.0,
+            5593750.0,
+            5421875.0,
+            4859375.0,
+            5343750.0
+          ],
+          "median_us": 5015625.0,
+          "min_us": 4859375.0,
+          "max_us": 5781250.0,
+          "wall_samples_us": [
+            5019278.1,
+            5850153.1,
+            4972110.9,
+            5028101.4,
+            5119000.4,
+            4938697.4,
+            4936608.2,
+            5331401.0,
+            4937118.2,
+            5024333.2,
+            5071565.7,
+            5635968.5,
+            5467588.8,
+            4936736.7,
+            5434099.9
+          ]
+        }
+      },
+      "change_percent": -5.309734513274334,
+      "aa_delta_percent": null
+    },
+    "tque-status.json": [
+      {
+        "id": 768,
+        "title": "VM速度改善：データ語の呼出し経路分離を再校正・評価し、採否と本体反映を判断する［docs/VM_DATA_CALL_ROUTE_EXPERIMENT.md］",
+        "status": "todo",
+        "parent_id": 121,
+        "progress": 0,
+        "progress_mode": "auto",
+        "created_at": "2026-11-15T09:54:32Z",
+        "depends_on": [],
+        "effective_progress": 16,
+        "blocked": false,
+        "blocked_by": []
+      },
+      {
+        "id": 769,
+        "title": "両OSの測定を再校正する：基準版同士のA/Aで揺らぎを確認し、反復数・回数・CPUを固定する（評価中は試作コードを固定）",
+        "status": "todo",
+        "parent_id": 768,
+        "progress": 0,
+        "progress_mode": "auto",
+        "created_at": "2026-11-15T09:54:53Z",
+        "depends_on": [],
+        "effective_progress": 80,
+        "blocked": false,
+        "blocked_by": []
+      },
+      {
+        "id": 770,
+        "title": "WindowsのLOOPをA/A校正し、独立2系列で試作と再比較する：各10%以上短縮・2δ超を確認する",
+        "status": "done",
+        "parent_id": 769,
+        "progress": 100,
+        "progress_mode": "auto",
+        "created_at": "2026-11-15T09:54:53Z",
+        "completed_at": "2026-11-15T10:08:50Z",
+        "depends_on": [],
+        "effective_progress": 100,
+        "blocked": false,
+        "blocked_by": []
+      },
+      {
+        "id": 771,
+        "title": "WindowsのCATCH-NOBT中THROWをA/A校正し、独立2系列で再比較する：悪化上限10%付近の系列差を確認する",
+        "status": "done",
+        "parent_id": 769,
+        "progress": 100,
+        "progress_mode": "auto",
+        "created_at": "2026-11-15T09:54:53Z",
+        "completed_at": "2026-11-15T10:16:07Z",
+        "depends_on": [
+          770
+        ],
+        "effective_progress": 100,
+        "blocked": false,
+        "blocked_by": []
+      },
+      {
+        "id": 772,
+        "title": "Windows正常CATCHをCPU4でA/A校正し、独立2系列で試作と比較する（CPU0の参考値を採用判定に使わない）",
+        "status": "done",
+        "parent_id": 769,
+        "progress": 100,
+        "progress_mode": "auto",
+        "created_at": "2026-11-15T09:54:53Z",
+        "completed_at": "2026-11-15T10:31:28Z",
+        "depends_on": [
+          771
+        ],
+        "effective_progress": 100,
+        "blocked": false,
+        "blocked_by": []
+      },
+      {
+        "id": 773,
+        "title": "Linuxの深さ256のCATCHとCATCH-NOBT中THROWをA/A校正・再比較し、系列差と増減方向の違いを確認する",
+        "status": "done",
+        "parent_id": 769,
+        "progress": 100,
+        "progress_mode": "auto",
+        "created_at": "2026-11-15T09:54:53Z",
+        "completed_at": "2026-11-15T10:36:23Z",
+        "depends_on": [
+          772
+        ],
+        "effective_progress": 100,
+        "blocked": false,
+        "blocked_by": []
+      },
+      {
+        "id": 774,
+        "title": "両OSの残る通常・CATCH項目もA/A校正を更新し、全17項目の測定条件と入力・実行体ハッシュを確定する",
+        "status": "todo",
+        "parent_id": 769,
+        "progress": 0,
+        "progress_mode": "auto",
+        "created_at": "2026-11-15T09:54:53Z",
+        "depends_on": [
+          773
+        ],
+        "effective_progress": 0,
+        "blocked": false,
+        "blocked_by": []
+      },
+      {
+        "id": 775,
+        "title": "校正済み条件で両OSの通常8項目・CATCH9項目を比較する：順序交替・独立2系列・チェックサム照合、ビルドやテストを時間測定と重ねない",
+        "status": "todo",
+        "parent_id": 768,
+        "progress": 0,
+        "progress_mode": "auto",
+        "created_at": "2026-11-15T09:54:53Z",
+        "depends_on": [
+          769
+        ],
+        "effective_progress": 0,
+        "blocked": true,
+        "blocked_by": [
+          769
+        ]
+      },
+      {
+        "id": 776,
+        "title": "Windowsの全17項目を基準版と対比較し、全試行値・中央値・最小最大・反復数・CPU・実行順を保存する",
+        "status": "todo",
+        "parent_id": 775,
+        "progress": 0,
+        "progress_mode": "auto",
+        "created_at": "2026-11-15T09:54:53Z",
+        "depends_on": [
+          769
+        ],
+        "effective_progress": 0,
+        "blocked": true,
+        "blocked_by": [
+          769
+        ]
+      },
+      {
+        "id": 777,
+        "title": "Linuxの全17項目を基準版と対比較し、全試行値・中央値・最小最大・反復数・CPU・実行順を保存する",
+        "status": "todo",
+        "parent_id": 775,
+        "progress": 0,
+        "progress_mode": "auto",
+        "created_at": "2026-11-15T09:54:53Z",
+        "depends_on": [
+          769
+        ],
+        "effective_progress": 0,
+        "blocked": true,
+        "blocked_by": [
+          769
+        ]
+      },
+      {
+        "id": 778,
+        "title": "採否とレビューを行う：整数演算・LOOP各10%以上短縮、他項目・CATCHの既定悪化上限、両OSサイズ増1%以内を判定。基準を満たす候補をレビューし指摘を反映、未達時は根拠ある追加実験か見送りを判断する",
+        "status": "todo",
+        "parent_id": 768,
+        "progress": 0,
+        "progress_mode": "auto",
+        "created_at": "2026-11-15T09:54:53Z",
+        "depends_on": [
+          775
+        ],
+        "effective_progress": 0,
+        "blocked": true,
+        "blocked_by": [
+          775
+        ]
+      },
+      {
+        "id": 779,
+        "title": "採否に従って本体の扱いを確定する：採用時のみ反映し構成別・両OS回帰テストと変更後の性能・サイズを再確認、見送り時は本体維持と試作保存。コミット・タグ・プッシュは別途明示指示時のみ",
+        "status": "todo",
+        "parent_id": 768,
+        "progress": 0,
+        "progress_mode": "auto",
+        "created_at": "2026-11-15T09:54:53Z",
+        "depends_on": [
+          778
+        ],
+        "effective_progress": 0,
+        "blocked": true,
+        "blocked_by": [
+          778
+        ]
+      },
+      {
+        "id": 780,
+        "title": "結果と残件を文書・tqueへ反映する：採否、校正と測定の根拠、レビュー対応、実装状態、未解決事項を記録し、実績に応じて完了を更新する",
+        "status": "todo",
+        "parent_id": 768,
+        "progress": 0,
+        "progress_mode": "auto",
+        "created_at": "2026-11-15T09:54:54Z",
+        "depends_on": [
+          779
+        ],
+        "effective_progress": 0,
+        "blocked": true,
+        "blocked_by": [
+          779
+        ]
+      }
+    ]
+  },
+  "scripts": {
+    "focused-linux.py": "from pathlib import Path\nimport argparse,json,hashlib,importlib.util,statistics,sys,platform,os\nsys.dont_write_bytecode=True\nroot=Path(__file__).resolve().parents[2];out=Path(__file__).resolve().parent\np=argparse.ArgumentParser();p.add_argument('stage',choices=['aa','compare']);p.add_argument('--series',type=int,required=True);p.add_argument('--config',default='loop-config.json');p.add_argument('--cpu',type=int,default=0);p.add_argument('--rounds',type=int,default=7);p.add_argument('--tag',default='loop');a=p.parse_args()\nspec=importlib.util.spec_from_file_location('bench',root/'scripts/benchmark-runtime.py');b=importlib.util.module_from_spec(spec);spec.loader.exec_module(b);b.cpu_affinity(a.cpu)\ndef sha(p):return hashlib.sha256(p.read_bytes()).hexdigest()\nassert sha(root/'src/forth.zig')=='3fedbd1601a1ebd3fa61f99bf2a3ce06fd876af1b7047bb8a86057b0e3ca5191'\nbase=root/'.work/vm-a-experiment/baseline-linux/bin/sigma';trial=root/'.work/vm-data-call-route-20261115/linux/bin/sigma'\nprior=json.loads((root/'docs/measurements/2026-11-15-vm-data-call-route.json').read_text(encoding='utf-8'))\nassert sha(base)==prior['binaries']['linux_baseline']['sha256'] and sha(trial)==prior['binaries']['linux_trial']['sha256']\nc=json.loads((out/a.config).read_text());n=c['iterations'];source=f'{n} CONSTANT BENCH-ITERATIONS {c[\"definition\"]} '+'.\" BENCH-READY\" CR KEY DROP BENCH-RUN .\" BENCH-DONE \" . CR KEY DROP BYE'\nengines={'A1':base,'A2':base} if a.stage=='aa' else {'baseline':base,'candidate':trial};vals={k:[] for k in engines};walls={k:[] for k in engines};orders=[];expected=None\nfor i in range(a.rounds+1):\n order=list(engines) if (a.series-1+i)%2==0 else list(reversed(engines));orders.append(order)\n for k in order:\n  cpu,check,wall,total=b.sample(str(engines[k]),False,source)\n  if expected is None:expected=check\n  assert check==expected\n  if c.get('checksum_per_iteration') is not None:assert check==n*c['checksum_per_iteration']\n  if i:vals[k].append(cpu);walls[k].append(wall)\nrows={k:{'samples_us':v,'median_us':statistics.median(v),'min_us':min(v),'max_us':max(v),'wall_samples_us':walls[k]} for k,v in vals.items()};left,right=list(engines);x,y=rows[left]['median_us'],rows[right]['median_us'];change=100*(y/x-1);delta=100*abs(x-y)/min(x,y)\nr={'stage':a.stage,'series':a.series,'pid':os.getpid(),'platform':platform.platform(),'cpu_affinity':b.cpu_affinity(),'rounds':a.rounds,'case':c,'checksum':expected,'orders':orders,'timing':'clock_getcpuclockid + clock_gettime READY/DONE CPU delta; startup/compilation excluded','engines':{k:{'path':str(v),'sha256':sha(v),**rows[k]} for k,v in engines.items()},'change_percent':change,'aa_delta_percent':delta if a.stage=='aa' else None}\n(out/f'{a.tag}-{a.stage}-{a.series}.json').write_text(json.dumps(r,indent=2)+'\\n');print(a.tag,a.stage,a.series,change,'delta',delta,flush=True)\n",
+    "focused.py": "from pathlib import Path\nimport argparse,json,hashlib,importlib.util,statistics,sys,platform,os\nsys.dont_write_bytecode=True\nroot=Path(__file__).resolve().parents[2];out=Path(__file__).resolve().parent\np=argparse.ArgumentParser();p.add_argument('stage',choices=['aa','compare']);p.add_argument('--series',type=int,required=True);p.add_argument('--config',default='loop-config.json');p.add_argument('--cpu',type=int,default=0);p.add_argument('--rounds',type=int,default=7);p.add_argument('--tag',default='loop');a=p.parse_args()\nspec=importlib.util.spec_from_file_location('bench',root/'scripts/benchmark-runtime.py');b=importlib.util.module_from_spec(spec);spec.loader.exec_module(b);b.cpu_affinity(a.cpu)\ndef sha(p):return hashlib.sha256(p.read_bytes()).hexdigest()\nassert sha(root/'src/forth.zig')=='3fedbd1601a1ebd3fa61f99bf2a3ce06fd876af1b7047bb8a86057b0e3ca5191'\nbase=root/'.work/vm-pc-windows-20261115/baseline/bin/sigma.exe';trial=root/'.work/vm-data-call-route-20261115/windows/bin/sigma.exe'\nprior=json.loads((root/'docs/measurements/2026-11-15-vm-data-call-route.json').read_text(encoding='utf-8'))\nassert sha(base)==prior['binaries']['windows_baseline']['sha256'] and sha(trial)==prior['binaries']['windows_trial']['sha256']\nc=json.loads((out/a.config).read_text());n=c['iterations'];source=f'{n} CONSTANT BENCH-ITERATIONS {c[\"definition\"]} '+'.\" BENCH-READY\" CR KEY DROP BENCH-RUN .\" BENCH-DONE \" . CR KEY DROP BYE'\nengines={'A1':base,'A2':base} if a.stage=='aa' else {'baseline':base,'candidate':trial};vals={k:[] for k in engines};walls={k:[] for k in engines};orders=[];expected=None\nfor i in range(a.rounds+1):\n order=list(engines) if (a.series-1+i)%2==0 else list(reversed(engines));orders.append(order)\n for k in order:\n  cpu,check,wall,total=b.sample(str(engines[k]),False,source)\n  if expected is None:expected=check\n  assert check==expected\n  if c.get('checksum_per_iteration') is not None:assert check==n*c['checksum_per_iteration']\n  if i:vals[k].append(cpu);walls[k].append(wall)\nrows={k:{'samples_us':v,'median_us':statistics.median(v),'min_us':min(v),'max_us':max(v),'wall_samples_us':walls[k]} for k,v in vals.items()};left,right=list(engines);x,y=rows[left]['median_us'],rows[right]['median_us'];change=100*(y/x-1);delta=100*abs(x-y)/min(x,y)\nr={'stage':a.stage,'series':a.series,'pid':os.getpid(),'platform':platform.platform(),'cpu_affinity':b.cpu_affinity(),'rounds':a.rounds,'case':c,'checksum':expected,'orders':orders,'timing':'GetProcessTimes READY/DONE CPU delta; startup/compilation excluded','engines':{k:{'path':str(v),'sha256':sha(v),**rows[k]} for k,v in engines.items()},'change_percent':change,'aa_delta_percent':delta if a.stage=='aa' else None}\n(out/f'{a.tag}-{a.stage}-{a.series}.json').write_text(json.dumps(r,indent=2)+'\\n');print(a.tag,a.stage,a.series,change,'delta',delta,flush=True)\n",
+    "measure-case.py": "from pathlib import Path\nimport subprocess,sys,json,argparse\np=argparse.ArgumentParser();p.add_argument('name');p.add_argument('--cpu',type=int,default=0);p.add_argument('--rounds',type=int,default=7);a=p.parse_args();out=Path(__file__).resolve().parent;history=[];cfg=out/(a.name+'-config.json')\ndef run(stage,series,tag):\n cmd=[sys.executable,str(out/'focused.py'),stage,'--series',str(series),'--config',cfg.name,'--cpu',str(a.cpu),'--rounds',str(a.rounds),'--tag',tag]\n with (out/f'{tag}-{stage}-{series}.log').open('wb') as log:subprocess.run(cmd,stdout=log,stderr=subprocess.STDOUT,check=True)\n r=json.loads((out/f'{tag}-{stage}-{series}.json').read_text());print(tag,stage,series,r['change_percent'],flush=True);return r\nfor attempt in range(3):\n tag=f'{a.name}-pass{attempt}';rows=[run('aa',i,tag) for i in [1,2]];delta=max(r['aa_delta_percent'] for r in rows);history.append({'attempt':attempt,'tag':tag,'delta_percent':delta});(out/(a.name+'-aa-history.json')).write_text(json.dumps(history,indent=2)+'\\n')\n if delta<=2:break\n if attempt==2:raise RuntimeError('AA unstable; no comparison decision')\n c=json.loads(cfg.read_text());c['iterations']*=2;cfg.write_text(json.dumps(c,indent=2)+'\\n')\nrows=[run('compare',i,tag) for i in [1,2]];changes=[r['change_percent'] for r in rows];limit=10 if a.name=='nobt' else 5\nresult={'tag':tag,'cpu':a.cpu,'delta_percent':delta,'iterations':rows[0]['case']['iterations'],'changes_percent':changes,'upper_limit_percent':limit,'both_within_limit':all(v<=limit for v in changes),'both_exceed_limit':all(v>limit for v in changes)}\n(out/(a.name+'-decision.json')).write_text(json.dumps(result,indent=2)+'\\n');print(result,flush=True)\n",
+    "measure-linux-case.py": "from pathlib import Path\nimport subprocess,sys,json,argparse\np=argparse.ArgumentParser();p.add_argument('name');p.add_argument('--cpu',type=int,default=0);p.add_argument('--rounds',type=int,default=7);a=p.parse_args();out=Path(__file__).resolve().parent;history=[];cfg=out/(a.name+'-config.json')\ndef run(stage,series,tag):\n cmd=[sys.executable,str(out/'focused-linux.py'),stage,'--series',str(series),'--config',cfg.name,'--cpu',str(a.cpu),'--rounds',str(a.rounds),'--tag',tag]\n with (out/f'{tag}-{stage}-{series}.log').open('wb') as log:subprocess.run(cmd,stdout=log,stderr=subprocess.STDOUT,check=True)\n r=json.loads((out/f'{tag}-{stage}-{series}.json').read_text());print(tag,stage,series,r['change_percent'],flush=True);return r\nfor attempt in range(3):\n tag=f'{a.name}-pass{attempt}';rows=[run('aa',i,tag) for i in [1,2]];delta=max(r['aa_delta_percent'] for r in rows);history.append({'attempt':attempt,'tag':tag,'delta_percent':delta});(out/(a.name+'-aa-history.json')).write_text(json.dumps(history,indent=2)+'\\n')\n if delta<=2:break\n if attempt==2:raise RuntimeError('AA unstable; no comparison decision')\n c=json.loads(cfg.read_text());c['iterations']*=2;cfg.write_text(json.dumps(c,indent=2)+'\\n')\nrows=[run('compare',i,tag) for i in [1,2]];changes=[r['change_percent'] for r in rows];limit=10 if a.name=='linux-nobt' else 5\nresult={'tag':tag,'cpu':a.cpu,'delta_percent':delta,'iterations':rows[0]['case']['iterations'],'changes_percent':changes,'upper_limit_percent':limit,'both_within_limit':all(v<=limit for v in changes),'both_exceed_limit':all(v>limit for v in changes)}\n(out/(a.name+'-decision.json')).write_text(json.dumps(result,indent=2)+'\\n');print(result,flush=True)\n",
+    "measure-linux.py": "from pathlib import Path\nimport subprocess,json\nout=Path(__file__).resolve().parent;s=out.as_posix();linux='/mnt/'+s[0].lower()+s[2:];records=[]\nfor name in ['linux-nested','linux-nobt']:\n cmd=['wsl','--exec','python3',linux+'/measure-linux-case.py',name]\n with (out/(name+'-driver.log')).open('wb') as log:r=subprocess.run(cmd,stdout=log,stderr=subprocess.STDOUT)\n records.append({'case':name,'command':cmd,'exit':r.returncode});(out/'linux-commands.json').write_text(json.dumps(records,indent=2)+'\\n');print(name,'exit',r.returncode,flush=True)\n assert r.returncode==0\n",
+    "measure-loop.py": "from pathlib import Path\nimport subprocess,sys,json\nout=Path(__file__).resolve().parent;history=[]\ndef run(stage,series,tag,rounds):\n cmd=[sys.executable,str(out/'focused.py'),stage,'--series',str(series),'--rounds',str(rounds),'--tag',tag]\n with (out/f'{tag}-{stage}-{series}.log').open('wb') as log:subprocess.run(cmd,stdout=log,stderr=subprocess.STDOUT,check=True)\n r=json.loads((out/f'{tag}-{stage}-{series}.json').read_text());print(tag,stage,series,r['change_percent'],flush=True);return r\nfor attempt in range(3):\n tag=f'loop-pass{attempt}';rows=[run('aa',i,tag,7) for i in [1,2]];delta=max(r['aa_delta_percent'] for r in rows);history.append({'attempt':attempt,'tag':tag,'delta_percent':delta});(out/'loop-aa-history.json').write_text(json.dumps(history,indent=2)+'\\n')\n if delta<=2:break\n if attempt==2:raise RuntimeError('AA unstable; no comparison decision')\n p=out/'loop-config.json';c=json.loads(p.read_text());c['iterations']*=2;p.write_text(json.dumps(c,indent=2)+'\\n')\nrows=[run('compare',i,tag,7) for i in [1,2]];result={'tag':tag,'delta_percent':delta,'iterations':rows[0]['case']['iterations'],'changes_percent':[r['change_percent'] for r in rows],'passes_loop_condition':all(-r['change_percent']>=10 and -r['change_percent']>2*delta for r in rows)}\n(out/'loop-decision.json').write_text(json.dumps(result,indent=2)+'\\n');print(result,flush=True)\n",
+    "save-progress.py": "from pathlib import Path\nimport json,hashlib,subprocess\nroot=Path.cwd();out=root/'.work/vm-priority-validation-20261115'\ndef read(p):return p.read_text(encoding='utf-8')\nrecords={p.name:json.loads(read(p)) for p in out.glob('*.json')}\nr={'records':records,'scripts':{p.name:read(p) for p in out.glob('*.py')},'production_sha256':hashlib.sha256((root/'src/forth.zig').read_bytes()).hexdigest(),'benchmark_sha256':hashlib.sha256((root/'scripts/benchmark-runtime.py').read_bytes()).hexdigest(),'head':subprocess.check_output(['git','rev-parse','HEAD'],text=True).strip()}\nassert r['production_sha256']=='3fedbd1601a1ebd3fa61f99bf2a3ce06fd876af1b7047bb8a86057b0e3ca5191'\n(root/'docs/measurements/2026-11-15-vm-priority-validation.json').write_text(json.dumps(r,ensure_ascii=False,indent=2)+'\\n',encoding='utf-8')\nlines=['# 優先順位に沿った再校正・評価','','2026-11-15。768→781→788→789を優先するようtqueの依存関係を更新した。その他は根拠・規模で着手判断し、大規模案を自動実装しない。現在は768の評価中。本体への反映・コミット・リリースは行っていない。','','## 重点項目の結果','','| 項目 | タスク | A/A δ | 基準版に対するCPU時間の差（独立2系列） | 状態 |','| --- | --- | ---: | --- | --- |']\nfor key,title,task in [('loop','Windows LOOP',770),('nobt','Windows CATCH-NOBT中THROW',771),('success','Windows正常CATCH・CPU4',772),('linux-nested','Linux深さ256 CATCH',773),('linux-nobt','Linux CATCH-NOBT中THROW',773)]:\n decision=records.get(key+'-decision.json')\n if decision:\n  passed=decision.get('passes_loop_condition',decision.get('both_within_limit',False));d=decision['delta_percent'];changes=' / '.join(f'{x:+.2f}%' for x in decision['changes_percent']);state='今回の条件を通過' if passed else '未達又は未確定';lines.append(f'| {title} | {task} | {d:.2f}% | {changes} | {state} |')\n else:\n  history=records.get(key+'-aa-history.json',[]);delta=history[-1]['delta_percent'] if history else None;lines.append(f'| {title} | {task} | '+(f'{delta:.2f}%' if delta is not None else '未確定')+' | 比較結果は未確定 | 未完了 |')\nlines+=['','負数は短縮、正数は悪化。LOOPは各10%以上かつ2δ超、CATCH-NOBT中THROWは悪化10%以内、正常系CATCHは悪化5%以内で判定する。部分項目の通過を全体の採用と扱わない。','','## 方法と校正の履歴','','CPUを固定し、同じ基準版同士を順序交替・独立2系列で比較する。δは100×中央値差の絶対値÷小さい中央値、2系列の最大。2%を超えた条件は比較に使わず、事前に決めた最大3条件まで反復数を2倍にして再校正する。安定しなければ候補との比較は実施しない。','','各比較の最初の1回はウォームアップとして除き、通常は7回、Windows正常CATCHは15回の中央値を使う。反復数・回数・CPU・入力・実行体SHA-256・PID・実行順・全測定値と最小最大は生データに保存した。WindowsはGetProcessTimes、Linuxはclock_getcpuclockid/clock_gettimeでREADY〜DONEのCPU時間を測定する。起動・コンパイルは除外し、他のビルド・テスト・性能測定は重ねない。','']\nfor key in ['loop','nobt','success','linux-nested','linux-nobt']:\n for h in records.get(key+'-aa-history.json',[]):\n  a=records[h['tag']+'-aa-1.json'];lines.append(f\"- {h['tag']}：{a['case']['iterations']:,}反復、{a['rounds']}回、CPU {a['cpu_affinity']}、δ={h['delta_percent']:.2f}%。\" )\nlines+=['','A/A δは信頼区間でも候補のばらつきの上限でもない。正常CATCHの最初の条件では、同じ実行体・同じ反復数のCPU時間が約2.52〜4.91秒に分かれた。実時間だけの遅延ではないが、原因は未特定。再校正の通過を、個別試行のばらつきが解消したとの意味にしない。','','設定JSON内の古いcalibration_samplesは反復数の出発点にした過去のWindows値であり、今回の校正結果やLinuxの校正結果として使わない。今回の校正値は*-aa-*.jsonにある。','','## 記録と残件','','[生データと実行手順](measurements/2026-11-15-vm-priority-validation.json)を保存。作業ログは`.work/vm-priority-validation-20261115/`。基準版と試作は前回の測定実行体とハッシュ一致を確認した。','','重点項目の確認後は774で残項目のA/Aを更新し、775〜777で両OS全17項目を比較する。778の採否・レビュー、779の本体の扱い、780の記録を終えるまで、781のCATCHコピー削減へ進まない。既存の採用条件・サイズ条件を緩めない。','','本体SHA-256：`'+r['production_sha256']+'`。']\n(root/'docs/VM_PRIORITY_VALIDATION.md').write_text('\\n'.join(lines)+'\\n',encoding='utf-8');print('updated raw evidence and progress report')\n"
+  },
+  "production_sha256": "3fedbd1601a1ebd3fa61f99bf2a3ce06fd876af1b7047bb8a86057b0e3ca5191",
+  "benchmark_sha256": "576345f4486dd27a510327d91ec04d5f8ce9721f42059679bd78e4b661e315ef",
+  "head": "257504759fd22e7453f9e96798e755f1ea589f79"
+}

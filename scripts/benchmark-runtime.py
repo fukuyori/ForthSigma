@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Compare compiled Forth kernels; run with Linux binaries inside WSL/Linux."""
+"""Compare compiled Forth kernels using child process CPU time on Linux/Windows."""
 
 import argparse
 import ctypes
@@ -8,13 +8,71 @@ import json
 import os
 import platform
 import queue
-import resource
 import shutil
 import statistics
 import subprocess
 import threading
 import time
 from pathlib import Path
+
+if os.name != "nt":
+    import resource
+
+
+class WindowsProcessClock:
+    """Own a query handle so CPU time remains readable after the child exits."""
+
+    def __init__(self, pid):
+        from ctypes import wintypes
+        self.api = ctypes.WinDLL("kernel32", use_last_error=True)
+        self.api.OpenProcess.argtypes = [wintypes.DWORD, wintypes.BOOL, wintypes.DWORD]
+        self.api.OpenProcess.restype = wintypes.HANDLE
+        self.api.GetProcessTimes.argtypes = [wintypes.HANDLE] + [ctypes.POINTER(wintypes.FILETIME)] * 4
+        self.api.GetProcessTimes.restype = wintypes.BOOL
+        self.api.CloseHandle.argtypes = [wintypes.HANDLE]
+        self.api.CloseHandle.restype = wintypes.BOOL
+        self.handle = self.api.OpenProcess(0x1000, False, pid)  # PROCESS_QUERY_LIMITED_INFORMATION
+        if not self.handle:
+            raise ctypes.WinError(ctypes.get_last_error())
+
+    def read_ns(self):
+        from ctypes import wintypes
+        times = [wintypes.FILETIME() for _ in range(4)]
+        if not self.api.GetProcessTimes(self.handle, *(ctypes.byref(t) for t in times)):
+            raise ctypes.WinError(ctypes.get_last_error())
+        # Creation/exit are timestamps; kernel/user are durations in 100 ns units.
+        return sum((t.dwHighDateTime << 32) | t.dwLowDateTime for t in times[2:]) * 100
+
+    def close(self):
+        if self.handle:
+            self.api.CloseHandle(self.handle)
+            self.handle = None
+
+
+def cpu_affinity(cpu=None):
+    """Optionally pin this runner; children inherit its processor affinity."""
+    if os.name != "nt":
+        if cpu is not None:
+            os.sched_setaffinity(0, {cpu})
+        return sorted(os.sched_getaffinity(0))
+    from ctypes import wintypes
+    api = ctypes.WinDLL("kernel32", use_last_error=True)
+    api.GetCurrentProcess.restype = wintypes.HANDLE
+    api.GetProcessAffinityMask.argtypes = [wintypes.HANDLE, ctypes.POINTER(ctypes.c_size_t), ctypes.POINTER(ctypes.c_size_t)]
+    api.GetProcessAffinityMask.restype = wintypes.BOOL
+    api.SetProcessAffinityMask.argtypes = [wintypes.HANDLE, ctypes.c_size_t]
+    api.SetProcessAffinityMask.restype = wintypes.BOOL
+    process_mask, system_mask = ctypes.c_size_t(), ctypes.c_size_t()
+    handle = api.GetCurrentProcess()
+    if not api.GetProcessAffinityMask(handle, ctypes.byref(process_mask), ctypes.byref(system_mask)):
+        raise ctypes.WinError(ctypes.get_last_error())
+    if cpu is not None:
+        if cpu < 0 or not process_mask.value & (1 << cpu):
+            raise ValueError("CPU is outside the runner's current affinity mask")
+        if not api.SetProcessAffinityMask(handle, 1 << cpu):
+            raise ctypes.WinError(ctypes.get_last_error())
+        process_mask.value = 1 << cpu
+    return [i for i in range(ctypes.sizeof(ctypes.c_size_t) * 8) if process_mask.value & (1 << i)]
 
 
 # Original, deliberately small kernels. These are diagnostics, not a general
@@ -53,8 +111,9 @@ def process_clock(pid):
 
 
 def sample(path, gforth, source):
-    command = [path, "-e", source]
-    start = resource.getrusage(resource.RUSAGE_CHILDREN)
+    command = [*(path if isinstance(path, list) else [path]), "-e", source]
+    start = resource.getrusage(resource.RUSAGE_CHILDREN) if os.name != "nt" else None
+    windows_clock = None
     # The first KEY parks the child after compilation; the second keeps its
     # process clock available until we have sampled it. Send one byte, not a
     # newline that could accidentally satisfy both KEYs.
@@ -88,12 +147,17 @@ def sample(path, gforth, source):
         try:
             if (line := receive()) != b"BENCH-READY":
                 raise RuntimeError(f"unexpected startup output: {line!r}")
-            clock_id = process_clock(child.pid)
-            cpu_start = time.clock_gettime_ns(clock_id)
+            if os.name == "nt":
+                windows_clock = WindowsProcessClock(child.pid)
+                read_cpu = windows_clock.read_ns
+            else:
+                clock_id = process_clock(child.pid)
+                read_cpu = lambda: time.clock_gettime_ns(clock_id)
+            cpu_start = read_cpu()
             wall_start = time.monotonic_ns()
             release()
             line = receive()
-            cpu_end = time.clock_gettime_ns(clock_id)
+            cpu_end = read_cpu()
             wall_end = time.monotonic_ns()
             fields = line.split()
             if len(fields) != 2 or fields[0] != b"BENCH-DONE":
@@ -111,16 +175,21 @@ def sample(path, gforth, source):
                     remaining.append(line)
             if child.returncode or remaining:
                 raise RuntimeError(f"benchmark exit={child.returncode}, extra output={remaining!r}")
+            if windows_clock is not None:
+                total_cpu_us = windows_clock.read_ns() / 1000
         finally:
             if child.poll() is None:
                 child.kill()
                 child.wait()
             reader.join(timeout=5)
-    end = resource.getrusage(resource.RUSAGE_CHILDREN)
+            if windows_clock is not None:
+                windows_clock.close()
     micros = (cpu_end - cpu_start) / 1000
     if micros <= 0:
         raise RuntimeError("measurement too short; increase --iterations")
-    total_cpu_us = (end.ru_utime + end.ru_stime - start.ru_utime - start.ru_stime) * 1_000_000
+    if os.name != "nt":
+        end = resource.getrusage(resource.RUSAGE_CHILDREN)
+        total_cpu_us = (end.ru_utime + end.ru_stime - start.ru_utime - start.ru_stime) * 1_000_000
     return micros, checksum, (wall_end - wall_start) / 1000, total_cpu_us
 
 
@@ -145,6 +214,7 @@ def main():
     parser.add_argument("--iterations", type=int, default=100_000_000)
     parser.add_argument("--rounds", type=int, default=7)
     parser.add_argument("--output", type=Path)
+    parser.add_argument("--cpu", type=int, help="pin this runner and its children to one CPU")
     args = parser.parse_args()
     engines = [(label, path, False) for label, path in args.sigma]
     engines += [(label, path, True) for label, path in args.gforth]
@@ -154,7 +224,7 @@ def main():
         parser.error("engine labels must be unique")
     report = {"schema_version": 2,
               "timing": "child process CPU clock between READY and DONE; startup/compilation excluded; boundary I/O included",
-              "platform": platform.platform(), "cpu_affinity": sorted(os.sched_getaffinity(0)),
+              "platform": platform.platform(), "cpu_affinity": cpu_affinity(args.cpu),
               "iterations": args.iterations, "rounds": args.rounds,
               "engines": [metadata(*item) for item in engines], "cases": {}}
     for name, definition in CASES.items():

@@ -95,6 +95,53 @@ test "compiled data words retain identity and execute DOES behavior" {
     try std.testing.expectEqual(machine.data_stack.len, machine.data_depth);
 }
 
+test "compiled data-word overflow preserves the failed PC in both loops" {
+    for ([_][]const u8{ "K", "V", "RAW", "A" }) |name| {
+        for ([_]bool{ false, true }) |counted| {
+            var output = Output{};
+            const machine = try createMachine(&output);
+            defer destroyMachine(machine);
+            try machine.interpretLine("7 CONSTANT K VARIABLE V CREATE RAW 2 ARRAY A");
+            var text: [64]u8 = undefined;
+            try machine.interpretLine(try std.fmt.bufPrint(&text, ": RUN {s} ;", .{name}));
+            const caller = machine.words[try machine.lookupOrFail("RUN")];
+            machine.keep_counting = counted;
+            @memset(machine.data_stack, 41);
+            machine.data_depth = machine.data_stack.len;
+            try std.testing.expectError(error.StackOverflow, machine.interpretLine("RUN"));
+            try std.testing.expectEqual(machine.data_stack.len, machine.data_depth);
+            for (machine.data_stack) |value| try std.testing.expectEqual(@as(forth.Cell, 41), value);
+            if (@import("../core/defs.zig").debug_enabled) {
+                try std.testing.expectEqual(caller.code_start + 1, machine.failed_pc);
+                try std.testing.expect(machine.backtrace_count != 0);
+                try std.testing.expectEqual(caller.code_start, machine.backtrace[0]);
+            }
+            try std.testing.expectEqual(@as(usize, 0), machine.call_depth);
+            try std.testing.expectEqual(@as(usize, 0), machine.frame_depth);
+        }
+    }
+}
+
+test "compiled data-word references reject targets forgotten during execution" {
+    for ([_][]const u8{ "7 CONSTANT DATA-X", "VARIABLE DATA-X", "CREATE DATA-X", "2 ARRAY DATA-X" }) |definition| {
+        for ([_]bool{ false, true }) |counted| {
+            var output = Output{};
+            const machine = try createMachine(&output);
+            defer destroyMachine(machine);
+            try machine.interpretLine(definition);
+            try machine.interpretLine(": RUN S\" FORGET DATA-X\" EVALUATE DATA-X ;");
+            const caller = try machine.lookupOrFail("RUN");
+            machine.keep_counting = counted;
+            try std.testing.expectError(error.InvalidExecutionToken, machine.executeWord(caller));
+            try expectStack(machine, &.{});
+            try std.testing.expect(machine.lookup("DATA-X") == null);
+            try std.testing.expect(machine.lookup("RUN") == null);
+            try std.testing.expectEqual(@as(usize, 0), machine.call_depth);
+            try std.testing.expectEqual(@as(usize, 0), machine.frame_depth);
+        }
+    }
+}
+
 test "a compiled created-word reference observes DOES attached afterwards" {
     var output = Output{};
     const machine = try createMachine(&output);
@@ -326,7 +373,7 @@ test "SYNONYM TRAVERSE-WORDLIST NAME>INTERPRET EKEY>CHAR and ENVIRONMENT? work a
 }
 
 test "QUIT keeps both data stacks, stops the line and the file, and CATCH does not stop it" {
-    try support.skipWithout(&.{ .files });
+    try support.skipWithout(&.{.files});
     try support.skipWithoutFloat();
     var output = Output{};
     support.setFakeFile(&output, 0, ": TQ 1 2 QUIT 3 ; TQ .S\n4 .\n");
