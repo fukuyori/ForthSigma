@@ -29,7 +29,7 @@ S01実装を`fac0e8f`としてコミットし、origin/mainへpush後、Claude C
 
 ## 検証と追跡
 
-通常構成、files/image無効構成、graphics/audio/float/image無効構成の`zig build test`を実行。コアのfreestandingコンパイルも通常テストに含まれる。実ファイル・SAVESYS通常終了の試験は`python3 scripts/verify-blocks.py zig-out/bin/sigma`、パイプ・PTY・編集付きACCEPT・Ctrl+Cの試験は`python3 scripts/verify-ekey.py zig-out/bin/sigma`で再実行できる。
+通常構成、files/image無効構成、graphics/audio/float/image無効構成の`zig build test`を実行。コアのfreestandingコンパイルも通常テストに含まれる。実ファイル・SAVESYS通常終了の試験は`python3 tests/scripts/verify-blocks.py zig-out/bin/sigma`、パイプ・PTY・編集付きACCEPT・Ctrl+Cの試験は`python3 tests/scripts/verify-ekey.py zig-out/bin/sigma`で再実行できる。
 
 Claude Codeへの依頼文・原文・Gforth比較JSON・旧イメージ試験結果は`.work/s01-review/`に保存した（Git対象外）。初回レビュー中に修正を進めたため、実ファイルと初回コミットのパッチは異なっていた。初回原文の「作業ツリーはクリーン」という推定は採用せず、修正差分を別ファイルに保存して再レビューした。
 

@@ -48,9 +48,9 @@
 ```sh
 zig build test --summary all
 zig build --prefix .work/p10/linux/default --summary all
-python3 scripts/verify-p10.py --sigma .work/p10/linux/default/bin/sigma --output .work/p10/linux/default-integration.json
-python3 scripts/verify-feature-matrix.py --platform linux
-python3 scripts/verify-p10-cross-build.py --default .work/p10/linux/default/bin/sigma --matrix .work/p10/linux
+python3 tests/scripts/verify-p10.py --sigma .work/p10/linux/default/bin/sigma --output .work/p10/linux/default-integration.json
+python3 tests/scripts/verify-feature-matrix.py --platform linux
+python3 tests/scripts/verify-p10-cross-build.py --default .work/p10/linux/default/bin/sigma --matrix .work/p10/linux
 python3 scripts/check-docs.py
 ```
 

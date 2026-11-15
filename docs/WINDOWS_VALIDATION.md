@@ -13,7 +13,7 @@
 - Windows CRTの`O_CREAT|O_TRUNC`が既存ファイルの読み取り専用属性を作成modeで変更していた。排他的な新規作成を先に試し、既存ファイルは作成modeなしで開くことで属性を保持する。
 - SYSTEMの子cmd.exeが共有コンソールモードを変更し、終了後に残していた。SYSTEM前の入力/出力モードを保存し、子終了後に復元する。正常/非0終了、後続キー入力、例外終了時の復元を確認した。
 
-追加境界検証は`python scripts/verify-windows-boundaries.py --minimal .work/windows-minimal/bin/sigma.exe`。minimal実行ファイルは`zig build -Dfloat=false -Dfiles=false -Dhelp=false -Dtools=false -Dimage=false -Dgraphics=false -Daudio=false -Ddebug=false --prefix .work/windows-minimal`で生成する。files無効時はFILENAME-MATCHが除外されることを確認した。
+追加境界検証は`python tests/scripts/verify-windows-boundaries.py --minimal .work/windows-minimal/bin/sigma.exe`。minimal実行ファイルは`zig build -Dfloat=false -Dfiles=false -Dhelp=false -Dtools=false -Dimage=false -Dgraphics=false -Daudio=false -Ddebug=false --prefix .work/windows-minimal`で生成する。files無効時はFILENAME-MATCHが除外されることを確認した。
 
 378件には、全256バイトと空ファイルの準備/EOF、Unicodeパス終端容量、ホーム/ドライブ/ソース相対検索、mkdirのWindows方針、列挙上限/解放、FPATHの保存実行と追加、入れ子入力/先読み、broken-pipe、SH-GETのメモリ不足70回後の解放/復帰、時刻/DST/offset/UTF-8名/範囲/失敗保持を含む。Windows broken-pipe書込の実測iorはCRT EINVAL由来の-534であり、定数BROKEN-PIPE-ERRORの-544と同一視しない。
 
@@ -41,11 +41,11 @@ PowerShellで次を実行する。検証は同じ作業ファイルを共有す�
 zig build test --summary all
 zig build --summary all
 zig build test -Dfloat=false -Dfiles=false -Dhelp=false -Dtools=false -Dimage=false -Dgraphics=false -Daudio=false -Ddebug=false --summary all
-python scripts/verify-blocks.py zig-out/bin/sigma.exe
-python scripts/verify-ekey.py zig-out/bin/sigma.exe
-python scripts/verify-runtime.py --sigma zig-out/bin/sigma.exe --output .work/windows-runtime.json
-python scripts/verify-windows.py
-python scripts/verify-windows-console.py zig-out/bin/sigma.exe
+python tests/scripts/verify-blocks.py zig-out/bin/sigma.exe
+python tests/scripts/verify-ekey.py zig-out/bin/sigma.exe
+python tests/scripts/verify-runtime.py --sigma zig-out/bin/sigma.exe --output .work/windows-runtime.json
+python tests/scripts/verify-windows.py
+python tests/scripts/verify-windows-console.py zig-out/bin/sigma.exe
 ```
 
 - 通常テスト：コア999成功・5 skip、ホスト58成功・5 skip。freestandingコンパイルとビルド内の実行確認も成功。キャッシュ再利用時の集計は再実行したテストだけを表示する。Windows側のresize通知の実装変更により、WindowsではスキップされるPOSIX用resizeテストの取り込みがなくなり、最終実行のskipは修正途中より1件少ない。

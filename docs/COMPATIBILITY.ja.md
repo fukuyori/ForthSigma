@@ -132,7 +132,7 @@
 | Gforthの `$VALUE` などの残りの文字列語 | 未実装 | Gforthの語（2026-10-30の調査）。 |
 | Gforthの例外の書き方: TRY, ENDTRY, RESTORE, IFERROR | 未実装 | `CATCH` で同じことができます（2026-10-30の調査）。#417 の検討で見送りました（2026-11-10）。 |
 | Gforthの道具の語: ]], [[ | 制限付きで実装済み | P07bで後回しコンパイル・マクロのモードを実装。辞書のコンパイルトークン・リテラル・記載した文字列形式を扱う。内部で[']等の解析専用構文は使えない。後述のP07bを参照。 |
-| EKEY>FKEY, K-SHIFT-MASK, K-CTRL-MASK, K-ALT-MASK | 実装済み・Windows/Linux実機確認待ち | 標準定数はEKEYSに配置。GRAPHICS値は維持。macOSのパイプ・擬似端末確認は`python3 scripts/verify-ekey.py zig-out/bin/sigma`で再実行できます。 |
+| EKEY>FKEY, K-SHIFT-MASK, K-CTRL-MASK, K-ALT-MASK | 実装済み・Windows/Linux実機確認待ち | 標準定数はEKEYSに配置。GRAPHICS値は維持。macOSのパイプ・擬似端末確認は`python3 tests/scripts/verify-ekey.py zig-out/bin/sigma`で再実行できます。 |
 | 標準ブロック語: BLK, BLOCK, BUFFER, EMPTY-BUFFERS, FLUSH, LIST, LOAD, SAVE-BUFFERS, SCR, THRU, UPDATE | 実装済み（S01b、2026-11-13） | blocks.fbの1024バイトブロック、32バッファー。macOSの単体・実ファイル試験済み。Windows/Linux実機確認は別環境。辞書読込はLOAD-DICTIONARYへ改名。 |
 | CODE, ;CODE, ASSEMBLER, EDITOR（標準のTOOLS-EXT） | 対象外 | アセンブラとエディター。Gforthの `CODE` と同じく対象外です。 |
 | Gforthの CODE, END-CODE, SAVESYSTEM, 'COLD, BOOTMESSAGE, FPATH, SCRIPT? | 対象外 | Gforthの起動処理やアセンブラに依存します（2026-10-30決定、教材Level 30）。SAVESYSTEM の代わりに SAVESYS を使えます。 |

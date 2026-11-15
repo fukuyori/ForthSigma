@@ -57,9 +57,9 @@ for group in a.groups:
     report = folder / (label + '-integration.json')
     integration_log = folder / (label + '-integration.log')
     if not via_wsl:
-        invocation = [sys.executable, 'scripts/verify-p10.py', '--sigma', str(exe), '--disabled', group, '--output', str(report)]
+        invocation = [sys.executable, 'tests/scripts/verify-p10.py', '--sigma', str(exe), '--disabled', group, '--output', str(report)]
     else:
-        invocation = ['wsl', '--cd', linux(root), '--exec', 'python3', 'scripts/verify-p10.py', '--sigma', linux(exe), '--disabled', group, '--output', linux(report)]
+        invocation = ['wsl', '--cd', linux(root), '--exec', 'python3', 'tests/scripts/verify-p10.py', '--sigma', linux(exe), '--disabled', group, '--output', linux(report)]
     r = command(invocation, integration_log)
     assert r.returncode == 0, (label, 'integration', str(integration_log))
     record = json.loads(report.read_text())

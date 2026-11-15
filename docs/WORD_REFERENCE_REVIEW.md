@@ -30,7 +30,7 @@ Claude Codeの初回・追加レビューを読み、上記の説明不一致と
 
 - Windows PowerShellから`zig build`、`zig build test`が成功。
 - `python scripts/word-reference.py --check --sigma zig-out/bin/sigma.exe`：全1,503項目、7語彙の辞書1,463項目、EKEYS値35件が一致。出力を照合するガイド例28件と、終了を確認する個別例132件が成功。
-- `python scripts/test-word-reference.py --sigma zig-out/bin/sigma.exe`：選択規則・指紋の回帰5件と、確認済みの不一致に対する動作回帰19件が成功。
+- `python tests/scripts/test-word-reference.py --sigma zig-out/bin/sigma.exe`：選択規則・指紋の回帰5件と、確認済みの不一致に対する動作回帰19件が成功。
 - `python scripts/check-docs.py`：指摘0件。`git diff --check`：成功。
 
 全語の全分岐、全OS、物理デバイスの網羅検証ではない。特に抜粋の準備はリンク先のテスト文脈に従う。指紋一致や辞書名の一致は、説明の意味が正しいことの証明ではない。

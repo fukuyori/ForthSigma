@@ -21,8 +21,8 @@ Windows・WSLとも通常構成37件、8種類の単独機能除外構成の統�
 
 ## 追加確認前の実施記録
 
-- `scripts/verify-p10.py`を作成し、マクロ・無名定義・検索順・型付き参照・例外・FORGET/MARKER・保存/復元・破損イメージ拒否を組み合わせて検証した。Windows通常構成は37件成功、WSL通常構成は追加前の25件成功。証跡は`.work/p10/windows-default.json`、`.work/p10/linux-default.json`。両方とも`complete: true`を確認した。
-- `scripts/verify-feature-matrix.py`を作成し、以下の8種類の単独機能除外構成で、Windowsのビルド・単体テスト、Linux用ビルドとWSL上の単体テスト、各構成の統合テストが成功した。Linuxのテスト実行体はWindowsでクロスコンパイルし、WSL上で実行した。Linux版Zigでのビルドランナー実行を意味しない。
+- `tests/scripts/verify-p10.py`を作成し、マクロ・無名定義・検索順・型付き参照・例外・FORGET/MARKER・保存/復元・破損イメージ拒否を組み合わせて検証した。Windows通常構成は37件成功、WSL通常構成は追加前の25件成功。証跡は`.work/p10/windows-default.json`、`.work/p10/linux-default.json`。両方とも`complete: true`を確認した。
+- `tests/scripts/verify-feature-matrix.py`を作成し、以下の8種類の単独機能除外構成で、Windowsのビルド・単体テスト、Linux用ビルドとWSL上の単体テスト、各構成の統合テストが成功した。Linuxのテスト実行体はWindowsでクロスコンパイルし、WSL上で実行した。Linux版Zigでのビルドランナー実行を意味しない。
 
 | 除外機能 | Windows統合成功件数 | WSL統合成功件数 |
 | --- | ---: | ---: |
@@ -37,11 +37,11 @@ Windows・WSLとも通常構成37件、8種類の単独機能除外構成の統�
 
 上表は追加確認前の成功件数。単体テスト・ビルドの証跡は各OSフォルダーの`no-*-tests.log`、`no-*-build.log`。WSL実行ログは`no-*-native-test-0.log`と`no-*-native-test-1.log`。統合JSONとmatrixは今回の再実行結果へ更新済みであり、現在の件数は冒頭の追加確認結果を参照する。
 
-- `scripts/verify-p10-cross-build.py`を作成し、Windows通常版の保存イメージを7種類の機能除外版へ読み込む検証が7件成功した。float除外版では保存済みの浮動小数点語を実行すると-261になり、除外機能の実行を拒否した。証跡は`.work/p10/windows/cross-build.json`。image除外版には読込機能がないため対象外。
+- `tests/scripts/verify-p10-cross-build.py`を作成し、Windows通常版の保存イメージを7種類の機能除外版へ読み込む検証が7件成功した。float除外版では保存済みの浮動小数点語を実行すると-261になり、除外機能の実行を拒否した。証跡は`.work/p10/windows/cross-build.json`。image除外版には読込機能がないため対象外。
 - 英日マニュアルの登録語索引、互換性一覧の不足、古い未実装表記、日本語のP07/P08表を修正した。`scripts/check-docs.py`はMarkdownのエスケープされた縦棒を扱い、追加語だけでなく組込み950語を確認するよう変更した。`python scripts/check-docs.py`は指摘0件。証跡は`.work/p10-docs.log`。
 - HELPのBROKEN-PIPE-ERROR説明にWindows CRTでEINVALになる場合を明記した。
 
-主な実行方法：`python scripts/verify-feature-matrix.py --platform windows`、同`--platform linux`。通常構成は`python scripts/verify-p10.py --sigma <実行体> --output <JSON>`、構成間読込は`python scripts/verify-p10-cross-build.py --default <通常版> --matrix <除外構成フォルダー>`。
+主な実行方法：`python tests/scripts/verify-feature-matrix.py --platform windows`、同`--platform linux`。通常構成は`python tests/scripts/verify-p10.py --sigma <実行体> --output <JSON>`、構成間読込は`python tests/scripts/verify-p10-cross-build.py --default <通常版> --matrix <除外構成フォルダー>`。
 
 ## macOS実機での確認（2026-11-15、tque #752）
 

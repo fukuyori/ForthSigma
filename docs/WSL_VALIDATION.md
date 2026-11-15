@@ -14,9 +14,9 @@ WSL専用タスク728〜741の確認は完了。最新ソースをLinux用にビ
 - 既存ブロック/EKEYのパイプ・PTY、ランタイム13件、SHOW PTY20件、POSIX統合10件も最新ビルドで成功。行編集18件は前回の成功記録を維持する。
 
 ```sh
-python3 scripts/verify-posix-boundaries.py --sigma .work/wsl-build/bin/sigma --minimal .work/wsl-minimal/bin/sigma
-python3 scripts/verify-posix-terminal.py --sigma .work/wsl-build/bin/sigma
-python3 scripts/verify-build-cli.py --sigma .work/wsl-build/bin/sigma --output .work/wsl-build-cli.json
+python3 tests/scripts/verify-posix-boundaries.py --sigma .work/wsl-build/bin/sigma --minimal .work/wsl-minimal/bin/sigma
+python3 tests/scripts/verify-posix-terminal.py --sigma .work/wsl-build/bin/sigma
+python3 tests/scripts/verify-build-cli.py --sigma .work/wsl-build/bin/sigma --output .work/wsl-build-cli.json
 ```
 
 追加の最小構成実行ファイルはWindowsで`zig build -Dtarget=x86_64-linux-musl -Dfloat=false -Dfiles=false -Dhelp=false -Dtools=false -Dimage=false -Dgraphics=false -Daudio=false -Ddebug=false --prefix .work/wsl-minimal`で生成した。
@@ -50,12 +50,12 @@ zig build test -Dtarget=x86_64-linux-musl -Dfloat=false -Dfiles=false -Dhelp=fal
 リポジトリのルートで実行する。
 
 ```sh
-python3 scripts/verify-blocks.py .work/wsl-build/bin/sigma
-python3 scripts/verify-ekey.py .work/wsl-build/bin/sigma
-python3 scripts/verify-runtime.py --sigma .work/wsl-build/bin/sigma --output .work/wsl-runtime.json
-python3 scripts/verify-output-activity.py --sigma .work/wsl-build/bin/sigma --output .work/wsl-output-activity.json
-python3 scripts/test-line-editor.py --sigma .work/wsl-build/bin/sigma
-python3 scripts/verify-posix-native.py --sigma .work/wsl-build/bin/sigma --output .work/wsl-native/report.json
+python3 tests/scripts/verify-blocks.py .work/wsl-build/bin/sigma
+python3 tests/scripts/verify-ekey.py .work/wsl-build/bin/sigma
+python3 tests/scripts/verify-runtime.py --sigma .work/wsl-build/bin/sigma --output .work/wsl-runtime.json
+python3 tests/scripts/verify-output-activity.py --sigma .work/wsl-build/bin/sigma --output .work/wsl-output-activity.json
+python3 tests/scripts/test-line-editor.py --sigma .work/wsl-build/bin/sigma
+python3 tests/scripts/verify-posix-native.py --sigma .work/wsl-build/bin/sigma --output .work/wsl-native/report.json
 ```
 
 すべて成功。

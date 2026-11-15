@@ -6,7 +6,7 @@
 
 - 対象コミット：`16945a5ffacbd1a33a846d832849f4347b499ff2`。開始時の作業ツリーに変更なし。
 - macOS 27.2、arm64、Zig 0.17.1。通常版・単独機能除外8構成ともネイティブターゲットでビルド・実行。
-- `scripts/verify-feature-matrix.py`に`--platform macos`を追加。既存のWindows・Linux・WSL経路は維持した。アプリケーション実装の変更なし。
+- `tests/scripts/verify-feature-matrix.py`に`--platform macos`を追加。既存のWindows・Linux・WSL経路は維持した。アプリケーション実装の変更なし。
 - 初回は既定キャッシュへのアクセスがPermissionDeniedで停止。リポジトリ内の`.zig-global-cache`・`.zig-cache`を指定して以降の検証を実施した。
 
 ## 結果
@@ -36,10 +36,10 @@ export ZIG_GLOBAL_CACHE_DIR="$PWD/.zig-global-cache"
 export ZIG_LOCAL_CACHE_DIR="$PWD/.zig-cache"
 zig build test --summary all
 zig build --prefix .work/p10/macos/default --summary all
-python3 scripts/verify-p10.py --sigma .work/p10/macos/default/bin/sigma --output .work/p10/macos/default-integration.json
-python3 scripts/verify-feature-matrix.py --platform macos
-python3 scripts/verify-p10-cross-build.py --default .work/p10/macos/default/bin/sigma --matrix .work/p10/macos
-python3 scripts/verify-runtime.py --sigma .work/p10/macos/default/bin/sigma --output .work/p10/macos/runtime.json
+python3 tests/scripts/verify-p10.py --sigma .work/p10/macos/default/bin/sigma --output .work/p10/macos/default-integration.json
+python3 tests/scripts/verify-feature-matrix.py --platform macos
+python3 tests/scripts/verify-p10-cross-build.py --default .work/p10/macos/default/bin/sigma --matrix .work/p10/macos
+python3 tests/scripts/verify-runtime.py --sigma .work/p10/macos/default/bin/sigma --output .work/p10/macos/runtime.json
 python3 scripts/check-docs.py
 python3 scripts/word-reference.py --check --sigma .work/p10/macos/default/bin/sigma
 ```

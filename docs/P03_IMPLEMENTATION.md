@@ -53,7 +53,7 @@ ZIG_GLOBAL_CACHE_DIR="$PWD/.zig-global-cache" zig build test \
   -Dfloat=false -Dgraphics=false -Daudio=false -Dfiles=false \
   -Dimage=false -Dhelp=false -Dtools=false -Ddebug=false --cache-dir .zig-cache
 ZIG_GLOBAL_CACHE_DIR="$PWD/.zig-global-cache" zig build --cache-dir .zig-cache
-python3 scripts/verify-p03a.py zig-out/bin/sigma --gforth-build .work/gforth-audit/gforth-build --report .work/p03a-check/results.json
+python3 tests/scripts/verify-p03a.py zig-out/bin/sigma --gforth-build .work/gforth-audit/gforth-build --report .work/p03a-check/results.json
 ```
 
 比較元はP00と同じ作業用Gforth 1.0.1 arm64。--gforth-buildなしではSigmaのみ検証する。GPLコードは転用していない。Windows/Linux確認はここでは行わず、別環境の607で確認する。版番号変更・パッケージ作成は行わない。
@@ -80,7 +80,7 @@ python3 scripts/verify-p03a.py zig-out/bin/sigma --gforth-build .work/gforth-aud
 検証：通常／全機能群無効のzig build test成功。src/tests/p03b_data_test.zigで格納順・容量不足・入力保持・重複コピー・フィールド・辞書復元追加を確認。verify-p03b-data.pyは基本12＋境界/コンパイル等276＝288ケースでSigma・指定Gforthとも成功。
 
 ```sh
-python3 scripts/verify-p03b-data.py zig-out/bin/sigma --gforth-build .work/gforth-audit/gforth-build --report .work/p03b-data-check/results.json
+python3 tests/scripts/verify-p03b-data.py zig-out/bin/sigma --gforth-build .work/gforth-audit/gforth-build --report .work/p03b-data-check/results.json
 ```
 
 ログは.zig-cache/p03b-data-test.log、p03b-data-minimal.log。JSONは.work/p03b-data-check/。P03aは737b660、データ配置12語はad34fefでpush済み。
@@ -119,7 +119,7 @@ Forthの保存・読込入口でホスト処理前に検査し、Tcl資源解放
 - CLIでSAVE/SAVESYSの-264、部分破損SAVEの-9と既存ファイル保持を確認。
 
 ```sh
-python3 scripts/verify-p03b-address.py zig-out/bin/sigma --gforth-build .work/gforth-audit/gforth-build --report .work/p03b-address-check/results.json
+python3 tests/scripts/verify-p03b-address.py zig-out/bin/sigma --gforth-build .work/gforth-audit/gforth-build --report .work/p03b-address-check/results.json
 ```
 
 ログは.zig-cache/p03b-address-test.log、p03b-address-minimal.log。JSONは.work/p03b-address-check/（legacy-guard.jsonも含む）。子616は16862f1でpush済み。

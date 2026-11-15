@@ -66,7 +66,7 @@ MiBは1,048,576バイト。最小構成はfloat/files/help/tools/image/graphics/
 
 後続の原因調査では、f1140c7の直前・直後を同じ環境・ビルド条件で測定し、整数演算+59.0%、LOOP+37.9%の時間増加を確認した。これは2千万反復・5回の別系列であり、上表の1億反復・7回と絶対時間を混ぜない。コミット全体の差は確認済みだが、個別の生成命令の原因は未特定。[改善計画](VM_PERFORMANCE_PLAN.md)と[原因調査の生データ](measurements/2026-11-15-vm-diagnosis.json)を参照する。
 
-事前に`python3 scripts/test-benchmark-runtime.py`を実行したところ、テストがPythonへ非対応の`-e`を渡しており、意図したプロトコル検査に到達しなかった。テスト用子プログラムを実行可能なPythonスクリプトとして起動するよう修正し、3件すべて成功した。起動・終了・sleepの除外、不正出力の拒否、早期終了の拒否を確認した。測定本体のアルゴリズムは変更していない。
+事前に`python3 tests/scripts/test-benchmark-runtime.py`を実行したところ、テストがPythonへ非対応の`-e`を渡しており、意図したプロトコル検査に到達しなかった。テスト用子プログラムを実行可能なPythonスクリプトとして起動するよう修正し、3件すべて成功した。起動・終了・sleepの除外、不正出力の拒否、早期終了の拒否を確認した。測定本体のアルゴリズムは変更していない。
 
 過去の比較対象Gforth 0.7.9_20260410も確認したが、`libgfdisasm2.la`欠落により`40 2 + . bye`が終了コード1で失敗したため、本測定から除外した。失敗の標準出力・標準エラーは生データに保存した。既存インストールやキャッシュを修復・変更してはいない。
 
@@ -83,7 +83,7 @@ zig build -Dtarget=x86_64-linux-musl -Doptimize=fast -Dcpu=baseline -Dstrip=true
 
 ```sh
 cd /mnt/d/home/source/zig/forthz
-python3 scripts/test-benchmark-runtime.py
+python3 tests/scripts/test-benchmark-runtime.py
 taskset -c 0 python3 scripts/benchmark-runtime.py \
   --sigma sigma=./.work/measure-20261115/x86_64-linux-musl-full/bin/sigma \
   --gforth gforth-1.0.2=/usr/local/bin/gforth-1.0.2-amd64 \

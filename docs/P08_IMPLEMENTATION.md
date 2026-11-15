@@ -55,7 +55,7 @@ Two existing fixture names TABLE were renamed because TABLE is now public; warni
 
 ### Validation
 
-scripts/probe-p08a.py records170 observations from the designated Gforth build. scripts/verify-p08a.py passes163 matching cases and7 explicit Sigma policy checks, comparing tokenized output to allow display whitespace differences. It also passes native SAVE/LOAD-DICTIONARY into a destination with an extra wordlist and SAVESYS execution (2 checks). Artifacts: .work/p08a-check/.
+tests/scripts/probe-p08a.py records170 observations from the designated Gforth build. tests/scripts/verify-p08a.py passes163 matching cases and7 explicit Sigma policy checks, comparing tokenized output to allow display whitespace differences. It also passes native SAVE/LOAD-DICTIONARY into a destination with an extra wordlist and SAVESYS execution (2 checks). Artifacts: .work/p08a-check/.
 
 Twelve Zig regressions cover named/anonymous tokens and forgetting, case/table warnings, copied and caught NEXTNAME state, scoped compilation destination/error restoration, writable VM context, finite traversal callbacks, listing/filter output, full restore/both append routes with rebasing, malformed policy validation without mutation, line-local MWORDS, control metadata/aliases and capacity/bit63 persistence. Normal/minimal tests (all optional groups disabled, including freestanding checks) and normal build pass. P07 prework/a/b/c/d comparison/image/EOF verifiers also pass after the code changes. Logs: .zig-cache/p08a-*.log.
 
@@ -99,7 +99,7 @@ Six public words and one hidden ADDR compilation action change builtin ABI/count
 
 AVALUE's typed slot retains heap roots and data pointers through full restore and both append routes. Compiled ADDR, captured PRESERVE actions and completed anonymous :IS assignments use existing typed word-id relocation. Active :IS compilers cannot be encoded or used as append sources. Runtime guards are never serialized; a successful full restore invalidates live scopes only after preflight, while failed preflight leaves them intact. No new framing/Word/Op layout:7 appended Builtin tags/table entries change ABI/count, so old-ABI SIGIMG45/46/47 images must be recreated.
 
-scripts/probe-p08b.py records64 observations. scripts/verify-p08b.py passes54 matching stdout/exit cases plus10 explicit Sigma error/compiler policies. Native SAVE/LOAD-DICTIONARY into a nonempty dictionary/heap and SAVESYS execution both pass, exercising an AVALUE heap root, compiled ADDR and deferred-action relocation. Artifacts: .work/p08b-check/.
+tests/scripts/probe-p08b.py records64 observations. tests/scripts/verify-p08b.py passes54 matching stdout/exit cases plus10 explicit Sigma error/compiler policies. Native SAVE/LOAD-DICTIONARY into a nonempty dictionary/heap and SAVESYS execution both pass, exercising an AVALUE heap root, compiled ADDR and deferred-action relocation. Artifacts: .work/p08b-check/.
 
 Twelve Zig regressions pass: typed full/partial writes, separate ADDR actions and scalar/float/double/xt locals, :IS timing/rollback/active-save rejection, captured/uninitialized actions, nested/throwing/rebinding wrappers, same-id reuse and error priority, unrelated FORGET, successful/failed image restoration,64-level unwind and all3 image routes. Normal/minimal tests (all optional groups disabled, including freestanding checks) and build pass; P08a and every P07 verifier also pass. Logs: .zig-cache/p08b-*.log. No Windows/Linux native execution, version change, package creation or unrequested external review was performed.
 

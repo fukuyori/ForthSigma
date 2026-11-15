@@ -5,7 +5,7 @@
 ```sh
 export GFORTH_P00_SOURCE=/path/to/gforth
 export GFORTH_P00_BUILD=/path/to/gforth-build
-python3 scripts/gforth-p00/run.py
+python3 tests/scripts/gforth-p00/run.py
 ```
 
 SOURCEは参照元のソース、BUILDは同じソースから構築した`gforth-ditc`と`gforth.fi`を含むディレクトリ。既定値は今回指定された`/Users/fuk/source/forth/gforth`と、リポジトリ内の`.work/gforth-audit/gforth-build`である。

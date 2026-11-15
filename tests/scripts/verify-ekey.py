@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""EKEY host regressions. Run: python3 scripts/verify-ekey.py zig-out/bin/sigma"""
+"""EKEY host regressions. Run: python3 tests/scripts/verify-ekey.py zig-out/bin/sigma"""
 import os
 import subprocess
 import sys

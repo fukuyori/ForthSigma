@@ -2,6 +2,12 @@
 
 更新日：2026-11-15。現在状態はこの文書、実装経緯は各フェーズ記録とgit履歴を参照する。tqueの表示番号は振り直されるため、再開時はタスク名と親子関係で照合する。
 
+## テストスクリプトの配置変更（2026-11-15）
+
+`test-*`・`verify-*`・`probe-*`と`gforth-p00/`の99ファイルを`tests/scripts/`へ移動した。実行は引き続きリポジトリルートから行う。呼出し元・文書のパスとテストのルート解決・importを更新。生成・ビルド・配布・ベンチマーク本体と文書チェックは`scripts/`に保持する。[実行例と区分](../tests/scripts/README.md)を参照。測定JSONのハッシュ対象パスと外部レビュー原文は当時の記録として保持する。
+
+移動後にPython97ファイルの構文、リファレンス回帰5件＋動作19件、署名スクリプトのモック9件、行編集18件、P10統合37件、ランタイム13件、debug除外マトリックスの単体・ビルド・統合36件を確認して成功。文書チェック指摘0件。Linux専用ベンチマークテストはimportのみ確認し、Gforth比較・Windows専用試験は再実行していない。証跡は`.work/script-move/`。
+
 ## バージョン更新（2026-11-15）
 
 利用者指定で製品バージョンを0.11.0へ更新し、チェックリストの表示例・ログ例・変更履歴・開発記録を更新した。過去の測定記録は変更しない。パッケージ・タグは作成していない。
@@ -40,7 +46,7 @@ agy指摘は、CATCH成功用0の容量不足＋外側CATCHなしでの失敗PC�
 
 速度はWSL2のCPU0で8カーネルを各1億反復、ウォームアップ1回を除外して7回測定し、全チェックサムが一致した。起動・コンパイルを除いたCPU時間の中央値比の幾何平均は、SigmaがGforth 1.0.2通常版の3.50倍、fast版の10.06倍。実用全般の速度ではなく、旧表からの性能退行とも断定しない。旧Gforth 0.7.9はlibgfdisasm2.la欠落で起動失敗し除外。環境やインストールは修復していない。
 
-測定器のテストがPythonへ非対応の-eを渡していたため、`scripts/test-benchmark-runtime.py`のテスト用起動方法を修正し3件成功。測定本体・アプリケーション実装は変更していない。記録対象は測定レポート・生JSON・改善計画・レビューと採否・索引・実装ノート・本引継ぎ・上記テスト。実行体・ビルドログ・事前試行は`.work/measure-20261115/`。
+測定器のテストがPythonへ非対応の-eを渡していたため、`tests/scripts/test-benchmark-runtime.py`のテスト用起動方法を修正し3件成功。測定本体・アプリケーション実装は変更していない。記録対象は測定レポート・生JSON・改善計画・レビューと採否・索引・実装ノート・本引継ぎ・上記テスト。実行体・ビルドログ・事前試行は`.work/measure-20261115/`。
 
 ## 直前の見送り検討と公開記録
 
@@ -92,10 +98,10 @@ agy指摘は、CATCH成功用0の容量不足＋外側CATCHなしでの失敗PC�
 ## 再開時の成果物と実行方法
 
 - 今回の測定・計画作成開始時のHEADとorigin/mainは`50e661e`。全ワードリファレンスとHELP修正は`7b9e4dd`、Windows/WSL変更は`eaf0fe1`、582〜584の見送り記録は`50e661e`で公開済み。今回の成果物は冒頭を参照。再開時は`git status --short --branch`とリモートの実際の先端を再照会し、既存変更を保持する。
-- P10用スクリプト：`scripts/verify-p10.py`（通常/除外版統合）、`scripts/verify-feature-matrix.py`（8構成のビルド・単体・統合）、`scripts/verify-p10-cross-build.py`（通常版→除外版の保存イメージ読込）。
+- P10用スクリプト：`tests/scripts/verify-p10.py`（通常/除外版統合）、`tests/scripts/verify-feature-matrix.py`（8構成のビルド・単体・統合）、`tests/scripts/verify-p10-cross-build.py`（通常版→除外版の保存イメージ読込）。
 - 既存除外版実行体：`.work/p10/windows/no-<機能>/bin/sigma.exe`、`.work/p10/linux/no-<機能>/bin/sigma`。機能は`float files help tools image graphics audio debug`。再実行前に対象ソースとビルド時点を照合する。
-- 統合検証：`python scripts/verify-p10.py --sigma <実行体> --disabled <除外機能> --output <JSON>`。通常版では`--disabled`を省略。Linux実行体はWSLからLinux側のパスで指定する。
-- 構成間読込：`python scripts/verify-p10-cross-build.py --default <通常版実行体> --matrix <.work/p10/windows または linux>`。WSLではWSL側のPythonから実行する。
+- 統合検証：`python tests/scripts/verify-p10.py --sigma <実行体> --disabled <除外機能> --output <JSON>`。通常版では`--disabled`を省略。Linux実行体はWSLからLinux側のパスで指定する。
+- 構成間読込：`python tests/scripts/verify-p10-cross-build.py --default <通常版実行体> --matrix <.work/p10/windows または linux>`。WSLではWSL側のPythonから実行する。
 - 証跡：`.work/p10/windows-default.json`、`linux-default.json`、両OSの`matrix.json`と構成別ログ、Windowsの`cross-build.json`、`.work/p10-docs.log`。`complete: true`と件数、実際のログを照合する。
 - 今回は追加の実行検証まで完了。`.work/p10-refresh.log`と更新済みJSONが最新のWindows・WSL追加確認結果。最終ビルドは`.work/p10-windows-final-build.log`・`.work/p10-linux-final-build.log`、最終文書チェックは`.work/p10-docs-final.log`。
 

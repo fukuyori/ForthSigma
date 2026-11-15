@@ -63,9 +63,9 @@ ZIG_GLOBAL_CACHE_DIR="$PWD/.zig-global-cache" zig build test \
   -Dfloat=false -Dgraphics=false -Daudio=false -Dfiles=false \
   -Dimage=false -Dhelp=false -Dtools=false -Ddebug=false --cache-dir .zig-cache
 ZIG_GLOBAL_CACHE_DIR="$PWD/.zig-global-cache" zig build --cache-dir .zig-cache
-python3 scripts/verify-p02a.py zig-out/bin/sigma --gforth-build .work/gforth-audit/gforth-build --report .work/p02a-check/results.json
-python3 scripts/verify-p02b.py zig-out/bin/sigma --gforth-build .work/gforth-audit/gforth-build --report .work/p02b-check/results.json
-python3 scripts/verify-p02c.py zig-out/bin/sigma --gforth-build .work/gforth-audit/gforth-build --report .work/p02c-check/results.json
+python3 tests/scripts/verify-p02a.py zig-out/bin/sigma --gforth-build .work/gforth-audit/gforth-build --report .work/p02a-check/results.json
+python3 tests/scripts/verify-p02b.py zig-out/bin/sigma --gforth-build .work/gforth-audit/gforth-build --report .work/p02b-check/results.json
+python3 tests/scripts/verify-p02c.py zig-out/bin/sigma --gforth-build .work/gforth-audit/gforth-build --report .work/p02c-check/results.json
 ```
 
 --gforth-buildなしではSigmaのみ検証する。P02cの元の表示4ケースは未実装の>STRING-EXECUTEを使うため、ホスト側で出力を捕捉するケースに置き換えた。E系の表記全体のバイト一致ではなく、値と符号付き0の復元を検証する。Zigの回帰ではF*+の融合丸め、E.EXACTの完全な値、入力不足、範囲外時の非部分書込みも確認する。

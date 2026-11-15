@@ -90,7 +90,7 @@ Forth 2012の標準語は、P00で仕様を確定後、S01で先に対応する�
 
 ### S01 Forth 2012の標準語を優先対応
 
-2026-11-13 実装とmacOS検証完了（tque 579/580/581、S01b子608/609/610完了）。利用者の指示によりWindows/Linux実機確認はP10配下607へ分離し、ここでは行わない。終了時保存を含む実ファイル検証は`python3 scripts/verify-blocks.py zig-out/bin/sigma`、キー入力は`python3 scripts/verify-ekey.py zig-out/bin/sigma`で再実行できる。辞書読込の現在名はLOAD-DICTIONARY、標準LOADはブロック実行である。P01は着手可能。
+2026-11-13 実装とmacOS検証完了（tque 579/580/581、S01b子608/609/610完了）。利用者の指示によりWindows/Linux実機確認はP10配下607へ分離し、ここでは行わない。終了時保存を含む実ファイル検証は`python3 tests/scripts/verify-blocks.py zig-out/bin/sigma`、キー入力は`python3 tests/scripts/verify-ekey.py zig-out/bin/sigma`で再実行できる。辞書読込の現在名はLOAD-DICTIONARY、標準LOADはブロック実行である。P01は着手可能。
 
 FACILITY EXTのキー4語とBLOCK/BLOCK EXTの10語を優先する。既存の入力・ファイル・ヒープ基盤を利用し、Gforth拡張の追加を待たずに進める。
 
@@ -118,7 +118,7 @@ FACILITY EXTのキー4語とBLOCK/BLOCK EXTの10語を優先する。既存の�
 
 #### P01a 比較と最小最大
 
-2026-11-13 完了（tque 554）。16語を実装し、既存33ケースと境界・コンパイル済み1,144ケース、合計1,177ケースでSigmaと指定Gforthが一致した。通常構成と全機能群無効構成のテスト、スタック不足、イメージ復元・追加後の実行を確認。再実行は`python3 scripts/verify-p01a.py zig-out/bin/sigma --gforth-build .work/gforth-audit/gforth-build`（比較用Gforthがある場合）。Gforthを指定しない場合はSigmaの期待値検査のみ行う。
+2026-11-13 完了（tque 554）。16語を実装し、既存33ケースと境界・コンパイル済み1,144ケース、合計1,177ケースでSigmaと指定Gforthが一致した。通常構成と全機能群無効構成のテスト、スタック不足、イメージ復元・追加後の実行を確認。再実行は`python3 tests/scripts/verify-p01a.py zig-out/bin/sigma --gforth-build .work/gforth-audit/gforth-build`（比較用Gforthがある場合）。Gforthを指定しない場合はSigmaの期待値検査のみ行う。
 
 対象 16語。tque ID: 554。
 
@@ -128,7 +128,7 @@ FACILITY EXTのキー4語とBLOCK/BLOCK EXTの10語を優先する。既存の�
 
 #### P01b 基本スタック操作
 
-2026-11-13 完了（tque 555）。6語を実装し、既存6ケースと境界・コンパイル・リターンスタック4,054ケース、合計4,060ケースでSigmaと指定Gforthが一致した。通常・全機能群無効構成、スタック不足／容量境界、入れ子DOループ、CATCH/THROW・ローカル変数、イメージ復元・追加後の実行を確認。再実行は`python3 scripts/verify-p01b.py zig-out/bin/sigma --gforth-build .work/gforth-audit/gforth-build`。Gforth未指定時はSigmaの期待値検査のみ。
+2026-11-13 完了（tque 555）。6語を実装し、既存6ケースと境界・コンパイル・リターンスタック4,054ケース、合計4,060ケースでSigmaと指定Gforthが一致した。通常・全機能群無効構成、スタック不足／容量境界、入れ子DOループ、CATCH/THROW・ローカル変数、イメージ復元・追加後の実行を確認。再実行は`python3 tests/scripts/verify-p01b.py zig-out/bin/sigma --gforth-build .work/gforth-audit/gforth-build`。Gforth未指定時はSigmaの期待値検査のみ。
 
 対象 6語。tque ID: 555。
 
@@ -138,7 +138,7 @@ FACILITY EXTのキー4語とBLOCK/BLOCK EXTの10語を優先する。既存の�
 
 #### P01c 倍長データの格納と回転
 
-2026-11-13 完了（tque 556）。3語を実装し、既存5ケースと境界・コンパイル・格納順序4,548ケース、合計4,553ケースで指定64ビットGforthと一致した。2,は2!と同じ上位セル先の格納で、自動整列なし。容量不足では部分書込を行わない。ROL/RORは回転数をmod 64として扱う。通常・全機能群無効構成、イメージ復元・追加、生セル非再配置を確認。`python3 scripts/verify-p01c.py zig-out/bin/sigma --gforth-build .work/gforth-audit/gforth-build`で再実行できる。
+2026-11-13 完了（tque 556）。3語を実装し、既存5ケースと境界・コンパイル・格納順序4,548ケース、合計4,553ケースで指定64ビットGforthと一致した。2,は2!と同じ上位セル先の格納で、自動整列なし。容量不足では部分書込を行わない。ROL/RORは回転数をmod 64として扱う。通常・全機能群無効構成、イメージ復元・追加、生セル非再配置を確認。`python3 tests/scripts/verify-p01c.py zig-out/bin/sigma --gforth-build .work/gforth-audit/gforth-build`で再実行できる。
 
 対象 3語。tque ID: 556。
 

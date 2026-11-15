@@ -9,14 +9,14 @@ import unittest
 
 
 sys.dont_write_bytecode = True
-spec = importlib.util.spec_from_file_location("benchmark_runtime", Path(__file__).with_name("benchmark-runtime.py"))
+spec = importlib.util.spec_from_file_location("benchmark_runtime", Path(__file__).resolve().parents[2] / "scripts/benchmark-runtime.py")
 benchmark = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(benchmark)
 
 
 class BenchmarkProtocolTests(unittest.TestCase):
     def child(self, source):
-        workspace = Path(__file__).resolve().parent.parent / ".work"
+        workspace = Path(__file__).resolve().parents[2] / ".work"
         workspace.mkdir(exist_ok=True)
         temporary = tempfile.TemporaryDirectory(dir=workspace)
         self.addCleanup(temporary.cleanup)

@@ -6,7 +6,7 @@ Implemented `)`, `?ERRNO-THROW`, `?IOR`, `ASSERT-LEVEL`, `ASSERT0(` through `ASS
 
 ### Reference and decisions
 
-The designated Gforth1.0.1 build (c479e1eec66dd57a2441c3020177267ba70d3bdc) was measured before implementation using `scripts/probe-p09a.py`; no GPL implementation code was copied. Observations are in `.work/p09a-check/spec-probes.json`. `scripts/verify-p09a.py` checks55 matching behaviors,15 explicit Sigma policies, and2 native SAVE/LOAD-DICTIONARY/SAVESYS cases.
+The designated Gforth1.0.1 build (c479e1eec66dd57a2441c3020177267ba70d3bdc) was measured before implementation using `tests/scripts/probe-p09a.py`; no GPL implementation code was copied. Observations are in `.work/p09a-check/spec-probes.json`. `tests/scripts/verify-p09a.py` checks55 matching behaviors,15 explicit Sigma policies, and2 native SAVE/LOAD-DICTIONARY/SAVESYS cases.
 
 - ASSERT-LEVEL is initially1; the chosen level is tested when parsing/compiling each assertion. Level-1 disables all. Existing ASSERT( uses level1. Enabled bodies retain the existing512-byte, current-line limit; nested assertions are bounded to16. Quoted closing parentheses are supported. False assertions retain Sigma's source-place diagnostic and THROW-2. Unmatched `)` is-22 and missing close is-259. Existing interpreted ASSERT behavior is retained; new assertion words are omitted with-Ddebug=false, while legacy ASSERT( stays available.
 - CATCH-NOBT restores the enclosing suppression state on normal return, caught errors, QUIT and step-limit escape. Compiled/deferred/synonym calls enter the existing VM loop. FAST-THROW skips capture, propagates through CATCH, and treats0 as a no-op; uncaught use is safely reported. NOTHROW clears pending backtrace information. Ordinary CATCH continues Sigma's existing behavior of clearing handled traces.
@@ -21,7 +21,7 @@ Nine Zig regressions cover compile-time/nested assertions, CATCH/FAST/suppressio
 
 ## P09b — stack/source browsing and editor diagnostics (30 words, tque577)
 
-All30 public words are implemented. Measurements precede implementation in `scripts/probe-p09b.py`; additional diagnostic probes are under `.work/p09b-check/diagnostics-extra.json` and `fancy-tty.json`. Gforth WHERE on this reference build timed out or faulted for several formats; those known-abnormal cases are not repeated. Their partial output, the public manual and Sigma's existing WHERE layout establish the presentation policy, rather than reproducing the failures.
+All30 public words are implemented. Measurements precede implementation in `tests/scripts/probe-p09b.py`; additional diagnostic probes are under `.work/p09b-check/diagnostics-extra.json` and `fancy-tty.json`. Gforth WHERE on this reference build timed out or faulted for several formats; those known-abnormal cases are not repeated. Their partial output, the public manual and Sigma's existing WHERE layout establish the presentation policy, rather than reproducing the failures.
 
 ### Stack and source browsing
 
@@ -52,7 +52,7 @@ The new builtin entries change the dictionary ABI; recreate images from earlier 
 
 ## P09c — return-stack extensions (5 words, tque578)
 
-F>R, FR>, FR@, R'@ and RPICK are implemented. `scripts/probe-p09c.py` measured all five words and normal/loop/CATCH/local/recursive combinations before implementation. `verify-p09c.py` compares21 reference cases, checks5 Sigma boundary policies and2 native image routes.
+F>R, FR>, FR@, R'@ and RPICK are implemented. `tests/scripts/probe-p09c.py` measured all five words and normal/loop/CATCH/local/recursive combinations before implementation. `verify-p09c.py` compares21 reference cases, checks5 Sigma boundary policies and2 native image routes.
 
 A float uses exactly one64-bit logical return cell, with bits preserved, including signed zero, infinity and NaN payloads. FR@ retains that cell; FR> consumes it. Integer/float returns deliberately share the untyped user return stack. VM calls, DO loops and locals have separate storage and are never exposed through RPICK. R'@ copies the second user item; RPICK0 is R@. Negative/oversized indices give-6 without consuming u; a missing u gives-4. New transfer words check destination capacity before consuming source values. Interpreted use follows Sigma's existing >R/R> model. The floating trio is omitted with-Dfloat=false; R'@ and RPICK remain. Builtin additions change the image ABI.
 
