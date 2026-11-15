@@ -2724,7 +2724,10 @@ test "native pipe write after child exit reports EPIPE and restores SIGPIPE disp
     try std.testing.expectEqual(@as(c_int, 0), std.c.sigaction(.PIPE, null, &after));
     try std.testing.expectEqual(before.handler.handler, after.handler.handler);
     try std.testing.expectEqual(before.flags, after.flags);
-    try std.testing.expectEqualSlices(u8, std.mem.asBytes(&before.mask), std.mem.asBytes(&after.mask));
+    // Linux libc's sigset_t reserves more space than the kernel uses. glibc can
+    // return unspecified bytes there, so compare only the actual signal bits.
+    const mask_bytes = if (builtin.os.tag == .linux) @sizeOf(std.os.linux.sigset_t) else @sizeOf(@TypeOf(before.mask));
+    try std.testing.expectEqualSlices(u8, std.mem.asBytes(&before.mask)[0..mask_bytes], std.mem.asBytes(&after.mask)[0..mask_bytes]);
     try std.testing.expectEqual(@as(forth.Cell, 0), fileFlush(null, id));
     try std.testing.expectEqual(@as(forth.Cell, 0), fileClosePipe(null, id).ior);
 }

@@ -2,6 +2,14 @@
 
 更新日：2026-11-15。現在状態はこの文書、実装経緯は各フェーズ記録とgit履歴を参照する。tqueの表示番号は振り直されるため、再開時はタスク名と親子関係で照合する。
 
+## Linuxネイティブ追加確認と元作業ツリーへの統合（2026-11-15）
+
+利用者の#553のLinux確認依頼により、`9d26340`を基準とする別作業ツリーで実施。通常版・8単独機能除外版のLinux版Zigビルドランナー、P10計312件、境界482件、PTY/FIFO24件、POSIX統合10件、ランタイム13件、文書チェックが成功。詳細・証跡は[Linux P10検証](LINUX_P10_VALIDATION.md)。tque #754はdone・auto100%。macOS実機の#752は未実施のまま残し、#742・#553・#542を完了にはしない。
+
+その後の利用者の統合指示により、元の`/home/fuk/source/zig/ForthSigma`を`9d26340`へfast-forwardし、Linux検証の修正・文書・`.work/p10`の成果物を反映した。元の未コミットCATCH変更はstash「Preserve pre-integration CATCH changes 2026-11-15」と`/tmp/ForthSigma-catch-before-integration.patch`に退避。最新mainに別実装のCATCH再帰対策があるため古い本体差分は重ねず、元の深い再帰・SYNONYM/EXECUTE/DEFER・上限捕捉・ローカル復元の回帰テストを追加保持した。
+
+`verify-feature-matrix.py`へLinux直接実行を追加し、glibcで不定となるシグナルマスク予約領域の比較をテストから除いた。日本語説明への影響なしと確認しソース指紋を更新。今回の変更には検証基盤・回帰テスト・記録を含む。統合後は1063件成功・6 skip、通常ビルド・P10統合37件・文書チェック指摘0件。参照行番号も更新した。別worktreeの全変更と検証成果物を元フォルダーに保持し、別worktreeは削除済み。詳細はLinux P10検証記録を参照。
+
 ## VM速度改善の計画・レビュー
 
 利用者の依頼で[速度改善計画](VM_PERFORMANCE_PLAN.md)を作成した後、Claude Codeへレビューを依頼し、指摘をソースと照合して改訂、限定的な再確認まで完了した。[採否と結果](VM_PERFORMANCE_REVIEW.md)、[初回原文](VM_PERFORMANCE_CLAUDE_REVIEW.md)、[再確認原文](VM_PERFORMANCE_CLAUDE_FOLLOWUP.md)を別々に保存。モデル表示claude-sonnet-5-5、実際のツールは初回Read/Grep計10回・再確認計5回で、コマンド・編集はない。再確認は「重大な残存問題なし、条件付きで安全な実験計画」との結果で、改善を保証するものではない。

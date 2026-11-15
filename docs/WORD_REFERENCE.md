@@ -9280,7 +9280,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 1 2 ' + CATCH : V 1 0 / ; ' V CATCH ' ABORT CATCH S" NOSUCHWORD" ' EVALUATE CATCH NIP NIP
 ```
 
-[Example context](../src/tests/catch_test.zig#L218)
+[Example context](../src/tests/catch_test.zig#L276)
 
 Caution: Follow the operand order in the stack effect. Example names and values depend on their setup.
 
@@ -9506,7 +9506,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 : FOREVER BEGIN AGAIN ; : RUN-LIMIT ['] FOREVER CATCH ;
 ```
 
-[Example context](../src/tests/catch_test.zig#L194)
+[Example context](../src/tests/catch_test.zig#L195)
 
 Caution: Compile-only: ordinary interpreted execution is not allowed.
 
@@ -19744,7 +19744,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 3 VIA  ' NEGATE IS LATER 3 VIA  ' OTHER IS LATER 3 VIA  ' DOUBLE IS LATER 3 VIA
 ```
 
-[Example context](../src/tests/catch_test.zig#L291)
+[Example context](../src/tests/catch_test.zig#L349)
 
 Caution: Follow the operand order in the stack effect. Example names and values depend on their setup.
 
@@ -20936,7 +20936,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 : Q QUIT ; : RUN-Q ['] Q CATCH ;
 ```
 
-[Example context](../src/tests/catch_test.zig#L189)
+[Example context](../src/tests/catch_test.zig#L190)
 
 Caution: Follow the operand order in the stack effect. Example names and values depend on their setup.
 
@@ -39690,7 +39690,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 ." shown"
 ```
 
-[Example context](../src/tests/catch_test.zig#L241)
+[Example context](../src/tests/catch_test.zig#L299)
 
 Caution: Follow the operand order in the stack effect. Example names and values depend on their setup.
 
@@ -39828,7 +39828,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 : Q QUIT ; : RUN-Q ['] Q CATCH ;
 ```
 
-[Example context](../src/tests/catch_test.zig#L189)
+[Example context](../src/tests/catch_test.zig#L190)
 
 Caution: Follow the operand order in the stack effect. Example names and values depend on their setup.
 

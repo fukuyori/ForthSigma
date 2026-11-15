@@ -5,6 +5,7 @@ const forth = @import("../forth.zig");
 const support = @import("support.zig");
 const Output = support.Output;
 const createMachine = support.createMachine;
+const createMachineWith = support.createMachineWith;
 const destroyMachine = support.destroyMachine;
 const expectStack = support.expectStack;
 const expectFloatStack = support.expectFloatStack;
@@ -54,7 +55,7 @@ test "CATCH uses the configured call stack without host recursion" {
         machine.keep_counting = counted;
         for ([_]usize{ 4095, 4096, 4097 }) |depth| {
             var buffer: [80]u8 = undefined;
-            try machine.interpretLine(try std.fmt.bufPrint(&buffer, "{d} ' Z CATCH", .{ depth }));
+            try machine.interpretLine(try std.fmt.bufPrint(&buffer, "{d} ' Z CATCH", .{depth}));
             try std.testing.expectEqual(@as(forth.Cell, if (depth == 4095) 0 else -5), try machine.pop());
             try std.testing.expectEqual(@as(usize, 1), machine.data_depth);
             try std.testing.expectEqual(@as(usize, 0), machine.catch_depth);
@@ -203,6 +204,63 @@ test "QUIT and step limits escape compiled CATCH and discard its continuation" {
     try expectStack(machine, &.{42});
 }
 
+test "deep dynamic recursion through CATCH uses VM frames" {
+    var output = Output{};
+    var sizes = forth.Sizes.small;
+    sizes.data_stack = 4096;
+    sizes.return_stack = 4096;
+    sizes.float_stack = 4096;
+    const machine = try createMachineWith(&output, sizes);
+    defer destroyMachine(machine);
+
+    try machine.interpretLine("VARIABLE ZXT : Z DUP IF 1- ZXT @ CATCH THROW THEN ; ' Z ZXT !");
+    try machine.interpretLine("2047 ' Z CATCH");
+    try std.testing.expectEqual(@as(forth.Cell, 0), try machine.pop());
+    try expectStack(machine, &.{0});
+    try std.testing.expectEqual(@as(usize, 0), machine.call_depth);
+    try std.testing.expectEqual(@as(usize, 0), machine.frame_depth);
+    try std.testing.expectEqual(@as(usize, 0), machine.return_depth);
+
+    machine.data_depth = 0;
+    try machine.interpretLine("SYNONYM CATCH-ALIAS CATCH : SYNONYM-CATCH DUP IF 1- ZXT @ CATCH-ALIAS THROW THEN ; ' SYNONYM-CATCH ZXT !");
+    try machine.interpretLine("2047 ' SYNONYM-CATCH CATCH");
+    try std.testing.expectEqual(@as(forth.Cell, 0), try machine.pop());
+    try expectStack(machine, &.{0});
+
+    machine.data_depth = 0;
+    try machine.interpretLine("VARIABLE CATCH-XT ' CATCH CATCH-XT ! : EXECUTE-CATCH DUP IF 1- ZXT @ CATCH-XT @ EXECUTE THROW THEN ; ' EXECUTE-CATCH ZXT !");
+    try machine.interpretLine("2047 ' EXECUTE-CATCH CATCH");
+    try std.testing.expectEqual(@as(forth.Cell, 0), try machine.pop());
+    try expectStack(machine, &.{0});
+
+    machine.data_depth = 0;
+    try machine.interpretLine("DEFER CATCHER VARIABLE DXT : DEFER-CATCH DUP IF 1- DXT @ CATCHER THROW THEN ; ' DEFER-CATCH DXT ! ' CATCH IS CATCHER");
+    try machine.interpretLine("2047 ' DEFER-CATCH CATCH");
+    try std.testing.expectEqual(@as(forth.Cell, 0), try machine.pop());
+    try expectStack(machine, &.{0});
+    try std.testing.expectEqual(@as(usize, 0), machine.call_depth);
+    try std.testing.expectEqual(@as(usize, 0), machine.frame_depth);
+
+    machine.data_depth = 0;
+    try machine.interpretLine(": SUPPRESS DUP IF 1- ZXT @ CATCH DROP ELSE DROP THEN ; ' SUPPRESS ZXT !");
+    try machine.interpretLine("4096 ' SUPPRESS CATCH");
+    try std.testing.expectEqual(@as(forth.Cell, 0), try machine.pop());
+    try expectStack(machine, &.{0});
+    try std.testing.expectEqual(@as(usize, 0), machine.call_depth);
+    try std.testing.expectEqual(@as(usize, 0), machine.frame_depth);
+
+    machine.data_depth = 0;
+    const locals_top = machine.locals_top;
+    try machine.interpretLine("VARIABLE DEEP-COUNT : DEEP-THROW { n } DEEP-COUNT @ DUP IF 1- DEEP-COUNT ! 0 ZXT @ CATCH THROW ELSE 77 THROW THEN ; ' DEEP-THROW ZXT !");
+    try machine.interpretLine("2047 DEEP-COUNT ! 0 ' DEEP-THROW CATCH");
+    try std.testing.expectEqual(@as(forth.Cell, 77), try machine.pop());
+    try expectStack(machine, &.{0});
+    try std.testing.expectEqual(locals_top, machine.locals_top);
+    try std.testing.expectEqual(@as(usize, 0), machine.call_depth);
+    try std.testing.expectEqual(@as(usize, 0), machine.frame_depth);
+    try std.testing.expectEqual(@as(usize, 0), machine.return_depth);
+}
+
 test "CATCH returns 0 or the THROW code and restores the stack depths like gforth" {
     try support.skipWithoutFloat();
     var output = Output{};
@@ -227,7 +285,7 @@ test "CATCH returns 0 or the THROW code and restores the stack depths like gfort
 }
 
 test "CATCH works with file iors, nested catches, locals, and $TMP" {
-    try support.skipWithout(&.{ .files });
+    try support.skipWithout(&.{.files});
     var output = Output{};
     const machine = try createMachine(&output);
     defer destroyMachine(machine);

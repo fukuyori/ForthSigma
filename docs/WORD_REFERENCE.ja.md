@@ -11280,7 +11280,7 @@ Empty the stacks and return to the terminal without a message.
 1 2 ' + CATCH : V 1 0 / ; ' V CATCH ' ABORT CATCH S" NOSUCHWORD" ' EVALUATE CATCH NIP NIP
 ```
 
-[使用例の文脈](../src/tests/catch_test.zig#L218)
+[使用例の文脈](../src/tests/catch_test.zig#L276)
 
 注意：スタック効果の入力順を守ってください。使用例の名前・値は例の定義や初期状態に依存します。
 
@@ -11566,7 +11566,7 @@ Go back to BEGIN forever (leave with EXIT).
 : FOREVER BEGIN AGAIN ; : RUN-LIMIT ['] FOREVER CATCH ;
 ```
 
-[使用例の文脈](../src/tests/catch_test.zig#L194)
+[使用例の文脈](../src/tests/catch_test.zig#L195)
 
 注意：コンパイル専用です。通常の解釈時入力では実行できません。
 
@@ -24484,7 +24484,7 @@ Negate.
 3 VIA  ' NEGATE IS LATER 3 VIA  ' OTHER IS LATER 3 VIA  ' DOUBLE IS LATER 3 VIA
 ```
 
-[使用例の文脈](../src/tests/catch_test.zig#L291)
+[使用例の文脈](../src/tests/catch_test.zig#L349)
 
 注意：スタック効果の入力順を守ってください。使用例の名前・値は例の定義や初期状態に依存します。
 
@@ -25988,7 +25988,7 @@ Leave what is running and wait for terminal input, keeping both data stacks; CAT
 : Q QUIT ; : RUN-Q ['] Q CATCH ;
 ```
 
-[使用例の文脈](../src/tests/catch_test.zig#L189)
+[使用例の文脈](../src/tests/catch_test.zig#L190)
 
 注意：スタック効果の入力順を守ってください。使用例の名前・値は例の定義や初期状態に依存します。
 
@@ -48516,7 +48516,7 @@ Print the text up to the next ".
 ." shown"
 ```
 
-[使用例の文脈](../src/tests/catch_test.zig#L241)
+[使用例の文脈](../src/tests/catch_test.zig#L299)
 
 注意：スタック効果の入力順を守ってください。使用例の名前・値は例の定義や初期状態に依存します。
 
@@ -48690,7 +48690,7 @@ Compile the execution token of name, which is read when compiling.
 : Q QUIT ; : RUN-Q ['] Q CATCH ;
 ```
 
-[使用例の文脈](../src/tests/catch_test.zig#L189)
+[使用例の文脈](../src/tests/catch_test.zig#L190)
 
 注意：スタック効果の入力順を守ってください。使用例の名前・値は例の定義や初期状態に依存します。
 
