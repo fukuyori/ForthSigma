@@ -2,7 +2,13 @@
 
 ## [Unreleased]
 
+## [0.11.0] - 2026-11-15
+
 ### Added
+
+- Implemented the standard-first word plan: 380 previously unsupported words and dictionary entries for four existing assignment forms, covering numeric and memory operations, strings, files, host I/O, compilation, dictionary definitions, and diagnostics. The implementation and comparison records are in `docs/GFORTH_WORD_PHASES.md`.
+- Added the complete English and Japanese word reference, with 1,503 entries including syntax, usage examples, and cautions.
+- Completed P10 integration checks on Windows, WSL, native Linux, and native macOS, including eight individually excluded feature configurations and cross-configuration dictionary loading (312 integration cases per environment).
 
 - Interactive input on macOS and Linux has in-memory history (Up/Down, latest 128 lines), cursor movement (Left/Right, Home/End, Ctrl+A/E), insertion, Delete, Ctrl+K and horizontal scrolling of long lines. History lasts only for the process and excludes files, pipes and `ACCEPT` answers; Windows keeps its native console editing.
 - `scripts/build-release.sh` and `scripts/build-zip.sh` make the release build and the ZIPs on Linux and macOS, as `build-release.ps1` and `build-zip.ps1` do on Windows: the version with the floating-point words and the one without, for this machine or for the target `--target` or `--platform` names.
@@ -20,6 +26,8 @@
 - On Linux, a program built with `-Doptimize=fast` (or `safe` or `small`) against glibc and started from a terminal got keys from `INKEY` that nobody pressed (`0 150 0 0`), so a game that reads the keys before its first `SHOW`, such as `examples/hopper.fs`, never opened its window. Reading the terminal's settings wrote 16 bytes past the place for them, over the keys waiting for `INKEY`. The ZIPs of the releases, which do not use glibc, were not affected.
 
 ### Changed
+
+- Updated the product version and startup examples to 0.11.0. Added built-in words change the dictionary ABI; recreate dictionary images from earlier releases. Current image formats are SIGIMG45/46/47.
 
 - A build that leaves out a group of words (`-Dfloat=false` and the like, but for `-Dhelp=false` and `-Ddebug=false`) is 50 to 78 KB smaller: its executable held the table of the `HELP` texts twice, once for `HELP` without the words left out and once whole for `--lint`. `--lint` now reads the table `HELP` uses. The build with every group is as it was.
 
@@ -158,6 +166,7 @@
 - Updated the product version and startup examples to 0.6.1.
 - Added an optional SDL3 host backend. Builds can still run when SDL3 is unavailable; gamepad polling then reports that the backend is unavailable.
 
+[0.11.0]: https://github.com/fukuyori/ForthSigma/releases/tag/v0.11.0
 [0.10.0]: https://github.com/fukuyori/ForthSigma/releases/tag/v0.10.0
 [0.9.0]: https://github.com/fukuyori/ForthSigma/releases/tag/v0.9.0
 [0.8.0]: https://github.com/fukuyori/ForthSigma/releases/tag/v0.8.0
