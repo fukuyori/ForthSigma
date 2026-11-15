@@ -13747,10 +13747,10 @@ Related: [Strings](USER_MANUAL.md#strings).
 Usage example (source excerpt; consult the link for setup and expectations)
 
 ```forth
-EKEY? EKEY? KEY EKEY EKEY?
+EKEY? EKEY
 ```
 
-[Example context](../src/tests/xchar_test.zig#L128)
+[Example context](../src/tests/xchar_test.zig#L259)
 
 Caution: Follow the operand order in the stack effect. Example names and values depend on their setup.
 

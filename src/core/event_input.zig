@@ -5,6 +5,14 @@ const keys = @import("standard_keys.zig");
 const xchar = @import("words_xchar.zig");
 const Cell = forth.Cell;
 
+// Zig 0.17.0 attaches a signed no-wrap flag when narrowing Cell directly to u8
+// in fast builds. Convert to an unsigned cell first so bytes 0x80..0xff survive
+// UTF-8 decoding; both casts retain their range checks in checked builds.
+fn eventByte(value: Cell) u8 {
+    const unsigned: forth.UCell = @intCast(value);
+    return @intCast(unsigned);
+}
+
 fn next(self: *forth.State, timeout: i32) forth.RuntimeError!?Cell {
     if (self.pending_key != null or self.pending_event_count != 0) return xchar.key(self) catch null;
     if (@import("input_redirect.zig").selected(self) != null) return if (timeout >= 0 and !try @import("input_redirect.zig").ready(self)) null else if (try @import("input_redirect.zig").byte(self)) |value| @as(Cell, value) else null;
@@ -92,7 +100,7 @@ pub fn ready(self: *forth.State) forth.RuntimeError!bool {
     if (self.pending_key != null or self.pending_event_count != 0 or self.pending_standard_event != null) return true;
     const event = (try next(self, 0)) orelse return false;
     if (event >= 0 and event <= 255) {
-        const byte = [_]u8{@intCast(event)};
+        const byte = [_]u8{eventByte(event)};
         try unread(self, &byte);
     } else self.pending_standard_event = event;
     return true;
@@ -102,7 +110,7 @@ pub fn read(self: *forth.State) forth.RuntimeError!Cell {
     const first = (try next(self, -1)) orelse return keys.eof;
     if (first > 255) return first;
     var bytes: [32]u8 = undefined;
-    bytes[0] = @intCast(first);
+    bytes[0] = eventByte(first);
     if (first == 27 and @import("input_redirect.zig").selected(self) == null) {
         const clock = self.writer.monotonic_ms_fn;
         const deadline = if (clock) |now| now(self.writer.context) + 50 else 0;
@@ -118,7 +126,7 @@ pub fn read(self: *forth.State) forth.RuntimeError!Cell {
                 self.pending_standard_event = value;
                 break;
             }
-            bytes[length] = @intCast(value);
+            bytes[length] = eventByte(value);
             length += 1;
             if (length == 2 and value != '[' and value != 'O') break;
             if (length >= 3 and value >= 0x40 and value <= 0x7e) {
@@ -146,11 +154,11 @@ pub fn read(self: *forth.State) forth.RuntimeError!Cell {
             break;
         }
         if (value & 0xc0 != 0x80) {
-            const byte = [_]u8{@intCast(value)};
+            const byte = [_]u8{eventByte(value)};
             try unread(self, &byte);
             break;
         }
-        bytes[length] = @intCast(value);
+        bytes[length] = eventByte(value);
         length += 1;
     }
     return xchar.decode(bytes[0..length]).code;

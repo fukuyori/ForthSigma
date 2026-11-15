@@ -43,7 +43,7 @@
     "src/core/directories.zig": "94cd4e81e4c06795075bebd5388980369ee390e3d3eb2ce3e7b8aeed765a89ce",
     "src/core/dynamic_strings.zig": "88629838c96e43860d3eba5d6e0892988d444ef7775bdd7c4458d7f090f274f1",
     "src/core/error_reporting.zig": "5438638c3d5b32b5d1b34f9cc3831afb4e63ed3af527528b2f4b1e9f5de09696",
-    "src/core/event_input.zig": "4925fcae24a101b8c5f508056a13f5428ce1435e1e98e2c7dbae443680dc6174",
+    "src/core/event_input.zig": "2c34c996f629b093165f9a60d84238d75f64234e333d08bd80f8e0cd1b278efc",
     "src/core/exception_registry.zig": "e9b84eb3273c1e949000febafa2b9c2553293827eae2df23119aa5f13ab30cde",
     "src/core/file_streams.zig": "159423a8c1d4d0a837b1dee22908c4c17c87068e95a331f24c78e42d25f3886d",
     "src/core/filename_match.zig": "b314235f3f8cedcd6f73f14b63d176dc5911dea96df592d8e83c4022f0ba88f1",
@@ -261,7 +261,7 @@
     "src/tests/support.zig": "815feb5175dee187577673cbf5a03df291e1d4da6be69228f60c74a4c5758e27",
     "src/tests/text_and_numbers_test.zig": "79a692df3ce75c5ed17091798aaea527cd53e6892f49c0e97c260834aaf662c3",
     "src/tests/wordlists_test.zig": "9f93d23e2b61e60be346b53a104a124e0852794d759c416029caa10cf340221b",
-    "src/tests/xchar_test.zig": "22cc302604af48d1a45e41bd2ca3ebfd83433f97aff338e4f21c3c5d9ef4175a"
+    "src/tests/xchar_test.zig": "698b330da6ba271d4a5d5e5a1d9debe706c514c17ac54b5849b03d46f4e08cfc"
   },
   "translations": {
     "!": "1dfda2fcadec843d3cc00432f1b4d96e4a6be144f448da732761fa36515b5e0f",

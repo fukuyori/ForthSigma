@@ -16913,10 +16913,10 @@ True if a standard keyboard byte or event is waiting, without blocking.
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
 ```forth
-EKEY? EKEY? KEY EKEY EKEY?
+EKEY? EKEY
 ```
 
-[使用例の文脈](../src/tests/xchar_test.zig#L128)
+[使用例の文脈](../src/tests/xchar_test.zig#L259)
 
 注意：スタック効果の入力順を守ってください。使用例の名前・値は例の定義や初期状態に依存します。
 

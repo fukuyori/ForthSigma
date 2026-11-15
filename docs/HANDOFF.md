@@ -2,6 +2,16 @@
 
 更新日：2026-11-15。現在状態はこの文書、実装経緯は各フェーズ記録とgit履歴を参照する。tqueの表示番号は振り直されるため、再開時はタスク名と親子関係で照合する。
 
+## GitHub ActionsのEKEY最適化失敗の修正（2026-11-15）
+
+`v0.11.0`の[Release実行](https://github.com/fukuyori/ForthSigma/actions/runs/43675216095)で、Windows・Ubuntuの`-Dcpu=baseline -Doptimize=fast`におけるP06a入力切替とEKEY UTF-8の2件が失敗。テストスクリプト移動前のコミット`4802167`で発生した。
+
+公式配布のZig 0.17.0を`.work/ekey-ci/`へ取得し、公式indexのSHA256と照合。macOS arm64でも同じ2件を再現した。診断ログでは`{195,169}`等の入力バイトが正しいのに、デコード結果が233ではなく195となる。最小再現でも符号付きi64からu8への直接`@intCast`を含むUTF-8デコードが失敗し、0.17.1では成功した。0.17.0のLinux x86_64向けLLVM IRでは当該変換に`trunc nuw nsw`が付き、符号なしセルを経由する修正後は`trunc nuw`となることを確認した。
+
+`src/core/event_input.zig`のイベント→バイト変換を符号なしセル経由の共通ヘルパーへ変更。Checkedビルドの範囲検査は維持する。EKEY?経由の1〜4バイト境界、不正・不完全UTF-8、後続KEYバイト保持の回帰を追加した。語義・仕様の変更はない。生成リファレンスのEKEY?使用例は新しい回帰テストの抜粋へ更新され、英日で参照先を確認してソース指紋も更新した。
+
+Zig 0.17.0の修正後fastテストは1063成功・7 skip（コア1001成功・5 skip、ホスト62成功・2 skip）。Linux x86_64向けEKEYテストのクロスコンパイルも成功。Zig 0.17.0の通常テストも1063成功・7 skip、fast実行体のビルド、EKEYパイプ・POSIX PTY、P10統合37件が成功。文書チェック指摘0件。クロスコンパイルをWindows/Linux実機の実行結果と混同しない。証跡は`.work/ekey-ci/`の`before-0170-fast.log`・`diagnostic.log`・`cast-{before,after}.log`・`cast-0171.log`・`after-0170-fast.log`・`ir-cast-comparison.txt`と生成IR。利用者から既存`v0.11.0`タグの削除、修正のコミット、同名タグの再作成とpushを明示指示された。EKEY修正はCHANGELOGの0.11.0へ含める。公開コミットとタグの実際の状態はGit履歴・リモートを照合する。Actionsの修正後結果は別途確認する。
+
 ## テストスクリプトの配置変更（2026-11-15）
 
 `test-*`・`verify-*`・`probe-*`と`gforth-p00/`の99ファイルを`tests/scripts/`へ移動した。実行は引き続きリポジトリルートから行う。呼出し元・文書のパスとテストのルート解決・importを更新。生成・ビルド・配布・ベンチマーク本体と文書チェックは`scripts/`に保持する。[実行例と区分](../tests/scripts/README.md)を参照。測定JSONのハッシュ対象パスと外部レビュー原文は当時の記録として保持する。

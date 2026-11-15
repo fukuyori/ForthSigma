@@ -19,6 +19,8 @@
 
 ### Fixed
 
+- EKEY now decodes non-ASCII UTF-8 correctly in Zig 0.17.0 fast builds. Event bytes are narrowed through an unsigned cell to avoid an incorrect signed no-wrap assumption; readiness polling, malformed-input recovery and KEY byte preservation remain covered by regression tests.
+
 - Terminal `SHOW` no longer rewinds over intervening direct STDOUT file writes or external command/editor output. Silent or failing external callbacks also separate frames conservatively; private captures and ordinary file output retain frame reuse.
 
 - The macOS PKG script now uses `-e` for its signed-binary execution check, checks the exit status, and skips execution when building only for another architecture. It reports missing option values, selects only a working notary profile, and removes temporary package contents on failure.

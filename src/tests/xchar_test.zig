@@ -242,3 +242,27 @@ test "interruption during an EKEY sequence preserves already read bytes" {
     try std.testing.expectEqual(@as(u8, 27), try words_xchar.key(machine));
     try std.testing.expectEqual(@as(u8, '['), try words_xchar.key(machine));
 }
+
+test "EKEY preserves high bytes at UTF-8 length boundaries and after readiness polling" {
+    const cases = [_]struct { []const u8, forth.Cell }{
+        .{ "\x00", 0 },                   .{ "\x7f", 0x7f },
+        .{ "\xc2\x80", 0x80 },            .{ "\xdf\xbf", 0x7ff },
+        .{ "\xe0\xa0\x80", 0x800 },       .{ "\xef\xbf\xbf", 0xffff },
+        .{ "\xf0\x90\x80\x80", 0x10000 }, .{ "\xf4\x8f\xbf\xbf", 0x10ffff },
+        .{ "\x80", 0xfffd },              .{ "\xff", 0xfffd },
+        .{ "\xe6\x97", 0xfffd },          .{ "\xf4\x90\x80\x80", 0xfffd },
+    };
+    for (cases) |case| {
+        var output = Output{ .keys = case[0] };
+        const machine = try createMachine(&output);
+        defer destroyMachine(machine);
+        try machine.interpretLine("EKEY? EKEY");
+        try expectStack(machine, &.{ -1, case[1] });
+        try std.testing.expectEqual(case[0].len, output.key_index);
+    }
+    var output = Output{ .keys = "\xe6\x97Z" };
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
+    try machine.interpretLine("EKEY KEY");
+    try expectStack(machine, &.{ 0xfffd, 'Z' });
+}
