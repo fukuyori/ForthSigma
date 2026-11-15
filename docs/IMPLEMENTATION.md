@@ -1,5 +1,7 @@
 # Zig implementation notes
 
+Latest size and speed measurements (2026-11-15): [report](SIZE_SPEED_MEASUREMENT.md) (Japanese), [raw samples and metadata](measurements/2026-11-15-size-speed.json). Sigma at `50e661e`, Zig 0.17.0 fast/baseline/stripped: full Windows 1,806,848 bytes; full Linux musl 1,888,000 bytes. Eight execution-interval kernels under WSL measured Sigma at 3.50 times the elapsed CPU time of normal Gforth 1.0.2 and 10.06 times that of gforth-fast, using geometric means of median-time ratios. These diagnostic results do not establish general application performance; older tables below have different environments and references.
+
 ## Architecture
 
 The runtime uses 64-bit cells, a separate 64-bit (IEEE binary64) floating-point stack, and a logical byte memory (64 MiB and 64 KiB by default) that holds the system area, the input buffers, the data area, the `ALLOCATE` heap, and the local-variable frames. Cell and float reads and writes use little-endian 8-byte layout. The dictionary is a bounded host-side table, searched through a hash table of the names whose chains hold the newest word first (`src/core/wordlists.zig`); colon definitions compile into a small host-independent operation stream. The operation stream represents calls, integer and float literals, branches, loops, and string output. No Z80 opcodes or machine addresses are executed.

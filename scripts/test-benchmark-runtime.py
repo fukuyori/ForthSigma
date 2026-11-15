@@ -21,7 +21,10 @@ class BenchmarkProtocolTests(unittest.TestCase):
         temporary = tempfile.TemporaryDirectory(dir=workspace)
         self.addCleanup(temporary.cleanup)
         path = Path(temporary.name) / "child.py"
-        path.write_text(source, encoding="utf-8")
+        # Behave as an executable engine accepting the benchmark's -e argument.
+        # Invoking Python directly with -e fails before the protocol can run.
+        path.write_text("#!" + sys.executable + "\n" + source, encoding="utf-8")
+        path.chmod(0o700)
         return str(path)
 
     def test_excludes_startup_teardown_and_sleep_from_execution_cpu(self):
@@ -39,7 +42,7 @@ print("BENCH-DONE 7", flush=True)
 assert sys.stdin.read(1) == "x"
 burn(0.1)
 ''')
-        cpu, checksum, wall, total = benchmark.sample(sys.executable, False, child)
+        cpu, checksum, wall, total = benchmark.sample(child, False, "unused")
         self.assertEqual(checksum, 7)
         self.assertGreater(cpu, 20_000)
         self.assertGreater(total - cpu, 150_000)
@@ -48,12 +51,12 @@ burn(0.1)
     def test_unexpected_output_is_rejected_and_waiting_child_is_reaped(self):
         child = self.child('import sys\nprint("BAD", flush=True)\nsys.stdin.read()\n')
         with self.assertRaisesRegex(RuntimeError, "unexpected startup"):
-            benchmark.sample(sys.executable, False, child)
+            benchmark.sample(child, False, "unused")
 
     def test_early_exit_is_rejected(self):
         child = self.child('pass\n')
         with self.assertRaisesRegex(RuntimeError, "exited before"):
-            benchmark.sample(sys.executable, False, child)
+            benchmark.sample(child, False, "unused")
 
 
 if __name__ == "__main__":
