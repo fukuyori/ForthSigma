@@ -1,0 +1,1455 @@
+{
+  "binary": {
+    "path": "/mnt/d/home/source/zig/forthz/.work/rot3-20261116/baseline-symbols/bin/sigma",
+    "sha256": "af54c4a8b252be6a15480fa1b770e960001e4861c84b1db5eff95a6b5ed6c910"
+  },
+  "scope": "Unmodified adopted-source Linux fast/baseline CPU uncounted VM; 100/200 Callgrind differences. Counts are not elapsed time; steady-state differences do not represent initial linear-notification costs.",
+  "cases": {
+    "fetch-empty": {
+      "source_100": "100 CONSTANT BENCH-ITERATIONS VARIABLE M-X 17 M-X ! : BENCH-RUN 0 BENCH-ITERATIONS 0 DO M-X @ + LOOP ;",
+      "per_iteration": {
+        "Ir": 152.0,
+        "Dr": 41.0,
+        "Dw": 14.0
+      },
+      "calls": {},
+      "memory_address_annotated_instructions": [
+        {
+          "pc": "0x1102aef",
+          "executions_per_iteration": 1.0,
+          "instruction": "test   rsi,rsi",
+          "source": "D:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline\\src/D:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline/src\\forth.zig:2421",
+          "function": "forth.State.runOperationsLoop__func_181"
+        },
+        {
+          "pc": "0x1102af2",
+          "executions_per_iteration": 1.0,
+          "instruction": "js     11043e4 <forth.State.runOperationsLoop__func_181+0x2534>",
+          "source": "D:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline\\src/D:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline/src\\forth.zig:2421",
+          "function": "forth.State.runOperationsLoop__func_181"
+        },
+        {
+          "pc": "0x1102af8",
+          "executions_per_iteration": 1.0,
+          "instruction": "mov    r14,r13",
+          "source": "D:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline\\src/D:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline/src\\forth.zig:2421",
+          "function": "forth.State.runOperationsLoop__func_181"
+        },
+        {
+          "pc": "0x1102afb",
+          "executions_per_iteration": 1.0,
+          "instruction": "mov    r13,r12",
+          "source": "D:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline\\src/D:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline/src\\forth.zig:2421",
+          "function": "forth.State.runOperationsLoop__func_181"
+        },
+        {
+          "pc": "0x1102afe",
+          "executions_per_iteration": 1.0,
+          "instruction": "mov    r12d,r8d",
+          "source": "D:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline\\src/D:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline/src\\forth.zig:2421",
+          "function": "forth.State.runOperationsLoop__func_181"
+        },
+        {
+          "pc": "0x1102b01",
+          "executions_per_iteration": 1.0,
+          "instruction": "mov    r8,QWORD PTR [rbx+0x4584d0]",
+          "source": "D:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline\\src/D:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline/src\\forth.zig:2421 (discriminator 6)",
+          "function": "forth.State.runOperationsLoop__func_181"
+        },
+        {
+          "pc": "0x1102b08",
+          "executions_per_iteration": 1.0,
+          "instruction": "sub    r8,rsi",
+          "source": "D:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline\\src/D:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline/src\\forth.zig:2421 (discriminator 6)",
+          "function": "forth.State.runOperationsLoop__func_181"
+        },
+        {
+          "pc": "0x1102b0b",
+          "executions_per_iteration": 1.0,
+          "instruction": "jb     11043e4 <forth.State.runOperationsLoop__func_181+0x2534>",
+          "source": "D:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline\\src/D:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline/src\\forth.zig:2421 (discriminator 2)",
+          "function": "forth.State.runOperationsLoop__func_181"
+        },
+        {
+          "pc": "0x1102b11",
+          "executions_per_iteration": 1.0,
+          "instruction": "cmp    r8,0x8",
+          "source": "D:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline\\src/D:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline/src\\forth.zig:2421 (discriminator 2)",
+          "function": "forth.State.runOperationsLoop__func_181"
+        },
+        {
+          "pc": "0x1102b15",
+          "executions_per_iteration": 1.0,
+          "instruction": "jb     11043e4 <forth.State.runOperationsLoop__func_181+0x2534>",
+          "source": "D:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline\\src/D:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline/src\\forth.zig:2421 (discriminator 2)",
+          "function": "forth.State.runOperationsLoop__func_181"
+        }
+      ],
+      "profiles": [
+        {
+          "summary": {
+            "Ir": 15441,
+            "Dr": 4168,
+            "Dw": 1445,
+            "I1mr": 31,
+            "D1mr": 14,
+            "D1mw": 5,
+            "ILmr": 31,
+            "DLmr": 6,
+            "DLmw": 3
+          },
+          "self_counts": {
+            "forth.State.runOperationsLoop__func_181": {
+              "Ir": 15404,
+              "Dr": 4157,
+              "Dw": 1430,
+              "I1mr": 28,
+              "D1mr": 12,
+              "D1mw": 3,
+              "ILmr": 28,
+              "DLmr": 6,
+              "DLmw": 2
+            },
+            "forth.State.runOperations__func_180": {
+              "Ir": 37,
+              "Dr": 11,
+              "Dw": 15,
+              "I1mr": 3,
+              "D1mr": 2,
+              "D1mw": 2,
+              "ILmr": 3,
+              "DLmr": 0,
+              "DLmw": 1
+            }
+          },
+          "calls": {
+            "main.run -> forth.State.interpretLine": 1,
+            "libc_start_main_stage2 -> main": 1,
+            "(below main) -> libc_start_main_stage2": 1,
+            "main -> main.run": 1,
+            "_start_c -> (below main)": 1,
+            "forth.State.runOperations__func_180 -> forth.State.runOperationsLoop__func_181": 1,
+            "forth.State.executeOperations -> forth.State.runOperations__func_180": 1,
+            "forth.State.interpretSource -> forth.State.handleWord": 14,
+            "forth.State.handleWord -> forth.State.executeWord": 10,
+            "forth.State.executeWord -> forth.State.executeOperations": 1,
+            "forth.State.interpretLine -> forth.State.interpretSource": 1,
+            "0x00000000010c4170 -> _start_c": 1
+          }
+        },
+        {
+          "summary": {
+            "Ir": 30641,
+            "Dr": 8268,
+            "Dw": 2845,
+            "I1mr": 31,
+            "D1mr": 14,
+            "D1mw": 5,
+            "ILmr": 31,
+            "DLmr": 6,
+            "DLmw": 3
+          },
+          "self_counts": {
+            "forth.State.runOperationsLoop__func_181": {
+              "Ir": 30604,
+              "Dr": 8257,
+              "Dw": 2830,
+              "I1mr": 28,
+              "D1mr": 12,
+              "D1mw": 3,
+              "ILmr": 28,
+              "DLmr": 6,
+              "DLmw": 2
+            },
+            "forth.State.runOperations__func_180": {
+              "Ir": 37,
+              "Dr": 11,
+              "Dw": 15,
+              "I1mr": 3,
+              "D1mr": 2,
+              "D1mw": 2,
+              "ILmr": 3,
+              "DLmr": 0,
+              "DLmw": 1
+            }
+          },
+          "calls": {
+            "main.run -> forth.State.interpretLine": 1,
+            "libc_start_main_stage2 -> main": 1,
+            "(below main) -> libc_start_main_stage2": 1,
+            "main -> main.run": 1,
+            "_start_c -> (below main)": 1,
+            "forth.State.runOperations__func_180 -> forth.State.runOperationsLoop__func_181": 1,
+            "forth.State.executeOperations -> forth.State.runOperations__func_180": 1,
+            "forth.State.interpretSource -> forth.State.handleWord": 14,
+            "forth.State.handleWord -> forth.State.executeWord": 10,
+            "forth.State.executeWord -> forth.State.executeOperations": 1,
+            "forth.State.interpretLine -> forth.State.interpretSource": 1,
+            "0x00000000010c4170 -> _start_c": 1
+          }
+        }
+      ]
+    },
+    "store-empty": {
+      "source_100": "100 CONSTANT BENCH-ITERATIONS VARIABLE M-X : BENCH-RUN BENCH-ITERATIONS 0 DO I M-X ! LOOP M-X @ ;",
+      "per_iteration": {
+        "Ir": 146.0,
+        "Dr": 43.0,
+        "Dw": 11.0
+      },
+      "calls": {},
+      "memory_address_annotated_instructions": [
+        {
+          "pc": "0x1103b26",
+          "executions_per_iteration": 1.0,
+          "instruction": "test   rsi,rsi",
+          "source": "D:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline\\src/D:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline/src\\forth.zig:2421",
+          "function": "forth.State.runOperationsLoop__func_181"
+        },
+        {
+          "pc": "0x1103b29",
+          "executions_per_iteration": 1.0,
+          "instruction": "js     11043e4 <forth.State.runOperationsLoop__func_181+0x2534>",
+          "source": "D:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline\\src/D:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline/src\\forth.zig:2421",
+          "function": "forth.State.runOperationsLoop__func_181"
+        },
+        {
+          "pc": "0x1103b2f",
+          "executions_per_iteration": 1.0,
+          "instruction": "mov    rdi,QWORD PTR [rbx+0x4584d0]",
+          "source": "D:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline\\src/D:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline/src\\forth.zig:2421 (discriminator 6)",
+          "function": "forth.State.runOperationsLoop__func_181"
+        },
+        {
+          "pc": "0x1103b36",
+          "executions_per_iteration": 1.0,
+          "instruction": "sub    rdi,rsi",
+          "source": "D:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline\\src/D:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline/src\\forth.zig:2421 (discriminator 6)",
+          "function": "forth.State.runOperationsLoop__func_181"
+        },
+        {
+          "pc": "0x1103b39",
+          "executions_per_iteration": 1.0,
+          "instruction": "jb     11043e4 <forth.State.runOperationsLoop__func_181+0x2534>",
+          "source": "D:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline\\src/D:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline/src\\forth.zig:2421 (discriminator 6)",
+          "function": "forth.State.runOperationsLoop__func_181"
+        },
+        {
+          "pc": "0x1103b3f",
+          "executions_per_iteration": 1.0,
+          "instruction": "cmp    rdi,0x8",
+          "source": "D:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline\\src/D:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline/src\\forth.zig:2421 (discriminator 2)",
+          "function": "forth.State.runOperationsLoop__func_181"
+        },
+        {
+          "pc": "0x1103b43",
+          "executions_per_iteration": 1.0,
+          "instruction": "jb     11043e4 <forth.State.runOperationsLoop__func_181+0x2534>",
+          "source": "D:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline\\src/D:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline/src\\forth.zig:2421 (discriminator 2)",
+          "function": "forth.State.runOperationsLoop__func_181"
+        },
+        {
+          "pc": "0x1103b49",
+          "executions_per_iteration": 1.0,
+          "instruction": "mov    rax,QWORD PTR [rdx+rcx*8-0x10]",
+          "source": "D:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline\\src/D:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline/src\\forth.zig:2421 (discriminator 2)",
+          "function": "forth.State.runOperationsLoop__func_181"
+        }
+      ],
+      "profiles": [
+        {
+          "summary": {
+            "Ir": 14906,
+            "Dr": 4383,
+            "Dw": 1150,
+            "I1mr": 34,
+            "D1mr": 12,
+            "D1mw": 6,
+            "ILmr": 34,
+            "DLmr": 5,
+            "DLmw": 3
+          },
+          "self_counts": {
+            "forth.State.runOperationsLoop__func_181": {
+              "Ir": 14869,
+              "Dr": 4372,
+              "Dw": 1135,
+              "I1mr": 31,
+              "D1mr": 10,
+              "D1mw": 4,
+              "ILmr": 31,
+              "DLmr": 5,
+              "DLmw": 2
+            },
+            "forth.State.runOperations__func_180": {
+              "Ir": 37,
+              "Dr": 11,
+              "Dw": 15,
+              "I1mr": 3,
+              "D1mr": 2,
+              "D1mw": 2,
+              "ILmr": 3,
+              "DLmr": 0,
+              "DLmw": 1
+            }
+          },
+          "calls": {
+            "main.run -> forth.State.interpretLine": 1,
+            "libc_start_main_stage2 -> main": 1,
+            "(below main) -> libc_start_main_stage2": 1,
+            "main -> main.run": 1,
+            "_start_c -> (below main)": 1,
+            "forth.State.handleWord -> forth.State.executeWord": 8,
+            "forth.State.executeOperations -> forth.State.runOperations__func_180": 1,
+            "forth.State.interpretLine -> forth.State.interpretSource": 1,
+            "forth.State.interpretSource -> forth.State.handleWord": 14,
+            "forth.State.executeWord -> forth.State.executeOperations": 1,
+            "forth.State.runOperations__func_180 -> forth.State.runOperationsLoop__func_181": 1,
+            "0x00000000010c4170 -> _start_c": 1
+          }
+        },
+        {
+          "summary": {
+            "Ir": 29506,
+            "Dr": 8683,
+            "Dw": 2250,
+            "I1mr": 34,
+            "D1mr": 12,
+            "D1mw": 6,
+            "ILmr": 34,
+            "DLmr": 5,
+            "DLmw": 3
+          },
+          "self_counts": {
+            "forth.State.runOperationsLoop__func_181": {
+              "Ir": 29469,
+              "Dr": 8672,
+              "Dw": 2235,
+              "I1mr": 31,
+              "D1mr": 10,
+              "D1mw": 4,
+              "ILmr": 31,
+              "DLmr": 5,
+              "DLmw": 2
+            },
+            "forth.State.runOperations__func_180": {
+              "Ir": 37,
+              "Dr": 11,
+              "Dw": 15,
+              "I1mr": 3,
+              "D1mr": 2,
+              "D1mw": 2,
+              "ILmr": 3,
+              "DLmr": 0,
+              "DLmw": 1
+            }
+          },
+          "calls": {
+            "main.run -> forth.State.interpretLine": 1,
+            "libc_start_main_stage2 -> main": 1,
+            "(below main) -> libc_start_main_stage2": 1,
+            "main -> main.run": 1,
+            "_start_c -> (below main)": 1,
+            "forth.State.handleWord -> forth.State.executeWord": 8,
+            "forth.State.executeOperations -> forth.State.runOperations__func_180": 1,
+            "forth.State.interpretLine -> forth.State.interpretSource": 1,
+            "forth.State.interpretSource -> forth.State.handleWord": 14,
+            "forth.State.executeWord -> forth.State.executeOperations": 1,
+            "forth.State.runOperations__func_180 -> forth.State.runOperationsLoop__func_181": 1,
+            "0x00000000010c4170 -> _start_c": 1
+          }
+        }
+      ]
+    },
+    "add-store-empty": {
+      "source_100": "100 CONSTANT BENCH-ITERATIONS VARIABLE M-X : BENCH-RUN 0 M-X ! BENCH-ITERATIONS 0 DO 1 M-X +! LOOP M-X @ ;",
+      "per_iteration": {
+        "Ir": 140.0,
+        "Dr": 40.0,
+        "Dw": 11.0
+      },
+      "calls": {},
+      "memory_address_annotated_instructions": [
+        {
+          "pc": "0x1102866",
+          "executions_per_iteration": 1.0,
+          "instruction": "test   rsi,rsi",
+          "source": "D:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline\\src/D:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline/src\\forth.zig:2421",
+          "function": "forth.State.runOperationsLoop__func_181"
+        },
+        {
+          "pc": "0x1102869",
+          "executions_per_iteration": 1.0,
+          "instruction": "js     11043e4 <forth.State.runOperationsLoop__func_181+0x2534>",
+          "source": "D:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline\\src/D:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline/src\\forth.zig:2421",
+          "function": "forth.State.runOperationsLoop__func_181"
+        },
+        {
+          "pc": "0x110286f",
+          "executions_per_iteration": 1.0,
+          "instruction": "mov    rdi,QWORD PTR [rbx+0x4584d0]",
+          "source": "D:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline\\src/D:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline/src\\forth.zig:2421 (discriminator 6)",
+          "function": "forth.State.runOperationsLoop__func_181"
+        },
+        {
+          "pc": "0x1102876",
+          "executions_per_iteration": 1.0,
+          "instruction": "sub    rdi,rsi",
+          "source": "D:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline\\src/D:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline/src\\forth.zig:2421 (discriminator 6)",
+          "function": "forth.State.runOperationsLoop__func_181"
+        },
+        {
+          "pc": "0x1102879",
+          "executions_per_iteration": 1.0,
+          "instruction": "jb     11043e4 <forth.State.runOperationsLoop__func_181+0x2534>",
+          "source": "D:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline\\src/D:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline/src\\forth.zig:2421 (discriminator 6)",
+          "function": "forth.State.runOperationsLoop__func_181"
+        },
+        {
+          "pc": "0x110287f",
+          "executions_per_iteration": 1.0,
+          "instruction": "cmp    rdi,0x8",
+          "source": "D:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline\\src/D:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline/src\\forth.zig:2421 (discriminator 2)",
+          "function": "forth.State.runOperationsLoop__func_181"
+        },
+        {
+          "pc": "0x1102883",
+          "executions_per_iteration": 1.0,
+          "instruction": "jb     11043e4 <forth.State.runOperationsLoop__func_181+0x2534>",
+          "source": "D:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline\\src/D:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline/src\\forth.zig:2421 (discriminator 2)",
+          "function": "forth.State.runOperationsLoop__func_181"
+        },
+        {
+          "pc": "0x1102889",
+          "executions_per_iteration": 1.0,
+          "instruction": "mov    rax,QWORD PTR [rdx+rcx*8-0x10]",
+          "source": "D:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline\\src/D:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline/src\\forth.zig:2421 (discriminator 2)",
+          "function": "forth.State.runOperationsLoop__func_181"
+        }
+      ],
+      "profiles": [
+        {
+          "summary": {
+            "Ir": 14413,
+            "Dr": 4112,
+            "Dw": 1159,
+            "I1mr": 35,
+            "D1mr": 13,
+            "D1mw": 6,
+            "ILmr": 35,
+            "DLmr": 5,
+            "DLmw": 3
+          },
+          "self_counts": {
+            "forth.State.runOperationsLoop__func_181": {
+              "Ir": 14376,
+              "Dr": 4101,
+              "Dw": 1144,
+              "I1mr": 32,
+              "D1mr": 11,
+              "D1mw": 4,
+              "ILmr": 32,
+              "DLmr": 5,
+              "DLmw": 2
+            },
+            "forth.State.runOperations__func_180": {
+              "Ir": 37,
+              "Dr": 11,
+              "Dw": 15,
+              "I1mr": 3,
+              "D1mr": 2,
+              "D1mw": 2,
+              "ILmr": 3,
+              "DLmr": 0,
+              "DLmw": 1
+            }
+          },
+          "calls": {
+            "main.run -> forth.State.interpretLine": 1,
+            "libc_start_main_stage2 -> main": 1,
+            "(below main) -> libc_start_main_stage2": 1,
+            "main -> main.run": 1,
+            "_start_c -> (below main)": 1,
+            "forth.State.handleWord -> forth.State.executeWord": 8,
+            "forth.State.interpretSource -> forth.State.handleWord": 15,
+            "forth.State.interpretLine -> forth.State.interpretSource": 1,
+            "forth.State.executeWord -> forth.State.executeOperations": 1,
+            "forth.State.executeOperations -> forth.State.runOperations__func_180": 1,
+            "forth.State.runOperations__func_180 -> forth.State.runOperationsLoop__func_181": 1,
+            "0x00000000010c4170 -> _start_c": 1
+          }
+        },
+        {
+          "summary": {
+            "Ir": 28413,
+            "Dr": 8112,
+            "Dw": 2259,
+            "I1mr": 35,
+            "D1mr": 13,
+            "D1mw": 6,
+            "ILmr": 35,
+            "DLmr": 5,
+            "DLmw": 3
+          },
+          "self_counts": {
+            "forth.State.runOperationsLoop__func_181": {
+              "Ir": 28376,
+              "Dr": 8101,
+              "Dw": 2244,
+              "I1mr": 32,
+              "D1mr": 11,
+              "D1mw": 4,
+              "ILmr": 32,
+              "DLmr": 5,
+              "DLmw": 2
+            },
+            "forth.State.runOperations__func_180": {
+              "Ir": 37,
+              "Dr": 11,
+              "Dw": 15,
+              "I1mr": 3,
+              "D1mr": 2,
+              "D1mw": 2,
+              "ILmr": 3,
+              "DLmr": 0,
+              "DLmw": 1
+            }
+          },
+          "calls": {
+            "main.run -> forth.State.interpretLine": 1,
+            "libc_start_main_stage2 -> main": 1,
+            "(below main) -> libc_start_main_stage2": 1,
+            "main -> main.run": 1,
+            "_start_c -> (below main)": 1,
+            "forth.State.handleWord -> forth.State.executeWord": 8,
+            "forth.State.interpretSource -> forth.State.handleWord": 15,
+            "forth.State.interpretLine -> forth.State.interpretSource": 1,
+            "forth.State.executeWord -> forth.State.executeOperations": 1,
+            "forth.State.executeOperations -> forth.State.runOperations__func_180": 1,
+            "forth.State.runOperations__func_180 -> forth.State.runOperationsLoop__func_181": 1,
+            "0x00000000010c4170 -> _start_c": 1
+          }
+        }
+      ]
+    },
+    "cstore-empty": {
+      "source_100": "100 CONSTANT BENCH-ITERATIONS CREATE M-X 1 ALLOT : BENCH-RUN BENCH-ITERATIONS 0 DO I M-X C! LOOP M-X C@ ;",
+      "per_iteration": {
+        "Ir": 172.0,
+        "Dr": 52.0,
+        "Dw": 20.0
+      },
+      "calls": {
+        "forth.State.runOperationsLoop__func_181 -> core.address_registry.written": 1.0
+      },
+      "memory_address_annotated_instructions": [
+        {
+          "pc": "0x11024a1",
+          "executions_per_iteration": 1.0,
+          "instruction": "test   rsi,rsi",
+          "source": "D:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline\\src/D:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline/src\\forth.zig:2421",
+          "function": "forth.State.runOperationsLoop__func_181"
+        },
+        {
+          "pc": "0x11024a4",
+          "executions_per_iteration": 1.0,
+          "instruction": "js     1104455 <forth.State.runOperationsLoop__func_181+0x25a5>",
+          "source": "D:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline\\src/D:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline/src\\forth.zig:2421",
+          "function": "forth.State.runOperationsLoop__func_181"
+        },
+        {
+          "pc": "0x11024aa",
+          "executions_per_iteration": 1.0,
+          "instruction": "cmp    QWORD PTR [rbx+0x4584d0],rsi",
+          "source": "D:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline\\src/D:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline/src\\forth.zig:2421 (discriminator 2)",
+          "function": "forth.State.runOperationsLoop__func_181"
+        },
+        {
+          "pc": "0x11024b1",
+          "executions_per_iteration": 1.0,
+          "instruction": "jbe    1104455 <forth.State.runOperationsLoop__func_181+0x25a5>",
+          "source": "D:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline\\src/D:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline/src\\forth.zig:2421 (discriminator 2)",
+          "function": "forth.State.runOperationsLoop__func_181"
+        }
+      ],
+      "profiles": [
+        {
+          "summary": {
+            "Ir": 17497,
+            "Dr": 5283,
+            "Dw": 2050,
+            "I1mr": 36,
+            "D1mr": 12,
+            "D1mw": 9,
+            "ILmr": 36,
+            "DLmr": 5,
+            "DLmw": 7
+          },
+          "self_counts": {
+            "forth.State.runOperationsLoop__func_181": {
+              "Ir": 15160,
+              "Dr": 4472,
+              "Dw": 1235,
+              "I1mr": 33,
+              "D1mr": 10,
+              "D1mw": 5,
+              "ILmr": 33,
+              "DLmr": 5,
+              "DLmw": 4
+            },
+            "forth.State.runOperations__func_180": {
+              "Ir": 37,
+              "Dr": 11,
+              "Dw": 15,
+              "I1mr": 3,
+              "D1mr": 2,
+              "D1mw": 2,
+              "ILmr": 3,
+              "DLmr": 0,
+              "DLmw": 1
+            },
+            "core.address_registry.written": {
+              "Ir": 2300,
+              "Dr": 800,
+              "Dw": 800,
+              "I1mr": 0,
+              "D1mr": 0,
+              "D1mw": 2,
+              "ILmr": 0,
+              "DLmr": 0,
+              "DLmw": 2
+            }
+          },
+          "calls": {
+            "main.run -> forth.State.interpretLine": 1,
+            "libc_start_main_stage2 -> main": 1,
+            "(below main) -> libc_start_main_stage2": 1,
+            "main -> main.run": 1,
+            "_start_c -> (below main)": 1,
+            "forth.State.interpretSource -> forth.State.handleWord": 16,
+            "forth.State.interpretLine -> forth.State.interpretSource": 1,
+            "forth.State.runOperationsLoop__func_181 -> core.address_registry.written": 100,
+            "forth.State.executeOperations -> forth.State.runOperations__func_180": 1,
+            "forth.State.handleWord -> forth.State.executeWord": 10,
+            "forth.State.executeWord -> forth.State.executeOperations": 1,
+            "forth.State.runOperations__func_180 -> forth.State.runOperationsLoop__func_181": 1,
+            "0x00000000010c4170 -> _start_c": 1
+          }
+        },
+        {
+          "summary": {
+            "Ir": 34697,
+            "Dr": 10483,
+            "Dw": 4050,
+            "I1mr": 36,
+            "D1mr": 12,
+            "D1mw": 9,
+            "ILmr": 36,
+            "DLmr": 5,
+            "DLmw": 7
+          },
+          "self_counts": {
+            "forth.State.runOperationsLoop__func_181": {
+              "Ir": 30060,
+              "Dr": 8872,
+              "Dw": 2435,
+              "I1mr": 33,
+              "D1mr": 10,
+              "D1mw": 5,
+              "ILmr": 33,
+              "DLmr": 5,
+              "DLmw": 4
+            },
+            "forth.State.runOperations__func_180": {
+              "Ir": 37,
+              "Dr": 11,
+              "Dw": 15,
+              "I1mr": 3,
+              "D1mr": 2,
+              "D1mw": 2,
+              "ILmr": 3,
+              "DLmr": 0,
+              "DLmw": 1
+            },
+            "core.address_registry.written": {
+              "Ir": 4600,
+              "Dr": 1600,
+              "Dw": 1600,
+              "I1mr": 0,
+              "D1mr": 0,
+              "D1mw": 2,
+              "ILmr": 0,
+              "DLmr": 0,
+              "DLmw": 2
+            }
+          },
+          "calls": {
+            "main.run -> forth.State.interpretLine": 1,
+            "libc_start_main_stage2 -> main": 1,
+            "(below main) -> libc_start_main_stage2": 1,
+            "main -> main.run": 1,
+            "_start_c -> (below main)": 1,
+            "forth.State.interpretSource -> forth.State.handleWord": 16,
+            "forth.State.interpretLine -> forth.State.interpretSource": 1,
+            "forth.State.runOperationsLoop__func_181 -> core.address_registry.written": 200,
+            "forth.State.executeOperations -> forth.State.runOperations__func_180": 1,
+            "forth.State.handleWord -> forth.State.executeWord": 10,
+            "forth.State.executeWord -> forth.State.executeOperations": 1,
+            "forth.State.runOperations__func_180 -> forth.State.runOperationsLoop__func_181": 1,
+            "0x00000000010c4170 -> _start_c": 1
+          }
+        }
+      ]
+    },
+    "fetch-registered": {
+      "source_100": "100 CONSTANT BENCH-ITERATIONS AVARIABLE M-A VARIABLE M-X 17 M-X ! : BENCH-RUN 0 BENCH-ITERATIONS 0 DO M-X @ + LOOP ;",
+      "per_iteration": {
+        "Ir": 152.0,
+        "Dr": 41.0,
+        "Dw": 14.0
+      },
+      "calls": {},
+      "memory_address_annotated_instructions": [
+        {
+          "pc": "0x1102aef",
+          "executions_per_iteration": 1.0,
+          "instruction": "test   rsi,rsi",
+          "source": "D:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline\\src/D:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline/src\\forth.zig:2421",
+          "function": "forth.State.runOperationsLoop__func_181"
+        },
+        {
+          "pc": "0x1102af2",
+          "executions_per_iteration": 1.0,
+          "instruction": "js     11043e4 <forth.State.runOperationsLoop__func_181+0x2534>",
+          "source": "D:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline\\src/D:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline/src\\forth.zig:2421",
+          "function": "forth.State.runOperationsLoop__func_181"
+        },
+        {
+          "pc": "0x1102af8",
+          "executions_per_iteration": 1.0,
+          "instruction": "mov    r14,r13",
+          "source": "D:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline\\src/D:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline/src\\forth.zig:2421",
+          "function": "forth.State.runOperationsLoop__func_181"
+        },
+        {
+          "pc": "0x1102afb",
+          "executions_per_iteration": 1.0,
+          "instruction": "mov    r13,r12",
+          "source": "D:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline\\src/D:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline/src\\forth.zig:2421",
+          "function": "forth.State.runOperationsLoop__func_181"
+        },
+        {
+          "pc": "0x1102afe",
+          "executions_per_iteration": 1.0,
+          "instruction": "mov    r12d,r8d",
+          "source": "D:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline\\src/D:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline/src\\forth.zig:2421",
+          "function": "forth.State.runOperationsLoop__func_181"
+        },
+        {
+          "pc": "0x1102b01",
+          "executions_per_iteration": 1.0,
+          "instruction": "mov    r8,QWORD PTR [rbx+0x4584d0]",
+          "source": "D:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline\\src/D:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline/src\\forth.zig:2421 (discriminator 6)",
+          "function": "forth.State.runOperationsLoop__func_181"
+        },
+        {
+          "pc": "0x1102b08",
+          "executions_per_iteration": 1.0,
+          "instruction": "sub    r8,rsi",
+          "source": "D:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline\\src/D:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline/src\\forth.zig:2421 (discriminator 6)",
+          "function": "forth.State.runOperationsLoop__func_181"
+        },
+        {
+          "pc": "0x1102b0b",
+          "executions_per_iteration": 1.0,
+          "instruction": "jb     11043e4 <forth.State.runOperationsLoop__func_181+0x2534>",
+          "source": "D:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline\\src/D:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline/src\\forth.zig:2421 (discriminator 2)",
+          "function": "forth.State.runOperationsLoop__func_181"
+        },
+        {
+          "pc": "0x1102b11",
+          "executions_per_iteration": 1.0,
+          "instruction": "cmp    r8,0x8",
+          "source": "D:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline\\src/D:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline/src\\forth.zig:2421 (discriminator 2)",
+          "function": "forth.State.runOperationsLoop__func_181"
+        },
+        {
+          "pc": "0x1102b15",
+          "executions_per_iteration": 1.0,
+          "instruction": "jb     11043e4 <forth.State.runOperationsLoop__func_181+0x2534>",
+          "source": "D:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline\\src/D:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline/src\\forth.zig:2421 (discriminator 2)",
+          "function": "forth.State.runOperationsLoop__func_181"
+        }
+      ],
+      "profiles": [
+        {
+          "summary": {
+            "Ir": 15441,
+            "Dr": 4168,
+            "Dw": 1445,
+            "I1mr": 31,
+            "D1mr": 14,
+            "D1mw": 6,
+            "ILmr": 31,
+            "DLmr": 6,
+            "DLmw": 3
+          },
+          "self_counts": {
+            "forth.State.runOperationsLoop__func_181": {
+              "Ir": 15404,
+              "Dr": 4157,
+              "Dw": 1430,
+              "I1mr": 28,
+              "D1mr": 12,
+              "D1mw": 4,
+              "ILmr": 28,
+              "DLmr": 6,
+              "DLmw": 3
+            },
+            "forth.State.runOperations__func_180": {
+              "Ir": 37,
+              "Dr": 11,
+              "Dw": 15,
+              "I1mr": 3,
+              "D1mr": 2,
+              "D1mw": 2,
+              "ILmr": 3
+            }
+          },
+          "calls": {
+            "_start_c -> (below main)": 1,
+            "forth.State.executeWord -> forth.State.executeOperations": 1,
+            "forth.State.handleWord -> forth.State.executeWord": 10,
+            "forth.State.executeOperations -> forth.State.runOperations__func_180": 1,
+            "forth.State.interpretLine -> forth.State.interpretSource": 1,
+            "forth.State.interpretSource -> forth.State.handleWord": 14,
+            "forth.State.runOperations__func_180 -> forth.State.runOperationsLoop__func_181": 1,
+            "0x00000000010c4170 -> _start_c": 1,
+            "main.run -> forth.State.interpretLine": 1,
+            "libc_start_main_stage2 -> main": 1,
+            "(below main) -> libc_start_main_stage2": 1,
+            "main -> main.run": 1
+          }
+        },
+        {
+          "summary": {
+            "Ir": 30641,
+            "Dr": 8268,
+            "Dw": 2845,
+            "I1mr": 31,
+            "D1mr": 14,
+            "D1mw": 6,
+            "ILmr": 31,
+            "DLmr": 6,
+            "DLmw": 3
+          },
+          "self_counts": {
+            "forth.State.runOperationsLoop__func_181": {
+              "Ir": 30604,
+              "Dr": 8257,
+              "Dw": 2830,
+              "I1mr": 28,
+              "D1mr": 12,
+              "D1mw": 4,
+              "ILmr": 28,
+              "DLmr": 6,
+              "DLmw": 3
+            },
+            "forth.State.runOperations__func_180": {
+              "Ir": 37,
+              "Dr": 11,
+              "Dw": 15,
+              "I1mr": 3,
+              "D1mr": 2,
+              "D1mw": 2,
+              "ILmr": 3
+            }
+          },
+          "calls": {
+            "_start_c -> (below main)": 1,
+            "forth.State.executeWord -> forth.State.executeOperations": 1,
+            "forth.State.handleWord -> forth.State.executeWord": 10,
+            "forth.State.executeOperations -> forth.State.runOperations__func_180": 1,
+            "forth.State.interpretLine -> forth.State.interpretSource": 1,
+            "forth.State.interpretSource -> forth.State.handleWord": 14,
+            "forth.State.runOperations__func_180 -> forth.State.runOperationsLoop__func_181": 1,
+            "0x00000000010c4170 -> _start_c": 1,
+            "main.run -> forth.State.interpretLine": 1,
+            "libc_start_main_stage2 -> main": 1,
+            "(below main) -> libc_start_main_stage2": 1,
+            "main -> main.run": 1
+          }
+        }
+      ]
+    },
+    "store-registered": {
+      "source_100": "100 CONSTANT BENCH-ITERATIONS AVARIABLE M-A VARIABLE M-X : BENCH-RUN BENCH-ITERATIONS 0 DO I M-X ! LOOP M-X @ ;",
+      "per_iteration": {
+        "Ir": 219.0,
+        "Dr": 60.0,
+        "Dw": 22.0
+      },
+      "calls": {
+        "forth.State.runOperationsLoop__func_181 -> core.address_registry.written": 1.0
+      },
+      "memory_address_annotated_instructions": [
+        {
+          "pc": "0x1103b26",
+          "executions_per_iteration": 1.0,
+          "instruction": "test   rsi,rsi",
+          "source": "D:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline\\src/D:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline/src\\forth.zig:2421",
+          "function": "forth.State.runOperationsLoop__func_181"
+        },
+        {
+          "pc": "0x1103b29",
+          "executions_per_iteration": 1.0,
+          "instruction": "js     11043e4 <forth.State.runOperationsLoop__func_181+0x2534>",
+          "source": "D:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline\\src/D:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline/src\\forth.zig:2421",
+          "function": "forth.State.runOperationsLoop__func_181"
+        },
+        {
+          "pc": "0x1103b2f",
+          "executions_per_iteration": 1.0,
+          "instruction": "mov    rdi,QWORD PTR [rbx+0x4584d0]",
+          "source": "D:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline\\src/D:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline/src\\forth.zig:2421 (discriminator 6)",
+          "function": "forth.State.runOperationsLoop__func_181"
+        },
+        {
+          "pc": "0x1103b36",
+          "executions_per_iteration": 1.0,
+          "instruction": "sub    rdi,rsi",
+          "source": "D:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline\\src/D:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline/src\\forth.zig:2421 (discriminator 6)",
+          "function": "forth.State.runOperationsLoop__func_181"
+        },
+        {
+          "pc": "0x1103b39",
+          "executions_per_iteration": 1.0,
+          "instruction": "jb     11043e4 <forth.State.runOperationsLoop__func_181+0x2534>",
+          "source": "D:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline\\src/D:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline/src\\forth.zig:2421 (discriminator 6)",
+          "function": "forth.State.runOperationsLoop__func_181"
+        },
+        {
+          "pc": "0x1103b3f",
+          "executions_per_iteration": 1.0,
+          "instruction": "cmp    rdi,0x8",
+          "source": "D:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline\\src/D:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline/src\\forth.zig:2421 (discriminator 2)",
+          "function": "forth.State.runOperationsLoop__func_181"
+        },
+        {
+          "pc": "0x1103b43",
+          "executions_per_iteration": 1.0,
+          "instruction": "jb     11043e4 <forth.State.runOperationsLoop__func_181+0x2534>",
+          "source": "D:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline\\src/D:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline/src\\forth.zig:2421 (discriminator 2)",
+          "function": "forth.State.runOperationsLoop__func_181"
+        },
+        {
+          "pc": "0x1103b49",
+          "executions_per_iteration": 1.0,
+          "instruction": "mov    rax,QWORD PTR [rdx+rcx*8-0x10]",
+          "source": "D:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline\\src/D:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline/src\\forth.zig:2421 (discriminator 2)",
+          "function": "forth.State.runOperationsLoop__func_181"
+        }
+      ],
+      "profiles": [
+        {
+          "summary": {
+            "Ir": 22271,
+            "Dr": 6075,
+            "Dw": 2307,
+            "I1mr": 42,
+            "D1mr": 12,
+            "D1mw": 13,
+            "ILmr": 42,
+            "DLmr": 5,
+            "DLmw": 9
+          },
+          "self_counts": {
+            "forth.State.runOperationsLoop__func_181": {
+              "Ir": 15969,
+              "Dr": 4572,
+              "Dw": 1235,
+              "I1mr": 32,
+              "D1mr": 10,
+              "D1mw": 6,
+              "ILmr": 32,
+              "DLmr": 5,
+              "DLmw": 4
+            },
+            "forth.State.runOperations__func_180": {
+              "Ir": 37,
+              "Dr": 11,
+              "Dw": 15,
+              "I1mr": 3,
+              "D1mr": 2,
+              "D1mw": 2,
+              "ILmr": 3
+            },
+            "core.address_registry.written": {
+              "Ir": 6265,
+              "Dr": 1492,
+              "Dw": 1057,
+              "I1mr": 7,
+              "D1mr": 0,
+              "D1mw": 5,
+              "ILmr": 7,
+              "DLmr": 0,
+              "DLmw": 5
+            }
+          },
+          "calls": {
+            "main.run -> forth.State.interpretLine": 1,
+            "libc_start_main_stage2 -> main": 1,
+            "(below main) -> libc_start_main_stage2": 1,
+            "main -> main.run": 1,
+            "_start_c -> (below main)": 1,
+            "forth.State.handleWord -> forth.State.executeWord": 8,
+            "forth.State.interpretSource -> forth.State.handleWord": 14,
+            "forth.State.runOperationsLoop__func_181 -> core.address_registry.written": 100,
+            "forth.State.executeWord -> forth.State.executeOperations": 1,
+            "forth.State.executeOperations -> forth.State.runOperations__func_180": 1,
+            "forth.State.interpretLine -> forth.State.interpretSource": 1,
+            "forth.State.runOperations__func_180 -> forth.State.runOperationsLoop__func_181": 1,
+            "0x00000000010c4170 -> _start_c": 1
+          }
+        },
+        {
+          "summary": {
+            "Ir": 44171,
+            "Dr": 12075,
+            "Dw": 4507,
+            "I1mr": 42,
+            "D1mr": 12,
+            "D1mw": 13,
+            "ILmr": 42,
+            "DLmr": 5,
+            "DLmw": 9
+          },
+          "self_counts": {
+            "forth.State.runOperationsLoop__func_181": {
+              "Ir": 31669,
+              "Dr": 9072,
+              "Dw": 2435,
+              "I1mr": 32,
+              "D1mr": 10,
+              "D1mw": 6,
+              "ILmr": 32,
+              "DLmr": 5,
+              "DLmw": 4
+            },
+            "forth.State.runOperations__func_180": {
+              "Ir": 37,
+              "Dr": 11,
+              "Dw": 15,
+              "I1mr": 3,
+              "D1mr": 2,
+              "D1mw": 2,
+              "ILmr": 3
+            },
+            "core.address_registry.written": {
+              "Ir": 12465,
+              "Dr": 2992,
+              "Dw": 2057,
+              "I1mr": 7,
+              "D1mr": 0,
+              "D1mw": 5,
+              "ILmr": 7,
+              "DLmr": 0,
+              "DLmw": 5
+            }
+          },
+          "calls": {
+            "main.run -> forth.State.interpretLine": 1,
+            "libc_start_main_stage2 -> main": 1,
+            "(below main) -> libc_start_main_stage2": 1,
+            "main -> main.run": 1,
+            "_start_c -> (below main)": 1,
+            "forth.State.handleWord -> forth.State.executeWord": 8,
+            "forth.State.interpretSource -> forth.State.handleWord": 14,
+            "forth.State.runOperationsLoop__func_181 -> core.address_registry.written": 200,
+            "forth.State.executeWord -> forth.State.executeOperations": 1,
+            "forth.State.executeOperations -> forth.State.runOperations__func_180": 1,
+            "forth.State.interpretLine -> forth.State.interpretSource": 1,
+            "forth.State.runOperations__func_180 -> forth.State.runOperationsLoop__func_181": 1,
+            "0x00000000010c4170 -> _start_c": 1
+          }
+        }
+      ]
+    },
+    "add-store-registered": {
+      "source_100": "100 CONSTANT BENCH-ITERATIONS AVARIABLE M-A VARIABLE M-X : BENCH-RUN 0 M-X ! BENCH-ITERATIONS 0 DO 1 M-X +! LOOP M-X @ ;",
+      "per_iteration": {
+        "Ir": 213.0,
+        "Dr": 57.0,
+        "Dw": 22.0
+      },
+      "calls": {
+        "forth.State.runOperationsLoop__func_181 -> core.address_registry.written": 1.0
+      },
+      "memory_address_annotated_instructions": [
+        {
+          "pc": "0x1102866",
+          "executions_per_iteration": 1.0,
+          "instruction": "test   rsi,rsi",
+          "source": "D:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline\\src/D:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline/src\\forth.zig:2421",
+          "function": "forth.State.runOperationsLoop__func_181"
+        },
+        {
+          "pc": "0x1102869",
+          "executions_per_iteration": 1.0,
+          "instruction": "js     11043e4 <forth.State.runOperationsLoop__func_181+0x2534>",
+          "source": "D:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline\\src/D:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline/src\\forth.zig:2421",
+          "function": "forth.State.runOperationsLoop__func_181"
+        },
+        {
+          "pc": "0x110286f",
+          "executions_per_iteration": 1.0,
+          "instruction": "mov    rdi,QWORD PTR [rbx+0x4584d0]",
+          "source": "D:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline\\src/D:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline/src\\forth.zig:2421 (discriminator 6)",
+          "function": "forth.State.runOperationsLoop__func_181"
+        },
+        {
+          "pc": "0x1102876",
+          "executions_per_iteration": 1.0,
+          "instruction": "sub    rdi,rsi",
+          "source": "D:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline\\src/D:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline/src\\forth.zig:2421 (discriminator 6)",
+          "function": "forth.State.runOperationsLoop__func_181"
+        },
+        {
+          "pc": "0x1102879",
+          "executions_per_iteration": 1.0,
+          "instruction": "jb     11043e4 <forth.State.runOperationsLoop__func_181+0x2534>",
+          "source": "D:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline\\src/D:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline/src\\forth.zig:2421 (discriminator 6)",
+          "function": "forth.State.runOperationsLoop__func_181"
+        },
+        {
+          "pc": "0x110287f",
+          "executions_per_iteration": 1.0,
+          "instruction": "cmp    rdi,0x8",
+          "source": "D:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline\\src/D:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline/src\\forth.zig:2421 (discriminator 2)",
+          "function": "forth.State.runOperationsLoop__func_181"
+        },
+        {
+          "pc": "0x1102883",
+          "executions_per_iteration": 1.0,
+          "instruction": "jb     11043e4 <forth.State.runOperationsLoop__func_181+0x2534>",
+          "source": "D:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline\\src/D:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline/src\\forth.zig:2421 (discriminator 2)",
+          "function": "forth.State.runOperationsLoop__func_181"
+        },
+        {
+          "pc": "0x1102889",
+          "executions_per_iteration": 1.0,
+          "instruction": "mov    rax,QWORD PTR [rdx+rcx*8-0x10]",
+          "source": "D:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline\\src/D:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline/src\\forth.zig:2421 (discriminator 2)",
+          "function": "forth.State.runOperationsLoop__func_181"
+        }
+      ],
+      "profiles": [
+        {
+          "summary": {
+            "Ir": 21836,
+            "Dr": 5826,
+            "Dw": 2307,
+            "I1mr": 43,
+            "D1mr": 13,
+            "D1mw": 13,
+            "ILmr": 43,
+            "DLmr": 5,
+            "DLmw": 9
+          },
+          "self_counts": {
+            "forth.State.runOperationsLoop__func_181": {
+              "Ir": 15487,
+              "Dr": 4303,
+              "Dw": 1245,
+              "I1mr": 33,
+              "D1mr": 11,
+              "D1mw": 6,
+              "ILmr": 33,
+              "DLmr": 5,
+              "DLmw": 4
+            },
+            "forth.State.runOperations__func_180": {
+              "Ir": 37,
+              "Dr": 11,
+              "Dw": 15,
+              "I1mr": 3,
+              "D1mr": 2,
+              "D1mw": 2,
+              "ILmr": 3
+            },
+            "core.address_registry.written": {
+              "Ir": 6312,
+              "Dr": 1512,
+              "Dw": 1047,
+              "I1mr": 7,
+              "D1mr": 0,
+              "D1mw": 5,
+              "ILmr": 7,
+              "DLmr": 0,
+              "DLmw": 5
+            }
+          },
+          "calls": {
+            "0x00000000010c4170 -> _start_c": 1,
+            "forth.State.runOperationsLoop__func_181 -> core.address_registry.written": 101,
+            "forth.State.executeWord -> forth.State.executeOperations": 1,
+            "forth.State.executeOperations -> forth.State.runOperations__func_180": 1,
+            "forth.State.interpretLine -> forth.State.interpretSource": 1,
+            "forth.State.interpretSource -> forth.State.handleWord": 15,
+            "forth.State.handleWord -> forth.State.executeWord": 8,
+            "forth.State.runOperations__func_180 -> forth.State.runOperationsLoop__func_181": 1,
+            "libc_start_main_stage2 -> main": 1,
+            "(below main) -> libc_start_main_stage2": 1,
+            "main -> main.run": 1,
+            "main.run -> forth.State.interpretLine": 1,
+            "_start_c -> (below main)": 1
+          }
+        },
+        {
+          "summary": {
+            "Ir": 43136,
+            "Dr": 11526,
+            "Dw": 4507,
+            "I1mr": 43,
+            "D1mr": 13,
+            "D1mw": 13,
+            "ILmr": 43,
+            "DLmr": 5,
+            "DLmw": 9
+          },
+          "self_counts": {
+            "forth.State.runOperationsLoop__func_181": {
+              "Ir": 30587,
+              "Dr": 8503,
+              "Dw": 2445,
+              "I1mr": 33,
+              "D1mr": 11,
+              "D1mw": 6,
+              "ILmr": 33,
+              "DLmr": 5,
+              "DLmw": 4
+            },
+            "forth.State.runOperations__func_180": {
+              "Ir": 37,
+              "Dr": 11,
+              "Dw": 15,
+              "I1mr": 3,
+              "D1mr": 2,
+              "D1mw": 2,
+              "ILmr": 3
+            },
+            "core.address_registry.written": {
+              "Ir": 12512,
+              "Dr": 3012,
+              "Dw": 2047,
+              "I1mr": 7,
+              "D1mr": 0,
+              "D1mw": 5,
+              "ILmr": 7,
+              "DLmr": 0,
+              "DLmw": 5
+            }
+          },
+          "calls": {
+            "0x00000000010c4170 -> _start_c": 1,
+            "forth.State.runOperationsLoop__func_181 -> core.address_registry.written": 201,
+            "forth.State.executeWord -> forth.State.executeOperations": 1,
+            "forth.State.executeOperations -> forth.State.runOperations__func_180": 1,
+            "forth.State.interpretLine -> forth.State.interpretSource": 1,
+            "forth.State.interpretSource -> forth.State.handleWord": 15,
+            "forth.State.handleWord -> forth.State.executeWord": 8,
+            "forth.State.runOperations__func_180 -> forth.State.runOperationsLoop__func_181": 1,
+            "libc_start_main_stage2 -> main": 1,
+            "(below main) -> libc_start_main_stage2": 1,
+            "main -> main.run": 1,
+            "main.run -> forth.State.interpretLine": 1,
+            "_start_c -> (below main)": 1
+          }
+        }
+      ]
+    },
+    "cstore-registered": {
+      "source_100": "100 CONSTANT BENCH-ITERATIONS AVARIABLE M-A CREATE M-X 1 ALLOT : BENCH-RUN BENCH-ITERATIONS 0 DO I M-X C! LOOP M-X C@ ;",
+      "per_iteration": {
+        "Ir": 211.0,
+        "Dr": 59.0,
+        "Dw": 22.0
+      },
+      "calls": {
+        "forth.State.runOperationsLoop__func_181 -> core.address_registry.written": 1.0
+      },
+      "memory_address_annotated_instructions": [
+        {
+          "pc": "0x11024a1",
+          "executions_per_iteration": 1.0,
+          "instruction": "test   rsi,rsi",
+          "source": "D:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline\\src/D:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline/src\\forth.zig:2421",
+          "function": "forth.State.runOperationsLoop__func_181"
+        },
+        {
+          "pc": "0x11024a4",
+          "executions_per_iteration": 1.0,
+          "instruction": "js     1104455 <forth.State.runOperationsLoop__func_181+0x25a5>",
+          "source": "D:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline\\src/D:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline/src\\forth.zig:2421",
+          "function": "forth.State.runOperationsLoop__func_181"
+        },
+        {
+          "pc": "0x11024aa",
+          "executions_per_iteration": 1.0,
+          "instruction": "cmp    QWORD PTR [rbx+0x4584d0],rsi",
+          "source": "D:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline\\src/D:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline/src\\forth.zig:2421 (discriminator 2)",
+          "function": "forth.State.runOperationsLoop__func_181"
+        },
+        {
+          "pc": "0x11024b1",
+          "executions_per_iteration": 1.0,
+          "instruction": "jbe    1104455 <forth.State.runOperationsLoop__func_181+0x25a5>",
+          "source": "D:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline\\src/D:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline/src\\forth.zig:2421 (discriminator 2)",
+          "function": "forth.State.runOperationsLoop__func_181"
+        }
+      ],
+      "profiles": [
+        {
+          "summary": {
+            "Ir": 21456,
+            "Dr": 5977,
+            "Dw": 2299,
+            "I1mr": 43,
+            "D1mr": 12,
+            "D1mw": 13,
+            "ILmr": 43,
+            "DLmr": 5,
+            "DLmw": 9
+          },
+          "self_counts": {
+            "forth.State.runOperations__func_180": {
+              "Ir": 37,
+              "Dr": 11,
+              "Dw": 15,
+              "I1mr": 3,
+              "D1mr": 2,
+              "D1mw": 2,
+              "ILmr": 3
+            },
+            "forth.State.runOperationsLoop__func_181": {
+              "Ir": 15160,
+              "Dr": 4472,
+              "Dw": 1235,
+              "I1mr": 33,
+              "D1mr": 10,
+              "D1mw": 6,
+              "ILmr": 33,
+              "DLmr": 5,
+              "DLmw": 4
+            },
+            "core.address_registry.written": {
+              "Ir": 6259,
+              "Dr": 1494,
+              "Dw": 1049,
+              "I1mr": 7,
+              "D1mr": 0,
+              "D1mw": 5,
+              "ILmr": 7,
+              "DLmr": 0,
+              "DLmw": 5
+            }
+          },
+          "calls": {
+            "main.run -> forth.State.interpretLine": 1,
+            "_start_c -> (below main)": 1,
+            "0x00000000010c4170 -> _start_c": 1,
+            "forth.State.runOperations__func_180 -> forth.State.runOperationsLoop__func_181": 1,
+            "forth.State.interpretSource -> forth.State.handleWord": 16,
+            "forth.State.runOperationsLoop__func_181 -> core.address_registry.written": 100,
+            "forth.State.executeOperations -> forth.State.runOperations__func_180": 1,
+            "forth.State.interpretLine -> forth.State.interpretSource": 1,
+            "forth.State.handleWord -> forth.State.executeWord": 10,
+            "forth.State.executeWord -> forth.State.executeOperations": 1,
+            "libc_start_main_stage2 -> main": 1,
+            "(below main) -> libc_start_main_stage2": 1,
+            "main -> main.run": 1
+          }
+        },
+        {
+          "summary": {
+            "Ir": 42556,
+            "Dr": 11877,
+            "Dw": 4499,
+            "I1mr": 43,
+            "D1mr": 12,
+            "D1mw": 13,
+            "ILmr": 43,
+            "DLmr": 5,
+            "DLmw": 9
+          },
+          "self_counts": {
+            "forth.State.runOperations__func_180": {
+              "Ir": 37,
+              "Dr": 11,
+              "Dw": 15,
+              "I1mr": 3,
+              "D1mr": 2,
+              "D1mw": 2,
+              "ILmr": 3
+            },
+            "forth.State.runOperationsLoop__func_181": {
+              "Ir": 30060,
+              "Dr": 8872,
+              "Dw": 2435,
+              "I1mr": 33,
+              "D1mr": 10,
+              "D1mw": 6,
+              "ILmr": 33,
+              "DLmr": 5,
+              "DLmw": 4
+            },
+            "core.address_registry.written": {
+              "Ir": 12459,
+              "Dr": 2994,
+              "Dw": 2049,
+              "I1mr": 7,
+              "D1mr": 0,
+              "D1mw": 5,
+              "ILmr": 7,
+              "DLmr": 0,
+              "DLmw": 5
+            }
+          },
+          "calls": {
+            "main.run -> forth.State.interpretLine": 1,
+            "_start_c -> (below main)": 1,
+            "0x00000000010c4170 -> _start_c": 1,
+            "forth.State.runOperations__func_180 -> forth.State.runOperationsLoop__func_181": 1,
+            "forth.State.interpretSource -> forth.State.handleWord": 16,
+            "forth.State.runOperationsLoop__func_181 -> core.address_registry.written": 200,
+            "forth.State.executeOperations -> forth.State.runOperations__func_180": 1,
+            "forth.State.interpretLine -> forth.State.interpretSource": 1,
+            "forth.State.handleWord -> forth.State.executeWord": 10,
+            "forth.State.executeWord -> forth.State.executeOperations": 1,
+            "libc_start_main_stage2 -> main": 1,
+            "(below main) -> libc_start_main_stage2": 1,
+            "main -> main.run": 1
+          }
+        }
+      ]
+    }
+  },
+  "add_store_disassembly_excerpt": "D PTR [rbx+0x147e88]\n 1102852:\t48 8b 74 ca f8       \tmov    rsi,QWORD PTR [rdx+rcx*8-0x8]\n 1102857:\t48 8d 41 fe          \tlea    rax,[rcx-0x2]\n 110285b:\t48 89 83 98 7e 14 00 \tmov    QWORD PTR [rbx+0x147e98],rax\n 1102862:\t66 b8 33 00          \tmov    ax,0x33\nforth.State.memoryAddress():\nD:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline\\src/D:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline/src\\forth.zig:2421\n 1102866:\t48 85 f6             \ttest   rsi,rsi\n 1102869:\t0f 88 75 1b 00 00    \tjs     11043e4 <forth.State.runOperationsLoop__func_181+0x2534>\nD:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline\\src/D:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline/src\\forth.zig:2421 (discriminator 6)\n 110286f:\t48 8b bb d0 84 45 00 \tmov    rdi,QWORD PTR [rbx+0x4584d0]\n 1102876:\t48 29 f7             \tsub    rdi,rsi\n 1102879:\t0f 82 65 1b 00 00    \tjb     11043e4 <forth.State.runOperationsLoop__func_181+0x2534>\nD:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline\\src/D:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline/src\\forth.zig:2421 (discriminator 2)\n 110287f:\t48 83 ff 08          \tcmp    rdi,0x8\n 1102883:\t0f 82 5b 1b 00 00    \tjb     11043e4 <forth.State.runOperationsLoop__func_181+0x2534>\ncore.words_memory.execute():\n 1102889:\t48 8b 44 ca f0       \tmov    rax,QWORD PTR [rdx+rcx*8-0x10]\nforth.State.readCell():\nD:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline\\src/D:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline/src\\forth.zig:2452\n 110288e:\t48 8b 8b c8 84 45 00 \tmov    rcx,QWORD PTR [rbx+0x4584c8]\nmem.writeInt():\nD:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline\\src/C:\\Users\\n_fuk\\AppData\\Local\\Microsoft\\WinGet\\Packages\\zig.zig_Microsoft.Winget.Source_8wekyb3d8bbwe\\zig-x86_64-windows-0.17.0\\lib/std\\mem.zig:2085 (discriminator 2)\n 1102895:\t48 01 04 31          \tadd    QWORD PTR [rcx+rsi*1],rax\nforth.State.writeCell():\nD:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline\\src/D:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline/src\\forth.zig:2458\n 1102899:\te9 bb 12 00 00       \tjmp    1103b59 <forth.State.runOperationsLoop__func_181+0x1ca9>\nforth.State.pop():\nD:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline\\src/D:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline/src\\forth.zig:2382\n 110289e:\t48 8b 8b 98 7e 14 00 \tmov    rcx,QWORD PTR [rbx+0x147e98]\n 11028a5:\t66 b8 1d 00          \tmov    ax,0x1d\n 11028a9:\t48 85 c9             \ttest   rcx,rcx\n 11028ac:\t66 44 89 75 d6       \tmov    WORD PTR [rbp-0x2a],r14w\n 11028b1:\t0f 84 2d 1b 00 00    \tje     11043e4 <forth.State.runOperationsLoop__func_181+0x2534>\n 11028b7:\t48 89 ca             \tmov    rdx,rcx\n 11028ba:\t48 83 c2 ff          \tadd    rdx,0xffffffffffffffff\nD:\\home\\source\\zig\\forthz\\.work\\ro",
+  "script": "from pathlib import Path\nimport subprocess,json,hashlib,importlib.util,re,collections\nroot=Path('/mnt/d/home/source/zig/forthz');out=root/'.work/memory-access-20261116';binary=root/'.work/rot3-20261116/baseline-symbols/bin/sigma'\nspec=importlib.util.spec_from_file_location('parse',out/'parse-callgrind.py');m=importlib.util.module_from_spec(spec);spec.loader.exec_module(m)\nnm=subprocess.check_output(['nm','-n',str(binary)],text=True);drivers=[x.split()[-1] for x in nm.splitlines() if 'forth.State.runOperations__' in x];assert len(drivers)==2\nasm={};source='';function=''\nfor line in (root/'.work/stack-check-20261116/baseline-disassembly.txt').read_text().splitlines():\n head=re.match(r'^[0-9a-f]+ <(.*)>:$',line)\n if head:function=head.group(1)\n ins=re.match(r'^\\s*([0-9a-f]+):\\s+(?:[0-9a-f]{2}\\s+)+\\s*(.*)$',line)\n if ins:asm[int(ins.group(1),16)]={'instruction':ins.group(2),'source':source,'function':function}\n elif re.search(r'\\.zig:\\d+',line):source=line\n\ndef instruction_cost(path):\n data=collections.Counter();pc=0;inclusive=False\n for line in path.read_text().splitlines():\n  if line.startswith('calls='):inclusive=True\n  match=re.match(r'^(0x[0-9a-f]+|[+-]\\d+|\\*)\\s+(\\d+)',line)\n  if not match:continue\n  pos,n=match.groups();pc=pc if pos=='*' else int(pos,16) if pos.startswith('0x') else pc+int(pos)\n  if inclusive:inclusive=False\n  else:data[pc]+=int(n)\n return data\nreport={'binary':{'path':str(binary),'sha256':hashlib.sha256(binary.read_bytes()).hexdigest()},'scope':'Unmodified adopted-source Linux fast baseline CPU uncounted VM; Callgrind instruction counts, not time. 100/200 difference removes constant setup, including first32 linear notifications.','cases':{}}\nfor registered in [False,True]:\n for name,setup,definition in [('fetch','VARIABLE M-X 17 M-X !',': BENCH-RUN 0 BENCH-ITERATIONS 0 DO M-X @ + LOOP ;'),('store','VARIABLE M-X',': BENCH-RUN BENCH-ITERATIONS 0 DO I M-X ! LOOP M-X @ ;'),('add-store','VARIABLE M-X',': BENCH-RUN 0 M-X ! BENCH-ITERATIONS 0 DO 1 M-X +! LOOP M-X @ ;'),('cstore','CREATE M-X 1 ALLOT',': BENCH-RUN BENCH-ITERATIONS 0 DO I M-X C! LOOP M-X C@ ;')]:\n  case=name+('-registered' if registered else '-empty');profiles=[];costs=[]\n  for n in [100,200]:\n   source=f'{n} CONSTANT BENCH-ITERATIONS '+('AVARIABLE M-A ' if registered else '')+setup+' '+definition+' BENCH-RUN . DEPTH . BYE';expected=17*n if name=='fetch' else n if name=='add-store' else (n-1)&255 if name=='cstore' else n-1\n   p=subprocess.run([str(binary),'-e',source],capture_output=True,check=True);assert p.stdout.split()==[str(expected).encode(),b'0'],(case,n,p.stdout)\n   file=out/f'{case}-{n}.callgrind';cmd=['valgrind','--tool=callgrind','--collect-atstart=no','--toggle-collect='+drivers[0],'--cache-sim=yes','--dump-instr=yes','--dump-line=no','--callgrind-out-file='+str(file),str(binary),'-e',source];v=subprocess.run(cmd,capture_output=True,check=True);assert v.stdout==p.stdout;(out/f'{case}-{n}.log').write_bytes(v.stdout+b'\\n'+v.stderr);profile=m.parse(file);cost=instruction_cost(file);assert sum(cost.values())==profile['summary']['Ir'];profiles.append(profile);costs.append(cost)\n  small,large=profiles;delta={pc:(costs[1][pc]-costs[0][pc])/100 for pc in costs[0].keys()|costs[1].keys()};delta={pc:v for pc,v in delta.items() if v};checks=[{'pc':hex(pc),'executions_per_iteration':v,**asm[pc]} for pc,v in delta.items() if pc in asm and re.search(r'forth\\.zig:242[0-5](?:\\D|$)',asm[pc]['source'])];calls={e:(large['calls'].get(e,0)-small['calls'].get(e,0))/100 for e in large['calls'].keys()|small['calls'].keys()};calls={e:v for e,v in calls.items() if v};counts={e:(large['summary'][e]-small['summary'][e])/100 for e in ['Ir','Dr','Dw']}\n  report['cases'][case]={'source_100':('100 CONSTANT BENCH-ITERATIONS '+('AVARIABLE M-A ' if registered else '')+setup+' '+definition),'per_iteration':counts,'calls':calls,'memory_address_annotated_instructions':checks,'profiles':profiles};(out/'generated-code.json').write_text(json.dumps(report,indent=2)+'\\n');print(case,counts,'checks',[(x['pc'],x['instruction'],x['executions_per_iteration']) for x in checks if re.match(r'(cmp|test|j\\w+)\\s',x['instruction'])],flush=True)\n",
+  "baseline_runtime_source_match": {
+    "src/forth.zig": {
+      "root": "d2c101033474ba348c6cd148249bd81afb6ae4e7656ae5bb0c40326806182195",
+      "reused_baseline": "d2c101033474ba348c6cd148249bd81afb6ae4e7656ae5bb0c40326806182195"
+    },
+    "src/core/words_memory.zig": {
+      "root": "a1f358c08a8e1849f91fe532c78346216f8956bb6e97c095a4067d69082b39ac",
+      "reused_baseline": "a1f358c08a8e1849f91fe532c78346216f8956bb6e97c095a4067d69082b39ac"
+    },
+    "src/core/address_registry.zig": {
+      "root": "0178972983138fa539ef4d796cd37546b1a7866e9b2468a0b0a9787f95b883cc",
+      "reused_baseline": "0178972983138fa539ef4d796cd37546b1a7866e9b2468a0b0a9787f95b883cc"
+    }
+  },
+  "callgrind_parser": "import collections,re\ndef parse(path):\n    names={}\n    own=collections.defaultdict(collections.Counter)\n    edges=collections.Counter()\n    function,callee=None,None\n    inclusive=False\n    events=None\n    summary=None\n    for line in path.read_text().splitlines():\n        if line.startswith('events:'):\n            events=line.split()[1:]\n        elif line.startswith('summary:'):\n            summary=dict(zip(events,map(int,line.split()[1:])))\n        match=re.match(r'(c?fn)=\\((\\d+)\\)(?: (.*))?$',line)\n        if match:\n            kind,number,name=match.groups()\n            if name is not None:\n                names[number]=name\n            if kind=='fn':\n                function=number\n            else:\n                callee=number\n        elif line.startswith('calls='):\n            edges[(function,callee)]+=int(line.split()[0].split('=')[1])\n            inclusive=True\n        elif re.match(r'^(0x[0-9a-f]+|[+-]\\d+|\\*) ',line):\n            if inclusive:\n                inclusive=False\n            else:\n                own[function].update(dict(zip(events,map(int,line.split()[1:]))))\n    assert summary is not None\n    assert sum(counts['Ir'] for counts in own.values())==summary['Ir']\n    return {'summary':summary,'self_counts':{names[k]:dict(v) for k,v in own.items()},'calls':{names[a]+' -> '+names[b]:n for (a,b),n in edges.items()}}\n\n",
+  "shared_write_tail_excerpt": "6_64-windows-0.17.0\\lib/std\\mem.zig:2085 (discriminator 2)\n 1103b55:\t48 89 04 31          \tmov    QWORD PTR [rcx+rsi*1],rax\nforth.State.runOperationsLoop__func_181():\nD:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline\\src/D:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline/src\\forth.zig:2029\n 1103b59:\t48 83 bb 78 67 15 00 \tcmp    QWORD PTR [rbx+0x156778],0x0\n 1103b60:\t00 \n 1103b61:\t4c 89 e1             \tmov    rcx,r12\nforth.State.writeCell():\nD:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline\\src/D:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline/src\\forth.zig:2458\n 1103b64:\t0f 84 b6 e3 ff ff    \tje     1101f20 <forth.State.runOperationsLoop__func_181+0x70>\nforth.State.runOperationsLoop__func_181():\nD:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline\\src/D:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline/src\\forth.zig:2029\n 1103b6a:\tba 08 00 00 00       \tmov    edx,0x8\n 1103b6f:\t48 89 df             \tmov    rdi,rbx\n 1103b72:\tb9 01 00 00 00       \tmov    ecx,0x1\n 1103b77:\t45 89 c6             \tmov    r14d,r8d\n 1103b7a:\te8 81 32 ff ff       \tcall   10f6e00 <core.address_registry.written>\n 1103b7f:\t45 89 f0             \tmov    r8d,r14d\n 1103b82:\t4c 8d 8b 50 7e 04 00 \tlea    r9,[rbx+0x47e50]\n 1103b89:\t4c 8b 5d c8          \tmov    r11,QWORD PTR [rbp-0x38]\n 1103b8d:\t4c 8b 55 c0          \tmov    r10,QWORD PTR [rbp-0x40]\n 1103b91:\t4c 89 e1             \tmov    rcx,r12\nD:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline\\src/D:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline/src\\forth.zig:2029 (discriminator 730)\n 1103b94:\te9 87 e3 ff ff       \tjmp    1101"
+}

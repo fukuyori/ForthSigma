@@ -1,0 +1,1126 @@
+{
+  "scope": "Linux full-LTO arithmetic preflight only; not adopted",
+  "data": {
+    "aa-1-partial": {
+      "samples": {
+        "A1": [
+          {
+            "cpu_us": 5827318.025,
+            "wall_us": 5832465.589,
+            "lifetime_cpu_us": 5829630.000000003,
+            "checksum": 29202
+          },
+          {
+            "cpu_us": 5813160.156,
+            "wall_us": 5818629.82,
+            "lifetime_cpu_us": 5815509.0,
+            "checksum": 29202
+          },
+          {
+            "cpu_us": 5740363.74,
+            "wall_us": 5743730.493,
+            "lifetime_cpu_us": 5742695.999999997,
+            "checksum": 29202
+          },
+          {
+            "cpu_us": 5732028.319,
+            "wall_us": 5735341.95,
+            "lifetime_cpu_us": 5734462.999999999,
+            "checksum": 29202
+          },
+          {
+            "cpu_us": 5711978.08,
+            "wall_us": 5713823.198,
+            "lifetime_cpu_us": 5714411.99999999,
+            "checksum": 29202
+          }
+        ],
+        "A2": [
+          {
+            "cpu_us": 5747345.801,
+            "wall_us": 5752274.19,
+            "lifetime_cpu_us": 5749638.0,
+            "checksum": 29202
+          },
+          {
+            "cpu_us": 5746865.536,
+            "wall_us": 5750564.763,
+            "lifetime_cpu_us": 5749186.999999999,
+            "checksum": 29202
+          },
+          {
+            "cpu_us": 5737159.771,
+            "wall_us": 5740625.962,
+            "lifetime_cpu_us": 5739602.000000008,
+            "checksum": 29202
+          },
+          {
+            "cpu_us": 5725674.24,
+            "wall_us": 5729025.012,
+            "lifetime_cpu_us": 5727896.000000002,
+            "checksum": 29202
+          },
+          {
+            "cpu_us": 5745760.724,
+            "wall_us": 5752366.81,
+            "lifetime_cpu_us": 5748034.999999995,
+            "checksum": 29202
+          }
+        ]
+      },
+      "warmups": {
+        "A1": {
+          "cpu_us": 5761908.006,
+          "wall_us": 5766024.691,
+          "lifetime_cpu_us": 5764321.999999999,
+          "checksum": 29202
+        },
+        "A2": {
+          "cpu_us": 5746245.243,
+          "wall_us": 5751822.732,
+          "lifetime_cpu_us": 5748392.0,
+          "checksum": 29202
+        }
+      },
+      "orders": [
+        [
+          "A1",
+          "A2"
+        ],
+        [
+          "A2",
+          "A1"
+        ],
+        [
+          "A1",
+          "A2"
+        ],
+        [
+          "A2",
+          "A1"
+        ],
+        [
+          "A1",
+          "A2"
+        ],
+        [
+          "A2",
+          "A1"
+        ]
+      ]
+    },
+    "aa-1": {
+      "samples": {
+        "A1": [
+          {
+            "cpu_us": 5827318.025,
+            "wall_us": 5832465.589,
+            "lifetime_cpu_us": 5829630.000000003,
+            "checksum": 29202
+          },
+          {
+            "cpu_us": 5813160.156,
+            "wall_us": 5818629.82,
+            "lifetime_cpu_us": 5815509.0,
+            "checksum": 29202
+          },
+          {
+            "cpu_us": 5740363.74,
+            "wall_us": 5743730.493,
+            "lifetime_cpu_us": 5742695.999999997,
+            "checksum": 29202
+          },
+          {
+            "cpu_us": 5732028.319,
+            "wall_us": 5735341.95,
+            "lifetime_cpu_us": 5734462.999999999,
+            "checksum": 29202
+          },
+          {
+            "cpu_us": 5711978.08,
+            "wall_us": 5713823.198,
+            "lifetime_cpu_us": 5714411.99999999,
+            "checksum": 29202
+          }
+        ],
+        "A2": [
+          {
+            "cpu_us": 5747345.801,
+            "wall_us": 5752274.19,
+            "lifetime_cpu_us": 5749638.0,
+            "checksum": 29202
+          },
+          {
+            "cpu_us": 5746865.536,
+            "wall_us": 5750564.763,
+            "lifetime_cpu_us": 5749186.999999999,
+            "checksum": 29202
+          },
+          {
+            "cpu_us": 5737159.771,
+            "wall_us": 5740625.962,
+            "lifetime_cpu_us": 5739602.000000008,
+            "checksum": 29202
+          },
+          {
+            "cpu_us": 5725674.24,
+            "wall_us": 5729025.012,
+            "lifetime_cpu_us": 5727896.000000002,
+            "checksum": 29202
+          },
+          {
+            "cpu_us": 5745760.724,
+            "wall_us": 5752366.81,
+            "lifetime_cpu_us": 5748034.999999995,
+            "checksum": 29202
+          }
+        ]
+      },
+      "warmups_excluded": {
+        "A1": {
+          "cpu_us": 5761908.006,
+          "wall_us": 5766024.691,
+          "lifetime_cpu_us": 5764321.999999999,
+          "checksum": 29202
+        },
+        "A2": {
+          "cpu_us": 5746245.243,
+          "wall_us": 5751822.732,
+          "lifetime_cpu_us": 5748392.0,
+          "checksum": 29202
+        }
+      },
+      "orders": [
+        [
+          "A1",
+          "A2"
+        ],
+        [
+          "A2",
+          "A1"
+        ],
+        [
+          "A1",
+          "A2"
+        ],
+        [
+          "A2",
+          "A1"
+        ],
+        [
+          "A1",
+          "A2"
+        ],
+        [
+          "A2",
+          "A1"
+        ]
+      ],
+      "medians_us": {
+        "A1": 5740363.74,
+        "A2": 5745760.724
+      },
+      "delta_percent": 0.09401815363010727,
+      "change_percent": 0.09401815363010435
+    },
+    "aa-2-partial": {
+      "samples": {
+        "A1": [
+          {
+            "cpu_us": 5728829.629,
+            "wall_us": 5729249.642,
+            "lifetime_cpu_us": 5731192.000000005,
+            "checksum": 29202
+          },
+          {
+            "cpu_us": 5719673.788,
+            "wall_us": 5720018.496,
+            "lifetime_cpu_us": 5721867.999999985,
+            "checksum": 29202
+          },
+          {
+            "cpu_us": 5815993.274,
+            "wall_us": 5816444.116,
+            "lifetime_cpu_us": 5818283.000000007,
+            "checksum": 29202
+          },
+          {
+            "cpu_us": 5745993.953,
+            "wall_us": 5746574.292,
+            "lifetime_cpu_us": 5748335.0000000065,
+            "checksum": 29202
+          },
+          {
+            "cpu_us": 5748299.244,
+            "wall_us": 5748778.399,
+            "lifetime_cpu_us": 5750556.000000007,
+            "checksum": 29202
+          }
+        ],
+        "A2": [
+          {
+            "cpu_us": 5739917.131,
+            "wall_us": 5740241.803,
+            "lifetime_cpu_us": 5742200.999999992,
+            "checksum": 29202
+          },
+          {
+            "cpu_us": 5750396.911,
+            "wall_us": 5750763.944,
+            "lifetime_cpu_us": 5752614.000000007,
+            "checksum": 29202
+          },
+          {
+            "cpu_us": 5758738.199,
+            "wall_us": 5759159.73,
+            "lifetime_cpu_us": 5761170.99999999,
+            "checksum": 29202
+          },
+          {
+            "cpu_us": 5755829.105,
+            "wall_us": 5760180.306,
+            "lifetime_cpu_us": 5758094.999999992,
+            "checksum": 29202
+          },
+          {
+            "cpu_us": 5742965.561,
+            "wall_us": 5743378.169,
+            "lifetime_cpu_us": 5745275.99999998,
+            "checksum": 29202
+          }
+        ]
+      },
+      "warmups": {
+        "A2": {
+          "cpu_us": 5734921.851,
+          "wall_us": 5738012.892,
+          "lifetime_cpu_us": 5737164.000000002,
+          "checksum": 29202
+        },
+        "A1": {
+          "cpu_us": 5745006.847,
+          "wall_us": 5746758.37,
+          "lifetime_cpu_us": 5747320.999999997,
+          "checksum": 29202
+        }
+      },
+      "orders": [
+        [
+          "A2",
+          "A1"
+        ],
+        [
+          "A1",
+          "A2"
+        ],
+        [
+          "A2",
+          "A1"
+        ],
+        [
+          "A1",
+          "A2"
+        ],
+        [
+          "A2",
+          "A1"
+        ],
+        [
+          "A1",
+          "A2"
+        ]
+      ]
+    },
+    "aa-2": {
+      "samples": {
+        "A1": [
+          {
+            "cpu_us": 5728829.629,
+            "wall_us": 5729249.642,
+            "lifetime_cpu_us": 5731192.000000005,
+            "checksum": 29202
+          },
+          {
+            "cpu_us": 5719673.788,
+            "wall_us": 5720018.496,
+            "lifetime_cpu_us": 5721867.999999985,
+            "checksum": 29202
+          },
+          {
+            "cpu_us": 5815993.274,
+            "wall_us": 5816444.116,
+            "lifetime_cpu_us": 5818283.000000007,
+            "checksum": 29202
+          },
+          {
+            "cpu_us": 5745993.953,
+            "wall_us": 5746574.292,
+            "lifetime_cpu_us": 5748335.0000000065,
+            "checksum": 29202
+          },
+          {
+            "cpu_us": 5748299.244,
+            "wall_us": 5748778.399,
+            "lifetime_cpu_us": 5750556.000000007,
+            "checksum": 29202
+          }
+        ],
+        "A2": [
+          {
+            "cpu_us": 5739917.131,
+            "wall_us": 5740241.803,
+            "lifetime_cpu_us": 5742200.999999992,
+            "checksum": 29202
+          },
+          {
+            "cpu_us": 5750396.911,
+            "wall_us": 5750763.944,
+            "lifetime_cpu_us": 5752614.000000007,
+            "checksum": 29202
+          },
+          {
+            "cpu_us": 5758738.199,
+            "wall_us": 5759159.73,
+            "lifetime_cpu_us": 5761170.99999999,
+            "checksum": 29202
+          },
+          {
+            "cpu_us": 5755829.105,
+            "wall_us": 5760180.306,
+            "lifetime_cpu_us": 5758094.999999992,
+            "checksum": 29202
+          },
+          {
+            "cpu_us": 5742965.561,
+            "wall_us": 5743378.169,
+            "lifetime_cpu_us": 5745275.99999998,
+            "checksum": 29202
+          }
+        ]
+      },
+      "warmups_excluded": {
+        "A2": {
+          "cpu_us": 5734921.851,
+          "wall_us": 5738012.892,
+          "lifetime_cpu_us": 5737164.000000002,
+          "checksum": 29202
+        },
+        "A1": {
+          "cpu_us": 5745006.847,
+          "wall_us": 5746758.37,
+          "lifetime_cpu_us": 5747320.999999997,
+          "checksum": 29202
+        }
+      },
+      "orders": [
+        [
+          "A2",
+          "A1"
+        ],
+        [
+          "A1",
+          "A2"
+        ],
+        [
+          "A2",
+          "A1"
+        ],
+        [
+          "A1",
+          "A2"
+        ],
+        [
+          "A2",
+          "A1"
+        ],
+        [
+          "A1",
+          "A2"
+        ]
+      ],
+      "medians_us": {
+        "A1": 5745993.953,
+        "A2": 5750396.911
+      },
+      "delta_percent": 0.07662656863225151,
+      "change_percent": 0.07662656863225425
+    },
+    "aa-decision": {
+      "delta_percent": 0.09401815363010727,
+      "minimum_median_us": 5740363.74
+    },
+    "compare-1-partial": {
+      "samples": {
+        "baseline": [
+          {
+            "cpu_us": 5722658.175,
+            "wall_us": 5723070.553,
+            "lifetime_cpu_us": 5724957.999999994,
+            "checksum": 29202
+          },
+          {
+            "cpu_us": 5740276.105,
+            "wall_us": 5740643.245,
+            "lifetime_cpu_us": 5742472.999999998,
+            "checksum": 29202
+          },
+          {
+            "cpu_us": 5748147.394,
+            "wall_us": 5751990.769,
+            "lifetime_cpu_us": 5750351.000000003,
+            "checksum": 29202
+          },
+          {
+            "cpu_us": 5744158.019,
+            "wall_us": 5744505.35,
+            "lifetime_cpu_us": 5746399.000000005,
+            "checksum": 29202
+          },
+          {
+            "cpu_us": 5755347.569,
+            "wall_us": 5755720.156,
+            "lifetime_cpu_us": 5757713.999999999,
+            "checksum": 29202
+          },
+          {
+            "cpu_us": 5725930.185,
+            "wall_us": 5726298.573,
+            "lifetime_cpu_us": 5728252.000000004,
+            "checksum": 29202
+          },
+          {
+            "cpu_us": 5784789.551,
+            "wall_us": 5785128.454,
+            "lifetime_cpu_us": 5787094.000000001,
+            "checksum": 29202
+          }
+        ],
+        "candidate": [
+          {
+            "cpu_us": 5608426.46,
+            "wall_us": 5608783.035,
+            "lifetime_cpu_us": 5610505.000000033,
+            "checksum": 29202
+          },
+          {
+            "cpu_us": 5595983.186,
+            "wall_us": 5596333.898,
+            "lifetime_cpu_us": 5598120.000000031,
+            "checksum": 29202
+          },
+          {
+            "cpu_us": 5607746.125,
+            "wall_us": 5608092.265,
+            "lifetime_cpu_us": 5609874.999999996,
+            "checksum": 29202
+          },
+          {
+            "cpu_us": 5569803.585,
+            "wall_us": 5570160.438,
+            "lifetime_cpu_us": 5571891.000000002,
+            "checksum": 29202
+          },
+          {
+            "cpu_us": 5590682.356,
+            "wall_us": 5591062.638,
+            "lifetime_cpu_us": 5592865.000000023,
+            "checksum": 29202
+          },
+          {
+            "cpu_us": 5591534.381,
+            "wall_us": 5591887.678,
+            "lifetime_cpu_us": 5593725.000000011,
+            "checksum": 29202
+          },
+          {
+            "cpu_us": 5653606.638,
+            "wall_us": 5654021.485,
+            "lifetime_cpu_us": 5655767.999999999,
+            "checksum": 29202
+          }
+        ]
+      },
+      "warmups": {
+        "baseline": {
+          "cpu_us": 5734432.765,
+          "wall_us": 5734800.762,
+          "lifetime_cpu_us": 5736719.999999978,
+          "checksum": 29202
+        },
+        "candidate": {
+          "cpu_us": 5588988.385,
+          "wall_us": 5589378.802,
+          "lifetime_cpu_us": 5591017.999999978,
+          "checksum": 29202
+        }
+      },
+      "orders": [
+        [
+          "baseline",
+          "candidate"
+        ],
+        [
+          "candidate",
+          "baseline"
+        ],
+        [
+          "baseline",
+          "candidate"
+        ],
+        [
+          "candidate",
+          "baseline"
+        ],
+        [
+          "baseline",
+          "candidate"
+        ],
+        [
+          "candidate",
+          "baseline"
+        ],
+        [
+          "baseline",
+          "candidate"
+        ],
+        [
+          "candidate",
+          "baseline"
+        ]
+      ]
+    },
+    "compare-1": {
+      "samples": {
+        "baseline": [
+          {
+            "cpu_us": 5722658.175,
+            "wall_us": 5723070.553,
+            "lifetime_cpu_us": 5724957.999999994,
+            "checksum": 29202
+          },
+          {
+            "cpu_us": 5740276.105,
+            "wall_us": 5740643.245,
+            "lifetime_cpu_us": 5742472.999999998,
+            "checksum": 29202
+          },
+          {
+            "cpu_us": 5748147.394,
+            "wall_us": 5751990.769,
+            "lifetime_cpu_us": 5750351.000000003,
+            "checksum": 29202
+          },
+          {
+            "cpu_us": 5744158.019,
+            "wall_us": 5744505.35,
+            "lifetime_cpu_us": 5746399.000000005,
+            "checksum": 29202
+          },
+          {
+            "cpu_us": 5755347.569,
+            "wall_us": 5755720.156,
+            "lifetime_cpu_us": 5757713.999999999,
+            "checksum": 29202
+          },
+          {
+            "cpu_us": 5725930.185,
+            "wall_us": 5726298.573,
+            "lifetime_cpu_us": 5728252.000000004,
+            "checksum": 29202
+          },
+          {
+            "cpu_us": 5784789.551,
+            "wall_us": 5785128.454,
+            "lifetime_cpu_us": 5787094.000000001,
+            "checksum": 29202
+          }
+        ],
+        "candidate": [
+          {
+            "cpu_us": 5608426.46,
+            "wall_us": 5608783.035,
+            "lifetime_cpu_us": 5610505.000000033,
+            "checksum": 29202
+          },
+          {
+            "cpu_us": 5595983.186,
+            "wall_us": 5596333.898,
+            "lifetime_cpu_us": 5598120.000000031,
+            "checksum": 29202
+          },
+          {
+            "cpu_us": 5607746.125,
+            "wall_us": 5608092.265,
+            "lifetime_cpu_us": 5609874.999999996,
+            "checksum": 29202
+          },
+          {
+            "cpu_us": 5569803.585,
+            "wall_us": 5570160.438,
+            "lifetime_cpu_us": 5571891.000000002,
+            "checksum": 29202
+          },
+          {
+            "cpu_us": 5590682.356,
+            "wall_us": 5591062.638,
+            "lifetime_cpu_us": 5592865.000000023,
+            "checksum": 29202
+          },
+          {
+            "cpu_us": 5591534.381,
+            "wall_us": 5591887.678,
+            "lifetime_cpu_us": 5593725.000000011,
+            "checksum": 29202
+          },
+          {
+            "cpu_us": 5653606.638,
+            "wall_us": 5654021.485,
+            "lifetime_cpu_us": 5655767.999999999,
+            "checksum": 29202
+          }
+        ]
+      },
+      "warmups_excluded": {
+        "baseline": {
+          "cpu_us": 5734432.765,
+          "wall_us": 5734800.762,
+          "lifetime_cpu_us": 5736719.999999978,
+          "checksum": 29202
+        },
+        "candidate": {
+          "cpu_us": 5588988.385,
+          "wall_us": 5589378.802,
+          "lifetime_cpu_us": 5591017.999999978,
+          "checksum": 29202
+        }
+      },
+      "orders": [
+        [
+          "baseline",
+          "candidate"
+        ],
+        [
+          "candidate",
+          "baseline"
+        ],
+        [
+          "baseline",
+          "candidate"
+        ],
+        [
+          "candidate",
+          "baseline"
+        ],
+        [
+          "baseline",
+          "candidate"
+        ],
+        [
+          "candidate",
+          "baseline"
+        ],
+        [
+          "baseline",
+          "candidate"
+        ],
+        [
+          "candidate",
+          "baseline"
+        ]
+      ],
+      "medians_us": {
+        "baseline": 5744158.019,
+        "candidate": 5595983.186
+      },
+      "delta_percent": 2.647878452721294,
+      "change_percent": -2.579574456515321
+    },
+    "compare-2-partial": {
+      "samples": {
+        "baseline": [
+          {
+            "cpu_us": 5729381.726,
+            "wall_us": 5733317.972,
+            "lifetime_cpu_us": 5731734.000000012,
+            "checksum": 29202
+          },
+          {
+            "cpu_us": 7010539.989,
+            "wall_us": 7010961.296,
+            "lifetime_cpu_us": 7012816.000000015,
+            "checksum": 29202
+          },
+          {
+            "cpu_us": 5958887.333,
+            "wall_us": 5959258.893,
+            "lifetime_cpu_us": 5961172.999999963,
+            "checksum": 29202
+          },
+          {
+            "cpu_us": 5688371.861,
+            "wall_us": 5688733.037,
+            "lifetime_cpu_us": 5690668.999999984,
+            "checksum": 29202
+          },
+          {
+            "cpu_us": 5710587.111,
+            "wall_us": 5710888.652,
+            "lifetime_cpu_us": 5712833.000000073,
+            "checksum": 29202
+          },
+          {
+            "cpu_us": 5724809.967,
+            "wall_us": 5725187.094,
+            "lifetime_cpu_us": 5727111.000000003,
+            "checksum": 29202
+          },
+          {
+            "cpu_us": 5757722.599,
+            "wall_us": 5759660.738,
+            "lifetime_cpu_us": 5760070.000000026,
+            "checksum": 29202
+          }
+        ],
+        "candidate": [
+          {
+            "cpu_us": 5552829.002,
+            "wall_us": 5553198.034,
+            "lifetime_cpu_us": 5554940.999999993,
+            "checksum": 29202
+          },
+          {
+            "cpu_us": 5575595.908,
+            "wall_us": 5577287.617,
+            "lifetime_cpu_us": 5577722.000000022,
+            "checksum": 29202
+          },
+          {
+            "cpu_us": 5574130.955,
+            "wall_us": 5574464.921,
+            "lifetime_cpu_us": 5576231.999999993,
+            "checksum": 29202
+          },
+          {
+            "cpu_us": 5585617.36,
+            "wall_us": 5585942.379,
+            "lifetime_cpu_us": 5588054.000000063,
+            "checksum": 29202
+          },
+          {
+            "cpu_us": 5586026.76,
+            "wall_us": 5586474.641,
+            "lifetime_cpu_us": 5588087.0,
+            "checksum": 29202
+          },
+          {
+            "cpu_us": 5635364.772,
+            "wall_us": 5639360.2,
+            "lifetime_cpu_us": 5637504.000000002,
+            "checksum": 29202
+          },
+          {
+            "cpu_us": 5568450.595,
+            "wall_us": 5568809.477,
+            "lifetime_cpu_us": 5570626.9999999385,
+            "checksum": 29202
+          }
+        ]
+      },
+      "warmups": {
+        "candidate": {
+          "cpu_us": 5673121.595,
+          "wall_us": 5673455.974,
+          "lifetime_cpu_us": 5675261.000000001,
+          "checksum": 29202
+        },
+        "baseline": {
+          "cpu_us": 5724129.605,
+          "wall_us": 5724599.409,
+          "lifetime_cpu_us": 5726586.99999999,
+          "checksum": 29202
+        }
+      },
+      "orders": [
+        [
+          "candidate",
+          "baseline"
+        ],
+        [
+          "baseline",
+          "candidate"
+        ],
+        [
+          "candidate",
+          "baseline"
+        ],
+        [
+          "baseline",
+          "candidate"
+        ],
+        [
+          "candidate",
+          "baseline"
+        ],
+        [
+          "baseline",
+          "candidate"
+        ],
+        [
+          "candidate",
+          "baseline"
+        ],
+        [
+          "baseline",
+          "candidate"
+        ]
+      ]
+    },
+    "compare-2": {
+      "samples": {
+        "baseline": [
+          {
+            "cpu_us": 5729381.726,
+            "wall_us": 5733317.972,
+            "lifetime_cpu_us": 5731734.000000012,
+            "checksum": 29202
+          },
+          {
+            "cpu_us": 7010539.989,
+            "wall_us": 7010961.296,
+            "lifetime_cpu_us": 7012816.000000015,
+            "checksum": 29202
+          },
+          {
+            "cpu_us": 5958887.333,
+            "wall_us": 5959258.893,
+            "lifetime_cpu_us": 5961172.999999963,
+            "checksum": 29202
+          },
+          {
+            "cpu_us": 5688371.861,
+            "wall_us": 5688733.037,
+            "lifetime_cpu_us": 5690668.999999984,
+            "checksum": 29202
+          },
+          {
+            "cpu_us": 5710587.111,
+            "wall_us": 5710888.652,
+            "lifetime_cpu_us": 5712833.000000073,
+            "checksum": 29202
+          },
+          {
+            "cpu_us": 5724809.967,
+            "wall_us": 5725187.094,
+            "lifetime_cpu_us": 5727111.000000003,
+            "checksum": 29202
+          },
+          {
+            "cpu_us": 5757722.599,
+            "wall_us": 5759660.738,
+            "lifetime_cpu_us": 5760070.000000026,
+            "checksum": 29202
+          }
+        ],
+        "candidate": [
+          {
+            "cpu_us": 5552829.002,
+            "wall_us": 5553198.034,
+            "lifetime_cpu_us": 5554940.999999993,
+            "checksum": 29202
+          },
+          {
+            "cpu_us": 5575595.908,
+            "wall_us": 5577287.617,
+            "lifetime_cpu_us": 5577722.000000022,
+            "checksum": 29202
+          },
+          {
+            "cpu_us": 5574130.955,
+            "wall_us": 5574464.921,
+            "lifetime_cpu_us": 5576231.999999993,
+            "checksum": 29202
+          },
+          {
+            "cpu_us": 5585617.36,
+            "wall_us": 5585942.379,
+            "lifetime_cpu_us": 5588054.000000063,
+            "checksum": 29202
+          },
+          {
+            "cpu_us": 5586026.76,
+            "wall_us": 5586474.641,
+            "lifetime_cpu_us": 5588087.0,
+            "checksum": 29202
+          },
+          {
+            "cpu_us": 5635364.772,
+            "wall_us": 5639360.2,
+            "lifetime_cpu_us": 5637504.000000002,
+            "checksum": 29202
+          },
+          {
+            "cpu_us": 5568450.595,
+            "wall_us": 5568809.477,
+            "lifetime_cpu_us": 5570626.9999999385,
+            "checksum": 29202
+          }
+        ]
+      },
+      "warmups_excluded": {
+        "candidate": {
+          "cpu_us": 5673121.595,
+          "wall_us": 5673455.974,
+          "lifetime_cpu_us": 5675261.000000001,
+          "checksum": 29202
+        },
+        "baseline": {
+          "cpu_us": 5724129.605,
+          "wall_us": 5724599.409,
+          "lifetime_cpu_us": 5726586.99999999,
+          "checksum": 29202
+        }
+      },
+      "orders": [
+        [
+          "candidate",
+          "baseline"
+        ],
+        [
+          "baseline",
+          "candidate"
+        ],
+        [
+          "candidate",
+          "baseline"
+        ],
+        [
+          "baseline",
+          "candidate"
+        ],
+        [
+          "candidate",
+          "baseline"
+        ],
+        [
+          "baseline",
+          "candidate"
+        ],
+        [
+          "candidate",
+          "baseline"
+        ],
+        [
+          "baseline",
+          "candidate"
+        ]
+      ],
+      "medians_us": {
+        "baseline": 5729381.726,
+        "candidate": 5575595.908
+      },
+      "delta_percent": 2.758195187340323,
+      "change_percent": -2.6841607935131684
+    },
+    "complete": {
+      "utc": "2026-11-16T03:47:30.161059+00:00",
+      "not_adopted": true
+    },
+    "config": {
+      "iterations": 774406557,
+      "expected": 29202,
+      "definition": ": BENCH-RUN 1 BENCH-ITERATIONS 0 DO 3 * 7 + 65535 AND LOOP ;"
+    },
+    "decision": {
+      "changes_percent": [
+        -2.579574456515321,
+        -2.6841607935131684
+      ],
+      "delta_percent": 0.09401815363010727,
+      "integer_screen_passed": false,
+      "not_adopted": true,
+      "remaining_cases_unmeasured": true
+    },
+    "pilot": {
+      "cpu_us": 774786.829,
+      "wall_us": 805826.603,
+      "lifetime_cpu_us": 777715.0,
+      "checksum": 2561
+    },
+    "protocol": {
+      "scope": "Linux full-LTO baseline-CPU arithmetic preflight only. No Windows LTO or distribution adoption decision.",
+      "baseline_sha256": "bdb6eb7a0ac59d27d23281708f89538631950d39654837cfd1cfa8d0e78b73fa",
+      "candidate_sha256": "f149938ec94a067ecfd8a7910a72d1de7e6dc550e8cdf910a65a66341de18ce8",
+      "primary": "Linux child process CPU clock READY/DONE via benchmark-runtime.py; runner/children CPU0 affinity; startup/compilation excluded, boundary I/O included",
+      "scaling": "one baseline100M pilot chooses ceil(100M*6sec/pilot CPU), freeze N before candidate",
+      "aa": "2 consecutive distinct sample groups; alternate A1/A2, reverse initial order in group2; 5 samples after excluded warmup per engine; all medians>=5sec,maxdelta<=2%; stop without retry if unresolved",
+      "ab": "only fresh AA passes; 2 groups, 7 samples each after excluded warmup; alternating order; all retained",
+      "screen": "Use existing Linux integer screen target >=10% shorter and >2delta in both groups. Otherwise stop further performance comparison. Passing this screen alone cannot justify adoption.",
+      "remaining": "LOOP, other normal/CATCH conditions, cross-image and configuration coverage remain unmeasured; Windows linking unresolved; no new partial adoption threshold",
+      "constraints": "No builds/tests/profiling overlap, no global power/priority changes"
+    },
+    "script-freeze": {
+      "run.py": "0641ac1d41b9de1f522b07c625556ab0463ff1f91d70117e69e44329fc5bd61a",
+      "protocol.json": "3c8d6633b6370a82932e13453541bdc1a22bdbf3f634a08b361bd35462db545e"
+    },
+    "start": {
+      "utc": "2026-11-16T03:42:07.698158+00:00",
+      "protocol_sha256": "3c8d6633b6370a82932e13453541bdc1a22bdbf3f634a08b361bd35462db545e",
+      "script_sha256": "0641ac1d41b9de1f522b07c625556ab0463ff1f91d70117e69e44329fc5bd61a",
+      "benchmark_sha256": "576345f4486dd27a510327d91ec04d5f8ce9721f42059679bd78e4b661e315ef",
+      "affinity": [
+        0
+      ]
+    }
+  },
+  "script": "from pathlib import Path\nimport json,hashlib,subprocess,math,statistics,datetime,importlib.util\nroot=Path('/mnt/d/home/source/zig/forthz');out=root/'.work/build-optimization-20261116/linux-screen';base=root/'.work/build-optimization-20261116/linux-default/bin/sigma';candidate=root/'.work/build-optimization-20261116/linux-full/bin/sigma';protocol=json.loads((out/'protocol.json').read_text());sha=lambda p:hashlib.sha256(p.read_bytes()).hexdigest();assert sha(base)==protocol['baseline_sha256'];assert sha(candidate)==protocol['candidate_sha256']\nspec=importlib.util.spec_from_file_location('bench',root/'scripts/benchmark-runtime.py');b=importlib.util.module_from_spec(spec);spec.loader.exec_module(b);affinity=b.cpu_affinity(0)\ndef expected(n):\n a,c,value=3,7,1\n while n:\n  if n&1:value=(a*value+c)&65535\n  c=(a*c+c)&65535;a=(a*a)&65535;n>>=1\n return value\n\ndef source(n):return f'{n} CONSTANT BENCH-ITERATIONS '+b.CASES['arithmetic']+' .\" BENCH-READY\" CR KEY DROP BENCH-RUN .\" BENCH-DONE \" . CR KEY DROP BYE'\ndef sample(binary,n):\n cpu,check,wall,total=b.sample(str(binary),False,source(n));assert check==expected(n),(check,expected(n),n);return {'cpu_us':cpu,'wall_us':wall,'lifetime_cpu_us':total,'checksum':check}\ndef save(name,x):(out/name).write_text(json.dumps(x,indent=2)+'\\n')\nsave('start.json',{'utc':datetime.datetime.now(datetime.timezone.utc).isoformat(),'protocol_sha256':sha(out/'protocol.json'),'script_sha256':sha(Path(__file__)),'benchmark_sha256':sha(root/'scripts/benchmark-runtime.py'),'affinity':affinity})\npilot=sample(base,100000000);save('pilot.json',pilot);n=math.ceil(100000000*6000000/pilot['cpu_us']);save('config.json',{'iterations':n,'expected':expected(n),'definition':b.CASES['arithmetic']})\ndef group(stage,index,engines,rounds):\n values={k:[] for k in engines};warm={};orders=[]\n for i in range(rounds+1):\n  keys=list(engines);keys=keys if (i+index)%2 else keys[::-1];orders.append(keys)\n  for key in keys:\n   row=sample(engines[key],n)\n   if i:values[key].append(row)\n   else:warm[key]=row\n   save(f'{stage}-{index}-partial.json',{'samples':values,'warmups':warm,'orders':orders})\n med={k:statistics.median(v['cpu_us'] for v in vs) for k,vs in values.items()};x={'samples':values,'warmups_excluded':warm,'orders':orders,'medians_us':med};a,c=list(med.values());x['delta_percent']=100*abs(a-c)/min(a,c);x['change_percent']=100*(c/a-1);save(f'{stage}-{index}.json',x);return x\naa=[group('aa',i,{'A1':base,'A2':base},5) for i in [1,2]];delta=max(x['delta_percent'] for x in aa);minimum=min(v for x in aa for v in x['medians_us'].values());save('aa-decision.json',{'delta_percent':delta,'minimum_median_us':minimum});print('AA',delta,minimum,flush=True)\nif delta>2 or minimum<5000000:save('stop.json',{'reason':'calibration unresolved; no candidate timed; no retry'});raise SystemExit(0)\nab=[group('compare',i,{'baseline':base,'candidate':candidate},7) for i in [1,2]];changes=[x['change_percent'] for x in ab];passed=all(x<=-10 and -x>2*delta for x in changes);save('decision.json',{'changes_percent':changes,'delta_percent':delta,'integer_screen_passed':passed,'not_adopted':True,'remaining_cases_unmeasured':True});print('AB',changes,'screen',passed,flush=True)\nsave('complete.json',{'utc':datetime.datetime.now(datetime.timezone.utc).isoformat(),'not_adopted':True})\n",
+  "summary": [
+    {
+      "series": 1,
+      "baseline_median_us": 5744158.019,
+      "candidate_median_us": 5595983.186,
+      "change_percent": -2.579574456515321
+    },
+    {
+      "series": 2,
+      "baseline_median_us": 5729381.726,
+      "candidate_median_us": 5575595.908,
+      "change_percent": -2.6841607935131684
+    }
+  ],
+  "decision": {
+    "changes_percent": [
+      -2.579574456515321,
+      -2.6841607935131684
+    ],
+    "delta_percent": 0.09401815363010727,
+    "integer_screen_passed": false,
+    "not_adopted": true,
+    "remaining_cases_unmeasured": true
+  },
+  "limitations": [
+    "single binary per configuration and single kernel; placement effects not separated",
+    "CPU0 is Linux affinity, host scheduling/load not captured",
+    "odd counted sample numbers cause per-group lead-order imbalance, reversed in second group",
+    "AA delta is median difference, not confidence interval/noise ceiling",
+    "build/test/profile nonoverlap is execution practice, not programmatically enforced"
+  ],
+  "frozen_input_bytes": {
+    "run.py": {
+      "sha256": "0641ac1d41b9de1f522b07c625556ab0463ff1f91d70117e69e44329fc5bd61a",
+      "base64": "ZnJvbSBwYXRobGliIGltcG9ydCBQYXRoDQppbXBvcnQganNvbixoYXNobGliLHN1YnByb2Nlc3MsbWF0aCxzdGF0aXN0aWNzLGRhdGV0aW1lLGltcG9ydGxpYi51dGlsDQpyb290PVBhdGgoJy9tbnQvZC9ob21lL3NvdXJjZS96aWcvZm9ydGh6Jyk7b3V0PXJvb3QvJy53b3JrL2J1aWxkLW9wdGltaXphdGlvbi0yMDI2MTExNi9saW51eC1zY3JlZW4nO2Jhc2U9cm9vdC8nLndvcmsvYnVpbGQtb3B0aW1pemF0aW9uLTIwMjYxMTE2L2xpbnV4LWRlZmF1bHQvYmluL3NpZ21hJztjYW5kaWRhdGU9cm9vdC8nLndvcmsvYnVpbGQtb3B0aW1pemF0aW9uLTIwMjYxMTE2L2xpbnV4LWZ1bGwvYmluL3NpZ21hJztwcm90b2NvbD1qc29uLmxvYWRzKChvdXQvJ3Byb3RvY29sLmpzb24nKS5yZWFkX3RleHQoKSk7c2hhPWxhbWJkYSBwOmhhc2hsaWIuc2hhMjU2KHAucmVhZF9ieXRlcygpKS5oZXhkaWdlc3QoKTthc3NlcnQgc2hhKGJhc2UpPT1wcm90b2NvbFsnYmFzZWxpbmVfc2hhMjU2J107YXNzZXJ0IHNoYShjYW5kaWRhdGUpPT1wcm90b2NvbFsnY2FuZGlkYXRlX3NoYTI1NiddDQpzcGVjPWltcG9ydGxpYi51dGlsLnNwZWNfZnJvbV9maWxlX2xvY2F0aW9uKCdiZW5jaCcscm9vdC8nc2NyaXB0cy9iZW5jaG1hcmstcnVudGltZS5weScpO2I9aW1wb3J0bGliLnV0aWwubW9kdWxlX2Zyb21fc3BlYyhzcGVjKTtzcGVjLmxvYWRlci5leGVjX21vZHVsZShiKTthZmZpbml0eT1iLmNwdV9hZmZpbml0eSgwKQ0KZGVmIGV4cGVjdGVkKG4pOg0KIGEsYyx2YWx1ZT0zLDcsMQ0KIHdoaWxlIG46DQogIGlmIG4mMTp2YWx1ZT0oYSp2YWx1ZStjKSY2NTUzNQ0KICBjPShhKmMrYykmNjU1MzU7YT0oYSphKSY2NTUzNTtuPj49MQ0KIHJldHVybiB2YWx1ZQ0KDQpkZWYgc291cmNlKG4pOnJldHVybiBmJ3tufSBDT05TVEFOVCBCRU5DSC1JVEVSQVRJT05TICcrYi5DQVNFU1snYXJpdGhtZXRpYyddKycgLiIgQkVOQ0gtUkVBRFkiIENSIEtFWSBEUk9QIEJFTkNILVJVTiAuIiBCRU5DSC1ET05FICIgLiBDUiBLRVkgRFJPUCBCWUUnDQpkZWYgc2FtcGxlKGJpbmFyeSxuKToNCiBjcHUsY2hlY2ssd2FsbCx0b3RhbD1iLnNhbXBsZShzdHIoYmluYXJ5KSxGYWxzZSxzb3VyY2UobikpO2Fzc2VydCBjaGVjaz09ZXhwZWN0ZWQobiksKGNoZWNrLGV4cGVjdGVkKG4pLG4pO3JldHVybiB7J2NwdV91cyc6Y3B1LCd3YWxsX3VzJzp3YWxsLCdsaWZldGltZV9jcHVfdXMnOnRvdGFsLCdjaGVja3N1bSc6Y2hlY2t9DQpkZWYgc2F2ZShuYW1lLHgpOihvdXQvbmFtZSkud3JpdGVfdGV4dChqc29uLmR1bXBzKHgsaW5kZW50PTIpKydcbicpDQpzYXZlKCdzdGFydC5qc29uJyx7J3V0Yyc6ZGF0ZXRpbWUuZGF0ZXRpbWUubm93KGRhdGV0aW1lLnRpbWV6b25lLnV0YykuaXNvZm9ybWF0KCksJ3Byb3RvY29sX3NoYTI1Nic6c2hhKG91dC8ncHJvdG9jb2wuanNvbicpLCdzY3JpcHRfc2hhMjU2JzpzaGEoUGF0aChfX2ZpbGVfXykpLCdiZW5jaG1hcmtfc2hhMjU2JzpzaGEocm9vdC8nc2NyaXB0cy9iZW5jaG1hcmstcnVudGltZS5weScpLCdhZmZpbml0eSc6YWZmaW5pdHl9KQ0KcGlsb3Q9c2FtcGxlKGJhc2UsMTAwMDAwMDAwKTtzYXZlKCdwaWxvdC5qc29uJyxwaWxvdCk7bj1tYXRoLmNlaWwoMTAwMDAwMDAwKjYwMDAwMDAvcGlsb3RbJ2NwdV91cyddKTtzYXZlKCdjb25maWcuanNvbicseydpdGVyYXRpb25zJzpuLCdleHBlY3RlZCc6ZXhwZWN0ZWQobiksJ2RlZmluaXRpb24nOmIuQ0FTRVNbJ2FyaXRobWV0aWMnXX0pDQpkZWYgZ3JvdXAoc3RhZ2UsaW5kZXgsZW5naW5lcyxyb3VuZHMpOg0KIHZhbHVlcz17azpbXSBmb3IgayBpbiBlbmdpbmVzfTt3YXJtPXt9O29yZGVycz1bXQ0KIGZvciBpIGluIHJhbmdlKHJvdW5kcysxKToNCiAga2V5cz1saXN0KGVuZ2luZXMpO2tleXM9a2V5cyBpZiAoaStpbmRleCklMiBlbHNlIGtleXNbOjotMV07b3JkZXJzLmFwcGVuZChrZXlzKQ0KICBmb3Iga2V5IGluIGtleXM6DQogICByb3c9c2FtcGxlKGVuZ2luZXNba2V5XSxuKQ0KICAgaWYgaTp2YWx1ZXNba2V5XS5hcHBlbmQocm93KQ0KICAgZWxzZTp3YXJtW2tleV09cm93DQogICBzYXZlKGYne3N0YWdlfS17aW5kZXh9LXBhcnRpYWwuanNvbicseydzYW1wbGVzJzp2YWx1ZXMsJ3dhcm11cHMnOndhcm0sJ29yZGVycyc6b3JkZXJzfSkNCiBtZWQ9e2s6c3RhdGlzdGljcy5tZWRpYW4odlsnY3B1X3VzJ10gZm9yIHYgaW4gdnMpIGZvciBrLHZzIGluIHZhbHVlcy5pdGVtcygpfTt4PXsnc2FtcGxlcyc6dmFsdWVzLCd3YXJtdXBzX2V4Y2x1ZGVkJzp3YXJtLCdvcmRlcnMnOm9yZGVycywnbWVkaWFuc191cyc6bWVkfTthLGM9bGlzdChtZWQudmFsdWVzKCkpO3hbJ2RlbHRhX3BlcmNlbnQnXT0xMDAqYWJzKGEtYykvbWluKGEsYyk7eFsnY2hhbmdlX3BlcmNlbnQnXT0xMDAqKGMvYS0xKTtzYXZlKGYne3N0YWdlfS17aW5kZXh9Lmpzb24nLHgpO3JldHVybiB4DQphYT1bZ3JvdXAoJ2FhJyxpLHsnQTEnOmJhc2UsJ0EyJzpiYXNlfSw1KSBmb3IgaSBpbiBbMSwyXV07ZGVsdGE9bWF4KHhbJ2RlbHRhX3BlcmNlbnQnXSBmb3IgeCBpbiBhYSk7bWluaW11bT1taW4odiBmb3IgeCBpbiBhYSBmb3IgdiBpbiB4WydtZWRpYW5zX3VzJ10udmFsdWVzKCkpO3NhdmUoJ2FhLWRlY2lzaW9uLmpzb24nLHsnZGVsdGFfcGVyY2VudCc6ZGVsdGEsJ21pbmltdW1fbWVkaWFuX3VzJzptaW5pbXVtfSk7cHJpbnQoJ0FBJyxkZWx0YSxtaW5pbXVtLGZsdXNoPVRydWUpDQppZiBkZWx0YT4yIG9yIG1pbmltdW08NTAwMDAwMDpzYXZlKCdzdG9wLmpzb24nLHsncmVhc29uJzonY2FsaWJyYXRpb24gdW5yZXNvbHZlZDsgbm8gY2FuZGlkYXRlIHRpbWVkOyBubyByZXRyeSd9KTtyYWlzZSBTeXN0ZW1FeGl0KDApDQphYj1bZ3JvdXAoJ2NvbXBhcmUnLGkseydiYXNlbGluZSc6YmFzZSwnY2FuZGlkYXRlJzpjYW5kaWRhdGV9LDcpIGZvciBpIGluIFsxLDJdXTtjaGFuZ2VzPVt4WydjaGFuZ2VfcGVyY2VudCddIGZvciB4IGluIGFiXTtwYXNzZWQ9YWxsKHg8PS0xMCBhbmQgLXg+MipkZWx0YSBmb3IgeCBpbiBjaGFuZ2VzKTtzYXZlKCdkZWNpc2lvbi5qc29uJyx7J2NoYW5nZXNfcGVyY2VudCc6Y2hhbmdlcywnZGVsdGFfcGVyY2VudCc6ZGVsdGEsJ2ludGVnZXJfc2NyZWVuX3Bhc3NlZCc6cGFzc2VkLCdub3RfYWRvcHRlZCc6VHJ1ZSwncmVtYWluaW5nX2Nhc2VzX3VubWVhc3VyZWQnOlRydWV9KTtwcmludCgnQUInLGNoYW5nZXMsJ3NjcmVlbicscGFzc2VkLGZsdXNoPVRydWUpDQpzYXZlKCdjb21wbGV0ZS5qc29uJyx7J3V0Yyc6ZGF0ZXRpbWUuZGF0ZXRpbWUubm93KGRhdGV0aW1lLnRpbWV6b25lLnV0YykuaXNvZm9ybWF0KCksJ25vdF9hZG9wdGVkJzpUcnVlfSkNCg=="
+    },
+    "protocol.json": {
+      "sha256": "3c8d6633b6370a82932e13453541bdc1a22bdbf3f634a08b361bd35462db545e",
+      "base64": "ew0KICAic2NvcGUiOiAiTGludXggZnVsbC1MVE8gYmFzZWxpbmUtQ1BVIGFyaXRobWV0aWMgcHJlZmxpZ2h0IG9ubHkuIE5vIFdpbmRvd3MgTFRPIG9yIGRpc3RyaWJ1dGlvbiBhZG9wdGlvbiBkZWNpc2lvbi4iLA0KICAiYmFzZWxpbmVfc2hhMjU2IjogImJkYjZlYjdhMGFjNTlkMjdkMjMyODE3MDhmODk1Mzg2MzE5NTBkMzk2NTQ4MzdjZmQxY2ZhOGQwZTc4YjczZmEiLA0KICAiY2FuZGlkYXRlX3NoYTI1NiI6ICJmMTQ5OTM4ZWM5NGEwNjdlY2ZkOGE3OTEwYTcyZDFkZTdlNmRjNTUwZThjZGY5MTBhNjVhNjYzNDFkZTE4Y2U4IiwNCiAgInByaW1hcnkiOiAiTGludXggY2hpbGQgcHJvY2VzcyBDUFUgY2xvY2sgUkVBRFkvRE9ORSB2aWEgYmVuY2htYXJrLXJ1bnRpbWUucHk7IHJ1bm5lci9jaGlsZHJlbiBDUFUwIGFmZmluaXR5OyBzdGFydHVwL2NvbXBpbGF0aW9uIGV4Y2x1ZGVkLCBib3VuZGFyeSBJL08gaW5jbHVkZWQiLA0KICAic2NhbGluZyI6ICJvbmUgYmFzZWxpbmUxMDBNIHBpbG90IGNob29zZXMgY2VpbCgxMDBNKjZzZWMvcGlsb3QgQ1BVKSwgZnJlZXplIE4gYmVmb3JlIGNhbmRpZGF0ZSIsDQogICJhYSI6ICIyIGNvbnNlY3V0aXZlIGRpc3RpbmN0IHNhbXBsZSBncm91cHM7IGFsdGVybmF0ZSBBMS9BMiwgcmV2ZXJzZSBpbml0aWFsIG9yZGVyIGluIGdyb3VwMjsgNSBzYW1wbGVzIGFmdGVyIGV4Y2x1ZGVkIHdhcm11cCBwZXIgZW5naW5lOyBhbGwgbWVkaWFucz49NXNlYyxtYXhkZWx0YTw9MiU7IHN0b3Agd2l0aG91dCByZXRyeSBpZiB1bnJlc29sdmVkIiwNCiAgImFiIjogIm9ubHkgZnJlc2ggQUEgcGFzc2VzOyAyIGdyb3VwcywgNyBzYW1wbGVzIGVhY2ggYWZ0ZXIgZXhjbHVkZWQgd2FybXVwOyBhbHRlcm5hdGluZyBvcmRlcjsgYWxsIHJldGFpbmVkIiwNCiAgInNjcmVlbiI6ICJVc2UgZXhpc3RpbmcgTGludXggaW50ZWdlciBzY3JlZW4gdGFyZ2V0ID49MTAlIHNob3J0ZXIgYW5kID4yZGVsdGEgaW4gYm90aCBncm91cHMuIE90aGVyd2lzZSBzdG9wIGZ1cnRoZXIgcGVyZm9ybWFuY2UgY29tcGFyaXNvbi4gUGFzc2luZyB0aGlzIHNjcmVlbiBhbG9uZSBjYW5ub3QganVzdGlmeSBhZG9wdGlvbi4iLA0KICAicmVtYWluaW5nIjogIkxPT1AsIG90aGVyIG5vcm1hbC9DQVRDSCBjb25kaXRpb25zLCBjcm9zcy1pbWFnZSBhbmQgY29uZmlndXJhdGlvbiBjb3ZlcmFnZSByZW1haW4gdW5tZWFzdXJlZDsgV2luZG93cyBsaW5raW5nIHVucmVzb2x2ZWQ7IG5vIG5ldyBwYXJ0aWFsIGFkb3B0aW9uIHRocmVzaG9sZCIsDQogICJjb25zdHJhaW50cyI6ICJObyBidWlsZHMvdGVzdHMvcHJvZmlsaW5nIG92ZXJsYXAsIG5vIGdsb2JhbCBwb3dlci9wcmlvcml0eSBjaGFuZ2VzIg0KfQ0K"
+    },
+    "script-freeze.json": {
+      "sha256": "34be416c8c0237d528b50d2c542e75bc3f1b7c13266664e16bea8144ddff5193",
+      "base64": "ew0KICAicnVuLnB5IjogIjA2NDFhYzFkNDFiOWRlMWY1MjJiMDdjNjI1NTU2YWIwNDYzZmYxZjkxZDcwMTE3ZTY5ZTQ0MzI5ZmM1YmQ2MWEiLA0KICAicHJvdG9jb2wuanNvbiI6ICIzYzhkNjYzM2I2MzcwYTgyOTMyZTEzNDUzNTQxYmRjMWEyMmJkYmYzZjYzNGEwOGIzNjFiZDM1NDYyZGI1NDVlIg0KfQ0K"
+    }
+  },
+  "recalculated_sample_counts": {
+    "counted": 48,
+    "warmups_excluded": 8,
+    "pilot": 1
+  }
+}

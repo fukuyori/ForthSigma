@@ -1,0 +1,179 @@
+{
+  "origin": "build.zig 109-162 exact CLI cases, execute cross-built binaries through WSL",
+  "cases": [
+    {
+      "config": "small",
+      "case": "pipe-bytes",
+      "command": [
+        "wsl",
+        "--exec",
+        "/mnt/d/home/source/zig/forthz/.work/optimize-small-20261116/source/.zig-cache/o/14ca03f87254e59055ce02c3cf48cfc0/sigma",
+        "-e",
+        ": T PAD 9 STDIN READ-FILE . DUP . 0 DO PAD I + C@ . LOOP ; T BYE"
+      ],
+      "binary_sha256": "6bd1071b20b2293a645a7447919c48a37229d7eda17f0112423400cd8a25e604",
+      "stdin_hex": "410d0a421a4300ff",
+      "stdout_hex": "30203820363520313320313020363620323620363720302032353520",
+      "stderr_hex": "",
+      "exit": 0,
+      "expected_exit": 0,
+      "expected_stdout_hex": "30203820363520313320313020363620323620363720302032353520",
+      "passed": true
+    },
+    {
+      "config": "small",
+      "case": "pipe-lines",
+      "command": [
+        "wsl",
+        "--exec",
+        "/mnt/d/home/source/zig/forthz/.work/optimize-small-20261116/source/.zig-cache/o/14ca03f87254e59055ce02c3cf48cfc0/sigma",
+        "-e",
+        "PAD 20 STDIN READ-LINE . . PAD SWAP TYPE PAD 20 STDIN READ-LINE . . PAD SWAP TYPE BYE"
+      ],
+      "binary_sha256": "6bd1071b20b2293a645a7447919c48a37229d7eda17f0112423400cd8a25e604",
+      "stdin_hex": "61620d0a63640a",
+      "stdout_hex": "30202d3120616230202d31206364",
+      "stderr_hex": "",
+      "exit": 0,
+      "expected_exit": 0,
+      "expected_stdout_hex": "30202d3120616230202d31206364",
+      "passed": true
+    },
+    {
+      "config": "small",
+      "case": "file",
+      "command": [
+        "wsl",
+        "--exec",
+        "/mnt/d/home/source/zig/forthz/.work/optimize-small-20261116/source/.zig-cache/o/14ca03f87254e59055ce02c3cf48cfc0/sigma",
+        "/mnt/d/home/source/zig/forthz/.work/optimize-small-20261116/source/src/tests/argument_file.fs",
+        "-e",
+        ". BYE"
+      ],
+      "binary_sha256": "6bd1071b20b2293a645a7447919c48a37229d7eda17f0112423400cd8a25e604",
+      "stdin_hex": "",
+      "stdout_hex": "4152472d46494c453520",
+      "stderr_hex": "",
+      "exit": 0,
+      "expected_exit": 0,
+      "expected_stdout_hex": "4152472d46494c453520",
+      "passed": true
+    },
+    {
+      "config": "small",
+      "case": "evaluate",
+      "command": [
+        "wsl",
+        "--exec",
+        "/mnt/d/home/source/zig/forthz/.work/optimize-small-20261116/source/.zig-cache/o/14ca03f87254e59055ce02c3cf48cfc0/sigma",
+        "-e",
+        "7",
+        "--evaluate",
+        ". BYE"
+      ],
+      "binary_sha256": "6bd1071b20b2293a645a7447919c48a37229d7eda17f0112423400cd8a25e604",
+      "stdin_hex": "",
+      "stdout_hex": "3720",
+      "stderr_hex": "",
+      "exit": 0,
+      "expected_exit": 0,
+      "expected_stdout_hex": "3720",
+      "passed": true
+    },
+    {
+      "config": "small",
+      "case": "missing-e",
+      "command": [
+        "wsl",
+        "--exec",
+        "/mnt/d/home/source/zig/forthz/.work/optimize-small-20261116/source/.zig-cache/o/14ca03f87254e59055ce02c3cf48cfc0/sigma",
+        "-e"
+      ],
+      "binary_sha256": "6bd1071b20b2293a645a7447919c48a37229d7eda17f0112423400cd8a25e604",
+      "stdin_hex": "",
+      "stdout_hex": "2d653a204f5054494f4e20524551554952455320414e20415247554d454e5420210a",
+      "stderr_hex": "",
+      "exit": 1,
+      "expected_exit": 1,
+      "expected_stdout_hex": "2d653a204f5054494f4e20524551554952455320414e20415247554d454e5420210a",
+      "passed": true
+    },
+    {
+      "config": "small",
+      "case": "xkey-accept",
+      "command": [
+        "wsl",
+        "--exec",
+        "/mnt/d/home/source/zig/forthz/.work/optimize-small-20261116/source/.zig-cache/o/14ca03f87254e59055ce02c3cf48cfc0/sigma",
+        "-e",
+        "XKEY . PAD 10 ACCEPT PAD SWAP TYPE SPACE KEY . BYE"
+      ],
+      "binary_sha256": "6bd1071b20b2293a645a7447919c48a37229d7eda17f0112423400cd8a25e604",
+      "stdin_hex": "e6410a726573740a",
+      "stdout_hex": "363535333320412031313420",
+      "stderr_hex": "",
+      "exit": 0,
+      "expected_exit": 0,
+      "expected_stdout_hex": "363535333320412031313420",
+      "passed": true
+    },
+    {
+      "config": "small",
+      "case": "xkey-read-line",
+      "command": [
+        "wsl",
+        "--exec",
+        "/mnt/d/home/source/zig/forthz/.work/optimize-small-20261116/source/.zig-cache/o/14ca03f87254e59055ce02c3cf48cfc0/sigma",
+        "-e",
+        "XKEY . PAD 10 STDIN READ-LINE . . PAD SWAP TYPE BYE"
+      ],
+      "binary_sha256": "6bd1071b20b2293a645a7447919c48a37229d7eda17f0112423400cd8a25e604",
+      "stdin_hex": "e641620a63640a",
+      "stdout_hex": "36353533332030202d31204162",
+      "stderr_hex": "",
+      "exit": 0,
+      "expected_exit": 0,
+      "expected_stdout_hex": "36353533332030202d31204162",
+      "passed": true
+    },
+    {
+      "config": "small",
+      "case": "xkey-inkey",
+      "command": [
+        "wsl",
+        "--exec",
+        "/mnt/d/home/source/zig/forthz/.work/optimize-small-20261116/source/.zig-cache/o/14ca03f87254e59055ce02c3cf48cfc0/sigma",
+        "-e",
+        "REQUIRE-GRAPHICS ALSO GRAPHICS XKEY . INKEY . INKEY . BYE"
+      ],
+      "binary_sha256": "6bd1071b20b2293a645a7447919c48a37229d7eda17f0112423400cd8a25e604",
+      "stdin_hex": "e64142",
+      "stdout_hex": "3635353333203635202d3120",
+      "stderr_hex": "",
+      "exit": 0,
+      "expected_exit": 0,
+      "expected_stdout_hex": "3635353333203635202d3120",
+      "passed": true
+    },
+    {
+      "config": "small",
+      "case": "missing-file",
+      "command": [
+        "wsl",
+        "--exec",
+        "/mnt/d/home/source/zig/forthz/.work/optimize-small-20261116/source/.zig-cache/o/14ca03f87254e59055ce02c3cf48cfc0/sigma",
+        "sigma-no-such-file.fs",
+        "-e",
+        "BYE"
+      ],
+      "binary_sha256": "6bd1071b20b2293a645a7447919c48a37229d7eda17f0112423400cd8a25e604",
+      "stdin_hex": "",
+      "stdout_hex": "7369676d612d6e6f2d737563682d66696c652e66733a204e4f20535543482046494c45204f52204449524543544f525920210a",
+      "stderr_hex": "",
+      "exit": 1,
+      "expected_exit": 1,
+      "expected_stdout_hex": null,
+      "passed": true
+    }
+  ]
+}

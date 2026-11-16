@@ -1,0 +1,17 @@
+# メモリーアクセス調査レビューへの対応
+
+[Read/Grepによるレビュー原文](VM_MEMORY_ACCESS_CLAUDE_REVIEW.md)を保存。結論・選定を覆す重大事項なし。
+
+索引の「温まっていた」を訂正。3対照はlinear0/indexed100/rebuild1で、線形段階だけ終わっていた。rebuildはglobal計数なので、最初のWORKLOAD通知という位置までは断定しない。registered-add-storeだけrebuild0という差の理由は未特定。
+
+早期復帰はlength0と登録0が未分離と明記。writeCell以外の8byte幅書込み、MOVE/CMOVE、char localの直接書込み等を全て計数したとは扱わない。char localと登録領域が重なり得るかは未確認で、不具合と断定しない。終了行のnative解釈実行もin_counted外は対象外。
+
+制御unit testは書込みではなくwrittenの直接通知でstatus遷移を確認したと訂正。CLI対照ではstatusを観測していない。登録1のIr差は対象外書込みの定常経路だけで、多件数・線形段階・重なり費用ではない。1+!/1-!生成コードも未確認。
+
+初回formatテスト2件の失敗を保持。2件目はNEW末尾照合の失敗で、actual出力は未記録のため直接原因は未確定。512byte捕捉上限とglobal statsの持越しは確認事実として記録した。
+
+その後、計測用追加行を専用CLI reset引数時のみ出すgateへ変更し、フル試験を戻して全21ステップ・1071成功/10skipを確認。6対照と6実例の再計数も前版と全て一致した。counter-only直接実行では対象controlとblocks/lintの3件成功を確認した。gate修正はレビュー後で、再静的レビューは未実施。
+
+「この6実例では効果が出ない規模」は時間未測定のため採用せず、局所案を予備へ置く優先判断にとどめる。writtenを薄いgateにする案も将来の比較候補だが、全呼出し元の実測短縮やサイズへの効果は未確認で、今回実装していない。古い.work/instrumentation.patchは途中版で、最終source_patchesは測定JSONに保存した。
+
+本体未変更。範囲検査の省略・登録探索の変更は今回選定していない。

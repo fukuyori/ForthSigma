@@ -1,0 +1,1118 @@
+{
+  "scope": "Linux small vs fast arithmetic only; not adopted",
+  "data": {
+    "aa-1-partial": {
+      "samples": {
+        "A1": [
+          {
+            "cpu_us": 5733969.039,
+            "wall_us": 5735993.996,
+            "lifetime_cpu_us": 5736363.000000001,
+            "checksum": 59630
+          },
+          {
+            "cpu_us": 5735945.211,
+            "wall_us": 5740709.597,
+            "lifetime_cpu_us": 5738267.0,
+            "checksum": 59630
+          },
+          {
+            "cpu_us": 5725254.432,
+            "wall_us": 5731956.868,
+            "lifetime_cpu_us": 5727419.0,
+            "checksum": 59630
+          },
+          {
+            "cpu_us": 5747000.316,
+            "wall_us": 5748907.572,
+            "lifetime_cpu_us": 5749338.000000004,
+            "checksum": 59630
+          },
+          {
+            "cpu_us": 5736644.463,
+            "wall_us": 5737115.47,
+            "lifetime_cpu_us": 5738852.000000002,
+            "checksum": 59630
+          }
+        ],
+        "A2": [
+          {
+            "cpu_us": 5745639.949,
+            "wall_us": 5749569.215,
+            "lifetime_cpu_us": 5747761.999999998,
+            "checksum": 59630
+          },
+          {
+            "cpu_us": 5744172.253,
+            "wall_us": 5747754.57,
+            "lifetime_cpu_us": 5746414.000000002,
+            "checksum": 59630
+          },
+          {
+            "cpu_us": 5781857.084,
+            "wall_us": 5783731.245,
+            "lifetime_cpu_us": 5784041.000000005,
+            "checksum": 59630
+          },
+          {
+            "cpu_us": 5696274.545,
+            "wall_us": 5699972.444,
+            "lifetime_cpu_us": 5698392.999999996,
+            "checksum": 59630
+          },
+          {
+            "cpu_us": 5727915.916,
+            "wall_us": 5728461.556,
+            "lifetime_cpu_us": 5730191.000000006,
+            "checksum": 59630
+          }
+        ]
+      },
+      "warmups": {
+        "A1": {
+          "cpu_us": 5757788.605,
+          "wall_us": 5760364.168,
+          "lifetime_cpu_us": 5760187.999999999,
+          "checksum": 59630
+        },
+        "A2": {
+          "cpu_us": 5749834.092,
+          "wall_us": 5754291.608,
+          "lifetime_cpu_us": 5752020.000000001,
+          "checksum": 59630
+        }
+      },
+      "orders": [
+        [
+          "A1",
+          "A2"
+        ],
+        [
+          "A2",
+          "A1"
+        ],
+        [
+          "A1",
+          "A2"
+        ],
+        [
+          "A2",
+          "A1"
+        ],
+        [
+          "A1",
+          "A2"
+        ],
+        [
+          "A2",
+          "A1"
+        ]
+      ]
+    },
+    "aa-1": {
+      "samples": {
+        "A1": [
+          {
+            "cpu_us": 5733969.039,
+            "wall_us": 5735993.996,
+            "lifetime_cpu_us": 5736363.000000001,
+            "checksum": 59630
+          },
+          {
+            "cpu_us": 5735945.211,
+            "wall_us": 5740709.597,
+            "lifetime_cpu_us": 5738267.0,
+            "checksum": 59630
+          },
+          {
+            "cpu_us": 5725254.432,
+            "wall_us": 5731956.868,
+            "lifetime_cpu_us": 5727419.0,
+            "checksum": 59630
+          },
+          {
+            "cpu_us": 5747000.316,
+            "wall_us": 5748907.572,
+            "lifetime_cpu_us": 5749338.000000004,
+            "checksum": 59630
+          },
+          {
+            "cpu_us": 5736644.463,
+            "wall_us": 5737115.47,
+            "lifetime_cpu_us": 5738852.000000002,
+            "checksum": 59630
+          }
+        ],
+        "A2": [
+          {
+            "cpu_us": 5745639.949,
+            "wall_us": 5749569.215,
+            "lifetime_cpu_us": 5747761.999999998,
+            "checksum": 59630
+          },
+          {
+            "cpu_us": 5744172.253,
+            "wall_us": 5747754.57,
+            "lifetime_cpu_us": 5746414.000000002,
+            "checksum": 59630
+          },
+          {
+            "cpu_us": 5781857.084,
+            "wall_us": 5783731.245,
+            "lifetime_cpu_us": 5784041.000000005,
+            "checksum": 59630
+          },
+          {
+            "cpu_us": 5696274.545,
+            "wall_us": 5699972.444,
+            "lifetime_cpu_us": 5698392.999999996,
+            "checksum": 59630
+          },
+          {
+            "cpu_us": 5727915.916,
+            "wall_us": 5728461.556,
+            "lifetime_cpu_us": 5730191.000000006,
+            "checksum": 59630
+          }
+        ]
+      },
+      "warmups_excluded": {
+        "A1": {
+          "cpu_us": 5757788.605,
+          "wall_us": 5760364.168,
+          "lifetime_cpu_us": 5760187.999999999,
+          "checksum": 59630
+        },
+        "A2": {
+          "cpu_us": 5749834.092,
+          "wall_us": 5754291.608,
+          "lifetime_cpu_us": 5752020.000000001,
+          "checksum": 59630
+        }
+      },
+      "orders": [
+        [
+          "A1",
+          "A2"
+        ],
+        [
+          "A2",
+          "A1"
+        ],
+        [
+          "A1",
+          "A2"
+        ],
+        [
+          "A2",
+          "A1"
+        ],
+        [
+          "A1",
+          "A2"
+        ],
+        [
+          "A2",
+          "A1"
+        ]
+      ],
+      "medians_us": {
+        "A1": 5735945.211,
+        "A2": 5744172.253
+      },
+      "delta_percent": 0.14342957781783167,
+      "change_percent": 0.14342957781783294
+    },
+    "aa-2-partial": {
+      "samples": {
+        "A1": [
+          {
+            "cpu_us": 5729600.725,
+            "wall_us": 5729975.753,
+            "lifetime_cpu_us": 5731826.0000000065,
+            "checksum": 59630
+          },
+          {
+            "cpu_us": 5711586.478,
+            "wall_us": 5711997.684,
+            "lifetime_cpu_us": 5713819.000000006,
+            "checksum": 59630
+          },
+          {
+            "cpu_us": 5720367.347,
+            "wall_us": 5724091.641,
+            "lifetime_cpu_us": 5722582.000000007,
+            "checksum": 59630
+          },
+          {
+            "cpu_us": 5732665.823,
+            "wall_us": 5733286.582,
+            "lifetime_cpu_us": 5734809.999999997,
+            "checksum": 59630
+          },
+          {
+            "cpu_us": 5745915.866,
+            "wall_us": 5746336.261,
+            "lifetime_cpu_us": 5748173.000000009,
+            "checksum": 59630
+          }
+        ],
+        "A2": [
+          {
+            "cpu_us": 5716365.345,
+            "wall_us": 5716778.639,
+            "lifetime_cpu_us": 5718520.99999999,
+            "checksum": 59630
+          },
+          {
+            "cpu_us": 5714853.965,
+            "wall_us": 5715156.344,
+            "lifetime_cpu_us": 5717172.0,
+            "checksum": 59630
+          },
+          {
+            "cpu_us": 5727702.491,
+            "wall_us": 5728024.509,
+            "lifetime_cpu_us": 5729996.000000005,
+            "checksum": 59630
+          },
+          {
+            "cpu_us": 5713680.866,
+            "wall_us": 5714066.364,
+            "lifetime_cpu_us": 5715954.999999998,
+            "checksum": 59630
+          },
+          {
+            "cpu_us": 6991218.113,
+            "wall_us": 6991662.036,
+            "lifetime_cpu_us": 6993421.000000019,
+            "checksum": 59630
+          }
+        ]
+      },
+      "warmups": {
+        "A2": {
+          "cpu_us": 5710714.11,
+          "wall_us": 5711047.774,
+          "lifetime_cpu_us": 5712953.0,
+          "checksum": 59630
+        },
+        "A1": {
+          "cpu_us": 5721610.566,
+          "wall_us": 5721994.911,
+          "lifetime_cpu_us": 5723787.999999981,
+          "checksum": 59630
+        }
+      },
+      "orders": [
+        [
+          "A2",
+          "A1"
+        ],
+        [
+          "A1",
+          "A2"
+        ],
+        [
+          "A2",
+          "A1"
+        ],
+        [
+          "A1",
+          "A2"
+        ],
+        [
+          "A2",
+          "A1"
+        ],
+        [
+          "A1",
+          "A2"
+        ]
+      ]
+    },
+    "aa-2": {
+      "samples": {
+        "A1": [
+          {
+            "cpu_us": 5729600.725,
+            "wall_us": 5729975.753,
+            "lifetime_cpu_us": 5731826.0000000065,
+            "checksum": 59630
+          },
+          {
+            "cpu_us": 5711586.478,
+            "wall_us": 5711997.684,
+            "lifetime_cpu_us": 5713819.000000006,
+            "checksum": 59630
+          },
+          {
+            "cpu_us": 5720367.347,
+            "wall_us": 5724091.641,
+            "lifetime_cpu_us": 5722582.000000007,
+            "checksum": 59630
+          },
+          {
+            "cpu_us": 5732665.823,
+            "wall_us": 5733286.582,
+            "lifetime_cpu_us": 5734809.999999997,
+            "checksum": 59630
+          },
+          {
+            "cpu_us": 5745915.866,
+            "wall_us": 5746336.261,
+            "lifetime_cpu_us": 5748173.000000009,
+            "checksum": 59630
+          }
+        ],
+        "A2": [
+          {
+            "cpu_us": 5716365.345,
+            "wall_us": 5716778.639,
+            "lifetime_cpu_us": 5718520.99999999,
+            "checksum": 59630
+          },
+          {
+            "cpu_us": 5714853.965,
+            "wall_us": 5715156.344,
+            "lifetime_cpu_us": 5717172.0,
+            "checksum": 59630
+          },
+          {
+            "cpu_us": 5727702.491,
+            "wall_us": 5728024.509,
+            "lifetime_cpu_us": 5729996.000000005,
+            "checksum": 59630
+          },
+          {
+            "cpu_us": 5713680.866,
+            "wall_us": 5714066.364,
+            "lifetime_cpu_us": 5715954.999999998,
+            "checksum": 59630
+          },
+          {
+            "cpu_us": 6991218.113,
+            "wall_us": 6991662.036,
+            "lifetime_cpu_us": 6993421.000000019,
+            "checksum": 59630
+          }
+        ]
+      },
+      "warmups_excluded": {
+        "A2": {
+          "cpu_us": 5710714.11,
+          "wall_us": 5711047.774,
+          "lifetime_cpu_us": 5712953.0,
+          "checksum": 59630
+        },
+        "A1": {
+          "cpu_us": 5721610.566,
+          "wall_us": 5721994.911,
+          "lifetime_cpu_us": 5723787.999999981,
+          "checksum": 59630
+        }
+      },
+      "orders": [
+        [
+          "A2",
+          "A1"
+        ],
+        [
+          "A1",
+          "A2"
+        ],
+        [
+          "A2",
+          "A1"
+        ],
+        [
+          "A1",
+          "A2"
+        ],
+        [
+          "A2",
+          "A1"
+        ],
+        [
+          "A1",
+          "A2"
+        ]
+      ],
+      "medians_us": {
+        "A1": 5729600.725,
+        "A2": 5716365.345
+      },
+      "delta_percent": 0.23153488626433985,
+      "change_percent": -0.23100004058310697
+    },
+    "aa-decision": {
+      "delta_percent": 0.23153488626433985,
+      "minimum_median_us": 5716365.345
+    },
+    "compare-1-partial": {
+      "samples": {
+        "baseline": [
+          {
+            "cpu_us": 5732876.818,
+            "wall_us": 5735245.972,
+            "lifetime_cpu_us": 5735084.0,
+            "checksum": 59630
+          },
+          {
+            "cpu_us": 5703558.531,
+            "wall_us": 5704224.879,
+            "lifetime_cpu_us": 5705813.0000000065,
+            "checksum": 59630
+          },
+          {
+            "cpu_us": 7197968.784,
+            "wall_us": 7198465.197,
+            "lifetime_cpu_us": 7200160.9999999665,
+            "checksum": 59630
+          },
+          {
+            "cpu_us": 5777192.861,
+            "wall_us": 5777661.041,
+            "lifetime_cpu_us": 5779526.999999988,
+            "checksum": 59630
+          },
+          {
+            "cpu_us": 5802081.67,
+            "wall_us": 5802602.418,
+            "lifetime_cpu_us": 5804320.000000001,
+            "checksum": 59630
+          },
+          {
+            "cpu_us": 5737347.631,
+            "wall_us": 5737737.48,
+            "lifetime_cpu_us": 5739574.000000015,
+            "checksum": 59630
+          },
+          {
+            "cpu_us": 5729651.613,
+            "wall_us": 5730076.523,
+            "lifetime_cpu_us": 5731928.999999991,
+            "checksum": 59630
+          }
+        ],
+        "candidate": [
+          {
+            "cpu_us": 13861438.977,
+            "wall_us": 13865860.088,
+            "lifetime_cpu_us": 13863575.999999994,
+            "checksum": 59630
+          },
+          {
+            "cpu_us": 13495976.23,
+            "wall_us": 13496920.23,
+            "lifetime_cpu_us": 13498165.999999998,
+            "checksum": 59630
+          },
+          {
+            "cpu_us": 14258571.825,
+            "wall_us": 14259307.613,
+            "lifetime_cpu_us": 14260706.999999987,
+            "checksum": 59630
+          },
+          {
+            "cpu_us": 13789749.675,
+            "wall_us": 13794007.181,
+            "lifetime_cpu_us": 13791973.000000028,
+            "checksum": 59630
+          },
+          {
+            "cpu_us": 13533839.242,
+            "wall_us": 13534894.258,
+            "lifetime_cpu_us": 13535958.000000004,
+            "checksum": 59630
+          },
+          {
+            "cpu_us": 13676863.421,
+            "wall_us": 13677700.536,
+            "lifetime_cpu_us": 13679058.000000007,
+            "checksum": 59630
+          },
+          {
+            "cpu_us": 13439738.178,
+            "wall_us": 13443745.826,
+            "lifetime_cpu_us": 13441909.00000002,
+            "checksum": 59630
+          }
+        ]
+      },
+      "warmups": {
+        "baseline": {
+          "cpu_us": 5719136.071,
+          "wall_us": 5719476.226,
+          "lifetime_cpu_us": 5721307.000000002,
+          "checksum": 59630
+        },
+        "candidate": {
+          "cpu_us": 13637964.774,
+          "wall_us": 13638849.304,
+          "lifetime_cpu_us": 13640064.999999993,
+          "checksum": 59630
+        }
+      },
+      "orders": [
+        [
+          "baseline",
+          "candidate"
+        ],
+        [
+          "candidate",
+          "baseline"
+        ],
+        [
+          "baseline",
+          "candidate"
+        ],
+        [
+          "candidate",
+          "baseline"
+        ],
+        [
+          "baseline",
+          "candidate"
+        ],
+        [
+          "candidate",
+          "baseline"
+        ],
+        [
+          "baseline",
+          "candidate"
+        ],
+        [
+          "candidate",
+          "baseline"
+        ]
+      ]
+    },
+    "compare-1": {
+      "samples": {
+        "baseline": [
+          {
+            "cpu_us": 5732876.818,
+            "wall_us": 5735245.972,
+            "lifetime_cpu_us": 5735084.0,
+            "checksum": 59630
+          },
+          {
+            "cpu_us": 5703558.531,
+            "wall_us": 5704224.879,
+            "lifetime_cpu_us": 5705813.0000000065,
+            "checksum": 59630
+          },
+          {
+            "cpu_us": 7197968.784,
+            "wall_us": 7198465.197,
+            "lifetime_cpu_us": 7200160.9999999665,
+            "checksum": 59630
+          },
+          {
+            "cpu_us": 5777192.861,
+            "wall_us": 5777661.041,
+            "lifetime_cpu_us": 5779526.999999988,
+            "checksum": 59630
+          },
+          {
+            "cpu_us": 5802081.67,
+            "wall_us": 5802602.418,
+            "lifetime_cpu_us": 5804320.000000001,
+            "checksum": 59630
+          },
+          {
+            "cpu_us": 5737347.631,
+            "wall_us": 5737737.48,
+            "lifetime_cpu_us": 5739574.000000015,
+            "checksum": 59630
+          },
+          {
+            "cpu_us": 5729651.613,
+            "wall_us": 5730076.523,
+            "lifetime_cpu_us": 5731928.999999991,
+            "checksum": 59630
+          }
+        ],
+        "candidate": [
+          {
+            "cpu_us": 13861438.977,
+            "wall_us": 13865860.088,
+            "lifetime_cpu_us": 13863575.999999994,
+            "checksum": 59630
+          },
+          {
+            "cpu_us": 13495976.23,
+            "wall_us": 13496920.23,
+            "lifetime_cpu_us": 13498165.999999998,
+            "checksum": 59630
+          },
+          {
+            "cpu_us": 14258571.825,
+            "wall_us": 14259307.613,
+            "lifetime_cpu_us": 14260706.999999987,
+            "checksum": 59630
+          },
+          {
+            "cpu_us": 13789749.675,
+            "wall_us": 13794007.181,
+            "lifetime_cpu_us": 13791973.000000028,
+            "checksum": 59630
+          },
+          {
+            "cpu_us": 13533839.242,
+            "wall_us": 13534894.258,
+            "lifetime_cpu_us": 13535958.000000004,
+            "checksum": 59630
+          },
+          {
+            "cpu_us": 13676863.421,
+            "wall_us": 13677700.536,
+            "lifetime_cpu_us": 13679058.000000007,
+            "checksum": 59630
+          },
+          {
+            "cpu_us": 13439738.178,
+            "wall_us": 13443745.826,
+            "lifetime_cpu_us": 13441909.00000002,
+            "checksum": 59630
+          }
+        ]
+      },
+      "warmups_excluded": {
+        "baseline": {
+          "cpu_us": 5719136.071,
+          "wall_us": 5719476.226,
+          "lifetime_cpu_us": 5721307.000000002,
+          "checksum": 59630
+        },
+        "candidate": {
+          "cpu_us": 13637964.774,
+          "wall_us": 13638849.304,
+          "lifetime_cpu_us": 13640064.999999993,
+          "checksum": 59630
+        }
+      },
+      "orders": [
+        [
+          "baseline",
+          "candidate"
+        ],
+        [
+          "candidate",
+          "baseline"
+        ],
+        [
+          "baseline",
+          "candidate"
+        ],
+        [
+          "candidate",
+          "baseline"
+        ],
+        [
+          "baseline",
+          "candidate"
+        ],
+        [
+          "candidate",
+          "baseline"
+        ],
+        [
+          "baseline",
+          "candidate"
+        ],
+        [
+          "candidate",
+          "baseline"
+        ]
+      ],
+      "medians_us": {
+        "baseline": 5737347.631,
+        "candidate": 13676863.421
+      },
+      "delta_percent": 138.38303516944413,
+      "change_percent": 138.38303516944413
+    },
+    "compare-2-partial": {
+      "samples": {
+        "baseline": [
+          {
+            "cpu_us": 7011151.367,
+            "wall_us": 7011572.867,
+            "lifetime_cpu_us": 7013336.999999952,
+            "checksum": 59630
+          },
+          {
+            "cpu_us": 5741353.739,
+            "wall_us": 5746915.098,
+            "lifetime_cpu_us": 5743639.000000022,
+            "checksum": 59630
+          },
+          {
+            "cpu_us": 5735285.018,
+            "wall_us": 5739053.208,
+            "lifetime_cpu_us": 5737619.000000008,
+            "checksum": 59630
+          },
+          {
+            "cpu_us": 5735056.647,
+            "wall_us": 5735486.918,
+            "lifetime_cpu_us": 5737331.00000001,
+            "checksum": 59630
+          },
+          {
+            "cpu_us": 5713898.699,
+            "wall_us": 5714260.98,
+            "lifetime_cpu_us": 5716088.999999945,
+            "checksum": 59630
+          },
+          {
+            "cpu_us": 5729508.196,
+            "wall_us": 5729823.102,
+            "lifetime_cpu_us": 5731798.999999982,
+            "checksum": 59630
+          },
+          {
+            "cpu_us": 5698416.787,
+            "wall_us": 5698785.128,
+            "lifetime_cpu_us": 5700739.000000015,
+            "checksum": 59630
+          }
+        ],
+        "candidate": [
+          {
+            "cpu_us": 13911549.872,
+            "wall_us": 13912370.863,
+            "lifetime_cpu_us": 13913779.000000007,
+            "checksum": 59630
+          },
+          {
+            "cpu_us": 13670968.477,
+            "wall_us": 13671632.335,
+            "lifetime_cpu_us": 13673075.999999974,
+            "checksum": 59630
+          },
+          {
+            "cpu_us": 13729525.701,
+            "wall_us": 13731867.475,
+            "lifetime_cpu_us": 13731688.999999974,
+            "checksum": 59630
+          },
+          {
+            "cpu_us": 13455509.611,
+            "wall_us": 13457623.078,
+            "lifetime_cpu_us": 13457766.000000028,
+            "checksum": 59630
+          },
+          {
+            "cpu_us": 13610971.29,
+            "wall_us": 13615061.707,
+            "lifetime_cpu_us": 13613270.000000048,
+            "checksum": 59630
+          },
+          {
+            "cpu_us": 13147326.58,
+            "wall_us": 13148345.076,
+            "lifetime_cpu_us": 13149421.000000034,
+            "checksum": 59630
+          },
+          {
+            "cpu_us": 13494220.42,
+            "wall_us": 13494915.835,
+            "lifetime_cpu_us": 13496344.999999987,
+            "checksum": 59630
+          }
+        ]
+      },
+      "warmups": {
+        "candidate": {
+          "cpu_us": 13545798.379,
+          "wall_us": 13546941.199,
+          "lifetime_cpu_us": 13547965.999999985,
+          "checksum": 59630
+        },
+        "baseline": {
+          "cpu_us": 5722109.543,
+          "wall_us": 5722510.648,
+          "lifetime_cpu_us": 5724345.000000001,
+          "checksum": 59630
+        }
+      },
+      "orders": [
+        [
+          "candidate",
+          "baseline"
+        ],
+        [
+          "baseline",
+          "candidate"
+        ],
+        [
+          "candidate",
+          "baseline"
+        ],
+        [
+          "baseline",
+          "candidate"
+        ],
+        [
+          "candidate",
+          "baseline"
+        ],
+        [
+          "baseline",
+          "candidate"
+        ],
+        [
+          "candidate",
+          "baseline"
+        ],
+        [
+          "baseline",
+          "candidate"
+        ]
+      ]
+    },
+    "compare-2": {
+      "samples": {
+        "baseline": [
+          {
+            "cpu_us": 7011151.367,
+            "wall_us": 7011572.867,
+            "lifetime_cpu_us": 7013336.999999952,
+            "checksum": 59630
+          },
+          {
+            "cpu_us": 5741353.739,
+            "wall_us": 5746915.098,
+            "lifetime_cpu_us": 5743639.000000022,
+            "checksum": 59630
+          },
+          {
+            "cpu_us": 5735285.018,
+            "wall_us": 5739053.208,
+            "lifetime_cpu_us": 5737619.000000008,
+            "checksum": 59630
+          },
+          {
+            "cpu_us": 5735056.647,
+            "wall_us": 5735486.918,
+            "lifetime_cpu_us": 5737331.00000001,
+            "checksum": 59630
+          },
+          {
+            "cpu_us": 5713898.699,
+            "wall_us": 5714260.98,
+            "lifetime_cpu_us": 5716088.999999945,
+            "checksum": 59630
+          },
+          {
+            "cpu_us": 5729508.196,
+            "wall_us": 5729823.102,
+            "lifetime_cpu_us": 5731798.999999982,
+            "checksum": 59630
+          },
+          {
+            "cpu_us": 5698416.787,
+            "wall_us": 5698785.128,
+            "lifetime_cpu_us": 5700739.000000015,
+            "checksum": 59630
+          }
+        ],
+        "candidate": [
+          {
+            "cpu_us": 13911549.872,
+            "wall_us": 13912370.863,
+            "lifetime_cpu_us": 13913779.000000007,
+            "checksum": 59630
+          },
+          {
+            "cpu_us": 13670968.477,
+            "wall_us": 13671632.335,
+            "lifetime_cpu_us": 13673075.999999974,
+            "checksum": 59630
+          },
+          {
+            "cpu_us": 13729525.701,
+            "wall_us": 13731867.475,
+            "lifetime_cpu_us": 13731688.999999974,
+            "checksum": 59630
+          },
+          {
+            "cpu_us": 13455509.611,
+            "wall_us": 13457623.078,
+            "lifetime_cpu_us": 13457766.000000028,
+            "checksum": 59630
+          },
+          {
+            "cpu_us": 13610971.29,
+            "wall_us": 13615061.707,
+            "lifetime_cpu_us": 13613270.000000048,
+            "checksum": 59630
+          },
+          {
+            "cpu_us": 13147326.58,
+            "wall_us": 13148345.076,
+            "lifetime_cpu_us": 13149421.000000034,
+            "checksum": 59630
+          },
+          {
+            "cpu_us": 13494220.42,
+            "wall_us": 13494915.835,
+            "lifetime_cpu_us": 13496344.999999987,
+            "checksum": 59630
+          }
+        ]
+      },
+      "warmups_excluded": {
+        "candidate": {
+          "cpu_us": 13545798.379,
+          "wall_us": 13546941.199,
+          "lifetime_cpu_us": 13547965.999999985,
+          "checksum": 59630
+        },
+        "baseline": {
+          "cpu_us": 5722109.543,
+          "wall_us": 5722510.648,
+          "lifetime_cpu_us": 5724345.000000001,
+          "checksum": 59630
+        }
+      },
+      "orders": [
+        [
+          "candidate",
+          "baseline"
+        ],
+        [
+          "baseline",
+          "candidate"
+        ],
+        [
+          "candidate",
+          "baseline"
+        ],
+        [
+          "baseline",
+          "candidate"
+        ],
+        [
+          "candidate",
+          "baseline"
+        ],
+        [
+          "baseline",
+          "candidate"
+        ],
+        [
+          "candidate",
+          "baseline"
+        ],
+        [
+          "baseline",
+          "candidate"
+        ]
+      ],
+      "medians_us": {
+        "baseline": 5735056.647,
+        "candidate": 13610971.29
+      },
+      "delta_percent": 137.3293260689915,
+      "change_percent": 137.3293260689915
+    },
+    "complete": {
+      "utc": "2026-11-16T04:16:20.678002+00:00",
+      "not_adopted": true
+    },
+    "config": {
+      "iterations": 773361863,
+      "expected": 59630,
+      "definition": ": BENCH-RUN 1 BENCH-ITERATIONS 0 DO 3 * 7 + 65535 AND LOOP ;"
+    },
+    "decision": {
+      "changes_percent": [
+        138.38303516944413,
+        137.3293260689915
+      ],
+      "delta_percent": 0.23153488626433985,
+      "integer_screen_passed": false,
+      "not_adopted": true,
+      "remaining_cases_unmeasured": true
+    },
+    "pilot": {
+      "cpu_us": 775833.448,
+      "wall_us": 806389.855,
+      "lifetime_cpu_us": 778374.0,
+      "checksum": 2561
+    },
+    "protocol": {
+      "scope": "Linux small vs fast baseline-CPU arithmetic preflight. No adoption from one condition.",
+      "baseline_sha256": "bdb6eb7a0ac59d27d23281708f89538631950d39654837cfd1cfa8d0e78b73fa",
+      "candidate_sha256": "6bd1071b20b2293a645a7447919c48a37229d7eda17f0112423400cd8a25e604",
+      "primary": "Linux child process CPU clock READY/DONE via benchmark-runtime.py; runner/children CPU0 affinity; startup/compilation excluded, boundary I/O included",
+      "scaling": "one baseline100M pilot chooses ceil(100M*6sec/pilot CPU), freeze N before candidate",
+      "aa": "2 consecutive distinct sample groups; alternate A1/A2, reverse initial order in group2; 5 samples after excluded warmup per engine; all medians>=5sec,maxdelta<=2%; stop without retry if unresolved",
+      "ab": "only fresh AA passes; 2 groups, 7 samples each after excluded warmup; alternating order; all retained",
+      "screen": "Use existing Linux integer screen target >=10% shorter and >2delta in both groups. Otherwise stop further performance comparison. Passing this screen alone cannot justify adoption.",
+      "remaining": "Windows timing, LOOP, other normal/CATCH conditions, additional disabled-feature configurations remain unmeasured. Both OS small ordinary regression and image cross-load have passed. No new partial adoption threshold.",
+      "constraints": "No builds/tests/profiling overlap, no global power/priority changes"
+    },
+    "script-freeze": {
+      "run.py": "8a2aff1d6b8000e38ef74bacd60b367af3262a6273005d631bc8756863f1210d",
+      "protocol.json": "a1c7e52696a44892ab0ce3fae45d63094d650301b343e4646939ef3919753a98"
+    },
+    "start": {
+      "utc": "2026-11-16T04:08:47.509775+00:00",
+      "protocol_sha256": "a1c7e52696a44892ab0ce3fae45d63094d650301b343e4646939ef3919753a98",
+      "script_sha256": "8a2aff1d6b8000e38ef74bacd60b367af3262a6273005d631bc8756863f1210d",
+      "benchmark_sha256": "576345f4486dd27a510327d91ec04d5f8ce9721f42059679bd78e4b661e315ef",
+      "affinity": [
+        0
+      ]
+    }
+  },
+  "summary": [
+    {
+      "series": 1,
+      "baseline_median_us": 5737347.631,
+      "candidate_median_us": 13676863.421,
+      "change_percent": 138.38303516944413,
+      "runtime_ratio": 2.3838303516944412
+    },
+    {
+      "series": 2,
+      "baseline_median_us": 5735056.647,
+      "candidate_median_us": 13610971.29,
+      "change_percent": 137.3293260689915,
+      "runtime_ratio": 2.373293260689915
+    }
+  ],
+  "post_result_interpretation": "Both CPU median changes are positive (observed worsening), and existing10percent shortening goal fails. No new post-hoc cutoff. No size-purpose adoption decided.",
+  "sample_counts": {
+    "counted": 48,
+    "excluded_warmups": 8,
+    "pilot": 1
+  },
+  "frozen_input_bytes": {
+    "run.py": {
+      "sha256": "8a2aff1d6b8000e38ef74bacd60b367af3262a6273005d631bc8756863f1210d",
+      "base64": "ZnJvbSBwYXRobGliIGltcG9ydCBQYXRoDQppbXBvcnQganNvbixoYXNobGliLHN1YnByb2Nlc3MsbWF0aCxzdGF0aXN0aWNzLGRhdGV0aW1lLGltcG9ydGxpYi51dGlsDQpyb290PVBhdGgoJy9tbnQvZC9ob21lL3NvdXJjZS96aWcvZm9ydGh6Jyk7b3V0PXJvb3QvJy53b3JrL29wdGltaXplLXNtYWxsLTIwMjYxMTE2L2xpbnV4LXNjcmVlbic7YmFzZT1yb290Lycud29yay9vcHRpbWl6ZS1zbWFsbC0yMDI2MTExNi9saW51eC1mYXN0L2Jpbi9zaWdtYSc7Y2FuZGlkYXRlPXJvb3QvJy53b3JrL29wdGltaXplLXNtYWxsLTIwMjYxMTE2L2xpbnV4LXNtYWxsL2Jpbi9zaWdtYSc7cHJvdG9jb2w9anNvbi5sb2Fkcygob3V0Lydwcm90b2NvbC5qc29uJykucmVhZF90ZXh0KCkpO3NoYT1sYW1iZGEgcDpoYXNobGliLnNoYTI1NihwLnJlYWRfYnl0ZXMoKSkuaGV4ZGlnZXN0KCk7YXNzZXJ0IHNoYShiYXNlKT09cHJvdG9jb2xbJ2Jhc2VsaW5lX3NoYTI1NiddO2Fzc2VydCBzaGEoY2FuZGlkYXRlKT09cHJvdG9jb2xbJ2NhbmRpZGF0ZV9zaGEyNTYnXQ0Kc3BlYz1pbXBvcnRsaWIudXRpbC5zcGVjX2Zyb21fZmlsZV9sb2NhdGlvbignYmVuY2gnLHJvb3QvJ3NjcmlwdHMvYmVuY2htYXJrLXJ1bnRpbWUucHknKTtiPWltcG9ydGxpYi51dGlsLm1vZHVsZV9mcm9tX3NwZWMoc3BlYyk7c3BlYy5sb2FkZXIuZXhlY19tb2R1bGUoYik7YWZmaW5pdHk9Yi5jcHVfYWZmaW5pdHkoMCkNCmRlZiBleHBlY3RlZChuKToNCiBhLGMsdmFsdWU9Myw3LDENCiB3aGlsZSBuOg0KICBpZiBuJjE6dmFsdWU9KGEqdmFsdWUrYykmNjU1MzUNCiAgYz0oYSpjK2MpJjY1NTM1O2E9KGEqYSkmNjU1MzU7bj4+PTENCiByZXR1cm4gdmFsdWUNCg0KZGVmIHNvdXJjZShuKTpyZXR1cm4gZid7bn0gQ09OU1RBTlQgQkVOQ0gtSVRFUkFUSU9OUyAnK2IuQ0FTRVNbJ2FyaXRobWV0aWMnXSsnIC4iIEJFTkNILVJFQURZIiBDUiBLRVkgRFJPUCBCRU5DSC1SVU4gLiIgQkVOQ0gtRE9ORSAiIC4gQ1IgS0VZIERST1AgQllFJw0KZGVmIHNhbXBsZShiaW5hcnksbik6DQogY3B1LGNoZWNrLHdhbGwsdG90YWw9Yi5zYW1wbGUoc3RyKGJpbmFyeSksRmFsc2Usc291cmNlKG4pKTthc3NlcnQgY2hlY2s9PWV4cGVjdGVkKG4pLChjaGVjayxleHBlY3RlZChuKSxuKTtyZXR1cm4geydjcHVfdXMnOmNwdSwnd2FsbF91cyc6d2FsbCwnbGlmZXRpbWVfY3B1X3VzJzp0b3RhbCwnY2hlY2tzdW0nOmNoZWNrfQ0KZGVmIHNhdmUobmFtZSx4KToob3V0L25hbWUpLndyaXRlX3RleHQoanNvbi5kdW1wcyh4LGluZGVudD0yKSsnXG4nKQ0Kc2F2ZSgnc3RhcnQuanNvbicseyd1dGMnOmRhdGV0aW1lLmRhdGV0aW1lLm5vdyhkYXRldGltZS50aW1lem9uZS51dGMpLmlzb2Zvcm1hdCgpLCdwcm90b2NvbF9zaGEyNTYnOnNoYShvdXQvJ3Byb3RvY29sLmpzb24nKSwnc2NyaXB0X3NoYTI1Nic6c2hhKFBhdGgoX19maWxlX18pKSwnYmVuY2htYXJrX3NoYTI1Nic6c2hhKHJvb3QvJ3NjcmlwdHMvYmVuY2htYXJrLXJ1bnRpbWUucHknKSwnYWZmaW5pdHknOmFmZmluaXR5fSkNCnBpbG90PXNhbXBsZShiYXNlLDEwMDAwMDAwMCk7c2F2ZSgncGlsb3QuanNvbicscGlsb3QpO249bWF0aC5jZWlsKDEwMDAwMDAwMCo2MDAwMDAwL3BpbG90WydjcHVfdXMnXSk7c2F2ZSgnY29uZmlnLmpzb24nLHsnaXRlcmF0aW9ucyc6biwnZXhwZWN0ZWQnOmV4cGVjdGVkKG4pLCdkZWZpbml0aW9uJzpiLkNBU0VTWydhcml0aG1ldGljJ119KQ0KZGVmIGdyb3VwKHN0YWdlLGluZGV4LGVuZ2luZXMscm91bmRzKToNCiB2YWx1ZXM9e2s6W10gZm9yIGsgaW4gZW5naW5lc307d2FybT17fTtvcmRlcnM9W10NCiBmb3IgaSBpbiByYW5nZShyb3VuZHMrMSk6DQogIGtleXM9bGlzdChlbmdpbmVzKTtrZXlzPWtleXMgaWYgKGkraW5kZXgpJTIgZWxzZSBrZXlzWzo6LTFdO29yZGVycy5hcHBlbmQoa2V5cykNCiAgZm9yIGtleSBpbiBrZXlzOg0KICAgcm93PXNhbXBsZShlbmdpbmVzW2tleV0sbikNCiAgIGlmIGk6dmFsdWVzW2tleV0uYXBwZW5kKHJvdykNCiAgIGVsc2U6d2FybVtrZXldPXJvdw0KICAgc2F2ZShmJ3tzdGFnZX0te2luZGV4fS1wYXJ0aWFsLmpzb24nLHsnc2FtcGxlcyc6dmFsdWVzLCd3YXJtdXBzJzp3YXJtLCdvcmRlcnMnOm9yZGVyc30pDQogbWVkPXtrOnN0YXRpc3RpY3MubWVkaWFuKHZbJ2NwdV91cyddIGZvciB2IGluIHZzKSBmb3Igayx2cyBpbiB2YWx1ZXMuaXRlbXMoKX07eD17J3NhbXBsZXMnOnZhbHVlcywnd2FybXVwc19leGNsdWRlZCc6d2FybSwnb3JkZXJzJzpvcmRlcnMsJ21lZGlhbnNfdXMnOm1lZH07YSxjPWxpc3QobWVkLnZhbHVlcygpKTt4WydkZWx0YV9wZXJjZW50J109MTAwKmFicyhhLWMpL21pbihhLGMpO3hbJ2NoYW5nZV9wZXJjZW50J109MTAwKihjL2EtMSk7c2F2ZShmJ3tzdGFnZX0te2luZGV4fS5qc29uJyx4KTtyZXR1cm4geA0KYWE9W2dyb3VwKCdhYScsaSx7J0ExJzpiYXNlLCdBMic6YmFzZX0sNSkgZm9yIGkgaW4gWzEsMl1dO2RlbHRhPW1heCh4WydkZWx0YV9wZXJjZW50J10gZm9yIHggaW4gYWEpO21pbmltdW09bWluKHYgZm9yIHggaW4gYWEgZm9yIHYgaW4geFsnbWVkaWFuc191cyddLnZhbHVlcygpKTtzYXZlKCdhYS1kZWNpc2lvbi5qc29uJyx7J2RlbHRhX3BlcmNlbnQnOmRlbHRhLCdtaW5pbXVtX21lZGlhbl91cyc6bWluaW11bX0pO3ByaW50KCdBQScsZGVsdGEsbWluaW11bSxmbHVzaD1UcnVlKQ0KaWYgZGVsdGE+MiBvciBtaW5pbXVtPDUwMDAwMDA6c2F2ZSgnc3RvcC5qc29uJyx7J3JlYXNvbic6J2NhbGlicmF0aW9uIHVucmVzb2x2ZWQ7IG5vIGNhbmRpZGF0ZSB0aW1lZDsgbm8gcmV0cnknfSk7cmFpc2UgU3lzdGVtRXhpdCgwKQ0KYWI9W2dyb3VwKCdjb21wYXJlJyxpLHsnYmFzZWxpbmUnOmJhc2UsJ2NhbmRpZGF0ZSc6Y2FuZGlkYXRlfSw3KSBmb3IgaSBpbiBbMSwyXV07Y2hhbmdlcz1beFsnY2hhbmdlX3BlcmNlbnQnXSBmb3IgeCBpbiBhYl07cGFzc2VkPWFsbCh4PD0tMTAgYW5kIC14PjIqZGVsdGEgZm9yIHggaW4gY2hhbmdlcyk7c2F2ZSgnZGVjaXNpb24uanNvbicseydjaGFuZ2VzX3BlcmNlbnQnOmNoYW5nZXMsJ2RlbHRhX3BlcmNlbnQnOmRlbHRhLCdpbnRlZ2VyX3NjcmVlbl9wYXNzZWQnOnBhc3NlZCwnbm90X2Fkb3B0ZWQnOlRydWUsJ3JlbWFpbmluZ19jYXNlc191bm1lYXN1cmVkJzpUcnVlfSk7cHJpbnQoJ0FCJyxjaGFuZ2VzLCdzY3JlZW4nLHBhc3NlZCxmbHVzaD1UcnVlKQ0Kc2F2ZSgnY29tcGxldGUuanNvbicseyd1dGMnOmRhdGV0aW1lLmRhdGV0aW1lLm5vdyhkYXRldGltZS50aW1lem9uZS51dGMpLmlzb2Zvcm1hdCgpLCdub3RfYWRvcHRlZCc6VHJ1ZX0pDQo="
+    },
+    "protocol.json": {
+      "sha256": "a1c7e52696a44892ab0ce3fae45d63094d650301b343e4646939ef3919753a98",
+      "base64": "ew0KICAic2NvcGUiOiAiTGludXggc21hbGwgdnMgZmFzdCBiYXNlbGluZS1DUFUgYXJpdGhtZXRpYyBwcmVmbGlnaHQuIE5vIGFkb3B0aW9uIGZyb20gb25lIGNvbmRpdGlvbi4iLA0KICAiYmFzZWxpbmVfc2hhMjU2IjogImJkYjZlYjdhMGFjNTlkMjdkMjMyODE3MDhmODk1Mzg2MzE5NTBkMzk2NTQ4MzdjZmQxY2ZhOGQwZTc4YjczZmEiLA0KICAiY2FuZGlkYXRlX3NoYTI1NiI6ICI2YmQxMDcxYjIwYjIyOTNhNjQ1YTc0NDc5MTljNDhhMzcyMjlkN2VkYTE3ZjAxMTI0MjM0MDBjZDhhMjVlNjA0IiwNCiAgInByaW1hcnkiOiAiTGludXggY2hpbGQgcHJvY2VzcyBDUFUgY2xvY2sgUkVBRFkvRE9ORSB2aWEgYmVuY2htYXJrLXJ1bnRpbWUucHk7IHJ1bm5lci9jaGlsZHJlbiBDUFUwIGFmZmluaXR5OyBzdGFydHVwL2NvbXBpbGF0aW9uIGV4Y2x1ZGVkLCBib3VuZGFyeSBJL08gaW5jbHVkZWQiLA0KICAic2NhbGluZyI6ICJvbmUgYmFzZWxpbmUxMDBNIHBpbG90IGNob29zZXMgY2VpbCgxMDBNKjZzZWMvcGlsb3QgQ1BVKSwgZnJlZXplIE4gYmVmb3JlIGNhbmRpZGF0ZSIsDQogICJhYSI6ICIyIGNvbnNlY3V0aXZlIGRpc3RpbmN0IHNhbXBsZSBncm91cHM7IGFsdGVybmF0ZSBBMS9BMiwgcmV2ZXJzZSBpbml0aWFsIG9yZGVyIGluIGdyb3VwMjsgNSBzYW1wbGVzIGFmdGVyIGV4Y2x1ZGVkIHdhcm11cCBwZXIgZW5naW5lOyBhbGwgbWVkaWFucz49NXNlYyxtYXhkZWx0YTw9MiU7IHN0b3Agd2l0aG91dCByZXRyeSBpZiB1bnJlc29sdmVkIiwNCiAgImFiIjogIm9ubHkgZnJlc2ggQUEgcGFzc2VzOyAyIGdyb3VwcywgNyBzYW1wbGVzIGVhY2ggYWZ0ZXIgZXhjbHVkZWQgd2FybXVwOyBhbHRlcm5hdGluZyBvcmRlcjsgYWxsIHJldGFpbmVkIiwNCiAgInNjcmVlbiI6ICJVc2UgZXhpc3RpbmcgTGludXggaW50ZWdlciBzY3JlZW4gdGFyZ2V0ID49MTAlIHNob3J0ZXIgYW5kID4yZGVsdGEgaW4gYm90aCBncm91cHMuIE90aGVyd2lzZSBzdG9wIGZ1cnRoZXIgcGVyZm9ybWFuY2UgY29tcGFyaXNvbi4gUGFzc2luZyB0aGlzIHNjcmVlbiBhbG9uZSBjYW5ub3QganVzdGlmeSBhZG9wdGlvbi4iLA0KICAicmVtYWluaW5nIjogIldpbmRvd3MgdGltaW5nLCBMT09QLCBvdGhlciBub3JtYWwvQ0FUQ0ggY29uZGl0aW9ucywgYWRkaXRpb25hbCBkaXNhYmxlZC1mZWF0dXJlIGNvbmZpZ3VyYXRpb25zIHJlbWFpbiB1bm1lYXN1cmVkLiBCb3RoIE9TIHNtYWxsIG9yZGluYXJ5IHJlZ3Jlc3Npb24gYW5kIGltYWdlIGNyb3NzLWxvYWQgaGF2ZSBwYXNzZWQuIE5vIG5ldyBwYXJ0aWFsIGFkb3B0aW9uIHRocmVzaG9sZC4iLA0KICAiY29uc3RyYWludHMiOiAiTm8gYnVpbGRzL3Rlc3RzL3Byb2ZpbGluZyBvdmVybGFwLCBubyBnbG9iYWwgcG93ZXIvcHJpb3JpdHkgY2hhbmdlcyINCn0NCg=="
+    },
+    "script-freeze.json": {
+      "sha256": "5b180228ec224e6f8974cd7b455d50e5b28d3d4356efd9bb0abaca2b643e9170",
+      "base64": "ew0KICAicnVuLnB5IjogIjhhMmFmZjFkNmI4MDAwZTM4ZWY3NGJhY2Q2MGIzNjdhZjMyNjJhNjI3MzAwNWQ2MzFiYzg3NTY4NjNmMTIxMGQiLA0KICAicHJvdG9jb2wuanNvbiI6ICJhMWM3ZTUyNjk2YTQ0ODkyYWIwY2UzZmFlNDVkNjMwOTRkNjUwMzAxYjM0M2U0NjQ2OTM5ZWYzOTE5NzUzYTk4Ig0KfQ0K"
+    }
+  },
+  "script": "from pathlib import Path\nimport json,hashlib,subprocess,math,statistics,datetime,importlib.util\nroot=Path('/mnt/d/home/source/zig/forthz');out=root/'.work/optimize-small-20261116/linux-screen';base=root/'.work/optimize-small-20261116/linux-fast/bin/sigma';candidate=root/'.work/optimize-small-20261116/linux-small/bin/sigma';protocol=json.loads((out/'protocol.json').read_text());sha=lambda p:hashlib.sha256(p.read_bytes()).hexdigest();assert sha(base)==protocol['baseline_sha256'];assert sha(candidate)==protocol['candidate_sha256']\nspec=importlib.util.spec_from_file_location('bench',root/'scripts/benchmark-runtime.py');b=importlib.util.module_from_spec(spec);spec.loader.exec_module(b);affinity=b.cpu_affinity(0)\ndef expected(n):\n a,c,value=3,7,1\n while n:\n  if n&1:value=(a*value+c)&65535\n  c=(a*c+c)&65535;a=(a*a)&65535;n>>=1\n return value\n\ndef source(n):return f'{n} CONSTANT BENCH-ITERATIONS '+b.CASES['arithmetic']+' .\" BENCH-READY\" CR KEY DROP BENCH-RUN .\" BENCH-DONE \" . CR KEY DROP BYE'\ndef sample(binary,n):\n cpu,check,wall,total=b.sample(str(binary),False,source(n));assert check==expected(n),(check,expected(n),n);return {'cpu_us':cpu,'wall_us':wall,'lifetime_cpu_us':total,'checksum':check}\ndef save(name,x):(out/name).write_text(json.dumps(x,indent=2)+'\\n')\nsave('start.json',{'utc':datetime.datetime.now(datetime.timezone.utc).isoformat(),'protocol_sha256':sha(out/'protocol.json'),'script_sha256':sha(Path(__file__)),'benchmark_sha256':sha(root/'scripts/benchmark-runtime.py'),'affinity':affinity})\npilot=sample(base,100000000);save('pilot.json',pilot);n=math.ceil(100000000*6000000/pilot['cpu_us']);save('config.json',{'iterations':n,'expected':expected(n),'definition':b.CASES['arithmetic']})\ndef group(stage,index,engines,rounds):\n values={k:[] for k in engines};warm={};orders=[]\n for i in range(rounds+1):\n  keys=list(engines);keys=keys if (i+index)%2 else keys[::-1];orders.append(keys)\n  for key in keys:\n   row=sample(engines[key],n)\n   if i:values[key].append(row)\n   else:warm[key]=row\n   save(f'{stage}-{index}-partial.json',{'samples':values,'warmups':warm,'orders':orders})\n med={k:statistics.median(v['cpu_us'] for v in vs) for k,vs in values.items()};x={'samples':values,'warmups_excluded':warm,'orders':orders,'medians_us':med};a,c=list(med.values());x['delta_percent']=100*abs(a-c)/min(a,c);x['change_percent']=100*(c/a-1);save(f'{stage}-{index}.json',x);return x\naa=[group('aa',i,{'A1':base,'A2':base},5) for i in [1,2]];delta=max(x['delta_percent'] for x in aa);minimum=min(v for x in aa for v in x['medians_us'].values());save('aa-decision.json',{'delta_percent':delta,'minimum_median_us':minimum});print('AA',delta,minimum,flush=True)\nif delta>2 or minimum<5000000:save('stop.json',{'reason':'calibration unresolved; no candidate timed; no retry'});raise SystemExit(0)\nab=[group('compare',i,{'baseline':base,'candidate':candidate},7) for i in [1,2]];changes=[x['change_percent'] for x in ab];passed=all(x<=-10 and -x>2*delta for x in changes);save('decision.json',{'changes_percent':changes,'delta_percent':delta,'integer_screen_passed':passed,'not_adopted':True,'remaining_cases_unmeasured':True});print('AB',changes,'screen',passed,flush=True)\nsave('complete.json',{'utc':datetime.datetime.now(datetime.timezone.utc).isoformat(),'not_adopted':True})\n",
+  "limits": [
+    "one kernel, one binary per config, Linux CPU0, host load unrecorded",
+    "AA delta is not a confidence interval/noise ceiling, no post-AB AA",
+    "group lead order is imbalanced 3:2 or4:3 and reversed in second group",
+    "no cause attribution between size optimization and code layout effects"
+  ]
+}

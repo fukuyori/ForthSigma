@@ -1,5 +1,15 @@
 # VM実行速度の改善計画
 
+2026-11-16 small比較：[両OSの通常機能・baseline CPUを固定した独立評価](VM_OPTIMIZE_SMALL_EXPERIMENT.md)を完了。サイズはWindows−26.316%/Linux−25.005%、通常回帰と辞書相互読込みは通過したが、Linux整数演算のCPU時間は＋138.383%/＋137.329%で、既存速度目標未達のため不採用。本体はfastの採用済み版を維持する。小規模候補の初回調査を閉じ、次は残る実例範囲#836を調査し、#806の再順位付けへつなぐ。
+
+2026-11-16 ビルド最適化：[LTO/PGOの対応・サイズ・Linux実測](VM_BUILD_OPTIMIZATION_INVESTIGATION.md)を記録。default/noneは両OSで基準SHAと一致。Windows GNU full/thinは最小プログラムでもリンク失敗。Linux fullはサイズ−3.286%、fast回帰を設定して実行し、整数予備比較は−2.580%/−2.684%だったが10%目標未達。thinはLinuxサイズ＋1.138%で上限超過。いずれも本体未採用。PGOは確認したフラグ/リンク構成では成立せず、他手法全般を否定しない。次は#841で通常機能・baseline CPUを維持したsmall比較を行う。
+
+2026-11-16 メモリー調査：[基準生成コードと通知回数](VM_MEMORY_ACCESS_INVESTIGATION.md)を確認。Linux +!の読み書きは範囲検査1組に統合済み。実例6ケースでは計数対象のwritten内の登録あり・長さ非0通知は0で、登録探索の書換えは今回選ばない。C!の登録0時の呼出し省略は予備案。計測版は専用出力gate修正後Windows Debug 1,071成功/10skip、6対照と6実例の再計数も一致した。速度比較・本体変更は行っていない。次の既定候補は#793のビルド最適化の調査で、配布CPU方針の変更とは分ける。
+
+2026-11-16 実例調査：[6ケースのcompiled命令頻度](VM_WORKLOAD_OPERATION_PROFILE.md)を確認。対象局所語は0または最大0.019%で、追加試作は後回しにする。メモリーprimitiveは命令数の2.496〜14.407%だったため、次は[検査・通知経路の調査](VM_MEMORY_ACCESS_INVESTIGATION.md)を優先する。頻度は時間比ではない。[基準版の長短診断](VM_TIMING_REASSESSMENT.md)は長条件で相対的な範囲が小さかったが、校正通過や候補の速度改善を示す結果ではない。
+
+2026-11-16 追加選定：2R>/DNEGATEには残存容量検査を確認したが、両語の実利用頻度と速度効果は未確認のため[予備候補](VM_STACK_CHECK_INVESTIGATION.md)へ残す。新たな局所試作より先に[計時条件整備](VM_TIMING_REASSESSMENT.md)と実利用側の負担調査を進める。既存A/A40標本はCPU一次値とkernel+user、主スレッドCPUの一致を再確認したが、校正差の原因は未特定。
+
 2026-11-16 スタック検査続報：[popDouble/2R@の生成コード調査](VM_STACK_CHECK_INVESTIGATION.md)で、確認したpopDouble経路のpop検査は除去済み、2R@は後続容量検査が残ることを確認。2R@単独試作はLinuxで30→26命令、構成別Windows/Linux回帰とCLI補完を通過した。専用Windows A/A差2.632%が上限を超えたため候補速度未測定・採用保留。本体は採用済み版のまま。
 
 2026-11-16 最新状況：CATCH中間コピー削減、ROT/-ROT固定3セル化、VM入口align64の各試作は、Windowsの測定済み条件で既定基準を満たさず不採用。[Windows生成コード・計時調査](VM_WINDOWS_DISPATCH_INVESTIGATION.md)も記録したが、悪化のCPU内部原因は未特定。次の[既存call_builtin内の-ROT特殊化](VM_BUILTIN_SPECIALIZATION_SELECTION.md)は命令数削減・構成別両OS回帰・双方向画像確認まで完了した。専用ケースのA/A差3.540%が2%上限を超えたため候補版は未計測、採用保留。本体は採用済みPC分離＋データ語経路分離版を維持する。以下の日付付き記述は各時点の履歴である。

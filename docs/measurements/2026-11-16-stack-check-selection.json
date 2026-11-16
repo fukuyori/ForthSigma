@@ -1,0 +1,509 @@
+{
+  "decision": "Both retained as reserve; do not start another trial until measurement stability and workload relevance are assessed. No claim on relative speed benefit.",
+  "definitions": {
+    "normal/arithmetic": ": BENCH-RUN 1 BENCH-ITERATIONS 0 DO 3 * 7 + 65535 AND LOOP ;",
+    "normal/stacks": ": BENCH-RUN 1 2 3 BENCH-ITERATIONS 0 DO ROT SWAP OVER + 65535 AND DUP NIP LOOP + + ;",
+    "normal/calls": ": BENCH-A 1+ ; : BENCH-B BENCH-A BENCH-A ; : BENCH-C BENCH-B BENCH-B ; : BENCH-RUN 0 BENCH-ITERATIONS 0 DO BENCH-C LOOP ;",
+    "normal/variables": "VARIABLE BENCH-V 7 CONSTANT BENCH-K : BENCH-RUN 0 BENCH-V ! BENCH-ITERATIONS 0 DO BENCH-K BENCH-V +! LOOP BENCH-V @ ;",
+    "normal/plus-loop": ": BENCH-RUN 0 BENCH-ITERATIONS 0 DO I 7 AND + 2 +LOOP ;",
+    "normal/extended": ": BENCH-RUN 1 BENCH-ITERATIONS 0 DO 2* 1+ DUP 3 RSHIFT XOR 65535 AND LOOP ;",
+    "normal/float": ": BENCH-RUN 0e BENCH-ITERATIONS 0 DO 1e F+ 1e F* LOOP F>S ;",
+    "catch/nested-64": ": B-NEST DUP IF 1- ['] B-NEST CATCH THROW ELSE DROP THEN ; : BENCH-RUN 0 BENCH-ITERATIONS 0 DO 64 ['] B-NEST CATCH + LOOP ;",
+    "catch/nested-256": ": B-NEST DUP IF 1- ['] B-NEST CATCH THROW ELSE DROP THEN ; : BENCH-RUN 0 BENCH-ITERATIONS 0 DO 256 ['] B-NEST CATCH + LOOP ;",
+    "catch/execute": ": B-WORK 1+ ; : BENCH-RUN 0 BENCH-ITERATIONS 0 DO ['] B-WORK ['] CATCH EXECUTE DROP LOOP ;",
+    "catch/defer": "DEFER B-CATCH ' CATCH IS B-CATCH : B-WORK 1+ ; : BENCH-RUN 0 BENCH-ITERATIONS 0 DO ['] B-WORK B-CATCH DROP LOOP ;",
+    "catch/synonym": "SYNONYM B-CATCH CATCH : B-WORK 1+ ; : BENCH-RUN 0 BENCH-ITERATIONS 0 DO ['] B-WORK B-CATCH DROP LOOP ;",
+    "catch/throw": ": B-WORK 77 THROW ; : BENCH-RUN 0 BENCH-ITERATIONS 0 DO ['] B-WORK CATCH + LOOP ;",
+    "catch/fast-throw": ": B-WORK 77 FAST-THROW ; : BENCH-RUN 0 BENCH-ITERATIONS 0 DO ['] B-WORK CATCH + LOOP ;",
+    "normal/loops": ": BENCH-RUN 0 BENCH-ITERATIONS 0 DO I 7 AND + LOOP ;",
+    "catch/success": ": B-WORK 1+ ; : BENCH-RUN 0 BENCH-ITERATIONS 0 DO ['] B-WORK CATCH DROP LOOP ;",
+    "catch/nobt-throw": ": B-WORK 77 THROW ; : BENCH-RUN 0 BENCH-ITERATIONS 0 DO ['] B-WORK CATCH-NOBT + LOOP ;"
+  },
+  "direct_token_hits": {
+    "2R>": [],
+    "DNEGATE": []
+  },
+  "scope_note": "17 distinct kernel definition strings from 29 items plus the reused nobt configuration. Lexical search only, not transitive dynamic word frequency.",
+  "benchmark_plan_sha256": "2eb66af06ed59d25d260033226f1278f3b2098c2e1dd2399e3ba7e95b79c5352",
+  "reused_nobt_config_sha256": "1a79dc346b55ce9391d271645a386fddc0ed15fdf6be66f46aadd8f9fb8c9275",
+  "source_hashes": {
+    "src/forth.zig": "d2c101033474ba348c6cd148249bd81afb6ae4e7656ae5bb0c40326806182195",
+    "src/core/words_stack.zig": "cc42d35910240f272a0bfc9c105431b71b43444de74befdb83e4a2e8296e1ba6",
+    "src/core/words_arithmetic.zig": "5d20923ce7034f4c8be403a4638fae5745a66acaab2e3ee8bf4954fbc06da7b3"
+  },
+  "baseline_assembly": {
+    "2R>": "<core.words_stack.execute__func_491>:\ncore.words_stack.execute__func_491():\nD:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline\\src/D:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline/src\\core\\words_stack.zig:170\n 11751f0:\t48 8b 8f b0 7e 14 00 \tmov    rcx,QWORD PTR [rdi+0x147eb0]\n 11751f7:\t66 b8 1e 00          \tmov    ax,0x1e\n 11751fb:\t48 83 f9 01          \tcmp    rcx,0x1\n 11751ff:\t0f 86 86 00 00 00    \tjbe    117528b <core.words_stack.execute__func_491+0x9b>\nD:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline\\src/D:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline/src\\core\\words_stack.zig:171\n 1175205:\t48 8b b7 90 7e 14 00 \tmov    rsi,QWORD PTR [rdi+0x147e90]\n 117520c:\t48 8b 97 98 7e 14 00 \tmov    rdx,QWORD PTR [rdi+0x147e98]\n 1175213:\t48 29 d6             \tsub    rsi,rdx\n 1175216:\t66 b8 1f 00          \tmov    ax,0x1f\n 117521a:\t48 83 fe 02          \tcmp    rsi,0x2\n 117521e:\t72 6b                \tjb     117528b <core.words_stack.execute__func_491+0x9b>\n 1175220:\t55                   \tpush   rbp\n 1175221:\t48 89 e5             \tmov    rbp,rsp\nD:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline\\src/D:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline/src\\core\\words_stack.zig:172\n 1175224:\t48 8d 71 fe          \tlea    rsi,[rcx-0x2]\n 1175228:\t48 89 b7 b0 7e 14 00 \tmov    QWORD PTR [rdi+0x147eb0],rsi\nforth.State.push():\nD:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline\\src/D:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline/src\\forth.zig:2389\n 117522f:\t48 8b b7 88 7e 14 00 \tmov    rsi,QWORD PTR [rdi+0x147e88]\ncore.words_stack.execute__func_491():\nD:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline\\src/D:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline/src\\core\\words_stack.zig:173\n 1175236:\t4c 8b 87 a0 7e 14 00 \tmov    r8,QWORD PTR [rdi+0x147ea0]\n 117523d:\t49 8b 4c c8 f0       \tmov    rcx,QWORD PTR [r8+rcx*8-0x10]\nforth.State.push():\nD:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline\\src/D:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline/src\\forth.zig:2389\n 1175242:\t48 89 0c d6          \tmov    QWORD PTR [rsi+rdx*8],rcx\nD:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline\\src/D:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline/src\\forth.zig:2390\n 1175246:\t48 8b 8f 98 7e 14 00 \tmov    rcx,QWORD PTR [rdi+0x147e98]\n 117524d:\t48 8d 51 01          \tlea    rdx,[rcx+0x1]\n 1175251:\t48 89 97 98 7e 14 00 \tmov    QWORD PTR [rdi+0x147e98],rdx\nD:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline\\src/D:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline/src\\forth.zig:2388\n 1175258:\t48 3b 97 90 7e 14 00 \tcmp    rdx,QWORD PTR [rdi+0x147e90]\n 117525f:\t74 29                \tje     117528a <core.words_stack.execute__func_491+0x9a>\nD:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline\\src/D:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline/src\\forth.zig:2389\n 1175261:\t48 8b 87 88 7e 14 00 \tmov    rax,QWORD PTR [rdi+0x147e88]\ncore.words_stack.execute__func_491():\nD:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline\\src/D:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline/src\\core\\words_stack.zig:174\n 1175268:\t48 8b 97 a0 7e 14 00 \tmov    rdx,QWORD PTR [rdi+0x147ea0]\n 117526f:\t48 8b b7 b0 7e 14 00 \tmov    rsi,QWORD PTR [rdi+0x147eb0]\n 1175276:\t48 8b 54 f2 08       \tmov    rdx,QWORD PTR [rdx+rsi*8+0x8]\nforth.State.push():\nD:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline\\src/D:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline/src\\forth.zig:2389\n 117527b:\t48 89 54 c8 08       \tmov    QWORD PTR [rax+rcx*8+0x8],rdx\nD:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline\\src/D:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline/src\\forth.zig:2390\n 1175280:\t48 83 87 98 7e 14 00 \tadd    QWORD PTR [rdi+0x147e98],0x1\n 1175287:\t01 \n 1175288:\t31 c0                \txor    eax,eax\ncore.words_stack.execute__func_491():\n 117528a:\t5d                   \tpop    rbp\n 117528b:\tc3                   \tret\n 117528c:\tcc                   \tint3\n 117528d:\tcc                   \tint3\n 117528e:\tcc                   \tint3\n 117528f:\tcc                   \tint3",
+    "DNEGATE": "<core.words_arithmetic.execute__func_444>:\nforth.State.popDouble():\nD:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline\\src/D:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline/src\\forth.zig:2347\n 1177a80:\t48 8b 8f 98 7e 14 00 \tmov    rcx,QWORD PTR [rdi+0x147e98]\nforth.State.requireDepth():\nD:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline\\src/D:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline/src\\forth.zig:2373\n 1177a87:\t48 83 f9 01          \tcmp    rcx,0x1\nforth.State.popDouble():\nD:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline\\src/D:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline/src\\forth.zig:2347\n 1177a8b:\t76 78                \tjbe    1177b05 <core.words_arithmetic.execute__func_444+0x85>\n 1177a8d:\t55                   \tpush   rbp\n 1177a8e:\t48 89 e5             \tmov    rbp,rsp\nforth.State.pop():\nD:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline\\src/D:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline/src\\forth.zig:2383\n 1177a91:\t48 8d 41 ff          \tlea    rax,[rcx-0x1]\n 1177a95:\t48 89 87 98 7e 14 00 \tmov    QWORD PTR [rdi+0x147e98],rax\nD:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline\\src/D:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline/src\\forth.zig:2384\n 1177a9c:\t48 8b b7 88 7e 14 00 \tmov    rsi,QWORD PTR [rdi+0x147e88]\n 1177aa3:\t48 8b 44 ce f8       \tmov    rax,QWORD PTR [rsi+rcx*8-0x8]\nD:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline\\src/D:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline/src\\forth.zig:2383\n 1177aa8:\t4c 8d 49 fe          \tlea    r9,[rcx-0x2]\n 1177aac:\t4c 89 8f 98 7e 14 00 \tmov    QWORD PTR [rdi+0x147e98],r9\n 1177ab3:\t31 d2                \txor    edx,edx\ncore.defs.cellsDouble():\nD:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline\\src/D:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline/src\\core\\defs.zig:1437\n 1177ab5:\t45 31 c0             \txor    r8d,r8d\n 1177ab8:\t4c 2b 44 ce f0       \tsub    r8,QWORD PTR [rsi+rcx*8-0x10]\n 1177abd:\t48 19 c2             \tsbb    rdx,rax\n 1177ac0:\t66 b8 1f 00          \tmov    ax,0x1f\nforth.State.push():\nD:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline\\src/D:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline/src\\forth.zig:2388\n 1177ac4:\t4c 3b 8f 90 7e 14 00 \tcmp    r9,QWORD PTR [rdi+0x147e90]\n 1177acb:\t74 36                \tje     1177b03 <core.words_arithmetic.execute__func_444+0x83>\nD:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline\\src/D:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline/src\\forth.zig:2389\n 1177acd:\t4c 89 44 ce f0       \tmov    QWORD PTR [rsi+rcx*8-0x10],r8\nD:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline\\src/D:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline/src\\forth.zig:2390\n 1177ad2:\t48 8b 8f 98 7e 14 00 \tmov    rcx,QWORD PTR [rdi+0x147e98]\n 1177ad9:\t48 8d 71 01          \tlea    rsi,[rcx+0x1]\n 1177add:\t48 89 b7 98 7e 14 00 \tmov    QWORD PTR [rdi+0x147e98],rsi\nD:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline\\src/D:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline/src\\forth.zig:2388\n 1177ae4:\t48 3b b7 90 7e 14 00 \tcmp    rsi,QWORD PTR [rdi+0x147e90]\n 1177aeb:\t74 16                \tje     1177b03 <core.words_arithmetic.execute__func_444+0x83>\nD:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline\\src/D:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline/src\\forth.zig:2389\n 1177aed:\t48 8b 87 88 7e 14 00 \tmov    rax,QWORD PTR [rdi+0x147e88]\n 1177af4:\t48 89 54 c8 08       \tmov    QWORD PTR [rax+rcx*8+0x8],rdx\nD:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline\\src/D:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline/src\\forth.zig:2390\n 1177af9:\t48 83 87 98 7e 14 00 \tadd    QWORD PTR [rdi+0x147e98],0x1\n 1177b00:\t01 \n 1177b01:\t31 c0                \txor    eax,eax\ncore.words_arithmetic.execute__func_444():\n 1177b03:\t5d                   \tpop    rbp\nD:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline\\src/D:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline/src\\core\\words_arithmetic.zig:260\n 1177b04:\tc3                   \tret\n 1177b05:\t66 b8 1d 00          \tmov    ax,0x1d\n 1177b09:\tc3                   \tret\n 1177b0a:\tcc                   \tint3\n 1177b0b:\tcc                   \tint3\n 1177b0c:\tcc                   \tint3\n 1177b0d:\tcc                   \tint3\n 1177b0e:\tcc                   \tint3\n 1177b0f:\tcc                   \tint3"
+  },
+  "assembly_scope": "reused Linux fast baseline-CPU uncounted symbols, addresses from previous artifacts; Windows/counted not checked",
+  "timing_input_hashes": {
+    ".work\\builtin-minus-rot-target-20261116\\minus-rot-aa-1.json": "b2bda634cdc765a34ffaf2d6fcf083901f02b3c17ad138eb2226477db1c9a8dd",
+    ".work\\builtin-minus-rot-target-20261116\\minus-rot-aa-2.json": "af67f65454e23ac0a8f2d699b0a53c7a07aa7de80b790fb28ac7d94e4ee2a4f3",
+    ".work\\stack-check-target-20261116\\two-r-fetch-aa-1.json": "96c540a00b297f0a78bed3863a7109e91b3864acd6491d249aa82b65702259a6",
+    ".work\\stack-check-target-20261116\\two-r-fetch-aa-2.json": "78005c05e80938e692e1e199516db9968ffe54b84f1a34cc2daf4d2c2ddd9261"
+  },
+  "timing_rows": [
+    {
+      "case": "minus-rot",
+      "series": 1,
+      "medians": {
+        "A1": {
+          "cpu_ms": 5296.875,
+          "kernel_ms": 1265.625,
+          "user_ms": 4093.75,
+          "cycles": 20761615900,
+          "wall_ms": 5775.1776
+        },
+        "A2": {
+          "cpu_ms": 5484.375,
+          "kernel_ms": 1390.625,
+          "user_ms": 4171.875,
+          "cycles": 20835101004,
+          "wall_ms": 5801.4752
+        }
+      },
+      "AA_delta_percent": {
+        "cpu_ms": 3.5398230088495577,
+        "wall_ms": 0.45535569330369813,
+        "cycles": 0.3539469391686415
+      },
+      "audited_counted_samples": 10,
+      "max_abs_process_minus_primary_thread_ms": 0.0,
+      "samples": {
+        "A1": [
+          {
+            "cpu_ms": 5281.25,
+            "kernel_ms": 1187.5,
+            "user_ms": 4093.75,
+            "cycles": 20761615900,
+            "wall_ms": 5775.1776,
+            "process_minus_primary_thread_ms": 0.0
+          },
+          {
+            "cpu_ms": 5296.875,
+            "kernel_ms": 1265.625,
+            "user_ms": 4031.25,
+            "cycles": 20802596610,
+            "wall_ms": 5783.6793,
+            "process_minus_primary_thread_ms": 0.0
+          },
+          {
+            "cpu_ms": 5453.125,
+            "kernel_ms": 1328.125,
+            "user_ms": 4125.0,
+            "cycles": 20907724094,
+            "wall_ms": 5816.6415,
+            "process_minus_primary_thread_ms": 0.0
+          },
+          {
+            "cpu_ms": 5140.625,
+            "kernel_ms": 1312.5,
+            "user_ms": 3828.125,
+            "cycles": 20272373481,
+            "wall_ms": 5638.59,
+            "process_minus_primary_thread_ms": 0.0
+          },
+          {
+            "cpu_ms": 5312.5,
+            "kernel_ms": 1218.75,
+            "user_ms": 4093.75,
+            "cycles": 20224654196,
+            "wall_ms": 5629.7774,
+            "process_minus_primary_thread_ms": 0.0
+          }
+        ],
+        "A2": [
+          {
+            "cpu_ms": 5484.375,
+            "kernel_ms": 1109.375,
+            "user_ms": 4375.0,
+            "cycles": 20835101004,
+            "wall_ms": 5797.129099999999,
+            "process_minus_primary_thread_ms": 0.0
+          },
+          {
+            "cpu_ms": 5546.875,
+            "kernel_ms": 1437.5,
+            "user_ms": 4109.375,
+            "cycles": 20979003304,
+            "wall_ms": 5829.7663,
+            "process_minus_primary_thread_ms": 0.0
+          },
+          {
+            "cpu_ms": 5468.75,
+            "kernel_ms": 1078.125,
+            "user_ms": 4390.625,
+            "cycles": 20824074476,
+            "wall_ms": 5801.4752,
+            "process_minus_primary_thread_ms": 0.0
+          },
+          {
+            "cpu_ms": 5218.75,
+            "kernel_ms": 1390.625,
+            "user_ms": 3828.125,
+            "cycles": 19947925925,
+            "wall_ms": 5539.7698,
+            "process_minus_primary_thread_ms": 0.0
+          },
+          {
+            "cpu_ms": 5578.125,
+            "kernel_ms": 1406.25,
+            "user_ms": 4171.875,
+            "cycles": 21041531030,
+            "wall_ms": 5855.7526,
+            "process_minus_primary_thread_ms": 0.0
+          }
+        ]
+      }
+    },
+    {
+      "case": "minus-rot",
+      "series": 2,
+      "medians": {
+        "A1": {
+          "cpu_ms": 5281.25,
+          "kernel_ms": 234.375,
+          "user_ms": 5093.75,
+          "cycles": 20204776925,
+          "wall_ms": 5597.883599999999
+        },
+        "A2": {
+          "cpu_ms": 5437.5,
+          "kernel_ms": 265.625,
+          "user_ms": 5109.375,
+          "cycles": 20603500931,
+          "wall_ms": 5700.5527999999995
+        }
+      },
+      "AA_delta_percent": {
+        "cpu_ms": 2.9585798816568047,
+        "wall_ms": 1.8340717195334373,
+        "cycles": 1.9734145419177895
+      },
+      "audited_counted_samples": 10,
+      "max_abs_process_minus_primary_thread_ms": 0.0,
+      "samples": {
+        "A1": [
+          {
+            "cpu_ms": 5281.25,
+            "kernel_ms": 234.375,
+            "user_ms": 5046.875,
+            "cycles": 20204776925,
+            "wall_ms": 5597.883599999999,
+            "process_minus_primary_thread_ms": 0.0
+          },
+          {
+            "cpu_ms": 5437.5,
+            "kernel_ms": 234.375,
+            "user_ms": 5203.125,
+            "cycles": 20756304170,
+            "wall_ms": 5742.8636,
+            "process_minus_primary_thread_ms": 0.0
+          },
+          {
+            "cpu_ms": 5265.625,
+            "kernel_ms": 171.875,
+            "user_ms": 5093.75,
+            "cycles": 19620832493,
+            "wall_ms": 5435.7543,
+            "process_minus_primary_thread_ms": 0.0
+          },
+          {
+            "cpu_ms": 4843.75,
+            "kernel_ms": 296.875,
+            "user_ms": 4546.875,
+            "cycles": 20127067807,
+            "wall_ms": 5570.8087000000005,
+            "process_minus_primary_thread_ms": 0.0
+          },
+          {
+            "cpu_ms": 5500.0,
+            "kernel_ms": 265.625,
+            "user_ms": 5234.375,
+            "cycles": 20981952804,
+            "wall_ms": 5811.073,
+            "process_minus_primary_thread_ms": 0.0
+          }
+        ],
+        "A2": [
+          {
+            "cpu_ms": 5343.75,
+            "kernel_ms": 218.75,
+            "user_ms": 5125.0,
+            "cycles": 20162989175,
+            "wall_ms": 5589.383599999999,
+            "process_minus_primary_thread_ms": 0.0
+          },
+          {
+            "cpu_ms": 5140.625,
+            "kernel_ms": 265.625,
+            "user_ms": 4875.0,
+            "cycles": 20030784808,
+            "wall_ms": 5544.7417000000005,
+            "process_minus_primary_thread_ms": 0.0
+          },
+          {
+            "cpu_ms": 5468.75,
+            "kernel_ms": 187.5,
+            "user_ms": 5281.25,
+            "cycles": 20603500931,
+            "wall_ms": 5700.5527999999995,
+            "process_minus_primary_thread_ms": 0.0
+          },
+          {
+            "cpu_ms": 5437.5,
+            "kernel_ms": 390.625,
+            "user_ms": 5046.875,
+            "cycles": 20669611364,
+            "wall_ms": 5712.1832,
+            "process_minus_primary_thread_ms": 0.0
+          },
+          {
+            "cpu_ms": 5453.125,
+            "kernel_ms": 343.75,
+            "user_ms": 5109.375,
+            "cycles": 20644370423,
+            "wall_ms": 5717.3145,
+            "process_minus_primary_thread_ms": 0.0
+          }
+        ]
+      }
+    },
+    {
+      "case": "two-r-fetch",
+      "series": 1,
+      "medians": {
+        "A1": {
+          "cpu_ms": 5953.125,
+          "kernel_ms": 328.125,
+          "user_ms": 5656.25,
+          "cycles": 22969960451,
+          "wall_ms": 6365.759099999999
+        },
+        "A2": {
+          "cpu_ms": 5984.375,
+          "kernel_ms": 296.875,
+          "user_ms": 5687.5,
+          "cycles": 22870620630,
+          "wall_ms": 6333.696099999999
+        }
+      },
+      "AA_delta_percent": {
+        "cpu_ms": 0.5249343832020997,
+        "wall_ms": 0.5062288984784115,
+        "cycles": 0.43435559798361273
+      },
+      "audited_counted_samples": 10,
+      "max_abs_process_minus_primary_thread_ms": 0.0,
+      "samples": {
+        "A1": [
+          {
+            "cpu_ms": 5843.75,
+            "kernel_ms": 187.5,
+            "user_ms": 5656.25,
+            "cycles": 22690802422,
+            "wall_ms": 6284.2041,
+            "process_minus_primary_thread_ms": 0.0
+          },
+          {
+            "cpu_ms": 6140.625,
+            "kernel_ms": 375.0,
+            "user_ms": 5765.625,
+            "cycles": 22969960451,
+            "wall_ms": 6365.759099999999,
+            "process_minus_primary_thread_ms": 0.0
+          },
+          {
+            "cpu_ms": 5828.125,
+            "kernel_ms": 328.125,
+            "user_ms": 5500.0,
+            "cycles": 22719034126,
+            "wall_ms": 6294.8779,
+            "process_minus_primary_thread_ms": 0.0
+          },
+          {
+            "cpu_ms": 6093.75,
+            "kernel_ms": 250.0,
+            "user_ms": 5843.75,
+            "cycles": 23129468556,
+            "wall_ms": 6406.8372,
+            "process_minus_primary_thread_ms": 0.0
+          },
+          {
+            "cpu_ms": 5953.125,
+            "kernel_ms": 343.75,
+            "user_ms": 5609.375,
+            "cycles": 23199686015,
+            "wall_ms": 6428.219599999999,
+            "process_minus_primary_thread_ms": 0.0
+          }
+        ],
+        "A2": [
+          {
+            "cpu_ms": 5906.25,
+            "kernel_ms": 296.875,
+            "user_ms": 5609.375,
+            "cycles": 22870620630,
+            "wall_ms": 6337.2936,
+            "process_minus_primary_thread_ms": 0.0
+          },
+          {
+            "cpu_ms": 6109.375,
+            "kernel_ms": 312.5,
+            "user_ms": 5796.875,
+            "cycles": 22848082197,
+            "wall_ms": 6335.879,
+            "process_minus_primary_thread_ms": 0.0
+          },
+          {
+            "cpu_ms": 5984.375,
+            "kernel_ms": 203.125,
+            "user_ms": 5781.25,
+            "cycles": 22804544280,
+            "wall_ms": 6318.964400000001,
+            "process_minus_primary_thread_ms": 0.0
+          },
+          {
+            "cpu_ms": 5875.0,
+            "kernel_ms": 296.875,
+            "user_ms": 5578.125,
+            "cycles": 22883432543,
+            "wall_ms": 6305.2256,
+            "process_minus_primary_thread_ms": 0.0
+          },
+          {
+            "cpu_ms": 6000.0,
+            "kernel_ms": 312.5,
+            "user_ms": 5687.5,
+            "cycles": 22900540933,
+            "wall_ms": 6333.696099999999,
+            "process_minus_primary_thread_ms": 0.0
+          }
+        ]
+      }
+    },
+    {
+      "case": "two-r-fetch",
+      "series": 2,
+      "medians": {
+        "A1": {
+          "cpu_ms": 6093.75,
+          "kernel_ms": 265.625,
+          "user_ms": 5828.125,
+          "cycles": 22847310696,
+          "wall_ms": 6330.6236
+        },
+        "A2": {
+          "cpu_ms": 5937.5,
+          "kernel_ms": 296.875,
+          "user_ms": 5640.625,
+          "cycles": 22793736077,
+          "wall_ms": 6319.1539
+        }
+      },
+      "AA_delta_percent": {
+        "cpu_ms": 2.6315789473684212,
+        "wall_ms": 0.1815068944593935,
+        "cycles": 0.23504097274364524
+      },
+      "audited_counted_samples": 10,
+      "max_abs_process_minus_primary_thread_ms": 0.0,
+      "samples": {
+        "A1": [
+          {
+            "cpu_ms": 6984.375,
+            "kernel_ms": 343.75,
+            "user_ms": 6640.625,
+            "cycles": 26048582205,
+            "wall_ms": 7219.8502,
+            "process_minus_primary_thread_ms": 0.0
+          },
+          {
+            "cpu_ms": 6093.75,
+            "kernel_ms": 265.625,
+            "user_ms": 5828.125,
+            "cycles": 22791260721,
+            "wall_ms": 6321.8885,
+            "process_minus_primary_thread_ms": 0.0
+          },
+          {
+            "cpu_ms": 5984.375,
+            "kernel_ms": 281.25,
+            "user_ms": 5703.125,
+            "cycles": 22847310696,
+            "wall_ms": 6330.6236,
+            "process_minus_primary_thread_ms": 0.0
+          },
+          {
+            "cpu_ms": 6250.0,
+            "kernel_ms": 234.375,
+            "user_ms": 6015.625,
+            "cycles": 23405692321,
+            "wall_ms": 6471.4401,
+            "process_minus_primary_thread_ms": 0.0
+          },
+          {
+            "cpu_ms": 6000.0,
+            "kernel_ms": 187.5,
+            "user_ms": 5812.5,
+            "cycles": 22822966512,
+            "wall_ms": 6290.1753,
+            "process_minus_primary_thread_ms": 0.0
+          }
+        ],
+        "A2": [
+          {
+            "cpu_ms": 5937.5,
+            "kernel_ms": 296.875,
+            "user_ms": 5640.625,
+            "cycles": 22793736077,
+            "wall_ms": 6319.1539,
+            "process_minus_primary_thread_ms": 0.0
+          },
+          {
+            "cpu_ms": 5796.875,
+            "kernel_ms": 328.125,
+            "user_ms": 5468.75,
+            "cycles": 22902911969,
+            "wall_ms": 6344.7845,
+            "process_minus_primary_thread_ms": 0.0
+          },
+          {
+            "cpu_ms": 6031.25,
+            "kernel_ms": 265.625,
+            "user_ms": 5765.625,
+            "cycles": 23256075201,
+            "wall_ms": 6464.5381,
+            "process_minus_primary_thread_ms": 0.0
+          },
+          {
+            "cpu_ms": 6078.125,
+            "kernel_ms": 406.25,
+            "user_ms": 5671.875,
+            "cycles": 22772139147,
+            "wall_ms": 6312.5163,
+            "process_minus_primary_thread_ms": 0.0
+          },
+          {
+            "cpu_ms": 5875.0,
+            "kernel_ms": 265.625,
+            "user_ms": 5609.375,
+            "cycles": 22699410021,
+            "wall_ms": 6289.5879,
+            "process_minus_primary_thread_ms": 0.0
+          }
+        ]
+      }
+    }
+  ],
+  "limitations": [
+    "No candidate comparison was performed in these files",
+    "CPU median is not sum of separately calculated kernel/user medians",
+    "Cycle counts are neither elapsed time nor retired instruction counts",
+    "No causal conclusion on kernel accounting or hardware",
+    "A/A percent is not a confidence interval",
+    "Thread equality only applies to these 40 counted samples"
+  ],
+  "analysis_script": "from pathlib import Path\nimport json,hashlib,statistics,re\nr=Path.cwd();o=r/'.work/stack-check-selection-20261116';h=lambda p:hashlib.sha256(p.read_bytes()).hexdigest()\nplan=r/'.work/vm-all-validation-20261115/plan.json';p=json.loads(plan.read_text());definitions={x['case']:x['config']['definition'] for x in p['items']};extra=r/'.work/vm-priority-validation-20261115/linux-nobt-config.json';definitions['catch/nobt-throw']=json.loads(extra.read_text())['definition'];assert len(definitions)==17\nhits={word:[k for k,v in definitions.items() if word in v.upper().split()] for word in ['2R>','DNEGATE']}\nrows=[];sources={}\nfor folder,case in [('builtin-minus-rot-target-20261116','minus-rot'),('stack-check-target-20261116','two-r-fetch')]:\n for i in [1,2]:\n  path=r/'.work'/folder/f'{case}-aa-{i}.json';x=json.loads(path.read_text());sources[str(path.relative_to(r))]=h(path);values={k:[] for k in x['engines']};indices={k:0 for k in values};audit=0\n  for n,order in enumerate(x['orders']):\n   for j,k in enumerate(order):\n    q=x['process_time_queries'][n*2+j]['queries'];first,last=q[:2];kernel=(last['kernel_ns']-first['kernel_ns'])/1e6;user=(last['user_ns']-first['user_ns'])/1e6;cpu=kernel+user;thread=sum(last['primary_thread'][a]-first['primary_thread'][a] for a in ['kernel_ns','user_ns'])/1e6\n    if n:\n     index=indices[k];expected=x['engines'][k]['samples_us'][index]/1000;assert abs(cpu-expected)<1e-7,(case,i,k,index,cpu,expected);indices[k]+=1;audit+=1\n     values[k].append({'cpu_ms':cpu,'kernel_ms':kernel,'user_ms':user,'cycles':last['cycles']-first['cycles'],'wall_ms':x['engines'][k]['wall_samples_us'][index]/1000,'process_minus_primary_thread_ms':cpu-thread})\n  medians={k:{a:statistics.median(v[a] for v in vs) for a in ['cpu_ms','kernel_ms','user_ms','cycles','wall_ms']} for k,vs in values.items()};delta=lambda a:100*abs(medians['A1'][a]-medians['A2'][a])/min(medians['A1'][a],medians['A2'][a]);rows.append({'case':case,'series':i,'medians':medians,'AA_delta_percent':{a:delta(a) for a in ['cpu_ms','wall_ms','cycles']},'audited_counted_samples':audit,'max_abs_process_minus_primary_thread_ms':max(abs(v['process_minus_primary_thread_ms']) for vs in values.values() for v in vs),'samples':values})\nasm={name:(r/'.work/stack-check-20261116'/f).read_text(encoding='utf-8') for name,f in [('2R>','execute__func_491.asm'),('DNEGATE','execute__func_444.asm')]}\nreport={'decision':'Both retained as reserve; do not start another trial until measurement stability and workload relevance are assessed. No claim on relative speed benefit.','definitions':definitions,'direct_token_hits':hits,'scope_note':'17 distinct kernel definition strings from 29 items plus the reused nobt configuration. Lexical search only, not transitive dynamic word frequency.','benchmark_plan_sha256':h(plan),'reused_nobt_config_sha256':h(extra),'source_hashes':{f:h(r/f) for f in ['src/forth.zig','src/core/words_stack.zig','src/core/words_arithmetic.zig']},'baseline_assembly':asm,'assembly_scope':'reused Linux fast baseline-CPU uncounted symbols, addresses from previous artifacts; Windows/counted not checked','timing_input_hashes':sources,'timing_rows':rows,'limitations':['No candidate comparison was performed in these files','CPU median is not sum of separately calculated kernel/user medians','Cycle counts are neither elapsed time nor retired instruction counts','No causal conclusion on kernel accounting or hardware','A/A percent is not a confidence interval','Thread equality only applies to these 40 counted samples']}\n(r/'docs/measurements/2026-11-16-stack-check-selection.json').write_text(json.dumps(report,indent=2)+'\\n',encoding='utf-8')\n(o/'summary.json').write_text(json.dumps({'hits':hits,'timing':[{k:v for k,v in x.items() if k not in ['samples','medians']} for x in rows]},indent=2)+'\\n');print((o/'summary.json').read_text())\n",
+  "initial_analysis_correction": "Initial 17-definition assertion failed because reused CATCH-NOBT was missing from items; explicitly loaded its frozen configuration and reran. Initial script retained."
+}

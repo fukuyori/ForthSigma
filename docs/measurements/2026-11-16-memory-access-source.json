@@ -1,0 +1,8 @@
+{
+  "scope": "source-only; no new generated-code assertion or timing",
+  "files": {
+    "src/forth.zig": "d2c101033474ba348c6cd148249bd81afb6ae4e7656ae5bb0c40326806182195",
+    "src/core/words_memory.zig": "a1f358c08a8e1849f91fe532c78346216f8956bb6e97c095a4067d69082b39ac",
+    "src/core/address_registry.zig": "0178972983138fa539ef4d796cd37546b1a7866e9b2468a0b0a9787f95b883cc"
+  }
+}

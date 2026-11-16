@@ -1,0 +1,1045 @@
+{
+  "toolchain": "0.17.0",
+  "builds": [
+    {
+      "os": "windows",
+      "mode": "fast",
+      "command": [
+        "zig",
+        "build",
+        "-Dtarget=x86_64-windows-gnu",
+        "-Doptimize=fast",
+        "-Dcpu=baseline",
+        "-Dstrip=true",
+        "--prefix",
+        "D:\\home\\source\\zig\\forthz\\.work\\optimize-small-20261116\\windows-fast",
+        "--summary",
+        "all"
+      ],
+      "exit": 0,
+      "bytes": 1809408,
+      "sha256": "379d6c6c069b9c3072da22fa6cea8b7deff77c5ed78ef9bbd070f92a724337bf",
+      "size_change_percent": 0.0
+    },
+    {
+      "os": "windows",
+      "mode": "small",
+      "command": [
+        "zig",
+        "build",
+        "-Dtarget=x86_64-windows-gnu",
+        "-Doptimize=small",
+        "-Dcpu=baseline",
+        "-Dstrip=true",
+        "--prefix",
+        "D:\\home\\source\\zig\\forthz\\.work\\optimize-small-20261116\\windows-small",
+        "--summary",
+        "all"
+      ],
+      "exit": 0,
+      "bytes": 1333248,
+      "sha256": "20ba763a414a3a2dc0c8512ef54f71f1d6b3f1092b7dcf07f1904bab33d38fc7",
+      "size_change_percent": -26.315789473684216
+    },
+    {
+      "os": "linux",
+      "mode": "fast",
+      "command": [
+        "zig",
+        "build",
+        "-Dtarget=x86_64-linux-musl",
+        "-Doptimize=fast",
+        "-Dcpu=baseline",
+        "-Dstrip=true",
+        "--prefix",
+        "D:\\home\\source\\zig\\forthz\\.work\\optimize-small-20261116\\linux-fast",
+        "--summary",
+        "all"
+      ],
+      "exit": 0,
+      "bytes": 1891456,
+      "sha256": "bdb6eb7a0ac59d27d23281708f89538631950d39654837cfd1cfa8d0e78b73fa",
+      "size_change_percent": 0.0
+    },
+    {
+      "os": "linux",
+      "mode": "small",
+      "command": [
+        "zig",
+        "build",
+        "-Dtarget=x86_64-linux-musl",
+        "-Doptimize=small",
+        "-Dcpu=baseline",
+        "-Dstrip=true",
+        "--prefix",
+        "D:\\home\\source\\zig\\forthz\\.work\\optimize-small-20261116\\linux-small",
+        "--summary",
+        "all"
+      ],
+      "exit": 0,
+      "bytes": 1418496,
+      "sha256": "6bd1071b20b2293a645a7447919c48a37229d7eda17f0112423400cd8a25e604",
+      "size_change_percent": -25.005075455099146
+    }
+  ],
+  "tests": [
+    {
+      "os": "windows",
+      "command": [
+        "zig",
+        "build",
+        "test",
+        "-Dtarget=x86_64-windows-gnu",
+        "-Doptimize=small",
+        "-Dcpu=baseline",
+        "--summary",
+        "all"
+      ],
+      "exit": 0
+    },
+    {
+      "os": "linux",
+      "command": [
+        "zig",
+        "build",
+        "test",
+        "-Dtarget=x86_64-linux-musl",
+        "-Doptimize=small",
+        "-Dcpu=baseline",
+        "--summary",
+        "all"
+      ],
+      "exit": 1,
+      "elf_tests": [
+        {
+          "command": [
+            "wsl",
+            "--exec",
+            "/mnt/d/home/source/zig/forthz/.work/optimize-small-20261116/source/.zig-cache/o/d65be8553f52de8636850cec3361aaf4/test"
+          ],
+          "exit": 0
+        },
+        {
+          "command": [
+            "wsl",
+            "--exec",
+            "/mnt/d/home/source/zig/forthz/.work/optimize-small-20261116/source/.zig-cache/o/06b78bb3eaf762b78c5ddb4e0e6e61fd/test"
+          ],
+          "exit": 0
+        }
+      ]
+    }
+  ],
+  "smoke": [
+    {
+      "os": "windows",
+      "case": "arithmetic",
+      "mode": "fast",
+      "command": [
+        "D:\\home\\source\\zig\\forthz\\.work\\optimize-small-20261116\\windows-fast\\bin\\sigma.exe",
+        "-e",
+        "100 CONSTANT BENCH-ITERATIONS : BENCH-RUN 1 BENCH-ITERATIONS 0 DO 3 * 7 + 65535 AND LOOP ; BENCH-RUN . DEPTH . BYE"
+      ],
+      "stdout": "22825 0 ",
+      "stderr": "",
+      "exit": 0
+    },
+    {
+      "os": "windows",
+      "case": "arithmetic",
+      "mode": "small",
+      "command": [
+        "D:\\home\\source\\zig\\forthz\\.work\\optimize-small-20261116\\windows-small\\bin\\sigma.exe",
+        "-e",
+        "100 CONSTANT BENCH-ITERATIONS : BENCH-RUN 1 BENCH-ITERATIONS 0 DO 3 * 7 + 65535 AND LOOP ; BENCH-RUN . DEPTH . BYE"
+      ],
+      "stdout": "22825 0 ",
+      "stderr": "",
+      "exit": 0
+    },
+    {
+      "os": "windows",
+      "case": "stacks",
+      "mode": "fast",
+      "command": [
+        "D:\\home\\source\\zig\\forthz\\.work\\optimize-small-20261116\\windows-fast\\bin\\sigma.exe",
+        "-e",
+        "100 CONSTANT BENCH-ITERATIONS : BENCH-RUN 1 2 3 BENCH-ITERATIONS 0 DO ROT SWAP OVER + 65535 AND DUP NIP LOOP + + ; BENCH-RUN . DEPTH . BYE"
+      ],
+      "stdout": "156 0 ",
+      "stderr": "",
+      "exit": 0
+    },
+    {
+      "os": "windows",
+      "case": "stacks",
+      "mode": "small",
+      "command": [
+        "D:\\home\\source\\zig\\forthz\\.work\\optimize-small-20261116\\windows-small\\bin\\sigma.exe",
+        "-e",
+        "100 CONSTANT BENCH-ITERATIONS : BENCH-RUN 1 2 3 BENCH-ITERATIONS 0 DO ROT SWAP OVER + 65535 AND DUP NIP LOOP + + ; BENCH-RUN . DEPTH . BYE"
+      ],
+      "stdout": "156 0 ",
+      "stderr": "",
+      "exit": 0
+    },
+    {
+      "os": "windows",
+      "case": "calls",
+      "mode": "fast",
+      "command": [
+        "D:\\home\\source\\zig\\forthz\\.work\\optimize-small-20261116\\windows-fast\\bin\\sigma.exe",
+        "-e",
+        "100 CONSTANT BENCH-ITERATIONS : BENCH-A 1+ ; : BENCH-B BENCH-A BENCH-A ; : BENCH-C BENCH-B BENCH-B ; : BENCH-RUN 0 BENCH-ITERATIONS 0 DO BENCH-C LOOP ; BENCH-RUN . DEPTH . BYE"
+      ],
+      "stdout": "400 0 ",
+      "stderr": "",
+      "exit": 0
+    },
+    {
+      "os": "windows",
+      "case": "calls",
+      "mode": "small",
+      "command": [
+        "D:\\home\\source\\zig\\forthz\\.work\\optimize-small-20261116\\windows-small\\bin\\sigma.exe",
+        "-e",
+        "100 CONSTANT BENCH-ITERATIONS : BENCH-A 1+ ; : BENCH-B BENCH-A BENCH-A ; : BENCH-C BENCH-B BENCH-B ; : BENCH-RUN 0 BENCH-ITERATIONS 0 DO BENCH-C LOOP ; BENCH-RUN . DEPTH . BYE"
+      ],
+      "stdout": "400 0 ",
+      "stderr": "",
+      "exit": 0
+    },
+    {
+      "os": "windows",
+      "case": "variables",
+      "mode": "fast",
+      "command": [
+        "D:\\home\\source\\zig\\forthz\\.work\\optimize-small-20261116\\windows-fast\\bin\\sigma.exe",
+        "-e",
+        "100 CONSTANT BENCH-ITERATIONS VARIABLE BENCH-V 7 CONSTANT BENCH-K : BENCH-RUN 0 BENCH-V ! BENCH-ITERATIONS 0 DO BENCH-K BENCH-V +! LOOP BENCH-V @ ; BENCH-RUN . DEPTH . BYE"
+      ],
+      "stdout": "700 0 ",
+      "stderr": "",
+      "exit": 0
+    },
+    {
+      "os": "windows",
+      "case": "variables",
+      "mode": "small",
+      "command": [
+        "D:\\home\\source\\zig\\forthz\\.work\\optimize-small-20261116\\windows-small\\bin\\sigma.exe",
+        "-e",
+        "100 CONSTANT BENCH-ITERATIONS VARIABLE BENCH-V 7 CONSTANT BENCH-K : BENCH-RUN 0 BENCH-V ! BENCH-ITERATIONS 0 DO BENCH-K BENCH-V +! LOOP BENCH-V @ ; BENCH-RUN . DEPTH . BYE"
+      ],
+      "stdout": "700 0 ",
+      "stderr": "",
+      "exit": 0
+    },
+    {
+      "os": "windows",
+      "case": "loops",
+      "mode": "fast",
+      "command": [
+        "D:\\home\\source\\zig\\forthz\\.work\\optimize-small-20261116\\windows-fast\\bin\\sigma.exe",
+        "-e",
+        "100 CONSTANT BENCH-ITERATIONS : BENCH-RUN 0 BENCH-ITERATIONS 0 DO I 7 AND + LOOP ; BENCH-RUN . DEPTH . BYE"
+      ],
+      "stdout": "342 0 ",
+      "stderr": "",
+      "exit": 0
+    },
+    {
+      "os": "windows",
+      "case": "loops",
+      "mode": "small",
+      "command": [
+        "D:\\home\\source\\zig\\forthz\\.work\\optimize-small-20261116\\windows-small\\bin\\sigma.exe",
+        "-e",
+        "100 CONSTANT BENCH-ITERATIONS : BENCH-RUN 0 BENCH-ITERATIONS 0 DO I 7 AND + LOOP ; BENCH-RUN . DEPTH . BYE"
+      ],
+      "stdout": "342 0 ",
+      "stderr": "",
+      "exit": 0
+    },
+    {
+      "os": "windows",
+      "case": "plus-loop",
+      "mode": "fast",
+      "command": [
+        "D:\\home\\source\\zig\\forthz\\.work\\optimize-small-20261116\\windows-fast\\bin\\sigma.exe",
+        "-e",
+        "100 CONSTANT BENCH-ITERATIONS : BENCH-RUN 0 BENCH-ITERATIONS 0 DO I 7 AND + 2 +LOOP ; BENCH-RUN . DEPTH . BYE"
+      ],
+      "stdout": "146 0 ",
+      "stderr": "",
+      "exit": 0
+    },
+    {
+      "os": "windows",
+      "case": "plus-loop",
+      "mode": "small",
+      "command": [
+        "D:\\home\\source\\zig\\forthz\\.work\\optimize-small-20261116\\windows-small\\bin\\sigma.exe",
+        "-e",
+        "100 CONSTANT BENCH-ITERATIONS : BENCH-RUN 0 BENCH-ITERATIONS 0 DO I 7 AND + 2 +LOOP ; BENCH-RUN . DEPTH . BYE"
+      ],
+      "stdout": "146 0 ",
+      "stderr": "",
+      "exit": 0
+    },
+    {
+      "os": "windows",
+      "case": "extended",
+      "mode": "fast",
+      "command": [
+        "D:\\home\\source\\zig\\forthz\\.work\\optimize-small-20261116\\windows-fast\\bin\\sigma.exe",
+        "-e",
+        "100 CONSTANT BENCH-ITERATIONS : BENCH-RUN 1 BENCH-ITERATIONS 0 DO 2* 1+ DUP 3 RSHIFT XOR 65535 AND LOOP ; BENCH-RUN . DEPTH . BYE"
+      ],
+      "stdout": "59859 0 ",
+      "stderr": "",
+      "exit": 0
+    },
+    {
+      "os": "windows",
+      "case": "extended",
+      "mode": "small",
+      "command": [
+        "D:\\home\\source\\zig\\forthz\\.work\\optimize-small-20261116\\windows-small\\bin\\sigma.exe",
+        "-e",
+        "100 CONSTANT BENCH-ITERATIONS : BENCH-RUN 1 BENCH-ITERATIONS 0 DO 2* 1+ DUP 3 RSHIFT XOR 65535 AND LOOP ; BENCH-RUN . DEPTH . BYE"
+      ],
+      "stdout": "59859 0 ",
+      "stderr": "",
+      "exit": 0
+    },
+    {
+      "os": "windows",
+      "case": "float",
+      "mode": "fast",
+      "command": [
+        "D:\\home\\source\\zig\\forthz\\.work\\optimize-small-20261116\\windows-fast\\bin\\sigma.exe",
+        "-e",
+        "100 CONSTANT BENCH-ITERATIONS : BENCH-RUN 0e BENCH-ITERATIONS 0 DO 1e F+ 1e F* LOOP F>S ; BENCH-RUN . DEPTH . BYE"
+      ],
+      "stdout": "100 0 ",
+      "stderr": "",
+      "exit": 0
+    },
+    {
+      "os": "windows",
+      "case": "float",
+      "mode": "small",
+      "command": [
+        "D:\\home\\source\\zig\\forthz\\.work\\optimize-small-20261116\\windows-small\\bin\\sigma.exe",
+        "-e",
+        "100 CONSTANT BENCH-ITERATIONS : BENCH-RUN 0e BENCH-ITERATIONS 0 DO 1e F+ 1e F* LOOP F>S ; BENCH-RUN . DEPTH . BYE"
+      ],
+      "stdout": "100 0 ",
+      "stderr": "",
+      "exit": 0
+    },
+    {
+      "os": "linux",
+      "case": "arithmetic",
+      "mode": "fast",
+      "command": [
+        "wsl",
+        "--exec",
+        "/mnt/d/home/source/zig/forthz/.work/optimize-small-20261116/linux-fast/bin/sigma",
+        "-e",
+        "100 CONSTANT BENCH-ITERATIONS : BENCH-RUN 1 BENCH-ITERATIONS 0 DO 3 * 7 + 65535 AND LOOP ; BENCH-RUN . DEPTH . BYE"
+      ],
+      "stdout": "22825 0 ",
+      "stderr": "",
+      "exit": 0
+    },
+    {
+      "os": "linux",
+      "case": "arithmetic",
+      "mode": "small",
+      "command": [
+        "wsl",
+        "--exec",
+        "/mnt/d/home/source/zig/forthz/.work/optimize-small-20261116/linux-small/bin/sigma",
+        "-e",
+        "100 CONSTANT BENCH-ITERATIONS : BENCH-RUN 1 BENCH-ITERATIONS 0 DO 3 * 7 + 65535 AND LOOP ; BENCH-RUN . DEPTH . BYE"
+      ],
+      "stdout": "22825 0 ",
+      "stderr": "",
+      "exit": 0
+    },
+    {
+      "os": "linux",
+      "case": "stacks",
+      "mode": "fast",
+      "command": [
+        "wsl",
+        "--exec",
+        "/mnt/d/home/source/zig/forthz/.work/optimize-small-20261116/linux-fast/bin/sigma",
+        "-e",
+        "100 CONSTANT BENCH-ITERATIONS : BENCH-RUN 1 2 3 BENCH-ITERATIONS 0 DO ROT SWAP OVER + 65535 AND DUP NIP LOOP + + ; BENCH-RUN . DEPTH . BYE"
+      ],
+      "stdout": "156 0 ",
+      "stderr": "",
+      "exit": 0
+    },
+    {
+      "os": "linux",
+      "case": "stacks",
+      "mode": "small",
+      "command": [
+        "wsl",
+        "--exec",
+        "/mnt/d/home/source/zig/forthz/.work/optimize-small-20261116/linux-small/bin/sigma",
+        "-e",
+        "100 CONSTANT BENCH-ITERATIONS : BENCH-RUN 1 2 3 BENCH-ITERATIONS 0 DO ROT SWAP OVER + 65535 AND DUP NIP LOOP + + ; BENCH-RUN . DEPTH . BYE"
+      ],
+      "stdout": "156 0 ",
+      "stderr": "",
+      "exit": 0
+    },
+    {
+      "os": "linux",
+      "case": "calls",
+      "mode": "fast",
+      "command": [
+        "wsl",
+        "--exec",
+        "/mnt/d/home/source/zig/forthz/.work/optimize-small-20261116/linux-fast/bin/sigma",
+        "-e",
+        "100 CONSTANT BENCH-ITERATIONS : BENCH-A 1+ ; : BENCH-B BENCH-A BENCH-A ; : BENCH-C BENCH-B BENCH-B ; : BENCH-RUN 0 BENCH-ITERATIONS 0 DO BENCH-C LOOP ; BENCH-RUN . DEPTH . BYE"
+      ],
+      "stdout": "400 0 ",
+      "stderr": "",
+      "exit": 0
+    },
+    {
+      "os": "linux",
+      "case": "calls",
+      "mode": "small",
+      "command": [
+        "wsl",
+        "--exec",
+        "/mnt/d/home/source/zig/forthz/.work/optimize-small-20261116/linux-small/bin/sigma",
+        "-e",
+        "100 CONSTANT BENCH-ITERATIONS : BENCH-A 1+ ; : BENCH-B BENCH-A BENCH-A ; : BENCH-C BENCH-B BENCH-B ; : BENCH-RUN 0 BENCH-ITERATIONS 0 DO BENCH-C LOOP ; BENCH-RUN . DEPTH . BYE"
+      ],
+      "stdout": "400 0 ",
+      "stderr": "",
+      "exit": 0
+    },
+    {
+      "os": "linux",
+      "case": "variables",
+      "mode": "fast",
+      "command": [
+        "wsl",
+        "--exec",
+        "/mnt/d/home/source/zig/forthz/.work/optimize-small-20261116/linux-fast/bin/sigma",
+        "-e",
+        "100 CONSTANT BENCH-ITERATIONS VARIABLE BENCH-V 7 CONSTANT BENCH-K : BENCH-RUN 0 BENCH-V ! BENCH-ITERATIONS 0 DO BENCH-K BENCH-V +! LOOP BENCH-V @ ; BENCH-RUN . DEPTH . BYE"
+      ],
+      "stdout": "700 0 ",
+      "stderr": "",
+      "exit": 0
+    },
+    {
+      "os": "linux",
+      "case": "variables",
+      "mode": "small",
+      "command": [
+        "wsl",
+        "--exec",
+        "/mnt/d/home/source/zig/forthz/.work/optimize-small-20261116/linux-small/bin/sigma",
+        "-e",
+        "100 CONSTANT BENCH-ITERATIONS VARIABLE BENCH-V 7 CONSTANT BENCH-K : BENCH-RUN 0 BENCH-V ! BENCH-ITERATIONS 0 DO BENCH-K BENCH-V +! LOOP BENCH-V @ ; BENCH-RUN . DEPTH . BYE"
+      ],
+      "stdout": "700 0 ",
+      "stderr": "",
+      "exit": 0
+    },
+    {
+      "os": "linux",
+      "case": "loops",
+      "mode": "fast",
+      "command": [
+        "wsl",
+        "--exec",
+        "/mnt/d/home/source/zig/forthz/.work/optimize-small-20261116/linux-fast/bin/sigma",
+        "-e",
+        "100 CONSTANT BENCH-ITERATIONS : BENCH-RUN 0 BENCH-ITERATIONS 0 DO I 7 AND + LOOP ; BENCH-RUN . DEPTH . BYE"
+      ],
+      "stdout": "342 0 ",
+      "stderr": "",
+      "exit": 0
+    },
+    {
+      "os": "linux",
+      "case": "loops",
+      "mode": "small",
+      "command": [
+        "wsl",
+        "--exec",
+        "/mnt/d/home/source/zig/forthz/.work/optimize-small-20261116/linux-small/bin/sigma",
+        "-e",
+        "100 CONSTANT BENCH-ITERATIONS : BENCH-RUN 0 BENCH-ITERATIONS 0 DO I 7 AND + LOOP ; BENCH-RUN . DEPTH . BYE"
+      ],
+      "stdout": "342 0 ",
+      "stderr": "",
+      "exit": 0
+    },
+    {
+      "os": "linux",
+      "case": "plus-loop",
+      "mode": "fast",
+      "command": [
+        "wsl",
+        "--exec",
+        "/mnt/d/home/source/zig/forthz/.work/optimize-small-20261116/linux-fast/bin/sigma",
+        "-e",
+        "100 CONSTANT BENCH-ITERATIONS : BENCH-RUN 0 BENCH-ITERATIONS 0 DO I 7 AND + 2 +LOOP ; BENCH-RUN . DEPTH . BYE"
+      ],
+      "stdout": "146 0 ",
+      "stderr": "",
+      "exit": 0
+    },
+    {
+      "os": "linux",
+      "case": "plus-loop",
+      "mode": "small",
+      "command": [
+        "wsl",
+        "--exec",
+        "/mnt/d/home/source/zig/forthz/.work/optimize-small-20261116/linux-small/bin/sigma",
+        "-e",
+        "100 CONSTANT BENCH-ITERATIONS : BENCH-RUN 0 BENCH-ITERATIONS 0 DO I 7 AND + 2 +LOOP ; BENCH-RUN . DEPTH . BYE"
+      ],
+      "stdout": "146 0 ",
+      "stderr": "",
+      "exit": 0
+    },
+    {
+      "os": "linux",
+      "case": "extended",
+      "mode": "fast",
+      "command": [
+        "wsl",
+        "--exec",
+        "/mnt/d/home/source/zig/forthz/.work/optimize-small-20261116/linux-fast/bin/sigma",
+        "-e",
+        "100 CONSTANT BENCH-ITERATIONS : BENCH-RUN 1 BENCH-ITERATIONS 0 DO 2* 1+ DUP 3 RSHIFT XOR 65535 AND LOOP ; BENCH-RUN . DEPTH . BYE"
+      ],
+      "stdout": "59859 0 ",
+      "stderr": "",
+      "exit": 0
+    },
+    {
+      "os": "linux",
+      "case": "extended",
+      "mode": "small",
+      "command": [
+        "wsl",
+        "--exec",
+        "/mnt/d/home/source/zig/forthz/.work/optimize-small-20261116/linux-small/bin/sigma",
+        "-e",
+        "100 CONSTANT BENCH-ITERATIONS : BENCH-RUN 1 BENCH-ITERATIONS 0 DO 2* 1+ DUP 3 RSHIFT XOR 65535 AND LOOP ; BENCH-RUN . DEPTH . BYE"
+      ],
+      "stdout": "59859 0 ",
+      "stderr": "",
+      "exit": 0
+    },
+    {
+      "os": "linux",
+      "case": "float",
+      "mode": "fast",
+      "command": [
+        "wsl",
+        "--exec",
+        "/mnt/d/home/source/zig/forthz/.work/optimize-small-20261116/linux-fast/bin/sigma",
+        "-e",
+        "100 CONSTANT BENCH-ITERATIONS : BENCH-RUN 0e BENCH-ITERATIONS 0 DO 1e F+ 1e F* LOOP F>S ; BENCH-RUN . DEPTH . BYE"
+      ],
+      "stdout": "100 0 ",
+      "stderr": "",
+      "exit": 0
+    },
+    {
+      "os": "linux",
+      "case": "float",
+      "mode": "small",
+      "command": [
+        "wsl",
+        "--exec",
+        "/mnt/d/home/source/zig/forthz/.work/optimize-small-20261116/linux-small/bin/sigma",
+        "-e",
+        "100 CONSTANT BENCH-ITERATIONS : BENCH-RUN 0e BENCH-ITERATIONS 0 DO 1e F+ 1e F* LOOP F>S ; BENCH-RUN . DEPTH . BYE"
+      ],
+      "stdout": "100 0 ",
+      "stderr": "",
+      "exit": 0
+    }
+  ],
+  "images": [
+    {
+      "os": "windows",
+      "action": "save",
+      "mode": "fast",
+      "command": [
+        "D:\\home\\source\\zig\\forthz\\.work\\optimize-small-20261116\\windows-fast\\bin\\sigma.exe",
+        "-e",
+        ": SMALL-IMAGE-CHECK 10 3 - ; SEE SMALL-IMAGE-CHECK SAVE D:/home/source/zig/forthz/.work/optimize-small-20261116/windows-fast.sigma BYE"
+      ],
+      "exit": 0,
+      "stdout": ": SMALL-IMAGE-CHECK\r\n  10 3 -\r\n;\r\n",
+      "stderr": "",
+      "sha256": "379d6c6c069b9c3072da22fa6cea8b7deff77c5ed78ef9bbd070f92a724337bf",
+      "image_sha256": "1519d842065a8b2d55668f83fdc3e5e66140361f3ef008cb29002e2bedc414d8"
+    },
+    {
+      "os": "windows",
+      "action": "save",
+      "mode": "small",
+      "command": [
+        "D:\\home\\source\\zig\\forthz\\.work\\optimize-small-20261116\\windows-small\\bin\\sigma.exe",
+        "-e",
+        ": SMALL-IMAGE-CHECK 10 3 - ; SEE SMALL-IMAGE-CHECK SAVE D:/home/source/zig/forthz/.work/optimize-small-20261116/windows-small.sigma BYE"
+      ],
+      "exit": 0,
+      "stdout": ": SMALL-IMAGE-CHECK\r\n  10 3 -\r\n;\r\n",
+      "stderr": "",
+      "sha256": "20ba763a414a3a2dc0c8512ef54f71f1d6b3f1092b7dcf07f1904bab33d38fc7",
+      "image_sha256": "d9dc896b915f4ea95644772bf881e42d2d404d75c59bb4732b061ce744291e16"
+    },
+    {
+      "os": "windows",
+      "action": "load",
+      "saved_mode": "fast",
+      "mode": "fast",
+      "command": [
+        "D:\\home\\source\\zig\\forthz\\.work\\optimize-small-20261116\\windows-fast\\bin\\sigma.exe",
+        "-e",
+        "LOAD-DICTIONARY D:/home/source/zig/forthz/.work/optimize-small-20261116/windows-fast.sigma SMALL-IMAGE-CHECK . DEPTH . BYE"
+      ],
+      "exit": 0,
+      "stdout": "7 0 ",
+      "stderr": "",
+      "sha256": "379d6c6c069b9c3072da22fa6cea8b7deff77c5ed78ef9bbd070f92a724337bf"
+    },
+    {
+      "os": "windows",
+      "action": "load",
+      "saved_mode": "fast",
+      "mode": "small",
+      "command": [
+        "D:\\home\\source\\zig\\forthz\\.work\\optimize-small-20261116\\windows-small\\bin\\sigma.exe",
+        "-e",
+        "LOAD-DICTIONARY D:/home/source/zig/forthz/.work/optimize-small-20261116/windows-fast.sigma SMALL-IMAGE-CHECK . DEPTH . BYE"
+      ],
+      "exit": 0,
+      "stdout": "7 0 ",
+      "stderr": "",
+      "sha256": "20ba763a414a3a2dc0c8512ef54f71f1d6b3f1092b7dcf07f1904bab33d38fc7"
+    },
+    {
+      "os": "windows",
+      "action": "load",
+      "saved_mode": "small",
+      "mode": "fast",
+      "command": [
+        "D:\\home\\source\\zig\\forthz\\.work\\optimize-small-20261116\\windows-fast\\bin\\sigma.exe",
+        "-e",
+        "LOAD-DICTIONARY D:/home/source/zig/forthz/.work/optimize-small-20261116/windows-small.sigma SMALL-IMAGE-CHECK . DEPTH . BYE"
+      ],
+      "exit": 0,
+      "stdout": "7 0 ",
+      "stderr": "",
+      "sha256": "379d6c6c069b9c3072da22fa6cea8b7deff77c5ed78ef9bbd070f92a724337bf"
+    },
+    {
+      "os": "windows",
+      "action": "load",
+      "saved_mode": "small",
+      "mode": "small",
+      "command": [
+        "D:\\home\\source\\zig\\forthz\\.work\\optimize-small-20261116\\windows-small\\bin\\sigma.exe",
+        "-e",
+        "LOAD-DICTIONARY D:/home/source/zig/forthz/.work/optimize-small-20261116/windows-small.sigma SMALL-IMAGE-CHECK . DEPTH . BYE"
+      ],
+      "exit": 0,
+      "stdout": "7 0 ",
+      "stderr": "",
+      "sha256": "20ba763a414a3a2dc0c8512ef54f71f1d6b3f1092b7dcf07f1904bab33d38fc7"
+    },
+    {
+      "os": "linux",
+      "action": "save",
+      "mode": "fast",
+      "command": [
+        "wsl",
+        "--exec",
+        "/mnt/d/home/source/zig/forthz/.work/optimize-small-20261116/linux-fast/bin/sigma",
+        "-e",
+        ": SMALL-IMAGE-CHECK 10 3 - ; SEE SMALL-IMAGE-CHECK SAVE /mnt/d/home/source/zig/forthz/.work/optimize-small-20261116/linux-fast.sigma BYE"
+      ],
+      "exit": 0,
+      "stdout": ": SMALL-IMAGE-CHECK\n  10 3 -\n;\n",
+      "stderr": "",
+      "sha256": "bdb6eb7a0ac59d27d23281708f89538631950d39654837cfd1cfa8d0e78b73fa",
+      "image_sha256": "c7270d6c0714cb2041c8e46fee8ec9d485ae272e139ae583f27c494de018bfbf"
+    },
+    {
+      "os": "linux",
+      "action": "save",
+      "mode": "small",
+      "command": [
+        "wsl",
+        "--exec",
+        "/mnt/d/home/source/zig/forthz/.work/optimize-small-20261116/linux-small/bin/sigma",
+        "-e",
+        ": SMALL-IMAGE-CHECK 10 3 - ; SEE SMALL-IMAGE-CHECK SAVE /mnt/d/home/source/zig/forthz/.work/optimize-small-20261116/linux-small.sigma BYE"
+      ],
+      "exit": 0,
+      "stdout": ": SMALL-IMAGE-CHECK\n  10 3 -\n;\n",
+      "stderr": "",
+      "sha256": "6bd1071b20b2293a645a7447919c48a37229d7eda17f0112423400cd8a25e604",
+      "image_sha256": "7ba82ebeff50b5111751d1755e96d65b96a2afc9caadad7a9b95c19cf272a73d"
+    },
+    {
+      "os": "linux",
+      "action": "load",
+      "saved_mode": "fast",
+      "mode": "fast",
+      "command": [
+        "wsl",
+        "--exec",
+        "/mnt/d/home/source/zig/forthz/.work/optimize-small-20261116/linux-fast/bin/sigma",
+        "-e",
+        "LOAD-DICTIONARY /mnt/d/home/source/zig/forthz/.work/optimize-small-20261116/linux-fast.sigma SMALL-IMAGE-CHECK . DEPTH . BYE"
+      ],
+      "exit": 0,
+      "stdout": "7 0 ",
+      "stderr": "",
+      "sha256": "bdb6eb7a0ac59d27d23281708f89538631950d39654837cfd1cfa8d0e78b73fa"
+    },
+    {
+      "os": "linux",
+      "action": "load",
+      "saved_mode": "fast",
+      "mode": "small",
+      "command": [
+        "wsl",
+        "--exec",
+        "/mnt/d/home/source/zig/forthz/.work/optimize-small-20261116/linux-small/bin/sigma",
+        "-e",
+        "LOAD-DICTIONARY /mnt/d/home/source/zig/forthz/.work/optimize-small-20261116/linux-fast.sigma SMALL-IMAGE-CHECK . DEPTH . BYE"
+      ],
+      "exit": 0,
+      "stdout": "7 0 ",
+      "stderr": "",
+      "sha256": "6bd1071b20b2293a645a7447919c48a37229d7eda17f0112423400cd8a25e604"
+    },
+    {
+      "os": "linux",
+      "action": "load",
+      "saved_mode": "small",
+      "mode": "fast",
+      "command": [
+        "wsl",
+        "--exec",
+        "/mnt/d/home/source/zig/forthz/.work/optimize-small-20261116/linux-fast/bin/sigma",
+        "-e",
+        "LOAD-DICTIONARY /mnt/d/home/source/zig/forthz/.work/optimize-small-20261116/linux-small.sigma SMALL-IMAGE-CHECK . DEPTH . BYE"
+      ],
+      "exit": 0,
+      "stdout": "7 0 ",
+      "stderr": "",
+      "sha256": "bdb6eb7a0ac59d27d23281708f89538631950d39654837cfd1cfa8d0e78b73fa"
+    },
+    {
+      "os": "linux",
+      "action": "load",
+      "saved_mode": "small",
+      "mode": "small",
+      "command": [
+        "wsl",
+        "--exec",
+        "/mnt/d/home/source/zig/forthz/.work/optimize-small-20261116/linux-small/bin/sigma",
+        "-e",
+        "LOAD-DICTIONARY /mnt/d/home/source/zig/forthz/.work/optimize-small-20261116/linux-small.sigma SMALL-IMAGE-CHECK . DEPTH . BYE"
+      ],
+      "exit": 0,
+      "stdout": "7 0 ",
+      "stderr": "",
+      "sha256": "6bd1071b20b2293a645a7447919c48a37229d7eda17f0112423400cd8a25e604"
+    }
+  ],
+  "SEE_matches_within_OS": {
+    "windows": true,
+    "linux": true
+  },
+  "source_hashes": {
+    "build.zig": {
+      "root": "1bb250b4d5dd553c01695877f499f2d58b5b784cef646fbbdc2c4b9ae4a824e4",
+      "snapshot": "1bb250b4d5dd553c01695877f499f2d58b5b784cef646fbbdc2c4b9ae4a824e4"
+    },
+    "src/forth.zig": {
+      "root": "d2c101033474ba348c6cd148249bd81afb6ae4e7656ae5bb0c40326806182195",
+      "snapshot": "d2c101033474ba348c6cd148249bd81afb6ae4e7656ae5bb0c40326806182195"
+    },
+    "src/core/defs.zig": {
+      "root": "d004483feb3f06ac94e6870e000317fee1ed553dc9edaf4943ab62e71cb8fc6d",
+      "snapshot": "d004483feb3f06ac94e6870e000317fee1ed553dc9edaf4943ab62e71cb8fc6d"
+    },
+    "src/core/image_format.zig": {
+      "root": "8ed007da4d080e80ef9b6d7afcd686a4e5d4d7e1f9eadd9dbe1168dee47ab2ea",
+      "snapshot": "8ed007da4d080e80ef9b6d7afcd686a4e5d4d7e1f9eadd9dbe1168dee47ab2ea"
+    },
+    "VERSION": {
+      "root": "6a9b524a9fd4f1f95f08a1db768ade6b9ef841e66ecf4893ff9393dafc33c13e",
+      "snapshot": "6a9b524a9fd4f1f95f08a1db768ade6b9ef841e66ecf4893ff9393dafc33c13e"
+    }
+  },
+  "scripts": {
+    "build.py": "from pathlib import Path\nimport subprocess,json,hashlib\nr=Path.cwd();o=r/'.work/optimize-small-20261116';rows=[]\nfor os,target in [('windows','x86_64-windows-gnu'),('linux','x86_64-linux-musl')]:\n for mode in ['fast','small']:\n  prefix=o/(os+'-'+mode);cmd=['zig','build','-Dtarget='+target,'-Doptimize='+mode,'-Dcpu=baseline','-Dstrip=true','--prefix',str(prefix),'--summary','all']\n  with (o/(os+'-'+mode+'.log')).open('wb') as f:p=subprocess.run(cmd,cwd=o/'source',stdout=f,stderr=subprocess.STDOUT)\n  row={'os':os,'mode':mode,'command':cmd,'exit':p.returncode}\n  if p.returncode==0:\n   b=prefix/'bin'/('sigma.exe' if os=='windows' else 'sigma');row.update({'bytes':b.stat().st_size,'sha256':hashlib.sha256(b.read_bytes()).hexdigest()})\n  rows.append(row);(o/'build-results.json').write_text(json.dumps(rows,indent=2)+'\\n');print(os,mode,p.returncode,row.get('bytes'),flush=True)\n",
+    "test.py": "from pathlib import Path\nimport subprocess,re,json\nr=Path.cwd();o=r/'.work/optimize-small-20261116';rows=[]\nfor os,target in [('windows','x86_64-windows-gnu'),('linux','x86_64-linux-musl')]:\n cmd=['zig','build','test','-Dtarget='+target,'-Doptimize=small','-Dcpu=baseline','--summary','all'];log=o/(os+'-small-tests.log')\n with log.open('wb') as f:p=subprocess.run(cmd,cwd=o/'source',stdout=f,stderr=subprocess.STDOUT)\n row={'os':os,'command':cmd,'exit':p.returncode}\n if os=='linux':\n  paths=list(dict.fromkeys(re.findall(r'failed command: \"([^\"\\r\\n]*test)\"',log.read_text(encoding='utf-8',errors='replace'))));row['elf_tests']=[]\n  for i,rel in enumerate(paths):\n   file=(o/'source'/rel.replace('\\\\\\\\','\\\\')).resolve();assert file.read_bytes()[:4]==b'\\x7fELF';w='/mnt/'+str(file)[0].lower()+str(file)[2:].replace('\\\\','/');args=['wsl','--exec',w]\n   with (o/f'linux-small-elf-{i}.log').open('wb') as f:x=subprocess.run(args,cwd=o/'source',stdout=f,stderr=subprocess.STDOUT)\n   row['elf_tests'].append({'command':args,'exit':x.returncode});assert x.returncode==0,row\n  assert len(paths)==2,row\n else:assert p.returncode==0,row\n rows.append(row);(o/'test-results.json').write_text(json.dumps(rows,indent=2)+'\\n');print(os,'small tests passed',flush=True)\ns=(r/'.work/build-optimization-20261116/check-linux-cli.py').read_text(encoding='utf-8').replace('build-optimization-20261116','optimize-small-20261116').replace(\"['full']\",\"['small']\").replace(\"f'candidate-linux-{config}-tests.log'\",\"f'linux-{config}-tests.log'\").replace('2026-11-16-build-lto-linux-cli.json','2026-11-16-small-linux-cli.json');(o/'check-linux-cli.py').write_text(s,encoding='utf-8');p=subprocess.run(['python',str(o/'check-linux-cli.py')],cwd=r);assert p.returncode==0\n",
+    "smoke.py": "from pathlib import Path\nimport subprocess,json,importlib.util\nr=Path.cwd();o=r/'.work/optimize-small-20261116';spec=importlib.util.spec_from_file_location('b',r/'scripts/benchmark-runtime.py');b=importlib.util.module_from_spec(spec);spec.loader.exec_module(b);rows=[]\nfor os in ['windows','linux']:\n for name,definition in b.CASES.items():\n  ref=None\n  for mode in ['fast','small']:\n   file=o/(os+'-'+mode)/'bin'/('sigma.exe' if os=='windows' else 'sigma');path=str(file);cmd=[path] if os=='windows' else ['wsl','--exec','/mnt/'+path[0].lower()+path[2:].replace('\\\\','/')];source='100 CONSTANT BENCH-ITERATIONS '+definition+' BENCH-RUN . DEPTH . BYE';cmd+=['-e',source];p=subprocess.run(cmd,cwd=r,capture_output=True,timeout=60);assert p.returncode==0,(os,name,mode,p.stderr);assert p.stdout.split()[-1:]==[b'0']\n   if ref is None:ref=(p.stdout,p.stderr)\n   else:assert (p.stdout,p.stderr)==ref,(os,name,mode)\n   rows.append({'os':os,'case':name,'mode':mode,'command':cmd,'stdout':p.stdout.decode('utf-8'),'stderr':p.stderr.decode('utf-8'),'exit':p.returncode})\n(o/'smoke.json').write_text(json.dumps(rows,indent=2)+'\\n');print('32 smoke runs passed, not timing')\n",
+    "check-images.py": "from pathlib import Path\nimport subprocess,json,hashlib\nr=Path.cwd();o=r/'.work/optimize-small-20261116';rows=[]\ndef local(path,os):\n s=str(path);return s.replace('\\\\','/') if os=='windows' else '/mnt/'+s[0].lower()+s[2:].replace('\\\\','/')\ndef run(os,mode,source):\n exe=o/(os+'-'+mode)/'bin'/('sigma.exe' if os=='windows' else 'sigma');cmd=[str(exe)] if os=='windows' else ['wsl','--exec',local(exe,os)];cmd+=['-e',source];p=subprocess.run(cmd,cwd=r,capture_output=True,timeout=60);assert p.returncode==0,(os,mode,p.stdout,p.stderr);return {'command':cmd,'exit':p.returncode,'stdout':p.stdout.decode('utf-8'),'stderr':p.stderr.decode('utf-8'),'sha256':hashlib.sha256(exe.read_bytes()).hexdigest()}\nfor os in ['windows','linux']:\n images={}\n for mode in ['fast','small']:\n  file=o/(os+'-'+mode+'.sigma');x=run(os,mode,': SMALL-IMAGE-CHECK 10 3 - ; SEE SMALL-IMAGE-CHECK SAVE '+local(file,os)+' BYE');images[mode]=file;rows.append({'os':os,'action':'save','mode':mode,**x,'image_sha256':hashlib.sha256(file.read_bytes()).hexdigest()})\n for saved,file in images.items():\n  for mode in ['fast','small']:\n   x=run(os,mode,'LOAD-DICTIONARY '+local(file,os)+' SMALL-IMAGE-CHECK . DEPTH . BYE');assert x['stdout'].split()==['7','0'],x;rows.append({'os':os,'action':'load','saved_mode':saved,'mode':mode,**x})\n(o/'images.json').write_text(json.dumps(rows,indent=2)+'\\n');print('4 saves / 8 dictionary loads passed; images not required byte-identical')\n",
+    "check-linux-cli.py": "from pathlib import Path\nimport subprocess,re,json,hashlib\nr=Path.cwd();o=r/'.work/optimize-small-20261116'\ndef w(p):return '/mnt/'+str(p)[0].lower()+str(p)[2:].replace('\\\\','/')\ncases=[('pipe-bytes',['-e',': T PAD 9 STDIN READ-FILE . DUP . 0 DO PAD I + C@ . LOOP ; T BYE'],b'A\\r\\nB\\x1aC\\x00\\xff',b'0 8 65 13 10 66 26 67 0 255 ',0),('pipe-lines',['-e','PAD 20 STDIN READ-LINE . . PAD SWAP TYPE PAD 20 STDIN READ-LINE . . PAD SWAP TYPE BYE'],b'ab\\r\\ncd\\n',b'0 -1 ab0 -1 cd',0),('file',[w(o/'source/src/tests/argument_file.fs'),'-e','. BYE'],b'',b'ARG-FILE5 ',0),('evaluate',['-e','7','--evaluate','. BYE'],b'',b'7 ',0),('missing-e',['-e'],b'',b'-e: OPTION REQUIRES AN ARGUMENT !\\n',1),('xkey-accept',['-e','XKEY . PAD 10 ACCEPT PAD SWAP TYPE SPACE KEY . BYE'],b'\\xe6A\\nrest\\n',b'65533 A 114 ',0),('xkey-read-line',['-e','XKEY . PAD 10 STDIN READ-LINE . . PAD SWAP TYPE BYE'],b'\\xe6Ab\\ncd\\n',b'65533 0 -1 Ab',0),('xkey-inkey',['-e','REQUIRE-GRAPHICS ALSO GRAPHICS XKEY . INKEY . INKEY . BYE'],b'\\xe6AB',b'65533 65 -1 ',0),('missing-file',['sigma-no-such-file.fs','-e','BYE'],b'',None,1)]\nrows=[]\nfor config in ['small']:\n log=(o/f'linux-{config}-tests.log').read_text()\n rel=re.search(r'failed command: \"([^\"\\r\\n]*sigma)\"',log).group(1).replace('\\\\\\\\','\\\\');exe=(o/'source'/rel).resolve();assert exe.read_bytes()[:4]==b'\\x7fELF'\n for name,args,data,expected,code in cases:\n  cmd=['wsl','--exec',w(exe),*args];p=subprocess.run(cmd,input=data,stdout=subprocess.PIPE,stderr=subprocess.PIPE,cwd=o/'source',timeout=60)\n  row={'config':config,'case':name,'command':cmd,'binary_sha256':hashlib.sha256(exe.read_bytes()).hexdigest(),'stdin_hex':data.hex(),'stdout_hex':p.stdout.hex(),'stderr_hex':p.stderr.hex(),'exit':p.returncode,'expected_exit':code,'expected_stdout_hex':None if expected is None else expected.hex(),'passed':p.returncode==code and (expected is None or p.stdout==expected)};rows.append(row)\n  (o/'linux-cli-supplement.json').write_text(json.dumps(rows,indent=2)+'\\n');assert row['passed'],row\n(r/'docs/measurements/2026-11-16-small-linux-cli.json').write_text(json.dumps({'origin':'build.zig 109-162 exact CLI cases, execute cross-built binaries through WSL','cases':rows},indent=2)+'\\n');print('CLI cases passed:',len(rows))\n"
+  },
+  "logs": {
+    "linux-fast.log": "Build Summary: 10/10 steps succeeded\ninstall success\n+- install sigma success\n|  +- compile exe sigma fast x86_64-linux-musl success 23s MaxRSS:478M\n|     +- options cached\n|     +- translate-c success 112ms MaxRSS:19M\n|     |  +- WriteFile c_time.h cached\n|     +- translate-c success 74ms MaxRSS:19M\n|        +- WriteFile c_file.h cached\n+- install LICENSE to LICENSE success\n+- install THIRD_PARTY_NOTICES.md to THIRD_PARTY_NOTICES.md success\n\n",
+    "linux-small-elf-0.log": "1/64 main.test.GETENV through the host accepts 3072 bytes and rejects 3073...OK\n2/64 main.test.SYSTEM through the host checks length and embedded NUL before running...OK\n3/64 main.test.INCLUDE through the host reads CR LF lines and limits a line to 4096 bytes...OK\n4/64 main.test.SLURP-FILE through the host reads every byte as it is...OK\n5/64 main.test.file words through the host: position, resize, flush, status, rename over a file, delete...OK\n6/64 main.test.file names and commands other than ASCII: create, include, status, rename, delete, SYSTEM...OK\n7/64 main.test.the banner names the version from VERSION and the license...OK\n8/64 main.test.SAVE and LOAD through the host keep the words, also when loaded twice...OK\n9/64 main.test_0...OK\n10/64 main.test.parseSize reads sizes as gforth does...OK\n11/64 main.test.the size options are read at the start of the arguments...OK\n12/64 main.test.startSizes keeps the defaults and refuses sizes that cannot be...OK\n13/64 main.test.line editing uses a bounded default for missing or unusable terminal widths...OK\n14/64 main.test.normal termination reports block writeback failure with nonzero status...OK\n15/64 main.test.file key readiness sees stdio buffered bytes and preserves flags and EOF...OK\n16/64 main.test.file key readiness mixes with READ-FILE READ-LINE and file size...OK\n17/64 main.test.P05b native clocks have Unix ns units and nondecreasing process CPU counters...OK\n18/64 main.test.native process CPU includes a busy worker thread...OK\n19/64 main.test.native one-way pipes read status ownership and invalid modes...OK\n20/64 main.test.native pipe write after child exit reports EPIPE and restores SIGPIPE disposition...OK\n21/64 main.test.native pipe shutdown reaps writers and rejects foreign closes and seeks...OK\n22/64 main.test.native pipe lifetime invalidates untracked child output cursor positions...OK\n23/64 main.test_1...OK\n24/64 host_editor.test.editor command quotes source paths independently from trusted editor arguments...OK\n25/64 host_line.test.Backspace takes away a whole character and as many columns as it is wide...OK\n26/64 host_line.test.Backspace over half-width kana, accents, and bytes that are not UTF-8...OK\n27/64 host_line.test.Backspace over a combining mark writes the character before it again...OK\n28/64 host_line.test.Enter ends a line that is not empty; Ctrl+U, Ctrl+W, and Ctrl+D as in the terminal...OK\n29/64 host_line.test.unsupported sequences and control characters are dropped; Tab is shown as a space...OK\n30/64 host_line.test.Ctrl+U on a line longer than the echo buffer blanks every column...OK\n31/64 host_line.test.a line longer than the buffer loses the rest...OK\n32/64 host_line.test.arrows insert in the middle, Delete removes forward, Home and End move the cursor...OK\n33/64 host_line.test.insertion and movement preserve UTF-8 in the middle of Japanese and emoji...OK\n34/64 host_line.test.Ctrl+W erases before the cursor and Ctrl+K erases after it...OK\n35/64 host_line.test.history navigation restores the unfinished line and its cursor without changing history...OK\n36/64 host_line.test.history is bounded, skips empty lines and adjacent duplicates, and starts empty...OK\n37/64 host_line.test.history does not remember overflowing lines or truncate a recalled line...OK\n38/64 host_line.test.long lines scroll horizontally within the available terminal width...OK\n39/64 host_line.test.incomplete UTF-8 input is retained at EOF and complete inserted characters fit atomically...OK\n40/64 host_line.test.output cursor tracks prompts, split UTF-8, colors and pending right margins...OK\n41/64 host_line.test.unknown output controls and resizing invalidate origin until a new row...OK\n42/64 host_input.test.a DSR reply gives the cursor's place only for positions from 1...OK\n43/64 host_input.test.terminal read-ahead is shared in FIFO order with canonical input...OK\n44/64 host_input.test.standard extra keys preserve plain controls and map modifiers media and pause...OK\n45/64 core.blocks.test.standard block numbers reject negative, limit and executable zero...OK\n46/64 core.lint.test.stack comments are counted...OK\n47/64 format.test.lines are indented by the structures they are in...OK\n48/64 format.test.the condition of a loop stands with the word that takes it...OK\n49/64 format.test.what one line opens is one step, and chains of conditions stay at one depth...OK\n50/64 format.test.what a word reads from the line is not a word: comments, strings, and names...OK\n51/64 format.test.a line may stand further in than its structure puts it, but not further out...OK\n52/64 format.test.the lines outside every structure keep their indentation, and blanks at the ends go...OK\n53/64 format.test.a definition that leaves a structure open does not move what follows it...OK\n54/64 format.test.the name's line may open a structure, and a word after a string does not start its line...OK\n55/64 format.test.a file indented by tabs or by four blanks comes to the same steps...OK\n56/64 format.test.the changed lines are counted...OK\n57/64 format.test.an indentation carried to the lines of a definition fits in the memory for it...OK\n58/64 format.test.strings are read as the interpreter reads them...OK\n59/64 format.test.with steps of no blanks, the indentation of the structures goes...OK\n60/64 format.test.what is formatted stays as it is when it is formatted again...OK\n61/64 host_process.test.macOS: wish is the first on the PATH but the system's, else Homebrew's or MacPorts's...OK\n62/64 host_directories.test.directory IDs reject stale and foreign handles and exhaust without leaking...OK\n63/64 host_directories.test.native directory reads consume truncation and preserve EOF buffers...OK\n64/64 host_gamepad.test.SDL3 virtual raw/mapped devices, remapping and hot unplug...SKIP\n63 passed; 1 skipped; 0 failed.\n",
+    "linux-small-elf-1.log": "1/1016 tests.image_graph_test.test.image graph follows rooted cycles and interior references but never raw values...OK\n2/1016 tests.image_graph_test.test.image graph accepts null system data and constant roots without heap allocation...OK\n3/1016 tests.image_graph_test.test.image graph rejects freed damaged and transient references without changing State...OK\n4/1016 tests.image_graph_test.test.typed references into host-owned Tcl buffers fail before save releases resources...OK\n5/1016 tests.image_encoder_test.test.State encoder produces structurally valid typed graphs and deterministic bytes...OK\n6/1016 tests.image_encoder_test.test.State encoder leaves short output untouched and rejects damaged references...OK\n7/1016 tests.image_encoder_test.test.State encoder preserves shared cyclic heap records and excludes raw orphan blocks...OK\n8/1016 tests.image_restore_plan_test.test.restore plan compacts heap and relocates source cells and interior cyclic targets...OK\n9/1016 tests.image_restore_plan_test.test.restore preflight rejects builtin mismatch CRC and capacity without touching target...OK\n10/1016 tests.image_restore_typed_test.test.typed restore runs strings arrays constants and code then resaves and restores again...OK\n11/1016 tests.image_restore_typed_test.test.typed restore keeps cyclic interior pointers and failed restore keeps target...OK\n12/1016 tests.image_restore_typed_test.test.typed restore retains system-rooted replacement lists and runtime block buffers...OK\n13/1016 tests.image_append_plan_test.test.append plan relocates data constant and heap owners without changing target...OK\n14/1016 tests.image_append_plan_test.test.append rejects conflicting system registrations and exhausted heap before mutation...OK\n15/1016 tests.image_append_plan_test.test.append transforms validated words and operations while preserving raw literals...OK\n16/1016 tests.image_append_typed_test.test.typed append twice retains independent strings and constants then resaves...OK\n17/1016 tests.image_append_typed_test.test.typed append maps source locations and deferred actions and preserves failed target...OK\n18/1016 tests.image_append_typed_test.test.typed append carries graphics library registration to its relocated vocabulary...OK\n19/1016 tests.internal_pointer_test.test.internal string owners register on store resize replacement and free...OK\n20/1016 tests.internal_pointer_test.test.string array owners survive heap moves and shrink removes element slots...OK\n21/1016 tests.internal_pointer_test.test.transient input owners do not register image roots and full registry fails before allocation...OK\n22/1016 tests.internal_pointer_test.test.macro string values and temporary string owners are explicit graph roots...OK\n23/1016 tests.p07d_test.test.P07d scoped parsing restores input after success nested calls and THROW...OK\n24/1016 tests.p07d_test.test.P07d execute parsing does not interpret the string and supports defining callbacks...OK\n25/1016 tests.p07d_test.test.P07d string parse handles empty missing overlapping and binary delimiters...OK\n26/1016 tests.p07d_test.test.P07d scope preserves raw cursor source identity line serial and block state...OK\n27/1016 tests.p07d_test.test.P07d file parsing starts empty refills privately and closes its owned file...OK\n28/1016 tests.p07d_test.test.P07d file failure cleanup prioritizes callback errors and preflight retains ownership...OK\n29/1016 tests.p07d_test.test.P07d forward resolution patches calls while preserving old execution token identity...OK\n30/1016 tests.p07d_test.test.P07d forwards are colon-only same-wordlist and report unresolved declarations...OK\n31/1016 tests.p07d_test.test.P07d FORGET unbinds a removed forward target and later colon resolution repairs calls...OK\n32/1016 tests.p07d_test.test.P07d recursive maintains Sigma self-visibility and enforces compile state...OK\n33/1016 tests.p07d_test.test.P07d forward bindings and old typed xts persist through restore and both append routes...OK\n34/1016 tests.p07d_test.test.P07d parsing accepts a binary delimiter without decoding bytes...OK\n35/1016 tests.p07d_test.test.P07d malformed forward destination is rejected before dictionary replacement...OK\n36/1016 tests.p07d_test.test.P07 review file scope rejects invalid and already owned sources before callback...OK\n37/1016 tests.p07d_test.test.P07 review file scope does not close an active redirected stream...OK\n38/1016 tests.p09a_test.test.P09a assertion levels are compile-time decisions with nested and quoted delimiters...OK\n39/1016 tests.p09a_test.test.P09a catch variants fast throw and suppression restore on success and failure...OK\n40/1016 tests.p09a_test.test.P09a errno adapters use host errno only on their documented triggers...OK\n41/1016 tests.p09a_test.test.P09a warning policy suppresses output and warning errors preserve old definitions...OK\n42/1016 tests.p09a_test.test.P09a exception messages are copied with monotonic codes and invisible records...OK\n43/1016 tests.p09a_test.test.P09a exception records relocate through restore and both append routes...OK\n44/1016 tests.p09a_test.test.P09a exception code collisions reject appends before mutation...OK\n45/1016 tests.p09a_test.test.P09a malformed exception records are rejected before image restoration...OK\n46/1016 tests.p09a_test.test.P09a failing exception converters retain the original error and forgetting never reuses codes...OK\n47/1016 tests.p09a_test.test.P09 review exception converters preserve the reported failure stacks...OK\n48/1016 tests.p09a_test.test.P09 review exception formatter CATCH cannot erase the original backtrace...OK\n49/1016 tests.p09a_test.test.P09 review negative ALLOT cannot truncate live exception records...OK\n50/1016 tests.p09b_test.test.P09b clear words preserve independent stacks and live return frames...OK\n51/1016 tests.p09b_test.test.P09b dot-s display limits are non-destructive bounded and independent of BASE...OK\n52/1016 tests.p09b_test.test.P09b floating display setting is a TO value and validates before output...OK\n53/1016 tests.p09b_test.test.P09b display settings persist on restore and remain local on both append routes...OK\n54/1016 tests.p09b_test.test.P09b source windows share LOCATE state and page in both directions...OK\n55/1016 tests.p09b_test.test.P09b missing current source follows warnings and invalid windows are bounded...OK\n56/1016 tests.p09b_test.test.P09b source selection survives FORGET table reuse without aliasing and stops at EOF...OK\n57/1016 tests.p09b_test.test.P09b source window settings survive image routes and full restore invalidates the cursor...OK\n58/1016 tests.p09b_test.test.P09b errors select the failing source for subsequent browsing...OK\n59/1016 tests.p09b_test.test.P09b documentation comments are immediate and discard only the current line...OK\n60/1016 tests.p09b_test.test.P09b embedded navigation works without file operations and saturates line arithmetic...OK\n61/1016 tests.p09b_test.test.P09b WHERE selection walks results with an empty boundary state...OK\n62/1016 tests.p09b_test.test.P09b WHERE snapshots ignore later uses and invalidate on dictionary deletion...OK\n63/1016 tests.p09b_test.test.P09b BROWSE copies its pattern and selects definitions in the first search wordlist...OK\n64/1016 tests.p09b_test.test.P09b BROWSE has explicit no-file rows and no-result warnings obey policy...OK\n65/1016 tests.p09b_test.test.P09b full image restore invalidates WHERE snapshots before using old indices...OK\n66/1016 tests.p09b_test.test.P09b BROWSE snapshots remain bounded across definition growth and both append routes...OK\n67/1016 tests.p09b_test.test.P09b WHERE format switching preserves rows and groups consecutive files...OK\n68/1016 tests.p09b_test.test.P09b expanded listing errors are reported before emitting a partial row...OK\n69/1016 tests.p09b_test.test.P09b UNUSED-WORDS uses CURRENT and excludes only recorded file uses and anonymous words...OK\n70/1016 tests.p09b_test.test.P09b BROWSE shares listing formats and keeps result selection independent...OK\n71/1016 tests.p09b_test.test.P09b listing style survives full restore and stays local on append with malformed image rejection...OK\n72/1016 tests.p09b_test.test.P09b EDIT and G use the definition line until N or B changes the window...OK\n73/1016 tests.p09b_test.test.P09b GG LL select one-shot and default destinations and consume missing-result selections...OK\n74/1016 tests.p09b_test.test.P09b WHEREG captures privately restores format and keeps result selection...OK\n75/1016 tests.p09b_test.test.P09b missing editors and locations do not launch and WHEREG restores state on capture failure...OK\n76/1016 tests.p09b_test.test.P09b editor callbacks restoring an image do not free a new heap allocation...OK\n77/1016 tests.p09b_test.test.P09b embedded EDIT uses a temporary text request without file operations...OK\n78/1016 tests.p09b_test.test.P09b smart stack display preserves stacks and BASE and bounds readable string previews...OK\n79/1016 tests.p09b_test.test.P09b smart float display is non-destructive and presentation hook leaves navigation untouched...OK\n80/1016 tests.p09b_test.test.P09b reported exception frames remain available after report and support source selection...OK\n81/1016 tests.p09b_test.test.P09b saved traces invalidate on FORGET restore and suppressed errors...OK\n82/1016 tests.p09c_test.test.P09c RPICK and second fetch use only user cells and keep them in place...OK\n83/1016 tests.p09c_test.test.P09c float return moves preserve zero infinity NaN and every payload bit...OK\n84/1016 tests.p09c_test.test.P09c float transfer failures leave both stacks intact...OK\n85/1016 tests.p09c_test.test.P09c return extensions compose with loops CATCH recursion and locals...OK\n86/1016 tests.p09c_test.test.P09c return words retain identity across all image routes...OK\n87/1016 tests.output_activity_test.test.698 direct STDOUT file writes separate terminal frames while private output does not...OK\n88/1016 tests.output_activity_test.test.698 failed direct STDOUT writes may have emitted a prefix...OK\n89/1016 tests.output_activity_test.test.698 external SYSTEM and captured SH invalidate terminal reuse on success and failure...OK\n90/1016 tests.output_activity_test.test.698 editor host output separates terminal frames without requiring actual launch...OK\n91/1016 tests.p08a_test.test.P08a name tokens cover anonymous words links aliases restrictions and forgetting...OK\n92/1016 tests.p08a_test.test.P08a case-sensitive wordlists and silent tables preserve spelling and warning policy...OK\n93/1016 tests.p08a_test.test.P08a nextname copies storage replaces noname and restores the one-shot on THROW...OK\n94/1016 tests.p08a_test.test.P08a one-shot definition wordlist restores immediately and after callback errors...OK\n95/1016 tests.p08a_test.test.P08a current context root and seal use VM cells and reject invalid current ids...OK\n96/1016 tests.p08a_test.test.P08a map-vocs uses a finite snapshot and propagates callback errors...OK\n97/1016 tests.p08a_test.test.P08a displays list names and filters mwords without changing Sigma WORDS order...OK\n98/1016 tests.p08a_test.test.P08a case policy and vocabulary targets survive all image routes with list rebasing...OK\n99/1016 tests.p08a_test.test.P08a invalid persisted wordlist policies fail before dictionary mutation...OK\n100/1016 tests.p08a_test.test.P08a optional MWORDS pattern never consumes the next included line...OK\n101/1016 tests.p08a_test.test.P08a compile-only metadata covers controls and aliases without restricting postponed brackets...OK\n102/1016 tests.p08a_test.test.P08a last wordlist flag bit persists and capacity failure leaves allocation unchanged...OK\n103/1016 tests.p08b_test.test.P08b AVALUE explicitly tracks full-cell updates and rejects damaged address storage...OK\n104/1016 tests.p08b_test.test.P08b ADDR has distinct interpretation and compilation actions and stable local addresses...OK\n105/1016 tests.p08b_test.test.P08b ADDR uses float double and XT local storage without outer-local capture...OK\n106/1016 tests.p08b_test.test.P08b colon IS commits only at semicolon and retains the previous action for DEFERS...OK\n107/1016 tests.p08b_test.test.P08b active colon IS cannot be saved and malformed definitions cannot set its target...OK\n108/1016 tests.p08b_test.test.P08b PRESERVE captures a compile-time action including the uninitialized sentinel...OK\n109/1016 tests.p08b_test.test.P08b WRAP XT restores dynamic actions after nested scopes rebinding and THROW...OK\n110/1016 tests.p08b_test.test.P08b WRAP XT invalidation cannot restore into a reused deferred word id...OK\n111/1016 tests.p08b_test.test.P08b unrelated tail FORGET leaves the wrapped target valid...OK\n112/1016 tests.p08b_test.test.P08b successful restore invalidates wrappers while failed preflight preserves them...OK\n113/1016 tests.p08b_test.test.P08b wrapper nesting is bounded and all deferred actions unwind on failure...OK\n114/1016 tests.p08b_test.test.P08b address values compiled ADDR and captured deferred actions survive all image routes...OK\n115/1016 tests.p08_review_test.test.P08 review one-shot CURRENT cannot overwrite a restored dictionary context...OK\n116/1016 tests.p08_review_test.test.P08 review MAP VOCS stops when a callback handle is forgotten and reused...OK\n117/1016 tests.p08_review_test.test.P08 review removed saved actions are not restored into surviving deferred words...OK\n118/1016 tests.p08_review_test.test.P08 review lazy loading isolates pending NEXTNAME and NONAME choices...OK\n119/1016 tests.p08_review_test.test.P08 review failed lazy loading restores allocated wordlist policy masks...OK\n120/1016 tests.p08_review_test.test.P08 review nested scopes track removal of each independently saved action...OK\n121/1016 tests.p08_review_test.test.P08 review final Macros callback still checks lifetime before MAP VOCS returns...OK\n122/1016 tests.p08_review_test.test.P08 review failed prerequisites retain successful prerequisites and their case policies...OK\n123/1016 tests.p07c_test.test.P07c signed unsigned and inclusive loop starts distinguish empty ranges...OK\n124/1016 tests.p07c_test.test.P07c negative loop uses unsigned decrement including zero and huge magnitudes...OK\n125/1016 tests.p07c_test.test.P07c FOR visits zero and preserves initialized body locals...OK\n126/1016 tests.p07c_test.test.P07c loop limit and delta access work through helpers and reject absent frames...OK\n127/1016 tests.p07c_test.test.P07c memory loops visit forward partial elements and reverse full elements...OK\n128/1016 tests.p07c_test.test.P07c invalid memory strides and overflowing ranges fail before consuming arguments...OK\n129/1016 tests.p07c_test.test.P07c ARRAY MEM wraps cell multiplication and combined IF keeps the original value...OK\n130/1016 tests.p07c_test.test.P07c DONE resolves LEAVE for explicit UNLOOP and keeps surrounding loops intact...OK\n131/1016 tests.p07c_test.test.P07c CS operations work in temporary interpretation and reject incompatible loop controls...OK\n132/1016 tests.p07c_test.test.P07c loop cancellation exceptions and EXIT clean up VM loop frames...OK\n133/1016 tests.p07c_test.test.P07c extended and DONE branch targets relocate through all image paths...OK\n134/1016 tests.p07c_test.test.P07c malformed control syntax cannot close the wrong loop kind...OK\n135/1016 tests.p07c_test.test.P07c SEE reconstructs DONE and zero-step loops retain work-limit interruption...OK\n136/1016 tests.p07c_test.test.P07 review coverage includes entered skipped and conditional extended blocks...OK\n137/1016 tests.p07b_test.test.P07b interpreted nested and compiled quotations produce stable tokens...OK\n138/1016 tests.p07b_test.test.P07b quotations isolate locals controls recursion and restore the outer definition...OK\n139/1016 tests.p07b_test.test.P07b quote callbacks preserve CATCH and IN COLON DEF semantics...OK\n140/1016 tests.p07b_test.test.P07b NONAME applies to colon data and deferred defining words without a name token...OK\n141/1016 tests.p07b_test.test.P07b postponing supports word semantics numeric and parsing literals...OK\n142/1016 tests.p07b_test.test.P07b postponing quotes and assignments and temporary interpretation are composable...OK\n143/1016 tests.p07b_test.test.P07b malformed quote removes the whole unfinished outer definition...OK\n144/1016 tests.p07b_test.test.P07b unterminated EVALUATE and caught quote errors cannot resurrect a discarded compiler...OK\n145/1016 tests.p07b_test.test.P07b quote depth bound rolls back and independent later definitions still work...OK\n146/1016 tests.p07b_test.test.P07b quotations and macro compiler actions survive restore and both append paths...OK\n147/1016 tests.p07b_test.test.P07b unfinished quotation cannot be saved and failed close rolls back data and names...OK\n148/1016 tests.p07b_test.test.P07b multiline quotations and quoted outer locals restore before subsequent source lines...OK\n149/1016 tests.p07b_test.test.P07b malformed quotation metadata is rejected before replacing a dictionary...OK\n150/1016 tests.p07b_test.test.P07 review CATCH discards runtime-opened quotations before later definitions...OK\n151/1016 tests.p07b_test.test.P07 review caught nested quote opening abandons its unfinished outer compiler...OK\n152/1016 tests.p07b_test.test.P07 review CATCH does not restore closed quote controls into its outer definition...OK\n153/1016 tests.p07b_test.test.P07 review SEE and stepping name postponed compiler helpers...OK\n154/1016 tests.p07b_test.test.P07 review postponing rejects parser-only tokens without leaving a compiler...OK\n155/1016 tests.p07a_test.test.P07a compilation token parsing selects ordinary immediate and combined semantics...OK\n156/1016 tests.p07a_test.test.P07a POSTPONE comma composes ordinary immediate and assignment tokens...OK\n157/1016 tests.p07a_test.test.P07a restrictions affect ordinary interpretation and preserve explicit execution...OK\n158/1016 tests.p07a_test.test.P07a unnamed or absent latest word cannot be restricted...OK\n159/1016 tests.p07a_test.test.P07a EXECUTE EXIT leaves its caller and restores local and loop resources...OK\n160/1016 tests.p07a_test.test.P07a SELECT handles noncanonical flags and bracket NOOP has default compilation semantics...OK\n161/1016 tests.p07a_test.test.P07a compile state and token preflight reject invalid operations without partial emission...OK\n162/1016 tests.p07a_test.test.P07a compile-only metadata and token macros survive restore and both append paths...OK\n163/1016 tests.p07a_test.test.P07a malformed compile-only image flag is rejected before dictionary mutation...OK\n164/1016 tests.p07_prework_test.test.P07 assignment names have interpretation tokens and immediate compilation semantics...OK\n165/1016 tests.p07_prework_test.test.P07 interpretation actions execute immediately during compilation without changing STATE...OK\n166/1016 tests.p07_prework_test.test.P07 POSTPONE and NAME COMPILE choose compilation actions including aliases...OK\n167/1016 tests.p07_prework_test.test.P07 dictionary search and redefinition shadow assignment names...OK\n168/1016 tests.p07_prework_test.test.P07 assignments retain scalar double string float and local behavior...OK\n169/1016 tests.p07_prework_test.test.P07 parsing names across lines and failures preserve Sigma error policy...OK\n170/1016 tests.p07_prework_test.test.P07 assignment tokens and postponed actions survive full restore and both append paths...OK\n171/1016 tests.p07_prework_test.test.P07 watched assignment uses token semantics rather than STATE...OK\n172/1016 tests.p07_prework_test.test.P07 assignment dictionary names and targets retain source use records...OK\n173/1016 tests.image_format_test.test.image45 codec parses all three magics and reachable heap cycles without touching State...OK\n174/1016 tests.image_format_test.test.image45 framing rejects old magic truncated sections CRC and unchecked length overflow...OK\n175/1016 tests.image_format_test.test.image45 records reject invalid kinds reserved bits widths ids duplicates and bad targets...OK\n176/1016 tests.image_format_test.test.image45 heap objects must be ordered disjoint reachable and within saved heap bounds...OK\n177/1016 tests.image_format_test.test.image45 native word and operation tags are checked before enum decoding...OK\n178/1016 tests.image_format_test.test.image45 validates system null one-past-data and interior heap targets without inference...OK\n179/1016 tests.image_format_test.test.image45 rejects overlapping memory registrations independently of reachability...OK\n180/1016 tests.image_format_test.test.image45 rejects count limits and protected builtin value registrations before installation...OK\n181/1016 tests.image_format_test.test.image45 bounded mutation corpus does not panic or alter input bytes...OK\n182/1016 tests.image_format_test.test.image45 canonical writers zero native padding and keep the specified 32 byte record...OK\n183/1016 tests.p01c_test.test.2, stores the top cell first and matches 2@ even at an unaligned HERE...OK\n184/1016 tests.p01c_test.test.2, rejects one-cell space without partial writes and accepts exactly two cells...OK\n185/1016 tests.p01c_test.test.2, requires both inputs before allocating and MARKER reclaims its cells...OK\n186/1016 tests.p01c_test.test.ROL ROR handle zero whole-cell and negative raw counts without signed shifts...OK\n187/1016 tests.p01c_test.test.2, data and rotation calls survive image restore and append...OK\n188/1016 tests.p02a_test.test.P02a divisions distinguish floor and truncation and preserve full unsigned magnitudes...OK\n189/1016 tests.p02a_test.test.P02a zero divisors and oversized cell quotients throw without host traps...OK\n190/1016 tests.p02a_test.test.P02a powers and double rotations cover zero and unsigned high bits...OK\n191/1016 tests.p02a_test.test.P02a words reject incomplete inputs...OK\n192/1016 tests.p02a_test.test.P02a agreed shifts saturate and narrow rotations mask both input and count...OK\n193/1016 tests.p02b_test.test.P02b IEEE constants reciprocal sign copying and stack access...OK\n194/1016 tests.p02b_test.test.P02b F star plus is fused and approximate comparison is strict...OK\n195/1016 tests.p02b_test.test.P02b vectors support byte strides negative strides aliasing and empty counts...OK\n196/1016 tests.p02b_test.test.P02b vector range failure precedes writes and handles stride arithmetic overflow...OK\n197/1016 tests.p02b_test.test.P02 native vector loops obey the step limit even with two zero strides...OK\n198/1016 tests.p02b_test.test.P02 FP dot separates nonfinite outputs with trailing spaces...OK\n199/1016 tests.p02c_test.test.P02c BASE EXECUTE restores base on return and exception and preserves results...OK\n200/1016 tests.p02c_test.test.P02c DPL and CONVERT report decimal and input consumption positions...OK\n201/1016 tests.p02c_test.test.P02c explicit bases preserve BASE and print full unsigned doubles...OK\n202/1016 tests.p02c_test.test.P02c randoms accept all seeds reproduce streams and respect unsigned bounds...OK\n203/1016 tests.p02c_test.test.P02c decimal separators and compact outputs round trip exact binary64 values...OK\n204/1016 tests.p02c_test.test.P02 definitions keep their builtin calls across dictionary restore and append...OK\n205/1016 tests.p02c_test.test.P02c precision output rounds before choosing compact layout...OK\n206/1016 tests.p02c_test.test.P02 seed initialization uses the host clock with a zero fallback...OK\n207/1016 tests.p02c_test.test.P02 nested BASE EXECUTE restores each base through CATCH...OK\n208/1016 tests.p02c_test.test.P02 large padded fields obey the step limit...OK\n209/1016 tests.p03a_test.test.P03a unaligned widths truncate stores zero extend reads and preserve neighboring bytes...OK\n210/1016 tests.p03a_test.test.P03a XD accesses only eight bytes and uses double stack representation...OK\n211/1016 tests.p03a_test.test.P03a complete range checks precede writes including end of logical memory...OK\n212/1016 tests.p03a_test.test.P03a alignment validates powers and allocation failures preserve HERE...OK\n213/1016 tests.p03a_test.test.P03a exchange indexed access and sign extension compose in compiled definitions...OK\n214/1016 tests.p03a_test.test.P03a width word calls survive dictionary restore and append...OK\n215/1016 tests.p03b_data_test.test.P03b fixed-width comma words reserve exact bytes without alignment...OK\n216/1016 tests.p03b_data_test.test.P03b allocation and input failure leave HERE inputs and bytes intact...OK\n217/1016 tests.p03b_data_test.test.P03b MEM comma and SAVE MEM DICT copy overlapping ranges and preserve failure state...OK\n218/1016 tests.p03b_data_test.test.P03b field offsets align naturally and field definitions survive images...OK\n219/1016 tests.p03b_address_test.test.P03b explicit memory and constant address registrations coexist with raw cells...OK\n220/1016 tests.p03b_address_test.test.P03b partial writes damage registrations and exact cell stores repair them...OK\n221/1016 tests.p03b_address_test.test.P03b MOVE and directional CMOVEs transfer pre-copy registrations and partial cells damage...OK\n222/1016 tests.p03b_address_test.test.P03b freeing referenced heap never revives a type by reusing the same address...OK\n223/1016 tests.p03b_address_test.test.P03b FORGET and HERE rollback remove source registrations and invalidate surviving targets...OK\n224/1016 tests.p03b_address_test.test.P03b typed metadata survives public image save restore and damaged references fail...OK\n225/1016 tests.p03b_address_test.test.P03b definitions work in compiled definers and across input lines...OK\n226/1016 tests.p03b_address_test.test.P03b bounded metadata preflights A comma and MOVE without partial mutation...OK\n227/1016 tests.p03b_address_test.test.P03b heap shrink invalidates truncated sources and targets...OK\n228/1016 tests.p03b_address_test.test.P03b failed compilation discards new registrations and preserves surviving variables...OK\n229/1016 tests.p03b_address_test.test.P03b copied types in unallocated storage do not attach to a later heap owner...OK\n230/1016 tests.p03c_test.test.P03c heap copies and extension retain contents and return appended region...OK\n231/1016 tests.p03c_test.test.P03c buffers grow move shrink and persist with explicit owner registration...OK\n232/1016 tests.p03c_test.test.P03c failed buffer growth preserves descriptor contents ownership and input...OK\n233/1016 tests.p03c_test.test.P03c descriptor freeing clears live owner but leaves null descriptor unchanged...OK\n234/1016 tests.p03c_test.test.P03c SAVE-MEM copies explicit cell types and FREE removes the copied storage...OK\n235/1016 tests.p03c_test.test.P03c descriptor registration capacity and invalid free fail before descriptor changes...OK\n236/1016 tests.p03_review_test.test.P03 review RESIZE transfers more than half a registry without doubling entries...OK\n237/1016 tests.p03_review_test.test.P03 review identical SUBSTITUTE and UNESCAPE writes damage explicit cells...OK\n238/1016 tests.p03_review_test.test.P03 review automatic owners reject HERE before allocating and zero blocks persist...OK\n239/1016 tests.p03_review_test.test.P03 review failed string copy frees new allocation and preserves previous owner...OK\n240/1016 tests.p03_review_test.test.P03 review sizing propagates invalid references without maximum-size fallback...OK\n241/1016 tests.p03_review_test.test.P03 review line read registry failure retains previous string and file position...OK\n242/1016 tests.p03_review_test.test.P03 review reserves an untyped owner before typed copies can fill registry...OK\n243/1016 tests.p03_review_test.test.P03 review TMP preflight preserves prior unregistered slot at registry limit...OK\n244/1016 tests.p03_review_test.test.P03 review identical gamepad output damages registered destination...OK\n245/1016 tests.p03_review_test.test.P03 review write notifications remain correct after warmup and registration removal...OK\n246/1016 tests.p04a_basic_test.test.P04a control constants newline and ASCII uppercase execute and compile...OK\n247/1016 tests.p04a_basic_test.test.P04a ASCII compare prefix suffix and search preserve borrowed spans...OK\n248/1016 tests.p04a_basic_test.test.P04a clamped slicing reverse scan and split predicate cover boundaries...OK\n249/1016 tests.p04a_basic_test.test.P04a TYPEWHITE keeps tabs and emits spaces for bytes including newlines...OK\n250/1016 tests.p04a_basic_test.test.P04a invalid ranges and output capacity preserve operands...OK\n251/1016 tests.p04a_basic_test.test.P04a NEWLINE persists and native comparisons honor the step limit...OK\n252/1016 tests.p04a_edit_test.test.P04a owned concatenation and APPEND self overlap preserve bytes across movement...OK\n253/1016 tests.p04a_edit_test.test.P04a INSERT observes preceding shift and DELETE clamps then blanks tail...OK\n254/1016 tests.p04a_edit_test.test.P04a STRING comma counts low byte and follows prefix-before-copy overlap order...OK\n255/1016 tests.p04a_edit_test.test.P04a bounded zero terminated strings reject missing terminator without consuming input...OK\n256/1016 tests.p04a_edit_test.test.P04a compound INSERT and STRING comma preflight registration capacity before writes...OK\n257/1016 tests.p04a_edit_test.test.P04a APPEND metadata exhaustion preserves original allocation and operands...OK\n258/1016 tests.p04a_edit_test.test.P04a INSERT capacity simulation includes registrations created by its first move...OK\n259/1016 tests.p04a_edit_test.test.P04a S+ frees failed destination when two copies need more metadata than available...OK\n260/1016 tests.p04a_xc_test.test.P04a XC query consumes valid and malformed UTF-8 using existing decoder rules...OK\n261/1016 tests.p04a_xc_test.test.P04a XC query empty input advances without reading beyond logical memory...OK\n262/1016 tests.p04a_xc_test.test.P04a XC query failures preserve range operands and output capacity...OK\n263/1016 tests.p04a_xc_test.test.P04a XC query executes after compile save restore and append...OK\n264/1016 tests.p04b_values_test.test.P04b string values replace append and self-reference in interpreted and compiled code...OK\n265/1016 tests.p04b_values_test.test.P04b MACRO is a value alias and supports multiline compiled defining words...OK\n266/1016 tests.p04b_values_test.test.P04b failed replacement and append preserve string owner and input...OK\n267/1016 tests.p04b_values_test.test.P04b failed creation restores dictionary HERE names and lookup index...OK\n268/1016 tests.p04b_values_test.test.P04b value execution checks output room and setters check input ranges...OK\n269/1016 tests.p04b_values_test.test.P04b string values and compiled TO plus TO survive repeated append and restore...OK\n270/1016 tests.p04b_values_test.test.P04b explicit aliases to a replaced borrowed string become invalid...OK\n271/1016 tests.p04b_values_test.test.P04b MARKER removes string value dictionary storage and its persistence root...OK\n272/1016 tests.p04b_values_test.test.P04b images reject missing owner types and invalid string headers before restore...OK\n273/1016 tests.p04b_macros_test.test.P04b dictionary macros have case sensitive lookup and restore CURRENT...OK\n274/1016 tests.p04b_macros_test.test.P04b replacements and TO share the macro dictionary while hard coded macros stay...OK\n275/1016 tests.p04b_macros_test.test.P04b each API executes callbacks once per occurrence including overflow...OK\n276/1016 tests.p04b_macros_test.test.P04b callback exceptions propagate and captured outputs do not commit...OK\n277/1016 tests.p04b_macros_test.test.P04b nested substitutions and input freed by a callback remain safe...OK\n278/1016 tests.p04b_macros_test.test.P04b overlapping bounded substitution damages typed destinations...OK\n279/1016 tests.p04b_macros_test.test.P04b macro callback stack and address contracts reject malformed results...OK\n280/1016 tests.p04b_macros_test.test.P04b macros survive public restore and repeated append with user wordlists...OK\n281/1016 tests.p04b_macros_test.test.P04b MARKER removes macro words and roots and REPLACER supports multiline names...OK\n282/1016 tests.p04b_macros_test.test.P04b output allocation failure frees snapshots and partial captures...OK\n283/1016 tests.p04b_macros_test.test.P04b failed TMP promotion does not retain a dangling owner or captured block...OK\n284/1016 tests.p04b_macros_test.test.P04b captures callback emissions and restores nested TMP output targets...OK\n285/1016 tests.p04_review_test.test.P04 review APPEND capacity preflight cannot borrow a neighbouring block registration...OK\n286/1016 tests.p04_review_test.test.P04 review APPEND shrink reuses capacity released by discarded registrations...OK\n287/1016 tests.p04_review_test.test.P04 review plus TO metadata exhaustion preserves string contents length and owner...OK\n288/1016 tests.p04_review_test.test.P04 review capture retries exact size when geometric growth cannot fit...OK\n289/1016 tests.p04_review_test.test.P04 review VALUE definition snapshots source overlapping its new owner...OK\n290/1016 tests.p04_review_test.test.P04 review string stores reject self-owned owner cells before freeing their block...OK\n291/1016 tests.p04_review_test.test.P04 review self plus TO with full metadata frees its detached copy on failure...OK\n292/1016 tests.p04_review_test.test.P04 review APPEND can grow in place with a full registry and raw appended bytes...OK\n293/1016 tests.p05a_stream_test.test.P05a EMIT-FILE truncates to one byte and returns host write errors...OK\n294/1016 tests.p05a_stream_test.test.P05a SLURP-FID reads binary data from the current position and keeps the file open...OK\n295/1016 tests.p05a_stream_test.test.P05a stream slurp continues after short reads without size or seek support...OK\n296/1016 tests.p05a_stream_test.test.P05a stream read errors free partial data and preserve the caller handle...OK\n297/1016 tests.p05a_stream_test.test.P05a stream heap exhaustion leaves no partial allocation or closed file...OK\n298/1016 tests.p05a_stream_test.test.P05a file helpers check data-stack room before host I/O...OK\n299/1016 tests.p05a_stream_test.test.P05a native slurp checks the work budget and frees accumulated bytes...OK\n300/1016 tests.p05a_input_test.test.P05a key file reads all byte values and distinguishes EOF from the last byte...OK\n301/1016 tests.p05a_input_test.test.P05a readiness neither consumes bytes nor sets an EOF indication...OK\n302/1016 tests.p05a_input_test.test.P05a EOF follows read file and successful reposition clears it...OK\n303/1016 tests.p05a_input_test.test.P05a missing hooks host errors and interrupt preserve the handle operand...OK\n304/1016 tests.p05a_input_test.test.P05a key helpers reject invalid handles and preflight input depth...OK\n305/1016 tests.p05a_misc_test.test.P05a encoded creation modes reach the host while default creation and existing modes remain intact...OK\n306/1016 tests.p05a_misc_test.test.P05a missing permission hook rejects explicit creation without truncation but allows OPEN-FILE...OK\n307/1016 tests.p05a_misc_test.test.P05a included listing follows registration order deduplicates and honors MARKER...OK\n308/1016 tests.p05a_misc_test.test.P05a included listing retains load flags through append and restore...OK\n309/1016 tests.p05a_misc_test.test.P05a triple backslash is immediate and a safe no-op outside a source file...OK\n310/1016 tests.p05a_misc_test.test.P05a triple backslash skips only the nested file closes it and resumes its caller...OK\n311/1016 tests.p05a_misc_test.test.P05a evaluated terminator leaves the containing file alive and embedded files can terminate...OK\n312/1016 tests.p05a_misc_test.test.P05a postponed terminator executes in the caller source context...OK\n313/1016 tests.p05a_misc_test.test.P05a skip failures propagate and close the included file on all paths...OK\n314/1016 tests.p05a_path_test.test.P05a path descriptors share dynamic string storage and display components...OK\n315/1016 tests.p05a_path_test.test.P05a path parsing works from compiled code and preserves the parsed source...OK\n316/1016 tests.p05a_path_test.test.P05a also path handles self aliases and failed allocation leaves owner intact...OK\n317/1016 tests.p05a_path_test.test.P05a dot path snapshots input when captured into its own owner...OK\n318/1016 tests.p05a_path_test.test.P05a paths survive repeated append and image restore with independent owners...OK\n319/1016 tests.p05a_path_test.test.P05a absolute names include Gforth explicit-relative forms and empty spans are safe...OK\n320/1016 tests.p05a_path_test.test.P05a path metadata exhaustion is atomic and CLEAR-PATH needs no extra stack slot...OK\n321/1016 tests.p05a_path_test.test.FPATH images retain configuration but both append routes preserve destination without orphan copies...OK\n322/1016 tests.p05a_path_test.test.FPATH append retains explicit aliases to source configuration independently...OK\n323/1016 tests.p05a_path_test.test.FPATH configured includes normalize history and close duplicate and failed candidates...OK\n324/1016 tests.p05a_path_test.test.FPATH source relative lookup and registration failures retain ownership and history...OK\n325/1016 tests.p05a_path_test.test.FPATH empty and configured append combinations preserve destination and slot aliases...OK\n326/1016 tests.p05a_path_test.test.FPATH full restore clears a previous configuration and rejects damaged source owner on append...OK\n327/1016 tests.p05a_path_test.test.FPATH rejects oversized names and full source tables after closing and needs no spare stack cells...OK\n328/1016 tests.p05a_path_test.test.P05 review LOCATE and WHERE reopen tilde source names recorded through FPATH...OK\n329/1016 tests.p05a_path_test.test.P05 review unavailable home expansion leaves LOCATE and WHERE nonthrowing...OK\n330/1016 tests.p06a_capture_test.test.P06a owned capture is independent FREE-able output including empty output...OK\n331/1016 tests.p06a_capture_test.test.P06a nested capture and TMP restore their enclosing output destinations...OK\n332/1016 tests.p06a_capture_test.test.P06a callback THROW restores capture and releases private allocations...OK\n333/1016 tests.p06a_capture_test.test.P06a capture rejects invalid tokens and full stack before callback...OK\n334/1016 tests.p06a_capture_test.test.P06a failed allocation and callback result overflow release capture and restore output...OK\n335/1016 tests.p06a_output_test.test.P06a output IDs nested destinations and borrowed handles...OK\n336/1016 tests.p06a_output_test.test.P06a output exceptions restore destination and retain already written bytes...OK\n337/1016 tests.p06a_output_test.test.P06a output nesting composes with caller-owned capture in both directions...OK\n338/1016 tests.p06a_output_test.test.P06a output errors are caught inside callback for EMIT and compiled print strings...OK\n339/1016 tests.p06a_output_test.test.P06a output invalid tokens and closed files restore prior state without closing borrowed files...OK\n340/1016 tests.p06a_output_test.test.P06a explicit STDOUT output prevents SHOW from overwriting intervening text...OK\n341/1016 tests.p06a_input_test.test.P06a borrowed input nests IDs and keeps terminal pending bytes isolated...OK\n342/1016 tests.p06a_input_test.test.P06a input THROW restores selection and leaves borrowed file progress intact...OK\n343/1016 tests.p06a_input_test.test.P06a file ACCEPT clips and drains lines without echo while numeric INPUT shares selection...OK\n344/1016 tests.p06a_input_test.test.P06a Unicode and unread byte stay in borrowed file across selection scopes...OK\n345/1016 tests.p06a_input_test.test.P06a input readiness EOF and invalid operands do not change ownership...OK\n346/1016 tests.p06a_input_test.test.P06a selected terminal REFILL and parser continuation read the borrowed stream...OK\n347/1016 tests.p06a_input_test.test.P06a input errors missing hooks and same-stream nesting restore state...OK\n348/1016 tests.p06a_input_test.test.P06a explicit STDIN shares caller pending state and long ACCEPT drains the line...OK\n349/1016 tests.p06b_csv_output_test.test.P06b CSV values support interpreted compiled TO and PLUS TO with quoted binary output...OK\n350/1016 tests.p06b_csv_output_test.test.P06b CSV output always encloses fields doubles quotes and adds no separator or newline...OK\n351/1016 tests.p06b_csv_output_test.test.P06b CSV capture snapshots input that aliases the growing output owner...OK\n352/1016 tests.p06b_csv_output_test.test.P06b CSV settings persist in full images and remain destination settings through both append routes...OK\n353/1016 tests.p06b_csv_output_test.test.P06b CSV image validation rejects a changed builtin VALUE address before restore mutation...OK\n354/1016 tests.p06b_csv_output_test.test.P06b omitted CSV VALUE slots keep image shape but cannot execute...SKIP\n355/1016 tests.p06b_csv_input_test.test.P06b CSV decodes quoted multiline fields logical rows and omitted trailing empties...OK\n356/1016 tests.p06b_csv_input_test.test.P06b CSV callbacks see file source and THROW closes file frees field and restores parser...OK\n357/1016 tests.p06b_csv_input_test.test.P06b nested CSV readers preserve outer borrowed field and parser buffers...OK\n358/1016 tests.p06b_csv_input_test.test.P06b CSV matches permissive quote endings and unterminated multiline EOF...OK\n359/1016 tests.p06b_csv_input_test.test.P06b CSV configured paths custom settings and callback setting changes...OK\n360/1016 tests.p06b_csv_input_test.test.P06b CSV I/O failures allocation failures stack preflight and nesting close all owned resources...OK\n361/1016 tests.p06b_csv_input_test.test.P06b CSV close errors oversized lines and full-stack preflight retain ownership rules...OK\n362/1016 tests.p06b_sh_test.test.P06b SH consumes line remainder prints newline and stores SYSTEM status...OK\n363/1016 tests.p06b_sh_test.test.P06b SH parses empty and NUL-delimited remainder like zero PARSE...OK\n364/1016 tests.p06b_sh_test.test.P06b SH errors preserve prior status and output errors prevent shell execution...OK\n365/1016 tests.p06b_sh_test.test.P06b SH snapshots EVALUATE text aliased to a growing capture owner and works without stack headroom...OK\n366/1016 tests.p06b_pipe_test.test.P06b read pipes integrate with byte input and return close status without changing system status...OK\n367/1016 tests.p06b_pipe_test.test.P06b write pipes integrate with output selection and EPIPE constant...OK\n368/1016 tests.p06b_pipe_test.test.P06b pipe invalid modes open errors and missing capabilities have defined stack effects...OK\n369/1016 tests.p06b_pipe_test.test.P06b CLOSE-PIPE preflights stack capacity before releasing a handle and propagates close errors...OK\n370/1016 tests.p06b_sh_get_test.test.P06b SH-GET borrows binary and empty output and stores close status...OK\n371/1016 tests.p06b_sh_get_test.test.P06b SH-GET reuses previous storage and accepts its previous result as a command...OK\n372/1016 tests.p06b_sh_get_test.test.P06b SH-GET read close and open failures release output and owned pipes and preserve status...OK\n373/1016 tests.p06b_sh_get_test.test.P06b SH-GET image restore invalidates runtime borrow while both append routes preserve it...OK\n374/1016 tests.p06b_sh_get_test.test.P06b SH-GET preflight preserves previous output and supports a full data stack...OK\n375/1016 tests.p06b_sh_get_test.test.P06b SH-GET allocation and work-limit failures close the pipe and release partial output...OK\n376/1016 tests.p06c_test.test.P06c all standard names and new EKEYS constants classify without heap allocation...OK\n377/1016 tests.p06c_test.test.P06c names remain stable and FKEY prints modifiers in shift ctrl alt order...OK\n378/1016 tests.p06c_test.test.P06c FORM uses physical fallback redirected and virtual capture dimensions...OK\n379/1016 tests.p06c_test.test.P06c relative movement handles signs zero minimum cell and rejects capture before output...OK\n380/1016 tests.p06c_test.test.P06c KEY-IOR shares pending bytes returns EOF and errors and preserves interrupts...OK\n381/1016 tests.p06c_test.test.P06c selected file KEY-IOR and EKEY EOF differ from legacy KEY and Shift Tab decodes...OK\n382/1016 tests.p06c_test.test.P06c key names persist through images and GRAPHICS keeps independent arrow values...OK\n383/1016 tests.p06c_test.test.P06c typed key-name references retain fixed addresses through dictionary append...OK\n384/1016 tests.p05a_search_test.test.P05a search tries ordered candidates read only and returns a borrowed name...OK\n385/1016 tests.p05a_search_test.test.P05a search stops at empty entries and reports last open error...OK\n386/1016 tests.p05a_search_test.test.P05a tilde expansion is native only and leaves the returned spelling...OK\n387/1016 tests.p05a_search_test.test.P05a file to path propagates close failure without leaking its handle...OK\n388/1016 tests.p05a_search_test.test.P05a search preflights stack ranges and path length before host access...OK\n389/1016 tests.p05a_search_test.test.P05a search handles a previous result as input and survives image restoration...OK\n390/1016 tests.p05a_search_test.test.P05a search rejects embedded NUL without opening truncated names...OK\n391/1016 tests.p05a_search_test.test.P05a path lookup needs no free heap and leaves no persistent owner root...OK\n392/1016 tests.p05b_path_parts_test.test.P05b basename and dirname return exact borrowed byte spans...OK\n393/1016 tests.p05b_path_parts_test.test.P05b path splitting validates before mutation and works with a full stack...OK\n394/1016 tests.p05b_path_parts_test.test.P05b path parts execute in compiled words without heap allocation...OK\n395/1016 tests.p05b_filename_match_test.test.P05b glob wildcard and bracket semantics are portable and case sensitive...OK\n396/1016 tests.p05b_filename_match_test.test.P05b glob decodes codepoints and distinguishes invalid bytes from Unicode...OK\n397/1016 tests.p05b_filename_match_test.test.P05b glob implements the twelve named classes on ASCII only...OK\n398/1016 tests.p05b_filename_match_test.test.P05b glob validates ranges NUL and stack before changing inputs...OK\n399/1016 tests.p05b_filename_match_test.test.P05b glob works without host hooks or heap and respects the work budget...OK\n400/1016 tests.p05b_cwd_test.test.P05b cwd requires terminator capacity and returns zero zero on failure...OK\n401/1016 tests.p05b_cwd_test.test.P05b set directory expands homes without source-relative normalization...OK\n402/1016 tests.p05b_cwd_test.test.P05b cwd validates operands hooks and NUL without host side effects...OK\n403/1016 tests.p05b_cwd_test.test.P05b cwd writes invalidate typed addresses and need no spare stack or heap...OK\n404/1016 tests.p05b_cwd_test.test.P05b cwd rejects malformed host lengths and missing terminators...OK\n405/1016 tests.p05b_mkdir_test.test.P05b mkdir parents attempts raw prefixes in order with the same native mode...OK\n406/1016 tests.p05b_mkdir_test.test.P05b mkdir reports final EEXIST and stops after a failed parent...OK\n407/1016 tests.p05b_mkdir_test.test.P05b mkdir expands homes per attempt and preserves source and OS dot semantics...OK\n408/1016 tests.p05b_mkdir_test.test.P05b mkdir preflights hooks ranges NUL and total length before creation...OK\n409/1016 tests.p05b_mkdir_test.test.P05b mkdir needs no spare stack or heap and checks budget between attempts...OK\n410/1016 tests.p05b_dir_iterator_test.test.P05b directory words preserve byte truncation consume entries and require explicit close...OK\n411/1016 tests.p05b_dir_iterator_test.test.P05b directory hooks report errors and close failure still invalidates...OK\n412/1016 tests.p05b_dir_iterator_test.test.P05b directory preflight rejects ranges NUL and missing hooks before resource access...OK\n413/1016 tests.p05b_dir_iterator_test.test.P05b directory writes notify typed memory and validate host results...OK\n414/1016 tests.p05b_dir_iterator_test.test.P05b directory words need no spare stack or free heap in compiled execution...OK\n415/1016 tests.p05b_clocks_test.test.P05b clocks keep 128-bit low-high cells and process user-system order...OK\n416/1016 tests.p05b_clocks_test.test.P05b clocks preflight all stack room before querying the host...OK\n417/1016 tests.p05b_clocks_test.test.P05b clocks report missing and failed hosts without changing existing operands...OK\n418/1016 tests.p05b_clocks_test.test.P05b clocks need neither file features nor free heap and retain hooks through image restore...OK\n419/1016 tests.p05b_ns_test.test.P05b NS consumes nonpositive double cells without querying a host...OK\n420/1016 tests.p05b_ns_test.test.P05b NS transports full double values and validates the signed seconds bound...OK\n421/1016 tests.p05b_ns_test.test.P05b NS errors preserve operands and CATCH sees UserInterrupt...OK\n422/1016 tests.p05b_ns_test.test.P05b NS needs no spare stack file feature or VM heap and keeps destination hooks...OK\n423/1016 tests.p05b_timezone_test.test.P05b datetime timezone has exact ten-cell order and dedicated borrowed UTF8 bytes...OK\n424/1016 tests.p05b_timezone_test.test.P05b timezone failures retain input cells and previous name even after host writes...OK\n425/1016 tests.p05b_timezone_test.test.P05b timezone preflights all output slots and rejects malformed callbacks atomically...OK\n426/1016 tests.p05b_timezone_test.test.P05b timezone supports an empty name and notifies typed scratch writes...OK\n427/1016 tests.p05b_timezone_test.test.P05b timezone compiled calls and image restore need no file feature or heap...OK\n428/1016 tests.p01b_test.test.P01b data words preserve the older stack and exact bit patterns...OK\n429/1016 tests.p01b_test.test.P01b underflow checks preserve both stacks...OK\n430/1016 tests.p01b_test.test.2TUCK overflow leaves the original four cells intact...OK\n431/1016 tests.p01b_test.test.RDROP and 2RDROP discard user cells without disturbing loop indices...OK\n432/1016 tests.p01b_test.test.return-stack drops work with CATCH THROW and locals...OK\n433/1016 tests.p01b_test.test.compiled P01b words survive image restore and append...OK\n434/1016 tests.p01b_test.test.DO-loop exit uses UNLOOP instead of deleting user return-stack cells...OK\n435/1016 tests.p01a_test.test.P01a zero tests consume a signed cell or double and return exact flags...OK\n436/1016 tests.p01a_test.test.P01a unsigned cells compare the high bit as magnitude and preserve min max bits...OK\n437/1016 tests.p01a_test.test.P01a signed double comparisons preserve high-low cell order and avoid subtraction overflow...OK\n438/1016 tests.p01a_test.test.P01a unsigned doubles order sign-bit boundaries by magnitude...OK\n439/1016 tests.p01a_test.test.all P01a words report insufficient input instead of reading past the stack...OK\n440/1016 tests.p01a_test.test.compiled P01a calls survive dictionary restore and append...OK\n441/1016 core.blocks.test.standard block numbers reject negative, limit and executable zero...OK\n442/1016 tests.blocks_test.test.BLOCK and BUFFER read contents and pad short blocks with spaces...OK\n443/1016 tests.blocks_test.test.UPDATE saves only modified blocks and EMPTY-BUFFERS discards changes...OK\n444/1016 tests.blocks_test.test.colliding buffer saves old contents and write failures remain retryable...OK\n445/1016 tests.blocks_test.test.invalid block numbers throw minus 35 without opening storage...OK\n446/1016 tests.blocks_test.test.failed open never creates over an existing file...OK\n447/1016 tests.blocks_test.test.failed read keeps the previous buffer contents and identity...OK\n448/1016 tests.blocks_test.test.failed flush retains dirty buffers and FLUSH does not empty them...OK\n449/1016 tests.blocks_test.test.dictionary restore preserves this process's unsaved runtime block buffer...OK\n450/1016 tests.blocks_test.test.LOAD exposes block input and restores the caller after success or THROW...OK\n451/1016 tests.blocks_test.test.nested LOAD and colliding BLOCK cannot overwrite the active source...OK\n452/1016 tests.blocks_test.test.block comments stop at 64 characters and EVALUATE temporarily clears BLK...OK\n453/1016 tests.blocks_test.test.block REFILL and SAVE-INPUT RESTORE-INPUT restore block and cursor...OK\n454/1016 tests.blocks_test.test.LIST displays sixteen lines and sets SCR; LOAD zero throws minus 35...OK\n455/1016 tests.blocks_test.test.a BLK store changes SOURCE while keeping the current input cursor...OK\n456/1016 tests.blocks_test.test.recursive LOAD and failed REFILL restore all input frames...OK\n457/1016 tests.blocks_test.test.BYE saves dirty blocks and a failed write can be caught before halting...OK\n458/1016 tests.blocks_test.test.a block ending while a defining word waits for a name cannot consume caller input...OK\n459/1016 tests.blocks_test.test.read-only block files can be loaded but dirty writeback fails without losing data...OK\n460/1016 tests.blocks_test.test.block parser clamps an out-of-range input cursor before WORD...OK\n461/1016 tests.blocks_test.test.BLK may select block zero inside LOAD while LOAD zero remains invalid...OK\n462/1016 tests.blocks_test.test.unrelated block open failures do not attempt read-only fallback...OK\n463/1016 tests.blocks_test.test.P09 review documentation comments end at the next 64 column block line...OK\n464/1016 tests.core_words_test.test.64-bit arithmetic wraps and division floors toward negative infinity...OK\n465/1016 tests.core_words_test.test.true flags are all bits set and zero remains false...OK\n466/1016 tests.core_words_test.test.dictionary uses case-insensitive full-name identity...OK\n467/1016 tests.core_words_test.test.compiled nested loops and outer indices produce expected result...OK\n468/1016 tests.core_words_test.test.q-do skips an empty range and do enters an equal range once...OK\n469/1016 tests.core_words_test.test.compiled data words retain identity and execute DOES behavior...OK\n470/1016 tests.core_words_test.test.compiled data-word overflow preserves the failed PC in both loops...OK\n471/1016 tests.core_words_test.test.compiled data-word references reject targets forgotten during execution...OK\n472/1016 tests.core_words_test.test.a compiled created-word reference observes DOES attached afterwards...OK\n473/1016 tests.core_words_test.test.compiled LOOP wraps cells and keeps nested equal-range and LEAVE behavior...OK\n474/1016 tests.core_words_test.test.variable array and string operations use the portable data area...OK\n475/1016 tests.core_words_test.test.number output is followed by a space and CR emits a newline...OK\n476/1016 tests.core_words_test.test.number output uses signed digits without zero padding in every base...OK\n477/1016 tests.core_words_test.test.dot-s shows depth and items without consuming them...OK\n478/1016 tests.core_words_test.test.error reporting resets the stack and reports the unknown token...OK\n479/1016 tests.core_words_test.test.forget removes later words and reclaims their data allocation...OK\n480/1016 tests.core_words_test.test.forget reclaims compiled code for later definitions...OK\n481/1016 tests.core_words_test.test.failed definition is rolled back and the interpreter recovers...OK\n482/1016 tests.core_words_test.test.data allocation stops at the start of the heap without moving the allocation pointer...OK\n483/1016 tests.core_words_test.test.cell access is 64-bit little-endian and rejects addresses outside logical memory...OK\n484/1016 tests.core_words_test.test.division by zero is reported as an error...OK\n485/1016 tests.core_words_test.test.C\" ABORT\" BUFFER: 2LITERAL 2VALUE and the double-cell words work as in gforth...OK\n486/1016 tests.core_words_test.test.DUMP shows 16 bytes a line in hexadecimal and as characters, as gforth does...OK\n487/1016 tests.core_words_test.test.WHILE follows the standard control-flow order, so CS-ROLL idioms and several WHILEs work...OK\n488/1016 tests.core_words_test.test.SYNONYM TRAVERSE-WORDLIST NAME>INTERPRET EKEY>CHAR and ENVIRONMENT? work as in gforth...OK\n489/1016 tests.core_words_test.test.QUIT keeps both data stacks, stops the line and the file, and CATCH does not stop it...OK\n490/1016 tests.core_words_test.test.M*/ works as in gforth...OK\n491/1016 tests.core_words_test.test.AHEAD N>R and NR> work as in gforth...OK\n492/1016 tests.core_words_test.test.?DUP U< U> 2R@ ALIGN UNUSED .R and U.R work as in gforth...OK\n493/1016 tests.core_words_test.test.*/ */MOD M* UM* UM/MOD FM/MOD and SM/REM work as in gforth...OK\n494/1016 tests.core_words_test.test.stack overflow is reported and subsequent input can run...OK\n495/1016 tests.core_words_test.test.colon definitions called from compiled code nest, end, and fail as their own calls did...OK\n496/1016 tests.core_words_test.test.after CATCH, QUIT, and BYE in nested calls with local variables, the callers go on or stop cleanly...OK\n497/1016 tests.core_words_test.test.return stack overflow and underflow reset cleanly...OK\n498/1016 tests.core_words_test.test.dictionary capacity failure preserves existing words...OK\n499/1016 tests.core_words_test.test.control nesting overflow rolls back the incomplete definition...OK\n500/1016 tests.core_words_test.test.compiled code capacity failure rolls back the incomplete definition...OK\n501/1016 tests.core_words_test.test.nested IF ELSE THEN selects every branch...OK\n502/1016 tests.core_words_test.test.BEGIN WHILE REPEAT and BEGIN END compile and run...OK\n503/1016 tests.core_words_test.test.+LOOP handles positive and negative increments at the boundary...OK\n504/1016 tests.core_words_test.test.+LOOP ends when the index crosses the limit also across the largest cell, as in gforth...OK\n505/1016 tests.core_words_test.test.LEAVE exits the active loop without losing the outer result...OK\n506/1016 tests.core_words_test.test.multiline definitions and immediate string output preserve compiler state...OK\n507/1016 tests.core_words_test.test.quoted string length is limited to 127 bytes...OK\n508/1016 tests.core_words_test.test.redefinition warns and subsequent lookup uses the newest definition...OK\n509/1016 tests.core_words_test.test.<BUILDS and DOES> attach a compiled behavior to created words...OK\n510/1016 tests.core_words_test.test.<BUILDS reads a created word name from the next input line...OK\n511/1016 tests.core_words_test.test.FORGET removes created words and their data can be reused...OK\n512/1016 tests.core_words_test.test.LEAVE exits immediately and UNLOOP allows EXIT from a loop...OK\n513/1016 tests.core_words_test.test.stack words follow the standard stack effects...OK\n514/1016 tests.core_words_test.test.basic standard words cover bit shifts, cells, characters, and number prefixes...OK\n515/1016 tests.core_words_test.test.memory words fill, erase, move, and switch flags on and off...OK\n516/1016 tests.core_words_test.test.UNTIL AGAIN EXIT and RECURSE compile structured definitions...OK\n517/1016 tests.core_words_test.test.CASE OF ENDOF ENDCASE selects a branch and drops the selector...OK\n518/1016 tests.core_words_test.test.VALUE and TO work interpreted and compiled...OK\n519/1016 tests.core_words_test.test.IMMEDIATE and POSTPONE extend the compiler...OK\n520/1016 tests.core_words_test.test.compile-only words are rejected while interpreting...OK\n521/1016 tests.core_words_test.test.DEFER IS ACTION-OF DEFER! DEFER@ and DEFERS work as in gforth...OK\n522/1016 tests.core_words_test.test.+TO ?EXIT NOOP PERFORM ?LEAVE CELL- UNDER+ and 0>= work as in gforth...OK\n523/1016 tests.core_words_test.test.?OF CONTOF and NEXT-CASE extend CASE as in gforth...OK\n524/1016 tests.core_words_test.test.a DEFER that runs itself, +TO of locals, and DEFERs of forgotten words, after the Codex review...OK\n525/1016 tests.core_words_test.test.COMPILE, [COMPILE] and NAME>COMPILE work as in gforth...OK\n526/1016 tests.core_words_test.test.BEGIN-STRUCTURE and the FIELD: words lay out fields as in gforth...OK\n527/1016 tests.core_words_test.test.STRUCT FIELD END-STRUCT and the % words work as gforth's structures...OK\n528/1016 tests.float_test.test.float literals require an exponent and use a separate stack...OK\n529/1016 tests.float_test.test.F. prints fixed notation with 15 significant digits and a trailing space...OK\n530/1016 tests.float_test.test.F. prints non-finite values by name...OK\n531/1016 tests.float_test.test.F.S shows each float as 14 0 17 F.RDP does...OK\n532/1016 tests.float_test.test.float arithmetic comparison and conversion...OK\n533/1016 tests.float_test.test.float math functions follow the host libm...OK\n534/1016 tests.float_test.test.float memory, variables, constants, and arrays...OK\n535/1016 tests.float_test.test.float stack underflow is reported and both stacks are reset...OK\n536/1016 tests.float_test.test.FINPUT reads a float and INPUT reads a 64-bit integer...OK\n537/1016 tests.float_test.test.dictionary image round trip relocates words, floats, values, and strings...OK\n538/1016 tests.float_test.test.F>STR-RDP matches gforth's output for fixed, exponential, and overflowing fields...OK\n539/1016 tests.float_test.test.F.RDP prints, F>BUF-RDP fills a buffer, and the book's Level 20 examples hold...OK\n540/1016 tests.float_test.test.F.RDP and F>BUF-RDP show a value whose exponent shortens when rounded...OK\n541/1016 tests.float_test.test.[ while interpreting, PI, and F. rounded from the exact binary value...OK\n542/1016 tests.float_test.test..S and F.S show the top nine items, and F.S shows zero, infinity, and NaN as gforth does...OK\n543/1016 tests.float_test.test.FSIN FCOS FTAN FEXP FLN are correctly rounded, as the original gforth in Linux gets them from glibc...OK\n544/1016 tests.float_test.test.math functions match the original gforth at large arguments, range limits, subnormals, and non-finite values...OK\n545/1016 tests.float_test.test.tiny arguments give the same results without an FMA instruction...OK\n546/1016 tests.float_test.test.the CORE-MATH functions of FASIN to F** are correctly rounded and give gforth's NaNs...OK\n547/1016 tests.float_test.test.FLOOR FTRUNC FROUND F~ FSINCOS and the SF@ DF@ and alignment words work as in gforth...OK\n548/1016 tests.float_test.test.REPRESENT gives the digits, exponent, and sign as gforth does...OK\n549/1016 tests.float_test.test.FE. FS. and F. follow PRECISION as in gforth...OK\n550/1016 tests.float_test.test.the fma that CORE-MATH uses gives the FMA instruction's results...OK\n551/1016 tests.float_test.test.SF! FROUND and many-digit output at their limits, as in gforth...OK\n552/1016 tests.float_test.test.FVALUE pushes its float, TO stores one, and SEE shows it...OK\n553/1016 tests.float_test.test..S and F.S at depth zero, at exactly nine items, and in hexadecimal...OK\n554/1016 tests.text_and_numbers_test.test.numbers containing a dot are double-cell integers...OK\n555/1016 tests.text_and_numbers_test.test.double arithmetic, comparison, and output exceed a single cell...OK\n556/1016 tests.text_and_numbers_test.test.2! and 2@ store a double with the high cell first...OK\n557/1016 tests.text_and_numbers_test.test.pictured numeric output builds strings from the right...OK\n558/1016 tests.text_and_numbers_test.test.nested hold areas keep the outer conversion...OK\n559/1016 tests.text_and_numbers_test.test.S\" and S\\\" return strings while interpreting and compiling...OK\n560/1016 tests.text_and_numbers_test.test.S\" keeps several interpreted strings alive...OK\n561/1016 tests.text_and_numbers_test.test.COUNT and PAD give addressable buffers...OK\n562/1016 tests.text_and_numbers_test.test.>NUMBER S>NUMBER? and >FLOAT convert strings...OK\n563/1016 tests.text_and_numbers_test.test.>FLOAT accepts decimal text without an exponent...OK\n564/1016 tests.text_and_numbers_test.test.ACCEPT and EVALUATE read and interpret a line...OK\n565/1016 tests.text_and_numbers_test.test.KEY and KEY? read single characters...OK\n566/1016 tests.text_and_numbers_test.test.WITHIN tests a half-open range with wrap-around like gforth...OK\n567/1016 tests.text_and_numbers_test.test.2>R and 2R> move a cell pair and keep its order...OK\n568/1016 tests.text_and_numbers_test.test.ENDIF is an alias of THEN...OK\n569/1016 tests.text_and_numbers_test.test.PLACE stores a counted string, handles overlap, and limits the length to 255...OK\n570/1016 tests.text_and_numbers_test.test.COMPARE SEARCH /STRING and -TRAILING work as in gforth...OK\n571/1016 tests.text_and_numbers_test.test.a string longer than memory is an error, not cut short...OK\n572/1016 tests.text_and_numbers_test.test.CHAR+ CHARS BOUNDS BLANK CMOVE> SCAN SKIP STR= STRING-PREFIX? and +PLACE work as in gforth...OK\n573/1016 tests.text_and_numbers_test.test.SOURCE >IN SOURCE-ID and REFILL work as in gforth...OK\n574/1016 tests.text_and_numbers_test.test.SLITERAL compiles a string and PARSE-NAME reads the next name...OK\n575/1016 tests.text_and_numbers_test.test.STATE reflects the compiler state through a saved address...OK\n576/1016 tests.text_and_numbers_test.test.ABORT clears the stacks silently, even from EVALUATE...OK\n577/1016 tests.text_and_numbers_test.test.0x numbers and 'c character literals as in gforth...OK\n578/1016 tests.host_words_test.test.:NONAME compiles an unnamed definition and leaves its execution token...OK\n579/1016 tests.host_words_test.test.an execution token stored in a constant survives a full image restore...OK\n580/1016 tests.host_words_test.test.TIME&DATE gives the host's local time and AT-XY moves the cursor as gforth does...OK\n581/1016 tests.host_words_test.test.MS UTIME GETENV and SYSTEM call the host...OK\n582/1016 tests.host_words_test.test.host words report an error when the host does not provide them...OK\n583/1016 tests.host_words_test.test.host failures in MS and UTIME are reported and leave a clean stack...OK\n584/1016 tests.host_words_test.test.PAGE clears the screen with ANSI sequences...OK\n585/1016 tests.host_words_test.test.THROW ignores zero, aborts on -1, and reports other codes in decimal...OK\n586/1016 tests.host_words_test.test.ARGC, ARGV, ARG, SHIFT-ARGS, and NEXT-ARG see the arguments the host set, as in gforth...OK\n587/1016 tests.xchar_test.test.CHAR, [CHAR], and 'c' give the code point of a UTF-8 character...OK\n588/1016 tests.xchar_test.test.XC-SIZE, X-SIZE, XC@+, XC!+, XC!+?, XC,, and XEMIT as in gforth...OK\n589/1016 tests.xchar_test.test.XCHAR+, XCHAR-, +X/STRING, X\\STRING-, -TRAILING-GARBAGE, and X@+/STRING...OK\n590/1016 tests.xchar_test.test.XHOLD, EKEY>XCHAR, X-WIDTH, and XC-WIDTH...OK\n591/1016 tests.xchar_test.test.the width table matches the runs gforth gave at their edges...OK\n592/1016 tests.xchar_test.test.malformed UTF-8 follows one rule: U+FFFD, taking the start byte and the bytes that continue it...OK\n593/1016 tests.xchar_test.test.XKEY reads the bytes of a character and leaves a byte that does not continue it for KEY...OK\n594/1016 tests.xchar_test.test.without the host's unread_fn, the byte XKEY leaves still comes first to KEY and XKEY...OK\n595/1016 tests.xchar_test.test.EKEY decodes UTF-8 and modified function keys without changing KEY bytes...OK\n596/1016 tests.xchar_test.test.unknown and incomplete EKEY sequences preserve input for KEY...OK\n597/1016 tests.xchar_test.test.standard key vocabulary can be restored after ONLY and GRAPHICS wins when selected...OK\n598/1016 tests.xchar_test.test.EKEY? does not consume bytes needed by KEY...OK\n599/1016 tests.xchar_test.test.EKEY escape continuation timeout is a total monotonic budget...OK\n600/1016 tests.xchar_test.test.ONLY ALSO EKEYS selects standard constants from Root...OK\n601/1016 tests.xchar_test.test.a deferred special key follows all pushed-back prefix bytes...OK\n602/1016 tests.xchar_test.test.interruption during an EKEY sequence preserves already read bytes...OK\n603/1016 tests.xchar_test.test.EKEY preserves high bytes at UTF-8 length boundaries and after readiness polling...OK\n604/1016 tests.files_and_heap_test.test.file access methods and standard stream ids follow gforth...OK\n605/1016 tests.files_and_heap_test.test.files are created, written, sized, repositioned, read by line, and closed...OK\n606/1016 tests.files_and_heap_test.test.file errors are returned as iors without changing the stack shape...OK\n607/1016 tests.files_and_heap_test.test.WRITE-LINE to STDOUT reaches the host...OK\n608/1016 tests.files_and_heap_test.test.file words report an error when the host has no file support...OK\n609/1016 tests.files_and_heap_test.test.ALLOCATE FREE and RESIZE manage the heap and reuse freed blocks...OK\n610/1016 tests.files_and_heap_test.test.freeing every block returns the heap to its start...OK\n611/1016 tests.files_and_heap_test.test.dynamic string words follow the book's Level 14 example...OK\n612/1016 tests.files_and_heap_test.test.dynamic strings handle sources inside themselves and out-of-range edits...OK\n613/1016 tests.files_and_heap_test.test.$SPLIT and $ITER divide strings at a separator...OK\n614/1016 tests.files_and_heap_test.test.$TMP captures output, nests, and restores output after an error...OK\n615/1016 tests.files_and_heap_test.test.string arrays store, fetch, count, map, print, and free elements...OK\n616/1016 tests.files_and_heap_test.test.$[]SLURP and $[]SLURP-FILE read a file line by line...OK\n617/1016 tests.files_and_heap_test.test.$SLURP $+SLURP $+SLURP-FILE and $SLURP-LINE read files as in gforth...OK\n618/1016 tests.files_and_heap_test.test.$+!LEN $[]+! $+[]! $EXEC $OFF and $VARIABLE work as in gforth...OK\n619/1016 tests.files_and_heap_test.test.SLURP-FILE and $SLURP-FILE read a whole file as it is and close it...OK\n620/1016 tests.files_and_heap_test.test.RESTORE-INPUT goes back to a saved line of a file or place in a string, as in gforth...OK\n621/1016 tests.files_and_heap_test.test.SOURCE-ID gives the file id and REFILL the next line of an included file...OK\n622/1016 tests.files_and_heap_test.test.PARSE-NAME reads the next name from a file being included...OK\n623/1016 tests.files_and_heap_test.test.FILE-POSITION RESIZE-FILE FLUSH-FILE FILE-STATUS RENAME-FILE DELETE-FILE BIN and INCLUDE-FILE work as in gforth...OK\n624/1016 tests.files_and_heap_test.test.READ-FILE reads bytes as they are and gives 0 at the end of the file...OK\n625/1016 tests.files_and_heap_test.test.typed heap strings survive public image restore...OK\n626/1016 tests.files_and_heap_test.test.S\" and S\\\" outside a definition keep each string in the heap, as gforth does...OK\n627/1016 tests.locals_test.test.locals take values in stack order and can be redefined mid-definition...OK\n628/1016 tests.locals_test.test.TO changes value-flavoured locals and | starts locals at zero...OK\n629/1016 tests.locals_test.test.typed locals hold cells, doubles, floats, characters, and execution tokens...OK\n630/1016 tests.locals_test.test.variable-flavoured locals push addresses into the locals frame...OK\n631/1016 tests.locals_test.test.LOCALS| binds the first name to the top of the stack and {: :} is accepted...OK\n632/1016 tests.locals_test.test.each recursive call gets its own locals frame and frames are released...OK\n633/1016 tests.locals_test.test.nested calls preserve locals at the end of memory and recover from exhaustion...OK\n634/1016 tests.locals_test.test.local names are scoped to their definition and rejected outside one...OK\n635/1016 tests.locals_test.test.locals survive a full image restore...OK\n636/1016 tests.locals_test.test.tabs separate tokens like spaces...OK\n637/1016 tests.locals_test.test.:NONAME failures restore code, data, stack, and STATE...OK\n638/1016 tests.locals_test.test.:NONAME rolls back when the code area fills at ; and fails cleanly on a full dictionary...OK\n639/1016 tests.locals_test.test.locals are visible only where every path passes their declaration, as in gforth...OK\n640/1016 tests.catch_test.test.dynamic recursion reaches the call limit and recovers through CATCH...OK\n641/1016 tests.catch_test.test.CATCH uses the configured call stack without host recursion...OK\n642/1016 tests.catch_test.test.deep CATCH resolves deferred and DOES> targets within the call limit...OK\n643/1016 tests.catch_test.test.a deferred CATCH also keeps its callee in the execution loop...OK\n644/1016 tests.catch_test.test.an uninitialized DEFER still warns at the call limit, including through CATCH...OK\n645/1016 tests.catch_test.test.compiled CATCH restores nested callers, loops, and locals...OK\n646/1016 tests.catch_test.test.BYE unwinds compiled CATCH continuations...OK\n647/1016 tests.catch_test.test.a successful CATCH without room for zero throws to its caller...OK\n648/1016 tests.catch_test.test.CATCH result overflow keeps the restored caller PC and BYE state...OK\n649/1016 tests.catch_test.test.helper failures keep the caller PC and the innermost backtrace PC...OK\n650/1016 tests.catch_test.test.PC at the u16 code limit branches and returns through both loop exits...OK\n651/1016 tests.catch_test.test.compiled CATCH consumes an invalid xt before propagating its error...OK\n652/1016 tests.catch_test.test.host output reentry preserves an outer CATCH and its locals...OK\n653/1016 tests.catch_test.test.QUIT and step limits escape compiled CATCH and discard its continuation...OK\n654/1016 tests.catch_test.test.deep dynamic recursion through CATCH uses VM frames...OK\n655/1016 tests.catch_test.test.CATCH returns 0 or the THROW code and restores the stack depths like gforth...OK\n656/1016 tests.catch_test.test.CATCH works with file iors, nested catches, locals, and $TMP...OK\n657/1016 tests.catch_test.test.a THROWn interpreter code is reported like the original error...OK\n658/1016 tests.catch_test.test.CATCH abandons a definition started by the caught word...OK\n659/1016 tests.catch_test.test.EXECUTE and a DEFER in compiled code run every kind of word...OK\n660/1016 tests.catch_test.test.a definition with EXECUTE keeps it through SEE and a dictionary image...OK\n661/1016 tests.source_and_see_test.test.a token consumes one following separator, so PARSE keeps further spaces...OK\n662/1016 tests.source_and_see_test.test.WORD returns a counted string and FIND reports immediacy...OK\n663/1016 tests.source_and_see_test.test.FIND-NAME NAME>INT and NAME>STRING follow the book's Level 10 example...OK\n664/1016 tests.source_and_see_test.test.SEE shows definitions with their control structures...OK\n665/1016 tests.source_and_see_test.test.EVALUATE does not read further terminal lines and input lines are limited to the TIB...OK\n666/1016 tests.source_and_see_test.test.INCLUDE interprets a file across lines and reports its name and line...OK\n667/1016 tests.source_and_see_test.test.REQUIRE loads a file once, even when it requires itself...OK\n668/1016 tests.source_and_see_test.test.errors in included files name the innermost file and line and close every file...OK\n669/1016 tests.source_and_see_test.test.CATCH around INCLUDED lets the rest of the line run...OK\n670/1016 tests.source_and_see_test.test.INCLUDE nesting is limited...OK\n671/1016 tests.source_and_see_test.test.MARKER forgets later words and the files required after it...OK\n672/1016 tests.source_and_see_test.test.LOCATE prints the file, line, and the lines of the definition...OK\n673/1016 tests.source_and_see_test.test.source locations and the REQUIRE history survive image restore and LOAD...OK\n674/1016 tests.source_and_see_test.test.a parsing word left waiting at the end of an EVALUATE string is an error...OK\n675/1016 tests.source_and_see_test.test.INCLUDE between CREATE and DOES> keeps the word being created...OK\n676/1016 tests.source_and_see_test.test.MARKER inside an included file keeps the names that frames and words refer to...OK\n677/1016 tests.source_and_see_test.test.a MARKER loaded with LOAD restores the history it was made with...OK\n678/1016 tests.source_and_see_test.test.a file that ends the caller's definition and starts another is an error...OK\n679/1016 tests.source_and_see_test.test.a failing close is reported at the file that failed...OK\n680/1016 tests.source_and_see_test.test.WORD and NAME>STRING buffers have the documented limits...OK\n681/1016 tests.source_and_see_test.test.SEE handles nested and empty branches and CASE...OK\n682/1016 tests.wordlists_test.test.the index of the names finds the newest word of a name as the dictionary changes...OK\n683/1016 tests.wordlists_test.test.the index of the names follows images that are restored and appended...OK\n684/1016 tests.wordlists_test.test.a full dictionary is searched through the index...OK\n685/1016 tests.wordlists_test.test.VOCABULARY ONLY ALSO DEFINITIONS and ORDER follow the book's Level 16 example...OK\n686/1016 tests.wordlists_test.test.WORDLIST SET-CURRENT and >ORDER build modules and shadow words by order...OK\n687/1016 tests.wordlists_test.test.GET-ORDER SET-ORDER PREVIOUS and the search order limits...OK\n688/1016 tests.wordlists_test.test.WORDS lists the first word list and SEARCH-WORDLIST searches one list...OK\n689/1016 tests.wordlists_test.test.[IF] [ELSE] [THEN] select input, nest, span lines, and work while compiling...OK\n690/1016 tests.wordlists_test.test.MARKER restores the search order and the current word list...OK\n691/1016 tests.wordlists_test.test.word lists and the search order survive image restore and LOAD renumbers them...OK\n692/1016 tests.wordlists_test.test.a MARKER made in reclaimed data space survives LOAD with old values in its unused slots...OK\n693/1016 tests.wordlists_test.test.[DEFINED] and [UNDEFINED] see local variables while compiling...OK\n694/1016 tests.wordlists_test.test.[IF] skipping inside an included file reads further lines and fails at its end...OK\n695/1016 tests.wordlists_test.test.[IFDEF] [IFUNDEF] [ENDIF] and the interpreted loops work as in gforth...OK\n696/1016 tests.wordlists_test.test.CATCH ends the interpreted loops started in the caught word...OK\n697/1016 tests.wordlists_test.test.an interpreted loop does not go back into a later terminal line of the same length...OK\n698/1016 tests.wordlists_test.test.an interpreted loop in an included file repeats its lines...OK\n699/1016 tests.wordlists_test.test.WHERE lists the uses of a word in included files as gforth does...OK\n700/1016 tests.wordlists_test.test.FIND and LOCATE pick the word from the first list in the search order...OK\n701/1016 tests.wordlists_test.test.image restore keeps words of a vocabulary made with :NONAME and DOES>...OK\n702/1016 tests.definitions_test.test.defining words compiled into a definition read their name when it runs...OK\n703/1016 tests.definitions_test.test.defining words follow the search order, a variable takes DOES>, and F. keeps every digit...OK\n704/1016 tests.definitions_test.test.>BODY gives the data area, and ' in a definition reads its name when the definition runs...OK\n705/1016 tests.definitions_test.test.LITERAL and FLITERAL compile a value, as the book's Level 31 DSL uses them...OK\n706/1016 tests.definitions_test.test.' follows the search order and reads its name across input boundaries...OK\n707/1016 tests.definitions_test.test.>BODY of ARRAY and plain CREATE words, and the words without a data area...OK\n708/1016 tests.definitions_test.test.LITERAL takes one cell at a time and fails without a value or outside a definition...OK\n709/1016 tests.definitions_test.test.an execution token compiled by ['] is relocated by LOAD, one compiled by LITERAL is not...OK\n710/1016 tests.help_test.test.HELP has a description for every built-in word, and only for words that exist...OK\n711/1016 tests.help_test.test.HELP shows the basic help, a word's description, or where to look for a defined word...OK\n712/1016 tests.help_test.test.HELP takes a name only from its own line, also in EVALUATE, and in a definition when it runs...OK\n713/1016 tests.help_test.test.LICENSE shows the MIT License and the CORE-MATH notices with LF line ends before the host...OK\n714/1016 tests.dictionary_test.test.a word group the build leaves out has no words in the dictionary, and its code does not run...OK\n715/1016 tests.dictionary_test.test.every build gives each built-in word the same execution token, a word left out keeping its place without a name...OK\n716/1016 tests.dictionary_test.test.a full restore keeps this build's built-in words when the image's built-in names differ...OK\n717/1016 tests.dictionary_test.test.a built-in word compiles to a direct call, and an image with plain calls still runs...OK\n718/1016 tests.dictionary_test.test.execution-only calls normalize on save and relocate on LOAD without changing SEE...OK\n719/1016 tests.dictionary_test.test.primitive instructions match dictionary calls including errors and full stacks...OK\n720/1016 tests.dictionary_test.test.SEE shows a built-in word the build leaves out by its own name...OK\n721/1016 tests.dictionary_test.test.FORGET, MARKER, and a failed definition give back the space of their names...OK\n722/1016 tests.dictionary_test.test.a full name area is a full dictionary, and the words before still work...OK\n723/1016 tests.dictionary_test.test.an image keeps HERE's data, the used heap, and the source table, and nothing else...OK\n724/1016 tests.dictionary_test.test.an FVALUE and a TO of it keep working after LOAD, a second LOAD, and a full restore...OK\n725/1016 tests.dictionary_test.test.LOAD gives the added words their names after the dictionary's own...OK\n726/1016 tests.dictionary_test.test.a damaged image, or one whose names are out of order or out of range, is rejected before anything changes...OK\n727/1016 tests.dictionary_test.test.a VARIABLE without room for its name and a definition CATCH abandons leave HERE and the names as they were...OK\n728/1016 tests.dictionary_test.test.LOAD into a dictionary without room changes nothing, and unnamed words keep LOAD and FORGET in step...OK\n729/1016 tests.dictionary_test.test.LOAD keeps a DEFER's action pointing to the loaded word...OK\n730/1016 tests.dictionary_test.test.an image records its layout and runs only with that layout...OK\n731/1016 tests.dictionary_test.test.LOAD's appendImage takes the words of an image with another layout...OK\n732/1016 tests.dictionary_test.test.the sizes of a machine are its limits...OK\n733/1016 tests.dictionary_test.test.a machine with the default sizes has them as its limits...OK\n734/1016 tests.dictionary_test.test.the sizes a machine may have, at their bounds...OK\n735/1016 tests.dictionary_test.test.dictionary capacity preflight accounts for all builtins root copies and keyboard constants...OK\n736/1016 tests.inline_calls_test.test.short calls inline with nested depth guards and retain original word identity...OK\n737/1016 tests.inline_calls_test.test.inlined calls reject words removed during execution by FORGET or MARKER...OK\n738/1016 tests.inline_calls_test.test.inlined calls preserve call-limit and stack-error ordering...OK\n739/1016 tests.inline_calls_test.test.recursive branching local dynamic and large definitions stay as calls...OK\n740/1016 tests.inline_calls_test.test.inline capacity fallback reserves one slot but not the rest of a definition...OK\n741/1016 tests.inline_calls_test.test.saved inline padding consumes LOAD capacity and rejection leaves the target unchanged...OK\n742/1016 tests.inline_calls_test.test.copied execution tokens relocate through repeated LOAD and another image round trip...OK\n743/1016 tests.inline_calls_test.test.inlining survives image normalization restoration and repeated relocation...OK\n744/1016 tests.inline_calls_test.test.SEE may omit empty old-image branches reconstructed as inline padding...OK\n745/1016 tests.inline_calls_test.test.image inlining does not hide a branch into reserved padding...OK\n746/1016 tests.graphics_test.test.REQUIRE-GRAPHICS is refused in a build without graphics...SKIP\n747/1016 tests.graphics_test.test.REQUIRE-GRAPHICS loads the GRAPHICS vocabulary once and keeps the search order...OK\n748/1016 tests.graphics_test.test.GFX-INIT checks the size, clears the image, and keeps the old one when the host fails...OK\n749/1016 tests.graphics_test.test.GFX-PSET, GFX-PGET, GFX-HLINE, and GFX-CLS stay inside the image...OK\n750/1016 tests.graphics_test.test.GFX-SAVE-PPM and GFX-SAVE-BMP write the image, and return the ior of a failure...OK\n751/1016 tests.graphics_test.test.the graphics library loads into GRAPHICS, and a failure removes everything it added...OK\n752/1016 tests.graphics_test.test.an image is SIGIMG45 until the graphics words are loaded, and SIGIMG46 from then on...OK\n753/1016 tests.graphics_test.test.LOAD of an image with the graphics words adds them, renumbered, as loaded...OK\n754/1016 tests.graphics_test.test.a library that fails inside a definition leaves nothing behind, also after the error is reported or caught...OK\n755/1016 tests.graphics_test.test.restoring an image into a used machine drops its graphics image, and a failed restore keeps it...OK\n756/1016 tests.graphics_test.test.any value in the cell of the GRAPHICS vocabulary is safe, and a host buffer of the wrong length is not used...OK\n757/1016 tests.graphics_test.test.the library is read line by line: CR LF, empty lines, the last line without LF, [DO] over lines, REFILL, SOURCE-ID...OK\n758/1016 tests.graphics_test.test.saving an image larger than the write buffer, and the first ior when a write or the close fails...OK\n759/1016 tests.graphics_test.test.a build without graphics loads a SIGIMG46 image and refuses to run its GFX- words...SKIP\n760/1016 tests.graphics_test.test.the color words, and the library loads in any BASE and leaves BASE as it was...OK\n761/1016 tests.graphics_test.test.the drawing words need an image, as the GFX- words do...OK\n762/1016 tests.graphics_test.test.LINE draws both ends, in every direction, and cuts lines at the edges...OK\n763/1016 tests.graphics_test.test.RECT and FILL-RECT draw w by h pixels from the top left corner, cut at the edges...OK\n764/1016 tests.graphics_test.test.CIRCLE and FILL-CIRCLE: small radii, symmetry, the outline inside the disc, and far circles...OK\n765/1016 tests.graphics_test.test.PAINT fills the area of one color, grows its stack, and does nothing on the same color or outside...OK\n766/1016 tests.graphics_test.test.SAVE-BMP and SAVE-PPM throw the ior of a failure...OK\n767/1016 tests.graphics_test.test.LOCATE and WHERE show the lines of the embedded library, without a file...OK\n768/1016 tests.graphics_test.test.CIRCLE and FILL-CIRCLE have the pixels of the midpoint circle algorithm, also cut at the edges...OK\n769/1016 tests.graphics_test.test.LINE between any two points of the image is Bresenham's line from the first point...OK\n770/1016 tests.graphics_test.test.PAINT gives CANNOT ALLOCATE MEMORY when its stack cannot be made or grown, and frees it...OK\n771/1016 tests.graphics_test.test.BASE is restored when the library fails to load...OK\n772/1016 tests.graphics_test.test.GFX-SHOW-BLOCKS writes two pixels a cell in 24-bit colors, as UTF-8 the host is told of...OK\n773/1016 tests.graphics_test.test.an image larger than the terminal is made smaller, keeping its proportions, by averaging...OK\n774/1016 tests.graphics_test.test.GFX-SHOW-SIXEL writes the image as Sixel graphics with the colors of a 6 x 6 x 6 cube...OK\n775/1016 tests.graphics_test.test.SHOW goes to the window when the host has one, or to the terminal, as chosen...OK\n776/1016 tests.graphics_test.test.the Sixel output decodes to the image's colors for heights of 1, 5, 6, 7, and 13, with runs...OK\n777/1016 tests.graphics_test.test.half block output longer than the output buffer comes out whole...OK\n778/1016 tests.graphics_test.test.GFX-SAVE-PNG writes a PNG whose chunks, stored blocks, Adler-32, and pixels check out...OK\n779/1016 tests.graphics_test.test.X-RANGE, Y-RANGE, MPSET, MLINE, AXES, and PLOT draw in mathematical coordinates...OK\n780/1016 tests.graphics_test.test.INKEY decodes keys and escape sequences from the terminal, and Ctrl+C throws -28...OK\n781/1016 tests.graphics_test.test.MOUSE gives the pixel under the mouse on the terminal and in the window, and keys wait for INKEY...OK\n782/1016 tests.graphics_test.test.MOUSE-EVENT gives each press, release, and notch of the wheel in order...OK\n783/1016 tests.graphics_test.test.SHOW on the terminal draws over the image it drew last when nothing was written since...OK\n784/1016 tests.graphics_test.test.FRAME waits for the rest of the frame time, does not wait when late, and shows the image...OK\n785/1016 tests.graphics_test.test.the built-in font has the ASCII characters, and the glyph words give their boxes and coverage...OK\n786/1016 tests.graphics_test.test.TEXT draws UTF-8 strings with the font, ? for a character it lacks, and TEXT-SCALE and TEXT-WIDTH...OK\n787/1016 tests.graphics_test.test.LOAD-FONT reads a BDF font for TEXT, TEXT-WIDTH, and TEXT-HEIGHT, and BUILTIN-FONT goes back...OK\n788/1016 tests.graphics_test.test.SYSTEM-FONT draws the host's glyphs, mixing the current color by coverage...OK\n789/1016 tests.graphics_test.test.the palettes of DISPLAY-COLORS: black and white, the 16 ANSI colors, xterm's 256, and the Bayer dither...OK\n790/1016 tests.graphics_test.test.DISPLAY-COLORS and DITHER change what SHOW shows on the terminal and in the window, not the image...OK\n791/1016 tests.graphics_test.test.BDF numbers too large to add give FONT ERROR, and an empty glyph draws nothing...OK\n792/1016 tests.graphics_test.test.LOAD-FONT keeps the font it had when the file changes between its two readings...OK\n793/1016 tests.graphics_test.test.MOUSE goes on reading the mouse and Ctrl+C when the queue of keys is full...OK\n794/1016 tests.graphics_test.test.TEXT takes overlong forms, surrogates, and values above U+10FFFF as bytes that are not UTF-8...OK\n795/1016 tests.graphics_test.test.PLOT gives its function finite x across a range as wide as the floats allow...OK\n796/1016 tests.graphics_test.test.TCL-EVAL sends a script to the Tcl program it starts, and gives its result or TCL ERROR...OK\n797/1016 tests.graphics_test.test.MOUSE-EVENT reads the presses and the wheel the Tcl program sends...OK\n798/1016 tests.graphics_test.test.TCL-EVENT and MOUSE read what the Tcl program sends without waiting, and a lost program starts again...OK\n799/1016 tests.graphics_test.test.DISPLAY-TK makes SHOW send the image to the Tk window as a PNG in base64...OK\n800/1016 tests.graphics_test.test.SHOW with nothing chosen and no window of the host's own uses the Tk window on a desktop...OK\n801/1016 tests.graphics_test.test.Ctrl+C from the Tk window while a script runs stops the program, so the next script gets its own result...OK\n802/1016 tests.graphics_test.test.a message cut short frees its text, and messages that come in parts are read without waiting...OK\n803/1016 tests.graphics_test.test.headers the protocol does not allow stop the program...OK\n804/1016 tests.graphics_test.test.a restart of the terminal drops its kept keys before INKEY gives them, and keeps the Tk window's...OK\n805/1016 tests.graphics_test.test.a sequence that waited past 50 ms ends before the bytes that come after...OK\n806/1016 tests.graphics_test.test.SAVE and SAVESYS in the middle of a message drop its rest, so the next script gets its own result...OK\n807/1016 tests.graphics_test.test.TCL-STOP in the middle of a message frees its text, and the new program is read from its start...OK\n808/1016 tests.graphics_test.test.KEY-HELD? holds a key of the window until it is released, and INKEY still gives the key...OK\n809/1016 tests.graphics_test.test.KEY-HELD? holds a key of the Windows console until it is released or the terminal restarts...OK\n810/1016 tests.graphics_test.test.KEY-HELD? holds a key of a terminal for 0.6 s after it was last pressed...OK\n811/1016 tests.graphics_test.test.KEY-HELD? on a terminal: a key being repeated stops soon after its last repeat...OK\n812/1016 tests.graphics_test.test.KEY-HELD? on a terminal: a new direction ends the one before it, and other keys do not...OK\n813/1016 tests.graphics_test.test.KEY-HELD? holds a key of the Tk window until the Tcl program tells it went up...OK\n814/1016 tests.graphics_test.test.KEY-HELD? keeps the 16 keys pressed last...OK\n815/1016 tests.graphics_test.test.WINDOW-SIZE gives the window the size to show the image in, from the next SHOW...OK\n816/1016 tests.graphics_test.test.WINDOW-SIZE goes to the Tk window with the image...OK\n817/1016 tests.graphics_test.test.KEY-HELD? forgets the Tk window's keys when the Tcl program stops or a release is given up...OK\n818/1016 tests.graphics_test.test.KEY-HELD? keeps the keys of each source apart...OK\n819/1016 tests.library_loading_test.test.a library of Forth only loads after the groups it needs and finds their words...OK\n820/1016 tests.library_loading_test.test.a library of Forth only that fails is removed, and the groups it needs stay...OK\n821/1016 tests.library_loading_test.test.FORGET removes a library of Forth only, and a vocabulary of the same name does not count...OK\n822/1016 tests.library_loading_test.test.an image keeps a library of Forth only loaded, also when appended...OK\n823/1016 tests.graphics_images_test.test.NEW-IMAGE makes black images with handles that FREE-IMAGE makes invalid...OK\n824/1016 tests.graphics_images_test.test.the sizes and the number of images are limited, and a failure changes nothing...OK\n825/1016 tests.graphics_images_test.test.the drawing words, GFX-WIDTH, and SAVE- use the image drawn on; SHOW the screen...OK\n826/1016 tests.graphics_images_test.test.COPY-RECT copies a rectangle, leaving out what falls outside either image...OK\n827/1016 tests.graphics_images_test.test.TRANSPARENT leaves out a color, and IMAGE-FLIP flips the copy...OK\n828/1016 tests.graphics_images_test.test.COPY-RECT within one image reads each pixel before writing over it...OK\n829/1016 tests.graphics_images_test.test.restoring an image frees the images of the pool...OK\n830/1016 tests.graphics_images_test.test.a host without the pool refuses NEW-IMAGE...OK\n831/1016 tests.graphics_images_test.test.IMAGE-MODE puts the pixels over, XORed, added, or mixed by IMAGE-ALPHA...OK\n832/1016 tests.graphics_images_test.test.IMAGE-SCALE draws each pixel n by n, also flipped and cut at the edges...OK\n833/1016 tests.load_image_test.test.LOAD-IMAGE reads every kind of PNG, BMP, and PPM/PGM file...OK\n834/1016 tests.load_image_test.test.LOAD-IMAGE gives black to transparent pixels when there is no transparent color...OK\n835/1016 tests.load_image_test.test.LOAD-IMAGE refuses damaged files and changes nothing...OK\n836/1016 tests.gui_test.test.REQUIRE-GUI loads the graphics words first, once, and keeps the search order...OK\n837/1016 tests.gui_test.test.REQUIRE-GUI is refused in a build without graphics...SKIP\n838/1016 tests.gui_test.test.the colors and the line widths are settings, and GUI-DEFAULT puts them back...OK\n839/1016 tests.gui_test.test.a button is clicked by the mouse, or by Enter and Space with the focus...OK\n840/1016 tests.gui_test.test.a check box changes its flag when clicked or with Space...OK\n841/1016 tests.gui_test.test.a field takes text, UTF-8 too, edits it at the cursor, and tells Enter...OK\n842/1016 tests.gui_test.test.a list follows the arrows and the mouse, and tells the choice...OK\n843/1016 tests.gui_test.test.the menu bar opens a menu, and an item is chosen by a click or the keys...OK\n844/1016 tests.gui_test.test.the function key bar tells a key pressed or a label clicked...OK\n845/1016 tests.gui_test.test.a dialog answers by its buttons, Enter, and Esc...OK\n846/1016 tests.gui_test.test.GUI-ASK and GUI-CHOOSE wait for the answer and put the screen back...OK\n847/1016 tests.gui_test.test.the first gamepad moves a list and chooses with A, each press once...OK\n848/1016 tests.gui_test.test.the focus, the pressed part, and the open menu are variables the program sets...OK\n849/1016 tests.gui_test.test.a list and a choice take their items from a word...OK\n850/1016 tests.game_test.test.REQUIRE-GAME loads the graphics words first, once...OK\n851/1016 tests.game_test.test.GFX-PIXEL reads any image, -1 outside it...OK\n852/1016 tests.game_test.test.a sprite is drawn with its frame, flip, and transparent color, and animates...OK\n853/1016 tests.game_test.test.HIT? tests the rectangles and PIXEL-HIT? the pixels that are shown...OK\n854/1016 tests.game_test.test.a tile map is drawn as far as the view and the map go, over another with a key...OK\n855/1016 tests.game_test.test.sprites and maps are data in the dictionary, which an image keeps...OK\n856/1016 tests.game_test.test.a palette gives the colors of a picture of color numbers, and turns...OK\n857/1016 tests.game_test.test.each row of a rectangle moves, or changes a color, by its cell of a table...OK\n858/1016 tests.game_test.test.DRAW-SPRITES shows only so many sprites on each row...OK\n859/1016 tests.gamepad_test.test.gamepad snapshots distinguish missing backend, disconnection and mapped/raw input...OK\n860/1016 tests.gamepad_test.test.gamepad rejects invalid indices and mapping failure without corrupting state...OK\n861/1016 tests.sound_test.test.a PSG tone sounds at clock / (16 \u00d7 period): O4's A on the MSX is 440 Hz...OK\n862/1016 tests.sound_test.test.the PSG's noise is a 17-bit LFSR that repeats after 131071 shifts...OK\n863/1016 tests.sound_test.test.the 16 envelope shapes of R13...OK\n864/1016 tests.sound_test.test.a whole envelope lasts 256 \u00d7 period clocks on the AY and the YM...OK\n865/1016 tests.sound_test.test.the PSG's mixer and volumes...OK\n866/1016 tests.sound_test.test.MML notes: pitches, lengths, dots, and the defaults...OK\n867/1016 tests.sound_test.test.MML errors...OK\n868/1016 tests.sound_test.test.PLAY's queue at its edge: 31 notes and the end mark fit, one more waits...OK\n869/1016 tests.sound_test.test.PLAY's voices start together, and PLAY(n) tells which still play...OK\n870/1016 tests.sound_test.test.a PLAY longer than the queue plays while it is put...OK\n871/1016 tests.sound_test.test.an invalid PLAY puts nothing...OK\n872/1016 tests.sound_test.test.BEEP drops the notes, sounds 1316 Hz for 40 ms, and sets the PSG as at the start...OK\n873/1016 tests.sound_test.test.SOUND writes a register; the output is 16-bit stereo without the constant level...OK\n874/1016 tests.sound_test.test.the same notes always make the same samples...OK\n875/1016 tests.sound_test.test.the WAV header of 16-bit PCM...OK\n876/1016 tests.sound_test.test.MML's @ chooses an instrument, and each note has its number for the other chips...OK\n877/1016 tests.sound_test.test.a note's pitch in equal temperament, and on the chips' period registers...OK\n878/1016 tests.sound_test.test.the ADSR envelope: its attack, its sustain level, and its release...OK\n879/1016 tests.sound_test.test.the NES pulse sounds on its timer with the duty rounded to the four of the chip...OK\n880/1016 tests.sound_test.test.the NES triangle sounds an octave lower than a pulse on the same timer, and keeps its step when it stops...OK\n881/1016 tests.sound_test.test.the NES noise is shorter for higher notes and goes silent with its envelope...OK\n882/1016 tests.sound_test.test.the engine plays four NES voices together, with their instruments...OK\n883/1016 tests.sound_test.test.ST-SOUND plays the same notes on a YM2149 at 2 MHz...OK\n884/1016 tests.sound_test.test.the SID's registers for a note and a pulse width, and the filter's cutoff...OK\n885/1016 tests.sound_test.test.the C64's waves sound at the note's pitch, the pulse with its width...OK\n886/1016 tests.sound_test.test.the C64's sync restarts a voice with the voice before, and ring modulation changes its triangle...OK\n887/1016 tests.sound_test.test.the C64's filter: a low-pass takes the high notes away, a high-pass the low ones...OK\n888/1016 tests.sound_test.test.C64-SOUND plays three voices on the SID through the engine...OK\n889/1016 tests.sound_test.test.the SCC's period for a note, and the waves the instruments make without SCC-WAVE...OK\n890/1016 tests.sound_test.test.the SCC plays its instrument's 32 samples as steps at the note's pitch...OK\n891/1016 tests.sound_test.test.SCC-SOUND plays five voices through the engine...OK\n892/1016 tests.sound_test.test.a WAV file's format, and its frames as mono 16-bit samples...OK\n893/1016 tests.sound_test.test.the sample player holds each value, stops at the end, and loops where it is told...OK\n894/1016 tests.sound_test.test.the Amiga plays a sample on Paula's period, voices 1 and 4 left and 2 and 3 right...OK\n895/1016 tests.sound_test.test.the Amiga's LED filter takes the high notes away...OK\n896/1016 tests.sound_test.test.the Amiga plays a high note of a wave with fewer samples, at its pitch...OK\n897/1016 tests.sound_test.test.SFX plays a sample once beside the music, on any chip, and a stop ends it...OK\n898/1016 tests.sound_test.test.the chips CHIPS takes, and the voices numbered across them...OK\n899/1016 tests.sound_test.test.the MSX's PSG and the SCC play one PLAY of 8 voices together...OK\n900/1016 tests.sound_test.test.the voices after a chip's own sound like the last chip, and CHIPS takes any chips...OK\n901/1016 tests.sound_test.test.an instrument with STYLE sounds like its chip on any voice, beside the voices' own...OK\n902/1016 tests.sound_test.test.a note on another chip ends the voice's note on the chip before...OK\n903/1016 tests.sound_test.test.a NES voice of the chip's own keeps its role, unless the instrument has STYLE...OK\n904/1016 tests.sound_test.test.the NES keeps no constant level when no voice is its own, and two noises are apart...OK\n905/1016 tests.sound_test.test.the C64's ring goes round its own voices, wherever they are...OK\n906/1016 tests.sound_test.test.the Amiga's sides start from its first voice...OK\n907/1016 tests.sound_test.test.the PSG's sound on every voice: three voices to a PSG, and the MSX's beside the ST's...OK\n908/1016 tests.audio_test.test.REQUIRE-AUDIO is refused in a build without audio...SKIP\n909/1016 tests.audio_test.test.REQUIRE-AUDIO appends AUDIO, the SND- words, and the library once, keeping the search order...OK\n910/1016 tests.audio_test.test.a dictionary that has had the audio words is saved as SIGIMG47, which LOAD reads...OK\n911/1016 tests.audio_test.test.PLAY puts the notes of voice A and an end mark in every voice, and PLAY? sees them...OK\n912/1016 tests.audio_test.test.PLAY with invalid MML throws INVALID MML (-274) and puts nothing...OK\n913/1016 tests.audio_test.test.a long PLAY waits for room while the audio thread plays, and starts before it is all put...OK\n914/1016 tests.audio_test.test.Ctrl+C while PLAY waits throws USER INTERRUPT and drops the notes put so far...OK\n915/1016 tests.audio_test.test.Ctrl+C as a key, when the terminal gives single keys, also stops PLAY's wait...OK\n916/1016 tests.audio_test.test.SOUND writes a PSG register at the audio thread's next turn, within MSX BASIC's ranges...OK\n917/1016 tests.audio_test.test.BEEP drops the music and the voices' settings, and beeps...OK\n918/1016 tests.audio_test.test.AUDIO? tells whether the sound reaches a device; without the host's engine the words fail...OK\n919/1016 tests.audio_test.test.NES-SOUND, ST-SOUND, and MSX-SOUND choose the chip, and PLAYS and PLAY? take 8 voices on any...OK\n920/1016 tests.audio_test.test.INSTRUMENT and the words after it change an instrument here and for the audio thread...OK\n921/1016 tests.audio_test.test.C64-SOUND, RING, SYNC, and FILTER...OK\n922/1016 tests.audio_test.test.SCC-SOUND plays five voices, and SCC-WAVE gives an instrument its wave...OK\n923/1016 tests.audio_test.test.LOAD-SAMPLE reads a WAV file into the pool; other files throw SAMPLE ERROR (-276)...OK\n924/1016 tests.audio_test.test.SAMPLE, LOOP-SAMPLE, SAMPLE-INSTRUMENT, SFX, and FREE-SAMPLES...OK\n925/1016 tests.audio_test.test.AMIGA-SOUND plays four voices, and AMIGA-FILTER turns the LED filter on...OK\n926/1016 tests.audio_test.test.CHIPS chooses several chips, whose voices PLAYS and PLAY? count together...OK\n927/1016 tests.audio_test.test.STYLE gives an instrument its chip, and every voice can be played...OK\n928/1016 tests.audio_test.test.a MOD header: the tags of four channels, the samples, and the song...OK\n929/1016 tests.audio_test.test.LOAD-MOD and PLAY-MOD: a row lasts its speed's ticks, a pattern break ends the song...OK\n930/1016 tests.audio_test.test.the module's effects: set volume, volume slide, speed, and portamento...OK\n931/1016 tests.audio_test.test.the module's pattern loop plays its rows again, and a note delay starts the note late...OK\n932/1016 tests.audio_test.test.a sample number without a note starts the loop of a sample once the sound has ended...OK\n933/1016 tests.audio_test.test.a sample number without a note starts nothing without a loop, before a note, or during a sound...OK\n934/1016 tests.audio_test.test.a sample number without a note changes nothing of the sound in a module of Startrekker...OK\n935/1016 tests.audio_test.test.a sample number without a note takes over when the sound goes round its loop or ends...OK\n936/1016 tests.audio_test.test.the module's arpeggio changes the note on each tick, and comes back...OK\n937/1016 tests.audio_test.test.the module's portamento stops at ProTracker's limits...OK\n938/1016 tests.audio_test.test.the module's tone portamento slides to the note, remembers its speed, and stops there...OK\n939/1016 tests.audio_test.test.the module's vibrato bends the note around it and keeps its place between rows...OK\n940/1016 tests.audio_test.test.the module's slides of the volume go on with portamento and vibrato...OK\n941/1016 tests.audio_test.test.the module's tremolo moves the volume it plays with, not the channel's...OK\n942/1016 tests.audio_test.test.the module's sample offset starts later in the sample and remembers its place...OK\n943/1016 tests.audio_test.test.the module's fine slides work once, on the row's first tick...OK\n944/1016 tests.audio_test.test.the module's note cut silences the note on its tick, and retrigger starts it again...OK\n945/1016 tests.audio_test.test.the module's position jump, pattern break in decimal digits, delay, and tempo...OK\n946/1016 tests.audio_test.test.the module played once ends where it would go round again, and goes on when repeating...OK\n947/1016 tests.audio_test.test.the module's delayed note sounds at its own period on the tick it starts...OK\n948/1016 tests.audio_test.test.the module's sample offset past the end of a sample with a loop plays the loop...OK\n949/1016 tests.audio_test.test.the module's retrigger on a row without a note starts on the first tick too...OK\n950/1016 tests.audio_test.test.the module's tone portamento forgets a note it reached, but not one it did not...OK\n951/1016 tests.audio_test.test.the module's position jump goes to row 0 after a pattern break on an earlier channel...OK\n952/1016 tests.audio_test.test.the module's sample with a loop goes on, one without ends, and E0 sets the LED filter...OK\n953/1016 tests.gforth_rest_test.test.SUBSTITUTE replaces %name%, keeps what it does not know, and tells an overflow...OK\n954/1016 tests.gforth_rest_test.test.UNESCAPE doubles %, and the $ words give strings of their own...OK\n955/1016 tests.gforth_rest_test.test.typed replacement links survive public image restore...OK\n956/1016 tests.gforth_rest_test.test.LATEST, LATESTXT, >NAME, ID., and .NAME...OK\n957/1016 tests.gforth_rest_test.test.ALIAS and SYNONYM give the word's execution token to ' and NAME>INT, as gforth...OK\n958/1016 tests.gforth_rest_test.test.~~ shows the place and the data stack on standard error...OK\n959/1016 tests.gforth_rest_test.test.ASSERT( lets true through and throws -2 at false, showing where...OK\n960/1016 tests.gforth_rest_test.test.EMIT? is true, and (LOCAL) declares locals as LOCALS| does...OK\n961/1016 tests.debug_test.test.an error in compiled code shows the words that were running and the stack...OK\n962/1016 tests.debug_test.test.the backtrace names inlined words, :NONAME definitions, and the definer of DOES> code...OK\n963/1016 tests.debug_test.test.the backtrace shows the floating-point stack when it holds something...OK\n964/1016 tests.debug_test.test.the backtrace gives the file and line of code compiled from a file...OK\n965/1016 tests.debug_test.test.a recursion is one line of the backtrace, and the callers that do not fit are counted...OK\n966/1016 tests.debug_test.test.CATCH drops the backtrace of the error it catches, and show_backtrace turns it off...OK\n967/1016 tests.debug_test.test.the step limit ends compiled code that CATCH would keep running...OK\n968/1016 tests.debug_test.test.code that LOAD adds has no lines, also where removed code had them...OK\n969/1016 tests.debug_words_test.test.the trace shows each word with the stack as it starts and as it ends...OK\n970/1016 tests.debug_words_test.test.deferred and synonym CATCH keep matching counted trace events...OK\n971/1016 tests.debug_words_test.test.compiled data words retain trace and profile operation counts...OK\n972/1016 tests.debug_words_test.test.the trace ends after the lines of its limit, and the program goes on...OK\n973/1016 tests.debug_words_test.test.the trace works together with the step limit...OK\n974/1016 tests.debug_words_test.test.ONCE runs what follows, up to THEN, only the first time...OK\n975/1016 tests.debug_words_test.test.~~BT shows the place, the stack, and the callers; ~~1BT only the first time...OK\n976/1016 tests.debug_words_test.test.~~BT gives the file and line of its callers...OK\n977/1016 tests.debug_words_test.test.~~VALUE shows every TO of its value...OK\n978/1016 tests.debug_words_test.test.~~VALUE in a definition reads its name at once, and a failed one leaves nothing...OK\n979/1016 tests.debug_words_test.test.~~BT shows the callers beyond an EVALUATE...OK\n980/1016 tests.debug_words_test.test.+LTRACE shows the lines of an included file before they are interpreted...OK\n981/1016 tests.debug_words_test.test.the profile counts the calls and the operations of each word...OK\n982/1016 tests.debug_words_test.test.the profile counts a recursion once, and ends the words that an error ended...OK\n983/1016 tests.debug_words_test.test.a word that takes the place of a removed one starts its profile at 0...OK\n984/1016 tests.debug_words_test.test.the short definitions of a loaded image stay calls for the trace...OK\n985/1016 tests.debug_words_test.test.the coverage words show the blocks of the code as gforth's do...OK\n986/1016 tests.debug_words_test.test.the coverage words need the counts...OK\n987/1016 tests.debug_words_test.test.a block starts after a word of a structure however the word is reached...OK\n988/1016 tests.debug_words_test.test..COVERAGE shows every block of a line with many...OK\n989/1016 tests.debug_words_test.test.WATCH keeps caller locations across compiled CATCH recovery...OK\n990/1016 tests.debug_words_test.test.WATCH shows each change of a cell, with the word that made it...OK\n991/1016 tests.debug_words_test.test.~~VARIABLE shows every use of its name...OK\n992/1016 tests.debug_words_test.test.WATCH sees what a defining word changes, before the next word runs...OK\n993/1016 tests.debug_words_test.test.~~VARIABLE shows a use that a word made by POSTPONE compiles...OK\n994/1016 tests.debug_step_test.test.DBG continues in the caller after compiled CATCH recovery...OK\n995/1016 tests.debug_step_test.test.DBG stops before each operation and shows the stack it leaves...OK\n996/1016 tests.debug_step_test.test.n goes into the word an operation calls, and u out of it...OK\n997/1016 tests.debug_step_test.test.d runs the rest, s ends the run with an error, and the end of the keys is as d...OK\n998/1016 tests.debug_step_test.test.BREAK: and BREAK\" start the steps in the middle of a definition...OK\n999/1016 tests.debug_step_test.test.a BREAK: of a loaded image stops as one compiled here...OK\n1000/1016 tests.debug_step_test.test.the steps that a BREAK: after DOES> started end with that code...OK\n1001/1016 tests.debug_step_test.test.n goes into copied definitions inside copied definitions, and u out of each...OK\n1002/1016 tests.debug_step_test.test.n goes into a colon definition called by another name...OK\n1003/1016 tests.debug_log_test.test.an error is logged with its message, code, backtrace, and stacks...OK\n1004/1016 tests.debug_log_test.test.the log gives files, lines, copied words, recursions, and names as JSON strings...OK\n1005/1016 tests.debug_log_test.test.with a log, the trace and the profile go to it instead of standard error...OK\n1006/1016 tests.debug_log_test.test.the log is UTF-8 also when a message is cut or a name is not...OK\n1007/1016 tests.debug_log_test.test.a change of a watched cell is logged...OK\n1008/1016 core.lint.test.stack comments are counted...OK\n1009/1016 tests.lint_test.test.each check finds what it is for...OK\n1010/1016 tests.lint_test.test.code that keeps to its stack comments has no findings...OK\n1011/1016 tests.lint_test.test.definitions without a fixed stack effect are counted, and floats are checked when named...OK\n1012/1016 tests.lint_test.test.an effect too large to count is not known, and does not end the checks...OK\n1013/1016 tests.lint_test.test.a definition that takes from the return stack what it did not put there is found...OK\n1014/1016 tests.lint_test.test.words that move a number of cells that is not fixed are not counted...OK\n1015/1016 tests.lint_test.test.a word that takes the place of a removed one has its own stack comment...OK\n1016/1016 tests.lint_test.test.macro lint redefinition distinguishes exact case but still detects identical names...OK\n1011 passed; 5 skipped; 0 failed.\n",
+    "linux-small-tests.log": "test\n+- run exe sigma failure\nerror: the host system (x86_64-windows.win11_br...win11_br-gnu) is unable to execute binaries from the target (x86_64-linux.5.10...7.2-musl)\nfailed command: \".\\\\.zig-cache\\\\o\\\\14ca03f87254e59055ce02c3cf48cfc0\\\\sigma\" -e \"REQUIRE-GRAPHICS ALSO GRAPHICS XKEY . INKEY . INKEY . BYE\"\n\ntest\n+- run exe sigma failure\nerror: the host system (x86_64-windows.win11_br...win11_br-gnu) is unable to execute binaries from the target (x86_64-linux.5.10...7.2-musl)\nfailed command: \".\\\\.zig-cache\\\\o\\\\14ca03f87254e59055ce02c3cf48cfc0\\\\sigma\" -e 7 --evaluate \". BYE\"\n\ntest\n+- run exe sigma failure\nerror: the host system (x86_64-windows.win11_br...win11_br-gnu) is unable to execute binaries from the target (x86_64-linux.5.10...7.2-musl)\nfailed command: \".\\\\.zig-cache\\\\o\\\\14ca03f87254e59055ce02c3cf48cfc0\\\\sigma\" sigma-no-such-file.fs -e BYE\n\ntest\n+- run exe sigma failure\nerror: the host system (x86_64-windows.win11_br...win11_br-gnu) is unable to execute binaries from the target (x86_64-linux.5.10...7.2-musl)\nfailed command: \".\\\\.zig-cache\\\\o\\\\14ca03f87254e59055ce02c3cf48cfc0\\\\sigma\" -e \": T PAD 9 STDIN READ-FILE . DUP . 0 DO PAD I + C@ . LOOP ; T BYE\"\n\ntest\n+- run exe sigma failure\nerror: the host system (x86_64-windows.win11_br...win11_br-gnu) is unable to execute binaries from the target (x86_64-linux.5.10...7.2-musl)\nfailed command: \".\\\\.zig-cache\\\\o\\\\14ca03f87254e59055ce02c3cf48cfc0\\\\sigma\" -e\n\ntest\n+- run exe sigma failure\nerror: the host system (x86_64-windows.win11_br...win11_br-gnu) is unable to execute binaries from the target (x86_64-linux.5.10...7.2-musl)\nfailed command: \".\\\\.zig-cache\\\\o\\\\14ca03f87254e59055ce02c3cf48cfc0\\\\sigma\" -e \"XKEY . PAD 10 STDIN READ-LINE . . PAD SWAP TYPE BYE\"\n\ntest\n+- run exe sigma failure\nerror: the host system (x86_64-windows.win11_br...win11_br-gnu) is unable to execute binaries from the target (x86_64-linux.5.10...7.2-musl)\nfailed command: \".\\\\.zig-cache\\\\o\\\\14ca03f87254e59055ce02c3cf48cfc0\\\\sigma\" \".\\\\src\\\\tests\\\\argument_file.fs\" -e \". BYE\"\n\ntest\n+- run exe sigma failure\nerror: the host system (x86_64-windows.win11_br...win11_br-gnu) is unable to execute binaries from the target (x86_64-linux.5.10...7.2-musl)\nfailed command: \".\\\\.zig-cache\\\\o\\\\14ca03f87254e59055ce02c3cf48cfc0\\\\sigma\" -e \"XKEY . PAD 10 ACCEPT PAD SWAP TYPE SPACE KEY . BYE\"\n\ntest\n+- run exe sigma failure\nerror: the host system (x86_64-windows.win11_br...win11_br-gnu) is unable to execute binaries from the target (x86_64-linux.5.10...7.2-musl)\nfailed command: \".\\\\.zig-cache\\\\o\\\\14ca03f87254e59055ce02c3cf48cfc0\\\\sigma\" -e \"PAD 20 STDIN READ-LINE . . PAD SWAP TYPE PAD 20 STDIN READ-LINE . . PAD SWAP TYPE BYE\"\n\ntest\n+- run test failure\nerror: the host system (x86_64-windows.win11_br...win11_br-gnu) is unable to execute binaries from the target (x86_64-linux.5.10...7.2-musl)\nfailed command: \".\\\\.zig-cache\\\\o\\\\d65be8553f52de8636850cec3361aaf4\\\\test\" \"--cache-dir=.\\\\.zig-cache\" --seed=0x8963024 --listen=-\n\ntest\n+- run test failure\nerror: the host system (x86_64-windows.win11_br...win11_br-gnu) is unable to execute binaries from the target (x86_64-linux.5.10...7.2-musl)\nfailed command: \".\\\\.zig-cache\\\\o\\\\06b78bb3eaf762b78c5ddb4e0e6e61fd\\\\test\" \"--cache-dir=.\\\\.zig-cache\" --seed=0x8963024 --listen=-\n\nBuild Summary: 9/21 steps succeeded (11 failed)\ntest transitive failure\n+- run test failure\n|  +- compile test small x86_64-linux-musl success 24s MaxRSS:565M\n|     +- options cached\n+- run test failure\n|  +- compile test small x86_64-linux-musl success 19s MaxRSS:503M\n|     +- options (reused)\n|     +- translate-c cached 9ms MaxRSS:18M\n|     |  +- WriteFile c_time.h cached\n|     +- translate-c cached 8ms MaxRSS:18M\n|        +- WriteFile c_file.h cached\n+- compile obj sigma-freestanding small thumb-freestanding-eabi cached 36ms MaxRSS:18M\n|  +- options (reused)\n+- run exe sigma failure\n|  +- compile exe sigma small x86_64-linux-musl cached 66ms MaxRSS:18M\n|     +- options (reused)\n|     +- translate-c (+1 more reused dependencies)\n|     +- translate-c (+1 more reused dependencies)\n+- run exe sigma failure\n|  +- compile exe sigma small x86_64-linux-musl (+3 more reused dependencies)\n+- run exe sigma failure\n|  +- compile exe sigma small x86_64-linux-musl (+3 more reused dependencies)\n+- run exe sigma failure\n|  +- compile exe sigma small x86_64-linux-musl (+3 more reused dependencies)\n+- run exe sigma failure\n|  +- compile exe sigma small x86_64-linux-musl (+3 more reused dependencies)\n+- run exe sigma failure\n|  +- compile exe sigma small x86_64-linux-musl (+3 more reused dependencies)\n+- run exe sigma failure\n|  +- compile exe sigma small x86_64-linux-musl (+3 more reused dependencies)\n+- run exe sigma failure\n|  +- compile exe sigma small x86_64-linux-musl (+3 more reused dependencies)\n+- run exe sigma failure\n   +- compile exe sigma small x86_64-linux-musl (+3 more reused dependencies)\n\nerror: the following build command exited with code 1:\nC:\\Users\\n_fuk\\AppData\\Local\\zig\\o\\ecd347ab6148f059e0788021b539893a\\maker.exe build --zig-lib=C:\\Users\\n_fuk\\AppData\\Local\\Microsoft\\WinGet\\Packages\\zig.zig_Microsoft.Winget.Source_8wekyb3d8bbwe\\zig-x86_64-windows-0.17.0\\lib --zig=C:\\Users\\n_fuk\\AppData\\Local\\Microsoft\\WinGet\\Packages\\zig.zig_Microsoft.Winget.Source_8wekyb3d8bbwe\\zig-x86_64-windows-0.17.0\\zig.exe --global-cache=C:\\Users\\n_fuk\\AppData\\Local\\zig --seed=0x8963024 test -Dtarget=x86_64-linux-musl -Doptimize=small -Dcpu=baseline --summary all\n",
+    "linux-small.log": "Build Summary: 10/10 steps succeeded\ninstall success\n+- install sigma success\n|  +- compile exe sigma small x86_64-linux-musl success 17s MaxRSS:477M\n|     +- options cached\n|     +- translate-c success 112ms MaxRSS:19M\n|     |  +- WriteFile c_time.h cached\n|     +- translate-c success 72ms MaxRSS:19M\n|        +- WriteFile c_file.h cached\n+- install LICENSE to LICENSE success\n+- install THIRD_PARTY_NOTICES.md to THIRD_PARTY_NOTICES.md success\n\n",
+    "windows-fast.log": "Build Summary: 10/10 steps succeeded\ninstall success\n+- install sigma success\n|  +- compile exe sigma fast x86_64-windows-gnu success 23s MaxRSS:485M\n|     +- options success\n|     +- translate-c success 114ms MaxRSS:19M\n|     |  +- WriteFile c_time.h success\n|     +- translate-c success 85ms MaxRSS:19M\n|        +- WriteFile c_file.h success\n+- install LICENSE to LICENSE success\n+- install THIRD_PARTY_NOTICES.md to THIRD_PARTY_NOTICES.md success\n\n",
+    "windows-small-tests.log": "Build Summary: 21/21 steps succeeded; 1070/1080 tests passed (10 skipped)\ntest success\n+- run test 1011 pass, 5 skip (1016 total) 2s MaxRSS:76M\n|  +- compile test small x86_64-windows-gnu success 25s MaxRSS:570M\n|     +- options cached\n+- run test 59 pass, 5 skip (64 total) 319ms MaxRSS:12M\n|  +- compile test small x86_64-windows-gnu success 20s MaxRSS:496M\n|     +- options (reused)\n|     +- translate-c cached 8ms MaxRSS:18M\n|     |  +- WriteFile c_time.h cached\n|     +- translate-c cached 10ms MaxRSS:18M\n|        +- WriteFile c_file.h cached\n+- compile obj sigma-freestanding small thumb-freestanding-eabi success 10s MaxRSS:329M\n|  +- options (reused)\n+- run exe sigma success 76ms\n|  +- compile exe sigma small x86_64-windows-gnu cached 81ms MaxRSS:19M\n|     +- options (reused)\n|     +- translate-c (+1 more reused dependencies)\n|     +- translate-c (+1 more reused dependencies)\n+- run exe sigma success 79ms\n|  +- compile exe sigma small x86_64-windows-gnu (+3 more reused dependencies)\n+- run exe sigma success 49ms\n|  +- compile exe sigma small x86_64-windows-gnu (+3 more reused dependencies)\n+- run exe sigma success 47ms\n|  +- compile exe sigma small x86_64-windows-gnu (+3 more reused dependencies)\n+- run exe sigma success 46ms\n|  +- compile exe sigma small x86_64-windows-gnu (+3 more reused dependencies)\n+- run exe sigma success 69ms\n|  +- compile exe sigma small x86_64-windows-gnu (+3 more reused dependencies)\n+- run exe sigma success 41ms\n|  +- compile exe sigma small x86_64-windows-gnu (+3 more reused dependencies)\n+- run exe sigma success 70ms\n|  +- compile exe sigma small x86_64-windows-gnu (+3 more reused dependencies)\n+- run exe sigma success 44ms\n   +- compile exe sigma small x86_64-windows-gnu (+3 more reused dependencies)\n\n",
+    "windows-small.log": "Build Summary: 10/10 steps succeeded\ninstall success\n+- install sigma success\n|  +- compile exe sigma small x86_64-windows-gnu success 18s MaxRSS:473M\n|     +- options cached\n|     +- translate-c success 113ms MaxRSS:19M\n|     |  +- WriteFile c_time.h cached\n|     +- translate-c success 81ms MaxRSS:19M\n|        +- WriteFile c_file.h cached\n+- install LICENSE to LICENSE success\n+- install THIRD_PARTY_NOTICES.md to THIRD_PARTY_NOTICES.md success\n\n"
+  },
+  "image_harness_correction": {
+    "path": "BYE",
+    "bytes": 87341,
+    "sha256": "290f4c4a59dfb80712c2e299a137ddfb48731d556cb9db1ea4d58efb2e78a4dd",
+    "reason": "Initial harness incorrectly used S-string for SAVE, which parses the next token BYE as filename; moved its generated file into work evidence.",
+    "preserved_file_creation_utc": "2026-11-16T04:06:32.451051+00:00",
+    "creator_from_initial_script": "First loop iteration windows-fast (SHA379d...), aborts at expected windows-fast.sigma missing before any other mode. Original per-command output was not saved.",
+    "initial_script": "from pathlib import Path\nimport subprocess,json,hashlib\nr=Path.cwd();o=r/'.work/optimize-small-20261116';rows=[]\ndef local(path,os):\n s=str(path);return s.replace('\\\\','/') if os=='windows' else '/mnt/'+s[0].lower()+s[2:].replace('\\\\','/')\ndef run(os,mode,source):\n exe=o/(os+'-'+mode)/'bin'/('sigma.exe' if os=='windows' else 'sigma');cmd=[str(exe)] if os=='windows' else ['wsl','--exec',local(exe,os)];cmd+=['-e',source];p=subprocess.run(cmd,cwd=r,capture_output=True,timeout=60);assert p.returncode==0,(os,mode,p.stdout,p.stderr);return {'command':cmd,'exit':p.returncode,'stdout':p.stdout.decode('utf-8'),'stderr':p.stderr.decode('utf-8'),'sha256':hashlib.sha256(exe.read_bytes()).hexdigest()}\nfor os in ['windows','linux']:\n images={}\n for mode in ['fast','small']:\n  file=o/(os+'-'+mode+'.sigma');x=run(os,mode,': SMALL-IMAGE-CHECK 10 3 - ; S\" '+local(file,os)+'\" SAVE BYE');images[mode]=file;rows.append({'os':os,'action':'save','mode':mode,**x,'image_sha256':hashlib.sha256(file.read_bytes()).hexdigest()})\n for saved,file in images.items():\n  for mode in ['fast','small']:\n   x=run(os,mode,'S\" '+local(file,os)+'\" LOAD-DICTIONARY SMALL-IMAGE-CHECK . DEPTH . BYE');assert x['stdout'].split()==['7','0'],x;rows.append({'os':os,'action':'load','saved_mode':saved,'mode':mode,**x})\n(o/'images.json').write_text(json.dumps(rows,indent=2)+'\\n');print('4 saves / 8 dictionary loads passed; images not required byte-identical')\n"
+  },
+  "scope": "small default-feature configuration vs fast, baseline CPU and strip=true on both OS. No LTO. Windows and Linux smoke, small ordinary regression and same-OS image cross-load. Timing underway separately.",
+  "limits": [
+    "Fast binaries match established 379d/BDB hashes; fast unit suites not rerun here",
+    "Cross parent Linux build/test exit1, ELF2 and CLI9 exit0 are separate outcomes",
+    "Only default feature configuration; disabled-feature matrix not run",
+    "Image probe one definition, not all image types; not byte-identical assertion",
+    "No speed inference from byte size"
+  ],
+  "image_byte_differences": {
+    "windows": {
+      "fast_bytes": 87341,
+      "small_bytes": 87341,
+      "differing_shared_byte_count": 5,
+      "first_difference_offsets": [
+        55217,
+        87337,
+        87338,
+        87339,
+        87340
+      ],
+      "cause": "not investigated; no byte-equivalence claim"
+    },
+    "linux": {
+      "fast_bytes": 87341,
+      "small_bytes": 87341,
+      "differing_shared_byte_count": 5,
+      "first_difference_offsets": [
+        55217,
+        87337,
+        87338,
+        87339,
+        87340
+      ],
+      "cause": "not investigated; no byte-equivalence claim"
+    }
+  },
+  "root_file_absent_after_move": true,
+  "linux_cli": {
+    "origin": "build.zig 109-162 exact CLI cases, execute cross-built binaries through WSL",
+    "cases": [
+      {
+        "config": "small",
+        "case": "pipe-bytes",
+        "command": [
+          "wsl",
+          "--exec",
+          "/mnt/d/home/source/zig/forthz/.work/optimize-small-20261116/source/.zig-cache/o/14ca03f87254e59055ce02c3cf48cfc0/sigma",
+          "-e",
+          ": T PAD 9 STDIN READ-FILE . DUP . 0 DO PAD I + C@ . LOOP ; T BYE"
+        ],
+        "binary_sha256": "6bd1071b20b2293a645a7447919c48a37229d7eda17f0112423400cd8a25e604",
+        "stdin_hex": "410d0a421a4300ff",
+        "stdout_hex": "30203820363520313320313020363620323620363720302032353520",
+        "stderr_hex": "",
+        "exit": 0,
+        "expected_exit": 0,
+        "expected_stdout_hex": "30203820363520313320313020363620323620363720302032353520",
+        "passed": true
+      },
+      {
+        "config": "small",
+        "case": "pipe-lines",
+        "command": [
+          "wsl",
+          "--exec",
+          "/mnt/d/home/source/zig/forthz/.work/optimize-small-20261116/source/.zig-cache/o/14ca03f87254e59055ce02c3cf48cfc0/sigma",
+          "-e",
+          "PAD 20 STDIN READ-LINE . . PAD SWAP TYPE PAD 20 STDIN READ-LINE . . PAD SWAP TYPE BYE"
+        ],
+        "binary_sha256": "6bd1071b20b2293a645a7447919c48a37229d7eda17f0112423400cd8a25e604",
+        "stdin_hex": "61620d0a63640a",
+        "stdout_hex": "30202d3120616230202d31206364",
+        "stderr_hex": "",
+        "exit": 0,
+        "expected_exit": 0,
+        "expected_stdout_hex": "30202d3120616230202d31206364",
+        "passed": true
+      },
+      {
+        "config": "small",
+        "case": "file",
+        "command": [
+          "wsl",
+          "--exec",
+          "/mnt/d/home/source/zig/forthz/.work/optimize-small-20261116/source/.zig-cache/o/14ca03f87254e59055ce02c3cf48cfc0/sigma",
+          "/mnt/d/home/source/zig/forthz/.work/optimize-small-20261116/source/src/tests/argument_file.fs",
+          "-e",
+          ". BYE"
+        ],
+        "binary_sha256": "6bd1071b20b2293a645a7447919c48a37229d7eda17f0112423400cd8a25e604",
+        "stdin_hex": "",
+        "stdout_hex": "4152472d46494c453520",
+        "stderr_hex": "",
+        "exit": 0,
+        "expected_exit": 0,
+        "expected_stdout_hex": "4152472d46494c453520",
+        "passed": true
+      },
+      {
+        "config": "small",
+        "case": "evaluate",
+        "command": [
+          "wsl",
+          "--exec",
+          "/mnt/d/home/source/zig/forthz/.work/optimize-small-20261116/source/.zig-cache/o/14ca03f87254e59055ce02c3cf48cfc0/sigma",
+          "-e",
+          "7",
+          "--evaluate",
+          ". BYE"
+        ],
+        "binary_sha256": "6bd1071b20b2293a645a7447919c48a37229d7eda17f0112423400cd8a25e604",
+        "stdin_hex": "",
+        "stdout_hex": "3720",
+        "stderr_hex": "",
+        "exit": 0,
+        "expected_exit": 0,
+        "expected_stdout_hex": "3720",
+        "passed": true
+      },
+      {
+        "config": "small",
+        "case": "missing-e",
+        "command": [
+          "wsl",
+          "--exec",
+          "/mnt/d/home/source/zig/forthz/.work/optimize-small-20261116/source/.zig-cache/o/14ca03f87254e59055ce02c3cf48cfc0/sigma",
+          "-e"
+        ],
+        "binary_sha256": "6bd1071b20b2293a645a7447919c48a37229d7eda17f0112423400cd8a25e604",
+        "stdin_hex": "",
+        "stdout_hex": "2d653a204f5054494f4e20524551554952455320414e20415247554d454e5420210a",
+        "stderr_hex": "",
+        "exit": 1,
+        "expected_exit": 1,
+        "expected_stdout_hex": "2d653a204f5054494f4e20524551554952455320414e20415247554d454e5420210a",
+        "passed": true
+      },
+      {
+        "config": "small",
+        "case": "xkey-accept",
+        "command": [
+          "wsl",
+          "--exec",
+          "/mnt/d/home/source/zig/forthz/.work/optimize-small-20261116/source/.zig-cache/o/14ca03f87254e59055ce02c3cf48cfc0/sigma",
+          "-e",
+          "XKEY . PAD 10 ACCEPT PAD SWAP TYPE SPACE KEY . BYE"
+        ],
+        "binary_sha256": "6bd1071b20b2293a645a7447919c48a37229d7eda17f0112423400cd8a25e604",
+        "stdin_hex": "e6410a726573740a",
+        "stdout_hex": "363535333320412031313420",
+        "stderr_hex": "",
+        "exit": 0,
+        "expected_exit": 0,
+        "expected_stdout_hex": "363535333320412031313420",
+        "passed": true
+      },
+      {
+        "config": "small",
+        "case": "xkey-read-line",
+        "command": [
+          "wsl",
+          "--exec",
+          "/mnt/d/home/source/zig/forthz/.work/optimize-small-20261116/source/.zig-cache/o/14ca03f87254e59055ce02c3cf48cfc0/sigma",
+          "-e",
+          "XKEY . PAD 10 STDIN READ-LINE . . PAD SWAP TYPE BYE"
+        ],
+        "binary_sha256": "6bd1071b20b2293a645a7447919c48a37229d7eda17f0112423400cd8a25e604",
+        "stdin_hex": "e641620a63640a",
+        "stdout_hex": "36353533332030202d31204162",
+        "stderr_hex": "",
+        "exit": 0,
+        "expected_exit": 0,
+        "expected_stdout_hex": "36353533332030202d31204162",
+        "passed": true
+      },
+      {
+        "config": "small",
+        "case": "xkey-inkey",
+        "command": [
+          "wsl",
+          "--exec",
+          "/mnt/d/home/source/zig/forthz/.work/optimize-small-20261116/source/.zig-cache/o/14ca03f87254e59055ce02c3cf48cfc0/sigma",
+          "-e",
+          "REQUIRE-GRAPHICS ALSO GRAPHICS XKEY . INKEY . INKEY . BYE"
+        ],
+        "binary_sha256": "6bd1071b20b2293a645a7447919c48a37229d7eda17f0112423400cd8a25e604",
+        "stdin_hex": "e64142",
+        "stdout_hex": "3635353333203635202d3120",
+        "stderr_hex": "",
+        "exit": 0,
+        "expected_exit": 0,
+        "expected_stdout_hex": "3635353333203635202d3120",
+        "passed": true
+      },
+      {
+        "config": "small",
+        "case": "missing-file",
+        "command": [
+          "wsl",
+          "--exec",
+          "/mnt/d/home/source/zig/forthz/.work/optimize-small-20261116/source/.zig-cache/o/14ca03f87254e59055ce02c3cf48cfc0/sigma",
+          "sigma-no-such-file.fs",
+          "-e",
+          "BYE"
+        ],
+        "binary_sha256": "6bd1071b20b2293a645a7447919c48a37229d7eda17f0112423400cd8a25e604",
+        "stdin_hex": "",
+        "stdout_hex": "7369676d612d6e6f2d737563682d66696c652e66733a204e4f20535543482046494c45204f52204449524543544f525920210a",
+        "stderr_hex": "",
+        "exit": 1,
+        "expected_exit": 1,
+        "expected_stdout_hex": null,
+        "passed": true
+      }
+    ]
+  }
+}
