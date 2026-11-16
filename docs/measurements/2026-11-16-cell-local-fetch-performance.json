@@ -1,0 +1,2023 @@
+{
+  "decision": "Adoption held; Windows AA delta5.167958656% exceeds2%; candidate CPU not measured, no AB or Linux calibration/standard34 timing",
+  "scope": "Fresh Windows baseline-only local pilot +20 counted +4 warmup runs; no retries",
+  "audit": [
+    {
+      "series": 1,
+      "medians_us": {
+        "A1": 6359375.0,
+        "A2": 6046875.0
+      },
+      "AA_delta_percent": 5.167958656330749,
+      "audited_samples_including_warmup": 12
+    },
+    {
+      "series": 2,
+      "medians_us": {
+        "A1": 6312500.0,
+        "A2": 6437500.0
+      },
+      "AA_delta_percent": 1.9801980198019802,
+      "audited_samples_including_warmup": 12
+    }
+  ],
+  "data": {
+    "complete.json": {
+      "utc": "2026-11-16T06:21:38.854456+00:00",
+      "status": "calibration_unresolved",
+      "not_adopted": true
+    },
+    "protocol.json": {
+      "cases": {
+        "arithmetic": {
+          "definition": ": BENCH-RUN 1 BENCH-ITERATIONS 0 DO 3 * 7 + 65535 AND LOOP ;",
+          "pilot_iterations": {
+            "windows": 100000000,
+            "linux": 100000000
+          }
+        },
+        "stacks": {
+          "definition": ": BENCH-RUN 1 2 3 BENCH-ITERATIONS 0 DO ROT SWAP OVER + 65535 AND DUP NIP LOOP + + ;",
+          "pilot_iterations": {
+            "windows": 100000000,
+            "linux": 100000000
+          }
+        },
+        "calls": {
+          "definition": ": BENCH-A 1+ ; : BENCH-B BENCH-A BENCH-A ; : BENCH-C BENCH-B BENCH-B ; : BENCH-RUN 0 BENCH-ITERATIONS 0 DO BENCH-C LOOP ;",
+          "pilot_iterations": {
+            "windows": 100000000,
+            "linux": 100000000
+          }
+        },
+        "variables": {
+          "definition": "VARIABLE BENCH-V 7 CONSTANT BENCH-K : BENCH-RUN 0 BENCH-V ! BENCH-ITERATIONS 0 DO BENCH-K BENCH-V +! LOOP BENCH-V @ ;",
+          "pilot_iterations": {
+            "windows": 130000000,
+            "linux": 130000000
+          }
+        },
+        "plus-loop": {
+          "definition": ": BENCH-RUN 0 BENCH-ITERATIONS 0 DO I 7 AND + 2 +LOOP ;",
+          "pilot_iterations": {
+            "windows": 280000000,
+            "linux": 280000000
+          }
+        },
+        "extended": {
+          "definition": ": BENCH-RUN 1 BENCH-ITERATIONS 0 DO 2* 1+ DUP 3 RSHIFT XOR 65535 AND LOOP ;",
+          "pilot_iterations": {
+            "windows": 100000000,
+            "linux": 100000000
+          }
+        },
+        "float": {
+          "definition": ": BENCH-RUN 0e BENCH-ITERATIONS 0 DO 1e F+ 1e F* LOOP F>S ;",
+          "pilot_iterations": {
+            "windows": 160000000,
+            "linux": 160000000
+          }
+        },
+        "catch-nested-64": {
+          "definition": ": B-NEST DUP IF 1- ['] B-NEST CATCH THROW ELSE DROP THEN ; : BENCH-RUN 0 BENCH-ITERATIONS 0 DO 64 ['] B-NEST CATCH + LOOP ;",
+          "pilot_iterations": {
+            "windows": 452583,
+            "linux": 452583
+          }
+        },
+        "catch-nested-256": {
+          "definition": ": B-NEST DUP IF 1- ['] B-NEST CATCH THROW ELSE DROP THEN ; : BENCH-RUN 0 BENCH-ITERATIONS 0 DO 256 ['] B-NEST CATCH + LOOP ;",
+          "pilot_iterations": {
+            "windows": 98564,
+            "linux": 98564
+          }
+        },
+        "catch-execute": {
+          "definition": ": B-WORK 1+ ; : BENCH-RUN 0 BENCH-ITERATIONS 0 DO ['] B-WORK ['] CATCH EXECUTE DROP LOOP ;",
+          "pilot_iterations": {
+            "windows": 36267144,
+            "linux": 36267144
+          }
+        },
+        "catch-defer": {
+          "definition": "DEFER B-CATCH ' CATCH IS B-CATCH : B-WORK 1+ ; : BENCH-RUN 0 BENCH-ITERATIONS 0 DO ['] B-WORK B-CATCH DROP LOOP ;",
+          "pilot_iterations": {
+            "windows": 29021139,
+            "linux": 29021139
+          }
+        },
+        "catch-synonym": {
+          "definition": "SYNONYM B-CATCH CATCH : B-WORK 1+ ; : BENCH-RUN 0 BENCH-ITERATIONS 0 DO ['] B-WORK B-CATCH DROP LOOP ;",
+          "pilot_iterations": {
+            "windows": 37887207,
+            "linux": 37887207
+          }
+        },
+        "catch-throw": {
+          "definition": ": B-WORK 77 THROW ; : BENCH-RUN 0 BENCH-ITERATIONS 0 DO ['] B-WORK CATCH + LOOP ;",
+          "pilot_iterations": {
+            "windows": 20972276,
+            "linux": 20972276
+          }
+        },
+        "catch-fast-throw": {
+          "definition": ": B-WORK 77 FAST-THROW ; : BENCH-RUN 0 BENCH-ITERATIONS 0 DO ['] B-WORK CATCH + LOOP ;",
+          "pilot_iterations": {
+            "windows": 19750187,
+            "linux": 19750187
+          }
+        },
+        "loops": {
+          "definition": ": BENCH-RUN 0 BENCH-ITERATIONS 0 DO I 7 AND + LOOP ;",
+          "pilot_iterations": {
+            "linux": 160000000,
+            "windows": 160000000
+          }
+        },
+        "catch-success": {
+          "definition": ": B-WORK 1+ ; : BENCH-RUN 0 BENCH-ITERATIONS 0 DO ['] B-WORK CATCH DROP LOOP ;",
+          "pilot_iterations": {
+            "linux": 46829687,
+            "windows": 46829687
+          }
+        },
+        "catch-nobt-throw": {
+          "definition": ": B-WORK 77 THROW ; : BENCH-RUN 0 BENCH-ITERATIONS 0 DO ['] B-WORK CATCH-NOBT + LOOP ;",
+          "pilot_iterations": {
+            "linux": 43461126,
+            "windows": 43461126
+          }
+        },
+        "local": {
+          "definition": ": BENCH-RUN { | x -- } 7 TO x 0 BENCH-ITERATIONS 0 DO x + LOOP ;",
+          "pilot_iterations": {
+            "windows": 100000000,
+            "linux": 100000000
+          }
+        }
+      },
+      "binary_hashes": {
+        "baseline-windows": "379d6c6c069b9c3072da22fa6cea8b7deff77c5ed78ef9bbd070f92a724337bf",
+        "baseline-linux": "bdb6eb7a0ac59d27d23281708f89538631950d39654837cfd1cfa8d0e78b73fa",
+        "candidate-windows": "9efbb6e8cc062ae71dae11bdeffa31fe9fd2ae4480bb3a04f10a838c4021c5c1",
+        "candidate-linux": "0edf681c46f0db5168a3c17485ebc2bccf2c475bce2ae8e01e34936dfb120c50"
+      },
+      "benchmark_sha256": "576345f4486dd27a510327d91ec04d5f8ce9721f42059679bd78e4b661e315ef",
+      "worker_sha256": "115890042cc18a655d2980f5ece754a6c98c125048352c8d3d69ae09061bab07",
+      "controller_sha256": "c790026244d79e3d5f4bef60e9d43b927f73cb90ab4f29cc70aa98c9ea8a7034",
+      "scope": "CPU READY/DONE; baseline-only pilot fixes N~6seconds; CPU0; fresh AA5x2 groups, AB7x2 groups; one excluded warmup per arm/group; alternate orders/reverse group2; no retries",
+      "aa_gate": "max delta<=2%, min median>=5sec. First failed calibration stops all later timing; unmeasured scope recorded",
+      "local_gate": "Both OS calibrated before any local AB. Both groups on each OS must shorten by >2delta; failure stops standard matrix, not a claim of worsening",
+      "standard_order": "windows arithmetic,windows loops,linux arithmetic,linux loops,then remaining normal/CATCH windows then Linux",
+      "standard_early_stop": "First unresolved calibration, first unmet primary10%+2delta target or any non-passing regression gate stops remaining matrix. No adoption with unmeasured items; local-only benefit is a separate future judgment",
+      "standard_caps": "other normal max(3%,2delta); normal CATCH+5%; THROW CATCH+10%. Both series required; mixed result unresolved",
+      "no_overlap": "No build, test, profiling during timing; read-only review/docs permitted",
+      "checksums": "local/arithmetic/loops independent formula; other cases use separately recorded baseline-only reference at fixed N",
+      "limitations": [
+        "AA delta not CI/drift bound; no post AB AA",
+        "Groups share session and environment",
+        "Logical CPU0 Windows vs WSL not guaranteed same physical core",
+        "Host load not recorded; no claim all interference excluded"
+      ]
+    },
+    "results.json": {
+      "calibrations": {
+        "windows/local": {
+          "delta_percent": 5.167958656330749,
+          "minimum_median_us": 6046875.0,
+          "passed": false
+        }
+      },
+      "comparisons": {},
+      "not_adopted": true,
+      "status": "calibration_unresolved",
+      "failed_platform": "windows",
+      "failed_case": "local"
+    },
+    "start.json": {
+      "utc": "2026-11-16T06:18:55.776599+00:00",
+      "protocol_sha256": "d18e6de1e2e66ec8f491694729944d56f163bc66679886a7d25ba6766f1fad25",
+      "worker_sha256": "115890042cc18a655d2980f5ece754a6c98c125048352c8d3d69ae09061bab07",
+      "controller_sha256": "c790026244d79e3d5f4bef60e9d43b927f73cb90ab4f29cc70aa98c9ea8a7034"
+    },
+    "windows-local-aa-1-partial.json": {
+      "samples": {
+        "A1": [
+          {
+            "utc_start": "2026-11-16T06:19:16.898476+00:00",
+            "cpu_us": 6109375.0,
+            "wall_us": 6648702.3,
+            "lifetime_cpu_us": 6109375.0,
+            "checksum": 8670967746
+          },
+          {
+            "utc_start": "2026-11-16T06:19:23.556415+00:00",
+            "cpu_us": 6359375.0,
+            "wall_us": 6773588.3,
+            "lifetime_cpu_us": 6359375.0,
+            "checksum": 8670967746
+          },
+          {
+            "utc_start": "2026-11-16T06:19:43.878630+00:00",
+            "cpu_us": 6515625.0,
+            "wall_us": 6824473.6,
+            "lifetime_cpu_us": 6515625.0,
+            "checksum": 8670967746
+          },
+          {
+            "utc_start": "2026-11-16T06:19:50.711264+00:00",
+            "cpu_us": 6406250.0,
+            "wall_us": 6694458.8,
+            "lifetime_cpu_us": 6406250.0,
+            "checksum": 8670967746
+          },
+          {
+            "utc_start": "2026-11-16T06:20:11.092545+00:00",
+            "cpu_us": 6343750.0,
+            "wall_us": 6622059.1,
+            "lifetime_cpu_us": 6375000.0,
+            "checksum": 8670967746
+          }
+        ],
+        "A2": [
+          {
+            "utc_start": "2026-11-16T06:19:10.068952+00:00",
+            "cpu_us": 5734375.0,
+            "wall_us": 6819854.7,
+            "lifetime_cpu_us": 5734375.0,
+            "checksum": 8670967746
+          },
+          {
+            "utc_start": "2026-11-16T06:19:30.339577+00:00",
+            "cpu_us": 6234375.0,
+            "wall_us": 6854694.2,
+            "lifetime_cpu_us": 6234375.0,
+            "checksum": 8670967746
+          },
+          {
+            "utc_start": "2026-11-16T06:19:37.202257+00:00",
+            "cpu_us": 6375000.0,
+            "wall_us": 6667872.7,
+            "lifetime_cpu_us": 6406250.0,
+            "checksum": 8670967746
+          },
+          {
+            "utc_start": "2026-11-16T06:19:57.414144+00:00",
+            "cpu_us": 6046875.0,
+            "wall_us": 6844016.2,
+            "lifetime_cpu_us": 6046875.0,
+            "checksum": 8670967746
+          },
+          {
+            "utc_start": "2026-11-16T06:20:04.267263+00:00",
+            "cpu_us": 5625000.0,
+            "wall_us": 6815724.1,
+            "lifetime_cpu_us": 5625000.0,
+            "checksum": 8670967746
+          }
+        ]
+      },
+      "warmups": {
+        "A1": {
+          "utc_start": "2026-11-16T06:18:56.497282+00:00",
+          "cpu_us": 6468750.0,
+          "wall_us": 6854359.9,
+          "lifetime_cpu_us": 6500000.0,
+          "checksum": 8670967746
+        },
+        "A2": {
+          "utc_start": "2026-11-16T06:19:03.364139+00:00",
+          "cpu_us": 6359375.0,
+          "wall_us": 6696407.6,
+          "lifetime_cpu_us": 6359375.0,
+          "checksum": 8670967746
+        }
+      },
+      "orders": [
+        [
+          "A1",
+          "A2"
+        ],
+        [
+          "A2",
+          "A1"
+        ],
+        [
+          "A1",
+          "A2"
+        ],
+        [
+          "A2",
+          "A1"
+        ],
+        [
+          "A1",
+          "A2"
+        ],
+        [
+          "A2",
+          "A1"
+        ]
+      ],
+      "metadata": {
+        "platform": "windows",
+        "stage": "aa",
+        "case": "local",
+        "series": 1,
+        "affinity": [
+          0
+        ],
+        "script_sha256": "115890042cc18a655d2980f5ece754a6c98c125048352c8d3d69ae09061bab07",
+        "protocol_sha256": "d18e6de1e2e66ec8f491694729944d56f163bc66679886a7d25ba6766f1fad25"
+      },
+      "cpu_queries": [
+        {
+          "pid": 6704,
+          "queries": [
+            {
+              "utc": "2026-11-16T06:18:56.507070+00:00",
+              "perf_counter_ns": 1098964208055700,
+              "kernel_ns": 0,
+              "user_ns": 15625000
+            },
+            {
+              "utc": "2026-11-16T06:19:03.361423+00:00",
+              "perf_counter_ns": 1098971062413800,
+              "kernel_ns": 640625000,
+              "user_ns": 5843750000
+            },
+            {
+              "utc": "2026-11-16T06:19:03.363450+00:00",
+              "perf_counter_ns": 1098971064435600,
+              "kernel_ns": 640625000,
+              "user_ns": 5859375000
+            }
+          ]
+        },
+        {
+          "pid": 31536,
+          "queries": [
+            {
+              "utc": "2026-11-16T06:19:03.370068+00:00",
+              "perf_counter_ns": 1098971071053700,
+              "kernel_ns": 0,
+              "user_ns": 0
+            },
+            {
+              "utc": "2026-11-16T06:19:10.066528+00:00",
+              "perf_counter_ns": 1098977767519400,
+              "kernel_ns": 421875000,
+              "user_ns": 5937500000
+            },
+            {
+              "utc": "2026-11-16T06:19:10.068599+00:00",
+              "perf_counter_ns": 1098977769585100,
+              "kernel_ns": 421875000,
+              "user_ns": 5937500000
+            }
+          ]
+        },
+        {
+          "pid": 5612,
+          "queries": [
+            {
+              "utc": "2026-11-16T06:19:10.076330+00:00",
+              "perf_counter_ns": 1098977777314900,
+              "kernel_ns": 0,
+              "user_ns": 0
+            },
+            {
+              "utc": "2026-11-16T06:19:16.896177+00:00",
+              "perf_counter_ns": 1098984597167600,
+              "kernel_ns": 484375000,
+              "user_ns": 5250000000
+            },
+            {
+              "utc": "2026-11-16T06:19:16.898148+00:00",
+              "perf_counter_ns": 1098984599133900,
+              "kernel_ns": 484375000,
+              "user_ns": 5250000000
+            }
+          ]
+        },
+        {
+          "pid": 25160,
+          "queries": [
+            {
+              "utc": "2026-11-16T06:19:16.904917+00:00",
+              "perf_counter_ns": 1098984605900500,
+              "kernel_ns": 0,
+              "user_ns": 0
+            },
+            {
+              "utc": "2026-11-16T06:19:23.553606+00:00",
+              "perf_counter_ns": 1098991254600600,
+              "kernel_ns": 328125000,
+              "user_ns": 5781250000
+            },
+            {
+              "utc": "2026-11-16T06:19:23.556094+00:00",
+              "perf_counter_ns": 1098991257080300,
+              "kernel_ns": 328125000,
+              "user_ns": 5781250000
+            }
+          ]
+        },
+        {
+          "pid": 21340,
+          "queries": [
+            {
+              "utc": "2026-11-16T06:19:23.562229+00:00",
+              "perf_counter_ns": 1098991263214100,
+              "kernel_ns": 0,
+              "user_ns": 0
+            },
+            {
+              "utc": "2026-11-16T06:19:30.335812+00:00",
+              "perf_counter_ns": 1098998036801800,
+              "kernel_ns": 421875000,
+              "user_ns": 5937500000
+            },
+            {
+              "utc": "2026-11-16T06:19:30.338923+00:00",
+              "perf_counter_ns": 1098998039910500,
+              "kernel_ns": 421875000,
+              "user_ns": 5937500000
+            }
+          ]
+        },
+        {
+          "pid": 35708,
+          "queries": [
+            {
+              "utc": "2026-11-16T06:19:30.345091+00:00",
+              "perf_counter_ns": 1098998046075400,
+              "kernel_ns": 0,
+              "user_ns": 0
+            },
+            {
+              "utc": "2026-11-16T06:19:37.199778+00:00",
+              "perf_counter_ns": 1099004900768400,
+              "kernel_ns": 562500000,
+              "user_ns": 5671875000
+            },
+            {
+              "utc": "2026-11-16T06:19:37.201922+00:00",
+              "perf_counter_ns": 1099004902908200,
+              "kernel_ns": 562500000,
+              "user_ns": 5671875000
+            }
+          ]
+        },
+        {
+          "pid": 38824,
+          "queries": [
+            {
+              "utc": "2026-11-16T06:19:37.208445+00:00",
+              "perf_counter_ns": 1099004909429200,
+              "kernel_ns": 0,
+              "user_ns": 15625000
+            },
+            {
+              "utc": "2026-11-16T06:19:43.876299+00:00",
+              "perf_counter_ns": 1099011577297800,
+              "kernel_ns": 406250000,
+              "user_ns": 5984375000
+            },
+            {
+              "utc": "2026-11-16T06:19:43.878278+00:00",
+              "perf_counter_ns": 1099011579264300,
+              "kernel_ns": 406250000,
+              "user_ns": 6000000000
+            }
+          ]
+        },
+        {
+          "pid": 44276,
+          "queries": [
+            {
+              "utc": "2026-11-16T06:19:43.884118+00:00",
+              "perf_counter_ns": 1099011585101700,
+              "kernel_ns": 0,
+              "user_ns": 0
+            },
+            {
+              "utc": "2026-11-16T06:19:50.708583+00:00",
+              "perf_counter_ns": 1099018409574000,
+              "kernel_ns": 484375000,
+              "user_ns": 6031250000
+            },
+            {
+              "utc": "2026-11-16T06:19:50.710787+00:00",
+              "perf_counter_ns": 1099018411773400,
+              "kernel_ns": 484375000,
+              "user_ns": 6031250000
+            }
+          ]
+        },
+        {
+          "pid": 22480,
+          "queries": [
+            {
+              "utc": "2026-11-16T06:19:50.717128+00:00",
+              "perf_counter_ns": 1099018418112700,
+              "kernel_ns": 0,
+              "user_ns": 0
+            },
+            {
+              "utc": "2026-11-16T06:19:57.411579+00:00",
+              "perf_counter_ns": 1099025112569500,
+              "kernel_ns": 359375000,
+              "user_ns": 6046875000
+            },
+            {
+              "utc": "2026-11-16T06:19:57.413792+00:00",
+              "perf_counter_ns": 1099025114782400,
+              "kernel_ns": 359375000,
+              "user_ns": 6046875000
+            }
+          ]
+        },
+        {
+          "pid": 39492,
+          "queries": [
+            {
+              "utc": "2026-11-16T06:19:57.420976+00:00",
+              "perf_counter_ns": 1099025121961100,
+              "kernel_ns": 0,
+              "user_ns": 0
+            },
+            {
+              "utc": "2026-11-16T06:20:04.264985+00:00",
+              "perf_counter_ns": 1099031965976000,
+              "kernel_ns": 453125000,
+              "user_ns": 5593750000
+            },
+            {
+              "utc": "2026-11-16T06:20:04.266913+00:00",
+              "perf_counter_ns": 1099031967899500,
+              "kernel_ns": 453125000,
+              "user_ns": 5593750000
+            }
+          ]
+        },
+        {
+          "pid": 34916,
+          "queries": [
+            {
+              "utc": "2026-11-16T06:20:04.274217+00:00",
+              "perf_counter_ns": 1099031975202300,
+              "kernel_ns": 0,
+              "user_ns": 0
+            },
+            {
+              "utc": "2026-11-16T06:20:11.089935+00:00",
+              "perf_counter_ns": 1099038790924500,
+              "kernel_ns": 531250000,
+              "user_ns": 5093750000
+            },
+            {
+              "utc": "2026-11-16T06:20:11.092176+00:00",
+              "perf_counter_ns": 1099038793161900,
+              "kernel_ns": 531250000,
+              "user_ns": 5093750000
+            }
+          ]
+        },
+        {
+          "pid": 39780,
+          "queries": [
+            {
+              "utc": "2026-11-16T06:20:11.098313+00:00",
+              "perf_counter_ns": 1099038799296800,
+              "kernel_ns": 0,
+              "user_ns": 15625000
+            },
+            {
+              "utc": "2026-11-16T06:20:17.720364+00:00",
+              "perf_counter_ns": 1099045421354000,
+              "kernel_ns": 359375000,
+              "user_ns": 6000000000
+            },
+            {
+              "utc": "2026-11-16T06:20:17.722964+00:00",
+              "perf_counter_ns": 1099045423950600,
+              "kernel_ns": 359375000,
+              "user_ns": 6015625000
+            }
+          ]
+        }
+      ]
+    },
+    "windows-local-aa-1.json": {
+      "samples": {
+        "A1": [
+          {
+            "utc_start": "2026-11-16T06:19:16.898476+00:00",
+            "cpu_us": 6109375.0,
+            "wall_us": 6648702.3,
+            "lifetime_cpu_us": 6109375.0,
+            "checksum": 8670967746
+          },
+          {
+            "utc_start": "2026-11-16T06:19:23.556415+00:00",
+            "cpu_us": 6359375.0,
+            "wall_us": 6773588.3,
+            "lifetime_cpu_us": 6359375.0,
+            "checksum": 8670967746
+          },
+          {
+            "utc_start": "2026-11-16T06:19:43.878630+00:00",
+            "cpu_us": 6515625.0,
+            "wall_us": 6824473.6,
+            "lifetime_cpu_us": 6515625.0,
+            "checksum": 8670967746
+          },
+          {
+            "utc_start": "2026-11-16T06:19:50.711264+00:00",
+            "cpu_us": 6406250.0,
+            "wall_us": 6694458.8,
+            "lifetime_cpu_us": 6406250.0,
+            "checksum": 8670967746
+          },
+          {
+            "utc_start": "2026-11-16T06:20:11.092545+00:00",
+            "cpu_us": 6343750.0,
+            "wall_us": 6622059.1,
+            "lifetime_cpu_us": 6375000.0,
+            "checksum": 8670967746
+          }
+        ],
+        "A2": [
+          {
+            "utc_start": "2026-11-16T06:19:10.068952+00:00",
+            "cpu_us": 5734375.0,
+            "wall_us": 6819854.7,
+            "lifetime_cpu_us": 5734375.0,
+            "checksum": 8670967746
+          },
+          {
+            "utc_start": "2026-11-16T06:19:30.339577+00:00",
+            "cpu_us": 6234375.0,
+            "wall_us": 6854694.2,
+            "lifetime_cpu_us": 6234375.0,
+            "checksum": 8670967746
+          },
+          {
+            "utc_start": "2026-11-16T06:19:37.202257+00:00",
+            "cpu_us": 6375000.0,
+            "wall_us": 6667872.7,
+            "lifetime_cpu_us": 6406250.0,
+            "checksum": 8670967746
+          },
+          {
+            "utc_start": "2026-11-16T06:19:57.414144+00:00",
+            "cpu_us": 6046875.0,
+            "wall_us": 6844016.2,
+            "lifetime_cpu_us": 6046875.0,
+            "checksum": 8670967746
+          },
+          {
+            "utc_start": "2026-11-16T06:20:04.267263+00:00",
+            "cpu_us": 5625000.0,
+            "wall_us": 6815724.1,
+            "lifetime_cpu_us": 5625000.0,
+            "checksum": 8670967746
+          }
+        ]
+      },
+      "warmups_excluded": {
+        "A1": {
+          "utc_start": "2026-11-16T06:18:56.497282+00:00",
+          "cpu_us": 6468750.0,
+          "wall_us": 6854359.9,
+          "lifetime_cpu_us": 6500000.0,
+          "checksum": 8670967746
+        },
+        "A2": {
+          "utc_start": "2026-11-16T06:19:03.364139+00:00",
+          "cpu_us": 6359375.0,
+          "wall_us": 6696407.6,
+          "lifetime_cpu_us": 6359375.0,
+          "checksum": 8670967746
+        }
+      },
+      "orders": [
+        [
+          "A1",
+          "A2"
+        ],
+        [
+          "A2",
+          "A1"
+        ],
+        [
+          "A1",
+          "A2"
+        ],
+        [
+          "A2",
+          "A1"
+        ],
+        [
+          "A1",
+          "A2"
+        ],
+        [
+          "A2",
+          "A1"
+        ]
+      ],
+      "medians_us": {
+        "A1": 6359375.0,
+        "A2": 6046875.0
+      },
+      "delta_percent": 5.167958656330749,
+      "change_percent": -4.91400491400491,
+      "config": {
+        "iterations": 1238709678,
+        "expected": 8670967746,
+        "expected_origin": "independent formula",
+        "validation": null,
+        "definition": ": BENCH-RUN { | x -- } 7 TO x 0 BENCH-ITERATIONS 0 DO x + LOOP ;",
+        "pilot": {
+          "utc_start": "2026-11-16T06:18:55.855596+00:00",
+          "cpu_us": 484375.0,
+          "wall_us": 543554.6,
+          "lifetime_cpu_us": 515625.0,
+          "checksum": 700000000
+        },
+        "metadata": {
+          "platform": "windows",
+          "stage": "pilot",
+          "case": "local",
+          "series": 1,
+          "affinity": [
+            0
+          ],
+          "script_sha256": "115890042cc18a655d2980f5ece754a6c98c125048352c8d3d69ae09061bab07",
+          "protocol_sha256": "d18e6de1e2e66ec8f491694729944d56f163bc66679886a7d25ba6766f1fad25"
+        },
+        "cpu_queries": [
+          {
+            "pid": 28600,
+            "queries": [
+              {
+                "utc": "2026-11-16T06:18:55.864087+00:00",
+                "perf_counter_ns": 1098963565072800,
+                "kernel_ns": 15625000,
+                "user_ns": 0
+              },
+              {
+                "utc": "2026-11-16T06:18:56.407636+00:00",
+                "perf_counter_ns": 1098964108626400,
+                "kernel_ns": 62500000,
+                "user_ns": 437500000
+              },
+              {
+                "utc": "2026-11-16T06:18:56.409836+00:00",
+                "perf_counter_ns": 1098964110822700,
+                "kernel_ns": 62500000,
+                "user_ns": 453125000
+              }
+            ]
+          }
+        ]
+      },
+      "metadata": {
+        "platform": "windows",
+        "stage": "aa",
+        "case": "local",
+        "series": 1,
+        "affinity": [
+          0
+        ],
+        "script_sha256": "115890042cc18a655d2980f5ece754a6c98c125048352c8d3d69ae09061bab07",
+        "protocol_sha256": "d18e6de1e2e66ec8f491694729944d56f163bc66679886a7d25ba6766f1fad25"
+      },
+      "cpu_queries": [
+        {
+          "pid": 6704,
+          "queries": [
+            {
+              "utc": "2026-11-16T06:18:56.507070+00:00",
+              "perf_counter_ns": 1098964208055700,
+              "kernel_ns": 0,
+              "user_ns": 15625000
+            },
+            {
+              "utc": "2026-11-16T06:19:03.361423+00:00",
+              "perf_counter_ns": 1098971062413800,
+              "kernel_ns": 640625000,
+              "user_ns": 5843750000
+            },
+            {
+              "utc": "2026-11-16T06:19:03.363450+00:00",
+              "perf_counter_ns": 1098971064435600,
+              "kernel_ns": 640625000,
+              "user_ns": 5859375000
+            }
+          ]
+        },
+        {
+          "pid": 31536,
+          "queries": [
+            {
+              "utc": "2026-11-16T06:19:03.370068+00:00",
+              "perf_counter_ns": 1098971071053700,
+              "kernel_ns": 0,
+              "user_ns": 0
+            },
+            {
+              "utc": "2026-11-16T06:19:10.066528+00:00",
+              "perf_counter_ns": 1098977767519400,
+              "kernel_ns": 421875000,
+              "user_ns": 5937500000
+            },
+            {
+              "utc": "2026-11-16T06:19:10.068599+00:00",
+              "perf_counter_ns": 1098977769585100,
+              "kernel_ns": 421875000,
+              "user_ns": 5937500000
+            }
+          ]
+        },
+        {
+          "pid": 5612,
+          "queries": [
+            {
+              "utc": "2026-11-16T06:19:10.076330+00:00",
+              "perf_counter_ns": 1098977777314900,
+              "kernel_ns": 0,
+              "user_ns": 0
+            },
+            {
+              "utc": "2026-11-16T06:19:16.896177+00:00",
+              "perf_counter_ns": 1098984597167600,
+              "kernel_ns": 484375000,
+              "user_ns": 5250000000
+            },
+            {
+              "utc": "2026-11-16T06:19:16.898148+00:00",
+              "perf_counter_ns": 1098984599133900,
+              "kernel_ns": 484375000,
+              "user_ns": 5250000000
+            }
+          ]
+        },
+        {
+          "pid": 25160,
+          "queries": [
+            {
+              "utc": "2026-11-16T06:19:16.904917+00:00",
+              "perf_counter_ns": 1098984605900500,
+              "kernel_ns": 0,
+              "user_ns": 0
+            },
+            {
+              "utc": "2026-11-16T06:19:23.553606+00:00",
+              "perf_counter_ns": 1098991254600600,
+              "kernel_ns": 328125000,
+              "user_ns": 5781250000
+            },
+            {
+              "utc": "2026-11-16T06:19:23.556094+00:00",
+              "perf_counter_ns": 1098991257080300,
+              "kernel_ns": 328125000,
+              "user_ns": 5781250000
+            }
+          ]
+        },
+        {
+          "pid": 21340,
+          "queries": [
+            {
+              "utc": "2026-11-16T06:19:23.562229+00:00",
+              "perf_counter_ns": 1098991263214100,
+              "kernel_ns": 0,
+              "user_ns": 0
+            },
+            {
+              "utc": "2026-11-16T06:19:30.335812+00:00",
+              "perf_counter_ns": 1098998036801800,
+              "kernel_ns": 421875000,
+              "user_ns": 5937500000
+            },
+            {
+              "utc": "2026-11-16T06:19:30.338923+00:00",
+              "perf_counter_ns": 1098998039910500,
+              "kernel_ns": 421875000,
+              "user_ns": 5937500000
+            }
+          ]
+        },
+        {
+          "pid": 35708,
+          "queries": [
+            {
+              "utc": "2026-11-16T06:19:30.345091+00:00",
+              "perf_counter_ns": 1098998046075400,
+              "kernel_ns": 0,
+              "user_ns": 0
+            },
+            {
+              "utc": "2026-11-16T06:19:37.199778+00:00",
+              "perf_counter_ns": 1099004900768400,
+              "kernel_ns": 562500000,
+              "user_ns": 5671875000
+            },
+            {
+              "utc": "2026-11-16T06:19:37.201922+00:00",
+              "perf_counter_ns": 1099004902908200,
+              "kernel_ns": 562500000,
+              "user_ns": 5671875000
+            }
+          ]
+        },
+        {
+          "pid": 38824,
+          "queries": [
+            {
+              "utc": "2026-11-16T06:19:37.208445+00:00",
+              "perf_counter_ns": 1099004909429200,
+              "kernel_ns": 0,
+              "user_ns": 15625000
+            },
+            {
+              "utc": "2026-11-16T06:19:43.876299+00:00",
+              "perf_counter_ns": 1099011577297800,
+              "kernel_ns": 406250000,
+              "user_ns": 5984375000
+            },
+            {
+              "utc": "2026-11-16T06:19:43.878278+00:00",
+              "perf_counter_ns": 1099011579264300,
+              "kernel_ns": 406250000,
+              "user_ns": 6000000000
+            }
+          ]
+        },
+        {
+          "pid": 44276,
+          "queries": [
+            {
+              "utc": "2026-11-16T06:19:43.884118+00:00",
+              "perf_counter_ns": 1099011585101700,
+              "kernel_ns": 0,
+              "user_ns": 0
+            },
+            {
+              "utc": "2026-11-16T06:19:50.708583+00:00",
+              "perf_counter_ns": 1099018409574000,
+              "kernel_ns": 484375000,
+              "user_ns": 6031250000
+            },
+            {
+              "utc": "2026-11-16T06:19:50.710787+00:00",
+              "perf_counter_ns": 1099018411773400,
+              "kernel_ns": 484375000,
+              "user_ns": 6031250000
+            }
+          ]
+        },
+        {
+          "pid": 22480,
+          "queries": [
+            {
+              "utc": "2026-11-16T06:19:50.717128+00:00",
+              "perf_counter_ns": 1099018418112700,
+              "kernel_ns": 0,
+              "user_ns": 0
+            },
+            {
+              "utc": "2026-11-16T06:19:57.411579+00:00",
+              "perf_counter_ns": 1099025112569500,
+              "kernel_ns": 359375000,
+              "user_ns": 6046875000
+            },
+            {
+              "utc": "2026-11-16T06:19:57.413792+00:00",
+              "perf_counter_ns": 1099025114782400,
+              "kernel_ns": 359375000,
+              "user_ns": 6046875000
+            }
+          ]
+        },
+        {
+          "pid": 39492,
+          "queries": [
+            {
+              "utc": "2026-11-16T06:19:57.420976+00:00",
+              "perf_counter_ns": 1099025121961100,
+              "kernel_ns": 0,
+              "user_ns": 0
+            },
+            {
+              "utc": "2026-11-16T06:20:04.264985+00:00",
+              "perf_counter_ns": 1099031965976000,
+              "kernel_ns": 453125000,
+              "user_ns": 5593750000
+            },
+            {
+              "utc": "2026-11-16T06:20:04.266913+00:00",
+              "perf_counter_ns": 1099031967899500,
+              "kernel_ns": 453125000,
+              "user_ns": 5593750000
+            }
+          ]
+        },
+        {
+          "pid": 34916,
+          "queries": [
+            {
+              "utc": "2026-11-16T06:20:04.274217+00:00",
+              "perf_counter_ns": 1099031975202300,
+              "kernel_ns": 0,
+              "user_ns": 0
+            },
+            {
+              "utc": "2026-11-16T06:20:11.089935+00:00",
+              "perf_counter_ns": 1099038790924500,
+              "kernel_ns": 531250000,
+              "user_ns": 5093750000
+            },
+            {
+              "utc": "2026-11-16T06:20:11.092176+00:00",
+              "perf_counter_ns": 1099038793161900,
+              "kernel_ns": 531250000,
+              "user_ns": 5093750000
+            }
+          ]
+        },
+        {
+          "pid": 39780,
+          "queries": [
+            {
+              "utc": "2026-11-16T06:20:11.098313+00:00",
+              "perf_counter_ns": 1099038799296800,
+              "kernel_ns": 0,
+              "user_ns": 15625000
+            },
+            {
+              "utc": "2026-11-16T06:20:17.720364+00:00",
+              "perf_counter_ns": 1099045421354000,
+              "kernel_ns": 359375000,
+              "user_ns": 6000000000
+            },
+            {
+              "utc": "2026-11-16T06:20:17.722964+00:00",
+              "perf_counter_ns": 1099045423950600,
+              "kernel_ns": 359375000,
+              "user_ns": 6015625000
+            }
+          ]
+        }
+      ]
+    },
+    "windows-local-aa-2-partial.json": {
+      "samples": {
+        "A1": [
+          {
+            "utc_start": "2026-11-16T06:20:31.207970+00:00",
+            "cpu_us": 6359375.0,
+            "wall_us": 6719759.0,
+            "lifetime_cpu_us": 6359375.0,
+            "checksum": 8670967746
+          },
+          {
+            "utc_start": "2026-11-16T06:20:51.612541+00:00",
+            "cpu_us": 6031250.0,
+            "wall_us": 6879213.2,
+            "lifetime_cpu_us": 6031250.0,
+            "checksum": 8670967746
+          },
+          {
+            "utc_start": "2026-11-16T06:20:58.500453+00:00",
+            "cpu_us": 5750000.0,
+            "wall_us": 6729404.6,
+            "lifetime_cpu_us": 5750000.0,
+            "checksum": 8670967746
+          },
+          {
+            "utc_start": "2026-11-16T06:21:18.682458+00:00",
+            "cpu_us": 6312500.0,
+            "wall_us": 6638332.1,
+            "lifetime_cpu_us": 6312500.0,
+            "checksum": 8670967746
+          },
+          {
+            "utc_start": "2026-11-16T06:21:25.329086+00:00",
+            "cpu_us": 6343750.0,
+            "wall_us": 6831720.4,
+            "lifetime_cpu_us": 6343750.0,
+            "checksum": 8670967746
+          }
+        ],
+        "A2": [
+          {
+            "utc_start": "2026-11-16T06:20:37.935583+00:00",
+            "cpu_us": 6515625.0,
+            "wall_us": 6825551.0,
+            "lifetime_cpu_us": 6531250.0,
+            "checksum": 8670967746
+          },
+          {
+            "utc_start": "2026-11-16T06:20:44.770454+00:00",
+            "cpu_us": 6656250.0,
+            "wall_us": 6832110.7,
+            "lifetime_cpu_us": 6671875.0,
+            "checksum": 8670967746
+          },
+          {
+            "utc_start": "2026-11-16T06:21:05.239945+00:00",
+            "cpu_us": 6203125.0,
+            "wall_us": 6628713.0,
+            "lifetime_cpu_us": 6203125.0,
+            "checksum": 8670967746
+          },
+          {
+            "utc_start": "2026-11-16T06:21:11.876646+00:00",
+            "cpu_us": 6437500.0,
+            "wall_us": 6797683.7,
+            "lifetime_cpu_us": 6437500.0,
+            "checksum": 8670967746
+          },
+          {
+            "utc_start": "2026-11-16T06:21:32.168895+00:00",
+            "cpu_us": 6312500.0,
+            "wall_us": 6666666.5,
+            "lifetime_cpu_us": 6312500.0,
+            "checksum": 8670967746
+          }
+        ]
+      },
+      "warmups": {
+        "A2": {
+          "utc_start": "2026-11-16T06:20:17.811008+00:00",
+          "cpu_us": 6343750.0,
+          "wall_us": 6643443.4,
+          "lifetime_cpu_us": 6343750.0,
+          "checksum": 8670967746
+        },
+        "A1": {
+          "utc_start": "2026-11-16T06:20:24.464926+00:00",
+          "cpu_us": 6390625.0,
+          "wall_us": 6734577.6,
+          "lifetime_cpu_us": 6406250.0,
+          "checksum": 8670967746
+        }
+      },
+      "orders": [
+        [
+          "A2",
+          "A1"
+        ],
+        [
+          "A1",
+          "A2"
+        ],
+        [
+          "A2",
+          "A1"
+        ],
+        [
+          "A1",
+          "A2"
+        ],
+        [
+          "A2",
+          "A1"
+        ],
+        [
+          "A1",
+          "A2"
+        ]
+      ],
+      "metadata": {
+        "platform": "windows",
+        "stage": "aa",
+        "case": "local",
+        "series": 2,
+        "affinity": [
+          0
+        ],
+        "script_sha256": "115890042cc18a655d2980f5ece754a6c98c125048352c8d3d69ae09061bab07",
+        "protocol_sha256": "d18e6de1e2e66ec8f491694729944d56f163bc66679886a7d25ba6766f1fad25"
+      },
+      "cpu_queries": [
+        {
+          "pid": 34320,
+          "queries": [
+            {
+              "utc": "2026-11-16T06:20:17.819044+00:00",
+              "perf_counter_ns": 1099045520028800,
+              "kernel_ns": 0,
+              "user_ns": 0
+            },
+            {
+              "utc": "2026-11-16T06:20:24.462480+00:00",
+              "perf_counter_ns": 1099052163470500,
+              "kernel_ns": 359375000,
+              "user_ns": 5984375000
+            },
+            {
+              "utc": "2026-11-16T06:20:24.464491+00:00",
+              "perf_counter_ns": 1099052165477400,
+              "kernel_ns": 359375000,
+              "user_ns": 5984375000
+            }
+          ]
+        },
+        {
+          "pid": 27564,
+          "queries": [
+            {
+              "utc": "2026-11-16T06:20:24.470638+00:00",
+              "perf_counter_ns": 1099052171622100,
+              "kernel_ns": 0,
+              "user_ns": 0
+            },
+            {
+              "utc": "2026-11-16T06:20:31.205205+00:00",
+              "perf_counter_ns": 1099058906196500,
+              "kernel_ns": 359375000,
+              "user_ns": 6031250000
+            },
+            {
+              "utc": "2026-11-16T06:20:31.207647+00:00",
+              "perf_counter_ns": 1099058908633000,
+              "kernel_ns": 359375000,
+              "user_ns": 6046875000
+            }
+          ]
+        },
+        {
+          "pid": 3172,
+          "queries": [
+            {
+              "utc": "2026-11-16T06:20:31.213568+00:00",
+              "perf_counter_ns": 1099058914551900,
+              "kernel_ns": 0,
+              "user_ns": 0
+            },
+            {
+              "utc": "2026-11-16T06:20:37.933318+00:00",
+              "perf_counter_ns": 1099065634309300,
+              "kernel_ns": 484375000,
+              "user_ns": 5875000000
+            },
+            {
+              "utc": "2026-11-16T06:20:37.935268+00:00",
+              "perf_counter_ns": 1099065636255000,
+              "kernel_ns": 484375000,
+              "user_ns": 5875000000
+            }
+          ]
+        },
+        {
+          "pid": 27196,
+          "queries": [
+            {
+              "utc": "2026-11-16T06:20:37.942624+00:00",
+              "perf_counter_ns": 1099065643608400,
+              "kernel_ns": 15625000,
+              "user_ns": 0
+            },
+            {
+              "utc": "2026-11-16T06:20:44.768167+00:00",
+              "perf_counter_ns": 1099072469157700,
+              "kernel_ns": 437500000,
+              "user_ns": 6093750000
+            },
+            {
+              "utc": "2026-11-16T06:20:44.770132+00:00",
+              "perf_counter_ns": 1099072471117900,
+              "kernel_ns": 437500000,
+              "user_ns": 6093750000
+            }
+          ]
+        },
+        {
+          "pid": 27424,
+          "queries": [
+            {
+              "utc": "2026-11-16T06:20:44.778093+00:00",
+              "perf_counter_ns": 1099072479078300,
+              "kernel_ns": 0,
+              "user_ns": 0
+            },
+            {
+              "utc": "2026-11-16T06:20:51.610196+00:00",
+              "perf_counter_ns": 1099079311187500,
+              "kernel_ns": 609375000,
+              "user_ns": 6046875000
+            },
+            {
+              "utc": "2026-11-16T06:20:51.612208+00:00",
+              "perf_counter_ns": 1099079313194500,
+              "kernel_ns": 625000000,
+              "user_ns": 6046875000
+            }
+          ]
+        },
+        {
+          "pid": 24796,
+          "queries": [
+            {
+              "utc": "2026-11-16T06:20:51.618973+00:00",
+              "perf_counter_ns": 1099079319956600,
+              "kernel_ns": 0,
+              "user_ns": 0
+            },
+            {
+              "utc": "2026-11-16T06:20:58.498177+00:00",
+              "perf_counter_ns": 1099086199168300,
+              "kernel_ns": 578125000,
+              "user_ns": 5453125000
+            },
+            {
+              "utc": "2026-11-16T06:20:58.500105+00:00",
+              "perf_counter_ns": 1099086201090900,
+              "kernel_ns": 578125000,
+              "user_ns": 5453125000
+            }
+          ]
+        },
+        {
+          "pid": 40460,
+          "queries": [
+            {
+              "utc": "2026-11-16T06:20:58.507662+00:00",
+              "perf_counter_ns": 1099086208646800,
+              "kernel_ns": 0,
+              "user_ns": 0
+            },
+            {
+              "utc": "2026-11-16T06:21:05.237059+00:00",
+              "perf_counter_ns": 1099092938049900,
+              "kernel_ns": 437500000,
+              "user_ns": 5312500000
+            },
+            {
+              "utc": "2026-11-16T06:21:05.239339+00:00",
+              "perf_counter_ns": 1099092940326700,
+              "kernel_ns": 437500000,
+              "user_ns": 5312500000
+            }
+          ]
+        },
+        {
+          "pid": 15616,
+          "queries": [
+            {
+              "utc": "2026-11-16T06:21:05.245653+00:00",
+              "perf_counter_ns": 1099092946637200,
+              "kernel_ns": 0,
+              "user_ns": 0
+            },
+            {
+              "utc": "2026-11-16T06:21:11.874359+00:00",
+              "perf_counter_ns": 1099099575348600,
+              "kernel_ns": 296875000,
+              "user_ns": 5906250000
+            },
+            {
+              "utc": "2026-11-16T06:21:11.876302+00:00",
+              "perf_counter_ns": 1099099577288500,
+              "kernel_ns": 296875000,
+              "user_ns": 5906250000
+            }
+          ]
+        },
+        {
+          "pid": 32108,
+          "queries": [
+            {
+              "utc": "2026-11-16T06:21:11.882269+00:00",
+              "perf_counter_ns": 1099099583253000,
+              "kernel_ns": 0,
+              "user_ns": 0
+            },
+            {
+              "utc": "2026-11-16T06:21:18.679944+00:00",
+              "perf_counter_ns": 1099106380935000,
+              "kernel_ns": 468750000,
+              "user_ns": 5968750000
+            },
+            {
+              "utc": "2026-11-16T06:21:18.682080+00:00",
+              "perf_counter_ns": 1099106383066500,
+              "kernel_ns": 468750000,
+              "user_ns": 5968750000
+            }
+          ]
+        },
+        {
+          "pid": 11456,
+          "queries": [
+            {
+              "utc": "2026-11-16T06:21:18.688339+00:00",
+              "perf_counter_ns": 1099106389323200,
+              "kernel_ns": 0,
+              "user_ns": 0
+            },
+            {
+              "utc": "2026-11-16T06:21:25.326663+00:00",
+              "perf_counter_ns": 1099113027653600,
+              "kernel_ns": 265625000,
+              "user_ns": 6046875000
+            },
+            {
+              "utc": "2026-11-16T06:21:25.328719+00:00",
+              "perf_counter_ns": 1099113029706200,
+              "kernel_ns": 265625000,
+              "user_ns": 6046875000
+            }
+          ]
+        },
+        {
+          "pid": 36716,
+          "queries": [
+            {
+              "utc": "2026-11-16T06:21:25.334801+00:00",
+              "perf_counter_ns": 1099113035785200,
+              "kernel_ns": 0,
+              "user_ns": 0
+            },
+            {
+              "utc": "2026-11-16T06:21:32.166513+00:00",
+              "perf_counter_ns": 1099119867504000,
+              "kernel_ns": 515625000,
+              "user_ns": 5828125000
+            },
+            {
+              "utc": "2026-11-16T06:21:32.168538+00:00",
+              "perf_counter_ns": 1099119869524400,
+              "kernel_ns": 515625000,
+              "user_ns": 5828125000
+            }
+          ]
+        },
+        {
+          "pid": 14224,
+          "queries": [
+            {
+              "utc": "2026-11-16T06:21:32.176141+00:00",
+              "perf_counter_ns": 1099119877126700,
+              "kernel_ns": 0,
+              "user_ns": 0
+            },
+            {
+              "utc": "2026-11-16T06:21:38.842801+00:00",
+              "perf_counter_ns": 1099126543791700,
+              "kernel_ns": 359375000,
+              "user_ns": 5953125000
+            },
+            {
+              "utc": "2026-11-16T06:21:38.845273+00:00",
+              "perf_counter_ns": 1099126546259400,
+              "kernel_ns": 359375000,
+              "user_ns": 5953125000
+            }
+          ]
+        }
+      ]
+    },
+    "windows-local-aa-2.json": {
+      "samples": {
+        "A1": [
+          {
+            "utc_start": "2026-11-16T06:20:31.207970+00:00",
+            "cpu_us": 6359375.0,
+            "wall_us": 6719759.0,
+            "lifetime_cpu_us": 6359375.0,
+            "checksum": 8670967746
+          },
+          {
+            "utc_start": "2026-11-16T06:20:51.612541+00:00",
+            "cpu_us": 6031250.0,
+            "wall_us": 6879213.2,
+            "lifetime_cpu_us": 6031250.0,
+            "checksum": 8670967746
+          },
+          {
+            "utc_start": "2026-11-16T06:20:58.500453+00:00",
+            "cpu_us": 5750000.0,
+            "wall_us": 6729404.6,
+            "lifetime_cpu_us": 5750000.0,
+            "checksum": 8670967746
+          },
+          {
+            "utc_start": "2026-11-16T06:21:18.682458+00:00",
+            "cpu_us": 6312500.0,
+            "wall_us": 6638332.1,
+            "lifetime_cpu_us": 6312500.0,
+            "checksum": 8670967746
+          },
+          {
+            "utc_start": "2026-11-16T06:21:25.329086+00:00",
+            "cpu_us": 6343750.0,
+            "wall_us": 6831720.4,
+            "lifetime_cpu_us": 6343750.0,
+            "checksum": 8670967746
+          }
+        ],
+        "A2": [
+          {
+            "utc_start": "2026-11-16T06:20:37.935583+00:00",
+            "cpu_us": 6515625.0,
+            "wall_us": 6825551.0,
+            "lifetime_cpu_us": 6531250.0,
+            "checksum": 8670967746
+          },
+          {
+            "utc_start": "2026-11-16T06:20:44.770454+00:00",
+            "cpu_us": 6656250.0,
+            "wall_us": 6832110.7,
+            "lifetime_cpu_us": 6671875.0,
+            "checksum": 8670967746
+          },
+          {
+            "utc_start": "2026-11-16T06:21:05.239945+00:00",
+            "cpu_us": 6203125.0,
+            "wall_us": 6628713.0,
+            "lifetime_cpu_us": 6203125.0,
+            "checksum": 8670967746
+          },
+          {
+            "utc_start": "2026-11-16T06:21:11.876646+00:00",
+            "cpu_us": 6437500.0,
+            "wall_us": 6797683.7,
+            "lifetime_cpu_us": 6437500.0,
+            "checksum": 8670967746
+          },
+          {
+            "utc_start": "2026-11-16T06:21:32.168895+00:00",
+            "cpu_us": 6312500.0,
+            "wall_us": 6666666.5,
+            "lifetime_cpu_us": 6312500.0,
+            "checksum": 8670967746
+          }
+        ]
+      },
+      "warmups_excluded": {
+        "A2": {
+          "utc_start": "2026-11-16T06:20:17.811008+00:00",
+          "cpu_us": 6343750.0,
+          "wall_us": 6643443.4,
+          "lifetime_cpu_us": 6343750.0,
+          "checksum": 8670967746
+        },
+        "A1": {
+          "utc_start": "2026-11-16T06:20:24.464926+00:00",
+          "cpu_us": 6390625.0,
+          "wall_us": 6734577.6,
+          "lifetime_cpu_us": 6406250.0,
+          "checksum": 8670967746
+        }
+      },
+      "orders": [
+        [
+          "A2",
+          "A1"
+        ],
+        [
+          "A1",
+          "A2"
+        ],
+        [
+          "A2",
+          "A1"
+        ],
+        [
+          "A1",
+          "A2"
+        ],
+        [
+          "A2",
+          "A1"
+        ],
+        [
+          "A1",
+          "A2"
+        ]
+      ],
+      "medians_us": {
+        "A1": 6312500.0,
+        "A2": 6437500.0
+      },
+      "delta_percent": 1.9801980198019802,
+      "change_percent": 1.980198019801982,
+      "config": {
+        "iterations": 1238709678,
+        "expected": 8670967746,
+        "expected_origin": "independent formula",
+        "validation": null,
+        "definition": ": BENCH-RUN { | x -- } 7 TO x 0 BENCH-ITERATIONS 0 DO x + LOOP ;",
+        "pilot": {
+          "utc_start": "2026-11-16T06:18:55.855596+00:00",
+          "cpu_us": 484375.0,
+          "wall_us": 543554.6,
+          "lifetime_cpu_us": 515625.0,
+          "checksum": 700000000
+        },
+        "metadata": {
+          "platform": "windows",
+          "stage": "pilot",
+          "case": "local",
+          "series": 1,
+          "affinity": [
+            0
+          ],
+          "script_sha256": "115890042cc18a655d2980f5ece754a6c98c125048352c8d3d69ae09061bab07",
+          "protocol_sha256": "d18e6de1e2e66ec8f491694729944d56f163bc66679886a7d25ba6766f1fad25"
+        },
+        "cpu_queries": [
+          {
+            "pid": 28600,
+            "queries": [
+              {
+                "utc": "2026-11-16T06:18:55.864087+00:00",
+                "perf_counter_ns": 1098963565072800,
+                "kernel_ns": 15625000,
+                "user_ns": 0
+              },
+              {
+                "utc": "2026-11-16T06:18:56.407636+00:00",
+                "perf_counter_ns": 1098964108626400,
+                "kernel_ns": 62500000,
+                "user_ns": 437500000
+              },
+              {
+                "utc": "2026-11-16T06:18:56.409836+00:00",
+                "perf_counter_ns": 1098964110822700,
+                "kernel_ns": 62500000,
+                "user_ns": 453125000
+              }
+            ]
+          }
+        ]
+      },
+      "metadata": {
+        "platform": "windows",
+        "stage": "aa",
+        "case": "local",
+        "series": 2,
+        "affinity": [
+          0
+        ],
+        "script_sha256": "115890042cc18a655d2980f5ece754a6c98c125048352c8d3d69ae09061bab07",
+        "protocol_sha256": "d18e6de1e2e66ec8f491694729944d56f163bc66679886a7d25ba6766f1fad25"
+      },
+      "cpu_queries": [
+        {
+          "pid": 34320,
+          "queries": [
+            {
+              "utc": "2026-11-16T06:20:17.819044+00:00",
+              "perf_counter_ns": 1099045520028800,
+              "kernel_ns": 0,
+              "user_ns": 0
+            },
+            {
+              "utc": "2026-11-16T06:20:24.462480+00:00",
+              "perf_counter_ns": 1099052163470500,
+              "kernel_ns": 359375000,
+              "user_ns": 5984375000
+            },
+            {
+              "utc": "2026-11-16T06:20:24.464491+00:00",
+              "perf_counter_ns": 1099052165477400,
+              "kernel_ns": 359375000,
+              "user_ns": 5984375000
+            }
+          ]
+        },
+        {
+          "pid": 27564,
+          "queries": [
+            {
+              "utc": "2026-11-16T06:20:24.470638+00:00",
+              "perf_counter_ns": 1099052171622100,
+              "kernel_ns": 0,
+              "user_ns": 0
+            },
+            {
+              "utc": "2026-11-16T06:20:31.205205+00:00",
+              "perf_counter_ns": 1099058906196500,
+              "kernel_ns": 359375000,
+              "user_ns": 6031250000
+            },
+            {
+              "utc": "2026-11-16T06:20:31.207647+00:00",
+              "perf_counter_ns": 1099058908633000,
+              "kernel_ns": 359375000,
+              "user_ns": 6046875000
+            }
+          ]
+        },
+        {
+          "pid": 3172,
+          "queries": [
+            {
+              "utc": "2026-11-16T06:20:31.213568+00:00",
+              "perf_counter_ns": 1099058914551900,
+              "kernel_ns": 0,
+              "user_ns": 0
+            },
+            {
+              "utc": "2026-11-16T06:20:37.933318+00:00",
+              "perf_counter_ns": 1099065634309300,
+              "kernel_ns": 484375000,
+              "user_ns": 5875000000
+            },
+            {
+              "utc": "2026-11-16T06:20:37.935268+00:00",
+              "perf_counter_ns": 1099065636255000,
+              "kernel_ns": 484375000,
+              "user_ns": 5875000000
+            }
+          ]
+        },
+        {
+          "pid": 27196,
+          "queries": [
+            {
+              "utc": "2026-11-16T06:20:37.942624+00:00",
+              "perf_counter_ns": 1099065643608400,
+              "kernel_ns": 15625000,
+              "user_ns": 0
+            },
+            {
+              "utc": "2026-11-16T06:20:44.768167+00:00",
+              "perf_counter_ns": 1099072469157700,
+              "kernel_ns": 437500000,
+              "user_ns": 6093750000
+            },
+            {
+              "utc": "2026-11-16T06:20:44.770132+00:00",
+              "perf_counter_ns": 1099072471117900,
+              "kernel_ns": 437500000,
+              "user_ns": 6093750000
+            }
+          ]
+        },
+        {
+          "pid": 27424,
+          "queries": [
+            {
+              "utc": "2026-11-16T06:20:44.778093+00:00",
+              "perf_counter_ns": 1099072479078300,
+              "kernel_ns": 0,
+              "user_ns": 0
+            },
+            {
+              "utc": "2026-11-16T06:20:51.610196+00:00",
+              "perf_counter_ns": 1099079311187500,
+              "kernel_ns": 609375000,
+              "user_ns": 6046875000
+            },
+            {
+              "utc": "2026-11-16T06:20:51.612208+00:00",
+              "perf_counter_ns": 1099079313194500,
+              "kernel_ns": 625000000,
+              "user_ns": 6046875000
+            }
+          ]
+        },
+        {
+          "pid": 24796,
+          "queries": [
+            {
+              "utc": "2026-11-16T06:20:51.618973+00:00",
+              "perf_counter_ns": 1099079319956600,
+              "kernel_ns": 0,
+              "user_ns": 0
+            },
+            {
+              "utc": "2026-11-16T06:20:58.498177+00:00",
+              "perf_counter_ns": 1099086199168300,
+              "kernel_ns": 578125000,
+              "user_ns": 5453125000
+            },
+            {
+              "utc": "2026-11-16T06:20:58.500105+00:00",
+              "perf_counter_ns": 1099086201090900,
+              "kernel_ns": 578125000,
+              "user_ns": 5453125000
+            }
+          ]
+        },
+        {
+          "pid": 40460,
+          "queries": [
+            {
+              "utc": "2026-11-16T06:20:58.507662+00:00",
+              "perf_counter_ns": 1099086208646800,
+              "kernel_ns": 0,
+              "user_ns": 0
+            },
+            {
+              "utc": "2026-11-16T06:21:05.237059+00:00",
+              "perf_counter_ns": 1099092938049900,
+              "kernel_ns": 437500000,
+              "user_ns": 5312500000
+            },
+            {
+              "utc": "2026-11-16T06:21:05.239339+00:00",
+              "perf_counter_ns": 1099092940326700,
+              "kernel_ns": 437500000,
+              "user_ns": 5312500000
+            }
+          ]
+        },
+        {
+          "pid": 15616,
+          "queries": [
+            {
+              "utc": "2026-11-16T06:21:05.245653+00:00",
+              "perf_counter_ns": 1099092946637200,
+              "kernel_ns": 0,
+              "user_ns": 0
+            },
+            {
+              "utc": "2026-11-16T06:21:11.874359+00:00",
+              "perf_counter_ns": 1099099575348600,
+              "kernel_ns": 296875000,
+              "user_ns": 5906250000
+            },
+            {
+              "utc": "2026-11-16T06:21:11.876302+00:00",
+              "perf_counter_ns": 1099099577288500,
+              "kernel_ns": 296875000,
+              "user_ns": 5906250000
+            }
+          ]
+        },
+        {
+          "pid": 32108,
+          "queries": [
+            {
+              "utc": "2026-11-16T06:21:11.882269+00:00",
+              "perf_counter_ns": 1099099583253000,
+              "kernel_ns": 0,
+              "user_ns": 0
+            },
+            {
+              "utc": "2026-11-16T06:21:18.679944+00:00",
+              "perf_counter_ns": 1099106380935000,
+              "kernel_ns": 468750000,
+              "user_ns": 5968750000
+            },
+            {
+              "utc": "2026-11-16T06:21:18.682080+00:00",
+              "perf_counter_ns": 1099106383066500,
+              "kernel_ns": 468750000,
+              "user_ns": 5968750000
+            }
+          ]
+        },
+        {
+          "pid": 11456,
+          "queries": [
+            {
+              "utc": "2026-11-16T06:21:18.688339+00:00",
+              "perf_counter_ns": 1099106389323200,
+              "kernel_ns": 0,
+              "user_ns": 0
+            },
+            {
+              "utc": "2026-11-16T06:21:25.326663+00:00",
+              "perf_counter_ns": 1099113027653600,
+              "kernel_ns": 265625000,
+              "user_ns": 6046875000
+            },
+            {
+              "utc": "2026-11-16T06:21:25.328719+00:00",
+              "perf_counter_ns": 1099113029706200,
+              "kernel_ns": 265625000,
+              "user_ns": 6046875000
+            }
+          ]
+        },
+        {
+          "pid": 36716,
+          "queries": [
+            {
+              "utc": "2026-11-16T06:21:25.334801+00:00",
+              "perf_counter_ns": 1099113035785200,
+              "kernel_ns": 0,
+              "user_ns": 0
+            },
+            {
+              "utc": "2026-11-16T06:21:32.166513+00:00",
+              "perf_counter_ns": 1099119867504000,
+              "kernel_ns": 515625000,
+              "user_ns": 5828125000
+            },
+            {
+              "utc": "2026-11-16T06:21:32.168538+00:00",
+              "perf_counter_ns": 1099119869524400,
+              "kernel_ns": 515625000,
+              "user_ns": 5828125000
+            }
+          ]
+        },
+        {
+          "pid": 14224,
+          "queries": [
+            {
+              "utc": "2026-11-16T06:21:32.176141+00:00",
+              "perf_counter_ns": 1099119877126700,
+              "kernel_ns": 0,
+              "user_ns": 0
+            },
+            {
+              "utc": "2026-11-16T06:21:38.842801+00:00",
+              "perf_counter_ns": 1099126543791700,
+              "kernel_ns": 359375000,
+              "user_ns": 5953125000
+            },
+            {
+              "utc": "2026-11-16T06:21:38.845273+00:00",
+              "perf_counter_ns": 1099126546259400,
+              "kernel_ns": 359375000,
+              "user_ns": 5953125000
+            }
+          ]
+        }
+      ]
+    },
+    "windows-local-config.json": {
+      "iterations": 1238709678,
+      "expected": 8670967746,
+      "expected_origin": "independent formula",
+      "validation": null,
+      "definition": ": BENCH-RUN { | x -- } 7 TO x 0 BENCH-ITERATIONS 0 DO x + LOOP ;",
+      "pilot": {
+        "utc_start": "2026-11-16T06:18:55.855596+00:00",
+        "cpu_us": 484375.0,
+        "wall_us": 543554.6,
+        "lifetime_cpu_us": 515625.0,
+        "checksum": 700000000
+      },
+      "metadata": {
+        "platform": "windows",
+        "stage": "pilot",
+        "case": "local",
+        "series": 1,
+        "affinity": [
+          0
+        ],
+        "script_sha256": "115890042cc18a655d2980f5ece754a6c98c125048352c8d3d69ae09061bab07",
+        "protocol_sha256": "d18e6de1e2e66ec8f491694729944d56f163bc66679886a7d25ba6766f1fad25"
+      },
+      "cpu_queries": [
+        {
+          "pid": 28600,
+          "queries": [
+            {
+              "utc": "2026-11-16T06:18:55.864087+00:00",
+              "perf_counter_ns": 1098963565072800,
+              "kernel_ns": 15625000,
+              "user_ns": 0
+            },
+            {
+              "utc": "2026-11-16T06:18:56.407636+00:00",
+              "perf_counter_ns": 1098964108626400,
+              "kernel_ns": 62500000,
+              "user_ns": 437500000
+            },
+            {
+              "utc": "2026-11-16T06:18:56.409836+00:00",
+              "perf_counter_ns": 1098964110822700,
+              "kernel_ns": 62500000,
+              "user_ns": 453125000
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "frozen_inputs": {
+    "protocol.json": {
+      "sha256": "d18e6de1e2e66ec8f491694729944d56f163bc66679886a7d25ba6766f1fad25",
+      "base64": "ew0KICAiY2FzZXMiOiB7DQogICAgImFyaXRobWV0aWMiOiB7DQogICAgICAiZGVmaW5pdGlvbiI6ICI6IEJFTkNILVJVTiAxIEJFTkNILUlURVJBVElPTlMgMCBETyAzICogNyArIDY1NTM1IEFORCBMT09QIDsiLA0KICAgICAgInBpbG90X2l0ZXJhdGlvbnMiOiB7DQogICAgICAgICJ3aW5kb3dzIjogMTAwMDAwMDAwLA0KICAgICAgICAibGludXgiOiAxMDAwMDAwMDANCiAgICAgIH0NCiAgICB9LA0KICAgICJzdGFja3MiOiB7DQogICAgICAiZGVmaW5pdGlvbiI6ICI6IEJFTkNILVJVTiAxIDIgMyBCRU5DSC1JVEVSQVRJT05TIDAgRE8gUk9UIFNXQVAgT1ZFUiArIDY1NTM1IEFORCBEVVAgTklQIExPT1AgKyArIDsiLA0KICAgICAgInBpbG90X2l0ZXJhdGlvbnMiOiB7DQogICAgICAgICJ3aW5kb3dzIjogMTAwMDAwMDAwLA0KICAgICAgICAibGludXgiOiAxMDAwMDAwMDANCiAgICAgIH0NCiAgICB9LA0KICAgICJjYWxscyI6IHsNCiAgICAgICJkZWZpbml0aW9uIjogIjogQkVOQ0gtQSAxKyA7IDogQkVOQ0gtQiBCRU5DSC1BIEJFTkNILUEgOyA6IEJFTkNILUMgQkVOQ0gtQiBCRU5DSC1CIDsgOiBCRU5DSC1SVU4gMCBCRU5DSC1JVEVSQVRJT05TIDAgRE8gQkVOQ0gtQyBMT09QIDsiLA0KICAgICAgInBpbG90X2l0ZXJhdGlvbnMiOiB7DQogICAgICAgICJ3aW5kb3dzIjogMTAwMDAwMDAwLA0KICAgICAgICAibGludXgiOiAxMDAwMDAwMDANCiAgICAgIH0NCiAgICB9LA0KICAgICJ2YXJpYWJsZXMiOiB7DQogICAgICAiZGVmaW5pdGlvbiI6ICJWQVJJQUJMRSBCRU5DSC1WIDcgQ09OU1RBTlQgQkVOQ0gtSyA6IEJFTkNILVJVTiAwIEJFTkNILVYgISBCRU5DSC1JVEVSQVRJT05TIDAgRE8gQkVOQ0gtSyBCRU5DSC1WICshIExPT1AgQkVOQ0gtViBAIDsiLA0KICAgICAgInBpbG90X2l0ZXJhdGlvbnMiOiB7DQogICAgICAgICJ3aW5kb3dzIjogMTMwMDAwMDAwLA0KICAgICAgICAibGludXgiOiAxMzAwMDAwMDANCiAgICAgIH0NCiAgICB9LA0KICAgICJwbHVzLWxvb3AiOiB7DQogICAgICAiZGVmaW5pdGlvbiI6ICI6IEJFTkNILVJVTiAwIEJFTkNILUlURVJBVElPTlMgMCBETyBJIDcgQU5EICsgMiArTE9PUCA7IiwNCiAgICAgICJwaWxvdF9pdGVyYXRpb25zIjogew0KICAgICAgICAid2luZG93cyI6IDI4MDAwMDAwMCwNCiAgICAgICAgImxpbnV4IjogMjgwMDAwMDAwDQogICAgICB9DQogICAgfSwNCiAgICAiZXh0ZW5kZWQiOiB7DQogICAgICAiZGVmaW5pdGlvbiI6ICI6IEJFTkNILVJVTiAxIEJFTkNILUlURVJBVElPTlMgMCBETyAyKiAxKyBEVVAgMyBSU0hJRlQgWE9SIDY1NTM1IEFORCBMT09QIDsiLA0KICAgICAgInBpbG90X2l0ZXJhdGlvbnMiOiB7DQogICAgICAgICJ3aW5kb3dzIjogMTAwMDAwMDAwLA0KICAgICAgICAibGludXgiOiAxMDAwMDAwMDANCiAgICAgIH0NCiAgICB9LA0KICAgICJmbG9hdCI6IHsNCiAgICAgICJkZWZpbml0aW9uIjogIjogQkVOQ0gtUlVOIDBlIEJFTkNILUlURVJBVElPTlMgMCBETyAxZSBGKyAxZSBGKiBMT09QIEY+UyA7IiwNCiAgICAgICJwaWxvdF9pdGVyYXRpb25zIjogew0KICAgICAgICAid2luZG93cyI6IDE2MDAwMDAwMCwNCiAgICAgICAgImxpbnV4IjogMTYwMDAwMDAwDQogICAgICB9DQogICAgfSwNCiAgICAiY2F0Y2gtbmVzdGVkLTY0Ijogew0KICAgICAgImRlZmluaXRpb24iOiAiOiBCLU5FU1QgRFVQIElGIDEtIFsnXSBCLU5FU1QgQ0FUQ0ggVEhST1cgRUxTRSBEUk9QIFRIRU4gOyA6IEJFTkNILVJVTiAwIEJFTkNILUlURVJBVElPTlMgMCBETyA2NCBbJ10gQi1ORVNUIENBVENIICsgTE9PUCA7IiwNCiAgICAgICJwaWxvdF9pdGVyYXRpb25zIjogew0KICAgICAgICAid2luZG93cyI6IDQ1MjU4MywNCiAgICAgICAgImxpbnV4IjogNDUyNTgzDQogICAgICB9DQogICAgfSwNCiAgICAiY2F0Y2gtbmVzdGVkLTI1NiI6IHsNCiAgICAgICJkZWZpbml0aW9uIjogIjogQi1ORVNUIERVUCBJRiAxLSBbJ10gQi1ORVNUIENBVENIIFRIUk9XIEVMU0UgRFJPUCBUSEVOIDsgOiBCRU5DSC1SVU4gMCBCRU5DSC1JVEVSQVRJT05TIDAgRE8gMjU2IFsnXSBCLU5FU1QgQ0FUQ0ggKyBMT09QIDsiLA0KICAgICAgInBpbG90X2l0ZXJhdGlvbnMiOiB7DQogICAgICAgICJ3aW5kb3dzIjogOTg1NjQsDQogICAgICAgICJsaW51eCI6IDk4NTY0DQogICAgICB9DQogICAgfSwNCiAgICAiY2F0Y2gtZXhlY3V0ZSI6IHsNCiAgICAgICJkZWZpbml0aW9uIjogIjogQi1XT1JLIDErIDsgOiBCRU5DSC1SVU4gMCBCRU5DSC1JVEVSQVRJT05TIDAgRE8gWyddIEItV09SSyBbJ10gQ0FUQ0ggRVhFQ1VURSBEUk9QIExPT1AgOyIsDQogICAgICAicGlsb3RfaXRlcmF0aW9ucyI6IHsNCiAgICAgICAgIndpbmRvd3MiOiAzNjI2NzE0NCwNCiAgICAgICAgImxpbnV4IjogMzYyNjcxNDQNCiAgICAgIH0NCiAgICB9LA0KICAgICJjYXRjaC1kZWZlciI6IHsNCiAgICAgICJkZWZpbml0aW9uIjogIkRFRkVSIEItQ0FUQ0ggJyBDQVRDSCBJUyBCLUNBVENIIDogQi1XT1JLIDErIDsgOiBCRU5DSC1SVU4gMCBCRU5DSC1JVEVSQVRJT05TIDAgRE8gWyddIEItV09SSyBCLUNBVENIIERST1AgTE9PUCA7IiwNCiAgICAgICJwaWxvdF9pdGVyYXRpb25zIjogew0KICAgICAgICAid2luZG93cyI6IDI5MDIxMTM5LA0KICAgICAgICAibGludXgiOiAyOTAyMTEzOQ0KICAgICAgfQ0KICAgIH0sDQogICAgImNhdGNoLXN5bm9ueW0iOiB7DQogICAgICAiZGVmaW5pdGlvbiI6ICJTWU5PTllNIEItQ0FUQ0ggQ0FUQ0ggOiBCLVdPUksgMSsgOyA6IEJFTkNILVJVTiAwIEJFTkNILUlURVJBVElPTlMgMCBETyBbJ10gQi1XT1JLIEItQ0FUQ0ggRFJPUCBMT09QIDsiLA0KICAgICAgInBpbG90X2l0ZXJhdGlvbnMiOiB7DQogICAgICAgICJ3aW5kb3dzIjogMzc4ODcyMDcsDQogICAgICAgICJsaW51eCI6IDM3ODg3MjA3DQogICAgICB9DQogICAgfSwNCiAgICAiY2F0Y2gtdGhyb3ciOiB7DQogICAgICAiZGVmaW5pdGlvbiI6ICI6IEItV09SSyA3NyBUSFJPVyA7IDogQkVOQ0gtUlVOIDAgQkVOQ0gtSVRFUkFUSU9OUyAwIERPIFsnXSBCLVdPUksgQ0FUQ0ggKyBMT09QIDsiLA0KICAgICAgInBpbG90X2l0ZXJhdGlvbnMiOiB7DQogICAgICAgICJ3aW5kb3dzIjogMjA5NzIyNzYsDQogICAgICAgICJsaW51eCI6IDIwOTcyMjc2DQogICAgICB9DQogICAgfSwNCiAgICAiY2F0Y2gtZmFzdC10aHJvdyI6IHsNCiAgICAgICJkZWZpbml0aW9uIjogIjogQi1XT1JLIDc3IEZBU1QtVEhST1cgOyA6IEJFTkNILVJVTiAwIEJFTkNILUlURVJBVElPTlMgMCBETyBbJ10gQi1XT1JLIENBVENIICsgTE9PUCA7IiwNCiAgICAgICJwaWxvdF9pdGVyYXRpb25zIjogew0KICAgICAgICAid2luZG93cyI6IDE5NzUwMTg3LA0KICAgICAgICAibGludXgiOiAxOTc1MDE4Nw0KICAgICAgfQ0KICAgIH0sDQogICAgImxvb3BzIjogew0KICAgICAgImRlZmluaXRpb24iOiAiOiBCRU5DSC1SVU4gMCBCRU5DSC1JVEVSQVRJT05TIDAgRE8gSSA3IEFORCArIExPT1AgOyIsDQogICAgICAicGlsb3RfaXRlcmF0aW9ucyI6IHsNCiAgICAgICAgImxpbnV4IjogMTYwMDAwMDAwLA0KICAgICAgICAid2luZG93cyI6IDE2MDAwMDAwMA0KICAgICAgfQ0KICAgIH0sDQogICAgImNhdGNoLXN1Y2Nlc3MiOiB7DQogICAgICAiZGVmaW5pdGlvbiI6ICI6IEItV09SSyAxKyA7IDogQkVOQ0gtUlVOIDAgQkVOQ0gtSVRFUkFUSU9OUyAwIERPIFsnXSBCLVdPUksgQ0FUQ0ggRFJPUCBMT09QIDsiLA0KICAgICAgInBpbG90X2l0ZXJhdGlvbnMiOiB7DQogICAgICAgICJsaW51eCI6IDQ2ODI5Njg3LA0KICAgICAgICAid2luZG93cyI6IDQ2ODI5Njg3DQogICAgICB9DQogICAgfSwNCiAgICAiY2F0Y2gtbm9idC10aHJvdyI6IHsNCiAgICAgICJkZWZpbml0aW9uIjogIjogQi1XT1JLIDc3IFRIUk9XIDsgOiBCRU5DSC1SVU4gMCBCRU5DSC1JVEVSQVRJT05TIDAgRE8gWyddIEItV09SSyBDQVRDSC1OT0JUICsgTE9PUCA7IiwNCiAgICAgICJwaWxvdF9pdGVyYXRpb25zIjogew0KICAgICAgICAibGludXgiOiA0MzQ2MTEyNiwNCiAgICAgICAgIndpbmRvd3MiOiA0MzQ2MTEyNg0KICAgICAgfQ0KICAgIH0sDQogICAgImxvY2FsIjogew0KICAgICAgImRlZmluaXRpb24iOiAiOiBCRU5DSC1SVU4geyB8IHggLS0gfSA3IFRPIHggMCBCRU5DSC1JVEVSQVRJT05TIDAgRE8geCArIExPT1AgOyIsDQogICAgICAicGlsb3RfaXRlcmF0aW9ucyI6IHsNCiAgICAgICAgIndpbmRvd3MiOiAxMDAwMDAwMDAsDQogICAgICAgICJsaW51eCI6IDEwMDAwMDAwMA0KICAgICAgfQ0KICAgIH0NCiAgfSwNCiAgImJpbmFyeV9oYXNoZXMiOiB7DQogICAgImJhc2VsaW5lLXdpbmRvd3MiOiAiMzc5ZDZjNmMwNjliOWMzMDcyZGEyMmZhNmNlYThiN2RlZmY3N2M1ZWQ3OGVmOWJiZDA3MGY5MmE3MjQzMzdiZiIsDQogICAgImJhc2VsaW5lLWxpbnV4IjogImJkYjZlYjdhMGFjNTlkMjdkMjMyODE3MDhmODk1Mzg2MzE5NTBkMzk2NTQ4MzdjZmQxY2ZhOGQwZTc4YjczZmEiLA0KICAgICJjYW5kaWRhdGUtd2luZG93cyI6ICI5ZWZiYjZlOGNjMDYyYWU3MWRhZTExYmRlZmZhMzFmZTlmZDJhZTQ0ODBiYjNhMDRmMTBhODM4YzQwMjFjNWMxIiwNCiAgICAiY2FuZGlkYXRlLWxpbnV4IjogIjBlZGY2ODFjNDZmMGRiNTE2OGEzYzE3NDg1ZWJjMmJjY2YyYzQ3NWJjZTJhZThlMDFlMzQ5MzZkZmIxMjBjNTAiDQogIH0sDQogICJiZW5jaG1hcmtfc2hhMjU2IjogIjU3NjM0NWY0NDg2ZGQyN2E1MTAzMjdkOTFlYzA0ZDVmOGNlOTcyMWY0MjA1OTY3OWJkNzhlNGI2NjFlMzE1ZWYiLA0KICAid29ya2VyX3NoYTI1NiI6ICIxMTU4OTAwNDJjYzE4YTY1NWQyOTgwZjVlY2U3NTRhNmM5OGMxMjUwNDgzNTJjOGQzZDY5YWUwOTA2MWJhYjA3IiwNCiAgImNvbnRyb2xsZXJfc2hhMjU2IjogImM3OTAwMjYyNDRkNzllM2Q1ZjRiZWY2MGU5ZDQzYjkyN2Y3M2NiOTBhYjRmMjljYzcwYWE5OGM5ZWE4YTcwMzQiLA0KICAic2NvcGUiOiAiQ1BVIFJFQURZL0RPTkU7IGJhc2VsaW5lLW9ubHkgcGlsb3QgZml4ZXMgTn42c2Vjb25kczsgQ1BVMDsgZnJlc2ggQUE1eDIgZ3JvdXBzLCBBQjd4MiBncm91cHM7IG9uZSBleGNsdWRlZCB3YXJtdXAgcGVyIGFybS9ncm91cDsgYWx0ZXJuYXRlIG9yZGVycy9yZXZlcnNlIGdyb3VwMjsgbm8gcmV0cmllcyIsDQogICJhYV9nYXRlIjogIm1heCBkZWx0YTw9MiUsIG1pbiBtZWRpYW4+PTVzZWMuIEZpcnN0IGZhaWxlZCBjYWxpYnJhdGlvbiBzdG9wcyBhbGwgbGF0ZXIgdGltaW5nOyB1bm1lYXN1cmVkIHNjb3BlIHJlY29yZGVkIiwNCiAgImxvY2FsX2dhdGUiOiAiQm90aCBPUyBjYWxpYnJhdGVkIGJlZm9yZSBhbnkgbG9jYWwgQUIuIEJvdGggZ3JvdXBzIG9uIGVhY2ggT1MgbXVzdCBzaG9ydGVuIGJ5ID4yZGVsdGE7IGZhaWx1cmUgc3RvcHMgc3RhbmRhcmQgbWF0cml4LCBub3QgYSBjbGFpbSBvZiB3b3JzZW5pbmciLA0KICAic3RhbmRhcmRfb3JkZXIiOiAid2luZG93cyBhcml0aG1ldGljLHdpbmRvd3MgbG9vcHMsbGludXggYXJpdGhtZXRpYyxsaW51eCBsb29wcyx0aGVuIHJlbWFpbmluZyBub3JtYWwvQ0FUQ0ggd2luZG93cyB0aGVuIExpbnV4IiwNCiAgInN0YW5kYXJkX2Vhcmx5X3N0b3AiOiAiRmlyc3QgdW5yZXNvbHZlZCBjYWxpYnJhdGlvbiwgZmlyc3QgdW5tZXQgcHJpbWFyeTEwJSsyZGVsdGEgdGFyZ2V0IG9yIGFueSBub24tcGFzc2luZyByZWdyZXNzaW9uIGdhdGUgc3RvcHMgcmVtYWluaW5nIG1hdHJpeC4gTm8gYWRvcHRpb24gd2l0aCB1bm1lYXN1cmVkIGl0ZW1zOyBsb2NhbC1vbmx5IGJlbmVmaXQgaXMgYSBzZXBhcmF0ZSBmdXR1cmUganVkZ21lbnQiLA0KICAic3RhbmRhcmRfY2FwcyI6ICJvdGhlciBub3JtYWwgbWF4KDMlLDJkZWx0YSk7IG5vcm1hbCBDQVRDSCs1JTsgVEhST1cgQ0FUQ0grMTAlLiBCb3RoIHNlcmllcyByZXF1aXJlZDsgbWl4ZWQgcmVzdWx0IHVucmVzb2x2ZWQiLA0KICAibm9fb3ZlcmxhcCI6ICJObyBidWlsZCwgdGVzdCwgcHJvZmlsaW5nIGR1cmluZyB0aW1pbmc7IHJlYWQtb25seSByZXZpZXcvZG9jcyBwZXJtaXR0ZWQiLA0KICAiY2hlY2tzdW1zIjogImxvY2FsL2FyaXRobWV0aWMvbG9vcHMgaW5kZXBlbmRlbnQgZm9ybXVsYTsgb3RoZXIgY2FzZXMgdXNlIHNlcGFyYXRlbHkgcmVjb3JkZWQgYmFzZWxpbmUtb25seSByZWZlcmVuY2UgYXQgZml4ZWQgTiIsDQogICJsaW1pdGF0aW9ucyI6IFsNCiAgICAiQUEgZGVsdGEgbm90IENJL2RyaWZ0IGJvdW5kOyBubyBwb3N0IEFCIEFBIiwNCiAgICAiR3JvdXBzIHNoYXJlIHNlc3Npb24gYW5kIGVudmlyb25tZW50IiwNCiAgICAiTG9naWNhbCBDUFUwIFdpbmRvd3MgdnMgV1NMIG5vdCBndWFyYW50ZWVkIHNhbWUgcGh5c2ljYWwgY29yZSIsDQogICAgIkhvc3QgbG9hZCBub3QgcmVjb3JkZWQ7IG5vIGNsYWltIGFsbCBpbnRlcmZlcmVuY2UgZXhjbHVkZWQiDQogIF0NCn0NCg=="
+    },
+    "worker.py": {
+      "sha256": "115890042cc18a655d2980f5ece754a6c98c125048352c8d3d69ae09061bab07",
+      "base64": "ZnJvbSBwYXRobGliIGltcG9ydCBQYXRoCmltcG9ydCBzdWJwcm9jZXNzLGpzb24saGFzaGxpYixpbXBvcnRsaWIudXRpbCxvcyxzeXMsbWF0aCxzdGF0aXN0aWNzLGRhdGV0aW1lLHRpbWUsY3R5cGVzCnI9UGF0aCgnRDovaG9tZS9zb3VyY2UvemlnL2ZvcnRoeicgaWYgb3MubmFtZT09J250JyBlbHNlICcvbW50L2QvaG9tZS9zb3VyY2UvemlnL2ZvcnRoeicpO289ci8nLndvcmsvY2VsbC1sb2NhbC1mZXRjaC0yMDI2MTExNi9wZXJmb3JtYW5jZSc7cGxhdGZvcm0sc3RhZ2UsY2FzZSxpbmRleD1zeXMuYXJndlsxXSxzeXMuYXJndlsyXSxzeXMuYXJndlszXSxpbnQoc3lzLmFyZ3ZbNF0pO3NoYT1sYW1iZGEgcDpoYXNobGliLnNoYTI1NihwLnJlYWRfYnl0ZXMoKSkuaGV4ZGlnZXN0KCk7cHJvdG9jb2w9anNvbi5sb2Fkcygoby8ncHJvdG9jb2wuanNvbicpLnJlYWRfdGV4dCgpKTthc3NlcnQgc2hhKHIvJ3NjcmlwdHMvYmVuY2htYXJrLXJ1bnRpbWUucHknKT09cHJvdG9jb2xbJ2JlbmNobWFya19zaGEyNTYnXTthc3NlcnQgc2hhKFBhdGgoX19maWxlX18pKT09cHJvdG9jb2xbJ3dvcmtlcl9zaGEyNTYnXQpzcGVjPWltcG9ydGxpYi51dGlsLnNwZWNfZnJvbV9maWxlX2xvY2F0aW9uKCdiJyxyLydzY3JpcHRzL2JlbmNobWFyay1ydW50aW1lLnB5Jyk7Yj1pbXBvcnRsaWIudXRpbC5tb2R1bGVfZnJvbV9zcGVjKHNwZWMpO3NwZWMubG9hZGVyLmV4ZWNfbW9kdWxlKGIpO2FmZmluaXR5PWIuY3B1X2FmZmluaXR5KDApCnBhdGhzPXtrOnIvJy53b3JrL2NlbGwtbG9jYWwtZmV0Y2gtMjAyNjExMTYnL2Yne2t9LXtwbGF0Zm9ybX0nLydiaW4nLygnc2lnbWEuZXhlJyBpZiBwbGF0Zm9ybT09J3dpbmRvd3MnIGVsc2UgJ3NpZ21hJykgZm9yIGsgaW4gWydiYXNlbGluZScsJ2NhbmRpZGF0ZSddfQpmb3IgayxwYXRoIGluIHBhdGhzLml0ZW1zKCk6YXNzZXJ0IHNoYShwYXRoKT09cHJvdG9jb2xbJ2JpbmFyeV9oYXNoZXMnXVtmJ3trfS17cGxhdGZvcm19J10KcXVlcmllcz1bXQppZiBvcy5uYW1lPT0nbnQnOgogZnJvbSBjdHlwZXMgaW1wb3J0IHdpbnR5cGVzCiBjbGFzcyBDbG9jayhiLldpbmRvd3NQcm9jZXNzQ2xvY2spOgogIGRlZiBfX2luaXRfXyhzZWxmLHBpZCk6c3VwZXIoKS5fX2luaXRfXyhwaWQpO3NlbGYucm93cz1bXTtxdWVyaWVzLmFwcGVuZCh7J3BpZCc6cGlkLCdxdWVyaWVzJzpzZWxmLnJvd3N9KQogIGRlZiByZWFkX25zKHNlbGYpOgogICB0cz1bd2ludHlwZXMuRklMRVRJTUUoKSBmb3IgXyBpbiByYW5nZSg0KV0KICAgaWYgbm90IHNlbGYuYXBpLkdldFByb2Nlc3NUaW1lcyhzZWxmLmhhbmRsZSwqKGN0eXBlcy5ieXJlZih0KSBmb3IgdCBpbiB0cykpOnJhaXNlIGN0eXBlcy5XaW5FcnJvcihjdHlwZXMuZ2V0X2xhc3RfZXJyb3IoKSkKICAga2VybmVsPSgodHNbMl0uZHdIaWdoRGF0ZVRpbWU8PDMyKXx0c1syXS5kd0xvd0RhdGVUaW1lKSoxMDA7dXNlcj0oKHRzWzNdLmR3SGlnaERhdGVUaW1lPDwzMil8dHNbM10uZHdMb3dEYXRlVGltZSkqMTAwCiAgIHNlbGYucm93cy5hcHBlbmQoeyd1dGMnOmRhdGV0aW1lLmRhdGV0aW1lLm5vdyhkYXRldGltZS50aW1lem9uZS51dGMpLmlzb2Zvcm1hdCgpLCdwZXJmX2NvdW50ZXJfbnMnOnRpbWUucGVyZl9jb3VudGVyX25zKCksJ2tlcm5lbF9ucyc6a2VybmVsLCd1c2VyX25zJzp1c2VyfSk7cmV0dXJuIGtlcm5lbCt1c2VyCiBiLldpbmRvd3NQcm9jZXNzQ2xvY2s9Q2xvY2sKZGVmIGRlZmluaXRpb24oKTpyZXR1cm4gcHJvdG9jb2xbJ2Nhc2VzJ11bY2FzZV1bJ2RlZmluaXRpb24nXQpkZWYgZXhwZWN0ZWQobik6CiBpZiBjYXNlPT0nbG9jYWwnOnJldHVybiA3Km4KIGlmIGNhc2U9PSdsb29wcyc6cmV0dXJuIG4vLzgqMjgrKG4lOCkqKG4lOC0xKS8vMgogaWYgY2FzZT09J2FyaXRobWV0aWMnOgogIGEsYyx2YWx1ZT0zLDcsMQogIHdoaWxlIG46CiAgIGlmIG4mMTp2YWx1ZT0oYSp2YWx1ZStjKSY2NTUzNQogICBjPShhKmMrYykmNjU1MzU7YT0oYSphKSY2NTUzNTtuPj49MQogIHJldHVybiB2YWx1ZQogcmV0dXJuIE5vbmUKZGVmIHNhbXBsZShwYXRoLG4sY2hlY2s9Tm9uZSk6CiBzb3VyY2U9Zid7bn0gQ09OU1RBTlQgQkVOQ0gtSVRFUkFUSU9OUyAnK2RlZmluaXRpb24oKSsnIC4iIEJFTkNILVJFQURZIiBDUiBLRVkgRFJPUCBCRU5DSC1SVU4gLiIgQkVOQ0gtRE9ORSAiIC4gQ1IgS0VZIERST1AgQllFJztzdGFydD1kYXRldGltZS5kYXRldGltZS5ub3coZGF0ZXRpbWUudGltZXpvbmUudXRjKS5pc29mb3JtYXQoKTtjcHUsY2hlY2tzdW0sd2FsbCx0b3RhbD1iLnNhbXBsZShzdHIocGF0aCksRmFsc2Usc291cmNlKTt3YW50ZWQ9ZXhwZWN0ZWQobikgaWYgY2hlY2sgaXMgTm9uZSBlbHNlIGNoZWNrCiBpZiB3YW50ZWQgaXMgbm90IE5vbmU6YXNzZXJ0IGNoZWNrc3VtPT13YW50ZWQsKGNhc2UsbixjaGVja3N1bSx3YW50ZWQpCiByZXR1cm4geyd1dGNfc3RhcnQnOnN0YXJ0LCdjcHVfdXMnOmNwdSwnd2FsbF91cyc6d2FsbCwnbGlmZXRpbWVfY3B1X3VzJzp0b3RhbCwnY2hlY2tzdW0nOmNoZWNrc3VtfQpkZWYgc2F2ZShuYW1lLGRhdGEpOihvL25hbWUpLndyaXRlX3RleHQoanNvbi5kdW1wcyhkYXRhLGluZGVudD0yKSsnXG4nKQpzdGVtPWYne3BsYXRmb3JtfS17Y2FzZX0nO21ldGE9eydwbGF0Zm9ybSc6cGxhdGZvcm0sJ3N0YWdlJzpzdGFnZSwnY2FzZSc6Y2FzZSwnc2VyaWVzJzppbmRleCwnYWZmaW5pdHknOmFmZmluaXR5LCdzY3JpcHRfc2hhMjU2JzpzaGEoUGF0aChfX2ZpbGVfXykpLCdwcm90b2NvbF9zaGEyNTYnOnNoYShvLydwcm90b2NvbC5qc29uJyl9CmlmIHN0YWdlPT0ncGlsb3QnOgogaW5pdGlhbD1wcm90b2NvbFsnY2FzZXMnXVtjYXNlXVsncGlsb3RfaXRlcmF0aW9ucyddW3BsYXRmb3JtXTtwaWxvdD1zYW1wbGUocGF0aHNbJ2Jhc2VsaW5lJ10saW5pdGlhbCk7bj1tYXRoLmNlaWwoaW5pdGlhbCo2MDAwMDAwL3BpbG90WydjcHVfdXMnXSk7YXNzZXJ0IDA8bjwyKio2Mwogd2FudGVkPWV4cGVjdGVkKG4pO3ZhbGlkYXRpb249Tm9uZQogaWYgd2FudGVkIGlzIE5vbmU6dmFsaWRhdGlvbj1zYW1wbGUocGF0aHNbJ2Jhc2VsaW5lJ10sbik7d2FudGVkPXZhbGlkYXRpb25bJ2NoZWNrc3VtJ10KIHNhdmUoc3RlbSsnLWNvbmZpZy5qc29uJyx7J2l0ZXJhdGlvbnMnOm4sJ2V4cGVjdGVkJzp3YW50ZWQsJ2V4cGVjdGVkX29yaWdpbic6J2luZGVwZW5kZW50IGZvcm11bGEnIGlmIHZhbGlkYXRpb24gaXMgTm9uZSBlbHNlICdiYXNlbGluZSByZWZlcmVuY2UsIG5vdCBpbmRlcGVuZGVudCBzZW1hbnRpYyBvcmFjbGUnLCd2YWxpZGF0aW9uJzp2YWxpZGF0aW9uLCdkZWZpbml0aW9uJzpkZWZpbml0aW9uKCksJ3BpbG90JzpwaWxvdCwnbWV0YWRhdGEnOm1ldGEsJ2NwdV9xdWVyaWVzJzpxdWVyaWVzfSk7cHJpbnQoc3RlbSwncGlsb3QnLG4sZmx1c2g9VHJ1ZSk7cmFpc2UgU3lzdGVtRXhpdCgwKQpjb25maWc9anNvbi5sb2Fkcygoby8oc3RlbSsnLWNvbmZpZy5qc29uJykpLnJlYWRfdGV4dCgpKTtuPWNvbmZpZ1snaXRlcmF0aW9ucyddO2VuZ2luZXM9eydBMSc6cGF0aHNbJ2Jhc2VsaW5lJ10sJ0EyJzpwYXRoc1snYmFzZWxpbmUnXX0gaWYgc3RhZ2U9PSdhYScgZWxzZSBwYXRocztyb3VuZHM9NSBpZiBzdGFnZT09J2FhJyBlbHNlIDc7dmFsdWVzPXtrOltdIGZvciBrIGluIGVuZ2luZXN9O3dhcm09e307b3JkZXJzPVtdCmZvciBpIGluIHJhbmdlKHJvdW5kcysxKToKIG9yZGVyPWxpc3QoZW5naW5lcyk7b3JkZXI9b3JkZXIgaWYgKGkraW5kZXgpJTIgZWxzZSBvcmRlcls6Oi0xXTtvcmRlcnMuYXBwZW5kKG9yZGVyKQogZm9yIGtleSBpbiBvcmRlcjoKICByb3c9c2FtcGxlKGVuZ2luZXNba2V5XSxuLGNvbmZpZ1snZXhwZWN0ZWQnXSkKICBpZiBpOnZhbHVlc1trZXldLmFwcGVuZChyb3cpCiAgZWxzZTp3YXJtW2tleV09cm93CiAgc2F2ZShmJ3tzdGVtfS17c3RhZ2V9LXtpbmRleH0tcGFydGlhbC5qc29uJyx7J3NhbXBsZXMnOnZhbHVlcywnd2FybXVwcyc6d2FybSwnb3JkZXJzJzpvcmRlcnMsJ21ldGFkYXRhJzptZXRhLCdjcHVfcXVlcmllcyc6cXVlcmllc30pCm1lZGlhbnM9e2s6c3RhdGlzdGljcy5tZWRpYW4oeFsnY3B1X3VzJ10gZm9yIHggaW4gcm93cykgZm9yIGsscm93cyBpbiB2YWx1ZXMuaXRlbXMoKX07YSxjPWxpc3QobWVkaWFucy52YWx1ZXMoKSk7ZGF0YT17J3NhbXBsZXMnOnZhbHVlcywnd2FybXVwc19leGNsdWRlZCc6d2FybSwnb3JkZXJzJzpvcmRlcnMsJ21lZGlhbnNfdXMnOm1lZGlhbnMsJ2RlbHRhX3BlcmNlbnQnOjEwMCphYnMoYy1hKS9taW4oYSxjKSwnY2hhbmdlX3BlcmNlbnQnOjEwMCooYy9hLTEpLCdjb25maWcnOmNvbmZpZywnbWV0YWRhdGEnOm1ldGEsJ2NwdV9xdWVyaWVzJzpxdWVyaWVzfTtzYXZlKGYne3N0ZW19LXtzdGFnZX0te2luZGV4fS5qc29uJyxkYXRhKTtwcmludChzdGVtLHN0YWdlLGluZGV4LGRhdGFbJ2NoYW5nZV9wZXJjZW50J10sZmx1c2g9VHJ1ZSkK"
+    },
+    "run.py": {
+      "sha256": "c790026244d79e3d5f4bef60e9d43b927f73cb90ab4f29cc70aa98c9ea8a7034",
+      "base64": "ZnJvbSBwYXRobGliIGltcG9ydCBQYXRoCmltcG9ydCBqc29uLHN1YnByb2Nlc3Msc3lzLGhhc2hsaWIsZGF0ZXRpbWUKcj1QYXRoLmN3ZCgpO289ci8nLndvcmsvY2VsbC1sb2NhbC1mZXRjaC0yMDI2MTExNi9wZXJmb3JtYW5jZSc7c2hhPWxhbWJkYSBwOmhhc2hsaWIuc2hhMjU2KHAucmVhZF9ieXRlcygpKS5oZXhkaWdlc3QoKTthc3NlcnQgbm90IChvLydzdGFydC5qc29uJykuZXhpc3RzKCksJ05vIHVucGxhbm5lZCByZXJ1bicKb2xkPWpzb24ubG9hZHMoKHIvJy53b3JrL3ZtLWFsbC12YWxpZGF0aW9uLTIwMjYxMTE1L3BsYW4uanNvbicpLnJlYWRfdGV4dCgpKTtjYXNlcz17fQpmb3IgaXRlbSBpbiBvbGRbJ2l0ZW1zJ106CiBuYW1lPWl0ZW1bJ2Nhc2UnXS5yZXBsYWNlKCdub3JtYWwvJywnJykucmVwbGFjZSgnY2F0Y2gvJywnY2F0Y2gtJyk7Y29uZmlnPWl0ZW1bJ2NvbmZpZyddO2VudHJ5PWNhc2VzLnNldGRlZmF1bHQobmFtZSx7J2RlZmluaXRpb24nOmNvbmZpZ1snZGVmaW5pdGlvbiddLCdwaWxvdF9pdGVyYXRpb25zJzp7fX0pO2Fzc2VydCBlbnRyeVsnZGVmaW5pdGlvbiddPT1jb25maWdbJ2RlZmluaXRpb24nXTtlbnRyeVsncGlsb3RfaXRlcmF0aW9ucyddW2l0ZW1bJ3BsYXRmb3JtJ11dPWNvbmZpZ1snaXRlcmF0aW9ucyddCmNvbmZpZz1qc29uLmxvYWRzKChyLycud29yay92bS1wcmlvcml0eS12YWxpZGF0aW9uLTIwMjYxMTE1L2xpbnV4LW5vYnQtY29uZmlnLmpzb24nKS5yZWFkX3RleHQoKSk7Y2FzZXNbJ2NhdGNoLW5vYnQtdGhyb3cnXT17J2RlZmluaXRpb24nOmNvbmZpZ1snZGVmaW5pdGlvbiddLCdwaWxvdF9pdGVyYXRpb25zJzp7J2xpbnV4Jzpjb25maWdbJ2l0ZXJhdGlvbnMnXX19CmZvciB4IGluIGNhc2VzLnZhbHVlcygpOgogZm9yIHBsYXRmb3JtIGluIFsnd2luZG93cycsJ2xpbnV4J106eFsncGlsb3RfaXRlcmF0aW9ucyddLnNldGRlZmF1bHQocGxhdGZvcm0sbmV4dChpdGVyKHhbJ3BpbG90X2l0ZXJhdGlvbnMnXS52YWx1ZXMoKSkpKQpjYXNlc1snbG9jYWwnXT17J2RlZmluaXRpb24nOic6IEJFTkNILVJVTiB7IHwgeCAtLSB9IDcgVE8geCAwIEJFTkNILUlURVJBVElPTlMgMCBETyB4ICsgTE9PUCA7JywncGlsb3RfaXRlcmF0aW9ucyc6eyd3aW5kb3dzJzoxMDAwMDAwMDAsJ2xpbnV4JzoxMDAwMDAwMDB9fQphc3NlcnQgbGVuKGNhc2VzKT09MTgKcm93cz1qc29uLmxvYWRzKChyLycud29yay9jZWxsLWxvY2FsLWZldGNoLTIwMjYxMTE2L2J1aWxkLXJlc3VsdHMuanNvbicpLnJlYWRfdGV4dCgpKTtoYXNoZXM9e3hbJ25hbWUnXTp4WydzaGEyNTYnXSBmb3IgeCBpbiByb3dzIGlmIG5vdCB4WyduYW1lJ10uZW5kc3dpdGgoJ3N5bWJvbHMnKX0KcHJvdG9jb2w9eydjYXNlcyc6Y2FzZXMsJ2JpbmFyeV9oYXNoZXMnOmhhc2hlcywnYmVuY2htYXJrX3NoYTI1Nic6c2hhKHIvJ3NjcmlwdHMvYmVuY2htYXJrLXJ1bnRpbWUucHknKSwnd29ya2VyX3NoYTI1Nic6c2hhKG8vJ3dvcmtlci5weScpLCdjb250cm9sbGVyX3NoYTI1Nic6c2hhKFBhdGgoX19maWxlX18pKSwnc2NvcGUnOidDUFUgUkVBRFkvRE9ORTsgYmFzZWxpbmUtb25seSBwaWxvdCBmaXhlcyBOfjZzZWNvbmRzOyBDUFUwOyBmcmVzaCBBQTV4MiBncm91cHMsIEFCN3gyIGdyb3Vwczsgb25lIGV4Y2x1ZGVkIHdhcm11cCBwZXIgYXJtL2dyb3VwOyBhbHRlcm5hdGUgb3JkZXJzL3JldmVyc2UgZ3JvdXAyOyBubyByZXRyaWVzJywnYWFfZ2F0ZSc6J21heCBkZWx0YTw9MiUsIG1pbiBtZWRpYW4+PTVzZWMuIEZpcnN0IGZhaWxlZCBjYWxpYnJhdGlvbiBzdG9wcyBhbGwgbGF0ZXIgdGltaW5nOyB1bm1lYXN1cmVkIHNjb3BlIHJlY29yZGVkJywnbG9jYWxfZ2F0ZSc6J0JvdGggT1MgY2FsaWJyYXRlZCBiZWZvcmUgYW55IGxvY2FsIEFCLiBCb3RoIGdyb3VwcyBvbiBlYWNoIE9TIG11c3Qgc2hvcnRlbiBieSA+MmRlbHRhOyBmYWlsdXJlIHN0b3BzIHN0YW5kYXJkIG1hdHJpeCwgbm90IGEgY2xhaW0gb2Ygd29yc2VuaW5nJywnc3RhbmRhcmRfb3JkZXInOid3aW5kb3dzIGFyaXRobWV0aWMsd2luZG93cyBsb29wcyxsaW51eCBhcml0aG1ldGljLGxpbnV4IGxvb3BzLHRoZW4gcmVtYWluaW5nIG5vcm1hbC9DQVRDSCB3aW5kb3dzIHRoZW4gTGludXgnLCdzdGFuZGFyZF9lYXJseV9zdG9wJzonRmlyc3QgdW5yZXNvbHZlZCBjYWxpYnJhdGlvbiwgZmlyc3QgdW5tZXQgcHJpbWFyeTEwJSsyZGVsdGEgdGFyZ2V0IG9yIGFueSBub24tcGFzc2luZyByZWdyZXNzaW9uIGdhdGUgc3RvcHMgcmVtYWluaW5nIG1hdHJpeC4gTm8gYWRvcHRpb24gd2l0aCB1bm1lYXN1cmVkIGl0ZW1zOyBsb2NhbC1vbmx5IGJlbmVmaXQgaXMgYSBzZXBhcmF0ZSBmdXR1cmUganVkZ21lbnQnLCdzdGFuZGFyZF9jYXBzJzonb3RoZXIgbm9ybWFsIG1heCgzJSwyZGVsdGEpOyBub3JtYWwgQ0FUQ0grNSU7IFRIUk9XIENBVENIKzEwJS4gQm90aCBzZXJpZXMgcmVxdWlyZWQ7IG1peGVkIHJlc3VsdCB1bnJlc29sdmVkJywnbm9fb3ZlcmxhcCc6J05vIGJ1aWxkLCB0ZXN0LCBwcm9maWxpbmcgZHVyaW5nIHRpbWluZzsgcmVhZC1vbmx5IHJldmlldy9kb2NzIHBlcm1pdHRlZCcsJ2NoZWNrc3Vtcyc6J2xvY2FsL2FyaXRobWV0aWMvbG9vcHMgaW5kZXBlbmRlbnQgZm9ybXVsYTsgb3RoZXIgY2FzZXMgdXNlIHNlcGFyYXRlbHkgcmVjb3JkZWQgYmFzZWxpbmUtb25seSByZWZlcmVuY2UgYXQgZml4ZWQgTicsJ2xpbWl0YXRpb25zJzpbJ0FBIGRlbHRhIG5vdCBDSS9kcmlmdCBib3VuZDsgbm8gcG9zdCBBQiBBQScsJ0dyb3VwcyBzaGFyZSBzZXNzaW9uIGFuZCBlbnZpcm9ubWVudCcsJ0xvZ2ljYWwgQ1BVMCBXaW5kb3dzIHZzIFdTTCBub3QgZ3VhcmFudGVlZCBzYW1lIHBoeXNpY2FsIGNvcmUnLCdIb3N0IGxvYWQgbm90IHJlY29yZGVkOyBubyBjbGFpbSBhbGwgaW50ZXJmZXJlbmNlIGV4Y2x1ZGVkJ119CihvLydwcm90b2NvbC5qc29uJykud3JpdGVfdGV4dChqc29uLmR1bXBzKHByb3RvY29sLGluZGVudD0yKSsnXG4nKTsoby8nc3RhcnQuanNvbicpLndyaXRlX3RleHQoanNvbi5kdW1wcyh7J3V0Yyc6ZGF0ZXRpbWUuZGF0ZXRpbWUubm93KGRhdGV0aW1lLnRpbWV6b25lLnV0YykuaXNvZm9ybWF0KCksJ3Byb3RvY29sX3NoYTI1Nic6c2hhKG8vJ3Byb3RvY29sLmpzb24nKSwnd29ya2VyX3NoYTI1Nic6c2hhKG8vJ3dvcmtlci5weScpLCdjb250cm9sbGVyX3NoYTI1Nic6c2hhKFBhdGgoX19maWxlX18pKX0saW5kZW50PTIpKydcbicpCnJlcG9ydD17J2NhbGlicmF0aW9ucyc6e30sJ2NvbXBhcmlzb25zJzp7fSwnbm90X2Fkb3B0ZWQnOlRydWV9CmRlZiBzYXZlKCk6KG8vJ3Jlc3VsdHMuanNvbicpLndyaXRlX3RleHQoanNvbi5kdW1wcyhyZXBvcnQsaW5kZW50PTIpKydcbicpCmRlZiBpbnZva2UocGxhdGZvcm0sc3RhZ2UsY2FzZSxpbmRleD0xKToKIHdvcmtlcj1vLyd3b3JrZXIucHknO2NtZD1bc3lzLmV4ZWN1dGFibGUsJy1YJywndXRmOCcsc3RyKHdvcmtlcikscGxhdGZvcm0sc3RhZ2UsY2FzZSxzdHIoaW5kZXgpXSBpZiBwbGF0Zm9ybT09J3dpbmRvd3MnIGVsc2UgWyd3c2wnLCctLWV4ZWMnLCdweXRob24zJywnL21udC9kL2hvbWUvc291cmNlL3ppZy9mb3J0aHovLndvcmsvY2VsbC1sb2NhbC1mZXRjaC0yMDI2MTExNi9wZXJmb3JtYW5jZS93b3JrZXIucHknLHBsYXRmb3JtLHN0YWdlLGNhc2Usc3RyKGluZGV4KV0KIHA9c3VicHJvY2Vzcy5ydW4oY21kLGN3ZD1yKTthc3NlcnQgcC5yZXR1cm5jb2RlPT0wLChwbGF0Zm9ybSxzdGFnZSxjYXNlLGluZGV4LHAucmV0dXJuY29kZSkKIGlmIHN0YWdlPT0ncGlsb3QnOnJldHVybgogcmV0dXJuIGpzb24ubG9hZHMoKG8vZid7cGxhdGZvcm19LXtjYXNlfS17c3RhZ2V9LXtpbmRleH0uanNvbicpLnJlYWRfdGV4dCgpKQpkZWYgc3RvcChyZWFzb24sKipleHRyYSk6CiByZXBvcnQudXBkYXRlKHN0YXR1cz1yZWFzb24sKipleHRyYSk7c2F2ZSgpOyhvLydjb21wbGV0ZS5qc29uJykud3JpdGVfdGV4dChqc29uLmR1bXBzKHsndXRjJzpkYXRldGltZS5kYXRldGltZS5ub3coZGF0ZXRpbWUudGltZXpvbmUudXRjKS5pc29mb3JtYXQoKSwnc3RhdHVzJzpyZWFzb24sJ25vdF9hZG9wdGVkJzpUcnVlfSxpbmRlbnQ9MikrJ1xuJyk7cHJpbnQoJ1NUT1AnLHJlYXNvbixleHRyYSxmbHVzaD1UcnVlKTtyYWlzZSBTeXN0ZW1FeGl0KDApCmRlZiBjYWxpYnJhdGUocGxhdGZvcm0sY2FzZSk6CiBpbnZva2UocGxhdGZvcm0sJ3BpbG90JyxjYXNlKTtncm91cHM9W2ludm9rZShwbGF0Zm9ybSwnYWEnLGNhc2UsaSkgZm9yIGkgaW4gWzEsMl1dO2RlbHRhPW1heCh4WydkZWx0YV9wZXJjZW50J10gZm9yIHggaW4gZ3JvdXBzKTttaW5pbXVtPW1pbih2IGZvciB4IGluIGdyb3VwcyBmb3IgdiBpbiB4WydtZWRpYW5zX3VzJ10udmFsdWVzKCkpO2VudHJ5PXsnZGVsdGFfcGVyY2VudCc6ZGVsdGEsJ21pbmltdW1fbWVkaWFuX3VzJzptaW5pbXVtLCdwYXNzZWQnOmRlbHRhPD0yIGFuZCBtaW5pbXVtPj01MDAwMDAwfTtyZXBvcnRbJ2NhbGlicmF0aW9ucyddW3BsYXRmb3JtKycvJytjYXNlXT1lbnRyeTtzYXZlKCk7cHJpbnQoJ0FBIGdhdGUnLHBsYXRmb3JtLGNhc2UsZW50cnksZmx1c2g9VHJ1ZSkKIGlmIG5vdCBlbnRyeVsncGFzc2VkJ106c3RvcCgnY2FsaWJyYXRpb25fdW5yZXNvbHZlZCcsZmFpbGVkX3BsYXRmb3JtPXBsYXRmb3JtLGZhaWxlZF9jYXNlPWNhc2UpCiByZXR1cm4gZW50cnkKZGVmIGNvbXBhcmUocGxhdGZvcm0sY2FzZSk6CiBncm91cHM9W2ludm9rZShwbGF0Zm9ybSwnY29tcGFyZScsY2FzZSxpKSBmb3IgaSBpbiBbMSwyXV07Y2hhbmdlcz1beFsnY2hhbmdlX3BlcmNlbnQnXSBmb3IgeCBpbiBncm91cHNdO2RlbHRhPXJlcG9ydFsnY2FsaWJyYXRpb25zJ11bcGxhdGZvcm0rJy8nK2Nhc2VdWydkZWx0YV9wZXJjZW50J107ZW50cnk9eydjaGFuZ2VzX3BlcmNlbnQnOmNoYW5nZXMsJ2RlbHRhX3BlcmNlbnQnOmRlbHRhfTtyZXBvcnRbJ2NvbXBhcmlzb25zJ11bcGxhdGZvcm0rJy8nK2Nhc2VdPWVudHJ5O3NhdmUoKTtyZXR1cm4gZW50cnkKZm9yIHBsYXRmb3JtIGluIFsnd2luZG93cycsJ2xpbnV4J106Y2FsaWJyYXRlKHBsYXRmb3JtLCdsb2NhbCcpCmZvciBwbGF0Zm9ybSBpbiBbJ3dpbmRvd3MnLCdsaW51eCddOmNvbXBhcmUocGxhdGZvcm0sJ2xvY2FsJykKaWYgbm90IGFsbChhbGwoLXY+Mip4WydkZWx0YV9wZXJjZW50J10gZm9yIHYgaW4geFsnY2hhbmdlc19wZXJjZW50J10pIGZvciB4IGluIHJlcG9ydFsnY29tcGFyaXNvbnMnXS52YWx1ZXMoKSk6c3RvcCgnbG9jYWxfc2NyZWVuX3VubWV0JykKcHJpbWFyeT1bKCd3aW5kb3dzJywnYXJpdGhtZXRpYycpLCgnd2luZG93cycsJ2xvb3BzJyksKCdsaW51eCcsJ2FyaXRobWV0aWMnKSwoJ2xpbnV4JywnbG9vcHMnKV07cmVtYWluaW5nPVsocGxhdGZvcm0sY2FzZSkgZm9yIHBsYXRmb3JtIGluIFsnd2luZG93cycsJ2xpbnV4J10gZm9yIGNhc2UgaW4gY2FzZXMgaWYgY2FzZSE9J2xvY2FsJyBhbmQgKHBsYXRmb3JtLGNhc2UpIG5vdCBpbiBwcmltYXJ5XQphc3NlcnQgbGVuKHByaW1hcnkrcmVtYWluaW5nKT09MzQKZm9yIHBsYXRmb3JtLGNhc2UgaW4gcHJpbWFyeStyZW1haW5pbmc6CiBjYWxpYnJhdGUocGxhdGZvcm0sY2FzZSk7eD1jb21wYXJlKHBsYXRmb3JtLGNhc2UpO2NoYW5nZXM9eFsnY2hhbmdlc19wZXJjZW50J107ZGVsdGE9eFsnZGVsdGFfcGVyY2VudCddCiBpZiBjYXNlIGluIFsnYXJpdGhtZXRpYycsJ2xvb3BzJ106CiAgcGFzc2VkPWFsbCh2PD0tMTAgYW5kIC12PjIqZGVsdGEgZm9yIHYgaW4gY2hhbmdlcykKICBpZiBub3QgcGFzc2VkOnN0b3AoJ3N0YW5kYXJkX3ByaW1hcnlfdGFyZ2V0X3VubWV0JyxmYWlsZWRfcGxhdGZvcm09cGxhdGZvcm0sZmFpbGVkX2Nhc2U9Y2FzZSkKIGVsc2U6CiAgY2FwPSgxMCBpZiAndGhyb3cnIGluIGNhc2UgZWxzZSA1KSBpZiBjYXNlLnN0YXJ0c3dpdGgoJ2NhdGNoLScpIGVsc2UgbWF4KDMsMipkZWx0YSkKICBpZiBub3QgYWxsKHY8PWNhcCBmb3IgdiBpbiBjaGFuZ2VzKTpzdG9wKCdzdGFuZGFyZF9yZWdyZXNzaW9uX29yX21peGVkX3Jlc3VsdCcsZmFpbGVkX3BsYXRmb3JtPXBsYXRmb3JtLGZhaWxlZF9jYXNlPWNhc2UsY2FwX3BlcmNlbnQ9Y2FwKQpyZXBvcnRbJ3N0YXR1cyddPSdhbGxfbnVtZXJpY19jb25kaXRpb25zX3Bhc3NlZF9wZW5kaW5nX3Jldmlldyc7c2F2ZSgpOyhvLydjb21wbGV0ZS5qc29uJykud3JpdGVfdGV4dChqc29uLmR1bXBzKHsndXRjJzpkYXRldGltZS5kYXRldGltZS5ub3coZGF0ZXRpbWUudGltZXpvbmUudXRjKS5pc29mb3JtYXQoKSwnc3RhdHVzJzpyZXBvcnRbJ3N0YXR1cyddLCdub3RfYWRvcHRlZCc6VHJ1ZX0saW5kZW50PTIpKydcbicpCg=="
+    }
+  },
+  "audit_script": "from pathlib import Path\nimport json,hashlib,statistics,base64\nr=Path.cwd();o=r/'.work/cell-local-fetch-20261116/performance';sha=lambda p:hashlib.sha256(p.read_bytes()).hexdigest();start=json.loads((o/'start.json').read_text());protocol=json.loads((o/'protocol.json').read_text());result=json.loads((o/'results.json').read_text())\nassert result['status']=='calibration_unresolved' and not result['comparisons']\nfor name,key in [('run.py','controller_sha256'),('worker.py','worker_sha256'),('protocol.json','protocol_sha256')]:assert sha(o/name)==start[key]\naudit=[];counted=warm=0\nfor i in [1,2]:\n x=json.loads((o/f'windows-local-aa-{i}.json').read_text());indices={k:0 for k in x['samples']};q=0\n for turn,order in enumerate(x['orders']):\n  for key in order:\n   queries=x['cpu_queries'][q]['queries'];q+=1;first,last=queries[:2];cpu=sum(last[k]-first[k] for k in ['kernel_ns','user_ns'])/1000\n   row=x['warmups_excluded'][key] if turn==0 else x['samples'][key][indices[key]]\n   assert abs(cpu-row['cpu_us'])<1e-7\n   if turn:indices[key]+=1;counted+=1\n   else:warm+=1\n med={k:statistics.median(z['cpu_us'] for z in rows) for k,rows in x['samples'].items()};assert med==x['medians_us'];a,b=med.values();delta=100*abs(a-b)/min(a,b);assert abs(delta-x['delta_percent'])<1e-10\n audit.append({'series':i,'medians_us':med,'AA_delta_percent':delta,'audited_samples_including_warmup':q})\nassert counted==20 and warm==4\ndata={p.name:json.loads(p.read_text()) for p in o.glob('*.json')};raw={name:{'sha256':sha(o/name),'base64':base64.b64encode((o/name).read_bytes()).decode()} for name in ['protocol.json','worker.py','run.py']}\nreport={'decision':'Adoption held; Windows AA delta5.167958656% exceeds2%; candidate CPU not measured, no AB or Linux calibration/standard34 timing','scope':'Fresh Windows baseline-only local pilot +20 counted +4 warmup runs; no retries','audit':audit,'data':data,'frozen_inputs':raw,'audit_script':Path(__file__).read_text(),'limitations':protocol['limitations']}\n(r/'docs/measurements/2026-11-16-cell-local-fetch-performance.json').write_text(json.dumps(report,indent=2)+'\\n');print(audit)\n",
+  "limitations": [
+    "AA delta not CI/drift bound; no post AB AA",
+    "Groups share session and environment",
+    "Logical CPU0 Windows vs WSL not guaranteed same physical core",
+    "Host load not recorded; no claim all interference excluded"
+  ]
+}
