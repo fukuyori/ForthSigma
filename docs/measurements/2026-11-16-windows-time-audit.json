@@ -1,0 +1,4717 @@
+{
+  "commands.json": [
+    {
+      "command": [
+        "C:\\Users\\n_fuk\\AppData\\Local\\Python\\pythoncore-3.14-64\\python.exe",
+        "D:\\home\\source\\zig\\forthz\\.work\\vm-time-audit-20261116\\worker.py",
+        "aa",
+        "rot",
+        "--series",
+        "1"
+      ],
+      "exit": 0
+    },
+    {
+      "command": [
+        "C:\\Users\\n_fuk\\AppData\\Local\\Python\\pythoncore-3.14-64\\python.exe",
+        "D:\\home\\source\\zig\\forthz\\.work\\vm-time-audit-20261116\\worker.py",
+        "aa",
+        "rot",
+        "--series",
+        "2"
+      ],
+      "exit": 0
+    }
+  ],
+  "complete.json": {
+    "utc": "2026-11-16T00:07:32.578117+00:00",
+    "series": 2,
+    "primary_metric_or_OS_policy_changed": false
+  },
+  "protocol.json": {
+    "purpose": "Timing variability diagnosis on adopted baseline only, no candidate timing or adoption.",
+    "source": "same ROT kernel and fixed1280000000 iterations from previous baseline-only6sec pilot; no choosing a new N after observing candidate.",
+    "runs": "two alternating independent A/A series; warmup1 excluded,5 samples each A1/A2; preserve all samples.",
+    "metrics": "Separate process kernel/user time and raw QueryProcessCycleTime snapshots at existing clock-read boundaries. PID+UTC+perf_counter for correlation; no semantic claims about hardware frequency from cycle ratios. API errors recorded without escalation.",
+    "monitoring": "Concurrent Processor Information logical0 counter logging1Hz, maximum150 samples. Monitoring overhead explicit; this diagnostic run is not an adoption benchmark.",
+    "policy": "No OS/power/affinity changes other than pinning own runner/children CPU0 as before. No new thresholds, no retroactive sample exclusions or changed primary metric."
+  },
+  "rot-aa-1.json": {
+    "stage": "aa",
+    "case": {
+      "name": "rot",
+      "iterations": 1280000000,
+      "definition": ": BENCH-RUN 1 2 3 BENCH-ITERATIONS 0 DO ROT LOOP >R SWAP 100 * SWAP 10 * + R> + ;",
+      "checksum_expected": 312,
+      "baseline_pilot_cpu_us": 468750.0
+    },
+    "series": 1,
+    "rounds": 5,
+    "engines": {
+      "A1": {
+        "samples_us": [
+          5593750.0,
+          5531250.0,
+          5656250.0,
+          5578125.0,
+          5468750.0
+        ],
+        "median_us": 5578125.0,
+        "min_us": 5468750.0,
+        "max_us": 5656250.0,
+        "wall_samples_us": [
+          5856921.9,
+          5849744.4,
+          5830415.8,
+          5848001.7,
+          5839024.0
+        ],
+        "total_process_cpu_samples_us": [
+          5593750.0,
+          5531250.0,
+          5671875.0,
+          5578125.0,
+          5484375.0
+        ],
+        "sha256": "379d6c6c069b9c3072da22fa6cea8b7deff77c5ed78ef9bbd070f92a724337bf"
+      },
+      "A2": {
+        "samples_us": [
+          5453125.0,
+          5421875.0,
+          5453125.0,
+          5656250.0,
+          5531250.0
+        ],
+        "median_us": 5453125.0,
+        "min_us": 5421875.0,
+        "max_us": 5656250.0,
+        "wall_samples_us": [
+          5844949.4,
+          5844704.1,
+          5835928.8,
+          5834672.6,
+          5848087.6
+        ],
+        "total_process_cpu_samples_us": [
+          5453125.0,
+          5437500.0,
+          5453125.0,
+          5656250.0,
+          5546875.0
+        ],
+        "sha256": "379d6c6c069b9c3072da22fa6cea8b7deff77c5ed78ef9bbd070f92a724337bf"
+      }
+    },
+    "orders": [
+      [
+        "A1",
+        "A2"
+      ],
+      [
+        "A2",
+        "A1"
+      ],
+      [
+        "A1",
+        "A2"
+      ],
+      [
+        "A2",
+        "A1"
+      ],
+      [
+        "A1",
+        "A2"
+      ],
+      [
+        "A2",
+        "A1"
+      ]
+    ],
+    "warmups_excluded": {
+      "A1": {
+        "cpu_us": 5656250.0,
+        "wall_us": 5867922.7,
+        "total_process_cpu_us": 5656250.0,
+        "checksum": 312,
+        "child_pid": 3880
+      },
+      "A2": {
+        "cpu_us": 5640625.0,
+        "wall_us": 5843756.6,
+        "total_process_cpu_us": 5656250.0,
+        "checksum": 312,
+        "child_pid": 19660
+      }
+    },
+    "child_pids_in_actual_execution_order": [
+      3880,
+      19660,
+      26692,
+      11960,
+      10564,
+      38260,
+      22724,
+      28044,
+      2536,
+      36408,
+      27900,
+      41832
+    ],
+    "cpu_affinity": [
+      0
+    ],
+    "process_time_queries": [
+      {
+        "pid": 3880,
+        "queries": [
+          {
+            "utc": "2026-11-16T00:05:12.061633+00:00",
+            "perf_counter_ns": 1076539762621200,
+            "kernel_ns": 0,
+            "user_ns": 0,
+            "cycles": 14204405,
+            "cycle_query_error": 0
+          },
+          {
+            "utc": "2026-11-16T00:05:17.929551+00:00",
+            "perf_counter_ns": 1076545630541800,
+            "kernel_ns": 343750000,
+            "user_ns": 5312500000,
+            "cycles": 21220131177,
+            "cycle_query_error": 0
+          },
+          {
+            "utc": "2026-11-16T00:05:17.931638+00:00",
+            "perf_counter_ns": 1076545632623700,
+            "kernel_ns": 343750000,
+            "user_ns": 5312500000,
+            "cycles": 21227103469,
+            "cycle_query_error": 0
+          }
+        ]
+      },
+      {
+        "pid": 19660,
+        "queries": [
+          {
+            "utc": "2026-11-16T00:05:17.938155+00:00",
+            "perf_counter_ns": 1076545639139700,
+            "kernel_ns": 0,
+            "user_ns": 0,
+            "cycles": 13289156,
+            "cycle_query_error": 0
+          },
+          {
+            "utc": "2026-11-16T00:05:23.781902+00:00",
+            "perf_counter_ns": 1076551482893300,
+            "kernel_ns": 265625000,
+            "user_ns": 5375000000,
+            "cycles": 21209838124,
+            "cycle_query_error": 0
+          },
+          {
+            "utc": "2026-11-16T00:05:23.784027+00:00",
+            "perf_counter_ns": 1076551485013100,
+            "kernel_ns": 281250000,
+            "user_ns": 5375000000,
+            "cycles": 21216742900,
+            "cycle_query_error": 0
+          }
+        ]
+      },
+      {
+        "pid": 26692,
+        "queries": [
+          {
+            "utc": "2026-11-16T00:05:23.789592+00:00",
+            "perf_counter_ns": 1076551490578700,
+            "kernel_ns": 0,
+            "user_ns": 0,
+            "cycles": 12967507,
+            "cycle_query_error": 0
+          },
+          {
+            "utc": "2026-11-16T00:05:29.634536+00:00",
+            "perf_counter_ns": 1076557335526600,
+            "kernel_ns": 218750000,
+            "user_ns": 5234375000,
+            "cycles": 21184677594,
+            "cycle_query_error": 0
+          },
+          {
+            "utc": "2026-11-16T00:05:29.636785+00:00",
+            "perf_counter_ns": 1076557337770500,
+            "kernel_ns": 218750000,
+            "user_ns": 5234375000,
+            "cycles": 21191398031,
+            "cycle_query_error": 0
+          }
+        ]
+      },
+      {
+        "pid": 11960,
+        "queries": [
+          {
+            "utc": "2026-11-16T00:05:29.642409+00:00",
+            "perf_counter_ns": 1076557343394000,
+            "kernel_ns": 0,
+            "user_ns": 0,
+            "cycles": 13212916,
+            "cycle_query_error": 0
+          },
+          {
+            "utc": "2026-11-16T00:05:35.499323+00:00",
+            "perf_counter_ns": 1076563200313600,
+            "kernel_ns": 328125000,
+            "user_ns": 5265625000,
+            "cycles": 21211815856,
+            "cycle_query_error": 0
+          },
+          {
+            "utc": "2026-11-16T00:05:35.501260+00:00",
+            "perf_counter_ns": 1076563202245200,
+            "kernel_ns": 328125000,
+            "user_ns": 5265625000,
+            "cycles": 21218458157,
+            "cycle_query_error": 0
+          }
+        ]
+      },
+      {
+        "pid": 10564,
+        "queries": [
+          {
+            "utc": "2026-11-16T00:05:35.507046+00:00",
+            "perf_counter_ns": 1076563208032100,
+            "kernel_ns": 0,
+            "user_ns": 0,
+            "cycles": 13626730,
+            "cycle_query_error": 0
+          },
+          {
+            "utc": "2026-11-16T00:05:41.356784+00:00",
+            "perf_counter_ns": 1076569057774100,
+            "kernel_ns": 281250000,
+            "user_ns": 5250000000,
+            "cycles": 21183301883,
+            "cycle_query_error": 0
+          },
+          {
+            "utc": "2026-11-16T00:05:41.358687+00:00",
+            "perf_counter_ns": 1076569059673000,
+            "kernel_ns": 281250000,
+            "user_ns": 5250000000,
+            "cycles": 21189778052,
+            "cycle_query_error": 0
+          }
+        ]
+      },
+      {
+        "pid": 38260,
+        "queries": [
+          {
+            "utc": "2026-11-16T00:05:41.364629+00:00",
+            "perf_counter_ns": 1076569065614800,
+            "kernel_ns": 0,
+            "user_ns": 15625000,
+            "cycles": 13536080,
+            "cycle_query_error": 0
+          },
+          {
+            "utc": "2026-11-16T00:05:47.209327+00:00",
+            "perf_counter_ns": 1076574910316800,
+            "kernel_ns": 234375000,
+            "user_ns": 5203125000,
+            "cycles": 21178821982,
+            "cycle_query_error": 0
+          },
+          {
+            "utc": "2026-11-16T00:05:47.211397+00:00",
+            "perf_counter_ns": 1076574912383100,
+            "kernel_ns": 234375000,
+            "user_ns": 5203125000,
+            "cycles": 21185647486,
+            "cycle_query_error": 0
+          }
+        ]
+      },
+      {
+        "pid": 22724,
+        "queries": [
+          {
+            "utc": "2026-11-16T00:05:47.217929+00:00",
+            "perf_counter_ns": 1076574918914700,
+            "kernel_ns": 0,
+            "user_ns": 0,
+            "cycles": 13569461,
+            "cycle_query_error": 0
+          },
+          {
+            "utc": "2026-11-16T00:05:53.053851+00:00",
+            "perf_counter_ns": 1076580754841100,
+            "kernel_ns": 281250000,
+            "user_ns": 5171875000,
+            "cycles": 21179810435,
+            "cycle_query_error": 0
+          },
+          {
+            "utc": "2026-11-16T00:05:53.056226+00:00",
+            "perf_counter_ns": 1076580757211400,
+            "kernel_ns": 281250000,
+            "user_ns": 5171875000,
+            "cycles": 21186672347,
+            "cycle_query_error": 0
+          }
+        ]
+      },
+      {
+        "pid": 28044,
+        "queries": [
+          {
+            "utc": "2026-11-16T00:05:53.061986+00:00",
+            "perf_counter_ns": 1076580762971000,
+            "kernel_ns": 0,
+            "user_ns": 0,
+            "cycles": 13320256,
+            "cycle_query_error": 0
+          },
+          {
+            "utc": "2026-11-16T00:05:58.892394+00:00",
+            "perf_counter_ns": 1076586593384500,
+            "kernel_ns": 218750000,
+            "user_ns": 5437500000,
+            "cycles": 21164391540,
+            "cycle_query_error": 0
+          },
+          {
+            "utc": "2026-11-16T00:05:58.894384+00:00",
+            "perf_counter_ns": 1076586595370200,
+            "kernel_ns": 218750000,
+            "user_ns": 5453125000,
+            "cycles": 21171217801,
+            "cycle_query_error": 0
+          }
+        ]
+      },
+      {
+        "pid": 2536,
+        "queries": [
+          {
+            "utc": "2026-11-16T00:05:58.900796+00:00",
+            "perf_counter_ns": 1076586601781600,
+            "kernel_ns": 0,
+            "user_ns": 0,
+            "cycles": 13320256,
+            "cycle_query_error": 0
+          },
+          {
+            "utc": "2026-11-16T00:06:04.748791+00:00",
+            "perf_counter_ns": 1076592449780900,
+            "kernel_ns": 312500000,
+            "user_ns": 5265625000,
+            "cycles": 21177164484,
+            "cycle_query_error": 0
+          },
+          {
+            "utc": "2026-11-16T00:06:04.750998+00:00",
+            "perf_counter_ns": 1076592451983400,
+            "kernel_ns": 312500000,
+            "user_ns": 5265625000,
+            "cycles": 21184018055,
+            "cycle_query_error": 0
+          }
+        ]
+      },
+      {
+        "pid": 36408,
+        "queries": [
+          {
+            "utc": "2026-11-16T00:06:04.756977+00:00",
+            "perf_counter_ns": 1076592457961800,
+            "kernel_ns": 0,
+            "user_ns": 0,
+            "cycles": 13301674,
+            "cycle_query_error": 0
+          },
+          {
+            "utc": "2026-11-16T00:06:10.591641+00:00",
+            "perf_counter_ns": 1076598292631600,
+            "kernel_ns": 343750000,
+            "user_ns": 5312500000,
+            "cycles": 21176633461,
+            "cycle_query_error": 0
+          },
+          {
+            "utc": "2026-11-16T00:06:10.593568+00:00",
+            "perf_counter_ns": 1076598294553700,
+            "kernel_ns": 343750000,
+            "user_ns": 5312500000,
+            "cycles": 21183198007,
+            "cycle_query_error": 0
+          }
+        ]
+      },
+      {
+        "pid": 27900,
+        "queries": [
+          {
+            "utc": "2026-11-16T00:06:10.600301+00:00",
+            "perf_counter_ns": 1076598301286300,
+            "kernel_ns": 15625000,
+            "user_ns": 0,
+            "cycles": 13245537,
+            "cycle_query_error": 0
+          },
+          {
+            "utc": "2026-11-16T00:06:16.448379+00:00",
+            "perf_counter_ns": 1076604149371700,
+            "kernel_ns": 250000000,
+            "user_ns": 5296875000,
+            "cycles": 21159514929,
+            "cycle_query_error": 0
+          },
+          {
+            "utc": "2026-11-16T00:06:16.450622+00:00",
+            "perf_counter_ns": 1076604151609500,
+            "kernel_ns": 250000000,
+            "user_ns": 5296875000,
+            "cycles": 21166456878,
+            "cycle_query_error": 0
+          }
+        ]
+      },
+      {
+        "pid": 41832,
+        "queries": [
+          {
+            "utc": "2026-11-16T00:06:16.456576+00:00",
+            "perf_counter_ns": 1076604157561400,
+            "kernel_ns": 15625000,
+            "user_ns": 0,
+            "cycles": 13182194,
+            "cycle_query_error": 0
+          },
+          {
+            "utc": "2026-11-16T00:06:22.295592+00:00",
+            "perf_counter_ns": 1076609996583100,
+            "kernel_ns": 187500000,
+            "user_ns": 5296875000,
+            "cycles": 21166531515,
+            "cycle_query_error": 0
+          },
+          {
+            "utc": "2026-11-16T00:06:22.298208+00:00",
+            "perf_counter_ns": 1076609999195400,
+            "kernel_ns": 187500000,
+            "user_ns": 5296875000,
+            "cycles": 21173736697,
+            "cycle_query_error": 0
+          }
+        ]
+      }
+    ],
+    "diagnostic_only": true,
+    "timing": "GetProcessTimes READY/DONE CPU delta; startup/compilation excluded; boundary I/O included",
+    "change_percent": -2.2408963585434205,
+    "aa_delta_percent": 2.292263610315186
+  },
+  "rot-aa-2.json": {
+    "stage": "aa",
+    "case": {
+      "name": "rot",
+      "iterations": 1280000000,
+      "definition": ": BENCH-RUN 1 2 3 BENCH-ITERATIONS 0 DO ROT LOOP >R SWAP 100 * SWAP 10 * + R> + ;",
+      "checksum_expected": 312,
+      "baseline_pilot_cpu_us": 468750.0
+    },
+    "series": 2,
+    "rounds": 5,
+    "engines": {
+      "A1": {
+        "samples_us": [
+          5500000.0,
+          5703125.0,
+          5640625.0,
+          5625000.0,
+          5500000.0
+        ],
+        "median_us": 5625000.0,
+        "min_us": 5500000.0,
+        "max_us": 5703125.0,
+        "wall_samples_us": [
+          5847207.3,
+          5829828.2,
+          5843426.4,
+          5851484.3,
+          5830041.9
+        ],
+        "total_process_cpu_samples_us": [
+          5500000.0,
+          5703125.0,
+          5640625.0,
+          5625000.0,
+          5500000.0
+        ],
+        "sha256": "379d6c6c069b9c3072da22fa6cea8b7deff77c5ed78ef9bbd070f92a724337bf"
+      },
+      "A2": {
+        "samples_us": [
+          5421875.0,
+          5671875.0,
+          5515625.0,
+          5437500.0,
+          5468750.0
+        ],
+        "median_us": 5468750.0,
+        "min_us": 5421875.0,
+        "max_us": 5671875.0,
+        "wall_samples_us": [
+          5837838.5,
+          5841977.4,
+          5827461.5,
+          5820796.2,
+          5837373.8
+        ],
+        "total_process_cpu_samples_us": [
+          5421875.0,
+          5671875.0,
+          5531250.0,
+          5437500.0,
+          5468750.0
+        ],
+        "sha256": "379d6c6c069b9c3072da22fa6cea8b7deff77c5ed78ef9bbd070f92a724337bf"
+      }
+    },
+    "orders": [
+      [
+        "A2",
+        "A1"
+      ],
+      [
+        "A1",
+        "A2"
+      ],
+      [
+        "A2",
+        "A1"
+      ],
+      [
+        "A1",
+        "A2"
+      ],
+      [
+        "A2",
+        "A1"
+      ],
+      [
+        "A1",
+        "A2"
+      ]
+    ],
+    "warmups_excluded": {
+      "A2": {
+        "cpu_us": 5687500.0,
+        "wall_us": 5844723.9,
+        "total_process_cpu_us": 5687500.0,
+        "checksum": 312,
+        "child_pid": 43852
+      },
+      "A1": {
+        "cpu_us": 5437500.0,
+        "wall_us": 5849354.0,
+        "total_process_cpu_us": 5437500.0,
+        "checksum": 312,
+        "child_pid": 3272
+      }
+    },
+    "child_pids_in_actual_execution_order": [
+      43852,
+      3272,
+      43300,
+      40552,
+      15172,
+      20208,
+      14072,
+      35392,
+      19960,
+      14164,
+      19996,
+      9444
+    ],
+    "cpu_affinity": [
+      0
+    ],
+    "process_time_queries": [
+      {
+        "pid": 43852,
+        "queries": [
+          {
+            "utc": "2026-11-16T00:06:22.414645+00:00",
+            "perf_counter_ns": 1076610115633100,
+            "kernel_ns": 0,
+            "user_ns": 0,
+            "cycles": 14500639,
+            "cycle_query_error": 0
+          },
+          {
+            "utc": "2026-11-16T00:06:28.259365+00:00",
+            "perf_counter_ns": 1076615960354700,
+            "kernel_ns": 328125000,
+            "user_ns": 5359375000,
+            "cycles": 21161206163,
+            "cycle_query_error": 0
+          },
+          {
+            "utc": "2026-11-16T00:06:28.261346+00:00",
+            "perf_counter_ns": 1076615962331700,
+            "kernel_ns": 328125000,
+            "user_ns": 5359375000,
+            "cycles": 21167883361,
+            "cycle_query_error": 0
+          }
+        ]
+      },
+      {
+        "pid": 3272,
+        "queries": [
+          {
+            "utc": "2026-11-16T00:06:28.267659+00:00",
+            "perf_counter_ns": 1076615968645100,
+            "kernel_ns": 0,
+            "user_ns": 0,
+            "cycles": 13279296,
+            "cycle_query_error": 0
+          },
+          {
+            "utc": "2026-11-16T00:06:34.116949+00:00",
+            "perf_counter_ns": 1076621817949400,
+            "kernel_ns": 296875000,
+            "user_ns": 5140625000,
+            "cycles": 21166453784,
+            "cycle_query_error": 0
+          },
+          {
+            "utc": "2026-11-16T00:06:34.119160+00:00",
+            "perf_counter_ns": 1076621820146400,
+            "kernel_ns": 296875000,
+            "user_ns": 5140625000,
+            "cycles": 21173205324,
+            "cycle_query_error": 0
+          }
+        ]
+      },
+      {
+        "pid": 43300,
+        "queries": [
+          {
+            "utc": "2026-11-16T00:06:34.124805+00:00",
+            "perf_counter_ns": 1076621825789800,
+            "kernel_ns": 0,
+            "user_ns": 0,
+            "cycles": 13247050,
+            "cycle_query_error": 0
+          },
+          {
+            "utc": "2026-11-16T00:06:39.972004+00:00",
+            "perf_counter_ns": 1076627672994900,
+            "kernel_ns": 328125000,
+            "user_ns": 5171875000,
+            "cycles": 21164091093,
+            "cycle_query_error": 0
+          },
+          {
+            "utc": "2026-11-16T00:06:39.973870+00:00",
+            "perf_counter_ns": 1076627674855500,
+            "kernel_ns": 328125000,
+            "user_ns": 5171875000,
+            "cycles": 21170470920,
+            "cycle_query_error": 0
+          }
+        ]
+      },
+      {
+        "pid": 40552,
+        "queries": [
+          {
+            "utc": "2026-11-16T00:06:39.980167+00:00",
+            "perf_counter_ns": 1076627681151900,
+            "kernel_ns": 0,
+            "user_ns": 0,
+            "cycles": 13310391,
+            "cycle_query_error": 0
+          },
+          {
+            "utc": "2026-11-16T00:06:45.817997+00:00",
+            "perf_counter_ns": 1076633518987800,
+            "kernel_ns": 203125000,
+            "user_ns": 5218750000,
+            "cycles": 21172023823,
+            "cycle_query_error": 0
+          },
+          {
+            "utc": "2026-11-16T00:06:45.819996+00:00",
+            "perf_counter_ns": 1076633520982900,
+            "kernel_ns": 203125000,
+            "user_ns": 5218750000,
+            "cycles": 21178835293,
+            "cycle_query_error": 0
+          }
+        ]
+      },
+      {
+        "pid": 15172,
+        "queries": [
+          {
+            "utc": "2026-11-16T00:06:45.825683+00:00",
+            "perf_counter_ns": 1076633526667900,
+            "kernel_ns": 0,
+            "user_ns": 0,
+            "cycles": 13347189,
+            "cycle_query_error": 0
+          },
+          {
+            "utc": "2026-11-16T00:06:51.667652+00:00",
+            "perf_counter_ns": 1076639368642600,
+            "kernel_ns": 296875000,
+            "user_ns": 5375000000,
+            "cycles": 21150256243,
+            "cycle_query_error": 0
+          },
+          {
+            "utc": "2026-11-16T00:06:51.669653+00:00",
+            "perf_counter_ns": 1076639370639200,
+            "kernel_ns": 296875000,
+            "user_ns": 5375000000,
+            "cycles": 21157067334,
+            "cycle_query_error": 0
+          }
+        ]
+      },
+      {
+        "pid": 20208,
+        "queries": [
+          {
+            "utc": "2026-11-16T00:06:51.675266+00:00",
+            "perf_counter_ns": 1076639376252200,
+            "kernel_ns": 0,
+            "user_ns": 0,
+            "cycles": 13066126,
+            "cycle_query_error": 0
+          },
+          {
+            "utc": "2026-11-16T00:06:57.505088+00:00",
+            "perf_counter_ns": 1076645206078400,
+            "kernel_ns": 203125000,
+            "user_ns": 5500000000,
+            "cycles": 21150506848,
+            "cycle_query_error": 0
+          },
+          {
+            "utc": "2026-11-16T00:06:57.507014+00:00",
+            "perf_counter_ns": 1076645208000000,
+            "kernel_ns": 203125000,
+            "user_ns": 5500000000,
+            "cycles": 21157097564,
+            "cycle_query_error": 0
+          }
+        ]
+      },
+      {
+        "pid": 14072,
+        "queries": [
+          {
+            "utc": "2026-11-16T00:06:57.512579+00:00",
+            "perf_counter_ns": 1076645213563800,
+            "kernel_ns": 0,
+            "user_ns": 0,
+            "cycles": 12944750,
+            "cycle_query_error": 0
+          },
+          {
+            "utc": "2026-11-16T00:07:03.355997+00:00",
+            "perf_counter_ns": 1076651056987500,
+            "kernel_ns": 406250000,
+            "user_ns": 5234375000,
+            "cycles": 21169161300,
+            "cycle_query_error": 0
+          },
+          {
+            "utc": "2026-11-16T00:07:03.358151+00:00",
+            "perf_counter_ns": 1076651059136600,
+            "kernel_ns": 406250000,
+            "user_ns": 5234375000,
+            "cycles": 21175860120,
+            "cycle_query_error": 0
+          }
+        ]
+      },
+      {
+        "pid": 35392,
+        "queries": [
+          {
+            "utc": "2026-11-16T00:07:03.363757+00:00",
+            "perf_counter_ns": 1076651064741500,
+            "kernel_ns": 15625000,
+            "user_ns": 0,
+            "cycles": 13072196,
+            "cycle_query_error": 0
+          },
+          {
+            "utc": "2026-11-16T00:07:09.191211+00:00",
+            "perf_counter_ns": 1076656892200500,
+            "kernel_ns": 312500000,
+            "user_ns": 5218750000,
+            "cycles": 21159513722,
+            "cycle_query_error": 0
+          },
+          {
+            "utc": "2026-11-16T00:07:09.193271+00:00",
+            "perf_counter_ns": 1076656894256200,
+            "kernel_ns": 312500000,
+            "user_ns": 5218750000,
+            "cycles": 21166328606,
+            "cycle_query_error": 0
+          }
+        ]
+      },
+      {
+        "pid": 19960,
+        "queries": [
+          {
+            "utc": "2026-11-16T00:07:09.199534+00:00",
+            "perf_counter_ns": 1076656900518900,
+            "kernel_ns": 0,
+            "user_ns": 0,
+            "cycles": 13383224,
+            "cycle_query_error": 0
+          },
+          {
+            "utc": "2026-11-16T00:07:15.020323+00:00",
+            "perf_counter_ns": 1076662721312800,
+            "kernel_ns": 234375000,
+            "user_ns": 5203125000,
+            "cycles": 21164118390,
+            "cycle_query_error": 0
+          },
+          {
+            "utc": "2026-11-16T00:07:15.022308+00:00",
+            "perf_counter_ns": 1076662723293400,
+            "kernel_ns": 234375000,
+            "user_ns": 5203125000,
+            "cycles": 21170905205,
+            "cycle_query_error": 0
+          }
+        ]
+      },
+      {
+        "pid": 14164,
+        "queries": [
+          {
+            "utc": "2026-11-16T00:07:15.028327+00:00",
+            "perf_counter_ns": 1076662729311700,
+            "kernel_ns": 0,
+            "user_ns": 0,
+            "cycles": 13055506,
+            "cycle_query_error": 0
+          },
+          {
+            "utc": "2026-11-16T00:07:20.879804+00:00",
+            "perf_counter_ns": 1076668580793800,
+            "kernel_ns": 281250000,
+            "user_ns": 5343750000,
+            "cycles": 21161769833,
+            "cycle_query_error": 0
+          },
+          {
+            "utc": "2026-11-16T00:07:20.882019+00:00",
+            "perf_counter_ns": 1076668583005300,
+            "kernel_ns": 281250000,
+            "user_ns": 5343750000,
+            "cycles": 21168593061,
+            "cycle_query_error": 0
+          }
+        ]
+      },
+      {
+        "pid": 19996,
+        "queries": [
+          {
+            "utc": "2026-11-16T00:07:20.888063+00:00",
+            "perf_counter_ns": 1076668589048400,
+            "kernel_ns": 0,
+            "user_ns": 0,
+            "cycles": 13204571,
+            "cycle_query_error": 0
+          },
+          {
+            "utc": "2026-11-16T00:07:26.718097+00:00",
+            "perf_counter_ns": 1076674419087700,
+            "kernel_ns": 281250000,
+            "user_ns": 5218750000,
+            "cycles": 21162611071,
+            "cycle_query_error": 0
+          },
+          {
+            "utc": "2026-11-16T00:07:26.720258+00:00",
+            "perf_counter_ns": 1076674421243800,
+            "kernel_ns": 281250000,
+            "user_ns": 5218750000,
+            "cycles": 21169360338,
+            "cycle_query_error": 0
+          }
+        ]
+      },
+      {
+        "pid": 9444,
+        "queries": [
+          {
+            "utc": "2026-11-16T00:07:26.725871+00:00",
+            "perf_counter_ns": 1076674426856000,
+            "kernel_ns": 0,
+            "user_ns": 0,
+            "cycles": 13142364,
+            "cycle_query_error": 0
+          },
+          {
+            "utc": "2026-11-16T00:07:32.563237+00:00",
+            "perf_counter_ns": 1076680264227300,
+            "kernel_ns": 234375000,
+            "user_ns": 5234375000,
+            "cycles": 21155891791,
+            "cycle_query_error": 0
+          },
+          {
+            "utc": "2026-11-16T00:07:32.565398+00:00",
+            "perf_counter_ns": 1076680266383500,
+            "kernel_ns": 234375000,
+            "user_ns": 5234375000,
+            "cycles": 21162529542,
+            "cycle_query_error": 0
+          }
+        ]
+      }
+    ],
+    "diagnostic_only": true,
+    "timing": "GetProcessTimes READY/DONE CPU delta; startup/compilation excluded; boundary I/O included",
+    "change_percent": -2.777777777777779,
+    "aa_delta_percent": 2.857142857142857
+  },
+  "rot-config.json": {
+    "name": "rot",
+    "iterations": 1280000000,
+    "definition": ": BENCH-RUN 1 2 3 BENCH-ITERATIONS 0 DO ROT LOOP >R SWAP 100 * SWAP 10 * + R> + ;",
+    "checksum_expected": 312,
+    "baseline_pilot_cpu_us": 468750.0
+  },
+  "summary.json": [
+    {
+      "series": 1,
+      "metrics": {
+        "samples_us": {
+          "A1_median": 5578125.0,
+          "A2_median": 5453125.0,
+          "delta_percent": 2.292263610315186
+        },
+        "wall_samples_us": {
+          "A1_median": 5848001.7,
+          "A2_median": 5844704.1,
+          "delta_percent": 0.05642030706055006
+        },
+        "kernel_us": {
+          "A1_median": 281250.0,
+          "A2_median": 234375.0,
+          "delta_percent": 20.0
+        },
+        "user_us": {
+          "A1_median": 5265625.0,
+          "A2_median": 5234375.0,
+          "delta_percent": 0.5970149253731343
+        },
+        "cycles": {
+          "A1_median": 21163844228,
+          "A2_median": 21165285902,
+          "delta_percent": 0.006811966599587089
+        }
+      },
+      "intervals": {
+        "A1": [
+          {
+            "pid": 11960,
+            "kernel_us": 328125.0,
+            "user_us": 5265625.0,
+            "cycles": 21198602940,
+            "start_utc": "2026-11-16T00:05:29.642409+00:00",
+            "end_utc": "2026-11-16T00:05:35.499323+00:00"
+          },
+          {
+            "pid": 10564,
+            "kernel_us": 281250.0,
+            "user_us": 5250000.0,
+            "cycles": 21169675153,
+            "start_utc": "2026-11-16T00:05:35.507046+00:00",
+            "end_utc": "2026-11-16T00:05:41.356784+00:00"
+          },
+          {
+            "pid": 28044,
+            "kernel_us": 218750.0,
+            "user_us": 5437500.0,
+            "cycles": 21151071284,
+            "start_utc": "2026-11-16T00:05:53.061986+00:00",
+            "end_utc": "2026-11-16T00:05:58.892394+00:00"
+          },
+          {
+            "pid": 2536,
+            "kernel_us": 312500.0,
+            "user_us": 5265625.0,
+            "cycles": 21163844228,
+            "start_utc": "2026-11-16T00:05:58.900796+00:00",
+            "end_utc": "2026-11-16T00:06:04.748791+00:00"
+          },
+          {
+            "pid": 41832,
+            "kernel_us": 171875.0,
+            "user_us": 5296875.0,
+            "cycles": 21153349321,
+            "start_utc": "2026-11-16T00:06:16.456576+00:00",
+            "end_utc": "2026-11-16T00:06:22.295592+00:00"
+          }
+        ],
+        "A2": [
+          {
+            "pid": 26692,
+            "kernel_us": 218750.0,
+            "user_us": 5234375.0,
+            "cycles": 21171710087,
+            "start_utc": "2026-11-16T00:05:23.789592+00:00",
+            "end_utc": "2026-11-16T00:05:29.634536+00:00"
+          },
+          {
+            "pid": 38260,
+            "kernel_us": 234375.0,
+            "user_us": 5187500.0,
+            "cycles": 21165285902,
+            "start_utc": "2026-11-16T00:05:41.364629+00:00",
+            "end_utc": "2026-11-16T00:05:47.209327+00:00"
+          },
+          {
+            "pid": 22724,
+            "kernel_us": 281250.0,
+            "user_us": 5171875.0,
+            "cycles": 21166240974,
+            "start_utc": "2026-11-16T00:05:47.217929+00:00",
+            "end_utc": "2026-11-16T00:05:53.053851+00:00"
+          },
+          {
+            "pid": 36408,
+            "kernel_us": 343750.0,
+            "user_us": 5312500.0,
+            "cycles": 21163331787,
+            "start_utc": "2026-11-16T00:06:04.756977+00:00",
+            "end_utc": "2026-11-16T00:06:10.591641+00:00"
+          },
+          {
+            "pid": 27900,
+            "kernel_us": 234375.0,
+            "user_us": 5296875.0,
+            "cycles": 21146269392,
+            "start_utc": "2026-11-16T00:06:10.600301+00:00",
+            "end_utc": "2026-11-16T00:06:16.448379+00:00"
+          }
+        ]
+      }
+    },
+    {
+      "series": 2,
+      "metrics": {
+        "samples_us": {
+          "A1_median": 5625000.0,
+          "A2_median": 5468750.0,
+          "delta_percent": 2.857142857142857
+        },
+        "wall_samples_us": {
+          "A1_median": 5843426.4,
+          "A2_median": 5837373.8,
+          "delta_percent": 0.10368703816775549
+        },
+        "kernel_us": {
+          "A1_median": 281250.0,
+          "A2_median": 234375.0,
+          "delta_percent": 20.0
+        },
+        "user_us": {
+          "A1_median": 5234375.0,
+          "A2_median": 5218750.0,
+          "delta_percent": 0.2994011976047904
+        },
+        "cycles": {
+          "A1_median": 21149406500,
+          "A2_median": 21146441526,
+          "delta_percent": 0.014021148647419006
+        }
+      },
+      "intervals": {
+        "A1": [
+          {
+            "pid": 43300,
+            "kernel_us": 328125.0,
+            "user_us": 5171875.0,
+            "cycles": 21150844043,
+            "start_utc": "2026-11-16T00:06:34.124805+00:00",
+            "end_utc": "2026-11-16T00:06:39.972004+00:00"
+          },
+          {
+            "pid": 20208,
+            "kernel_us": 203125.0,
+            "user_us": 5500000.0,
+            "cycles": 21137440722,
+            "start_utc": "2026-11-16T00:06:51.675266+00:00",
+            "end_utc": "2026-11-16T00:06:57.505088+00:00"
+          },
+          {
+            "pid": 14072,
+            "kernel_us": 406250.0,
+            "user_us": 5234375.0,
+            "cycles": 21156216550,
+            "start_utc": "2026-11-16T00:06:57.512579+00:00",
+            "end_utc": "2026-11-16T00:07:03.355997+00:00"
+          },
+          {
+            "pid": 14164,
+            "kernel_us": 281250.0,
+            "user_us": 5343750.0,
+            "cycles": 21148714327,
+            "start_utc": "2026-11-16T00:07:15.028327+00:00",
+            "end_utc": "2026-11-16T00:07:20.879804+00:00"
+          },
+          {
+            "pid": 19996,
+            "kernel_us": 281250.0,
+            "user_us": 5218750.0,
+            "cycles": 21149406500,
+            "start_utc": "2026-11-16T00:07:20.888063+00:00",
+            "end_utc": "2026-11-16T00:07:26.718097+00:00"
+          }
+        ],
+        "A2": [
+          {
+            "pid": 40552,
+            "kernel_us": 203125.0,
+            "user_us": 5218750.0,
+            "cycles": 21158713432,
+            "start_utc": "2026-11-16T00:06:39.980167+00:00",
+            "end_utc": "2026-11-16T00:06:45.817997+00:00"
+          },
+          {
+            "pid": 15172,
+            "kernel_us": 296875.0,
+            "user_us": 5375000.0,
+            "cycles": 21136909054,
+            "start_utc": "2026-11-16T00:06:45.825683+00:00",
+            "end_utc": "2026-11-16T00:06:51.667652+00:00"
+          },
+          {
+            "pid": 35392,
+            "kernel_us": 296875.0,
+            "user_us": 5218750.0,
+            "cycles": 21146441526,
+            "start_utc": "2026-11-16T00:07:03.363757+00:00",
+            "end_utc": "2026-11-16T00:07:09.191211+00:00"
+          },
+          {
+            "pid": 19960,
+            "kernel_us": 234375.0,
+            "user_us": 5203125.0,
+            "cycles": 21150735166,
+            "start_utc": "2026-11-16T00:07:09.199534+00:00",
+            "end_utc": "2026-11-16T00:07:15.020323+00:00"
+          },
+          {
+            "pid": 9444,
+            "kernel_us": 234375.0,
+            "user_us": 5234375.0,
+            "cycles": 21142749427,
+            "start_utc": "2026-11-16T00:07:26.725871+00:00",
+            "end_utc": "2026-11-16T00:07:32.563237+00:00"
+          }
+        ]
+      }
+    }
+  ],
+  "processor_samples": [
+    {
+      "utc": "2026-11-16T00:04:51.9786774Z",
+      "samples": [
+        {
+          "counter": "actual frequency",
+          "instance": "0,0",
+          "value": 4643.44133776373,
+          "status": 0
+        },
+        {
+          "counter": "% processor performance",
+          "instance": "0,0",
+          "value": 122.18675203284977,
+          "status": 0
+        },
+        {
+          "counter": "% processor time",
+          "instance": "0,0",
+          "value": 9.580649770162742,
+          "status": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-11-16T00:04:53.0238140Z",
+      "samples": [
+        {
+          "counter": "actual frequency",
+          "instance": "0,0",
+          "value": 4568.961483628204,
+          "status": 0
+        },
+        {
+          "counter": "% processor performance",
+          "instance": "0,0",
+          "value": 120.18793953412303,
+          "status": 0
+        },
+        {
+          "counter": "% processor time",
+          "instance": "0,0",
+          "value": 7.308767102788282,
+          "status": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-11-16T00:04:54.0394220Z",
+      "samples": [
+        {
+          "counter": "actual frequency",
+          "instance": "0,0",
+          "value": 4546.758371946083,
+          "status": 0
+        },
+        {
+          "counter": "% processor performance",
+          "instance": "0,0",
+          "value": 119.62345630249888,
+          "status": 0
+        },
+        {
+          "counter": "% processor time",
+          "instance": "0,0",
+          "value": 6.152275287315579,
+          "status": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-11-16T00:04:55.0541115Z",
+      "samples": [
+        {
+          "counter": "actual frequency",
+          "instance": "0,0",
+          "value": 4426.705867679259,
+          "status": 0
+        },
+        {
+          "counter": "% processor performance",
+          "instance": "0,0",
+          "value": 116.45281658904413,
+          "status": 0
+        },
+        {
+          "counter": "% processor time",
+          "instance": "0,0",
+          "value": 6.06732404346354,
+          "status": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-11-16T00:04:56.0633730Z",
+      "samples": [
+        {
+          "counter": "actual frequency",
+          "instance": "0,0",
+          "value": 4476.171351981352,
+          "status": 0
+        },
+        {
+          "counter": "% processor performance",
+          "instance": "0,0",
+          "value": 117.7875221403934,
+          "status": 0
+        },
+        {
+          "counter": "% processor time",
+          "instance": "0,0",
+          "value": 13.302944776948289,
+          "status": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-11-16T00:04:57.0796624Z",
+      "samples": [
+        {
+          "counter": "actual frequency",
+          "instance": "0,0",
+          "value": 4512.655627391477,
+          "status": 0
+        },
+        {
+          "counter": "% processor performance",
+          "instance": "0,0",
+          "value": 118.69527806371579,
+          "status": 0
+        },
+        {
+          "counter": "% processor time",
+          "instance": "0,0",
+          "value": 12.36502122328541,
+          "status": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-11-16T00:04:58.0923801Z",
+      "samples": [
+        {
+          "counter": "actual frequency",
+          "instance": "0,0",
+          "value": 4471.195470769231,
+          "status": 0
+        },
+        {
+          "counter": "% processor performance",
+          "instance": "0,0",
+          "value": 117.64981913925047,
+          "status": 0
+        },
+        {
+          "counter": "% processor time",
+          "instance": "0,0",
+          "value": 8.97018981696479,
+          "status": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-11-16T00:04:59.1057247Z",
+      "samples": [
+        {
+          "counter": "actual frequency",
+          "instance": "0,0",
+          "value": 4561.311837587699,
+          "status": 0
+        },
+        {
+          "counter": "% processor performance",
+          "instance": "0,0",
+          "value": 119.98878025723313,
+          "status": 0
+        },
+        {
+          "counter": "% processor time",
+          "instance": "0,0",
+          "value": 10.568428548393117,
+          "status": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-11-16T00:05:00.1162916Z",
+      "samples": [
+        {
+          "counter": "actual frequency",
+          "instance": "0,0",
+          "value": 4443.882862681896,
+          "status": 0
+        },
+        {
+          "counter": "% processor performance",
+          "instance": "0,0",
+          "value": 116.92405832320777,
+          "status": 0
+        },
+        {
+          "counter": "% processor time",
+          "instance": "0,0",
+          "value": 7.230288266912366,
+          "status": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-11-16T00:05:01.1291999Z",
+      "samples": [
+        {
+          "counter": "actual frequency",
+          "instance": "0,0",
+          "value": 4470.733286981438,
+          "status": 0
+        },
+        {
+          "counter": "% processor performance",
+          "instance": "0,0",
+          "value": 117.60680951477994,
+          "status": 0
+        },
+        {
+          "counter": "% processor time",
+          "instance": "0,0",
+          "value": 8.987318990277792,
+          "status": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-11-16T00:05:02.1403424Z",
+      "samples": [
+        {
+          "counter": "actual frequency",
+          "instance": "0,0",
+          "value": 4537.607081769676,
+          "status": 0
+        },
+        {
+          "counter": "% processor performance",
+          "instance": "0,0",
+          "value": 119.37931122514105,
+          "status": 0
+        },
+        {
+          "counter": "% processor time",
+          "instance": "0,0",
+          "value": 5.737816380974992,
+          "status": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-11-16T00:05:03.1517518Z",
+      "samples": [
+        {
+          "counter": "actual frequency",
+          "instance": "0,0",
+          "value": 4546.69812805786,
+          "status": 0
+        },
+        {
+          "counter": "% processor performance",
+          "instance": "0,0",
+          "value": 119.621260127161,
+          "status": 0
+        },
+        {
+          "counter": "% processor time",
+          "instance": "0,0",
+          "value": 4.217817236027265,
+          "status": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-11-16T00:05:04.1672985Z",
+      "samples": [
+        {
+          "counter": "actual frequency",
+          "instance": "0,0",
+          "value": 4459.171866906741,
+          "status": 0
+        },
+        {
+          "counter": "% processor performance",
+          "instance": "0,0",
+          "value": 117.31681385366817,
+          "status": 0
+        },
+        {
+          "counter": "% processor time",
+          "instance": "0,0",
+          "value": 3.0694501789036432,
+          "status": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-11-16T00:05:05.1784310Z",
+      "samples": [
+        {
+          "counter": "actual frequency",
+          "instance": "0,0",
+          "value": 4440.764751253374,
+          "status": 0
+        },
+        {
+          "counter": "% processor performance",
+          "instance": "0,0",
+          "value": 116.94162471458831,
+          "status": 0
+        },
+        {
+          "counter": "% processor time",
+          "instance": "0,0",
+          "value": 7.282181118696118,
+          "status": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-11-16T00:05:06.1922289Z",
+      "samples": [
+        {
+          "counter": "actual frequency",
+          "instance": "0,0",
+          "value": 4533.544162826421,
+          "status": 0
+        },
+        {
+          "counter": "% processor performance",
+          "instance": "0,0",
+          "value": 119.1847587595286,
+          "status": 0
+        },
+        {
+          "counter": "% processor time",
+          "instance": "0,0",
+          "value": 10.608416135010735,
+          "status": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-11-16T00:05:07.1996262Z",
+      "samples": [
+        {
+          "counter": "actual frequency",
+          "instance": "0,0",
+          "value": 4423.880870030309,
+          "status": 0
+        },
+        {
+          "counter": "% processor performance",
+          "instance": "0,0",
+          "value": 116.38362929681928,
+          "status": 0
+        },
+        {
+          "counter": "% processor time",
+          "instance": "0,0",
+          "value": 6.938404540095555,
+          "status": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-11-16T00:05:08.2036870Z",
+      "samples": [
+        {
+          "counter": "actual frequency",
+          "instance": "0,0",
+          "value": 4288.4909883275295,
+          "status": 0
+        },
+        {
+          "counter": "% processor performance",
+          "instance": "0,0",
+          "value": 112.82533999080218,
+          "status": 0
+        },
+        {
+          "counter": "% processor time",
+          "instance": "0,0",
+          "value": 5.072979644260589,
+          "status": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-11-16T00:05:09.2101809Z",
+      "samples": [
+        {
+          "counter": "actual frequency",
+          "instance": "0,0",
+          "value": 4183.501096084449,
+          "status": 0
+        },
+        {
+          "counter": "% processor performance",
+          "instance": "0,0",
+          "value": 110.063168189943,
+          "status": 0
+        },
+        {
+          "counter": "% processor time",
+          "instance": "0,0",
+          "value": 3.750037630630454,
+          "status": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-11-16T00:05:10.2241033Z",
+      "samples": [
+        {
+          "counter": "actual frequency",
+          "instance": "0,0",
+          "value": 4111.028107833771,
+          "status": 0
+        },
+        {
+          "counter": "% processor performance",
+          "instance": "0,0",
+          "value": 108.15423531518624,
+          "status": 0
+        },
+        {
+          "counter": "% processor time",
+          "instance": "0,0",
+          "value": 7.537302657481481,
+          "status": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-11-16T00:05:11.2334610Z",
+      "samples": [
+        {
+          "counter": "actual frequency",
+          "instance": "0,0",
+          "value": 4463.264917569341,
+          "status": 0
+        },
+        {
+          "counter": "% processor performance",
+          "instance": "0,0",
+          "value": 117.42420308668686,
+          "status": 0
+        },
+        {
+          "counter": "% processor time",
+          "instance": "0,0",
+          "value": 8.667165267575605,
+          "status": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-11-16T00:05:12.2487013Z",
+      "samples": [
+        {
+          "counter": "actual frequency",
+          "instance": "0,0",
+          "value": 4962.6889472172315,
+          "status": 0
+        },
+        {
+          "counter": "% processor performance",
+          "instance": "0,0",
+          "value": 130.56635911994323,
+          "status": 0
+        },
+        {
+          "counter": "% processor time",
+          "instance": "0,0",
+          "value": 36.899175495692994,
+          "status": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-11-16T00:05:13.2513871Z",
+      "samples": [
+        {
+          "counter": "actual frequency",
+          "instance": "0,0",
+          "value": 5305.4883807767,
+          "status": 0
+        },
+        {
+          "counter": "% processor performance",
+          "instance": "0,0",
+          "value": 139.58160969429275,
+          "status": 0
+        },
+        {
+          "counter": "% processor time",
+          "instance": "0,0",
+          "value": 100.0,
+          "status": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-11-16T00:05:14.2549229Z",
+      "samples": [
+        {
+          "counter": "actual frequency",
+          "instance": "0,0",
+          "value": 5302.698695087247,
+          "status": 0
+        },
+        {
+          "counter": "% processor performance",
+          "instance": "0,0",
+          "value": 139.50808376312287,
+          "status": 0
+        },
+        {
+          "counter": "% processor time",
+          "instance": "0,0",
+          "value": 100.0,
+          "status": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-11-16T00:05:15.2686926Z",
+      "samples": [
+        {
+          "counter": "actual frequency",
+          "instance": "0,0",
+          "value": 5302.864517931381,
+          "status": 0
+        },
+        {
+          "counter": "% processor performance",
+          "instance": "0,0",
+          "value": 139.51182798753752,
+          "status": 0
+        },
+        {
+          "counter": "% processor time",
+          "instance": "0,0",
+          "value": 100.0,
+          "status": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-11-16T00:05:16.2844624Z",
+      "samples": [
+        {
+          "counter": "actual frequency",
+          "instance": "0,0",
+          "value": 5299.488017604214,
+          "status": 0
+        },
+        {
+          "counter": "% processor performance",
+          "instance": "0,0",
+          "value": 139.42353154288415,
+          "status": 0
+        },
+        {
+          "counter": "% processor time",
+          "instance": "0,0",
+          "value": 100.0,
+          "status": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-11-16T00:05:17.2969511Z",
+      "samples": [
+        {
+          "counter": "actual frequency",
+          "instance": "0,0",
+          "value": 5301.497572738823,
+          "status": 0
+        },
+        {
+          "counter": "% processor performance",
+          "instance": "0,0",
+          "value": 139.47652849986568,
+          "status": 0
+        },
+        {
+          "counter": "% processor time",
+          "instance": "0,0",
+          "value": 100.0,
+          "status": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-11-16T00:05:18.2975541Z",
+      "samples": [
+        {
+          "counter": "actual frequency",
+          "instance": "0,0",
+          "value": 5302.963456106058,
+          "status": 0
+        },
+        {
+          "counter": "% processor performance",
+          "instance": "0,0",
+          "value": 139.5155215023234,
+          "status": 0
+        },
+        {
+          "counter": "% processor time",
+          "instance": "0,0",
+          "value": 100.0,
+          "status": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-11-16T00:05:19.3014560Z",
+      "samples": [
+        {
+          "counter": "actual frequency",
+          "instance": "0,0",
+          "value": 5307.570774174216,
+          "status": 0
+        },
+        {
+          "counter": "% processor performance",
+          "instance": "0,0",
+          "value": 139.63562088377995,
+          "status": 0
+        },
+        {
+          "counter": "% processor time",
+          "instance": "0,0",
+          "value": 100.0,
+          "status": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-11-16T00:05:20.3162684Z",
+      "samples": [
+        {
+          "counter": "actual frequency",
+          "instance": "0,0",
+          "value": 5305.732676920166,
+          "status": 0
+        },
+        {
+          "counter": "% processor performance",
+          "instance": "0,0",
+          "value": 139.58846733557425,
+          "status": 0
+        },
+        {
+          "counter": "% processor time",
+          "instance": "0,0",
+          "value": 100.0,
+          "status": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-11-16T00:05:21.3272156Z",
+      "samples": [
+        {
+          "counter": "actual frequency",
+          "instance": "0,0",
+          "value": 5306.539295757486,
+          "status": 0
+        },
+        {
+          "counter": "% processor performance",
+          "instance": "0,0",
+          "value": 139.60880979886377,
+          "status": 0
+        },
+        {
+          "counter": "% processor time",
+          "instance": "0,0",
+          "value": 100.0,
+          "status": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-11-16T00:05:22.3412693Z",
+      "samples": [
+        {
+          "counter": "actual frequency",
+          "instance": "0,0",
+          "value": 5305.503392451401,
+          "status": 0
+        },
+        {
+          "counter": "% processor performance",
+          "instance": "0,0",
+          "value": 139.58116296022797,
+          "status": 0
+        },
+        {
+          "counter": "% processor time",
+          "instance": "0,0",
+          "value": 100.0,
+          "status": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-11-16T00:05:23.3550641Z",
+      "samples": [
+        {
+          "counter": "actual frequency",
+          "instance": "0,0",
+          "value": 5307.877287232532,
+          "status": 0
+        },
+        {
+          "counter": "% processor performance",
+          "instance": "0,0",
+          "value": 139.6445089761294,
+          "status": 0
+        },
+        {
+          "counter": "% processor time",
+          "instance": "0,0",
+          "value": 100.0,
+          "status": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-11-16T00:05:24.3567845Z",
+      "samples": [
+        {
+          "counter": "actual frequency",
+          "instance": "0,0",
+          "value": 5306.21674685569,
+          "status": 0
+        },
+        {
+          "counter": "% processor performance",
+          "instance": "0,0",
+          "value": 139.6003540988217,
+          "status": 0
+        },
+        {
+          "counter": "% processor time",
+          "instance": "0,0",
+          "value": 100.0,
+          "status": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-11-16T00:05:25.3612130Z",
+      "samples": [
+        {
+          "counter": "actual frequency",
+          "instance": "0,0",
+          "value": 5306.011134598016,
+          "status": 0
+        },
+        {
+          "counter": "% processor performance",
+          "instance": "0,0",
+          "value": 139.59565510353298,
+          "status": 0
+        },
+        {
+          "counter": "% processor time",
+          "instance": "0,0",
+          "value": 100.0,
+          "status": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-11-16T00:05:26.3772884Z",
+      "samples": [
+        {
+          "counter": "actual frequency",
+          "instance": "0,0",
+          "value": 5308.304922044404,
+          "status": 0
+        },
+        {
+          "counter": "% processor performance",
+          "instance": "0,0",
+          "value": 139.65597388506848,
+          "status": 0
+        },
+        {
+          "counter": "% processor time",
+          "instance": "0,0",
+          "value": 100.0,
+          "status": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-11-16T00:05:27.3884396Z",
+      "samples": [
+        {
+          "counter": "actual frequency",
+          "instance": "0,0",
+          "value": 5309.0926640621165,
+          "status": 0
+        },
+        {
+          "counter": "% processor performance",
+          "instance": "0,0",
+          "value": 139.67581372533508,
+          "status": 0
+        },
+        {
+          "counter": "% processor time",
+          "instance": "0,0",
+          "value": 100.0,
+          "status": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-11-16T00:05:28.3914479Z",
+      "samples": [
+        {
+          "counter": "actual frequency",
+          "instance": "0,0",
+          "value": 5309.222570687936,
+          "status": 0
+        },
+        {
+          "counter": "% processor performance",
+          "instance": "0,0",
+          "value": 139.6795761223458,
+          "status": 0
+        },
+        {
+          "counter": "% processor time",
+          "instance": "0,0",
+          "value": 100.0,
+          "status": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-11-16T00:05:29.3947236Z",
+      "samples": [
+        {
+          "counter": "actual frequency",
+          "instance": "0,0",
+          "value": 5310.100628810459,
+          "status": 0
+        },
+        {
+          "counter": "% processor performance",
+          "instance": "0,0",
+          "value": 139.70291902822387,
+          "status": 0
+        },
+        {
+          "counter": "% processor time",
+          "instance": "0,0",
+          "value": 100.0,
+          "status": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-11-16T00:05:30.4058625Z",
+      "samples": [
+        {
+          "counter": "actual frequency",
+          "instance": "0,0",
+          "value": 5304.222956492009,
+          "status": 0
+        },
+        {
+          "counter": "% processor performance",
+          "instance": "0,0",
+          "value": 139.54756247932394,
+          "status": 0
+        },
+        {
+          "counter": "% processor time",
+          "instance": "0,0",
+          "value": 100.0,
+          "status": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-11-16T00:05:31.4072007Z",
+      "samples": [
+        {
+          "counter": "actual frequency",
+          "instance": "0,0",
+          "value": 5302.683684638604,
+          "status": 0
+        },
+        {
+          "counter": "% processor performance",
+          "instance": "0,0",
+          "value": 139.50780590852148,
+          "status": 0
+        },
+        {
+          "counter": "% processor time",
+          "instance": "0,0",
+          "value": 100.0,
+          "status": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-11-16T00:05:32.4174664Z",
+      "samples": [
+        {
+          "counter": "actual frequency",
+          "instance": "0,0",
+          "value": 5304.749747788696,
+          "status": 0
+        },
+        {
+          "counter": "% processor performance",
+          "instance": "0,0",
+          "value": 139.5616220102817,
+          "status": 0
+        },
+        {
+          "counter": "% processor time",
+          "instance": "0,0",
+          "value": 100.0,
+          "status": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-11-16T00:05:33.4244600Z",
+      "samples": [
+        {
+          "counter": "actual frequency",
+          "instance": "0,0",
+          "value": 5298.833264485788,
+          "status": 0
+        },
+        {
+          "counter": "% processor performance",
+          "instance": "0,0",
+          "value": 139.40583716625756,
+          "status": 0
+        },
+        {
+          "counter": "% processor time",
+          "instance": "0,0",
+          "value": 100.0,
+          "status": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-11-16T00:05:34.4268963Z",
+      "samples": [
+        {
+          "counter": "actual frequency",
+          "instance": "0,0",
+          "value": 5303.810414481885,
+          "status": 0
+        },
+        {
+          "counter": "% processor performance",
+          "instance": "0,0",
+          "value": 139.53740289135163,
+          "status": 0
+        },
+        {
+          "counter": "% processor time",
+          "instance": "0,0",
+          "value": 100.0,
+          "status": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-11-16T00:05:35.4430199Z",
+      "samples": [
+        {
+          "counter": "actual frequency",
+          "instance": "0,0",
+          "value": 5302.920293688809,
+          "status": 0
+        },
+        {
+          "counter": "% processor performance",
+          "instance": "0,0",
+          "value": 139.51413734409715,
+          "status": 0
+        },
+        {
+          "counter": "% processor time",
+          "instance": "0,0",
+          "value": 100.0,
+          "status": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-11-16T00:05:36.4555486Z",
+      "samples": [
+        {
+          "counter": "actual frequency",
+          "instance": "0,0",
+          "value": 5307.791288374012,
+          "status": 0
+        },
+        {
+          "counter": "% processor performance",
+          "instance": "0,0",
+          "value": 139.64147331245525,
+          "status": 0
+        },
+        {
+          "counter": "% processor time",
+          "instance": "0,0",
+          "value": 98.4568338655487,
+          "status": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-11-16T00:05:37.4701975Z",
+      "samples": [
+        {
+          "counter": "actual frequency",
+          "instance": "0,0",
+          "value": 5310.586635107561,
+          "status": 0
+        },
+        {
+          "counter": "% processor performance",
+          "instance": "0,0",
+          "value": 139.7161548020033,
+          "status": 0
+        },
+        {
+          "counter": "% processor time",
+          "instance": "0,0",
+          "value": 100.0,
+          "status": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-11-16T00:05:38.4715039Z",
+      "samples": [
+        {
+          "counter": "actual frequency",
+          "instance": "0,0",
+          "value": 5309.524724598683,
+          "status": 0
+        },
+        {
+          "counter": "% processor performance",
+          "instance": "0,0",
+          "value": 139.68706247053842,
+          "status": 0
+        },
+        {
+          "counter": "% processor time",
+          "instance": "0,0",
+          "value": 100.0,
+          "status": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-11-16T00:05:39.4851169Z",
+      "samples": [
+        {
+          "counter": "actual frequency",
+          "instance": "0,0",
+          "value": 5309.546549712956,
+          "status": 0
+        },
+        {
+          "counter": "% processor performance",
+          "instance": "0,0",
+          "value": 139.68902519872964,
+          "status": 0
+        },
+        {
+          "counter": "% processor time",
+          "instance": "0,0",
+          "value": 100.0,
+          "status": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-11-16T00:05:40.4995496Z",
+      "samples": [
+        {
+          "counter": "actual frequency",
+          "instance": "0,0",
+          "value": 5309.553621108413,
+          "status": 0
+        },
+        {
+          "counter": "% processor performance",
+          "instance": "0,0",
+          "value": 139.6876762451503,
+          "status": 0
+        },
+        {
+          "counter": "% processor time",
+          "instance": "0,0",
+          "value": 100.0,
+          "status": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-11-16T00:05:41.5011147Z",
+      "samples": [
+        {
+          "counter": "actual frequency",
+          "instance": "0,0",
+          "value": 5309.615763263375,
+          "status": 0
+        },
+        {
+          "counter": "% processor performance",
+          "instance": "0,0",
+          "value": 139.69074860438764,
+          "status": 0
+        },
+        {
+          "counter": "% processor time",
+          "instance": "0,0",
+          "value": 100.0,
+          "status": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-11-16T00:05:42.5161516Z",
+      "samples": [
+        {
+          "counter": "actual frequency",
+          "instance": "0,0",
+          "value": 5310.242883622402,
+          "status": 0
+        },
+        {
+          "counter": "% processor performance",
+          "instance": "0,0",
+          "value": 139.70585435281842,
+          "status": 0
+        },
+        {
+          "counter": "% processor time",
+          "instance": "0,0",
+          "value": 100.0,
+          "status": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-11-16T00:05:43.5202589Z",
+      "samples": [
+        {
+          "counter": "actual frequency",
+          "instance": "0,0",
+          "value": 5307.106892430279,
+          "status": 0
+        },
+        {
+          "counter": "% processor performance",
+          "instance": "0,0",
+          "value": 139.62498047802544,
+          "status": 0
+        },
+        {
+          "counter": "% processor time",
+          "instance": "0,0",
+          "value": 100.0,
+          "status": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-11-16T00:05:44.5216595Z",
+      "samples": [
+        {
+          "counter": "actual frequency",
+          "instance": "0,0",
+          "value": 5310.660405183019,
+          "status": 0
+        },
+        {
+          "counter": "% processor performance",
+          "instance": "0,0",
+          "value": 139.7170858277693,
+          "status": 0
+        },
+        {
+          "counter": "% processor time",
+          "instance": "0,0",
+          "value": 100.0,
+          "status": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-11-16T00:05:45.5327078Z",
+      "samples": [
+        {
+          "counter": "actual frequency",
+          "instance": "0,0",
+          "value": 5309.786241241146,
+          "status": 0
+        },
+        {
+          "counter": "% processor performance",
+          "instance": "0,0",
+          "value": 139.69370390121708,
+          "status": 0
+        },
+        {
+          "counter": "% processor time",
+          "instance": "0,0",
+          "value": 100.0,
+          "status": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-11-16T00:05:46.5346752Z",
+      "samples": [
+        {
+          "counter": "actual frequency",
+          "instance": "0,0",
+          "value": 5311.393414454984,
+          "status": 0
+        },
+        {
+          "counter": "% processor performance",
+          "instance": "0,0",
+          "value": 139.73723603357308,
+          "status": 0
+        },
+        {
+          "counter": "% processor time",
+          "instance": "0,0",
+          "value": 100.0,
+          "status": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-11-16T00:05:47.5459561Z",
+      "samples": [
+        {
+          "counter": "actual frequency",
+          "instance": "0,0",
+          "value": 5309.433407720431,
+          "status": 0
+        },
+        {
+          "counter": "% processor performance",
+          "instance": "0,0",
+          "value": 139.68565694678333,
+          "status": 0
+        },
+        {
+          "counter": "% processor time",
+          "instance": "0,0",
+          "value": 100.0,
+          "status": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-11-16T00:05:48.5565594Z",
+      "samples": [
+        {
+          "counter": "actual frequency",
+          "instance": "0,0",
+          "value": 5309.103802711201,
+          "status": 0
+        },
+        {
+          "counter": "% processor performance",
+          "instance": "0,0",
+          "value": 139.6755308706088,
+          "status": 0
+        },
+        {
+          "counter": "% processor time",
+          "instance": "0,0",
+          "value": 100.0,
+          "status": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-11-16T00:05:49.5714786Z",
+      "samples": [
+        {
+          "counter": "actual frequency",
+          "instance": "0,0",
+          "value": 5311.003343516793,
+          "status": 0
+        },
+        {
+          "counter": "% processor performance",
+          "instance": "0,0",
+          "value": 139.72727602334942,
+          "status": 0
+        },
+        {
+          "counter": "% processor time",
+          "instance": "0,0",
+          "value": 100.0,
+          "status": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-11-16T00:05:50.5798690Z",
+      "samples": [
+        {
+          "counter": "actual frequency",
+          "instance": "0,0",
+          "value": 5309.783715343778,
+          "status": 0
+        },
+        {
+          "counter": "% processor performance",
+          "instance": "0,0",
+          "value": 139.69405703695946,
+          "status": 0
+        },
+        {
+          "counter": "% processor time",
+          "instance": "0,0",
+          "value": 100.0,
+          "status": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-11-16T00:05:51.5924940Z",
+      "samples": [
+        {
+          "counter": "actual frequency",
+          "instance": "0,0",
+          "value": 5308.865949471901,
+          "status": 0
+        },
+        {
+          "counter": "% processor performance",
+          "instance": "0,0",
+          "value": 139.67008670451727,
+          "status": 0
+        },
+        {
+          "counter": "% processor time",
+          "instance": "0,0",
+          "value": 100.0,
+          "status": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-11-16T00:05:52.5934522Z",
+      "samples": [
+        {
+          "counter": "actual frequency",
+          "instance": "0,0",
+          "value": 5309.946909812861,
+          "status": 0
+        },
+        {
+          "counter": "% processor performance",
+          "instance": "0,0",
+          "value": 139.6978536752235,
+          "status": 0
+        },
+        {
+          "counter": "% processor time",
+          "instance": "0,0",
+          "value": 100.0,
+          "status": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-11-16T00:05:53.6063861Z",
+      "samples": [
+        {
+          "counter": "actual frequency",
+          "instance": "0,0",
+          "value": 5308.062451414739,
+          "status": 0
+        },
+        {
+          "counter": "% processor performance",
+          "instance": "0,0",
+          "value": 139.65063951145908,
+          "status": 0
+        },
+        {
+          "counter": "% processor time",
+          "instance": "0,0",
+          "value": 100.0,
+          "status": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-11-16T00:05:54.6092885Z",
+      "samples": [
+        {
+          "counter": "actual frequency",
+          "instance": "0,0",
+          "value": 5310.164610497868,
+          "status": 0
+        },
+        {
+          "counter": "% processor performance",
+          "instance": "0,0",
+          "value": 139.7034632172759,
+          "status": 0
+        },
+        {
+          "counter": "% processor time",
+          "instance": "0,0",
+          "value": 100.0,
+          "status": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-11-16T00:05:55.6235354Z",
+      "samples": [
+        {
+          "counter": "actual frequency",
+          "instance": "0,0",
+          "value": 5311.832269290412,
+          "status": 0
+        },
+        {
+          "counter": "% processor performance",
+          "instance": "0,0",
+          "value": 139.74975903025256,
+          "status": 0
+        },
+        {
+          "counter": "% processor time",
+          "instance": "0,0",
+          "value": 100.0,
+          "status": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-11-16T00:05:56.6255059Z",
+      "samples": [
+        {
+          "counter": "actual frequency",
+          "instance": "0,0",
+          "value": 5312.050049182108,
+          "status": 0
+        },
+        {
+          "counter": "% processor performance",
+          "instance": "0,0",
+          "value": 139.75229980407155,
+          "status": 0
+        },
+        {
+          "counter": "% processor time",
+          "instance": "0,0",
+          "value": 100.0,
+          "status": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-11-16T00:05:57.6406834Z",
+      "samples": [
+        {
+          "counter": "actual frequency",
+          "instance": "0,0",
+          "value": 5310.42549499528,
+          "status": 0
+        },
+        {
+          "counter": "% processor performance",
+          "instance": "0,0",
+          "value": 139.7118955270221,
+          "status": 0
+        },
+        {
+          "counter": "% processor time",
+          "instance": "0,0",
+          "value": 100.0,
+          "status": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-11-16T00:05:58.6443038Z",
+      "samples": [
+        {
+          "counter": "actual frequency",
+          "instance": "0,0",
+          "value": 5311.051275674107,
+          "status": 0
+        },
+        {
+          "counter": "% processor performance",
+          "instance": "0,0",
+          "value": 139.72707532535446,
+          "status": 0
+        },
+        {
+          "counter": "% processor time",
+          "instance": "0,0",
+          "value": 100.0,
+          "status": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-11-16T00:05:59.6549335Z",
+      "samples": [
+        {
+          "counter": "actual frequency",
+          "instance": "0,0",
+          "value": 5312.395724143609,
+          "status": 0
+        },
+        {
+          "counter": "% processor performance",
+          "instance": "0,0",
+          "value": 139.76684564629804,
+          "status": 0
+        },
+        {
+          "counter": "% processor time",
+          "instance": "0,0",
+          "value": 100.0,
+          "status": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-11-16T00:06:00.6574953Z",
+      "samples": [
+        {
+          "counter": "actual frequency",
+          "instance": "0,0",
+          "value": 5311.034318810788,
+          "status": 0
+        },
+        {
+          "counter": "% processor performance",
+          "instance": "0,0",
+          "value": 139.72433710095984,
+          "status": 0
+        },
+        {
+          "counter": "% processor time",
+          "instance": "0,0",
+          "value": 100.0,
+          "status": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-11-16T00:06:01.6675839Z",
+      "samples": [
+        {
+          "counter": "actual frequency",
+          "instance": "0,0",
+          "value": 5312.1965086254695,
+          "status": 0
+        },
+        {
+          "counter": "% processor performance",
+          "instance": "0,0",
+          "value": 139.75684332585638,
+          "status": 0
+        },
+        {
+          "counter": "% processor time",
+          "instance": "0,0",
+          "value": 100.0,
+          "status": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-11-16T00:06:02.6795161Z",
+      "samples": [
+        {
+          "counter": "actual frequency",
+          "instance": "0,0",
+          "value": 5312.234648256062,
+          "status": 0
+        },
+        {
+          "counter": "% processor performance",
+          "instance": "0,0",
+          "value": 139.75965997030985,
+          "status": 0
+        },
+        {
+          "counter": "% processor time",
+          "instance": "0,0",
+          "value": 100.0,
+          "status": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-11-16T00:06:03.6955192Z",
+      "samples": [
+        {
+          "counter": "actual frequency",
+          "instance": "0,0",
+          "value": 5311.388814865214,
+          "status": 0
+        },
+        {
+          "counter": "% processor performance",
+          "instance": "0,0",
+          "value": 139.73710255586425,
+          "status": 0
+        },
+        {
+          "counter": "% processor time",
+          "instance": "0,0",
+          "value": 100.0,
+          "status": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-11-16T00:06:04.7097609Z",
+      "samples": [
+        {
+          "counter": "actual frequency",
+          "instance": "0,0",
+          "value": 5313.398827007228,
+          "status": 0
+        },
+        {
+          "counter": "% processor performance",
+          "instance": "0,0",
+          "value": 139.78964969484156,
+          "status": 0
+        },
+        {
+          "counter": "% processor time",
+          "instance": "0,0",
+          "value": 100.0,
+          "status": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-11-16T00:06:05.7221106Z",
+      "samples": [
+        {
+          "counter": "actual frequency",
+          "instance": "0,0",
+          "value": 5312.982924442238,
+          "status": 0
+        },
+        {
+          "counter": "% processor performance",
+          "instance": "0,0",
+          "value": 139.77814458547567,
+          "status": 0
+        },
+        {
+          "counter": "% processor time",
+          "instance": "0,0",
+          "value": 100.0,
+          "status": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-11-16T00:06:06.7230193Z",
+      "samples": [
+        {
+          "counter": "actual frequency",
+          "instance": "0,0",
+          "value": 5313.191701917451,
+          "status": 0
+        },
+        {
+          "counter": "% processor performance",
+          "instance": "0,0",
+          "value": 139.78317740873135,
+          "status": 0
+        },
+        {
+          "counter": "% processor time",
+          "instance": "0,0",
+          "value": 100.0,
+          "status": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-11-16T00:06:07.7363532Z",
+      "samples": [
+        {
+          "counter": "actual frequency",
+          "instance": "0,0",
+          "value": 5311.900012947395,
+          "status": 0
+        },
+        {
+          "counter": "% processor performance",
+          "instance": "0,0",
+          "value": 139.7510669708764,
+          "status": 0
+        },
+        {
+          "counter": "% processor time",
+          "instance": "0,0",
+          "value": 100.0,
+          "status": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-11-16T00:06:08.7506972Z",
+      "samples": [
+        {
+          "counter": "actual frequency",
+          "instance": "0,0",
+          "value": 5314.490556365266,
+          "status": 0
+        },
+        {
+          "counter": "% processor performance",
+          "instance": "0,0",
+          "value": 139.81731627679542,
+          "status": 0
+        },
+        {
+          "counter": "% processor time",
+          "instance": "0,0",
+          "value": 100.0,
+          "status": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-11-16T00:06:09.7657463Z",
+      "samples": [
+        {
+          "counter": "actual frequency",
+          "instance": "0,0",
+          "value": 5313.141482029062,
+          "status": 0
+        },
+        {
+          "counter": "% processor performance",
+          "instance": "0,0",
+          "value": 139.78319462833366,
+          "status": 0
+        },
+        {
+          "counter": "% processor time",
+          "instance": "0,0",
+          "value": 100.0,
+          "status": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-11-16T00:06:10.7812851Z",
+      "samples": [
+        {
+          "counter": "actual frequency",
+          "instance": "0,0",
+          "value": 5310.232542887008,
+          "status": 0
+        },
+        {
+          "counter": "% processor performance",
+          "instance": "0,0",
+          "value": 139.70646587333118,
+          "status": 0
+        },
+        {
+          "counter": "% processor time",
+          "instance": "0,0",
+          "value": 100.0,
+          "status": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-11-16T00:06:11.7829760Z",
+      "samples": [
+        {
+          "counter": "actual frequency",
+          "instance": "0,0",
+          "value": 5313.454854444916,
+          "status": 0
+        },
+        {
+          "counter": "% processor performance",
+          "instance": "0,0",
+          "value": 139.79074120807684,
+          "status": 0
+        },
+        {
+          "counter": "% processor time",
+          "instance": "0,0",
+          "value": 100.0,
+          "status": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-11-16T00:06:12.7946501Z",
+      "samples": [
+        {
+          "counter": "actual frequency",
+          "instance": "0,0",
+          "value": 5311.988190078528,
+          "status": 0
+        },
+        {
+          "counter": "% processor performance",
+          "instance": "0,0",
+          "value": 139.75209919891185,
+          "status": 0
+        },
+        {
+          "counter": "% processor time",
+          "instance": "0,0",
+          "value": 100.0,
+          "status": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-11-16T00:06:13.8093110Z",
+      "samples": [
+        {
+          "counter": "actual frequency",
+          "instance": "0,0",
+          "value": 5313.163816837226,
+          "status": 0
+        },
+        {
+          "counter": "% processor performance",
+          "instance": "0,0",
+          "value": 139.78367805181105,
+          "status": 0
+        },
+        {
+          "counter": "% processor time",
+          "instance": "0,0",
+          "value": 100.0,
+          "status": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-11-16T00:06:14.8217920Z",
+      "samples": [
+        {
+          "counter": "actual frequency",
+          "instance": "0,0",
+          "value": 5312.590574162301,
+          "status": 0
+        },
+        {
+          "counter": "% processor performance",
+          "instance": "0,0",
+          "value": 139.76786950214748,
+          "status": 0
+        },
+        {
+          "counter": "% processor time",
+          "instance": "0,0",
+          "value": 100.0,
+          "status": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-11-16T00:06:15.8327924Z",
+      "samples": [
+        {
+          "counter": "actual frequency",
+          "instance": "0,0",
+          "value": 5312.512243909696,
+          "status": 0
+        },
+        {
+          "counter": "% processor performance",
+          "instance": "0,0",
+          "value": 139.76681146691354,
+          "status": 0
+        },
+        {
+          "counter": "% processor time",
+          "instance": "0,0",
+          "value": 100.0,
+          "status": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-11-16T00:06:16.8402954Z",
+      "samples": [
+        {
+          "counter": "actual frequency",
+          "instance": "0,0",
+          "value": 5313.572762590271,
+          "status": 0
+        },
+        {
+          "counter": "% processor performance",
+          "instance": "0,0",
+          "value": 139.7940532484206,
+          "status": 0
+        },
+        {
+          "counter": "% processor time",
+          "instance": "0,0",
+          "value": 100.0,
+          "status": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-11-16T00:06:17.8504950Z",
+      "samples": [
+        {
+          "counter": "actual frequency",
+          "instance": "0,0",
+          "value": 5311.600134934386,
+          "status": 0
+        },
+        {
+          "counter": "% processor performance",
+          "instance": "0,0",
+          "value": 139.74147518058476,
+          "status": 0
+        },
+        {
+          "counter": "% processor time",
+          "instance": "0,0",
+          "value": 100.0,
+          "status": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-11-16T00:06:18.8634980Z",
+      "samples": [
+        {
+          "counter": "actual frequency",
+          "instance": "0,0",
+          "value": 5312.680305729828,
+          "status": 0
+        },
+        {
+          "counter": "% processor performance",
+          "instance": "0,0",
+          "value": 139.77051078334435,
+          "status": 0
+        },
+        {
+          "counter": "% processor time",
+          "instance": "0,0",
+          "value": 100.0,
+          "status": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-11-16T00:06:19.8774190Z",
+      "samples": [
+        {
+          "counter": "actual frequency",
+          "instance": "0,0",
+          "value": 5312.535669028031,
+          "status": 0
+        },
+        {
+          "counter": "% processor performance",
+          "instance": "0,0",
+          "value": 139.7676831596921,
+          "status": 0
+        },
+        {
+          "counter": "% processor time",
+          "instance": "0,0",
+          "value": 100.0,
+          "status": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-11-16T00:06:20.8801240Z",
+      "samples": [
+        {
+          "counter": "actual frequency",
+          "instance": "0,0",
+          "value": 5313.7301250189485,
+          "status": 0
+        },
+        {
+          "counter": "% processor performance",
+          "instance": "0,0",
+          "value": 139.79771022817934,
+          "status": 0
+        },
+        {
+          "counter": "% processor time",
+          "instance": "0,0",
+          "value": 100.0,
+          "status": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-11-16T00:06:21.8883218Z",
+      "samples": [
+        {
+          "counter": "actual frequency",
+          "instance": "0,0",
+          "value": 5311.7751410833425,
+          "status": 0
+        },
+        {
+          "counter": "% processor performance",
+          "instance": "0,0",
+          "value": 139.74660540849362,
+          "status": 0
+        },
+        {
+          "counter": "% processor time",
+          "instance": "0,0",
+          "value": 100.0,
+          "status": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-11-16T00:06:22.9037598Z",
+      "samples": [
+        {
+          "counter": "actual frequency",
+          "instance": "0,0",
+          "value": 5293.901554457449,
+          "status": 0
+        },
+        {
+          "counter": "% processor performance",
+          "instance": "0,0",
+          "value": 139.2764361046385,
+          "status": 0
+        },
+        {
+          "counter": "% processor time",
+          "instance": "0,0",
+          "value": 89.22878600170567,
+          "status": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-11-16T00:06:23.9180371Z",
+      "samples": [
+        {
+          "counter": "actual frequency",
+          "instance": "0,0",
+          "value": 5314.779974476717,
+          "status": 0
+        },
+        {
+          "counter": "% processor performance",
+          "instance": "0,0",
+          "value": 139.82604361056207,
+          "status": 0
+        },
+        {
+          "counter": "% processor time",
+          "instance": "0,0",
+          "value": 100.0,
+          "status": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-11-16T00:06:24.9321082Z",
+      "samples": [
+        {
+          "counter": "actual frequency",
+          "instance": "0,0",
+          "value": 5313.112439591232,
+          "status": 0
+        },
+        {
+          "counter": "% processor performance",
+          "instance": "0,0",
+          "value": 139.78213433721254,
+          "status": 0
+        },
+        {
+          "counter": "% processor time",
+          "instance": "0,0",
+          "value": 100.0,
+          "status": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-11-16T00:06:25.9340891Z",
+      "samples": [
+        {
+          "counter": "actual frequency",
+          "instance": "0,0",
+          "value": 5311.465081073485,
+          "status": 0
+        },
+        {
+          "counter": "% processor performance",
+          "instance": "0,0",
+          "value": 139.73952646110558,
+          "status": 0
+        },
+        {
+          "counter": "% processor time",
+          "instance": "0,0",
+          "value": 100.0,
+          "status": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-11-16T00:06:26.9448718Z",
+      "samples": [
+        {
+          "counter": "actual frequency",
+          "instance": "0,0",
+          "value": 5313.239603070207,
+          "status": 0
+        },
+        {
+          "counter": "% processor performance",
+          "instance": "0,0",
+          "value": 139.7846060333611,
+          "status": 0
+        },
+        {
+          "counter": "% processor time",
+          "instance": "0,0",
+          "value": 100.0,
+          "status": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-11-16T00:06:27.9581210Z",
+      "samples": [
+        {
+          "counter": "actual frequency",
+          "instance": "0,0",
+          "value": 5313.166049265751,
+          "status": 0
+        },
+        {
+          "counter": "% processor performance",
+          "instance": "0,0",
+          "value": 139.78306263402064,
+          "status": 0
+        },
+        {
+          "counter": "% processor time",
+          "instance": "0,0",
+          "value": 100.0,
+          "status": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-11-16T00:06:28.9682257Z",
+      "samples": [
+        {
+          "counter": "actual frequency",
+          "instance": "0,0",
+          "value": 5311.7665614891985,
+          "status": 0
+        },
+        {
+          "counter": "% processor performance",
+          "instance": "0,0",
+          "value": 139.7466307234911,
+          "status": 0
+        },
+        {
+          "counter": "% processor time",
+          "instance": "0,0",
+          "value": 100.0,
+          "status": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-11-16T00:06:29.9836146Z",
+      "samples": [
+        {
+          "counter": "actual frequency",
+          "instance": "0,0",
+          "value": 5314.820908480687,
+          "status": 0
+        },
+        {
+          "counter": "% processor performance",
+          "instance": "0,0",
+          "value": 139.8277138922416,
+          "status": 0
+        },
+        {
+          "counter": "% processor time",
+          "instance": "0,0",
+          "value": 100.0,
+          "status": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-11-16T00:06:30.9964510Z",
+      "samples": [
+        {
+          "counter": "actual frequency",
+          "instance": "0,0",
+          "value": 5313.156537028787,
+          "status": 0
+        },
+        {
+          "counter": "% processor performance",
+          "instance": "0,0",
+          "value": 139.78216504763876,
+          "status": 0
+        },
+        {
+          "counter": "% processor time",
+          "instance": "0,0",
+          "value": 100.0,
+          "status": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-11-16T00:06:32.0088811Z",
+      "samples": [
+        {
+          "counter": "actual frequency",
+          "instance": "0,0",
+          "value": 5312.962729120373,
+          "status": 0
+        },
+        {
+          "counter": "% processor performance",
+          "instance": "0,0",
+          "value": 139.77720988450378,
+          "status": 0
+        },
+        {
+          "counter": "% processor time",
+          "instance": "0,0",
+          "value": 100.0,
+          "status": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-11-16T00:06:33.0149368Z",
+      "samples": [
+        {
+          "counter": "actual frequency",
+          "instance": "0,0",
+          "value": 5314.870226057527,
+          "status": 0
+        },
+        {
+          "counter": "% processor performance",
+          "instance": "0,0",
+          "value": 139.82924657033166,
+          "status": 0
+        },
+        {
+          "counter": "% processor time",
+          "instance": "0,0",
+          "value": 100.0,
+          "status": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-11-16T00:06:34.0228750Z",
+      "samples": [
+        {
+          "counter": "actual frequency",
+          "instance": "0,0",
+          "value": 5311.07336435024,
+          "status": 0
+        },
+        {
+          "counter": "% processor performance",
+          "instance": "0,0",
+          "value": 139.72849528078757,
+          "status": 0
+        },
+        {
+          "counter": "% processor time",
+          "instance": "0,0",
+          "value": 100.0,
+          "status": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-11-16T00:06:35.0354246Z",
+      "samples": [
+        {
+          "counter": "actual frequency",
+          "instance": "0,0",
+          "value": 5311.563616620064,
+          "status": 0
+        },
+        {
+          "counter": "% processor performance",
+          "instance": "0,0",
+          "value": 139.74212011285772,
+          "status": 0
+        },
+        {
+          "counter": "% processor time",
+          "instance": "0,0",
+          "value": 100.0,
+          "status": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-11-16T00:06:36.0481782Z",
+      "samples": [
+        {
+          "counter": "actual frequency",
+          "instance": "0,0",
+          "value": 5313.930632952191,
+          "status": 0
+        },
+        {
+          "counter": "% processor performance",
+          "instance": "0,0",
+          "value": 139.80128925228107,
+          "status": 0
+        },
+        {
+          "counter": "% processor time",
+          "instance": "0,0",
+          "value": 100.0,
+          "status": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-11-16T00:06:37.0502433Z",
+      "samples": [
+        {
+          "counter": "actual frequency",
+          "instance": "0,0",
+          "value": 5312.974782147772,
+          "status": 0
+        },
+        {
+          "counter": "% processor performance",
+          "instance": "0,0",
+          "value": 139.77827022677488,
+          "status": 0
+        },
+        {
+          "counter": "% processor time",
+          "instance": "0,0",
+          "value": 100.0,
+          "status": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-11-16T00:06:38.0639780Z",
+      "samples": [
+        {
+          "counter": "actual frequency",
+          "instance": "0,0",
+          "value": 5311.89251227173,
+          "status": 0
+        },
+        {
+          "counter": "% processor performance",
+          "instance": "0,0",
+          "value": 139.75103975453112,
+          "status": 0
+        },
+        {
+          "counter": "% processor time",
+          "instance": "0,0",
+          "value": 100.0,
+          "status": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-11-16T00:06:39.0718571Z",
+      "samples": [
+        {
+          "counter": "actual frequency",
+          "instance": "0,0",
+          "value": 5313.459040388887,
+          "status": 0
+        },
+        {
+          "counter": "% processor performance",
+          "instance": "0,0",
+          "value": 139.79124497341647,
+          "status": 0
+        },
+        {
+          "counter": "% processor time",
+          "instance": "0,0",
+          "value": 100.0,
+          "status": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-11-16T00:06:40.0838740Z",
+      "samples": [
+        {
+          "counter": "actual frequency",
+          "instance": "0,0",
+          "value": 5314.426236612198,
+          "status": 0
+        },
+        {
+          "counter": "% processor performance",
+          "instance": "0,0",
+          "value": 139.81568442628136,
+          "status": 0
+        },
+        {
+          "counter": "% processor time",
+          "instance": "0,0",
+          "value": 100.0,
+          "status": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-11-16T00:06:41.0982912Z",
+      "samples": [
+        {
+          "counter": "actual frequency",
+          "instance": "0,0",
+          "value": 5314.515633822811,
+          "status": 0
+        },
+        {
+          "counter": "% processor performance",
+          "instance": "0,0",
+          "value": 139.8193145827813,
+          "status": 0
+        },
+        {
+          "counter": "% processor time",
+          "instance": "0,0",
+          "value": 100.0,
+          "status": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-11-16T00:06:42.1004542Z",
+      "samples": [
+        {
+          "counter": "actual frequency",
+          "instance": "0,0",
+          "value": 5313.996647365068,
+          "status": 0
+        },
+        {
+          "counter": "% processor performance",
+          "instance": "0,0",
+          "value": 139.80529302076081,
+          "status": 0
+        },
+        {
+          "counter": "% processor time",
+          "instance": "0,0",
+          "value": 100.0,
+          "status": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-11-16T00:06:43.1133688Z",
+      "samples": [
+        {
+          "counter": "actual frequency",
+          "instance": "0,0",
+          "value": 5316.746789034301,
+          "status": 0
+        },
+        {
+          "counter": "% processor performance",
+          "instance": "0,0",
+          "value": 139.87775882222854,
+          "status": 0
+        },
+        {
+          "counter": "% processor time",
+          "instance": "0,0",
+          "value": 100.0,
+          "status": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-11-16T00:06:44.1167298Z",
+      "samples": [
+        {
+          "counter": "actual frequency",
+          "instance": "0,0",
+          "value": 5315.5932637447095,
+          "status": 0
+        },
+        {
+          "counter": "% processor performance",
+          "instance": "0,0",
+          "value": 139.84950017301398,
+          "status": 0
+        },
+        {
+          "counter": "% processor time",
+          "instance": "0,0",
+          "value": 100.0,
+          "status": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-11-16T00:06:45.1294792Z",
+      "samples": [
+        {
+          "counter": "actual frequency",
+          "instance": "0,0",
+          "value": 5314.410893607609,
+          "status": 0
+        },
+        {
+          "counter": "% processor performance",
+          "instance": "0,0",
+          "value": 139.81303460326788,
+          "status": 0
+        },
+        {
+          "counter": "% processor time",
+          "instance": "0,0",
+          "value": 100.0,
+          "status": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-11-16T00:06:46.1429765Z",
+      "samples": [
+        {
+          "counter": "actual frequency",
+          "instance": "0,0",
+          "value": 5313.674102779107,
+          "status": 0
+        },
+        {
+          "counter": "% processor performance",
+          "instance": "0,0",
+          "value": 139.79770424599215,
+          "status": 0
+        },
+        {
+          "counter": "% processor time",
+          "instance": "0,0",
+          "value": 100.0,
+          "status": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-11-16T00:06:47.1574656Z",
+      "samples": [
+        {
+          "counter": "actual frequency",
+          "instance": "0,0",
+          "value": 5313.427430026007,
+          "status": 0
+        },
+        {
+          "counter": "% processor performance",
+          "instance": "0,0",
+          "value": 139.78922565932038,
+          "status": 0
+        },
+        {
+          "counter": "% processor time",
+          "instance": "0,0",
+          "value": 100.0,
+          "status": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-11-16T00:06:48.1716119Z",
+      "samples": [
+        {
+          "counter": "actual frequency",
+          "instance": "0,0",
+          "value": 5314.031824765006,
+          "status": 0
+        },
+        {
+          "counter": "% processor performance",
+          "instance": "0,0",
+          "value": 139.80699952511898,
+          "status": 0
+        },
+        {
+          "counter": "% processor time",
+          "instance": "0,0",
+          "value": 100.0,
+          "status": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-11-16T00:06:49.2022345Z",
+      "samples": [
+        {
+          "counter": "actual frequency",
+          "instance": "0,0",
+          "value": 5314.892329762904,
+          "status": 0
+        },
+        {
+          "counter": "% processor performance",
+          "instance": "0,0",
+          "value": 139.8288370952066,
+          "status": 0
+        },
+        {
+          "counter": "% processor time",
+          "instance": "0,0",
+          "value": 100.0,
+          "status": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-11-16T00:06:50.2040630Z",
+      "samples": [
+        {
+          "counter": "actual frequency",
+          "instance": "0,0",
+          "value": 5314.980030567413,
+          "status": 0
+        },
+        {
+          "counter": "% processor performance",
+          "instance": "0,0",
+          "value": 139.83146130221817,
+          "status": 0
+        },
+        {
+          "counter": "% processor time",
+          "instance": "0,0",
+          "value": 100.0,
+          "status": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-11-16T00:06:51.2061759Z",
+      "samples": [
+        {
+          "counter": "actual frequency",
+          "instance": "0,0",
+          "value": 5315.270271521677,
+          "status": 0
+        },
+        {
+          "counter": "% processor performance",
+          "instance": "0,0",
+          "value": 139.83815297464898,
+          "status": 0
+        },
+        {
+          "counter": "% processor time",
+          "instance": "0,0",
+          "value": 100.0,
+          "status": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-11-16T00:06:52.2139652Z",
+      "samples": [
+        {
+          "counter": "actual frequency",
+          "instance": "0,0",
+          "value": 5314.784838532419,
+          "status": 0
+        },
+        {
+          "counter": "% processor performance",
+          "instance": "0,0",
+          "value": 139.82582794814337,
+          "status": 0
+        },
+        {
+          "counter": "% processor time",
+          "instance": "0,0",
+          "value": 100.0,
+          "status": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-11-16T00:06:53.2161593Z",
+      "samples": [
+        {
+          "counter": "actual frequency",
+          "instance": "0,0",
+          "value": 5314.065779179931,
+          "status": 0
+        },
+        {
+          "counter": "% processor performance",
+          "instance": "0,0",
+          "value": 139.80725582672613,
+          "status": 0
+        },
+        {
+          "counter": "% processor time",
+          "instance": "0,0",
+          "value": 100.0,
+          "status": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-11-16T00:06:54.2202903Z",
+      "samples": [
+        {
+          "counter": "actual frequency",
+          "instance": "0,0",
+          "value": 5314.046785601047,
+          "status": 0
+        },
+        {
+          "counter": "% processor performance",
+          "instance": "0,0",
+          "value": 139.80724532847273,
+          "status": 0
+        },
+        {
+          "counter": "% processor time",
+          "instance": "0,0",
+          "value": 100.0,
+          "status": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-11-16T00:06:55.2294788Z",
+      "samples": [
+        {
+          "counter": "actual frequency",
+          "instance": "0,0",
+          "value": 5315.514775271279,
+          "status": 0
+        },
+        {
+          "counter": "% processor performance",
+          "instance": "0,0",
+          "value": 139.84440114282452,
+          "status": 0
+        },
+        {
+          "counter": "% processor time",
+          "instance": "0,0",
+          "value": 100.0,
+          "status": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-11-16T00:06:56.2393104Z",
+      "samples": [
+        {
+          "counter": "actual frequency",
+          "instance": "0,0",
+          "value": 5312.080596149459,
+          "status": 0
+        },
+        {
+          "counter": "% processor performance",
+          "instance": "0,0",
+          "value": 139.75446582053064,
+          "status": 0
+        },
+        {
+          "counter": "% processor time",
+          "instance": "0,0",
+          "value": 100.0,
+          "status": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-11-16T00:06:57.2536442Z",
+      "samples": [
+        {
+          "counter": "actual frequency",
+          "instance": "0,0",
+          "value": 5311.265114048497,
+          "status": 0
+        },
+        {
+          "counter": "% processor performance",
+          "instance": "0,0",
+          "value": 139.7343503261581,
+          "status": 0
+        },
+        {
+          "counter": "% processor time",
+          "instance": "0,0",
+          "value": 100.0,
+          "status": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-11-16T00:06:58.2684615Z",
+      "samples": [
+        {
+          "counter": "actual frequency",
+          "instance": "0,0",
+          "value": 5315.048060560659,
+          "status": 0
+        },
+        {
+          "counter": "% processor performance",
+          "instance": "0,0",
+          "value": 139.83268856207863,
+          "status": 0
+        },
+        {
+          "counter": "% processor time",
+          "instance": "0,0",
+          "value": 100.0,
+          "status": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-11-16T00:06:59.2824735Z",
+      "samples": [
+        {
+          "counter": "actual frequency",
+          "instance": "0,0",
+          "value": 5314.0619399205025,
+          "status": 0
+        },
+        {
+          "counter": "% processor performance",
+          "instance": "0,0",
+          "value": 139.80538395386085,
+          "status": 0
+        },
+        {
+          "counter": "% processor time",
+          "instance": "0,0",
+          "value": 100.0,
+          "status": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-11-16T00:07:00.2884879Z",
+      "samples": [
+        {
+          "counter": "actual frequency",
+          "instance": "0,0",
+          "value": 5314.647604325208,
+          "status": 0
+        },
+        {
+          "counter": "% processor performance",
+          "instance": "0,0",
+          "value": 139.8236384947779,
+          "status": 0
+        },
+        {
+          "counter": "% processor time",
+          "instance": "0,0",
+          "value": 100.0,
+          "status": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-11-16T00:07:01.3027248Z",
+      "samples": [
+        {
+          "counter": "actual frequency",
+          "instance": "0,0",
+          "value": 5312.949131312048,
+          "status": 0
+        },
+        {
+          "counter": "% processor performance",
+          "instance": "0,0",
+          "value": 139.77755937497534,
+          "status": 0
+        },
+        {
+          "counter": "% processor time",
+          "instance": "0,0",
+          "value": 100.0,
+          "status": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-11-16T00:07:02.3178121Z",
+      "samples": [
+        {
+          "counter": "actual frequency",
+          "instance": "0,0",
+          "value": 5313.0117030314395,
+          "status": 0
+        },
+        {
+          "counter": "% processor performance",
+          "instance": "0,0",
+          "value": 139.77981334690963,
+          "status": 0
+        },
+        {
+          "counter": "% processor time",
+          "instance": "0,0",
+          "value": 100.0,
+          "status": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-11-16T00:07:03.3244656Z",
+      "samples": [
+        {
+          "counter": "actual frequency",
+          "instance": "0,0",
+          "value": 5312.7778500096165,
+          "status": 0
+        },
+        {
+          "counter": "% processor performance",
+          "instance": "0,0",
+          "value": 139.77271701364054,
+          "status": 0
+        },
+        {
+          "counter": "% processor time",
+          "instance": "0,0",
+          "value": 100.0,
+          "status": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-11-16T00:07:04.3262952Z",
+      "samples": [
+        {
+          "counter": "actual frequency",
+          "instance": "0,0",
+          "value": 5312.8828638707655,
+          "status": 0
+        },
+        {
+          "counter": "% processor performance",
+          "instance": "0,0",
+          "value": 139.77586587002364,
+          "status": 0
+        },
+        {
+          "counter": "% processor time",
+          "instance": "0,0",
+          "value": 100.0,
+          "status": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-11-16T00:07:05.3277248Z",
+      "samples": [
+        {
+          "counter": "actual frequency",
+          "instance": "0,0",
+          "value": 5315.5551005408515,
+          "status": 0
+        },
+        {
+          "counter": "% processor performance",
+          "instance": "0,0",
+          "value": 139.84600058159415,
+          "status": 0
+        },
+        {
+          "counter": "% processor time",
+          "instance": "0,0",
+          "value": 100.0,
+          "status": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-11-16T00:07:06.3306848Z",
+      "samples": [
+        {
+          "counter": "actual frequency",
+          "instance": "0,0",
+          "value": 5315.153752887573,
+          "status": 0
+        },
+        {
+          "counter": "% processor performance",
+          "instance": "0,0",
+          "value": 139.83631371635602,
+          "status": 0
+        },
+        {
+          "counter": "% processor time",
+          "instance": "0,0",
+          "value": 100.0,
+          "status": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-11-16T00:07:07.3309078Z",
+      "samples": [
+        {
+          "counter": "actual frequency",
+          "instance": "0,0",
+          "value": 5313.575423095809,
+          "status": 0
+        },
+        {
+          "counter": "% processor performance",
+          "instance": "0,0",
+          "value": 139.79452442607558,
+          "status": 0
+        },
+        {
+          "counter": "% processor time",
+          "instance": "0,0",
+          "value": 100.0,
+          "status": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-11-16T00:07:08.3320374Z",
+      "samples": [
+        {
+          "counter": "actual frequency",
+          "instance": "0,0",
+          "value": 5314.051157950933,
+          "status": 0
+        },
+        {
+          "counter": "% processor performance",
+          "instance": "0,0",
+          "value": 139.8061221390884,
+          "status": 0
+        },
+        {
+          "counter": "% processor time",
+          "instance": "0,0",
+          "value": 100.0,
+          "status": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-11-16T00:07:09.3430011Z",
+      "samples": [
+        {
+          "counter": "actual frequency",
+          "instance": "0,0",
+          "value": 5312.29129168118,
+          "status": 0
+        },
+        {
+          "counter": "% processor performance",
+          "instance": "0,0",
+          "value": 139.76018708516997,
+          "status": 0
+        },
+        {
+          "counter": "% processor time",
+          "instance": "0,0",
+          "value": 100.0,
+          "status": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-11-16T00:07:10.3478803Z",
+      "samples": [
+        {
+          "counter": "actual frequency",
+          "instance": "0,0",
+          "value": 5312.829930737998,
+          "status": 0
+        },
+        {
+          "counter": "% processor performance",
+          "instance": "0,0",
+          "value": 139.7743681275814,
+          "status": 0
+        },
+        {
+          "counter": "% processor time",
+          "instance": "0,0",
+          "value": 100.0,
+          "status": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-11-16T00:07:11.3599792Z",
+      "samples": [
+        {
+          "counter": "actual frequency",
+          "instance": "0,0",
+          "value": 5313.100558994821,
+          "status": 0
+        },
+        {
+          "counter": "% processor performance",
+          "instance": "0,0",
+          "value": 139.78160614266812,
+          "status": 0
+        },
+        {
+          "counter": "% processor time",
+          "instance": "0,0",
+          "value": 100.0,
+          "status": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-11-16T00:07:12.3731673Z",
+      "samples": [
+        {
+          "counter": "actual frequency",
+          "instance": "0,0",
+          "value": 5311.669037437546,
+          "status": 0
+        },
+        {
+          "counter": "% processor performance",
+          "instance": "0,0",
+          "value": 139.74433731058573,
+          "status": 0
+        },
+        {
+          "counter": "% processor time",
+          "instance": "0,0",
+          "value": 100.0,
+          "status": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-11-16T00:07:13.3881509Z",
+      "samples": [
+        {
+          "counter": "actual frequency",
+          "instance": "0,0",
+          "value": 5313.867614186312,
+          "status": 0
+        },
+        {
+          "counter": "% processor performance",
+          "instance": "0,0",
+          "value": 139.80244342678785,
+          "status": 0
+        },
+        {
+          "counter": "% processor time",
+          "instance": "0,0",
+          "value": 100.0,
+          "status": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-11-16T00:07:14.3999424Z",
+      "samples": [
+        {
+          "counter": "actual frequency",
+          "instance": "0,0",
+          "value": 5312.959281620829,
+          "status": 0
+        },
+        {
+          "counter": "% processor performance",
+          "instance": "0,0",
+          "value": 139.77691997501444,
+          "status": 0
+        },
+        {
+          "counter": "% processor time",
+          "instance": "0,0",
+          "value": 100.0,
+          "status": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-11-16T00:07:15.4141205Z",
+      "samples": [
+        {
+          "counter": "actual frequency",
+          "instance": "0,0",
+          "value": 5313.34855638737,
+          "status": 0
+        },
+        {
+          "counter": "% processor performance",
+          "instance": "0,0",
+          "value": 139.78777487592612,
+          "status": 0
+        },
+        {
+          "counter": "% processor time",
+          "instance": "0,0",
+          "value": 100.0,
+          "status": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-11-16T00:07:16.4149007Z",
+      "samples": [
+        {
+          "counter": "actual frequency",
+          "instance": "0,0",
+          "value": 5314.364791207316,
+          "status": 0
+        },
+        {
+          "counter": "% processor performance",
+          "instance": "0,0",
+          "value": 139.81641081561617,
+          "status": 0
+        },
+        {
+          "counter": "% processor time",
+          "instance": "0,0",
+          "value": 100.0,
+          "status": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-11-16T00:07:17.4167871Z",
+      "samples": [
+        {
+          "counter": "actual frequency",
+          "instance": "0,0",
+          "value": 5313.964089862377,
+          "status": 0
+        },
+        {
+          "counter": "% processor performance",
+          "instance": "0,0",
+          "value": 139.80305236968263,
+          "status": 0
+        },
+        {
+          "counter": "% processor time",
+          "instance": "0,0",
+          "value": 100.0,
+          "status": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-11-16T00:07:18.4182263Z",
+      "samples": [
+        {
+          "counter": "actual frequency",
+          "instance": "0,0",
+          "value": 5314.586845901786,
+          "status": 0
+        },
+        {
+          "counter": "% processor performance",
+          "instance": "0,0",
+          "value": 139.82071916194164,
+          "status": 0
+        },
+        {
+          "counter": "% processor time",
+          "instance": "0,0",
+          "value": 100.0,
+          "status": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-11-16T00:07:19.4233677Z",
+      "samples": [
+        {
+          "counter": "actual frequency",
+          "instance": "0,0",
+          "value": 5314.055722531943,
+          "status": 0
+        },
+        {
+          "counter": "% processor performance",
+          "instance": "0,0",
+          "value": 139.8076200573741,
+          "status": 0
+        },
+        {
+          "counter": "% processor time",
+          "instance": "0,0",
+          "value": 100.0,
+          "status": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-11-16T00:07:20.4380406Z",
+      "samples": [
+        {
+          "counter": "actual frequency",
+          "instance": "0,0",
+          "value": 5315.375174625599,
+          "status": 0
+        },
+        {
+          "counter": "% processor performance",
+          "instance": "0,0",
+          "value": 139.84178236087132,
+          "status": 0
+        },
+        {
+          "counter": "% processor time",
+          "instance": "0,0",
+          "value": 100.0,
+          "status": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-11-16T00:07:21.4394357Z",
+      "samples": [
+        {
+          "counter": "actual frequency",
+          "instance": "0,0",
+          "value": 5313.896784433828,
+          "status": 0
+        },
+        {
+          "counter": "% processor performance",
+          "instance": "0,0",
+          "value": 139.80147055297587,
+          "status": 0
+        },
+        {
+          "counter": "% processor time",
+          "instance": "0,0",
+          "value": 100.0,
+          "status": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-11-16T00:07:22.4515176Z",
+      "samples": [
+        {
+          "counter": "actual frequency",
+          "instance": "0,0",
+          "value": 5310.690455750597,
+          "status": 0
+        },
+        {
+          "counter": "% processor performance",
+          "instance": "0,0",
+          "value": 139.71834546477876,
+          "status": 0
+        },
+        {
+          "counter": "% processor time",
+          "instance": "0,0",
+          "value": 100.0,
+          "status": 0
+        }
+      ]
+    }
+  ],
+  "processor_summary": {
+    "actual frequency": {
+      "minimum": 4111.028107833771,
+      "median": 5311.634586185966,
+      "maximum": 5316.746789034301
+    },
+    "% processor performance": {
+      "minimum": 108.15423531518624,
+      "median": 139.7432287117217,
+      "maximum": 139.87775882222854
+    },
+    "% processor time": {
+      "minimum": 3.0694501789036432,
+      "median": 100.0,
+      "maximum": 100.0
+    }
+  },
+  "scripts": {
+    "worker.py": "from pathlib import Path\nimport sys,json,hashlib,statistics,importlib.util,argparse,os,ctypes,time,datetime\nfrom ctypes import wintypes\nroot=Path(__file__).resolve().parents[2];out=Path(__file__).resolve().parent;old=root/'.work/rot3-20261116'\np=argparse.ArgumentParser();p.add_argument('stage',choices=['pilot','aa','compare']);p.add_argument('case');p.add_argument('--series',type=int,default=1);a=p.parse_args()\nspec=importlib.util.spec_from_file_location('benchmark',root/'scripts/benchmark-runtime.py');b=importlib.util.module_from_spec(spec);spec.loader.exec_module(b);b.cpu_affinity(0)\ndef sha(path):return hashlib.sha256(path.read_bytes()).hexdigest()\nassert sha(root/'scripts/benchmark-runtime.py')=='576345f4486dd27a510327d91ec04d5f8ce9721f42059679bd78e4b661e315ef'\nmanifest=json.loads((old/'frozen-binaries.json').read_text());base=old/'baseline-windows/bin/sigma.exe';candidate=old/'candidate-windows/bin/sigma.exe';assert sha(base)==manifest['baseline-windows']['sha256'] and sha(candidate)==manifest['candidate-windows']['sha256']\nfor name,expected in json.loads((old/'frozen-sources.json').read_text()).items():assert sha(root/name)==expected,name\npids=[];sessions=[]\nclass Clock(b.WindowsProcessClock):\n def __init__(self,pid):\n  pids.append(pid);super().__init__(pid);self.queries=[];sessions.append({'pid':pid,'queries':self.queries})\n  self.api.QueryProcessCycleTime.argtypes=[wintypes.HANDLE,ctypes.POINTER(ctypes.c_ulonglong)];self.api.QueryProcessCycleTime.restype=wintypes.BOOL\n def read_ns(self):\n  fields=[wintypes.FILETIME() for _ in range(4)]\n  if not self.api.GetProcessTimes(self.handle,*(ctypes.byref(t) for t in fields)):raise ctypes.WinError(ctypes.get_last_error())\n  kernel=((fields[2].dwHighDateTime<<32)|fields[2].dwLowDateTime)*100;user=((fields[3].dwHighDateTime<<32)|fields[3].dwLowDateTime)*100\n  cycle=ctypes.c_ulonglong();ok=self.api.QueryProcessCycleTime(self.handle,ctypes.byref(cycle));err=0 if ok else ctypes.get_last_error()\n  self.queries.append({'utc':datetime.datetime.now(datetime.timezone.utc).isoformat(),'perf_counter_ns':time.perf_counter_ns(),'kernel_ns':kernel,'user_ns':user,'cycles':cycle.value if ok else None,'cycle_query_error':err})\n  return kernel+user\nb.WindowsProcessClock=Clock\nc=json.loads((out/(a.case+'-config.json')).read_text());n=c['iterations'];source=f'{n} CONSTANT BENCH-ITERATIONS {c[\"definition\"]} '+'.\" BENCH-READY\" CR KEY DROP BENCH-RUN .\" BENCH-DONE \" . CR KEY DROP BYE'\nrounds=0 if a.stage=='pilot' else 5 if a.stage=='aa' else 7\nengines={'baseline':base} if a.stage=='pilot' else {'A1':base,'A2':base} if a.stage=='aa' else {'baseline':base,'candidate':candidate}\nvalues={k:[] for k in engines};walls={k:[] for k in engines};totals={k:[] for k in engines};orders=[];warmups={}\nfor i in range(rounds+1):\n order=list(engines) if (a.series-1+i)%2==0 else list(reversed(engines));orders.append(order)\n for key in order:\n  cpu,check,wall,total=b.sample(str(engines[key]),False,source);assert check==c['checksum_expected'];assert total>=cpu\n  if i or a.stage=='pilot':values[key].append(cpu);walls[key].append(wall);totals[key].append(total)\n  else:warmups[key]={'cpu_us':cpu,'wall_us':wall,'total_process_cpu_us':total,'checksum':check,'child_pid':pids[-1]}\nrows={k:{'samples_us':v,'median_us':statistics.median(v),'min_us':min(v),'max_us':max(v),'wall_samples_us':walls[k],'total_process_cpu_samples_us':totals[k],'sha256':sha(engines[k])} for k,v in values.items()}\nr={'stage':a.stage,'case':c,'series':a.series,'rounds':rounds,'engines':rows,'orders':orders,'warmups_excluded':warmups,'child_pids_in_actual_execution_order':pids,'cpu_affinity':b.cpu_affinity(),'process_time_queries':sessions,'diagnostic_only':True,'timing':'GetProcessTimes READY/DONE CPU delta; startup/compilation excluded; boundary I/O included'}\nif len(rows)==2:\n x,y=[v['median_us'] for v in rows.values()];r['change_percent']=100*(y/x-1);r['aa_delta_percent']=100*abs(x-y)/min(x,y)\n(out/(a.case+f'-{a.stage}-{a.series}.json')).write_text(json.dumps(r,indent=2)+'\\n');print(a.case,a.stage,a.series,r.get('change_percent',rows['baseline']['median_us'] if 'baseline' in rows else None),flush=True)\n",
+    "run.py": "from pathlib import Path\nimport subprocess,json,sys,datetime,hashlib\nout=Path('.work/vm-time-audit-20261116').resolve();rows=[]\nfor index in (1,2):\n cmd=[sys.executable,str(out/'worker.py'),'aa','rot','--series',str(index)]\n with (out/f'run-{index}.log').open('wb') as log:r=subprocess.run(cmd,stdout=log,stderr=subprocess.STDOUT)\n rows.append({'command':cmd,'exit':r.returncode});(out/'commands.json').write_text(json.dumps(rows,indent=2)+'\\n');assert r.returncode==0\n value=json.loads((out/f'rot-aa-{index}.json').read_text());print('audit series',index,'CPU delta',value['aa_delta_percent'],flush=True)\n(out/'complete.json').write_text(json.dumps({'utc':datetime.datetime.now(datetime.timezone.utc).isoformat(),'series':2,'primary_metric_or_OS_policy_changed':False},indent=2)+'\\n')\n"
+  },
+  "status": "baseline_only_diagnostic_metric_variability_observed_no_primary_policy_change",
+  "limitations": "Monitoring overhead included; no retrospective diagnosis of the earlier candidate outlier; raw process cycle values not interpreted as retired instructions or clock frequency. Median(kernel)+median(user) need not equal median(total)."
+}

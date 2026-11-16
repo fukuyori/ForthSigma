@@ -1,0 +1,1866 @@
+{
+  "decision": "calibration unresolved; candidate not timed; adoption deferred",
+  "iterations": 349090910,
+  "warmup_excluded_per_engine": 1,
+  "samples_per_engine": 5,
+  "series": [
+    {
+      "series": 1,
+      "delta_percent": 3.5398230088495577,
+      "medians_us": {
+        "A1": 5296875.0,
+        "A2": 5484375.0
+      }
+    },
+    {
+      "series": 2,
+      "delta_percent": 2.9585798816568047,
+      "medians_us": {
+        "A1": 5281250.0,
+        "A2": 5437500.0
+      }
+    }
+  ],
+  "candidate_comparisons": 0,
+  "unmeasured": [
+    "Windows candidate target",
+    "Linux target",
+    "all 17 standard cases per OS"
+  ],
+  "files": {
+    "aa-summary.json": {
+      "sha256": "bcacf0da90f0f9761c2b5301d5b663d86005c76041239370d796e8ff844f8f2c",
+      "content": {
+        "delta_percent": 3.5398230088495577,
+        "minimum_median_us": 5281250.0,
+        "iterations": 349090910
+      }
+    },
+    "commands.json": {
+      "sha256": "ffb488c8f201b94188ceadaa4b15073496f74dec43eb90fd9f4ef46621557385",
+      "content": [
+        [
+          "C:\\Users\\n_fuk\\AppData\\Local\\Python\\pythoncore-3.14-64\\python.exe",
+          "D:\\home\\source\\zig\\forthz\\.work\\builtin-minus-rot-target-20261116\\worker.py",
+          "pilot",
+          "minus-rot",
+          "--series",
+          "1"
+        ],
+        [
+          "C:\\Users\\n_fuk\\AppData\\Local\\Python\\pythoncore-3.14-64\\python.exe",
+          "D:\\home\\source\\zig\\forthz\\.work\\builtin-minus-rot-target-20261116\\worker.py",
+          "aa",
+          "minus-rot",
+          "--series",
+          "1"
+        ],
+        [
+          "C:\\Users\\n_fuk\\AppData\\Local\\Python\\pythoncore-3.14-64\\python.exe",
+          "D:\\home\\source\\zig\\forthz\\.work\\builtin-minus-rot-target-20261116\\worker.py",
+          "aa",
+          "minus-rot",
+          "--series",
+          "2"
+        ]
+      ]
+    },
+    "minus-rot-aa-1.json": {
+      "sha256": "b2bda634cdc765a34ffaf2d6fcf083901f02b3c17ad138eb2226477db1c9a8dd",
+      "content": {
+        "stage": "aa",
+        "case": {
+          "name": "minus-rot",
+          "iterations": 349090910,
+          "definition": ": BENCH-RUN 1 2 3 BENCH-ITERATIONS 0 DO -ROT LOOP >R SWAP 100 * SWAP 10 * + R> + ;",
+          "checksum_expected": 231,
+          "baseline_pilot_cpu_us": 1718750.0
+        },
+        "series": 1,
+        "rounds": 5,
+        "engines": {
+          "A1": {
+            "samples_us": [
+              5281250.0,
+              5296875.0,
+              5453125.0,
+              5140625.0,
+              5312500.0
+            ],
+            "median_us": 5296875.0,
+            "min_us": 5140625.0,
+            "max_us": 5453125.0,
+            "wall_samples_us": [
+              5775177.6,
+              5783679.3,
+              5816641.5,
+              5638590.0,
+              5629777.4
+            ],
+            "total_process_cpu_samples_us": [
+              5281250.0,
+              5296875.0,
+              5468750.0,
+              5140625.0,
+              5312500.0
+            ],
+            "sha256": "379d6c6c069b9c3072da22fa6cea8b7deff77c5ed78ef9bbd070f92a724337bf"
+          },
+          "A2": {
+            "samples_us": [
+              5484375.0,
+              5546875.0,
+              5468750.0,
+              5218750.0,
+              5578125.0
+            ],
+            "median_us": 5484375.0,
+            "min_us": 5218750.0,
+            "max_us": 5578125.0,
+            "wall_samples_us": [
+              5797129.1,
+              5829766.3,
+              5801475.2,
+              5539769.8,
+              5855752.6
+            ],
+            "total_process_cpu_samples_us": [
+              5484375.0,
+              5562500.0,
+              5484375.0,
+              5234375.0,
+              5578125.0
+            ],
+            "sha256": "379d6c6c069b9c3072da22fa6cea8b7deff77c5ed78ef9bbd070f92a724337bf"
+          }
+        },
+        "orders": [
+          [
+            "A1",
+            "A2"
+          ],
+          [
+            "A2",
+            "A1"
+          ],
+          [
+            "A1",
+            "A2"
+          ],
+          [
+            "A2",
+            "A1"
+          ],
+          [
+            "A1",
+            "A2"
+          ],
+          [
+            "A2",
+            "A1"
+          ]
+        ],
+        "warmups_excluded": {
+          "A1": {
+            "cpu_us": 5500000.0,
+            "wall_us": 5816253.2,
+            "total_process_cpu_us": 5500000.0,
+            "checksum": 231,
+            "child_pid": 44296
+          },
+          "A2": {
+            "cpu_us": 5515625.0,
+            "wall_us": 5815634.1,
+            "total_process_cpu_us": 5531250.0,
+            "checksum": 231,
+            "child_pid": 27480
+          }
+        },
+        "child_pids_in_actual_execution_order": [
+          44296,
+          27480,
+          36376,
+          35644,
+          4748,
+          21064,
+          5608,
+          29216,
+          22720,
+          10936,
+          14996,
+          26436
+        ],
+        "cpu_affinity": [
+          0
+        ],
+        "process_time_queries": [
+          {
+            "pid": 44296,
+            "primary_tid_from_CreateProcess": 28668,
+            "thread_ids_at_READY": [
+              28668,
+              24096,
+              43812
+            ],
+            "snapshot_error": 0,
+            "primary_query_open_error": 0,
+            "queries": [
+              {
+                "primary_thread": {
+                  "kernel_ns": 0,
+                  "user_ns": 0,
+                  "cycles": 14623911,
+                  "time_query_ok": true,
+                  "cycle_query_ok": true
+                },
+                "utc": "2026-11-16T01:12:26.619408+00:00",
+                "perf_counter_ns": 1080574320398200,
+                "kernel_ns": 0,
+                "user_ns": 0,
+                "cycles": 14984246,
+                "cycle_query_error": 0
+              },
+              {
+                "primary_thread": {
+                  "kernel_ns": 1406250000,
+                  "user_ns": 4093750000,
+                  "cycles": 20928561047,
+                  "time_query_ok": true,
+                  "cycle_query_ok": true
+                },
+                "utc": "2026-11-16T01:12:32.435659+00:00",
+                "perf_counter_ns": 1080580136649700,
+                "kernel_ns": 1406250000,
+                "user_ns": 4093750000,
+                "cycles": 20928921382,
+                "cycle_query_error": 0
+              },
+              {
+                "primary_thread": {
+                  "kernel_ns": 1406250000,
+                  "user_ns": 4093750000,
+                  "cycles": 20932095365,
+                  "time_query_ok": true,
+                  "cycle_query_ok": true
+                },
+                "utc": "2026-11-16T01:12:32.437929+00:00",
+                "perf_counter_ns": 1080580138915000,
+                "kernel_ns": 1406250000,
+                "user_ns": 4093750000,
+                "cycles": 20935881158,
+                "cycle_query_error": 0
+              }
+            ]
+          },
+          {
+            "pid": 27480,
+            "primary_tid_from_CreateProcess": 39776,
+            "thread_ids_at_READY": [
+              39776,
+              34116,
+              27268
+            ],
+            "snapshot_error": 0,
+            "primary_query_open_error": 0,
+            "queries": [
+              {
+                "primary_thread": {
+                  "kernel_ns": 0,
+                  "user_ns": 0,
+                  "cycles": 14073542,
+                  "time_query_ok": true,
+                  "cycle_query_ok": true
+                },
+                "utc": "2026-11-16T01:12:32.481719+00:00",
+                "perf_counter_ns": 1080580182707500,
+                "kernel_ns": 0,
+                "user_ns": 0,
+                "cycles": 14252192,
+                "cycle_query_error": 0
+              },
+              {
+                "primary_thread": {
+                  "kernel_ns": 1078125000,
+                  "user_ns": 4437500000,
+                  "cycles": 20908733961,
+                  "time_query_ok": true,
+                  "cycle_query_ok": true
+                },
+                "utc": "2026-11-16T01:12:38.297350+00:00",
+                "perf_counter_ns": 1080585998340800,
+                "kernel_ns": 1078125000,
+                "user_ns": 4437500000,
+                "cycles": 20908912611,
+                "cycle_query_error": 0
+              },
+              {
+                "primary_thread": {
+                  "kernel_ns": 1078125000,
+                  "user_ns": 4437500000,
+                  "cycles": 20912247416,
+                  "time_query_ok": true,
+                  "cycle_query_ok": true
+                },
+                "utc": "2026-11-16T01:12:38.299385+00:00",
+                "perf_counter_ns": 1080586000371400,
+                "kernel_ns": 1078125000,
+                "user_ns": 4453125000,
+                "cycles": 20915810181,
+                "cycle_query_error": 0
+              }
+            ]
+          },
+          {
+            "pid": 36376,
+            "primary_tid_from_CreateProcess": 37100,
+            "thread_ids_at_READY": [
+              37100,
+              41336,
+              41996
+            ],
+            "snapshot_error": 0,
+            "primary_query_open_error": 0,
+            "queries": [
+              {
+                "primary_thread": {
+                  "kernel_ns": 0,
+                  "user_ns": 0,
+                  "cycles": 13330879,
+                  "time_query_ok": true,
+                  "cycle_query_ok": true
+                },
+                "utc": "2026-11-16T01:12:38.343154+00:00",
+                "perf_counter_ns": 1080586044142900,
+                "kernel_ns": 0,
+                "user_ns": 0,
+                "cycles": 13765177,
+                "cycle_query_error": 0
+              },
+              {
+                "primary_thread": {
+                  "kernel_ns": 1109375000,
+                  "user_ns": 4375000000,
+                  "cycles": 20848431883,
+                  "time_query_ok": true,
+                  "cycle_query_ok": true
+                },
+                "utc": "2026-11-16T01:12:44.140279+00:00",
+                "perf_counter_ns": 1080591841270400,
+                "kernel_ns": 1109375000,
+                "user_ns": 4375000000,
+                "cycles": 20848866181,
+                "cycle_query_error": 0
+              },
+              {
+                "primary_thread": {
+                  "kernel_ns": 1109375000,
+                  "user_ns": 4375000000,
+                  "cycles": 20851955581,
+                  "time_query_ok": true,
+                  "cycle_query_ok": true
+                },
+                "utc": "2026-11-16T01:12:44.142290+00:00",
+                "perf_counter_ns": 1080591843276300,
+                "kernel_ns": 1109375000,
+                "user_ns": 4375000000,
+                "cycles": 20855728099,
+                "cycle_query_error": 0
+              }
+            ]
+          },
+          {
+            "pid": 35644,
+            "primary_tid_from_CreateProcess": 11572,
+            "thread_ids_at_READY": [
+              11572,
+              7248,
+              19680
+            ],
+            "snapshot_error": 0,
+            "primary_query_open_error": 0,
+            "queries": [
+              {
+                "primary_thread": {
+                  "kernel_ns": 0,
+                  "user_ns": 0,
+                  "cycles": 12563935,
+                  "time_query_ok": true,
+                  "cycle_query_ok": true
+                },
+                "utc": "2026-11-16T01:12:44.187015+00:00",
+                "perf_counter_ns": 1080591888005300,
+                "kernel_ns": 0,
+                "user_ns": 0,
+                "cycles": 14525296,
+                "cycle_query_error": 0
+              },
+              {
+                "primary_thread": {
+                  "kernel_ns": 1187500000,
+                  "user_ns": 4093750000,
+                  "cycles": 20774179835,
+                  "time_query_ok": true,
+                  "cycle_query_ok": true
+                },
+                "utc": "2026-11-16T01:12:49.962191+00:00",
+                "perf_counter_ns": 1080597663181400,
+                "kernel_ns": 1187500000,
+                "user_ns": 4093750000,
+                "cycles": 20776141196,
+                "cycle_query_error": 0
+              },
+              {
+                "primary_thread": {
+                  "kernel_ns": 1187500000,
+                  "user_ns": 4093750000,
+                  "cycles": 20777719842,
+                  "time_query_ok": true,
+                  "cycle_query_ok": true
+                },
+                "utc": "2026-11-16T01:12:49.964317+00:00",
+                "perf_counter_ns": 1080597665302900,
+                "kernel_ns": 1187500000,
+                "user_ns": 4093750000,
+                "cycles": 20783001596,
+                "cycle_query_error": 0
+              }
+            ]
+          },
+          {
+            "pid": 4748,
+            "primary_tid_from_CreateProcess": 9444,
+            "thread_ids_at_READY": [
+              9444,
+              1988,
+              15944
+            ],
+            "snapshot_error": 0,
+            "primary_query_open_error": 0,
+            "queries": [
+              {
+                "primary_thread": {
+                  "kernel_ns": 0,
+                  "user_ns": 0,
+                  "cycles": 13662768,
+                  "time_query_ok": true,
+                  "cycle_query_ok": true
+                },
+                "utc": "2026-11-16T01:12:50.007469+00:00",
+                "perf_counter_ns": 1080597708456000,
+                "kernel_ns": 0,
+                "user_ns": 0,
+                "cycles": 13857729,
+                "cycle_query_error": 0
+              },
+              {
+                "primary_thread": {
+                  "kernel_ns": 1265625000,
+                  "user_ns": 4031250000,
+                  "cycles": 20816246482,
+                  "time_query_ok": true,
+                  "cycle_query_ok": true
+                },
+                "utc": "2026-11-16T01:12:55.791142+00:00",
+                "perf_counter_ns": 1080603492134100,
+                "kernel_ns": 1265625000,
+                "user_ns": 4031250000,
+                "cycles": 20816454339,
+                "cycle_query_error": 0
+              },
+              {
+                "primary_thread": {
+                  "kernel_ns": 1265625000,
+                  "user_ns": 4031250000,
+                  "cycles": 20819783834,
+                  "time_query_ok": true,
+                  "cycle_query_ok": true
+                },
+                "utc": "2026-11-16T01:12:55.793295+00:00",
+                "perf_counter_ns": 1080603494281300,
+                "kernel_ns": 1265625000,
+                "user_ns": 4031250000,
+                "cycles": 20823335981,
+                "cycle_query_error": 0
+              }
+            ]
+          },
+          {
+            "pid": 21064,
+            "primary_tid_from_CreateProcess": 35012,
+            "thread_ids_at_READY": [
+              35012,
+              1284,
+              12556
+            ],
+            "snapshot_error": 0,
+            "primary_query_open_error": 0,
+            "queries": [
+              {
+                "primary_thread": {
+                  "kernel_ns": 0,
+                  "user_ns": 15625000,
+                  "cycles": 12749793,
+                  "time_query_ok": true,
+                  "cycle_query_ok": true
+                },
+                "utc": "2026-11-16T01:12:55.836964+00:00",
+                "perf_counter_ns": 1080603537953700,
+                "kernel_ns": 0,
+                "user_ns": 15625000,
+                "cycles": 13853934,
+                "cycle_query_error": 0
+              },
+              {
+                "primary_thread": {
+                  "kernel_ns": 1437500000,
+                  "user_ns": 4125000000,
+                  "cycles": 20991753097,
+                  "time_query_ok": true,
+                  "cycle_query_ok": true
+                },
+                "utc": "2026-11-16T01:13:01.666728+00:00",
+                "perf_counter_ns": 1080609367718200,
+                "kernel_ns": 1437500000,
+                "user_ns": 4125000000,
+                "cycles": 20992857238,
+                "cycle_query_error": 0
+              },
+              {
+                "primary_thread": {
+                  "kernel_ns": 1437500000,
+                  "user_ns": 4125000000,
+                  "cycles": 20995529028,
+                  "time_query_ok": true,
+                  "cycle_query_ok": true
+                },
+                "utc": "2026-11-16T01:13:01.668860+00:00",
+                "perf_counter_ns": 1080609369846900,
+                "kernel_ns": 1437500000,
+                "user_ns": 4125000000,
+                "cycles": 20999951665,
+                "cycle_query_error": 0
+              }
+            ]
+          },
+          {
+            "pid": 5608,
+            "primary_tid_from_CreateProcess": 36984,
+            "thread_ids_at_READY": [
+              36984,
+              1872,
+              41084
+            ],
+            "snapshot_error": 0,
+            "primary_query_open_error": 0,
+            "queries": [
+              {
+                "primary_thread": {
+                  "kernel_ns": 15625000,
+                  "user_ns": 0,
+                  "cycles": 13216328,
+                  "time_query_ok": true,
+                  "cycle_query_ok": true
+                },
+                "utc": "2026-11-16T01:13:01.711937+00:00",
+                "perf_counter_ns": 1080609412926300,
+                "kernel_ns": 15625000,
+                "user_ns": 0,
+                "cycles": 13664281,
+                "cycle_query_error": 0
+              },
+              {
+                "primary_thread": {
+                  "kernel_ns": 1093750000,
+                  "user_ns": 4390625000,
+                  "cycles": 20837290804,
+                  "time_query_ok": true,
+                  "cycle_query_ok": true
+                },
+                "utc": "2026-11-16T01:13:07.513406+00:00",
+                "perf_counter_ns": 1080615214396500,
+                "kernel_ns": 1093750000,
+                "user_ns": 4390625000,
+                "cycles": 20837738757,
+                "cycle_query_error": 0
+              },
+              {
+                "primary_thread": {
+                  "kernel_ns": 1093750000,
+                  "user_ns": 4390625000,
+                  "cycles": 20840772018,
+                  "time_query_ok": true,
+                  "cycle_query_ok": true
+                },
+                "utc": "2026-11-16T01:13:07.515712+00:00",
+                "perf_counter_ns": 1080615216698000,
+                "kernel_ns": 1093750000,
+                "user_ns": 4390625000,
+                "cycles": 20844574123,
+                "cycle_query_error": 0
+              }
+            ]
+          },
+          {
+            "pid": 29216,
+            "primary_tid_from_CreateProcess": 5984,
+            "thread_ids_at_READY": [
+              5984,
+              39752,
+              14448
+            ],
+            "snapshot_error": 0,
+            "primary_query_open_error": 0,
+            "queries": [
+              {
+                "primary_thread": {
+                  "kernel_ns": 0,
+                  "user_ns": 0,
+                  "cycles": 13350602,
+                  "time_query_ok": true,
+                  "cycle_query_ok": true
+                },
+                "utc": "2026-11-16T01:13:07.558693+00:00",
+                "perf_counter_ns": 1080615259681900,
+                "kernel_ns": 0,
+                "user_ns": 0,
+                "cycles": 13537976,
+                "cycle_query_error": 0
+              },
+              {
+                "primary_thread": {
+                  "kernel_ns": 1328125000,
+                  "user_ns": 4125000000,
+                  "cycles": 20921074696,
+                  "time_query_ok": true,
+                  "cycle_query_ok": true
+                },
+                "utc": "2026-11-16T01:13:13.375331+00:00",
+                "perf_counter_ns": 1080621076322100,
+                "kernel_ns": 1328125000,
+                "user_ns": 4125000000,
+                "cycles": 20921262070,
+                "cycle_query_error": 0
+              },
+              {
+                "primary_thread": {
+                  "kernel_ns": 1328125000,
+                  "user_ns": 4125000000,
+                  "cycles": 20924682599,
+                  "time_query_ok": true,
+                  "cycle_query_ok": true
+                },
+                "utc": "2026-11-16T01:13:13.378008+00:00",
+                "perf_counter_ns": 1080621078994200,
+                "kernel_ns": 1328125000,
+                "user_ns": 4140625000,
+                "cycles": 20928301122,
+                "cycle_query_error": 0
+              }
+            ]
+          },
+          {
+            "pid": 22720,
+            "primary_tid_from_CreateProcess": 20404,
+            "thread_ids_at_READY": [
+              20404,
+              20872,
+              26032
+            ],
+            "snapshot_error": 0,
+            "primary_query_open_error": 0,
+            "queries": [
+              {
+                "primary_thread": {
+                  "kernel_ns": 0,
+                  "user_ns": 0,
+                  "cycles": 12603381,
+                  "time_query_ok": true,
+                  "cycle_query_ok": true
+                },
+                "utc": "2026-11-16T01:13:13.421555+00:00",
+                "perf_counter_ns": 1080621122543400,
+                "kernel_ns": 0,
+                "user_ns": 0,
+                "cycles": 13696523,
+                "cycle_query_error": 0
+              },
+              {
+                "primary_thread": {
+                  "kernel_ns": 1312500000,
+                  "user_ns": 3828125000,
+                  "cycles": 20284976862,
+                  "time_query_ok": true,
+                  "cycle_query_ok": true
+                },
+                "utc": "2026-11-16T01:13:19.060142+00:00",
+                "perf_counter_ns": 1080626761131900,
+                "kernel_ns": 1312500000,
+                "user_ns": 3828125000,
+                "cycles": 20286070004,
+                "cycle_query_error": 0
+              },
+              {
+                "primary_thread": {
+                  "kernel_ns": 1312500000,
+                  "user_ns": 3828125000,
+                  "cycles": 20288554417,
+                  "time_query_ok": true,
+                  "cycle_query_ok": true
+                },
+                "utc": "2026-11-16T01:13:19.062446+00:00",
+                "perf_counter_ns": 1080626763431900,
+                "kernel_ns": 1312500000,
+                "user_ns": 3828125000,
+                "cycles": 20292957331,
+                "cycle_query_error": 0
+              }
+            ]
+          },
+          {
+            "pid": 10936,
+            "primary_tid_from_CreateProcess": 43120,
+            "thread_ids_at_READY": [
+              43120,
+              25196,
+              33472
+            ],
+            "snapshot_error": 0,
+            "primary_query_open_error": 0,
+            "queries": [
+              {
+                "primary_thread": {
+                  "kernel_ns": 15625000,
+                  "user_ns": 0,
+                  "cycles": 13189397,
+                  "time_query_ok": true,
+                  "cycle_query_ok": true
+                },
+                "utc": "2026-11-16T01:13:19.105453+00:00",
+                "perf_counter_ns": 1080626806440600,
+                "kernel_ns": 15625000,
+                "user_ns": 0,
+                "cycles": 13383219,
+                "cycle_query_error": 0
+              },
+              {
+                "primary_thread": {
+                  "kernel_ns": 1406250000,
+                  "user_ns": 3828125000,
+                  "cycles": 19961048186,
+                  "time_query_ok": true,
+                  "cycle_query_ok": true
+                },
+                "utc": "2026-11-16T01:13:24.645219+00:00",
+                "perf_counter_ns": 1080632346209300,
+                "kernel_ns": 1406250000,
+                "user_ns": 3828125000,
+                "cycles": 19961309144,
+                "cycle_query_error": 0
+              },
+              {
+                "primary_thread": {
+                  "kernel_ns": 1406250000,
+                  "user_ns": 3828125000,
+                  "cycles": 19964527505,
+                  "time_query_ok": true,
+                  "cycle_query_ok": true
+                },
+                "utc": "2026-11-16T01:13:24.647620+00:00",
+                "perf_counter_ns": 1080632348606700,
+                "kernel_ns": 1406250000,
+                "user_ns": 3828125000,
+                "cycles": 19968219610,
+                "cycle_query_error": 0
+              }
+            ]
+          },
+          {
+            "pid": 14996,
+            "primary_tid_from_CreateProcess": 32360,
+            "thread_ids_at_READY": [
+              32360,
+              28320,
+              29400
+            ],
+            "snapshot_error": 0,
+            "primary_query_open_error": 0,
+            "queries": [
+              {
+                "primary_thread": {
+                  "kernel_ns": 0,
+                  "user_ns": 0,
+                  "cycles": 13300530,
+                  "time_query_ok": true,
+                  "cycle_query_ok": true
+                },
+                "utc": "2026-11-16T01:13:24.690424+00:00",
+                "perf_counter_ns": 1080632391411100,
+                "kernel_ns": 0,
+                "user_ns": 0,
+                "cycles": 13528489,
+                "cycle_query_error": 0
+              },
+              {
+                "primary_thread": {
+                  "kernel_ns": 1406250000,
+                  "user_ns": 4171875000,
+                  "cycles": 21054816388,
+                  "time_query_ok": true,
+                  "cycle_query_ok": true
+                },
+                "utc": "2026-11-16T01:13:30.546170+00:00",
+                "perf_counter_ns": 1080638247160100,
+                "kernel_ns": 1406250000,
+                "user_ns": 4171875000,
+                "cycles": 21055059519,
+                "cycle_query_error": 0
+              },
+              {
+                "primary_thread": {
+                  "kernel_ns": 1406250000,
+                  "user_ns": 4171875000,
+                  "cycles": 21058323397,
+                  "time_query_ok": true,
+                  "cycle_query_ok": true
+                },
+                "utc": "2026-11-16T01:13:30.548406+00:00",
+                "perf_counter_ns": 1080638249392100,
+                "kernel_ns": 1406250000,
+                "user_ns": 4171875000,
+                "cycles": 21061883128,
+                "cycle_query_error": 0
+              }
+            ]
+          },
+          {
+            "pid": 26436,
+            "primary_tid_from_CreateProcess": 18192,
+            "thread_ids_at_READY": [
+              18192,
+              40916,
+              31552
+            ],
+            "snapshot_error": 0,
+            "primary_query_open_error": 0,
+            "queries": [
+              {
+                "primary_thread": {
+                  "kernel_ns": 0,
+                  "user_ns": 0,
+                  "cycles": 13209503,
+                  "time_query_ok": true,
+                  "cycle_query_ok": true
+                },
+                "utc": "2026-11-16T01:13:30.591420+00:00",
+                "perf_counter_ns": 1080638292407600,
+                "kernel_ns": 0,
+                "user_ns": 0,
+                "cycles": 13608905,
+                "cycle_query_error": 0
+              },
+              {
+                "primary_thread": {
+                  "kernel_ns": 1218750000,
+                  "user_ns": 4093750000,
+                  "cycles": 20237863699,
+                  "time_query_ok": true,
+                  "cycle_query_ok": true
+                },
+                "utc": "2026-11-16T01:13:36.221192+00:00",
+                "perf_counter_ns": 1080643922183400,
+                "kernel_ns": 1218750000,
+                "user_ns": 4093750000,
+                "cycles": 20238263101,
+                "cycle_query_error": 0
+              },
+              {
+                "primary_thread": {
+                  "kernel_ns": 1218750000,
+                  "user_ns": 4093750000,
+                  "cycles": 20241295983,
+                  "time_query_ok": true,
+                  "cycle_query_ok": true
+                },
+                "utc": "2026-11-16T01:13:36.223294+00:00",
+                "perf_counter_ns": 1080643924279000,
+                "kernel_ns": 1218750000,
+                "user_ns": 4093750000,
+                "cycles": 20245046882,
+                "cycle_query_error": 0
+              }
+            ]
+          }
+        ],
+        "diagnostic_only": true,
+        "timing": "GetProcessTimes READY/DONE CPU delta; startup/compilation excluded; boundary I/O included",
+        "change_percent": 3.539823008849563,
+        "aa_delta_percent": 3.5398230088495577
+      }
+    },
+    "minus-rot-aa-2.json": {
+      "sha256": "af67f65454e23ac0a8f2d699b0a53c7a07aa7de80b790fb28ac7d94e4ee2a4f3",
+      "content": {
+        "stage": "aa",
+        "case": {
+          "name": "minus-rot",
+          "iterations": 349090910,
+          "definition": ": BENCH-RUN 1 2 3 BENCH-ITERATIONS 0 DO -ROT LOOP >R SWAP 100 * SWAP 10 * + R> + ;",
+          "checksum_expected": 231,
+          "baseline_pilot_cpu_us": 1718750.0
+        },
+        "series": 2,
+        "rounds": 5,
+        "engines": {
+          "A1": {
+            "samples_us": [
+              5281250.0,
+              5437500.0,
+              5265625.0,
+              4843750.0,
+              5500000.0
+            ],
+            "median_us": 5281250.0,
+            "min_us": 4843750.0,
+            "max_us": 5500000.0,
+            "wall_samples_us": [
+              5597883.6,
+              5742863.6,
+              5435754.3,
+              5570808.7,
+              5811073.0
+            ],
+            "total_process_cpu_samples_us": [
+              5296875.0,
+              5437500.0,
+              5281250.0,
+              4875000.0,
+              5500000.0
+            ],
+            "sha256": "379d6c6c069b9c3072da22fa6cea8b7deff77c5ed78ef9bbd070f92a724337bf"
+          },
+          "A2": {
+            "samples_us": [
+              5343750.0,
+              5140625.0,
+              5468750.0,
+              5437500.0,
+              5453125.0
+            ],
+            "median_us": 5437500.0,
+            "min_us": 5140625.0,
+            "max_us": 5468750.0,
+            "wall_samples_us": [
+              5589383.6,
+              5544741.7,
+              5700552.8,
+              5712183.2,
+              5717314.5
+            ],
+            "total_process_cpu_samples_us": [
+              5343750.0,
+              5140625.0,
+              5468750.0,
+              5437500.0,
+              5453125.0
+            ],
+            "sha256": "379d6c6c069b9c3072da22fa6cea8b7deff77c5ed78ef9bbd070f92a724337bf"
+          }
+        },
+        "orders": [
+          [
+            "A2",
+            "A1"
+          ],
+          [
+            "A1",
+            "A2"
+          ],
+          [
+            "A2",
+            "A1"
+          ],
+          [
+            "A1",
+            "A2"
+          ],
+          [
+            "A2",
+            "A1"
+          ],
+          [
+            "A1",
+            "A2"
+          ]
+        ],
+        "warmups_excluded": {
+          "A2": {
+            "cpu_us": 4796875.0,
+            "wall_us": 5563428.4,
+            "total_process_cpu_us": 4796875.0,
+            "checksum": 231,
+            "child_pid": 40588
+          },
+          "A1": {
+            "cpu_us": 5203125.0,
+            "wall_us": 5602359.0,
+            "total_process_cpu_us": 5203125.0,
+            "checksum": 231,
+            "child_pid": 22772
+          }
+        },
+        "child_pids_in_actual_execution_order": [
+          40588,
+          22772,
+          19508,
+          28540,
+          25940,
+          13880,
+          44956,
+          25108,
+          44988,
+          36972,
+          18440,
+          2476
+        ],
+        "cpu_affinity": [
+          0
+        ],
+        "process_time_queries": [
+          {
+            "pid": 40588,
+            "primary_tid_from_CreateProcess": 28460,
+            "thread_ids_at_READY": [
+              28460,
+              29700,
+              20204
+            ],
+            "snapshot_error": 0,
+            "primary_query_open_error": 0,
+            "queries": [
+              {
+                "primary_thread": {
+                  "kernel_ns": 0,
+                  "user_ns": 0,
+                  "cycles": 15021420,
+                  "time_query_ok": true,
+                  "cycle_query_ok": true
+                },
+                "utc": "2026-11-16T01:13:36.379070+00:00",
+                "perf_counter_ns": 1080644080059900,
+                "kernel_ns": 0,
+                "user_ns": 0,
+                "cycles": 15256586,
+                "cycle_query_error": 0
+              },
+              {
+                "primary_thread": {
+                  "kernel_ns": 359375000,
+                  "user_ns": 4437500000,
+                  "cycles": 20101039160,
+                  "time_query_ok": true,
+                  "cycle_query_ok": true
+                },
+                "utc": "2026-11-16T01:13:41.942496+00:00",
+                "perf_counter_ns": 1080649643487000,
+                "kernel_ns": 359375000,
+                "user_ns": 4437500000,
+                "cycles": 20101274326,
+                "cycle_query_error": 0
+              },
+              {
+                "primary_thread": {
+                  "kernel_ns": 359375000,
+                  "user_ns": 4437500000,
+                  "cycles": 20104435412,
+                  "time_query_ok": true,
+                  "cycle_query_ok": true
+                },
+                "utc": "2026-11-16T01:13:41.944687+00:00",
+                "perf_counter_ns": 1080649645672500,
+                "kernel_ns": 359375000,
+                "user_ns": 4437500000,
+                "cycles": 20107981108,
+                "cycle_query_error": 0
+              }
+            ]
+          },
+          {
+            "pid": 22772,
+            "primary_tid_from_CreateProcess": 34252,
+            "thread_ids_at_READY": [
+              34252,
+              27152
+            ],
+            "snapshot_error": 0,
+            "primary_query_open_error": 0,
+            "queries": [
+              {
+                "primary_thread": {
+                  "kernel_ns": 0,
+                  "user_ns": 0,
+                  "cycles": 13282707,
+                  "time_query_ok": true,
+                  "cycle_query_ok": true
+                },
+                "utc": "2026-11-16T01:13:41.987114+00:00",
+                "perf_counter_ns": 1080649688101900,
+                "kernel_ns": 0,
+                "user_ns": 0,
+                "cycles": 13479943,
+                "cycle_query_error": 0
+              },
+              {
+                "primary_thread": {
+                  "kernel_ns": 296875000,
+                  "user_ns": 4906250000,
+                  "cycles": 20241426354,
+                  "time_query_ok": true,
+                  "cycle_query_ok": true
+                },
+                "utc": "2026-11-16T01:13:47.589469+00:00",
+                "perf_counter_ns": 1080655290458700,
+                "kernel_ns": 296875000,
+                "user_ns": 4906250000,
+                "cycles": 20241688451,
+                "cycle_query_error": 0
+              },
+              {
+                "primary_thread": {
+                  "kernel_ns": 296875000,
+                  "user_ns": 4906250000,
+                  "cycles": 20244815020,
+                  "time_query_ok": true,
+                  "cycle_query_ok": true
+                },
+                "utc": "2026-11-16T01:13:47.591435+00:00",
+                "perf_counter_ns": 1080655292421300,
+                "kernel_ns": 296875000,
+                "user_ns": 4906250000,
+                "cycles": 20248347063,
+                "cycle_query_error": 0
+              }
+            ]
+          },
+          {
+            "pid": 19508,
+            "primary_tid_from_CreateProcess": 43852,
+            "thread_ids_at_READY": [
+              43852,
+              36980,
+              14900
+            ],
+            "snapshot_error": 0,
+            "primary_query_open_error": 0,
+            "queries": [
+              {
+                "primary_thread": {
+                  "kernel_ns": 15625000,
+                  "user_ns": 0,
+                  "cycles": 13905901,
+                  "time_query_ok": true,
+                  "cycle_query_ok": true
+                },
+                "utc": "2026-11-16T01:13:47.634985+00:00",
+                "perf_counter_ns": 1080655335972900,
+                "kernel_ns": 15625000,
+                "user_ns": 0,
+                "cycles": 14083792,
+                "cycle_query_error": 0
+              },
+              {
+                "primary_thread": {
+                  "kernel_ns": 250000000,
+                  "user_ns": 5046875000,
+                  "cycles": 20218682826,
+                  "time_query_ok": true,
+                  "cycle_query_ok": true
+                },
+                "utc": "2026-11-16T01:13:53.232865+00:00",
+                "perf_counter_ns": 1080660933855200,
+                "kernel_ns": 250000000,
+                "user_ns": 5046875000,
+                "cycles": 20218860717,
+                "cycle_query_error": 0
+              },
+              {
+                "primary_thread": {
+                  "kernel_ns": 250000000,
+                  "user_ns": 5046875000,
+                  "cycles": 20222077182,
+                  "time_query_ok": true,
+                  "cycle_query_ok": true
+                },
+                "utc": "2026-11-16T01:13:53.234900+00:00",
+                "perf_counter_ns": 1080660935886600,
+                "kernel_ns": 250000000,
+                "user_ns": 5046875000,
+                "cycles": 20225548535,
+                "cycle_query_error": 0
+              }
+            ]
+          },
+          {
+            "pid": 28540,
+            "primary_tid_from_CreateProcess": 26244,
+            "thread_ids_at_READY": [
+              26244,
+              18404
+            ],
+            "snapshot_error": 0,
+            "primary_query_open_error": 0,
+            "queries": [
+              {
+                "primary_thread": {
+                  "kernel_ns": 0,
+                  "user_ns": 0,
+                  "cycles": 13229606,
+                  "time_query_ok": true,
+                  "cycle_query_ok": true
+                },
+                "utc": "2026-11-16T01:13:53.278063+00:00",
+                "perf_counter_ns": 1080660979051000,
+                "kernel_ns": 0,
+                "user_ns": 0,
+                "cycles": 13410532,
+                "cycle_query_error": 0
+              },
+              {
+                "primary_thread": {
+                  "kernel_ns": 218750000,
+                  "user_ns": 5125000000,
+                  "cycles": 20176146714,
+                  "time_query_ok": true,
+                  "cycle_query_ok": true
+                },
+                "utc": "2026-11-16T01:13:58.867443+00:00",
+                "perf_counter_ns": 1080666568433300,
+                "kernel_ns": 218750000,
+                "user_ns": 5125000000,
+                "cycles": 20176399707,
+                "cycle_query_error": 0
+              },
+              {
+                "primary_thread": {
+                  "kernel_ns": 218750000,
+                  "user_ns": 5125000000,
+                  "cycles": 20179583551,
+                  "time_query_ok": true,
+                  "cycle_query_ok": true
+                },
+                "utc": "2026-11-16T01:13:58.869409+00:00",
+                "perf_counter_ns": 1080666570395300,
+                "kernel_ns": 218750000,
+                "user_ns": 5125000000,
+                "cycles": 20183089420,
+                "cycle_query_error": 0
+              }
+            ]
+          },
+          {
+            "pid": 25940,
+            "primary_tid_from_CreateProcess": 14404,
+            "thread_ids_at_READY": [
+              14404,
+              25224
+            ],
+            "snapshot_error": 0,
+            "primary_query_open_error": 0,
+            "queries": [
+              {
+                "primary_thread": {
+                  "kernel_ns": 0,
+                  "user_ns": 0,
+                  "cycles": 13483731,
+                  "time_query_ok": true,
+                  "cycle_query_ok": true
+                },
+                "utc": "2026-11-16T01:13:58.912532+00:00",
+                "perf_counter_ns": 1080666613521800,
+                "kernel_ns": 0,
+                "user_ns": 0,
+                "cycles": 13708277,
+                "cycle_query_error": 0
+              },
+              {
+                "primary_thread": {
+                  "kernel_ns": 265625000,
+                  "user_ns": 4875000000,
+                  "cycles": 20044210127,
+                  "time_query_ok": true,
+                  "cycle_query_ok": true
+                },
+                "utc": "2026-11-16T01:14:04.457272+00:00",
+                "perf_counter_ns": 1080672158262400,
+                "kernel_ns": 265625000,
+                "user_ns": 4875000000,
+                "cycles": 20044493085,
+                "cycle_query_error": 0
+              },
+              {
+                "primary_thread": {
+                  "kernel_ns": 265625000,
+                  "user_ns": 4875000000,
+                  "cycles": 20047624586,
+                  "time_query_ok": true,
+                  "cycle_query_ok": true
+                },
+                "utc": "2026-11-16T01:14:04.459310+00:00",
+                "perf_counter_ns": 1080672160296200,
+                "kernel_ns": 265625000,
+                "user_ns": 4875000000,
+                "cycles": 20051190007,
+                "cycle_query_error": 0
+              }
+            ]
+          },
+          {
+            "pid": 13880,
+            "primary_tid_from_CreateProcess": 27492,
+            "thread_ids_at_READY": [
+              27492,
+              9540
+            ],
+            "snapshot_error": 0,
+            "primary_query_open_error": 0,
+            "queries": [
+              {
+                "primary_thread": {
+                  "kernel_ns": 0,
+                  "user_ns": 0,
+                  "cycles": 13575522,
+                  "time_query_ok": true,
+                  "cycle_query_ok": true
+                },
+                "utc": "2026-11-16T01:14:04.502716+00:00",
+                "perf_counter_ns": 1080672203704900,
+                "kernel_ns": 0,
+                "user_ns": 0,
+                "cycles": 13758344,
+                "cycle_query_error": 0
+              },
+              {
+                "primary_thread": {
+                  "kernel_ns": 234375000,
+                  "user_ns": 5203125000,
+                  "cycles": 20769823555,
+                  "time_query_ok": true,
+                  "cycle_query_ok": true
+                },
+                "utc": "2026-11-16T01:14:10.245577+00:00",
+                "perf_counter_ns": 1080677946567000,
+                "kernel_ns": 234375000,
+                "user_ns": 5203125000,
+                "cycles": 20770062514,
+                "cycle_query_error": 0
+              },
+              {
+                "primary_thread": {
+                  "kernel_ns": 234375000,
+                  "user_ns": 5203125000,
+                  "cycles": 20773289978,
+                  "time_query_ok": true,
+                  "cycle_query_ok": true
+                },
+                "utc": "2026-11-16T01:14:10.247787+00:00",
+                "perf_counter_ns": 1080677948773300,
+                "kernel_ns": 234375000,
+                "user_ns": 5203125000,
+                "cycles": 20776961982,
+                "cycle_query_error": 0
+              }
+            ]
+          },
+          {
+            "pid": 44956,
+            "primary_tid_from_CreateProcess": 38296,
+            "thread_ids_at_READY": [
+              38296,
+              6136
+            ],
+            "snapshot_error": 0,
+            "primary_query_open_error": 0,
+            "queries": [
+              {
+                "primary_thread": {
+                  "kernel_ns": 0,
+                  "user_ns": 15625000,
+                  "cycles": 13425323,
+                  "time_query_ok": true,
+                  "cycle_query_ok": true
+                },
+                "utc": "2026-11-16T01:14:10.290223+00:00",
+                "perf_counter_ns": 1080677991210700,
+                "kernel_ns": 0,
+                "user_ns": 15625000,
+                "cycles": 13599043,
+                "cycle_query_error": 0
+              },
+              {
+                "primary_thread": {
+                  "kernel_ns": 171875000,
+                  "user_ns": 5109375000,
+                  "cycles": 19634192956,
+                  "time_query_ok": true,
+                  "cycle_query_ok": true
+                },
+                "utc": "2026-11-16T01:14:15.725972+00:00",
+                "perf_counter_ns": 1080683426961500,
+                "kernel_ns": 171875000,
+                "user_ns": 5109375000,
+                "cycles": 19634431536,
+                "cycle_query_error": 0
+              },
+              {
+                "primary_thread": {
+                  "kernel_ns": 171875000,
+                  "user_ns": 5109375000,
+                  "cycles": 19637702999,
+                  "time_query_ok": true,
+                  "cycle_query_ok": true
+                },
+                "utc": "2026-11-16T01:14:15.728110+00:00",
+                "perf_counter_ns": 1080683429096100,
+                "kernel_ns": 171875000,
+                "user_ns": 5109375000,
+                "cycles": 19641331762,
+                "cycle_query_error": 0
+              }
+            ]
+          },
+          {
+            "pid": 25108,
+            "primary_tid_from_CreateProcess": 8968,
+            "thread_ids_at_READY": [
+              8968,
+              21400,
+              16580
+            ],
+            "snapshot_error": 0,
+            "primary_query_open_error": 0,
+            "queries": [
+              {
+                "primary_thread": {
+                  "kernel_ns": 0,
+                  "user_ns": 0,
+                  "cycles": 13473873,
+                  "time_query_ok": true,
+                  "cycle_query_ok": true
+                },
+                "utc": "2026-11-16T01:14:15.771303+00:00",
+                "perf_counter_ns": 1080683472291900,
+                "kernel_ns": 0,
+                "user_ns": 0,
+                "cycles": 13904758,
+                "cycle_query_error": 0
+              },
+              {
+                "primary_thread": {
+                  "kernel_ns": 187500000,
+                  "user_ns": 5281250000,
+                  "cycles": 20616974804,
+                  "time_query_ok": true,
+                  "cycle_query_ok": true
+                },
+                "utc": "2026-11-16T01:14:21.471853+00:00",
+                "perf_counter_ns": 1080689172842900,
+                "kernel_ns": 187500000,
+                "user_ns": 5281250000,
+                "cycles": 20617405689,
+                "cycle_query_error": 0
+              },
+              {
+                "primary_thread": {
+                  "kernel_ns": 187500000,
+                  "user_ns": 5281250000,
+                  "cycles": 20620416572,
+                  "time_query_ok": true,
+                  "cycle_query_ok": true
+                },
+                "utc": "2026-11-16T01:14:21.473829+00:00",
+                "perf_counter_ns": 1080689174814800,
+                "kernel_ns": 187500000,
+                "user_ns": 5281250000,
+                "cycles": 20624162538,
+                "cycle_query_error": 0
+              }
+            ]
+          },
+          {
+            "pid": 44988,
+            "primary_tid_from_CreateProcess": 4152,
+            "thread_ids_at_READY": [
+              4152,
+              28860,
+              21408
+            ],
+            "snapshot_error": 0,
+            "primary_query_open_error": 0,
+            "queries": [
+              {
+                "primary_thread": {
+                  "kernel_ns": 0,
+                  "user_ns": 0,
+                  "cycles": 13447701,
+                  "time_query_ok": true,
+                  "cycle_query_ok": true
+                },
+                "utc": "2026-11-16T01:14:21.517089+00:00",
+                "perf_counter_ns": 1080689218079100,
+                "kernel_ns": 0,
+                "user_ns": 0,
+                "cycles": 13707521,
+                "cycle_query_error": 0
+              },
+              {
+                "primary_thread": {
+                  "kernel_ns": 390625000,
+                  "user_ns": 5046875000,
+                  "cycles": 20683059065,
+                  "time_query_ok": true,
+                  "cycle_query_ok": true
+                },
+                "utc": "2026-11-16T01:14:27.229272+00:00",
+                "perf_counter_ns": 1080694930263000,
+                "kernel_ns": 390625000,
+                "user_ns": 5046875000,
+                "cycles": 20683318885,
+                "cycle_query_error": 0
+              },
+              {
+                "primary_thread": {
+                  "kernel_ns": 390625000,
+                  "user_ns": 5046875000,
+                  "cycles": 20686457213,
+                  "time_query_ok": true,
+                  "cycle_query_ok": true
+                },
+                "utc": "2026-11-16T01:14:27.231364+00:00",
+                "perf_counter_ns": 1080694932351300,
+                "kernel_ns": 390625000,
+                "user_ns": 5046875000,
+                "cycles": 20690008219,
+                "cycle_query_error": 0
+              }
+            ]
+          },
+          {
+            "pid": 36972,
+            "primary_tid_from_CreateProcess": 17380,
+            "thread_ids_at_READY": [
+              17380,
+              16760
+            ],
+            "snapshot_error": 0,
+            "primary_query_open_error": 0,
+            "queries": [
+              {
+                "primary_thread": {
+                  "kernel_ns": 0,
+                  "user_ns": 15625000,
+                  "cycles": 13302427,
+                  "time_query_ok": true,
+                  "cycle_query_ok": true
+                },
+                "utc": "2026-11-16T01:14:27.274585+00:00",
+                "perf_counter_ns": 1080694975573400,
+                "kernel_ns": 0,
+                "user_ns": 15625000,
+                "cycles": 13488663,
+                "cycle_query_error": 0
+              },
+              {
+                "primary_thread": {
+                  "kernel_ns": 296875000,
+                  "user_ns": 4562500000,
+                  "cycles": 20140318649,
+                  "time_query_ok": true,
+                  "cycle_query_ok": true
+                },
+                "utc": "2026-11-16T01:14:32.845390+00:00",
+                "perf_counter_ns": 1080700546380000,
+                "kernel_ns": 296875000,
+                "user_ns": 4562500000,
+                "cycles": 20140556470,
+                "cycle_query_error": 0
+              },
+              {
+                "primary_thread": {
+                  "kernel_ns": 296875000,
+                  "user_ns": 4578125000,
+                  "cycles": 20143866242,
+                  "time_query_ok": true,
+                  "cycle_query_ok": true
+                },
+                "utc": "2026-11-16T01:14:32.847583+00:00",
+                "perf_counter_ns": 1080700548569400,
+                "kernel_ns": 296875000,
+                "user_ns": 4578125000,
+                "cycles": 20147415353,
+                "cycle_query_error": 0
+              }
+            ]
+          },
+          {
+            "pid": 18440,
+            "primary_tid_from_CreateProcess": 36320,
+            "thread_ids_at_READY": [
+              36320,
+              29116,
+              36708
+            ],
+            "snapshot_error": 0,
+            "primary_query_open_error": 0,
+            "queries": [
+              {
+                "primary_thread": {
+                  "kernel_ns": 0,
+                  "user_ns": 0,
+                  "cycles": 13206089,
+                  "time_query_ok": true,
+                  "cycle_query_ok": true
+                },
+                "utc": "2026-11-16T01:14:32.890945+00:00",
+                "perf_counter_ns": 1080700591933600,
+                "kernel_ns": 0,
+                "user_ns": 0,
+                "cycles": 13660112,
+                "cycle_query_error": 0
+              },
+              {
+                "primary_thread": {
+                  "kernel_ns": 265625000,
+                  "user_ns": 5234375000,
+                  "cycles": 20995158893,
+                  "time_query_ok": true,
+                  "cycle_query_ok": true
+                },
+                "utc": "2026-11-16T01:14:38.702012+00:00",
+                "perf_counter_ns": 1080706403002400,
+                "kernel_ns": 265625000,
+                "user_ns": 5234375000,
+                "cycles": 20995612916,
+                "cycle_query_error": 0
+              },
+              {
+                "primary_thread": {
+                  "kernel_ns": 265625000,
+                  "user_ns": 5234375000,
+                  "cycles": 20998822552,
+                  "time_query_ok": true,
+                  "cycle_query_ok": true
+                },
+                "utc": "2026-11-16T01:14:38.704069+00:00",
+                "perf_counter_ns": 1080706405054600,
+                "kernel_ns": 265625000,
+                "user_ns": 5234375000,
+                "cycles": 21002601519,
+                "cycle_query_error": 0
+              }
+            ]
+          },
+          {
+            "pid": 2476,
+            "primary_tid_from_CreateProcess": 44000,
+            "thread_ids_at_READY": [
+              44000,
+              16912
+            ],
+            "snapshot_error": 0,
+            "primary_query_open_error": 0,
+            "queries": [
+              {
+                "primary_thread": {
+                  "kernel_ns": 0,
+                  "user_ns": 0,
+                  "cycles": 13397636,
+                  "time_query_ok": true,
+                  "cycle_query_ok": true
+                },
+                "utc": "2026-11-16T01:14:38.746995+00:00",
+                "perf_counter_ns": 1080706447983400,
+                "kernel_ns": 0,
+                "user_ns": 0,
+                "cycles": 13605493,
+                "cycle_query_error": 0
+              },
+              {
+                "primary_thread": {
+                  "kernel_ns": 343750000,
+                  "user_ns": 5109375000,
+                  "cycles": 20657714199,
+                  "time_query_ok": true,
+                  "cycle_query_ok": true
+                },
+                "utc": "2026-11-16T01:14:44.464306+00:00",
+                "perf_counter_ns": 1080712165296200,
+                "kernel_ns": 343750000,
+                "user_ns": 5109375000,
+                "cycles": 20657975916,
+                "cycle_query_error": 0
+              },
+              {
+                "primary_thread": {
+                  "kernel_ns": 343750000,
+                  "user_ns": 5109375000,
+                  "cycles": 20661218929,
+                  "time_query_ok": true,
+                  "cycle_query_ok": true
+                },
+                "utc": "2026-11-16T01:14:44.466480+00:00",
+                "perf_counter_ns": 1080712167466100,
+                "kernel_ns": 343750000,
+                "user_ns": 5109375000,
+                "cycles": 20664780555,
+                "cycle_query_error": 0
+              }
+            ]
+          }
+        ],
+        "diagnostic_only": true,
+        "timing": "GetProcessTimes READY/DONE CPU delta; startup/compilation excluded; boundary I/O included",
+        "change_percent": 2.9585798816567976,
+        "aa_delta_percent": 2.9585798816568047
+      }
+    },
+    "minus-rot-config.json": {
+      "sha256": "c504ceb51995761dbd9b1a902d9a1b0799424bcfccdfd934cb0fa2cf30eabeb2",
+      "content": {
+        "name": "minus-rot",
+        "iterations": 349090910,
+        "definition": ": BENCH-RUN 1 2 3 BENCH-ITERATIONS 0 DO -ROT LOOP >R SWAP 100 * SWAP 10 * + R> + ;",
+        "checksum_expected": 231,
+        "baseline_pilot_cpu_us": 1718750.0
+      }
+    },
+    "minus-rot-pilot-1.json": {
+      "sha256": "5cf3a5250dfa7fef3b7eafb5e912f17a31bdc17b5769191ae36ae24e512f55ac",
+      "content": {
+        "stage": "pilot",
+        "case": {
+          "name": "minus-rot",
+          "iterations": 100000000,
+          "definition": ": BENCH-RUN 1 2 3 BENCH-ITERATIONS 0 DO -ROT LOOP >R SWAP 100 * SWAP 10 * + R> + ;",
+          "checksum_expected": 312
+        },
+        "series": 1,
+        "rounds": 0,
+        "engines": {
+          "baseline": {
+            "samples_us": [
+              1718750.0
+            ],
+            "median_us": 1718750.0,
+            "min_us": 1718750.0,
+            "max_us": 1718750.0,
+            "wall_samples_us": [
+              1965222.3
+            ],
+            "total_process_cpu_samples_us": [
+              1734375.0
+            ],
+            "sha256": "379d6c6c069b9c3072da22fa6cea8b7deff77c5ed78ef9bbd070f92a724337bf"
+          }
+        },
+        "orders": [
+          [
+            "baseline"
+          ]
+        ],
+        "warmups_excluded": {},
+        "child_pids_in_actual_execution_order": [
+          36536
+        ],
+        "cpu_affinity": [
+          0
+        ],
+        "process_time_queries": [
+          {
+            "pid": 36536,
+            "primary_tid_from_CreateProcess": 24220,
+            "thread_ids_at_READY": [
+              24220,
+              44484
+            ],
+            "snapshot_error": 0,
+            "primary_query_open_error": 0,
+            "queries": [
+              {
+                "primary_thread": {
+                  "kernel_ns": 15625000,
+                  "user_ns": 0,
+                  "cycles": 19815010,
+                  "time_query_ok": true,
+                  "cycle_query_ok": true
+                },
+                "utc": "2026-11-16T01:12:24.498004+00:00",
+                "perf_counter_ns": 1080572198993500,
+                "kernel_ns": 15625000,
+                "user_ns": 0,
+                "cycles": 19976971,
+                "cycle_query_error": 0
+              },
+              {
+                "primary_thread": {
+                  "kernel_ns": 296875000,
+                  "user_ns": 1437500000,
+                  "cycles": 7071878550,
+                  "time_query_ok": true,
+                  "cycle_query_ok": true
+                },
+                "utc": "2026-11-16T01:12:26.463224+00:00",
+                "perf_counter_ns": 1080574164214500,
+                "kernel_ns": 296875000,
+                "user_ns": 1437500000,
+                "cycles": 7072120923,
+                "cycle_query_error": 0
+              },
+              {
+                "primary_thread": {
+                  "kernel_ns": 296875000,
+                  "user_ns": 1437500000,
+                  "cycles": 7075564209,
+                  "time_query_ok": true,
+                  "cycle_query_ok": true
+                },
+                "utc": "2026-11-16T01:12:26.465421+00:00",
+                "perf_counter_ns": 1080574166407100,
+                "kernel_ns": 296875000,
+                "user_ns": 1437500000,
+                "cycles": 7079196008,
+                "cycle_query_error": 0
+              }
+            ]
+          }
+        ],
+        "diagnostic_only": true,
+        "timing": "GetProcessTimes READY/DONE CPU delta; startup/compilation excluded; boundary I/O included"
+      }
+    },
+    "protocol.json": {
+      "sha256": "28a751d619a384cebf806ddfbb9c92bece3ad08f14b8b7291acde3fc46833cab",
+      "content": {
+        "purpose": "Windows dedicated compiled minus-rot target preflight only; actual time, not Callgrind counts. No adoption before full global safeguards/review.",
+        "kernel": ": BENCH-RUN 1 2 3 N 0 DO -ROT LOOP >R SWAP 100 * SWAP 10 * + R> + ;",
+        "scaling": "Baseline-only pilot100M chooses ceil(100M*6sec/pilot CPU); freeze N before candidate, exact weighted rotation checksum.",
+        "aa": "Independent2 A/A series5 samples each after1warmup. Require all medians>=5sec,maxdelta<=2percent. Stop without retries or candidate if unresolved.",
+        "ab": "Only fresh AA pass ->independent2 baseline/candidate7 samples after1warmup, alternating order, preserve all. CPU GetProcessTimes kernel+user primary unchanged; extra thread/cycle logs read-only and equal across engines.",
+        "scope": "Do not define a partial-adoption percentage threshold. Dedicated result is target evidence only; global17/OS, target Linux, normal worsening caps, size and review remain required.",
+        "baseline": "New frozen baseline builds match379d/BDB adopted binaries; no new opcode, image signature or manual rotate."
+      }
+    },
+    "start.json": {
+      "sha256": "be62e0f0141350d6282d5d66cfc1c0d128091d568ff59873be20ecd30cb6f68d",
+      "content": {
+        "utc": "2026-11-16T01:12:24.350327+00:00",
+        "protocol_sha256": "28a751d619a384cebf806ddfbb9c92bece3ad08f14b8b7291acde3fc46833cab"
+      }
+    },
+    "stop.json": {
+      "sha256": "9dc7fe2d9b9a0de315081ddad9b2c46f5be60b495be62b34b71746b5ddc12c93",
+      "content": {
+        "reason": "fresh target calibration unresolved; candidate not timed; no retry"
+      }
+    }
+  },
+  "root_runtime_unchanged": true
+}

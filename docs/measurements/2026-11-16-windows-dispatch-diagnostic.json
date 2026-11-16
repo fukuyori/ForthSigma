@@ -1,0 +1,375 @@
+{
+  "commands.json": [
+    [
+      "C:\\Users\\n_fuk\\AppData\\Local\\Python\\pythoncore-3.14-64\\python.exe",
+      "D:\\home\\source\\zig\\forthz\\.work\\vm-dispatch-20261116\\worker.py",
+      "pilot",
+      "rot",
+      "--series",
+      "1"
+    ],
+    [
+      "C:\\Users\\n_fuk\\AppData\\Local\\Python\\pythoncore-3.14-64\\python.exe",
+      "D:\\home\\source\\zig\\forthz\\.work\\vm-dispatch-20261116\\worker.py",
+      "aa",
+      "rot",
+      "--series",
+      "1"
+    ],
+    [
+      "C:\\Users\\n_fuk\\AppData\\Local\\Python\\pythoncore-3.14-64\\python.exe",
+      "D:\\home\\source\\zig\\forthz\\.work\\vm-dispatch-20261116\\worker.py",
+      "aa",
+      "rot",
+      "--series",
+      "2"
+    ]
+  ],
+  "protocol.json": {
+    "purpose": "Diagnosis only: separate ROT and ROT+SWAP on the rejected unchanged ROT candidate and adopted baseline. No adoption decision or retroactive threshold changes.",
+    "platform": "Windows CPU0, process CPU READY/DONE; no other timing, builds or tests overlap.",
+    "scale": "For each case baseline-only pilot100M chooses N=ceil(100M*6sec/pilot CPU), then freeze before any candidate measurement. Pilot>=1 CPU tick required.",
+    "aa": "At frozen N, one excluded warmup then5 samples per A1/A2, alternating order, independent2 series, require every median>=5 seconds and maxdelta<=2percent. Stop without candidate if unresolved; no automatic retries or choosing convenient results.",
+    "ab": "At accepted N, one excluded warmup then7 samples per baseline/candidate, alternating order independent2 series. Mathematical weighted-order checksum, source/executable hashes each process series. Preserve all samples and outliers. Delta not a CI. No assertion of hardware cause from timing or static instructions alone."
+  },
+  "results.json": {
+    "rot": {
+      "config": {
+        "name": "rot",
+        "iterations": 1280000000,
+        "definition": ": BENCH-RUN 1 2 3 BENCH-ITERATIONS 0 DO ROT LOOP >R SWAP 100 * SWAP 10 * + R> + ;",
+        "checksum_expected": 312,
+        "baseline_pilot_cpu_us": 468750.0
+      },
+      "aa_delta_percent": 3.1073446327683616,
+      "minimum_baseline_median_us": 5500000.0
+    }
+  },
+  "rot-aa-1.json": {
+    "stage": "aa",
+    "case": {
+      "name": "rot",
+      "iterations": 1280000000,
+      "definition": ": BENCH-RUN 1 2 3 BENCH-ITERATIONS 0 DO ROT LOOP >R SWAP 100 * SWAP 10 * + R> + ;",
+      "checksum_expected": 312,
+      "baseline_pilot_cpu_us": 468750.0
+    },
+    "series": 1,
+    "rounds": 5,
+    "engines": {
+      "A1": {
+        "samples_us": [
+          5718750.0,
+          5484375.0,
+          5812500.0,
+          5703125.0,
+          5515625.0
+        ],
+        "median_us": 5703125.0,
+        "min_us": 5484375.0,
+        "max_us": 5812500.0,
+        "wall_samples_us": [
+          6050822.3,
+          6057379.5,
+          6056068.7,
+          6032323.1,
+          5828712.5
+        ],
+        "total_process_cpu_samples_us": [
+          5734375.0,
+          5500000.0,
+          5812500.0,
+          5703125.0,
+          5531250.0
+        ],
+        "sha256": "379d6c6c069b9c3072da22fa6cea8b7deff77c5ed78ef9bbd070f92a724337bf"
+      },
+      "A2": {
+        "samples_us": [
+          5796875.0,
+          5312500.0,
+          5375000.0,
+          5531250.0,
+          5593750.0
+        ],
+        "median_us": 5531250.0,
+        "min_us": 5312500.0,
+        "max_us": 5796875.0,
+        "wall_samples_us": [
+          6057569.3,
+          6060516.5,
+          6055208.4,
+          6059891.1,
+          5991510.0
+        ],
+        "total_process_cpu_samples_us": [
+          5796875.0,
+          5312500.0,
+          5375000.0,
+          5531250.0,
+          5593750.0
+        ],
+        "sha256": "379d6c6c069b9c3072da22fa6cea8b7deff77c5ed78ef9bbd070f92a724337bf"
+      }
+    },
+    "orders": [
+      [
+        "A1",
+        "A2"
+      ],
+      [
+        "A2",
+        "A1"
+      ],
+      [
+        "A1",
+        "A2"
+      ],
+      [
+        "A2",
+        "A1"
+      ],
+      [
+        "A1",
+        "A2"
+      ],
+      [
+        "A2",
+        "A1"
+      ]
+    ],
+    "warmups_excluded": {
+      "A1": {
+        "cpu_us": 5703125.0,
+        "wall_us": 6059554.8,
+        "total_process_cpu_us": 5703125.0,
+        "checksum": 312,
+        "child_pid": 43456
+      },
+      "A2": {
+        "cpu_us": 5546875.0,
+        "wall_us": 6054053.5,
+        "total_process_cpu_us": 5546875.0,
+        "checksum": 312,
+        "child_pid": 24216
+      }
+    },
+    "child_pids_in_actual_execution_order": [
+      43456,
+      24216,
+      29092,
+      16796,
+      3892,
+      40904,
+      7704,
+      23768,
+      15380,
+      23064,
+      5132,
+      40136
+    ],
+    "cpu_affinity": [
+      0
+    ],
+    "timing": "GetProcessTimes READY/DONE CPU delta; startup/compilation excluded; boundary I/O included",
+    "change_percent": -3.013698630136985,
+    "aa_delta_percent": 3.1073446327683616
+  },
+  "rot-aa-2.json": {
+    "stage": "aa",
+    "case": {
+      "name": "rot",
+      "iterations": 1280000000,
+      "definition": ": BENCH-RUN 1 2 3 BENCH-ITERATIONS 0 DO ROT LOOP >R SWAP 100 * SWAP 10 * + R> + ;",
+      "checksum_expected": 312,
+      "baseline_pilot_cpu_us": 468750.0
+    },
+    "series": 2,
+    "rounds": 5,
+    "engines": {
+      "A1": {
+        "samples_us": [
+          5312500.0,
+          5640625.0,
+          5640625.0,
+          5734375.0,
+          5578125.0
+        ],
+        "median_us": 5640625.0,
+        "min_us": 5312500.0,
+        "max_us": 5734375.0,
+        "wall_samples_us": [
+          5845915.5,
+          5823011.7,
+          5826889.3,
+          5846425.8,
+          5843118.2
+        ],
+        "total_process_cpu_samples_us": [
+          5312500.0,
+          5640625.0,
+          5656250.0,
+          5750000.0,
+          5578125.0
+        ],
+        "sha256": "379d6c6c069b9c3072da22fa6cea8b7deff77c5ed78ef9bbd070f92a724337bf"
+      },
+      "A2": {
+        "samples_us": [
+          5343750.0,
+          5640625.0,
+          5656250.0,
+          5500000.0,
+          5328125.0
+        ],
+        "median_us": 5500000.0,
+        "min_us": 5328125.0,
+        "max_us": 5656250.0,
+        "wall_samples_us": [
+          5850614.1,
+          5841737.2,
+          5840167.8,
+          5840485.9,
+          5829018.4
+        ],
+        "total_process_cpu_samples_us": [
+          5343750.0,
+          5640625.0,
+          5656250.0,
+          5500000.0,
+          5343750.0
+        ],
+        "sha256": "379d6c6c069b9c3072da22fa6cea8b7deff77c5ed78ef9bbd070f92a724337bf"
+      }
+    },
+    "orders": [
+      [
+        "A2",
+        "A1"
+      ],
+      [
+        "A1",
+        "A2"
+      ],
+      [
+        "A2",
+        "A1"
+      ],
+      [
+        "A1",
+        "A2"
+      ],
+      [
+        "A2",
+        "A1"
+      ],
+      [
+        "A1",
+        "A2"
+      ]
+    ],
+    "warmups_excluded": {
+      "A2": {
+        "cpu_us": 5687500.0,
+        "wall_us": 5862273.3,
+        "total_process_cpu_us": 5687500.0,
+        "checksum": 312,
+        "child_pid": 23916
+      },
+      "A1": {
+        "cpu_us": 5578125.0,
+        "wall_us": 5814845.8,
+        "total_process_cpu_us": 5593750.0,
+        "checksum": 312,
+        "child_pid": 41184
+      }
+    },
+    "child_pids_in_actual_execution_order": [
+      23916,
+      41184,
+      8852,
+      12572,
+      944,
+      20568,
+      23000,
+      22248,
+      40152,
+      37144,
+      36712,
+      21548
+    ],
+    "cpu_affinity": [
+      0
+    ],
+    "timing": "GetProcessTimes READY/DONE CPU delta; startup/compilation excluded; boundary I/O included",
+    "change_percent": -2.4930747922437657,
+    "aa_delta_percent": 2.5568181818181817
+  },
+  "rot-config.json": {
+    "name": "rot",
+    "iterations": 1280000000,
+    "definition": ": BENCH-RUN 1 2 3 BENCH-ITERATIONS 0 DO ROT LOOP >R SWAP 100 * SWAP 10 * + R> + ;",
+    "checksum_expected": 312,
+    "baseline_pilot_cpu_us": 468750.0
+  },
+  "rot-pilot-1.json": {
+    "stage": "pilot",
+    "case": {
+      "name": "rot",
+      "iterations": 100000000,
+      "definition": ": BENCH-RUN 1 2 3 BENCH-ITERATIONS 0 DO ROT LOOP >R SWAP 100 * SWAP 10 * + R> + ;",
+      "checksum_expected": 231
+    },
+    "series": 1,
+    "rounds": 0,
+    "engines": {
+      "baseline": {
+        "samples_us": [
+          468750.0
+        ],
+        "median_us": 468750.0,
+        "min_us": 468750.0,
+        "max_us": 468750.0,
+        "wall_samples_us": [
+          472890.4
+        ],
+        "total_process_cpu_samples_us": [
+          468750.0
+        ],
+        "sha256": "379d6c6c069b9c3072da22fa6cea8b7deff77c5ed78ef9bbd070f92a724337bf"
+      }
+    },
+    "orders": [
+      [
+        "baseline"
+      ]
+    ],
+    "warmups_excluded": {},
+    "child_pids_in_actual_execution_order": [
+      42484
+    ],
+    "cpu_affinity": [
+      0
+    ],
+    "timing": "GetProcessTimes READY/DONE CPU delta; startup/compilation excluded; boundary I/O included"
+  },
+  "start.json": {
+    "utc": "2026-11-15T23:59:01.112799+00:00",
+    "protocol_sha256": "abded1216970448a6a90d8a8dafb442d81aebf3739d2deb2c142c1d626454fd2"
+  },
+  "stop.json": {
+    "reason": "unresolved diagnostic calibration; no candidate timing for this case",
+    "case": "rot"
+  },
+  "tasks.json": {
+    "map": 814,
+    "diagnostic": 815,
+    "selection": 816,
+    "timing_logs": 817
+  },
+  "scripts": {
+    "worker.py": "from pathlib import Path\nimport sys,json,hashlib,statistics,importlib.util,argparse,os\nroot=Path(__file__).resolve().parents[2];out=Path(__file__).resolve().parent;old=root/'.work/rot3-20261116'\np=argparse.ArgumentParser();p.add_argument('stage',choices=['pilot','aa','compare']);p.add_argument('case');p.add_argument('--series',type=int,default=1);a=p.parse_args()\nspec=importlib.util.spec_from_file_location('benchmark',root/'scripts/benchmark-runtime.py');b=importlib.util.module_from_spec(spec);spec.loader.exec_module(b);b.cpu_affinity(0)\ndef sha(path):return hashlib.sha256(path.read_bytes()).hexdigest()\nassert sha(root/'scripts/benchmark-runtime.py')=='576345f4486dd27a510327d91ec04d5f8ce9721f42059679bd78e4b661e315ef'\nmanifest=json.loads((old/'frozen-binaries.json').read_text());base=old/'baseline-windows/bin/sigma.exe';candidate=old/'candidate-windows/bin/sigma.exe';assert sha(base)==manifest['baseline-windows']['sha256'] and sha(candidate)==manifest['candidate-windows']['sha256']\nfor name,expected in json.loads((old/'frozen-sources.json').read_text()).items():assert sha(root/name)==expected,name\npids=[]\nclass Clock(b.WindowsProcessClock):\n def __init__(self,pid):pids.append(pid);super().__init__(pid)\nb.WindowsProcessClock=Clock\nc=json.loads((out/(a.case+'-config.json')).read_text());n=c['iterations'];source=f'{n} CONSTANT BENCH-ITERATIONS {c[\"definition\"]} '+'.\" BENCH-READY\" CR KEY DROP BENCH-RUN .\" BENCH-DONE \" . CR KEY DROP BYE'\nrounds=0 if a.stage=='pilot' else 5 if a.stage=='aa' else 7\nengines={'baseline':base} if a.stage=='pilot' else {'A1':base,'A2':base} if a.stage=='aa' else {'baseline':base,'candidate':candidate}\nvalues={k:[] for k in engines};walls={k:[] for k in engines};totals={k:[] for k in engines};orders=[];warmups={}\nfor i in range(rounds+1):\n order=list(engines) if (a.series-1+i)%2==0 else list(reversed(engines));orders.append(order)\n for key in order:\n  cpu,check,wall,total=b.sample(str(engines[key]),False,source);assert check==c['checksum_expected'];assert total>=cpu\n  if i or a.stage=='pilot':values[key].append(cpu);walls[key].append(wall);totals[key].append(total)\n  else:warmups[key]={'cpu_us':cpu,'wall_us':wall,'total_process_cpu_us':total,'checksum':check,'child_pid':pids[-1]}\nrows={k:{'samples_us':v,'median_us':statistics.median(v),'min_us':min(v),'max_us':max(v),'wall_samples_us':walls[k],'total_process_cpu_samples_us':totals[k],'sha256':sha(engines[k])} for k,v in values.items()}\nr={'stage':a.stage,'case':c,'series':a.series,'rounds':rounds,'engines':rows,'orders':orders,'warmups_excluded':warmups,'child_pids_in_actual_execution_order':pids,'cpu_affinity':b.cpu_affinity(),'timing':'GetProcessTimes READY/DONE CPU delta; startup/compilation excluded; boundary I/O included'}\nif len(rows)==2:\n x,y=[v['median_us'] for v in rows.values()];r['change_percent']=100*(y/x-1);r['aa_delta_percent']=100*abs(x-y)/min(x,y)\n(out/(a.case+f'-{a.stage}-{a.series}.json')).write_text(json.dumps(r,indent=2)+'\\n');print(a.case,a.stage,a.series,r.get('change_percent',rows['baseline']['median_us'] if 'baseline' in rows else None),flush=True)\n",
+    "run.py": "from pathlib import Path\nimport subprocess,json,sys,math,datetime,hashlib\nout=Path(__file__).resolve().parent;rows={};commands=[]\ndef save(name,obj):(out/name).write_text(json.dumps(obj,indent=2)+'\\n')\ndef expected(case,n):\n seq=[1,2,3]\n if case=='rot':k=n%3;seq=seq[k:]+seq[:k]\n elif n%2:seq=[2,1,3]\n return 100*seq[0]+10*seq[1]+seq[2]\ndef run(stage,case,index=1):\n cmd=[sys.executable,str(out/'worker.py'),stage,case,'--series',str(index)];commands.append(cmd);save('commands.json',commands)\n with (out/(case+f'-{stage}-{index}.log')).open('wb') as f:r=subprocess.run(cmd,stdout=f,stderr=subprocess.STDOUT)\n assert r.returncode==0,(stage,case,index,r.returncode)\n return json.loads((out/(case+f'-{stage}-{index}.json')).read_text())\ncases={k:': BENCH-RUN 1 2 3 BENCH-ITERATIONS 0 DO '+word+' LOOP >R SWAP 100 * SWAP 10 * + R> + ;' for k,word in [('rot','ROT'),('rot-swap','ROT SWAP')]}\nsave('start.json',{'utc':datetime.datetime.now(datetime.timezone.utc).isoformat(),'protocol_sha256':hashlib.sha256((out/'protocol.json').read_bytes()).hexdigest()})\nfor case,definition in cases.items():\n c={'name':case,'iterations':100000000,'definition':definition,'checksum_expected':expected(case,100000000)};save(case+'-config.json',c);pilot=run('pilot',case);cpu=pilot['engines']['baseline']['median_us'];assert cpu>0\n n=math.ceil(100000000*6000000/cpu);assert n<2**63;c['iterations']=n;c['checksum_expected']=expected(case,n);c['baseline_pilot_cpu_us']=cpu;save(case+'-config.json',c)\n aa=[run('aa',case,i) for i in (1,2)];delta=max(x['aa_delta_percent'] for x in aa);minimum=min(v['median_us'] for x in aa for v in x['engines'].values());print('AA',case,n,'delta',delta,'min',minimum,flush=True)\n rows[case]={'config':c,'aa_delta_percent':delta,'minimum_baseline_median_us':minimum};save('results.json',rows)\n if minimum<5000000 or delta>2:save('stop.json',{'reason':'unresolved diagnostic calibration; no candidate timing for this case','case':case});raise SystemExit(0)\n ab=[run('compare',case,i) for i in (1,2)];rows[case]['changes_percent']=[x['change_percent'] for x in ab];save('results.json',rows);print('AB',case,rows[case]['changes_percent'],flush=True)\nsave('complete.json',{'utc':datetime.datetime.now(datetime.timezone.utc).isoformat(),'diagnostic_cases':len(rows),'purpose':'diagnosis only; no cause or adoption claim'})\n"
+  },
+  "status": "baseline_calibration_failed_no_candidate_comparison"
+}

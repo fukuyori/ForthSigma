@@ -1,0 +1,21 @@
+{
+  "status": "single_prototype_prepared_not_adopted",
+  "selection": "Keep existing call_builtin, OpKind/Builtin tags and image hash inputs unchanged. Force-inline existing executeBuiltin for constant minus_rot only, preserving all common hooks.",
+  "basis": "Linux baseline-minus-rot measured builtinInLoop+executeBuiltin+rotate each1 per iteration. Native call removal not yet verified for new prototype.",
+  "compatibility_reason": "Image encoder normalizes primitive ops, but layoutSignature hashes every OpKind enum name/value. Do not add new primitive tag.",
+  "error_contract": "Existing executeBuiltin executes result first, checks pending output error, then propagates result, then coverage. Do not manually invert error priority.",
+  "source_sha256": {
+    "src/forth.zig": "d2c101033474ba348c6cd148249bd81afb6ae4e7656ae5bb0c40326806182195",
+    "src/core/defs.zig": "d004483feb3f06ac94e6870e000317fee1ed553dc9edaf4943ab62e71cb8fc6d",
+    "src/core/words_stack.zig": "cc42d35910240f272a0bfc9c105431b71b43444de74befdb83e4a2e8296e1ba6",
+    "src/core/image_format.zig": "8ed007da4d080e80ef9b6d7afcd686a4e5d4d7e1f9eadd9dbe1168dee47ab2ea",
+    "src/core/image_encoder.zig": "baebe6349143383a1ccf41c7c83ac1243472b7a03ad71eb1598fbdd54a8efea5"
+  },
+  "tasks": {
+    "parent": 826,
+    "prototype": 827,
+    "regression": 828,
+    "measurement": 829,
+    "decision": 830
+  }
+}

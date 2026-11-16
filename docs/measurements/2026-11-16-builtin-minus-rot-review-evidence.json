@@ -1,0 +1,32 @@
+{
+  "root": {
+    "src/forth.zig": "d2c101033474ba348c6cd148249bd81afb6ae4e7656ae5bb0c40326806182195",
+    "zig-out/bin/sigma.exe": "379d6c6c069b9c3072da22fa6cea8b7deff77c5ed78ef9bbd070f92a724337bf"
+  },
+  "source_equalities": {
+    "src/core/defs.zig": {
+      "baseline": "d004483feb3f06ac94e6870e000317fee1ed553dc9edaf4943ab62e71cb8fc6d",
+      "candidate": "d004483feb3f06ac94e6870e000317fee1ed553dc9edaf4943ab62e71cb8fc6d",
+      "equal": true
+    },
+    "src/core/words_stack.zig": {
+      "baseline": "cc42d35910240f272a0bfc9c105431b71b43444de74befdb83e4a2e8296e1ba6",
+      "candidate": "cc42d35910240f272a0bfc9c105431b71b43444de74befdb83e4a2e8296e1ba6",
+      "equal": true
+    },
+    "src/core/image_format.zig": {
+      "baseline": "8ed007da4d080e80ef9b6d7afcd686a4e5d4d7e1f9eadd9dbe1168dee47ab2ea",
+      "candidate": "8ed007da4d080e80ef9b6d7afcd686a4e5d4d7e1f9eadd9dbe1168dee47ab2ea",
+      "equal": true
+    },
+    "src/core/image_encoder.zig": {
+      "baseline": "baebe6349143383a1ccf41c7c83ac1243472b7a03ad71eb1598fbdd54a8efea5",
+      "candidate": "baebe6349143383a1ccf41c7c83ac1243472b7a03ad71eb1598fbdd54a8efea5",
+      "equal": true
+    }
+  },
+  "scripts": {
+    "run.py": "2c3fe86ff43ccc215b06fe2db638ea62889aeb7f3cc68a054f157e5775b2273c",
+    "worker.py": "adc0af9444f2e5a30b9bb801ec39919ff24fc8aba107d4c57517b141da7a9594"
+  }
+}

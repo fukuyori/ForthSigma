@@ -1,0 +1,8 @@
+{
+  "scope": "source inspection only; no generated code or timing claim",
+  "files": {
+    "src/forth.zig": "d2c101033474ba348c6cd148249bd81afb6ae4e7656ae5bb0c40326806182195",
+    "src/core/words_stack.zig": "cc42d35910240f272a0bfc9c105431b71b43444de74befdb83e4a2e8296e1ba6",
+    "src/core/words_arithmetic.zig": "5d20923ce7034f4c8be403a4638fae5745a66acaab2e3ee8bf4954fbc06da7b3"
+  }
+}
