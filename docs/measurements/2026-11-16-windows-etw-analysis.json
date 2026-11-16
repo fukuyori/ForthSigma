@@ -1,0 +1,3746 @@
+{
+  "etl_sha256": "a5d55b65cb1ec469993102a7ae0db4a363db3f68f765d9c393281ec01dd56fbf",
+  "etl_bytes": 55312384,
+  "capture_status": "samples_captured",
+  "cleanup_confirmed": true,
+  "event_counts": {
+    "FirstReliableEventTimeStamp": 1,
+    "FirstReliableCSwitchEventTimeStamp": 1,
+    "UnknownEvent/Classic": 45,
+    "GroupMasks": 32,
+    "EtwInternalVersion": 7,
+    "SystemPaths": 1,
+    "UnknownVolume": 2,
+    "VolumeMapping": 14,
+    "GroupMasksEnd": 24,
+    "P-DCStart": 376,
+    "T-DCStart": 6671,
+    "Interrupt": 46350,
+    "ReadyThread": 434879,
+    "DPC": 90576,
+    "CSwitch": 723767,
+    "DPC_ISR_CSWITCH_PCT": 723767,
+    "T-SetBasePriority": 10831,
+    "DPCTmr": 1537,
+    "T-SetPriority": 20409,
+    "T-End": 283,
+    "P-End": 12,
+    "P-Start": 10,
+    "T-Start": 269,
+    "ThreadName": 150,
+    "T-SetPagePriority": 81,
+    "Mark": 4,
+    "PhysicalDisk": 2,
+    "PhysicalDiskEx": 2,
+    "LogicalDisk": 3,
+    "MachineId": 1,
+    "T-DCEnd": 6677,
+    "P-DCEnd": 374,
+    "P-Zombie": 137,
+    "NetworkInterface": 40,
+    "WinSAT_WinSPR": 1,
+    "WinSAT_Metrics": 1,
+    "WinSAT_SystemConfig": 1,
+    "BuildInfo": 1
+  },
+  "invalid_events": [],
+  "all_cpu_cswitch_old_new_chain_mismatch_count": 0,
+  "chain_mismatch_examples": [],
+  "rows": [
+    {
+      "kind": "sigma",
+      "pid": 35868,
+      "tid": 15248,
+      "thread_events": {
+        "pid": 35868,
+        "T-Start": 89972,
+        "T-End": 6689146
+      },
+      "slices": 493,
+      "cpus": [
+        0
+      ],
+      "priorities": [
+        8,
+        9,
+        10
+      ],
+      "lifetime_scheduled_gross_ms": 6512.525,
+      "lifetime_dpc_isr_ms": 298.928,
+      "lifetime_scheduled_excluding_dpc_isr_ms": 6213.597,
+      "lifetime_primary_api_ms": 5796.875,
+      "api_minus_scheduled_excluding_ms": -416.722,
+      "measured_process_api_ms": 5781.25,
+      "measured_wall_ms": 6552.2044000000005,
+      "approx_utc_window_us": [
+        96734.0,
+        6649461.0
+      ],
+      "approx_window_scheduled_gross_ms": 6507.266,
+      "boundary_process_query_bracket_us": [
+        25.9,
+        49.3
+      ],
+      "process_minus_primary_interval_ms": 0.0,
+      "xperf_lifetime_gross_ms": 6512.496,
+      "xperf_lifetime_net_ms": 6213.599,
+      "xperf_lifetime_dpc_isr_ms": 298.897,
+      "xperf_api_minus_net_ms": -416.72400000000016,
+      "parser_minus_xperf_net_us": -2.0,
+      "last_switch_after_thread_end_event_us": 122
+    },
+    {
+      "kind": "native",
+      "pid": 12920,
+      "tid": 15980,
+      "thread_events": {
+        "pid": 12920,
+        "T-Start": 6700629,
+        "T-End": 14639967
+      },
+      "slices": 654,
+      "cpus": [
+        0
+      ],
+      "priorities": [
+        8,
+        9,
+        10
+      ],
+      "lifetime_scheduled_gross_ms": 7852.141,
+      "lifetime_dpc_isr_ms": 370.065,
+      "lifetime_scheduled_excluding_dpc_isr_ms": 7482.076,
+      "lifetime_primary_api_ms": 7500.0,
+      "api_minus_scheduled_excluding_ms": 17.924,
+      "measured_process_api_ms": 7484.375,
+      "measured_wall_ms": 7895.5857000000005,
+      "approx_utc_window_us": [
+        6705061.0,
+        14600357.0
+      ],
+      "approx_window_scheduled_gross_ms": 7849.461,
+      "boundary_process_query_bracket_us": [
+        20.3,
+        44.8
+      ],
+      "process_minus_primary_interval_ms": 0.0,
+      "xperf_lifetime_gross_ms": 7852.111,
+      "xperf_lifetime_net_ms": 7482.07,
+      "xperf_lifetime_dpc_isr_ms": 370.041,
+      "xperf_api_minus_net_ms": 17.93000000000029,
+      "parser_minus_xperf_net_us": 6.0,
+      "last_switch_after_thread_end_event_us": 14
+    },
+    {
+      "kind": "native",
+      "pid": 9924,
+      "tid": 23156,
+      "thread_events": {
+        "pid": 9924,
+        "T-Start": 14649537,
+        "T-End": 22572917
+      },
+      "slices": 616,
+      "cpus": [
+        0
+      ],
+      "priorities": [
+        8,
+        9,
+        10
+      ],
+      "lifetime_scheduled_gross_ms": 7838.053,
+      "lifetime_dpc_isr_ms": 359.134,
+      "lifetime_scheduled_excluding_dpc_isr_ms": 7478.919,
+      "lifetime_primary_api_ms": 7375.0,
+      "api_minus_scheduled_excluding_ms": -103.919,
+      "measured_process_api_ms": 7375.0,
+      "measured_wall_ms": 7883.0826,
+      "approx_utc_window_us": [
+        14652304.0,
+        22533832.0
+      ],
+      "approx_window_scheduled_gross_ms": 7835.762,
+      "boundary_process_query_bracket_us": [
+        19.3,
+        44.7
+      ],
+      "process_minus_primary_interval_ms": 0.0,
+      "xperf_lifetime_gross_ms": 7838.019,
+      "xperf_lifetime_net_ms": 7478.906,
+      "xperf_lifetime_dpc_isr_ms": 359.113,
+      "xperf_api_minus_net_ms": -103.90599999999995,
+      "parser_minus_xperf_net_us": 13.0,
+      "last_switch_after_thread_end_event_us": 14
+    },
+    {
+      "kind": "sigma",
+      "pid": 25668,
+      "tid": 44616,
+      "thread_events": {
+        "pid": 25668,
+        "T-Start": 22582057,
+        "T-End": 29280740
+      },
+      "slices": 538,
+      "cpus": [
+        0
+      ],
+      "priorities": [
+        8,
+        9,
+        10
+      ],
+      "lifetime_scheduled_gross_ms": 6614.026,
+      "lifetime_dpc_isr_ms": 437.955,
+      "lifetime_scheduled_excluding_dpc_isr_ms": 6176.071,
+      "lifetime_primary_api_ms": 6125.0,
+      "api_minus_scheduled_excluding_ms": -51.071,
+      "measured_process_api_ms": 6125.0,
+      "measured_wall_ms": 6656.392,
+      "approx_utc_window_us": [
+        22587233.0,
+        29240297.0
+      ],
+      "approx_window_scheduled_gross_ms": 6609.495,
+      "boundary_process_query_bracket_us": [
+        21.5,
+        45.0
+      ],
+      "process_minus_primary_interval_ms": 0.0,
+      "xperf_lifetime_gross_ms": 6614.009,
+      "xperf_lifetime_net_ms": 6176.077,
+      "xperf_lifetime_dpc_isr_ms": 437.932,
+      "xperf_api_minus_net_ms": -51.077000000000226,
+      "parser_minus_xperf_net_us": -6.0,
+      "last_switch_after_thread_end_event_us": 125
+    },
+    {
+      "kind": "sigma",
+      "pid": 24824,
+      "tid": 35132,
+      "thread_events": {
+        "pid": 24824,
+        "T-Start": 29292490,
+        "T-End": 36112394
+      },
+      "slices": 584,
+      "cpus": [
+        0
+      ],
+      "priorities": [
+        8,
+        9,
+        10
+      ],
+      "lifetime_scheduled_gross_ms": 6726.456,
+      "lifetime_dpc_isr_ms": 550.376,
+      "lifetime_scheduled_excluding_dpc_isr_ms": 6176.08,
+      "lifetime_primary_api_ms": 6031.25,
+      "api_minus_scheduled_excluding_ms": -144.83,
+      "measured_process_api_ms": 6031.25,
+      "measured_wall_ms": 6772.9351,
+      "approx_utc_window_us": [
+        29297180.0,
+        36070956.0
+      ],
+      "approx_window_scheduled_gross_ms": 6721.957,
+      "boundary_process_query_bracket_us": [
+        17.6,
+        46.5
+      ],
+      "process_minus_primary_interval_ms": 0.0,
+      "xperf_lifetime_gross_ms": 6726.435,
+      "xperf_lifetime_net_ms": 6176.079,
+      "xperf_lifetime_dpc_isr_ms": 550.356,
+      "xperf_api_minus_net_ms": -144.82899999999972,
+      "parser_minus_xperf_net_us": 1.0,
+      "last_switch_after_thread_end_event_us": 124
+    },
+    {
+      "kind": "native",
+      "pid": 10856,
+      "tid": 33384,
+      "thread_events": {
+        "pid": 10856,
+        "T-Start": 36122934,
+        "T-End": 44342239
+      },
+      "slices": 656,
+      "cpus": [
+        0
+      ],
+      "priorities": [
+        8,
+        9,
+        10
+      ],
+      "lifetime_scheduled_gross_ms": 8131.777,
+      "lifetime_dpc_isr_ms": 648.704,
+      "lifetime_scheduled_excluding_dpc_isr_ms": 7483.073,
+      "lifetime_primary_api_ms": 7593.75,
+      "api_minus_scheduled_excluding_ms": 110.677,
+      "measured_process_api_ms": 7578.125,
+      "measured_wall_ms": 8176.2608,
+      "approx_utc_window_us": [
+        36126170.0,
+        44301804.0
+      ],
+      "approx_window_scheduled_gross_ms": 8129.111,
+      "boundary_process_query_bracket_us": [
+        17.9,
+        45.2
+      ],
+      "process_minus_primary_interval_ms": 0.0,
+      "xperf_lifetime_gross_ms": 8131.751,
+      "xperf_lifetime_net_ms": 7483.076,
+      "xperf_lifetime_dpc_isr_ms": 648.675,
+      "xperf_api_minus_net_ms": 110.67399999999998,
+      "parser_minus_xperf_net_us": -3.0,
+      "last_switch_after_thread_end_event_us": 14
+    }
+  ],
+  "source_script": "from pathlib import Path\nimport csv,json,hashlib,collections,datetime,re\np=Path('.work/windows-timing-followup-20261116/etw/admin-20261116T074942-5bd67094')\nj=json.loads((p/'capture.json').read_text());sha=lambda f:hashlib.sha256(f.read_bytes()).hexdigest()\nassert j['status']=='samples_captured' and j['stop_exit']==0 and j['cleanup_confirmed'] and sha(p/'schedule.etl')==j['etl_sha256']\nsamples=j['samples']; tids={s['observer']['primary_tid'] for s in samples};pids={s['observer']['pid'] for s in samples}\nevents=collections.Counter();threads={};slices=collections.defaultdict(list);dpc=collections.defaultdict(list);issues=[];last={};raw=[];invalid=[]\ndef pid(s):return int(re.search(r'\\(\\s*(\\d+)\\)',s)[1])\nfor row in csv.reader((p/'events.csv').open(errors='replace'),skipinitialspace=True):\n if not row or len(row)<2:continue\n name=row[0].strip()\n try:t=int(row[1])\n except ValueError:continue\n events[name]+=1\n if name.startswith('InvalidEvent'):invalid.append(row[:10])\n if name in ['T-Start','T-End'] and pid(row[2]) in pids:\n  tid=int(row[3]);threads.setdefault(tid,{'pid':pid(row[2])})[name]=t\n if name=='CSwitch':\n  cpu=int(row[16]);new=int(row[3]);old=int(row[9]);duration=int(row[15]);begin=t-duration\n  if cpu in last and last[cpu][1]!=old:issues.append({'cpu':cpu,'time':t,'expected':last[cpu][1],'old':old})\n  last[cpu]=(t,new)\n  if old in tids:\n   slices[old].append({'start_us':begin,'end_us':t,'cpu':cpu,'old_priority':int(row[10]),'old_state':row[12],'wait_reason':row[13]})\n if name=='DPC_ISR_CSWITCH_PCT' and int(row[7]) in tids:\n  dpc[int(row[7])].append({'start_us':int(row[2]),'end_us':t,'cpu':int(row[8]),'dpc_isr_us':int(row[5])})\ntrace_start=datetime.datetime.fromisoformat('2026-11-16T07:49:42.2987597+00:00')\ndef overlap(a,b,c,d):return max(0,min(b,d)-max(a,c))\nrows=[]\nfor s in samples:\n tid=s['observer']['primary_tid'];q=s['observer']['queries'];runs=slices[tid];adjust=dpc[tid]\n assert threads[tid]['pid']==s['observer']['pid'] and 'T-Start'in threads[tid] and 'T-End'in threads[tid]\n assert len(runs)==len(adjust) and all(abs(a['start_us']-b['start_us'])<=1 and (a['end_us'],a['cpu'])==(b['end_us'],b['cpu']) for a,b in zip(runs,adjust))\n assert runs[0]['start_us']>=threads[tid]['T-Start']\n gross=sum(x['end_us']-x['start_us'] for x in runs);di=sum(x['dpc_isr_us'] for x in adjust)\n api_lifetime=sum(q[-1]['primary_thread'].values())/1000\n # UTC is sampled after perf_start and before process_query_end. Use it only for an approximate window; lifetime needs no clock join.\n bounds=[(datetime.datetime.fromisoformat(x['utc'])-trace_start).total_seconds()*1e6 for x in q[:2]]\n window_gross=sum(overlap(x['start_us'],x['end_us'],*bounds) for x in runs)\n rows.append({'kind':s['kind'],'pid':s['observer']['pid'],'tid':tid,'thread_events':threads[tid],'slices':len(runs),'cpus':sorted(set(x['cpu'] for x in runs)),'priorities':sorted(set(x['old_priority'] for x in runs)),'lifetime_scheduled_gross_ms':gross/1000,'lifetime_dpc_isr_ms':di/1000,'lifetime_scheduled_excluding_dpc_isr_ms':(gross-di)/1000,'lifetime_primary_api_ms':api_lifetime/1000,'api_minus_scheduled_excluding_ms':(api_lifetime-gross+di)/1000,'measured_process_api_ms':s['cpu_us']/1000,'measured_wall_ms':s['wall_us']/1000,'approx_utc_window_us':bounds,'approx_window_scheduled_gross_ms':window_gross/1000,'boundary_process_query_bracket_us':[(x['process_query_end_ns']-x['perf_start_ns'])/1000 for x in q[:2]],'process_minus_primary_interval_ms':(sum(q[1]['process'].values())-sum(q[0]['process'].values())-sum(q[1]['primary_thread'].values())+sum(q[0]['primary_thread'].values()))/1e6})\ndef xperf_thread_report(name):\n result={}\n for r in csv.reader((p/name).open(errors='replace'),skipinitialspace=True):\n  if len(r)!=3:continue\n  try:value,tid=int(r[0]),int(r[2])\n  except ValueError:continue\n  if tid in tids:result[tid]=value\n assert set(result)==tids\n return result\nnet=xperf_thread_report('cswitch-net.txt');gross_report=xperf_thread_report('cswitch-gross.txt')\nfor r in rows:\n tid=r['tid'];r['xperf_lifetime_gross_ms']=gross_report[tid]/1000;r['xperf_lifetime_net_ms']=net[tid]/1000;r['xperf_lifetime_dpc_isr_ms']=(gross_report[tid]-net[tid])/1000\n r['xperf_api_minus_net_ms']=r['lifetime_primary_api_ms']-net[tid]/1000\n r['parser_minus_xperf_net_us']=round(r['lifetime_scheduled_excluding_dpc_isr_ms']*1000-net[tid],6)\n assert abs(r['parser_minus_xperf_net_us'])<=r['slices']*2\n r['last_switch_after_thread_end_event_us']=slices[tid][-1]['end_us']-threads[tid]['T-End']\nreport={'etl_sha256':j['etl_sha256'],'etl_bytes':j['etl_bytes'],'capture_status':j['status'],'cleanup_confirmed':j['cleanup_confirmed'],'event_counts':dict(events),'invalid_events':invalid,'all_cpu_cswitch_old_new_chain_mismatch_count':len(issues),'chain_mismatch_examples':issues[:5],'rows':rows,'source_script':Path(__file__).read_text(),'limits':['Single profiled session; not AA calibration or performance comparison','ETW slice residence is scheduler-derived elapsed time, not independent hardware instructions or thread CPU accuracy proof','Xperf -exc_dpcisr supplied DPC_ISR_CSWITCH_PCT per slice; CSV integer microsecond rounding applies','Approximate interval joins use observer UTC against trace UTC, not a direct QPC-marker join; lifetime joins use target T-Start/T-End and TID identity instead','System configuration invalid event warning retained; lost event/buffer counters are zero, which alone is not proof of no unobserved data error','No frequency, sampling stacks or instruction attribution in this trace']}\nreport['xperf_warning']={'event_number':1336047,'time_us':44493519,'provider':'01853a65-418f-4f36-aefc-dc0f1d2fd235','type':'0x0c','version':2,'name_from_tracestats':'SysConfig: Logical Disks','mof_length':112,'scope':'After all target threads ended; warning is decoder-specific and not proof every event valid. No InvalidEvent CSV row emitted.'}\nassert report['xperf_warning']['time_us']>max(slices[tid][-1]['end_us'] for tid in tids)\nreport['tracestats']=(p/'timespan.txt').read_text()\nreport['report_hashes']={name:sha(p/name) for name in ['events.csv','tracestats.txt','timespan.txt','cswitch-net.txt','cswitch-gross.txt','dpcisr.txt']}\n(p/'analysis.json').write_text(json.dumps(report,indent=2)+'\\n')\nfor x in rows:print({k:v for k,v in x.items() if k not in ['approx_utc_window_us','thread_events']})\nprint('Invalid',invalid,'chain mismatches',len(issues))\n",
+  "limits": [
+    "Single profiled session; not AA calibration or performance comparison",
+    "ETW slice residence is scheduler-derived elapsed time, not independent hardware instructions or thread CPU accuracy proof",
+    "Xperf -exc_dpcisr supplied DPC_ISR_CSWITCH_PCT per slice; CSV integer microsecond rounding applies",
+    "Approximate interval joins use observer UTC against trace UTC, not a direct QPC-marker join; lifetime joins use target T-Start/T-End and TID identity instead",
+    "System configuration invalid event warning retained; lost event/buffer counters are zero, which alone is not proof of no unobserved data error",
+    "No frequency, sampling stacks or instruction attribution in this trace"
+  ],
+  "xperf_warning": {
+    "event_number": 1336047,
+    "time_us": 44493519,
+    "provider": "01853a65-418f-4f36-aefc-dc0f1d2fd235",
+    "type": "0x0c",
+    "version": 2,
+    "name_from_tracestats": "SysConfig: Logical Disks",
+    "mof_length": 112,
+    "scope": "After all target threads ended; warning is decoder-specific and not proof every event valid. No InvalidEvent CSV row emitted."
+  },
+  "tracestats": "Number of Processors : 16\nCPU Speed            : 3793 MHz\nOS Version           : 10.00.00.00\nOS Build Number      : 26300\nClock type           : PerfCounter\nBoot time            : 2026/11/03:13:03:45.5000000\nNative Pointer Size  : 8 (64bit)\nStart time (UTC)     : 2026/11/16:07:49:42.2987597\nEnd time (UTC)       : 2026/11/16:07:50:27.2757041  (+         0:00:00:44.9769444)\nFirst event          : 2026/11/16:07:49:42.2987597\nFirst reliable event : 2026/11/16:07:49:42.2987597\nLast event           : 2026/11/16:07:50:27.2757041  (+         0:00:00:44.9769444)\nTotal # Lost Buffers : 0\nTotal # Lost Events  : 0\n\nNumber of Traces     : 1\n\nTrace name: .work/windows-timing-followup-20261116/etw/admin-20261116T074942-5bd67094/schedule.etl\n    Log file mode        : Sequential Relogged\n    Pointer size         : 8 (64bit)\n    Start time (UTC)     : 2026/11/16:07:49:42.2987597\n    End time (UTC)       : 2026/11/16:07:50:27.2757041  (+         0:00:00:44.9769444)\n    Start time (Local)   : 2026/11/16:16:49:42.2987597\n    End time (Local)     : 2026/11/16:16:50:27.2757041\n    First event          : 2026/11/16:07:49:42.2987597\n    First reliable event : 2026/11/16:07:49:42.2987597\n    Last event           : 2026/11/16:07:50:27.2757041  (+         0:00:00:44.9769444)\n    # Lost Buffers       : 0\n    # Lost Events        : 0\n\n",
+  "report_hashes": {
+    "events.csv": "48e4bcbd98371330c541128f13120079fd79b282766afabf3d00c015dcee0cc3",
+    "tracestats.txt": "f9dfc759c420c11481a47008df719e71a268731ac54dbbbf5f8136f7d70273a2",
+    "timespan.txt": "f289e5612f959f4b0f3c12a946ce9fbf3d6abca314b5ca00135965b9634a89d7",
+    "cswitch-net.txt": "6a990a2c7c1614d7453d8e25f621b567364d186644a6b882425357e41450aff1",
+    "cswitch-gross.txt": "10263d8881b33586aea2e0287193c517626b34bc26c44910bcc6671da5c8acf8",
+    "dpcisr.txt": "cdc7ffedaf8371c962e8750f7e17b9229bfada8ab6a46aa3352abcbf46373a72"
+  },
+  "by_kind_descriptive": {
+    "sigma": {
+      "lifetime_primary_api_ms": {
+        "median_ms": 6031.25,
+        "range_ms": 328.125,
+        "range_percent_of_median": 5.4404145077720205
+      },
+      "xperf_lifetime_net_ms": {
+        "median_ms": 6176.079,
+        "range_ms": 37.521999999999935,
+        "range_percent_of_median": 0.6075375655006994
+      }
+    },
+    "native": {
+      "lifetime_primary_api_ms": {
+        "median_ms": 7500.0,
+        "range_ms": 218.75,
+        "range_percent_of_median": 2.9166666666666665
+      },
+      "xperf_lifetime_net_ms": {
+        "median_ms": 7482.07,
+        "range_ms": 4.170000000000073,
+        "range_percent_of_median": 0.055733239598133574
+      }
+    }
+  },
+  "capture": {
+    "instance": "SigmaTiming2bdcbacfad",
+    "purpose": "One owned scheduler/DPC/interrupt trace; baseline Sigma and independent native3 each, no calibration/adoption",
+    "profile_sha256": "874a6df6dac0643a98b492710a38e8def0f32dbf8b527fbcdbdb70dd45215095",
+    "created_utc": "2026-11-16T07:49:42.163309+00:00",
+    "commands": [
+      {
+        "command": [
+          "C:\\WINDOWS\\system32\\wpr.exe",
+          "-status"
+        ],
+        "exit": 0,
+        "stdout": "\r\nMicrosoft Windows Performance Recorder Version 10.0.26100 (CoreSystem)\r\nCopyright (c) 2024 Microsoft Corporation. All rights reserved.\r\n\r\nWPR is not recording\r\n",
+        "stderr": ""
+      },
+      {
+        "command": [
+          "C:\\WINDOWS\\system32\\wpr.exe",
+          "-status",
+          "-instancename",
+          "SigmaTiming2bdcbacfad"
+        ],
+        "exit": 0,
+        "stdout": "\r\nMicrosoft Windows Performance Recorder Version 10.0.26100 (CoreSystem)\r\nCopyright (c) 2024 Microsoft Corporation. All rights reserved.\r\n\r\nWPR is not recording\r\n",
+        "stderr": ""
+      },
+      {
+        "command": [
+          "C:\\WINDOWS\\system32\\wpr.exe",
+          "-start",
+          "D:\\home\\source\\zig\\forthz\\.work\\windows-timing-followup-20261116\\etw\\schedule.wprp!SigmaSchedule.Light",
+          "-filemode",
+          "-recordtempto",
+          "D:\\home\\source\\zig\\forthz\\.work\\windows-timing-followup-20261116\\etw\\admin-20261116T074942-5bd67094\\temp",
+          "-instancename",
+          "SigmaTiming2bdcbacfad"
+        ],
+        "exit": 0,
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "command": [
+          "C:\\WINDOWS\\system32\\wpr.exe",
+          "-stop",
+          "D:\\home\\source\\zig\\forthz\\.work\\windows-timing-followup-20261116\\etw\\admin-20261116T074942-5bd67094\\schedule.etl",
+          "Sigma scheduler diagnostic",
+          "-skipPdbGen",
+          "-instancename",
+          "SigmaTiming2bdcbacfad"
+        ],
+        "exit": 0,
+        "stdout": "Press Ctrl+C to cancel the stop operation.\r\nThe trace was successfully saved.\r\n",
+        "stderr": ""
+      },
+      {
+        "command": [
+          "C:\\WINDOWS\\system32\\wpr.exe",
+          "-status",
+          "-instancename",
+          "SigmaTiming2bdcbacfad"
+        ],
+        "exit": 0,
+        "stdout": "\r\nMicrosoft Windows Performance Recorder Version 10.0.26100 (CoreSystem)\r\nCopyright (c) 2024 Microsoft Corporation. All rights reserved.\r\n\r\nWPR is not recording\r\n",
+        "stderr": ""
+      }
+    ],
+    "samples": [
+      {
+        "kind": "sigma",
+        "iterations": 1238709678,
+        "cpu_us": 5781250.0,
+        "wall_us": 6552204.4,
+        "lifetime_cpu_us": 5796875.0,
+        "checksum": 8670967746,
+        "observer": {
+          "pid": 35868,
+          "primary_tid": 15248,
+          "queries": [
+            {
+              "index": 0,
+              "utc": "2026-11-16T07:49:42.395493+00:00",
+              "perf_start_ns": 1104410096469700,
+              "process": {
+                "kernel_ns": 0,
+                "user_ns": 15625000
+              },
+              "process_query_end_ns": 1104410096495600,
+              "primary_thread": {
+                "kernel_ns": 0,
+                "user_ns": 15625000
+              },
+              "process_cycles": 16077769,
+              "primary_cycles": 15876360,
+              "primary_group": {
+                "mask": 1,
+                "group": 0
+              },
+              "process_priority": 32,
+              "thread_priority": 0,
+              "thread_records": [
+                {
+                  "id": 15248,
+                  "user_time": 0.015625,
+                  "system_time": 0.0
+                },
+                {
+                  "id": 41888,
+                  "user_time": 0.0,
+                  "system_time": 0.0
+                },
+                {
+                  "id": 3524,
+                  "user_time": 0.0,
+                  "system_time": 0.0
+                }
+              ],
+              "process_affinity": [
+                0
+              ],
+              "context_switches": {
+                "voluntary": 11,
+                "involuntary": 0
+              },
+              "host_cpu_times": [
+                {
+                  "user": 32898.328125,
+                  "system": 51280.17187500006,
+                  "idle": 432011.46874999994,
+                  "interrupt": 18037.6875,
+                  "dpc": 17098.046875
+                },
+                {
+                  "user": 17949.515625,
+                  "system": 16846.3125,
+                  "idle": 481394.078125,
+                  "interrupt": 1180.953125,
+                  "dpc": 1725.03125
+                },
+                {
+                  "user": 69217.15625,
+                  "system": 47135.46875,
+                  "idle": 399837.28125,
+                  "interrupt": 1551.21875,
+                  "dpc": 1306.84375
+                },
+                {
+                  "user": 44443.375,
+                  "system": 30463.28125000006,
+                  "idle": 441283.24999999994,
+                  "interrupt": 1195.6875,
+                  "dpc": 706.8125
+                },
+                {
+                  "user": 16094.640624999998,
+                  "system": 11377.359375,
+                  "idle": 488717.90625,
+                  "interrupt": 666.96875,
+                  "dpc": 151.828125
+                },
+                {
+                  "user": 14816.234374999998,
+                  "system": 10275.999999999942,
+                  "idle": 491097.671875,
+                  "interrupt": 663.09375,
+                  "dpc": 149.96875
+                },
+                {
+                  "user": 63654.59374999999,
+                  "system": 38010.734375,
+                  "idle": 414524.578125,
+                  "interrupt": 1257.96875,
+                  "dpc": 770.671875
+                },
+                {
+                  "user": 75391.328125,
+                  "system": 36018.015625,
+                  "idle": 404780.5625,
+                  "interrupt": 1174.65625,
+                  "dpc": 693.4375
+                },
+                {
+                  "user": 10111.78125,
+                  "system": 7816.124999999942,
+                  "idle": 498262.0,
+                  "interrupt": 551.5625,
+                  "dpc": 126.0625
+                },
+                {
+                  "user": 10365.640625,
+                  "system": 7215.09375,
+                  "idle": 498609.171875,
+                  "interrupt": 528.421875,
+                  "dpc": 111.359375
+                },
+                {
+                  "user": 29498.671874999996,
+                  "system": 22177.31249999994,
+                  "idle": 464513.921875,
+                  "interrupt": 1015.328125,
+                  "dpc": 274.328125
+                },
+                {
+                  "user": 27553.515625,
+                  "system": 19181.796875,
+                  "idle": 469454.59375,
+                  "interrupt": 961.09375,
+                  "dpc": 238.46875
+                },
+                {
+                  "user": 7665.593749999999,
+                  "system": 5815.546874999942,
+                  "idle": 502708.765625,
+                  "interrupt": 430.859375,
+                  "dpc": 107.25
+                },
+                {
+                  "user": 7594.749999999999,
+                  "system": 5414.593749999942,
+                  "idle": 503180.5625,
+                  "interrupt": 420.421875,
+                  "dpc": 105.703125
+                },
+                {
+                  "user": 8327.90625,
+                  "system": 6628.312500000058,
+                  "idle": 501233.68749999994,
+                  "interrupt": 433.765625,
+                  "dpc": 239.53125
+                },
+                {
+                  "user": 9395.390625,
+                  "system": 6239.578124999942,
+                  "idle": 500554.9375,
+                  "interrupt": 423.9375,
+                  "dpc": 182.28125
+                }
+              ],
+              "api_cost_ns": {
+                "GetProcessTimes": 14900,
+                "GetThreadTimes": 6700,
+                "QueryProcessCycleTime": 15700,
+                "QueryThreadCycleTime": 2900,
+                "primary_group": 5500,
+                "process_priority": 1400,
+                "thread_priority": 1300,
+                "thread_records": 32815500,
+                "process_affinity": 27200,
+                "context_switches": 6403400,
+                "host_cpu_times": 29500
+              },
+              "perf_end_ns": 1104410135818000,
+              "observer_ns": 39348300
+            },
+            {
+              "index": 1,
+              "utc": "2026-11-16T07:49:48.948220+00:00",
+              "perf_start_ns": 1104416649194000,
+              "process": {
+                "kernel_ns": 1531250000,
+                "user_ns": 4265625000
+              },
+              "process_query_end_ns": 1104416649243300,
+              "primary_thread": {
+                "kernel_ns": 1531250000,
+                "user_ns": 4265625000
+              },
+              "process_cycles": 23412239005,
+              "primary_cycles": 23411968942,
+              "primary_group": {
+                "mask": 1,
+                "group": 0
+              },
+              "process_priority": 32,
+              "thread_priority": 0,
+              "thread_records": [
+                {
+                  "id": 15248,
+                  "user_time": 4.265625,
+                  "system_time": 1.53125
+                },
+                {
+                  "id": 41888,
+                  "user_time": 0.0,
+                  "system_time": 0.0
+                },
+                {
+                  "id": 3524,
+                  "user_time": 0.0,
+                  "system_time": 0.0
+                }
+              ],
+              "process_affinity": [
+                0
+              ],
+              "context_switches": {
+                "voluntary": 494,
+                "involuntary": 0
+              },
+              "host_cpu_times": [
+                {
+                  "user": 32902.578125,
+                  "system": 51282.46875000006,
+                  "idle": 432011.46874999994,
+                  "interrupt": 18038.109375,
+                  "dpc": 17098.34375
+                },
+                {
+                  "user": 17949.546875,
+                  "system": 16846.421875,
+                  "idle": 481400.484375,
+                  "interrupt": 1180.96875,
+                  "dpc": 1725.03125
+                },
+                {
+                  "user": 69217.3125,
+                  "system": 47135.96875,
+                  "idle": 399843.171875,
+                  "interrupt": 1551.234375,
+                  "dpc": 1306.84375
+                },
+                {
+                  "user": 44443.625,
+                  "system": 30463.64062500006,
+                  "idle": 441289.18749999994,
+                  "interrupt": 1195.6875,
+                  "dpc": 706.8125
+                },
+                {
+                  "user": 16094.687499999998,
+                  "system": 11377.4375,
+                  "idle": 488724.328125,
+                  "interrupt": 666.96875,
+                  "dpc": 151.828125
+                },
+                {
+                  "user": 14816.281249999998,
+                  "system": 10276.124999999942,
+                  "idle": 491104.046875,
+                  "interrupt": 663.09375,
+                  "dpc": 149.96875
+                },
+                {
+                  "user": 63654.68749999999,
+                  "system": 38011.0625,
+                  "idle": 414530.703125,
+                  "interrupt": 1258.0,
+                  "dpc": 770.671875
+                },
+                {
+                  "user": 75391.546875,
+                  "system": 36018.390625,
+                  "idle": 404786.515625,
+                  "interrupt": 1174.703125,
+                  "dpc": 693.4375
+                },
+                {
+                  "user": 10111.78125,
+                  "system": 7816.234374999942,
+                  "idle": 498268.4375,
+                  "interrupt": 551.5625,
+                  "dpc": 126.0625
+                },
+                {
+                  "user": 10365.671875,
+                  "system": 7215.1875,
+                  "idle": 498615.59375,
+                  "interrupt": 528.4375,
+                  "dpc": 111.359375
+                },
+                {
+                  "user": 29498.765624999996,
+                  "system": 22177.40624999994,
+                  "idle": 464520.28125,
+                  "interrupt": 1015.34375,
+                  "dpc": 274.328125
+                },
+                {
+                  "user": 27553.625,
+                  "system": 19181.921875,
+                  "idle": 469460.90625,
+                  "interrupt": 961.09375,
+                  "dpc": 238.46875
+                },
+                {
+                  "user": 7665.624999999999,
+                  "system": 5815.624999999942,
+                  "idle": 502715.203125,
+                  "interrupt": 430.875,
+                  "dpc": 107.25
+                },
+                {
+                  "user": 7594.796874999999,
+                  "system": 5414.671874999942,
+                  "idle": 503186.984375,
+                  "interrupt": 420.4375,
+                  "dpc": 105.703125
+                },
+                {
+                  "user": 8327.96875,
+                  "system": 6628.375000000058,
+                  "idle": 501240.10937499994,
+                  "interrupt": 433.78125,
+                  "dpc": 239.53125
+                },
+                {
+                  "user": 9395.46875,
+                  "system": 6239.624999999942,
+                  "idle": 500561.359375,
+                  "interrupt": 423.9375,
+                  "dpc": 182.28125
+                }
+              ],
+              "api_cost_ns": {
+                "GetProcessTimes": 28900,
+                "GetThreadTimes": 5800,
+                "QueryProcessCycleTime": 27800,
+                "QueryThreadCycleTime": 2200,
+                "primary_group": 5800,
+                "process_priority": 1900,
+                "thread_priority": 1600,
+                "thread_records": 32573000,
+                "process_affinity": 28400,
+                "context_switches": 6088000,
+                "host_cpu_times": 27600
+              },
+              "perf_end_ns": 1104416688018300,
+              "observer_ns": 38824300
+            },
+            {
+              "index": 2,
+              "utc": "2026-11-16T07:49:48.989263+00:00",
+              "perf_start_ns": 1104416690240500,
+              "process": {
+                "kernel_ns": 1531250000,
+                "user_ns": 4265625000
+              },
+              "process_query_end_ns": 1104416690275500,
+              "primary_thread": {
+                "kernel_ns": 1531250000,
+                "user_ns": 4265625000
+              },
+              "process_cycles": 23419974450,
+              "primary_cycles": 23415617809,
+              "primary_group": {
+                "mask": 1,
+                "group": 0
+              },
+              "process_priority": 32,
+              "thread_priority": 0,
+              "thread_records": {
+                "error": "NoSuchProcess: process no longer exists (pid=35868)"
+              },
+              "process_affinity": {
+                "error": "NoSuchProcess: process no longer exists (pid=35868)"
+              },
+              "context_switches": {
+                "error": "NoSuchProcess: process no longer exists (pid=35868)"
+              },
+              "host_cpu_times": [
+                {
+                  "user": 32902.578125,
+                  "system": 51282.48437500006,
+                  "idle": 432011.46874999994,
+                  "interrupt": 18038.109375,
+                  "dpc": 17098.34375
+                },
+                {
+                  "user": 17949.546875,
+                  "system": 16846.421875,
+                  "idle": 481400.5,
+                  "interrupt": 1180.96875,
+                  "dpc": 1725.03125
+                },
+                {
+                  "user": 69217.3125,
+                  "system": 47135.96875,
+                  "idle": 399843.1875,
+                  "interrupt": 1551.234375,
+                  "dpc": 1306.84375
+                },
+                {
+                  "user": 44443.625,
+                  "system": 30463.64062500006,
+                  "idle": 441289.20312499994,
+                  "interrupt": 1195.6875,
+                  "dpc": 706.8125
+                },
+                {
+                  "user": 16094.687499999998,
+                  "system": 11377.4375,
+                  "idle": 488724.34375,
+                  "interrupt": 666.96875,
+                  "dpc": 151.828125
+                },
+                {
+                  "user": 14816.281249999998,
+                  "system": 10276.124999999942,
+                  "idle": 491104.0625,
+                  "interrupt": 663.09375,
+                  "dpc": 149.96875
+                },
+                {
+                  "user": 63654.68749999999,
+                  "system": 38011.0625,
+                  "idle": 414530.71875,
+                  "interrupt": 1258.0,
+                  "dpc": 770.671875
+                },
+                {
+                  "user": 75391.546875,
+                  "system": 36018.390625,
+                  "idle": 404786.53125,
+                  "interrupt": 1174.703125,
+                  "dpc": 693.4375
+                },
+                {
+                  "user": 10111.78125,
+                  "system": 7816.234374999942,
+                  "idle": 498268.453125,
+                  "interrupt": 551.5625,
+                  "dpc": 126.0625
+                },
+                {
+                  "user": 10365.671875,
+                  "system": 7215.1875,
+                  "idle": 498615.609375,
+                  "interrupt": 528.4375,
+                  "dpc": 111.359375
+                },
+                {
+                  "user": 29498.765624999996,
+                  "system": 22177.40624999994,
+                  "idle": 464520.296875,
+                  "interrupt": 1015.34375,
+                  "dpc": 274.328125
+                },
+                {
+                  "user": 27553.625,
+                  "system": 19181.921875,
+                  "idle": 469460.921875,
+                  "interrupt": 961.09375,
+                  "dpc": 238.46875
+                },
+                {
+                  "user": 7665.624999999999,
+                  "system": 5815.624999999942,
+                  "idle": 502715.21875,
+                  "interrupt": 430.875,
+                  "dpc": 107.25
+                },
+                {
+                  "user": 7594.796874999999,
+                  "system": 5414.671874999942,
+                  "idle": 503187.0,
+                  "interrupt": 420.4375,
+                  "dpc": 105.703125
+                },
+                {
+                  "user": 8327.96875,
+                  "system": 6628.375000000058,
+                  "idle": 501240.12499999994,
+                  "interrupt": 433.78125,
+                  "dpc": 239.53125
+                },
+                {
+                  "user": 9395.46875,
+                  "system": 6239.624999999942,
+                  "idle": 500561.375,
+                  "interrupt": 423.9375,
+                  "dpc": 182.28125
+                }
+              ],
+              "api_cost_ns": {
+                "GetProcessTimes": 21500,
+                "GetThreadTimes": 5200,
+                "QueryProcessCycleTime": 27500,
+                "QueryThreadCycleTime": 4400,
+                "primary_group": 4200,
+                "process_priority": 1500,
+                "thread_priority": 1300,
+                "thread_records": 162600,
+                "process_affinity": 35200,
+                "context_switches": 5535300,
+                "host_cpu_times": 25300
+              },
+              "perf_end_ns": 1104416696119300,
+              "observer_ns": 5878800
+            }
+          ]
+        }
+      },
+      {
+        "kind": "native",
+        "iterations": 38400000000,
+        "cpu_us": 7484375.0,
+        "wall_us": 7895585.7,
+        "lifetime_cpu_us": 7500000.0,
+        "checksum": 268800000000,
+        "observer": {
+          "pid": 12920,
+          "primary_tid": 15980,
+          "queries": [
+            {
+              "index": 0,
+              "utc": "2026-11-16T07:49:49.003820+00:00",
+              "perf_start_ns": 1104416704797400,
+              "process": {
+                "kernel_ns": 15625000,
+                "user_ns": 0
+              },
+              "process_query_end_ns": 1104416704817700,
+              "primary_thread": {
+                "kernel_ns": 15625000,
+                "user_ns": 0
+              },
+              "process_cycles": 7661480,
+              "primary_cycles": 7661480,
+              "primary_group": {
+                "mask": 1,
+                "group": 0
+              },
+              "process_priority": 32,
+              "thread_priority": 0,
+              "thread_records": [
+                {
+                  "id": 15980,
+                  "user_time": 0.0,
+                  "system_time": 0.015625
+                },
+                {
+                  "id": 38428,
+                  "user_time": 0.0,
+                  "system_time": 0.0
+                }
+              ],
+              "process_affinity": [
+                0
+              ],
+              "context_switches": {
+                "voluntary": 8,
+                "involuntary": 0
+              },
+              "host_cpu_times": [
+                {
+                  "user": 32902.578125,
+                  "system": 51282.53125000006,
+                  "idle": 432011.46874999994,
+                  "interrupt": 18038.109375,
+                  "dpc": 17098.34375
+                },
+                {
+                  "user": 17949.546875,
+                  "system": 16846.421875,
+                  "idle": 481400.546875,
+                  "interrupt": 1180.96875,
+                  "dpc": 1725.03125
+                },
+                {
+                  "user": 69217.3125,
+                  "system": 47135.96875,
+                  "idle": 399843.234375,
+                  "interrupt": 1551.234375,
+                  "dpc": 1306.84375
+                },
+                {
+                  "user": 44443.625,
+                  "system": 30463.64062500006,
+                  "idle": 441289.24999999994,
+                  "interrupt": 1195.6875,
+                  "dpc": 706.8125
+                },
+                {
+                  "user": 16094.687499999998,
+                  "system": 11377.4375,
+                  "idle": 488724.390625,
+                  "interrupt": 666.96875,
+                  "dpc": 151.828125
+                },
+                {
+                  "user": 14816.281249999998,
+                  "system": 10276.124999999942,
+                  "idle": 491104.109375,
+                  "interrupt": 663.09375,
+                  "dpc": 149.96875
+                },
+                {
+                  "user": 63654.68749999999,
+                  "system": 38011.0625,
+                  "idle": 414530.765625,
+                  "interrupt": 1258.0,
+                  "dpc": 770.671875
+                },
+                {
+                  "user": 75391.546875,
+                  "system": 36018.390625,
+                  "idle": 404786.578125,
+                  "interrupt": 1174.703125,
+                  "dpc": 693.4375
+                },
+                {
+                  "user": 10111.78125,
+                  "system": 7816.234374999942,
+                  "idle": 498268.5,
+                  "interrupt": 551.5625,
+                  "dpc": 126.0625
+                },
+                {
+                  "user": 10365.671875,
+                  "system": 7215.1875,
+                  "idle": 498615.65625,
+                  "interrupt": 528.4375,
+                  "dpc": 111.359375
+                },
+                {
+                  "user": 29498.765624999996,
+                  "system": 22177.40624999994,
+                  "idle": 464520.34375,
+                  "interrupt": 1015.34375,
+                  "dpc": 274.328125
+                },
+                {
+                  "user": 27553.625,
+                  "system": 19181.9375,
+                  "idle": 469460.953125,
+                  "interrupt": 961.09375,
+                  "dpc": 238.46875
+                },
+                {
+                  "user": 7665.624999999999,
+                  "system": 5815.624999999942,
+                  "idle": 502715.265625,
+                  "interrupt": 430.875,
+                  "dpc": 107.25
+                },
+                {
+                  "user": 7594.796874999999,
+                  "system": 5414.671874999942,
+                  "idle": 503187.046875,
+                  "interrupt": 420.4375,
+                  "dpc": 105.703125
+                },
+                {
+                  "user": 8327.96875,
+                  "system": 6628.375000000058,
+                  "idle": 501240.17187499994,
+                  "interrupt": 433.78125,
+                  "dpc": 239.53125
+                },
+                {
+                  "user": 9395.46875,
+                  "system": 6239.624999999942,
+                  "idle": 500561.421875,
+                  "interrupt": 423.9375,
+                  "dpc": 182.28125
+                }
+              ],
+              "api_cost_ns": {
+                "GetProcessTimes": 10400,
+                "GetThreadTimes": 3600,
+                "QueryProcessCycleTime": 14700,
+                "QueryThreadCycleTime": 2000,
+                "primary_group": 3800,
+                "process_priority": 1300,
+                "thread_priority": 1300,
+                "thread_records": 32314900,
+                "process_affinity": 23300,
+                "context_switches": 6253400,
+                "host_cpu_times": 27900
+              },
+              "perf_end_ns": 1104416743475000,
+              "observer_ns": 38677600
+            },
+            {
+              "index": 1,
+              "utc": "2026-11-16T07:49:56.899116+00:00",
+              "perf_start_ns": 1104424600091900,
+              "process": {
+                "kernel_ns": 546875000,
+                "user_ns": 6953125000
+              },
+              "process_query_end_ns": 1104424600136700,
+              "primary_thread": {
+                "kernel_ns": 546875000,
+                "user_ns": 6953125000
+              },
+              "process_cycles": 28330463988,
+              "primary_cycles": 28330379025,
+              "primary_group": {
+                "mask": 1,
+                "group": 0
+              },
+              "process_priority": 32,
+              "thread_priority": 0,
+              "thread_records": [
+                {
+                  "id": 15980,
+                  "user_time": 6.953125,
+                  "system_time": 0.546875
+                },
+                {
+                  "id": 38428,
+                  "user_time": 0.0,
+                  "system_time": 0.0
+                }
+              ],
+              "process_affinity": [
+                0
+              ],
+              "context_switches": {
+                "voluntary": 654,
+                "involuntary": 0
+              },
+              "host_cpu_times": [
+                {
+                  "user": 32909.53125,
+                  "system": 51283.46875000006,
+                  "idle": 432011.46874999994,
+                  "interrupt": 18038.34375,
+                  "dpc": 17098.46875
+                },
+                {
+                  "user": 17949.546875,
+                  "system": 16846.578125,
+                  "idle": 481408.28125,
+                  "interrupt": 1181.015625,
+                  "dpc": 1725.046875
+                },
+                {
+                  "user": 69217.46875,
+                  "system": 47136.5,
+                  "idle": 399850.4375,
+                  "interrupt": 1551.265625,
+                  "dpc": 1306.859375
+                },
+                {
+                  "user": 44444.125,
+                  "system": 30464.03125000006,
+                  "idle": 441296.24999999994,
+                  "interrupt": 1195.71875,
+                  "dpc": 706.828125
+                },
+                {
+                  "user": 16094.765624999998,
+                  "system": 11377.625,
+                  "idle": 488732.015625,
+                  "interrupt": 666.984375,
+                  "dpc": 151.828125
+                },
+                {
+                  "user": 14816.406249999998,
+                  "system": 10276.562499999942,
+                  "idle": 491111.4375,
+                  "interrupt": 663.109375,
+                  "dpc": 149.96875
+                },
+                {
+                  "user": 63654.71874999999,
+                  "system": 38011.46875,
+                  "idle": 414538.21875,
+                  "interrupt": 1258.0625,
+                  "dpc": 770.859375
+                },
+                {
+                  "user": 75391.875,
+                  "system": 36019.015625,
+                  "idle": 404793.515625,
+                  "interrupt": 1174.734375,
+                  "dpc": 693.4375
+                },
+                {
+                  "user": 10111.8125,
+                  "system": 7816.390624999942,
+                  "idle": 498276.203125,
+                  "interrupt": 551.5625,
+                  "dpc": 126.0625
+                },
+                {
+                  "user": 10365.703125,
+                  "system": 7215.34375,
+                  "idle": 498623.359375,
+                  "interrupt": 528.453125,
+                  "dpc": 111.359375
+                },
+                {
+                  "user": 29498.843749999996,
+                  "system": 22177.65624999994,
+                  "idle": 464527.90625,
+                  "interrupt": 1015.375,
+                  "dpc": 274.328125
+                },
+                {
+                  "user": 27553.734375,
+                  "system": 19182.140625,
+                  "idle": 469468.53125,
+                  "interrupt": 961.125,
+                  "dpc": 238.46875
+                },
+                {
+                  "user": 7665.671874999999,
+                  "system": 5815.734374999942,
+                  "idle": 502723.0,
+                  "interrupt": 430.875,
+                  "dpc": 107.25
+                },
+                {
+                  "user": 7594.828124999999,
+                  "system": 5414.796874999942,
+                  "idle": 503194.78125,
+                  "interrupt": 420.484375,
+                  "dpc": 105.703125
+                },
+                {
+                  "user": 8328.015625,
+                  "system": 6628.468750000058,
+                  "idle": 501247.92187499994,
+                  "interrupt": 433.8125,
+                  "dpc": 239.53125
+                },
+                {
+                  "user": 9395.484375,
+                  "system": 6239.703125,
+                  "idle": 500569.21875,
+                  "interrupt": 423.9375,
+                  "dpc": 182.28125
+                }
+              ],
+              "api_cost_ns": {
+                "GetProcessTimes": 26200,
+                "GetThreadTimes": 4500,
+                "QueryProcessCycleTime": 28300,
+                "QueryThreadCycleTime": 2100,
+                "primary_group": 4000,
+                "process_priority": 1400,
+                "thread_priority": 1000,
+                "thread_records": 32533900,
+                "process_affinity": 24500,
+                "context_switches": 6281400,
+                "host_cpu_times": 29700
+              },
+              "perf_end_ns": 1104424639060100,
+              "observer_ns": 38968200
+            },
+            {
+              "index": 2,
+              "utc": "2026-11-16T07:49:56.939589+00:00",
+              "perf_start_ns": 1104424640565700,
+              "process": {
+                "kernel_ns": 546875000,
+                "user_ns": 6953125000
+              },
+              "process_query_end_ns": 1104424640601700,
+              "primary_thread": {
+                "kernel_ns": 546875000,
+                "user_ns": 6953125000
+              },
+              "process_cycles": 28335531436,
+              "primary_cycles": 28332831578,
+              "primary_group": {
+                "mask": 1,
+                "group": 0
+              },
+              "process_priority": 32,
+              "thread_priority": 0,
+              "thread_records": {
+                "error": "NoSuchProcess: process no longer exists (pid=12920)"
+              },
+              "process_affinity": {
+                "error": "NoSuchProcess: process no longer exists (pid=12920)"
+              },
+              "context_switches": {
+                "error": "NoSuchProcess: process no longer exists (pid=12920)"
+              },
+              "host_cpu_times": [
+                {
+                  "user": 32909.53125,
+                  "system": 51283.48437500006,
+                  "idle": 432011.46874999994,
+                  "interrupt": 18038.34375,
+                  "dpc": 17098.46875
+                },
+                {
+                  "user": 17949.546875,
+                  "system": 16846.578125,
+                  "idle": 481408.296875,
+                  "interrupt": 1181.015625,
+                  "dpc": 1725.046875
+                },
+                {
+                  "user": 69217.46875,
+                  "system": 47136.5,
+                  "idle": 399850.453125,
+                  "interrupt": 1551.265625,
+                  "dpc": 1306.859375
+                },
+                {
+                  "user": 44444.125,
+                  "system": 30464.03125000006,
+                  "idle": 441296.26562499994,
+                  "interrupt": 1195.71875,
+                  "dpc": 706.828125
+                },
+                {
+                  "user": 16094.765624999998,
+                  "system": 11377.625,
+                  "idle": 488732.03125,
+                  "interrupt": 666.984375,
+                  "dpc": 151.828125
+                },
+                {
+                  "user": 14816.406249999998,
+                  "system": 10276.562499999942,
+                  "idle": 491111.453125,
+                  "interrupt": 663.109375,
+                  "dpc": 149.96875
+                },
+                {
+                  "user": 63654.71874999999,
+                  "system": 38011.46875,
+                  "idle": 414538.234375,
+                  "interrupt": 1258.0625,
+                  "dpc": 770.859375
+                },
+                {
+                  "user": 75391.875,
+                  "system": 36019.015625,
+                  "idle": 404793.53125,
+                  "interrupt": 1174.734375,
+                  "dpc": 693.4375
+                },
+                {
+                  "user": 10111.8125,
+                  "system": 7816.390624999942,
+                  "idle": 498276.21875,
+                  "interrupt": 551.5625,
+                  "dpc": 126.0625
+                },
+                {
+                  "user": 10365.703125,
+                  "system": 7215.34375,
+                  "idle": 498623.375,
+                  "interrupt": 528.453125,
+                  "dpc": 111.359375
+                },
+                {
+                  "user": 29498.843749999996,
+                  "system": 22177.65624999994,
+                  "idle": 464527.921875,
+                  "interrupt": 1015.375,
+                  "dpc": 274.328125
+                },
+                {
+                  "user": 27553.734375,
+                  "system": 19182.15625,
+                  "idle": 469468.53125,
+                  "interrupt": 961.125,
+                  "dpc": 238.46875
+                },
+                {
+                  "user": 7665.671874999999,
+                  "system": 5815.734374999942,
+                  "idle": 502723.015625,
+                  "interrupt": 430.875,
+                  "dpc": 107.25
+                },
+                {
+                  "user": 7594.828124999999,
+                  "system": 5414.796874999942,
+                  "idle": 503194.796875,
+                  "interrupt": 420.484375,
+                  "dpc": 105.703125
+                },
+                {
+                  "user": 8328.015625,
+                  "system": 6628.468750000058,
+                  "idle": 501247.93749999994,
+                  "interrupt": 433.8125,
+                  "dpc": 239.53125
+                },
+                {
+                  "user": 9395.484375,
+                  "system": 6239.703125,
+                  "idle": 500569.234375,
+                  "interrupt": 423.9375,
+                  "dpc": 182.28125
+                }
+              ],
+              "api_cost_ns": {
+                "GetProcessTimes": 21700,
+                "GetThreadTimes": 5700,
+                "QueryProcessCycleTime": 27100,
+                "QueryThreadCycleTime": 2100,
+                "primary_group": 3600,
+                "process_priority": 1300,
+                "thread_priority": 1200,
+                "thread_records": 163100,
+                "process_affinity": 31900,
+                "context_switches": 5956200,
+                "host_cpu_times": 30000
+              },
+              "perf_end_ns": 1104424646861300,
+              "observer_ns": 6295600
+            }
+          ]
+        }
+      },
+      {
+        "kind": "native",
+        "iterations": 38400000000,
+        "cpu_us": 7375000.0,
+        "wall_us": 7883082.6,
+        "lifetime_cpu_us": 7375000.0,
+        "checksum": 268800000000,
+        "observer": {
+          "pid": 9924,
+          "primary_tid": 23156,
+          "queries": [
+            {
+              "index": 0,
+              "utc": "2026-11-16T07:49:56.951063+00:00",
+              "perf_start_ns": 1104424652040800,
+              "process": {
+                "kernel_ns": 0,
+                "user_ns": 0
+              },
+              "process_query_end_ns": 1104424652060100,
+              "primary_thread": {
+                "kernel_ns": 0,
+                "user_ns": 0
+              },
+              "process_cycles": 6205347,
+              "primary_cycles": 6205347,
+              "primary_group": {
+                "mask": 1,
+                "group": 0
+              },
+              "process_priority": 32,
+              "thread_priority": 0,
+              "thread_records": [
+                {
+                  "id": 23156,
+                  "user_time": 0.0,
+                  "system_time": 0.0
+                },
+                {
+                  "id": 22704,
+                  "user_time": 0.0,
+                  "system_time": 0.0
+                }
+              ],
+              "process_affinity": [
+                0
+              ],
+              "context_switches": {
+                "voluntary": 5,
+                "involuntary": 0
+              },
+              "host_cpu_times": [
+                {
+                  "user": 32909.546875,
+                  "system": 51283.51562500006,
+                  "idle": 432011.46874999994,
+                  "interrupt": 18038.34375,
+                  "dpc": 17098.46875
+                },
+                {
+                  "user": 17949.546875,
+                  "system": 16846.578125,
+                  "idle": 481408.328125,
+                  "interrupt": 1181.015625,
+                  "dpc": 1725.046875
+                },
+                {
+                  "user": 69217.46875,
+                  "system": 47136.5,
+                  "idle": 399850.484375,
+                  "interrupt": 1551.265625,
+                  "dpc": 1306.859375
+                },
+                {
+                  "user": 44444.125,
+                  "system": 30464.03125000006,
+                  "idle": 441296.31249999994,
+                  "interrupt": 1195.71875,
+                  "dpc": 706.828125
+                },
+                {
+                  "user": 16094.765624999998,
+                  "system": 11377.625,
+                  "idle": 488732.0625,
+                  "interrupt": 666.984375,
+                  "dpc": 151.828125
+                },
+                {
+                  "user": 14816.406249999998,
+                  "system": 10276.562499999942,
+                  "idle": 491111.484375,
+                  "interrupt": 663.109375,
+                  "dpc": 149.96875
+                },
+                {
+                  "user": 63654.71874999999,
+                  "system": 38011.46875,
+                  "idle": 414538.28125,
+                  "interrupt": 1258.0625,
+                  "dpc": 770.859375
+                },
+                {
+                  "user": 75391.875,
+                  "system": 36019.015625,
+                  "idle": 404793.578125,
+                  "interrupt": 1174.734375,
+                  "dpc": 693.4375
+                },
+                {
+                  "user": 10111.8125,
+                  "system": 7816.390624999942,
+                  "idle": 498276.25,
+                  "interrupt": 551.5625,
+                  "dpc": 126.0625
+                },
+                {
+                  "user": 10365.703125,
+                  "system": 7215.34375,
+                  "idle": 498623.40625,
+                  "interrupt": 528.453125,
+                  "dpc": 111.359375
+                },
+                {
+                  "user": 29498.843749999996,
+                  "system": 22177.65624999994,
+                  "idle": 464527.953125,
+                  "interrupt": 1015.375,
+                  "dpc": 274.328125
+                },
+                {
+                  "user": 27553.734375,
+                  "system": 19182.15625,
+                  "idle": 469468.5625,
+                  "interrupt": 961.125,
+                  "dpc": 238.46875
+                },
+                {
+                  "user": 7665.671874999999,
+                  "system": 5815.734374999942,
+                  "idle": 502723.046875,
+                  "interrupt": 430.875,
+                  "dpc": 107.25
+                },
+                {
+                  "user": 7594.828124999999,
+                  "system": 5414.796874999942,
+                  "idle": 503194.828125,
+                  "interrupt": 420.484375,
+                  "dpc": 105.703125
+                },
+                {
+                  "user": 8328.015625,
+                  "system": 6628.468750000058,
+                  "idle": 501247.96874999994,
+                  "interrupt": 433.8125,
+                  "dpc": 239.53125
+                },
+                {
+                  "user": 9395.484375,
+                  "system": 6239.703125,
+                  "idle": 500569.265625,
+                  "interrupt": 423.9375,
+                  "dpc": 182.28125
+                }
+              ],
+              "api_cost_ns": {
+                "GetProcessTimes": 9300,
+                "GetThreadTimes": 3300,
+                "QueryProcessCycleTime": 25600,
+                "QueryThreadCycleTime": 1400,
+                "primary_group": 3700,
+                "process_priority": 1200,
+                "thread_priority": 800,
+                "thread_records": 31570800,
+                "process_affinity": 25900,
+                "context_switches": 5191800,
+                "host_cpu_times": 33800
+              },
+              "perf_end_ns": 1104424688930200,
+              "observer_ns": 36889400
+            },
+            {
+              "index": 1,
+              "utc": "2026-11-16T07:50:04.832591+00:00",
+              "perf_start_ns": 1104432533566600,
+              "process": {
+                "kernel_ns": 328125000,
+                "user_ns": 7046875000
+              },
+              "process_query_end_ns": 1104432533611300,
+              "primary_thread": {
+                "kernel_ns": 328125000,
+                "user_ns": 7046875000
+              },
+              "process_cycles": 28318649543,
+              "primary_cycles": 28318566097,
+              "primary_group": {
+                "mask": 1,
+                "group": 0
+              },
+              "process_priority": 32,
+              "thread_priority": 0,
+              "thread_records": [
+                {
+                  "id": 23156,
+                  "user_time": 7.046875,
+                  "system_time": 0.328125
+                },
+                {
+                  "id": 22704,
+                  "user_time": 0.0,
+                  "system_time": 0.0
+                }
+              ],
+              "process_affinity": [
+                0
+              ],
+              "context_switches": {
+                "voluntary": 616,
+                "involuntary": 0
+              },
+              "host_cpu_times": [
+                {
+                  "user": 32916.59375,
+                  "system": 51284.34375000006,
+                  "idle": 432011.46874999994,
+                  "interrupt": 18038.609375,
+                  "dpc": 17098.671875
+                },
+                {
+                  "user": 17949.5625,
+                  "system": 16846.625,
+                  "idle": 481416.15625,
+                  "interrupt": 1181.015625,
+                  "dpc": 1725.046875
+                },
+                {
+                  "user": 69217.515625,
+                  "system": 47136.703125,
+                  "idle": 399858.125,
+                  "interrupt": 1551.28125,
+                  "dpc": 1306.859375
+                },
+                {
+                  "user": 44444.375,
+                  "system": 30464.54687500006,
+                  "idle": 441303.42187499994,
+                  "interrupt": 1195.765625,
+                  "dpc": 706.828125
+                },
+                {
+                  "user": 16094.859374999998,
+                  "system": 11377.75,
+                  "idle": 488739.734375,
+                  "interrupt": 666.984375,
+                  "dpc": 151.828125
+                },
+                {
+                  "user": 14816.562499999998,
+                  "system": 10276.984374999942,
+                  "idle": 491118.796875,
+                  "interrupt": 663.140625,
+                  "dpc": 149.96875
+                },
+                {
+                  "user": 63654.81249999999,
+                  "system": 38011.734375,
+                  "idle": 414545.796875,
+                  "interrupt": 1258.078125,
+                  "dpc": 770.921875
+                },
+                {
+                  "user": 75392.109375,
+                  "system": 36019.53125,
+                  "idle": 404800.703125,
+                  "interrupt": 1174.734375,
+                  "dpc": 693.4375
+                },
+                {
+                  "user": 10111.8125,
+                  "system": 7816.437499999942,
+                  "idle": 498284.09375,
+                  "interrupt": 551.578125,
+                  "dpc": 126.0625
+                },
+                {
+                  "user": 10365.703125,
+                  "system": 7215.421875,
+                  "idle": 498631.21875,
+                  "interrupt": 528.453125,
+                  "dpc": 111.359375
+                },
+                {
+                  "user": 29498.859374999996,
+                  "system": 22177.79687499994,
+                  "idle": 464535.6875,
+                  "interrupt": 1015.375,
+                  "dpc": 274.328125
+                },
+                {
+                  "user": 27553.78125,
+                  "system": 19182.265625,
+                  "idle": 469476.296875,
+                  "interrupt": 961.140625,
+                  "dpc": 238.46875
+                },
+                {
+                  "user": 7665.671874999999,
+                  "system": 5815.749999999942,
+                  "idle": 502730.921875,
+                  "interrupt": 430.875,
+                  "dpc": 107.25
+                },
+                {
+                  "user": 7594.828124999999,
+                  "system": 5414.796874999942,
+                  "idle": 503202.71875,
+                  "interrupt": 420.484375,
+                  "dpc": 105.703125
+                },
+                {
+                  "user": 8328.046875,
+                  "system": 6628.484375000058,
+                  "idle": 501255.81249999994,
+                  "interrupt": 433.8125,
+                  "dpc": 239.53125
+                },
+                {
+                  "user": 9395.484375,
+                  "system": 6239.75,
+                  "idle": 500577.109375,
+                  "interrupt": 423.9375,
+                  "dpc": 182.28125
+                }
+              ],
+              "api_cost_ns": {
+                "GetProcessTimes": 25900,
+                "GetThreadTimes": 4800,
+                "QueryProcessCycleTime": 27600,
+                "QueryThreadCycleTime": 2000,
+                "primary_group": 4900,
+                "process_priority": 1700,
+                "thread_priority": 1100,
+                "thread_records": 32352900,
+                "process_affinity": 23600,
+                "context_switches": 5937700,
+                "host_cpu_times": 31900
+              },
+              "perf_end_ns": 1104432572012500,
+              "observer_ns": 38445900
+            },
+            {
+              "index": 2,
+              "utc": "2026-11-16T07:50:04.872510+00:00",
+              "perf_start_ns": 1104432573486800,
+              "process": {
+                "kernel_ns": 328125000,
+                "user_ns": 7046875000
+              },
+              "process_query_end_ns": 1104432573523200,
+              "primary_thread": {
+                "kernel_ns": 328125000,
+                "user_ns": 7046875000
+              },
+              "process_cycles": 28323660855,
+              "primary_cycles": 28320989066,
+              "primary_group": {
+                "mask": 1,
+                "group": 0
+              },
+              "process_priority": 32,
+              "thread_priority": 0,
+              "thread_records": {
+                "error": "NoSuchProcess: process no longer exists (pid=9924)"
+              },
+              "process_affinity": {
+                "error": "NoSuchProcess: process no longer exists (pid=9924)"
+              },
+              "context_switches": {
+                "error": "NoSuchProcess: process no longer exists (pid=9924)"
+              },
+              "host_cpu_times": [
+                {
+                  "user": 32916.59375,
+                  "system": 51284.34375000006,
+                  "idle": 432011.46874999994,
+                  "interrupt": 18038.609375,
+                  "dpc": 17098.671875
+                },
+                {
+                  "user": 17949.5625,
+                  "system": 16846.625,
+                  "idle": 481416.15625,
+                  "interrupt": 1181.015625,
+                  "dpc": 1725.046875
+                },
+                {
+                  "user": 69217.515625,
+                  "system": 47136.703125,
+                  "idle": 399858.140625,
+                  "interrupt": 1551.28125,
+                  "dpc": 1306.859375
+                },
+                {
+                  "user": 44444.375,
+                  "system": 30464.54687500006,
+                  "idle": 441303.42187499994,
+                  "interrupt": 1195.765625,
+                  "dpc": 706.828125
+                },
+                {
+                  "user": 16094.859374999998,
+                  "system": 11377.75,
+                  "idle": 488739.734375,
+                  "interrupt": 666.984375,
+                  "dpc": 151.828125
+                },
+                {
+                  "user": 14816.562499999998,
+                  "system": 10276.984374999942,
+                  "idle": 491118.796875,
+                  "interrupt": 663.140625,
+                  "dpc": 149.96875
+                },
+                {
+                  "user": 63654.81249999999,
+                  "system": 38011.734375,
+                  "idle": 414545.8125,
+                  "interrupt": 1258.078125,
+                  "dpc": 770.921875
+                },
+                {
+                  "user": 75392.125,
+                  "system": 36019.53125,
+                  "idle": 404800.703125,
+                  "interrupt": 1174.734375,
+                  "dpc": 693.4375
+                },
+                {
+                  "user": 10111.8125,
+                  "system": 7816.437499999942,
+                  "idle": 498284.09375,
+                  "interrupt": 551.578125,
+                  "dpc": 126.0625
+                },
+                {
+                  "user": 10365.703125,
+                  "system": 7215.421875,
+                  "idle": 498631.21875,
+                  "interrupt": 528.453125,
+                  "dpc": 111.359375
+                },
+                {
+                  "user": 29498.859374999996,
+                  "system": 22177.79687499994,
+                  "idle": 464535.6875,
+                  "interrupt": 1015.375,
+                  "dpc": 274.328125
+                },
+                {
+                  "user": 27553.78125,
+                  "system": 19182.265625,
+                  "idle": 469476.296875,
+                  "interrupt": 961.140625,
+                  "dpc": 238.46875
+                },
+                {
+                  "user": 7665.671874999999,
+                  "system": 5815.749999999942,
+                  "idle": 502730.921875,
+                  "interrupt": 430.875,
+                  "dpc": 107.25
+                },
+                {
+                  "user": 7594.828124999999,
+                  "system": 5414.796874999942,
+                  "idle": 503202.71875,
+                  "interrupt": 420.484375,
+                  "dpc": 105.703125
+                },
+                {
+                  "user": 8328.046875,
+                  "system": 6628.484375000058,
+                  "idle": 501255.81249999994,
+                  "interrupt": 433.8125,
+                  "dpc": 239.53125
+                },
+                {
+                  "user": 9395.484375,
+                  "system": 6239.75,
+                  "idle": 500577.109375,
+                  "interrupt": 423.9375,
+                  "dpc": 182.28125
+                }
+              ],
+              "api_cost_ns": {
+                "GetProcessTimes": 22100,
+                "GetThreadTimes": 4400,
+                "QueryProcessCycleTime": 26300,
+                "QueryThreadCycleTime": 1900,
+                "primary_group": 3800,
+                "process_priority": 1300,
+                "thread_priority": 1400,
+                "thread_records": 151400,
+                "process_affinity": 30300,
+                "context_switches": 5398700,
+                "host_cpu_times": 26600
+              },
+              "perf_end_ns": 1104432579201400,
+              "observer_ns": 5714600
+            }
+          ]
+        }
+      },
+      {
+        "kind": "sigma",
+        "iterations": 1238709678,
+        "cpu_us": 6125000.0,
+        "wall_us": 6656392.0,
+        "lifetime_cpu_us": 6125000.0,
+        "checksum": 8670967746,
+        "observer": {
+          "pid": 25668,
+          "primary_tid": 44616,
+          "queries": [
+            {
+              "index": 0,
+              "utc": "2026-11-16T07:50:04.885992+00:00",
+              "perf_start_ns": 1104432586969900,
+              "process": {
+                "kernel_ns": 0,
+                "user_ns": 0
+              },
+              "process_query_end_ns": 1104432586991400,
+              "primary_thread": {
+                "kernel_ns": 0,
+                "user_ns": 0
+              },
+              "process_cycles": 13309638,
+              "primary_cycles": 13309638,
+              "primary_group": {
+                "mask": 1,
+                "group": 0
+              },
+              "process_priority": 32,
+              "thread_priority": 0,
+              "thread_records": [
+                {
+                  "id": 44616,
+                  "user_time": 0.0,
+                  "system_time": 0.0
+                },
+                {
+                  "id": 18928,
+                  "user_time": 0.0,
+                  "system_time": 0.0
+                }
+              ],
+              "process_affinity": [
+                0
+              ],
+              "context_switches": {
+                "voluntary": 6,
+                "involuntary": 0
+              },
+              "host_cpu_times": [
+                {
+                  "user": 32916.59375,
+                  "system": 51284.39062500006,
+                  "idle": 432011.46874999994,
+                  "interrupt": 18038.609375,
+                  "dpc": 17098.671875
+                },
+                {
+                  "user": 17949.5625,
+                  "system": 16846.625,
+                  "idle": 481416.203125,
+                  "interrupt": 1181.015625,
+                  "dpc": 1725.046875
+                },
+                {
+                  "user": 69217.515625,
+                  "system": 47136.703125,
+                  "idle": 399858.171875,
+                  "interrupt": 1551.28125,
+                  "dpc": 1306.859375
+                },
+                {
+                  "user": 44444.375,
+                  "system": 30464.54687500006,
+                  "idle": 441303.46874999994,
+                  "interrupt": 1195.765625,
+                  "dpc": 706.828125
+                },
+                {
+                  "user": 16094.859374999998,
+                  "system": 11377.75,
+                  "idle": 488739.78125,
+                  "interrupt": 666.984375,
+                  "dpc": 151.828125
+                },
+                {
+                  "user": 14816.562499999998,
+                  "system": 10276.984374999942,
+                  "idle": 491118.84375,
+                  "interrupt": 663.140625,
+                  "dpc": 149.96875
+                },
+                {
+                  "user": 63654.81249999999,
+                  "system": 38011.734375,
+                  "idle": 414545.84375,
+                  "interrupt": 1258.078125,
+                  "dpc": 770.921875
+                },
+                {
+                  "user": 75392.125,
+                  "system": 36019.53125,
+                  "idle": 404800.734375,
+                  "interrupt": 1174.734375,
+                  "dpc": 693.4375
+                },
+                {
+                  "user": 10111.8125,
+                  "system": 7816.437499999942,
+                  "idle": 498284.140625,
+                  "interrupt": 551.578125,
+                  "dpc": 126.0625
+                },
+                {
+                  "user": 10365.703125,
+                  "system": 7215.421875,
+                  "idle": 498631.265625,
+                  "interrupt": 528.453125,
+                  "dpc": 111.359375
+                },
+                {
+                  "user": 29498.859374999996,
+                  "system": 22177.79687499994,
+                  "idle": 464535.734375,
+                  "interrupt": 1015.375,
+                  "dpc": 274.328125
+                },
+                {
+                  "user": 27553.78125,
+                  "system": 19182.265625,
+                  "idle": 469476.34375,
+                  "interrupt": 961.140625,
+                  "dpc": 238.46875
+                },
+                {
+                  "user": 7665.671874999999,
+                  "system": 5815.749999999942,
+                  "idle": 502730.96875,
+                  "interrupt": 430.875,
+                  "dpc": 107.25
+                },
+                {
+                  "user": 7594.828124999999,
+                  "system": 5414.796874999942,
+                  "idle": 503202.765625,
+                  "interrupt": 420.484375,
+                  "dpc": 105.703125
+                },
+                {
+                  "user": 8328.046875,
+                  "system": 6628.484375000058,
+                  "idle": 501255.85937499994,
+                  "interrupt": 433.8125,
+                  "dpc": 239.53125
+                },
+                {
+                  "user": 9395.484375,
+                  "system": 6239.75,
+                  "idle": 500577.15625,
+                  "interrupt": 423.9375,
+                  "dpc": 182.28125
+                }
+              ],
+              "api_cost_ns": {
+                "GetProcessTimes": 9200,
+                "GetThreadTimes": 3300,
+                "QueryProcessCycleTime": 24900,
+                "QueryThreadCycleTime": 1700,
+                "primary_group": 4000,
+                "process_priority": 1100,
+                "thread_priority": 800,
+                "thread_records": 30986000,
+                "process_affinity": 25200,
+                "context_switches": 5157900,
+                "host_cpu_times": 29200
+              },
+              "perf_end_ns": 1104432623236300,
+              "observer_ns": 36266400
+            },
+            {
+              "index": 1,
+              "utc": "2026-11-16T07:50:11.539056+00:00",
+              "perf_start_ns": 1104439240031300,
+              "process": {
+                "kernel_ns": 265625000,
+                "user_ns": 5859375000
+              },
+              "process_query_end_ns": 1104439240076300,
+              "primary_thread": {
+                "kernel_ns": 265625000,
+                "user_ns": 5859375000
+              },
+              "process_cycles": 23384993538,
+              "primary_cycles": 23384710960,
+              "primary_group": {
+                "mask": 1,
+                "group": 0
+              },
+              "process_priority": 32,
+              "thread_priority": 0,
+              "thread_records": [
+                {
+                  "id": 44616,
+                  "user_time": 5.859375,
+                  "system_time": 0.265625
+                },
+                {
+                  "id": 18928,
+                  "user_time": 0.0,
+                  "system_time": 0.0
+                },
+                {
+                  "id": 30132,
+                  "user_time": 0.0,
+                  "system_time": 0.0
+                }
+              ],
+              "process_affinity": [
+                0
+              ],
+              "context_switches": {
+                "voluntary": 539,
+                "involuntary": 0
+              },
+              "host_cpu_times": [
+                {
+                  "user": 32922.453125,
+                  "system": 51285.18750000006,
+                  "idle": 432011.46874999994,
+                  "interrupt": 18038.96875,
+                  "dpc": 17098.828125
+                },
+                {
+                  "user": 17949.5625,
+                  "system": 16846.640625,
+                  "idle": 481422.84375,
+                  "interrupt": 1181.015625,
+                  "dpc": 1725.046875
+                },
+                {
+                  "user": 69217.546875,
+                  "system": 47136.96875,
+                  "idle": 399864.53125,
+                  "interrupt": 1551.328125,
+                  "dpc": 1306.859375
+                },
+                {
+                  "user": 44444.421875,
+                  "system": 30464.85937500006,
+                  "idle": 441309.76562499994,
+                  "interrupt": 1195.8125,
+                  "dpc": 706.828125
+                },
+                {
+                  "user": 16094.859374999998,
+                  "system": 11377.765625,
+                  "idle": 488746.421875,
+                  "interrupt": 666.984375,
+                  "dpc": 151.828125
+                },
+                {
+                  "user": 14816.578124999998,
+                  "system": 10277.578124999942,
+                  "idle": 491124.890625,
+                  "interrupt": 663.171875,
+                  "dpc": 149.96875
+                },
+                {
+                  "user": 63654.84374999999,
+                  "system": 38011.921875,
+                  "idle": 414552.28125,
+                  "interrupt": 1258.078125,
+                  "dpc": 770.953125
+                },
+                {
+                  "user": 75392.203125,
+                  "system": 36019.90625,
+                  "idle": 404806.9375,
+                  "interrupt": 1174.765625,
+                  "dpc": 693.4375
+                },
+                {
+                  "user": 10111.8125,
+                  "system": 7816.453124999942,
+                  "idle": 498290.78125,
+                  "interrupt": 551.59375,
+                  "dpc": 126.0625
+                },
+                {
+                  "user": 10365.703125,
+                  "system": 7215.421875,
+                  "idle": 498637.921875,
+                  "interrupt": 528.453125,
+                  "dpc": 111.359375
+                },
+                {
+                  "user": 29498.859374999996,
+                  "system": 22177.90624999994,
+                  "idle": 464542.28125,
+                  "interrupt": 1015.375,
+                  "dpc": 274.328125
+                },
+                {
+                  "user": 27553.8125,
+                  "system": 19182.3125,
+                  "idle": 469482.921875,
+                  "interrupt": 961.15625,
+                  "dpc": 238.46875
+                },
+                {
+                  "user": 7665.671874999999,
+                  "system": 5815.749999999942,
+                  "idle": 502737.625,
+                  "interrupt": 430.875,
+                  "dpc": 107.25
+                },
+                {
+                  "user": 7594.828124999999,
+                  "system": 5414.796874999942,
+                  "idle": 503209.421875,
+                  "interrupt": 420.484375,
+                  "dpc": 105.703125
+                },
+                {
+                  "user": 8328.046875,
+                  "system": 6628.484375000058,
+                  "idle": 501262.51562499994,
+                  "interrupt": 433.8125,
+                  "dpc": 239.53125
+                },
+                {
+                  "user": 9395.484375,
+                  "system": 6239.75,
+                  "idle": 500583.8125,
+                  "interrupt": 423.9375,
+                  "dpc": 182.28125
+                }
+              ],
+              "api_cost_ns": {
+                "GetProcessTimes": 26300,
+                "GetThreadTimes": 7000,
+                "QueryProcessCycleTime": 26100,
+                "QueryThreadCycleTime": 2100,
+                "primary_group": 4300,
+                "process_priority": 1700,
+                "thread_priority": 1200,
+                "thread_records": 33562600,
+                "process_affinity": 23600,
+                "context_switches": 5879700,
+                "host_cpu_times": 28800
+              },
+              "perf_end_ns": 1104439279627500,
+              "observer_ns": 39596200
+            },
+            {
+              "index": 2,
+              "utc": "2026-11-16T07:50:11.582341+00:00",
+              "perf_start_ns": 1104439283317400,
+              "process": {
+                "kernel_ns": 265625000,
+                "user_ns": 5859375000
+              },
+              "process_query_end_ns": 1104439283359300,
+              "primary_thread": {
+                "kernel_ns": 265625000,
+                "user_ns": 5859375000
+              },
+              "process_cycles": 23393285034,
+              "primary_cycles": 23388379548,
+              "primary_group": {
+                "mask": 1,
+                "group": 0
+              },
+              "process_priority": 32,
+              "thread_priority": 0,
+              "thread_records": {
+                "error": "NoSuchProcess: process no longer exists (pid=25668)"
+              },
+              "process_affinity": {
+                "error": "NoSuchProcess: process no longer exists (pid=25668)"
+              },
+              "context_switches": {
+                "error": "NoSuchProcess: process no longer exists (pid=25668)"
+              },
+              "host_cpu_times": [
+                {
+                  "user": 32922.453125,
+                  "system": 51285.20312500006,
+                  "idle": 432011.46874999994,
+                  "interrupt": 18038.984375,
+                  "dpc": 17098.828125
+                },
+                {
+                  "user": 17949.5625,
+                  "system": 16846.640625,
+                  "idle": 481422.859375,
+                  "interrupt": 1181.015625,
+                  "dpc": 1725.046875
+                },
+                {
+                  "user": 69217.546875,
+                  "system": 47136.96875,
+                  "idle": 399864.546875,
+                  "interrupt": 1551.328125,
+                  "dpc": 1306.859375
+                },
+                {
+                  "user": 44444.421875,
+                  "system": 30464.85937500006,
+                  "idle": 441309.78124999994,
+                  "interrupt": 1195.8125,
+                  "dpc": 706.828125
+                },
+                {
+                  "user": 16094.859374999998,
+                  "system": 11377.765625,
+                  "idle": 488746.4375,
+                  "interrupt": 666.984375,
+                  "dpc": 151.828125
+                },
+                {
+                  "user": 14816.578124999998,
+                  "system": 10277.593749999942,
+                  "idle": 491124.890625,
+                  "interrupt": 663.171875,
+                  "dpc": 149.96875
+                },
+                {
+                  "user": 63654.84374999999,
+                  "system": 38011.921875,
+                  "idle": 414552.296875,
+                  "interrupt": 1258.078125,
+                  "dpc": 770.953125
+                },
+                {
+                  "user": 75392.203125,
+                  "system": 36019.90625,
+                  "idle": 404806.953125,
+                  "interrupt": 1174.765625,
+                  "dpc": 693.4375
+                },
+                {
+                  "user": 10111.8125,
+                  "system": 7816.453124999942,
+                  "idle": 498290.796875,
+                  "interrupt": 551.59375,
+                  "dpc": 126.0625
+                },
+                {
+                  "user": 10365.703125,
+                  "system": 7215.421875,
+                  "idle": 498637.9375,
+                  "interrupt": 528.453125,
+                  "dpc": 111.359375
+                },
+                {
+                  "user": 29498.859374999996,
+                  "system": 22177.90624999994,
+                  "idle": 464542.296875,
+                  "interrupt": 1015.375,
+                  "dpc": 274.328125
+                },
+                {
+                  "user": 27553.8125,
+                  "system": 19182.3125,
+                  "idle": 469482.9375,
+                  "interrupt": 961.15625,
+                  "dpc": 238.46875
+                },
+                {
+                  "user": 7665.671874999999,
+                  "system": 5815.749999999942,
+                  "idle": 502737.640625,
+                  "interrupt": 430.875,
+                  "dpc": 107.25
+                },
+                {
+                  "user": 7594.828124999999,
+                  "system": 5414.796874999942,
+                  "idle": 503209.4375,
+                  "interrupt": 420.484375,
+                  "dpc": 105.703125
+                },
+                {
+                  "user": 8328.046875,
+                  "system": 6628.484375000058,
+                  "idle": 501262.53124999994,
+                  "interrupt": 433.8125,
+                  "dpc": 239.53125
+                },
+                {
+                  "user": 9395.484375,
+                  "system": 6239.75,
+                  "idle": 500583.828125,
+                  "interrupt": 423.9375,
+                  "dpc": 182.28125
+                }
+              ],
+              "api_cost_ns": {
+                "GetProcessTimes": 25000,
+                "GetThreadTimes": 5700,
+                "QueryProcessCycleTime": 25000,
+                "QueryThreadCycleTime": 2700,
+                "primary_group": 4300,
+                "process_priority": 1200,
+                "thread_priority": 1300,
+                "thread_records": 245600,
+                "process_affinity": 36600,
+                "context_switches": 5833800,
+                "host_cpu_times": 42100
+              },
+              "perf_end_ns": 1104439289595700,
+              "observer_ns": 6278300
+            }
+          ]
+        }
+      },
+      {
+        "kind": "sigma",
+        "iterations": 1238709678,
+        "cpu_us": 6031250.0,
+        "wall_us": 6772935.1,
+        "lifetime_cpu_us": 6031250.0,
+        "checksum": 8670967746,
+        "observer": {
+          "pid": 24824,
+          "primary_tid": 35132,
+          "queries": [
+            {
+              "index": 0,
+              "utc": "2026-11-16T07:50:11.595939+00:00",
+              "perf_start_ns": 1104439296916700,
+              "process": {
+                "kernel_ns": 0,
+                "user_ns": 0
+              },
+              "process_query_end_ns": 1104439296934300,
+              "primary_thread": {
+                "kernel_ns": 0,
+                "user_ns": 0
+              },
+              "process_cycles": 13371844,
+              "primary_cycles": 13371844,
+              "primary_group": {
+                "mask": 1,
+                "group": 0
+              },
+              "process_priority": 32,
+              "thread_priority": 0,
+              "thread_records": [
+                {
+                  "id": 35132,
+                  "user_time": 0.0,
+                  "system_time": 0.0
+                },
+                {
+                  "id": 23548,
+                  "user_time": 0.0,
+                  "system_time": 0.0
+                }
+              ],
+              "process_affinity": [
+                0
+              ],
+              "context_switches": {
+                "voluntary": 7,
+                "involuntary": 0
+              },
+              "host_cpu_times": [
+                {
+                  "user": 32922.453125,
+                  "system": 51285.25000000006,
+                  "idle": 432011.46874999994,
+                  "interrupt": 18038.984375,
+                  "dpc": 17098.84375
+                },
+                {
+                  "user": 17949.5625,
+                  "system": 16846.640625,
+                  "idle": 481422.90625,
+                  "interrupt": 1181.015625,
+                  "dpc": 1725.046875
+                },
+                {
+                  "user": 69217.546875,
+                  "system": 47136.96875,
+                  "idle": 399864.59375,
+                  "interrupt": 1551.328125,
+                  "dpc": 1306.859375
+                },
+                {
+                  "user": 44444.421875,
+                  "system": 30464.87500000006,
+                  "idle": 441309.81249999994,
+                  "interrupt": 1195.8125,
+                  "dpc": 706.828125
+                },
+                {
+                  "user": 16094.859374999998,
+                  "system": 11377.765625,
+                  "idle": 488746.484375,
+                  "interrupt": 666.984375,
+                  "dpc": 151.828125
+                },
+                {
+                  "user": 14816.578124999998,
+                  "system": 10277.593749999942,
+                  "idle": 491124.9375,
+                  "interrupt": 663.171875,
+                  "dpc": 149.96875
+                },
+                {
+                  "user": 63654.84374999999,
+                  "system": 38011.921875,
+                  "idle": 414552.34375,
+                  "interrupt": 1258.078125,
+                  "dpc": 770.953125
+                },
+                {
+                  "user": 75392.203125,
+                  "system": 36019.90625,
+                  "idle": 404807.0,
+                  "interrupt": 1174.765625,
+                  "dpc": 693.4375
+                },
+                {
+                  "user": 10111.8125,
+                  "system": 7816.453124999942,
+                  "idle": 498290.84375,
+                  "interrupt": 551.59375,
+                  "dpc": 126.0625
+                },
+                {
+                  "user": 10365.703125,
+                  "system": 7215.421875,
+                  "idle": 498637.984375,
+                  "interrupt": 528.453125,
+                  "dpc": 111.359375
+                },
+                {
+                  "user": 29498.859374999996,
+                  "system": 22177.90624999994,
+                  "idle": 464542.34375,
+                  "interrupt": 1015.375,
+                  "dpc": 274.328125
+                },
+                {
+                  "user": 27553.8125,
+                  "system": 19182.3125,
+                  "idle": 469482.984375,
+                  "interrupt": 961.15625,
+                  "dpc": 238.46875
+                },
+                {
+                  "user": 7665.671874999999,
+                  "system": 5815.749999999942,
+                  "idle": 502737.6875,
+                  "interrupt": 430.875,
+                  "dpc": 107.25
+                },
+                {
+                  "user": 7594.828124999999,
+                  "system": 5414.796874999942,
+                  "idle": 503209.484375,
+                  "interrupt": 420.484375,
+                  "dpc": 105.703125
+                },
+                {
+                  "user": 8328.046875,
+                  "system": 6628.484375000058,
+                  "idle": 501262.57812499994,
+                  "interrupt": 433.8125,
+                  "dpc": 239.53125
+                },
+                {
+                  "user": 9395.484375,
+                  "system": 6239.75,
+                  "idle": 500583.875,
+                  "interrupt": 423.9375,
+                  "dpc": 182.28125
+                }
+              ],
+              "api_cost_ns": {
+                "GetProcessTimes": 8700,
+                "GetThreadTimes": 3200,
+                "QueryProcessCycleTime": 25800,
+                "QueryThreadCycleTime": 1800,
+                "primary_group": 3500,
+                "process_priority": 1000,
+                "thread_priority": 900,
+                "thread_records": 34435700,
+                "process_affinity": 25800,
+                "context_switches": 6874700,
+                "host_cpu_times": 31000
+              },
+              "perf_end_ns": 1104439338349100,
+              "observer_ns": 41432400
+            },
+            {
+              "index": 1,
+              "utc": "2026-11-16T07:50:18.369715+00:00",
+              "perf_start_ns": 1104446070690400,
+              "process": {
+                "kernel_ns": 328125000,
+                "user_ns": 5703125000
+              },
+              "process_query_end_ns": 1104446070736900,
+              "primary_thread": {
+                "kernel_ns": 328125000,
+                "user_ns": 5703125000
+              },
+              "process_cycles": 23382607328,
+              "primary_cycles": 23382290612,
+              "primary_group": {
+                "mask": 1,
+                "group": 0
+              },
+              "process_priority": 32,
+              "thread_priority": 0,
+              "thread_records": [
+                {
+                  "id": 35132,
+                  "user_time": 5.703125,
+                  "system_time": 0.328125
+                },
+                {
+                  "id": 23548,
+                  "user_time": 0.0,
+                  "system_time": 0.0
+                },
+                {
+                  "id": 16964,
+                  "user_time": 0.0,
+                  "system_time": 0.0
+                }
+              ],
+              "process_affinity": [
+                0
+              ],
+              "context_switches": {
+                "voluntary": 585,
+                "involuntary": 0
+              },
+              "host_cpu_times": [
+                {
+                  "user": 32928.203125,
+                  "system": 51286.28125000006,
+                  "idle": 432011.46874999994,
+                  "interrupt": 18039.46875,
+                  "dpc": 17099.0
+                },
+                {
+                  "user": 17949.578125,
+                  "system": 16846.703125,
+                  "idle": 481429.59375,
+                  "interrupt": 1181.015625,
+                  "dpc": 1725.0625
+                },
+                {
+                  "user": 69217.703125,
+                  "system": 47137.484375,
+                  "idle": 399870.6875,
+                  "interrupt": 1551.34375,
+                  "dpc": 1306.859375
+                },
+                {
+                  "user": 44444.546875,
+                  "system": 30465.18750000006,
+                  "idle": 441316.14062499994,
+                  "interrupt": 1195.84375,
+                  "dpc": 706.828125
+                },
+                {
+                  "user": 16094.921874999998,
+                  "system": 11377.953125,
+                  "idle": 488753.0,
+                  "interrupt": 667.03125,
+                  "dpc": 151.828125
+                },
+                {
+                  "user": 14816.781249999998,
+                  "system": 10278.093749999942,
+                  "idle": 491131.0,
+                  "interrupt": 663.1875,
+                  "dpc": 149.96875
+                },
+                {
+                  "user": 63654.95312499999,
+                  "system": 38012.375,
+                  "idle": 414558.5625,
+                  "interrupt": 1258.09375,
+                  "dpc": 771.046875
+                },
+                {
+                  "user": 75392.34375,
+                  "system": 36020.375,
+                  "idle": 404813.15625,
+                  "interrupt": 1174.84375,
+                  "dpc": 693.4375
+                },
+                {
+                  "user": 10111.828125,
+                  "system": 7816.515624999942,
+                  "idle": 498297.53125,
+                  "interrupt": 551.625,
+                  "dpc": 126.0625
+                },
+                {
+                  "user": 10365.71875,
+                  "system": 7215.515625,
+                  "idle": 498644.640625,
+                  "interrupt": 528.46875,
+                  "dpc": 111.359375
+                },
+                {
+                  "user": 29498.890624999996,
+                  "system": 22178.07812499994,
+                  "idle": 464548.90625,
+                  "interrupt": 1015.40625,
+                  "dpc": 274.328125
+                },
+                {
+                  "user": 27553.921875,
+                  "system": 19182.46875,
+                  "idle": 469489.484375,
+                  "interrupt": 961.15625,
+                  "dpc": 238.46875
+                },
+                {
+                  "user": 7665.687499999999,
+                  "system": 5815.828124999942,
+                  "idle": 502744.359375,
+                  "interrupt": 430.890625,
+                  "dpc": 107.25
+                },
+                {
+                  "user": 7594.843749999999,
+                  "system": 5414.812499999942,
+                  "idle": 503216.21875,
+                  "interrupt": 420.484375,
+                  "dpc": 105.703125
+                },
+                {
+                  "user": 8328.046875,
+                  "system": 6628.515625000058,
+                  "idle": 501269.31249999994,
+                  "interrupt": 433.828125,
+                  "dpc": 239.53125
+                },
+                {
+                  "user": 9395.5,
+                  "system": 6239.78125,
+                  "idle": 500590.59375,
+                  "interrupt": 423.953125,
+                  "dpc": 182.28125
+                }
+              ],
+              "api_cost_ns": {
+                "GetProcessTimes": 27300,
+                "GetThreadTimes": 4600,
+                "QueryProcessCycleTime": 28800,
+                "QueryThreadCycleTime": 1900,
+                "primary_group": 4200,
+                "process_priority": 1500,
+                "thread_priority": 1000,
+                "thread_records": 33545900,
+                "process_affinity": 25400,
+                "context_switches": 6888500,
+                "host_cpu_times": 30700
+              },
+              "perf_end_ns": 1104446111283500,
+              "observer_ns": 40593100
+            },
+            {
+              "index": 2,
+              "utc": "2026-11-16T07:50:18.412512+00:00",
+              "perf_start_ns": 1104446113488400,
+              "process": {
+                "kernel_ns": 328125000,
+                "user_ns": 5703125000
+              },
+              "process_query_end_ns": 1104446113524500,
+              "primary_thread": {
+                "kernel_ns": 328125000,
+                "user_ns": 5703125000
+              },
+              "process_cycles": 23390370461,
+              "primary_cycles": 23385947064,
+              "primary_group": {
+                "mask": 1,
+                "group": 0
+              },
+              "process_priority": 32,
+              "thread_priority": 0,
+              "thread_records": {
+                "error": "NoSuchProcess: process no longer exists (pid=24824)"
+              },
+              "process_affinity": {
+                "error": "NoSuchProcess: process no longer exists (pid=24824)"
+              },
+              "context_switches": {
+                "error": "NoSuchProcess: process no longer exists (pid=24824)"
+              },
+              "host_cpu_times": [
+                {
+                  "user": 32928.203125,
+                  "system": 51286.28125000006,
+                  "idle": 432011.46874999994,
+                  "interrupt": 18039.46875,
+                  "dpc": 17099.0
+                },
+                {
+                  "user": 17949.578125,
+                  "system": 16846.703125,
+                  "idle": 481429.609375,
+                  "interrupt": 1181.015625,
+                  "dpc": 1725.0625
+                },
+                {
+                  "user": 69217.703125,
+                  "system": 47137.484375,
+                  "idle": 399870.703125,
+                  "interrupt": 1551.34375,
+                  "dpc": 1306.859375
+                },
+                {
+                  "user": 44444.546875,
+                  "system": 30465.18750000006,
+                  "idle": 441316.15624999994,
+                  "interrupt": 1195.84375,
+                  "dpc": 706.828125
+                },
+                {
+                  "user": 16094.921874999998,
+                  "system": 11377.953125,
+                  "idle": 488753.015625,
+                  "interrupt": 667.03125,
+                  "dpc": 151.828125
+                },
+                {
+                  "user": 14816.781249999998,
+                  "system": 10278.093749999942,
+                  "idle": 491131.015625,
+                  "interrupt": 663.1875,
+                  "dpc": 149.96875
+                },
+                {
+                  "user": 63654.95312499999,
+                  "system": 38012.375,
+                  "idle": 414558.5625,
+                  "interrupt": 1258.09375,
+                  "dpc": 771.046875
+                },
+                {
+                  "user": 75392.34375,
+                  "system": 36020.375,
+                  "idle": 404813.171875,
+                  "interrupt": 1174.84375,
+                  "dpc": 693.4375
+                },
+                {
+                  "user": 10111.828125,
+                  "system": 7816.515624999942,
+                  "idle": 498297.546875,
+                  "interrupt": 551.625,
+                  "dpc": 126.0625
+                },
+                {
+                  "user": 10365.71875,
+                  "system": 7215.515625,
+                  "idle": 498644.65625,
+                  "interrupt": 528.46875,
+                  "dpc": 111.359375
+                },
+                {
+                  "user": 29498.890624999996,
+                  "system": 22178.07812499994,
+                  "idle": 464548.921875,
+                  "interrupt": 1015.40625,
+                  "dpc": 274.328125
+                },
+                {
+                  "user": 27553.921875,
+                  "system": 19182.46875,
+                  "idle": 469489.5,
+                  "interrupt": 961.15625,
+                  "dpc": 238.46875
+                },
+                {
+                  "user": 7665.687499999999,
+                  "system": 5815.828124999942,
+                  "idle": 502744.375,
+                  "interrupt": 430.890625,
+                  "dpc": 107.25
+                },
+                {
+                  "user": 7594.843749999999,
+                  "system": 5414.812499999942,
+                  "idle": 503216.234375,
+                  "interrupt": 420.484375,
+                  "dpc": 105.703125
+                },
+                {
+                  "user": 8328.046875,
+                  "system": 6628.515625000058,
+                  "idle": 501269.32812499994,
+                  "interrupt": 433.828125,
+                  "dpc": 239.53125
+                },
+                {
+                  "user": 9395.5,
+                  "system": 6239.78125,
+                  "idle": 500590.609375,
+                  "interrupt": 423.953125,
+                  "dpc": 182.28125
+                }
+              ],
+              "api_cost_ns": {
+                "GetProcessTimes": 22000,
+                "GetThreadTimes": 4500,
+                "QueryProcessCycleTime": 27500,
+                "QueryThreadCycleTime": 1800,
+                "primary_group": 3500,
+                "process_priority": 1300,
+                "thread_priority": 1400,
+                "thread_records": 150900,
+                "process_affinity": 30700,
+                "context_switches": 6317300,
+                "host_cpu_times": 28900
+              },
+              "perf_end_ns": 1104446120128400,
+              "observer_ns": 6640000
+            }
+          ]
+        }
+      },
+      {
+        "kind": "native",
+        "iterations": 38400000000,
+        "cpu_us": 7578125.0,
+        "wall_us": 8176260.8,
+        "lifetime_cpu_us": 7593750.0,
+        "checksum": 268800000000,
+        "observer": {
+          "pid": 10856,
+          "primary_tid": 33384,
+          "queries": [
+            {
+              "index": 0,
+              "utc": "2026-11-16T07:50:18.424929+00:00",
+              "perf_start_ns": 1104446125906600,
+              "process": {
+                "kernel_ns": 0,
+                "user_ns": 15625000
+              },
+              "process_query_end_ns": 1104446125924500,
+              "primary_thread": {
+                "kernel_ns": 0,
+                "user_ns": 15625000
+              },
+              "process_cycles": 6416619,
+              "primary_cycles": 6416619,
+              "primary_group": {
+                "mask": 1,
+                "group": 0
+              },
+              "process_priority": 32,
+              "thread_priority": 0,
+              "thread_records": [
+                {
+                  "id": 33384,
+                  "user_time": 0.015625,
+                  "system_time": 0.0
+                },
+                {
+                  "id": 16072,
+                  "user_time": 0.0,
+                  "system_time": 0.0
+                }
+              ],
+              "process_affinity": [
+                0
+              ],
+              "context_switches": {
+                "voluntary": 5,
+                "involuntary": 0
+              },
+              "host_cpu_times": [
+                {
+                  "user": 32928.234375,
+                  "system": 51286.29687500006,
+                  "idle": 432011.46874999994,
+                  "interrupt": 18039.46875,
+                  "dpc": 17099.0
+                },
+                {
+                  "user": 17949.578125,
+                  "system": 16846.703125,
+                  "idle": 481429.65625,
+                  "interrupt": 1181.015625,
+                  "dpc": 1725.0625
+                },
+                {
+                  "user": 69217.703125,
+                  "system": 47137.484375,
+                  "idle": 399870.75,
+                  "interrupt": 1551.34375,
+                  "dpc": 1306.859375
+                },
+                {
+                  "user": 44444.546875,
+                  "system": 30465.21875000006,
+                  "idle": 441316.17187499994,
+                  "interrupt": 1195.84375,
+                  "dpc": 706.828125
+                },
+                {
+                  "user": 16094.921874999998,
+                  "system": 11377.953125,
+                  "idle": 488753.0625,
+                  "interrupt": 667.03125,
+                  "dpc": 151.828125
+                },
+                {
+                  "user": 14816.781249999998,
+                  "system": 10278.093749999942,
+                  "idle": 491131.0625,
+                  "interrupt": 663.1875,
+                  "dpc": 149.96875
+                },
+                {
+                  "user": 63654.95312499999,
+                  "system": 38012.375,
+                  "idle": 414558.609375,
+                  "interrupt": 1258.09375,
+                  "dpc": 771.046875
+                },
+                {
+                  "user": 75392.359375,
+                  "system": 36020.390625,
+                  "idle": 404813.1875,
+                  "interrupt": 1174.84375,
+                  "dpc": 693.4375
+                },
+                {
+                  "user": 10111.828125,
+                  "system": 7816.515624999942,
+                  "idle": 498297.59375,
+                  "interrupt": 551.625,
+                  "dpc": 126.0625
+                },
+                {
+                  "user": 10365.71875,
+                  "system": 7215.515625,
+                  "idle": 498644.703125,
+                  "interrupt": 528.46875,
+                  "dpc": 111.359375
+                },
+                {
+                  "user": 29498.890624999996,
+                  "system": 22178.07812499994,
+                  "idle": 464548.96875,
+                  "interrupt": 1015.40625,
+                  "dpc": 274.328125
+                },
+                {
+                  "user": 27553.921875,
+                  "system": 19182.46875,
+                  "idle": 469489.546875,
+                  "interrupt": 961.15625,
+                  "dpc": 238.46875
+                },
+                {
+                  "user": 7665.687499999999,
+                  "system": 5815.828124999942,
+                  "idle": 502744.421875,
+                  "interrupt": 430.890625,
+                  "dpc": 107.25
+                },
+                {
+                  "user": 7594.843749999999,
+                  "system": 5414.812499999942,
+                  "idle": 503216.28125,
+                  "interrupt": 420.484375,
+                  "dpc": 105.703125
+                },
+                {
+                  "user": 8328.046875,
+                  "system": 6628.515625000058,
+                  "idle": 501269.37499999994,
+                  "interrupt": 433.828125,
+                  "dpc": 239.53125
+                },
+                {
+                  "user": 9395.5,
+                  "system": 6239.78125,
+                  "idle": 500590.65625,
+                  "interrupt": 423.953125,
+                  "dpc": 182.28125
+                }
+              ],
+              "api_cost_ns": {
+                "GetProcessTimes": 8800,
+                "GetThreadTimes": 3500,
+                "QueryProcessCycleTime": 24100,
+                "QueryThreadCycleTime": 1900,
+                "primary_group": 3900,
+                "process_priority": 1000,
+                "thread_priority": 900,
+                "thread_records": 33056900,
+                "process_affinity": 19800,
+                "context_switches": 5975700,
+                "host_cpu_times": 67900
+              },
+              "perf_end_ns": 1104446165090500,
+              "observer_ns": 39183900
+            },
+            {
+              "index": 1,
+              "utc": "2026-11-16T07:50:26.600563+00:00",
+              "perf_start_ns": 1104454301538300,
+              "process": {
+                "kernel_ns": 718750000,
+                "user_ns": 6875000000
+              },
+              "process_query_end_ns": 1104454301583500,
+              "primary_thread": {
+                "kernel_ns": 718750000,
+                "user_ns": 6875000000
+              },
+              "process_cycles": 28334359790,
+              "primary_cycles": 28334289620,
+              "primary_group": {
+                "mask": 1,
+                "group": 0
+              },
+              "process_priority": 32,
+              "thread_priority": 0,
+              "thread_records": [
+                {
+                  "id": 33384,
+                  "user_time": 6.875,
+                  "system_time": 0.71875
+                },
+                {
+                  "id": 16072,
+                  "user_time": 0.0,
+                  "system_time": 0.0
+                }
+              ],
+              "process_affinity": [
+                0
+              ],
+              "context_switches": {
+                "voluntary": 656,
+                "involuntary": 0
+              },
+              "host_cpu_times": [
+                {
+                  "user": 32935.09375,
+                  "system": 51287.60937500006,
+                  "idle": 432011.46874999994,
+                  "interrupt": 18039.796875,
+                  "dpc": 17099.25
+                },
+                {
+                  "user": 17949.578125,
+                  "system": 16846.71875,
+                  "idle": 481437.8125,
+                  "interrupt": 1181.015625,
+                  "dpc": 1725.0625
+                },
+                {
+                  "user": 69217.71875,
+                  "system": 47137.9375,
+                  "idle": 399878.453125,
+                  "interrupt": 1551.359375,
+                  "dpc": 1306.859375
+                },
+                {
+                  "user": 44444.65625,
+                  "system": 30465.37500000006,
+                  "idle": 441324.07812499994,
+                  "interrupt": 1195.859375,
+                  "dpc": 706.828125
+                },
+                {
+                  "user": 16094.968749999998,
+                  "system": 11378.796875,
+                  "idle": 488760.34375,
+                  "interrupt": 667.03125,
+                  "dpc": 151.828125
+                },
+                {
+                  "user": 14816.859374999998,
+                  "system": 10278.093749999942,
+                  "idle": 491139.15625,
+                  "interrupt": 663.1875,
+                  "dpc": 149.96875
+                },
+                {
+                  "user": 63655.32812499999,
+                  "system": 38012.734375,
+                  "idle": 414566.046875,
+                  "interrupt": 1258.109375,
+                  "dpc": 771.140625
+                },
+                {
+                  "user": 75392.484375,
+                  "system": 36020.796875,
+                  "idle": 404820.828125,
+                  "interrupt": 1174.84375,
+                  "dpc": 693.4375
+                },
+                {
+                  "user": 10111.84375,
+                  "system": 7816.562499999942,
+                  "idle": 498305.703125,
+                  "interrupt": 551.65625,
+                  "dpc": 126.0625
+                },
+                {
+                  "user": 10365.765625,
+                  "system": 7215.546875000058,
+                  "idle": 498652.79687499994,
+                  "interrupt": 528.46875,
+                  "dpc": 111.359375
+                },
+                {
+                  "user": 29498.921874999996,
+                  "system": 22178.21874999994,
+                  "idle": 464556.96875,
+                  "interrupt": 1015.4375,
+                  "dpc": 274.328125
+                },
+                {
+                  "user": 27553.953125,
+                  "system": 19182.5,
+                  "idle": 469497.65625,
+                  "interrupt": 961.15625,
+                  "dpc": 238.46875
+                },
+                {
+                  "user": 7665.703124999999,
+                  "system": 5815.859374999942,
+                  "idle": 502752.546875,
+                  "interrupt": 430.890625,
+                  "dpc": 107.25
+                },
+                {
+                  "user": 7594.843749999999,
+                  "system": 5414.812499999942,
+                  "idle": 503224.453125,
+                  "interrupt": 420.484375,
+                  "dpc": 105.703125
+                },
+                {
+                  "user": 8328.078125,
+                  "system": 6628.515625000058,
+                  "idle": 501277.51562499994,
+                  "interrupt": 433.828125,
+                  "dpc": 239.53125
+                },
+                {
+                  "user": 9395.5,
+                  "system": 6239.78125,
+                  "idle": 500598.828125,
+                  "interrupt": 423.953125,
+                  "dpc": 182.28125
+                }
+              ],
+              "api_cost_ns": {
+                "GetProcessTimes": 27000,
+                "GetThreadTimes": 4800,
+                "QueryProcessCycleTime": 27900,
+                "QueryThreadCycleTime": 1800,
+                "primary_group": 4400,
+                "process_priority": 1500,
+                "thread_priority": 1500,
+                "thread_records": 33662800,
+                "process_affinity": 25100,
+                "context_switches": 5993400,
+                "host_cpu_times": 30800
+              },
+              "perf_end_ns": 1104454341351000,
+              "observer_ns": 39812700
+            },
+            {
+              "index": 2,
+              "utc": "2026-11-16T07:50:26.641834+00:00",
+              "perf_start_ns": 1104454342811000,
+              "process": {
+                "kernel_ns": 718750000,
+                "user_ns": 6875000000
+              },
+              "process_query_end_ns": 1104454342845200,
+              "primary_thread": {
+                "kernel_ns": 718750000,
+                "user_ns": 6875000000
+              },
+              "process_cycles": 28339313827,
+              "primary_cycles": 28336672383,
+              "primary_group": {
+                "mask": 1,
+                "group": 0
+              },
+              "process_priority": 32,
+              "thread_priority": 0,
+              "thread_records": {
+                "error": "NoSuchProcess: process no longer exists (pid=10856)"
+              },
+              "process_affinity": {
+                "error": "NoSuchProcess: process no longer exists (pid=10856)"
+              },
+              "context_switches": {
+                "error": "NoSuchProcess: process no longer exists (pid=10856)"
+              },
+              "host_cpu_times": [
+                {
+                  "user": 32935.09375,
+                  "system": 51287.62500000006,
+                  "idle": 432011.46874999994,
+                  "interrupt": 18039.796875,
+                  "dpc": 17099.25
+                },
+                {
+                  "user": 17949.578125,
+                  "system": 16846.71875,
+                  "idle": 481437.828125,
+                  "interrupt": 1181.015625,
+                  "dpc": 1725.0625
+                },
+                {
+                  "user": 69217.71875,
+                  "system": 47137.9375,
+                  "idle": 399878.46875,
+                  "interrupt": 1551.359375,
+                  "dpc": 1306.859375
+                },
+                {
+                  "user": 44444.65625,
+                  "system": 30465.37500000006,
+                  "idle": 441324.09374999994,
+                  "interrupt": 1195.859375,
+                  "dpc": 706.828125
+                },
+                {
+                  "user": 16094.968749999998,
+                  "system": 11378.796875,
+                  "idle": 488760.359375,
+                  "interrupt": 667.03125,
+                  "dpc": 151.828125
+                },
+                {
+                  "user": 14816.859374999998,
+                  "system": 10278.093749999942,
+                  "idle": 491139.171875,
+                  "interrupt": 663.1875,
+                  "dpc": 149.96875
+                },
+                {
+                  "user": 63655.32812499999,
+                  "system": 38012.734375,
+                  "idle": 414566.0625,
+                  "interrupt": 1258.109375,
+                  "dpc": 771.140625
+                },
+                {
+                  "user": 75392.484375,
+                  "system": 36020.796875,
+                  "idle": 404820.84375,
+                  "interrupt": 1174.84375,
+                  "dpc": 693.4375
+                },
+                {
+                  "user": 10111.84375,
+                  "system": 7816.562499999942,
+                  "idle": 498305.71875,
+                  "interrupt": 551.65625,
+                  "dpc": 126.0625
+                },
+                {
+                  "user": 10365.765625,
+                  "system": 7215.546875000058,
+                  "idle": 498652.81249999994,
+                  "interrupt": 528.46875,
+                  "dpc": 111.359375
+                },
+                {
+                  "user": 29498.921874999996,
+                  "system": 22178.21874999994,
+                  "idle": 464556.984375,
+                  "interrupt": 1015.4375,
+                  "dpc": 274.328125
+                },
+                {
+                  "user": 27553.953125,
+                  "system": 19182.5,
+                  "idle": 469497.671875,
+                  "interrupt": 961.15625,
+                  "dpc": 238.46875
+                },
+                {
+                  "user": 7665.703124999999,
+                  "system": 5815.859374999942,
+                  "idle": 502752.5625,
+                  "interrupt": 430.890625,
+                  "dpc": 107.25
+                },
+                {
+                  "user": 7594.843749999999,
+                  "system": 5414.812499999942,
+                  "idle": 503224.46875,
+                  "interrupt": 420.484375,
+                  "dpc": 105.703125
+                },
+                {
+                  "user": 8328.078125,
+                  "system": 6628.515625000058,
+                  "idle": 501277.53124999994,
+                  "interrupt": 433.828125,
+                  "dpc": 239.53125
+                },
+                {
+                  "user": 9395.5,
+                  "system": 6239.78125,
+                  "idle": 500598.84375,
+                  "interrupt": 423.953125,
+                  "dpc": 182.28125
+                }
+              ],
+              "api_cost_ns": {
+                "GetProcessTimes": 20300,
+                "GetThreadTimes": 4600,
+                "QueryProcessCycleTime": 26800,
+                "QueryThreadCycleTime": 1600,
+                "primary_group": 4200,
+                "process_priority": 1200,
+                "thread_priority": 1000,
+                "thread_records": 170600,
+                "process_affinity": 34300,
+                "context_switches": 6412500,
+                "host_cpu_times": 42900
+              },
+              "perf_end_ns": 1104454349581400,
+              "observer_ns": 6770400
+            }
+          ]
+        }
+      }
+    ],
+    "raw_trace_scope": "Local work folder only; do not publish whole ETL/event dump",
+    "constraints": "No priority/power/settings changes; do not stop/cancel other instances",
+    "manual_cancel": "& 'C:\\WINDOWS\\system32\\wpr.exe' -cancel -instancename SigmaTiming2bdcbacfad",
+    "status": "samples_captured",
+    "stop_exit": 0,
+    "cleanup_confirmed": true,
+    "etl_exists": true,
+    "etl_sha256": "a5d55b65cb1ec469993102a7ae0db4a363db3f68f765d9c393281ec01dd56fbf",
+    "etl_bytes": 55312384
+  },
+  "qpc_analysis": {
+    "frequency": 10000000,
+    "clock_type": 1,
+    "python_clock": {
+      "implementation": "QueryPerformanceCounter()",
+      "monotonic": true,
+      "adjustable": false,
+      "resolution": 1e-07
+    },
+    "all_cswitch_raw_csv_correspondence_count": 723767,
+    "raw_qpc_to_xperf_offset_range_us": [
+      1104409999738.7,
+      1104409999739.6
+    ],
+    "old_new_chain_mismatches": 0,
+    "rows": [
+      {
+        "kind": "sigma",
+        "tid": 15248,
+        "pid": 35868,
+        "api_interval_ms": 5781.25,
+        "qpc_interval_gross_ms": 6507.236199999993,
+        "qpc_interval_net_lower_ms": 6207.767999999993,
+        "qpc_interval_net_upper_ms": 6208.882399999993,
+        "api_minus_net_range_ms": [
+          -427.6323999999929,
+          -426.5179999999925
+        ],
+        "dpc_isr_excluded_bounds_ms": [
+          298.911,
+          298.911
+        ],
+        "intersected_slices": 482,
+        "partial_boundary_slices": 0,
+        "process_query_bracket_us": [
+          25.9,
+          49.3
+        ]
+      },
+      {
+        "kind": "native",
+        "tid": 15980,
+        "pid": 12920,
+        "api_interval_ms": 7484.375,
+        "qpc_interval_gross_ms": 7849.431099999998,
+        "qpc_interval_net_lower_ms": 7478.654999999998,
+        "qpc_interval_net_upper_ms": 7480.077199999997,
+        "api_minus_net_range_ms": [
+          4.297800000002607,
+          5.720000000001862
+        ],
+        "dpc_isr_excluded_bounds_ms": [
+          370.065,
+          370.065
+        ],
+        "intersected_slices": 646,
+        "partial_boundary_slices": 0,
+        "process_query_bracket_us": [
+          20.3,
+          44.8
+        ]
+      },
+      {
+        "kind": "native",
+        "tid": 23156,
+        "pid": 9924,
+        "api_interval_ms": 7375.0,
+        "qpc_interval_gross_ms": 7835.728899999995,
+        "qpc_interval_net_lower_ms": 7475.927899999995,
+        "qpc_interval_net_upper_ms": 7477.275899999995,
+        "api_minus_net_range_ms": [
+          -102.27589999999478,
+          -100.92789999999478
+        ],
+        "dpc_isr_excluded_bounds_ms": [
+          359.127,
+          359.127
+        ],
+        "intersected_slices": 610,
+        "partial_boundary_slices": 0,
+        "process_query_bracket_us": [
+          19.3,
+          44.7
+        ]
+      },
+      {
+        "kind": "sigma",
+        "tid": 44616,
+        "pid": 25668,
+        "api_interval_ms": 6125.0,
+        "qpc_interval_gross_ms": 6609.478899999997,
+        "qpc_interval_net_lower_ms": 6170.9663999999975,
+        "qpc_interval_net_upper_ms": 6172.161399999997,
+        "api_minus_net_range_ms": [
+          -47.16139999999758,
+          -45.96639999999758
+        ],
+        "dpc_isr_excluded_bounds_ms": [
+          437.915,
+          437.915
+        ],
+        "intersected_slices": 531,
+        "partial_boundary_slices": 0,
+        "process_query_bracket_us": [
+          21.5,
+          45.0
+        ]
+      },
+      {
+        "kind": "sigma",
+        "tid": 35132,
+        "pid": 24824,
+        "api_interval_ms": 6031.25,
+        "qpc_interval_gross_ms": 6721.935100000002,
+        "qpc_interval_net_lower_ms": 6170.919000000003,
+        "qpc_interval_net_upper_ms": 6172.199200000002,
+        "api_minus_net_range_ms": [
+          -140.94920000000204,
+          -139.6690000000028
+        ],
+        "dpc_isr_excluded_bounds_ms": [
+          550.376,
+          550.376
+        ],
+        "intersected_slices": 576,
+        "partial_boundary_slices": 0,
+        "process_query_bracket_us": [
+          17.6,
+          46.5
+        ]
+      },
+      {
+        "kind": "native",
+        "tid": 33384,
+        "pid": 10856,
+        "api_interval_ms": 7578.125,
+        "qpc_interval_gross_ms": 8129.084800000001,
+        "qpc_interval_net_lower_ms": 7480.006700000002,
+        "qpc_interval_net_upper_ms": 7481.432900000002,
+        "api_minus_net_range_ms": [
+          96.6920999999987,
+          98.11829999999794
+        ],
+        "dpc_isr_excluded_bounds_ms": [
+          648.365,
+          648.365
+        ],
+        "intersected_slices": 650,
+        "partial_boundary_slices": 0,
+        "process_query_bracket_us": [
+          17.9,
+          45.2
+        ]
+      }
+    ],
+    "raw_decoder_source": "#define UNICODE\n#define _UNICODE\n#include <windows.h>\n#include <evntrace.h>\n#include <evntcons.h>\n#include <stdio.h>\n#include <stdint.h>\n#include <string.h>\nstatic FILE *out;\nstatic unsigned long long count;\nstatic const GUID thread_provider={0x3d6fa8d1,0xfe05,0x11d0,{0x9d,0xda,0x00,0xc0,0x4f,0xd7,0xba,0x7c}};\nstatic void WINAPI record(EVENT_RECORD *event) {\n    if (memcmp(&event->EventHeader.ProviderId,&thread_provider,sizeof(GUID)) || event->EventHeader.EventDescriptor.Opcode!=36) return;\n    fprintf(out,\"%lld,%u,%lu,%lu,%u,\",event->EventHeader.TimeStamp.QuadPart,(unsigned)event->BufferContext.ProcessorNumber,(unsigned long)event->EventHeader.ProcessId,(unsigned long)event->EventHeader.ThreadId,(unsigned)event->UserDataLength);\n    for (unsigned i=0;i<event->UserDataLength;i++) fprintf(out,\"%02x\",((unsigned char*)event->UserData)[i]);\n    fputc('\\n',out);count++;\n}\nint wmain(int argc,wchar_t **argv) {\n    if(argc!=3) return 2;\n    out=_wfopen(argv[2],L\"wb\");if(!out)return 3;\n    EVENT_TRACE_LOGFILEW logfile={0};logfile.LogFileName=argv[1];\n    logfile.ProcessTraceMode=PROCESS_TRACE_MODE_EVENT_RECORD|PROCESS_TRACE_MODE_RAW_TIMESTAMP;\n    logfile.EventRecordCallback=record;\n    TRACEHANDLE handle=OpenTraceW(&logfile);\n    if(handle==INVALID_PROCESSTRACE_HANDLE){fprintf(stderr,\"OpenTrace=%lu\\n\",GetLastError());fclose(out);return 4;}\n    fprintf(out,\"frequency,%lld\\n\",logfile.LogfileHeader.PerfFreq.QuadPart);\n    fprintf(out,\"clock_type,%lu\\n\",logfile.LogfileHeader.ReservedFlags);\n    fprintf(out,\"qpc,cpu,header_pid,header_tid,payload_length,payload_hex\\n\");\n    ULONG result=ProcessTrace(&handle,1,NULL,NULL);ULONG close_result=CloseTrace(handle);\n    int failed=ferror(out);fclose(out);\n    fprintf(stderr,\"ProcessTrace=%lu CloseTrace=%lu CSwitch=%llu WriteError=%d\\n\",result,close_result,count,failed);\n    return result||close_result||failed?5:0;\n}\n",
+    "analysis_source": "from pathlib import Path\nimport csv,json,struct,time,hashlib,collections\np=Path('.work/windows-timing-followup-20261116/etw/admin-20261116T074942-5bd67094');c=json.loads((p/'capture.json').read_text());tids={s['observer']['primary_tid'] for s in c['samples']}\nraw=csv.reader((p/'raw-cswitch.csv').open());frequency=int(next(raw)[1]);clock_type=int(next(raw)[1]);next(raw)\nassert frequency>0 and clock_type==1\nclock=time.get_clock_info('perf_counter');assert 'QueryPerformanceCounter' in clock.implementation\ntargets=collections.defaultdict(list);interrupts=collections.defaultdict(list);last={};offsets=[];count=0;chain_errors=0\nfor r in csv.reader((p/'events.csv').open(errors='replace'),skipinitialspace=True):\n if not r or len(r)<2:continue\n try:timestamp=int(r[1])\n except ValueError:continue\n if r[0]=='DPC_ISR_CSWITCH_PCT' and int(r[7]) in tids:\n  interrupts[int(r[7])].append((int(r[2]),timestamp,int(r[8]),int(r[5])))\n if r[0]!='CSwitch':continue\n q=next(raw);tick,cpu=int(q[0]),int(q[1]);payload=bytes.fromhex(q[5]);new,old=struct.unpack_from('<II',payload)\n assert cpu==int(r[16]) and new==int(r[3]) and old==int(r[9])\n offsets.append(tick*1000000/frequency-timestamp);count+=1\n if cpu in last:\n  previous_tick,previous_new=last[cpu]\n  chain_errors+=previous_new!=old\n  if old in tids:targets[old].append((previous_tick,tick,cpu,timestamp,int(r[15])))\n else:assert old not in tids\n last[cpu]=(tick,new)\nassert next(raw,None) is None and count==723767 and chain_errors==0\nassert max(offsets)-min(offsets)<=1.01\nrows=[]\nfor s in c['samples']:\n tid=s['observer']['primary_tid'];queries=s['observer']['queries'];intervals=targets[tid];di=interrupts[tid];assert len(intervals)==len(di)\n # Same Windows QPC clock. Use integer cross products to avoid float tick/ns conversion at boundaries.\n begin=queries[0]['process_query_end_ns']*frequency;end=queries[1]['process_query_end_ns']*frequency\n gross=0;excluded_min=0;excluded_max=0;partial=0;used=0\n for (a,b,cpu,timestamp,duration_csv),(dstart,dend,dcpu,d) in zip(intervals,di):\n  assert dend==timestamp and dcpu==cpu and abs((timestamp-duration_csv)-dstart)<=1\n  a*=1000000000;b*=1000000000\n  length=max(0,min(b,end)-max(a,begin))/(frequency*1000)\n  if not length:continue\n  used+=1;duration=(b-a)/(frequency*1000);gross+=length\n  if length<duration:partial+=1\n  excluded_min+=max(0,d-(duration-length));excluded_max+=min(d,length)\n # dpc fields rounded to integer us once per slice: conservative +/-1us per used slice.\n bracket_us=sum((x['process_query_end_ns']-x['perf_start_ns'])/1000 for x in queries[:2])\n net_min=gross-excluded_max-used-bracket_us;net_max=gross-excluded_min+used+bracket_us\n api=s['cpu_us']\n rows.append({'kind':s['kind'],'tid':tid,'pid':s['observer']['pid'],'api_interval_ms':api/1000,'qpc_interval_gross_ms':gross/1000,'qpc_interval_net_lower_ms':net_min/1000,'qpc_interval_net_upper_ms':net_max/1000,'api_minus_net_range_ms':[(api-net_max)/1000,(api-net_min)/1000],'dpc_isr_excluded_bounds_ms':[excluded_min/1000,excluded_max/1000],'intersected_slices':used,'partial_boundary_slices':partial,'process_query_bracket_us':[(x['process_query_end_ns']-x['perf_start_ns'])/1000 for x in queries[:2]]})\nresult={'frequency':frequency,'clock_type':clock_type,'python_clock':vars(clock),'all_cswitch_raw_csv_correspondence_count':count,'raw_qpc_to_xperf_offset_range_us':[min(offsets),max(offsets)],'old_new_chain_mismatches':chain_errors,'rows':rows,'raw_decoder_source':Path('.work/windows-timing-followup-20261116/read-etw-qpc.c').read_text(),'analysis_source':Path(__file__).read_text(),'raw_csv_sha256':hashlib.sha256((p/'raw-cswitch.csv').read_bytes()).hexdigest(),'limits':['QPC boundaries use process_query_end; net bounds widened by sum of both API acquisition brackets, not an ETW marker','DPC/ISR per-slice integer us rounded; net bounds conservatively allow1us per intersected slice and partial-boundary allocation','Bounds describe rounding/allocation/bracket allowances only, not a confidence interval or total ETW accuracy bound','Header clock_type1 and QPF correspond to Windows QPC; all723767 payload old/new IDs and CPUs match xperf, offset spread<=1.01us','Same single trace, not an independent CPU clock accuracy test or calibration']}\n(p/'qpc-analysis.json').write_text(json.dumps(result,indent=2)+'\\n')\nfor r in rows:print(r)\n",
+    "raw_csv_sha256": "41f07b1b5b2284c66294743ae9662e15a75d44b62fe9bfab2c934adc82bf824d",
+    "limits": [
+      "QPC boundaries use process_query_end; net bounds widened by sum of both API acquisition brackets, not an ETW marker",
+      "DPC/ISR per-slice integer us rounded; net bounds conservatively allow1us per intersected slice and partial-boundary allocation",
+      "Bounds describe rounding/allocation/bracket allowances only, not a confidence interval or total ETW accuracy bound",
+      "Header clock_type1 and QPF correspond to Windows QPC; all723767 payload old/new IDs and CPUs match xperf, offset spread<=1.01us",
+      "Same single trace, not an independent CPU clock accuracy test or calibration",
+      "Observed API CPU values are multiples of15.625ms; net bounds do not include API quantization or establish its error bound",
+      "Clock implementation checked in analysis environment, not recorded directly in acquisition process; common origin is supported indirectly by UTC window agreement16-33us, not a direct acquisition clock-info proof"
+    ]
+  },
+  "raw_decoder_build": {
+    "source_sha256": "384e9e3b58b00b0f141174484675f35396dda49f74becd4fca3c73bb252e0581",
+    "binary_sha256": "76d246fe8dd794ab118ab8e25145e78dc9b20267c1bb49eeff359b107cab583d",
+    "build_command": [
+      "zig",
+      "cc",
+      "-target",
+      "x86_64-windows-gnu",
+      "-O2",
+      "-municode",
+      ".work/windows-timing-followup-20261116/read-etw-qpc.c",
+      "-ladvapi32",
+      "-o",
+      ".work/windows-timing-followup-20261116/read-etw-qpc.exe"
+    ],
+    "build_exit": 0,
+    "build_warning": "UNICODE macro redefined (same effective value); no compilation error",
+    "read_result": {
+      "ProcessTrace": 0,
+      "CloseTrace": 0,
+      "CSwitch": 723767,
+      "WriteError": 0
+    },
+    "purpose": "Offline read existing ETL only; no trace collection or profiled workload"
+  },
+  "reproduction": {
+    "script": "from pathlib import Path\nimport csv,json,hashlib,collections,datetime,re\np=Path('.work/windows-timing-followup-20261116/etw/admin-20261116T074942-5bd67094')\nj=json.loads((p/'capture.json').read_text());sha=lambda f:hashlib.sha256(f.read_bytes()).hexdigest()\nassert j['status']=='samples_captured' and j['stop_exit']==0 and j['cleanup_confirmed'] and sha(p/'schedule.etl')==j['etl_sha256']\nsamples=j['samples']; tids={s['observer']['primary_tid'] for s in samples};pids={s['observer']['pid'] for s in samples}\nevents=collections.Counter();threads={};slices=collections.defaultdict(list);dpc=collections.defaultdict(list);issues=[];last={};raw=[];invalid=[]\ndef pid(s):return int(re.search(r'\\(\\s*(\\d+)\\)',s)[1])\nfor row in csv.reader((p/'events.csv').open(errors='replace'),skipinitialspace=True):\n if not row or len(row)<2:continue\n name=row[0].strip()\n try:t=int(row[1])\n except ValueError:continue\n events[name]+=1\n if name.startswith('InvalidEvent'):invalid.append(row[:10])\n if name in ['T-Start','T-End'] and pid(row[2]) in pids:\n  tid=int(row[3]);threads.setdefault(tid,{'pid':pid(row[2])})[name]=t\n if name=='CSwitch':\n  cpu=int(row[16]);new=int(row[3]);old=int(row[9]);duration=int(row[15]);begin=t-duration\n  if cpu in last and last[cpu][1]!=old:issues.append({'cpu':cpu,'time':t,'expected':last[cpu][1],'old':old})\n  last[cpu]=(t,new)\n  if old in tids:\n   slices[old].append({'start_us':begin,'end_us':t,'cpu':cpu,'old_priority':int(row[10]),'old_state':row[12],'wait_reason':row[13]})\n if name=='DPC_ISR_CSWITCH_PCT' and int(row[7]) in tids:\n  dpc[int(row[7])].append({'start_us':int(row[2]),'end_us':t,'cpu':int(row[8]),'dpc_isr_us':int(row[5])})\ntrace_start=datetime.datetime.fromisoformat('2026-11-16T07:49:42.2987597+00:00')\ndef overlap(a,b,c,d):return max(0,min(b,d)-max(a,c))\nrows=[]\nfor s in samples:\n tid=s['observer']['primary_tid'];q=s['observer']['queries'];runs=slices[tid];adjust=dpc[tid]\n assert threads[tid]['pid']==s['observer']['pid'] and 'T-Start'in threads[tid] and 'T-End'in threads[tid]\n assert len(runs)==len(adjust) and all(abs(a['start_us']-b['start_us'])<=1 and (a['end_us'],a['cpu'])==(b['end_us'],b['cpu']) for a,b in zip(runs,adjust))\n assert runs[0]['start_us']>=threads[tid]['T-Start']\n gross=sum(x['end_us']-x['start_us'] for x in runs);di=sum(x['dpc_isr_us'] for x in adjust)\n api_lifetime=sum(q[-1]['primary_thread'].values())/1000\n # UTC is sampled after perf_start and before process_query_end. Use it only for an approximate window; lifetime needs no clock join.\n bounds=[(datetime.datetime.fromisoformat(x['utc'])-trace_start).total_seconds()*1e6 for x in q[:2]]\n window_gross=sum(overlap(x['start_us'],x['end_us'],*bounds) for x in runs)\n rows.append({'kind':s['kind'],'pid':s['observer']['pid'],'tid':tid,'thread_events':threads[tid],'slices':len(runs),'cpus':sorted(set(x['cpu'] for x in runs)),'priorities':sorted(set(x['old_priority'] for x in runs)),'lifetime_scheduled_gross_ms':gross/1000,'lifetime_dpc_isr_ms':di/1000,'lifetime_scheduled_excluding_dpc_isr_ms':(gross-di)/1000,'lifetime_primary_api_ms':api_lifetime/1000,'api_minus_scheduled_excluding_ms':(api_lifetime-gross+di)/1000,'measured_process_api_ms':s['cpu_us']/1000,'measured_wall_ms':s['wall_us']/1000,'approx_utc_window_us':bounds,'approx_window_scheduled_gross_ms':window_gross/1000,'boundary_process_query_bracket_us':[(x['process_query_end_ns']-x['perf_start_ns'])/1000 for x in q[:2]],'process_minus_primary_interval_ms':(sum(q[1]['process'].values())-sum(q[0]['process'].values())-sum(q[1]['primary_thread'].values())+sum(q[0]['primary_thread'].values()))/1e6})\ndef xperf_thread_report(name):\n result={}\n for r in csv.reader((p/name).open(errors='replace'),skipinitialspace=True):\n  if len(r)!=3:continue\n  try:value,tid=int(r[0]),int(r[2])\n  except ValueError:continue\n  if tid in tids:result[tid]=value\n assert set(result)==tids\n return result\nnet=xperf_thread_report('cswitch-net.txt');gross_report=xperf_thread_report('cswitch-gross.txt')\nfor r in rows:\n tid=r['tid'];r['xperf_lifetime_gross_ms']=gross_report[tid]/1000;r['xperf_lifetime_net_ms']=net[tid]/1000;r['xperf_lifetime_dpc_isr_ms']=(gross_report[tid]-net[tid])/1000\n r['xperf_api_minus_net_ms']=r['lifetime_primary_api_ms']-net[tid]/1000\n r['parser_minus_xperf_net_us']=round(r['lifetime_scheduled_excluding_dpc_isr_ms']*1000-net[tid],6)\n assert abs(r['parser_minus_xperf_net_us'])<=r['slices']*2\n r['last_switch_after_thread_end_event_us']=slices[tid][-1]['end_us']-threads[tid]['T-End']\nreport={'etl_sha256':j['etl_sha256'],'etl_bytes':j['etl_bytes'],'capture_status':j['status'],'cleanup_confirmed':j['cleanup_confirmed'],'event_counts':dict(events),'invalid_events':invalid,'all_cpu_cswitch_old_new_chain_mismatch_count':len(issues),'chain_mismatch_examples':issues[:5],'rows':rows,'source_script':Path(__file__).read_text(),'limits':['Single profiled session; not AA calibration or performance comparison','ETW slice residence is scheduler-derived elapsed time, not independent hardware instructions or thread CPU accuracy proof','Xperf -exc_dpcisr supplied DPC_ISR_CSWITCH_PCT per slice; CSV integer microsecond rounding applies','Approximate interval joins use observer UTC against trace UTC, not a direct QPC-marker join; lifetime joins use target T-Start/T-End and TID identity instead','System configuration invalid event warning retained; lost event/buffer counters are zero, which alone is not proof of no unobserved data error','No frequency, sampling stacks or instruction attribution in this trace']}\nreport['xperf_warning']={'event_number':1336047,'time_us':44493519,'provider':'01853a65-418f-4f36-aefc-dc0f1d2fd235','type':'0x0c','version':2,'name_from_tracestats':'SysConfig: Logical Disks','mof_length':112,'scope':'After all target threads ended; warning is decoder-specific and not proof every event valid. No InvalidEvent CSV row emitted.'}\nassert report['xperf_warning']['time_us']>max(slices[tid][-1]['end_us'] for tid in tids)\nreport['tracestats']=(p/'timespan.txt').read_text()\nreport['report_hashes']={name:sha(p/name) for name in ['events.csv','tracestats.txt','timespan.txt','cswitch-net.txt','cswitch-gross.txt','dpcisr.txt']}\n(p/'analysis.json').write_text(json.dumps(report,indent=2)+'\\n')\nfor x in rows:print({k:v for k,v in x.items() if k not in ['approx_utc_window_us','thread_events']})\nprint('Invalid',invalid,'chain mismatches',len(issues))\n",
+    "xperf_actions": [
+      "tracestats -timespan actual",
+      "tracestats -detail",
+      "dumper -exc_dpcisr",
+      "cswitch -thread",
+      "cswitch -thread -exc_dpcisr",
+      "dpcisr -summary"
+    ],
+    "external_symbols_loaded": false,
+    "raw_etl_or_events_published": false
+  }
+}
