@@ -1,0 +1,983 @@
+{
+  "method": "Linux fast baseline CPU; generated code and Callgrind counts only, not timing",
+  "baseline_binary": {
+    "path": "/mnt/d/home/source/zig/forthz/.work/rot3-20261116/baseline-symbols/bin/sigma",
+    "sha256": "af54c4a8b252be6a15480fa1b770e960001e4861c84b1db5eff95a6b5ed6c910"
+  },
+  "candidate_binary": {
+    "path": "/mnt/d/home/source/zig/forthz/.work/stack-check-20261116/candidate-symbols/bin/sigma",
+    "sha256": "512a4f7ad678352725dc37c0fb4462ea04e7773b57d30d4f3f868e5dc8422308"
+  },
+  "cases": {
+    "dnegate": {
+      "baseline": {
+        "core.words_arithmetic.execute__func_444": {
+          "Ir": 30.0,
+          "Dr": 10.0,
+          "Dw": 7.0
+        },
+        "forth.State.runOperationsLoop__func_181": {
+          "Ir": 81.0,
+          "Dr": 27.0,
+          "Dw": 12.0
+        },
+        "forth.State.builtinInLoop__func_183": {
+          "Ir": 22.0,
+          "Dr": 6.0,
+          "Dw": 6.0
+        },
+        "forth.State.executeBuiltin": {
+          "Ir": 27.0,
+          "Dr": 9.0,
+          "Dw": 6.0
+        }
+      },
+      "candidate": {
+        "core.words_arithmetic.execute__func_444": {
+          "Ir": 30.0,
+          "Dr": 10.0,
+          "Dw": 7.0
+        },
+        "forth.State.runOperationsLoop__func_181": {
+          "Ir": 81.0,
+          "Dr": 27.0,
+          "Dw": 12.0
+        },
+        "forth.State.builtinInLoop__func_183": {
+          "Ir": 22.0,
+          "Dr": 6.0,
+          "Dw": 6.0
+        },
+        "forth.State.executeBuiltin": {
+          "Ir": 27.0,
+          "Dr": 9.0,
+          "Dw": 6.0
+        }
+      },
+      "definition": ": BENCH-RUN 123. BENCH-ITERATIONS 0 DO DNEGATE LOOP D>S ;",
+      "baseline_calls": {
+        "forth.State.executeBuiltin -> core.words_arithmetic.execute__func_444": 1.0,
+        "forth.State.runOperationsLoop__func_181 -> forth.State.builtinInLoop__func_183": 1.0,
+        "forth.State.builtinInLoop__func_183 -> forth.State.executeBuiltin": 1.0
+      },
+      "candidate_calls": {
+        "forth.State.builtinInLoop__func_183 -> forth.State.executeBuiltin": 1.0,
+        "forth.State.executeBuiltin -> core.words_arithmetic.execute__func_444": 1.0,
+        "forth.State.runOperationsLoop__func_181 -> forth.State.builtinInLoop__func_183": 1.0
+      }
+    },
+    "two-r-fetch": {
+      "baseline": {
+        "core.words_stack.execute__func_492": {
+          "Ir": 30.0,
+          "Dr": 14.0,
+          "Dw": 5.0
+        },
+        "forth.State.runOperationsLoop__func_181": {
+          "Ir": 310.0,
+          "Dr": 94.0,
+          "Dw": 47.0
+        },
+        "core.words_stack.execute__func_491": {
+          "Ir": 32.0,
+          "Dr": 14.0,
+          "Dw": 6.0
+        },
+        "forth.State.builtinInLoop__func_183": {
+          "Ir": 66.0,
+          "Dr": 18.0,
+          "Dw": 18.0
+        },
+        "forth.State.executeBuiltin": {
+          "Ir": 81.0,
+          "Dr": 27.0,
+          "Dw": 18.0
+        },
+        "core.words_stack.execute__func_490": {
+          "Ir": 27.0,
+          "Dr": 11.0,
+          "Dw": 6.0
+        }
+      },
+      "candidate": {
+        "forth.State.runOperationsLoop__func_181": {
+          "Ir": 310.0,
+          "Dr": 94.0,
+          "Dw": 47.0
+        },
+        "forth.State.builtinInLoop__func_183": {
+          "Ir": 66.0,
+          "Dr": 18.0,
+          "Dw": 18.0
+        },
+        "core.words_stack.execute__func_491": {
+          "Ir": 32.0,
+          "Dr": 14.0,
+          "Dw": 6.0
+        },
+        "core.words_stack.execute__func_492": {
+          "Ir": 26.0,
+          "Dr": 12.0,
+          "Dw": 4.0
+        },
+        "core.words_stack.execute__func_490": {
+          "Ir": 27.0,
+          "Dr": 11.0,
+          "Dw": 6.0
+        },
+        "forth.State.executeBuiltin": {
+          "Ir": 81.0,
+          "Dr": 27.0,
+          "Dw": 18.0
+        }
+      },
+      "definition": ": BENCH-RUN 0 BENCH-ITERATIONS 0 DO 11 22 2>R 2R@ + + 2R> 2DROP LOOP ;",
+      "baseline_calls": {
+        "forth.State.executeBuiltin -> core.words_stack.execute__func_490": 1.0,
+        "forth.State.builtinInLoop__func_183 -> forth.State.executeBuiltin": 3.0,
+        "forth.State.executeBuiltin -> core.words_stack.execute__func_491": 1.0,
+        "forth.State.executeBuiltin -> core.words_stack.execute__func_492": 1.0,
+        "forth.State.runOperationsLoop__func_181 -> forth.State.builtinInLoop__func_183": 3.0
+      },
+      "candidate_calls": {
+        "forth.State.executeBuiltin -> core.words_stack.execute__func_491": 1.0,
+        "forth.State.executeBuiltin -> core.words_stack.execute__func_490": 1.0,
+        "forth.State.builtinInLoop__func_183 -> forth.State.executeBuiltin": 3.0,
+        "forth.State.executeBuiltin -> core.words_stack.execute__func_492": 1.0,
+        "forth.State.runOperationsLoop__func_181 -> forth.State.builtinInLoop__func_183": 3.0
+      }
+    }
+  },
+  "disassembly": {
+    "baseline_dnegate": "<core.words_arithmetic.execute__func_444>:\nforth.State.popDouble():\nD:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline\\src/D:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline/src\\forth.zig:2347\n 1177a80:\t48 8b 8f 98 7e 14 00 \tmov    rcx,QWORD PTR [rdi+0x147e98]\nforth.State.requireDepth():\nD:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline\\src/D:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline/src\\forth.zig:2373\n 1177a87:\t48 83 f9 01          \tcmp    rcx,0x1\nforth.State.popDouble():\nD:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline\\src/D:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline/src\\forth.zig:2347\n 1177a8b:\t76 78                \tjbe    1177b05 <core.words_arithmetic.execute__func_444+0x85>\n 1177a8d:\t55                   \tpush   rbp\n 1177a8e:\t48 89 e5             \tmov    rbp,rsp\nforth.State.pop():\nD:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline\\src/D:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline/src\\forth.zig:2383\n 1177a91:\t48 8d 41 ff          \tlea    rax,[rcx-0x1]\n 1177a95:\t48 89 87 98 7e 14 00 \tmov    QWORD PTR [rdi+0x147e98],rax\nD:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline\\src/D:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline/src\\forth.zig:2384\n 1177a9c:\t48 8b b7 88 7e 14 00 \tmov    rsi,QWORD PTR [rdi+0x147e88]\n 1177aa3:\t48 8b 44 ce f8       \tmov    rax,QWORD PTR [rsi+rcx*8-0x8]\nD:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline\\src/D:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline/src\\forth.zig:2383\n 1177aa8:\t4c 8d 49 fe          \tlea    r9,[rcx-0x2]\n 1177aac:\t4c 89 8f 98 7e 14 00 \tmov    QWORD PTR [rdi+0x147e98],r9\n 1177ab3:\t31 d2                \txor    edx,edx\ncore.defs.cellsDouble():\nD:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline\\src/D:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline/src\\core\\defs.zig:1437\n 1177ab5:\t45 31 c0             \txor    r8d,r8d\n 1177ab8:\t4c 2b 44 ce f0       \tsub    r8,QWORD PTR [rsi+rcx*8-0x10]\n 1177abd:\t48 19 c2             \tsbb    rdx,rax\n 1177ac0:\t66 b8 1f 00          \tmov    ax,0x1f\nforth.State.push():\nD:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline\\src/D:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline/src\\forth.zig:2388\n 1177ac4:\t4c 3b 8f 90 7e 14 00 \tcmp    r9,QWORD PTR [rdi+0x147e90]\n 1177acb:\t74 36                \tje     1177b03 <core.words_arithmetic.execute__func_444+0x83>\nD:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline\\src/D:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline/src\\forth.zig:2389\n 1177acd:\t4c 89 44 ce f0       \tmov    QWORD PTR [rsi+rcx*8-0x10],r8\nD:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline\\src/D:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline/src\\forth.zig:2390\n 1177ad2:\t48 8b 8f 98 7e 14 00 \tmov    rcx,QWORD PTR [rdi+0x147e98]\n 1177ad9:\t48 8d 71 01          \tlea    rsi,[rcx+0x1]\n 1177add:\t48 89 b7 98 7e 14 00 \tmov    QWORD PTR [rdi+0x147e98],rsi\nD:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline\\src/D:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline/src\\forth.zig:2388\n 1177ae4:\t48 3b b7 90 7e 14 00 \tcmp    rsi,QWORD PTR [rdi+0x147e90]\n 1177aeb:\t74 16                \tje     1177b03 <core.words_arithmetic.execute__func_444+0x83>\nD:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline\\src/D:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline/src\\forth.zig:2389\n 1177aed:\t48 8b 87 88 7e 14 00 \tmov    rax,QWORD PTR [rdi+0x147e88]\n 1177af4:\t48 89 54 c8 08       \tmov    QWORD PTR [rax+rcx*8+0x8],rdx\nD:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline\\src/D:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline/src\\forth.zig:2390\n 1177af9:\t48 83 87 98 7e 14 00 \tadd    QWORD PTR [rdi+0x147e98],0x1\n 1177b00:\t01 \n 1177b01:\t31 c0                \txor    eax,eax\ncore.words_arithmetic.execute__func_444():\n 1177b03:\t5d                   \tpop    rbp\nD:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline\\src/D:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline/src\\core\\words_arithmetic.zig:260\n 1177b04:\tc3                   \tret\n 1177b05:\t66 b8 1d 00          \tmov    ax,0x1d\n 1177b09:\tc3                   \tret\n 1177b0a:\tcc                   \tint3\n 1177b0b:\tcc                   \tint3\n 1177b0c:\tcc                   \tint3\n 1177b0d:\tcc                   \tint3\n 1177b0e:\tcc                   \tint3\n 1177b0f:\tcc                   \tint3",
+    "baseline_two_r_fetch": "<core.words_stack.execute__func_492>:\ncore.words_stack.execute__func_492():\nD:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline\\src/D:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline/src\\core\\words_stack.zig:119\n 1175160:\t48 8b 8f b0 7e 14 00 \tmov    rcx,QWORD PTR [rdi+0x147eb0]\n 1175167:\t66 b8 1e 00          \tmov    ax,0x1e\n 117516b:\t48 83 f9 01          \tcmp    rcx,0x1\n 117516f:\t76 7b                \tjbe    11751ec <core.words_stack.execute__func_492+0x8c>\nD:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline\\src/D:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline/src\\core\\words_stack.zig:120\n 1175171:\t48 8b b7 90 7e 14 00 \tmov    rsi,QWORD PTR [rdi+0x147e90]\n 1175178:\t48 8b 97 98 7e 14 00 \tmov    rdx,QWORD PTR [rdi+0x147e98]\n 117517f:\t48 29 d6             \tsub    rsi,rdx\n 1175182:\t66 b8 1f 00          \tmov    ax,0x1f\n 1175186:\t48 83 fe 02          \tcmp    rsi,0x2\n 117518a:\t72 60                \tjb     11751ec <core.words_stack.execute__func_492+0x8c>\n 117518c:\t55                   \tpush   rbp\n 117518d:\t48 89 e5             \tmov    rbp,rsp\nforth.State.push():\nD:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline\\src/D:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline/src\\forth.zig:2389\n 1175190:\t48 8b b7 88 7e 14 00 \tmov    rsi,QWORD PTR [rdi+0x147e88]\ncore.words_stack.execute__func_492():\nD:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline\\src/D:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline/src\\core\\words_stack.zig:121\n 1175197:\t4c 8b 87 a0 7e 14 00 \tmov    r8,QWORD PTR [rdi+0x147ea0]\n 117519e:\t49 8b 4c c8 f0       \tmov    rcx,QWORD PTR [r8+rcx*8-0x10]\nforth.State.push():\nD:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline\\src/D:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline/src\\forth.zig:2389\n 11751a3:\t48 89 0c d6          \tmov    QWORD PTR [rsi+rdx*8],rcx\nD:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline\\src/D:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline/src\\forth.zig:2390\n 11751a7:\t48 8b 8f 98 7e 14 00 \tmov    rcx,QWORD PTR [rdi+0x147e98]\n 11751ae:\t48 8d 51 01          \tlea    rdx,[rcx+0x1]\n 11751b2:\t48 89 97 98 7e 14 00 \tmov    QWORD PTR [rdi+0x147e98],rdx\nD:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline\\src/D:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline/src\\forth.zig:2388\n 11751b9:\t48 3b 97 90 7e 14 00 \tcmp    rdx,QWORD PTR [rdi+0x147e90]\n 11751c0:\t74 29                \tje     11751eb <core.words_stack.execute__func_492+0x8b>\nD:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline\\src/D:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline/src\\forth.zig:2389\n 11751c2:\t48 8b 87 88 7e 14 00 \tmov    rax,QWORD PTR [rdi+0x147e88]\ncore.words_stack.execute__func_492():\nD:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline\\src/D:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline/src\\core\\words_stack.zig:122\n 11751c9:\t48 8b 97 a0 7e 14 00 \tmov    rdx,QWORD PTR [rdi+0x147ea0]\n 11751d0:\t48 8b b7 b0 7e 14 00 \tmov    rsi,QWORD PTR [rdi+0x147eb0]\n 11751d7:\t48 8b 54 f2 f8       \tmov    rdx,QWORD PTR [rdx+rsi*8-0x8]\nforth.State.push():\nD:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline\\src/D:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline/src\\forth.zig:2389\n 11751dc:\t48 89 54 c8 08       \tmov    QWORD PTR [rax+rcx*8+0x8],rdx\nD:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline\\src/D:\\home\\source\\zig\\forthz\\.work\\rot3-20261116\\baseline/src\\forth.zig:2390\n 11751e1:\t48 83 87 98 7e 14 00 \tadd    QWORD PTR [rdi+0x147e98],0x1\n 11751e8:\t01 \n 11751e9:\t31 c0                \txor    eax,eax\ncore.words_stack.execute__func_492():\n 11751eb:\t5d                   \tpop    rbp\n 11751ec:\tc3                   \tret\n 11751ed:\tcc                   \tint3\n 11751ee:\tcc                   \tint3\n 11751ef:\tcc                   \tint3",
+    "candidate_two_r_fetch": "<core.words_stack.execute__func_492>:\ncore.words_stack.execute__func_492():\nD:\\home\\source\\zig\\forthz\\.work\\stack-check-20261116\\candidate\\src/D:\\home\\source\\zig\\forthz\\.work\\stack-check-20261116\\candidate/src\\core\\words_stack.zig:119\n 1175160:\t48 8b 97 b0 7e 14 00 \tmov    rdx,QWORD PTR [rdi+0x147eb0]\n 1175167:\t66 b8 1e 00          \tmov    ax,0x1e\n 117516b:\t48 83 fa 01          \tcmp    rdx,0x1\n 117516f:\t76 63                \tjbe    11751d4 <core.words_stack.execute__func_492+0x74>\nD:\\home\\source\\zig\\forthz\\.work\\stack-check-20261116\\candidate\\src/D:\\home\\source\\zig\\forthz\\.work\\stack-check-20261116\\candidate/src\\core\\words_stack.zig:120\n 1175171:\t48 8b b7 90 7e 14 00 \tmov    rsi,QWORD PTR [rdi+0x147e90]\n 1175178:\t48 8b 8f 98 7e 14 00 \tmov    rcx,QWORD PTR [rdi+0x147e98]\n 117517f:\t48 29 ce             \tsub    rsi,rcx\n 1175182:\t66 b8 1f 00          \tmov    ax,0x1f\n 1175186:\t48 83 fe 02          \tcmp    rsi,0x2\n 117518a:\t72 48                \tjb     11751d4 <core.words_stack.execute__func_492+0x74>\n 117518c:\t55                   \tpush   rbp\n 117518d:\t48 89 e5             \tmov    rbp,rsp\nD:\\home\\source\\zig\\forthz\\.work\\stack-check-20261116\\candidate\\src/D:\\home\\source\\zig\\forthz\\.work\\stack-check-20261116\\candidate/src\\core\\words_stack.zig:122\n 1175190:\t48 8b 87 88 7e 14 00 \tmov    rax,QWORD PTR [rdi+0x147e88]\n 1175197:\t48 8b b7 a0 7e 14 00 \tmov    rsi,QWORD PTR [rdi+0x147ea0]\n 117519e:\t48 8b 54 d6 f0       \tmov    rdx,QWORD PTR [rsi+rdx*8-0x10]\n 11751a3:\t48 89 14 c8          \tmov    QWORD PTR [rax+rcx*8],rdx\nD:\\home\\source\\zig\\forthz\\.work\\stack-check-20261116\\candidate\\src/D:\\home\\source\\zig\\forthz\\.work\\stack-check-20261116\\candidate/src\\core\\words_stack.zig:123\n 11751a7:\t48 8b 87 b0 7e 14 00 \tmov    rax,QWORD PTR [rdi+0x147eb0]\n 11751ae:\t48 8b 97 88 7e 14 00 \tmov    rdx,QWORD PTR [rdi+0x147e88]\n 11751b5:\t48 8b b7 a0 7e 14 00 \tmov    rsi,QWORD PTR [rdi+0x147ea0]\n 11751bc:\t48 8b 44 c6 f8       \tmov    rax,QWORD PTR [rsi+rax*8-0x8]\n 11751c1:\t48 89 44 ca 08       \tmov    QWORD PTR [rdx+rcx*8+0x8],rax\nD:\\home\\source\\zig\\forthz\\.work\\stack-check-20261116\\candidate\\src/D:\\home\\source\\zig\\forthz\\.work\\stack-check-20261116\\candidate/src\\core\\words_stack.zig:124 (discriminator 2)\n 11751c6:\t48 83 c1 02          \tadd    rcx,0x2\n 11751ca:\t48 89 8f 98 7e 14 00 \tmov    QWORD PTR [rdi+0x147e98],rcx\n 11751d1:\t31 c0                \txor    eax,eax\n 11751d3:\t5d                   \tpop    rbp\n 11751d4:\tc3                   \tret\n 11751d5:\tcc                   \tint3\n 11751d6:\tcc                   \tint3\n 11751d7:\tcc                   \tint3\n 11751d8:\tcc                   \tint3\n 11751d9:\tcc                   \tint3\n 11751da:\tcc                   \tint3\n 11751db:\tcc                   \tint3\n 11751dc:\tcc                   \tint3\n 11751dd:\tcc                   \tint3\n 11751de:\tcc                   \tint3\n 11751df:\tcc                   \tint3"
+  },
+  "initial_validation": [
+    {
+      "kind": "baseline",
+      "name": "windows-debug",
+      "command": [
+        "zig",
+        "build",
+        "test",
+        "--summary",
+        "all"
+      ],
+      "exit": 0
+    },
+    {
+      "kind": "candidate",
+      "name": "windows-debug",
+      "command": [
+        "zig",
+        "build",
+        "test",
+        "--summary",
+        "all"
+      ],
+      "exit": 0
+    },
+    {
+      "kind": "candidate",
+      "name": "linux-symbols",
+      "command": [
+        "zig",
+        "build",
+        "-Dtarget=x86_64-linux-musl",
+        "-Doptimize=fast",
+        "-Dcpu=baseline",
+        "-Dstrip=false",
+        "--prefix",
+        "D:\\home\\source\\zig\\forthz\\.work\\stack-check-20261116\\candidate-symbols",
+        "--summary",
+        "all"
+      ],
+      "exit": 0
+    }
+  ],
+  "initial_test_compile_failure": "Both shared tests initially failed comptime_int runtime expression; expected value explicitly cast to Cell and tests rerun; original failure logs retained. Runtime implementation unchanged by correction.",
+  "source_manifest": {
+    "baseline": {
+      "src/forth.zig": "d2c101033474ba348c6cd148249bd81afb6ae4e7656ae5bb0c40326806182195",
+      "src/core/words_stack.zig": "cc42d35910240f272a0bfc9c105431b71b43444de74befdb83e4a2e8296e1ba6"
+    },
+    "candidate": {
+      "src/forth.zig": "d2c101033474ba348c6cd148249bd81afb6ae4e7656ae5bb0c40326806182195",
+      "src/core/words_stack.zig": "f6415fa241475e1735085b72651ac8bf928a4c2e3a2183556950226dfad4cc41"
+    }
+  },
+  "not_timing": true,
+  "root_unchanged": true,
+  "direct_windows_tests": [
+    {
+      "kind": "baseline",
+      "command": [
+        "D:\\home\\source\\zig\\forthz\\.work\\stack-check-20261116\\baseline\\.zig-cache\\o\\23b5e471133f1ef241587bf003b6ede5\\test.exe"
+      ],
+      "exit": 0,
+      "sha256": "f9318b427b9d4b8dc22ee7d2bcbece51c7dea9c636414f82a824b6d01e0660ff"
+    },
+    {
+      "kind": "baseline",
+      "command": [
+        "D:\\home\\source\\zig\\forthz\\.work\\stack-check-20261116\\baseline\\.zig-cache\\o\\27be93cf4423bb73590eb2584e81f3b0\\test.exe"
+      ],
+      "exit": 0,
+      "sha256": "f04828921938621c9ddc083a5e44c1719ccec5862ce9f717f786ee29d0bf0d67"
+    },
+    {
+      "kind": "candidate",
+      "command": [
+        "D:\\home\\source\\zig\\forthz\\.work\\stack-check-20261116\\candidate\\.zig-cache\\o\\172116b663ab24e7a5c790bca24ee70c\\test.exe"
+      ],
+      "exit": 0,
+      "sha256": "31df42d8b4319801f5a22244c873763fb4beb636b42a3ea2cae8de43e029aa35"
+    },
+    {
+      "kind": "candidate",
+      "command": [
+        "D:\\home\\source\\zig\\forthz\\.work\\stack-check-20261116\\candidate\\.zig-cache\\o\\b57baf9d85faa8ec8e8eed2a83b3248b\\test.exe"
+      ],
+      "exit": 0,
+      "sha256": "07881ff5035ef9970bf6a4267ae66c8ec8a9fcf92fa74bfd36d1a5df3e6c2d29"
+    }
+  ],
+  "patches": {
+    "src/core/words_stack.zig": "--- src/core/words_stack.zig\n+++ candidate/src/core/words_stack.zig\n@@ -118,8 +118,10 @@\n         .two_r_fetch => {\n             if (self.return_depth < 2) return error.ReturnStackUnderflow;\n             if (self.data_stack.len - self.data_depth < 2) return error.StackOverflow;\n-            try self.push(self.return_stack[self.return_depth - 2]);\n-            try self.push(self.return_stack[self.return_depth - 1]);\n+            const base = self.data_depth;\n+            self.data_stack[base] = self.return_stack[self.return_depth - 2];\n+            self.data_stack[base + 1] = self.return_stack[self.return_depth - 1];\n+            self.data_depth = base + 2;\n         },\n         // ( x1 x2 x3 x4 x5 x6 -- x3 x4 x5 x6 x1 x2 )\n         .two_rot => {\n",
+    "src/tests/core_words_test.zig": "--- src/tests/core_words_test.zig\n+++ candidate/src/tests/core_words_test.zig\n@@ -997,3 +997,53 @@\n     );\n     try expectOutput(\"STRUCT CELL% FIELD S.A END-STRUCT R% HERE 1 ALLOT R% %ALIGN HERE SWAP - . HERE R% %ALLOT TUCK = . HERE SWAP - . R% %ALLOC 0<> . R% %ALLOCATE . 0<> .\", \"8 -1 8 -1 0 -1 \");\n }\n+\n+\n+test \"two R fetch preserves boundary states error priority and compiled PC\" {\n+    for ([_]bool{ false, true }) |counted| {\n+        for ([_]bool{ false, true }) |compiled| {\n+            for ([_]bool{ false, true }) |pending| {\n+                for ([_]usize{ 0, 1, 2, 5 }) |ret_depth| {\n+                    for ([_]usize{ 0, 1, 2, 5 }) |space| {\n+                        var output = Output{};\n+                        const machine = try createMachine(&output);\n+                        defer destroyMachine(machine);\n+                        machine.keep_counting = counted;\n+                        try machine.interpretLine(\": CHECK-2RF 2R@ ;\");\n+                        const id = try machine.lookupOrFail(\"CHECK-2RF\");\n+                        const caller = machine.words[id];\n+                        const depth = machine.data_stack.len - space;\n+                        for (0..depth) |i| machine.data_stack[i] = @as(forth.Cell, @intCast(i)) - 17;\n+                        machine.data_depth = depth;\n+                        for (0..ret_depth) |i| machine.return_stack[i] = if (i % 2 == 0) std.math.minInt(forth.Cell) else std.math.maxInt(forth.Cell);\n+                        machine.return_depth = ret_depth;\n+                        if (pending) machine.output_error = -123;\n+                        const result = if (compiled) machine.executeWord(id) else machine.executeBuiltin(.two_r_fetch);\n+                        if (pending) {\n+                            try std.testing.expectError(error.Thrown, result);\n+                            try std.testing.expectEqual(@as(forth.Cell, -123), machine.throw_code);\n+                        } else if (ret_depth < 2) {\n+                            try std.testing.expectError(error.ReturnStackUnderflow, result);\n+                        } else if (space < 2) {\n+                            try std.testing.expectError(error.StackOverflow, result);\n+                        } else try result;\n+                        const success = ret_depth >= 2 and space >= 2;\n+                        try std.testing.expectEqual(depth + @as(usize, if (success) 2 else 0), machine.data_depth);\n+                        for (0..depth) |i| try std.testing.expectEqual(@as(forth.Cell, @intCast(i)) - 17, machine.data_stack[i]);\n+                        if (success) try std.testing.expectEqualSlices(forth.Cell, machine.return_stack[ret_depth - 2 .. ret_depth], machine.data_stack[depth .. depth + 2]);\n+                        try std.testing.expectEqual(ret_depth, machine.return_depth);\n+                        for (0..ret_depth) |i| try std.testing.expectEqual(@as(forth.Cell, if (i % 2 == 0) std.math.minInt(forth.Cell) else std.math.maxInt(forth.Cell)), machine.return_stack[i]);\n+                        try std.testing.expect(machine.output_error == null);\n+                        if (@import(\"../core/defs.zig\").debug_enabled and compiled and (pending or !success)) {\n+                            try std.testing.expectEqual(caller.code_start + 1, machine.failed_pc);\n+                            try std.testing.expect(machine.backtrace_count != 0);\n+                            try std.testing.expectEqual(caller.code_start, machine.backtrace[0]);\n+                        }\n+                        try std.testing.expectEqual(@as(usize, 0), machine.frame_depth);\n+                        try std.testing.expectEqual(@as(usize, 0), machine.call_depth);\n+                    }\n+                }\n+            }\n+        }\n+    }\n+}\n"
+  },
+  "scripts": {
+    "probe.py": "from pathlib import Path\nimport subprocess,json,hashlib,importlib.util\nroot=Path('/mnt/d/home/source/zig/forthz');out=root/'.work/stack-check-20261116';binary=root/'.work/rot3-20261116/baseline-symbols/bin/sigma'\nspec=importlib.util.spec_from_file_location('parse',out/'parse-callgrind.py');m=importlib.util.module_from_spec(spec);spec.loader.exec_module(m)\nnm=subprocess.check_output(['nm','-n',str(binary)],text=True);drivers=[x.split()[-1] for x in nm.splitlines() if 'forth.State.runOperations__' in x];assert len(drivers)==2;driver=drivers[0]\nkernels={'dnegate':': BENCH-RUN 123. BENCH-ITERATIONS 0 DO DNEGATE LOOP D>S ;','two-r-fetch':': BENCH-RUN 0 BENCH-ITERATIONS 0 DO 11 22 2>R 2R@ + + 2R> 2DROP LOOP ;'}\nreport={'binary':{'path':str(binary),'sha256':hashlib.sha256(binary.read_bytes()).hexdigest()},'scope':'Linux fast baseline CPU; generated code and Callgrind counts only, not timing','cases':{}}\nfor name,definition in kernels.items():\n profiles=[]\n for n in [100,200]:\n  expected=123 if name=='dnegate' else 33*n;source=f'{n} CONSTANT BENCH-ITERATIONS {definition} BENCH-RUN . DEPTH . BYE';native=subprocess.run([str(binary),'-e',source],capture_output=True,check=True);assert native.stdout.split()==[str(expected).encode(),b'0']\n  p=out/f'{name}-{n}.callgrind';cmd=['valgrind','--tool=callgrind','--collect-atstart=no','--toggle-collect='+driver,'--cache-sim=yes','--dump-instr=yes','--dump-line=no','--callgrind-out-file='+str(p),str(binary),'-e',source];v=subprocess.run(cmd,capture_output=True,check=True);assert v.stdout==native.stdout;(out/f'{name}-{n}.log').write_bytes(v.stdout+b'\\n'+v.stderr);profiles.append(m.parse(p))\n small,large=profiles;own={fn:{e:(large['self_counts'].get(fn,{}).get(e,0)-small['self_counts'].get(fn,{}).get(e,0))/100 for e in ['Ir','Dr','Dw']} for fn in large['self_counts'].keys()|small['self_counts'].keys()};own={f:v for f,v in own.items() if v['Ir']};calls={e:(large['calls'].get(e,0)-small['calls'].get(e,0))/100 for e in large['calls'].keys()|small['calls'].keys()};calls={e:v for e,v in calls.items() if v}\n report['cases'][name]={'definition':definition,'profiles':profiles,'self_per_iteration':own,'calls_per_iteration':calls};(out/'baseline-code.json').write_text(json.dumps(report,indent=2)+'\\n');print(name,json.dumps(own),json.dumps(calls),flush=True)\nsubprocess.run(['objdump','-d','-l','-Mintel',str(binary)],stdout=(out/'baseline-disassembly.txt').open('wb'),check=True)\n",
+    "probe-candidate.py": "from pathlib import Path\nimport subprocess,json,hashlib,importlib.util\nroot=Path('/mnt/d/home/source/zig/forthz');out=root/'.work/stack-check-20261116';binary=out/'candidate-symbols/bin/sigma'\nspec=importlib.util.spec_from_file_location('parse',out/'parse-callgrind.py');m=importlib.util.module_from_spec(spec);spec.loader.exec_module(m)\nnm=subprocess.check_output(['nm','-n',str(binary)],text=True);drivers=[x.split()[-1] for x in nm.splitlines() if 'forth.State.runOperations__' in x];assert len(drivers)==2;driver=drivers[0]\nkernels={'dnegate':': BENCH-RUN 123. BENCH-ITERATIONS 0 DO DNEGATE LOOP D>S ;','two-r-fetch':': BENCH-RUN 0 BENCH-ITERATIONS 0 DO 11 22 2>R 2R@ + + 2R> 2DROP LOOP ;'}\nreport={'binary':{'path':str(binary),'sha256':hashlib.sha256(binary.read_bytes()).hexdigest()},'scope':'Linux fast baseline CPU; generated code and Callgrind counts only, not timing','cases':{}}\nfor name,definition in kernels.items():\n profiles=[]\n for n in [100,200]:\n  expected=123 if name=='dnegate' else 33*n;source=f'{n} CONSTANT BENCH-ITERATIONS {definition} BENCH-RUN . DEPTH . BYE';native=subprocess.run([str(binary),'-e',source],capture_output=True,check=True);assert native.stdout.split()==[str(expected).encode(),b'0']\n  p=out/f'candidate-{name}-{n}.callgrind';cmd=['valgrind','--tool=callgrind','--collect-atstart=no','--toggle-collect='+driver,'--cache-sim=yes','--dump-instr=yes','--dump-line=no','--callgrind-out-file='+str(p),str(binary),'-e',source];v=subprocess.run(cmd,capture_output=True,check=True);assert v.stdout==native.stdout;(out/f'candidate-{name}-{n}.log').write_bytes(v.stdout+b'\\n'+v.stderr);profiles.append(m.parse(p))\n small,large=profiles;own={fn:{e:(large['self_counts'].get(fn,{}).get(e,0)-small['self_counts'].get(fn,{}).get(e,0))/100 for e in ['Ir','Dr','Dw']} for fn in large['self_counts'].keys()|small['self_counts'].keys()};own={f:v for f,v in own.items() if v['Ir']};calls={e:(large['calls'].get(e,0)-small['calls'].get(e,0))/100 for e in large['calls'].keys()|small['calls'].keys()};calls={e:v for e,v in calls.items() if v}\n report['cases'][name]={'definition':definition,'profiles':profiles,'self_per_iteration':own,'calls_per_iteration':calls};(out/'candidate-code.json').write_text(json.dumps(report,indent=2)+'\\n');print(name,json.dumps(own),json.dumps(calls),flush=True)\nsubprocess.run(['objdump','-d','-l','-Mintel',str(binary)],stdout=(out/'candidate-disassembly.txt').open('wb'),check=True)\n",
+    "parse-callgrind.py": "import collections,re\ndef parse(path):\n    names={}\n    own=collections.defaultdict(collections.Counter)\n    edges=collections.Counter()\n    function,callee=None,None\n    inclusive=False\n    events=None\n    summary=None\n    for line in path.read_text().splitlines():\n        if line.startswith('events:'):\n            events=line.split()[1:]\n        elif line.startswith('summary:'):\n            summary=dict(zip(events,map(int,line.split()[1:])))\n        match=re.match(r'(c?fn)=\\((\\d+)\\)(?: (.*))?$',line)\n        if match:\n            kind,number,name=match.groups()\n            if name is not None:\n                names[number]=name\n            if kind=='fn':\n                function=number\n            else:\n                callee=number\n        elif line.startswith('calls='):\n            edges[(function,callee)]+=int(line.split()[0].split('=')[1])\n            inclusive=True\n        elif re.match(r'^(0x[0-9a-f]+|[+-]\\d+|\\*) ',line):\n            if inclusive:\n                inclusive=False\n            else:\n                own[function].update(dict(zip(events,map(int,line.split()[1:]))))\n    assert summary is not None\n    assert sum(counts['Ir'] for counts in own.values())==summary['Ir']\n    return {'summary':summary,'self_counts':{names[k]:dict(v) for k,v in own.items()},'calls':{names[a]+' -> '+names[b]:n for (a,b),n in edges.items()}}\n\n",
+    "build-test.py": "from pathlib import Path\nimport subprocess,concurrent.futures,json,hashlib\nout=Path.cwd()/'.work/stack-check-20261116'\njobs=[('baseline','windows-debug',['zig','build','test','--summary','all']),('candidate','windows-debug',['zig','build','test','--summary','all']),('candidate','linux-symbols',['zig','build','-Dtarget=x86_64-linux-musl','-Doptimize=fast','-Dcpu=baseline','-Dstrip=false','--prefix',str(out/'candidate-symbols'),'--summary','all'])]\ndef run(job):\n kind,name,cmd=job\n with (out/(kind+'-'+name+'.log')).open('wb') as f:p=subprocess.run(cmd,cwd=out/kind,stdout=f,stderr=subprocess.STDOUT)\n row={'kind':kind,'name':name,'command':cmd,'exit':p.returncode};assert p.returncode==0,row;print(kind,name,'passed',flush=True);return row\n# Separate baseline/candidate cache; candidate jobs sequential.\nrows=[]\nwith concurrent.futures.ThreadPoolExecutor(max_workers=2) as pool:\n rows=list(pool.map(run,jobs[:2]))\nrows.append(run(jobs[2]));(out/'validation-initial.json').write_text(json.dumps(rows,indent=2)+'\\n')\n",
+    "check-windows-direct.py": "from pathlib import Path\nimport subprocess,json,hashlib,shutil\nr=Path.cwd();o=r/'.work/stack-check-20261116';rows=[]\nfor kind in ['baseline','candidate']:\n for i,p in enumerate((o/kind/'.zig-cache/o').glob('*/test.exe')):\n  cmd=[str(p)]\n  with (o/f'{kind}-windows-direct-{i}.log').open('wb') as f:x=subprocess.run(cmd,cwd=o/kind,stdout=f,stderr=subprocess.STDOUT)\n  assert x.returncode==0;rows.append({'kind':kind,'command':cmd,'exit':x.returncode,'sha256':hashlib.sha256(p.read_bytes()).hexdigest()})\n(o/'windows-direct-tests.json').write_text(json.dumps(rows,indent=2)+'\\n');print('direct test binaries passed',len(rows))\n"
+  },
+  "windows_binaries": {
+    "baseline-windows": {
+      "sha256": "379d6c6c069b9c3072da22fa6cea8b7deff77c5ed78ef9bbd070f92a724337bf",
+      "bytes": 1809408
+    },
+    "candidate-windows": {
+      "sha256": "4c75083175ac6c6e1344fe2559adaf921adc982486ffcd6e0ff6e54b64e7ae02",
+      "bytes": 1809408
+    }
+  },
+  "current_root_hashes": {
+    "src/forth.zig": "d2c101033474ba348c6cd148249bd81afb6ae4e7656ae5bb0c40326806182195",
+    "src/core/words_stack.zig": "cc42d35910240f272a0bfc9c105431b71b43444de74befdb83e4a2e8296e1ba6",
+    "zig-out/bin/sigma.exe": "379d6c6c069b9c3072da22fa6cea8b7deff77c5ed78ef9bbd070f92a724337bf"
+  },
+  "baseline_provenance": {
+    "reuse": "rot3 baseline symbol-bearing Linux build; not a new stack-check baseline build",
+    "compared_scope": "tracked src except tests and forth_test, build files VERSION and licenses; not whole tree or all generated inputs",
+    "files": {
+      "LICENSE": {
+        "root": "4e506bd0fb984e66c05f26d59f67d569f0c2d3c7a40829855631a5a9491bbe0a",
+        "reused_tree": "4e506bd0fb984e66c05f26d59f67d569f0c2d3c7a40829855631a5a9491bbe0a"
+      },
+      "THIRD_PARTY_NOTICES.md": {
+        "root": "87f63f99325437c9515a5e04ae9233b12c50c16fa262c7f046ec1ecb0839f45e",
+        "reused_tree": "87f63f99325437c9515a5e04ae9233b12c50c16fa262c7f046ec1ecb0839f45e"
+      },
+      "VERSION": {
+        "root": "6a9b524a9fd4f1f95f08a1db768ade6b9ef841e66ecf4893ff9393dafc33c13e",
+        "reused_tree": "6a9b524a9fd4f1f95f08a1db768ade6b9ef841e66ecf4893ff9393dafc33c13e"
+      },
+      "build.zig": {
+        "root": "1bb250b4d5dd553c01695877f499f2d58b5b784cef646fbbdc2c4b9ae4a824e4",
+        "reused_tree": "1bb250b4d5dd553c01695877f499f2d58b5b784cef646fbbdc2c4b9ae4a824e4"
+      },
+      "src/audio/audio.fs": {
+        "root": "a207a12594eb2e413ff41ae1fb9c1cbd02225bd0ceefe64d7dc1e26936016dfa",
+        "reused_tree": "a207a12594eb2e413ff41ae1fb9c1cbd02225bd0ceefe64d7dc1e26936016dfa"
+      },
+      "src/core-math/README.md": {
+        "root": "06df2e20f1e91155d284e1ab7b1cbb33716da9e803b2344e8aba1d3acb5b7dfc",
+        "reused_tree": "06df2e20f1e91155d284e1ab7b1cbb33716da9e803b2344e8aba1d3acb5b7dfc"
+      },
+      "src/core-math/acos/acos.c": {
+        "root": "ae78ed253160e4bc963c29144839c537d9010200537fc67a6c0e0f5d78a67d06",
+        "reused_tree": "ae78ed253160e4bc963c29144839c537d9010200537fc67a6c0e0f5d78a67d06"
+      },
+      "src/core-math/acosh/acosh.c": {
+        "root": "82f010b7abb986809d357ad58585a7879fd4a9200fd3c8a1d680e0e95d75eef5",
+        "reused_tree": "82f010b7abb986809d357ad58585a7879fd4a9200fd3c8a1d680e0e95d75eef5"
+      },
+      "src/core-math/asin/asin.c": {
+        "root": "a986ab8c2cb1cdfc6064b15109bc969da460a3974a4cd02dd9b3767666e76d19",
+        "reused_tree": "a986ab8c2cb1cdfc6064b15109bc969da460a3974a4cd02dd9b3767666e76d19"
+      },
+      "src/core-math/asinh/asinh.c": {
+        "root": "0ec75c3d84f4932aadfefe8a88a201b4f8a5055b7f1a33eb31dcebd22492cc78",
+        "reused_tree": "0ec75c3d84f4932aadfefe8a88a201b4f8a5055b7f1a33eb31dcebd22492cc78"
+      },
+      "src/core-math/atan/atan.c": {
+        "root": "712ee60888f293531e6e6852ab1b30ed99a804bce3637a931c2c7a9daa972928",
+        "reused_tree": "712ee60888f293531e6e6852ab1b30ed99a804bce3637a931c2c7a9daa972928"
+      },
+      "src/core-math/atan2/atan2.c": {
+        "root": "a36a7d1505a34298e37fb1123e60317f4e93a01b8e1cca3546d9bc70f98ca66d",
+        "reused_tree": "a36a7d1505a34298e37fb1123e60317f4e93a01b8e1cca3546d9bc70f98ca66d"
+      },
+      "src/core-math/atan2/tint.h": {
+        "root": "4ce7ae7688bf78c2cc6f6ac2bb159c76d2d67faa802a18f35ca348ec434bc5de",
+        "reused_tree": "4ce7ae7688bf78c2cc6f6ac2bb159c76d2d67faa802a18f35ca348ec434bc5de"
+      },
+      "src/core-math/atanh/atanh.c": {
+        "root": "4f4f970b8139c1824734059244d5a1dcc409061c896c9689a2850a1756b92792",
+        "reused_tree": "4f4f970b8139c1824734059244d5a1dcc409061c896c9689a2850a1756b92792"
+      },
+      "src/core-math/cos.c": {
+        "root": "9678a88b094440ab2d399e924a8033532582045b7dbc85650484c9dd9a36e598",
+        "reused_tree": "9678a88b094440ab2d399e924a8033532582045b7dbc85650484c9dd9a36e598"
+      },
+      "src/core-math/cosh/cosh.c": {
+        "root": "55c18935d8f5be836a4b180f43a06f39e577bfd10d195165e61b536d71c201f2",
+        "reused_tree": "55c18935d8f5be836a4b180f43a06f39e577bfd10d195165e61b536d71c201f2"
+      },
+      "src/core-math/dint.h": {
+        "root": "10f20d4905b04f1e1a4254a95c4cc81a6cf96db833eb42b83215243ee51b9312",
+        "reused_tree": "10f20d4905b04f1e1a4254a95c4cc81a6cf96db833eb42b83215243ee51b9312"
+      },
+      "src/core-math/exp.c": {
+        "root": "458097f727013f19ba2f73bc578918a969c5b7f56259d00995a1f9c0fdc46ea2",
+        "reused_tree": "458097f727013f19ba2f73bc578918a969c5b7f56259d00995a1f9c0fdc46ea2"
+      },
+      "src/core-math/exp10/exp10.c": {
+        "root": "f30569452bc5b875916116471636be99ac94818915e8f50d47fcf6a97b423828",
+        "reused_tree": "f30569452bc5b875916116471636be99ac94818915e8f50d47fcf6a97b423828"
+      },
+      "src/core-math/expm1/expm1.c": {
+        "root": "5d270181a7a046fe305a5543a7f10bcd280fcea0e1be32658d4243da73896d01",
+        "reused_tree": "5d270181a7a046fe305a5543a7f10bcd280fcea0e1be32658d4243da73896d01"
+      },
+      "src/core-math/log.c": {
+        "root": "fd0b6496f261bfd2beb9489b213a496ec13c2e0bdf9d57682c8065310f344d73",
+        "reused_tree": "fd0b6496f261bfd2beb9489b213a496ec13c2e0bdf9d57682c8065310f344d73"
+      },
+      "src/core-math/log10/dint.h": {
+        "root": "91b9e30ebe0b2b7d200e897ee32ef388dd249b95e873a0ffd705f8ce676b047f",
+        "reused_tree": "91b9e30ebe0b2b7d200e897ee32ef388dd249b95e873a0ffd705f8ce676b047f"
+      },
+      "src/core-math/log10/log10.c": {
+        "root": "43850aaa6046c5069ccc0d5a10776c90651772915196c2a236eca2150ff061fa",
+        "reused_tree": "43850aaa6046c5069ccc0d5a10776c90651772915196c2a236eca2150ff061fa"
+      },
+      "src/core-math/log1p/dint.h": {
+        "root": "5c58a17ea0ad729849aea66ef0e64481a64204065138b55d9dd1a3bb3e7d1d0c",
+        "reused_tree": "5c58a17ea0ad729849aea66ef0e64481a64204065138b55d9dd1a3bb3e7d1d0c"
+      },
+      "src/core-math/log1p/log1p.c": {
+        "root": "d2f1258188b7ff4e49c4c6a3c2ebb1ef6c2ece17bc258a21ea70853a241907e7",
+        "reused_tree": "d2f1258188b7ff4e49c4c6a3c2ebb1ef6c2ece17bc258a21ea70853a241907e7"
+      },
+      "src/core-math/pow/dint.h": {
+        "root": "c12ac5f59fa4d3409d1b392df56845687cb82f57d280faa083cdf833a5aa5ba7",
+        "reused_tree": "c12ac5f59fa4d3409d1b392df56845687cb82f57d280faa083cdf833a5aa5ba7"
+      },
+      "src/core-math/pow/pow.c": {
+        "root": "adc2001a299f342ec8e4e69fccbb2fd459ea77794d05f36d9f1ca9131f31b7cd",
+        "reused_tree": "adc2001a299f342ec8e4e69fccbb2fd459ea77794d05f36d9f1ca9131f31b7cd"
+      },
+      "src/core-math/pow/pow.h": {
+        "root": "1233d071cab515a082daec0ec2ec476a4c2797050a95dabe62c724e51b5a5dc0",
+        "reused_tree": "1233d071cab515a082daec0ec2ec476a4c2797050a95dabe62c724e51b5a5dc0"
+      },
+      "src/core-math/pow/qint.h": {
+        "root": "32de9c10388056e2294339e3302c3695cdf4abc87ca790ad48917d9794bfb6e4",
+        "reused_tree": "32de9c10388056e2294339e3302c3695cdf4abc87ca790ad48917d9794bfb6e4"
+      },
+      "src/core-math/sin.c": {
+        "root": "5aa197032fbd1c9e2548413b42b20d7378f84e65fc5144f16c95781d21190594",
+        "reused_tree": "5aa197032fbd1c9e2548413b42b20d7378f84e65fc5144f16c95781d21190594"
+      },
+      "src/core-math/sinh/sinh.c": {
+        "root": "08344b39a40a2824fe5e00dd353e9745a6b48933e897653e010a06cee874652d",
+        "reused_tree": "08344b39a40a2824fe5e00dd353e9745a6b48933e897653e010a06cee874652d"
+      },
+      "src/core-math/tan.c": {
+        "root": "cd71ef7d9d168ed5decd2d8c099bdb40e98b0a0d14174e41384d1429e4f923cc",
+        "reused_tree": "cd71ef7d9d168ed5decd2d8c099bdb40e98b0a0d14174e41384d1429e4f923cc"
+      },
+      "src/core-math/tanh/tanh.c": {
+        "root": "c76166a7e16ff85dc91460184fe67ce3aecc19f5b53e6d42d7d1cf81e57c8c39",
+        "reused_tree": "c76166a7e16ff85dc91460184fe67ce3aecc19f5b53e6d42d7d1cf81e57c8c39"
+      },
+      "src/core/address_registry.zig": {
+        "root": "0178972983138fa539ef4d796cd37546b1a7866e9b2468a0b0a9787f95b883cc",
+        "reused_tree": "0178972983138fa539ef4d796cd37546b1a7866e9b2468a0b0a9787f95b883cc"
+      },
+      "src/core/blocks.zig": {
+        "root": "36af308d421c99070882990963d437f3ffe2affcf0dc4c7386d71280ebe24683",
+        "reused_tree": "36af308d421c99070882990963d437f3ffe2affcf0dc4c7386d71280ebe24683"
+      },
+      "src/core/char_width.zig": {
+        "root": "681ca0279267da9e8f46271674aa2359de44da1794217f7f1da6737edd124326",
+        "reused_tree": "681ca0279267da9e8f46271674aa2359de44da1794217f7f1da6737edd124326"
+      },
+      "src/core/control_flow.zig": {
+        "root": "81ab51243fae89f5281766b5a421a044f3074da220dd7479c7a98542084a3f6c",
+        "reused_tree": "81ab51243fae89f5281766b5a421a044f3074da220dd7479c7a98542084a3f6c"
+      },
+      "src/core/coverage.zig": {
+        "root": "bb6d34b14201a5b291ceb01615d98e8e8bf132d9d7d4e5cb81770033212afaaa",
+        "reused_tree": "bb6d34b14201a5b291ceb01615d98e8e8bf132d9d7d4e5cb81770033212afaaa"
+      },
+      "src/core/csv.zig": {
+        "root": "3856ca1f176012f27d1872a98450b2231d98275db1b075bf82afd365a78d86bf",
+        "reused_tree": "3856ca1f176012f27d1872a98450b2231d98275db1b075bf82afd365a78d86bf"
+      },
+      "src/core/csv_reader.zig": {
+        "root": "0ded4f9165e8576ed89e528cb83bc2af6fddf95dff2395057b2e3d8870ca6175",
+        "reused_tree": "0ded4f9165e8576ed89e528cb83bc2af6fddf95dff2395057b2e3d8870ca6175"
+      },
+      "src/core/debug_log.zig": {
+        "root": "2d4dfaf432d08615d86bee5b12b438970de9e7663cd4e07d7624db403cf05b86",
+        "reused_tree": "2d4dfaf432d08615d86bee5b12b438970de9e7663cd4e07d7624db403cf05b86"
+      },
+      "src/core/decompiler.zig": {
+        "root": "5fdc97f0ec99ac5e53648b127491bd8b6e431bc3383674ab6f64f2e316e34934",
+        "reused_tree": "5fdc97f0ec99ac5e53648b127491bd8b6e431bc3383674ab6f64f2e316e34934"
+      },
+      "src/core/definers.zig": {
+        "root": "4e45cff07ac67e61b036fde5ee7b387d6810a26940795cefa3648656992bf948",
+        "reused_tree": "4e45cff07ac67e61b036fde5ee7b387d6810a26940795cefa3648656992bf948"
+      },
+      "src/core/defs.zig": {
+        "root": "d004483feb3f06ac94e6870e000317fee1ed553dc9edaf4943ab62e71cb8fc6d",
+        "reused_tree": "d004483feb3f06ac94e6870e000317fee1ed553dc9edaf4943ab62e71cb8fc6d"
+      },
+      "src/core/dictionary_image.zig": {
+        "root": "daab18a2b62433fe83dd9712ebeb9008ca364bff7408ff7701a0288be9e301ca",
+        "reused_tree": "daab18a2b62433fe83dd9712ebeb9008ca364bff7408ff7701a0288be9e301ca"
+      },
+      "src/core/directories.zig": {
+        "root": "64261fa73ea43d0b35d6f86c687c5d07e592812f8463f87959a00412a83373e6",
+        "reused_tree": "64261fa73ea43d0b35d6f86c687c5d07e592812f8463f87959a00412a83373e6"
+      },
+      "src/core/dynamic_strings.zig": {
+        "root": "5793e0c420b4e80b27eec5c36be6f57b61137a614c7286ba5f6574d2995f5275",
+        "reused_tree": "5793e0c420b4e80b27eec5c36be6f57b61137a614c7286ba5f6574d2995f5275"
+      },
+      "src/core/error_reporting.zig": {
+        "root": "04f2a08a92b51246fb443a0eaaf9b8cbefbb507b13f27520703886df4e6c7aca",
+        "reused_tree": "04f2a08a92b51246fb443a0eaaf9b8cbefbb507b13f27520703886df4e6c7aca"
+      },
+      "src/core/event_input.zig": {
+        "root": "199b88d73a0abd6405f369ef6765c6e2865c6a10d8d62c38be8d55b2ee556712",
+        "reused_tree": "199b88d73a0abd6405f369ef6765c6e2865c6a10d8d62c38be8d55b2ee556712"
+      },
+      "src/core/exception_registry.zig": {
+        "root": "a101f0fd1c6df12a375a5819aa86256a5e4e4a3f6ba76bb7b00c3c3390cae8a8",
+        "reused_tree": "a101f0fd1c6df12a375a5819aa86256a5e4e4a3f6ba76bb7b00c3c3390cae8a8"
+      },
+      "src/core/file_streams.zig": {
+        "root": "b742e13ded4181e2f1c372de6f818bb0939dc8870a21b8a3780cad66fe96f21f",
+        "reused_tree": "b742e13ded4181e2f1c372de6f818bb0939dc8870a21b8a3780cad66fe96f21f"
+      },
+      "src/core/filename_match.zig": {
+        "root": "336d27e29bcc3390a7a07f4a6a6b07fc044e9ad4a53731574d2b62fddfe7f004",
+        "reused_tree": "336d27e29bcc3390a7a07f4a6a6b07fc044e9ad4a53731574d2b62fddfe7f004"
+      },
+      "src/core/float_format.zig": {
+        "root": "6e0562553f3b8ad4ff54e803fd115eec1f1f164fdd208f8ece956b797bbcc91d",
+        "reused_tree": "6e0562553f3b8ad4ff54e803fd115eec1f1f164fdd208f8ece956b797bbcc91d"
+      },
+      "src/core/float_math.zig": {
+        "root": "2ed27d53e44f908901545f8f9d5f58fe4470fafd5a7dca5f26fa325419665ac6",
+        "reused_tree": "2ed27d53e44f908901545f8f9d5f58fe4470fafd5a7dca5f26fa325419665ac6"
+      },
+      "src/core/gamepad.zig": {
+        "root": "32af2468a657293127df00da57f6224676c71b98e8fe00374eb8b1e7f5144806",
+        "reused_tree": "32af2468a657293127df00da57f6224676c71b98e8fe00374eb8b1e7f5144806"
+      },
+      "src/core/graphics_decode.zig": {
+        "root": "c33146f6c5a12bcbfbb085add3b15ee1a9d94b9069ae02037b1ac50230e2dc32",
+        "reused_tree": "c33146f6c5a12bcbfbb085add3b15ee1a9d94b9069ae02037b1ac50230e2dc32"
+      },
+      "src/core/graphics_font.zig": {
+        "root": "e178f3972a1c22b8036b30b915ac42dec895fce1daea8e5acd4841309075dc11",
+        "reused_tree": "e178f3972a1c22b8036b30b915ac42dec895fce1daea8e5acd4841309075dc11"
+      },
+      "src/core/graphics_images.zig": {
+        "root": "5d936f7a975f4979b029c7e3c6efb48eddb58806679fdb36b97c872dd5d9a699",
+        "reused_tree": "5d936f7a975f4979b029c7e3c6efb48eddb58806679fdb36b97c872dd5d9a699"
+      },
+      "src/core/graphics_input.zig": {
+        "root": "22a1d66a9950a44085807c8268eb1e269cdb52c6adf31e23b0d1e61148f2f962",
+        "reused_tree": "22a1d66a9950a44085807c8268eb1e269cdb52c6adf31e23b0d1e61148f2f962"
+      },
+      "src/core/graphics_palette.zig": {
+        "root": "c331b0c07252369213601fa60b34a90a01df22219bfb649493f39dc36bf19b44",
+        "reused_tree": "c331b0c07252369213601fa60b34a90a01df22219bfb649493f39dc36bf19b44"
+      },
+      "src/core/graphics_terminal.zig": {
+        "root": "c62b1805cb179e13200ad922376c81cbd19b823e30b5ca2f828f686a460edabd",
+        "reused_tree": "c62b1805cb179e13200ad922376c81cbd19b823e30b5ca2f828f686a460edabd"
+      },
+      "src/core/heap_memory.zig": {
+        "root": "901f905903217e80471aabe5cfa9acaf5ca16ab558657ec0cd9ca8d28b51777d",
+        "reused_tree": "901f905903217e80471aabe5cfa9acaf5ca16ab558657ec0cd9ca8d28b51777d"
+      },
+      "src/core/help_text.zig": {
+        "root": "a087eeaae8b7308910294e628a7283713ca31c4fd97921e70b235478d260b767",
+        "reused_tree": "a087eeaae8b7308910294e628a7283713ca31c4fd97921e70b235478d260b767"
+      },
+      "src/core/host_interface.zig": {
+        "root": "39da4b784b2bf5bd70c4c817689585422e5bff42d882e84521eec7e540d93d75",
+        "reused_tree": "39da4b784b2bf5bd70c4c817689585422e5bff42d882e84521eec7e540d93d75"
+      },
+      "src/core/image_append.zig": {
+        "root": "38d23264283464d8509ff587c3bfe3da640c11a0acf298cb5dd7dcb0a1bf74a0",
+        "reused_tree": "38d23264283464d8509ff587c3bfe3da640c11a0acf298cb5dd7dcb0a1bf74a0"
+      },
+      "src/core/image_append_plan.zig": {
+        "root": "05da2791823c4c6705b0f2684ed046ef4689836e18fabded5db6fefec5ccb6e7",
+        "reused_tree": "05da2791823c4c6705b0f2684ed046ef4689836e18fabded5db6fefec5ccb6e7"
+      },
+      "src/core/image_encoder.zig": {
+        "root": "baebe6349143383a1ccf41c7c83ac1243472b7a03ad71eb1598fbdd54a8efea5",
+        "reused_tree": "baebe6349143383a1ccf41c7c83ac1243472b7a03ad71eb1598fbdd54a8efea5"
+      },
+      "src/core/image_format.zig": {
+        "root": "8ed007da4d080e80ef9b6d7afcd686a4e5d4d7e1f9eadd9dbe1168dee47ab2ea",
+        "reused_tree": "8ed007da4d080e80ef9b6d7afcd686a4e5d4d7e1f9eadd9dbe1168dee47ab2ea"
+      },
+      "src/core/image_graph.zig": {
+        "root": "264f9a98bcf1697e44ca3e2585996bb9c5a773f76d23a5256db2c36c9a4483ba",
+        "reused_tree": "264f9a98bcf1697e44ca3e2585996bb9c5a773f76d23a5256db2c36c9a4483ba"
+      },
+      "src/core/image_restore.zig": {
+        "root": "f4eab62ea8759cc91af343a3c55011207bc53fa41605db5ae43b7f0ea7457350",
+        "reused_tree": "f4eab62ea8759cc91af343a3c55011207bc53fa41605db5ae43b7f0ea7457350"
+      },
+      "src/core/image_restore_plan.zig": {
+        "root": "ca362bc63dbf3d07b365f3dd422dd893f84a767c835ff430025f23c75f263ac7",
+        "reused_tree": "ca362bc63dbf3d07b365f3dd422dd893f84a767c835ff430025f23c75f263ac7"
+      },
+      "src/core/inline_calls.zig": {
+        "root": "6bf8247ead00e75df7f18c8dfbe868dcbe7acbe1113a985f246971d45cce6429",
+        "reused_tree": "6bf8247ead00e75df7f18c8dfbe868dcbe7acbe1113a985f246971d45cce6429"
+      },
+      "src/core/input_redirect.zig": {
+        "root": "2032570447f8bf8294041355af11bb22ef5c1ce5feb09c58a4393eff3b17fff5",
+        "reused_tree": "2032570447f8bf8294041355af11bb22ef5c1ce5feb09c58a4393eff3b17fff5"
+      },
+      "src/core/integer_math.zig": {
+        "root": "616cf5aa364ad9e05cbcff0d43bf6a8ffcd6a5ed67800501cc958d91cad96ac3",
+        "reused_tree": "616cf5aa364ad9e05cbcff0d43bf6a8ffcd6a5ed67800501cc958d91cad96ac3"
+      },
+      "src/core/library_loading.zig": {
+        "root": "8210bcd168136ba91ab235b02d22869d64bada4aff39c9e516688d1ec543f1d3",
+        "reused_tree": "8210bcd168136ba91ab235b02d22869d64bada4aff39c9e516688d1ec543f1d3"
+      },
+      "src/core/lint.zig": {
+        "root": "6328781a50592e3342a23d568b16382190d5debfca85c0af3187b4ff0114fb25",
+        "reused_tree": "6328781a50592e3342a23d568b16382190d5debfca85c0af3187b4ff0114fb25"
+      },
+      "src/core/local_variables.zig": {
+        "root": "a1414460308e3617a813e1d8b01bea43083ebf4e7f5472da6b91c00ec9c4ecb6",
+        "reused_tree": "a1414460308e3617a813e1d8b01bea43083ebf4e7f5472da6b91c00ec9c4ecb6"
+      },
+      "src/core/macro_substitute.zig": {
+        "root": "94acdc1a5bb3e6e65df12c80eabfe7eb2a05f317c0a67e864be28e91c6d28c65",
+        "reused_tree": "94acdc1a5bb3e6e65df12c80eabfe7eb2a05f317c0a67e864be28e91c6d28c65"
+      },
+      "src/core/memory_map.zig": {
+        "root": "a0a89d1c82cd230011cfaebe9759d35bc2a62d4abde84dcb40941b7793b6bd1d",
+        "reused_tree": "a0a89d1c82cd230011cfaebe9759d35bc2a62d4abde84dcb40941b7793b6bd1d"
+      },
+      "src/core/nanosecond_wait.zig": {
+        "root": "97e080dc56a2104b789d84bb53f4880a1424f37f4a11bc21b2c8714095fe3ea0",
+        "reused_tree": "97e080dc56a2104b789d84bb53f4880a1424f37f4a11bc21b2c8714095fe3ea0"
+      },
+      "src/core/number_io.zig": {
+        "root": "6075a363beeef7b88b533cf131fa2c9ff470c2b222d3b7fb06628dada4a98b0e",
+        "reused_tree": "6075a363beeef7b88b533cf131fa2c9ff470c2b222d3b7fb06628dada4a98b0e"
+      },
+      "src/core/output_redirect.zig": {
+        "root": "1f90b385f3be241a81e9c640c6e5c83c76042b6e1c422415d227148e66cfe8d2",
+        "reused_tree": "1f90b385f3be241a81e9c640c6e5c83c76042b6e1c422415d227148e66cfe8d2"
+      },
+      "src/core/paths.zig": {
+        "root": "f58454e8c9e99a8ec25911e7b8884ca05fae2de3c11cf62367e43c26271015d2",
+        "reused_tree": "f58454e8c9e99a8ec25911e7b8884ca05fae2de3c11cf62367e43c26271015d2"
+      },
+      "src/core/pipes.zig": {
+        "root": "9589993a4d916d045e85687d869a95c861c22ea2f8987f5b4f42dc4806a8b58e",
+        "reused_tree": "9589993a4d916d045e85687d869a95c861c22ea2f8987f5b4f42dc4806a8b58e"
+      },
+      "src/core/profiler.zig": {
+        "root": "e1ba6cb5d8c96ede648c9693ef7084c3b2f406d04aa107f8738aa9375c4f238a",
+        "reused_tree": "e1ba6cb5d8c96ede648c9693ef7084c3b2f406d04aa107f8738aa9375c4f238a"
+      },
+      "src/core/quotations.zig": {
+        "root": "65d5c7bc9811d90b27bdeb458d77be712f1cd140e93da6c0820f9771ea942df7",
+        "reused_tree": "65d5c7bc9811d90b27bdeb458d77be712f1cd140e93da6c0820f9771ea942df7"
+      },
+      "src/core/shell_line.zig": {
+        "root": "01e952dcadbb5baa09b976b60c2a34408708e5ebcab471166443373692dacb79",
+        "reused_tree": "01e952dcadbb5baa09b976b60c2a34408708e5ebcab471166443373692dacb79"
+      },
+      "src/core/shell_output.zig": {
+        "root": "f78cfaf0ad82ed5a4edfab49c7b8047ca14b3564429d7231d0d56e9e31f90a30",
+        "reused_tree": "f78cfaf0ad82ed5a4edfab49c7b8047ca14b3564429d7231d0d56e9e31f90a30"
+      },
+      "src/core/sound_amiga.zig": {
+        "root": "f07453a4e678fad53db63da1027edde71583f41af84ded7b85745e32b188c7a2",
+        "reused_tree": "f07453a4e678fad53db63da1027edde71583f41af84ded7b85745e32b188c7a2"
+      },
+      "src/core/sound_c64.zig": {
+        "root": "6368fd524fa9c902c30c1ff02cecee6f6b89d8bf9211c5ca005ffc88809b8d37",
+        "reused_tree": "6368fd524fa9c902c30c1ff02cecee6f6b89d8bf9211c5ca005ffc88809b8d37"
+      },
+      "src/core/sound_engine.zig": {
+        "root": "2e1f6a0a97869a96e67d4e00ac6a549cd5dc9652f3a3820da64e2964e710a63e",
+        "reused_tree": "2e1f6a0a97869a96e67d4e00ac6a549cd5dc9652f3a3820da64e2964e710a63e"
+      },
+      "src/core/sound_mml.zig": {
+        "root": "bfdff169c1fb3d3cd579906cf71e790a5fd1883db0058320a95eac307962e26e",
+        "reused_tree": "bfdff169c1fb3d3cd579906cf71e790a5fd1883db0058320a95eac307962e26e"
+      },
+      "src/core/sound_mod.zig": {
+        "root": "bf649e5e3b45d1a69d40d745c816e24aba68fbe4d19eefcb9f295c631daa5bbc",
+        "reused_tree": "bf649e5e3b45d1a69d40d745c816e24aba68fbe4d19eefcb9f295c631daa5bbc"
+      },
+      "src/core/sound_nes.zig": {
+        "root": "c020d9acddff22923b6146e4b6185ea070fde6e5a56ea0dcaedf8919efcef139",
+        "reused_tree": "c020d9acddff22923b6146e4b6185ea070fde6e5a56ea0dcaedf8919efcef139"
+      },
+      "src/core/sound_parts.zig": {
+        "root": "b43ae54cc0c1ded433951dc9ab4a4b492c77b316949c722ff372f613cec6c5e1",
+        "reused_tree": "b43ae54cc0c1ded433951dc9ab4a4b492c77b316949c722ff372f613cec6c5e1"
+      },
+      "src/core/sound_pcm.zig": {
+        "root": "4e87bc075ad335a445609d713f9506034b4ee320f003679d28a945465160f409",
+        "reused_tree": "4e87bc075ad335a445609d713f9506034b4ee320f003679d28a945465160f409"
+      },
+      "src/core/sound_psg.zig": {
+        "root": "68ec51802c61616ca950551936cd5ffbfb4be61fbd81b7ce8f4888962fabab43",
+        "reused_tree": "68ec51802c61616ca950551936cd5ffbfb4be61fbd81b7ce8f4888962fabab43"
+      },
+      "src/core/sound_scc.zig": {
+        "root": "137f70c7155e53c5fac478f7ca38d8e6f6619fd2b58c7dd8df6bc14229b871e0",
+        "reused_tree": "137f70c7155e53c5fac478f7ca38d8e6f6619fd2b58c7dd8df6bc14229b871e0"
+      },
+      "src/core/sound_wav.zig": {
+        "root": "6e1b68052c97da8b9d0c722f7fdfa91103e340f8aa8ac6cc83ab725718464380",
+        "reused_tree": "6e1b68052c97da8b9d0c722f7fdfa91103e340f8aa8ac6cc83ab725718464380"
+      },
+      "src/core/source_diagnostics.zig": {
+        "root": "64690701e82ac250e22d666dfb6ffb8847612568aa48ad0e591388c3279d9604",
+        "reused_tree": "64690701e82ac250e22d666dfb6ffb8847612568aa48ad0e591388c3279d9604"
+      },
+      "src/core/source_editor.zig": {
+        "root": "2d2b8dc4429ce73dc8b3915839d60ad4b2030b15ca6ee48cd310e2240243ae8b",
+        "reused_tree": "2d2b8dc4429ce73dc8b3915839d60ad4b2030b15ca6ee48cd310e2240243ae8b"
+      },
+      "src/core/source_input.zig": {
+        "root": "70b4c792e8f6c2be7fb70975a3032ed647053c13ca60462508fe479a34977423",
+        "reused_tree": "70b4c792e8f6c2be7fb70975a3032ed647053c13ca60462508fe479a34977423"
+      },
+      "src/core/source_listing.zig": {
+        "root": "7233598454e1ce3d5d539f3a4dd8db7c052c0c89901d0991154a683861276010",
+        "reused_tree": "7233598454e1ce3d5d539f3a4dd8db7c052c0c89901d0991154a683861276010"
+      },
+      "src/core/source_navigation.zig": {
+        "root": "726f78adf0ced4bd39d10c19e41e5f1cbce4d0fe63ba65e525c12bb3657be106",
+        "reused_tree": "726f78adf0ced4bd39d10c19e41e5f1cbce4d0fe63ba65e525c12bb3657be106"
+      },
+      "src/core/source_search.zig": {
+        "root": "afcaff74ace88230b433e00c6ffa6d1dd2cbb037a2645c467ac7df074e6f4be1",
+        "reused_tree": "afcaff74ace88230b433e00c6ffa6d1dd2cbb037a2645c467ac7df074e6f4be1"
+      },
+      "src/core/standard_keys.zig": {
+        "root": "2e91d22da319617368b7430ecfe88bfe6a3f63226c23beb4c5595702915999bc",
+        "reused_tree": "2e91d22da319617368b7430ecfe88bfe6a3f63226c23beb4c5595702915999bc"
+      },
+      "src/core/string_values.zig": {
+        "root": "29477e7d5b1e922a6c2ac4a6ef1d91d57ff7004b57027cf0e2bd76ecfcd2dd89",
+        "reused_tree": "29477e7d5b1e922a6c2ac4a6ef1d91d57ff7004b57027cf0e2bd76ecfcd2dd89"
+      },
+      "src/core/tcl.zig": {
+        "root": "73a2f5fcffcec7484083570094abd314af667ea0cd2f91c4b7de63e7a338e81f",
+        "reused_tree": "73a2f5fcffcec7484083570094abd314af667ea0cd2f91c4b7de63e7a338e81f"
+      },
+      "src/core/text_input.zig": {
+        "root": "46964760138fb94dd466a78b2da395bb9deb7668aa49592ab6b6a8055fc77628",
+        "reused_tree": "46964760138fb94dd466a78b2da395bb9deb7668aa49592ab6b6a8055fc77628"
+      },
+      "src/core/word_semantics.zig": {
+        "root": "cff516a8e06c12f57828d5d1848ef5110ec9217e7c519b981ee37129278fcda5",
+        "reused_tree": "cff516a8e06c12f57828d5d1848ef5110ec9217e7c519b981ee37129278fcda5"
+      },
+      "src/core/wordlists.zig": {
+        "root": "f46734f8cd79a3bcc9feb0217a7fcd35ef82c9a1377cf27cb4ee4053fce3a1c0",
+        "reused_tree": "f46734f8cd79a3bcc9feb0217a7fcd35ef82c9a1377cf27cb4ee4053fce3a1c0"
+      },
+      "src/core/words_arithmetic.zig": {
+        "root": "5d20923ce7034f4c8be403a4638fae5745a66acaab2e3ee8bf4954fbc06da7b3",
+        "reused_tree": "5d20923ce7034f4c8be403a4638fae5745a66acaab2e3ee8bf4954fbc06da7b3"
+      },
+      "src/core/words_audio.zig": {
+        "root": "a506f426842fc5a92f3cd98195ae27c18877d94732b30f93c19aa60241d6b6d9",
+        "reused_tree": "a506f426842fc5a92f3cd98195ae27c18877d94732b30f93c19aa60241d6b6d9"
+      },
+      "src/core/words_buffers.zig": {
+        "root": "27707d118634eca2173d880bbfdc737138cb2421c73e960a42d36746540a2d82",
+        "reused_tree": "27707d118634eca2173d880bbfdc737138cb2421c73e960a42d36746540a2d82"
+      },
+      "src/core/words_compilation_tokens.zig": {
+        "root": "81593751c461bf19e23e96047dea8558cf98d2cffd9a29255166a2f209aa1a58",
+        "reused_tree": "81593751c461bf19e23e96047dea8558cf98d2cffd9a29255166a2f209aa1a58"
+      },
+      "src/core/words_compiling.zig": {
+        "root": "b47885067210c81d18ac52f4e2ee0360b36376273b108996c12ce013b36863eb",
+        "reused_tree": "b47885067210c81d18ac52f4e2ee0360b36376273b108996c12ce013b36863eb"
+      },
+      "src/core/words_data.zig": {
+        "root": "7fc161844f45b288ed3f8251a3c61bd5960c0c5bba241ee912c6350bccb093e5",
+        "reused_tree": "7fc161844f45b288ed3f8251a3c61bd5960c0c5bba241ee912c6350bccb093e5"
+      },
+      "src/core/words_debug.zig": {
+        "root": "c6f59b5fddfbb1de37d713443f22777828ac5dd4e2a4dc303ced83b163f193bf",
+        "reused_tree": "c6f59b5fddfbb1de37d713443f22777828ac5dd4e2a4dc303ced83b163f193bf"
+      },
+      "src/core/words_defining.zig": {
+        "root": "72cd1136121bd5f76d9f15ed92d2b21ce58efb1e8d55b190eec616396b8ad6dd",
+        "reused_tree": "72cd1136121bd5f76d9f15ed92d2b21ce58efb1e8d55b190eec616396b8ad6dd"
+      },
+      "src/core/words_diagnostics.zig": {
+        "root": "51f1de2e804d2bcc96f0d41599c056c53051fc9fde27d0cdf45bc6f2b501ae41",
+        "reused_tree": "51f1de2e804d2bcc96f0d41599c056c53051fc9fde27d0cdf45bc6f2b501ae41"
+      },
+      "src/core/words_dictionary.zig": {
+        "root": "fa447d18c2d43c5699b1047d889a57eaccb1fff821a8f0397cbd89dc5773b3a6",
+        "reused_tree": "fa447d18c2d43c5699b1047d889a57eaccb1fff821a8f0397cbd89dc5773b3a6"
+      },
+      "src/core/words_files.zig": {
+        "root": "833fe0016818a541694bdd48e4c69e5bb7d9b5c66caa7c6aea78c769694b184d",
+        "reused_tree": "833fe0016818a541694bdd48e4c69e5bb7d9b5c66caa7c6aea78c769694b184d"
+      },
+      "src/core/words_float.zig": {
+        "root": "e6428f25157963cd48a50760becdaec7d20e5451d03d2f85eca8bdbe7c66bb22",
+        "reused_tree": "e6428f25157963cd48a50760becdaec7d20e5451d03d2f85eca8bdbe7c66bb22"
+      },
+      "src/core/words_game.zig": {
+        "root": "fe818ef9242467af270819b7f87c386602330c769efd90a3233bdc9e447cab2b",
+        "reused_tree": "fe818ef9242467af270819b7f87c386602330c769efd90a3233bdc9e447cab2b"
+      },
+      "src/core/words_graphics.zig": {
+        "root": "c855279d32ad6cd407ddb38f71d3f2a66245af08316f6baaed5a036b7c44f979",
+        "reused_tree": "c855279d32ad6cd407ddb38f71d3f2a66245af08316f6baaed5a036b7c44f979"
+      },
+      "src/core/words_gui.zig": {
+        "root": "bf81f6ded96bfe6f1622eac14518e43889846d966f9066e6803a2866df0f7b98",
+        "reused_tree": "bf81f6ded96bfe6f1622eac14518e43889846d966f9066e6803a2866df0f7b98"
+      },
+      "src/core/words_help.zig": {
+        "root": "6455558de0d85181143e1a4aea92f681b7a8ce08cfd9779a363e842407da4742",
+        "reused_tree": "6455558de0d85181143e1a4aea92f681b7a8ce08cfd9779a363e842407da4742"
+      },
+      "src/core/words_input.zig": {
+        "root": "3a6d58f08b2cfc4de9943be47e34bbde330609a782e3e25594d9b35b058e137c",
+        "reused_tree": "3a6d58f08b2cfc4de9943be47e34bbde330609a782e3e25594d9b35b058e137c"
+      },
+      "src/core/words_loops.zig": {
+        "root": "316132b48ee3996fb7deec64aef7d4afdc99a07bf4b1f8f104a327b67fa65a44",
+        "reused_tree": "316132b48ee3996fb7deec64aef7d4afdc99a07bf4b1f8f104a327b67fa65a44"
+      },
+      "src/core/words_memory.zig": {
+        "root": "a1f358c08a8e1849f91fe532c78346216f8956bb6e97c095a4067d69082b39ac",
+        "reused_tree": "a1f358c08a8e1849f91fe532c78346216f8956bb6e97c095a4067d69082b39ac"
+      },
+      "src/core/words_names.zig": {
+        "root": "631a67c5805af798f63e796512a1c2c7e390d7788e19c59a93fb91f8373a0746",
+        "reused_tree": "631a67c5805af798f63e796512a1c2c7e390d7788e19c59a93fb91f8373a0746"
+      },
+      "src/core/words_numeric.zig": {
+        "root": "c8321cc324dc94bc6a4a0fc41b24603a1670a930b0783aadcbd6e5b4cec524f9",
+        "reused_tree": "c8321cc324dc94bc6a4a0fc41b24603a1670a930b0783aadcbd6e5b4cec524f9"
+      },
+      "src/core/words_output.zig": {
+        "root": "d10a61561769a65102668800e1a8cf64f33a56c970bfcae1f6b75caa4708c5cf",
+        "reused_tree": "d10a61561769a65102668800e1a8cf64f33a56c970bfcae1f6b75caa4708c5cf"
+      },
+      "src/core/words_parsing.zig": {
+        "root": "53bc789c5e6a2885c9c16113b477b805406b68c76c846ec24ef600751e5204ae",
+        "reused_tree": "53bc789c5e6a2885c9c16113b477b805406b68c76c846ec24ef600751e5204ae"
+      },
+      "src/core/words_pictured.zig": {
+        "root": "646d528d6625fd5b13d873c2bf700854070276e8c9ae9c6be932b4836ff11117",
+        "reused_tree": "646d528d6625fd5b13d873c2bf700854070276e8c9ae9c6be932b4836ff11117"
+      },
+      "src/core/words_return_extensions.zig": {
+        "root": "4fffdb3a64aedb81fc281697149e2de73c9cf769bbed3186d650189266dcccfb",
+        "reused_tree": "4fffdb3a64aedb81fc281697149e2de73c9cf769bbed3186d650189266dcccfb"
+      },
+      "src/core/words_stack.zig": {
+        "root": "cc42d35910240f272a0bfc9c105431b71b43444de74befdb83e4a2e8296e1ba6",
+        "reused_tree": "cc42d35910240f272a0bfc9c105431b71b43444de74befdb83e4a2e8296e1ba6"
+      },
+      "src/core/words_stack_display.zig": {
+        "root": "902009c8c694962cb3e15aebf735f5acb3e3d59fda1620b0af5065941536828a",
+        "reused_tree": "902009c8c694962cb3e15aebf735f5acb3e3d59fda1620b0af5065941536828a"
+      },
+      "src/core/words_string_edit.zig": {
+        "root": "aec6e72aa3c19bc9b3e52642f7e2c131882ff6e68fbd4bcb540c1478e90f483d",
+        "reused_tree": "aec6e72aa3c19bc9b3e52642f7e2c131882ff6e68fbd4bcb540c1478e90f483d"
+      },
+      "src/core/words_strings.zig": {
+        "root": "b10532256e237cb3b3a63d9846162bb9613c724ea1bfc05daa5dca573668a9af",
+        "reused_tree": "b10532256e237cb3b3a63d9846162bb9613c724ea1bfc05daa5dca573668a9af"
+      },
+      "src/core/words_system.zig": {
+        "root": "0181205ea52210411a48c46eecec5008d5541c69c0f28bfc449c78f6161f3605",
+        "reused_tree": "0181205ea52210411a48c46eecec5008d5541c69c0f28bfc449c78f6161f3605"
+      },
+      "src/core/words_terminal.zig": {
+        "root": "c0fba2494cdcf8d965fd7fa69af050f515715e08ff0a75d6732d5a256b8e294b",
+        "reused_tree": "c0fba2494cdcf8d965fd7fa69af050f515715e08ff0a75d6732d5a256b8e294b"
+      },
+      "src/core/words_text.zig": {
+        "root": "dc3a9b5bcaa6f71b6408fa868957742e00aa8d62c0fecbf31aac3db446f7c677",
+        "reused_tree": "dc3a9b5bcaa6f71b6408fa868957742e00aa8d62c0fecbf31aac3db446f7c677"
+      },
+      "src/core/words_tools.zig": {
+        "root": "72261eac5cf05e464ad60af469fff36a59c8d2d4a6c0ae890d906802b8875626",
+        "reused_tree": "72261eac5cf05e464ad60af469fff36a59c8d2d4a6c0ae890d906802b8875626"
+      },
+      "src/core/words_value_extensions.zig": {
+        "root": "f9cbda67f69fd7699fd40b719c9da4366a919a494ce82a9bde12b6f6e388ed1b",
+        "reused_tree": "f9cbda67f69fd7699fd40b719c9da4366a919a494ce82a9bde12b6f6e388ed1b"
+      },
+      "src/core/words_width.zig": {
+        "root": "0f7ca0486e04192954710040773ae28b0b4317c7fb64915967d7082319d2bb56",
+        "reused_tree": "0f7ca0486e04192954710040773ae28b0b4317c7fb64915967d7082319d2bb56"
+      },
+      "src/core/words_xchar.zig": {
+        "root": "ab6a01143cc63a902c51a4e81fc362194243248f95d782ccaed5e0426e4736a0",
+        "reused_tree": "ab6a01143cc63a902c51a4e81fc362194243248f95d782ccaed5e0426e4736a0"
+      },
+      "src/core/zoned_time.zig": {
+        "root": "fbee68158ddc931197f6f2f3a269f6e46468bb954e75b643696e6a02765b5cac",
+        "reused_tree": "fbee68158ddc931197f6f2f3a269f6e46468bb954e75b643696e6a02765b5cac"
+      },
+      "src/fma/README.md": {
+        "root": "05efa47e7d16e53d52b62c8468809d27493ece3213a3c75dd8dae6080c19e3d3",
+        "reused_tree": "05efa47e7d16e53d52b62c8468809d27493ece3213a3c75dd8dae6080c19e3d3"
+      },
+      "src/fma/atomic.h": {
+        "root": "399878f9d33cd7dba696e33fdfd09a1001a863b3b711c1fb078715483e4ea468",
+        "reused_tree": "399878f9d33cd7dba696e33fdfd09a1001a863b3b711c1fb078715483e4ea468"
+      },
+      "src/fma/fma.c": {
+        "root": "f15e2db8c727f6cb3886dbc8817bebfcd7afff155b284be409fb961e0b985894",
+        "reused_tree": "f15e2db8c727f6cb3886dbc8817bebfcd7afff155b284be409fb961e0b985894"
+      },
+      "src/fma/fma_for_tests.c": {
+        "root": "14c032ea423580521b58a7c3e5444368b371685f69d57355e39a6c1d7dba2f8b",
+        "reused_tree": "14c032ea423580521b58a7c3e5444368b371685f69d57355e39a6c1d7dba2f8b"
+      },
+      "src/fma/sigma_fma.h": {
+        "root": "7b38d40f17599ddbd068157a6592122e2cb22eba0b7df3d159a0523924372a89",
+        "reused_tree": "7b38d40f17599ddbd068157a6592122e2cb22eba0b7df3d159a0523924372a89"
+      },
+      "src/format.zig": {
+        "root": "65a1a3811fc2facfce6485484175455b9b0128eb6c77f2ddd42d0c54cf078b70",
+        "reused_tree": "65a1a3811fc2facfce6485484175455b9b0128eb6c77f2ddd42d0c54cf078b70"
+      },
+      "src/forth.zig": {
+        "root": "d2c101033474ba348c6cd148249bd81afb6ae4e7656ae5bb0c40326806182195",
+        "reused_tree": "d2c101033474ba348c6cd148249bd81afb6ae4e7656ae5bb0c40326806182195"
+      },
+      "src/freestanding_check.zig": {
+        "root": "fa1af8e5602c2938d65c65a430894a0404ee5753aeb45bb0265923a38a3ddf6d",
+        "reused_tree": "fa1af8e5602c2938d65c65a430894a0404ee5753aeb45bb0265923a38a3ddf6d"
+      },
+      "src/graphics/font_misaki.zig": {
+        "root": "b9c1134e29bf6942b0642f47ec4f24b60f89b07ff103fbd7bc8f664d03e2e4dc",
+        "reused_tree": "b9c1134e29bf6942b0642f47ec4f24b60f89b07ff103fbd7bc8f664d03e2e4dc"
+      },
+      "src/graphics/game.fs": {
+        "root": "fd87642575e3d5c9b15168149dce80b233c49f8d70b48db6366f114c09ac18c0",
+        "reused_tree": "fd87642575e3d5c9b15168149dce80b233c49f8d70b48db6366f114c09ac18c0"
+      },
+      "src/graphics/graphics.fs": {
+        "root": "c23a9f87460ca3b6b09f646bc16d5a853adb1a70d45272eb4dceaa9ebbf1562d",
+        "reused_tree": "c23a9f87460ca3b6b09f646bc16d5a853adb1a70d45272eb4dceaa9ebbf1562d"
+      },
+      "src/graphics/graphics_float.fs": {
+        "root": "90ef953451223f299471a8a558586147c463f2a3d6864eb440d7717fc456c043",
+        "reused_tree": "90ef953451223f299471a8a558586147c463f2a3d6864eb440d7717fc456c043"
+      },
+      "src/graphics/gui.fs": {
+        "root": "f9e172ba73a42e276e2443ad46eeb66bf1fdf780301ea800dbc58d4d78597998",
+        "reused_tree": "f9e172ba73a42e276e2443ad46eeb66bf1fdf780301ea800dbc58d4d78597998"
+      },
+      "src/graphics/sigma_tk.tcl": {
+        "root": "405e8aedba39a73c4cc615d8049baddba826545730b6e75d968ae6cf00c1333a",
+        "reused_tree": "405e8aedba39a73c4cc615d8049baddba826545730b6e75d968ae6cf00c1333a"
+      },
+      "src/host_audio.zig": {
+        "root": "e8d8a8727184f4af76564413f071788d8e09f8317ea8db4ff5e75bc6709bee73",
+        "reused_tree": "e8d8a8727184f4af76564413f071788d8e09f8317ea8db4ff5e75bc6709bee73"
+      },
+      "src/host_directories.zig": {
+        "root": "f54ad3a3859fac1895036a80b2175592474cff16793dd7d109f631c86c20c0a8",
+        "reused_tree": "f54ad3a3859fac1895036a80b2175592474cff16793dd7d109f631c86c20c0a8"
+      },
+      "src/host_editor.zig": {
+        "root": "654e6c7dbf40f3ca104f2c63c962799832a6453f608ec48b552cc5f5a9dbdb39",
+        "reused_tree": "654e6c7dbf40f3ca104f2c63c962799832a6453f608ec48b552cc5f5a9dbdb39"
+      },
+      "src/host_font.zig": {
+        "root": "54785719b68ed40998924c36b60b7e9a5b06f1fc65789d82491932b46321585a",
+        "reused_tree": "54785719b68ed40998924c36b60b7e9a5b06f1fc65789d82491932b46321585a"
+      },
+      "src/host_gamepad.zig": {
+        "root": "761a6f709a8dbeb262a2667058c0d2da626d004c3cb02426998c605705e84bab",
+        "reused_tree": "761a6f709a8dbeb262a2667058c0d2da626d004c3cb02426998c605705e84bab"
+      },
+      "src/host_input.zig": {
+        "root": "b59c24dde2c08ba0c25aecbd432e6b937fc657afbcfe53b44c903438fa25cbc3",
+        "reused_tree": "b59c24dde2c08ba0c25aecbd432e6b937fc657afbcfe53b44c903438fa25cbc3"
+      },
+      "src/host_line.zig": {
+        "root": "f076a2af123da4852bc2bd42a4a5cea99ed3fceee8eab38081d2e160a0b4a58a",
+        "reused_tree": "f076a2af123da4852bc2bd42a4a5cea99ed3fceee8eab38081d2e160a0b4a58a"
+      },
+      "src/host_pipe_signal.zig": {
+        "root": "de621382ed35b7044d7fcdf53a415ad767f0b15f8771e871a0ebd84365afaef2",
+        "reused_tree": "de621382ed35b7044d7fcdf53a415ad767f0b15f8771e871a0ebd84365afaef2"
+      },
+      "src/host_process.zig": {
+        "root": "74fd530254a2f7d41b36919ad5d15a9d6c21fa404fe30ab8d4475bda71183b74",
+        "reused_tree": "74fd530254a2f7d41b36919ad5d15a9d6c21fa404fe30ab8d4475bda71183b74"
+      },
+      "src/host_resize.zig": {
+        "root": "6af68524c130f5551d9f162c0cdf1f7232ef8a075d2f73926bd30f46e452114e",
+        "reused_tree": "6af68524c130f5551d9f162c0cdf1f7232ef8a075d2f73926bd30f46e452114e"
+      },
+      "src/host_timezone.zig": {
+        "root": "c165dc48c15ae094c3108d0f3ad5a0241d077c0f88aea60485de70f8b4f20455",
+        "reused_tree": "c165dc48c15ae094c3108d0f3ad5a0241d077c0f88aea60485de70f8b4f20455"
+      },
+      "src/host_wait.zig": {
+        "root": "6ff6f3e887564ecdfaf66121ec9fa882ce84e16d1c7acbbc7a4f5fe76a57dc36",
+        "reused_tree": "6ff6f3e887564ecdfaf66121ec9fa882ce84e16d1c7acbbc7a4f5fe76a57dc36"
+      },
+      "src/host_window.zig": {
+        "root": "2ad62766ea216cf3e2b01229db6871d04bb90af488fb3ee17dd2a0effd6237bd",
+        "reused_tree": "2ad62766ea216cf3e2b01229db6871d04bb90af488fb3ee17dd2a0effd6237bd"
+      },
+      "src/main.zig": {
+        "root": "0cd9f2bbc70230f5b5c5d2c73ce9cea129add5178c3014eed5db1b81a62e600f",
+        "reused_tree": "0cd9f2bbc70230f5b5c5d2c73ce9cea129add5178c3014eed5db1b81a62e600f"
+      }
+    },
+    "mismatches": []
+  }
+}

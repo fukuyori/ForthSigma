@@ -1,0 +1,509 @@
+{
+  "jobs": [
+    {
+      "kind": "baseline",
+      "name": "debug-followup-tests",
+      "command": [
+        "zig",
+        "build",
+        "test",
+        "--summary",
+        "all"
+      ],
+      "exit": 0
+    },
+    {
+      "kind": "candidate",
+      "name": "debug-followup-tests",
+      "command": [
+        "zig",
+        "build",
+        "test",
+        "--summary",
+        "all"
+      ],
+      "exit": 0
+    },
+    {
+      "kind": "candidate",
+      "name": "fast-tests",
+      "command": [
+        "zig",
+        "build",
+        "test",
+        "-Doptimize=fast",
+        "--summary",
+        "all"
+      ],
+      "exit": 0
+    },
+    {
+      "kind": "candidate",
+      "name": "no-debug-tests",
+      "command": [
+        "zig",
+        "build",
+        "test",
+        "-Ddebug=false",
+        "--summary",
+        "all"
+      ],
+      "exit": 0
+    },
+    {
+      "kind": "candidate",
+      "name": "no-float-tests",
+      "command": [
+        "zig",
+        "build",
+        "test",
+        "-Dfloat=false",
+        "--summary",
+        "all"
+      ],
+      "exit": 0
+    },
+    {
+      "kind": "candidate",
+      "name": "minimal-tests",
+      "command": [
+        "zig",
+        "build",
+        "test",
+        "-Dfloat=false",
+        "-Dfiles=false",
+        "-Dhelp=false",
+        "-Dtools=false",
+        "-Dimage=false",
+        "-Dgraphics=false",
+        "-Daudio=false",
+        "-Ddebug=false",
+        "--summary",
+        "all"
+      ],
+      "exit": 0
+    },
+    {
+      "kind": "candidate",
+      "name": "linux-debug-tests",
+      "command": [
+        "zig",
+        "build",
+        "test",
+        "-Dtarget=x86_64-linux-musl",
+        "--summary",
+        "all"
+      ],
+      "exit": 1,
+      "elf_tests": [
+        {
+          "path": "D:\\home\\source\\zig\\forthz\\.work\\stack-check-20261116\\candidate\\.zig-cache\\o\\43ede414da717465f5255df82a0bcc67\\test",
+          "exit": 0
+        },
+        {
+          "path": "D:\\home\\source\\zig\\forthz\\.work\\stack-check-20261116\\candidate\\.zig-cache\\o\\120a68264b95700ca2aee086b23851f7\\test",
+          "exit": 0
+        }
+      ]
+    },
+    {
+      "kind": "candidate",
+      "name": "linux-fast-tests",
+      "command": [
+        "zig",
+        "build",
+        "test",
+        "-Dtarget=x86_64-linux-musl",
+        "-Doptimize=fast",
+        "--summary",
+        "all"
+      ],
+      "exit": 1,
+      "elf_tests": [
+        {
+          "path": "D:\\home\\source\\zig\\forthz\\.work\\stack-check-20261116\\candidate\\.zig-cache\\o\\133dbf0676f253bb68cd24fb66ece483\\test",
+          "exit": 0
+        },
+        {
+          "path": "D:\\home\\source\\zig\\forthz\\.work\\stack-check-20261116\\candidate\\.zig-cache\\o\\bde3a7ad9ab43b04f5a3a31abdb5c408\\test",
+          "exit": 0
+        }
+      ]
+    }
+  ],
+  "linux_cli": {
+    "origin": "build.zig 109-162 exact CLI cases, execute cross-built binaries through WSL",
+    "cases": [
+      {
+        "config": "debug",
+        "case": "pipe-bytes",
+        "command": [
+          "wsl",
+          "--exec",
+          "/mnt/d/home/source/zig/forthz/.work/stack-check-20261116/candidate/.zig-cache/o/036a7a170c4e2be42aa29aee86047c48/sigma",
+          "-e",
+          ": T PAD 9 STDIN READ-FILE . DUP . 0 DO PAD I + C@ . LOOP ; T BYE"
+        ],
+        "binary_sha256": "39011ae0c3b7babf4e6c3e3fab3d53e6de9b30c6e9709b47ef11751e2af2805b",
+        "stdin_hex": "410d0a421a4300ff",
+        "stdout_hex": "30203820363520313320313020363620323620363720302032353520",
+        "stderr_hex": "",
+        "exit": 0,
+        "expected_exit": 0,
+        "expected_stdout_hex": "30203820363520313320313020363620323620363720302032353520",
+        "passed": true
+      },
+      {
+        "config": "debug",
+        "case": "pipe-lines",
+        "command": [
+          "wsl",
+          "--exec",
+          "/mnt/d/home/source/zig/forthz/.work/stack-check-20261116/candidate/.zig-cache/o/036a7a170c4e2be42aa29aee86047c48/sigma",
+          "-e",
+          "PAD 20 STDIN READ-LINE . . PAD SWAP TYPE PAD 20 STDIN READ-LINE . . PAD SWAP TYPE BYE"
+        ],
+        "binary_sha256": "39011ae0c3b7babf4e6c3e3fab3d53e6de9b30c6e9709b47ef11751e2af2805b",
+        "stdin_hex": "61620d0a63640a",
+        "stdout_hex": "30202d3120616230202d31206364",
+        "stderr_hex": "",
+        "exit": 0,
+        "expected_exit": 0,
+        "expected_stdout_hex": "30202d3120616230202d31206364",
+        "passed": true
+      },
+      {
+        "config": "debug",
+        "case": "file",
+        "command": [
+          "wsl",
+          "--exec",
+          "/mnt/d/home/source/zig/forthz/.work/stack-check-20261116/candidate/.zig-cache/o/036a7a170c4e2be42aa29aee86047c48/sigma",
+          "/mnt/d/home/source/zig/forthz/.work/stack-check-20261116/candidate/src/tests/argument_file.fs",
+          "-e",
+          ". BYE"
+        ],
+        "binary_sha256": "39011ae0c3b7babf4e6c3e3fab3d53e6de9b30c6e9709b47ef11751e2af2805b",
+        "stdin_hex": "",
+        "stdout_hex": "4152472d46494c453520",
+        "stderr_hex": "",
+        "exit": 0,
+        "expected_exit": 0,
+        "expected_stdout_hex": "4152472d46494c453520",
+        "passed": true
+      },
+      {
+        "config": "debug",
+        "case": "evaluate",
+        "command": [
+          "wsl",
+          "--exec",
+          "/mnt/d/home/source/zig/forthz/.work/stack-check-20261116/candidate/.zig-cache/o/036a7a170c4e2be42aa29aee86047c48/sigma",
+          "-e",
+          "7",
+          "--evaluate",
+          ". BYE"
+        ],
+        "binary_sha256": "39011ae0c3b7babf4e6c3e3fab3d53e6de9b30c6e9709b47ef11751e2af2805b",
+        "stdin_hex": "",
+        "stdout_hex": "3720",
+        "stderr_hex": "",
+        "exit": 0,
+        "expected_exit": 0,
+        "expected_stdout_hex": "3720",
+        "passed": true
+      },
+      {
+        "config": "debug",
+        "case": "missing-e",
+        "command": [
+          "wsl",
+          "--exec",
+          "/mnt/d/home/source/zig/forthz/.work/stack-check-20261116/candidate/.zig-cache/o/036a7a170c4e2be42aa29aee86047c48/sigma",
+          "-e"
+        ],
+        "binary_sha256": "39011ae0c3b7babf4e6c3e3fab3d53e6de9b30c6e9709b47ef11751e2af2805b",
+        "stdin_hex": "",
+        "stdout_hex": "2d653a204f5054494f4e20524551554952455320414e20415247554d454e5420210a",
+        "stderr_hex": "",
+        "exit": 1,
+        "expected_exit": 1,
+        "expected_stdout_hex": "2d653a204f5054494f4e20524551554952455320414e20415247554d454e5420210a",
+        "passed": true
+      },
+      {
+        "config": "debug",
+        "case": "xkey-accept",
+        "command": [
+          "wsl",
+          "--exec",
+          "/mnt/d/home/source/zig/forthz/.work/stack-check-20261116/candidate/.zig-cache/o/036a7a170c4e2be42aa29aee86047c48/sigma",
+          "-e",
+          "XKEY . PAD 10 ACCEPT PAD SWAP TYPE SPACE KEY . BYE"
+        ],
+        "binary_sha256": "39011ae0c3b7babf4e6c3e3fab3d53e6de9b30c6e9709b47ef11751e2af2805b",
+        "stdin_hex": "e6410a726573740a",
+        "stdout_hex": "363535333320412031313420",
+        "stderr_hex": "",
+        "exit": 0,
+        "expected_exit": 0,
+        "expected_stdout_hex": "363535333320412031313420",
+        "passed": true
+      },
+      {
+        "config": "debug",
+        "case": "xkey-read-line",
+        "command": [
+          "wsl",
+          "--exec",
+          "/mnt/d/home/source/zig/forthz/.work/stack-check-20261116/candidate/.zig-cache/o/036a7a170c4e2be42aa29aee86047c48/sigma",
+          "-e",
+          "XKEY . PAD 10 STDIN READ-LINE . . PAD SWAP TYPE BYE"
+        ],
+        "binary_sha256": "39011ae0c3b7babf4e6c3e3fab3d53e6de9b30c6e9709b47ef11751e2af2805b",
+        "stdin_hex": "e641620a63640a",
+        "stdout_hex": "36353533332030202d31204162",
+        "stderr_hex": "",
+        "exit": 0,
+        "expected_exit": 0,
+        "expected_stdout_hex": "36353533332030202d31204162",
+        "passed": true
+      },
+      {
+        "config": "debug",
+        "case": "xkey-inkey",
+        "command": [
+          "wsl",
+          "--exec",
+          "/mnt/d/home/source/zig/forthz/.work/stack-check-20261116/candidate/.zig-cache/o/036a7a170c4e2be42aa29aee86047c48/sigma",
+          "-e",
+          "REQUIRE-GRAPHICS ALSO GRAPHICS XKEY . INKEY . INKEY . BYE"
+        ],
+        "binary_sha256": "39011ae0c3b7babf4e6c3e3fab3d53e6de9b30c6e9709b47ef11751e2af2805b",
+        "stdin_hex": "e64142",
+        "stdout_hex": "3635353333203635202d3120",
+        "stderr_hex": "",
+        "exit": 0,
+        "expected_exit": 0,
+        "expected_stdout_hex": "3635353333203635202d3120",
+        "passed": true
+      },
+      {
+        "config": "debug",
+        "case": "missing-file",
+        "command": [
+          "wsl",
+          "--exec",
+          "/mnt/d/home/source/zig/forthz/.work/stack-check-20261116/candidate/.zig-cache/o/036a7a170c4e2be42aa29aee86047c48/sigma",
+          "sigma-no-such-file.fs",
+          "-e",
+          "BYE"
+        ],
+        "binary_sha256": "39011ae0c3b7babf4e6c3e3fab3d53e6de9b30c6e9709b47ef11751e2af2805b",
+        "stdin_hex": "",
+        "stdout_hex": "7369676d612d6e6f2d737563682d66696c652e66733a204e4f20535543482046494c45204f52204449524543544f525920210a",
+        "stderr_hex": "",
+        "exit": 1,
+        "expected_exit": 1,
+        "expected_stdout_hex": null,
+        "passed": true
+      },
+      {
+        "config": "fast",
+        "case": "pipe-bytes",
+        "command": [
+          "wsl",
+          "--exec",
+          "/mnt/d/home/source/zig/forthz/.work/stack-check-20261116/candidate/.zig-cache/o/0b809dd1feebff18dcca57956371132e/sigma",
+          "-e",
+          ": T PAD 9 STDIN READ-FILE . DUP . 0 DO PAD I + C@ . LOOP ; T BYE"
+        ],
+        "binary_sha256": "126306f9b3095a97a6efaab35c450601b6320da5af0c36ac50b4fa35d2cb89d0",
+        "stdin_hex": "410d0a421a4300ff",
+        "stdout_hex": "30203820363520313320313020363620323620363720302032353520",
+        "stderr_hex": "",
+        "exit": 0,
+        "expected_exit": 0,
+        "expected_stdout_hex": "30203820363520313320313020363620323620363720302032353520",
+        "passed": true
+      },
+      {
+        "config": "fast",
+        "case": "pipe-lines",
+        "command": [
+          "wsl",
+          "--exec",
+          "/mnt/d/home/source/zig/forthz/.work/stack-check-20261116/candidate/.zig-cache/o/0b809dd1feebff18dcca57956371132e/sigma",
+          "-e",
+          "PAD 20 STDIN READ-LINE . . PAD SWAP TYPE PAD 20 STDIN READ-LINE . . PAD SWAP TYPE BYE"
+        ],
+        "binary_sha256": "126306f9b3095a97a6efaab35c450601b6320da5af0c36ac50b4fa35d2cb89d0",
+        "stdin_hex": "61620d0a63640a",
+        "stdout_hex": "30202d3120616230202d31206364",
+        "stderr_hex": "",
+        "exit": 0,
+        "expected_exit": 0,
+        "expected_stdout_hex": "30202d3120616230202d31206364",
+        "passed": true
+      },
+      {
+        "config": "fast",
+        "case": "file",
+        "command": [
+          "wsl",
+          "--exec",
+          "/mnt/d/home/source/zig/forthz/.work/stack-check-20261116/candidate/.zig-cache/o/0b809dd1feebff18dcca57956371132e/sigma",
+          "/mnt/d/home/source/zig/forthz/.work/stack-check-20261116/candidate/src/tests/argument_file.fs",
+          "-e",
+          ". BYE"
+        ],
+        "binary_sha256": "126306f9b3095a97a6efaab35c450601b6320da5af0c36ac50b4fa35d2cb89d0",
+        "stdin_hex": "",
+        "stdout_hex": "4152472d46494c453520",
+        "stderr_hex": "",
+        "exit": 0,
+        "expected_exit": 0,
+        "expected_stdout_hex": "4152472d46494c453520",
+        "passed": true
+      },
+      {
+        "config": "fast",
+        "case": "evaluate",
+        "command": [
+          "wsl",
+          "--exec",
+          "/mnt/d/home/source/zig/forthz/.work/stack-check-20261116/candidate/.zig-cache/o/0b809dd1feebff18dcca57956371132e/sigma",
+          "-e",
+          "7",
+          "--evaluate",
+          ". BYE"
+        ],
+        "binary_sha256": "126306f9b3095a97a6efaab35c450601b6320da5af0c36ac50b4fa35d2cb89d0",
+        "stdin_hex": "",
+        "stdout_hex": "3720",
+        "stderr_hex": "",
+        "exit": 0,
+        "expected_exit": 0,
+        "expected_stdout_hex": "3720",
+        "passed": true
+      },
+      {
+        "config": "fast",
+        "case": "missing-e",
+        "command": [
+          "wsl",
+          "--exec",
+          "/mnt/d/home/source/zig/forthz/.work/stack-check-20261116/candidate/.zig-cache/o/0b809dd1feebff18dcca57956371132e/sigma",
+          "-e"
+        ],
+        "binary_sha256": "126306f9b3095a97a6efaab35c450601b6320da5af0c36ac50b4fa35d2cb89d0",
+        "stdin_hex": "",
+        "stdout_hex": "2d653a204f5054494f4e20524551554952455320414e20415247554d454e5420210a",
+        "stderr_hex": "",
+        "exit": 1,
+        "expected_exit": 1,
+        "expected_stdout_hex": "2d653a204f5054494f4e20524551554952455320414e20415247554d454e5420210a",
+        "passed": true
+      },
+      {
+        "config": "fast",
+        "case": "xkey-accept",
+        "command": [
+          "wsl",
+          "--exec",
+          "/mnt/d/home/source/zig/forthz/.work/stack-check-20261116/candidate/.zig-cache/o/0b809dd1feebff18dcca57956371132e/sigma",
+          "-e",
+          "XKEY . PAD 10 ACCEPT PAD SWAP TYPE SPACE KEY . BYE"
+        ],
+        "binary_sha256": "126306f9b3095a97a6efaab35c450601b6320da5af0c36ac50b4fa35d2cb89d0",
+        "stdin_hex": "e6410a726573740a",
+        "stdout_hex": "363535333320412031313420",
+        "stderr_hex": "",
+        "exit": 0,
+        "expected_exit": 0,
+        "expected_stdout_hex": "363535333320412031313420",
+        "passed": true
+      },
+      {
+        "config": "fast",
+        "case": "xkey-read-line",
+        "command": [
+          "wsl",
+          "--exec",
+          "/mnt/d/home/source/zig/forthz/.work/stack-check-20261116/candidate/.zig-cache/o/0b809dd1feebff18dcca57956371132e/sigma",
+          "-e",
+          "XKEY . PAD 10 STDIN READ-LINE . . PAD SWAP TYPE BYE"
+        ],
+        "binary_sha256": "126306f9b3095a97a6efaab35c450601b6320da5af0c36ac50b4fa35d2cb89d0",
+        "stdin_hex": "e641620a63640a",
+        "stdout_hex": "36353533332030202d31204162",
+        "stderr_hex": "",
+        "exit": 0,
+        "expected_exit": 0,
+        "expected_stdout_hex": "36353533332030202d31204162",
+        "passed": true
+      },
+      {
+        "config": "fast",
+        "case": "xkey-inkey",
+        "command": [
+          "wsl",
+          "--exec",
+          "/mnt/d/home/source/zig/forthz/.work/stack-check-20261116/candidate/.zig-cache/o/0b809dd1feebff18dcca57956371132e/sigma",
+          "-e",
+          "REQUIRE-GRAPHICS ALSO GRAPHICS XKEY . INKEY . INKEY . BYE"
+        ],
+        "binary_sha256": "126306f9b3095a97a6efaab35c450601b6320da5af0c36ac50b4fa35d2cb89d0",
+        "stdin_hex": "e64142",
+        "stdout_hex": "3635353333203635202d3120",
+        "stderr_hex": "",
+        "exit": 0,
+        "expected_exit": 0,
+        "expected_stdout_hex": "3635353333203635202d3120",
+        "passed": true
+      },
+      {
+        "config": "fast",
+        "case": "missing-file",
+        "command": [
+          "wsl",
+          "--exec",
+          "/mnt/d/home/source/zig/forthz/.work/stack-check-20261116/candidate/.zig-cache/o/0b809dd1feebff18dcca57956371132e/sigma",
+          "sigma-no-such-file.fs",
+          "-e",
+          "BYE"
+        ],
+        "binary_sha256": "126306f9b3095a97a6efaab35c450601b6320da5af0c36ac50b4fa35d2cb89d0",
+        "stdin_hex": "",
+        "stdout_hex": "7369676d612d6e6f2d737563682d66696c652e66733a204e4f20535543482046494c45204f52204449524543544f525920210a",
+        "stderr_hex": "",
+        "exit": 1,
+        "expected_exit": 1,
+        "expected_stdout_hex": null,
+        "passed": true
+      }
+    ]
+  },
+  "followup_test_patch": "--- src/tests/core_words_test.zig\n+++ candidate/src/tests/core_words_test.zig\n@@ -997,3 +997,90 @@\n     );\n     try expectOutput(\"STRUCT CELL% FIELD S.A END-STRUCT R% HERE 1 ALLOT R% %ALIGN HERE SWAP - . HERE R% %ALLOT TUCK = . HERE SWAP - . R% %ALLOC 0<> . R% %ALLOCATE . 0<> .\", \"8 -1 8 -1 0 -1 \");\n }\n+\n+\n+test \"two R fetch preserves boundary states error priority and compiled PC\" {\n+    for ([_]bool{ false, true }) |counted| {\n+        for ([_]bool{ false, true }) |compiled| {\n+            for ([_]bool{ false, true }) |pending| {\n+                for ([_]usize{ 0, 1, 2, 5 }) |ret_depth| {\n+                    for ([_]usize{ 0, 1, 2, 5 }) |space| {\n+                        var output = Output{};\n+                        const machine = try createMachine(&output);\n+                        defer destroyMachine(machine);\n+                        machine.keep_counting = counted;\n+                        try machine.interpretLine(\": CHECK-2RF 2R@ ;\");\n+                        const id = try machine.lookupOrFail(\"CHECK-2RF\");\n+                        const caller = machine.words[id];\n+                        const depth = machine.data_stack.len - space;\n+                        for (0..depth) |i| machine.data_stack[i] = @as(forth.Cell, @intCast(i)) - 17;\n+                        machine.data_depth = depth;\n+                        @memset(machine.data_stack[depth..], -919);\n+                        for (0..ret_depth) |i| machine.return_stack[i] = if (i % 2 == 0) std.math.minInt(forth.Cell) else std.math.maxInt(forth.Cell);\n+                        machine.return_depth = ret_depth;\n+                        if (pending) machine.output_error = -123;\n+                        const result = if (compiled) machine.executeWord(id) else machine.executeBuiltin(.two_r_fetch);\n+                        if (pending) {\n+                            try std.testing.expectError(error.Thrown, result);\n+                            try std.testing.expectEqual(@as(forth.Cell, -123), machine.throw_code);\n+                        } else if (ret_depth < 2) {\n+                            try std.testing.expectError(error.ReturnStackUnderflow, result);\n+                        } else if (space < 2) {\n+                            try std.testing.expectError(error.StackOverflow, result);\n+                        } else try result;\n+                        const success = ret_depth >= 2 and space >= 2;\n+                        try std.testing.expectEqual(depth + @as(usize, if (success) 2 else 0), machine.data_depth);\n+                        for (0..depth) |i| try std.testing.expectEqual(@as(forth.Cell, @intCast(i)) - 17, machine.data_stack[i]);\n+                        if (!success) for (machine.data_stack[depth..]) |cell| try std.testing.expectEqual(@as(forth.Cell, -919), cell);\n+                        if (success) try std.testing.expectEqualSlices(forth.Cell, machine.return_stack[ret_depth - 2 .. ret_depth], machine.data_stack[depth .. depth + 2]);\n+                        try std.testing.expectEqual(ret_depth, machine.return_depth);\n+                        for (0..ret_depth) |i| try std.testing.expectEqual(@as(forth.Cell, if (i % 2 == 0) std.math.minInt(forth.Cell) else std.math.maxInt(forth.Cell)), machine.return_stack[i]);\n+                        try std.testing.expect(machine.output_error == null);\n+                        if (@import(\"../core/defs.zig\").debug_enabled and compiled and (pending or !success)) {\n+                            try std.testing.expectEqual(caller.code_start + 1, machine.failed_pc);\n+                            try std.testing.expect(machine.backtrace_count != 0);\n+                            try std.testing.expectEqual(caller.code_start, machine.backtrace[0]);\n+                        }\n+                        try std.testing.expectEqual(@as(usize, 0), machine.frame_depth);\n+                        try std.testing.expectEqual(@as(usize, 0), machine.call_depth);\n+                    }\n+                }\n+            }\n+        }\n+    }\n+}\n+\n+\n+test \"two R fetch catches boundary errors and restores both stacks\" {\n+    for ([_]bool{ false, true }) |counted| {\n+        for ([_]usize{ 0, 1, 2 }) |ret_depth| {\n+            for ([_]usize{ 0, 3 }) |depth| {\n+                var output = Output{};\n+                const machine = try createMachine(&output);\n+                defer destroyMachine(machine);\n+                machine.keep_counting = counted;\n+                try machine.interpretLine(\": CATCH-2RF 2R@ ;\");\n+                const storage = machine.data_stack;\n+                defer machine.data_stack = storage;\n+                machine.data_stack = storage[0..4];\n+                for (0..depth) |i| try machine.push(@as(forth.Cell, @intCast(51 + i)));\n+                machine.return_depth = ret_depth;\n+                for (0..ret_depth) |i| machine.return_stack[i] = @as(forth.Cell, @intCast(71 + i));\n+                try machine.interpretLine(\"' CATCH-2RF CATCH\");\n+                const code = try machine.pop();\n+                try std.testing.expectEqual(@as(forth.Cell, if (ret_depth < 2) -6 else if (depth == 3) -3 else 0), code);\n+                if (ret_depth == 2 and depth == 0) {\n+                    try expectStack(machine, &.{ 71, 72 });\n+                } else {\n+                    try std.testing.expectEqual(depth, machine.data_depth);\n+                    for (0..depth) |i| try std.testing.expectEqual(@as(forth.Cell, @intCast(51 + i)), machine.data_stack[i]);\n+                }\n+                try std.testing.expectEqual(ret_depth, machine.return_depth);\n+                for (0..ret_depth) |i| try std.testing.expectEqual(@as(forth.Cell, @intCast(71 + i)), machine.return_stack[i]);\n+                try std.testing.expectEqual(@as(usize, 0), machine.catch_depth);\n+                try std.testing.expectEqual(@as(usize, 0), machine.frame_depth);\n+                try std.testing.expectEqual(@as(usize, 0), machine.call_depth);\n+            }\n+        }\n+    }\n+}\n",
+  "scripts": {
+    "validate-followup.py": "from pathlib import Path\nimport subprocess,concurrent.futures,json,hashlib,re\nout=Path.cwd()/'.work/stack-check-20261116'\njobs=[]\nfor kind in ('baseline','candidate'):jobs.append((kind,'debug-followup-tests',['zig','build','test','--summary','all']))\nfor name,opts in [('fast', ['-Doptimize=fast']),('no-debug',['-Ddebug=false']),('no-float',['-Dfloat=false']),('minimal',['-Dfloat=false','-Dfiles=false','-Dhelp=false','-Dtools=false','-Dimage=false','-Dgraphics=false','-Daudio=false','-Ddebug=false']),('linux-debug',['-Dtarget=x86_64-linux-musl']),('linux-fast',['-Dtarget=x86_64-linux-musl','-Doptimize=fast'])]:\n jobs.append(('candidate',name+'-tests',['zig','build','test',*opts,'--summary','all']))\n\ndef run(job):\n kind,name,cmd=job\n with (out/(kind+'-'+name+'.log')).open('wb') as log:r=subprocess.run(cmd,cwd=out/kind,stdout=log,stderr=subprocess.STDOUT)\n row={'kind':kind,'name':name,'command':cmd,'exit':r.returncode}\n if name.startswith('linux-') and name.endswith('-tests'):\n  text=(out/(kind+'-'+name+'.log')).read_text(errors='replace')\n  # Cross-test Windows runner cannot execute ELF; execute the exact generated test binaries through WSL.\n  paths=list(dict.fromkeys(re.findall(r'failed command: \"([^\"\\r\\n]*test(?:\\.exe)?)\"',text)))\n  paths=[str((out/kind/p.replace('\\\\\\\\','\\\\')).resolve()) for p in paths]\n  paths=[p for p in paths if '.zig-cache' in p and Path(p).is_file() and Path(p).read_bytes()[:4]==b'\\x7fELF']\n  row['elf_tests']=[]\n  for i,p in enumerate(paths):\n   w='/mnt/'+p[0].lower()+p[2:].replace('\\\\','/')\n   with (out/(kind+'-'+name+f'-elf-{i}.log')).open('wb') as log:t=subprocess.run(['wsl','--exec',w],cwd=out/kind,stdout=log,stderr=subprocess.STDOUT)\n   row['elf_tests'].append({'path':p,'exit':t.returncode})\n  assert len(paths)==2,(name,text[-3000:])\n  assert all(x['exit']==0 for x in row['elf_tests']),row\n else: assert r.returncode==0,row\n if name.endswith('-build'):\n  os=name.split('-')[0];b=out/(kind+'-'+os)/'bin'/('sigma.exe' if os=='windows' else 'sigma');row['binary']={'sha256':hashlib.sha256(b.read_bytes()).hexdigest(),'bytes':b.stat().st_size}\n return row\n# Jobs share source-local cache: run sequentially to avoid test/build cache contention.\nrows=json.loads((out/'validation.json').read_text()) if (out/'validation.json').exists() else []\nfor job in jobs:\n if any(x['kind']==job[0] and x['name']==job[1] for x in rows):continue\n row=run(job);rows.append(row);(out/'validation.json').write_text(json.dumps(rows,indent=2)+'\\n');print(job[0],job[1],row['exit'],flush=True)\n",
+    "check-linux-cli.py": "from pathlib import Path\nimport subprocess,re,json,hashlib\nr=Path.cwd();o=r/'.work/stack-check-20261116'\ndef w(p):return '/mnt/'+str(p)[0].lower()+str(p)[2:].replace('\\\\','/')\ncases=[('pipe-bytes',['-e',': T PAD 9 STDIN READ-FILE . DUP . 0 DO PAD I + C@ . LOOP ; T BYE'],b'A\\r\\nB\\x1aC\\x00\\xff',b'0 8 65 13 10 66 26 67 0 255 ',0),('pipe-lines',['-e','PAD 20 STDIN READ-LINE . . PAD SWAP TYPE PAD 20 STDIN READ-LINE . . PAD SWAP TYPE BYE'],b'ab\\r\\ncd\\n',b'0 -1 ab0 -1 cd',0),('file',[w(o/'candidate/src/tests/argument_file.fs'),'-e','. BYE'],b'',b'ARG-FILE5 ',0),('evaluate',['-e','7','--evaluate','. BYE'],b'',b'7 ',0),('missing-e',['-e'],b'',b'-e: OPTION REQUIRES AN ARGUMENT !\\n',1),('xkey-accept',['-e','XKEY . PAD 10 ACCEPT PAD SWAP TYPE SPACE KEY . BYE'],b'\\xe6A\\nrest\\n',b'65533 A 114 ',0),('xkey-read-line',['-e','XKEY . PAD 10 STDIN READ-LINE . . PAD SWAP TYPE BYE'],b'\\xe6Ab\\ncd\\n',b'65533 0 -1 Ab',0),('xkey-inkey',['-e','REQUIRE-GRAPHICS ALSO GRAPHICS XKEY . INKEY . INKEY . BYE'],b'\\xe6AB',b'65533 65 -1 ',0),('missing-file',['sigma-no-such-file.fs','-e','BYE'],b'',None,1)]\nrows=[]\nfor config in ['debug','fast']:\n log=(o/f'candidate-linux-{config}-tests.log').read_text()\n rel=re.search(r'failed command: \"([^\"\\r\\n]*sigma)\"',log).group(1).replace('\\\\\\\\','\\\\');exe=(o/'candidate'/rel).resolve();assert exe.read_bytes()[:4]==b'\\x7fELF'\n for name,args,data,expected,code in cases:\n  cmd=['wsl','--exec',w(exe),*args];p=subprocess.run(cmd,input=data,stdout=subprocess.PIPE,stderr=subprocess.PIPE,cwd=o/'candidate',timeout=60)\n  row={'config':config,'case':name,'command':cmd,'binary_sha256':hashlib.sha256(exe.read_bytes()).hexdigest(),'stdin_hex':data.hex(),'stdout_hex':p.stdout.hex(),'stderr_hex':p.stderr.hex(),'exit':p.returncode,'expected_exit':code,'expected_stdout_hex':None if expected is None else expected.hex(),'passed':p.returncode==code and (expected is None or p.stdout==expected)};rows.append(row)\n  (o/'linux-cli-supplement.json').write_text(json.dumps(rows,indent=2)+'\\n');assert row['passed'],row\n(r/'docs/measurements/2026-11-16-stack-check-linux-cli.json').write_text(json.dumps({'origin':'build.zig 109-162 exact CLI cases, execute cross-built binaries through WSL','cases':rows},indent=2)+'\\n');print('CLI cases passed:',len(rows))\n"
+  },
+  "summaries": {
+    "baseline-debug-followup-tests": "Build Summary: 21/21 steps succeeded; 1013/1018 tests passed (5 skipped)\ntest success\n+- run test 1013 pass, 5 skip (1018 total) 6s MaxRSS:89M\n|  +- compile test debug native success 18s MaxRSS:1G\n|     +- options cached\n+- run test cached\n|  +- compile test debug native cached 45ms MaxRSS:18M\n|     +- options (reused)\n|     +- translate-c cached 9ms MaxRSS:18M\n|     |  +- WriteFile c_time.h cached\n|     +- translate-c cached 10ms MaxRSS:18M\n|        +- WriteFile c_file.h cached\n+- compile obj sigma-freestanding small thumb-freestanding-eabi cached 25ms MaxRSS:18M\n|  +- options (reused)\n+- run exe sigma cached\n|  +- compile exe sigma debug native cached 47ms MaxRSS:18M\n|     +- options (reused)\n|     +- translate-c (+1 more reused dependencies)\n|     +- translate-c (+1 more reused dependencies)\n+- run exe sigma cached\n|  +- compile exe sigma debug native (+3 more reused dependencies)\n+- run exe sigma cached\n|  +- compile exe sigma debug native (+3 more reused dependencies)\n+- run exe sigma cached\n|  +- compile exe sigma debug native (+3 more reused dependencies)\n+- run exe sigma cached\n|  +- compile exe sigma debug native (+3 more reused dependencies)\n+- run exe sigma cached\n|  +- compile exe sigma debug native (+3 more reused dependencies)\n+- run exe sigma cached\n|  +- compile exe sigma debug native (+3 more reused dependencies)\n+- run exe sigma cached\n|  +- compile exe sigma debug native (+3 more reused dependencies)\n+- run exe sigma cached\n   +- compile exe sigma debug native (+3 more reused dependencies)\n\n",
+    "candidate-debug-followup-tests": "Build Summary: 21/21 steps succeeded; 1013/1018 tests passed (5 skipped)\ntest success\n+- run test 1013 pass, 5 skip (1018 total) 6s MaxRSS:89M\n|  +- compile test debug native success 18s MaxRSS:1G\n|     +- options cached\n+- run test cached\n|  +- compile test debug native cached 55ms MaxRSS:18M\n|     +- options (reused)\n|     +- translate-c cached 7ms MaxRSS:18M\n|     |  +- WriteFile c_time.h cached\n|     +- translate-c cached 10ms MaxRSS:18M\n|        +- WriteFile c_file.h cached\n+- compile obj sigma-freestanding small thumb-freestanding-eabi cached 26ms MaxRSS:18M\n|  +- options (reused)\n+- run exe sigma cached\n|  +- compile exe sigma debug native cached 55ms MaxRSS:18M\n|     +- options (reused)\n|     +- translate-c (+1 more reused dependencies)\n|     +- translate-c (+1 more reused dependencies)\n+- run exe sigma cached\n|  +- compile exe sigma debug native (+3 more reused dependencies)\n+- run exe sigma cached\n|  +- compile exe sigma debug native (+3 more reused dependencies)\n+- run exe sigma cached\n|  +- compile exe sigma debug native (+3 more reused dependencies)\n+- run exe sigma cached\n|  +- compile exe sigma debug native (+3 more reused dependencies)\n+- run exe sigma cached\n|  +- compile exe sigma debug native (+3 more reused dependencies)\n+- run exe sigma cached\n|  +- compile exe sigma debug native (+3 more reused dependencies)\n+- run exe sigma cached\n|  +- compile exe sigma debug native (+3 more reused dependencies)\n+- run exe sigma cached\n   +- compile exe sigma debug native (+3 more reused dependencies)\n\n",
+    "candidate-fast-tests": "Build Summary: 21/21 steps succeeded; 1072/1082 tests passed (10 skipped)\ntest success\n+- run test 1013 pass, 5 skip (1018 total) 1s MaxRSS:77M\n|  +- compile test fast native success 58s MaxRSS:1G\n|     +- options cached\n+- run test 59 pass, 5 skip (64 total) 293ms MaxRSS:12M\n|  +- compile test fast native success 31s MaxRSS:523M\n|     +- options (reused)\n|     +- translate-c success 173ms MaxRSS:19M\n|     |  +- WriteFile c_time.h cached\n|     +- translate-c success 125ms MaxRSS:19M\n|        +- WriteFile c_file.h cached\n+- compile obj sigma-freestanding small thumb-freestanding-eabi cached 32ms MaxRSS:18M\n|  +- options (reused)\n+- run exe sigma success 24ms\n|  +- compile exe sigma fast native success 28s MaxRSS:494M\n|     +- options (reused)\n|     +- translate-c (+1 more reused dependencies)\n|     +- translate-c (+1 more reused dependencies)\n+- run exe sigma success 42ms\n|  +- compile exe sigma fast native (+3 more reused dependencies)\n+- run exe sigma success 45ms\n|  +- compile exe sigma fast native (+3 more reused dependencies)\n+- run exe sigma success 27ms\n|  +- compile exe sigma fast native (+3 more reused dependencies)\n+- run exe sigma success 20ms\n|  +- compile exe sigma fast native (+3 more reused dependencies)\n+- run exe sigma success 32ms\n|  +- compile exe sigma fast native (+3 more reused dependencies)\n+- run exe sigma success 38ms\n|  +- compile exe sigma fast native (+3 more reused dependencies)\n+- run exe sigma success 36ms\n|  +- compile exe sigma fast native (+3 more reused dependencies)\n+- run exe sigma success 20ms\n   +- compile exe sigma fast native (+3 more reused dependencies)\n\n",
+    "candidate-no-debug-tests": "Build Summary: 21/21 steps succeeded; 1005/1082 tests passed (77 skipped)\ntest success\n+- run test 946 pass, 72 skip (1018 total) 5s MaxRSS:88M\n|  +- compile test debug native success 18s MaxRSS:1G\n|     +- options success\n+- run test 59 pass, 5 skip (64 total) 435ms MaxRSS:35M\n|  +- compile test debug native success 15s MaxRSS:750M\n|     +- options (reused)\n|     +- translate-c cached 8ms MaxRSS:18M\n|     |  +- WriteFile c_time.h cached\n|     +- translate-c cached 9ms MaxRSS:18M\n|        +- WriteFile c_file.h cached\n+- compile obj sigma-freestanding small thumb-freestanding-eabi success 10s MaxRSS:329M\n|  +- options (reused)\n+- run exe sigma success 328ms\n|  +- compile exe sigma debug native success 14s MaxRSS:764M\n|     +- options (reused)\n|     +- translate-c (+1 more reused dependencies)\n|     +- translate-c (+1 more reused dependencies)\n+- run exe sigma success 294ms\n|  +- compile exe sigma debug native (+3 more reused dependencies)\n+- run exe sigma success 336ms\n|  +- compile exe sigma debug native (+3 more reused dependencies)\n+- run exe sigma success 333ms\n|  +- compile exe sigma debug native (+3 more reused dependencies)\n+- run exe sigma success 295ms\n|  +- compile exe sigma debug native (+3 more reused dependencies)\n+- run exe sigma success 318ms\n|  +- compile exe sigma debug native (+3 more reused dependencies)\n+- run exe sigma success 294ms\n|  +- compile exe sigma debug native (+3 more reused dependencies)\n+- run exe sigma success 318ms\n|  +- compile exe sigma debug native (+3 more reused dependencies)\n+- run exe sigma success 295ms\n   +- compile exe sigma debug native (+3 more reused dependencies)\n\n",
+    "candidate-no-float-tests": "Build Summary: 21/21 steps succeeded; 1007/1056 tests passed (49 skipped)\ntest success\n+- run test 948 pass, 44 skip (992 total) 5s MaxRSS:89M\n|  +- compile test debug native success 18s MaxRSS:989M\n|     +- options success\n+- run test 59 pass, 5 skip (64 total) 432ms MaxRSS:36M\n|  +- compile test debug native success 14s MaxRSS:743M\n|     +- options (reused)\n|     +- translate-c cached 8ms MaxRSS:18M\n|     |  +- WriteFile c_time.h cached\n|     +- translate-c cached 9ms MaxRSS:18M\n|        +- WriteFile c_file.h cached\n+- compile obj sigma-freestanding small thumb-freestanding-eabi success 10s MaxRSS:330M\n|  +- options (reused)\n+- run exe sigma success 84ms\n|  +- compile exe sigma debug native success 14s MaxRSS:758M\n|     +- options (reused)\n|     +- translate-c (+1 more reused dependencies)\n|     +- translate-c (+1 more reused dependencies)\n+- run exe sigma success 87ms\n|  +- compile exe sigma debug native (+3 more reused dependencies)\n+- run exe sigma success 126ms\n|  +- compile exe sigma debug native (+3 more reused dependencies)\n+- run exe sigma success 117ms\n|  +- compile exe sigma debug native (+3 more reused dependencies)\n+- run exe sigma success 102ms\n|  +- compile exe sigma debug native (+3 more reused dependencies)\n+- run exe sigma success 94ms\n|  +- compile exe sigma debug native (+3 more reused dependencies)\n+- run exe sigma success 132ms\n|  +- compile exe sigma debug native (+3 more reused dependencies)\n+- run exe sigma success 131ms\n|  +- compile exe sigma debug native (+3 more reused dependencies)\n+- run exe sigma success 105ms\n   +- compile exe sigma debug native (+3 more reused dependencies)\n\n",
+    "candidate-minimal-tests": "Build Summary: 11/11 steps succeeded; 591/1053 tests passed (462 skipped)\ntest success\n+- run test 540 pass, 452 skip (992 total) 3s MaxRSS:86M\n|  +- compile test debug native success 14s MaxRSS:868M\n|     +- options success\n+- run test 51 pass, 10 skip (61 total) 362ms MaxRSS:14M\n|  +- compile test debug native success 3s MaxRSS:441M\n|     +- options (reused)\n|     +- translate-c cached 7ms MaxRSS:18M\n|     |  +- WriteFile c_time.h cached\n|     +- translate-c cached 10ms MaxRSS:18M\n|        +- WriteFile c_file.h cached\n+- compile obj sigma-freestanding small thumb-freestanding-eabi success 914ms MaxRSS:113M\n   +- options (reused)\n\n",
+    "candidate-linux-debug-tests": "test\n+- run test failure\nerror: the host system (x86_64-windows.win11_br...win11_br-gnu) is unable to execute binaries from the target (x86_64-linux.5.10...7.2-musl)\nfailed command: \".\\\\.zig-cache\\\\o\\\\43ede414da717465f5255df82a0bcc67\\\\test\" \"--cache-dir=.\\\\.zig-cache\" --seed=0xfb2f1fad --listen=-\n\ntest\n+- run exe sigma failure\nerror: the host system (x86_64-windows.win11_br...win11_br-gnu) is unable to execute binaries from the target (x86_64-linux.5.10...7.2-musl)\nfailed command: \".\\\\.zig-cache\\\\o\\\\036a7a170c4e2be42aa29aee86047c48\\\\sigma\" -e\n\ntest\n+- run exe sigma failure\nerror: the host system (x86_64-windows.win11_br...win11_br-gnu) is unable to execute binaries from the target (x86_64-linux.5.10...7.2-musl)\nfailed command: \".\\\\.zig-cache\\\\o\\\\036a7a170c4e2be42aa29aee86047c48\\\\sigma\" \".\\\\src\\\\tests\\\\argument_file.fs\" -e \". BYE\"\n\ntest\n+- run exe sigma failure\nerror: the host system (x86_64-windows.win11_br...win11_br-gnu) is unable to execute binaries from the target (x86_64-linux.5.10...7.2-musl)\nfailed command: \".\\\\.zig-cache\\\\o\\\\036a7a170c4e2be42aa29aee86047c48\\\\sigma\" -e \"REQUIRE-GRAPHICS ALSO GRAPHICS XKEY . INKEY . INKEY . BYE\"\n\ntest\n+- run exe sigma failure\nerror: the host system (x86_64-windows.win11_br...win11_br-gnu) is unable to execute binaries from the target (x86_64-linux.5.10...7.2-musl)\nfailed command: \".\\\\.zig-cache\\\\o\\\\036a7a170c4e2be42aa29aee86047c48\\\\sigma\" -e \"XKEY . PAD 10 STDIN READ-LINE . . PAD SWAP TYPE BYE\"\n\ntest\n+- run exe sigma failure\nerror: the host system (x86_64-windows.win11_br...win11_br-gnu) is unable to execute binaries from the target (x86_64-linux.5.10...7.2-musl)\nfailed command: \".\\\\.zig-cache\\\\o\\\\036a7a170c4e2be42aa29aee86047c48\\\\sigma\" -e \"XKEY . PAD 10 ACCEPT PAD SWAP TYPE SPACE KEY . BYE\"\n\ntest\n+- run exe sigma failure\nerror: the host system (x86_64-windows.win11_br...win11_br-gnu) is unable to execute binaries from the target (x86_64-linux.5.10...7.2-musl)\nfailed command: \".\\\\.zig-cache\\\\o\\\\036a7a170c4e2be42aa29aee86047c48\\\\sigma\" -e \"PAD 20 STDIN READ-LINE . . PAD SWAP TYPE PAD 20 STDIN READ-LINE . . PAD SWAP TYPE BYE\"\n\ntest\n+- run exe sigma failure\nerror: the host system (x86_64-windows.win11_br...win11_br-gnu) is unable to execute binaries from the target (x86_64-linux.5.10...7.2-musl)\nfailed command: \".\\\\.zig-cache\\\\o\\\\036a7a170c4e2be42aa29aee86047c48\\\\sigma\" -e \": T PAD 9 STDIN READ-FILE . DUP . 0 DO PAD I + C@ . LOOP ; T BYE\"\n\ntest\n+- run exe sigma failure\nerror: the host system (x86_64-windows.win11_br...win11_br-gnu) is unable to execute binaries from the target (x86_64-linux.5.10...7.2-musl)\nfailed command: \".\\\\.zig-cache\\\\o\\\\036a7a170c4e2be42aa29aee86047c48\\\\sigma\" sigma-no-such-file.fs -e BYE\n\ntest\n+- run exe sigma failure\nerror: the host system (x86_64-windows.win11_br...win11_br-gnu) is unable to execute binaries from the target (x86_64-linux.5.10...7.2-musl)\nfailed command: \".\\\\.zig-cache\\\\o\\\\036a7a170c4e2be42aa29aee86047c48\\\\sigma\" -e 7 --evaluate \". BYE\"\n\ntest\n+- run test failure\nerror: the host system (x86_64-windows.win11_br...win11_br-gnu) is unable to execute binaries from the target (x86_64-linux.5.10...7.2-musl)\nfailed command: \".\\\\.zig-cache\\\\o\\\\120a68264b95700ca2aee086b23851f7\\\\test\" \"--cache-dir=.\\\\.zig-cache\" --seed=0xfb2f1fad --listen=-\n\nBuild Summary: 9/21 steps succeeded (11 failed)\ntest transitive failure\n+- run test failure\n|  +- compile test debug x86_64-linux-musl success 13s MaxRSS:453M\n|     +- options cached\n+- run test failure\n|  +- compile test debug x86_64-linux-musl success 11s MaxRSS:434M\n|     +- options (reused)\n|     +- translate-c success 151ms MaxRSS:19M\n|     |  +- WriteFile c_time.h cached\n|     +- translate-c success 107ms MaxRSS:19M\n|        +- WriteFile c_file.h cached\n+- compile obj sigma-freestanding small thumb-freestanding-eabi cached 36ms MaxRSS:18M\n|  +- options (reused)\n+- run exe sigma failure\n|  +- compile exe sigma debug x86_64-linux-musl success 11s MaxRSS:437M\n|     +- options (reused)\n|     +- translate-c (+1 more reused dependencies)\n|     +- translate-c (+1 more reused dependencies)\n+- run exe sigma failure\n|  +- compile exe sigma debug x86_64-linux-musl (+3 more reused dependencies)\n+- run exe sigma failure\n|  +- compile exe sigma debug x86_64-linux-musl (+3 more reused dependencies)\n+- run exe sigma failure\n|  +- compile exe sigma debug x86_64-linux-musl (+3 more reused dependencies)\n+- run exe sigma failure\n|  +- compile exe sigma debug x86_64-linux-musl (+3 more reused dependencies)\n+- run exe sigma failure\n|  +- compile exe sigma debug x86_64-linux-musl (+3 more reused dependencies)\n+- run exe sigma failure\n|  +- compile exe sigma debug x86_64-linux-musl (+3 more reused dependencies)\n+- run exe sigma failure\n|  +- compile exe sigma debug x86_64-linux-musl (+3 more reused dependencies)\n+- run exe sigma failure\n   +- compile exe sigma debug x86_64-linux-musl (+3 more reused dependencies)\n\nerror: the following build command exited with code 1:\nC:\\Users\\n_fuk\\AppData\\Local\\zig\\o\\ecd347ab6148f059e0788021b539893a\\maker.exe build --zig-lib=C:\\Users\\n_fuk\\AppData\\Local\\Microsoft\\WinGet\\Packages\\zig.zig_Microsoft.Winget.Source_8wekyb3d8bbwe\\zig-x86_64-windows-0.17.0\\lib --zig=C:\\Users\\n_fuk\\AppData\\Local\\Microsoft\\WinGet\\Packages\\zig.zig_Microsoft.Winget.Source_8wekyb3d8bbwe\\zig-x86_64-windows-0.17.0\\zig.exe --global-cache=C:\\Users\\n_fuk\\AppData\\Local\\zig --seed=0xfb2f1fad test -Dtarget=x86_64-linux-musl --summary all\n",
+    "candidate-linux-fast-tests": "test\n+- run exe sigma failure\nerror: the host system (x86_64-windows.win11_br...win11_br-gnu) is unable to execute binaries from the target (x86_64-linux.5.10...7.2-musl)\nfailed command: \".\\\\.zig-cache\\\\o\\\\0b809dd1feebff18dcca57956371132e\\\\sigma\" -e\n\ntest\n+- run exe sigma failure\nerror: the host system (x86_64-windows.win11_br...win11_br-gnu) is unable to execute binaries from the target (x86_64-linux.5.10...7.2-musl)\nfailed command: \".\\\\.zig-cache\\\\o\\\\0b809dd1feebff18dcca57956371132e\\\\sigma\" -e \"XKEY . PAD 10 STDIN READ-LINE . . PAD SWAP TYPE BYE\"\n\ntest\n+- run exe sigma failure\nerror: the host system (x86_64-windows.win11_br...win11_br-gnu) is unable to execute binaries from the target (x86_64-linux.5.10...7.2-musl)\nfailed command: \".\\\\.zig-cache\\\\o\\\\0b809dd1feebff18dcca57956371132e\\\\sigma\" -e \"PAD 20 STDIN READ-LINE . . PAD SWAP TYPE PAD 20 STDIN READ-LINE . . PAD SWAP TYPE BYE\"\n\ntest\n+- run exe sigma failure\nerror: the host system (x86_64-windows.win11_br...win11_br-gnu) is unable to execute binaries from the target (x86_64-linux.5.10...7.2-musl)\nfailed command: \".\\\\.zig-cache\\\\o\\\\0b809dd1feebff18dcca57956371132e\\\\sigma\" -e \"REQUIRE-GRAPHICS ALSO GRAPHICS XKEY . INKEY . INKEY . BYE\"\n\ntest\n+- run exe sigma failure\nerror: the host system (x86_64-windows.win11_br...win11_br-gnu) is unable to execute binaries from the target (x86_64-linux.5.10...7.2-musl)\nfailed command: \".\\\\.zig-cache\\\\o\\\\0b809dd1feebff18dcca57956371132e\\\\sigma\" sigma-no-such-file.fs -e BYE\n\ntest\n+- run exe sigma failure\nerror: the host system (x86_64-windows.win11_br...win11_br-gnu) is unable to execute binaries from the target (x86_64-linux.5.10...7.2-musl)\nfailed command: \".\\\\.zig-cache\\\\o\\\\0b809dd1feebff18dcca57956371132e\\\\sigma\" -e \"XKEY . PAD 10 ACCEPT PAD SWAP TYPE SPACE KEY . BYE\"\n\ntest\n+- run exe sigma failure\nerror: the host system (x86_64-windows.win11_br...win11_br-gnu) is unable to execute binaries from the target (x86_64-linux.5.10...7.2-musl)\nfailed command: \".\\\\.zig-cache\\\\o\\\\0b809dd1feebff18dcca57956371132e\\\\sigma\" -e \": T PAD 9 STDIN READ-FILE . DUP . 0 DO PAD I + C@ . LOOP ; T BYE\"\n\ntest\n+- run exe sigma failure\nerror: the host system (x86_64-windows.win11_br...win11_br-gnu) is unable to execute binaries from the target (x86_64-linux.5.10...7.2-musl)\nfailed command: \".\\\\.zig-cache\\\\o\\\\0b809dd1feebff18dcca57956371132e\\\\sigma\" -e 7 --evaluate \". BYE\"\n\ntest\n+- run exe sigma failure\nerror: the host system (x86_64-windows.win11_br...win11_br-gnu) is unable to execute binaries from the target (x86_64-linux.5.10...7.2-musl)\nfailed command: \".\\\\.zig-cache\\\\o\\\\0b809dd1feebff18dcca57956371132e\\\\sigma\" \".\\\\src\\\\tests\\\\argument_file.fs\" -e \". BYE\"\n\ntest\n+- run test failure\nerror: the host system (x86_64-windows.win11_br...win11_br-gnu) is unable to execute binaries from the target (x86_64-linux.5.10...7.2-musl)\nfailed command: \".\\\\.zig-cache\\\\o\\\\133dbf0676f253bb68cd24fb66ece483\\\\test\" \"--cache-dir=.\\\\.zig-cache\" --seed=0x44407cd7 --listen=-\n\ntest\n+- run test failure\nerror: the host system (x86_64-windows.win11_br...win11_br-gnu) is unable to execute binaries from the target (x86_64-linux.5.10...7.2-musl)\nfailed command: \".\\\\.zig-cache\\\\o\\\\bde3a7ad9ab43b04f5a3a31abdb5c408\\\\test\" \"--cache-dir=.\\\\.zig-cache\" --seed=0x44407cd7 --listen=-\n\nBuild Summary: 9/21 steps succeeded (11 failed)\ntest transitive failure\n+- run test failure\n|  +- compile test fast x86_64-linux-musl success 54s MaxRSS:1G\n|     +- options cached\n+- run test failure\n|  +- compile test fast x86_64-linux-musl success 27s MaxRSS:508M\n|     +- options (reused)\n|     +- translate-c cached 8ms MaxRSS:18M\n|     |  +- WriteFile c_time.h cached\n|     +- translate-c cached 10ms MaxRSS:18M\n|        +- WriteFile c_file.h cached\n+- compile obj sigma-freestanding small thumb-freestanding-eabi cached 41ms MaxRSS:18M\n|  +- options (reused)\n+- run exe sigma failure\n|  +- compile exe sigma fast x86_64-linux-musl success 25s MaxRSS:477M\n|     +- options (reused)\n|     +- translate-c (+1 more reused dependencies)\n|     +- translate-c (+1 more reused dependencies)\n+- run exe sigma failure\n|  +- compile exe sigma fast x86_64-linux-musl (+3 more reused dependencies)\n+- run exe sigma failure\n|  +- compile exe sigma fast x86_64-linux-musl (+3 more reused dependencies)\n+- run exe sigma failure\n|  +- compile exe sigma fast x86_64-linux-musl (+3 more reused dependencies)\n+- run exe sigma failure\n|  +- compile exe sigma fast x86_64-linux-musl (+3 more reused dependencies)\n+- run exe sigma failure\n|  +- compile exe sigma fast x86_64-linux-musl (+3 more reused dependencies)\n+- run exe sigma failure\n|  +- compile exe sigma fast x86_64-linux-musl (+3 more reused dependencies)\n+- run exe sigma failure\n|  +- compile exe sigma fast x86_64-linux-musl (+3 more reused dependencies)\n+- run exe sigma failure\n   +- compile exe sigma fast x86_64-linux-musl (+3 more reused dependencies)\n\nerror: the following build command exited with code 1:\nC:\\Users\\n_fuk\\AppData\\Local\\zig\\o\\ecd347ab6148f059e0788021b539893a\\maker.exe build --zig-lib=C:\\Users\\n_fuk\\AppData\\Local\\Microsoft\\WinGet\\Packages\\zig.zig_Microsoft.Winget.Source_8wekyb3d8bbwe\\zig-x86_64-windows-0.17.0\\lib --zig=C:\\Users\\n_fuk\\AppData\\Local\\Microsoft\\WinGet\\Packages\\zig.zig_Microsoft.Winget.Source_8wekyb3d8bbwe\\zig-x86_64-windows-0.17.0\\zig.exe --global-cache=C:\\Users\\n_fuk\\AppData\\Local\\zig --seed=0x44407cd7 test -Dtarget=x86_64-linux-musl -Doptimize=fast --summary all\n"
+  },
+  "candidate_runtime_unchanged_after_initial_trial": true,
+  "new_tests_after_timing": "sentinel check and CATCH test were added after the preflight; original timing frozen-source hashes refer to the earlier test file. Runtime source unchanged.",
+  "root_hashes": {
+    "src/forth.zig": "d2c101033474ba348c6cd148249bd81afb6ae4e7656ae5bb0c40326806182195",
+    "src/core/words_stack.zig": "cc42d35910240f272a0bfc9c105431b71b43444de74befdb83e4a2e8296e1ba6",
+    "zig-out/bin/sigma.exe": "379d6c6c069b9c3072da22fa6cea8b7deff77c5ed78ef9bbd070f92a724337bf"
+  }
+}

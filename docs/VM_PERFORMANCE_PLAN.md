@@ -1,5 +1,7 @@
 # VM実行速度の改善計画
 
+2026-11-16 スタック検査続報：[popDouble/2R@の生成コード調査](VM_STACK_CHECK_INVESTIGATION.md)で、確認したpopDouble経路のpop検査は除去済み、2R@は後続容量検査が残ることを確認。2R@単独試作はLinuxで30→26命令、構成別Windows/Linux回帰とCLI補完を通過した。専用Windows A/A差2.632%が上限を超えたため候補速度未測定・採用保留。本体は採用済み版のまま。
+
 2026-11-16 最新状況：CATCH中間コピー削減、ROT/-ROT固定3セル化、VM入口align64の各試作は、Windowsの測定済み条件で既定基準を満たさず不採用。[Windows生成コード・計時調査](VM_WINDOWS_DISPATCH_INVESTIGATION.md)も記録したが、悪化のCPU内部原因は未特定。次の[既存call_builtin内の-ROT特殊化](VM_BUILTIN_SPECIALIZATION_SELECTION.md)は命令数削減・構成別両OS回帰・双方向画像確認まで完了した。専用ケースのA/A差3.540%が2%上限を超えたため候補版は未計測、採用保留。本体は採用済みPC分離＋データ語経路分離版を維持する。以下の日付付き記述は各時点の履歴である。
 
 2026-11-16 続報：[CATCH名前領域の中間コピー削減](VM_CATCH_COPY_EXPERIMENT.md)を作業用コピーで試した。コピー量減少・構成別回帰通過を確認したが、Windows整数演算が約13%、スタック操作が約57〜60%悪化し、既定の打切り条件で不採用とした。全34条件のA/A校正は完了、候補比較はWindowsの2条件のみ。本体は前回採用版を維持し、次の優先候補はtque #788のROT/-ROTである。
