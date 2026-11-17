@@ -396,7 +396,8 @@ test "a font of macOS: chosen by its names, drawn in gray, and no glyph for a ch
 }
 
 test "a font of Linux: chosen by its name or its path, drawn in gray, and no glyph for a character it lacks" {
-    if (builtin.os.tag != .linux) return error.SkipZigTest;
+    // Without the graphics words the build leaves src/stb out, and nothing may call it.
+    if (builtin.os.tag != .linux or !@import("build_options").graphics) return error.SkipZigTest;
     try std.testing.expect(!try select(null, "No Such Font Name", 16));
     try std.testing.expect(!try select(null, "/no/such/font.ttf", 16));
     // The fonts a system has differ; without DejaVu Sans there is nothing to compare.
