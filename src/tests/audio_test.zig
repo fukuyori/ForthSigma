@@ -1192,6 +1192,23 @@ test "the module played once ends where it would go round again, and goes on whe
     run.ticks(1);
     try std.testing.expect(!run.player.playing);
 
+    // A break at the song's end to rows not played yet plays them, and the song ends
+    // when it comes to a row it has played.
+    try run.start(&modFile(1, &.{
+        .{ 0, modCell(1, 428, 0, 0) },
+        .{ 1, modCell(0, 0, 0xd, 0x02) },
+        .{ 3, modCell(0, 0, 0xd, 0) },
+    }));
+    run.ticks(13);
+    try std.testing.expect(run.player.playing);
+    try std.testing.expectEqual(@as(u8, 0), run.player.position);
+    try std.testing.expectEqual(@as(u8, 2), run.player.row);
+    run.ticks(11);
+    try std.testing.expect(run.player.playing);
+    try std.testing.expectEqual(@as(u8, 3), run.player.row);
+    run.ticks(1);
+    try std.testing.expect(!run.player.playing);
+
     // A pattern loop plays its rows again without ending the song.
     try run.start(&modFile(1, &.{
         .{ 0, modCell(1, 428, 0xe, 0x60) },

@@ -2,7 +2,8 @@
 //!
 //! The commands, their ranges, the defaults of an omitted number, the pitches, and the
 //! lengths follow the MSX Red Book's description of the MSX1 ROM (see docs/DECISIONS.md,
-//! "MSX の MML"). BASIC's variables (X and =name;) are not taken: a Forth program joins
+//! "MSX の MML"). The Red Book's length constant, 12000, is that of the 50 Hz ROMs; the
+//! 60 Hz ROMs have 14400, so a note lasts as long on both. BASIC's variables (X and =name;) are not taken: a Forth program joins
 //! the strings itself.
 
 /// What a voice plays: a note or a rest for `ticks` of 1/50 second, or the end of one

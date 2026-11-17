@@ -467,7 +467,7 @@ Samples 0 to 63 are recorded sound kept in a pool of 64 MiB outside the dictiona
 | Word | Stack | Description |
 | --- | --- | --- |
 | `LOAD-MOD` | ( c-addr u -- ) | Read a ProTracker module of four channels (`M.K.`, `M!K!`, `FLT4`, `4CHN`) into the pool. Other files give `MOD ERROR !` (THROW -277); a full pool gives `OUT OF MEMORY !`. |
-| `PLAY-MOD` | ( flag -- ) | Play the module from its start, beside `PLAY` and `SFX`; again after its end when flag is true. With a false flag, a song that jumps back to a row it has played (`Bxx`) ends there. |
+| `PLAY-MOD` | ( flag -- ) | Play the module from its start, beside `PLAY` and `SFX`; again after its end when flag is true. With a false flag, the song ends where it comes to a row it has played: after its last row, or at a jump back (`Bxx`, `Dxx`). A `Dxx` at the end of the song that goes to rows not played yet plays them first. |
 | `STOP-MOD` | ( -- ) | Stop the module. |
 | `MOD?` | ( -- flag ) | Whether the module plays. |
 

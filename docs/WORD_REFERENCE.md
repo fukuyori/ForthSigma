@@ -825,7 +825,7 @@ Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/
 
 ` ( flag -- ) `
 
-Play the module from its start, beside PLAY and SFX; again after its end when flag is true; with a false flag, a song that jumps back to a row it has played ends there (FORTH/Sigma audio).
+Play the module from its start, beside PLAY and SFX; again after its end when flag is true; with a false flag, the song ends where it comes to a row it has played, also after a break at its end to rows not played yet (FORTH/Sigma audio).
 
 Kind: library.
 

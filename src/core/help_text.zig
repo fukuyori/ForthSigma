@@ -1346,7 +1346,7 @@ pub const entries = [_]Entry{
     .{ .name = "SND-STOP-MOD", .stack = "( -- )", .text = "Host primitive for STOP-MOD (FORTH/Sigma)." },
     .{ .name = "SND-MOD-PLAYING", .stack = "( -- flag )", .text = "Host primitive for MOD? (FORTH/Sigma)." },
     .{ .name = "LOAD-MOD", .stack = "( c-addr u -- )", .text = "Load a 4-channel, 31-sample ProTracker MOD into the shared sample pool. Reloading consumes more space until FREE-SAMPLES; invalid modules throw -277, pool exhaustion is out of memory." },
-    .{ .name = "PLAY-MOD", .stack = "( flag -- )", .text = "Play the module from its start, beside PLAY and SFX; again after its end when flag is true; with a false flag, a song that jumps back to a row it has played ends there (FORTH/Sigma audio)." },
+    .{ .name = "PLAY-MOD", .stack = "( flag -- )", .text = "Play the module from its start, beside PLAY and SFX; again after its end when flag is true; with a false flag, the song ends where it comes to a row it has played, also after a break at its end to rows not played yet (FORTH/Sigma audio)." },
     .{ .name = "STOP-MOD", .stack = "( -- )", .text = "Stop the module (FORTH/Sigma audio)." },
     .{ .name = "MOD?", .stack = "( -- flag )", .text = "Whether the module plays (FORTH/Sigma audio)." },
     .{ .name = "SND-CHIPS", .stack = "( mask -- )", .text = "Host primitive for CHIPS (FORTH/Sigma)." },

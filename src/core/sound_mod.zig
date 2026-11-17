@@ -235,12 +235,13 @@ pub const Mod = struct {
                 self.position +%= 1;
             }
         }
-        if (self.position >= self.song.length) {
-            if (!self.repeat) return self.stop();
-            self.position = 0;
-        }
-        // A song played once ends where it would go round again (Bxx or Dxx back).
-        if (jumped and !pattern_loop and !self.repeat and self.visited[self.position] >> @intCast(self.row) & 1 != 0) self.stop();
+        // Past the song's end the song goes round to its start, as on the Amiga.
+        const wrapped = self.position >= self.song.length;
+        if (wrapped) self.position = 0;
+        // A song played once ends where it would go round again: at a row already played
+        // (Bxx or Dxx back, or the start after the last row). A Dxx at the song's end that
+        // goes to rows not played yet, an ending after the start, plays them first.
+        if ((jumped or wrapped) and !pattern_loop and !self.repeat and self.visited[self.position] >> @intCast(self.row) & 1 != 0) self.stop();
     }
 
     fn readRow(self: *Mod, pool: []const i16, led: *bool) void {

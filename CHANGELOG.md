@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+### Fixed
+
+- `FALSE PLAY-MOD` plays the ending of a module whose last row breaks (`Dxx`) to rows of the first position that have not been played yet. The song used to stop as soon as it passed its last position, which cut such an ending (16 rows in `dyna-km2.mod`); it now stops when it comes to a row it has played, as libopenmpt does.
+
 ### Changed
 
 - `DO` follows Forth 2012 when the start value equals the limit: the index wraps through every cell value before the loop ends, as in gforth. Earlier versions ran the body once and left the loop. Programs that relied on that must use `?DO` (no iteration for an empty range) or guard the loop. `?DO`, `LOOP`, `+LOOP` and `LEAVE` are unchanged.

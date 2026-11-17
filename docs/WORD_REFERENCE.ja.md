@@ -963,11 +963,11 @@ S" CDE" PLAY
 
 ` ( flag -- ) `
 
-PLAY・SFXと並行してMODを先頭から再生します。真なら繰返し、偽なら既に通った行へ戻った時点でも終了します。
+PLAY・SFXと並行してMODを先頭から再生します。真なら繰返し、偽なら既に演奏した行に来た時点で終了します。曲の終わりの移動先がまだ演奏していない行なら、その行を先に演奏します。
 
 <details><summary>英語の説明（HELP・実装に基づく）</summary>
 
-Play the module from its start, beside PLAY and SFX; again after its end when flag is true; with a false flag, a song that jumps back to a row it has played ends there (FORTH/Sigma audio).
+Play the module from its start, beside PLAY and SFX; again after its end when flag is true; with a false flag, the song ends where it comes to a row it has played, also after a break at its end to rows not played yet (FORTH/Sigma audio).
 
 </details>
 
