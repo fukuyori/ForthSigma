@@ -35,7 +35,7 @@
     "src/core/coverage.zig": "bb6d34b14201a5b291ceb01615d98e8e8bf132d9d7d4e5cb81770033212afaaa",
     "src/core/csv.zig": "74979e890403f84687f3073cbfe84401b3d31d95155cb14b4d538b60e2498086",
     "src/core/csv_reader.zig": "1bb77051b4c958f388926d918c19c8b8a86a3b237428a11660fd24ceea316489",
-    "src/core/debug_log.zig": "daa669e00d69dbb13e462932bd3cdc301aab17eb79b89b3d5c82ea12bd9adb68",
+    "src/core/debug_log.zig": "d22e3f089bf55fef4eacedb13464b99d59991fdb9c9c59d9132e71c31f987729",
     "src/core/decompiler.zig": "7c71483f068652144e9b2e88d2739f13e37a6117ef4b34ac850ea473a9fcbe6d",
     "src/core/definers.zig": "6f25816f3e27512cb921db8a5a0f40cc7db407de2bcbf1937e09379365c814bb",
     "src/core/defs.zig": "eefd27a88d85f471e1745e4f765870801868b8becdd61fe7a97f33b84d8f4ac9",

@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [0.11.1] - 2026-11-17
+
 ### Added
 
 - `SYSTEM-FONT` works on Linux too: Sigma reads the system's TrueType and OpenType font files itself (with stb_truetype) and finds a font by its name under the usual font folders, or takes the path of a font file. No font is part of Sigma, and only the Linux executables grow (about 31 KB).
@@ -25,6 +27,7 @@
   - `>FLOAT` takes an exponent written with `D` or with its sign alone (`1D`, `1+1`).
   - `(` and `CHAR` have dictionary entries, so `'`, `FIND`, and `SEARCH-WORDLIST` find them. Added built-in words change the dictionary ABI; recreate dictionary images.
 - The examples use `?DO` where the range of a loop is decided at run time and could be empty (144 loops in 13 files), so that they keep ending with the new `DO`. Their checked output is unchanged.
+- Updated the product version and startup examples to 0.11.1.
 - The README lists the Forth 2012 words that are available (446 of the 450 glossary entries; `docs/forth2012-word-status.tsv`), the results of the Forth 2012 test suite, and the known differences from gforth.
 
 ## [0.11.0] - 2026-11-15
@@ -193,6 +196,7 @@
 - Updated the product version and startup examples to 0.6.1.
 - Added an optional SDL3 host backend. Builds can still run when SDL3 is unavailable; gamepad polling then reports that the backend is unavailable.
 
+[0.11.1]: https://github.com/fukuyori/ForthSigma/releases/tag/v0.11.1
 [0.11.0]: https://github.com/fukuyori/ForthSigma/releases/tag/v0.11.0
 [0.10.0]: https://github.com/fukuyori/ForthSigma/releases/tag/v0.10.0
 [0.9.0]: https://github.com/fukuyori/ForthSigma/releases/tag/v0.9.0
