@@ -41,7 +41,10 @@ pub fn finishPending(self: *State, token: []const u8) RuntimeError!void {
             self.beginDefinition(try self.appendWord(token, .colon, .drop, 0));
         },
         .colon_name => {
-            self.beginDefinition(try self.appendWord(token, .colon, .drop, 0));
+            // The name is not found until ; ends the definition (6.1.0450).
+            const id = try self.appendWord(token, .colon, .drop, 0);
+            self.beginDefinition(id);
+            self.hidden_word = id;
         },
         .variable_name, .value_name, .watched_value_name, .watched_variable_name => {
             const variable = pending == .variable_name or pending == .watched_variable_name;
@@ -87,6 +90,8 @@ pub fn finishPending(self: *State, token: []const u8) RuntimeError!void {
         },
         .buffer_name => {
             if (self.pending_array_size < 0 or self.pending_array_size > self.sizes.dataLimit()) return error.MemoryExhausted;
+            const aligned = (self.data_here + (cell_size - 1)) & ~@as(Cell, cell_size - 1);
+            try self.reserveData(aligned - self.data_here);
             _ = try self.appendDataWord(token, .created, self.pending_array_size);
         },
         .two_variable_name, .two_constant_name => {
@@ -138,6 +143,7 @@ pub fn endDefinition(self: *State) RuntimeError!void {
     }
     @import("words_parsing.zig").resolve(self, self.current_word);
     try @import("words_value_extensions.zig").finishColon(self, self.current_word);
+    if (self.current_word == self.hidden_word) self.hidden_word = @import("wordlists.zig").no_word;
     self.local_count = 0;
     self.setCompiling(false);
     self.defining = false;

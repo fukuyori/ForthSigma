@@ -1,0 +1,451 @@
+number	name	word set	status
+6.1.0010	!	CORE	available
+6.1.0030	#	CORE	available
+6.1.0040	#>	CORE	available
+6.1.0050	#S	CORE	available
+6.1.0070	'	CORE	available
+6.1.0080	(	CORE	available
+6.1.0090	*	CORE	available
+6.1.0100	*/	CORE	available
+6.1.0110	*/MOD	CORE	available
+6.1.0120	+	CORE	available
+6.1.0130	+!	CORE	available
+6.1.0140	+LOOP	CORE	available
+6.1.0150	,	CORE	available
+6.1.0160	-	CORE	available
+6.1.0180	.	CORE	available
+6.1.0190	."	CORE	available (parsing word, checked by running it)
+6.1.0230	/	CORE	available
+6.1.0240	/MOD	CORE	available
+6.1.0250	0<	CORE	available
+6.1.0270	0=	CORE	available
+6.1.0290	1+	CORE	available
+6.1.0300	1-	CORE	available
+6.1.0310	2!	CORE	available
+6.1.0320	2*	CORE	available
+6.1.0330	2/	CORE	available
+6.1.0350	2@	CORE	available
+6.1.0370	2DROP	CORE	available
+6.1.0380	2DUP	CORE	available
+6.1.0400	2OVER	CORE	available
+6.1.0430	2SWAP	CORE	available
+6.1.0450	:	CORE	available
+6.1.0460	;	CORE	available
+6.1.0480	<	CORE	available
+6.1.0490	<#	CORE	available
+6.1.0530	=	CORE	available
+6.1.0540	>	CORE	available
+6.1.0550	>BODY	CORE	available
+6.1.0560	>IN	CORE	available
+6.1.0570	>NUMBER	CORE	available
+6.1.0580	>R	CORE	available
+6.1.0630	?DUP	CORE	available
+6.1.0650	@	CORE	available
+6.1.0670	ABORT	CORE	available
+6.1.0680	ABORT"	CORE	available (parsing word, checked by running it)
+6.1.0690	ABS	CORE	available
+6.1.0695	ACCEPT	CORE	available
+6.1.0705	ALIGN	CORE	available
+6.1.0706	ALIGNED	CORE	available
+6.1.0710	ALLOT	CORE	available
+6.1.0720	AND	CORE	available
+6.1.0750	BASE	CORE	available
+6.1.0760	BEGIN	CORE	available
+6.1.0770	BL	CORE	available
+6.1.0850	C!	CORE	available
+6.1.0860	C,	CORE	available
+6.1.0870	C@	CORE	available
+6.1.0880	CELL+	CORE	available
+6.1.0890	CELLS	CORE	available
+6.1.0895	CHAR	CORE	available
+6.1.0897	CHAR+	CORE	available
+6.1.0898	CHARS	CORE	available
+6.1.0950	CONSTANT	CORE	available
+6.1.0980	COUNT	CORE	available
+6.1.0990	CR	CORE	available
+6.1.1000	CREATE	CORE	available
+6.1.1170	DECIMAL	CORE	available
+6.1.1200	DEPTH	CORE	available
+6.1.1240	DO	CORE	available
+6.1.1250	DOES>	CORE	available
+6.1.1260	DROP	CORE	available
+6.1.1290	DUP	CORE	available
+6.1.1310	ELSE	CORE	available
+6.1.1320	EMIT	CORE	available
+6.1.1345	ENVIRONMENT?	CORE	available
+6.1.1360	EVALUATE	CORE	available
+6.1.1370	EXECUTE	CORE	available
+6.1.1380	EXIT	CORE	available
+6.1.1540	FILL	CORE	available
+6.1.1550	FIND	CORE	available
+6.1.1561	FM/MOD	CORE	available
+6.1.1650	HERE	CORE	available
+6.1.1670	HOLD	CORE	available
+6.1.1680	I	CORE	available
+6.1.1700	IF	CORE	available
+6.1.1710	IMMEDIATE	CORE	available
+6.1.1720	INVERT	CORE	available
+6.1.1730	J	CORE	available
+6.1.1750	KEY	CORE	available
+6.1.1760	LEAVE	CORE	available
+6.1.1780	LITERAL	CORE	available
+6.1.1800	LOOP	CORE	available
+6.1.1805	LSHIFT	CORE	available
+6.1.1810	M*	CORE	available
+6.1.1870	MAX	CORE	available
+6.1.1880	MIN	CORE	available
+6.1.1890	MOD	CORE	available
+6.1.1900	MOVE	CORE	available
+6.1.1910	NEGATE	CORE	available
+6.1.1980	OR	CORE	available
+6.1.1990	OVER	CORE	available
+6.1.2033	POSTPONE	CORE	available (parsing word, checked by running it)
+6.1.2050	QUIT	CORE	available
+6.1.2060	R>	CORE	available
+6.1.2070	R@	CORE	available
+6.1.2120	RECURSE	CORE	available
+6.1.2140	REPEAT	CORE	available
+6.1.2160	ROT	CORE	available
+6.1.2162	RSHIFT	CORE	available
+6.1.2165	S"	CORE	available (parsing word, checked by running it)
+6.1.2170	S>D	CORE	available
+6.1.2210	SIGN	CORE	available
+6.1.2214	SM/REM	CORE	available
+6.1.2216	SOURCE	CORE	available
+6.1.2220	SPACE	CORE	available
+6.1.2230	SPACES	CORE	available
+6.1.2250	STATE	CORE	available
+6.1.2260	SWAP	CORE	available
+6.1.2270	THEN	CORE	available
+6.1.2310	TYPE	CORE	available
+6.1.2320	U.	CORE	available
+6.1.2340	U<	CORE	available
+6.1.2360	UM*	CORE	available
+6.1.2370	UM/MOD	CORE	available
+6.1.2380	UNLOOP	CORE	available
+6.1.2390	UNTIL	CORE	available
+6.1.2410	VARIABLE	CORE	available
+6.1.2430	WHILE	CORE	available
+6.1.2450	WORD	CORE	available
+6.1.2490	XOR	CORE	available
+6.1.2500	[	CORE	available (parsing word, checked by running it)
+6.1.2510	[']	CORE	available (parsing word, checked by running it)
+6.1.2520	[CHAR]	CORE	available (parsing word, checked by running it)
+6.1.2540	]	CORE	available (parsing word, checked by running it)
+6.2.0200	.(	CORE EXT	available (parsing word, checked by running it)
+6.2.0210	.R	CORE EXT	available
+6.2.0260	0<>	CORE EXT	available
+6.2.0280	0>	CORE EXT	available
+6.2.0340	2>R	CORE EXT	available
+6.2.0410	2R>	CORE EXT	available
+6.2.0415	2R@	CORE EXT	available
+6.2.0455	:NONAME	CORE EXT	available (parsing word, checked by running it)
+6.2.0500	<>	CORE EXT	available
+6.2.0620	?DO	CORE EXT	available
+6.2.0698	ACTION-OF	CORE EXT	available
+6.2.0700	AGAIN	CORE EXT	available
+6.2.0825	BUFFER:	CORE EXT	available
+6.2.0855	C"	CORE EXT	available (parsing word, checked by running it)
+6.2.0873	CASE	CORE EXT	available
+6.2.0945	COMPILE,	CORE EXT	available
+6.2.1173	DEFER	CORE EXT	available
+6.2.1175	DEFER!	CORE EXT	available
+6.2.1177	DEFER@	CORE EXT	available
+6.2.1342	ENDCASE	CORE EXT	available
+6.2.1343	ENDOF	CORE EXT	available
+6.2.1350	ERASE	CORE EXT	available
+6.2.1485	FALSE	CORE EXT	available
+6.2.1660	HEX	CORE EXT	available
+6.2.1675	HOLDS	CORE EXT	available
+6.2.1725	IS	CORE EXT	available
+6.2.1850	MARKER	CORE EXT	available
+6.2.1930	NIP	CORE EXT	available
+6.2.1950	OF	CORE EXT	available
+6.2.2000	PAD	CORE EXT	available
+6.2.2008	PARSE	CORE EXT	available
+6.2.2020	PARSE-NAME	CORE EXT	available
+6.2.2030	PICK	CORE EXT	available
+6.2.2125	REFILL	CORE EXT	available
+6.2.2148	RESTORE-INPUT	CORE EXT	available
+6.2.2150	ROLL	CORE EXT	available
+6.2.2182	SAVE-INPUT	CORE EXT	available
+6.2.2218	SOURCE-ID	CORE EXT	available
+6.2.2266	S\"	CORE EXT	available (parsing word, checked by running it)
+6.2.2295	TO	CORE EXT	available
+6.2.2298	TRUE	CORE EXT	available
+6.2.2300	TUCK	CORE EXT	available
+6.2.2330	U.R	CORE EXT	available
+6.2.2350	U>	CORE EXT	available
+6.2.2395	UNUSED	CORE EXT	available
+6.2.2405	VALUE	CORE EXT	available
+6.2.2440	WITHIN	CORE EXT	available
+6.2.2530	[COMPILE]	CORE EXT	available
+6.2.2535	\	CORE EXT	available (parsing word, checked by running it)
+7.6.1.0790	BLK	BLOCK	available
+7.6.1.0800	BLOCK	BLOCK	available
+7.6.1.0820	BUFFER	BLOCK	available
+7.6.1.1360	EVALUATE	BLOCK	available
+7.6.1.1559	FLUSH	BLOCK	available
+7.6.1.1790	LOAD	BLOCK	available
+7.6.1.2180	SAVE-BUFFERS	BLOCK	available
+7.6.1.2400	UPDATE	BLOCK	available
+7.6.2.1330	EMPTY-BUFFERS	BLOCK EXT	available
+7.6.2.1770	LIST	BLOCK EXT	available
+7.6.2.2125	REFILL	BLOCK EXT	available
+7.6.2.2190	SCR	BLOCK EXT	available
+7.6.2.2280	THRU	BLOCK EXT	available
+7.6.2.2535	\	BLOCK EXT	available (parsing word, checked by running it)
+8.6.1.0360	2CONSTANT	DOUBLE	available
+8.6.1.0390	2LITERAL	DOUBLE	available
+8.6.1.0440	2VARIABLE	DOUBLE	available
+8.6.1.1040	D+	DOUBLE	available
+8.6.1.1050	D-	DOUBLE	available
+8.6.1.1060	D.	DOUBLE	available
+8.6.1.1070	D.R	DOUBLE	available
+8.6.1.1075	D0<	DOUBLE	available
+8.6.1.1080	D0=	DOUBLE	available
+8.6.1.1090	D2*	DOUBLE	available
+8.6.1.1100	D2/	DOUBLE	available
+8.6.1.1110	D<	DOUBLE	available
+8.6.1.1120	D=	DOUBLE	available
+8.6.1.1140	D>S	DOUBLE	available
+8.6.1.1160	DABS	DOUBLE	available
+8.6.1.1210	DMAX	DOUBLE	available
+8.6.1.1220	DMIN	DOUBLE	available
+8.6.1.1230	DNEGATE	DOUBLE	available
+8.6.1.1820	M*/	DOUBLE	available
+8.6.1.1830	M+	DOUBLE	available
+8.6.2.0420	2ROT	DOUBLE EXT	available
+8.6.2.0435	2VALUE	DOUBLE EXT	available
+8.6.2.1270	DU<	DOUBLE EXT	available
+9.6.1.0875	CATCH	EXCEPTION	available
+9.6.1.2275	THROW	EXCEPTION	available
+9.6.2.0670	ABORT	EXCEPTION EXT	available
+9.6.2.0680	ABORT"	EXCEPTION EXT	available (parsing word, checked by running it)
+10.6.1.0742	AT-XY	FACILITY	available
+10.6.1.1755	KEY?	FACILITY	available
+10.6.1.2005	PAGE	FACILITY	available
+10.6.2.0135	+FIELD	FACILITY EXT	available
+10.6.2.0763	BEGIN-STRUCTURE	FACILITY EXT	available
+10.6.2.0893	CFIELD:	FACILITY EXT	available
+10.6.2.1305	EKEY	FACILITY EXT	available
+10.6.2.1306	EKEY>CHAR	FACILITY EXT	available
+10.6.2.1306.40	EKEY>FKEY	FACILITY EXT	available
+10.6.2.1307	EKEY?	FACILITY EXT	available
+10.6.2.1325	EMIT?	FACILITY EXT	available
+10.6.2.1336	END-STRUCTURE	FACILITY EXT	available
+10.6.2.1518	FIELD:	FACILITY EXT	available
+10.6.2.1740.01	K-ALT-MASK	FACILITY EXT	available
+10.6.2.1740.02	K-CTRL-MASK	FACILITY EXT	available
+10.6.2.1740.03	K-DELETE	FACILITY EXT	available
+10.6.2.1740.04	K-DOWN	FACILITY EXT	available
+10.6.2.1740.05	K-END	FACILITY EXT	available
+10.6.2.1740.06	K-F1	FACILITY EXT	available
+10.6.2.1740.07	K-F10	FACILITY EXT	available
+10.6.2.1740.08	K-F11	FACILITY EXT	available
+10.6.2.1740.09	K-F12	FACILITY EXT	available
+10.6.2.1740.10	K-F2	FACILITY EXT	available
+10.6.2.1740.11	K-F3	FACILITY EXT	available
+10.6.2.1740.12	K-F4	FACILITY EXT	available
+10.6.2.1740.13	K-F5	FACILITY EXT	available
+10.6.2.1740.14	K-F6	FACILITY EXT	available
+10.6.2.1740.15	K-F7	FACILITY EXT	available
+10.6.2.1740.16	K-F8	FACILITY EXT	available
+10.6.2.1740.17	K-F9	FACILITY EXT	available
+10.6.2.1740.18	K-HOME	FACILITY EXT	available
+10.6.2.1740.19	K-INSERT	FACILITY EXT	available
+10.6.2.1740.20	K-LEFT	FACILITY EXT	available
+10.6.2.1740.21	K-NEXT	FACILITY EXT	available
+10.6.2.1740.22	K-PRIOR	FACILITY EXT	available
+10.6.2.1740.23	K-RIGHT	FACILITY EXT	available
+10.6.2.1740.24	K-SHIFT-MASK	FACILITY EXT	available
+10.6.2.1740.25	K-UP	FACILITY EXT	available
+10.6.2.1905	MS	FACILITY EXT	available
+10.6.2.2292	TIME&DATE	FACILITY EXT	available
+11.6.1.0080	(	FILE	available
+11.6.1.0765	BIN	FILE	available
+11.6.1.0900	CLOSE-FILE	FILE	available
+11.6.1.1010	CREATE-FILE	FILE	available
+11.6.1.1190	DELETE-FILE	FILE	available
+11.6.1.1520	FILE-POSITION	FILE	available
+11.6.1.1522	FILE-SIZE	FILE	available
+11.6.1.1717	INCLUDE-FILE	FILE	available
+11.6.1.1718	INCLUDED	FILE	available
+11.6.1.1970	OPEN-FILE	FILE	available
+11.6.1.2054	R/O	FILE	available
+11.6.1.2056	R/W	FILE	available
+11.6.1.2080	READ-FILE	FILE	available
+11.6.1.2090	READ-LINE	FILE	available
+11.6.1.2142	REPOSITION-FILE	FILE	available
+11.6.1.2147	RESIZE-FILE	FILE	available
+11.6.1.2165	S"	FILE	available (parsing word, checked by running it)
+11.6.1.2218	SOURCE-ID	FILE	available
+11.6.1.2425	W/O	FILE	available
+11.6.1.2480	WRITE-FILE	FILE	available
+11.6.1.2485	WRITE-LINE	FILE	available
+11.6.2.1524	FILE-STATUS	FILE EXT	available
+11.6.2.1560	FLUSH-FILE	FILE EXT	available
+11.6.2.1714	INCLUDE	FILE EXT	available
+11.6.2.2125	REFILL	FILE EXT	available
+11.6.2.2130	RENAME-FILE	FILE EXT	available
+11.6.2.2144.10	REQUIRE	FILE EXT	available
+11.6.2.2144.50	REQUIRED	FILE EXT	available
+11.6.2.2266	S\"	FILE EXT	available (parsing word, checked by running it)
+12.6.1.0558	>FLOAT	FLOATING	available
+12.6.1.1130	D>F	FLOATING	available
+12.6.1.1400	F!	FLOATING	available
+12.6.1.1410	F*	FLOATING	available
+12.6.1.1420	F+	FLOATING	available
+12.6.1.1425	F-	FLOATING	available
+12.6.1.1430	F/	FLOATING	available
+12.6.1.1440	F0<	FLOATING	available
+12.6.1.1450	F0=	FLOATING	available
+12.6.1.1460	F<	FLOATING	available
+12.6.1.1470	F>D	FLOATING	available
+12.6.1.1472	F@	FLOATING	available
+12.6.1.1479	FALIGN	FLOATING	available
+12.6.1.1483	FALIGNED	FLOATING	available
+12.6.1.1492	FCONSTANT	FLOATING	available
+12.6.1.1497	FDEPTH	FLOATING	available
+12.6.1.1500	FDROP	FLOATING	available
+12.6.1.1510	FDUP	FLOATING	available
+12.6.1.1552	FLITERAL	FLOATING	available
+12.6.1.1555	FLOAT+	FLOATING	available
+12.6.1.1556	FLOATS	FLOATING	available
+12.6.1.1558	FLOOR	FLOATING	available
+12.6.1.1562	FMAX	FLOATING	available
+12.6.1.1565	FMIN	FLOATING	available
+12.6.1.1567	FNEGATE	FLOATING	available
+12.6.1.1600	FOVER	FLOATING	available
+12.6.1.1610	FROT	FLOATING	available
+12.6.1.1612	FROUND	FLOATING	available
+12.6.1.1620	FSWAP	FLOATING	available
+12.6.1.1630	FVARIABLE	FLOATING	available
+12.6.1.2143	REPRESENT	FLOATING	available
+12.6.2.1203	DF!	FLOATING EXT	available
+12.6.2.1204	DF@	FLOATING EXT	available
+12.6.2.1205	DFALIGN	FLOATING EXT	available
+12.6.2.1207	DFALIGNED	FLOATING EXT	available
+12.6.2.1207.40	DFFIELD:	FLOATING EXT	available
+12.6.2.1208	DFLOAT+	FLOATING EXT	available
+12.6.2.1209	DFLOATS	FLOATING EXT	available
+12.6.2.1415	F**	FLOATING EXT	available
+12.6.2.1427	F.	FLOATING EXT	available
+12.6.2.1471	F>S	FLOATING EXT	available
+12.6.2.1474	FABS	FLOATING EXT	available
+12.6.2.1476	FACOS	FLOATING EXT	available
+12.6.2.1477	FACOSH	FLOATING EXT	available
+12.6.2.1484	FALOG	FLOATING EXT	available
+12.6.2.1486	FASIN	FLOATING EXT	available
+12.6.2.1487	FASINH	FLOATING EXT	available
+12.6.2.1488	FATAN	FLOATING EXT	available
+12.6.2.1489	FATAN2	FLOATING EXT	available
+12.6.2.1491	FATANH	FLOATING EXT	available
+12.6.2.1493	FCOS	FLOATING EXT	available
+12.6.2.1494	FCOSH	FLOATING EXT	available
+12.6.2.1513	FE.	FLOATING EXT	available
+12.6.2.1515	FEXP	FLOATING EXT	available
+12.6.2.1516	FEXPM1	FLOATING EXT	available
+12.6.2.1517	FFIELD:	FLOATING EXT	available
+12.6.2.1553	FLN	FLOATING EXT	available
+12.6.2.1554	FLNP1	FLOATING EXT	available
+12.6.2.1557	FLOG	FLOATING EXT	available
+12.6.2.1613	FS.	FLOATING EXT	available
+12.6.2.1614	FSIN	FLOATING EXT	available
+12.6.2.1616	FSINCOS	FLOATING EXT	available
+12.6.2.1617	FSINH	FLOATING EXT	available
+12.6.2.1618	FSQRT	FLOATING EXT	available
+12.6.2.1625	FTAN	FLOATING EXT	available
+12.6.2.1626	FTANH	FLOATING EXT	available
+12.6.2.1627	FTRUNC	FLOATING EXT	available
+12.6.2.1628	FVALUE	FLOATING EXT	available
+12.6.2.1640	F~	FLOATING EXT	available
+12.6.2.2035	PRECISION	FLOATING EXT	available
+12.6.2.2175	S>F	FLOATING EXT	available
+12.6.2.2200	SET-PRECISION	FLOATING EXT	available
+12.6.2.2202	SF!	FLOATING EXT	available
+12.6.2.2203	SF@	FLOATING EXT	available
+12.6.2.2204	SFALIGN	FLOATING EXT	available
+12.6.2.2206	SFALIGNED	FLOATING EXT	available
+12.6.2.2206.40	SFFIELD:	FLOATING EXT	available
+12.6.2.2207	SFLOAT+	FLOATING EXT	available
+12.6.2.2208	SFLOATS	FLOATING EXT	available
+13.6.1.0086	(LOCAL)	LOCAL	available
+13.6.2.1795	LOCALS|	LOCAL EXT	available (parsing word, checked by running it)
+13.6.2.2550	{:	LOCAL EXT	available (parsing word, checked by running it)
+14.6.1.0707	ALLOCATE	MEMORY	available
+14.6.1.1605	FREE	MEMORY	available
+14.6.1.2145	RESIZE	MEMORY	available
+15.6.1.0220	.S	TOOLS	available
+15.6.1.0600	?	TOOLS	available
+15.6.1.1280	DUMP	TOOLS	available
+15.6.1.2194	SEE	TOOLS	available
+15.6.1.2465	WORDS	TOOLS	available
+15.6.2.0470	;CODE	TOOLS EXT	not available
+15.6.2.0702	AHEAD	TOOLS EXT	available
+15.6.2.0740	ASSEMBLER	TOOLS EXT	not available
+15.6.2.0830	BYE	TOOLS EXT	available
+15.6.2.0930	CODE	TOOLS EXT	not available
+15.6.2.1015	CS-PICK	TOOLS EXT	available
+15.6.2.1020	CS-ROLL	TOOLS EXT	available
+15.6.2.1300	EDITOR	TOOLS EXT	not available
+15.6.2.1580	FORGET	TOOLS EXT	available (parsing word, checked by running it)
+15.6.2.1908	N>R	TOOLS EXT	available
+15.6.2.1909.10	NAME>COMPILE	TOOLS EXT	available
+15.6.2.1909.20	NAME>INTERPRET	TOOLS EXT	available
+15.6.2.1909.40	NAME>STRING	TOOLS EXT	available
+15.6.2.1940	NR>	TOOLS EXT	available
+15.6.2.2250	STATE	TOOLS EXT	available
+15.6.2.2264	SYNONYM	TOOLS EXT	available
+15.6.2.2297	TRAVERSE-WORDLIST	TOOLS EXT	available
+15.6.2.2530.30	[DEFINED]	TOOLS EXT	available
+15.6.2.2531	[ELSE]	TOOLS EXT	available
+15.6.2.2532	[IF]	TOOLS EXT	available
+15.6.2.2533	[THEN]	TOOLS EXT	available
+15.6.2.2534	[UNDEFINED]	TOOLS EXT	available
+16.6.1.1180	DEFINITIONS	SEARCH	available
+16.6.1.1550	FIND	SEARCH	available
+16.6.1.1595	FORTH-WORDLIST	SEARCH	available
+16.6.1.1643	GET-CURRENT	SEARCH	available
+16.6.1.1647	GET-ORDER	SEARCH	available
+16.6.1.2192	SEARCH-WORDLIST	SEARCH	available
+16.6.1.2195	SET-CURRENT	SEARCH	available
+16.6.1.2197	SET-ORDER	SEARCH	available
+16.6.1.2460	WORDLIST	SEARCH	available
+16.6.2.0715	ALSO	SEARCH EXT	available
+16.6.2.1590	FORTH	SEARCH EXT	available
+16.6.2.1965	ONLY	SEARCH EXT	available
+16.6.2.1985	ORDER	SEARCH EXT	available
+16.6.2.2037	PREVIOUS	SEARCH EXT	available
+17.6.1.0170	-TRAILING	STRING	available
+17.6.1.0245	/STRING	STRING	available
+17.6.1.0780	BLANK	STRING	available
+17.6.1.0910	CMOVE	STRING	available
+17.6.1.0920	CMOVE>	STRING	available
+17.6.1.0935	COMPARE	STRING	available
+17.6.1.2191	SEARCH	STRING	available
+17.6.1.2212	SLITERAL	STRING	available
+17.6.2.2141	REPLACES	STRING EXT	available
+17.6.2.2255	SUBSTITUTE	STRING EXT	available
+17.6.2.2375	UNESCAPE	STRING EXT	available
+18.6.1.2486.50	X-SIZE	XCHAR	available
+18.6.1.2487.10	XC!+	XCHAR	available
+18.6.1.2487.15	XC!+?	XCHAR	available
+18.6.1.2487.20	XC,	XCHAR	available
+18.6.1.2487.25	XC-SIZE	XCHAR	available
+18.6.1.2487.35	XC@+	XCHAR	available
+18.6.1.2487.40	XCHAR+	XCHAR	available
+18.6.1.2488.10	XEMIT	XCHAR	available
+18.6.1.2488.30	XKEY	XCHAR	available
+18.6.1.2488.35	XKEY?	XCHAR	available
+18.6.2.0145	+X/STRING	XCHAR EXT	available
+18.6.2.0175	-TRAILING-GARBAGE	XCHAR EXT	available
+18.6.2.0895	CHAR	XCHAR EXT	available
+18.6.2.1306.60	EKEY>XCHAR	XCHAR EXT	available
+18.6.2.2008	PARSE	XCHAR EXT	available
+18.6.2.2486.70	X-WIDTH	XCHAR EXT	available
+18.6.2.2487.30	XC-WIDTH	XCHAR EXT	available
+18.6.2.2487.45	XCHAR-	XCHAR EXT	available
+18.6.2.2488.20	XHOLD	XCHAR EXT	available
+18.6.2.2495	X\STRING-	XCHAR EXT	available
+18.6.2.2520	[CHAR]	XCHAR EXT	available (parsing word, checked by running it)

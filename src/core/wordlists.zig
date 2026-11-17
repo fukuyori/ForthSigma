@@ -36,6 +36,7 @@ pub fn lookup(self: *State, name: []const u8) ?u16 {
 pub fn lookupIn(self: *State, name: []const u8, wid: Cell) ?u16 {
     var id = self.name_heads[nameBucket(name)];
     while (id != no_word) : (id = self.name_next[id]) {
+        if (id == self.hidden_word) continue;
         const word = self.words[id];
         if (word.wordlist == wid and word.name_len != 0 and (if (caseSensitive(self, wid)) std.mem.eql(u8, self.wordName(word), name) else asciiEqlIgnoreCase(self.wordName(word), name))) return id;
     }

@@ -27,7 +27,7 @@
 | 変数・定数 | VARIABLE/VAR, CONSTANT/CONST | 実装 | 誌面の版によりVAR/CONST等の表記差があります。 |
 | 条件分岐 | IF, ELSE, THEN | 実装 | 誌面参照。 |
 | 条件・後判定ループ | BEGIN, WHILE, REPEAT, END | 実装 | 誌面参照。 |
-| カウント付きループ | DO, LOOP, +LOOP, LEAVE, I | 変更 | LEAVEは即座にループを抜けます（誌面は次のLOOPで終了）。DOの最低1回実行は維持。負の+LOOPの終端判定は資料から確定できません。 |
+| カウント付きループ | DO, LOOP, +LOOP, LEAVE, I | 変更 | LEAVEは即座にループを抜けます（誌面は次のLOOPで終了）。開始値と終値が同じDOはForth 2012に従い、添字が一周するまで繰り返します（誌面は1回実行）。負の+LOOPの終端判定は資料から確定できません。 |
 | 基数 | BASE, HEX, DEC, OCT | 実装 | 資料で確認できる基数は8、10、16です。 |
 | 出力 | ., C., ECHO, CR, SPACE, SPCES, TYPE | 変更 | .とC.は末尾に空白、ゼロ埋めなし。TYPEは ( addr u )。 |
 | 数値入力 | INPUT | 実装 | 端末から整数1個を読み取ります。 |
@@ -106,7 +106,7 @@
 | 無限大・NaNの表示 | 拡張 | `F.` `FE.` `FS.` は `infinity` `-infinity` `NaN` を `PRECISION` で切らずに表示します。Gforthは `PRECISION` の文字数で切ります（`6 SET-PRECISION` で `infini`、`2 SET-PRECISION` で `Na`）。既定の `PRECISION`（15）では同じです。 |
 | F+!, F?, FA@, FA!, FARRAY, FINPUT, FMINUS | 拡張 | FORTH/Σの +!、?、A@、A!、ARRAY、INPUT、MINUS に対応する浮動小数点版。Gforthのワードではありません。 |
 | ."文字列出力 | 拡張 | コンパイル時文字列出力です。1982年資料のワードではありません。 |
-| ?DO | 拡張 | 開始値と終値が同じ場合、ループ本体を実行しません。FORTH/ΣのDOは同値でも1回実行します。 |
+| ?DO | 拡張 | 開始値と終値が同じ場合、ループ本体を実行しません。DOはこの判定をせず、Forth 2012と同じく添字が一周するまで繰り返します。 |
 | J, K | 拡張 | 2段目・3段目のループ添字を取得します。誌面では利用者定義例として説明されています。 |
 | EXECUTE | 拡張 | ポータブルな辞書トークンを実行します。Z80コードアドレス互換ではありません。 |
 | 単一の論理メモリと上限 | 拡張 | 既定で64 MiBと64 KiBの論理メモリ（システム領域は4000H未満、入力バッファは4000H〜13FFFH、データ領域は14000Hから `-m` の大きさまで、その後に同じ大きさのヒープ、最後にローカル変数）と各種固定容量を使います。メモリとスタックの大きさは、gforthと同じ起動オプション `-m`、`-d`、`-r`、`-f`、`-l` で指定できます。歴史的な機種のメモリ配置とは異なります。 |
@@ -150,7 +150,7 @@ zig build testで、現行コアの主要動作を次のテストで確認しま
 | 64-bit arithmetic | 64ビット折り返し、床関数除算の商と剰余 |
 | true flags | 比較・0=・NOTの真偽値（-1と0） |
 | dictionary identity | 大小文字を区別しない全文字照合 |
-| nested loops, loop boundaries | 入れ子DO/LOOP、I/J、?DOの0回実行、DOの最低1回実行 |
+| nested loops, loop boundaries | 入れ子DO/LOOP、I/J、?DOの0回実行、開始値と終値が同じDOの一周 |
 | LEAVE, UNLOOP | LEAVEの即時脱出、UNLOOPとEXIT |
 | variable, array, string | 変数、配列、文字列リテラルとTYPE |
 | number output, dot-s | 末尾空白、全基数での符号付き表示、U.、C.、.S |
@@ -256,7 +256,7 @@ Six quotation/anonymous-definition/postponing items are implemented. Nested/inte
 
 ## P07d（573）
 
-入力切替・前方参照の8語を実装。Gforth一致50件、Sigma方針4件、Zig回帰13件、native保存2件と通常・最小テスト、P07の既存検証が通過。一時入力はTHROW時にも復元し、ファイル版は検証後に所有権を引き受けて閉じる。FORWARDは同じwordlistの完了したコロン定義に解決し、古いxtも実行可能。既存の暗黙再帰を維持し、定義外RECURSIVEは-14。旧ABIのイメージは再作成する。P07は新規40項目と先行4語が実装完了。外部レビューと指摘修正は[P07_REVIEW.md](P07_REVIEW.md)に記録。[記録](P07_IMPLEMENTATION.md)。
+入力切替・前方参照の8語を実装。Gforth一致50件、Sigma方針4件、Zig回帰13件、native保存2件と通常・最小テスト、P07の既存検証が通過。一時入力はTHROW時にも復元し、ファイル版は検証後に所有権を引き受けて閉じる。FORWARDは同じwordlistの完了したコロン定義に解決し、古いxtも実行可能。定義外RECURSIVEは-14（2026-11-17から、定義中の名前はRECURSIVEを使わない限り見つからない）。旧ABIのイメージは再作成する。P07は新規40項目と先行4語が実装完了。外部レビューと指摘修正は[P07_REVIEW.md](P07_REVIEW.md)に記録。[記録](P07_IMPLEMENTATION.md)。
 
 P07レビューではCATCHの引用状態復元、ファイルIDの事前検証と使用中・標準ストリームの所有権保護、SEE・ステップの補助語名表示、拡張制御語のcoverageを修正した。`]]`内の解析専用構文（`[']`・`[CHAR]`・POSTPONE等）は未対応。既述の`[`・`]`と文字列構文は例外。比較用Gforthでは前記3構文の成功を実測済み。[レビュー・証拠](P07_REVIEW.md)。
 

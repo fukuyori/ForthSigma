@@ -159,7 +159,7 @@ pub fn finish(self: *forth.State, kind: defs.OpKind) forth.RuntimeError!bool {
         .normal => {
             if (kind != .negative_loop) return error.LoopMismatch;
             const distance = @as(map.UCell, @bitCast(frame.index)) -% @as(map.UCell, @bitCast(frame.limit));
-            again = !frame.exit_after_first and (step == 0 or step < distance);
+            again = step == 0 or step < distance;
             frame.index -%= @bitCast(step);
         },
     }

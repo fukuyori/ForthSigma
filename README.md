@@ -173,7 +173,7 @@ The tests run with the same options, for example `zig build test -Dfloat=false`;
 
 Since 2026-10-28, the numeric behavior and the basic words follow the behavior of [gforth](https://github.com/forthy42/gforth), with the goal of running the samples of the ForthBasicMaster course material. The work was divided into 6 stages. Stage 1 (64-bit cells, true = -1, floored division, name matching on all characters, `TYPE ( addr u )`, basic standard words), stage 2 (floating point), stage 3 (strings such as `S"`, double-cell integers, number formatting with `<# #>`), the small words used in the course material (`WITHIN`, `:NONAME`, `STATE`, `MS`, `GETENV`, `SYSTEM`, and others), `THROW` and `CATCH` and the main file operations (`OPEN-FILE`, `READ-LINE`, `WRITE-LINE`, and others), `ALLOCATE` and dynamic strings (`$!`, `$[]!`, and others), local variables (`{ a b -- c }`, type prefixes such as `F:`, `LOCALS|`), loading source files (`INCLUDE`, `REQUIRE`, and others), `SEE`, `LOCATE`, and `MARKER`, and word lists (`VOCABULARY`, `ONLY`, `ALSO`, and others) and `[IF]` are implemented, and all 6 stages are done ([decisions and open issues](https://github.com/fukuyori/ForthSigma/blob/main/docs/DECISIONS.md)).
 
-This implementation is **not a system that guarantees conformance to ANS Forth or Forth 2012**. Words specific to FORTH/Σ whose meaning does not conflict with gforth are retained.
+This implementation is **not a system that guarantees conformance to ANS Forth or Forth 2012**; what was checked is in [Forth 2012 conformance status](#forth-2012-conformance-status) below. Words specific to FORTH/Σ whose meaning does not conflict with gforth are retained.
 
 | Item | FORTH/Σ sources | Current port |
 | --- | --- | --- |
@@ -185,10 +185,91 @@ This implementation is **not a system that guarantees conformance to ANS Forth o
 | Number output | . prints no space; 4 hexadecimal digits, 6 octal digits | . prints a trailing space, no zero padding, signed in every base |
 | Division | Not settled by the sources | Floored division. Division by zero is an error |
 | LEAVE | Ends at the next LOOP | Leaves the loop at once |
-| DO | Runs once even when the start and limit are equal | As in the sources (differs from gforth) |
+| DO | Runs once even when the start and limit are equal | As in Forth 2012 and gforth: the index wraps through every cell value. Use `?DO` to skip an empty range |
 | Floating point | None | Separate stack, double precision, literals containing `E` |
 
 For the definitions on the standard side, see the [Forth 2012 Standard](https://forth-standard.org/standard/index). Individual behavior and porting decisions are recorded in the specification, the implementation notes, and the decisions.
+
+### Forth 2012 conformance status
+
+Checked on 2026-11-17 against the glossary of the Forth 2012 standard document (450 entries in 25 word sets, 435 different names). The full build provides 446 of the 450 entries.
+
+| Word set | Available / entries | Not available |
+| --- | ---: | --- |
+| CORE | 133 / 133 |  |
+| CORE EXT | 49 / 49 |  |
+| BLOCK | 8 / 8 |  |
+| BLOCK EXT | 6 / 6 |  |
+| DOUBLE | 20 / 20 |  |
+| DOUBLE EXT | 3 / 3 |  |
+| EXCEPTION | 2 / 2 |  |
+| EXCEPTION EXT | 2 / 2 |  |
+| FACILITY | 3 / 3 |  |
+| FACILITY EXT | 37 / 37 |  |
+| FILE | 21 / 21 |  |
+| FILE EXT | 8 / 8 |  |
+| FLOATING | 31 / 31 |  |
+| FLOATING EXT | 48 / 48 |  |
+| LOCAL | 1 / 1 |  |
+| LOCAL EXT | 2 / 2 |  |
+| MEMORY | 3 / 3 |  |
+| TOOLS | 5 / 5 |  |
+| TOOLS EXT | 18 / 22 | `;CODE`, `ASSEMBLER`, `CODE`, `EDITOR` |
+| SEARCH | 9 / 9 |  |
+| SEARCH EXT | 5 / 5 |  |
+| STRING | 8 / 8 |  |
+| STRING EXT | 3 / 3 |  |
+| XCHAR | 10 / 10 |  |
+| XCHAR EXT | 11 / 11 |  |
+
+The four missing words belong to the Programming-Tools extension and need an assembler or an editor. The status of each word is in [the word list](docs/forth2012-word-status.tsv).
+
+What this count means and does not mean:
+
+- It counts names. Most entries were found with `[DEFINED]`. The words that the text interpreter handles as syntax (`\`, `."`, `S"`, `S\"`, `C"`, `.(`, `ABORT"`, `[CHAR]`, `[']`, `[`, `]`, `POSTPONE`, `:NONAME`, `{:`, `LOCALS|`, `FORGET`) were checked by running them.
+- It is not a conformance test. The behavior of every word has not been compared with the standard text. Sigma does not claim to be a Standard System.
+- A build that leaves out word groups (`-Dfloat=false` and the others) provides fewer words.
+
+Results of the standard test suite ([Forth-Standard/forth-standard-test-suite](https://github.com/Forth-Standard/forth-standard-test-suite), version 0.13.4), run on 2026-11-17 with the full Windows build: `runtests.fth` (about 1,920 tests) runs to its end and reports 2 failures, both in the String word set.
+
+| Part | Result |
+| --- | --- |
+| Core, Core extension, Block, Double number, Exception, Facility, File-access, Locals, Memory-allocation, Programming-tools, Search-order | No failure |
+| String | 2 failures: the tests create the substitution `MAC3` and use it as `%mac3%`. Sigma matches substitution names with case, as gforth 1.0.2 does, and gforth reports the same two failures. The standard does not say how the case of these names is treated |
+| Floating point (`fp/runfptests.fth`) | No failure: `fatan2-test`, `ieee-arith-test`, `ieee-fprox-test`, `fpzero-test`, `to-float-test` report 0 errors, `fpio-test` and `ak-fp-test` complete, and `paranoia` finds no failure, defect, or flaw |
+
+The floating-point part needed one change to the test harness: `HAS-FLOATING` in `ttester.fs` was set by hand, because Sigma answers the `FLOATING` environment query, which Forth 2012 marks as obsolescent, as unknown. Tests whose output must be read by eye (displayed characters, number formats) were not judged. The suite itself says that its tests are not comprehensive, so passing it does not make Sigma a Standard System. The first run on the same day found ten differences, which were then removed; [both runs, with the logs](docs/measurements/2026-11-17-forth2012-test-suite.json).
+
+Behavior that was compared with the standard text:
+
+| Item | Standard | Sigma |
+| --- | --- | --- |
+| `DO` with an equal start and limit | No special case; `LOOP` ends only when the index equals the limit after adding one (6.1.1240, 6.1.1800) | The same since 2026-11-17. Earlier versions ran the body once |
+| `?DO` with an equal start and limit | The body is skipped (6.2.0620) | The same |
+| `+LOOP` | Ends when the index crosses the boundary between the limit minus one and the limit (6.1.0140) | The same, also for a negative step |
+| `LEAVE`, `UNLOOP` | Leave at once; `UNLOOP` before `EXIT` (6.1.1760, 6.1.2380) | The same |
+| Loop control parameters | A system may keep them on the return stack (3.2.3.3) | Kept on a separate loop stack. Standard programs see no difference |
+| Structures | `BEGIN-STRUCTURE`, `+FIELD`, `FIELD:`, `CFIELD:`, `FFIELD:`, `SFFIELD:`, `DFFIELD:`, `END-STRUCTURE` | Available; the sizes and offsets of a test structure are the same as gforth |
+
+### Differences from gforth
+
+Sigma follows gforth where the two can agree, and the words are compared with gforth run under WSL. The known differences are these; the per-word records are in [the compatibility notes](docs/COMPATIBILITY.md).
+
+| Item | gforth | Sigma |
+| --- | --- | --- |
+| Loop control parameters | On the return stack: inside a loop `R@` gives the loop index, and `I` after `>R` gives the value pushed | On a separate loop stack: `R@` gives the value the program pushed, and `I` stays the index. Both uses are outside the standard |
+| Leaving a loop with `2RDROP EXIT` | Works | Throws -6 when the program has no cells of its own on the return stack. Use `UNLOOP EXIT`, which works in both |
+| `CODE`, `END-CODE`, `;CODE`, `ASSEMBLER` | Available | Not available (no assembler) |
+| `SAVESYSTEM`, `'COLD`, `BOOTMESSAGE`, `SCRIPT?` | Available | Not available. `SAVESYS` saves an image |
+| Memory | Host addresses | One logical memory (64 MiB by default) with its own addresses; `-m`, `-d`, `-r`, `-f`, `-l` set the sizes |
+| `FPATH` when empty or unset | An empty search path | Files are looked up from the current directory as before |
+| `IS` | Deferred words | Also accepted on `FVALUE`, `2VALUE`, and `$VALUE`; unsupported targets throw -259 |
+| Pipes | `BROKEN-PIPE-ERROR` is -2049 | One-way only (`R/O` or `W/O`); `BROKEN-PIPE-ERROR` is -544 |
+| Floating-point functions | Its own results | CORE-MATH, correctly rounded; some results differ from gforth by 1 ulp |
+| `SEE` | gforth's decompiler output | Its own format, for example `offset +FIELD name` for a field |
+| Words of FORTH/Σ | None | Kept where they do not conflict, for example `"..."` strings and `BEGIN ... END` |
+
+The loop rows were run on gforth 1.0.2 on 2026-11-17. The other rows come from the comparisons recorded in the compatibility notes, most of them made with gforth 0.7.9_20260410.
 
 ## Sources and references
 

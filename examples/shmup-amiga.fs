@@ -71,7 +71,7 @@ VARIABLE WAVE-COUNT  VARIABLE WAVE-SIGN  VARIABLE WAVE-SEED
 \ changes by dp every 64 samples. It fades out.
 : SWEEP { n p dp amp -- }
    0 WAVE-COUNT !  1 WAVE-SIGN !
-   n 0 DO
+   n 0 ?DO
       1 WAVE-COUNT +!
       WAVE-COUNT @  p I 64 / dp * +  2 MAX  >= IF  0 WAVE-COUNT !  WAVE-SIGN @ NEGATE WAVE-SIGN !  THEN
       WAVE-SIGN @ amp *  n I - *  n /  WAVE I + C!
@@ -80,7 +80,7 @@ VARIABLE WAVE-COUNT  VARIABLE WAVE-SIGN  VARIABLE WAVE-SEED
 \ a rumble that falls as it fades.
 : RUMBLE { n hold dh amp | v -- }
    0 TO v  0 WAVE-COUNT !
-   n 0 DO
+   n 0 ?DO
       1 WAVE-COUNT +!
       WAVE-COUNT @  hold I 256 / dh * +  >= IF
          0 WAVE-COUNT !
@@ -90,7 +90,7 @@ VARIABLE WAVE-COUNT  VARIABLE WAVE-SIGN  VARIABLE WAVE-SEED
    LOOP ;
 \ Two notes one after the other, for a two-tone siren.
 : TWO-TONE { n p1 p2 amp -- }
-   n 0 DO
+   n 0 ?DO
       I n 2/ < IF p1 ELSE p2 THEN  I SWAP /  1 AND IF amp ELSE amp NEGATE THEN  WAVE I + C!
    LOOP ;
 \ The waves' steps are softened once, as a low-pass would.
@@ -291,20 +291,20 @@ VARIABLE AIM-X  VARIABLE AIM-Y
 HAS-SOUND [IF]
 ALSO AUDIO
 : LOOP-WAVE { len a1 a2 a3 a4 rate k -- }
-   len 0 DO
+   len 0 ?DO
       I 256 * len / { p }
       p SIN a1 *  p 2* SIN a2 * +  p 3 * SIN a3 * +  p 4 * SIN a4 * +  1024 /
       -127 127 CLAMP  WAVE I + C!
    LOOP
    WAVE len rate k SAMPLE   0 len k LOOP-SAMPLE ;
 : KICK { n k | ph -- }
-   n 0 DO
+   n 0 ?DO
       ph  n I - 14 * n / 2 + +  TO ph
       ph SIN 118 * 1024 /  n I - * n /  WAVE I + C!
    LOOP
    WAVE n 11025 k SAMPLE ;
 : NOISY { n amp tone k -- }
-   n 0 DO
+   n 0 ?DO
       160 RND 80 -  amp * 100 /   I tone * SIN  amp * 256 / +
       n I - * n /  -127 127 CLAMP  WAVE I + C!
    LOOP
@@ -445,7 +445,7 @@ INIT-DISCS
 : DISC { x y r c -- }
    r 0< IF EXIT THEN  r MAX-R MIN TO r
    x SHX @ + TO x  y SHY @ + TO y
-   r 1+ 0 DO
+   r 1+ 0 ?DO
       r I DISC-HW  DUP x SWAP -  SWAP x +
       2DUP y I + c GFX-HLINE  y I - c GFX-HLINE
    LOOP ;
@@ -464,7 +464,7 @@ INIT-DISCS
 : SDISC { x y r c -- }
    r 0< IF EXIT THEN  r MAX-R MIN TO r
    x SHX @ + TO x  y SHY @ + TO y
-   r 1+ 0 DO
+   r 1+ 0 ?DO
       r I DISC-HW  DUP x SWAP -  SWAP x +
       2DUP y I + c HL  y I - c HL
    LOOP ;
@@ -539,7 +539,7 @@ VARIABLE PT-N   VARIABLE PT-MARK
       XK @ * 100 /  PT-N @ 1- I - CELLS PT-X + !
    LOOP ;
 : CROSSINGS { y | n -- n }
-   PT-N @ 0 DO
+   PT-N @ 0 ?DO
       I CELLS PT-X + @  I CELLS PT-Y + @
       I 1+ PT-N @ MOD CELLS PT-X + @   I 1+ PT-N @ MOD CELLS PT-Y + @
       { ax ay bx by }
@@ -560,16 +560,16 @@ CREATE METAL  0 , 2 , 4 , 5 , 6 , 7 , 7 , 6 , 5 , 5 , 4 , 4 , 3 , 3 , 2 , 1 ,
 : FILL-RUN { x1 x2 y r | w -- }
    x2 x1 < IF EXIT THEN
    x2 x1 - 1+ TO w
-   x2 1+ x1 DO
+   x2 1+ x1 ?DO
       r  I x1 - 256 * w /  SHADED   CX0 I +        y CY0 +  ROT GFX-PSET
       r  I x1 - 256 * w /  DARKER   CX0 I NEGATE + 1-  y CY0 +  ROT GFX-PSET
    LOOP ;
 : HALF { r | y0 y1 n -- }                 \ the polygon and its mirror image, in ramp r
    1000 TO y0  -1000 TO y1
-   PT-N @ 0 DO
+   PT-N @ 0 ?DO
       I CELLS PT-Y + @  DUP y0 MIN TO y0  y1 MAX TO y1
    LOOP
-   y1 y0 DO
+   y1 y0 ?DO
       I CROSSINGS TO n
       n 1 ?DO
          I 1 AND IF
@@ -579,8 +579,8 @@ CREATE METAL  0 , 2 , 4 , 5 , 6 , 7 , 7 , 6 , 5 , 5 , 4 , 4 , 3 , 3 , 2 , 1 ,
    LOOP ;
 \ A dark edge around what is drawn near the center of the canvas.
 : EDGE ( -- )
-   CY0 56 + CY0 56 - DO
-      CX0 66 + CX0 66 - DO
+   CY0 56 + CY0 56 - ?DO
+      CX0 66 + CX0 66 - ?DO
          I J GFX-PGET CLEAR = IF
             I 1+ J BODY-PX?  I 1- J BODY-PX? OR  I J 1+ BODY-PX? OR  I J 1- BODY-PX? OR
             IF  I J OUTLINE-C GFX-PSET  THEN
@@ -651,12 +651,12 @@ CREATE ROT-BUF  RS RS * CELLS ALLOT
 : ROT-BAKE { n | tab a dx dy c s rgb half -- tab }
    RS 2/ TO half   GRAB
    HERE TO tab  n CELLS ALLOT
-   n 0 DO
+   n 0 ?DO
       I 256 * n / TO a   a COS TO c  a SIN TO s
       CANVAS
-      half 9 + half NEGATE 8 - DO
+      half 9 + half NEGATE 8 - ?DO
          I TO dy
-         half 9 + half NEGATE 8 - DO
+         half 9 + half NEGATE 8 - ?DO
             I TO dx
             dx c * dy s * +  512 + 1024 /  half +
             dy c * dx s * -  512 + 1024 /  half +
@@ -729,7 +729,7 @@ CREATE NEEDLE-B  ROT-NEEDLE-B , 2 ,
 : BAKE-GLOW { r c | side img d s -- img }
    r 2* 1+ TO side
    side side NEW-IMAGE TO img  img DRAW-TO  0 GFX-CLS
-   side 0 DO  side 0 DO
+   side 0 ?DO  side 0 ?DO
       I r - DUP *  J r - DUP * +  ISQRT  256 * r 1+ /  TO d
       d 256 < IF
          256 d - DUP * 256 / TO s
@@ -790,8 +790,8 @@ BAKE-SPINNERS
 \ with panel lines, and then get a dark outline.
 
 : OUTLINE { rows -- }
-   rows 1+ 0 DO
-      CW 1- 1 DO
+   rows 1+ 0 ?DO
+      CW 1- 1 ?DO
          I J GFX-PGET CLEAR = IF
             I 1+ J BODY-PX?  I 1- J BODY-PX? OR  I J 1+ BODY-PX? OR  I J 1- BODY-PX? OR
             IF  I J OUTLINE-C GFX-PSET  THEN
@@ -809,7 +809,7 @@ CREATE RAMP-PURP  $221144 , $332266 , $443388 , $6644AA , $8866CC , $AA88DD , $C
 : RAMP-PX ( ramp idx -- rgb )   0 MAX 7 MIN CELLS + @ ;
 : HULL { prof n rows0 ramp | pos s f hw row rows -- }
    rows0 SCL TO rows
-   rows 0 DO
+   rows 0 ?DO
       I TO row
       row n 1- * 256 * rows 1- / TO pos
       pos 256 / TO s   pos 255 AND TO f
@@ -879,7 +879,7 @@ V[
    CANVAS  sc TEXT-SCALE  $FFFFFF COLOR!
    a u  CW a u TEXT-WIDTH - 2/  0  TEXT
    1 TEXT-SCALE
-   sc 9 * 0 DO  CW 0 DO
+   sc 9 * 0 ?DO  CW 0 ?DO
       I J GFX-PGET PAINTED? IF  I J  J CHROME  GFX-PSET  THEN
    LOOP  LOOP
    0 0 CW sc 9 *  CX0 0 CAPTURE ;
@@ -889,12 +889,12 @@ S" STORM" 10 LOGO CONSTANT LOGO-B
 
 : BAKE-CLOUD { n | x y r -- spr }
    CANVAS
-   n 0 DO
+   n 0 ?DO
       90 RND 75 + SCL TO x   34 RND 16 + SCL TO y   10 RND 7 + SCL TO r
       x y 2 SCL + r $99AACC DISC
    LOOP
    SEED @  1 SEED !  SEED !
-   n 0 DO
+   n 0 ?DO
       90 RND 75 + SCL TO x   34 RND 16 + SCL TO y   10 RND 7 + SCL TO r
       x y 1 SCL - r 2 SCL - $EEEEFF DISC
    LOOP
@@ -1483,7 +1483,7 @@ CREATE BAND-PALS  SH #BG * 256 + CELLS ALLOT
    SH #BANDS @ CELLS BAND-TOP + ! ;
 \ Each band's palette: the colors of its first line, from each number's copper table.
 : FILL-BAND-PALS ( -- )
-   #BANDS @ 0 DO
+   #BANDS @ 0 ?DO
       I CELLS BAND-TOP + @ { top }
       #BG 0 DO  I COLOR-MAP PALETTE@ top COPPER@  J BAND-PAL I CELLS + !  LOOP
    LOOP ;
@@ -1509,7 +1509,7 @@ CREATE BAND-PALS  SH #BG * 256 + CELLS ALLOT
 \ first line.
 : DRAW-STRIP ( -- )
    SCROLL @ >PX >SL  SHX @ SHY @ { sc ox oy | top -- }
-   #BANDS @ 0 DO
+   #BANDS @ 0 ?DO
       I CELLS BAND-TOP + @ TO top
       top oy - sc - STRIP 1- AND   I 1+ CELLS BAND-TOP + @ top -
       PF-X ox +  top  I BAND-PAL  STRIP-ROWS
@@ -2129,7 +2129,7 @@ CREATE TICKERS  ' TITLE-TICK , ' INTRO-TICK , ' PLAY-TICK , ' CLEAR-TICK , ' GAM
             x hw 3 / -  y  hw 2* 3 /  SH y - $FFFFDD SRECT
             x y 16 >SL $FF8844 SDISC  x y 9 >SL $FFFFDD SDISC
             \ Its light along the beam (the shake is already in x and y).
-            SH y - 24 / 1+ 0 DO  x SHX @ -  y SHY @ - I 24 * +  LASER-GLOW SGLOW  LOOP
+            SH y - 24 / 1+ 0 ?DO  x SHX @ -  y SHY @ - I 24 * +  LASER-GLOW SGLOW  LOOP
          THEN
       THEN
    LOOP ;
@@ -2267,7 +2267,7 @@ CREATE RIPPLE-T  SH CELLS ALLOT
    u 16 *  SW +  { span }
    CLOCK @ 4 * span MOD  { t }
    2 TEXT-SCALE
-   u 0 DO
+   u 0 ?DO
       SW t -  I 16 * +  { x }
       x -16 SW WITHIN IF
          $77CCFF COLOR!

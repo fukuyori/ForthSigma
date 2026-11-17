@@ -54,7 +54,7 @@ VARIABLE WAVE-COUNT  VARIABLE WAVE-SIGN  VARIABLE WAVE-SEED
 \ changes by dp every 64 samples. It fades out.
 : SWEEP { n p dp amp -- }
    0 WAVE-COUNT !  1 WAVE-SIGN !
-   n 0 DO
+   n 0 ?DO
       1 WAVE-COUNT +!
       WAVE-COUNT @  p I 64 / dp * +  2 MAX  >= IF  0 WAVE-COUNT !  WAVE-SIGN @ NEGATE WAVE-SIGN !  THEN
       WAVE-SIGN @ amp *  n I - *  n /  WAVE I + C!
@@ -63,7 +63,7 @@ VARIABLE WAVE-COUNT  VARIABLE WAVE-SIGN  VARIABLE WAVE-SEED
 \ a rumble that falls as it fades.
 : RUMBLE { n hold dh amp | v -- }
    0 TO v  0 WAVE-COUNT !
-   n 0 DO
+   n 0 ?DO
       1 WAVE-COUNT +!
       WAVE-COUNT @  hold I 256 / dh * +  >= IF
          0 WAVE-COUNT !
@@ -73,7 +73,7 @@ VARIABLE WAVE-COUNT  VARIABLE WAVE-SIGN  VARIABLE WAVE-SEED
    LOOP ;
 \ Two notes one after the other, for a two-tone siren.
 : TWO-TONE { n p1 p2 amp -- }
-   n 0 DO
+   n 0 ?DO
       I n 2/ < IF p1 ELSE p2 THEN  I SWAP /  1 AND IF amp ELSE amp NEGATE THEN  WAVE I + C!
    LOOP ;
 : KEEP ( n k -- )   >R WAVE SWAP WAVE-RATE R> SAMPLE ;
@@ -347,7 +347,7 @@ INIT-DISCS
 : DISC { x y r c -- }
    r 0< IF EXIT THEN  r MAX-R MIN TO r
    x SHX @ + TO x  y SHY @ + TO y
-   r 1+ 0 DO
+   r 1+ 0 ?DO
       r I DISC-HW  DUP x SWAP -  SWAP x +
       2DUP y I + c GFX-HLINE  y I - c GFX-HLINE
    LOOP ;
@@ -594,7 +594,7 @@ CREATE ROT-BUF  RS RS * CELLS ALLOT
 : ROT-BAKE { n | tab cy a dx dy c s rgb -- tab }
    RY @ 2/ TO cy   GRAB
    HERE TO tab  n CELLS ALLOT
-   n 0 DO
+   n 0 ?DO
       I 256 * n / TO a   a COS TO c  a SIN TO s
       CANVAS
       49 -24 DO
@@ -721,7 +721,7 @@ CREATE NEEDLE-B  ROT-NEEDLE-B , 2 ,
 : BAKE-GLOW { r c | side img d s -- img }
    r 2* 1+ TO side
    side side NEW-IMAGE TO img  img DRAW-TO  0 GFX-CLS
-   side 0 DO  side 0 DO
+   side 0 ?DO  side 0 ?DO
       I r - DUP *  J r - DUP * +  ISQRT  256 * r 1+ /  TO d
       d 256 < IF
          256 d - DUP * 256 / TO s
@@ -782,7 +782,7 @@ $12122A CONSTANT OUTLINE-C
 : BODY-PX? ( x y -- flag )
    GFX-PGET  DUP 0< IF DROP FALSE EXIT THEN  DUP CLEAR <> SWAP OUTLINE-C <> AND ;
 : OUTLINE { rows -- }
-   rows 1+ 0 DO
+   rows 1+ 0 ?DO
       W 1- 1 DO
          I J GFX-PGET CLEAR = IF
             I 1+ J BODY-PX?  I 1- J BODY-PX? OR  I J 1+ BODY-PX? OR  I J 1- BODY-PX? OR
@@ -799,7 +799,7 @@ CREATE RAMP-PURP  $20143C , $342060 , $4C3088 , $6844B0 , $8860CC , $A880E0 , $C
 
 : RAMP-PX ( ramp idx -- rgb )   0 MAX 7 MIN CELLS + @ ;
 : HULL { prof n rows ramp | pos s f hw row -- }
-   rows 0 DO
+   rows 0 ?DO
       I TO row
       row n 1- * 256 * rows 1- / TO pos
       pos 256 / TO s   pos 255 AND TO f
@@ -880,12 +880,12 @@ R| ..KKKKK
 
 : BAKE-CLOUD { n | x y r -- spr }
    CANVAS
-   n 0 DO
+   n 0 ?DO
       90 RND 75 + TO x   34 RND 16 + TO y   10 RND 7 + TO r
       x y 2 + r $9CB0C8 DISC
    LOOP
    SEED @  1 SEED !  SEED !
-   n 0 DO
+   n 0 ?DO
       90 RND 75 + TO x   34 RND 16 + TO y   10 RND 7 + TO r
       x y 1- r 2 - $F0F4FA DISC
    LOOP
@@ -2061,7 +2061,7 @@ CREATE TICKERS  ' TITLE-TICK , ' INTRO-TICK , ' PLAY-TICK , ' CLEAR-TICK , ' GAM
             x hw 3 / -  y  hw 2* 3 /  H y - $FFFFE0 BAR-RECT
             x y 16 $FF9040 DISC  x y 9 $FFFFE0 DISC
             \ Its light along the beam (the shake is already in x and y).
-            H y - 24 / 1+ 0 DO  x SHX @ -  y SHY @ - I 24 * +  LASER-GLOW GLOW  LOOP
+            H y - 24 / 1+ 0 ?DO  x SHX @ -  y SHY @ - I 24 * +  LASER-GLOW GLOW  LOOP
          THEN
       THEN
    LOOP ;

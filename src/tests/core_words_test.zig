@@ -55,14 +55,14 @@ test "compiled nested loops and outer indices produce expected result" {
     try expectStack(machine, &expected);
 }
 
-test "q-do skips an empty range and do enters an equal range once" {
+test "q-do skips an empty range and do wraps around an equal range" {
     var output = Output{};
     const machine = try createMachine(&output);
     defer destroyMachine(machine);
 
-    try machine.interpretLine(": SKIP 0 5 5 ?DO 1 + LOOP ; : ONCE 0 5 5 DO 1 + LOOP ; SKIP ONCE");
+    try machine.interpretLine(": SKIP 0 5 5 ?DO 1 + LOOP ; : WRAPS 0 5 5 DO 1 + DUP 3 = IF LEAVE THEN LOOP ; : PLUS 0 5 5 DO 1 + DUP 4 = IF LEAVE THEN 1 +LOOP ; SKIP WRAPS PLUS");
 
-    const expected = [_]forth.Cell{ 0, 1 };
+    const expected = [_]forth.Cell{ 0, 3, 4 };
     try expectStack(machine, &expected);
 }
 
@@ -158,7 +158,7 @@ test "compiled LOOP wraps cells and keeps nested equal-range and LEAVE behavior"
     try machine.interpretLine(": WRAP -9223372036854775807 9223372036854775807 DO I LOOP ; WRAP");
     try expectStack(machine, &.{ std.math.maxInt(forth.Cell), std.math.minInt(forth.Cell) });
     machine.data_depth = 0;
-    try machine.interpretLine(": NEST 0 3 0 DO 5 5 DO 1+ LOOP 10 0 DO 1+ LEAVE LOOP LOOP ; NEST");
+    try machine.interpretLine(": NEST 0 3 0 DO 5 4 DO 1+ LOOP 10 0 DO 1+ LEAVE LOOP LOOP ; NEST");
     try expectStack(machine, &.{6});
     try std.testing.expectEqual(@as(usize, 0), machine.loop_depth);
 }

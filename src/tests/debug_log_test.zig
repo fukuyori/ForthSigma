@@ -65,7 +65,7 @@ test "an error is logged with its message, code, backtrace, and stacks" {
 test "the log gives files, lines, copied words, recursions, and names as JSON strings" {
     try support.skipWithout(&.{ .debug, .files });
     var output = Output{};
-    setFakeFile(&output, 0, ": SQUARE DUP * ;\n: TWICE\n  SQUARE SQUARE ;\n: A\"B\\ 1 0 / ;\n: DEEP DEEP ;\nTWICE\n");
+    setFakeFile(&output, 0, ": SQUARE DUP * ;\n: TWICE\n  SQUARE SQUARE ;\n: A\"B\\ 1 0 / ;\n: DEEP RECURSE ;\nTWICE\n");
     const machine = try createLogged(&output);
     defer destroyMachine(machine);
 

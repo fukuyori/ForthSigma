@@ -84,7 +84,7 @@ test "a recursion is one line of the backtrace, and the callers that do not fit 
     const machine = try createMachine(&output);
     defer destroyMachine(machine);
 
-    try fail(machine, ": DEEP DEEP ; DEEP", error.ReturnStackOverflow);
+    try fail(machine, ": DEEP RECURSE ; DEEP", error.ReturnStackOverflow);
     try std.testing.expect(std.mem.startsWith(u8, output.written(), "RETURN STACK OVER FLOW !\nBACKTRACE:\n  DEEP *32\n  ... "));
     try std.testing.expect(std.mem.endsWith(u8, output.written(), " MORE\nSTACK: <0> \n"));
 }

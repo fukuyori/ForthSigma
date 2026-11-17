@@ -34,14 +34,14 @@ VARIABLE WAVE-COUNT  VARIABLE WAVE-SIGN  VARIABLE WAVE-SEED
 \ every 64 samples (below 0: the pitch rises), fading out.
 : SQUARE-SWEEP { n p dp -- }
    0 WAVE-COUNT !  1 WAVE-SIGN !
-   n 0 DO
+   n 0 ?DO
       1 WAVE-COUNT +!
       WAVE-COUNT @  p I 64 / dp * +  2 MAX  >= IF  0 WAVE-COUNT !  WAVE-SIGN @ NEGATE WAVE-SIGN !  THEN
       WAVE-SIGN @ 100 *  n I - *  n /  WAVE I + C!
    LOOP ;
 \ Noise of n samples, fading out.
 : NOISE-BURST { n -- }
-   n 0 DO
+   n 0 ?DO
       WAVE-SEED @ 1103515245 * 12345 + DUP WAVE-SEED !  16 RSHIFT 200 MOD 100 -
       n I - *  n /  WAVE I + C!
    LOOP ;
@@ -87,7 +87,7 @@ ALSO AUDIO
 : PHRASE ( melody harmony bass drums -- )   4 PLAYS ;
 \ Short tunes of samples, which do not stop the music: four rising notes, each n
 \ samples, of half periods p1 to p4.
-: TONE-AT { at n p -- }   n 0 DO  I p / 1 AND IF -80 ELSE 80 THEN  WAVE at + I + C!  LOOP ;
+: TONE-AT { at n p -- }   n 0 ?DO  I p / 1 AND IF -80 ELSE 80 THEN  WAVE at + I + C!  LOOP ;
 : FOUR-NOTES { n p1 p2 p3 p4 -- }
    0 n p1 TONE-AT  n n p2 TONE-AT  n 2* n p3 TONE-AT  n 3 * n p4 TONE-AT ;
 PREVIOUS
@@ -181,8 +181,8 @@ VARIABLE THEME                      \ 0 out in the day, 1 in a cave
 
 \ Whether the box (in pixels) covers a solid tile.
 : BOX-SOLID? { x y w h -- flag }
-   y h + 1- >TILE 1+  y >TILE DO
-      x w + 1- >TILE 1+  x >TILE DO
+   y h + 1- >TILE 1+  y >TILE ?DO
+      x w + 1- >TILE 1+  x >TILE ?DO
          I J TILE@ SOLID? IF  UNLOOP UNLOOP TRUE EXIT  THEN
       LOOP
    LOOP FALSE ;
@@ -413,8 +413,8 @@ VARIABLE IN-LEFT  VARIABLE IN-RIGHT  VARIABLE IN-JUMP  VARIABLE IN-RUN
 
 : COLLECT ( -- )   \ the coins the box covers
    PBOX { x y w h }
-   y h + 1- >TILE 1+  y >TILE DO
-      x w + 1- >TILE 1+  x >TILE DO
+   y h + 1- >TILE 1+  y >TILE ?DO
+      x w + 1- >TILE 1+  x >TILE ?DO
          I J TILE@ COIN = IF  EMPTY I J TILE!  ADD-COIN  THEN
       LOOP
    LOOP ;
@@ -535,8 +535,8 @@ DEFER NEXT-COURSE
    h 0 ?DO  TUBE-L x 19 I - TILE!  TUBE-R x 1+ 19 I - TILE!  LOOP
    TUBE-TL x 20 h - TILE!  TUBE-TR x 1+ 20 h - TILE! ;
 : COLUMN ( tx h -- )   { x h }  h 0 ?DO  HARD x 19 I - TILE!  LOOP ;
-: STAIR-UP ( tx n -- )     { x n }  n 0 DO  x I +  I 1+  COLUMN  LOOP ;
-: STAIR-DOWN ( tx n -- )   { x n }  n 0 DO  x I +  n I -  COLUMN  LOOP ;
+: STAIR-UP ( tx n -- )     { x n }  n 0 ?DO  x I +  I 1+  COLUMN  LOOP ;
+: STAIR-DOWN ( tx n -- )   { x n }  n 0 ?DO  x I +  n I -  COLUMN  LOOP ;
 : BALLOON ( tx -- )   DUP BALLOON-X !  12 + LEN ! ;
 
 : COURSE-1 ( -- )   \ out in the day
@@ -759,7 +759,7 @@ DEFER READ-INPUT  ' LIVE-INPUT IS READ-INPUT
 VARIABLE FLIP
 : LAYER ( addr n x y -- )
    { a n x y }
-   n 0 DO
+   n 0 ?DO
       a I + C@ ?DUP IF
          8 0 DO
             DUP 128 I RSHIFT AND IF  x FLIP @ IF 7 I - ELSE I THEN +  y J +  PSET  THEN

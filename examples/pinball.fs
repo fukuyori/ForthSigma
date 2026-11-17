@@ -34,17 +34,17 @@ CREATE S-WAVE S-RATE ALLOT
 VARIABLE HISS-SEED
 : HISS-BYTE ( -- n )   HISS-SEED @ 1103515245 * 12345 + DUP HISS-SEED !  16 RSHIFT 255 AND 128 - ;
 : SWISH { at n k amp | v -- }
-   n 0 DO
+   n 0 ?DO
       HISS-BYTE v - k * 256 / v + TO v
       v amp * n I - * n / 256 /  S-WAVE at + I + C!
    LOOP ;
 : CHIME { at n half amp -- }
-   n 0 DO
+   n 0 ?DO
       I half / 1 AND IF amp ELSE amp NEGATE THEN  n I - * n /
       S-WAVE at + I + DUP C@ DUP 127 > IF 256 - THEN ROT +  -127 MAX 127 MIN  SWAP C!
    LOOP ;
 : BLOOP { at n half amp -- }
-   n 0 DO
+   n 0 ?DO
       I half I 16 / + / 1 AND IF amp ELSE amp NEGATE THEN  n I - * n /
       S-WAVE at + I + C!
    LOOP ;
@@ -149,10 +149,10 @@ VARIABLE ROW-LO   VARIABLE ROW-HI
    y y0 - x1 x0 - *  y1 y0 - /  x0 +  ROW-HIT ;
 : P] { | top bot -- }
    99999 TO top  -99999 TO bot
-   #PTS @ 0 DO  I PT@ NIP DUP top MIN TO top  bot MAX TO bot  LOOP
-   bot 1+ top DO
+   #PTS @ 0 ?DO  I PT@ NIP DUP top MIN TO top  bot MAX TO bot  LOOP
+   bot 1+ top ?DO
       99999 ROW-LO !  -99999 ROW-HI !
-      #PTS @ 0 DO  J  I PT@  I 1+ #PTS @ MOD PT@  EDGE  LOOP
+      #PTS @ 0 ?DO  J  I PT@  I 1+ #PTS @ MOD PT@  EDGE  LOOP
       ROW-HI @ ROW-LO @ >= IF  ROW-LO @ ROW-HI @ I COLOR@ GFX-HLINE  THEN
    LOOP ;
 : BOX { x1 y1 x2 y2 -- }   [P x1 y1 DV x2 y1 DV x2 y2 DV x1 y2 DV P] ;
@@ -167,7 +167,7 @@ VARIABLE ROW-LO   VARIABLE ROW-HI
 
 : ART-PX { x y | r g b n v -- rgb | -1 }
    x ZOOM * ZOOM 2/ +  y ZOOM * ZOOM 2/ +  GFX-PGET KEY-COLOR = IF -1 EXIT THEN
-   ZOOM 0 DO ZOOM 0 DO
+   ZOOM 0 ?DO ZOOM 0 ?DO
       x ZOOM * I +  y ZOOM * J +  GFX-PGET TO v
       v KEY-COLOR <> IF
          v 16 RSHIFT 255 AND r + TO r
@@ -234,7 +234,7 @@ CREATE SEGS MAX-SEGS SEG-CELLS * CELLS ALLOT    VARIABLE #SEGS
 : LN { x0 y0 x1 y1 kind -- }   x0 FX * y0 FX * x1 FX * y1 FX * kind ADD-SEG ;
 
 : ARC { cx cy r a0 a1 n kind -- }
-   n 0 DO
+   n 0 ?DO
       a1 a0 - I * n / a0 + { p }
       a1 a0 - I 1+ * n / a0 + { q }
       cx FX * r p COST * +   cy FX * r p SINT * +
@@ -410,7 +410,7 @@ VARIABLE NEXT-SPARK
    x 16 * a !  y 16 * a CELL+ !  dx a 2 CELLS + !  dy a 3 CELLS + !  life a 4 CELLS + !  c a 5 CELLS + !
    NEXT-SPARK @ 1+ #SPARKS MOD NEXT-SPARK ! ;
 : BURST { x y n spread c -- }
-   n 0 DO
+   n 0 ?DO
       x y  spread 2* 1+ RND spread -  spread 2* 1+ RND spread -  14 20 RND +  c SPARK
    LOOP ;
 
@@ -529,7 +529,7 @@ CREATE MSG-ART #MSG CELLS ALLOT   VARIABLE MSG-NOW   VARIABLE MSG-T
    kind K-TGT >= IF  LAST-VN @ -300 < IF  kind K-TGT - TGT-HIT  THEN  EXIT  THEN ;
 
 : TEST-SEGS ( -- )
-   #SEGS @ 0 DO
+   #SEGS @ 0 ?DO
       I SEG[] { a }
       BX @ a 5 CELLS + @ >  BX @ a 7 CELLS + @ < AND
       BY @ a 6 CELLS + @ > AND  BY @ a 8 CELLS + @ < AND IF
@@ -1102,7 +1102,7 @@ VARIABLE RAIL-PASS
    ENDCASE ;
 
 : DRAW-RAILS-PASS ( -- )
-   #SEGS @ 0 DO
+   #SEGS @ 0 ?DO
       I SEG[] { a }
       a 9 CELLS + @ { kind }
       kind K-DROP < kind K-GATE <> AND IF

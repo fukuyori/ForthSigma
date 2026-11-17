@@ -35,13 +35,13 @@ VARIABLE HISS-SEED
 : HISS-BYTE ( -- n )   HISS-SEED @ 1103515245 * 12345 + DUP HISS-SEED !  16 RSHIFT 255 AND 128 - ;
 \ n samples of noise from sample at on, low-passed by k/256, fading out.
 : SWISH { at n k amp | v -- }
-   n 0 DO
+   n 0 ?DO
       HISS-BYTE v - k * 256 / v + TO v
       v amp * n I - * n / 256 /  S-WAVE at + I + C!
    LOOP ;
 \ n samples of a square wave of half period half, fading out, added to what is there.
 : CHIME { at n half amp -- }
-   n 0 DO
+   n 0 ?DO
       I half / 1 AND IF amp ELSE amp NEGATE THEN  n I - * n /
       S-WAVE at + I + DUP C@ DUP 127 > IF 256 - THEN ROT +  -127 MAX 127 MIN  SWAP C!
    LOOP ;
@@ -104,7 +104,7 @@ CREATE SINE 256 CELLS ALLOT
 \ xt ( x y -- rgb | -1 ) gives the pixels; -1 is a hole in the sprite.
 : BAKE { bw bh xt | a x c x2 -- a }
    ALIGN HERE TO a   0 ,  bw ,  bh ,
-   bh 0 DO
+   bh 0 ?DO
       0 TO x
       BEGIN x bw < WHILE
          x I xt EXECUTE TO c
@@ -164,10 +164,10 @@ VARIABLE ROW-LO   VARIABLE ROW-HI
 \ Fill the convex polygon of the points given since [P.
 : P] { | top bot -- }
    99999 TO top  -99999 TO bot
-   #PTS @ 0 DO  I PT@ NIP DUP top MIN TO top  bot MAX TO bot  LOOP
-   bot 1+ top DO
+   #PTS @ 0 ?DO  I PT@ NIP DUP top MIN TO top  bot MAX TO bot  LOOP
+   bot 1+ top ?DO
       99999 ROW-LO !  -99999 ROW-HI !
-      #PTS @ 0 DO  J  I PT@  I 1+ #PTS @ MOD PT@  EDGE  LOOP
+      #PTS @ 0 ?DO  J  I PT@  I 1+ #PTS @ MOD PT@  EDGE  LOOP
       ROW-HI @ ROW-LO @ >= IF  ROW-LO @ ROW-HI @ I COLOR@ GFX-HLINE  THEN
    LOOP ;
 
@@ -177,14 +177,14 @@ VARIABLE PEN-X   VARIABLE PEN-Y   VARIABLE PEN-R
 : PEN-TO { x y | tx ty n -- }     \ a thick line from the pen
    x y >CANVAS TO ty TO tx
    tx PEN-X @ - ABS  ty PEN-Y @ - ABS MAX  2/ 1+ TO n
-   n 1+ 1 DO
+   n 1+ 1 ?DO
       tx PEN-X @ - I * n /  PEN-X @ +
       ty PEN-Y @ - I * n /  PEN-Y @ +  STAMP
    LOOP
    tx PEN-X !  ty PEN-Y ! ;
 
 : DRECT { x1 y1 x2 y2 -- }
-   y2 ZOOM @ * y1 ZOOM @ * DO  x1 ZOOM @ *  x2 ZOOM @ * 1-  I  COLOR@ GFX-HLINE  LOOP ;
+   y2 ZOOM @ * y1 ZOOM @ * ?DO  x1 ZOOM @ *  x2 ZOOM @ * 1-  I  COLOR@ GFX-HLINE  LOOP ;
 : DCIRC ( x y r -- )   >R >CANVAS R> ZOOM @ * FILL-CIRCLE ;
 : DELL { cx cy rx ry | x0 y0 rr -- }
    cx cy >CANVAS TO y0 TO x0   ry ZOOM @ * TO rr
@@ -200,7 +200,7 @@ VARIABLE PEN-X   VARIABLE PEN-Y   VARIABLE PEN-R
    s SS SS * / ;
 : GRAB-MASK { bw bh | a -- a }
    ALIGN HERE TO a  bw , bh ,
-   bh 0 DO bw 0 DO  I J SUB-ALPHA C,  LOOP LOOP  ALIGN  a ;
+   bh 0 ?DO bw 0 ?DO  I J SUB-ALPHA C,  LOOP LOOP  ALIGN  a ;
 
 \ ---- The suits ---------------------------------------------------------------------
 \ Spades 0, hearts 1, clubs 2, diamonds 3; the odd ones are red. cx cy is the middle of
@@ -318,7 +318,7 @@ CW CH * CELLS ALLOCATE THROW CONSTANT BASE-BUF
    p @ c a MIX-RGB  p ! ;
 : STAMP-MASK { x y m c flip | bw bh -- }
    m @ TO bw   m CELL+ @ TO bh
-   bh 0 DO bw 0 DO
+   bh 0 ?DO bw 0 ?DO
       m 2 CELLS + J bw * + I + C@ DUP IF
          { a }
          flip IF  CW 1- x - I -  CH 1- y - J -  ELSE  x I +  y J +  THEN  a c BLEND
@@ -536,8 +536,8 @@ VARIABLE ROBE   VARIABLE TRIM
 : FRAME-ART ( -- )
    TRIM @ { c }
    ART-X 1-  ART-Y 1-  ART-W 2 +  ART-H 2* 2 +  { x y bw bh }
-   bw 0 DO  c x I + y BUF-XY !   c x I + y bh 1- + BUF-XY !  LOOP
-   bh 0 DO  c x y I + BUF-XY !   c x bw 1- + y I + BUF-XY !  LOOP
+   bw 0 ?DO  c x I + y BUF-XY !   c x I + y bh 1- + BUF-XY !  LOOP
+   bh 0 ?DO  c x y I + BUF-XY !   c x bw 1- + y I + BUF-XY !  LOOP
    ART-W 0 DO  c  ART-X I +  ART-Y ART-H + BUF-XY !  LOOP ;
 : FACE-PIP ( -- )
    CUR-SUIT @ K-MID SUIT-MASK { m }
@@ -634,7 +634,7 @@ CREATE BTN-SPR #BTN-ART 3 * CELLS ALLOT
 
 : ROUNDED { x y bw bh c -- }
    c INK
-   bh 0 DO  x 4 + x bw + 5 -  y I + c GFX-HLINE  LOOP
+   bh 0 ?DO  x 4 + x bw + 5 -  y I + c GFX-HLINE  LOOP
    x y 4 + bw bh 8 - FILL-RECT
    x 4 + y 4 + 4 FILL-CIRCLE   x bw + 5 - y 4 + 4 FILL-CIRCLE
    x 4 + y bh + 5 - 4 FILL-CIRCLE   x bw + 5 - y bh + 5 - 4 FILL-CIRCLE ;
@@ -858,7 +858,7 @@ CREATE START-XY 13 2* CELLS ALLOT
 VARIABLE DRAG-FROM?   VARIABLE DRAG-AT-X   VARIABLE DRAG-AT-Y
 
 : REMEMBER-STARTS { src n cnt -- }
-   cnt 0 DO
+   cnt 0 ?DO
       DRAG-FROM? @ IF  DRAG-AT-X @  DRAG-AT-Y @ I UP-GAP-MAX * +
       ELSE  src n I + CARD-XY  THEN
       START-XY I 2* CELLS + 2!
@@ -885,12 +885,12 @@ VARIABLE DRAG-FROM?   VARIABLE DRAG-AT-X   VARIABLE DRAG-AT-Y
    src #CARDS n - TO cnt
    dst #CARDS TO base
    src n cnt REMEMBER-STARTS
-   cnt 0 DO  src n I + CARD@ dst PUSH-CARD  LOOP
+   cnt 0 ?DO  src n I + CARD@ dst PUSH-CARD  LOOP
    n src SET-COUNT
    src P-WASTE = IF  FAN @ 1- 1 MAX FAN !  THEN
    src dst MOVE-SCORE
    dst FOUND? IF S-FOUND ELSE S-PLACE THEN TO snd
-   cnt 0 DO
+   cnt 0 ?DO
       dst base I + CARD@
       START-XY I 2* CELLS + 2@
       dst base I + CARD-XY
@@ -913,9 +913,9 @@ VARIABLE DRAG-FROM?   VARIABLE DRAG-AT-X   VARIABLE DRAG-AT-Y
    SAVE-UNDO
    DRAW3 @ IF 3 ELSE 1 THEN  P-STOCK #CARDS MIN TO cnt
    P-WASTE #CARDS TO base
-   cnt 0 DO  P-STOCK POP-CARD UP-BIT OR  P-WASTE PUSH-CARD  LOOP
+   cnt 0 ?DO  P-STOCK POP-CARD UP-BIT OR  P-WASTE PUSH-CARD  LOOP
    cnt FAN !
-   cnt 0 DO
+   cnt 0 ?DO
       P-WASTE base I + CARD@
       P-STOCK BASE-X  TOP-Y
       P-WASTE base I + CARD-XY
@@ -943,12 +943,12 @@ CREATE DECK 52 ALLOT
    SHUFFLE-DECK
    52 0 DO  DECK I + C@ P-STOCK PUSH-CARD  LOOP
    7 0 DO
-      7 I DO
+      7 I ?DO
          P-STOCK POP-CARD  I J = IF UP-BIT OR THEN  P-T0 I + PUSH-CARD
       LOOP
    LOOP
    7 0 DO
-      7 I DO
+      7 I ?DO
          P-T0 I + J CARD@
          P-STOCK BASE-X  TOP-Y
          P-T0 I + J CARD-XY
@@ -1096,7 +1096,7 @@ VARIABLE D-PX    VARIABLE D-PY    VARIABLE D-MOVED
 
 : SPRING-BACK { | cnt c -- }
    D-SRC @ #CARDS D-IDX @ - TO cnt
-   cnt 0 DO
+   cnt 0 ?DO
       D-SRC @ D-IDX @ I + CARD@
       DRAG-X  DRAG-Y I UP-GAP-MAX * +
       D-SRC @ D-IDX @ I + CARD-XY
@@ -1155,7 +1155,7 @@ VARIABLE HOVER
    P-WASTE VISIBLE TO v
    v 0= IF  P-WASTE BASE-X TOP-Y SLOT-P @ SPR  EXIT  THEN
    FIRST-FAN 1- 0 MAX  v 1- MIN TO first      \ the card below shows while the top one flies
-   v first DO  P-WASTE I CARD-XY 999  P-WASTE I CARD@  DRAW-CARD  LOOP ;
+   v first ?DO  P-WASTE I CARD-XY 999  P-WASTE I CARD@  DRAW-CARD  LOOP ;
 
 : DRAW-FOUNDATION { p | v -- }
    p VISIBLE TO v
@@ -1165,7 +1165,7 @@ VARIABLE HOVER
 : DRAW-COLUMN { p | v y0 -- }
    p VISIBLE TO v
    v 0= IF  p BASE-X TAB-Y SLOT-K @ SPR  EXIT  THEN
-   v 0 DO
+   v 0 ?DO
       p I CARD-XY DUP TO y0
       I v 1- < IF  p I 1+ CARD-XY NIP y0 - CORNER 1+ +  ELSE 999 THEN
       p I CARD@  DRAW-CARD
@@ -1184,7 +1184,7 @@ VARIABLE HOVER
 
 \ A soft shadow: the picture under it made darker, pixel by pixel.
 : SHADE { x y bw bh -- }
-   bh 0 DO bw 0 DO
+   bh 0 ?DO bw 0 ?DO
       x I + y J + GFX-PGET DUP 0>= IF
          0 80 MIX-RGB  x I + y J + ROT GFX-PSET
       ELSE DROP THEN
@@ -1207,7 +1207,7 @@ VARIABLE HOVER
    d 0>= IF  d PILE-TARGET-XY CW CH $70F0B0 BOX-AROUND  THEN
    x CW + y 6 + 5 total SHADE
    x 6 + y total + CW 1- 5 SHADE
-   cnt 0 DO
+   cnt 0 ?DO
       x  y I UP-GAP-MAX * +
       I cnt 1- < IF UP-GAP-MAX CORNER 1+ + ELSE 999 THEN
       D-SRC @ D-IDX @ I + CARD@  DRAW-CARD
@@ -1254,7 +1254,7 @@ VARIABLE HOVER
 : BIG-NUMBER { n cx y | cnt x -- }
    n S>D <# #S #>  DUP TO cnt
    cx cnt BIG-W @ * 2/ - TO x
-   0 DO
+   0 ?DO
       DUP I + C@ [CHAR] 0 - CELLS BIG-DIGITS + @  { s }
       x I BIG-W @ * +  y  s SPR
    LOOP DROP ;

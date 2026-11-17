@@ -35,18 +35,18 @@ CREATE S-WAVE S-RATE ALLOT
 VARIABLE HISS-SEED
 : HISS-BYTE ( -- n )   HISS-SEED @ 1103515245 * 12345 + DUP HISS-SEED !  16 RSHIFT 255 AND 128 - ;
 : SWISH { at n k amp | v -- }
-   n 0 DO
+   n 0 ?DO
       HISS-BYTE v - k * 256 / v + TO v
       v amp * n I - * n / 256 /  S-WAVE at + I + C!
    LOOP ;
 : CHIME { at n half amp -- }
-   n 0 DO
+   n 0 ?DO
       I half / 1 AND IF amp ELSE amp NEGATE THEN  n I - * n /
       S-WAVE at + I + DUP C@ DUP 127 > IF 256 - THEN ROT +  -127 MAX 127 MIN  SWAP C!
    LOOP ;
 \ A square wave whose half period grows by one every 16 samples: a falling blip.
 : BLOOP { at n half amp -- }
-   n 0 DO
+   n 0 ?DO
       I half I 16 / + / 1 AND IF amp ELSE amp NEGATE THEN  n I - * n /
       S-WAVE at + I + C!
    LOOP ;
@@ -141,10 +141,10 @@ VARIABLE ROW-LO   VARIABLE ROW-HI
    y y0 - x1 x0 - *  y1 y0 - /  x0 +  ROW-HIT ;
 : P] { | top bot -- }
    99999 TO top  -99999 TO bot
-   #PTS @ 0 DO  I PT@ NIP DUP top MIN TO top  bot MAX TO bot  LOOP
-   bot 1+ top DO
+   #PTS @ 0 ?DO  I PT@ NIP DUP top MIN TO top  bot MAX TO bot  LOOP
+   bot 1+ top ?DO
       99999 ROW-LO !  -99999 ROW-HI !
-      #PTS @ 0 DO  J  I PT@  I 1+ #PTS @ MOD PT@  EDGE  LOOP
+      #PTS @ 0 ?DO  J  I PT@  I 1+ #PTS @ MOD PT@  EDGE  LOOP
       ROW-HI @ ROW-LO @ >= IF  ROW-LO @ ROW-HI @ I COLOR@ GFX-HLINE  THEN
    LOOP ;
 : BOX ( x1 y1 x2 y2 -- )   { x1 y1 x2 y2 }  [P x1 y1 DV x2 y1 DV x2 y2 DV x1 y2 DV P] ;
@@ -560,7 +560,7 @@ VARIABLE NEXT-SPARK
    x 16 * a !  y 16 * a CELL+ !  dx a 2 CELLS + !  dy a 3 CELLS + !  life a 4 CELLS + !  c a 5 CELLS + !
    NEXT-SPARK @ 1+ #SPARKS MOD NEXT-SPARK ! ;
 : BURST { x y n spread c -- }
-   n 0 DO
+   n 0 ?DO
       x y  spread 2* 1+ RND spread -  spread 2* 1+ RND spread -  20 30 RND +  c SPARK
    LOOP ;
 : STEP-SPARKS ( -- )
@@ -687,7 +687,7 @@ VARIABLE NEXT-SPARK
 \ ---- The end of a stage -------------------------------------------------------------
 
 : DRY-PIPES ( -- n )
-   0  BW BH * 0 DO
+   0  BW BH * 0 ?DO
       BOARD I + C@ 1 8 WITHIN  WETS I + C@ 0= AND IF 1+ THEN
    LOOP ;
 

@@ -173,7 +173,7 @@ Forthソースファイルは標準入力からも読み込めます。例:
 
 2026-10-28から、数値まわりと基本ワードを[Gforth](https://github.com/forthy42/gforth)の挙動に合わせ、教材ForthBasicMasterのサンプルが動くことを目標にしています。作業は6段階に分けており、段階1（64ビットセル、真=-1、床関数除算、全文字の名前照合、`TYPE ( addr u )`、基本標準ワード）、段階2（浮動小数点）、段階3（`S"` などの文字列、倍長整数、`<# #>` による数値書式）と、教材で使う小規模なワード（`WITHIN`、`:NONAME`、`STATE`、`MS`、`GETENV`、`SYSTEM` など）、`THROW`／`CATCH` と主なファイル操作（`OPEN-FILE`、`READ-LINE`、`WRITE-LINE` など）、`ALLOCATE` と動的文字列（`$!`、`$[]!` など）、ローカル変数（`{ a b -- c }`、`F:` などの型指定、`LOCALS|`）、ソースファイルの読み込み（`INCLUDE`、`REQUIRE` など）、`SEE`・`LOCATE`・`MARKER`、語彙（`VOCABULARY`、`ONLY`、`ALSO` など）と `[IF]` を実装済みで、6段階はすべて終わりました（[決定事項・保留事項](https://github.com/fukuyori/ForthSigma/blob/main/docs/DECISIONS.md)）。
 
-この実装は**ANS Forth／Forth 2012準拠を保証する処理系ではありません**。Gforthと意味が衝突しないFORTH/Σ固有のワードは残しています。
+この実装は**ANS Forth／Forth 2012準拠を保証する処理系ではありません**。調べた範囲の状況は、下の[Forth 2012の準拠状況](#forth-2012の準拠状況)にまとめています。Gforthと意味が衝突しないFORTH/Σ固有のワードは残しています。
 
 | 項目 | FORTH/Σ資料 | 現在の移植版 |
 | --- | --- | --- |
@@ -185,10 +185,91 @@ Forthソースファイルは標準入力からも読み込めます。例:
 | 数値表示 | .は空白なし、16進4桁、8進6桁 | .は末尾に空白、ゼロ埋めなし、全基数で符号付き |
 | 除算 | 資料で確定しない | 床関数除算。ゼロ除算はエラー |
 | LEAVE | 次のLOOPで終了 | 即座にループを抜ける |
-| DO | 開始値と終値が同じでも1回実行 | 資料どおり（Gforthとは異なる） |
+| DO | 開始値と終値が同じでも1回実行 | Forth 2012・Gforthと同じ。添字が一周するまで繰り返す。空の範囲を飛ばすには `?DO` を使う |
 | 浮動小数点 | なし | 専用スタック、倍精度、`E` を含むリテラル |
 
 標準側の定義は[Forth 2012 Standard](https://forth-standard.org/standard/index)を参照してください。個々の挙動と移植上の判断は、仕様書・実装ノート・決定事項に記録しています。
+
+### Forth 2012の準拠状況
+
+2026-11-17に、Forth 2012規格書の語の一覧（25語群・450項目、名前は435種類）と照合しました。全機能を有効にしたビルドは、450項目のうち446項目を備えています。
+
+| 語群 | 利用可 / 項目数 | 利用不可 |
+| --- | ---: | --- |
+| CORE | 133 / 133 |  |
+| CORE EXT | 49 / 49 |  |
+| BLOCK | 8 / 8 |  |
+| BLOCK EXT | 6 / 6 |  |
+| DOUBLE | 20 / 20 |  |
+| DOUBLE EXT | 3 / 3 |  |
+| EXCEPTION | 2 / 2 |  |
+| EXCEPTION EXT | 2 / 2 |  |
+| FACILITY | 3 / 3 |  |
+| FACILITY EXT | 37 / 37 |  |
+| FILE | 21 / 21 |  |
+| FILE EXT | 8 / 8 |  |
+| FLOATING | 31 / 31 |  |
+| FLOATING EXT | 48 / 48 |  |
+| LOCAL | 1 / 1 |  |
+| LOCAL EXT | 2 / 2 |  |
+| MEMORY | 3 / 3 |  |
+| TOOLS | 5 / 5 |  |
+| TOOLS EXT | 18 / 22 | `;CODE`, `ASSEMBLER`, `CODE`, `EDITOR` |
+| SEARCH | 9 / 9 |  |
+| SEARCH EXT | 5 / 5 |  |
+| STRING | 8 / 8 |  |
+| STRING EXT | 3 / 3 |  |
+| XCHAR | 10 / 10 |  |
+| XCHAR EXT | 11 / 11 |  |
+
+利用できない4語はプログラミングツール拡張の語で、アセンブラーまたはエディターを必要とします。語ごとの状況は[語の一覧](docs/forth2012-word-status.tsv)にあります。
+
+この集計の意味と限界は次のとおりです。
+
+- 名前の有無を数えたものです。大半の項目は `[DEFINED]` で確認しました。テキストインタープリターが構文として処理する語（`\`、`."`、`S"`、`S\"`、`C"`、`.(`、`ABORT"`、`[CHAR]`、`[']`、`[`、`]`、`POSTPONE`、`:NONAME`、`{:`、`LOCALS|`、`FORGET`）は、実際に動かして確認しました。
+- 準拠試験ではありません。すべての語の動作を規格本文と比べたわけではありません。Sigmaは標準システムであるとは主張しません。
+- 語群を外したビルド（`-Dfloat=false` など）では、使える語が減ります。
+
+規格のテストスイート（[Forth-Standard/forth-standard-test-suite](https://github.com/Forth-Standard/forth-standard-test-suite)、バージョン0.13.4）を、2026-11-17に全機能のWindowsビルドで実行しました。`runtests.fth`（約1,920件）は最後まで実行でき、失敗の報告は文字列語群の2件です。
+
+| 部分 | 結果 |
+| --- | --- |
+| Core、Core extension、Block、Double number、Exception、Facility、File-access、Locals、Memory-allocation、Programming-tools、Search-order | 失敗なし |
+| String | 失敗2件。テストは置換名 `MAC3` を作り、`%mac3%` として使う。Sigmaは置換名の大文字と小文字を区別し、Gforth 1.0.2も同じで、Gforthも同じ2件が失敗する。規格はこの名前の大文字小文字の扱いを定めていない |
+| 浮動小数点（`fp/runfptests.fth`） | 失敗なし。`fatan2-test`、`ieee-arith-test`、`ieee-fprox-test`、`fpzero-test`、`to-float-test` はエラー0件、`fpio-test` と `ak-fp-test` は完了、`paranoia` は失敗・欠陥・不備なし |
+
+浮動小数点の部分では、テストハーネスを1か所変更しました。Forth 2012が廃止予定としている `FLOATING` の環境問合せにSigmaは「不明」と答えるため、`ttester.fs` の `HAS-FLOATING` を手で設定しています。表示を目で確かめる種類のテスト（文字の表示、数値の書式）は判定していません。スイート自身が「テストは網羅的ではない」と断っており、通過したことでSigmaが標準システムになるわけではありません。同じ日の最初の実行では10種類の相違が見つかり、その後に修正しました。[2回の実行とログ](docs/measurements/2026-11-17-forth2012-test-suite.json)。
+
+規格本文と比べた動作は次のとおりです。
+
+| 項目 | 規格 | Sigma |
+| --- | --- | --- |
+| 開始値と終値が同じ `DO` | 特別な扱いはない。`LOOP` は1を足した添字が終値と等しいときだけ終了する（6.1.1240、6.1.1800） | 2026-11-17から同じ。それ以前の版は本体を1回実行していた |
+| 開始値と終値が同じ `?DO` | 本体を実行しない（6.2.0620） | 同じ |
+| `+LOOP` | 添字が「終値−1」と「終値」の境界をまたいだら終了する（6.1.0140） | 同じ。負の増分でも同じ |
+| `LEAVE`、`UNLOOP` | 直ちに抜ける。`EXIT` の前に `UNLOOP`（6.1.1760、6.1.2380） | 同じ |
+| ループ制御パラメーター | 処理系はリターンスタックに置いてよい（3.2.3.3） | 専用のループスタックに置く。規格に沿ったプログラムでは違いが現れない |
+| 構造体 | `BEGIN-STRUCTURE`、`+FIELD`、`FIELD:`、`CFIELD:`、`FFIELD:`、`SFFIELD:`、`DFFIELD:`、`END-STRUCTURE` | 利用可。試験用の構造体の大きさとオフセットはGforthと同じ |
+
+### Gforthとの違い
+
+SigmaはGforthと合わせられる範囲でGforthに従い、WSLで動かしたGforthと語を比べています。分かっている違いは次のとおりです。語ごとの記録は[互換性一覧](docs/COMPATIBILITY.ja.md)にあります。
+
+| 項目 | Gforth | Sigma |
+| --- | --- | --- |
+| ループ制御パラメーター | リターンスタックに置く。ループの中の `R@` はループ添字を返し、`>R` の後の `I` は積んだ値を返す | 専用のループスタックに置く。`R@` はプログラムが積んだ値を返し、`I` は添字のまま。どちらの使い方も規格の範囲外 |
+| `2RDROP EXIT` によるループ脱出 | 動く | プログラム自身のセルがリターンスタックにないと-6になる。両方で動く `UNLOOP EXIT` を使う |
+| `CODE`、`END-CODE`、`;CODE`、`ASSEMBLER` | 利用可 | 利用不可（アセンブラーがない） |
+| `SAVESYSTEM`、`'COLD`、`BOOTMESSAGE`、`SCRIPT?` | 利用可 | 利用不可。イメージの保存は `SAVESYS` |
+| メモリー | ホストのアドレス | 独自のアドレスを持つ1つの論理メモリー（既定64 MiB）。`-m`、`-d`、`-r`、`-f`、`-l` で大きさを指定する |
+| 空または未設定の `FPATH` | 空の検索パス | 従来どおりカレントディレクトリーからファイルを探す |
+| `IS` | 遅延語 | `FVALUE`、`2VALUE`、`$VALUE` にも使える。対象外の語は-259 |
+| パイプ | `BROKEN-PIPE-ERROR` は-2049 | 単方向だけ（`R/O` または `W/O`）。`BROKEN-PIPE-ERROR` は-544 |
+| 浮動小数点関数 | Gforth自身の結果 | CORE-MATHによる正しい丸め。一部の結果がGforthと1 ulp異なる |
+| `SEE` | Gforthの逆コンパイル表示 | 独自の形式。たとえばフィールドは `オフセット +FIELD 名前` |
+| FORTH/Σの語 | なし | 衝突しない範囲で残している。たとえば `"..."` の文字列、`BEGIN ... END` |
+
+ループの行は2026-11-17にGforth 1.0.2で実行して確かめました。その他の行は互換性一覧に記録した比較に基づき、その多くはGforth 0.7.9_20260410との比較です。
 
 ## 出典・参考資料
 

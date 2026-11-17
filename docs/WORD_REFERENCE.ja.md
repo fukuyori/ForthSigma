@@ -12,12 +12,12 @@
 
 - [AUDIO](#namespace-audio) (73)
 - [EKEYS](#namespace-ekeys) (35)
-- [FORTH](#namespace-forth) (955)
+- [FORTH](#namespace-forth) (957)
 - [GAME](#namespace-game) (59)
 - [GRAPHICS](#namespace-graphics) (207)
 - [GUI](#namespace-gui) (120)
 - [Root](#namespace-root) (14)
-- [Syntax](#namespace-syntax) (40)
+- [Syntax](#namespace-syntax) (38)
 
 更新：`python scripts/word-reference.py`。照合のみ：`python scripts/word-reference.py --check`。生成文書の本文を直接編集せず、HELP原文・登録定義または生成スクリプトを更新してください。
 
@@ -3772,6 +3772,7 @@ ALSO EKEYS K-WINCH . PREVIOUS
 - [` %ALLOT `](#w-464f5254483a25414c4c4f54)
 - [` %SIZE `](#w-464f5254483a2553495a45)
 - [` ' `](#w-464f5254483a27)
+- [` ( `](#w-464f5254483a28)
 - [` (ASSERT) `](#w-464f5254483a2841535345525429)
 - [` (BREAK") `](#w-464f5254483a28425245414b2229)
 - [` (BREAK:) `](#w-464f5254483a28425245414b3a29)
@@ -4015,6 +4016,7 @@ ALSO EKEYS K-WINCH . PREVIOUS
 - [` CELL/ `](#w-464f5254483a43454c4c2f)
 - [` CELLS `](#w-464f5254483a43454c4c53)
 - [` CFIELD: `](#w-464f5254483a434649454c443a)
+- [` CHAR `](#w-464f5254483a43484152)
 - [` CHAR% `](#w-464f5254483a4348415225)
 - [` CHAR+ `](#w-464f5254483a434841522b)
 - [` CHAR- `](#w-464f5254483a434841522d)
@@ -6279,7 +6281,7 @@ Align HERE for the structure.
 STRUCT CELL% FIELD S.A END-STRUCT R% HERE 1 ALLOT R% %ALIGN HERE SWAP - . HERE R% %ALLOT TUCK = . HERE SWAP - . R% %ALLOC 0<> . R% %ALLOCATE . 0<> .
 ```
 
-[使用例の文脈](../src/tests/core_words_test.zig#L951)
+[使用例の文脈](../src/tests/core_words_test.zig#L998)
 
 注意：スタック効果の入力順を守ってください。使用例の名前・値は例の定義や初期状態に依存します。
 
@@ -6309,7 +6311,7 @@ The alignment of a structure.
 STRUCT . . STRUCT CELL% FIELD S.A CHAR% FIELD S.B FLOAT% FIELD S.C CHAR% FIELD S.D DOUBLE% FIELD S.E SFLOAT% FIELD S.F DFLOAT% FIELD S.G CHAR% 3 * FIELD S.H END-STRUCT REC% REC% . . 0 S.A . 0 S.B . 0 S.C . 0 S.D . 0 S.E . 0 S.F . 0 S.G . 0 S.H . CELL% . . CHAR% . . FLOAT% . . DOUBLE% . . SFLOAT% . . DFLOAT% . . REC% %SIZE . REC% %ALIGNMENT .
 ```
 
-[使用例の文脈](../src/tests/core_words_test.zig#L946)
+[使用例の文脈](../src/tests/core_words_test.zig#L993)
 
 注意：スタック効果の入力順を守ってください。使用例の名前・値は例の定義や初期状態に依存します。
 
@@ -6339,7 +6341,7 @@ Allocate the structure on the heap; throw if there is no memory.
 STRUCT CELL% FIELD S.A END-STRUCT R% HERE 1 ALLOT R% %ALIGN HERE SWAP - . HERE R% %ALLOT TUCK = . HERE SWAP - . R% %ALLOC 0<> . R% %ALLOCATE . 0<> .
 ```
 
-[使用例の文脈](../src/tests/core_words_test.zig#L951)
+[使用例の文脈](../src/tests/core_words_test.zig#L998)
 
 注意：番地・長さ・容量は有効な論理メモリー範囲を指定します。所有領域と借用領域の寿命を区別してください。
 
@@ -6369,7 +6371,7 @@ Allocate the structure on the heap.
 STRUCT CELL% FIELD S.A END-STRUCT R% HERE 1 ALLOT R% %ALIGN HERE SWAP - . HERE R% %ALLOT TUCK = . HERE SWAP - . R% %ALLOC 0<> . R% %ALLOCATE . 0<> .
 ```
 
-[使用例の文脈](../src/tests/core_words_test.zig#L951)
+[使用例の文脈](../src/tests/core_words_test.zig#L998)
 
 注意：戻り値のiorを確認してください。0が成功です。THROWへ渡す方法もあります。 番地・長さ・容量は有効な論理メモリー範囲を指定します。所有領域と借用領域の寿命を区別してください。
 
@@ -6399,7 +6401,7 @@ Align HERE and allot the structure.
 STRUCT CELL% FIELD S.A END-STRUCT R% HERE 1 ALLOT R% %ALIGN HERE SWAP - . HERE R% %ALLOT TUCK = . HERE SWAP - . R% %ALLOC 0<> . R% %ALLOCATE . 0<> .
 ```
 
-[使用例の文脈](../src/tests/core_words_test.zig#L951)
+[使用例の文脈](../src/tests/core_words_test.zig#L998)
 
 注意：番地・長さ・容量は有効な論理メモリー範囲を指定します。所有領域と借用領域の寿命を区別してください。
 
@@ -6464,6 +6466,32 @@ V ' V = .
 注意：スタック効果の入力順を守ってください。使用例の名前・値は例の定義や初期状態に依存します。
 
 出典：[src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L528).
+
+<a id="w-464f5254483a28"></a>
+
+### ` ( `
+
+` ( -- ) `
+
+最初の)までを無視します。コメントは入れ子にできません。ファイルの中では行をまたいで続き、ファイルの終わりでコメントも終わります。ブロック入力では1024バイトの範囲内で64バイト行をまたぎます。それ以外では閉じ記号の欠落はエラーです。
+
+<details><summary>英語の説明（HELP・実装に基づく）</summary>
+
+Ignore text through the first ); comments do not nest. In a file the comment goes on over lines, and the end of the file ends it. Block input can cross 64-byte rows within its 1024-byte buffer. Elsewhere a missing ) is an error.
+
+</details>
+
+種別：builtin; immediate.
+
+使用例
+
+```forth
+( ignored text ) 42 .
+```
+
+注意：即時語なので、定義のコンパイル中にもその場で実行されます。
+
+出典：[src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L947).
 
 <a id="w-464f5254483a2841535345525429"></a>
 
@@ -6803,7 +6831,7 @@ n1 times n2 divided by n3 (floored), with a double-cell product in between.
 9223372036854775807 2 3 */ .
 ```
 
-[使用例の文脈](../src/tests/core_words_test.zig#L401)
+[使用例の文脈](../src/tests/core_words_test.zig#L448)
 
 注意：スタック効果の入力順を守ってください。使用例の名前・値は例の定義や初期状態に依存します。
 
@@ -6865,7 +6893,7 @@ Like \*/, giving the remainder too.
 10 3 4 */ . -10 3 4 */ . 10 -3 4 */ . 7 2 -3 */ . 10 3 4 */MOD . . -10 3 4 */MOD . .
 ```
 
-[使用例の文脈](../src/tests/core_words_test.zig#L399)
+[使用例の文脈](../src/tests/core_words_test.zig#L446)
 
 注意：スタック効果の入力順を守ってください。使用例の名前・値は例の定義や初期状態に依存します。
 
@@ -7063,7 +7091,7 @@ Add; 64-bit two's complement, wrapping on overflow.
 2 3 +
 ```
 
-[使用例の文脈](../src/tests/core_words_test.zig#L454)
+[使用例の文脈](../src/tests/core_words_test.zig#L501)
 
 注意：スタック効果の入力順を守ってください。使用例の名前・値は例の定義や初期状態に依存します。
 
@@ -7091,7 +7119,7 @@ Add n to the cell at addr.
 VARIABLE CALLED : P 1 CALLED +! ;
 ```
 
-[使用例の文脈](../src/tests/p07d_test.zig#L208)
+[使用例の文脈](../src/tests/p07d_test.zig#L210)
 
 注意：番地・長さ・容量は有効な論理メモリー範囲を指定します。所有領域と借用領域の寿命を区別してください。
 
@@ -7233,7 +7261,7 @@ Add n to the index and repeat until it crosses the limit; a loop whose limit equ
 : EDGE 0 1 DO I -1 +LOOP ; EDGE
 ```
 
-[使用例の文脈](../src/tests/core_words_test.zig#L645)
+[使用例の文脈](../src/tests/core_words_test.zig#L692)
 
 注意：コンパイル専用です。通常の解釈時入力では実行できません。
 
@@ -7377,7 +7405,7 @@ Store a cell at HERE and advance HERE.
 : CELL <BUILDS , DOES> @ ;
 ```
 
-[使用例の文脈](../src/tests/core_words_test.zig#L742)
+[使用例の文脈](../src/tests/core_words_test.zig#L789)
 
 注意：スタック効果の入力順を守ってください。使用例の名前・値は例の定義や初期状態に依存します。
 
@@ -7635,7 +7663,7 @@ Move the top cell below the next two.
 1 2 3 -ROT NIP 4 TUCK 2DUP 2DROP DEPTH 9 8 7 2 PICK 3 ROLL 5 >R R@ R> 2SWAP 2OVER
 ```
 
-[使用例の文脈](../src/tests/core_words_test.zig#L781)
+[使用例の文脈](../src/tests/core_words_test.zig#L828)
 
 注意：スタック効果の入力順を守ってください。使用例の名前・値は例の定義や初期状態に依存します。
 
@@ -7785,7 +7813,7 @@ With --coverage: show how often each block of the code ran, as file:line:column:
 INCLUDE a.txt .COVER-RAW
 ```
 
-[使用例の文脈](../src/tests/debug_words_test.zig#L327)
+[使用例の文脈](../src/tests/debug_words_test.zig#L380)
 
 注意：スタック効果の入力順を守ってください。使用例の名前・値は例の定義や初期状態に依存します。
 
@@ -7815,7 +7843,7 @@ With --coverage: show the files, with ( count) after the word that starts each b
 .COVERAGE
 ```
 
-[使用例の文脈](../src/tests/debug_words_test.zig#L335)
+[使用例の文脈](../src/tests/debug_words_test.zig#L388)
 
 注意：スタック効果の入力順を守ってください。使用例の名前・値は例の定義や初期状態に依存します。
 
@@ -7987,7 +8015,7 @@ Print n right-aligned in width characters, without a space after it.
 CHAR | EMIT 42 5 .R CHAR | EMIT -42 5 .R CHAR | EMIT 123456 3 .R CHAR | EMIT 7 0 .R CHAR | EMIT 7 -3 .R CHAR | EMIT 42 5 U.R CHAR | EMIT -1 3 U.R CHAR | EMIT 7 -9223372036854775808 .R CHAR | EMIT HEX 255 6 .R
 ```
 
-[使用例の文脈](../src/tests/core_words_test.zig#L382)
+[使用例の文脈](../src/tests/core_words_test.zig#L429)
 
 注意：スタック効果の入力順を守ってください。使用例の名前・値は例の定義や初期状態に依存します。
 
@@ -8017,7 +8045,7 @@ Show depth and up to MAXDEPTH-.S top cells without removing them; the initial li
 1 -2 3 .S
 ```
 
-[使用例の文脈](../src/tests/core_words_test.zig#L144)
+[使用例の文脈](../src/tests/core_words_test.zig#L191)
 
 注意：スタック効果の入力順を守ってください。使用例の名前・値は例の定義や初期状態に依存します。
 
@@ -8567,7 +8595,7 @@ True if n is positive.
 : T5 CASE DUP . DUP 0> ?OF 1- CONTOF ." done" ENDCASE ; 3 T5
 ```
 
-[使用例の文脈](../src/tests/core_words_test.zig#L900)
+[使用例の文脈](../src/tests/core_words_test.zig#L947)
 
 注意：スタック効果の入力順を守ってください。使用例の名前・値は例の定義や初期状態に依存します。
 
@@ -8789,7 +8817,7 @@ Shift left by one bit.
 : A 1+ ; : B A 2* ; : C B 3 + ;
 ```
 
-[使用例の文脈](../src/tests/debug_step_test.zig#L277)
+[使用例の文脈](../src/tests/debug_step_test.zig#L291)
 
 注意：スタック効果の入力順を守ってください。使用例の名前・値は例の定義や初期状態に依存します。
 
@@ -8847,7 +8875,7 @@ Shift right by one bit, keeping the sign.
 1 4 LSHIFT -1 60 RSHIFT 3 CELLS 0 CELL+ 9 ALIGNED BL CHAR A : Z [CHAR] Z ; Z $FF #10 %101 'a' -7 2/ 1 \ 2 3
 ```
 
-[使用例の文脈](../src/tests/core_words_test.zig#L792)
+[使用例の文脈](../src/tests/core_words_test.zig#L839)
 
 注意：スタック効果の入力順を守ってください。使用例の名前・値は例の定義や初期状態に依存します。
 
@@ -8961,7 +8989,7 @@ Remove the top two cells.
 2DROP 8 TO V
 ```
 
-[使用例の文脈](../src/tests/debug_words_test.zig#L165)
+[使用例の文脈](../src/tests/debug_words_test.zig#L218)
 
 注意：スタック効果の入力順を守ってください。使用例の名前・値は例の定義や初期状態に依存します。
 
@@ -9047,7 +9075,7 @@ While compiling, compile the double-cell number d.
 16 BUFFER: BUF BUF 16 ERASE 7 BUF C! BUF C@ . HERE BUF - . : T5 [ 12345678901234567890. ] 2LITERAL ; T5 D.
 ```
 
-[使用例の文脈](../src/tests/core_words_test.zig#L262)
+[使用例の文脈](../src/tests/core_words_test.zig#L309)
 
 注意：コンパイル専用です。通常の解釈時入力では実行できません。
 
@@ -9105,7 +9133,7 @@ Copy the second pair to the top.
 1 2 3 -ROT NIP 4 TUCK 2DUP 2DROP DEPTH 9 8 7 2 PICK 3 ROLL 5 >R R@ R> 2SWAP 2OVER
 ```
 
-[使用例の文脈](../src/tests/core_words_test.zig#L781)
+[使用例の文脈](../src/tests/core_words_test.zig#L828)
 
 注意：スタック効果の入力順を守ってください。使用例の名前・値は例の定義や初期状態に依存します。
 
@@ -9165,7 +9193,7 @@ Copy the pair 2&gt;R moved, keeping it on the return stack.
 : T2 1 2 2>R 2R@ 2R> ; T2 . . . .
 ```
 
-[使用例の文脈](../src/tests/core_words_test.zig#L380)
+[使用例の文脈](../src/tests/core_words_test.zig#L427)
 
 注意：スタック効果の入力順を守ってください。使用例の名前・値は例の定義や初期状態に依存します。
 
@@ -9223,7 +9251,7 @@ Move the third pair of cells to the top.
 1. 2. DU< . -1. 1. DU< . 1. -1. DU< . 1. 2. 3. 2ROT D. D. D.
 ```
 
-[使用例の文脈](../src/tests/core_words_test.zig#L268)
+[使用例の文脈](../src/tests/core_words_test.zig#L315)
 
 注意：スタック効果の入力順を守ってください。使用例の名前・値は例の定義や初期状態に依存します。
 
@@ -9483,7 +9511,7 @@ True if n1 is less than n2.
 : COUNT-UP 0 BEGIN DUP 3 < WHILE 1 + REPEAT ;
 ```
 
-[使用例の文脈](../src/tests/core_words_test.zig#L620)
+[使用例の文脈](../src/tests/core_words_test.zig#L667)
 
 注意：スタック効果の入力順を守ってください。使用例の名前・値は例の定義や初期状態に依存します。
 
@@ -9597,7 +9625,7 @@ True if not equal.
 : T8 0 BEGIN DUP 10 < WHILE DUP 5 <> WHILE 1+ REPEAT ." five" THEN . ; T8
 ```
 
-[使用例の文脈](../src/tests/core_words_test.zig#L300)
+[使用例の文脈](../src/tests/core_words_test.zig#L347)
 
 注意：スタック効果の入力順を守ってください。使用例の名前・値は例の定義や初期状態に依存します。
 
@@ -9625,7 +9653,7 @@ The FORTH/Sigma name of CREATE.
 : CELL <BUILDS , DOES> @ ;
 ```
 
-[使用例の文脈](../src/tests/core_words_test.zig#L742)
+[使用例の文脈](../src/tests/core_words_test.zig#L789)
 
 注意：スタック効果の入力順を守ってください。使用例の名前・値は例の定義や初期状態に依存します。
 
@@ -9713,7 +9741,7 @@ True if n1 is greater than n2.
 : FACT DUP 1 > IF DUP 1- RECURSE * THEN ; U A 20 FACT
 ```
 
-[使用例の文脈](../src/tests/core_words_test.zig#L816)
+[使用例の文脈](../src/tests/core_words_test.zig#L863)
 
 注意：スタック効果の入力順を守ってください。使用例の名前・値は例の定義や初期状態に依存します。
 
@@ -10009,7 +10037,7 @@ Move a cell to the return stack.
 0 >R
 ```
 
-[使用例の文脈](../src/tests/core_words_test.zig#L535)
+[使用例の文脈](../src/tests/core_words_test.zig#L582)
 
 注意：スタック効果の入力順を守ってください。使用例の名前・値は例の定義や初期状態に依存します。
 
@@ -10153,7 +10181,7 @@ Copy the top cell unless it is zero.
 5 ?DUP . . 0 ?DUP . DEPTH .
 ```
 
-[使用例の文脈](../src/tests/core_words_test.zig#L378)
+[使用例の文脈](../src/tests/core_words_test.zig#L425)
 
 注意：スタック効果の入力順を守ってください。使用例の名前・値は例の定義や初期状態に依存します。
 
@@ -10267,7 +10295,7 @@ Return from the current definition if flag is true.
 : T2 DUP . ?EXIT ." after" ; 0 T2 1 T2 NOOP VARIABLE XV ' DUP XV ! 4 XV PERFORM . .
 ```
 
-[使用例の文脈](../src/tests/core_words_test.zig#L889)
+[使用例の文脈](../src/tests/core_words_test.zig#L936)
 
 注意：コンパイル専用です。通常の解釈時入力では実行できません。
 
@@ -10325,7 +10353,7 @@ Leave the innermost DO loop if flag is true.
 : T3 10 0 DO I . I 3 = ?LEAVE LOOP ; T3 10 CELL- . 1 2 3 UNDER+ . . 0 0>= . -1 0>= . 1 0>= .
 ```
 
-[使用例の文脈](../src/tests/core_words_test.zig#L890)
+[使用例の文脈](../src/tests/core_words_test.zig#L937)
 
 注意：コンパイル専用です。通常の解釈時入力では実行できません。
 
@@ -10355,7 +10383,7 @@ Like OF, but run the branch if flag is true.
 : T5 CASE DUP . DUP 0> ?OF 1- CONTOF ." done" ENDCASE ; 3 T5
 ```
 
-[使用例の文脈](../src/tests/core_words_test.zig#L900)
+[使用例の文脈](../src/tests/core_words_test.zig#L947)
 
 注意：コンパイル専用です。通常の解釈時入力では実行できません。
 
@@ -11194,7 +11222,7 @@ Store x as element i of the cell array at addr.
 VARIABLE V 123 V ! V @ 2 ARRAY A 42 1 A A! 1 A A@ : MESSAGE " OK" TYPE ; MESSAGE
 ```
 
-[使用例の文脈](../src/tests/core_words_test.zig#L124)
+[使用例の文脈](../src/tests/core_words_test.zig#L171)
 
 注意：番地・長さ・容量は有効な論理メモリー範囲を指定します。所有領域と借用領域の寿命を区別してください。
 
@@ -11250,7 +11278,7 @@ Fetch element i of the cell array at addr (see ARRAY).
 VARIABLE V 123 V ! V @ 2 ARRAY A 42 1 A A! 1 A A@ : MESSAGE " OK" TYPE ; MESSAGE
 ```
 
-[使用例の文脈](../src/tests/core_words_test.zig#L124)
+[使用例の文脈](../src/tests/core_words_test.zig#L171)
 
 注意：番地・長さ・容量は有効な論理メモリー範囲を指定します。所有領域と借用領域の寿命を区別してください。
 
@@ -11280,7 +11308,7 @@ Empty the stacks and return to the terminal without a message.
 1 2 ' + CATCH : V 1 0 / ; ' V CATCH ' ABORT CATCH S" NOSUCHWORD" ' EVALUATE CATCH NIP NIP
 ```
 
-[使用例の文脈](../src/tests/catch_test.zig#L276)
+[使用例の文脈](../src/tests/catch_test.zig#L435)
 
 注意：スタック効果の入力順を守ってください。使用例の名前・値は例の定義や初期状態に依存します。
 
@@ -11566,7 +11594,7 @@ Go back to BEGIN forever (leave with EXIT).
 : FOREVER BEGIN AGAIN ; : RUN-LIMIT ['] FOREVER CATCH ;
 ```
 
-[使用例の文脈](../src/tests/catch_test.zig#L195)
+[使用例の文脈](../src/tests/catch_test.zig#L354)
 
 注意：コンパイル専用です。通常の解釈時入力では実行できません。
 
@@ -11594,7 +11622,7 @@ In a definition, branch forward always; THEN marks where to.
 : T1 AHEAD 111 . THEN 222 . ; T1 : T2 1 2 3 3 N>R 99 . NR> . . . . ; T2 : T3 0 N>R NR> . ; T3
 ```
 
-[使用例の文脈](../src/tests/core_words_test.zig#L365)
+[使用例の文脈](../src/tests/core_words_test.zig#L412)
 
 注意：コンパイル専用です。通常の解釈時入力では実行できません。
 
@@ -11654,7 +11682,7 @@ Round HERE up to a multiple of the cell size.
 HERE 1 ALLOT ALIGN HERE SWAP - . HERE ALIGN HERE SWAP - . UNUSED 0> .
 ```
 
-[使用例の文脈](../src/tests/core_words_test.zig#L381)
+[使用例の文脈](../src/tests/core_words_test.zig#L428)
 
 注意：スタック効果の入力順を守ってください。使用例の名前・値は例の定義や初期状態に依存します。
 
@@ -11682,7 +11710,7 @@ Round up to a multiple of the cell size.
 1 4 LSHIFT -1 60 RSHIFT 3 CELLS 0 CELL+ 9 ALIGNED BL CHAR A : Z [CHAR] Z ; Z $FF #10 %101 'a' -7 2/ 1 \ 2 3
 ```
 
-[使用例の文脈](../src/tests/core_words_test.zig#L792)
+[使用例の文脈](../src/tests/core_words_test.zig#L839)
 
 注意：番地・長さ・容量は有効な論理メモリー範囲を指定します。所有領域と借用領域の寿命を区別してください。
 
@@ -11740,7 +11768,7 @@ Reserve n bytes of data space (negative n gives them back).
 1 ALLOT
 ```
 
-[使用例の文脈](../src/tests/core_words_test.zig#L222)
+[使用例の文脈](../src/tests/core_words_test.zig#L269)
 
 注意：スタック効果の入力順を守ってください。使用例の名前・値は例の定義や初期状態に依存します。
 
@@ -11969,10 +11997,10 @@ Make an array of n cells; name pushes its address, used with A@ and A!.
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
 ```forth
-7 CONSTANT K VARIABLE V CREATE RAW 19 , 2 ARRAY A
+7 CONSTANT K VARIABLE V CREATE RAW 2 ARRAY A
 ```
 
-[使用例の文脈](../src/tests/core_words_test.zig#L74)
+[使用例の文脈](../src/tests/core_words_test.zig#L104)
 
 注意：スタック効果の入力順を守ってください。使用例の名前・値は例の定義や初期状態に依存します。
 
@@ -12522,7 +12550,7 @@ Start a loop: BEGIN ... UNTIL, BEGIN ... AGAIN, or BEGIN ... WHILE ... REPEAT.
 : COUNT-TO 0 BEGIN 1 + DUP 3 = END ;
 ```
 
-[使用例の文脈](../src/tests/core_words_test.zig#L621)
+[使用例の文脈](../src/tests/core_words_test.zig#L668)
 
 注意：コンパイル専用です。通常の解釈時入力では実行できません。
 
@@ -12758,7 +12786,7 @@ As BREAK:, after showing BREAK AT: and the text.
 : T BREAK: 123 . ; : U BREAK" there" 7 . ;
 ```
 
-[使用例の文脈](../src/tests/debug_step_test.zig#L223)
+[使用例の文脈](../src/tests/debug_step_test.zig#L237)
 
 注意：即時語なので、定義のコンパイル中にもその場で実行されます。
 
@@ -12788,7 +12816,7 @@ In a definition: from here on, step through it as DBG does.
 : T BREAK: 123 . ; : U BREAK" there" 7 . ;
 ```
 
-[使用例の文脈](../src/tests/debug_step_test.zig#L223)
+[使用例の文脈](../src/tests/debug_step_test.zig#L237)
 
 注意：即時語なので、定義のコンパイル中にもその場で実行されます。
 
@@ -12962,7 +12990,7 @@ Reserve u bytes of data space; name pushes their address.
 16 BUFFER: BUF BUF 16 ERASE 7 BUF C! BUF C@ . HERE BUF - . : T5 [ 12345678901234567890. ] 2LITERAL ; T5 D.
 ```
 
-[使用例の文脈](../src/tests/core_words_test.zig#L262)
+[使用例の文脈](../src/tests/core_words_test.zig#L309)
 
 注意：スタック効果の入力順を守ってください。使用例の名前・値は例の定義や初期状態に依存します。
 
@@ -13136,7 +13164,7 @@ Print the low 8 bits as a number and a space.
 HEX FF . -1 . 10 U. DECIMAL -1 U. 8 OCT . DECIMAL 300 C.
 ```
 
-[使用例の文脈](../src/tests/core_words_test.zig#L136)
+[使用例の文脈](../src/tests/core_words_test.zig#L183)
 
 注意：スタック効果の入力順を守ってください。使用例の名前・値は例の定義や初期状態に依存します。
 
@@ -13308,7 +13336,7 @@ Start CASE n OF ... ENDOF ... ENDCASE, which runs the branch whose value equals 
 : T5 CASE DUP . DUP 0> ?OF 1- CONTOF ." done" ENDCASE ; 3 T5
 ```
 
-[使用例の文脈](../src/tests/core_words_test.zig#L900)
+[使用例の文脈](../src/tests/core_words_test.zig#L947)
 
 注意：コンパイル専用です。通常の解釈時入力では実行できません。
 
@@ -13424,7 +13452,7 @@ The alignment and size of a cell.
 STRUCT CELL% FIELD S.A END-STRUCT R% HERE 1 ALLOT R% %ALIGN HERE SWAP - . HERE R% %ALLOT TUCK = . HERE SWAP - . R% %ALLOC 0<> . R% %ALLOCATE . 0<> .
 ```
 
-[使用例の文脈](../src/tests/core_words_test.zig#L951)
+[使用例の文脈](../src/tests/core_words_test.zig#L998)
 
 注意：スタック効果の入力順を守ってください。使用例の名前・値は例の定義や初期状態に依存します。
 
@@ -13480,7 +13508,7 @@ Subtract the size of a cell.
 : T3 10 0 DO I . I 3 = ?LEAVE LOOP ; T3 10 CELL- . 1 2 3 UNDER+ . . 0 0>= . -1 0>= . 1 0>= .
 ```
 
-[使用例の文脈](../src/tests/core_words_test.zig#L890)
+[使用例の文脈](../src/tests/core_words_test.zig#L937)
 
 注意：番地・長さ・容量は有効な論理メモリー範囲を指定します。所有領域と借用領域の寿命を区別してください。
 
@@ -13578,6 +13606,36 @@ BEGIN-STRUCTURE REVIEW-STRUCT FIELD: REVIEW-CELL CFIELD: REVIEW-CHAR FFIELD: REV
 
 出典：[src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L422).
 
+<a id="w-464f5254483a43484152"></a>
+
+### ` CHAR `
+
+` ( "word" -- xc ) `
+
+次の語の先頭UTF-8文字のコードポイントを返します。定義の中では、その定義を実行したときに語を読みます。リテラルにするには\[CHAR\]を使います。
+
+<details><summary>英語の説明（HELP・実装に基づく）</summary>
+
+The code point of the first character (UTF-8) of the next word. In a definition the word is read when the definition runs; use \[CHAR\] for a literal.
+
+</details>
+
+種別：builtin.
+
+関連説明：[文字（UTF-8）](USER_MANUAL.ja.md#文字utf-8), [P07d 入力の一時切り替えと前方参照](USER_MANUAL.ja.md#p07d-入力の一時切り替えと前方参照).
+
+使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
+
+```forth
+CHAR b KEY-HELD?
+```
+
+[使用例の文脈](../src/tests/graphics_test.zig#L2339)
+
+注意：スタック効果の入力順を守ってください。使用例の名前・値は例の定義や初期状態に依存します。
+
+出典：[src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L953).
+
 <a id="w-464f5254483a4348415225"></a>
 
 ### ` CHAR% `
@@ -13602,7 +13660,7 @@ The alignment and size of a character.
 STRUCT . . STRUCT CELL% FIELD S.A CHAR% FIELD S.B FLOAT% FIELD S.C CHAR% FIELD S.D DOUBLE% FIELD S.E SFLOAT% FIELD S.F DFLOAT% FIELD S.G CHAR% 3 * FIELD S.H END-STRUCT REC% REC% . . 0 S.A . 0 S.B . 0 S.C . 0 S.D . 0 S.E . 0 S.F . 0 S.G . 0 S.H . CELL% . . CHAR% . . FLOAT% . . DOUBLE% . . SFLOAT% . . DFLOAT% . . REC% %SIZE . REC% %ALIGNMENT .
 ```
 
-[使用例の文脈](../src/tests/core_words_test.zig#L946)
+[使用例の文脈](../src/tests/core_words_test.zig#L993)
 
 注意：スタック効果の入力順を守ってください。使用例の名前・値は例の定義や初期状態に依存します。
 
@@ -14038,7 +14096,7 @@ Append the execution of xt to the definition being compiled.
 : SQ DUP * ; : GEN ['] SQ COMPILE, ; IMMEDIATE : T1 GEN 1+ ; 5 T1 . : T2 [ ' SQ COMPILE, ] ; 3 T2 .
 ```
 
-[使用例の文脈](../src/tests/core_words_test.zig#L924)
+[使用例の文脈](../src/tests/core_words_test.zig#L971)
 
 注意：スタック効果の入力順を守ってください。使用例の名前・値は例の定義や初期状態に依存します。
 
@@ -14214,7 +14272,7 @@ End an OF branch and go back to CASE.
 : T5 CASE DUP . DUP 0> ?OF 1- CONTOF ." done" ENDCASE ; 3 T5
 ```
 
-[使用例の文脈](../src/tests/core_words_test.zig#L900)
+[使用例の文脈](../src/tests/core_words_test.zig#L947)
 
 注意：コンパイル専用です。通常の解釈時入力では実行できません。
 
@@ -14304,7 +14362,7 @@ With --coverage: show the part of the blocks of the code that ran at least once.
 COV%
 ```
 
-[使用例の文脈](../src/tests/debug_words_test.zig#L331)
+[使用例の文脈](../src/tests/debug_words_test.zig#L384)
 
 注意：スタック効果の入力順を守ってください。使用例の名前・値は例の定義や初期状態に依存します。
 
@@ -14478,7 +14536,7 @@ While compiling, copy the u-th entry of the control-flow stack to its top.
 : T7 0 BEGIN [ 0 CS-PICK ] 1+ DUP 3 > UNTIL . EXIT AGAIN ; T7
 ```
 
-[使用例の文脈](../src/tests/core_words_test.zig#L302)
+[使用例の文脈](../src/tests/core_words_test.zig#L349)
 
 注意：スタック効果の入力順を守ってください。使用例の名前・値は例の定義や初期状態に依存します。
 
@@ -14506,7 +14564,7 @@ While compiling, move the u-th entry of the control-flow stack to its top.
 : MYWHILE POSTPONE IF 1 CS-ROLL ; IMMEDIATE : T2 0 BEGIN DUP 3 < MYWHILE 1+ REPEAT . ; T2
 ```
 
-[使用例の文脈](../src/tests/core_words_test.zig#L299)
+[使用例の文脈](../src/tests/core_words_test.zig#L346)
 
 注意：スタック効果の入力順を守ってください。使用例の名前・値は例の定義や初期状態に依存します。
 
@@ -14830,7 +14888,7 @@ Print a double-cell number right-aligned in width characters, without a space af
 CHAR | EMIT 12345. 10 D.R CHAR | EMIT -12345. 10 D.R CHAR | EMIT 123456789012. 3 D.R CHAR | EMIT 12345. -3 D.R CHAR | EMIT 0. 0 D.R CHAR | EMIT
 ```
 
-[使用例の文脈](../src/tests/core_words_test.zig#L263)
+[使用例の文脈](../src/tests/core_words_test.zig#L310)
 
 注意：スタック効果の入力順を守ってください。使用例の名前・値は例の定義や初期状態に依存します。
 
@@ -15026,7 +15084,7 @@ Double a double-cell number (shift left one bit).
 5. D2* D. -5. D2* D. -5. D2/ D. 5. D2/ D. -1. D2/ D. 1. 2. DMAX D. -1. 2. DMIN D. 5. 7 M+ D. -5. -7 M+ D.
 ```
 
-[使用例の文脈](../src/tests/core_words_test.zig#L267)
+[使用例の文脈](../src/tests/core_words_test.zig#L314)
 
 注意：スタック効果の入力順を守ってください。使用例の名前・値は例の定義や初期状態に依存します。
 
@@ -15054,7 +15112,7 @@ Halve a double-cell number, rounding down (arithmetic shift right).
 5. D2* D. -5. D2* D. -5. D2/ D. 5. D2/ D. -1. D2/ D. 1. 2. DMAX D. -1. 2. DMIN D. 5. 7 M+ D. -5. -7 M+ D.
 ```
 
-[使用例の文脈](../src/tests/core_words_test.zig#L267)
+[使用例の文脈](../src/tests/core_words_test.zig#L314)
 
 注意：スタック効果の入力順を守ってください。使用例の名前・値は例の定義や初期状態に依存します。
 
@@ -15374,7 +15432,7 @@ Run the colon definition name step by step: Enter next, n into the called word, 
 DBG DUP
 ```
 
-[使用例の文脈](../src/tests/debug_step_test.zig#L182)
+[使用例の文脈](../src/tests/debug_step_test.zig#L196)
 
 注意：スタック効果の入力順を守ってください。使用例の名前・値は例の定義や初期状態に依存します。
 
@@ -15552,7 +15610,7 @@ Make the DEFER xt1 run xt2.
 DEFER D1 ' OVER ' D1 DEFER! ' D1 DEFER@ ' OVER = . ' NIP TO D1 1 2 D1 . : T2 [ ' DUP ] LITERAL TO D1 ; T2 ' D1 DEFER@ ' DUP = .
 ```
 
-[使用例の文脈](../src/tests/core_words_test.zig#L871)
+[使用例の文脈](../src/tests/core_words_test.zig#L918)
 
 注意：スタック効果の入力順を守ってください。使用例の名前・値は例の定義や初期状態に依存します。
 
@@ -15582,7 +15640,7 @@ The word the DEFER xt1 runs.
 DEFER F : A 42 ; ' A IS F FORGET A : TEST-BUF 99 ; F ' F DEFER@ . MARKER M : C 7 ; ' C IS F M F
 ```
 
-[使用例の文脈](../src/tests/core_words_test.zig#L911)
+[使用例の文脈](../src/tests/core_words_test.zig#L958)
 
 注意：スタック効果の入力順を守ってください。使用例の名前・値は例の定義や初期状態に依存します。
 
@@ -15754,7 +15812,7 @@ The number of cells on the data stack.
 5 ?DUP . . 0 ?DUP . DEPTH .
 ```
 
-[使用例の文脈](../src/tests/core_words_test.zig#L378)
+[使用例の文脈](../src/tests/core_words_test.zig#L425)
 
 注意：スタック効果の入力順を守ってください。使用例の名前・値は例の定義や初期状態に依存します。
 
@@ -15924,7 +15982,7 @@ The alignment and size of a 64-bit float.
 STRUCT . . STRUCT CELL% FIELD S.A CHAR% FIELD S.B FLOAT% FIELD S.C CHAR% FIELD S.D DOUBLE% FIELD S.E SFLOAT% FIELD S.F DFLOAT% FIELD S.G CHAR% 3 * FIELD S.H END-STRUCT REC% REC% . . 0 S.A . 0 S.B . 0 S.C . 0 S.D . 0 S.E . 0 S.F . 0 S.G . 0 S.H . CELL% . . CHAR% . . FLOAT% . . DOUBLE% . . SFLOAT% . . DFLOAT% . . REC% %SIZE . REC% %ALIGNMENT .
 ```
 
-[使用例の文脈](../src/tests/core_words_test.zig#L946)
+[使用例の文脈](../src/tests/core_words_test.zig#L993)
 
 注意：スタック効果の入力順を守ってください。使用例の名前・値は例の定義や初期状態に依存します。
 
@@ -16098,7 +16156,7 @@ The larger double-cell number.
 5. D2* D. -5. D2* D. -5. D2/ D. 5. D2/ D. -1. D2/ D. 1. 2. DMAX D. -1. 2. DMIN D. 5. 7 M+ D. -5. -7 M+ D.
 ```
 
-[使用例の文脈](../src/tests/core_words_test.zig#L267)
+[使用例の文脈](../src/tests/core_words_test.zig#L314)
 
 注意：スタック効果の入力順を守ってください。使用例の名前・値は例の定義や初期状態に依存します。
 
@@ -16126,7 +16184,7 @@ The smaller double-cell number.
 5. D2* D. -5. D2* D. -5. D2/ D. 5. D2/ D. -1. D2/ D. 1. 2. DMAX D. -1. 2. DMIN D. 5. 7 M+ D. -5. -7 M+ D.
 ```
 
-[使用例の文脈](../src/tests/core_words_test.zig#L267)
+[使用例の文脈](../src/tests/core_words_test.zig#L314)
 
 注意：スタック効果の入力順を守ってください。使用例の名前・値は例の定義や初期状態に依存します。
 
@@ -16168,11 +16226,11 @@ Negate a double cell.
 
 ` ( limit start -- ) `
 
-回数ループを開始します。Sigmaでは最低1回、開始と上限が等しければ1回実行します。
+回数ループを開始します。開始と上限が等しい場合、添字が全セル値を一周するまで終了しません（Forth 2012）。空の範囲を飛ばすには?DOを使います。
 
 <details><summary>英語の説明（HELP・実装に基づく）</summary>
 
-Start a counted loop; the body runs at least once, and exactly once when limit equals start (FORTH/Sigma).
+Start a counted loop. When limit equals start the index wraps through every cell value before the loop ends (Forth 2012); use ?DO to skip an empty range.
 
 </details>
 
@@ -16216,7 +16274,7 @@ In a defining word, give the words it creates this behaviour; they start with th
 : CELL <BUILDS , DOES> @ ;
 ```
 
-[使用例の文脈](../src/tests/core_words_test.zig#L742)
+[使用例の文脈](../src/tests/core_words_test.zig#L789)
 
 注意：即時語なので、定義のコンパイル中にもその場で実行されます。 番地・長さ・容量は有効な論理メモリー範囲を指定します。所有領域と借用領域の寿命を区別してください。
 
@@ -16274,7 +16332,7 @@ The alignment and size of a double number.
 STRUCT . . STRUCT CELL% FIELD S.A CHAR% FIELD S.B FLOAT% FIELD S.C CHAR% FIELD S.D DOUBLE% FIELD S.E SFLOAT% FIELD S.F DFLOAT% FIELD S.G CHAR% 3 * FIELD S.H END-STRUCT REC% REC% . . 0 S.A . 0 S.B . 0 S.C . 0 S.D . 0 S.E . 0 S.F . 0 S.G . 0 S.H . CELL% . . CHAR% . . FLOAT% . . DOUBLE% . . SFLOAT% . . DFLOAT% . . REC% %SIZE . REC% %ALIGNMENT .
 ```
 
-[使用例の文脈](../src/tests/core_words_test.zig#L946)
+[使用例の文脈](../src/tests/core_words_test.zig#L993)
 
 注意：スタック効果の入力順を守ってください。使用例の名前・値は例の定義や初期状態に依存します。
 
@@ -16364,7 +16422,7 @@ Remove the top cell.
 DROP 2 V !
 ```
 
-[使用例の文脈](../src/tests/debug_words_test.zig#L472)
+[使用例の文脈](../src/tests/debug_words_test.zig#L541)
 
 注意：スタック効果の入力順を守ってください。使用例の名前・値は例の定義や初期状態に依存します。
 
@@ -16480,7 +16538,7 @@ True if ud1 is less than ud2, compared as unsigned numbers.
 1. 2. DU< . -1. 1. DU< . 1. -1. DU< . 1. 2. 3. 2ROT D. D. D.
 ```
 
-[使用例の文脈](../src/tests/core_words_test.zig#L268)
+[使用例の文脈](../src/tests/core_words_test.zig#L315)
 
 注意：スタック効果の入力順を守ってください。使用例の名前・値は例の定義や初期状態に依存します。
 
@@ -16596,7 +16654,7 @@ Show u bytes from addr, 16 to a line, in hexadecimal and as characters.
 CREATE DD 40 ALLOT DD 40 ERASE S" AB" DD SWAP MOVE 1 DD 2 + C! 127 DD 3 + C! 200 DD 4 + C! 32 DD 5 + C! 126 DD 6 + C! DD 20 DUMP DD 0 DUMP DD 3 DUMP
 ```
 
-[使用例の文脈](../src/tests/core_words_test.zig#L291)
+[使用例の文脈](../src/tests/core_words_test.zig#L338)
 
 注意：番地・長さ・容量は有効な論理メモリー範囲を指定します。所有領域と借用領域の寿命を区別してください。
 
@@ -16828,7 +16886,7 @@ True if the event is a byte character (0..255).
 S" DUP" FIND-NAME NAME>INTERPRET S" DUP" FIND-NAME NAME>INT = . 65 EKEY>CHAR . . 300 EKEY>CHAR . .
 ```
 
-[使用例の文脈](../src/tests/core_words_test.zig#L318)
+[使用例の文脈](../src/tests/core_words_test.zig#L365)
 
 注意：スタック効果の入力順を守ってください。使用例の名前・値は例の定義や初期状態に依存します。
 
@@ -17122,7 +17180,7 @@ The FORTH/Sigma name of UNTIL.
 : COUNT-TO 0 BEGIN 1 + DUP 3 = END ;
 ```
 
-[使用例の文脈](../src/tests/core_words_test.zig#L621)
+[使用例の文脈](../src/tests/core_words_test.zig#L668)
 
 注意：コンパイル専用です。通常の解釈時入力では実行できません。
 
@@ -17152,7 +17210,7 @@ End a gforth structure; name gives its align and size.
 STRUCT CELL% FIELD S.A END-STRUCT R% HERE 1 ALLOT R% %ALIGN HERE SWAP - . HERE R% %ALLOT TUCK = . HERE SWAP - . R% %ALLOC 0<> . R% %ALLOCATE . 0<> .
 ```
 
-[使用例の文脈](../src/tests/core_words_test.zig#L951)
+[使用例の文脈](../src/tests/core_words_test.zig#L998)
 
 注意：スタック効果の入力順を守ってください。使用例の名前・値は例の定義や初期状態に依存します。
 
@@ -17210,7 +17268,7 @@ End a CASE and drop the selector.
 : T5 CASE DUP . DUP 0> ?OF 1- CONTOF ." done" ENDCASE ; 3 T5
 ```
 
-[使用例の文脈](../src/tests/core_words_test.zig#L900)
+[使用例の文脈](../src/tests/core_words_test.zig#L947)
 
 注意：コンパイル専用です。通常の解釈時入力では実行できません。
 
@@ -17270,7 +17328,7 @@ End a branch of CASE.
 : T4 CASE DUP 0< ?OF ." neg" ENDOF 1 OF ." one" ENDOF ." other" ENDCASE ; -5 T4 1 T4 7 T4
 ```
 
-[使用例の文脈](../src/tests/core_words_test.zig#L899)
+[使用例の文脈](../src/tests/core_words_test.zig#L946)
 
 注意：コンパイル専用です。通常の解釈時入力では実行できません。
 
@@ -19506,7 +19564,7 @@ Make a field of a gforth structure.
 STRUCT CELL% FIELD S.A END-STRUCT R% HERE 1 ALLOT R% %ALIGN HERE SWAP - . HERE R% %ALLOT TUCK = . HERE SWAP - . R% %ALLOC 0<> . R% %ALLOCATE . 0<> .
 ```
 
-[使用例の文脈](../src/tests/core_words_test.zig#L951)
+[使用例の文脈](../src/tests/core_words_test.zig#L998)
 
 注意：スタック効果の入力順を守ってください。使用例の名前・値は例の定義や初期状態に依存します。
 
@@ -20036,7 +20094,7 @@ The alignment and size of a float.
 STRUCT . . STRUCT CELL% FIELD S.A CHAR% FIELD S.B FLOAT% FIELD S.C CHAR% FIELD S.D DOUBLE% FIELD S.E SFLOAT% FIELD S.F DFLOAT% FIELD S.G CHAR% 3 * FIELD S.H END-STRUCT REC% REC% . . 0 S.A . 0 S.B . 0 S.C . 0 S.D . 0 S.E . 0 S.F . 0 S.G . 0 S.H . CELL% . . CHAR% . . FLOAT% . . DOUBLE% . . SFLOAT% . . DFLOAT% . . REC% %SIZE . REC% %ALIGNMENT .
 ```
 
-[使用例の文脈](../src/tests/core_words_test.zig#L946)
+[使用例の文脈](../src/tests/core_words_test.zig#L993)
 
 注意：スタック効果の入力順を守ってください。使用例の名前・値は例の定義や初期状態に依存します。
 
@@ -20272,7 +20330,7 @@ Divide d by n, rounding the quotient toward minus infinity.
 -7 S>D 2 FM/MOD . . -7 S>D 2 SM/REM . . 7 S>D -2 FM/MOD . . 7 S>D -2 SM/REM . . 5 S>D -5 FM/MOD . . 0 S>D 3 FM/MOD . .
 ```
 
-[使用例の文脈](../src/tests/core_words_test.zig#L407)
+[使用例の文脈](../src/tests/core_words_test.zig#L454)
 
 注意：スタック効果の入力順を守ってください。使用例の名前・値は例の定義や初期状態に依存します。
 
@@ -20552,7 +20610,7 @@ Declare a colon-only forward binding in the current wordlist.
 FORWARD F : F 7 ;
 ```
 
-[使用例の文脈](../src/tests/p07d_test.zig#L191)
+[使用例の文脈](../src/tests/p07d_test.zig#L193)
 
 注意：スタック効果の入力順を守ってください。使用例の名前・値は例の定義や初期状態に依存します。
 
@@ -21688,7 +21746,7 @@ The next free address of the data space.
 ALLOT HERE
 ```
 
-[使用例の文脈](../src/tests/core_words_test.zig#L217)
+[使用例の文脈](../src/tests/core_words_test.zig#L264)
 
 注意：番地・長さ・容量は有効な論理メモリー範囲を指定します。所有領域と借用領域の寿命を区別してください。
 
@@ -22448,7 +22506,7 @@ Set a DEFER action (Sigma also accepts VALUE/FVALUE/2VALUE/$VALUE). Tick execute
 5 VALUE V 9 IS V V .
 ```
 
-[使用例の文脈](../src/tests/core_words_test.zig#L877)
+[使用例の文脈](../src/tests/core_words_test.zig#L924)
 
 注意：即時語なので、定義のコンパイル中にもその場で実行されます。
 
@@ -23438,7 +23496,7 @@ Shift a cell left by u bits; a negative count or count at least 64 returns zero.
 1 4 LSHIFT -1 60 RSHIFT 3 CELLS 0 CELL+ 9 ALIGNED BL CHAR A : Z [CHAR] Z ; Z $FF #10 %101 'a' -7 2/ 1 \ 2 3
 ```
 
-[使用例の文脈](../src/tests/core_words_test.zig#L792)
+[使用例の文脈](../src/tests/core_words_test.zig#L839)
 
 注意：スタック効果の入力順を守ってください。使用例の名前・値は例の定義や初期状態に依存します。
 
@@ -23468,7 +23526,7 @@ Multiply two numbers into a double-cell product.
 3 -4 M* . . -1 -1 UM* . . 9223372036854775807 9223372036854775807 M* D. 9223372036854775807 -9223372036854775808 M* D.
 ```
 
-[使用例の文脈](../src/tests/core_words_test.zig#L402)
+[使用例の文脈](../src/tests/core_words_test.zig#L449)
 
 注意：スタック効果の入力順を守ってください。使用例の名前・値は例の定義や初期状態に依存します。
 
@@ -23496,7 +23554,7 @@ Multiply d1 by n1 using a three-cell intermediate and divide, flooring, by the u
 170141183460469231731687303715884105727. 2 3 M*/ D.
 ```
 
-[使用例の文脈](../src/tests/core_words_test.zig#L354)
+[使用例の文脈](../src/tests/core_words_test.zig#L401)
 
 注意：スタック効果の入力順を守ってください。使用例の名前・値は例の定義や初期状態に依存します。
 
@@ -23524,7 +23582,7 @@ Add a single-cell number to a double-cell number.
 5. D2* D. -5. D2* D. -5. D2/ D. 5. D2/ D. -1. D2/ D. 1. 2. DMAX D. -1. 2. DMIN D. 5. 7 M+ D. -5. -7 M+ D.
 ```
 
-[使用例の文脈](../src/tests/core_words_test.zig#L267)
+[使用例の文脈](../src/tests/core_words_test.zig#L314)
 
 注意：スタック効果の入力順を守ってください。使用例の名前・値は例の定義や初期状態に依存します。
 
@@ -24194,7 +24252,7 @@ Move n cells and their count to the return stack, keeping their order.
 : T1 AHEAD 111 . THEN 222 . ; T1 : T2 1 2 3 3 N>R 99 . NR> . . . . ; T2 : T3 0 N>R NR> . ; T3
 ```
 
-[使用例の文脈](../src/tests/core_words_test.zig#L365)
+[使用例の文脈](../src/tests/core_words_test.zig#L412)
 
 注意：スタック効果の入力順を守ってください。使用例の名前・値は例の定義や初期状態に依存します。
 
@@ -24484,7 +24542,7 @@ Negate.
 3 VIA  ' NEGATE IS LATER 3 VIA  ' OTHER IS LATER 3 VIA  ' DOUBLE IS LATER 3 VIA
 ```
 
-[使用例の文脈](../src/tests/catch_test.zig#L349)
+[使用例の文脈](../src/tests/catch_test.zig#L508)
 
 注意：スタック効果の入力順を守ってください。使用例の名前・値は例の定義や初期状態に依存します。
 
@@ -24600,7 +24658,7 @@ End a CASE and go back to its start, keeping the selector.
 : T6 CASE DUP . 1- DUP 0> ?OF ENDOF NEXT-CASE ; 3 T6 : T7 CASE 1+ DUP 3 < ?OF ENDOF DUP . NEXT-CASE DROP ; 0 T7 .
 ```
 
-[使用例の文脈](../src/tests/core_words_test.zig#L901)
+[使用例の文脈](../src/tests/core_words_test.zig#L948)
 
 注意：コンパイル専用です。通常の解釈時入力では実行できません。
 
@@ -24716,7 +24774,7 @@ Do nothing.
 : T2 DUP . ?EXIT ." after" ; 0 T2 1 T2 NOOP VARIABLE XV ' DUP XV ! 4 XV PERFORM . .
 ```
 
-[使用例の文脈](../src/tests/core_words_test.zig#L889)
+[使用例の文脈](../src/tests/core_words_test.zig#L936)
 
 注意：スタック効果の入力順を守ってください。使用例の名前・値は例の定義や初期状態に依存します。
 
@@ -24856,7 +24914,7 @@ Move the cells N&gt;R moved, and their count, back.
 : T1 AHEAD 111 . THEN 222 . ; T1 : T2 1 2 3 3 N>R 99 . NR> . . . . ; T2 : T3 0 N>R NR> . ; T3
 ```
 
-[使用例の文脈](../src/tests/core_words_test.zig#L365)
+[使用例の文脈](../src/tests/core_words_test.zig#L412)
 
 注意：スタック効果の入力順を守ってください。使用例の名前・値は例の定義や初期状態に依存します。
 
@@ -25030,7 +25088,7 @@ Use base 8 for numbers.
 HEX FF . -1 . 10 U. DECIMAL -1 U. 8 OCT . DECIMAL 300 C.
 ```
 
-[使用例の文脈](../src/tests/core_words_test.zig#L136)
+[使用例の文脈](../src/tests/core_words_test.zig#L183)
 
 注意：スタック効果の入力順を守ってください。使用例の名前・値は例の定義や初期状態に依存します。
 
@@ -25060,7 +25118,7 @@ Run up to ENDOF if x equals n (dropping both), otherwise skip it.
 : T4 CASE DUP 0< ?OF ." neg" ENDOF 1 OF ." one" ENDOF ." other" ENDCASE ; -5 T4 1 T4 7 T4
 ```
 
-[使用例の文脈](../src/tests/core_words_test.zig#L899)
+[使用例の文脈](../src/tests/core_words_test.zig#L946)
 
 注意：コンパイル専用です。通常の解釈時入力では実行できません。
 
@@ -25088,7 +25146,7 @@ Store false (0) in the cell at addr.
 CREATE BUF 16 ALLOT BUF 4 65 FILL BUF BUF 1+ 3 MOVE BUF 3 + 1 ERASE BUF 4 TYPE VARIABLE F F ON F @ F OFF F @
 ```
 
-[使用例の文脈](../src/tests/core_words_test.zig#L803)
+[使用例の文脈](../src/tests/core_words_test.zig#L850)
 
 注意：番地・長さ・容量は有効な論理メモリー範囲を指定します。所有領域と借用領域の寿命を区別してください。
 
@@ -25116,7 +25174,7 @@ Store true (-1) in the cell at addr.
 CREATE BUF 16 ALLOT BUF 4 65 FILL BUF BUF 1+ 3 MOVE BUF 3 + 1 ERASE BUF 4 TYPE VARIABLE F F ON F @ F OFF F @
 ```
 
-[使用例の文脈](../src/tests/core_words_test.zig#L803)
+[使用例の文脈](../src/tests/core_words_test.zig#L850)
 
 注意：番地・長さ・容量は有効な論理メモリー範囲を指定します。所有領域と借用領域の寿命を区別してください。
 
@@ -25146,7 +25204,7 @@ In a definition: run what follows, up to THEN, only the first time.
 : T 3 0 DO ONCE 7 THEN LOOP ; T
 ```
 
-[使用例の文脈](../src/tests/debug_words_test.zig#L101)
+[使用例の文脈](../src/tests/debug_words_test.zig#L154)
 
 注意：即時語なので、定義のコンパイル中にもその場で実行されます。
 
@@ -25694,7 +25752,7 @@ Run the execution token stored at addr: @ EXECUTE.
 : T2 DUP . ?EXIT ." after" ; 0 T2 1 T2 NOOP VARIABLE XV ' DUP XV ! 4 XV PERFORM . .
 ```
 
-[使用例の文脈](../src/tests/core_words_test.zig#L889)
+[使用例の文脈](../src/tests/core_words_test.zig#L936)
 
 注意：番地・長さ・容量は有効な論理メモリー範囲を指定します。所有領域と借用領域の寿命を区別してください。
 
@@ -25988,7 +26046,7 @@ Leave what is running and wait for terminal input, keeping both data stacks; CAT
 : Q QUIT ; : RUN-Q ['] Q CATCH ;
 ```
 
-[使用例の文脈](../src/tests/catch_test.zig#L190)
+[使用例の文脈](../src/tests/catch_test.zig#L349)
 
 注意：スタック効果の入力順を守ってください。使用例の名前・値は例の定義や初期状態に依存します。
 
@@ -26108,7 +26166,7 @@ Move a cell from the return stack.
 R>
 ```
 
-[使用例の文脈](../src/tests/core_words_test.zig#L543)
+[使用例の文脈](../src/tests/core_words_test.zig#L590)
 
 注意：スタック効果の入力順を守ってください。使用例の名前・値は例の定義や初期状態に依存します。
 
@@ -26136,7 +26194,7 @@ Copy the top of the return stack.
 1 2 3 -ROT NIP 4 TUCK 2DUP 2DROP DEPTH 9 8 7 2 PICK 3 ROLL 5 >R R@ R> 2SWAP 2OVER
 ```
 
-[使用例の文脈](../src/tests/core_words_test.zig#L781)
+[使用例の文脈](../src/tests/core_words_test.zig#L828)
 
 注意：スタック効果の入力順を守ってください。使用例の名前・値は例の定義や初期状態に依存します。
 
@@ -26334,7 +26392,7 @@ Call the definition being compiled.
 
 種別：builtin; immediate.
 
-関連説明：[ワードの定義と辞書](USER_MANUAL.ja.md#ワードの定義と辞書).
+関連説明：[ワードの定義と辞書](USER_MANUAL.ja.md#ワードの定義と辞書), [P07d 入力の一時切り替えと前方参照](USER_MANUAL.ja.md#p07d-入力の一時切り替えと前方参照).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
@@ -26342,7 +26400,7 @@ Call the definition being compiled.
 : DOWN DUP IF 1- RECURSE THEN ; 1023 DOWN
 ```
 
-[使用例の文脈](../src/tests/core_words_test.zig#L472)
+[使用例の文脈](../src/tests/core_words_test.zig#L519)
 
 注意：即時語なので、定義のコンパイル中にもその場で実行されます。
 
@@ -26354,23 +26412,25 @@ Call the definition being compiled.
 
 ` ( -- ) `
 
-コンパイル中の定義を名前で自己参照可能にします。Sigmaでは未完了定義も既に検索可能です。
+コンパイル中の定義を、自分の名前で検索できるようにします。これを使わない場合、定義中の名前は以前の同名の語を指します。コンパイル状態専用です。
 
 <details><summary>英語の説明（HELP・実装に基づく）</summary>
 
-Allow portable explicit self-reference; Sigma already exposes its unfinished definition. Compile-state only.
+Make the definition being compiled findable by its own name, so that it can call itself by name. Without it the name still means the earlier word. Compile-state only.
 
 </details>
 
 種別：builtin; immediate, compile-only.
 
+関連説明：[P07d 入力の一時切り替えと前方参照](USER_MANUAL.ja.md#p07d-入力の一時切り替えと前方参照).
+
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
 ```forth
-: FACT RECURSIVE DUP IF DUP 1- FACT * ELSE DROP 1 THEN ; 5 FACT : IMPLICIT DUP IF 1- IMPLICIT ELSE DROP 9 THEN ; 2 IMPLICIT
+: A 1 ; : B 2 ; DEFER D ' A IS D : R RECURSIVE ['] B ['] D ['] R WRAP-XT ;
 ```
 
-[使用例の文脈](../src/tests/p07d_test.zig#L136)
+[使用例の文脈](../src/tests/p08b_test.zig#L181)
 
 注意：コンパイル専用です。通常の解釈時入力では実行できません。
 
@@ -26460,7 +26520,7 @@ Go back to BEGIN.
 : COUNT-UP 0 BEGIN DUP 3 < WHILE 1 + REPEAT ;
 ```
 
-[使用例の文脈](../src/tests/core_words_test.zig#L620)
+[使用例の文脈](../src/tests/core_words_test.zig#L667)
 
 注意：コンパイル専用です。通常の解釈時入力では実行できません。
 
@@ -26840,7 +26900,7 @@ Move the u-th cell below the top to the top.
 1 2 3 -ROT NIP 4 TUCK 2DUP 2DROP DEPTH 9 8 7 2 PICK 3 ROLL 5 >R R@ R> 2SWAP 2OVER
 ```
 
-[使用例の文脈](../src/tests/core_words_test.zig#L781)
+[使用例の文脈](../src/tests/core_words_test.zig#L828)
 
 注意：スタック効果の入力順を守ってください。使用例の名前・値は例の定義や初期状態に依存します。
 
@@ -26984,7 +27044,7 @@ Shift a cell right by u bits with zero fill; a negative count or count at least 
 1 4 LSHIFT -1 60 RSHIFT 3 CELLS 0 CELL+ 9 ALIGNED BL CHAR A : Z [CHAR] Z ; Z $FF #10 %101 'a' -7 2/ 1 \ 2 3
 ```
 
-[使用例の文脈](../src/tests/core_words_test.zig#L792)
+[使用例の文脈](../src/tests/core_words_test.zig#L839)
 
 注意：スタック効果の入力順を守ってください。使用例の名前・値は例の定義や初期状態に依存します。
 
@@ -27862,7 +27922,7 @@ The alignment and size of a 32-bit float.
 STRUCT . . STRUCT CELL% FIELD S.A CHAR% FIELD S.B FLOAT% FIELD S.C CHAR% FIELD S.D DOUBLE% FIELD S.E SFLOAT% FIELD S.F DFLOAT% FIELD S.G CHAR% 3 * FIELD S.H END-STRUCT REC% REC% . . 0 S.A . 0 S.B . 0 S.C . 0 S.D . 0 S.E . 0 S.F . 0 S.G . 0 S.H . CELL% . . CHAR% . . FLOAT% . . DOUBLE% . . SFLOAT% . . DFLOAT% . . REC% %SIZE . REC% %ALIGNMENT .
 ```
 
-[使用例の文脈](../src/tests/core_words_test.zig#L946)
+[使用例の文脈](../src/tests/core_words_test.zig#L993)
 
 注意：スタック効果の入力順を守ってください。使用例の名前・値は例の定義や初期状態に依存します。
 
@@ -28274,7 +28334,7 @@ Divide d by n, rounding the quotient toward zero.
 -7 S>D 2 FM/MOD . . -7 S>D 2 SM/REM . . 7 S>D -2 FM/MOD . . 7 S>D -2 SM/REM . . 5 S>D -5 FM/MOD . . 0 S>D 3 FM/MOD . .
 ```
 
-[使用例の文脈](../src/tests/core_words_test.zig#L407)
+[使用例の文脈](../src/tests/core_words_test.zig#L454)
 
 注意：スタック効果の入力順を守ってください。使用例の名前・値は例の定義や初期状態に依存します。
 
@@ -28802,7 +28862,7 @@ Start a gforth structure.
 STRUCT CELL% FIELD S.A END-STRUCT R% HERE 1 ALLOT R% %ALIGN HERE SWAP - . HERE R% %ALLOT TUCK = . HERE SWAP - . R% %ALLOC 0<> . R% %ALLOCATE . 0<> .
 ```
 
-[使用例の文脈](../src/tests/core_words_test.zig#L951)
+[使用例の文脈](../src/tests/core_words_test.zig#L998)
 
 注意：スタック効果の入力順を守ってください。使用例の名前・値は例の定義や初期状態に依存します。
 
@@ -29100,7 +29160,7 @@ End an IF.
 : T IF 1 THEN ;
 ```
 
-[使用例の文脈](../src/tests/debug_words_test.zig#L367)
+[使用例の文脈](../src/tests/debug_words_test.zig#L420)
 
 注意：コンパイル専用です。通常の解釈時入力では実行できません。
 
@@ -29308,7 +29368,7 @@ Run xt ( nt -- flag ) for each word of the list, newest first, until it gives fa
 WORDLIST CONSTANT WL GET-CURRENT WL SET-CURRENT : AAA ; : BBB ; : CCC ; SET-CURRENT : SHOW NAME>STRING TYPE SPACE TRUE ; ' SHOW WL TRAVERSE-WORDLIST : FIRST NAME>STRING TYPE SPACE FALSE ; ' FIRST WL TRAVERSE-WORDLIST
 ```
 
-[使用例の文脈](../src/tests/core_words_test.zig#L313)
+[使用例の文脈](../src/tests/core_words_test.zig#L360)
 
 注意：スタック効果の入力順を守ってください。使用例の名前・値は例の定義や初期状態に依存します。
 
@@ -29624,7 +29684,7 @@ Print an unsigned number and a space.
 HEX FF . -1 . 10 U. DECIMAL -1 U. 8 OCT . DECIMAL 300 C.
 ```
 
-[使用例の文脈](../src/tests/core_words_test.zig#L136)
+[使用例の文脈](../src/tests/core_words_test.zig#L183)
 
 注意：スタック効果の入力順を守ってください。使用例の名前・値は例の定義や初期状態に依存します。
 
@@ -29652,7 +29712,7 @@ Print u unsigned, right-aligned in width characters, without a space after it.
 CHAR | EMIT 42 5 .R CHAR | EMIT -42 5 .R CHAR | EMIT 123456 3 .R CHAR | EMIT 7 0 .R CHAR | EMIT 7 -3 .R CHAR | EMIT 42 5 U.R CHAR | EMIT -1 3 U.R CHAR | EMIT 7 -9223372036854775808 .R CHAR | EMIT HEX 255 6 .R
 ```
 
-[使用例の文脈](../src/tests/core_words_test.zig#L382)
+[使用例の文脈](../src/tests/core_words_test.zig#L429)
 
 注意：スタック効果の入力順を守ってください。使用例の名前・値は例の定義や初期状態に依存します。
 
@@ -29748,7 +29808,7 @@ True if u1 is less than u2, compared as unsigned numbers.
 1 2 U< . -1 1 U< . 1 -1 U< . 2 2 U< . 1 2 U> . -1 1 U> .
 ```
 
-[使用例の文脈](../src/tests/core_words_test.zig#L379)
+[使用例の文脈](../src/tests/core_words_test.zig#L426)
 
 注意：スタック効果の入力順を守ってください。使用例の名前・値は例の定義や初期状態に依存します。
 
@@ -29808,7 +29868,7 @@ True if u1 is greater than u2, compared as unsigned numbers.
 1 2 U< . -1 1 U< . 1 -1 U< . 2 2 U< . 1 2 U> . -1 1 U> .
 ```
 
-[使用例の文脈](../src/tests/core_words_test.zig#L379)
+[使用例の文脈](../src/tests/core_words_test.zig#L426)
 
 注意：スタック効果の入力順を守ってください。使用例の名前・値は例の定義や初期状態に依存します。
 
@@ -29956,7 +30016,7 @@ Multiply two unsigned numbers into an unsigned double-cell product.
 3 -4 M* . . -1 -1 UM* . . 9223372036854775807 9223372036854775807 M* D. 9223372036854775807 -9223372036854775808 M* D.
 ```
 
-[使用例の文脈](../src/tests/core_words_test.zig#L402)
+[使用例の文脈](../src/tests/core_words_test.zig#L449)
 
 注意：スタック効果の入力順を守ってください。使用例の名前・値は例の定義や初期状態に依存します。
 
@@ -29986,7 +30046,7 @@ Divide an unsigned double-cell number by u; the quotient must fit in a cell.
 7 0 1 UM/MOD . . -1 1 2 UM/MOD . .
 ```
 
-[使用例の文脈](../src/tests/core_words_test.zig#L406)
+[使用例の文脈](../src/tests/core_words_test.zig#L453)
 
 注意：スタック効果の入力順を守ってください。使用例の名前・値は例の定義や初期状態に依存します。
 
@@ -30192,7 +30252,7 @@ Go back to BEGIN while flag is false.
 : T7 0 BEGIN [ 0 CS-PICK ] 1+ DUP 3 > UNTIL . EXIT AGAIN ; T7
 ```
 
-[使用例の文脈](../src/tests/core_words_test.zig#L302)
+[使用例の文脈](../src/tests/core_words_test.zig#L349)
 
 注意：コンパイル専用です。通常の解釈時入力では実行できません。
 
@@ -30222,7 +30282,7 @@ The bytes of data space left.
 HERE 1 ALLOT ALIGN HERE SWAP - . HERE ALIGN HERE SWAP - . UNUSED 0> .
 ```
 
-[使用例の文脈](../src/tests/core_words_test.zig#L381)
+[使用例の文脈](../src/tests/core_words_test.zig#L428)
 
 注意：スタック効果の入力順を守ってください。使用例の名前・値は例の定義や初期状態に依存します。
 
@@ -30282,7 +30342,7 @@ End what WATCH started for the cell at a-addr.
 HERE DUP DUP 7 SWAP ! WATCH VARIABLE V UNWATCH
 ```
 
-[使用例の文脈](../src/tests/debug_words_test.zig#L483)
+[使用例の文脈](../src/tests/debug_words_test.zig#L552)
 
 注意：番地・長さ・容量は有効な論理メモリー範囲を指定します。所有領域と借用領域の寿命を区別してください。
 
@@ -30850,7 +30910,7 @@ From now on, show each change of the cell at a-addr on standard error, with the 
 V WATCH 5 V !
 ```
 
-[使用例の文脈](../src/tests/debug_words_test.zig#L489)
+[使用例の文脈](../src/tests/debug_words_test.zig#L558)
 
 注意：番地・長さ・容量は有効な論理メモリー範囲を指定します。所有領域と借用領域の寿命を区別してください。
 
@@ -30996,7 +31056,7 @@ Leave a BEGIN ... WHILE ... REPEAT loop when flag is false.
 : COUNT-UP 0 BEGIN DUP 3 < WHILE 1 + REPEAT ;
 ```
 
-[使用例の文脈](../src/tests/core_words_test.zig#L620)
+[使用例の文脈](../src/tests/core_words_test.zig#L667)
 
 注意：コンパイル専用です。通常の解釈時入力では実行できません。
 
@@ -32498,7 +32558,7 @@ As ~~BT, the first time only.
 : THRICE 3 0 DO I ~~1BT DROP LOOP ; : CALLER THRICE ; CALLER CALLER
 ```
 
-[使用例の文脈](../src/tests/debug_words_test.zig#L121)
+[使用例の文脈](../src/tests/debug_words_test.zig#L174)
 
 注意：即時語なので、定義のコンパイル中にもその場で実行されます。
 
@@ -32528,7 +32588,7 @@ As ~~, and then the words that called the definition, innermost first.
 DROP ~~BT : GUARD ['] INNER CATCH DROP ; GUARD
 ```
 
-[使用例の文脈](../src/tests/debug_words_test.zig#L118)
+[使用例の文脈](../src/tests/debug_words_test.zig#L171)
 
 注意：即時語なので、定義のコンパイル中にもその場で実行されます。
 
@@ -32558,7 +32618,7 @@ Define a VALUE whose every TO is shown on standard error: the place, the data st
 7 ~~VALUE VV : BUMP VV 1+ TO VV ; BUMP VV
 ```
 
-[使用例の文脈](../src/tests/debug_words_test.zig#L143)
+[使用例の文脈](../src/tests/debug_words_test.zig#L196)
 
 注意：スタック効果の入力順を守ってください。使用例の名前・値は例の定義や初期状態に依存します。
 
@@ -32588,7 +32648,7 @@ Define a VARIABLE whose every use by name is shown on standard error: the place,
 ~~VARIABLE SEEN 3 SEEN ! : USES 5 SEEN ! SEEN @ ; USES
 ```
 
-[使用例の文脈](../src/tests/debug_words_test.zig#L463)
+[使用例の文脈](../src/tests/debug_words_test.zig#L532)
 
 注意：スタック効果の入力順を守ってください。使用例の名前・値は例の定義や初期状態に依存します。
 
@@ -48370,7 +48430,6 @@ WORDS
 ## Syntax
 
 - [` " `](#w-53796e7461783a22)
-- [` ( `](#w-53796e7461783a28)
 - [` -- `](#w-53796e7461783a2d2d)
 - [` ." `](#w-53796e7461783a2e22)
 - [` .( `](#w-53796e7461783a2e28)
@@ -48387,7 +48446,6 @@ WORDS
 - [` C" `](#w-53796e7461783a4322)
 - [` C: `](#w-53796e7461783a433a)
 - [` C^ `](#w-53796e7461783a435e)
-- [` CHAR `](#w-53796e7461783a43484152)
 - [` D: `](#w-53796e7461783a443a)
 - [` D^ `](#w-53796e7461783a445e)
 - [` F: `](#w-53796e7461783a463a)
@@ -48440,32 +48498,6 @@ In a definition, the string up to the next " (FORTH/Sigma).
 
 出典：[src/core/help_text.zig](../src/core/help_text.zig), [HELP](../src/core/help_text.zig#L1036).
 
-<a id="w-53796e7461783a28"></a>
-
-### ` ( `
-
-` ( -- ) `
-
-現在の入力バッファー内の最初の)までを無視します。コメントは入れ子にできません。ブロック入力では1024バイトの範囲内で64バイト行をまたぎます。閉じ記号の欠落はエラーです。
-
-<details><summary>英語の説明（HELP・実装に基づく）</summary>
-
-Ignore text through the first ) in the current source buffer; comments do not nest. Block input can cross 64-byte rows within its 1024-byte buffer. Missing ) is an error.
-
-</details>
-
-種別：syntax.
-
-使用例
-
-```forth
-( ignored text ) 42 .
-```
-
-注意：スタック効果の入力順を守ってください。使用例の名前・値は例の定義や初期状態に依存します。
-
-出典：[src/core/help_text.zig](../src/core/help_text.zig), [HELP](../src/core/help_text.zig#L947).
-
 <a id="w-53796e7461783a2d2d"></a>
 
 ### ` -- `
@@ -48516,7 +48548,7 @@ Print the text up to the next ".
 ." shown"
 ```
 
-[使用例の文脈](../src/tests/catch_test.zig#L299)
+[使用例の文脈](../src/tests/catch_test.zig#L458)
 
 注意：スタック効果の入力順を守ってください。使用例の名前・値は例の定義や初期状態に依存します。
 
@@ -48690,7 +48722,7 @@ Compile the execution token of name, which is read when compiling.
 : Q QUIT ; : RUN-Q ['] Q CATCH ;
 ```
 
-[使用例の文脈](../src/tests/catch_test.zig#L190)
+[使用例の文脈](../src/tests/catch_test.zig#L349)
 
 注意：スタック効果の入力順を守ってください。使用例の名前・値は例の定義や初期状態に依存します。
 
@@ -48780,7 +48812,7 @@ Ignore through the line end; block input skips to the next 64-byte row boundary.
 1 4 LSHIFT -1 60 RSHIFT 3 CELLS 0 CELL+ 9 ALIGNED BL CHAR A : Z [CHAR] Z ; Z $FF #10 %101 'a' -7 2/ 1 \ 2 3
 ```
 
-[使用例の文脈](../src/tests/core_words_test.zig#L792)
+[使用例の文脈](../src/tests/core_words_test.zig#L839)
 
 注意：スタック効果の入力順を守ってください。使用例の名前・値は例の定義や初期状態に依存します。
 
@@ -48838,7 +48870,7 @@ In a definition: if flag is not zero, show the text and abort (THROW -2).
 : CHK ABORT" bad value" ; 0 CHK ." after0" : T3 1 ABORT" first" ; ' T3 CATCH . : T4 0 ABORT" never" 5 ; T4 .
 ```
 
-[使用例の文脈](../src/tests/core_words_test.zig#L261)
+[使用例の文脈](../src/tests/core_words_test.zig#L308)
 
 注意：スタック効果の入力順を守ってください。使用例の名前・値は例の定義や初期状態に依存します。
 
@@ -48866,7 +48898,7 @@ In a definition, the counted string up to the next ".
 : T1 C" hello" ; T1 COUNT TYPE T1 C@ . : T2 C" " ; T2 C@ .
 ```
 
-[使用例の文脈](../src/tests/core_words_test.zig#L260)
+[使用例の文脈](../src/tests/core_words_test.zig#L307)
 
 注意：番地・長さ・容量は有効な論理メモリー範囲を指定します。所有領域と借用領域の寿命を区別してください。
 
@@ -48931,36 +48963,6 @@ Declare the next local to store a character. Its name returns its storage addres
 注意：スタック効果の入力順を守ってください。使用例の名前・値は例の定義や初期状態に依存します。
 
 出典：[src/core/local_variables.zig](../src/core/local_variables.zig).
-
-<a id="w-53796e7461783a43484152"></a>
-
-### ` CHAR `
-
-` ( "word" -- xc ) `
-
-次の語の先頭UTF-8文字のコードポイントを返します。
-
-<details><summary>英語の説明（HELP・実装に基づく）</summary>
-
-The code point of the first character (UTF-8) of the next word.
-
-</details>
-
-種別：syntax.
-
-関連説明：[文字（UTF-8）](USER_MANUAL.ja.md#文字utf-8), [P07d 入力の一時切り替えと前方参照](USER_MANUAL.ja.md#p07d-入力の一時切り替えと前方参照).
-
-使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
-
-```forth
-CHAR b KEY-HELD?
-```
-
-[使用例の文脈](../src/tests/graphics_test.zig#L2339)
-
-注意：スタック効果の入力順を守ってください。使用例の名前・値は例の定義や初期状態に依存します。
-
-出典：[src/core/help_text.zig](../src/core/help_text.zig), [HELP](../src/core/help_text.zig#L953).
 
 <a id="w-53796e7461783a443a"></a>
 
@@ -49160,7 +49162,7 @@ Compile name so that it is compiled, or run if immediate, when the definition ru
 ~~VARIABLE V : M POSTPONE V ; IMMEDIATE : T 3 M ! ; T V @
 ```
 
-[使用例の文脈](../src/tests/debug_words_test.zig#L499)
+[使用例の文脈](../src/tests/debug_words_test.zig#L568)
 
 注意：スタック効果の入力順を守ってください。使用例の名前・値は例の定義や初期状態に依存します。
 

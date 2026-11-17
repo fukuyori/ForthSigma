@@ -31,17 +31,17 @@ CREATE S-WAVE S-RATE ALLOT
 VARIABLE HISS-SEED
 : HISS-BYTE ( -- n )   HISS-SEED @ 1103515245 * 12345 + DUP HISS-SEED !  16 RSHIFT 255 AND 128 - ;
 : SWISH { at n k amp | v -- }
-   n 0 DO
+   n 0 ?DO
       HISS-BYTE v - k * 256 / v + TO v
       v amp * n I - * n / 256 /  S-WAVE at + I + C!
    LOOP ;
 : CHIME { at n half amp -- }
-   n 0 DO
+   n 0 ?DO
       I half / 1 AND IF amp ELSE amp NEGATE THEN  n I - * n /
       S-WAVE at + I + DUP C@ DUP 127 > IF 256 - THEN ROT +  -127 MAX 127 MIN  SWAP C!
    LOOP ;
 : BLOOP { at n half amp -- }
-   n 0 DO
+   n 0 ?DO
       I half I 16 / + / 1 AND IF amp ELSE amp NEGATE THEN  n I - * n /
       S-WAVE at + I + C!
    LOOP ;
@@ -157,10 +157,10 @@ VARIABLE ROW-LO   VARIABLE ROW-HI
    y y0 - x1 x0 - *  y1 y0 - /  x0 +  ROW-HIT ;
 : P] { | top bot -- }
    99999 TO top  -99999 TO bot
-   #PTS @ 0 DO  I PT@ NIP DUP top MIN TO top  bot MAX TO bot  LOOP
-   bot 1+ top DO
+   #PTS @ 0 ?DO  I PT@ NIP DUP top MIN TO top  bot MAX TO bot  LOOP
+   bot 1+ top ?DO
       99999 ROW-LO !  -99999 ROW-HI !
-      #PTS @ 0 DO  J  I PT@  I 1+ #PTS @ MOD PT@  EDGE  LOOP
+      #PTS @ 0 ?DO  J  I PT@  I 1+ #PTS @ MOD PT@  EDGE  LOOP
       ROW-HI @ ROW-LO @ >= IF  ROW-LO @ ROW-HI @ I COLOR@ GFX-HLINE  THEN
    LOOP ;
 : BOX { x1 y1 x2 y2 -- }   [P x1 y1 DV x2 y1 DV x2 y2 DV x1 y2 DV P] ;
@@ -410,7 +410,7 @@ VARIABLE NEXT-SPARK
    x 16 * a !  y 16 * a CELL+ !  dx a 2 CELLS + !  dy a 3 CELLS + !  life a 4 CELLS + !  c a 5 CELLS + !
    NEXT-SPARK @ 1+ #SPARKS MOD NEXT-SPARK ! ;
 : BURST { x y n spread c -- }
-   n 0 DO
+   n 0 ?DO
       x y  spread 2* 1+ RND spread -  spread 2* 1+ RND spread -  16 24 RND +  c SPARK
    LOOP ;
 : STEP-SPARKS ( -- )
@@ -442,17 +442,17 @@ CREATE POOL MAX-SQUARES CELLS ALLOT   VARIABLE #POOL
 : SAFE? { x y fx fy -- flag }   x fx - ABS 2 <  y fy - ABS 2 < AND ;
 
 : SET-NUMBERS ( -- )
-   #SQUARES 0 DO
+   #SQUARES 0 ?DO
       I I>X I I>Y ['] +MINE COUNT-AROUND
       I BOARD + DUP C@ $F0 AND ROT OR SWAP C!
    LOOP ;
 
 : PLACE-MINES { fx fy | k t -- }
    0 #POOL !
-   #SQUARES 0 DO
+   #SQUARES 0 ?DO
       I I>X I I>Y fx fy SAFE? 0= IF  I POOL+  THEN
    LOOP
-   #MINES 0 DO
+   #MINES 0 ?DO
       #POOL @ I - RND I + TO k
       POOL k CELLS + @ TO t
       POOL I CELLS + @  POOL k CELLS + !
@@ -496,7 +496,7 @@ CREATE WAITING MAX-SQUARES CELLS ALLOT   VARIABLE #WAITING
    LOOP ;
 : LIST-MINES ( -- )
    0 #POOL !
-   #SQUARES 0 DO
+   #SQUARES 0 ?DO
       I BOARD + C@  DUP MINE-B AND 0<>  SWAP BUOY-B BOOM-B OR AND 0= AND IF  I POOL+  THEN
    LOOP
    SORT-POOL ;
@@ -520,7 +520,7 @@ CREATE WAITING MAX-SQUARES CELLS ALLOT   VARIABLE #WAITING
 
 : WIN ( -- )
    STOP-CLOCK
-   #SQUARES 0 DO
+   #SQUARES 0 ?DO
       I BOARD + C@ MINE-B AND IF  I BOARD + DUP C@ BUOY-B OR SWAP C!  THEN
    LOOP
    #MINES #BUOYS !
@@ -753,7 +753,7 @@ VARIABLE OLD-B   VARIABLE MX   VARIABLE MY
 
 : DRAW-BOARD ( -- )
    C-LINE COLOR!  BX0 3 -  BY0 3 -  BW CS * 6 +  BH CS * 6 +  FILL-RECT
-   BH 0 DO BW 0 DO
+   BH 0 ?DO BW 0 ?DO
       I CS * BX0 +  J CS * BY0 +  I J SQUARE-SPR  SPR
    LOOP LOOP ;
 
@@ -790,7 +790,7 @@ VARIABLE OLD-B   VARIABLE MX   VARIABLE MY
    10 0 DO
       CLOCK @ 2/ I - TO a
       C-SONAR $0A2436  I 25 *  MIX-RGB TO c
-      RADAR-R 2 - 2 DO
+      RADAR-R 2 - 2 ?DO
          a COS64 I * 1024 / 400 + TO x
          a SIN64 I * 1024 / 205 + TO y
          x DUP 1+ y c GFX-HLINE

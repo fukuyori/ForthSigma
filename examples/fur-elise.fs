@@ -57,7 +57,7 @@ VARIABLE STRIKE                                         \ the samples before the
 \ rate it was recorded at, so the rate is the period times that note's 261.63 Hz.
 : MAKE-TONE ( period rate number -- )
    >R >R  DUP PERIOD !  CYCLES * STRIKE !
-   STRIKE @ PERIOD @ +  0 DO  I SAMPLE-AT  TONE I + C!  LOOP
+   STRIKE @ PERIOD @ +  0 ?DO  I SAMPLE-AT  TONE I + C!  LOOP
    TONE  STRIKE @ PERIOD @ +  R> R@ SAMPLE
    STRIKE @  DUP PERIOD @ +  R> LOOP-SAMPLE ;
 

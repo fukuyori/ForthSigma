@@ -178,7 +178,7 @@ test "P08b wrapper nesting is bounded and all deferred actions unwind on failure
     var out = support.Output{};
     const m = try support.createMachine(&out);
     defer support.destroyMachine(m);
-    try m.interpretLine(": A 1 ; : B 2 ; DEFER D ' A IS D : R ['] B ['] D ['] R WRAP-XT ;");
+    try m.interpretLine(": A 1 ; : B 2 ; DEFER D ' A IS D : R RECURSIVE ['] B ['] D ['] R WRAP-XT ;");
     try std.testing.expectError(error.ReturnStackOverflow, m.executeWord(m.lookup("R").?));
     try std.testing.expect(m.wrap_guard == null);
     m.data_depth = 0;

@@ -29,14 +29,14 @@ VARIABLE WAVE-COUNT  VARIABLE WAVE-SIGN  VARIABLE WAVE-SEED
 \ every 64 samples (below 0: the pitch rises), fading out.
 : SQUARE-SWEEP { n p dp -- }
    0 WAVE-COUNT !  1 WAVE-SIGN !
-   n 0 DO
+   n 0 ?DO
       1 WAVE-COUNT +!
       WAVE-COUNT @  p I 64 / dp * +  2 MAX  >= IF  0 WAVE-COUNT !  WAVE-SIGN @ NEGATE WAVE-SIGN !  THEN
       WAVE-SIGN @ 100 *  n I - *  n /  WAVE I + C!
    LOOP ;
 \ Noise of n samples, fading out.
 : NOISE-BURST { n -- }
-   n 0 DO
+   n 0 ?DO
       WAVE-SEED @ 1103515245 * 12345 + DUP WAVE-SEED !  16 RSHIFT 200 MOD 100 -
       n I - *  n /  WAVE I + C!
    LOOP ;
@@ -199,7 +199,7 @@ CREATE LEVELS  ' LEVEL-1 ,  ' LEVEL-2 ,
    FALSE ;
 
 : REVEAL ( -- )   \ the hidden ladders
-   COLS ROWS * 0 DO  MAP I + C@ HIDDEN = IF LADDER MAP I + C! THEN  LOOP ;
+   COLS ROWS * 0 ?DO  MAP I + C@ HIDDEN = IF LADDER MAP I + C! THEN  LOOP ;
 
 : PICK-GOLD ( -- )
    0 TX 0 TY TILE@ GOLD <> IF EXIT THEN

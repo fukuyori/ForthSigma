@@ -3,7 +3,7 @@ const std = @import("std");
 const forth = @import("../forth.zig");
 const defs = @import("defs.zig");
 const map = @import("memory_map.zig");
-pub const words = [_]defs.Builtin{ .execute_parsing, .execute_parsing_file, .string_parse, .parse_word, .name_word, .forward_word, .dot_unresolved, .recursive_word };
+pub const words = [_]defs.Builtin{ .execute_parsing, .execute_parsing_file, .string_parse, .parse_word, .name_word, .forward_word, .dot_unresolved, .recursive_word, .paren_comment, .char_word };
 const Source = struct {
     line: []const u8,
     cursor: map.Cell,
@@ -55,8 +55,23 @@ pub fn forgetTargets(self: *forth.State, removed: u16) void {
 pub fn execute(self: *forth.State, comptime word: defs.Builtin) forth.RuntimeError!void {
     switch (word) {
         .parse_word, .name_word => try self.executeBuiltin(.parse_name),
+        // The text interpreter handles ( and CHAR itself; these run when the words are
+        // reached through their execution tokens or from a definition.
+        .paren_comment => {
+            try self.push(')');
+            try self.executeBuiltin(.parse);
+            self.data_depth -= 2;
+        },
+        .char_word => {
+            try self.executeBuiltin(.parse_name);
+            const length = try self.pop();
+            const address = try self.pop();
+            const start = try self.memoryAddress(address, @intCast(length));
+            try self.push(@import("words_xchar.zig").decode(self.memory[start..][0..@intCast(length)]).code);
+        },
         .recursive_word => {
             if (!self.defining or !self.compiling) return error.CompileOnly;
+            self.hidden_word = @import("wordlists.zig").no_word;
         },
         .forward_word => {
             const name = (try @import("quotations.zig").definitionName(self)) orelse return error.InvalidDefinition;

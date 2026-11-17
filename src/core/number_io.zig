@@ -172,8 +172,12 @@ pub fn parseFloat(token: []const u8, require_exponent: bool) ?Float {
     if (integer_digits.len + fraction_digits.len == 0) return null;
     var exponent_sign: []const u8 = "";
     var exponent_digits: []const u8 = "0";
-    if (i < token.len and (token[i] == 'e' or token[i] == 'E')) {
-        i += 1;
+    // The text interpreter needs E; >FLOAT also takes D and an exponent that starts
+    // with its sign (1+1 is 1E1).
+    const marker = i < token.len and (token[i] == 'e' or token[i] == 'E' or (!require_exponent and (token[i] == 'd' or token[i] == 'D')));
+    const sign_alone = !require_exponent and !marker and i < token.len and (token[i] == '-' or token[i] == '+');
+    if (marker or sign_alone) {
+        if (marker) i += 1;
         if (i < token.len and (token[i] == '-' or token[i] == '+')) {
             exponent_sign = token[i .. i + 1];
             i += 1;

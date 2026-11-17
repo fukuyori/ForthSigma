@@ -37,7 +37,7 @@ VARIABLE HARMONICS                                      \ how many
    2DUP < IF HALF-SINE ELSE TUCK - SWAP HALF-SINE NEGATE THEN ;
 
 : SAMPLE-AT ( n -- byte )
-   0  HARMONICS @ 0 DO  OVER I 1+ * 32 SINE  LEVELS @ I + C@ *  +  LOOP
+   0  HARMONICS @ 0 ?DO  OVER I 1+ * 32 SINE  LEVELS @ I + C@ *  +  LOOP
    NIP 1000 / ;
 
 \ Makes the wave of instrument n from `count` levels at `addr`.

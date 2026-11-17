@@ -1025,6 +1025,8 @@ pub const Builtin = enum {
     forward_word,
     dot_unresolved,
     recursive_word,
+    paren_comment,
+    char_word,
     dot_id,
     dot_voc,
     compile_only_query,
@@ -1340,7 +1342,7 @@ pub const ControlKind = enum { if_branch, else_branch, begin_loop, while_branch,
 /// also keeps the fewest visible at any of its LEAVEs.
 pub const Control = struct { kind: ControlKind, address: u16, locals: u16 = 0, leave_locals: u16 = std.math.maxInt(u16) };
 
-pub const Loop = struct { index: Cell, limit: Cell, exit_pc: u16, exit_after_first: bool = false, leave_keeps_frame: bool = false, stride: UCell = 1, mode: enum { normal, countdown, memory_up, memory_down } = .normal };
+pub const Loop = struct { index: Cell, limit: Cell, exit_pc: u16, leave_keeps_frame: bool = false, stride: UCell = 1, mode: enum { normal, countdown, memory_up, memory_down } = .normal };
 
 pub const Pending = enum { none, colon_name, variable_name, constant_name, array_name, forget_name, tick_name, value_name, watched_value_name, watched_variable_name, to_name, char_name, postpone_name, fconstant_name, fvalue_name, fvariable_name, two_constant_name, two_value_name, two_variable_name, buffer_name, plus_to_name, action_of_name, aconstant_name, avariable_name, string_value_name, replacer_name };
 

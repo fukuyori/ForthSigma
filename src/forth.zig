@@ -235,6 +235,8 @@ pub const State = struct {
     postponing: bool = false,
     control_stack: [max_controls]Control = undefined,
     control_depth: usize = 0,
+    /// The colon definition being compiled, whose name is not found yet; RECURSIVE reveals it.
+    hidden_word: u16 = wordlists.no_word,
     random_state: u64 = 0,
     addresses: @import("core/address_registry.zig").Registry = .{},
     /// The loops of [DO], [FOR], and [BEGIN] that are running.
@@ -633,7 +635,22 @@ pub const State = struct {
                 continue;
             }
             if (std.mem.eql(u8, token, "(")) {
-                const close = std.mem.indexOfScalarPos(u8, line, cursor, ')') orelse return error.CommentUnclosed;
+                var found = std.mem.indexOfScalarPos(u8, line, cursor, ')');
+                // In a file the comment goes on over lines; the end of the file ends it.
+                var end_of_file = false;
+                while (found == null and self.source_kind == .file) {
+                    line = (try self.readIncludeLine()) orelse {
+                        end_of_file = true;
+                        break;
+                    };
+                    self.source_line = line;
+                    self.setSourceCursor(0);
+                    self.numberInputLine();
+                    cursor = 0;
+                    found = std.mem.indexOfScalar(u8, line, ')');
+                }
+                if (end_of_file) break;
+                const close = found orelse return error.CommentUnclosed;
                 // --lint: the comment after the name of a colon definition is its
                 // stack comment.
                 if (defs.debug_enabled) if (self.lint) |lint| {
@@ -866,7 +883,7 @@ pub const State = struct {
         .{ "FOR", .for_word },                        .{ "NEXT", .next_word },                        .{ "MEM+DO", .memory_up_do },                       .{ "MEM-DO", .memory_down_do },                .{ "ARRAY>MEM", .array_to_mem },
         .{ "I'", .index_limit },                      .{ "DELTA-I", .delta_index },                   .{ "CS-DROP", .cs_drop },                           .{ "DONE", .done },                            .{ "?DUP-IF", .question_dup_if },
         .{ "?DUP-0=-IF", .question_dup_zero_if },     .{ "EXECUTE-PARSING", .execute_parsing },       .{ "EXECUTE-PARSING-FILE", .execute_parsing_file }, .{ "STRING-PARSE", .string_parse },            .{ "PARSE-WORD", .parse_word },
-        .{ "NAME", .name_word },                      .{ "FORWARD", .forward_word },                  .{ ".UNRESOLVED", .dot_unresolved },                .{ "RECURSIVE", .recursive_word },             .{ ".ID", .dot_id },
+        .{ "NAME", .name_word },                      .{ "FORWARD", .forward_word },                  .{ ".UNRESOLVED", .dot_unresolved },                .{ "(", .paren_comment }, .{ "CHAR", .char_word }, .{ "RECURSIVE", .recursive_word },             .{ ".ID", .dot_id },
         .{ ".VOC", .dot_voc },                        .{ "COMPILE-ONLY?", .compile_only_query },      .{ "CONTEXT", .context_address },                   .{ "CS-VOCABULARY", .cs_vocabulary },          .{ "CS-WORDLIST", .cs_wordlist },
         .{ "CURRENT", .current_address },             .{ "FIND-NAME-IN", .find_name_in },             .{ "IN", .in_vocabulary },                          .{ "IN-WORDLIST", .in_wordlist },              .{ "LATESTNT", .latest_nt },
         .{ "MAP-VOCS", .map_vocs },                   .{ "MWORDS", .mwords },                         .{ "NAME>LINK", .name_to_link },                    .{ "NEXTNAME", .nextname },                    .{ "OBSOLETE?", .obsolete_query },
@@ -940,6 +957,7 @@ pub const State = struct {
         return switch (builtin) {
             .documentation_comment, .assert_close, .assert_zero, .assert_one, .assert_two, .assert_three, .warning_quote => true,
             .addr, .preserve => true,
+            .paren_comment => true,
             .recursive_word, .positive_do, .unsigned_positive_do, .negative_do, .unsigned_negative_do, .inclusive_negative_do, .unsigned_inclusive_negative_do, .negative_loop, .for_word, .next_word, .memory_up_do, .memory_down_do, .done, .question_dup_if, .question_dup_zero_if, .quote_open, .quote_close, .postpone_open, .bracket_comp_tick, .execute_exit, .assign_to, .assign_is, .assign_plus_to, .assignment_action_of, .compile_if, .compile_else, .compile_ahead, .compile_then, .compile_begin, .compile_end, .compile_again, .compile_while, .compile_repeat, .compile_do, .compile_q_do, .compile_loop, .compile_plus_loop, .compile_does, .compile_case, .compile_of, .compile_endof, .compile_endcase, .compile_exit, .compile_recurse, .leave, .bracket_if, .bracket_else, .bracket_then, .bracket_defined, .bracket_undefined, .bracket_ifdef, .bracket_ifundef, .bracket_do, .bracket_q_do, .bracket_loop, .bracket_plus_loop, .bracket_i, .bracket_begin, .bracket_until, .bracket_again, .bracket_while, .bracket_repeat, .bracket_for, .bracket_next, .end_definition, .literal, .fliteral, .sliteral, .two_literal, .defers, .bracket_compile, .question_exit, .question_leave, .compile_question_of, .compile_contof, .compile_next_case, .debug_tilde, .assert_paren, .once, .debug_tilde_bt, .debug_tilde_one_bt, .break_colon, .break_quote, .triple_backslash => true,
             else => false,
         };
@@ -1106,6 +1124,9 @@ pub const State = struct {
     /// Takes word `id` and every later word out of the dictionary and the index of the
     /// names; the caller gives back their code, data, and names.
     pub fn dropWordsFrom(self: *State, id: u16) void {
+        if (self.hidden_word != wordlists.no_word and self.hidden_word >= id) self.hidden_word = wordlists.no_word;
+        if (self.hidden_word != wordlists.no_word and self.hidden_word >= id) self.hidden_word = wordlists.no_word;
+        if (self.hidden_word != wordlists.no_word and self.hidden_word >= id) self.hidden_word = wordlists.no_word;
         self.source_trace = .{};
         self.source_search = .{};
         @import("core/words_value_extensions.zig").invalidate(self, id);
@@ -1214,6 +1235,11 @@ pub const State = struct {
         }
         if (std.mem.eql(u8, token, "[']")) {
             self.pending = .tick_name;
+            return;
+        }
+        if (asciiEqlIgnoreCase(token, "CHAR") and self.compiling) {
+            // Not immediate: the name is read when the definition runs.
+            _ = try self.emit(.{ .kind = .builtin, .value = @backingInt(Builtin.char_word) });
             return;
         }
         if (asciiEqlIgnoreCase(token, "CHAR") or asciiEqlIgnoreCase(token, "[CHAR]")) {
@@ -2074,7 +2100,7 @@ pub const State = struct {
                         continue;
                     }
                     if (self.loop_depth == self.loop_stack.len) return error.StackOverflow;
-                    self.loop_stack[self.loop_depth] = .{ .index = start, .limit = limit, .exit_pc = exit_pc, .exit_after_first = start == limit, .leave_keeps_frame = keep };
+                    self.loop_stack[self.loop_depth] = .{ .index = start, .limit = limit, .exit_pc = exit_pc, .leave_keeps_frame = keep };
                     self.loop_depth += 1;
                     if (op.kind == .q_do_loop and start == limit) pc = exit_pc;
                 },
@@ -2096,7 +2122,7 @@ pub const State = struct {
                     const frame = &self.loop_stack[self.loop_depth - 1];
                     const crossed = if (loop_kind == .plus_loop) integer_math.loopCrossed(frame.index, frame.limit, step) else false;
                     frame.index +%= step;
-                    const again = if (frame.exit_after_first) false else if (loop_kind == .loop) frame.index != frame.limit else !crossed;
+                    const again = if (loop_kind == .loop) frame.index != frame.limit else !crossed;
                     if (again) {
                         pc = @as(u16, @intCast(op.value));
                     } else {
@@ -2129,12 +2155,12 @@ pub const State = struct {
                     try self.push(self.memory[address]);
                 },
                 .does => {
+                    // The created word stays the target, so that a later DOES> replaces
+                    // this one (6.1.1250), also one that runs inside a DOES> part.
                     const created_id = self.last_created_word orelse return error.InvalidDefinition;
-                    const defining_id = running.defining_word orelse return error.InvalidDefinition;
                     self.words[created_id].does_code_start = @intCast(pc);
-                    self.words[created_id].does_code_end = self.words[defining_id].code_end;
+                    self.words[created_id].does_code_end = @intCast(end_pc);
                     self.words[created_id].has_does = true;
-                    self.last_created_word = null;
                     // The defining word ends here, as at EXIT.
                     if (counted) self.traceRunning(frameWithLoopPCs(running, pc, end_pc), false);
                     {

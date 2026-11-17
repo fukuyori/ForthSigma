@@ -12,12 +12,12 @@ Entries (namespace/name pairs): **1503**. The same name in different vocabularie
 
 - [AUDIO](#namespace-audio) (73)
 - [EKEYS](#namespace-ekeys) (35)
-- [FORTH](#namespace-forth) (955)
+- [FORTH](#namespace-forth) (957)
 - [GAME](#namespace-game) (59)
 - [GRAPHICS](#namespace-graphics) (207)
 - [GUI](#namespace-gui) (120)
 - [Root](#namespace-root) (14)
-- [Syntax](#namespace-syntax) (40)
+- [Syntax](#namespace-syntax) (38)
 
 Regenerate: `python scripts/word-reference.py`. Check only: `python scripts/word-reference.py --check`. Edit the HELP/registration sources or generator, rather than editing generated entries.
 
@@ -3124,6 +3124,7 @@ Sources: [src/core/standard_keys.zig](../src/core/standard_keys.zig).
 - [` %ALLOT `](#w-464f5254483a25414c4c4f54)
 - [` %SIZE `](#w-464f5254483a2553495a45)
 - [` ' `](#w-464f5254483a27)
+- [` ( `](#w-464f5254483a28)
 - [` (ASSERT) `](#w-464f5254483a2841535345525429)
 - [` (BREAK") `](#w-464f5254483a28425245414b2229)
 - [` (BREAK:) `](#w-464f5254483a28425245414b3a29)
@@ -3367,6 +3368,7 @@ Sources: [src/core/standard_keys.zig](../src/core/standard_keys.zig).
 - [` CELL/ `](#w-464f5254483a43454c4c2f)
 - [` CELLS `](#w-464f5254483a43454c4c53)
 - [` CFIELD: `](#w-464f5254483a434649454c443a)
+- [` CHAR `](#w-464f5254483a43484152)
 - [` CHAR% `](#w-464f5254483a4348415225)
 - [` CHAR+ `](#w-464f5254483a434841522b)
 - [` CHAR- `](#w-464f5254483a434841522d)
@@ -5301,7 +5303,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 STRUCT CELL% FIELD S.A END-STRUCT R% HERE 1 ALLOT R% %ALIGN HERE SWAP - . HERE R% %ALLOT TUCK = . HERE SWAP - . R% %ALLOC 0<> . R% %ALLOCATE . 0<> .
 ```
 
-[Example context](../src/tests/core_words_test.zig#L951)
+[Example context](../src/tests/core_words_test.zig#L998)
 
 Caution: Follow the operand order in the stack effect. Example names and values depend on their setup.
 
@@ -5325,7 +5327,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 STRUCT . . STRUCT CELL% FIELD S.A CHAR% FIELD S.B FLOAT% FIELD S.C CHAR% FIELD S.D DOUBLE% FIELD S.E SFLOAT% FIELD S.F DFLOAT% FIELD S.G CHAR% 3 * FIELD S.H END-STRUCT REC% REC% . . 0 S.A . 0 S.B . 0 S.C . 0 S.D . 0 S.E . 0 S.F . 0 S.G . 0 S.H . CELL% . . CHAR% . . FLOAT% . . DOUBLE% . . SFLOAT% . . DFLOAT% . . REC% %SIZE . REC% %ALIGNMENT .
 ```
 
-[Example context](../src/tests/core_words_test.zig#L946)
+[Example context](../src/tests/core_words_test.zig#L993)
 
 Caution: Follow the operand order in the stack effect. Example names and values depend on their setup.
 
@@ -5349,7 +5351,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 STRUCT CELL% FIELD S.A END-STRUCT R% HERE 1 ALLOT R% %ALIGN HERE SWAP - . HERE R% %ALLOT TUCK = . HERE SWAP - . R% %ALLOC 0<> . R% %ALLOCATE . 0<> .
 ```
 
-[Example context](../src/tests/core_words_test.zig#L951)
+[Example context](../src/tests/core_words_test.zig#L998)
 
 Caution: Use valid logical-memory addresses, lengths and capacities; distinguish owned storage from borrowed lifetimes.
 
@@ -5373,7 +5375,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 STRUCT CELL% FIELD S.A END-STRUCT R% HERE 1 ALLOT R% %ALIGN HERE SWAP - . HERE R% %ALLOT TUCK = . HERE SWAP - . R% %ALLOC 0<> . R% %ALLOCATE . 0<> .
 ```
 
-[Example context](../src/tests/core_words_test.zig#L951)
+[Example context](../src/tests/core_words_test.zig#L998)
 
 Caution: Check the returned ior; zero is success. Passing it to THROW is one option. Use valid logical-memory addresses, lengths and capacities; distinguish owned storage from borrowed lifetimes.
 
@@ -5397,7 +5399,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 STRUCT CELL% FIELD S.A END-STRUCT R% HERE 1 ALLOT R% %ALIGN HERE SWAP - . HERE R% %ALLOT TUCK = . HERE SWAP - . R% %ALLOC 0<> . R% %ALLOCATE . 0<> .
 ```
 
-[Example context](../src/tests/core_words_test.zig#L951)
+[Example context](../src/tests/core_words_test.zig#L998)
 
 Caution: Use valid logical-memory addresses, lengths and capacities; distinguish owned storage from borrowed lifetimes.
 
@@ -5450,6 +5452,26 @@ V ' V = .
 Caution: Follow the operand order in the stack effect. Example names and values depend on their setup.
 
 Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L528).
+
+<a id="w-464f5254483a28"></a>
+
+### ` ( `
+
+` ( -- ) `
+
+Ignore text through the first ); comments do not nest. In a file the comment goes on over lines, and the end of the file ends it. Block input can cross 64-byte rows within its 1024-byte buffer. Elsewhere a missing ) is an error.
+
+Kind: builtin; immediate.
+
+Usage example
+
+```forth
+( ignored text ) 42 .
+```
+
+Caution: Immediate: it executes during definition compilation.
+
+Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L947).
 
 <a id="w-464f5254483a2841535345525429"></a>
 
@@ -5723,7 +5745,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 9223372036854775807 2 3 */ .
 ```
 
-[Example context](../src/tests/core_words_test.zig#L401)
+[Example context](../src/tests/core_words_test.zig#L448)
 
 Caution: Follow the operand order in the stack effect. Example names and values depend on their setup.
 
@@ -5773,7 +5795,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 10 3 4 */ . -10 3 4 */ . 10 -3 4 */ . 7 2 -3 */ . 10 3 4 */MOD . . -10 3 4 */MOD . .
 ```
 
-[Example context](../src/tests/core_words_test.zig#L399)
+[Example context](../src/tests/core_words_test.zig#L446)
 
 Caution: Follow the operand order in the stack effect. Example names and values depend on their setup.
 
@@ -5935,7 +5957,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 2 3 +
 ```
 
-[Example context](../src/tests/core_words_test.zig#L454)
+[Example context](../src/tests/core_words_test.zig#L501)
 
 Caution: Follow the operand order in the stack effect. Example names and values depend on their setup.
 
@@ -5957,7 +5979,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 VARIABLE CALLED : P 1 CALLED +! ;
 ```
 
-[Example context](../src/tests/p07d_test.zig#L208)
+[Example context](../src/tests/p07d_test.zig#L210)
 
 Caution: Use valid logical-memory addresses, lengths and capacities; distinguish owned storage from borrowed lifetimes.
 
@@ -6069,7 +6091,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 : EDGE 0 1 DO I -1 +LOOP ; EDGE
 ```
 
-[Example context](../src/tests/core_words_test.zig#L645)
+[Example context](../src/tests/core_words_test.zig#L692)
 
 Caution: Compile-only: ordinary interpreted execution is not allowed.
 
@@ -6183,7 +6205,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 : CELL <BUILDS , DOES> @ ;
 ```
 
-[Example context](../src/tests/core_words_test.zig#L742)
+[Example context](../src/tests/core_words_test.zig#L789)
 
 Caution: Follow the operand order in the stack effect. Example names and values depend on their setup.
 
@@ -6387,7 +6409,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 1 2 3 -ROT NIP 4 TUCK 2DUP 2DROP DEPTH 9 8 7 2 PICK 3 ROLL 5 >R R@ R> 2SWAP 2OVER
 ```
 
-[Example context](../src/tests/core_words_test.zig#L781)
+[Example context](../src/tests/core_words_test.zig#L828)
 
 Caution: Follow the operand order in the stack effect. Example names and values depend on their setup.
 
@@ -6507,7 +6529,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 INCLUDE a.txt .COVER-RAW
 ```
 
-[Example context](../src/tests/debug_words_test.zig#L327)
+[Example context](../src/tests/debug_words_test.zig#L380)
 
 Caution: Follow the operand order in the stack effect. Example names and values depend on their setup.
 
@@ -6531,7 +6553,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 .COVERAGE
 ```
 
-[Example context](../src/tests/debug_words_test.zig#L335)
+[Example context](../src/tests/debug_words_test.zig#L388)
 
 Caution: Follow the operand order in the stack effect. Example names and values depend on their setup.
 
@@ -6667,7 +6689,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 CHAR | EMIT 42 5 .R CHAR | EMIT -42 5 .R CHAR | EMIT 123456 3 .R CHAR | EMIT 7 0 .R CHAR | EMIT 7 -3 .R CHAR | EMIT 42 5 U.R CHAR | EMIT -1 3 U.R CHAR | EMIT 7 -9223372036854775808 .R CHAR | EMIT HEX 255 6 .R
 ```
 
-[Example context](../src/tests/core_words_test.zig#L382)
+[Example context](../src/tests/core_words_test.zig#L429)
 
 Caution: Follow the operand order in the stack effect. Example names and values depend on their setup.
 
@@ -6691,7 +6713,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 1 -2 3 .S
 ```
 
-[Example context](../src/tests/core_words_test.zig#L144)
+[Example context](../src/tests/core_words_test.zig#L191)
 
 Caution: Follow the operand order in the stack effect. Example names and values depend on their setup.
 
@@ -7133,7 +7155,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 : T5 CASE DUP . DUP 0> ?OF 1- CONTOF ." done" ENDCASE ; 3 T5
 ```
 
-[Example context](../src/tests/core_words_test.zig#L900)
+[Example context](../src/tests/core_words_test.zig#L947)
 
 Caution: Follow the operand order in the stack effect. Example names and values depend on their setup.
 
@@ -7307,7 +7329,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 : A 1+ ; : B A 2* ; : C B 3 + ;
 ```
 
-[Example context](../src/tests/debug_step_test.zig#L277)
+[Example context](../src/tests/debug_step_test.zig#L291)
 
 Caution: Follow the operand order in the stack effect. Example names and values depend on their setup.
 
@@ -7353,7 +7375,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 1 4 LSHIFT -1 60 RSHIFT 3 CELLS 0 CELL+ 9 ALIGNED BL CHAR A : Z [CHAR] Z ; Z $FF #10 %101 'a' -7 2/ 1 \ 2 3
 ```
 
-[Example context](../src/tests/core_words_test.zig#L792)
+[Example context](../src/tests/core_words_test.zig#L839)
 
 Caution: Follow the operand order in the stack effect. Example names and values depend on their setup.
 
@@ -7443,7 +7465,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 2DROP 8 TO V
 ```
 
-[Example context](../src/tests/debug_words_test.zig#L165)
+[Example context](../src/tests/debug_words_test.zig#L218)
 
 Caution: Follow the operand order in the stack effect. Example names and values depend on their setup.
 
@@ -7509,7 +7531,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 16 BUFFER: BUF BUF 16 ERASE 7 BUF C! BUF C@ . HERE BUF - . : T5 [ 12345678901234567890. ] 2LITERAL ; T5 D.
 ```
 
-[Example context](../src/tests/core_words_test.zig#L262)
+[Example context](../src/tests/core_words_test.zig#L309)
 
 Caution: Compile-only: ordinary interpreted execution is not allowed.
 
@@ -7555,7 +7577,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 1 2 3 -ROT NIP 4 TUCK 2DUP 2DROP DEPTH 9 8 7 2 PICK 3 ROLL 5 >R R@ R> 2SWAP 2OVER
 ```
 
-[Example context](../src/tests/core_words_test.zig#L781)
+[Example context](../src/tests/core_words_test.zig#L828)
 
 Caution: Follow the operand order in the stack effect. Example names and values depend on their setup.
 
@@ -7603,7 +7625,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 : T2 1 2 2>R 2R@ 2R> ; T2 . . . .
 ```
 
-[Example context](../src/tests/core_words_test.zig#L380)
+[Example context](../src/tests/core_words_test.zig#L427)
 
 Caution: Follow the operand order in the stack effect. Example names and values depend on their setup.
 
@@ -7649,7 +7671,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 1. 2. DU< . -1. 1. DU< . 1. -1. DU< . 1. 2. 3. 2ROT D. D. D.
 ```
 
-[Example context](../src/tests/core_words_test.zig#L268)
+[Example context](../src/tests/core_words_test.zig#L315)
 
 Caution: Follow the operand order in the stack effect. Example names and values depend on their setup.
 
@@ -7855,7 +7877,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 : COUNT-UP 0 BEGIN DUP 3 < WHILE 1 + REPEAT ;
 ```
 
-[Example context](../src/tests/core_words_test.zig#L620)
+[Example context](../src/tests/core_words_test.zig#L667)
 
 Caution: Follow the operand order in the stack effect. Example names and values depend on their setup.
 
@@ -7945,7 +7967,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 : T8 0 BEGIN DUP 10 < WHILE DUP 5 <> WHILE 1+ REPEAT ." five" THEN . ; T8
 ```
 
-[Example context](../src/tests/core_words_test.zig#L300)
+[Example context](../src/tests/core_words_test.zig#L347)
 
 Caution: Follow the operand order in the stack effect. Example names and values depend on their setup.
 
@@ -7967,7 +7989,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 : CELL <BUILDS , DOES> @ ;
 ```
 
-[Example context](../src/tests/core_words_test.zig#L742)
+[Example context](../src/tests/core_words_test.zig#L789)
 
 Caution: Follow the operand order in the stack effect. Example names and values depend on their setup.
 
@@ -8037,7 +8059,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 : FACT DUP 1 > IF DUP 1- RECURSE * THEN ; U A 20 FACT
 ```
 
-[Example context](../src/tests/core_words_test.zig#L816)
+[Example context](../src/tests/core_words_test.zig#L863)
 
 Caution: Follow the operand order in the stack effect. Example names and values depend on their setup.
 
@@ -8273,7 +8295,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 0 >R
 ```
 
-[Example context](../src/tests/core_words_test.zig#L535)
+[Example context](../src/tests/core_words_test.zig#L582)
 
 Caution: Follow the operand order in the stack effect. Example names and values depend on their setup.
 
@@ -8387,7 +8409,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 5 ?DUP . . 0 ?DUP . DEPTH .
 ```
 
-[Example context](../src/tests/core_words_test.zig#L378)
+[Example context](../src/tests/core_words_test.zig#L425)
 
 Caution: Follow the operand order in the stack effect. Example names and values depend on their setup.
 
@@ -8477,7 +8499,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 : T2 DUP . ?EXIT ." after" ; 0 T2 1 T2 NOOP VARIABLE XV ' DUP XV ! 4 XV PERFORM . .
 ```
 
-[Example context](../src/tests/core_words_test.zig#L889)
+[Example context](../src/tests/core_words_test.zig#L936)
 
 Caution: Compile-only: ordinary interpreted execution is not allowed.
 
@@ -8523,7 +8545,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 : T3 10 0 DO I . I 3 = ?LEAVE LOOP ; T3 10 CELL- . 1 2 3 UNDER+ . . 0 0>= . -1 0>= . 1 0>= .
 ```
 
-[Example context](../src/tests/core_words_test.zig#L890)
+[Example context](../src/tests/core_words_test.zig#L937)
 
 Caution: Compile-only: ordinary interpreted execution is not allowed.
 
@@ -8547,7 +8569,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 : T5 CASE DUP . DUP 0> ?OF 1- CONTOF ." done" ENDCASE ; 3 T5
 ```
 
-[Example context](../src/tests/core_words_test.zig#L900)
+[Example context](../src/tests/core_words_test.zig#L947)
 
 Caution: Compile-only: ordinary interpreted execution is not allowed.
 
@@ -9212,7 +9234,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 VARIABLE V 123 V ! V @ 2 ARRAY A 42 1 A A! 1 A A@ : MESSAGE " OK" TYPE ; MESSAGE
 ```
 
-[Example context](../src/tests/core_words_test.zig#L124)
+[Example context](../src/tests/core_words_test.zig#L171)
 
 Caution: Use valid logical-memory addresses, lengths and capacities; distinguish owned storage from borrowed lifetimes.
 
@@ -9256,7 +9278,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 VARIABLE V 123 V ! V @ 2 ARRAY A 42 1 A A! 1 A A@ : MESSAGE " OK" TYPE ; MESSAGE
 ```
 
-[Example context](../src/tests/core_words_test.zig#L124)
+[Example context](../src/tests/core_words_test.zig#L171)
 
 Caution: Use valid logical-memory addresses, lengths and capacities; distinguish owned storage from borrowed lifetimes.
 
@@ -9280,7 +9302,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 1 2 ' + CATCH : V 1 0 / ; ' V CATCH ' ABORT CATCH S" NOSUCHWORD" ' EVALUATE CATCH NIP NIP
 ```
 
-[Example context](../src/tests/catch_test.zig#L276)
+[Example context](../src/tests/catch_test.zig#L435)
 
 Caution: Follow the operand order in the stack effect. Example names and values depend on their setup.
 
@@ -9506,7 +9528,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 : FOREVER BEGIN AGAIN ; : RUN-LIMIT ['] FOREVER CATCH ;
 ```
 
-[Example context](../src/tests/catch_test.zig#L195)
+[Example context](../src/tests/catch_test.zig#L354)
 
 Caution: Compile-only: ordinary interpreted execution is not allowed.
 
@@ -9528,7 +9550,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 : T1 AHEAD 111 . THEN 222 . ; T1 : T2 1 2 3 3 N>R 99 . NR> . . . . ; T2 : T3 0 N>R NR> . ; T3
 ```
 
-[Example context](../src/tests/core_words_test.zig#L365)
+[Example context](../src/tests/core_words_test.zig#L412)
 
 Caution: Compile-only: ordinary interpreted execution is not allowed.
 
@@ -9576,7 +9598,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 HERE 1 ALLOT ALIGN HERE SWAP - . HERE ALIGN HERE SWAP - . UNUSED 0> .
 ```
 
-[Example context](../src/tests/core_words_test.zig#L381)
+[Example context](../src/tests/core_words_test.zig#L428)
 
 Caution: Follow the operand order in the stack effect. Example names and values depend on their setup.
 
@@ -9598,7 +9620,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 1 4 LSHIFT -1 60 RSHIFT 3 CELLS 0 CELL+ 9 ALIGNED BL CHAR A : Z [CHAR] Z ; Z $FF #10 %101 'a' -7 2/ 1 \ 2 3
 ```
 
-[Example context](../src/tests/core_words_test.zig#L792)
+[Example context](../src/tests/core_words_test.zig#L839)
 
 Caution: Use valid logical-memory addresses, lengths and capacities; distinguish owned storage from borrowed lifetimes.
 
@@ -9644,7 +9666,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 1 ALLOT
 ```
 
-[Example context](../src/tests/core_words_test.zig#L222)
+[Example context](../src/tests/core_words_test.zig#L269)
 
 Caution: Follow the operand order in the stack effect. Example names and values depend on their setup.
 
@@ -9825,10 +9847,10 @@ Related: [Variables, constants, and arrays](USER_MANUAL.md#variables-constants-a
 Usage example (source excerpt; consult the link for setup and expectations)
 
 ```forth
-7 CONSTANT K VARIABLE V CREATE RAW 19 , 2 ARRAY A
+7 CONSTANT K VARIABLE V CREATE RAW 2 ARRAY A
 ```
 
-[Example context](../src/tests/core_words_test.zig#L74)
+[Example context](../src/tests/core_words_test.zig#L104)
 
 Caution: Follow the operand order in the stack effect. Example names and values depend on their setup.
 
@@ -10264,7 +10286,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 : COUNT-TO 0 BEGIN 1 + DUP 3 = END ;
 ```
 
-[Example context](../src/tests/core_words_test.zig#L621)
+[Example context](../src/tests/core_words_test.zig#L668)
 
 Caution: Compile-only: ordinary interpreted execution is not allowed.
 
@@ -10452,7 +10474,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 : T BREAK: 123 . ; : U BREAK" there" 7 . ;
 ```
 
-[Example context](../src/tests/debug_step_test.zig#L223)
+[Example context](../src/tests/debug_step_test.zig#L237)
 
 Caution: Immediate: it executes during definition compilation.
 
@@ -10476,7 +10498,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 : T BREAK: 123 . ; : U BREAK" there" 7 . ;
 ```
 
-[Example context](../src/tests/debug_step_test.zig#L223)
+[Example context](../src/tests/debug_step_test.zig#L237)
 
 Caution: Immediate: it executes during definition compilation.
 
@@ -10614,7 +10636,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 16 BUFFER: BUF BUF 16 ERASE 7 BUF C! BUF C@ . HERE BUF - . : T5 [ 12345678901234567890. ] 2LITERAL ; T5 D.
 ```
 
-[Example context](../src/tests/core_words_test.zig#L262)
+[Example context](../src/tests/core_words_test.zig#L309)
 
 Caution: Follow the operand order in the stack effect. Example names and values depend on their setup.
 
@@ -10752,7 +10774,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 HEX FF . -1 . 10 U. DECIMAL -1 U. 8 OCT . DECIMAL 300 C.
 ```
 
-[Example context](../src/tests/core_words_test.zig#L136)
+[Example context](../src/tests/core_words_test.zig#L183)
 
 Caution: Follow the operand order in the stack effect. Example names and values depend on their setup.
 
@@ -10888,7 +10910,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 : T5 CASE DUP . DUP 0> ?OF 1- CONTOF ." done" ENDCASE ; 3 T5
 ```
 
-[Example context](../src/tests/core_words_test.zig#L900)
+[Example context](../src/tests/core_words_test.zig#L947)
 
 Caution: Compile-only: ordinary interpreted execution is not allowed.
 
@@ -10980,7 +11002,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 STRUCT CELL% FIELD S.A END-STRUCT R% HERE 1 ALLOT R% %ALIGN HERE SWAP - . HERE R% %ALLOT TUCK = . HERE SWAP - . R% %ALLOC 0<> . R% %ALLOCATE . 0<> .
 ```
 
-[Example context](../src/tests/core_words_test.zig#L951)
+[Example context](../src/tests/core_words_test.zig#L998)
 
 Caution: Follow the operand order in the stack effect. Example names and values depend on their setup.
 
@@ -11024,7 +11046,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 : T3 10 0 DO I . I 3 = ?LEAVE LOOP ; T3 10 CELL- . 1 2 3 UNDER+ . . 0 0>= . -1 0>= . 1 0>= .
 ```
 
-[Example context](../src/tests/core_words_test.zig#L890)
+[Example context](../src/tests/core_words_test.zig#L937)
 
 Caution: Use valid logical-memory addresses, lengths and capacities; distinguish owned storage from borrowed lifetimes.
 
@@ -11104,6 +11126,30 @@ Caution: Follow the operand order in the stack effect. Example names and values 
 
 Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L422).
 
+<a id="w-464f5254483a43484152"></a>
+
+### ` CHAR `
+
+` ( "word" -- xc ) `
+
+The code point of the first character (UTF-8) of the next word. In a definition the word is read when the definition runs; use \[CHAR\] for a literal.
+
+Kind: builtin.
+
+Related: [Characters (UTF-8)](USER_MANUAL.md#characters-utf-8), [P07d: scoped parsing and forward references](USER_MANUAL.md#p07d-scoped-parsing-and-forward-references).
+
+Usage example (source excerpt; consult the link for setup and expectations)
+
+```forth
+CHAR b KEY-HELD?
+```
+
+[Example context](../src/tests/graphics_test.zig#L2339)
+
+Caution: Follow the operand order in the stack effect. Example names and values depend on their setup.
+
+Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L953).
+
 <a id="w-464f5254483a4348415225"></a>
 
 ### ` CHAR% `
@@ -11122,7 +11168,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 STRUCT . . STRUCT CELL% FIELD S.A CHAR% FIELD S.B FLOAT% FIELD S.C CHAR% FIELD S.D DOUBLE% FIELD S.E SFLOAT% FIELD S.F DFLOAT% FIELD S.G CHAR% 3 * FIELD S.H END-STRUCT REC% REC% . . 0 S.A . 0 S.B . 0 S.C . 0 S.D . 0 S.E . 0 S.F . 0 S.G . 0 S.H . CELL% . . CHAR% . . FLOAT% . . DOUBLE% . . SFLOAT% . . DFLOAT% . . REC% %SIZE . REC% %ALIGNMENT .
 ```
 
-[Example context](../src/tests/core_words_test.zig#L946)
+[Example context](../src/tests/core_words_test.zig#L993)
 
 Caution: Follow the operand order in the stack effect. Example names and values depend on their setup.
 
@@ -11466,7 +11512,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 : SQ DUP * ; : GEN ['] SQ COMPILE, ; IMMEDIATE : T1 GEN 1+ ; 5 T1 . : T2 [ ' SQ COMPILE, ] ; 3 T2 .
 ```
 
-[Example context](../src/tests/core_words_test.zig#L924)
+[Example context](../src/tests/core_words_test.zig#L971)
 
 Caution: Follow the operand order in the stack effect. Example names and values depend on their setup.
 
@@ -11606,7 +11652,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 : T5 CASE DUP . DUP 0> ?OF 1- CONTOF ." done" ENDCASE ; 3 T5
 ```
 
-[Example context](../src/tests/core_words_test.zig#L900)
+[Example context](../src/tests/core_words_test.zig#L947)
 
 Caution: Compile-only: ordinary interpreted execution is not allowed.
 
@@ -11678,7 +11724,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 COV%
 ```
 
-[Example context](../src/tests/debug_words_test.zig#L331)
+[Example context](../src/tests/debug_words_test.zig#L384)
 
 Caution: Follow the operand order in the stack effect. Example names and values depend on their setup.
 
@@ -11816,7 +11862,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 : T7 0 BEGIN [ 0 CS-PICK ] 1+ DUP 3 > UNTIL . EXIT AGAIN ; T7
 ```
 
-[Example context](../src/tests/core_words_test.zig#L302)
+[Example context](../src/tests/core_words_test.zig#L349)
 
 Caution: Follow the operand order in the stack effect. Example names and values depend on their setup.
 
@@ -11838,7 +11884,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 : MYWHILE POSTPONE IF 1 CS-ROLL ; IMMEDIATE : T2 0 BEGIN DUP 3 < MYWHILE 1+ REPEAT . ; T2
 ```
 
-[Example context](../src/tests/core_words_test.zig#L299)
+[Example context](../src/tests/core_words_test.zig#L346)
 
 Caution: Follow the operand order in the stack effect. Example names and values depend on their setup.
 
@@ -12096,7 +12142,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 CHAR | EMIT 12345. 10 D.R CHAR | EMIT -12345. 10 D.R CHAR | EMIT 123456789012. 3 D.R CHAR | EMIT 12345. -3 D.R CHAR | EMIT 0. 0 D.R CHAR | EMIT
 ```
 
-[Example context](../src/tests/core_words_test.zig#L263)
+[Example context](../src/tests/core_words_test.zig#L310)
 
 Caution: Follow the operand order in the stack effect. Example names and values depend on their setup.
 
@@ -12250,7 +12296,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 5. D2* D. -5. D2* D. -5. D2/ D. 5. D2/ D. -1. D2/ D. 1. 2. DMAX D. -1. 2. DMIN D. 5. 7 M+ D. -5. -7 M+ D.
 ```
 
-[Example context](../src/tests/core_words_test.zig#L267)
+[Example context](../src/tests/core_words_test.zig#L314)
 
 Caution: Follow the operand order in the stack effect. Example names and values depend on their setup.
 
@@ -12272,7 +12318,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 5. D2* D. -5. D2* D. -5. D2/ D. 5. D2/ D. -1. D2/ D. 1. 2. DMAX D. -1. 2. DMIN D. 5. 7 M+ D. -5. -7 M+ D.
 ```
 
-[Example context](../src/tests/core_words_test.zig#L267)
+[Example context](../src/tests/core_words_test.zig#L314)
 
 Caution: Follow the operand order in the stack effect. Example names and values depend on their setup.
 
@@ -12526,7 +12572,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 DBG DUP
 ```
 
-[Example context](../src/tests/debug_step_test.zig#L182)
+[Example context](../src/tests/debug_step_test.zig#L196)
 
 Caution: Follow the operand order in the stack effect. Example names and values depend on their setup.
 
@@ -12668,7 +12714,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 DEFER D1 ' OVER ' D1 DEFER! ' D1 DEFER@ ' OVER = . ' NIP TO D1 1 2 D1 . : T2 [ ' DUP ] LITERAL TO D1 ; T2 ' D1 DEFER@ ' DUP = .
 ```
 
-[Example context](../src/tests/core_words_test.zig#L871)
+[Example context](../src/tests/core_words_test.zig#L918)
 
 Caution: Follow the operand order in the stack effect. Example names and values depend on their setup.
 
@@ -12692,7 +12738,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 DEFER F : A 42 ; ' A IS F FORGET A : TEST-BUF 99 ; F ' F DEFER@ . MARKER M : C 7 ; ' C IS F M F
 ```
 
-[Example context](../src/tests/core_words_test.zig#L911)
+[Example context](../src/tests/core_words_test.zig#L958)
 
 Caution: Follow the operand order in the stack effect. Example names and values depend on their setup.
 
@@ -12828,7 +12874,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 5 ?DUP . . 0 ?DUP . DEPTH .
 ```
 
-[Example context](../src/tests/core_words_test.zig#L378)
+[Example context](../src/tests/core_words_test.zig#L425)
 
 Caution: Follow the operand order in the stack effect. Example names and values depend on their setup.
 
@@ -12962,7 +13008,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 STRUCT . . STRUCT CELL% FIELD S.A CHAR% FIELD S.B FLOAT% FIELD S.C CHAR% FIELD S.D DOUBLE% FIELD S.E SFLOAT% FIELD S.F DFLOAT% FIELD S.G CHAR% 3 * FIELD S.H END-STRUCT REC% REC% . . 0 S.A . 0 S.B . 0 S.C . 0 S.D . 0 S.E . 0 S.F . 0 S.G . 0 S.H . CELL% . . CHAR% . . FLOAT% . . DOUBLE% . . SFLOAT% . . DFLOAT% . . REC% %SIZE . REC% %ALIGNMENT .
 ```
 
-[Example context](../src/tests/core_words_test.zig#L946)
+[Example context](../src/tests/core_words_test.zig#L993)
 
 Caution: Follow the operand order in the stack effect. Example names and values depend on their setup.
 
@@ -13100,7 +13146,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 5. D2* D. -5. D2* D. -5. D2/ D. 5. D2/ D. -1. D2/ D. 1. 2. DMAX D. -1. 2. DMIN D. 5. 7 M+ D. -5. -7 M+ D.
 ```
 
-[Example context](../src/tests/core_words_test.zig#L267)
+[Example context](../src/tests/core_words_test.zig#L314)
 
 Caution: Follow the operand order in the stack effect. Example names and values depend on their setup.
 
@@ -13122,7 +13168,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 5. D2* D. -5. D2* D. -5. D2/ D. 5. D2/ D. -1. D2/ D. 1. 2. DMAX D. -1. 2. DMIN D. 5. 7 M+ D. -5. -7 M+ D.
 ```
 
-[Example context](../src/tests/core_words_test.zig#L267)
+[Example context](../src/tests/core_words_test.zig#L314)
 
 Caution: Follow the operand order in the stack effect. Example names and values depend on their setup.
 
@@ -13158,7 +13204,7 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L34
 
 ` ( limit start -- ) `
 
-Start a counted loop; the body runs at least once, and exactly once when limit equals start (FORTH/Sigma).
+Start a counted loop. When limit equals start the index wraps through every cell value before the loop ends (Forth 2012); use ?DO to skip an empty range.
 
 Kind: builtin; immediate, compile-only.
 
@@ -13194,7 +13240,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 : CELL <BUILDS , DOES> @ ;
 ```
 
-[Example context](../src/tests/core_words_test.zig#L742)
+[Example context](../src/tests/core_words_test.zig#L789)
 
 Caution: Immediate: it executes during definition compilation. Use valid logical-memory addresses, lengths and capacities; distinguish owned storage from borrowed lifetimes.
 
@@ -13240,7 +13286,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 STRUCT . . STRUCT CELL% FIELD S.A CHAR% FIELD S.B FLOAT% FIELD S.C CHAR% FIELD S.D DOUBLE% FIELD S.E SFLOAT% FIELD S.F DFLOAT% FIELD S.G CHAR% 3 * FIELD S.H END-STRUCT REC% REC% . . 0 S.A . 0 S.B . 0 S.C . 0 S.D . 0 S.E . 0 S.F . 0 S.G . 0 S.H . CELL% . . CHAR% . . FLOAT% . . DOUBLE% . . SFLOAT% . . DFLOAT% . . REC% %SIZE . REC% %ALIGNMENT .
 ```
 
-[Example context](../src/tests/core_words_test.zig#L946)
+[Example context](../src/tests/core_words_test.zig#L993)
 
 Caution: Follow the operand order in the stack effect. Example names and values depend on their setup.
 
@@ -13312,7 +13358,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 DROP 2 V !
 ```
 
-[Example context](../src/tests/debug_words_test.zig#L472)
+[Example context](../src/tests/debug_words_test.zig#L541)
 
 Caution: Follow the operand order in the stack effect. Example names and values depend on their setup.
 
@@ -13404,7 +13450,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 1. 2. DU< . -1. 1. DU< . 1. -1. DU< . 1. 2. 3. 2ROT D. D. D.
 ```
 
-[Example context](../src/tests/core_words_test.zig#L268)
+[Example context](../src/tests/core_words_test.zig#L315)
 
 Caution: Follow the operand order in the stack effect. Example names and values depend on their setup.
 
@@ -13496,7 +13542,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 CREATE DD 40 ALLOT DD 40 ERASE S" AB" DD SWAP MOVE 1 DD 2 + C! 127 DD 3 + C! 200 DD 4 + C! 32 DD 5 + C! 126 DD 6 + C! DD 20 DUMP DD 0 DUMP DD 3 DUMP
 ```
 
-[Example context](../src/tests/core_words_test.zig#L291)
+[Example context](../src/tests/core_words_test.zig#L338)
 
 Caution: Use valid logical-memory addresses, lengths and capacities; distinguish owned storage from borrowed lifetimes.
 
@@ -13680,7 +13726,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 S" DUP" FIND-NAME NAME>INTERPRET S" DUP" FIND-NAME NAME>INT = . 65 EKEY>CHAR . . 300 EKEY>CHAR . .
 ```
 
-[Example context](../src/tests/core_words_test.zig#L318)
+[Example context](../src/tests/core_words_test.zig#L365)
 
 Caution: Follow the operand order in the stack effect. Example names and values depend on their setup.
 
@@ -13914,7 +13960,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 : COUNT-TO 0 BEGIN 1 + DUP 3 = END ;
 ```
 
-[Example context](../src/tests/core_words_test.zig#L621)
+[Example context](../src/tests/core_words_test.zig#L668)
 
 Caution: Compile-only: ordinary interpreted execution is not allowed.
 
@@ -13938,7 +13984,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 STRUCT CELL% FIELD S.A END-STRUCT R% HERE 1 ALLOT R% %ALIGN HERE SWAP - . HERE R% %ALLOT TUCK = . HERE SWAP - . R% %ALLOC 0<> . R% %ALLOCATE . 0<> .
 ```
 
-[Example context](../src/tests/core_words_test.zig#L951)
+[Example context](../src/tests/core_words_test.zig#L998)
 
 Caution: Follow the operand order in the stack effect. Example names and values depend on their setup.
 
@@ -13984,7 +14030,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 : T5 CASE DUP . DUP 0> ?OF 1- CONTOF ." done" ENDCASE ; 3 T5
 ```
 
-[Example context](../src/tests/core_words_test.zig#L900)
+[Example context](../src/tests/core_words_test.zig#L947)
 
 Caution: Compile-only: ordinary interpreted execution is not allowed.
 
@@ -14032,7 +14078,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 : T4 CASE DUP 0< ?OF ." neg" ENDOF 1 OF ." one" ENDOF ." other" ENDCASE ; -5 T4 1 T4 7 T4
 ```
 
-[Example context](../src/tests/core_words_test.zig#L899)
+[Example context](../src/tests/core_words_test.zig#L946)
 
 Caution: Compile-only: ordinary interpreted execution is not allowed.
 
@@ -15794,7 +15840,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 STRUCT CELL% FIELD S.A END-STRUCT R% HERE 1 ALLOT R% %ALIGN HERE SWAP - . HERE R% %ALLOT TUCK = . HERE SWAP - . R% %ALLOC 0<> . R% %ALLOCATE . 0<> .
 ```
 
-[Example context](../src/tests/core_words_test.zig#L951)
+[Example context](../src/tests/core_words_test.zig#L998)
 
 Caution: Follow the operand order in the stack effect. Example names and values depend on their setup.
 
@@ -16216,7 +16262,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 STRUCT . . STRUCT CELL% FIELD S.A CHAR% FIELD S.B FLOAT% FIELD S.C CHAR% FIELD S.D DOUBLE% FIELD S.E SFLOAT% FIELD S.F DFLOAT% FIELD S.G CHAR% 3 * FIELD S.H END-STRUCT REC% REC% . . 0 S.A . 0 S.B . 0 S.C . 0 S.D . 0 S.E . 0 S.F . 0 S.G . 0 S.H . CELL% . . CHAR% . . FLOAT% . . DOUBLE% . . SFLOAT% . . DFLOAT% . . REC% %SIZE . REC% %ALIGNMENT .
 ```
 
-[Example context](../src/tests/core_words_test.zig#L946)
+[Example context](../src/tests/core_words_test.zig#L993)
 
 Caution: Follow the operand order in the stack effect. Example names and values depend on their setup.
 
@@ -16404,7 +16450,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 -7 S>D 2 FM/MOD . . -7 S>D 2 SM/REM . . 7 S>D -2 FM/MOD . . 7 S>D -2 SM/REM . . 5 S>D -5 FM/MOD . . 0 S>D 3 FM/MOD . .
 ```
 
-[Example context](../src/tests/core_words_test.zig#L407)
+[Example context](../src/tests/core_words_test.zig#L454)
 
 Caution: Follow the operand order in the stack effect. Example names and values depend on their setup.
 
@@ -16624,7 +16670,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 FORWARD F : F 7 ;
 ```
 
-[Example context](../src/tests/p07d_test.zig#L191)
+[Example context](../src/tests/p07d_test.zig#L193)
 
 Caution: Follow the operand order in the stack effect. Example names and values depend on their setup.
 
@@ -17526,7 +17572,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 ALLOT HERE
 ```
 
-[Example context](../src/tests/core_words_test.zig#L217)
+[Example context](../src/tests/core_words_test.zig#L264)
 
 Caution: Use valid logical-memory addresses, lengths and capacities; distinguish owned storage from borrowed lifetimes.
 
@@ -18130,7 +18176,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 5 VALUE V 9 IS V V .
 ```
 
-[Example context](../src/tests/core_words_test.zig#L877)
+[Example context](../src/tests/core_words_test.zig#L924)
 
 Caution: Immediate: it executes during definition compilation.
 
@@ -18916,7 +18962,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 1 4 LSHIFT -1 60 RSHIFT 3 CELLS 0 CELL+ 9 ALIGNED BL CHAR A : Z [CHAR] Z ; Z $FF #10 %101 'a' -7 2/ 1 \ 2 3
 ```
 
-[Example context](../src/tests/core_words_test.zig#L792)
+[Example context](../src/tests/core_words_test.zig#L839)
 
 Caution: Follow the operand order in the stack effect. Example names and values depend on their setup.
 
@@ -18940,7 +18986,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 3 -4 M* . . -1 -1 UM* . . 9223372036854775807 9223372036854775807 M* D. 9223372036854775807 -9223372036854775808 M* D.
 ```
 
-[Example context](../src/tests/core_words_test.zig#L402)
+[Example context](../src/tests/core_words_test.zig#L449)
 
 Caution: Follow the operand order in the stack effect. Example names and values depend on their setup.
 
@@ -18962,7 +19008,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 170141183460469231731687303715884105727. 2 3 M*/ D.
 ```
 
-[Example context](../src/tests/core_words_test.zig#L354)
+[Example context](../src/tests/core_words_test.zig#L401)
 
 Caution: Follow the operand order in the stack effect. Example names and values depend on their setup.
 
@@ -18984,7 +19030,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 5. D2* D. -5. D2* D. -5. D2/ D. 5. D2/ D. -1. D2/ D. 1. 2. DMAX D. -1. 2. DMIN D. 5. 7 M+ D. -5. -7 M+ D.
 ```
 
-[Example context](../src/tests/core_words_test.zig#L267)
+[Example context](../src/tests/core_words_test.zig#L314)
 
 Caution: Follow the operand order in the stack effect. Example names and values depend on their setup.
 
@@ -19514,7 +19560,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 : T1 AHEAD 111 . THEN 222 . ; T1 : T2 1 2 3 3 N>R 99 . NR> . . . . ; T2 : T3 0 N>R NR> . ; T3
 ```
 
-[Example context](../src/tests/core_words_test.zig#L365)
+[Example context](../src/tests/core_words_test.zig#L412)
 
 Caution: Follow the operand order in the stack effect. Example names and values depend on their setup.
 
@@ -19744,7 +19790,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 3 VIA  ' NEGATE IS LATER 3 VIA  ' OTHER IS LATER 3 VIA  ' DOUBLE IS LATER 3 VIA
 ```
 
-[Example context](../src/tests/catch_test.zig#L349)
+[Example context](../src/tests/catch_test.zig#L508)
 
 Caution: Follow the operand order in the stack effect. Example names and values depend on their setup.
 
@@ -19836,7 +19882,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 : T6 CASE DUP . 1- DUP 0> ?OF ENDOF NEXT-CASE ; 3 T6 : T7 CASE 1+ DUP 3 < ?OF ENDOF DUP . NEXT-CASE DROP ; 0 T7 .
 ```
 
-[Example context](../src/tests/core_words_test.zig#L901)
+[Example context](../src/tests/core_words_test.zig#L948)
 
 Caution: Compile-only: ordinary interpreted execution is not allowed.
 
@@ -19928,7 +19974,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 : T2 DUP . ?EXIT ." after" ; 0 T2 1 T2 NOOP VARIABLE XV ' DUP XV ! 4 XV PERFORM . .
 ```
 
-[Example context](../src/tests/core_words_test.zig#L889)
+[Example context](../src/tests/core_words_test.zig#L936)
 
 Caution: Follow the operand order in the stack effect. Example names and values depend on their setup.
 
@@ -20038,7 +20084,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 : T1 AHEAD 111 . THEN 222 . ; T1 : T2 1 2 3 3 N>R 99 . NR> . . . . ; T2 : T3 0 N>R NR> . ; T3
 ```
 
-[Example context](../src/tests/core_words_test.zig#L365)
+[Example context](../src/tests/core_words_test.zig#L412)
 
 Caution: Follow the operand order in the stack effect. Example names and values depend on their setup.
 
@@ -20176,7 +20222,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 HEX FF . -1 . 10 U. DECIMAL -1 U. 8 OCT . DECIMAL 300 C.
 ```
 
-[Example context](../src/tests/core_words_test.zig#L136)
+[Example context](../src/tests/core_words_test.zig#L183)
 
 Caution: Follow the operand order in the stack effect. Example names and values depend on their setup.
 
@@ -20200,7 +20246,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 : T4 CASE DUP 0< ?OF ." neg" ENDOF 1 OF ." one" ENDOF ." other" ENDCASE ; -5 T4 1 T4 7 T4
 ```
 
-[Example context](../src/tests/core_words_test.zig#L899)
+[Example context](../src/tests/core_words_test.zig#L946)
 
 Caution: Compile-only: ordinary interpreted execution is not allowed.
 
@@ -20222,7 +20268,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 CREATE BUF 16 ALLOT BUF 4 65 FILL BUF BUF 1+ 3 MOVE BUF 3 + 1 ERASE BUF 4 TYPE VARIABLE F F ON F @ F OFF F @
 ```
 
-[Example context](../src/tests/core_words_test.zig#L803)
+[Example context](../src/tests/core_words_test.zig#L850)
 
 Caution: Use valid logical-memory addresses, lengths and capacities; distinguish owned storage from borrowed lifetimes.
 
@@ -20244,7 +20290,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 CREATE BUF 16 ALLOT BUF 4 65 FILL BUF BUF 1+ 3 MOVE BUF 3 + 1 ERASE BUF 4 TYPE VARIABLE F F ON F @ F OFF F @
 ```
 
-[Example context](../src/tests/core_words_test.zig#L803)
+[Example context](../src/tests/core_words_test.zig#L850)
 
 Caution: Use valid logical-memory addresses, lengths and capacities; distinguish owned storage from borrowed lifetimes.
 
@@ -20268,7 +20314,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 : T 3 0 DO ONCE 7 THEN LOOP ; T
 ```
 
-[Example context](../src/tests/debug_words_test.zig#L101)
+[Example context](../src/tests/debug_words_test.zig#L154)
 
 Caution: Immediate: it executes during definition compilation.
 
@@ -20702,7 +20748,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 : T2 DUP . ?EXIT ." after" ; 0 T2 1 T2 NOOP VARIABLE XV ' DUP XV ! 4 XV PERFORM . .
 ```
 
-[Example context](../src/tests/core_words_test.zig#L889)
+[Example context](../src/tests/core_words_test.zig#L936)
 
 Caution: Use valid logical-memory addresses, lengths and capacities; distinguish owned storage from borrowed lifetimes.
 
@@ -20936,7 +20982,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 : Q QUIT ; : RUN-Q ['] Q CATCH ;
 ```
 
-[Example context](../src/tests/catch_test.zig#L190)
+[Example context](../src/tests/catch_test.zig#L349)
 
 Caution: Follow the operand order in the stack effect. Example names and values depend on their setup.
 
@@ -21032,7 +21078,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 R>
 ```
 
-[Example context](../src/tests/core_words_test.zig#L543)
+[Example context](../src/tests/core_words_test.zig#L590)
 
 Caution: Follow the operand order in the stack effect. Example names and values depend on their setup.
 
@@ -21054,7 +21100,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 1 2 3 -ROT NIP 4 TUCK 2DUP 2DROP DEPTH 9 8 7 2 PICK 3 ROLL 5 >R R@ R> 2SWAP 2OVER
 ```
 
-[Example context](../src/tests/core_words_test.zig#L781)
+[Example context](../src/tests/core_words_test.zig#L828)
 
 Caution: Follow the operand order in the stack effect. Example names and values depend on their setup.
 
@@ -21210,7 +21256,7 @@ Call the definition being compiled.
 
 Kind: builtin; immediate.
 
-Related: [Defining words and the dictionary](USER_MANUAL.md#defining-words-and-the-dictionary).
+Related: [Defining words and the dictionary](USER_MANUAL.md#defining-words-and-the-dictionary), [P07d: scoped parsing and forward references](USER_MANUAL.md#p07d-scoped-parsing-and-forward-references).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
@@ -21218,7 +21264,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 : DOWN DUP IF 1- RECURSE THEN ; 1023 DOWN
 ```
 
-[Example context](../src/tests/core_words_test.zig#L472)
+[Example context](../src/tests/core_words_test.zig#L519)
 
 Caution: Immediate: it executes during definition compilation.
 
@@ -21230,17 +21276,19 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L53
 
 ` ( -- ) `
 
-Allow portable explicit self-reference; Sigma already exposes its unfinished definition. Compile-state only.
+Make the definition being compiled findable by its own name, so that it can call itself by name. Without it the name still means the earlier word. Compile-state only.
 
 Kind: builtin; immediate, compile-only.
+
+Related: [P07d: scoped parsing and forward references](USER_MANUAL.md#p07d-scoped-parsing-and-forward-references).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
 ```forth
-: FACT RECURSIVE DUP IF DUP 1- FACT * ELSE DROP 1 THEN ; 5 FACT : IMPLICIT DUP IF 1- IMPLICIT ELSE DROP 9 THEN ; 2 IMPLICIT
+: A 1 ; : B 2 ; DEFER D ' A IS D : R RECURSIVE ['] B ['] D ['] R WRAP-XT ;
 ```
 
-[Example context](../src/tests/p07d_test.zig#L136)
+[Example context](../src/tests/p08b_test.zig#L181)
 
 Caution: Compile-only: ordinary interpreted execution is not allowed.
 
@@ -21312,7 +21360,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 : COUNT-UP 0 BEGIN DUP 3 < WHILE 1 + REPEAT ;
 ```
 
-[Example context](../src/tests/core_words_test.zig#L620)
+[Example context](../src/tests/core_words_test.zig#L667)
 
 Caution: Compile-only: ordinary interpreted execution is not allowed.
 
@@ -21614,7 +21662,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 1 2 3 -ROT NIP 4 TUCK 2DUP 2DROP DEPTH 9 8 7 2 PICK 3 ROLL 5 >R R@ R> 2SWAP 2OVER
 ```
 
-[Example context](../src/tests/core_words_test.zig#L781)
+[Example context](../src/tests/core_words_test.zig#L828)
 
 Caution: Follow the operand order in the stack effect. Example names and values depend on their setup.
 
@@ -21728,7 +21776,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 1 4 LSHIFT -1 60 RSHIFT 3 CELLS 0 CELL+ 9 ALIGNED BL CHAR A : Z [CHAR] Z ; Z $FF #10 %101 'a' -7 2/ 1 \ 2 3
 ```
 
-[Example context](../src/tests/core_words_test.zig#L792)
+[Example context](../src/tests/core_words_test.zig#L839)
 
 Caution: Follow the operand order in the stack effect. Example names and values depend on their setup.
 
@@ -22424,7 +22472,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 STRUCT . . STRUCT CELL% FIELD S.A CHAR% FIELD S.B FLOAT% FIELD S.C CHAR% FIELD S.D DOUBLE% FIELD S.E SFLOAT% FIELD S.F DFLOAT% FIELD S.G CHAR% 3 * FIELD S.H END-STRUCT REC% REC% . . 0 S.A . 0 S.B . 0 S.C . 0 S.D . 0 S.E . 0 S.F . 0 S.G . 0 S.H . CELL% . . CHAR% . . FLOAT% . . DOUBLE% . . SFLOAT% . . DFLOAT% . . REC% %SIZE . REC% %ALIGNMENT .
 ```
 
-[Example context](../src/tests/core_words_test.zig#L946)
+[Example context](../src/tests/core_words_test.zig#L993)
 
 Caution: Follow the operand order in the stack effect. Example names and values depend on their setup.
 
@@ -22752,7 +22800,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 -7 S>D 2 FM/MOD . . -7 S>D 2 SM/REM . . 7 S>D -2 FM/MOD . . 7 S>D -2 SM/REM . . 5 S>D -5 FM/MOD . . 0 S>D 3 FM/MOD . .
 ```
 
-[Example context](../src/tests/core_words_test.zig#L407)
+[Example context](../src/tests/core_words_test.zig#L454)
 
 Caution: Follow the operand order in the stack effect. Example names and values depend on their setup.
 
@@ -23172,7 +23220,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 STRUCT CELL% FIELD S.A END-STRUCT R% HERE 1 ALLOT R% %ALIGN HERE SWAP - . HERE R% %ALLOT TUCK = . HERE SWAP - . R% %ALLOC 0<> . R% %ALLOCATE . 0<> .
 ```
 
-[Example context](../src/tests/core_words_test.zig#L951)
+[Example context](../src/tests/core_words_test.zig#L998)
 
 Caution: Follow the operand order in the stack effect. Example names and values depend on their setup.
 
@@ -23410,7 +23458,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 : T IF 1 THEN ;
 ```
 
-[Example context](../src/tests/debug_words_test.zig#L367)
+[Example context](../src/tests/debug_words_test.zig#L420)
 
 Caution: Compile-only: ordinary interpreted execution is not allowed.
 
@@ -23576,7 +23624,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 WORDLIST CONSTANT WL GET-CURRENT WL SET-CURRENT : AAA ; : BBB ; : CCC ; SET-CURRENT : SHOW NAME>STRING TYPE SPACE TRUE ; ' SHOW WL TRAVERSE-WORDLIST : FIRST NAME>STRING TYPE SPACE FALSE ; ' FIRST WL TRAVERSE-WORDLIST
 ```
 
-[Example context](../src/tests/core_words_test.zig#L313)
+[Example context](../src/tests/core_words_test.zig#L360)
 
 Caution: Follow the operand order in the stack effect. Example names and values depend on their setup.
 
@@ -23826,7 +23874,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 HEX FF . -1 . 10 U. DECIMAL -1 U. 8 OCT . DECIMAL 300 C.
 ```
 
-[Example context](../src/tests/core_words_test.zig#L136)
+[Example context](../src/tests/core_words_test.zig#L183)
 
 Caution: Follow the operand order in the stack effect. Example names and values depend on their setup.
 
@@ -23848,7 +23896,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 CHAR | EMIT 42 5 .R CHAR | EMIT -42 5 .R CHAR | EMIT 123456 3 .R CHAR | EMIT 7 0 .R CHAR | EMIT 7 -3 .R CHAR | EMIT 42 5 U.R CHAR | EMIT -1 3 U.R CHAR | EMIT 7 -9223372036854775808 .R CHAR | EMIT HEX 255 6 .R
 ```
 
-[Example context](../src/tests/core_words_test.zig#L382)
+[Example context](../src/tests/core_words_test.zig#L429)
 
 Caution: Follow the operand order in the stack effect. Example names and values depend on their setup.
 
@@ -23926,7 +23974,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 1 2 U< . -1 1 U< . 1 -1 U< . 2 2 U< . 1 2 U> . -1 1 U> .
 ```
 
-[Example context](../src/tests/core_words_test.zig#L379)
+[Example context](../src/tests/core_words_test.zig#L426)
 
 Caution: Follow the operand order in the stack effect. Example names and values depend on their setup.
 
@@ -23974,7 +24022,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 1 2 U< . -1 1 U< . 1 -1 U< . 2 2 U< . 1 2 U> . -1 1 U> .
 ```
 
-[Example context](../src/tests/core_words_test.zig#L379)
+[Example context](../src/tests/core_words_test.zig#L426)
 
 Caution: Follow the operand order in the stack effect. Example names and values depend on their setup.
 
@@ -24092,7 +24140,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 3 -4 M* . . -1 -1 UM* . . 9223372036854775807 9223372036854775807 M* D. 9223372036854775807 -9223372036854775808 M* D.
 ```
 
-[Example context](../src/tests/core_words_test.zig#L402)
+[Example context](../src/tests/core_words_test.zig#L449)
 
 Caution: Follow the operand order in the stack effect. Example names and values depend on their setup.
 
@@ -24116,7 +24164,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 7 0 1 UM/MOD . . -1 1 2 UM/MOD . .
 ```
 
-[Example context](../src/tests/core_words_test.zig#L406)
+[Example context](../src/tests/core_words_test.zig#L453)
 
 Caution: Follow the operand order in the stack effect. Example names and values depend on their setup.
 
@@ -24280,7 +24328,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 : T7 0 BEGIN [ 0 CS-PICK ] 1+ DUP 3 > UNTIL . EXIT AGAIN ; T7
 ```
 
-[Example context](../src/tests/core_words_test.zig#L302)
+[Example context](../src/tests/core_words_test.zig#L349)
 
 Caution: Compile-only: ordinary interpreted execution is not allowed.
 
@@ -24304,7 +24352,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 HERE 1 ALLOT ALIGN HERE SWAP - . HERE ALIGN HERE SWAP - . UNUSED 0> .
 ```
 
-[Example context](../src/tests/core_words_test.zig#L381)
+[Example context](../src/tests/core_words_test.zig#L428)
 
 Caution: Follow the operand order in the stack effect. Example names and values depend on their setup.
 
@@ -24352,7 +24400,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 HERE DUP DUP 7 SWAP ! WATCH VARIABLE V UNWATCH
 ```
 
-[Example context](../src/tests/debug_words_test.zig#L483)
+[Example context](../src/tests/debug_words_test.zig#L552)
 
 Caution: Use valid logical-memory addresses, lengths and capacities; distinguish owned storage from borrowed lifetimes.
 
@@ -24804,7 +24852,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 V WATCH 5 V !
 ```
 
-[Example context](../src/tests/debug_words_test.zig#L489)
+[Example context](../src/tests/debug_words_test.zig#L558)
 
 Caution: Use valid logical-memory addresses, lengths and capacities; distinguish owned storage from borrowed lifetimes.
 
@@ -24918,7 +24966,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 : COUNT-UP 0 BEGIN DUP 3 < WHILE 1 + REPEAT ;
 ```
 
-[Example context](../src/tests/core_words_test.zig#L620)
+[Example context](../src/tests/core_words_test.zig#L667)
 
 Caution: Compile-only: ordinary interpreted execution is not allowed.
 
@@ -26114,7 +26162,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 : THRICE 3 0 DO I ~~1BT DROP LOOP ; : CALLER THRICE ; CALLER CALLER
 ```
 
-[Example context](../src/tests/debug_words_test.zig#L121)
+[Example context](../src/tests/debug_words_test.zig#L174)
 
 Caution: Immediate: it executes during definition compilation.
 
@@ -26138,7 +26186,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 DROP ~~BT : GUARD ['] INNER CATCH DROP ; GUARD
 ```
 
-[Example context](../src/tests/debug_words_test.zig#L118)
+[Example context](../src/tests/debug_words_test.zig#L171)
 
 Caution: Immediate: it executes during definition compilation.
 
@@ -26162,7 +26210,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 7 ~~VALUE VV : BUMP VV 1+ TO VV ; BUMP VV
 ```
 
-[Example context](../src/tests/debug_words_test.zig#L143)
+[Example context](../src/tests/debug_words_test.zig#L196)
 
 Caution: Follow the operand order in the stack effect. Example names and values depend on their setup.
 
@@ -26186,7 +26234,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 ~~VARIABLE SEEN 3 SEEN ! : USES 5 SEEN ! SEEN @ ; USES
 ```
 
-[Example context](../src/tests/debug_words_test.zig#L463)
+[Example context](../src/tests/debug_words_test.zig#L532)
 
 Caution: Follow the operand order in the stack effect. Example names and values depend on their setup.
 
@@ -39568,7 +39616,6 @@ Sources: [src/core/memory_map.zig](../src/core/memory_map.zig), [HELP](../src/co
 ## Syntax
 
 - [` " `](#w-53796e7461783a22)
-- [` ( `](#w-53796e7461783a28)
 - [` -- `](#w-53796e7461783a2d2d)
 - [` ." `](#w-53796e7461783a2e22)
 - [` .( `](#w-53796e7461783a2e28)
@@ -39585,7 +39632,6 @@ Sources: [src/core/memory_map.zig](../src/core/memory_map.zig), [HELP](../src/co
 - [` C" `](#w-53796e7461783a4322)
 - [` C: `](#w-53796e7461783a433a)
 - [` C^ `](#w-53796e7461783a435e)
-- [` CHAR `](#w-53796e7461783a43484152)
 - [` D: `](#w-53796e7461783a443a)
 - [` D^ `](#w-53796e7461783a445e)
 - [` F: `](#w-53796e7461783a463a)
@@ -39632,26 +39678,6 @@ Caution: Use valid logical-memory addresses, lengths and capacities; distinguish
 
 Sources: [src/core/help_text.zig](../src/core/help_text.zig), [HELP](../src/core/help_text.zig#L1036).
 
-<a id="w-53796e7461783a28"></a>
-
-### ` ( `
-
-` ( -- ) `
-
-Ignore text through the first ) in the current source buffer; comments do not nest. Block input can cross 64-byte rows within its 1024-byte buffer. Missing ) is an error.
-
-Kind: syntax.
-
-Usage example
-
-```forth
-( ignored text ) 42 .
-```
-
-Caution: Follow the operand order in the stack effect. Example names and values depend on their setup.
-
-Sources: [src/core/help_text.zig](../src/core/help_text.zig), [HELP](../src/core/help_text.zig#L947).
-
 <a id="w-53796e7461783a2d2d"></a>
 
 ### ` -- `
@@ -39690,7 +39716,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 ." shown"
 ```
 
-[Example context](../src/tests/catch_test.zig#L299)
+[Example context](../src/tests/catch_test.zig#L458)
 
 Caution: Follow the operand order in the stack effect. Example names and values depend on their setup.
 
@@ -39828,7 +39854,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 : Q QUIT ; : RUN-Q ['] Q CATCH ;
 ```
 
-[Example context](../src/tests/catch_test.zig#L190)
+[Example context](../src/tests/catch_test.zig#L349)
 
 Caution: Follow the operand order in the stack effect. Example names and values depend on their setup.
 
@@ -39900,7 +39926,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 1 4 LSHIFT -1 60 RSHIFT 3 CELLS 0 CELL+ 9 ALIGNED BL CHAR A : Z [CHAR] Z ; Z $FF #10 %101 'a' -7 2/ 1 \ 2 3
 ```
 
-[Example context](../src/tests/core_words_test.zig#L792)
+[Example context](../src/tests/core_words_test.zig#L839)
 
 Caution: Follow the operand order in the stack effect. Example names and values depend on their setup.
 
@@ -39946,7 +39972,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 : CHK ABORT" bad value" ; 0 CHK ." after0" : T3 1 ABORT" first" ; ' T3 CATCH . : T4 0 ABORT" never" 5 ; T4 .
 ```
 
-[Example context](../src/tests/core_words_test.zig#L261)
+[Example context](../src/tests/core_words_test.zig#L308)
 
 Caution: Follow the operand order in the stack effect. Example names and values depend on their setup.
 
@@ -39968,7 +39994,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 : T1 C" hello" ; T1 COUNT TYPE T1 C@ . : T2 C" " ; T2 C@ .
 ```
 
-[Example context](../src/tests/core_words_test.zig#L260)
+[Example context](../src/tests/core_words_test.zig#L307)
 
 Caution: Use valid logical-memory addresses, lengths and capacities; distinguish owned storage from borrowed lifetimes.
 
@@ -40021,30 +40047,6 @@ Usage example (source excerpt; consult the link for setup and expectations)
 Caution: Follow the operand order in the stack effect. Example names and values depend on their setup.
 
 Sources: [src/core/local_variables.zig](../src/core/local_variables.zig).
-
-<a id="w-53796e7461783a43484152"></a>
-
-### ` CHAR `
-
-` ( "word" -- xc ) `
-
-The code point of the first character (UTF-8) of the next word.
-
-Kind: syntax.
-
-Related: [Characters (UTF-8)](USER_MANUAL.md#characters-utf-8), [P07d: scoped parsing and forward references](USER_MANUAL.md#p07d-scoped-parsing-and-forward-references).
-
-Usage example (source excerpt; consult the link for setup and expectations)
-
-```forth
-CHAR b KEY-HELD?
-```
-
-[Example context](../src/tests/graphics_test.zig#L2339)
-
-Caution: Follow the operand order in the stack effect. Example names and values depend on their setup.
-
-Sources: [src/core/help_text.zig](../src/core/help_text.zig), [HELP](../src/core/help_text.zig#L953).
 
 <a id="w-53796e7461783a443a"></a>
 
@@ -40202,7 +40204,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 ~~VARIABLE V : M POSTPONE V ; IMMEDIATE : T 3 M ! ; T V @
 ```
 
-[Example context](../src/tests/debug_words_test.zig#L499)
+[Example context](../src/tests/debug_words_test.zig#L568)
 
 Caution: Follow the operand order in the stack effect. Example names and values depend on their setup.
 

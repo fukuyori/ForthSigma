@@ -13,7 +13,8 @@
 - [サウンドの調査](SOUND_RESEARCH.md): MSX、Atari ST、C64、NES、Amiga の音源、MSX BASIC の音の語、各システムの音の出力と、その出典
 - [ネイティブウィンドウの検討（Windows・macOS・Linux）](NATIVE_WINDOW_STUDY.md): `SHOW` の共通条件の案と、macOS・Linux の表示方式・依存・検証条件（検討段階）
 - [実装ノート](IMPLEMENTATION.md): Zig移植版の構成、実装判断、未実装機能
-- [サイズ測定・速度比較](SIZE_SPEED_MEASUREMENT.md): 2026-11-15のWindows/Linux実行体サイズとWSLでのGforth 1.0.2比較、生データと再実行手順
+- [Forth 2012の語の状況](forth2012-word-status.tsv): Forth 2012規格の語の一覧の各項目と、全機能ビルドでの有無（2026-11-17確認。要約はトップのREADME）
+- [サイズ測定・速度比較](SIZE_SPEED_MEASUREMENT.md): 2026-11-17のWindows/Linux実行体サイズとWSLでのGforth 1.0.2比較、生データと再実行手順
 - [VM実行速度の改善計画](VM_PERFORMANCE_PLAN.md): CATCHの安全性を維持して通常実行の負担を減らす実験案。改善実装は未実施
 - [VM改善計画のレビュー結果](VM_PERFORMANCE_REVIEW.md): Claude CodeとAntigravity（agy）のレビュー、指摘の採否と具体的な判定基準
 - [GforthのVM実装参照](GFORTH_VM_REFERENCE.md): 固定版ソースから参照する設計原理と、Sigmaへ移植しない方式の区別

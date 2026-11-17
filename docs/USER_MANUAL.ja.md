@@ -531,7 +531,7 @@ CREATE BUF 16 ALLOT
 - `CASE ... OF ... ENDOF ... ENDCASE`（Gforthの `?OF`、`CONTOF`、`NEXT-CASE` も使えます）
 - `DO ... LOOP`、`DO ... +LOOP`、`?DO`
 
-`IF ... ENDIF` も使えます（`ENDIF` は `THEN` の別名）。`DO` は開始値と終値が等しくても本体を1回実行します（FORTH/Σの仕様）。`?DO` は等しい場合に本体を実行しません。`LEAVE` は直ちにループを抜けます。ループの途中で `EXIT` するときは、先に `UNLOOP` でループを片付けます。`?EXIT`（( flag -- )）は真のとき `EXIT` し、`?LEAVE`（( flag -- )）は真のとき `LEAVE` します。`?OF`（( flag -- )）は値と比べる代わりに真偽で選ぶ `OF`、`CONTOF` は `CASE` の先頭へ戻る `ENDOF`、`NEXT-CASE` は選択値を捨てずに先頭へ戻る `ENDCASE` です（Gforthと同じ）。`I`、`J`、`K` は内側からそれぞれ1段目、2段目、3段目のループ添字を返します。
+`IF ... ENDIF` も使えます（`ENDIF` は `THEN` の別名）。`DO` は開始値と終値が等しいかどうかを調べません。Forth 2012と同じく、等しい場合は添字が一周するまで繰り返します。`?DO` は等しい場合に本体を実行しないので、範囲が空になりうるときは `?DO` を使います。`LEAVE` は直ちにループを抜けます。ループの途中で `EXIT` するときは、先に `UNLOOP` でループを片付けます。`?EXIT`（( flag -- )）は真のとき `EXIT` し、`?LEAVE`（( flag -- )）は真のとき `LEAVE` します。`?OF`（( flag -- )）は値と比べる代わりに真偽で選ぶ `OF`、`CONTOF` は `CASE` の先頭へ戻る `ENDOF`、`NEXT-CASE` は選択値を捨てずに先頭へ戻る `ENDCASE` です（Gforthと同じ）。`I`、`J`、`K` は内側からそれぞれ1段目、2段目、3段目のループ添字を返します。
 
 ## 浮動小数点数
 
@@ -1063,7 +1063,7 @@ SAVESYS demo.exe
 | P06a | `>STRING-EXECUTE`, `INFILE-EXECUTE`, `INFILE-ID`, `OUTFILE-EXECUTE`, `OUTFILE-ID` |
 | P06b | `.QUOTED-CSV`, `BROKEN-PIPE-ERROR`, `CLOSE-PIPE`, `CSV-QUOTE`, `CSV-SEPARATOR`, `OPEN-PIPE`, `READ-CSV`, `SH`, `SH-GET` |
 | P06c | `AT-DELTAXY`, `FKEY.`, `FORM`, `KEY-IOR`, `SIMPLE-FKEY-STRING` |
-| P07d | `.UNRESOLVED`, `EXECUTE-PARSING`, `EXECUTE-PARSING-FILE`, `FORWARD`, `NAME`, `PARSE-WORD`, `RECURSIVE`, `STRING-PARSE` |
+| P07d | `.UNRESOLVED`, `EXECUTE-PARSING`, `EXECUTE-PARSING-FILE`, `FORWARD`, `NAME`, `PARSE-WORD`, `RECURSIVE`, `STRING-PARSE`, `(`, `CHAR` |
 | P08a | `.ID`, `.VOC`, `COMPILE-ONLY?`, `CONTEXT`, `CS-VOCABULARY`, `CS-WORDLIST`, `CURRENT`, `FIND-NAME-IN`, `IN`, `IN-WORDLIST`, `LATESTNT`, `MAP-VOCS` |
 | P08a | `MWORDS`, `NAME>LINK`, `NEXTNAME`, `OBSOLETE?`, `ROOT`, `SEAL`, `TABLE`, `VLIST`, `VOCS`, `WORDLIST-WORDS`, `XT>NAME` |
 | P08b | `:IS`, `ADDR`, `ADDRESSABLE:`, `AVALUE`, `PRESERVE`, `WRAP-XT` |
@@ -1393,7 +1393,7 @@ MEM+DO/MEM-DOはLOOPで閉じ、正の刻み幅を要求します。0／負の�
 | EXECUTE-PARSING-FILE | `( ... fid xt -- ... )`。空の初期入力バッファーを持つファイル入力でxtを実行し、REFILLで行を読む。ファイル機能が必要。 |
 | FORWARD | `( "name" -- )`。同じ語彙で後から完成させるコロン定義を宣言する。 |
 | .UNRESOLVED | `( -- )`。未解決の前方宣言を表示する。 |
-| RECURSIVE | `( -- )`。コンパイル専用の印。Sigmaの暗黙の自己参照も引き続き使える。 |
+| RECURSIVE | `( -- )`。コンパイル専用。コンパイル中の定義を自分の名前で検索できるようにする。使わない場合、定義中の名前はForth 2012と同じく以前の同名の語を指す。再帰には `RECURSE` か `RECURSIVE` を使う。 |
 
 NAME・PARSE-WORD `( -- addr u )` はPARSE-NAMEの別名。STRING-PARSE `( delim-addr delim-u -- addr u )` は最初のバイト列区切りまでを返し、区切りも消費する。見つからなければ残り全部、空区切りなら空文字列を返して位置を進めない。
 
@@ -1401,7 +1401,7 @@ EXECUTE-PARSING `( ... addr u xt -- ... )` は一時的な文字列入力でxt�
 
 FORWARD `( "name" -- )` は同じwordlist内の後続コロン定義を宣言する。.UNRESOLVED `( -- )` は未解決名を診断出力する。未解決参照の実行は-259。重複宣言や非コロン定義による解決はエラー。古いxtは識別値を保ち、解決後の定義を実行する。対象のFORGET後は未解決に戻り、再定義で再解決できる。
 
-RECURSIVE `( -- )` はコンパイル専用の印で、既存Sigmaの暗黙の自己参照も維持する。定義外では-14。builtin・WordKindのABIが変わるため、旧ABIのイメージは再作成する。[詳細](P07_IMPLEMENTATION.md)。
+RECURSIVE `( -- )` はコンパイル専用で、コンパイル中の定義を自分の名前で検索できるようにする（2026-11-17から、使わない場合の定義中の名前は以前の同名の語を指す）。定義外では-14。builtin・WordKindのABIが変わるため、旧ABIのイメージは再作成する。[詳細](P07_IMPLEMENTATION.md)。
 
 P07レビュー補足：EXECUTE-PARSING-FILEには、呼出し側が排他的に所有する、開いた読取り可能な通常ファイルを渡す。不正ID・標準ストリーム・使用中のinclude入力・現在の入出力リダイレクト先はコールバック前に拒否し、所有権を引き受けない。空読取りによる検証では入力・EOF・pushbackを変更しない。読取り権限と他の別名参照は呼出し側が管理し、パイプは専用のclose手順を使う。CATCHで未完の引用コンテキストが変わった場合、未完の外側定義も破棄する。内側のローカル変数・制御状態を親へ復元しない。完了済みの最上位引用は保持する。
 

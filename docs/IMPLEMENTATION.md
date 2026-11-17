@@ -1,6 +1,6 @@
 # Zig implementation notes
 
-Latest size and speed measurements (2026-11-15): [report](SIZE_SPEED_MEASUREMENT.md) (Japanese), [raw samples and metadata](measurements/2026-11-15-size-speed.json). Sigma at `50e661e`, Zig 0.17.0 fast/baseline/stripped: full Windows 1,806,848 bytes; full Linux musl 1,888,000 bytes. Eight execution-interval kernels under WSL measured Sigma at 3.50 times the elapsed CPU time of normal Gforth 1.0.2 and 10.06 times that of gforth-fast, using geometric means of median-time ratios. These diagnostic results do not establish general application performance; older tables below have different environments and references.
+Latest size and speed measurements (2026-11-17): [report](SIZE_SPEED_MEASUREMENT.md) (Japanese), [raw samples and metadata](measurements/2026-11-17-size-speed.json). Sigma at `f1d641c`, Zig 0.17.0 fast/baseline/stripped: full Windows 1,809,408 bytes; full Linux musl 1,891,456 bytes. Eight execution-interval kernels under WSL measured Sigma at 2.59 times the elapsed CPU time of normal Gforth 1.0.2 and 7.46 times that of gforth-fast, using geometric means of median-time ratios. The 2026-11-15 measurement at `50e661e` under the same conditions gave 3.50 and 10.06 ([raw data](measurements/2026-11-15-size-speed.json)). These diagnostic results do not establish general application performance; older tables below have different environments and references.
 
 ## Architecture
 
@@ -117,7 +117,7 @@ The gforth source tree (`D:\home\source\forth\gforth`, GPLv3) was read for behav
 
 - Decimal is the source-defined initial base. `HEX`, `DEC`, and `OCT` remain; `DECIMAL` is an alias of `DEC`.
 - The original `"` word is compile-only and stores strings up to 127 bytes. `."` is retained as a convenience extension.
-- `DO` always enters the body once, including when start equals limit. For regular `LOOP`, the implementation stops on index equality. For `+LOOP`, it stops when the signed index crosses the limit in the step direction. The source article's Z80 loop comparison is difficult to read, so this directional crossing rule is the portable design choice, not a confirmed historical detail.
+- `DO` always enters the body, and does not treat an equal start and limit specially: as in Forth 2012, the index then wraps through every cell value before `LOOP` finds it equal to the limit again (until 2026-11-17 the loop ended after one pass in that case). For regular `LOOP`, the implementation stops on index equality. For `+LOOP`, it stops when the signed index crosses the limit in the step direction. The source article's Z80 loop comparison is difficult to read, so this directional crossing rule is the portable design choice, not a confirmed historical detail.
 - `MINUS`, `COM`, `NAND`, `NOR`, `SWAB`, `END`, `VAR`, `CONST`, `ARRAY`, `A@`, `A!`, `OSET`, `1+!`, `1-!`, `C.`, `ECHO`, `SPCES`, `INPUT`, and `<BUILDS` remain available. `SWAB` now reverses all eight bytes of a cell; this widening is a portable choice. `C.` prints the low byte as an unsigned number followed by a space.
 - `NOT` remains the FORTH/Σ logical not (same as `0=`) and now returns `-1` for true.
 - `ARRAY` and `FARRAY` allocate eight bytes per element; `A@`/`A!` and `FA@`/`FA!` take `( index base )`.

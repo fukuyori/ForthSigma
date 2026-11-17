@@ -2,6 +2,21 @@
 
 ## [Unreleased]
 
+### Changed
+
+- `DO` follows Forth 2012 when the start value equals the limit: the index wraps through every cell value before the loop ends, as in gforth. Earlier versions ran the body once and left the loop. Programs that relied on that must use `?DO` (no iteration for an empty range) or guard the loop. `?DO`, `LOOP`, `+LOOP` and `LEAVE` are unchanged.
+- Differences from Forth 2012 that the standard test suite found are removed. These change the behavior of existing programs:
+  - The name of a colon definition is not found until `;` ends it. `: X X 1+ ;` now calls the earlier `X`; a definition that calls itself by name needs `RECURSE` or `RECURSIVE`.
+  - `CHAR` in a definition reads its word when the definition runs. `[CHAR]` compiles a literal, as before.
+  - A `DOES>` replaces the action of a created word that already has one.
+  - `ELSE` takes the branch of an earlier `ELSE` or of a `WHILE` whose loop is closed, so `IF ... ELSE ... ELSE ... THEN` and `BEGIN ... WHILE ... WHILE ... REPEAT ... ELSE ... THEN` compile.
+  - `BUFFER:` gives an aligned address.
+  - In a file, a `(` comment goes on over lines.
+  - `>FLOAT` takes an exponent written with `D` or with its sign alone (`1D`, `1+1`).
+  - `(` and `CHAR` have dictionary entries, so `'`, `FIND`, and `SEARCH-WORDLIST` find them. Added built-in words change the dictionary ABI; recreate dictionary images.
+- The examples use `?DO` where the range of a loop is decided at run time and could be empty (144 loops in 13 files), so that they keep ending with the new `DO`. Their checked output is unchanged.
+- The README lists the Forth 2012 words that are available (446 of the 450 glossary entries; `docs/forth2012-word-status.tsv`), the results of the Forth 2012 test suite, and the known differences from gforth.
+
 ## [0.11.0] - 2026-11-15
 
 ### Added

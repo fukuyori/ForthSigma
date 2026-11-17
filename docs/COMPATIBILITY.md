@@ -27,7 +27,7 @@ This list maps the [FORTH/Σ specification](SPEC.md) to the current Zig implemen
 | Variables and constants | VARIABLE/VAR, CONSTANT/CONST | Implemented | The spelling (VAR/CONST and so on) differs between versions of the book. |
 | Conditional branch | IF, ELSE, THEN | Implemented | See the book. |
 | Conditional and post-test loops | BEGIN, WHILE, REPEAT, END | Implemented | See the book. |
-| Counted loop | DO, LOOP, +LOOP, LEAVE, I | Changed | LEAVE leaves the loop immediately (in the book, the loop ends at the next LOOP). DO still runs at least once. The end test of a negative +LOOP cannot be determined from the material. |
+| Counted loop | DO, LOOP, +LOOP, LEAVE, I | Changed | LEAVE leaves the loop immediately (in the book, the loop ends at the next LOOP). When the start value equals the limit, DO follows Forth 2012: the index wraps through every cell value before the loop ends (the book runs the body once). The end test of a negative +LOOP cannot be determined from the material. |
 | Base | BASE, HEX, DEC, OCT | Implemented | The bases confirmed in the material are 8, 10, and 16. |
 | Output | ., C., ECHO, CR, SPACE, SPCES, TYPE | Changed | . and C. append a space and do not pad with zeros. TYPE takes ( addr u ). |
 | Number input | INPUT | Implemented | Reads one integer from the terminal. |
@@ -106,7 +106,7 @@ The build made with `zig build -Dfloat=false` does not have the floating-point w
 | Display of infinity and NaN | Extended | `F.` `FE.` `FS.` print `infinity` `-infinity` `NaN` without cutting them to `PRECISION`. gforth cuts them to `PRECISION` characters (`infini` with `6 SET-PRECISION`, `Na` with `2 SET-PRECISION`). With the default `PRECISION` (15) the output is the same. |
 | F+!, F?, FA@, FA!, FARRAY, FINPUT, FMINUS | Extended | Floating-point versions of the FORTH/Σ words +!, ?, A@, A!, ARRAY, INPUT, and MINUS. They are not gforth words. |
 | ." string output | Extended | Compile-time string output. It is not a word of the 1982 material. |
-| ?DO | Extended | When the start value and the limit are equal, the loop body does not run. The FORTH/Σ DO runs once even when they are equal. |
+| ?DO | Extended | When the start value and the limit are equal, the loop body does not run. DO does not test for this case; as in Forth 2012 its index wraps through every cell value. |
 | J, K | Extended | Get the loop index of the second and third levels. The book explains them as examples of user definitions. |
 | EXECUTE | Extended | Executes a portable dictionary token. It is not compatible with Z80 code addresses. |
 | Single logical memory and limits | Extended | Uses one logical memory of 64 MiB and 64 KiB by default (the system area below 4000H, the input buffers at 4000H–13FFFH, the data area from 14000H up to the `-m` size, the heap after it of the same size, then local variables), whose sizes and those of the stacks gforth's startup options `-m`, `-d`, `-r`, `-f`, and `-l` choose, and various fixed capacities. This differs from the memory layout of the historical machines. |
@@ -150,7 +150,7 @@ zig build test checks the main behavior of the current core with the following t
 | 64-bit arithmetic | 64-bit wraparound, the quotient and remainder of floored division |
 | true flags | Truth values (-1 and 0) of comparisons, 0=, and NOT |
 | dictionary identity | Case-insensitive matching of all characters |
-| nested loops, loop boundaries | Nested DO/LOOP, I/J, zero iterations of ?DO, at least one iteration of DO |
+| nested loops, loop boundaries | Nested DO/LOOP, I/J, zero iterations of ?DO, wrap-around of DO with an equal start and limit |
 | LEAVE, UNLOOP | Immediate exit with LEAVE, UNLOOP and EXIT |
 | variable, array, string | Variables, arrays, string literals and TYPE |
 | number output, dot-s | Trailing space, signed output in every base, U., C., .S |

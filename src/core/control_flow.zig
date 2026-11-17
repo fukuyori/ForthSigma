@@ -46,8 +46,14 @@ pub fn compileIf(self: *State) RuntimeError!void {
     try self.pushControl(.if_branch, at);
 }
 
+/// ELSE ( C: orig1 -- orig2 ), as the standard has it: orig1 may come from IF, from a
+/// WHILE whose loop REPEAT has closed, or from an earlier ELSE.
 pub fn compileElse(self: *State) RuntimeError!void {
-    const old = try self.popControl(.if_branch);
+    try self.requireCompiling();
+    const kind = self.topControl() orelse return error.ControlMismatch;
+    if (kind != .if_branch and kind != .else_branch and kind != .while_branch) return error.ControlMismatch;
+    self.control_depth -= 1;
+    const old = self.control_stack[self.control_depth];
     const at = try self.emit(.{ .kind = .branch });
     self.patch(old.address, self.code_count);
     // The ELSE part is reached without the locals declared in the IF part.

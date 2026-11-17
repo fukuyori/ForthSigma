@@ -129,13 +129,15 @@ test "P07d FORGET unbinds a removed forward target and later colon resolution re
     try registry.validate(m);
 }
 
-test "P07d recursive maintains Sigma self-visibility and enforces compile state" {
+test "P07d recursive reveals the definition being compiled and enforces compile state" {
     var out = support.Output{};
     const m = try support.createMachine(&out);
     defer support.destroyMachine(m);
-    try m.interpretLine(": FACT RECURSIVE DUP IF DUP 1- FACT * ELSE DROP 1 THEN ; 5 FACT : IMPLICIT DUP IF 1- IMPLICIT ELSE DROP 9 THEN ; 2 IMPLICIT");
-    try support.expectStack(m, &.{ 120, 9 });
+    try m.interpretLine(": FACT RECURSIVE DUP IF DUP 1- FACT * ELSE DROP 1 THEN ; 5 FACT : OLD 9 ; : OLD OLD 1+ ; OLD");
+    try support.expectStack(m, &.{ 120, 10 });
     try std.testing.expectError(error.CompileOnly, m.executeBuiltin(.recursive_word));
+    // Without RECURSIVE the name is not found until ; (Forth 2012 6.1.0450).
+    try std.testing.expectError(error.UnknownWord, m.interpretLine(": IMPLICIT DUP IF 1- IMPLICIT ELSE DROP 9 THEN ;"));
 }
 
 test "P07d forward bindings and old typed xts persist through restore and both append routes" {

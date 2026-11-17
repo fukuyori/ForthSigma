@@ -538,7 +538,7 @@ The available structures are as follows.
 - `CASE ... OF ... ENDOF ... ENDCASE` (gforth's `?OF`, `CONTOF`, and `NEXT-CASE` can also be used)
 - `DO ... LOOP`, `DO ... +LOOP`, `?DO`
 
-`IF ... ENDIF` can also be used (`ENDIF` is an alias of `THEN`). `DO` runs the body once even when the start value equals the limit (the FORTH/Σ specification). `?DO` does not run the body when they are equal. `LEAVE` leaves the loop immediately. To `EXIT` in the middle of a loop, first clean up the loop with `UNLOOP`. `?EXIT` (( flag -- )) does `EXIT` when the flag is true, and `?LEAVE` (( flag -- )) does `LEAVE` when the flag is true. `?OF` (( flag -- )) is an `OF` that selects by a flag instead of comparing with a value, `CONTOF` is an `ENDOF` that goes back to the start of the `CASE`, and `NEXT-CASE` is an `ENDCASE` that goes back to the start without dropping the selector (the same as gforth). `I`, `J`, and `K` return the index of the first, second, and third loop, counted from the innermost.
+`IF ... ENDIF` can also be used (`ENDIF` is an alias of `THEN`). `DO` does not test whether the start value equals the limit: as in Forth 2012, the index then wraps through every cell value before the loop ends. `?DO` does not run the body when they are equal, so use `?DO` when the range can be empty. `LEAVE` leaves the loop immediately. To `EXIT` in the middle of a loop, first clean up the loop with `UNLOOP`. `?EXIT` (( flag -- )) does `EXIT` when the flag is true, and `?LEAVE` (( flag -- )) does `LEAVE` when the flag is true. `?OF` (( flag -- )) is an `OF` that selects by a flag instead of comparing with a value, `CONTOF` is an `ENDOF` that goes back to the start of the `CASE`, and `NEXT-CASE` is an `ENDCASE` that goes back to the start without dropping the selector (the same as gforth). `I`, `J`, and `K` return the index of the first, second, and third loop, counted from the innermost.
 
 ## Floating-point numbers
 
@@ -1072,7 +1072,7 @@ The following table lists the built-in words registered at start-up and listed b
 | P06a | `>STRING-EXECUTE`, `INFILE-EXECUTE`, `INFILE-ID`, `OUTFILE-EXECUTE`, `OUTFILE-ID` |
 | P06b | `.QUOTED-CSV`, `BROKEN-PIPE-ERROR`, `CLOSE-PIPE`, `CSV-QUOTE`, `CSV-SEPARATOR`, `OPEN-PIPE`, `READ-CSV`, `SH`, `SH-GET` |
 | P06c | `AT-DELTAXY`, `FKEY.`, `FORM`, `KEY-IOR`, `SIMPLE-FKEY-STRING` |
-| P07d | `.UNRESOLVED`, `EXECUTE-PARSING`, `EXECUTE-PARSING-FILE`, `FORWARD`, `NAME`, `PARSE-WORD`, `RECURSIVE`, `STRING-PARSE` |
+| P07d | `.UNRESOLVED`, `EXECUTE-PARSING`, `EXECUTE-PARSING-FILE`, `FORWARD`, `NAME`, `PARSE-WORD`, `RECURSIVE`, `STRING-PARSE`, `(`, `CHAR` |
 | P08a | `.ID`, `.VOC`, `COMPILE-ONLY?`, `CONTEXT`, `CS-VOCABULARY`, `CS-WORDLIST`, `CURRENT`, `FIND-NAME-IN`, `IN`, `IN-WORDLIST`, `LATESTNT`, `MAP-VOCS` |
 | P08a | `MWORDS`, `NAME>LINK`, `NEXTNAME`, `OBSOLETE?`, `ROOT`, `SEAL`, `TABLE`, `VLIST`, `VOCS`, `WORDLIST-WORDS`, `XT>NAME` |
 | P08b | `:IS`, `ADDR`, `ADDRESSABLE:`, `AVALUE`, `PRESERVE`, `WRAP-XT` |
@@ -1401,7 +1401,7 @@ The new operation/builtin tags change the ABI; recreate earlier-ABI images. Full
 | EXECUTE-PARSING-FILE | `( ... fid xt -- ... )`; execute xt with an initially empty file source; REFILL reads lines. Available with file support. |
 | FORWARD | `( "name" -- )`; declare a colon definition to be supplied later in the same wordlist. |
 | .UNRESOLVED | `( -- )`; diagnose unresolved forward declarations. |
-| RECURSIVE | `( -- )`; compile-only marker. Existing Sigma implicit self-reference remains available. |
+| RECURSIVE | `( -- )`; compile-only. Makes the definition being compiled findable by its own name. Without it the name means the earlier word of that name, as in Forth 2012; use `RECURSE` or `RECURSIVE` for recursion. |
 
 Scoped parsing restores SOURCE, raw >IN, source kind, BLK and source position on success or THROW. String storage is borrowed and must remain valid during the callback. File execution takes ownership after validation and closes once on success or error; the callback must not close/reuse the handle. Callback errors take priority over close errors.
 
