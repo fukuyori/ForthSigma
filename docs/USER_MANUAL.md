@@ -735,7 +735,7 @@ S" dir" SYSTEM
 | `SHIFT-ARGS` | ( -- ) | Remove argument 1 from the arguments; argument 0 stays. Nothing happens when only argument 0 is left. |
 | `NEXT-ARG` | ( -- addr count ) | Argument 1, removed from the arguments (`1 ARG SHIFT-ARGS`). `0 0` when none is left. |
 | `GETENV` | ( addr u -- addr2 u2 ) | Return the value of an environment variable. When it is not set, `0 0`. The result is valid until the next `GETENV`, and a value longer than 3072 bytes gives `STRING TOO LONG !`. |
-| `SYSTEM` | ( addr u -- ) | Run the string as a shell command (`cmd.exe` on Windows). The exit code of the command is not returned (it can be fetched with `$?`). |
+| `SYSTEM` | ( addr u -- ) | Run the string as a shell command (`cmd.exe` on Windows). The exit code of the command is not returned (it can be fetched with `$?`). When the command cannot be started, `HOST FUNCTION ERROR !` (-265) follows and `$?` keeps its value. On macOS a shell that cannot be run is not an error: the C library reports it as a shell that ended with exit code 127, so `$?` is 32512, as for a command that was not found. |
 | `$?` | ( -- n ) | The status of the last `SYSTEM`. On Linux and macOS it is the value returned by `system` (256 times the exit code), as in gforth; on Windows it is the exit code. |
 ## Local variables
 

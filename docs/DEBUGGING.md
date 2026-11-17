@@ -154,9 +154,9 @@ The keys are read as `KEY` reads them, so they can come from a pipe, as above: a
 
 ```text
 > sigma prog.fs -e "SCORE WATCH BUMP 7 SCORE ! BYE"
-WATCH: 81920 changed from 0 to 1
+WATCH: 122880 changed from 0 to 1
   in BUMP prog.fs:7
-WATCH: 81920 changed from 1 to 7
+WATCH: 122880 changed from 1 to 7
 ```
 
 The second change was made at the prompt, so it has no definition. `a-addr UNWATCH` ends it for that cell. Up to eight cells are watched. Run `WATCH` before the program is started, outside a definition: a definition that is already running is not looked at.

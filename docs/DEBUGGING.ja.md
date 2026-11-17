@@ -154,9 +154,9 @@ SQUARE         -> [ 2 ] 16 9
 
 ```text
 > sigma prog.fs -e "SCORE WATCH BUMP 7 SCORE ! BYE"
-WATCH: 81920 changed from 0 to 1
+WATCH: 122880 changed from 0 to 1
   in BUMP prog.fs:7
-WATCH: 81920 changed from 1 to 7
+WATCH: 122880 changed from 1 to 7
 ```
 
 2つ目の変更はプロンプトで行ったものなので、定義の行がありません。`a-addr UNWATCH` は、そのセルの監視をやめます。監視できるセルは8個までです。`WATCH` は、プログラムを始める前に、定義の外で実行してください。すでに実行中の定義の中は調べません。
