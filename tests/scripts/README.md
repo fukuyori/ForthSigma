@@ -25,5 +25,9 @@ its `word_reference_examples.py` helper, and `benchmark-runtime.py`.
 `debug-outputs/` keeps what `verify-debug-outputs.py` recorded on each system, to be
 compared with `--compare`.
 
+`check-ime.fs` is a check by hand, not a script that judges: it shows a `GUI-FIELD` to
+type Japanese into with the input method, and prints what was entered (its header
+tells how to run it).
+
 Recorded measurement JSON and original external review transcripts preserve
 paths as they were when recorded. Current commands use `tests/scripts/`.
