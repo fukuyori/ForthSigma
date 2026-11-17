@@ -2,12 +2,13 @@
 
 英語版：[README.md](README.md)（こちらが原本）。
 
-このディレクトリには、`tests/scripts/verify-debug-outputs.py` が各OSで記録した結果を置きます。デバッグ機能（[docs/DEBUGGING.ja.md](../../../docs/DEBUGGING.ja.md)）の出力を、OSの間で1行ずつ比べるためのものです。tque #890（macOSの出力をWindowsの出力と直接比べる）のために作りました。
+このディレクトリには、`tests/scripts/verify-debug-outputs.py` が各OSで記録した結果を置きます。デバッグ機能（[docs/DEBUGGING.ja.md](../../../docs/DEBUGGING.ja.md)）の出力を、OSの間で1行ずつ比べるためのものです。tque #890（macOSの出力を、WindowsとLinuxの出力と直接比べる）のために作りました。
 
 | ファイル | OS |
 |---|---|
 | `macos.json` | macOS 27.2、Apple silicon（arm64）、FORTH/Sigma 0.11.0 |
 | `windows.json` | Windows（これから記録する） |
+| `linux.json` | Linux（これから記録する。WSLでもよい） |
 
 ## 記録するもの
 

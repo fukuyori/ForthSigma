@@ -5,12 +5,13 @@ Japanese version: [README.ja.md](README.ja.md).
 This folder keeps what `tests/scripts/verify-debug-outputs.py` recorded on each system,
 so that the output of the debugging features (see [docs/DEBUGGING.md](../../../docs/DEBUGGING.md))
 can be compared between systems line by line. It was made for tque #890: comparing the
-output on macOS with the output on Windows directly.
+output on macOS directly with the output on Windows and on Linux.
 
 | File | System |
 |---|---|
 | `macos.json` | macOS 27.2, Apple silicon (arm64), FORTH/Sigma 0.11.0 |
 | `windows.json` | Windows (to be recorded) |
+| `linux.json` | Linux (to be recorded; WSL will do) |
 
 ## What is recorded
 
