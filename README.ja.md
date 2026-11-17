@@ -300,4 +300,4 @@ MITライセンスは、このプロジェクトで作成したプログラム�
 
 ## ライセンス
 
-プロジェクトで作成したコードとドキュメントは[MIT License](https://github.com/fukuyori/ForthSigma/blob/main/LICENSE)で提供します。浮動小数点の数学関数（`FSIN` `FEXP` `FASIN` `F**` など）は、CORE-MATHのコード（MIT License、`src/core-math/`）と、FMA命令のないCPUではmuslの `fma`（MIT License、`src/fma/`）を使います。著作権表示は[THIRD_PARTY_NOTICES.md](https://github.com/fukuyori/ForthSigma/blob/main/THIRD_PARTY_NOTICES.md)にあります。第三者資料の扱いは上記「資料とライセンスの範囲」を参照してください。
+プロジェクトで作成したコードとドキュメントは[MIT License](https://github.com/fukuyori/ForthSigma/blob/main/LICENSE)で提供します。浮動小数点の数学関数（`FSIN` `FEXP` `FASIN` `F**` など）は、CORE-MATHのコード（MIT License、`src/core-math/`）と、FMA命令のないCPUではmuslの `fma`（MIT License、`src/fma/`）を使います。Linuxの `SYSTEM-FONT` は、フォントファイルの読み取りにstb_truetype（MIT License、`src/stb/`）を使います。著作権表示は[THIRD_PARTY_NOTICES.md](https://github.com/fukuyori/ForthSigma/blob/main/THIRD_PARTY_NOTICES.md)にあります。第三者資料の扱いは上記「資料とライセンスの範囲」を参照してください。

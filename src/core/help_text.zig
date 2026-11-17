@@ -1244,7 +1244,7 @@ pub const entries = [_]Entry{
     .{ .name = "TEXT-HEIGHT", .stack = "( -- h )", .text = "The height of a line of TEXT, at the current scale (FORTH/Sigma graphics)." },
     .{ .name = "BUILTIN-FONT", .stack = "( -- )", .text = "Draw TEXT with the built-in ASCII font, 4 by 8 pixels (FORTH/Sigma graphics)." },
     .{ .name = "LOAD-FONT", .stack = "( c-addr u -- )", .text = "Read the named BDF font file and draw TEXT with it; THROW on failure (FORTH/Sigma graphics)." },
-    .{ .name = "SYSTEM-FONT", .stack = "( c-addr u height -- )", .text = "Draw TEXT with the system's font of that name, height pixels a line, smoothed (Windows and macOS; FORTH/Sigma graphics)." },
+    .{ .name = "SYSTEM-FONT", .stack = "( c-addr u height -- )", .text = "Draw TEXT with the system's font of that name, height pixels a line, smoothed (Windows, macOS, and Linux, where the name may be a font file's path; FORTH/Sigma graphics)." },
     .{ .name = "TEXT-SCALE", .stack = "( n -- )", .text = "Draw each pixel of TEXT's font as n by n pixels, 1 to 256; 1 at first (FORTH/Sigma graphics)." },
     .{ .name = "TEXT-WIDTH", .stack = "( c-addr u -- w )", .text = "How many pixels wide TEXT draws the string (FORTH/Sigma graphics)." },
     .{ .name = "INKEY", .stack = "( -- key | -1 )", .text = "The next key pressed, without waiting; -1 when none. Keys that are not characters give K-UP and so on (FORTH/Sigma graphics)." },

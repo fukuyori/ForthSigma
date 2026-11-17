@@ -3,17 +3,20 @@
 //! green values are the coverage TEXT mixes the current color with. On macOS Core Text
 //! draws it into a gray bitmap of Core Graphics; the frameworks are loaded when the
 //! program first chooses a font, so that the macOS builds made on Linux need no SDK.
+//! Linux has no drawing of text of its own, and the executables given out load no shared
+//! library: stb_truetype (src/stb) reads the font file, found by the font's name under
+//! the folders the system keeps its fonts in, and draws the glyphs.
 //! Other hosts have no system fonts (`available` is false).
 
 const std = @import("std");
 const builtin = @import("builtin");
 const forth = @import("forth.zig");
 
-pub const available = builtin.os.tag == .windows or builtin.os.tag == .macos;
+pub const available = builtin.os.tag == .windows or builtin.os.tag == .macos or builtin.os.tag == .linux;
 
 /// The host's system_font_fn and system_glyph_fn.
-pub const select = if (builtin.os.tag == .windows) gdi.select else if (builtin.os.tag == .macos) coretext.select else unsupportedSelect;
-pub const glyph = if (builtin.os.tag == .windows) gdi.glyph else if (builtin.os.tag == .macos) coretext.glyph else unsupportedGlyph;
+pub const select = if (builtin.os.tag == .windows) gdi.select else if (builtin.os.tag == .macos) coretext.select else if (builtin.os.tag == .linux) truetype.select else unsupportedSelect;
+pub const glyph = if (builtin.os.tag == .windows) gdi.glyph else if (builtin.os.tag == .macos) coretext.glyph else if (builtin.os.tag == .linux) truetype.glyph else unsupportedGlyph;
 
 fn unsupportedSelect(_: ?*anyopaque, _: []const u8, _: u32) forth.RuntimeError!bool {
     return error.HostUnavailable;
@@ -22,6 +25,24 @@ fn unsupportedSelect(_: ?*anyopaque, _: []const u8, _: u32) forth.RuntimeError!b
 fn unsupportedGlyph(_: ?*anyopaque, _: u21, _: []u8, _: u32) ?forth.SystemGlyph {
     return null;
 }
+
+/// Linux: src/stb/sigma_font.c, which the build adds when the graphics words are in.
+const truetype = struct {
+    extern fn sigma_font_select(name: [*]const u8, name_length: usize, height: c_uint) c_int;
+    extern fn sigma_font_glyph(code: c_uint, alpha: [*]u8, alpha_length: usize, max_width: c_uint, out: *[4]c_int) c_int;
+
+    fn select(_: ?*anyopaque, name: []const u8, height: u32) forth.RuntimeError!bool {
+        if (name.len == 0) return false;
+        return sigma_font_select(name.ptr, name.len, height) == 1;
+    }
+
+    fn glyph(_: ?*anyopaque, code: u21, alpha: []u8, max_width: u32) ?forth.SystemGlyph {
+        if (code >= 0xD800 and code < 0xE000) return null;
+        var out: [4]c_int = undefined;
+        if (sigma_font_glyph(code, alpha.ptr, alpha.len, max_width, &out) != 1) return null;
+        return .{ .advance = out[0], .left = out[1], .width = @intCast(out[2]), .height = @intCast(out[3]) };
+    }
+};
 
 const gdi = struct {
     const Handle = *anyopaque;
@@ -372,4 +393,29 @@ test "a font of macOS: chosen by its names, drawn in gray, and no glyph for a ch
     try std.testing.expect(try select(null, "HiraginoSans-W3", 24));
     const kanji = glyph(null, 0x65E5, &alpha, 512) orelse return error.TestUnexpectedResult;
     try std.testing.expect(kanji.advance >= 20 and kanji.advance <= 26);
+}
+
+test "a font of Linux: chosen by its name or its path, drawn in gray, and no glyph for a character it lacks" {
+    if (builtin.os.tag != .linux) return error.SkipZigTest;
+    try std.testing.expect(!try select(null, "No Such Font Name", 16));
+    try std.testing.expect(!try select(null, "/no/such/font.ttf", 16));
+    // The fonts a system has differ; without DejaVu Sans there is nothing to compare.
+    if (!try select(null, "DejaVu Sans", 16)) return error.SkipZigTest;
+    var alpha: [512 * 256]u8 = undefined;
+    const a = glyph(null, 'A', &alpha, 512) orelse return error.TestUnexpectedResult;
+    try std.testing.expectEqual(@as(u32, 16), a.height);
+    try std.testing.expect(a.advance > 4 and a.advance < 16);
+    var ink: usize = 0;
+    var gray = false;
+    for (alpha[0 .. a.width * a.height]) |value| {
+        if (value != 0) ink += 1;
+        if (value != 0 and value != 255) gray = true;
+    }
+    try std.testing.expect(ink > 10 and gray);
+    // DejaVu Sans has no kanji; the names are found without regard to the letters' case.
+    try std.testing.expect(glyph(null, 0x65E5, &alpha, 512) == null);
+    try std.testing.expect(try select(null, "dejavu sans", 24));
+    const larger = glyph(null, 'A', &alpha, 512) orelse return error.TestUnexpectedResult;
+    try std.testing.expectEqual(@as(u32, 24), larger.height);
+    try std.testing.expect(larger.advance > a.advance);
 }

@@ -4,6 +4,7 @@
 
 ### Added
 
+- `SYSTEM-FONT` works on Linux too: Sigma reads the system's TrueType and OpenType font files itself (with stb_truetype) and finds a font by its name under the usual font folders, or takes the path of a font file. No font is part of Sigma, and only the Linux executables grow (about 31 KB).
 - `SYSTEM-FONT` works on macOS too: Core Text draws the fonts of the system (such as `Hiragino Sans` or `ヒラギノ角ゴシック`), loaded when first used, so the macOS builds made on Linux need no SDK.
 - On macOS, the input method (IME) works in a `GUI-FIELD` of the Tk window: Japanese can be typed and converted in place there (the text being converted shows underlined at the cursor), and only the committed text is taken.
 

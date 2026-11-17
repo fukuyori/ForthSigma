@@ -1143,7 +1143,7 @@ TEXT	UTF-8文字列を行の左上x・yから現在のフォント・色で描�
 TEXT-HEIGHT	現在の倍率を含むTEXTの行高です。
 BUILTIN-FONT	4×8画素の組込みASCIIフォントを選びます。
 LOAD-FONT	指定BDFファイルをTEXT用に読みます。失敗はTHROWします。
-SYSTEM-FONT	WindowsとmacOSのシステムフォントを名前・行高で選び、平滑化して描きます。
+SYSTEM-FONT	Windows・macOS・Linuxのシステムフォントを名前・行高で選び、平滑化して描きます（Linuxではフォントファイルのパスも指定できます）。
 TEXT-SCALE	フォントの画素をn×nにします。範囲1〜256、初期値1です。
 TEXT-WIDTH	文字列をTEXTで描く幅を画素数で返します。
 INKEY	キーを待たずに読み、不在は-1です。特殊キーはGRAPHICSのK-UPなどで返します。

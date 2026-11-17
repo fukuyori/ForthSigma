@@ -1,5 +1,5 @@
 //! The fonts of TEXT: the built-in ASCII font, a BDF file that LOAD-FONT read, or a font
-//! of the system that SYSTEM-FONT chose and the host draws (Windows). GFX-GLYPH-LOAD puts
+//! of the system that SYSTEM-FONT chose and the host draws. GFX-GLYPH-LOAD puts
 //! one glyph here, as coverage from 0 (none) to 255 (full) for each pixel of its box,
 //! and TEXT's Forth code reads it with GFX-GLYPH-BOX and GFX-GLYPH-ALPHA.
 

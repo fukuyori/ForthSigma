@@ -16818,7 +16818,7 @@ Open a word in EDITOR using +line (set a GUI editor wait option). Unset editor g
 
 種別：builtin.
 
-関連説明：[実装していない機能](USER_MANUAL.ja.md#実装していない機能).
+関連説明：[実装していない機能](USER_MANUAL.ja.md#実装していない機能), [P09c ユーザー戻りスタックの追加操作](USER_MANUAL.ja.md#p09c-ユーザー戻りスタックの追加操作).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
@@ -21416,7 +21416,7 @@ Open the selected source line, or the start of the last N/B window, in EDITOR.
 
 種別：builtin.
 
-関連説明：[メモリとスタックの大きさ](USER_MANUAL.ja.md#メモリとスタックの大きさ), [P09b スタック表示とソース参照](USER_MANUAL.ja.md#p09b-スタック表示とソース参照).
+関連説明：[メモリとスタックの大きさ](USER_MANUAL.ja.md#メモリとスタックの大きさ), [P09b スタック表示とソース参照](USER_MANUAL.ja.md#p09b-スタック表示とソース参照), [P09c ユーザー戻りスタックの追加操作](USER_MANUAL.ja.md#p09c-ユーザー戻りスタックの追加操作).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
@@ -39983,11 +39983,11 @@ SHOW
 
 ` ( c-addr u height -- ) `
 
-WindowsとmacOSのシステムフォントを名前・行高で選び、平滑化して描きます。
+Windows・macOS・Linuxのシステムフォントを名前・行高で選び、平滑化して描きます（Linuxではフォントファイルのパスも指定できます）。
 
 <details><summary>英語の説明（HELP・実装に基づく）</summary>
 
-Draw TEXT with the system's font of that name, height pixels a line, smoothed (Windows and macOS; FORTH/Sigma graphics).
+Draw TEXT with the system's font of that name, height pixels a line, smoothed (Windows, macOS, and Linux, where the name may be a font file's path; FORTH/Sigma graphics).
 
 </details>
 

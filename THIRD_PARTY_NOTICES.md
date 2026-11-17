@@ -85,6 +85,32 @@ modification, either commercially and noncommercially.
 THESE FONTS ARE PROVIDED "AS IS" WITHOUT WARRANTY.
 ```
 
+## stb_truetype
+
+The reading and drawing of TrueType and OpenType fonts in `src/stb/stb_truetype.h` (v1.28), used by `SYSTEM-FONT` on Linux only. Project: <https://github.com/nothings/stb>. It is offered under two licenses; this project uses it under the MIT License below. Builds for other systems and builds with `-Dgraphics=false` leave it out. No font is included.
+
+```text
+Copyright (c) 2017 Sean Barrett
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of
+this software and associated documentation files (the "Software"), to deal in
+the Software without restriction, including without limitation the rights to
+use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies
+of the Software, and to permit persons to whom the Software is furnished to do
+so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+```
+
 ## Unicode Character Database
 
 The column widths of `XC-WIDTH` and `X-WIDTH` in `src/core/char_width.zig`, made by `scripts/make-width-table.py` from `UnicodeData.txt`, `EastAsianWidth.txt`, and `PropList.txt` of the Unicode Character Database 15.1.0. Project: <https://www.unicode.org/ucd/>.

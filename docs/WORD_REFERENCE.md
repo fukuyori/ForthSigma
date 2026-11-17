@@ -13670,7 +13670,7 @@ Open a word in EDITOR using +line (set a GUI editor wait option). Unset editor g
 
 Kind: builtin.
 
-Related: [Features not implemented](USER_MANUAL.md#features-not-implemented).
+Related: [Features not implemented](USER_MANUAL.md#features-not-implemented), [P09c user return-stack extensions](USER_MANUAL.md#p09c-user-return-stack-extensions).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
@@ -17308,7 +17308,7 @@ Open the selected source line, or the start of the last N/B window, in EDITOR.
 
 Kind: builtin.
 
-Related: [Memory and stack sizes](USER_MANUAL.md#memory-and-stack-sizes), [P09b stack display and source browsing](USER_MANUAL.md#p09b-stack-display-and-source-browsing).
+Related: [Memory and stack sizes](USER_MANUAL.md#memory-and-stack-sizes), [P09b stack display and source browsing](USER_MANUAL.md#p09b-stack-display-and-source-browsing), [P09c user return-stack extensions](USER_MANUAL.md#p09c-user-return-stack-extensions).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
@@ -32411,7 +32411,7 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 ` ( c-addr u height -- ) `
 
-Draw TEXT with the system's font of that name, height pixels a line, smoothed (Windows and macOS; FORTH/Sigma graphics).
+Draw TEXT with the system's font of that name, height pixels a line, smoothed (Windows, macOS, and Linux, where the name may be a font file's path; FORTH/Sigma graphics).
 
 Kind: library.
 

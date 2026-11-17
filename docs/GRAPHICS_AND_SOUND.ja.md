@@ -105,7 +105,7 @@ BALLS  1 IMAGE-FLIP BALL 0 0 PUT-IMAGE  0 IMAGE-FLIP  SHOW
 
 ### 文字
 
-`TEXT` は、文字列を今のフォントで描きます。初めは組み込みのフォントで、美咲ゴシック（門真なむ氏、自由に利用できるフォント。[THIRD_PARTY_NOTICES.md](../THIRD_PARTY_NOTICES.md) を参照）のASCIIの文字を、幅4画素・高さ8画素で描きます。`LOAD-FONT` はBDFのフォントファイルを読んで使い（どのOSでも）、`SYSTEM-FONT` はシステムに登録されたフォントを名前で使います（WindowsとmacOS）。文字列はUTF-8として読み、フォントにない文字は1つの `?` で描きます（フォントに `?` もなければ描きません）。UTF-8でないバイトも1バイトごとに同じです。制御文字は描きません。
+`TEXT` は、文字列を今のフォントで描きます。初めは組み込みのフォントで、美咲ゴシック（門真なむ氏、自由に利用できるフォント。[THIRD_PARTY_NOTICES.md](../THIRD_PARTY_NOTICES.md) を参照）のASCIIの文字を、幅4画素・高さ8画素で描きます。`LOAD-FONT` はBDFのフォントファイルを読んで使い（どのOSでも）、`SYSTEM-FONT` はシステムに登録されたフォントを名前で使います（Windows、macOS、Linux）。文字列はUTF-8として読み、フォントにない文字は1つの `?` で描きます（フォントに `?` もなければ描きません）。UTF-8でないバイトも1バイトごとに同じです。制御文字は描きません。
 
 ```forth
 REQUIRE-GRAPHICS  ALSO GRAPHICS
@@ -123,7 +123,7 @@ SHOW
 | `TEXT-WIDTH` | ( c-addr u -- w ) | `TEXT` が今の倍率で描いたときの幅（画素）。画像は要らない。 |
 | `TEXT-HEIGHT` | ( -- h ) | 今のフォントの1行の高さ（今の倍率で）。 |
 | `LOAD-FONT` | ( c-addr u -- ) | 名前のBDFフォントファイルを読んで使う。開けないファイルはそのエラーを、読めるBDFフォントでないファイルは `FONT ERROR !`（THROW -272）を THROW し、フォントは元のまま。1行の高さは256画素まで、1字の幅は512画素まで。使っていたフォントは、新しいフォントを最後まで読み終えるまで残す。 |
-| `SYSTEM-FONT` | ( c-addr u height -- ) | システムのその名前のフォント（Windowsでは `Consolas`、`MS Gothic`、`メイリオ` など、macOSでは `Hiragino Sans`、`HiraginoSans-W3`、`ヒラギノ角ゴシック`、`Osaka` など）を、1行 height 画素（1〜256）で、灰色の濃淡でなめらかにして使う。macOSでは、ファミリー名、フルネーム、PostScript名と、それを利用者の言語で表した名前で探す。フォントにない文字は `?` で描き、ほかのフォントで補わない。WindowsではU+10000以上の文字も `?` で描く。その名前のフォントがなければ `FONT ERROR !`、Linuxでは `HOST FUNCTION UNAVAILABLE !`。 |
+| `SYSTEM-FONT` | ( c-addr u height -- ) | システムのその名前のフォント（Windowsでは `Consolas`、`MS Gothic`、`メイリオ` など、macOSでは `Hiragino Sans`、`HiraginoSans-W3`、`ヒラギノ角ゴシック`、`Osaka` など、Linuxでは `DejaVu Sans`、`Noto Sans CJK JP` など）を、1行 height 画素（1〜256）で、灰色の濃淡でなめらかにして使う。macOSでは、ファミリー名、フルネーム、PostScript名と、それを利用者の言語で表した名前で探す。Linuxでは、Sigmaがフォントファイル（TrueTypeとOpenType：`.ttf`、`.otf`、`.ttc`、`.otc`）を自分で読む。`/usr/share/fonts`、`/usr/local/share/fonts`、`~/.local/share/fonts`（または `$XDG_DATA_HOME/fonts`）、`~/.fonts` の下を探し、ファミリー名、フルネーム、PostScript名のどれかが指定の名前と同じフォントを使う（どの言語の名前でもよく、ASCIIの大文字と小文字は区別しない）。ファミリー名で指定したときは、標準の太さのフォントを使う。名前に `/` があれば、フォントファイルのパスとして扱う（コレクションなら最初のフォント）。Sigmaにフォントは入っていない。アクセント付きの文字を2つの字形から組み立てる一部のOpenTypeフォント（URWの `C059` など）では、アクセントなしで描かれる。フォントファイルの破損は検査しないので、信頼できるファイルだけを指定すること。フォントにない文字は `?` で描き、ほかのフォントで補わない。WindowsではU+10000以上の文字も `?` で描く。その名前のフォントがなければ `FONT ERROR !`（Linuxでは、パスのファイルがフォントでないときも）。 |
 | `BUILTIN-FONT` | ( -- ) | 組み込みのフォントに戻す。 |
 | `GFX-GLYPH-LOAD` | ( code -- advance \| -1 ) | 今のフォントの文字番号の字形を読み込み、ペンを進める幅を返す。フォントになければ -1。 |
 | `GFX-GLYPH-BOX` | ( -- left width height ) | 読み込んだ字形の箱。ペンから `left` 画素右（負なら左）、行の上端から。 |

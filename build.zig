@@ -45,6 +45,7 @@ pub fn build(b: *std.Build) void {
     if (float) addCoreMath(b, exe.root_module);
     addEmbeddedTexts(b, exe.root_module);
     addCTime(b, exe.root_module, target, optimize);
+    if (graphics and target.result.os.tag == .linux) addSystemFont(b, exe.root_module);
     const c_file = b.addTranslateC(.{
         .root_source_file = b.addWriteFiles().add("c_file.h", "#include <stdio.h>\n#include <fcntl.h>\n#include <sys/stat.h>\n#ifdef _WIN32\n#include <io.h>\n#include <direct.h>\n#else\n#include <errno.h>\n#include <pwd.h>\n#include <unistd.h>\n#include <dirent.h>\n#endif\n"),
         .target = target,
@@ -184,6 +185,17 @@ fn addCoreMath(b: *std.Build, module: *std.Build.Module) void {
         .root = b.path("src/fma"),
         .files = &.{"fma.c"},
         .flags = &.{ "-std=gnu11", "-Dfma=sigma_fma_software", "-Wno-shift-op-parentheses" },
+    });
+}
+
+/// SYSTEM-FONT on Linux: stb_truetype reads the system's font files and draws their
+/// glyphs, since Linux has no drawing of text of its own and the executable loads no
+/// shared library. Windows and macOS use the system's own drawing instead.
+fn addSystemFont(b: *std.Build, module: *std.Build.Module) void {
+    module.addCSourceFiles(.{
+        .root = b.path("src/stb"),
+        .files = &.{"sigma_font.c"},
+        .flags = &.{ "-std=gnu11", "-Wno-unused-function" },
     });
 }
 
