@@ -104,7 +104,7 @@ Linuxにはインストーラーがないので、実行ファイルを `PATH` �
 
     sudo install -m 755 dist/release/bin/sigma /usr/local/bin/sigma
 
-GitHub Actions（`.github/workflows/release.yml`）は、手動起動（Actions > Release > Run workflow）に加え、`v0.11.1`のように`VERSION`と一致する`v`付きタグのpushでも動きます。Windows x86_64、Linux x86_64・arm32・arm64、macOS arm64でテストとビルドを行い、各ZIPを実行の成果物（artifact）として残します。ZIPには実行ファイル、LICENSE、THIRD_PARTY_NOTICES.md、README.mdを入れます。浮動小数点の語を含む版には`examples`フォルダーのサンプルプログラムも入ります。VERSIONと一致するタグの全ジョブ成功後、Linux x86_64向けの2つのZIP（`sigma-版番号-linux-x86_64.zip`と`sigma-版番号-linux-x86_64-nofloat.zip`）およびSHA256ファイルをGitHub Releaseに公開します。ほかの対象向けZIPはActionsのartifactに残します。各対象には、浮動小数点の語を含む版（`sigma-版番号-対象.zip`）と除いた版（`sigma-版番号-対象-nofloat.zip`）があります。テストはWindows x86_64、Linux x86_64・arm64、macOS arm64の実機で実行します。CIのWindows版は署名なしなので、Windows向けには次のスクリプトで作った同じ名前・同じ内容の署名付きZIP（`dist\zip\sigma-版番号-windows-x86_64.zip`と`dist\zip\sigma-版番号-windows-x86_64-nofloat.zip`）を使います。`-Variant Float`または`-Variant NoFloat`で片方だけ作ることもできます。
+GitHub Actions（`.github/workflows/release.yml`）は、手動起動（Actions > Release > Run workflow）に加え、`v0.11.2`のように`VERSION`と一致する`v`付きタグのpushでも動きます。Windows x86_64、Linux x86_64・arm32・arm64、macOS arm64でテストとビルドを行い、各ZIPを実行の成果物（artifact）として残します。ZIPには実行ファイル、LICENSE、THIRD_PARTY_NOTICES.md、README.mdを入れます。浮動小数点の語を含む版には`examples`フォルダーのサンプルプログラムも入ります。VERSIONと一致するタグの全ジョブ成功後、Linux x86_64向けの2つのZIP（`sigma-版番号-linux-x86_64.zip`と`sigma-版番号-linux-x86_64-nofloat.zip`）およびSHA256ファイルをGitHub Releaseに公開します。ほかの対象向けZIPはActionsのartifactに残します。各対象には、浮動小数点の語を含む版（`sigma-版番号-対象.zip`）と除いた版（`sigma-版番号-対象-nofloat.zip`）があります。テストはWindows x86_64、Linux x86_64・arm64、macOS arm64の実機で実行します。CIのWindows版は署名なしなので、Windows向けには次のスクリプトで作った同じ名前・同じ内容の署名付きZIP（`dist\zip\sigma-版番号-windows-x86_64.zip`と`dist\zip\sigma-版番号-windows-x86_64-nofloat.zip`）を使います。`-Variant Float`または`-Variant NoFloat`で片方だけ作ることもできます。
 
     .\scripts\build-zip.ps1 -Sign
 
@@ -118,7 +118,7 @@ macOSでは、次のスクリプトでインストーラーパッケージ（`di
     xcrun notarytool store-credentials notarytool --apple-id <id> --team-id <team> --password <app-pw>   # 最初の1回だけ
     ./scripts/sign-and-notarize-macos.sh
 
-対話プロンプトの前に、版番号とライセンスの2行（`FORTH/Sigma 0.11.1  MIT License`、`` Type `help' for basic help ``）を表示します。`HELP` で基本的な使い方、`HELP DUP` のように語名を付けるとその語の説明、`LICENSE` でライセンスの全文を表示します。
+対話プロンプトの前に、版番号とライセンスの2行（`FORTH/Sigma 0.11.2  MIT License`、`` Type `help' for basic help ``）を表示します。`HELP` で基本的な使い方、`HELP DUP` のように語名を付けるとその語の説明、`LICENSE` でライセンスの全文を表示します。
 
 例:
 

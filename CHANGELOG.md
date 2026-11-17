@@ -2,6 +2,13 @@
 
 ## [Unreleased]
 
+## [0.11.2] - 2026-11-17
+
+### Changed
+
+- `HELP GFX-TCL` and the manual tell when `GFX-TCL` throws: an error of the script gives a true flag and the message, and `HOST FUNCTION ERROR !` (-265) comes when the Tcl program cannot be started or has ended. The behavior is unchanged.
+- Updated the product version and startup examples to 0.11.2.
+
 ## [0.11.1] - 2026-11-17
 
 ### Added
@@ -196,6 +203,7 @@
 - Updated the product version and startup examples to 0.6.1.
 - Added an optional SDL3 host backend. Builds can still run when SDL3 is unavailable; gamepad polling then reports that the backend is unavailable.
 
+[0.11.2]: https://github.com/fukuyori/ForthSigma/releases/tag/v0.11.2
 [0.11.1]: https://github.com/fukuyori/ForthSigma/releases/tag/v0.11.1
 [0.11.0]: https://github.com/fukuyori/ForthSigma/releases/tag/v0.11.0
 [0.10.0]: https://github.com/fukuyori/ForthSigma/releases/tag/v0.10.0
