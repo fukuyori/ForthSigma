@@ -1,0 +1,2408 @@
+{
+  "date": "2026-11-17",
+  "task": 881,
+  "status": "regression_or_mixed_result",
+  "stopped_at": {
+    "platform": "windows",
+    "case": "catch-nested-256"
+  },
+  "start_utc": "2026-11-16T23:15:35.469137+00:00",
+  "complete_utc": "2026-11-17T00:44:47.103509+00:00",
+  "compared_count": 15,
+  "compared_passed": [
+    "linux/loops",
+    "windows/stacks",
+    "linux/stacks",
+    "windows/calls",
+    "linux/calls",
+    "windows/variables",
+    "linux/variables",
+    "windows/plus-loop",
+    "linux/plus-loop",
+    "windows/extended",
+    "linux/extended",
+    "windows/float",
+    "linux/float",
+    "windows/catch-nested-64"
+  ],
+  "compared_failed": [
+    "windows/catch-nested-256"
+  ],
+  "deferred_history": [
+    "windows/loops",
+    "linux/catch-nested-64"
+  ],
+  "unevaluated_after_second_miss": [],
+  "not_compared": [
+    "windows/loops",
+    "linux/catch-nested-64",
+    "linux/catch-nested-256",
+    "windows/catch-execute",
+    "linux/catch-execute",
+    "windows/catch-defer",
+    "linux/catch-defer",
+    "windows/catch-synonym",
+    "linux/catch-synonym",
+    "windows/catch-throw",
+    "linux/catch-throw",
+    "windows/catch-fast-throw",
+    "linux/catch-fast-throw",
+    "windows/catch-success",
+    "linux/catch-success",
+    "windows/catch-nobt-throw",
+    "linux/catch-nobt-throw"
+  ],
+  "calibration_attempts": {
+    "windows/loops": [
+      {
+        "delta_percent": 2.191780821917808,
+        "minimum_median_us": 5703125.0,
+        "passed": false,
+        "attempt": 1,
+        "source": ".work/partial-adoption-continue-20261117/local/results.json"
+      }
+    ],
+    "linux/loops": [
+      {
+        "delta_percent": 0.08082866181333222,
+        "minimum_median_us": 5941090.564,
+        "passed": true,
+        "attempt": 1,
+        "utc": "2026-11-16T23:18:10.829515+00:00"
+      }
+    ],
+    "windows/stacks": [
+      {
+        "delta_percent": 0.0,
+        "minimum_median_us": 6187500.0,
+        "passed": true,
+        "attempt": 1,
+        "utc": "2026-11-16T23:24:07.557873+00:00"
+      }
+    ],
+    "linux/stacks": [
+      {
+        "delta_percent": 0.5183103606296704,
+        "minimum_median_us": 5755598.627,
+        "passed": true,
+        "attempt": 1,
+        "utc": "2026-11-16T23:29:59.901621+00:00"
+      }
+    ],
+    "windows/calls": [
+      {
+        "delta_percent": 0.0,
+        "minimum_median_us": 5984375.0,
+        "passed": true,
+        "attempt": 1,
+        "utc": "2026-11-16T23:35:43.665116+00:00"
+      }
+    ],
+    "linux/calls": [
+      {
+        "delta_percent": 0.3836156521259302,
+        "minimum_median_us": 5920677.298,
+        "passed": true,
+        "attempt": 1,
+        "utc": "2026-11-16T23:41:36.208753+00:00"
+      }
+    ],
+    "windows/variables": [
+      {
+        "delta_percent": 0.2597402597402597,
+        "minimum_median_us": 6015625.0,
+        "passed": true,
+        "attempt": 1,
+        "utc": "2026-11-16T23:47:34.435203+00:00"
+      }
+    ],
+    "linux/variables": [
+      {
+        "delta_percent": 0.07021014514166313,
+        "minimum_median_us": 5841595.957,
+        "passed": true,
+        "attempt": 1,
+        "utc": "2026-11-16T23:53:35.836088+00:00"
+      }
+    ],
+    "windows/plus-loop": [
+      {
+        "delta_percent": 0.26525198938992045,
+        "minimum_median_us": 5890625.0,
+        "passed": true,
+        "attempt": 1,
+        "utc": "2026-11-16T23:59:16.902139+00:00"
+      }
+    ],
+    "linux/plus-loop": [
+      {
+        "delta_percent": 0.46023339728328133,
+        "minimum_median_us": 5935274.398,
+        "passed": true,
+        "attempt": 1,
+        "utc": "2026-11-17T00:05:22.095347+00:00"
+      }
+    ],
+    "windows/extended": [
+      {
+        "delta_percent": 0.5291005291005291,
+        "minimum_median_us": 5906250.0,
+        "passed": true,
+        "attempt": 1,
+        "utc": "2026-11-17T00:11:06.875092+00:00"
+      }
+    ],
+    "linux/extended": [
+      {
+        "delta_percent": 0.4693349904707793,
+        "minimum_median_us": 5812896.237,
+        "passed": true,
+        "attempt": 1,
+        "utc": "2026-11-17T00:16:51.302771+00:00"
+      }
+    ],
+    "windows/float": [
+      {
+        "delta_percent": 0.2597402597402597,
+        "minimum_median_us": 6015625.0,
+        "passed": true,
+        "attempt": 1,
+        "utc": "2026-11-17T00:22:34.509448+00:00"
+      }
+    ],
+    "linux/float": [
+      {
+        "delta_percent": 0.17150401247912966,
+        "minimum_median_us": 5808729.658,
+        "passed": true,
+        "attempt": 1,
+        "utc": "2026-11-17T00:28:27.878621+00:00"
+      }
+    ],
+    "windows/catch-nested-64": [
+      {
+        "delta_percent": 1.2084592145015105,
+        "minimum_median_us": 5171875.0,
+        "passed": true,
+        "attempt": 1,
+        "utc": "2026-11-17T00:33:53.194372+00:00"
+      }
+    ],
+    "linux/catch-nested-64": [
+      {
+        "delta_percent": 4.470084962382793,
+        "minimum_median_us": 5557512.801,
+        "passed": false,
+        "attempt": 1,
+        "utc": "2026-11-17T00:39:22.586749+00:00"
+      }
+    ],
+    "windows/catch-nested-256": [
+      {
+        "delta_percent": 1.744186046511628,
+        "minimum_median_us": 5375000.0,
+        "passed": true,
+        "attempt": 1,
+        "utc": "2026-11-17T00:41:43.447083+00:00"
+      }
+    ]
+  },
+  "verdicts": {
+    "windows/loops": {
+      "calibration_attempts_this_run": []
+    },
+    "linux/loops": {
+      "calibration_attempts_this_run": [
+        {
+          "delta_percent": 0.08082866181333222,
+          "minimum_median_us": 5941090.564,
+          "passed": true
+        }
+      ],
+      "comparison": {
+        "changes_percent": [
+          0.0428189753321373,
+          -0.10029100329284057
+        ],
+        "threshold_percent": 3,
+        "passed": true
+      }
+    },
+    "windows/stacks": {
+      "calibration_attempts_this_run": [
+        {
+          "delta_percent": 0.0,
+          "minimum_median_us": 6187500.0,
+          "passed": true
+        }
+      ],
+      "comparison": {
+        "changes_percent": [
+          1.2658227848101333,
+          1.2658227848101333
+        ],
+        "threshold_percent": 3,
+        "passed": true
+      }
+    },
+    "linux/stacks": {
+      "calibration_attempts_this_run": [
+        {
+          "delta_percent": 0.5183103606296704,
+          "minimum_median_us": 5755598.627,
+          "passed": true
+        }
+      ],
+      "comparison": {
+        "changes_percent": [
+          1.7265346407816518,
+          1.8124102321839475
+        ],
+        "threshold_percent": 3,
+        "passed": true
+      }
+    },
+    "windows/calls": {
+      "calibration_attempts_this_run": [
+        {
+          "delta_percent": 0.0,
+          "minimum_median_us": 5984375.0,
+          "passed": true
+        }
+      ],
+      "comparison": {
+        "changes_percent": [
+          0.0,
+          0.0
+        ],
+        "threshold_percent": 3,
+        "passed": true
+      }
+    },
+    "linux/calls": {
+      "calibration_attempts_this_run": [
+        {
+          "delta_percent": 0.3836156521259302,
+          "minimum_median_us": 5920677.298,
+          "passed": true
+        }
+      ],
+      "comparison": {
+        "changes_percent": [
+          0.25228179047769306,
+          -0.0396763993942062
+        ],
+        "threshold_percent": 3,
+        "passed": true
+      }
+    },
+    "windows/variables": {
+      "calibration_attempts_this_run": [
+        {
+          "delta_percent": 0.2597402597402597,
+          "minimum_median_us": 6015625.0,
+          "passed": true
+        }
+      ],
+      "comparison": {
+        "changes_percent": [
+          -0.2597402597402598,
+          0.0
+        ],
+        "threshold_percent": 3,
+        "passed": true
+      }
+    },
+    "linux/variables": {
+      "calibration_attempts_this_run": [
+        {
+          "delta_percent": 0.07021014514166313,
+          "minimum_median_us": 5841595.957,
+          "passed": true
+        }
+      ],
+      "comparison": {
+        "changes_percent": [
+          0.03911777152720841,
+          -0.09386451581515631
+        ],
+        "threshold_percent": 3,
+        "passed": true
+      }
+    },
+    "windows/plus-loop": {
+      "calibration_attempts_this_run": [
+        {
+          "delta_percent": 0.26525198938992045,
+          "minimum_median_us": 5890625.0,
+          "passed": true
+        }
+      ],
+      "comparison": {
+        "changes_percent": [
+          0.0,
+          -0.26385224274406704
+        ],
+        "threshold_percent": 3,
+        "passed": true
+      }
+    },
+    "linux/plus-loop": {
+      "calibration_attempts_this_run": [
+        {
+          "delta_percent": 0.46023339728328133,
+          "minimum_median_us": 5935274.398,
+          "passed": true
+        }
+      ],
+      "comparison": {
+        "changes_percent": [
+          -0.07900866111982818,
+          -0.009870491149166494
+        ],
+        "threshold_percent": 3,
+        "passed": true
+      }
+    },
+    "windows/extended": {
+      "calibration_attempts_this_run": [
+        {
+          "delta_percent": 0.5291005291005291,
+          "minimum_median_us": 5906250.0,
+          "passed": true
+        }
+      ],
+      "comparison": {
+        "changes_percent": [
+          0.2645502645502562,
+          0.0
+        ],
+        "threshold_percent": 3,
+        "passed": true
+      }
+    },
+    "linux/extended": {
+      "calibration_attempts_this_run": [
+        {
+          "delta_percent": 0.4693349904707793,
+          "minimum_median_us": 5812896.237,
+          "passed": true
+        }
+      ],
+      "comparison": {
+        "changes_percent": [
+          -0.06396883120883823,
+          -0.25048735472293915
+        ],
+        "threshold_percent": 3,
+        "passed": true
+      }
+    },
+    "windows/float": {
+      "calibration_attempts_this_run": [
+        {
+          "delta_percent": 0.2597402597402597,
+          "minimum_median_us": 6015625.0,
+          "passed": true
+        }
+      ],
+      "comparison": {
+        "changes_percent": [
+          0.0,
+          0.7772020725388629
+        ],
+        "threshold_percent": 3,
+        "passed": true
+      }
+    },
+    "linux/float": {
+      "calibration_attempts_this_run": [
+        {
+          "delta_percent": 0.17150401247912966,
+          "minimum_median_us": 5808729.658,
+          "passed": true
+        }
+      ],
+      "comparison": {
+        "changes_percent": [
+          -0.042720825732933676,
+          0.0020739061693975103
+        ],
+        "threshold_percent": 3,
+        "passed": true
+      }
+    },
+    "windows/catch-nested-64": {
+      "calibration_attempts_this_run": [
+        {
+          "delta_percent": 1.2084592145015105,
+          "minimum_median_us": 5171875.0,
+          "passed": true
+        }
+      ],
+      "comparison": {
+        "changes_percent": [
+          0.29940119760478723,
+          1.96629213483146
+        ],
+        "threshold_percent": 5,
+        "passed": true
+      }
+    },
+    "linux/catch-nested-64": {
+      "calibration_attempts_this_run": [
+        {
+          "delta_percent": 4.470084962382793,
+          "minimum_median_us": 5557512.801,
+          "passed": false
+        }
+      ]
+    },
+    "windows/catch-nested-256": {
+      "calibration_attempts_this_run": [
+        {
+          "delta_percent": 1.744186046511628,
+          "minimum_median_us": 5375000.0,
+          "passed": true
+        }
+      ],
+      "comparison": {
+        "changes_percent": [
+          9.770114942528728,
+          3.125
+        ],
+        "threshold_percent": 5,
+        "passed": false
+      }
+    },
+    "linux/catch-nested-256": {
+      "calibration_attempts_this_run": []
+    },
+    "windows/catch-execute": {
+      "calibration_attempts_this_run": []
+    },
+    "linux/catch-execute": {
+      "calibration_attempts_this_run": []
+    },
+    "windows/catch-defer": {
+      "calibration_attempts_this_run": []
+    },
+    "linux/catch-defer": {
+      "calibration_attempts_this_run": []
+    },
+    "windows/catch-synonym": {
+      "calibration_attempts_this_run": []
+    },
+    "linux/catch-synonym": {
+      "calibration_attempts_this_run": []
+    },
+    "windows/catch-throw": {
+      "calibration_attempts_this_run": []
+    },
+    "linux/catch-throw": {
+      "calibration_attempts_this_run": []
+    },
+    "windows/catch-fast-throw": {
+      "calibration_attempts_this_run": []
+    },
+    "linux/catch-fast-throw": {
+      "calibration_attempts_this_run": []
+    },
+    "windows/catch-success": {
+      "calibration_attempts_this_run": []
+    },
+    "linux/catch-success": {
+      "calibration_attempts_this_run": []
+    },
+    "windows/catch-nobt-throw": {
+      "calibration_attempts_this_run": []
+    },
+    "linux/catch-nobt-throw": {
+      "calibration_attempts_this_run": []
+    }
+  },
+  "groups": {
+    "linux-calls-aa-1.json": {
+      "case": "linux/calls",
+      "stage": "aa",
+      "series": 1,
+      "iterations": 397423517,
+      "medians_us": {
+        "A1": 5931065.084,
+        "A2": 5953817.578
+      },
+      "delta_percent": 0.3836156521259302,
+      "change_percent": 0.38361565212592375,
+      "cpu_us": {
+        "A1": [
+          5949244.003,
+          5904651.169,
+          5931065.084,
+          5949846.703,
+          5917950.129
+        ],
+        "A2": [
+          5953817.578,
+          5948595.991,
+          5959300.755,
+          5956121.152,
+          5913497.413
+        ]
+      }
+    },
+    "linux-calls-aa-2.json": {
+      "case": "linux/calls",
+      "stage": "aa",
+      "series": 2,
+      "iterations": 397423517,
+      "medians_us": {
+        "A1": 5938864.806,
+        "A2": 5920677.298
+      },
+      "delta_percent": 0.30718627421466077,
+      "change_percent": -0.30624552998116394,
+      "cpu_us": {
+        "A1": [
+          5938864.806,
+          5926302.292,
+          5961670.308,
+          5962503.479,
+          5925574.333
+        ],
+        "A2": [
+          5952196.026,
+          5904729.988,
+          5902271.818,
+          5920677.298,
+          5924866.572
+        ]
+      }
+    },
+    "linux-calls-compare-1.json": {
+      "case": "linux/calls",
+      "stage": "compare",
+      "series": 1,
+      "iterations": 397423517,
+      "medians_us": {
+        "baseline": 5928704.95,
+        "candidate": 5943661.993
+      },
+      "delta_percent": 0.2522817904776927,
+      "change_percent": 0.25228179047769306,
+      "cpu_us": {
+        "baseline": [
+          5956388.613,
+          5928704.95,
+          5927201.391,
+          5891455.555,
+          5906460.946,
+          5938439.738,
+          5935836.032
+        ],
+        "candidate": [
+          5922251.999,
+          5914875.308,
+          5945339.016,
+          5955117.891,
+          5948700.184,
+          5943661.993,
+          5913642.709
+        ]
+      }
+    },
+    "linux-calls-compare-2.json": {
+      "case": "linux/calls",
+      "stage": "compare",
+      "series": 2,
+      "iterations": 397423517,
+      "medians_us": {
+        "baseline": 5940410.511,
+        "candidate": 5938053.57
+      },
+      "delta_percent": 0.039692147809297085,
+      "change_percent": -0.0396763993942062,
+      "cpu_us": {
+        "baseline": [
+          5948196.493,
+          5940410.511,
+          5953506.068,
+          5950055.404,
+          5912475.553,
+          5917357.431,
+          5913276.433
+        ],
+        "candidate": [
+          5950198.786,
+          5916420.186,
+          5907041.748,
+          5938053.57,
+          5922474.514,
+          5947765.884,
+          5953182.582
+        ]
+      }
+    },
+    "linux-catch-nested-64-aa-1.json": {
+      "case": "linux/catch-nested-64",
+      "stage": "aa",
+      "series": 1,
+      "iterations": 2576975,
+      "medians_us": {
+        "A1": 5805938.345,
+        "A2": 5557512.801
+      },
+      "delta_percent": 4.470084962382793,
+      "change_percent": -4.278818155448394,
+      "cpu_us": {
+        "A1": [
+          5805938.345,
+          6041795.42,
+          5470077.29,
+          7998612.094,
+          5552686.541
+        ],
+        "A2": [
+          5525750.66,
+          5557512.801,
+          5469289.114,
+          6300878.483,
+          6127232.744
+        ]
+      }
+    },
+    "linux-catch-nested-64-aa-2.json": {
+      "case": "linux/catch-nested-64",
+      "stage": "aa",
+      "series": 2,
+      "iterations": 2576975,
+      "medians_us": {
+        "A1": 5813199.138,
+        "A2": 5688249.968
+      },
+      "delta_percent": 2.1966188318536974,
+      "change_percent": -2.149404605516203,
+      "cpu_us": {
+        "A1": [
+          5609010.014,
+          6112012.698,
+          5530457.886,
+          6736917.295,
+          5813199.138
+        ],
+        "A2": [
+          6282442.427,
+          5835787.361,
+          5456976.401,
+          5688249.968,
+          5574454.859
+        ]
+      }
+    },
+    "linux-extended-aa-1.json": {
+      "case": "linux/extended",
+      "stage": "aa",
+      "series": 1,
+      "iterations": 615426592,
+      "medians_us": {
+        "A1": 5837730.334,
+        "A2": 5819154.863
+      },
+      "delta_percent": 0.31921252204694767,
+      "change_percent": -0.31819679802290723,
+      "cpu_us": {
+        "A1": [
+          5837730.334,
+          5847350.468,
+          5850056.78,
+          5813761.605,
+          5811434.152
+        ],
+        "A2": [
+          5818064.432,
+          5818805.54,
+          5826538.615,
+          5819154.863,
+          5846941.402
+        ]
+      }
+    },
+    "linux-extended-aa-2.json": {
+      "case": "linux/extended",
+      "stage": "aa",
+      "series": 2,
+      "iterations": 615426592,
+      "medians_us": {
+        "A1": 5812896.237,
+        "A2": 5840178.193
+      },
+      "delta_percent": 0.4693349904707793,
+      "change_percent": 0.4693349904707711,
+      "cpu_us": {
+        "A1": [
+          5807791.559,
+          5819355.298,
+          5812896.237,
+          5802731.236,
+          5842473.525
+        ],
+        "A2": [
+          5864137.245,
+          5840178.193,
+          5857734.641,
+          5826008.68,
+          5828476.296
+        ]
+      }
+    },
+    "linux-extended-compare-1.json": {
+      "case": "linux/extended",
+      "stage": "compare",
+      "series": 1,
+      "iterations": 615426592,
+      "medians_us": {
+        "baseline": 5843569.328,
+        "candidate": 5839831.265
+      },
+      "delta_percent": 0.06400977751537967,
+      "change_percent": -0.06396883120883823,
+      "cpu_us": {
+        "baseline": [
+          5806893.245,
+          5843569.328,
+          6473462.169,
+          5831496.323,
+          5843826.995,
+          5817296.257,
+          5973649.939
+        ],
+        "candidate": [
+          5839584.168,
+          5839831.265,
+          5799161.712,
+          5827737.033,
+          5877243.018,
+          5842589.454,
+          6504214.818
+        ]
+      }
+    },
+    "linux-extended-compare-2.json": {
+      "case": "linux/extended",
+      "stage": "compare",
+      "series": 2,
+      "iterations": 615426592,
+      "medians_us": {
+        "baseline": 5835369.221,
+        "candidate": 5820752.359
+      },
+      "delta_percent": 0.2511163694741155,
+      "change_percent": -0.25048735472293915,
+      "cpu_us": {
+        "baseline": [
+          5804139.912,
+          5835369.221,
+          5825936.232,
+          5798034.283,
+          5853903.398,
+          5847975.015,
+          6368904.614
+        ],
+        "candidate": [
+          5827075.478,
+          5838348.198,
+          5840731.87,
+          5819089.167,
+          5807878.844,
+          5820752.359,
+          5809299.52
+        ]
+      }
+    },
+    "linux-float-aa-1.json": {
+      "case": "linux/float",
+      "stage": "aa",
+      "series": 1,
+      "iterations": 838617001,
+      "medians_us": {
+        "A1": 5808729.658,
+        "A2": 5816668.496
+      },
+      "delta_percent": 0.1366708121640123,
+      "change_percent": 0.13667081216401922,
+      "cpu_us": {
+        "A1": [
+          5863747.653,
+          5802734.952,
+          5804251.874,
+          5808904.046,
+          5808729.658
+        ],
+        "A2": [
+          5814313.563,
+          5809448.025,
+          5833391.545,
+          5848683.139,
+          5816668.496
+        ]
+      }
+    },
+    "linux-float-aa-2.json": {
+      "case": "linux/float",
+      "stage": "aa",
+      "series": 2,
+      "iterations": 838617001,
+      "medians_us": {
+        "A1": 5828865.958,
+        "A2": 5838862.697
+      },
+      "delta_percent": 0.17150401247912966,
+      "change_percent": 0.17150401247914004,
+      "cpu_us": {
+        "A1": [
+          5814260.291,
+          5811442.922,
+          5837563.814,
+          5843268.808,
+          5828865.958
+        ],
+        "A2": [
+          7384075.05,
+          5839257.635,
+          5838862.697,
+          5818363.419,
+          5805600.827
+        ]
+      }
+    },
+    "linux-float-compare-1.json": {
+      "case": "linux/float",
+      "stage": "compare",
+      "series": 1,
+      "iterations": 838617001,
+      "medians_us": {
+        "baseline": 5825945.443,
+        "candidate": 5823456.551
+      },
+      "delta_percent": 0.042739084222627226,
+      "change_percent": -0.042720825732933676,
+      "cpu_us": {
+        "baseline": [
+          5825945.443,
+          5826690.56,
+          5831356.26,
+          5802554.748,
+          5816352.955,
+          5809027.384,
+          7351883.306
+        ],
+        "candidate": [
+          5823456.551,
+          5812020.75,
+          5830080.306,
+          5820739.094,
+          5843890.928,
+          5829663.852,
+          5816263.863
+        ]
+      }
+    },
+    "linux-float-compare-2.json": {
+      "case": "linux/float",
+      "stage": "compare",
+      "series": 2,
+      "iterations": 838617001,
+      "medians_us": {
+        "baseline": 5820948.015,
+        "candidate": 5821068.736
+      },
+      "delta_percent": 0.002073906169387138,
+      "change_percent": 0.0020739061693975103,
+      "cpu_us": {
+        "baseline": [
+          5819946.826,
+          5811647.838,
+          5844578.53,
+          7388490.836,
+          5806035.979,
+          5835933.252,
+          5820948.015
+        ],
+        "candidate": [
+          5833101.886,
+          5810125.901,
+          5821068.736,
+          5812100.161,
+          5804835.882,
+          5837726.499,
+          5833965.254
+        ]
+      }
+    },
+    "linux-loops-aa-1.json": {
+      "case": "linux/loops",
+      "stage": "aa",
+      "series": 1,
+      "iterations": 1055590305,
+      "medians_us": {
+        "A1": 5945575.795,
+        "A2": 5946407.758
+      },
+      "delta_percent": 0.013992976099978464,
+      "change_percent": 0.013992976099985732,
+      "cpu_us": {
+        "A1": [
+          5956535.348,
+          5924228.406,
+          5941906.135,
+          5945575.795,
+          5962292.528
+        ],
+        "A2": [
+          5955456.425,
+          5946407.758,
+          5956459.287,
+          5945949.627,
+          5944292.267
+        ]
+      }
+    },
+    "linux-loops-aa-2.json": {
+      "case": "linux/loops",
+      "stage": "aa",
+      "series": 2,
+      "iterations": 1055590305,
+      "medians_us": {
+        "A1": 5945892.668,
+        "A2": 5941090.564
+      },
+      "delta_percent": 0.08082866181333222,
+      "change_percent": -0.08076338185254439,
+      "cpu_us": {
+        "A1": [
+          8491887.296,
+          5945892.668,
+          5939879.945,
+          5943783.385,
+          5962293.458
+        ],
+        "A2": [
+          5943570.125,
+          5941090.564,
+          8443371.416,
+          5930340.265,
+          5937380.901
+        ]
+      }
+    },
+    "linux-loops-compare-1.json": {
+      "case": "linux/loops",
+      "stage": "compare",
+      "series": 1,
+      "iterations": 1055590305,
+      "medians_us": {
+        "baseline": 5935583.419,
+        "candidate": 5938124.975
+      },
+      "delta_percent": 0.042818975332134336,
+      "change_percent": 0.0428189753321373,
+      "cpu_us": {
+        "baseline": [
+          5947690.229,
+          5958789.723,
+          5897057.637,
+          5935583.419,
+          5932355.741,
+          5926428.802,
+          6007781.261
+        ],
+        "candidate": [
+          5927809.577,
+          5938124.975,
+          5922633.095,
+          8473770.584,
+          5941472.731,
+          5924188.2,
+          5976960.178
+        ]
+      }
+    },
+    "linux-loops-compare-2.json": {
+      "case": "linux/loops",
+      "stage": "compare",
+      "series": 2,
+      "iterations": 1055590305,
+      "medians_us": {
+        "baseline": 5935377.855,
+        "candidate": 5929425.205
+      },
+      "delta_percent": 0.1003916871230754,
+      "change_percent": -0.10029100329284057,
+      "cpu_us": {
+        "baseline": [
+          5991138.699,
+          5935377.855,
+          5926675.306,
+          5929899.649,
+          5983269.604,
+          5928507.774,
+          5935523.92
+        ],
+        "candidate": [
+          5964689.511,
+          5934166.275,
+          5927725.878,
+          5927091.502,
+          5929425.205,
+          5970560.581,
+          5928670.835
+        ]
+      }
+    },
+    "linux-plus-loop-aa-1.json": {
+      "case": "linux/plus-loop",
+      "stage": "aa",
+      "series": 1,
+      "iterations": 1801517184,
+      "medians_us": {
+        "A1": 5962590.513,
+        "A2": 5935274.398
+      },
+      "delta_percent": 0.46023339728328133,
+      "change_percent": -0.4581249532471521,
+      "cpu_us": {
+        "A1": [
+          5962590.513,
+          5962860.463,
+          5937541.957,
+          8023106.632,
+          5939633.131
+        ],
+        "A2": [
+          5935274.398,
+          5936277.608,
+          5928313.074,
+          5919271.158,
+          5936378.926
+        ]
+      }
+    },
+    "linux-plus-loop-aa-2.json": {
+      "case": "linux/plus-loop",
+      "stage": "aa",
+      "series": 2,
+      "iterations": 1801517184,
+      "medians_us": {
+        "A1": 5940674.986,
+        "A2": 5936187.633
+      },
+      "delta_percent": 0.07559317995700537,
+      "change_percent": -0.07553607983225019,
+      "cpu_us": {
+        "A1": [
+          8035476.859,
+          5927801.791,
+          5932378.544,
+          5940674.986,
+          5943490.791
+        ],
+        "A2": [
+          5923737.081,
+          5936187.633,
+          8028709.779,
+          5929386.301,
+          6174048.101
+        ]
+      }
+    },
+    "linux-plus-loop-compare-1.json": {
+      "case": "linux/plus-loop",
+      "stage": "compare",
+      "series": 1,
+      "iterations": 1801517184,
+      "medians_us": {
+        "baseline": 5933279.888,
+        "candidate": 5928592.083
+      },
+      "delta_percent": 0.07907113416426012,
+      "change_percent": -0.07900866111982818,
+      "cpu_us": {
+        "baseline": [
+          5936239.181,
+          5935984.574,
+          5945330.036,
+          5933279.888,
+          5931715.519,
+          5932186.263,
+          5924086.006
+        ],
+        "candidate": [
+          5927764.813,
+          5923877.586,
+          5940356.45,
+          5928592.083,
+          5943367.259,
+          5938329.207,
+          5921561.982
+        ]
+      }
+    },
+    "linux-plus-loop-compare-2.json": {
+      "case": "linux/plus-loop",
+      "stage": "compare",
+      "series": 2,
+      "iterations": 1801517184,
+      "medians_us": {
+        "baseline": 5935834.308,
+        "candidate": 5935248.412
+      },
+      "delta_percent": 0.009871465511301471,
+      "change_percent": -0.009870491149166494,
+      "cpu_us": {
+        "baseline": [
+          5928163.831,
+          6123799.915,
+          5945216.092,
+          5959317.274,
+          5928049.996,
+          5930129.905,
+          5935834.308
+        ],
+        "candidate": [
+          5945452.279,
+          6212232.391,
+          5929069.885,
+          5935248.412,
+          5921333.97,
+          8020714.945,
+          5929294.682
+        ]
+      }
+    },
+    "linux-stacks-aa-1.json": {
+      "case": "linux/stacks",
+      "stage": "aa",
+      "series": 1,
+      "iterations": 498248628,
+      "medians_us": {
+        "A1": 5785430.491,
+        "A2": 5755598.627
+      },
+      "delta_percent": 0.5183103606296704,
+      "change_percent": -0.5156377567133053,
+      "cpu_us": {
+        "A1": [
+          5785430.491,
+          5929340.465,
+          5796697.302,
+          5755101.052,
+          5761223.542
+        ],
+        "A2": [
+          5740550.994,
+          5753418.87,
+          5776629.822,
+          5755598.627,
+          5797516.391
+        ]
+      }
+    },
+    "linux-stacks-aa-2.json": {
+      "case": "linux/stacks",
+      "stage": "aa",
+      "series": 2,
+      "iterations": 498248628,
+      "medians_us": {
+        "A1": 5786015.932,
+        "A2": 5773014.534
+      },
+      "delta_percent": 0.2252098608695456,
+      "change_percent": -0.22470380574126647,
+      "cpu_us": {
+        "A1": [
+          5763765.412,
+          5764824.783,
+          5910509.729,
+          5893012.259,
+          5786015.932
+        ],
+        "A2": [
+          5754522.264,
+          5803799.336,
+          5787161.153,
+          5773014.534,
+          5753211.68
+        ]
+      }
+    },
+    "linux-stacks-compare-1.json": {
+      "case": "linux/stacks",
+      "stage": "compare",
+      "series": 1,
+      "iterations": 498248628,
+      "medians_us": {
+        "baseline": 5774014.239,
+        "candidate": 5873704.595
+      },
+      "delta_percent": 1.7265346407816449,
+      "change_percent": 1.7265346407816518,
+      "cpu_us": {
+        "baseline": [
+          5743855.774,
+          5764333.859,
+          5782313.113,
+          5793405.46,
+          5778892.614,
+          5761562.826,
+          5774014.239
+        ],
+        "candidate": [
+          5893257.036,
+          5984543.042,
+          5835431.866,
+          5847495.042,
+          5864466.478,
+          5873704.595,
+          5880164.005
+        ]
+      }
+    },
+    "linux-stacks-compare-2.json": {
+      "case": "linux/stacks",
+      "stage": "compare",
+      "series": 2,
+      "iterations": 498248628,
+      "medians_us": {
+        "baseline": 5782151.642,
+        "candidate": 5886947.95
+      },
+      "delta_percent": 1.8124102321839486,
+      "change_percent": 1.8124102321839475,
+      "cpu_us": {
+        "baseline": [
+          5766776.01,
+          5784885.548,
+          5754946.176,
+          5740694.476,
+          5782151.642,
+          5833980.684,
+          5933506.158
+        ],
+        "candidate": [
+          5847501.005,
+          5891925.899,
+          5877465.578,
+          5871834.072,
+          5888604.108,
+          5886947.95,
+          5899144.1
+        ]
+      }
+    },
+    "linux-variables-aa-1.json": {
+      "case": "linux/variables",
+      "stage": "aa",
+      "series": 1,
+      "iterations": 1008021226,
+      "medians_us": {
+        "A1": 5841595.957,
+        "A2": 5845697.35
+      },
+      "delta_percent": 0.07021014514166313,
+      "change_percent": 0.07021014514165813,
+      "cpu_us": {
+        "A1": [
+          5854385.22,
+          5839674.985,
+          5840571.93,
+          5847995.794,
+          5841595.957
+        ],
+        "A2": [
+          5838941.539,
+          5858014.043,
+          5839664.368,
+          5853052.868,
+          5845697.35
+        ]
+      }
+    },
+    "linux-variables-aa-2.json": {
+      "case": "linux/variables",
+      "stage": "aa",
+      "series": 2,
+      "iterations": 1008021226,
+      "medians_us": {
+        "A1": 5851603.689,
+        "A2": 5851993.366
+      },
+      "delta_percent": 0.006659319747382529,
+      "change_percent": 0.006659319747392978,
+      "cpu_us": {
+        "A1": [
+          5851603.689,
+          5860902.94,
+          5865995.121,
+          5838580.598,
+          5841481.009
+        ],
+        "A2": [
+          5844346.752,
+          5847873.06,
+          5875974.517,
+          5873052.635,
+          5851993.366
+        ]
+      }
+    },
+    "linux-variables-compare-1.json": {
+      "case": "linux/variables",
+      "stage": "compare",
+      "series": 1,
+      "iterations": 1008021226,
+      "medians_us": {
+        "baseline": 5851544.99,
+        "candidate": 5853833.984
+      },
+      "delta_percent": 0.03911777152720734,
+      "change_percent": 0.03911777152720841,
+      "cpu_us": {
+        "baseline": [
+          5851544.99,
+          5857387.114,
+          5840351.033,
+          5848727.924,
+          5862220.972,
+          5835115.058,
+          5862860.167
+        ],
+        "candidate": [
+          5859060.368,
+          5847934.529,
+          5841098.677,
+          5878480.241,
+          5835001.812,
+          5853833.984,
+          5855320.674
+        ]
+      }
+    },
+    "linux-variables-compare-2.json": {
+      "case": "linux/variables",
+      "stage": "compare",
+      "series": 2,
+      "iterations": 1008021226,
+      "medians_us": {
+        "baseline": 5859890.665,
+        "candidate": 5854390.307
+      },
+      "delta_percent": 0.09395270406592669,
+      "change_percent": -0.09386451581515631,
+      "cpu_us": {
+        "baseline": [
+          5842601.218,
+          5854871.774,
+          5857513.729,
+          5862369.945,
+          5859890.665,
+          5916796.751,
+          5872047.647
+        ],
+        "candidate": [
+          5860049.198,
+          5849070.605,
+          5850218.883,
+          5854390.307,
+          5842796.233,
+          5859375.22,
+          5968129.695
+        ]
+      }
+    },
+    "windows-calls-aa-1.json": {
+      "case": "windows/calls",
+      "stage": "aa",
+      "series": 1,
+      "iterations": 387878788,
+      "medians_us": {
+        "A1": 6000000.0,
+        "A2": 6000000.0
+      },
+      "delta_percent": 0.0,
+      "change_percent": 0.0,
+      "cpu_us": {
+        "A1": [
+          6015625.0,
+          6000000.0,
+          6015625.0,
+          5968750.0,
+          6000000.0
+        ],
+        "A2": [
+          6031250.0,
+          5968750.0,
+          5953125.0,
+          6000000.0,
+          6015625.0
+        ]
+      }
+    },
+    "windows-calls-aa-2.json": {
+      "case": "windows/calls",
+      "stage": "aa",
+      "series": 2,
+      "iterations": 387878788,
+      "medians_us": {
+        "A1": 5984375.0,
+        "A2": 5984375.0
+      },
+      "delta_percent": 0.0,
+      "change_percent": 0.0,
+      "cpu_us": {
+        "A1": [
+          5984375.0,
+          5984375.0,
+          5984375.0,
+          5984375.0,
+          6000000.0
+        ],
+        "A2": [
+          5968750.0,
+          8734375.0,
+          5968750.0,
+          5984375.0,
+          6000000.0
+        ]
+      }
+    },
+    "windows-calls-compare-1.json": {
+      "case": "windows/calls",
+      "stage": "compare",
+      "series": 1,
+      "iterations": 387878788,
+      "medians_us": {
+        "baseline": 5984375.0,
+        "candidate": 5984375.0
+      },
+      "delta_percent": 0.0,
+      "change_percent": 0.0,
+      "cpu_us": {
+        "baseline": [
+          5984375.0,
+          5984375.0,
+          5984375.0,
+          7250000.0,
+          5984375.0,
+          5984375.0,
+          5984375.0
+        ],
+        "candidate": [
+          5984375.0,
+          5968750.0,
+          5984375.0,
+          5984375.0,
+          5984375.0,
+          5968750.0,
+          5984375.0
+        ]
+      }
+    },
+    "windows-calls-compare-2.json": {
+      "case": "windows/calls",
+      "stage": "compare",
+      "series": 2,
+      "iterations": 387878788,
+      "medians_us": {
+        "baseline": 5984375.0,
+        "candidate": 5984375.0
+      },
+      "delta_percent": 0.0,
+      "change_percent": 0.0,
+      "cpu_us": {
+        "baseline": [
+          5984375.0,
+          5953125.0,
+          6015625.0,
+          5968750.0,
+          5984375.0,
+          5984375.0,
+          5984375.0
+        ],
+        "candidate": [
+          5984375.0,
+          5968750.0,
+          6000000.0,
+          5953125.0,
+          5968750.0,
+          5984375.0,
+          5984375.0
+        ]
+      }
+    },
+    "windows-catch-nested-256-aa-1.json": {
+      "case": "windows/catch-nested-256",
+      "stage": "aa",
+      "series": 1,
+      "iterations": 600772,
+      "medians_us": {
+        "A1": 5421875.0,
+        "A2": 5390625.0
+      },
+      "delta_percent": 0.5797101449275363,
+      "change_percent": -0.5763688760806907,
+      "cpu_us": {
+        "A1": [
+          5421875.0,
+          6000000.0,
+          6000000.0,
+          5312500.0,
+          5328125.0
+        ],
+        "A2": [
+          5468750.0,
+          5390625.0,
+          6015625.0,
+          5343750.0,
+          5359375.0
+        ]
+      }
+    },
+    "windows-catch-nested-256-aa-2.json": {
+      "case": "windows/catch-nested-256",
+      "stage": "aa",
+      "series": 2,
+      "iterations": 600772,
+      "medians_us": {
+        "A1": 5468750.0,
+        "A2": 5375000.0
+      },
+      "delta_percent": 1.744186046511628,
+      "change_percent": -1.7142857142857126,
+      "cpu_us": {
+        "A1": [
+          5468750.0,
+          5453125.0,
+          5343750.0,
+          5906250.0,
+          5953125.0
+        ],
+        "A2": [
+          5406250.0,
+          5359375.0,
+          5343750.0,
+          6000000.0,
+          5375000.0
+        ]
+      }
+    },
+    "windows-catch-nested-256-compare-1.json": {
+      "case": "windows/catch-nested-256",
+      "stage": "compare",
+      "series": 1,
+      "iterations": 600772,
+      "medians_us": {
+        "baseline": 5437500.0,
+        "candidate": 5968750.0
+      },
+      "delta_percent": 9.770114942528735,
+      "change_percent": 9.770114942528728,
+      "cpu_us": {
+        "baseline": [
+          5359375.0,
+          5468750.0,
+          5437500.0,
+          5968750.0,
+          5375000.0,
+          5390625.0,
+          5468750.0
+        ],
+        "candidate": [
+          6140625.0,
+          6125000.0,
+          5906250.0,
+          5562500.0,
+          5968750.0,
+          5984375.0,
+          5484375.0
+        ]
+      }
+    },
+    "windows-catch-nested-256-compare-2.json": {
+      "case": "windows/catch-nested-256",
+      "stage": "compare",
+      "series": 2,
+      "iterations": 600772,
+      "medians_us": {
+        "baseline": 5500000.0,
+        "candidate": 5671875.0
+      },
+      "delta_percent": 3.125,
+      "change_percent": 3.125,
+      "cpu_us": {
+        "baseline": [
+          5500000.0,
+          5484375.0,
+          5765625.0,
+          5468750.0,
+          5437500.0,
+          5968750.0,
+          5953125.0
+        ],
+        "candidate": [
+          6015625.0,
+          5671875.0,
+          5500000.0,
+          6000000.0,
+          5546875.0,
+          6875000.0,
+          5578125.0
+        ]
+      }
+    },
+    "windows-catch-nested-64-aa-1.json": {
+      "case": "windows/catch-nested-64",
+      "stage": "aa",
+      "series": 1,
+      "iterations": 2257038,
+      "medians_us": {
+        "A1": 5171875.0,
+        "A2": 5234375.0
+      },
+      "delta_percent": 1.2084592145015105,
+      "change_percent": 1.2084592145015005,
+      "cpu_us": {
+        "A1": [
+          5343750.0,
+          5156250.0,
+          5718750.0,
+          5062500.0,
+          5171875.0
+        ],
+        "A2": [
+          5250000.0,
+          5234375.0,
+          5203125.0,
+          5171875.0,
+          5531250.0
+        ]
+      }
+    },
+    "windows-catch-nested-64-aa-2.json": {
+      "case": "windows/catch-nested-64",
+      "stage": "aa",
+      "series": 2,
+      "iterations": 2257038,
+      "medians_us": {
+        "A1": 5203125.0,
+        "A2": 5171875.0
+      },
+      "delta_percent": 0.6042296072507553,
+      "change_percent": -0.6006006006005982,
+      "cpu_us": {
+        "A1": [
+          5125000.0,
+          5734375.0,
+          5156250.0,
+          5203125.0,
+          5281250.0
+        ],
+        "A2": [
+          5156250.0,
+          5093750.0,
+          5234375.0,
+          5171875.0,
+          5187500.0
+        ]
+      }
+    },
+    "windows-catch-nested-64-compare-1.json": {
+      "case": "windows/catch-nested-64",
+      "stage": "compare",
+      "series": 1,
+      "iterations": 2257038,
+      "medians_us": {
+        "baseline": 5218750.0,
+        "candidate": 5234375.0
+      },
+      "delta_percent": 0.2994011976047904,
+      "change_percent": 0.29940119760478723,
+      "cpu_us": {
+        "baseline": [
+          5171875.0,
+          5218750.0,
+          5609375.0,
+          5171875.0,
+          5203125.0,
+          5218750.0,
+          5578125.0
+        ],
+        "candidate": [
+          5156250.0,
+          5656250.0,
+          5640625.0,
+          5625000.0,
+          5234375.0,
+          5203125.0,
+          5156250.0
+        ]
+      }
+    },
+    "windows-catch-nested-64-compare-2.json": {
+      "case": "windows/catch-nested-64",
+      "stage": "compare",
+      "series": 2,
+      "iterations": 2257038,
+      "medians_us": {
+        "baseline": 5562500.0,
+        "candidate": 5671875.0
+      },
+      "delta_percent": 1.9662921348314606,
+      "change_percent": 1.96629213483146,
+      "cpu_us": {
+        "baseline": [
+          5765625.0,
+          5734375.0,
+          5125000.0,
+          5187500.0,
+          5671875.0,
+          5562500.0,
+          5265625.0
+        ],
+        "candidate": [
+          5671875.0,
+          5703125.0,
+          5703125.0,
+          5218750.0,
+          5250000.0,
+          5187500.0,
+          5671875.0
+        ]
+      }
+    },
+    "windows-extended-aa-1.json": {
+      "case": "windows/extended",
+      "stage": "aa",
+      "series": 1,
+      "iterations": 556521740,
+      "medians_us": {
+        "A1": 5921875.0,
+        "A2": 5937500.0
+      },
+      "delta_percent": 0.2638522427440633,
+      "change_percent": 0.26385224274405594,
+      "cpu_us": {
+        "A1": [
+          5921875.0,
+          5921875.0,
+          5921875.0,
+          5968750.0,
+          5953125.0
+        ],
+        "A2": [
+          5921875.0,
+          5906250.0,
+          6015625.0,
+          5937500.0,
+          5937500.0
+        ]
+      }
+    },
+    "windows-extended-aa-2.json": {
+      "case": "windows/extended",
+      "stage": "aa",
+      "series": 2,
+      "iterations": 556521740,
+      "medians_us": {
+        "A1": 5906250.0,
+        "A2": 5937500.0
+      },
+      "delta_percent": 0.5291005291005291,
+      "change_percent": 0.5291005291005346,
+      "cpu_us": {
+        "A1": [
+          5937500.0,
+          5906250.0,
+          5890625.0,
+          5906250.0,
+          5921875.0
+        ],
+        "A2": [
+          5937500.0,
+          5937500.0,
+          5890625.0,
+          5921875.0,
+          5937500.0
+        ]
+      }
+    },
+    "windows-extended-compare-1.json": {
+      "case": "windows/extended",
+      "stage": "compare",
+      "series": 1,
+      "iterations": 556521740,
+      "medians_us": {
+        "baseline": 5906250.0,
+        "candidate": 5921875.0
+      },
+      "delta_percent": 0.26455026455026454,
+      "change_percent": 0.2645502645502562,
+      "cpu_us": {
+        "baseline": [
+          5906250.0,
+          5937500.0,
+          5937500.0,
+          5906250.0,
+          5890625.0,
+          6000000.0,
+          5906250.0
+        ],
+        "candidate": [
+          5921875.0,
+          5921875.0,
+          5921875.0,
+          5937500.0,
+          5921875.0,
+          5921875.0,
+          5937500.0
+        ]
+      }
+    },
+    "windows-extended-compare-2.json": {
+      "case": "windows/extended",
+      "stage": "compare",
+      "series": 2,
+      "iterations": 556521740,
+      "medians_us": {
+        "baseline": 5921875.0,
+        "candidate": 5921875.0
+      },
+      "delta_percent": 0.0,
+      "change_percent": 0.0,
+      "cpu_us": {
+        "baseline": [
+          5937500.0,
+          5906250.0,
+          5921875.0,
+          5921875.0,
+          5906250.0,
+          5937500.0,
+          6015625.0
+        ],
+        "candidate": [
+          5937500.0,
+          5921875.0,
+          5890625.0,
+          5921875.0,
+          5921875.0,
+          5921875.0,
+          5906250.0
+        ]
+      }
+    },
+    "windows-float-aa-1.json": {
+      "case": "windows/float",
+      "stage": "aa",
+      "series": 1,
+      "iterations": 877714286,
+      "medians_us": {
+        "A1": 6046875.0,
+        "A2": 6046875.0
+      },
+      "delta_percent": 0.0,
+      "change_percent": 0.0,
+      "cpu_us": {
+        "A1": [
+          6015625.0,
+          6046875.0,
+          6000000.0,
+          6062500.0,
+          6046875.0
+        ],
+        "A2": [
+          6015625.0,
+          6062500.0,
+          6078125.0,
+          6046875.0,
+          5984375.0
+        ]
+      }
+    },
+    "windows-float-aa-2.json": {
+      "case": "windows/float",
+      "stage": "aa",
+      "series": 2,
+      "iterations": 877714286,
+      "medians_us": {
+        "A1": 6015625.0,
+        "A2": 6031250.0
+      },
+      "delta_percent": 0.2597402597402597,
+      "change_percent": 0.2597402597402487,
+      "cpu_us": {
+        "A1": [
+          6015625.0,
+          6015625.0,
+          6031250.0,
+          5984375.0,
+          6046875.0
+        ],
+        "A2": [
+          6046875.0,
+          6031250.0,
+          5984375.0,
+          6015625.0,
+          6046875.0
+        ]
+      }
+    },
+    "windows-float-compare-1.json": {
+      "case": "windows/float",
+      "stage": "compare",
+      "series": 1,
+      "iterations": 877714286,
+      "medians_us": {
+        "baseline": 6031250.0,
+        "candidate": 6031250.0
+      },
+      "delta_percent": 0.0,
+      "change_percent": 0.0,
+      "cpu_us": {
+        "baseline": [
+          6015625.0,
+          5984375.0,
+          6046875.0,
+          6000000.0,
+          6046875.0,
+          6031250.0,
+          6062500.0
+        ],
+        "candidate": [
+          7140625.0,
+          6031250.0,
+          6015625.0,
+          6062500.0,
+          5984375.0,
+          6015625.0,
+          7109375.0
+        ]
+      }
+    },
+    "windows-float-compare-2.json": {
+      "case": "windows/float",
+      "stage": "compare",
+      "series": 2,
+      "iterations": 877714286,
+      "medians_us": {
+        "baseline": 6031250.0,
+        "candidate": 6078125.0
+      },
+      "delta_percent": 0.7772020725388601,
+      "change_percent": 0.7772020725388629,
+      "cpu_us": {
+        "baseline": [
+          6015625.0,
+          6109375.0,
+          6031250.0,
+          6031250.0,
+          6046875.0,
+          6015625.0,
+          7140625.0
+        ],
+        "candidate": [
+          6093750.0,
+          6078125.0,
+          6078125.0,
+          6046875.0,
+          5984375.0,
+          7078125.0,
+          6000000.0
+        ]
+      }
+    },
+    "windows-plus-loop-aa-1.json": {
+      "case": "windows/plus-loop",
+      "stage": "aa",
+      "series": 1,
+      "iterations": 1558260870,
+      "medians_us": {
+        "A1": 5953125.0,
+        "A2": 5953125.0
+      },
+      "delta_percent": 0.0,
+      "change_percent": 0.0,
+      "cpu_us": {
+        "A1": [
+          5953125.0,
+          6015625.0,
+          5937500.0,
+          5906250.0,
+          5953125.0
+        ],
+        "A2": [
+          5937500.0,
+          5921875.0,
+          5953125.0,
+          5968750.0,
+          5984375.0
+        ]
+      }
+    },
+    "windows-plus-loop-aa-2.json": {
+      "case": "windows/plus-loop",
+      "stage": "aa",
+      "series": 2,
+      "iterations": 1558260870,
+      "medians_us": {
+        "A1": 5890625.0,
+        "A2": 5906250.0
+      },
+      "delta_percent": 0.26525198938992045,
+      "change_percent": 0.2652519893899141,
+      "cpu_us": {
+        "A1": [
+          5937500.0,
+          5859375.0,
+          5843750.0,
+          5968750.0,
+          5890625.0
+        ],
+        "A2": [
+          5953125.0,
+          5906250.0,
+          5906250.0,
+          5937500.0,
+          5906250.0
+        ]
+      }
+    },
+    "windows-plus-loop-compare-1.json": {
+      "case": "windows/plus-loop",
+      "stage": "compare",
+      "series": 1,
+      "iterations": 1558260870,
+      "medians_us": {
+        "baseline": 6015625.0,
+        "candidate": 6015625.0
+      },
+      "delta_percent": 0.0,
+      "change_percent": 0.0,
+      "cpu_us": {
+        "baseline": [
+          5906250.0,
+          6015625.0,
+          6046875.0,
+          6015625.0,
+          5984375.0,
+          6000000.0,
+          6093750.0
+        ],
+        "candidate": [
+          5921875.0,
+          6046875.0,
+          6015625.0,
+          6156250.0,
+          6046875.0,
+          6015625.0,
+          6000000.0
+        ]
+      }
+    },
+    "windows-plus-loop-compare-2.json": {
+      "case": "windows/plus-loop",
+      "stage": "compare",
+      "series": 2,
+      "iterations": 1558260870,
+      "medians_us": {
+        "baseline": 5921875.0,
+        "candidate": 5906250.0
+      },
+      "delta_percent": 0.26455026455026454,
+      "change_percent": -0.26385224274406704,
+      "cpu_us": {
+        "baseline": [
+          7031250.0,
+          5937500.0,
+          5953125.0,
+          5921875.0,
+          5828125.0,
+          5875000.0,
+          5906250.0
+        ],
+        "candidate": [
+          5890625.0,
+          5906250.0,
+          5937500.0,
+          15625000.0,
+          5875000.0,
+          5937500.0,
+          5875000.0
+        ]
+      }
+    },
+    "windows-stacks-aa-1.json": {
+      "case": "windows/stacks",
+      "stage": "aa",
+      "series": 1,
+      "iterations": 505263158,
+      "medians_us": {
+        "A1": 6187500.0,
+        "A2": 6187500.0
+      },
+      "delta_percent": 0.0,
+      "change_percent": 0.0,
+      "cpu_us": {
+        "A1": [
+          6187500.0,
+          6203125.0,
+          6156250.0,
+          6187500.0,
+          6171875.0
+        ],
+        "A2": [
+          6171875.0,
+          6187500.0,
+          6187500.0,
+          6203125.0,
+          6234375.0
+        ]
+      }
+    },
+    "windows-stacks-aa-2.json": {
+      "case": "windows/stacks",
+      "stage": "aa",
+      "series": 2,
+      "iterations": 505263158,
+      "medians_us": {
+        "A1": 6187500.0,
+        "A2": 6187500.0
+      },
+      "delta_percent": 0.0,
+      "change_percent": 0.0,
+      "cpu_us": {
+        "A1": [
+          6187500.0,
+          11421875.0,
+          6203125.0,
+          6171875.0,
+          6156250.0
+        ],
+        "A2": [
+          6171875.0,
+          6125000.0,
+          6187500.0,
+          6187500.0,
+          6187500.0
+        ]
+      }
+    },
+    "windows-stacks-compare-1.json": {
+      "case": "windows/stacks",
+      "stage": "compare",
+      "series": 1,
+      "iterations": 505263158,
+      "medians_us": {
+        "baseline": 6171875.0,
+        "candidate": 6250000.0
+      },
+      "delta_percent": 1.2658227848101267,
+      "change_percent": 1.2658227848101333,
+      "cpu_us": {
+        "baseline": [
+          6171875.0,
+          6187500.0,
+          6171875.0,
+          6171875.0,
+          6140625.0,
+          6140625.0,
+          6140625.0
+        ],
+        "candidate": [
+          6265625.0,
+          6203125.0,
+          6250000.0,
+          6234375.0,
+          6265625.0,
+          6265625.0,
+          6203125.0
+        ]
+      }
+    },
+    "windows-stacks-compare-2.json": {
+      "case": "windows/stacks",
+      "stage": "compare",
+      "series": 2,
+      "iterations": 505263158,
+      "medians_us": {
+        "baseline": 6171875.0,
+        "candidate": 6250000.0
+      },
+      "delta_percent": 1.2658227848101267,
+      "change_percent": 1.2658227848101333,
+      "cpu_us": {
+        "baseline": [
+          6156250.0,
+          6171875.0,
+          6171875.0,
+          6140625.0,
+          6171875.0,
+          6171875.0,
+          6140625.0
+        ],
+        "candidate": [
+          6265625.0,
+          6234375.0,
+          6265625.0,
+          6250000.0,
+          6234375.0,
+          6250000.0,
+          6218750.0
+        ]
+      }
+    },
+    "windows-variables-aa-1.json": {
+      "case": "windows/variables",
+      "stage": "aa",
+      "series": 1,
+      "iterations": 1085217392,
+      "medians_us": {
+        "A1": 6031250.0,
+        "A2": 6015625.0
+      },
+      "delta_percent": 0.2597402597402597,
+      "change_percent": -0.2590673575129543,
+      "cpu_us": {
+        "A1": [
+          6031250.0,
+          6031250.0,
+          6046875.0,
+          6046875.0,
+          6000000.0
+        ],
+        "A2": [
+          6046875.0,
+          20234375.0,
+          5984375.0,
+          6015625.0,
+          6000000.0
+        ]
+      }
+    },
+    "windows-variables-aa-2.json": {
+      "case": "windows/variables",
+      "stage": "aa",
+      "series": 2,
+      "iterations": 1085217392,
+      "medians_us": {
+        "A1": 6015625.0,
+        "A2": 6015625.0
+      },
+      "delta_percent": 0.0,
+      "change_percent": 0.0,
+      "cpu_us": {
+        "A1": [
+          6031250.0,
+          6015625.0,
+          6000000.0,
+          6015625.0,
+          5984375.0
+        ],
+        "A2": [
+          6015625.0,
+          6015625.0,
+          5984375.0,
+          6015625.0,
+          6000000.0
+        ]
+      }
+    },
+    "windows-variables-compare-1.json": {
+      "case": "windows/variables",
+      "stage": "compare",
+      "series": 1,
+      "iterations": 1085217392,
+      "medians_us": {
+        "baseline": 6015625.0,
+        "candidate": 6000000.0
+      },
+      "delta_percent": 0.2604166666666667,
+      "change_percent": -0.2597402597402598,
+      "cpu_us": {
+        "baseline": [
+          6000000.0,
+          6031250.0,
+          5953125.0,
+          6015625.0,
+          6156250.0,
+          6015625.0,
+          6015625.0
+        ],
+        "candidate": [
+          6000000.0,
+          6000000.0,
+          6031250.0,
+          6015625.0,
+          6000000.0,
+          6000000.0,
+          6000000.0
+        ]
+      }
+    },
+    "windows-variables-compare-2.json": {
+      "case": "windows/variables",
+      "stage": "compare",
+      "series": 2,
+      "iterations": 1085217392,
+      "medians_us": {
+        "baseline": 6015625.0,
+        "candidate": 6015625.0
+      },
+      "delta_percent": 0.0,
+      "change_percent": 0.0,
+      "cpu_us": {
+        "baseline": [
+          6031250.0,
+          6031250.0,
+          6015625.0,
+          6015625.0,
+          6031250.0,
+          6000000.0,
+          6015625.0
+        ],
+        "candidate": [
+          6031250.0,
+          5968750.0,
+          6000000.0,
+          20359375.0,
+          6015625.0,
+          6015625.0,
+          6000000.0
+        ]
+      }
+    }
+  },
+  "audit": {
+    "complete_groups": 62,
+    "child_processes_in_complete_groups_including_warmup": 864,
+    "checked": "sample counts, warmup exclusion, checksums, medians, delta, change, arm order, parent and live child affinity [2], verdicts, and SHA of inputs/binaries/evidence/worker/controller/protocol at audit time",
+    "limits": [
+      "A/A is not a clock accuracy proof or a confidence interval",
+      "Host load was not independently monitored",
+      "Hashes are checked at worker launch and at audit, not continuously"
+    ]
+  },
+  "frozen": {
+    "protocol_sha256": "46bb98d56d22138571d40c8cadd99b762cb5a7afa51b168f093d41775206ca8b",
+    "controller_sha256": "6bf60fb48661d46d9cac9f0ff1c55dc874699b33579d767498ad3e97f2760cd3",
+    "worker_sha256": "f455981f9fc1c12c22c3b37769d68adb020a941178d13dbca4a790aba45bba83",
+    "binary_hashes": {
+      "baseline-windows": "379d6c6c069b9c3072da22fa6cea8b7deff77c5ed78ef9bbd070f92a724337bf",
+      "candidate-windows": "9efbb6e8cc062ae71dae11bdeffa31fe9fd2ae4480bb3a04f10a838c4021c5c1",
+      "baseline-linux": "bdb6eb7a0ac59d27d23281708f89538631950d39654837cfd1cfa8d0e78b73fa",
+      "candidate-linux": "0edf681c46f0db5168a3c17485ebc2bccf2c475bce2ae8e01e34936dfb120c50"
+    }
+  },
+  "decision": {
+    "local": "hold; Windows catch-nested-256 comparison exceeded the 5% cap in series 1",
+    "runtime_modified": false
+  },
+  "audit_source": "\"\"\"Recompute every completed group of the continuation run from raw samples and archive the evidence.\"\"\"\nfrom pathlib import Path\nimport json, hashlib, statistics, gzip\n\nr = Path.cwd()\nbase = r / '.work/partial-adoption-local-standard-20261117'\no = base / 'local'\nsha = lambda p: hashlib.sha256(p.read_bytes()).hexdigest()\nprotocol = json.loads((o / 'protocol.json').read_text())\nplan = protocol['continuation_880']\nresults = json.loads((o / 'results.json').read_text())\nstart = json.loads((o / 'start.json').read_text())\nassert start['protocol_sha256'] == sha(o / 'protocol.json') and start['controller_sha256'] == sha(base / 'run.py') == protocol['controller_sha256']\nassert start['worker_sha256'] == sha(o / 'worker.py') == protocol['worker_sha256']\nfor name, digest in {**protocol['input_hashes'], **protocol['evidence_hashes']}.items():\n    assert sha(r / name) == digest, name\nfor platform, paths in protocol['binary_paths'].items():\n    for kind, path in paths.items():\n        assert sha(r / path) == protocol['binary_hashes'][kind + '-' + platform]\n\ngroups, children, raw = {}, 0, {}\nfor path in sorted(list(o.glob('*-aa-?.json')) + list(o.glob('*-compare-?.json')) + list(o.glob('attempt-*/*-aa-?.json'))):\n    d = json.loads(path.read_text())\n    m = d['metadata']\n    rounds = 5 if m['stage'] == 'aa' else 7\n    arms = list(d['samples'])\n    assert all(len(d['samples'][a]) == rounds for a in arms) and set(d['warmups_excluded']) == set(arms)\n    assert all(x['checksum'] == d['config']['expected'] for a in arms for x in d['samples'][a] + [d['warmups_excluded'][a]])\n    medians = {a: statistics.median(x['cpu_us'] for x in d['samples'][a]) for a in arms}\n    a, c = (medians[k] for k in arms)\n    assert medians == d['medians_us'] and abs(100 * abs(c - a) / min(a, c) - d['delta_percent']) < 1e-9 and abs(100 * (c / a - 1) - d['change_percent']) < 1e-9\n    expected_orders = [arms if (i + m['series']) % 2 else arms[::-1] for i in range(rounds + 1)]\n    assert d['orders'] == expected_orders and m['affinity'] == [2] and m['protocol_sha256'] == start['protocol_sha256']\n    for session in d['cpu_queries']:\n        for q in session['queries']:\n            if q.get('child_affinity') is not None:\n                assert q['child_affinity'] == [2]\n    children += len(d['cpu_queries'])\n    rel = path.relative_to(o).as_posix()\n    raw[rel] = d\n    groups[rel] = {'case': m['platform'] + '/' + m['case'], 'stage': m['stage'], 'series': m['series'],\n                   'iterations': d['config']['iterations'], 'medians_us': medians, 'delta_percent': d['delta_percent'],\n                   'change_percent': d['change_percent'], 'cpu_us': {k: [x['cpu_us'] for x in d['samples'][k]] for k in arms}}\n\n# Recompute calibration and comparison verdicts for conditions measured in this run.\nverdicts = {}\nfor case in plan['order']:\n    for platform in ('windows', 'linux'):\n        key = platform + '/' + case\n        stem = f'{platform}-{case}'\n        attempts = []\n        for folder in ('attempt-1/', ''):\n            aa = [groups.get(f'{folder}{stem}-aa-{i}.json') for i in (1, 2)]\n            if all(aa):\n                delta = max(x['delta_percent'] for x in aa)\n                minimum = min(v for x in aa for v in x['medians_us'].values())\n                attempts.append({'delta_percent': delta, 'minimum_median_us': minimum, 'passed': delta <= 2 and minimum >= 5000000})\n        ab = [groups.get(f'{stem}-compare-{i}.json') for i in (1, 2)]\n        entry = {'calibration_attempts_this_run': attempts}\n        if all(ab):\n            delta = attempts[-1]['delta_percent']\n            cap = (10 if 'throw' in case else 5) if case.startswith('catch-') else max(3, 2 * delta)\n            changes = [x['change_percent'] for x in ab]\n            entry['comparison'] = {'changes_percent': changes, 'threshold_percent': cap, 'passed': all(v <= cap for v in changes)}\n            assert results['comparisons'][key] == {'changes_percent': changes, 'delta_percent': delta, 'threshold_percent': cap, 'passed': entry['comparison']['passed']}\n            assert attempts[-1]['passed']\n        else:\n            assert key not in results['comparisons']\n        if attempts:\n            stored = {k: results['calibrations'][key][k] for k in ('delta_percent', 'minimum_median_us', 'passed')}\n            assert stored == attempts[-1], key\n        verdicts[key] = entry\n\ncompared = [k for k, v in verdicts.items() if 'comparison' in v]\nsummary = {\n    'date': '2026-11-17', 'task': 881, 'status': results['status'],\n    'stopped_at': {'platform': results.get('platform'), 'case': results.get('case')},\n    'start_utc': start['utc'], 'complete_utc': json.loads((o / 'complete.json').read_text())['utc'],\n    'compared_count': len(compared), 'compared_passed': [k for k in compared if verdicts[k]['comparison']['passed']],\n    'compared_failed': [k for k in compared if not verdicts[k]['comparison']['passed']],\n    'deferred_history': results['deferred_history'], 'unevaluated_after_second_miss': results['unevaluated'],\n    'not_compared': [k for k in verdicts if 'comparison' not in v] if False else [k for k, v in verdicts.items() if 'comparison' not in v],\n    'calibration_attempts': results['calibration_attempts'], 'verdicts': verdicts, 'groups': groups,\n    'audit': {'complete_groups': len(groups), 'child_processes_in_complete_groups_including_warmup': children,\n              'checked': 'sample counts, warmup exclusion, checksums, medians, delta, change, arm order, parent and live child affinity [2], verdicts, and SHA of inputs/binaries/evidence/worker/controller/protocol at audit time',\n              'limits': ['A/A is not a clock accuracy proof or a confidence interval', 'Host load was not independently monitored',\n                         'Hashes are checked at worker launch and at audit, not continuously']},\n    'frozen': {'protocol_sha256': start['protocol_sha256'], 'controller_sha256': start['controller_sha256'], 'worker_sha256': start['worker_sha256'], 'binary_hashes': protocol['binary_hashes']},\n    'decision': {'local': 'hold; Windows catch-nested-256 comparison exceeded the 5% cap in series 1', 'runtime_modified': False},\n    'audit_source': Path(__file__).read_text(encoding='utf-8'),\n}\nout = r / 'docs/measurements/2026-11-17-partial-adoption-local-standard-results.json'\nout.write_text(json.dumps(summary, indent=2, ensure_ascii=False) + '\\n', encoding='utf-8')\narchive = {'results': results, 'protocol': protocol, 'start': start, 'groups': raw,\n           'configs': {p.name: json.loads(p.read_text()) for p in sorted(o.glob('*-config.json'))},\n           'log': (base / 'run.log').read_text(encoding='utf-8', errors='replace'),\n           'sources': {n: (base / n).read_text(encoding='utf-8') for n in ('run.py', 'prepare.py', 'audit.py', 'local/worker.py')}}\ngz = r / 'docs/measurements/2026-11-17-partial-adoption-local-standard-raw.json.gz'\ngz.write_bytes(gzip.compress(json.dumps(archive, ensure_ascii=False).encode('utf-8'), mtime=0))\nprint('groups', len(groups), 'children', children, 'compared', len(compared), 'failed', summary['compared_failed'])\nprint('not compared', len(summary['not_compared']), '| sizes', out.stat().st_size, gz.stat().st_size)\n"
+}

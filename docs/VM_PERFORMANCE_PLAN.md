@@ -1,5 +1,7 @@
 # VM実行速度の改善計画
 
+2026-11-17 追補：部分採用評価（#870）を終了した。VALUEは未測定38条件を残して評価を終了。セル型localは[継続評価](VM_PARTIAL_ADOPTION_LOCAL_STANDARD_RESULTS.md)でWindows catch-nested-256が悪化上限5%を超え、標準17条件は未比較。両候補とも追加採用は保留、製品VMは採用済み基準版のまま。経過は[追補結果](VM_PARTIAL_ADOPTION_FOLLOWUP_RESULTS.md)と[継続方針](VM_PARTIAL_ADOPTION_CONTINUATION_PLAN.md)。
+
 2026-11-16 セル型local試作：[#850の第1試作・境界/構成別回帰・レビュー対応](VM_CELL_LOCAL_FETCH_EXPERIMENT.md)を完了。Linuxセルkernel Ir129→108、Windowsサイズ同一/Linux+192bytes。Windows専用A/Aは最大δ5.168%で2%上限未達のため、候補CPU比較・Linux校正・標準34条件は未実施。採用保留、本体維持。追補9構成と再レビューまで確認済み。命令削減を速度改善と扱わず、同一条件再試行・VALUE自動試作はしない。
 
 2026-11-16 局所案の選定：[#849の比較と単独実験計画](VM_CELL_LOCAL_FETCH_PLAN.md)を記録。第一候補はセル型local_fetchだけの経路分離。readCell→pushと既存検査を維持し、store/他型/VALUEを変更しない。VALUEは予備。親121へ#850と#851〜854をautoで登録。次は#851の単独試作。本体未変更、試作・速度効果は未確認。
@@ -226,3 +228,8 @@ callsも主な観察項目に含める。片方だけ大きく改善する候補
 
 
 2026-11-16 ETW取得後追記：管理者実行で6標本の記録・停止確認に成功し、生QPCを使った同一区間の照合も完了した。DPC/ISR控除後もAPIとETWスケジューラー時間に差が残る。原因は未特定で、候補比較・採用保留を維持。[ETW解析結果](VM_WINDOWS_ETW_ANALYSIS.md)。先の権限不足は取得成功で解消した。
+
+
+2026-11-16 最新追記：3候補を独立試作・検証し、CPU2で校正と専用比較を完了した。セルlocalは専用でWindows約11〜12%/Linux約18%、VALUEは約42〜45%短縮したが、標準整数の10%目標は未達で残り33条件は未測定。literal→bit_and先読みはLinux約17%短縮に対してWindows約1〜2%増加し、専用予備条件未達。追加採用はせず基準VMを維持する。[3候補の最終結果](VM_THREE_CANDIDATES_RESULTS.md)。以下は各時点の履歴。
+
+2026-11-16 後続完了：[#873の128実行](VM_WINDOWS_ETW_CONTROL_RESULTS.md)と[#874の保存記録追加解析](VM_WINDOWS_ETW_CONDITION_INVESTIGATION.md)を完了し、残差調査は原因未特定で打切り。3候補の#869再々レビューの指摘を反映した。次は[#870の部分採用評価案](VM_PARTIAL_ADOPTION_EVALUATION_PLAN.md)の基準判断であり、追加採用はしていない。

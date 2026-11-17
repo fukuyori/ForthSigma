@@ -1,0 +1,761 @@
+{
+  "value": {
+    "results": {
+      "variant": "value",
+      "calibrations": {
+        "windows/real/pinball-bake": {
+          "delta_percent": 0.2617801047120419,
+          "minimum_median_us": 5968750.0,
+          "passed": true
+        },
+        "linux/real/pinball-bake": {
+          "delta_percent": 0.09557566313095764,
+          "minimum_median_us": 6069011.514,
+          "passed": true
+        },
+        "windows/real/pinball-logic": {
+          "delta_percent": 0.7168458781362007,
+          "minimum_median_us": 8718750.0,
+          "passed": true
+        },
+        "linux/real/pinball-logic": {
+          "delta_percent": 0.3006638566805549,
+          "minimum_median_us": 5923397.862,
+          "passed": true
+        }
+      },
+      "comparisons": {
+        "windows/real/pinball-bake": {
+          "changes_percent": [
+            -3.421052631578947,
+            -4.960835509138384
+          ],
+          "delta_percent": 0.2617801047120419,
+          "threshold_percent": 3,
+          "passed": true
+        },
+        "linux/real/pinball-bake": {
+          "changes_percent": [
+            -6.767977489544952,
+            -7.5352783401034245
+          ],
+          "delta_percent": 0.09557566313095764,
+          "threshold_percent": 3,
+          "passed": true
+        },
+        "windows/real/pinball-logic": {
+          "changes_percent": [
+            0.0,
+            -1.4109347442680775
+          ],
+          "delta_percent": 0.7168458781362007,
+          "threshold_percent": 3,
+          "passed": true
+        },
+        "linux/real/pinball-logic": {
+          "changes_percent": [
+            -1.1033423779051255,
+            -1.0155350822837583
+          ],
+          "delta_percent": 0.3006638566805549,
+          "threshold_percent": 3,
+          "passed": true
+        }
+      },
+      "not_adopted": true,
+      "status": "infrastructure_error",
+      "platform": "windows",
+      "stage": "pilot",
+      "case": "real/waterworks-logic",
+      "series": 1,
+      "exit": 1
+    },
+    "start": {
+      "utc": "2026-11-16T10:59:50.850422+00:00",
+      "protocol_sha256": "af0b3acf2863a94e397753fbc8c65b826fa7c486796c17690126afd81a68475f",
+      "worker_sha256": "da6670abe5c66322fd5f85e02becf5b65ffcbae46ef91cf86f8a0c6e55c192b0",
+      "controller_sha256": "1067314322b92eef5a1ac73e06dd3c386be3aa6ca2239a5ab552124e05895ee6"
+    },
+    "completion": {
+      "utc": "2026-11-16T11:30:12.262843+00:00",
+      "status": "infrastructure_error",
+      "not_adopted": true
+    },
+    "audited_groups": [
+      {
+        "file": "linux-real-pinball-bake-aa-1.json",
+        "stage": "aa",
+        "case": "real/pinball-bake",
+        "platform": "linux",
+        "series": 1,
+        "medians_us": {
+          "A1": 6071049.271,
+          "A2": 6072072.73
+        },
+        "delta_percent": 0.016858024936308086,
+        "change_percent": 0.01685802493631705,
+        "batches_including_warmup": 12,
+        "child_processes": 120
+      },
+      {
+        "file": "linux-real-pinball-bake-aa-2.json",
+        "stage": "aa",
+        "case": "real/pinball-bake",
+        "platform": "linux",
+        "series": 2,
+        "medians_us": {
+          "A1": 6069011.514,
+          "A2": 6074812.012
+        },
+        "delta_percent": 0.09557566313095764,
+        "change_percent": 0.09557566313096455,
+        "batches_including_warmup": 12,
+        "child_processes": 120
+      },
+      {
+        "file": "linux-real-pinball-bake-compare-1.json",
+        "stage": "compare",
+        "case": "real/pinball-bake",
+        "platform": "linux",
+        "series": 1,
+        "medians_us": {
+          "baseline": 6045942.996,
+          "candidate": 5636754.9350000005
+        },
+        "delta_percent": 7.259284210836456,
+        "change_percent": -6.767977489544952,
+        "batches_including_warmup": 16,
+        "child_processes": 160
+      },
+      {
+        "file": "linux-real-pinball-bake-compare-2.json",
+        "stage": "compare",
+        "case": "real/pinball-bake",
+        "platform": "linux",
+        "series": 2,
+        "medians_us": {
+          "baseline": 6070323.515,
+          "candidate": 5612907.742
+        },
+        "delta_percent": 8.149354915942606,
+        "change_percent": -7.5352783401034245,
+        "batches_including_warmup": 16,
+        "child_processes": 160
+      },
+      {
+        "file": "linux-real-pinball-logic-aa-1.json",
+        "stage": "aa",
+        "case": "real/pinball-logic",
+        "platform": "linux",
+        "series": 1,
+        "medians_us": {
+          "A1": 5939664.713,
+          "A2": 5957523.138
+        },
+        "delta_percent": 0.3006638566805549,
+        "change_percent": 0.30066385668054973,
+        "batches_including_warmup": 12,
+        "child_processes": 1668
+      },
+      {
+        "file": "linux-real-pinball-logic-aa-2.json",
+        "stage": "aa",
+        "case": "real/pinball-logic",
+        "platform": "linux",
+        "series": 2,
+        "medians_us": {
+          "A1": 5923397.862,
+          "A2": 5926792.308
+        },
+        "delta_percent": 0.05730572348983405,
+        "change_percent": 0.057305723489831095,
+        "batches_including_warmup": 12,
+        "child_processes": 1668
+      },
+      {
+        "file": "linux-real-pinball-logic-compare-1.json",
+        "stage": "compare",
+        "case": "real/pinball-logic",
+        "platform": "linux",
+        "series": 1,
+        "medians_us": {
+          "baseline": 5939669.799,
+          "candidate": 5874134.905
+        },
+        "delta_percent": 1.1156518374172304,
+        "change_percent": -1.1033423779051255,
+        "batches_including_warmup": 16,
+        "child_processes": 2224
+      },
+      {
+        "file": "linux-real-pinball-logic-compare-2.json",
+        "stage": "compare",
+        "case": "real/pinball-logic",
+        "platform": "linux",
+        "series": 2,
+        "medians_us": {
+          "baseline": 5933314.373,
+          "candidate": 5873059.484
+        },
+        "delta_percent": 1.0259540051339875,
+        "change_percent": -1.0155350822837583,
+        "batches_including_warmup": 16,
+        "child_processes": 2224
+      },
+      {
+        "file": "windows-real-pinball-bake-aa-1.json",
+        "stage": "aa",
+        "case": "real/pinball-bake",
+        "platform": "windows",
+        "series": 1,
+        "medians_us": {
+          "A1": 5984375.0,
+          "A2": 5968750.0
+        },
+        "delta_percent": 0.2617801047120419,
+        "change_percent": -0.26109660574412663,
+        "batches_including_warmup": 12,
+        "child_processes": 108
+      },
+      {
+        "file": "windows-real-pinball-bake-aa-2.json",
+        "stage": "aa",
+        "case": "real/pinball-bake",
+        "platform": "windows",
+        "series": 2,
+        "medians_us": {
+          "A1": 6015625.0,
+          "A2": 6000000.0
+        },
+        "delta_percent": 0.2604166666666667,
+        "change_percent": -0.2597402597402598,
+        "batches_including_warmup": 12,
+        "child_processes": 108
+      },
+      {
+        "file": "windows-real-pinball-bake-compare-1.json",
+        "stage": "compare",
+        "case": "real/pinball-bake",
+        "platform": "windows",
+        "series": 1,
+        "medians_us": {
+          "baseline": 5937500.0,
+          "candidate": 5734375.0
+        },
+        "delta_percent": 3.542234332425068,
+        "change_percent": -3.421052631578947,
+        "batches_including_warmup": 16,
+        "child_processes": 144
+      },
+      {
+        "file": "windows-real-pinball-bake-compare-2.json",
+        "stage": "compare",
+        "case": "real/pinball-bake",
+        "platform": "windows",
+        "series": 2,
+        "medians_us": {
+          "baseline": 5984375.0,
+          "candidate": 5687500.0
+        },
+        "delta_percent": 5.21978021978022,
+        "change_percent": -4.960835509138384,
+        "batches_including_warmup": 16,
+        "child_processes": 144
+      },
+      {
+        "file": "windows-real-pinball-logic-aa-1.json",
+        "stage": "aa",
+        "case": "real/pinball-logic",
+        "platform": "windows",
+        "series": 1,
+        "medians_us": {
+          "A1": 8781250.0,
+          "A2": 8718750.0
+        },
+        "delta_percent": 0.7168458781362007,
+        "change_percent": -0.7117437722419906,
+        "batches_including_warmup": 12,
+        "child_processes": 2304
+      },
+      {
+        "file": "windows-real-pinball-logic-aa-2.json",
+        "stage": "aa",
+        "case": "real/pinball-logic",
+        "platform": "windows",
+        "series": 2,
+        "medians_us": {
+          "A1": 8765625.0,
+          "A2": 8812500.0
+        },
+        "delta_percent": 0.5347593582887701,
+        "change_percent": 0.5347593582887722,
+        "batches_including_warmup": 12,
+        "child_processes": 2304
+      },
+      {
+        "file": "windows-real-pinball-logic-compare-1.json",
+        "stage": "compare",
+        "case": "real/pinball-logic",
+        "platform": "windows",
+        "series": 1,
+        "medians_us": {
+          "baseline": 8734375.0,
+          "candidate": 8734375.0
+        },
+        "delta_percent": 0.0,
+        "change_percent": 0.0,
+        "batches_including_warmup": 16,
+        "child_processes": 3072
+      },
+      {
+        "file": "windows-real-pinball-logic-compare-2.json",
+        "stage": "compare",
+        "case": "real/pinball-logic",
+        "platform": "windows",
+        "series": 2,
+        "medians_us": {
+          "baseline": 8859375.0,
+          "candidate": 8734375.0
+        },
+        "delta_percent": 1.4311270125223614,
+        "change_percent": -1.4109347442680775,
+        "batches_including_warmup": 16,
+        "child_processes": 3072
+      }
+    ],
+    "audited_batches_with_warmup": 224,
+    "audited_children_with_warmup": 19600,
+    "successful_pilot_children": 4,
+    "sizes": {
+      "windows": {
+        "baseline": 1809408,
+        "candidate": 1809408,
+        "increase_percent": 0.0
+      },
+      "linux": {
+        "baseline": 1891456,
+        "candidate": 1891632,
+        "increase_percent": 0.009305001015080805
+      }
+    },
+    "classified_status": "measurement_unresolved; mandatory real benefit passed; no adoption",
+    "unmeasured_comparison_conditions": 48,
+    "known_missing": "Remaining7 real cases x2 OS and standard34 conditions; failed waterworks Windows baseline pilot is among the unmeasured cases",
+    "worker_sha256": "da6670abe5c66322fd5f85e02becf5b65ffcbae46ef91cf86f8a0c6e55c192b0",
+    "protocol_sha256": "af0b3acf2863a94e397753fbc8c65b826fa7c486796c17690126afd81a68475f"
+  },
+  "local": {
+    "results": {
+      "variant": "local",
+      "calibrations": {
+        "windows/real/pinball-bake": {
+          "delta_percent": 0.0,
+          "minimum_median_us": 5968750.0,
+          "passed": true
+        },
+        "linux/real/pinball-bake": {
+          "delta_percent": 0.7260854196092165,
+          "minimum_median_us": 6069557.081,
+          "passed": true
+        },
+        "windows/real/pinball-logic": {
+          "delta_percent": 0.26737967914438504,
+          "minimum_median_us": 5843750.0,
+          "passed": true
+        },
+        "linux/real/pinball-logic": {
+          "delta_percent": 0.23691029282108753,
+          "minimum_median_us": 5870367.148,
+          "passed": true
+        }
+      },
+      "comparisons": {
+        "windows/real/pinball-bake": {
+          "changes_percent": [
+            -9.768637532133672,
+            -8.311688311688314
+          ],
+          "delta_percent": 0.0,
+          "threshold_percent": 3,
+          "passed": true
+        },
+        "linux/real/pinball-bake": {
+          "changes_percent": [
+            -12.014508697441606,
+            -12.141147623237014
+          ],
+          "delta_percent": 0.7260854196092165,
+          "threshold_percent": 3,
+          "passed": true
+        },
+        "windows/real/pinball-logic": {
+          "changes_percent": [
+            -7.71276595744681,
+            -8.799999999999997
+          ],
+          "delta_percent": 0.26737967914438504,
+          "threshold_percent": 3,
+          "passed": true
+        },
+        "linux/real/pinball-logic": {
+          "changes_percent": [
+            -8.632408318829077,
+            -8.700399343773013
+          ],
+          "delta_percent": 0.23691029282108753,
+          "threshold_percent": 3,
+          "passed": true
+        }
+      },
+      "not_adopted": true,
+      "status": "infrastructure_error",
+      "platform": "windows",
+      "stage": "pilot",
+      "case": "real/waterworks-logic",
+      "series": 1,
+      "exit": 1
+    },
+    "start": {
+      "utc": "2026-11-16T11:30:54.001847+00:00",
+      "protocol_sha256": "e1a0a2d733f707c9c82f9c765fd17c57892202b848f3ff020f4f7cbd8b56210b",
+      "worker_sha256": "c731d7b715f8f0105c35824f5b9b89ee766da7a2f01d71319870ab902ae9cd20",
+      "controller_sha256": "1067314322b92eef5a1ac73e06dd3c386be3aa6ca2239a5ab552124e05895ee6"
+    },
+    "completion": {
+      "utc": "2026-11-16T11:57:30.294011+00:00",
+      "status": "infrastructure_error",
+      "not_adopted": true
+    },
+    "audited_groups": [
+      {
+        "file": "linux-real-pinball-bake-aa-1.json",
+        "stage": "aa",
+        "case": "real/pinball-bake",
+        "platform": "linux",
+        "series": 1,
+        "medians_us": {
+          "A1": 6078990.858,
+          "A2": 6087575.218
+        },
+        "delta_percent": 0.14121356982636765,
+        "change_percent": 0.14121356982637057,
+        "batches_including_warmup": 12,
+        "child_processes": 120
+      },
+      {
+        "file": "linux-real-pinball-bake-aa-2.json",
+        "stage": "aa",
+        "case": "real/pinball-bake",
+        "platform": "linux",
+        "series": 2,
+        "medians_us": {
+          "A1": 6113627.25,
+          "A2": 6069557.081
+        },
+        "delta_percent": 0.7260854196092165,
+        "change_percent": -0.720851422533153,
+        "batches_including_warmup": 12,
+        "child_processes": 120
+      },
+      {
+        "file": "linux-real-pinball-bake-compare-1.json",
+        "stage": "compare",
+        "case": "real/pinball-bake",
+        "platform": "linux",
+        "series": 1,
+        "medians_us": {
+          "baseline": 6059929.801,
+          "candidate": 5331859.007999999
+        },
+        "delta_percent": 13.655102130562577,
+        "change_percent": -12.014508697441606,
+        "batches_including_warmup": 16,
+        "child_processes": 160
+      },
+      {
+        "file": "linux-real-pinball-bake-compare-2.json",
+        "stage": "compare",
+        "case": "real/pinball-bake",
+        "platform": "linux",
+        "series": 2,
+        "medians_us": {
+          "baseline": 6061343.127,
+          "candidate": 5325426.51
+        },
+        "delta_percent": 13.818923528812352,
+        "change_percent": -12.141147623237014,
+        "batches_including_warmup": 16,
+        "child_processes": 160
+      },
+      {
+        "file": "linux-real-pinball-logic-aa-1.json",
+        "stage": "aa",
+        "case": "real/pinball-logic",
+        "platform": "linux",
+        "series": 1,
+        "medians_us": {
+          "A1": 5870367.148,
+          "A2": 5884274.652
+        },
+        "delta_percent": 0.23691029282108753,
+        "change_percent": 0.23691029282109088,
+        "batches_including_warmup": 12,
+        "child_processes": 1656
+      },
+      {
+        "file": "linux-real-pinball-logic-aa-2.json",
+        "stage": "aa",
+        "case": "real/pinball-logic",
+        "platform": "linux",
+        "series": 2,
+        "medians_us": {
+          "A1": 5877698.766,
+          "A2": 5872463.85
+        },
+        "delta_percent": 0.0891434350847507,
+        "change_percent": -0.08906404033977022,
+        "batches_including_warmup": 12,
+        "child_processes": 1656
+      },
+      {
+        "file": "linux-real-pinball-logic-compare-1.json",
+        "stage": "compare",
+        "case": "real/pinball-logic",
+        "platform": "linux",
+        "series": 1,
+        "medians_us": {
+          "baseline": 5869321.553,
+          "candidate": 5362657.751
+        },
+        "delta_percent": 9.447998092093798,
+        "change_percent": -8.632408318829077,
+        "batches_including_warmup": 16,
+        "child_processes": 2208
+      },
+      {
+        "file": "linux-real-pinball-logic-compare-2.json",
+        "stage": "compare",
+        "case": "real/pinball-logic",
+        "platform": "linux",
+        "series": 2,
+        "medians_us": {
+          "baseline": 5873734.007,
+          "candidate": 5362695.692
+        },
+        "delta_percent": 9.529504270815904,
+        "change_percent": -8.700399343773013,
+        "batches_including_warmup": 16,
+        "child_processes": 2208
+      },
+      {
+        "file": "windows-real-pinball-bake-aa-1.json",
+        "stage": "aa",
+        "case": "real/pinball-bake",
+        "platform": "windows",
+        "series": 1,
+        "medians_us": {
+          "A1": 5968750.0,
+          "A2": 5968750.0
+        },
+        "delta_percent": 0.0,
+        "change_percent": 0.0,
+        "batches_including_warmup": 12,
+        "child_processes": 108
+      },
+      {
+        "file": "windows-real-pinball-bake-aa-2.json",
+        "stage": "aa",
+        "case": "real/pinball-bake",
+        "platform": "windows",
+        "series": 2,
+        "medians_us": {
+          "A1": 5968750.0,
+          "A2": 5968750.0
+        },
+        "delta_percent": 0.0,
+        "change_percent": 0.0,
+        "batches_including_warmup": 12,
+        "child_processes": 108
+      },
+      {
+        "file": "windows-real-pinball-bake-compare-1.json",
+        "stage": "compare",
+        "case": "real/pinball-bake",
+        "platform": "windows",
+        "series": 1,
+        "medians_us": {
+          "baseline": 6078125.0,
+          "candidate": 5484375.0
+        },
+        "delta_percent": 10.826210826210826,
+        "change_percent": -9.768637532133672,
+        "batches_including_warmup": 16,
+        "child_processes": 144
+      },
+      {
+        "file": "windows-real-pinball-bake-compare-2.json",
+        "stage": "compare",
+        "case": "real/pinball-bake",
+        "platform": "windows",
+        "series": 2,
+        "medians_us": {
+          "baseline": 6015625.0,
+          "candidate": 5515625.0
+        },
+        "delta_percent": 9.06515580736544,
+        "change_percent": -8.311688311688314,
+        "batches_including_warmup": 16,
+        "child_processes": 144
+      },
+      {
+        "file": "windows-real-pinball-logic-aa-1.json",
+        "stage": "aa",
+        "case": "real/pinball-logic",
+        "platform": "windows",
+        "series": 1,
+        "medians_us": {
+          "A1": 5843750.0,
+          "A2": 5859375.0
+        },
+        "delta_percent": 0.26737967914438504,
+        "change_percent": 0.2673796791443861,
+        "batches_including_warmup": 12,
+        "child_processes": 1536
+      },
+      {
+        "file": "windows-real-pinball-logic-aa-2.json",
+        "stage": "aa",
+        "case": "real/pinball-logic",
+        "platform": "windows",
+        "series": 2,
+        "medians_us": {
+          "A1": 5875000.0,
+          "A2": 5875000.0
+        },
+        "delta_percent": 0.0,
+        "change_percent": 0.0,
+        "batches_including_warmup": 12,
+        "child_processes": 1536
+      },
+      {
+        "file": "windows-real-pinball-logic-compare-1.json",
+        "stage": "compare",
+        "case": "real/pinball-logic",
+        "platform": "windows",
+        "series": 1,
+        "medians_us": {
+          "baseline": 5875000.0,
+          "candidate": 5421875.0
+        },
+        "delta_percent": 8.357348703170029,
+        "change_percent": -7.71276595744681,
+        "batches_including_warmup": 16,
+        "child_processes": 2048
+      },
+      {
+        "file": "windows-real-pinball-logic-compare-2.json",
+        "stage": "compare",
+        "case": "real/pinball-logic",
+        "platform": "windows",
+        "series": 2,
+        "medians_us": {
+          "baseline": 5859375.0,
+          "candidate": 5343750.0
+        },
+        "delta_percent": 9.649122807017545,
+        "change_percent": -8.799999999999997,
+        "batches_including_warmup": 16,
+        "child_processes": 2048
+      }
+    ],
+    "audited_batches_with_warmup": 224,
+    "audited_children_with_warmup": 15960,
+    "successful_pilot_children": 4,
+    "sizes": {
+      "windows": {
+        "baseline": 1809408,
+        "candidate": 1809408,
+        "increase_percent": 0.0
+      },
+      "linux": {
+        "baseline": 1891456,
+        "candidate": 1891648,
+        "increase_percent": 0.010150910198292173
+      }
+    },
+    "classified_status": "measurement_unresolved; mandatory real benefit passed; no adoption",
+    "unmeasured_comparison_conditions": 48,
+    "known_missing": "Remaining7 real cases x2 OS and standard34 conditions; failed waterworks Windows baseline pilot is among the unmeasured cases",
+    "worker_sha256": "c731d7b715f8f0105c35824f5b9b89ee766da7a2f01d71319870ab902ae9cd20",
+    "protocol_sha256": "e1a0a2d733f707c9c82f9c765fd17c57892202b848f3ff020f4f7cbd8b56210b"
+  },
+  "failure_evidence": {
+    "local_windows_waterworks_logic_ready_done_cpu_ns": 0,
+    "local_queries": [
+      {
+        "child_affinity": [
+          2
+        ],
+        "utc": "2026-11-16T11:57:30.260892+00:00",
+        "perf_counter_ns": 1119280404476300,
+        "kernel_ns": 0,
+        "user_ns": 0
+      },
+      {
+        "child_affinity": [
+          2
+        ],
+        "utc": "2026-11-16T11:57:30.262316+00:00",
+        "perf_counter_ns": 1119280405898300,
+        "kernel_ns": 0,
+        "user_ns": 0
+      },
+      {
+        "child_affinity": [
+          2
+        ],
+        "utc": "2026-11-16T11:57:30.264134+00:00",
+        "perf_counter_ns": 1119280407717100,
+        "kernel_ns": 15625000,
+        "user_ns": 0
+      }
+    ],
+    "value_raw_failure_queries": "not preserved; helper nonpositive interval rejection only",
+    "no_retries": true,
+    "local_logging_change": "Added failure-query persistence before local timing; previous protocol preserved; no measurement conditions changed"
+  },
+  "utc": "2026-11-16T11:59:55.585518+00:00",
+  "audit_source": "from pathlib import Path\nimport json,hashlib,statistics,math,datetime,gzip\nr=Path.cwd();base=r/'.work/partial-adoption-20261116';sha=lambda p:hashlib.sha256(p.read_bytes()).hexdigest();raw={'inputs':json.loads((base/'inputs.json').read_text()),'handshake_validation':json.loads((base/'handshake-validation.json').read_text()),'variants':{}};report={}\nfor variant in ('value','local'):\n o=base/variant;protocol=json.loads((o/'protocol.json').read_text());start=json.loads((o/'start.json').read_text());result=json.loads((o/'results.json').read_text());completion=json.loads((o/'complete.json').read_text());assert completion['status']==result['status']=='infrastructure_error'\n assert sha(o/'protocol.json')==start['protocol_sha256'] and sha(o/'worker.py')==start['worker_sha256'] and sha(base/'run.py')==start['controller_sha256']\n for name,digest in protocol['input_hashes'].items():assert sha(r/name)==digest,name\n sizes={}\n for platform,paths in protocol['binary_paths'].items():\n  sizes[platform]={}\n  for kind,path in paths.items():\n   assert sha(r/path)==protocol['binary_hashes'][kind+'-'+platform];sizes[platform][kind]=(r/path).stat().st_size\n  sizes[platform]['increase_percent']=(sizes[platform]['candidate']/sizes[platform]['baseline']-1)*100;assert sizes[platform]['increase_percent']<=1\n files={};groups=[];child_count=0;batch_count=0;pilot_children=0;checks_by_case={}\n for path in sorted(o.glob('*.json')):\n  if '-partial' in path.name or path.name.startswith('protocol-before'):continue\n  data=json.loads(path.read_text());files[path.name]=data\n  if path.name.endswith('-config.json'):\n   pilot=data['pilot'];pilot_children+=len(pilot['children']);assert len(data['cpu_queries'])==len(pilot['children'])\n   for child,session in zip(pilot['children'],data['cpu_queries']):\n    a,b=session['queries'][:2];assert a['child_affinity']==b['child_affinity']==[2]\n    delta=(b['kernel_ns']+b['user_ns']-a['kernel_ns']-a['user_ns'])/1000 if data['metadata']['platform']=='windows' else (b['cpu_ns']-a['cpu_ns'])/1000\n    assert math.isclose(delta,child['cpu_us'],abs_tol=1e-7)\n   continue\n  if not ('-aa-' in path.name or '-compare-' in path.name):continue\n  meta=data['metadata'];stage=meta['stage'];n=5 if stage=='aa' else 7;assert meta['script_sha256']==start['worker_sha256'] and meta['protocol_sha256']==start['protocol_sha256'];assert meta['affinity']==[2]\n  assert all(len(x)==n for x in data['samples'].values()) and len(data['warmups_excluded'])==2\n  keys=list(data['samples']);assert data['orders']==[keys if (turn+meta['series'])%2 else keys[::-1] for turn in range(n+1)]\n  sequence=[data['warmups_excluded'][kind] if turn==0 else data['samples'][kind][turn-1] for turn,order in enumerate(data['orders']) for kind in order]\n  children=[c for row in sequence for c in row['children']];child_count+=len(children);batch_count+=len(sequence)\n  for row in sequence:\n   assert len(row['children'])==data['config']['iterations'] and sum(x['cpu_us'] for x in row['children'])==row['cpu_us']\n   assert sum(x['checksum'] for x in row['children'])==row['checksum']==data['config']['expected']\n  queries=data['cpu_queries'];assert len(queries)==len(children)\n  for child,session in zip(children,queries):\n   a,b=session['queries'][:2];assert a['child_affinity']==b['child_affinity']==[2]\n   delta=(b['kernel_ns']+b['user_ns']-a['kernel_ns']-a['user_ns'])/1000 if meta['platform']=='windows' else (b['cpu_ns']-a['cpu_ns'])/1000\n   assert math.isclose(delta,child['cpu_us'],abs_tol=1e-7)\n  med={k:statistics.median(x['cpu_us'] for x in v) for k,v in data['samples'].items()};assert med==data['medians_us'];a,b=med.values();assert math.isclose(100*(b/a-1),data['change_percent'],abs_tol=1e-9);assert math.isclose(100*abs(b-a)/min(a,b),data['delta_percent'],abs_tol=1e-9)\n  groups.append({'file':path.name,'stage':stage,'case':meta['case'],'platform':meta['platform'],'series':meta['series'],'medians_us':med,'delta_percent':data['delta_percent'],'change_percent':data['change_percent'],'batches_including_warmup':len(sequence),'child_processes':len(children)})\n  checks_by_case.setdefault(meta['platform']+'/'+meta['case'],{}).setdefault(stage,[]).append(data)\n for key,stages in checks_by_case.items():\n  aa=stages['aa'];delta=max(x['delta_percent'] for x in aa);minimum=min(v for x in aa for v in x['medians_us'].values());assert delta==result['calibrations'][key]['delta_percent'];assert minimum==result['calibrations'][key]['minimum_median_us'];assert delta<=2 and minimum>=5e6\n  compare=sorted(stages['compare'],key=lambda x:x['metadata']['series']);changes=[x['change_percent'] for x in compare];entry=result['comparisons'][key];assert changes==entry['changes_percent'];threshold=max(3,2*delta);assert threshold==entry['threshold_percent'];assert all(-v>threshold for v in changes) if key.endswith('/pinball-bake') else all(v<=threshold for v in changes)\n report[variant]={'results':result,'start':start,'completion':completion,'audited_groups':groups,'audited_batches_with_warmup':batch_count,'audited_children_with_warmup':child_count,'successful_pilot_children':pilot_children,'sizes':sizes,'classified_status':'measurement_unresolved; mandatory real benefit passed; no adoption','unmeasured_comparison_conditions':48,'known_missing':'Remaining7 real cases x2 OS and standard34 conditions; failed waterworks Windows baseline pilot is among the unmeasured cases','worker_sha256':sha(o/'worker.py'),'protocol_sha256':sha(o/'protocol.json')}\n raw['variants'][variant]={'files':files,'worker_source':(o/'worker.py').read_text(),'file_hashes':{name:sha(o/name) for name in files}}\nassert len(raw['inputs']['validation'])==54\nfail=raw['variants']['local']['files']['failure-observations.json'];q=fail['cpu_queries'][-1]['queries'];delta=sum(q[1][k]-q[0][k] for k in ('kernel_ns','user_ns'));assert delta==0 and q[0]['child_affinity']==q[1]['child_affinity']==[2]\nreport['failure_evidence']={'local_windows_waterworks_logic_ready_done_cpu_ns':delta,'local_queries':q,'value_raw_failure_queries':'not preserved; helper nonpositive interval rejection only','no_retries':True,'local_logging_change':'Added failure-query persistence before local timing; previous protocol preserved; no measurement conditions changed'}\nreport['utc']=datetime.datetime.now(datetime.timezone.utc).isoformat();report['audit_source']=Path(__file__).read_text(encoding='utf-8');report['scripts']={name:(base/name).read_text(encoding='utf-8') for name in ('prepare-inputs.py','prepare-workers.py','validate-handshake.py','run.py')};report['approval']='User OK to partial real-workload criterion; safety/regression/size unchanged';report['runtime_modified']=False\nout=r/'docs/measurements/2026-11-16-partial-adoption-raw.json.gz';payload=(json.dumps(raw,separators=(',',':'),ensure_ascii=False)+'\\n').encode('utf-8');out.write_bytes(gzip.compress(payload,mtime=0));assert json.loads(gzip.decompress(out.read_bytes()))['inputs']['cases'].keys()==raw['inputs']['cases'].keys()\nreport['raw_archive']={'file':out.name,'sha256':sha(out),'bytes':out.stat().st_size,'uncompressed_bytes':len(payload),'contents':'Final protocol/results/config/group/pilot/failure JSON and all child samples/CPU queries; partial intermediate duplicates excluded; source+54 input and4 handshake validations included'}\nsummary=r/'docs/measurements/2026-11-16-partial-adoption-results.json';summary.write_text(json.dumps(report,indent=2,ensure_ascii=False)+'\\n',encoding='utf-8')\nfor variant in ('value','local'):print(variant,'batches',report[variant]['audited_batches_with_warmup'],'children',report[variant]['audited_children_with_warmup'],'pilots',report[variant]['successful_pilot_children'],'size',report[variant]['sizes'])\nprint('API deltas, batch sums, expected checksums, live child affinity, orders, medians, AA/AB criteria, frozen hashes and gzip roundtrip: PASS',flush=True)\n",
+  "scripts": {
+    "prepare-inputs.py": "from pathlib import Path\nimport json,subprocess,hashlib,re,sys\nr=Path.cwd();o=r/'.work/partial-adoption-20261116';old=r/'.work/three-candidates-20261116';sha=lambda p:hashlib.sha256(p.read_bytes()).hexdigest()\nprior=json.loads((r/'.work/workload-profile-20261116/results.json').read_text());phase=json.loads((r/'.work/workload-phases-20261116/results.json').read_text());cases={}\nitems=[(x['case']['name'],x['baseline']['command'][1:]) for x in prior['cases']]+[(x['name'],x['runs'][0]['command'][1:]) for x in phase['cases'] if x['name'].endswith('-bake')]\nheader='VARIABLE BENCH-HASH : BENCH-ACC BENCH-HASH @ 65599 * + 9223372036854775807 AND BENCH-HASH ! ; '\nfor name,args in items:\n args=list(args);tail=args[-1];assert args[-2]=='-e' and tail.endswith('BYE');args=args[:-2];args[1]='0 WARNINGS ! '+args[1]\n body=tail[:-3].strip().replace(' .',' BENCH-ACC')\n if name.endswith('-bake'):\n  body+=' GFX-WIDTH BENCH-ACC GFX-HEIGHT BENCH-ACC 8 0 DO 8 0 DO I GFX-WIDTH 1- * 7 / J GFX-HEIGHT 1- * 7 / GFX-PGET BENCH-ACC LOOP LOOP'\n definition=header+': BENCH-RUN 0 BENCH-HASH ! '+body+' BENCH-HASH @ ;'\n cases['real/'+name]={'kind':'real','args':args,'definition':definition,'expected_by_os':{},'pilot_iterations':{'windows':1,'linux':1},'scope':'Fresh child once per workload; loading/compilation/setup before READY; workload and state checksum inside timed interval; output/pixels are partial state checks, not all images or visual acceptance'}\npaths={'windows':{'baseline':'.work/cell-local-fetch-20261116/baseline-windows/bin/sigma.exe','value':'.work/three-candidates-20261116/value-windows/bin/sigma.exe','local':'.work/cell-local-fetch-20261116/candidate-windows/bin/sigma.exe'},'linux':{'baseline':'.work/cell-local-fetch-20261116/baseline-linux/bin/sigma','value':'.work/three-candidates-20261116/value-linux/bin/sigma','local':'.work/cell-local-fetch-20261116/candidate-linux/bin/sigma'}}\n# Use actual prior local protocol paths rather than assuming the candidate directory name.\nlocal=json.loads((old/'performance/local/protocol.json').read_text())\nfor platform in paths:paths[platform]['local']=local['binary_paths'][platform]['candidate']\nvalidation=[]\nfor platform in ('windows','linux'):\n def native(s):\n  s=s.replace('\\\\\\\\','/').replace('\\\\','/')\n  return s if platform=='windows' else ('/mnt/'+s[0].lower()+s[2:] if len(s)>1 and s[1]==':' else s)\n for case,x in cases.items():\n  expected=None\n  for kind in ('baseline','value','local'):\n   exe=r/paths[platform][kind];args=[native(a) if ':/' in a.replace('\\\\','/') else a for a in x['args']]\n   command=([str(exe)] if platform=='windows' else ['wsl','--exec',native(str(exe))])+args+['-e',x['definition']+' BENCH-RUN . DEPTH . BYE']\n   p=subprocess.run(command,cwd=r,capture_output=True,timeout=180)\n   assert p.returncode==0 and not p.stderr,(platform,kind,case,p.stdout,p.stderr)\n   fields=p.stdout.split();assert len(fields)==2 and fields[1]==b'0',(case,p.stdout)\n   value=int(fields[0]);expected=value if expected is None else expected;assert value==expected,(platform,kind,case,value,expected)\n   validation.append({'platform':platform,'kind':kind,'case':case,'exit':p.returncode,'stdout':p.stdout.decode(),'binary_sha256':sha(exe),'command':command})\n  x['expected_by_os'][platform]=expected\n  print(platform,case,'three variants match',flush=True)\nconfig={'cases':cases,'binary_paths':paths,'binary_hashes':{platform:{kind:sha(r/path) for kind,path in entries.items()} for platform,entries in paths.items()},'input_hashes':{str(Path('examples')/(name+'.fs')):sha(r/'examples'/(name+'.fs')) for name in ('pinball','waterworks','klondike')},'validation':validation,'source':Path(__file__).read_text(encoding='utf-8'),'expected_scope':'Cross-variant baseline reference plus depth0; not independent whole-state oracle'}\n(o/'inputs.json').write_text(json.dumps(config,indent=2)+'\\n');print('54 workload validations complete',flush=True)\n",
+    "prepare-workers.py": "from pathlib import Path\nr=Path.cwd();o=r/'.work/partial-adoption-20261116'\nbase=(r/'.work/three-candidates-20261116/performance/value/worker.py').read_text()\nbase=base.replace(\"o=r/'.work/three-candidates-20261116/performance/value'\",\"o=Path(__file__).resolve().parent\")\nbase=base.replace(\"for k,path in paths.items():assert sha(path)==protocol['binary_hashes'][f'{k}-{platform}']\",\"for k,path in paths.items():assert sha(path)==protocol['binary_hashes'][f'{k}-{platform}']\\nfor name,digest in protocol['input_hashes'].items():assert sha(r/name)==digest,name\")\nbase=base.replace(\"if case in ['local','value']:return 7*n\",\"if case.startswith('real/') : return n*protocol['cases'][case]['expected_by_os'][platform]\\n if case in ['local','value']:return 7*n\")\na=base.index('def sample(path,n,check=None):');b=base.index('\\ndef save(',a)\nbase=base[:a]+'''def sample(path,n,check=None):\n started=datetime.datetime.now(datetime.timezone.utc).isoformat();clock_start=time.monotonic_ns()\n if case.startswith('real/'):\n  args=[]\n  for arg in protocol['cases'][case]['args']:\n   arg=arg.replace('\\\\\\\\\\\\\\\\','/').replace('\\\\\\\\','/') if ':\\\\\\\\' in arg or ':/' in arg else arg\n   if platform=='linux' and len(arg)>1 and arg[1]==':':arg='/mnt/'+arg[0].lower()+arg[2:]\n   args.append(arg)\n  source=definition()+' .\" BENCH-READY\" CR KEY DROP BENCH-RUN .\" BENCH-DONE \" . CR KEY DROP BYE'\n  children=[]\n  for _ in range(n):\n   cpu,checksum,wall,total=b.sample([str(path),*args],False,source)\n   assert checksum==protocol['cases'][case]['expected_by_os'][platform],(case,checksum)\n   children.append({'cpu_us':cpu,'checksum':checksum,'wall_us':wall,'lifetime_cpu_us':total})\n  cpu=sum(x['cpu_us'] for x in children);checksum=sum(x['checksum'] for x in children);wall=sum(x['wall_us'] for x in children);total=sum(x['lifetime_cpu_us'] for x in children)\n else:\n  children=None\n  source=f'{n} CONSTANT BENCH-ITERATIONS '+definition()+' .\" BENCH-READY\" CR KEY DROP BENCH-RUN .\" BENCH-DONE \" . CR KEY DROP BYE'\n  cpu,checksum,wall,total=b.sample(str(path),False,source)\n wanted=expected(n) if check is None else check\n if wanted is not None:assert checksum==wanted,(case,n,checksum,wanted)\n return {'utc_start':started,'cpu_us':cpu,'wall_us':wall,'lifetime_cpu_us':total,'checksum':checksum,'children':children,'runner_wall_us':(time.monotonic_ns()-clock_start)/1000}\n''' + base[b:]\n# Real-case file stems cannot contain directory separators.\nbase=base.replace(\"stem=f'{platform}-{case}'\",\"stem=f'{platform}-{case.replace(\\\"/\\\",\\\"-\\\")}'\")\n# No implicit fixed local N: every standard case uses its explicit pilot; 'local' kernel is not in this matrix.\nbase=base.replace(\"if case=='local':n=1238709678\",\"if case=='local':n=1238709678\")\n# Capture Linux child affinity directly at both CPU query endpoints.\nneedle='\\ndef definition():'\nextra='''\nif os.name!='nt':\n original_process_clock=b.process_clock;original_read=time.clock_gettime_ns;active={}\n def process_clock(pid):\n  clock_id=original_process_clock(pid);active[clock_id]=pid;queries.append({'pid':pid,'clock_id':clock_id,'queries':[]});return clock_id\n def read_clock(clock_id):\n  value=original_read(clock_id)\n  if clock_id in active:\n   session=next(x for x in reversed(queries) if x['clock_id']==clock_id and x['pid']==active[clock_id])\n   affinity=sorted(os.sched_getaffinity(active[clock_id]));assert affinity==[2]\n   session['queries'].append({'cpu_ns':value,'child_affinity':affinity})\n  return value\n b.process_clock=process_clock;time.clock_gettime_ns=read_clock\n'''\nbase=base.replace(needle,'\\n'+extra+needle)\nfor variant in ('value','local'):\n path=o/variant;path.mkdir(exist_ok=True);(path/'worker.py').write_text(base,encoding='utf-8');compile(base,str(path/'worker.py'),'exec')\nprint('Prepared two independent worker scripts; original timing workers retained')\n",
+    "validate-handshake.py": "from pathlib import Path\nimport subprocess,json,sys\nr=Path.cwd();o=r/'.work/partial-adoption-20261116';rows=[]\nfor platform in ('windows','linux'):\n for variant in ('value','local'):\n  worker=o/variant/'worker.py'\n  code=\"import sys,json;from pathlib import Path;sys.argv=[\"+repr(str(worker) if platform=='windows' else '/mnt/d/home/source/zig/forthz/.work/partial-adoption-20261116/'+variant+'/worker.py')+\",'\"+platform+\"','smoke','real/pinball-bake','1'];p=Path(sys.argv[0]);g={'__file__':str(p)};exec(p.read_text().split('stem=')[0],g);x=g['sample'](g['paths']['candidate'],1);print(json.dumps({'sample':x,'queries':g['queries']}))\"\n  cmd=[sys.executable,'-X','utf8','-c',code] if platform=='windows' else ['wsl','--exec','python3','-c',code]\n  p=subprocess.run(cmd,capture_output=True,cwd=r,timeout=120);assert p.returncode==0,(platform,variant,p.stdout,p.stderr)\n  data=json.loads(p.stdout);rows.append({'platform':platform,'variant':variant,**data});print(platform,variant,'handshake CPU us',data['sample']['cpu_us'],flush=True)\n(o/'handshake-validation.json').write_text(json.dumps(rows,indent=2)+'\\n')\n",
+    "run.py": "from pathlib import Path\nimport json,subprocess,hashlib,datetime,sys\nr=Path.cwd();base=r/'.work/partial-adoption-20261116';variant=sys.argv[1];o=base/variant;sha=lambda p:hashlib.sha256(p.read_bytes()).hexdigest()\nassert variant in ('value','local')\nif '--prepare' in sys.argv:\n assert not (o/'protocol.json').exists(),'Do not overwrite frozen protocol'\n inputs=json.loads((base/'inputs.json').read_text());old=json.loads((r/'.work/three-candidates-20261116/performance/value/protocol.json').read_text());cases=inputs['cases'];cases.update({k:dict(v,kind='standard') for k,v in old['cases'].items() if k not in ('local','value')});assert len(cases)==26\n paths={platform:{'baseline':items['baseline'],'candidate':items[variant]} for platform,items in inputs['binary_paths'].items()}\n frozen=json.loads((r/'.work/three-candidates-20261116/frozen.json').read_text());input_hashes=dict(frozen['root_runtime']);input_hashes.update({key.replace(chr(92),'/'):value for key,value in inputs['input_hashes'].items()})\n for name,expected in input_hashes.items():assert sha(r/name)==expected,name\n protocol={'variant':variant,'approval':'User OK to partial criterion max(3%,2delta) for both OS pinball-bake; safety/size/regression unchanged','cases':cases,'binary_paths':paths,'binary_hashes':{kind+'-'+platform:sha(r/path) for platform,items in paths.items() for kind,path in items.items()},'input_hashes':input_hashes,'worker_sha256':sha(o/'worker.py'),'controller_sha256':sha(Path(__file__)),'benchmark_sha256':sha(r/'scripts/benchmark-runtime.py'),'scope':'Fresh child per real workload, compile/setup excluded, CPU sums across N fresh children per batch; standard kernels loop inside one child. Pilot fixes N once. AA5x2 AB7x2 with excluded warmups per arm and reversed order in series2. No retry or OS settings changes. No build/test/profile during timings.','mandatory':'real/pinball-bake','real_order':['real/pinball-bake',*['real/'+name for name in ('pinball-logic','waterworks-logic','klondike-logic','pinball-render','waterworks-render','klondike-render','waterworks-bake','klondike-bake')]],'standard_order':['arithmetic','loops',*[k for k in cases if not k.startswith('real/') and k not in ('arithmetic','loops')]],'caps':'mandatory real shorten>max(3,2delta), other real/standard normal <=max(3,2delta), catch success5/throw10; both series required; mixed unresolved','calibration':'AA maxdelta<=2, min all arm median>=5s, first failure stops variant; no exploring CPU/N or repeating conditions','limitations':['Sums of discrete child CPU values do not guarantee cancellation of quantization','No continuous 5s real kernel or start/exit cost measurement','No host-load exclusion or CPU clock accuracy claim','Reference checksums are cross-variant partial state comparisons, not complete semantic oracle']}\n (o/'protocol.json').write_text(json.dumps(protocol,indent=2)+'\\n');print('prepared',variant,flush=True);raise SystemExit(0)\nprotocol=json.loads((o/'protocol.json').read_text());assert sha(Path(__file__))==protocol['controller_sha256'];assert sha(o/'worker.py')==protocol['worker_sha256']\nassert not (o/'start.json').exists(),'No unplanned rerun'\nfor name,digest in protocol['input_hashes'].items():assert sha(r/name)==digest\nif variant=='local':assert (base/'value/complete.json').is_file(),'Value timing still active'\n(o/'start.json').write_text(json.dumps({'utc':datetime.datetime.now(datetime.timezone.utc).isoformat(),'protocol_sha256':sha(o/'protocol.json'),'worker_sha256':sha(o/'worker.py'),'controller_sha256':sha(Path(__file__))},indent=2)+'\\n')\nreport={'variant':variant,'calibrations':{},'comparisons':{},'not_adopted':True}\ndef save():(o/'results.json').write_text(json.dumps(report,indent=2)+'\\n')\ndef stop(reason,**extra):\n report.update(status=reason,**extra);save();(o/'complete.json').write_text(json.dumps({'utc':datetime.datetime.now(datetime.timezone.utc).isoformat(),'status':reason,'not_adopted':True},indent=2)+'\\n');print('STOP',variant,reason,extra,flush=True);raise SystemExit(0)\ndef invoke(platform,stage,case,index=1):\n path=o/'worker.py';linux='/mnt/d/home/source/zig/forthz/.work/partial-adoption-20261116/'+variant+'/worker.py';cmd=[sys.executable,'-X','utf8',str(path),platform,stage,case,str(index)] if platform=='windows' else ['wsl','--exec','python3',linux,platform,stage,case,str(index)]\n p=subprocess.run(cmd,cwd=r)\n if p.returncode:stop('infrastructure_error',platform=platform,stage=stage,case=case,series=index,exit=p.returncode)\n if stage=='pilot':return\n return json.loads((o/f'{platform}-{case.replace(\"/\",\"-\")}-{stage}-{index}.json').read_text())\ndef calibrate(platform,case):\n invoke(platform,'pilot',case);groups=[invoke(platform,'aa',case,i) for i in (1,2)];delta=max(x['delta_percent'] for x in groups);minimum=min(v for x in groups for v in x['medians_us'].values());entry={'delta_percent':delta,'minimum_median_us':minimum,'passed':delta<=2 and minimum>=5000000};report['calibrations'][platform+'/'+case]=entry;save();print('AA',variant,platform,case,entry,flush=True)\n if not entry['passed']:stop('calibration_unresolved',platform=platform,case=case)\ndef compare(platform,case,mandatory=False):\n groups=[invoke(platform,'compare',case,i) for i in (1,2)];changes=[x['change_percent'] for x in groups];delta=report['calibrations'][platform+'/'+case]['delta_percent'];cap=(10 if 'throw' in case else 5) if case.startswith('catch-') else max(3,2*delta);passed=all(-v>cap for v in changes) if mandatory else all(v<=cap for v in changes);entry={'changes_percent':changes,'delta_percent':delta,'threshold_percent':cap,'passed':passed};report['comparisons'][platform+'/'+case]=entry;save();return passed\nmandatory=protocol['mandatory']\nfor platform in ('windows','linux'):calibrate(platform,mandatory)\npassed=[]\nfor platform in ('windows','linux'):passed.append(compare(platform,mandatory,True))\nif not all(passed):stop('mandatory_real_benefit_unmet')\nfor case in protocol['real_order'][1:]+protocol['standard_order']:\n for platform in ('windows','linux'):\n  calibrate(platform,case)\n  if not compare(platform,case):stop('regression_or_mixed_result',platform=platform,case=case)\nstop('all_numeric_conditions_passed_pending_safety_review')\n"
+  },
+  "approval": "User OK to partial real-workload criterion; safety/regression/size unchanged",
+  "runtime_modified": false,
+  "raw_archive": {
+    "file": "2026-11-16-partial-adoption-raw.json.gz",
+    "sha256": "fe277808528a5b17b526b9d0042b37bcac9a97e349e919e4d4471604e93c4d13",
+    "bytes": 1564121,
+    "uncompressed_bytes": 14089572,
+    "contents": "Final protocol/results/config/group/pilot/failure JSON and all child samples/CPU queries; partial intermediate duplicates excluded; source+54 input and4 handshake validations included"
+  },
+  "post_timing_candidate_source_hashes": {
+    "value": {
+      "path": ".work\\three-candidates-20261116\\value\\src\\forth.zig",
+      "sha256": "912c7942e90fb8fe3f6e48f84a10c2c242e2071371ddd17dd72dbf9829e9aced"
+    },
+    "local": {
+      "path": ".work\\cell-local-fetch-20261116\\candidate\\src\\forth.zig",
+      "sha256": "f859a1428428c5a75ee2001fd1f80182a47fcacf436f0e51b73b609c632b1728"
+    }
+  },
+  "task_status": {
+    "875": "done",
+    "876": "done",
+    "870": "incomplete",
+    "877": "todo"
+  },
+  "approval_user_text": "OK"
+}

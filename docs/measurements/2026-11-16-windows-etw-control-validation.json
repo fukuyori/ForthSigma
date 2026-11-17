@@ -1,0 +1,588 @@
+{
+  "date": "2026-11-16",
+  "scope": "Task872 implementation and pre-capture validation; no new ETW or 128-run diagnostic data",
+  "input_hashes": {
+    "zig-out/bin/sigma.exe": "379d6c6c069b9c3072da22fa6cea8b7deff77c5ed78ef9bbd070f92a724337bf",
+    ".work/windows-timing-followup-20261116/native-control.exe": "298b31cd9b84fbd8fe6d1fa47db0e30faada550b4173b6b296fa8ecf736d4034",
+    "scripts/benchmark-runtime.py": "576345f4486dd27a510327d91ec04d5f8ce9721f42059679bd78e4b661e315ef",
+    ".work/windows-timing-followup-20261116/etw/schedule.wprp": "874a6df6dac0643a98b492710a38e8def0f32dbf8b527fbcdbdb70dd45215095",
+    "docs/VM_WINDOWS_ETW_CONTROL_PLAN.md": "8046410ad620da5cf5ef1254de4093109087ca3ce5ddedae4ab61e2815687c38",
+    "scripts/windows-etw-control/analyze.py": "bf787a73292d50fa43c10fd37fb80492692f28ded51a0018fd4ad6aa4ee00704",
+    "scripts/windows-etw-control/capture.py": "74ca556165393d516e8debad05523bca6d33247ac8c118d83524ce7b95ce3ccd",
+    "scripts/windows-etw-control/observer.py": "c758f99fd513d7d23f68ea26baae51aec28da1b2d6dbe403e025808bb56c5bdd",
+    "scripts/windows-etw-control/capture.ps1": "50ad8cb032da21b7ff54c3d908ac8c969f457910a90113f43fb97c80f9b18b9e",
+    "scripts/windows-etw-control/read-etw-qpc.c": "4164e45b805ee0dad9f09f3c906dcd3e77c64022a106d6edf06cf6b8d9ddff5d"
+  },
+  "clock": {
+    "frequency": 10000000,
+    "python_clock": {
+      "implementation": "QueryPerformanceCounter()",
+      "monotonic": true,
+      "adjustable": false,
+      "resolution": 1e-07
+    },
+    "qpc_perf_brackets": [
+      [
+        11125872702238,
+        1112587270225100,
+        11125872702256
+      ],
+      [
+        11125872702272,
+        1112587270227500,
+        11125872702279
+      ],
+      [
+        11125872702290,
+        1112587270229200,
+        11125872702297
+      ],
+      [
+        11125872702305,
+        1112587270230700,
+        11125872702311
+      ],
+      [
+        11125872702321,
+        1112587270232300,
+        11125872702328
+      ],
+      [
+        11125872702337,
+        1112587270233900,
+        11125872702343
+      ],
+      [
+        11125872702352,
+        1112587270235400,
+        11125872702358
+      ],
+      [
+        11125872702366,
+        1112587270236800,
+        11125872702371
+      ]
+    ]
+  },
+  "smoke_folder": ".work/windows-etw-control-20261116/smoke-20261116T100557-a56365f8",
+  "smoke_status": "complete",
+  "smoke_conditions": [
+    {
+      "cpu": 0,
+      "mode": "minimal",
+      "kind": "sigma",
+      "n": 50000000,
+      "checksum": 350000000
+    },
+    {
+      "cpu": 2,
+      "mode": "full",
+      "kind": "native",
+      "n": 1000000000,
+      "checksum": 7000000000
+    },
+    {
+      "cpu": 0,
+      "mode": "full",
+      "kind": "native",
+      "n": 1000000000,
+      "checksum": 7000000000
+    },
+    {
+      "cpu": 2,
+      "mode": "minimal",
+      "kind": "sigma",
+      "n": 50000000,
+      "checksum": 350000000
+    },
+    {
+      "cpu": 2,
+      "mode": "minimal",
+      "kind": "native",
+      "n": 1000000000,
+      "checksum": 7000000000
+    },
+    {
+      "cpu": 0,
+      "mode": "full",
+      "kind": "sigma",
+      "n": 50000000,
+      "checksum": 350000000
+    },
+    {
+      "cpu": 2,
+      "mode": "full",
+      "kind": "sigma",
+      "n": 50000000,
+      "checksum": 350000000
+    },
+    {
+      "cpu": 0,
+      "mode": "minimal",
+      "kind": "native",
+      "n": 1000000000,
+      "checksum": 7000000000
+    }
+  ],
+  "smoke_summary": [
+    {
+      "group": 1,
+      "etw": false,
+      "cpu": 0,
+      "mode": "full",
+      "kind": "native",
+      "count": 1,
+      "cpu_us": {
+        "values": [
+          171875.0
+        ],
+        "median": 171875.0,
+        "min": 171875.0,
+        "max": 171875.0,
+        "range_percent": 0.0
+      },
+      "wall_us": {
+        "values": [
+          255186.9
+        ],
+        "median": 255186.9,
+        "min": 255186.9,
+        "max": 255186.9,
+        "range_percent": 0.0
+      },
+      "observer_us": {
+        "values": [
+          83151.9
+        ],
+        "median": 83151.9,
+        "min": 83151.9,
+        "max": 83151.9,
+        "range_percent": 0.0
+      }
+    },
+    {
+      "group": 1,
+      "etw": false,
+      "cpu": 0,
+      "mode": "full",
+      "kind": "sigma",
+      "count": 1,
+      "cpu_us": {
+        "values": [
+          250000.0
+        ],
+        "median": 250000.0,
+        "min": 250000.0,
+        "max": 250000.0,
+        "range_percent": 0.0
+      },
+      "wall_us": {
+        "values": [
+          313173.9
+        ],
+        "median": 313173.9,
+        "min": 313173.9,
+        "max": 313173.9,
+        "range_percent": 0.0
+      },
+      "observer_us": {
+        "values": [
+          81062.90000000001
+        ],
+        "median": 81062.90000000001,
+        "min": 81062.90000000001,
+        "max": 81062.90000000001,
+        "range_percent": 0.0
+      }
+    },
+    {
+      "group": 1,
+      "etw": false,
+      "cpu": 0,
+      "mode": "minimal",
+      "kind": "native",
+      "count": 1,
+      "cpu_us": {
+        "values": [
+          187500.0
+        ],
+        "median": 187500.0,
+        "min": 187500.0,
+        "max": 187500.0,
+        "range_percent": 0.0
+      },
+      "wall_us": {
+        "values": [
+          217004.6
+        ],
+        "median": 217004.6,
+        "min": 217004.6,
+        "max": 217004.6,
+        "range_percent": 0.0
+      },
+      "observer_us": {
+        "values": [
+          90.1
+        ],
+        "median": 90.1,
+        "min": 90.1,
+        "max": 90.1,
+        "range_percent": 0.0
+      }
+    },
+    {
+      "group": 1,
+      "etw": false,
+      "cpu": 0,
+      "mode": "minimal",
+      "kind": "sigma",
+      "count": 1,
+      "cpu_us": {
+        "values": [
+          234375.0
+        ],
+        "median": 234375.0,
+        "min": 234375.0,
+        "max": 234375.0,
+        "range_percent": 0.0
+      },
+      "wall_us": {
+        "values": [
+          272125.1
+        ],
+        "median": 272125.1,
+        "min": 272125.1,
+        "max": 272125.1,
+        "range_percent": 0.0
+      },
+      "observer_us": {
+        "values": [
+          103.5
+        ],
+        "median": 103.5,
+        "min": 103.5,
+        "max": 103.5,
+        "range_percent": 0.0
+      }
+    },
+    {
+      "group": 1,
+      "etw": false,
+      "cpu": 2,
+      "mode": "full",
+      "kind": "native",
+      "count": 1,
+      "cpu_us": {
+        "values": [
+          187500.0
+        ],
+        "median": 187500.0,
+        "min": 187500.0,
+        "max": 187500.0,
+        "range_percent": 0.0
+      },
+      "wall_us": {
+        "values": [
+          231789.0
+        ],
+        "median": 231789.0,
+        "min": 231789.0,
+        "max": 231789.0,
+        "range_percent": 0.0
+      },
+      "observer_us": {
+        "values": [
+          74824.09999999999
+        ],
+        "median": 74824.09999999999,
+        "min": 74824.09999999999,
+        "max": 74824.09999999999,
+        "range_percent": 0.0
+      }
+    },
+    {
+      "group": 1,
+      "etw": false,
+      "cpu": 2,
+      "mode": "full",
+      "kind": "sigma",
+      "count": 1,
+      "cpu_us": {
+        "values": [
+          234375.0
+        ],
+        "median": 234375.0,
+        "min": 234375.0,
+        "max": 234375.0,
+        "range_percent": 0.0
+      },
+      "wall_us": {
+        "values": [
+          286663.5
+        ],
+        "median": 286663.5,
+        "min": 286663.5,
+        "max": 286663.5,
+        "range_percent": 0.0
+      },
+      "observer_us": {
+        "values": [
+          74578.5
+        ],
+        "median": 74578.5,
+        "min": 74578.5,
+        "max": 74578.5,
+        "range_percent": 0.0
+      }
+    },
+    {
+      "group": 1,
+      "etw": false,
+      "cpu": 2,
+      "mode": "minimal",
+      "kind": "native",
+      "count": 1,
+      "cpu_us": {
+        "values": [
+          187500.0
+        ],
+        "median": 187500.0,
+        "min": 187500.0,
+        "max": 187500.0,
+        "range_percent": 0.0
+      },
+      "wall_us": {
+        "values": [
+          195097.6
+        ],
+        "median": 195097.6,
+        "min": 195097.6,
+        "max": 195097.6,
+        "range_percent": 0.0
+      },
+      "observer_us": {
+        "values": [
+          91.6
+        ],
+        "median": 91.6,
+        "min": 91.6,
+        "max": 91.6,
+        "range_percent": 0.0
+      }
+    },
+    {
+      "group": 1,
+      "etw": false,
+      "cpu": 2,
+      "mode": "minimal",
+      "kind": "sigma",
+      "count": 1,
+      "cpu_us": {
+        "values": [
+          250000.0
+        ],
+        "median": 250000.0,
+        "min": 250000.0,
+        "max": 250000.0,
+        "range_percent": 0.0
+      },
+      "wall_us": {
+        "values": [
+          247945.4
+        ],
+        "median": 247945.4,
+        "min": 247945.4,
+        "max": 247945.4,
+        "range_percent": 0.0
+      },
+      "observer_us": {
+        "values": [
+          109.30000000000001
+        ],
+        "median": 109.30000000000001,
+        "min": 109.30000000000001,
+        "max": 109.30000000000001,
+        "range_percent": 0.0
+      }
+    }
+  ],
+  "archived_etl_decoder": {
+    "ProcessTrace": 0,
+    "CloseTrace": 0,
+    "cswitch_count": 723767,
+    "raw_csv_sha256": "41f07b1b5b2284c66294743ae9662e15a75d44b62fe9bfab2c934adc82bf824d",
+    "matches_archived_raw": true
+  },
+  "archived_analysis": {
+    "cswitch_count": 723767,
+    "chain_mismatches": 0,
+    "frequency": 10000000,
+    "offset_range_us": [
+      1104409999738.7,
+      1104409999739.6
+    ],
+    "rows": [
+      {
+        "group": 1,
+        "cpu": 0,
+        "mode": "archived-full",
+        "kind": "sigma",
+        "warmup": false,
+        "cycle": 0,
+        "cpu_us": 5781250.0,
+        "pid": 35868,
+        "tid": 15248,
+        "scheduler_gross_range_us": [
+          6507236.199999993,
+          6507236.199999993
+        ],
+        "scheduler_net_range_us": [
+          6207832.199999994,
+          6208818.199999994
+        ],
+        "partial_boundary_dpc_cases": 0,
+        "residual_range_us": [
+          -427568.19999999367,
+          -426582.19999999367
+        ]
+      },
+      {
+        "group": 1,
+        "cpu": 0,
+        "mode": "archived-full",
+        "kind": "native",
+        "warmup": false,
+        "cycle": 1,
+        "cpu_us": 7484375.0,
+        "pid": 12920,
+        "tid": 15980,
+        "scheduler_gross_range_us": [
+          7849431.099999998,
+          7849431.099999998
+        ],
+        "scheduler_net_range_us": [
+          7478712.1,
+          7480020.1
+        ],
+        "partial_boundary_dpc_cases": 0,
+        "residual_range_us": [
+          4354.9000000003725,
+          5662.9000000003725
+        ]
+      },
+      {
+        "group": 1,
+        "cpu": 0,
+        "mode": "archived-full",
+        "kind": "native",
+        "warmup": false,
+        "cycle": 2,
+        "cpu_us": 7375000.0,
+        "pid": 9924,
+        "tid": 23156,
+        "scheduler_gross_range_us": [
+          7835728.899999995,
+          7835728.899999995
+        ],
+        "scheduler_net_range_us": [
+          7475985.899999993,
+          7477217.899999993
+        ],
+        "partial_boundary_dpc_cases": 0,
+        "residual_range_us": [
+          -102217.89999999292,
+          -100985.89999999292
+        ]
+      },
+      {
+        "group": 1,
+        "cpu": 0,
+        "mode": "archived-full",
+        "kind": "sigma",
+        "warmup": false,
+        "cycle": 3,
+        "cpu_us": 6125000.0,
+        "pid": 25668,
+        "tid": 44616,
+        "scheduler_gross_range_us": [
+          6609478.899999998,
+          6609478.899999998
+        ],
+        "scheduler_net_range_us": [
+          6171025.8999999985,
+          6172101.8999999985
+        ],
+        "partial_boundary_dpc_cases": 0,
+        "residual_range_us": [
+          -47101.89999999851,
+          -46025.89999999851
+        ]
+      },
+      {
+        "group": 1,
+        "cpu": 0,
+        "mode": "archived-full",
+        "kind": "sigma",
+        "warmup": false,
+        "cycle": 4,
+        "cpu_us": 6031250.0,
+        "pid": 24824,
+        "tid": 35132,
+        "scheduler_gross_range_us": [
+          6721935.100000002,
+          6721935.100000002
+        ],
+        "scheduler_net_range_us": [
+          6170975.100000001,
+          6172143.100000001
+        ],
+        "partial_boundary_dpc_cases": 0,
+        "residual_range_us": [
+          -140893.10000000056,
+          -139725.10000000056
+        ]
+      },
+      {
+        "group": 1,
+        "cpu": 0,
+        "mode": "archived-full",
+        "kind": "native",
+        "warmup": false,
+        "cycle": 5,
+        "cpu_us": 7578125.0,
+        "pid": 10856,
+        "tid": 33384,
+        "scheduler_gross_range_us": [
+          8129084.800000002,
+          8129084.800000002
+        ],
+        "scheduler_net_range_us": [
+          7480063.800000002,
+          7481375.800000002
+        ],
+        "partial_boundary_dpc_cases": 0,
+        "residual_range_us": [
+          96749.19999999832,
+          98061.19999999832
+        ]
+      }
+    ],
+    "net_boundary_unresolved": false
+  },
+  "negative_checks": {
+    "nonzero_lost_events": "rejected",
+    "mock_start_stop_failure": "stop/cancel only owned instance",
+    "mock_existing_recording": "no start/stop/cancel"
+  },
+  "wrapper_whatif": "passed; no real recording",
+  "administrator": false,
+  "capture_attempt": "rejected by administrator guard before any real workload or WPR command",
+  "limitations": [
+    "No real new-driver WPR start/stop/cleanup tested",
+    "Mocked lifecycle is not administrator execution evidence",
+    "Smoke timing is not calibration or performance comparison",
+    "Partial boundary DPC requires raw-event follow-up; aggregate is not prorated",
+    "New export warnings stop analysis for inspection"
+  ],
+  "next_task": 873
+}

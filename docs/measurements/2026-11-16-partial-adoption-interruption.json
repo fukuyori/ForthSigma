@@ -1,0 +1,185 @@
+{
+  "date": "2026-11-16",
+  "state": "利用者の指示で中断",
+  "value_status": {
+    "variant": "value",
+    "calibrations": {
+      "windows/real/waterworks-logic": {
+        "delta_percent": 0.7874015748031497,
+        "minimum_median_us": 5953125.0,
+        "passed": true
+      },
+      "linux/real/waterworks-logic": {
+        "delta_percent": 0.040303639675985964,
+        "minimum_median_us": 5917078.505,
+        "passed": true
+      },
+      "windows/real/klondike-logic": {
+        "delta_percent": 0.2506265664160401,
+        "minimum_median_us": 6234375.0,
+        "passed": true
+      },
+      "linux/real/klondike-logic": {
+        "delta_percent": 0.3758718535920194,
+        "minimum_median_us": 5930682.404,
+        "passed": true
+      },
+      "windows/real/pinball-render": {
+        "delta_percent": 1.015228426395939,
+        "minimum_median_us": 6156250.0,
+        "passed": true
+      },
+      "linux/real/pinball-render": {
+        "delta_percent": 0.25165596072888113,
+        "minimum_median_us": 5805824.729,
+        "passed": true
+      },
+      "windows/real/waterworks-render": {
+        "delta_percent": 1.0126582278481013,
+        "minimum_median_us": 6078125.0,
+        "passed": true
+      },
+      "linux/real/waterworks-render": {
+        "delta_percent": 0.1777196702104207,
+        "minimum_median_us": 5871942.024,
+        "passed": true
+      },
+      "windows/real/klondike-render": {
+        "delta_percent": 0.0,
+        "minimum_median_us": 6109375.0,
+        "passed": true
+      },
+      "linux/real/klondike-render": {
+        "delta_percent": 0.3814984080442895,
+        "minimum_median_us": 5989724.077,
+        "passed": true
+      },
+      "windows/real/waterworks-bake": {
+        "delta_percent": 2.030456852791878,
+        "minimum_median_us": 6156250.0,
+        "passed": false
+      }
+    },
+    "comparisons": {
+      "windows/real/waterworks-logic": {
+        "changes_percent": [
+          0.7874015748031482,
+          -0.5235602094240788
+        ],
+        "delta_percent": 0.7874015748031497,
+        "threshold_percent": 3,
+        "passed": true
+      },
+      "linux/real/waterworks-logic": {
+        "changes_percent": [
+          -0.7094820453178441,
+          0.12582606169533328
+        ],
+        "delta_percent": 0.040303639675985964,
+        "threshold_percent": 3,
+        "passed": true
+      },
+      "windows/real/klondike-logic": {
+        "changes_percent": [
+          -0.7499999999999951,
+          -3.6319612590799077
+        ],
+        "delta_percent": 0.2506265664160401,
+        "threshold_percent": 3,
+        "passed": true
+      },
+      "linux/real/klondike-logic": {
+        "changes_percent": [
+          -1.2781816687816527,
+          -1.403058720321182
+        ],
+        "delta_percent": 0.3758718535920194,
+        "threshold_percent": 3,
+        "passed": true
+      },
+      "windows/real/pinball-render": {
+        "changes_percent": [
+          0.2538071065989911,
+          0.995024875621886
+        ],
+        "delta_percent": 1.015228426395939,
+        "threshold_percent": 3,
+        "passed": true
+      },
+      "linux/real/pinball-render": {
+        "changes_percent": [
+          -0.12005317303142027,
+          0.14693829985354956
+        ],
+        "delta_percent": 0.25165596072888113,
+        "threshold_percent": 3,
+        "passed": true
+      },
+      "windows/real/waterworks-render": {
+        "changes_percent": [
+          0.0,
+          -0.2557544757033292
+        ],
+        "delta_percent": 1.0126582278481013,
+        "threshold_percent": 3,
+        "passed": true
+      },
+      "linux/real/waterworks-render": {
+        "changes_percent": [
+          -0.24249232746234028,
+          -0.2612607799351907
+        ],
+        "delta_percent": 0.1777196702104207,
+        "threshold_percent": 3,
+        "passed": true
+      },
+      "windows/real/klondike-render": {
+        "changes_percent": [
+          -5.343511450381677,
+          -5.597964376590325
+        ],
+        "delta_percent": 0.0,
+        "threshold_percent": 3,
+        "passed": true
+      },
+      "linux/real/klondike-render": {
+        "changes_percent": [
+          -7.011546935965507,
+          -6.472222660045935
+        ],
+        "delta_percent": 0.3814984080442895,
+        "threshold_percent": 3,
+        "passed": true
+      }
+    },
+    "not_adopted": true,
+    "status": "calibration_unresolved",
+    "platform": "windows",
+    "case": "real/waterworks-bake"
+  },
+  "local_interruption": {
+    "utc": "2026-11-16T13:58:40.683571+00:00",
+    "status": "paused_by_user",
+    "reason": "User explicitly requested temporary interruption",
+    "partial_file": "linux-real-waterworks-render-compare-2-partial.json",
+    "stage": {
+      "platform": "linux",
+      "stage": "compare",
+      "case": "real/waterworks-render",
+      "series": 2,
+      "affinity": [
+        2
+      ],
+      "script_sha256": "f455981f9fc1c12c22c3b37769d68adb020a941178d13dbca4a790aba45bba83",
+      "protocol_sha256": "09a70b337e51f03357de23b50c9b48d7d87dccec09e4f63515381860a9927bd0"
+    },
+    "completed_samples": {
+      "baseline": 6,
+      "candidate": 6
+    },
+    "limits": "Interrupted series is incomplete and not a valid completed comparison; do not append or silently rerun frozen protocol. Resume requires recording treatment of interrupted condition.",
+    "runtime_modified": false
+  },
+  "resume_directory": ".work\\partial-adoption-resume-20261116",
+  "no_runtime_adoption": true
+}

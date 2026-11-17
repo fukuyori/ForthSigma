@@ -110,3 +110,6 @@ Windowsのpsutil context counterは、`voluntary`というfield名でも全threa
 `python -O .work/windows-timing-followup-20261116/etw/capture-admin.py --preflight`は依存版・入力ハッシュ・System32 WPRの存在を記録せずに検査する。現在の結果は入力一致、psutil7.2.2、administrator=false。`-WhatIf`はwrapperのパス・driverハッシュと表示までを確認し、管理者判定・WPR開始・後始末の動作確認にはならない。実際の管理者記録と停止処理は未実行である。
 
 [Claude Codeの初回レビュー](VM_WINDOWS_TIMING_FOLLOWUP_CLAUDE_REVIEW.md)と[指摘への対応・検証範囲](VM_WINDOWS_TIMING_FOLLOWUP_REVIEW_RESPONSE.md)を別に保持した。
+
+
+2026-11-16 後続条件：別logical CPU2を事前固定し、local/VALUE/literal→bit_andの各基準A/A校正と専用比較を完了した。[結果](VM_THREE_CANDIDATES_RESULTS.md)。CPU2のA/A成立は、CPU0のAPI/ETW残差の原因や会計精度を解明したことを意味しない。#862/#872/#873/#874はその後完了し、[残差は原因未特定で打切り](VM_WINDOWS_ETW_CONDITION_INVESTIGATION.md)とした。

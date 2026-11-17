@@ -1,0 +1,3317 @@
+{
+  "task": 874,
+  "source_capture_sha256": "b5729e7ea37cfb5a1b30cfe4c705e67dac9acf530bab95afdda1cba84cf5fc10",
+  "etw_rows": [
+    {
+      "group": 1,
+      "cpu": 0,
+      "mode": "minimal",
+      "kind": "sigma",
+      "cycle": 0,
+      "warmup": true,
+      "cpu_us": 6093750.0,
+      "wall_us": 6457141.5,
+      "tid": 7424,
+      "capture_index": 33,
+      "begin_qpc": 11130656113395,
+      "end_qpc": 11130720684405,
+      "gross_us": 6450932.100000002,
+      "dpc_isr_us": 281064.0,
+      "net_us": 6169868.100000002,
+      "residual_us": -76118.10000000242,
+      "interval_qpc_us": 6457101.0,
+      "off_cpu_us": 6168.899999997579,
+      "slices": 459,
+      "priority_changed_within_slice_count": 2,
+      "switch_in_priority_weight_us": {
+        "10": 31764.0,
+        "9": 33158.8,
+        "8": 6386009.300000004
+      },
+      "switch_out_priority_weight_us": {
+        "9": 55901.100000000006,
+        "8": 6395031.000000003
+      },
+      "boundary_priority_before": 0,
+      "boundary_priority_after": 0
+    },
+    {
+      "group": 1,
+      "cpu": 2,
+      "mode": "full",
+      "kind": "native",
+      "cycle": 0,
+      "warmup": true,
+      "cpu_us": 7406250.0,
+      "wall_us": 7514040.8,
+      "tid": 24716,
+      "capture_index": 34,
+      "begin_qpc": 11130720785411,
+      "end_qpc": 11130795928360,
+      "gross_us": 7474127.599999996,
+      "dpc_isr_us": 6276.0,
+      "net_us": 7467851.599999996,
+      "residual_us": -61601.5999999959,
+      "interval_qpc_us": 7514294.9,
+      "off_cpu_us": 40167.30000000447,
+      "slices": 423,
+      "priority_changed_within_slice_count": 2,
+      "switch_in_priority_weight_us": {
+        "10": 34529.1,
+        "9": 30116.2,
+        "8": 7409482.299999996
+      },
+      "switch_out_priority_weight_us": {
+        "9": 34529.1,
+        "8": 7439598.499999995
+      },
+      "boundary_priority_before": 0,
+      "boundary_priority_after": 0
+    },
+    {
+      "group": 1,
+      "cpu": 0,
+      "mode": "full",
+      "kind": "native",
+      "cycle": 0,
+      "warmup": true,
+      "cpu_us": 7640625.0,
+      "wall_us": 7896157.3,
+      "tid": 28472,
+      "capture_index": 35,
+      "begin_qpc": 11130796389181,
+      "end_qpc": 11130875347210,
+      "gross_us": 7850714.700000005,
+      "dpc_isr_us": 339822.0,
+      "net_us": 7510892.700000005,
+      "residual_us": 129732.29999999516,
+      "interval_qpc_us": 7895802.9,
+      "off_cpu_us": 45088.19999999553,
+      "slices": 580,
+      "priority_changed_within_slice_count": 2,
+      "switch_in_priority_weight_us": {
+        "10": 58574.0,
+        "9": 7901.3,
+        "8": 7784239.400000002
+      },
+      "switch_out_priority_weight_us": {
+        "9": 58574.0,
+        "8": 7792140.700000003
+      },
+      "boundary_priority_before": 0,
+      "boundary_priority_after": 0
+    },
+    {
+      "group": 1,
+      "cpu": 2,
+      "mode": "minimal",
+      "kind": "sigma",
+      "cycle": 0,
+      "warmup": true,
+      "cpu_us": 7218750.0,
+      "wall_us": 7249034.0,
+      "tid": 41860,
+      "capture_index": 36,
+      "begin_qpc": 11130875855735,
+      "end_qpc": 11130948345663,
+      "gross_us": 7245431.700000002,
+      "dpc_isr_us": 3682.0,
+      "net_us": 7241749.700000002,
+      "residual_us": -22999.70000000205,
+      "interval_qpc_us": 7248992.8,
+      "off_cpu_us": 3561.099999997765,
+      "slices": 445,
+      "priority_changed_within_slice_count": 2,
+      "switch_in_priority_weight_us": {
+        "10": 30516.1,
+        "9": 31921.1,
+        "8": 7182994.500000002
+      },
+      "switch_out_priority_weight_us": {
+        "9": 43438.899999999994,
+        "8": 7201992.800000002
+      },
+      "boundary_priority_before": 0,
+      "boundary_priority_after": 0
+    },
+    {
+      "group": 1,
+      "cpu": 2,
+      "mode": "minimal",
+      "kind": "native",
+      "cycle": 0,
+      "warmup": true,
+      "cpu_us": 7437500.0,
+      "wall_us": 7477109.4,
+      "tid": 15828,
+      "capture_index": 37,
+      "begin_qpc": 11130948436860,
+      "end_qpc": 11131023207548,
+      "gross_us": 7471315.899999996,
+      "dpc_isr_us": 4925.0,
+      "net_us": 7466390.899999996,
+      "residual_us": -28890.899999995716,
+      "interval_qpc_us": 7477068.8,
+      "off_cpu_us": 5752.900000004098,
+      "slices": 452,
+      "priority_changed_within_slice_count": 2,
+      "switch_in_priority_weight_us": {
+        "10": 698.4,
+        "9": 32190.0,
+        "8": 7438427.499999996
+      },
+      "switch_out_priority_weight_us": {
+        "9": 698.4,
+        "8": 7470617.499999996
+      },
+      "boundary_priority_before": 0,
+      "boundary_priority_after": 0
+    },
+    {
+      "group": 1,
+      "cpu": 0,
+      "mode": "full",
+      "kind": "sigma",
+      "cycle": 0,
+      "warmup": true,
+      "cpu_us": 6265625.0,
+      "wall_us": 6509150.7,
+      "tid": 23496,
+      "capture_index": 38,
+      "begin_qpc": 11131023331882,
+      "end_qpc": 11131088411517,
+      "gross_us": 6462514.100000004,
+      "dpc_isr_us": 279974.0,
+      "net_us": 6182540.100000004,
+      "residual_us": 83084.89999999572,
+      "interval_qpc_us": 6507963.5,
+      "off_cpu_us": 45449.399999995716,
+      "slices": 510,
+      "priority_changed_within_slice_count": 2,
+      "switch_in_priority_weight_us": {
+        "10": 37920.4,
+        "9": 29032.5,
+        "8": 6395561.200000006
+      },
+      "switch_out_priority_weight_us": {
+        "9": 37920.4,
+        "8": 6424593.700000005
+      },
+      "boundary_priority_before": 0,
+      "boundary_priority_after": 0
+    },
+    {
+      "group": 1,
+      "cpu": 2,
+      "mode": "full",
+      "kind": "sigma",
+      "cycle": 0,
+      "warmup": true,
+      "cpu_us": 6125000.0,
+      "wall_us": 6177608.3,
+      "tid": 42660,
+      "capture_index": 39,
+      "begin_qpc": 11131088936385,
+      "end_qpc": 11131150715596,
+      "gross_us": 6136301.599999998,
+      "dpc_isr_us": 4535.0,
+      "net_us": 6131766.599999998,
+      "residual_us": -6766.599999997765,
+      "interval_qpc_us": 6177921.1,
+      "off_cpu_us": 41619.50000000186,
+      "slices": 392,
+      "priority_changed_within_slice_count": 2,
+      "switch_in_priority_weight_us": {
+        "10": 36848.9,
+        "9": 27257.5,
+        "8": 6072195.199999998
+      },
+      "switch_out_priority_weight_us": {
+        "9": 36848.9,
+        "8": 6099452.699999998
+      },
+      "boundary_priority_before": 0,
+      "boundary_priority_after": 0
+    },
+    {
+      "group": 1,
+      "cpu": 0,
+      "mode": "minimal",
+      "kind": "native",
+      "cycle": 0,
+      "warmup": true,
+      "cpu_us": 7406250.0,
+      "wall_us": 7871154.1,
+      "tid": 13288,
+      "capture_index": 40,
+      "begin_qpc": 11131151186503,
+      "end_qpc": 11131229897624,
+      "gross_us": 7865314.699999996,
+      "dpc_isr_us": 353204.0,
+      "net_us": 7512110.699999996,
+      "residual_us": -105860.69999999646,
+      "interval_qpc_us": 7871112.1,
+      "off_cpu_us": 5797.4000000031665,
+      "slices": 586,
+      "priority_changed_within_slice_count": 0,
+      "switch_in_priority_weight_us": {
+        "8": 7865314.699999996
+      },
+      "switch_out_priority_weight_us": {
+        "8": 7865314.699999996
+      },
+      "boundary_priority_before": 0,
+      "boundary_priority_after": 0
+    },
+    {
+      "group": 1,
+      "cpu": 0,
+      "mode": "minimal",
+      "kind": "sigma",
+      "cycle": 1,
+      "warmup": false,
+      "cpu_us": 6046875.0,
+      "wall_us": 6449814.3,
+      "tid": 20756,
+      "capture_index": 41,
+      "begin_qpc": 11131230027326,
+      "end_qpc": 11131294525055,
+      "gross_us": 6444589.199999998,
+      "dpc_isr_us": 276225.0,
+      "net_us": 6168364.199999998,
+      "residual_us": -121489.19999999832,
+      "interval_qpc_us": 6449772.9,
+      "off_cpu_us": 5183.700000002049,
+      "slices": 463,
+      "priority_changed_within_slice_count": 2,
+      "switch_in_priority_weight_us": {
+        "10": 31947.8,
+        "9": 33102.9,
+        "8": 6379538.499999999
+      },
+      "switch_out_priority_weight_us": {
+        "9": 63038.9,
+        "8": 6381550.299999999
+      },
+      "boundary_priority_before": 0,
+      "boundary_priority_after": 0
+    },
+    {
+      "group": 1,
+      "cpu": 2,
+      "mode": "full",
+      "kind": "native",
+      "cycle": 1,
+      "warmup": false,
+      "cpu_us": 7437500.0,
+      "wall_us": 7518769.2,
+      "tid": 33884,
+      "capture_index": 42,
+      "begin_qpc": 11131294628107,
+      "end_qpc": 11131369805978,
+      "gross_us": 7474092.499999999,
+      "dpc_isr_us": 3824.0,
+      "net_us": 7470268.499999999,
+      "residual_us": -32768.49999999907,
+      "interval_qpc_us": 7517787.1,
+      "off_cpu_us": 43694.60000000056,
+      "slices": 467,
+      "priority_changed_within_slice_count": 2,
+      "switch_in_priority_weight_us": {
+        "10": 43731.9,
+        "9": 20528.4,
+        "8": 7409832.199999998
+      },
+      "switch_out_priority_weight_us": {
+        "9": 43731.9,
+        "8": 7430360.599999999
+      },
+      "boundary_priority_before": 0,
+      "boundary_priority_after": 0
+    },
+    {
+      "group": 1,
+      "cpu": 0,
+      "mode": "full",
+      "kind": "native",
+      "cycle": 1,
+      "warmup": false,
+      "cpu_us": 7515625.0,
+      "wall_us": 7895694.0,
+      "tid": 30932,
+      "capture_index": 43,
+      "begin_qpc": 11131370282350,
+      "end_qpc": 11131449244934,
+      "gross_us": 7851101.200000002,
+      "dpc_isr_us": 341024.0,
+      "net_us": 7510077.200000002,
+      "residual_us": 5547.799999997951,
+      "interval_qpc_us": 7896258.4,
+      "off_cpu_us": 45157.19999999832,
+      "slices": 576,
+      "priority_changed_within_slice_count": 2,
+      "switch_in_priority_weight_us": {
+        "10": 40662.1,
+        "9": 26098.2,
+        "8": 7784340.900000002
+      },
+      "switch_out_priority_weight_us": {
+        "10": 25271.2,
+        "9": 15390.9,
+        "8": 7810439.1000000015
+      },
+      "boundary_priority_before": 0,
+      "boundary_priority_after": 0
+    },
+    {
+      "group": 1,
+      "cpu": 2,
+      "mode": "minimal",
+      "kind": "sigma",
+      "cycle": 1,
+      "warmup": false,
+      "cpu_us": 6125000.0,
+      "wall_us": 6133546.2,
+      "tid": 36332,
+      "capture_index": 44,
+      "begin_qpc": 11131449766051,
+      "end_qpc": 11131511101169,
+      "gross_us": 6127304.500000002,
+      "dpc_isr_us": 2989.0,
+      "net_us": 6124315.500000002,
+      "residual_us": 684.4999999981374,
+      "interval_qpc_us": 6133511.8,
+      "off_cpu_us": 6207.299999997951,
+      "slices": 359,
+      "priority_changed_within_slice_count": 2,
+      "switch_in_priority_weight_us": {
+        "10": 30977.2,
+        "9": 32444.6,
+        "8": 6063882.700000002
+      },
+      "switch_out_priority_weight_us": {
+        "9": 51381.5,
+        "8": 6075923.000000001
+      },
+      "boundary_priority_before": 0,
+      "boundary_priority_after": 0
+    },
+    {
+      "group": 1,
+      "cpu": 2,
+      "mode": "minimal",
+      "kind": "native",
+      "cycle": 1,
+      "warmup": false,
+      "cpu_us": 7390625.0,
+      "wall_us": 7484975.8,
+      "tid": 30680,
+      "capture_index": 45,
+      "begin_qpc": 11131511194446,
+      "end_qpc": 11131586043815,
+      "gross_us": 7475111.399999999,
+      "dpc_isr_us": 4427.0,
+      "net_us": 7470684.399999999,
+      "residual_us": -80059.39999999944,
+      "interval_qpc_us": 7484936.9,
+      "off_cpu_us": 9825.500000000931,
+      "slices": 494,
+      "priority_changed_within_slice_count": 2,
+      "switch_in_priority_weight_us": {
+        "10": 710.9,
+        "9": 32194.4,
+        "8": 7442206.099999999
+      },
+      "switch_out_priority_weight_us": {
+        "9": 710.9,
+        "8": 7474400.499999999
+      },
+      "boundary_priority_before": 0,
+      "boundary_priority_after": 0
+    },
+    {
+      "group": 1,
+      "cpu": 0,
+      "mode": "full",
+      "kind": "sigma",
+      "cycle": 1,
+      "warmup": false,
+      "cpu_us": 5953125.0,
+      "wall_us": 6498028.9,
+      "tid": 23992,
+      "capture_index": 46,
+      "begin_qpc": 11131586162171,
+      "end_qpc": 11131651135007,
+      "gross_us": 6452850.399999997,
+      "dpc_isr_us": 277791.0,
+      "net_us": 6175059.399999997,
+      "residual_us": -221934.39999999665,
+      "interval_qpc_us": 6497283.6,
+      "off_cpu_us": 44433.20000000298,
+      "slices": 484,
+      "priority_changed_within_slice_count": 2,
+      "switch_in_priority_weight_us": {
+        "10": 57471.3,
+        "9": 8547.1,
+        "8": 6386831.999999997
+      },
+      "switch_out_priority_weight_us": {
+        "9": 57471.3,
+        "8": 6395379.099999998
+      },
+      "boundary_priority_before": 0,
+      "boundary_priority_after": 0
+    },
+    {
+      "group": 1,
+      "cpu": 2,
+      "mode": "full",
+      "kind": "sigma",
+      "cycle": 1,
+      "warmup": false,
+      "cpu_us": 6109375.0,
+      "wall_us": 6165657.0,
+      "tid": 18380,
+      "capture_index": 47,
+      "begin_qpc": 11131651654012,
+      "end_qpc": 11131713405104,
+      "gross_us": 6126100.399999996,
+      "dpc_isr_us": 3442.0,
+      "net_us": 6122658.399999996,
+      "residual_us": -13283.399999995716,
+      "interval_qpc_us": 6175109.2,
+      "off_cpu_us": 49008.80000000447,
+      "slices": 353,
+      "priority_changed_within_slice_count": 2,
+      "switch_in_priority_weight_us": {
+        "10": 50623.2,
+        "9": 14777.9,
+        "8": 6060699.299999996
+      },
+      "switch_out_priority_weight_us": {
+        "9": 50623.2,
+        "8": 6075477.1999999955
+      },
+      "boundary_priority_before": 0,
+      "boundary_priority_after": 0
+    },
+    {
+      "group": 1,
+      "cpu": 0,
+      "mode": "minimal",
+      "kind": "native",
+      "cycle": 1,
+      "warmup": false,
+      "cpu_us": 7421875.0,
+      "wall_us": 7860081.0,
+      "tid": 24100,
+      "capture_index": 48,
+      "begin_qpc": 11131713876345,
+      "end_qpc": 11131792476733,
+      "gross_us": 7853557.199999998,
+      "dpc_isr_us": 342112.0,
+      "net_us": 7511445.199999998,
+      "residual_us": -89570.19999999832,
+      "interval_qpc_us": 7860038.8,
+      "off_cpu_us": 6481.60000000149,
+      "slices": 565,
+      "priority_changed_within_slice_count": 0,
+      "switch_in_priority_weight_us": {
+        "8": 7853557.199999998
+      },
+      "switch_out_priority_weight_us": {
+        "8": 7853557.199999998
+      },
+      "boundary_priority_before": 0,
+      "boundary_priority_after": 0
+    },
+    {
+      "group": 1,
+      "cpu": 0,
+      "mode": "minimal",
+      "kind": "sigma",
+      "cycle": 2,
+      "warmup": false,
+      "cpu_us": 6218750.0,
+      "wall_us": 6460046.8,
+      "tid": 21860,
+      "capture_index": 49,
+      "begin_qpc": 11131792604961,
+      "end_qpc": 11131857205017,
+      "gross_us": 6454133.8000000045,
+      "dpc_isr_us": 280940.0,
+      "net_us": 6173193.8000000045,
+      "residual_us": 45556.19999999553,
+      "interval_qpc_us": 6460005.6,
+      "off_cpu_us": 5871.799999995157,
+      "slices": 475,
+      "priority_changed_within_slice_count": 2,
+      "switch_in_priority_weight_us": {
+        "10": 33355.9,
+        "9": 33614.2,
+        "8": 6387163.700000004
+      },
+      "switch_out_priority_weight_us": {
+        "9": 53960.600000000006,
+        "8": 6400173.200000005
+      },
+      "boundary_priority_before": 0,
+      "boundary_priority_after": 0
+    },
+    {
+      "group": 1,
+      "cpu": 2,
+      "mode": "full",
+      "kind": "native",
+      "cycle": 2,
+      "warmup": false,
+      "cpu_us": 7453125.0,
+      "wall_us": 7535336.2,
+      "tid": 1780,
+      "capture_index": 50,
+      "begin_qpc": 11131857308010,
+      "end_qpc": 11131932655408,
+      "gross_us": 7493141.000000008,
+      "dpc_isr_us": 4669.0,
+      "net_us": 7488472.000000008,
+      "residual_us": -35347.00000000838,
+      "interval_qpc_us": 7534739.8,
+      "off_cpu_us": 41598.79999999143,
+      "slices": 418,
+      "priority_changed_within_slice_count": 2,
+      "switch_in_priority_weight_us": {
+        "10": 46821.5,
+        "9": 16630.3,
+        "8": 7429689.200000009
+      },
+      "switch_out_priority_weight_us": {
+        "9": 46821.5,
+        "8": 7446319.500000009
+      },
+      "boundary_priority_before": 0,
+      "boundary_priority_after": 0
+    },
+    {
+      "group": 1,
+      "cpu": 0,
+      "mode": "full",
+      "kind": "native",
+      "cycle": 2,
+      "warmup": false,
+      "cpu_us": 7468750.0,
+      "wall_us": 7892383.1,
+      "tid": 6684,
+      "capture_index": 51,
+      "begin_qpc": 11131933132606,
+      "end_qpc": 11132012061257,
+      "gross_us": 7849176.300000002,
+      "dpc_isr_us": 339901.0,
+      "net_us": 7509275.300000002,
+      "residual_us": -40525.30000000168,
+      "interval_qpc_us": 7892865.1,
+      "off_cpu_us": 43688.79999999795,
+      "slices": 579,
+      "priority_changed_within_slice_count": 2,
+      "switch_in_priority_weight_us": {
+        "10": 48864.8,
+        "9": 17068.8,
+        "8": 7783242.700000001
+      },
+      "switch_out_priority_weight_us": {
+        "9": 63926.3,
+        "8": 7785250.000000001
+      },
+      "boundary_priority_before": 0,
+      "boundary_priority_after": 0
+    },
+    {
+      "group": 1,
+      "cpu": 2,
+      "mode": "minimal",
+      "kind": "sigma",
+      "cycle": 2,
+      "warmup": false,
+      "cpu_us": 6109375.0,
+      "wall_us": 6148067.3,
+      "tid": 42648,
+      "capture_index": 52,
+      "begin_qpc": 11132012575346,
+      "end_qpc": 11132074055637,
+      "gross_us": 6144641.200000002,
+      "dpc_isr_us": 3058.0,
+      "net_us": 6141583.200000002,
+      "residual_us": -32208.20000000205,
+      "interval_qpc_us": 6148029.1,
+      "off_cpu_us": 3387.8999999975786,
+      "slices": 372,
+      "priority_changed_within_slice_count": 2,
+      "switch_in_priority_weight_us": {
+        "10": 31412.7,
+        "9": 32432.600000000002,
+        "8": 6080795.900000002
+      },
+      "switch_out_priority_weight_us": {
+        "9": 53197.1,
+        "8": 6091444.1000000015
+      },
+      "boundary_priority_before": 0,
+      "boundary_priority_after": 0
+    },
+    {
+      "group": 1,
+      "cpu": 2,
+      "mode": "minimal",
+      "kind": "native",
+      "cycle": 2,
+      "warmup": false,
+      "cpu_us": 7437500.0,
+      "wall_us": 7486104.8,
+      "tid": 15152,
+      "capture_index": 53,
+      "begin_qpc": 11132074153796,
+      "end_qpc": 11132149014428,
+      "gross_us": 7479440.400000004,
+      "dpc_isr_us": 6667.0,
+      "net_us": 7472773.400000004,
+      "residual_us": -35273.4000000041,
+      "interval_qpc_us": 7486063.2,
+      "off_cpu_us": 6622.799999996088,
+      "slices": 497,
+      "priority_changed_within_slice_count": 2,
+      "switch_in_priority_weight_us": {
+        "10": 730.8,
+        "9": 32711.399999999998,
+        "8": 7445998.200000004
+      },
+      "switch_out_priority_weight_us": {
+        "9": 949.5999999999999,
+        "8": 7478490.800000004
+      },
+      "boundary_priority_before": 0,
+      "boundary_priority_after": 0
+    },
+    {
+      "group": 1,
+      "cpu": 0,
+      "mode": "full",
+      "kind": "sigma",
+      "cycle": 2,
+      "warmup": false,
+      "cpu_us": 5796875.0,
+      "wall_us": 6504912.7,
+      "tid": 304,
+      "capture_index": 54,
+      "begin_qpc": 11132149133540,
+      "end_qpc": 11132214180498,
+      "gross_us": 6459830.199999994,
+      "dpc_isr_us": 280507.0,
+      "net_us": 6179323.199999994,
+      "residual_us": -382448.19999999367,
+      "interval_qpc_us": 6504695.8,
+      "off_cpu_us": 44865.60000000615,
+      "slices": 464,
+      "priority_changed_within_slice_count": 2,
+      "switch_in_priority_weight_us": {
+        "8": 6421407.599999993,
+        "10": 15369.1,
+        "9": 23053.5
+      },
+      "switch_out_priority_weight_us": {
+        "8": 6428901.4999999935,
+        "9": 30928.7
+      },
+      "boundary_priority_before": 0,
+      "boundary_priority_after": 0
+    },
+    {
+      "group": 1,
+      "cpu": 2,
+      "mode": "full",
+      "kind": "sigma",
+      "cycle": 2,
+      "warmup": false,
+      "cpu_us": 6140625.0,
+      "wall_us": 6219538.5,
+      "tid": 5592,
+      "capture_index": 55,
+      "begin_qpc": 11132214707403,
+      "end_qpc": 11132276939860,
+      "gross_us": 6178472.799999999,
+      "dpc_isr_us": 2713.0,
+      "net_us": 6175759.799999999,
+      "residual_us": -35134.79999999888,
+      "interval_qpc_us": 6223245.7,
+      "off_cpu_us": 44772.900000001304,
+      "slices": 390,
+      "priority_changed_within_slice_count": 2,
+      "switch_in_priority_weight_us": {
+        "10": 43250.7,
+        "9": 19990.0,
+        "8": 6115232.099999998
+      },
+      "switch_out_priority_weight_us": {
+        "9": 58852.5,
+        "8": 6119620.299999999
+      },
+      "boundary_priority_before": 0,
+      "boundary_priority_after": 0
+    },
+    {
+      "group": 1,
+      "cpu": 0,
+      "mode": "minimal",
+      "kind": "native",
+      "cycle": 2,
+      "warmup": false,
+      "cpu_us": 7421875.0,
+      "wall_us": 7853902.5,
+      "tid": 16536,
+      "capture_index": 56,
+      "begin_qpc": 11132277412684,
+      "end_qpc": 11132355951319,
+      "gross_us": 7847029.600000003,
+      "dpc_isr_us": 335475.0,
+      "net_us": 7511554.600000003,
+      "residual_us": -89679.60000000335,
+      "interval_qpc_us": 7853863.5,
+      "off_cpu_us": 6833.899999996647,
+      "slices": 600,
+      "priority_changed_within_slice_count": 0,
+      "switch_in_priority_weight_us": {
+        "8": 7847029.600000003
+      },
+      "switch_out_priority_weight_us": {
+        "8": 7847029.600000003
+      },
+      "boundary_priority_before": 0,
+      "boundary_priority_after": 0
+    },
+    {
+      "group": 1,
+      "cpu": 0,
+      "mode": "minimal",
+      "kind": "sigma",
+      "cycle": 3,
+      "warmup": false,
+      "cpu_us": 6343750.0,
+      "wall_us": 6463649.3,
+      "tid": 29604,
+      "capture_index": 57,
+      "begin_qpc": 11132356074563,
+      "end_qpc": 11132420710662,
+      "gross_us": 6457156.399999997,
+      "dpc_isr_us": 280524.0,
+      "net_us": 6176632.399999997,
+      "residual_us": 167117.60000000335,
+      "interval_qpc_us": 6463609.9,
+      "off_cpu_us": 6453.500000003725,
+      "slices": 518,
+      "priority_changed_within_slice_count": 2,
+      "switch_in_priority_weight_us": {
+        "10": 4892.8,
+        "9": 33026.2,
+        "8": 6419237.399999998
+      },
+      "switch_out_priority_weight_us": {
+        "9": 35464.4,
+        "8": 6421691.999999997
+      },
+      "boundary_priority_before": 0,
+      "boundary_priority_after": 0
+    },
+    {
+      "group": 1,
+      "cpu": 2,
+      "mode": "full",
+      "kind": "native",
+      "cycle": 3,
+      "warmup": false,
+      "cpu_us": 7437500.0,
+      "wall_us": 7515765.8,
+      "tid": 39768,
+      "capture_index": 58,
+      "begin_qpc": 11132420820573,
+      "end_qpc": 11132495977991,
+      "gross_us": 7473900.7,
+      "dpc_isr_us": 3492.0,
+      "net_us": 7470408.7,
+      "residual_us": -32908.700000000186,
+      "interval_qpc_us": 7515741.8,
+      "off_cpu_us": 41841.09999999963,
+      "slices": 441,
+      "priority_changed_within_slice_count": 2,
+      "switch_in_priority_weight_us": {
+        "10": 40472.3,
+        "9": 23094.2,
+        "8": 7410334.2
+      },
+      "switch_out_priority_weight_us": {
+        "9": 55686.0,
+        "8": 7418214.7
+      },
+      "boundary_priority_before": 0,
+      "boundary_priority_after": 0
+    },
+    {
+      "group": 1,
+      "cpu": 0,
+      "mode": "full",
+      "kind": "native",
+      "cycle": 3,
+      "warmup": false,
+      "cpu_us": 7484375.0,
+      "wall_us": 7890425.3,
+      "tid": 12132,
+      "capture_index": 59,
+      "begin_qpc": 11132496447883,
+      "end_qpc": 11132575350620,
+      "gross_us": 7845211.400000007,
+      "dpc_isr_us": 334168.0,
+      "net_us": 7511043.400000007,
+      "residual_us": -26668.40000000689,
+      "interval_qpc_us": 7890273.7,
+      "off_cpu_us": 45062.299999993294,
+      "slices": 569,
+      "priority_changed_within_slice_count": 2,
+      "switch_in_priority_weight_us": {
+        "10": 50908.9,
+        "9": 16610.8,
+        "8": 7777691.700000007
+      },
+      "switch_out_priority_weight_us": {
+        "9": 66510.9,
+        "8": 7778700.5000000065
+      },
+      "boundary_priority_before": 0,
+      "boundary_priority_after": 0
+    },
+    {
+      "group": 1,
+      "cpu": 2,
+      "mode": "minimal",
+      "kind": "sigma",
+      "cycle": 3,
+      "warmup": false,
+      "cpu_us": 6109375.0,
+      "wall_us": 6147593.2,
+      "tid": 4056,
+      "capture_index": 60,
+      "begin_qpc": 11132575871039,
+      "end_qpc": 11132637346604,
+      "gross_us": 6143560.699999998,
+      "dpc_isr_us": 4532.0,
+      "net_us": 6139028.699999998,
+      "residual_us": -29653.699999998324,
+      "interval_qpc_us": 6147556.5,
+      "off_cpu_us": 3995.8000000016764,
+      "slices": 378,
+      "priority_changed_within_slice_count": 2,
+      "switch_in_priority_weight_us": {
+        "10": 30875.8,
+        "9": 32708.3,
+        "8": 6079976.599999999
+      },
+      "switch_out_priority_weight_us": {
+        "9": 30875.8,
+        "8": 6112684.8999999985
+      },
+      "boundary_priority_before": 0,
+      "boundary_priority_after": 0
+    },
+    {
+      "group": 1,
+      "cpu": 2,
+      "mode": "minimal",
+      "kind": "native",
+      "cycle": 3,
+      "warmup": false,
+      "cpu_us": 7359375.0,
+      "wall_us": 7479316.3,
+      "tid": 18404,
+      "capture_index": 61,
+      "begin_qpc": 11132637450041,
+      "end_qpc": 11132712242798,
+      "gross_us": 7474341.699999999,
+      "dpc_isr_us": 4827.0,
+      "net_us": 7469514.699999999,
+      "residual_us": -110139.69999999925,
+      "interval_qpc_us": 7479275.7,
+      "off_cpu_us": 4934.000000000931,
+      "slices": 448,
+      "priority_changed_within_slice_count": 2,
+      "switch_in_priority_weight_us": {
+        "10": 717.6,
+        "9": 31389.5,
+        "8": 7442234.6
+      },
+      "switch_out_priority_weight_us": {
+        "9": 18101.6,
+        "8": 7456240.1
+      },
+      "boundary_priority_before": 0,
+      "boundary_priority_after": 0
+    },
+    {
+      "group": 1,
+      "cpu": 0,
+      "mode": "full",
+      "kind": "sigma",
+      "cycle": 3,
+      "warmup": false,
+      "cpu_us": 5781250.0,
+      "wall_us": 6484202.8,
+      "tid": 43336,
+      "capture_index": 62,
+      "begin_qpc": 11132712369020,
+      "end_qpc": 11132777205953,
+      "gross_us": 6439528.299999995,
+      "dpc_isr_us": 270851.0,
+      "net_us": 6168677.299999995,
+      "residual_us": -387427.29999999516,
+      "interval_qpc_us": 6483693.3,
+      "off_cpu_us": 44165.00000000466,
+      "slices": 477,
+      "priority_changed_within_slice_count": 2,
+      "switch_in_priority_weight_us": {
+        "10": 50455.8,
+        "9": 17312.7,
+        "8": 6371759.799999996
+      },
+      "switch_out_priority_weight_us": {
+        "10": 4587.0,
+        "9": 60932.5,
+        "8": 6374008.799999996
+      },
+      "boundary_priority_before": 0,
+      "boundary_priority_after": 0
+    },
+    {
+      "group": 1,
+      "cpu": 2,
+      "mode": "full",
+      "kind": "sigma",
+      "cycle": 3,
+      "warmup": false,
+      "cpu_us": 6125000.0,
+      "wall_us": 6169215.4,
+      "tid": 14696,
+      "capture_index": 63,
+      "begin_qpc": 11132777735049,
+      "end_qpc": 11132839427885,
+      "gross_us": 6128965.700000005,
+      "dpc_isr_us": 3663.0,
+      "net_us": 6125302.700000005,
+      "residual_us": -302.7000000048429,
+      "interval_qpc_us": 6169283.6,
+      "off_cpu_us": 40317.899999994785,
+      "slices": 336,
+      "priority_changed_within_slice_count": 2,
+      "switch_in_priority_weight_us": {
+        "10": 61897.5,
+        "9": 2196.8,
+        "8": 6064871.400000005
+      },
+      "switch_out_priority_weight_us": {
+        "9": 61897.5,
+        "8": 6067068.200000005
+      },
+      "boundary_priority_before": 0,
+      "boundary_priority_after": 0
+    },
+    {
+      "group": 1,
+      "cpu": 0,
+      "mode": "minimal",
+      "kind": "native",
+      "cycle": 3,
+      "warmup": false,
+      "cpu_us": 7453125.0,
+      "wall_us": 7882293.0,
+      "tid": 18924,
+      "capture_index": 64,
+      "begin_qpc": 11132839912334,
+      "end_qpc": 11132918734849,
+      "gross_us": 7874821.2,
+      "dpc_isr_us": 363070.0,
+      "net_us": 7511751.2,
+      "residual_us": -58626.200000000186,
+      "interval_qpc_us": 7882251.5,
+      "off_cpu_us": 7430.299999999814,
+      "slices": 605,
+      "priority_changed_within_slice_count": 2,
+      "switch_in_priority_weight_us": {
+        "10": 549.0,
+        "9": 33733.4,
+        "8": 7840538.800000001
+      },
+      "switch_out_priority_weight_us": {
+        "9": 25186.0,
+        "8": 7849635.2
+      },
+      "boundary_priority_before": 0,
+      "boundary_priority_after": 0
+    },
+    {
+      "group": 2,
+      "cpu": 0,
+      "mode": "minimal",
+      "kind": "native",
+      "cycle": 0,
+      "warmup": true,
+      "cpu_us": 7375000.0,
+      "wall_us": 7912690.0,
+      "tid": 33712,
+      "capture_index": 65,
+      "begin_qpc": 11133075543305,
+      "end_qpc": 11133154669788,
+      "gross_us": 7906334.700000005,
+      "dpc_isr_us": 368911.0,
+      "net_us": 7537423.700000005,
+      "residual_us": -162423.70000000484,
+      "interval_qpc_us": 7912648.3,
+      "off_cpu_us": 6313.599999994971,
+      "slices": 582,
+      "priority_changed_within_slice_count": 0,
+      "switch_in_priority_weight_us": {
+        "8": 7906334.700000005
+      },
+      "switch_out_priority_weight_us": {
+        "8": 7906334.700000005
+      },
+      "boundary_priority_before": 0,
+      "boundary_priority_after": 0
+    },
+    {
+      "group": 2,
+      "cpu": 2,
+      "mode": "full",
+      "kind": "sigma",
+      "cycle": 0,
+      "warmup": true,
+      "cpu_us": 6140625.0,
+      "wall_us": 6202173.5,
+      "tid": 42528,
+      "capture_index": 66,
+      "begin_qpc": 11133154802288,
+      "end_qpc": 11133216817107,
+      "gross_us": 6159508.600000003,
+      "dpc_isr_us": 4445.0,
+      "net_us": 6155063.600000003,
+      "residual_us": -14438.600000003353,
+      "interval_qpc_us": 6201481.9,
+      "off_cpu_us": 41973.29999999702,
+      "slices": 356,
+      "priority_changed_within_slice_count": 1,
+      "switch_in_priority_weight_us": {
+        "10": 63811.2,
+        "8": 6095697.400000003
+      },
+      "switch_out_priority_weight_us": {
+        "8": 6159508.600000003
+      },
+      "boundary_priority_before": 0,
+      "boundary_priority_after": 0
+    },
+    {
+      "group": 2,
+      "cpu": 0,
+      "mode": "full",
+      "kind": "sigma",
+      "cycle": 0,
+      "warmup": true,
+      "cpu_us": 5937500.0,
+      "wall_us": 6524495.3,
+      "tid": 25360,
+      "capture_index": 67,
+      "begin_qpc": 11133217329454,
+      "end_qpc": 11133282576955,
+      "gross_us": 6479937.5,
+      "dpc_isr_us": 304788.0,
+      "net_us": 6175149.5,
+      "residual_us": -237649.5,
+      "interval_qpc_us": 6524750.1,
+      "off_cpu_us": 44812.59999999963,
+      "slices": 481,
+      "priority_changed_within_slice_count": 2,
+      "switch_in_priority_weight_us": {
+        "10": 39626.1,
+        "9": 26705.1,
+        "8": 6413606.3
+      },
+      "switch_out_priority_weight_us": {
+        "9": 54740.3,
+        "8": 6425197.2
+      },
+      "boundary_priority_before": 0,
+      "boundary_priority_after": 0
+    },
+    {
+      "group": 2,
+      "cpu": 2,
+      "mode": "minimal",
+      "kind": "native",
+      "cycle": 0,
+      "warmup": true,
+      "cpu_us": 7437500.0,
+      "wall_us": 7475305.4,
+      "tid": 40568,
+      "capture_index": 68,
+      "begin_qpc": 11133283082014,
+      "end_qpc": 11133357834673,
+      "gross_us": 7471033.999999997,
+      "dpc_isr_us": 4077.0,
+      "net_us": 7466956.999999997,
+      "residual_us": -29456.999999997206,
+      "interval_qpc_us": 7475265.9,
+      "off_cpu_us": 4231.9000000031665,
+      "slices": 421,
+      "priority_changed_within_slice_count": 2,
+      "switch_in_priority_weight_us": {
+        "10": 729.1,
+        "9": 32702.000000000004,
+        "8": 7437602.899999998
+      },
+      "switch_out_priority_weight_us": {
+        "9": 26104.4,
+        "8": 7444929.599999998
+      },
+      "boundary_priority_before": 0,
+      "boundary_priority_after": 0
+    },
+    {
+      "group": 2,
+      "cpu": 2,
+      "mode": "minimal",
+      "kind": "sigma",
+      "cycle": 0,
+      "warmup": true,
+      "cpu_us": 6078125.0,
+      "wall_us": 6133478.5,
+      "tid": 36284,
+      "capture_index": 69,
+      "begin_qpc": 11133357953906,
+      "end_qpc": 11133419288312,
+      "gross_us": 6127969.299999997,
+      "dpc_isr_us": 3931.0,
+      "net_us": 6124038.299999997,
+      "residual_us": -45913.29999999702,
+      "interval_qpc_us": 6133440.6,
+      "off_cpu_us": 5471.300000002608,
+      "slices": 360,
+      "priority_changed_within_slice_count": 2,
+      "switch_in_priority_weight_us": {
+        "10": 4835.3,
+        "9": 31661.9,
+        "8": 6091472.099999997
+      },
+      "switch_out_priority_weight_us": {
+        "9": 26564.2,
+        "8": 6101405.099999997
+      },
+      "boundary_priority_before": 0,
+      "boundary_priority_after": 0
+    },
+    {
+      "group": 2,
+      "cpu": 0,
+      "mode": "full",
+      "kind": "native",
+      "cycle": 0,
+      "warmup": true,
+      "cpu_us": 7578125.0,
+      "wall_us": 7926924.5,
+      "tid": 2160,
+      "capture_index": 70,
+      "begin_qpc": 11133419400068,
+      "end_qpc": 11133498674921,
+      "gross_us": 7881580.099999997,
+      "dpc_isr_us": 369784.0,
+      "net_us": 7511796.099999997,
+      "residual_us": 66328.90000000317,
+      "interval_qpc_us": 7927485.3,
+      "off_cpu_us": 45905.20000000298,
+      "slices": 553,
+      "priority_changed_within_slice_count": 2,
+      "switch_in_priority_weight_us": {
+        "10": 51651.2,
+        "9": 15055.1,
+        "8": 7814873.799999996
+      },
+      "switch_out_priority_weight_us": {
+        "9": 51651.2,
+        "8": 7829928.899999997
+      },
+      "boundary_priority_before": 0,
+      "boundary_priority_after": 0
+    },
+    {
+      "group": 2,
+      "cpu": 2,
+      "mode": "full",
+      "kind": "native",
+      "cycle": 0,
+      "warmup": true,
+      "cpu_us": 7437500.0,
+      "wall_us": 7513094.2,
+      "tid": 10716,
+      "capture_index": 71,
+      "begin_qpc": 11133499173397,
+      "end_qpc": 11133574301033,
+      "gross_us": 7470200.200000002,
+      "dpc_isr_us": 4038.0,
+      "net_us": 7466162.200000002,
+      "residual_us": -28662.20000000205,
+      "interval_qpc_us": 7512763.6,
+      "off_cpu_us": 42563.39999999758,
+      "slices": 412,
+      "priority_changed_within_slice_count": 2,
+      "switch_in_priority_weight_us": {
+        "10": 49348.4,
+        "9": 15225.2,
+        "8": 7405626.600000002
+      },
+      "switch_out_priority_weight_us": {
+        "9": 49348.4,
+        "8": 7420851.800000002
+      },
+      "boundary_priority_before": 0,
+      "boundary_priority_after": 0
+    },
+    {
+      "group": 2,
+      "cpu": 0,
+      "mode": "minimal",
+      "kind": "sigma",
+      "cycle": 0,
+      "warmup": true,
+      "cpu_us": 6203125.0,
+      "wall_us": 6473694.5,
+      "tid": 40768,
+      "capture_index": 72,
+      "begin_qpc": 11133574799824,
+      "end_qpc": 11133639536307,
+      "gross_us": 6469173.799999998,
+      "dpc_isr_us": 307962.0,
+      "net_us": 6161211.799999998,
+      "residual_us": 41913.20000000205,
+      "interval_qpc_us": 6473648.3,
+      "off_cpu_us": 4474.500000001863,
+      "slices": 492,
+      "priority_changed_within_slice_count": 2,
+      "switch_in_priority_weight_us": {
+        "10": 32235.9,
+        "9": 33126.600000000006,
+        "8": 6403811.299999999
+      },
+      "switch_out_priority_weight_us": {
+        "9": 51896.9,
+        "8": 6417276.8999999985
+      },
+      "boundary_priority_before": 0,
+      "boundary_priority_after": 0
+    },
+    {
+      "group": 2,
+      "cpu": 0,
+      "mode": "minimal",
+      "kind": "native",
+      "cycle": 1,
+      "warmup": false,
+      "cpu_us": 7375000.0,
+      "wall_us": 7890269.3,
+      "tid": 18368,
+      "capture_index": 73,
+      "begin_qpc": 11133639660141,
+      "end_qpc": 11133718562406,
+      "gross_us": 7880971.50000001,
+      "dpc_isr_us": 371002.0,
+      "net_us": 7509969.50000001,
+      "residual_us": -134969.50000001024,
+      "interval_qpc_us": 7890226.5,
+      "off_cpu_us": 9254.999999989755,
+      "slices": 605,
+      "priority_changed_within_slice_count": 0,
+      "switch_in_priority_weight_us": {
+        "8": 7880971.50000001
+      },
+      "switch_out_priority_weight_us": {
+        "8": 7880971.50000001
+      },
+      "boundary_priority_before": 0,
+      "boundary_priority_after": 0
+    },
+    {
+      "group": 2,
+      "cpu": 2,
+      "mode": "full",
+      "kind": "sigma",
+      "cycle": 1,
+      "warmup": false,
+      "cpu_us": 6156250.0,
+      "wall_us": 6194367.3,
+      "tid": 40624,
+      "capture_index": 74,
+      "begin_qpc": 11133718693223,
+      "end_qpc": 11133780640102,
+      "gross_us": 6154092.700000004,
+      "dpc_isr_us": 4947.0,
+      "net_us": 6149145.700000004,
+      "residual_us": 7104.299999996088,
+      "interval_qpc_us": 6194687.9,
+      "off_cpu_us": 40595.19999999646,
+      "slices": 392,
+      "priority_changed_within_slice_count": 1,
+      "switch_in_priority_weight_us": {
+        "10": 65250.1,
+        "8": 6088842.600000005
+      },
+      "switch_out_priority_weight_us": {
+        "8": 6154092.700000004
+      },
+      "boundary_priority_before": 0,
+      "boundary_priority_after": 0
+    },
+    {
+      "group": 2,
+      "cpu": 0,
+      "mode": "full",
+      "kind": "sigma",
+      "cycle": 1,
+      "warmup": false,
+      "cpu_us": 5609375.0,
+      "wall_us": 6518811.0,
+      "tid": 37392,
+      "capture_index": 75,
+      "begin_qpc": 11133781136307,
+      "end_qpc": 11133846326380,
+      "gross_us": 6475867.0,
+      "dpc_isr_us": 311049.0,
+      "net_us": 6164818.0,
+      "residual_us": -555443.0,
+      "interval_qpc_us": 6519007.3,
+      "off_cpu_us": 43140.299999999814,
+      "slices": 506,
+      "priority_changed_within_slice_count": 2,
+      "switch_in_priority_weight_us": {
+        "10": 46361.6,
+        "9": 20943.9,
+        "8": 6408561.5
+      },
+      "switch_out_priority_weight_us": {
+        "9": 61306.6,
+        "8": 6414560.399999999
+      },
+      "boundary_priority_before": 0,
+      "boundary_priority_after": 0
+    },
+    {
+      "group": 2,
+      "cpu": 2,
+      "mode": "minimal",
+      "kind": "native",
+      "cycle": 1,
+      "warmup": false,
+      "cpu_us": 7437500.0,
+      "wall_us": 7477347.9,
+      "tid": 40884,
+      "capture_index": 76,
+      "begin_qpc": 11133846834421,
+      "end_qpc": 11133921607467,
+      "gross_us": 7472779.500000001,
+      "dpc_isr_us": 3973.0,
+      "net_us": 7468806.500000001,
+      "residual_us": -31306.50000000093,
+      "interval_qpc_us": 7477304.6,
+      "off_cpu_us": 4525.099999998696,
+      "slices": 414,
+      "priority_changed_within_slice_count": 0,
+      "switch_in_priority_weight_us": {
+        "8": 7472779.500000001
+      },
+      "switch_out_priority_weight_us": {
+        "8": 7472779.500000001
+      },
+      "boundary_priority_before": 0,
+      "boundary_priority_after": 0
+    },
+    {
+      "group": 2,
+      "cpu": 2,
+      "mode": "minimal",
+      "kind": "sigma",
+      "cycle": 1,
+      "warmup": false,
+      "cpu_us": 6046875.0,
+      "wall_us": 6128476.1,
+      "tid": 13680,
+      "capture_index": 77,
+      "begin_qpc": 11133921810661,
+      "end_qpc": 11133983095002,
+      "gross_us": 6125292.499999999,
+      "dpc_isr_us": 3002.0,
+      "net_us": 6122290.499999999,
+      "residual_us": -75415.49999999907,
+      "interval_qpc_us": 6128434.1,
+      "off_cpu_us": 3141.600000000559,
+      "slices": 329,
+      "priority_changed_within_slice_count": 2,
+      "switch_in_priority_weight_us": {
+        "10": 4806.6,
+        "9": 32969.0,
+        "8": 6087516.899999998
+      },
+      "switch_out_priority_weight_us": {
+        "9": 4806.6,
+        "8": 6120485.8999999985
+      },
+      "boundary_priority_before": 0,
+      "boundary_priority_after": 0
+    },
+    {
+      "group": 2,
+      "cpu": 0,
+      "mode": "full",
+      "kind": "native",
+      "cycle": 1,
+      "warmup": false,
+      "cpu_us": 7578125.0,
+      "wall_us": 7923979.1,
+      "tid": 23976,
+      "capture_index": 78,
+      "begin_qpc": 11133983216953,
+      "end_qpc": 11134062452199,
+      "gross_us": 7879259.100000003,
+      "dpc_isr_us": 368497.0,
+      "net_us": 7510762.100000003,
+      "residual_us": 67362.89999999665,
+      "interval_qpc_us": 7923524.6,
+      "off_cpu_us": 44265.499999996275,
+      "slices": 584,
+      "priority_changed_within_slice_count": 2,
+      "switch_in_priority_weight_us": {
+        "10": 38154.9,
+        "9": 28600.199999999997,
+        "8": 7812504.000000005
+      },
+      "switch_out_priority_weight_us": {
+        "9": 53725.3,
+        "8": 7825533.800000004
+      },
+      "boundary_priority_before": 0,
+      "boundary_priority_after": 0
+    },
+    {
+      "group": 2,
+      "cpu": 2,
+      "mode": "full",
+      "kind": "native",
+      "cycle": 1,
+      "warmup": false,
+      "cpu_us": 7406250.0,
+      "wall_us": 7519926.8,
+      "tid": 34604,
+      "capture_index": 79,
+      "begin_qpc": 11134062954316,
+      "end_qpc": 11134138153004,
+      "gross_us": 7479682.899999999,
+      "dpc_isr_us": 3872.0,
+      "net_us": 7475810.899999999,
+      "residual_us": -69560.89999999944,
+      "interval_qpc_us": 7519868.8,
+      "off_cpu_us": 40185.90000000037,
+      "slices": 385,
+      "priority_changed_within_slice_count": 2,
+      "switch_in_priority_weight_us": {
+        "10": 42078.4,
+        "9": 22712.4,
+        "8": 7414892.099999999
+      },
+      "switch_out_priority_weight_us": {
+        "9": 42078.4,
+        "8": 7437604.499999999
+      },
+      "boundary_priority_before": 0,
+      "boundary_priority_after": 0
+    },
+    {
+      "group": 2,
+      "cpu": 0,
+      "mode": "minimal",
+      "kind": "sigma",
+      "cycle": 1,
+      "warmup": false,
+      "cpu_us": 5984375.0,
+      "wall_us": 6476008.1,
+      "tid": 41480,
+      "capture_index": 80,
+      "begin_qpc": 11134138647975,
+      "end_qpc": 11134203407636,
+      "gross_us": 6471015.800000002,
+      "dpc_isr_us": 302762.0,
+      "net_us": 6168253.800000002,
+      "residual_us": -183878.80000000168,
+      "interval_qpc_us": 6475966.1,
+      "off_cpu_us": 4950.299999997951,
+      "slices": 484,
+      "priority_changed_within_slice_count": 2,
+      "switch_in_priority_weight_us": {
+        "10": 32383.0,
+        "9": 32592.9,
+        "8": 6406039.900000002
+      },
+      "switch_out_priority_weight_us": {
+        "9": 59577.899999999994,
+        "8": 6411437.900000002
+      },
+      "boundary_priority_before": 0,
+      "boundary_priority_after": 0
+    },
+    {
+      "group": 2,
+      "cpu": 0,
+      "mode": "minimal",
+      "kind": "native",
+      "cycle": 2,
+      "warmup": false,
+      "cpu_us": 7140625.0,
+      "wall_us": 7886367.0,
+      "tid": 13492,
+      "capture_index": 81,
+      "begin_qpc": 11134203543009,
+      "end_qpc": 11134282406282,
+      "gross_us": 7878973.800000002,
+      "dpc_isr_us": 366028.0,
+      "net_us": 7512945.800000002,
+      "residual_us": -372320.8000000017,
+      "interval_qpc_us": 7886327.3,
+      "off_cpu_us": 7353.499999998137,
+      "slices": 588,
+      "priority_changed_within_slice_count": 0,
+      "switch_in_priority_weight_us": {
+        "8": 7878973.800000002
+      },
+      "switch_out_priority_weight_us": {
+        "8": 7878973.800000002
+      },
+      "boundary_priority_before": 0,
+      "boundary_priority_after": 0
+    },
+    {
+      "group": 2,
+      "cpu": 2,
+      "mode": "full",
+      "kind": "sigma",
+      "cycle": 2,
+      "warmup": false,
+      "cpu_us": 6093750.0,
+      "wall_us": 6175842.4,
+      "tid": 18988,
+      "capture_index": 82,
+      "begin_qpc": 11134282539104,
+      "end_qpc": 11134344313987,
+      "gross_us": 6136021.899999995,
+      "dpc_isr_us": 4029.0,
+      "net_us": 6131992.899999995,
+      "residual_us": -38242.899999994785,
+      "interval_qpc_us": 6177488.3,
+      "off_cpu_us": 41466.40000000503,
+      "slices": 340,
+      "priority_changed_within_slice_count": 2,
+      "switch_in_priority_weight_us": {
+        "10": 43138.1,
+        "9": 21833.1,
+        "8": 6071050.6999999955
+      },
+      "switch_out_priority_weight_us": {
+        "9": 43138.1,
+        "8": 6092883.799999995
+      },
+      "boundary_priority_before": 0,
+      "boundary_priority_after": 0
+    },
+    {
+      "group": 2,
+      "cpu": 0,
+      "mode": "full",
+      "kind": "sigma",
+      "cycle": 2,
+      "warmup": false,
+      "cpu_us": 5984375.0,
+      "wall_us": 6474004.0,
+      "tid": 32564,
+      "capture_index": 83,
+      "begin_qpc": 11134344820520,
+      "end_qpc": 11134409567123,
+      "gross_us": 6429117.900000007,
+      "dpc_isr_us": 290543.0,
+      "net_us": 6138574.900000007,
+      "residual_us": -154199.9000000069,
+      "interval_qpc_us": 6474660.3,
+      "off_cpu_us": 45542.39999999292,
+      "slices": 500,
+      "priority_changed_within_slice_count": 2,
+      "switch_in_priority_weight_us": {
+        "10": 48042.1,
+        "9": 20941.8,
+        "8": 6360134.0000000065
+      },
+      "switch_out_priority_weight_us": {
+        "9": 63610.6,
+        "8": 6365507.300000006
+      },
+      "boundary_priority_before": 0,
+      "boundary_priority_after": 0
+    },
+    {
+      "group": 2,
+      "cpu": 2,
+      "mode": "minimal",
+      "kind": "native",
+      "cycle": 2,
+      "warmup": false,
+      "cpu_us": 7453125.0,
+      "wall_us": 7474060.0,
+      "tid": 27900,
+      "capture_index": 84,
+      "begin_qpc": 11134410072245,
+      "end_qpc": 11134484812408,
+      "gross_us": 7469062.800000001,
+      "dpc_isr_us": 3309.0,
+      "net_us": 7465753.800000001,
+      "residual_us": -12628.800000000745,
+      "interval_qpc_us": 7474016.3,
+      "off_cpu_us": 4953.499999999069,
+      "slices": 409,
+      "priority_changed_within_slice_count": 2,
+      "switch_in_priority_weight_us": {
+        "10": 688.5,
+        "9": 32440.3,
+        "8": 7435934.000000001
+      },
+      "switch_out_priority_weight_us": {
+        "9": 3678.0,
+        "8": 7465384.800000001
+      },
+      "boundary_priority_before": 0,
+      "boundary_priority_after": 0
+    },
+    {
+      "group": 2,
+      "cpu": 2,
+      "mode": "minimal",
+      "kind": "sigma",
+      "cycle": 2,
+      "warmup": false,
+      "cpu_us": 6093750.0,
+      "wall_us": 6126612.9,
+      "tid": 38108,
+      "capture_index": 85,
+      "begin_qpc": 11134484943556,
+      "end_qpc": 11134546209272,
+      "gross_us": 6124362.999999999,
+      "dpc_isr_us": 3063.0,
+      "net_us": 6121299.999999999,
+      "residual_us": -27549.99999999907,
+      "interval_qpc_us": 6126571.6,
+      "off_cpu_us": 2208.600000000559,
+      "slices": 292,
+      "priority_changed_within_slice_count": 2,
+      "switch_in_priority_weight_us": {
+        "10": 4575.6,
+        "9": 32381.5,
+        "8": 6087405.899999999
+      },
+      "switch_out_priority_weight_us": {
+        "9": 34505.40000000001,
+        "8": 6089857.6
+      },
+      "boundary_priority_before": 0,
+      "boundary_priority_after": 0
+    },
+    {
+      "group": 2,
+      "cpu": 0,
+      "mode": "full",
+      "kind": "native",
+      "cycle": 2,
+      "warmup": false,
+      "cpu_us": 7546875.0,
+      "wall_us": 7872845.1,
+      "tid": 36400,
+      "capture_index": 86,
+      "begin_qpc": 11134546329983,
+      "end_qpc": 11134625062036,
+      "gross_us": 7826437.6000000015,
+      "dpc_isr_us": 350029.0,
+      "net_us": 7476408.6000000015,
+      "residual_us": 70466.39999999851,
+      "interval_qpc_us": 7873205.3,
+      "off_cpu_us": 46767.69999999832,
+      "slices": 574,
+      "priority_changed_within_slice_count": 2,
+      "switch_in_priority_weight_us": {
+        "10": 51819.7,
+        "9": 15536.4,
+        "8": 7759081.500000001
+      },
+      "switch_out_priority_weight_us": {
+        "9": 51819.7,
+        "8": 7774617.900000001
+      },
+      "boundary_priority_before": 0,
+      "boundary_priority_after": 0
+    },
+    {
+      "group": 2,
+      "cpu": 2,
+      "mode": "full",
+      "kind": "native",
+      "cycle": 2,
+      "warmup": false,
+      "cpu_us": 7421875.0,
+      "wall_us": 7515638.4,
+      "tid": 1252,
+      "capture_index": 87,
+      "begin_qpc": 11134625565089,
+      "end_qpc": 11134700720139,
+      "gross_us": 7471449.299999999,
+      "dpc_isr_us": 4178.0,
+      "net_us": 7467271.299999999,
+      "residual_us": -45396.29999999888,
+      "interval_qpc_us": 7515505.0,
+      "off_cpu_us": 44055.70000000112,
+      "slices": 390,
+      "priority_changed_within_slice_count": 2,
+      "switch_in_priority_weight_us": {
+        "10": 33963.1,
+        "9": 29135.9,
+        "8": 7408350.299999999
+      },
+      "switch_out_priority_weight_us": {
+        "9": 49252.2,
+        "8": 7422197.1
+      },
+      "boundary_priority_before": 0,
+      "boundary_priority_after": 0
+    },
+    {
+      "group": 2,
+      "cpu": 0,
+      "mode": "minimal",
+      "kind": "sigma",
+      "cycle": 2,
+      "warmup": false,
+      "cpu_us": 5906250.0,
+      "wall_us": 6431761.8,
+      "tid": 14500,
+      "capture_index": 88,
+      "begin_qpc": 11134701229553,
+      "end_qpc": 11134765546775,
+      "gross_us": 6426283.7,
+      "dpc_isr_us": 289346.0,
+      "net_us": 6136937.7,
+      "residual_us": -230687.7000000002,
+      "interval_qpc_us": 6431722.2,
+      "off_cpu_us": 5438.5,
+      "slices": 495,
+      "priority_changed_within_slice_count": 2,
+      "switch_in_priority_weight_us": {
+        "10": 33142.3,
+        "9": 34192.9,
+        "8": 6358948.499999999
+      },
+      "switch_out_priority_weight_us": {
+        "9": 33142.3,
+        "8": 6393141.399999999
+      },
+      "boundary_priority_before": 0,
+      "boundary_priority_after": 0
+    },
+    {
+      "group": 2,
+      "cpu": 0,
+      "mode": "minimal",
+      "kind": "native",
+      "cycle": 3,
+      "warmup": false,
+      "cpu_us": 7250000.0,
+      "wall_us": 7858428.5,
+      "tid": 21576,
+      "capture_index": 89,
+      "begin_qpc": 11134765690999,
+      "end_qpc": 11134844274874,
+      "gross_us": 7847925.400000009,
+      "dpc_isr_us": 367013.0,
+      "net_us": 7480912.400000009,
+      "residual_us": -230912.40000000875,
+      "interval_qpc_us": 7858387.5,
+      "off_cpu_us": 10462.099999991246,
+      "slices": 664,
+      "priority_changed_within_slice_count": 0,
+      "switch_in_priority_weight_us": {
+        "8": 7847925.400000009
+      },
+      "switch_out_priority_weight_us": {
+        "8": 7847925.400000009
+      },
+      "boundary_priority_before": 0,
+      "boundary_priority_after": 0
+    },
+    {
+      "group": 2,
+      "cpu": 2,
+      "mode": "full",
+      "kind": "sigma",
+      "cycle": 3,
+      "warmup": false,
+      "cpu_us": 6062500.0,
+      "wall_us": 6175323.1,
+      "tid": 3524,
+      "capture_index": 90,
+      "begin_qpc": 11134844415140,
+      "end_qpc": 11134906213346,
+      "gross_us": 6136379.799999998,
+      "dpc_isr_us": 2856.0,
+      "net_us": 6133523.799999998,
+      "residual_us": -71023.79999999795,
+      "interval_qpc_us": 6179820.6,
+      "off_cpu_us": 43440.80000000168,
+      "slices": 308,
+      "priority_changed_within_slice_count": 2,
+      "switch_in_priority_weight_us": {
+        "8": 6099707.599999998,
+        "10": 16021.7,
+        "9": 20650.5
+      },
+      "switch_out_priority_weight_us": {
+        "8": 6120358.099999998,
+        "9": 16021.7
+      },
+      "boundary_priority_before": 0,
+      "boundary_priority_after": 0
+    },
+    {
+      "group": 2,
+      "cpu": 0,
+      "mode": "full",
+      "kind": "sigma",
+      "cycle": 3,
+      "warmup": false,
+      "cpu_us": 6000000.0,
+      "wall_us": 6479792.6,
+      "tid": 40888,
+      "capture_index": 91,
+      "begin_qpc": 11134906737145,
+      "end_qpc": 11134971525599,
+      "gross_us": 6434610.599999999,
+      "dpc_isr_us": 296329.0,
+      "net_us": 6138281.599999999,
+      "residual_us": -138281.5999999987,
+      "interval_qpc_us": 6478845.4,
+      "off_cpu_us": 44234.80000000168,
+      "slices": 533,
+      "priority_changed_within_slice_count": 2,
+      "switch_in_priority_weight_us": {
+        "10": 39309.3,
+        "9": 28553.8,
+        "8": 6366747.499999997
+      },
+      "switch_out_priority_weight_us": {
+        "9": 55385.700000000004,
+        "8": 6379224.899999998
+      },
+      "boundary_priority_before": 0,
+      "boundary_priority_after": 0
+    },
+    {
+      "group": 2,
+      "cpu": 2,
+      "mode": "minimal",
+      "kind": "native",
+      "cycle": 3,
+      "warmup": false,
+      "cpu_us": 7375000.0,
+      "wall_us": 7474278.7,
+      "tid": 23204,
+      "capture_index": 92,
+      "begin_qpc": 11134972047080,
+      "end_qpc": 11135046789468,
+      "gross_us": 7471749.599999996,
+      "dpc_isr_us": 5287.0,
+      "net_us": 7466462.599999996,
+      "residual_us": -91462.5999999959,
+      "interval_qpc_us": 7474238.8,
+      "off_cpu_us": 2489.2000000039116,
+      "slices": 382,
+      "priority_changed_within_slice_count": 2,
+      "switch_in_priority_weight_us": {
+        "10": 706.8,
+        "9": 31933.2,
+        "8": 7439109.599999996
+      },
+      "switch_out_priority_weight_us": {
+        "9": 706.8,
+        "8": 7471042.799999995
+      },
+      "boundary_priority_before": 0,
+      "boundary_priority_after": 0
+    },
+    {
+      "group": 2,
+      "cpu": 2,
+      "mode": "minimal",
+      "kind": "sigma",
+      "cycle": 3,
+      "warmup": false,
+      "cpu_us": 6031250.0,
+      "wall_us": 6133603.3,
+      "tid": 24124,
+      "capture_index": 93,
+      "begin_qpc": 11135046924319,
+      "end_qpc": 11135108259941,
+      "gross_us": 6130446.499999997,
+      "dpc_isr_us": 4110.0,
+      "net_us": 6126336.499999997,
+      "residual_us": -95086.4999999972,
+      "interval_qpc_us": 6133562.2,
+      "off_cpu_us": 3115.7000000029802,
+      "slices": 311,
+      "priority_changed_within_slice_count": 2,
+      "switch_in_priority_weight_us": {
+        "10": 31226.1,
+        "9": 31913.9,
+        "8": 6067306.499999997
+      },
+      "switch_out_priority_weight_us": {
+        "9": 49252.59999999999,
+        "8": 6081193.899999998
+      },
+      "boundary_priority_before": 0,
+      "boundary_priority_after": 0
+    },
+    {
+      "group": 2,
+      "cpu": 0,
+      "mode": "full",
+      "kind": "native",
+      "cycle": 3,
+      "warmup": false,
+      "cpu_us": 7562500.0,
+      "wall_us": 7869302.4,
+      "tid": 9912,
+      "capture_index": 94,
+      "begin_qpc": 11135108401613,
+      "end_qpc": 11135187094198,
+      "gross_us": 7823800.4,
+      "dpc_isr_us": 347397.0,
+      "net_us": 7476403.4,
+      "residual_us": 86096.59999999963,
+      "interval_qpc_us": 7869258.5,
+      "off_cpu_us": 45458.09999999963,
+      "slices": 606,
+      "priority_changed_within_slice_count": 2,
+      "switch_in_priority_weight_us": {
+        "10": 47820.6,
+        "9": 20791.8,
+        "8": 7755188.000000001
+      },
+      "switch_out_priority_weight_us": {
+        "9": 63436.899999999994,
+        "8": 7760363.5
+      },
+      "boundary_priority_before": 0,
+      "boundary_priority_after": 0
+    },
+    {
+      "group": 2,
+      "cpu": 2,
+      "mode": "full",
+      "kind": "native",
+      "cycle": 3,
+      "warmup": false,
+      "cpu_us": 7390625.0,
+      "wall_us": 7516288.5,
+      "tid": 24888,
+      "capture_index": 95,
+      "begin_qpc": 11135187610179,
+      "end_qpc": 11135262770596,
+      "gross_us": 7476351.300000001,
+      "dpc_isr_us": 5390.0,
+      "net_us": 7470961.300000001,
+      "residual_us": -80336.30000000075,
+      "interval_qpc_us": 7516041.7,
+      "off_cpu_us": 39690.39999999944,
+      "slices": 407,
+      "priority_changed_within_slice_count": 2,
+      "switch_in_priority_weight_us": {
+        "10": 43841.5,
+        "9": 20514.7,
+        "8": 7411995.100000001
+      },
+      "switch_out_priority_weight_us": {
+        "9": 43841.5,
+        "8": 7432509.800000001
+      },
+      "boundary_priority_before": 0,
+      "boundary_priority_after": 0
+    },
+    {
+      "group": 2,
+      "cpu": 0,
+      "mode": "minimal",
+      "kind": "sigma",
+      "cycle": 3,
+      "warmup": false,
+      "cpu_us": 6000000.0,
+      "wall_us": 6456116.5,
+      "tid": 28224,
+      "capture_index": 96,
+      "begin_qpc": 11135263287141,
+      "end_qpc": 11135327847833,
+      "gross_us": 6449395.1000000015,
+      "dpc_isr_us": 299415.0,
+      "net_us": 6149980.1000000015,
+      "residual_us": -149980.1000000015,
+      "interval_qpc_us": 6456069.2,
+      "off_cpu_us": 6674.099999998696,
+      "slices": 499,
+      "priority_changed_within_slice_count": 2,
+      "switch_in_priority_weight_us": {
+        "10": 4857.8,
+        "9": 33647.0,
+        "8": 6410890.300000001
+      },
+      "switch_out_priority_weight_us": {
+        "9": 36756.2,
+        "8": 6412638.900000001
+      },
+      "boundary_priority_before": 0,
+      "boundary_priority_after": 0
+    }
+  ],
+  "etw_measured_rows": 48,
+  "summary": [
+    {
+      "group": 1,
+      "cpu": 0,
+      "mode": "full",
+      "kind": "native",
+      "metrics": {
+        "cpu_us": {
+          "mean": 7489583.333333333,
+          "median": 7484375.0,
+          "min": 7468750.0,
+          "max": 7515625.0
+        },
+        "gross_us": {
+          "mean": 7848496.300000004,
+          "median": 7849176.300000002,
+          "min": 7845211.400000007,
+          "max": 7851101.200000002
+        },
+        "dpc_isr_us": {
+          "mean": 338364.3333333333,
+          "median": 339901.0,
+          "min": 334168.0,
+          "max": 341024.0
+        },
+        "net_us": {
+          "mean": 7510131.9666666705,
+          "median": 7510077.200000002,
+          "min": 7509275.300000002,
+          "max": 7511043.400000007
+        },
+        "residual_us": {
+          "mean": -20548.63333333687,
+          "median": -26668.40000000689,
+          "min": -40525.30000000168,
+          "max": 5547.799999997951
+        },
+        "off_cpu_us": {
+          "mean": 44636.09999999652,
+          "median": 45062.299999993294,
+          "min": 43688.79999999795,
+          "max": 45157.19999999832
+        }
+      }
+    },
+    {
+      "group": 1,
+      "cpu": 0,
+      "mode": "full",
+      "kind": "sigma",
+      "metrics": {
+        "cpu_us": {
+          "mean": 5843750.0,
+          "median": 5796875.0,
+          "min": 5781250.0,
+          "max": 5953125.0
+        },
+        "gross_us": {
+          "mean": 6450736.299999995,
+          "median": 6452850.399999997,
+          "min": 6439528.299999995,
+          "max": 6459830.199999994
+        },
+        "dpc_isr_us": {
+          "mean": 276383.0,
+          "median": 277791.0,
+          "min": 270851.0,
+          "max": 280507.0
+        },
+        "net_us": {
+          "mean": 6174353.299999995,
+          "median": 6175059.399999997,
+          "min": 6168677.299999995,
+          "max": 6179323.199999994
+        },
+        "residual_us": {
+          "mean": -330603.29999999516,
+          "median": -382448.19999999367,
+          "min": -387427.29999999516,
+          "max": -221934.39999999665
+        },
+        "off_cpu_us": {
+          "mean": 44487.933333337925,
+          "median": 44433.20000000298,
+          "min": 44165.00000000466,
+          "max": 44865.60000000615
+        }
+      }
+    },
+    {
+      "group": 1,
+      "cpu": 0,
+      "mode": "minimal",
+      "kind": "native",
+      "metrics": {
+        "cpu_us": {
+          "mean": 7432291.666666667,
+          "median": 7421875.0,
+          "min": 7421875.0,
+          "max": 7453125.0
+        },
+        "gross_us": {
+          "mean": 7858469.333333334,
+          "median": 7853557.199999998,
+          "min": 7847029.600000003,
+          "max": 7874821.2
+        },
+        "dpc_isr_us": {
+          "mean": 346885.6666666667,
+          "median": 342112.0,
+          "min": 335475.0,
+          "max": 363070.0
+        },
+        "net_us": {
+          "mean": 7511583.666666667,
+          "median": 7511554.600000003,
+          "min": 7511445.199999998,
+          "max": 7511751.2
+        },
+        "residual_us": {
+          "mean": -79292.00000000063,
+          "median": -89570.19999999832,
+          "min": -89679.60000000335,
+          "max": -58626.200000000186
+        },
+        "off_cpu_us": {
+          "mean": 6915.266666665983,
+          "median": 6833.899999996647,
+          "min": 6481.60000000149,
+          "max": 7430.299999999814
+        }
+      }
+    },
+    {
+      "group": 1,
+      "cpu": 0,
+      "mode": "minimal",
+      "kind": "sigma",
+      "metrics": {
+        "cpu_us": {
+          "mean": 6203125.0,
+          "median": 6218750.0,
+          "min": 6046875.0,
+          "max": 6343750.0
+        },
+        "gross_us": {
+          "mean": 6451959.8,
+          "median": 6454133.8000000045,
+          "min": 6444589.199999998,
+          "max": 6457156.399999997
+        },
+        "dpc_isr_us": {
+          "mean": 279229.6666666667,
+          "median": 280524.0,
+          "min": 276225.0,
+          "max": 280940.0
+        },
+        "net_us": {
+          "mean": 6172730.133333333,
+          "median": 6173193.8000000045,
+          "min": 6168364.199999998,
+          "max": 6176632.399999997
+        },
+        "residual_us": {
+          "mean": 30394.866666666854,
+          "median": 45556.19999999553,
+          "min": -121489.19999999832,
+          "max": 167117.60000000335
+        },
+        "off_cpu_us": {
+          "mean": 5836.333333333644,
+          "median": 5871.799999995157,
+          "min": 5183.700000002049,
+          "max": 6453.500000003725
+        }
+      }
+    },
+    {
+      "group": 1,
+      "cpu": 2,
+      "mode": "full",
+      "kind": "native",
+      "metrics": {
+        "cpu_us": {
+          "mean": 7442708.333333333,
+          "median": 7437500.0,
+          "min": 7437500.0,
+          "max": 7453125.0
+        },
+        "gross_us": {
+          "mean": 7480378.066666669,
+          "median": 7474092.499999999,
+          "min": 7473900.7,
+          "max": 7493141.000000008
+        },
+        "dpc_isr_us": {
+          "mean": 3995.0,
+          "median": 3824.0,
+          "min": 3492.0,
+          "max": 4669.0
+        },
+        "net_us": {
+          "mean": 7476383.066666669,
+          "median": 7470408.7,
+          "min": 7470268.499999999,
+          "max": 7488472.000000008
+        },
+        "residual_us": {
+          "mean": -33674.73333333588,
+          "median": -32908.700000000186,
+          "min": -35347.00000000838,
+          "max": -32768.49999999907
+        },
+        "off_cpu_us": {
+          "mean": 42378.16666666387,
+          "median": 41841.09999999963,
+          "min": 41598.79999999143,
+          "max": 43694.60000000056
+        }
+      }
+    },
+    {
+      "group": 1,
+      "cpu": 2,
+      "mode": "full",
+      "kind": "sigma",
+      "metrics": {
+        "cpu_us": {
+          "mean": 6125000.0,
+          "median": 6125000.0,
+          "min": 6109375.0,
+          "max": 6140625.0
+        },
+        "gross_us": {
+          "mean": 6144512.966666667,
+          "median": 6128965.700000005,
+          "min": 6126100.399999996,
+          "max": 6178472.799999999
+        },
+        "dpc_isr_us": {
+          "mean": 3272.6666666666665,
+          "median": 3442.0,
+          "min": 2713.0,
+          "max": 3663.0
+        },
+        "net_us": {
+          "mean": 6141240.3,
+          "median": 6125302.700000005,
+          "min": 6122658.399999996,
+          "max": 6175759.799999999
+        },
+        "residual_us": {
+          "mean": -16240.299999999814,
+          "median": -13283.399999995716,
+          "min": -35134.79999999888,
+          "max": -302.7000000048429
+        },
+        "off_cpu_us": {
+          "mean": 44699.86666666685,
+          "median": 44772.900000001304,
+          "min": 40317.899999994785,
+          "max": 49008.80000000447
+        }
+      }
+    },
+    {
+      "group": 1,
+      "cpu": 2,
+      "mode": "minimal",
+      "kind": "native",
+      "metrics": {
+        "cpu_us": {
+          "mean": 7395833.333333333,
+          "median": 7390625.0,
+          "min": 7359375.0,
+          "max": 7437500.0
+        },
+        "gross_us": {
+          "mean": 7476297.833333334,
+          "median": 7475111.399999999,
+          "min": 7474341.699999999,
+          "max": 7479440.400000004
+        },
+        "dpc_isr_us": {
+          "mean": 5307.0,
+          "median": 4827.0,
+          "min": 4427.0,
+          "max": 6667.0
+        },
+        "net_us": {
+          "mean": 7470990.833333334,
+          "median": 7470684.399999999,
+          "min": 7469514.699999999,
+          "max": 7472773.400000004
+        },
+        "residual_us": {
+          "mean": -75157.50000000093,
+          "median": -80059.39999999944,
+          "min": -110139.69999999925,
+          "max": -35273.4000000041
+        },
+        "off_cpu_us": {
+          "mean": 7127.43333333265,
+          "median": 6622.799999996088,
+          "min": 4934.000000000931,
+          "max": 9825.500000000931
+        }
+      }
+    },
+    {
+      "group": 1,
+      "cpu": 2,
+      "mode": "minimal",
+      "kind": "sigma",
+      "metrics": {
+        "cpu_us": {
+          "mean": 6114583.333333333,
+          "median": 6109375.0,
+          "min": 6109375.0,
+          "max": 6125000.0
+        },
+        "gross_us": {
+          "mean": 6138502.133333334,
+          "median": 6143560.699999998,
+          "min": 6127304.500000002,
+          "max": 6144641.200000002
+        },
+        "dpc_isr_us": {
+          "mean": 3526.3333333333335,
+          "median": 3058.0,
+          "min": 2989.0,
+          "max": 4532.0
+        },
+        "net_us": {
+          "mean": 6134975.800000001,
+          "median": 6139028.699999998,
+          "min": 6124315.500000002,
+          "max": 6141583.200000002
+        },
+        "residual_us": {
+          "mean": -20392.466666667413,
+          "median": -29653.699999998324,
+          "min": -32208.20000000205,
+          "max": 684.4999999981374
+        },
+        "off_cpu_us": {
+          "mean": 4530.333333332402,
+          "median": 3995.8000000016764,
+          "min": 3387.8999999975786,
+          "max": 6207.299999997951
+        }
+      }
+    },
+    {
+      "group": 2,
+      "cpu": 0,
+      "mode": "full",
+      "kind": "native",
+      "metrics": {
+        "cpu_us": {
+          "mean": 7562500.0,
+          "median": 7562500.0,
+          "min": 7546875.0,
+          "max": 7578125.0
+        },
+        "gross_us": {
+          "mean": 7843165.700000002,
+          "median": 7826437.6000000015,
+          "min": 7823800.4,
+          "max": 7879259.100000003
+        },
+        "dpc_isr_us": {
+          "mean": 355307.6666666667,
+          "median": 350029.0,
+          "min": 347397.0,
+          "max": 368497.0
+        },
+        "net_us": {
+          "mean": 7487858.033333335,
+          "median": 7476408.6000000015,
+          "min": 7476403.4,
+          "max": 7510762.100000003
+        },
+        "residual_us": {
+          "mean": 74641.96666666493,
+          "median": 70466.39999999851,
+          "min": 67362.89999999665,
+          "max": 86096.59999999963
+        },
+        "off_cpu_us": {
+          "mean": 45497.09999999808,
+          "median": 45458.09999999963,
+          "min": 44265.499999996275,
+          "max": 46767.69999999832
+        }
+      }
+    },
+    {
+      "group": 2,
+      "cpu": 0,
+      "mode": "full",
+      "kind": "sigma",
+      "metrics": {
+        "cpu_us": {
+          "mean": 5864583.333333333,
+          "median": 5984375.0,
+          "min": 5609375.0,
+          "max": 6000000.0
+        },
+        "gross_us": {
+          "mean": 6446531.833333335,
+          "median": 6434610.599999999,
+          "min": 6429117.900000007,
+          "max": 6475867.0
+        },
+        "dpc_isr_us": {
+          "mean": 299307.0,
+          "median": 296329.0,
+          "min": 290543.0,
+          "max": 311049.0
+        },
+        "net_us": {
+          "mean": 6147224.833333335,
+          "median": 6138574.900000007,
+          "min": 6138281.599999999,
+          "max": 6164818.0
+        },
+        "residual_us": {
+          "mean": -282641.50000000186,
+          "median": -154199.9000000069,
+          "min": -555443.0,
+          "max": -138281.5999999987
+        },
+        "off_cpu_us": {
+          "mean": 44305.83333333147,
+          "median": 44234.80000000168,
+          "min": 43140.299999999814,
+          "max": 45542.39999999292
+        }
+      }
+    },
+    {
+      "group": 2,
+      "cpu": 0,
+      "mode": "minimal",
+      "kind": "native",
+      "metrics": {
+        "cpu_us": {
+          "mean": 7255208.333333333,
+          "median": 7250000.0,
+          "min": 7140625.0,
+          "max": 7375000.0
+        },
+        "gross_us": {
+          "mean": 7869290.23333334,
+          "median": 7878973.800000002,
+          "min": 7847925.400000009,
+          "max": 7880971.50000001
+        },
+        "dpc_isr_us": {
+          "mean": 368014.3333333333,
+          "median": 367013.0,
+          "min": 366028.0,
+          "max": 371002.0
+        },
+        "net_us": {
+          "mean": 7501275.900000007,
+          "median": 7509969.50000001,
+          "min": 7480912.400000009,
+          "max": 7512945.800000002
+        },
+        "residual_us": {
+          "mean": -246067.56666667355,
+          "median": -230912.40000000875,
+          "min": -372320.8000000017,
+          "max": -134969.50000001024
+        },
+        "off_cpu_us": {
+          "mean": 9023.533333326379,
+          "median": 9254.999999989755,
+          "min": 7353.499999998137,
+          "max": 10462.099999991246
+        }
+      }
+    },
+    {
+      "group": 2,
+      "cpu": 0,
+      "mode": "minimal",
+      "kind": "sigma",
+      "metrics": {
+        "cpu_us": {
+          "mean": 5963541.666666667,
+          "median": 5984375.0,
+          "min": 5906250.0,
+          "max": 6000000.0
+        },
+        "gross_us": {
+          "mean": 6448898.200000001,
+          "median": 6449395.1000000015,
+          "min": 6426283.7,
+          "max": 6471015.800000002
+        },
+        "dpc_isr_us": {
+          "mean": 297174.3333333333,
+          "median": 299415.0,
+          "min": 289346.0,
+          "max": 302762.0
+        },
+        "net_us": {
+          "mean": 6151723.866666668,
+          "median": 6149980.1000000015,
+          "min": 6136937.7,
+          "max": 6168253.800000002
+        },
+        "residual_us": {
+          "mean": -188182.20000000112,
+          "median": -183878.80000000168,
+          "min": -230687.7000000002,
+          "max": -149980.1000000015
+        },
+        "off_cpu_us": {
+          "mean": 5687.633333332215,
+          "median": 5438.5,
+          "min": 4950.299999997951,
+          "max": 6674.099999998696
+        }
+      }
+    },
+    {
+      "group": 2,
+      "cpu": 2,
+      "mode": "full",
+      "kind": "native",
+      "metrics": {
+        "cpu_us": {
+          "mean": 7406250.0,
+          "median": 7406250.0,
+          "min": 7390625.0,
+          "max": 7421875.0
+        },
+        "gross_us": {
+          "mean": 7475827.833333333,
+          "median": 7476351.300000001,
+          "min": 7471449.299999999,
+          "max": 7479682.899999999
+        },
+        "dpc_isr_us": {
+          "mean": 4480.0,
+          "median": 4178.0,
+          "min": 3872.0,
+          "max": 5390.0
+        },
+        "net_us": {
+          "mean": 7471347.833333333,
+          "median": 7470961.300000001,
+          "min": 7467271.299999999,
+          "max": 7475810.899999999
+        },
+        "residual_us": {
+          "mean": -65097.83333333302,
+          "median": -69560.89999999944,
+          "min": -80336.30000000075,
+          "max": -45396.29999999888
+        },
+        "off_cpu_us": {
+          "mean": 41310.66666666698,
+          "median": 40185.90000000037,
+          "min": 39690.39999999944,
+          "max": 44055.70000000112
+        }
+      }
+    },
+    {
+      "group": 2,
+      "cpu": 2,
+      "mode": "full",
+      "kind": "sigma",
+      "metrics": {
+        "cpu_us": {
+          "mean": 6104166.666666667,
+          "median": 6093750.0,
+          "min": 6062500.0,
+          "max": 6156250.0
+        },
+        "gross_us": {
+          "mean": 6142164.799999999,
+          "median": 6136379.799999998,
+          "min": 6136021.899999995,
+          "max": 6154092.700000004
+        },
+        "dpc_isr_us": {
+          "mean": 3944.0,
+          "median": 4029.0,
+          "min": 2856.0,
+          "max": 4947.0
+        },
+        "net_us": {
+          "mean": 6138220.799999999,
+          "median": 6133523.799999998,
+          "min": 6131992.899999995,
+          "max": 6149145.700000004
+        },
+        "residual_us": {
+          "mean": -34054.13333333222,
+          "median": -38242.899999994785,
+          "min": -71023.79999999795,
+          "max": 7104.299999996088
+        },
+        "off_cpu_us": {
+          "mean": 41834.13333333439,
+          "median": 41466.40000000503,
+          "min": 40595.19999999646,
+          "max": 43440.80000000168
+        }
+      }
+    },
+    {
+      "group": 2,
+      "cpu": 2,
+      "mode": "minimal",
+      "kind": "native",
+      "metrics": {
+        "cpu_us": {
+          "mean": 7421875.0,
+          "median": 7437500.0,
+          "min": 7375000.0,
+          "max": 7453125.0
+        },
+        "gross_us": {
+          "mean": 7471197.299999999,
+          "median": 7471749.599999996,
+          "min": 7469062.800000001,
+          "max": 7472779.500000001
+        },
+        "dpc_isr_us": {
+          "mean": 4189.666666666667,
+          "median": 3973.0,
+          "min": 3309.0,
+          "max": 5287.0
+        },
+        "net_us": {
+          "mean": 7467007.633333333,
+          "median": 7466462.599999996,
+          "min": 7465753.800000001,
+          "max": 7468806.500000001
+        },
+        "residual_us": {
+          "mean": -45132.633333332524,
+          "median": -31306.50000000093,
+          "min": -91462.5999999959,
+          "max": -12628.800000000745
+        },
+        "off_cpu_us": {
+          "mean": 3989.2666666672253,
+          "median": 4525.099999998696,
+          "min": 2489.2000000039116,
+          "max": 4953.499999999069
+        }
+      }
+    },
+    {
+      "group": 2,
+      "cpu": 2,
+      "mode": "minimal",
+      "kind": "sigma",
+      "metrics": {
+        "cpu_us": {
+          "mean": 6057291.666666667,
+          "median": 6046875.0,
+          "min": 6031250.0,
+          "max": 6093750.0
+        },
+        "gross_us": {
+          "mean": 6126700.666666665,
+          "median": 6125292.499999999,
+          "min": 6124362.999999999,
+          "max": 6130446.499999997
+        },
+        "dpc_isr_us": {
+          "mean": 3391.6666666666665,
+          "median": 3063.0,
+          "min": 3002.0,
+          "max": 4110.0
+        },
+        "net_us": {
+          "mean": 6123308.999999998,
+          "median": 6122290.499999999,
+          "min": 6121299.999999999,
+          "max": 6126336.499999997
+        },
+        "residual_us": {
+          "mean": -66017.33333333179,
+          "median": -75415.49999999907,
+          "min": -95086.4999999972,
+          "max": -27549.99999999907
+        },
+        "off_cpu_us": {
+          "mean": 2821.9666666680328,
+          "median": 3115.7000000029802,
+          "min": 2208.600000000559,
+          "max": 3141.600000000559
+        }
+      }
+    }
+  ],
+  "mean_difference_accounting": [
+    {
+      "dimension": "cpu",
+      "before": {
+        "group": 1,
+        "cpu": 0,
+        "mode": "full",
+        "kind": "native"
+      },
+      "after": {
+        "group": 1,
+        "cpu": 2,
+        "mode": "full",
+        "kind": "native"
+      },
+      "mean_deltas_us": {
+        "cpu_us": -46875.0,
+        "gross_us": -368118.2333333343,
+        "dpc_isr_us": -334369.3333333333,
+        "net_us": -33748.900000001304,
+        "residual_us": -13126.099999999005,
+        "off_cpu_us": -2257.9333333326504
+      }
+    },
+    {
+      "dimension": "cpu",
+      "before": {
+        "group": 1,
+        "cpu": 0,
+        "mode": "full",
+        "kind": "sigma"
+      },
+      "after": {
+        "group": 1,
+        "cpu": 2,
+        "mode": "full",
+        "kind": "sigma"
+      },
+      "mean_deltas_us": {
+        "cpu_us": 281250.0,
+        "gross_us": -306223.33333332837,
+        "dpc_isr_us": -273110.3333333333,
+        "net_us": -33112.99999999534,
+        "residual_us": 314362.99999999534,
+        "off_cpu_us": 211.93333332892507
+      }
+    },
+    {
+      "dimension": "cpu",
+      "before": {
+        "group": 1,
+        "cpu": 0,
+        "mode": "minimal",
+        "kind": "native"
+      },
+      "after": {
+        "group": 1,
+        "cpu": 2,
+        "mode": "minimal",
+        "kind": "native"
+      },
+      "mean_deltas_us": {
+        "cpu_us": -36458.333333333954,
+        "gross_us": -382171.5,
+        "dpc_isr_us": -341578.6666666667,
+        "net_us": -40592.83333333302,
+        "residual_us": 4134.499999999694,
+        "off_cpu_us": 212.16666666666697
+      }
+    },
+    {
+      "dimension": "cpu",
+      "before": {
+        "group": 1,
+        "cpu": 0,
+        "mode": "minimal",
+        "kind": "sigma"
+      },
+      "after": {
+        "group": 1,
+        "cpu": 2,
+        "mode": "minimal",
+        "kind": "sigma"
+      },
+      "mean_deltas_us": {
+        "cpu_us": -88541.66666666698,
+        "gross_us": -313457.66666666605,
+        "dpc_isr_us": -275703.3333333334,
+        "net_us": -37754.33333333209,
+        "residual_us": -50787.33333333427,
+        "off_cpu_us": -1306.0000000012424
+      }
+    },
+    {
+      "dimension": "cpu",
+      "before": {
+        "group": 2,
+        "cpu": 0,
+        "mode": "full",
+        "kind": "native"
+      },
+      "after": {
+        "group": 2,
+        "cpu": 2,
+        "mode": "full",
+        "kind": "native"
+      },
+      "mean_deltas_us": {
+        "cpu_us": -156250.0,
+        "gross_us": -367337.866666669,
+        "dpc_isr_us": -350827.6666666667,
+        "net_us": -16510.20000000205,
+        "residual_us": -139739.79999999795,
+        "off_cpu_us": -4186.433333331101
+      }
+    },
+    {
+      "dimension": "cpu",
+      "before": {
+        "group": 2,
+        "cpu": 0,
+        "mode": "full",
+        "kind": "sigma"
+      },
+      "after": {
+        "group": 2,
+        "cpu": 2,
+        "mode": "full",
+        "kind": "sigma"
+      },
+      "mean_deltas_us": {
+        "cpu_us": 239583.33333333395,
+        "gross_us": -304367.033333336,
+        "dpc_isr_us": -295363.0,
+        "net_us": -9004.033333336003,
+        "residual_us": 248587.36666666964,
+        "off_cpu_us": -2471.6999999970867
+      }
+    },
+    {
+      "dimension": "cpu",
+      "before": {
+        "group": 2,
+        "cpu": 0,
+        "mode": "minimal",
+        "kind": "native"
+      },
+      "after": {
+        "group": 2,
+        "cpu": 2,
+        "mode": "minimal",
+        "kind": "native"
+      },
+      "mean_deltas_us": {
+        "cpu_us": 166666.66666666698,
+        "gross_us": -398092.93333334103,
+        "dpc_isr_us": -363824.6666666666,
+        "net_us": -34268.266666674055,
+        "residual_us": 200934.93333334103,
+        "off_cpu_us": -5034.266666659154
+      }
+    },
+    {
+      "dimension": "cpu",
+      "before": {
+        "group": 2,
+        "cpu": 0,
+        "mode": "minimal",
+        "kind": "sigma"
+      },
+      "after": {
+        "group": 2,
+        "cpu": 2,
+        "mode": "minimal",
+        "kind": "sigma"
+      },
+      "mean_deltas_us": {
+        "cpu_us": 93750.0,
+        "gross_us": -322197.533333336,
+        "dpc_isr_us": -293782.6666666666,
+        "net_us": -28414.866666669957,
+        "residual_us": 122164.86666666933,
+        "off_cpu_us": -2865.6666666641827
+      }
+    },
+    {
+      "dimension": "mode",
+      "before": {
+        "group": 1,
+        "cpu": 0,
+        "mode": "minimal",
+        "kind": "native"
+      },
+      "after": {
+        "group": 1,
+        "cpu": 0,
+        "mode": "full",
+        "kind": "native"
+      },
+      "mean_deltas_us": {
+        "cpu_us": 57291.666666666046,
+        "gross_us": -9973.033333330415,
+        "dpc_isr_us": -8521.333333333372,
+        "net_us": -1451.699999996461,
+        "residual_us": 58743.36666666376,
+        "off_cpu_us": 37720.833333330535
+      }
+    },
+    {
+      "dimension": "mode",
+      "before": {
+        "group": 1,
+        "cpu": 0,
+        "mode": "minimal",
+        "kind": "sigma"
+      },
+      "after": {
+        "group": 1,
+        "cpu": 0,
+        "mode": "full",
+        "kind": "sigma"
+      },
+      "mean_deltas_us": {
+        "cpu_us": -359375.0,
+        "gross_us": -1223.5000000046566,
+        "dpc_isr_us": -2846.666666666686,
+        "net_us": 1623.1666666623205,
+        "residual_us": -360998.16666666203,
+        "off_cpu_us": 38651.600000004284
+      }
+    },
+    {
+      "dimension": "mode",
+      "before": {
+        "group": 1,
+        "cpu": 2,
+        "mode": "minimal",
+        "kind": "native"
+      },
+      "after": {
+        "group": 1,
+        "cpu": 2,
+        "mode": "full",
+        "kind": "native"
+      },
+      "mean_deltas_us": {
+        "cpu_us": 46875.0,
+        "gross_us": 4080.233333335258,
+        "dpc_isr_us": -1312.0,
+        "net_us": 5392.233333335258,
+        "residual_us": 41482.766666665055,
+        "off_cpu_us": 35250.73333333122
+      }
+    },
+    {
+      "dimension": "mode",
+      "before": {
+        "group": 1,
+        "cpu": 2,
+        "mode": "minimal",
+        "kind": "sigma"
+      },
+      "after": {
+        "group": 1,
+        "cpu": 2,
+        "mode": "full",
+        "kind": "sigma"
+      },
+      "mean_deltas_us": {
+        "cpu_us": 10416.666666666977,
+        "gross_us": 6010.833333333023,
+        "dpc_isr_us": -253.66666666666697,
+        "net_us": 6264.499999999069,
+        "residual_us": 4152.166666667599,
+        "off_cpu_us": 40169.533333334446
+      }
+    },
+    {
+      "dimension": "mode",
+      "before": {
+        "group": 2,
+        "cpu": 0,
+        "mode": "minimal",
+        "kind": "native"
+      },
+      "after": {
+        "group": 2,
+        "cpu": 0,
+        "mode": "full",
+        "kind": "native"
+      },
+      "mean_deltas_us": {
+        "cpu_us": 307291.666666667,
+        "gross_us": -26124.533333337866,
+        "dpc_isr_us": -12706.666666666628,
+        "net_us": -13417.86666667182,
+        "residual_us": 320709.53333333845,
+        "off_cpu_us": 36473.5666666717
+      }
+    },
+    {
+      "dimension": "mode",
+      "before": {
+        "group": 2,
+        "cpu": 0,
+        "mode": "minimal",
+        "kind": "sigma"
+      },
+      "after": {
+        "group": 2,
+        "cpu": 0,
+        "mode": "full",
+        "kind": "sigma"
+      },
+      "mean_deltas_us": {
+        "cpu_us": -98958.33333333395,
+        "gross_us": -2366.366666666232,
+        "dpc_isr_us": 2132.666666666686,
+        "net_us": -4499.033333333209,
+        "residual_us": -94459.30000000075,
+        "off_cpu_us": 38618.199999999255
+      }
+    },
+    {
+      "dimension": "mode",
+      "before": {
+        "group": 2,
+        "cpu": 2,
+        "mode": "minimal",
+        "kind": "native"
+      },
+      "after": {
+        "group": 2,
+        "cpu": 2,
+        "mode": "full",
+        "kind": "native"
+      },
+      "mean_deltas_us": {
+        "cpu_us": -15625.0,
+        "gross_us": 4630.5333333341405,
+        "dpc_isr_us": 290.33333333333303,
+        "net_us": 4340.200000000186,
+        "residual_us": -19965.2000000005,
+        "off_cpu_us": 37321.399999999754
+      }
+    },
+    {
+      "dimension": "mode",
+      "before": {
+        "group": 2,
+        "cpu": 2,
+        "mode": "minimal",
+        "kind": "sigma"
+      },
+      "after": {
+        "group": 2,
+        "cpu": 2,
+        "mode": "full",
+        "kind": "sigma"
+      },
+      "mean_deltas_us": {
+        "cpu_us": 46875.0,
+        "gross_us": 15464.133333333768,
+        "dpc_isr_us": 552.3333333333335,
+        "net_us": 14911.800000000745,
+        "residual_us": 31963.199999999568,
+        "off_cpu_us": 39012.16666666635
+      }
+    }
+  ],
+  "descriptive_correlations": [
+    {
+      "group": 1,
+      "cpu": 0,
+      "kind": "sigma",
+      "n": 6,
+      "pearson_residual_dpc": 0.5595841411885015,
+      "pearson_residual_order": -0.19903812774961255
+    },
+    {
+      "group": 1,
+      "cpu": 0,
+      "kind": "native",
+      "n": 6,
+      "pearson_residual_dpc": -0.0943520793055978,
+      "pearson_residual_order": -0.3159599101703394
+    },
+    {
+      "group": 1,
+      "cpu": 2,
+      "kind": "sigma",
+      "n": 6,
+      "pearson_residual_dpc": 0.011598444103241417,
+      "pearson_residual_order": -0.20185252187130018
+    },
+    {
+      "group": 1,
+      "cpu": 2,
+      "kind": "native",
+      "n": 6,
+      "pearson_residual_dpc": -0.04349085686669944,
+      "pearson_residual_order": -0.3543633804071211
+    },
+    {
+      "group": 2,
+      "cpu": 0,
+      "kind": "sigma",
+      "n": 6,
+      "pearson_residual_dpc": -0.7117253801565535,
+      "pearson_residual_order": 0.7031431617287647
+    },
+    {
+      "group": 2,
+      "cpu": 0,
+      "kind": "native",
+      "n": 6,
+      "pearson_residual_dpc": -0.5850627320750029,
+      "pearson_residual_order": 0.24392554326671614
+    },
+    {
+      "group": 2,
+      "cpu": 2,
+      "kind": "sigma",
+      "n": 6,
+      "pearson_residual_dpc": 0.5010009957634377,
+      "pearson_residual_order": -0.6732092104993734
+    },
+    {
+      "group": 2,
+      "cpu": 2,
+      "kind": "native",
+      "n": 6,
+      "pearson_residual_dpc": -0.8573382236677515,
+      "pearson_residual_order": -0.5882770203884422
+    }
+  ],
+  "limits": [
+    "Existing 128 runs only; scheduler/priority detailed data only for ETW-on64 runs, measured48",
+    "Priority values sampled at switches, not continuous changes or frequency",
+    "Switch-in/out priority weights describe slice residence including interruptions, not instruction execution by priority",
+    "Mean difference identity is bookkeeping, not causal explanation; preregistered medians retained in prior results",
+    "Correlations use n6 per group/CPU/program, mix observer modes and can be confounded",
+    "ETW off has no scheduler/DPC trace; cross-block differences cannot be decomposed in this way",
+    "DPC per-slice integer-us rounding and API quantization remain; residual is not ground-truth error"
+  ],
+  "analysis_source": "\"\"\"Task874: inspect existing scheduler exports; never capture or change OS settings.\"\"\"\nimport argparse\nimport collections\nimport csv\nimport hashlib\nimport json\nfrom pathlib import Path\nimport statistics\nimport struct\n\n\ndef require(condition, message):\n    if not condition:\n        raise ValueError(message)\n\n\ndef digest(path):\n    with path.open('rb') as stream:\n        return hashlib.file_digest(stream, 'sha256').hexdigest()\n\n\ndef correlation(xs, ys):\n    xmean, ymean = statistics.mean(xs), statistics.mean(ys)\n    xv, yv = [x - xmean for x in xs], [y - ymean for y in ys]\n    denominator = (sum(x*x for x in xv) * sum(y*y for y in yv)) ** 0.5\n    return sum(x*y for x, y in zip(xv, yv)) / denominator if denominator else None\n\n\ndef extract(folder, group, samples, previous):\n    tids = {s['observer']['primary_tid'] for s in samples}\n    require(len(tids) == len(samples), 'Ambiguous reused TID')\n    slices, dpc = collections.defaultdict(list), collections.defaultdict(list)\n    raw_path, events_path = folder / 'raw.csv', folder / 'events.csv'\n    count, last = 0, {}\n    with raw_path.open() as raw_stream, events_path.open(errors='replace') as events_stream:\n        raw = csv.reader(raw_stream)\n        frequency = int(next(raw)[1])\n        require(int(next(raw)[1]) == 1, 'Non-QPC trace')\n        next(raw)\n        for row in csv.reader(events_stream, skipinitialspace=True):\n            if len(row) < 2:\n                continue\n            try:\n                timestamp = int(row[1])\n            except ValueError:\n                continue\n            if row[0] == 'DPC_ISR_CSWITCH_PCT' and int(row[7]) in tids:\n                dpc[int(row[7])].append((timestamp, int(row[8]), int(row[5])))\n            if row[0] != 'CSwitch':\n                continue\n            record = next(raw)\n            tick, cpu = int(record[0]), int(record[1])\n            new, old = struct.unpack_from('<II', bytes.fromhex(record[5]))\n            require((cpu, new, old) == (int(row[16]), int(row[3]), int(row[9])), 'Raw/xperf mismatch')\n            if cpu in last:\n                before, prior, new_priority = last[cpu]\n                require(prior == old, 'Broken scheduler chain')\n                if old in tids:\n                    slices[old].append((before, tick, cpu, timestamp, new_priority, int(row[10])))\n            else:\n                require(old not in tids, 'Missing preceding target switch')\n            last[cpu] = tick, new, int(row[4])\n            count += 1\n        require(next(raw, None) is None, 'Extra raw records')\n    require(count == previous['cswitch_count'], 'Changed CSwitch count')\n    old_rows = {r['tid']: r for r in previous['rows']}\n    results = []\n    for sample in samples:\n        tid = sample['observer']['primary_tid']\n        q0, q1 = sample['observer']['queries'][:2]\n        begin, end = q0['process']['after_qpc'], q1['process']['after_qpc']\n        require(end > begin, 'Invalid API interval')\n        runs, interruptions = slices[tid], dpc[tid]\n        require(len(runs) == len(interruptions), 'DPC correspondence count')\n        gross = excluded = 0.0\n        priorities_in, priorities_out = collections.Counter(), collections.Counter()\n        switches, prior_change = 0, 0\n        for (a, b, cpu, stamp, inp, outp), (ds, dcpu, interrupt) in zip(runs, interruptions):\n            require((stamp, cpu) == (ds, dcpu), 'DPC correspondence key')\n            overlap = max(0, min(b, end) - max(a, begin))\n            if not overlap:\n                continue\n            require(cpu == sample['cpu'], 'CPU drift')\n            require(overlap == b-a or interrupt == 0, 'Partial DPC boundary needs raw interruption events')\n            duration = overlap * 1e6 / frequency\n            gross += duration\n            excluded += interrupt\n            priorities_in[inp] += duration\n            priorities_out[outp] += duration\n            switches += 1\n            prior_change += inp != outp\n        net = gross - excluded\n        residual = sample['cpu_us'] - net\n        prior = old_rows[tid]\n        require(prior['scheduler_gross_range_us'][0] - 0.01 <= gross <= prior['scheduler_gross_range_us'][1] + 0.01, 'Gross interval disagreement')\n        require(prior['residual_range_us'][0] <= residual <= prior['residual_range_us'][1], 'Residual interval disagreement')\n        result = {k: sample[k] for k in ('group', 'cpu', 'mode', 'kind', 'cycle', 'warmup', 'cpu_us', 'wall_us')}\n        result.update(tid=tid, capture_index=sample['capture_index'], begin_qpc=begin, end_qpc=end,\n                      gross_us=gross, dpc_isr_us=excluded, net_us=net, residual_us=residual,\n                      interval_qpc_us=(end-begin)*1e6/frequency,\n                      off_cpu_us=(end-begin)*1e6/frequency-gross,\n                      slices=switches, priority_changed_within_slice_count=prior_change,\n                      switch_in_priority_weight_us=dict(priorities_in), switch_out_priority_weight_us=dict(priorities_out),\n                      boundary_priority_before=sample['observer']['before']['thread_priority'],\n                      boundary_priority_after=sample['observer']['after']['thread_priority'])\n        results.append(result)\n    return results\n\n\ndef analyze(folder, metadata):\n    capture = json.loads((folder / 'capture.json').read_text(encoding='utf-8'))\n    require(capture['status'] == 'complete', 'Incomplete capture')\n    require(digest(folder / 'capture.json') == metadata['analysis']['capture_sha256'], 'Capture changed')\n    rows = []\n    for group in (1, 2):\n        exports = folder / f'g{group}-analysis'\n        for name in ('raw.csv', 'events.csv', 'parsed.json'):\n            require(digest(exports / name) == metadata['local_export_files'][f'g{group}-analysis/{name}']['sha256'], 'Export changed: ' + name)\n        samples = [dict(s, capture_index=i+1) for i, s in enumerate(capture['samples']) if s['group'] == group and s['etw']]\n        require(len(samples) == 32, 'Missing ETW samples')\n        previous = json.loads((exports / 'parsed.json').read_text())\n        rows.extend(extract(exports, group, samples, previous))\n        print('group', group, 'scheduler/DPC/priority extraction complete', flush=True)\n    measured = [r for r in rows if not r['warmup']]\n    grouped = collections.defaultdict(list)\n    for row in measured:\n        grouped[(row['group'], row['cpu'], row['mode'], row['kind'])].append(row)\n    summary = []\n    fields = ('cpu_us', 'gross_us', 'dpc_isr_us', 'net_us', 'residual_us', 'off_cpu_us')\n    for key, values in sorted(grouped.items()):\n        require(len(values) == 3, 'Missing measured samples')\n        item = dict(zip(('group', 'cpu', 'mode', 'kind'), key))\n        item['metrics'] = {name: {'mean': statistics.mean(v[name] for v in values), 'median': statistics.median(v[name] for v in values), 'min': min(v[name] for v in values), 'max': max(v[name] for v in values)} for name in fields}\n        summary.append(item)\n    differences = []\n    for dimension, low, high in [('cpu', 0, 2), ('mode', 'minimal', 'full')]:\n        for a in summary:\n            if a[dimension] != low:\n                continue\n            for b in summary:\n                if b[dimension] != high or any(a[k] != b[k] for k in ('group', 'cpu', 'mode', 'kind') if k != dimension):\n                    continue\n                delta = {f: b['metrics'][f]['mean']-a['metrics'][f]['mean'] for f in fields}\n                require(abs(delta['cpu_us'] - (delta['gross_us'] - delta['dpc_isr_us'] + delta['residual_us'])) < 1e-6, 'Accounting difference identity')\n                differences.append({'dimension': dimension, 'before': {k:a[k] for k in ('group','cpu','mode','kind')}, 'after': {k:b[k] for k in ('group','cpu','mode','kind')}, 'mean_deltas_us':delta})\n    correlations = []\n    for group in (1, 2):\n        for cpu in (0, 2):\n            for kind in ('sigma', 'native'):\n                subset = [r for r in measured if (r['group'],r['cpu'],r['kind']) == (group,cpu,kind)]\n                correlations.append({'group':group,'cpu':cpu,'kind':kind,'n':len(subset),\n                    'pearson_residual_dpc':correlation([r['residual_us'] for r in subset],[r['dpc_isr_us'] for r in subset]),\n                    'pearson_residual_order':correlation([r['residual_us'] for r in subset],[r['capture_index'] for r in subset])})\n    return {'task':874,'source_capture_sha256':digest(folder/'capture.json'),'etw_rows':rows,'etw_measured_rows':len(measured),'summary':summary,'mean_difference_accounting':differences,'descriptive_correlations':correlations,\n            'limits':['Existing 128 runs only; scheduler/priority detailed data only for ETW-on64 runs, measured48',\n                      'Priority values sampled at switches, not continuous changes or frequency',\n                      'Switch-in/out priority weights describe slice residence including interruptions, not instruction execution by priority',\n                      'Mean difference identity is bookkeeping, not causal explanation; preregistered medians retained in prior results',\n                      'Correlations use n6 per group/CPU/program, mix observer modes and can be confounded',\n                      'ETW off has no scheduler/DPC trace; cross-block differences cannot be decomposed in this way',\n                      'DPC per-slice integer-us rounding and API quantization remain; residual is not ground-truth error'],\n            'analysis_source':Path(__file__).read_text(encoding='utf-8')}\n\n\nif __name__ == '__main__':\n    parser = argparse.ArgumentParser(description=__doc__)\n    parser.add_argument('capture', type=Path)\n    parser.add_argument('--metadata', type=Path, required=True)\n    parser.add_argument('--output', type=Path, required=True)\n    args = parser.parse_args()\n    result = analyze(args.capture.resolve(), json.loads(args.metadata.read_text(encoding='utf-8')))\n    args.output.write_text(json.dumps(result, indent=2) + '\\n', encoding='utf-8')\n    print(args.output)\n",
+  "date": "2026-11-16",
+  "source_metadata_sha256": "9c781dbaa4cb59cd50092a700c98e004883b1977ff4e9820b165c6c2fab85e7e",
+  "observer_api_costs": {
+    "process": {
+      "count": 128,
+      "mean_ms": 0.025848437499999998,
+      "max_ms": 1.3839
+    },
+    "primary_thread": {
+      "count": 128,
+      "mean_ms": 0.00529609375,
+      "max_ms": 0.0091
+    },
+    "process_cycles": {
+      "count": 128,
+      "mean_ms": 0.0277546875,
+      "max_ms": 0.1058
+    },
+    "thread_cycles": {
+      "count": 128,
+      "mean_ms": 0.0024749999999999998,
+      "max_ms": 0.005
+    },
+    "identity": {
+      "count": 128,
+      "mean_ms": 0.02763515625,
+      "max_ms": 0.5784
+    },
+    "threads": {
+      "count": 128,
+      "mean_ms": 31.95180546875,
+      "max_ms": 39.1505
+    },
+    "contexts": {
+      "count": 128,
+      "mean_ms": 6.31471484375,
+      "max_ms": 15.3591
+    },
+    "host_cpu": {
+      "count": 128,
+      "mean_ms": 0.04009453125,
+      "max_ms": 0.2671
+    }
+  },
+  "priority8_switch_out_slice_share_percent_range": [
+    98.98254193556384,
+    100.0
+  ],
+  "boundary_priority_values": {
+    "process_class": [
+      32
+    ],
+    "thread_relative": [
+      0
+    ]
+  },
+  "decision": {
+    "task874": "complete",
+    "cause": "unidentified",
+    "existing_record_investigation": "stop",
+    "new_capture": false,
+    "runtime_modified": false,
+    "adoption_or_calibration_changed": false
+  },
+  "validation": {
+    "raw_xperf_and_scheduler_chain_events": 6969209,
+    "existing_interval_agreement_all64": true,
+    "accounting_identity_all64": true,
+    "priority_weights_all64": true,
+    "original_frozen_hashes_match": true,
+    "changed_capture_digest_rejected": true
+  }
+}

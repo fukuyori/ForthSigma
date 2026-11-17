@@ -1,0 +1,3294 @@
+{
+  "date": "2026-11-17",
+  "audit_utc": "2026-11-16T23:01:55.459883+00:00",
+  "phases": {
+    "initial_value": {
+      "results": {
+        "variant": "value",
+        "calibrations": {
+          "windows/real/pinball-bake": {
+            "delta_percent": 0.2617801047120419,
+            "minimum_median_us": 5968750.0,
+            "passed": true
+          },
+          "linux/real/pinball-bake": {
+            "delta_percent": 0.09557566313095764,
+            "minimum_median_us": 6069011.514,
+            "passed": true
+          },
+          "windows/real/pinball-logic": {
+            "delta_percent": 0.7168458781362007,
+            "minimum_median_us": 8718750.0,
+            "passed": true
+          },
+          "linux/real/pinball-logic": {
+            "delta_percent": 0.3006638566805549,
+            "minimum_median_us": 5923397.862,
+            "passed": true
+          }
+        },
+        "comparisons": {
+          "windows/real/pinball-bake": {
+            "changes_percent": [
+              -3.421052631578947,
+              -4.960835509138384
+            ],
+            "delta_percent": 0.2617801047120419,
+            "threshold_percent": 3,
+            "passed": true
+          },
+          "linux/real/pinball-bake": {
+            "changes_percent": [
+              -6.767977489544952,
+              -7.5352783401034245
+            ],
+            "delta_percent": 0.09557566313095764,
+            "threshold_percent": 3,
+            "passed": true
+          },
+          "windows/real/pinball-logic": {
+            "changes_percent": [
+              0.0,
+              -1.4109347442680775
+            ],
+            "delta_percent": 0.7168458781362007,
+            "threshold_percent": 3,
+            "passed": true
+          },
+          "linux/real/pinball-logic": {
+            "changes_percent": [
+              -1.1033423779051255,
+              -1.0155350822837583
+            ],
+            "delta_percent": 0.3006638566805549,
+            "threshold_percent": 3,
+            "passed": true
+          }
+        },
+        "not_adopted": true,
+        "status": "infrastructure_error",
+        "platform": "windows",
+        "stage": "pilot",
+        "case": "real/waterworks-logic",
+        "series": 1,
+        "exit": 1
+      },
+      "groups": [
+        {
+          "file": "linux-real-pinball-bake-aa-1.json",
+          "platform": "linux",
+          "case": "real/pinball-bake",
+          "stage": "aa",
+          "series": 1,
+          "medians_us": {
+            "A1": 6071049.271,
+            "A2": 6072072.73
+          },
+          "delta_percent": 0.016858024936308086,
+          "change_percent": 0.01685802493631705,
+          "batches": 12,
+          "children": 120
+        },
+        {
+          "file": "linux-real-pinball-bake-aa-2.json",
+          "platform": "linux",
+          "case": "real/pinball-bake",
+          "stage": "aa",
+          "series": 2,
+          "medians_us": {
+            "A1": 6069011.514,
+            "A2": 6074812.012
+          },
+          "delta_percent": 0.09557566313095764,
+          "change_percent": 0.09557566313096455,
+          "batches": 12,
+          "children": 120
+        },
+        {
+          "file": "linux-real-pinball-bake-compare-1.json",
+          "platform": "linux",
+          "case": "real/pinball-bake",
+          "stage": "compare",
+          "series": 1,
+          "medians_us": {
+            "baseline": 6045942.996,
+            "candidate": 5636754.9350000005
+          },
+          "delta_percent": 7.259284210836456,
+          "change_percent": -6.767977489544952,
+          "batches": 16,
+          "children": 160
+        },
+        {
+          "file": "linux-real-pinball-bake-compare-2.json",
+          "platform": "linux",
+          "case": "real/pinball-bake",
+          "stage": "compare",
+          "series": 2,
+          "medians_us": {
+            "baseline": 6070323.515,
+            "candidate": 5612907.742
+          },
+          "delta_percent": 8.149354915942606,
+          "change_percent": -7.5352783401034245,
+          "batches": 16,
+          "children": 160
+        },
+        {
+          "file": "linux-real-pinball-logic-aa-1.json",
+          "platform": "linux",
+          "case": "real/pinball-logic",
+          "stage": "aa",
+          "series": 1,
+          "medians_us": {
+            "A1": 5939664.713,
+            "A2": 5957523.138
+          },
+          "delta_percent": 0.3006638566805549,
+          "change_percent": 0.30066385668054973,
+          "batches": 12,
+          "children": 1668
+        },
+        {
+          "file": "linux-real-pinball-logic-aa-2.json",
+          "platform": "linux",
+          "case": "real/pinball-logic",
+          "stage": "aa",
+          "series": 2,
+          "medians_us": {
+            "A1": 5923397.862,
+            "A2": 5926792.308
+          },
+          "delta_percent": 0.05730572348983405,
+          "change_percent": 0.057305723489831095,
+          "batches": 12,
+          "children": 1668
+        },
+        {
+          "file": "linux-real-pinball-logic-compare-1.json",
+          "platform": "linux",
+          "case": "real/pinball-logic",
+          "stage": "compare",
+          "series": 1,
+          "medians_us": {
+            "baseline": 5939669.799,
+            "candidate": 5874134.905
+          },
+          "delta_percent": 1.1156518374172304,
+          "change_percent": -1.1033423779051255,
+          "batches": 16,
+          "children": 2224
+        },
+        {
+          "file": "linux-real-pinball-logic-compare-2.json",
+          "platform": "linux",
+          "case": "real/pinball-logic",
+          "stage": "compare",
+          "series": 2,
+          "medians_us": {
+            "baseline": 5933314.373,
+            "candidate": 5873059.484
+          },
+          "delta_percent": 1.0259540051339875,
+          "change_percent": -1.0155350822837583,
+          "batches": 16,
+          "children": 2224
+        },
+        {
+          "file": "windows-real-pinball-bake-aa-1.json",
+          "platform": "windows",
+          "case": "real/pinball-bake",
+          "stage": "aa",
+          "series": 1,
+          "medians_us": {
+            "A1": 5984375.0,
+            "A2": 5968750.0
+          },
+          "delta_percent": 0.2617801047120419,
+          "change_percent": -0.26109660574412663,
+          "batches": 12,
+          "children": 108
+        },
+        {
+          "file": "windows-real-pinball-bake-aa-2.json",
+          "platform": "windows",
+          "case": "real/pinball-bake",
+          "stage": "aa",
+          "series": 2,
+          "medians_us": {
+            "A1": 6015625.0,
+            "A2": 6000000.0
+          },
+          "delta_percent": 0.2604166666666667,
+          "change_percent": -0.2597402597402598,
+          "batches": 12,
+          "children": 108
+        },
+        {
+          "file": "windows-real-pinball-bake-compare-1.json",
+          "platform": "windows",
+          "case": "real/pinball-bake",
+          "stage": "compare",
+          "series": 1,
+          "medians_us": {
+            "baseline": 5937500.0,
+            "candidate": 5734375.0
+          },
+          "delta_percent": 3.542234332425068,
+          "change_percent": -3.421052631578947,
+          "batches": 16,
+          "children": 144
+        },
+        {
+          "file": "windows-real-pinball-bake-compare-2.json",
+          "platform": "windows",
+          "case": "real/pinball-bake",
+          "stage": "compare",
+          "series": 2,
+          "medians_us": {
+            "baseline": 5984375.0,
+            "candidate": 5687500.0
+          },
+          "delta_percent": 5.21978021978022,
+          "change_percent": -4.960835509138384,
+          "batches": 16,
+          "children": 144
+        },
+        {
+          "file": "windows-real-pinball-logic-aa-1.json",
+          "platform": "windows",
+          "case": "real/pinball-logic",
+          "stage": "aa",
+          "series": 1,
+          "medians_us": {
+            "A1": 8781250.0,
+            "A2": 8718750.0
+          },
+          "delta_percent": 0.7168458781362007,
+          "change_percent": -0.7117437722419906,
+          "batches": 12,
+          "children": 2304
+        },
+        {
+          "file": "windows-real-pinball-logic-aa-2.json",
+          "platform": "windows",
+          "case": "real/pinball-logic",
+          "stage": "aa",
+          "series": 2,
+          "medians_us": {
+            "A1": 8765625.0,
+            "A2": 8812500.0
+          },
+          "delta_percent": 0.5347593582887701,
+          "change_percent": 0.5347593582887722,
+          "batches": 12,
+          "children": 2304
+        },
+        {
+          "file": "windows-real-pinball-logic-compare-1.json",
+          "platform": "windows",
+          "case": "real/pinball-logic",
+          "stage": "compare",
+          "series": 1,
+          "medians_us": {
+            "baseline": 8734375.0,
+            "candidate": 8734375.0
+          },
+          "delta_percent": 0.0,
+          "change_percent": 0.0,
+          "batches": 16,
+          "children": 3072
+        },
+        {
+          "file": "windows-real-pinball-logic-compare-2.json",
+          "platform": "windows",
+          "case": "real/pinball-logic",
+          "stage": "compare",
+          "series": 2,
+          "medians_us": {
+            "baseline": 8859375.0,
+            "candidate": 8734375.0
+          },
+          "delta_percent": 1.4311270125223614,
+          "change_percent": -1.4109347442680775,
+          "batches": 16,
+          "children": 3072
+        }
+      ],
+      "batches_in_complete_groups_including_warmup": 224,
+      "children_in_complete_groups": 19600,
+      "successful_pilot_and_reference_children": 4,
+      "scope": "Raw API deltas/affinity/ordering/checksum sums/medians/gates audited. Complete but superseded pre-interruption groups retained as records, not used for resumed condition decision."
+    },
+    "initial_local": {
+      "results": {
+        "variant": "local",
+        "calibrations": {
+          "windows/real/pinball-bake": {
+            "delta_percent": 0.0,
+            "minimum_median_us": 5968750.0,
+            "passed": true
+          },
+          "linux/real/pinball-bake": {
+            "delta_percent": 0.7260854196092165,
+            "minimum_median_us": 6069557.081,
+            "passed": true
+          },
+          "windows/real/pinball-logic": {
+            "delta_percent": 0.26737967914438504,
+            "minimum_median_us": 5843750.0,
+            "passed": true
+          },
+          "linux/real/pinball-logic": {
+            "delta_percent": 0.23691029282108753,
+            "minimum_median_us": 5870367.148,
+            "passed": true
+          }
+        },
+        "comparisons": {
+          "windows/real/pinball-bake": {
+            "changes_percent": [
+              -9.768637532133672,
+              -8.311688311688314
+            ],
+            "delta_percent": 0.0,
+            "threshold_percent": 3,
+            "passed": true
+          },
+          "linux/real/pinball-bake": {
+            "changes_percent": [
+              -12.014508697441606,
+              -12.141147623237014
+            ],
+            "delta_percent": 0.7260854196092165,
+            "threshold_percent": 3,
+            "passed": true
+          },
+          "windows/real/pinball-logic": {
+            "changes_percent": [
+              -7.71276595744681,
+              -8.799999999999997
+            ],
+            "delta_percent": 0.26737967914438504,
+            "threshold_percent": 3,
+            "passed": true
+          },
+          "linux/real/pinball-logic": {
+            "changes_percent": [
+              -8.632408318829077,
+              -8.700399343773013
+            ],
+            "delta_percent": 0.23691029282108753,
+            "threshold_percent": 3,
+            "passed": true
+          }
+        },
+        "not_adopted": true,
+        "status": "infrastructure_error",
+        "platform": "windows",
+        "stage": "pilot",
+        "case": "real/waterworks-logic",
+        "series": 1,
+        "exit": 1
+      },
+      "groups": [
+        {
+          "file": "linux-real-pinball-bake-aa-1.json",
+          "platform": "linux",
+          "case": "real/pinball-bake",
+          "stage": "aa",
+          "series": 1,
+          "medians_us": {
+            "A1": 6078990.858,
+            "A2": 6087575.218
+          },
+          "delta_percent": 0.14121356982636765,
+          "change_percent": 0.14121356982637057,
+          "batches": 12,
+          "children": 120
+        },
+        {
+          "file": "linux-real-pinball-bake-aa-2.json",
+          "platform": "linux",
+          "case": "real/pinball-bake",
+          "stage": "aa",
+          "series": 2,
+          "medians_us": {
+            "A1": 6113627.25,
+            "A2": 6069557.081
+          },
+          "delta_percent": 0.7260854196092165,
+          "change_percent": -0.720851422533153,
+          "batches": 12,
+          "children": 120
+        },
+        {
+          "file": "linux-real-pinball-bake-compare-1.json",
+          "platform": "linux",
+          "case": "real/pinball-bake",
+          "stage": "compare",
+          "series": 1,
+          "medians_us": {
+            "baseline": 6059929.801,
+            "candidate": 5331859.007999999
+          },
+          "delta_percent": 13.655102130562577,
+          "change_percent": -12.014508697441606,
+          "batches": 16,
+          "children": 160
+        },
+        {
+          "file": "linux-real-pinball-bake-compare-2.json",
+          "platform": "linux",
+          "case": "real/pinball-bake",
+          "stage": "compare",
+          "series": 2,
+          "medians_us": {
+            "baseline": 6061343.127,
+            "candidate": 5325426.51
+          },
+          "delta_percent": 13.818923528812352,
+          "change_percent": -12.141147623237014,
+          "batches": 16,
+          "children": 160
+        },
+        {
+          "file": "linux-real-pinball-logic-aa-1.json",
+          "platform": "linux",
+          "case": "real/pinball-logic",
+          "stage": "aa",
+          "series": 1,
+          "medians_us": {
+            "A1": 5870367.148,
+            "A2": 5884274.652
+          },
+          "delta_percent": 0.23691029282108753,
+          "change_percent": 0.23691029282109088,
+          "batches": 12,
+          "children": 1656
+        },
+        {
+          "file": "linux-real-pinball-logic-aa-2.json",
+          "platform": "linux",
+          "case": "real/pinball-logic",
+          "stage": "aa",
+          "series": 2,
+          "medians_us": {
+            "A1": 5877698.766,
+            "A2": 5872463.85
+          },
+          "delta_percent": 0.0891434350847507,
+          "change_percent": -0.08906404033977022,
+          "batches": 12,
+          "children": 1656
+        },
+        {
+          "file": "linux-real-pinball-logic-compare-1.json",
+          "platform": "linux",
+          "case": "real/pinball-logic",
+          "stage": "compare",
+          "series": 1,
+          "medians_us": {
+            "baseline": 5869321.553,
+            "candidate": 5362657.751
+          },
+          "delta_percent": 9.447998092093798,
+          "change_percent": -8.632408318829077,
+          "batches": 16,
+          "children": 2208
+        },
+        {
+          "file": "linux-real-pinball-logic-compare-2.json",
+          "platform": "linux",
+          "case": "real/pinball-logic",
+          "stage": "compare",
+          "series": 2,
+          "medians_us": {
+            "baseline": 5873734.007,
+            "candidate": 5362695.692
+          },
+          "delta_percent": 9.529504270815904,
+          "change_percent": -8.700399343773013,
+          "batches": 16,
+          "children": 2208
+        },
+        {
+          "file": "windows-real-pinball-bake-aa-1.json",
+          "platform": "windows",
+          "case": "real/pinball-bake",
+          "stage": "aa",
+          "series": 1,
+          "medians_us": {
+            "A1": 5968750.0,
+            "A2": 5968750.0
+          },
+          "delta_percent": 0.0,
+          "change_percent": 0.0,
+          "batches": 12,
+          "children": 108
+        },
+        {
+          "file": "windows-real-pinball-bake-aa-2.json",
+          "platform": "windows",
+          "case": "real/pinball-bake",
+          "stage": "aa",
+          "series": 2,
+          "medians_us": {
+            "A1": 5968750.0,
+            "A2": 5968750.0
+          },
+          "delta_percent": 0.0,
+          "change_percent": 0.0,
+          "batches": 12,
+          "children": 108
+        },
+        {
+          "file": "windows-real-pinball-bake-compare-1.json",
+          "platform": "windows",
+          "case": "real/pinball-bake",
+          "stage": "compare",
+          "series": 1,
+          "medians_us": {
+            "baseline": 6078125.0,
+            "candidate": 5484375.0
+          },
+          "delta_percent": 10.826210826210826,
+          "change_percent": -9.768637532133672,
+          "batches": 16,
+          "children": 144
+        },
+        {
+          "file": "windows-real-pinball-bake-compare-2.json",
+          "platform": "windows",
+          "case": "real/pinball-bake",
+          "stage": "compare",
+          "series": 2,
+          "medians_us": {
+            "baseline": 6015625.0,
+            "candidate": 5515625.0
+          },
+          "delta_percent": 9.06515580736544,
+          "change_percent": -8.311688311688314,
+          "batches": 16,
+          "children": 144
+        },
+        {
+          "file": "windows-real-pinball-logic-aa-1.json",
+          "platform": "windows",
+          "case": "real/pinball-logic",
+          "stage": "aa",
+          "series": 1,
+          "medians_us": {
+            "A1": 5843750.0,
+            "A2": 5859375.0
+          },
+          "delta_percent": 0.26737967914438504,
+          "change_percent": 0.2673796791443861,
+          "batches": 12,
+          "children": 1536
+        },
+        {
+          "file": "windows-real-pinball-logic-aa-2.json",
+          "platform": "windows",
+          "case": "real/pinball-logic",
+          "stage": "aa",
+          "series": 2,
+          "medians_us": {
+            "A1": 5875000.0,
+            "A2": 5875000.0
+          },
+          "delta_percent": 0.0,
+          "change_percent": 0.0,
+          "batches": 12,
+          "children": 1536
+        },
+        {
+          "file": "windows-real-pinball-logic-compare-1.json",
+          "platform": "windows",
+          "case": "real/pinball-logic",
+          "stage": "compare",
+          "series": 1,
+          "medians_us": {
+            "baseline": 5875000.0,
+            "candidate": 5421875.0
+          },
+          "delta_percent": 8.357348703170029,
+          "change_percent": -7.71276595744681,
+          "batches": 16,
+          "children": 2048
+        },
+        {
+          "file": "windows-real-pinball-logic-compare-2.json",
+          "platform": "windows",
+          "case": "real/pinball-logic",
+          "stage": "compare",
+          "series": 2,
+          "medians_us": {
+            "baseline": 5859375.0,
+            "candidate": 5343750.0
+          },
+          "delta_percent": 9.649122807017545,
+          "change_percent": -8.799999999999997,
+          "batches": 16,
+          "children": 2048
+        }
+      ],
+      "batches_in_complete_groups_including_warmup": 224,
+      "children_in_complete_groups": 15960,
+      "successful_pilot_and_reference_children": 4,
+      "scope": "Raw API deltas/affinity/ordering/checksum sums/medians/gates audited. Complete but superseded pre-interruption groups retained as records, not used for resumed condition decision."
+    },
+    "followup_value": {
+      "results": {
+        "variant": "value",
+        "calibrations": {
+          "windows/real/waterworks-logic": {
+            "delta_percent": 0.7874015748031497,
+            "minimum_median_us": 5953125.0,
+            "passed": true
+          },
+          "linux/real/waterworks-logic": {
+            "delta_percent": 0.040303639675985964,
+            "minimum_median_us": 5917078.505,
+            "passed": true
+          },
+          "windows/real/klondike-logic": {
+            "delta_percent": 0.2506265664160401,
+            "minimum_median_us": 6234375.0,
+            "passed": true
+          },
+          "linux/real/klondike-logic": {
+            "delta_percent": 0.3758718535920194,
+            "minimum_median_us": 5930682.404,
+            "passed": true
+          },
+          "windows/real/pinball-render": {
+            "delta_percent": 1.015228426395939,
+            "minimum_median_us": 6156250.0,
+            "passed": true
+          },
+          "linux/real/pinball-render": {
+            "delta_percent": 0.25165596072888113,
+            "minimum_median_us": 5805824.729,
+            "passed": true
+          },
+          "windows/real/waterworks-render": {
+            "delta_percent": 1.0126582278481013,
+            "minimum_median_us": 6078125.0,
+            "passed": true
+          },
+          "linux/real/waterworks-render": {
+            "delta_percent": 0.1777196702104207,
+            "minimum_median_us": 5871942.024,
+            "passed": true
+          },
+          "windows/real/klondike-render": {
+            "delta_percent": 0.0,
+            "minimum_median_us": 6109375.0,
+            "passed": true
+          },
+          "linux/real/klondike-render": {
+            "delta_percent": 0.3814984080442895,
+            "minimum_median_us": 5989724.077,
+            "passed": true
+          },
+          "windows/real/waterworks-bake": {
+            "delta_percent": 2.030456852791878,
+            "minimum_median_us": 6156250.0,
+            "passed": false
+          }
+        },
+        "comparisons": {
+          "windows/real/waterworks-logic": {
+            "changes_percent": [
+              0.7874015748031482,
+              -0.5235602094240788
+            ],
+            "delta_percent": 0.7874015748031497,
+            "threshold_percent": 3,
+            "passed": true
+          },
+          "linux/real/waterworks-logic": {
+            "changes_percent": [
+              -0.7094820453178441,
+              0.12582606169533328
+            ],
+            "delta_percent": 0.040303639675985964,
+            "threshold_percent": 3,
+            "passed": true
+          },
+          "windows/real/klondike-logic": {
+            "changes_percent": [
+              -0.7499999999999951,
+              -3.6319612590799077
+            ],
+            "delta_percent": 0.2506265664160401,
+            "threshold_percent": 3,
+            "passed": true
+          },
+          "linux/real/klondike-logic": {
+            "changes_percent": [
+              -1.2781816687816527,
+              -1.403058720321182
+            ],
+            "delta_percent": 0.3758718535920194,
+            "threshold_percent": 3,
+            "passed": true
+          },
+          "windows/real/pinball-render": {
+            "changes_percent": [
+              0.2538071065989911,
+              0.995024875621886
+            ],
+            "delta_percent": 1.015228426395939,
+            "threshold_percent": 3,
+            "passed": true
+          },
+          "linux/real/pinball-render": {
+            "changes_percent": [
+              -0.12005317303142027,
+              0.14693829985354956
+            ],
+            "delta_percent": 0.25165596072888113,
+            "threshold_percent": 3,
+            "passed": true
+          },
+          "windows/real/waterworks-render": {
+            "changes_percent": [
+              0.0,
+              -0.2557544757033292
+            ],
+            "delta_percent": 1.0126582278481013,
+            "threshold_percent": 3,
+            "passed": true
+          },
+          "linux/real/waterworks-render": {
+            "changes_percent": [
+              -0.24249232746234028,
+              -0.2612607799351907
+            ],
+            "delta_percent": 0.1777196702104207,
+            "threshold_percent": 3,
+            "passed": true
+          },
+          "windows/real/klondike-render": {
+            "changes_percent": [
+              -5.343511450381677,
+              -5.597964376590325
+            ],
+            "delta_percent": 0.0,
+            "threshold_percent": 3,
+            "passed": true
+          },
+          "linux/real/klondike-render": {
+            "changes_percent": [
+              -7.011546935965507,
+              -6.472222660045935
+            ],
+            "delta_percent": 0.3814984080442895,
+            "threshold_percent": 3,
+            "passed": true
+          }
+        },
+        "not_adopted": true,
+        "status": "calibration_unresolved",
+        "platform": "windows",
+        "case": "real/waterworks-bake"
+      },
+      "groups": [
+        {
+          "file": "linux-real-klondike-logic-aa-1.json",
+          "platform": "linux",
+          "case": "real/klondike-logic",
+          "stage": "aa",
+          "series": 1,
+          "medians_us": {
+            "A1": 5971196.509,
+            "A2": 5993640.556
+          },
+          "delta_percent": 0.3758718535920194,
+          "change_percent": 0.3758718535920247,
+          "batches": 12,
+          "children": 12
+        },
+        {
+          "file": "linux-real-klondike-logic-aa-2.json",
+          "platform": "linux",
+          "case": "real/klondike-logic",
+          "stage": "aa",
+          "series": 2,
+          "medians_us": {
+            "A1": 5930682.404,
+            "A2": 5940670.758
+          },
+          "delta_percent": 0.16841829185227575,
+          "change_percent": 0.1684182918522792,
+          "batches": 12,
+          "children": 12
+        },
+        {
+          "file": "linux-real-klondike-logic-compare-1.json",
+          "platform": "linux",
+          "case": "real/klondike-logic",
+          "stage": "compare",
+          "series": 1,
+          "medians_us": {
+            "baseline": 5920925.941,
+            "candidate": 5845245.751
+          },
+          "delta_percent": 1.2947306789804718,
+          "change_percent": -1.2781816687816527,
+          "batches": 16,
+          "children": 16
+        },
+        {
+          "file": "linux-real-klondike-logic-compare-2.json",
+          "platform": "linux",
+          "case": "real/klondike-logic",
+          "stage": "compare",
+          "series": 2,
+          "medians_us": {
+            "baseline": 5946258.399,
+            "candidate": 5862828.902
+          },
+          "delta_percent": 1.4230245909366372,
+          "change_percent": -1.403058720321182,
+          "batches": 16,
+          "children": 16
+        },
+        {
+          "file": "linux-real-klondike-render-aa-1.json",
+          "platform": "linux",
+          "case": "real/klondike-render",
+          "stage": "aa",
+          "series": 1,
+          "medians_us": {
+            "A1": 5989724.077,
+            "A2": 6012574.779
+          },
+          "delta_percent": 0.3814984080442895,
+          "change_percent": 0.3814984080442896,
+          "batches": 12,
+          "children": 12
+        },
+        {
+          "file": "linux-real-klondike-render-aa-2.json",
+          "platform": "linux",
+          "case": "real/klondike-render",
+          "stage": "aa",
+          "series": 2,
+          "medians_us": {
+            "A1": 6002001.223,
+            "A2": 6005283.829
+          },
+          "delta_percent": 0.05469185823256004,
+          "change_percent": 0.0546918582325695,
+          "batches": 12,
+          "children": 12
+        },
+        {
+          "file": "linux-real-klondike-render-compare-1.json",
+          "platform": "linux",
+          "case": "real/klondike-render",
+          "stage": "compare",
+          "series": 1,
+          "medians_us": {
+            "baseline": 6017283.131,
+            "candidate": 5595378.5
+          },
+          "delta_percent": 7.540233980596668,
+          "change_percent": -7.011546935965507,
+          "batches": 16,
+          "children": 16
+        },
+        {
+          "file": "linux-real-klondike-render-compare-2.json",
+          "platform": "linux",
+          "case": "real/klondike-render",
+          "stage": "compare",
+          "series": 2,
+          "medians_us": {
+            "baseline": 5981986.658,
+            "candidate": 5594819.162
+          },
+          "delta_percent": 6.920107420623013,
+          "change_percent": -6.472222660045935,
+          "batches": 16,
+          "children": 16
+        },
+        {
+          "file": "linux-real-pinball-render-aa-1.json",
+          "platform": "linux",
+          "case": "real/pinball-render",
+          "stage": "aa",
+          "series": 1,
+          "medians_us": {
+            "A1": 5813802.684,
+            "A2": 5823332.843
+          },
+          "delta_percent": 0.16392298669212946,
+          "change_percent": 0.16392298669212213,
+          "batches": 12,
+          "children": 12
+        },
+        {
+          "file": "linux-real-pinball-render-aa-2.json",
+          "platform": "linux",
+          "case": "real/pinball-render",
+          "stage": "aa",
+          "series": 2,
+          "medians_us": {
+            "A1": 5805824.729,
+            "A2": 5820435.433
+          },
+          "delta_percent": 0.25165596072888113,
+          "change_percent": 0.2516559607288915,
+          "batches": 12,
+          "children": 12
+        },
+        {
+          "file": "linux-real-pinball-render-compare-1.json",
+          "platform": "linux",
+          "case": "real/pinball-render",
+          "stage": "compare",
+          "series": 1,
+          "medians_us": {
+            "baseline": 5788683.318,
+            "candidate": 5781733.82
+          },
+          "delta_percent": 0.12019747391275913,
+          "change_percent": -0.12005317303142027,
+          "batches": 16,
+          "children": 16
+        },
+        {
+          "file": "linux-real-pinball-render-compare-2.json",
+          "platform": "linux",
+          "case": "real/pinball-render",
+          "stage": "compare",
+          "series": 2,
+          "medians_us": {
+            "baseline": 5767425.517,
+            "candidate": 5775900.074
+          },
+          "delta_percent": 0.14693829985355716,
+          "change_percent": 0.14693829985354956,
+          "batches": 16,
+          "children": 16
+        },
+        {
+          "file": "linux-real-waterworks-logic-aa-1.json",
+          "platform": "linux",
+          "case": "real/waterworks-logic",
+          "stage": "aa",
+          "series": 1,
+          "medians_us": {
+            "A1": 5919463.303,
+            "A2": 5917078.505
+          },
+          "delta_percent": 0.040303639675985964,
+          "change_percent": -0.04028740238649631,
+          "batches": 12,
+          "children": 12
+        },
+        {
+          "file": "linux-real-waterworks-logic-aa-2.json",
+          "platform": "linux",
+          "case": "real/waterworks-logic",
+          "stage": "aa",
+          "series": 2,
+          "medians_us": {
+            "A1": 5959330.568,
+            "A2": 5961135.798
+          },
+          "delta_percent": 0.030292496437335528,
+          "change_percent": 0.030292496437334115,
+          "batches": 12,
+          "children": 12
+        },
+        {
+          "file": "linux-real-waterworks-logic-compare-1.json",
+          "platform": "linux",
+          "case": "real/waterworks-logic",
+          "stage": "compare",
+          "series": 1,
+          "medians_us": {
+            "baseline": 5984520.86,
+            "candidate": 5942061.759
+          },
+          "delta_percent": 0.7145516610575626,
+          "change_percent": -0.7094820453178441,
+          "batches": 16,
+          "children": 16
+        },
+        {
+          "file": "linux-real-waterworks-logic-compare-2.json",
+          "platform": "linux",
+          "case": "real/waterworks-logic",
+          "stage": "compare",
+          "series": 2,
+          "medians_us": {
+            "baseline": 5962883.92,
+            "candidate": 5970386.782
+          },
+          "delta_percent": 0.12582606169532362,
+          "change_percent": 0.12582606169533328,
+          "batches": 16,
+          "children": 16
+        },
+        {
+          "file": "linux-real-waterworks-render-aa-1.json",
+          "platform": "linux",
+          "case": "real/waterworks-render",
+          "stage": "aa",
+          "series": 1,
+          "medians_us": {
+            "A1": 5879656.186,
+            "A2": 5884089.464
+          },
+          "delta_percent": 0.07540029314224145,
+          "change_percent": 0.07540029314223595,
+          "batches": 12,
+          "children": 12
+        },
+        {
+          "file": "linux-real-waterworks-render-aa-2.json",
+          "platform": "linux",
+          "case": "real/waterworks-render",
+          "stage": "aa",
+          "series": 2,
+          "medians_us": {
+            "A1": 5871942.024,
+            "A2": 5882377.62
+          },
+          "delta_percent": 0.1777196702104207,
+          "change_percent": 0.17771967021043,
+          "batches": 12,
+          "children": 12
+        },
+        {
+          "file": "linux-real-waterworks-render-compare-1.json",
+          "platform": "linux",
+          "case": "real/waterworks-render",
+          "stage": "compare",
+          "series": 1,
+          "medians_us": {
+            "baseline": 5881498.664,
+            "candidate": 5867236.481
+          },
+          "delta_percent": 0.24308178213347514,
+          "change_percent": -0.24249232746234028,
+          "batches": 16,
+          "children": 16
+        },
+        {
+          "file": "linux-real-waterworks-render-compare-2.json",
+          "platform": "linux",
+          "case": "real/waterworks-render",
+          "stage": "compare",
+          "series": 2,
+          "medians_us": {
+            "baseline": 5885878.854,
+            "candidate": 5870501.361
+          },
+          "delta_percent": 0.26194513985056406,
+          "change_percent": -0.2612607799351907,
+          "batches": 16,
+          "children": 16
+        },
+        {
+          "file": "windows-real-klondike-logic-aa-1.json",
+          "platform": "windows",
+          "case": "real/klondike-logic",
+          "stage": "aa",
+          "series": 1,
+          "medians_us": {
+            "A1": 6250000.0,
+            "A2": 6250000.0
+          },
+          "delta_percent": 0.0,
+          "change_percent": 0.0,
+          "batches": 12,
+          "children": 12
+        },
+        {
+          "file": "windows-real-klondike-logic-aa-2.json",
+          "platform": "windows",
+          "case": "real/klondike-logic",
+          "stage": "aa",
+          "series": 2,
+          "medians_us": {
+            "A1": 6250000.0,
+            "A2": 6234375.0
+          },
+          "delta_percent": 0.2506265664160401,
+          "change_percent": -0.24999999999999467,
+          "batches": 12,
+          "children": 12
+        },
+        {
+          "file": "windows-real-klondike-logic-compare-1.json",
+          "platform": "windows",
+          "case": "real/klondike-logic",
+          "stage": "compare",
+          "series": 1,
+          "medians_us": {
+            "baseline": 6250000.0,
+            "candidate": 6203125.0
+          },
+          "delta_percent": 0.7556675062972292,
+          "change_percent": -0.7499999999999951,
+          "batches": 16,
+          "children": 16
+        },
+        {
+          "file": "windows-real-klondike-logic-compare-2.json",
+          "platform": "windows",
+          "case": "real/klondike-logic",
+          "stage": "compare",
+          "series": 2,
+          "medians_us": {
+            "baseline": 6453125.0,
+            "candidate": 6218750.0
+          },
+          "delta_percent": 3.7688442211055277,
+          "change_percent": -3.6319612590799077,
+          "batches": 16,
+          "children": 16
+        },
+        {
+          "file": "windows-real-klondike-render-aa-1.json",
+          "platform": "windows",
+          "case": "real/klondike-render",
+          "stage": "aa",
+          "series": 1,
+          "medians_us": {
+            "A1": 6125000.0,
+            "A2": 6125000.0
+          },
+          "delta_percent": 0.0,
+          "change_percent": 0.0,
+          "batches": 12,
+          "children": 12
+        },
+        {
+          "file": "windows-real-klondike-render-aa-2.json",
+          "platform": "windows",
+          "case": "real/klondike-render",
+          "stage": "aa",
+          "series": 2,
+          "medians_us": {
+            "A1": 6109375.0,
+            "A2": 6109375.0
+          },
+          "delta_percent": 0.0,
+          "change_percent": 0.0,
+          "batches": 12,
+          "children": 12
+        },
+        {
+          "file": "windows-real-klondike-render-compare-1.json",
+          "platform": "windows",
+          "case": "real/klondike-render",
+          "stage": "compare",
+          "series": 1,
+          "medians_us": {
+            "baseline": 6140625.0,
+            "candidate": 5812500.0
+          },
+          "delta_percent": 5.645161290322581,
+          "change_percent": -5.343511450381677,
+          "batches": 16,
+          "children": 16
+        },
+        {
+          "file": "windows-real-klondike-render-compare-2.json",
+          "platform": "windows",
+          "case": "real/klondike-render",
+          "stage": "compare",
+          "series": 2,
+          "medians_us": {
+            "baseline": 6140625.0,
+            "candidate": 5796875.0
+          },
+          "delta_percent": 5.929919137466308,
+          "change_percent": -5.597964376590325,
+          "batches": 16,
+          "children": 16
+        },
+        {
+          "file": "windows-real-pinball-render-aa-1.json",
+          "platform": "windows",
+          "case": "real/pinball-render",
+          "stage": "aa",
+          "series": 1,
+          "medians_us": {
+            "A1": 6156250.0,
+            "A2": 6218750.0
+          },
+          "delta_percent": 1.015228426395939,
+          "change_percent": 1.0152284263959421,
+          "batches": 12,
+          "children": 12
+        },
+        {
+          "file": "windows-real-pinball-render-aa-2.json",
+          "platform": "windows",
+          "case": "real/pinball-render",
+          "stage": "aa",
+          "series": 2,
+          "medians_us": {
+            "A1": 6265625.0,
+            "A2": 6328125.0
+          },
+          "delta_percent": 0.9975062344139651,
+          "change_percent": 0.9975062344139696,
+          "batches": 12,
+          "children": 12
+        },
+        {
+          "file": "windows-real-pinball-render-compare-1.json",
+          "platform": "windows",
+          "case": "real/pinball-render",
+          "stage": "compare",
+          "series": 1,
+          "medians_us": {
+            "baseline": 6156250.0,
+            "candidate": 6171875.0
+          },
+          "delta_percent": 0.25380710659898476,
+          "change_percent": 0.2538071065989911,
+          "batches": 16,
+          "children": 16
+        },
+        {
+          "file": "windows-real-pinball-render-compare-2.json",
+          "platform": "windows",
+          "case": "real/pinball-render",
+          "stage": "compare",
+          "series": 2,
+          "medians_us": {
+            "baseline": 6281250.0,
+            "candidate": 6343750.0
+          },
+          "delta_percent": 0.9950248756218906,
+          "change_percent": 0.995024875621886,
+          "batches": 16,
+          "children": 16
+        },
+        {
+          "file": "windows-real-waterworks-bake-aa-1.json",
+          "platform": "windows",
+          "case": "real/waterworks-bake",
+          "stage": "aa",
+          "series": 1,
+          "medians_us": {
+            "A1": 6203125.0,
+            "A2": 6156250.0
+          },
+          "delta_percent": 0.7614213197969543,
+          "change_percent": -0.7556675062972307,
+          "batches": 12,
+          "children": 360
+        },
+        {
+          "file": "windows-real-waterworks-bake-aa-2.json",
+          "platform": "windows",
+          "case": "real/waterworks-bake",
+          "stage": "aa",
+          "series": 2,
+          "medians_us": {
+            "A1": 6156250.0,
+            "A2": 6281250.0
+          },
+          "delta_percent": 2.030456852791878,
+          "change_percent": 2.0304568527918843,
+          "batches": 12,
+          "children": 360
+        },
+        {
+          "file": "windows-real-waterworks-logic-aa-1.json",
+          "platform": "windows",
+          "case": "real/waterworks-logic",
+          "stage": "aa",
+          "series": 1,
+          "medians_us": {
+            "A1": 5968750.0,
+            "A2": 5953125.0
+          },
+          "delta_percent": 0.26246719160104987,
+          "change_percent": -0.2617801047120394,
+          "batches": 12,
+          "children": 12
+        },
+        {
+          "file": "windows-real-waterworks-logic-aa-2.json",
+          "platform": "windows",
+          "case": "real/waterworks-logic",
+          "stage": "aa",
+          "series": 2,
+          "medians_us": {
+            "A1": 6000000.0,
+            "A2": 5953125.0
+          },
+          "delta_percent": 0.7874015748031497,
+          "change_percent": -0.78125,
+          "batches": 12,
+          "children": 12
+        },
+        {
+          "file": "windows-real-waterworks-logic-compare-1.json",
+          "platform": "windows",
+          "case": "real/waterworks-logic",
+          "stage": "compare",
+          "series": 1,
+          "medians_us": {
+            "baseline": 5953125.0,
+            "candidate": 6000000.0
+          },
+          "delta_percent": 0.7874015748031497,
+          "change_percent": 0.7874015748031482,
+          "batches": 16,
+          "children": 16
+        },
+        {
+          "file": "windows-real-waterworks-logic-compare-2.json",
+          "platform": "windows",
+          "case": "real/waterworks-logic",
+          "stage": "compare",
+          "series": 2,
+          "medians_us": {
+            "baseline": 5968750.0,
+            "candidate": 5937500.0
+          },
+          "delta_percent": 0.5263157894736842,
+          "change_percent": -0.5235602094240788,
+          "batches": 16,
+          "children": 16
+        },
+        {
+          "file": "windows-real-waterworks-render-aa-1.json",
+          "platform": "windows",
+          "case": "real/waterworks-render",
+          "stage": "aa",
+          "series": 1,
+          "medians_us": {
+            "A1": 6093750.0,
+            "A2": 6078125.0
+          },
+          "delta_percent": 0.2570694087403599,
+          "change_percent": -0.2564102564102555,
+          "batches": 12,
+          "children": 12
+        },
+        {
+          "file": "windows-real-waterworks-render-aa-2.json",
+          "platform": "windows",
+          "case": "real/waterworks-render",
+          "stage": "aa",
+          "series": 2,
+          "medians_us": {
+            "A1": 6171875.0,
+            "A2": 6234375.0
+          },
+          "delta_percent": 1.0126582278481013,
+          "change_percent": 1.0126582278481067,
+          "batches": 12,
+          "children": 12
+        },
+        {
+          "file": "windows-real-waterworks-render-compare-1.json",
+          "platform": "windows",
+          "case": "real/waterworks-render",
+          "stage": "compare",
+          "series": 1,
+          "medians_us": {
+            "baseline": 6109375.0,
+            "candidate": 6109375.0
+          },
+          "delta_percent": 0.0,
+          "change_percent": 0.0,
+          "batches": 16,
+          "children": 16
+        },
+        {
+          "file": "windows-real-waterworks-render-compare-2.json",
+          "platform": "windows",
+          "case": "real/waterworks-render",
+          "stage": "compare",
+          "series": 2,
+          "medians_us": {
+            "baseline": 6109375.0,
+            "candidate": 6093750.0
+          },
+          "delta_percent": 0.2564102564102564,
+          "change_percent": -0.2557544757033292,
+          "batches": 16,
+          "children": 16
+        }
+      ],
+      "batches_in_complete_groups_including_warmup": 584,
+      "children_in_complete_groups": 1280,
+      "successful_pilot_and_reference_children": 11,
+      "scope": "Raw API deltas/affinity/ordering/checksum sums/medians/gates audited. Complete but superseded pre-interruption groups retained as records, not used for resumed condition decision."
+    },
+    "local_before_pause": {
+      "results": {
+        "variant": "local",
+        "calibrations": {
+          "windows/real/waterworks-logic": {
+            "delta_percent": 0.8241758241758241,
+            "minimum_median_us": 5687500.0,
+            "passed": true
+          },
+          "linux/real/waterworks-logic": {
+            "delta_percent": 0.3217586563587558,
+            "minimum_median_us": 5880315.092,
+            "passed": true
+          },
+          "windows/real/klondike-logic": {
+            "delta_percent": 1.550387596899225,
+            "minimum_median_us": 5875000.0,
+            "passed": true
+          },
+          "linux/real/klondike-logic": {
+            "delta_percent": 1.2590331347386683,
+            "minimum_median_us": 5794605.229,
+            "passed": true
+          },
+          "windows/real/pinball-render": {
+            "delta_percent": 1.0582010582010581,
+            "minimum_median_us": 5906250.0,
+            "passed": true
+          },
+          "linux/real/pinball-render": {
+            "delta_percent": 0.15673454285067082,
+            "minimum_median_us": 6013748.944,
+            "passed": true
+          },
+          "windows/real/waterworks-render": {
+            "delta_percent": 0.7751937984496124,
+            "minimum_median_us": 6046875.0,
+            "passed": true
+          },
+          "linux/real/waterworks-render": {
+            "delta_percent": 0.8899924082304455,
+            "minimum_median_us": 5814706.019,
+            "passed": true
+          }
+        },
+        "comparisons": {
+          "windows/real/waterworks-logic": {
+            "changes_percent": [
+              -1.9230769230769273,
+              -1.6483516483516536
+            ],
+            "delta_percent": 0.8241758241758241,
+            "threshold_percent": 3,
+            "passed": true
+          },
+          "linux/real/waterworks-logic": {
+            "changes_percent": [
+              -5.20195648136249,
+              -6.080821780339574
+            ],
+            "delta_percent": 0.3217586563587558,
+            "threshold_percent": 3,
+            "passed": true
+          },
+          "windows/real/klondike-logic": {
+            "changes_percent": [
+              -6.166219839142095,
+              -6.702412868632712
+            ],
+            "delta_percent": 1.550387596899225,
+            "threshold_percent": 3.10077519379845,
+            "passed": true
+          },
+          "linux/real/klondike-logic": {
+            "changes_percent": [
+              -8.337289055343188,
+              -8.638971651627314
+            ],
+            "delta_percent": 1.2590331347386683,
+            "threshold_percent": 3,
+            "passed": true
+          },
+          "windows/real/pinball-render": {
+            "changes_percent": [
+              -0.2624671916010457,
+              -0.26109660574412663
+            ],
+            "delta_percent": 1.0582010582010581,
+            "threshold_percent": 3,
+            "passed": true
+          },
+          "linux/real/pinball-render": {
+            "changes_percent": [
+              -0.45188811543289686,
+              -0.42423497519467057
+            ],
+            "delta_percent": 0.15673454285067082,
+            "threshold_percent": 3,
+            "passed": true
+          },
+          "windows/real/waterworks-render": {
+            "changes_percent": [
+              0.0,
+              0.25706940874035134
+            ],
+            "delta_percent": 0.7751937984496124,
+            "threshold_percent": 3,
+            "passed": true
+          }
+        },
+        "not_adopted": true
+      },
+      "groups": [
+        {
+          "file": "linux-real-klondike-logic-aa-1.json",
+          "platform": "linux",
+          "case": "real/klondike-logic",
+          "stage": "aa",
+          "series": 1,
+          "medians_us": {
+            "A1": 5842041.614,
+            "A2": 5794605.229
+          },
+          "delta_percent": 0.8186301417497267,
+          "change_percent": -0.811983004132022,
+          "batches": 12,
+          "children": 12
+        },
+        {
+          "file": "linux-real-klondike-logic-aa-2.json",
+          "platform": "linux",
+          "case": "real/klondike-logic",
+          "stage": "aa",
+          "series": 2,
+          "medians_us": {
+            "A1": 5811675.323,
+            "A2": 5884846.241
+          },
+          "delta_percent": 1.2590331347386683,
+          "change_percent": 1.259033134738674,
+          "batches": 12,
+          "children": 12
+        },
+        {
+          "file": "linux-real-klondike-logic-compare-1.json",
+          "platform": "linux",
+          "case": "real/klondike-logic",
+          "stage": "compare",
+          "series": 1,
+          "medians_us": {
+            "baseline": 5821806.978,
+            "candidate": 5336426.102
+          },
+          "delta_percent": 9.095616930178942,
+          "change_percent": -8.337289055343188,
+          "batches": 16,
+          "children": 16
+        },
+        {
+          "file": "linux-real-klondike-logic-compare-2.json",
+          "platform": "linux",
+          "case": "real/klondike-logic",
+          "stage": "compare",
+          "series": 2,
+          "medians_us": {
+            "baseline": 5832719.105,
+            "candidate": 5328832.155
+          },
+          "delta_percent": 9.455860784190905,
+          "change_percent": -8.638971651627314,
+          "batches": 16,
+          "children": 16
+        },
+        {
+          "file": "linux-real-pinball-render-aa-1.json",
+          "platform": "linux",
+          "case": "real/pinball-render",
+          "stage": "aa",
+          "series": 1,
+          "medians_us": {
+            "A1": 6019133.329,
+            "A2": 6013748.944
+          },
+          "delta_percent": 0.08953458234021976,
+          "change_percent": -0.08945448963654234,
+          "batches": 12,
+          "children": 12
+        },
+        {
+          "file": "linux-real-pinball-render-aa-2.json",
+          "platform": "linux",
+          "case": "real/pinball-render",
+          "stage": "aa",
+          "series": 2,
+          "medians_us": {
+            "A1": 6013990.808,
+            "A2": 6023416.809
+          },
+          "delta_percent": 0.15673454285067082,
+          "change_percent": 0.15673454285067834,
+          "batches": 12,
+          "children": 12
+        },
+        {
+          "file": "linux-real-pinball-render-compare-1.json",
+          "platform": "linux",
+          "case": "real/pinball-render",
+          "stage": "compare",
+          "series": 1,
+          "medians_us": {
+            "baseline": 6022214.586,
+            "candidate": 5995000.914
+          },
+          "delta_percent": 0.45393941369464574,
+          "change_percent": -0.45188811543289686,
+          "batches": 16,
+          "children": 16
+        },
+        {
+          "file": "linux-real-pinball-render-compare-2.json",
+          "platform": "linux",
+          "case": "real/pinball-render",
+          "stage": "compare",
+          "series": 2,
+          "medians_us": {
+            "baseline": 6021286.196,
+            "candidate": 5995741.794
+          },
+          "delta_percent": 0.4260423960478626,
+          "change_percent": -0.42423497519467057,
+          "batches": 16,
+          "children": 16
+        },
+        {
+          "file": "linux-real-waterworks-logic-aa-1.json",
+          "platform": "linux",
+          "case": "real/waterworks-logic",
+          "stage": "aa",
+          "series": 1,
+          "medians_us": {
+            "A1": 5894364.495,
+            "A2": 5913330.123
+          },
+          "delta_percent": 0.3217586563587558,
+          "change_percent": 0.32175865635875045,
+          "batches": 12,
+          "children": 12
+        },
+        {
+          "file": "linux-real-waterworks-logic-aa-2.json",
+          "platform": "linux",
+          "case": "real/waterworks-logic",
+          "stage": "aa",
+          "series": 2,
+          "medians_us": {
+            "A1": 5883364.724,
+            "A2": 5880315.092
+          },
+          "delta_percent": 0.0518617106785511,
+          "change_percent": -0.05183482824989705,
+          "batches": 12,
+          "children": 12
+        },
+        {
+          "file": "linux-real-waterworks-logic-compare-1.json",
+          "platform": "linux",
+          "case": "real/waterworks-logic",
+          "stage": "compare",
+          "series": 1,
+          "medians_us": {
+            "baseline": 5870677.544,
+            "candidate": 5565287.453
+          },
+          "delta_percent": 5.487409115505395,
+          "change_percent": -5.20195648136249,
+          "batches": 16,
+          "children": 16
+        },
+        {
+          "file": "linux-real-waterworks-logic-compare-2.json",
+          "platform": "linux",
+          "case": "real/waterworks-logic",
+          "stage": "compare",
+          "series": 2,
+          "medians_us": {
+            "baseline": 5942247.003,
+            "candidate": 5580909.553
+          },
+          "delta_percent": 6.474526178367529,
+          "change_percent": -6.080821780339574,
+          "batches": 16,
+          "children": 16
+        },
+        {
+          "file": "linux-real-waterworks-render-aa-1.json",
+          "platform": "linux",
+          "case": "real/waterworks-render",
+          "stage": "aa",
+          "series": 1,
+          "medians_us": {
+            "A1": 5835316.742,
+            "A2": 5887250.618
+          },
+          "delta_percent": 0.8899924082304455,
+          "change_percent": 0.8899924082304445,
+          "batches": 12,
+          "children": 12
+        },
+        {
+          "file": "linux-real-waterworks-render-aa-2.json",
+          "platform": "linux",
+          "case": "real/waterworks-render",
+          "stage": "aa",
+          "series": 2,
+          "medians_us": {
+            "A1": 5814706.019,
+            "A2": 5821278.275
+          },
+          "delta_percent": 0.11302817336808944,
+          "change_percent": 0.11302817336809046,
+          "batches": 12,
+          "children": 12
+        },
+        {
+          "file": "linux-real-waterworks-render-compare-1.json",
+          "platform": "linux",
+          "case": "real/waterworks-render",
+          "stage": "compare",
+          "series": 1,
+          "medians_us": {
+            "baseline": 5813466.673,
+            "candidate": 5781827.953
+          },
+          "delta_percent": 0.5472096412620576,
+          "change_percent": -0.5442315537292575,
+          "batches": 16,
+          "children": 16
+        },
+        {
+          "file": "windows-real-klondike-logic-aa-1.json",
+          "platform": "windows",
+          "case": "real/klondike-logic",
+          "stage": "aa",
+          "series": 1,
+          "medians_us": {
+            "A1": 6140625.0,
+            "A2": 6046875.0
+          },
+          "delta_percent": 1.550387596899225,
+          "change_percent": -1.526717557251911,
+          "batches": 12,
+          "children": 12
+        },
+        {
+          "file": "windows-real-klondike-logic-aa-2.json",
+          "platform": "windows",
+          "case": "real/klondike-logic",
+          "stage": "aa",
+          "series": 2,
+          "medians_us": {
+            "A1": 5875000.0,
+            "A2": 5890625.0
+          },
+          "delta_percent": 0.26595744680851063,
+          "change_percent": 0.26595744680850686,
+          "batches": 12,
+          "children": 12
+        },
+        {
+          "file": "windows-real-klondike-logic-compare-1.json",
+          "platform": "windows",
+          "case": "real/klondike-logic",
+          "stage": "compare",
+          "series": 1,
+          "medians_us": {
+            "baseline": 5828125.0,
+            "candidate": 5468750.0
+          },
+          "delta_percent": 6.571428571428571,
+          "change_percent": -6.166219839142095,
+          "batches": 16,
+          "children": 16
+        },
+        {
+          "file": "windows-real-klondike-logic-compare-2.json",
+          "platform": "windows",
+          "case": "real/klondike-logic",
+          "stage": "compare",
+          "series": 2,
+          "medians_us": {
+            "baseline": 5828125.0,
+            "candidate": 5437500.0
+          },
+          "delta_percent": 7.183908045977011,
+          "change_percent": -6.702412868632712,
+          "batches": 16,
+          "children": 16
+        },
+        {
+          "file": "windows-real-pinball-render-aa-1.json",
+          "platform": "windows",
+          "case": "real/pinball-render",
+          "stage": "aa",
+          "series": 1,
+          "medians_us": {
+            "A1": 5953125.0,
+            "A2": 5937500.0
+          },
+          "delta_percent": 0.2631578947368421,
+          "change_percent": -0.2624671916010457,
+          "batches": 12,
+          "children": 12
+        },
+        {
+          "file": "windows-real-pinball-render-aa-2.json",
+          "platform": "windows",
+          "case": "real/pinball-render",
+          "stage": "aa",
+          "series": 2,
+          "medians_us": {
+            "A1": 5906250.0,
+            "A2": 5968750.0
+          },
+          "delta_percent": 1.0582010582010581,
+          "change_percent": 1.0582010582010692,
+          "batches": 12,
+          "children": 12
+        },
+        {
+          "file": "windows-real-pinball-render-compare-1.json",
+          "platform": "windows",
+          "case": "real/pinball-render",
+          "stage": "compare",
+          "series": 1,
+          "medians_us": {
+            "baseline": 5953125.0,
+            "candidate": 5937500.0
+          },
+          "delta_percent": 0.2631578947368421,
+          "change_percent": -0.2624671916010457,
+          "batches": 16,
+          "children": 16
+        },
+        {
+          "file": "windows-real-pinball-render-compare-2.json",
+          "platform": "windows",
+          "case": "real/pinball-render",
+          "stage": "compare",
+          "series": 2,
+          "medians_us": {
+            "baseline": 5984375.0,
+            "candidate": 5968750.0
+          },
+          "delta_percent": 0.2617801047120419,
+          "change_percent": -0.26109660574412663,
+          "batches": 16,
+          "children": 16
+        },
+        {
+          "file": "windows-real-waterworks-logic-aa-1.json",
+          "platform": "windows",
+          "case": "real/waterworks-logic",
+          "stage": "aa",
+          "series": 1,
+          "medians_us": {
+            "A1": 5687500.0,
+            "A2": 5734375.0
+          },
+          "delta_percent": 0.8241758241758241,
+          "change_percent": 0.8241758241758212,
+          "batches": 12,
+          "children": 12
+        },
+        {
+          "file": "windows-real-waterworks-logic-aa-2.json",
+          "platform": "windows",
+          "case": "real/waterworks-logic",
+          "stage": "aa",
+          "series": 2,
+          "medians_us": {
+            "A1": 5703125.0,
+            "A2": 5734375.0
+          },
+          "delta_percent": 0.547945205479452,
+          "change_percent": 0.5479452054794498,
+          "batches": 12,
+          "children": 12
+        },
+        {
+          "file": "windows-real-waterworks-logic-compare-1.json",
+          "platform": "windows",
+          "case": "real/waterworks-logic",
+          "stage": "compare",
+          "series": 1,
+          "medians_us": {
+            "baseline": 5687500.0,
+            "candidate": 5578125.0
+          },
+          "delta_percent": 1.9607843137254901,
+          "change_percent": -1.9230769230769273,
+          "batches": 16,
+          "children": 16
+        },
+        {
+          "file": "windows-real-waterworks-logic-compare-2.json",
+          "platform": "windows",
+          "case": "real/waterworks-logic",
+          "stage": "compare",
+          "series": 2,
+          "medians_us": {
+            "baseline": 5687500.0,
+            "candidate": 5593750.0
+          },
+          "delta_percent": 1.675977653631285,
+          "change_percent": -1.6483516483516536,
+          "batches": 16,
+          "children": 16
+        },
+        {
+          "file": "windows-real-waterworks-render-aa-1.json",
+          "platform": "windows",
+          "case": "real/waterworks-render",
+          "stage": "aa",
+          "series": 1,
+          "medians_us": {
+            "A1": 6062500.0,
+            "A2": 6109375.0
+          },
+          "delta_percent": 0.7731958762886598,
+          "change_percent": 0.773195876288657,
+          "batches": 12,
+          "children": 12
+        },
+        {
+          "file": "windows-real-waterworks-render-aa-2.json",
+          "platform": "windows",
+          "case": "real/waterworks-render",
+          "stage": "aa",
+          "series": 2,
+          "medians_us": {
+            "A1": 6046875.0,
+            "A2": 6093750.0
+          },
+          "delta_percent": 0.7751937984496124,
+          "change_percent": 0.7751937984496138,
+          "batches": 12,
+          "children": 12
+        },
+        {
+          "file": "windows-real-waterworks-render-compare-1.json",
+          "platform": "windows",
+          "case": "real/waterworks-render",
+          "stage": "compare",
+          "series": 1,
+          "medians_us": {
+            "baseline": 6078125.0,
+            "candidate": 6078125.0
+          },
+          "delta_percent": 0.0,
+          "change_percent": 0.0,
+          "batches": 16,
+          "children": 16
+        },
+        {
+          "file": "windows-real-waterworks-render-compare-2.json",
+          "platform": "windows",
+          "case": "real/waterworks-render",
+          "stage": "compare",
+          "series": 2,
+          "medians_us": {
+            "baseline": 6078125.0,
+            "candidate": 6093750.0
+          },
+          "delta_percent": 0.2570694087403599,
+          "change_percent": 0.25706940874035134,
+          "batches": 16,
+          "children": 16
+        }
+      ],
+      "batches_in_complete_groups_including_warmup": 432,
+      "children_in_complete_groups": 432,
+      "successful_pilot_and_reference_children": 8,
+      "scope": "Raw API deltas/affinity/ordering/checksum sums/medians/gates audited. Complete but superseded pre-interruption groups retained as records, not used for resumed condition decision."
+    },
+    "local_after_pause": {
+      "results": {
+        "variant": "local",
+        "calibrations": {
+          "windows/real/waterworks-logic": {
+            "delta_percent": 0.8241758241758241,
+            "minimum_median_us": 5687500.0,
+            "passed": true
+          },
+          "linux/real/waterworks-logic": {
+            "delta_percent": 0.3217586563587558,
+            "minimum_median_us": 5880315.092,
+            "passed": true
+          },
+          "windows/real/klondike-logic": {
+            "delta_percent": 1.550387596899225,
+            "minimum_median_us": 5875000.0,
+            "passed": true
+          },
+          "linux/real/klondike-logic": {
+            "delta_percent": 1.2590331347386683,
+            "minimum_median_us": 5794605.229,
+            "passed": true
+          },
+          "windows/real/pinball-render": {
+            "delta_percent": 1.0582010582010581,
+            "minimum_median_us": 5906250.0,
+            "passed": true
+          },
+          "linux/real/pinball-render": {
+            "delta_percent": 0.15673454285067082,
+            "minimum_median_us": 6013748.944,
+            "passed": true
+          },
+          "windows/real/waterworks-render": {
+            "delta_percent": 0.7751937984496124,
+            "minimum_median_us": 6046875.0,
+            "passed": true
+          },
+          "linux/real/waterworks-render": {
+            "delta_percent": 0.3191751813352429,
+            "minimum_median_us": 5826179.505,
+            "passed": true
+          },
+          "windows/real/klondike-render": {
+            "delta_percent": 0.5291005291005291,
+            "minimum_median_us": 5906250.0,
+            "passed": true
+          },
+          "linux/real/klondike-render": {
+            "delta_percent": 0.24346377601374394,
+            "minimum_median_us": 5935902.76,
+            "passed": true
+          },
+          "windows/real/waterworks-bake": {
+            "delta_percent": 0.2638522427440633,
+            "minimum_median_us": 5875000.0,
+            "passed": true
+          },
+          "linux/real/waterworks-bake": {
+            "delta_percent": 0.23652234427309962,
+            "minimum_median_us": 5817775.924,
+            "passed": true
+          },
+          "windows/real/klondike-bake": {
+            "delta_percent": 0.0,
+            "minimum_median_us": 6078125.0,
+            "passed": true
+          },
+          "linux/real/klondike-bake": {
+            "delta_percent": 0.3914052539679421,
+            "minimum_median_us": 5727504.357,
+            "passed": true
+          },
+          "windows/arithmetic": {
+            "delta_percent": 0.7731958762886598,
+            "minimum_median_us": 6062500.0,
+            "passed": true
+          },
+          "linux/arithmetic": {
+            "delta_percent": 0.3656886515959989,
+            "minimum_median_us": 5808504.358,
+            "passed": true
+          },
+          "windows/loops": {
+            "delta_percent": 2.191780821917808,
+            "minimum_median_us": 5703125.0,
+            "passed": false
+          }
+        },
+        "comparisons": {
+          "windows/real/waterworks-logic": {
+            "changes_percent": [
+              -1.9230769230769273,
+              -1.6483516483516536
+            ],
+            "delta_percent": 0.8241758241758241,
+            "threshold_percent": 3,
+            "passed": true
+          },
+          "linux/real/waterworks-logic": {
+            "changes_percent": [
+              -5.20195648136249,
+              -6.080821780339574
+            ],
+            "delta_percent": 0.3217586563587558,
+            "threshold_percent": 3,
+            "passed": true
+          },
+          "windows/real/klondike-logic": {
+            "changes_percent": [
+              -6.166219839142095,
+              -6.702412868632712
+            ],
+            "delta_percent": 1.550387596899225,
+            "threshold_percent": 3.10077519379845,
+            "passed": true
+          },
+          "linux/real/klondike-logic": {
+            "changes_percent": [
+              -8.337289055343188,
+              -8.638971651627314
+            ],
+            "delta_percent": 1.2590331347386683,
+            "threshold_percent": 3,
+            "passed": true
+          },
+          "windows/real/pinball-render": {
+            "changes_percent": [
+              -0.2624671916010457,
+              -0.26109660574412663
+            ],
+            "delta_percent": 1.0582010582010581,
+            "threshold_percent": 3,
+            "passed": true
+          },
+          "linux/real/pinball-render": {
+            "changes_percent": [
+              -0.45188811543289686,
+              -0.42423497519467057
+            ],
+            "delta_percent": 0.15673454285067082,
+            "threshold_percent": 3,
+            "passed": true
+          },
+          "windows/real/waterworks-render": {
+            "changes_percent": [
+              0.0,
+              0.25706940874035134
+            ],
+            "delta_percent": 0.7751937984496124,
+            "threshold_percent": 3,
+            "passed": true
+          },
+          "linux/real/waterworks-render": {
+            "changes_percent": [
+              -0.6413651194175918,
+              -0.2265262890618236
+            ],
+            "delta_percent": 0.3191751813352429,
+            "threshold_percent": 3,
+            "passed": true
+          },
+          "windows/real/klondike-render": {
+            "changes_percent": [
+              -19.78891820580475,
+              -19.525065963060683
+            ],
+            "delta_percent": 0.5291005291005291,
+            "threshold_percent": 3,
+            "passed": true
+          },
+          "linux/real/klondike-render": {
+            "changes_percent": [
+              -8.872042766972088,
+              -8.965370078536894
+            ],
+            "delta_percent": 0.24346377601374394,
+            "threshold_percent": 3,
+            "passed": true
+          },
+          "windows/real/waterworks-bake": {
+            "changes_percent": [
+              -8.288770053475936,
+              -7.978723404255317
+            ],
+            "delta_percent": 0.2638522427440633,
+            "threshold_percent": 3,
+            "passed": true
+          },
+          "linux/real/waterworks-bake": {
+            "changes_percent": [
+              -11.945989585218786,
+              -11.528080701131493
+            ],
+            "delta_percent": 0.23652234427309962,
+            "threshold_percent": 3,
+            "passed": true
+          },
+          "windows/real/klondike-bake": {
+            "changes_percent": [
+              -10.282776349614398,
+              -9.536082474226804
+            ],
+            "delta_percent": 0.0,
+            "threshold_percent": 3,
+            "passed": true
+          },
+          "linux/real/klondike-bake": {
+            "changes_percent": [
+              -12.225565971546049,
+              -11.811906030357012
+            ],
+            "delta_percent": 0.3914052539679421,
+            "threshold_percent": 3,
+            "passed": true
+          },
+          "windows/arithmetic": {
+            "changes_percent": [
+              0.0,
+              0.0
+            ],
+            "delta_percent": 0.7731958762886598,
+            "threshold_percent": 3,
+            "passed": true
+          },
+          "linux/arithmetic": {
+            "changes_percent": [
+              0.0263243808187541,
+              -0.03410043106084615
+            ],
+            "delta_percent": 0.3656886515959989,
+            "threshold_percent": 3,
+            "passed": true
+          }
+        },
+        "not_adopted": true,
+        "resume": {
+          "user_instruction": "さいかいして",
+          "created_utc": "2026-11-16T21:59:40.042972+00:00",
+          "prior_results": ".work/partial-adoption-resume-20261116/local/results.json",
+          "interrupted_condition": "linux/real/waterworks-render",
+          "policy": "Exclude interrupted series AND old complete comparison series1 for this condition; fresh AA5x2 and AB7x2. Keep N198 unchanged; no pilot or N exploration. Preserve old data separately. Other completed cases retained as historical evidence, not contemporaneous reruns.",
+          "fixed_iterations": 198,
+          "remaining_after_condition": "klondike render, waterworks/klondike bake, standard34 conditions",
+          "value_status": "Stopped calibration_unresolved at Windows waterworks bake delta2.030%; not resumed"
+        },
+        "status": "calibration_unresolved",
+        "platform": "windows",
+        "case": "loops"
+      },
+      "groups": [
+        {
+          "file": "linux-arithmetic-aa-1.json",
+          "platform": "linux",
+          "case": "arithmetic",
+          "stage": "aa",
+          "series": 1,
+          "medians_us": {
+            "A1": 5828400.434,
+            "A2": 5808504.358
+          },
+          "delta_percent": 0.3425335469120836,
+          "change_percent": -0.3413642598050881,
+          "batches": 12,
+          "children": 12
+        },
+        {
+          "file": "linux-arithmetic-aa-2.json",
+          "platform": "linux",
+          "case": "arithmetic",
+          "stage": "aa",
+          "series": 2,
+          "medians_us": {
+            "A1": 5812184.192,
+            "A2": 5833438.69
+          },
+          "delta_percent": 0.3656886515959989,
+          "change_percent": 0.36568865159600783,
+          "batches": 12,
+          "children": 12
+        },
+        {
+          "file": "linux-arithmetic-compare-1.json",
+          "platform": "linux",
+          "case": "arithmetic",
+          "stage": "compare",
+          "series": 1,
+          "medians_us": {
+            "baseline": 5818324.885,
+            "candidate": 5819856.523
+          },
+          "delta_percent": 0.02632438081876324,
+          "change_percent": 0.0263243808187541,
+          "batches": 16,
+          "children": 16
+        },
+        {
+          "file": "linux-arithmetic-compare-2.json",
+          "platform": "linux",
+          "case": "arithmetic",
+          "stage": "compare",
+          "series": 2,
+          "medians_us": {
+            "baseline": 5813991.021,
+            "candidate": 5812008.425
+          },
+          "delta_percent": 0.03411206342151686,
+          "change_percent": -0.03410043106084615,
+          "batches": 16,
+          "children": 16
+        },
+        {
+          "file": "linux-real-klondike-bake-aa-1.json",
+          "platform": "linux",
+          "case": "real/klondike-bake",
+          "stage": "aa",
+          "series": 1,
+          "medians_us": {
+            "A1": 5745897.065,
+            "A2": 5768386.808
+          },
+          "delta_percent": 0.3914052539679421,
+          "change_percent": 0.3914052539679469,
+          "batches": 12,
+          "children": 192
+        },
+        {
+          "file": "linux-real-klondike-bake-aa-2.json",
+          "platform": "linux",
+          "case": "real/klondike-bake",
+          "stage": "aa",
+          "series": 2,
+          "medians_us": {
+            "A1": 5730084.389,
+            "A2": 5727504.357
+          },
+          "delta_percent": 0.04504635595514377,
+          "change_percent": -0.045026073349874185,
+          "batches": 12,
+          "children": 192
+        },
+        {
+          "file": "linux-real-klondike-bake-compare-1.json",
+          "platform": "linux",
+          "case": "real/klondike-bake",
+          "stage": "compare",
+          "series": 1,
+          "medians_us": {
+            "baseline": 5736361.7,
+            "candidate": 5035059.016
+          },
+          "delta_percent": 13.928390546594546,
+          "change_percent": -12.225565971546049,
+          "batches": 16,
+          "children": 256
+        },
+        {
+          "file": "linux-real-klondike-bake-compare-2.json",
+          "platform": "linux",
+          "case": "real/klondike-bake",
+          "stage": "compare",
+          "series": 2,
+          "medians_us": {
+            "baseline": 5724612.533,
+            "candidate": 5048426.68
+          },
+          "delta_percent": 13.393991749524629,
+          "change_percent": -11.811906030357012,
+          "batches": 16,
+          "children": 256
+        },
+        {
+          "file": "linux-real-klondike-render-aa-1.json",
+          "platform": "linux",
+          "case": "real/klondike-render",
+          "stage": "aa",
+          "series": 1,
+          "medians_us": {
+            "A1": 5982045.666,
+            "A2": 5972296.88
+          },
+          "delta_percent": 0.16323344595689812,
+          "change_percent": -0.16296742860739677,
+          "batches": 12,
+          "children": 12
+        },
+        {
+          "file": "linux-real-klondike-render-aa-2.json",
+          "platform": "linux",
+          "case": "real/klondike-render",
+          "stage": "aa",
+          "series": 2,
+          "medians_us": {
+            "A1": 5935902.76,
+            "A2": 5950354.533
+          },
+          "delta_percent": 0.24346377601374394,
+          "change_percent": 0.24346377601374147,
+          "batches": 12,
+          "children": 12
+        },
+        {
+          "file": "linux-real-klondike-render-compare-1.json",
+          "platform": "linux",
+          "case": "real/klondike-render",
+          "stage": "compare",
+          "series": 1,
+          "medians_us": {
+            "baseline": 5935916.517,
+            "candidate": 5409279.465
+          },
+          "delta_percent": 9.735807798571564,
+          "change_percent": -8.872042766972088,
+          "batches": 16,
+          "children": 16
+        },
+        {
+          "file": "linux-real-klondike-render-compare-2.json",
+          "platform": "linux",
+          "case": "real/klondike-render",
+          "stage": "compare",
+          "series": 2,
+          "medians_us": {
+            "baseline": 5942387.401,
+            "candidate": 5409630.379
+          },
+          "delta_percent": 9.848307271937552,
+          "change_percent": -8.965370078536894,
+          "batches": 16,
+          "children": 16
+        },
+        {
+          "file": "linux-real-waterworks-bake-aa-1.json",
+          "platform": "linux",
+          "case": "real/waterworks-bake",
+          "stage": "aa",
+          "series": 1,
+          "medians_us": {
+            "A1": 5831536.264,
+            "A2": 5817775.924
+          },
+          "delta_percent": 0.23652234427309962,
+          "change_percent": -0.2359642361301595,
+          "batches": 12,
+          "children": 396
+        },
+        {
+          "file": "linux-real-waterworks-bake-aa-2.json",
+          "platform": "linux",
+          "case": "real/waterworks-bake",
+          "stage": "aa",
+          "series": 2,
+          "medians_us": {
+            "A1": 5825235.779,
+            "A2": 5818646.443
+          },
+          "delta_percent": 0.11324516903630205,
+          "change_percent": -0.11311706941983246,
+          "batches": 12,
+          "children": 396
+        },
+        {
+          "file": "linux-real-waterworks-bake-compare-1.json",
+          "platform": "linux",
+          "case": "real/waterworks-bake",
+          "stage": "compare",
+          "series": 1,
+          "medians_us": {
+            "baseline": 5827929.248,
+            "candidate": 5131725.427
+          },
+          "delta_percent": 13.566661562541926,
+          "change_percent": -11.945989585218786,
+          "batches": 16,
+          "children": 528
+        },
+        {
+          "file": "linux-real-waterworks-bake-compare-2.json",
+          "platform": "linux",
+          "case": "real/waterworks-bake",
+          "stage": "compare",
+          "series": 2,
+          "medians_us": {
+            "baseline": 5826651.291,
+            "candidate": 5154950.228
+          },
+          "delta_percent": 13.030214323923829,
+          "change_percent": -11.528080701131493,
+          "batches": 16,
+          "children": 528
+        },
+        {
+          "file": "linux-real-waterworks-render-aa-1.json",
+          "platform": "linux",
+          "case": "real/waterworks-render",
+          "stage": "aa",
+          "series": 1,
+          "medians_us": {
+            "A1": 5830438.014,
+            "A2": 5847542.722
+          },
+          "delta_percent": 0.29336917670555707,
+          "change_percent": 0.2933691767055491,
+          "batches": 12,
+          "children": 12
+        },
+        {
+          "file": "linux-real-waterworks-render-aa-2.json",
+          "platform": "linux",
+          "case": "real/waterworks-render",
+          "stage": "aa",
+          "series": 2,
+          "medians_us": {
+            "A1": 5826179.505,
+            "A2": 5844775.224
+          },
+          "delta_percent": 0.3191751813352429,
+          "change_percent": 0.3191751813352406,
+          "batches": 12,
+          "children": 12
+        },
+        {
+          "file": "linux-real-waterworks-render-compare-1.json",
+          "platform": "linux",
+          "case": "real/waterworks-render",
+          "stage": "compare",
+          "series": 1,
+          "medians_us": {
+            "baseline": 6371092.029,
+            "candidate": 6330230.067
+          },
+          "delta_percent": 0.6455051643859991,
+          "change_percent": -0.6413651194175918,
+          "batches": 16,
+          "children": 16
+        },
+        {
+          "file": "linux-real-waterworks-render-compare-2.json",
+          "platform": "linux",
+          "case": "real/waterworks-render",
+          "stage": "compare",
+          "series": 2,
+          "medians_us": {
+            "baseline": 6407240.44,
+            "candidate": 6392726.356
+          },
+          "delta_percent": 0.2270405956979262,
+          "change_percent": -0.2265262890618236,
+          "batches": 16,
+          "children": 16
+        },
+        {
+          "file": "windows-arithmetic-aa-1.json",
+          "platform": "windows",
+          "case": "arithmetic",
+          "stage": "aa",
+          "series": 1,
+          "medians_us": {
+            "A1": 6109375.0,
+            "A2": 6062500.0
+          },
+          "delta_percent": 0.7731958762886598,
+          "change_percent": -0.7672634271099765,
+          "batches": 12,
+          "children": 12
+        },
+        {
+          "file": "windows-arithmetic-aa-2.json",
+          "platform": "windows",
+          "case": "arithmetic",
+          "stage": "aa",
+          "series": 2,
+          "medians_us": {
+            "A1": 6078125.0,
+            "A2": 6078125.0
+          },
+          "delta_percent": 0.0,
+          "change_percent": 0.0,
+          "batches": 12,
+          "children": 12
+        },
+        {
+          "file": "windows-arithmetic-compare-1.json",
+          "platform": "windows",
+          "case": "arithmetic",
+          "stage": "compare",
+          "series": 1,
+          "medians_us": {
+            "baseline": 6015625.0,
+            "candidate": 6015625.0
+          },
+          "delta_percent": 0.0,
+          "change_percent": 0.0,
+          "batches": 16,
+          "children": 16
+        },
+        {
+          "file": "windows-arithmetic-compare-2.json",
+          "platform": "windows",
+          "case": "arithmetic",
+          "stage": "compare",
+          "series": 2,
+          "medians_us": {
+            "baseline": 6078125.0,
+            "candidate": 6078125.0
+          },
+          "delta_percent": 0.0,
+          "change_percent": 0.0,
+          "batches": 16,
+          "children": 16
+        },
+        {
+          "file": "windows-loops-aa-1.json",
+          "platform": "windows",
+          "case": "loops",
+          "stage": "aa",
+          "series": 1,
+          "medians_us": {
+            "A1": 5828125.0,
+            "A2": 5703125.0
+          },
+          "delta_percent": 2.191780821917808,
+          "change_percent": -2.144772117962468,
+          "batches": 12,
+          "children": 12
+        },
+        {
+          "file": "windows-loops-aa-2.json",
+          "platform": "windows",
+          "case": "loops",
+          "stage": "aa",
+          "series": 2,
+          "medians_us": {
+            "A1": 6093750.0,
+            "A2": 6109375.0
+          },
+          "delta_percent": 0.2564102564102564,
+          "change_percent": 0.2564102564102555,
+          "batches": 12,
+          "children": 12
+        },
+        {
+          "file": "windows-real-klondike-bake-aa-1.json",
+          "platform": "windows",
+          "case": "real/klondike-bake",
+          "stage": "aa",
+          "series": 1,
+          "medians_us": {
+            "A1": 6109375.0,
+            "A2": 6109375.0
+          },
+          "delta_percent": 0.0,
+          "change_percent": 0.0,
+          "batches": 12,
+          "children": 180
+        },
+        {
+          "file": "windows-real-klondike-bake-aa-2.json",
+          "platform": "windows",
+          "case": "real/klondike-bake",
+          "stage": "aa",
+          "series": 2,
+          "medians_us": {
+            "A1": 6078125.0,
+            "A2": 6078125.0
+          },
+          "delta_percent": 0.0,
+          "change_percent": 0.0,
+          "batches": 12,
+          "children": 180
+        },
+        {
+          "file": "windows-real-klondike-bake-compare-1.json",
+          "platform": "windows",
+          "case": "real/klondike-bake",
+          "stage": "compare",
+          "series": 1,
+          "medians_us": {
+            "baseline": 6078125.0,
+            "candidate": 5453125.0
+          },
+          "delta_percent": 11.461318051575931,
+          "change_percent": -10.282776349614398,
+          "batches": 16,
+          "children": 240
+        },
+        {
+          "file": "windows-real-klondike-bake-compare-2.json",
+          "platform": "windows",
+          "case": "real/klondike-bake",
+          "stage": "compare",
+          "series": 2,
+          "medians_us": {
+            "baseline": 6062500.0,
+            "candidate": 5484375.0
+          },
+          "delta_percent": 10.54131054131054,
+          "change_percent": -9.536082474226804,
+          "batches": 16,
+          "children": 240
+        },
+        {
+          "file": "windows-real-klondike-render-aa-1.json",
+          "platform": "windows",
+          "case": "real/klondike-render",
+          "stage": "aa",
+          "series": 1,
+          "medians_us": {
+            "A1": 5906250.0,
+            "A2": 5937500.0
+          },
+          "delta_percent": 0.5291005291005291,
+          "change_percent": 0.5291005291005346,
+          "batches": 12,
+          "children": 12
+        },
+        {
+          "file": "windows-real-klondike-render-aa-2.json",
+          "platform": "windows",
+          "case": "real/klondike-render",
+          "stage": "aa",
+          "series": 2,
+          "medians_us": {
+            "A1": 5953125.0,
+            "A2": 5937500.0
+          },
+          "delta_percent": 0.2631578947368421,
+          "change_percent": -0.2624671916010457,
+          "batches": 12,
+          "children": 12
+        },
+        {
+          "file": "windows-real-klondike-render-compare-1.json",
+          "platform": "windows",
+          "case": "real/klondike-render",
+          "stage": "compare",
+          "series": 1,
+          "medians_us": {
+            "baseline": 5921875.0,
+            "candidate": 4750000.0
+          },
+          "delta_percent": 24.67105263157895,
+          "change_percent": -19.78891820580475,
+          "batches": 16,
+          "children": 16
+        },
+        {
+          "file": "windows-real-klondike-render-compare-2.json",
+          "platform": "windows",
+          "case": "real/klondike-render",
+          "stage": "compare",
+          "series": 2,
+          "medians_us": {
+            "baseline": 5921875.0,
+            "candidate": 4765625.0
+          },
+          "delta_percent": 24.262295081967213,
+          "change_percent": -19.525065963060683,
+          "batches": 16,
+          "children": 16
+        },
+        {
+          "file": "windows-real-waterworks-bake-aa-1.json",
+          "platform": "windows",
+          "case": "real/waterworks-bake",
+          "stage": "aa",
+          "series": 1,
+          "medians_us": {
+            "A1": 5937500.0,
+            "A2": 5921875.0
+          },
+          "delta_percent": 0.2638522427440633,
+          "change_percent": -0.2631578947368429,
+          "batches": 12,
+          "children": 336
+        },
+        {
+          "file": "windows-real-waterworks-bake-aa-2.json",
+          "platform": "windows",
+          "case": "real/waterworks-bake",
+          "stage": "aa",
+          "series": 2,
+          "medians_us": {
+            "A1": 5875000.0,
+            "A2": 5875000.0
+          },
+          "delta_percent": 0.0,
+          "change_percent": 0.0,
+          "batches": 12,
+          "children": 336
+        },
+        {
+          "file": "windows-real-waterworks-bake-compare-1.json",
+          "platform": "windows",
+          "case": "real/waterworks-bake",
+          "stage": "compare",
+          "series": 1,
+          "medians_us": {
+            "baseline": 5843750.0,
+            "candidate": 5359375.0
+          },
+          "delta_percent": 9.037900874635568,
+          "change_percent": -8.288770053475936,
+          "batches": 16,
+          "children": 448
+        },
+        {
+          "file": "windows-real-waterworks-bake-compare-2.json",
+          "platform": "windows",
+          "case": "real/waterworks-bake",
+          "stage": "compare",
+          "series": 2,
+          "medians_us": {
+            "baseline": 5875000.0,
+            "candidate": 5406250.0
+          },
+          "delta_percent": 8.670520231213873,
+          "change_percent": -7.978723404255317,
+          "batches": 16,
+          "children": 448
+        }
+      ],
+      "batches_in_complete_groups_including_warmup": 528,
+      "children_in_complete_groups": 5456,
+      "successful_pilot_and_reference_children": 9,
+      "scope": "Raw API deltas/affinity/ordering/checksum sums/medians/gates audited. Complete but superseded pre-interruption groups retained as records, not used for resumed condition decision."
+    }
+  },
+  "coverage": {
+    "value": {
+      "comparisons": {
+        "windows/real/pinball-bake": {
+          "changes_percent": [
+            -3.421052631578947,
+            -4.960835509138384
+          ],
+          "delta_percent": 0.2617801047120419,
+          "threshold_percent": 3,
+          "passed": true
+        },
+        "linux/real/pinball-bake": {
+          "changes_percent": [
+            -6.767977489544952,
+            -7.5352783401034245
+          ],
+          "delta_percent": 0.09557566313095764,
+          "threshold_percent": 3,
+          "passed": true
+        },
+        "windows/real/pinball-logic": {
+          "changes_percent": [
+            0.0,
+            -1.4109347442680775
+          ],
+          "delta_percent": 0.7168458781362007,
+          "threshold_percent": 3,
+          "passed": true
+        },
+        "linux/real/pinball-logic": {
+          "changes_percent": [
+            -1.1033423779051255,
+            -1.0155350822837583
+          ],
+          "delta_percent": 0.3006638566805549,
+          "threshold_percent": 3,
+          "passed": true
+        },
+        "windows/real/waterworks-logic": {
+          "changes_percent": [
+            0.7874015748031482,
+            -0.5235602094240788
+          ],
+          "delta_percent": 0.7874015748031497,
+          "threshold_percent": 3,
+          "passed": true
+        },
+        "linux/real/waterworks-logic": {
+          "changes_percent": [
+            -0.7094820453178441,
+            0.12582606169533328
+          ],
+          "delta_percent": 0.040303639675985964,
+          "threshold_percent": 3,
+          "passed": true
+        },
+        "windows/real/klondike-logic": {
+          "changes_percent": [
+            -0.7499999999999951,
+            -3.6319612590799077
+          ],
+          "delta_percent": 0.2506265664160401,
+          "threshold_percent": 3,
+          "passed": true
+        },
+        "linux/real/klondike-logic": {
+          "changes_percent": [
+            -1.2781816687816527,
+            -1.403058720321182
+          ],
+          "delta_percent": 0.3758718535920194,
+          "threshold_percent": 3,
+          "passed": true
+        },
+        "windows/real/pinball-render": {
+          "changes_percent": [
+            0.2538071065989911,
+            0.995024875621886
+          ],
+          "delta_percent": 1.015228426395939,
+          "threshold_percent": 3,
+          "passed": true
+        },
+        "linux/real/pinball-render": {
+          "changes_percent": [
+            -0.12005317303142027,
+            0.14693829985354956
+          ],
+          "delta_percent": 0.25165596072888113,
+          "threshold_percent": 3,
+          "passed": true
+        },
+        "windows/real/waterworks-render": {
+          "changes_percent": [
+            0.0,
+            -0.2557544757033292
+          ],
+          "delta_percent": 1.0126582278481013,
+          "threshold_percent": 3,
+          "passed": true
+        },
+        "linux/real/waterworks-render": {
+          "changes_percent": [
+            -0.24249232746234028,
+            -0.2612607799351907
+          ],
+          "delta_percent": 0.1777196702104207,
+          "threshold_percent": 3,
+          "passed": true
+        },
+        "windows/real/klondike-render": {
+          "changes_percent": [
+            -5.343511450381677,
+            -5.597964376590325
+          ],
+          "delta_percent": 0.0,
+          "threshold_percent": 3,
+          "passed": true
+        },
+        "linux/real/klondike-render": {
+          "changes_percent": [
+            -7.011546935965507,
+            -6.472222660045935
+          ],
+          "delta_percent": 0.3814984080442895,
+          "threshold_percent": 3,
+          "passed": true
+        }
+      },
+      "compared_count": 14,
+      "unmeasured_count": 38,
+      "unmeasured": [
+        "linux/arithmetic",
+        "linux/calls",
+        "linux/catch-defer",
+        "linux/catch-execute",
+        "linux/catch-fast-throw",
+        "linux/catch-nested-256",
+        "linux/catch-nested-64",
+        "linux/catch-nobt-throw",
+        "linux/catch-success",
+        "linux/catch-synonym",
+        "linux/catch-throw",
+        "linux/extended",
+        "linux/float",
+        "linux/loops",
+        "linux/plus-loop",
+        "linux/real/klondike-bake",
+        "linux/real/waterworks-bake",
+        "linux/stacks",
+        "linux/variables",
+        "windows/arithmetic",
+        "windows/calls",
+        "windows/catch-defer",
+        "windows/catch-execute",
+        "windows/catch-fast-throw",
+        "windows/catch-nested-256",
+        "windows/catch-nested-64",
+        "windows/catch-nobt-throw",
+        "windows/catch-success",
+        "windows/catch-synonym",
+        "windows/catch-throw",
+        "windows/extended",
+        "windows/float",
+        "windows/loops",
+        "windows/plus-loop",
+        "windows/real/klondike-bake",
+        "windows/real/waterworks-bake",
+        "windows/stacks",
+        "windows/variables"
+      ]
+    },
+    "local": {
+      "comparisons": {
+        "windows/real/pinball-bake": {
+          "changes_percent": [
+            -9.768637532133672,
+            -8.311688311688314
+          ],
+          "delta_percent": 0.0,
+          "threshold_percent": 3,
+          "passed": true
+        },
+        "linux/real/pinball-bake": {
+          "changes_percent": [
+            -12.014508697441606,
+            -12.141147623237014
+          ],
+          "delta_percent": 0.7260854196092165,
+          "threshold_percent": 3,
+          "passed": true
+        },
+        "windows/real/pinball-logic": {
+          "changes_percent": [
+            -7.71276595744681,
+            -8.799999999999997
+          ],
+          "delta_percent": 0.26737967914438504,
+          "threshold_percent": 3,
+          "passed": true
+        },
+        "linux/real/pinball-logic": {
+          "changes_percent": [
+            -8.632408318829077,
+            -8.700399343773013
+          ],
+          "delta_percent": 0.23691029282108753,
+          "threshold_percent": 3,
+          "passed": true
+        },
+        "windows/real/waterworks-logic": {
+          "changes_percent": [
+            -1.9230769230769273,
+            -1.6483516483516536
+          ],
+          "delta_percent": 0.8241758241758241,
+          "threshold_percent": 3,
+          "passed": true
+        },
+        "linux/real/waterworks-logic": {
+          "changes_percent": [
+            -5.20195648136249,
+            -6.080821780339574
+          ],
+          "delta_percent": 0.3217586563587558,
+          "threshold_percent": 3,
+          "passed": true
+        },
+        "windows/real/klondike-logic": {
+          "changes_percent": [
+            -6.166219839142095,
+            -6.702412868632712
+          ],
+          "delta_percent": 1.550387596899225,
+          "threshold_percent": 3.10077519379845,
+          "passed": true
+        },
+        "linux/real/klondike-logic": {
+          "changes_percent": [
+            -8.337289055343188,
+            -8.638971651627314
+          ],
+          "delta_percent": 1.2590331347386683,
+          "threshold_percent": 3,
+          "passed": true
+        },
+        "windows/real/pinball-render": {
+          "changes_percent": [
+            -0.2624671916010457,
+            -0.26109660574412663
+          ],
+          "delta_percent": 1.0582010582010581,
+          "threshold_percent": 3,
+          "passed": true
+        },
+        "linux/real/pinball-render": {
+          "changes_percent": [
+            -0.45188811543289686,
+            -0.42423497519467057
+          ],
+          "delta_percent": 0.15673454285067082,
+          "threshold_percent": 3,
+          "passed": true
+        },
+        "windows/real/waterworks-render": {
+          "changes_percent": [
+            0.0,
+            0.25706940874035134
+          ],
+          "delta_percent": 0.7751937984496124,
+          "threshold_percent": 3,
+          "passed": true
+        },
+        "linux/real/waterworks-render": {
+          "changes_percent": [
+            -0.6413651194175918,
+            -0.2265262890618236
+          ],
+          "delta_percent": 0.3191751813352429,
+          "threshold_percent": 3,
+          "passed": true
+        },
+        "windows/real/klondike-render": {
+          "changes_percent": [
+            -19.78891820580475,
+            -19.525065963060683
+          ],
+          "delta_percent": 0.5291005291005291,
+          "threshold_percent": 3,
+          "passed": true
+        },
+        "linux/real/klondike-render": {
+          "changes_percent": [
+            -8.872042766972088,
+            -8.965370078536894
+          ],
+          "delta_percent": 0.24346377601374394,
+          "threshold_percent": 3,
+          "passed": true
+        },
+        "windows/real/waterworks-bake": {
+          "changes_percent": [
+            -8.288770053475936,
+            -7.978723404255317
+          ],
+          "delta_percent": 0.2638522427440633,
+          "threshold_percent": 3,
+          "passed": true
+        },
+        "linux/real/waterworks-bake": {
+          "changes_percent": [
+            -11.945989585218786,
+            -11.528080701131493
+          ],
+          "delta_percent": 0.23652234427309962,
+          "threshold_percent": 3,
+          "passed": true
+        },
+        "windows/real/klondike-bake": {
+          "changes_percent": [
+            -10.282776349614398,
+            -9.536082474226804
+          ],
+          "delta_percent": 0.0,
+          "threshold_percent": 3,
+          "passed": true
+        },
+        "linux/real/klondike-bake": {
+          "changes_percent": [
+            -12.225565971546049,
+            -11.811906030357012
+          ],
+          "delta_percent": 0.3914052539679421,
+          "threshold_percent": 3,
+          "passed": true
+        },
+        "windows/arithmetic": {
+          "changes_percent": [
+            0.0,
+            0.0
+          ],
+          "delta_percent": 0.7731958762886598,
+          "threshold_percent": 3,
+          "passed": true
+        },
+        "linux/arithmetic": {
+          "changes_percent": [
+            0.0263243808187541,
+            -0.03410043106084615
+          ],
+          "delta_percent": 0.3656886515959989,
+          "threshold_percent": 3,
+          "passed": true
+        }
+      },
+      "compared_count": 20,
+      "unmeasured_count": 32,
+      "unmeasured": [
+        "linux/calls",
+        "linux/catch-defer",
+        "linux/catch-execute",
+        "linux/catch-fast-throw",
+        "linux/catch-nested-256",
+        "linux/catch-nested-64",
+        "linux/catch-nobt-throw",
+        "linux/catch-success",
+        "linux/catch-synonym",
+        "linux/catch-throw",
+        "linux/extended",
+        "linux/float",
+        "linux/loops",
+        "linux/plus-loop",
+        "linux/stacks",
+        "linux/variables",
+        "windows/calls",
+        "windows/catch-defer",
+        "windows/catch-execute",
+        "windows/catch-fast-throw",
+        "windows/catch-nested-256",
+        "windows/catch-nested-64",
+        "windows/catch-nobt-throw",
+        "windows/catch-success",
+        "windows/catch-synonym",
+        "windows/catch-throw",
+        "windows/extended",
+        "windows/float",
+        "windows/loops",
+        "windows/plus-loop",
+        "windows/stacks",
+        "windows/variables"
+      ]
+    }
+  },
+  "resume_policy": {
+    "user_instruction": "さいかいして",
+    "created_utc": "2026-11-16T21:59:40.042972+00:00",
+    "prior_results": ".work/partial-adoption-resume-20261116/local/results.json",
+    "interrupted_condition": "linux/real/waterworks-render",
+    "policy": "Exclude interrupted series AND old complete comparison series1 for this condition; fresh AA5x2 and AB7x2. Keep N198 unchanged; no pilot or N exploration. Preserve old data separately. Other completed cases retained as historical evidence, not contemporaneous reruns.",
+    "fixed_iterations": 198,
+    "remaining_after_condition": "klondike render, waterworks/klondike bake, standard34 conditions",
+    "value_status": "Stopped calibration_unresolved at Windows waterworks bake delta2.030%; not resumed"
+  },
+  "archive": {
+    "file": "2026-11-17-partial-adoption-followup-raw.json.gz",
+    "sha256": "5f700266dd6cbf3b2e5db02f84e0c275030347697be97c69b73ae75d61630c81",
+    "bytes": 2269969,
+    "uncompressed_bytes": 18354490
+  },
+  "validation": {
+    "all_frozen_inputs_and_binaries_currently_match": true,
+    "raw_cpu_query_deltas_live_child_affinity_checksums_orders_medians_gates": "passed",
+    "historical_prior_primary_results_hash": "verified at final audit",
+    "interrupted_condition_uses_only_fresh_complete_groups": true,
+    "candidate_source_hashes_match_final_reviewed_bytes": {
+      "local": {
+        "path": ".work\\cell-local-fetch-20261116\\candidate\\src\\forth.zig",
+        "sha256": "f859a1428428c5a75ee2001fd1f80182a47fcacf436f0e51b73b609c632b1728"
+      },
+      "value": {
+        "path": ".work\\three-candidates-20261116\\value\\src\\forth.zig",
+        "sha256": "912c7942e90fb8fe3f6e48f84a10c2c242e2071371ddd17dd72dbf9829e9aced"
+      }
+    }
+  },
+  "limits": [
+    "No CPU clock accuracy proof or confidence intervals",
+    "No claim all host load/build activity independently observed",
+    "Artifact hashes checked per worker launch and at audit, not continuous immutability proof",
+    "Fresh-child sums and repeated-reset intervals are distinct metrics",
+    "No production runtime changed or additional candidate adopted"
+  ],
+  "decision": {
+    "value": "hold; Windows waterworks bake AA delta2.030% exceeds2%",
+    "local": "hold; Windows loops AA delta2.192% exceeds2%",
+    "standard_goal10percent": "not achieved by these candidates",
+    "runtime_modified": false
+  },
+  "audit_source": "from pathlib import Path\nimport json,hashlib,statistics,math,re,gzip,datetime\nr=Path.cwd();sha=lambda p:hashlib.sha256(p.read_bytes()).hexdigest();phases={\n 'initial_value':r/'.work/partial-adoption-20261116/value','initial_local':r/'.work/partial-adoption-20261116/local',\n 'followup_value':r/'.work/partial-adoption-resume-20261116/value','local_before_pause':r/'.work/partial-adoption-resume-20261116/local',\n 'local_after_pause':r/'.work/partial-adoption-continue-20261117/local'}\nraw={'phases':{},'validation_references':{}};audits={}\nfor label,o in phases.items():\n protocol=json.loads((o/'protocol.json').read_text());start=json.loads((o/'start.json').read_text());results=json.loads((o/'results.json').read_text());assert sha(o/'protocol.json')==start['protocol_sha256'];assert sha(o/'worker.py')==start['worker_sha256']\n controller=o.parent/'run.py';assert sha(controller)==start['controller_sha256']\n for name,digest in protocol['input_hashes'].items():assert sha(r/name)==digest,(label,name)\n for platform,paths in protocol['binary_paths'].items():\n  for kind,path in paths.items():assert sha(r/path)==protocol['binary_hashes'][kind+'-'+platform]\n files={};groups=[];case_groups={};batches=children_total=pilots=0\n for path in sorted(o.glob('*.json')):\n  if 'protocol-before' in path.name or '-partial' in path.name:continue\n  data=json.loads(path.read_text());files[path.name]=data\n  if path.name.endswith('-config.json'):\n   # Copied N198 config in continuation is historical, not a new pilot.\n   if label=='local_after_pause' and path.name=='linux-real-waterworks-render-config.json':continue\n   pilot=data.get('pilot');validation=data.get('validation');flat=[]\n   for sample in (pilot,validation):\n    if sample is not None:flat.extend(sample['children'] if sample.get('children') is not None else [sample])\n   queries=data['cpu_queries'];assert len(queries)==len(flat),(label,path.name)\n   for child,session in zip(flat,queries):\n    a,b=session['queries'][:2];assert a['child_affinity']==b['child_affinity']==[2]\n    delta=((b['kernel_ns']+b['user_ns']-a['kernel_ns']-a['user_ns']) if data['metadata']['platform']=='windows' else b['cpu_ns']-a['cpu_ns'])/1000\n    assert math.isclose(delta,child['cpu_us'],abs_tol=1e-7)\n   pilots+=len(flat)\n  if not re.search(r'-(aa|compare)-[12]\\.json$',path.name):continue\n  meta=data['metadata'];stage=meta['stage'];n=5 if stage=='aa' else 7;assert meta['script_sha256']==start['worker_sha256'] and meta['protocol_sha256']==start['protocol_sha256'];assert meta['affinity']==[2]\n  assert all(len(rows)==n for rows in data['samples'].values());assert len(data['warmups_excluded'])==2\n  keys=list(data['samples']);assert data['orders']==[keys if (i+meta['series'])%2 else keys[::-1] for i in range(n+1)]\n  seq=[data['warmups_excluded'][key] if i==0 else data['samples'][key][i-1] for i,order in enumerate(data['orders']) for key in order]\n  flat=[]\n  for row in seq:\n   assert row['checksum']==data['config']['expected'] and row['cpu_us']>0\n   if row.get('children') is not None:\n    assert len(row['children'])==data['config']['iterations'];assert sum(c['cpu_us'] for c in row['children'])==row['cpu_us'];assert sum(c['checksum'] for c in row['children'])==row['checksum'];flat.extend(row['children'])\n   else:flat.append(row)\n  assert len(data['cpu_queries'])==len(flat)\n  for child,session in zip(flat,data['cpu_queries']):\n   a,b=session['queries'][:2];assert a['child_affinity']==b['child_affinity']==[2]\n   delta=((b['kernel_ns']+b['user_ns']-a['kernel_ns']-a['user_ns']) if meta['platform']=='windows' else b['cpu_ns']-a['cpu_ns'])/1000\n   assert math.isclose(delta,child['cpu_us'],abs_tol=1e-7)\n  med={k:statistics.median(v['cpu_us'] for v in rows) for k,rows in data['samples'].items()};assert med==data['medians_us'];a,b=med.values();assert math.isclose(data['change_percent'],100*(b/a-1),abs_tol=1e-9);assert math.isclose(data['delta_percent'],100*abs(b-a)/min(a,b),abs_tol=1e-9)\n  batches+=len(seq);children_total+=len(flat);key=meta['platform']+'/'+meta['case'];case_groups.setdefault(key,{}).setdefault(stage,[]).append(data)\n  groups.append({'file':path.name,'platform':meta['platform'],'case':meta['case'],'stage':stage,'series':meta['series'],'medians_us':med,'delta_percent':data['delta_percent'],'change_percent':data['change_percent'],'batches':len(seq),'children':len(flat)})\n for key,stages in case_groups.items():\n  aa=stages.get('aa',[])\n  if len(aa)==2:\n   delta=max(x['delta_percent'] for x in aa);minimum=min(v for x in aa for v in x['medians_us'].values());entry=results['calibrations'][key];assert entry['delta_percent']==delta and entry['minimum_median_us']==minimum;assert entry['passed']==(delta<=2 and minimum>=5000000)\n  comp=sorted(stages.get('compare',[]),key=lambda x:x['metadata']['series'])\n  if len(comp)==2:\n   changes=[x['change_percent'] for x in comp];entry=results['comparisons'][key];assert changes==entry['changes_percent'];assert entry['passed']\n   case=comp[0]['metadata']['case'];cap=(10 if 'throw' in case else 5) if case.startswith('catch-') else max(3,2*entry['delta_percent']);assert entry['threshold_percent']==cap\n   assert all(-v>cap for v in changes) if case=='real/pinball-bake' else all(v<=cap for v in changes)\n if label=='local_before_pause':\n  partial=o/'linux-real-waterworks-render-compare-2-partial.json';files[partial.name]=json.loads(partial.read_text());assert all(len(v)==6 for v in files[partial.name]['samples'].values())\n raw['phases'][label]={'files':files,'file_hashes':{name:sha(o/name) for name in files},'worker_source':(o/'worker.py').read_text(),'controller_source':controller.read_text()}\n audits[label]={'results':results,'groups':groups,'batches_in_complete_groups_including_warmup':batches,'children_in_complete_groups':children_total,'successful_pilot_and_reference_children':pilots,'scope':'Raw API deltas/affinity/ordering/checksum sums/medians/gates audited. Complete but superseded pre-interruption groups retained as records, not used for resumed condition decision.'}\n print(label,len(groups),'groups',children_total,'children',flush=True)\ncurrent=raw['phases']['local_after_pause']['files'];protocol=current['protocol.json'];assert current['complete.json']['status']=='calibration_unresolved'\nfor name,digest in protocol['evidence_hashes'].items():assert sha(r/name)==digest,name\nassert sha(r/'.work/partial-adoption-20261116/local/results.json')==protocol['prior_results_sha256']\ncoverage={}\nfor variant in ('value','local'):\n initial=audits['initial_'+variant]['results']['comparisons'];follow=audits['followup_value' if variant=='value' else 'local_after_pause']['results']['comparisons'];merged={**initial,**follow};targets={platform+'/'+case for platform in ('windows','linux') for case in protocol['cases']};assert len(targets)==52\n unmeasured=sorted(targets-set(merged));coverage[variant]={'comparisons':merged,'compared_count':len(merged),'unmeasured_count':len(unmeasured),'unmeasured':unmeasured}\nassert coverage['value']['compared_count']==14 and coverage['value']['unmeasured_count']==38\nassert coverage['local']['compared_count']==20 and coverage['local']['unmeasured_count']==32\nassert len([k for k in coverage['local']['comparisons'] if '/real/' in k])==18\n# For the interrupted condition only the new folder's two fresh groups decide the outcome.\nnew=[g for g in audits['local_after_pause']['groups'] if g['case']=='real/waterworks-render' and g['platform']=='linux'];assert len(new)==4\nfor name in ('2026-11-16-partial-adoption-results.json','2026-11-16-short-workload-timing-validation.json','2026-11-17-partial-adoption-resume.json'):\n path=r/'docs/measurements'/name;raw['validation_references'][name]={'sha256':sha(path)}\nraw['interrupted_condition_policy']='Keep all old files, exclude old Linux waterworks-render AA and compare1/partial2 from the current decision; use continuation AA and compare1/2 with fixedN198.'\nraw['audit_source']=Path(__file__).read_text(encoding='utf-8')\n# Preserve exact executable-script/protocol/readiness bytes, not just normalized text.\nimport base64\nexact={}\nfor o in phases.values():\n for path in (o/'worker.py',o.parent/'run.py',o/'protocol.json',o/'results.json',o/'start.json',o/'complete.json',o/'interruption.json',*o.glob('*-config.json')):\n  if path.is_file():exact[path.relative_to(r).as_posix()]={'sha256':sha(path),'base64':base64.b64encode(path.read_bytes()).decode()}\nfor root in (r/'.work/partial-adoption-resume-20261116',):\n ready_file=root/'ready.json';ready=json.loads(ready_file.read_text())\n for name in list(ready['hashes'])+[ready_file.relative_to(r).as_posix()]:\n  path=r/name;exact[name]={'sha256':sha(path),'base64':base64.b64encode(path.read_bytes()).decode()}\nraw['exact_script_protocol_evidence_bytes']=exact\narchive=r/'docs/measurements/2026-11-17-partial-adoption-followup-raw.json.gz';payload=(json.dumps(raw,separators=(',',':'),ensure_ascii=False)+'\\n').encode();archive.write_bytes(gzip.compress(payload,mtime=0));assert json.loads(gzip.decompress(archive.read_bytes()))['interrupted_condition_policy']==raw['interrupted_condition_policy']\nsummary={'date':'2026-11-17','audit_utc':datetime.datetime.now(datetime.timezone.utc).isoformat(),'phases':audits,'coverage':coverage,'resume_policy':protocol['resume'],'archive':{'file':archive.name,'sha256':sha(archive),'bytes':archive.stat().st_size,'uncompressed_bytes':len(payload)},'validation':{'all_frozen_inputs_and_binaries_currently_match':True,'raw_cpu_query_deltas_live_child_affinity_checksums_orders_medians_gates':'passed','historical_prior_primary_results_hash':'verified at final audit','interrupted_condition_uses_only_fresh_complete_groups':True},'limits':['No CPU clock accuracy proof or confidence intervals','No claim all host load/build activity independently observed','Artifact hashes checked per worker launch and at audit, not continuous immutability proof','Fresh-child sums and repeated-reset intervals are distinct metrics','No production runtime changed or additional candidate adopted'],'decision':{'value':'hold; Windows waterworks bake AA delta2.030% exceeds2%','local':'hold; Windows loops AA delta2.192% exceeds2%','standard_goal10percent':'not achieved by these candidates','runtime_modified':False},'audit_source':Path(__file__).read_text(encoding='utf-8')}\n(r/'docs/measurements/2026-11-17-partial-adoption-followup-results.json').write_text(json.dumps(summary,indent=2,ensure_ascii=False)+'\\n',encoding='utf-8');print('All audit checks and compressed archive roundtrip passed',flush=True)\n",
+  "task_state": {
+    "878": "done",
+    "879": "done",
+    "880": "todo",
+    "870": "incomplete"
+  }
+}

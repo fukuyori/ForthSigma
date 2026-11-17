@@ -1,0 +1,701 @@
+{
+  "date": "2026-11-17",
+  "task": 880,
+  "decision": {
+    "value": "Evaluation ended; adoption on hold; 38 unevaluated conditions not measured.",
+    "local": "Continue standard 32 conditions under the continuation protocol below.",
+    "runtime_modified": false,
+    "timing_started": false
+  },
+  "reviewed_calibration_misses": {
+    "local windows/loops": {
+      "1": {
+        "delta_percent": 2.191780821917808,
+        "medians_us": {
+          "A1": 5828125.0,
+          "A2": 5703125.0
+        },
+        "cpu_us": {
+          "A1": [
+            5703125.0,
+            5875000.0,
+            5828125.0,
+            7296875.0,
+            5718750.0
+          ],
+          "A2": [
+            5750000.0,
+            5703125.0,
+            17031250.0,
+            5687500.0,
+            5687500.0
+          ]
+        },
+        "wall_us": {
+          "A1": [
+            5704450.5,
+            5879017.7,
+            5839922.6,
+            7317534.7,
+            5731050.4
+          ],
+          "A2": [
+            5779986.3,
+            5749329.6,
+            17063068.8,
+            5712345.9,
+            5709391.3
+          ]
+        }
+      },
+      "2": {
+        "delta_percent": 0.2564102564102564,
+        "medians_us": {
+          "A1": 6093750.0,
+          "A2": 6109375.0
+        },
+        "cpu_us": {
+          "A1": [
+            6156250.0,
+            6078125.0,
+            6109375.0,
+            6093750.0,
+            6078125.0
+          ],
+          "A2": [
+            6171875.0,
+            6031250.0,
+            6109375.0,
+            6031250.0,
+            6156250.0
+          ]
+        },
+        "wall_us": {
+          "A1": [
+            6176497.2,
+            6124199.9,
+            6127015.7,
+            6117941.7,
+            6098937.0
+          ],
+          "A2": [
+            6189402.6,
+            6070481.6,
+            6102410.4,
+            6061293.0,
+            6190817.2
+          ]
+        }
+      }
+    },
+    "value windows/real/waterworks-bake": {
+      "1": {
+        "delta_percent": 0.7614213197969543,
+        "medians_us": {
+          "A1": 6203125.0,
+          "A2": 6156250.0
+        },
+        "cpu_us": {
+          "A1": [
+            6156250.0,
+            6234375.0,
+            6281250.0,
+            6187500.0,
+            6203125.0
+          ],
+          "A2": [
+            6109375.0,
+            6156250.0,
+            6109375.0,
+            6171875.0,
+            6234375.0
+          ]
+        },
+        "wall_us": {
+          "A1": [
+            6276295.7,
+            6228897.6,
+            6297749.7,
+            6240733.3,
+            6244366.0
+          ],
+          "A2": [
+            6215876.3,
+            6284662.1,
+            6236881.0,
+            6211893.3,
+            6235559.2
+          ]
+        }
+      },
+      "2": {
+        "delta_percent": 2.030456852791878,
+        "medians_us": {
+          "A1": 6156250.0,
+          "A2": 6281250.0
+        },
+        "cpu_us": {
+          "A1": [
+            6187500.0,
+            6156250.0,
+            6187500.0,
+            6156250.0,
+            6125000.0
+          ],
+          "A2": [
+            6187500.0,
+            6250000.0,
+            6296875.0,
+            6281250.0,
+            6390625.0
+          ]
+        },
+        "wall_us": {
+          "A1": [
+            6247577.2,
+            6265445.5,
+            6250201.1,
+            6214102.6,
+            6227089.6
+          ],
+          "A2": [
+            6218455.8,
+            6239417.1,
+            6317865.6,
+            6321080.4,
+            6327237.0
+          ]
+        }
+      }
+    }
+  },
+  "calibration_history": {
+    "windows": {
+      "attempts": 19,
+      "missed": 2
+    },
+    "linux": {
+      "attempts": 18,
+      "missed": 0
+    }
+  },
+  "continuation_880": {
+    "user_instruction": "おすすめで (approval of the #880 recommendation: end VALUE on hold, continue local with one recorded recalibration per missed condition)",
+    "created_utc": "2026-11-16T23:12:09.807846+00:00",
+    "prior_results": ".work/partial-adoption-continue-20261117/local/results.json",
+    "order": [
+      "loops",
+      "stacks",
+      "calls",
+      "variables",
+      "plus-loop",
+      "extended",
+      "float",
+      "catch-nested-64",
+      "catch-nested-256",
+      "catch-execute",
+      "catch-defer",
+      "catch-synonym",
+      "catch-throw",
+      "catch-fast-throw",
+      "catch-success",
+      "catch-nobt-throw"
+    ],
+    "platform_order": [
+      "windows",
+      "linux"
+    ],
+    "prior_missed": [
+      "windows/loops"
+    ],
+    "prior_missed_note": "Windows loops missed calibration at 2.191781% in the prior protocol; that record counts as attempt 1. Its fixed N=890434783 is reused for the single recalibration in the second pass.",
+    "stop_rules": "Stop on infrastructure error or on a comparison exceeding its cap. Calibration misses do not stop the run.",
+    "adoption": "Unchanged: every standard condition must pass its regression cap on both OS; unevaluated conditions keep adoption on hold.",
+    "value_status": "VALUE evaluation ended on hold; its 38 unevaluated conditions are not measured."
+  },
+  "calibration_rule": "AA maxdelta<=2, min all arm median>=5s. A miss defers that condition and the run continues. After one pass each deferred condition gets exactly one recalibration with the same N/CPU/sample counts/limit; all attempts are preserved. A second miss leaves the condition unevaluated and adoption on hold. No exploring CPU/N and no further repeats.",
+  "caps": "mandatory real shorten>max(3,2delta), other real/standard normal <=max(3,2delta), catch success5/throw10; both series required; mixed unresolved",
+  "frozen": {
+    "workdir": ".work/partial-adoption-local-standard-20261117",
+    "protocol_sha256": "46bb98d56d22138571d40c8cadd99b762cb5a7afa51b168f093d41775206ca8b",
+    "controller_sha256": "6bf60fb48661d46d9cac9f0ff1c55dc874699b33579d767498ad3e97f2760cd3",
+    "worker_sha256": "f455981f9fc1c12c22c3b37769d68adb020a941178d13dbca4a790aba45bba83",
+    "benchmark_sha256": "576345f4486dd27a510327d91ec04d5f8ce9721f42059679bd78e4b661e315ef",
+    "binary_hashes": {
+      "baseline-windows": "379d6c6c069b9c3072da22fa6cea8b7deff77c5ed78ef9bbd070f92a724337bf",
+      "candidate-windows": "9efbb6e8cc062ae71dae11bdeffa31fe9fd2ae4480bb3a04f10a838c4021c5c1",
+      "baseline-linux": "bdb6eb7a0ac59d27d23281708f89538631950d39654837cfd1cfa8d0e78b73fa",
+      "candidate-linux": "0edf681c46f0db5168a3c17485ebc2bccf2c475bce2ae8e01e34936dfb120c50"
+    },
+    "input_hash_count": 301,
+    "evidence_hashes": {
+      ".work/partial-adoption-resume-20261116/local/results.json": "1fa6d6748892969a566f42500c54fb626616fe6ab0b74f5745b959ed87e596ce",
+      ".work/partial-adoption-resume-20261116/local/interruption.json": "0192d4170e61deab3e64eff564a23454709a8528ed9090a085864fb66e1f79b9",
+      ".work/partial-adoption-resume-20261116/local/protocol.json": "09a70b337e51f03357de23b50c9b48d7d87dccec09e4f63515381860a9927bd0",
+      ".work/partial-adoption-resume-20261116/local/linux-real-waterworks-render-config.json": "821d2562d81df69725bd0508ca20909ea82eca91f381d0240cb536f3b0db5fe1",
+      ".work/partial-adoption-continue-20261117/local/linux-real-waterworks-render-config.json": "821d2562d81df69725bd0508ca20909ea82eca91f381d0240cb536f3b0db5fe1",
+      ".work/partial-adoption-resume-20261116/run.py": "6ace985b6b5820b79d62f616edfe63ef4ac6e744c9d45008460480225388d934",
+      ".work/partial-adoption-resume-20261116/inputs.json": "3e5be8dd238c35e1a9350f42f17c42185482a2422715f885099fa43288cb8186",
+      ".work/partial-adoption-resume-20261116/repeat-input.json": "3872d887931d46fe51b851fbb67e127a3d7e0f90cd58040d60c1ba94f87c0a51",
+      ".work/partial-adoption-resume-20261116/repeat-inputs.json": "752e97ed26c1f9bc235de7c1ae81282efaa74ea366dba4f8edb370123650dffa",
+      ".work/partial-adoption-resume-20261116/handshake-validation.json": "2ce465ef72940fb150049dcd1bd877a6470b68507c3231e4e7f2c14a86597bd8",
+      ".work/partial-adoption-resume-20261116/value/worker.py": "f455981f9fc1c12c22c3b37769d68adb020a941178d13dbca4a790aba45bba83",
+      ".work/partial-adoption-resume-20261116/value/protocol.json": "09c3deb013ce98fc108d1cac950fcbe250280f418ea04c2c97962a1e11edffc8",
+      ".work/partial-adoption-resume-20261116/local/worker.py": "f455981f9fc1c12c22c3b37769d68adb020a941178d13dbca4a790aba45bba83",
+      ".work/partial-adoption-continue-20261117/run.py": "11b8e0e11b47bd37bd3518f645902a1d38ad90ecf259e7f1d4578487acd6a92e",
+      ".work/partial-adoption-continue-20261117/local/results.json": "b27b896d9fb5c4a901fd4b4a7733aa01e909b1cc1ab9ed563267658677aa8abc",
+      ".work/partial-adoption-continue-20261117/local/protocol.json": "bbb3e299ceeb08a2b725f95ea3401e460f7427bd218b59aee570ea49faae1281",
+      ".work/partial-adoption-continue-20261117/local/complete.json": "a94512d45d03af241d4462c9b90baa58662294519acf26095cda961fb0eacc4e",
+      ".work/partial-adoption-continue-20261117/local/windows-loops-config.json": "622c90ed48857c67792d1d78819fe396bd8fcab149967aeb244914c9f2953650",
+      ".work/partial-adoption-continue-20261117/local/windows-loops-aa-1.json": "3e6b86d4cdc08efde491da807468dd202ced7d6f54c9a4eeca6adccf34571b5a",
+      ".work/partial-adoption-continue-20261117/local/windows-loops-aa-2.json": "e7ae27fe7672b52439615e71b9422f33182c9678b1870afe3f3fe5c6de05e722",
+      ".work/partial-adoption-local-standard-20261117/local/windows-loops-config.json": "622c90ed48857c67792d1d78819fe396bd8fcab149967aeb244914c9f2953650"
+    }
+  },
+  "pre_checks": {
+    "preflight": "Hashes matched; no timing started.",
+    "controller_simulation": "Fake worker; paths: all pass, miss then pass, miss twice, regression stop, CATCH cap stop. No binaries run.",
+    "functional_check": {
+      "scope": "No timing. Small-N result equality across baseline/candidate and both OS.",
+      "rows": [
+        {
+          "case": "loops",
+          "iterations": 1000,
+          "ok": true,
+          "outputs": {
+            "windows-baseline": {
+              "exit": 0,
+              "stdout": "3500",
+              "stderr": ""
+            },
+            "windows-candidate": {
+              "exit": 0,
+              "stdout": "3500",
+              "stderr": ""
+            },
+            "linux-baseline": {
+              "exit": 0,
+              "stdout": "3500",
+              "stderr": ""
+            },
+            "linux-candidate": {
+              "exit": 0,
+              "stdout": "3500",
+              "stderr": ""
+            }
+          }
+        },
+        {
+          "case": "stacks",
+          "iterations": 1000,
+          "ok": true,
+          "outputs": {
+            "windows-baseline": {
+              "exit": 0,
+              "stdout": "1506",
+              "stderr": ""
+            },
+            "windows-candidate": {
+              "exit": 0,
+              "stdout": "1506",
+              "stderr": ""
+            },
+            "linux-baseline": {
+              "exit": 0,
+              "stdout": "1506",
+              "stderr": ""
+            },
+            "linux-candidate": {
+              "exit": 0,
+              "stdout": "1506",
+              "stderr": ""
+            }
+          }
+        },
+        {
+          "case": "calls",
+          "iterations": 1000,
+          "ok": true,
+          "outputs": {
+            "windows-baseline": {
+              "exit": 0,
+              "stdout": "4000",
+              "stderr": ""
+            },
+            "windows-candidate": {
+              "exit": 0,
+              "stdout": "4000",
+              "stderr": ""
+            },
+            "linux-baseline": {
+              "exit": 0,
+              "stdout": "4000",
+              "stderr": ""
+            },
+            "linux-candidate": {
+              "exit": 0,
+              "stdout": "4000",
+              "stderr": ""
+            }
+          }
+        },
+        {
+          "case": "variables",
+          "iterations": 1000,
+          "ok": true,
+          "outputs": {
+            "windows-baseline": {
+              "exit": 0,
+              "stdout": "7000",
+              "stderr": ""
+            },
+            "windows-candidate": {
+              "exit": 0,
+              "stdout": "7000",
+              "stderr": ""
+            },
+            "linux-baseline": {
+              "exit": 0,
+              "stdout": "7000",
+              "stderr": ""
+            },
+            "linux-candidate": {
+              "exit": 0,
+              "stdout": "7000",
+              "stderr": ""
+            }
+          }
+        },
+        {
+          "case": "plus-loop",
+          "iterations": 1000,
+          "ok": true,
+          "outputs": {
+            "windows-baseline": {
+              "exit": 0,
+              "stdout": "1500",
+              "stderr": ""
+            },
+            "windows-candidate": {
+              "exit": 0,
+              "stdout": "1500",
+              "stderr": ""
+            },
+            "linux-baseline": {
+              "exit": 0,
+              "stdout": "1500",
+              "stderr": ""
+            },
+            "linux-candidate": {
+              "exit": 0,
+              "stdout": "1500",
+              "stderr": ""
+            }
+          }
+        },
+        {
+          "case": "extended",
+          "iterations": 1000,
+          "ok": true,
+          "outputs": {
+            "windows-baseline": {
+              "exit": 0,
+              "stdout": "59859",
+              "stderr": ""
+            },
+            "windows-candidate": {
+              "exit": 0,
+              "stdout": "59859",
+              "stderr": ""
+            },
+            "linux-baseline": {
+              "exit": 0,
+              "stdout": "59859",
+              "stderr": ""
+            },
+            "linux-candidate": {
+              "exit": 0,
+              "stdout": "59859",
+              "stderr": ""
+            }
+          }
+        },
+        {
+          "case": "float",
+          "iterations": 1000,
+          "ok": true,
+          "outputs": {
+            "windows-baseline": {
+              "exit": 0,
+              "stdout": "1000",
+              "stderr": ""
+            },
+            "windows-candidate": {
+              "exit": 0,
+              "stdout": "1000",
+              "stderr": ""
+            },
+            "linux-baseline": {
+              "exit": 0,
+              "stdout": "1000",
+              "stderr": ""
+            },
+            "linux-candidate": {
+              "exit": 0,
+              "stdout": "1000",
+              "stderr": ""
+            }
+          }
+        },
+        {
+          "case": "catch-nested-64",
+          "iterations": 1000,
+          "ok": true,
+          "outputs": {
+            "windows-baseline": {
+              "exit": 0,
+              "stdout": "0",
+              "stderr": ""
+            },
+            "windows-candidate": {
+              "exit": 0,
+              "stdout": "0",
+              "stderr": ""
+            },
+            "linux-baseline": {
+              "exit": 0,
+              "stdout": "0",
+              "stderr": ""
+            },
+            "linux-candidate": {
+              "exit": 0,
+              "stdout": "0",
+              "stderr": ""
+            }
+          }
+        },
+        {
+          "case": "catch-nested-256",
+          "iterations": 1000,
+          "ok": true,
+          "outputs": {
+            "windows-baseline": {
+              "exit": 0,
+              "stdout": "0",
+              "stderr": ""
+            },
+            "windows-candidate": {
+              "exit": 0,
+              "stdout": "0",
+              "stderr": ""
+            },
+            "linux-baseline": {
+              "exit": 0,
+              "stdout": "0",
+              "stderr": ""
+            },
+            "linux-candidate": {
+              "exit": 0,
+              "stdout": "0",
+              "stderr": ""
+            }
+          }
+        },
+        {
+          "case": "catch-execute",
+          "iterations": 1000,
+          "ok": true,
+          "outputs": {
+            "windows-baseline": {
+              "exit": 0,
+              "stdout": "1000",
+              "stderr": ""
+            },
+            "windows-candidate": {
+              "exit": 0,
+              "stdout": "1000",
+              "stderr": ""
+            },
+            "linux-baseline": {
+              "exit": 0,
+              "stdout": "1000",
+              "stderr": ""
+            },
+            "linux-candidate": {
+              "exit": 0,
+              "stdout": "1000",
+              "stderr": ""
+            }
+          }
+        },
+        {
+          "case": "catch-defer",
+          "iterations": 1000,
+          "ok": true,
+          "outputs": {
+            "windows-baseline": {
+              "exit": 0,
+              "stdout": "1000",
+              "stderr": ""
+            },
+            "windows-candidate": {
+              "exit": 0,
+              "stdout": "1000",
+              "stderr": ""
+            },
+            "linux-baseline": {
+              "exit": 0,
+              "stdout": "1000",
+              "stderr": ""
+            },
+            "linux-candidate": {
+              "exit": 0,
+              "stdout": "1000",
+              "stderr": ""
+            }
+          }
+        },
+        {
+          "case": "catch-synonym",
+          "iterations": 1000,
+          "ok": true,
+          "outputs": {
+            "windows-baseline": {
+              "exit": 0,
+              "stdout": "1000",
+              "stderr": ""
+            },
+            "windows-candidate": {
+              "exit": 0,
+              "stdout": "1000",
+              "stderr": ""
+            },
+            "linux-baseline": {
+              "exit": 0,
+              "stdout": "1000",
+              "stderr": ""
+            },
+            "linux-candidate": {
+              "exit": 0,
+              "stdout": "1000",
+              "stderr": ""
+            }
+          }
+        },
+        {
+          "case": "catch-throw",
+          "iterations": 1000,
+          "ok": true,
+          "outputs": {
+            "windows-baseline": {
+              "exit": 0,
+              "stdout": "77000",
+              "stderr": ""
+            },
+            "windows-candidate": {
+              "exit": 0,
+              "stdout": "77000",
+              "stderr": ""
+            },
+            "linux-baseline": {
+              "exit": 0,
+              "stdout": "77000",
+              "stderr": ""
+            },
+            "linux-candidate": {
+              "exit": 0,
+              "stdout": "77000",
+              "stderr": ""
+            }
+          }
+        },
+        {
+          "case": "catch-fast-throw",
+          "iterations": 1000,
+          "ok": true,
+          "outputs": {
+            "windows-baseline": {
+              "exit": 0,
+              "stdout": "77000",
+              "stderr": ""
+            },
+            "windows-candidate": {
+              "exit": 0,
+              "stdout": "77000",
+              "stderr": ""
+            },
+            "linux-baseline": {
+              "exit": 0,
+              "stdout": "77000",
+              "stderr": ""
+            },
+            "linux-candidate": {
+              "exit": 0,
+              "stdout": "77000",
+              "stderr": ""
+            }
+          }
+        },
+        {
+          "case": "catch-success",
+          "iterations": 1000,
+          "ok": true,
+          "outputs": {
+            "windows-baseline": {
+              "exit": 0,
+              "stdout": "1000",
+              "stderr": ""
+            },
+            "windows-candidate": {
+              "exit": 0,
+              "stdout": "1000",
+              "stderr": ""
+            },
+            "linux-baseline": {
+              "exit": 0,
+              "stdout": "1000",
+              "stderr": ""
+            },
+            "linux-candidate": {
+              "exit": 0,
+              "stdout": "1000",
+              "stderr": ""
+            }
+          }
+        },
+        {
+          "case": "catch-nobt-throw",
+          "iterations": 1000,
+          "ok": true,
+          "outputs": {
+            "windows-baseline": {
+              "exit": 0,
+              "stdout": "77000",
+              "stderr": ""
+            },
+            "windows-candidate": {
+              "exit": 0,
+              "stdout": "77000",
+              "stderr": ""
+            },
+            "linux-baseline": {
+              "exit": 0,
+              "stdout": "77000",
+              "stderr": ""
+            },
+            "linux-candidate": {
+              "exit": 0,
+              "stdout": "77000",
+              "stderr": ""
+            }
+          }
+        }
+      ]
+    }
+  },
+  "sources": {
+    "run.py": "\"\"\"Controller for the local candidate standard-condition continuation (tque #880 decision).\n\nDifferences from the previous controller, approved by the user on 2026-11-17:\n  * A calibration miss marks that condition as deferred and the run proceeds to the next condition.\n  * After one pass, each deferred condition gets exactly one recalibration with the same N, CPU,\n    sample counts and 2% limit. Every attempt is preserved.\n  * A second miss leaves the condition unevaluated. Adoption stays on hold in that case.\nComparison caps, sample counts, order alternation and the worker are unchanged.\n\"\"\"\nfrom pathlib import Path\nimport json, subprocess, sys, hashlib, datetime, copy, shutil\n\nr = Path.cwd()\nbase = r / '.work/partial-adoption-local-standard-20261117'\no = base / 'local'\nvariant = 'local'\nLINUX_WORKER = '/mnt/d/home/source/zig/forthz/.work/partial-adoption-local-standard-20261117/local/worker.py'\nsha = lambda p: hashlib.sha256(p.read_bytes()).hexdigest()\nnow = lambda: datetime.datetime.now(datetime.timezone.utc).isoformat()\n\nif sys.flags.optimize:\n    raise RuntimeError('Python optimization disabled')\nprotocol = json.loads((o / 'protocol.json').read_text())\nassert sha(Path(__file__)) == protocol['controller_sha256'] and sha(o / 'worker.py') == protocol['worker_sha256']\nfor name, digest in {**protocol['input_hashes'], **protocol['evidence_hashes']}.items():\n    if sha(r / name) != digest:\n        raise RuntimeError('Frozen input/evidence changed: ' + name)\nfor platform, paths in protocol['binary_paths'].items():\n    for kind, path in paths.items():\n        assert sha(r / path) == protocol['binary_hashes'][kind + '-' + platform]\nplan = protocol['continuation_880']\nif '--preflight' in sys.argv:\n    print('Continuation evidence/input hashes match; no timing started')\n    raise SystemExit(0)\nassert not (o / 'start.json').exists(), 'No unplanned rerun'\n\nprior = json.loads((r / plan['prior_results']).read_text())\nreport = copy.deepcopy(prior)\nfor stale in ('platform', 'case', 'stage', 'series', 'exit'):\n    report.pop(stale, None)\nreport['continuation_880'] = plan\nreport['status'] = 'running'\nreport['calibration_attempts'] = {\n    key: [{**prior['calibrations'][key], 'attempt': 1, 'source': plan['prior_results']}]\n    for key in plan['prior_missed']\n}\nreport['deferred_history'] = list(plan['prior_missed'])\nreport['unevaluated'] = []\n(o / 'start.json').write_text(json.dumps({\n    'utc': now(), 'protocol_sha256': sha(o / 'protocol.json'),\n    'worker_sha256': sha(o / 'worker.py'), 'controller_sha256': sha(Path(__file__))}, indent=2) + '\\n')\n\n\ndef save():\n    (o / 'results.json').write_text(json.dumps(report, indent=2) + '\\n')\n\n\ndef finish(reason, **extra):\n    report.update(status=reason, **extra)\n    save()\n    (o / 'complete.json').write_text(json.dumps({'utc': now(), 'status': reason, 'not_adopted': True}, indent=2) + '\\n')\n    print('STOP', variant, reason, extra, flush=True)\n    raise SystemExit(0)\n\n\ndef invoke(platform, stage, case, index=1):\n    if platform == 'windows':\n        cmd = [sys.executable, '-X', 'utf8', str(o / 'worker.py'), platform, stage, case, str(index)]\n    else:\n        cmd = ['wsl', '--exec', 'python3', LINUX_WORKER, platform, stage, case, str(index)]\n    p = subprocess.run(cmd, cwd=r)\n    if p.returncode:\n        finish('infrastructure_error', platform=platform, stage=stage, case=case, series=index, exit=p.returncode)\n    if stage == 'pilot':\n        return None\n    return json.loads((o / f'{platform}-{case.replace(\"/\", \"-\")}-{stage}-{index}.json').read_text())\n\n\ndef calibrate(platform, case, attempt):\n    key = platform + '/' + case\n    groups = [invoke(platform, 'aa', case, i) for i in (1, 2)]\n    delta = max(x['delta_percent'] for x in groups)\n    minimum = min(v for x in groups for v in x['medians_us'].values())\n    entry = {'delta_percent': delta, 'minimum_median_us': minimum, 'passed': delta <= 2 and minimum >= 5000000}\n    report['calibrations'][key] = entry\n    report['calibration_attempts'].setdefault(key, []).append({**entry, 'attempt': attempt, 'utc': now()})\n    save()\n    print('AA', variant, key, 'attempt', attempt, entry, flush=True)\n    return entry['passed']\n\n\ndef archive_attempt(platform, case, attempt):\n    \"\"\"Move the A/A files of a missed attempt aside so the recalibration cannot overwrite them.\"\"\"\n    target = o / f'attempt-{attempt}'\n    target.mkdir(exist_ok=True)\n    stem = f'{platform}-{case.replace(\"/\", \"-\")}'\n    for i in (1, 2):\n        for suffix in ('', '-partial'):\n            path = o / f'{stem}-aa-{i}{suffix}.json'\n            if path.exists():\n                shutil.move(str(path), str(target / path.name))\n\n\ndef compare(platform, case):\n    key = platform + '/' + case\n    groups = [invoke(platform, 'compare', case, i) for i in (1, 2)]\n    changes = [x['change_percent'] for x in groups]\n    delta = report['calibrations'][key]['delta_percent']\n    cap = (10 if 'throw' in case else 5) if case.startswith('catch-') else max(3, 2 * delta)\n    passed = all(v <= cap for v in changes)\n    report['comparisons'][key] = {'changes_percent': changes, 'delta_percent': delta, 'threshold_percent': cap, 'passed': passed}\n    save()\n    print('AB', variant, key, report['comparisons'][key], flush=True)\n    if not passed:\n        finish('regression_or_mixed_result', platform=platform, case=case)\n\n\n# First pass: every remaining standard condition in the frozen order.\nfor case in plan['order']:\n    for platform in ('windows', 'linux'):\n        key = platform + '/' + case\n        if key in plan['prior_missed']:\n            print('DEFERRED (missed in prior protocol)', key, flush=True)\n            continue\n        invoke(platform, 'pilot', case)\n        if calibrate(platform, case, 1):\n            compare(platform, case)\n        else:\n            report['deferred_history'].append(key)\n            save()\n\n# Second pass: one recalibration per deferred condition, same N (no new pilot).\nfor key in list(report['deferred_history']):\n    platform, case = key.split('/', 1)\n    archive_attempt(platform, case, 1)\n    if calibrate(platform, case, 2):\n        compare(platform, case)\n    else:\n        report['unevaluated'].append(key)\n        save()\n\nif report['unevaluated']:\n    finish('completed_with_unevaluated_conditions')\nfinish('all_numeric_conditions_passed_pending_safety_review')\n",
+    "prepare.py": "\"\"\"Freeze the continuation protocol for the local candidate (tque #880 decision). No timing is started.\"\"\"\nfrom pathlib import Path\nimport json, hashlib, datetime\n\nr = Path.cwd()\nold = r / '.work/partial-adoption-continue-20261117'\nbase = r / '.work/partial-adoption-local-standard-20261117'\no = base / 'local'\nsha = lambda p: hashlib.sha256(p.read_bytes()).hexdigest()\n\no.mkdir(exist_ok=True)\nassert not (o / 'protocol.json').exists(), 'Preserve frozen continuation'\ncontroller = base / 'run.py'\ncompile(controller.read_text(encoding='utf-8'), str(controller), 'exec')\n\n# The worker and the already fixed Windows LOOP N are carried over byte for byte.\nfor name in ('worker.py', 'windows-loops-config.json'):\n    (o / name).write_bytes((old / 'local' / name).read_bytes())\n\np = json.loads((old / 'local/protocol.json').read_text())\nassert sha(o / 'worker.py') == p['worker_sha256']\np['controller_sha256'] = sha(controller)\nevidence = [\n    old / 'run.py', old / 'local/results.json', old / 'local/protocol.json', old / 'local/complete.json',\n    old / 'local/windows-loops-config.json', old / 'local/windows-loops-aa-1.json', old / 'local/windows-loops-aa-2.json',\n    o / 'windows-loops-config.json',\n]\np['evidence_hashes'].update({path.relative_to(r).as_posix(): sha(path) for path in evidence})\np['calibration'] = ('AA maxdelta<=2, min all arm median>=5s. A miss defers that condition and the run continues. '\n                    'After one pass each deferred condition gets exactly one recalibration with the same N/CPU/sample counts/limit; '\n                    'all attempts are preserved. A second miss leaves the condition unevaluated and adoption on hold. '\n                    'No exploring CPU/N and no further repeats.')\np['scope'] = p['scope'].replace('No retry or OS settings changes.', 'One recorded recalibration per missed condition; no OS settings changes.')\np['continuation_880'] = {\n    'user_instruction': 'おすすめで (approval of the #880 recommendation: end VALUE on hold, continue local with one recorded recalibration per missed condition)',\n    'created_utc': datetime.datetime.now(datetime.timezone.utc).isoformat(),\n    'prior_results': (old / 'local/results.json').relative_to(r).as_posix(),\n    'order': p['standard_order'][1:],\n    'platform_order': ['windows', 'linux'],\n    'prior_missed': ['windows/loops'],\n    'prior_missed_note': 'Windows loops missed calibration at 2.191781% in the prior protocol; that record counts as attempt 1. '\n                         'Its fixed N=890434783 is reused for the single recalibration in the second pass.',\n    'stop_rules': 'Stop on infrastructure error or on a comparison exceeding its cap. Calibration misses do not stop the run.',\n    'adoption': 'Unchanged: every standard condition must pass its regression cap on both OS; unevaluated conditions keep adoption on hold.',\n    'value_status': 'VALUE evaluation ended on hold; its 38 unevaluated conditions are not measured.',\n}\n(o / 'protocol.json').write_text(json.dumps(p, indent=2) + '\\n')\n(base / 'continuation-decision.json').write_text(json.dumps(p['continuation_880'], indent=2, ensure_ascii=False) + '\\n')\nprint('Frozen. controller', p['controller_sha256'], 'protocol', sha(o / 'protocol.json'))\n",
+    "functional-check.py": "\"\"\"Functional check without timing: every remaining standard definition gives the same result on\nbaseline and candidate, on both OS, at a small fixed N. Not a performance measurement.\"\"\"\nfrom pathlib import Path\nimport json, subprocess\n\nr = Path.cwd()\nbase = r / '.work/partial-adoption-local-standard-20261117'\np = json.loads((base / 'local/protocol.json').read_text())\nN = 1000\nrows = []\nfor case in p['continuation_880']['order']:\n    source = f\"{N} CONSTANT BENCH-ITERATIONS {p['cases'][case]['definition']} BENCH-RUN . BYE\"\n    out = {}\n    for platform in ('windows', 'linux'):\n        for kind in ('baseline', 'candidate'):\n            path = p['binary_paths'][platform][kind]\n            cmd = [str(r / path), '-e', source] if platform == 'windows' else ['wsl', '--exec', '/mnt/d/home/source/zig/forthz/' + path, '-e', source]\n            done = subprocess.run(cmd, capture_output=True, text=True, timeout=120)\n            out[f'{platform}-{kind}'] = {'exit': done.returncode, 'stdout': done.stdout.strip(), 'stderr': done.stderr.strip()}\n    values = {v['stdout'] for v in out.values()}\n    ok = len(values) == 1 and all(v['exit'] == 0 and not v['stderr'] for v in out.values()) and next(iter(values)) != ''\n    rows.append({'case': case, 'iterations': N, 'ok': ok, 'outputs': out})\n    print(case, 'OK' if ok else 'MISMATCH', sorted(values))\n(base / 'functional-check.json').write_text(json.dumps({'scope': 'No timing. Small-N result equality across baseline/candidate and both OS.', 'rows': rows}, indent=2) + '\\n')\nprint('all ok' if all(x['ok'] for x in rows) else 'FAILED')\n"
+  }
+}
