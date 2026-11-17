@@ -74,6 +74,8 @@ On Linux and macOS, the same `zig build` builds the program, and the executable 
     zig build
     ./zig-out/bin/sigma
 
+On Linux, when `zig build` fails on the C library's headers of the distribution (`'gnu/stubs-32.h' not found`), give the musl target, which uses the headers that come with Zig: `zig build -Dtarget=x86_64-linux-musl`.
+
 The core regression tests run with zig build test.
 
 To specify another Zig target, use zig build -Dtarget=<triple>.
@@ -90,7 +92,7 @@ To sign, set `CODESIGN_CERT` to the subject of the certificate in the certificat
     .\scripts\build-release.ps1 -Sign
     .\scripts\build-installer.ps1 -Sign
 
-On Linux and macOS, the following script makes the release build. As `build-release.ps1` does, it builds both the version with the floating-point words (`dist/release/bin/sigma`) and the version without them (`dist/release-nofloat/bin/sigma`). `--variant float` or `--variant nofloat` builds only one of them, and `--output` and `--nofloat-output` change the output directories. Even when `--target` is not given, the CPU is baseline (`-Dcpu=baseline`). `--help` lists all the options.
+On Linux and macOS, the following script makes the release build. As `build-release.ps1` does, it builds both the version with the floating-point words (`dist/release/bin/sigma`) and the version without them (`dist/release-nofloat/bin/sigma`). `--variant float` or `--variant nofloat` builds only one of them, and `--output` and `--nofloat-output` change the output directories. When `--target` is not given, on Linux the script builds the musl target of the machine's CPU (`x86_64-linux-musl`, `aarch64-linux-musl`, or `arm-linux-musleabihf`), as the released executables are built; on macOS it builds for the machine, with the baseline CPU (`-Dcpu=baseline`). `--help` lists all the options.
 
     ./scripts/build-release.sh
 

@@ -74,6 +74,8 @@ LinuxとmacOSでも同じ `zig build` でビルドし、実行ファイルは `z
     zig build
     ./zig-out/bin/sigma
 
+Linuxで、`zig build` がディストリビューションのCライブラリのヘッダーで失敗する場合（`'gnu/stubs-32.h' not found`）は、musl向けを指定します。Zigに付属するヘッダーを使うビルドになります：`zig build -Dtarget=x86_64-linux-musl`。
+
 コアの回帰テストはzig build testで実行できます。
 
 別のZigターゲットを指定する場合はzig build -Dtarget=<triple>を使います。
@@ -90,7 +92,7 @@ LinuxとmacOSでも同じ `zig build` でビルドし、実行ファイルは `z
     .\scripts\build-release.ps1 -Sign
     .\scripts\build-installer.ps1 -Sign
 
-LinuxとmacOSでは、リリースビルドを次のスクリプトで作ります。`build-release.ps1` と同じく、浮動小数点の語を含む版（`dist/release/bin/sigma`）と除いた版（`dist/release-nofloat/bin/sigma`）の両方をビルドします。`--variant float` または `--variant nofloat` で片方だけにでき、出力先は `--output` と `--nofloat-output` で変えられます。`--target` を指定しないときもCPUはbaseline（`-Dcpu=baseline`）です。オプションの一覧は `--help` で表示します。
+LinuxとmacOSでは、リリースビルドを次のスクリプトで作ります。`build-release.ps1` と同じく、浮動小数点の語を含む版（`dist/release/bin/sigma`）と除いた版（`dist/release-nofloat/bin/sigma`）の両方をビルドします。`--variant float` または `--variant nofloat` で片方だけにでき、出力先は `--output` と `--nofloat-output` で変えられます。`--target` を指定しないとき、Linuxでは、そのマシンのCPUのmusl向け（`x86_64-linux-musl`、`aarch64-linux-musl`、`arm-linux-musleabihf` のどれか）をビルドします。配布している実行ファイルと同じ形です。macOSでは、そのマシン向けにbaselineのCPU（`-Dcpu=baseline`）でビルドします。オプションの一覧は `--help` で表示します。
 
     ./scripts/build-release.sh
 

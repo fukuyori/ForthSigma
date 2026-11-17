@@ -17,7 +17,9 @@
 #                          (default: dist/release-nofloat)
 #   --target TRIPLE        Zig target, such as x86_64-linux-musl,
 #                          aarch64-linux-musl, arm-linux-musleabihf or
-#                          aarch64-macos (default: this machine, with the
+#                          aarch64-macos (default: on Linux, the musl target of
+#                          this machine's CPU, as the released executables
+#                          are built; elsewhere this machine, with the
 #                          baseline CPU)
 #   --variant VARIANT      both, float or nofloat (default: both)
 #
@@ -46,7 +48,7 @@ while [[ $# -gt 0 ]]; do
                 --variant)        VARIANT="$2" ;;
             esac
             shift 2 ;;
-        -h|--help) sed -n '2,26p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
+        -h|--help) sed -n '2,28p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
         *) echo "Error: unknown option: $1" >&2; exit 1 ;;
     esac
 done
@@ -72,6 +74,18 @@ ROOT=$(cd "$(dirname "$0")/.." && pwd)
 if [[ -z "$OUTPUT" ]]; then OUTPUT="$ROOT/dist/release"; else OUTPUT=$(absolute "$OUTPUT"); fi
 if [[ -z "$NOFLOAT_OUTPUT" ]]; then NOFLOAT_OUTPUT="$ROOT/dist/release-nofloat"; else NOFLOAT_OUTPUT=$(absolute "$NOFLOAT_OUTPUT"); fi
 cd "$ROOT"
+
+# On Linux the default is the static musl build of this machine's CPU, the form the
+# released executables have. It uses the C headers that come with Zig, so the build
+# does not depend on the C library's headers of the distribution (a build for the
+# machine itself failed on them: 'gnu/stubs-32.h' not found).
+if [[ -z "$TARGET" && "$(uname -s)" == Linux ]]; then
+    case "$(uname -m)" in
+        x86_64)        TARGET=x86_64-linux-musl ;;
+        aarch64|arm64) TARGET=aarch64-linux-musl ;;
+        armv7l|armv6l) TARGET=arm-linux-musleabihf ;;
+    esac
+fi
 
 case "$TARGET" in
     *windows*) EXECUTABLE=sigma.exe ;;
