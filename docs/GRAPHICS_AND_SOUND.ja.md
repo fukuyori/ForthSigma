@@ -105,7 +105,7 @@ BALLS  1 IMAGE-FLIP BALL 0 0 PUT-IMAGE  0 IMAGE-FLIP  SHOW
 
 ### 文字
 
-`TEXT` は、文字列を今のフォントで描きます。初めは組み込みのフォントで、美咲ゴシック（門真なむ氏、自由に利用できるフォント。[THIRD_PARTY_NOTICES.md](../THIRD_PARTY_NOTICES.md) を参照）のASCIIの文字を、幅4画素・高さ8画素で描きます。`LOAD-FONT` はBDFのフォントファイルを読んで使い（どのOSでも）、`SYSTEM-FONT` はシステムに登録されたフォントを名前で使います（Windows）。文字列はUTF-8として読み、フォントにない文字は1つの `?` で描きます（フォントに `?` もなければ描きません）。UTF-8でないバイトも1バイトごとに同じです。制御文字は描きません。
+`TEXT` は、文字列を今のフォントで描きます。初めは組み込みのフォントで、美咲ゴシック（門真なむ氏、自由に利用できるフォント。[THIRD_PARTY_NOTICES.md](../THIRD_PARTY_NOTICES.md) を参照）のASCIIの文字を、幅4画素・高さ8画素で描きます。`LOAD-FONT` はBDFのフォントファイルを読んで使い（どのOSでも）、`SYSTEM-FONT` はシステムに登録されたフォントを名前で使います（WindowsとmacOS）。文字列はUTF-8として読み、フォントにない文字は1つの `?` で描きます（フォントに `?` もなければ描きません）。UTF-8でないバイトも1バイトごとに同じです。制御文字は描きません。
 
 ```forth
 REQUIRE-GRAPHICS  ALSO GRAPHICS
@@ -123,7 +123,7 @@ SHOW
 | `TEXT-WIDTH` | ( c-addr u -- w ) | `TEXT` が今の倍率で描いたときの幅（画素）。画像は要らない。 |
 | `TEXT-HEIGHT` | ( -- h ) | 今のフォントの1行の高さ（今の倍率で）。 |
 | `LOAD-FONT` | ( c-addr u -- ) | 名前のBDFフォントファイルを読んで使う。開けないファイルはそのエラーを、読めるBDFフォントでないファイルは `FONT ERROR !`（THROW -272）を THROW し、フォントは元のまま。1行の高さは256画素まで、1字の幅は512画素まで。使っていたフォントは、新しいフォントを最後まで読み終えるまで残す。 |
-| `SYSTEM-FONT` | ( c-addr u height -- ) | システムのその名前のフォント（`Consolas`、`MS Gothic`、`メイリオ` など）を、1行 height 画素（1〜256）で、灰色の濃淡でなめらかにして使う。U+10000以上の文字は `?` で描く。その名前のフォントがなければ `FONT ERROR !`、LinuxとmacOSでは `HOST FUNCTION UNAVAILABLE !`。 |
+| `SYSTEM-FONT` | ( c-addr u height -- ) | システムのその名前のフォント（Windowsでは `Consolas`、`MS Gothic`、`メイリオ` など、macOSでは `Hiragino Sans`、`HiraginoSans-W3`、`ヒラギノ角ゴシック`、`Osaka` など）を、1行 height 画素（1〜256）で、灰色の濃淡でなめらかにして使う。macOSでは、ファミリー名、フルネーム、PostScript名と、それを利用者の言語で表した名前で探す。フォントにない文字は `?` で描き、ほかのフォントで補わない。WindowsではU+10000以上の文字も `?` で描く。その名前のフォントがなければ `FONT ERROR !`、Linuxでは `HOST FUNCTION UNAVAILABLE !`。 |
 | `BUILTIN-FONT` | ( -- ) | 組み込みのフォントに戻す。 |
 | `GFX-GLYPH-LOAD` | ( code -- advance \| -1 ) | 今のフォントの文字番号の字形を読み込み、ペンを進める幅を返す。フォントになければ -1。 |
 | `GFX-GLYPH-BOX` | ( -- left width height ) | 読み込んだ字形の箱。ペンから `left` 画素右（負なら左）、行の上端から。 |
@@ -211,7 +211,7 @@ LinuxとmacOSでは、文字でないキーは端末からエスケープシー�
 | `GUI-BEGIN`、`GUI-END` | ( -- ) | フレームの GUI を始める、終える。`GUI-END` は開いているプルダウンメニューをほかの部品の上に描きます。 |
 | `GUI-BUTTON` | ( c-addr u x y -- flag ) | ボタン。クリックされたとき、またはフォーカスがあって Enter か Space が押されたときに真。大きさは `GUI-BUTTON-SIZE` ( c-addr u -- w h ) で分かります。 |
 | `GUI-CHECK` | ( addr c-addr u x y -- flag ) | ラベル付きのチェックボックス。ボックスかラベルのクリック、または Space か Enter で addr のフラグが変わり、変わったときに真。 |
-| `GUI-FIELD` | ( buf room len-addr x y w -- flag ) | 幅 w 画素の1行の入力欄。buf の文字列（room バイトまで、長さは len-addr）を編集します。`INKEY` が返す文字のバイト（UTF-8 も）、Backspace、Delete、左右の矢印、Home、End が使えます。Enter が押されたときに真。 |
+| `GUI-FIELD` | ( buf room len-addr x y w -- flag ) | 幅 w 画素の1行の入力欄。buf の文字列（room バイトまで、長さは len-addr）を編集します。`INKEY` が返す文字のバイト（UTF-8 も）、Backspace、Delete、左右の矢印、Home、End が使えます。Tkのウィンドウでは、フォーカスがある間、IMEで日本語を変換して入力できます。変換中の文字はカーソルの位置に下線つきで表示され、確定した文字だけが入ります。Enter が押されたときに真。 |
 | `GUI-LIST` | ( c-addr u var x y w -- flag ) | 項目 "a\|b\|c" を縦に並べた、幅 w 画素のリスト（0 なら最も広い項目に合わせます）。var のセルが選んでいる項目で、マウスを項目の上に置くか、フォーカスがあるときの上下の矢印で選びます。項目をクリックしたとき、または Enter か Space で真。 |
 | `GUI-LIST-XT` | ( xt n var x y w -- flag ) | 同じリストを、xt ( i -- c-addr u ) が返す n 個の項目で作ります。項目はプログラムのどのデータ（文字列の配列、ディレクトリの一覧など）にあってもよく、\| を含めることもできます。項目がなければ何も描きません。 |
 | `GUI-MENUBAR` | ( c-addr u -- n ) | 項目 "a\|b\|c" の見出しを並べた、上端のバー。見出しをクリックするとそのメニューが開きます（もう一度で閉じる）。開いている間は、ほかの見出しの上にマウスを置くか、左右の矢印でそのメニューに移り、Esc で閉じます。開いているメニューの番号を返し、なければ -1。`GUI-BEGIN` のすぐ後に呼びます。 |

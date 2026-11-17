@@ -2436,6 +2436,7 @@ test {
     // The tests of the host's terminal input and of the Tcl program it starts.
     _ = host_input;
     _ = host_line;
+    _ = host_font;
     _ = host_process;
 }
 

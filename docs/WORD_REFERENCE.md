@@ -6,7 +6,7 @@ Each entry has a stack effect and a behavior description based on runtime HELP, 
 
 Coverage assumes the full build. Feature-disabled builds omit their respective words. Load optional vocabularies with REQUIRE before adding them to the search order. Immediate/compile-only flags come from the built-in implementation; syntax forms have their own conditions in their descriptions.
 
-Entries (namespace/name pairs): **1503**. The same name in different vocabularies counts separately.
+Entries (namespace/name pairs): **1517**. The same name in different vocabularies counts separately.
 
 ## Contents
 
@@ -15,7 +15,7 @@ Entries (namespace/name pairs): **1503**. The same name in different vocabularie
 - [FORTH](#namespace-forth) (957)
 - [GAME](#namespace-game) (59)
 - [GRAPHICS](#namespace-graphics) (207)
-- [GUI](#namespace-gui) (120)
+- [GUI](#namespace-gui) (134)
 - [Root](#namespace-root) (14)
 - [Syntax](#namespace-syntax) (38)
 
@@ -29572,7 +29572,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
    (SAVED) @ ?DUP IF  0 0 SCREEN IMAGE-SIZE 0 0 -1 0 0 128 1 GFX-COPY  THEN ;
 ```
 
-[Example context](../src/graphics/gui.fs#L556)
+[Example context](../src/graphics/gui.fs#L608)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -32411,7 +32411,7 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 ` ( c-addr u height -- ) `
 
-Draw TEXT with the system's font of that name, height pixels a line, smoothed (Windows; FORTH/Sigma graphics).
+Draw TEXT with the system's font of that name, height pixels a line, smoothed (Windows and macOS; FORTH/Sigma graphics).
 
 Kind: library.
 
@@ -34960,6 +34960,16 @@ Sources: [src/graphics/graphics_float.fs](../src/graphics/graphics_float.fs).
 - [` (GUI-COLORS) `](#w-4755493a284755492d434f4c4f525329)
 - [` (HOT) `](#w-4755493a28484f5429)
 - [` (ID) `](#w-4755493a28494429)
+- [` (IME#) `](#w-4755493a28494d452329)
+- [` (IME+) `](#w-4755493a28494d452b29)
+- [` (IME-CMD) `](#w-4755493a28494d452d434d4429)
+- [` (IME-H) `](#w-4755493a28494d452d4829)
+- [` (IME-LEN) `](#w-4755493a28494d452d4c454e29)
+- [` (IME-ON) `](#w-4755493a28494d452d4f4e29)
+- [` (IME-SEND) `](#w-4755493a28494d452d53454e4429)
+- [` (IME-SENT) `](#w-4755493a28494d452d53454e5429)
+- [` (IME-X) `](#w-4755493a28494d452d5829)
+- [` (IME-Y) `](#w-4755493a28494d452d5929)
 - [` (IN) `](#w-4755493a28494e29)
 - [` (ITEM) `](#w-4755493a284954454d29)
 - [` (ITEM-H) `](#w-4755493a284954454d2d4829)
@@ -34981,6 +34991,9 @@ Sources: [src/graphics/graphics_float.fs](../src/graphics/graphics_float.fs).
 - [` (PAD-X) `](#w-4755493a285041442d5829)
 - [` (PAD-Y) `](#w-4755493a285041442d5929)
 - [` (PIECE) `](#w-4755493a28504945434529)
+- [` (PRE) `](#w-4755493a2850524529)
+- [` (PRE-LEN) `](#w-4755493a285052452d4c454e29)
+- [` (PREEDIT) `](#w-4755493a285052454544495429)
 - [` (PRESS) `](#w-4755493a28505245535329)
 - [` (PRESSED-ON) `](#w-4755493a28505245535345442d4f4e29)
 - [` (PULL) `](#w-4755493a2850554c4c29)
@@ -34997,6 +35010,7 @@ Sources: [src/graphics/graphics_float.fs](../src/graphics/graphics_float.fs).
 - [` (SAVE-SCREEN) `](#w-4755493a28534156452d53435245454e29)
 - [` (SAVED) `](#w-4755493a28534156454429)
 - [` (SEPARATOR?) `](#w-4755493a28534550415241544f523f29)
+- [` (SHOWN) `](#w-4755493a2853484f574e29)
 - [` (TAKE) `](#w-4755493a2854414b4529)
 - [` (TEXT) `](#w-4755493a285445585429)
 - [` (TILE) `](#w-4755493a2854494c4529)
@@ -35132,7 +35146,7 @@ Implementation definition (private helpers may change):
 
 ```forth
 : GUI-BEGIN ( -- )
-   0 (ID) !  0 (FOCUS-N) !  TRUE (ENABLED) !  0 (KEY-COUNT) !
+   0 (ID) !  0 (FOCUS-N) !  TRUE (ENABLED) !  0 (KEY-COUNT) !  FALSE (IME-ON) !
    FALSE (PRESS) !  FALSE (RELEASE) !  0 (WHEEL) !
    BEGIN MOUSE-EVENT WHILE
       { x y b k }
@@ -35296,7 +35310,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
    chosen ;
 ```
 
-[Example context](../src/graphics/gui.fs#L520)
+[Example context](../src/graphics/gui.fs#L571)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment. Use valid logical-memory addresses, lengths and capacities; distinguish owned storage from borrowed lifetimes.
 
@@ -35556,7 +35570,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 : GUI-YES-NO ( addr u -- n )   S" Yes|No" GUI-DIALOG  DUP 0< IF EXIT THEN  0= 1 AND ;
 ```
 
-[Example context](../src/graphics/gui.fs#L537)
+[Example context](../src/graphics/gui.fs#L588)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment. Use valid logical-memory addresses, lengths and capacities; distinguish owned storage from borrowed lifetimes.
 
@@ -35672,6 +35686,7 @@ Implementation definition (private helpers may change):
 
 ```forth
 : GUI-END ( -- )
+   (IME-SEND)
    GUI-MENU-OPEN @ 0< 0= IF  (PULL) 2@ NIP IF (DRAW-PULL) THEN  THEN
    0 0 (PULL) 2!
    (RELEASE) @ IF 0 GUI-ACTIVE ! THEN
@@ -35737,7 +35752,7 @@ Caution: Load and select the vocabulary first. Host display, input and sound sup
 Implementation definition (private helpers may change):
 
 ```forth
-: GUI-FIELD { buf room len-addr x y w | h id f entered len start inner -- flag }
+: GUI-FIELD { buf room len-addr x y w | h id f entered len start inner shown at -- flag }
    (ROW-H) TO h  (NEW-PART) TO id  FALSE TO entered  len-addr @ 0 MAX room MIN TO len
    (ENABLED) @ IF
       (FOCUSABLE) TO f
@@ -35758,18 +35773,40 @@ Implementation definition (private helpers may change):
    x y w h GUI-FIELD-FACE GUI-BORDER (BORDER-W) @ (BOX)
    f (FOCUSED?) IF x y w h (FOCUS-RING) THEN
    w (BORDER-W) @ 2* - (PAD-X) 2* - 1- TO inner
-   \ The text from where the cursor shows.
+   \ The text being converted shows at the cursor, underlined, until it is committed.
+   f (FOCUSED?) IF (PREEDIT) ELSE 0 (PRE-LEN) ! THEN
+   \ The text from where the cursor (after the text being converted) shows.
    0 TO start
    f (FOCUSED?) IF
-      BEGIN buf start + (CURSOR) @ start - TEXT-WIDTH inner > WHILE  buf len start (FORTH) TO start  REPEAT
+      BEGIN
+         start (CURSOR) @ < IF
+            buf start + (CURSOR) @ start - TEXT-WIDTH  (PRE) (PRE-LEN) @ TEXT-WIDTH +  inner >
+         ELSE FALSE THEN
+      WHILE  buf len start (FORTH) TO start  REPEAT
    THEN
-   buf start +  buf start + len start - inner (FIT)
+   \ What is shown: the text before the cursor, the text being converted, the rest.
+   0 TO shown
+   \ (SHOWN) holds 256 bytes before the cursor, 256 being converted, and 256 after: more
+   \ than a field shows. Without the focus, 512 bytes from the start.
+   (CURSOR) @ start - 0 MAX 256 MIN  f (FOCUSED?) 0= IF DROP len start - 512 MIN THEN  TO at
+   buf start +  (SHOWN) at MOVE  at TO shown
+   f (FOCUSED?) IF
+      (PRE) (SHOWN) shown + (PRE-LEN) @ MOVE  shown (PRE-LEN) @ + TO shown
+      buf start at + +  (SHOWN) shown +  len start - at - 0 MAX 256 MIN  DUP shown + >R  MOVE  R> TO shown
+   THEN
+   (SHOWN) DUP shown inner (FIT)
    x (BORDER-W) @ + (PAD-X) +  y (BORDER-W) @ + (PAD-Y) +
    (ENABLED) @ IF GUI-TEXT ELSE GUI-DISABLED THEN (TEXT)
    f (FOCUSED?) IF
       GUI-TEXT (USE)
-      x (BORDER-W) @ + (PAD-X) +  buf start + (CURSOR) @ start - TEXT-WIDTH +  y (BORDER-W) @ + 2 +
-      OVER  y h + (BORDER-W) @ - 3 -  LINE
+      x (BORDER-W) @ + (PAD-X) +  (SHOWN) at TEXT-WIDTH +   \ where the cursor is in the text
+      (PRE-LEN) @ IF
+         \ The line under the text being converted.
+         DUP  y h + (BORDER-W) @ - 3 -  OVER (PRE) (PRE-LEN) @ TEXT-WIDTH +  x w + (BORDER-W) @ - 1- MIN  OVER  LINE
+      THEN
+      DUP TRUE (IME-ON) !  (IME-X) !  y (IME-Y) !  h (IME-H) !
+      (PRE) (PRE-LEN) @ TEXT-WIDTH +  x w + (BORDER-W) @ - 1- MIN
+      y (BORDER-W) @ + 2 +  OVER  y h + (BORDER-W) @ - 3 -  LINE
    THEN
    entered ;
 ```
@@ -36380,7 +36417,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
    (END-WAIT)  chosen ;
 ```
 
-[Example context](../src/graphics/gui.fs#L577)
+[Example context](../src/graphics/gui.fs#L629)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -36647,7 +36684,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
    FALSE ;
 ```
 
-[Example context](../src/graphics/gui.fs#L303)
+[Example context](../src/graphics/gui.fs#L332)
 
 Caution: Internal operation: prefer its public wrapper; internal state and calling conventions may change. Load and select the vocabulary first. Host display, input and sound support depends on the environment. Use valid logical-memory addresses, lengths and capacities; distinguish owned storage from borrowed lifetimes.
 
@@ -36769,7 +36806,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
    x y w h GUI-BACKGROUND GUI-BORDER (BORDER-W) @ (BOX) ;
 ```
 
-[Example context](../src/graphics/gui.fs#L239)
+[Example context](../src/graphics/gui.fs#L268)
 
 Caution: Internal operation: prefer its public wrapper; internal state and calling conventions may change. Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -36991,7 +37028,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
    LOOP ;
 ```
 
-[Example context](../src/graphics/gui.fs#L473)
+[Example context](../src/graphics/gui.fs#L524)
 
 Caution: Internal operation: prefer its public wrapper; internal state and calling conventions may change. Load and select the vocabulary first. Host display, input and sound support depends on the environment. Use valid logical-memory addresses, lengths and capacities; distinguish owned storage from borrowed lifetimes.
 
@@ -37019,13 +37056,14 @@ Usage example (source excerpt; consult the link for setup and expectations)
 
 ```forth
 : GUI-END ( -- )
+   (IME-SEND)
    GUI-MENU-OPEN @ 0< 0= IF  (PULL) 2@ NIP IF (DRAW-PULL) THEN  THEN
    0 0 (PULL) 2!
    (RELEASE) @ IF 0 GUI-ACTIVE ! THEN
    (FOCUS-N) @ (LAST-FOCUS-N) ! ;
 ```
 
-[Example context](../src/graphics/gui.fs#L540)
+[Example context](../src/graphics/gui.fs#L591)
 
 Caution: Internal operation: prefer its public wrapper; internal state and calling conventions may change. Load and select the vocabulary first. Host display, input and sound support depends on the environment. Use valid logical-memory addresses, lengths and capacities; distinguish owned storage from borrowed lifetimes.
 
@@ -37105,47 +37143,29 @@ Kind: private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` loads the vocabulary and makes it searchable.
 
+Private helper definition; not a standalone call example.
+
 Usage example (source excerpt; consult the link for setup and expectations)
 
 ```forth
-: GUI-FIELD { buf room len-addr x y w | h id f entered len start inner -- flag }
-   (ROW-H) TO h  (NEW-PART) TO id  FALSE TO entered  len-addr @ 0 MAX room MIN TO len
-   (ENABLED) @ IF
-      (FOCUSABLE) TO f
-      x y w h (PRESSED-ON) IF  f GUI-FOCUSED !  THEN
-   ELSE 0 TO f THEN
-   f (FOCUSED?) IF
-      (CURSOR-OF) @ id <> IF  len (CURSOR) !  id (CURSOR-OF) !  THEN
-      (CURSOR) @ 0 MAX len MIN (CURSOR) !
-      buf (F-BUF) !  room (F-MAX) !  len (F-LEN) !
-      \ The keys of the frame, in order; those the field does not use stay for others.
-      0 BEGIN DUP (KEY-COUNT) @ < WHILE
-         (KEYS) OVER CELLS + @
-         DUP 13 = IF  DROP TRUE TO entered TRUE  ELSE (EDIT) THEN
-         IF (DROP-KEY) ELSE 1+ THEN
-      REPEAT DROP
-      (F-LEN) @ TO len  len len-addr !
+: (EDIT) { key | c -- flag }
+   (CURSOR) @ TO c
+   key 8 = IF  c 0> IF  (F-BUF) @ c (BACK)  DUP c (F-CUT)  (CURSOR) !  THEN  TRUE EXIT THEN
+   key K-DELETE = IF  c (F-LEN) @ < IF  c  (F-BUF) @ (F-LEN) @ c (FORTH)  (F-CUT)  THEN  TRUE EXIT THEN
+   key K-LEFT = IF  (F-BUF) @ c (BACK) (CURSOR) !  TRUE EXIT THEN
+   key K-RIGHT = IF  (F-BUF) @ (F-LEN) @ c (FORTH) (CURSOR) !  TRUE EXIT THEN
+   key K-HOME = IF  0 (CURSOR) !  TRUE EXIT THEN
+   key K-END = IF  (F-LEN) @ (CURSOR) !  TRUE EXIT THEN
+   key 32 256 WITHIN key 127 <> AND IF
+      (F-LEN) @ (F-MAX) @ < IF
+         (F-BUF) @ c +  DUP 1+  (F-LEN) @ c - MOVE
+         key (F-BUF) @ c + C!  1 (F-LEN) +!  1 (CURSOR) +!
+      THEN  TRUE EXIT
    THEN
-   x y w h GUI-FIELD-FACE GUI-BORDER (BORDER-W) @ (BOX)
-   f (FOCUSED?) IF x y w h (FOCUS-RING) THEN
-   w (BORDER-W) @ 2* - (PAD-X) 2* - 1- TO inner
-   \ The text from where the cursor shows.
-   0 TO start
-   f (FOCUSED?) IF
-      BEGIN buf start + (CURSOR) @ start - TEXT-WIDTH inner > WHILE  buf len start (FORTH) TO start  REPEAT
-   THEN
-   buf start +  buf start + len start - inner (FIT)
-   x (BORDER-W) @ + (PAD-X) +  y (BORDER-W) @ + (PAD-Y) +
-   (ENABLED) @ IF GUI-TEXT ELSE GUI-DISABLED THEN (TEXT)
-   f (FOCUSED?) IF
-      GUI-TEXT (USE)
-      x (BORDER-W) @ + (PAD-X) +  buf start + (CURSOR) @ start - TEXT-WIDTH +  y (BORDER-W) @ + 2 +
-      OVER  y h + (BORDER-W) @ - 3 -  LINE
-   THEN
-   entered ;
+   FALSE ;
 ```
 
-[Example context](../src/graphics/gui.fs#L322)
+[Example context](../src/graphics/gui.fs#L332)
 
 Caution: Internal operation: prefer its public wrapper; internal state and calling conventions may change. Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -37220,7 +37240,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
    2DROP (END-WAIT) ;
 ```
 
-[Example context](../src/graphics/gui.fs#L569)
+[Example context](../src/graphics/gui.fs#L621)
 
 Caution: Internal operation: prefer its public wrapper; internal state and calling conventions may change. Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -37294,7 +37314,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
    FALSE ;
 ```
 
-[Example context](../src/graphics/gui.fs#L303)
+[Example context](../src/graphics/gui.fs#L332)
 
 Caution: Internal operation: prefer its public wrapper; internal state and calling conventions may change. Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -37376,47 +37396,21 @@ Kind: private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` loads the vocabulary and makes it searchable.
 
+Private helper definition; not a standalone call example.
+
 Usage example (source excerpt; consult the link for setup and expectations)
 
 ```forth
-: GUI-FIELD { buf room len-addr x y w | h id f entered len start inner -- flag }
-   (ROW-H) TO h  (NEW-PART) TO id  FALSE TO entered  len-addr @ 0 MAX room MIN TO len
-   (ENABLED) @ IF
-      (FOCUSABLE) TO f
-      x y w h (PRESSED-ON) IF  f GUI-FOCUSED !  THEN
-   ELSE 0 TO f THEN
-   f (FOCUSED?) IF
-      (CURSOR-OF) @ id <> IF  len (CURSOR) !  id (CURSOR-OF) !  THEN
-      (CURSOR) @ 0 MAX len MIN (CURSOR) !
-      buf (F-BUF) !  room (F-MAX) !  len (F-LEN) !
-      \ The keys of the frame, in order; those the field does not use stay for others.
-      0 BEGIN DUP (KEY-COUNT) @ < WHILE
-         (KEYS) OVER CELLS + @
-         DUP 13 = IF  DROP TRUE TO entered TRUE  ELSE (EDIT) THEN
-         IF (DROP-KEY) ELSE 1+ THEN
-      REPEAT DROP
-      (F-LEN) @ TO len  len len-addr !
-   THEN
-   x y w h GUI-FIELD-FACE GUI-BORDER (BORDER-W) @ (BOX)
-   f (FOCUSED?) IF x y w h (FOCUS-RING) THEN
-   w (BORDER-W) @ 2* - (PAD-X) 2* - 1- TO inner
-   \ The text from where the cursor shows.
-   0 TO start
-   f (FOCUSED?) IF
-      BEGIN buf start + (CURSOR) @ start - TEXT-WIDTH inner > WHILE  buf len start (FORTH) TO start  REPEAT
-   THEN
-   buf start +  buf start + len start - inner (FIT)
-   x (BORDER-W) @ + (PAD-X) +  y (BORDER-W) @ + (PAD-Y) +
-   (ENABLED) @ IF GUI-TEXT ELSE GUI-DISABLED THEN (TEXT)
-   f (FOCUSED?) IF
-      GUI-TEXT (USE)
-      x (BORDER-W) @ + (PAD-X) +  buf start + (CURSOR) @ start - TEXT-WIDTH +  y (BORDER-W) @ + 2 +
-      OVER  y h + (BORDER-W) @ - 3 -  LINE
-   THEN
-   entered ;
+: (FIT) { addr u w | used n next -- n }
+   0 TO used  0 TO n
+   BEGIN n u < WHILE
+      addr u n (FORTH) TO next
+      addr n + next n - TEXT-WIDTH used + DUP w > IF DROP n EXIT THEN  TO used
+      next TO n
+   REPEAT  n ;
 ```
 
-[Example context](../src/graphics/gui.fs#L322)
+[Example context](../src/graphics/gui.fs#L84)
 
 Caution: Internal operation: prefer its public wrapper; internal state and calling conventions may change. Load and select the vocabulary first. Host display, input and sound support depends on the environment. Use valid logical-memory addresses, lengths and capacities; distinguish owned storage from borrowed lifetimes.
 
@@ -37494,7 +37488,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
    clicked ;
 ```
 
-[Example context](../src/graphics/gui.fs#L252)
+[Example context](../src/graphics/gui.fs#L281)
 
 Caution: Internal operation: prefer its public wrapper; internal state and calling conventions may change. Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -37567,7 +37561,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
    clicked ;
 ```
 
-[Example context](../src/graphics/gui.fs#L252)
+[Example context](../src/graphics/gui.fs#L281)
 
 Caution: Internal operation: prefer its public wrapper; internal state and calling conventions may change. Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -37611,7 +37605,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
    clicked ;
 ```
 
-[Example context](../src/graphics/gui.fs#L252)
+[Example context](../src/graphics/gui.fs#L281)
 
 Caution: Internal operation: prefer its public wrapper; internal state and calling conventions may change. Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -37721,7 +37715,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
    clicked ;
 ```
 
-[Example context](../src/graphics/gui.fs#L252)
+[Example context](../src/graphics/gui.fs#L281)
 
 Caution: Internal operation: prefer its public wrapper; internal state and calling conventions may change. Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -37758,6 +37752,315 @@ Implementation definition (private helpers may change):
 
 ```forth
 VARIABLE (ID)
+```
+
+Sources: [src/graphics/gui.fs](../src/graphics/gui.fs).
+
+<a id="w-4755493a28494d452329"></a>
+
+### ` (IME#) `
+
+` ( n -- ) `
+
+Internal library operation. Its exact implementation is reproduced below; it is not a stable public interface.
+
+Kind: private library helper.
+
+` REQUIRE-GUI ALSO GUI ` loads the vocabulary and makes it searchable.
+
+Usage example (source excerpt; consult the link for setup and expectations)
+
+```forth
+: (IME-SEND) ( -- )
+   (DISPLAY) @ 3 <> IF EXIT THEN
+   (IME-ON) @ 0<> 1 AND  (IME-X) @  (IME-Y) @  (IME-H) @
+   (IME-SENT) 3 CELLS + @ OVER =  (IME-SENT) 2 CELLS + @ 3 PICK = AND
+   (IME-SENT) CELL+ @ 4 PICK = AND  (IME-SENT) @ 5 PICK = AND
+   IF 2DROP 2DROP EXIT THEN
+   (IME-SENT) 3 CELLS + !  (IME-SENT) 2 CELLS + !  (IME-SENT) CELL+ !  (IME-SENT) !
+   0 (IME-LEN) !  S" sigma_ime" (IME+)
+   (IME-SENT) 4 0 DO DUP I CELLS + @ (IME#) LOOP DROP
+   (IME-CMD) (IME-LEN) @ GFX-TCL DROP 2DROP ;
+```
+
+[Example context](../src/graphics/gui.fs#L210)
+
+Caution: Internal operation: prefer its public wrapper; internal state and calling conventions may change. Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+: (IME#) ( n -- )   S"  " (IME+)  0 MAX S>D <# #S #> (IME+) ;
+```
+
+Sources: [src/graphics/gui.fs](../src/graphics/gui.fs).
+
+<a id="w-4755493a28494d452b29"></a>
+
+### ` (IME+) `
+
+` ( c-addr u -- ) `
+
+Internal library operation. Its exact implementation is reproduced below; it is not a stable public interface.
+
+Kind: private library helper.
+
+` REQUIRE-GUI ALSO GUI ` loads the vocabulary and makes it searchable.
+
+Usage example (source excerpt; consult the link for setup and expectations)
+
+```forth
+: (IME#) ( n -- )   S"  " (IME+)  0 MAX S>D <# #S #> (IME+) ;
+```
+
+[Example context](../src/graphics/gui.fs#L200)
+
+Caution: Internal operation: prefer its public wrapper; internal state and calling conventions may change. Load and select the vocabulary first. Host display, input and sound support depends on the environment. Use valid logical-memory addresses, lengths and capacities; distinguish owned storage from borrowed lifetimes.
+
+Implementation definition (private helpers may change):
+
+```forth
+: (IME+) ( c-addr u -- )   TUCK  (IME-CMD) (IME-LEN) @ + SWAP MOVE  (IME-LEN) +! ;
+```
+
+Sources: [src/graphics/gui.fs](../src/graphics/gui.fs).
+
+<a id="w-4755493a28494d452d434d4429"></a>
+
+### ` (IME-CMD) `
+
+` ( -- addr ) `
+
+Return the address of private library storage.
+
+Kind: private library helper.
+
+` REQUIRE-GUI ALSO GUI ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GUI ALSO GUI (IME-CMD) @ . PREVIOUS
+```
+
+Caution: Internal operation: prefer its public wrapper; internal state and calling conventions may change. Load and select the vocabulary first. Host display, input and sound support depends on the environment. Use valid logical-memory addresses, lengths and capacities; distinguish owned storage from borrowed lifetimes.
+
+Implementation definition (private helpers may change):
+
+```forth
+CREATE (IME-CMD)
+```
+
+Sources: [src/graphics/gui.fs](../src/graphics/gui.fs).
+
+<a id="w-4755493a28494d452d4829"></a>
+
+### ` (IME-H) `
+
+` ( -- addr ) `
+
+Return the address of private library storage.
+
+Kind: private library helper.
+
+` REQUIRE-GUI ALSO GUI ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GUI ALSO GUI (IME-H) @ . PREVIOUS
+```
+
+Caution: Internal operation: prefer its public wrapper; internal state and calling conventions may change. Load and select the vocabulary first. Host display, input and sound support depends on the environment. Use valid logical-memory addresses, lengths and capacities; distinguish owned storage from borrowed lifetimes.
+
+Implementation definition (private helpers may change):
+
+```forth
+VARIABLE (IME-H)
+```
+
+Sources: [src/graphics/gui.fs](../src/graphics/gui.fs).
+
+<a id="w-4755493a28494d452d4c454e29"></a>
+
+### ` (IME-LEN) `
+
+` ( -- addr ) `
+
+Return the address of private library storage.
+
+Kind: private library helper.
+
+` REQUIRE-GUI ALSO GUI ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GUI ALSO GUI (IME-LEN) @ . PREVIOUS
+```
+
+Caution: Internal operation: prefer its public wrapper; internal state and calling conventions may change. Load and select the vocabulary first. Host display, input and sound support depends on the environment. Use valid logical-memory addresses, lengths and capacities; distinguish owned storage from borrowed lifetimes.
+
+Implementation definition (private helpers may change):
+
+```forth
+VARIABLE (IME-LEN)
+```
+
+Sources: [src/graphics/gui.fs](../src/graphics/gui.fs).
+
+<a id="w-4755493a28494d452d4f4e29"></a>
+
+### ` (IME-ON) `
+
+` ( -- addr ) `
+
+Return the address of private library storage.
+
+Kind: private library helper.
+
+` REQUIRE-GUI ALSO GUI ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GUI ALSO GUI (IME-ON) @ . PREVIOUS
+```
+
+Caution: Internal operation: prefer its public wrapper; internal state and calling conventions may change. Load and select the vocabulary first. Host display, input and sound support depends on the environment. Use valid logical-memory addresses, lengths and capacities; distinguish owned storage from borrowed lifetimes.
+
+Implementation definition (private helpers may change):
+
+```forth
+VARIABLE (IME-ON)
+```
+
+Sources: [src/graphics/gui.fs](../src/graphics/gui.fs).
+
+<a id="w-4755493a28494d452d53454e4429"></a>
+
+### ` (IME-SEND) `
+
+` ( -- ) `
+
+Internal library operation. Its exact implementation is reproduced below; it is not a stable public interface.
+
+Kind: private library helper.
+
+` REQUIRE-GUI ALSO GUI ` loads the vocabulary and makes it searchable.
+
+Usage example (source excerpt; consult the link for setup and expectations)
+
+```forth
+: GUI-END ( -- )
+   (IME-SEND)
+   GUI-MENU-OPEN @ 0< 0= IF  (PULL) 2@ NIP IF (DRAW-PULL) THEN  THEN
+   0 0 (PULL) 2!
+   (RELEASE) @ IF 0 GUI-ACTIVE ! THEN
+   (FOCUS-N) @ (LAST-FOCUS-N) ! ;
+```
+
+[Example context](../src/graphics/gui.fs#L591)
+
+Caution: Internal operation: prefer its public wrapper; internal state and calling conventions may change. Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+: (IME-SEND) ( -- )
+   (DISPLAY) @ 3 <> IF EXIT THEN
+   (IME-ON) @ 0<> 1 AND  (IME-X) @  (IME-Y) @  (IME-H) @
+   (IME-SENT) 3 CELLS + @ OVER =  (IME-SENT) 2 CELLS + @ 3 PICK = AND
+   (IME-SENT) CELL+ @ 4 PICK = AND  (IME-SENT) @ 5 PICK = AND
+   IF 2DROP 2DROP EXIT THEN
+   (IME-SENT) 3 CELLS + !  (IME-SENT) 2 CELLS + !  (IME-SENT) CELL+ !  (IME-SENT) !
+   0 (IME-LEN) !  S" sigma_ime" (IME+)
+   (IME-SENT) 4 0 DO DUP I CELLS + @ (IME#) LOOP DROP
+   (IME-CMD) (IME-LEN) @ GFX-TCL DROP 2DROP ;
+```
+
+Sources: [src/graphics/gui.fs](../src/graphics/gui.fs).
+
+<a id="w-4755493a28494d452d53454e5429"></a>
+
+### ` (IME-SENT) `
+
+` ( -- addr ) `
+
+Return the address of private library storage.
+
+Kind: private library helper.
+
+` REQUIRE-GUI ALSO GUI ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GUI ALSO GUI (IME-SENT) @ . PREVIOUS
+```
+
+Caution: Internal operation: prefer its public wrapper; internal state and calling conventions may change. Load and select the vocabulary first. Host display, input and sound support depends on the environment. Use valid logical-memory addresses, lengths and capacities; distinguish owned storage from borrowed lifetimes.
+
+Implementation definition (private helpers may change):
+
+```forth
+CREATE (IME-SENT)
+```
+
+Sources: [src/graphics/gui.fs](../src/graphics/gui.fs).
+
+<a id="w-4755493a28494d452d5829"></a>
+
+### ` (IME-X) `
+
+` ( -- addr ) `
+
+Return the address of private library storage.
+
+Kind: private library helper.
+
+` REQUIRE-GUI ALSO GUI ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GUI ALSO GUI (IME-X) @ . PREVIOUS
+```
+
+Caution: Internal operation: prefer its public wrapper; internal state and calling conventions may change. Load and select the vocabulary first. Host display, input and sound support depends on the environment. Use valid logical-memory addresses, lengths and capacities; distinguish owned storage from borrowed lifetimes.
+
+Implementation definition (private helpers may change):
+
+```forth
+VARIABLE (IME-X)
+```
+
+Sources: [src/graphics/gui.fs](../src/graphics/gui.fs).
+
+<a id="w-4755493a28494d452d5929"></a>
+
+### ` (IME-Y) `
+
+` ( -- addr ) `
+
+Return the address of private library storage.
+
+Kind: private library helper.
+
+` REQUIRE-GUI ALSO GUI ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GUI ALSO GUI (IME-Y) @ . PREVIOUS
+```
+
+Caution: Internal operation: prefer its public wrapper; internal state and calling conventions may change. Load and select the vocabulary first. Host display, input and sound support depends on the environment. Use valid logical-memory addresses, lengths and capacities; distinguish owned storage from borrowed lifetimes.
+
+Implementation definition (private helpers may change):
+
+```forth
+VARIABLE (IME-Y)
 ```
 
 Sources: [src/graphics/gui.fs](../src/graphics/gui.fs).
@@ -37810,7 +38113,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 : (LIST-ITEM) ( i -- addr u )   >R (LIST-ITEMS) 2@ R> (ITEM) ;
 ```
 
-[Example context](../src/graphics/gui.fs#L397)
+[Example context](../src/graphics/gui.fs#L448)
 
 Caution: Internal operation: prefer its public wrapper; internal state and calling conventions may change. Load and select the vocabulary first. Host display, input and sound support depends on the environment. Use valid logical-memory addresses, lengths and capacities; distinguish owned storage from borrowed lifetimes.
 
@@ -37872,7 +38175,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
    chosen ;
 ```
 
-[Example context](../src/graphics/gui.fs#L446)
+[Example context](../src/graphics/gui.fs#L497)
 
 Caution: Internal operation: prefer its public wrapper; internal state and calling conventions may change. Load and select the vocabulary first. Host display, input and sound support depends on the environment. Use valid logical-memory addresses, lengths and capacities; distinguish owned storage from borrowed lifetimes.
 
@@ -37902,7 +38205,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 : GUI-CHOOSE ( addr u -- n )   2DUP (LIST-ITEMS) 2!  (ITEMS) ['] (LIST-ITEM) SWAP GUI-CHOOSE-XT ;
 ```
 
-[Example context](../src/graphics/gui.fs#L593)
+[Example context](../src/graphics/gui.fs#L645)
 
 Caution: Internal operation: prefer its public wrapper; internal state and calling conventions may change. Load and select the vocabulary first. Host display, input and sound support depends on the environment. Use valid logical-memory addresses, lengths and capacities; distinguish owned storage from borrowed lifetimes.
 
@@ -38044,7 +38347,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 : GUI-CHOOSE ( addr u -- n )   2DUP (LIST-ITEMS) 2!  (ITEMS) ['] (LIST-ITEM) SWAP GUI-CHOOSE-XT ;
 ```
 
-[Example context](../src/graphics/gui.fs#L593)
+[Example context](../src/graphics/gui.fs#L645)
 
 Caution: Internal operation: prefer its public wrapper; internal state and calling conventions may change. Load and select the vocabulary first. Host display, input and sound support depends on the environment. Use valid logical-memory addresses, lengths and capacities; distinguish owned storage from borrowed lifetimes.
 
@@ -38228,7 +38531,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
    clicked ;
 ```
 
-[Example context](../src/graphics/gui.fs#L252)
+[Example context](../src/graphics/gui.fs#L281)
 
 Caution: Internal operation: prefer its public wrapper; internal state and calling conventions may change. Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -38261,7 +38564,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
    2DROP (END-WAIT) ;
 ```
 
-[Example context](../src/graphics/gui.fs#L569)
+[Example context](../src/graphics/gui.fs#L621)
 
 Caution: Internal operation: prefer its public wrapper; internal state and calling conventions may change. Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -38317,7 +38620,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 
 ```forth
 : GUI-BEGIN ( -- )
-   0 (ID) !  0 (FOCUS-N) !  TRUE (ENABLED) !  0 (KEY-COUNT) !
+   0 (ID) !  0 (FOCUS-N) !  TRUE (ENABLED) !  0 (KEY-COUNT) !  FALSE (IME-ON) !
    FALSE (PRESS) !  FALSE (RELEASE) !  0 (WHEEL) !
    BEGIN MOUSE-EVENT WHILE
       { x y b k }
@@ -38337,7 +38640,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
    GUI-FOCUSED @ 1 < GUI-FOCUSED @ (LAST-FOCUS-N) @ > OR IF 1 GUI-FOCUSED ! THEN ;
 ```
 
-[Example context](../src/graphics/gui.fs#L193)
+[Example context](../src/graphics/gui.fs#L222)
 
 Caution: Internal operation: prefer its public wrapper; internal state and calling conventions may change. Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -38375,7 +38678,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 : GUI-BUTTON-SIZE ( addr u -- w h )   TEXT-WIDTH (PAD-X) 2* + (BORDER-W) @ 2* +  (ROW-H) ;
 ```
 
-[Example context](../src/graphics/gui.fs#L248)
+[Example context](../src/graphics/gui.fs#L277)
 
 Caution: Internal operation: prefer its public wrapper; internal state and calling conventions may change. Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -38439,7 +38742,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
    REPEAT ;
 ```
 
-[Example context](../src/graphics/gui.fs#L221)
+[Example context](../src/graphics/gui.fs#L250)
 
 Caution: Internal operation: prefer its public wrapper; internal state and calling conventions may change. Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -38447,6 +38750,102 @@ Implementation definition (private helpers may change):
 
 ```forth
 : (PIECE) ( sx sy w h dx dy -- )   >R >R >R >R >R >R (TILES) @ R> R> R> R> R> R>  -1 0 0 128 1 GFX-COPY ;
+```
+
+Sources: [src/graphics/gui.fs](../src/graphics/gui.fs).
+
+<a id="w-4755493a2850524529"></a>
+
+### ` (PRE) `
+
+` ( -- addr ) `
+
+Return the address of private library storage.
+
+Kind: private library helper.
+
+` REQUIRE-GUI ALSO GUI ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GUI ALSO GUI (PRE) @ . PREVIOUS
+```
+
+Caution: Internal operation: prefer its public wrapper; internal state and calling conventions may change. Load and select the vocabulary first. Host display, input and sound support depends on the environment. Use valid logical-memory addresses, lengths and capacities; distinguish owned storage from borrowed lifetimes.
+
+Implementation definition (private helpers may change):
+
+```forth
+CREATE (PRE)
+```
+
+Sources: [src/graphics/gui.fs](../src/graphics/gui.fs).
+
+<a id="w-4755493a285052452d4c454e29"></a>
+
+### ` (PRE-LEN) `
+
+` ( -- addr ) `
+
+Return the address of private library storage.
+
+Kind: private library helper.
+
+` REQUIRE-GUI ALSO GUI ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GUI ALSO GUI (PRE-LEN) @ . PREVIOUS
+```
+
+Caution: Internal operation: prefer its public wrapper; internal state and calling conventions may change. Load and select the vocabulary first. Host display, input and sound support depends on the environment. Use valid logical-memory addresses, lengths and capacities; distinguish owned storage from borrowed lifetimes.
+
+Implementation definition (private helpers may change):
+
+```forth
+VARIABLE (PRE-LEN)
+```
+
+Sources: [src/graphics/gui.fs](../src/graphics/gui.fs).
+
+<a id="w-4755493a285052454544495429"></a>
+
+### ` (PREEDIT) `
+
+` ( -- ) `
+
+Internal library operation. Its exact implementation is reproduced below; it is not a stable public interface.
+
+Kind: private library helper.
+
+` REQUIRE-GUI ALSO GUI ` loads the vocabulary and makes it searchable.
+
+Private helper definition; not a standalone call example.
+
+Usage example (source excerpt; consult the link for setup and expectations)
+
+```forth
+: (PREEDIT) ( -- )
+   0 (PRE-LEN) !
+   (DISPLAY) @ 3 <> IF EXIT THEN
+   S" set ::sigma_preedit" GFX-TCL IF 2DROP EXIT THEN
+   256 MIN  DUP (PRE-LEN) !  (PRE) SWAP MOVE ;
+```
+
+[Example context](../src/graphics/gui.fs#L205)
+
+Caution: Internal operation: prefer its public wrapper; internal state and calling conventions may change. Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+: (PREEDIT) ( -- )
+   0 (PRE-LEN) !
+   (DISPLAY) @ 3 <> IF EXIT THEN
+   S" set ::sigma_preedit" GFX-TCL IF 2DROP EXIT THEN
+   256 MIN  DUP (PRE-LEN) !  (PRE) SWAP MOVE ;
 ```
 
 Sources: [src/graphics/gui.fs](../src/graphics/gui.fs).
@@ -38510,7 +38909,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
    key ;
 ```
 
-[Example context](../src/graphics/gui.fs#L500)
+[Example context](../src/graphics/gui.fs#L551)
 
 Caution: Internal operation: prefer its public wrapper; internal state and calling conventions may change. Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -38668,7 +39067,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
    clicked ;
 ```
 
-[Example context](../src/graphics/gui.fs#L252)
+[Example context](../src/graphics/gui.fs#L281)
 
 Caution: Internal operation: prefer its public wrapper; internal state and calling conventions may change. Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -38701,7 +39100,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
    2DROP (END-WAIT) ;
 ```
 
-[Example context](../src/graphics/gui.fs#L569)
+[Example context](../src/graphics/gui.fs#L621)
 
 Caution: Internal operation: prefer its public wrapper; internal state and calling conventions may change. Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -38790,7 +39189,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 : (ITEM-H) ( addr u -- h )   (SEPARATOR?) IF 5 ELSE (ROW-H) THEN ;
 ```
 
-[Example context](../src/graphics/gui.fs#L441)
+[Example context](../src/graphics/gui.fs#L492)
 
 Caution: Internal operation: prefer its public wrapper; internal state and calling conventions may change. Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -38879,7 +39278,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
    2DROP (END-WAIT) ;
 ```
 
-[Example context](../src/graphics/gui.fs#L569)
+[Example context](../src/graphics/gui.fs#L621)
 
 Caution: Internal operation: prefer its public wrapper; internal state and calling conventions may change. Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -38941,7 +39340,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 : (ITEM-H) ( addr u -- h )   (SEPARATOR?) IF 5 ELSE (ROW-H) THEN ;
 ```
 
-[Example context](../src/graphics/gui.fs#L441)
+[Example context](../src/graphics/gui.fs#L492)
 
 Caution: Internal operation: prefer its public wrapper; internal state and calling conventions may change. Load and select the vocabulary first. Host display, input and sound support depends on the environment. Use valid logical-memory addresses, lengths and capacities; distinguish owned storage from borrowed lifetimes.
 
@@ -38949,6 +39348,34 @@ Implementation definition (private helpers may change):
 
 ```forth
 : (SEPARATOR?) ( addr u -- flag )   S" -" COMPARE 0= ;
+```
+
+Sources: [src/graphics/gui.fs](../src/graphics/gui.fs).
+
+<a id="w-4755493a2853484f574e29"></a>
+
+### ` (SHOWN) `
+
+` ( -- addr ) `
+
+Return the address of private library storage.
+
+Kind: private library helper.
+
+` REQUIRE-GUI ALSO GUI ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GUI ALSO GUI (SHOWN) @ . PREVIOUS
+```
+
+Caution: Internal operation: prefer its public wrapper; internal state and calling conventions may change. Load and select the vocabulary first. Host display, input and sound support depends on the environment. Use valid logical-memory addresses, lengths and capacities; distinguish owned storage from borrowed lifetimes.
+
+Implementation definition (private helpers may change):
+
+```forth
+CREATE (SHOWN)
 ```
 
 Sources: [src/graphics/gui.fs](../src/graphics/gui.fs).
@@ -38985,7 +39412,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
    (END-WAIT)  chosen ;
 ```
 
-[Example context](../src/graphics/gui.fs#L577)
+[Example context](../src/graphics/gui.fs#L629)
 
 Caution: Internal operation: prefer its public wrapper; internal state and calling conventions may change. Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -39018,7 +39445,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 : GUI-LABEL ( addr u x y -- )   GUI-TEXT (TEXT) ;
 ```
 
-[Example context](../src/graphics/gui.fs#L243)
+[Example context](../src/graphics/gui.fs#L272)
 
 Caution: Internal operation: prefer its public wrapper; internal state and calling conventions may change. Load and select the vocabulary first. Host display, input and sound support depends on the environment. Use valid logical-memory addresses, lengths and capacities; distinguish owned storage from borrowed lifetimes.
 
@@ -39087,7 +39514,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
    REPEAT ;
 ```
 
-[Example context](../src/graphics/gui.fs#L226)
+[Example context](../src/graphics/gui.fs#L255)
 
 Caution: Internal operation: prefer its public wrapper; internal state and calling conventions may change. Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -39123,7 +39550,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
    x y w h GUI-BACKGROUND GUI-BORDER (BORDER-W) @ (BOX) ;
 ```
 
-[Example context](../src/graphics/gui.fs#L239)
+[Example context](../src/graphics/gui.fs#L268)
 
 Caution: Internal operation: prefer its public wrapper; internal state and calling conventions may change. Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 

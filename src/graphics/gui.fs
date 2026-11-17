@@ -189,9 +189,38 @@ VARIABLE (CURSOR-OF)   \ the part the cursor belongs to
 \ Parts made after GUI-ENABLE with false are drawn grey and take no input.
 : GUI-ENABLE ( flag -- )   0<> (ENABLED) ! ;
 
+\ The input method of the Tk window: while a field has the focus, its keys go through
+\ the input method of the system (so that Japanese can be typed on macOS), and the
+\ input method's window shows at the cursor. GUI-FIELD tells where the cursor is;
+\ GUI-END tells the Tk window when that changes.
+VARIABLE (IME-ON)  VARIABLE (IME-X)  VARIABLE (IME-Y)  VARIABLE (IME-H)
+CREATE (IME-SENT) 4 CELLS ALLOT  (IME-SENT) 4 CELLS ERASE
+CREATE (IME-CMD) 64 ALLOT  VARIABLE (IME-LEN)
+: (IME+) ( c-addr u -- )   TUCK  (IME-CMD) (IME-LEN) @ + SWAP MOVE  (IME-LEN) +! ;
+: (IME#) ( n -- )   S"  " (IME+)  0 MAX S>D <# #S #> (IME+) ;
+\ The text the input method is converting and has not committed (inline conversion),
+\ asked of the Tk window each frame a field has the focus there.
+CREATE (PRE) 256 ALLOT  VARIABLE (PRE-LEN)  0 (PRE-LEN) !
+CREATE (SHOWN) 768 ALLOT
+: (PREEDIT) ( -- )
+   0 (PRE-LEN) !
+   (DISPLAY) @ 3 <> IF EXIT THEN
+   S" set ::sigma_preedit" GFX-TCL IF 2DROP EXIT THEN
+   256 MIN  DUP (PRE-LEN) !  (PRE) SWAP MOVE ;
+: (IME-SEND) ( -- )
+   (DISPLAY) @ 3 <> IF EXIT THEN
+   (IME-ON) @ 0<> 1 AND  (IME-X) @  (IME-Y) @  (IME-H) @
+   (IME-SENT) 3 CELLS + @ OVER =  (IME-SENT) 2 CELLS + @ 3 PICK = AND
+   (IME-SENT) CELL+ @ 4 PICK = AND  (IME-SENT) @ 5 PICK = AND
+   IF 2DROP 2DROP EXIT THEN
+   (IME-SENT) 3 CELLS + !  (IME-SENT) 2 CELLS + !  (IME-SENT) CELL+ !  (IME-SENT) !
+   0 (IME-LEN) !  S" sigma_ime" (IME+)
+   (IME-SENT) 4 0 DO DUP I CELLS + @ (IME#) LOOP DROP
+   (IME-CMD) (IME-LEN) @ GFX-TCL DROP 2DROP ;
+
 \ Starts the GUI of a frame: reads the mouse, the keys, and the first gamepad.
 : GUI-BEGIN ( -- )
-   0 (ID) !  0 (FOCUS-N) !  TRUE (ENABLED) !  0 (KEY-COUNT) !
+   0 (ID) !  0 (FOCUS-N) !  TRUE (ENABLED) !  0 (KEY-COUNT) !  FALSE (IME-ON) !
    FALSE (PRESS) !  FALSE (RELEASE) !  0 (WHEEL) !
    BEGIN MOUSE-EVENT WHILE
       { x y b k }
@@ -319,7 +348,7 @@ VARIABLE (F-BUF)  VARIABLE (F-MAX)  VARIABLE (F-LEN)
 \ A field of one line of text, w pixels wide, editing the bytes at buf (at most room),
 \ whose count is at len-addr. With the focus it takes the keys: text, Backspace,
 \ Delete, the arrows, Home, and End. True when Enter was pressed in it.
-: GUI-FIELD { buf room len-addr x y w | h id f entered len start inner -- flag }
+: GUI-FIELD { buf room len-addr x y w | h id f entered len start inner shown at -- flag }
    (ROW-H) TO h  (NEW-PART) TO id  FALSE TO entered  len-addr @ 0 MAX room MIN TO len
    (ENABLED) @ IF
       (FOCUSABLE) TO f
@@ -340,18 +369,40 @@ VARIABLE (F-BUF)  VARIABLE (F-MAX)  VARIABLE (F-LEN)
    x y w h GUI-FIELD-FACE GUI-BORDER (BORDER-W) @ (BOX)
    f (FOCUSED?) IF x y w h (FOCUS-RING) THEN
    w (BORDER-W) @ 2* - (PAD-X) 2* - 1- TO inner
-   \ The text from where the cursor shows.
+   \ The text being converted shows at the cursor, underlined, until it is committed.
+   f (FOCUSED?) IF (PREEDIT) ELSE 0 (PRE-LEN) ! THEN
+   \ The text from where the cursor (after the text being converted) shows.
    0 TO start
    f (FOCUSED?) IF
-      BEGIN buf start + (CURSOR) @ start - TEXT-WIDTH inner > WHILE  buf len start (FORTH) TO start  REPEAT
+      BEGIN
+         start (CURSOR) @ < IF
+            buf start + (CURSOR) @ start - TEXT-WIDTH  (PRE) (PRE-LEN) @ TEXT-WIDTH +  inner >
+         ELSE FALSE THEN
+      WHILE  buf len start (FORTH) TO start  REPEAT
    THEN
-   buf start +  buf start + len start - inner (FIT)
+   \ What is shown: the text before the cursor, the text being converted, the rest.
+   0 TO shown
+   \ (SHOWN) holds 256 bytes before the cursor, 256 being converted, and 256 after: more
+   \ than a field shows. Without the focus, 512 bytes from the start.
+   (CURSOR) @ start - 0 MAX 256 MIN  f (FOCUSED?) 0= IF DROP len start - 512 MIN THEN  TO at
+   buf start +  (SHOWN) at MOVE  at TO shown
+   f (FOCUSED?) IF
+      (PRE) (SHOWN) shown + (PRE-LEN) @ MOVE  shown (PRE-LEN) @ + TO shown
+      buf start at + +  (SHOWN) shown +  len start - at - 0 MAX 256 MIN  DUP shown + >R  MOVE  R> TO shown
+   THEN
+   (SHOWN) DUP shown inner (FIT)
    x (BORDER-W) @ + (PAD-X) +  y (BORDER-W) @ + (PAD-Y) +
    (ENABLED) @ IF GUI-TEXT ELSE GUI-DISABLED THEN (TEXT)
    f (FOCUSED?) IF
       GUI-TEXT (USE)
-      x (BORDER-W) @ + (PAD-X) +  buf start + (CURSOR) @ start - TEXT-WIDTH +  y (BORDER-W) @ + 2 +
-      OVER  y h + (BORDER-W) @ - 3 -  LINE
+      x (BORDER-W) @ + (PAD-X) +  (SHOWN) at TEXT-WIDTH +   \ where the cursor is in the text
+      (PRE-LEN) @ IF
+         \ The line under the text being converted.
+         DUP  y h + (BORDER-W) @ - 3 -  OVER (PRE) (PRE-LEN) @ TEXT-WIDTH +  x w + (BORDER-W) @ - 1- MIN  OVER  LINE
+      THEN
+      DUP TRUE (IME-ON) !  (IME-X) !  y (IME-Y) !  h (IME-H) !
+      (PRE) (PRE-LEN) @ TEXT-WIDTH +  x w + (BORDER-W) @ - 1- MIN
+      y (BORDER-W) @ + 2 +  OVER  y h + (BORDER-W) @ - 3 -  LINE
    THEN
    entered ;
 
@@ -538,6 +589,7 @@ VARIABLE (F-BUF)  VARIABLE (F-MAX)  VARIABLE (F-LEN)
 
 \ Ends the GUI of a frame: draws the open menu over the other parts.
 : GUI-END ( -- )
+   (IME-SEND)
    GUI-MENU-OPEN @ 0< 0= IF  (PULL) 2@ NIP IF (DRAW-PULL) THEN  THEN
    0 0 (PULL) 2!
    (RELEASE) @ IF 0 GUI-ACTIVE ! THEN

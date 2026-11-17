@@ -60,7 +60,14 @@ array set sigma_keys {
     Up 256 Down 257 Left 258 Right 259 Home 260 End 261 Prior 262 Next 263
     Insert 264 Delete 265 F1 266 F2 267 F3 268 F4 269 F5 270 F6 271 F7 272 F8 273
     F9 274 F10 275 F11 276 F12 277
+    Return 13 KP_Enter 13 BackSpace 8 Tab 9 Escape 27
 }
+# Whether the input method is showing text it has not committed: Tk sends that text as
+# keys between <<TkStartIMEMarkedText>> and <<TkEndIMEMarkedText>>, for a text widget to
+# show and take back. Sigma keeps it in sigma_preedit, which GUI-FIELD asks for and draws
+# in the field (inline conversion), and takes only the committed text as keys.
+set sigma_marking 0
+set sigma_preedit ""
 set sigma_buttons 0
 # WINDOW-SIZE as the last image came with it, and how the shown copy of the image is
 # made from it: zoomed by sigma_zoom after taking every sigma_sub-th pixel.
@@ -90,6 +97,9 @@ proc sigma_show {w h data} {
         bind . <KeyPress> {sigma_key %K %A %k}
         bind . <KeyRelease> {sigma_key_release %k}
         bind . <FocusOut> {sigma_keys_released}
+        bind . <<TkStartIMEMarkedText>> {set ::sigma_marking 1; set ::sigma_preedit ""}
+        bind . <<TkEndIMEMarkedText>> {set ::sigma_marking 0}
+        bind . <<TkClearIMEMarkedText>> {set ::sigma_preedit ""}
         wm protocol . WM_DELETE_WINDOW {wm withdraw .}
         wm title . "FORTH/Sigma graphics"
     }
@@ -111,6 +121,39 @@ proc sigma_show {w h data} {
     set ::sigma_image_size $image_size
     sigma_fit
     if {[wm state .] ne "normal"} { wm deiconify . }
+    sigma_ime_apply
+}
+
+# The input method (GUI-FIELD): Tk passes keys to the system's input method only for a
+# window that has had a caret set (Tk_SetCaretPos, by "tk caret"), and that cannot be
+# undone; so a window of one pixel, .sigma_ime, has it, and takes the focus while a field
+# has it. Its keys still come to the bindings of ".". x y h: the cursor in the image.
+set sigma_ime_state {0 0 0 0}
+proc sigma_ime {on x y h} {
+    set ::sigma_ime_state [list $on $x $y $h]
+    sigma_ime_apply
+}
+
+proc sigma_ime_apply {} {
+    if {![winfo exists .sigma]} return
+    lassign $::sigma_ime_state on x y h
+    if {!$on} {
+        set ::sigma_preedit ""
+        if {[focus] eq ".sigma_ime"} { sigma_keys_released; focus . }
+        return
+    }
+    if {![winfo exists .sigma_ime]} {
+        frame .sigma_ime -width 1 -height 1 -borderwidth 0 -highlightthickness 0 -background black
+    }
+    set left [expr {([winfo width .sigma] - [image width sigma_view]) / 2}]
+    set top [expr {([winfo height .sigma] - [image height sigma_view]) / 2}]
+    set px [expr {$left + $x * $::sigma_zoom / $::sigma_sub}]
+    set py [expr {$top + $y * $::sigma_zoom / $::sigma_sub}]
+    place .sigma_ime -in .sigma -x $px -y $py -width 1 -height 1
+    # Under the image, so that it does not show; it still takes the keys.
+    lower .sigma_ime .sigma
+    tk caret .sigma_ime -x 0 -y 0 -height [expr {max(1, $h * $::sigma_zoom / $::sigma_sub)}]
+    if {[focus] ne ".sigma_ime"} { sigma_keys_released; focus .sigma_ime }
 }
 
 proc sigma_copy {zoom sub} {
@@ -189,6 +232,7 @@ proc sigma_mouse {x y {wheel 0}} {
 # its release is known (the name and the character may change while it is held, with
 # Shift).
 proc sigma_key {name char key} {
+    if {$::sigma_marking} { append ::sigma_preedit $char; return }
     if {[info exists ::sigma_keys($name)]} {
         set codes $::sigma_keys($name)
     } else {

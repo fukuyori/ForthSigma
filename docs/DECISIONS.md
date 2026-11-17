@@ -36,7 +36,7 @@
 | LEAVE | 次のLOOP/+LOOPで終了 | 即座にループを抜ける。コンパイル専用。 | Forth 2012／Gforth。 |
 | トークン区切り | 空白とキャリッジリターン。タブは区切りではない（SPEC §3.2） | 空白、タブ、CR、LF | 利用者の指示（2026-10-29）。Gforthと同じで、教材のタブで字下げしたサンプルがそのまま動く。 |
 | 論理メモリ | 機種のメモリマップ | 既定で64 MiB+64 KiB。`m` を `-m` の値、`l` を `-l` の値として、0〜3FFFHはシステム領域、4000H〜13FFFHは入力バッファ・ソースファイルの表・引数、14000H〜`m` はデータ領域、`m`〜`2m` は `ALLOCATE` のヒープ、`2m`〜`2m+l` はローカル変数。既定は `m` が32 MiB、`l` が64 KiB。`m` は1 MiB以上、`l` は4 KiB以上で、どちらもセルの倍数、`2m+l` は4 GiB未満（イメージの `HERE` が32ビットのため）。メモリとスタックはホストが確保して `State` に渡す。 | 1 MiBは利用者指示。ヒープのため段階5bで2 MiBに広げた。2026-11-10に利用者の決定で、大きさを起動時に指定できるようにし、既定を広げた（`docs/MEMORY_AND_GRAPHICS_PLAN.md`）。入力領域を下の固定番地に移したので、入力バッファなどの番地はコンパイル時の定数のまま。 |
-| 起動オプション | なし | gforthと同じ `-m`（`--dictionary-size`）、`-d`（`--data-stack-size`）、`-r`（`--return-stack-size`）、`-f`（`--fp-stack-size`）、`-l`（`--locals-stack-size`）。値は続けて書くか、次の引数か、長い名前では `=` の後。単位は、なしと `e` が要素数、`b`、`k`、`M`、`G`、`T`（大文字と小文字を区別）。バイトの指定は要素の単位に切り上げ、`0` は既定値。引数の先頭でだけ読み、`--` で打ち切る。範囲外は `-m: INVALID SIZE !`、値がなければ `-d: OPTION REQUIRES AN ARGUMENT !` で終了コード1。スタックは各16〜2^27要素で、既定は4096。既定値はビルド時に `-Dmemory-mib`、`-Dlocals-kib`、`-Dstack-cells` で変えられる。`SAVESYS` の実行ファイルは保存時の `m` と `l` で起動し、`-m`・`-l` は `A SAVED PROGRAM KEEPS ITS MEMORY LAYOUT !` で終了コード1。 | gforthの動作（WSLのgforth 0.7.9で確かめた単位）に合わせた。gforthの `-m` の単位なしの値の意味は未確認で、Sigmaはセル数として扱う。 |
+| 起動オプション | なし | gforthと同じ `-m`（`--dictionary-size`）、`-d`（`--data-stack-size`）、`-r`（`--return-stack-size`）、`-f`（`--fp-stack-size`）、`-l`（`--locals-stack-size`）。値は続けて書くか、次の引数か、長い名前では `=` の後。単位は、なしと `e` が要素数、`b`、`k`、`M`、`G`、`T`（大文字と小文字を区別）。バイトの指定は要素の単位に切り上げ、`0` は既定値。引数の先頭でだけ読み、`--` で打ち切る。範囲外は `-m: INVALID SIZE !`、値がなければ `-d: OPTION REQUIRES AN ARGUMENT !` で終了コード1。スタックは各16〜2^27要素で、既定は4096。既定値はビルド時に `-Dmemory-mib`、`-Dlocals-kib`、`-Dstack-cells` で変えられる。`SAVESYS` の実行ファイルは保存時の `m` と `l` で起動し、`-m`・`-l` は `A SAVED PROGRAM KEEPS ITS MEMORY LAYOUT !` で終了コード1。 | gforthの動作（WSLのgforth 0.7.9で確かめた単位）に合わせた。gforthの `-m` の単位なしの値は、要素数（セル数）で、Sigmaと同じ（2026-11-17、macOSのgforth 0.7.9_20260819 arm64で `-m 1000000` と `-m 1000000e` の `UNUSED` が同じ7377826、`-m 1000000b` は377826になることで確かめた）。 |
 
 ## 移植版で選んだ動作
 
@@ -326,7 +326,7 @@ G3の後にCodexのレビューで、(1) ウィンドウのスレッドが生き
 | 入力 | `GUI-BEGIN` がマウス（`MOUSE-EVENT` と `MOUSE`）、キー（`INKEY`）、最初のゲームパッドを1回読む。ゲームパッドは十字キーを矢印、A を Enter、B を Esc として、押されたときだけキーにする。部品が取らなかったキーは、次の `GUI-BEGIN` まで `GUI-KEY` で読める。 |
 | フォーカス | フォーカスを取れる部品をフレームの中で数え、その番号で持つ。クリックでその部品に、Tab で次の部品に移る。持つ部品がなければ最初の部品。開いているメニューは、キーと、メニュー上のマウスを取る。 |
 | メニュー | `GUI-MENUBAR` は `GUI-BEGIN` のすぐ後に呼ぶ。`GUI-MENU` は選択をその場で判定し、プルダウンの描画は `GUI-END` まで遅らせる（ほかの部品の上に描くため）。"-" は区切り線、`~` で始まる項目は選べない。 |
-| 入力欄 | `INKEY` のバイトをそのまま入れる（UTF-8 も）。Backspace と左右の矢印は UTF-8 の1文字単位。カーソルが見える位置から表示する。IME での入力は未確認。 |
+| 入力欄 | `INKEY` のバイトをそのまま入れる（UTF-8 も）。Backspace と左右の矢印は UTF-8 の1文字単位。カーソルが見える位置から表示する。Tkのウィンドウでは、入力欄にフォーカスがある間だけ、1画素の部品 `.sigma_ime` にキーの行き先を移し、`tk caret` でIMEを使えるようにする（TkのmacOS版は、`Tk_SetCaretPos` を呼んだ部品のキーだけをIMEに渡し、その印は外せないため）。IMEが変換中の文字はキーとして送らず、Tclの `sigma_preedit` に持つ。`GUI-FIELD` はフォーカスがある間、毎フレームそれを問い合わせ、カーソルの位置に下線つきで描く（インラインの変換）。確定した文字だけを入力に入れる。macOSで利用者がIMEで「日本語」を入力して確かめた（2026-11-17）。Windowsは未確認。 |
 | タイルの枠 | `GUI-TILES` ( img size -- ) で、パネルを画像の3×3のタイル（角、辺、中央）で描く。NES の RPG のような枠を作れる。 |
 
 #### G6: マウスのイベント（#432、2026-11-10、利用者の決定）
@@ -478,7 +478,8 @@ G4（`396e5c4`〜`78b5189`）のCodexのレビューで、確実な不具合9件
 - **基本語**: 字形の形が字ごと・フォントごとに違い、濃淡もあるので、`GFX-GLYPH ( code -- rows width )` をやめ、`GFX-GLYPH-LOAD`（字形を読み込み、進む幅を返す）、`GFX-GLYPH-BOX`（箱）、`GFX-GLYPH-ALPHA`（濃さ0〜255）と `GFX-FONT-HEIGHT` `GFX-FONT-BUILTIN` `GFX-FONT-LOAD` `GFX-FONT-SYSTEM` にした（`GFX-GLYPH` は未コミットだった）。描く処理、混ぜる計算、`?` への置き換え、拡大は、これまでどおりForthのライブラリで行う。`TEXT-HEIGHT` も加えた。
 - **BDF**: core（`src/core/graphics_font.zig`）が1回目に字数と大きさを数え、ホストから論理メモリの外のバッファ（`font_buffer_fn`、画像と同じく新しいものを得られたときだけ古いものを手放す）をもらって2回目に読み、文字番号の順に並べる。1行は256画素まで、1字の箱は512画素まで、全体は64 MiBまで（2026-11-10に16 MiBから広げた）。読めないファイルは新しいエラー `FONT ERROR`（-272）で、フォントは元のまま。
 - **Windows**: ホスト（`src/host_font.zig`）がGDIのメモリDCとDIBに1字ずつ白で描き（`ANTIALIASED_QUALITY`）、緑の値を濃さにする。`CreateFont` はどんな名前にも代わりのフォントを返すので、先に `EnumFontFamiliesExW` で名前があるかを確かめる（日本語の名前「メイリオ」も見つかることを確かめた）。フォントにない字は `GetGlyphIndicesW` で調べ、`?` で描く。斜体などがはみ出す分として、高さの半分の余白を左右に取り、core が空の列を除く。
-- **辞書**: フォントは辞書の一部ではなく、画像と同じく `SAVE` で保存せず、復元すると組み込みに戻る。LinuxとmacOSの `SYSTEM-FONT` は `HOST FUNCTION UNAVAILABLE`。
+- **macOS（2026-11-17、利用者の決定）**: ホスト（`src/host_font.zig`）が、Core Text（`CTFontCreateWithName`、`CTFontDrawGlyphs`）で1字ずつ、Core Graphicsの8ビットの灰色のビットマップに白で描き、その値を濃さにする（LCDのなめらかさは使わない）。フレームワークは最初に使うときに読み込むので、Linuxで作るmacOS版にもSDKは要らない。Core Textもどんな名前にも代わりのフォントを返すので、作ったフォントのPostScript名・ファミリー名・フルネーム（利用者の言語でのファミリー名とフルネームも）が指定の名前と同じときだけ使い、直接見つからない名前は、利用できるファミリーを順に調べる（「ヒラギノ角ゴシック」で見つかることを確かめた）。大きさは、アセントとディセントの和が height 画素になるようにする。フォントにない字は `CTFontGetGlyphsForCharacters` で調べて `?` で描き、ほかのフォントで補わない。U+10000以上の字はサロゲートペアで調べる。余白はWindowsと同じ。
+- **辞書**: フォントは辞書の一部ではなく、画像と同じく `SAVE` で保存せず、復元すると組み込みに戻る。Linuxの `SYSTEM-FONT` は `HOST FUNCTION UNAVAILABLE`。
 
 #### G4: 文字（#376、2026-11-05）
 
