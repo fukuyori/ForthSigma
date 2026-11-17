@@ -1175,7 +1175,7 @@ pub const entries = [_]Entry{
     .{ .name = "GFX-INKEY", .stack = "( -- key | -1 )", .text = "The next key from the terminal or the window without waiting, or -1; Ctrl+C throws -28 (FORTH/Sigma)." },
     .{ .name = "GFX-MOUSE", .stack = "( -- x y buttons )", .text = "The pixel of the image under the mouse and the buttons held, 1 left 2 right 4 middle (FORTH/Sigma)." },
     .{ .name = "GFX-MOUSE-MODE", .stack = "( flag -- )", .text = "Ask the terminal to report the mouse (true) or to stop (FORTH/Sigma)." },
-    .{ .name = "GFX-TCL", .stack = "( c-addr u -- c-addr2 u2 flag )", .text = "Run a Tcl script in the Tcl program; its result, or with a true flag its error message (FORTH/Sigma)." },
+    .{ .name = "GFX-TCL", .stack = "( c-addr u -- c-addr2 u2 flag )", .text = "Run a Tcl script in the Tcl program; its result, or with a true flag the script's error message; -265 when the program cannot be started or has ended (FORTH/Sigma)." },
     .{ .name = "GFX-TCL-ERROR", .stack = "( -- c-addr u )", .text = "The message of the last Tcl script that failed (FORTH/Sigma)." },
     .{ .name = "GFX-TCL-EVENT", .stack = "( -- c-addr u true | false )", .text = "The next text the Tcl program sent with sigma_event, without waiting (FORTH/Sigma)." },
     .{ .name = "GFX-TCL-PROGRAM", .stack = "( c-addr u -- )", .text = "The Tcl program (wish) to start; empty for SIGMA_WISH, wish on the PATH, or on Windows the wish of Git for Windows, on macOS Homebrew's or MacPorts's (FORTH/Sigma)." },

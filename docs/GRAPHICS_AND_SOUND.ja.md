@@ -156,7 +156,7 @@ WAIT-PRESS                                       \ ボタンを押すと pressed
 | `TCL-PROGRAM` | ( c-addr u -- ) | 次に起動するプログラム（`PATH` の名前かパス）。空なら `SIGMA_WISH`、`wish`、Git for Windows のもの、macOSではHomebrewかMacPortsのもの。 |
 | `TCL-STOP` | ( -- ) | プログラムを終える。次の `TCL` で起動し直す。Sigmaの終了時にも終える。プログラムが書いてSigmaがまだ読んでいないものは捨てる。ホストがプログラムの終わりを確かめられなかったときは `HOST FUNCTION ERROR !`。 |
 | `DISPLAY-TK` | ( -- ) | `SHOW` で、画像をTkのウィンドウ `.` に表示する（PNGで送り、`DISPLAY-COLORS` の色数に従う）。そこで押したキーとマウスは `INKEY` と `MOUSE` に届く。ウィンドウを閉じると、次の `SHOW` まで隠れる。`WINDOW-SIZE` があれば、画像は入る最大の整数倍で表示し（Tkは整数倍でしか拡大しないため）、入らなければ整数分の1に縮めます。ウィンドウの大きさを変えたときも同じです。 |
-| `GFX-TCL`、`GFX-TCL-ERROR`、`GFX-TCL-EVENT`、`GFX-TCL-PROGRAM`、`GFX-TCL-STOP`、`GFX-SHOW-TK` | | 下の層の語。`GFX-TCL` ( c-addr u -- c-addr2 u2 flag ) は THROW せず、結果か、真のフラグとメッセージを返す。 |
+| `GFX-TCL`、`GFX-TCL-ERROR`、`GFX-TCL-EVENT`、`GFX-TCL-PROGRAM`、`GFX-TCL-STOP`、`GFX-SHOW-TK` | | 下の層の語。`GFX-TCL` ( c-addr u -- c-addr2 u2 flag ) は、スクリプトのエラーでは THROW せず、結果か、真のフラグとメッセージを返す。プログラムを起動できないときと、プログラムが終わったときは、この語も `HOST FUNCTION ERROR !` になる。 |
 
 プログラムを起動できないときや、プログラムが終わったときは、`HOST FUNCTION ERROR !`（THROW -265）になり、次に使うときに起動し直します。スクリプトは終わるまで実行するので、待つスクリプト（`vwait` など）はSigmaも待たせます。その間にTkのウィンドウで Ctrl+C を押すと `USER INTERRUPT !` になり、プログラムを終えます（次のスクリプトで起動し直します）。`return`・`break`・`continue` で終わるスクリプトも結果を返し、エラーだけが `TCL ERROR !` です。結果とイベントはヒープに置き、`SAVE` と `SAVESYS` はその前にこれらを解放します。そのため、それより前に TCL の語が返した文字列は、その後は使えません。そのとき受け取りの途中だったメッセージは捨て、プログラムは動いたままです。Sigmaがまだ読んでいないものが4 MiBを超えてプログラムにたまっている間（Sigmaが読むのは TCL の語、`INKEY`、`KEY-HELD?`、`MOUSE` の中だけ）、プログラムは新しいイベント、押したキー、マウスの知らせを捨てます。結果とキーを離した知らせは必ず送ります。`SHOW` のたびに画像全体を送るので、大きな画像は更新が遅くなります。Tcl側の取り決めは `src/graphics/sigma_tk.tcl` にあります。
 

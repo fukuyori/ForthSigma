@@ -475,7 +475,8 @@ VARIABLE (TEXT-SCALE)  1 (TEXT-SCALE) !
 \ else wish on the PATH (macOS: not /usr/bin/wish), else Git for Windows's wish
 \ (Windows) or Homebrew's or MacPorts's (macOS). The words underneath:
 \   GFX-TCL ( c-addr u -- c-addr2 u2 flag )  runs a script: its result, or with a true
-\     flag its error message (GFX-TCL-ERROR ( -- c-addr u ) gives the message again)
+\     flag the script's error message (GFX-TCL-ERROR ( -- c-addr u ) gives the message
+\     again); it throws -265 when the program cannot be started or has ended
 \   GFX-TCL-EVENT ( -- c-addr u true | false )  GFX-TCL-PROGRAM ( c-addr u -- )
 \   GFX-TCL-STOP ( -- )  GFX-SHOW-TK ( -- )
 \ A result stays until the next script, an event until the next TCL-EVENT.
