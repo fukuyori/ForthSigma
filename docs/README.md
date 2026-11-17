@@ -15,6 +15,7 @@ For the project overview, how to build, the current features, the differences fr
 - [Implementation notes](IMPLEMENTATION.md): the structure of the Zig port, implementation decisions, features not implemented
 - [Forth 2012 word status](forth2012-word-status.tsv): each glossary entry of the Forth 2012 standard and whether the full build provides it (checked 2026-11-17; summary in the top-level README)
 - [Size and speed measurements](SIZE_SPEED_MEASUREMENT.md): 2026-11-17 Windows/Linux executable sizes and WSL comparisons with Gforth 1.0.2, including raw samples (in Japanese)
+- [Core-side TUI and asynchronous execution: how to proceed](ASYNC_CORE_PLAN.md): the seven items to implement in the core, what exists in Sigma and gforth, and the approach for each, with the decisions of 2026-11-17 (in Japanese; not implemented)
 - [VM performance improvement plan](VM_PERFORMANCE_PLAN.md): proposed experiments to reduce interpreter overhead while preserving CATCH safety; not implemented (in Japanese)
 - [VM performance design review](VM_PERFORMANCE_REVIEW.md): Claude Code and Antigravity reviews, corrections, decisions and bounded acceptance criteria (in Japanese)
 - [Gforth VM implementation reference](GFORTH_VM_REFERENCE.md): fixed-version sources and applicable design principles; no engine or GPL code migration (in Japanese)
