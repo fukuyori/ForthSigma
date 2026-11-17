@@ -26,47 +26,36 @@ const graphics_image_address = memory_map.graphics_image_address;
 const graphics_vocabulary_address = memory_map.graphics_vocabulary_address;
 
 /// The built-in words this file executes; executeBuiltin dispatches by this list.
-pub const words = [_]Builtin{ .gfx_init, .gfx_width, .gfx_height, .gfx_pset, .gfx_pget, .gfx_hline, .gfx_cls, .gfx_save_ppm, .gfx_save_bmp, .gfx_show_blocks, .gfx_show_sixel, .gfx_show_window, .gfx_window_query, .gfx_save_png, .gfx_inkey, .gfx_mouse, .gfx_mouse_mode, .gfx_glyph_load, .gfx_glyph_box, .gfx_glyph_alpha, .gfx_font_height, .gfx_font_builtin, .gfx_font_load, .gfx_font_system, .gfx_color_mode, .gfx_tcl, .gfx_tcl_error, .gfx_tcl_event, .gfx_tcl_program, .gfx_tcl_stop, .gfx_show_tk, .gfx_key_held, .gfx_window_size, .gfx_gamepad_poll, .gfx_gamepad_query, .gfx_gamepad_name, .gfx_gamepad_map, .gfx_gamepad_guid, .gfx_mouse_event } ++ graphics_images.words;
+pub const words = [_]Builtin{ .gfx_init, .gfx_width, .gfx_height, .gfx_pset, .gfx_pget, .gfx_hline, .gfx_cls, .gfx_save_ppm, .gfx_save_bmp, .gfx_show_blocks, .gfx_show_sixel, .gfx_show_window, .gfx_window_query, .gfx_save_png, .gfx_inkey, .gfx_mouse, .gfx_mouse_mode, .gfx_glyph_load, .gfx_glyph_box, .gfx_glyph_alpha, .gfx_font_height, .gfx_font_builtin, .gfx_font_load, .gfx_font_system, .gfx_color_mode, .gfx_tcl, .gfx_tcl_error, .gfx_tcl_event, .gfx_tcl_program, .gfx_tcl_stop, .gfx_show_tk, .gfx_key_held, .gfx_window_size, .gfx_gamepad_poll, .gfx_gamepad_query, .gfx_gamepad_name, .gfx_gamepad_map, .gfx_gamepad_guid, .gfx_mouse_event } ++ graphics_images.words ++ [_]Builtin{ .gfx_auto_display, .gfx_auto_display_set, .gfx_ime_preedit, .gfx_ime_caret };
 
 /// The GFX- words in the order REQUIRE-GRAPHICS appends them, right after the GRAPHICS
 /// vocabulary. The order is part of the dictionary that images keep: add new words at
 /// the end.
 pub const definitions = [_]struct { []const u8, Builtin }{
-    .{ "GFX-INIT", .gfx_init },     .{ "GFX-WIDTH", .gfx_width }, .{ "GFX-HEIGHT", .gfx_height },
-    .{ "GFX-PSET", .gfx_pset },     .{ "GFX-PGET", .gfx_pget },   .{ "GFX-HLINE", .gfx_hline },
-    .{ "GFX-CLS", .gfx_cls },       .{ "GFX-SAVE-PPM", .gfx_save_ppm }, .{ "GFX-SAVE-BMP", .gfx_save_bmp },
-    .{ "GFX-SHOW-BLOCKS", .gfx_show_blocks }, .{ "GFX-SHOW-SIXEL", .gfx_show_sixel }, .{ "GFX-SHOW-WINDOW", .gfx_show_window },
-    .{ "GFX-WINDOW?", .gfx_window_query }, .{ "GFX-SAVE-PNG", .gfx_save_png }, .{ "GFX-INKEY", .gfx_inkey },
-    .{ "GFX-MOUSE", .gfx_mouse },           .{ "GFX-MOUSE-MODE", .gfx_mouse_mode }, .{ "GFX-GLYPH-LOAD", .gfx_glyph_load },
-    .{ "GFX-GLYPH-BOX", .gfx_glyph_box },   .{ "GFX-GLYPH-ALPHA", .gfx_glyph_alpha }, .{ "GFX-FONT-HEIGHT", .gfx_font_height },
-    .{ "GFX-FONT-BUILTIN", .gfx_font_builtin }, .{ "GFX-FONT-LOAD", .gfx_font_load }, .{ "GFX-FONT-SYSTEM", .gfx_font_system },
-    .{ "GFX-COLOR-MODE", .gfx_color_mode },  .{ "GFX-TCL", .gfx_tcl },         .{ "GFX-TCL-ERROR", .gfx_tcl_error },
-    .{ "GFX-TCL-EVENT", .gfx_tcl_event },    .{ "GFX-TCL-PROGRAM", .gfx_tcl_program }, .{ "GFX-TCL-STOP", .gfx_tcl_stop },
-    .{ "GFX-SHOW-TK", .gfx_show_tk },        .{ "GFX-KEY-HELD", .gfx_key_held },
-    .{ "GFX-WINDOW-SIZE", .gfx_window_size },
-    .{ "GFX-GAMEPAD-POLL", .gfx_gamepad_poll },
-    .{ "GFX-GAMEPAD-QUERY", .gfx_gamepad_query },
-    .{ "GFX-GAMEPAD-NAME", .gfx_gamepad_name },
-    .{ "GFX-GAMEPAD-MAP", .gfx_gamepad_map },
-    .{ "GFX-GAMEPAD-GUID", .gfx_gamepad_guid },
-    .{ "GFX-IMAGE-NEW", .gfx_image_new },
-    .{ "GFX-IMAGE-FREE", .gfx_image_free },
-    .{ "GFX-IMAGE-SIZE", .gfx_image_size },
-    .{ "GFX-TARGET", .gfx_target },
-    .{ "GFX-TARGET@", .gfx_target_query },
-    .{ "GFX-COPY", .gfx_copy },
-    .{ "GFX-IMAGE-LOAD", .gfx_image_load },
-    .{ "GFX-MOUSE-EVENT", .gfx_mouse_event },
-    .{ "GFX-PIXEL", .gfx_pixel },
-    .{ "GFX-TILEMAP", .gfx_tilemap },
-    .{ "GFX-INDEXED", .gfx_indexed },
-    .{ "GFX-ROW-SHIFT", .gfx_row_shift },
-    .{ "GFX-ROW-COLOR", .gfx_row_color },
+    .{ "GFX-INIT", .gfx_init },                 .{ "GFX-WIDTH", .gfx_width },                    .{ "GFX-HEIGHT", .gfx_height },
+    .{ "GFX-PSET", .gfx_pset },                 .{ "GFX-PGET", .gfx_pget },                      .{ "GFX-HLINE", .gfx_hline },
+    .{ "GFX-CLS", .gfx_cls },                   .{ "GFX-SAVE-PPM", .gfx_save_ppm },              .{ "GFX-SAVE-BMP", .gfx_save_bmp },
+    .{ "GFX-SHOW-BLOCKS", .gfx_show_blocks },   .{ "GFX-SHOW-SIXEL", .gfx_show_sixel },          .{ "GFX-SHOW-WINDOW", .gfx_show_window },
+    .{ "GFX-WINDOW?", .gfx_window_query },      .{ "GFX-SAVE-PNG", .gfx_save_png },              .{ "GFX-INKEY", .gfx_inkey },
+    .{ "GFX-MOUSE", .gfx_mouse },               .{ "GFX-MOUSE-MODE", .gfx_mouse_mode },          .{ "GFX-GLYPH-LOAD", .gfx_glyph_load },
+    .{ "GFX-GLYPH-BOX", .gfx_glyph_box },       .{ "GFX-GLYPH-ALPHA", .gfx_glyph_alpha },        .{ "GFX-FONT-HEIGHT", .gfx_font_height },
+    .{ "GFX-FONT-BUILTIN", .gfx_font_builtin }, .{ "GFX-FONT-LOAD", .gfx_font_load },            .{ "GFX-FONT-SYSTEM", .gfx_font_system },
+    .{ "GFX-COLOR-MODE", .gfx_color_mode },     .{ "GFX-TCL", .gfx_tcl },                        .{ "GFX-TCL-ERROR", .gfx_tcl_error },
+    .{ "GFX-TCL-EVENT", .gfx_tcl_event },       .{ "GFX-TCL-PROGRAM", .gfx_tcl_program },        .{ "GFX-TCL-STOP", .gfx_tcl_stop },
+    .{ "GFX-SHOW-TK", .gfx_show_tk },           .{ "GFX-KEY-HELD", .gfx_key_held },              .{ "GFX-WINDOW-SIZE", .gfx_window_size },
+    .{ "GFX-GAMEPAD-POLL", .gfx_gamepad_poll }, .{ "GFX-GAMEPAD-QUERY", .gfx_gamepad_query },    .{ "GFX-GAMEPAD-NAME", .gfx_gamepad_name },
+    .{ "GFX-GAMEPAD-MAP", .gfx_gamepad_map },   .{ "GFX-GAMEPAD-GUID", .gfx_gamepad_guid },      .{ "GFX-IMAGE-NEW", .gfx_image_new },
+    .{ "GFX-IMAGE-FREE", .gfx_image_free },     .{ "GFX-IMAGE-SIZE", .gfx_image_size },          .{ "GFX-TARGET", .gfx_target },
+    .{ "GFX-TARGET@", .gfx_target_query },      .{ "GFX-COPY", .gfx_copy },                      .{ "GFX-IMAGE-LOAD", .gfx_image_load },
+    .{ "GFX-MOUSE-EVENT", .gfx_mouse_event },   .{ "GFX-PIXEL", .gfx_pixel },                    .{ "GFX-TILEMAP", .gfx_tilemap },
+    .{ "GFX-INDEXED", .gfx_indexed },           .{ "GFX-ROW-SHIFT", .gfx_row_shift },            .{ "GFX-ROW-COLOR", .gfx_row_color },
+    .{ "GFX-AUTO-DISPLAY", .gfx_auto_display }, .{ "GFX-AUTO-DISPLAY!", .gfx_auto_display_set }, .{ "GFX-IME-PREEDIT", .gfx_ime_preedit },
+    .{ "GFX-IME-CARET", .gfx_ime_caret },
 };
 
 /// The words of the graphics library that HELP describes; the help test checks that the
 /// library defines each of them.
-pub const library_words = [_][]const u8{ "RGB", "COLOR", "COLOR!", "COLOR@", "PSET", "CLS", "LINE", "RECT", "FILL-RECT", "CIRCLE", "FILL-CIRCLE", "PAINT", "SAVE-PPM", "SAVE-BMP", "SAVE-PNG", "SHOW", "DISPLAY-TERMINAL", "DISPLAY-WINDOW", "TERMINAL-BLOCKS", "TERMINAL-SIXEL", "DISPLAY-COLORS", "DITHER", "TCL", "TCL-EVAL", "TCL-ERROR$", "TCL-EVENT", "TCL-PROGRAM", "TCL-STOP", "DISPLAY-TK", "INKEY", "KEY-HELD?", "MOUSE", "WINDOW-SIZE", "MOUSE-ON", "MOUSE-OFF", "FRAME", "TEXT", "TEXT-SCALE", "TEXT-WIDTH", "TEXT-HEIGHT", "BUILTIN-FONT", "LOAD-FONT", "SYSTEM-FONT", "K-UP", "K-DOWN", "K-LEFT", "K-RIGHT", "K-HOME", "K-END", "K-PRIOR", "K-NEXT", "K-INSERT", "K-DELETE", "K-F1", "K-F2", "K-F3", "K-F4", "K-F5", "K-F6", "K-F7", "K-F8", "K-F9", "K-F10", "K-F11", "K-F12", "GAMEPAD-POLL", "GAMEPAD?", "GAMEPAD-ID", "GAMEPAD-BUTTONS", "GAMEPAD-MAPPED?", "GAMEPAD-AXES", "GAMEPAD-BUTTON-COUNT", "GAMEPAD-HATS", "GAMEPAD-AXIS", "GAMEPAD-HAT", "GAMEPAD-BUTTON?", "GAMEPAD-NAME", "GAMEPAD-MAP", "GAMEPAD-GUID", "SCREEN", "NEW-IMAGE", "FREE-IMAGE", "IMAGE-SIZE", "DRAW-TO", "DRAWING", "TRANSPARENT", "IMAGE-FLIP", "COPY-RECT", "PUT-IMAGE", "LOAD-IMAGE", "IMAGE-MODE", "IMAGE-ALPHA", "IMAGE-SCALE", "MOUSE-EVENT" };
+pub const library_words = [_][]const u8{ "RGB", "COLOR", "COLOR!", "COLOR@", "PSET", "CLS", "LINE", "RECT", "FILL-RECT", "CIRCLE", "FILL-CIRCLE", "PAINT", "SAVE-PPM", "SAVE-BMP", "SAVE-PNG", "SHOW", "DISPLAY-TERMINAL", "DISPLAY-WINDOW", "DISPLAY-AUTO", "TERMINAL-BLOCKS", "TERMINAL-SIXEL", "DISPLAY-COLORS", "DITHER", "TCL", "TCL-EVAL", "TCL-ERROR$", "TCL-EVENT", "TCL-PROGRAM", "TCL-STOP", "DISPLAY-TK", "INKEY", "KEY-HELD?", "MOUSE", "WINDOW-SIZE", "MOUSE-ON", "MOUSE-OFF", "FRAME", "TEXT", "TEXT-SCALE", "TEXT-WIDTH", "TEXT-HEIGHT", "BUILTIN-FONT", "LOAD-FONT", "SYSTEM-FONT", "K-UP", "K-DOWN", "K-LEFT", "K-RIGHT", "K-HOME", "K-END", "K-PRIOR", "K-NEXT", "K-INSERT", "K-DELETE", "K-F1", "K-F2", "K-F3", "K-F4", "K-F5", "K-F6", "K-F7", "K-F8", "K-F9", "K-F10", "K-F11", "K-F12", "GAMEPAD-POLL", "GAMEPAD?", "GAMEPAD-ID", "GAMEPAD-BUTTONS", "GAMEPAD-MAPPED?", "GAMEPAD-AXES", "GAMEPAD-BUTTON-COUNT", "GAMEPAD-HATS", "GAMEPAD-AXIS", "GAMEPAD-HAT", "GAMEPAD-BUTTON?", "GAMEPAD-NAME", "GAMEPAD-MAP", "GAMEPAD-GUID", "SCREEN", "NEW-IMAGE", "FREE-IMAGE", "IMAGE-SIZE", "DRAW-TO", "DRAWING", "TRANSPARENT", "IMAGE-FLIP", "COPY-RECT", "PUT-IMAGE", "LOAD-IMAGE", "IMAGE-MODE", "IMAGE-ALPHA", "IMAGE-SCALE", "MOUSE-EVENT" };
 
 /// The words of the part of the library that uses floating-point numbers, which a build
 /// without them leaves out.
@@ -186,6 +175,27 @@ pub fn execute(self: *State, builtin: Builtin) RuntimeError!void {
             if (!default and (width < 1 or width > max_side or height < 1 or height > max_side)) return error.InvalidNumber;
             self.gfx_window_size = .{ @intCast(width), @intCast(height) };
         },
+        .gfx_auto_display => try self.push(self.gfx_auto_display),
+        .gfx_auto_display_set => {
+            const display = try self.pop();
+            if (display < 0 or display > 3) return error.InvalidNumber;
+            self.gfx_auto_display = @intCast(display);
+        },
+        .gfx_ime_preedit => {
+            const destination = try self.memoryRange();
+            const length = if (self.writer.ime_preedit_fn) |preedit_fn|
+                try preedit_fn(self.writer.context, destination)
+            else
+                0;
+            try self.push(@intCast(@min(length, destination.len)));
+        },
+        .gfx_ime_caret => {
+            const height = try self.pop();
+            const y = try self.pop();
+            const x = try self.pop();
+            const active = try self.pop() != 0;
+            if (self.writer.ime_caret_fn) |caret_fn| try caret_fn(self.writer.context, active, x, y, height);
+        },
         .gfx_key_held => {
             const key = try self.pop();
             try self.push(if (try graphics_input.keyHeld(self, key)) -1 else 0);
@@ -196,7 +206,7 @@ pub fn execute(self: *State, builtin: Builtin) RuntimeError!void {
         },
         .gfx_mouse_mode => graphics_input.setMouse(self, try self.pop() != 0),
         .gfx_mouse_event => if (try graphics_input.nextMouseEvent(self)) |event| {
-            for ([_]Cell{ event.x, event.y, event.button, @intFromEnum(event.kind), -1 }) |value| try self.push(value);
+            for ([_]Cell{ event.x, event.y, event.button, @backingInt(event.kind), -1 }) |value| try self.push(value);
         } else try self.push(0),
         else => {
             // The fonts are left out of a build without graphics.

@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+### Added
+
+- macOS has a graphics window of its own (AppKit), as Windows has: `SHOW` uses it when nothing else is chosen, and `DISPLAY-WINDOW` chooses it. It needs no Tcl/Tk. The window can be moved, resized, and closed while the program waits for input or computes; a closed window is opened again by the next `SHOW`. The first `SHOW` brings the window to the front and gives it the keys; later ones do not.
+- `DISPLAY-AUTO` returns `SHOW` to choosing by itself: Sigma's own window where the host has one, else the Tk window on a desktop, else the terminal. The first that works is kept while the program runs, and a saved dictionary keeps only that the choice is automatic. A window that cannot start falls through to the next; `DISPLAY-WINDOW` and `DISPLAY-TK` do not fall back.
+- On macOS, the input method (IME) works in a `GUI-FIELD` of Sigma's own window as in the Tk window: the text being converted shows underlined at the cursor, the candidate window follows the cursor, and only the committed text is taken.
+
+### Changed
+
+- Four built-in words are added for the above (`GFX-AUTO-DISPLAY`, `GFX-AUTO-DISPLAY!`, `GFX-IME-PREEDIT`, `GFX-IME-CARET`). Added built-in words change the dictionary ABI; recreate dictionary images.
+
 ## [0.11.2] - 2026-11-17
 
 ### Changed

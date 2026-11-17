@@ -2006,6 +2006,14 @@ pub fn main(init: std.process.Init.Minimal) u8 {
 
 /// Returns the exit status: 1 when an argument fails, as in gforth, and 0 otherwise.
 fn run(init: std.process.Init.Minimal) !u8 {
+    // The private AppKit child runs before Sigma sets up its terminal, Forth state, or
+    // saved-image path. It must receive the protocol greeting before opening AppKit.
+    if (builtin.os.tag == .macos and init.args.vector.len == 2 and
+        std.mem.eql(u8, std.mem.span(init.args.vector[1]), host_window.internal_child_argument))
+    {
+        if (!graphics) return 1;
+        return try host_window.runChild();
+    }
     // The C library's allocator, which std.process.Init also gives in a release build
     // that links the C library.
     const allocator = std.heap.c_allocator;
@@ -2014,6 +2022,7 @@ fn run(init: std.process.Init.Minimal) !u8 {
     const argv0: ?[*:0]const u8 = if (builtin.os.tag == .windows or init.args.vector.len == 0) null else init.args.vector[0];
     const executable_path = try executablePathAlloc(allocator, argv0);
     defer allocator.free(executable_path);
+    if (graphics and builtin.os.tag == .macos) host_window.initMac(executable_path, init.environ.block.slice);
     var host = HostContext{ .allocator = allocator, .executable_path = executable_path, .environ_map = &environ_map };
     defer if (host.framebuffer.len != 0) allocator.free(host.framebuffer);
     defer for (host.fonts) |font| {
@@ -2078,7 +2087,7 @@ fn run(init: std.process.Init.Minimal) !u8 {
         return 1;
     };
     defer storage.free(std.heap.page_allocator);
-    machine.init(.{ .gamepad_ops = if (graphics) &host_gamepad.ops else null, .context = @ptrCast(&host), .write_fn = terminalWrite, .read_fn = terminalRead, .load_fn = loadDictionary, .save_fn = saveDictionary, .savesys_fn = saveExecutableImage, .key_fn = terminalKey, .key_ior_fn = terminalKeyIor, .event_key_fn = terminalEventKey, .monotonic_ms_fn = monotonicMilliseconds, .key_ready_fn = terminalKeyReady, .buffered_key_fn = terminalBufferedKey, .unread_fn = terminalUnread, .sleep_fn = sleepMilliseconds, .sleep_ns_fn = sleepNanoseconds, .utime_fn = microsecondsSinceEpoch, .ntime_fn = nanosecondsSinceEpoch, .cputime_fn = processCpuTimes, .local_time_fn = localTime, .zoned_time_fn = @import("host_timezone.zig").convert, .getenv_fn = environmentValue, .errno_fn = currentErrno, .system_fn = runShellCommand, .editor_fn = if (@import("build_options").tools) editSource else null, .file_ops = &file_ops, .framebuffer_fn = graphicsBuffer, .image_alloc_fn = if (graphics) imageAlloc else null, .image_free_fn = if (graphics) imageFree else null, .terminal_size_fn = terminalSize, .terminal_utf8_fn = terminalUtf8, .window_fn = if (host_window.available) host_window.show else null, .input_fn = inputEvent, .mouse_fn = mouseMode, .cursor_fn = cursorPosition, .font_buffer_fn = if (graphics) fontBuffer else null, .font_free_fn = if (graphics) fontFree else null, .system_font_fn = if (graphics and host_font.available) host_font.select else null, .system_glyph_fn = if (graphics and host_font.available) host_font.glyph else null, .process_start_fn = if (graphics) host_process.start else null, .process_write_fn = if (graphics) host_process.write else null, .process_read_fn = if (graphics) host_process.read else null, .process_stop_fn = if (graphics) host_process.stop else null, .audio_fn = if (audio) host_audio.start else null, .audio_device_fn = if (audio) host_audio.hasDevice else null, .audio_wait_fn = if (audio) audioWait else null }, storage);
+    machine.init(.{ .gamepad_ops = if (graphics) &host_gamepad.ops else null, .context = @ptrCast(&host), .write_fn = terminalWrite, .read_fn = terminalRead, .load_fn = loadDictionary, .save_fn = saveDictionary, .savesys_fn = saveExecutableImage, .key_fn = terminalKey, .key_ior_fn = terminalKeyIor, .event_key_fn = terminalEventKey, .monotonic_ms_fn = monotonicMilliseconds, .key_ready_fn = terminalKeyReady, .buffered_key_fn = terminalBufferedKey, .unread_fn = terminalUnread, .sleep_fn = sleepMilliseconds, .sleep_ns_fn = sleepNanoseconds, .utime_fn = microsecondsSinceEpoch, .ntime_fn = nanosecondsSinceEpoch, .cputime_fn = processCpuTimes, .local_time_fn = localTime, .zoned_time_fn = @import("host_timezone.zig").convert, .getenv_fn = environmentValue, .errno_fn = currentErrno, .system_fn = runShellCommand, .editor_fn = if (@import("build_options").tools) editSource else null, .file_ops = &file_ops, .framebuffer_fn = graphicsBuffer, .image_alloc_fn = if (graphics) imageAlloc else null, .image_free_fn = if (graphics) imageFree else null, .terminal_size_fn = terminalSize, .terminal_utf8_fn = terminalUtf8, .window_fn = if (graphics and host_window.available) host_window.show else null, .ime_preedit_fn = if (graphics and builtin.os.tag == .macos) host_window.imePreedit else null, .ime_caret_fn = if (graphics and builtin.os.tag == .macos) host_window.imeCaret else null, .input_fn = inputEvent, .mouse_fn = mouseMode, .cursor_fn = cursorPosition, .font_buffer_fn = if (graphics) fontBuffer else null, .font_free_fn = if (graphics) fontFree else null, .system_font_fn = if (graphics and host_font.available) host_font.select else null, .system_glyph_fn = if (graphics and host_font.available) host_font.glyph else null, .process_start_fn = if (graphics) host_process.start else null, .process_write_fn = if (graphics) host_process.write else null, .process_read_fn = if (graphics) host_process.read else null, .process_stop_fn = if (graphics) host_process.stop else null, .audio_fn = if (audio) host_audio.start else null, .audio_device_fn = if (audio) host_audio.hasDevice else null, .audio_wait_fn = if (audio) audioWait else null }, storage);
     defer closeAllFiles();
     defer host_directories.closeAll();
     // The images of the pool, when the session ends without BYE.

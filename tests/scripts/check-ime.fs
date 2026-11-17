@@ -1,15 +1,19 @@
 \ Check by hand of the input method in a GUI-FIELD, and of the system's font in it
 \ (tque #889; Linux is #897). Run from the repository root, after `zig build`:
 \   zig-out/bin/sigma tests/scripts/check-ime.fs -e "IME-TK"       the Tk window (needs wish)
-\   zig-out/bin/sigma tests/scripts/check-ime.fs -e "IME-WINDOW"   Sigma's own window (Windows)
+\   zig-out/bin/sigma tests/scripts/check-ime.fs -e "IME-WINDOW"   Sigma's own window (Windows, macOS)
 \ The terminal shows the font that was chosen (the first the system has of MS Gothic,
 \ Hiragino Sans, Noto Sans CJK JP, Droid Sans Fallback; none: the built-in font, which
 \ draws Japanese as ?). Type in the field, convert with the input method, and press
 \ Enter. Each Enter prints the text of the field and its bytes to the terminal
 \ (日本語 is E6 97 A5 E6 9C AC E8 AA 9E) and empties the field. The Quit button, or
 \ Ctrl+C in the terminal, ends the check.
-\ To look at: the text being converted shows underlined at the cursor; only the
-\ committed text goes in; ASCII keys, Backspace, the arrows, Home, and End work as usual.
+\ In both native macOS and Tk windows, text being converted should appear underlined
+\ at the field cursor, with the candidate window near that cursor. Enter commits text;
+\ only then should it enter the field and print as UTF-8 bytes. Cancel conversion and
+\ verify the field stays unchanged. ASCII keys, Backspace, arrows, Home, and End should
+\ work as usual. Native macOS inline conversion and candidate placement need physical
+\ keyboard confirmation for tque #922.
 
 REQUIRE-GUI  ALSO GRAPHICS ALSO GUI
 DECIMAL

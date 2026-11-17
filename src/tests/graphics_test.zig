@@ -2018,8 +2018,9 @@ test "SHOW with nothing chosen and no window of the host's own uses the Tk windo
     const machine = try libraryMachine(&output, "3 2");
     defer destroyMachine(machine);
     output.process_replies = "R 0 0\n" ++ "R 0 0\n";
-    try machine.interpretLine("SHOW SHOW (DISPLAY) @");
-    try expectStack(machine, &.{3});
+    // The choice stays automatic in the dictionary; what it resolved to is the process's.
+    try machine.interpretLine("SHOW SHOW (DISPLAY) @ GFX-AUTO-DISPLAY");
+    try expectStack(machine, &.{ 0, 3 });
     machine.data_depth = 0;
     try std.testing.expectEqual(@as(usize, 1), output.process_starts);
     try std.testing.expectEqual(@as(usize, 2), std.mem.count(u8, output.processWritten(), "sigma_show 0 0 "));
@@ -2030,8 +2031,8 @@ test "SHOW with nothing chosen and no window of the host's own uses the Tk windo
     var lost = Output{ .display = ":0" };
     const no_wish = try libraryMachine(&lost, "3 2");
     defer destroyMachine(no_wish);
-    try no_wish.interpretLine("SHOW (DISPLAY) @");
-    try expectStack(no_wish, &.{1});
+    try no_wish.interpretLine("SHOW (DISPLAY) @ GFX-AUTO-DISPLAY");
+    try expectStack(no_wish, &.{ 0, 1 });
     no_wish.data_depth = 0;
     try std.testing.expect(std.mem.indexOf(u8, lost.written(), "\u{2580}") != null);
     lost.len = 0;

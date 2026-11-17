@@ -93,6 +93,9 @@ pub const InputEvent = union(enum) {
     key: u32,
     /// The same, pressed in the window: it stays when the terminal restarts.
     window_key: u32,
+    /// A committed Unicode scalar from a native window. The graphics input layer
+    /// converts the whole scalar to UTF-8 bytes atomically before exposing INKEY.
+    window_text: u21,
     /// A key of `key` was released (a Windows console tells when, and when it loses the
     /// focus): KEY-HELD? no longer holds it.
     key_release: u32,
@@ -215,6 +218,13 @@ pub const Writer = struct {
     /// (WINDOW-SIZE), 0 0 for the image's size; the image keeps its proportions in it,
     /// and the rest is black.
     window_fn: ?*const fn (?*anyopaque, []const u32, u32, u32, ColorMode, [2]u32) RuntimeError!void = null,
+    /// Copies the current, uncommitted IME preedit into the caller's buffer. The count
+    /// is capped to its length. This is separate from input_fn: INKEY receives commits
+    /// only, while GUI-FIELD may draw this preedit inline.
+    ime_preedit_fn: ?*const fn (?*anyopaque, []u8) RuntimeError!usize = null,
+    /// Gives the native text client the focused GUI-FIELD caret in image pixels.
+    /// Candidate windows use this position; x/y are measured from the image's top-left.
+    ime_caret_fn: ?*const fn (?*anyopaque, bool, Cell, Cell, Cell) RuntimeError!void = null,
     /// The next input event without waiting, or null when there is none. The first call
     /// lets the terminal give each key at once, without echo; the host gives it back its
     /// line input when the program next reads a line or a KEY, and at the end. The host

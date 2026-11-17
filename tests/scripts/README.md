@@ -29,5 +29,10 @@ compared with `--compare`.
 type Japanese into with the input method, and prints what was entered (its header
 tells how to run it).
 
+`check-window.fs` is a check by hand too, of Sigma's own window: it prints the presses,
+releases, and wheel notches of the mouse, and lets the window be moved, resized, and
+closed while the program waits for input and while it computes (its header tells how to
+run it).
+
 Recorded measurement JSON and original external review transcripts preserve
 paths as they were when recorded. Current commands use `tests/scripts/`.

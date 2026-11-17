@@ -189,10 +189,9 @@ VARIABLE (CURSOR-OF)   \ the part the cursor belongs to
 \ Parts made after GUI-ENABLE with false are drawn grey and take no input.
 : GUI-ENABLE ( flag -- )   0<> (ENABLED) ! ;
 
-\ The input method of the Tk window: while a field has the focus, its keys go through
-\ the input method of the system (so that Japanese can be typed on macOS), and the
-\ input method's window shows at the cursor. GUI-FIELD tells where the cursor is;
-\ GUI-END tells the Tk window when that changes.
+\ The input method of a GUI window: while a field has the focus, committed text goes
+\ through INKEY and uncommitted text is drawn inline. Tk and native windows get the
+\ preedit text and caret through their respective host interfaces.
 VARIABLE (IME-ON)  VARIABLE (IME-X)  VARIABLE (IME-Y)  VARIABLE (IME-H)
 CREATE (IME-SENT) 4 CELLS ALLOT  (IME-SENT) 4 CELLS ERASE
 CREATE (IME-CMD) 64 ALLOT  VARIABLE (IME-LEN)
@@ -202,13 +201,20 @@ CREATE (IME-CMD) 64 ALLOT  VARIABLE (IME-LEN)
 \ asked of the Tk window each frame a field has the focus there.
 CREATE (PRE) 256 ALLOT  VARIABLE (PRE-LEN)  0 (PRE-LEN) !
 CREATE (SHOWN) 768 ALLOT
+: (IME-DISPLAY) ( -- mode )
+   (DISPLAY) @ DUP 0= IF DROP GFX-AUTO-DISPLAY THEN ;
 : (PREEDIT) ( -- )
    0 (PRE-LEN) !
-   (DISPLAY) @ 3 <> IF EXIT THEN
-   S" set ::sigma_preedit" GFX-TCL IF 2DROP EXIT THEN
-   256 MIN  DUP (PRE-LEN) !  (PRE) SWAP MOVE ;
+   (IME-DISPLAY) DUP 3 = IF
+      DROP S" set ::sigma_preedit" GFX-TCL IF 2DROP EXIT THEN
+      256 MIN DUP (PRE-LEN) !  (PRE) SWAP MOVE EXIT
+   THEN
+   2 = IF (PRE) 256 GFX-IME-PREEDIT 256 MIN (PRE-LEN) ! THEN ;
 : (IME-SEND) ( -- )
-   (DISPLAY) @ 3 <> IF EXIT THEN
+   (IME-DISPLAY) DUP 2 = IF
+      DROP (IME-ON) @ 0<> 1 AND  (IME-X) @  (IME-Y) @  (IME-H) @ GFX-IME-CARET EXIT
+   THEN
+   3 <> IF EXIT THEN
    (IME-ON) @ 0<> 1 AND  (IME-X) @  (IME-Y) @  (IME-H) @
    (IME-SENT) 3 CELLS + @ OVER =  (IME-SENT) 2 CELLS + @ 3 PICK = AND
    (IME-SENT) CELL+ @ 4 PICK = AND  (IME-SENT) @ 5 PICK = AND

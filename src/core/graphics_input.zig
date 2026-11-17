@@ -484,6 +484,7 @@ fn readInput(self: *State, until_key: bool) RuntimeError!void {
                 try decodePending(self, false);
             },
             .restarted => restart(input),
+            .window_text => |code_point| try windowText(self, code_point),
             .key => |key| {
                 try addKey(self, key, true);
                 press(self, key, .terminal, true);
@@ -510,6 +511,18 @@ pub fn readPending(self: *State) RuntimeError!void {
 pub fn windowKey(self: *State, key: u32, source: KeySource) RuntimeError!void {
     try addKey(self, key, false);
     press(self, key, source, true);
+}
+
+/// A committed Unicode scalar from a native window. Queue all of its UTF-8 bytes
+/// together, or none, so INKEY cannot observe a truncated character at capacity.
+pub fn windowText(self: *State, code_point: u21) RuntimeError!void {
+    if (code_point == interrupt_byte) return error.UserInterrupt;
+    var bytes: [4]u8 = undefined;
+    const length = std.unicode.utf8Encode(code_point, &bytes) catch return;
+    const input = &self.gfx_input;
+    if (input.keys.len - input.key_count < length) return;
+    for (bytes[0..length]) |byte| pushKey(input, .{ .code = byte, .from_terminal = false });
+    if (code_point < 0x80) press(self, code_point, .window, true);
 }
 
 /// A key released in such a window.

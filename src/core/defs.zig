@@ -1108,6 +1108,11 @@ pub const Builtin = enum {
     f_r_fetch,
     r_second_fetch,
     r_pick,
+    // Runtime-only display resolution helpers appended to preserve existing tags.
+    gfx_auto_display,
+    gfx_auto_display_set,
+    gfx_ime_preedit,
+    gfx_ime_caret,
 };
 
 pub const HeapResult = union(enum) { address: Cell, no_memory, bad_pointer };

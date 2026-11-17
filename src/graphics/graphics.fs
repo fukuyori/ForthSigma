@@ -245,7 +245,7 @@ VARIABLE (P-STACK)  VARIABLE (P-SIZE)  VARIABLE (P-USED)  VARIABLE (P-TARGET)
 
 \ ---- Showing the image -------------------------------------------------------------
 
-\ Where SHOW puts the image: 0 not chosen yet (see SHOW), 1 the terminal, 2 the window,
+\ Where SHOW puts the image: 0 automatic (see SHOW), 1 the terminal, 2 the window,
 \ 3 the Tk window (DISPLAY-TK). And how the terminal shows it: 0 with half block
 \ characters, 1 as Sixel graphics.
 VARIABLE (DISPLAY)  0 (DISPLAY) !
@@ -254,6 +254,7 @@ VARIABLE (TERMINAL-MODE)  0 (TERMINAL-MODE) !
 : DISPLAY-TERMINAL ( -- )   1 (DISPLAY) ! ;
 \ HOST FUNCTION UNAVAILABLE when the host has no window.
 : DISPLAY-WINDOW ( -- )   GFX-WINDOW? 0= IF -21 THROW THEN  2 (DISPLAY) ! ;
+: DISPLAY-AUTO ( -- )   0 (DISPLAY) !  0 GFX-AUTO-DISPLAY! ;
 : TERMINAL-BLOCKS ( -- )   0 (TERMINAL-MODE) ! ;
 : TERMINAL-SIXEL ( -- )   1 (TERMINAL-MODE) ! ;
 
@@ -276,25 +277,58 @@ VARIABLE (DITHER)  0 (DITHER) !
    S" DISPLAY" GETENV NIP  S" WAYLAND_DISPLAY" GETENV NIP OR
    S" __CFBundleIdentifier" GETENV NIP OR  0<> ;
 
-\ The first SHOW with nothing chosen on a host without a window of its own (Linux,
-\ macOS) tries the Tk window when Sigma runs on a desktop, and keeps to it when that
-\ works; else, or when wish cannot start, it keeps to the terminal. True when it
-\ showed the image in the Tk window.
-: (TRY-TK) ( -- flag )
-   1 (DISPLAY) !
-   ['] (DESKTOP?) CATCH IF FALSE THEN  0= IF FALSE EXIT THEN
-   ['] GFX-SHOW-TK CATCH IF FALSE EXIT THEN
-   3 (DISPLAY) !  TRUE ;
+\ Automatic display is selected once per process, independently of saved Forth
+\ dictionaries. Host startup failures may fall through to Tk, then terminal.
+: (AUTO-TRY-TK) ( -- flag )
+   ['] (DESKTOP?) CATCH ?DUP IF DROP FALSE EXIT THEN
+   0= IF FALSE EXIT THEN
+   ['] GFX-SHOW-TK CATCH
+   DUP 0= IF DROP 3 GFX-AUTO-DISPLAY! TRUE EXIT THEN
+   DUP -21 = IF DROP FALSE EXIT THEN
+   DUP -265 = IF DROP FALSE EXIT THEN
+   THROW ;
+
+: (AUTO-TRY-WINDOW) ( -- flag )
+   ['] GFX-SHOW-WINDOW CATCH
+   DUP 0= IF DROP 2 GFX-AUTO-DISPLAY! TRUE EXIT THEN
+   DUP -21 = IF DROP FALSE EXIT THEN
+   DUP -265 = IF DROP FALSE EXIT THEN
+   THROW ;
+
+: (AUTO-SHOW-WINDOW) ( -- )
+   ['] GFX-SHOW-WINDOW CATCH ?DUP IF
+      DUP -265 = IF 3 GFX-AUTO-DISPLAY! THEN
+      THROW
+   THEN ;
+
+: (AUTO-SHOW-TK) ( -- )
+   ['] GFX-SHOW-TK CATCH ?DUP IF
+      DUP -265 = IF 1 GFX-AUTO-DISPLAY! THEN
+      THROW
+   THEN ;
+
+: (AUTO-SHOW) ( -- )
+   GFX-AUTO-DISPLAY DUP 2 = IF DROP (AUTO-SHOW-WINDOW) EXIT THEN
+   DUP 3 = IF DROP (AUTO-SHOW-TK) EXIT THEN
+   DUP 1 = IF DROP (TERMINAL-MODE) @ IF GFX-SHOW-SIXEL ELSE GFX-SHOW-BLOCKS THEN EXIT THEN
+   DROP
+   GFX-WINDOW? IF (AUTO-TRY-WINDOW) IF EXIT THEN THEN
+   (AUTO-TRY-TK) IF EXIT THEN
+   1 GFX-AUTO-DISPLAY!
+   (TERMINAL-MODE) @ IF GFX-SHOW-SIXEL ELSE GFX-SHOW-BLOCKS THEN ;
 
 \ Shows the image where DISPLAY-TERMINAL, DISPLAY-WINDOW, or DISPLAY-TK said, with the
-\ colors DISPLAY-COLORS and DITHER chose. With nothing chosen: the window when the host
-\ has one, else the Tk window on a desktop (see (TRY-TK)), else the terminal.
+\ colors DISPLAY-COLORS and DITHER chose. Automatic display remembers its successful
+\ backend for this process and falls back only when a backend cannot start.
 : SHOW ( -- )
    (NEED-IMAGE)
    (COLORS) @ (DITHER) @ GFX-COLOR-MODE
-   (DISPLAY) @ 0=  GFX-WINDOW? 0= AND IF (TRY-TK) IF EXIT THEN THEN
+   (DISPLAY) @ 0= IF (AUTO-SHOW) EXIT THEN
    (DISPLAY) @ 3 = IF GFX-SHOW-TK EXIT THEN
-   (WINDOW?) IF GFX-SHOW-WINDOW EXIT THEN
+   (DISPLAY) @ 2 = IF
+      ['] GFX-SHOW-WINDOW CATCH ?DUP IF DUP -21 = IF DROP -265 THEN THROW THEN
+      EXIT
+   THEN
    (TERMINAL-MODE) @ IF GFX-SHOW-SIXEL ELSE GFX-SHOW-BLOCKS THEN ;
 
 \ ---- Keys, the mouse, and animation --------------------------------------------------

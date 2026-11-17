@@ -1,29 +1,55 @@
-//! The graphics window of the Windows host, for SHOW. The window has a thread of its
-//! own that runs its messages, so it can be moved, resized, and closed while Forth
-//! waits for input. SHOW copies the image under a lock and asks the window to draw it
-//! again; a window the user closed is opened again by the next SHOW. Other hosts have
-//! no window (`available` is false).
+//! The host's native graphics window. Windows runs it on a dedicated thread; macOS uses
+//! the AppKit child process in host_window_macos.zig. Other hosts have no native window.
 
 const std = @import("std");
 const builtin = @import("builtin");
 const forth = @import("forth.zig");
 
-pub const available = builtin.os.tag == .windows;
+const macos_window = if (builtin.os.tag == .macos) @import("host_window_macos.zig") else struct {
+    fn imePreedit(_: ?*anyopaque, _: []u8) forth.RuntimeError!usize {
+        return 0;
+    }
+    fn imeCaret(_: ?*anyopaque, _: bool, _: i64, _: i64, _: i64) forth.RuntimeError!void {}
+};
+
+pub const available = builtin.os.tag == .windows or builtin.os.tag == .macos;
+pub const internal_child_argument = if (builtin.os.tag == .macos) macos_window.child_argument else "";
 
 /// The host's window_fn: shows the pixels, opening the window when it is not open.
-pub const show = if (available) win32.show else unsupported;
+pub const show = if (builtin.os.tag == .windows) win32.show else if (builtin.os.tag == .macos) macos_window.show else unsupported;
+
+/// Copies the latest native-window IME preedit, when that backend supports it.
+pub fn imePreedit(context: ?*anyopaque, destination: []u8) forth.RuntimeError!usize {
+    return macos_window.imePreedit(context, destination);
+}
+
+/// Updates the native-window input-method caret, when that backend supports it.
+pub fn imeCaret(context: ?*anyopaque, active: bool, x: i64, y: i64, height: i64) forth.RuntimeError!void {
+    return macos_window.imeCaret(context, active, x, y, height);
+}
 
 /// The next key or mouse change in the window, for INKEY and MOUSE; null when none.
 pub fn poll() ?forth.InputEvent {
-    return if (available) win32.poll() else null;
+    return if (builtin.os.tag == .windows) win32.poll() else if (builtin.os.tag == .macos) macos_window.poll() else null;
 }
 
 /// Closes the window and waits for its thread, before the program ends.
 pub fn close() void {
-    if (available) win32.close();
+    if (builtin.os.tag == .windows) win32.close() else if (builtin.os.tag == .macos) macos_window.close();
 }
 
-fn unsupported(_: ?*anyopaque, _: []const u32, _: u32, _: u32, _: forth.ColorMode) forth.RuntimeError!void {
+/// Internal AppKit child entry point, dispatched before Sigma initializes its Forth VM.
+pub fn runChild() !u8 {
+    if (builtin.os.tag == .macos) return macos_window.runChild();
+    return error.HostUnavailable;
+}
+
+/// Configures the executable and inherited environment used by the AppKit child.
+pub fn initMac(executable_path: [:0]const u8, environment: [:null]const ?[*:0]const u8) void {
+    if (builtin.os.tag == .macos) macos_window.init(executable_path, environment);
+}
+
+fn unsupported(_: ?*anyopaque, _: []const u32, _: u32, _: u32, _: forth.ColorMode, _: [2]u32) forth.RuntimeError!void {
     return error.HostUnavailable;
 }
 
