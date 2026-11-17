@@ -10,8 +10,8 @@ output on macOS directly with the output on Windows and on Linux.
 | File | System |
 |---|---|
 | `macos.json` | macOS 27.2, Apple silicon (arm64), FORTH/Sigma 0.11.0 |
-| `windows.json` | Windows (to be recorded) |
-| `linux.json` | Linux (to be recorded; WSL will do) |
+| `windows.json` | Windows 11 (AMD64), FORTH/Sigma 0.11.0 |
+| `linux.json` | Linux under WSL (x86_64, the `x86_64-linux-musl` build), FORTH/Sigma 0.11.0 |
 
 ## What is recorded
 
@@ -73,3 +73,11 @@ differ and 1 otherwise.
 Every difference is to be explained before the check is done: it is either a bug, or a
 difference of the systems that is meant (record it in docs/DECISIONS.md). Both files
 should come from the same commit; compare the version lines at the top of the report.
+
+## Results
+
+On 2026-11-17 `windows.json` and `linux.json` were recorded with builds of commit
+`c16ffdb`, whose sources are the same as those `macos.json` was recorded with. Both
+comparisons with `macos.json` gave `27 cases, 0 differ`: the exit codes, standard
+output, standard error and the files are the same on the three systems, taking CR LF
+as LF.

@@ -7,8 +7,8 @@
 | ファイル | OS |
 |---|---|
 | `macos.json` | macOS 27.2、Apple silicon（arm64）、FORTH/Sigma 0.11.0 |
-| `windows.json` | Windows（これから記録する） |
-| `linux.json` | Linux（これから記録する。WSLでもよい） |
+| `windows.json` | Windows 11（AMD64）、FORTH/Sigma 0.11.0 |
+| `linux.json` | WSLのLinux（x86_64、`x86_64-linux-musl` のビルド）、FORTH/Sigma 0.11.0 |
 
 ## 記録するもの
 
@@ -54,3 +54,7 @@ python3 tests/scripts/verify-debug-outputs.py --compare tests/scripts/debug-outp
 最後の行は、場合の数と、違った場合の数です。終了コードは、違いがなければ0、あれば1です。
 
 確認を終える前に、すべての違いの理由を明らかにします。不具合か、意図したOSの違い（docs/DECISIONS.md に記録する）のどちらかです。2つのファイルは同じコミットで記録したものを使い、結果の先頭の版の行で確かめます。
+
+## 結果
+
+2026-11-17に、コミット `c16ffdb` のビルドで `windows.json` と `linux.json` を記録しました。このコミットのソースは、`macos.json` を記録したときのソースと同じです。`macos.json` との比較は、どちらも `27 cases, 0 differ` でした。CR LF を LF とみなすと、終了コード、標準出力、標準エラー、ファイルは3つのOSで同じです。

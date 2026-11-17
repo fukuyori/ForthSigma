@@ -17,6 +17,8 @@
 
 - `docs/SIZE_SPEED_MEASUREMENT.md`: 測定対象の版番号。過去の実測記録として保持し、バージョン更新時には書き換えない。
 - `docs/measurements/2026-11-17-size-speed.json`: 上の測定の生データに記録した測定対象の版番号。過去の実測記録として保持し、バージョン更新時には書き換えない。
+- `tests/scripts/debug-outputs/macos.json`、`tests/scripts/debug-outputs/windows.json`、`tests/scripts/debug-outputs/linux.json`: 各OSで記録したデバッグ機能の出力。起動時の表示とログの `start` の行に、記録したときの版番号が入っている。記録として保持し、バージョン更新時には書き換えない。記録し直すときは、3つを同じコミットのビルドで記録する。
+- `tests/scripts/debug-outputs/README.md`、`tests/scripts/debug-outputs/README.ja.md`: 上の3つを記録したときのOSと版番号の表。記録し直したときだけ、表の版番号を合わせる。
 
 ## リリース時
 

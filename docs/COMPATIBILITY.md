@@ -280,7 +280,7 @@ P09b30/30 and P09c5/5 are implemented (P09 total50/50). P09b verification covers
 
 Sigma retains its plain LOCATE/.S/F.S/WHERE formatting, uses one-based bounded source windows and preserves source settings on append. BROWSE follows Sigma MWORDS; UNUSED-WORDS uses CURRENT and recorded file uses, with a saturation error. Editor commands use explicit EDITOR/+line configuration and wait for it; missing configuration gives-21. Inspection copies are temporary; Windows cmd path restrictions and GUI wait options are documented. Saved traces are bounded VM frames from reported exceptions, invalidated on deletion/restore; CATCH's existing clearing policy remains. Smart xts stay numeric because they are ordinal cells; FANCY-AFTER-L is a plain-browser compatibility hook. Return extensions expose only logical user cells and preserve float bits; native loop/call/local frames are separate. All added builtins change the image ABI; recreate old images. [Exact policies, scope and evidence](P09_IMPLEMENTATION.md).
 
-P09 review: negative ALLOT cannot truncate live EXCEPTION(S) records (-259, no HERE change); FORGET/MARKER own their removal. `\G` respects 64-column LOAD lines. Windows quoted EDITOR executable prefixes require native verification under tque702; this platform concern is unconfirmed here. See [P09 review](P09_REVIEW.md).
+P09 review: negative ALLOT cannot truncate live EXCEPTION(S) records (-259, no HERE change); FORGET/MARKER own their removal. `\G` respects 64-column LOAD lines. Windows quoted EDITOR executable prefixes were checked on Windows on 2026-11-17 (a stand-in editor and real editors under Program Files) and work; see the user manual. See [P09 review](P09_REVIEW.md).
 
 ## Implemented extension index
 

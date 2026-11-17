@@ -1,0 +1,363 @@
+{
+ "system": "Linux",
+ "release": "6.18.33.2-microsoft-standard-WSL2",
+ "machine": "x86_64",
+ "sigma": "FORTH/Sigma 0.11.0  MIT License",
+ "cases": [
+  {
+   "name": "backtrace",
+   "args": [
+    "prog.fs",
+    "-e",
+    "3 4 0 REPORT"
+   ],
+   "stdin": null,
+   "exit": 1,
+   "stdout": "DIVISION BY ZERO !\nBACKTRACE:\n  AVERAGE prog.fs:3\n  REPORT prog.fs:5\nSTACK: <0> \n",
+   "stderr": "",
+   "files": {}
+  },
+  {
+   "name": "max-steps",
+   "args": [
+    "--max-steps",
+    "1000",
+    "prog.fs",
+    "-e",
+    "SPIN"
+   ],
+   "stdin": null,
+   "exit": 1,
+   "stdout": "STEP LIMIT !\nBACKTRACE:\n  BUMP prog.fs:9\n  SPIN prog.fs:10\nSTACK: <0> \n",
+   "stderr": "",
+   "files": {}
+  },
+  {
+   "name": "max-steps=",
+   "args": [
+    "--max-steps=1000",
+    "prog.fs",
+    "-e",
+    "SPIN"
+   ],
+   "stdin": null,
+   "exit": 1,
+   "stdout": "STEP LIMIT !\nBACKTRACE:\n  BUMP prog.fs:9\n  SPIN prog.fs:10\nSTACK: <0> \n",
+   "stderr": "",
+   "files": {}
+  },
+  {
+   "name": "trace",
+   "args": [
+    "--trace",
+    "prog.fs",
+    "-e",
+    "3 4 5 REPORT BYE"
+   ],
+   "stdin": null,
+   "exit": 0,
+   "stdout": "5 ",
+   "stderr": "> REPORT <3> 3 4 5\n  > SUMSQ <2> 3 4\n    > SQUARE <2> 3 4\n    < SQUARE <2> 3 16\n    > SQUARE <2> 16 3\n    < SQUARE <2> 16 9\n  < SUMSQ <1> 25\n  > AVERAGE <2> 25 5\n  < AVERAGE <1> 5\n< REPORT <0>\n",
+   "files": {}
+  },
+  {
+   "name": "trace-limit",
+   "args": [
+    "--trace",
+    "--trace-limit",
+    "3",
+    "prog.fs",
+    "-e",
+    "3 4 5 REPORT BYE"
+   ],
+   "stdin": null,
+   "exit": 0,
+   "stdout": "5 ",
+   "stderr": "> REPORT <3> 3 4 5\n  > SUMSQ <2> 3 4\n    > SQUARE <2> 3 4\nTRACE LIMIT\n",
+   "files": {}
+  },
+  {
+   "name": "tilde",
+   "args": [
+    "prog.fs",
+    "-e",
+    ": T 5 ~~ SQUARE ~~BT DROP ; : CALLER T ; CALLER BYE"
+   ],
+   "stdin": null,
+   "exit": 0,
+   "stdout": "",
+   "stderr": "\n*the terminal*:0:7:<1> #5 \n\n*the terminal*:0:17:<1> #25 \nBACKTRACE:\n  CALLER\n",
+   "files": {}
+  },
+  {
+   "name": "tilde-once",
+   "args": [
+    "prog.fs",
+    "-e",
+    ": T 3 0 DO I ~~1BT ONCE .\" once\" THEN LOOP ; : C T ; C BYE"
+   ],
+   "stdin": null,
+   "exit": 0,
+   "stdout": "once",
+   "stderr": "\n*the terminal*:0:14:<1> #0 \nBACKTRACE:\n  C\n",
+   "files": {}
+  },
+  {
+   "name": "tilde-value",
+   "args": [
+    "-e",
+    "3 ~~VALUE V 5 TO V ~~VARIABLE W 7 W ! W @ . BYE"
+   ],
+   "stdin": null,
+   "exit": 0,
+   "stdout": "7 ",
+   "stderr": "\n*the terminal*:0:18:<1> #5 `V \n\n*the terminal*:0:35:<1> #7 `W \n\n*the terminal*:0:39:<0> `W \n",
+   "files": {}
+  },
+  {
+   "name": "dbg-enter",
+   "args": [
+    "prog.fs"
+   ],
+   "stdin": "3 4 DBG SUMSQ\n\n\n\n\n\n. BYE\n",
+   "exit": 0,
+   "stdout": "FORTH/Sigma 0.11.0  MIT License\nType `help' for basic help\n: SUMSQ\n[ 2 ] 3 4\nSQUARE         -> [ 2 ] 3 16\nSWAP           -> [ 2 ] 16 3\nSQUARE         -> [ 2 ] 16 9\n+              -> [ 1 ] 25\n;              ->  OK\n25  OK\n",
+   "stderr": "",
+   "files": {}
+  },
+  {
+   "name": "dbg-n-u",
+   "args": [
+    "prog.fs"
+   ],
+   "stdin": "3 4 5 DBG REPORT\n\nn\n\n\n\nu\n. BYE\n",
+   "exit": 0,
+   "stdout": "FORTH/Sigma 0.11.0  MIT License\nType `help' for basic help\n: REPORT\n[ 3 ] 3 4 5\n>R             -> [ 2 ] 3 4\nSUMSQ          -> \n: SUMSQ\n[ 2 ] 3 4\nSQUARE         -> [ 2 ] 3 16\nSWAP           -> [ 2 ] 16 3\nSQUARE         -> [ 2 ] 16 9\n+              -> [ 1 ] 25\n;              -> \n[ 1 ] 25\nR>             -> [ 2 ] 25 5\nAVERAGE        -> [ 1 ] 5\n.              -> 5  OK\n",
+   "stderr": "",
+   "files": {}
+  },
+  {
+   "name": "dbg-d",
+   "args": [
+    "prog.fs"
+   ],
+   "stdin": "3 4 5 DBG REPORT\nd\n BYE\n",
+   "exit": 0,
+   "stdout": "FORTH/Sigma 0.11.0  MIT License\nType `help' for basic help\n: REPORT\n[ 3 ] 3 4 5\n>R             -> \nDone...\n5  OK\n OK\n",
+   "stderr": "",
+   "files": {}
+  },
+  {
+   "name": "dbg-s",
+   "args": [
+    "prog.fs"
+   ],
+   "stdin": "3 4 5 DBG REPORT\ns\n.S BYE\n",
+   "exit": 0,
+   "stdout": "FORTH/Sigma 0.11.0  MIT License\nType `help' for basic help\n: REPORT\n[ 3 ] 3 4 5\n>R             -> \ndebugger aborted\nBACKTRACE:\n  REPORT prog.fs:5\nSTACK: <3> 3 4 5 \n<0>  OK\n",
+   "stderr": "",
+   "files": {}
+  },
+  {
+   "name": "break-colon",
+   "args": [
+    "brk.fs"
+   ],
+   "stdin": null,
+   "exit": 0,
+   "stdout": "[ 1 ] 1\n2              -> 3 ",
+   "stderr": "",
+   "files": {}
+  },
+  {
+   "name": "break-quote",
+   "args": [
+    "brk2.fs",
+    "-e",
+    "B2"
+   ],
+   "stdin": "\n\n\n. BYE\n",
+   "exit": 0,
+   "stdout": "BREAK AT: here\n[ 1 ] 1\n2              -> [ 2 ] 1 2\n+              -> [ 1 ] 3\n;              -> FORTH/Sigma 0.11.0  MIT License\nType `help' for basic help\n3  OK\n",
+   "stderr": "",
+   "files": {}
+  },
+  {
+   "name": "watch",
+   "args": [
+    "prog.fs",
+    "-e",
+    "SCORE WATCH BUMP 7 SCORE ! BYE"
+   ],
+   "stdin": null,
+   "exit": 0,
+   "stdout": "",
+   "stderr": "WATCH: 122880 changed from 0 to 1\n  in BUMP prog.fs:9\nWATCH: 122880 changed from 1 to 7\n",
+   "files": {}
+  },
+  {
+   "name": "unwatch",
+   "args": [
+    "prog.fs",
+    "-e",
+    "SCORE WATCH BUMP SCORE UNWATCH BUMP SCORE @ . BYE"
+   ],
+   "stdin": null,
+   "exit": 0,
+   "stdout": "2 ",
+   "stderr": "WATCH: 122880 changed from 0 to 1\n  in BUMP prog.fs:9\n",
+   "files": {}
+  },
+  {
+   "name": "profile",
+   "args": [
+    "--profile",
+    "prog.fs",
+    "-e",
+    "3 4 5 REPORT BYE"
+   ],
+   "stdin": null,
+   "exit": 0,
+   "stdout": "5 ",
+   "stderr": "PROFILE: 19 OPERATIONS\n     CALLS        SELF       TOTAL  WORD\n         2           6           6  SQUARE prog.fs:1\n         1           6          19  REPORT prog.fs:4\n         1           5          11  SUMSQ prog.fs:2\n         1           2           2  AVERAGE prog.fs:3\n",
+   "files": {}
+  },
+  {
+   "name": "coverage",
+   "args": [
+    "--coverage",
+    "prog.fs",
+    "-e",
+    "3 4 5 REPORT -1 TELL CR COV% CR .COVERAGE BYE"
+   ],
+   "stdin": null,
+   "exit": 0,
+   "stdout": "5 minus\n53.3% coverage\n\n: SQUARE ( 2)  ( n -- n ) DUP * ;\n: SUMSQ ( 1)  ( a b -- n ) SQUARE SWAP SQUARE + ;\n: AVERAGE ( 1)  ( sum n -- avg ) / ;\n: REPORT ( 1)  ( a b n -- )\n ( 1)    >R SUMSQ R> AVERAGE . ;\n\n\\ Not used by the examples above.\nVARIABLE SCORE\n: BUMP ( 0)  ( -- ) 1 SCORE +! ;\n: SPIN ( 0)  ( -- ) BEGIN ( 0)  BUMP AGAIN ( 0)  ;\n: TELL ( 1)  ( n -- ) DUP 0< IF ( 1)  DROP .\" minus\" ELSE ( 0)  0= IF ( 0)  .\" zero\" THEN ( 0)  THEN ( 1)  ;\n",
+   "stderr": "",
+   "files": {}
+  },
+  {
+   "name": "cover-raw",
+   "args": [
+    "--coverage",
+    "prog.fs",
+    "-e",
+    "-1 TELL .COVER-RAW BYE"
+   ],
+   "stdin": null,
+   "exit": 0,
+   "stdout": "minusprog.fs:1:9: 0 \nprog.fs:2:8: 0 \nprog.fs:3:10: 0 \nprog.fs:4:9: 0 \nprog.fs:5:1: 0 \nprog.fs:9:7: 0 \nprog.fs:10:7: 0 \nprog.fs:10:20: 0 \nprog.fs:10:31: 0 \nprog.fs:11:7: 1 \nprog.fs:11:26: 1 \nprog.fs:11:46: 0 \nprog.fs:11:52: 0 \nprog.fs:11:66: 0 \nprog.fs:11:71: 1 \n",
+   "stderr": "",
+   "files": {}
+  },
+  {
+   "name": "lint-prog",
+   "args": [
+    "--lint",
+    "prog.fs"
+   ],
+   "stdin": null,
+   "exit": 2,
+   "stdout": "prog.fs:4: UNUSED: REPORT is not used in the files\nprog.fs:10: UNUSED: SPIN is not used in the files\nprog.fs:11: UNUSED: TELL is not used in the files\nLINT: 1 DEFINITIONS WITHOUT A FIXED STACK EFFECT WERE NOT CHECKED FOR IT\nLINT: 3 FINDINGS\n",
+   "stderr": "",
+   "files": {}
+  },
+  {
+   "name": "lint-findings",
+   "args": [
+    "--lint",
+    "lint.fs"
+   ],
+   "stdin": null,
+   "exit": 2,
+   "stdout": "WARNING: SAME NAME WORD EXISTS\nlint.fs:1: UNUSED: X is not used in the files\nlint.fs:2: STACK DEPTH: paths in Y meet with different stack depths\nlint.fs:3: UNREACHABLE: code in Z that is never reached\nlint.fs:4: REDEFINED: X was defined at lint.fs:1\nLINT: 4 FINDINGS\n",
+   "stderr": "",
+   "files": {}
+  },
+  {
+   "name": "format-check-prog",
+   "args": [
+    "--format-check",
+    "prog.fs"
+   ],
+   "stdin": null,
+   "exit": 0,
+   "stdout": "prog.fs: FORMATTED ALREADY\n",
+   "stderr": "",
+   "files": {}
+  },
+  {
+   "name": "format-check-needs",
+   "args": [
+    "--format-check",
+    "fmt.fs"
+   ],
+   "stdin": null,
+   "exit": 2,
+   "stdout": "fmt.fs: 3 LINES TO FORMAT\n",
+   "stderr": "",
+   "files": {}
+  },
+  {
+   "name": "format-indent-2",
+   "args": [
+    "--format-check",
+    "--format-indent",
+    "2",
+    "fmt.fs"
+   ],
+   "stdin": null,
+   "exit": 2,
+   "stdout": "fmt.fs: 3 LINES TO FORMAT\n",
+   "stderr": "",
+   "files": {}
+  },
+  {
+   "name": "format",
+   "args": [
+    "--format",
+    "fmt.fs"
+   ],
+   "stdin": null,
+   "exit": 0,
+   "stdout": "fmt.fs: 3 LINES FORMATTED\n",
+   "stderr": "",
+   "files": {
+    "fmt.fs": ": BAD\n   1 IF\n      2\n   THEN ;\n"
+   }
+  },
+  {
+   "name": "debug-log",
+   "args": [
+    "--debug-log",
+    "run.jsonl",
+    "--trace",
+    "--profile",
+    "prog.fs",
+    "-e",
+    "3 4 0 REPORT"
+   ],
+   "stdin": null,
+   "exit": 1,
+   "stdout": "DIVISION BY ZERO !\nBACKTRACE:\n  AVERAGE prog.fs:3\n  REPORT prog.fs:5\nSTACK: <0> \n",
+   "stderr": "",
+   "files": {
+    "run.jsonl": "{\"event\":\"start\",\"version\":\"0.11.0\"}\n{\"event\":\"enter\",\"word\":\"REPORT\",\"depth\":0,\"stack_depth\":3,\"stack\":[3,4,0]}\n{\"event\":\"enter\",\"word\":\"SUMSQ\",\"depth\":1,\"stack_depth\":2,\"stack\":[3,4]}\n{\"event\":\"enter\",\"word\":\"SQUARE\",\"depth\":2,\"stack_depth\":2,\"stack\":[3,4]}\n{\"event\":\"exit\",\"word\":\"SQUARE\",\"depth\":2,\"stack_depth\":2,\"stack\":[3,16]}\n{\"event\":\"enter\",\"word\":\"SQUARE\",\"depth\":2,\"stack_depth\":2,\"stack\":[16,3]}\n{\"event\":\"exit\",\"word\":\"SQUARE\",\"depth\":2,\"stack_depth\":2,\"stack\":[16,9]}\n{\"event\":\"exit\",\"word\":\"SUMSQ\",\"depth\":1,\"stack_depth\":1,\"stack\":[25]}\n{\"event\":\"enter\",\"word\":\"AVERAGE\",\"depth\":1,\"stack_depth\":2,\"stack\":[25,0]}\n{\"event\":\"error\",\"message\":\"DIVISION BY ZERO !\",\"code\":-10,\"backtrace\":[{\"word\":\"AVERAGE\",\"file\":\"prog.fs\",\"line\":3},{\"word\":\"REPORT\",\"file\":\"prog.fs\",\"line\":5}],\"more\":0,\"stack_depth\":0,\"stack\":[],\"float_stack_depth\":0,\"float_stack\":[]}\n{\"event\":\"profile\",\"operations\":16}\n{\"event\":\"profile_word\",\"word\":\"SQUARE\",\"file\":\"prog.fs\",\"line\":1,\"calls\":2,\"self\":6,\"total\":6}\n{\"event\":\"profile_word\",\"word\":\"SUMSQ\",\"file\":\"prog.fs\",\"line\":2,\"calls\":1,\"self\":5,\"total\":11}\n{\"event\":\"profile_word\",\"word\":\"REPORT\",\"file\":\"prog.fs\",\"line\":4,\"calls\":1,\"self\":4,\"total\":16}\n{\"event\":\"profile_word\",\"word\":\"AVERAGE\",\"file\":\"prog.fs\",\"line\":3,\"calls\":1,\"self\":1,\"total\":1}\n"
+   }
+  },
+  {
+   "name": "end-of-options",
+   "args": [
+    "--",
+    "prog.fs",
+    "-e",
+    "3 4 5 REPORT BYE"
+   ],
+   "stdin": null,
+   "exit": 0,
+   "stdout": "5 ",
+   "stderr": "",
+   "files": {}
+  }
+ ]
+}
