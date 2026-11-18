@@ -45,7 +45,7 @@ Sigmaの外から、PowerShellのWin32呼出しでウィンドウを探し、`Ge
 | `MOUSE-CURSOR` | `FALSE MOUSE-CURSOR` の後、マウスを画像の上とタイトルバーの上へ | 画像の上では `GetCursorInfo` がカーソルなし（flags 0、cursor 0）、タイトルバーの上では矢印。`TRUE MOUSE-CURSOR` で画像の上も矢印に戻る | 合格 |
 | Tkのフルスクリーン | `DISPLAY-TK` で `TRUE FULLSCREEN` | Tkのウィンドウが2560×1440を覆う。Tk内の `event generate . <Alt-Return>` で解除し、キーは届かない。フルスクリーンでないときは13が届く | 合格 |
 
-`SendInput` で送ったAltは、この環境では効かなかった（Alt+F4でもウィンドウは閉じず、F4が単独のキーとして `INKEY` に届いた）。そのため、実際のキー操作でのAlt+Enter・Alt+Returnによる解除は、物理キーボードで確かめる（#1019）。
+`SendInput` で送ったAltは、この環境では効かなかった（Alt+F4でもウィンドウは閉じず、F4が単独のキーとして `INKEY` に届いた）。そのため、実際のキー操作でのAlt+Enterによる解除は、利用者が物理キーボードで確かめた。`tests/scripts/check-fullscreen.fs` を、Sigma自身のウィンドウと、`-e "REQUIRE-GRAPHICS ALSO GRAPHICS DISPLAY-TK"` を前に付けたTkのウィンドウの両方で実行し、どちらもAlt+Enterで元のウィンドウに戻り、解除キーは `INKEY` に届かなかった（利用者の報告「all ok」、#1031）。
 
 ## 物理キーボード・物理マウスでの確認（#1029）
 
@@ -59,7 +59,6 @@ Sigmaの外から、PowerShellのWin32呼出しでウィンドウを探し、`Ge
 
 ## 確かめていないこと
 
-- 物理キーのAlt+Enterによるフルスクリーンの解除は、利用者が確認済み（OK）だが、Sigma自身のウィンドウとTkのウィンドウのどちらで確かめたかは未記録（#1031）。
 - ウィンドウの作成が実際にOS内で止まる場合（単体テストは作成前のスレッドを止めて確かめた）。
 - ネイティブが失敗して自動表示がTk・端末へ進む経路の実機での確認。
 - Windows 10 1703より前（DPI非対応のまま動く経路）。
