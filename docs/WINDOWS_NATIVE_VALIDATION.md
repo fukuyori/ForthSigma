@@ -31,9 +31,25 @@ Sigmaの外から、PowerShellのWin32呼出しでウィンドウを探し、`Ge
 | 自動表示 | 表示先を指定せずに`SHOW`、その後`DISPLAY-TK` | 自動表示はネイティブ（`GFX-AUTO-DISPLAY`が2）。Tkの表示も成功 | 合格 |
 | 探索中のTkへの書込み | 単体テスト（誰も読まないパイプへ1 MB） | 200 msで書込みが取り消される | 合格（単体テスト） |
 
+## フルスクリーンとMOUSE-CURSOR（#1016、#1019の一部）
+
+2026-11-18、基準コミット`e181656`。
+
+| 項目 | 操作 | 結果 | 判定 |
+|---|---|---|---|
+| フルスクリーンで開く | `SHOW` の前に `TRUE FULLSCREEN` | 枠なし（`WS_POPUP`）で主画面2560×1440を覆う | 合格 |
+| フォーカス（端末が前面） | Sigmaを新しいコンソールで起動し、コンソールのタイトルバーをクリックして前面にしてから `TRUE FULLSCREEN` | 前面はSigmaのウィンドウ（`GetForegroundWindow`）、キーフォーカスもこのウィンドウ（`GetGUIThreadInfo`）。続けて送った `A` は `INKEY` に97で届いた | 合格 |
+| フォーカス（ほかのアプリが前面） | Chromeが前面のまま `TRUE FULLSCREEN` | 前面はChromeのまま（Windowsが拒否） | 仕様どおり |
+| Alt+Enterでの解除 | `WM_SYSKEYDOWN`（Alt付き）をウィンドウへ送る | 640×400のウィンドウへ戻り、`FULLSCREEN?` は0、`INKEY` には届かない。Alt無しのEnterと繰り返しでは解除しない | 合格 |
+| `F`・`W`・`C`・`Q` | `tests/scripts/check-fullscreen.fs` に `WM_CHAR` を送る | 再びフルスクリーン、ウィンドウへ戻る、カーソル切替、終了 | 合格 |
+| `MOUSE-CURSOR` | `FALSE MOUSE-CURSOR` の後、マウスを画像の上とタイトルバーの上へ | 画像の上では `GetCursorInfo` がカーソルなし（flags 0、cursor 0）、タイトルバーの上では矢印。`TRUE MOUSE-CURSOR` で画像の上も矢印に戻る | 合格 |
+| Tkのフルスクリーン | `DISPLAY-TK` で `TRUE FULLSCREEN` | Tkのウィンドウが2560×1440を覆う。Tk内の `event generate . <Alt-Return>` で解除し、キーは届かない。フルスクリーンでないときは13が届く | 合格 |
+
+`SendInput` で送ったAltは、この環境では効かなかった（Alt+F4でもウィンドウは閉じず、F4が単独のキーとして `INKEY` に届いた）。そのため、実際のキー操作でのAlt+Enter・Alt+Returnによる解除は、物理キーボードで確かめる（#1019）。
+
 ## 確かめていないこと
 
-- 物理キーボード・物理マウスでの操作。上の入力はすべて`SendMessageW`か`SendInput`による。
+- 物理キーボード・物理マウスでの操作。上の入力はすべて`SendMessageW`か`SendInput`による。物理キーのAlt+Enterによるフルスクリーンの解除も含む。
 - ウィンドウの作成が実際にOS内で止まる場合（単体テストは作成前のスレッドを止めて確かめた）。
 - ネイティブが失敗して自動表示がTk・端末へ進む経路の実機での確認。
 - Windows 10 1703より前（DPI非対応のまま動く経路）。

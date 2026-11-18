@@ -250,3 +250,19 @@ Claude Code Sonnetの最終レビューは、上記制限を明示した受け�
 既定ONへの変更後、GNUと静的muslの`zig build test --summary all`はいずれも23/23ステップ成功。実装・有効オプションが従来の`-Dx11=true`と同一のため、以前成功したテスト結果はキャッシュから再利用された（新規に全単体テストを実行したという意味ではない）。既定ONで作ったGNU実行体は上記の物理表示確認実行体とSHA-256が一致した。新しい既定ビルドで、認証付き専用Xvfbの自動選択・切断・再接続テストは改めて実行し成功した（`default-on-auto.json`）。arm32/arm64 musl、Windows、macOS、graphics無効、files無効、`-Dx11=false`の7ビルドも成功した（`default-on-matrix.json`）。
 
 既定変更後のClaude Code再レビューで指摘された検討書・決定記録・途中の検証記録の古い既定OFF表現を、当時の判断として明示した。再レビューで必須修正なし（`default-on-final-review.txt`）。
+
+## フルスクリーンとMOUSE-CURSOR（#1018、#1019の一部）
+
+2026-11-18、WSLgのXWayland（ウィンドウマネージャーは `_NET_WM_STATE_FULLSCREEN` と `_NET_ACTIVE_WINDOW` に対応）、`zig build -Dtarget=x86_64-linux-gnu`。キーと要求は `experiments/linux_x11_probe.py` のSendEventで送った。
+
+| 項目 | 結果 |
+|---|---|
+| `SHOW` の前に `TRUE FULLSCREEN` | 2560×1440を覆い、`_NET_WM_STATE` は `_NET_WM_STATE_FULLSCREEN`。`FULLSCREEN?` は-1 |
+| Return単独 | フルスクリーンのまま、`INKEY` に13 |
+| Mod1+Return | 640×400へ戻り、`INKEY` には届かず、`FULLSCREEN?` は0 |
+| 途中での切替 | `TRUE FULLSCREEN` で覆い、`FALSE FULLSCREEN` で640×400 |
+| 素早い反転 | `TRUE` の8 ms後に `FALSE` で640×400のまま（0）、`FALSE` の直後に `TRUE` でフルスクリーン（-1） |
+| ウィンドウマネージャー側の解除 | 外部から `_NET_WM_STATE` のremoveを送ると640×400へ戻り、`FULLSCREEN?` は0。続く `TRUE FULLSCREEN` で再びフルスクリーン |
+| `MOUSE-CURSOR` | ポインターをウィンドウ内へ移し、XFixesの `GetCursorImage` で確認。表示時24×24（不透明260画素）、`FALSE MOUSE-CURSOR` で1×1（不透明0画素）、`TRUE` で24×24に戻る |
+
+物理キーボードでのAlt+Return、EWMHに対応しないウィンドウマネージャー、WSLg以外の環境は未確認（#1019）。
