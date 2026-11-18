@@ -266,3 +266,28 @@ Claude Code Sonnetの最終レビューは、上記制限を明示した受け�
 | `MOUSE-CURSOR` | ポインターをウィンドウ内へ移し、XFixesの `GetCursorImage` で確認。表示時24×24（不透明260画素）、`FALSE MOUSE-CURSOR` で1×1（不透明0画素）、`TRUE` で24×24に戻る |
 
 物理キーボードでのAlt+Return、EWMHに対応しないウィンドウマネージャー、WSLg以外の環境は未確認（#1019）。
+
+### 物理キーボードでの確認手順（#1019、Linuxの実機で行う）
+
+WindowsではSendInputのAltが効かなかったため、解除キーは物理キーボードで確かめる。Linuxでは次の手順で行い、結果をこの節の下に記録する。
+
+準備：リポジトリのルートで `zig build`（X11ウィンドウは既定で有効）。
+
+起動：
+
+- Sigma自身のウィンドウ：`zig-out/bin/sigma tests/scripts/check-fullscreen.fs`
+- Tkのウィンドウ：`zig-out/bin/sigma -e "REQUIRE-GRAPHICS ALSO GRAPHICS DISPLAY-TK" tests/scripts/check-fullscreen.fs`
+
+操作と期待する結果（どちらのウィンドウも同じ）：
+
+| 手順 | 操作 | 期待する結果 |
+|---|---|---|
+| ① | 起動する | ウィンドウが画面全体を覆う。端末に `fullscreen: 1` |
+| ② | Alt+Enter | 元の大きさのウィンドウに戻る。端末に `fullscreen: 0`。`key ...` の行は出ない |
+| ③ | `F` | もう一度フルスクリーン。端末に `key 102` と `fullscreen: 1` |
+| ④ | Enterだけ（Altなし） | フルスクリーンのまま。端末に `key 13` |
+| ⑤ | Alt+Enter | ②と同じ |
+| ⑥ | `C` を2回 | 1回目で画像の上のカーソルが消え（タイトルバーの上では消えない）、2回目で戻る。端末に `key 99` が2回 |
+| ⑦ | `Q` | 終わる。端末に `done` |
+
+フルスクリーンにしたときにキーが届かない場合は、画像を一度クリックしてからキーを押す。記録する項目：ディストリビューションと版、X11かXWaylandか、ウィンドウマネージャーまたはデスクトップ環境の名前と版、ウィンドウごとの②・⑤の結果、端末に出た行。
