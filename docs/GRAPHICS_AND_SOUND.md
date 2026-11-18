@@ -436,7 +436,7 @@ Outside a definition, each `S"` string has its own place, so a `PLAYS` of eight 
 | `REQUIRE-AUDIO` | ( -- ) | Load the audio words, the first time only. It is a parsing word (like `REQUIRE-GRAPHICS`) and cannot be used inside a definition. |
 | `PLAY` | ( c-addr u -- ) | Play the MML on voice A. Voices B and C, which have no notes, still start the next `PLAY` together with A. |
 | `PLAY2`, `PLAY3` | ( c-addr1 u1 c-addr2 u2 -- ), ( c-addr1 u1 c-addr2 u2 c-addr3 u3 -- ) | Play voices A and B, or A, B, and C, starting together. |
-| `PLAYS` | ( c-addr1 u1 ... c-addrn un n -- ) | Play the first n voices, starting together; n is 1 to 8. |
+| `PLAYS` | ( c-addr1 u1 ... c-addrn un n -- ) | Play the first n voices, starting together; n is 1 to 8. `0 PLAYS` stops MML and resets its chip voices while keeping SFX, MOD, samples, instruments, the selected chips and MML settings. It returns after the audio thread takes the stop. |
 | `PLAY?` | ( n -- flag ) | Whether voice n (1 to 8) still has notes to play, or any voice for 0, as MSX BASIC's `PLAY(n)`. A voice without notes counts until the audio thread takes its end of the `PLAY` (within a fiftieth of a second). |
 | `SOUND` | ( reg value -- ) | Write the value 0 to 255 to the PSG's register 0 to 13, as MSX BASIC's `SOUND`; the PSG sounds with every chip. |
 | `BEEP` | ( -- ) | Stop the music, set the PSG and the voices' settings as at start, and beep (about 1316 Hz for 40 ms). It returns when the audio thread has stopped the music. |

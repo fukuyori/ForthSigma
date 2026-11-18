@@ -8,6 +8,8 @@
 - `DISPLAY-AUTO` returns `SHOW` to choosing by itself: Sigma's own window where the host has one, else the Tk window on a desktop, else the terminal. The first that works is kept while the program runs, and a saved dictionary keeps only that the choice is automatic. A window that cannot start falls through to the next; `DISPLAY-WINDOW` and `DISPLAY-TK` do not fall back.
 - On macOS, the input method (IME) works in a `GUI-FIELD` of Sigma's own window as in the Tk window: the text being converted shows underlined at the cursor, the candidate window follows the cursor, and only the committed text is taken.
 
+- `0 PLAYS` stops MML and resets its chip voices without interrupting `SFX` or `PLAY-MOD`. Samples, instruments, selected chips and MML settings are kept, and the stop has taken effect when the word returns.
+
 ### Changed
 
 - Four built-in words are added for the above (`GFX-AUTO-DISPLAY`, `GFX-AUTO-DISPLAY!`, `GFX-IME-PREEDIT`, `GFX-IME-CARET`). Added built-in words change the dictionary ABI; recreate dictionary images.

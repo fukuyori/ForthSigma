@@ -436,7 +436,7 @@ TUNE
 | `REQUIRE-AUDIO` | ( -- ) | 音の語を読み込む（最初の1回だけ）。`REQUIRE-GRAPHICS` と同じく解析器が扱う語で、定義の中では使えない。 |
 | `PLAY` | ( c-addr u -- ) | MML を声部Aで鳴らす。音符のない声部BとCも、次の `PLAY` をAと同時に始める。 |
 | `PLAY2`、`PLAY3` | ( c-addr1 u1 c-addr2 u2 -- )、( c-addr1 u1 c-addr2 u2 c-addr3 u3 -- ) | 声部AとB、またはA、B、Cを同時に鳴らし始める。 |
-| `PLAYS` | ( c-addr1 u1 ... c-addrn un n -- ) | 最初の n 声を同時に鳴らし始める。n は 1〜8。 |
+| `PLAYS` | ( c-addr1 u1 ... c-addrn un n -- ) | 最初の n 声を同時に鳴らし始める。n は 1〜8。`0 PLAYS` はMMLの演奏と音源の声を停止し、SFX・MOD・標本・音色・選択した音源・MMLの設定を保持する。音のスレッドが停止を受け付けてから戻る。 |
 | `PLAY?` | ( n -- flag ) | 声部 n（1〜8。0 ならいずれか）に、まだ鳴らす音符があるか。MSX BASIC の `PLAY(n)`。音符のない声部も、`PLAY` の区切りを音のスレッドが受け取るまで（1/50秒以内）は真になる。 |
 | `SOUND` | ( reg value -- ) | PSG のレジスタ 0〜13 に値 0〜255 を書く（MSX BASIC の `SOUND`）。PSG は、どの機種を選んでいても鳴る。 |
 | `BEEP` | ( -- ) | 音楽を止め、PSG と声部の設定を初めの状態にして、ビープ音（約1316 Hz、40 ms）を鳴らす。音のスレッドが音楽を止めてから戻る。 |

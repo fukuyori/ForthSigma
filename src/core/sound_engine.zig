@@ -184,7 +184,7 @@ pub const Command = union(enum) {
     /// BEEP (with `beep`) or a stop: drops the notes put before it (up to these tails
     /// and this PLAY count), sounds 1316 Hz for 40 ms when `beep`, and sets the PSG as
     /// the MSX starts it. With `chip`, PLAY plays on that chip from now on.
-    reset: struct { tails: [max_voices]u32, plays: u32, beep: bool, chips: ?Chips = null },
+    reset: struct { tails: [max_voices]u32, plays: u32, beep: bool, chips: ?Chips = null, preserve_effects: bool = false },
     /// INSTRUMENT and the words after it: the instrument's settings, which the notes
     /// that start from now on use.
     instrument: struct { index: u8, value: Instrument },
@@ -341,6 +341,13 @@ pub const Engine = struct {
         return .{ .reset = .{ .tails = tails, .plays = self.plays_put.raw, .beep = beep } };
     }
 
+    /// Stop MML and reset its chip voices, preserving independent SFX and MOD playback.
+    pub fn stopPlayCommand(self: *const Engine) Command {
+        var command = self.resetCommand(false);
+        command.reset.preserve_effects = true;
+        return command;
+    }
+
     /// The command for MSX-SOUND and the others: a stop that also chooses the chip.
     pub fn chipCommand(self: *const Engine, chip: Chip) Command {
         return self.chipsCommand(Chips.one(chip));
@@ -472,9 +479,11 @@ pub const Engine = struct {
                     self.scc = scc_module.Scc.init(self.sample_rate);
                     self.amiga = amiga_module.Amiga.init(self.sample_rate);
                     self.resetVoices();
-                    self.sfx_players = @splat(.{});
-                    self.mod.stop();
-                    self.mod_playing.store(false, .release);
+                    if (!b.preserve_effects) {
+                        self.sfx_players = @splat(.{});
+                        self.mod.stop();
+                        self.mod_playing.store(false, .release);
+                    }
                     self.setRegisters(msxInitialRegisters());
                     if (b.beep) {
                         self.psg.write(0, @truncate(beep_period));

@@ -13,6 +13,7 @@
 \   SND-PLAY ( c-addr1 u1 c-addr2 u2 c-addr3 u3 -- )  the three voices of one PLAY
 \   SND-SOUND ( reg value -- )  SND-BEEP ( -- )  SND-PLAYING ( n -- flag )
 \   SND-DEVICE ( -- flag )  SND-PLAYS ( c-addr1 u1 ... c-addrn un n -- )
+\     n=0 stops MML and resets its chip voices, keeping SFX/MOD and MML settings.
 \   SND-CHIP ( n -- )  SND-INSTRUMENT ( n -- )  SND-WAVE ( n -- )
 \   SND-DUTY ( percent -- )  SND-ADSR ( a d s r -- )  SND-RING ( flag -- )
 \   SND-SYNC ( flag -- )  SND-FILTER ( mode cutoff resonance -- )

@@ -90,7 +90,13 @@ pub fn execute(self: *State, builtin: Builtin) RuntimeError!void {
         },
         .snd_plays => {
             const count = try self.pop();
-            if (count < 1 or count > sound_engine.max_voices) return error.InvalidNumber;
+            if (count < 0 or count > sound_engine.max_voices) return error.InvalidNumber;
+            if (count == 0) {
+                const engine = try getEngine(self);
+                try putCommand(self, engine, engine.stopPlayCommand());
+                waitTaken(self, engine);
+                return;
+            }
             var texts: [sound_engine.max_voices][]const u8 = undefined;
             var v: usize = @intCast(count);
             while (v > 0) {

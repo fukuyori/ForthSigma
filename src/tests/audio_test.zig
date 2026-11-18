@@ -323,7 +323,7 @@ test "NES-SOUND, ST-SOUND, and MSX-SOUND choose the chip, and PLAYS and PLAY? ta
     try std.testing.expectEqual(@as(u32, 1), queued(&engine, 4));
     try std.testing.expectError(error.InvalidNumber, machine.interpretLine("9 PLAYS"));
     machine.data_depth = 0;
-    try std.testing.expectError(error.InvalidNumber, machine.interpretLine("0 PLAYS"));
+    try std.testing.expectError(error.InvalidNumber, machine.interpretLine("-1 PLAYS"));
     machine.data_depth = 0;
 
     try machine.interpretLine("ST-SOUND");
@@ -524,6 +524,49 @@ test "SAMPLE, LOOP-SAMPLE, SAMPLE-INSTRUMENT, SFX, and FREE-SAMPLES" {
     try std.testing.expect(!engine.sfx_players[0].active);
     render(&engine, 1);
     try std.testing.expectEqual(@as(u32, 0), engine.samples[1].length);
+}
+
+test "0 PLAYS stops queued and sounding MML while SFX and MOD continue" {
+    try skipWithout(&.{ .audio, .files });
+    var engine = newEngine();
+    var pool: [8192]i16 = undefined;
+    engine.pool = &pool;
+    var output = Output{ .audio = &engine };
+    support.setFakeFile(&output, 0, &modFile(1, &.{.{ 0, modCell(1, 428, 0, 0) }}));
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
+    try machine.interpretLine("REQUIRE-AUDIO ALSO AUDIO NES-SOUND S\" a.txt\" LOAD-MOD TRUE PLAY-MOD");
+    try machine.interpretLine("CREATE STOP-SAMPLE 2048 ALLOT STOP-SAMPLE 2048 64 FILL STOP-SAMPLE 2048 8000 1 SAMPLE");
+    try machine.interpretLine("2 INSTRUMENT PULSE 25 DUTY S\" @2 T42 O3 V12 L8 C1 D1\" PLAY 1 SFX");
+    render(&engine, 16);
+    try std.testing.expect(engine.isPlaying(0));
+    try std.testing.expect(engine.sfx_players[0].active);
+    const position = engine.sfx_players[0].position;
+    const mod_tick = @as(u16, engine.mod.row) * 6 + engine.mod.tick;
+    const voice = machine.audio_voices[0];
+    const instrument = machine.audio_instruments[2];
+    try machine.interpretLine("0 PLAYS 0 PLAY? MOD?");
+    try expectStack(machine, &.{ 0, -1 });
+    machine.data_depth = 0;
+    try std.testing.expectEqualDeep(voice, machine.audio_voices[0]);
+    try std.testing.expectEqualDeep(instrument, machine.audio_instruments[2]);
+    try std.testing.expectEqual(@as(u8, 2), machine.audio_instrument);
+    try std.testing.expectEqual(sound_engine.Chip.nes, engine.chips.only().?);
+    for (0..sound_engine.max_voices) |v| try std.testing.expectEqual(@as(u32, 0), queued(&engine, v));
+    render(&engine, 2400);
+    try std.testing.expect(!engine.isPlaying(0));
+    try std.testing.expect(engine.sfx_players[0].active);
+    try std.testing.expect(engine.sfx_players[0].position > position);
+    try std.testing.expect(engine.mod.playing);
+    try std.testing.expect(@as(u16, engine.mod.row) * 6 + engine.mod.tick > mod_tick);
+    try std.testing.expectEqual(@as(u32, 2048), engine.samples[1].length);
+    try machine.interpretLine("S\" @2 O5 C64\" PLAY");
+    render(&engine, 1);
+    try std.testing.expect(engine.isPlaying(0));
+    try std.testing.expect(engine.sfx_players[0].active);
+    try machine.interpretLine("BEEP");
+    try std.testing.expect(!engine.sfx_players[0].active);
+    try std.testing.expect(!engine.mod.playing);
 }
 
 test "AMIGA-SOUND plays four voices, and AMIGA-FILTER turns the LED filter on" {
@@ -804,7 +847,7 @@ const ModRun = struct {
         @memcpy(std.mem.sliceAsBytes(self.pool[0..pattern_slots]), file[mod_module.header_size..][0..mod_module.pattern_size]);
         song.patterns_at = 0;
         song.samples[0].start = pattern_slots;
-        for (file[mod_module.header_size + mod_module.pattern_size..], 0..) |byte, i| {
+        for (file[mod_module.header_size + mod_module.pattern_size ..], 0..) |byte, i| {
             self.pool[pattern_slots + i] = @as(i16, @as(i8, @bitCast(byte))) * 256;
         }
         self.player = mod_module.Mod.init(rate);

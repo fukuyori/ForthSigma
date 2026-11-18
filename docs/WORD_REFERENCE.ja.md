@@ -197,7 +197,7 @@ Turn the Amiga's LED filter (a low-pass at about 3.3 kHz) on or off; off at firs
 REQUIRE-AUDIO ALSO AUDIO AMIGA-SOUND TRUE AMIGA-FILTER
 ```
 
-[使用例の文脈](../src/tests/audio_test.zig#L535)
+[使用例の文脈](../src/tests/audio_test.zig#L578)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -235,7 +235,7 @@ Play PLAY on the Amiga's Paula (PAL, 4 voices of samples, left right right left)
 REQUIRE-AUDIO ALSO AUDIO AMIGA-SOUND TRUE AMIGA-FILTER
 ```
 
-[使用例の文脈](../src/tests/audio_test.zig#L535)
+[使用例の文脈](../src/tests/audio_test.zig#L578)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -308,10 +308,10 @@ Stop the music, set the PSG and the PLAY settings as at start, and beep (FORTH/S
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
 ```forth
-NES-SOUND BEEP
+BEEP
 ```
 
-[使用例の文脈](../src/tests/audio_test.zig#L358)
+[使用例の文脈](../src/tests/audio_test.zig#L567)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -383,7 +383,7 @@ Play PLAY on the C64's SID (PAL, 3 voices); the music stops (FORTH/Sigma audio).
 C64-SOUND
 ```
 
-[使用例の文脈](../src/tests/audio_test.zig#L571)
+[使用例の文脈](../src/tests/audio_test.zig#L614)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -421,7 +421,7 @@ Give the voices several chips, e.g. MSX SCC OR CHIPS; they are numbered in the o
 ST NES OR CHIPS
 ```
 
-[使用例の文脈](../src/tests/audio_test.zig#L567)
+[使用例の文脈](../src/tests/audio_test.zig#L610)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -611,7 +611,7 @@ Load a 4-channel, 31-sample ProTracker MOD into the shared sample pool. Reloadin
 REQUIRE-AUDIO ALSO AUDIO S" a.txt" LOAD-MOD
 ```
 
-[使用例の文脈](../src/tests/audio_test.zig#L739)
+[使用例の文脈](../src/tests/audio_test.zig#L782)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。 番地・長さ・容量は有効な論理メモリー範囲を指定します。所有領域と借用領域の寿命を区別してください。
 
@@ -725,7 +725,7 @@ Whether the module plays (FORTH/Sigma audio).
 MOD?
 ```
 
-[使用例の文脈](../src/tests/audio_test.zig#L706)
+[使用例の文脈](../src/tests/audio_test.zig#L749)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -983,7 +983,7 @@ Play the module from its start, beside PLAY and SFX; again after its end when fl
 TRUE PLAY-MOD
 ```
 
-[使用例の文脈](../src/tests/audio_test.zig#L711)
+[使用例の文脈](../src/tests/audio_test.zig#L754)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -1115,11 +1115,11 @@ Whether voice n (1 to 8), or any voice for 0, still has notes to play, as MSX BA
 
 ` ( c-addr1 u1 ... c-addrn un n -- ) `
 
-最初のn声部（1〜8）でMMLを同時開始します。
+最初のn声部（1〜8）でMMLを同時開始します。n=0ではMMLと音源の声を停止し、SFX・MOD・標本・音色・選択音源・MML設定を保持します。
 
 <details><summary>英語の説明（HELP・実装に基づく）</summary>
 
-Play MML on the first n voices, starting together; n is 1 to 8 (FORTH/Sigma audio).
+Play MML on the first n voices, starting together; n is 1 to 8. With n=0, stop MML and reset its chip voices, keeping SFX, MOD, samples, instruments and MML settings (FORTH/Sigma audio).
 
 </details>
 
@@ -1132,10 +1132,10 @@ Play MML on the first n voices, starting together; n is 1 to 8 (FORTH/Sigma audi
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
 ```forth
-S" C" S" E" S" G" S" C" 4 PLAYS 4 PLAY?
+0 PLAYS 0 PLAY? MOD?
 ```
 
-[使用例の文脈](../src/tests/audio_test.zig#L319)
+[使用例の文脈](../src/tests/audio_test.zig#L548)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。 番地・長さ・容量は有効な論理メモリー範囲を指定します。所有領域と借用領域の寿命を区別してください。
 
@@ -1511,7 +1511,7 @@ Host primitive for ADSR (FORTH/Sigma).
 : ADSR ( attack decay sustain release -- )   SND-ADSR ;
 ```
 
-[使用例の文脈](../src/audio/audio.fs#L81)
+[使用例の文脈](../src/audio/audio.fs#L82)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -1543,7 +1543,7 @@ Host primitive for AMIGA-FILTER (FORTH/Sigma).
 : AMIGA-FILTER ( flag -- )   SND-AMIGA-FILTER ;             \ the LED filter
 ```
 
-[使用例の文脈](../src/audio/audio.fs#L100)
+[使用例の文脈](../src/audio/audio.fs#L101)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -1575,7 +1575,7 @@ Host primitive for BEEP (FORTH/Sigma).
 : BEEP ( -- )   SND-BEEP ;
 ```
 
-[使用例の文脈](../src/audio/audio.fs#L38)
+[使用例の文脈](../src/audio/audio.fs#L39)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -1607,7 +1607,7 @@ Host primitive for MSX-SOUND (0), ST-SOUND (1), NES-SOUND (2), C64-SOUND (3), SC
 : SCC-SOUND ( -- )   4 SND-CHIP ;     \ Konami's SCC, 5 voices
 ```
 
-[使用例の文脈](../src/audio/audio.fs#L50)
+[使用例の文脈](../src/audio/audio.fs#L51)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -1639,7 +1639,7 @@ Host primitive for CHIPS (FORTH/Sigma).
 : CHIPS ( mask -- )   SND-CHIPS ;
 ```
 
-[使用例の文脈](../src/audio/audio.fs#L61)
+[使用例の文脈](../src/audio/audio.fs#L62)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -1671,7 +1671,7 @@ Host primitive for AUDIO? (FORTH/Sigma).
 : AUDIO? ( -- flag )   SND-DEVICE ;
 ```
 
-[使用例の文脈](../src/audio/audio.fs#L114)
+[使用例の文脈](../src/audio/audio.fs#L115)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -1703,7 +1703,7 @@ Host primitive for DUTY (FORTH/Sigma).
 : DUTY ( percent -- )   SND-DUTY ;
 ```
 
-[使用例の文脈](../src/audio/audio.fs#L80)
+[使用例の文脈](../src/audio/audio.fs#L81)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -1735,7 +1735,7 @@ Host primitive for FILTER (FORTH/Sigma).
 : FILTER ( mode cutoff resonance -- )   SND-FILTER ;
 ```
 
-[使用例の文脈](../src/audio/audio.fs#L84)
+[使用例の文脈](../src/audio/audio.fs#L85)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -1767,7 +1767,7 @@ Host primitive for FREE-SAMPLES (FORTH/Sigma).
 : FREE-SAMPLES ( -- )   SND-FREE-SAMPLES ;                  \ stops the music too
 ```
 
-[使用例の文脈](../src/audio/audio.fs#L99)
+[使用例の文脈](../src/audio/audio.fs#L100)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -1799,7 +1799,7 @@ Host primitive for INSTRUMENT (FORTH/Sigma).
 : INSTRUMENT ( n -- )   SND-INSTRUMENT ;
 ```
 
-[使用例の文脈](../src/audio/audio.fs#L74)
+[使用例の文脈](../src/audio/audio.fs#L75)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -1831,7 +1831,7 @@ Host primitive for LOAD-MOD: ior 0, the file's, -277, or -257 (FORTH/Sigma).
 : LOAD-MOD ( c-addr u -- )   SND-LOAD-MOD THROW ;
 ```
 
-[使用例の文脈](../src/audio/audio.fs#L107)
+[使用例の文脈](../src/audio/audio.fs#L108)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。 戻り値のiorを確認してください。0が成功です。THROWへ渡す方法もあります。 番地・長さ・容量は有効な論理メモリー範囲を指定します。所有領域と借用領域の寿命を区別してください。
 
@@ -1895,7 +1895,7 @@ Host primitive for LOOP-SAMPLE (FORTH/Sigma).
 : LOOP-SAMPLE ( start end n -- )   SND-LOOP-SAMPLE ;        \ 0 0 for no loop
 ```
 
-[使用例の文脈](../src/audio/audio.fs#L96)
+[使用例の文脈](../src/audio/audio.fs#L97)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -1927,7 +1927,7 @@ Host primitive for MOD? (FORTH/Sigma).
 : MOD? ( -- flag )   SND-MOD-PLAYING ;
 ```
 
-[使用例の文脈](../src/audio/audio.fs#L110)
+[使用例の文脈](../src/audio/audio.fs#L111)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -1959,7 +1959,7 @@ Put the MML of the three voices of one PLAY; an empty string for a voice that ha
 : PLAY ( c-addr u -- )   0 0 0 0 SND-PLAY ;
 ```
 
-[使用例の文脈](../src/audio/audio.fs#L33)
+[使用例の文脈](../src/audio/audio.fs#L34)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。 番地・長さ・容量は有効な論理メモリー範囲を指定します。所有領域と借用領域の寿命を区別してください。
 
@@ -1991,7 +1991,7 @@ Host primitive for PLAY-MOD (FORTH/Sigma).
 : PLAY-MOD ( flag -- )   SND-PLAY-MOD ;     \ again from the start after the end when true
 ```
 
-[使用例の文脈](../src/audio/audio.fs#L108)
+[使用例の文脈](../src/audio/audio.fs#L109)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -2023,7 +2023,7 @@ Host primitive for PLAY? (FORTH/Sigma).
 : PLAY? ( n -- flag )   SND-PLAYING ;
 ```
 
-[使用例の文脈](../src/audio/audio.fs#L36)
+[使用例の文脈](../src/audio/audio.fs#L37)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -2055,7 +2055,7 @@ Host primitive for PLAYS (FORTH/Sigma).
 : PLAYS ( c-addr1 u1 ... c-addrn un n -- )   SND-PLAYS ;
 ```
 
-[使用例の文脈](../src/audio/audio.fs#L52)
+[使用例の文脈](../src/audio/audio.fs#L53)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。 番地・長さ・容量は有効な論理メモリー範囲を指定します。所有領域と借用領域の寿命を区別してください。
 
@@ -2087,7 +2087,7 @@ Host primitive for RING (FORTH/Sigma).
 : RING ( flag -- )   SND-RING ;
 ```
 
-[使用例の文脈](../src/audio/audio.fs#L82)
+[使用例の文脈](../src/audio/audio.fs#L83)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -2119,7 +2119,7 @@ Host primitive for SAMPLE (FORTH/Sigma).
 : SAMPLE ( c-addr u rate n -- )   SND-SAMPLE ;              \ signed 8-bit bytes
 ```
 
-[使用例の文脈](../src/audio/audio.fs#L95)
+[使用例の文脈](../src/audio/audio.fs#L96)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。 番地・長さ・容量は有効な論理メモリー範囲を指定します。所有領域と借用領域の寿命を区別してください。
 
@@ -2151,7 +2151,7 @@ Host primitive for SAMPLE-INSTRUMENT (FORTH/Sigma).
 : SAMPLE-INSTRUMENT ( n -- )   SND-SAMPLE-INSTRUMENT ;      \ -1 for none
 ```
 
-[使用例の文脈](../src/audio/audio.fs#L97)
+[使用例の文脈](../src/audio/audio.fs#L98)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -2183,7 +2183,7 @@ Host primitive for SFX (FORTH/Sigma).
 : SFX ( n -- )   SND-SFX ;
 ```
 
-[使用例の文脈](../src/audio/audio.fs#L98)
+[使用例の文脈](../src/audio/audio.fs#L99)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -2215,7 +2215,7 @@ Host primitive for SOUND (FORTH/Sigma).
 : SOUND ( reg value -- )   SND-SOUND ;
 ```
 
-[使用例の文脈](../src/audio/audio.fs#L37)
+[使用例の文脈](../src/audio/audio.fs#L38)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -2247,7 +2247,7 @@ Host primitive for STOP-MOD (FORTH/Sigma).
 : STOP-MOD ( -- )   SND-STOP-MOD ;
 ```
 
-[使用例の文脈](../src/audio/audio.fs#L109)
+[使用例の文脈](../src/audio/audio.fs#L110)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -2279,7 +2279,7 @@ Host primitive for STYLE (FORTH/Sigma).
 : STYLE ( chip -- )   SND-STYLE ;
 ```
 
-[使用例の文脈](../src/audio/audio.fs#L65)
+[使用例の文脈](../src/audio/audio.fs#L66)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -2311,7 +2311,7 @@ Host primitive for SYNC (FORTH/Sigma).
 : SYNC ( flag -- )   SND-SYNC ;
 ```
 
-[使用例の文脈](../src/audio/audio.fs#L83)
+[使用例の文脈](../src/audio/audio.fs#L84)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -2343,7 +2343,7 @@ Host primitive for SQUARE (0), PULSE (1), TRIANGLE (2), SAW (3), and NOISE (4) (
 : SAW ( -- )   3 SND-WAVE ;
 ```
 
-[使用例の文脈](../src/audio/audio.fs#L78)
+[使用例の文脈](../src/audio/audio.fs#L79)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -2375,7 +2375,7 @@ Host primitive for SCC-WAVE (FORTH/Sigma).
 : SCC-WAVE ( c-addr n -- )   SND-WAVETABLE ;
 ```
 
-[使用例の文脈](../src/audio/audio.fs#L86)
+[使用例の文脈](../src/audio/audio.fs#L87)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。 番地・長さ・容量は有効な論理メモリー範囲を指定します。所有領域と借用領域の寿命を区別してください。
 
@@ -2557,7 +2557,7 @@ Stop the module (FORTH/Sigma audio).
 STOP-MOD
 ```
 
-[使用例の文脈](../src/tests/audio_test.zig#L714)
+[使用例の文脈](../src/tests/audio_test.zig#L757)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -2595,7 +2595,7 @@ Choose one chip mask (MSX, ST, NES, C64, SCC or AMIGA) for an instrument on any 
 0 STYLE
 ```
 
-[使用例の文脈](../src/tests/audio_test.zig#L591)
+[使用例の文脈](../src/tests/audio_test.zig#L634)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -18906,7 +18906,7 @@ The false flag.
 FALSE PLAY-MOD
 ```
 
-[使用例の文脈](../src/tests/audio_test.zig#L741)
+[使用例の文脈](../src/tests/audio_test.zig#L784)
 
 注意：スタック効果の入力順を守ってください。使用例の名前・値は例の定義や初期状態に依存します。
 
@@ -25378,7 +25378,7 @@ Bitwise or.
 ST NES OR CHIPS
 ```
 
-[使用例の文脈](../src/tests/audio_test.zig#L567)
+[使用例の文脈](../src/tests/audio_test.zig#L610)
 
 注意：スタック効果の入力順を守ってください。使用例の名前・値は例の定義や初期状態に依存します。
 

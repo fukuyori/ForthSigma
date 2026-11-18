@@ -179,7 +179,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 REQUIRE-AUDIO ALSO AUDIO AMIGA-SOUND TRUE AMIGA-FILTER
 ```
 
-[Example context](../src/tests/audio_test.zig#L535)
+[Example context](../src/tests/audio_test.zig#L578)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -211,7 +211,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 REQUIRE-AUDIO ALSO AUDIO AMIGA-SOUND TRUE AMIGA-FILTER
 ```
 
-[Example context](../src/tests/audio_test.zig#L535)
+[Example context](../src/tests/audio_test.zig#L578)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -272,10 +272,10 @@ Related: [Graphics and sound](USER_MANUAL.md#graphics-and-sound), [The music mac
 Usage example (source excerpt; consult the link for setup and expectations)
 
 ```forth
-NES-SOUND BEEP
+BEEP
 ```
 
-[Example context](../src/tests/audio_test.zig#L358)
+[Example context](../src/tests/audio_test.zig#L567)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -335,7 +335,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 C64-SOUND
 ```
 
-[Example context](../src/tests/audio_test.zig#L571)
+[Example context](../src/tests/audio_test.zig#L614)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -367,7 +367,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 ST NES OR CHIPS
 ```
 
-[Example context](../src/tests/audio_test.zig#L567)
+[Example context](../src/tests/audio_test.zig#L610)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -527,7 +527,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 REQUIRE-AUDIO ALSO AUDIO S" a.txt" LOAD-MOD
 ```
 
-[Example context](../src/tests/audio_test.zig#L739)
+[Example context](../src/tests/audio_test.zig#L782)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment. Use valid logical-memory addresses, lengths and capacities; distinguish owned storage from borrowed lifetimes.
 
@@ -623,7 +623,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 MOD?
 ```
 
-[Example context](../src/tests/audio_test.zig#L706)
+[Example context](../src/tests/audio_test.zig#L749)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -839,7 +839,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 TRUE PLAY-MOD
 ```
 
-[Example context](../src/tests/audio_test.zig#L711)
+[Example context](../src/tests/audio_test.zig#L754)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -953,7 +953,7 @@ Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/
 
 ` ( c-addr1 u1 ... c-addrn un n -- ) `
 
-Play MML on the first n voices, starting together; n is 1 to 8 (FORTH/Sigma audio).
+Play MML on the first n voices, starting together; n is 1 to 8. With n=0, stop MML and reset its chip voices, keeping SFX, MOD, samples, instruments and MML settings (FORTH/Sigma audio).
 
 Kind: library.
 
@@ -964,10 +964,10 @@ Related: [The music macro language (MML)](GRAPHICS_AND_SOUND.md#the-music-macro-
 Usage example (source excerpt; consult the link for setup and expectations)
 
 ```forth
-S" C" S" E" S" G" S" C" 4 PLAYS 4 PLAY?
+0 PLAYS 0 PLAY? MOD?
 ```
 
-[Example context](../src/tests/audio_test.zig#L319)
+[Example context](../src/tests/audio_test.zig#L548)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment. Use valid logical-memory addresses, lengths and capacities; distinguish owned storage from borrowed lifetimes.
 
@@ -1283,7 +1283,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 : ADSR ( attack decay sustain release -- )   SND-ADSR ;
 ```
 
-[Example context](../src/audio/audio.fs#L81)
+[Example context](../src/audio/audio.fs#L82)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -1309,7 +1309,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 : AMIGA-FILTER ( flag -- )   SND-AMIGA-FILTER ;             \ the LED filter
 ```
 
-[Example context](../src/audio/audio.fs#L100)
+[Example context](../src/audio/audio.fs#L101)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -1335,7 +1335,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 : BEEP ( -- )   SND-BEEP ;
 ```
 
-[Example context](../src/audio/audio.fs#L38)
+[Example context](../src/audio/audio.fs#L39)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -1361,7 +1361,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 : SCC-SOUND ( -- )   4 SND-CHIP ;     \ Konami's SCC, 5 voices
 ```
 
-[Example context](../src/audio/audio.fs#L50)
+[Example context](../src/audio/audio.fs#L51)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -1387,7 +1387,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 : CHIPS ( mask -- )   SND-CHIPS ;
 ```
 
-[Example context](../src/audio/audio.fs#L61)
+[Example context](../src/audio/audio.fs#L62)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -1413,7 +1413,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 : AUDIO? ( -- flag )   SND-DEVICE ;
 ```
 
-[Example context](../src/audio/audio.fs#L114)
+[Example context](../src/audio/audio.fs#L115)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -1439,7 +1439,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 : DUTY ( percent -- )   SND-DUTY ;
 ```
 
-[Example context](../src/audio/audio.fs#L80)
+[Example context](../src/audio/audio.fs#L81)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -1465,7 +1465,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 : FILTER ( mode cutoff resonance -- )   SND-FILTER ;
 ```
 
-[Example context](../src/audio/audio.fs#L84)
+[Example context](../src/audio/audio.fs#L85)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -1491,7 +1491,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 : FREE-SAMPLES ( -- )   SND-FREE-SAMPLES ;                  \ stops the music too
 ```
 
-[Example context](../src/audio/audio.fs#L99)
+[Example context](../src/audio/audio.fs#L100)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -1517,7 +1517,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 : INSTRUMENT ( n -- )   SND-INSTRUMENT ;
 ```
 
-[Example context](../src/audio/audio.fs#L74)
+[Example context](../src/audio/audio.fs#L75)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -1543,7 +1543,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 : LOAD-MOD ( c-addr u -- )   SND-LOAD-MOD THROW ;
 ```
 
-[Example context](../src/audio/audio.fs#L107)
+[Example context](../src/audio/audio.fs#L108)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment. Check the returned ior; zero is success. Passing it to THROW is one option. Use valid logical-memory addresses, lengths and capacities; distinguish owned storage from borrowed lifetimes.
 
@@ -1595,7 +1595,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 : LOOP-SAMPLE ( start end n -- )   SND-LOOP-SAMPLE ;        \ 0 0 for no loop
 ```
 
-[Example context](../src/audio/audio.fs#L96)
+[Example context](../src/audio/audio.fs#L97)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -1621,7 +1621,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 : MOD? ( -- flag )   SND-MOD-PLAYING ;
 ```
 
-[Example context](../src/audio/audio.fs#L110)
+[Example context](../src/audio/audio.fs#L111)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -1647,7 +1647,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 : PLAY ( c-addr u -- )   0 0 0 0 SND-PLAY ;
 ```
 
-[Example context](../src/audio/audio.fs#L33)
+[Example context](../src/audio/audio.fs#L34)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment. Use valid logical-memory addresses, lengths and capacities; distinguish owned storage from borrowed lifetimes.
 
@@ -1673,7 +1673,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 : PLAY-MOD ( flag -- )   SND-PLAY-MOD ;     \ again from the start after the end when true
 ```
 
-[Example context](../src/audio/audio.fs#L108)
+[Example context](../src/audio/audio.fs#L109)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -1699,7 +1699,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 : PLAY? ( n -- flag )   SND-PLAYING ;
 ```
 
-[Example context](../src/audio/audio.fs#L36)
+[Example context](../src/audio/audio.fs#L37)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -1725,7 +1725,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 : PLAYS ( c-addr1 u1 ... c-addrn un n -- )   SND-PLAYS ;
 ```
 
-[Example context](../src/audio/audio.fs#L52)
+[Example context](../src/audio/audio.fs#L53)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment. Use valid logical-memory addresses, lengths and capacities; distinguish owned storage from borrowed lifetimes.
 
@@ -1751,7 +1751,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 : RING ( flag -- )   SND-RING ;
 ```
 
-[Example context](../src/audio/audio.fs#L82)
+[Example context](../src/audio/audio.fs#L83)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -1777,7 +1777,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 : SAMPLE ( c-addr u rate n -- )   SND-SAMPLE ;              \ signed 8-bit bytes
 ```
 
-[Example context](../src/audio/audio.fs#L95)
+[Example context](../src/audio/audio.fs#L96)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment. Use valid logical-memory addresses, lengths and capacities; distinguish owned storage from borrowed lifetimes.
 
@@ -1803,7 +1803,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 : SAMPLE-INSTRUMENT ( n -- )   SND-SAMPLE-INSTRUMENT ;      \ -1 for none
 ```
 
-[Example context](../src/audio/audio.fs#L97)
+[Example context](../src/audio/audio.fs#L98)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -1829,7 +1829,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 : SFX ( n -- )   SND-SFX ;
 ```
 
-[Example context](../src/audio/audio.fs#L98)
+[Example context](../src/audio/audio.fs#L99)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -1855,7 +1855,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 : SOUND ( reg value -- )   SND-SOUND ;
 ```
 
-[Example context](../src/audio/audio.fs#L37)
+[Example context](../src/audio/audio.fs#L38)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -1881,7 +1881,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 : STOP-MOD ( -- )   SND-STOP-MOD ;
 ```
 
-[Example context](../src/audio/audio.fs#L109)
+[Example context](../src/audio/audio.fs#L110)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -1907,7 +1907,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 : STYLE ( chip -- )   SND-STYLE ;
 ```
 
-[Example context](../src/audio/audio.fs#L65)
+[Example context](../src/audio/audio.fs#L66)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -1933,7 +1933,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 : SYNC ( flag -- )   SND-SYNC ;
 ```
 
-[Example context](../src/audio/audio.fs#L83)
+[Example context](../src/audio/audio.fs#L84)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -1959,7 +1959,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 : SAW ( -- )   3 SND-WAVE ;
 ```
 
-[Example context](../src/audio/audio.fs#L78)
+[Example context](../src/audio/audio.fs#L79)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -1985,7 +1985,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 : SCC-WAVE ( c-addr n -- )   SND-WAVETABLE ;
 ```
 
-[Example context](../src/audio/audio.fs#L86)
+[Example context](../src/audio/audio.fs#L87)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment. Use valid logical-memory addresses, lengths and capacities; distinguish owned storage from borrowed lifetimes.
 
@@ -2137,7 +2137,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 STOP-MOD
 ```
 
-[Example context](../src/tests/audio_test.zig#L714)
+[Example context](../src/tests/audio_test.zig#L757)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -2169,7 +2169,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 0 STYLE
 ```
 
-[Example context](../src/tests/audio_test.zig#L591)
+[Example context](../src/tests/audio_test.zig#L634)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -15320,7 +15320,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 FALSE PLAY-MOD
 ```
 
-[Example context](../src/tests/audio_test.zig#L741)
+[Example context](../src/tests/audio_test.zig#L784)
 
 Caution: Follow the operand order in the stack effect. Example names and values depend on their setup.
 
@@ -20452,7 +20452,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 ST NES OR CHIPS
 ```
 
-[Example context](../src/tests/audio_test.zig#L567)
+[Example context](../src/tests/audio_test.zig#L610)
 
 Caution: Follow the operand order in the stack effect. Example names and values depend on their setup.
 
