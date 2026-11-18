@@ -156,6 +156,7 @@ const win32 = struct {
     const wm_paint = 0x000F;
     const wm_erase_background = 0x0014;
     const wm_kill_focus = 0x0008;
+    const wm_capture_changed = 0x0215;
     const wm_key_down = 0x0100;
     const wm_key_up = 0x0101;
     const wm_char = 0x0102;
@@ -435,6 +436,29 @@ const win32 = struct {
         }
     }
 
+    /// The window lost the focus or the mouse: the buttons held are released, with a
+    /// release for MOUSE-EVENT, at the last place. Called with the lock held.
+    fn releaseButtons() void {
+        if (mouse_buttons == 0 and queued_buttons == 0) return;
+        mouse_buttons = 0;
+        mouse_changed = true;
+        if (queued_buttons != 0) {
+            queueMouse(.{ .x = mouse_x, .y = mouse_y, .buttons = 0, .wheel = 0 });
+            queued_buttons = 0;
+        }
+    }
+
+    /// The window is closed: keys and buttons are released, and the mouse is nowhere
+    /// (-1 -1) until a window shows it again. Called with the lock held.
+    fn windowGone() void {
+        down = @splat(0);
+        releaseButtons();
+        mouse_x = -1;
+        mouse_y = -1;
+        mouse_changed = true;
+        wheel_rest = 0;
+    }
+
     /// WM_MOUSEWHEEL: the high word of wparam is the distance, 120 a notch, above 0 up. A
     /// notch is told at the last place of the mouse in the window.
     fn wheelTurned(wparam: usize) void {
@@ -666,8 +690,18 @@ const win32 = struct {
             wm_kill_focus => {
                 AcquireSRWLockExclusive(&lock);
                 down = @splat(0);
+                releaseButtons();
                 ReleaseSRWLockExclusive(&lock);
                 return DefWindowProcW(handle, message, wparam, lparam);
+            },
+            // Another window took the mouse while a button was held: its release does
+            // not come here. (ReleaseCapture after the last button also sends this, with
+            // the buttons already up.)
+            wm_capture_changed => {
+                AcquireSRWLockExclusive(&lock);
+                releaseButtons();
+                ReleaseSRWLockExclusive(&lock);
+                return 0;
             },
             wm_char => {
                 // The key of the character, from the scan code WM_CHAR carries (keys
@@ -717,6 +751,7 @@ const win32 = struct {
                 AcquireSRWLockExclusive(&lock);
                 window = null;
                 update_pending = false;
+                windowGone();
                 ReleaseSRWLockExclusive(&lock);
                 PostQuitMessage(0);
                 return 0;
@@ -777,7 +812,50 @@ const win32 = struct {
         try std.testing.expect(window == null);
         try std.testing.expectEqual(.cancelled, start);
     }
+
+    /// Losing the focus releases the buttons held, and closing puts the mouse nowhere.
+    fn testMouseRelease() !void {
+        AcquireSRWLockExclusive(&lock);
+        defer ReleaseSRWLockExclusive(&lock);
+        defer {
+            mouse_x = -1;
+            mouse_y = -1;
+            mouse_buttons = 0;
+            queued_buttons = 0;
+            mouse_changed = false;
+            mouse_count = 0;
+        }
+        mouse_x = 5;
+        mouse_y = 6;
+        mouse_buttons = 1;
+        queued_buttons = 1;
+        mouse_changed = false;
+        mouse_count = 0;
+        releaseButtons();
+        try std.testing.expectEqual(@as(usize, 1), mouse_count);
+        try std.testing.expectEqual(MouseItem{ .x = 5, .y = 6, .buttons = 0, .wheel = 0 }, mouse_queue[mouse_head]);
+        try std.testing.expect(mouse_changed);
+        try std.testing.expectEqual(@as(u8, 0), mouse_buttons);
+        // Nothing more to release.
+        releaseButtons();
+        try std.testing.expectEqual(@as(usize, 1), mouse_count);
+        mouse_count = 0;
+        mouse_buttons = 2;
+        queued_buttons = 2;
+        down[65] = 'A' + 1;
+        windowGone();
+        try std.testing.expectEqual(@as(usize, 1), mouse_count);
+        try std.testing.expectEqual(MouseItem{ .x = 5, .y = 6, .buttons = 0, .wheel = 0 }, mouse_queue[mouse_head]);
+        try std.testing.expectEqual(@as(i32, -1), mouse_x);
+        try std.testing.expectEqual(@as(i32, -1), mouse_y);
+        try std.testing.expectEqual(@as(u8, 0), mouse_buttons);
+        try std.testing.expectEqual(@as(u32, 0), down[65]);
+    }
 };
+
+test "the Windows window releases the mouse buttons when it loses the focus or closes" {
+    if (comptime builtin.os.tag == .windows) try win32.testMouseRelease() else return error.SkipZigTest;
+}
 
 test "the Windows window stops waiting after its time and destroys the late window" {
     if (comptime builtin.os.tag == .windows) try win32.testLateWindow() else return error.SkipZigTest;

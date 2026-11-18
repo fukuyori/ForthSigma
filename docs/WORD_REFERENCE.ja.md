@@ -39570,7 +39570,7 @@ The oldest mouse event not yet read, without waiting: kind 1 pressed, 2 released
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
 
-関連説明：[キー、マウス、アニメーション](GRAPHICS_AND_SOUND.ja.md#キー、マウス、アニメーション), [GUI](GRAPHICS_AND_SOUND.ja.md#gui).
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス), [キー、マウス、アニメーション](GRAPHICS_AND_SOUND.ja.md#キー、マウス、アニメーション), [GUI](GRAPHICS_AND_SOUND.ja.md#gui).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 

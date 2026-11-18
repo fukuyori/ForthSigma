@@ -32052,7 +32052,7 @@ Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
 
-Related: [Keys, the mouse, and animation](GRAPHICS_AND_SOUND.md#keys-the-mouse-and-animation), [GUI](GRAPHICS_AND_SOUND.md#gui).
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics), [Keys, the mouse, and animation](GRAPHICS_AND_SOUND.md#keys-the-mouse-and-animation), [GUI](GRAPHICS_AND_SOUND.md#gui).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
