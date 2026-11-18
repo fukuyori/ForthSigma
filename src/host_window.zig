@@ -546,7 +546,14 @@ const win32 = struct {
     /// tried again in this process (a thread stuck in CreateWindowExW cannot be ended).
     fn open() forth.RuntimeError!void {
         if (broken) return error.HostFailed;
-        const deadline = GetTickCount64() + start_timeout_ms;
+        // While automatic display looks for a display, the window has at most 2 of its
+        // 5 seconds, so that Tk can still be tried (as on Linux).
+        const display_budget = @import("host_display_budget.zig");
+        var deadline = GetTickCount64() + start_timeout_ms;
+        if (display_budget.active()) {
+            if (display_budget.expired()) return error.HostFailed;
+            deadline = @min(deadline, GetTickCount64() + 2000, @as(u64, @intCast(@max(0, display_budget.deadline()))));
+        }
         if (thread) |old| {
             if (WaitForSingleObject(old, remainingMs(deadline)) != wait_object_0) {
                 broken = true;

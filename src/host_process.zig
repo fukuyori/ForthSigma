@@ -60,6 +60,7 @@ const windows = struct {
     extern "kernel32" fn GetEnvironmentVariableW([*:0]const u16, ?[*]u16, u32) callconv(.winapi) u32;
     extern "kernel32" fn GetLastError() callconv(.winapi) u32;
     extern "kernel32" fn GetTickCount64() callconv(.winapi) u64;
+    extern "kernel32" fn Sleep(u32) callconv(.winapi) void;
     extern "kernel32" fn SearchPathW(?[*:0]const u16, [*:0]const u16, ?[*:0]const u16, u32, [*]u16, ?*?[*]u16) callconv(.winapi) u32;
     extern "kernel32" fn GetFileAttributesW([*:0]const u16) callconv(.winapi) u32;
 
@@ -163,7 +164,10 @@ const windows = struct {
     }
 
     fn startProgram(_: ?*anyopaque, program: []const u8, script: []const u8) forth.RuntimeError!void {
+        // Automatic display has one time for the window and Tk together.
+        if (budget.expired()) return error.HostFailed;
         _ = stopProgram(null);
+        if (budget.expired()) return error.HostFailed;
         if (!writeScript(script)) return error.HostFailed;
         errdefer removeScript();
         var name_buffer: [512]u16 = undefined;
@@ -231,9 +235,19 @@ const windows = struct {
     fn readProgram(_: ?*anyopaque, buffer: []u8, wait: bool) forth.RuntimeError!usize {
         const handle = from_program orelse return error.HostFailed;
         var wanted: u32 = @intCast(@min(buffer.len, 1 << 20));
-        if (!wait) {
+        // Waiting while automatic display looks for a display: only up to its time,
+        // so a program that does not answer does not hold SHOW.
+        const bounded = wait and budget.active();
+        if (!wait or bounded) {
             var available: u32 = 0;
-            if (PeekNamedPipe(handle, null, 0, null, &available, null) == 0) return error.HostFailed;
+            while (true) {
+                // Checked before each read too: a program that keeps sending other
+                // messages must not hold the search past its time.
+                if (bounded and budget.expired()) return error.HostFailed;
+                if (PeekNamedPipe(handle, null, 0, null, &available, null) == 0) return error.HostFailed;
+                if (available != 0 or !bounded) break;
+                Sleep(1);
+            }
             if (available == 0) return 0;
             wanted = @min(wanted, available);
         }
@@ -252,13 +266,17 @@ const windows = struct {
         if (from_program) |handle| _ = CloseHandle(handle);
         from_program = null;
         var stopped = true;
+        // During automatic display's search, a program that failed is ended at once,
+        // within the time left.
+        const searching = budget.active();
         if (process) |handle| {
-            if (WaitForSingleObject(handle, 2000) != 0) {
+            if (WaitForSingleObject(handle, if (searching) 0 else 2000) != 0) {
                 // TerminateProcess fails when the program has just ended, too.
                 if (TerminateProcess(handle, 1) == 0) {
                     stopped = WaitForSingleObject(handle, 0) == 0;
                 } else {
-                    stopped = WaitForSingleObject(handle, 5000) == 0;
+                    const left: u32 = @intCast(std.math.clamp(budget.cleanupDeadline() - budget.now(), 50, 5000));
+                    stopped = WaitForSingleObject(handle, if (searching) left else 5000) == 0;
                 }
             }
             _ = CloseHandle(handle);

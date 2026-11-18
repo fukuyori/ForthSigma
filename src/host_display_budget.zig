@@ -1,10 +1,15 @@
-//! One absolute deadline shared by Linux's initial native/Tk display search.
-//! Only the main VM thread changes this state; workers receive a copied deadline.
+//! One absolute deadline shared by the initial native/Tk display search (Linux and
+//! Windows). Only the main VM thread changes this state; workers receive a copied
+//! deadline.
 const std = @import("std");
+const builtin = @import("builtin");
+
+extern "kernel32" fn GetTickCount64() callconv(.winapi) u64;
 
 var until: ?i64 = null;
 
 pub fn now() i64 {
+    if (builtin.os.tag == .windows) return @intCast(GetTickCount64() & std.math.maxInt(i63));
     var time: std.c.timespec = undefined;
     if (std.c.clock_gettime(.MONOTONIC, &time) != 0) return std.math.maxInt(i64) - 10000;
     return @as(i64, time.sec) * 1000 + @divTrunc(@as(i64, time.nsec), 1_000_000);
