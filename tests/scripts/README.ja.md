@@ -31,6 +31,10 @@ python3 tests/scripts/verify-debug-outputs.py --compare tests/scripts/debug-outp
 ホイールを出力し、入力待ちや計算中の移動・リサイズ・閉じる操作を確認できます。
 実行方法はファイル冒頭にあります。
 
+`check-fullscreen.fs`は`FULLSCREEN`と`MOUSE-CURSOR`の手動確認です。ウィンドウが
+フルスクリーンで開き、キーで解除・再びフルスクリーン・カーソルの表示切替を試せます。
+キーと見る点はファイル冒頭にあります。
+
 `check-auto-size.fs`は`WINDOW-SIZE 0 0`の手動確認です。3つの画像を順に表示し、
 ウィンドウが画面の作業領域に収まることを確かめます。見る点はファイル冒頭にあります。
 

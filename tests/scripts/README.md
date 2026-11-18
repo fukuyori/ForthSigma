@@ -34,6 +34,10 @@ releases, and wheel notches of the mouse, and lets the window be moved, resized,
 closed while the program waits for input and while it computes (its header tells how to
 run it).
 
+`check-fullscreen.fs` is a check by hand of `FULLSCREEN` and `MOUSE-CURSOR`: the window
+opens fullscreen, and keys leave it, enter it again and hide the cursor (its header
+tells the keys and what to look for).
+
 `check-auto-size.fs` is a check by hand of `WINDOW-SIZE 0 0`: it shows three images in
 turn, and the window should fit the work area of its screen (its header tells what to
 look for).
