@@ -75,14 +75,45 @@ set sigma_size ""
 set sigma_image_size ""
 set sigma_zoom 1
 set sigma_sub 1
+# FULLSCREEN as asked: the window covers its screen (wm attributes -fullscreen).
+set sigma_fullscreen 0
+
+# FULLSCREEN in the Tk window: asked before the window is opened, it opens so.
+proc sigma_fullscreen {on} {
+    set ::sigma_fullscreen $on
+    if {[winfo exists .sigma]} {
+        wm attributes . -fullscreen $on
+        if {$on} { focus -force . }
+    }
+}
+
+# FULLSCREEN?: as the window is (the user or the window manager may have left it);
+# "" before the window is opened, when Sigma's own wish counts.
+proc sigma_fullscreen_state {} {
+    if {[winfo exists .sigma]} { return [wm attributes . -fullscreen] }
+    return ""
+}
+
+# Alt+Enter (Control+Command+F on macOS) leaves fullscreen and is no key for INKEY;
+# without fullscreen, Alt+Enter is the key it was.
+proc sigma_leave_fullscreen {name char key} {
+    if {[wm attributes . -fullscreen]} {
+        set ::sigma_fullscreen 0
+        wm attributes . -fullscreen 0
+    } else {
+        sigma_key $name $char $key
+    }
+}
 
 # Shows a PNG image given in base64 in a part of the window "." w by h pixels large (0 0:
 # the image's size), opening the window the first time; closing the window only hides
 # it, until the next image. The image keeps its proportions, as large as fits by a whole
 # factor (Tk's photo images zoom only so), in the middle with black around it, also
 # when the window is resized.
-proc sigma_show {w h data} {
-    if {![winfo exists .sigma]} {
+proc sigma_show {w h fullscreen data} {
+    set opening [expr {![winfo exists .sigma]}]
+    if {$opening} {
+        if {$fullscreen} { set ::sigma_fullscreen 1 }
         image create photo sigma_image
         image create photo sigma_view
         label .sigma -image sigma_view -borderwidth 0 -highlightthickness 0 -background black
@@ -96,6 +127,11 @@ proc sigma_show {w h data} {
         bind . <MouseWheel> {sigma_wheel %D %x %y}
         bind . <KeyPress> {sigma_key %K %A %k}
         bind . <KeyRelease> {sigma_key_release %k}
+        bind . <Alt-Return> {sigma_leave_fullscreen %K %A %k}
+        bind . <Alt-KP_Enter> {sigma_leave_fullscreen %K %A %k}
+        if {[tk windowingsystem] eq "aqua"} {
+            bind . <Control-Command-Key-f> {sigma_leave_fullscreen %K %A %k}
+        }
         bind . <FocusOut> {sigma_keys_released}
         bind . <<TkStartIMEMarkedText>> {set ::sigma_marking 1; set ::sigma_preedit ""}
         bind . <<TkEndIMEMarkedText>> {set ::sigma_marking 0}
@@ -121,6 +157,7 @@ proc sigma_show {w h data} {
     set ::sigma_image_size $image_size
     sigma_fit
     if {[wm state .] ne "normal"} { wm deiconify . }
+    if {$opening && $::sigma_fullscreen} { sigma_fullscreen 1 }
     sigma_ime_apply
 }
 

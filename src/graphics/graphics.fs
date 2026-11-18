@@ -259,8 +259,22 @@ VARIABLE (TERMINAL-MODE)  0 (TERMINAL-MODE) !
 \ The user leaves fullscreen with Alt+Enter (Control+Command+F on macOS); FULLSCREEN?
 \ then gives false. Asked before SHOW has chosen where to show, the window opens so;
 \ the terminal takes no notice. HOST FUNCTION UNAVAILABLE with DISPLAY-TERMINAL.
-: FULLSCREEN ( flag -- )   (DISPLAY) @ 1 = IF -21 THROW THEN  GFX-FULLSCREEN ;
-: FULLSCREEN? ( -- flag )   GFX-FULLSCREEN? ;
+\ Whether SHOW shows in the Tk window, chosen or found by the automatic choice.
+: (TK-SHOWN?) ( -- flag )   (DISPLAY) @ DUP 0= IF DROP GFX-AUTO-DISPLAY THEN 3 = ;
+: FULLSCREEN ( flag -- )
+   (DISPLAY) @ 1 = IF -21 THROW THEN
+   0<> DUP GFX-FULLSCREEN
+   (TK-SHOWN?) IF
+      IF S" sigma_fullscreen 1" ELSE S" sigma_fullscreen 0" THEN GFX-TCL DROP 2DROP EXIT
+   THEN DROP ;
+\ In the Tk window, as the window is, and the wish follows it; before the window is
+\ opened (an empty answer), the wish as it is.
+: FULLSCREEN? ( -- flag )
+   (TK-SHOWN?) IF
+      S" sigma_fullscreen_state" GFX-TCL IF 2DROP GFX-FULLSCREEN? EXIT THEN
+      1 <> IF DROP GFX-FULLSCREEN? EXIT THEN
+      C@ [CHAR] 1 =  DUP GFX-FULLSCREEN EXIT
+   THEN GFX-FULLSCREEN? ;
 \ Whether the mouse cursor shows over Sigma's own window (at first it does).
 : MOUSE-CURSOR ( flag -- )   GFX-MOUSE-CURSOR ;
 : TERMINAL-BLOCKS ( -- )   0 (TERMINAL-MODE) ! ;

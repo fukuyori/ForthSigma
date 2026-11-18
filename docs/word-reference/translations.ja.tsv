@@ -1078,7 +1078,7 @@ SAVE-PNG	画像をPNGへ保存します。失敗はTHROWします。
 SHOW	選択されたウィンドウ・Tk・端末へ画像を表示します。明示選択がなければネイティブウィンドウ、デスクトップのTk、端末の順に試し、成功した表示先を実行中は記憶します。
 DISPLAY-TERMINAL	SHOWの表示先を端末にします。
 DISPLAY-WINDOW	SHOWの表示先をネイティブウィンドウにします。ホストが未対応なら-21です。
-FULLSCREEN	Sigma自身のウィンドウで画面全体を覆う（真）か、ウィンドウに戻す（偽）かを切り替えます。画面の解像度は変えません。利用者はAlt+Enterで解除できます。SHOWが表示先を決める前なら、ウィンドウはその状態で開きます。DISPLAY-TERMINALではHOST FUNCTION UNAVAILABLEです。今のところWindowsとLinux（X11。ウィンドウマネージャーがEWMHのフルスクリーンに対応する場合）のウィンドウが対応し、ほかでは意図を覚えておくだけです。
+FULLSCREEN	Sigma自身のウィンドウで画面全体を覆う（真）か、ウィンドウに戻す（偽）かを切り替えます。画面の解像度は変えません。利用者はAlt+Enterで解除できます。SHOWが表示先を決める前なら、ウィンドウはその状態で開きます。DISPLAY-TERMINALではHOST FUNCTION UNAVAILABLEです。今のところWindowsとLinux（X11。ウィンドウマネージャーがEWMHのフルスクリーンに対応する場合）のウィンドウと、Tkのウィンドウが対応し、ほかでは意図を覚えておくだけです。
 FULLSCREEN?	今フルスクリーンを求めているかを返します。利用者がキーで解除した後は偽です。
 MOUSE-CURSOR	Sigma自身のウィンドウの上でマウスカーソルを表示する（真）か隠す（偽）かを切り替えます。初めは表示します。今のところWindowsとLinuxのウィンドウが対応します。
 GFX-FULLSCREEN	FULLSCREENのホスト基本語です。
@@ -1260,6 +1260,7 @@ GRAPHICS:(P-TARGET?)	指定座標の画素が塗りつぶし対象色か調べ�
 GRAPHICS:(PX>M)	画素列を数学x座標へ変換します。幅1なら範囲の左端です。
 GRAPHICS:(UTF8-NEXT)	非空文字列から先頭文字と残りを返します。不正UTF-8は1バイト消費して-1です。
 GRAPHICS:(VLINE)	両端を含む垂直線を画像の端で切り詰めて描きます。
+GRAPHICS:(TK-SHOWN?)	SHOWの表示先が、明示選択または自動選択の結果としてTkのウィンドウかを返します。内部語です。
 GRAPHICS:(WINDOW?)	明示的なウィンドウ選択、または未選択でホスト対応があるか判定します。
 GUI:(ADD-KEY)	容量内ならフレームの保留キー列へ追加します。満杯なら捨てます。
 GUI:(BACK)	文字列内の指定位置の直前にあるUTF-8文字の先頭を求めます。
