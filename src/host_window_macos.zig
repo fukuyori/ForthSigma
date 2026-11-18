@@ -34,6 +34,7 @@ const SendPointFromViewStret = *const fn (*Point, Id, Sel, Point, Id) callconv(.
 const SendInitWindow = *const fn (Id, Sel, Rect, usize, usize, i8) callconv(.c) Id;
 const SendInitView = *const fn (Id, Sel, Rect) callconv(.c) Id;
 const SendSize1 = *const fn (Id, Sel, Size) callconv(.c) void;
+const SendSetFrame = *const fn (Id, Sel, Rect, i8, i8) callconv(.c) void;
 const SendSizeReturn = *const fn (Id, Sel, Size) callconv(.c) Size;
 const SendSizeStret = *const fn (*Size, Id, Sel, Size) callconv(.c) void;
 const SendRect0 = *const fn (Id, Sel) callconv(.c) Rect;
@@ -166,6 +167,7 @@ var send_rect1: ?SendRect1 = null;
 var send_rect1_stret: ?SendRect1Stret = null;
 var send_rect_to_view: ?SendRectToView = null;
 var send_rect_to_view_stret: ?SendRectToViewStret = null;
+var send_set_frame: ?SendSetFrame = null;
 var marked_text: Id = null;
 var marked_selection = Range{ .location = 0, .length = 0 };
 
@@ -902,8 +904,8 @@ fn endTransition(now_fullscreen: bool) void {
         fullscreen_desired = now_fullscreen;
         outputInput(if (now_fullscreen) "INPUT FULLSCREEN 1\n" else "INPUT FULLSCREEN 0\n", true);
     }
-    // The window fits the image again, as it would have without fullscreen.
-    if (!now_fullscreen) fitWindowToFrame();
+    // AppKit restores the window's pre-fullscreen frame. Keep that size and position;
+    // resizing here would discard a user's manual resize and move.
     reconcileFullscreen();
 }
 
@@ -922,7 +924,6 @@ fn windowDidFailToEnterFullScreen(_: Id, _: Sel, _: Id) callconv(.c) void {
     transition_by_sigma = false;
     fullscreen_desired = false;
     outputInput("INPUT FULLSCREEN 0\n", true);
-    fitWindowToFrame();
 }
 
 fn windowDidFailToExitFullScreen(_: Id, _: Sel, _: Id) callconv(.c) void {
@@ -958,6 +959,23 @@ fn fitWindowToFrame() void {
     const desired = requestedClientSize(frame_width, frame_height, last_requested_size, roomFor(window, view));
     const points = convertSizeFromBacking(view, .{ .width = @floatFromInt(desired[0]), .height = @floatFromInt(desired[1]) });
     send_size1(window, selector_register("setContentSize:"), points);
+    if (last_requested_size[0] == 0 and last_requested_size[1] == 0) keepAutoSizedWindowVisible(window);
+}
+
+/// `setContentSize:` changes the window's frame but does not guarantee that the
+/// resulting frame stays inside NSScreen.visibleFrame. Clamp its origin after sizing.
+fn keepAutoSizedWindowVisible(window: Id) void {
+    const screen = send_id0_global(window, selector_register("screen")) orelse blk: {
+        const screen_class = objc_get_class.?("NSScreen") orelse return;
+        break :blk send_id0_global(screen_class, selector_register("mainScreen")) orelse return;
+    };
+    const visible = getRect(screen, selector_register("visibleFrame"));
+    var frame = getRect(window, selector_register("frame"));
+    const max_x = visible.origin.x + @max(0, visible.size.width - frame.size.width);
+    const max_y = visible.origin.y + @max(0, visible.size.height - frame.size.height);
+    frame.origin.x = std.math.clamp(frame.origin.x, visible.origin.x, max_x);
+    frame.origin.y = std.math.clamp(frame.origin.y, visible.origin.y, max_y);
+    (send_set_frame orelse return)(window, selector_register("setFrame:display:animate:"), frame, 1, 0);
 }
 
 /// Child: makes the window cover its screen (a fullscreen Space) or a window again,
@@ -1437,8 +1455,8 @@ fn runCommand(context: ?*anyopaque) callconv(.c) void {
             if (!std.mem.eql(u32, &last_frame_size, &.{ frame.width, frame.height }) or !std.mem.eql(u32, &last_requested_size, &frame.requested)) {
                 last_frame_size = .{ frame.width, frame.height };
                 last_requested_size = frame.requested;
-                // A fullscreen window keeps covering its screen; it fits the image when
-                // it leaves fullscreen (windowDidExitFullScreen).
+                // A fullscreen window keeps covering its screen. AppKit restores the
+                // saved window frame when fullscreen ends; later frames use this size.
                 if (active_window) |window| if (!fullscreen_transitioning and !windowIsFullscreen(window)) fitWindowToFrame();
             }
             if (active_view) |view| _ = send_bool1(view, selector_register("setNeedsDisplay:"), 1);
@@ -1661,6 +1679,7 @@ pub fn runChild() !u8 {
     send_size_to_id = objc.lookup(SendSizeToId, "objc_msgSend");
     send_image_hot_spot = objc.lookup(SendImageHotSpot, "objc_msgSend");
     send_rect_cursor = objc.lookup(SendRectCursor, "objc_msgSend");
+    send_set_frame = objc.lookup(SendSetFrame, "objc_msgSend") orelse return error.ObjcRuntimeUnavailable;
     post_event = objc.lookup(PostEvent, "objc_msgSend") orelse return error.ObjcRuntimeUnavailable;
     rect_fill = appkit.lookup(RectFill, "NSRectFill") orelse return error.AppKitSymbolUnavailable;
     var graphics = try std.DynLib.open("/System/Library/Frameworks/CoreGraphics.framework/CoreGraphics");
