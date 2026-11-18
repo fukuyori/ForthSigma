@@ -32561,7 +32561,7 @@ Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
 
-Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics), [Images](GRAPHICS_AND_SOUND.md#images), [Tcl/Tk](GRAPHICS_AND_SOUND.md#tcltk).
+Related: [Boing demos](GRAPHICS_AND_SOUND.md#boing-demos), [Graphics](GRAPHICS_AND_SOUND.md#graphics), [Images](GRAPHICS_AND_SOUND.md#images).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 

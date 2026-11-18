@@ -40169,7 +40169,7 @@ Show the image where DISPLAY-WINDOW, DISPLAY-TK, or DISPLAY-TERMINAL chose. With
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
 
-関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス), [画像](GRAPHICS_AND_SOUND.ja.md#画像), [Tcl/Tk](GRAPHICS_AND_SOUND.ja.md#tcltk).
+関連説明：[Boingデモ](GRAPHICS_AND_SOUND.ja.md#boingデモ), [グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス), [画像](GRAPHICS_AND_SOUND.ja.md#画像).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 

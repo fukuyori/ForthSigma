@@ -6,6 +6,30 @@ Japanese version: [GRAPHICS_AND_SOUND.ja.md](GRAPHICS_AND_SOUND.ja.md). This Eng
 
 The graphics and the sound of Sigma are extensions of this port: the FORTH/Σ of the magazine has neither. This manual describes them: drawing, text, Tcl/Tk, keys, the mouse, and animation (`REQUIRE-GRAPHICS`), and music, sound chips, recorded sound, and modules (`REQUIRE-AUDIO`). For starting Sigma, the language, and the other words, see the [user manual](USER_MANUAL.md); for where `SHOW` shows the image and with how many colors, see the [graphics modes manual](GRAPHICS_MODES.md).
 
+## Boing demos
+
+The red-and-white checkered ball rotates by changing its palette and bounces in front of a grid. Run one source file per process. All three demos need graphics and floating-point words; builds with `-Daudio=false` run silently.
+
+| Source | Rendered image | Initial window | Frame pacing |
+| --- | --- | --- | --- |
+| [boing.fs](../examples/boing.fs) | 320×200 | 960×600 (3× pixels) | 16 ms per frame |
+| [boing-hd.fs](../examples/boing-hd.fs) | 960×600 | 960×600 | 16 ms per frame |
+| [boing-hfr.fs](../examples/boing-hfr.fs) | 1920×1200 | 1280×800 | 120 fps target |
+
+From the repository root:
+
+```sh
+zig build -Doptimize=ReleaseFast
+zig-out/bin/sigma examples/boing-hd.fs
+zig-out/bin/sigma examples/boing-hfr.fs
+```
+
+Space pauses/resumes; Q or Esc quits. Keys go to the focused window or terminal. Resize/maximize the window to suit your screen. HD and HFR include six floor rows and synthesized rubber-ball impacts, with different sounds for the floor and walls.
+
+HFR restores only the previous ball/shadow area and advances motion by elapsed time, so a lower frame rate does not slow the simulation. Physics uses steps of at most 8 ms; elapsed time is capped at 100 ms after a stall. For less work, change `DETAIL` from 6 to 4 for 1280×800 rendering, or `TARGET-FPS` from 120 to 60. Keep `DETAIL` within 1–10 to fit the indexed palette.
+
+Prefer a native window for HFR; Tk and terminal output may be slower. The Linux ReleaseFast probe on a dedicated Xvfb produced about 110–116 drawing-loop iterations per second over 240 iterations. This is a short software test, not a monitor-FPS measurement. Asynchronous `SHOW` can combine frames, and actual presentation depends on the backend, display refresh rate and workload. The 16 ms and 120 fps settings are pacing targets, not guaranteed rates.
+
 ## Graphics
 
 Sigma draws on one image in memory and saves it as a PPM, BMP, or PNG file. The graphics words are not in the dictionary at start-up: `REQUIRE-GRAPHICS` adds the `GRAPHICS` vocabulary, with the `GFX-` words and the graphics library written in Forth (`src/graphics/graphics.fs` and, with the floating-point words, `src/graphics/graphics_float.fs`, built into the program), the first time it runs; later it does nothing. It does not change the search order, so make the words visible with `ALSO GRAPHICS` (or `GRAPHICS`). Where `SHOW` shows the image and with how many colors are summed up in the [graphics modes manual](GRAPHICS_MODES.md).

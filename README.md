@@ -134,6 +134,15 @@ Forth source files can also be read from standard input. Example:
 
     sigma.exe < examples/demo.fs
 
+The Boing demos show a rotating, bouncing checkered ball: [the original](examples/boing.fs) renders 320×200, [HD](examples/boing-hd.fs) renders 960×600, and [HFR](examples/boing-hfr.fs) renders 1920×1200 with a 120 fps target. Graphics and floating-point support are required; audio is optional. Space pauses/resumes and Q or Esc quits. For HFR, use a fast build:
+
+```sh
+zig build -Doptimize=ReleaseFast
+zig-out/bin/sigma examples/boing-hfr.fs
+```
+
+HFR opens a 1280×800 window that can be resized. The target is not a guarantee of monitor FPS; see the [graphics and sound manual](docs/GRAPHICS_AND_SOUND.md) for the variants and performance limits.
+
 `examples/calculator.fs` is a calculator whose window and buttons are Tk's and whose arithmetic is Forth's. It needs Tcl/Tk: Sigma uses `SIGMA_WISH`, else `wish` on the `PATH`; on Windows, else the `wish` of Git for Windows; and on macOS it passes over the system's `/usr/bin/wish` and, without another `wish` on the `PATH`, uses Homebrew's or MacPorts's.
 
     sigma.exe < examples/calculator.fs

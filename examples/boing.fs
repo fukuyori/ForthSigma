@@ -2,10 +2,11 @@
 \ and bounces in front of a purple grid on gray, and throws a shadow on the grid.
 \ It needs a build with graphics and floating-point numbers.
 \
-\   sigma.exe examples/boing.fs      (in a window; Tk on Linux/macOS)
+\   sigma.exe examples/boing.fs      (in a native window, or Tk when selected/available)
 \
 \ Keys: Space stops the ball and lets it go again, Q or Esc ends the demonstration.
-\ On Windows the keys go to the console Sigma runs in, as INKEY reads them there.
+\ Keys go to the focused window or terminal.
+\ Higher-resolution variants: boing-hd.fs (960x600), boing-hfr.fs (1920x1200).
 \
 \ As on the Amiga, the ball is drawn once and turns by its colors alone. The picture
 \ of the ball holds color numbers: every checker is cut into SUB stripes along its

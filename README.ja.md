@@ -134,6 +134,15 @@ Forthソースファイルは標準入力からも読み込めます。例:
 
     sigma.exe < examples/demo.fs
 
+Boingデモは、市松模様の球が回転して跳ねるアニメーションです。[元の版](examples/boing.fs)は320×200、[HD版](examples/boing-hd.fs)は960×600、[HFR版](examples/boing-hfr.fs)は1920×1200で120fpsを目標に描画します。グラフィックスと浮動小数点の語が必要で、音は省略可能です。Spaceで一時停止・再開、QまたはEscで終了します。HFR版には高速ビルドを使います。
+
+```sh
+zig build -Doptimize=ReleaseFast
+zig-out/bin/sigma examples/boing-hfr.fs
+```
+
+HFR版は1280×800の窓で開き、リサイズできます。目標値はモニターの実表示fpsを保証しません。各版の違いと性能上の制限は[グラフィックスとサウンドのマニュアル](docs/GRAPHICS_AND_SOUND.ja.md)を参照してください。
+
 `examples/calculator.fs` は、窓とボタンはTkで、計算はForthで行う電卓です。Tcl/Tkが必要で、Sigmaは `SIGMA_WISH`、なければ `PATH` の `wish` を使います。Windowsではそれもなければ Git for Windows の `wish`、macOSではシステムの `/usr/bin/wish` は飛ばし、それもなければHomebrewかMacPortsのものを使います。
 
     sigma.exe < examples/calculator.fs
