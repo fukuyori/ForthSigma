@@ -21,6 +21,104 @@ pub fn autoClientSize(image_width: u32, image_height: u32, room: [2]u32) [2]u32 
     return .{ @intCast(@max(1, iw * lh / ih)), @intCast(lh) };
 }
 
+/// Where the image is drawn in a client area: the largest whole rectangle with its
+/// proportions, in the middle (an odd pixel left over goes right or below). x and y are
+/// its top left corner; the rest of the client area is black.
+pub const Place = struct { x: u32, y: u32, w: u32, h: u32 };
+
+pub fn place(image_width: u32, image_height: u32, client_width: u32, client_height: u32) Place {
+    const iw: u64 = @max(image_width, 1);
+    const ih: u64 = @max(image_height, 1);
+    const cw: u64 = @max(client_width, 1);
+    const ch: u64 = @max(client_height, 1);
+    var rw = cw;
+    var rh = ch;
+    if (cw * ih <= ch * iw) rh = @max(1, ih * cw / iw) else rw = @max(1, iw * ch / ih);
+    return .{ .x = @intCast((cw - rw) / 2), .y = @intCast((ch - rh) / 2), .w = @intCast(rw), .h = @intCast(rh) };
+}
+
+/// The image's pixel (along one side) that output pixel d of the drawn rectangle shows:
+/// nearest neighbour, floor(d × image / drawn), the same for enlarging and shrinking.
+pub fn source(d: u32, image: u32, drawn: u32) u32 {
+    return @intCast(@as(u64, d) * image / @max(drawn, 1));
+}
+
+/// The image's pixel under a point of the client area, from where the image is drawn:
+/// floor((p - start) × image / drawn), outside the image beyond its edges (not clamped).
+pub fn imagePixel(p: i64, start: u32, image: u32, drawn: u32) i64 {
+    return @divFloor((p - start) * @as(i64, image), @max(drawn, 1));
+}
+
+/// The image's column for each output column of a drawn width: `columns` gets
+/// drawn_width entries.
+pub fn sourceColumns(columns: []u32, image_width: u32, drawn_width: u32) void {
+    for (columns[0..drawn_width], 0..) |*column, dx| column.* = source(@intCast(dx), image_width, drawn_width);
+}
+
+/// Draws output rows first_row up to first_row + rows of the image shown at
+/// drawn_width × drawn_height into `out` (rows × drawn_width pixels), by the
+/// nearest-neighbour rule of `source`; `columns` comes from sourceColumns. Drawing a
+/// band of rows at a time keeps the memory small however large the window is.
+pub fn scaleRows(image: []const u32, image_width: u32, image_height: u32, out: []u32, drawn_width: u32, drawn_height: u32, columns: []const u32, first_row: u32, rows: u32) void {
+    for (0..rows) |index| {
+        const dy: u32 = first_row + @as(u32, @intCast(index));
+        const row = image[@as(usize, source(dy, image_height, drawn_height)) * image_width ..][0..image_width];
+        const target = out[index * drawn_width ..][0..drawn_width];
+        for (target, columns[0..drawn_width]) |*pixel, column| pixel.* = row[column];
+    }
+}
+
+test "place centres the largest rectangle with the image's proportions" {
+    try std.testing.expectEqual(Place{ .x = 0, .y = 0, .w = 640, .h = 400 }, place(320, 200, 640, 400));
+    try std.testing.expectEqual(Place{ .x = 0, .y = 50, .w = 640, .h = 400 }, place(320, 200, 640, 500));
+    try std.testing.expectEqual(Place{ .x = 80, .y = 0, .w = 640, .h = 400 }, place(320, 200, 800, 400));
+    // An odd pixel left over goes right.
+    try std.testing.expectEqual(Place{ .x = 0, .y = 0, .w = 3, .h = 3 }, place(1, 1, 4, 3));
+    // cw × ih > ch × iw by a little: the height limits it, though floor(ih × cw / iw)
+    // would also be ch.
+    try std.testing.expectEqual(Place{ .x = 0, .y = 0, .w = 99, .h = 100 }, place(100, 101, 100, 100));
+    try std.testing.expectEqual(Place{ .x = 0, .y = 0, .w = 1, .h = 1 }, place(0, 0, 0, 0));
+}
+
+test "source and imagePixel use the nearest neighbour both ways" {
+    // 3 pixels drawn in 7: 0 0 0 1 1 2 2.
+    const expected = [_]u32{ 0, 0, 0, 1, 1, 2, 2 };
+    for (expected, 0..) |e, d| try std.testing.expectEqual(e, source(@intCast(d), 3, 7));
+    // 7 pixels drawn in 3: 0 2 4.
+    for ([_]u32{ 0, 2, 4 }, 0..) |e, d| try std.testing.expectEqual(e, source(@intCast(d), 7, 3));
+    try std.testing.expectEqual(@as(i64, 0), imagePixel(10, 10, 3, 7));
+    try std.testing.expectEqual(@as(i64, 2), imagePixel(16, 10, 3, 7));
+    try std.testing.expectEqual(@as(i64, 3), imagePixel(17, 10, 3, 7));
+    try std.testing.expectEqual(@as(i64, -1), imagePixel(9, 10, 3, 7));
+}
+
+test "scaleRows draws each output pixel from its source pixel, a band at a time" {
+    const image = [_]u32{ 1, 2, 3, 4, 5, 6 }; // 3 by 2
+    var columns: [5]u32 = undefined;
+    sourceColumns(&columns, 3, 5);
+    var out: [5 * 3]u32 = undefined;
+    scaleRows(&image, 3, 2, &out, 5, 3, &columns, 0, 3);
+    try std.testing.expectEqualSlices(u32, &.{ 1, 1, 2, 2, 3, 1, 1, 2, 2, 3, 4, 4, 5, 5, 6 }, &out);
+    // The last row alone gives the same as in the whole.
+    var band: [5]u32 = undefined;
+    scaleRows(&image, 3, 2, &band, 5, 3, &columns, 2, 1);
+    try std.testing.expectEqualSlices(u32, out[10..15], &band);
+    // Shrinking: 4 by 4 shown at 2 by 2 takes pixels 0 and 2 of each side.
+    const big = [_]u32{ 0, 1, 2, 3, 10, 11, 12, 13, 20, 21, 22, 23, 30, 31, 32, 33 };
+    var small_columns: [2]u32 = undefined;
+    sourceColumns(&small_columns, 4, 2);
+    var small: [4]u32 = undefined;
+    scaleRows(&big, 4, 4, &small, 2, 2, &small_columns, 0, 2);
+    try std.testing.expectEqualSlices(u32, &.{ 0, 2, 20, 22 }, &small);
+}
+
+test "place stays within the client area at the largest sizes" {
+    const p = place(1, 1, 16384, 16384);
+    try std.testing.expectEqual(Place{ .x = 0, .y = 0, .w = 16384, .h = 16384 }, p);
+    const q = place(16384, 1, std.math.maxInt(i32), 3);
+    try std.testing.expectEqual(Place{ .x = (std.math.maxInt(i32) - 49152) / 2, .y = 0, .w = 49152, .h = 3 }, q);
+}
+
 test "autoClientSize keeps an image that fits and shrinks one that does not" {
     const unknown = [2]u32{ 0, 0 };
     try std.testing.expectEqual([2]u32{ 320, 200 }, autoClientSize(320, 200, unknown));

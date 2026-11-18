@@ -406,23 +406,40 @@ const win32 = struct {
         if (code_point < 0x80 and virtual_key < down.len) down[virtual_key] = code_point + 1;
     }
 
-    /// Where the image is drawn in a client area: as large as fits with its proportions,
-    /// in the middle; the rest is black. Called with the lock held.
-    fn fitted(client_width: i32, client_height: i32) Rect {
-        const cw: i64 = @max(client_width, 1);
-        const ch: i64 = @max(client_height, 1);
-        const iw: i64 = @max(width, 1);
-        const ih: i64 = @max(height, 1);
-        // The wider of the two fills its width; the other its height.
-        var w: i64 = cw;
-        var h: i64 = @max(1, @divFloor(ih * cw, iw));
-        if (h > ch) {
-            h = ch;
-            w = @max(1, @divFloor(iw * ch, ih));
+    /// Where the image is drawn in a client area, by window_layout's rule. Called with
+    /// the lock held.
+    fn fitted(client_width: i32, client_height: i32) window_layout.Place {
+        return window_layout.place(width, height, @intCast(@max(client_width, 1)), @intCast(@max(client_height, 1)));
+    }
+
+    /// The image drawn at the size it is shown, a band of rows at a time, by the
+    /// nearest-neighbour rule, so that GDI copies it pixel for pixel. The band holds at
+    /// most band_pixels pixels (4 MB) however large the window is; used only by the
+    /// window thread, with the lock held.
+    const band_pixels = 1 << 20;
+    var band: []u32 = &.{};
+    var band_columns: []u32 = &.{};
+
+    /// Draws the image at `fit` by bands; false when there is no memory for them (GDI
+    /// then stretches the image itself).
+    fn drawScaled(dc: ?Handle, fit: window_layout.Place) bool {
+        if (band.len == 0) band = std.heap.c_allocator.alloc(u32, band_pixels) catch return false;
+        if (band_columns.len < fit.w) {
+            const columns = std.heap.c_allocator.alloc(u32, fit.w) catch return false;
+            if (band_columns.len != 0) std.heap.c_allocator.free(band_columns);
+            band_columns = columns;
         }
-        const left: i32 = @intCast(@divFloor(cw - w, 2));
-        const top: i32 = @intCast(@divFloor(ch - h, 2));
-        return .{ .left = left, .top = top, .right = left + @as(i32, @intCast(w)), .bottom = top + @as(i32, @intCast(h)) };
+        window_layout.sourceColumns(band_columns, width, fit.w);
+        // At least one row, however wide: a row of 16384 pixels fits the band.
+        const rows_per_band: u32 = @intCast(@max(1, band_pixels / fit.w));
+        var first: u32 = 0;
+        while (first < fit.h) : (first += rows_per_band) {
+            const rows = @min(rows_per_band, fit.h - first);
+            window_layout.scaleRows(pixels, width, height, band, fit.w, fit.h, band_columns, first, rows);
+            const info = BitmapInfo{ .header = .{ .width = @intCast(fit.w), .height = -@as(i32, @intCast(rows)) } };
+            _ = StretchDIBits(dc, @intCast(fit.x), @intCast(fit.y + first), @intCast(fit.w), @intCast(rows), 0, 0, @intCast(fit.w), @intCast(rows), band.ptr, &info, 0, source_copy);
+        }
+        return true;
     }
 
     /// The pixel of the image under a point of the client area, from where the image is
@@ -436,10 +453,8 @@ const win32 = struct {
         AcquireSRWLockExclusive(&lock);
         defer ReleaseSRWLockExclusive(&lock);
         const place = fitted(client.right, client.bottom);
-        const shown_width: i64 = @max(place.right - place.left, 1);
-        const shown_height: i64 = @max(place.bottom - place.top, 1);
-        mouse_x = @intCast(std.math.clamp(@divFloor((x - place.left) * width, shown_width), -1 << 20, 1 << 20));
-        mouse_y = @intCast(std.math.clamp(@divFloor((y - place.top) * height, shown_height), -1 << 20, 1 << 20));
+        mouse_x = @intCast(std.math.clamp(window_layout.imagePixel(x, place.x, width, place.w), -1 << 20, 1 << 20));
+        mouse_y = @intCast(std.math.clamp(window_layout.imagePixel(y, place.y, height, place.h), -1 << 20, 1 << 20));
         var buttons: u8 = 0;
         if (wparam & button_left != 0) buttons |= 1;
         if (wparam & button_right != 0) buttons |= 2;
@@ -673,16 +688,23 @@ const win32 = struct {
                 _ = GetClientRect(handle, &client);
                 _ = SetStretchBltMode(dc, color_on_color);
                 AcquireSRWLockExclusive(&lock);
-                // Rows from the top: a negative height.
-                const info = BitmapInfo{ .header = .{ .width = @intCast(width), .height = -@as(i32, @intCast(height)) } };
-                const place = fitted(client.right, client.bottom);
-                if (pixels.len != 0) _ = StretchDIBits(dc, place.left, place.top, place.right - place.left, place.bottom - place.top, 0, 0, @intCast(width), @intCast(height), pixels.ptr, &info, 0, source_copy);
+                const fit = fitted(client.right, client.bottom);
+                const left: i32 = @intCast(fit.x);
+                const top: i32 = @intCast(fit.y);
+                const right: i32 = @intCast(fit.x + fit.w);
+                const bottom: i32 = @intCast(fit.y + fit.h);
+                // Rows from the top: a negative height. The image is drawn at its shown
+                // size and copied as it is; without memory for that, GDI stretches it.
+                if (pixels.len != 0 and !drawScaled(dc, fit)) {
+                    const info = BitmapInfo{ .header = .{ .width = @intCast(width), .height = -@as(i32, @intCast(height)) } };
+                    _ = StretchDIBits(dc, left, top, @intCast(fit.w), @intCast(fit.h), 0, 0, @intCast(width), @intCast(height), pixels.ptr, &info, 0, source_copy);
+                }
                 ReleaseSRWLockExclusive(&lock);
                 // Black around the image: above and below it, then left and right of it.
-                _ = PatBlt(dc, 0, 0, client.right, place.top, blackness);
-                _ = PatBlt(dc, 0, place.bottom, client.right, client.bottom - place.bottom, blackness);
-                _ = PatBlt(dc, 0, place.top, place.left, place.bottom - place.top, blackness);
-                _ = PatBlt(dc, place.right, place.top, client.right - place.right, place.bottom - place.top, blackness);
+                _ = PatBlt(dc, 0, 0, client.right, top, blackness);
+                _ = PatBlt(dc, 0, bottom, client.right, client.bottom - bottom, blackness);
+                _ = PatBlt(dc, 0, top, left, bottom - top, blackness);
+                _ = PatBlt(dc, right, top, client.right - right, bottom - top, blackness);
                 _ = EndPaint(handle, &paint);
                 return 0;
             },
