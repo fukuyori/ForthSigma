@@ -4,6 +4,7 @@ const std = @import("std");
 const forth = @import("forth.zig");
 const x = @import("host_x11.zig");
 const xim = @import("host_xim.zig");
+const window_layout = @import("window_layout.zig");
 const c = x.c;
 const allocator = std.heap.c_allocator;
 const Status = enum { idle, starting, ready, closed, unavailable, failed, oom };
@@ -411,12 +412,13 @@ const Window = struct {
         self.physical_down = @splat(false);
         self.last_key = null;
         self.pending_release = null;
+        // Not mapped yet: room() must not ask for the frame of a window not made.
+        self.mapped = false;
         self.id = try self.conn.resource();
         self.gc = try self.conn.resource();
-        const size = desired(frame);
+        const size = desired(frame, self.room());
         self.width = size[0];
         self.height = size[1];
-        self.mapped = false;
         var body: [40]u8 = @splat(0);
         x.put32(&body, 0, self.id);
         x.put32(&body, 4, self.conn.root);
@@ -460,6 +462,45 @@ const Window = struct {
         caret_dirty = true;
         unlock();
     }
+    /// Up to `values.len` 32-bit values of a property of `window` (CARDINAL); how many
+    /// came. Nothing when the property is not there or not 32-bit.
+    fn cardinals(self: *Window, window: u32, name: []const u8, first: u32, values: []u32) x.Error!usize {
+        const atom = try self.conn.atom(name);
+        var body: [20]u8 = @splat(0);
+        x.put32(&body, 0, window);
+        x.put32(&body, 4, atom);
+        x.put32(&body, 8, 6); // CARDINAL
+        x.put32(&body, 12, first);
+        x.put32(&body, 16, @intCast(values.len));
+        const reply = try self.conn.reply(try self.conn.request(20, 0, &body));
+        if (reply.len < 32 or reply[1] != 32) return 0;
+        const count = @min(x.get32(reply, 16), values.len, (reply.len - 32) / 4);
+        for (values[0..count], 0..) |*value, i| value.* = x.get32(reply, 32 + i * 4);
+        return count;
+    }
+
+    /// The room for the client area that WINDOW-SIZE 0 0 may use: the current
+    /// desktop's work area (_NET_WORKAREA), else the screen, less the frame the window
+    /// manager gives this window (_NET_FRAME_EXTENTS, known once the window is
+    /// mapped). A side of 0 is not known.
+    fn room(self: *Window) [2]u32 {
+        var area = [2]u32{ self.conn.screen_width, self.conn.screen_height };
+        var desktop: [1]u32 = .{0};
+        _ = self.cardinals(self.conn.root, "_NET_CURRENT_DESKTOP", 0, &desktop) catch 0;
+        var work: [4]u32 = undefined;
+        const got = self.cardinals(self.conn.root, "_NET_WORKAREA", @min(desktop[0], 1 << 20) * 4, &work) catch 0;
+        if (got == 4 and work[2] != 0 and work[3] != 0) area = .{ work[2], work[3] };
+        if (self.id != 0 and self.mapped) {
+            var extents: [4]u32 = undefined; // left, right, top, bottom
+            if ((self.cardinals(self.id, "_NET_FRAME_EXTENTS", 0, &extents) catch 0) == 4) {
+                // A known side stays known: at least 1 pixel, never 0 (unknown).
+                if (area[0] != 0) area[0] = @max(1, area[0] -| (extents[0] +| extents[1]));
+                if (area[1] != 0) area[1] = @max(1, area[1] -| (extents[2] +| extents[3]));
+            }
+        }
+        return area;
+    }
+
     fn property(self: *Window, atom: u32, kind: u32, bits: u8, value: []const u8) x.Error!void {
         var body: [256]u8 = @splat(0);
         if (value.len > body.len - 20) return error.Failed;
@@ -745,10 +786,11 @@ fn keysym(symbol: u32) ?u32 {
         else => null,
     };
 }
-fn desired(frame: Frame) [2]u32 {
+/// The window's size: what WINDOW-SIZE gave, or for 0 0 the image's size by
+/// window_layout, which also fits `room` (the work area less the frame).
+fn desired(frame: Frame, room: [2]u32) [2]u32 {
     if (frame.requested[0] != 0 and frame.requested[1] != 0) return frame.requested;
-    const rect = layout(frame.width, frame.height, @min(1600, frame.width), @min(1200, frame.height));
-    return .{ rect[2], rect[3] };
+    return window_layout.autoClientSize(frame.width, frame.height, room);
 }
 fn layout(iw: u32, ih: u32, w: u32, h: u32) [4]u32 {
     var rw = w;
@@ -781,7 +823,7 @@ fn run() x.Error!void {
                 conn.deadline = frame.deadline;
                 try window.create(frame);
             } else if (resize) {
-                const size = desired(frame);
+                const size = desired(frame, window.room());
                 var body: [16]u8 = @splat(0);
                 x.put32(&body, 0, window.id);
                 x.put16(&body, 4, 12);

@@ -94,6 +94,9 @@ pub const Connection = struct {
     mask: u32 = 0,
     next_id: u32 = 1,
     root: u32 = 0,
+    /// The screen's size in pixels, from the connection setup.
+    screen_width: u16 = 0,
+    screen_height: u16 = 0,
     visual: u32 = 0,
     depth: u8 = 0,
     bits: u8 = 0,
@@ -169,6 +172,8 @@ pub const Connection = struct {
             if (offset + 40 > body.len) return error.Unavailable;
             if (screen == d.screen) {
                 self.root = get32(body, offset);
+                self.screen_width = get16(body, offset + 20);
+                self.screen_height = get16(body, offset + 22);
                 self.visual = get32(body, offset + 32);
                 self.depth = body[offset + 38];
             }
