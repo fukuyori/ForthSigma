@@ -52,3 +52,9 @@ shared five-second native/Tk search budget, blocked PNG writes, unresponsive or
 stopped children, trickling output, cleanup, retries and explicit Tcl after failure.
 It uses temporary fake wish programs and a private local socket; no desktop is used.
 The acceptance tolerance is 5.25 seconds including process startup and scheduling.
+
+`check-window-keys.fs` logs native-window key codes and A-held changes for manual
+special-key, repeat and focus-loss checks. Run with stdin from `/dev/null` to exclude
+terminal input. Escape exits; Ctrl+C in the window is caught in key and held-state reads. Repeated
+codes and VM processing timestamps need correlation with the operator’s report.
+See its header for the procedure.
