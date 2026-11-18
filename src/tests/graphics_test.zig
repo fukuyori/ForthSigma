@@ -1400,12 +1400,12 @@ test "MOUSE-EVENT gives each press, release, and notch of the wheel in order" {
     output.event_index = 0;
     try machine.interpretLine(": EVENTS BEGIN MOUSE-EVENT WHILE REPEAT ; EVENTS INKEY");
     try expectStack(machine, &.{
-        2, 1, 1, 1,
-        4, 1, 2, 1,
-        5, 1, 1, 2,
-        5, 1, 2, 2,
-        6, 1, 1, 3,
-        6, 1, -1, 3,
+        2,   1, 1,  1,
+        4,   1, 2,  1,
+        5,   1, 1,  2,
+        5,   1, 2,  2,
+        6,   1, 1,  3,
+        6,   1, -1, 3,
         'k',
     });
     machine.data_depth = 0;
@@ -2529,4 +2529,96 @@ test "KEY-HELD? keeps the keys of each source apart" {
     setEvents(&output, &.{.restarted});
     try machine.interpretLine("CHAR x KEY-HELD? CHAR y KEY-HELD?");
     try expectStack(machine, &.{ 0, -1 });
+}
+
+test "automatic search shares one scope and releases it on native, Tk and propagated errors" {
+    try skipWithout(&.{.graphics});
+    const Hooks = struct {
+        var active = false;
+        var begins: usize = 0;
+        var ends: usize = 0;
+        var failure: ?forth.RuntimeError = null;
+        fn scope(_: ?*anyopaque, begin: bool) void {
+            active = begin;
+            if (begin) begins += 1 else ends += 1;
+        }
+        fn processStart(context: ?*anyopaque, program: []const u8, script: []const u8) forth.RuntimeError!void {
+            std.debug.assert(active);
+            return Output.processStart(context, program, script);
+        }
+        fn unavailable(_: ?*anyopaque, _: []const u8, _: []const u8) forth.RuntimeError!void {
+            std.debug.assert(active);
+            return error.HostUnavailable;
+        }
+        fn window(context: ?*anyopaque, pixels: []const u32, width: u32, height: u32, mode: forth.ColorMode, size: [2]u32) forth.RuntimeError!void {
+            std.debug.assert(active);
+            if (failure) |err| return err;
+            return Output.window(context, pixels, width, height, mode, size);
+        }
+    };
+    for ([_]?forth.RuntimeError{ null, error.HostUnavailable, error.HostFailed, error.MemoryExhausted, error.UserInterrupt }) |failure| {
+        var output = Output{ .display = ":0", .has_window = true };
+        const machine = try libraryMachine(&output, "3 2");
+        defer destroyMachine(machine);
+        Hooks.active = false;
+        Hooks.begins = 0;
+        Hooks.ends = 0;
+        Hooks.failure = failure;
+        machine.writer.display_budget_fn = Hooks.scope;
+        machine.writer.process_start_fn = Hooks.processStart;
+        machine.writer.window_fn = Hooks.window;
+        output.process_replies = "R 0 0\n";
+        if (failure != null and (failure.? == error.MemoryExhausted or failure.? == error.UserInterrupt)) {
+            try std.testing.expectError(failure.?, machine.interpretLine("SHOW"));
+            try std.testing.expectEqual(@as(u8, 0), machine.gfx_auto_display);
+            try std.testing.expectEqual(@as(usize, 0), output.process_starts);
+        } else {
+            try machine.interpretLine("SHOW");
+            try std.testing.expectEqual(@as(u8, if (failure == null) 2 else 3), machine.gfx_auto_display);
+        }
+        try std.testing.expect(!Hooks.active);
+        try std.testing.expectEqual(@as(usize, 1), Hooks.begins);
+        try std.testing.expectEqual(Hooks.begins, Hooks.ends);
+    }
+    // No desktop starts no process; unavailable/failed Tk selects terminal.
+    for (0..3) |kind| {
+        var output = Output{};
+        const machine = try libraryMachine(&output, "3 2");
+        defer destroyMachine(machine);
+        machine.writer.display_budget_fn = Hooks.scope;
+        machine.writer.process_start_fn = if (kind == 1) Hooks.unavailable else Hooks.processStart;
+        try machine.interpretLine(if (kind == 0) "FALSE GFX-AUTO-TRY" else "TRUE GFX-AUTO-TRY");
+        try expectStack(machine, &.{1});
+        try std.testing.expect(!Hooks.active);
+        try std.testing.expectEqual(@as(usize, if (kind == 2) 1 else 0), output.process_starts);
+    }
+    // A Tcl script failure must propagate rather than silently selecting the terminal.
+    var output = Output{ .display = ":0" };
+    const machine = try libraryMachine(&output, "3 2");
+    defer destroyMachine(machine);
+    machine.writer.display_budget_fn = Hooks.scope;
+    machine.writer.process_start_fn = Hooks.processStart;
+    output.process_replies = "R 1 4\nfail";
+    try std.testing.expectError(error.TclFailed, machine.interpretLine("SHOW"));
+    try std.testing.expect(!Hooks.active);
+    try std.testing.expectEqual(@as(u8, 0), machine.gfx_auto_display);
+    // Retry starts a fresh scope, and a successful selected backend is not re-scoped.
+    output.process_replies = "R 0 0\nR 0 0\n";
+    output.process_reply_index = 0;
+    const before = Hooks.begins;
+    try machine.interpretLine("SHOW SHOW");
+    try std.testing.expectEqual(before + 1, Hooks.begins);
+    try std.testing.expectEqual(Hooks.begins, Hooks.ends);
+}
+
+test "DISPLAY-AUTO preserves the existing terminal picture when no GUI is attempted" {
+    try skipWithout(&.{.graphics});
+    var output = Output{ .terminal_columns = 80, .terminal_rows = 24 };
+    const machine = try libraryMachine(&output, "3 2");
+    defer destroyMachine(machine);
+    try machine.interpretLine("DISPLAY-TERMINAL SHOW");
+    output.len = 0;
+    try machine.interpretLine("DISPLAY-AUTO SHOW");
+    try std.testing.expect(std.mem.indexOf(u8, output.written(), "\x1b[1A") != null);
+    try std.testing.expect(std.mem.indexOf(u8, output.written(), "\x1b[J") != null);
 }

@@ -1113,6 +1113,7 @@ pub const Builtin = enum {
     gfx_auto_display_set,
     gfx_ime_preedit,
     gfx_ime_caret,
+    gfx_auto_try,
 };
 
 pub const HeapResult = union(enum) { address: Cell, no_memory, bad_pointer };

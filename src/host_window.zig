@@ -4,6 +4,8 @@
 const std = @import("std");
 const builtin = @import("builtin");
 const forth = @import("forth.zig");
+const linux_enabled = builtin.os.tag == .linux and @import("build_options").graphics and @import("build_options").x11;
+const linux_window = if (linux_enabled) @import("host_window_linux.zig") else struct {};
 
 const macos_window = if (builtin.os.tag == .macos) @import("host_window_macos.zig") else struct {
     fn imePreedit(_: ?*anyopaque, _: []u8) forth.RuntimeError!usize {
@@ -12,30 +14,32 @@ const macos_window = if (builtin.os.tag == .macos) @import("host_window_macos.zi
     fn imeCaret(_: ?*anyopaque, _: bool, _: i64, _: i64, _: i64) forth.RuntimeError!void {}
 };
 
-pub const available = builtin.os.tag == .windows or builtin.os.tag == .macos;
+pub const available = builtin.os.tag == .windows or builtin.os.tag == .macos or linux_enabled;
 pub const internal_child_argument = if (builtin.os.tag == .macos) macos_window.child_argument else "";
 
 /// The host's window_fn: shows the pixels, opening the window when it is not open.
-pub const show = if (builtin.os.tag == .windows) win32.show else if (builtin.os.tag == .macos) macos_window.show else unsupported;
+pub const show = if (builtin.os.tag == .windows) win32.show else if (builtin.os.tag == .macos) macos_window.show else if (linux_enabled) linux_window.show else unsupported;
 
 /// Copies the latest native-window IME preedit, when that backend supports it.
 pub fn imePreedit(context: ?*anyopaque, destination: []u8) forth.RuntimeError!usize {
+    if (linux_enabled) return linux_window.imePreedit(context, destination);
     return macos_window.imePreedit(context, destination);
 }
 
 /// Updates the native-window input-method caret, when that backend supports it.
 pub fn imeCaret(context: ?*anyopaque, active: bool, x: i64, y: i64, height: i64) forth.RuntimeError!void {
+    if (linux_enabled) return linux_window.imeCaret(context, active, x, y, height);
     return macos_window.imeCaret(context, active, x, y, height);
 }
 
 /// The next key or mouse change in the window, for INKEY and MOUSE; null when none.
 pub fn poll() ?forth.InputEvent {
-    return if (builtin.os.tag == .windows) win32.poll() else if (builtin.os.tag == .macos) macos_window.poll() else null;
+    return if (builtin.os.tag == .windows) win32.poll() else if (builtin.os.tag == .macos) macos_window.poll() else if (linux_enabled) linux_window.poll() else null;
 }
 
 /// Closes the window and waits for its thread, before the program ends.
 pub fn close() void {
-    if (builtin.os.tag == .windows) win32.close() else if (builtin.os.tag == .macos) macos_window.close();
+    if (builtin.os.tag == .windows) win32.close() else if (builtin.os.tag == .macos) macos_window.close() else if (linux_enabled) linux_window.close();
 }
 
 /// Internal AppKit child entry point, dispatched before Sigma initializes its Forth VM.

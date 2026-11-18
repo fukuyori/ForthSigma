@@ -211,6 +211,9 @@ pub const Writer = struct {
     /// console with another code page). The output written before the call must have
     /// reached the terminal first.
     terminal_utf8_fn: ?*const fn (?*anyopaque, bool) void = null,
+    /// Begins/ends the initial automatic display search. The host shares one deadline
+    /// across its native and Tcl callbacks; ending the scope must not block.
+    display_budget_fn: ?*const fn (?*anyopaque, bool) void = null,
     /// Shows the 32-bit pixels (0xAARRGGBB, rows from the top) of a width × height
     /// image in a window, which the host keeps open. The host copies the pixels, each
     /// as graphics_palette.convert gives it in the color mode (DISPLAY-COLORS). The

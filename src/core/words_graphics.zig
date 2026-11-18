@@ -26,7 +26,7 @@ const graphics_image_address = memory_map.graphics_image_address;
 const graphics_vocabulary_address = memory_map.graphics_vocabulary_address;
 
 /// The built-in words this file executes; executeBuiltin dispatches by this list.
-pub const words = [_]Builtin{ .gfx_init, .gfx_width, .gfx_height, .gfx_pset, .gfx_pget, .gfx_hline, .gfx_cls, .gfx_save_ppm, .gfx_save_bmp, .gfx_show_blocks, .gfx_show_sixel, .gfx_show_window, .gfx_window_query, .gfx_save_png, .gfx_inkey, .gfx_mouse, .gfx_mouse_mode, .gfx_glyph_load, .gfx_glyph_box, .gfx_glyph_alpha, .gfx_font_height, .gfx_font_builtin, .gfx_font_load, .gfx_font_system, .gfx_color_mode, .gfx_tcl, .gfx_tcl_error, .gfx_tcl_event, .gfx_tcl_program, .gfx_tcl_stop, .gfx_show_tk, .gfx_key_held, .gfx_window_size, .gfx_gamepad_poll, .gfx_gamepad_query, .gfx_gamepad_name, .gfx_gamepad_map, .gfx_gamepad_guid, .gfx_mouse_event } ++ graphics_images.words ++ [_]Builtin{ .gfx_auto_display, .gfx_auto_display_set, .gfx_ime_preedit, .gfx_ime_caret };
+pub const words = [_]Builtin{ .gfx_init, .gfx_width, .gfx_height, .gfx_pset, .gfx_pget, .gfx_hline, .gfx_cls, .gfx_save_ppm, .gfx_save_bmp, .gfx_show_blocks, .gfx_show_sixel, .gfx_show_window, .gfx_window_query, .gfx_save_png, .gfx_inkey, .gfx_mouse, .gfx_mouse_mode, .gfx_glyph_load, .gfx_glyph_box, .gfx_glyph_alpha, .gfx_font_height, .gfx_font_builtin, .gfx_font_load, .gfx_font_system, .gfx_color_mode, .gfx_tcl, .gfx_tcl_error, .gfx_tcl_event, .gfx_tcl_program, .gfx_tcl_stop, .gfx_show_tk, .gfx_key_held, .gfx_window_size, .gfx_gamepad_poll, .gfx_gamepad_query, .gfx_gamepad_name, .gfx_gamepad_map, .gfx_gamepad_guid, .gfx_mouse_event } ++ graphics_images.words ++ [_]Builtin{ .gfx_auto_display, .gfx_auto_display_set, .gfx_ime_preedit, .gfx_ime_caret, .gfx_auto_try };
 
 /// The GFX- words in the order REQUIRE-GRAPHICS appends them, right after the GRAPHICS
 /// vocabulary. The order is part of the dictionary that images keep: add new words at
@@ -50,7 +50,7 @@ pub const definitions = [_]struct { []const u8, Builtin }{
     .{ "GFX-MOUSE-EVENT", .gfx_mouse_event },   .{ "GFX-PIXEL", .gfx_pixel },                    .{ "GFX-TILEMAP", .gfx_tilemap },
     .{ "GFX-INDEXED", .gfx_indexed },           .{ "GFX-ROW-SHIFT", .gfx_row_shift },            .{ "GFX-ROW-COLOR", .gfx_row_color },
     .{ "GFX-AUTO-DISPLAY", .gfx_auto_display }, .{ "GFX-AUTO-DISPLAY!", .gfx_auto_display_set }, .{ "GFX-IME-PREEDIT", .gfx_ime_preedit },
-    .{ "GFX-IME-CARET", .gfx_ime_caret },
+    .{ "GFX-IME-CARET", .gfx_ime_caret },       .{ "GFX-AUTO-TRY", .gfx_auto_try },
 };
 
 /// The words of the graphics library that HELP describes; the help test checks that the
@@ -175,6 +175,11 @@ pub fn execute(self: *State, builtin: Builtin) RuntimeError!void {
             if (!default and (width < 1 or width > max_side or height < 1 or height > max_side)) return error.InvalidNumber;
             self.gfx_window_size = .{ @intCast(width), @intCast(height) };
         },
+        .gfx_auto_try => {
+            const desktop = try self.pop() != 0;
+            try requireImage(self);
+            try self.push(try autoTry(self, desktop));
+        },
         .gfx_auto_display => try self.push(self.gfx_auto_display),
         .gfx_auto_display_set => {
             const display = try self.pop();
@@ -214,6 +219,33 @@ pub fn execute(self: *State, builtin: Builtin) RuntimeError!void {
             try executeFont(self, builtin);
         },
     }
+}
+
+// Only startup availability failures select another backend. Tcl script failures,
+// allocation failures and interrupts must still reach the application's CATCH.
+fn autoTry(self: *State, desktop: bool) RuntimeError!Cell {
+    const budget = self.writer.display_budget_fn;
+    if (budget) |scope| scope(self.writer.context, true);
+    defer if (budget) |scope| scope(self.writer.context, false);
+    if (self.writer.window_fn) |show| {
+        self.gfx_input.shown = null;
+        if (show(self.writer.context, self.gfx_pixels, @intCast(self.gfx_width), @intCast(self.gfx_height), self.gfx_color_mode, self.gfx_window_size)) |_| {
+            return 2;
+        } else |err| switch (err) {
+            error.HostUnavailable, error.HostFailed => {},
+            else => return err,
+        }
+    }
+    if (desktop) {
+        self.gfx_input.shown = null;
+        if (tcl.showImage(self)) |_| {
+            return 3;
+        } else |err| switch (err) {
+            error.HostUnavailable, error.HostFailed => {},
+            else => return err,
+        }
+    }
+    return 1;
 }
 
 fn executeFont(self: *State, builtin: Builtin) RuntimeError!void {
@@ -380,6 +412,7 @@ const FileOutput = struct {
 pub const ByteSink = struct {
     context: *anyopaque,
     write: *const fn (*anyopaque, []const u8) void,
+    cancelled: ?*const fn (*anyopaque) bool = null,
 
     fn bytes(sink: ByteSink, data: []const u8) void {
         sink.write(sink.context, data);
@@ -486,6 +519,7 @@ pub fn writePng(canvas: Canvas, output: ByteSink, mode: ?graphics_palette.ColorM
     var stream = StoredStream{ .chunk = &idat, .left = raw };
     var row: [1 + 3 * max_side]u8 = undefined;
     for (0..height) |y| {
+        if (output.cancelled) |cancelled| if (cancelled(output.context)) return;
         row[0] = 0;
         for (canvas.pixels[y * width ..][0..width], 0..) |source, x| {
             const pixel = if (mode) |colors| graphics_palette.convert(colors, x, y, source) else source;

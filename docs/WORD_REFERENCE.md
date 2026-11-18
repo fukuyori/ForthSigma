@@ -6,7 +6,7 @@ Each entry has a stack effect and a behavior description based on runtime HELP, 
 
 Coverage assumes the full build. Feature-disabled builds omit their respective words. Load optional vocabularies with REQUIRE before adding them to the search order. Immediate/compile-only flags come from the built-in implementation; syntax forms have their own conditions in their descriptions.
 
-Entries (namespace/name pairs): **1527**. The same name in different vocabularies counts separately.
+Entries (namespace/name pairs): **1526**. The same name in different vocabularies counts separately.
 
 ## Contents
 
@@ -14,7 +14,7 @@ Entries (namespace/name pairs): **1527**. The same name in different vocabularie
 - [EKEYS](#namespace-ekeys) (35)
 - [FORTH](#namespace-forth) (957)
 - [GAME](#namespace-game) (59)
-- [GRAPHICS](#namespace-graphics) (216)
+- [GRAPHICS](#namespace-graphics) (215)
 - [GUI](#namespace-gui) (135)
 - [Root](#namespace-root) (14)
 - [Syntax](#namespace-syntax) (38)
@@ -129,7 +129,7 @@ Implementation definition (private helpers may change):
 : ADSR ( attack decay sustain release -- )   SND-ADSR ;
 ```
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1324).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1325).
 
 <a id="w-415544494f3a414d494741"></a>
 
@@ -157,7 +157,7 @@ Implementation definition (private helpers may change):
 16 CONSTANT SCC   32 CONSTANT AMIGA
 ```
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1366).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1367).
 
 <a id="w-415544494f3a414d4947412d46494c544552"></a>
 
@@ -189,7 +189,7 @@ Implementation definition (private helpers may change):
 : AMIGA-FILTER ( flag -- )   SND-AMIGA-FILTER ;
 ```
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1348).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1349).
 
 <a id="w-415544494f3a414d4947412d534f554e44"></a>
 
@@ -221,7 +221,7 @@ Implementation definition (private helpers may change):
 : AMIGA-SOUND ( -- )   5 SND-CHIP ;
 ```
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1347).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1348).
 
 <a id="w-415544494f3a415544494f3f"></a>
 
@@ -253,7 +253,7 @@ Implementation definition (private helpers may change):
 : AUDIO? ( -- flag )   SND-DEVICE ;
 ```
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1306).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1307).
 
 <a id="w-415544494f3a42454550"></a>
 
@@ -285,7 +285,7 @@ Implementation definition (private helpers may change):
 : BEEP ( -- )   SND-BEEP ;
 ```
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1305).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1306).
 
 <a id="w-415544494f3a433634"></a>
 
@@ -313,7 +313,7 @@ Implementation definition (private helpers may change):
 1 CONSTANT MSX   2 CONSTANT ST   4 CONSTANT NES   8 CONSTANT C64
 ```
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1364).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1365).
 
 <a id="w-415544494f3a4336342d534f554e44"></a>
 
@@ -345,7 +345,7 @@ Implementation definition (private helpers may change):
 : C64-SOUND ( -- )   3 SND-CHIP ;
 ```
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1328).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1329).
 
 <a id="w-415544494f3a4348495053"></a>
 
@@ -377,7 +377,7 @@ Implementation definition (private helpers may change):
 : CHIPS ( mask -- )   SND-CHIPS ;
 ```
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1358).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1359).
 
 <a id="w-415544494f3a44555459"></a>
 
@@ -409,7 +409,7 @@ Implementation definition (private helpers may change):
 : DUTY ( percent -- )   SND-DUTY ;
 ```
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1323).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1324).
 
 <a id="w-415544494f3a46494c544552"></a>
 
@@ -441,7 +441,7 @@ Implementation definition (private helpers may change):
 : FILTER ( mode cutoff resonance -- )   SND-FILTER ;
 ```
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1331).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1332).
 
 <a id="w-415544494f3a465245452d53414d504c4553"></a>
 
@@ -473,7 +473,7 @@ Implementation definition (private helpers may change):
 : FREE-SAMPLES ( -- )   SND-FREE-SAMPLES ;
 ```
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1346).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1347).
 
 <a id="w-415544494f3a494e535452554d454e54"></a>
 
@@ -505,7 +505,7 @@ Implementation definition (private helpers may change):
 : INSTRUMENT ( n -- )   SND-INSTRUMENT ;
 ```
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1317).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1318).
 
 <a id="w-415544494f3a4c4f41442d4d4f44"></a>
 
@@ -537,7 +537,7 @@ Implementation definition (private helpers may change):
 : LOAD-MOD ( c-addr u -- )   SND-LOAD-MOD THROW ;
 ```
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1353).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1354).
 
 <a id="w-415544494f3a4c4f41442d53414d504c45"></a>
 
@@ -569,7 +569,7 @@ Implementation definition (private helpers may change):
 : LOAD-SAMPLE ( c-addr u n -- )   SND-LOAD-SAMPLE THROW ;
 ```
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1341).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1342).
 
 <a id="w-415544494f3a4c4f4f502d53414d504c45"></a>
 
@@ -601,7 +601,7 @@ Implementation definition (private helpers may change):
 : LOOP-SAMPLE ( start end n -- )   SND-LOOP-SAMPLE ;
 ```
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1343).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1344).
 
 <a id="w-415544494f3a4d4f443f"></a>
 
@@ -633,7 +633,7 @@ Implementation definition (private helpers may change):
 : MOD? ( -- flag )   SND-MOD-PLAYING ;
 ```
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1356).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1357).
 
 <a id="w-415544494f3a4d5358"></a>
 
@@ -661,7 +661,7 @@ Implementation definition (private helpers may change):
 1 CONSTANT MSX   2 CONSTANT ST   4 CONSTANT NES   8 CONSTANT C64
 ```
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1361).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1362).
 
 <a id="w-415544494f3a4d53582d534f554e44"></a>
 
@@ -693,7 +693,7 @@ Implementation definition (private helpers may change):
 : MSX-SOUND ( -- )   0 SND-CHIP ;
 ```
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1314).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1315).
 
 <a id="w-415544494f3a4e4553"></a>
 
@@ -721,7 +721,7 @@ Implementation definition (private helpers may change):
 1 CONSTANT MSX   2 CONSTANT ST   4 CONSTANT NES   8 CONSTANT C64
 ```
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1363).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1364).
 
 <a id="w-415544494f3a4e45532d534f554e44"></a>
 
@@ -753,7 +753,7 @@ Implementation definition (private helpers may change):
 : NES-SOUND ( -- )   2 SND-CHIP ;
 ```
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1316).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1317).
 
 <a id="w-415544494f3a4e4f495345"></a>
 
@@ -785,7 +785,7 @@ Implementation definition (private helpers may change):
 : NOISE ( -- )   4 SND-WAVE ;
 ```
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1322).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1323).
 
 <a id="w-415544494f3a504c4159"></a>
 
@@ -817,7 +817,7 @@ Implementation definition (private helpers may change):
 : PLAY ( c-addr u -- )   0 0 0 0 SND-PLAY ;
 ```
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1300).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1301).
 
 <a id="w-415544494f3a504c41592d4d4f44"></a>
 
@@ -849,7 +849,7 @@ Implementation definition (private helpers may change):
 : PLAY-MOD ( flag -- )   SND-PLAY-MOD ;
 ```
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1354).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1355).
 
 <a id="w-415544494f3a504c415932"></a>
 
@@ -881,7 +881,7 @@ Implementation definition (private helpers may change):
 : PLAY2 ( c-addr1 u1 c-addr2 u2 -- )   0 0 SND-PLAY ;
 ```
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1301).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1302).
 
 <a id="w-415544494f3a504c415933"></a>
 
@@ -913,7 +913,7 @@ Implementation definition (private helpers may change):
 : PLAY3 ( c-addr1 u1 c-addr2 u2 c-addr3 u3 -- )   SND-PLAY ;
 ```
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1302).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1303).
 
 <a id="w-415544494f3a504c41593f"></a>
 
@@ -945,7 +945,7 @@ Implementation definition (private helpers may change):
 : PLAY? ( n -- flag )   SND-PLAYING ;
 ```
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1303).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1304).
 
 <a id="w-415544494f3a504c415953"></a>
 
@@ -977,7 +977,7 @@ Implementation definition (private helpers may change):
 : PLAYS ( c-addr1 u1 ... c-addrn un n -- )   SND-PLAYS ;
 ```
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1313).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1314).
 
 <a id="w-415544494f3a50554c5345"></a>
 
@@ -1009,7 +1009,7 @@ Implementation definition (private helpers may change):
 : PULSE ( -- )   1 SND-WAVE ;
 ```
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1319).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1320).
 
 <a id="w-415544494f3a52494e47"></a>
 
@@ -1041,7 +1041,7 @@ Implementation definition (private helpers may change):
 : RING ( flag -- )   SND-RING ;
 ```
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1329).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1330).
 
 <a id="w-415544494f3a53414d504c45"></a>
 
@@ -1073,7 +1073,7 @@ Implementation definition (private helpers may change):
 : SAMPLE ( c-addr u rate n -- )   SND-SAMPLE ;
 ```
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1342).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1343).
 
 <a id="w-415544494f3a53414d504c452d494e535452554d454e54"></a>
 
@@ -1105,7 +1105,7 @@ Implementation definition (private helpers may change):
 : SAMPLE-INSTRUMENT ( n -- )   SND-SAMPLE-INSTRUMENT ;
 ```
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1344).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1345).
 
 <a id="w-415544494f3a534157"></a>
 
@@ -1137,7 +1137,7 @@ Implementation definition (private helpers may change):
 : SAW ( -- )   3 SND-WAVE ;
 ```
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1321).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1322).
 
 <a id="w-415544494f3a534343"></a>
 
@@ -1165,7 +1165,7 @@ Implementation definition (private helpers may change):
 16 CONSTANT SCC   32 CONSTANT AMIGA
 ```
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1365).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1366).
 
 <a id="w-415544494f3a5343432d534f554e44"></a>
 
@@ -1197,7 +1197,7 @@ Implementation definition (private helpers may change):
 : SCC-SOUND ( -- )   4 SND-CHIP ;
 ```
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1333).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1334).
 
 <a id="w-415544494f3a5343432d57415645"></a>
 
@@ -1229,7 +1229,7 @@ Implementation definition (private helpers may change):
 : SCC-WAVE ( c-addr n -- )   SND-WAVETABLE ;
 ```
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1367).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1368).
 
 <a id="w-415544494f3a534658"></a>
 
@@ -1261,7 +1261,7 @@ Implementation definition (private helpers may change):
 : SFX ( n -- )   SND-SFX ;
 ```
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1345).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1346).
 
 <a id="w-415544494f3a534e442d41445352"></a>
 
@@ -1287,7 +1287,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1312).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1313).
 
 <a id="w-415544494f3a534e442d414d4947412d46494c544552"></a>
 
@@ -1313,7 +1313,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1339).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1340).
 
 <a id="w-415544494f3a534e442d42454550"></a>
 
@@ -1339,7 +1339,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1297).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1298).
 
 <a id="w-415544494f3a534e442d43484950"></a>
 
@@ -1365,7 +1365,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1308).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1309).
 
 <a id="w-415544494f3a534e442d4348495053"></a>
 
@@ -1391,7 +1391,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1357).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1358).
 
 <a id="w-415544494f3a534e442d444556494345"></a>
 
@@ -1417,7 +1417,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1299).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1300).
 
 <a id="w-415544494f3a534e442d44555459"></a>
 
@@ -1443,7 +1443,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1311).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1312).
 
 <a id="w-415544494f3a534e442d46494c544552"></a>
 
@@ -1469,7 +1469,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1327).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1328).
 
 <a id="w-415544494f3a534e442d465245452d53414d504c4553"></a>
 
@@ -1495,7 +1495,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1340).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1341).
 
 <a id="w-415544494f3a534e442d494e535452554d454e54"></a>
 
@@ -1521,7 +1521,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1309).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1310).
 
 <a id="w-415544494f3a534e442d4c4f41442d4d4f44"></a>
 
@@ -1547,7 +1547,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment. Check the returned ior; zero is success. Passing it to THROW is one option. Use valid logical-memory addresses, lengths and capacities; distinguish owned storage from borrowed lifetimes.
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1349).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1350).
 
 <a id="w-415544494f3a534e442d4c4f41442d53414d504c45"></a>
 
@@ -1573,7 +1573,7 @@ S" b.txt" 6 SND-LOAD-SAMPLE S" missing.txt" 6 SND-LOAD-SAMPLE 0<>
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment. Check the returned ior; zero is success. Passing it to THROW is one option. Use valid logical-memory addresses, lengths and capacities; distinguish owned storage from borrowed lifetimes.
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1334).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1335).
 
 <a id="w-415544494f3a534e442d4c4f4f502d53414d504c45"></a>
 
@@ -1599,7 +1599,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1336).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1337).
 
 <a id="w-415544494f3a534e442d4d4f442d504c4159494e47"></a>
 
@@ -1625,7 +1625,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1352).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1353).
 
 <a id="w-415544494f3a534e442d504c4159"></a>
 
@@ -1651,7 +1651,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment. Use valid logical-memory addresses, lengths and capacities; distinguish owned storage from borrowed lifetimes.
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1295).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1296).
 
 <a id="w-415544494f3a534e442d504c41592d4d4f44"></a>
 
@@ -1677,7 +1677,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1350).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1351).
 
 <a id="w-415544494f3a534e442d504c4159494e47"></a>
 
@@ -1703,7 +1703,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1298).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1299).
 
 <a id="w-415544494f3a534e442d504c415953"></a>
 
@@ -1729,7 +1729,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment. Use valid logical-memory addresses, lengths and capacities; distinguish owned storage from borrowed lifetimes.
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1307).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1308).
 
 <a id="w-415544494f3a534e442d52494e47"></a>
 
@@ -1755,7 +1755,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1325).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1326).
 
 <a id="w-415544494f3a534e442d53414d504c45"></a>
 
@@ -1781,7 +1781,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment. Use valid logical-memory addresses, lengths and capacities; distinguish owned storage from borrowed lifetimes.
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1335).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1336).
 
 <a id="w-415544494f3a534e442d53414d504c452d494e535452554d454e54"></a>
 
@@ -1807,7 +1807,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1337).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1338).
 
 <a id="w-415544494f3a534e442d534658"></a>
 
@@ -1833,7 +1833,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1338).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1339).
 
 <a id="w-415544494f3a534e442d534f554e44"></a>
 
@@ -1859,7 +1859,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1296).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1297).
 
 <a id="w-415544494f3a534e442d53544f502d4d4f44"></a>
 
@@ -1885,7 +1885,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1351).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1352).
 
 <a id="w-415544494f3a534e442d5354594c45"></a>
 
@@ -1911,7 +1911,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1359).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1360).
 
 <a id="w-415544494f3a534e442d53594e43"></a>
 
@@ -1937,7 +1937,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1326).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1327).
 
 <a id="w-415544494f3a534e442d57415645"></a>
 
@@ -1963,7 +1963,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1310).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1311).
 
 <a id="w-415544494f3a534e442d574156455441424c45"></a>
 
@@ -1989,7 +1989,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment. Use valid logical-memory addresses, lengths and capacities; distinguish owned storage from borrowed lifetimes.
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1332).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1333).
 
 <a id="w-415544494f3a534f554e44"></a>
 
@@ -2021,7 +2021,7 @@ Implementation definition (private helpers may change):
 : SOUND ( reg value -- )   SND-SOUND ;
 ```
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1304).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1305).
 
 <a id="w-415544494f3a535155415245"></a>
 
@@ -2053,7 +2053,7 @@ Implementation definition (private helpers may change):
 : SQUARE ( -- )   0 SND-WAVE ;
 ```
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1318).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1319).
 
 <a id="w-415544494f3a5354"></a>
 
@@ -2081,7 +2081,7 @@ Implementation definition (private helpers may change):
 1 CONSTANT MSX   2 CONSTANT ST   4 CONSTANT NES   8 CONSTANT C64
 ```
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1362).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1363).
 
 <a id="w-415544494f3a53542d534f554e44"></a>
 
@@ -2115,7 +2115,7 @@ Implementation definition (private helpers may change):
 : ST-SOUND ( -- )   1 SND-CHIP ;
 ```
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1315).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1316).
 
 <a id="w-415544494f3a53544f502d4d4f44"></a>
 
@@ -2147,7 +2147,7 @@ Implementation definition (private helpers may change):
 : STOP-MOD ( -- )   SND-STOP-MOD ;
 ```
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1355).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1356).
 
 <a id="w-415544494f3a5354594c45"></a>
 
@@ -2179,7 +2179,7 @@ Implementation definition (private helpers may change):
 : STYLE ( chip -- )   SND-STYLE ;
 ```
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1360).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1361).
 
 <a id="w-415544494f3a53594e43"></a>
 
@@ -2213,7 +2213,7 @@ Implementation definition (private helpers may change):
 : SYNC ( flag -- )   SND-SYNC ;
 ```
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1330).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1331).
 
 <a id="w-415544494f3a545249414e474c45"></a>
 
@@ -2245,7 +2245,7 @@ Implementation definition (private helpers may change):
 : TRIANGLE ( -- )   2 SND-WAVE ;
 ```
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1320).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1321).
 
 <a id="namespace-ekeys"></a>
 
@@ -28264,6 +28264,7 @@ Sources: [src/graphics/game.fs](../src/graphics/game.fs).
 - [` GAMEPAD? `](#w-47524150484943533a47414d455041443f)
 - [` GFX-AUTO-DISPLAY `](#w-47524150484943533a4746582d4155544f2d444953504c4159)
 - [` GFX-AUTO-DISPLAY! `](#w-47524150484943533a4746582d4155544f2d444953504c415921)
+- [` GFX-AUTO-TRY `](#w-47524150484943533a4746582d4155544f2d545259)
 - [` GFX-CLS `](#w-47524150484943533a4746582d434c53)
 - [` GFX-COLOR-MODE `](#w-47524150484943533a4746582d434f4c4f522d4d4f4445)
 - [` GFX-COPY `](#w-47524150484943533a4746582d434f5059)
@@ -28388,8 +28389,6 @@ Sources: [src/graphics/game.fs](../src/graphics/game.fs).
 - [` (AUTO-SHOW) `](#w-47524150484943533a284155544f2d53484f5729)
 - [` (AUTO-SHOW-TK) `](#w-47524150484943533a284155544f2d53484f572d544b29)
 - [` (AUTO-SHOW-WINDOW) `](#w-47524150484943533a284155544f2d53484f572d57494e444f5729)
-- [` (AUTO-TRY-TK) `](#w-47524150484943533a284155544f2d5452592d544b29)
-- [` (AUTO-TRY-WINDOW) `](#w-47524150484943533a284155544f2d5452592d57494e444f5729)
 - [` (BLEND-PIXEL) `](#w-47524150484943533a28424c454e442d504958454c29)
 - [` (BRESENHAM) `](#w-47524150484943533a2842524553454e48414d29)
 - [` (CHECK-RANGE) `](#w-47524150484943533a28434845434b2d52414e474529)
@@ -28482,7 +28481,7 @@ Implementation definition (private helpers may change):
    THEN ;
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1291).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1292).
 
 <a id="w-47524150484943533a4255494c54494e2d464f4e54"></a>
 
@@ -28514,7 +28513,7 @@ Implementation definition (private helpers may change):
 : BUILTIN-FONT ( -- )   GFX-FONT-BUILTIN ;
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1250).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1251).
 
 <a id="w-47524150484943533a434952434c45"></a>
 
@@ -28720,7 +28719,7 @@ Implementation definition (private helpers may change):
    (TRANSPARENT) @ (FLIP) @ (MODE) @ (ALPHA) @ (SCALE) @ GFX-COPY ;
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1225).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1226).
 
 <a id="w-47524150484943533a444953504c41592d4155544f"></a>
 
@@ -28780,7 +28779,7 @@ Implementation definition (private helpers may change):
 : DISPLAY-COLORS ( n -- )   DUP (DITHER) @ GFX-COLOR-MODE  (COLORS) ! ;
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1239).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1240).
 
 <a id="w-47524150484943533a444953504c41592d5445524d494e414c"></a>
 
@@ -28844,7 +28843,7 @@ Implementation definition (private helpers may change):
 : DISPLAY-TK ( -- )   3 (DISPLAY) ! ;
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1216).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1217).
 
 <a id="w-47524150484943533a444953504c41592d57494e444f57"></a>
 
@@ -28908,7 +28907,7 @@ Implementation definition (private helpers may change):
 : DITHER ( flag -- )   0<> (DITHER) ! ;
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1240).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1241).
 
 <a id="w-47524150484943533a445241572d544f"></a>
 
@@ -28940,7 +28939,7 @@ Implementation definition (private helpers may change):
 : DRAW-TO ( img -- )   GFX-TARGET ;
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1221).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1222).
 
 <a id="w-47524150484943533a44524157494e47"></a>
 
@@ -28972,7 +28971,7 @@ Implementation definition (private helpers may change):
 : DRAWING ( -- img )   GFX-TARGET@ ;
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1222).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1223).
 
 <a id="w-47524150484943533a46494c4c2d434952434c45"></a>
 
@@ -29084,7 +29083,7 @@ Implementation definition (private helpers may change):
    SHOW ;
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1263).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1264).
 
 <a id="w-47524150484943533a465245452d494d414745"></a>
 
@@ -29116,7 +29115,7 @@ Implementation definition (private helpers may change):
 : FREE-IMAGE ( img -- )   GFX-IMAGE-FREE ;
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1219).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1220).
 
 <a id="w-47524150484943533a47414d455041442d41584553"></a>
 
@@ -29144,7 +29143,7 @@ Implementation definition (private helpers may change):
 : GAMEPAD-AXES ( pad -- count ) 4 SWAP GFX-GAMEPAD-QUERY ;
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1194).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1195).
 
 <a id="w-47524150484943533a47414d455041442d41584953"></a>
 
@@ -29175,7 +29174,7 @@ Implementation definition (private helpers may change):
    { axis pad } axis 0 16 WITHIN 0= IF -24 THROW THEN 16 axis + pad GFX-GAMEPAD-QUERY ;
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1197).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1198).
 
 <a id="w-47524150484943533a47414d455041442d425554544f4e2d434f554e54"></a>
 
@@ -29203,7 +29202,7 @@ Implementation definition (private helpers may change):
 : GAMEPAD-BUTTON-COUNT ( pad -- count ) 5 SWAP GFX-GAMEPAD-QUERY ;
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1195).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1196).
 
 <a id="w-47524150484943533a47414d455041442d425554544f4e3f"></a>
 
@@ -29235,7 +29234,7 @@ Implementation definition (private helpers may change):
    pad GAMEPAD-BUTTONS 1 button LSHIFT AND 0<> ;
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1199).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1200).
 
 <a id="w-47524150484943533a47414d455041442d425554544f4e53"></a>
 
@@ -29265,7 +29264,7 @@ Implementation definition (private helpers may change):
 : GAMEPAD-BUTTONS ( pad -- mask ) 2 SWAP GFX-GAMEPAD-QUERY ;
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1192).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1193).
 
 <a id="w-47524150484943533a47414d455041442d47554944"></a>
 
@@ -29273,7 +29272,7 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 ` ( addr capacity pad -- length ) `
 
-Copy the 32 ASCII hex digits of the device GUID used in SDL mappings (no terminator); missing pads return 0 (FORTH/Sigma graphics).
+Copy 32 ASCII hex digits of the device identifier (no terminator); missing pads return 0. SDL backends use the mapping GUID; static Linux musl evdev uses its own bus/vendor/product/version identifier, incompatible with SDL mappings (FORTH/Sigma graphics).
 
 Kind: library.
 
@@ -29293,7 +29292,7 @@ Implementation definition (private helpers may change):
 : GAMEPAD-GUID ( addr capacity pad -- length ) GFX-GAMEPAD-GUID ;
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1205).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1206).
 
 <a id="w-47524150484943533a47414d455041442d484154"></a>
 
@@ -29324,7 +29323,7 @@ Implementation definition (private helpers may change):
    { hat pad } hat 0 4 WITHIN 0= IF -24 THROW THEN 32 hat + pad GFX-GAMEPAD-QUERY ;
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1198).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1199).
 
 <a id="w-47524150484943533a47414d455041442d48415453"></a>
 
@@ -29352,7 +29351,7 @@ Implementation definition (private helpers may change):
 : GAMEPAD-HATS ( pad -- count ) 6 SWAP GFX-GAMEPAD-QUERY ;
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1196).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1197).
 
 <a id="w-47524150484943533a47414d455041442d4944"></a>
 
@@ -29382,7 +29381,7 @@ Implementation definition (private helpers may change):
 : GAMEPAD-ID ( pad -- id ) 1 SWAP GFX-GAMEPAD-QUERY ;
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1191).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1192).
 
 <a id="w-47524150484943533a47414d455041442d4d4150"></a>
 
@@ -29390,7 +29389,7 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 ` ( addr length -- flag ) `
 
-Add an SDL mapping string (GUID,name,a:b0,...); true on success. Poll again. Mapping lasts for this process only. SDL\_GAMECONTROLLERCONFIG is also supported by SDL. (FORTH/Sigma graphics).
+Add an SDL mapping string (GUID,name,a:b0,...); true on success. Poll again. Mapping lasts for this process only. SDL\_GAMECONTROLLERCONFIG is also supported by SDL. Static Linux musl evdev returns false (no custom mapping). (FORTH/Sigma graphics).
 
 Kind: library.
 
@@ -29414,7 +29413,7 @@ Implementation definition (private helpers may change):
 : GAMEPAD-MAP ( addr length -- flag ) GFX-GAMEPAD-MAP ;
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1201).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1202).
 
 <a id="w-47524150484943533a47414d455041442d4d41505045443f"></a>
 
@@ -29427,6 +29426,8 @@ True for SDL standard layout, false for raw joystick layout or absent pad. (FORT
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Related: [GUI](GRAPHICS_AND_SOUND.md#gui).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
@@ -29444,7 +29445,7 @@ Implementation definition (private helpers may change):
 : GAMEPAD-MAPPED? ( pad -- flag ) 3 SWAP GFX-GAMEPAD-QUERY ;
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1193).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1194).
 
 <a id="w-47524150484943533a47414d455041442d4e414d45"></a>
 
@@ -29474,7 +29475,7 @@ Implementation definition (private helpers may change):
 : GAMEPAD-NAME ( addr capacity pad -- length ) GFX-GAMEPAD-NAME ;
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1200).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1201).
 
 <a id="w-47524150484943533a47414d455041442d504f4c4c"></a>
 
@@ -29482,7 +29483,7 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 ` ( -- count ) `
 
-Refresh up to 8 pads; -1 means SDL3 unavailable, 0 means no devices. Needs SDL 3.2+ (or set SIGMA\_SDL3 to its absolute library path): SDL3.dll beside sigma.exe on Windows, libSDL3.so.0 on Linux, libSDL3.dylib on macOS. Static musl builds have no backend. Poll once per frame. (FORTH/Sigma graphics).
+Refresh up to 8 pads; -1 means backend unavailable or access denied, 0 means no devices. Windows/macOS and dynamic Linux use SDL 3.2+ (SIGMA\_SDL3 may name its library). Static Linux musl uses evdev raw snapshots: mapped is false, GAMEPAD-MAP is unsupported, and device permissions apply. Poll once per frame. (FORTH/Sigma graphics).
 
 Kind: library.
 
@@ -29504,7 +29505,7 @@ Implementation definition (private helpers may change):
 : GAMEPAD-POLL ( -- count ) GFX-GAMEPAD-POLL ;
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1189).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1190).
 
 <a id="w-47524150484943533a47414d455041443f"></a>
 
@@ -29534,7 +29535,7 @@ Implementation definition (private helpers may change):
 : GAMEPAD? ( pad -- flag ) 0 SWAP GFX-GAMEPAD-QUERY ;
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1190).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1191).
 
 <a id="w-47524150484943533a4746582d4155544f2d444953504c4159"></a>
 
@@ -29579,6 +29580,38 @@ Usage example (source excerpt; consult the link for setup and expectations)
 ```
 
 [Example context](../src/graphics/graphics.fs#L257)
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1181).
+
+<a id="w-47524150484943533a4746582d4155544f2d545259"></a>
+
+### ` GFX-AUTO-TRY `
+
+` ( desktop? -- mode ) `
+
+Internal initial SHOW search: try the native window, then Tk on a desktop, returning 1 for terminal, 2 for native, or 3 for Tk. A supporting host bounds the whole search with one deadline; errors other than host availability failures propagate (FORTH/Sigma).
+
+Kind: builtin.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example (source excerpt; consult the link for setup and expectations)
+
+```forth
+: (AUTO-SHOW) ( -- )
+   GFX-AUTO-DISPLAY DUP 2 = IF DROP (AUTO-SHOW-WINDOW) EXIT THEN
+   DUP 3 = IF DROP (AUTO-SHOW-TK) EXIT THEN
+   DUP 1 = IF DROP (TERMINAL-MODE) @ IF GFX-SHOW-SIXEL ELSE GFX-SHOW-BLOCKS THEN EXIT THEN
+   DROP
+   ['] (DESKTOP?) CATCH ?DUP IF DROP FALSE THEN
+   GFX-AUTO-TRY DUP GFX-AUTO-DISPLAY!
+   1 <> IF EXIT THEN
+   (TERMINAL-MODE) @ IF GFX-SHOW-SIXEL ELSE GFX-SHOW-BLOCKS THEN ;
+```
+
+[Example context](../src/graphics/graphics.fs#L294)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -29634,7 +29667,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1238).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1239).
 
 <a id="w-47524150484943533a4746582d434f5059"></a>
 
@@ -29657,11 +29690,11 @@ Usage example (source excerpt; consult the link for setup and expectations)
    (SAVED) @ ?DUP IF  0 0 SCREEN IMAGE-SIZE 0 0 -1 0 0 128 1 GFX-COPY  THEN ;
 ```
 
-[Example context](../src/graphics/gui.fs#L614)
+[Example context](../src/graphics/gui.fs#L615)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1237).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1238).
 
 <a id="w-47524150484943533a4746582d464f4e542d4255494c54494e"></a>
 
@@ -29683,11 +29716,11 @@ Usage example (source excerpt; consult the link for setup and expectations)
 : BUILTIN-FONT ( -- )   GFX-FONT-BUILTIN ;
 ```
 
-[Example context](../src/graphics/graphics.fs#L414)
+[Example context](../src/graphics/graphics.fs#L398)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1245).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1246).
 
 <a id="w-47524150484943533a4746582d464f4e542d484549474854"></a>
 
@@ -29713,7 +29746,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS GFX-FONT-HEIGHT CHAR A GFX-GLYPH-LOAD GFX-GLYPH-B
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1244).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1245).
 
 <a id="w-47524150484943533a4746582d464f4e542d4c4f4144"></a>
 
@@ -29735,11 +29768,11 @@ Usage example (source excerpt; consult the link for setup and expectations)
 : LOAD-FONT ( c-addr u -- )   GFX-FONT-LOAD THROW ;
 ```
 
-[Example context](../src/graphics/graphics.fs#L417)
+[Example context](../src/graphics/graphics.fs#L401)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment. Check the returned ior; zero is success. Passing it to THROW is one option. Use valid logical-memory addresses, lengths and capacities; distinguish owned storage from borrowed lifetimes.
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1246).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1247).
 
 <a id="w-47524150484943533a4746582d464f4e542d53595354454d"></a>
 
@@ -29761,11 +29794,11 @@ Usage example (source excerpt; consult the link for setup and expectations)
 : SYSTEM-FONT ( c-addr u height -- )   GFX-FONT-SYSTEM THROW ;
 ```
 
-[Example context](../src/graphics/graphics.fs#L420)
+[Example context](../src/graphics/graphics.fs#L404)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment. Check the returned ior; zero is success. Passing it to THROW is one option. Use valid logical-memory addresses, lengths and capacities; distinguish owned storage from borrowed lifetimes.
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1247).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1248).
 
 <a id="w-47524150484943533a4746582d47414d455041442d47554944"></a>
 
@@ -29785,11 +29818,11 @@ Usage example (source excerpt; consult the link for setup and expectations)
 : GAMEPAD-GUID ( addr capacity pad -- length ) GFX-GAMEPAD-GUID ;
 ```
 
-[Example context](../src/graphics/graphics.fs#L370)
+[Example context](../src/graphics/graphics.fs#L354)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment. Use valid logical-memory addresses, lengths and capacities; distinguish owned storage from borrowed lifetimes.
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1206).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1207).
 
 <a id="w-47524150484943533a4746582d47414d455041442d4d4150"></a>
 
@@ -29809,11 +29842,11 @@ Usage example (source excerpt; consult the link for setup and expectations)
 : GAMEPAD-MAP ( addr length -- flag ) GFX-GAMEPAD-MAP ;
 ```
 
-[Example context](../src/graphics/graphics.fs#L371)
+[Example context](../src/graphics/graphics.fs#L355)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment. Use valid logical-memory addresses, lengths and capacities; distinguish owned storage from borrowed lifetimes.
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1204).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1205).
 
 <a id="w-47524150484943533a4746582d47414d455041442d4e414d45"></a>
 
@@ -29833,11 +29866,11 @@ Usage example (source excerpt; consult the link for setup and expectations)
 : GAMEPAD-NAME ( addr capacity pad -- length ) GFX-GAMEPAD-NAME ;
 ```
 
-[Example context](../src/graphics/graphics.fs#L369)
+[Example context](../src/graphics/graphics.fs#L353)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment. Use valid logical-memory addresses, lengths and capacities; distinguish owned storage from borrowed lifetimes.
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1203).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1204).
 
 <a id="w-47524150484943533a4746582d47414d455041442d504f4c4c"></a>
 
@@ -29857,11 +29890,11 @@ Usage example (source excerpt; consult the link for setup and expectations)
 : GAMEPAD-POLL ( -- count ) GFX-GAMEPAD-POLL ;
 ```
 
-[Example context](../src/graphics/graphics.fs#L354)
+[Example context](../src/graphics/graphics.fs#L338)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1202).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1203).
 
 <a id="w-47524150484943533a4746582d47414d455041442d5155455259"></a>
 
@@ -29881,11 +29914,11 @@ Usage example (source excerpt; consult the link for setup and expectations)
 : GAMEPAD? ( pad -- flag ) 0 SWAP GFX-GAMEPAD-QUERY ;
 ```
 
-[Example context](../src/graphics/graphics.fs#L355)
+[Example context](../src/graphics/graphics.fs#L339)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1207).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1208).
 
 <a id="w-47524150484943533a4746582d474c5950482d414c504841"></a>
 
@@ -29911,7 +29944,7 @@ S" a.txt" LOAD-FONT CHAR A GFX-GLYPH-LOAD DROP BL GFX-GLYPH-LOAD GFX-GLYPH-BOX 0
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1243).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1244).
 
 <a id="w-47524150484943533a4746582d474c5950482d424f58"></a>
 
@@ -29937,7 +29970,7 @@ S" a.txt" LOAD-FONT CHAR A GFX-GLYPH-LOAD DROP BL GFX-GLYPH-LOAD GFX-GLYPH-BOX 0
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1242).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1243).
 
 <a id="w-47524150484943533a4746582d474c5950482d4c4f4144"></a>
 
@@ -29963,7 +29996,7 @@ S" a.txt" LOAD-FONT CHAR A GFX-GLYPH-LOAD DROP BL GFX-GLYPH-LOAD GFX-GLYPH-BOX 0
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1241).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1242).
 
 <a id="w-47524150484943533a4746582d484549474854"></a>
 
@@ -30037,11 +30070,11 @@ Usage example (source excerpt; consult the link for setup and expectations)
 : FREE-IMAGE ( img -- )   GFX-IMAGE-FREE ;
 ```
 
-[Example context](../src/graphics/graphics.fs#L542)
+[Example context](../src/graphics/graphics.fs#L526)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1233).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1234).
 
 <a id="w-47524150484943533a4746582d494d4147452d4c4f4144"></a>
 
@@ -30063,11 +30096,11 @@ Usage example (source excerpt; consult the link for setup and expectations)
 : LOAD-IMAGE ( c-addr u -- img )   (TRANSPARENT) @ GFX-IMAGE-LOAD THROW ;
 ```
 
-[Example context](../src/graphics/graphics.fs#L571)
+[Example context](../src/graphics/graphics.fs#L555)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment. Check the returned ior; zero is success. Passing it to THROW is one option. Use valid logical-memory addresses, lengths and capacities; distinguish owned storage from borrowed lifetimes.
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1231).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1232).
 
 <a id="w-47524150484943533a4746582d494d4147452d4e4557"></a>
 
@@ -30089,11 +30122,11 @@ Usage example (source excerpt; consult the link for setup and expectations)
 : NEW-IMAGE ( w h -- img )   GFX-IMAGE-NEW ;
 ```
 
-[Example context](../src/graphics/graphics.fs#L541)
+[Example context](../src/graphics/graphics.fs#L525)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1232).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1233).
 
 <a id="w-47524150484943533a4746582d494d4147452d53495a45"></a>
 
@@ -30115,11 +30148,11 @@ Usage example (source excerpt; consult the link for setup and expectations)
 : IMAGE-SIZE ( img -- w h )   GFX-IMAGE-SIZE ;
 ```
 
-[Example context](../src/graphics/graphics.fs#L543)
+[Example context](../src/graphics/graphics.fs#L527)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1234).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1235).
 
 <a id="w-47524150484943533a4746582d494d452d4341524554"></a>
 
@@ -30151,11 +30184,11 @@ Usage example (source excerpt; consult the link for setup and expectations)
    (IME-CMD) (IME-LEN) @ GFX-TCL DROP 2DROP ;
 ```
 
-[Example context](../src/graphics/gui.fs#L213)
+[Example context](../src/graphics/gui.fs#L214)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1182).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1183).
 
 <a id="w-47524150484943533a4746582d494d452d50524545444954"></a>
 
@@ -30181,11 +30214,11 @@ Usage example (source excerpt; consult the link for setup and expectations)
    2 = IF (PRE) 256 GFX-IME-PREEDIT 256 MIN (PRE-LEN) ! THEN ;
 ```
 
-[Example context](../src/graphics/gui.fs#L206)
+[Example context](../src/graphics/gui.fs#L207)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment. Use valid logical-memory addresses, lengths and capacities; distinguish owned storage from borrowed lifetimes.
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1181).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1182).
 
 <a id="w-47524150484943533a4746582d494e4445584544"></a>
 
@@ -30260,7 +30293,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 : INKEY ( -- key | -1 )   GFX-INKEY ;
 ```
 
-[Example context](../src/graphics/graphics.fs#L347)
+[Example context](../src/graphics/graphics.fs#L331)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -30286,11 +30319,11 @@ Usage example (source excerpt; consult the link for setup and expectations)
 : KEY-HELD? ( key -- flag )   GFX-KEY-HELD ;
 ```
 
-[Example context](../src/graphics/graphics.fs#L350)
+[Example context](../src/graphics/graphics.fs#L334)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1188).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1189).
 
 <a id="w-47524150484943533a4746582d4d4f555345"></a>
 
@@ -30312,7 +30345,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 : MOUSE ( -- x y buttons )   GFX-MOUSE ;
 ```
 
-[Example context](../src/graphics/graphics.fs#L378)
+[Example context](../src/graphics/graphics.fs#L362)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -30336,11 +30369,11 @@ Usage example (source excerpt; consult the link for setup and expectations)
 : MOUSE-EVENT ( -- x y button kind true | false )   GFX-MOUSE-EVENT ;
 ```
 
-[Example context](../src/graphics/graphics.fs#L384)
+[Example context](../src/graphics/graphics.fs#L368)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1262).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1263).
 
 <a id="w-47524150484943533a4746582d4d4f5553452d4d4f4445"></a>
 
@@ -30362,7 +30395,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 : MOUSE-ON ( -- )   TRUE GFX-MOUSE-MODE ;
 ```
 
-[Example context](../src/graphics/graphics.fs#L379)
+[Example context](../src/graphics/graphics.fs#L363)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -30659,11 +30692,11 @@ Usage example (source excerpt; consult the link for setup and expectations)
    THEN ;
 ```
 
-[Example context](../src/graphics/graphics.fs#L304)
+[Example context](../src/graphics/graphics.fs#L288)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1209).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1210).
 
 <a id="w-47524150484943533a4746582d53484f572d57494e444f57"></a>
 
@@ -30689,7 +30722,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
    THEN ;
 ```
 
-[Example context](../src/graphics/graphics.fs#L298)
+[Example context](../src/graphics/graphics.fs#L282)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -30715,11 +30748,11 @@ Usage example (source excerpt; consult the link for setup and expectations)
 : DRAW-TO ( img -- )   GFX-TARGET ;
 ```
 
-[Example context](../src/graphics/graphics.fs#L544)
+[Example context](../src/graphics/graphics.fs#L528)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1235).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1236).
 
 <a id="w-47524150484943533a4746582d54415247455440"></a>
 
@@ -30741,11 +30774,11 @@ Usage example (source excerpt; consult the link for setup and expectations)
 : DRAWING ( -- img )   GFX-TARGET@ ;
 ```
 
-[Example context](../src/graphics/graphics.fs#L545)
+[Example context](../src/graphics/graphics.fs#L529)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1236).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1237).
 
 <a id="w-47524150484943533a4746582d54434c"></a>
 
@@ -30767,11 +30800,11 @@ Usage example (source excerpt; consult the link for setup and expectations)
 : TCL-EVAL ( c-addr u -- c-addr2 u2 )   GFX-TCL IF 2DROP -273 THROW THEN ;
 ```
 
-[Example context](../src/graphics/graphics.fs#L520)
+[Example context](../src/graphics/graphics.fs#L504)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment. Use valid logical-memory addresses, lengths and capacities; distinguish owned storage from borrowed lifetimes.
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1183).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1184).
 
 <a id="w-47524150484943533a4746582d54434c2d4552524f52"></a>
 
@@ -30793,11 +30826,11 @@ Usage example (source excerpt; consult the link for setup and expectations)
 : TCL-ERROR$ ( -- c-addr u )   GFX-TCL-ERROR ;
 ```
 
-[Example context](../src/graphics/graphics.fs#L522)
+[Example context](../src/graphics/graphics.fs#L506)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment. Use valid logical-memory addresses, lengths and capacities; distinguish owned storage from borrowed lifetimes.
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1184).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1185).
 
 <a id="w-47524150484943533a4746582d54434c2d4556454e54"></a>
 
@@ -30819,11 +30852,11 @@ Usage example (source excerpt; consult the link for setup and expectations)
 : TCL-EVENT ( -- c-addr u true | false )   GFX-TCL-EVENT ;
 ```
 
-[Example context](../src/graphics/graphics.fs#L524)
+[Example context](../src/graphics/graphics.fs#L508)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment. Use valid logical-memory addresses, lengths and capacities; distinguish owned storage from borrowed lifetimes.
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1185).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1186).
 
 <a id="w-47524150484943533a4746582d54434c2d50524f4752414d"></a>
 
@@ -30845,11 +30878,11 @@ Usage example (source excerpt; consult the link for setup and expectations)
 : TCL-PROGRAM ( c-addr u -- )   GFX-TCL-PROGRAM ;
 ```
 
-[Example context](../src/graphics/graphics.fs#L525)
+[Example context](../src/graphics/graphics.fs#L509)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment. Use valid logical-memory addresses, lengths and capacities; distinguish owned storage from borrowed lifetimes.
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1186).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1187).
 
 <a id="w-47524150484943533a4746582d54434c2d53544f50"></a>
 
@@ -30871,11 +30904,11 @@ Usage example (source excerpt; consult the link for setup and expectations)
 : TCL-STOP ( -- )   GFX-TCL-STOP ;
 ```
 
-[Example context](../src/graphics/graphics.fs#L526)
+[Example context](../src/graphics/graphics.fs#L510)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1187).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1188).
 
 <a id="w-47524150484943533a4746582d54494c454d4150"></a>
 
@@ -30950,11 +30983,11 @@ Usage example (source excerpt; consult the link for setup and expectations)
 : WINDOW-SIZE ( w h -- )   GFX-WINDOW-SIZE ;
 ```
 
-[Example context](../src/graphics/graphics.fs#L374)
+[Example context](../src/graphics/graphics.fs#L358)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1208).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1209).
 
 <a id="w-47524150484943533a4746582d57494e444f573f"></a>
 
@@ -31012,7 +31045,7 @@ Implementation definition (private helpers may change):
 : IMAGE-ALPHA ( n -- )   DUP 0 256 WITHIN 0= IF DROP -24 THROW THEN (ALPHA) ! ;
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1227).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1228).
 
 <a id="w-47524150484943533a494d4147452d464c4950"></a>
 
@@ -31044,7 +31077,7 @@ Implementation definition (private helpers may change):
 : IMAGE-FLIP ( n -- )   DUP 0 4 WITHIN 0= IF DROP -24 THROW THEN (FLIP) ! ;
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1224).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1225).
 
 <a id="w-47524150484943533a494d4147452d4d4f4445"></a>
 
@@ -31076,7 +31109,7 @@ Implementation definition (private helpers may change):
 : IMAGE-MODE ( n -- )   DUP 0 4 WITHIN 0= IF DROP -24 THROW THEN (MODE) ! ;
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1226).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1227).
 
 <a id="w-47524150484943533a494d4147452d5343414c45"></a>
 
@@ -31108,7 +31141,7 @@ Implementation definition (private helpers may change):
 : IMAGE-SCALE ( n -- )   DUP 1 17 WITHIN 0= IF DROP -24 THROW THEN (SCALE) ! ;
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1228).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1229).
 
 <a id="w-47524150484943533a494d4147452d53495a45"></a>
 
@@ -31140,7 +31173,7 @@ Implementation definition (private helpers may change):
 : IMAGE-SIZE ( img -- w h )   GFX-IMAGE-SIZE ;
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1220).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1221).
 
 <a id="w-47524150484943533a494e4b4559"></a>
 
@@ -31172,7 +31205,7 @@ Implementation definition (private helpers may change):
 : INKEY ( -- key | -1 )   GFX-INKEY ;
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1255).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1256).
 
 <a id="w-47524150484943533a4b2d44454c455445"></a>
 
@@ -31200,7 +31233,7 @@ Implementation definition (private helpers may change):
 264 CONSTANT K-INSERT 265 CONSTANT K-DELETE
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1273).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1274).
 
 <a id="w-47524150484943533a4b2d444f574e"></a>
 
@@ -31228,7 +31261,7 @@ Implementation definition (private helpers may change):
 256 CONSTANT K-UP     257 CONSTANT K-DOWN   258 CONSTANT K-LEFT    259 CONSTANT K-RIGHT
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1265).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1266).
 
 <a id="w-47524150484943533a4b2d454e44"></a>
 
@@ -31256,7 +31289,7 @@ Implementation definition (private helpers may change):
 260 CONSTANT K-HOME   261 CONSTANT K-END    262 CONSTANT K-PRIOR   263 CONSTANT K-NEXT
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1269).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1270).
 
 <a id="w-47524150484943533a4b2d4631"></a>
 
@@ -31284,7 +31317,7 @@ Implementation definition (private helpers may change):
 266 CONSTANT K-F1   267 CONSTANT K-F2   268 CONSTANT K-F3   269 CONSTANT K-F4
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1274).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1275).
 
 <a id="w-47524150484943533a4b2d463130"></a>
 
@@ -31312,7 +31345,7 @@ Implementation definition (private helpers may change):
 274 CONSTANT K-F9   275 CONSTANT K-F10  276 CONSTANT K-F11  277 CONSTANT K-F12
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1283).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1284).
 
 <a id="w-47524150484943533a4b2d463131"></a>
 
@@ -31340,7 +31373,7 @@ Implementation definition (private helpers may change):
 274 CONSTANT K-F9   275 CONSTANT K-F10  276 CONSTANT K-F11  277 CONSTANT K-F12
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1284).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1285).
 
 <a id="w-47524150484943533a4b2d463132"></a>
 
@@ -31368,7 +31401,7 @@ Implementation definition (private helpers may change):
 274 CONSTANT K-F9   275 CONSTANT K-F10  276 CONSTANT K-F11  277 CONSTANT K-F12
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1285).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1286).
 
 <a id="w-47524150484943533a4b2d4632"></a>
 
@@ -31396,7 +31429,7 @@ Implementation definition (private helpers may change):
 266 CONSTANT K-F1   267 CONSTANT K-F2   268 CONSTANT K-F3   269 CONSTANT K-F4
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1275).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1276).
 
 <a id="w-47524150484943533a4b2d4633"></a>
 
@@ -31424,7 +31457,7 @@ Implementation definition (private helpers may change):
 266 CONSTANT K-F1   267 CONSTANT K-F2   268 CONSTANT K-F3   269 CONSTANT K-F4
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1276).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1277).
 
 <a id="w-47524150484943533a4b2d4634"></a>
 
@@ -31452,7 +31485,7 @@ Implementation definition (private helpers may change):
 266 CONSTANT K-F1   267 CONSTANT K-F2   268 CONSTANT K-F3   269 CONSTANT K-F4
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1277).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1278).
 
 <a id="w-47524150484943533a4b2d4635"></a>
 
@@ -31480,7 +31513,7 @@ Implementation definition (private helpers may change):
 270 CONSTANT K-F5   271 CONSTANT K-F6   272 CONSTANT K-F7   273 CONSTANT K-F8
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1278).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1279).
 
 <a id="w-47524150484943533a4b2d4636"></a>
 
@@ -31508,7 +31541,7 @@ Implementation definition (private helpers may change):
 270 CONSTANT K-F5   271 CONSTANT K-F6   272 CONSTANT K-F7   273 CONSTANT K-F8
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1279).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1280).
 
 <a id="w-47524150484943533a4b2d4637"></a>
 
@@ -31536,7 +31569,7 @@ Implementation definition (private helpers may change):
 270 CONSTANT K-F5   271 CONSTANT K-F6   272 CONSTANT K-F7   273 CONSTANT K-F8
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1280).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1281).
 
 <a id="w-47524150484943533a4b2d4638"></a>
 
@@ -31564,7 +31597,7 @@ Implementation definition (private helpers may change):
 270 CONSTANT K-F5   271 CONSTANT K-F6   272 CONSTANT K-F7   273 CONSTANT K-F8
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1281).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1282).
 
 <a id="w-47524150484943533a4b2d4639"></a>
 
@@ -31592,7 +31625,7 @@ Implementation definition (private helpers may change):
 274 CONSTANT K-F9   275 CONSTANT K-F10  276 CONSTANT K-F11  277 CONSTANT K-F12
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1282).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1283).
 
 <a id="w-47524150484943533a4b2d484f4d45"></a>
 
@@ -31620,7 +31653,7 @@ Implementation definition (private helpers may change):
 260 CONSTANT K-HOME   261 CONSTANT K-END    262 CONSTANT K-PRIOR   263 CONSTANT K-NEXT
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1268).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1269).
 
 <a id="w-47524150484943533a4b2d494e53455254"></a>
 
@@ -31648,7 +31681,7 @@ Implementation definition (private helpers may change):
 264 CONSTANT K-INSERT 265 CONSTANT K-DELETE
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1272).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1273).
 
 <a id="w-47524150484943533a4b2d4c454654"></a>
 
@@ -31676,7 +31709,7 @@ Implementation definition (private helpers may change):
 256 CONSTANT K-UP     257 CONSTANT K-DOWN   258 CONSTANT K-LEFT    259 CONSTANT K-RIGHT
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1266).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1267).
 
 <a id="w-47524150484943533a4b2d4e455854"></a>
 
@@ -31704,7 +31737,7 @@ Implementation definition (private helpers may change):
 260 CONSTANT K-HOME   261 CONSTANT K-END    262 CONSTANT K-PRIOR   263 CONSTANT K-NEXT
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1271).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1272).
 
 <a id="w-47524150484943533a4b2d5052494f52"></a>
 
@@ -31732,7 +31765,7 @@ Implementation definition (private helpers may change):
 260 CONSTANT K-HOME   261 CONSTANT K-END    262 CONSTANT K-PRIOR   263 CONSTANT K-NEXT
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1270).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1271).
 
 <a id="w-47524150484943533a4b2d5249474854"></a>
 
@@ -31760,7 +31793,7 @@ Implementation definition (private helpers may change):
 256 CONSTANT K-UP     257 CONSTANT K-DOWN   258 CONSTANT K-LEFT    259 CONSTANT K-RIGHT
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1267).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1268).
 
 <a id="w-47524150484943533a4b2d5550"></a>
 
@@ -31790,7 +31823,7 @@ Implementation definition (private helpers may change):
 256 CONSTANT K-UP     257 CONSTANT K-DOWN   258 CONSTANT K-LEFT    259 CONSTANT K-RIGHT
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1264).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1265).
 
 <a id="w-47524150484943533a4b45592d48454c443f"></a>
 
@@ -31822,7 +31855,7 @@ Implementation definition (private helpers may change):
 : KEY-HELD? ( key -- flag )   GFX-KEY-HELD ;
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1256).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1257).
 
 <a id="w-47524150484943533a4c494e45"></a>
 
@@ -31908,7 +31941,7 @@ Implementation definition (private helpers may change):
 : LOAD-FONT ( c-addr u -- )   GFX-FONT-LOAD THROW ;
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1251).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1252).
 
 <a id="w-47524150484943533a4c4f41442d494d414745"></a>
 
@@ -31940,7 +31973,7 @@ Implementation definition (private helpers may change):
 : LOAD-IMAGE ( c-addr u -- img )   (TRANSPARENT) @ GFX-IMAGE-LOAD THROW ;
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1230).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1231).
 
 <a id="w-47524150484943533a4d4c494e45"></a>
 
@@ -31975,7 +32008,7 @@ Implementation definition (private helpers may change):
    x1 (M>PX) y1 (M>PY) x2 (M>PX) y2 (M>PY) LINE ;
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1290).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1291).
 
 <a id="w-47524150484943533a4d4f555345"></a>
 
@@ -32007,7 +32040,7 @@ Implementation definition (private helpers may change):
 : MOUSE ( -- x y buttons )   GFX-MOUSE ;
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1258).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1259).
 
 <a id="w-47524150484943533a4d4f5553452d4556454e54"></a>
 
@@ -32039,7 +32072,7 @@ Implementation definition (private helpers may change):
 : MOUSE-EVENT ( -- x y button kind true | false )   GFX-MOUSE-EVENT ;
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1261).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1262).
 
 <a id="w-47524150484943533a4d4f5553452d4f4646"></a>
 
@@ -32071,7 +32104,7 @@ Implementation definition (private helpers may change):
 : MOUSE-OFF ( -- )   FALSE GFX-MOUSE-MODE ;
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1260).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1261).
 
 <a id="w-47524150484943533a4d4f5553452d4f4e"></a>
 
@@ -32103,7 +32136,7 @@ Implementation definition (private helpers may change):
 : MOUSE-ON ( -- )   TRUE GFX-MOUSE-MODE ;
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1259).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1260).
 
 <a id="w-47524150484943533a4d50534554"></a>
 
@@ -32138,7 +32171,7 @@ Implementation definition (private helpers may change):
    x (M>PX) y (M>PY) PSET ;
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1289).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1290).
 
 <a id="w-47524150484943533a4e45572d494d414745"></a>
 
@@ -32170,7 +32203,7 @@ Implementation definition (private helpers may change):
 : NEW-IMAGE ( w h -- img )   GFX-IMAGE-NEW ;
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1218).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1219).
 
 <a id="w-47524150484943533a5041494e54"></a>
 
@@ -32253,7 +32286,7 @@ Implementation definition (private helpers may change):
    LOOP ;
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1292).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1293).
 
 <a id="w-47524150484943533a50534554"></a>
 
@@ -32317,7 +32350,7 @@ Implementation definition (private helpers may change):
 : PUT-IMAGE { src x y | w h -- }   src IMAGE-SIZE TO h TO w  src 0 0 w h x y COPY-RECT ;
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1229).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1230).
 
 <a id="w-47524150484943533a52454354"></a>
 
@@ -32514,7 +32547,7 @@ Implementation definition (private helpers may change):
 0 CONSTANT SCREEN
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1217).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1218).
 
 <a id="w-47524150484943533a53484f57"></a>
 
@@ -32587,7 +32620,7 @@ Implementation definition (private helpers may change):
 : SYSTEM-FONT ( c-addr u height -- )   GFX-FONT-SYSTEM THROW ;
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1252).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1253).
 
 <a id="w-47524150484943533a54434c"></a>
 
@@ -32619,7 +32652,7 @@ Implementation definition (private helpers may change):
 : TCL ( c-addr u -- )   TCL-EVAL 2DROP ;
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1210).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1211).
 
 <a id="w-47524150484943533a54434c2d4552524f5224"></a>
 
@@ -32651,7 +32684,7 @@ Implementation definition (private helpers may change):
 : TCL-ERROR$ ( -- c-addr u )   GFX-TCL-ERROR ;
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1212).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1213).
 
 <a id="w-47524150484943533a54434c2d4556414c"></a>
 
@@ -32683,7 +32716,7 @@ Implementation definition (private helpers may change):
 : TCL-EVAL ( c-addr u -- c-addr2 u2 )   GFX-TCL IF 2DROP -273 THROW THEN ;
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1211).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1212).
 
 <a id="w-47524150484943533a54434c2d4556454e54"></a>
 
@@ -32715,7 +32748,7 @@ Implementation definition (private helpers may change):
 : TCL-EVENT ( -- c-addr u true | false )   GFX-TCL-EVENT ;
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1213).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1214).
 
 <a id="w-47524150484943533a54434c2d50524f4752414d"></a>
 
@@ -32747,7 +32780,7 @@ Implementation definition (private helpers may change):
 : TCL-PROGRAM ( c-addr u -- )   GFX-TCL-PROGRAM ;
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1214).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1215).
 
 <a id="w-47524150484943533a54434c2d53544f50"></a>
 
@@ -32779,7 +32812,7 @@ Implementation definition (private helpers may change):
 : TCL-STOP ( -- )   GFX-TCL-STOP ;
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1215).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1216).
 
 <a id="w-47524150484943533a5445524d494e414c2d424c4f434b53"></a>
 
@@ -32884,7 +32917,7 @@ Implementation definition (private helpers may change):
    REPEAT ;
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1248).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1249).
 
 <a id="w-47524150484943533a544558542d484549474854"></a>
 
@@ -32916,7 +32949,7 @@ Implementation definition (private helpers may change):
 : TEXT-HEIGHT ( -- h )   GFX-FONT-HEIGHT (TEXT-SCALE) @ * ;
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1249).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1250).
 
 <a id="w-47524150484943533a544558542d5343414c45"></a>
 
@@ -32948,7 +32981,7 @@ Implementation definition (private helpers may change):
 : TEXT-SCALE ( n -- )   DUP 1 257 WITHIN 0= IF DROP -24 THROW THEN  (TEXT-SCALE) ! ;
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1253).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1254).
 
 <a id="w-47524150484943533a544558542d5749445448"></a>
 
@@ -32985,7 +33018,7 @@ Implementation definition (private helpers may change):
    w (TEXT-SCALE) @ * ;
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1254).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1255).
 
 <a id="w-47524150484943533a5452414e53504152454e54"></a>
 
@@ -33017,7 +33050,7 @@ Implementation definition (private helpers may change):
 : TRANSPARENT ( rgb|-1 -- )   DUP 0< IF DROP -1 ELSE $FFFFFF AND THEN (TRANSPARENT) ! ;
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1223).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1224).
 
 <a id="w-47524150484943533a57494e444f572d53495a45"></a>
 
@@ -33049,7 +33082,7 @@ Implementation definition (private helpers may change):
 : WINDOW-SIZE ( w h -- )   GFX-WINDOW-SIZE ;
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1257).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1258).
 
 <a id="w-47524150484943533a582d52414e4745"></a>
 
@@ -33081,7 +33114,7 @@ Implementation definition (private helpers may change):
 : X-RANGE { F: lo F: hi -- }   lo hi (CHECK-RANGE)  lo (X-MIN) F!  hi (X-MAX) F! ;
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1287).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1288).
 
 <a id="w-47524150484943533a592d52414e4745"></a>
 
@@ -33113,7 +33146,7 @@ Implementation definition (private helpers may change):
 : Y-RANGE { F: lo F: hi -- }   lo hi (CHECK-RANGE)  lo (Y-MIN) F!  hi (Y-MAX) F! ;
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1288).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1289).
 
 <a id="w-47524150484943533a28414c50484129"></a>
 
@@ -33170,7 +33203,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
    (TERMINAL-MODE) @ IF GFX-SHOW-SIXEL ELSE GFX-SHOW-BLOCKS THEN ;
 ```
 
-[Example context](../src/graphics/graphics.fs#L323)
+[Example context](../src/graphics/graphics.fs#L307)
 
 Caution: Internal operation: prefer its public wrapper; internal state and calling conventions may change. Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -33182,9 +33215,9 @@ Implementation definition (private helpers may change):
    DUP 3 = IF DROP (AUTO-SHOW-TK) EXIT THEN
    DUP 1 = IF DROP (TERMINAL-MODE) @ IF GFX-SHOW-SIXEL ELSE GFX-SHOW-BLOCKS THEN EXIT THEN
    DROP
-   GFX-WINDOW? IF (AUTO-TRY-WINDOW) IF EXIT THEN THEN
-   (AUTO-TRY-TK) IF EXIT THEN
-   1 GFX-AUTO-DISPLAY!
+   ['] (DESKTOP?) CATCH ?DUP IF DROP FALSE THEN
+   GFX-AUTO-TRY DUP GFX-AUTO-DISPLAY!
+   1 <> IF EXIT THEN
    (TERMINAL-MODE) @ IF GFX-SHOW-SIXEL ELSE GFX-SHOW-BLOCKS THEN ;
 ```
 
@@ -33210,13 +33243,13 @@ Usage example (source excerpt; consult the link for setup and expectations)
    DUP 3 = IF DROP (AUTO-SHOW-TK) EXIT THEN
    DUP 1 = IF DROP (TERMINAL-MODE) @ IF GFX-SHOW-SIXEL ELSE GFX-SHOW-BLOCKS THEN EXIT THEN
    DROP
-   GFX-WINDOW? IF (AUTO-TRY-WINDOW) IF EXIT THEN THEN
-   (AUTO-TRY-TK) IF EXIT THEN
-   1 GFX-AUTO-DISPLAY!
+   ['] (DESKTOP?) CATCH ?DUP IF DROP FALSE THEN
+   GFX-AUTO-TRY DUP GFX-AUTO-DISPLAY!
+   1 <> IF EXIT THEN
    (TERMINAL-MODE) @ IF GFX-SHOW-SIXEL ELSE GFX-SHOW-BLOCKS THEN ;
 ```
 
-[Example context](../src/graphics/graphics.fs#L310)
+[Example context](../src/graphics/graphics.fs#L294)
 
 Caution: Internal operation: prefer its public wrapper; internal state and calling conventions may change. Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -33238,48 +33271,6 @@ Sources: [src/graphics/graphics.fs](../src/graphics/graphics.fs).
 
 ` ( -- ) `
 
-Internal library operation. Its exact implementation is reproduced below; it is not a stable public interface.
-
-Kind: private library helper.
-
-` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
-
-Usage example (source excerpt; consult the link for setup and expectations)
-
-```forth
-: (AUTO-SHOW) ( -- )
-   GFX-AUTO-DISPLAY DUP 2 = IF DROP (AUTO-SHOW-WINDOW) EXIT THEN
-   DUP 3 = IF DROP (AUTO-SHOW-TK) EXIT THEN
-   DUP 1 = IF DROP (TERMINAL-MODE) @ IF GFX-SHOW-SIXEL ELSE GFX-SHOW-BLOCKS THEN EXIT THEN
-   DROP
-   GFX-WINDOW? IF (AUTO-TRY-WINDOW) IF EXIT THEN THEN
-   (AUTO-TRY-TK) IF EXIT THEN
-   1 GFX-AUTO-DISPLAY!
-   (TERMINAL-MODE) @ IF GFX-SHOW-SIXEL ELSE GFX-SHOW-BLOCKS THEN ;
-```
-
-[Example context](../src/graphics/graphics.fs#L310)
-
-Caution: Internal operation: prefer its public wrapper; internal state and calling conventions may change. Load and select the vocabulary first. Host display, input and sound support depends on the environment.
-
-Implementation definition (private helpers may change):
-
-```forth
-: (AUTO-SHOW-WINDOW) ( -- )
-   ['] GFX-SHOW-WINDOW CATCH ?DUP IF
-      DUP -265 = IF 3 GFX-AUTO-DISPLAY! THEN
-      THROW
-   THEN ;
-```
-
-Sources: [src/graphics/graphics.fs](../src/graphics/graphics.fs).
-
-<a id="w-47524150484943533a284155544f2d5452592d544b29"></a>
-
-### ` (AUTO-TRY-TK) `
-
-` ( -- flag ) `
-
 Automatic display is selected once per process, independently of saved Forth dictionaries. Host startup failures may fall through to Tk, then terminal.
 
 Kind: private library helper.
@@ -33294,70 +33285,24 @@ Usage example (source excerpt; consult the link for setup and expectations)
    DUP 3 = IF DROP (AUTO-SHOW-TK) EXIT THEN
    DUP 1 = IF DROP (TERMINAL-MODE) @ IF GFX-SHOW-SIXEL ELSE GFX-SHOW-BLOCKS THEN EXIT THEN
    DROP
-   GFX-WINDOW? IF (AUTO-TRY-WINDOW) IF EXIT THEN THEN
-   (AUTO-TRY-TK) IF EXIT THEN
-   1 GFX-AUTO-DISPLAY!
+   ['] (DESKTOP?) CATCH ?DUP IF DROP FALSE THEN
+   GFX-AUTO-TRY DUP GFX-AUTO-DISPLAY!
+   1 <> IF EXIT THEN
    (TERMINAL-MODE) @ IF GFX-SHOW-SIXEL ELSE GFX-SHOW-BLOCKS THEN ;
 ```
 
-[Example context](../src/graphics/graphics.fs#L310)
+[Example context](../src/graphics/graphics.fs#L294)
 
 Caution: Internal operation: prefer its public wrapper; internal state and calling conventions may change. Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
 Implementation definition (private helpers may change):
 
 ```forth
-: (AUTO-TRY-TK) ( -- flag )
-   ['] (DESKTOP?) CATCH ?DUP IF DROP FALSE EXIT THEN
-   0= IF FALSE EXIT THEN
-   ['] GFX-SHOW-TK CATCH
-   DUP 0= IF DROP 3 GFX-AUTO-DISPLAY! TRUE EXIT THEN
-   DUP -21 = IF DROP FALSE EXIT THEN
-   DUP -265 = IF DROP FALSE EXIT THEN
-   THROW ;
-```
-
-Sources: [src/graphics/graphics.fs](../src/graphics/graphics.fs).
-
-<a id="w-47524150484943533a284155544f2d5452592d57494e444f5729"></a>
-
-### ` (AUTO-TRY-WINDOW) `
-
-` ( -- flag ) `
-
-Internal library operation. Its exact implementation is reproduced below; it is not a stable public interface.
-
-Kind: private library helper.
-
-` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
-
-Usage example (source excerpt; consult the link for setup and expectations)
-
-```forth
-: (AUTO-SHOW) ( -- )
-   GFX-AUTO-DISPLAY DUP 2 = IF DROP (AUTO-SHOW-WINDOW) EXIT THEN
-   DUP 3 = IF DROP (AUTO-SHOW-TK) EXIT THEN
-   DUP 1 = IF DROP (TERMINAL-MODE) @ IF GFX-SHOW-SIXEL ELSE GFX-SHOW-BLOCKS THEN EXIT THEN
-   DROP
-   GFX-WINDOW? IF (AUTO-TRY-WINDOW) IF EXIT THEN THEN
-   (AUTO-TRY-TK) IF EXIT THEN
-   1 GFX-AUTO-DISPLAY!
-   (TERMINAL-MODE) @ IF GFX-SHOW-SIXEL ELSE GFX-SHOW-BLOCKS THEN ;
-```
-
-[Example context](../src/graphics/graphics.fs#L310)
-
-Caution: Internal operation: prefer its public wrapper; internal state and calling conventions may change. Load and select the vocabulary first. Host display, input and sound support depends on the environment.
-
-Implementation definition (private helpers may change):
-
-```forth
-: (AUTO-TRY-WINDOW) ( -- flag )
-   ['] GFX-SHOW-WINDOW CATCH
-   DUP 0= IF DROP 2 GFX-AUTO-DISPLAY! TRUE EXIT THEN
-   DUP -21 = IF DROP FALSE EXIT THEN
-   DUP -265 = IF DROP FALSE EXIT THEN
-   THROW ;
+: (AUTO-SHOW-WINDOW) ( -- )
+   ['] GFX-SHOW-WINDOW CATCH ?DUP IF
+      DUP -265 = IF 3 GFX-AUTO-DISPLAY! THEN
+      THROW
+   THEN ;
 ```
 
 Sources: [src/graphics/graphics.fs](../src/graphics/graphics.fs).
@@ -33386,7 +33331,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
    LOOP ;
 ```
 
-[Example context](../src/graphics/graphics.fs#L464)
+[Example context](../src/graphics/graphics.fs#L448)
 
 Caution: Internal operation: prefer its public wrapper; internal state and calling conventions may change. Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -33627,7 +33572,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
    REPEAT ;
 ```
 
-[Example context](../src/graphics/graphics.fs#L486)
+[Example context](../src/graphics/graphics.fs#L470)
 
 Caution: Internal operation: prefer its public wrapper; internal state and calling conventions may change. Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -33746,17 +33691,18 @@ Kind: private library helper.
 Usage example (source excerpt; consult the link for setup and expectations)
 
 ```forth
-: (AUTO-TRY-TK) ( -- flag )
-   ['] (DESKTOP?) CATCH ?DUP IF DROP FALSE EXIT THEN
-   0= IF FALSE EXIT THEN
-   ['] GFX-SHOW-TK CATCH
-   DUP 0= IF DROP 3 GFX-AUTO-DISPLAY! TRUE EXIT THEN
-   DUP -21 = IF DROP FALSE EXIT THEN
-   DUP -265 = IF DROP FALSE EXIT THEN
-   THROW ;
+: (AUTO-SHOW) ( -- )
+   GFX-AUTO-DISPLAY DUP 2 = IF DROP (AUTO-SHOW-WINDOW) EXIT THEN
+   DUP 3 = IF DROP (AUTO-SHOW-TK) EXIT THEN
+   DUP 1 = IF DROP (TERMINAL-MODE) @ IF GFX-SHOW-SIXEL ELSE GFX-SHOW-BLOCKS THEN EXIT THEN
+   DROP
+   ['] (DESKTOP?) CATCH ?DUP IF DROP FALSE THEN
+   GFX-AUTO-TRY DUP GFX-AUTO-DISPLAY!
+   1 <> IF EXIT THEN
+   (TERMINAL-MODE) @ IF GFX-SHOW-SIXEL ELSE GFX-SHOW-BLOCKS THEN ;
 ```
 
-[Example context](../src/graphics/graphics.fs#L282)
+[Example context](../src/graphics/graphics.fs#L294)
 
 Caution: Internal operation: prefer its public wrapper; internal state and calling conventions may change. Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -33853,7 +33799,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
    REPEAT ;
 ```
 
-[Example context](../src/graphics/graphics.fs#L486)
+[Example context](../src/graphics/graphics.fs#L470)
 
 Caution: Internal operation: prefer its public wrapper; internal state and calling conventions may change. Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -34052,7 +33998,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
    LOOP ;
 ```
 
-[Example context](../src/graphics/graphics.fs#L473)
+[Example context](../src/graphics/graphics.fs#L457)
 
 Caution: Internal operation: prefer its public wrapper; internal state and calling conventions may change. Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -34191,7 +34137,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
    w (TEXT-SCALE) @ * ;
 ```
 
-[Example context](../src/graphics/graphics.fs#L498)
+[Example context](../src/graphics/graphics.fs#L482)
 
 Caution: Internal operation: prefer its public wrapper; internal state and calling conventions may change. Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -34298,7 +34244,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
    x y ROT GFX-PSET ;
 ```
 
-[Example context](../src/graphics/graphics.fs#L454)
+[Example context](../src/graphics/graphics.fs#L438)
 
 Caution: Internal operation: prefer its public wrapper; internal state and calling conventions may change. Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -35000,7 +34946,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
    w (TEXT-SCALE) @ * ;
 ```
 
-[Example context](../src/graphics/graphics.fs#L498)
+[Example context](../src/graphics/graphics.fs#L482)
 
 Caution: Internal operation: prefer its public wrapper; internal state and calling conventions may change. Load and select the vocabulary first. Host display, input and sound support depends on the environment. Use valid logical-memory addresses, lengths and capacities; distinguish owned storage from borrowed lifetimes.
 
@@ -35373,7 +35319,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 FRAME-1 GUI-ACTIVE @
 ```
 
-[Example context](../src/tests/gui_test.zig#L342)
+[Example context](../src/tests/gui_test.zig#L370)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment. Use valid logical-memory addresses, lengths and capacities; distinguish owned storage from borrowed lifetimes.
 
@@ -35579,10 +35525,10 @@ Related: [GUI](GRAPHICS_AND_SOUND.md#gui).
 Usage example (source excerpt; consult the link for setup and expectations)
 
 ```forth
-GUI-BEGIN FALSE GUI-ENABLE S" OK" 10 10 GUI-BUTTON GUI-END GUI-KEY GUI-KEY
+: FRAME-1 GUI-BEGIN S" OK" 10 10 GUI-BUTTON GUI-END ;
 ```
 
-[Example context](../src/tests/gui_test.zig#L116)
+[Example context](../src/tests/gui_test.zig#L334)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment. Use valid logical-memory addresses, lengths and capacities; distinguish owned storage from borrowed lifetimes.
 
@@ -35642,7 +35588,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
    chosen ;
 ```
 
-[Example context](../src/graphics/gui.fs#L577)
+[Example context](../src/graphics/gui.fs#L578)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment. Use valid logical-memory addresses, lengths and capacities; distinguish owned storage from borrowed lifetimes.
 
@@ -35757,7 +35703,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 ['] COLOR-NAME 3 GUI-CHOOSE-XT ['] COLOR-NAME 0 GUI-CHOOSE-XT
 ```
 
-[Example context](../src/tests/gui_test.zig#L383)
+[Example context](../src/tests/gui_test.zig#L411)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -35902,7 +35848,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 : GUI-YES-NO ( addr u -- n )   S" Yes|No" GUI-DIALOG  DUP 0< IF EXIT THEN  0= 1 AND ;
 ```
 
-[Example context](../src/graphics/gui.fs#L594)
+[Example context](../src/graphics/gui.fs#L595)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment. Use valid logical-memory addresses, lengths and capacities; distinguish owned storage from borrowed lifetimes.
 
@@ -36300,7 +36246,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 1 GUI-FOCUSED ! FRAME-1
 ```
 
-[Example context](../src/tests/gui_test.zig#L347)
+[Example context](../src/tests/gui_test.zig#L375)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment. Use valid logical-memory addresses, lengths and capacities; distinguish owned storage from borrowed lifetimes.
 
@@ -36459,7 +36405,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 VARIABLE PICK : FRAME-1 GUI-BEGIN ['] COLOR-NAME 3 PICK 10 10 0 GUI-LIST-XT GUI-END ;
 ```
 
-[Example context](../src/tests/gui_test.zig#L367)
+[Example context](../src/tests/gui_test.zig#L395)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -36519,7 +36465,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 : FRAME-2 GUI-BEGIN S" File|Edit" GUI-MENUBAR 0 = IF S" New|Open|Quit" GUI-MENU ELSE -9 THEN GUI-END ;
 ```
 
-[Example context](../src/tests/gui_test.zig#L352)
+[Example context](../src/tests/gui_test.zig#L380)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment. Use valid logical-memory addresses, lengths and capacities; distinguish owned storage from borrowed lifetimes.
 
@@ -36575,7 +36521,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 0 GUI-MENU-OPEN ! 2 GUI-MENU-ITEM ! FRAME-2 GUI-MENU-OPEN @
 ```
 
-[Example context](../src/tests/gui_test.zig#L354)
+[Example context](../src/tests/gui_test.zig#L382)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment. Use valid logical-memory addresses, lengths and capacities; distinguish owned storage from borrowed lifetimes.
 
@@ -36607,7 +36553,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 0 GUI-MENU-OPEN ! 2 GUI-MENU-ITEM ! FRAME-2 GUI-MENU-OPEN @
 ```
 
-[Example context](../src/tests/gui_test.zig#L354)
+[Example context](../src/tests/gui_test.zig#L382)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment. Use valid logical-memory addresses, lengths and capacities; distinguish owned storage from borrowed lifetimes.
 
@@ -36639,7 +36585,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 : FRAME-2 GUI-BEGIN S" File|Edit" GUI-MENUBAR 0 = IF S" New|Open|Quit" GUI-MENU ELSE -9 THEN GUI-END ;
 ```
 
-[Example context](../src/tests/gui_test.zig#L352)
+[Example context](../src/tests/gui_test.zig#L380)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment. Use valid logical-memory addresses, lengths and capacities; distinguish owned storage from borrowed lifetimes.
 
@@ -36749,7 +36695,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
    (END-WAIT)  chosen ;
 ```
 
-[Example context](../src/graphics/gui.fs#L635)
+[Example context](../src/graphics/gui.fs#L636)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -36961,7 +36907,8 @@ Usage example (source excerpt; consult the link for setup and expectations)
 
 ```forth
 : (PAD-KEYS) ( -- )
-   GAMEPAD-POLL 1 < IF EXIT THEN
+   GAMEPAD-POLL 1 < IF 0 (PAD-HELD) ! EXIT THEN
+   0 GAMEPAD-MAPPED? 0= IF 0 (PAD-HELD) ! EXIT THEN
    0 GAMEPAD-BUTTONS  DUP (PAD-HELD) @ INVERT AND  SWAP (PAD-HELD) !
    DUP 1 11 LSHIFT AND IF K-UP (ADD-KEY) THEN
    DUP 1 12 LSHIFT AND IF K-DOWN (ADD-KEY) THEN
@@ -37016,7 +36963,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
    FALSE ;
 ```
 
-[Example context](../src/graphics/gui.fs#L338)
+[Example context](../src/graphics/gui.fs#L339)
 
 Caution: Internal operation: prefer its public wrapper; internal state and calling conventions may change. Load and select the vocabulary first. Host display, input and sound support depends on the environment. Use valid logical-memory addresses, lengths and capacities; distinguish owned storage from borrowed lifetimes.
 
@@ -37077,7 +37024,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
    (MX) @ (MY) @ (BLOCKED) IF FALSE EXIT THEN  (MX) @ (MY) @ x y w h (IN) ;
 ```
 
-[Example context](../src/graphics/gui.fs#L176)
+[Example context](../src/graphics/gui.fs#L177)
 
 Caution: Internal operation: prefer its public wrapper; internal state and calling conventions may change. Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -37138,7 +37085,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
    x y w h GUI-BACKGROUND GUI-BORDER (BORDER-W) @ (BOX) ;
 ```
 
-[Example context](../src/graphics/gui.fs#L274)
+[Example context](../src/graphics/gui.fs#L275)
 
 Caution: Internal operation: prefer its public wrapper; internal state and calling conventions may change. Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -37360,7 +37307,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
    LOOP ;
 ```
 
-[Example context](../src/graphics/gui.fs#L530)
+[Example context](../src/graphics/gui.fs#L531)
 
 Caution: Internal operation: prefer its public wrapper; internal state and calling conventions may change. Load and select the vocabulary first. Host display, input and sound support depends on the environment. Use valid logical-memory addresses, lengths and capacities; distinguish owned storage from borrowed lifetimes.
 
@@ -37395,7 +37342,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
    (FOCUS-N) @ (LAST-FOCUS-N) ! ;
 ```
 
-[Example context](../src/graphics/gui.fs#L597)
+[Example context](../src/graphics/gui.fs#L598)
 
 Caution: Internal operation: prefer its public wrapper; internal state and calling conventions may change. Load and select the vocabulary first. Host display, input and sound support depends on the environment. Use valid logical-memory addresses, lengths and capacities; distinguish owned storage from borrowed lifetimes.
 
@@ -37497,7 +37444,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
    FALSE ;
 ```
 
-[Example context](../src/graphics/gui.fs#L338)
+[Example context](../src/graphics/gui.fs#L339)
 
 Caution: Internal operation: prefer its public wrapper; internal state and calling conventions may change. Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -37572,7 +37519,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
    2DROP (END-WAIT) ;
 ```
 
-[Example context](../src/graphics/gui.fs#L627)
+[Example context](../src/graphics/gui.fs#L628)
 
 Caution: Internal operation: prefer its public wrapper; internal state and calling conventions may change. Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -37646,7 +37593,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
    FALSE ;
 ```
 
-[Example context](../src/graphics/gui.fs#L338)
+[Example context](../src/graphics/gui.fs#L339)
 
 Caution: Internal operation: prefer its public wrapper; internal state and calling conventions may change. Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -37820,7 +37767,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
    clicked ;
 ```
 
-[Example context](../src/graphics/gui.fs#L287)
+[Example context](../src/graphics/gui.fs#L288)
 
 Caution: Internal operation: prefer its public wrapper; internal state and calling conventions may change. Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -37893,7 +37840,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
    clicked ;
 ```
 
-[Example context](../src/graphics/gui.fs#L287)
+[Example context](../src/graphics/gui.fs#L288)
 
 Caution: Internal operation: prefer its public wrapper; internal state and calling conventions may change. Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -37937,7 +37884,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
    clicked ;
 ```
 
-[Example context](../src/graphics/gui.fs#L287)
+[Example context](../src/graphics/gui.fs#L288)
 
 Caution: Internal operation: prefer its public wrapper; internal state and calling conventions may change. Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -38047,7 +37994,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
    clicked ;
 ```
 
-[Example context](../src/graphics/gui.fs#L287)
+[Example context](../src/graphics/gui.fs#L288)
 
 Caution: Internal operation: prefer its public wrapper; internal state and calling conventions may change. Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -38118,7 +38065,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
    (IME-CMD) (IME-LEN) @ GFX-TCL DROP 2DROP ;
 ```
 
-[Example context](../src/graphics/gui.fs#L213)
+[Example context](../src/graphics/gui.fs#L214)
 
 Caution: Internal operation: prefer its public wrapper; internal state and calling conventions may change. Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -38148,7 +38095,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 : (IME#) ( n -- )   S"  " (IME+)  0 MAX S>D <# #S #> (IME+) ;
 ```
 
-[Example context](../src/graphics/gui.fs#L199)
+[Example context](../src/graphics/gui.fs#L200)
 
 Caution: Internal operation: prefer its public wrapper; internal state and calling conventions may change. Load and select the vocabulary first. Host display, input and sound support depends on the environment. Use valid logical-memory addresses, lengths and capacities; distinguish owned storage from borrowed lifetimes.
 
@@ -38212,7 +38159,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
    2 = IF (PRE) 256 GFX-IME-PREEDIT 256 MIN (PRE-LEN) ! THEN ;
 ```
 
-[Example context](../src/graphics/gui.fs#L206)
+[Example context](../src/graphics/gui.fs#L207)
 
 Caution: Internal operation: prefer its public wrapper; internal state and calling conventions may change. Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -38332,7 +38279,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
    (FOCUS-N) @ (LAST-FOCUS-N) ! ;
 ```
 
-[Example context](../src/graphics/gui.fs#L597)
+[Example context](../src/graphics/gui.fs#L598)
 
 Caution: Internal operation: prefer its public wrapper; internal state and calling conventions may change. Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -38458,7 +38405,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 : (RELEASED-ON) { x y w h -- flag }   (RELEASE) @ IF (RX) @ (RY) @ x y w h (IN) ELSE FALSE THEN ;
 ```
 
-[Example context](../src/graphics/gui.fs#L181)
+[Example context](../src/graphics/gui.fs#L182)
 
 Caution: Internal operation: prefer its public wrapper; internal state and calling conventions may change. Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -38488,7 +38435,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 : (LIST-ITEM) ( i -- addr u )   >R (LIST-ITEMS) 2@ R> (ITEM) ;
 ```
 
-[Example context](../src/graphics/gui.fs#L454)
+[Example context](../src/graphics/gui.fs#L455)
 
 Caution: Internal operation: prefer its public wrapper; internal state and calling conventions may change. Load and select the vocabulary first. Host display, input and sound support depends on the environment. Use valid logical-memory addresses, lengths and capacities; distinguish owned storage from borrowed lifetimes.
 
@@ -38550,7 +38497,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
    chosen ;
 ```
 
-[Example context](../src/graphics/gui.fs#L503)
+[Example context](../src/graphics/gui.fs#L504)
 
 Caution: Internal operation: prefer its public wrapper; internal state and calling conventions may change. Load and select the vocabulary first. Host display, input and sound support depends on the environment. Use valid logical-memory addresses, lengths and capacities; distinguish owned storage from borrowed lifetimes.
 
@@ -38580,7 +38527,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 : GUI-CHOOSE ( addr u -- n )   2DUP (LIST-ITEMS) 2!  (ITEMS) ['] (LIST-ITEM) SWAP GUI-CHOOSE-XT ;
 ```
 
-[Example context](../src/graphics/gui.fs#L651)
+[Example context](../src/graphics/gui.fs#L652)
 
 Caution: Internal operation: prefer its public wrapper; internal state and calling conventions may change. Load and select the vocabulary first. Host display, input and sound support depends on the environment. Use valid logical-memory addresses, lengths and capacities; distinguish owned storage from borrowed lifetimes.
 
@@ -38722,7 +38669,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 : GUI-CHOOSE ( addr u -- n )   2DUP (LIST-ITEMS) 2!  (ITEMS) ['] (LIST-ITEM) SWAP GUI-CHOOSE-XT ;
 ```
 
-[Example context](../src/graphics/gui.fs#L651)
+[Example context](../src/graphics/gui.fs#L652)
 
 Caution: Internal operation: prefer its public wrapper; internal state and calling conventions may change. Load and select the vocabulary first. Host display, input and sound support depends on the environment. Use valid logical-memory addresses, lengths and capacities; distinguish owned storage from borrowed lifetimes.
 
@@ -38906,7 +38853,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
    clicked ;
 ```
 
-[Example context](../src/graphics/gui.fs#L287)
+[Example context](../src/graphics/gui.fs#L288)
 
 Caution: Internal operation: prefer its public wrapper; internal state and calling conventions may change. Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -38939,7 +38886,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
    2DROP (END-WAIT) ;
 ```
 
-[Example context](../src/graphics/gui.fs#L627)
+[Example context](../src/graphics/gui.fs#L628)
 
 Caution: Internal operation: prefer its public wrapper; internal state and calling conventions may change. Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -38985,7 +38932,7 @@ Sources: [src/graphics/gui.fs](../src/graphics/gui.fs).
 
 ` ( -- ) `
 
-The first gamepad as keys: its D-pad as the arrows, A as Enter, B as Esc, each when it is pressed.
+The first mapped gamepad as keys: its D-pad as the arrows, A as Enter, B as Esc, each when it is pressed.
 
 Kind: private library helper.
 
@@ -39015,7 +38962,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
    GUI-FOCUSED @ 1 < GUI-FOCUSED @ (LAST-FOCUS-N) @ > OR IF 1 GUI-FOCUSED ! THEN ;
 ```
 
-[Example context](../src/graphics/gui.fs#L228)
+[Example context](../src/graphics/gui.fs#L229)
 
 Caution: Internal operation: prefer its public wrapper; internal state and calling conventions may change. Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -39023,7 +38970,8 @@ Implementation definition (private helpers may change):
 
 ```forth
 : (PAD-KEYS) ( -- )
-   GAMEPAD-POLL 1 < IF EXIT THEN
+   GAMEPAD-POLL 1 < IF 0 (PAD-HELD) ! EXIT THEN
+   0 GAMEPAD-MAPPED? 0= IF 0 (PAD-HELD) ! EXIT THEN
    0 GAMEPAD-BUTTONS  DUP (PAD-HELD) @ INVERT AND  SWAP (PAD-HELD) !
    DUP 1 11 LSHIFT AND IF K-UP (ADD-KEY) THEN
    DUP 1 12 LSHIFT AND IF K-DOWN (ADD-KEY) THEN
@@ -39053,7 +39001,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 : GUI-BUTTON-SIZE ( addr u -- w h )   TEXT-WIDTH (PAD-X) 2* + (BORDER-W) @ 2* +  (ROW-H) ;
 ```
 
-[Example context](../src/graphics/gui.fs#L283)
+[Example context](../src/graphics/gui.fs#L284)
 
 Caution: Internal operation: prefer its public wrapper; internal state and calling conventions may change. Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -39117,7 +39065,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
    REPEAT ;
 ```
 
-[Example context](../src/graphics/gui.fs#L256)
+[Example context](../src/graphics/gui.fs#L257)
 
 Caution: Internal operation: prefer its public wrapper; internal state and calling conventions may change. Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -39211,7 +39159,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
    2 = IF (PRE) 256 GFX-IME-PREEDIT 256 MIN (PRE-LEN) ! THEN ;
 ```
 
-[Example context](../src/graphics/gui.fs#L206)
+[Example context](../src/graphics/gui.fs#L207)
 
 Caution: Internal operation: prefer its public wrapper; internal state and calling conventions may change. Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -39288,7 +39236,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
    key ;
 ```
 
-[Example context](../src/graphics/gui.fs#L557)
+[Example context](../src/graphics/gui.fs#L558)
 
 Caution: Internal operation: prefer its public wrapper; internal state and calling conventions may change. Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -39446,7 +39394,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
    clicked ;
 ```
 
-[Example context](../src/graphics/gui.fs#L287)
+[Example context](../src/graphics/gui.fs#L288)
 
 Caution: Internal operation: prefer its public wrapper; internal state and calling conventions may change. Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -39479,7 +39427,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
    2DROP (END-WAIT) ;
 ```
 
-[Example context](../src/graphics/gui.fs#L627)
+[Example context](../src/graphics/gui.fs#L628)
 
 Caution: Internal operation: prefer its public wrapper; internal state and calling conventions may change. Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -39568,7 +39516,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 : (ITEM-H) ( addr u -- h )   (SEPARATOR?) IF 5 ELSE (ROW-H) THEN ;
 ```
 
-[Example context](../src/graphics/gui.fs#L498)
+[Example context](../src/graphics/gui.fs#L499)
 
 Caution: Internal operation: prefer its public wrapper; internal state and calling conventions may change. Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -39657,7 +39605,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
    2DROP (END-WAIT) ;
 ```
 
-[Example context](../src/graphics/gui.fs#L627)
+[Example context](../src/graphics/gui.fs#L628)
 
 Caution: Internal operation: prefer its public wrapper; internal state and calling conventions may change. Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -39719,7 +39667,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 : (ITEM-H) ( addr u -- h )   (SEPARATOR?) IF 5 ELSE (ROW-H) THEN ;
 ```
 
-[Example context](../src/graphics/gui.fs#L498)
+[Example context](../src/graphics/gui.fs#L499)
 
 Caution: Internal operation: prefer its public wrapper; internal state and calling conventions may change. Load and select the vocabulary first. Host display, input and sound support depends on the environment. Use valid logical-memory addresses, lengths and capacities; distinguish owned storage from borrowed lifetimes.
 
@@ -39791,7 +39739,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
    (END-WAIT)  chosen ;
 ```
 
-[Example context](../src/graphics/gui.fs#L635)
+[Example context](../src/graphics/gui.fs#L636)
 
 Caution: Internal operation: prefer its public wrapper; internal state and calling conventions may change. Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -39824,7 +39772,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 : GUI-LABEL ( addr u x y -- )   GUI-TEXT (TEXT) ;
 ```
 
-[Example context](../src/graphics/gui.fs#L278)
+[Example context](../src/graphics/gui.fs#L279)
 
 Caution: Internal operation: prefer its public wrapper; internal state and calling conventions may change. Load and select the vocabulary first. Host display, input and sound support depends on the environment. Use valid logical-memory addresses, lengths and capacities; distinguish owned storage from borrowed lifetimes.
 
@@ -39893,7 +39841,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
    REPEAT ;
 ```
 
-[Example context](../src/graphics/gui.fs#L261)
+[Example context](../src/graphics/gui.fs#L262)
 
 Caution: Internal operation: prefer its public wrapper; internal state and calling conventions may change. Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -39929,7 +39877,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
    x y w h GUI-BACKGROUND GUI-BORDER (BORDER-W) @ (BOX) ;
 ```
 
-[Example context](../src/graphics/gui.fs#L274)
+[Example context](../src/graphics/gui.fs#L275)
 
 Caution: Internal operation: prefer its public wrapper; internal state and calling conventions may change. Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -41038,7 +40986,7 @@ REQUIRE-AUDIO
 
 Caution: Follow the operand order in the stack effect. Example names and values depend on their setup.
 
-Sources: [src/core/help_text.zig](../src/core/help_text.zig), [HELP](../src/core/help_text.zig#L1294).
+Sources: [src/core/help_text.zig](../src/core/help_text.zig), [HELP](../src/core/help_text.zig#L1295).
 
 <a id="w-53796e7461783a524551554952452d47414d45"></a>
 

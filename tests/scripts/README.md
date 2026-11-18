@@ -36,3 +36,19 @@ run it).
 
 Recorded measurement JSON and original external review transcripts preserve
 paths as they were when recorded. Current commands use `tests/scripts/`.
+
+For the experimental Linux X11 backend, build with `zig build -Dx11=true`.
+`test-linux-native-window.py` checks pixels, letterboxing, keys and close/reopen;
+`SIGMA_TEST_RESIZE=1` also checks resize redraw. On a private Xvfb only,
+`SIGMA_TEST_REMAP=1` checks keyboard-map refresh, and `test-linux-xim-fixture.py`
+checks preedit changes, Unicode commits and IM liveness. Both intrusive cases
+require `SIGMA_TEST_PRIVATE_XSERVER=1`; never point them at the user desktop.
+`SIGMA_TEST_CLOSE_AFTER=6` covers reopening after the initial startup deadline.
+`test-linux-x11-failures.py` owns a temporary local socket and checks rejected,
+disconnected and stalled setup. `SIGMA_TEST_BINARY` selects the built executable.
+
+`test-linux-display-budget.py` requires the experimental Linux build and checks the
+shared five-second native/Tk search budget, blocked PNG writes, unresponsive or
+stopped children, trickling output, cleanup, retries and explicit Tcl after failure.
+It uses temporary fake wish programs and a private local socket; no desktop is used.
+The acceptance tolerance is 5.25 seconds including process startup and scheduling.

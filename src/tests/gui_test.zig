@@ -324,6 +324,34 @@ test "the first gamepad moves a list and chooses with A, each press once" {
     pad = .{};
 }
 
+test "raw pads cannot click GUI buttons and reconnect resets mapped held state" {
+    try skipWithout(&.{.graphics});
+    var output = Output{};
+    const machine = try guiMachine(&output);
+    defer destroyMachine(machine);
+    defer pad = .{};
+    machine.writer.gamepad_ops = &pad_ops;
+    try machine.interpretLine(": FRAME-1 GUI-BEGIN S\" OK\" 10 10 GUI-BUTTON GUI-END ;");
+    pad = .{};
+    pad.count = 1;
+    pad.pads[0] = .{ .id = 1, .mapped = false, .buttons = 1 };
+    try machine.interpretLine("FRAME-1");
+    try expectStack(machine, &.{0});
+    machine.data_depth = 0;
+    pad.pads[0].mapped = true;
+    try machine.interpretLine("FRAME-1 FRAME-1");
+    try expectStack(machine, &.{ -1, 0 });
+    machine.data_depth = 0;
+    pad.count = 0;
+    try machine.interpretLine("FRAME-1");
+    try expectStack(machine, &.{0});
+    machine.data_depth = 0;
+    pad.count = 1;
+    pad.pads[0].id = 2;
+    try machine.interpretLine("FRAME-1");
+    try expectStack(machine, &.{-1});
+}
+
 test "the focus, the pressed part, and the open menu are variables the program sets" {
     try skipWithout(&.{.graphics});
     var output = Output{};

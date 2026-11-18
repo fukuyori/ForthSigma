@@ -1,6 +1,7 @@
 \ Check by hand of Sigma's own window: the mouse, and whether the window can be moved,
 \ resized, and closed while the program waits for input and while it computes
-\ (tque #922). Run from the repository root, after `zig build`, with an input that
+\ (tque #922; Linux #984/#985). Run from the repository root after `zig build`
+\ (Linux: `zig build -Dx11=true`), with an input that
 \ stays silent until part B has waited 20 seconds and then ends (part B makes the file
 \ .work/check-window.go when it starts to wait):
 \   mkdir -p .work; rm -f .work/check-window.go

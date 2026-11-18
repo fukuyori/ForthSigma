@@ -14,6 +14,7 @@ pub fn build(b: *std.Build) void {
     const tools = b.option(bool, "tools", "Include SEE, LOCATE, and WHERE (default: on)") orelse true;
     const image = b.option(bool, "image", "Include SAVE, LOAD, and SAVESYS (default: on)") orelse true;
     const graphics = b.option(bool, "graphics", "Include REQUIRE-GRAPHICS and the GFX- words (default: on)") orelse true;
+    const x11 = b.option(bool, "x11", "Enable the experimental Linux X11 window (broader acceptance unfinished; default: off)") orelse false;
     const audio = b.option(bool, "audio", "Include REQUIRE-AUDIO and the SND- words (default: on)") orelse true;
     const debug = b.option(bool, "debug", "Include the debugging features: the backtrace after an error, --max-steps, --trace, --profile, --debug-log, --lint, --format, --coverage, and the debugging words (DBG, BREAK:, ~~BT and others) (default: on)") orelse true;
     const options = b.addOptions();
@@ -23,6 +24,7 @@ pub fn build(b: *std.Build) void {
     options.addOption(bool, "tools", tools);
     options.addOption(bool, "image", image);
     options.addOption(bool, "graphics", graphics);
+    options.addOption(bool, "x11", x11);
     options.addOption(bool, "audio", audio);
     options.addOption(bool, "debug", debug);
     options.addOption(usize, "memory_mib", b.option(usize, "memory-mib", "The default size of the data area, and of the heap, in MiB (default: 32)") orelse 32);
@@ -52,6 +54,23 @@ pub fn build(b: *std.Build) void {
         .optimize = optimize,
     });
     exe.root_module.addImport("c_file", c_file.createModule());
+    if (target.result.os.tag == .linux and graphics) {
+        const c_evdev = b.addTranslateC(.{
+            .root_source_file = b.path("src/host_evdev.h"),
+            .target = target,
+            .optimize = optimize,
+        });
+        exe.root_module.addImport("c_evdev", c_evdev.createModule());
+    }
+    if (target.result.os.tag == .linux and graphics and x11) {
+        exe.root_module.addCSourceFile(.{ .file = b.path("src/host_x11.c"), .flags = &.{"-std=gnu11"} });
+        const c_x11 = b.addTranslateC(.{
+            .root_source_file = b.path("src/host_x11.h"),
+            .target = target,
+            .optimize = optimize,
+        });
+        exe.root_module.addImport("c_x11", c_x11.createModule());
+    }
     // Each function and constant in its own section, so that the linker drops the ones
     // nothing calls, also from the C files.
     exe.link_function_sections = true;

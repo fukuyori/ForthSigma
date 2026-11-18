@@ -13,7 +13,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS
    ."  axes=" index GAMEPAD-AXES 0 ?DO I index GAMEPAD-AXIS . LOOP
    ."  hats=" index GAMEPAD-HATS 0 ?DO I index GAMEPAD-HAT . LOOP CR ;
 : .GAMEPADS ( -- )
-   GAMEPAD-POLL DUP -1 = IF DROP ." SDL3 unavailable; see HELP GAMEPAD-POLL" CR EXIT THEN
+   GAMEPAD-POLL DUP -1 = IF DROP ." Gamepad backend unavailable or access denied; see HELP GAMEPAD-POLL" CR EXIT THEN
    DUP 0= IF ." No gamepads connected" CR THEN
    0 ?DO I .PAD LOOP ;
 .GAMEPADS

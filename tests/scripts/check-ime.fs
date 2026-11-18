@@ -1,7 +1,7 @@
 \ Check by hand of the input method in a GUI-FIELD, and of the system's font in it
 \ (tque #889; Linux is #897). Run from the repository root, after `zig build`:
 \   zig-out/bin/sigma tests/scripts/check-ime.fs -e "IME-TK"       the Tk window (needs wish)
-\   zig-out/bin/sigma tests/scripts/check-ime.fs -e "IME-WINDOW"   Sigma's own window (Windows, macOS)
+\   zig-out/bin/sigma tests/scripts/check-ime.fs -e "IME-WINDOW"   Sigma's own window (Windows, macOS; Linux: build with -Dx11=true)
 \ The terminal shows the font that was chosen (the first the system has of MS Gothic,
 \ Hiragino Sans, Noto Sans CJK JP, Droid Sans Fallback; none: the built-in font, which
 \ draws Japanese as ?). Type in the field, convert with the input method, and press

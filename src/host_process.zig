@@ -11,6 +11,8 @@ const builtin = @import("builtin");
 const forth = @import("forth.zig");
 
 const is_windows = builtin.os.tag == .windows;
+const linux = builtin.os.tag == .linux;
+const budget = @import("host_display_budget.zig");
 
 pub const start = if (is_windows) windows.startProgram else posix.startProgram;
 pub const write = if (is_windows) windows.writeProgram else posix.writeProgram;
@@ -290,6 +292,31 @@ const posix = struct {
     const duplicate_from = 0; // F_DUPFD
     const executable = 1; // X_OK
 
+    var pending: [16]c_int = @splat(0);
+    fn reapPending() void {
+        for (&pending) |*pid| {
+            if (pid.* == 0) continue;
+            const result = waitpid(pid.*, null, no_hang);
+            if (result == pid.* or (result < 0 and std.c._errno().* != @backingInt(std.c.E.INTR))) pid.* = 0;
+        }
+    }
+    fn makePipe(fds: *[2]c_int) c_int {
+        return if (linux) std.c.pipe2(fds, .{ .CLOEXEC = true }) else pipe(fds);
+    }
+    fn waitReady(fd: c_int, events: i16, wait: bool) forth.RuntimeError!bool {
+        while (true) {
+            if (linux and budget.expired()) return error.HostFailed;
+            var descriptors = [_]std.c.pollfd{.{ .fd = fd, .events = events, .revents = 0 }};
+            const timeout: c_int = if (!wait) 0 else if (linux) budget.remaining() else -1;
+            const result = std.c.poll(&descriptors, 1, timeout);
+            if (result > 0) return true; // HUP/ERR proceed to read/write for EOF/error.
+            if (result == 0) {
+                if (!wait) return false;
+                return error.HostFailed;
+            }
+            if (std.c._errno().* != @backingInt(std.c.E.INTR)) return error.HostFailed;
+        }
+    }
     var child: c_int = 0;
     var to_program: c_int = -1;
     var from_program: c_int = -1;
@@ -310,14 +337,14 @@ const posix = struct {
             const file = std.c.open(&script_name, .{ .ACCMODE = .WRONLY, .CREAT = true, .EXCL = true, .NOFOLLOW = true, .CLOEXEC = true }, @as(std.c.mode_t, 0o600));
             if (file < 0) {
                 script_name[0] = 0;
-                if (std.c._errno().* == @intFromEnum(std.c.E.EXIST)) continue;
+                if (std.c._errno().* == @backingInt(std.c.E.EXIST)) continue;
                 return false;
             }
             var rest = text;
             var ok = true;
             while (rest.len != 0) {
                 const written = std.c.write(file, rest.ptr, rest.len);
-                if (written < 0 and std.c._errno().* == @intFromEnum(std.c.E.INTR)) continue;
+                if (written < 0 and std.c._errno().* == @backingInt(std.c.E.INTR)) continue;
                 if (written <= 0) {
                     ok = false;
                     break;
@@ -386,7 +413,9 @@ const posix = struct {
     }
 
     fn startProgram(_: ?*anyopaque, program: []const u8, script: []const u8) forth.RuntimeError!void {
+        if (linux and budget.expired()) return error.HostFailed;
         _ = stopProgram(null);
+        if (linux and budget.expired()) return error.HostFailed;
         if (!writeScript(script)) return error.HostFailed;
         errdefer removeScript();
         var name_buffer: [512:0]u8 = undefined;
@@ -401,8 +430,8 @@ const posix = struct {
             "wish";
         var input: [2]c_int = undefined;
         var output: [2]c_int = undefined;
-        if (pipe(&input) != 0) return error.HostFailed;
-        if (pipe(&output) != 0) {
+        if (makePipe(&input) != 0) return error.HostFailed;
+        if (makePipe(&output) != 0) {
             _ = std.c.close(input[0]);
             _ = std.c.close(input[1]);
             return error.HostFailed;
@@ -430,6 +459,17 @@ const posix = struct {
         child = pid;
         to_program = input[1];
         from_program = output[0];
+        if (linux) {
+            // Only the parent's ends are nonblocking; wish retains ordinary stdin/stdout.
+            for ([_]c_int{ to_program, from_program }) |fd| {
+                const flags = fcntl(fd, std.c.F.GETFL);
+                const nonblock: c_int = @bitCast(@as(u32, @bitCast(std.c.O{ .NONBLOCK = true })));
+                if (flags < 0 or fcntl(fd, std.c.F.SETFL, flags | nonblock) < 0) {
+                    _ = stopProgram(null);
+                    return error.HostFailed;
+                }
+            }
+        }
     }
 
     fn writeProgram(_: ?*anyopaque, bytes: []const u8) forth.RuntimeError!void {
@@ -440,9 +480,10 @@ const posix = struct {
         defer _ = signal(sigpipe, previous);
         var rest = bytes;
         while (rest.len != 0) {
+            if (linux) _ = try waitReady(to_program, std.c.POLL.OUT, true);
             const written = std.c.write(to_program, rest.ptr, rest.len);
             if (written < 0) {
-                if (std.c._errno().* == @intFromEnum(std.c.E.INTR)) continue;
+                if (std.c._errno().* == @backingInt(std.c.E.INTR) or (linux and std.c._errno().* == @backingInt(std.c.E.AGAIN))) continue;
                 return error.HostFailed;
             }
             if (written == 0) return error.HostFailed;
@@ -452,13 +493,20 @@ const posix = struct {
 
     fn readProgram(_: ?*anyopaque, buffer: []u8, wait: bool) forth.RuntimeError!usize {
         if (from_program < 0) return error.HostFailed;
-        if (!wait) {
+        if (!linux and !wait) {
             var descriptor = [_]std.c.pollfd{.{ .fd = from_program, .events = std.c.POLL.IN, .revents = 0 }};
             if (std.c.poll(&descriptor, 1, 0) <= 0) return 0;
         }
         while (true) {
+            if (linux and !try waitReady(from_program, std.c.POLL.IN, wait)) return 0;
             const count = std.c.read(from_program, buffer.ptr, buffer.len);
-            if (count < 0 and std.c._errno().* == @intFromEnum(std.c.E.INTR)) continue;
+            if (count < 0) {
+                if (std.c._errno().* == @backingInt(std.c.E.INTR)) continue;
+                if (linux and std.c._errno().* == @backingInt(std.c.E.AGAIN)) {
+                    if (!wait) return 0;
+                    continue;
+                }
+            }
             // 0 is the end of the program's output.
             if (count <= 0) return error.HostFailed;
             return @intCast(count);
@@ -470,7 +518,7 @@ const posix = struct {
         for (0..steps) |_| {
             const result = waitpid(child, null, no_hang);
             if (result == child) return true;
-            if (result < 0 and std.c._errno().* != @intFromEnum(std.c.E.INTR)) return true;
+            if (result < 0 and std.c._errno().* != @backingInt(std.c.E.INTR)) return true;
             var pause: std.c.timespec = .{ .sec = 0, .nsec = 10 * std.time.ns_per_ms };
             _ = std.c.nanosleep(&pause, null);
         }
@@ -479,12 +527,37 @@ const posix = struct {
 
     /// Returns whether the program was seen to end.
     fn stopProgram(_: ?*anyopaque) bool {
+        if (linux) reapPending();
         // Its output is closed too, so that it does not wait to write what Sigma will
         // not read.
         if (to_program >= 0) _ = std.c.close(to_program);
         to_program = -1;
         if (from_program >= 0) _ = std.c.close(from_program);
         from_program = -1;
+        if (linux and budget.active() and child > 0) {
+            // Startup failure must not add the usual three-second shutdown grace.
+            _ = kill(child, sigkill);
+            var reaped = false;
+            while (true) {
+                const result = waitpid(child, null, no_hang);
+                if (result == child or (result < 0 and std.c._errno().* != @backingInt(std.c.E.INTR))) {
+                    reaped = true;
+                    break;
+                }
+                if (budget.now() >= budget.cleanupDeadline()) break;
+                var pause: std.c.timespec = .{ .sec = 0, .nsec = std.time.ns_per_ms };
+                _ = std.c.nanosleep(&pause, null);
+            }
+            if (!reaped) {
+                for (&pending) |*pid| if (pid.* == 0) {
+                    pid.* = child;
+                    break;
+                };
+            }
+            child = 0;
+            removeScript();
+            return reaped;
+        }
         if (child > 0) {
             // The program ends when its input closes; after 2 s it is asked to end, and
             // after 1 s more it is ended.
@@ -492,7 +565,7 @@ const posix = struct {
                 _ = kill(child, sigterm);
                 if (!ended(100)) {
                     _ = kill(child, sigkill);
-                    while (waitpid(child, null, 0) < 0 and std.c._errno().* == @intFromEnum(std.c.E.INTR)) {}
+                    while (waitpid(child, null, 0) < 0 and std.c._errno().* == @backingInt(std.c.E.INTR)) {}
                 }
             }
         }

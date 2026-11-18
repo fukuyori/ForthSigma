@@ -391,7 +391,12 @@ const Base64Writer = struct {
     }
 
     fn sink(writer: *Base64Writer) words_graphics.ByteSink {
-        return .{ .context = writer, .write = struct {
+        return .{ .context = writer, .cancelled = struct {
+            fn check(context: *anyopaque) bool {
+                const base64: *Base64Writer = @ptrCast(@alignCast(context));
+                return base64.failure != null;
+            }
+        }.check, .write = struct {
             fn put(context: *anyopaque, data: []const u8) void {
                 const base64: *Base64Writer = @ptrCast(@alignCast(context));
                 base64.bytes(data);

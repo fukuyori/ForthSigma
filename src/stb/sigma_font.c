@@ -304,13 +304,31 @@ int sigma_font_select(const char *name, size_t name_length, unsigned height) {
         closeFile(&file);
         return 0;
     }
+    // Some CFF faces (URW C059, for example) put Latin accents above their
+    // hhea ascent. Using hhea alone silently clips those outlines. Measure a
+    // small, stable Latin reference set, rather than the face-wide bbox whose
+    // exceptional glyphs can make ordinary Latin/CJK text much too small.
+    int measured_ascent = ascent, measured_descent = descent;
+    for (unsigned code = 0xC0; code <= 0xFF; code += 1) {
+        int index = stbtt_FindGlyphIndex(&info, (int)code);
+        int x0, y0, x1, y1;
+        if (index && stbtt_GetGlyphBox(&info, index, &x0, &y0, &x1, &y1)) {
+            if (y1 > measured_ascent) measured_ascent = y1;
+            if (y0 < measured_descent) measured_descent = y0;
+        }
+    }
+    // Do not let an anomalous reference outline dominate the size of a face.
+    if ((long)measured_ascent - measured_descent <= ((long)ascent - descent) * 3 / 2) {
+        ascent = measured_ascent;
+        descent = measured_descent;
+    }
     closeFile(&current);
     current = file;
     font = info;
     chosen = 1;
     line_height = height < max_line_height ? height : max_line_height;
-    // The size whose ascent and descent take `height` pixels, as on the other systems.
-    scale = stbtt_ScaleForPixelHeight(&font, (float)line_height);
+    // The corrected reference ascent and descent together take `height` pixels.
+    scale = (float)line_height / (float)(ascent - descent);
     baseline = (int)lroundf((float)ascent * scale);
     return 1;
 }

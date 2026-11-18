@@ -8,9 +8,10 @@ const Handle = *anyopaque;
 const Guid = extern struct { bytes: [16]u8 };
 const windows = builtin.os.tag == .windows;
 // Zig's static musl ELF loader cannot resolve SDL's dependent shared libraries.
-// Such builds remain usable without gamepads and report an unavailable backend.
+// Such builds use raw evdev snapshots instead of loading SDL.
 const can_load = !(builtin.os.tag == .linux and builtin.link_mode == .static and
-    (builtin.abi == .musl or builtin.abi == .musleabi or builtin.abi == .musleabihf));
+    builtin.abi.isMusl());
+const evdev = if (!can_load and builtin.os.tag == .linux) @import("host_evdev.zig") else struct {};
 extern "c" fn getenv([*:0]const u8) ?[*:0]const u8;
 const Lib = if (windows) struct {
     handle: Handle,
@@ -105,6 +106,7 @@ fn closePad(pad: *Open) void {
     pad.* = .{};
 }
 pub fn close() void {
+    if (comptime !can_load and builtin.os.tag == .linux) return evdev.close();
     if (library) |*lib| {
         for (&opened) |*pad| closePad(pad);
         api.SDL_QuitSubSystem(subsystem);
@@ -154,6 +156,7 @@ fn readPad(slot: *Open) gp.Pad {
     return result;
 }
 pub fn poll(_: ?*anyopaque, snapshot: *gp.Snapshot) bool {
+    if (comptime !can_load and builtin.os.tag == .linux) return evdev.poll(null, snapshot);
     snapshot.* = .{};
     if (!initialize()) return false;
     api.SDL_UpdateGamepads();
@@ -187,6 +190,10 @@ pub fn poll(_: ?*anyopaque, snapshot: *gp.Snapshot) bool {
         if (snapshot.count == gp.max_pads) break;
     }
     return true;
+}
+
+test {
+    if (!can_load and builtin.os.tag == .linux) _ = evdev;
 }
 fn mapping(_: ?*anyopaque, text: []const u8) bool {
     if (text.len == 0 or text.len >= 4096 or std.mem.indexOfScalar(u8, text, 0) != null or !initialize()) return false;

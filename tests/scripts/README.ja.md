@@ -1,0 +1,51 @@
+# テストと検証のスクリプト
+
+リポジトリのルートから実行します。`test-*`は回帰テスト、`verify-*`は統合・比較の
+確認、`probe-*`は参考結果の収集です。`gforth-p00/`にはP00のGforth参照テストが
+あります。必要な参照ビルドはそのREADMEを確認してください。各スクリプトの
+OS・参照実行環境の条件も満たす必要があります。
+
+実行例:
+
+```sh
+python3 tests/scripts/test-word-reference.py --sigma zig-out/bin/sigma
+python3 tests/scripts/test-line-editor.py --sigma zig-out/bin/sigma
+python3 tests/scripts/verify-p10.py --sigma zig-out/bin/sigma --output .work/p10/report.json
+python3 tests/scripts/verify-feature-matrix.py --platform macos
+python3 tests/scripts/verify-debug-outputs.py --sigma zig-out/bin/sigma --out tests/scripts/debug-outputs/windows.json
+python3 tests/scripts/verify-debug-outputs.py --compare tests/scripts/debug-outputs/macos.json tests/scripts/debug-outputs/windows.json
+```
+
+ビルド・配布・データ生成・文書生成・ベンチマークのコマンドは`scripts/`にあります。
+`check-docs.py`、`word-reference.py`、その補助の`word_reference_examples.py`、
+`benchmark-runtime.py`も同じです。`test-benchmark-runtime.py`にはLinuxの
+プロセスCPU時計APIが必要です。
+
+`debug-outputs/`には各OSで`verify-debug-outputs.py`が記録した結果があり、
+`--compare`で比較できます。
+
+`check-ime.fs`は合否を自動判定しない手動確認です。`GUI-FIELD`を表示し、IMEで
+入力した日本語とそのバイト列を出力します。実行方法はファイル冒頭にあります。
+
+`check-window.fs`もSigma自身のウィンドウの手動確認です。マウスの押下・解放・
+ホイールを出力し、入力待ちや計算中の移動・リサイズ・閉じる操作を確認できます。
+実行方法はファイル冒頭にあります。
+
+過去の測定JSONと外部レビュー原文には、記録当時のパスを残しています。
+現在の実行コマンドは`tests/scripts/`を使います。
+
+Linuxの実験用X11バックエンドは`zig build -Dx11=true`でビルドします。
+`test-linux-native-window.py`は画素・黒余白・キー・閉じて再表示を確認し、
+`SIGMA_TEST_RESIZE=1`でリサイズの再描画も確認します。private Xvfbだけで、
+`SIGMA_TEST_REMAP=1`によるキーマップ変更と、`test-linux-xim-fixture.py`による
+preeditの差分・Unicode確定・IMの生存確認を試せます。この2つは
+`SIGMA_TEST_PRIVATE_XSERVER=1`が必要で、利用者のデスクトップには適用しません。
+`SIGMA_TEST_CLOSE_AFTER=6`は初回作成期限の後に閉じて再表示する確認です。
+`test-linux-x11-failures.py`は自分専用の一時ソケットで接続拒否・切断・無応答を確認します。
+実行ファイルは`SIGMA_TEST_BINARY`で選べます。
+
+`test-linux-display-budget.py`は実験用Linuxビルドで、自動探索全体の5秒期限、
+PNG送信の詰まり、無応答・停止した子、少量ずつ続く応答、回収、再試行、失敗後の
+明示的Tcl実行を確認します。一時的なwish代替プログラムと専用ローカルソケットを
+使い、デスクトップには接続しません。プロセス起動とスケジューリングを含む
+受け入れ許容値は5.25秒です。

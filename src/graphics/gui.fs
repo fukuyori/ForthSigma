@@ -128,10 +128,11 @@ VARIABLE (PAD-HELD)
    (KEY-COUNT) @ 0= IF -1 EXIT THEN
    (KEYS) @  (KEYS) CELL+ (KEYS) (KEY-COUNT) @ 1- CELLS MOVE  -1 (KEY-COUNT) +! ;
 
-\ The first gamepad as keys: its D-pad as the arrows, A as Enter, B as Esc, each when
+\ The first mapped gamepad as keys: its D-pad as the arrows, A as Enter, B as Esc, each when
 \ it is pressed.
 : (PAD-KEYS) ( -- )
-   GAMEPAD-POLL 1 < IF EXIT THEN
+   GAMEPAD-POLL 1 < IF 0 (PAD-HELD) ! EXIT THEN
+   0 GAMEPAD-MAPPED? 0= IF 0 (PAD-HELD) ! EXIT THEN
    0 GAMEPAD-BUTTONS  DUP (PAD-HELD) @ INVERT AND  SWAP (PAD-HELD) !
    DUP 1 11 LSHIFT AND IF K-UP (ADD-KEY) THEN
    DUP 1 12 LSHIFT AND IF K-DOWN (ADD-KEY) THEN

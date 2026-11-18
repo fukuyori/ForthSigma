@@ -420,3 +420,70 @@ test "a font of Linux: chosen by its name or its path, drawn in gray, and no gly
     try std.testing.expectEqual(@as(u32, 24), larger.height);
     try std.testing.expect(larger.advance > a.advance);
 }
+
+test "Linux C059 accents fit the fixed line instead of being clipped above it" {
+    if (builtin.os.tag != .linux or !@import("build_options").graphics) return error.SkipZigTest;
+    const Stats = struct {
+        ink: usize = 0,
+        top: usize = 256,
+        bottom: usize = 0,
+        fn measure(code: u21, height: u32) !@This() {
+            var alpha: [512 * 256]u8 = undefined;
+            const g = glyph(null, code, &alpha, 512) orelse return error.TestUnexpectedResult;
+            try std.testing.expectEqual(height, g.height);
+            var result: @This() = .{};
+            for (alpha[0 .. g.width * g.height], 0..) |value, i| {
+                if (value == 0) continue;
+                result.ink += 1;
+                result.top = @min(result.top, i / g.width);
+                result.bottom = @max(result.bottom, i / g.width);
+            }
+            return result;
+        }
+    };
+    // A path fixes the face: a family name could select a different installed style.
+    const path = "/usr/share/fonts/opentype/urw-base35/C059-Roman.otf";
+    if (!try select(null, path, 64)) return error.SkipZigTest;
+    for ([_]u32{ 12, 16, 24, 64 }) |height| {
+        try std.testing.expect(try select(null, path, height));
+        const a = try Stats.measure('A', height);
+        const accented_a = try Stats.measure('Ä', height);
+        const o = try Stats.measure('O', height);
+        const accented_o = try Stats.measure('Ö', height);
+        try std.testing.expect(accented_a.ink > a.ink);
+        try std.testing.expect(accented_o.ink > o.ink);
+        try std.testing.expect(accented_a.top < a.top);
+        try std.testing.expect(accented_o.top < o.top);
+        if (height == 64) {
+            try std.testing.expect(accented_a.top > 0 and accented_o.top > 0);
+            const x = try Stats.measure('x', height);
+            const g = try Stats.measure('g', height);
+            const p = try Stats.measure('p', height);
+            try std.testing.expect(g.bottom > x.bottom and p.bottom > x.bottom);
+            try std.testing.expect(g.bottom + 1 < height and p.bottom + 1 < height);
+        }
+    }
+}
+
+test "Linux line correction preserves ordinary DejaVu and CJK character sizes" {
+    if (builtin.os.tag != .linux or !@import("build_options").graphics) return error.SkipZigTest;
+    var alpha: [512 * 256]u8 = undefined;
+    var checked = false;
+    if (try select(null, "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", 64)) {
+        const a = glyph(null, 'A', &alpha, 512) orelse return error.TestUnexpectedResult;
+        try std.testing.expectEqual(@as(i32, 38), a.advance);
+        var top: usize = 256;
+        for (alpha[0 .. a.width * a.height], 0..) |value, i| if (value != 0) {
+            top = @min(top, i / a.width);
+        };
+        try std.testing.expectEqual(@as(usize, 10), top);
+        checked = true;
+    }
+    if (try select(null, "Noto Sans CJK JP", 64)) {
+        const kanji = glyph(null, '日', &alpha, 512) orelse return error.TestUnexpectedResult;
+        try std.testing.expect(kanji.advance >= 40);
+        try std.testing.expectEqual(@as(u32, 64), kanji.height);
+        checked = true;
+    }
+    if (!checked) return error.SkipZigTest;
+}
