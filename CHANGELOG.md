@@ -12,6 +12,7 @@
 
 ### Changed
 
+- The Windows graphics window is aware of each monitor's DPI: `WINDOW-SIZE` and the window's sizes are the screen's pixels, and Windows no longer stretches (and blurs) the image. On a monitor scaled above 100%, a window of the same `WINDOW-SIZE` therefore looks smaller than it did before this change; give a larger `WINDOW-SIZE` for the old look. A window moved to a monitor of another DPI takes the size Windows gives it and lays the image out again; `WINDOW-SIZE` is not restored. Before Windows 10 1703 the window stays unaware of DPI, as before. On every Windows, with `0 0` the window also fits the work area of its monitor (the screen without the taskbar), and a window sized for a new image is moved into the work area as far as it fits.
 - Four built-in words are added for the above (`GFX-AUTO-DISPLAY`, `GFX-AUTO-DISPLAY!`, `GFX-IME-PREEDIT`, `GFX-IME-CARET`). Added built-in words change the dictionary ABI; recreate dictionary images.
 
 ## [0.11.2] - 2026-11-17

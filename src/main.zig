@@ -2447,6 +2447,7 @@ test {
     _ = host_line;
     _ = host_font;
     _ = host_process;
+    _ = @import("window_layout.zig");
     if (builtin.os.tag == .linux and @import("build_options").graphics) _ = @import("host_evdev.zig");
     if (builtin.os.tag == .linux and @import("build_options").graphics and @import("build_options").x11) {
         _ = @import("host_window_linux.zig");

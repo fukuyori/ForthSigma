@@ -4,6 +4,7 @@
 const std = @import("std");
 const builtin = @import("builtin");
 const forth = @import("forth.zig");
+const window_layout = @import("window_layout.zig");
 const linux_enabled = builtin.os.tag == .linux and @import("build_options").graphics and @import("build_options").x11;
 const linux_window = if (linux_enabled) @import("host_window_linux.zig") else struct {};
 
@@ -124,6 +125,26 @@ const win32 = struct {
     extern "kernel32" fn ReleaseSRWLockExclusive(*SrwLock) callconv(.winapi) void;
     extern "user32" fn SetCapture(?Handle) callconv(.winapi) ?Handle;
     extern "user32" fn ReleaseCapture() callconv(.winapi) i32;
+    extern "user32" fn GetWindowRect(?Handle, *Rect) callconv(.winapi) i32;
+    extern "user32" fn MonitorFromWindow(?Handle, u32) callconv(.winapi) ?Handle;
+    extern "user32" fn GetMonitorInfoW(?Handle, *MonitorInfo) callconv(.winapi) i32;
+    extern "kernel32" fn GetProcAddress(Handle, [*:0]const u8) callconv(.winapi) ?*const anyopaque;
+
+    const MonitorInfo = extern struct { size: u32 = @sizeOf(MonitorInfo), monitor: Rect = .{}, work: Rect = .{}, flags: u32 = 0 };
+
+    /// The DPI functions of Windows 10 1607 and later, looked up when the window thread
+    /// starts so that Sigma still runs (unaware of DPI, as before) on older Windows. The
+    /// window is aware of DPI from Windows 10 1703 (Per Monitor v2).
+    const Dpi = struct {
+        set_thread_context: ?*const fn (?*anyopaque) callconv(.winapi) ?*anyopaque = null,
+        for_window: ?*const fn (?Handle) callconv(.winapi) u32 = null,
+        adjust_rect: ?*const fn (*Rect, u32, i32, u32, u32) callconv(.winapi) i32 = null,
+    };
+    var dpi: Dpi = .{};
+    var dpi_loaded = false;
+    /// DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2 (Windows 10 1703).
+    const per_monitor_aware_v2: isize = -4;
+    const monitor_default_to_nearest: u32 = 2;
 
     const overlapped_window: u32 = 0x00CF0000;
     const use_default: i32 = @bitCast(@as(u32, 0x80000000));
@@ -139,12 +160,14 @@ const win32 = struct {
     const wm_left_down = 0x0201;
     const wm_middle_up = 0x0208;
     const wm_mouse_wheel = 0x020A;
+    const wm_dpi_changed = 0x02E0;
     const button_left: usize = 0x0001;
     const button_right: usize = 0x0002;
     const button_middle: usize = 0x0010;
     /// Sent by SHOW: draw the new image; wparam is 1 when its size changed.
     const wm_new_image = 0x8000;
     const show_no_activate = 4;
+    const no_size: u32 = 0x0001;
     const no_move: u32 = 0x0002;
     const no_z_order: u32 = 0x0004;
     const no_activate: u32 = 0x0010;
@@ -157,9 +180,6 @@ const win32 = struct {
     const redraw_horizontal: u32 = 0x0002;
     const infinite: u32 = 0xFFFF_FFFF;
     const wait_object_0: u32 = 0;
-    /// The largest client area a new window gets; a larger image is drawn smaller.
-    const max_client_width = 1600;
-    const max_client_height = 1200;
 
     const class_name = std.unicode.utf8ToUtf16LeStringLiteral("SigmaGraphicsWindow");
     const title = std.unicode.utf8ToUtf16LeStringLiteral("FORTH/Sigma graphics");
@@ -433,31 +453,75 @@ const win32 = struct {
         if (!opened) return error.HostFailed;
     }
 
-    /// The size of a client area for the image, at most the largest a new window gets,
-    /// keeping the image's proportions.
-    fn clientSize(image_width: u32, image_height: u32) [2]i32 {
-        if (requested[0] != 0) return .{ @intCast(requested[0]), @intCast(requested[1]) };
-        var w: u64 = @max(image_width, 1);
-        var h: u64 = @max(image_height, 1);
-        if (w > max_client_width) {
-            h = @max(1, h * max_client_width / w);
-            w = max_client_width;
+    /// Looks up the DPI functions once, and makes the window thread aware of each
+    /// monitor's DPI, so that the window's sizes are its raster pixels and Windows does
+    /// not stretch its bitmap. Only the window thread is changed: the console is not.
+    fn useDpi() void {
+        if (!dpi_loaded) {
+            dpi_loaded = true;
+            if (GetModuleHandleW(std.unicode.utf8ToUtf16LeStringLiteral("user32.dll"))) |user32| {
+                dpi.set_thread_context = @ptrCast(GetProcAddress(user32, "SetThreadDpiAwarenessContext"));
+                dpi.for_window = @ptrCast(GetProcAddress(user32, "GetDpiForWindow"));
+                dpi.adjust_rect = @ptrCast(GetProcAddress(user32, "AdjustWindowRectExForDpi"));
+            }
         }
-        if (h > max_client_height) {
-            w = @max(1, w * max_client_height / h);
-            h = max_client_height;
-        }
-        return .{ @intCast(w), @intCast(h) };
+        const set = dpi.set_thread_context orelse return;
+        // Per Monitor v2 is Windows 10 1703's. Without it the window stays unaware of DPI
+        // (Per Monitor v1 would need EnableNonClientDpiScaling for its frame to match
+        // frameSize); GetDpiForWindow then gives 96, as the frame is.
+        _ = set(@ptrFromInt(@as(usize, @bitCast(per_monitor_aware_v2))));
     }
 
-    fn windowSize(image_width: u32, image_height: u32) [2]i32 {
-        const client = clientSize(image_width, image_height);
-        var rect = Rect{ .right = client[0], .bottom = client[1] };
-        _ = AdjustWindowRect(&rect, overlapped_window, 0);
+    /// The size the frame and title bar add to a client area, at the window's DPI.
+    fn frameSize(handle: Handle) [2]i32 {
+        var rect = Rect{};
+        if (dpi.adjust_rect != null and dpi.for_window != null) {
+            _ = dpi.adjust_rect.?(&rect, overlapped_window, 0, 0, dpi.for_window.?(handle));
+        } else _ = AdjustWindowRect(&rect, overlapped_window, 0);
         return .{ rect.right - rect.left, rect.bottom - rect.top };
     }
 
+    /// The work area (the screen without the taskbar) of the monitor the window is on.
+    fn workArea(handle: Handle) ?Rect {
+        var info = MonitorInfo{};
+        const monitor = MonitorFromWindow(handle, monitor_default_to_nearest) orelse return null;
+        if (GetMonitorInfoW(monitor, &info) == 0) return null;
+        return info.work;
+    }
+
+    /// The window's size for the image: the client area WINDOW-SIZE gave, or for 0 0
+    /// the image's size as window_layout gives it, which also fits the work area. Called
+    /// with the lock held, on the window thread.
+    fn windowSize(handle: Handle, image_width: u32, image_height: u32) [2]i32 {
+        const frame = frameSize(handle);
+        var client: [2]u32 = requested;
+        if (requested[0] == 0) {
+            var room = [2]u32{ 0, 0 };
+            if (workArea(handle)) |work| {
+                room = .{ @intCast(@max(1, work.right - work.left - frame[0])), @intCast(@max(1, work.bottom - work.top - frame[1])) };
+            }
+            client = window_layout.autoClientSize(image_width, image_height, room);
+        }
+        return .{ @as(i32, @intCast(client[0])) + frame[0], @as(i32, @intCast(client[1])) + frame[1] };
+    }
+
+    /// Moves a window just sized for its image into its monitor's work area, as far as
+    /// it fits (a larger one keeps its top left corner in the work area).
+    fn keepInWorkArea(handle: Handle) void {
+        const work = workArea(handle) orelse return;
+        var place = Rect{};
+        if (GetWindowRect(handle, &place) == 0) return;
+        var x = place.left;
+        var y = place.top;
+        if (place.right > work.right) x -= place.right - work.right;
+        if (place.bottom > work.bottom) y -= place.bottom - work.bottom;
+        x = @max(x, work.left);
+        y = @max(y, work.top);
+        if (x != place.left or y != place.top) _ = SetWindowPos(handle, null, x, y, 0, 0, no_size | no_z_order | no_activate);
+    }
+
     fn run(_: ?*anyopaque) callconv(.winapi) u32 {
+        useDpi();
         const instance = GetModuleHandleW(null);
         if (!class_registered) {
             const class = WindowClass{
@@ -471,19 +535,19 @@ const win32 = struct {
             };
             class_registered = RegisterClassExW(&class) != 0;
         }
-        AcquireSRWLockExclusive(&lock);
-        const size = windowSize(width, height);
-        ReleaseSRWLockExclusive(&lock);
-        const handle = CreateWindowExW(0, class_name, title, overlapped_window, use_default, use_default, size[0], size[1], null, null, instance, null);
-        if (handle == null) {
+        // Made hidden at the default place, then sized at the DPI of the monitor it is on.
+        const handle = CreateWindowExW(0, class_name, title, overlapped_window, use_default, use_default, use_default, use_default, null, null, instance, null) orelse {
             _ = SetEvent(ready.?);
             return 1;
-        }
+        };
         AcquireSRWLockExclusive(&lock);
         window = handle;
         update_pending = false;
         resize_pending = false;
+        const size = windowSize(handle, width, height);
         ReleaseSRWLockExclusive(&lock);
+        _ = SetWindowPos(handle, null, 0, 0, size[0], size[1], no_move | no_z_order | no_activate);
+        keepInWorkArea(handle);
         // The console keeps the keyboard, so typing goes on there.
         _ = ShowWindow(handle, show_no_activate);
         opened = true;
@@ -568,9 +632,20 @@ const win32 = struct {
                 update_pending = false;
                 const resize = resize_pending;
                 resize_pending = false;
-                const size = windowSize(width, height);
+                const size = windowSize(handle.?, width, height);
                 ReleaseSRWLockExclusive(&lock);
-                if (resize) _ = SetWindowPos(handle, null, 0, 0, size[0], size[1], no_move | no_z_order | no_activate);
+                if (resize) {
+                    _ = SetWindowPos(handle, null, 0, 0, size[0], size[1], no_move | no_z_order | no_activate);
+                    keepInWorkArea(handle.?);
+                }
+                _ = InvalidateRect(handle, null, 0);
+                return 0;
+            },
+            // Moved to a monitor of another DPI: take the size Windows suggests. The image
+            // is laid out again in the client area it gets; WINDOW-SIZE is not restored.
+            wm_dpi_changed => {
+                const suggested: *const Rect = @ptrFromInt(@as(usize, @bitCast(lparam)));
+                _ = SetWindowPos(handle, null, suggested.left, suggested.top, suggested.right - suggested.left, suggested.bottom - suggested.top, no_z_order | no_activate);
                 _ = InvalidateRect(handle, null, 0);
                 return 0;
             },

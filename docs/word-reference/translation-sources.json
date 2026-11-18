@@ -171,14 +171,14 @@
     "src/host_resize.zig": "627521c4304ca5ff00f304ff22c0a4cc710a91d585cee01d32c36cd6163b1194",
     "src/host_timezone.zig": "39c4c38377418e6f349cd8d84834fd663d5cff65cfe1194a2e11c7da2b411ccd",
     "src/host_wait.zig": "fe2f1de816178347288dc17682057cafbf7c50cc105a2dd50e40e6220702a85a",
-    "src/host_window.zig": "2c0da2e12dcb4461dbdab793b995d2f47bc2c099b856777618228e5f433fecd1",
+    "src/host_window.zig": "799a6d7f9741f74b033315c8be559cef27e92e01b0a6022232b2586005d6c153",
     "src/host_window_linux.zig": "682690d53137771f018340e7b304c07c61312a75120532a7648239ccb46b8f0a",
     "src/host_window_macos.zig": "0a0d8c34196f595130a42bf8cd1f9b747e73a0216c24adb82f2116caeaaf5c9f",
     "src/host_x11.c": "ff56c05c30b016c1145ad904bb30e1dcbccb0c0ddbbf30f749bfed6a840e4181",
     "src/host_x11.h": "65bb9fcbd1ef4a4ba08376d706baf789fbcd15f3259c43d43416cac4b6c16615",
     "src/host_x11.zig": "66b2796e66d405456e5599ee68a3c13af7eb67ce41a52becb5df669195ef973d",
     "src/host_xim.zig": "b653bfee9baf9aaa4ef1e83480e864e4ae2352b3dd09d584face56b1bbe113af",
-    "src/main.zig": "f468aac0de6f892f7da3c726e87ddbbecafcc691da8ab0bc590238c1a0dae038",
+    "src/main.zig": "18b14f0180e8cc4f8a1ff8513f8653956e15e9f6a92b1e51a7b68b4970289f57",
     "src/stb/sigma_font.c": "d1698db33cc12a091499411a4e5b80b87587c199d0c637fe4ee8f1816d50759c",
     "src/stb/stb_truetype.h": "428cfe93520f2aed5e413a220b0db5bba5b17e2ebe5a64e4a8efa9eeeb67ec5f",
     "src/tests/argument_file.fs": "0cdb301b2f928dc68be2ece50be7e8172ed7e12f69dc6c70bdb7e4bd37dbadbc",
@@ -272,7 +272,8 @@
     "src/tests/support.zig": "815feb5175dee187577673cbf5a03df291e1d4da6be69228f60c74a4c5758e27",
     "src/tests/text_and_numbers_test.zig": "79a692df3ce75c5ed17091798aaea527cd53e6892f49c0e97c260834aaf662c3",
     "src/tests/wordlists_test.zig": "9f93d23e2b61e60be346b53a104a124e0852794d759c416029caa10cf340221b",
-    "src/tests/xchar_test.zig": "698b330da6ba271d4a5d5e5a1d9debe706c514c17ac54b5849b03d46f4e08cfc"
+    "src/tests/xchar_test.zig": "698b330da6ba271d4a5d5e5a1d9debe706c514c17ac54b5849b03d46f4e08cfc",
+    "src/window_layout.zig": "7fe4cb20b53a401572dec5dfe08526ad5dee1639aa00a4b7d130c9838dca95cc"
   },
   "translations": {
     "!": "1dfda2fcadec843d3cc00432f1b4d96e4a6be144f448da732761fa36515b5e0f",
