@@ -449,6 +449,8 @@ pub const State = struct {
     /// The backend auto-selection resolved by SHOW (0 unresolved, 1 terminal,
     /// 2 native window, 3 Tk). State is runtime-only and is never saved in images.
     gfx_auto_display: u8 = 0,
+    /// FULLSCREEN: whether fullscreen is wanted, for this run only (not in images).
+    gfx_fullscreen: bool = false,
     gamepads: @import("core/gamepad.zig").Snapshot = .{},
     /// TEXT's font and the glyph it loaded last (none in a build without graphics).
     gfx_font: if (defs.graphics_enabled) graphics_font.FontState else void = if (defs.graphics_enabled) .{} else {},

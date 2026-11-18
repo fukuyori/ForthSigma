@@ -228,6 +228,13 @@ pub const Writer = struct {
     /// Gives the native text client the focused GUI-FIELD caret in image pixels.
     /// Candidate windows use this position; x/y are measured from the image's top-left.
     ime_caret_fn: ?*const fn (?*anyopaque, bool, Cell, Cell, Cell) RuntimeError!void = null,
+    /// FULLSCREEN for the host's own window: `request` 1 asks for fullscreen, 0 for
+    /// the window, -1 only asks. Gives whether fullscreen is wanted now: the user may
+    /// have left it with the window's key. Without a window yet, the window opens as
+    /// asked.
+    window_fullscreen_fn: ?*const fn (?*anyopaque, i8) RuntimeError!bool = null,
+    /// MOUSE-CURSOR for the host's own window: whether the mouse cursor shows over it.
+    window_cursor_fn: ?*const fn (?*anyopaque, bool) RuntimeError!void = null,
     /// The next input event without waiting, or null when there is none. The first call
     /// lets the terminal give each key at once, without echo; the host gives it back its
     /// line input when the program next reads a line or a KEY, and at the end. The host

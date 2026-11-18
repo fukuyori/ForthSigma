@@ -89,6 +89,11 @@ pub const Output = struct {
     window_first_pixel: u32 = 0,
     window_mode: forth.ColorMode = .{},
     window_size: [2]u32 = .{ 0, 0 },
+    /// FULLSCREEN as the window keeps it (a test clears it as the user's Alt+Enter
+    /// would), the requests that changed it, and MOUSE-CURSOR.
+    window_fullscreen: bool = false,
+    fullscreen_requests: usize = 0,
+    window_cursor: bool = true,
     /// The input events INKEY and MOUSE get from the host, in turn; then none.
     events: []const forth.InputEvent = &.{},
     event_index: usize = 0,
@@ -283,6 +288,20 @@ pub const Output = struct {
         output.window_first_pixel = pixels[0];
     }
 
+    pub fn fullscreen(context: ?*anyopaque, request: i8) forth.RuntimeError!bool {
+        const output: *Output = @ptrCast(@alignCast(context.?));
+        if (request >= 0) {
+            output.window_fullscreen = request == 1;
+            output.fullscreen_requests += 1;
+        }
+        return output.window_fullscreen;
+    }
+
+    pub fn windowCursor(context: ?*anyopaque, visible: bool) forth.RuntimeError!void {
+        const output: *Output = @ptrCast(@alignCast(context.?));
+        output.window_cursor = visible;
+    }
+
     /// Images of the pool from the testing allocator, so that a test that leaves one
     /// behind fails; `image_fails` refuses them, and `images_live` counts those not freed.
     pub fn imageAlloc(context: ?*anyopaque, pixels: usize) ?[]u32 {
@@ -318,7 +337,7 @@ pub const Output = struct {
     }
 
     pub fn writer(self: *Output) forth.Writer {
-        return .{ .context = @ptrCast(self), .write_fn = write, .read_fn = read, .save_fn = saveImage, .savesys_fn = saveImage, .key_fn = key, .key_ready_fn = keyReady, .unread_fn = unread, .sleep_fn = sleep, .utime_fn = utime, .local_time_fn = localTime, .getenv_fn = getenv, .system_fn = system, .file_ops = &fake_file_ops, .framebuffer_fn = framebuffer, .image_alloc_fn = imageAlloc, .image_free_fn = imageFree, .terminal_size_fn = terminalSize, .terminal_utf8_fn = terminalUtf8, .window_fn = if (self.has_window) window else null, .input_fn = input, .mouse_fn = mouse, .cursor_fn = cursor, .font_buffer_fn = fontBuffer, .font_free_fn = fontFree, .system_font_fn = if (self.has_system_fonts) systemFont else null, .system_glyph_fn = if (self.has_system_fonts) systemGlyph else null, .process_start_fn = processStart, .process_write_fn = processWrite, .process_read_fn = processRead, .process_stop_fn = processStop, .audio_fn = audioEngine, .audio_device_fn = audioDevice, .audio_wait_fn = audioWait };
+        return .{ .context = @ptrCast(self), .write_fn = write, .read_fn = read, .save_fn = saveImage, .savesys_fn = saveImage, .key_fn = key, .key_ready_fn = keyReady, .unread_fn = unread, .sleep_fn = sleep, .utime_fn = utime, .local_time_fn = localTime, .getenv_fn = getenv, .system_fn = system, .file_ops = &fake_file_ops, .framebuffer_fn = framebuffer, .image_alloc_fn = imageAlloc, .image_free_fn = imageFree, .terminal_size_fn = terminalSize, .terminal_utf8_fn = terminalUtf8, .window_fn = if (self.has_window) window else null, .window_fullscreen_fn = if (self.has_window) fullscreen else null, .window_cursor_fn = if (self.has_window) windowCursor else null, .input_fn = input, .mouse_fn = mouse, .cursor_fn = cursor, .font_buffer_fn = fontBuffer, .font_free_fn = fontFree, .system_font_fn = if (self.has_system_fonts) systemFont else null, .system_glyph_fn = if (self.has_system_fonts) systemGlyph else null, .process_start_fn = processStart, .process_write_fn = processWrite, .process_read_fn = processRead, .process_stop_fn = processStop, .audio_fn = audioEngine, .audio_device_fn = audioDevice, .audio_wait_fn = audioWait };
     }
 
     pub fn audioEngine(context: ?*anyopaque) ?*@import("../core/sound_engine.zig").Engine {

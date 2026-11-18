@@ -2611,6 +2611,45 @@ test "automatic search shares one scope and releases it on native, Tk and propag
     try std.testing.expectEqual(Hooks.begins, Hooks.ends);
 }
 
+test "FULLSCREEN asks the window, and FULLSCREEN? tells when the user left it" {
+    try skipWithout(&.{.graphics});
+    var output = Output{ .has_window = true };
+    const machine = try libraryMachine(&output, "3 2");
+    defer destroyMachine(machine);
+    // Asked before SHOW chose where to show: the window opens so.
+    try machine.interpretLine("TRUE FULLSCREEN FULLSCREEN?");
+    try expectStack(machine, &.{-1});
+    machine.data_depth = 0;
+    try std.testing.expect(output.window_fullscreen);
+    try machine.interpretLine("SHOW FULLSCREEN?");
+    try expectStack(machine, &.{-1});
+    machine.data_depth = 0;
+    // The user leaves fullscreen with Alt+Enter: the window says so.
+    output.window_fullscreen = false;
+    try machine.interpretLine("FULLSCREEN?");
+    try expectStack(machine, &.{0});
+    machine.data_depth = 0;
+    try machine.interpretLine("FALSE MOUSE-CURSOR");
+    try std.testing.expect(!output.window_cursor);
+    try machine.interpretLine("TRUE MOUSE-CURSOR");
+    try std.testing.expect(output.window_cursor);
+    // The terminal chosen by DISPLAY-TERMINAL cannot be fullscreen.
+    try machine.interpretLine("DISPLAY-TERMINAL");
+    try std.testing.expectError(error.HostUnavailable, machine.interpretLine("TRUE FULLSCREEN"));
+    machine.data_depth = 0;
+    try std.testing.expectEqual(@as(usize, 1), output.fullscreen_requests);
+}
+
+test "FULLSCREEN without a window of the host's own only keeps the wish" {
+    try skipWithout(&.{.graphics});
+    var output = Output{ .terminal_columns = 80, .terminal_rows = 24 };
+    const machine = try libraryMachine(&output, "3 2");
+    defer destroyMachine(machine);
+    try machine.interpretLine("TRUE FULLSCREEN SHOW FULLSCREEN? FALSE FULLSCREEN FULLSCREEN?");
+    try expectStack(machine, &.{ -1, 0 });
+    machine.data_depth = 0;
+}
+
 test "DISPLAY-AUTO preserves the existing terminal picture when no GUI is attempted" {
     try skipWithout(&.{.graphics});
     var output = Output{ .terminal_columns = 80, .terminal_rows = 24 };

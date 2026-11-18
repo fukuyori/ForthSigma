@@ -1114,6 +1114,9 @@ pub const Builtin = enum {
     gfx_ime_preedit,
     gfx_ime_caret,
     gfx_auto_try,
+    gfx_fullscreen,
+    gfx_fullscreen_query,
+    gfx_mouse_cursor,
 };
 
 pub const HeapResult = union(enum) { address: Cell, no_memory, bad_pointer };

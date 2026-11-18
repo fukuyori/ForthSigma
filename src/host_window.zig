@@ -40,6 +40,18 @@ pub fn poll() ?forth.InputEvent {
     return if (builtin.os.tag == .windows) win32.poll() else if (builtin.os.tag == .macos) macos_window.poll() else if (linux_enabled) linux_window.poll() else null;
 }
 
+/// The host's window_fullscreen_fn (Windows; macOS and Linux have none yet).
+pub fn fullscreen(context: ?*anyopaque, request: i8) forth.RuntimeError!bool {
+    if (builtin.os.tag == .windows) return win32.fullscreen(context, request);
+    return error.HostUnavailable;
+}
+
+/// The host's window_cursor_fn (Windows; macOS and Linux have none yet).
+pub fn mouseCursor(context: ?*anyopaque, visible: bool) forth.RuntimeError!void {
+    if (builtin.os.tag == .windows) return win32.mouseCursor(context, visible);
+    return error.HostUnavailable;
+}
+
 /// Closes the window and waits for its thread, before the program ends.
 pub fn close() void {
     if (builtin.os.tag == .windows) win32.close() else if (builtin.os.tag == .macos) macos_window.close() else if (linux_enabled) linux_window.close();
@@ -134,6 +146,12 @@ const win32 = struct {
     extern "kernel32" fn GetTickCount64() callconv(.winapi) u64;
     extern "kernel32" fn ResetEvent(Handle) callconv(.winapi) i32;
     extern "user32" fn DestroyWindow(?Handle) callconv(.winapi) i32;
+    extern "user32" fn SetWindowLongPtrW(?Handle, i32, isize) callconv(.winapi) isize;
+    extern "user32" fn SetForegroundWindow(?Handle) callconv(.winapi) i32;
+    extern "user32" fn BringWindowToTop(?Handle) callconv(.winapi) i32;
+    extern "user32" fn SetCursor(?Handle) callconv(.winapi) ?Handle;
+    extern "user32" fn GetCursorPos(*Point) callconv(.winapi) i32;
+    extern "user32" fn WindowFromPoint(Point) callconv(.winapi) ?Handle;
     extern "imm32" fn ImmGetContext(?Handle) callconv(.winapi) ?Handle;
     extern "imm32" fn ImmReleaseContext(?Handle, ?Handle) callconv(.winapi) i32;
     extern "imm32" fn ImmGetCompositionStringW(?Handle, u32, ?*anyopaque, u32) callconv(.winapi) i32;
@@ -188,6 +206,19 @@ const win32 = struct {
     const wm_mouse_wheel = 0x020A;
     const wm_dpi_changed = 0x02E0;
     const wm_get_dpi_scaled_size = 0x02E4;
+    const wm_system_key_down = 0x0104;
+    const wm_system_char = 0x0106;
+    const wm_set_cursor = 0x0020;
+    /// Sent by fullscreen and mouseCursor: the window takes what was asked.
+    const wm_fullscreen = 0x8002;
+    const wm_cursor = 0x8003;
+    const ws_popup: u32 = 0x8000_0000;
+    const ws_visible: u32 = 0x1000_0000;
+    const gwl_style: i32 = -16;
+    const frame_changed: u32 = 0x0020;
+    const show_window: u32 = 0x0040;
+    const hit_client: usize = 1;
+    const vk_return: usize = 0x0D;
     const button_left: usize = 0x0001;
     const button_right: usize = 0x0002;
     const button_middle: usize = 0x0010;
@@ -234,6 +265,13 @@ const win32 = struct {
     var high_surrogate: u16 = 0;
     /// Ctrl+C was pressed and is not yet told.
     var interrupt_pending = false;
+    /// FULLSCREEN: wanted (under `lock`; Alt+Enter clears it), and whether the window
+    /// covers its screen now with the place it had before (window thread only).
+    var fullscreen_wanted = false;
+    var fullscreen_on = false;
+    var windowed_place = Rect{};
+    /// MOUSE-CURSOR, under `lock`.
+    var cursor_visible = true;
     /// The focused GUI-FIELD's caret, in image pixels (imeCaret), and the text the IME
     /// is converting there, as UTF-8 (imePreedit). Without a focused field the IME
     /// shows its own composition window, as before.
@@ -724,6 +762,83 @@ const win32 = struct {
         return imeState().active;
     }
 
+    /// FULLSCREEN and FULLSCREEN?: request 1 or 0 asks, -1 only tells what is wanted.
+    /// Without a window, the next one opens so.
+    fn fullscreen(_: ?*anyopaque, request: i8) forth.RuntimeError!bool {
+        AcquireSRWLockExclusive(&lock);
+        var changed = false;
+        if (request >= 0) {
+            changed = fullscreen_wanted != (request == 1);
+            fullscreen_wanted = request == 1;
+        }
+        const wanted = fullscreen_wanted;
+        const current = window;
+        ReleaseSRWLockExclusive(&lock);
+        if (changed) if (current) |handle| {
+            _ = PostMessageW(handle, wm_fullscreen, 0, 0);
+        };
+        return wanted;
+    }
+
+    /// MOUSE-CURSOR.
+    fn mouseCursor(_: ?*anyopaque, visible: bool) forth.RuntimeError!void {
+        AcquireSRWLockExclusive(&lock);
+        const changed = cursor_visible != visible;
+        cursor_visible = visible;
+        const current = window;
+        ReleaseSRWLockExclusive(&lock);
+        if (changed) if (current) |handle| {
+            _ = PostMessageW(handle, wm_cursor, 0, 0);
+        };
+    }
+
+    /// Makes the window cover its screen, or a window again at the place it had, as
+    /// fullscreen_wanted says. Window thread only.
+    fn applyFullscreen(handle: Handle) void {
+        AcquireSRWLockExclusive(&lock);
+        const wanted = fullscreen_wanted;
+        ReleaseSRWLockExclusive(&lock);
+        if (wanted == fullscreen_on) return;
+        if (wanted) {
+            var monitor_info = MonitorInfo{};
+            const monitor = MonitorFromWindow(handle, monitor_default_to_nearest) orelse return;
+            if (GetMonitorInfoW(monitor, &monitor_info) == 0) return;
+            if (GetWindowRect(handle, &windowed_place) == 0) return;
+            const screen = monitor_info.monitor;
+            _ = SetWindowLongPtrW(handle, gwl_style, @intCast(ws_popup | ws_visible));
+            fullscreen_on = true;
+            // On top of the others and with the keys, over the whole screen.
+            _ = SetWindowPos(handle, null, screen.left, screen.top, screen.right - screen.left, screen.bottom - screen.top, frame_changed | show_window);
+            takeKeys(handle);
+        } else {
+            _ = SetWindowLongPtrW(handle, gwl_style, @intCast(overlapped_window | ws_visible));
+            fullscreen_on = false;
+            const place = windowed_place;
+            _ = SetWindowPos(handle, null, place.left, place.top, place.right - place.left, place.bottom - place.top, frame_changed | show_window | no_z_order | no_activate);
+        }
+        if (imeActive()) placeIme(handle);
+        _ = InvalidateRect(handle, null, 0);
+    }
+
+    /// Brings the window to the front with the keys, as far as Windows lets it: it
+    /// refuses a process that is not in front (another program the user works in keeps
+    /// the keys; then a click gives them to the window). Joining another thread's input
+    /// (AttachThreadInput) is not used, since SetForegroundWindow can then hang.
+    fn takeKeys(handle: Handle) void {
+        _ = BringWindowToTop(handle);
+        _ = SetForegroundWindow(handle);
+    }
+
+    /// Shows or hides the cursor at once when the mouse is over the window.
+    fn applyCursor(handle: Handle) void {
+        var point: Point = undefined;
+        if (GetCursorPos(&point) == 0 or WindowFromPoint(point) != handle) return;
+        AcquireSRWLockExclusive(&lock);
+        const visible = cursor_visible;
+        ReleaseSRWLockExclusive(&lock);
+        _ = SetCursor(if (visible) LoadCursorW(null, arrow_cursor) else null);
+    }
+
     fn remainingMs(deadline: u64) u32 {
         const now = GetTickCount64();
         return if (now >= deadline) 0 else @intCast(@min(deadline - now, infinite - 1));
@@ -863,8 +978,11 @@ const win32 = struct {
             _ = DestroyWindow(handle);
             return 1;
         }
-        // The console keeps the keyboard, so typing goes on there.
+        // The console keeps the keyboard, so typing goes on there. A window opened
+        // while fullscreen is wanted covers its screen at once, and takes the keys.
         _ = ShowWindow(handle, show_no_activate);
+        fullscreen_on = false;
+        applyFullscreen(handle);
         var message: Message = undefined;
         while (GetMessageW(&message, null, 0, 0) > 0) {
             _ = TranslateMessage(&message);
@@ -1005,7 +1123,8 @@ const win32 = struct {
                 resize_pending = false;
                 const size = windowSize(handle.?, width, height);
                 ReleaseSRWLockExclusive(&lock);
-                if (resize) {
+                // A fullscreen window keeps covering its screen.
+                if (resize and !fullscreen_on) {
                     _ = SetWindowPos(handle, null, 0, 0, size[0], size[1], no_move | no_z_order | no_activate);
                     keepInWorkArea(handle.?);
                     // The image's size changed: the caret's place on the screen too.
@@ -1018,6 +1137,7 @@ const win32 = struct {
             // keeps the client area's proportions exactly (by default it scales the
             // whole window, frame included).
             wm_get_dpi_scaled_size => {
+                if (fullscreen_on) return 0;
                 const size: *[2]i32 = @ptrFromInt(@as(usize, @bitCast(lparam)));
                 const scaled = dpiScaledSize(handle.?, size.*, @truncate(wparam)) orelse return 0;
                 size.* = scaled;
@@ -1027,9 +1147,48 @@ const win32 = struct {
             // is laid out again in the client area it gets; WINDOW-SIZE is not restored.
             wm_dpi_changed => {
                 const suggested: *const Rect = @ptrFromInt(@as(usize, @bitCast(lparam)));
-                _ = SetWindowPos(handle, null, suggested.left, suggested.top, suggested.right - suggested.left, suggested.bottom - suggested.top, no_z_order | no_activate);
+                if (!fullscreen_on) _ = SetWindowPos(handle, null, suggested.left, suggested.top, suggested.right - suggested.left, suggested.bottom - suggested.top, no_z_order | no_activate);
                 _ = InvalidateRect(handle, null, 0);
                 return 0;
+            },
+            wm_fullscreen => {
+                applyFullscreen(handle.?);
+                return 0;
+            },
+            wm_cursor => {
+                applyCursor(handle.?);
+                return 0;
+            },
+            // Alt+Enter leaves fullscreen; it is not a key for INKEY. Bit 29 of lparam is
+            // set when Alt is down (Enter alone also comes here when no window has the
+            // focus); bit 30 when the key was down already (a repeat, left alone).
+            wm_system_key_down => {
+                const bits: usize = @bitCast(lparam);
+                const alt = bits & (1 << 29) != 0;
+                const repeat = bits & (1 << 30) != 0;
+                if (wparam == vk_return and alt and !repeat and fullscreen_on) {
+                    AcquireSRWLockExclusive(&lock);
+                    fullscreen_wanted = false;
+                    ReleaseSRWLockExclusive(&lock);
+                    applyFullscreen(handle.?);
+                    return 0;
+                }
+                return DefWindowProcW(handle, message, wparam, lparam);
+            },
+            // The character of Alt+Enter would only beep.
+            wm_system_char => {
+                if (wparam == 13) return 0;
+                return DefWindowProcW(handle, message, wparam, lparam);
+            },
+            wm_set_cursor => {
+                AcquireSRWLockExclusive(&lock);
+                const visible = cursor_visible;
+                ReleaseSRWLockExclusive(&lock);
+                if (!visible and (@as(usize, @bitCast(lparam)) & 0xFFFF) == hit_client) {
+                    _ = SetCursor(null);
+                    return 1;
+                }
+                return DefWindowProcW(handle, message, wparam, lparam);
             },
             wm_destroy => {
                 AcquireSRWLockExclusive(&lock);

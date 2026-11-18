@@ -255,6 +255,14 @@ VARIABLE (TERMINAL-MODE)  0 (TERMINAL-MODE) !
 \ HOST FUNCTION UNAVAILABLE when the host has no window.
 : DISPLAY-WINDOW ( -- )   GFX-WINDOW? 0= IF -21 THROW THEN  2 (DISPLAY) ! ;
 : DISPLAY-AUTO ( -- )   0 (DISPLAY) !  0 GFX-AUTO-DISPLAY! ;
+\ FULLSCREEN: Sigma's own window covers its screen (true) or is a window again (false).
+\ The user leaves fullscreen with Alt+Enter (Control+Command+F on macOS); FULLSCREEN?
+\ then gives false. Asked before SHOW has chosen where to show, the window opens so;
+\ the terminal takes no notice. HOST FUNCTION UNAVAILABLE with DISPLAY-TERMINAL.
+: FULLSCREEN ( flag -- )   (DISPLAY) @ 1 = IF -21 THROW THEN  GFX-FULLSCREEN ;
+: FULLSCREEN? ( -- flag )   GFX-FULLSCREEN? ;
+\ Whether the mouse cursor shows over Sigma's own window (at first it does).
+: MOUSE-CURSOR ( flag -- )   GFX-MOUSE-CURSOR ;
 : TERMINAL-BLOCKS ( -- )   0 (TERMINAL-MODE) ! ;
 : TERMINAL-SIXEL ( -- )   1 (TERMINAL-MODE) ! ;
 
