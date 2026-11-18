@@ -65,7 +65,7 @@ PREVIOUS
 | `FILL-CIRCLE` | ( x y r -- ) | 塗りつぶした円。同じ引数の `CIRCLE` の画素をすべて含みます。 |
 | `PAINT` | ( x y -- ) | x y と同じ色で上下左右につながる領域を、現在の色で塗ります。画像の外や、領域がすでに現在の色のときは何もしません。 |
 | `SAVE-PPM`、`SAVE-BMP`、`SAVE-PNG` | ( c-addr u -- ) | 画像を新しいファイルに、2進のPPM（P6）、24ビットのBMP、またはPNGで書きます。ファイル操作のエラーは `THROW` します。PNGは赤・緑・青の各8ビットで圧縮しないので、大きさはBMPとほぼ同じです。PNGを読めるプログラムなら読めます。 |
-| `SHOW` | ( -- ) | 画像を表示します。ホストにウィンドウがあれば（Windows）ウィンドウに、なければデスクトップで `wish` が起動できればTkのウィンドウに（Linux、macOS。[グラフィックモードのマニュアル](GRAPHICS_MODES.ja.md)を参照）、それもだめなら端末に、または `DISPLAY-TERMINAL`・`DISPLAY-WINDOW`・`DISPLAY-TK` で決めた先に表示します。 |
+| `SHOW` | ( -- ) | 画像を表示します。ホストにSigma自身のウィンドウがあれば（Windows、macOS、X11またはXWaylandのLinux）ウィンドウに、なければデスクトップで `wish` が起動できればTkのウィンドウに（[グラフィックモードのマニュアル](GRAPHICS_MODES.ja.md)を参照）、それもだめなら端末に、または `DISPLAY-TERMINAL`・`DISPLAY-WINDOW`・`DISPLAY-TK` で決めた先に表示します。 |
 | `DISPLAY-TERMINAL`、`DISPLAY-WINDOW` | ( -- ) | `SHOW` の表示先を端末、またはウィンドウにします。ホストにウィンドウがなければ、`DISPLAY-WINDOW` は `HOST FUNCTION UNAVAILABLE !` になります。 |
 | `WINDOW-SIZE` | ( w h -- ) | 次の `SHOW` から、ウィンドウ（と `DISPLAY-TK` のTkのウィンドウ）で、画像を w×h 画素の大きさの領域に表示します。各辺は1〜16384で、0 0（初めの値）なら画像と同じ大きさです。画像は縦横の比を保って入る最大の大きさで中央に描き、余りは黒にします。たとえば `160 120 GFX-INIT 640 480 WINDOW-SIZE` で、1画素を4×4で表示します。画像そのものと端末への表示は変えません。 |
 | `TERMINAL-BLOCKS`、`TERMINAL-SIXEL` | ( -- ) | 端末への表示を、半角ブロック（既定）またはSixelにします。 |
@@ -90,7 +90,7 @@ Sigmaを作り直さずにライブラリの変更を試すには、組み込み
 
 端末では、1文字で上下2画素を、24ビット色のエスケープで表示します。多くの端末（Windows Terminal と Windows のコンソール、xterm、GNOME Terminal など）で表示できます。画像が端末より大きいときは、縦横比を保って端末に収まるように縮め、縮めた1画素は元の画素の平均の色にします。1行はプロンプトのために残します。出力が端末でないとき（パイプやファイル）は、80桁24行とみなします。Sixel（`TERMINAL-SIXEL`）は、対応した端末では本物の画素で、216色で表示します。対応していない端末では、乱れた文字が出るか、何も表示されないことがあります。Windowsのコンソールは、UTF-8のコードページで半角ブロックを表示するので、Sigmaは書いている間だけコードページをUTF-8にして、終わったら元に戻します。
 
-Windowsのウィンドウは専用のスレッドで動くので、Forthが入力を待っている間も、動かす・大きさを変える（画像はそれに合わせて伸び縮みします）・閉じることができます。キー入力はコンソールのままです。`SHOW` のたびに今の画像を描き直し、画像の大きさか `WINDOW-SIZE` の大きさが変わればウィンドウの大きさも合わせます（`WINDOW-SIZE` がなければ、1600×1200画素より大きい画像や、タスクバーを除いた画面の作業領域に入らない画像は縮めて表示します）。大きさを合わせたウィンドウは、入る範囲で作業領域の中へ動かします。Windows 10 1703以降では、ウィンドウは画面ごとのDPIに対応していて、大きさは画面の画素で数えます。そのためWindowsが画像を引き伸ばすことはなく、拡大率が100%より大きい画面では、同じ `WINDOW-SIZE` でも、Windowsが拡大していた以前のSigmaより小さく見えます。DPIの違う画面へ移したウィンドウは、Windowsが示す大きさになります。それより古いWindowsでは、ウィンドウはDPIに対応しません。ウィンドウの大きさを変えると、画像は縦横の比を保って描き直し、余りは黒にします。`MOUSE` はマウスの下の画像の画素を返します。閉じたウィンドウは、次の `SHOW` で開き直します（ウィンドウが閉じるのとちょうど同時に表示した画像は、そのときまで表示されないことがあります）。LinuxとmacOSにはまだウィンドウがなく、`SHOW` は、Tcl/Tkのあるデスクトップではそのウィンドウに、ほかでは端末に表示します。
+Windowsのウィンドウは専用のスレッドで動くので、Forthが入力を待っている間も、動かす・大きさを変える（画像はそれに合わせて伸び縮みします）・閉じることができます。キー入力はコンソールのままです。`SHOW` のたびに今の画像を描き直し、画像の大きさか `WINDOW-SIZE` の大きさが変わればウィンドウの大きさも合わせます（`WINDOW-SIZE` がなければ、1600×1200画素より大きい画像や、タスクバーを除いた画面の作業領域に入らない画像は縮めて表示します）。大きさを合わせたウィンドウは、入る範囲で作業領域の中へ動かします。Windows 10 1703以降では、ウィンドウは画面ごとのDPIに対応していて、大きさは画面の画素で数えます。そのためWindowsが画像を引き伸ばすことはなく、拡大率が100%より大きい画面では、同じ `WINDOW-SIZE` でも、Windowsが拡大していた以前のSigmaより小さく見えます。DPIの違う画面へ移したウィンドウは、Windowsが示す大きさになります。それより古いWindowsでは、ウィンドウはDPIに対応しません。ウィンドウの大きさを変えると、画像は縦横の比を保って描き直し、余りは黒にします。`MOUSE` はマウスの下の画像の画素を返します。閉じたウィンドウは、次の `SHOW` で開き直します（ウィンドウが閉じるのとちょうど同時に表示した画像は、そのときまで表示されないことがあります）。`SHOW` がウィンドウの作成を待つのは最大5秒で、時間内に作れなければ、Sigmaが終わるまでウィンドウを作り直しません。自動表示では、初めて表示先を選ぶときならTkのウィンドウか端末へ進みます。すでにウィンドウを選んでいたときは、その `SHOW` が `HOST FUNCTION ERROR`（-265）になり、次の `SHOW` で次の表示先へ進みます。`DISPLAY-WINDOW` のときは -265 になります。macOSにもSigma自身のウィンドウ（AppKit）があり、LinuxにはX11またはXWaylandのウィンドウがあります（このページの冒頭を参照）。ほかでは、`SHOW` は、Tcl/Tkのあるデスクトップではそのウィンドウに、ほかでは端末に表示します。
 
 画像は辞書の一部ではありません。`SAVE` と `SAVESYS` はグラフィックスの語とそれを使う語を保存しますが、画素は保存しないので、プログラムは起動後に `GFX-INIT` で画像を作ります。辞書は、読み込んだときのグラフィックスのライブラリを持ち続けます。`REQUIRE-GRAPHICS` は新しい版のライブラリの語を加えないので、それを使うには、その辞書をソースから作り直します。
 
@@ -161,7 +161,7 @@ SHOW
 
 ### Tcl/Tk
 
-TCL の語は、Sigmaが別のプログラムとして起動するTcl/Tkのインタープリター（`wish`）でTclのスクリプトを実行します。最初に必要になったときに起動し、パイプでやり取りします。SigmaにTclのライブラリはリンクしません。これで、Tkの部品（ウィジェット）を使えるほか、`DISPLAY-TK` で画像をTkのウィンドウに表示できます。Sigma自身のウィンドウがないLinuxやmacOSでも使えます。Tcl/Tkが入っている必要があり、`TCL-PROGRAM` で指定したプログラム、なければ環境変数 `SIGMA_WISH`、なければ `PATH` の `wish`、Windowsではそれもなければ Git for Windows に付いているもの（`%ProgramW6432%`、`%ProgramFiles%`、`%LOCALAPPDATA%\Programs` の下の `Git\mingw64\bin\wish.exe`。ふつうは `C:\Program Files\Git\mingw64\bin\wish.exe`）を使います。Linuxでは `tk` のパッケージにあります。macOSでは `brew install tcl-tk` で入れます。システムの `/usr/bin/wish`（Tcl/Tk 8.5）は最近のmacOSでは起動しないので、Sigmaは `PATH` のそれを飛ばし、`PATH` にほかの `wish` がなければ、Homebrewのもの（`/opt/homebrew/bin/wish`、`/usr/local/bin/wish`）かMacPortsのもの（`/opt/local/bin/wish`）のうち、最初にあるものを使います。
+TCL の語は、Sigmaが別のプログラムとして起動するTcl/Tkのインタープリター（`wish`）でTclのスクリプトを実行します。最初に必要になったときに起動し、パイプでやり取りします。SigmaにTclのライブラリはリンクしません。これで、Tkの部品（ウィジェット）を使えるほか、`DISPLAY-TK` で画像をTkのウィンドウに表示できます。Sigma自身のウィンドウがない環境でも使えます。Tcl/Tkが入っている必要があり、`TCL-PROGRAM` で指定したプログラム、なければ環境変数 `SIGMA_WISH`、なければ `PATH` の `wish`、Windowsではそれもなければ Git for Windows に付いているもの（`%ProgramW6432%`、`%ProgramFiles%`、`%LOCALAPPDATA%\Programs` の下の `Git\mingw64\bin\wish.exe`。ふつうは `C:\Program Files\Git\mingw64\bin\wish.exe`）を使います。Linuxでは `tk` のパッケージにあります。macOSでは `brew install tcl-tk` で入れます。システムの `/usr/bin/wish`（Tcl/Tk 8.5）は最近のmacOSでは起動しないので、Sigmaは `PATH` のそれを飛ばし、`PATH` にほかの `wish` がなければ、Homebrewのもの（`/opt/homebrew/bin/wish`、`/usr/local/bin/wish`）かMacPortsのもの（`/opt/local/bin/wish`）のうち、最初にあるものを使います。
 
 ```forth
 REQUIRE-GRAPHICS  ALSO GRAPHICS

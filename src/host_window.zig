@@ -129,6 +129,9 @@ const win32 = struct {
     extern "user32" fn MonitorFromWindow(?Handle, u32) callconv(.winapi) ?Handle;
     extern "user32" fn GetMonitorInfoW(?Handle, *MonitorInfo) callconv(.winapi) i32;
     extern "kernel32" fn GetProcAddress(Handle, [*:0]const u8) callconv(.winapi) ?*const anyopaque;
+    extern "kernel32" fn GetTickCount64() callconv(.winapi) u64;
+    extern "kernel32" fn ResetEvent(Handle) callconv(.winapi) i32;
+    extern "user32" fn DestroyWindow(?Handle) callconv(.winapi) i32;
 
     const MonitorInfo = extern struct { size: u32 = @sizeOf(MonitorInfo), monitor: Rect = .{}, work: Rect = .{}, flags: u32 = 0 };
 
@@ -238,10 +241,20 @@ const win32 = struct {
     // Used only by the thread that runs Forth.
     var thread: ?Handle = null;
     var class_registered = false;
-    var ready: ?Handle = null;
-    var opened = false;
+    /// A window could not be made within the time: SHOW fails from then on.
+    var broken = false;
+    /// The longest open waits, in milliseconds; tests make it shorter.
+    var start_timeout_ms: u32 = 5000;
+    /// The event the window thread sets when it has told how making the window went.
+    var started: ?Handle = null;
+    /// Tests hold the window thread here before it makes the window.
+    var test_gate: ?Handle = null;
+    /// How making the window went, under `lock`: the window thread sets opened or
+    /// failed, and open sets cancelled when it stops waiting first.
+    var start: enum { waiting, opened, failed, cancelled } = .waiting;
 
     fn show(_: ?*anyopaque, image: []const u32, image_width: u32, image_height: u32, mode: forth.ColorMode, size: [2]u32) forth.RuntimeError!void {
+        if (broken) return error.HostFailed;
         AcquireSRWLockExclusive(&lock);
         // The window fits itself again when the image or WINDOW-SIZE changed.
         const resized = image_width != width or image_height != height or size[0] != requested[0] or size[1] != requested[1];
@@ -438,19 +451,51 @@ const win32 = struct {
 
     /// Only called when there is no window: the old thread, if any, is ending (after
     /// WM_DESTROY, or after a window it could not create), so waiting for it ends.
+    /// Waits at most start_timeout_ms in all (the contract's 5 seconds) for the old
+    /// thread to end and the new window to be made. When the time runs out, the window
+    /// thread is told to destroy the window it may still make, and the window is not
+    /// tried again in this process (a thread stuck in CreateWindowExW cannot be ended).
     fn open() forth.RuntimeError!void {
+        if (broken) return error.HostFailed;
+        const deadline = GetTickCount64() + start_timeout_ms;
         if (thread) |old| {
-            _ = WaitForSingleObject(old, infinite);
+            if (WaitForSingleObject(old, remainingMs(deadline)) != wait_object_0) {
+                broken = true;
+                return error.HostFailed;
+            }
             _ = CloseHandle(old);
             thread = null;
         }
-        const event = CreateEventW(null, 1, 0, null) orelse return error.HostFailed;
-        defer _ = CloseHandle(event);
-        ready = event;
-        opened = false;
+        // One event for the whole process, never closed: a thread may set it after open
+        // stopped waiting. The thread before has ended, so it no longer sets it.
+        if (started == null) started = CreateEventW(null, 1, 0, null);
+        const event = started orelse return error.HostFailed;
+        _ = ResetEvent(event);
+        AcquireSRWLockExclusive(&lock);
+        start = .waiting;
+        ReleaseSRWLockExclusive(&lock);
         thread = CreateThread(null, 0, run, null, 0, null) orelse return error.HostFailed;
-        _ = WaitForSingleObject(event, infinite);
-        if (!opened) return error.HostFailed;
+        _ = WaitForSingleObject(event, remainingMs(deadline));
+        // The state decides, not the wait: the thread may have told its result just as
+        // the time ran out.
+        AcquireSRWLockExclusive(&lock);
+        const result = start;
+        if (result == .waiting) start = .cancelled;
+        ReleaseSRWLockExclusive(&lock);
+        switch (result) {
+            .opened => {},
+            // The thread ends by itself; the next open waits for it.
+            .failed => return error.HostFailed,
+            .waiting, .cancelled => {
+                broken = true;
+                return error.HostFailed;
+            },
+        }
+    }
+
+    fn remainingMs(deadline: u64) u32 {
+        const now = GetTickCount64();
+        return if (now >= deadline) 0 else @intCast(@min(deadline - now, infinite - 1));
     }
 
     /// Looks up the DPI functions once, and makes the window thread aware of each
@@ -520,7 +565,14 @@ const win32 = struct {
         if (x != place.left or y != place.top) _ = SetWindowPos(handle, null, x, y, 0, 0, no_size | no_z_order | no_activate);
     }
 
+    /// The window thread: makes the window, tells open through `start` and the event it
+    /// was given, and runs the window's messages. A window made after open stopped
+    /// waiting is destroyed at once.
     fn run(_: ?*anyopaque) callconv(.winapi) u32 {
+        const event = started.?;
+        if (builtin.is_test) if (test_gate) |gate| {
+            _ = WaitForSingleObject(gate, infinite);
+        };
         useDpi();
         const instance = GetModuleHandleW(null);
         if (!class_registered) {
@@ -537,21 +589,33 @@ const win32 = struct {
         }
         // Made hidden at the default place, then sized at the DPI of the monitor it is on.
         const handle = CreateWindowExW(0, class_name, title, overlapped_window, use_default, use_default, use_default, use_default, null, null, instance, null) orelse {
-            _ = SetEvent(ready.?);
+            AcquireSRWLockExclusive(&lock);
+            if (start == .waiting) start = .failed;
+            ReleaseSRWLockExclusive(&lock);
+            _ = SetEvent(event);
             return 1;
         };
         AcquireSRWLockExclusive(&lock);
-        window = handle;
-        update_pending = false;
-        resize_pending = false;
         const size = windowSize(handle, width, height);
         ReleaseSRWLockExclusive(&lock);
         _ = SetWindowPos(handle, null, 0, 0, size[0], size[1], no_move | no_z_order | no_activate);
         keepInWorkArea(handle);
+        AcquireSRWLockExclusive(&lock);
+        const cancelled = start == .cancelled;
+        if (!cancelled) {
+            start = .opened;
+            window = handle;
+            update_pending = false;
+            resize_pending = false;
+        }
+        ReleaseSRWLockExclusive(&lock);
+        _ = SetEvent(event);
+        if (cancelled) {
+            _ = DestroyWindow(handle);
+            return 1;
+        }
         // The console keeps the keyboard, so typing goes on there.
         _ = ShowWindow(handle, show_no_activate);
-        opened = true;
-        _ = SetEvent(ready.?);
         var message: Message = undefined;
         while (GetMessageW(&message, null, 0, 0) > 0) {
             _ = TranslateMessage(&message);
@@ -666,6 +730,9 @@ const win32 = struct {
         const current = window;
         ReleaseSRWLockExclusive(&lock);
         if (current) |handle| _ = PostMessageW(handle, wm_close, 0, 0);
+        // After a window that took too long, the thread may still be in CreateWindowExW:
+        // it is left to the end of the process without waiting.
+        if (broken) return;
         if (thread) |running| {
             // A thread that has not ended in 5 seconds is left to the end of the process,
             // with its handle and the image it draws.
@@ -674,4 +741,44 @@ const win32 = struct {
             thread = null;
         }
     }
+
+    /// A window thread slower than the time open waits: SHOW fails at once, and the
+    /// window made late is destroyed, so its thread ends.
+    fn testLateWindow() !void {
+        // The gate holds the window thread until the test lets it go, so open's time
+        // surely runs out first.
+        const gate = CreateEventW(null, 1, 0, null) orelse return error.SkipZigTest;
+        defer _ = CloseHandle(gate);
+        test_gate = gate;
+        start_timeout_ms = 200;
+        defer {
+            broken = false;
+            start_timeout_ms = 5000;
+            test_gate = null;
+        }
+        var image: [4]u32 = @splat(0);
+        var before = GetTickCount64();
+        try std.testing.expectError(error.HostFailed, @This().show(null, &image, 2, 2, .{}, .{ 0, 0 }));
+        // GetTickCount64 counts in steps of 10 to 16 ms; the bound above is loose.
+        const waited = GetTickCount64() - before;
+        try std.testing.expect(waited >= 150 and waited < 3000);
+        try std.testing.expect(broken);
+        // Broken: SHOW fails without starting another wait.
+        before = GetTickCount64();
+        try std.testing.expectError(error.HostFailed, @This().show(null, &image, 2, 2, .{}, .{ 0, 0 }));
+        try std.testing.expect(GetTickCount64() - before < 150);
+        _ = SetEvent(gate);
+        const late = thread.?;
+        try std.testing.expectEqual(wait_object_0, WaitForSingleObject(late, 5000));
+        _ = CloseHandle(late);
+        thread = null;
+        AcquireSRWLockExclusive(&lock);
+        defer ReleaseSRWLockExclusive(&lock);
+        try std.testing.expect(window == null);
+        try std.testing.expectEqual(.cancelled, start);
+    }
 };
+
+test "the Windows window stops waiting after its time and destroys the late window" {
+    if (comptime builtin.os.tag == .windows) try win32.testLateWindow() else return error.SkipZigTest;
+}
