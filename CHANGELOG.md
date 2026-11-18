@@ -21,6 +21,7 @@
 - On Windows, automatic display's first search tries the window and the Tk window within 5 seconds in all, as on Linux: the window has at most 2 of them, and Tk's start and its first answer are waited for only until the time runs out.
 - The macOS window lays the image out by the same rule as the Windows and Linux windows: the side that limits it is chosen as the contract says (an image 100 by 101 in an area 100 by 100 is shown 99 by 100, not 100 by 100), and an odd spare pixel goes below the image rather than above it.
 - On Linux too, `WINDOW-SIZE 0 0` fits the window into the work area of the current desktop (`_NET_WORKAREA`, or the screen when the window manager does not give one), less the frame the window manager gives the window once it is shown (`_NET_FRAME_EXTENTS`; the first window does not know it yet).
+- On macOS too, `WINDOW-SIZE 0 0` fits the window into the visible frame of its screen (without the menu bar and the Dock), less the window's title bar and frame.
 - Four built-in words are added for the above (`GFX-AUTO-DISPLAY`, `GFX-AUTO-DISPLAY!`, `GFX-IME-PREEDIT`, `GFX-IME-CARET`). Added built-in words change the dictionary ABI; recreate dictionary images.
 
 ## [0.11.2] - 2026-11-17

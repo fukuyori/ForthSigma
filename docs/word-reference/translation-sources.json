@@ -173,7 +173,7 @@
     "src/host_wait.zig": "fe2f1de816178347288dc17682057cafbf7c50cc105a2dd50e40e6220702a85a",
     "src/host_window.zig": "46d4d1ab678282135953f23c707c9e8762411ed1b9e411d106483d4fd6e7e596",
     "src/host_window_linux.zig": "b5660313f2263d43b0600a90702f26edc9c29f75b14f9b571f021b3f3ab1dd89",
-    "src/host_window_macos.zig": "b71c4e7a8b41d6b3c72d2ca3585ee73e84773b0ff2b45e4cf35d6858dd06bab8",
+    "src/host_window_macos.zig": "951b8c9826cf79de38dd995310cb304e73607f521ddbfb9a10c0bca92dcbd170",
     "src/host_x11.c": "ff56c05c30b016c1145ad904bb30e1dcbccb0c0ddbbf30f749bfed6a840e4181",
     "src/host_x11.h": "65bb9fcbd1ef4a4ba08376d706baf789fbcd15f3259c43d43416cac4b6c16615",
     "src/host_x11.zig": "06d01dc59c85f8958a5611b08de9e5537271c4651f1eb16560a9d2478f0cddf1",

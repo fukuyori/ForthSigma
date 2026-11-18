@@ -3,6 +3,7 @@
 //! FRAME <sequence> / FRAME-ACCEPTED <sequence>, then QUIT / CLOSED.
 
 const std = @import("std");
+const window_layout = @import("window_layout.zig");
 const forth = @import("forth.zig");
 
 const Id = ?*anyopaque;
@@ -1223,8 +1224,8 @@ fn runCommand(context: ?*anyopaque) callconv(.c) void {
             frame_height = frame.height;
             if (!std.mem.eql(u32, &last_frame_size, &.{ frame.width, frame.height }) or !std.mem.eql(u32, &last_requested_size, &frame.requested)) {
                 if (active_window) |window| {
-                    const desired = requestedClientSize(frame.width, frame.height, frame.requested);
                     const view = active_view orelse return;
+                    const desired = requestedClientSize(frame.width, frame.height, frame.requested, roomFor(window, view));
                     const points = convertSizeFromBacking(view, .{ .width = @floatFromInt(desired[0]), .height = @floatFromInt(desired[1]) });
                     send_size1(window, selector_register("setContentSize:"), points);
                 }
@@ -1335,19 +1336,34 @@ fn receiveFrame(header: []const u8) !void {
     if (!queueCommand(.{ .frame = .{ .sequence = sequence, .width = width, .height = height, .requested = .{ requested_width, requested_height }, .pixels = pixels } })) return error.OutOfMemory;
 }
 
-fn requestedClientSize(image_width: u32, image_height: u32, requested: [2]u32) [2]u32 {
+/// The client size in backing pixels: what WINDOW-SIZE gave, or for 0 0 the image's
+/// size by window_layout, which also fits `room`.
+fn requestedClientSize(image_width: u32, image_height: u32, requested: [2]u32, room: [2]u32) [2]u32 {
     if (requested[0] != 0) return requested;
-    var width: u64 = image_width;
-    var height: u64 = image_height;
-    if (width > 1600) {
-        height = @max(1, height * 1600 / width);
-        width = 1600;
-    }
-    if (height > 1200) {
-        width = @max(1, width * 1200 / height);
-        height = 1200;
-    }
-    return .{ @intCast(width), @intCast(height) };
+    return window_layout.autoClientSize(image_width, image_height, room);
+}
+
+/// The room WINDOW-SIZE 0 0 may use, in backing pixels: the visible frame of the
+/// window's screen (without the menu bar and the Dock), less the window's title bar
+/// and frame. A side of 0 is not known.
+fn roomFor(window: Id, view: Id) [2]u32 {
+    const screen = send_id0_global(window, selector_register("screen")) orelse blk: {
+        const screen_class = objc_get_class.?("NSScreen") orelse return .{ 0, 0 };
+        break :blk send_id0_global(screen_class, selector_register("mainScreen")) orelse return .{ 0, 0 };
+    };
+    const visible = getRect(screen, selector_register("visibleFrame"));
+    const outer = getRect(window, selector_register("frame"));
+    const content = getRect(view, selector_register("bounds"));
+    const width = visible.size.width - @max(0, outer.size.width - content.size.width);
+    const height = visible.size.height - @max(0, outer.size.height - content.size.height);
+    if (!(width >= 1 and height >= 1)) return .{ 0, 0 };
+    const backing = convertRect(view, "convertRectToBacking:", .{ .origin = .{ .x = 0, .y = 0 }, .size = .{ .width = width, .height = height } });
+    return .{ sideOf(backing.size.width), sideOf(backing.size.height) };
+}
+
+fn sideOf(value: f64) u32 {
+    if (!(value >= 1)) return 1;
+    return @intFromFloat(@min(@floor(value), 1 << 30));
 }
 
 fn output(bytes: []const u8) void {
