@@ -15,8 +15,11 @@
 - [実装ノート](IMPLEMENTATION.md): Zig移植版の構成、実装判断、未実装機能
 - [Forth 2012の語の状況](forth2012-word-status.tsv): Forth 2012規格の語の一覧の各項目と、全機能ビルドでの有無（2026-11-17確認。要約はトップのREADME）
 - [サイズ測定・速度比較](SIZE_SPEED_MEASUREMENT.md): 2026-11-17のWindows/Linux実行体サイズとWSLでのGforth 1.0.2比較、生データと再実行手順
-- [本体の機能拡張の全体](CORE_EXTENSION_PLAN.md): 本体に足す12項目の構成、語群（サウンド、グラフィックス、拡張モジュール）、進める順序、決定事項の場所（tque 613、実装未着手）
-- [本体の機能拡張：共通の取り決め](ASYNC_COMMON_RULES.md): 段階0（tque 900）の仕様案。時計、待機・期限・中断、キュー、実行制御、資源の持ち主、辞書イメージに含めない状態、語群（語群の分け方だけ決定済み）
+- [本体の機能拡張の全体](CORE_EXTENSION_PLAN.md): 共通基盤・OS判別、TUI・非同期、音と描画、ゲーム表示、タスク制御の範囲、依存関係、段階0〜Eの工程（tque 613、実装未着手）
+- [本体の機能拡張の詳細設計](CORE_EXTENSION_DETAILED_DESIGN.md): 本体コア・グラフィックス・サウンド・拡張への配置、API候補、内部構造、所有権、失敗・取消し・復元、検証条件。[判断記録](CORE_EXTENSION_DESIGN_DECISIONS.md)、[State隔離監査表](CORE_EXTENSION_WORKER_STATE_AUDIT.md)
+- [詳細設計レビューへの対応](CORE_EXTENSION_REVIEW_RESPONSE.md): Claude Codeの[初稿レビュー](CORE_EXTENSION_CLAUDE_REVIEW.md)と[再確認](CORE_EXTENSION_CLAUDE_FOLLOWUP.md)への対応、残る採用判断。[依頼文](CORE_EXTENSION_REVIEW_REQUEST.md)
+- [システムのタスク制御の補完計画](TASK_CONTROL_PLAN.md): 実行方式、状態と結果、複合待機、取消し・回収、VM分離、通常ビルドでの利用（tque 1048、方式未確定・実装未着手）
+- [本体の機能拡張：共通の取り決め](ASYNC_COMMON_RULES.md): 段階0（tque 900）の契約案と内部最小基盤の実装範囲。時計、待機・期限・中断、キュー、実行制御、資源、辞書イメージ、語群。具体的な未決事項は実装時に確認する
 - [TUI・非同期実行基盤の対応方法](ASYNC_CORE_PLAN.md): 拡張モジュールの7項目（tque 1002）について、SigmaとGforthの現状、項目ごとの対応方法、2026-11-17の決定事項
 - [レトロPCエミュレータ向け拡張の対応方法](EMULATOR_CORE_PLAN.md): サウンドとグラフィックスに足す5項目（tque 1003）について、現状、対応方法、Codexのレビューの反映、2026-11-18の決定事項
 - [VM実行速度の改善計画](VM_PERFORMANCE_PLAN.md): CATCHの安全性を維持して通常実行の負担を減らす実験案。改善実装は未実施
