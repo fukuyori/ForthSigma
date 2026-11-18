@@ -28835,10 +28835,10 @@ Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics), [Tcl/Tk](GRAPHICS_AND_SOUND
 Usage example (source excerpt; consult the link for setup and expectations)
 
 ```forth
-640 480 WINDOW-SIZE DISPLAY-TK SHOW
+FALSE MOUSE-CURSOR DISPLAY-TK SHOW
 ```
 
-[Example context](../src/tests/graphics_test.zig#L2477)
+[Example context](../src/tests/graphics_test.zig#L2672)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -29690,7 +29690,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
    (TERMINAL-MODE) @ IF GFX-SHOW-SIXEL ELSE GFX-SHOW-BLOCKS THEN ;
 ```
 
-[Example context](../src/graphics/graphics.fs#L316)
+[Example context](../src/graphics/graphics.fs#L320)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -29795,7 +29795,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 : BUILTIN-FONT ( -- )   GFX-FONT-BUILTIN ;
 ```
 
-[Example context](../src/graphics/graphics.fs#L420)
+[Example context](../src/graphics/graphics.fs#L424)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -29847,7 +29847,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 : LOAD-FONT ( c-addr u -- )   GFX-FONT-LOAD THROW ;
 ```
 
-[Example context](../src/graphics/graphics.fs#L423)
+[Example context](../src/graphics/graphics.fs#L427)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment. Check the returned ior; zero is success. Passing it to THROW is one option. Use valid logical-memory addresses, lengths and capacities; distinguish owned storage from borrowed lifetimes.
 
@@ -29873,7 +29873,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 : SYSTEM-FONT ( c-addr u height -- )   GFX-FONT-SYSTEM THROW ;
 ```
 
-[Example context](../src/graphics/graphics.fs#L426)
+[Example context](../src/graphics/graphics.fs#L430)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment. Check the returned ior; zero is success. Passing it to THROW is one option. Use valid logical-memory addresses, lengths and capacities; distinguish owned storage from borrowed lifetimes.
 
@@ -29955,7 +29955,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 : GAMEPAD-GUID ( addr capacity pad -- length ) GFX-GAMEPAD-GUID ;
 ```
 
-[Example context](../src/graphics/graphics.fs#L376)
+[Example context](../src/graphics/graphics.fs#L380)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment. Use valid logical-memory addresses, lengths and capacities; distinguish owned storage from borrowed lifetimes.
 
@@ -29979,7 +29979,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 : GAMEPAD-MAP ( addr length -- flag ) GFX-GAMEPAD-MAP ;
 ```
 
-[Example context](../src/graphics/graphics.fs#L377)
+[Example context](../src/graphics/graphics.fs#L381)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment. Use valid logical-memory addresses, lengths and capacities; distinguish owned storage from borrowed lifetimes.
 
@@ -30003,7 +30003,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 : GAMEPAD-NAME ( addr capacity pad -- length ) GFX-GAMEPAD-NAME ;
 ```
 
-[Example context](../src/graphics/graphics.fs#L375)
+[Example context](../src/graphics/graphics.fs#L379)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment. Use valid logical-memory addresses, lengths and capacities; distinguish owned storage from borrowed lifetimes.
 
@@ -30027,7 +30027,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 : GAMEPAD-POLL ( -- count ) GFX-GAMEPAD-POLL ;
 ```
 
-[Example context](../src/graphics/graphics.fs#L360)
+[Example context](../src/graphics/graphics.fs#L364)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -30051,7 +30051,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 : GAMEPAD? ( pad -- flag ) 0 SWAP GFX-GAMEPAD-QUERY ;
 ```
 
-[Example context](../src/graphics/graphics.fs#L361)
+[Example context](../src/graphics/graphics.fs#L365)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -30207,7 +30207,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 : FREE-IMAGE ( img -- )   GFX-IMAGE-FREE ;
 ```
 
-[Example context](../src/graphics/graphics.fs#L548)
+[Example context](../src/graphics/graphics.fs#L552)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -30233,7 +30233,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 : LOAD-IMAGE ( c-addr u -- img )   (TRANSPARENT) @ GFX-IMAGE-LOAD THROW ;
 ```
 
-[Example context](../src/graphics/graphics.fs#L577)
+[Example context](../src/graphics/graphics.fs#L581)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment. Check the returned ior; zero is success. Passing it to THROW is one option. Use valid logical-memory addresses, lengths and capacities; distinguish owned storage from borrowed lifetimes.
 
@@ -30259,7 +30259,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 : NEW-IMAGE ( w h -- img )   GFX-IMAGE-NEW ;
 ```
 
-[Example context](../src/graphics/graphics.fs#L547)
+[Example context](../src/graphics/graphics.fs#L551)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -30285,7 +30285,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 : IMAGE-SIZE ( img -- w h )   GFX-IMAGE-SIZE ;
 ```
 
-[Example context](../src/graphics/graphics.fs#L549)
+[Example context](../src/graphics/graphics.fs#L553)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -30430,7 +30430,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 : INKEY ( -- key | -1 )   GFX-INKEY ;
 ```
 
-[Example context](../src/graphics/graphics.fs#L353)
+[Example context](../src/graphics/graphics.fs#L357)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -30456,7 +30456,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 : KEY-HELD? ( key -- flag )   GFX-KEY-HELD ;
 ```
 
-[Example context](../src/graphics/graphics.fs#L356)
+[Example context](../src/graphics/graphics.fs#L360)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -30482,7 +30482,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 : MOUSE ( -- x y buttons )   GFX-MOUSE ;
 ```
 
-[Example context](../src/graphics/graphics.fs#L384)
+[Example context](../src/graphics/graphics.fs#L388)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -30503,7 +30503,11 @@ Kind: builtin.
 Usage example (source excerpt; consult the link for setup and expectations)
 
 ```forth
-: MOUSE-CURSOR ( flag -- )   GFX-MOUSE-CURSOR ;
+: MOUSE-CURSOR ( flag -- )
+   0<> DUP GFX-MOUSE-CURSOR
+   (TK-SHOWN?) IF
+      IF S" sigma_cursor 1" ELSE S" sigma_cursor 0" THEN GFX-TCL DROP 2DROP EXIT
+   THEN DROP ;
 ```
 
 [Example context](../src/graphics/graphics.fs#L279)
@@ -30530,7 +30534,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 : MOUSE-EVENT ( -- x y button kind true | false )   GFX-MOUSE-EVENT ;
 ```
 
-[Example context](../src/graphics/graphics.fs#L390)
+[Example context](../src/graphics/graphics.fs#L394)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -30556,7 +30560,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 : MOUSE-ON ( -- )   TRUE GFX-MOUSE-MODE ;
 ```
 
-[Example context](../src/graphics/graphics.fs#L385)
+[Example context](../src/graphics/graphics.fs#L389)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -30853,7 +30857,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
    THEN ;
 ```
 
-[Example context](../src/graphics/graphics.fs#L310)
+[Example context](../src/graphics/graphics.fs#L314)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -30883,7 +30887,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
    THEN ;
 ```
 
-[Example context](../src/graphics/graphics.fs#L304)
+[Example context](../src/graphics/graphics.fs#L308)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -30909,7 +30913,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 : DRAW-TO ( img -- )   GFX-TARGET ;
 ```
 
-[Example context](../src/graphics/graphics.fs#L550)
+[Example context](../src/graphics/graphics.fs#L554)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -30935,7 +30939,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 : DRAWING ( -- img )   GFX-TARGET@ ;
 ```
 
-[Example context](../src/graphics/graphics.fs#L551)
+[Example context](../src/graphics/graphics.fs#L555)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -30961,7 +30965,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 : TCL-EVAL ( c-addr u -- c-addr2 u2 )   GFX-TCL IF 2DROP -273 THROW THEN ;
 ```
 
-[Example context](../src/graphics/graphics.fs#L526)
+[Example context](../src/graphics/graphics.fs#L530)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment. Use valid logical-memory addresses, lengths and capacities; distinguish owned storage from borrowed lifetimes.
 
@@ -30987,7 +30991,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 : TCL-ERROR$ ( -- c-addr u )   GFX-TCL-ERROR ;
 ```
 
-[Example context](../src/graphics/graphics.fs#L528)
+[Example context](../src/graphics/graphics.fs#L532)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment. Use valid logical-memory addresses, lengths and capacities; distinguish owned storage from borrowed lifetimes.
 
@@ -31013,7 +31017,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 : TCL-EVENT ( -- c-addr u true | false )   GFX-TCL-EVENT ;
 ```
 
-[Example context](../src/graphics/graphics.fs#L530)
+[Example context](../src/graphics/graphics.fs#L534)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment. Use valid logical-memory addresses, lengths and capacities; distinguish owned storage from borrowed lifetimes.
 
@@ -31039,7 +31043,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 : TCL-PROGRAM ( c-addr u -- )   GFX-TCL-PROGRAM ;
 ```
 
-[Example context](../src/graphics/graphics.fs#L531)
+[Example context](../src/graphics/graphics.fs#L535)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment. Use valid logical-memory addresses, lengths and capacities; distinguish owned storage from borrowed lifetimes.
 
@@ -31065,7 +31069,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 : TCL-STOP ( -- )   GFX-TCL-STOP ;
 ```
 
-[Example context](../src/graphics/graphics.fs#L532)
+[Example context](../src/graphics/graphics.fs#L536)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -31144,7 +31148,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 : WINDOW-SIZE ( w h -- )   GFX-WINDOW-SIZE ;
 ```
 
-[Example context](../src/graphics/graphics.fs#L380)
+[Example context](../src/graphics/graphics.fs#L384)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -32209,7 +32213,7 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 ` ( flag -- ) `
 
-Show (true) or hide (false) the mouse cursor over Sigma's own window; it shows at first. The windows of Windows, macOS, and Linux do it (FORTH/Sigma graphics).
+Show (true) or hide (false) the mouse cursor over the graphics view in the native or Tk window; it shows at first (FORTH/Sigma graphics).
 
 Kind: library.
 
@@ -32230,7 +32234,11 @@ Caution: Load and select the vocabulary first. Host display, input and sound sup
 Implementation definition (private helpers may change):
 
 ```forth
-: MOUSE-CURSOR ( flag -- )   GFX-MOUSE-CURSOR ;
+: MOUSE-CURSOR ( flag -- )
+   0<> DUP GFX-MOUSE-CURSOR
+   (TK-SHOWN?) IF
+      IF S" sigma_cursor 1" ELSE S" sigma_cursor 0" THEN GFX-TCL DROP 2DROP EXIT
+   THEN DROP ;
 ```
 
 Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1175).
@@ -33396,7 +33404,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
    (TERMINAL-MODE) @ IF GFX-SHOW-SIXEL ELSE GFX-SHOW-BLOCKS THEN ;
 ```
 
-[Example context](../src/graphics/graphics.fs#L329)
+[Example context](../src/graphics/graphics.fs#L333)
 
 Caution: Internal operation: prefer its public wrapper; internal state and calling conventions may change. Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -33442,7 +33450,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
    (TERMINAL-MODE) @ IF GFX-SHOW-SIXEL ELSE GFX-SHOW-BLOCKS THEN ;
 ```
 
-[Example context](../src/graphics/graphics.fs#L316)
+[Example context](../src/graphics/graphics.fs#L320)
 
 Caution: Internal operation: prefer its public wrapper; internal state and calling conventions may change. Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -33484,7 +33492,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
    (TERMINAL-MODE) @ IF GFX-SHOW-SIXEL ELSE GFX-SHOW-BLOCKS THEN ;
 ```
 
-[Example context](../src/graphics/graphics.fs#L316)
+[Example context](../src/graphics/graphics.fs#L320)
 
 Caution: Internal operation: prefer its public wrapper; internal state and calling conventions may change. Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -33524,7 +33532,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
    LOOP ;
 ```
 
-[Example context](../src/graphics/graphics.fs#L470)
+[Example context](../src/graphics/graphics.fs#L474)
 
 Caution: Internal operation: prefer its public wrapper; internal state and calling conventions may change. Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -33765,7 +33773,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
    REPEAT ;
 ```
 
-[Example context](../src/graphics/graphics.fs#L492)
+[Example context](../src/graphics/graphics.fs#L496)
 
 Caution: Internal operation: prefer its public wrapper; internal state and calling conventions may change. Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -33895,7 +33903,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
    (TERMINAL-MODE) @ IF GFX-SHOW-SIXEL ELSE GFX-SHOW-BLOCKS THEN ;
 ```
 
-[Example context](../src/graphics/graphics.fs#L316)
+[Example context](../src/graphics/graphics.fs#L320)
 
 Caution: Internal operation: prefer its public wrapper; internal state and calling conventions may change. Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -33992,7 +34000,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
    REPEAT ;
 ```
 
-[Example context](../src/graphics/graphics.fs#L492)
+[Example context](../src/graphics/graphics.fs#L496)
 
 Caution: Internal operation: prefer its public wrapper; internal state and calling conventions may change. Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -34191,7 +34199,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
    LOOP ;
 ```
 
-[Example context](../src/graphics/graphics.fs#L479)
+[Example context](../src/graphics/graphics.fs#L483)
 
 Caution: Internal operation: prefer its public wrapper; internal state and calling conventions may change. Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -34330,7 +34338,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
    w (TEXT-SCALE) @ * ;
 ```
 
-[Example context](../src/graphics/graphics.fs#L504)
+[Example context](../src/graphics/graphics.fs#L508)
 
 Caution: Internal operation: prefer its public wrapper; internal state and calling conventions may change. Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -34437,7 +34445,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
    x y ROT GFX-PSET ;
 ```
 
-[Example context](../src/graphics/graphics.fs#L460)
+[Example context](../src/graphics/graphics.fs#L464)
 
 Caution: Internal operation: prefer its public wrapper; internal state and calling conventions may change. Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -35103,15 +35111,14 @@ Kind: private library helper.
 Usage example (source excerpt; consult the link for setup and expectations)
 
 ```forth
-: FULLSCREEN ( flag -- )
-   (DISPLAY) @ 1 = IF -21 THROW THEN
-   0<> DUP GFX-FULLSCREEN
+: MOUSE-CURSOR ( flag -- )
+   0<> DUP GFX-MOUSE-CURSOR
    (TK-SHOWN?) IF
-      IF S" sigma_fullscreen 1" ELSE S" sigma_fullscreen 0" THEN GFX-TCL DROP 2DROP EXIT
+      IF S" sigma_cursor 1" ELSE S" sigma_cursor 0" THEN GFX-TCL DROP 2DROP EXIT
    THEN DROP ;
 ```
 
-[Example context](../src/graphics/graphics.fs#L264)
+[Example context](../src/graphics/graphics.fs#L279)
 
 Caution: Internal operation: prefer its public wrapper; internal state and calling conventions may change. Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -35174,7 +35181,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
    w (TEXT-SCALE) @ * ;
 ```
 
-[Example context](../src/graphics/graphics.fs#L504)
+[Example context](../src/graphics/graphics.fs#L508)
 
 Caution: Internal operation: prefer its public wrapper; internal state and calling conventions may change. Load and select the vocabulary first. Host display, input and sound support depends on the environment. Use valid logical-memory addresses, lengths and capacities; distinguish owned storage from borrowed lifetimes.
 
@@ -35262,7 +35269,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
    (DISPLAY) @ DUP 2 =  SWAP 0=  GFX-WINDOW? AND  OR ;
 ```
 
-[Example context](../src/graphics/graphics.fs#L283)
+[Example context](../src/graphics/graphics.fs#L287)
 
 Caution: Internal operation: prefer its public wrapper; internal state and calling conventions may change. Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 

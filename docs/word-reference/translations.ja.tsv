@@ -1080,7 +1080,7 @@ DISPLAY-TERMINAL	SHOWの表示先を端末にします。
 DISPLAY-WINDOW	SHOWの表示先をネイティブウィンドウにします。ホストが未対応なら-21です。
 FULLSCREEN	Sigma自身のウィンドウで画面全体を覆う（真）か、ウィンドウに戻す（偽）かを切り替えます。画面の解像度は変えません。利用者はAlt+Enter（macOSではControl+Command+F）で解除できます。SHOWが表示先を決める前なら、ウィンドウはその状態で開きます。DISPLAY-TERMINALではHOST FUNCTION UNAVAILABLEです。Windows、macOS、Linux（X11。ウィンドウマネージャーがEWMHのフルスクリーンに対応する場合）のウィンドウと、Tkのウィンドウが対応します。
 FULLSCREEN?	今フルスクリーンを求めているかを返します。利用者がキーで解除した後は偽です。
-MOUSE-CURSOR	Sigma自身のウィンドウの上でマウスカーソルを表示する（真）か隠す（偽）かを切り替えます。初めは表示します。Windows、macOS、Linuxのウィンドウが対応します。
+MOUSE-CURSOR	ネイティブまたはTkのウィンドウの画像上で、マウスカーソルを表示する（真）か隠す（偽）かを切り替えます。初めは表示します。
 GFX-FULLSCREEN	FULLSCREENのホスト基本語です。
 GFX-FULLSCREEN?	FULLSCREEN?のホスト基本語です。
 GFX-MOUSE-CURSOR	MOUSE-CURSORのホスト基本語です。

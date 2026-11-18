@@ -420,7 +420,7 @@ pub fn showImage(self: *State) RuntimeError!void {
     // The size of the window's image (WINDOW-SIZE), 0 0 for the image's own, and
     // whether a window opened now covers its screen (FULLSCREEN).
     var buffer: [48]u8 = undefined;
-    const command = std.fmt.bufPrint(&buffer, "sigma_show {d} {d} {d} ", .{ self.gfx_window_size[0], self.gfx_window_size[1], @intFromBool(self.gfx_fullscreen) }) catch unreachable;
+    const command = std.fmt.bufPrint(&buffer, "sigma_show {d} {d} {d} {d} ", .{ self.gfx_window_size[0], self.gfx_window_size[1], @intFromBool(self.gfx_fullscreen), @intFromBool(self.gfx_cursor_visible) }) catch unreachable;
     if (command.len + base64 > max_message) return error.InvalidNumber;
     if (try run(self, &.{command}, @intCast(command.len + base64), writeImage)) return error.TclFailed;
 }

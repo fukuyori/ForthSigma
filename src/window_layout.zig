@@ -159,3 +159,51 @@ test "autoClientSize also fits in the work area's room" {
     try std.testing.expectEqual([2]u32{ 1066, 600 }, autoClientSize(1600, 900, .{ 0, 600 }));
     try std.testing.expectEqual([2]u32{ 1, 1 }, autoClientSize(1000, 1000, .{ 1, 1 }));
 }
+
+/// Root-coordinate rectangles; origins may be negative on multi-monitor desktops.
+pub const ScreenRect = struct { x: i64, y: i64, w: u32, h: u32 };
+
+fn overlap(a: ScreenRect, b: ScreenRect) [2]u32 {
+    return .{
+        @intCast(@max(0, @min(a.x + a.w, b.x + b.w) - @max(a.x, b.x))),
+        @intCast(@max(0, @min(a.y + a.h, b.y + b.h) - @max(a.y, b.y))),
+    };
+}
+
+pub fn selectMonitor(monitors: []const ScreenRect, target: ScreenRect) ?ScreenRect {
+    var selected: ?ScreenRect = null;
+    var largest: u64 = 0;
+    for (monitors) |monitor| {
+        const size = overlap(monitor, target);
+        const area = @as(u64, size[0]) * size[1];
+        if (area > largest) {
+            selected = monitor;
+            largest = area;
+        }
+    }
+    return selected;
+}
+
+pub fn workRoom(monitor: ScreenRect, work: ScreenRect) [2]u32 {
+    const size = overlap(monitor, work);
+    // Zero means unknown to autoClientSize; a monitor with no usable intersection
+    // must instead be limited to the smallest possible client area.
+    return .{ @max(1, size[0]), @max(1, size[1]) };
+}
+
+test "monitor selection and work area on unequal and negative-origin displays" {
+    const monitors = [_]ScreenRect{
+        .{ .x = -1280, .y = 0, .w = 1280, .h = 720 },
+        .{ .x = 0, .y = 0, .w = 2560, .h = 1440 },
+    };
+    const work: ScreenRect = .{ .x = -1280, .y = 30, .w = 3840, .h = 1410 };
+    const small = selectMonitor(&monitors, .{ .x = -1000, .y = 100, .w = 600, .h = 400 }).?;
+    try std.testing.expectEqual(monitors[0], small);
+    try std.testing.expectEqual([2]u32{ 1280, 690 }, workRoom(small, work));
+    try std.testing.expectEqual([2]u32{ 920, 690 }, autoClientSize(1600, 1200, workRoom(small, work)));
+    try std.testing.expectEqual(monitors[1], selectMonitor(&monitors, .{ .x = -100, .y = 100, .w = 600, .h = 400 }).?);
+    try std.testing.expectEqual(monitors[0], selectMonitor(&monitors, .{ .x = -1, .y = 0, .w = 1, .h = 1 }).?);
+    try std.testing.expectEqual(monitors[1], selectMonitor(&monitors, .{ .x = 0, .y = 0, .w = 1, .h = 1 }).?);
+    try std.testing.expectEqual(@as(?ScreenRect, null), selectMonitor(&monitors, .{ .x = 3000, .y = 0, .w = 1, .h = 1 }));
+    try std.testing.expectEqual([2]u32{ 1, 1 }, workRoom(small, .{ .x = 3000, .y = 2000, .w = 100, .h = 100 }));
+}

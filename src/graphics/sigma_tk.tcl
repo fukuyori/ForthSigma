@@ -89,6 +89,12 @@ proc sigma_fullscreen {on} {
 
 # FULLSCREEN?: as the window is (the user or the window manager may have left it);
 # "" before the window is opened, when Sigma's own wish counts.
+proc sigma_cursor {visible} {
+    if {[winfo exists .sigma]} {
+        .sigma configure -cursor [expr {$visible ? "" : "none"}]
+    }
+}
+
 proc sigma_fullscreen_state {} {
     if {[winfo exists .sigma]} { return [wm attributes . -fullscreen] }
     return ""
@@ -110,7 +116,7 @@ proc sigma_leave_fullscreen {name char key} {
 # it, until the next image. The image keeps its proportions, as large as fits by a whole
 # factor (Tk's photo images zoom only so), in the middle with black around it, also
 # when the window is resized.
-proc sigma_show {w h fullscreen data} {
+proc sigma_show {w h fullscreen cursor data} {
     set opening [expr {![winfo exists .sigma]}]
     if {$opening} {
         if {$fullscreen} { set ::sigma_fullscreen 1 }
@@ -156,6 +162,7 @@ proc sigma_show {w h fullscreen data} {
     }
     set ::sigma_image_size $image_size
     sigma_fit
+    sigma_cursor $cursor
     if {[wm state .] ne "normal"} { wm deiconify . }
     if {$opening && $::sigma_fullscreen} { sigma_fullscreen 1 }
     sigma_ime_apply

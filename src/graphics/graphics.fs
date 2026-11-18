@@ -276,7 +276,11 @@ VARIABLE (TERMINAL-MODE)  0 (TERMINAL-MODE) !
       C@ [CHAR] 1 =  DUP GFX-FULLSCREEN EXIT
    THEN GFX-FULLSCREEN? ;
 \ Whether the mouse cursor shows over Sigma's own window (at first it does).
-: MOUSE-CURSOR ( flag -- )   GFX-MOUSE-CURSOR ;
+: MOUSE-CURSOR ( flag -- )
+   0<> DUP GFX-MOUSE-CURSOR
+   (TK-SHOWN?) IF
+      IF S" sigma_cursor 1" ELSE S" sigma_cursor 0" THEN GFX-TCL DROP 2DROP EXIT
+   THEN DROP ;
 : TERMINAL-BLOCKS ( -- )   0 (TERMINAL-MODE) ! ;
 : TERMINAL-SIXEL ( -- )   1 (TERMINAL-MODE) ! ;
 

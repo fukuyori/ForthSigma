@@ -208,6 +208,7 @@ pub fn execute(self: *State, builtin: Builtin) RuntimeError!void {
         },
         .gfx_mouse_cursor => {
             const visible = try self.pop() != 0;
+            self.gfx_cursor_visible = visible;
             if (self.writer.window_cursor_fn) |cursor_fn| try cursor_fn(self.writer.context, visible);
         },
         .gfx_ime_caret => {

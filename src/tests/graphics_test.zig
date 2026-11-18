@@ -1993,15 +1993,15 @@ test "DISPLAY-TK makes SHOW send the image to the Tk window as a PNG in base64" 
     const base64_length = (png_length + 2) / 3 * 4;
     const written = output.processWritten();
     const newline = std.mem.indexOfScalar(u8, written, '\n').?;
-    // "sigma_show <w> <h> <fullscreen> " and the image.
-    try std.testing.expectEqual(17 + base64_length, try std.fmt.parseInt(usize, written[0..newline], 10));
+    // "sigma_show <w> <h> <fullscreen> <cursor> " and the image.
+    try std.testing.expectEqual(19 + base64_length, try std.fmt.parseInt(usize, written[0..newline], 10));
     const body = written[newline + 1 ..];
-    try std.testing.expectEqual(17 + base64_length, body.len);
-    try std.testing.expect(std.mem.startsWith(u8, body, "sigma_show 0 0 0 "));
+    try std.testing.expectEqual(19 + base64_length, body.len);
+    try std.testing.expect(std.mem.startsWith(u8, body, "sigma_show 0 0 0 1 "));
     var png: [128]u8 = undefined;
     const decoder = std.base64.standard.Decoder;
-    const decoded_length = try decoder.calcSizeForSlice(body[17..]);
-    try decoder.decode(png[0..decoded_length], body[17..]);
+    const decoded_length = try decoder.calcSizeForSlice(body[19..]);
+    try decoder.decode(png[0..decoded_length], body[19..]);
     try std.testing.expectEqual(png_length, decoded_length);
     try std.testing.expectEqualStrings("\x89PNG\r\n\x1a\n", png[0..8]);
     // The first pixel, red, after the zlib and block headers and the row's filter byte.
@@ -2477,7 +2477,7 @@ test "WINDOW-SIZE goes to the Tk window with the image" {
     try machine.interpretLine("640 480 WINDOW-SIZE DISPLAY-TK SHOW");
     const written = output.processWritten();
     const newline = std.mem.indexOfScalar(u8, written, '\n').?;
-    try std.testing.expect(std.mem.startsWith(u8, written[newline + 1 ..], "sigma_show 640 480 0 iVBORw0KGgo"));
+    try std.testing.expect(std.mem.startsWith(u8, written[newline + 1 ..], "sigma_show 640 480 0 1 iVBORw0KGgo"));
 }
 
 test "KEY-HELD? forgets the Tk window's keys when the Tcl program stops or a release is given up" {
@@ -2661,4 +2661,17 @@ test "DISPLAY-AUTO preserves the existing terminal picture when no GUI is attemp
     try machine.interpretLine("DISPLAY-AUTO SHOW");
     try std.testing.expect(std.mem.indexOf(u8, output.written(), "\x1b[1A") != null);
     try std.testing.expect(std.mem.indexOf(u8, output.written(), "\x1b[J") != null);
+}
+
+test "Tk SHOW carries cursor intent set before display selection" {
+    try skipWithout(&.{.graphics});
+    var output = Output{};
+    const machine = try libraryMachine(&output, "3 2");
+    defer destroyMachine(machine);
+    output.process_replies = "R 0 0\nR 0 0\nR 0 0\n";
+    try machine.interpretLine("FALSE MOUSE-CURSOR DISPLAY-TK SHOW");
+    try std.testing.expect(std.mem.indexOf(u8, output.processWritten(), "sigma_show 0 0 0 0 ") != null);
+    try machine.interpretLine("TRUE MOUSE-CURSOR SHOW");
+    try std.testing.expect(std.mem.indexOf(u8, output.processWritten(), "sigma_cursor 1") != null);
+    try std.testing.expect(std.mem.indexOf(u8, output.processWritten(), "sigma_show 0 0 0 1 ") != null);
 }

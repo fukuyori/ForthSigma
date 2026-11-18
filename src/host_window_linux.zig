@@ -297,6 +297,7 @@ const Window = struct {
     /// The window covers its screen (EWMH fullscreen asked), and the blank cursor of
     /// MOUSE-CURSOR, once made.
     fullscreen_on: bool = false,
+    normal_rect: ?window_layout.ScreenRect = null,
     blank_cursor: u32 = 0,
     /// A window opened fullscreen asks for the keys once mapped.
     activate_pending: bool = false,
@@ -480,6 +481,7 @@ const Window = struct {
         try self.property(67, 31, 8, "sigma\x00Sigma\x00"); // WM_CLASS
         // Fullscreen asked before the window is made: it is mapped so (EWMH).
         self.fullscreen_on = false;
+        self.normal_rect = null;
         self.state_dirty = false;
         self.state_asked = null;
         self.state_atom = try self.conn.atom("_NET_WM_STATE");
@@ -547,21 +549,62 @@ const Window = struct {
         return count;
     }
 
-    /// The room for the client area that WINDOW-SIZE 0 0 may use: the current
-    /// desktop's work area (_NET_WORKAREA), else the screen, less the frame the window
-    /// manager gives this window (_NET_FRAME_EXTENTS, known once the window is
-    /// mapped). A side of 0 is not known.
+    /// Xinerama is also exposed by RandR/XWayland servers. Query it directly,
+    /// without a library dependency. Re-query so display layout changes are seen.
+    fn monitor(self: *Window) x.Error!?window_layout.ScreenRect {
+        var query: [12]u8 = @splat(0);
+        x.put16(&query, 0, 8);
+        @memcpy(query[4..], "XINERAMA");
+        const extension = try self.conn.reply(try self.conn.request(98, 0, &query));
+        if (extension[8] == 0) return null;
+        const opcode = extension[9];
+        const screens = try self.conn.reply(try self.conn.request(opcode, 5, &.{}));
+        const count = x.get32(screens, 8);
+        if (count == 0 or count > 256 or screens.len < 32 + @as(usize, count) * 8) return null;
+        var monitors: [256]window_layout.ScreenRect = undefined;
+        for (monitors[0..count], 0..) |*rect, i| {
+            const offset = 32 + i * 8;
+            rect.* = .{ .x = @as(i16, @bitCast(x.get16(screens, offset))), .y = @as(i16, @bitCast(x.get16(screens, offset + 2))), .w = x.get16(screens, offset + 4), .h = x.get16(screens, offset + 6) };
+        }
+        // Before mapping, choose the pointer's monitor. Afterwards use the window's
+        // largest overlap, translating through any WM reparenting to root coordinates.
+        var target: window_layout.ScreenRect = undefined;
+        if (self.mapped) {
+            var body: [12]u8 = @splat(0);
+            x.put32(&body, 0, self.id);
+            x.put32(&body, 4, self.conn.root);
+            const position = try self.conn.reply(try self.conn.request(40, 0, &body));
+            if (position[1] == 0) return null;
+            target = .{ .x = @as(i16, @bitCast(x.get16(position, 12))), .y = @as(i16, @bitCast(x.get16(position, 14))), .w = self.width, .h = self.height };
+        } else {
+            var body: [4]u8 = undefined;
+            x.put32(&body, 0, self.conn.root);
+            const pointer = try self.conn.reply(try self.conn.request(38, 0, &body));
+            if (pointer[1] == 0) return null;
+            target = .{ .x = @as(i16, @bitCast(x.get16(pointer, 16))), .y = @as(i16, @bitCast(x.get16(pointer, 18))), .w = 1, .h = 1 };
+        }
+        return window_layout.selectMonitor(monitors[0..count], target);
+    }
+
+    /// Intersect the desktop work area with this window's monitor before removing
+    /// decorations. Without monitor information retain the core-screen fallback.
     fn room(self: *Window) [2]u32 {
-        var area = [2]u32{ self.conn.screen_width, self.conn.screen_height };
+        const bounds = self.monitor() catch null;
         var desktop: [1]u32 = .{0};
         _ = self.cardinals(self.conn.root, "_NET_CURRENT_DESKTOP", 0, &desktop) catch 0;
         var work: [4]u32 = undefined;
         const got = self.cardinals(self.conn.root, "_NET_WORKAREA", @min(desktop[0], 1 << 20) * 4, &work) catch 0;
-        if (got == 4 and work[2] != 0 and work[3] != 0) area = .{ work[2], work[3] };
+        var area = [2]u32{ self.conn.screen_width, self.conn.screen_height };
+        if (bounds) |monitor_rect| area = .{ monitor_rect.w, monitor_rect.h };
+        if (got == 4 and work[2] != 0 and work[3] != 0) {
+            const work_rect: window_layout.ScreenRect = .{ .x = @as(i32, @bitCast(work[0])), .y = @as(i32, @bitCast(work[1])), .w = work[2], .h = work[3] };
+            if (bounds) |monitor_rect| {
+                area = window_layout.workRoom(monitor_rect, work_rect);
+            } else area = .{ work[2], work[3] };
+        }
         if (self.id != 0 and self.mapped) {
-            var extents: [4]u32 = undefined; // left, right, top, bottom
+            var extents: [4]u32 = undefined;
             if ((self.cardinals(self.id, "_NET_FRAME_EXTENTS", 0, &extents) catch 0) == 4) {
-                // A known side stays known: at least 1 pixel, never 0 (unknown).
                 if (area[0] != 0) area[0] = @max(1, area[0] -| (extents[0] +| extents[1]));
                 if (area[1] != 0) area[1] = @max(1, area[1] -| (extents[2] +| extents[3]));
             }
@@ -754,11 +797,38 @@ const Window = struct {
                 if (!fullscreen_dirty) fullscreen_wanted = false;
                 unlock();
             }
+            if (self.fullscreen_on and !on) {
+                if (self.normal_rect) |rect| {
+                    // Restore the frame origin with NorthWestGravity after the WM's
+                    // fullscreen restore. The WM retains the previous client size.
+                    try self.rootMessage(try self.conn.atom("_NET_MOVERESIZE_WINDOW"), .{
+                        1 | (3 << 8) | (1 << 12),
+                        @bitCast(@as(i32, @intCast(rect.x))),
+                        @bitCast(@as(i32, @intCast(rect.y))),
+                        0,
+                        0,
+                    });
+                    self.normal_rect = null;
+                }
+            }
             self.fullscreen_on = on;
         }
         // Compared with what was asked last when that has not come yet, so that asking
         // the other way meanwhile is sent too.
         if (modes_dirty and wanted != (self.state_asked orelse self.fullscreen_on)) {
+            if (wanted and !self.fullscreen_on and self.normal_rect == null) {
+                var translate: [12]u8 = @splat(0);
+                x.put32(&translate, 0, self.id);
+                x.put32(&translate, 4, self.conn.root);
+                const position = try self.conn.reply(try self.conn.request(40, 0, &translate));
+                if (position[1] != 0) {
+                    const px: i64 = @as(i16, @bitCast(x.get16(position, 12)));
+                    const py: i64 = @as(i16, @bitCast(x.get16(position, 14)));
+                    var extents: [4]u32 = @splat(0);
+                    _ = self.cardinals(self.id, "_NET_FRAME_EXTENTS", 0, &extents) catch 0;
+                    self.normal_rect = .{ .x = px - extents[0], .y = py - extents[2], .w = self.width, .h = self.height };
+                }
+            }
             try self.rootMessage(self.state_atom, .{ @intFromBool(wanted), self.fullscreen_atom, 0, 1, 0 });
             self.state_asked = wanted;
             if (wanted) self.activate_pending = true;

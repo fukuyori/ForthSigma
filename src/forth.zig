@@ -451,6 +451,7 @@ pub const State = struct {
     gfx_auto_display: u8 = 0,
     /// FULLSCREEN: whether fullscreen is wanted, for this run only (not in images).
     gfx_fullscreen: bool = false,
+    gfx_cursor_visible: bool = true,
     gamepads: @import("core/gamepad.zig").Snapshot = .{},
     /// TEXT's font and the glyph it loaded last (none in a build without graphics).
     gfx_font: if (defs.graphics_enabled) graphics_font.FontState else void = if (defs.graphics_enabled) .{} else {},

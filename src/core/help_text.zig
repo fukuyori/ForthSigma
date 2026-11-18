@@ -1172,7 +1172,7 @@ pub const entries = [_]Entry{
     .{ .name = "DISPLAY-WINDOW", .stack = "( -- )", .text = "Select a native window for SHOW; throw -21 when the host has no native-window support." },
     .{ .name = "FULLSCREEN", .stack = "( flag -- )", .text = "Make Sigma's own window cover its screen (true) or be a window again (false), without changing the screen's mode. The user leaves fullscreen with Alt+Enter (Control+Command+F on macOS). Asked before SHOW has chosen where to show, the window opens so; HOST FUNCTION UNAVAILABLE with DISPLAY-TERMINAL. The windows of Windows, macOS, and Linux (X11, a window manager with EWMH fullscreen) and the Tk window do it (FORTH/Sigma graphics)." },
     .{ .name = "FULLSCREEN?", .stack = "( -- flag )", .text = "Whether fullscreen is wanted now; false after the user left it with its key (FORTH/Sigma graphics)." },
-    .{ .name = "MOUSE-CURSOR", .stack = "( flag -- )", .text = "Show (true) or hide (false) the mouse cursor over Sigma's own window; it shows at first. The windows of Windows, macOS, and Linux do it (FORTH/Sigma graphics)." },
+    .{ .name = "MOUSE-CURSOR", .stack = "( flag -- )", .text = "Show (true) or hide (false) the mouse cursor over the graphics view in the native or Tk window; it shows at first (FORTH/Sigma graphics)." },
     .{ .name = "GFX-FULLSCREEN", .stack = "( flag -- )", .text = "Host primitive for FULLSCREEN (FORTH/Sigma)." },
     .{ .name = "GFX-FULLSCREEN?", .stack = "( -- flag )", .text = "Host primitive for FULLSCREEN? (FORTH/Sigma)." },
     .{ .name = "GFX-MOUSE-CURSOR", .stack = "( flag -- )", .text = "Host primitive for MOUSE-CURSOR (FORTH/Sigma)." },
