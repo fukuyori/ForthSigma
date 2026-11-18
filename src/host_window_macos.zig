@@ -678,20 +678,31 @@ fn drawCalibration(_: Id, _: Sel, _: Rect) callconv(.c) void {
     }
 }
 
-/// Preserve aspect ratio in the current drawing area. Integer floor division matches
-/// the common host geometry and leaves odd spare pixels on the right/top side.
+/// Preserve aspect ratio in the current drawing area by the contract's rule (as
+/// window_layout.place): the width limits it when cw × ih <= ch × iw, else the height,
+/// with floor division. An odd spare pixel goes right or below; AppKit's y grows
+/// upward, so the space below is rounded up.
 fn fittedRect(bounds: Rect, image_width: u32, image_height: u32) Rect {
     const cw = @max(bounds.size.width, 1);
     const ch = @max(bounds.size.height, 1);
     const iw = @as(f64, @floatFromInt(@max(image_width, 1)));
     const ih = @as(f64, @floatFromInt(@max(image_height, 1)));
     var w = cw;
-    var h = @max(1, @floor(ih * cw / iw));
-    if (h > ch) {
-        h = ch;
-        w = @max(1, @floor(iw * ch / ih));
-    }
-    return .{ .origin = .{ .x = bounds.origin.x + @floor((cw - w) / 2), .y = bounds.origin.y + @floor((ch - h) / 2) }, .size = .{ .width = w, .height = h } };
+    var h = ch;
+    if (cw * ih <= ch * iw) h = @max(1, @floor(ih * cw / iw)) else w = @max(1, @floor(iw * ch / ih));
+    return .{ .origin = .{ .x = bounds.origin.x + @floor((cw - w) / 2), .y = bounds.origin.y + @ceil((ch - h) / 2) }, .size = .{ .width = w, .height = h } };
+}
+
+test "fittedRect follows the contract's rule, the odd pixel right and below" {
+    const r = fittedRect(.{ .origin = .{ .x = 0, .y = 0 }, .size = .{ .width = 100, .height = 100 } }, 100, 101);
+    try std.testing.expectEqual(@as(f64, 99), r.size.width);
+    try std.testing.expectEqual(@as(f64, 100), r.size.height);
+    // 1 by 1 in 4 by 3: 3 by 3, the spare column on the right.
+    const s = fittedRect(.{ .origin = .{ .x = 0, .y = 0 }, .size = .{ .width = 4, .height = 3 } }, 1, 1);
+    try std.testing.expectEqual(@as(f64, 0), s.origin.x);
+    // 1 by 1 in 3 by 4: the spare row below, at y 0 to 1 (y grows upward).
+    const t = fittedRect(.{ .origin = .{ .x = 0, .y = 0 }, .size = .{ .width = 3, .height = 4 } }, 1, 1);
+    try std.testing.expectEqual(@as(f64, 1), t.origin.y);
 }
 
 fn getRect(object: Id, selector: Sel) Rect {

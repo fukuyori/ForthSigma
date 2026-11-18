@@ -19,6 +19,7 @@
 - The Windows window queues each character typed whole: when the queue is full, a character is dropped with all its UTF-8 bytes rather than in part. Ctrl+C is not queued with the keys; it is told first, also when the queue is full.
 - The Windows window draws the image by the rule of the native windows' common contract, as the Linux window does: Sigma scales it itself, a band of rows at a time, to the largest whole rectangle with its proportions, each pixel shown taken from the image pixel at floor(position × image size / shown size), instead of leaving the stretching to GDI; `MOUSE` maps back by the same rule.
 - On Windows, automatic display's first search tries the window and the Tk window within 5 seconds in all, as on Linux: the window has at most 2 of them, and Tk's start and its first answer are waited for only until the time runs out.
+- The macOS window lays the image out by the same rule as the Windows and Linux windows: the side that limits it is chosen as the contract says (an image 100 by 101 in an area 100 by 100 is shown 99 by 100, not 100 by 100), and an odd spare pixel goes below the image rather than above it.
 - Four built-in words are added for the above (`GFX-AUTO-DISPLAY`, `GFX-AUTO-DISPLAY!`, `GFX-IME-PREEDIT`, `GFX-IME-CARET`). Added built-in words change the dictionary ABI; recreate dictionary images.
 
 ## [0.11.2] - 2026-11-17
