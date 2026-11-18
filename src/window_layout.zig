@@ -68,6 +68,25 @@ pub fn scaleRows(image: []const u32, image_width: u32, image_height: u32, out: [
     }
 }
 
+/// A client area moved from a screen of one DPI to another: each side scaled by
+/// new / old, rounded to the nearest pixel, at least 1 and at most 16384 × 4.
+pub fn dpiScaled(client: [2]u32, old_dpi: u32, new_dpi: u32) [2]u32 {
+    var result: [2]u32 = undefined;
+    for (&result, client) |*side, value| {
+        const scaled = (@as(u64, value) * new_dpi + @max(old_dpi, 1) / 2) / @max(old_dpi, 1);
+        side.* = @intCast(std.math.clamp(scaled, 1, 16384 * 4));
+    }
+    return result;
+}
+
+test "dpiScaled scales the client area by the DPIs' ratio" {
+    try std.testing.expectEqual([2]u32{ 960, 600 }, dpiScaled(.{ 640, 400 }, 96, 144));
+    try std.testing.expectEqual([2]u32{ 640, 400 }, dpiScaled(.{ 960, 600 }, 144, 96));
+    // 1365 × 96 / 144 = 910, 1024 × 96 / 144 = 682.7 → 683.
+    try std.testing.expectEqual([2]u32{ 910, 683 }, dpiScaled(.{ 1365, 1024 }, 144, 96));
+    try std.testing.expectEqual([2]u32{ 1, 1 }, dpiScaled(.{ 0, 0 }, 96, 144));
+}
+
 test "place centres the largest rectangle with the image's proportions" {
     try std.testing.expectEqual(Place{ .x = 0, .y = 0, .w = 640, .h = 400 }, place(320, 200, 640, 400));
     try std.testing.expectEqual(Place{ .x = 0, .y = 50, .w = 640, .h = 400 }, place(320, 200, 640, 500));

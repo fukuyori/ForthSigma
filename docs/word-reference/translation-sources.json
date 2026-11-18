@@ -171,7 +171,7 @@
     "src/host_resize.zig": "627521c4304ca5ff00f304ff22c0a4cc710a91d585cee01d32c36cd6163b1194",
     "src/host_timezone.zig": "39c4c38377418e6f349cd8d84834fd663d5cff65cfe1194a2e11c7da2b411ccd",
     "src/host_wait.zig": "fe2f1de816178347288dc17682057cafbf7c50cc105a2dd50e40e6220702a85a",
-    "src/host_window.zig": "46d4d1ab678282135953f23c707c9e8762411ed1b9e411d106483d4fd6e7e596",
+    "src/host_window.zig": "91e6527d86a4ade66c881705398f83bac684ed3a5fe602710f73eb256c0f72c6",
     "src/host_window_linux.zig": "b5660313f2263d43b0600a90702f26edc9c29f75b14f9b571f021b3f3ab1dd89",
     "src/host_window_macos.zig": "951b8c9826cf79de38dd995310cb304e73607f521ddbfb9a10c0bca92dcbd170",
     "src/host_x11.c": "ff56c05c30b016c1145ad904bb30e1dcbccb0c0ddbbf30f749bfed6a840e4181",
@@ -273,7 +273,7 @@
     "src/tests/text_and_numbers_test.zig": "79a692df3ce75c5ed17091798aaea527cd53e6892f49c0e97c260834aaf662c3",
     "src/tests/wordlists_test.zig": "9f93d23e2b61e60be346b53a104a124e0852794d759c416029caa10cf340221b",
     "src/tests/xchar_test.zig": "698b330da6ba271d4a5d5e5a1d9debe706c514c17ac54b5849b03d46f4e08cfc",
-    "src/window_layout.zig": "08e7544916451d2bcb2f351c8485e781cc24a7cabf765572ba46b6f9ae628731"
+    "src/window_layout.zig": "cebf99db949afa8dee4bb314ad839e3d429a1ef4023d77c50700a6635c068fe8"
   },
   "translations": {
     "!": "1dfda2fcadec843d3cc00432f1b4d96e4a6be144f448da732761fa36515b5e0f",

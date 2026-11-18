@@ -187,6 +187,7 @@ const win32 = struct {
     const wm_middle_up = 0x0208;
     const wm_mouse_wheel = 0x020A;
     const wm_dpi_changed = 0x02E0;
+    const wm_get_dpi_scaled_size = 0x02E4;
     const button_left: usize = 0x0001;
     const button_right: usize = 0x0002;
     const button_middle: usize = 0x0010;
@@ -756,6 +757,21 @@ const win32 = struct {
         return .{ rect.right - rect.left, rect.bottom - rect.top };
     }
 
+    /// The window's size at `new_dpi` whose client area is the present one scaled by
+    /// new_dpi / the present DPI; null without the DPI functions.
+    fn dpiScaledSize(handle: Handle, new_dpi: u32) ?[2]i32 {
+        const for_window = dpi.for_window orelse return null;
+        const adjust = dpi.adjust_rect orelse return null;
+        const old_dpi = for_window(handle);
+        if (old_dpi == 0 or new_dpi == 0) return null;
+        var client = Rect{};
+        if (GetClientRect(handle, &client) == 0) return null;
+        const scaled = window_layout.dpiScaled(.{ @intCast(@max(client.right, 0)), @intCast(@max(client.bottom, 0)) }, old_dpi, new_dpi);
+        var rect = Rect{ .right = @intCast(scaled[0]), .bottom = @intCast(scaled[1]) };
+        if (adjust(&rect, overlapped_window, 0, 0, new_dpi) == 0) return null;
+        return .{ rect.right - rect.left, rect.bottom - rect.top };
+    }
+
     /// The work area (the screen without the taskbar) of the monitor the window is on.
     fn workArea(handle: Handle) ?Rect {
         var info = MonitorInfo{};
@@ -994,6 +1010,15 @@ const win32 = struct {
                 }
                 _ = InvalidateRect(handle, null, 0);
                 return 0;
+            },
+            // About to move to a monitor of another DPI: the size Windows then suggests
+            // keeps the client area's proportions exactly (by default it scales the
+            // whole window, frame included).
+            wm_get_dpi_scaled_size => {
+                const size: *[2]i32 = @ptrFromInt(@as(usize, @bitCast(lparam)));
+                const scaled = dpiScaledSize(handle.?, @truncate(wparam)) orelse return 0;
+                size.* = scaled;
+                return 1;
             },
             // Moved to a monitor of another DPI: take the size Windows suggests. The image
             // is laid out again in the client area it gets; WINDOW-SIZE is not restored.
