@@ -1,7 +1,8 @@
 \ Manual native-window keyboard check (#985). Run from the repository root:
 \   .work/linux-native/current/bin/sigma tests/scripts/check-window-keys.fs < /dev/null
 \ Or build Linux with `zig build -Dx11=true` and use zig-out/bin/sigma.
-\ Press arrows, Home/End, Page Up/Down, Insert/Delete, F1/F2/F12.
+\ Press arrows, Home/End, Page Up/Down, Insert/Delete, F1/F2/F12,
+\ Enter, Backspace and Tab.
 \ Hold A for two seconds, release it, then hold A while switching to a different
 \ window (not the launching terminal), release it there and return. Focus loss
 \ should log "held A 0" after "held A -1"; the screen should show Held A: 0.
@@ -38,8 +39,8 @@ VARIABLE KEY-DONE
    CLS $FFFFFF COLOR!
    S" Linux keyboard check - Escape ends" 10 10 TEXT
    S" Arrows, Home/End, PgUp/PgDn, Ins/Del" 10 40 TEXT
-   S" F1 F2 F12; hold A for 2 seconds" 10 70 TEXT
-   S" Hold A, switch windows, release, return" 10 100 TEXT
+   S" F1 F2 F12; Enter Backspace Tab" 10 70 TEXT
+   S" Hold A 2s; then test focus switch" 10 100 TEXT
    S" Last code:" 10 150 TEXT KEY-LAST @ 210 150 KEY-NUMBER
    S" Held A:" 10 190 TEXT A-HELD @ ABS 210 190 KEY-NUMBER
    SHOW ;

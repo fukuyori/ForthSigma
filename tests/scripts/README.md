@@ -58,3 +58,17 @@ special-key, repeat and focus-loss checks. Run with stdin from `/dev/null` to ex
 terminal input. Escape exits; Ctrl+C in the window is caught in key and held-state reads. Repeated
 codes and VM processing timestamps need correlation with the operator’s report.
 See its header for the procedure.
+
+`test-linux-window-colors.py` compares native and Tk raster readback for all eight
+full/2/16/256-color and dither settings, before and after integer-zoom resize.
+`test-linux-auto-display.py` checks automatic selection, selected-backend loss,
+explicit failure and `DISPLAY-AUTO` recovery. Both own authenticated depth24 Xvfb
+servers and never use the user's DISPLAY. Set `SIGMA_TEST_XVFB` if Xvfb is not on
+PATH and `SIGMA_TEST_BINARY` for the experimental Linux executable. Missing
+Xvfb/wish is reported as a skip with exit code 77, rather than a passing result.
+`test-linux-x11-support.py` checks the shared helper's partial-line timeout,
+stderr draining, process-group cleanup, X11 authentication and skip status.
+
+`check-window-display.fs` is a manual color/resize/monitor-movement check. It shows
+color bars, a gray ramp and four click targets; 0/2/6/5 select color count and D
+changes dithering. It changes no desktop display settings. See its header.
