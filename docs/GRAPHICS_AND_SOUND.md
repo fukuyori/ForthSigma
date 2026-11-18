@@ -1,5 +1,7 @@
 # FORTH/Σ Graphics and Sound Manual
 
+Linux builds enable the local X11/XWayland window by default; use `-Dx11=false` to omit it. Automatic display selection tries native, Tk, then terminal within a shared five-second budget. Direct Wayland and native TCP/SSH connections are unsupported. See [Linux validation](LINUX_NATIVE_VALIDATION.md) for tested environments and limits.
+
 Japanese version: [GRAPHICS_AND_SOUND.ja.md](GRAPHICS_AND_SOUND.ja.md). This English version is the primary one.
 
 The graphics and the sound of Sigma are extensions of this port: the FORTH/Σ of the magazine has neither. This manual describes them: drawing, text, Tcl/Tk, keys, the mouse, and animation (`REQUIRE-GRAPHICS`), and music, sound chips, recorded sound, and modules (`REQUIRE-AUDIO`). For starting Sigma, the language, and the other words, see the [user manual](USER_MANUAL.md); for where `SHOW` shows the image and with how many colors, see the [graphics modes manual](GRAPHICS_MODES.md).

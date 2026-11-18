@@ -14,7 +14,7 @@ pub fn build(b: *std.Build) void {
     const tools = b.option(bool, "tools", "Include SEE, LOCATE, and WHERE (default: on)") orelse true;
     const image = b.option(bool, "image", "Include SAVE, LOAD, and SAVESYS (default: on)") orelse true;
     const graphics = b.option(bool, "graphics", "Include REQUIRE-GRAPHICS and the GFX- words (default: on)") orelse true;
-    const x11 = b.option(bool, "x11", "Enable the experimental Linux X11 window (broader acceptance unfinished; default: off)") orelse false;
+    const x11 = b.option(bool, "x11", "Enable the Linux X11/XWayland window (default: on)") orelse true;
     const audio = b.option(bool, "audio", "Include REQUIRE-AUDIO and the SND- words (default: on)") orelse true;
     const debug = b.option(bool, "debug", "Include the debugging features: the backtrace after an error, --max-steps, --trace, --profile, --debug-log, --lint, --format, --coverage, and the debugging words (DBG, BREAK:, ~~BT and others) (default: on)") orelse true;
     const options = b.addOptions();

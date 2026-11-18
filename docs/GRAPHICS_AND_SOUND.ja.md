@@ -1,5 +1,7 @@
 # FORTH/Σ グラフィックスとサウンドのマニュアル
 
+LinuxビルドはローカルX11/XWaylandのウィンドウを既定で有効にする。`-Dx11=false`で除外できる。自動表示は共通5秒の期限内でnative、Tk、端末の順に探索する。Wayland直接接続とnativeのTCP/SSH接続は未対応。検証した環境と制限は[Linux検証記録](LINUX_NATIVE_VALIDATION.md)を参照。
+
 英語版（正）: [GRAPHICS_AND_SOUND.md](GRAPHICS_AND_SOUND.md)。この日本語版は英語版の訳です。内容が異なる場合は英語版に従ってください。
 
 Sigma のグラフィックスとサウンドは、この移植版の拡張です。誌面の FORTH/Σ には、どちらもありません。このマニュアルでは、描画、文字、Tcl/Tk、キー、マウス、アニメーション（`REQUIRE-GRAPHICS`）と、音楽、音源、録音した音、モジュール（`REQUIRE-AUDIO`）を説明します。Sigma の起動、言語、ほかの語は[ユーザーマニュアル](USER_MANUAL.ja.md)を、`SHOW` の表示先と色数は[グラフィックモードのマニュアル](GRAPHICS_MODES.ja.md)を参照してください。

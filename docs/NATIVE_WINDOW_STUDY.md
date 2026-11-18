@@ -15,7 +15,7 @@
 | ウィンドウのホスト側の境界 | `show`（画素、幅、高さ、色モード、表示領域の大きさを受け取って表示する）、`poll`（次のキーかマウスの変化を返す）、`close`（終了前に閉じる）の3つ | `src/host_window.zig` |
 | Windows 版の作り | ウィンドウは専用のスレッドでメッセージを処理する。`SHOW` はロックの下で画素を写し、描き直しを頼む | `src/host_window.zig` |
 | 本体との接続 | `window_fn` に `host_window.show` を渡す。`INKEY` と `MOUSE` の入力は、端末の入力がなければ `host_window.poll` を読む。終了時に `host_window.close` を呼ぶ | `src/main.zig` |
-| Linux での `SHOW` | 自動選択ではデスクトップの手掛かりがあり `wish` を起動できれば Tk、それ以外は端末。X11は`-Dx11=true`だけの実験実装。既定は無効 | `src/graphics/graphics.fs`、`src/host_window.zig`、[Linux検証記録](LINUX_NATIVE_VALIDATION.md) |
+| Linux での `SHOW` | ローカルX11/XWaylandは既定で有効。自動選択はnative→Tk→端末。`-Dx11=false`でnativeを除外できる | `src/graphics/graphics.fs`、`src/host_window.zig`、[Linux検証記録](LINUX_NATIVE_VALIDATION.md) |
 | macOS での `SHOW` | デスクトップで `wish` を起動できれば Tk のウィンドウ、できなければ端末 | `docs/GRAPHICS_MODES.ja.md` |
 | Tk のウィンドウの制約 | `SHOW` のたびに画像全体を PNG で送る。拡大は整数倍だけ。Tcl/Tk を別に入れる必要がある（システムの `wish` 8.5 は最近の macOS では起動しない） | `docs/GRAPHICS_AND_SOUND.ja.md` |
 | macOS のフレームワークの使い方の前例 | 音は AudioToolbox を実行時に読み込み（`std.DynLib.open`）、関数を名前で引いて呼ぶ。ビルドに macOS の SDK は要らない | `src/host_audio.zig` |
@@ -216,7 +216,7 @@ Linux でも同じ登録とフォールバックの問題が生じる。起動�
 
 ## 9. 3 OS 共通の条件と Linux の検討
 
-**2026-11-18の進捗:** X11/XWaylandの直接通信・専用スレッドとXIMを実験用に実装し、複数のClaude Codeレビューと回帰確認を行った。物理IMEと自動探索の共通5秒期限も確認済み。物理マウス・別DPIなどの受け入れを残すため、既定は`-Dx11=false`のまま。以下は検討時点の記録であり、最新の実装・未受け入れ事項は[Linux対応の検証記録](LINUX_NATIVE_VALIDATION.md)を参照。
+**2026-11-18の進捗:** X11/XWaylandの直接通信・専用スレッドとXIMを実験用に実装し、複数のClaude Codeレビューと回帰確認を行った。物理IMEと自動探索の共通5秒期限も確認済み。記録した範囲の物理操作と独立サーバー試験を受け入れ、既定を`-Dx11=true`へ変更した。混在DPI・ARM実機は未検証。以下は検討時点の記録であり、最新の実装・未受け入れ事項は[Linux対応の検証記録](LINUX_NATIVE_VALIDATION.md)を参照。
 
 2026-11-14 追記。Windows・macOS と同じ利用者向けの語で Linux のウィンドウも扱う検討。実装、実機検証、性能測定は未実施。以下の推奨順序と構成は設計上の提案であり、採用決定ではない。
 
