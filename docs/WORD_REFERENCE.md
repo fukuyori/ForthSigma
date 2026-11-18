@@ -29128,7 +29128,7 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 ` ( flag -- ) `
 
-Make Sigma's own window cover its screen (true) or be a window again (false), without changing the screen's mode. The user leaves fullscreen with Alt+Enter. Asked before SHOW has chosen where to show, the window opens so; HOST FUNCTION UNAVAILABLE with DISPLAY-TERMINAL. For now the Windows window, the Linux window (X11, a window manager with EWMH fullscreen), and the Tk window do it; elsewhere the wish is only kept (FORTH/Sigma graphics).
+Make Sigma's own window cover its screen (true) or be a window again (false), without changing the screen's mode. The user leaves fullscreen with Alt+Enter (Control+Command+F on macOS). Asked before SHOW has chosen where to show, the window opens so; HOST FUNCTION UNAVAILABLE with DISPLAY-TERMINAL. The windows of Windows, macOS, and Linux (X11, a window manager with EWMH fullscreen) and the Tk window do it (FORTH/Sigma graphics).
 
 Kind: library.
 
@@ -32209,7 +32209,7 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 ` ( flag -- ) `
 
-Show (true) or hide (false) the mouse cursor over Sigma's own window; it shows at first. For now the Windows and Linux windows do it (FORTH/Sigma graphics).
+Show (true) or hide (false) the mouse cursor over Sigma's own window; it shows at first. The windows of Windows, macOS, and Linux do it (FORTH/Sigma graphics).
 
 Kind: library.
 

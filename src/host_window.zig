@@ -40,16 +40,18 @@ pub fn poll() ?forth.InputEvent {
     return if (builtin.os.tag == .windows) win32.poll() else if (builtin.os.tag == .macos) macos_window.poll() else if (linux_enabled) linux_window.poll() else null;
 }
 
-/// The host's window_fullscreen_fn (Windows and Linux; macOS has none yet).
+/// The host's window_fullscreen_fn.
 pub fn fullscreen(context: ?*anyopaque, request: i8) forth.RuntimeError!bool {
     if (builtin.os.tag == .windows) return win32.fullscreen(context, request);
+    if (builtin.os.tag == .macos) return macos_window.fullscreen(context, request);
     if (linux_enabled) return linux_window.fullscreen(context, request);
     return error.HostUnavailable;
 }
 
-/// The host's window_cursor_fn (Windows and Linux; macOS has none yet).
+/// The host's window_cursor_fn.
 pub fn mouseCursor(context: ?*anyopaque, visible: bool) forth.RuntimeError!void {
     if (builtin.os.tag == .windows) return win32.mouseCursor(context, visible);
+    if (builtin.os.tag == .macos) return macos_window.mouseCursor(context, visible);
     if (linux_enabled) return linux_window.mouseCursor(context, visible);
     return error.HostUnavailable;
 }

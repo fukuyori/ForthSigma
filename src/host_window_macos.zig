@@ -53,6 +53,12 @@ const SendFirstRect = *const fn (Id, Sel, Range, ?*Range) callconv(.c) Rect;
 const SendAttributedSubstring = *const fn (Id, Sel, Range, ?*Range) callconv(.c) Id;
 const SendPointIndex = *const fn (Id, Sel, Point) callconv(.c) usize;
 const SendDoCommand = *const fn (Id, Sel, Sel) callconv(.c) void;
+const SendSizeToId = *const fn (Id, Sel, Size) callconv(.c) Id;
+const SendImageHotSpot = *const fn (Id, Sel, Id, Point) callconv(.c) Id;
+const SendRectCursor = *const fn (Id, Sel, Rect, Id) callconv(.c) void;
+var send_size_to_id: ?SendSizeToId = null;
+var send_image_hot_spot: ?SendImageHotSpot = null;
+var send_rect_cursor: ?SendRectCursor = null;
 const PostEvent = *const fn (Id, Sel, Id, i8) callconv(.c) void;
 const RectFill = *const fn (Rect) callconv(.c) void;
 const DispatchQueue = ?*anyopaque;
@@ -69,7 +75,7 @@ const appkit_path = "/System/Library/Frameworks/AppKit.framework/AppKit";
 const dispatch_path = "/usr/lib/system/libdispatch.dylib";
 pub const child_argument = "--sigma-internal-window-child-v1";
 
-const Command = union(enum) { frame: Frame, caret: ImeCaret, quit };
+const Command = union(enum) { frame: Frame, caret: ImeCaret, fullscreen: bool, cursor: bool, quit };
 const Frame = struct { sequence: u64, width: u32, height: u32, requested: [2]u32, pixels: []u32 };
 const ImeCaret = struct { active: bool = false, x: i32 = 0, y: i32 = 0, height: u32 = 0 };
 
@@ -121,6 +127,23 @@ var input_line_used: usize = 0;
 var preedit_buffer: [256]u8 = undefined;
 var preedit_length: usize = 0;
 var ime_caret = ImeCaret{};
+/// Parent: FULLSCREEN as wanted (the child tells when the window entered or left it)
+/// and MOUSE-CURSOR. Child: whether NSCursor hide is in effect.
+var fullscreen_wanted = false;
+var cursor_visible = true;
+/// Child: the fullscreen state the parent asked for last (or the user chose), whether
+/// a transition of the window is under way, and MOUSE-CURSOR with the blank cursor
+/// the view's cursor rectangle gives while the cursor is hidden.
+var fullscreen_desired = false;
+var fullscreen_transitioning = false;
+/// Child: the transition under way was started by Sigma (toggleFullScreen:), not by
+/// the user (the green button, the system's shortcut).
+var transition_by_sigma = false;
+/// Child: Sigma asked for fullscreen or not while the user's transition was under
+/// way; that request, not the user's, is what is wanted when it ends.
+var asked_during_transition = false;
+var child_cursor_visible = true;
+var blank_cursor: Id = null;
 var pressed_keys: [256]u32 = @splat(0);
 var mouse_buttons: u8 = 0;
 /// The mouse buttons of the last mouse line the child sent or kept.
@@ -150,6 +173,31 @@ pub fn imePreedit(_: ?*anyopaque, destination: []u8) forth.RuntimeError!usize {
     const length = @min(preedit_length, destination.len);
     @memcpy(destination[0..length], preedit_buffer[0..length]);
     return length;
+}
+
+/// The host's window_fullscreen_fn: request 1 or 0 asks, -1 only tells. The child
+/// says (INPUT FULLSCREEN) only when the wish changed without Sigma asking: the user's
+/// Control+Command+F or the green button, or a transition that failed. The window
+/// carrying out what Sigma asked is not told, so later requests are not undone.
+pub fn fullscreen(_: ?*anyopaque, request: i8) forth.RuntimeError!bool {
+    // What the child said meanwhile (the user may have left fullscreen) comes first.
+    readChildInput();
+    if (request >= 0 and fullscreen_wanted != (request == 1)) {
+        fullscreen_wanted = request == 1;
+        if (child_process) |child| {
+            try writeAllUntil(child.to_child, if (fullscreen_wanted) "FULLSCREEN 1\n" else "FULLSCREEN 0\n", monotonicNs() + std.time.ns_per_s);
+        }
+    }
+    return fullscreen_wanted;
+}
+
+/// The host's window_cursor_fn.
+pub fn mouseCursor(_: ?*anyopaque, visible: bool) forth.RuntimeError!void {
+    if (cursor_visible == visible) return;
+    cursor_visible = visible;
+    if (child_process) |child| {
+        try writeAllUntil(child.to_child, if (visible) "CURSOR 1\n" else "CURSOR 0\n", monotonicNs() + std.time.ns_per_s);
+    }
 }
 
 pub fn imeCaret(_: ?*anyopaque, active: bool, x: i64, y: i64, height: i64) forth.RuntimeError!void {
@@ -287,6 +335,25 @@ fn sendFrame(pixels: []const u32, width: u32, height: u32, mode: forth.ColorMode
     try readFrameStatus(child.from_child, expected, deadline);
 }
 
+/// Reads all the child's lines that have come, without waiting: input events wait in
+/// the queue for poll, and INPUT FULLSCREEN updates fullscreen_wanted.
+fn readChildInput() void {
+    const child = child_process orelse return;
+    while (true) {
+        var descriptor = [_]std.c.pollfd{.{ .fd = child.from_child, .events = std.c.POLL.IN, .revents = 0 }};
+        if (std.c.poll(&descriptor, descriptor.len, 0) <= 0) return;
+        var byte: u8 = undefined;
+        if (std.c.read(child.from_child, @ptrCast(&byte), 1) <= 0) return;
+        if (byte == '\n') {
+            enqueueInputLine(input_line[0..input_line_used]);
+            input_line_used = 0;
+        } else if (input_line_used < input_line.len) {
+            input_line[input_line_used] = byte;
+            input_line_used += 1;
+        } else return;
+    }
+}
+
 pub fn poll() ?forth.InputEvent {
     if (input_count != 0) {
         const event = input_queue[input_head];
@@ -324,6 +391,10 @@ fn enqueueInputLine(line: []const u8) void {
     const kind = fields.next() orelse return;
     if (std.mem.eql(u8, kind, "PREEDIT")) {
         updatePreeditHex(fields.next() orelse return);
+        return;
+    }
+    if (std.mem.eql(u8, kind, "FULLSCREEN")) {
+        fullscreen_wanted = std.mem.eql(u8, fields.next() orelse return, "1");
         return;
     }
     const event: forth.InputEvent = if (std.mem.eql(u8, kind, "KEY")) blk: {
@@ -548,6 +619,9 @@ fn startChild() forth.RuntimeError!void {
     var caret_buffer: [96]u8 = undefined;
     const caret_line = std.fmt.bufPrint(&caret_buffer, "CARET {d} {d} {d} {d}\n", .{ @intFromBool(ime_caret.active), ime_caret.x, ime_caret.y, ime_caret.height }) catch return error.HostFailed;
     try writeAllUntil(child.to_child, caret_line, startup_deadline);
+    // A window opened while fullscreen is wanted covers its screen at once.
+    try writeAllUntil(child.to_child, if (fullscreen_wanted) "FULLSCREEN 1\n" else "FULLSCREEN 0\n", startup_deadline);
+    try writeAllUntil(child.to_child, if (cursor_visible) "CURSOR 1\n" else "CURSOR 0\n", startup_deadline);
     child_process = child;
     window_was_ready = true;
 }
@@ -801,6 +875,133 @@ var objc_get_class: ?ObjcGetClass = null;
 var send_color: ?SendColor = null;
 var send_void0: ?SendVoid0 = null;
 
+/// The window entered or left fullscreen, also by the user: the parent's FULLSCREEN?
+/// follows it.
+/// A transition begins, Sigma's or the user's: frames do not resize the window and no
+/// other toggle starts until it ends.
+fn windowWillEnterFullScreen(_: Id, _: Sel, _: Id) callconv(.c) void {
+    if (!transition_by_sigma) asked_during_transition = false;
+    fullscreen_transitioning = true;
+}
+
+fn windowWillExitFullScreen(_: Id, _: Sel, _: Id) callconv(.c) void {
+    if (!transition_by_sigma) asked_during_transition = false;
+    fullscreen_transitioning = true;
+}
+
+/// A transition ended. One the user made is now wanted, and the parent is told (its
+/// FULLSCREEN? follows); one Sigma asked for needs no word. Then the window goes on
+/// toward what is wanted now.
+fn endTransition(now_fullscreen: bool) void {
+    // The user's transition decides, unless Sigma asked something meanwhile.
+    const by_user = !transition_by_sigma and !asked_during_transition;
+    fullscreen_transitioning = false;
+    transition_by_sigma = false;
+    asked_during_transition = false;
+    if (by_user and fullscreen_desired != now_fullscreen) {
+        fullscreen_desired = now_fullscreen;
+        outputInput(if (now_fullscreen) "INPUT FULLSCREEN 1\n" else "INPUT FULLSCREEN 0\n", true);
+    }
+    // The window fits the image again, as it would have without fullscreen.
+    if (!now_fullscreen) fitWindowToFrame();
+    reconcileFullscreen();
+}
+
+fn windowDidEnterFullScreen(_: Id, _: Sel, _: Id) callconv(.c) void {
+    endTransition(true);
+}
+
+fn windowDidExitFullScreen(_: Id, _: Sel, _: Id) callconv(.c) void {
+    endTransition(false);
+}
+
+/// A transition that did not happen (another one, or the system refused): the window
+/// stays as it is, and so does the wish, which the parent is told of.
+fn windowDidFailToEnterFullScreen(_: Id, _: Sel, _: Id) callconv(.c) void {
+    fullscreen_transitioning = false;
+    transition_by_sigma = false;
+    fullscreen_desired = false;
+    outputInput("INPUT FULLSCREEN 0\n", true);
+    fitWindowToFrame();
+}
+
+fn windowDidFailToExitFullScreen(_: Id, _: Sel, _: Id) callconv(.c) void {
+    fullscreen_transitioning = false;
+    transition_by_sigma = false;
+    fullscreen_desired = true;
+    outputInput("INPUT FULLSCREEN 1\n", true);
+}
+
+fn windowIsFullscreen(window: Id) bool {
+    return send_usize0(window, selector_register("styleMask")) & (1 << 14) != 0; // NSWindowStyleMaskFullScreen
+}
+
+/// One transition at a time, toward fullscreen_desired as it is when the last ends.
+fn reconcileFullscreen() void {
+    if (fullscreen_transitioning) return;
+    const window = active_window orelse return;
+    if (fullscreen_desired == windowIsFullscreen(window)) return;
+    if (fullscreen_desired) {
+        if (active_app) |app| _ = send_bool1(app, selector_register("activateIgnoringOtherApps:"), 1);
+        _ = send_id1(window, selector_register("makeKeyAndOrderFront:"), null);
+    }
+    fullscreen_transitioning = true;
+    transition_by_sigma = true;
+    send_void1(window, selector_register("toggleFullScreen:"), null);
+}
+
+/// The window's size for the image shown (WINDOW-SIZE, or 0 0 by the work area).
+fn fitWindowToFrame() void {
+    const window = active_window orelse return;
+    const view = active_view orelse return;
+    if (frame_width == 0 or frame_height == 0) return;
+    const desired = requestedClientSize(frame_width, frame_height, last_requested_size, roomFor(window, view));
+    const points = convertSizeFromBacking(view, .{ .width = @floatFromInt(desired[0]), .height = @floatFromInt(desired[1]) });
+    send_size1(window, selector_register("setContentSize:"), points);
+}
+
+/// Child: makes the window cover its screen (a fullscreen Space) or a window again,
+/// and takes the keys for fullscreen.
+fn applyFullscreen(on: bool) void {
+    if (fullscreen_transitioning) asked_during_transition = true;
+    fullscreen_desired = on;
+    reconcileFullscreen();
+}
+
+/// Child: MOUSE-CURSOR, by the view's cursor rectangle (resetCursorRects), so that
+/// the cursor is hidden only over the image's view, not over the title bar or other
+/// programs.
+fn applyCursor(visible: bool) void {
+    child_cursor_visible = visible;
+    const window = active_window orelse return;
+    const view = active_view orelse return;
+    send_void1(window, selector_register("invalidateCursorRectsForView:"), view);
+}
+
+/// A cursor of an empty 1 by 1 image: nothing shows.
+fn blankCursor() Id {
+    if (blank_cursor != null) return blank_cursor;
+    const size_to_id = send_size_to_id orelse return null;
+    const image_hot_spot = send_image_hot_spot orelse return null;
+    const image_class = objc_get_class.?("NSImage") orelse return null;
+    const cursor_class = objc_get_class.?("NSCursor") orelse return null;
+    const image_alloc = send_id0_global(image_class, selector_register("alloc")) orelse return null;
+    const image = size_to_id(image_alloc, selector_register("initWithSize:"), .{ .width = 1, .height = 1 }) orelse return null;
+    // Drawing nothing gives the image a representation of transparent pixels.
+    send_void0.?(image, selector_register("lockFocus"));
+    send_void0.?(image, selector_register("unlockFocus"));
+    const cursor_alloc = send_id0_global(cursor_class, selector_register("alloc")) orelse return null;
+    blank_cursor = image_hot_spot(cursor_alloc, selector_register("initWithImage:hotSpot:"), image, .{ .x = 0, .y = 0 });
+    return blank_cursor;
+}
+
+fn resetCursorRects(self: Id, _: Sel) callconv(.c) void {
+    if (child_cursor_visible) return;
+    const add = send_rect_cursor orelse return;
+    const cursor = blankCursor() orelse return;
+    add(self, selector_register("addCursorRect:cursor:"), getRect(self, selector_register("bounds")), cursor);
+}
+
 fn windowWillClose(_: Id, _: Sel, _: Id) callconv(.c) void {
     did_close = true;
     releaseAllInput(true);
@@ -913,6 +1114,17 @@ fn doCommandBySelector(_: Id, _: Sel, _: Sel) callconv(.c) void {}
 fn keyDown(self: Id, _: Sel, event: Id) callconv(.c) void {
     const hardware = send_keycode(event, selector_register("keyCode"));
     if (hardware >= pressed_keys.len) return;
+    // Control+Command+F (the F key, 3) leaves fullscreen; it is no key for INKEY.
+    const flags = send_usize0(event, selector_register("modifierFlags"));
+    const control_command = (1 << 18) | (1 << 20);
+    if (hardware == 3 and flags & control_command == control_command) {
+        if (active_window) |window| if (windowIsFullscreen(window)) {
+            fullscreen_desired = false;
+            outputInput("INPUT FULLSCREEN 0\n", true);
+            reconcileFullscreen();
+            return;
+        };
+    }
     if (specialKey(hardware)) |special| if (marked_text == null) {
         const previous = pressed_keys[hardware];
         if (previous != 0 and previous != special) sendInput("KEYUP", previous);
@@ -1223,14 +1435,11 @@ fn runCommand(context: ?*anyopaque) callconv(.c) void {
             frame_width = frame.width;
             frame_height = frame.height;
             if (!std.mem.eql(u32, &last_frame_size, &.{ frame.width, frame.height }) or !std.mem.eql(u32, &last_requested_size, &frame.requested)) {
-                if (active_window) |window| {
-                    const view = active_view orelse return;
-                    const desired = requestedClientSize(frame.width, frame.height, frame.requested, roomFor(window, view));
-                    const points = convertSizeFromBacking(view, .{ .width = @floatFromInt(desired[0]), .height = @floatFromInt(desired[1]) });
-                    send_size1(window, selector_register("setContentSize:"), points);
-                }
                 last_frame_size = .{ frame.width, frame.height };
                 last_requested_size = frame.requested;
+                // A fullscreen window keeps covering its screen; it fits the image when
+                // it leaves fullscreen (windowDidExitFullScreen).
+                if (active_window) |window| if (!fullscreen_transitioning and !windowIsFullscreen(window)) fitWindowToFrame();
             }
             if (active_view) |view| _ = send_bool1(view, selector_register("setNeedsDisplay:"), 1);
             var buffer: [64]u8 = undefined;
@@ -1238,6 +1447,8 @@ fn runCommand(context: ?*anyopaque) callconv(.c) void {
             output(line);
             sendCurrentPreedit();
         },
+        .fullscreen => |on| applyFullscreen(on),
+        .cursor => |visible| applyCursor(visible),
         .caret => |caret| {
             ime_caret = caret;
             if (active_view) |view| {
@@ -1294,6 +1505,14 @@ fn readParentLoop() bool {
                 if (err == error.OutOfMemory) output("ERROR MEMORY\n") else output("ERROR PROTOCOL\n");
                 return false;
             };
+            continue;
+        }
+        if (std.mem.eql(u8, message, "FULLSCREEN 1") or std.mem.eql(u8, message, "FULLSCREEN 0")) {
+            if (!queueCommand(.{ .fullscreen = message[11] == '1' })) return false;
+            continue;
+        }
+        if (std.mem.eql(u8, message, "CURSOR 1") or std.mem.eql(u8, message, "CURSOR 0")) {
+            if (!queueCommand(.{ .cursor = message[7] == '1' })) return false;
             continue;
         }
         if (std.mem.startsWith(u8, message, "CARET ")) {
@@ -1439,6 +1658,9 @@ pub fn runChild() !u8 {
     send_other_event = objc.lookup(SendOtherEvent, "objc_msgSend") orelse return error.ObjcRuntimeUnavailable;
     send_void0 = objc.lookup(SendVoid0, "objc_msgSend") orelse return error.ObjcRuntimeUnavailable;
     send_void1 = objc.lookup(SendVoid1, "objc_msgSend") orelse return error.ObjcRuntimeUnavailable;
+    send_size_to_id = objc.lookup(SendSizeToId, "objc_msgSend");
+    send_image_hot_spot = objc.lookup(SendImageHotSpot, "objc_msgSend");
+    send_rect_cursor = objc.lookup(SendRectCursor, "objc_msgSend");
     post_event = objc.lookup(PostEvent, "objc_msgSend") orelse return error.ObjcRuntimeUnavailable;
     rect_fill = appkit.lookup(RectFill, "NSRectFill") orelse return error.AppKitSymbolUnavailable;
     var graphics = try std.DynLib.open("/System/Library/Frameworks/CoreGraphics.framework/CoreGraphics");
@@ -1472,6 +1694,12 @@ pub fn runChild() !u8 {
     const delegate_class = try addMethod(allocate_class, class_add_method, register_class, object_class, "SigmaProbeDelegate\x00", selector_register("windowWillClose:"), @ptrCast(&windowWillClose), "v@:@\x00");
     if (class_add_method(delegate_class, selector_register("applicationDidFinishLaunching:"), @ptrCast(&applicationDidFinishLaunching), "v@:@\x00") == 0) return error.ObjcMethodRegistrationFailed;
     if (class_add_method(delegate_class, selector_register("windowDidResignKey:"), @ptrCast(&windowDidResignKey), "v@:@\x00") == 0) return error.ObjcMethodRegistrationFailed;
+    if (class_add_method(delegate_class, selector_register("windowDidEnterFullScreen:"), @ptrCast(&windowDidEnterFullScreen), "v@:@\x00") == 0) return error.ObjcMethodRegistrationFailed;
+    if (class_add_method(delegate_class, selector_register("windowDidExitFullScreen:"), @ptrCast(&windowDidExitFullScreen), "v@:@\x00") == 0) return error.ObjcMethodRegistrationFailed;
+    if (class_add_method(delegate_class, selector_register("windowDidFailToEnterFullScreen:"), @ptrCast(&windowDidFailToEnterFullScreen), "v@:@\x00") == 0) return error.ObjcMethodRegistrationFailed;
+    if (class_add_method(delegate_class, selector_register("windowWillEnterFullScreen:"), @ptrCast(&windowWillEnterFullScreen), "v@:@\x00") == 0) return error.ObjcMethodRegistrationFailed;
+    if (class_add_method(delegate_class, selector_register("windowWillExitFullScreen:"), @ptrCast(&windowWillExitFullScreen), "v@:@\x00") == 0) return error.ObjcMethodRegistrationFailed;
+    if (class_add_method(delegate_class, selector_register("windowDidFailToExitFullScreen:"), @ptrCast(&windowDidFailToExitFullScreen), "v@:@\x00") == 0) return error.ObjcMethodRegistrationFailed;
     const delegate_alloc = send_id0(delegate_class, selector_register("alloc")) orelse return error.AppKitInitializationFailed;
     const delegate = send_id0(delegate_alloc, selector_register("init")) orelse return error.AppKitInitializationFailed;
 
@@ -1479,6 +1707,7 @@ pub fn runChild() !u8 {
     const probe_view_class = allocate_class(view_class, "SigmaProbeView\x00", 0) orelse return error.ObjcClassAllocationFailed;
     if (class_add_method(probe_view_class, selector_register("drawRect:"), @ptrCast(&drawCalibration), "v@:{CGRect={CGPoint=dd}{CGSize=dd}}\x00") == 0 or
         class_add_method(probe_view_class, selector_register("acceptsFirstResponder"), @ptrCast(&acceptsFirstResponder), "c@:\x00") == 0 or
+        class_add_method(probe_view_class, selector_register("resetCursorRects"), @ptrCast(&resetCursorRects), "v@:\x00") == 0 or
         class_add_method(probe_view_class, selector_register("keyDown:"), @ptrCast(&keyDown), "v@:@\x00") == 0 or
         class_add_method(probe_view_class, selector_register("keyUp:"), @ptrCast(&keyUp), "v@:@\x00") == 0 or
         class_add_method(probe_view_class, selector_register("hasMarkedText"), @ptrCast(&hasMarkedText), "c@:\x00") == 0 or
@@ -1519,6 +1748,8 @@ pub fn runChild() !u8 {
     const title = (objc.lookup(SendString, "objc_msgSend") orelse return error.ObjcRuntimeUnavailable)(string_class, selector_register("stringWithUTF8String:"), "FORTH/Sigma graphics\x00") orelse return error.AppKitInitializationFailed;
     _ = send_id1(window, selector_register("setTitle:"), title);
     _ = send_id1(window, selector_register("setDelegate:"), delegate);
+    // The window may become a fullscreen Space (NSWindowCollectionBehaviorFullScreenPrimary).
+    send_void1(window, selector_register("setCollectionBehavior:"), @ptrFromInt(1 << 7));
     _ = send_id1(window, selector_register("setContentView:"), view);
     _ = send_id1(app, selector_register("setDelegate:"), delegate);
     _ = send_bool1(view, selector_register("setNeedsDisplay:"), 1);
