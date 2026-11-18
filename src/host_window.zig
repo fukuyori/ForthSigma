@@ -207,6 +207,8 @@ const win32 = struct {
     var key_head: usize = 0;
     var key_count: usize = 0;
     var high_surrogate: u16 = 0;
+    /// Ctrl+C was pressed and is not yet told.
+    var interrupt_pending = false;
     /// For KEY-HELD?, by virtual key, the code plus 1 (0: none): `down`, the key the
     /// window has down now; `told`, the key poll told the core was pressed and not yet
     /// that it was released. Releases are not queued: poll tells them from the two, so
@@ -299,6 +301,11 @@ const win32 = struct {
     fn poll() ?forth.InputEvent {
         AcquireSRWLockExclusive(&lock);
         defer ReleaseSRWLockExclusive(&lock);
+        // Ctrl+C before the keys queued, and also when their queue was full.
+        if (interrupt_pending) {
+            interrupt_pending = false;
+            return .{ .window_text = interrupt_character };
+        }
         if (key_count != 0) {
             const key = keys[key_head];
             if (key.virtual_key < told.len) {
@@ -309,11 +316,12 @@ const win32 = struct {
                     told[virtual_key] = 0;
                     return .{ .window_key_release = old };
                 }
-                if (holdable(key.code)) told[virtual_key] = key.code + 1;
+                if (holdable(key)) told[virtual_key] = key.code + 1;
             }
             key_head = (key_head + 1) % keys.len;
             key_count -= 1;
-            return .{ .window_key = key.code };
+            // A character goes whole, so that the core takes all its UTF-8 bytes or none.
+            return if (key.text) .{ .window_text = @intCast(key.code) } else .{ .window_key = key.code };
         }
         // The keys told down that the window no longer has down.
         for (&told, down) |*code, now| {
@@ -335,20 +343,23 @@ const win32 = struct {
         return .{ .window_mouse = .{ .x = mouse_x, .y = mouse_y, .buttons = mouse_buttons } };
     }
 
-    /// A key pressed, and its virtual key (`no_key` for the bytes of a character after
-    /// the first).
-    const KeyEvent = struct { code: u32, virtual_key: usize };
+    /// A key pressed: a key that gives no character (`text` false, graphics_input's
+    /// code), or a character (`text`, its Unicode scalar), and its virtual key (`no_key`
+    /// when none).
+    const KeyEvent = struct { code: u32, virtual_key: usize, text: bool = false };
     const no_key = std.math.maxInt(usize);
+    /// Ctrl+C, which WM_CHAR gives as 3.
+    const interrupt_character = 3;
 
-    /// The codes KEY-HELD? tells: one byte (ASCII), and the keys from 256 up.
-    fn holdable(code: u32) bool {
-        return code < 0x80 or code >= 256;
+    /// What KEY-HELD? tells: a character of one byte (ASCII), and the keys from 256 up.
+    fn holdable(key: KeyEvent) bool {
+        return if (key.text) key.code < 0x80 else key.code >= 256;
     }
 
-    /// Called with the lock held.
-    fn pushKey(key: u32, virtual_key: usize) void {
+    /// Called with the lock held. A key or character that does not fit is dropped whole.
+    fn pushKey(key: KeyEvent) void {
         if (key_count == keys.len) return;
-        keys[(key_head + key_count) % keys.len] = .{ .code = key, .virtual_key = virtual_key };
+        keys[(key_head + key_count) % keys.len] = key;
         key_count += 1;
     }
 
@@ -383,9 +394,14 @@ const win32 = struct {
             code_point = 0x10000 + ((@as(u21, high_surrogate) - 0xD800) << 10) + (unit - 0xDC00);
         }
         high_surrogate = 0;
-        var bytes: [4]u8 = undefined;
-        const length = std.unicode.utf8Encode(code_point, &bytes) catch return;
-        for (bytes[0..length], 0..) |byte, index| pushKey(byte, if (index == 0) virtual_key else no_key);
+        // Ctrl+C is not queued: it is told first, even when the queue is full.
+        if (code_point == interrupt_character) {
+            interrupt_pending = true;
+            return;
+        }
+        if (!std.unicode.utf8ValidCodepoint(code_point)) return;
+        if (key_count == keys.len) return;
+        pushKey(.{ .code = code_point, .virtual_key = virtual_key, .text = true });
         // A character of one byte is held until its key goes up.
         if (code_point < 0x80 and virtual_key < down.len) down[virtual_key] = code_point + 1;
     }
@@ -674,7 +690,7 @@ const win32 = struct {
             wm_key_down => {
                 if (virtualKey(wparam)) |key| {
                     AcquireSRWLockExclusive(&lock);
-                    pushKey(key, wparam);
+                    pushKey(.{ .code = key, .virtual_key = wparam });
                     if (wparam < down.len) down[wparam] = key + 1;
                     ReleaseSRWLockExclusive(&lock);
                 }
@@ -855,7 +871,51 @@ const win32 = struct {
         try std.testing.expectEqual(@as(u8, 0), mouse_buttons);
         try std.testing.expectEqual(@as(u32, 0), down[65]);
     }
+
+    /// Characters are queued whole, as Unicode scalars, and Ctrl+C comes first even when
+    /// the queue is full.
+    fn testCharacters() !void {
+        const reset = struct {
+            fn all() void {
+                key_head = 0;
+                key_count = 0;
+                high_surrogate = 0;
+                interrupt_pending = false;
+                down = @splat(0);
+                told = @splat(0);
+            }
+        };
+        reset.all();
+        defer reset.all();
+        pushCharacter('A', 0x41);
+        pushCharacter(0x3042, 0x41);
+        pushCharacter(0xD83D, 0x41);
+        pushCharacter(0xDE00, 0x41);
+        // A low surrogate alone is no character.
+        pushCharacter(0xDE00, 0x41);
+        pushCharacter(interrupt_character, 0x43);
+        try std.testing.expectEqual(@as(usize, 3), key_count);
+        try std.testing.expectEqual(forth.InputEvent{ .window_text = 3 }, @This().poll().?);
+        try std.testing.expectEqual(forth.InputEvent{ .window_text = 'A' }, @This().poll().?);
+        // Another code of the same key: the A is released first.
+        try std.testing.expectEqual(forth.InputEvent{ .window_key_release = 'A' }, @This().poll().?);
+        try std.testing.expectEqual(forth.InputEvent{ .window_text = 0x3042 }, @This().poll().?);
+        try std.testing.expectEqual(forth.InputEvent{ .window_text = 0x1F600 }, @This().poll().?);
+        reset.all();
+        for (0..keys.len) |_| pushCharacter('x', no_key);
+        pushCharacter(0x3042, no_key);
+        try std.testing.expectEqual(keys.len, key_count);
+        pushCharacter(interrupt_character, no_key);
+        try std.testing.expectEqual(forth.InputEvent{ .window_text = 3 }, @This().poll().?);
+        try std.testing.expectEqual(forth.InputEvent{ .window_text = 'x' }, @This().poll().?);
+        try std.testing.expectEqual(keys.len - 1, key_count);
+        try std.testing.expectEqual(@as(u32, 'x'), keys[(key_head + key_count - 1) % keys.len].code);
+    }
 };
+
+test "the Windows window queues characters whole and tells Ctrl+C first" {
+    if (comptime builtin.os.tag == .windows) try win32.testCharacters() else return error.SkipZigTest;
+}
 
 test "the Windows window releases the mouse buttons when it loses the focus or closes" {
     if (comptime builtin.os.tag == .windows) try win32.testMouseRelease() else return error.SkipZigTest;
