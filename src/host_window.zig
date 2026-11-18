@@ -695,12 +695,16 @@ const win32 = struct {
                 return DefWindowProcW(handle, message, wparam, lparam);
             },
             // Another window took the mouse while a button was held: its release does
-            // not come here. (ReleaseCapture after the last button also sends this, with
-            // the buttons already up.)
+            // not come here. lparam is the window that takes it: this window itself when
+            // a second button calls SetCapture again, which releases nothing. (Our
+            // ReleaseCapture after the last button also sends this, with the buttons
+            // already up.)
             wm_capture_changed => {
-                AcquireSRWLockExclusive(&lock);
-                releaseButtons();
-                ReleaseSRWLockExclusive(&lock);
+                if (lparam != @as(isize, @bitCast(@intFromPtr(handle)))) {
+                    AcquireSRWLockExclusive(&lock);
+                    releaseButtons();
+                    ReleaseSRWLockExclusive(&lock);
+                }
                 return 0;
             },
             wm_char => {
