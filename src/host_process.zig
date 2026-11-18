@@ -61,6 +61,15 @@ const windows = struct {
     extern "kernel32" fn GetLastError() callconv(.winapi) u32;
     extern "kernel32" fn GetTickCount64() callconv(.winapi) u64;
     extern "kernel32" fn Sleep(u32) callconv(.winapi) void;
+    extern "kernel32" fn CreateThread(?*anyopaque, usize, *const fn (?*anyopaque) callconv(.winapi) u32, ?*anyopaque, u32, ?*u32) callconv(.winapi) ?Handle;
+    extern "kernel32" fn CreateEventW(?*anyopaque, i32, i32, ?[*:0]const u16) callconv(.winapi) ?Handle;
+    extern "kernel32" fn SetEvent(Handle) callconv(.winapi) i32;
+    extern "kernel32" fn OpenThread(u32, i32, u32) callconv(.winapi) ?Handle;
+    extern "kernel32" fn GetCurrentThreadId() callconv(.winapi) u32;
+    extern "kernel32" fn CancelSynchronousIo(Handle) callconv(.winapi) i32;
+    /// THREAD_TERMINATE, the access CancelSynchronousIo needs.
+    const thread_terminate: u32 = 0x0001;
+    const infinite: u32 = 0xFFFF_FFFF;
     extern "kernel32" fn SearchPathW(?[*:0]const u16, [*:0]const u16, ?[*:0]const u16, u32, [*]u16, ?*?[*]u16) callconv(.winapi) u32;
     extern "kernel32" fn GetFileAttributesW([*:0]const u16) callconv(.winapi) u32;
 
@@ -223,13 +232,91 @@ const windows = struct {
 
     fn writeProgram(_: ?*anyopaque, bytes: []const u8) forth.RuntimeError!void {
         const handle = to_program orelse return error.HostFailed;
+        // While automatic display looks for a display, a program that does not read
+        // must not hold SHOW past the time: a watch cancels the write then.
+        var watch: Watch = .{};
+        const bounded = budget.active();
+        if (bounded) {
+            if (budget.expired()) return error.HostFailed;
+            // Without the watch the write could not be bounded: it is not tried.
+            if (!watch.start(@intCast(@max(0, budget.remaining())))) return error.HostFailed;
+        }
+        defer watch.stop();
         var rest = bytes;
         while (rest.len != 0) {
+            if (bounded and budget.expired()) return error.HostFailed;
             var written: u32 = 0;
             const amount: u32 = @intCast(@min(rest.len, 1 << 20));
             if (WriteFile(handle, rest.ptr, amount, &written, null) == 0 or written == 0) return error.HostFailed;
             rest = rest[written..];
         }
+    }
+
+    /// Cancels the calling thread's blocked WriteFile when the display search's time
+    /// runs out: from then on every 10 ms until stop, so that a write begun just after
+    /// a cancel is cancelled too.
+    const Watch = struct {
+        target: ?Handle = null,
+        done: ?Handle = null,
+        thread: ?Handle = null,
+        milliseconds: u32 = 0,
+
+        /// False when a handle it needs could not be had.
+        fn start(self: *Watch, milliseconds: u32) bool {
+            self.target = OpenThread(thread_terminate, 0, GetCurrentThreadId()) orelse return false;
+            self.done = CreateEventW(null, 1, 0, null) orelse {
+                self.stop();
+                return false;
+            };
+            self.milliseconds = milliseconds;
+            self.thread = CreateThread(null, 0, run, self, 0, null) orelse {
+                self.stop();
+                return false;
+            };
+            return true;
+        }
+
+        fn run(parameter: ?*anyopaque) callconv(.winapi) u32 {
+            const self: *Watch = @ptrCast(@alignCast(parameter.?));
+            if (WaitForSingleObject(self.done.?, self.milliseconds) == 0) return 0;
+            while (true) {
+                _ = CancelSynchronousIo(self.target.?);
+                if (WaitForSingleObject(self.done.?, 10) == 0) return 0;
+            }
+        }
+
+        fn stop(self: *Watch) void {
+            if (self.thread) |thread| {
+                _ = SetEvent(self.done.?);
+                _ = WaitForSingleObject(thread, infinite);
+                _ = CloseHandle(thread);
+            }
+            if (self.done) |done| _ = CloseHandle(done);
+            if (self.target) |target| _ = CloseHandle(target);
+            self.* = .{};
+        }
+    };
+
+    /// A pipe nobody reads: the write blocks once its buffer is full, and the watch
+    /// cancels it after its time.
+    fn testWatch() !void {
+        const inherit = SecurityAttributes{};
+        var reader: ?Handle = null;
+        var writer: ?Handle = null;
+        if (CreatePipe(&reader, &writer, &inherit, 4096) == 0) return error.SkipZigTest;
+        defer _ = CloseHandle(reader.?);
+        defer _ = CloseHandle(writer.?);
+        const bytes = try std.testing.allocator.alloc(u8, 1 << 20);
+        defer std.testing.allocator.free(bytes);
+        @memset(bytes, 'x');
+        var watch: Watch = .{};
+        const before = GetTickCount64();
+        try std.testing.expect(watch.start(200));
+        defer watch.stop();
+        var written: u32 = 0;
+        try std.testing.expectEqual(@as(i32, 0), WriteFile(writer.?, bytes.ptr, @intCast(bytes.len), &written, null));
+        const waited = GetTickCount64() - before;
+        try std.testing.expect(waited >= 150 and waited < 5000);
     }
 
     fn readProgram(_: ?*anyopaque, buffer: []u8, wait: bool) forth.RuntimeError!usize {
@@ -612,4 +699,8 @@ test "macOS: wish is the first on the PATH but the system's, else Homebrew's or 
     // None: plain wish, which the PATH then finds.
     fake.present = &.{"/usr/bin/wish"};
     try std.testing.expectEqualStrings("wish", std.mem.span(posix.macWish("/usr/bin", &buffer, fake.exists)));
+}
+
+test "a write the display search waits for is cancelled when its time runs out" {
+    if (comptime builtin.os.tag == .windows) try windows.testWatch() else return error.SkipZigTest;
 }
