@@ -1,6 +1,43 @@
 # ForthSigma 作業引き継ぎ
 
-更新日：2026-11-17。現在状態はこの文書、実装経緯は各フェーズ記録とgit履歴を参照する。tqueの表示番号は振り直されるため、再開時はタスク名と親子関係で照合する。
+更新日：2026-11-18。現在状態はこの文書、実装経緯は各フェーズ記録とgit履歴を参照する。tqueの表示番号は振り直されるため、再開時はタスク名と親子関係で照合する。
+
+## ネイティブウィンドウの3 OS共通化とフルスクリーン（#1005 / #1013 / #1014、2026-11-18）
+
+### 現在の状態
+
+- Windowsのウィンドウを3 OS共通の契約（[決定事項G3](DECISIONS.md)、[検討書10.10](NATIVE_WINDOW_STUDY.md)）に合わせた：画面ごとのDPI対応とDPIの違う画面への移動、`WINDOW-SIZE 0 0`を作業領域にも収める、作成の待ちを最大5秒、最近傍での描画、1文字単位の入力とCtrl+Cの優先、フォーカス喪失・閉鎖時のマウスの解放、`GUI-FIELD`のIME、自動表示の探索をTkと合わせて5秒。結果は[Windowsの受け入れ記録](WINDOWS_NATIVE_VALIDATION.md)にあり、物理キーボード・マウスでの確認も利用者が済ませた。
+- `WINDOW-SIZE 0 0`の作業領域への収まりをmacOS（`visibleFrame`）とLinux（`_NET_WORKAREA`）にも入れた。計算は3 OS共通の`src/window_layout.zig`。macOSの描画矩形も同じ規則にした。
+- フルスクリーン（[決定事項G10](DECISIONS.md)）：`FULLSCREEN`・`FULLSCREEN?`・`MOUSE-CURSOR`を、Windows・Linux（EWMH）・macOS（フルスクリーンのSpace）のウィンドウとTkのウィンドウに実装した。Windowsは利用者が実際のAlt+Enterで確認済み。LinuxはWSLgのXWaylandで確認済み（[Linuxの記録](LINUX_NATIVE_VALIDATION.md)の末尾）。**macOSは一度もMacで動かしていない**（クロスビルドとCodexのレビューのみ）。
+- 組込み語`GFX-FULLSCREEN`・`GFX-FULLSCREEN?`・`GFX-MOUSE-CURSOR`を加えたため、これより前に`SAVE`した辞書イメージは`INVALID IMAGE`で拒否される。ソースから保存し直す。
+- 各変更はCodexのレビューを受けて指摘を直してからコミットした。
+
+### Macで行うこと（このWindows機ではできない）
+
+準備：リポジトリのルートで`zig build`。
+
+1. **フルスクリーン（tque「フルスクリーン受け入れ（macOS）」、#1019の子）**
+   - Sigma自身のウィンドウ：`zig-out/bin/sigma tests/scripts/check-fullscreen.fs`
+   - Tkのウィンドウ：`zig-out/bin/sigma -e "REQUIRE-GRAPHICS ALSO GRAPHICS DISPLAY-TK" tests/scripts/check-fullscreen.fs`
+   - 期待：起動するとフルスクリーンのSpaceになり、端末に`fullscreen: 1`。Control+Command+Fで元のウィンドウに戻り`fullscreen: 0`、`key ...`の行は出ない。`F`で再びフルスクリーン、`W`でウィンドウへ、Enterだけではフルスクリーンのまま（`key 13`）、`C`で画像の上のカーソルが消える（タイトルバーの上では消えない）・もう一度で戻る、`Q`で終了。
+   - あわせて：緑のボタンで入る・出ると`fullscreen:`の表示が変わること、フルスクリーン中にウィンドウを閉じると次の画像で再びフルスクリーンで開くこと、Command+Tab・Dockとの切り替え。
+   - 見つかりやすい問題の候補（未確認）：フルスクリーンで開くとき一度通常のウィンドウを経由すること、Control+Command+Fがシステムの操作に先に取られること、透明なカーソルが表示されること。
+2. **`WINDOW-SIZE 0 0`の作業領域（tque「0 0の作業領域制限の確認（macOS）」、#1023の子）**
+   - `zig-out/bin/sigma tests/scripts/check-auto-size.fs`
+   - 期待：320×200・1600×1200・4000×1000の画像が順に4秒ずつ出る。どれもウィンドウ（タイトルバーと枠を含む）がメニューバーとDockを避けて画面に収まり、円が丸いまま。
+3. 結果は[macOSの受け入れ記録](MACOS_P10_VALIDATION.md)か新しい記録に、macOSの版・機種・画面の大きさと倍率とともに書き、tqueを完了にする。
+
+### Linuxで行うこと（WSLgでは足りない）
+
+準備：リポジトリのルートで`zig build`（X11ウィンドウは既定で有効）。ウィンドウマネージャーのある実際のデスクトップで行う。
+
+1. **フルスクリーン（tque「フルスクリーン受け入れ（Linux）」、#1019の子）**：手順と期待する結果は[Linuxの記録の「物理キーボードでの確認手順」](LINUX_NATIVE_VALIDATION.md)にある。解除キーはAlt+Enter。Sigma自身のウィンドウとTkのウィンドウの両方で行う。
+2. **`WINDOW-SIZE 0 0`の作業領域（tque「0 0の作業領域制限の確認（Linux）」、#1023の子）**：`zig-out/bin/sigma tests/scripts/check-auto-size.fs`。ウィンドウ（枠を含む）がパネルを避けて画面に収まること。WSLgには`_NET_WORKAREA`がなく、仮の値を設定してしか確かめていない。最初のウィンドウはウィンドウマネージャーの枠の大きさを知らないため、枠の分だけはみ出す場合がある（記録しておく）。
+3. 結果は[Linuxの記録](LINUX_NATIVE_VALIDATION.md)に、ディストリビューションと版、X11かXWaylandか、ウィンドウマネージャーまたはデスクトップ環境の名前と版とともに書き、tqueを完了にする。
+
+### どのタスクにも入っていない未確認事項
+
+- Sigma自身のウィンドウが開けないとき、自動表示がTk・端末へ切り替わるかの実機確認（Windows）。普通の環境ではウィンドウの作成が失敗しないため、確かめる方法がない。試験用に失敗させるスイッチを加える案を利用者に示したが、加えるかは決まっていない。
 
 ## macOS AppKitウィンドウとIME（#917 / #975 / #922、2026-11-17）
 
