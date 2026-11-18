@@ -31,6 +31,9 @@ python3 tests/scripts/verify-debug-outputs.py --compare tests/scripts/debug-outp
 ホイールを出力し、入力待ちや計算中の移動・リサイズ・閉じる操作を確認できます。
 実行方法はファイル冒頭にあります。
 
+`check-auto-size.fs`は`WINDOW-SIZE 0 0`の手動確認です。3つの画像を順に表示し、
+ウィンドウが画面の作業領域に収まることを確かめます。見る点はファイル冒頭にあります。
+
 過去の測定JSONと外部レビュー原文には、記録当時のパスを残しています。
 現在の実行コマンドは`tests/scripts/`を使います。
 

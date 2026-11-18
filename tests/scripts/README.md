@@ -34,6 +34,10 @@ releases, and wheel notches of the mouse, and lets the window be moved, resized,
 closed while the program waits for input and while it computes (its header tells how to
 run it).
 
+`check-auto-size.fs` is a check by hand of `WINDOW-SIZE 0 0`: it shows three images in
+turn, and the window should fit the work area of its screen (its header tells what to
+look for).
+
 Recorded measurement JSON and original external review transcripts preserve
 paths as they were when recorded. Current commands use `tests/scripts/`.
 
