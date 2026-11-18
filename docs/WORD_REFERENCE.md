@@ -953,7 +953,7 @@ Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/
 
 ` ( c-addr1 u1 ... c-addrn un n -- ) `
 
-Play MML on the first n voices, starting together; n is 1 to 8. With n=0, stop MML and reset its chip voices, keeping SFX, MOD, samples, instruments and MML settings (FORTH/Sigma audio).
+Play MML on the first n voices, starting together; n is 1 to 8. With n=0, stop MML and reset its chip voices, keeping SFX, MOD, samples, instruments, the selected chips and MML settings (FORTH/Sigma audio).
 
 Kind: library.
 
@@ -961,13 +961,11 @@ Kind: library.
 
 Related: [The music macro language (MML)](GRAPHICS_AND_SOUND.md#the-music-macro-language-mml), [MSX BASIC](GRAPHICS_AND_SOUND.md#msx-basic).
 
-Usage example (source excerpt; consult the link for setup and expectations)
+Usage example
 
 ```forth
-0 PLAYS 0 PLAY? MOD?
+REQUIRE-AUDIO ALSO AUDIO S" C" S" E" S" G" S" C" 4 PLAYS 4 PLAY? .
 ```
-
-[Example context](../src/tests/audio_test.zig#L548)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment. Use valid logical-memory addresses, lengths and capacities; distinguish owned storage from borrowed lifetimes.
 

@@ -1311,7 +1311,7 @@ pub const entries = [_]Entry{
     .{ .name = "SND-WAVE", .stack = "( n -- )", .text = "Host primitive for SQUARE (0), PULSE (1), TRIANGLE (2), SAW (3), and NOISE (4) (FORTH/Sigma)." },
     .{ .name = "SND-DUTY", .stack = "( percent -- )", .text = "Host primitive for DUTY (FORTH/Sigma)." },
     .{ .name = "SND-ADSR", .stack = "( a d s r -- )", .text = "Host primitive for ADSR (FORTH/Sigma)." },
-    .{ .name = "PLAYS", .stack = "( c-addr1 u1 ... c-addrn un n -- )", .text = "Play MML on the first n voices, starting together; n is 1 to 8. With n=0, stop MML and reset its chip voices, keeping SFX, MOD, samples, instruments and MML settings (FORTH/Sigma audio)." },
+    .{ .name = "PLAYS", .stack = "( c-addr1 u1 ... c-addrn un n -- )", .text = "Play MML on the first n voices, starting together; n is 1 to 8. With n=0, stop MML and reset its chip voices, keeping SFX, MOD, samples, instruments, the selected chips and MML settings (FORTH/Sigma audio)." },
     .{ .name = "MSX-SOUND", .stack = "( -- )", .text = "Play PLAY on the MSX's AY-3-8910 (3 voices), as at start; the music stops (FORTH/Sigma audio)." },
     .{ .name = "ST-SOUND", .stack = "( -- )", .text = "Play PLAY on the Atari ST's YM2149 at 2 MHz (3 voices); the music stops (FORTH/Sigma audio)." },
     .{ .name = "NES-SOUND", .stack = "( -- )", .text = "Play PLAY on the NES's APU: pulse, pulse, triangle, noise; the music stops (FORTH/Sigma audio)." },

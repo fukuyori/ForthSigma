@@ -130,6 +130,7 @@
   "W^": ": REVIEW-CELL { W^ value -- } value @ . ; 42 REVIEW-CELL",
   "ROOT": "ALSO ROOT WORDS PREVIOUS",
   "AUDIO:ST": "REQUIRE-AUDIO ALSO AUDIO ST .",
+  "AUDIO:PLAYS": "REQUIRE-AUDIO ALSO AUDIO S\" C\" S\" E\" S\" G\" S\" C\" 4 PLAYS 4 PLAY? .",
   "|": ": REVIEW-LOCALS { a | temp -- } a TO temp temp . ; 7 REVIEW-LOCALS",
   "--": ": REVIEW-LOCALS { a -- result } a . ; 7 REVIEW-LOCALS",
   "{": ": REVIEW-LOCALS { a -- result } a . ; 7 REVIEW-LOCALS",

@@ -1119,7 +1119,7 @@ Whether voice n (1 to 8), or any voice for 0, still has notes to play, as MSX BA
 
 <details><summary>英語の説明（HELP・実装に基づく）</summary>
 
-Play MML on the first n voices, starting together; n is 1 to 8. With n=0, stop MML and reset its chip voices, keeping SFX, MOD, samples, instruments and MML settings (FORTH/Sigma audio).
+Play MML on the first n voices, starting together; n is 1 to 8. With n=0, stop MML and reset its chip voices, keeping SFX, MOD, samples, instruments, the selected chips and MML settings (FORTH/Sigma audio).
 
 </details>
 
@@ -1129,13 +1129,11 @@ Play MML on the first n voices, starting together; n is 1 to 8. With n=0, stop M
 
 関連説明：[MML（音楽の記述）](GRAPHICS_AND_SOUND.ja.md#mml音楽の記述), [MSX BASIC の語](GRAPHICS_AND_SOUND.ja.md#msx-basic-の語).
 
-使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
+使用例
 
 ```forth
-0 PLAYS 0 PLAY? MOD?
+REQUIRE-AUDIO ALSO AUDIO S" C" S" E" S" G" S" C" 4 PLAYS 4 PLAY? .
 ```
-
-[使用例の文脈](../src/tests/audio_test.zig#L548)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。 番地・長さ・容量は有効な論理メモリー範囲を指定します。所有領域と借用領域の寿命を区別してください。
 
