@@ -171,7 +171,7 @@
     "src/host_resize.zig": "627521c4304ca5ff00f304ff22c0a4cc710a91d585cee01d32c36cd6163b1194",
     "src/host_timezone.zig": "39c4c38377418e6f349cd8d84834fd663d5cff65cfe1194a2e11c7da2b411ccd",
     "src/host_wait.zig": "fe2f1de816178347288dc17682057cafbf7c50cc105a2dd50e40e6220702a85a",
-    "src/host_window.zig": "91e6527d86a4ade66c881705398f83bac684ed3a5fe602710f73eb256c0f72c6",
+    "src/host_window.zig": "42b1a77b6f337d9392eb15401509fc9ce11f68e8a73cc89fddf71dd96809350a",
     "src/host_window_linux.zig": "b5660313f2263d43b0600a90702f26edc9c29f75b14f9b571f021b3f3ab1dd89",
     "src/host_window_macos.zig": "951b8c9826cf79de38dd995310cb304e73607f521ddbfb9a10c0bca92dcbd170",
     "src/host_x11.c": "ff56c05c30b016c1145ad904bb30e1dcbccb0c0ddbbf30f749bfed6a840e4181",

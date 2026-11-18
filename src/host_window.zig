@@ -757,16 +757,19 @@ const win32 = struct {
         return .{ rect.right - rect.left, rect.bottom - rect.top };
     }
 
-    /// The window's size at `new_dpi` whose client area is the present one scaled by
-    /// new_dpi / the present DPI; null without the DPI functions.
-    fn dpiScaledSize(handle: Handle, new_dpi: u32) ?[2]i32 {
+    /// The window's size at `new_dpi` for `size`, the window size it is about to have
+    /// at the present DPI (it may differ from the present one while it is resized): its
+    /// client area scaled by new_dpi / the present DPI, with the frame at new_dpi. Null
+    /// without the DPI functions.
+    fn dpiScaledSize(handle: Handle, size: [2]i32, new_dpi: u32) ?[2]i32 {
         const for_window = dpi.for_window orelse return null;
         const adjust = dpi.adjust_rect orelse return null;
         const old_dpi = for_window(handle);
         if (old_dpi == 0 or new_dpi == 0) return null;
-        var client = Rect{};
-        if (GetClientRect(handle, &client) == 0) return null;
-        const scaled = window_layout.dpiScaled(.{ @intCast(@max(client.right, 0)), @intCast(@max(client.bottom, 0)) }, old_dpi, new_dpi);
+        var old_frame = Rect{};
+        if (adjust(&old_frame, overlapped_window, 0, 0, old_dpi) == 0) return null;
+        const client = [2]i32{ size[0] - (old_frame.right - old_frame.left), size[1] - (old_frame.bottom - old_frame.top) };
+        const scaled = window_layout.dpiScaled(.{ @intCast(@max(client[0], 0)), @intCast(@max(client[1], 0)) }, old_dpi, new_dpi);
         var rect = Rect{ .right = @intCast(scaled[0]), .bottom = @intCast(scaled[1]) };
         if (adjust(&rect, overlapped_window, 0, 0, new_dpi) == 0) return null;
         return .{ rect.right - rect.left, rect.bottom - rect.top };
@@ -1016,7 +1019,7 @@ const win32 = struct {
             // whole window, frame included).
             wm_get_dpi_scaled_size => {
                 const size: *[2]i32 = @ptrFromInt(@as(usize, @bitCast(lparam)));
-                const scaled = dpiScaledSize(handle.?, @truncate(wparam)) orelse return 0;
+                const scaled = dpiScaledSize(handle.?, size.*, @truncate(wparam)) orelse return 0;
                 size.* = scaled;
                 return 1;
             },
