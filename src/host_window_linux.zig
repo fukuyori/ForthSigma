@@ -33,6 +33,31 @@ var preedit_len: usize = 0;
 const Caret = struct { active: bool = false, px: i64 = 0, py: i64 = 0, height: i64 = 0 };
 var caret: Caret = .{};
 var caret_dirty = false;
+/// FULLSCREEN and MOUSE-CURSOR as asked (Alt+Enter clears fullscreen_wanted), and
+/// whether the window has yet to take them.
+var fullscreen_wanted = false;
+var fullscreen_dirty = false;
+var cursor_visible = true;
+var cursor_dirty = false;
+/// The host's window_fullscreen_fn: request 1 or 0 asks, -1 only tells.
+pub fn fullscreen(_: ?*anyopaque, request: i8) forth.RuntimeError!bool {
+    lock();
+    defer unlock();
+    if (request >= 0 and fullscreen_wanted != (request == 1)) {
+        fullscreen_wanted = request == 1;
+        fullscreen_dirty = true;
+    }
+    return fullscreen_wanted;
+}
+/// The host's window_cursor_fn.
+pub fn mouseCursor(_: ?*anyopaque, visible: bool) forth.RuntimeError!void {
+    lock();
+    defer unlock();
+    if (cursor_visible != visible) {
+        cursor_visible = visible;
+        cursor_dirty = true;
+    }
+}
 pub fn imePreedit(_: ?*anyopaque, destination: []u8) forth.RuntimeError!usize {
     lock();
     defer unlock();
@@ -269,6 +294,20 @@ const Window = struct {
     protocols: u32 = 0,
     delete: u32 = 0,
     mapped: bool = false,
+    /// The window covers its screen (EWMH fullscreen asked), and the blank cursor of
+    /// MOUSE-CURSOR, once made.
+    fullscreen_on: bool = false,
+    blank_cursor: u32 = 0,
+    /// A window opened fullscreen asks for the keys once mapped.
+    activate_pending: bool = false,
+    /// _NET_WM_STATE and _NET_WM_STATE_FULLSCREEN, and whether the window manager
+    /// changed the window's state since applyModes last read it.
+    state_atom: u32 = 0,
+    fullscreen_atom: u32 = 0,
+    state_dirty: bool = false,
+    /// The fullscreen state last asked of the window manager and not yet seen in its
+    /// _NET_WM_STATE; null when none is on the way.
+    state_asked: ?bool = null,
     frame: ?Frame = null,
     width: u32 = 1,
     height: u32 = 1,
@@ -278,6 +317,8 @@ const Window = struct {
     keysyms: [256][8]u32 = @splat(@splat(0)),
     columns: usize = 0,
     num_lock_mask: u16 = 0,
+    /// The modifier bit Alt_L or Alt_R is on (Mod1 when the map has none).
+    alt_mask: u16 = 8,
     map_dirty: bool = false,
     pending_release: ?[32]u8 = null,
     last_key: ?[32]u8 = null,
@@ -399,12 +440,15 @@ const Window = struct {
         const per_mod: usize = modifiers[1];
         if (modifiers.len < 32 + per_mod * 8) return error.Failed;
         self.num_lock_mask = 0;
+        var alt: u16 = 0;
         for (0..8) |index| for (0..per_mod) |i| {
             const hardware = modifiers[32 + index * per_mod + i];
-            for (self.keysyms[hardware]) |symbol| if (symbol == 0xff7f) {
-                self.num_lock_mask |= @as(u16, 1) << @intCast(index);
-            };
+            for (self.keysyms[hardware]) |symbol| {
+                if (symbol == 0xff7f) self.num_lock_mask |= @as(u16, 1) << @intCast(index);
+                if (index >= 3 and (symbol == 0xffe9 or symbol == 0xffea)) alt |= @as(u16, 1) << @intCast(index);
+            }
         };
+        self.alt_mask = if (alt != 0) alt else 8;
     }
     fn create(self: *Window, frame: Frame) x.Error!void {
         self.has_focus = false;
@@ -427,16 +471,36 @@ const Window = struct {
         x.put16(&body, 18, 1);
         x.put32(&body, 20, self.conn.visual);
         x.put32(&body, 24, (1 << 1) | (1 << 11));
-        x.put32(&body, 32, 1 | 2 | 4 | 8 | 16 | 32 | 64 | (1 << 15) | (1 << 17) | (1 << 21));
+        x.put32(&body, 32, 1 | 2 | 4 | 8 | 16 | 32 | 64 | (1 << 15) | (1 << 17) | (1 << 21) | (1 << 22)); // ... PropertyChange
         _ = try self.conn.request(1, self.conn.depth, body[0..36]);
         var protocol: [4]u8 = undefined;
         x.put32(&protocol, 0, self.delete);
         try self.property(self.protocols, 4, 32, &protocol);
         try self.property(39, 31, 8, "FORTH/Sigma graphics");
         try self.property(67, 31, 8, "sigma\x00Sigma\x00"); // WM_CLASS
-        const user_time = try self.conn.atom("_NET_WM_USER_TIME");
-        const zero = [_]u8{ 0, 0, 0, 0 };
-        try self.property(user_time, 6, 32, &zero); // Do not request focus on map.
+        // Fullscreen asked before the window is made: it is mapped so (EWMH).
+        self.fullscreen_on = false;
+        self.state_dirty = false;
+        self.state_asked = null;
+        self.state_atom = try self.conn.atom("_NET_WM_STATE");
+        self.fullscreen_atom = try self.conn.atom("_NET_WM_STATE_FULLSCREEN");
+        lock();
+        const open_fullscreen = fullscreen_wanted;
+        fullscreen_dirty = false;
+        cursor_dirty = true;
+        unlock();
+        self.activate_pending = open_fullscreen;
+        if (open_fullscreen) {
+            var state: [4]u8 = undefined;
+            x.put32(&state, 0, try self.conn.atom("_NET_WM_STATE_FULLSCREEN"));
+            try self.property(try self.conn.atom("_NET_WM_STATE"), 4, 32, &state);
+            self.fullscreen_on = true;
+        } else {
+            // Do not request focus on map; a fullscreen window asks for it (G10).
+            const user_time = try self.conn.atom("_NET_WM_USER_TIME");
+            const zero = [_]u8{ 0, 0, 0, 0 };
+            try self.property(user_time, 6, 32, &zero);
+        }
         var hints: [36]u8 = @splat(0);
         x.put32(&hints, 0, 1);
         x.put32(&hints, 4, 1); // InputHint, accepts input.
@@ -464,18 +528,22 @@ const Window = struct {
     }
     /// Up to `values.len` 32-bit values of a property of `window` (CARDINAL); how many
     /// came. Nothing when the property is not there or not 32-bit.
-    fn cardinals(self: *Window, window: u32, name: []const u8, first: u32, values: []u32) x.Error!usize {
+    fn cardinals(self: *Window, window: u32, name: []const u8, first: u32, values_: []u32) x.Error!usize {
+        return self.values(window, name, 6, first, values_); // CARDINAL
+    }
+    /// Up to `out.len` 32-bit values of a property of type `kind` (4 ATOM, 6 CARDINAL).
+    fn values(self: *Window, window: u32, name: []const u8, kind: u32, first: u32, out: []u32) x.Error!usize {
         const atom = try self.conn.atom(name);
         var body: [20]u8 = @splat(0);
         x.put32(&body, 0, window);
         x.put32(&body, 4, atom);
-        x.put32(&body, 8, 6); // CARDINAL
+        x.put32(&body, 8, kind);
         x.put32(&body, 12, first);
-        x.put32(&body, 16, @intCast(values.len));
+        x.put32(&body, 16, @intCast(out.len));
         const reply = try self.conn.reply(try self.conn.request(20, 0, &body));
         if (reply.len < 32 or reply[1] != 32) return 0;
-        const count = @min(x.get32(reply, 16), values.len, (reply.len - 32) / 4);
-        for (values[0..count], 0..) |*value, i| value.* = x.get32(reply, 32 + i * 4);
+        const count = @min(x.get32(reply, 16), out.len, (reply.len - 32) / 4);
+        for (out[0..count], 0..) |*value, i| value.* = x.get32(reply, 32 + i * 4);
         return count;
     }
 
@@ -530,13 +598,18 @@ const Window = struct {
         if (kind == 1) return error.Failed;
         // Servers without detectable autorepeat emit release/press pairs with the
         // same keycode and timestamp. Delay release until the next packet/tick.
+        var paired = false;
         if (self.pending_release) |release| {
             self.pending_release = null;
-            if (!(kind == 2 and release[1] == bytes[1] and x.get32(&release, 4) == x.get32(bytes, 4))) self.key(&release);
+            paired = kind == 2 and release[1] == bytes[1] and x.get32(&release, 4) == x.get32(bytes, 4);
+            if (!paired) self.key(&release);
         }
         switch (kind) {
             2 => {
+                // A press paired with the release before it is the key repeating.
+                const repeat = self.physical_down[bytes[1]] or paired;
                 self.physical_down[bytes[1]] = true;
+                if (self.leavesFullscreen(bytes, repeat)) return;
                 if (self.input_method) |*method| {
                     method.conn.deadline = self.conn.deadline;
                     self.last_key = bytes[0..32].*;
@@ -583,6 +656,12 @@ const Window = struct {
                 }
             }, // FocusOut
             12 => self.redraw = true,
+            // The window manager's state of the window: fullscreen as it really is. Left
+            // by the window manager itself, it is no longer wanted either.
+            // No request here: applyModes reads the property after the events.
+            28 => if (x.get32(bytes, 4) == self.id and self.id != 0 and x.get32(bytes, 8) == self.state_atom) {
+                self.state_dirty = true;
+            },
             17 => if (x.get32(bytes, 8) == self.id) {
                 if (self.gc != 0) {
                     var id: [4]u8 = undefined;
@@ -633,6 +712,116 @@ const Window = struct {
             34 => self.map_dirty = true,
             else => {},
         }
+    }
+    /// Alt+Enter (Return or the keypad's Enter with Mod1) pressed, not a repeat, while
+    /// fullscreen: it leaves fullscreen and is no key for INKEY.
+    fn leavesFullscreen(self: *Window, bytes: []const u8, repeat: bool) bool {
+        if (!self.fullscreen_on or repeat) return false;
+        const symbol = self.keysyms[bytes[1]][0];
+        if ((symbol != 0xff0d and symbol != 0xff8d) or x.get16(bytes, 28) & self.alt_mask == 0) return false;
+        lock();
+        fullscreen_wanted = false;
+        fullscreen_dirty = true;
+        unlock();
+        return true;
+    }
+    /// Takes FULLSCREEN and MOUSE-CURSOR as asked, once the window is mapped: EWMH's
+    /// _NET_WM_STATE to the root (the window manager covers the screen and puts the
+    /// window back), _NET_ACTIVE_WINDOW for the keys, and a blank cursor or none.
+    fn applyModes(self: *Window) x.Error!void {
+        if (self.id == 0 or !self.mapped) return;
+        lock();
+        const wanted = fullscreen_wanted;
+        const modes_dirty = fullscreen_dirty;
+        const visible = cursor_visible;
+        const cursor_changed = cursor_dirty;
+        fullscreen_dirty = false;
+        cursor_dirty = false;
+        unlock();
+        // fullscreen_on follows the window manager (PropertyNotify of _NET_WM_STATE).
+        // Left by the window manager itself, fullscreen is no longer wanted either.
+        if (self.state_dirty) {
+            self.state_dirty = false;
+            var atoms: [16]u32 = undefined;
+            const count = try self.values(self.id, "_NET_WM_STATE", 4, 0, &atoms);
+            const on = std.mem.indexOfScalar(u32, atoms[0..count], self.fullscreen_atom) != null;
+            if (self.state_asked) |asked| {
+                // What was asked has come; a state on the way to it is not the window
+                // manager's own.
+                if (asked == on) self.state_asked = null;
+            } else if (self.fullscreen_on and !on and !modes_dirty) {
+                lock();
+                if (!fullscreen_dirty) fullscreen_wanted = false;
+                unlock();
+            }
+            self.fullscreen_on = on;
+        }
+        // Compared with what was asked last when that has not come yet, so that asking
+        // the other way meanwhile is sent too.
+        if (modes_dirty and wanted != (self.state_asked orelse self.fullscreen_on)) {
+            try self.rootMessage(self.state_atom, .{ @intFromBool(wanted), self.fullscreen_atom, 0, 1, 0 });
+            self.state_asked = wanted;
+            if (wanted) self.activate_pending = true;
+        }
+        if (self.activate_pending) {
+            self.activate_pending = false;
+            try self.rootMessage(try self.conn.atom("_NET_ACTIVE_WINDOW"), .{ 1, 0, 0, 0, 0 });
+        }
+        if (cursor_changed) {
+            if (!visible and self.blank_cursor == 0) {
+                // A 1 by 1 cursor whose mask shows nothing.
+                const pixmap = try self.conn.resource();
+                var make_pixmap: [12]u8 = @splat(0);
+                x.put32(&make_pixmap, 0, pixmap);
+                x.put32(&make_pixmap, 4, self.id);
+                x.put16(&make_pixmap, 8, 1);
+                x.put16(&make_pixmap, 10, 1);
+                _ = try self.conn.request(53, 1, &make_pixmap);
+                // A new pixmap's bits are undefined: clear them, so the mask shows nothing.
+                const clear_gc = try self.conn.resource();
+                var make_gc: [16]u8 = @splat(0);
+                x.put32(&make_gc, 0, clear_gc);
+                x.put32(&make_gc, 4, pixmap);
+                x.put32(&make_gc, 8, 1 << 2); // GCForeground
+                x.put32(&make_gc, 12, 0);
+                _ = try self.conn.request(55, 0, &make_gc);
+                var fill: [16]u8 = @splat(0);
+                x.put32(&fill, 0, pixmap);
+                x.put32(&fill, 4, clear_gc);
+                x.put16(&fill, 12, 1);
+                x.put16(&fill, 14, 1);
+                _ = try self.conn.request(70, 0, &fill);
+                var free_gc: [4]u8 = undefined;
+                x.put32(&free_gc, 0, clear_gc);
+                _ = try self.conn.request(60, 0, &free_gc);
+                self.blank_cursor = try self.conn.resource();
+                var cursor: [28]u8 = @splat(0);
+                x.put32(&cursor, 0, self.blank_cursor);
+                x.put32(&cursor, 4, pixmap);
+                x.put32(&cursor, 8, pixmap);
+                _ = try self.conn.request(93, 0, &cursor);
+                var free_pixmap: [4]u8 = undefined;
+                x.put32(&free_pixmap, 0, pixmap);
+                _ = try self.conn.request(54, 0, &free_pixmap);
+            }
+            var attributes: [12]u8 = @splat(0);
+            x.put32(&attributes, 0, self.id);
+            x.put32(&attributes, 4, 1 << 14); // CWCursor
+            x.put32(&attributes, 8, if (visible) 0 else self.blank_cursor);
+            _ = try self.conn.request(2, 0, &attributes);
+        }
+    }
+    /// An EWMH client message about this window to the root window.
+    fn rootMessage(self: *Window, kind: u32, data: [5]u32) x.Error!void {
+        var body: [40]u8 = @splat(0);
+        x.put32(&body, 0, self.conn.root);
+        x.put32(&body, 4, (1 << 19) | (1 << 20)); // SubstructureNotify, SubstructureRedirect
+        body[8] = 33;
+        body[9] = 32;
+        x.put32(&body, 12, self.id);
+        x.put32(&body, 16, kind);
+        for (data, 0..) |value, i| x.put32(&body, 20 + i * 4, value);
+        _ = try self.conn.request(25, 0, &body);
     }
     fn key(self: *Window, bytes: []const u8) void {
         const hardware = bytes[1];
@@ -822,7 +1011,8 @@ fn run() x.Error!void {
             if (window.id == 0) {
                 conn.deadline = frame.deadline;
                 try window.create(frame);
-            } else if (resize) {
+            } else if (resize and !window.fullscreen_on) {
+                // A fullscreen window keeps covering its screen.
                 const size = desired(frame, window.room());
                 var body: [16]u8 = @splat(0);
                 x.put32(&body, 0, window.id);
@@ -849,6 +1039,7 @@ fn run() x.Error!void {
         try window.drainSaved();
         while (try conn.ready()) try window.event(try conn.next());
         window.pumpIme() catch window.dropIme();
+        try window.applyModes();
         if (window.pending_release) |release| {
             window.pending_release = null;
             window.key(&release);

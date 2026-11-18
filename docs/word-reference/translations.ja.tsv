@@ -1078,9 +1078,9 @@ SAVE-PNG	画像をPNGへ保存します。失敗はTHROWします。
 SHOW	選択されたウィンドウ・Tk・端末へ画像を表示します。明示選択がなければネイティブウィンドウ、デスクトップのTk、端末の順に試し、成功した表示先を実行中は記憶します。
 DISPLAY-TERMINAL	SHOWの表示先を端末にします。
 DISPLAY-WINDOW	SHOWの表示先をネイティブウィンドウにします。ホストが未対応なら-21です。
-FULLSCREEN	Sigma自身のウィンドウで画面全体を覆う（真）か、ウィンドウに戻す（偽）かを切り替えます。画面の解像度は変えません。利用者はAlt+Enterで解除できます。SHOWが表示先を決める前なら、ウィンドウはその状態で開きます。DISPLAY-TERMINALではHOST FUNCTION UNAVAILABLEです。今のところWindowsのウィンドウだけが対応し、ほかでは意図を覚えておくだけです。
+FULLSCREEN	Sigma自身のウィンドウで画面全体を覆う（真）か、ウィンドウに戻す（偽）かを切り替えます。画面の解像度は変えません。利用者はAlt+Enterで解除できます。SHOWが表示先を決める前なら、ウィンドウはその状態で開きます。DISPLAY-TERMINALではHOST FUNCTION UNAVAILABLEです。今のところWindowsとLinux（X11。ウィンドウマネージャーがEWMHのフルスクリーンに対応する場合）のウィンドウが対応し、ほかでは意図を覚えておくだけです。
 FULLSCREEN?	今フルスクリーンを求めているかを返します。利用者がキーで解除した後は偽です。
-MOUSE-CURSOR	Sigma自身のウィンドウの上でマウスカーソルを表示する（真）か隠す（偽）かを切り替えます。初めは表示します。今のところWindowsのウィンドウだけが対応します。
+MOUSE-CURSOR	Sigma自身のウィンドウの上でマウスカーソルを表示する（真）か隠す（偽）かを切り替えます。初めは表示します。今のところWindowsとLinuxのウィンドウが対応します。
 GFX-FULLSCREEN	FULLSCREENのホスト基本語です。
 GFX-FULLSCREEN?	FULLSCREEN?のホスト基本語です。
 GFX-MOUSE-CURSOR	MOUSE-CURSORのホスト基本語です。

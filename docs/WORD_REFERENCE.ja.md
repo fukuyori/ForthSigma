@@ -36015,11 +36015,11 @@ A FREE-IMAGE DRAWING
 
 ` ( flag -- ) `
 
-Sigma自身のウィンドウで画面全体を覆う（真）か、ウィンドウに戻す（偽）かを切り替えます。画面の解像度は変えません。利用者はAlt+Enterで解除できます。SHOWが表示先を決める前なら、ウィンドウはその状態で開きます。DISPLAY-TERMINALではHOST FUNCTION UNAVAILABLEです。今のところWindowsのウィンドウだけが対応し、ほかでは意図を覚えておくだけです。
+Sigma自身のウィンドウで画面全体を覆う（真）か、ウィンドウに戻す（偽）かを切り替えます。画面の解像度は変えません。利用者はAlt+Enterで解除できます。SHOWが表示先を決める前なら、ウィンドウはその状態で開きます。DISPLAY-TERMINALではHOST FUNCTION UNAVAILABLEです。今のところWindowsとLinux（X11。ウィンドウマネージャーがEWMHのフルスクリーンに対応する場合）のウィンドウが対応し、ほかでは意図を覚えておくだけです。
 
 <details><summary>英語の説明（HELP・実装に基づく）</summary>
 
-Make Sigma's own window cover its screen (true) or be a window again (false), without changing the screen's mode. The user leaves fullscreen with Alt+Enter. Asked before SHOW has chosen where to show, the window opens so; HOST FUNCTION UNAVAILABLE with DISPLAY-TERMINAL. For now only the Windows window does it; elsewhere the wish is only kept (FORTH/Sigma graphics).
+Make Sigma's own window cover its screen (true) or be a window again (false), without changing the screen's mode. The user leaves fullscreen with Alt+Enter. Asked before SHOW has chosen where to show, the window opens so; HOST FUNCTION UNAVAILABLE with DISPLAY-TERMINAL. For now the Windows window and the Linux window (X11, a window manager with EWMH fullscreen) do it; elsewhere the wish is only kept (FORTH/Sigma graphics).
 
 </details>
 
@@ -39730,11 +39730,11 @@ MOUSE
 
 ` ( flag -- ) `
 
-Sigma自身のウィンドウの上でマウスカーソルを表示する（真）か隠す（偽）かを切り替えます。初めは表示します。今のところWindowsのウィンドウだけが対応します。
+Sigma自身のウィンドウの上でマウスカーソルを表示する（真）か隠す（偽）かを切り替えます。初めは表示します。今のところWindowsとLinuxのウィンドウが対応します。
 
 <details><summary>英語の説明（HELP・実装に基づく）</summary>
 
-Show (true) or hide (false) the mouse cursor over Sigma's own window; it shows at first. For now only the Windows window does it (FORTH/Sigma graphics).
+Show (true) or hide (false) the mouse cursor over Sigma's own window; it shows at first. For now the Windows and Linux windows do it (FORTH/Sigma graphics).
 
 </details>
 
