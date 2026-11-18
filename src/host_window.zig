@@ -23,12 +23,14 @@ pub const show = if (builtin.os.tag == .windows) win32.show else if (builtin.os.
 
 /// Copies the latest native-window IME preedit, when that backend supports it.
 pub fn imePreedit(context: ?*anyopaque, destination: []u8) forth.RuntimeError!usize {
+    if (builtin.os.tag == .windows) return win32.imePreedit(context, destination);
     if (linux_enabled) return linux_window.imePreedit(context, destination);
     return macos_window.imePreedit(context, destination);
 }
 
 /// Updates the native-window input-method caret, when that backend supports it.
 pub fn imeCaret(context: ?*anyopaque, active: bool, x: i64, y: i64, height: i64) forth.RuntimeError!void {
+    if (builtin.os.tag == .windows) return win32.imeCaret(context, active, x, y, height);
     if (linux_enabled) return linux_window.imeCaret(context, active, x, y, height);
     return macos_window.imeCaret(context, active, x, y, height);
 }
@@ -132,6 +134,18 @@ const win32 = struct {
     extern "kernel32" fn GetTickCount64() callconv(.winapi) u64;
     extern "kernel32" fn ResetEvent(Handle) callconv(.winapi) i32;
     extern "user32" fn DestroyWindow(?Handle) callconv(.winapi) i32;
+    extern "imm32" fn ImmGetContext(?Handle) callconv(.winapi) ?Handle;
+    extern "imm32" fn ImmReleaseContext(?Handle, ?Handle) callconv(.winapi) i32;
+    extern "imm32" fn ImmGetCompositionStringW(?Handle, u32, ?*anyopaque, u32) callconv(.winapi) i32;
+    extern "imm32" fn ImmSetCompositionWindow(?Handle, *const CompositionForm) callconv(.winapi) i32;
+    extern "imm32" fn ImmSetCandidateWindow(?Handle, *const CandidateForm) callconv(.winapi) i32;
+
+    const CompositionForm = extern struct { style: u32, point: Point, area: Rect = .{} };
+    const CandidateForm = extern struct { index: u32 = 0, style: u32, point: Point, area: Rect = .{} };
+    const cfs_point: u32 = 0x0002;
+    const cfs_exclude: u32 = 0x0080;
+    const gcs_composition: u32 = 0x0008;
+    const gcs_result: u32 = 0x0800;
 
     const MonitorInfo = extern struct { size: u32 = @sizeOf(MonitorInfo), monitor: Rect = .{}, work: Rect = .{}, flags: u32 = 0 };
 
@@ -157,6 +171,14 @@ const win32 = struct {
     const wm_erase_background = 0x0014;
     const wm_kill_focus = 0x0008;
     const wm_capture_changed = 0x0215;
+    const wm_ime_start_composition = 0x010D;
+    const wm_ime_end_composition = 0x010E;
+    const wm_ime_composition = 0x010F;
+    const wm_ime_set_context = 0x0281;
+    const isc_show_composition_window: usize = 0x8000_0000;
+    const wm_size = 0x0005;
+    /// Sent by imeCaret: the focused GUI-FIELD's caret moved, or the field was left.
+    const wm_ime_caret = 0x8001;
     const wm_key_down = 0x0100;
     const wm_key_up = 0x0101;
     const wm_char = 0x0102;
@@ -202,13 +224,24 @@ const win32 = struct {
     /// The image's size changed since the window last fitted it.
     var resize_pending = false;
     /// Keys pressed in the window and not yet read (later ones are dropped when it is
-    /// full), and the mouse: the pixel of the image under it and its buttons.
-    var keys: [64]KeyEvent = undefined;
+    /// full), and the mouse: the pixel of the image under it and its buttons. A text the
+    /// IME commits comes all at once; INKEY takes it from here a key at a time, so the
+    /// queue holds that much.
+    var keys: [1024]KeyEvent = undefined;
     var key_head: usize = 0;
     var key_count: usize = 0;
     var high_surrogate: u16 = 0;
     /// Ctrl+C was pressed and is not yet told.
     var interrupt_pending = false;
+    /// The focused GUI-FIELD's caret, in image pixels (imeCaret), and the text the IME
+    /// is converting there, as UTF-8 (imePreedit). Without a focused field the IME
+    /// shows its own composition window, as before.
+    var ime_caret: struct { active: bool = false, x: i64 = 0, y: i64 = 0, height: i64 = 0 } = .{};
+    /// Counts the changes of ime_caret.active, so that a composition read for one
+    /// field is not stored after that field was left.
+    var ime_generation: u32 = 0;
+    var preedit: [512]u8 = undefined;
+    var preedit_len: usize = 0;
     /// For KEY-HELD?, by virtual key, the code plus 1 (0: none): `down`, the key the
     /// window has down now; `told`, the key poll told the core was pressed and not yet
     /// that it was released. Releases are not queued: poll tells them from the two, so
@@ -488,6 +521,7 @@ const win32 = struct {
         mouse_y = -1;
         mouse_changed = true;
         wheel_rest = 0;
+        preedit_len = 0;
     }
 
     /// WM_MOUSEWHEEL: the high word of wparam is the distance, 120 a notch, above 0 up. A
@@ -546,6 +580,140 @@ const win32 = struct {
                 return error.HostFailed;
             },
         }
+    }
+
+    /// GFX-IME-PREEDIT: the text being converted in the focused GUI-FIELD, cut at a
+    /// character's start to fit.
+    fn imePreedit(_: ?*anyopaque, destination: []u8) forth.RuntimeError!usize {
+        AcquireSRWLockExclusive(&lock);
+        defer ReleaseSRWLockExclusive(&lock);
+        var n = @min(preedit_len, destination.len);
+        while (n > 0 and n < preedit_len and preedit[n] & 0xc0 == 0x80) n -= 1;
+        @memcpy(destination[0..n], preedit[0..n]);
+        return n;
+    }
+
+    /// GFX-IME-CARET, which GUI-FIELD calls each frame: the window moves the IME's
+    /// windows only when the caret changed.
+    fn imeCaret(_: ?*anyopaque, active: bool, x: i64, y: i64, caret_height: i64) forth.RuntimeError!void {
+        AcquireSRWLockExclusive(&lock);
+        const changed = ime_caret.active != active or ime_caret.x != x or ime_caret.y != y or ime_caret.height != caret_height;
+        if (changed) {
+            if (ime_caret.active != active) ime_generation +%= 1;
+            ime_caret = .{ .active = active, .x = x, .y = y, .height = caret_height };
+            if (!active) preedit_len = 0;
+        }
+        const current = window;
+        ReleaseSRWLockExclusive(&lock);
+        if (changed) if (current) |handle| {
+            _ = PostMessageW(handle, wm_ime_caret, 0, 0);
+        };
+    }
+
+    /// UTF-16 as UTF-8 into `destination`, as much as fits by whole characters. An
+    /// unpaired surrogate is left out.
+    fn utf16ToUtf8(destination: []u8, units: []const u16) usize {
+        var length: usize = 0;
+        var index: usize = 0;
+        while (index < units.len) : (index += 1) {
+            var code_point: u21 = units[index];
+            if (code_point >= 0xD800 and code_point < 0xDC00) {
+                if (index + 1 >= units.len or units[index + 1] < 0xDC00 or units[index + 1] >= 0xE000) continue;
+                index += 1;
+                code_point = 0x10000 + ((code_point - 0xD800) << 10) + (units[index] - 0xDC00);
+            } else if (code_point >= 0xDC00 and code_point < 0xE000) continue;
+            var bytes: [4]u8 = undefined;
+            const n = std.unicode.utf8Encode(code_point, &bytes) catch continue;
+            if (length + n > destination.len) break;
+            @memcpy(destination[length..][0..n], bytes[0..n]);
+            length += n;
+        }
+        return length;
+    }
+
+    /// One of the IME's strings (gcs_composition or gcs_result) as UTF-16, at most
+    /// `units`; its length.
+    fn imeString(context: ?Handle, which: u32, units: []u16) usize {
+        const bytes = ImmGetCompositionStringW(context, which, units.ptr, @intCast(units.len * 2));
+        return if (bytes <= 0) 0 else @min(@as(usize, @intCast(bytes)) / 2, units.len);
+    }
+
+    /// Puts the IME's composition and candidate windows at the focused field's caret,
+    /// from image pixels to the client area by window_layout's rule.
+    fn placeIme(handle: Handle) void {
+        var client = Rect{};
+        _ = GetClientRect(handle, &client);
+        AcquireSRWLockExclusive(&lock);
+        const caret = ime_caret;
+        const fit = fitted(client.right, client.bottom);
+        const iw: i64 = @max(width, 1);
+        const ih: i64 = @max(height, 1);
+        ReleaseSRWLockExclusive(&lock);
+        if (!caret.active) return;
+        const limit: i64 = 1 << 24;
+        const x: i32 = @intCast(std.math.clamp(fit.x + @divFloor(std.math.clamp(caret.x, -limit, limit) * fit.w, iw), -limit, limit));
+        const y: i32 = @intCast(std.math.clamp(fit.y + @divFloor(std.math.clamp(caret.y, -limit, limit) * fit.h, ih), -limit, limit));
+        const h: i32 = @intCast(std.math.clamp(@divFloor(std.math.clamp(caret.height, 1, limit) * fit.h, ih), 1, limit));
+        const context = ImmGetContext(handle) orelse return;
+        defer _ = ImmReleaseContext(handle, context);
+        _ = ImmSetCompositionWindow(context, &.{ .style = cfs_point, .point = .{ .x = x, .y = y } });
+        // The candidates go below the caret, not over it.
+        _ = ImmSetCandidateWindow(context, &.{ .style = cfs_exclude, .point = .{ .x = x, .y = y + h }, .area = .{ .left = x, .top = y, .right = x + 1, .bottom = y + h } });
+    }
+
+    /// WM_IME_COMPOSITION in a focused GUI-FIELD: the text being converted goes to
+    /// imePreedit, and the text committed to INKEY as characters typed.
+    /// `generation` is ime_generation when the window saw the field focused: a text
+    /// being converted read after the field was left is not stored. Without either
+    /// flag, the composition was cancelled.
+    fn composition(handle: Handle, flags: isize, generation: u32) void {
+        if (flags & (gcs_result | gcs_composition) == 0) {
+            AcquireSRWLockExclusive(&lock);
+            preedit_len = 0;
+            ReleaseSRWLockExclusive(&lock);
+            return;
+        }
+        const context = ImmGetContext(handle) orelse return;
+        defer _ = ImmReleaseContext(handle, context);
+        if (flags & gcs_result != 0) committed(context);
+        if (flags & gcs_composition != 0) {
+            // More than the field can show is not needed.
+            var units: [512]u16 = undefined;
+            const count = imeString(context, gcs_composition, &units);
+            AcquireSRWLockExclusive(&lock);
+            if (ime_caret.active and ime_generation == generation) preedit_len = utf16ToUtf8(&preedit, units[0..count]);
+            ReleaseSRWLockExclusive(&lock);
+        }
+    }
+
+    /// The text committed, whole, however long, as characters typed for INKEY.
+    fn committed(context: Handle) void {
+        const bytes = ImmGetCompositionStringW(context, gcs_result, null, 0);
+        var small: [256]u16 = undefined;
+        var units: []u16 = &small;
+        var allocated: ?[]u16 = null;
+        if (bytes > 0 and @as(usize, @intCast(bytes)) / 2 > small.len) {
+            // Without memory for it, the start of the text is taken.
+            allocated = std.heap.c_allocator.alloc(u16, @as(usize, @intCast(bytes)) / 2) catch null;
+            if (allocated) |buffer| units = buffer;
+        }
+        defer if (allocated) |buffer| std.heap.c_allocator.free(buffer);
+        const count = imeString(context, gcs_result, units);
+        AcquireSRWLockExclusive(&lock);
+        defer ReleaseSRWLockExclusive(&lock);
+        for (units[0..count]) |unit| pushCharacter(unit, no_key);
+        preedit_len = 0;
+    }
+
+    /// Whether a GUI-FIELD is focused, and ime_generation then.
+    fn imeState() struct { active: bool, generation: u32 } {
+        AcquireSRWLockExclusive(&lock);
+        defer ReleaseSRWLockExclusive(&lock);
+        return .{ .active = ime_caret.active, .generation = ime_generation };
+    }
+
+    fn imeActive() bool {
+        return imeState().active;
     }
 
     fn remainingMs(deadline: u64) u32 {
@@ -729,6 +897,7 @@ const win32 = struct {
                 AcquireSRWLockExclusive(&lock);
                 down = @splat(0);
                 releaseButtons();
+                preedit_len = 0;
                 ReleaseSRWLockExclusive(&lock);
                 return DefWindowProcW(handle, message, wparam, lparam);
             },
@@ -743,6 +912,42 @@ const win32 = struct {
                     releaseButtons();
                     ReleaseSRWLockExclusive(&lock);
                 }
+                return 0;
+            },
+            // In a focused GUI-FIELD the field shows the text being converted itself:
+            // the IME's own composition window is not opened (DefWindowProcW is not
+            // called). Elsewhere the IME works as before.
+            wm_ime_start_composition => {
+                if (!imeActive()) return DefWindowProcW(handle, message, wparam, lparam);
+                placeIme(handle.?);
+                return 0;
+            },
+            wm_ime_composition => {
+                const state = imeState();
+                if (!state.active) return DefWindowProcW(handle, message, wparam, lparam);
+                composition(handle.?, lparam, state.generation);
+                return 0;
+            },
+            // The IME's own composition window is not wanted in a focused field.
+            wm_ime_set_context => {
+                const bits: usize = @bitCast(lparam);
+                const shown = if (wparam != 0 and imeActive()) bits & ~isc_show_composition_window else bits;
+                return DefWindowProcW(handle, message, wparam, @bitCast(shown));
+            },
+            // The caret's place on the screen moves with the window's size.
+            wm_size => {
+                if (imeActive()) placeIme(handle.?);
+                return DefWindowProcW(handle, message, wparam, lparam);
+            },
+            wm_ime_end_composition => {
+                AcquireSRWLockExclusive(&lock);
+                preedit_len = 0;
+                ReleaseSRWLockExclusive(&lock);
+                if (!imeActive()) return DefWindowProcW(handle, message, wparam, lparam);
+                return 0;
+            },
+            wm_ime_caret => {
+                placeIme(handle.?);
                 return 0;
             },
             wm_char => {
@@ -777,6 +982,8 @@ const win32 = struct {
                 if (resize) {
                     _ = SetWindowPos(handle, null, 0, 0, size[0], size[1], no_move | no_z_order | no_activate);
                     keepInWorkArea(handle.?);
+                    // The image's size changed: the caret's place on the screen too.
+                    if (imeActive()) placeIme(handle.?);
                 }
                 _ = InvalidateRect(handle, null, 0);
                 return 0;
@@ -933,7 +1140,42 @@ const win32 = struct {
         try std.testing.expectEqual(keys.len - 1, key_count);
         try std.testing.expectEqual(@as(u32, 'x'), keys[(key_head + key_count - 1) % keys.len].code);
     }
+
+    /// The IME's text as UTF-8, cut by whole characters, and the caret that clears it.
+    fn testIme() !void {
+        var out: [8]u8 = undefined;
+        // あ, 😀 (a surrogate pair), and a lone low surrogate left out.
+        const units = [_]u16{ 0x3042, 0xD83D, 0xDE00, 0xDC00, 'a' };
+        try std.testing.expectEqualStrings("\u{3042}\u{1F600}a", out[0..utf16ToUtf8(&out, &units)]);
+        // Only whole characters fit: あ (3 bytes) and not the 4 of 😀 in 6.
+        try std.testing.expectEqualStrings("\u{3042}", out[0..utf16ToUtf8(out[0..6], &units)]);
+        // A high surrogate at the end is left out.
+        try std.testing.expectEqual(@as(usize, 0), utf16ToUtf8(&out, &.{0xD83D}));
+        defer {
+            ime_caret = .{};
+            preedit_len = 0;
+        }
+        preedit_len = utf16ToUtf8(&preedit, &units);
+        var two: [4]u8 = undefined;
+        // A copy cut inside 😀 keeps あ only.
+        try std.testing.expectEqual(@as(usize, 3), try @This().imePreedit(null, &two));
+        const generation = ime_generation;
+        try @This().imeCaret(null, true, 1, 2, 8);
+        try std.testing.expect(ime_caret.active);
+        try std.testing.expect(preedit_len != 0);
+        try std.testing.expectEqual(generation +% 1, ime_generation);
+        // A caret that moves in the same field is not another field.
+        try @This().imeCaret(null, true, 5, 2, 8);
+        try std.testing.expectEqual(generation +% 1, ime_generation);
+        try @This().imeCaret(null, false, 1, 2, 8);
+        try std.testing.expectEqual(@as(usize, 0), preedit_len);
+        try std.testing.expectEqual(generation +% 2, ime_generation);
+    }
 };
+
+test "the Windows window gives the IME's text as UTF-8 for GUI-FIELD" {
+    if (comptime builtin.os.tag == .windows) try win32.testIme() else return error.SkipZigTest;
+}
 
 test "the Windows window queues characters whole and tells Ctrl+C first" {
     if (comptime builtin.os.tag == .windows) try win32.testCharacters() else return error.SkipZigTest;

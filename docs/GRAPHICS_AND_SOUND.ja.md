@@ -239,7 +239,7 @@ LinuxとmacOSでは、文字でないキーは端末からエスケープシー�
 | `GUI-BEGIN`、`GUI-END` | ( -- ) | フレームの GUI を始める、終える。`GUI-END` は開いているプルダウンメニューをほかの部品の上に描きます。 |
 | `GUI-BUTTON` | ( c-addr u x y -- flag ) | ボタン。クリックされたとき、またはフォーカスがあって Enter か Space が押されたときに真。大きさは `GUI-BUTTON-SIZE` ( c-addr u -- w h ) で分かります。 |
 | `GUI-CHECK` | ( addr c-addr u x y -- flag ) | ラベル付きのチェックボックス。ボックスかラベルのクリック、または Space か Enter で addr のフラグが変わり、変わったときに真。 |
-| `GUI-FIELD` | ( buf room len-addr x y w -- flag ) | 幅 w 画素の1行の入力欄。buf の文字列（room バイトまで、長さは len-addr）を編集します。`INKEY` が返す文字のバイト（UTF-8 も）、Backspace、Delete、左右の矢印、Home、End が使えます。Tkのウィンドウでは、フォーカスがある間、IMEで日本語を変換して入力できます。変換中の文字はカーソルの位置に下線つきで表示され、確定した文字だけが入ります。Enter が押されたときに真。 |
+| `GUI-FIELD` | ( buf room len-addr x y w -- flag ) | 幅 w 画素の1行の入力欄。buf の文字列（room バイトまで、長さは len-addr）を編集します。`INKEY` が返す文字のバイト（UTF-8 も）、Backspace、Delete、左右の矢印、Home、End が使えます。TkのウィンドウとSigma自身のウィンドウ（Windows、macOS、X11またはXWaylandのLinux）では、フォーカスがある間、IMEで日本語を変換して入力できます。変換中の文字はカーソルの位置に下線つきで表示され、候補ウィンドウはカーソルに付いて動き、確定した文字だけが入ります。Enter が押されたときに真。 |
 | `GUI-LIST` | ( c-addr u var x y w -- flag ) | 項目 "a\|b\|c" を縦に並べた、幅 w 画素のリスト（0 なら最も広い項目に合わせます）。var のセルが選んでいる項目で、マウスを項目の上に置くか、フォーカスがあるときの上下の矢印で選びます。項目をクリックしたとき、または Enter か Space で真。 |
 | `GUI-LIST-XT` | ( xt n var x y w -- flag ) | 同じリストを、xt ( i -- c-addr u ) が返す n 個の項目で作ります。項目はプログラムのどのデータ（文字列の配列、ディレクトリの一覧など）にあってもよく、\| を含めることもできます。項目がなければ何も描きません。 |
 | `GUI-MENUBAR` | ( c-addr u -- n ) | 項目 "a\|b\|c" の見出しを並べた、上端のバー。見出しをクリックするとそのメニューが開きます（もう一度で閉じる）。開いている間は、ほかの見出しの上にマウスを置くか、左右の矢印でそのメニューに移り、Esc で閉じます。開いているメニューの番号を返し、なければ -1。`GUI-BEGIN` のすぐ後に呼びます。 |
@@ -290,7 +290,7 @@ VARIABLE SOUND-ON   CREATE NAME 16 ALLOT  VARIABLE NAME-LEN
 | `GUI-SELECTION` | リストやメニューで選んでいる項目 | 3A73D9 |
 | `GUI-SELECTED-TEXT` | 選んでいる項目の文字 | FFFFFF |
 
-`GUI-BORDER-WIDTH` ( n -- ) と `GUI-FOCUS-WIDTH` ( n -- ) で、枠とフォーカスの枠の太さを0〜8画素で設定します（初めは1）。ほかの値は `NUMBER ERROR !` です。文字は `TEXT` の字体と倍率を使い、部品の大きさは `TEXT-HEIGHT` に合わせます。入力欄は、カーソルが見える位置から文字を表示します。日本語入力（IME）での動作は試していません。ほかのグラフィックスの語と同じく、GUI は辞書の外に何も持たず、設定とプログラムの変数の値は辞書と一緒に保存されます。
+`GUI-BORDER-WIDTH` ( n -- ) と `GUI-FOCUS-WIDTH` ( n -- ) で、枠とフォーカスの枠の太さを0〜8画素で設定します（初めは1）。ほかの値は `NUMBER ERROR !` です。文字は `TEXT` の字体と倍率を使い、部品の大きさは `TEXT-HEIGHT` に合わせます。入力欄は、カーソルが見える位置から文字を表示します。ほかのグラフィックスの語と同じく、GUI は辞書の外に何も持たず、設定とプログラムの変数の値は辞書と一緒に保存されます。
 
 ### スプライトとタイルマップ
 
