@@ -28738,6 +28738,8 @@ Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
 
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
+
 Usage example
 
 ```forth

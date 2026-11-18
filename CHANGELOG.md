@@ -2,12 +2,17 @@
 
 ## [Unreleased]
 
+## [0.12.0] - 2026-11-18
+
 ### Added
 
+- Linux has a native graphics window on local X11/XWayland, enabled by default; `-Dx11=false` omits it. It supports keyboard and mouse input and XIM text conversion. Direct Wayland and native TCP/SSH connections are unsupported.
+- Static Linux musl builds read raw gamepad state through evdev, subject to device permissions. These devices are not mapped: `GAMEPAD-MAP` is unsupported and they do not drive GUI navigation.
+- Added `examples/boing-hd.fs` (960 by 600) and `examples/boing-hfr.fs` (1920 by 1200, with a 120 fps pacing target), with synthesized impacts and elapsed-time motion in HFR.
 - macOS has a graphics window of its own (AppKit), as Windows has: `SHOW` uses it when nothing else is chosen, and `DISPLAY-WINDOW` chooses it. It needs no Tcl/Tk. The window can be moved, resized, and closed while the program waits for input or computes; a closed window is opened again by the next `SHOW`. The first `SHOW` brings the window to the front and gives it the keys; later ones do not.
 - `DISPLAY-AUTO` returns `SHOW` to choosing by itself: Sigma's own window where the host has one, else the Tk window on a desktop, else the terminal. The first that works is kept while the program runs, and a saved dictionary keeps only that the choice is automatic. A window that cannot start falls through to the next; `DISPLAY-WINDOW` and `DISPLAY-TK` do not fall back.
 - On macOS, the input method (IME) works in a `GUI-FIELD` of Sigma's own window as in the Tk window: the text being converted shows underlined at the cursor, the candidate window follows the cursor, and only the committed text is taken.
-- `FULLSCREEN ( flag -- )` makes Sigma's own window cover its screen without changing the screen's mode, and `FULLSCREEN?` tells whether it is wanted; the user leaves it with Alt+Enter. `MOUSE-CURSOR ( flag -- )` shows or hides the mouse cursor over the window. The windows of Windows, macOS (a fullscreen Space; Control+Command+F leaves it) and Linux (EWMH fullscreen) do them, and the Tk window does `FULLSCREEN`.
+- `FULLSCREEN ( flag -- )` makes Sigma's own window cover its screen without changing the screen's mode, and `FULLSCREEN?` tells whether it is wanted; the user leaves it with Alt+Enter. `MOUSE-CURSOR ( flag -- )` shows or hides the mouse cursor over the window. The windows of Windows, macOS (a fullscreen Space; Control+Command+F leaves it) and Linux (EWMH fullscreen) do them, and the Tk window supports `FULLSCREEN`, `FULLSCREEN?`, and `MOUSE-CURSOR`.
 - On Windows too, the IME works in a `GUI-FIELD` of Sigma's own window in the same way. Outside a focused field, the IME shows its own composition window as before. The window keeps up to 1024 characters typed or committed and not yet read.
 
 - `0 PLAYS` stops MML and resets its chip voices without interrupting `SFX` or `PLAY-MOD`. Samples, instruments, selected chips and MML settings are kept, and the stop has taken effect when the word returns.
@@ -24,6 +29,11 @@
 - On Linux too, `WINDOW-SIZE 0 0` fits the window into the work area of the current desktop (`_NET_WORKAREA`, or the screen when the window manager does not give one), less the frame the window manager gives the window once it is shown (`_NET_FRAME_EXTENTS`; the first window does not know it yet).
 - On macOS too, `WINDOW-SIZE 0 0` fits the window into the visible frame of its screen (without the menu bar and the Dock), less the window's title bar and frame.
 - Built-in words are added for the above (`GFX-AUTO-DISPLAY`, `GFX-AUTO-DISPLAY!`, `GFX-IME-PREEDIT`, `GFX-IME-CARET`, `GFX-FULLSCREEN`, `GFX-FULLSCREEN?`, `GFX-MOUSE-CURSOR`). Added built-in words change the dictionary ABI; recreate dictionary images.
+
+### Fixed
+
+- On Linux, accented letters in C059 and similar fonts no longer lose their tops when rendered by `SYSTEM-FONT`; the correction keeps ordinary Latin and CJK fonts at their existing size.
+- Linux and macOS native windows preserve their previous size and position when leaving fullscreen. Linux automatic sizing uses the current monitor's work area; macOS automatic sizing also keeps the resulting window within its visible screen area.
 
 ## [0.11.2] - 2026-11-17
 
@@ -226,6 +236,7 @@
 - Updated the product version and startup examples to 0.6.1.
 - Added an optional SDL3 host backend. Builds can still run when SDL3 is unavailable; gamepad polling then reports that the backend is unavailable.
 
+[0.12.0]: https://github.com/fukuyori/ForthSigma/releases/tag/v0.12.0
 [0.11.2]: https://github.com/fukuyori/ForthSigma/releases/tag/v0.11.2
 [0.11.1]: https://github.com/fukuyori/ForthSigma/releases/tag/v0.11.1
 [0.11.0]: https://github.com/fukuyori/ForthSigma/releases/tag/v0.11.0

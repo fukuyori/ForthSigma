@@ -30,8 +30,8 @@
 - [ ] `scripts/build-installer.ps1` で作ったインストーラー名と製品情報を確認する。
 - [ ] 署名付き配布物を作る場合は `CODESIGN_CERT` を確認し、`scripts/build-installer.ps1 -Sign` を使う。署名にはタイムスタンプが付く（既定のサーバーは `http://timestamp.digicert.com`、`CODESIGN_TIMESTAMP_URL` で変更できる）。署名した実行ファイルの `Get-AuthenticodeSignature` で `TimeStamperCertificate` があることを確かめる。
 - [ ] 公開前にREADME、変更履歴、互換性情報に版固有の変更があれば反映する。
-- [ ] `v` に `VERSION` の値を付けたタグ（例: `v0.1.0`）を作ってプッシュする。タグのプッシュでは GitHub Actions は動かない。各OSのZIPが要るときは、GitHub Actions の Release を手で起動し（Actions > Release > Run workflow）、実行の成果物（artifact）から取る。タグで起動したときは、タグと `VERSION` が違うとビルドは失敗する。
-- [ ] リリースは手で作る（`gh release create` など。CIはリリースを作らない）。Windows版2つ（`sigma-版番号-windows-x86_64.zip` と浮動小数点の語を除いた `sigma-版番号-windows-x86_64-nofloat.zip`）は、`scripts/build-zip.ps1 -Sign` で作った署名付きのZIPを添付する（CIの成果物のWindows版は署名なし）。`build-zip.ps1` も `VERSION` の値を使い、`-Version` で上書きできる。
+- [ ] `v` に `VERSION` の値を付けたタグ（例: `v0.1.0`）を作ってプッシュする。タグのプッシュで GitHub Actions の Release が動く。手動起動（Actions > Release > Run workflow）もでき、各OSのZIPは実行の成果物（artifact）から取る。タグで起動したときは、タグと `VERSION` が違うとビルドは失敗する。
+- [ ] VERSIONと一致するタグの全ジョブ成功後、CIがGitHub Releaseを作り、Linux x86_64向けの2つのZIPとSHA256ファイルを公開する。ほかの対象向けZIPはActionsのartifactに残る。Windows版2つ（`sigma-版番号-windows-x86_64.zip` と浮動小数点の語を除いた `sigma-版番号-windows-x86_64-nofloat.zip`）は、`scripts/build-zip.ps1 -Sign` で作った署名付きのZIPを添付する（CIの成果物のWindows版は署名なし）。`build-zip.ps1` も `VERSION` の値を使い、`-Version` で上書きできる。
 - [ ] macOS では `scripts/sign-and-notarize-macos.sh` で、署名と公証を済ませたユニバーサルの PKG（`dist/pkg/sigma-版番号-macos-universal.pkg`）を作り、リリースに加える。このスクリプトも `VERSION` の値を使い、`--version` で上書きできる。最後に Gatekeeper の確認（`spctl`）で `Notarized Developer ID` と出ることを確かめる。
 - [ ] 更新後のソースと生成物の版番号が一致することを確認する（引数なしで起動したときの1行目を含む）。
 

@@ -35560,6 +35560,8 @@ Clear the explicit and remembered display choices, so SHOW chooses automatically
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
 
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
+
 使用例
 
 ```forth
