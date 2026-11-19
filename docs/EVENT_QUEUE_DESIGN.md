@@ -1,6 +1,6 @@
 # 638 イベントキューの詳細設計
 
-2026-11-19。採用した設計。1074仕様→1075実装→1076 Windows/Linux→1077 Mac実機。設計・実装レビューを反映し、1074〜1076のWindows/Linux受け入れまで完了。638はauto75%、Mac実機1077を残す。
+2026-11-19。採用した設計。1074仕様→1075実装→1076 Windows/Linux→1077 Mac実機。設計・実装レビューを反映し、1074〜1077および638は完了。1077の実機環境・結果・境界は[実装記録](CORE_EXTENSION_IMPLEMENTATION.md)を参照。
 
 ## 配置と公開API
 
@@ -68,7 +68,7 @@ STDINを明示したKEY-FILE/READ-FILE/READ-LINE/SLURP/INCLUDEも、Decoderの�
 
 ## Mac実機1077の手順
 
-同じコードでOS/Zig版・コミットと作業差分を記録し、`zig build test --summary all`、`zig build --prefix .work/638-native --summary all`、`python3 tests/scripts/verify-event-queue.py .work/638-native/bin/sigma`、637の`verify-terminal-modes.py --sigma .work/638-native/bin/sigma`とNSの`verify-p05b-ns.py --sigma .work/638-native/bin/sigma --sigma-only`を実行する。`verify-extension-matrix.py`、`scripts/word-reference.py --check --sigma .work/638-native/bin/sigma`、`scripts/check-docs.py`も実行する。成功・skip数とログを実装記録に追記し、1077と638の完了を確定する。クロスコンパイルだけでは実機完了にしない。
+Mac実機1077の受け入れ結果は[実装記録](CORE_EXTENSION_IMPLEMENTATION.md)に記録した。再実行手順として、同一コードでOS/Zig版・コミットと作業差分を記録し、`zig build test --summary all`、`zig build --prefix .work/638-native --summary all`、`python3 tests/scripts/verify-event-queue.py .work/638-native/bin/sigma`、637の`verify-terminal-modes.py --sigma .work/638-native/bin/sigma`とNSの`verify-p05b-ns.py --sigma .work/638-native/bin/sigma --sigma-only`を実行する。`verify-extension-matrix.py`、`scripts/word-reference.py --check --sigma .work/638-native/bin/sigma`、`scripts/check-docs.py`も実行する。クロスコンパイルだけでは実機完了にしない。
 
 - [最終レビュー](reviews/638-final-claude-review.md)
 - [最終指摘の再レビュー](reviews/638-followup-claude-review.md)

@@ -2,7 +2,7 @@
 
 ## 2026-11-19：638 イベントキュー（1074〜1077）
 
-基点は`e66c701 Record Mac acceptance for terminal controls`。今回のコード・設計・レビュー記録は、この文書と同じコミットに含む。1074〜1076は完了、638はauto75%、1077 Mac実機は未着手。
+基点は`e66c701 Record Mac acceptance for terminal controls`。対象コミット`7e2b9e9`をmacOS 27.2.1 Build 26B131（Darwin 27.2.0、arm64）、Zig 0.17.1、Python 3.15.2で実機ビルド・実行した。開始時の作業ツリーはクリーン。tqueの1074〜1077と638は完了。
 
 EXTENSIONへEKEY-WAIT、EKEY-MOUSE、K-MOUSE/K-PASTE-BEGIN/K-PASTE-ENDを追加した。coreに純粋な逐次Decoderと一つのstdin状態、ホストに型付き入力・共通Clock・checked pushbackを置く。EKEY/EKEY?は既存の所属を維持し、旧埋込みの操作口も残した。部分UTF8/ESC、先読み、native通知、paste、EOF、別入力APIへの切替を共有する。[設計](EVENT_QUEUE_DESIGN.md)。
 
@@ -19,6 +19,10 @@ Claude Codeへ設計・実装・ファイル対応範囲・複数の再レビュ
 | Linux新規PTY/pipe | 15ケース成功。全体期限・分割UTF8/ESC、paste内外のCtrl+C、mouse先読み、KEY/ACCEPT/INKEY/STDIN file APIへの切替、32byte押戻し、EOF順序。`.work/event-queue/posix.json` |
 | Linux既存回帰 | 637 PTY13ケース、NS sigma-only pass=true（期限8、範囲1、redirect2、signal2、PTY5）。`.work/terminal-modes/posix.json`、`.work/p05b-ns-check/sigma-only.json` |
 | Mac向けコンパイル | aarch64-macos、audio/graphics/float除外のcore/host/runtimeで14/14成功。実行確認ではない。`.work/638-review/release-candidate-macos-build.log` |
+| Mac全体テスト | `zig build test --summary all` 23/23段階成功、1148成功・14スキップ。core 1050成功・8スキップ、host 98成功・6スキップ。Cortex-M0+ freestanding成功。 |
+| Mac実行体 | `zig build --prefix .work/638-native --summary all` 10/10成功。 |
+| Macイベント入力 | `verify-event-queue.py`のPTY/pipe 15ケース成功。637端末モード13ケース、NS sigma-only回帰も成功（期限8、範囲1、redirect2、信号2、PTY5）。 |
+| Mac構成・参照・文書 | extension matrix 12構成成功、除外イメージ拒否成功。語参照1549項目、例28・個別実行例149成功、欠落なし。check-docs findings=0。 |
 | 英日HELP・語参照 | 1549項目、HELP1335、EKEYSの既存35値一致、実辞書に欠落なし。例28・個別例149成功。`.work/638-review/release-candidate-word-reference.log` |
 | 3語群・除外構成 | 最終コードの12/12構成でtestとビルド成功、除外イメージの拒否・既存辞書保持も成功。matrix.jsonのsource_sha256が現在のbuild.zig/srcと一致。`.work/638-review/release-candidate-matrix.log` |
 
@@ -26,7 +30,7 @@ LinuxでSIGWINCHの既存復元試験も実行対象となり、muslが付加す
 
 WindowsでEOF直前のESC[をpeekしたあとKEYへ切り替えると、`ESC → EOF → [`になる不具合を再現した。成功したpushbackごとにcoreのEOFキャッシュを解除し、ストリーム終端はホストが再通知する契約にそろえて、`ESC → [ → EOF`と途中UTF8の両方を実行試験へ追加した。checked拒否・旧void受理後のエラー・旧pendingとのXYZ順序・入れ子stdin・イメージ復元等は19件の新規core試験で確認した。
 
-実物キーボード・実端末エミュレーターの表示、OS APIの任意失敗注入、Mac実行は未確認。差替えcallbackで拒否・エラーの保持を確認した。新しい待機は複数入力源やワーカーを追加せず、stdinの同時利用者は一つとする。入力スコープ外のOSシグナル・強制終了の制約は637と共通。LOGO言語機能や保存アプリ起動1067〜1069の実装は含まない。
+差替えcallbackで拒否・エラーの保持を確認した。新しい待機は複数入力源やワーカーを追加せず、stdinの同時利用者は一つとする。入力スコープ外のOSシグナル・強制終了の制約は637と共通。LOGO言語機能や保存アプリ起動1067〜1069の実装は含まない。
 
 
 ## 2026-11-19：637 ターミナル制御（1070〜1073）
