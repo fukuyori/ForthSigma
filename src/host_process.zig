@@ -1,7 +1,7 @@
 //! The Tcl program of the TCL words (wish): started with the script the core gives,
 //! written to a file in the temporary directory, and pipes to its standard input and
-//! output. Windows uses CreateProcessW and anonymous pipes; Linux and macOS fork and
-//! exec, finding the program on the PATH. The program is SIGMA_WISH when that is set,
+//! output. Native ownership uses the common process registry; this adapter keeps
+//! wish discovery, private protocol I/O and the display budget. The program is SIGMA_WISH when that is set,
 //! else wish (on Windows, Git for Windows's when the PATH has none; on macOS, not the
 //! system's /usr/bin/wish, which macOS no longer lets start, but Homebrew's or
 //! MacPorts's), unless TCL-PROGRAM named one.
@@ -17,43 +17,111 @@ const budget = @import("host_display_budget.zig");
 pub const start = if (is_windows) windows.startProgram else posix.startProgram;
 pub const write = if (is_windows) windows.writeProgram else posix.writeProgram;
 pub const read = if (is_windows) windows.readProgram else posix.readProgram;
-pub const stop = if (is_windows) windows.stopProgram else posix.stopProgram;
+pub const stop = stopProgram;
+
+pub const Shared = struct {
+    context: ?*anyopaque,
+    launch: *const fn (?*anyopaque, []const u8, []const u8, u32) forth.FileResult,
+    raw: *const fn (?*anyopaque, forth.Cell, u2) isize,
+    close: *const fn (?*anyopaque, forth.Cell) forth.Cell,
+    status: *const fn (?*anyopaque, forth.Cell) forth.ProcessStatus,
+    signal: *const fn (?*anyopaque, forth.Cell, bool) forth.Cell,
+    wait: *const fn (?*anyopaque, forth.Cell, u32) forth.Cell,
+    free: *const fn (?*anyopaque, forth.Cell, u32) forth.Cell,
+};
+var shared: ?Shared = null;
+var shared_id: forth.Cell = 0;
+pub fn bind(host: Shared) void {
+    shared = host;
+}
+pub fn detachInternal(id: forth.Cell) void {
+    if (id != shared_id) return;
+    if (is_windows) {
+        windows.to_program = null;
+        windows.from_program = null;
+    } else {
+        posix.to_program = -1;
+        posix.from_program = -1;
+    }
+}
+pub fn releasedInternal(id: forth.Cell) void {
+    if (id != shared_id) return;
+    detachInternal(id);
+    shared_id = 0;
+    if (is_windows) windows.removeScript() else posix.removeScript();
+}
+fn cleanupLimit() u32 {
+    return if (budget.active()) @intCast(std.math.clamp(budget.cleanupDeadline() - budget.now(), 0, 3000)) else 3000;
+}
+fn launchShared(program: []const u8, script: []const u8) forth.RuntimeError!void {
+    const host = shared orelse return error.HostUnavailable;
+    const result = host.launch(host.context, program, script, cleanupLimit());
+    shared_id = @bitCast(result.value);
+    if (result.ior != 0) {
+        _ = stopProgram(null);
+        return error.HostFailed;
+    }
+    errdefer {
+        _ = stopProgram(null);
+    }
+    const input = host.raw(host.context, shared_id, 0);
+    const output = host.raw(host.context, shared_id, 1);
+    if (input < 0 or output < 0) return error.HostFailed;
+    if (is_windows) {
+        windows.to_program = @ptrFromInt(@as(usize, @intCast(input)));
+        windows.from_program = @ptrFromInt(@as(usize, @intCast(output)));
+    } else {
+        posix.to_program = @intCast(input);
+        posix.from_program = @intCast(output);
+    }
+}
+fn ended(host: Shared, id: forth.Cell, milliseconds: u32) bool {
+    const until = budget.now() + milliseconds;
+    while (true) {
+        const observed = host.status(host.context, id);
+        if (observed.ior != 0) return false;
+        if (observed.state != 1) return true;
+        const remaining = until - budget.now();
+        if (remaining <= 0) return false;
+        if (host.wait(host.context, id, @intCast(@min(remaining, 10))) != 0) return false;
+    }
+}
+fn stopProgram(_: ?*anyopaque) bool {
+    if (shared_id == 0) return true;
+    const host = shared orelse return false;
+    const id = shared_id;
+    detachInternal(id);
+    const close_error = host.close(host.context, id);
+    var observed = host.status(host.context, id);
+    if (observed.ior == 0 and observed.state == 1) {
+        if (budget.active()) {
+            _ = host.signal(host.context, id, true);
+            _ = ended(host, id, cleanupLimit());
+        } else if (!ended(host, id, 2000)) {
+            _ = host.signal(host.context, id, false);
+            if (!ended(host, id, 1000)) {
+                _ = host.signal(host.context, id, true);
+                _ = ended(host, id, 3000);
+            }
+        }
+    }
+    observed = host.status(host.context, id);
+    if (observed.ior == 0 and observed.state == 1) return false;
+    const result = host.free(host.context, id, cleanupLimit());
+    // releasedInternal is called only once the registry actually removes the ID.
+    return result == 0 and close_error == 0 and shared_id == 0;
+}
 
 const windows = struct {
     const Handle = *anyopaque;
     const SecurityAttributes = extern struct { length: u32 = @sizeOf(SecurityAttributes), descriptor: ?*anyopaque = null, inherit: i32 = 1 };
-    const StartupInfo = extern struct {
-        cb: u32 = @sizeOf(StartupInfo),
-        reserved: ?[*:0]u16 = null,
-        desktop: ?[*:0]u16 = null,
-        title: ?[*:0]u16 = null,
-        x: u32 = 0,
-        y: u32 = 0,
-        x_size: u32 = 0,
-        y_size: u32 = 0,
-        x_count_chars: u32 = 0,
-        y_count_chars: u32 = 0,
-        fill_attribute: u32 = 0,
-        flags: u32 = 0,
-        show_window: u16 = 0,
-        reserved2_size: u16 = 0,
-        reserved2: ?*u8 = null,
-        std_input: ?Handle = null,
-        std_output: ?Handle = null,
-        std_error: ?Handle = null,
-    };
-    const ProcessInformation = extern struct { process: ?Handle, thread: ?Handle, process_id: u32, thread_id: u32 };
-
     extern "kernel32" fn CreatePipe(*?Handle, *?Handle, *const SecurityAttributes, u32) callconv(.winapi) i32;
-    extern "kernel32" fn SetHandleInformation(Handle, u32, u32) callconv(.winapi) i32;
-    extern "kernel32" fn CreateProcessW(?[*:0]const u16, [*:0]u16, ?*anyopaque, ?*anyopaque, i32, u32, ?*anyopaque, ?[*:0]const u16, *StartupInfo, *ProcessInformation) callconv(.winapi) i32;
     extern "kernel32" fn CreateFileW([*:0]const u16, u32, u32, ?*const SecurityAttributes, u32, u32, ?Handle) callconv(.winapi) Handle;
     extern "kernel32" fn WriteFile(Handle, [*]const u8, u32, ?*u32, ?*anyopaque) callconv(.winapi) i32;
     extern "kernel32" fn ReadFile(Handle, [*]u8, u32, ?*u32, ?*anyopaque) callconv(.winapi) i32;
     extern "kernel32" fn PeekNamedPipe(Handle, ?*anyopaque, u32, ?*u32, ?*u32, ?*u32) callconv(.winapi) i32;
     extern "kernel32" fn CloseHandle(Handle) callconv(.winapi) i32;
     extern "kernel32" fn WaitForSingleObject(Handle, u32) callconv(.winapi) u32;
-    extern "kernel32" fn TerminateProcess(Handle, u32) callconv(.winapi) i32;
     extern "kernel32" fn GetTempPathW(u32, [*]u16) callconv(.winapi) u32;
     extern "kernel32" fn GetCurrentProcessId() callconv(.winapi) u32;
     extern "kernel32" fn DeleteFileW([*:0]const u16) callconv(.winapi) i32;
@@ -86,7 +154,6 @@ const windows = struct {
     const open_existing: u32 = 3;
     const no_window: u32 = 0x0800_0000;
 
-    var process: ?Handle = null;
     var to_program: ?Handle = null;
     var from_program: ?Handle = null;
     /// The temporary file of the script, removed when the program stops; empty before.
@@ -158,6 +225,11 @@ const windows = struct {
         const default = std.unicode.utf8ToUtf16LeStringLiteral("wish");
         var found: [512]u16 = undefined;
         const on_path = SearchPathW(null, default, std.unicode.utf8ToUtf16LeStringLiteral(".exe"), found.len, &found, null);
+        if (on_path != 0 and on_path < found.len) {
+            if (on_path > buffer.len) return null;
+            @memcpy(buffer[0..on_path], found[0..on_path]);
+            return buffer[0..on_path];
+        }
         // Not on the PATH (a longer path than `found` takes is there all the same).
         if (on_path == 0) {
             for (git_places) |place| {
@@ -175,59 +247,18 @@ const windows = struct {
     fn startProgram(_: ?*anyopaque, program: []const u8, script: []const u8) forth.RuntimeError!void {
         // Automatic display has one time for the window and Tk together.
         if (budget.expired()) return error.HostFailed;
-        _ = stopProgram(null);
+        if (!stopProgram(null)) return error.HostFailed;
         if (budget.expired()) return error.HostFailed;
         if (!writeScript(script)) return error.HostFailed;
-        errdefer removeScript();
+        errdefer if (shared_id == 0) removeScript();
         var name_buffer: [512]u16 = undefined;
         const name = programName(program, &name_buffer) orelse return error.HostFailed;
-        // "program" "script"
-        var command: [1600:0]u16 = undefined;
-        var at: usize = 0;
-        const script_length = std.mem.indexOfScalar(u16, &script_name, 0).?;
-        if (name.len + script_length + 6 > command.len) return error.HostFailed;
-        for ([_][]const u16{ name, script_name[0..script_length] }) |part| {
-            command[at] = '"';
-            @memcpy(command[at + 1 ..][0..part.len], part);
-            command[at + 1 + part.len] = '"';
-            command[at + 2 + part.len] = ' ';
-            at += part.len + 3;
-        }
-        command[at - 1] = 0;
-        const inherit = SecurityAttributes{};
-        var child_input: ?Handle = null;
-        var child_output: ?Handle = null;
-        var input_writer: ?Handle = null;
-        var output_reader: ?Handle = null;
-        if (CreatePipe(&child_input, &input_writer, &inherit, 0) == 0) return error.HostFailed;
-        if (CreatePipe(&output_reader, &child_output, &inherit, 0) == 0) {
-            _ = CloseHandle(child_input.?);
-            _ = CloseHandle(input_writer.?);
-            return error.HostFailed;
-        }
-        // Sigma's own ends are not inherited: else the program would hold its own input
-        // open, and never see it end.
-        if (SetHandleInformation(input_writer.?, handle_flag_inherit, 0) == 0 or SetHandleInformation(output_reader.?, handle_flag_inherit, 0) == 0) {
-            for ([_]?Handle{ child_input, input_writer, output_reader, child_output }) |handle| _ = CloseHandle(handle.?);
-            return error.HostFailed;
-        }
-        // What the program writes to standard error goes nowhere, not into the messages.
-        const nul = CreateFileW(std.unicode.utf8ToUtf16LeStringLiteral("NUL"), generic_write, 3, &inherit, open_existing, 0, null);
-        var startup = StartupInfo{ .flags = use_std_handles, .std_input = child_input, .std_output = child_output, .std_error = if (@intFromPtr(nul) == invalid_handle) null else nul };
-        var information: ProcessInformation = undefined;
-        const created = CreateProcessW(null, &command, null, null, 1, no_window, null, null, &startup, &information);
-        _ = CloseHandle(child_input.?);
-        _ = CloseHandle(child_output.?);
-        if (@intFromPtr(nul) != invalid_handle) _ = CloseHandle(nul);
-        if (created == 0) {
-            _ = CloseHandle(input_writer.?);
-            _ = CloseHandle(output_reader.?);
-            return error.HostFailed;
-        }
-        _ = CloseHandle(information.thread.?);
-        process = information.process;
-        to_program = input_writer;
-        from_program = output_reader;
+        const allocator = std.heap.page_allocator;
+        const name_utf8 = std.unicode.wtf16LeToWtf8Alloc(allocator, name) catch return error.HostFailed;
+        defer allocator.free(name_utf8);
+        const script_utf8 = std.unicode.wtf16LeToWtf8Alloc(allocator, std.mem.sliceTo(&script_name, 0)) catch return error.HostFailed;
+        defer allocator.free(script_utf8);
+        try launchShared(name_utf8, script_utf8);
     }
 
     fn writeProgram(_: ?*anyopaque, bytes: []const u8) forth.RuntimeError!void {
@@ -342,47 +373,10 @@ const windows = struct {
         if (ReadFile(handle, buffer.ptr, wanted, &count, null) == 0 or count == 0) return error.HostFailed;
         return count;
     }
-
-    /// Returns whether the program was seen to end.
-    fn stopProgram(_: ?*anyopaque) bool {
-        // Closing its standard input ends the program's script; it is ended if it
-        // goes on for 2 seconds. Its output is closed too, so that it does not wait
-        // to write what Sigma will not read.
-        if (to_program) |handle| _ = CloseHandle(handle);
-        to_program = null;
-        if (from_program) |handle| _ = CloseHandle(handle);
-        from_program = null;
-        var stopped = true;
-        // During automatic display's search, a program that failed is ended at once,
-        // within the time left.
-        const searching = budget.active();
-        if (process) |handle| {
-            if (WaitForSingleObject(handle, if (searching) 0 else 2000) != 0) {
-                // TerminateProcess fails when the program has just ended, too.
-                if (TerminateProcess(handle, 1) == 0) {
-                    stopped = WaitForSingleObject(handle, 0) == 0;
-                } else {
-                    const left: u32 = @intCast(std.math.clamp(budget.cleanupDeadline() - budget.now(), 50, 5000));
-                    stopped = WaitForSingleObject(handle, if (searching) left else 5000) == 0;
-                }
-            }
-            _ = CloseHandle(handle);
-        }
-        process = null;
-        removeScript();
-        return stopped;
-    }
 };
 
 const posix = struct {
-    extern "c" fn fork() c_int;
-    extern "c" fn execvp([*:0]const u8, [*:null]const ?[*:0]const u8) c_int;
-    extern "c" fn _exit(c_int) noreturn;
-    extern "c" fn dup2(c_int, c_int) c_int;
     extern "c" fn fcntl(c_int, c_int, ...) c_int;
-    extern "c" fn pipe(*[2]c_int) c_int;
-    extern "c" fn waitpid(c_int, ?*c_int, c_int) c_int;
-    extern "c" fn kill(c_int, c_int) c_int;
     extern "c" fn unlink([*:0]const u8) c_int;
     extern "c" fn getpid() c_int;
     extern "c" fn signal(c_int, usize) usize;
@@ -390,24 +384,9 @@ const posix = struct {
     extern "c" fn access([*:0]const u8, c_int) c_int;
 
     const sigpipe = 13;
-    const sigkill = 9;
-    const sigterm = 15;
     const ignore: usize = 1; // SIG_IGN
-    const no_hang = 1; // WNOHANG
-    const duplicate_from = 0; // F_DUPFD
     const executable = 1; // X_OK
 
-    var pending: [16]c_int = @splat(0);
-    fn reapPending() void {
-        for (&pending) |*pid| {
-            if (pid.* == 0) continue;
-            const result = waitpid(pid.*, null, no_hang);
-            if (result == pid.* or (result < 0 and std.c._errno().* != @backingInt(std.c.E.INTR))) pid.* = 0;
-        }
-    }
-    fn makePipe(fds: *[2]c_int) c_int {
-        return if (linux) std.c.pipe2(fds, .{ .CLOEXEC = true }) else pipe(fds);
-    }
     fn waitReady(fd: c_int, events: i16, wait: bool) forth.RuntimeError!bool {
         while (true) {
             if (linux and budget.expired()) return error.HostFailed;
@@ -422,7 +401,6 @@ const posix = struct {
             if (std.c._errno().* != @backingInt(std.c.E.INTR)) return error.HostFailed;
         }
     }
-    var child: c_int = 0;
     var to_program: c_int = -1;
     var from_program: c_int = -1;
     /// The temporary file of the script, removed when the program stops; empty before.
@@ -510,19 +488,12 @@ const posix = struct {
         return "wish";
     }
 
-    /// A descriptor numbered 3 or more for the same file, so that putting the pipes at
-    /// 0 and 1 cannot close one of them (when Sigma started with 0 or 1 closed, a pipe
-    /// may have one of those numbers).
-    fn aboveStandard(descriptor: c_int) c_int {
-        return if (descriptor > 2) descriptor else fcntl(descriptor, duplicate_from, @as(c_int, 3));
-    }
-
     fn startProgram(_: ?*anyopaque, program: []const u8, script: []const u8) forth.RuntimeError!void {
         if (linux and budget.expired()) return error.HostFailed;
-        _ = stopProgram(null);
+        if (!stopProgram(null)) return error.HostFailed;
         if (linux and budget.expired()) return error.HostFailed;
         if (!writeScript(script)) return error.HostFailed;
-        errdefer removeScript();
+        errdefer if (shared_id == 0) removeScript();
         var name_buffer: [512:0]u8 = undefined;
         const name: [*:0]const u8 = if (program.len != 0) blk: {
             if (program.len >= name_buffer.len) return error.HostFailed;
@@ -533,44 +504,14 @@ const posix = struct {
             macWish(if (getenv("PATH")) |path| std.mem.span(path) else "", &name_buffer, isExecutable)
         else
             "wish";
-        var input: [2]c_int = undefined;
-        var output: [2]c_int = undefined;
-        if (makePipe(&input) != 0) return error.HostFailed;
-        if (makePipe(&output) != 0) {
-            _ = std.c.close(input[0]);
-            _ = std.c.close(input[1]);
-            return error.HostFailed;
-        }
-        const pid = fork();
-        if (pid < 0) {
-            for ([_]c_int{ input[0], input[1], output[0], output[1] }) |descriptor| _ = std.c.close(descriptor);
-            return error.HostFailed;
-        }
-        if (pid == 0) {
-            const reading = aboveStandard(input[0]);
-            const writing = aboveStandard(output[1]);
-            if (reading < 0 or writing < 0 or dup2(reading, 0) < 0 or dup2(writing, 1) < 0) _exit(126);
-            for ([_]c_int{ input[0], input[1], output[0], output[1], reading, writing }) |descriptor| {
-                // 0 and 1 are the pipes now; 2 is closed only if it was a pipe's end.
-                if (descriptor > 2) _ = std.c.close(descriptor);
-                if (descriptor == 2) _ = std.c.close(2);
-            }
-            const arguments = [_:null]?[*:0]const u8{ name, &script_name };
-            _ = execvp(name, &arguments);
-            _exit(127);
-        }
-        _ = std.c.close(input[0]);
-        _ = std.c.close(output[1]);
-        child = pid;
-        to_program = input[1];
-        from_program = output[0];
+        try launchShared(std.mem.span(name), std.mem.sliceTo(&script_name, 0));
         if (linux) {
             // Only the parent's ends are nonblocking; wish retains ordinary stdin/stdout.
             for ([_]c_int{ to_program, from_program }) |fd| {
                 const flags = fcntl(fd, std.c.F.GETFL);
                 const nonblock: c_int = @bitCast(@as(u32, @bitCast(std.c.O{ .NONBLOCK = true })));
                 if (flags < 0 or fcntl(fd, std.c.F.SETFL, flags | nonblock) < 0) {
-                    _ = stopProgram(null);
+                    if (!stopProgram(null)) return error.HostFailed;
                     return error.HostFailed;
                 }
             }
@@ -617,67 +558,6 @@ const posix = struct {
             return @intCast(count);
         }
     }
-
-    /// Waits up to `steps` times 10 ms for the program to end; whether it did.
-    fn ended(steps: u32) bool {
-        for (0..steps) |_| {
-            const result = waitpid(child, null, no_hang);
-            if (result == child) return true;
-            if (result < 0 and std.c._errno().* != @backingInt(std.c.E.INTR)) return true;
-            var pause: std.c.timespec = .{ .sec = 0, .nsec = 10 * std.time.ns_per_ms };
-            _ = std.c.nanosleep(&pause, null);
-        }
-        return false;
-    }
-
-    /// Returns whether the program was seen to end.
-    fn stopProgram(_: ?*anyopaque) bool {
-        if (linux) reapPending();
-        // Its output is closed too, so that it does not wait to write what Sigma will
-        // not read.
-        if (to_program >= 0) _ = std.c.close(to_program);
-        to_program = -1;
-        if (from_program >= 0) _ = std.c.close(from_program);
-        from_program = -1;
-        if (linux and budget.active() and child > 0) {
-            // Startup failure must not add the usual three-second shutdown grace.
-            _ = kill(child, sigkill);
-            var reaped = false;
-            while (true) {
-                const result = waitpid(child, null, no_hang);
-                if (result == child or (result < 0 and std.c._errno().* != @backingInt(std.c.E.INTR))) {
-                    reaped = true;
-                    break;
-                }
-                if (budget.now() >= budget.cleanupDeadline()) break;
-                var pause: std.c.timespec = .{ .sec = 0, .nsec = std.time.ns_per_ms };
-                _ = std.c.nanosleep(&pause, null);
-            }
-            if (!reaped) {
-                for (&pending) |*pid| if (pid.* == 0) {
-                    pid.* = child;
-                    break;
-                };
-            }
-            child = 0;
-            removeScript();
-            return reaped;
-        }
-        if (child > 0) {
-            // The program ends when its input closes; after 2 s it is asked to end, and
-            // after 1 s more it is ended.
-            if (!ended(200)) {
-                _ = kill(child, sigterm);
-                if (!ended(100)) {
-                    _ = kill(child, sigkill);
-                    while (waitpid(child, null, 0) < 0 and std.c._errno().* == @backingInt(std.c.E.INTR)) {}
-                }
-            }
-        }
-        child = 0;
-        removeScript();
-        return true;
-    }
 };
 
 test "macOS: wish is the first on the PATH but the system's, else Homebrew's or MacPorts's" {
@@ -703,4 +583,11 @@ test "macOS: wish is the first on the PATH but the system's, else Homebrew's or 
 
 test "a write the display search waits for is cancelled when its time runs out" {
     if (comptime builtin.os.tag == .windows) try windows.testWatch() else return error.SkipZigTest;
+}
+
+// The generic process configuration table is host-only; exercise its ownership
+// invariants in the normal host test target before connecting native launchers.
+test {
+    _ = @import("host_process_spec.zig");
+    _ = @import("host_process_native.zig");
 }

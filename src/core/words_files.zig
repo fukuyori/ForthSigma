@@ -174,8 +174,9 @@ pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
             try @import("event_input.zig").beforeFileRead(self, fileid);
             const result = files.read_line(self.writer.context, fileid, buffer);
             @import("address_registry.zig").written(self, @intCast(@intFromPtr(buffer.ptr) - @intFromPtr(self.memory.ptr)), if (result.ior != 0) buffer.len else @min(result.length, buffer.len), false);
-            try self.push(if (result.ior == 0) @intCast(result.length) else 0);
-            try self.push(if (result.ior == 0) truth(result.found) else 0);
+            if (result.length > buffer.len) return error.HostFailed;
+            try self.push(@intCast(result.length));
+            try self.push(truth(result.found));
             try self.push(result.ior);
         },
         .write_line, .write_file => {
@@ -235,7 +236,8 @@ pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
             if (buffer.len != 0) try @import("event_input.zig").beforeFileRead(self, fileid);
             const result = files.read(self.writer.context, fileid, buffer);
             @import("address_registry.zig").written(self, @intCast(@intFromPtr(buffer.ptr) - @intFromPtr(self.memory.ptr)), if (result.ior != 0) buffer.len else @intCast(@min(result.value, buffer.len)), false);
-            try self.push(if (result.ior == 0) @intCast(result.value) else 0);
+            if (result.value > buffer.len) return error.HostFailed;
+            try self.push(@intCast(result.value));
             try self.push(result.ior);
         },
         .slurp_file => {

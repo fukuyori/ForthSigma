@@ -6,13 +6,13 @@ Each entry has a stack effect and a behavior description based on runtime HELP, 
 
 Coverage assumes the full build. Feature-disabled builds omit their respective words. Load optional vocabularies with REQUIRE before adding them to the search order. Immediate/compile-only flags come from the built-in implementation; syntax forms have their own conditions in their descriptions.
 
-Entries (namespace/name pairs): **1777**. The same name in different vocabularies counts separately.
+Entries (namespace/name pairs): **1795**. The same name in different vocabularies counts separately.
 
 ## Contents
 
 - [AUDIO](#namespace-audio) (73)
 - [EKEYS](#namespace-ekeys) (35)
-- [EXTENSION](#namespace-extension) (14)
+- [EXTENSION](#namespace-extension) (32)
 - [FORTH](#namespace-forth) (958)
 - [GAME](#namespace-game) (59)
 - [GRAPHICS](#namespace-graphics) (450)
@@ -130,7 +130,7 @@ Implementation definition (private helpers may change):
 : ADSR ( attack decay sustain release -- )   SND-ADSR ;
 ```
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1346).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1364).
 
 <a id="w-415544494f3a414d494741"></a>
 
@@ -158,7 +158,7 @@ Implementation definition (private helpers may change):
 16 CONSTANT SCC   32 CONSTANT AMIGA
 ```
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1388).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1406).
 
 <a id="w-415544494f3a414d4947412d46494c544552"></a>
 
@@ -190,7 +190,7 @@ Implementation definition (private helpers may change):
 : AMIGA-FILTER ( flag -- )   SND-AMIGA-FILTER ;
 ```
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1370).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1388).
 
 <a id="w-415544494f3a414d4947412d534f554e44"></a>
 
@@ -222,7 +222,7 @@ Implementation definition (private helpers may change):
 : AMIGA-SOUND ( -- )   5 SND-CHIP ;
 ```
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1369).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1387).
 
 <a id="w-415544494f3a415544494f3f"></a>
 
@@ -254,7 +254,7 @@ Implementation definition (private helpers may change):
 : AUDIO? ( -- flag )   SND-DEVICE ;
 ```
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1328).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1346).
 
 <a id="w-415544494f3a42454550"></a>
 
@@ -286,7 +286,7 @@ Implementation definition (private helpers may change):
 : BEEP ( -- )   SND-BEEP ;
 ```
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1327).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1345).
 
 <a id="w-415544494f3a433634"></a>
 
@@ -314,7 +314,7 @@ Implementation definition (private helpers may change):
 1 CONSTANT MSX   2 CONSTANT ST   4 CONSTANT NES   8 CONSTANT C64
 ```
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1386).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1404).
 
 <a id="w-415544494f3a4336342d534f554e44"></a>
 
@@ -346,7 +346,7 @@ Implementation definition (private helpers may change):
 : C64-SOUND ( -- )   3 SND-CHIP ;
 ```
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1350).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1368).
 
 <a id="w-415544494f3a4348495053"></a>
 
@@ -378,7 +378,7 @@ Implementation definition (private helpers may change):
 : CHIPS ( mask -- )   SND-CHIPS ;
 ```
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1380).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1398).
 
 <a id="w-415544494f3a44555459"></a>
 
@@ -410,7 +410,7 @@ Implementation definition (private helpers may change):
 : DUTY ( percent -- )   SND-DUTY ;
 ```
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1345).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1363).
 
 <a id="w-415544494f3a46494c544552"></a>
 
@@ -442,7 +442,7 @@ Implementation definition (private helpers may change):
 : FILTER ( mode cutoff resonance -- )   SND-FILTER ;
 ```
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1353).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1371).
 
 <a id="w-415544494f3a465245452d53414d504c4553"></a>
 
@@ -474,7 +474,7 @@ Implementation definition (private helpers may change):
 : FREE-SAMPLES ( -- )   SND-FREE-SAMPLES ;
 ```
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1368).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1386).
 
 <a id="w-415544494f3a494e535452554d454e54"></a>
 
@@ -506,7 +506,7 @@ Implementation definition (private helpers may change):
 : INSTRUMENT ( n -- )   SND-INSTRUMENT ;
 ```
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1339).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1357).
 
 <a id="w-415544494f3a4c4f41442d4d4f44"></a>
 
@@ -538,7 +538,7 @@ Implementation definition (private helpers may change):
 : LOAD-MOD ( c-addr u -- )   SND-LOAD-MOD THROW ;
 ```
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1375).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1393).
 
 <a id="w-415544494f3a4c4f41442d53414d504c45"></a>
 
@@ -570,7 +570,7 @@ Implementation definition (private helpers may change):
 : LOAD-SAMPLE ( c-addr u n -- )   SND-LOAD-SAMPLE THROW ;
 ```
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1363).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1381).
 
 <a id="w-415544494f3a4c4f4f502d53414d504c45"></a>
 
@@ -602,7 +602,7 @@ Implementation definition (private helpers may change):
 : LOOP-SAMPLE ( start end n -- )   SND-LOOP-SAMPLE ;
 ```
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1365).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1383).
 
 <a id="w-415544494f3a4d4f443f"></a>
 
@@ -634,7 +634,7 @@ Implementation definition (private helpers may change):
 : MOD? ( -- flag )   SND-MOD-PLAYING ;
 ```
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1378).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1396).
 
 <a id="w-415544494f3a4d5358"></a>
 
@@ -662,7 +662,7 @@ Implementation definition (private helpers may change):
 1 CONSTANT MSX   2 CONSTANT ST   4 CONSTANT NES   8 CONSTANT C64
 ```
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1383).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1401).
 
 <a id="w-415544494f3a4d53582d534f554e44"></a>
 
@@ -694,7 +694,7 @@ Implementation definition (private helpers may change):
 : MSX-SOUND ( -- )   0 SND-CHIP ;
 ```
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1336).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1354).
 
 <a id="w-415544494f3a4e4553"></a>
 
@@ -722,7 +722,7 @@ Implementation definition (private helpers may change):
 1 CONSTANT MSX   2 CONSTANT ST   4 CONSTANT NES   8 CONSTANT C64
 ```
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1385).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1403).
 
 <a id="w-415544494f3a4e45532d534f554e44"></a>
 
@@ -754,7 +754,7 @@ Implementation definition (private helpers may change):
 : NES-SOUND ( -- )   2 SND-CHIP ;
 ```
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1338).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1356).
 
 <a id="w-415544494f3a4e4f495345"></a>
 
@@ -786,7 +786,7 @@ Implementation definition (private helpers may change):
 : NOISE ( -- )   4 SND-WAVE ;
 ```
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1344).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1362).
 
 <a id="w-415544494f3a504c4159"></a>
 
@@ -818,7 +818,7 @@ Implementation definition (private helpers may change):
 : PLAY ( c-addr u -- )   0 0 0 0 SND-PLAY ;
 ```
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1322).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1340).
 
 <a id="w-415544494f3a504c41592d4d4f44"></a>
 
@@ -850,7 +850,7 @@ Implementation definition (private helpers may change):
 : PLAY-MOD ( flag -- )   SND-PLAY-MOD ;
 ```
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1376).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1394).
 
 <a id="w-415544494f3a504c415932"></a>
 
@@ -882,7 +882,7 @@ Implementation definition (private helpers may change):
 : PLAY2 ( c-addr1 u1 c-addr2 u2 -- )   0 0 SND-PLAY ;
 ```
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1323).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1341).
 
 <a id="w-415544494f3a504c415933"></a>
 
@@ -914,7 +914,7 @@ Implementation definition (private helpers may change):
 : PLAY3 ( c-addr1 u1 c-addr2 u2 c-addr3 u3 -- )   SND-PLAY ;
 ```
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1324).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1342).
 
 <a id="w-415544494f3a504c41593f"></a>
 
@@ -946,7 +946,7 @@ Implementation definition (private helpers may change):
 : PLAY? ( n -- flag )   SND-PLAYING ;
 ```
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1325).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1343).
 
 <a id="w-415544494f3a504c415953"></a>
 
@@ -976,7 +976,7 @@ Implementation definition (private helpers may change):
 : PLAYS ( c-addr1 u1 ... c-addrn un n -- )   SND-PLAYS ;
 ```
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1335).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1353).
 
 <a id="w-415544494f3a50554c5345"></a>
 
@@ -1008,7 +1008,7 @@ Implementation definition (private helpers may change):
 : PULSE ( -- )   1 SND-WAVE ;
 ```
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1341).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1359).
 
 <a id="w-415544494f3a52494e47"></a>
 
@@ -1040,7 +1040,7 @@ Implementation definition (private helpers may change):
 : RING ( flag -- )   SND-RING ;
 ```
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1351).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1369).
 
 <a id="w-415544494f3a53414d504c45"></a>
 
@@ -1072,7 +1072,7 @@ Implementation definition (private helpers may change):
 : SAMPLE ( c-addr u rate n -- )   SND-SAMPLE ;
 ```
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1364).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1382).
 
 <a id="w-415544494f3a53414d504c452d494e535452554d454e54"></a>
 
@@ -1104,7 +1104,7 @@ Implementation definition (private helpers may change):
 : SAMPLE-INSTRUMENT ( n -- )   SND-SAMPLE-INSTRUMENT ;
 ```
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1366).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1384).
 
 <a id="w-415544494f3a534157"></a>
 
@@ -1136,7 +1136,7 @@ Implementation definition (private helpers may change):
 : SAW ( -- )   3 SND-WAVE ;
 ```
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1343).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1361).
 
 <a id="w-415544494f3a534343"></a>
 
@@ -1164,7 +1164,7 @@ Implementation definition (private helpers may change):
 16 CONSTANT SCC   32 CONSTANT AMIGA
 ```
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1387).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1405).
 
 <a id="w-415544494f3a5343432d534f554e44"></a>
 
@@ -1196,7 +1196,7 @@ Implementation definition (private helpers may change):
 : SCC-SOUND ( -- )   4 SND-CHIP ;
 ```
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1355).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1373).
 
 <a id="w-415544494f3a5343432d57415645"></a>
 
@@ -1228,7 +1228,7 @@ Implementation definition (private helpers may change):
 : SCC-WAVE ( c-addr n -- )   SND-WAVETABLE ;
 ```
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1389).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1407).
 
 <a id="w-415544494f3a534658"></a>
 
@@ -1260,7 +1260,7 @@ Implementation definition (private helpers may change):
 : SFX ( n -- )   SND-SFX ;
 ```
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1367).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1385).
 
 <a id="w-415544494f3a534e442d41445352"></a>
 
@@ -1286,7 +1286,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1334).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1352).
 
 <a id="w-415544494f3a534e442d414d4947412d46494c544552"></a>
 
@@ -1312,7 +1312,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1361).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1379).
 
 <a id="w-415544494f3a534e442d42454550"></a>
 
@@ -1338,7 +1338,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1319).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1337).
 
 <a id="w-415544494f3a534e442d43484950"></a>
 
@@ -1364,7 +1364,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1330).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1348).
 
 <a id="w-415544494f3a534e442d4348495053"></a>
 
@@ -1390,7 +1390,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1379).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1397).
 
 <a id="w-415544494f3a534e442d444556494345"></a>
 
@@ -1416,7 +1416,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1321).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1339).
 
 <a id="w-415544494f3a534e442d44555459"></a>
 
@@ -1442,7 +1442,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1333).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1351).
 
 <a id="w-415544494f3a534e442d46494c544552"></a>
 
@@ -1468,7 +1468,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1349).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1367).
 
 <a id="w-415544494f3a534e442d465245452d53414d504c4553"></a>
 
@@ -1494,7 +1494,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1362).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1380).
 
 <a id="w-415544494f3a534e442d494e535452554d454e54"></a>
 
@@ -1520,7 +1520,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1331).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1349).
 
 <a id="w-415544494f3a534e442d4c4f41442d4d4f44"></a>
 
@@ -1546,7 +1546,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment. Check the returned ior; zero is success. Passing it to THROW is one option. Use valid logical-memory addresses, lengths and capacities; distinguish owned storage from borrowed lifetimes.
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1371).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1389).
 
 <a id="w-415544494f3a534e442d4c4f41442d53414d504c45"></a>
 
@@ -1572,7 +1572,7 @@ S" b.txt" 6 SND-LOAD-SAMPLE S" missing.txt" 6 SND-LOAD-SAMPLE 0<>
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment. Check the returned ior; zero is success. Passing it to THROW is one option. Use valid logical-memory addresses, lengths and capacities; distinguish owned storage from borrowed lifetimes.
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1356).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1374).
 
 <a id="w-415544494f3a534e442d4c4f4f502d53414d504c45"></a>
 
@@ -1598,7 +1598,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1358).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1376).
 
 <a id="w-415544494f3a534e442d4d4f442d504c4159494e47"></a>
 
@@ -1624,7 +1624,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1374).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1392).
 
 <a id="w-415544494f3a534e442d504c4159"></a>
 
@@ -1650,7 +1650,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment. Use valid logical-memory addresses, lengths and capacities; distinguish owned storage from borrowed lifetimes.
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1317).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1335).
 
 <a id="w-415544494f3a534e442d504c41592d4d4f44"></a>
 
@@ -1676,7 +1676,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1372).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1390).
 
 <a id="w-415544494f3a534e442d504c4159494e47"></a>
 
@@ -1702,7 +1702,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1320).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1338).
 
 <a id="w-415544494f3a534e442d504c415953"></a>
 
@@ -1728,7 +1728,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment. Use valid logical-memory addresses, lengths and capacities; distinguish owned storage from borrowed lifetimes.
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1329).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1347).
 
 <a id="w-415544494f3a534e442d52494e47"></a>
 
@@ -1754,7 +1754,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1347).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1365).
 
 <a id="w-415544494f3a534e442d53414d504c45"></a>
 
@@ -1780,7 +1780,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment. Use valid logical-memory addresses, lengths and capacities; distinguish owned storage from borrowed lifetimes.
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1357).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1375).
 
 <a id="w-415544494f3a534e442d53414d504c452d494e535452554d454e54"></a>
 
@@ -1806,7 +1806,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1359).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1377).
 
 <a id="w-415544494f3a534e442d534658"></a>
 
@@ -1832,7 +1832,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1360).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1378).
 
 <a id="w-415544494f3a534e442d534f554e44"></a>
 
@@ -1858,7 +1858,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1318).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1336).
 
 <a id="w-415544494f3a534e442d53544f502d4d4f44"></a>
 
@@ -1884,7 +1884,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1373).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1391).
 
 <a id="w-415544494f3a534e442d5354594c45"></a>
 
@@ -1910,7 +1910,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1381).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1399).
 
 <a id="w-415544494f3a534e442d53594e43"></a>
 
@@ -1936,7 +1936,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1348).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1366).
 
 <a id="w-415544494f3a534e442d57415645"></a>
 
@@ -1962,7 +1962,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1332).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1350).
 
 <a id="w-415544494f3a534e442d574156455441424c45"></a>
 
@@ -1988,7 +1988,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment. Use valid logical-memory addresses, lengths and capacities; distinguish owned storage from borrowed lifetimes.
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1354).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1372).
 
 <a id="w-415544494f3a534f554e44"></a>
 
@@ -2020,7 +2020,7 @@ Implementation definition (private helpers may change):
 : SOUND ( reg value -- )   SND-SOUND ;
 ```
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1326).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1344).
 
 <a id="w-415544494f3a535155415245"></a>
 
@@ -2052,7 +2052,7 @@ Implementation definition (private helpers may change):
 : SQUARE ( -- )   0 SND-WAVE ;
 ```
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1340).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1358).
 
 <a id="w-415544494f3a5354"></a>
 
@@ -2080,7 +2080,7 @@ Implementation definition (private helpers may change):
 1 CONSTANT MSX   2 CONSTANT ST   4 CONSTANT NES   8 CONSTANT C64
 ```
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1384).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1402).
 
 <a id="w-415544494f3a53542d534f554e44"></a>
 
@@ -2114,7 +2114,7 @@ Implementation definition (private helpers may change):
 : ST-SOUND ( -- )   1 SND-CHIP ;
 ```
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1337).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1355).
 
 <a id="w-415544494f3a53544f502d4d4f44"></a>
 
@@ -2146,7 +2146,7 @@ Implementation definition (private helpers may change):
 : STOP-MOD ( -- )   SND-STOP-MOD ;
 ```
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1377).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1395).
 
 <a id="w-415544494f3a5354594c45"></a>
 
@@ -2178,7 +2178,7 @@ Implementation definition (private helpers may change):
 : STYLE ( chip -- )   SND-STYLE ;
 ```
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1382).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1400).
 
 <a id="w-415544494f3a53594e43"></a>
 
@@ -2212,7 +2212,7 @@ Implementation definition (private helpers may change):
 : SYNC ( flag -- )   SND-SYNC ;
 ```
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1352).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1370).
 
 <a id="w-415544494f3a545249414e474c45"></a>
 
@@ -2244,7 +2244,7 @@ Implementation definition (private helpers may change):
 : TRIANGLE ( -- )   2 SND-WAVE ;
 ```
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1342).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1360).
 
 <a id="namespace-ekeys"></a>
 
@@ -3069,6 +3069,21 @@ Sources: [src/core/standard_keys.zig](../src/core/standard_keys.zig).
 - [` K-MOUSE `](#w-455854454e53494f4e3a4b2d4d4f555345)
 - [` K-PASTE-BEGIN `](#w-455854454e53494f4e3a4b2d50415354452d424547494e)
 - [` K-PASTE-END `](#w-455854454e53494f4e3a4b2d50415354452d454e44)
+- [` PROC-ARG `](#w-455854454e53494f4e3a50524f432d415247)
+- [` PROC-CWD `](#w-455854454e53494f4e3a50524f432d435744)
+- [` PROC-ENV `](#w-455854454e53494f4e3a50524f432d454e56)
+- [` PROC-FREE `](#w-455854454e53494f4e3a50524f432d46524545)
+- [` PROC-IO `](#w-455854454e53494f4e3a50524f432d494f)
+- [` PROC-KILL `](#w-455854454e53494f4e3a50524f432d4b494c4c)
+- [` PROC-NEW `](#w-455854454e53494f4e3a50524f432d4e4557)
+- [` PROC-START `](#w-455854454e53494f4e3a50524f432d5354415254)
+- [` PROC-STATUS `](#w-455854454e53494f4e3a50524f432d535441545553)
+- [` PROC-STDERR `](#w-455854454e53494f4e3a50524f432d535444455252)
+- [` PROC-STDIN `](#w-455854454e53494f4e3a50524f432d535444494e)
+- [` PROC-STDOUT `](#w-455854454e53494f4e3a50524f432d5354444f5554)
+- [` PROC-TERM `](#w-455854454e53494f4e3a50524f432d5445524d)
+- [` PROC-WAIT `](#w-455854454e53494f4e3a50524f432d57414954)
+- [` READ-AVAILABLE `](#w-455854454e53494f4e3a524541442d415641494c41424c45)
 - [` ROWS `](#w-455854454e53494f4e3a524f5753)
 - [` TERM-ALT-SCREEN `](#w-455854454e53494f4e3a5445524d2d414c542d53435245454e)
 - [` TERM-HIDE-CURSOR `](#w-455854454e53494f4e3a5445524d2d484944452d435552534f52)
@@ -3076,6 +3091,9 @@ Sources: [src/core/standard_keys.zig](../src/core/standard_keys.zig).
 - [` TERM-MODE@ `](#w-455854454e53494f4e3a5445524d2d4d4f444540)
 - [` TERM-MOUSE `](#w-455854454e53494f4e3a5445524d2d4d4f555345)
 - [` TERM-PASTE `](#w-455854454e53494f4e3a5445524d2d5041535445)
+- [` WAIT-FILES `](#w-455854454e53494f4e3a574149542d46494c4553)
+- [` WAIT-WRITABLE `](#w-455854454e53494f4e3a574149542d5752495441424c45)
+- [` WRITE-AVAILABLE `](#w-455854454e53494f4e3a57524954452d415641494c41424c45)
 
 <a id="w-455854454e53494f4e3a434f4c53"></a>
 
@@ -3097,7 +3115,7 @@ REQUIRE-EXTENSION ALSO EXTENSION COLS . PREVIOUS
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
-Sources: [src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1310).
+Sources: [src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1328).
 
 <a id="w-455854454e53494f4e3a454b45592d4d4f555345"></a>
 
@@ -3127,7 +3145,7 @@ Sources: [src/core/words_extension.zig](../src/core/words_extension.zig), [HELP]
 
 ` ( ms -- event flag ior ) `
 
-Wait for a complete standard event with one monotonic deadline; zero polls, negative waits indefinitely. Timeout returns 0 0 0, EOF K-EOF true 0. Partial input survives timeout and interruption.
+Wait for a complete standard event with one monotonic deadline; zero polls, negative waits indefinitely. Timeout returns 0 0 0, EOF K-EOF true 0. Partial input survives timeout and interruption. Selected files decode UTF-8 with literal ESC and byte 3; host-owned partial bytes remain readable after the scope exits. A missing file-wait callback throws -21.
 
 Kind: builtin.
 
@@ -3193,7 +3211,7 @@ Implementation definition (private helpers may change):
 2147483682 CONSTANT K-MOUSE
 ```
 
-Sources: [src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1305).
+Sources: [src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1323).
 
 <a id="w-455854454e53494f4e3a4b2d50415354452d424547494e"></a>
 
@@ -3223,7 +3241,7 @@ Implementation definition (private helpers may change):
 2147483683 CONSTANT K-PASTE-BEGIN
 ```
 
-Sources: [src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1306).
+Sources: [src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1324).
 
 <a id="w-455854454e53494f4e3a4b2d50415354452d454e44"></a>
 
@@ -3253,7 +3271,364 @@ Implementation definition (private helpers may change):
 2147483684 CONSTANT K-PASTE-END
 ```
 
-Sources: [src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1307).
+Sources: [src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1325).
+
+<a id="w-455854454e53494f4e3a50524f432d415247"></a>
+
+### ` PROC-ARG `
+
+` ( addr len proc -- ior ) `
+
+Copy an argument before startup; the first is argv\[0\]. No implicit shell.
+
+Kind: builtin.
+
+` REQUIRE-EXTENSION ALSO EXTENSION ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-EXTENSION ALSO EXTENSION PROC-NEW THROW CONSTANT P
+S" program" P PROC-ARG THROW
+P PROC-FREE THROW
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment. Check the returned ior; zero is success. Passing it to THROW is one option. Use valid logical-memory addresses, lengths and capacities; distinguish owned storage from borrowed lifetimes.
+
+Sources: [src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1310).
+
+<a id="w-455854454e53494f4e3a50524f432d435744"></a>
+
+### ` PROC-CWD `
+
+` ( addr len proc -- ior ) `
+
+Copy child working directory before startup; empty inherits the startup-time parent directory.
+
+Kind: builtin.
+
+` REQUIRE-EXTENSION ALSO EXTENSION ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-EXTENSION ALSO EXTENSION PROC-NEW THROW CONSTANT P
+S" ." P PROC-CWD THROW
+P PROC-FREE THROW
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment. Check the returned ior; zero is success. Passing it to THROW is one option. Use valid logical-memory addresses, lengths and capacities; distinguish owned storage from borrowed lifetimes.
+
+Sources: [src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1311).
+
+<a id="w-455854454e53494f4e3a50524f432d454e56"></a>
+
+### ` PROC-ENV `
+
+` ( addr len proc -- ior ) `
+
+Apply an environment edit: NAME=VALUE sets, NAME removes, NAME= sets empty.
+
+Kind: builtin.
+
+` REQUIRE-EXTENSION ALSO EXTENSION ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-EXTENSION ALSO EXTENSION PROC-NEW THROW CONSTANT P
+S" SIGMA_EXAMPLE=value" P PROC-ENV THROW
+P PROC-FREE THROW
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment. Check the returned ior; zero is success. Passing it to THROW is one option. Use valid logical-memory addresses, lengths and capacities; distinguish owned storage from borrowed lifetimes.
+
+Sources: [src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1312).
+
+<a id="w-455854454e53494f4e3a50524f432d46524545"></a>
+
+### ` PROC-FREE `
+
+` ( proc -- ior ) `
+
+Release configuring or terminal records, discard remaining pipe data and reap the root child. Running returns EBUSY; failed cleanup retains ownership for retry.
+
+Kind: builtin.
+
+` REQUIRE-EXTENSION ALSO EXTENSION ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-EXTENSION ALSO EXTENSION PROC-NEW THROW CONSTANT P
+P PROC-FREE THROW
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment. Check the returned ior; zero is success. Passing it to THROW is one option.
+
+Sources: [src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1322).
+
+<a id="w-455854454e53494f4e3a50524f432d494f"></a>
+
+### ` PROC-IO `
+
+` ( mode which proc -- ior ) `
+
+Configure stdin/stdout/stderr (which=0/1/2): mode=0 pipe, 1 inherit, 2 null, 3 stderr merge. Defaults to three pipes.
+
+Kind: builtin.
+
+` REQUIRE-EXTENSION ALSO EXTENSION ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-EXTENSION ALSO EXTENSION PROC-NEW THROW CONSTANT P
+2 1 P PROC-IO THROW
+P PROC-FREE THROW
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment. Check the returned ior; zero is success. Passing it to THROW is one option.
+
+Sources: [src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1313).
+
+<a id="w-455854454e53494f4e3a50524f432d4b494c4c"></a>
+
+### ` PROC-KILL `
+
+` ( proc -- ior ) `
+
+Request group termination without waiting: SIGKILL on POSIX, terminate Job with exit 137 on Windows.
+
+Kind: builtin.
+
+` REQUIRE-EXTENSION ALSO EXTENSION ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-EXTENSION ALSO EXTENSION PROC-NEW THROW CONSTANT P
+P PROC-KILL .
+P PROC-FREE THROW
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment. Check the returned ior; zero is success. Passing it to THROW is one option.
+
+Sources: [src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1321).
+
+<a id="w-455854454e53494f4e3a50524f432d4e4557"></a>
+
+### ` PROC-NEW `
+
+` ( -- proc ior ) `
+
+Create an owned process configuration; the host supports 64 public records.
+
+Kind: builtin.
+
+` REQUIRE-EXTENSION ALSO EXTENSION ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-EXTENSION ALSO EXTENSION PROC-NEW THROW DUP PROC-STATUS . . . PROC-FREE THROW
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment. Check the returned ior; zero is success. Passing it to THROW is one option.
+
+Sources: [src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1309).
+
+<a id="w-455854454e53494f4e3a50524f432d5354415254"></a>
+
+### ` PROC-START `
+
+` ( proc -- ior ) `
+
+Start the configured executable with copied argv, environment and directory.
+
+Kind: builtin.
+
+` REQUIRE-EXTENSION ALSO EXTENSION ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-EXTENSION ALSO EXTENSION PROC-NEW THROW CONSTANT P
+P PROC-START .
+P PROC-FREE THROW
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment. Check the returned ior; zero is success. Passing it to THROW is one option.
+
+Sources: [src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1314).
+
+<a id="w-455854454e53494f4e3a50524f432d535441545553"></a>
+
+### ` PROC-STATUS `
+
+` ( proc -- state code ior ) `
+
+Observe retained status: 0 configuring, 1 running, 2 exited, 3 POSIX signal. Windows retains unsigned 32-bit exit codes.
+
+Kind: builtin.
+
+` REQUIRE-EXTENSION ALSO EXTENSION ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-EXTENSION ALSO EXTENSION PROC-NEW THROW CONSTANT P
+P PROC-STATUS . . .
+P PROC-FREE THROW
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment. Check the returned ior; zero is success. Passing it to THROW is one option.
+
+Sources: [src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1318).
+
+<a id="w-455854454e53494f4e3a50524f432d535444455252"></a>
+
+### ` PROC-STDERR `
+
+` ( proc -- fid ior ) `
+
+Return the readable child error FILE ID; zero if not piped or merged.
+
+Kind: builtin.
+
+` REQUIRE-EXTENSION ALSO EXTENSION ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-EXTENSION ALSO EXTENSION PROC-NEW THROW CONSTANT P
+P PROC-STDERR . .
+P PROC-FREE THROW
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment. Check the returned ior; zero is success. Passing it to THROW is one option.
+
+Sources: [src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1317).
+
+<a id="w-455854454e53494f4e3a50524f432d535444494e"></a>
+
+### ` PROC-STDIN `
+
+` ( proc -- fid ior ) `
+
+Return the writable child input FILE ID; zero if not piped.
+
+Kind: builtin.
+
+` REQUIRE-EXTENSION ALSO EXTENSION ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-EXTENSION ALSO EXTENSION PROC-NEW THROW CONSTANT P
+P PROC-STDIN . .
+P PROC-FREE THROW
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment. Check the returned ior; zero is success. Passing it to THROW is one option.
+
+Sources: [src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1315).
+
+<a id="w-455854454e53494f4e3a50524f432d5354444f5554"></a>
+
+### ` PROC-STDOUT `
+
+` ( proc -- fid ior ) `
+
+Return the readable child output FILE ID; zero if not piped.
+
+Kind: builtin.
+
+` REQUIRE-EXTENSION ALSO EXTENSION ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-EXTENSION ALSO EXTENSION PROC-NEW THROW CONSTANT P
+P PROC-STDOUT . .
+P PROC-FREE THROW
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment. Check the returned ior; zero is success. Passing it to THROW is one option.
+
+Sources: [src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1316).
+
+<a id="w-455854454e53494f4e3a50524f432d5445524d"></a>
+
+### ` PROC-TERM `
+
+` ( proc -- ior ) `
+
+Request group termination without waiting: SIGTERM on POSIX, terminate Job with exit 143 on Windows.
+
+Kind: builtin.
+
+` REQUIRE-EXTENSION ALSO EXTENSION ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-EXTENSION ALSO EXTENSION PROC-NEW THROW CONSTANT P
+P PROC-TERM .
+P PROC-FREE THROW
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment. Check the returned ior; zero is success. Passing it to THROW is one option.
+
+Sources: [src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1320).
+
+<a id="w-455854454e53494f4e3a50524f432d57414954"></a>
+
+### ` PROC-WAIT `
+
+` ( proc ms -- state code ior ) `
+
+Wait with one monotonic deadline: zero polls, negative waits indefinitely. Timeout retains state 1; Ctrl+C throws -28 without killing the child.
+
+Kind: builtin.
+
+` REQUIRE-EXTENSION ALSO EXTENSION ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-EXTENSION ALSO EXTENSION PROC-NEW THROW CONSTANT P
+P 0 PROC-WAIT . . .
+P PROC-FREE THROW
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment. Check the returned ior; zero is success. Passing it to THROW is one option.
+
+Sources: [src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1319).
+
+<a id="w-455854454e53494f4e3a524541442d415641494c41424c45"></a>
+
+### ` READ-AVAILABLE `
+
+` ( c-addr u fid -- u2 eof? ior ) `
+
+Read currently available bytes without waiting for a producer; distinguish temporary emptiness from observed EOF. Return the transferred count even with an I/O error. An empty buffer validates without consuming input. Host partial bytes are shared with ordinary file words.
+
+Kind: builtin.
+
+` REQUIRE-EXTENSION ALSO EXTENSION ` loads the vocabulary and makes it searchable.
+
+Usage example (source excerpt; consult the link for setup and expectations)
+
+```forth
+PAD 8 10 READ-AVAILABLE PAD 2 10 WRITE-AVAILABLE
+```
+
+[Example context](../src/tests/async_io_test.zig#L56)
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment. Check the returned ior; zero is success. Passing it to THROW is one option. Use valid logical-memory addresses, lengths and capacities; distinguish owned storage from borrowed lifetimes.
+
+Sources: [src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1306).
 
 <a id="w-455854454e53494f4e3a524f5753"></a>
 
@@ -3275,7 +3650,7 @@ REQUIRE-EXTENSION ALSO EXTENSION ROWS . PREVIOUS
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
-Sources: [src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1311).
+Sources: [src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1329).
 
 <a id="w-455854454e53494f4e3a5445524d2d414c542d53435245454e"></a>
 
@@ -3305,7 +3680,7 @@ Implementation definition (private helpers may change):
 1 CONSTANT TERM-ALT-SCREEN
 ```
 
-Sources: [src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1312).
+Sources: [src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1330).
 
 <a id="w-455854454e53494f4e3a5445524d2d484944452d435552534f52"></a>
 
@@ -3335,7 +3710,7 @@ Implementation definition (private helpers may change):
 4 CONSTANT TERM-HIDE-CURSOR
 ```
 
-Sources: [src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1314).
+Sources: [src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1332).
 
 <a id="w-455854454e53494f4e3a5445524d2d4d4f444521"></a>
 
@@ -3357,7 +3732,7 @@ REQUIRE-EXTENSION ALSO EXTENSION 0 TERM-MODE! . PREVIOUS
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment. Check the returned ior; zero is success. Passing it to THROW is one option.
 
-Sources: [src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1308).
+Sources: [src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1326).
 
 <a id="w-455854454e53494f4e3a5445524d2d4d4f444540"></a>
 
@@ -3379,7 +3754,7 @@ REQUIRE-EXTENSION ALSO EXTENSION TERM-MODE@ . PREVIOUS
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
-Sources: [src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1309).
+Sources: [src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1327).
 
 <a id="w-455854454e53494f4e3a5445524d2d4d4f555345"></a>
 
@@ -3409,7 +3784,7 @@ Implementation definition (private helpers may change):
 8 CONSTANT TERM-MOUSE
 ```
 
-Sources: [src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1315).
+Sources: [src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1333).
 
 <a id="w-455854454e53494f4e3a5445524d2d5041535445"></a>
 
@@ -3439,7 +3814,79 @@ Implementation definition (private helpers may change):
 2 CONSTANT TERM-PASTE
 ```
 
-Sources: [src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1313).
+Sources: [src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1331).
+
+<a id="w-455854454e53494f4e3a574149542d46494c4553"></a>
+
+### ` WAIT-FILES `
+
+` ( addr n ms -- index ior ) `
+
+Wait for the first readable file ID in a 1..64-cell array; EOF and I/O errors are ready. Validate all IDs first. Zero polls, negative waits indefinitely; timeout returns -1 0. Ctrl+C throws -28. Requires optional host file I/O support.
+
+Kind: builtin.
+
+` REQUIRE-EXTENSION ALSO EXTENSION ` loads the vocabulary and makes it searchable.
+
+Usage example (source excerpt; consult the link for setup and expectations)
+
+```forth
+11 IDS CELL+ ! IDS 2 42 WAIT-FILES IDS 2 42 WAIT-WRITABLE
+```
+
+[Example context](../src/tests/async_io_test.zig#L53)
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment. Check the returned ior; zero is success. Passing it to THROW is one option. Use valid logical-memory addresses, lengths and capacities; distinguish owned storage from borrowed lifetimes.
+
+Sources: [src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1305).
+
+<a id="w-455854454e53494f4e3a574149542d5752495441424c45"></a>
+
+### ` WAIT-WRITABLE `
+
+` ( addr n ms -- index ior ) `
+
+Wait for the first file ID that can accept output or report an I/O error; validate all 1..64 IDs first. Zero polls, negative waits indefinitely; timeout returns -1 0. Ctrl+C throws -28. Native resource ownership stays at the host.
+
+Kind: builtin.
+
+` REQUIRE-EXTENSION ALSO EXTENSION ` loads the vocabulary and makes it searchable.
+
+Usage example (source excerpt; consult the link for setup and expectations)
+
+```forth
+11 IDS CELL+ ! IDS 2 42 WAIT-FILES IDS 2 42 WAIT-WRITABLE
+```
+
+[Example context](../src/tests/async_io_test.zig#L53)
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment. Check the returned ior; zero is success. Passing it to THROW is one option. Use valid logical-memory addresses, lengths and capacities; distinguish owned storage from borrowed lifetimes.
+
+Sources: [src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1308).
+
+<a id="w-455854454e53494f4e3a57524954452d415641494c41424c45"></a>
+
+### ` WRITE-AVAILABLE `
+
+` ( c-addr u fid -- u2 ior ) `
+
+Accept as many bytes as can be queued without waiting for a consumer. The host copies accepted bytes before returning; the count does not guarantee delivery. Later pipe errors remain sticky until close. FLUSH-FILE and close wait for delivery.
+
+Kind: builtin.
+
+` REQUIRE-EXTENSION ALSO EXTENSION ` loads the vocabulary and makes it searchable.
+
+Usage example (source excerpt; consult the link for setup and expectations)
+
+```forth
+PAD 8 10 READ-AVAILABLE PAD 2 10 WRITE-AVAILABLE
+```
+
+[Example context](../src/tests/async_io_test.zig#L56)
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment. Check the returned ior; zero is success. Passing it to THROW is one option. Use valid logical-memory addresses, lengths and capacities; distinguish owned storage from borrowed lifetimes.
+
+Sources: [src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1307).
 
 <a id="namespace-forth"></a>
 
@@ -21607,7 +22054,7 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L24
 
 ` ( addr u fileid -- u2 ior ) `
 
-Read up to u bytes as they are; u2 is 0 at the end of the file.
+Read the requested bytes or stop at EOF; u2 is zero at EOF with no bytes read. Preserve partial host counts even with an I/O error.
 
 Kind: builtin.
 
@@ -21631,7 +22078,7 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L75
 
 ` ( addr u fileid -- u2 flag ior ) `
 
-Read a line of at most u characters without its end; flag is false at the end of the file.
+Read a line of at most u bytes without its terminator; flag is false at EOF with no bytes read. Preserve partial host counts even with an I/O error.
 
 Kind: builtin.
 
@@ -21640,10 +22087,10 @@ Related: [Characters (UTF-8)](USER_MANUAL.md#characters-utf-8), [Files and excep
 Usage example (source excerpt; consult the link for setup and expectations)
 
 ```forth
-S" b.txt" R/O OPEN-FILE S" a.txt" 8 OPEN-FILE 99 FILE-SIZE PAD 4 99 READ-LINE
+PAD 8 4 READ-FILE PAD 8 4 READ-LINE
 ```
 
-[Example context](../src/tests/files_and_heap_test.zig#L52)
+[Example context](../src/tests/async_io_test.zig#L100)
 
 Caution: Check the returned ior; zero is success. Passing it to THROW is one option. Use valid logical-memory addresses, lengths and capacities; distinguish owned storage from borrowed lifetimes.
 
@@ -31091,7 +31538,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS : SC-EVENT-DEMO GFX-KEY-EVENT IF . . ELSE ." none
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1397).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1415).
 
 <a id="w-47524150484943533a4746582d4b45592d48454c44"></a>
 
@@ -31139,7 +31586,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS CREATE SC-BITS 32 ALLOT SC-BITS GFX-KEY-RESYNC SC
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment. Use valid logical-memory addresses, lengths and capacities; distinguish owned storage from borrowed lifetimes.
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1399).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1417).
 
 <a id="w-47524150484943533a4746582d4d4f555345"></a>
 
@@ -31480,7 +31927,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-LSHIFT GFX-SCAN-HELD? .
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1395).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1413).
 
 <a id="w-47524150484943533a4746582d5343414e2d494e5055543f"></a>
 
@@ -31502,7 +31949,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS GFX-SCAN-INPUT? .
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1391).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1409).
 
 <a id="w-47524150484943533a4746582d5343414e2d535550504f525445443f"></a>
 
@@ -31524,7 +31971,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-A GFX-SCAN-SUPPORTED? .
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1393).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1411).
 
 <a id="w-47524150484943533a4746582d53484f572d424c4f434b53"></a>
 
@@ -31800,7 +32247,7 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 ` ( -- ) `
 
-End the Tcl program, dropping what it wrote and Sigma did not read; -265 when the host could not see it end (FORTH/Sigma).
+End the Tcl program, dropping what it wrote and Sigma did not read; -265 on termination or cleanup failure; unreleased ownership is retried before another start (FORTH/Sigma).
 
 Kind: builtin.
 
@@ -32763,7 +33210,7 @@ Implementation definition (private helpers may change):
 : KEY-EVENT ( -- scan kind true | false ) GFX-KEY-EVENT ;
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1396).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1414).
 
 <a id="w-47524150484943533a4b45592d48454c443f"></a>
 
@@ -32823,7 +33270,7 @@ Implementation definition (private helpers may change):
 : KEY-RESYNC ( addr -- ) GFX-KEY-RESYNC ;
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1398).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1416).
 
 <a id="w-47524150484943533a4c494e45"></a>
 
@@ -33549,7 +33996,7 @@ Implementation definition (private helpers may change):
 39 CONSTANT SC-0
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1435).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1453).
 
 <a id="w-47524150484943533a53432d31"></a>
 
@@ -33577,7 +34024,7 @@ Implementation definition (private helpers may change):
 30 CONSTANT SC-1
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1426).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1444).
 
 <a id="w-47524150484943533a53432d32"></a>
 
@@ -33605,7 +34052,7 @@ Implementation definition (private helpers may change):
 31 CONSTANT SC-2
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1427).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1445).
 
 <a id="w-47524150484943533a53432d33"></a>
 
@@ -33633,7 +34080,7 @@ Implementation definition (private helpers may change):
 32 CONSTANT SC-3
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1428).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1446).
 
 <a id="w-47524150484943533a53432d34"></a>
 
@@ -33661,7 +34108,7 @@ Implementation definition (private helpers may change):
 33 CONSTANT SC-4
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1429).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1447).
 
 <a id="w-47524150484943533a53432d35"></a>
 
@@ -33689,7 +34136,7 @@ Implementation definition (private helpers may change):
 34 CONSTANT SC-5
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1430).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1448).
 
 <a id="w-47524150484943533a53432d36"></a>
 
@@ -33717,7 +34164,7 @@ Implementation definition (private helpers may change):
 35 CONSTANT SC-6
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1431).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1449).
 
 <a id="w-47524150484943533a53432d37"></a>
 
@@ -33745,7 +34192,7 @@ Implementation definition (private helpers may change):
 36 CONSTANT SC-7
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1432).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1450).
 
 <a id="w-47524150484943533a53432d38"></a>
 
@@ -33773,7 +34220,7 @@ Implementation definition (private helpers may change):
 37 CONSTANT SC-8
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1433).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1451).
 
 <a id="w-47524150484943533a53432d39"></a>
 
@@ -33801,7 +34248,7 @@ Implementation definition (private helpers may change):
 38 CONSTANT SC-9
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1434).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1452).
 
 <a id="w-47524150484943533a53432d41"></a>
 
@@ -33831,7 +34278,7 @@ Implementation definition (private helpers may change):
 4 CONSTANT SC-A
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1400).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1418).
 
 <a id="w-47524150484943533a53432d414741494e"></a>
 
@@ -33859,7 +34306,7 @@ Implementation definition (private helpers may change):
 121 CONSTANT SC-AGAIN
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1517).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1535).
 
 <a id="w-47524150484943533a53432d414c544552415345"></a>
 
@@ -33887,7 +34334,7 @@ Implementation definition (private helpers may change):
 153 CONSTANT SC-ALTERASE
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1549).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1567).
 
 <a id="w-47524150484943533a53432d41504f5354524f504845"></a>
 
@@ -33915,7 +34362,7 @@ Implementation definition (private helpers may change):
 52 CONSTANT SC-APOSTROPHE
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1448).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1466).
 
 <a id="w-47524150484943533a53432d4150504c49434154494f4e"></a>
 
@@ -33943,7 +34390,7 @@ Implementation definition (private helpers may change):
 101 CONSTANT SC-APPLICATION
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1497).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1515).
 
 <a id="w-47524150484943533a53432d42"></a>
 
@@ -33971,7 +34418,7 @@ Implementation definition (private helpers may change):
 5 CONSTANT SC-B
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1401).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1419).
 
 <a id="w-47524150484943533a53432d4241434b534c415348"></a>
 
@@ -33999,7 +34446,7 @@ Implementation definition (private helpers may change):
 49 CONSTANT SC-BACKSLASH
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1445).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1463).
 
 <a id="w-47524150484943533a53432d4241434b5350414345"></a>
 
@@ -34027,7 +34474,7 @@ Implementation definition (private helpers may change):
 42 CONSTANT SC-BACKSPACE
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1438).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1456).
 
 <a id="w-47524150484943533a53432d43"></a>
 
@@ -34055,7 +34502,7 @@ Implementation definition (private helpers may change):
 6 CONSTANT SC-C
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1402).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1420).
 
 <a id="w-47524150484943533a53432d43414e43454c"></a>
 
@@ -34083,7 +34530,7 @@ Implementation definition (private helpers may change):
 155 CONSTANT SC-CANCEL
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1551).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1569).
 
 <a id="w-47524150484943533a53432d434150534c4f434b"></a>
 
@@ -34111,7 +34558,7 @@ Implementation definition (private helpers may change):
 57 CONSTANT SC-CAPSLOCK
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1453).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1471).
 
 <a id="w-47524150484943533a53432d434c454152"></a>
 
@@ -34139,7 +34586,7 @@ Implementation definition (private helpers may change):
 156 CONSTANT SC-CLEAR
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1552).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1570).
 
 <a id="w-47524150484943533a53432d434c454152414741494e"></a>
 
@@ -34167,7 +34614,7 @@ Implementation definition (private helpers may change):
 162 CONSTANT SC-CLEARAGAIN
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1558).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1576).
 
 <a id="w-47524150484943533a53432d434f4d4d41"></a>
 
@@ -34195,7 +34642,7 @@ Implementation definition (private helpers may change):
 54 CONSTANT SC-COMMA
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1450).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1468).
 
 <a id="w-47524150484943533a53432d434f5059"></a>
 
@@ -34223,7 +34670,7 @@ Implementation definition (private helpers may change):
 124 CONSTANT SC-COPY
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1520).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1538).
 
 <a id="w-47524150484943533a53432d435253454c"></a>
 
@@ -34251,7 +34698,7 @@ Implementation definition (private helpers may change):
 163 CONSTANT SC-CRSEL
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1559).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1577).
 
 <a id="w-47524150484943533a53432d43555252454e4359535542554e4954"></a>
 
@@ -34279,7 +34726,7 @@ Implementation definition (private helpers may change):
 181 CONSTANT SC-CURRENCYSUBUNIT
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1566).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1584).
 
 <a id="w-47524150484943533a53432d43555252454e4359554e4954"></a>
 
@@ -34307,7 +34754,7 @@ Implementation definition (private helpers may change):
 180 CONSTANT SC-CURRENCYUNIT
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1565).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1583).
 
 <a id="w-47524150484943533a53432d435554"></a>
 
@@ -34335,7 +34782,7 @@ Implementation definition (private helpers may change):
 123 CONSTANT SC-CUT
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1519).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1537).
 
 <a id="w-47524150484943533a53432d44"></a>
 
@@ -34363,7 +34810,7 @@ Implementation definition (private helpers may change):
 7 CONSTANT SC-D
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1403).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1421).
 
 <a id="w-47524150484943533a53432d444543494d414c534550415241544f52"></a>
 
@@ -34391,7 +34838,7 @@ Implementation definition (private helpers may change):
 179 CONSTANT SC-DECIMALSEPARATOR
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1564).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1582).
 
 <a id="w-47524150484943533a53432d44454c455445"></a>
 
@@ -34419,7 +34866,7 @@ Implementation definition (private helpers may change):
 76 CONSTANT SC-DELETE
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1472).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1490).
 
 <a id="w-47524150484943533a53432d444f574e"></a>
 
@@ -34447,7 +34894,7 @@ Implementation definition (private helpers may change):
 81 CONSTANT SC-DOWN
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1477).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1495).
 
 <a id="w-47524150484943533a53432d45"></a>
 
@@ -34475,7 +34922,7 @@ Implementation definition (private helpers may change):
 8 CONSTANT SC-E
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1404).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1422).
 
 <a id="w-47524150484943533a53432d454e44"></a>
 
@@ -34503,7 +34950,7 @@ Implementation definition (private helpers may change):
 77 CONSTANT SC-END
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1473).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1491).
 
 <a id="w-47524150484943533a53432d455155414c53"></a>
 
@@ -34531,7 +34978,7 @@ Implementation definition (private helpers may change):
 46 CONSTANT SC-EQUALS
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1442).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1460).
 
 <a id="w-47524150484943533a53432d455343415045"></a>
 
@@ -34559,7 +35006,7 @@ Implementation definition (private helpers may change):
 41 CONSTANT SC-ESCAPE
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1437).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1455).
 
 <a id="w-47524150484943533a53432d45584543555445"></a>
 
@@ -34587,7 +35034,7 @@ Implementation definition (private helpers may change):
 116 CONSTANT SC-EXECUTE
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1512).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1530).
 
 <a id="w-47524150484943533a53432d455853454c"></a>
 
@@ -34615,7 +35062,7 @@ Implementation definition (private helpers may change):
 164 CONSTANT SC-EXSEL
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1560).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1578).
 
 <a id="w-47524150484943533a53432d46"></a>
 
@@ -34643,7 +35090,7 @@ Implementation definition (private helpers may change):
 9 CONSTANT SC-F
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1405).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1423).
 
 <a id="w-47524150484943533a53432d4631"></a>
 
@@ -34671,7 +35118,7 @@ Implementation definition (private helpers may change):
 58 CONSTANT SC-F1
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1454).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1472).
 
 <a id="w-47524150484943533a53432d463130"></a>
 
@@ -34699,7 +35146,7 @@ Implementation definition (private helpers may change):
 67 CONSTANT SC-F10
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1463).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1481).
 
 <a id="w-47524150484943533a53432d463131"></a>
 
@@ -34727,7 +35174,7 @@ Implementation definition (private helpers may change):
 68 CONSTANT SC-F11
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1464).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1482).
 
 <a id="w-47524150484943533a53432d463132"></a>
 
@@ -34755,7 +35202,7 @@ Implementation definition (private helpers may change):
 69 CONSTANT SC-F12
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1465).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1483).
 
 <a id="w-47524150484943533a53432d463133"></a>
 
@@ -34783,7 +35230,7 @@ Implementation definition (private helpers may change):
 104 CONSTANT SC-F13
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1500).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1518).
 
 <a id="w-47524150484943533a53432d463134"></a>
 
@@ -34811,7 +35258,7 @@ Implementation definition (private helpers may change):
 105 CONSTANT SC-F14
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1501).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1519).
 
 <a id="w-47524150484943533a53432d463135"></a>
 
@@ -34839,7 +35286,7 @@ Implementation definition (private helpers may change):
 106 CONSTANT SC-F15
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1502).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1520).
 
 <a id="w-47524150484943533a53432d463136"></a>
 
@@ -34867,7 +35314,7 @@ Implementation definition (private helpers may change):
 107 CONSTANT SC-F16
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1503).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1521).
 
 <a id="w-47524150484943533a53432d463137"></a>
 
@@ -34895,7 +35342,7 @@ Implementation definition (private helpers may change):
 108 CONSTANT SC-F17
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1504).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1522).
 
 <a id="w-47524150484943533a53432d463138"></a>
 
@@ -34923,7 +35370,7 @@ Implementation definition (private helpers may change):
 109 CONSTANT SC-F18
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1505).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1523).
 
 <a id="w-47524150484943533a53432d463139"></a>
 
@@ -34951,7 +35398,7 @@ Implementation definition (private helpers may change):
 110 CONSTANT SC-F19
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1506).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1524).
 
 <a id="w-47524150484943533a53432d4632"></a>
 
@@ -34979,7 +35426,7 @@ Implementation definition (private helpers may change):
 59 CONSTANT SC-F2
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1455).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1473).
 
 <a id="w-47524150484943533a53432d463230"></a>
 
@@ -35007,7 +35454,7 @@ Implementation definition (private helpers may change):
 111 CONSTANT SC-F20
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1507).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1525).
 
 <a id="w-47524150484943533a53432d463231"></a>
 
@@ -35035,7 +35482,7 @@ Implementation definition (private helpers may change):
 112 CONSTANT SC-F21
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1508).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1526).
 
 <a id="w-47524150484943533a53432d463232"></a>
 
@@ -35063,7 +35510,7 @@ Implementation definition (private helpers may change):
 113 CONSTANT SC-F22
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1509).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1527).
 
 <a id="w-47524150484943533a53432d463233"></a>
 
@@ -35091,7 +35538,7 @@ Implementation definition (private helpers may change):
 114 CONSTANT SC-F23
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1510).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1528).
 
 <a id="w-47524150484943533a53432d463234"></a>
 
@@ -35119,7 +35566,7 @@ Implementation definition (private helpers may change):
 115 CONSTANT SC-F24
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1511).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1529).
 
 <a id="w-47524150484943533a53432d4633"></a>
 
@@ -35147,7 +35594,7 @@ Implementation definition (private helpers may change):
 60 CONSTANT SC-F3
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1456).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1474).
 
 <a id="w-47524150484943533a53432d4634"></a>
 
@@ -35175,7 +35622,7 @@ Implementation definition (private helpers may change):
 61 CONSTANT SC-F4
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1457).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1475).
 
 <a id="w-47524150484943533a53432d4635"></a>
 
@@ -35203,7 +35650,7 @@ Implementation definition (private helpers may change):
 62 CONSTANT SC-F5
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1458).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1476).
 
 <a id="w-47524150484943533a53432d4636"></a>
 
@@ -35231,7 +35678,7 @@ Implementation definition (private helpers may change):
 63 CONSTANT SC-F6
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1459).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1477).
 
 <a id="w-47524150484943533a53432d4637"></a>
 
@@ -35259,7 +35706,7 @@ Implementation definition (private helpers may change):
 64 CONSTANT SC-F7
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1460).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1478).
 
 <a id="w-47524150484943533a53432d4638"></a>
 
@@ -35287,7 +35734,7 @@ Implementation definition (private helpers may change):
 65 CONSTANT SC-F8
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1461).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1479).
 
 <a id="w-47524150484943533a53432d4639"></a>
 
@@ -35315,7 +35762,7 @@ Implementation definition (private helpers may change):
 66 CONSTANT SC-F9
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1462).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1480).
 
 <a id="w-47524150484943533a53432d46494e44"></a>
 
@@ -35343,7 +35790,7 @@ Implementation definition (private helpers may change):
 126 CONSTANT SC-FIND
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1522).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1540).
 
 <a id="w-47524150484943533a53432d47"></a>
 
@@ -35371,7 +35818,7 @@ Implementation definition (private helpers may change):
 10 CONSTANT SC-G
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1406).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1424).
 
 <a id="w-47524150484943533a53432d4752415645"></a>
 
@@ -35399,7 +35846,7 @@ Implementation definition (private helpers may change):
 53 CONSTANT SC-GRAVE
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1449).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1467).
 
 <a id="w-47524150484943533a53432d48"></a>
 
@@ -35427,7 +35874,7 @@ Implementation definition (private helpers may change):
 11 CONSTANT SC-H
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1407).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1425).
 
 <a id="w-47524150484943533a53432d48454c50"></a>
 
@@ -35455,7 +35902,7 @@ Implementation definition (private helpers may change):
 117 CONSTANT SC-HELP
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1513).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1531).
 
 <a id="w-47524150484943533a53432d484f4d45"></a>
 
@@ -35483,7 +35930,7 @@ Implementation definition (private helpers may change):
 74 CONSTANT SC-HOME
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1470).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1488).
 
 <a id="w-47524150484943533a53432d49"></a>
 
@@ -35511,7 +35958,7 @@ Implementation definition (private helpers may change):
 12 CONSTANT SC-I
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1408).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1426).
 
 <a id="w-47524150484943533a53432d494e53455254"></a>
 
@@ -35539,7 +35986,7 @@ Implementation definition (private helpers may change):
 73 CONSTANT SC-INSERT
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1469).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1487).
 
 <a id="w-47524150484943533a53432d494e5445524e4154494f4e414c31"></a>
 
@@ -35567,7 +36014,7 @@ Implementation definition (private helpers may change):
 135 CONSTANT SC-INTERNATIONAL1
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1531).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1549).
 
 <a id="w-47524150484943533a53432d494e5445524e4154494f4e414c32"></a>
 
@@ -35595,7 +36042,7 @@ Implementation definition (private helpers may change):
 136 CONSTANT SC-INTERNATIONAL2
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1532).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1550).
 
 <a id="w-47524150484943533a53432d494e5445524e4154494f4e414c33"></a>
 
@@ -35623,7 +36070,7 @@ Implementation definition (private helpers may change):
 137 CONSTANT SC-INTERNATIONAL3
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1533).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1551).
 
 <a id="w-47524150484943533a53432d494e5445524e4154494f4e414c34"></a>
 
@@ -35651,7 +36098,7 @@ Implementation definition (private helpers may change):
 138 CONSTANT SC-INTERNATIONAL4
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1534).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1552).
 
 <a id="w-47524150484943533a53432d494e5445524e4154494f4e414c35"></a>
 
@@ -35679,7 +36126,7 @@ Implementation definition (private helpers may change):
 139 CONSTANT SC-INTERNATIONAL5
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1535).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1553).
 
 <a id="w-47524150484943533a53432d494e5445524e4154494f4e414c36"></a>
 
@@ -35707,7 +36154,7 @@ Implementation definition (private helpers may change):
 140 CONSTANT SC-INTERNATIONAL6
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1536).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1554).
 
 <a id="w-47524150484943533a53432d494e5445524e4154494f4e414c37"></a>
 
@@ -35735,7 +36182,7 @@ Implementation definition (private helpers may change):
 141 CONSTANT SC-INTERNATIONAL7
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1537).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1555).
 
 <a id="w-47524150484943533a53432d494e5445524e4154494f4e414c38"></a>
 
@@ -35763,7 +36210,7 @@ Implementation definition (private helpers may change):
 142 CONSTANT SC-INTERNATIONAL8
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1538).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1556).
 
 <a id="w-47524150484943533a53432d494e5445524e4154494f4e414c39"></a>
 
@@ -35791,7 +36238,7 @@ Implementation definition (private helpers may change):
 143 CONSTANT SC-INTERNATIONAL9
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1539).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1557).
 
 <a id="w-47524150484943533a53432d4a"></a>
 
@@ -35819,7 +36266,7 @@ Implementation definition (private helpers may change):
 13 CONSTANT SC-J
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1409).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1427).
 
 <a id="w-47524150484943533a53432d4b"></a>
 
@@ -35847,7 +36294,7 @@ Implementation definition (private helpers may change):
 14 CONSTANT SC-K
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1410).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1428).
 
 <a id="w-47524150484943533a53432d4b502d30"></a>
 
@@ -35875,7 +36322,7 @@ Implementation definition (private helpers may change):
 98 CONSTANT SC-KP-0
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1494).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1512).
 
 <a id="w-47524150484943533a53432d4b502d3030"></a>
 
@@ -35903,7 +36350,7 @@ Implementation definition (private helpers may change):
 176 CONSTANT SC-KP-00
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1561).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1579).
 
 <a id="w-47524150484943533a53432d4b502d303030"></a>
 
@@ -35931,7 +36378,7 @@ Implementation definition (private helpers may change):
 177 CONSTANT SC-KP-000
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1562).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1580).
 
 <a id="w-47524150484943533a53432d4b502d31"></a>
 
@@ -35959,7 +36406,7 @@ Implementation definition (private helpers may change):
 89 CONSTANT SC-KP-1
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1485).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1503).
 
 <a id="w-47524150484943533a53432d4b502d32"></a>
 
@@ -35987,7 +36434,7 @@ Implementation definition (private helpers may change):
 90 CONSTANT SC-KP-2
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1486).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1504).
 
 <a id="w-47524150484943533a53432d4b502d33"></a>
 
@@ -36015,7 +36462,7 @@ Implementation definition (private helpers may change):
 91 CONSTANT SC-KP-3
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1487).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1505).
 
 <a id="w-47524150484943533a53432d4b502d34"></a>
 
@@ -36043,7 +36490,7 @@ Implementation definition (private helpers may change):
 92 CONSTANT SC-KP-4
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1488).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1506).
 
 <a id="w-47524150484943533a53432d4b502d35"></a>
 
@@ -36071,7 +36518,7 @@ Implementation definition (private helpers may change):
 93 CONSTANT SC-KP-5
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1489).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1507).
 
 <a id="w-47524150484943533a53432d4b502d36"></a>
 
@@ -36099,7 +36546,7 @@ Implementation definition (private helpers may change):
 94 CONSTANT SC-KP-6
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1490).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1508).
 
 <a id="w-47524150484943533a53432d4b502d37"></a>
 
@@ -36127,7 +36574,7 @@ Implementation definition (private helpers may change):
 95 CONSTANT SC-KP-7
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1491).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1509).
 
 <a id="w-47524150484943533a53432d4b502d38"></a>
 
@@ -36155,7 +36602,7 @@ Implementation definition (private helpers may change):
 96 CONSTANT SC-KP-8
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1492).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1510).
 
 <a id="w-47524150484943533a53432d4b502d39"></a>
 
@@ -36183,7 +36630,7 @@ Implementation definition (private helpers may change):
 97 CONSTANT SC-KP-9
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1493).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1511).
 
 <a id="w-47524150484943533a53432d4b502d41"></a>
 
@@ -36211,7 +36658,7 @@ Implementation definition (private helpers may change):
 188 CONSTANT SC-KP-A
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1573).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1591).
 
 <a id="w-47524150484943533a53432d4b502d414d50455253414e44"></a>
 
@@ -36239,7 +36686,7 @@ Implementation definition (private helpers may change):
 199 CONSTANT SC-KP-AMPERSAND
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1584).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1602).
 
 <a id="w-47524150484943533a53432d4b502d4154"></a>
 
@@ -36267,7 +36714,7 @@ Implementation definition (private helpers may change):
 206 CONSTANT SC-KP-AT
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1591).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1609).
 
 <a id="w-47524150484943533a53432d4b502d42"></a>
 
@@ -36295,7 +36742,7 @@ Implementation definition (private helpers may change):
 189 CONSTANT SC-KP-B
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1574).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1592).
 
 <a id="w-47524150484943533a53432d4b502d4241434b5350414345"></a>
 
@@ -36323,7 +36770,7 @@ Implementation definition (private helpers may change):
 187 CONSTANT SC-KP-BACKSPACE
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1572).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1590).
 
 <a id="w-47524150484943533a53432d4b502d42494e415259"></a>
 
@@ -36351,7 +36798,7 @@ Implementation definition (private helpers may change):
 218 CONSTANT SC-KP-BINARY
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1603).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1621).
 
 <a id="w-47524150484943533a53432d4b502d43"></a>
 
@@ -36379,7 +36826,7 @@ Implementation definition (private helpers may change):
 190 CONSTANT SC-KP-C
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1575).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1593).
 
 <a id="w-47524150484943533a53432d4b502d434c454152"></a>
 
@@ -36407,7 +36854,7 @@ Implementation definition (private helpers may change):
 216 CONSTANT SC-KP-CLEAR
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1601).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1619).
 
 <a id="w-47524150484943533a53432d4b502d434c454152454e545259"></a>
 
@@ -36435,7 +36882,7 @@ Implementation definition (private helpers may change):
 217 CONSTANT SC-KP-CLEARENTRY
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1602).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1620).
 
 <a id="w-47524150484943533a53432d4b502d434f4c4f4e"></a>
 
@@ -36463,7 +36910,7 @@ Implementation definition (private helpers may change):
 203 CONSTANT SC-KP-COLON
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1588).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1606).
 
 <a id="w-47524150484943533a53432d4b502d434f4d4d41"></a>
 
@@ -36491,7 +36938,7 @@ Implementation definition (private helpers may change):
 133 CONSTANT SC-KP-COMMA
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1529).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1547).
 
 <a id="w-47524150484943533a53432d4b502d44"></a>
 
@@ -36519,7 +36966,7 @@ Implementation definition (private helpers may change):
 191 CONSTANT SC-KP-D
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1576).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1594).
 
 <a id="w-47524150484943533a53432d4b502d44424c414d50455253414e44"></a>
 
@@ -36547,7 +36994,7 @@ Implementation definition (private helpers may change):
 200 CONSTANT SC-KP-DBLAMPERSAND
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1585).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1603).
 
 <a id="w-47524150484943533a53432d4b502d44424c564552544943414c424152"></a>
 
@@ -36575,7 +37022,7 @@ Implementation definition (private helpers may change):
 202 CONSTANT SC-KP-DBLVERTICALBAR
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1587).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1605).
 
 <a id="w-47524150484943533a53432d4b502d444543494d414c"></a>
 
@@ -36603,7 +37050,7 @@ Implementation definition (private helpers may change):
 220 CONSTANT SC-KP-DECIMAL
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1605).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1623).
 
 <a id="w-47524150484943533a53432d4b502d444956494445"></a>
 
@@ -36631,7 +37078,7 @@ Implementation definition (private helpers may change):
 84 CONSTANT SC-KP-DIVIDE
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1480).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1498).
 
 <a id="w-47524150484943533a53432d4b502d45"></a>
 
@@ -36659,7 +37106,7 @@ Implementation definition (private helpers may change):
 192 CONSTANT SC-KP-E
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1577).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1595).
 
 <a id="w-47524150484943533a53432d4b502d454e544552"></a>
 
@@ -36687,7 +37134,7 @@ Implementation definition (private helpers may change):
 88 CONSTANT SC-KP-ENTER
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1484).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1502).
 
 <a id="w-47524150484943533a53432d4b502d455155414c53"></a>
 
@@ -36715,7 +37162,7 @@ Implementation definition (private helpers may change):
 103 CONSTANT SC-KP-EQUALS
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1499).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1517).
 
 <a id="w-47524150484943533a53432d4b502d455155414c534153343030"></a>
 
@@ -36743,7 +37190,7 @@ Implementation definition (private helpers may change):
 134 CONSTANT SC-KP-EQUALSAS400
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1530).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1548).
 
 <a id="w-47524150484943533a53432d4b502d4558434c414d"></a>
 
@@ -36771,7 +37218,7 @@ Implementation definition (private helpers may change):
 207 CONSTANT SC-KP-EXCLAM
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1592).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1610).
 
 <a id="w-47524150484943533a53432d4b502d46"></a>
 
@@ -36799,7 +37246,7 @@ Implementation definition (private helpers may change):
 193 CONSTANT SC-KP-F
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1578).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1596).
 
 <a id="w-47524150484943533a53432d4b502d47524541544552"></a>
 
@@ -36827,7 +37274,7 @@ Implementation definition (private helpers may change):
 198 CONSTANT SC-KP-GREATER
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1583).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1601).
 
 <a id="w-47524150484943533a53432d4b502d48415348"></a>
 
@@ -36855,7 +37302,7 @@ Implementation definition (private helpers may change):
 204 CONSTANT SC-KP-HASH
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1589).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1607).
 
 <a id="w-47524150484943533a53432d4b502d48455841444543494d414c"></a>
 
@@ -36883,7 +37330,7 @@ Implementation definition (private helpers may change):
 221 CONSTANT SC-KP-HEXADECIMAL
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1606).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1624).
 
 <a id="w-47524150484943533a53432d4b502d4c4546544252414345"></a>
 
@@ -36911,7 +37358,7 @@ Implementation definition (private helpers may change):
 184 CONSTANT SC-KP-LEFTBRACE
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1569).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1587).
 
 <a id="w-47524150484943533a53432d4b502d4c454654504152454e"></a>
 
@@ -36939,7 +37386,7 @@ Implementation definition (private helpers may change):
 182 CONSTANT SC-KP-LEFTPAREN
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1567).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1585).
 
 <a id="w-47524150484943533a53432d4b502d4c455353"></a>
 
@@ -36967,7 +37414,7 @@ Implementation definition (private helpers may change):
 197 CONSTANT SC-KP-LESS
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1582).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1600).
 
 <a id="w-47524150484943533a53432d4b502d4d454d414444"></a>
 
@@ -36995,7 +37442,7 @@ Implementation definition (private helpers may change):
 211 CONSTANT SC-KP-MEMADD
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1596).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1614).
 
 <a id="w-47524150484943533a53432d4b502d4d454d434c454152"></a>
 
@@ -37023,7 +37470,7 @@ Implementation definition (private helpers may change):
 210 CONSTANT SC-KP-MEMCLEAR
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1595).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1613).
 
 <a id="w-47524150484943533a53432d4b502d4d454d444956494445"></a>
 
@@ -37051,7 +37498,7 @@ Implementation definition (private helpers may change):
 214 CONSTANT SC-KP-MEMDIVIDE
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1599).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1617).
 
 <a id="w-47524150484943533a53432d4b502d4d454d4d554c5449504c59"></a>
 
@@ -37079,7 +37526,7 @@ Implementation definition (private helpers may change):
 213 CONSTANT SC-KP-MEMMULTIPLY
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1598).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1616).
 
 <a id="w-47524150484943533a53432d4b502d4d454d524543414c4c"></a>
 
@@ -37107,7 +37554,7 @@ Implementation definition (private helpers may change):
 209 CONSTANT SC-KP-MEMRECALL
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1594).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1612).
 
 <a id="w-47524150484943533a53432d4b502d4d454d53544f5245"></a>
 
@@ -37135,7 +37582,7 @@ Implementation definition (private helpers may change):
 208 CONSTANT SC-KP-MEMSTORE
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1593).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1611).
 
 <a id="w-47524150484943533a53432d4b502d4d454d5355425452414354"></a>
 
@@ -37163,7 +37610,7 @@ Implementation definition (private helpers may change):
 212 CONSTANT SC-KP-MEMSUBTRACT
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1597).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1615).
 
 <a id="w-47524150484943533a53432d4b502d4d494e5553"></a>
 
@@ -37191,7 +37638,7 @@ Implementation definition (private helpers may change):
 86 CONSTANT SC-KP-MINUS
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1482).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1500).
 
 <a id="w-47524150484943533a53432d4b502d4d554c5449504c59"></a>
 
@@ -37219,7 +37666,7 @@ Implementation definition (private helpers may change):
 85 CONSTANT SC-KP-MULTIPLY
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1481).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1499).
 
 <a id="w-47524150484943533a53432d4b502d4f4354414c"></a>
 
@@ -37247,7 +37694,7 @@ Implementation definition (private helpers may change):
 219 CONSTANT SC-KP-OCTAL
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1604).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1622).
 
 <a id="w-47524150484943533a53432d4b502d50455243454e54"></a>
 
@@ -37275,7 +37722,7 @@ Implementation definition (private helpers may change):
 196 CONSTANT SC-KP-PERCENT
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1581).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1599).
 
 <a id="w-47524150484943533a53432d4b502d504552494f44"></a>
 
@@ -37303,7 +37750,7 @@ Implementation definition (private helpers may change):
 99 CONSTANT SC-KP-PERIOD
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1495).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1513).
 
 <a id="w-47524150484943533a53432d4b502d504c5553"></a>
 
@@ -37331,7 +37778,7 @@ Implementation definition (private helpers may change):
 87 CONSTANT SC-KP-PLUS
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1483).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1501).
 
 <a id="w-47524150484943533a53432d4b502d504c55534d494e5553"></a>
 
@@ -37359,7 +37806,7 @@ Implementation definition (private helpers may change):
 215 CONSTANT SC-KP-PLUSMINUS
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1600).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1618).
 
 <a id="w-47524150484943533a53432d4b502d504f574552"></a>
 
@@ -37387,7 +37834,7 @@ Implementation definition (private helpers may change):
 195 CONSTANT SC-KP-POWER
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1580).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1598).
 
 <a id="w-47524150484943533a53432d4b502d52494748544252414345"></a>
 
@@ -37415,7 +37862,7 @@ Implementation definition (private helpers may change):
 185 CONSTANT SC-KP-RIGHTBRACE
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1570).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1588).
 
 <a id="w-47524150484943533a53432d4b502d5249474854504152454e"></a>
 
@@ -37443,7 +37890,7 @@ Implementation definition (private helpers may change):
 183 CONSTANT SC-KP-RIGHTPAREN
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1568).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1586).
 
 <a id="w-47524150484943533a53432d4b502d5350414345"></a>
 
@@ -37471,7 +37918,7 @@ Implementation definition (private helpers may change):
 205 CONSTANT SC-KP-SPACE
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1590).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1608).
 
 <a id="w-47524150484943533a53432d4b502d544142"></a>
 
@@ -37499,7 +37946,7 @@ Implementation definition (private helpers may change):
 186 CONSTANT SC-KP-TAB
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1571).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1589).
 
 <a id="w-47524150484943533a53432d4b502d564552544943414c424152"></a>
 
@@ -37527,7 +37974,7 @@ Implementation definition (private helpers may change):
 201 CONSTANT SC-KP-VERTICALBAR
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1586).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1604).
 
 <a id="w-47524150484943533a53432d4b502d584f52"></a>
 
@@ -37555,7 +38002,7 @@ Implementation definition (private helpers may change):
 194 CONSTANT SC-KP-XOR
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1579).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1597).
 
 <a id="w-47524150484943533a53432d4c"></a>
 
@@ -37583,7 +38030,7 @@ Implementation definition (private helpers may change):
 15 CONSTANT SC-L
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1411).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1429).
 
 <a id="w-47524150484943533a53432d4c414c54"></a>
 
@@ -37611,7 +38058,7 @@ Implementation definition (private helpers may change):
 226 CONSTANT SC-LALT
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1609).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1627).
 
 <a id="w-47524150484943533a53432d4c414e4731"></a>
 
@@ -37639,7 +38086,7 @@ Implementation definition (private helpers may change):
 144 CONSTANT SC-LANG1
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1540).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1558).
 
 <a id="w-47524150484943533a53432d4c414e4732"></a>
 
@@ -37667,7 +38114,7 @@ Implementation definition (private helpers may change):
 145 CONSTANT SC-LANG2
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1541).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1559).
 
 <a id="w-47524150484943533a53432d4c414e4733"></a>
 
@@ -37695,7 +38142,7 @@ Implementation definition (private helpers may change):
 146 CONSTANT SC-LANG3
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1542).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1560).
 
 <a id="w-47524150484943533a53432d4c414e4734"></a>
 
@@ -37723,7 +38170,7 @@ Implementation definition (private helpers may change):
 147 CONSTANT SC-LANG4
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1543).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1561).
 
 <a id="w-47524150484943533a53432d4c414e4735"></a>
 
@@ -37751,7 +38198,7 @@ Implementation definition (private helpers may change):
 148 CONSTANT SC-LANG5
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1544).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1562).
 
 <a id="w-47524150484943533a53432d4c414e4736"></a>
 
@@ -37779,7 +38226,7 @@ Implementation definition (private helpers may change):
 149 CONSTANT SC-LANG6
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1545).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1563).
 
 <a id="w-47524150484943533a53432d4c414e4737"></a>
 
@@ -37807,7 +38254,7 @@ Implementation definition (private helpers may change):
 150 CONSTANT SC-LANG7
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1546).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1564).
 
 <a id="w-47524150484943533a53432d4c414e4738"></a>
 
@@ -37835,7 +38282,7 @@ Implementation definition (private helpers may change):
 151 CONSTANT SC-LANG8
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1547).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1565).
 
 <a id="w-47524150484943533a53432d4c414e4739"></a>
 
@@ -37863,7 +38310,7 @@ Implementation definition (private helpers may change):
 152 CONSTANT SC-LANG9
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1548).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1566).
 
 <a id="w-47524150484943533a53432d4c4354524c"></a>
 
@@ -37891,7 +38338,7 @@ Implementation definition (private helpers may change):
 224 CONSTANT SC-LCTRL
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1607).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1625).
 
 <a id="w-47524150484943533a53432d4c454654"></a>
 
@@ -37919,7 +38366,7 @@ Implementation definition (private helpers may change):
 80 CONSTANT SC-LEFT
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1476).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1494).
 
 <a id="w-47524150484943533a53432d4c454654425241434b4554"></a>
 
@@ -37947,7 +38394,7 @@ Implementation definition (private helpers may change):
 47 CONSTANT SC-LEFTBRACKET
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1443).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1461).
 
 <a id="w-47524150484943533a53432d4c475549"></a>
 
@@ -37975,7 +38422,7 @@ Implementation definition (private helpers may change):
 227 CONSTANT SC-LGUI
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1610).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1628).
 
 <a id="w-47524150484943533a53432d4c4f434b494e47434150534c4f434b"></a>
 
@@ -38003,7 +38450,7 @@ Implementation definition (private helpers may change):
 130 CONSTANT SC-LOCKINGCAPSLOCK
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1526).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1544).
 
 <a id="w-47524150484943533a53432d4c4f434b494e474e554d4c4f434b"></a>
 
@@ -38031,7 +38478,7 @@ Implementation definition (private helpers may change):
 131 CONSTANT SC-LOCKINGNUMLOCK
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1527).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1545).
 
 <a id="w-47524150484943533a53432d4c4f434b494e475343524f4c4c4c4f434b"></a>
 
@@ -38059,7 +38506,7 @@ Implementation definition (private helpers may change):
 132 CONSTANT SC-LOCKINGSCROLLLOCK
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1528).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1546).
 
 <a id="w-47524150484943533a53432d4c5348494654"></a>
 
@@ -38089,7 +38536,7 @@ Implementation definition (private helpers may change):
 225 CONSTANT SC-LSHIFT
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1608).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1626).
 
 <a id="w-47524150484943533a53432d4d"></a>
 
@@ -38117,7 +38564,7 @@ Implementation definition (private helpers may change):
 16 CONSTANT SC-M
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1412).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1430).
 
 <a id="w-47524150484943533a53432d4d454e55"></a>
 
@@ -38145,7 +38592,7 @@ Implementation definition (private helpers may change):
 118 CONSTANT SC-MENU
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1514).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1532).
 
 <a id="w-47524150484943533a53432d4d494e5553"></a>
 
@@ -38173,7 +38620,7 @@ Implementation definition (private helpers may change):
 45 CONSTANT SC-MINUS
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1441).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1459).
 
 <a id="w-47524150484943533a53432d4d555445"></a>
 
@@ -38201,7 +38648,7 @@ Implementation definition (private helpers may change):
 127 CONSTANT SC-MUTE
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1523).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1541).
 
 <a id="w-47524150484943533a53432d4e"></a>
 
@@ -38229,7 +38676,7 @@ Implementation definition (private helpers may change):
 17 CONSTANT SC-N
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1413).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1431).
 
 <a id="w-47524150484943533a53432d4e4f4e55534241434b534c415348"></a>
 
@@ -38257,7 +38704,7 @@ Implementation definition (private helpers may change):
 100 CONSTANT SC-NONUSBACKSLASH
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1496).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1514).
 
 <a id="w-47524150484943533a53432d4e4f4e555348415348"></a>
 
@@ -38285,7 +38732,7 @@ Implementation definition (private helpers may change):
 50 CONSTANT SC-NONUSHASH
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1446).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1464).
 
 <a id="w-47524150484943533a53432d4e554d4c4f434b434c454152"></a>
 
@@ -38313,7 +38760,7 @@ Implementation definition (private helpers may change):
 83 CONSTANT SC-NUMLOCKCLEAR
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1479).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1497).
 
 <a id="w-47524150484943533a53432d4f"></a>
 
@@ -38341,7 +38788,7 @@ Implementation definition (private helpers may change):
 18 CONSTANT SC-O
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1414).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1432).
 
 <a id="w-47524150484943533a53432d4f504552"></a>
 
@@ -38369,7 +38816,7 @@ Implementation definition (private helpers may change):
 161 CONSTANT SC-OPER
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1557).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1575).
 
 <a id="w-47524150484943533a53432d4f5554"></a>
 
@@ -38397,7 +38844,7 @@ Implementation definition (private helpers may change):
 160 CONSTANT SC-OUT
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1556).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1574).
 
 <a id="w-47524150484943533a53432d50"></a>
 
@@ -38425,7 +38872,7 @@ Implementation definition (private helpers may change):
 19 CONSTANT SC-P
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1415).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1433).
 
 <a id="w-47524150484943533a53432d50414745444f574e"></a>
 
@@ -38453,7 +38900,7 @@ Implementation definition (private helpers may change):
 78 CONSTANT SC-PAGEDOWN
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1474).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1492).
 
 <a id="w-47524150484943533a53432d504147455550"></a>
 
@@ -38481,7 +38928,7 @@ Implementation definition (private helpers may change):
 75 CONSTANT SC-PAGEUP
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1471).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1489).
 
 <a id="w-47524150484943533a53432d5041535445"></a>
 
@@ -38509,7 +38956,7 @@ Implementation definition (private helpers may change):
 125 CONSTANT SC-PASTE
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1521).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1539).
 
 <a id="w-47524150484943533a53432d5041555345"></a>
 
@@ -38537,7 +38984,7 @@ Implementation definition (private helpers may change):
 72 CONSTANT SC-PAUSE
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1468).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1486).
 
 <a id="w-47524150484943533a53432d504552494f44"></a>
 
@@ -38565,7 +39012,7 @@ Implementation definition (private helpers may change):
 55 CONSTANT SC-PERIOD
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1451).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1469).
 
 <a id="w-47524150484943533a53432d504f574552"></a>
 
@@ -38593,7 +39040,7 @@ Implementation definition (private helpers may change):
 102 CONSTANT SC-POWER
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1498).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1516).
 
 <a id="w-47524150484943533a53432d5052455353"></a>
 
@@ -38623,7 +39070,7 @@ Implementation definition (private helpers may change):
 1 CONSTANT SC-PRESS
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1615).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1633).
 
 <a id="w-47524150484943533a53432d5052494e5453435245454e"></a>
 
@@ -38651,7 +39098,7 @@ Implementation definition (private helpers may change):
 70 CONSTANT SC-PRINTSCREEN
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1466).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1484).
 
 <a id="w-47524150484943533a53432d5052494f52"></a>
 
@@ -38679,7 +39126,7 @@ Implementation definition (private helpers may change):
 157 CONSTANT SC-PRIOR
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1553).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1571).
 
 <a id="w-47524150484943533a53432d51"></a>
 
@@ -38707,7 +39154,7 @@ Implementation definition (private helpers may change):
 20 CONSTANT SC-Q
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1416).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1434).
 
 <a id="w-47524150484943533a53432d52"></a>
 
@@ -38735,7 +39182,7 @@ Implementation definition (private helpers may change):
 21 CONSTANT SC-R
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1417).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1435).
 
 <a id="w-47524150484943533a53432d52414c54"></a>
 
@@ -38763,7 +39210,7 @@ Implementation definition (private helpers may change):
 230 CONSTANT SC-RALT
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1613).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1631).
 
 <a id="w-47524150484943533a53432d524354524c"></a>
 
@@ -38791,7 +39238,7 @@ Implementation definition (private helpers may change):
 228 CONSTANT SC-RCTRL
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1611).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1629).
 
 <a id="w-47524150484943533a53432d52454c45415345"></a>
 
@@ -38821,7 +39268,7 @@ Implementation definition (private helpers may change):
 2 CONSTANT SC-RELEASE
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1616).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1634).
 
 <a id="w-47524150484943533a53432d524553594e43"></a>
 
@@ -38849,7 +39296,7 @@ Implementation definition (private helpers may change):
 3 CONSTANT SC-RESYNC
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1617).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1635).
 
 <a id="w-47524150484943533a53432d52455455524e"></a>
 
@@ -38877,7 +39324,7 @@ Implementation definition (private helpers may change):
 40 CONSTANT SC-RETURN
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1436).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1454).
 
 <a id="w-47524150484943533a53432d52455455524e32"></a>
 
@@ -38905,7 +39352,7 @@ Implementation definition (private helpers may change):
 158 CONSTANT SC-RETURN2
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1554).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1572).
 
 <a id="w-47524150484943533a53432d52475549"></a>
 
@@ -38933,7 +39380,7 @@ Implementation definition (private helpers may change):
 231 CONSTANT SC-RGUI
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1614).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1632).
 
 <a id="w-47524150484943533a53432d5249474854"></a>
 
@@ -38961,7 +39408,7 @@ Implementation definition (private helpers may change):
 79 CONSTANT SC-RIGHT
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1475).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1493).
 
 <a id="w-47524150484943533a53432d5249474854425241434b4554"></a>
 
@@ -38989,7 +39436,7 @@ Implementation definition (private helpers may change):
 48 CONSTANT SC-RIGHTBRACKET
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1444).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1462).
 
 <a id="w-47524150484943533a53432d525348494654"></a>
 
@@ -39019,7 +39466,7 @@ Implementation definition (private helpers may change):
 229 CONSTANT SC-RSHIFT
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1612).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1630).
 
 <a id="w-47524150484943533a53432d53"></a>
 
@@ -39047,7 +39494,7 @@ Implementation definition (private helpers may change):
 22 CONSTANT SC-S
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1418).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1436).
 
 <a id="w-47524150484943533a53432d5343524f4c4c4c4f434b"></a>
 
@@ -39075,7 +39522,7 @@ Implementation definition (private helpers may change):
 71 CONSTANT SC-SCROLLLOCK
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1467).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1485).
 
 <a id="w-47524150484943533a53432d53454c454354"></a>
 
@@ -39103,7 +39550,7 @@ Implementation definition (private helpers may change):
 119 CONSTANT SC-SELECT
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1515).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1533).
 
 <a id="w-47524150484943533a53432d53454d49434f4c4f4e"></a>
 
@@ -39131,7 +39578,7 @@ Implementation definition (private helpers may change):
 51 CONSTANT SC-SEMICOLON
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1447).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1465).
 
 <a id="w-47524150484943533a53432d534550415241544f52"></a>
 
@@ -39159,7 +39606,7 @@ Implementation definition (private helpers may change):
 159 CONSTANT SC-SEPARATOR
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1555).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1573).
 
 <a id="w-47524150484943533a53432d534c415348"></a>
 
@@ -39187,7 +39634,7 @@ Implementation definition (private helpers may change):
 56 CONSTANT SC-SLASH
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1452).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1470).
 
 <a id="w-47524150484943533a53432d5350414345"></a>
 
@@ -39215,7 +39662,7 @@ Implementation definition (private helpers may change):
 44 CONSTANT SC-SPACE
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1440).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1458).
 
 <a id="w-47524150484943533a53432d53544f50"></a>
 
@@ -39243,7 +39690,7 @@ Implementation definition (private helpers may change):
 120 CONSTANT SC-STOP
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1516).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1534).
 
 <a id="w-47524150484943533a53432d535953524551"></a>
 
@@ -39271,7 +39718,7 @@ Implementation definition (private helpers may change):
 154 CONSTANT SC-SYSREQ
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1550).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1568).
 
 <a id="w-47524150484943533a53432d54"></a>
 
@@ -39299,7 +39746,7 @@ Implementation definition (private helpers may change):
 23 CONSTANT SC-T
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1419).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1437).
 
 <a id="w-47524150484943533a53432d544142"></a>
 
@@ -39327,7 +39774,7 @@ Implementation definition (private helpers may change):
 43 CONSTANT SC-TAB
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1439).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1457).
 
 <a id="w-47524150484943533a53432d54484f5553414e4453534550415241544f52"></a>
 
@@ -39355,7 +39802,7 @@ Implementation definition (private helpers may change):
 178 CONSTANT SC-THOUSANDSSEPARATOR
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1563).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1581).
 
 <a id="w-47524150484943533a53432d55"></a>
 
@@ -39383,7 +39830,7 @@ Implementation definition (private helpers may change):
 24 CONSTANT SC-U
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1420).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1438).
 
 <a id="w-47524150484943533a53432d554e444f"></a>
 
@@ -39411,7 +39858,7 @@ Implementation definition (private helpers may change):
 122 CONSTANT SC-UNDO
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1518).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1536).
 
 <a id="w-47524150484943533a53432d5550"></a>
 
@@ -39439,7 +39886,7 @@ Implementation definition (private helpers may change):
 82 CONSTANT SC-UP
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1478).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1496).
 
 <a id="w-47524150484943533a53432d56"></a>
 
@@ -39467,7 +39914,7 @@ Implementation definition (private helpers may change):
 25 CONSTANT SC-V
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1421).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1439).
 
 <a id="w-47524150484943533a53432d564f4c554d45444f574e"></a>
 
@@ -39495,7 +39942,7 @@ Implementation definition (private helpers may change):
 129 CONSTANT SC-VOLUMEDOWN
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1525).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1543).
 
 <a id="w-47524150484943533a53432d564f4c554d455550"></a>
 
@@ -39523,7 +39970,7 @@ Implementation definition (private helpers may change):
 128 CONSTANT SC-VOLUMEUP
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1524).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1542).
 
 <a id="w-47524150484943533a53432d57"></a>
 
@@ -39551,7 +39998,7 @@ Implementation definition (private helpers may change):
 26 CONSTANT SC-W
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1422).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1440).
 
 <a id="w-47524150484943533a53432d58"></a>
 
@@ -39579,7 +40026,7 @@ Implementation definition (private helpers may change):
 27 CONSTANT SC-X
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1423).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1441).
 
 <a id="w-47524150484943533a53432d59"></a>
 
@@ -39607,7 +40054,7 @@ Implementation definition (private helpers may change):
 28 CONSTANT SC-Y
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1424).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1442).
 
 <a id="w-47524150484943533a53432d5a"></a>
 
@@ -39635,7 +40082,7 @@ Implementation definition (private helpers may change):
 29 CONSTANT SC-Z
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1425).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1443).
 
 <a id="w-47524150484943533a5343414e2d48454c443f"></a>
 
@@ -39663,7 +40110,7 @@ Implementation definition (private helpers may change):
 : SCAN-HELD? ( scan -- flag ) GFX-SCAN-HELD? ;
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1394).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1412).
 
 <a id="w-47524150484943533a5343414e2d494e5055543f"></a>
 
@@ -39693,7 +40140,7 @@ Implementation definition (private helpers may change):
 : SCAN-INPUT? ( -- flag ) GFX-SCAN-INPUT? ;
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1390).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1408).
 
 <a id="w-47524150484943533a5343414e2d535550504f525445443f"></a>
 
@@ -39721,7 +40168,7 @@ Implementation definition (private helpers may change):
 : SCAN-SUPPORTED? ( scan -- flag ) GFX-SCAN-SUPPORTED? ;
 ```
 
-Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1392).
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1410).
 
 <a id="w-47524150484943533a53435245454e"></a>
 
@@ -39992,7 +40439,7 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 ` ( -- ) `
 
-End the Tcl program, dropping what it wrote and Sigma did not read; the next TCL starts it again. HOST FUNCTION ERROR (-265) when the host could not see it end (FORTH/Sigma graphics).
+End the Tcl program, dropping what it wrote and Sigma did not read; the next TCL starts it again. HOST FUNCTION ERROR (-265) on termination or cleanup failure; unreleased ownership is retried before another start (FORTH/Sigma graphics).
 
 Kind: library.
 
@@ -48225,7 +48672,7 @@ REQUIRE-AUDIO
 
 Caution: Follow the operand order in the stack effect. Example names and values depend on their setup.
 
-Sources: [src/core/help_text.zig](../src/core/help_text.zig), [HELP](../src/core/help_text.zig#L1316).
+Sources: [src/core/help_text.zig](../src/core/help_text.zig), [HELP](../src/core/help_text.zig#L1334).
 
 <a id="w-53796e7461783a524551554952452d455854454e53494f4e"></a>
 

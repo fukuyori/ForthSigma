@@ -1,5 +1,16 @@
 # 613 本体機能拡張の引継ぎ（2026-11-19）
 
+## 最新追記：639から643へ（2026-11-19）
+
+利用者の「macは残して、次に進めて」により643へ着手。639の1091・1094・1095は完了、Mac実機1092・1096は未完了のまま。643と1051の開発依存は639全体から完了済みI/O実装へ置き換え、最終統合はMacも待つ。
+
+643は1097仕様→1098ホスト→1099コア/Tcl→1100 Windows/Linux→1101 Mac実機。1098と1102〜1104を完了し、native OS backend・FILE所有・公開PROC語14個を実装した。1099は1105コア接続、1106 Tcl共通backend移行、1107資料に分割。1106のTcl移行を完了し、旧OS起動コードを除去した。Windows/Linux全体受け入れ1100まで完了し、643はauto80%、未完了はMac実機1101。[実装/検証記録](PROCESS_MANAGEMENT_IMPLEMENTATION.md)、[詳細設計](PROCESS_MANAGEMENT_DESIGN.md)、[レビュー採否](reviews/643-review-response.md)を参照。
+
+Tclはregistry内部予約枠を使い、wish探索・script・display budgetとprivate I/Oをadapterへ残した。終了時はTclも共通group/Job KILLと単一期限で回収する。公開64プロセス、多量3stream、Ctrl+C、FILE再利用/rollback、子孫と継承制限、Tcl再起動とscript削除をWindows/Linuxで実行。最終結果は[実装記録](PROCESS_MANAGEMENT_IMPLEMENTATION.md)。Mac実機1101を残す。Linux native socketの一部ケースと実wish GUI表示はfixtureでの成功扱いにしない。
+
+現ブランチmain、基点085fef2。639と今回の643資料・基盤は未コミット。コミット・プッシュは今回依頼されていない。以下の「最新追記」や未実装という記述は各時点の履歴。
+
+
 ## 最新追記：638イベントキュー（2026-11-19）
 
 現在の基点は`e66c701`、main。637はMac実機1073を含め完了済み。以下の637の残作業の記述は履歴。638のコード・設計・試験・レビュー資料は、この追記と同じコミットに含む。2026-11-19、利用者からコミット・プッシュの指示を受けた。

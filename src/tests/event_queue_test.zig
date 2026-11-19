@@ -391,3 +391,42 @@ test "peek to KEY keeps decoder prefix ahead of legacy bytes with and without ch
         }
     }
 }
+
+test "selected file EKEY-WAIT dispatches fixed results without consuming on stack overflow" {
+    try support.skipWithout(&.{ .files, .extension });
+    const Bridge = struct {
+        var calls: usize = 0;
+        var outcome: ev.Result = .timeout;
+        fn wait(_: ?*anyopaque, id: forth.Cell, ms: i64) forth.RuntimeError!ev.Result {
+            if (id != forth.first_file_id or ms != 7) return error.HostFailed;
+            calls += 1;
+            return outcome;
+        }
+    };
+    var output = support.Output{};
+    const machine = try support.createMachine(&output);
+    defer support.destroyMachine(machine);
+    var ops = support.fake_file_ops;
+    ops.event_wait = Bridge.wait;
+    machine.writer.file_ops = &ops;
+    machine.input_file = forth.first_file_id;
+    Bridge.calls = 0;
+    Bridge.outcome = .{ .event = .{ .value = 0x3042 } };
+    try machine.push(7);
+    try machine.executeBuiltin(.ekey_wait);
+    try support.expectStack(machine, &.{ 0x3042, -1, 0 });
+    machine.data_depth = 0;
+    Bridge.outcome = .{ .failure = -37 };
+    try machine.push(7);
+    try machine.executeBuiltin(.ekey_wait);
+    try support.expectStack(machine, &.{ 0, 0, -37 });
+    machine.data_depth = 0;
+    Bridge.outcome = .eof;
+    try machine.push(7);
+    try machine.executeBuiltin(.ekey_wait);
+    try support.expectStack(machine, &.{ keys.eof, -1, 0 });
+    machine.data_depth = machine.data_stack.len - 1;
+    machine.data_stack[machine.data_depth - 1] = 7;
+    try std.testing.expectError(error.StackOverflow, machine.executeBuiltin(.ekey_wait));
+    try std.testing.expectEqual(@as(usize, 3), Bridge.calls);
+}

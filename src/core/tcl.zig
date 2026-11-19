@@ -331,7 +331,7 @@ pub fn setProgram(self: *State, name: []const u8) RuntimeError!void {
 }
 
 /// GFX-TCL-STOP. HOST FUNCTION ERROR if the host could not see the program end; the
-/// next use starts a new one all the same.
+/// next use retries cleanup before starting another owned program.
 pub fn stop(self: *State) RuntimeError!void {
     if (!self.tcl.running) return;
     if (!halt(self)) return error.HostFailed;

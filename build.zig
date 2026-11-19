@@ -46,6 +46,18 @@ pub fn build(b: *std.Build) void {
         }),
     });
     exe.root_module.addOptions("build_options", options);
+    exe.root_module.addCSourceFile(.{
+        .file = b.path("src/host_file_stdio.c"),
+        .flags = &.{"-std=gnu11"},
+    });
+    if (target.result.os.tag != .windows) exe.root_module.addCSourceFile(.{
+        .file = b.path("src/host_file_kind.c"),
+        .flags = &.{"-std=gnu11"},
+    });
+    if (target.result.os.tag == .windows or target.result.os.tag == .linux or target.result.os.tag == .macos) {
+        exe.root_module.addCSourceFile(.{ .file = b.path("src/host_process_native.c"), .flags = &.{"-std=gnu11"} });
+        if (target.result.os.tag == .linux) exe.root_module.linkSystemLibrary("pthread", .{});
+    }
     if (float) addCoreMath(b, exe.root_module);
     addEmbeddedTexts(b, exe.root_module);
     addCTime(b, exe.root_module, target, optimize);

@@ -8,7 +8,7 @@ const Builtin = defs.Builtin;
 const RuntimeError = defs.RuntimeError;
 const State = forth.State;
 
-pub const words = [_]Builtin{ .host_os, .term_mode_set, .term_mode_get, .terminal_cols, .terminal_rows, .ekey_wait, .ekey_mouse };
+pub const words = [_]Builtin{ .host_os, .term_mode_set, .term_mode_get, .terminal_cols, .terminal_rows, .ekey_wait, .ekey_mouse, .wait_files, .read_available, .write_available, .wait_writable, .proc_new, .proc_arg, .proc_cwd, .proc_env, .proc_io, .proc_start, .proc_stdin, .proc_stdout, .proc_stderr, .proc_status, .proc_wait, .proc_term, .proc_kill, .proc_free };
 pub const definitions = [_]struct { []const u8, Builtin }{
     .{ "HOST-OS", .host_os },
     .{ "TERM-MODE!", .term_mode_set },
@@ -17,6 +17,24 @@ pub const definitions = [_]struct { []const u8, Builtin }{
     .{ "ROWS", .terminal_rows },
     .{ "EKEY-WAIT", .ekey_wait },
     .{ "EKEY-MOUSE", .ekey_mouse },
+    .{ "WAIT-FILES", .wait_files },
+    .{ "READ-AVAILABLE", .read_available },
+    .{ "WRITE-AVAILABLE", .write_available },
+    .{ "WAIT-WRITABLE", .wait_writable },
+    .{ "PROC-NEW", .proc_new },
+    .{ "PROC-ARG", .proc_arg },
+    .{ "PROC-CWD", .proc_cwd },
+    .{ "PROC-ENV", .proc_env },
+    .{ "PROC-IO", .proc_io },
+    .{ "PROC-START", .proc_start },
+    .{ "PROC-STDIN", .proc_stdin },
+    .{ "PROC-STDOUT", .proc_stdout },
+    .{ "PROC-STDERR", .proc_stderr },
+    .{ "PROC-STATUS", .proc_status },
+    .{ "PROC-WAIT", .proc_wait },
+    .{ "PROC-TERM", .proc_term },
+    .{ "PROC-KILL", .proc_kill },
+    .{ "PROC-FREE", .proc_free },
 };
 pub const library_words = [_][]const u8{ "TERM-ALT-SCREEN", "TERM-PASTE", "TERM-HIDE-CURSOR", "TERM-MOUSE", "K-MOUSE", "K-PASTE-BEGIN", "K-PASTE-END" };
 pub const library_name = "*extension library*";
@@ -39,6 +57,8 @@ pub fn extensionLoaded(self: *const State) bool {
 
 pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
     switch (builtin) {
+        .proc_new, .proc_arg, .proc_cwd, .proc_env, .proc_io, .proc_start, .proc_stdin, .proc_stdout, .proc_stderr, .proc_status, .proc_wait, .proc_term, .proc_kill, .proc_free => try @import("words_process.zig").execute(self, builtin),
+        .wait_files, .read_available, .write_available, .wait_writable => try @import("words_async_io.zig").execute(self, builtin),
         .host_os => {
             const name = osName(@import("builtin").os.tag);
             if (self.data_depth + 2 > self.data_stack.len) return error.StackOverflow;
@@ -65,7 +85,6 @@ pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
             try self.push(callback(self.writer.context));
         },
         .ekey_wait => {
-            if (@import("input_redirect.zig").selected(self) != null) return error.HostUnavailable;
             const timeout = try self.peek(0);
             if (self.data_depth + 2 > self.data_stack.len) return error.StackOverflow;
             const result = try @import("event_input.zig").modern(self, timeout, false);

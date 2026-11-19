@@ -114,6 +114,11 @@ Gforthの `fork+exec` は、ソース上でLinux向けの条件の中に定義�
 
 ## 3. 非ブロッキングI/O（639）
 
+### 2026-11-19の実装
+
+639を1093仕様、1094読取り、1095書込みへ分割した。1078のslot保留と1091のupdate stream境界を共通化し、EXTENSIONに4語を追加する。採用契約は[ASYNC_IO_DESIGN.md](ASYNC_IO_DESIGN.md)、実装・Claudeレビュー・Windows/Linuxの試験結果は[ASYNC_IO_IMPLEMENTATION.md](ASYNC_IO_IMPLEMENTATION.md)を参照。Mac実機は別タスクに残し、639全体の完了と区別する。以下は検討時の履歴。
+
+
 ### 現状
 
 `KEY?`、`KEY-FILE`、`KEY?-FILE` がある。複数の対象をまとめて待つ手段はない。`READ-FILE` は要求した長さまで待つ。
@@ -160,6 +165,10 @@ Gforthの `fork+exec` は、ソース上でLinux向けの条件の中に定義�
 - `THIRD_PARTY_NOTICES.md` には、すでにUnicode Character Databaseの記載がある。使うファイルを追記する。
 
 ## 5. 子プロセス管理（643）
+
+### 2026-11-19の着手
+
+639のMac実機1092・1096を残して先へ進む指示を受け、643の依存を1064・1091・1094・1095へ変更した。1097仕様、1098ホスト、1099コア/Tcl、1100 Windows/Linux、1101 Mac実機へ分ける。[詳細設計](PROCESS_MANAGEMENT_DESIGN.md)をレビューし、以下の検討案を具体化する。1098（1102〜1104）と公開PROC語の実装・Windows/Linux結合確認を進めた。1099は1105コア・1106 Tcl移行・1107資料に分割し、Tcl移行1106まで完了し、1100 Windows/Linux全体受け入れまで完了した。Mac実機1101は残す。[実装記録](PROCESS_MANAGEMENT_IMPLEMENTATION.md)。
 
 ### 現状
 

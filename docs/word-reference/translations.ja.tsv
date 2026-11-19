@@ -662,8 +662,8 @@ STDERR	標準エラー出力のファイルIDです。
 OPEN-FILE	既存ファイルを開きます。
 CREATE-FILE	ファイルを作成し、既存なら内容を空にします。
 CLOSE-FILE	ファイルを閉じます。
-READ-LINE	行末を除き最大uバイト読みます。EOFではflagが偽です。
-READ-FILE	そのまま最大uバイト読みます。EOFでは読取長0です。
+READ-LINE	行末を除き最大uバイト読みます。何も読まずにEOFとなればflagは偽です。hostが部分データとiorを返した場合は読取長も返します。
+READ-FILE	要求長まで読み、先にEOFとなれば読めた分を返します。EOFで何も読めなければ読取長0です。hostが部分データとiorを返した場合は読取長も返します。
 WRITE-LINE	文字列と行末を書きます。STDOUTへの出力は端末SHOWのフレームを区切ります。
 WRITE-FILE	文字列を書きます。空でないSTDOUT出力は端末SHOWのフレームを区切ります。
 FILE-SIZE	ファイルのバイト数を返します。
@@ -1099,7 +1099,7 @@ GFX-TCL	Tclスクリプトを実行し、結果、またはスクリプトのエ
 GFX-TCL-ERROR	最後に失敗したTclスクリプトのメッセージを返します。
 GFX-TCL-EVENT	sigma_eventで届いた次の文字列を待たずに読みます。
 GFX-TCL-PROGRAM	起動するTclプログラムを設定します。空なら環境変数・PATH・OS別の既知のwishを探します。
-GFX-TCL-STOP	Tclプログラムを終了し、未読出力を破棄します。終了を確認できなければ-265です。
+GFX-TCL-STOP	Tclプログラムを終了して未読出力を破棄します。終了確認や後始末の失敗は-265です。未回収の所有は次の起動前に再試行します。
 GFX-KEY-HELD	GFX-INKEY形式のキーが押されているか調べます。
 GAMEPAD-POLL	最大8台の状態を更新します。バックエンド不可・権限不足は-1、機器なしは0です。Windows・macOS・動的LinuxはSDL3.2以降を使います。静的Linux muslはevdevでrawの状態を読み、mappedは偽、GAMEPAD-MAPは非対応です。毎フレーム1回呼びます。
 GAMEPAD?	最後の更新で番号0〜7の機器が存在するか返します。
@@ -1123,7 +1123,7 @@ TCL-EVAL	Tclを実行し、次のスクリプトまで有効な結果を返し�
 TCL-ERROR$	最後に失敗したTclスクリプトのメッセージを返します。
 TCL-EVENT	ウィジェットがsigma_eventで送った次の文字列を待たずに読みます。
 TCL-PROGRAM	起動プログラムを指定します。未指定ならSIGMA_WISH・PATH・OS別のwishを探し、macOSの/usr/bin/wishは使いません。
-TCL-STOP	Tclを終了して未読出力を破棄します。次のTCLで再起動し、終了確認失敗は-265です。
+TCL-STOP	Tclを終了して未読出力を破棄します。終了確認や後始末の失敗は-265です。未回収の所有は次の起動前に再試行し、回収後に再起動します。
 DISPLAY-TK	SHOWの表示先をTkにします。INKEYとMOUSEもTkから読みます。
 SCREEN	GFX-INITで作りSHOWが表示する画面画像のハンドルです。
 NEW-IMAGE	画面以外の黒い画像を作ります。各辺1〜16384、合計256枚・1GiBまでで、画像は保存されません。
@@ -1329,7 +1329,7 @@ EXTENSION:TERM-ALT-SCREEN	代替画面を要求するビット1を返します�
 EXTENSION:TERM-PASTE	raw時の貼り付け報告を要求するビット2を返します。Windowsは無視します。この版で貼り付け境界をイベントとして解釈する機能は含まず、638で別に扱います。
 EXTENSION:TERM-HIDE-CURSOR	カーソル非表示を要求するビット4を返します。
 EXTENSION:TERM-MOUSE	raw時のマウス報告を要求するビット8を返します。MOUSE-ON/OFFと同じ要求を共有します。
-EXTENSION:EKEY-WAIT	相対ミリ秒で完成した標準イベントを待ち、event flag iorの固定3セルを返します。0はポーリング、負数は無期限。期限は0 false 0、EOFはK-EOF true 0、対象の読取り障害は0 false iorです。途中入力は保持し、Ctrl+Cは貼り付け外だけ-28です。
+EXTENSION:EKEY-WAIT	相対ミリ秒で完成した標準イベントを待ち、event flag iorの固定3セルを返します。0はポーリング、負数は無期限。期限は0 false 0、EOFはK-EOF true 0、対象の読取り障害は0 false iorです。途中入力は保持し、stdinのCtrl+Cは貼り付け外だけ-28です。 選択ファイルではUTF-8を復号し、ESCとバイト3を文字として扱います。途中バイトはホストが保持し、スコープ退出後もバイトAPIで読めます。ファイル待機口がない埋込みホストでは-21です。
 EXTENSION:EKEY-MOUSE	EKEYまたはEKEY-WAITが最後に取得したK-MOUSEの列・行・押下ボタン集合・ホイールを返します。0起点、ボタンは左1・右2・中央4、ホイールは上1・下-1。先読みでは更新せず、初期値はすべて0です。
 EXTENSION:K-MOUSE	標準端末のマウスイベントの値を返します。付随情報は消費後のEKEY-MOUSEで取得します。修飾マスクをORでき、GRAPHICSのマウス値とは別です。
 EXTENSION:K-PASTE-BEGIN	bracketed pasteの開始イベントを返します。終了まで文字を一つずつ返し、終了印以外のESC列や値3も文字として扱います。
@@ -1563,3 +1563,21 @@ SC-RGUI	USB HID Keyboard/Keypadページ0x07のRGUIの番号231です。ホス�
 SC-PRESS	物理キーイベントの種類1です。
 SC-RELEASE	物理キーイベントの種類2です。
 SC-RESYNC	物理キーイベントの種類3です。
+WAIT-FILES	1〜64個のファイルIDを検査してから、読取り可能な先頭の添字とiorを返します。観測済みEOFとエラーも準備完了です。ms=0は即時確認、負数は無期限待機、時間切れは-1 0、中断は-28です。
+READ-AVAILABLE	いま取得できるバイトを待たずに読み、読めた数・観測済みEOFの真偽・iorを返します。部分データとエラーを同時に返せます。空のバッファでは入力を消費しません。通常のファイル語と保留バイトを共有します。
+WRITE-AVAILABLE	待たずに受け付けられる分を書き込み、受付数とiorを返します。ホストは戻る前にデータをコピーします。受付数は相手への配送完了を意味しません。後続エラーはcloseまで保持され、FLUSH-FILEとcloseで配送完了を待ちます。
+WAIT-WRITABLE	1〜64個のファイルIDを検査してから、出力を受け付けられる先頭の添字とiorを返します。ms=0は即時確認、負数は無期限待機、時間切れは-1 0、中断は-28です。ネイティブ資源はホストが所有します。
+PROC-NEW	子プロセスの設定を作り、不透明IDとiorを返します。公開枠は64件です。
+PROC-ARG	起動前の設定へ引数をコピーします。最初の引数が実行ファイルargv[0]で、暗黙にシェルは起動しません。
+PROC-CWD	子の作業ディレクトリをコピーします。空文字は起動時点の親の作業ディレクトリを継承します。
+PROC-ENV	NAME=VALUEで環境を設定し、NAMEだけなら削除、NAME=なら空値にします。起動前だけ編集できます。
+PROC-IO	which=0/1/2でstdin/stdout/stderrを選び、mode=0 pipe、1継承、2破棄、3 stderrをstdoutへ統合に設定します。既定は独立3pipeです。
+PROC-START	コピーした引数・環境・作業ディレクトリで直接起動し、起動失敗をiorで返します。
+PROC-STDIN	子の標準入力へ親が書き込むFILE IDとiorを返します。pipe以外は0です。CLOSE-FILEで子へEOFを渡せます。
+PROC-STDOUT	子の標準出力を親が読むFILE IDとiorを返します。pipe以外は0です。子の終了後もclose/FREEまで読み出せます。
+PROC-STDERR	子の標準エラーを親が読むFILE IDとiorを返します。pipe以外とstdoutへの統合時は0です。
+PROC-STATUS	state・code・iorを返します。state=0設定中、1実行中、2通常終了、3 POSIXのsignal終了です。Windowsでは32ビットの終了値を保持します。
+PROC-WAIT	単調時計の一つの期限で待ち、state・code・iorを返します。ms=0は即時確認、負数は無期限。時間切れはstate=1、中断は-28で子を止めません。
+PROC-TERM	終了要求を送って戻ります。POSIXはプロセスグループへSIGTERM、WindowsはJobを終了値143で強制終了します。
+PROC-KILL	強制終了要求を送って戻ります。POSIXはプロセスグループへSIGKILL、WindowsはJobを終了値137で終了します。
+PROC-FREE	設定中または終了済みの資源を解放し、未読・未配送データを破棄して直接の子を回収します。実行中はEBUSY、回収できない資源は再試行用に保持します。

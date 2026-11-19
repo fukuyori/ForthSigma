@@ -11,17 +11,41 @@ const UCell = memory_map.UCell;
 
 pub const CpuTimes = struct { user: Double, system: Double };
 
+/// Process resources live in the host; these results contain only opaque IDs.
+pub const ProcessStatus = struct { state: Cell = 0, code: Cell = 0, ior: Cell = 0 };
+pub const ProcessText = enum { argument, cwd, environment };
+pub const ProcessOps = struct {
+    new: *const fn (?*anyopaque) FileResult,
+    text: *const fn (?*anyopaque, Cell, ProcessText, []const u8) Cell,
+    io: *const fn (?*anyopaque, Cell, Cell, Cell) Cell,
+    start: *const fn (?*anyopaque, Cell) RuntimeError!Cell,
+    stream: *const fn (?*anyopaque, Cell, u2) FileResult,
+    status: *const fn (?*anyopaque, Cell) ProcessStatus,
+    wait: *const fn (?*anyopaque, Cell, i64) RuntimeError!ProcessStatus,
+    signal: *const fn (?*anyopaque, Cell, bool) Cell,
+    free: *const fn (?*anyopaque, Cell) Cell,
+};
+
 pub const FileAccess = enum { read_only, write_only, read_write };
 
 pub const FileResult = struct { value: UCell = 0, ior: Cell = 0 };
 /// null byte means EOF; an I/O error has a nonzero ior instead.
 pub const FileKeyResult = struct { byte: ?u8 = null, ior: Cell = 0 };
+pub const AvailableResult = struct { count: usize = 0, eof: bool = false, ior: Cell = 0 };
+pub const FileWaitResult = struct { index: Cell = -1, ior: Cell = 0 };
 
 /// `found` is false only at the end of the file with nothing read.
 pub const LineResult = struct { length: usize = 0, found: bool = false, ior: Cell = 0 };
 
 /// Host file operations. Ids are opaque cells; the standard streams use the fixed ids above.
 pub const FileOps = struct {
+    /// Validate direction/capability without consuming data or starting workers.
+    io_check: ?*const fn (?*anyopaque, Cell, bool) Cell = null,
+    wait_files: ?*const fn (?*anyopaque, []const Cell, i64, bool) RuntimeError!FileWaitResult = null,
+    read_available: ?*const fn (?*anyopaque, Cell, []u8) RuntimeError!AvailableResult = null,
+    write_available: ?*const fn (?*anyopaque, Cell, []const u8) RuntimeError!FileResult = null,
+    /// Host-owned partial UTF-8 survives input scopes and is shared with byte APIs.
+    event_wait: ?*const fn (?*anyopaque, Cell, i64) RuntimeError!@import("standard_event.zig").Result = null,
     /// Borrowable file stream connected to a shell command; only one-way access.
     open_pipe: ?*const fn (?*anyopaque, []const u8, FileAccess) FileResult = null,
     /// Wait for/close the owned pipe; value is a bit-cast signed process status.
@@ -148,6 +172,7 @@ pub const EditorRequest = union(enum) {
 };
 
 pub const Writer = struct {
+    process_ops: ?*const ProcessOps = null,
     physical_key_ops: ?*const @import("physical_keys.zig").Ops = null,
     gamepad_ops: ?*const @import("gamepad.zig").Ops = null,
     context: ?*anyopaque,

@@ -80,3 +80,14 @@ stderr draining, process-group cleanup, X11 authentication and skip status.
 `check-window-display.fs` is a manual color/resize/monitor-movement check. It shows
 color bars, a gray ramp and four click targets; 0/2/6/5 select color count and D
 changes dithering. It changes no desktop display settings. See its header.
+
+
+### 子プロセス管理（643）
+
+`verify-process-words.py --sigma PATH` は公開PROC語とFILE/AVAILABLEの大量3streamを、`verify-process-interrupt.py --sigma PATH` は無期限WAITの中断と子の生存を調べる。Windowsの中断試験は専用の非表示consoleを作り、その中だけにCtrl+Cを送る。
+
+`zig cc tests/process_wish_fixture.c -o .work/643/wish-fixture.exe` で制御されたfixtureを作り、`verify-process-capacity.py --sigma PATH --fixture PATH` で64実プロセスと超過/再利用、`verify-process-tcl.py --sigma PATH --fixture PATH` でTcl内部予約枠・再起動・script削除・終了時の子孫回収を確認する。Linux用fixtureは `zig cc -target x86_64-linux-musl` で作り、WSL内でLinux版Sigmaと実行する。fixtureは実Tcl/TkやGUI表示の代用とはしない。
+
+native C単体は `zig cc -shared -DSIGMA_PROC_TESTING src/host_process_native.c -o .work/643/process-native.dll` と `verify-process-native.py --library PATH`。LinuxのPython ctypesにはGNU共有libraryを使う。Linuxの子孫試験は専用helperのsubreaper設定を一時変更し、自分で作った子孫を回収して元の設定へ戻す。製品Sigmaにsubreaperを設定しない。
+
+各scriptの`--output PATH`でJSON証拠を残せる。OS単体・公開語・Tcl protocol・実GUIを区別し、Macのクロスコンパイルは実機確認へ代えない。

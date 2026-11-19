@@ -345,4 +345,10 @@ stdin/stdoutが端末でVTを利用できることが条件です。POSIXではT
 
 `REQUIRE-EXTENSION ALSO EXTENSION`で`EKEY-WAIT ( ms -- event flag ior )`と`EKEY-MOUSE ( -- column row buttons wheel )`を使えます。期限は`0 false 0`、EOFは`K-EOF true 0`です。0はポーリング、負数は無期限。UTF-8/ESCの途中入力は期限を過ぎても保持します。`K-MOUSE`、`K-PASTE-BEGIN`、`K-PASTE-END`は非文字イベントです。マウス情報は消費時だけ更新します。貼り付け中は制御バイトも文字とし、byte入力やGRAPHICSへ切り替えると貼り付けの解釈を解除します。標準入力の`EKEY?`は完成イベントを先読みし、マウスや貼り付けの状態を確定しません。音・描画は前提ではありません。独自の埋込みホストでEKEY-WAITを使う場合は新しい型付き入力口とClockが必要で、従来EKEYの操作口も維持します。順序・エラー・ファイル選択・OS別の確認は[イベント設計](EVENT_QUEUE_DESIGN.md)を参照してください。
 
-EKEY-WAITの対象は標準入力（リダイレクトしたstdinを含む）です。INFILE-EXECUTEで非stdinを選択している場合は入力を消費せず-21をTHROWし、既存のファイルEKEY/EKEY?の動作を維持します。ファイルごとの期限待機と永続する保留は639/1078で扱います。
+EKEY-WAITは、ホストがFileOps.event_waitを提供する場合にINFILE-EXECUTEの選択ファイルにも対応します。ファイルはUTF-8を復号し、ESCとバイト3は文字です。途中バイトはホストのファイルslotが保持し、スコープ退出後もKEY-FILE/READ-FILEで読めます。optional待機口がない埋込みホストは選択ファイルを消費せず-21です。[ファイル待機設計](FILE_INPUT_WAIT_DESIGN.md)を参照してください。
+
+## 非ブロッキングファイルI/O
+
+`REQUIRE-EXTENSION ALSO EXTENSION`でWAIT-FILES、READ-AVAILABLE、WRITE-AVAILABLE、WAIT-WRITABLEを使えます。ID配列は1〜64セルで全件を待機前に検査します。時間切れは-1 0、読取りでは未準備と観測済みEOFを区別します。書込みは戻る前にコピーし、Windowsでは64KiBのホストqueueへの受付と配送を分けます。FLUSH/CLOSEは配送を待ち、Windowsのcloseが中断された場合は-516と開いたIDを残して再試行できます。プロセス終了時は中断・エラー後の未配送分を破棄できます。
+
+Windowsの新語は単方向同期pipeをworkerで扱い、双方向pipeとstdinに共有するstdout/stderrを拒否します。従来のファイル語は維持します。POSIXはpollと一時的な非ブロッキング設定を使い、fd flagsを復元します。組込みhostはoptional callbackが必要で、未提供なら-21です。Stateや保存画像にOS資源を追加しません。Builtinを末尾に追加するため旧画像はABI検査で拒否し、辞書は変更しません。Windows/Linuxの試験は成功、Macはクロスビルドまでで実機確認は残っています。[設計](ASYNC_IO_DESIGN.md)と[実装・試験記録](ASYNC_IO_IMPLEMENTATION.md)を参照してください。
