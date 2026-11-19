@@ -434,7 +434,7 @@ int sigma_proc_status(struct sigma_process *p, uint32_t *state, uint32_t *code) 
         if (info.si_pid && p->state == 1) {
             if (info.si_code != CLD_EXITED && info.si_code != CLD_KILLED && info.si_code != CLD_DUMPED) return EIO;
             p->state = info.si_code == CLD_EXITED ? 2 : 3;
-            p->code = (uint32_t)info.si_status;
+            p->code = (uint32_t)(info.si_code == CLD_EXITED ? info.si_status & 0xff : info.si_status);
         }
     }
     *state = p->state; *code = p->code;

@@ -18,6 +18,7 @@ def run(sigma):
         child.write_text(
             "import os,sys,time\n"
             "if sys.argv[1]=='sleep':time.sleep(30)\n"
+            "elif sys.argv[1]=='exit259':os._exit(259)\n"
             "elif sys.argv[1]=='bulk':\n"
             " sys.stdout.buffer.write(b'O'*200000);sys.stdout.buffer.flush()\n"
             " sys.stderr.buffer.write(b'E'*200000);sys.stderr.buffer.flush()\n"
@@ -100,6 +101,14 @@ P PROC-START ." MISSING " . CR
 P PROC-STATUS THROW ." CONFIG " . . CR
 P PROC-FREE THROW
 ''', ["MISSING -514", "CONFIG 0 0"])
+
+        if sys.platform != "win32":
+            invoke("posix-exit-code-is-eight-bit", setup("exit259") + '''
+P PROC-START THROW
+P -1 PROC-WAIT THROW . . CR
+P PROC-STATUS THROW . . CR
+P PROC-FREE THROW
+''', ["3 2", "3 2"])
     return {"platform": sys.platform, "cases": reports}
 
 

@@ -83,7 +83,7 @@ def run(library):
    with Process() as p:
     assert p.start([sys.executable,'-c',f'import os;os._exit({exit_code})'])==0;p.communicate()
     expected=exit_code if os.name=='nt' else exit_code&255
-    assert p.wait()==(2,expected)
+    actual=p.wait();assert actual==(2,expected),(exit_code,actual,expected)
    reports.append({'case':f'exit-{exit_code}','passed':True})
   for name,exe,bad_cwd in [('missing-executable',str(work/'does-not-exist.exe'),None),('missing-cwd',sys.executable,str(work/'absent-cwd'))]:
    with Process() as p:
@@ -135,7 +135,7 @@ def run(library):
   reports.append({'case':'inheritable-parent-resource-excluded','passed':True})
   # Root termination is observed without relinquishing its group/job descendants.
   saved_subreaper=I()
-  if os.name!='nt':
+  if sys.platform=='linux':
    libc=ctypes.CDLL(None,use_errno=True);assert libc.prctl(37,ctypes.byref(saved_subreaper),0,0,0)==0
    assert libc.prctl(36,1,0,0,0)==0
   try:
@@ -151,24 +151,32 @@ def run(library):
       assert api.sigma_proc_signal(p.p,1)==0
       assert kernel.WaitForSingleObject(handle,5000)==0
      finally:assert kernel.CloseHandle(handle)
-    else:
+    elif sys.platform=='linux':
      assert api.sigma_proc_signal(p.p,1)==0
      until=time.monotonic()+5
      while True:
       pid,status=os.waitpid(descendant,os.WNOHANG)
       if pid:assert os.WIFSIGNALED(status) and os.WTERMSIG(status)==9;break
       assert time.monotonic()<until;time.sleep(.005)
+    else:
+     assert api.sigma_proc_signal(p.p,1)==0
+     until=time.monotonic()+5
+     while True:
+      try:os.kill(descendant,0)
+      except ProcessLookupError:break
+      assert time.monotonic()<until,('descendant still exists',descendant);time.sleep(.01)
   finally:
-   if os.name!='nt':assert libc.prctl(36,saved_subreaper.value,0,0,0)==0
+   if sys.platform=='linux':assert libc.prctl(36,saved_subreaper.value,0,0,0)==0
   reports.append({'case':'kill-descendants-after-root-exit','passed':True})
   # Every retained partial-start state must be abortable without draining pipes.
-  for step in range(1,9 if os.name=='nt' else 6):
+  fault_steps=8 if os.name=='nt' else 5 if sys.platform=='linux' else 4
+  for step in range(1,fault_steps+1):
    api.sigma_proc_test_fault(step)
    with Process() as p:
     result=p.start([sys.executable,'-c','import time;time.sleep(30)'])
     assert result==errno.EIO,(step,result)
    api.sigma_proc_test_fault(0)
-  reports.append({'case':'startup-fault-rollback','steps':8 if os.name=='nt' else 5})
+  reports.append({'case':'startup-fault-rollback','steps':fault_steps})
   # Kernel resource counts stay bounded across both success and partial failure.
   def resource_count():
    import gc;gc.collect()
@@ -176,7 +184,7 @@ def run(library):
     kernel=ctypes.WinDLL('kernel32',use_last_error=True);kernel.GetCurrentProcess.restype=P
     kernel.GetProcessHandleCount.argtypes=[P,ctypes.POINTER(U)];count=U()
     assert kernel.GetProcessHandleCount(kernel.GetCurrentProcess(),ctypes.byref(count));return count.value
-   return len(os.listdir('/proc/self/fd'))
+   return len(os.listdir('/proc/self/fd' if sys.platform=='linux' else '/dev/fd'))
   before=resource_count()
   for _ in range(24):
    with Process() as p:assert p.start([str(work/'missing-executable')])==errno.ENOENT

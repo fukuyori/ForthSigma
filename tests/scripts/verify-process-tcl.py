@@ -5,9 +5,22 @@ import json
 import os
 from pathlib import Path
 import subprocess
+import sys
 import tempfile
 
 ROOT = Path(__file__).resolve().parents[2]
+
+
+def wait_gone(pid, timeout=5):
+    import time
+    deadline = time.monotonic() + timeout
+    while True:
+        try:
+            os.kill(int(pid), 0)
+        except ProcessLookupError:
+            return
+        assert time.monotonic() < deadline, ("process still exists", pid)
+        time.sleep(.01)
 
 
 def run(sigma, fixture):
@@ -49,13 +62,20 @@ RELEASE
                         assert api.WaitForSingleObject(handle, 0) == 0, ("child still running", pid)
                     finally:
                         api.CloseHandle(handle)
-            else:
+            elif sys.platform == "linux":
                 assert not Path("/proc/" + pid).exists(), ("child not reaped", pid)
+            else:
+                try:
+                    os.kill(int(pid), 0)
+                except ProcessLookupError:
+                    pass
+                else:
+                    raise AssertionError(("child still exists", pid))
         # Exit must kill retained Tcl descendants before relinquishing its Job/PGID.
         log.unlink()
         env["SIGMA_PROCESS_FIXTURE_DESCENDANT"] = "1"
         source.write_text(f'REQUIRE-GRAPHICS ALSO GRAPHICS S" {fixture.resolve()}" TCL-PROGRAM S" child" TCL BYE\n', encoding="utf-8")
-        if os.name != "nt":
+        if sys.platform == "linux":
             import ctypes
             libc = ctypes.CDLL(None, use_errno=True)
             saved = ctypes.c_int()
@@ -74,13 +94,15 @@ RELEASE
                     if handle:
                         try: assert api.WaitForSingleObject(handle, 0) == 0, ("Tcl descendant still running", pid)
                         finally: api.CloseHandle(handle)
-                else:
+                elif sys.platform == "linux":
                     waited, status = os.waitpid(pid, 0)
                     assert waited == pid and os.WIFSIGNALED(status) and os.WTERMSIG(status) == 9, status
+                else:
+                    wait_gone(pid)
             for key, value in records:
                 if key != "descendant": assert not Path(value).exists(), value
         finally:
-            if os.name != "nt": assert libc.prctl(36, saved.value, 0, 0, 0) == 0
+            if sys.platform == "linux": assert libc.prctl(36, saved.value, 0, 0, 0) == 0
         return {"case": "private-tcl-reservation-restart-and-exit", "children": len(children), "scripts_removed": True, "exit_kills_descendants": True, "stdout": output}
 
 
