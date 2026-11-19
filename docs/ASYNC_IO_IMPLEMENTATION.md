@@ -36,7 +36,7 @@ Windowsは移行前のpipeもReadFileで読み、CRTの内部先読みを残さ�
 
 - Windows core 1075成功・8除外、host 116成功・11除外。runtimeとfreestandingを含むbuild test成功。
 - Linux muslをWSL Ubuntuで実行：core 1075成功・8除外、host 125成功・9除外、runtime 15成功。Windows専用worker試験は除外。
-- Windowsのfiles/extension/graphics/audio除外構成：core 702成功・381除外、host 108成功・15除外。Mac arm64はクロスビルド成功、実行は未確認。
+- Windowsのfiles/extension/graphics/audio除外構成：core 702成功・381除外、host 108成功・15除外。Mac arm64はクロスビルド成功。Mac実機の結果は下記「Mac実機受け入れ（1092/1096）」。
 - tests/scripts/verify-async-io-read.py：遅延2pipeの順序、EOF-ready、従来読取り→worker移行、不正な後続IDで先行データを消費しない、stdin先読み、到着済みデータの初回0 pollの5ケース。Windows/Linuxで成功。
 - tests/scripts/verify-async-io-write.py：満杯時のtimeout→相手の読取りでready、受付後の呼出し元メモリ変更、legacy tailとの順序、別pipeの並行読取り、stdout順序、broken pipe、stderrの受付後の従来書込み（合計196608バイト）、stdout/stderr共有時のOUT→ERR順序。Windows/Linuxで成功。Windowsは非同期エラーをFLUSHと後続write/closeで報告。POSIXはwrite時のEPIPEを返し、空のFLUSH/closeには未配送queueがない。
 - tests/scripts/verify-async-io-stdin-spawn.py：親のstdin readerを移行後にSYSTEMで子を起動し、子へ遅延した次のバイトを渡せること、親の再開後のEOFをWindows/Linuxで確認。

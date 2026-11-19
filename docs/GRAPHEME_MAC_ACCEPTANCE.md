@@ -1,6 +1,8 @@
 # 640 Mac実機受け入れ（1111）
 
-未実施。aarch64-macosのクロスコンパイルはMacでの実行合格ではない。
+2026-11-20実施・合格（macOS 27.2.1 / Apple M5 / Zig 0.17.1 / `789420e`）。結果は
+[実装記録](GRAPHEME_IMPLEMENTATION.md#mac実機受け入れ1111)。以下は再実行の手順。
+aarch64-macosのクロスコンパイルはMacでの実行合格ではない。
 Mac上のcheckoutで、OS・機種・Zig版・対象commitと未コミット差分を記録してから実行する。
 
 ```sh

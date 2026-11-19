@@ -46,7 +46,7 @@ SYNC時の位置操作は保留入力とslot EOFを保つ。試験は読んだby
 | SYNCの入力 | CR先読みの保留byte、論理位置、EOF後の再読を単体と公開語で確認。write→4入力経路→SYNCでNULが混入しない |
 | core契約・画像 | callback不足・負長・stack容量不足で呼出し前に失敗し引数保持。短buffer/alias/OS失敗時解放、最大u64サイズ、符号付き秒、画像のcompiled語復元が成功 |
 | 既存process回帰 | Windows公開PROC4件、Linux5件成功。大量3streamの送受信も維持 |
-| Macクロス | aarch64-macos、graphics/audio/float除外でcore/host/runtime14/14 stepコンパイル成功。Mac実機は未実施 |
+| Macクロス | aarch64-macos、graphics/audio/float除外でcore/host/runtime14/14 stepコンパイル成功。Mac実機は下記1116で合格 |
 | 文書 | 全語1801・HELP1587、文書例28件・独立使用例397件、標準キー35件を実辞書と照合。check-docs指摘0件 |
 
 除外は成功件数に足さない。Windows junctionを所有するdirectoryで作って解決後に除去した。
@@ -73,8 +73,26 @@ python scripts/word-reference.py --check --sigma zig-out/bin/sigma.exe
 python scripts/check-docs.py
 ```
 
+## Mac実機受け入れ（1116）
+
+2026-11-20、macOS 27.2.1（26B131）/ Apple M5 arm64 / Zig 0.17.1、対象commit `789420e`（未コミット差分なし）。
+[実機手順](FILESYSTEM_MAC_ACCEPTANCE.md)をMac上で実行し、すべて成功した。
+
+| 確認 | 結果 |
+| --- | --- |
+| `zig build test`（通常） | 23/23 step、1248成功・26除外・失敗0 |
+| `zig build test -Dextension=false` | 23/23 step、1208成功・51除外・失敗0 |
+| `zig build test -Dfiles=false -Dgraphics=false -Daudio=false` | 13/13 step、855成功・399除外・失敗0 |
+| 公開語（`verify-filesystem.py`） | 9ケース群成功。Gforth COMPACT 1,010例、1024超のCOMPACT、実パスのcap0/短buffer/alias、欠落directory、symlink・dangling・device、SYNCの方向切替・位置・readonly/closed、pipe拒否 |
+| mtime | 設定値1700000000秒+123456700nsをそのまま観測。負時刻は要求-0.1秒に対しstatで-1秒+900000000nsを観測（APFSで丸めなし） |
+| Native資源（`verify-filesystem-native.py`） | 1,000反復でfd 4→4 |
+| 手動照合 | `/tmp`経由のsymlinkが`/private/tmp/...`の実パスへ解決。FILE-METADATAの大きさ・秒がstatと一致。directoryと`/dev/null`はEINVAL（-534） |
+| 文書 | `word-reference.py --check`で全語1802・HELP1588・個別実行例398件成功、check-docs指摘0 |
+
+Macの同期はfsyncでありF_FULLFSYNCではない（設計どおり）。ログ・JSON・source指紋は`.work/646/`の
+`mac-public.json`、`mac-native.json`、`mac-manual.txt`、`test-*.txt`、`mac-source-fingerprints.json`。
+
 ## 状態と残作業
 
-仕様1112・ホスト1113・コア/文書1114・Windows/Linux1115、Mac実機1116に分割した。
-1116は[実機手順](FILESYSTEM_MAC_ACCEPTANCE.md)へ残し、646全体を完了扱いにしない。
-640のMac1111も未完了のまま。コミット・タグ・push・配布物作成は行っていない。
+仕様1112・ホスト1113・コア/文書1114・Windows/Linux1115・Mac実機1116をすべて完了した。
+配布物作成は行っていない。

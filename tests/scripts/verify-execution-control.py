@@ -63,6 +63,10 @@ def run(sigma):
                     proc.wait(timeout=2)
                     assert proc.returncode==0 and b'-28' in data,(name,data,proc.returncode)
                     after=__import__('termios').tcgetattr(slave)
+                    # BSD/macOS kernels set the PENDIN state bit whenever ICANON is
+                    # turned back on; it is not configuration Sigma restored wrongly.
+                    pendin=getattr(__import__('termios'),'PENDIN',0)
+                    before[3]&=~pendin; after[3]&=~pendin
                     assert before==after,(name,'terminal mode not restored')
                     return data,time.monotonic()-start
                 finally:

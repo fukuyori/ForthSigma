@@ -1,5 +1,11 @@
 # 613 本体機能拡張の引継ぎ（2026-11-19）
 
+## 最新追記：640・646・652のMac実機受け入れ（2026-11-20）
+
+この節を最新状態とする。基点main `789420e`。macOS 27.2.1 / Apple M5 / Zig 0.17.1で、1111（書記素）・1116（ファイルシステム）・1122（実行制御）のMac実機受け入れをすべて実施して合格した。tqueでは3件と親の640・646・652、1002を完了にした。
+結果は[書記素](GRAPHEME_IMPLEMENTATION.md#mac実機受け入れ1111)、[ファイルシステム](FILESYSTEM_IMPLEMENTATION.md#mac実機受け入れ1116)、[実行制御](EXECUTION_CONTROL_IMPLEMENTATION.md#mac実機受け入れ1122)の各実装記録へ記載。1122の実端末操作は利用者が行い、Terminal.app・WezTerm・Ghosttyの貼付け動作を記録した。
+macOSでは`verify-execution-control.py`のtermios比較がカーネルの`PENDIN`ビットで失敗していたため、比較から除くよう修正した。以下の節で「Mac実機を残す」とあるのは各時点の記録。
+
 
 ## 最新追記：652実行制御のWindows/Linux受け入れ、Mac実機を残す（2026-11-20）
 

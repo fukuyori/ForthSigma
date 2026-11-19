@@ -31,7 +31,7 @@
 | 通常単体の公式適合 | 全853行を両端から照合する1試験を`zig build test`へ追加。公式データはcore試験だけに埋込み |
 | UTF-8・stack・memory | 過長、surrogate、範囲外、不完全列、不正継続、スカラー境界、空、NUL、CRLF、領域外・stack不足と失敗時の引数保持が成功 |
 | 規則・画像 | 長い結合列、GB9c/GB11の属性交差、全公式RI/ZWJケース、公開語を含む定義の画像保存・復元が成功 |
-| Mac向け | aarch64-macos、graphics/audio/float除外でcore/host/runtime 14/14 stepコンパイル成功。Mac実機は未実施 |
+| Mac向け | aarch64-macos、graphics/audio/float除外でcore/host/runtime 14/14 stepコンパイル成功。Mac実機は下記1111で合格 |
 | OS非依存性 | Windows通常testに含むCortex-M0+ freestandingコンパイル成功 |
 | 文書・実辞書 | 全語1797項目、HELP1583項目、標準キー35個、文書例28件、独立使用例393件を照合して成功 |
 | 生成再現性 | 固定入力5ファイルのSHAと生成表一致。check-docsからも検査し指摘0件 |
@@ -61,9 +61,24 @@ python scripts/word-reference.py --check --sigma zig-out/bin/sigma.exe
 python scripts/check-docs.py
 ```
 
+## Mac実機受け入れ（1111）
+
+2026-11-20、macOS 27.2.1（26B131）/ Apple M5 arm64 / Zig 0.17.1、対象commit `789420e`（未コミット差分なし）。
+[受け入れ手順](GRAPHEME_MAC_ACCEPTANCE.md)をMac上で実行し、すべて成功した。
+
+| 確認 | 結果 |
+| --- | --- |
+| `zig build test`（通常） | 23/23 step、1248成功・26除外・失敗0 |
+| `zig build test -Dextension=false` | 23/23 step、1208成功・51除外・失敗0 |
+| `zig build test -Dgraphics=false -Daudio=false -Dfiles=false` | 13/13 step、855成功・399除外・失敗0 |
+| `make-grapheme-table.py --check` | 入力の固定SHAと生成表の再現が一致 |
+| `verify-graphemes.py`（公開語） | Unicode 18.0.0、853ケース・3,096項目成功 |
+
+単体試験には公式853ケース、UTF-8境界・異常系、先読み制限、長い結合列、GB9c/GB11の交差、
+画像復元、除外時の辞書・HELP・実行拒否が含まれる。除外は成功件数に足さない。
+ログとsource指紋（集約SHA-256 `a2e3e78e…`）は`.work/640-mac/`に保存した。
+
 ## 残作業
 
-Mac実機1111は[受け入れ手順](GRAPHEME_MAC_ACCEPTANCE.md)に残す。
-クロスコンパイルやWindows/Linuxでの成功で640全体を完了にしない。
 クラスタ表示幅・単語境界・既存端末行編集への組込みは今回の実装範囲に含めていない。
 コミット・タグ・push・配布物作成は行っていない。
