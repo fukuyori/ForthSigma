@@ -192,7 +192,7 @@
     "src/host_x11.zig": "ef5dffe4b223c2c7792ae99f912e87faf6cd8dcef54c21793be9daea5a2aa49e",
     "src/host_xim.zig": "b653bfee9baf9aaa4ef1e83480e864e4ae2352b3dd09d584face56b1bbe113af",
     "src/main.zig": "5a80a606b890f3d1d9f072dfe35e1fdfbce3934ac2909ac5de09f97c2bf97f2c",
-    "src/physical_key_map.zig": "175c06bece99b0f6550805fef2f64fc5b41d6056ee9002f8d49a042a3623994c",
+    "src/physical_key_map.zig": "e638630a49c2e2c358dc136aadc47fcd23ebbd5a11b7a68e769b4fe9481d81de",
     "src/physical_key_protocol.zig": "f6ff7e274f11628233cc9f5cf3d2b5b14da675ce147ead0c9eda3216297dcde1",
     "src/runtime_test.zig": "466cd719f27c7f9085c2308266a84a0c83baab9e1736f5ea4e90f9c0a8a9433d",
     "src/stb/sigma_font.c": "d1698db33cc12a091499411a4e5b80b87587c199d0c637fe4ee8f1816d50759c",

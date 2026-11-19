@@ -75,3 +75,29 @@ pure Tracker9件、IPC Sender/Receiver4件、変換表1件、公開語7件。短
 6. MacはCommand併用のkeyUp、FlagsChangedの左右区別を確認する。device-dependent maskを出さない対象キーボードも、使う場合は左右同時押下を確認し、必要なら対応可否と復旧を修正する。
 7. Macのpipe詰まり確認は、このチェッカーの親Sigmaだけを一時停止して行う。`ps -ax -o pid,ppid,command`でチェッカー親PIDを確認し、別端末から`kill -STOP 親PID`。`--sigma-internal-window-child-v1`の子は止めない。ウィンドウで十分な数のキーを押し離してから、すべて離し、`kill -CONT 親PID`で必ず再開する。ウィンドウが応答を続け、復帰後に再同期要求／snapshot採取を経てheldが0へ戻ることを記録する。この手順はまだ実行していない。
 8. 実行ログと未確認を本記録へ追記し、該当する1082／1087だけを完了にする。クロスコンパイルや合成入力だけで閉じない。
+
+## 1090 Linux JIS実キーボード確認（2026-11-19）
+
+環境：Ubuntu 26.04.1、kernel 7.0.0-43、GNOME Waylandセッション（SigmaのウィンドウはXWayland経由）、IMEはfcitx5のXIM。Zig 0.17.1。HEAD `ca82413`。キーボードはCompx 2.4G Receiver（USB 25a7:fa61）経由の無線JIS配列で、機種名は不明、テンキーなし。XKBはevdev／pc105、jp,us。同じマシンにARCHISS M04US（US）も接続しているが、試験ではJISの方だけを使った。左右Altを単押しでIME切替にする常駐ツール（alt-henkan、仮想キーボード）は、試験中だけ止めて終了後に再開した。
+
+手順：`zig build`、`tests/scripts/check-physical-keys-ime.fs`（物理edgeの記録と、IMEを使うGUI-FIELDを同時に動かすチェッカー。今回追加）。ログは`.work/1090/session1.log`、xevによる切り分けは`.work/1090/xev-super.log`。
+
+| 確認 | 結果 |
+|---|---|
+| 国際キー | ろ135、¥137、無変換139、変換138、カタカナ/ひらがな136、半角/全角53。いずれも押下と解放が1対ずつ届き、supportedは1。Windowsで53/136を対象外にした決定（1089）とはOSで扱いが違う |
+| A短押し／長押し | どちらもedgeは1対だけ。長押しでは文字側に`a`が19個入り、repeatは物理edgeにならない |
+| 左右Shift同時押下と片方の解放 | 左を先に離すと`shift=01`、右を先に離すと`shift=10` |
+| 左右Ctrl・左右Alt・メニュー(101)・矢印・Enter | 正常 |
+| IME併用 | 半角/全角でオンにして`a`→Enterで`あ`（E3 81 82）が確定。物理番号はIMEの状態で変わらない |
+| フォーカス喪失 | Alt+Tabで、押されたままのキーがまとめて解放された |
+| 左右Windowsキー(227/231) | 押下は届くが、解放は届かない。xevでもKeyPressのみで、KeyReleaseは0件。GNOME（overlay-key=Super）がXへ届く前に解放を横取りしているため。**利用者の決定でWindowsキーは使わない**ことにし、XKBのLWIN/RWINを未対応（supported=false、edgeなし）に変更した。修正後に同じ実機で、LGUI/RGUI=false、左Alt・ろ=trueを確認した。Windows版とMacのCommandは変更していない |
+| CapsLock/Pause/PrintScreen | X11では1/0/1。PrintScreenの実押下（GNOMEのスクリーンショットに取られる可能性）は未確認 |
+
+未確認：テンキーEnter（キーなし）。IMEをオフにする経路は、IMEの状態変化を明示的に観測していない（確定3の`a`）。
+
+ネイティブglibcビルドの`zig build test`では、997と関係のない`host_resize`のSIGWINCH試験が1件失敗する（sigactionのmask 128バイト全体を比べるため、glibcが書かない末尾の部分で食い違う）。`-Dtarget=x86_64-linux-musl`では全工程が成功する。別タスクで直す。
+
+## 997 Claude Codeレビュー（1090時点）
+
+- 本記録と設計書の「1087＝Windows/Linux実キーボード」という書き方は、tqueの1087（Windows US）・1088（Linux US）・1089（Windows JIS）・1090（Linux JIS）への分割と合っていない。1087/1089の実機結果と、1089のタイトルにある「ろ/円/無変換/変換・IME a/あの修正」は、このリポジトリ（origin/mainと同じ`ca82413`）にない。Windows側の記録とコードをpushし、1090をその上で再確認するかどうかを決める必要がある。
+- Linuxの経路では、XIMへ転送する前に押下を記録すること、保留した解放を毎周期確定すること、IMEから戻ってきたキーが物理状態を変えないことを、コードで確認した。ブロッカーはない。

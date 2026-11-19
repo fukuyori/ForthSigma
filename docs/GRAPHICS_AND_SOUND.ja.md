@@ -526,7 +526,7 @@ S" @1 CDEF" S" @2 EGAB" S" @3 O3 C2G2" S" @4 O2 C1" 4 PLAYS
 
 `REQUIRE-GRAPHICS GRAPHICS`で読み込みます。`SCAN-INPUT?`はnativeウィンドウの物理入力が利用可能かを調べ、`scan SCAN-SUPPORTED?`はそのキーの押下・解放に対応するかを調べます。ウィンドウを自動では開きません。端末・SIXEL・Tkだけでは未対応です。`scan SCAN-HELD?`は状態を読み、`KEY-EVENT`は`scan kind true`または空なら`false`だけを返します。INKEY/EKEY/KEYと独立したキューです。
 
-番号はUSB HID Keyboard/Keypad page 0x07の0〜255。例は`SC-A`、`SC-LSHIFT`、`SC-RSHIFT`。範囲外は-24です。`SC-PRESS`（1）と`SC-RELEASE`（2）は実際の変化だけで、autorepeatは増えません。MacのCapsLock、WindowsのPause等、両方の変化を得られないキーはSCAN-SUPPORTED?が偽です。キーボード配列の文字やIME確定文字の番号とは別です。
+番号はUSB HID Keyboard/Keypad page 0x07の0〜255。例は`SC-A`、`SC-LSHIFT`、`SC-RSHIFT`。範囲外は-24です。`SC-PRESS`（1）と`SC-RELEASE`（2）は実際の変化だけで、autorepeatは増えません。MacのCapsLock、WindowsのPause、Linuxの左右Windowsキー（GNOMEが解放を横取りする）等、両方の変化を得られないキーはSCAN-SUPPORTED?が偽です。キーボード配列の文字やIME確定文字の番号とは別です。
 
 キューは256件。満杯になると先の256件を残して新しい履歴を捨てますが、状態更新は続きます。残りを読んだ後は`0 SC-RESYNC true`（種類3）を返し続けます。`addr KEY-RESYNC`は32バイトへ状態を写し、未読履歴を破棄して要求を消します。キーnはn/8バイト目のbit(n%8)。通信snapshot待ちの間は要求を消さず、最新状態が到着した後にもう一度読み直します。失われた短押しの回数や時刻は復元できません。不正な32バイト領域はホストを変更せず-9です。
 

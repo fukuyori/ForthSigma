@@ -29,6 +29,8 @@ pub fn darwinScan(code: usize) u8 {
     return if (code < darwin.len) darwin[code] else 0;
 }
 /// XKB key names describe positions rather than symbols for the current layout.
+/// LWIN/RWIN stay unsupported: GNOME (overlay-key) consumes their release before X
+/// sees it (tque1090), and the user decided not to use the Windows keys.
 pub fn xkbScan(name: [4]u8) u8 {
     const rows = [_]struct { prefix: [2]u8, codes: []const u8 }{
         .{ .prefix = .{ 'A', 'E' }, .codes = &.{ 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 45, 46 } },
@@ -49,7 +51,7 @@ pub fn xkbScan(name: [4]u8) u8 {
         .{ .name = "TAB\x00", .scan = 43 }, .{ .name = "RTRN", .scan = 40 },       .{ .name = "BKSL", .scan = 49 },
         .{ .name = "CAPS", .scan = 57 },    .{ .name = "LFSH", .scan = 225 },      .{ .name = "RTSH", .scan = 229 },
         .{ .name = "LCTL", .scan = 224 },   .{ .name = "RCTL", .scan = 228 },      .{ .name = "LALT", .scan = 226 },
-        .{ .name = "RALT", .scan = 230 },   .{ .name = "LWIN", .scan = 227 },      .{ .name = "RWIN", .scan = 231 },
+        .{ .name = "RALT", .scan = 230 },   .{ .name = "LWIN", .scan = 0 },        .{ .name = "RWIN", .scan = 0 },
         .{ .name = "SPCE", .scan = 44 },    .{ .name = "MENU", .scan = 101 },      .{ .name = "COMP", .scan = 101 },
         .{ .name = "LSGT", .scan = 100 },   .{ .name = "PRSC", .scan = 70 },       .{ .name = "SCLK", .scan = 71 },
         .{ .name = "PAUS", .scan = 0 },     .{ .name = "INS\x00", .scan = 73 },    .{ .name = "HOME", .scan = 74 },
@@ -85,4 +87,6 @@ test "native positions distinguish sides and keypad without characters" {
     try std.testing.expectEqual(@as(u8, 20), xkbScan("AD01".*));
     try std.testing.expectEqual(@as(u8, 225), xkbScan("LFSH".*));
     try std.testing.expectEqual(@as(u8, 0), xkbScan("XXXX".*));
+    try std.testing.expectEqual(@as(u8, 0), xkbScan("LWIN".*));
+    try std.testing.expectEqual(@as(u8, 0), xkbScan("RWIN".*));
 }
