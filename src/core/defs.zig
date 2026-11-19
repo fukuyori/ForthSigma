@@ -1128,6 +1128,11 @@ pub const Builtin = enum {
     terminal_rows,
     ekey_wait,
     ekey_mouse,
+    gfx_scan_input,
+    gfx_scan_supported,
+    gfx_scan_held,
+    gfx_key_event,
+    gfx_key_resync,
 };
 
 pub const HeapResult = union(enum) { address: Cell, no_memory, bad_pointer };

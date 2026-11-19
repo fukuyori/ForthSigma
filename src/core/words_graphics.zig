@@ -26,37 +26,39 @@ const graphics_image_address = memory_map.graphics_image_address;
 const graphics_vocabulary_address = memory_map.graphics_vocabulary_address;
 
 /// The built-in words this file executes; executeBuiltin dispatches by this list.
-pub const words = [_]Builtin{ .gfx_init, .gfx_width, .gfx_height, .gfx_pset, .gfx_pget, .gfx_hline, .gfx_cls, .gfx_save_ppm, .gfx_save_bmp, .gfx_show_blocks, .gfx_show_sixel, .gfx_show_window, .gfx_window_query, .gfx_save_png, .gfx_inkey, .gfx_mouse, .gfx_mouse_mode, .gfx_glyph_load, .gfx_glyph_box, .gfx_glyph_alpha, .gfx_font_height, .gfx_font_builtin, .gfx_font_load, .gfx_font_system, .gfx_color_mode, .gfx_tcl, .gfx_tcl_error, .gfx_tcl_event, .gfx_tcl_program, .gfx_tcl_stop, .gfx_show_tk, .gfx_key_held, .gfx_window_size, .gfx_gamepad_poll, .gfx_gamepad_query, .gfx_gamepad_name, .gfx_gamepad_map, .gfx_gamepad_guid, .gfx_mouse_event } ++ graphics_images.words ++ [_]Builtin{ .gfx_auto_display, .gfx_auto_display_set, .gfx_ime_preedit, .gfx_ime_caret, .gfx_auto_try, .gfx_fullscreen, .gfx_fullscreen_query, .gfx_mouse_cursor };
+pub const words = [_]Builtin{ .gfx_init, .gfx_width, .gfx_height, .gfx_pset, .gfx_pget, .gfx_hline, .gfx_cls, .gfx_save_ppm, .gfx_save_bmp, .gfx_show_blocks, .gfx_show_sixel, .gfx_show_window, .gfx_window_query, .gfx_save_png, .gfx_inkey, .gfx_mouse, .gfx_mouse_mode, .gfx_glyph_load, .gfx_glyph_box, .gfx_glyph_alpha, .gfx_font_height, .gfx_font_builtin, .gfx_font_load, .gfx_font_system, .gfx_color_mode, .gfx_tcl, .gfx_tcl_error, .gfx_tcl_event, .gfx_tcl_program, .gfx_tcl_stop, .gfx_show_tk, .gfx_key_held, .gfx_window_size, .gfx_gamepad_poll, .gfx_gamepad_query, .gfx_gamepad_name, .gfx_gamepad_map, .gfx_gamepad_guid, .gfx_mouse_event } ++ graphics_images.words ++ [_]Builtin{ .gfx_auto_display, .gfx_auto_display_set, .gfx_ime_preedit, .gfx_ime_caret, .gfx_auto_try, .gfx_fullscreen, .gfx_fullscreen_query, .gfx_mouse_cursor, .gfx_scan_input, .gfx_scan_supported, .gfx_scan_held, .gfx_key_event, .gfx_key_resync };
 
 /// The GFX- words in the order REQUIRE-GRAPHICS appends them, right after the GRAPHICS
 /// vocabulary. The order is part of the dictionary that images keep: add new words at
 /// the end.
 pub const definitions = [_]struct { []const u8, Builtin }{
-    .{ "GFX-INIT", .gfx_init },                    .{ "GFX-WIDTH", .gfx_width },                    .{ "GFX-HEIGHT", .gfx_height },
-    .{ "GFX-PSET", .gfx_pset },                    .{ "GFX-PGET", .gfx_pget },                      .{ "GFX-HLINE", .gfx_hline },
-    .{ "GFX-CLS", .gfx_cls },                      .{ "GFX-SAVE-PPM", .gfx_save_ppm },              .{ "GFX-SAVE-BMP", .gfx_save_bmp },
-    .{ "GFX-SHOW-BLOCKS", .gfx_show_blocks },      .{ "GFX-SHOW-SIXEL", .gfx_show_sixel },          .{ "GFX-SHOW-WINDOW", .gfx_show_window },
-    .{ "GFX-WINDOW?", .gfx_window_query },         .{ "GFX-SAVE-PNG", .gfx_save_png },              .{ "GFX-INKEY", .gfx_inkey },
-    .{ "GFX-MOUSE", .gfx_mouse },                  .{ "GFX-MOUSE-MODE", .gfx_mouse_mode },          .{ "GFX-GLYPH-LOAD", .gfx_glyph_load },
-    .{ "GFX-GLYPH-BOX", .gfx_glyph_box },          .{ "GFX-GLYPH-ALPHA", .gfx_glyph_alpha },        .{ "GFX-FONT-HEIGHT", .gfx_font_height },
-    .{ "GFX-FONT-BUILTIN", .gfx_font_builtin },    .{ "GFX-FONT-LOAD", .gfx_font_load },            .{ "GFX-FONT-SYSTEM", .gfx_font_system },
-    .{ "GFX-COLOR-MODE", .gfx_color_mode },        .{ "GFX-TCL", .gfx_tcl },                        .{ "GFX-TCL-ERROR", .gfx_tcl_error },
-    .{ "GFX-TCL-EVENT", .gfx_tcl_event },          .{ "GFX-TCL-PROGRAM", .gfx_tcl_program },        .{ "GFX-TCL-STOP", .gfx_tcl_stop },
-    .{ "GFX-SHOW-TK", .gfx_show_tk },              .{ "GFX-KEY-HELD", .gfx_key_held },              .{ "GFX-WINDOW-SIZE", .gfx_window_size },
-    .{ "GFX-GAMEPAD-POLL", .gfx_gamepad_poll },    .{ "GFX-GAMEPAD-QUERY", .gfx_gamepad_query },    .{ "GFX-GAMEPAD-NAME", .gfx_gamepad_name },
-    .{ "GFX-GAMEPAD-MAP", .gfx_gamepad_map },      .{ "GFX-GAMEPAD-GUID", .gfx_gamepad_guid },      .{ "GFX-IMAGE-NEW", .gfx_image_new },
-    .{ "GFX-IMAGE-FREE", .gfx_image_free },        .{ "GFX-IMAGE-SIZE", .gfx_image_size },          .{ "GFX-TARGET", .gfx_target },
-    .{ "GFX-TARGET@", .gfx_target_query },         .{ "GFX-COPY", .gfx_copy },                      .{ "GFX-IMAGE-LOAD", .gfx_image_load },
-    .{ "GFX-MOUSE-EVENT", .gfx_mouse_event },      .{ "GFX-PIXEL", .gfx_pixel },                    .{ "GFX-TILEMAP", .gfx_tilemap },
-    .{ "GFX-INDEXED", .gfx_indexed },              .{ "GFX-ROW-SHIFT", .gfx_row_shift },            .{ "GFX-ROW-COLOR", .gfx_row_color },
-    .{ "GFX-AUTO-DISPLAY", .gfx_auto_display },    .{ "GFX-AUTO-DISPLAY!", .gfx_auto_display_set }, .{ "GFX-IME-PREEDIT", .gfx_ime_preedit },
-    .{ "GFX-IME-CARET", .gfx_ime_caret },          .{ "GFX-AUTO-TRY", .gfx_auto_try },              .{ "GFX-FULLSCREEN", .gfx_fullscreen },
-    .{ "GFX-FULLSCREEN?", .gfx_fullscreen_query }, .{ "GFX-MOUSE-CURSOR", .gfx_mouse_cursor },
+    .{ "GFX-INIT", .gfx_init },                      .{ "GFX-WIDTH", .gfx_width },                    .{ "GFX-HEIGHT", .gfx_height },
+    .{ "GFX-PSET", .gfx_pset },                      .{ "GFX-PGET", .gfx_pget },                      .{ "GFX-HLINE", .gfx_hline },
+    .{ "GFX-CLS", .gfx_cls },                        .{ "GFX-SAVE-PPM", .gfx_save_ppm },              .{ "GFX-SAVE-BMP", .gfx_save_bmp },
+    .{ "GFX-SHOW-BLOCKS", .gfx_show_blocks },        .{ "GFX-SHOW-SIXEL", .gfx_show_sixel },          .{ "GFX-SHOW-WINDOW", .gfx_show_window },
+    .{ "GFX-WINDOW?", .gfx_window_query },           .{ "GFX-SAVE-PNG", .gfx_save_png },              .{ "GFX-INKEY", .gfx_inkey },
+    .{ "GFX-MOUSE", .gfx_mouse },                    .{ "GFX-MOUSE-MODE", .gfx_mouse_mode },          .{ "GFX-GLYPH-LOAD", .gfx_glyph_load },
+    .{ "GFX-GLYPH-BOX", .gfx_glyph_box },            .{ "GFX-GLYPH-ALPHA", .gfx_glyph_alpha },        .{ "GFX-FONT-HEIGHT", .gfx_font_height },
+    .{ "GFX-FONT-BUILTIN", .gfx_font_builtin },      .{ "GFX-FONT-LOAD", .gfx_font_load },            .{ "GFX-FONT-SYSTEM", .gfx_font_system },
+    .{ "GFX-COLOR-MODE", .gfx_color_mode },          .{ "GFX-TCL", .gfx_tcl },                        .{ "GFX-TCL-ERROR", .gfx_tcl_error },
+    .{ "GFX-TCL-EVENT", .gfx_tcl_event },            .{ "GFX-TCL-PROGRAM", .gfx_tcl_program },        .{ "GFX-TCL-STOP", .gfx_tcl_stop },
+    .{ "GFX-SHOW-TK", .gfx_show_tk },                .{ "GFX-KEY-HELD", .gfx_key_held },              .{ "GFX-WINDOW-SIZE", .gfx_window_size },
+    .{ "GFX-GAMEPAD-POLL", .gfx_gamepad_poll },      .{ "GFX-GAMEPAD-QUERY", .gfx_gamepad_query },    .{ "GFX-GAMEPAD-NAME", .gfx_gamepad_name },
+    .{ "GFX-GAMEPAD-MAP", .gfx_gamepad_map },        .{ "GFX-GAMEPAD-GUID", .gfx_gamepad_guid },      .{ "GFX-IMAGE-NEW", .gfx_image_new },
+    .{ "GFX-IMAGE-FREE", .gfx_image_free },          .{ "GFX-IMAGE-SIZE", .gfx_image_size },          .{ "GFX-TARGET", .gfx_target },
+    .{ "GFX-TARGET@", .gfx_target_query },           .{ "GFX-COPY", .gfx_copy },                      .{ "GFX-IMAGE-LOAD", .gfx_image_load },
+    .{ "GFX-MOUSE-EVENT", .gfx_mouse_event },        .{ "GFX-PIXEL", .gfx_pixel },                    .{ "GFX-TILEMAP", .gfx_tilemap },
+    .{ "GFX-INDEXED", .gfx_indexed },                .{ "GFX-ROW-SHIFT", .gfx_row_shift },            .{ "GFX-ROW-COLOR", .gfx_row_color },
+    .{ "GFX-AUTO-DISPLAY", .gfx_auto_display },      .{ "GFX-AUTO-DISPLAY!", .gfx_auto_display_set }, .{ "GFX-IME-PREEDIT", .gfx_ime_preedit },
+    .{ "GFX-IME-CARET", .gfx_ime_caret },            .{ "GFX-AUTO-TRY", .gfx_auto_try },              .{ "GFX-FULLSCREEN", .gfx_fullscreen },
+    .{ "GFX-FULLSCREEN?", .gfx_fullscreen_query },   .{ "GFX-MOUSE-CURSOR", .gfx_mouse_cursor },      .{ "GFX-SCAN-INPUT?", .gfx_scan_input },
+    .{ "GFX-SCAN-SUPPORTED?", .gfx_scan_supported }, .{ "GFX-SCAN-HELD?", .gfx_scan_held },           .{ "GFX-KEY-EVENT", .gfx_key_event },
+    .{ "GFX-KEY-RESYNC", .gfx_key_resync },
 };
 
 /// The words of the graphics library that HELP describes; the help test checks that the
 /// library defines each of them.
-pub const library_words = [_][]const u8{ "RGB", "COLOR", "COLOR!", "COLOR@", "PSET", "CLS", "LINE", "RECT", "FILL-RECT", "CIRCLE", "FILL-CIRCLE", "PAINT", "SAVE-PPM", "SAVE-BMP", "SAVE-PNG", "SHOW", "DISPLAY-TERMINAL", "DISPLAY-WINDOW", "DISPLAY-AUTO", "FULLSCREEN", "FULLSCREEN?", "MOUSE-CURSOR", "TERMINAL-BLOCKS", "TERMINAL-SIXEL", "DISPLAY-COLORS", "DITHER", "TCL", "TCL-EVAL", "TCL-ERROR$", "TCL-EVENT", "TCL-PROGRAM", "TCL-STOP", "DISPLAY-TK", "INKEY", "KEY-HELD?", "MOUSE", "WINDOW-SIZE", "MOUSE-ON", "MOUSE-OFF", "FRAME", "TEXT", "TEXT-SCALE", "TEXT-WIDTH", "TEXT-HEIGHT", "BUILTIN-FONT", "LOAD-FONT", "SYSTEM-FONT", "K-UP", "K-DOWN", "K-LEFT", "K-RIGHT", "K-HOME", "K-END", "K-PRIOR", "K-NEXT", "K-INSERT", "K-DELETE", "K-F1", "K-F2", "K-F3", "K-F4", "K-F5", "K-F6", "K-F7", "K-F8", "K-F9", "K-F10", "K-F11", "K-F12", "GAMEPAD-POLL", "GAMEPAD?", "GAMEPAD-ID", "GAMEPAD-BUTTONS", "GAMEPAD-MAPPED?", "GAMEPAD-AXES", "GAMEPAD-BUTTON-COUNT", "GAMEPAD-HATS", "GAMEPAD-AXIS", "GAMEPAD-HAT", "GAMEPAD-BUTTON?", "GAMEPAD-NAME", "GAMEPAD-MAP", "GAMEPAD-GUID", "SCREEN", "NEW-IMAGE", "FREE-IMAGE", "IMAGE-SIZE", "DRAW-TO", "DRAWING", "TRANSPARENT", "IMAGE-FLIP", "COPY-RECT", "PUT-IMAGE", "LOAD-IMAGE", "IMAGE-MODE", "IMAGE-ALPHA", "IMAGE-SCALE", "MOUSE-EVENT" };
+pub const library_words = [_][]const u8{ "RGB", "COLOR", "COLOR!", "COLOR@", "PSET", "CLS", "LINE", "RECT", "FILL-RECT", "CIRCLE", "FILL-CIRCLE", "PAINT", "SAVE-PPM", "SAVE-BMP", "SAVE-PNG", "SHOW", "DISPLAY-TERMINAL", "DISPLAY-WINDOW", "DISPLAY-AUTO", "FULLSCREEN", "FULLSCREEN?", "MOUSE-CURSOR", "TERMINAL-BLOCKS", "TERMINAL-SIXEL", "DISPLAY-COLORS", "DITHER", "TCL", "TCL-EVAL", "TCL-ERROR$", "TCL-EVENT", "TCL-PROGRAM", "TCL-STOP", "DISPLAY-TK", "INKEY", "KEY-HELD?", "MOUSE", "WINDOW-SIZE", "MOUSE-ON", "MOUSE-OFF", "FRAME", "TEXT", "TEXT-SCALE", "TEXT-WIDTH", "TEXT-HEIGHT", "BUILTIN-FONT", "LOAD-FONT", "SYSTEM-FONT", "K-UP", "K-DOWN", "K-LEFT", "K-RIGHT", "K-HOME", "K-END", "K-PRIOR", "K-NEXT", "K-INSERT", "K-DELETE", "K-F1", "K-F2", "K-F3", "K-F4", "K-F5", "K-F6", "K-F7", "K-F8", "K-F9", "K-F10", "K-F11", "K-F12", "GAMEPAD-POLL", "GAMEPAD?", "GAMEPAD-ID", "GAMEPAD-BUTTONS", "GAMEPAD-MAPPED?", "GAMEPAD-AXES", "GAMEPAD-BUTTON-COUNT", "GAMEPAD-HATS", "GAMEPAD-AXIS", "GAMEPAD-HAT", "GAMEPAD-BUTTON?", "GAMEPAD-NAME", "GAMEPAD-MAP", "GAMEPAD-GUID", "SCREEN", "NEW-IMAGE", "FREE-IMAGE", "IMAGE-SIZE", "DRAW-TO", "DRAWING", "TRANSPARENT", "IMAGE-FLIP", "COPY-RECT", "PUT-IMAGE", "LOAD-IMAGE", "IMAGE-MODE", "IMAGE-ALPHA", "IMAGE-SCALE", "MOUSE-EVENT" } ++ [_][]const u8{ "SCAN-INPUT?", "SCAN-SUPPORTED?", "SCAN-HELD?", "KEY-EVENT", "KEY-RESYNC", "SC-A", "SC-B", "SC-C", "SC-D", "SC-E", "SC-F", "SC-G", "SC-H", "SC-I", "SC-J", "SC-K", "SC-L", "SC-M", "SC-N", "SC-O", "SC-P", "SC-Q", "SC-R", "SC-S", "SC-T", "SC-U", "SC-V", "SC-W", "SC-X", "SC-Y", "SC-Z", "SC-1", "SC-2", "SC-3", "SC-4", "SC-5", "SC-6", "SC-7", "SC-8", "SC-9", "SC-0", "SC-RETURN", "SC-ESCAPE", "SC-BACKSPACE", "SC-TAB", "SC-SPACE", "SC-MINUS", "SC-EQUALS", "SC-LEFTBRACKET", "SC-RIGHTBRACKET", "SC-BACKSLASH", "SC-NONUSHASH", "SC-SEMICOLON", "SC-APOSTROPHE", "SC-GRAVE", "SC-COMMA", "SC-PERIOD", "SC-SLASH", "SC-CAPSLOCK", "SC-F1", "SC-F2", "SC-F3", "SC-F4", "SC-F5", "SC-F6", "SC-F7", "SC-F8", "SC-F9", "SC-F10", "SC-F11", "SC-F12", "SC-PRINTSCREEN", "SC-SCROLLLOCK", "SC-PAUSE", "SC-INSERT", "SC-HOME", "SC-PAGEUP", "SC-DELETE", "SC-END", "SC-PAGEDOWN", "SC-RIGHT", "SC-LEFT", "SC-DOWN", "SC-UP", "SC-NUMLOCKCLEAR", "SC-KP-DIVIDE", "SC-KP-MULTIPLY", "SC-KP-MINUS", "SC-KP-PLUS", "SC-KP-ENTER", "SC-KP-1", "SC-KP-2", "SC-KP-3", "SC-KP-4", "SC-KP-5", "SC-KP-6", "SC-KP-7", "SC-KP-8", "SC-KP-9", "SC-KP-0", "SC-KP-PERIOD", "SC-NONUSBACKSLASH", "SC-APPLICATION", "SC-POWER", "SC-KP-EQUALS", "SC-F13", "SC-F14", "SC-F15", "SC-F16", "SC-F17", "SC-F18", "SC-F19", "SC-F20", "SC-F21", "SC-F22", "SC-F23", "SC-F24", "SC-EXECUTE", "SC-HELP", "SC-MENU", "SC-SELECT", "SC-STOP", "SC-AGAIN", "SC-UNDO", "SC-CUT", "SC-COPY", "SC-PASTE", "SC-FIND", "SC-MUTE", "SC-VOLUMEUP", "SC-VOLUMEDOWN", "SC-LOCKINGCAPSLOCK", "SC-LOCKINGNUMLOCK", "SC-LOCKINGSCROLLLOCK", "SC-KP-COMMA", "SC-KP-EQUALSAS400", "SC-INTERNATIONAL1", "SC-INTERNATIONAL2", "SC-INTERNATIONAL3", "SC-INTERNATIONAL4", "SC-INTERNATIONAL5", "SC-INTERNATIONAL6", "SC-INTERNATIONAL7", "SC-INTERNATIONAL8", "SC-INTERNATIONAL9", "SC-LANG1", "SC-LANG2", "SC-LANG3", "SC-LANG4", "SC-LANG5", "SC-LANG6", "SC-LANG7", "SC-LANG8", "SC-LANG9", "SC-ALTERASE", "SC-SYSREQ", "SC-CANCEL", "SC-CLEAR", "SC-PRIOR", "SC-RETURN2", "SC-SEPARATOR", "SC-OUT", "SC-OPER", "SC-CLEARAGAIN", "SC-CRSEL", "SC-EXSEL", "SC-KP-00", "SC-KP-000", "SC-THOUSANDSSEPARATOR", "SC-DECIMALSEPARATOR", "SC-CURRENCYUNIT", "SC-CURRENCYSUBUNIT", "SC-KP-LEFTPAREN", "SC-KP-RIGHTPAREN", "SC-KP-LEFTBRACE", "SC-KP-RIGHTBRACE", "SC-KP-TAB", "SC-KP-BACKSPACE", "SC-KP-A", "SC-KP-B", "SC-KP-C", "SC-KP-D", "SC-KP-E", "SC-KP-F", "SC-KP-XOR", "SC-KP-POWER", "SC-KP-PERCENT", "SC-KP-LESS", "SC-KP-GREATER", "SC-KP-AMPERSAND", "SC-KP-DBLAMPERSAND", "SC-KP-VERTICALBAR", "SC-KP-DBLVERTICALBAR", "SC-KP-COLON", "SC-KP-HASH", "SC-KP-SPACE", "SC-KP-AT", "SC-KP-EXCLAM", "SC-KP-MEMSTORE", "SC-KP-MEMRECALL", "SC-KP-MEMCLEAR", "SC-KP-MEMADD", "SC-KP-MEMSUBTRACT", "SC-KP-MEMMULTIPLY", "SC-KP-MEMDIVIDE", "SC-KP-PLUSMINUS", "SC-KP-CLEAR", "SC-KP-CLEARENTRY", "SC-KP-BINARY", "SC-KP-OCTAL", "SC-KP-DECIMAL", "SC-KP-HEXADECIMAL", "SC-LCTRL", "SC-LSHIFT", "SC-LALT", "SC-LGUI", "SC-RCTRL", "SC-RSHIFT", "SC-RALT", "SC-RGUI", "SC-PRESS", "SC-RELEASE", "SC-RESYNC" };
 
 /// The words of the part of the library that uses floating-point numbers, which a build
 /// without them leaves out.
@@ -80,6 +82,36 @@ const rgb_mask: u32 = 0x00ff_ffff;
 
 pub fn execute(self: *State, builtin: Builtin) RuntimeError!void {
     switch (builtin) {
+        .gfx_scan_input => {
+            const ops = self.writer.physical_key_ops;
+            try self.push(if (ops != null and ops.?.available(self.writer.context)) -1 else 0);
+        },
+        .gfx_scan_supported, .gfx_scan_held => {
+            const value = try self.pop();
+            if (value < 0 or value > 255) return error.InvalidNumber;
+            const ops = self.writer.physical_key_ops;
+            const flag = if (ops) |o| if (builtin == .gfx_scan_supported) o.supported(self.writer.context, @intCast(value)) else o.held(self.writer.context, @intCast(value)) else false;
+            try self.push(if (flag) -1 else 0);
+        },
+        .gfx_key_event => {
+            // Reserve before consuming a host event, including the three-cell case.
+            if (self.data_stack.len - self.data_depth < 3) return error.StackOverflow;
+            const event = if (self.writer.physical_key_ops) |ops| ops.next(self.writer.context) else null;
+            if (event) |e| {
+                try self.push(e.scan);
+                try self.push(@backingInt(e.kind));
+                try self.push(-1);
+            } else try self.push(0);
+        },
+        .gfx_key_resync => {
+            const address = try self.pop();
+            const index = try self.memoryAddress(address, 32);
+            var bitmap: @import("physical_keys.zig").Bitmap = @splat(0);
+            if (self.writer.physical_key_ops) |ops| ops.resync(self.writer.context, &bitmap);
+            @memcpy(self.memory[index..][0..32], &bitmap);
+            @import("address_registry.zig").written(self, address, 32, false);
+        },
+
         .gfx_gamepad_poll, .gfx_gamepad_query, .gfx_gamepad_name, .gfx_gamepad_map, .gfx_gamepad_guid => try @import("gamepad.zig").execute(self, builtin),
         .gfx_image_new, .gfx_image_free, .gfx_image_size, .gfx_target, .gfx_target_query, .gfx_copy, .gfx_image_load, .gfx_pixel, .gfx_tilemap, .gfx_indexed, .gfx_row_shift, .gfx_row_color => try graphics_images.execute(self, builtin),
         .gfx_init => {

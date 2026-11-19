@@ -6,6 +6,23 @@ const std = @import("std");
 const window_layout = @import("window_layout.zig");
 const forth = @import("forth.zig");
 
+const physical_keys = @import("core/physical_keys.zig");
+const physical_map = @import("physical_key_map.zig");
+const physical_protocol = @import("physical_key_protocol.zig");
+var physical_state: physical_keys.Host = .{};
+var physical_receiver: physical_protocol.Receiver = .{};
+pub fn physical(req: physical_keys.Request) physical_keys.Response {
+    // Reset is a non-I/O boundary used during image commit.
+    if (req != .reset) {
+        readChildInput();
+        if (physical_receiver.sync_pending) if (child_process) |child| {
+            // This pipe is nonblocking. Never interleave control with FRAME pixels.
+            if (std.c.write(child.to_child, "SCANSYNC\n", 9) == 9) physical_receiver.sync_pending = false;
+        };
+    }
+    return physical_state.request(req);
+}
+
 const Id = ?*anyopaque;
 const Sel = ?*anyopaque;
 const Imp = *const anyopaque;
@@ -301,6 +318,7 @@ fn forgetChild(child: ChildProcess) void {
     _ = std.c.close(child.to_child);
     _ = std.c.close(child.from_child);
     child_process = null;
+    physical_state.close();
     input_line_used = 0;
     preedit_length = 0;
     for (held_keys) |code| {
@@ -341,11 +359,14 @@ fn sendFrame(pixels: []const u32, width: u32, height: u32, mode: forth.ColorMode
 /// the queue for poll, and INPUT FULLSCREEN updates fullscreen_wanted.
 fn readChildInput() void {
     const child = child_process orelse return;
-    while (true) {
+    for (0..4096) |_| {
         var descriptor = [_]std.c.pollfd{.{ .fd = child.from_child, .events = std.c.POLL.IN, .revents = 0 }};
         if (std.c.poll(&descriptor, descriptor.len, 0) <= 0) return;
         var byte: u8 = undefined;
-        if (std.c.read(child.from_child, @ptrCast(&byte), 1) <= 0) return;
+        if (std.c.read(child.from_child, @ptrCast(&byte), 1) <= 0) {
+            physical_state.close();
+            return;
+        }
         if (byte == '\n') {
             enqueueInputLine(input_line[0..input_line_used]);
             input_line_used = 0;
@@ -370,7 +391,10 @@ pub fn poll() ?forth.InputEvent {
         if (ready <= 0) return null;
         var byte: u8 = undefined;
         const count = std.c.read(child.from_child, @ptrCast(&byte), 1);
-        if (count <= 0) return null;
+        if (count <= 0) {
+            physical_state.close();
+            return null;
+        }
         if (byte == '\n') {
             enqueueInputLine(input_line[0..input_line_used]);
             input_line_used = 0;
@@ -388,6 +412,8 @@ pub fn poll() ?forth.InputEvent {
 }
 
 fn enqueueInputLine(line: []const u8) void {
+    if (std.mem.eql(u8, line, "CLOSED") or std.mem.eql(u8, line, "EXIT 0")) physical_state.close();
+    if (physical_receiver.accept(&physical_state, line)) return;
     if (!std.mem.startsWith(u8, line, "INPUT ")) return;
     var fields = std.mem.tokenizeScalar(u8, line[6..], ' ');
     const kind = fields.next() orelse return;
@@ -625,6 +651,12 @@ fn startChild() forth.RuntimeError!void {
     try writeAllUntil(child.to_child, if (fullscreen_wanted) "FULLSCREEN 1\n" else "FULLSCREEN 0\n", startup_deadline);
     try writeAllUntil(child.to_child, if (cursor_visible) "CURSOR 1\n" else "CURSOR 0\n", startup_deadline);
     child_process = child;
+    physical_receiver = .{ .sync_pending = physical_state.tracker.stale };
+    physical_state.available = true;
+    physical_state.supported = @splat(0);
+    for (physical_map.darwin) |scan| if (scan != 102 and (scan < 127 or scan > 129)) {
+        physical_state.support(scan);
+    };
     window_was_ready = true;
 }
 
@@ -1317,7 +1349,66 @@ fn outputInput(bytes: []const u8, keep: bool) void {
     }
 }
 
+var physical_sender: physical_protocol.Sender = .{};
+var physical_guard = std.atomic.Value(u8).init(0);
+var physical_sync_requested = std.atomic.Value(bool).init(false);
+const ObjcSuper = extern struct { receiver: Id, superclass: Id };
+const SendSuperEvent = *const fn (*ObjcSuper, Sel, Id) callconv(.c) void;
+var send_super_event: SendSuperEvent = undefined;
+var application_superclass: Id = null;
+
+/// Caller holds physical_guard and stdout_lock. Every physical line fits PIPE_BUF.
+fn physicalWrite(line: []const u8) bool {
+    const flags = std.c.fcntl(1, 3, @as(c_int, 0));
+    if (flags < 0 or std.c.fcntl(1, 4, flags | 4) == -1) return false;
+    defer _ = std.c.fcntl(1, 4, flags);
+    return std.c.write(1, line.ptr, line.len) == @as(isize, @intCast(line.len));
+}
+fn physicalTryWrite(_: ?*anyopaque, line: []const u8) bool {
+    if (stdout_lock.cmpxchgStrong(0, 1, .acquire, .monotonic) != null) return false;
+    defer stdout_lock.store(0, .release);
+    return physicalWrite(line);
+}
+const physical_writer: physical_protocol.Writer = .{ .context = null, .write = physicalTryWrite };
+fn physicalFlush() void {
+    if (physical_guard.cmpxchgStrong(0, 1, .acquire, .monotonic) != null) return;
+    defer physical_guard.store(0, .release);
+    if (physical_sync_requested.swap(false, .acq_rel)) physical_sender.dirty = true;
+    physical_sender.flush(physical_writer);
+}
+fn physicalChildEdge(scan: u8, down_: bool) void {
+    if (scan == 102 or (scan >= 127 and scan <= 129)) return;
+    while (physical_guard.swap(1, .acquire) != 0) std.atomic.spinLoopHint();
+    defer physical_guard.store(0, .release);
+    physical_sender.edge(scan, down_, physical_writer);
+}
+fn physicalChildRelease() void {
+    while (physical_guard.swap(1, .acquire) != 0) std.atomic.spinLoopHint();
+    defer physical_guard.store(0, .release);
+    physical_sender.releaseAll(physical_writer);
+}
+fn applicationSendEvent(app: Id, selector: Sel, event: Id) callconv(.c) void {
+    const kind = send_usize0(event, selector_register("type"));
+    if (active_window != null and send_id0_global(event, selector_register("window")) == active_window and (kind == 10 or kind == 11 or kind == 12)) {
+        const scan = physical_map.darwinScan(send_keycode(event, selector_register("keyCode")));
+        if (kind == 12 and scan >= 224 and scan <= 231) {
+            // Device-specific bits from Apple IOHIDFamily/IOLLEvent.h.
+            const masks = [_]usize{ 1, 2, 32, 8, 8192, 4, 64, 16 };
+            const groups = [_]usize{ 0x40000, 0x20000, 0x80000, 0x100000 };
+            const flags = send_usize0(event, selector_register("modifierFlags"));
+            const index = scan - 224;
+            const target = flags & masks[index] != 0;
+            const other = flags & masks[index ^ 4] != 0;
+            const either = flags & groups[index % 4] != 0;
+            physicalChildEdge(scan, if (either != (target or other)) either else target);
+        } else if (kind != 12) physicalChildEdge(scan, kind == 10);
+    }
+    var super = ObjcSuper{ .receiver = app, .superclass = application_superclass };
+    send_super_event(&super, selector, event);
+}
+
 fn releaseAllInput(closed: bool) void {
+    physicalChildRelease();
     for (&pressed_keys) |*code| {
         if (code.* != 0) sendInput("KEYUP", code.*);
         code.* = 0;
@@ -1504,6 +1595,14 @@ fn readParentLoop() bool {
     var line: [128]u8 = undefined;
     var used: usize = 0;
     while (true) {
+        physicalFlush();
+        var descriptor = [_]std.c.pollfd{.{ .fd = 0, .events = std.c.POLL.IN, .revents = 0 }};
+        const ready = std.c.poll(&descriptor, 1, 16);
+        if (ready < 0) {
+            if (std.c._errno().* == @backingInt(std.c.E.INTR)) continue;
+            return false;
+        }
+        if (ready == 0) continue;
         var byte: u8 = undefined;
         const count = std.c.read(0, @ptrCast(&byte), 1);
         if (count <= 0) return false;
@@ -1515,6 +1614,10 @@ fn readParentLoop() bool {
         }
         const message = line[0..used];
         used = 0;
+        if (std.mem.eql(u8, message, "SCANSYNC")) {
+            physical_sync_requested.store(true, .release);
+            continue;
+        }
         if (std.mem.eql(u8, message, "QUIT")) {
             return queueCommand(.quit);
         }
@@ -1704,7 +1807,9 @@ pub fn runChild() !u8 {
     const pool_init = send_id0(pool, selector_register("init")) orelse return error.AppKitInitializationFailed;
     defer send_void0.?(pool_init, selector_register("drain"));
 
-    const app_class = get_class("NSApplication") orelse return error.AppKitClassUnavailable;
+    application_superclass = get_class("NSApplication") orelse return error.AppKitClassUnavailable;
+    send_super_event = objc.lookup(SendSuperEvent, "objc_msgSendSuper") orelse return error.ObjcRuntimeUnavailable;
+    const app_class = try addMethod(allocate_class, class_add_method, register_class, application_superclass, "SigmaPhysicalApplication\x00", selector_register("sendEvent:"), @ptrCast(&applicationSendEvent), "v@:@\x00");
     const app = send_id0(app_class, selector_register("sharedApplication")) orelse return error.AppKitInitializationFailed;
     active_app = app;
     if (send_bool1(app, selector_register("setActivationPolicy:"), 0) == 0) return error.AppKitInitializationFailed;

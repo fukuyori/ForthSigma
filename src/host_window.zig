@@ -76,7 +76,47 @@ fn unsupported(_: ?*anyopaque, _: []const u32, _: u32, _: u32, _: forth.ColorMod
     return error.HostUnavailable;
 }
 
+const physical_keys = @import("core/physical_keys.zig");
+const physical_map = @import("physical_key_map.zig");
+fn physicalRequest(req: physical_keys.Request) physical_keys.Response {
+    if (builtin.os.tag == .windows) return win32.physical(req);
+    if (builtin.os.tag == .macos) return macos_window.physical(req);
+    if (linux_enabled) return linux_window.physicalQuery(req);
+    return switch (req) {
+        .available, .supported, .held => .{ .flag = false },
+        .next => .{ .event = null },
+        .resync => .{ .bitmap = @splat(0) },
+        .reset => .none,
+    };
+}
+fn physicalAvailable(_: ?*anyopaque) bool {
+    return physicalRequest(.available).flag;
+}
+fn physicalSupported(_: ?*anyopaque, scan: u8) bool {
+    return physicalRequest(.{ .supported = scan }).flag;
+}
+fn physicalHeld(_: ?*anyopaque, scan: u8) bool {
+    return physicalRequest(.{ .held = scan }).flag;
+}
+fn physicalNext(_: ?*anyopaque) ?physical_keys.Event {
+    return physicalRequest(.next).event;
+}
+fn physicalResync(_: ?*anyopaque, out: *physical_keys.Bitmap) void {
+    out.* = physicalRequest(.resync).bitmap;
+}
+fn physicalReset(_: ?*anyopaque) void {
+    _ = physicalRequest(.reset);
+}
+pub const physical_ops: physical_keys.Ops = .{ .available = physicalAvailable, .supported = physicalSupported, .held = physicalHeld, .next = physicalNext, .resync = physicalResync, .reset = physicalReset };
+
 const win32 = struct {
+    var physical_state: physical_keys.Host = .{};
+    fn physical(req: physical_keys.Request) physical_keys.Response {
+        AcquireSRWLockExclusive(&lock);
+        defer ReleaseSRWLockExclusive(&lock);
+        return physical_state.request(req);
+    }
+
     const Handle = *anyopaque;
     const WindowProc = *const fn (?Handle, u32, usize, isize) callconv(.winapi) isize;
     const WindowClass = extern struct {
@@ -113,6 +153,8 @@ const win32 = struct {
     const BitmapInfo = extern struct { header: BitmapInfoHeader, colors: [1]u32 = .{0} };
     const SrwLock = extern struct { pointer: ?*anyopaque = null };
 
+    extern "user32" fn GetKeyState(i32) callconv(.winapi) i16;
+    extern "user32" fn SetTimer(?Handle, usize, u32, ?*anyopaque) callconv(.winapi) usize;
     extern "user32" fn RegisterClassExW(*const WindowClass) callconv(.winapi) u16;
     extern "user32" fn CreateWindowExW(u32, [*:0]const u16, [*:0]const u16, u32, i32, i32, i32, i32, ?Handle, ?Handle, ?Handle, ?*anyopaque) callconv(.winapi) ?Handle;
     extern "user32" fn DefWindowProcW(?Handle, u32, usize, isize) callconv(.winapi) isize;
@@ -558,6 +600,7 @@ const win32 = struct {
     /// The window is closed: keys and buttons are released, and the mouse is nowhere
     /// (-1 -1) until a window shows it again. Called with the lock held.
     fn windowGone() void {
+        physical_state.close();
         down = @splat(0);
         releaseButtons();
         mouse_x = -1;
@@ -973,6 +1016,12 @@ const win32 = struct {
         if (!cancelled) {
             start = .opened;
             window = handle;
+            physical_state.available = true;
+            physical_state.supported = @splat(0);
+            for (physical_map.windows) |scan| if (scan != 70 and scan != 72 and scan != 102 and (scan < 127 or scan > 129)) {
+                physical_state.support(scan);
+            };
+            if (SetTimer(handle, 0x5343, 16, null) == 0) physical_state.supported[28] &= ~@as(u8, 0x22);
             update_pending = false;
             resize_pending = false;
         }
@@ -996,6 +1045,24 @@ const win32 = struct {
     }
 
     fn windowProc(handle: ?Handle, message: u32, wparam: usize, lparam: isize) callconv(.winapi) isize {
+        if (message == 0x100 or message == 0x101 or message == 0x104 or message == 0x105) {
+            const bits: usize = @bitCast(lparam);
+            const scan = physical_map.windowsScan(@truncate(bits >> 16), bits & (1 << 24) != 0);
+            AcquireSRWLockExclusive(&lock);
+            physical_state.update(scan, message == 0x100 or message == 0x104);
+            ReleaseSRWLockExclusive(&lock);
+        }
+        if (message == 0x113 and wparam == 0x5343) {
+            // SDL documents Windows losing one Shift key-up when both were held.
+            // Only reconcile releases; never infer a new press from polling.
+            const left = GetKeyState(0xa0) < 0;
+            const right = GetKeyState(0xa1) < 0;
+            AcquireSRWLockExclusive(&lock);
+            if (!left) physical_state.update(225, false);
+            if (!right) physical_state.update(229, false);
+            ReleaseSRWLockExclusive(&lock);
+            return 0;
+        }
         switch (message) {
             wm_paint => {
                 var paint: PaintStruct = undefined;
@@ -1044,6 +1111,7 @@ const win32 = struct {
             wm_kill_focus => {
                 AcquireSRWLockExclusive(&lock);
                 down = @splat(0);
+                physical_state.tracker.releaseAll();
                 releaseButtons();
                 preedit_len = 0;
                 ReleaseSRWLockExclusive(&lock);

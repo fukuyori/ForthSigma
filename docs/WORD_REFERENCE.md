@@ -6,7 +6,7 @@ Each entry has a stack effect and a behavior description based on runtime HELP, 
 
 Coverage assumes the full build. Feature-disabled builds omit their respective words. Load optional vocabularies with REQUIRE before adding them to the search order. Immediate/compile-only flags come from the built-in implementation; syntax forms have their own conditions in their descriptions.
 
-Entries (namespace/name pairs): **1549**. The same name in different vocabularies counts separately.
+Entries (namespace/name pairs): **1777**. The same name in different vocabularies counts separately.
 
 ## Contents
 
@@ -15,7 +15,7 @@ Entries (namespace/name pairs): **1549**. The same name in different vocabularie
 - [EXTENSION](#namespace-extension) (14)
 - [FORTH](#namespace-forth) (958)
 - [GAME](#namespace-game) (59)
-- [GRAPHICS](#namespace-graphics) (222)
+- [GRAPHICS](#namespace-graphics) (450)
 - [GUI](#namespace-gui) (135)
 - [Root](#namespace-root) (14)
 - [Syntax](#namespace-syntax) (39)
@@ -28698,7 +28698,9 @@ Sources: [src/graphics/game.fs](../src/graphics/game.fs).
 - [` GFX-INDEXED `](#w-47524150484943533a4746582d494e4445584544)
 - [` GFX-INIT `](#w-47524150484943533a4746582d494e4954)
 - [` GFX-INKEY `](#w-47524150484943533a4746582d494e4b4559)
+- [` GFX-KEY-EVENT `](#w-47524150484943533a4746582d4b45592d4556454e54)
 - [` GFX-KEY-HELD `](#w-47524150484943533a4746582d4b45592d48454c44)
+- [` GFX-KEY-RESYNC `](#w-47524150484943533a4746582d4b45592d524553594e43)
 - [` GFX-MOUSE `](#w-47524150484943533a4746582d4d4f555345)
 - [` GFX-MOUSE-CURSOR `](#w-47524150484943533a4746582d4d4f5553452d435552534f52)
 - [` GFX-MOUSE-EVENT `](#w-47524150484943533a4746582d4d4f5553452d4556454e54)
@@ -28711,6 +28713,9 @@ Sources: [src/graphics/game.fs](../src/graphics/game.fs).
 - [` GFX-SAVE-BMP `](#w-47524150484943533a4746582d534156452d424d50)
 - [` GFX-SAVE-PNG `](#w-47524150484943533a4746582d534156452d504e47)
 - [` GFX-SAVE-PPM `](#w-47524150484943533a4746582d534156452d50504d)
+- [` GFX-SCAN-HELD? `](#w-47524150484943533a4746582d5343414e2d48454c443f)
+- [` GFX-SCAN-INPUT? `](#w-47524150484943533a4746582d5343414e2d494e5055543f)
+- [` GFX-SCAN-SUPPORTED? `](#w-47524150484943533a4746582d5343414e2d535550504f525445443f)
 - [` GFX-SHOW-BLOCKS `](#w-47524150484943533a4746582d53484f572d424c4f434b53)
 - [` GFX-SHOW-SIXEL `](#w-47524150484943533a4746582d53484f572d534958454c)
 - [` GFX-SHOW-TK `](#w-47524150484943533a4746582d53484f572d544b)
@@ -28754,7 +28759,9 @@ Sources: [src/graphics/game.fs](../src/graphics/game.fs).
 - [` K-PRIOR `](#w-47524150484943533a4b2d5052494f52)
 - [` K-RIGHT `](#w-47524150484943533a4b2d5249474854)
 - [` K-UP `](#w-47524150484943533a4b2d5550)
+- [` KEY-EVENT `](#w-47524150484943533a4b45592d4556454e54)
 - [` KEY-HELD? `](#w-47524150484943533a4b45592d48454c443f)
+- [` KEY-RESYNC `](#w-47524150484943533a4b45592d524553594e43)
 - [` LINE `](#w-47524150484943533a4c494e45)
 - [` LOAD-FONT `](#w-47524150484943533a4c4f41442d464f4e54)
 - [` LOAD-IMAGE `](#w-47524150484943533a4c4f41442d494d414745)
@@ -28775,6 +28782,227 @@ Sources: [src/graphics/game.fs](../src/graphics/game.fs).
 - [` SAVE-BMP `](#w-47524150484943533a534156452d424d50)
 - [` SAVE-PNG `](#w-47524150484943533a534156452d504e47)
 - [` SAVE-PPM `](#w-47524150484943533a534156452d50504d)
+- [` SC-0 `](#w-47524150484943533a53432d30)
+- [` SC-1 `](#w-47524150484943533a53432d31)
+- [` SC-2 `](#w-47524150484943533a53432d32)
+- [` SC-3 `](#w-47524150484943533a53432d33)
+- [` SC-4 `](#w-47524150484943533a53432d34)
+- [` SC-5 `](#w-47524150484943533a53432d35)
+- [` SC-6 `](#w-47524150484943533a53432d36)
+- [` SC-7 `](#w-47524150484943533a53432d37)
+- [` SC-8 `](#w-47524150484943533a53432d38)
+- [` SC-9 `](#w-47524150484943533a53432d39)
+- [` SC-A `](#w-47524150484943533a53432d41)
+- [` SC-AGAIN `](#w-47524150484943533a53432d414741494e)
+- [` SC-ALTERASE `](#w-47524150484943533a53432d414c544552415345)
+- [` SC-APOSTROPHE `](#w-47524150484943533a53432d41504f5354524f504845)
+- [` SC-APPLICATION `](#w-47524150484943533a53432d4150504c49434154494f4e)
+- [` SC-B `](#w-47524150484943533a53432d42)
+- [` SC-BACKSLASH `](#w-47524150484943533a53432d4241434b534c415348)
+- [` SC-BACKSPACE `](#w-47524150484943533a53432d4241434b5350414345)
+- [` SC-C `](#w-47524150484943533a53432d43)
+- [` SC-CANCEL `](#w-47524150484943533a53432d43414e43454c)
+- [` SC-CAPSLOCK `](#w-47524150484943533a53432d434150534c4f434b)
+- [` SC-CLEAR `](#w-47524150484943533a53432d434c454152)
+- [` SC-CLEARAGAIN `](#w-47524150484943533a53432d434c454152414741494e)
+- [` SC-COMMA `](#w-47524150484943533a53432d434f4d4d41)
+- [` SC-COPY `](#w-47524150484943533a53432d434f5059)
+- [` SC-CRSEL `](#w-47524150484943533a53432d435253454c)
+- [` SC-CURRENCYSUBUNIT `](#w-47524150484943533a53432d43555252454e4359535542554e4954)
+- [` SC-CURRENCYUNIT `](#w-47524150484943533a53432d43555252454e4359554e4954)
+- [` SC-CUT `](#w-47524150484943533a53432d435554)
+- [` SC-D `](#w-47524150484943533a53432d44)
+- [` SC-DECIMALSEPARATOR `](#w-47524150484943533a53432d444543494d414c534550415241544f52)
+- [` SC-DELETE `](#w-47524150484943533a53432d44454c455445)
+- [` SC-DOWN `](#w-47524150484943533a53432d444f574e)
+- [` SC-E `](#w-47524150484943533a53432d45)
+- [` SC-END `](#w-47524150484943533a53432d454e44)
+- [` SC-EQUALS `](#w-47524150484943533a53432d455155414c53)
+- [` SC-ESCAPE `](#w-47524150484943533a53432d455343415045)
+- [` SC-EXECUTE `](#w-47524150484943533a53432d45584543555445)
+- [` SC-EXSEL `](#w-47524150484943533a53432d455853454c)
+- [` SC-F `](#w-47524150484943533a53432d46)
+- [` SC-F1 `](#w-47524150484943533a53432d4631)
+- [` SC-F10 `](#w-47524150484943533a53432d463130)
+- [` SC-F11 `](#w-47524150484943533a53432d463131)
+- [` SC-F12 `](#w-47524150484943533a53432d463132)
+- [` SC-F13 `](#w-47524150484943533a53432d463133)
+- [` SC-F14 `](#w-47524150484943533a53432d463134)
+- [` SC-F15 `](#w-47524150484943533a53432d463135)
+- [` SC-F16 `](#w-47524150484943533a53432d463136)
+- [` SC-F17 `](#w-47524150484943533a53432d463137)
+- [` SC-F18 `](#w-47524150484943533a53432d463138)
+- [` SC-F19 `](#w-47524150484943533a53432d463139)
+- [` SC-F2 `](#w-47524150484943533a53432d4632)
+- [` SC-F20 `](#w-47524150484943533a53432d463230)
+- [` SC-F21 `](#w-47524150484943533a53432d463231)
+- [` SC-F22 `](#w-47524150484943533a53432d463232)
+- [` SC-F23 `](#w-47524150484943533a53432d463233)
+- [` SC-F24 `](#w-47524150484943533a53432d463234)
+- [` SC-F3 `](#w-47524150484943533a53432d4633)
+- [` SC-F4 `](#w-47524150484943533a53432d4634)
+- [` SC-F5 `](#w-47524150484943533a53432d4635)
+- [` SC-F6 `](#w-47524150484943533a53432d4636)
+- [` SC-F7 `](#w-47524150484943533a53432d4637)
+- [` SC-F8 `](#w-47524150484943533a53432d4638)
+- [` SC-F9 `](#w-47524150484943533a53432d4639)
+- [` SC-FIND `](#w-47524150484943533a53432d46494e44)
+- [` SC-G `](#w-47524150484943533a53432d47)
+- [` SC-GRAVE `](#w-47524150484943533a53432d4752415645)
+- [` SC-H `](#w-47524150484943533a53432d48)
+- [` SC-HELP `](#w-47524150484943533a53432d48454c50)
+- [` SC-HOME `](#w-47524150484943533a53432d484f4d45)
+- [` SC-I `](#w-47524150484943533a53432d49)
+- [` SC-INSERT `](#w-47524150484943533a53432d494e53455254)
+- [` SC-INTERNATIONAL1 `](#w-47524150484943533a53432d494e5445524e4154494f4e414c31)
+- [` SC-INTERNATIONAL2 `](#w-47524150484943533a53432d494e5445524e4154494f4e414c32)
+- [` SC-INTERNATIONAL3 `](#w-47524150484943533a53432d494e5445524e4154494f4e414c33)
+- [` SC-INTERNATIONAL4 `](#w-47524150484943533a53432d494e5445524e4154494f4e414c34)
+- [` SC-INTERNATIONAL5 `](#w-47524150484943533a53432d494e5445524e4154494f4e414c35)
+- [` SC-INTERNATIONAL6 `](#w-47524150484943533a53432d494e5445524e4154494f4e414c36)
+- [` SC-INTERNATIONAL7 `](#w-47524150484943533a53432d494e5445524e4154494f4e414c37)
+- [` SC-INTERNATIONAL8 `](#w-47524150484943533a53432d494e5445524e4154494f4e414c38)
+- [` SC-INTERNATIONAL9 `](#w-47524150484943533a53432d494e5445524e4154494f4e414c39)
+- [` SC-J `](#w-47524150484943533a53432d4a)
+- [` SC-K `](#w-47524150484943533a53432d4b)
+- [` SC-KP-0 `](#w-47524150484943533a53432d4b502d30)
+- [` SC-KP-00 `](#w-47524150484943533a53432d4b502d3030)
+- [` SC-KP-000 `](#w-47524150484943533a53432d4b502d303030)
+- [` SC-KP-1 `](#w-47524150484943533a53432d4b502d31)
+- [` SC-KP-2 `](#w-47524150484943533a53432d4b502d32)
+- [` SC-KP-3 `](#w-47524150484943533a53432d4b502d33)
+- [` SC-KP-4 `](#w-47524150484943533a53432d4b502d34)
+- [` SC-KP-5 `](#w-47524150484943533a53432d4b502d35)
+- [` SC-KP-6 `](#w-47524150484943533a53432d4b502d36)
+- [` SC-KP-7 `](#w-47524150484943533a53432d4b502d37)
+- [` SC-KP-8 `](#w-47524150484943533a53432d4b502d38)
+- [` SC-KP-9 `](#w-47524150484943533a53432d4b502d39)
+- [` SC-KP-A `](#w-47524150484943533a53432d4b502d41)
+- [` SC-KP-AMPERSAND `](#w-47524150484943533a53432d4b502d414d50455253414e44)
+- [` SC-KP-AT `](#w-47524150484943533a53432d4b502d4154)
+- [` SC-KP-B `](#w-47524150484943533a53432d4b502d42)
+- [` SC-KP-BACKSPACE `](#w-47524150484943533a53432d4b502d4241434b5350414345)
+- [` SC-KP-BINARY `](#w-47524150484943533a53432d4b502d42494e415259)
+- [` SC-KP-C `](#w-47524150484943533a53432d4b502d43)
+- [` SC-KP-CLEAR `](#w-47524150484943533a53432d4b502d434c454152)
+- [` SC-KP-CLEARENTRY `](#w-47524150484943533a53432d4b502d434c454152454e545259)
+- [` SC-KP-COLON `](#w-47524150484943533a53432d4b502d434f4c4f4e)
+- [` SC-KP-COMMA `](#w-47524150484943533a53432d4b502d434f4d4d41)
+- [` SC-KP-D `](#w-47524150484943533a53432d4b502d44)
+- [` SC-KP-DBLAMPERSAND `](#w-47524150484943533a53432d4b502d44424c414d50455253414e44)
+- [` SC-KP-DBLVERTICALBAR `](#w-47524150484943533a53432d4b502d44424c564552544943414c424152)
+- [` SC-KP-DECIMAL `](#w-47524150484943533a53432d4b502d444543494d414c)
+- [` SC-KP-DIVIDE `](#w-47524150484943533a53432d4b502d444956494445)
+- [` SC-KP-E `](#w-47524150484943533a53432d4b502d45)
+- [` SC-KP-ENTER `](#w-47524150484943533a53432d4b502d454e544552)
+- [` SC-KP-EQUALS `](#w-47524150484943533a53432d4b502d455155414c53)
+- [` SC-KP-EQUALSAS400 `](#w-47524150484943533a53432d4b502d455155414c534153343030)
+- [` SC-KP-EXCLAM `](#w-47524150484943533a53432d4b502d4558434c414d)
+- [` SC-KP-F `](#w-47524150484943533a53432d4b502d46)
+- [` SC-KP-GREATER `](#w-47524150484943533a53432d4b502d47524541544552)
+- [` SC-KP-HASH `](#w-47524150484943533a53432d4b502d48415348)
+- [` SC-KP-HEXADECIMAL `](#w-47524150484943533a53432d4b502d48455841444543494d414c)
+- [` SC-KP-LEFTBRACE `](#w-47524150484943533a53432d4b502d4c4546544252414345)
+- [` SC-KP-LEFTPAREN `](#w-47524150484943533a53432d4b502d4c454654504152454e)
+- [` SC-KP-LESS `](#w-47524150484943533a53432d4b502d4c455353)
+- [` SC-KP-MEMADD `](#w-47524150484943533a53432d4b502d4d454d414444)
+- [` SC-KP-MEMCLEAR `](#w-47524150484943533a53432d4b502d4d454d434c454152)
+- [` SC-KP-MEMDIVIDE `](#w-47524150484943533a53432d4b502d4d454d444956494445)
+- [` SC-KP-MEMMULTIPLY `](#w-47524150484943533a53432d4b502d4d454d4d554c5449504c59)
+- [` SC-KP-MEMRECALL `](#w-47524150484943533a53432d4b502d4d454d524543414c4c)
+- [` SC-KP-MEMSTORE `](#w-47524150484943533a53432d4b502d4d454d53544f5245)
+- [` SC-KP-MEMSUBTRACT `](#w-47524150484943533a53432d4b502d4d454d5355425452414354)
+- [` SC-KP-MINUS `](#w-47524150484943533a53432d4b502d4d494e5553)
+- [` SC-KP-MULTIPLY `](#w-47524150484943533a53432d4b502d4d554c5449504c59)
+- [` SC-KP-OCTAL `](#w-47524150484943533a53432d4b502d4f4354414c)
+- [` SC-KP-PERCENT `](#w-47524150484943533a53432d4b502d50455243454e54)
+- [` SC-KP-PERIOD `](#w-47524150484943533a53432d4b502d504552494f44)
+- [` SC-KP-PLUS `](#w-47524150484943533a53432d4b502d504c5553)
+- [` SC-KP-PLUSMINUS `](#w-47524150484943533a53432d4b502d504c55534d494e5553)
+- [` SC-KP-POWER `](#w-47524150484943533a53432d4b502d504f574552)
+- [` SC-KP-RIGHTBRACE `](#w-47524150484943533a53432d4b502d52494748544252414345)
+- [` SC-KP-RIGHTPAREN `](#w-47524150484943533a53432d4b502d5249474854504152454e)
+- [` SC-KP-SPACE `](#w-47524150484943533a53432d4b502d5350414345)
+- [` SC-KP-TAB `](#w-47524150484943533a53432d4b502d544142)
+- [` SC-KP-VERTICALBAR `](#w-47524150484943533a53432d4b502d564552544943414c424152)
+- [` SC-KP-XOR `](#w-47524150484943533a53432d4b502d584f52)
+- [` SC-L `](#w-47524150484943533a53432d4c)
+- [` SC-LALT `](#w-47524150484943533a53432d4c414c54)
+- [` SC-LANG1 `](#w-47524150484943533a53432d4c414e4731)
+- [` SC-LANG2 `](#w-47524150484943533a53432d4c414e4732)
+- [` SC-LANG3 `](#w-47524150484943533a53432d4c414e4733)
+- [` SC-LANG4 `](#w-47524150484943533a53432d4c414e4734)
+- [` SC-LANG5 `](#w-47524150484943533a53432d4c414e4735)
+- [` SC-LANG6 `](#w-47524150484943533a53432d4c414e4736)
+- [` SC-LANG7 `](#w-47524150484943533a53432d4c414e4737)
+- [` SC-LANG8 `](#w-47524150484943533a53432d4c414e4738)
+- [` SC-LANG9 `](#w-47524150484943533a53432d4c414e4739)
+- [` SC-LCTRL `](#w-47524150484943533a53432d4c4354524c)
+- [` SC-LEFT `](#w-47524150484943533a53432d4c454654)
+- [` SC-LEFTBRACKET `](#w-47524150484943533a53432d4c454654425241434b4554)
+- [` SC-LGUI `](#w-47524150484943533a53432d4c475549)
+- [` SC-LOCKINGCAPSLOCK `](#w-47524150484943533a53432d4c4f434b494e47434150534c4f434b)
+- [` SC-LOCKINGNUMLOCK `](#w-47524150484943533a53432d4c4f434b494e474e554d4c4f434b)
+- [` SC-LOCKINGSCROLLLOCK `](#w-47524150484943533a53432d4c4f434b494e475343524f4c4c4c4f434b)
+- [` SC-LSHIFT `](#w-47524150484943533a53432d4c5348494654)
+- [` SC-M `](#w-47524150484943533a53432d4d)
+- [` SC-MENU `](#w-47524150484943533a53432d4d454e55)
+- [` SC-MINUS `](#w-47524150484943533a53432d4d494e5553)
+- [` SC-MUTE `](#w-47524150484943533a53432d4d555445)
+- [` SC-N `](#w-47524150484943533a53432d4e)
+- [` SC-NONUSBACKSLASH `](#w-47524150484943533a53432d4e4f4e55534241434b534c415348)
+- [` SC-NONUSHASH `](#w-47524150484943533a53432d4e4f4e555348415348)
+- [` SC-NUMLOCKCLEAR `](#w-47524150484943533a53432d4e554d4c4f434b434c454152)
+- [` SC-O `](#w-47524150484943533a53432d4f)
+- [` SC-OPER `](#w-47524150484943533a53432d4f504552)
+- [` SC-OUT `](#w-47524150484943533a53432d4f5554)
+- [` SC-P `](#w-47524150484943533a53432d50)
+- [` SC-PAGEDOWN `](#w-47524150484943533a53432d50414745444f574e)
+- [` SC-PAGEUP `](#w-47524150484943533a53432d504147455550)
+- [` SC-PASTE `](#w-47524150484943533a53432d5041535445)
+- [` SC-PAUSE `](#w-47524150484943533a53432d5041555345)
+- [` SC-PERIOD `](#w-47524150484943533a53432d504552494f44)
+- [` SC-POWER `](#w-47524150484943533a53432d504f574552)
+- [` SC-PRESS `](#w-47524150484943533a53432d5052455353)
+- [` SC-PRINTSCREEN `](#w-47524150484943533a53432d5052494e5453435245454e)
+- [` SC-PRIOR `](#w-47524150484943533a53432d5052494f52)
+- [` SC-Q `](#w-47524150484943533a53432d51)
+- [` SC-R `](#w-47524150484943533a53432d52)
+- [` SC-RALT `](#w-47524150484943533a53432d52414c54)
+- [` SC-RCTRL `](#w-47524150484943533a53432d524354524c)
+- [` SC-RELEASE `](#w-47524150484943533a53432d52454c45415345)
+- [` SC-RESYNC `](#w-47524150484943533a53432d524553594e43)
+- [` SC-RETURN `](#w-47524150484943533a53432d52455455524e)
+- [` SC-RETURN2 `](#w-47524150484943533a53432d52455455524e32)
+- [` SC-RGUI `](#w-47524150484943533a53432d52475549)
+- [` SC-RIGHT `](#w-47524150484943533a53432d5249474854)
+- [` SC-RIGHTBRACKET `](#w-47524150484943533a53432d5249474854425241434b4554)
+- [` SC-RSHIFT `](#w-47524150484943533a53432d525348494654)
+- [` SC-S `](#w-47524150484943533a53432d53)
+- [` SC-SCROLLLOCK `](#w-47524150484943533a53432d5343524f4c4c4c4f434b)
+- [` SC-SELECT `](#w-47524150484943533a53432d53454c454354)
+- [` SC-SEMICOLON `](#w-47524150484943533a53432d53454d49434f4c4f4e)
+- [` SC-SEPARATOR `](#w-47524150484943533a53432d534550415241544f52)
+- [` SC-SLASH `](#w-47524150484943533a53432d534c415348)
+- [` SC-SPACE `](#w-47524150484943533a53432d5350414345)
+- [` SC-STOP `](#w-47524150484943533a53432d53544f50)
+- [` SC-SYSREQ `](#w-47524150484943533a53432d535953524551)
+- [` SC-T `](#w-47524150484943533a53432d54)
+- [` SC-TAB `](#w-47524150484943533a53432d544142)
+- [` SC-THOUSANDSSEPARATOR `](#w-47524150484943533a53432d54484f5553414e4453534550415241544f52)
+- [` SC-U `](#w-47524150484943533a53432d55)
+- [` SC-UNDO `](#w-47524150484943533a53432d554e444f)
+- [` SC-UP `](#w-47524150484943533a53432d5550)
+- [` SC-V `](#w-47524150484943533a53432d56)
+- [` SC-VOLUMEDOWN `](#w-47524150484943533a53432d564f4c554d45444f574e)
+- [` SC-VOLUMEUP `](#w-47524150484943533a53432d564f4c554d455550)
+- [` SC-W `](#w-47524150484943533a53432d57)
+- [` SC-X `](#w-47524150484943533a53432d58)
+- [` SC-Y `](#w-47524150484943533a53432d59)
+- [` SC-Z `](#w-47524150484943533a53432d5a)
+- [` SCAN-HELD? `](#w-47524150484943533a5343414e2d48454c443f)
+- [` SCAN-INPUT? `](#w-47524150484943533a5343414e2d494e5055543f)
+- [` SCAN-SUPPORTED? `](#w-47524150484943533a5343414e2d535550504f525445443f)
 - [` SCREEN `](#w-47524150484943533a53435245454e)
 - [` SHOW `](#w-47524150484943533a53484f57)
 - [` SYSTEM-FONT `](#w-47524150484943533a53595354454d2d464f4e54)
@@ -30843,6 +31071,28 @@ Caution: Load and select the vocabulary first. Host display, input and sound sup
 
 Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1182).
 
+<a id="w-47524150484943533a4746582d4b45592d4556454e54"></a>
+
+### ` GFX-KEY-EVENT `
+
+` ( -- scan kind true | false ) `
+
+Host primitive for KEY-EVENT; Read an independent physical edge: kind 1 press, 2 release, 3 sticky resync (scan=0). First 256 survive overflow; later edges are lost but held state is maintained.
+
+Kind: builtin.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS : SC-EVENT-DEMO GFX-KEY-EVENT IF . . ELSE ." none" THEN ; SC-EVENT-DEMO
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1397).
+
 <a id="w-47524150484943533a4746582d4b45592d48454c44"></a>
 
 ### ` GFX-KEY-HELD `
@@ -30868,6 +31118,28 @@ Usage example (source excerpt; consult the link for setup and expectations)
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
 Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1195).
+
+<a id="w-47524150484943533a4746582d4b45592d524553594e43"></a>
+
+### ` GFX-KEY-RESYNC `
+
+` ( addr -- ) `
+
+Host primitive for KEY-RESYNC; Copy the 32-byte physical bitmap and discard unread history atomically. Bit n%8 of byte n/8 is usage n. Resync remains requested while a transport snapshot is pending. Invalid address throws -9 before host state changes.
+
+Kind: builtin.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS CREATE SC-BITS 32 ALLOT SC-BITS GFX-KEY-RESYNC SC-BITS C@ .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment. Use valid logical-memory addresses, lengths and capacities; distinguish owned storage from borrowed lifetimes.
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1399).
 
 <a id="w-47524150484943533a4746582d4d4f555345"></a>
 
@@ -31187,6 +31459,72 @@ S" a.txt" GFX-SAVE-PPM
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment. Check the returned ior; zero is success. Passing it to THROW is one option. Use valid logical-memory addresses, lengths and capacities; distinguish owned storage from borrowed lifetimes.
 
 Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1147).
+
+<a id="w-47524150484943533a4746582d5343414e2d48454c443f"></a>
+
+### ` GFX-SCAN-HELD? `
+
+` ( scan -- flag ) `
+
+Host primitive for SCAN-HELD?; Read physical USB keyboard usage scan (0..255) without consuming events; unavailable is false, out of range throws -24.
+
+Kind: builtin.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-LSHIFT GFX-SCAN-HELD? .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1395).
+
+<a id="w-47524150484943533a4746582d5343414e2d494e5055543f"></a>
+
+### ` GFX-SCAN-INPUT? `
+
+` ( -- flag ) `
+
+Host primitive for SCAN-INPUT?; True when the native-window physical keyboard is available; does not open a window.
+
+Kind: builtin.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS GFX-SCAN-INPUT? .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1391).
+
+<a id="w-47524150484943533a4746582d5343414e2d535550504f525445443f"></a>
+
+### ` GFX-SCAN-SUPPORTED? `
+
+` ( scan -- flag ) `
+
+Host primitive for SCAN-SUPPORTED?; True if this host can deliver both physical edges for USB keyboard usage scan (0..255; reserved 0..3 are false); out of range throws -24.
+
+Kind: builtin.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-A GFX-SCAN-SUPPORTED? .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1393).
 
 <a id="w-47524150484943533a4746582d53484f572d424c4f434b53"></a>
 
@@ -32397,6 +32735,36 @@ Implementation definition (private helpers may change):
 
 Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1271).
 
+<a id="w-47524150484943533a4b45592d4556454e54"></a>
+
+### ` KEY-EVENT `
+
+` ( -- scan kind true | false ) `
+
+Read an independent physical edge: kind 1 press, 2 release, 3 sticky resync (scan=0). First 256 survive overflow; later edges are lost but held state is maintained.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Related: [Physical keys](GRAPHICS_AND_SOUND.md#physical-keys).
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS : SC-EVENT-DEMO KEY-EVENT IF . . ELSE ." none" THEN ; SC-EVENT-DEMO
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+: KEY-EVENT ( -- scan kind true | false ) GFX-KEY-EVENT ;
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1396).
+
 <a id="w-47524150484943533a4b45592d48454c443f"></a>
 
 ### ` KEY-HELD? `
@@ -32428,6 +32796,34 @@ Implementation definition (private helpers may change):
 ```
 
 Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1263).
+
+<a id="w-47524150484943533a4b45592d524553594e43"></a>
+
+### ` KEY-RESYNC `
+
+` ( addr -- ) `
+
+Copy the 32-byte physical bitmap and discard unread history atomically. Bit n%8 of byte n/8 is usage n. Resync remains requested while a transport snapshot is pending. Invalid address throws -9 before host state changes.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS CREATE SC-BITS 32 ALLOT SC-BITS KEY-RESYNC SC-BITS C@ .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment. Use valid logical-memory addresses, lengths and capacities; distinguish owned storage from borrowed lifetimes.
+
+Implementation definition (private helpers may change):
+
+```forth
+: KEY-RESYNC ( addr -- ) GFX-KEY-RESYNC ;
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1398).
 
 <a id="w-47524150484943533a4c494e45"></a>
 
@@ -33126,6 +33522,6206 @@ Implementation definition (private helpers may change):
 ```
 
 Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1167).
+
+<a id="w-47524150484943533a53432d30"></a>
+
+### ` SC-0 `
+
+` ( -- scan ) `
+
+USB HID Keyboard/Keypad page 0x07 usage 39 for 0. Use SCAN-SUPPORTED? to query host support.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-0 .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+39 CONSTANT SC-0
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1435).
+
+<a id="w-47524150484943533a53432d31"></a>
+
+### ` SC-1 `
+
+` ( -- scan ) `
+
+USB HID Keyboard/Keypad page 0x07 usage 30 for 1. Use SCAN-SUPPORTED? to query host support.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-1 .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+30 CONSTANT SC-1
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1426).
+
+<a id="w-47524150484943533a53432d32"></a>
+
+### ` SC-2 `
+
+` ( -- scan ) `
+
+USB HID Keyboard/Keypad page 0x07 usage 31 for 2. Use SCAN-SUPPORTED? to query host support.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-2 .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+31 CONSTANT SC-2
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1427).
+
+<a id="w-47524150484943533a53432d33"></a>
+
+### ` SC-3 `
+
+` ( -- scan ) `
+
+USB HID Keyboard/Keypad page 0x07 usage 32 for 3. Use SCAN-SUPPORTED? to query host support.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-3 .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+32 CONSTANT SC-3
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1428).
+
+<a id="w-47524150484943533a53432d34"></a>
+
+### ` SC-4 `
+
+` ( -- scan ) `
+
+USB HID Keyboard/Keypad page 0x07 usage 33 for 4. Use SCAN-SUPPORTED? to query host support.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-4 .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+33 CONSTANT SC-4
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1429).
+
+<a id="w-47524150484943533a53432d35"></a>
+
+### ` SC-5 `
+
+` ( -- scan ) `
+
+USB HID Keyboard/Keypad page 0x07 usage 34 for 5. Use SCAN-SUPPORTED? to query host support.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-5 .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+34 CONSTANT SC-5
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1430).
+
+<a id="w-47524150484943533a53432d36"></a>
+
+### ` SC-6 `
+
+` ( -- scan ) `
+
+USB HID Keyboard/Keypad page 0x07 usage 35 for 6. Use SCAN-SUPPORTED? to query host support.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-6 .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+35 CONSTANT SC-6
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1431).
+
+<a id="w-47524150484943533a53432d37"></a>
+
+### ` SC-7 `
+
+` ( -- scan ) `
+
+USB HID Keyboard/Keypad page 0x07 usage 36 for 7. Use SCAN-SUPPORTED? to query host support.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-7 .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+36 CONSTANT SC-7
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1432).
+
+<a id="w-47524150484943533a53432d38"></a>
+
+### ` SC-8 `
+
+` ( -- scan ) `
+
+USB HID Keyboard/Keypad page 0x07 usage 37 for 8. Use SCAN-SUPPORTED? to query host support.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-8 .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+37 CONSTANT SC-8
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1433).
+
+<a id="w-47524150484943533a53432d39"></a>
+
+### ` SC-9 `
+
+` ( -- scan ) `
+
+USB HID Keyboard/Keypad page 0x07 usage 38 for 9. Use SCAN-SUPPORTED? to query host support.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-9 .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+38 CONSTANT SC-9
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1434).
+
+<a id="w-47524150484943533a53432d41"></a>
+
+### ` SC-A `
+
+` ( -- scan ) `
+
+USB HID Keyboard/Keypad page 0x07 usage 4 for A. Use SCAN-SUPPORTED? to query host support.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Related: [Physical keys](GRAPHICS_AND_SOUND.md#physical-keys).
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-A .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+4 CONSTANT SC-A
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1400).
+
+<a id="w-47524150484943533a53432d414741494e"></a>
+
+### ` SC-AGAIN `
+
+` ( -- scan ) `
+
+USB HID Keyboard/Keypad page 0x07 usage 121 for AGAIN. Use SCAN-SUPPORTED? to query host support.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-AGAIN .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+121 CONSTANT SC-AGAIN
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1517).
+
+<a id="w-47524150484943533a53432d414c544552415345"></a>
+
+### ` SC-ALTERASE `
+
+` ( -- scan ) `
+
+USB HID Keyboard/Keypad page 0x07 usage 153 for ALTERASE. Use SCAN-SUPPORTED? to query host support.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-ALTERASE .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+153 CONSTANT SC-ALTERASE
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1549).
+
+<a id="w-47524150484943533a53432d41504f5354524f504845"></a>
+
+### ` SC-APOSTROPHE `
+
+` ( -- scan ) `
+
+USB HID Keyboard/Keypad page 0x07 usage 52 for APOSTROPHE. Use SCAN-SUPPORTED? to query host support.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-APOSTROPHE .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+52 CONSTANT SC-APOSTROPHE
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1448).
+
+<a id="w-47524150484943533a53432d4150504c49434154494f4e"></a>
+
+### ` SC-APPLICATION `
+
+` ( -- scan ) `
+
+USB HID Keyboard/Keypad page 0x07 usage 101 for APPLICATION. Use SCAN-SUPPORTED? to query host support.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-APPLICATION .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+101 CONSTANT SC-APPLICATION
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1497).
+
+<a id="w-47524150484943533a53432d42"></a>
+
+### ` SC-B `
+
+` ( -- scan ) `
+
+USB HID Keyboard/Keypad page 0x07 usage 5 for B. Use SCAN-SUPPORTED? to query host support.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-B .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+5 CONSTANT SC-B
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1401).
+
+<a id="w-47524150484943533a53432d4241434b534c415348"></a>
+
+### ` SC-BACKSLASH `
+
+` ( -- scan ) `
+
+USB HID Keyboard/Keypad page 0x07 usage 49 for BACKSLASH. Use SCAN-SUPPORTED? to query host support.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-BACKSLASH .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+49 CONSTANT SC-BACKSLASH
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1445).
+
+<a id="w-47524150484943533a53432d4241434b5350414345"></a>
+
+### ` SC-BACKSPACE `
+
+` ( -- scan ) `
+
+USB HID Keyboard/Keypad page 0x07 usage 42 for BACKSPACE. Use SCAN-SUPPORTED? to query host support.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-BACKSPACE .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+42 CONSTANT SC-BACKSPACE
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1438).
+
+<a id="w-47524150484943533a53432d43"></a>
+
+### ` SC-C `
+
+` ( -- scan ) `
+
+USB HID Keyboard/Keypad page 0x07 usage 6 for C. Use SCAN-SUPPORTED? to query host support.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-C .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+6 CONSTANT SC-C
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1402).
+
+<a id="w-47524150484943533a53432d43414e43454c"></a>
+
+### ` SC-CANCEL `
+
+` ( -- scan ) `
+
+USB HID Keyboard/Keypad page 0x07 usage 155 for CANCEL. Use SCAN-SUPPORTED? to query host support.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-CANCEL .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+155 CONSTANT SC-CANCEL
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1551).
+
+<a id="w-47524150484943533a53432d434150534c4f434b"></a>
+
+### ` SC-CAPSLOCK `
+
+` ( -- scan ) `
+
+USB HID Keyboard/Keypad page 0x07 usage 57 for CAPSLOCK. Use SCAN-SUPPORTED? to query host support.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-CAPSLOCK .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+57 CONSTANT SC-CAPSLOCK
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1453).
+
+<a id="w-47524150484943533a53432d434c454152"></a>
+
+### ` SC-CLEAR `
+
+` ( -- scan ) `
+
+USB HID Keyboard/Keypad page 0x07 usage 156 for CLEAR. Use SCAN-SUPPORTED? to query host support.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-CLEAR .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+156 CONSTANT SC-CLEAR
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1552).
+
+<a id="w-47524150484943533a53432d434c454152414741494e"></a>
+
+### ` SC-CLEARAGAIN `
+
+` ( -- scan ) `
+
+USB HID Keyboard/Keypad page 0x07 usage 162 for CLEARAGAIN. Use SCAN-SUPPORTED? to query host support.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-CLEARAGAIN .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+162 CONSTANT SC-CLEARAGAIN
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1558).
+
+<a id="w-47524150484943533a53432d434f4d4d41"></a>
+
+### ` SC-COMMA `
+
+` ( -- scan ) `
+
+USB HID Keyboard/Keypad page 0x07 usage 54 for COMMA. Use SCAN-SUPPORTED? to query host support.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-COMMA .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+54 CONSTANT SC-COMMA
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1450).
+
+<a id="w-47524150484943533a53432d434f5059"></a>
+
+### ` SC-COPY `
+
+` ( -- scan ) `
+
+USB HID Keyboard/Keypad page 0x07 usage 124 for COPY. Use SCAN-SUPPORTED? to query host support.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-COPY .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+124 CONSTANT SC-COPY
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1520).
+
+<a id="w-47524150484943533a53432d435253454c"></a>
+
+### ` SC-CRSEL `
+
+` ( -- scan ) `
+
+USB HID Keyboard/Keypad page 0x07 usage 163 for CRSEL. Use SCAN-SUPPORTED? to query host support.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-CRSEL .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+163 CONSTANT SC-CRSEL
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1559).
+
+<a id="w-47524150484943533a53432d43555252454e4359535542554e4954"></a>
+
+### ` SC-CURRENCYSUBUNIT `
+
+` ( -- scan ) `
+
+USB HID Keyboard/Keypad page 0x07 usage 181 for CURRENCYSUBUNIT. Use SCAN-SUPPORTED? to query host support.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-CURRENCYSUBUNIT .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+181 CONSTANT SC-CURRENCYSUBUNIT
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1566).
+
+<a id="w-47524150484943533a53432d43555252454e4359554e4954"></a>
+
+### ` SC-CURRENCYUNIT `
+
+` ( -- scan ) `
+
+USB HID Keyboard/Keypad page 0x07 usage 180 for CURRENCYUNIT. Use SCAN-SUPPORTED? to query host support.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-CURRENCYUNIT .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+180 CONSTANT SC-CURRENCYUNIT
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1565).
+
+<a id="w-47524150484943533a53432d435554"></a>
+
+### ` SC-CUT `
+
+` ( -- scan ) `
+
+USB HID Keyboard/Keypad page 0x07 usage 123 for CUT. Use SCAN-SUPPORTED? to query host support.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-CUT .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+123 CONSTANT SC-CUT
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1519).
+
+<a id="w-47524150484943533a53432d44"></a>
+
+### ` SC-D `
+
+` ( -- scan ) `
+
+USB HID Keyboard/Keypad page 0x07 usage 7 for D. Use SCAN-SUPPORTED? to query host support.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-D .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+7 CONSTANT SC-D
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1403).
+
+<a id="w-47524150484943533a53432d444543494d414c534550415241544f52"></a>
+
+### ` SC-DECIMALSEPARATOR `
+
+` ( -- scan ) `
+
+USB HID Keyboard/Keypad page 0x07 usage 179 for DECIMALSEPARATOR. Use SCAN-SUPPORTED? to query host support.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-DECIMALSEPARATOR .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+179 CONSTANT SC-DECIMALSEPARATOR
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1564).
+
+<a id="w-47524150484943533a53432d44454c455445"></a>
+
+### ` SC-DELETE `
+
+` ( -- scan ) `
+
+USB HID Keyboard/Keypad page 0x07 usage 76 for DELETE. Use SCAN-SUPPORTED? to query host support.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-DELETE .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+76 CONSTANT SC-DELETE
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1472).
+
+<a id="w-47524150484943533a53432d444f574e"></a>
+
+### ` SC-DOWN `
+
+` ( -- scan ) `
+
+USB HID Keyboard/Keypad page 0x07 usage 81 for DOWN. Use SCAN-SUPPORTED? to query host support.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-DOWN .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+81 CONSTANT SC-DOWN
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1477).
+
+<a id="w-47524150484943533a53432d45"></a>
+
+### ` SC-E `
+
+` ( -- scan ) `
+
+USB HID Keyboard/Keypad page 0x07 usage 8 for E. Use SCAN-SUPPORTED? to query host support.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-E .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+8 CONSTANT SC-E
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1404).
+
+<a id="w-47524150484943533a53432d454e44"></a>
+
+### ` SC-END `
+
+` ( -- scan ) `
+
+USB HID Keyboard/Keypad page 0x07 usage 77 for END. Use SCAN-SUPPORTED? to query host support.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-END .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+77 CONSTANT SC-END
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1473).
+
+<a id="w-47524150484943533a53432d455155414c53"></a>
+
+### ` SC-EQUALS `
+
+` ( -- scan ) `
+
+USB HID Keyboard/Keypad page 0x07 usage 46 for EQUALS. Use SCAN-SUPPORTED? to query host support.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-EQUALS .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+46 CONSTANT SC-EQUALS
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1442).
+
+<a id="w-47524150484943533a53432d455343415045"></a>
+
+### ` SC-ESCAPE `
+
+` ( -- scan ) `
+
+USB HID Keyboard/Keypad page 0x07 usage 41 for ESCAPE. Use SCAN-SUPPORTED? to query host support.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-ESCAPE .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+41 CONSTANT SC-ESCAPE
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1437).
+
+<a id="w-47524150484943533a53432d45584543555445"></a>
+
+### ` SC-EXECUTE `
+
+` ( -- scan ) `
+
+USB HID Keyboard/Keypad page 0x07 usage 116 for EXECUTE. Use SCAN-SUPPORTED? to query host support.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-EXECUTE .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+116 CONSTANT SC-EXECUTE
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1512).
+
+<a id="w-47524150484943533a53432d455853454c"></a>
+
+### ` SC-EXSEL `
+
+` ( -- scan ) `
+
+USB HID Keyboard/Keypad page 0x07 usage 164 for EXSEL. Use SCAN-SUPPORTED? to query host support.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-EXSEL .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+164 CONSTANT SC-EXSEL
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1560).
+
+<a id="w-47524150484943533a53432d46"></a>
+
+### ` SC-F `
+
+` ( -- scan ) `
+
+USB HID Keyboard/Keypad page 0x07 usage 9 for F. Use SCAN-SUPPORTED? to query host support.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-F .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+9 CONSTANT SC-F
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1405).
+
+<a id="w-47524150484943533a53432d4631"></a>
+
+### ` SC-F1 `
+
+` ( -- scan ) `
+
+USB HID Keyboard/Keypad page 0x07 usage 58 for F1. Use SCAN-SUPPORTED? to query host support.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-F1 .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+58 CONSTANT SC-F1
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1454).
+
+<a id="w-47524150484943533a53432d463130"></a>
+
+### ` SC-F10 `
+
+` ( -- scan ) `
+
+USB HID Keyboard/Keypad page 0x07 usage 67 for F10. Use SCAN-SUPPORTED? to query host support.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-F10 .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+67 CONSTANT SC-F10
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1463).
+
+<a id="w-47524150484943533a53432d463131"></a>
+
+### ` SC-F11 `
+
+` ( -- scan ) `
+
+USB HID Keyboard/Keypad page 0x07 usage 68 for F11. Use SCAN-SUPPORTED? to query host support.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-F11 .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+68 CONSTANT SC-F11
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1464).
+
+<a id="w-47524150484943533a53432d463132"></a>
+
+### ` SC-F12 `
+
+` ( -- scan ) `
+
+USB HID Keyboard/Keypad page 0x07 usage 69 for F12. Use SCAN-SUPPORTED? to query host support.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-F12 .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+69 CONSTANT SC-F12
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1465).
+
+<a id="w-47524150484943533a53432d463133"></a>
+
+### ` SC-F13 `
+
+` ( -- scan ) `
+
+USB HID Keyboard/Keypad page 0x07 usage 104 for F13. Use SCAN-SUPPORTED? to query host support.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-F13 .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+104 CONSTANT SC-F13
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1500).
+
+<a id="w-47524150484943533a53432d463134"></a>
+
+### ` SC-F14 `
+
+` ( -- scan ) `
+
+USB HID Keyboard/Keypad page 0x07 usage 105 for F14. Use SCAN-SUPPORTED? to query host support.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-F14 .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+105 CONSTANT SC-F14
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1501).
+
+<a id="w-47524150484943533a53432d463135"></a>
+
+### ` SC-F15 `
+
+` ( -- scan ) `
+
+USB HID Keyboard/Keypad page 0x07 usage 106 for F15. Use SCAN-SUPPORTED? to query host support.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-F15 .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+106 CONSTANT SC-F15
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1502).
+
+<a id="w-47524150484943533a53432d463136"></a>
+
+### ` SC-F16 `
+
+` ( -- scan ) `
+
+USB HID Keyboard/Keypad page 0x07 usage 107 for F16. Use SCAN-SUPPORTED? to query host support.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-F16 .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+107 CONSTANT SC-F16
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1503).
+
+<a id="w-47524150484943533a53432d463137"></a>
+
+### ` SC-F17 `
+
+` ( -- scan ) `
+
+USB HID Keyboard/Keypad page 0x07 usage 108 for F17. Use SCAN-SUPPORTED? to query host support.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-F17 .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+108 CONSTANT SC-F17
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1504).
+
+<a id="w-47524150484943533a53432d463138"></a>
+
+### ` SC-F18 `
+
+` ( -- scan ) `
+
+USB HID Keyboard/Keypad page 0x07 usage 109 for F18. Use SCAN-SUPPORTED? to query host support.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-F18 .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+109 CONSTANT SC-F18
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1505).
+
+<a id="w-47524150484943533a53432d463139"></a>
+
+### ` SC-F19 `
+
+` ( -- scan ) `
+
+USB HID Keyboard/Keypad page 0x07 usage 110 for F19. Use SCAN-SUPPORTED? to query host support.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-F19 .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+110 CONSTANT SC-F19
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1506).
+
+<a id="w-47524150484943533a53432d4632"></a>
+
+### ` SC-F2 `
+
+` ( -- scan ) `
+
+USB HID Keyboard/Keypad page 0x07 usage 59 for F2. Use SCAN-SUPPORTED? to query host support.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-F2 .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+59 CONSTANT SC-F2
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1455).
+
+<a id="w-47524150484943533a53432d463230"></a>
+
+### ` SC-F20 `
+
+` ( -- scan ) `
+
+USB HID Keyboard/Keypad page 0x07 usage 111 for F20. Use SCAN-SUPPORTED? to query host support.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-F20 .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+111 CONSTANT SC-F20
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1507).
+
+<a id="w-47524150484943533a53432d463231"></a>
+
+### ` SC-F21 `
+
+` ( -- scan ) `
+
+USB HID Keyboard/Keypad page 0x07 usage 112 for F21. Use SCAN-SUPPORTED? to query host support.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-F21 .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+112 CONSTANT SC-F21
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1508).
+
+<a id="w-47524150484943533a53432d463232"></a>
+
+### ` SC-F22 `
+
+` ( -- scan ) `
+
+USB HID Keyboard/Keypad page 0x07 usage 113 for F22. Use SCAN-SUPPORTED? to query host support.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-F22 .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+113 CONSTANT SC-F22
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1509).
+
+<a id="w-47524150484943533a53432d463233"></a>
+
+### ` SC-F23 `
+
+` ( -- scan ) `
+
+USB HID Keyboard/Keypad page 0x07 usage 114 for F23. Use SCAN-SUPPORTED? to query host support.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-F23 .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+114 CONSTANT SC-F23
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1510).
+
+<a id="w-47524150484943533a53432d463234"></a>
+
+### ` SC-F24 `
+
+` ( -- scan ) `
+
+USB HID Keyboard/Keypad page 0x07 usage 115 for F24. Use SCAN-SUPPORTED? to query host support.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-F24 .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+115 CONSTANT SC-F24
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1511).
+
+<a id="w-47524150484943533a53432d4633"></a>
+
+### ` SC-F3 `
+
+` ( -- scan ) `
+
+USB HID Keyboard/Keypad page 0x07 usage 60 for F3. Use SCAN-SUPPORTED? to query host support.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-F3 .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+60 CONSTANT SC-F3
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1456).
+
+<a id="w-47524150484943533a53432d4634"></a>
+
+### ` SC-F4 `
+
+` ( -- scan ) `
+
+USB HID Keyboard/Keypad page 0x07 usage 61 for F4. Use SCAN-SUPPORTED? to query host support.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-F4 .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+61 CONSTANT SC-F4
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1457).
+
+<a id="w-47524150484943533a53432d4635"></a>
+
+### ` SC-F5 `
+
+` ( -- scan ) `
+
+USB HID Keyboard/Keypad page 0x07 usage 62 for F5. Use SCAN-SUPPORTED? to query host support.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-F5 .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+62 CONSTANT SC-F5
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1458).
+
+<a id="w-47524150484943533a53432d4636"></a>
+
+### ` SC-F6 `
+
+` ( -- scan ) `
+
+USB HID Keyboard/Keypad page 0x07 usage 63 for F6. Use SCAN-SUPPORTED? to query host support.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-F6 .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+63 CONSTANT SC-F6
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1459).
+
+<a id="w-47524150484943533a53432d4637"></a>
+
+### ` SC-F7 `
+
+` ( -- scan ) `
+
+USB HID Keyboard/Keypad page 0x07 usage 64 for F7. Use SCAN-SUPPORTED? to query host support.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-F7 .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+64 CONSTANT SC-F7
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1460).
+
+<a id="w-47524150484943533a53432d4638"></a>
+
+### ` SC-F8 `
+
+` ( -- scan ) `
+
+USB HID Keyboard/Keypad page 0x07 usage 65 for F8. Use SCAN-SUPPORTED? to query host support.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-F8 .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+65 CONSTANT SC-F8
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1461).
+
+<a id="w-47524150484943533a53432d4639"></a>
+
+### ` SC-F9 `
+
+` ( -- scan ) `
+
+USB HID Keyboard/Keypad page 0x07 usage 66 for F9. Use SCAN-SUPPORTED? to query host support.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-F9 .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+66 CONSTANT SC-F9
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1462).
+
+<a id="w-47524150484943533a53432d46494e44"></a>
+
+### ` SC-FIND `
+
+` ( -- scan ) `
+
+USB HID Keyboard/Keypad page 0x07 usage 126 for FIND. Use SCAN-SUPPORTED? to query host support.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-FIND .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+126 CONSTANT SC-FIND
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1522).
+
+<a id="w-47524150484943533a53432d47"></a>
+
+### ` SC-G `
+
+` ( -- scan ) `
+
+USB HID Keyboard/Keypad page 0x07 usage 10 for G. Use SCAN-SUPPORTED? to query host support.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-G .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+10 CONSTANT SC-G
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1406).
+
+<a id="w-47524150484943533a53432d4752415645"></a>
+
+### ` SC-GRAVE `
+
+` ( -- scan ) `
+
+USB HID Keyboard/Keypad page 0x07 usage 53 for GRAVE. Use SCAN-SUPPORTED? to query host support.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-GRAVE .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+53 CONSTANT SC-GRAVE
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1449).
+
+<a id="w-47524150484943533a53432d48"></a>
+
+### ` SC-H `
+
+` ( -- scan ) `
+
+USB HID Keyboard/Keypad page 0x07 usage 11 for H. Use SCAN-SUPPORTED? to query host support.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-H .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+11 CONSTANT SC-H
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1407).
+
+<a id="w-47524150484943533a53432d48454c50"></a>
+
+### ` SC-HELP `
+
+` ( -- scan ) `
+
+USB HID Keyboard/Keypad page 0x07 usage 117 for HELP. Use SCAN-SUPPORTED? to query host support.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-HELP .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+117 CONSTANT SC-HELP
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1513).
+
+<a id="w-47524150484943533a53432d484f4d45"></a>
+
+### ` SC-HOME `
+
+` ( -- scan ) `
+
+USB HID Keyboard/Keypad page 0x07 usage 74 for HOME. Use SCAN-SUPPORTED? to query host support.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-HOME .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+74 CONSTANT SC-HOME
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1470).
+
+<a id="w-47524150484943533a53432d49"></a>
+
+### ` SC-I `
+
+` ( -- scan ) `
+
+USB HID Keyboard/Keypad page 0x07 usage 12 for I. Use SCAN-SUPPORTED? to query host support.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-I .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+12 CONSTANT SC-I
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1408).
+
+<a id="w-47524150484943533a53432d494e53455254"></a>
+
+### ` SC-INSERT `
+
+` ( -- scan ) `
+
+USB HID Keyboard/Keypad page 0x07 usage 73 for INSERT. Use SCAN-SUPPORTED? to query host support.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-INSERT .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+73 CONSTANT SC-INSERT
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1469).
+
+<a id="w-47524150484943533a53432d494e5445524e4154494f4e414c31"></a>
+
+### ` SC-INTERNATIONAL1 `
+
+` ( -- scan ) `
+
+USB HID Keyboard/Keypad page 0x07 usage 135 for INTERNATIONAL1. Use SCAN-SUPPORTED? to query host support.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-INTERNATIONAL1 .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+135 CONSTANT SC-INTERNATIONAL1
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1531).
+
+<a id="w-47524150484943533a53432d494e5445524e4154494f4e414c32"></a>
+
+### ` SC-INTERNATIONAL2 `
+
+` ( -- scan ) `
+
+USB HID Keyboard/Keypad page 0x07 usage 136 for INTERNATIONAL2. Use SCAN-SUPPORTED? to query host support.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-INTERNATIONAL2 .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+136 CONSTANT SC-INTERNATIONAL2
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1532).
+
+<a id="w-47524150484943533a53432d494e5445524e4154494f4e414c33"></a>
+
+### ` SC-INTERNATIONAL3 `
+
+` ( -- scan ) `
+
+USB HID Keyboard/Keypad page 0x07 usage 137 for INTERNATIONAL3. Use SCAN-SUPPORTED? to query host support.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-INTERNATIONAL3 .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+137 CONSTANT SC-INTERNATIONAL3
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1533).
+
+<a id="w-47524150484943533a53432d494e5445524e4154494f4e414c34"></a>
+
+### ` SC-INTERNATIONAL4 `
+
+` ( -- scan ) `
+
+USB HID Keyboard/Keypad page 0x07 usage 138 for INTERNATIONAL4. Use SCAN-SUPPORTED? to query host support.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-INTERNATIONAL4 .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+138 CONSTANT SC-INTERNATIONAL4
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1534).
+
+<a id="w-47524150484943533a53432d494e5445524e4154494f4e414c35"></a>
+
+### ` SC-INTERNATIONAL5 `
+
+` ( -- scan ) `
+
+USB HID Keyboard/Keypad page 0x07 usage 139 for INTERNATIONAL5. Use SCAN-SUPPORTED? to query host support.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-INTERNATIONAL5 .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+139 CONSTANT SC-INTERNATIONAL5
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1535).
+
+<a id="w-47524150484943533a53432d494e5445524e4154494f4e414c36"></a>
+
+### ` SC-INTERNATIONAL6 `
+
+` ( -- scan ) `
+
+USB HID Keyboard/Keypad page 0x07 usage 140 for INTERNATIONAL6. Use SCAN-SUPPORTED? to query host support.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-INTERNATIONAL6 .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+140 CONSTANT SC-INTERNATIONAL6
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1536).
+
+<a id="w-47524150484943533a53432d494e5445524e4154494f4e414c37"></a>
+
+### ` SC-INTERNATIONAL7 `
+
+` ( -- scan ) `
+
+USB HID Keyboard/Keypad page 0x07 usage 141 for INTERNATIONAL7. Use SCAN-SUPPORTED? to query host support.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-INTERNATIONAL7 .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+141 CONSTANT SC-INTERNATIONAL7
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1537).
+
+<a id="w-47524150484943533a53432d494e5445524e4154494f4e414c38"></a>
+
+### ` SC-INTERNATIONAL8 `
+
+` ( -- scan ) `
+
+USB HID Keyboard/Keypad page 0x07 usage 142 for INTERNATIONAL8. Use SCAN-SUPPORTED? to query host support.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-INTERNATIONAL8 .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+142 CONSTANT SC-INTERNATIONAL8
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1538).
+
+<a id="w-47524150484943533a53432d494e5445524e4154494f4e414c39"></a>
+
+### ` SC-INTERNATIONAL9 `
+
+` ( -- scan ) `
+
+USB HID Keyboard/Keypad page 0x07 usage 143 for INTERNATIONAL9. Use SCAN-SUPPORTED? to query host support.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-INTERNATIONAL9 .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+143 CONSTANT SC-INTERNATIONAL9
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1539).
+
+<a id="w-47524150484943533a53432d4a"></a>
+
+### ` SC-J `
+
+` ( -- scan ) `
+
+USB HID Keyboard/Keypad page 0x07 usage 13 for J. Use SCAN-SUPPORTED? to query host support.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-J .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+13 CONSTANT SC-J
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1409).
+
+<a id="w-47524150484943533a53432d4b"></a>
+
+### ` SC-K `
+
+` ( -- scan ) `
+
+USB HID Keyboard/Keypad page 0x07 usage 14 for K. Use SCAN-SUPPORTED? to query host support.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-K .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+14 CONSTANT SC-K
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1410).
+
+<a id="w-47524150484943533a53432d4b502d30"></a>
+
+### ` SC-KP-0 `
+
+` ( -- scan ) `
+
+USB HID Keyboard/Keypad page 0x07 usage 98 for KP-0. Use SCAN-SUPPORTED? to query host support.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-KP-0 .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+98 CONSTANT SC-KP-0
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1494).
+
+<a id="w-47524150484943533a53432d4b502d3030"></a>
+
+### ` SC-KP-00 `
+
+` ( -- scan ) `
+
+USB HID Keyboard/Keypad page 0x07 usage 176 for KP-00. Use SCAN-SUPPORTED? to query host support.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-KP-00 .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+176 CONSTANT SC-KP-00
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1561).
+
+<a id="w-47524150484943533a53432d4b502d303030"></a>
+
+### ` SC-KP-000 `
+
+` ( -- scan ) `
+
+USB HID Keyboard/Keypad page 0x07 usage 177 for KP-000. Use SCAN-SUPPORTED? to query host support.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-KP-000 .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+177 CONSTANT SC-KP-000
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1562).
+
+<a id="w-47524150484943533a53432d4b502d31"></a>
+
+### ` SC-KP-1 `
+
+` ( -- scan ) `
+
+USB HID Keyboard/Keypad page 0x07 usage 89 for KP-1. Use SCAN-SUPPORTED? to query host support.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-KP-1 .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+89 CONSTANT SC-KP-1
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1485).
+
+<a id="w-47524150484943533a53432d4b502d32"></a>
+
+### ` SC-KP-2 `
+
+` ( -- scan ) `
+
+USB HID Keyboard/Keypad page 0x07 usage 90 for KP-2. Use SCAN-SUPPORTED? to query host support.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-KP-2 .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+90 CONSTANT SC-KP-2
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1486).
+
+<a id="w-47524150484943533a53432d4b502d33"></a>
+
+### ` SC-KP-3 `
+
+` ( -- scan ) `
+
+USB HID Keyboard/Keypad page 0x07 usage 91 for KP-3. Use SCAN-SUPPORTED? to query host support.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-KP-3 .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+91 CONSTANT SC-KP-3
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1487).
+
+<a id="w-47524150484943533a53432d4b502d34"></a>
+
+### ` SC-KP-4 `
+
+` ( -- scan ) `
+
+USB HID Keyboard/Keypad page 0x07 usage 92 for KP-4. Use SCAN-SUPPORTED? to query host support.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-KP-4 .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+92 CONSTANT SC-KP-4
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1488).
+
+<a id="w-47524150484943533a53432d4b502d35"></a>
+
+### ` SC-KP-5 `
+
+` ( -- scan ) `
+
+USB HID Keyboard/Keypad page 0x07 usage 93 for KP-5. Use SCAN-SUPPORTED? to query host support.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-KP-5 .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+93 CONSTANT SC-KP-5
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1489).
+
+<a id="w-47524150484943533a53432d4b502d36"></a>
+
+### ` SC-KP-6 `
+
+` ( -- scan ) `
+
+USB HID Keyboard/Keypad page 0x07 usage 94 for KP-6. Use SCAN-SUPPORTED? to query host support.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-KP-6 .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+94 CONSTANT SC-KP-6
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1490).
+
+<a id="w-47524150484943533a53432d4b502d37"></a>
+
+### ` SC-KP-7 `
+
+` ( -- scan ) `
+
+USB HID Keyboard/Keypad page 0x07 usage 95 for KP-7. Use SCAN-SUPPORTED? to query host support.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-KP-7 .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+95 CONSTANT SC-KP-7
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1491).
+
+<a id="w-47524150484943533a53432d4b502d38"></a>
+
+### ` SC-KP-8 `
+
+` ( -- scan ) `
+
+USB HID Keyboard/Keypad page 0x07 usage 96 for KP-8. Use SCAN-SUPPORTED? to query host support.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-KP-8 .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+96 CONSTANT SC-KP-8
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1492).
+
+<a id="w-47524150484943533a53432d4b502d39"></a>
+
+### ` SC-KP-9 `
+
+` ( -- scan ) `
+
+USB HID Keyboard/Keypad page 0x07 usage 97 for KP-9. Use SCAN-SUPPORTED? to query host support.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-KP-9 .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+97 CONSTANT SC-KP-9
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1493).
+
+<a id="w-47524150484943533a53432d4b502d41"></a>
+
+### ` SC-KP-A `
+
+` ( -- scan ) `
+
+USB HID Keyboard/Keypad page 0x07 usage 188 for KP-A. Use SCAN-SUPPORTED? to query host support.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-KP-A .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+188 CONSTANT SC-KP-A
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1573).
+
+<a id="w-47524150484943533a53432d4b502d414d50455253414e44"></a>
+
+### ` SC-KP-AMPERSAND `
+
+` ( -- scan ) `
+
+USB HID Keyboard/Keypad page 0x07 usage 199 for KP-AMPERSAND. Use SCAN-SUPPORTED? to query host support.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-KP-AMPERSAND .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+199 CONSTANT SC-KP-AMPERSAND
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1584).
+
+<a id="w-47524150484943533a53432d4b502d4154"></a>
+
+### ` SC-KP-AT `
+
+` ( -- scan ) `
+
+USB HID Keyboard/Keypad page 0x07 usage 206 for KP-AT. Use SCAN-SUPPORTED? to query host support.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-KP-AT .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+206 CONSTANT SC-KP-AT
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1591).
+
+<a id="w-47524150484943533a53432d4b502d42"></a>
+
+### ` SC-KP-B `
+
+` ( -- scan ) `
+
+USB HID Keyboard/Keypad page 0x07 usage 189 for KP-B. Use SCAN-SUPPORTED? to query host support.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-KP-B .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+189 CONSTANT SC-KP-B
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1574).
+
+<a id="w-47524150484943533a53432d4b502d4241434b5350414345"></a>
+
+### ` SC-KP-BACKSPACE `
+
+` ( -- scan ) `
+
+USB HID Keyboard/Keypad page 0x07 usage 187 for KP-BACKSPACE. Use SCAN-SUPPORTED? to query host support.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-KP-BACKSPACE .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+187 CONSTANT SC-KP-BACKSPACE
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1572).
+
+<a id="w-47524150484943533a53432d4b502d42494e415259"></a>
+
+### ` SC-KP-BINARY `
+
+` ( -- scan ) `
+
+USB HID Keyboard/Keypad page 0x07 usage 218 for KP-BINARY. Use SCAN-SUPPORTED? to query host support.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-KP-BINARY .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+218 CONSTANT SC-KP-BINARY
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1603).
+
+<a id="w-47524150484943533a53432d4b502d43"></a>
+
+### ` SC-KP-C `
+
+` ( -- scan ) `
+
+USB HID Keyboard/Keypad page 0x07 usage 190 for KP-C. Use SCAN-SUPPORTED? to query host support.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-KP-C .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+190 CONSTANT SC-KP-C
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1575).
+
+<a id="w-47524150484943533a53432d4b502d434c454152"></a>
+
+### ` SC-KP-CLEAR `
+
+` ( -- scan ) `
+
+USB HID Keyboard/Keypad page 0x07 usage 216 for KP-CLEAR. Use SCAN-SUPPORTED? to query host support.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-KP-CLEAR .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+216 CONSTANT SC-KP-CLEAR
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1601).
+
+<a id="w-47524150484943533a53432d4b502d434c454152454e545259"></a>
+
+### ` SC-KP-CLEARENTRY `
+
+` ( -- scan ) `
+
+USB HID Keyboard/Keypad page 0x07 usage 217 for KP-CLEARENTRY. Use SCAN-SUPPORTED? to query host support.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-KP-CLEARENTRY .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+217 CONSTANT SC-KP-CLEARENTRY
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1602).
+
+<a id="w-47524150484943533a53432d4b502d434f4c4f4e"></a>
+
+### ` SC-KP-COLON `
+
+` ( -- scan ) `
+
+USB HID Keyboard/Keypad page 0x07 usage 203 for KP-COLON. Use SCAN-SUPPORTED? to query host support.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-KP-COLON .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+203 CONSTANT SC-KP-COLON
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1588).
+
+<a id="w-47524150484943533a53432d4b502d434f4d4d41"></a>
+
+### ` SC-KP-COMMA `
+
+` ( -- scan ) `
+
+USB HID Keyboard/Keypad page 0x07 usage 133 for KP-COMMA. Use SCAN-SUPPORTED? to query host support.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-KP-COMMA .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+133 CONSTANT SC-KP-COMMA
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1529).
+
+<a id="w-47524150484943533a53432d4b502d44"></a>
+
+### ` SC-KP-D `
+
+` ( -- scan ) `
+
+USB HID Keyboard/Keypad page 0x07 usage 191 for KP-D. Use SCAN-SUPPORTED? to query host support.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-KP-D .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+191 CONSTANT SC-KP-D
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1576).
+
+<a id="w-47524150484943533a53432d4b502d44424c414d50455253414e44"></a>
+
+### ` SC-KP-DBLAMPERSAND `
+
+` ( -- scan ) `
+
+USB HID Keyboard/Keypad page 0x07 usage 200 for KP-DBLAMPERSAND. Use SCAN-SUPPORTED? to query host support.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-KP-DBLAMPERSAND .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+200 CONSTANT SC-KP-DBLAMPERSAND
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1585).
+
+<a id="w-47524150484943533a53432d4b502d44424c564552544943414c424152"></a>
+
+### ` SC-KP-DBLVERTICALBAR `
+
+` ( -- scan ) `
+
+USB HID Keyboard/Keypad page 0x07 usage 202 for KP-DBLVERTICALBAR. Use SCAN-SUPPORTED? to query host support.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-KP-DBLVERTICALBAR .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+202 CONSTANT SC-KP-DBLVERTICALBAR
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1587).
+
+<a id="w-47524150484943533a53432d4b502d444543494d414c"></a>
+
+### ` SC-KP-DECIMAL `
+
+` ( -- scan ) `
+
+USB HID Keyboard/Keypad page 0x07 usage 220 for KP-DECIMAL. Use SCAN-SUPPORTED? to query host support.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-KP-DECIMAL .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+220 CONSTANT SC-KP-DECIMAL
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1605).
+
+<a id="w-47524150484943533a53432d4b502d444956494445"></a>
+
+### ` SC-KP-DIVIDE `
+
+` ( -- scan ) `
+
+USB HID Keyboard/Keypad page 0x07 usage 84 for KP-DIVIDE. Use SCAN-SUPPORTED? to query host support.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-KP-DIVIDE .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+84 CONSTANT SC-KP-DIVIDE
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1480).
+
+<a id="w-47524150484943533a53432d4b502d45"></a>
+
+### ` SC-KP-E `
+
+` ( -- scan ) `
+
+USB HID Keyboard/Keypad page 0x07 usage 192 for KP-E. Use SCAN-SUPPORTED? to query host support.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-KP-E .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+192 CONSTANT SC-KP-E
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1577).
+
+<a id="w-47524150484943533a53432d4b502d454e544552"></a>
+
+### ` SC-KP-ENTER `
+
+` ( -- scan ) `
+
+USB HID Keyboard/Keypad page 0x07 usage 88 for KP-ENTER. Use SCAN-SUPPORTED? to query host support.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-KP-ENTER .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+88 CONSTANT SC-KP-ENTER
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1484).
+
+<a id="w-47524150484943533a53432d4b502d455155414c53"></a>
+
+### ` SC-KP-EQUALS `
+
+` ( -- scan ) `
+
+USB HID Keyboard/Keypad page 0x07 usage 103 for KP-EQUALS. Use SCAN-SUPPORTED? to query host support.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-KP-EQUALS .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+103 CONSTANT SC-KP-EQUALS
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1499).
+
+<a id="w-47524150484943533a53432d4b502d455155414c534153343030"></a>
+
+### ` SC-KP-EQUALSAS400 `
+
+` ( -- scan ) `
+
+USB HID Keyboard/Keypad page 0x07 usage 134 for KP-EQUALSAS400. Use SCAN-SUPPORTED? to query host support.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-KP-EQUALSAS400 .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+134 CONSTANT SC-KP-EQUALSAS400
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1530).
+
+<a id="w-47524150484943533a53432d4b502d4558434c414d"></a>
+
+### ` SC-KP-EXCLAM `
+
+` ( -- scan ) `
+
+USB HID Keyboard/Keypad page 0x07 usage 207 for KP-EXCLAM. Use SCAN-SUPPORTED? to query host support.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-KP-EXCLAM .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+207 CONSTANT SC-KP-EXCLAM
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1592).
+
+<a id="w-47524150484943533a53432d4b502d46"></a>
+
+### ` SC-KP-F `
+
+` ( -- scan ) `
+
+USB HID Keyboard/Keypad page 0x07 usage 193 for KP-F. Use SCAN-SUPPORTED? to query host support.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-KP-F .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+193 CONSTANT SC-KP-F
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1578).
+
+<a id="w-47524150484943533a53432d4b502d47524541544552"></a>
+
+### ` SC-KP-GREATER `
+
+` ( -- scan ) `
+
+USB HID Keyboard/Keypad page 0x07 usage 198 for KP-GREATER. Use SCAN-SUPPORTED? to query host support.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-KP-GREATER .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+198 CONSTANT SC-KP-GREATER
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1583).
+
+<a id="w-47524150484943533a53432d4b502d48415348"></a>
+
+### ` SC-KP-HASH `
+
+` ( -- scan ) `
+
+USB HID Keyboard/Keypad page 0x07 usage 204 for KP-HASH. Use SCAN-SUPPORTED? to query host support.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-KP-HASH .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+204 CONSTANT SC-KP-HASH
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1589).
+
+<a id="w-47524150484943533a53432d4b502d48455841444543494d414c"></a>
+
+### ` SC-KP-HEXADECIMAL `
+
+` ( -- scan ) `
+
+USB HID Keyboard/Keypad page 0x07 usage 221 for KP-HEXADECIMAL. Use SCAN-SUPPORTED? to query host support.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-KP-HEXADECIMAL .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+221 CONSTANT SC-KP-HEXADECIMAL
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1606).
+
+<a id="w-47524150484943533a53432d4b502d4c4546544252414345"></a>
+
+### ` SC-KP-LEFTBRACE `
+
+` ( -- scan ) `
+
+USB HID Keyboard/Keypad page 0x07 usage 184 for KP-LEFTBRACE. Use SCAN-SUPPORTED? to query host support.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-KP-LEFTBRACE .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+184 CONSTANT SC-KP-LEFTBRACE
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1569).
+
+<a id="w-47524150484943533a53432d4b502d4c454654504152454e"></a>
+
+### ` SC-KP-LEFTPAREN `
+
+` ( -- scan ) `
+
+USB HID Keyboard/Keypad page 0x07 usage 182 for KP-LEFTPAREN. Use SCAN-SUPPORTED? to query host support.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-KP-LEFTPAREN .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+182 CONSTANT SC-KP-LEFTPAREN
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1567).
+
+<a id="w-47524150484943533a53432d4b502d4c455353"></a>
+
+### ` SC-KP-LESS `
+
+` ( -- scan ) `
+
+USB HID Keyboard/Keypad page 0x07 usage 197 for KP-LESS. Use SCAN-SUPPORTED? to query host support.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-KP-LESS .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+197 CONSTANT SC-KP-LESS
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1582).
+
+<a id="w-47524150484943533a53432d4b502d4d454d414444"></a>
+
+### ` SC-KP-MEMADD `
+
+` ( -- scan ) `
+
+USB HID Keyboard/Keypad page 0x07 usage 211 for KP-MEMADD. Use SCAN-SUPPORTED? to query host support.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-KP-MEMADD .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+211 CONSTANT SC-KP-MEMADD
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1596).
+
+<a id="w-47524150484943533a53432d4b502d4d454d434c454152"></a>
+
+### ` SC-KP-MEMCLEAR `
+
+` ( -- scan ) `
+
+USB HID Keyboard/Keypad page 0x07 usage 210 for KP-MEMCLEAR. Use SCAN-SUPPORTED? to query host support.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-KP-MEMCLEAR .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+210 CONSTANT SC-KP-MEMCLEAR
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1595).
+
+<a id="w-47524150484943533a53432d4b502d4d454d444956494445"></a>
+
+### ` SC-KP-MEMDIVIDE `
+
+` ( -- scan ) `
+
+USB HID Keyboard/Keypad page 0x07 usage 214 for KP-MEMDIVIDE. Use SCAN-SUPPORTED? to query host support.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-KP-MEMDIVIDE .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+214 CONSTANT SC-KP-MEMDIVIDE
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1599).
+
+<a id="w-47524150484943533a53432d4b502d4d454d4d554c5449504c59"></a>
+
+### ` SC-KP-MEMMULTIPLY `
+
+` ( -- scan ) `
+
+USB HID Keyboard/Keypad page 0x07 usage 213 for KP-MEMMULTIPLY. Use SCAN-SUPPORTED? to query host support.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-KP-MEMMULTIPLY .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+213 CONSTANT SC-KP-MEMMULTIPLY
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1598).
+
+<a id="w-47524150484943533a53432d4b502d4d454d524543414c4c"></a>
+
+### ` SC-KP-MEMRECALL `
+
+` ( -- scan ) `
+
+USB HID Keyboard/Keypad page 0x07 usage 209 for KP-MEMRECALL. Use SCAN-SUPPORTED? to query host support.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-KP-MEMRECALL .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+209 CONSTANT SC-KP-MEMRECALL
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1594).
+
+<a id="w-47524150484943533a53432d4b502d4d454d53544f5245"></a>
+
+### ` SC-KP-MEMSTORE `
+
+` ( -- scan ) `
+
+USB HID Keyboard/Keypad page 0x07 usage 208 for KP-MEMSTORE. Use SCAN-SUPPORTED? to query host support.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-KP-MEMSTORE .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+208 CONSTANT SC-KP-MEMSTORE
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1593).
+
+<a id="w-47524150484943533a53432d4b502d4d454d5355425452414354"></a>
+
+### ` SC-KP-MEMSUBTRACT `
+
+` ( -- scan ) `
+
+USB HID Keyboard/Keypad page 0x07 usage 212 for KP-MEMSUBTRACT. Use SCAN-SUPPORTED? to query host support.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-KP-MEMSUBTRACT .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+212 CONSTANT SC-KP-MEMSUBTRACT
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1597).
+
+<a id="w-47524150484943533a53432d4b502d4d494e5553"></a>
+
+### ` SC-KP-MINUS `
+
+` ( -- scan ) `
+
+USB HID Keyboard/Keypad page 0x07 usage 86 for KP-MINUS. Use SCAN-SUPPORTED? to query host support.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-KP-MINUS .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+86 CONSTANT SC-KP-MINUS
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1482).
+
+<a id="w-47524150484943533a53432d4b502d4d554c5449504c59"></a>
+
+### ` SC-KP-MULTIPLY `
+
+` ( -- scan ) `
+
+USB HID Keyboard/Keypad page 0x07 usage 85 for KP-MULTIPLY. Use SCAN-SUPPORTED? to query host support.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-KP-MULTIPLY .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+85 CONSTANT SC-KP-MULTIPLY
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1481).
+
+<a id="w-47524150484943533a53432d4b502d4f4354414c"></a>
+
+### ` SC-KP-OCTAL `
+
+` ( -- scan ) `
+
+USB HID Keyboard/Keypad page 0x07 usage 219 for KP-OCTAL. Use SCAN-SUPPORTED? to query host support.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-KP-OCTAL .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+219 CONSTANT SC-KP-OCTAL
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1604).
+
+<a id="w-47524150484943533a53432d4b502d50455243454e54"></a>
+
+### ` SC-KP-PERCENT `
+
+` ( -- scan ) `
+
+USB HID Keyboard/Keypad page 0x07 usage 196 for KP-PERCENT. Use SCAN-SUPPORTED? to query host support.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-KP-PERCENT .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+196 CONSTANT SC-KP-PERCENT
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1581).
+
+<a id="w-47524150484943533a53432d4b502d504552494f44"></a>
+
+### ` SC-KP-PERIOD `
+
+` ( -- scan ) `
+
+USB HID Keyboard/Keypad page 0x07 usage 99 for KP-PERIOD. Use SCAN-SUPPORTED? to query host support.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-KP-PERIOD .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+99 CONSTANT SC-KP-PERIOD
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1495).
+
+<a id="w-47524150484943533a53432d4b502d504c5553"></a>
+
+### ` SC-KP-PLUS `
+
+` ( -- scan ) `
+
+USB HID Keyboard/Keypad page 0x07 usage 87 for KP-PLUS. Use SCAN-SUPPORTED? to query host support.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-KP-PLUS .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+87 CONSTANT SC-KP-PLUS
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1483).
+
+<a id="w-47524150484943533a53432d4b502d504c55534d494e5553"></a>
+
+### ` SC-KP-PLUSMINUS `
+
+` ( -- scan ) `
+
+USB HID Keyboard/Keypad page 0x07 usage 215 for KP-PLUSMINUS. Use SCAN-SUPPORTED? to query host support.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-KP-PLUSMINUS .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+215 CONSTANT SC-KP-PLUSMINUS
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1600).
+
+<a id="w-47524150484943533a53432d4b502d504f574552"></a>
+
+### ` SC-KP-POWER `
+
+` ( -- scan ) `
+
+USB HID Keyboard/Keypad page 0x07 usage 195 for KP-POWER. Use SCAN-SUPPORTED? to query host support.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-KP-POWER .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+195 CONSTANT SC-KP-POWER
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1580).
+
+<a id="w-47524150484943533a53432d4b502d52494748544252414345"></a>
+
+### ` SC-KP-RIGHTBRACE `
+
+` ( -- scan ) `
+
+USB HID Keyboard/Keypad page 0x07 usage 185 for KP-RIGHTBRACE. Use SCAN-SUPPORTED? to query host support.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-KP-RIGHTBRACE .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+185 CONSTANT SC-KP-RIGHTBRACE
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1570).
+
+<a id="w-47524150484943533a53432d4b502d5249474854504152454e"></a>
+
+### ` SC-KP-RIGHTPAREN `
+
+` ( -- scan ) `
+
+USB HID Keyboard/Keypad page 0x07 usage 183 for KP-RIGHTPAREN. Use SCAN-SUPPORTED? to query host support.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-KP-RIGHTPAREN .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+183 CONSTANT SC-KP-RIGHTPAREN
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1568).
+
+<a id="w-47524150484943533a53432d4b502d5350414345"></a>
+
+### ` SC-KP-SPACE `
+
+` ( -- scan ) `
+
+USB HID Keyboard/Keypad page 0x07 usage 205 for KP-SPACE. Use SCAN-SUPPORTED? to query host support.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-KP-SPACE .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+205 CONSTANT SC-KP-SPACE
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1590).
+
+<a id="w-47524150484943533a53432d4b502d544142"></a>
+
+### ` SC-KP-TAB `
+
+` ( -- scan ) `
+
+USB HID Keyboard/Keypad page 0x07 usage 186 for KP-TAB. Use SCAN-SUPPORTED? to query host support.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-KP-TAB .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+186 CONSTANT SC-KP-TAB
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1571).
+
+<a id="w-47524150484943533a53432d4b502d564552544943414c424152"></a>
+
+### ` SC-KP-VERTICALBAR `
+
+` ( -- scan ) `
+
+USB HID Keyboard/Keypad page 0x07 usage 201 for KP-VERTICALBAR. Use SCAN-SUPPORTED? to query host support.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-KP-VERTICALBAR .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+201 CONSTANT SC-KP-VERTICALBAR
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1586).
+
+<a id="w-47524150484943533a53432d4b502d584f52"></a>
+
+### ` SC-KP-XOR `
+
+` ( -- scan ) `
+
+USB HID Keyboard/Keypad page 0x07 usage 194 for KP-XOR. Use SCAN-SUPPORTED? to query host support.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-KP-XOR .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+194 CONSTANT SC-KP-XOR
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1579).
+
+<a id="w-47524150484943533a53432d4c"></a>
+
+### ` SC-L `
+
+` ( -- scan ) `
+
+USB HID Keyboard/Keypad page 0x07 usage 15 for L. Use SCAN-SUPPORTED? to query host support.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-L .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+15 CONSTANT SC-L
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1411).
+
+<a id="w-47524150484943533a53432d4c414c54"></a>
+
+### ` SC-LALT `
+
+` ( -- scan ) `
+
+USB HID Keyboard/Keypad page 0x07 usage 226 for LALT. Use SCAN-SUPPORTED? to query host support.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-LALT .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+226 CONSTANT SC-LALT
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1609).
+
+<a id="w-47524150484943533a53432d4c414e4731"></a>
+
+### ` SC-LANG1 `
+
+` ( -- scan ) `
+
+USB HID Keyboard/Keypad page 0x07 usage 144 for LANG1. Use SCAN-SUPPORTED? to query host support.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-LANG1 .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+144 CONSTANT SC-LANG1
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1540).
+
+<a id="w-47524150484943533a53432d4c414e4732"></a>
+
+### ` SC-LANG2 `
+
+` ( -- scan ) `
+
+USB HID Keyboard/Keypad page 0x07 usage 145 for LANG2. Use SCAN-SUPPORTED? to query host support.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-LANG2 .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+145 CONSTANT SC-LANG2
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1541).
+
+<a id="w-47524150484943533a53432d4c414e4733"></a>
+
+### ` SC-LANG3 `
+
+` ( -- scan ) `
+
+USB HID Keyboard/Keypad page 0x07 usage 146 for LANG3. Use SCAN-SUPPORTED? to query host support.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-LANG3 .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+146 CONSTANT SC-LANG3
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1542).
+
+<a id="w-47524150484943533a53432d4c414e4734"></a>
+
+### ` SC-LANG4 `
+
+` ( -- scan ) `
+
+USB HID Keyboard/Keypad page 0x07 usage 147 for LANG4. Use SCAN-SUPPORTED? to query host support.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-LANG4 .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+147 CONSTANT SC-LANG4
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1543).
+
+<a id="w-47524150484943533a53432d4c414e4735"></a>
+
+### ` SC-LANG5 `
+
+` ( -- scan ) `
+
+USB HID Keyboard/Keypad page 0x07 usage 148 for LANG5. Use SCAN-SUPPORTED? to query host support.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-LANG5 .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+148 CONSTANT SC-LANG5
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1544).
+
+<a id="w-47524150484943533a53432d4c414e4736"></a>
+
+### ` SC-LANG6 `
+
+` ( -- scan ) `
+
+USB HID Keyboard/Keypad page 0x07 usage 149 for LANG6. Use SCAN-SUPPORTED? to query host support.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-LANG6 .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+149 CONSTANT SC-LANG6
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1545).
+
+<a id="w-47524150484943533a53432d4c414e4737"></a>
+
+### ` SC-LANG7 `
+
+` ( -- scan ) `
+
+USB HID Keyboard/Keypad page 0x07 usage 150 for LANG7. Use SCAN-SUPPORTED? to query host support.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-LANG7 .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+150 CONSTANT SC-LANG7
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1546).
+
+<a id="w-47524150484943533a53432d4c414e4738"></a>
+
+### ` SC-LANG8 `
+
+` ( -- scan ) `
+
+USB HID Keyboard/Keypad page 0x07 usage 151 for LANG8. Use SCAN-SUPPORTED? to query host support.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-LANG8 .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+151 CONSTANT SC-LANG8
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1547).
+
+<a id="w-47524150484943533a53432d4c414e4739"></a>
+
+### ` SC-LANG9 `
+
+` ( -- scan ) `
+
+USB HID Keyboard/Keypad page 0x07 usage 152 for LANG9. Use SCAN-SUPPORTED? to query host support.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-LANG9 .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+152 CONSTANT SC-LANG9
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1548).
+
+<a id="w-47524150484943533a53432d4c4354524c"></a>
+
+### ` SC-LCTRL `
+
+` ( -- scan ) `
+
+USB HID Keyboard/Keypad page 0x07 usage 224 for LCTRL. Use SCAN-SUPPORTED? to query host support.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-LCTRL .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+224 CONSTANT SC-LCTRL
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1607).
+
+<a id="w-47524150484943533a53432d4c454654"></a>
+
+### ` SC-LEFT `
+
+` ( -- scan ) `
+
+USB HID Keyboard/Keypad page 0x07 usage 80 for LEFT. Use SCAN-SUPPORTED? to query host support.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-LEFT .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+80 CONSTANT SC-LEFT
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1476).
+
+<a id="w-47524150484943533a53432d4c454654425241434b4554"></a>
+
+### ` SC-LEFTBRACKET `
+
+` ( -- scan ) `
+
+USB HID Keyboard/Keypad page 0x07 usage 47 for LEFTBRACKET. Use SCAN-SUPPORTED? to query host support.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-LEFTBRACKET .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+47 CONSTANT SC-LEFTBRACKET
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1443).
+
+<a id="w-47524150484943533a53432d4c475549"></a>
+
+### ` SC-LGUI `
+
+` ( -- scan ) `
+
+USB HID Keyboard/Keypad page 0x07 usage 227 for LGUI. Use SCAN-SUPPORTED? to query host support.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-LGUI .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+227 CONSTANT SC-LGUI
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1610).
+
+<a id="w-47524150484943533a53432d4c4f434b494e47434150534c4f434b"></a>
+
+### ` SC-LOCKINGCAPSLOCK `
+
+` ( -- scan ) `
+
+USB HID Keyboard/Keypad page 0x07 usage 130 for LOCKINGCAPSLOCK. Use SCAN-SUPPORTED? to query host support.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-LOCKINGCAPSLOCK .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+130 CONSTANT SC-LOCKINGCAPSLOCK
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1526).
+
+<a id="w-47524150484943533a53432d4c4f434b494e474e554d4c4f434b"></a>
+
+### ` SC-LOCKINGNUMLOCK `
+
+` ( -- scan ) `
+
+USB HID Keyboard/Keypad page 0x07 usage 131 for LOCKINGNUMLOCK. Use SCAN-SUPPORTED? to query host support.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-LOCKINGNUMLOCK .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+131 CONSTANT SC-LOCKINGNUMLOCK
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1527).
+
+<a id="w-47524150484943533a53432d4c4f434b494e475343524f4c4c4c4f434b"></a>
+
+### ` SC-LOCKINGSCROLLLOCK `
+
+` ( -- scan ) `
+
+USB HID Keyboard/Keypad page 0x07 usage 132 for LOCKINGSCROLLLOCK. Use SCAN-SUPPORTED? to query host support.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-LOCKINGSCROLLLOCK .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+132 CONSTANT SC-LOCKINGSCROLLLOCK
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1528).
+
+<a id="w-47524150484943533a53432d4c5348494654"></a>
+
+### ` SC-LSHIFT `
+
+` ( -- scan ) `
+
+USB HID Keyboard/Keypad page 0x07 usage 225 for LSHIFT. Use SCAN-SUPPORTED? to query host support.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Related: [Physical keys](GRAPHICS_AND_SOUND.md#physical-keys).
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-LSHIFT .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+225 CONSTANT SC-LSHIFT
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1608).
+
+<a id="w-47524150484943533a53432d4d"></a>
+
+### ` SC-M `
+
+` ( -- scan ) `
+
+USB HID Keyboard/Keypad page 0x07 usage 16 for M. Use SCAN-SUPPORTED? to query host support.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-M .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+16 CONSTANT SC-M
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1412).
+
+<a id="w-47524150484943533a53432d4d454e55"></a>
+
+### ` SC-MENU `
+
+` ( -- scan ) `
+
+USB HID Keyboard/Keypad page 0x07 usage 118 for MENU. Use SCAN-SUPPORTED? to query host support.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-MENU .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+118 CONSTANT SC-MENU
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1514).
+
+<a id="w-47524150484943533a53432d4d494e5553"></a>
+
+### ` SC-MINUS `
+
+` ( -- scan ) `
+
+USB HID Keyboard/Keypad page 0x07 usage 45 for MINUS. Use SCAN-SUPPORTED? to query host support.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-MINUS .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+45 CONSTANT SC-MINUS
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1441).
+
+<a id="w-47524150484943533a53432d4d555445"></a>
+
+### ` SC-MUTE `
+
+` ( -- scan ) `
+
+USB HID Keyboard/Keypad page 0x07 usage 127 for MUTE. Use SCAN-SUPPORTED? to query host support.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-MUTE .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+127 CONSTANT SC-MUTE
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1523).
+
+<a id="w-47524150484943533a53432d4e"></a>
+
+### ` SC-N `
+
+` ( -- scan ) `
+
+USB HID Keyboard/Keypad page 0x07 usage 17 for N. Use SCAN-SUPPORTED? to query host support.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-N .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+17 CONSTANT SC-N
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1413).
+
+<a id="w-47524150484943533a53432d4e4f4e55534241434b534c415348"></a>
+
+### ` SC-NONUSBACKSLASH `
+
+` ( -- scan ) `
+
+USB HID Keyboard/Keypad page 0x07 usage 100 for NONUSBACKSLASH. Use SCAN-SUPPORTED? to query host support.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-NONUSBACKSLASH .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+100 CONSTANT SC-NONUSBACKSLASH
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1496).
+
+<a id="w-47524150484943533a53432d4e4f4e555348415348"></a>
+
+### ` SC-NONUSHASH `
+
+` ( -- scan ) `
+
+USB HID Keyboard/Keypad page 0x07 usage 50 for NONUSHASH. Use SCAN-SUPPORTED? to query host support.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-NONUSHASH .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+50 CONSTANT SC-NONUSHASH
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1446).
+
+<a id="w-47524150484943533a53432d4e554d4c4f434b434c454152"></a>
+
+### ` SC-NUMLOCKCLEAR `
+
+` ( -- scan ) `
+
+USB HID Keyboard/Keypad page 0x07 usage 83 for NUMLOCKCLEAR. Use SCAN-SUPPORTED? to query host support.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-NUMLOCKCLEAR .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+83 CONSTANT SC-NUMLOCKCLEAR
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1479).
+
+<a id="w-47524150484943533a53432d4f"></a>
+
+### ` SC-O `
+
+` ( -- scan ) `
+
+USB HID Keyboard/Keypad page 0x07 usage 18 for O. Use SCAN-SUPPORTED? to query host support.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-O .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+18 CONSTANT SC-O
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1414).
+
+<a id="w-47524150484943533a53432d4f504552"></a>
+
+### ` SC-OPER `
+
+` ( -- scan ) `
+
+USB HID Keyboard/Keypad page 0x07 usage 161 for OPER. Use SCAN-SUPPORTED? to query host support.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-OPER .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+161 CONSTANT SC-OPER
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1557).
+
+<a id="w-47524150484943533a53432d4f5554"></a>
+
+### ` SC-OUT `
+
+` ( -- scan ) `
+
+USB HID Keyboard/Keypad page 0x07 usage 160 for OUT. Use SCAN-SUPPORTED? to query host support.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-OUT .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+160 CONSTANT SC-OUT
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1556).
+
+<a id="w-47524150484943533a53432d50"></a>
+
+### ` SC-P `
+
+` ( -- scan ) `
+
+USB HID Keyboard/Keypad page 0x07 usage 19 for P. Use SCAN-SUPPORTED? to query host support.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-P .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+19 CONSTANT SC-P
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1415).
+
+<a id="w-47524150484943533a53432d50414745444f574e"></a>
+
+### ` SC-PAGEDOWN `
+
+` ( -- scan ) `
+
+USB HID Keyboard/Keypad page 0x07 usage 78 for PAGEDOWN. Use SCAN-SUPPORTED? to query host support.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-PAGEDOWN .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+78 CONSTANT SC-PAGEDOWN
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1474).
+
+<a id="w-47524150484943533a53432d504147455550"></a>
+
+### ` SC-PAGEUP `
+
+` ( -- scan ) `
+
+USB HID Keyboard/Keypad page 0x07 usage 75 for PAGEUP. Use SCAN-SUPPORTED? to query host support.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-PAGEUP .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+75 CONSTANT SC-PAGEUP
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1471).
+
+<a id="w-47524150484943533a53432d5041535445"></a>
+
+### ` SC-PASTE `
+
+` ( -- scan ) `
+
+USB HID Keyboard/Keypad page 0x07 usage 125 for PASTE. Use SCAN-SUPPORTED? to query host support.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-PASTE .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+125 CONSTANT SC-PASTE
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1521).
+
+<a id="w-47524150484943533a53432d5041555345"></a>
+
+### ` SC-PAUSE `
+
+` ( -- scan ) `
+
+USB HID Keyboard/Keypad page 0x07 usage 72 for PAUSE. Use SCAN-SUPPORTED? to query host support.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-PAUSE .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+72 CONSTANT SC-PAUSE
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1468).
+
+<a id="w-47524150484943533a53432d504552494f44"></a>
+
+### ` SC-PERIOD `
+
+` ( -- scan ) `
+
+USB HID Keyboard/Keypad page 0x07 usage 55 for PERIOD. Use SCAN-SUPPORTED? to query host support.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-PERIOD .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+55 CONSTANT SC-PERIOD
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1451).
+
+<a id="w-47524150484943533a53432d504f574552"></a>
+
+### ` SC-POWER `
+
+` ( -- scan ) `
+
+USB HID Keyboard/Keypad page 0x07 usage 102 for POWER. Use SCAN-SUPPORTED? to query host support.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-POWER .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+102 CONSTANT SC-POWER
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1498).
+
+<a id="w-47524150484943533a53432d5052455353"></a>
+
+### ` SC-PRESS `
+
+` ( -- kind ) `
+
+Physical event kind 1.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Related: [Physical keys](GRAPHICS_AND_SOUND.md#physical-keys).
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-PRESS .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+1 CONSTANT SC-PRESS
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1615).
+
+<a id="w-47524150484943533a53432d5052494e5453435245454e"></a>
+
+### ` SC-PRINTSCREEN `
+
+` ( -- scan ) `
+
+USB HID Keyboard/Keypad page 0x07 usage 70 for PRINTSCREEN. Use SCAN-SUPPORTED? to query host support.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-PRINTSCREEN .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+70 CONSTANT SC-PRINTSCREEN
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1466).
+
+<a id="w-47524150484943533a53432d5052494f52"></a>
+
+### ` SC-PRIOR `
+
+` ( -- scan ) `
+
+USB HID Keyboard/Keypad page 0x07 usage 157 for PRIOR. Use SCAN-SUPPORTED? to query host support.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-PRIOR .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+157 CONSTANT SC-PRIOR
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1553).
+
+<a id="w-47524150484943533a53432d51"></a>
+
+### ` SC-Q `
+
+` ( -- scan ) `
+
+USB HID Keyboard/Keypad page 0x07 usage 20 for Q. Use SCAN-SUPPORTED? to query host support.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-Q .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+20 CONSTANT SC-Q
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1416).
+
+<a id="w-47524150484943533a53432d52"></a>
+
+### ` SC-R `
+
+` ( -- scan ) `
+
+USB HID Keyboard/Keypad page 0x07 usage 21 for R. Use SCAN-SUPPORTED? to query host support.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-R .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+21 CONSTANT SC-R
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1417).
+
+<a id="w-47524150484943533a53432d52414c54"></a>
+
+### ` SC-RALT `
+
+` ( -- scan ) `
+
+USB HID Keyboard/Keypad page 0x07 usage 230 for RALT. Use SCAN-SUPPORTED? to query host support.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-RALT .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+230 CONSTANT SC-RALT
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1613).
+
+<a id="w-47524150484943533a53432d524354524c"></a>
+
+### ` SC-RCTRL `
+
+` ( -- scan ) `
+
+USB HID Keyboard/Keypad page 0x07 usage 228 for RCTRL. Use SCAN-SUPPORTED? to query host support.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-RCTRL .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+228 CONSTANT SC-RCTRL
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1611).
+
+<a id="w-47524150484943533a53432d52454c45415345"></a>
+
+### ` SC-RELEASE `
+
+` ( -- kind ) `
+
+Physical event kind 2.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Related: [Physical keys](GRAPHICS_AND_SOUND.md#physical-keys).
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-RELEASE .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+2 CONSTANT SC-RELEASE
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1616).
+
+<a id="w-47524150484943533a53432d524553594e43"></a>
+
+### ` SC-RESYNC `
+
+` ( -- kind ) `
+
+Physical event kind 3.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-RESYNC .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+3 CONSTANT SC-RESYNC
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1617).
+
+<a id="w-47524150484943533a53432d52455455524e"></a>
+
+### ` SC-RETURN `
+
+` ( -- scan ) `
+
+USB HID Keyboard/Keypad page 0x07 usage 40 for RETURN. Use SCAN-SUPPORTED? to query host support.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-RETURN .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+40 CONSTANT SC-RETURN
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1436).
+
+<a id="w-47524150484943533a53432d52455455524e32"></a>
+
+### ` SC-RETURN2 `
+
+` ( -- scan ) `
+
+USB HID Keyboard/Keypad page 0x07 usage 158 for RETURN2. Use SCAN-SUPPORTED? to query host support.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-RETURN2 .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+158 CONSTANT SC-RETURN2
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1554).
+
+<a id="w-47524150484943533a53432d52475549"></a>
+
+### ` SC-RGUI `
+
+` ( -- scan ) `
+
+USB HID Keyboard/Keypad page 0x07 usage 231 for RGUI. Use SCAN-SUPPORTED? to query host support.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-RGUI .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+231 CONSTANT SC-RGUI
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1614).
+
+<a id="w-47524150484943533a53432d5249474854"></a>
+
+### ` SC-RIGHT `
+
+` ( -- scan ) `
+
+USB HID Keyboard/Keypad page 0x07 usage 79 for RIGHT. Use SCAN-SUPPORTED? to query host support.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-RIGHT .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+79 CONSTANT SC-RIGHT
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1475).
+
+<a id="w-47524150484943533a53432d5249474854425241434b4554"></a>
+
+### ` SC-RIGHTBRACKET `
+
+` ( -- scan ) `
+
+USB HID Keyboard/Keypad page 0x07 usage 48 for RIGHTBRACKET. Use SCAN-SUPPORTED? to query host support.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-RIGHTBRACKET .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+48 CONSTANT SC-RIGHTBRACKET
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1444).
+
+<a id="w-47524150484943533a53432d525348494654"></a>
+
+### ` SC-RSHIFT `
+
+` ( -- scan ) `
+
+USB HID Keyboard/Keypad page 0x07 usage 229 for RSHIFT. Use SCAN-SUPPORTED? to query host support.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Related: [Physical keys](GRAPHICS_AND_SOUND.md#physical-keys).
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-RSHIFT .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+229 CONSTANT SC-RSHIFT
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1612).
+
+<a id="w-47524150484943533a53432d53"></a>
+
+### ` SC-S `
+
+` ( -- scan ) `
+
+USB HID Keyboard/Keypad page 0x07 usage 22 for S. Use SCAN-SUPPORTED? to query host support.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-S .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+22 CONSTANT SC-S
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1418).
+
+<a id="w-47524150484943533a53432d5343524f4c4c4c4f434b"></a>
+
+### ` SC-SCROLLLOCK `
+
+` ( -- scan ) `
+
+USB HID Keyboard/Keypad page 0x07 usage 71 for SCROLLLOCK. Use SCAN-SUPPORTED? to query host support.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-SCROLLLOCK .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+71 CONSTANT SC-SCROLLLOCK
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1467).
+
+<a id="w-47524150484943533a53432d53454c454354"></a>
+
+### ` SC-SELECT `
+
+` ( -- scan ) `
+
+USB HID Keyboard/Keypad page 0x07 usage 119 for SELECT. Use SCAN-SUPPORTED? to query host support.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-SELECT .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+119 CONSTANT SC-SELECT
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1515).
+
+<a id="w-47524150484943533a53432d53454d49434f4c4f4e"></a>
+
+### ` SC-SEMICOLON `
+
+` ( -- scan ) `
+
+USB HID Keyboard/Keypad page 0x07 usage 51 for SEMICOLON. Use SCAN-SUPPORTED? to query host support.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-SEMICOLON .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+51 CONSTANT SC-SEMICOLON
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1447).
+
+<a id="w-47524150484943533a53432d534550415241544f52"></a>
+
+### ` SC-SEPARATOR `
+
+` ( -- scan ) `
+
+USB HID Keyboard/Keypad page 0x07 usage 159 for SEPARATOR. Use SCAN-SUPPORTED? to query host support.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-SEPARATOR .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+159 CONSTANT SC-SEPARATOR
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1555).
+
+<a id="w-47524150484943533a53432d534c415348"></a>
+
+### ` SC-SLASH `
+
+` ( -- scan ) `
+
+USB HID Keyboard/Keypad page 0x07 usage 56 for SLASH. Use SCAN-SUPPORTED? to query host support.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-SLASH .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+56 CONSTANT SC-SLASH
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1452).
+
+<a id="w-47524150484943533a53432d5350414345"></a>
+
+### ` SC-SPACE `
+
+` ( -- scan ) `
+
+USB HID Keyboard/Keypad page 0x07 usage 44 for SPACE. Use SCAN-SUPPORTED? to query host support.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-SPACE .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+44 CONSTANT SC-SPACE
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1440).
+
+<a id="w-47524150484943533a53432d53544f50"></a>
+
+### ` SC-STOP `
+
+` ( -- scan ) `
+
+USB HID Keyboard/Keypad page 0x07 usage 120 for STOP. Use SCAN-SUPPORTED? to query host support.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-STOP .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+120 CONSTANT SC-STOP
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1516).
+
+<a id="w-47524150484943533a53432d535953524551"></a>
+
+### ` SC-SYSREQ `
+
+` ( -- scan ) `
+
+USB HID Keyboard/Keypad page 0x07 usage 154 for SYSREQ. Use SCAN-SUPPORTED? to query host support.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-SYSREQ .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+154 CONSTANT SC-SYSREQ
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1550).
+
+<a id="w-47524150484943533a53432d54"></a>
+
+### ` SC-T `
+
+` ( -- scan ) `
+
+USB HID Keyboard/Keypad page 0x07 usage 23 for T. Use SCAN-SUPPORTED? to query host support.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-T .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+23 CONSTANT SC-T
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1419).
+
+<a id="w-47524150484943533a53432d544142"></a>
+
+### ` SC-TAB `
+
+` ( -- scan ) `
+
+USB HID Keyboard/Keypad page 0x07 usage 43 for TAB. Use SCAN-SUPPORTED? to query host support.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-TAB .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+43 CONSTANT SC-TAB
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1439).
+
+<a id="w-47524150484943533a53432d54484f5553414e4453534550415241544f52"></a>
+
+### ` SC-THOUSANDSSEPARATOR `
+
+` ( -- scan ) `
+
+USB HID Keyboard/Keypad page 0x07 usage 178 for THOUSANDSSEPARATOR. Use SCAN-SUPPORTED? to query host support.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-THOUSANDSSEPARATOR .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+178 CONSTANT SC-THOUSANDSSEPARATOR
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1563).
+
+<a id="w-47524150484943533a53432d55"></a>
+
+### ` SC-U `
+
+` ( -- scan ) `
+
+USB HID Keyboard/Keypad page 0x07 usage 24 for U. Use SCAN-SUPPORTED? to query host support.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-U .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+24 CONSTANT SC-U
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1420).
+
+<a id="w-47524150484943533a53432d554e444f"></a>
+
+### ` SC-UNDO `
+
+` ( -- scan ) `
+
+USB HID Keyboard/Keypad page 0x07 usage 122 for UNDO. Use SCAN-SUPPORTED? to query host support.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-UNDO .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+122 CONSTANT SC-UNDO
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1518).
+
+<a id="w-47524150484943533a53432d5550"></a>
+
+### ` SC-UP `
+
+` ( -- scan ) `
+
+USB HID Keyboard/Keypad page 0x07 usage 82 for UP. Use SCAN-SUPPORTED? to query host support.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-UP .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+82 CONSTANT SC-UP
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1478).
+
+<a id="w-47524150484943533a53432d56"></a>
+
+### ` SC-V `
+
+` ( -- scan ) `
+
+USB HID Keyboard/Keypad page 0x07 usage 25 for V. Use SCAN-SUPPORTED? to query host support.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-V .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+25 CONSTANT SC-V
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1421).
+
+<a id="w-47524150484943533a53432d564f4c554d45444f574e"></a>
+
+### ` SC-VOLUMEDOWN `
+
+` ( -- scan ) `
+
+USB HID Keyboard/Keypad page 0x07 usage 129 for VOLUMEDOWN. Use SCAN-SUPPORTED? to query host support.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-VOLUMEDOWN .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+129 CONSTANT SC-VOLUMEDOWN
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1525).
+
+<a id="w-47524150484943533a53432d564f4c554d455550"></a>
+
+### ` SC-VOLUMEUP `
+
+` ( -- scan ) `
+
+USB HID Keyboard/Keypad page 0x07 usage 128 for VOLUMEUP. Use SCAN-SUPPORTED? to query host support.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-VOLUMEUP .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+128 CONSTANT SC-VOLUMEUP
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1524).
+
+<a id="w-47524150484943533a53432d57"></a>
+
+### ` SC-W `
+
+` ( -- scan ) `
+
+USB HID Keyboard/Keypad page 0x07 usage 26 for W. Use SCAN-SUPPORTED? to query host support.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-W .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+26 CONSTANT SC-W
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1422).
+
+<a id="w-47524150484943533a53432d58"></a>
+
+### ` SC-X `
+
+` ( -- scan ) `
+
+USB HID Keyboard/Keypad page 0x07 usage 27 for X. Use SCAN-SUPPORTED? to query host support.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-X .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+27 CONSTANT SC-X
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1423).
+
+<a id="w-47524150484943533a53432d59"></a>
+
+### ` SC-Y `
+
+` ( -- scan ) `
+
+USB HID Keyboard/Keypad page 0x07 usage 28 for Y. Use SCAN-SUPPORTED? to query host support.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-Y .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+28 CONSTANT SC-Y
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1424).
+
+<a id="w-47524150484943533a53432d5a"></a>
+
+### ` SC-Z `
+
+` ( -- scan ) `
+
+USB HID Keyboard/Keypad page 0x07 usage 29 for Z. Use SCAN-SUPPORTED? to query host support.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-Z .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+29 CONSTANT SC-Z
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1425).
+
+<a id="w-47524150484943533a5343414e2d48454c443f"></a>
+
+### ` SCAN-HELD? `
+
+` ( scan -- flag ) `
+
+Read physical USB keyboard usage scan (0..255) without consuming events; unavailable is false, out of range throws -24.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-LSHIFT SCAN-HELD? .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+: SCAN-HELD? ( scan -- flag ) GFX-SCAN-HELD? ;
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1394).
+
+<a id="w-47524150484943533a5343414e2d494e5055543f"></a>
+
+### ` SCAN-INPUT? `
+
+` ( -- flag ) `
+
+True when the native-window physical keyboard is available; does not open a window.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Related: [Physical keys](GRAPHICS_AND_SOUND.md#physical-keys).
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SCAN-INPUT? .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+: SCAN-INPUT? ( -- flag ) GFX-SCAN-INPUT? ;
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1390).
+
+<a id="w-47524150484943533a5343414e2d535550504f525445443f"></a>
+
+### ` SCAN-SUPPORTED? `
+
+` ( scan -- flag ) `
+
+True if this host can deliver both physical edges for USB keyboard usage scan (0..255; reserved 0..3 are false); out of range throws -24.
+
+Kind: library.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS SC-A SCAN-SUPPORTED? .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+: SCAN-SUPPORTED? ( scan -- flag ) GFX-SCAN-SUPPORTED? ;
+```
+
+Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1392).
 
 <a id="w-47524150484943533a53435245454e"></a>
 

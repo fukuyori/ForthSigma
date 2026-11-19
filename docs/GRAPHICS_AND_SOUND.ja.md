@@ -521,3 +521,23 @@ S" @1 CDEF" S" @2 EGAB" S" @3 O3 C2G2" S" @4 O2 C1" 4 PLAYS
 エラー: `-Daudio=false` の版の `REQUIRE-AUDIO` は `AUDIO UNAVAILABLE !`（THROW -275）、範囲外の数は `NUMBER ERROR !`、音のスレッドを持たないホストでは `HOST FUNCTION UNAVAILABLE !` です。`REQUIRE-GRAPHICS` と同じく、ライブラリの読み込みに失敗したときは加えたものを取り除き、`FORGET` や `MARKER` で消したあとは `REQUIRE-AUDIO` でもう一度読み込めます。
 
 `examples/music.fs` は、各機種で短い曲を鳴らし、いくつかの機種を1つの `PLAY` で鳴らし、`SAMPLE` で作った効果音を鳴らします。`examples/fur-elise.fs` は、ベートーヴェンの「エリーゼのために」の主部、最初の中間部、主部の再現（1〜58小節）を、プログラムが自分で作る標本のピアノで、Amiga の音源で鳴らします。`examples/fur-elise-simple.fs` は、主部だけを2つの声部の `PLAY2` で鳴らす短いプログラムです。 `examples/pastoral.fs` は、ベートーヴェンの交響曲第6番「田園」第1楽章の提示部（1〜138小節）を、弦と管の波形を作って8声で鳴らします。
+
+## Physical keys
+
+`REQUIRE-GRAPHICS GRAPHICS`で読み込みます。`SCAN-INPUT?`はnativeウィンドウの物理入力が利用可能かを調べ、`scan SCAN-SUPPORTED?`はそのキーの押下・解放に対応するかを調べます。ウィンドウを自動では開きません。端末・SIXEL・Tkだけでは未対応です。`scan SCAN-HELD?`は状態を読み、`KEY-EVENT`は`scan kind true`または空なら`false`だけを返します。INKEY/EKEY/KEYと独立したキューです。
+
+番号はUSB HID Keyboard/Keypad page 0x07の0〜255。例は`SC-A`、`SC-LSHIFT`、`SC-RSHIFT`。範囲外は-24です。`SC-PRESS`（1）と`SC-RELEASE`（2）は実際の変化だけで、autorepeatは増えません。MacのCapsLock、WindowsのPause等、両方の変化を得られないキーはSCAN-SUPPORTED?が偽です。キーボード配列の文字やIME確定文字の番号とは別です。
+
+キューは256件。満杯になると先の256件を残して新しい履歴を捨てますが、状態更新は続きます。残りを読んだ後は`0 SC-RESYNC true`（種類3）を返し続けます。`addr KEY-RESYNC`は32バイトへ状態を写し、未読履歴を破棄して要求を消します。キーnはn/8バイト目のbit(n%8)。通信snapshot待ちの間は要求を消さず、最新状態が到着した後にもう一度読み直します。失われた短押しの回数や時刻は復元できません。不正な32バイト領域はホストを変更せず-9です。
+
+```forth
+REQUIRE-GRAPHICS GRAPHICS
+SC-A SCAN-SUPPORTED? .
+SC-LSHIFT SCAN-HELD? .
+CREATE HELD-BITS 32 ALLOT
+HELD-BITS KEY-RESYNC
+: PRINT-EDGE KEY-EVENT IF . . ELSE ." none" THEN ;
+PRINT-EDGE
+```
+
+フォーカス喪失・閉鎖は全解放し、閉鎖後も残った履歴を取り出せます。保存イメージに状態や履歴は入らず、復元成功時に境界を置きます。ただしOSやMacのpipeに未読で残り、復元後に届く通知は取り込みます。OS上の発生時刻による排除は保証しません。詳細と確認範囲は[設計](PHYSICAL_KEY_DESIGN.md)と[検証記録](PHYSICAL_KEY_IMPLEMENTATION.md)。

@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+### Added
+
+- GRAPHICS physical-key input: `SCAN-INPUT?`, `SCAN-SUPPORTED?`, `SCAN-HELD?`, `KEY-EVENT`, `KEY-RESYNC` and USB HID keyboard `SC-*` constants, with an independent256-event queue, explicit overflow resynchronization, focus-loss releases and native Windows/macOS/X11 adapters. Windows/Linux synthetic native-window acceptance passed; physical keyboard checks and Mac runtime acceptance remain pending.
+
+### Changed
+
+- The new builtin tags change the dictionary-image ABI signature. Existing saved images must be recreated with the current executable; physical held state and event history are never saved.
+
 ## [0.12.0] - 2026-11-18
 
 ### Added

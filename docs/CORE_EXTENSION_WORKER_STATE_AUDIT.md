@@ -202,3 +202,6 @@ State直下以外のコンテナ変数、関数内static相当、Cライブラ�
 638でState直下へstandard_inputを追加し、169項目とした。Writer.standard_event_fn・standard_clock（Clock.context/now_fnを含む）・standard_interruptsも1053の再帰監査対象。メインの入力/時計contextや保留イベントをワーカーへ借用しない。
 
 638のchecked押し戻しWriter.unread_byte_fnと、standard_input.legacyの旧pendingキャッシュも再帰監査に含める。Decoder全体は純粋な値だが、ワーカーへメインの未読入力やEOF/paste状態をコピーしない。
+
+
+997でWriter.physical_key_opsを追加した。メインのウィンドウのTracker、supported bitmap、contextをワーカーへ借用しない。ワーカーWriterではnullにし、SCAN-INPUT?・SCAN-SUPPORTED?・SCAN-HELD?・KEY-EVENT・KEY-RESYNCを入力/UI禁止語として将来の静的・動的検査に加える。State直下のフィールド追加はなく169項目のまま。ホストTrackerとMac Sender/Receiverはイメージに含めない。

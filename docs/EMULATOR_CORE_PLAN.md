@@ -39,23 +39,18 @@ Gforthに同じ働きの語があるかは調べていない。
 
 ## 8. 物理キーの状態とイベント（997、段階A）
 
-`KEY-HELD?` は文字のバイトと `K-UP` などの番号で調べるので、ShiftやCtrlだけを押した状態、左右の区別、配列によらないキーの位置が取れない。ZX Spectrum、Commodore 64、Apple II、Amiga、Atari STのキーボードの走査には、物理キーごとの押下状態が要る。端末は解放と修飾キー単独を知らせないので、ウィンドウの機能としてGRAPHICSに置く。
+利用者決定により、物理キーは`EKEY`に出さず、GRAPHICSの別の語で読む。`KEY-HELD?`の文字／特殊キーと同時16個の契約は変えない。
 
-- **語の候補**：`SCAN-HELD? ( scan -- flag )`、`KEY-EVENT ( -- scan kind true | false )`（kindは1押下、2解放。`MOUSE-EVENT` と同じ形）、キーの定数（`SC-A`、`SC-LSHIFT` など）、下の層の `GFX-SCAN-HELD`、`GFX-KEY-EVENT`。
-- **キーの番号はUSB HIDのusage IDを候補とする。** Keyboard/Keypadのページ（0x07）の0〜255を使う。Windowsのスキャンコード、macOSのkeyCode、X11のkeycodeを、ホストごとの表でこれにそろえる。表にないキー、範囲の外の番号、配列や機種によって対応が取れないキーの扱いを決める。
-- **状態は物理キー専用の256キーの表で持つ。** `KEY-HELD?` の同時保持16個（満杯なら最も古いものを外す）は#909で採用済みの契約（`docs/NATIVE_WINDOW_STUDY.md` の10.10節）なので、変えない。
-- **押下と解放はキューに順に入れ、状態の差は取りこぼした後の復旧に使う。** 状態の表だけでは、読取りの間に終わった短い押下や押し直しを復元できない。#909も解放の通知と状態の同期を区別している。キューがあふれたことの知らせ方、その後の再同期、フォーカス喪失のときに残っているイベント、リピートを押下に数えるかを契約に加える。
-- **押下と解放のイベントは `EKEY` に出さず、GRAPHICSの別の語で読む（決定）。** 端末は解放を知らせないので、`EKEY` に混ぜると端末とウィンドウで意味が変わる。
-- **`INKEY` と `KEY-HELD?` の意味は変えない。** `EKEY` や `INKEY` を読んでも、物理キーのイベントが消えないようにする。
-- **[項目2（638）](ASYNC_CORE_PLAN.md)とそろえる点**：キューの容量と、`EKEY`・`INKEY` と混ぜたときの規則。638の「キーと文字は捨てない」と、#909の有界のキューでの破棄は別の保証なので、物理キーがどちらに従うかを決める。物理キーの番号は別の語で読むなら、`EKEY` の値の範囲と分ける必要はない。
-- **実装場所**：`src/core/graphics_input.zig`、`src/core/host_interface.zig`、`src/graphics/graphics.fs`、`src/host_window.zig`、`src/host_window_macos.zig`。LinuxはX11のキーを共通入力へつなぐ作業（982）に、物理キーの受け渡しを足す。
-- **ホスト側は表を足すだけでは済まない。** いまのホスト共通のイベントは物理キーの番号を持たない（`src/core/host_interface.zig`）。Windowsは仮想キーと文字を中心に扱い、macOSはkeyCodeを文字に結び付けて送っている。Windowsの拡張キーとシステムキー、macOSの修飾キーの変化の通知、macOSの親子の間の通信の拡張を調べる。
+2026-11-19に[詳細設計](PHYSICAL_KEY_DESIGN.md)を作成し、[Claude Codeレビューと採否](reviews/997-review-response.md)を反映した。[実装記録](PHYSICAL_KEY_IMPLEMENTATION.md)と実機確認は分けて管理する。
 
-未決の点：
+- 番号はUSB HID Keyboard/Keypad page 0x07の0〜255。予約0〜3は生成しない。Windows Set1、Mac keyCode、XKB key nameから変換し、文字配列から推定しない。
+- 公開語は`SCAN-INPUT?`、`SCAN-SUPPORTED?`、`SCAN-HELD?`、`KEY-EVENT`、`KEY-RESYNC`とSC-*定数。キーごとに実際の押下／解放が両方得られるかを調べられる。
+- 専用256ビット状態・256件edgeキュー。あふれたら先の256件を残して新しいedgeを捨て、状態更新は続ける。履歴の後にstickyな再同期要求を返し、32バイトsnapshot採取とackを原子的に行う。通信snapshot待ちなら要求を消さない。
+- `INKEY`、`EKEY`、文字／IMEキューと独立。フォーカス喪失と閉鎖では全解放し、閉鎖前の履歴は取り出せる。端末・SIXEL・Tkは未対応とし、自動でnativeウィンドウを開かない。
+- 本体コアは純粋な型・検査・optional Writer Ops、GRAPHICSは公開語、ホストはOS変換・入力所有を担う。AUDIOには追加しない。イメージには一時入力を保存せず、復元成功時にTrackerを境界状態にする。OS／pipeに未読で残り復元後に届く通知は取り込む。
+- Macは左右修飾と独立SCAN IPCを追加する。最新snapshotの非blocking再送で最後の解放が落ちても復旧させる。Linuxは完了済み982のX11経路にXKB GetNames/NamesNotifyを足し、keycode-8という固定換算は使わない。
 
-- 端末だけのときの動作（常に偽を返すか、エラーにするか）。
-- Tkのウィンドウでの扱い。キーの番号がOSごとに違う。
-- OSが届けないキーと、リピートの扱い。
+作業順：1079設計→1080実装（1083 pure Tracker→1084 nativeホスト→1085公開語→1086統合レビュー）→1081 Windows/Linux自動受け入れを完了。残りは1082 Mac実機と1087 Windows/Linux実キーボード。公開語・native接続は実装済みだが、997全体は未完了。
 
 ## 9. PCMストリーム出力（998、段階B）
 

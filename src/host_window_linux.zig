@@ -1,6 +1,14 @@
-//! Experimental local X11 window. Enable with -Dx11=true while broader
-//! acceptance is unfinished; the default Linux display remains Tk/terminal.
+//! Local X11/XWayland window, enabled by default; -Dx11=false omits it.
+//! Physical keys use XKB position names independently of text/IME input.
 const std = @import("std");
+const physical_keys = @import("core/physical_keys.zig");
+var physical_state: physical_keys.Host = .{};
+pub fn physicalQuery(req: physical_keys.Request) physical_keys.Response {
+    lock();
+    defer unlock();
+    return physical_state.request(req);
+}
+
 const forth = @import("forth.zig");
 const x = @import("host_x11.zig");
 const xim = @import("host_xim.zig");
@@ -85,6 +93,7 @@ fn releaseFocus() void {
     lock();
     defer unlock();
     down = @splat(0);
+    physical_state.tracker.releaseAll();
     mouse_latest.window_mouse.buttons = 0;
     mouse_dirty = true;
     preedit_len = 0;
@@ -284,6 +293,7 @@ fn entry(_: ?*anyopaque) callconv(.c) ?*anyopaque {
         status = .idle;
     } else if (result) |value| status = value;
     running = false;
+    physical_state.close();
     unlock();
     return null;
 }
@@ -321,6 +331,9 @@ const Window = struct {
     /// The modifier bit Alt_L or Alt_R is on (Mod1 when the map has none).
     alt_mask: u16 = 8,
     map_dirty: bool = false,
+    physical_dirty: bool = false,
+    scan_map: [256]u8 = @splat(0),
+    scan_valid: bool = false,
     pending_release: ?[32]u8 = null,
     last_key: ?[32]u8 = null,
     physical_down: [256]bool = @splat(false),
@@ -328,6 +341,32 @@ const Window = struct {
     pending_text: [4096]u21 = undefined,
     text_count: usize = 0,
     text_offset: usize = 0,
+    fn physicalNames(self: *Window) x.Error!void {
+        const next = self.conn.physicalNames() catch |err| {
+            if (err != error.Unavailable and err != error.XError) return err;
+            self.scan_map = @splat(0);
+            self.scan_valid = false;
+            lock();
+            defer unlock();
+            physical_state.tracker.boundary();
+            physical_state.available = false;
+            physical_state.supported = @splat(0);
+            return;
+        };
+        lock();
+        defer unlock();
+        if (self.scan_valid and !std.mem.eql(u8, &self.scan_map, &next)) physical_state.tracker.boundary();
+        self.scan_map = next;
+        self.scan_valid = false;
+        for (next) |scan| if (scan >= 4) {
+            self.scan_valid = true;
+            break;
+        };
+        physical_state.supported = @splat(0);
+        for (next) |scan| physical_state.support(scan);
+        physical_state.available = self.id != 0 and self.scan_valid;
+    }
+
     fn wantsIme(self: *Window) bool {
         lock();
         defer unlock();
@@ -479,6 +518,9 @@ const Window = struct {
         try self.property(self.protocols, 4, 32, &protocol);
         try self.property(39, 31, 8, "FORTH/Sigma graphics");
         try self.property(67, 31, 8, "sigma\x00Sigma\x00"); // WM_CLASS
+        var owner_pid: [4]u8 = undefined;
+        x.put32(&owner_pid, 0, @intCast(c.getpid()));
+        try self.property(try self.conn.atom("_NET_WM_PID"), 6, 32, &owner_pid);
         // Fullscreen asked before the window is made: it is mapped so (EWMH).
         self.fullscreen_on = false;
         self.normal_rect = null;
@@ -635,6 +677,7 @@ const Window = struct {
         const kind = bytes[0] & 127;
         if (self.conn.xkb_event != 0 and kind == self.conn.xkb_event) {
             if (bytes[1] == 0 or bytes[1] == 1) self.map_dirty = true;
+            if (bytes[1] == 0 or bytes[1] == 6) self.physical_dirty = true;
             return;
         }
         if (((kind >= 2 and kind <= 8) and x.get32(bytes, 12) != self.id) or ((kind == 9 or kind == 10) and x.get32(bytes, 4) != self.id) or (kind == 12 and x.get32(bytes, 4) != self.id)) return;
@@ -652,6 +695,9 @@ const Window = struct {
                 // A press paired with the release before it is the key repeating.
                 const repeat = self.physical_down[bytes[1]] or paired;
                 self.physical_down[bytes[1]] = true;
+                lock();
+                physical_state.update(self.scan_map[bytes[1]], true);
+                unlock();
                 if (self.leavesFullscreen(bytes, repeat)) return;
                 if (self.input_method) |*method| {
                     method.conn.deadline = self.conn.deadline;
@@ -718,6 +764,7 @@ const Window = struct {
                 setPreedit("");
                 resetInput();
                 lock();
+                physical_state.close();
                 status = .closed;
                 unlock();
             },
@@ -749,6 +796,7 @@ const Window = struct {
                 self.buttons = 0;
                 resetInput();
                 lock();
+                physical_state.close();
                 status = .closed;
                 unlock();
             },
@@ -898,6 +946,7 @@ const Window = struct {
         lock();
         defer unlock();
         if (bytes[0] & 127 == 3) {
+            physical_state.update(self.scan_map[hardware], false);
             down[hardware] = 0;
             return;
         }
@@ -1071,6 +1120,7 @@ fn run() x.Error!void {
     window.delete = try conn.atom("WM_DELETE_WINDOW");
     try window.keymap();
     _ = try conn.enableDetectableRepeat();
+    try window.physicalNames();
     while (!stop.load(.acquire)) {
         conn.deadline = x.now() + 5000;
         if (take()) |frame| {
@@ -1098,6 +1148,7 @@ fn run() x.Error!void {
                 unlock();
                 break;
             }
+            physical_state.available = window.scan_valid;
             status = .ready;
             unlock();
         }
@@ -1105,6 +1156,10 @@ fn run() x.Error!void {
             window.map_dirty = false;
             try window.keymap();
             _ = try conn.enableDetectableRepeat();
+        }
+        if (window.physical_dirty) {
+            window.physical_dirty = false;
+            try window.physicalNames();
         }
         try window.drainSaved();
         while (try conn.ready()) try window.event(try conn.next());

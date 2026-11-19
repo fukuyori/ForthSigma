@@ -148,6 +148,7 @@ pub const EditorRequest = union(enum) {
 };
 
 pub const Writer = struct {
+    physical_key_ops: ?*const @import("physical_keys.zig").Ops = null,
     gamepad_ops: ?*const @import("gamepad.zig").Ops = null,
     context: ?*anyopaque,
     write_fn: *const fn (?*anyopaque, []const u8) void,

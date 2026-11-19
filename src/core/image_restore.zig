@@ -99,6 +99,7 @@ fn apply(state: *forth.State, plan: *const preflight.Plan, memory_is_fresh: bool
     state.pending = .none;
     state.last_created_word = null;
     @import("words_graphics.zig").clearImage(state);
+    if (state.writer.physical_key_ops) |ops| ops.reset(state.writer.context);
     @import("graphics_images.zig").releaseAll(state);
     if (defs.graphics_enabled) @import("tcl.zig").forgetHeap(state);
     @memcpy(state.addresses.records[0..h.relocation_count], plan.records[0..h.relocation_count]);

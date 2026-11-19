@@ -521,3 +521,23 @@ The `SND-` words are the base the library is written with: `SND-PLAY`, `SND-PLAY
 Errors: `REQUIRE-AUDIO` in a build with `-Daudio=false` gives `AUDIO UNAVAILABLE !` (THROW -275); a number out of its range gives `NUMBER ERROR !`; a host without an audio thread gives `HOST FUNCTION UNAVAILABLE !`. As with `REQUIRE-GRAPHICS`, a library that fails to load is removed again, and `REQUIRE-AUDIO` loads it again after `FORGET` or a `MARKER` removed it.
 
 `examples/music.fs` plays a short tune on each chip, several chips in one `PLAY`, and a sound effect made with `SAMPLE`. `examples/fur-elise.fs` plays the theme, the first episode, and the theme again of Beethoven's Für Elise (bars 1 to 58) on the Amiga's Paula, with a piano of samples that the program makes itself. `examples/fur-elise-simple.fs` is a short program that plays the theme alone on two voices with `PLAY2`. `examples/pastoral.fs` plays the exposition of the first movement of Beethoven's Symphony No. 6 (bars 1 to 138) on 8 voices, with waves for the strings and the winds that it makes.
+
+## Physical keys
+
+Load with `REQUIRE-GRAPHICS GRAPHICS`. `SCAN-INPUT?` queries native-window input availability; `scan SCAN-SUPPORTED?` queries both press/release support for a particular physical key. Neither opens a window. Terminal, SIXEL and Tk-only output are unsupported. `scan SCAN-HELD?` reads held state; `KEY-EVENT` returns `scan kind true`, or just `false` when empty. This queue is independent of INKEY/EKEY/KEY.
+
+Numbers are USB HID Keyboard/Keypad page 0x07 usages 0..255, for example `SC-A`, `SC-LSHIFT`, `SC-RSHIFT`; outside this range throws -24. `SC-PRESS` (1) and `SC-RELEASE` (2) represent changes, excluding autorepeat. SCAN-SUPPORTED? is false for keys lacking both edges, including Mac CapsLock and Windows Pause. Physical positions are independent of layout characters and IME committed text.
+
+The queue holds256 edges. Overflow preserves the first256, drops subsequent edges, and keeps updating held state. After the preserved history, KEY-EVENT repeatedly returns `0 SC-RESYNC true` (kind3). `addr KEY-RESYNC` copies a32-byte bitmap, discards unread history and acknowledges resync. Usage n is bit(n%8) of byte n/8. While a transport snapshot is pending, resync stays requested; read again after the authoritative state arrives. Lost tap counts/timestamps cannot be recovered. An invalid32-byte address throws -9 without changing host state.
+
+```forth
+REQUIRE-GRAPHICS GRAPHICS
+SC-A SCAN-SUPPORTED? .
+SC-LSHIFT SCAN-HELD? .
+CREATE HELD-BITS 32 ALLOT
+HELD-BITS KEY-RESYNC
+: PRINT-EDGE KEY-EVENT IF . . ELSE ." none" THEN ;
+PRINT-EDGE
+```
+
+Focus loss and closure release all held keys; queued history remains readable after closure. Dictionary images contain neither bitmap nor history; successful restore creates a tracker boundary. OS/Mac pipe notifications still unread at that point are applied when they arrive after restore. No filtering by OS occurrence time is guaranteed. See the [design](PHYSICAL_KEY_DESIGN.md) and [validation record](PHYSICAL_KEY_IMPLEMENTATION.md).

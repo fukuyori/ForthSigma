@@ -3,7 +3,7 @@
 const std = @import("std");
 pub const c = @import("c_x11");
 const allocator = std.heap.c_allocator;
-pub const Error = error{ Unavailable, Failed, OutOfMemory };
+pub const Error = error{ Unavailable, Failed, OutOfMemory, XError };
 pub fn now() i64 {
     var ts: std.c.timespec = undefined;
     _ = std.c.clock_gettime(.MONOTONIC, &ts);
@@ -114,6 +114,7 @@ pub const Connection = struct {
     events: [512][32]u8 = undefined,
     event_count: usize = 0,
     xkb_event: u8 = 0,
+    xkb_opcode: u8 = 0,
 
     pub fn open() Error!Connection {
         return openUntil(now() + 5000);
@@ -294,7 +295,7 @@ pub const Connection = struct {
     pub fn next(self: *Connection) Error![]const u8 {
         try self.read(self.packet[0..32]);
         const kind = self.packet[0] & 127;
-        if (kind == 0) return error.Failed;
+        if (kind == 0) return error.XError;
         const units = if (kind == 1 or kind == 35) get32(self.packet, 4) else 0;
         if (units > (self.packet.len - 32) / 4) return error.Failed;
         const extra = @as(usize, units) * 4;
@@ -326,10 +327,11 @@ pub const Connection = struct {
         self.xkb_event = extension[10];
         const version = try self.reply(try self.request(opcode, 0, &.{ 1, 0, 0, 0 }));
         if (version[1] == 0) return false;
+        self.xkb_opcode = opcode;
         var selection: [12]u8 = @splat(0);
         put16(&selection, 0, 0x100);
-        put16(&selection, 2, 3); // NewKeyboardNotify + MapNotify
-        put16(&selection, 6, 3);
+        put16(&selection, 2, 0x43); // NewKeyboardNotify + MapNotify + NamesNotify
+        put16(&selection, 6, 0x43);
         put16(&selection, 8, 0xff); // all map components
         put16(&selection, 10, 0xff);
         _ = try self.request(opcode, 1, &selection);
@@ -339,6 +341,14 @@ pub const Connection = struct {
         put32(&flags, 8, 1);
         const reply_ = try self.reply(try self.request(opcode, 21, &flags));
         return get32(reply_, 8) & get32(reply_, 12) & 1 != 0;
+    }
+    pub fn physicalNames(self: *Connection) Error![256]u8 {
+        if (self.xkb_opcode == 0) return error.Unavailable;
+        var body: [8]u8 = @splat(0);
+        put16(&body, 0, 0x100);
+        put32(&body, 4, 1 << 9);
+        const data = try self.reply(try self.request(self.xkb_opcode, 17, &body));
+        return parsePhysicalNames(data);
     }
     pub fn resource(self: *Connection) Error!u32 {
         const shifted = @as(u64, self.next_id) << @intCast(@ctz(self.mask));
@@ -394,4 +404,28 @@ test "X11 transport setup and round trip on an explicitly enabled desktop" {
     try connection.sync();
     _ = try connection.enableDetectableRepeat();
     try std.testing.expect(try connection.atom("WM_PROTOCOLS") != 0);
+}
+
+pub fn parsePhysicalNames(data: []const u8) Error![256]u8 {
+    if (data.len < 32 or get32(data, 8) != 1 << 9) return error.Unavailable;
+    const first: usize = data[18];
+    const count: usize = data[19];
+    if (count == 0 or first + count > 256 or data.len != 32 + count * 4) return error.Unavailable;
+    var mapping: [256]u8 = @splat(0);
+    for (0..count) |index| mapping[first + index] = @import("physical_key_map.zig").xkbScan(data[32 + index * 4 ..][0..4].*);
+    return mapping;
+}
+test "XKB physical names validates lengths and does not assume keycode offsets" {
+    var data: [40]u8 = @splat(0);
+    put32(&data, 8, 1 << 9);
+    data[18] = 100;
+    data[19] = 2;
+    @memcpy(data[32..36], "AD01");
+    @memcpy(data[36..40], "RCTL");
+    const mapping = try parsePhysicalNames(&data);
+    try std.testing.expectEqual(@as(u8, 20), mapping[100]);
+    try std.testing.expectEqual(@as(u8, 228), mapping[101]);
+    try std.testing.expectError(error.Unavailable, parsePhysicalNames(data[0..39]));
+    data[18] = 255;
+    try std.testing.expectError(error.Unavailable, parsePhysicalNames(&data));
 }
