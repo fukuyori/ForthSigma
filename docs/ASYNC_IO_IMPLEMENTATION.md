@@ -1,6 +1,6 @@
 # 非ブロッキングI/Oの実装・検証（639）
 
-2026-11-19。[採用設計](ASYNC_IO_DESIGN.md)。1078の選択ファイル待機に続き、1091のupdate stream境界、1094の読取り、1095の書込みを実装した。Mac実機は1092（1078）と1096（新4語）に残し、639全体は未完了。
+2026-11-19。[採用設計](ASYNC_IO_DESIGN.md)。1078の選択ファイル待機に続き、1091のupdate stream境界、1094の読取り、1095の書込みを実装した。Mac実機受け入れを1092/1096で実施した。
 
 ## 振り分けと実装
 
@@ -48,3 +48,19 @@ Windowsは移行前のpipeもReadFileで読み、CRTの内部先読みを残さ�
 - 英日HELP/参照は1781語（HELP 1567件）。生成照合と実行辞書の照合を実施。
 
 各Python fixtureは --sigma に対象実行ファイル、--output にJSONの記録先を指定する。.work/639に試験ログ・JSONと固定レビュースナップショットを置く。Mac実機受け入れでは同じ読取り/書込みfixtureを実行し、pipeの中断・close・ID再利用、除外構成を確認する。Windows専用console fixtureはMac受け入れの代用にしない。
+
+## Mac実機受け入れ（1092/1096）
+
+2026-11-19、macOS 27.2.1 arm64 / Zig 0.17.1。HEAD `164fc6b` のコードをこのMacでビルドして実行。
+
+- `verify-file-input-wait.py`: 遅延pipe、分割UTF-8の再開、scope退出後のKEY-FILE/READ-FILE、途中EOF、THROW/seek失敗後のprefix保持の4ケース成功。
+- `verify-file-wait-interrupt.py`: SIGINT中断後にior=-28とprefix E3を保持するケース成功。
+- `verify-async-io-read.py`: 複数pipeのready順、EOF-ready、従来読取りから待機readerへの移行、不正ID検査、stdin先読み/EOFを含む5ケース成功。
+- `verify-async-io-write.py`: backpressure/再ready、読取りとの並行、stdout順序、broken pipe、stderrの196608 bytes、stdout/stderr共有時の順序を確認。
+- `verify-async-io-stdin-spawn.py`: stdin worker停止中の子への次バイト引継ぎと親のEOFを確認。
+- 追加のMac実行：通常ファイルでREAD→WRITE→READの方向切替と、送信pipeをcloseした後の同slot再利用を確認（`.work/639-mac/direction-id-reuse.fs`）。
+- 上記file wait/read/write/stdin-spawn fixtureはgraphics/audio/float除外ビルドでも成功。通常・除外の`zig build`は成功。
+- 初回の通常・除外全体テストでは、macOSがプロセスグループへのSIGKILLにEPERMを返し、公開失敗後の子プロセスrollbackが残る問題を検出。`sigma_proc_signal`を更新し、EPERM時は所有する子PIDへシグナルを送るよう修正。`process publication rollback is retryable and closed-stream errors still reap the child`の単体実行、および通常・除外の`zig build test --summary all`がすべて成功。
+- 静的レビューでは639の対象コードに新たなブロッカーなし。以前の限定レビューで指摘されたWindows未移行stdinの0-byte pipe読取りは現在ループして継続し、通常FILEのCR後読取りエラーも`LineSource.ior`を返すことを現行コードで確認。
+
+JSON結果は`.work/639-mac/`に保存。Windows専用consoleとWindows API故障注入はMac受け入れ対象外。

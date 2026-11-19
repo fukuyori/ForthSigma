@@ -447,9 +447,14 @@ int sigma_proc_signal(struct sigma_process *p, int force) {
     uint32_t state, code; int error = sigma_proc_status(p, &state, &code);
     if (error) return error;
     int sig = force ? SIGKILL : SIGTERM;
-    if (kill(-p->pid, sig) && errno != ESRCH) return errno;
-    /* A failed launch can return before the child established its new group. */
-    if (!p->group_ready && kill(p->pid, sig) && errno != ESRCH) return errno;
+    if (kill(-p->pid, sig)) {
+        int group_error = errno;
+        /* A failed launch can return before the child established its new group.
+           Some hosts also deny signaling a process group while allowing its
+           owned child PID, so retain a direct-child cleanup path on EPERM. */
+        if (group_error != ESRCH && group_error != EPERM && p->group_ready) return group_error;
+        if (group_error != ESRCH && kill(p->pid, sig) && errno != ESRCH) return errno;
+    }
     return 0;
 }
 static void pause_ms(unsigned ms) {

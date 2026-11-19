@@ -75,3 +75,25 @@ Escapeで終了し、窓のCtrl+Cはキー読込と押下状態読込の両方�
 `check-window-display.fs`は色・リサイズ・画面間移動の手動確認です。色帯・灰色階調・
 4つのクリック対象を表示し、0/2/6/5で色数、Dでディザリングを切り替えます。
 デスクトップの表示設定は変更しません。手順はファイル先頭を参照してください。
+
+### 子プロセス管理（643）
+
+`verify-process-words.py --sigma PATH`は公開PROC語とFILE/AVAILABLEによる3ストリームの
+大量入出力を確認します。`verify-process-interrupt.py --sigma PATH`は無期限待機の中断と
+子プロセスの生存を確認します。Windowsの中断試験は専用の非表示consoleを作り、
+その中だけにCtrl+Cを送ります。
+
+制御したfixtureは`zig cc tests/process_wish_fixture.c -o .work/643/wish-fixture.exe`で作成し、
+`verify-process-capacity.py --sigma PATH --fixture PATH`で64実プロセスと上限超過・再利用を、
+`verify-process-tcl.py --sigma PATH --fixture PATH`でTcl内部予約枠・再起動・script削除・
+終了時の子孫回収を確認します。Linux用fixtureは
+`zig cc -target x86_64-linux-musl`で作成し、WSL内でLinux版Sigmaと実行します。
+fixtureは実Tcl/TkやGUI表示の代用ではありません。
+
+native C単体は`zig cc -shared -DSIGMA_PROC_TESTING src/host_process_native.c -o .work/643/process-native.dll`
+と`verify-process-native.py --library PATH`で確認します。LinuxのPython ctypesにはGNU共有libraryを
+使います。Linuxの子孫試験は専用helperのsubreaper設定を一時変更し、自分で起動した子孫を回収して
+元へ戻します。製品Sigmaではsubreaperを設定しません。
+
+各scriptの`--output PATH`でJSONの結果を保存できます。OS単体・公開語・Tcl protocol・実GUIを区別し、
+Macのクロスコンパイルを実機確認の代わりにしません。

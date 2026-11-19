@@ -22,7 +22,11 @@ POSIXは既存stdioのバッファを使った非ブロッキングprobe、Windo
 - テスト専用fault seam：cleanup/commit境界の中断、flags復旧失敗後のprefix順、READ-FILE失敗時のprefix保持を確認。実際のカーネル障害を起こした証拠とはしない。
 - 古いFileOpsのnull callbackは既存のscope/THROWテストで-21と未消費、従来EKEYを確認。追加テストはcallbackの固定結果とstack満杯時の未消費を検証。
 - 英日HELP・1777語参照、8語彙のruntime照合、例28本と個別用例377本が成功。公開語追加なし。
-- Mac arm64はcross build成功。実行は未確認で1092へ残す。
+- Mac arm64は当初cross buildのみだったが、1092で実機受け入れを完了。
+
+### Mac実機受け入れ（1092）
+
+2026-11-19、macOS 27.2.1 arm64 / Zig 0.17.1、HEAD `164fc6b`の実機で受け入れ。通常・graphics/audio/float除外の両buildで`verify-file-input-wait.py`の遅延pipe4ケースを実行し、分割UTF-8の再開、scope退出後のKEY-FILE/READ-FILE、途中EOF、THROW/seek失敗後のprefix保持を確認。SIGINTで無期限待機を中断した後のior=-28とprefix保持も成功。最初の全体テストで見つかったプロセス管理のSIGKILL失敗を修正後、通常・除外構成の全テストが成功。[639記録](ASYNC_IO_IMPLEMENTATION.md#mac実機受け入れ10921096)と構造化結果`.work/639-mac/file-input-wait.json`、`file-wait-interrupt.json`を参照。
 
 生ログ・実パイプの構造化結果は`.work/1078/`。実パイプ検証スクリプトは`tests/scripts/verify-file-input-wait.py`、制御通知は`verify-file-wait-interrupt.py`。
 
