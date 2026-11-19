@@ -2,7 +2,7 @@
 
 ## 2026-11-19：637 ターミナル制御（1070〜1073）
 
-基点は`b4af2fb Record Mac acceptance for core extension`。本節の実装・設計・レビュー記録は、この文書と同じコミットに含む。tqueの1070〜1072は完了、637はauto75%。Mac実機1073は未実施。
+基点は`b4af2fb Record Mac acceptance for core extension`。本節の実装・設計・レビュー記録は、この文書と同じコミットに含む。tqueの1070〜1073と637は完了。1073は`15a7cd82a4fef36ff4bcda4357d4ccd21d8b0e50`をmacOS 27.2.1 Build 26B131（Darwin 27.2.0、arm64）、Zig 0.17.1、Python 3で実機ビルド・実行した。開始時の作業ツリーはクリーン。
 
 EXTENSIONへTERM-MODE!/@、COLS/ROWSと4定数を追加した。表示要求はホストのManagerでraw入力と独立して所有する。KEY/ACCEPTではalt/cursorを保ち、REPLとSYSTEMで退避、未捕捉診断と通常終了で解除する。Windowsのpaste要求を除外する。coreは語の処理・FORM共用・入力エラー伝達、ホストはOS操作と資源の後始末を担当する。[詳細設計](TERMINAL_CONTROL_DESIGN.md)。
 
@@ -21,10 +21,16 @@ Claude Codeへ設計・実装・Windows入力再開・最終の読み取り専�
 | Mac向けコンパイル | aarch64-macos、audio/graphics/float除外のcore/host/runtimeで14/14ステップ成功。`.work/637-review/final3-macos-build.log`。Mac実行の証拠ではない |
 | 英日HELP・全語参照 | 1544項目、HELP1330、実辞書に欠落なし、例28件と個別例144件成功。check-docs findings=0。`.work/637-review/final3-word-reference.log`、`final3-check-docs.log` |
 | 3語群・機能除外 | 最終コードの12/12構成でtestと実行体ビルド成功。extension除外版でのイメージ拒否と既存辞書の保持も成功。matrix.jsonのsource_sha256が現在のbuild.zig/srcと一致。`.work/637-review/final3-extension-matrix.log`、`.work/extension-matrix/matrix.json` |
+| Mac `zig build test --summary all` | 23/23ステップ成功。core 1031成功・8スキップ、host 96成功・6スキップ、全体1127成功・14スキップ。runtime 15成功は成功済みキャッシュを含む。単独の`zig build runtime-test --summary all`も成功（キャッシュ）。 |
+| Mac通常ビルド | `zig build --prefix .work/637-native --summary all` 10/10成功。 |
+| Mac端末モード・PTY | `verify-terminal-modes.py` 13ケース成功。`verify-p05b-ns.py --sigma-only`もpass=true（期限8、範囲1、リダイレクト2、信号復帰2、PTYケース成功）。 |
+| Mac全体受け入れ | extension matrix 12構成成功、除外イメージ拒否成功。語参照1544項目（HELP 1330、文書例28、個別実行例144、欠落なし）、check-docs findings=0。 |
 
-実OS APIの失敗を任意に注入した受け入れ、物理キーボード操作、Mac実行は未確認。Managerの差替えBackendでは部分失敗・巻戻し・dirty保持・入れ子・明示解除を確認した。入力/待機スコープ外の既定SIGINTやCtrl+Break、SIGTERM/SIGHUP・強制終了時の完全復元は保証しない。通常VMループへ信号処理を追加する変更は含めていない。
+Macのtermios比較では、raw-mouse-and-paste復帰後にDarwinが`PENDIN`を一時的に付け直すことを確認した。Python標準の`tty.setraw()`→保存属性の`tcsetattr()`だけでも同じ差が再現するため、`verify-terminal-modes.py`はDarwinに限りこの一時フラグだけを比較から除外し、他の属性は厳密に比較するよう修正した。その後13ケースすべて成功。
 
-次工程は638イベントキュー。637のMac実機確認は1073として残し、1057の最終統合受け入れで待つ。保存アプリ起動の1067は計画済み・未実装であり、LOGO機能のSigma組込みは行っていない。
+実OS APIの失敗を任意に注入した受け入れ、物理キーボード操作、実端末エミュレータの表示確認は未実施。Managerの差替えBackendでは部分失敗・巻戻し・dirty保持・入れ子・明示解除を確認した。入力/待機スコープ外の既定SIGINTやCtrl+Break、SIGTERM/SIGHUP・強制終了時の完全復元は保証しない。通常VMループへ信号処理を追加する変更は含めていない。
+
+次工程は638イベントキュー。保存アプリ起動の1067は計画済み・未実装であり、LOGO機能のSigma組込みは行っていない。
 
 
 ## 2026-11-19：1065 Mac実機受け入れ

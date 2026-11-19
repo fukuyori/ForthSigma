@@ -9,6 +9,7 @@ import pty
 import select
 import signal
 import subprocess
+import sys
 import termios
 import time
 
@@ -22,6 +23,17 @@ def main():
     args = parser.parse_args()
     sigma = str(args.sigma.resolve(strict=True))
     records = []
+
+    def termios_restored(before, after):
+        # Darwin sets PENDIN (retype pending input) when switching back to
+        # canonical mode. It is a transient state bit, not a saved terminal mode;
+        # Python's tty.setraw()/tcsetattr(saved) produces the same difference.
+        if sys.platform == 'darwin' and hasattr(termios, 'PENDIN'):
+            before = list(before)
+            after = list(after)
+            before[3] &= ~termios.PENDIN
+            after[3] &= ~termios.PENDIN
+        return before == after
 
     def run(name, source, expected, send=None, status=0, options=()):
         master, slave = pty.openpty()
@@ -62,9 +74,11 @@ def main():
             assert proc.poll() is not None, (name, 'timeout', bytes(data))
             assert proc.returncode == status, (name, proc.returncode, bytes(data))
             assert expected in data, (name, expected, bytes(data))
-            assert termios.tcgetattr(slave) == before, (name, 'termios not restored')
+            after = termios.tcgetattr(slave)
+            assert termios_restored(before, after), (name, 'termios not restored', before, after)
             assert data.count(b'\x1b[?1049h') == data.count(b'\x1b[?1049l'), (name, 'screen not restored', bytes(data))
-            records.append({'case': name, 'exit': proc.returncode, 'stdout_hex': data.hex(), 'termios_restored': True})
+            records.append({'case': name, 'exit': proc.returncode, 'stdout_hex': data.hex(), 'termios_restored': True,
+                            'transient_flags_ignored': ['PENDIN'] if sys.platform == 'darwin' and hasattr(termios, 'PENDIN') else []})
             return bytes(data)
         finally:
             if proc.poll() is None:
