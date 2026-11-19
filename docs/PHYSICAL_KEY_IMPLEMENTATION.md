@@ -60,21 +60,38 @@ pure Tracker9件、IPC Sender/Receiver4件、変換表1件、公開語7件。短
 
 ## 残りの作業と次の順序
 
-- 1082：Mac実機。sendEvent/super、左右修飾、Command併用、Fn/電源/音量の除外、通信詰まりから最後の解放の復旧、全体／除外構成を同じコードで実行する。
-- 1087：Windows/Linuxの実キーボード。JIS/USのキー位置、国際キー、左右同時押下と片方解放、IME併用、フォーカス切替を確認し、機種・OS・配列・未対応を記録する。
+### 1082 Mac実機の受け入れ（2026-11-19）
+
+対象は`ca82413b26d8616df2092340d04c605813514b0d`、開始時の作業ツリーはクリーン。macOS 27.2.1 Build 26B131（Darwin 27.2.0、arm64）、Mac model identifier `Mac17,3`、Zig 0.17.1、Python 3.15.2。内蔵キーボードを使用。ユーザー申告では左Controlキーとテンキーなし。配列名は未採取。
+
+| 確認 | 結果 |
+|---|---|
+| `zig build test --summary all` | 23/23工程成功、1178成功・14スキップ。core1071成功・8スキップ、host107成功・6スキップ。 |
+| `zig build test -Dgraphics=false -Daudio=false -Dfloat=false --summary all` | 22/22工程成功、958成功・205スキップ。 |
+| `zig build --summary all` | 通常構成10/10工程成功。 |
+| `verify-extension-matrix.py` | 12構成成功、extension除外イメージ拒否成功。 |
+| HELP・語参照、文書 | 語参照check成功。HELP1563、全語彙1777。check-docs findings=0。 |
+| 実キーボード | `zig-out/bin/sigma tests/scripts/check-physical-keys.fs`を実行しQで正常終了。A (usage 4)、左右Shift (225/229)、左Option (226)、左右Command (227/231)、矢印 (79〜82)、Enter (40) の押下・解放を取得。長押し中の重複pressはなく、左右Shiftの片側解放後も他方はheld。左Controlとテンキーは機器にない。 |
+| 入力経路の独立 | 物理Aのpress/release (usage 4) とGRAPHICS `INKEY` の`a` (97) を別々に取得。 |
+| Command併用・フォーカス | Command併用中のキーpress/releaseを取得。ShiftとCommandを保持してアプリを切り替え、フォーカス復帰後に両方のrelease edgeを取得。その後のAイベントで修飾状態はすべて0。Command+Tab自体はOSが処理するためTab edgeはアプリへ届かない。 |
+| Fn・電源・音量 | native窓を開いた状態でHID usage 0、POWER、MUTE、VOLUMEUP、VOLUMEDOWNの`SCAN-SUPPORTED?`はいずれもfalse。起動表示のCapsLock/Pause/PrintScreenは0/1/1。 |
+| overflow・通信復旧 | 親Sigma PID 67494を1分26秒SIGSTOPし、AppKit子PID 67500が動作を続けることを確認。再開後、物理入力overflowの`KEY-RESYNC`とsnapshot読取りを確認。 |
+
+997の設計・native接続・公開語レビュー回答をコードと照合した。既存レビューで挙がった修正事項は反映済みで、今回新たなブロッキング欠陥は見つからなかった。Mac実機のキー通知、左右modifier、Command併用、フォーカス解放、overflow後のsnapshot復旧を確認した。
+
+- 1088：Linux US実機。キー位置、左右修飾と片方解放、IME併用、フォーカス切替を確認し、機種・OS・配列・未対応を記録する。Windows US 1087、Windows JIS 1089、Linux JIS 1090（下記）は完了。
 - タスク制御の本物のワーカー実行検査は1049〜1053へ引継ぎ。入力資源を借用せず、worker Writerのphysical_key_opsはnullにする。
 - 次の開発項目は予定どおり639・1078（非ブロッキングI/O／ファイル入力待機）。実機確認を完了済みとはせず、依存のない後続を進められる。
 
-## 実キーボードの共通手順（1082・1087、未実行）
+## Linux実キーボード確認手順（1088・1090）
 
 1. OS・Zig版・Git HEADと未コミット差分、キーボード機種・接続方法・配列を記録する。未コミット差分がある場合は、HEADだけで同一コードとは判定しない。
 2. 対象OSで`zig build test --summary all`、`zig build test -Dgraphics=false -Daudio=false -Dfloat=false --summary all`を実行する。その後`zig build`で全体構成の実行体を作る。
 3. `zig-out/bin/sigma tests/scripts/check-physical-keys.fs`（Windowsはsigma.exe）を実行する。黄色い枠のnativeウィンドウをクリックし、キーを押す。結果は端末へusageとkind、左右modifierの状態として出る。Qまたはウィンドウ閉鎖で終了する。
 4. Aの短押し／長押し、左右Shiftを両方押して片方だけ離す、左右Ctrl/Alt/GUI単独、矢印、通常Enter／テンキーEnter、JISの国際キーを確認する。IMEのon/offで物理番号が変わらず、文字確定の経路は別に動くことを確認する。Ctrl+Cは既存の割込みとして扱う。
 5. Alt+Tab／Command+Tabのフォーカス喪失でheldがすべてfalseになること、閉鎖で全解放して終了すること、対応外の問い合わせがfalseになることを確認する。
-6. MacはCommand併用のkeyUp、FlagsChangedの左右区別を確認する。device-dependent maskを出さない対象キーボードも、使う場合は左右同時押下を確認し、必要なら対応可否と復旧を修正する。
-7. Macのpipe詰まり確認は、このチェッカーの親Sigmaだけを一時停止して行う。`ps -ax -o pid,ppid,command`でチェッカー親PIDを確認し、別端末から`kill -STOP 親PID`。`--sigma-internal-window-child-v1`の子は止めない。ウィンドウで十分な数のキーを押し離してから、すべて離し、`kill -CONT 親PID`で必ず再開する。ウィンドウが応答を続け、復帰後に再同期要求／snapshot採取を経てheldが0へ戻ることを記録する。この手順はまだ実行していない。
-8. 実行ログと未確認を本記録へ追記し、該当する1082／1087だけを完了にする。クロスコンパイルや合成入力だけで閉じない。
+6. LinuxではJIS配列の国際キーと左右修飾、XIMのIME on/offを確認する。USの基本キー確認とは別に、1089・1090で対象とするキーの位置・押下解放を記録する。
+7. 実行ログと未確認を本記録へ追記し、該当する1088／1090だけを完了にする。クロスコンパイルや合成通知だけで閉じない。
 
 ## 1090 Linux JIS実キーボード確認（2026-11-19）
 
@@ -99,5 +116,5 @@ pure Tracker9件、IPC Sender/Receiver4件、変換表1件、公開語7件。短
 
 ## 997 Claude Codeレビュー（1090時点）
 
-- 本記録と設計書の「1087＝Windows/Linux実キーボード」という書き方は、tqueの1087（Windows US）・1088（Linux US）・1089（Windows JIS）・1090（Linux JIS）への分割と合っていない。1087/1089の実機結果と、1089のタイトルにある「ろ/円/無変換/変換・IME a/あの修正」は、このリポジトリ（origin/mainと同じ`ca82413`）にない。Windows側の記録とコードをpushし、1090をその上で再確認するかどうかを決める必要がある。
+- 1082の記録（`18800bf`）で、残りの作業はtqueの1088／1090に合わせて書き直された。ただし、冒頭の状況説明と[詳細設計](PHYSICAL_KEY_DESIGN.md)は、まだ「1087＝Windows/Linux実キーボード」のまま。1087（Windows US）と1089（Windows JIS）の実機結果と、1089のタイトルにある「ろ/円/無変換/変換・IME a/あの修正」のコードも、このリポジトリにない。1090はその修正を含まない`ca82413`で実施した。
 - Linuxの経路では、XIMへ転送する前に押下を記録すること、保留した解放を毎周期確定すること、IMEから戻ってきたキーが物理状態を変えないことを、コードで確認した。ブロッカーはない。
