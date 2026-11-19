@@ -1,5 +1,87 @@
 # 613 本体機能拡張の引継ぎ（2026-11-19）
 
+## 現在の引継ぎ：Mac検証の取込み後、次は640
+
+2026-11-19、この節を最新情報とする。下の過去の追記にある「Mac未完了」「643は80%」「未コミット」や古いHEADは、各時点の履歴であり現在の状態ではない。今回の引継ぎではコード変更・ビルド・試験・tque変更は行っていない。現在のGit/tqueと、取り込んだ検証記録を照合した。
+
+### 作業環境とGit
+
+- 利用者はレモン、担当はロク。作業場所は`D:\home\source\zig\forthz`、PowerShell、Zig `0.17.1`。
+- ブランチ`main`、HEAD `fa34ada`（Verify process management on macOS）。直前のpullはfast-forward成功。引継ぎ更新前の作業ツリーはクリーンで、ローカルの`origin/main`参照と一致していた。今回の引継ぎ作成では追加fetchは行っていない。
+- `164fc6b`：非ブロッキングFILE I/O・PROC管理・Tcl移行・設計/レビュー/試験をまとめてコミットし、push済み。
+- `afac042`：Mac実機で検出したprocess rollbackを修正。
+- `fa34ada`：Macの受け入れ記録、OS差を扱う検証scriptを更新。
+- 引継ぎ作成後、レモンからコミット・pushの追加指示を受けた。この最新節は、その指示による引継ぎコミットに含める。
+
+### tqueの現在地
+
+番号は振り直されることがある。再開時は番号だけでなくタイトル・親・依存関係も再照合する。
+
+| タスク | 現在の状態 | 内容 |
+| --- | --- | --- |
+| 637 | 完了 | ターミナル制御 |
+| 638 | 完了 | イベントキュー |
+| 639 | 完了 | 非ブロッキングFILE I/O。Mac実機1092/1096も完了 |
+| 643 | 完了 | 子プロセス管理。1097〜1107の関連工程とMac実機1101も完了 |
+| 640 | 未着手 | Unicode書記素クラスタ。次の候補としてレモンへ案内済み。実装開始の指示はまだ受けていない |
+| 646 | 未着手 | ファイルシステム。640と独立して着手可能 |
+| 652 | 未着手 | debug構成の実行制御。通常ビルドのタスク制御1048とは分ける |
+
+640/646の先行条件1056は完了。652の先行条件1056/1064も完了。親1002は未完了で、640/646/652が残る。1048配下の方式比較1049も未完了であり、PROC管理が完了したことをForthタスク制御全体の完了とは扱わない。
+
+### 今回取り込んだMacの結果と変更
+
+詳細は[FILE待機](FILE_INPUT_WAIT_IMPLEMENTATION.md)、[非ブロッキングI/O](ASYNC_IO_IMPLEMENTATION.md)、[子プロセス管理](PROCESS_MANAGEMENT_IMPLEMENTATION.md)を読む。Mac実行は、取り込んだコミット内の記録に基づく。Windows側でMac試験を再実行したものではない。
+
+- macOS `27.2.1 arm64` / Zig `0.17.1`。PROCの通常試験はcore 1077成功・8除外、host 136成功・15除外、runtime/freestandingを含む23/23 step成功。
+- native backendの16ケース、PROCの大量3stream・timeout/状態・終了259の再読、64同時起動と超過/再利用、SIGINT、Tcl内部枠/再起動/script削除/終了時子孫killをMacで確認。除外構成でも実行した。
+- 639のFILE待機・読取り・書込み・stdin継承・方向切替・FILE ID再利用もMacで受け入れ済み。
+- Macで`waitid(WNOWAIT)`が終了値259を返す差に対応し、POSIXの通常終了値を0..255へ正規化。group signalがEPERMとなるrollbackでは、所有する子PIDへのfallbackを追加した。
+- 検証scriptの`prctl`・`/proc`依存をLinux限定にし、Macの資源/生存確認を追加した。
+- Macの`.work/1101/mac`、`.work/1101/mac-excluded`、`.work/639-mac`はMac側の証拠の場所。Gitで取り込んだ本文記録と、このWindows checkoutに実在するログを混同しない。
+
+**再開時の確認事項：** Windows/Linuxの既存成功記録は主に`164fc6b`時点。取り込んだ`afac042`のnative C修正について、このWindowsセッションではまだ再ビルド・再試験していない。640の実装へ進む前にdiffを読み、Windows通常試験とLinuxのprocess回帰（native・公開語・rollback）を確認する。引継ぎ時に新たな失敗を検出したという意味ではない。
+
+### 実装上の分担と維持する契約
+
+- 本体コア：optional host口、スタック/論理メモリの検査、EXTENSION語の登録。PROCはgraphicsに依存せず、files/extension無効またはhost未提供では-21。OS資源をVM Stateや保存画像へ足していない。
+- host：process registry/設定/OS payload/終了結果。公開64枠とTcl内部予約1枠。WindowsはJobと継承3端点の許可リスト、POSIXはWNOWAITとPGID保持、最終FREEでreap。
+- 公開pipeはFileSlot所有で639のFILE/WAIT/AVAILABLEと共有。`(proc所有者ID, FILE ID)`で再利用を照合し、別fileを誤って閉じない。
+- Tclは共通registryへ移行済み。wish探索・一時script・privateプロトコル・display budgetはadapterに残す。close前にraw参照を外し、registry除去後にscriptを削除。Sigma終了はTclも含め全group/JobへKILLして共通期限で回収する。
+- WRITE-AVAILABLEの受付は配送完了ではない。CLOSE-FILE/FLUSH-FILEは配送待ちになり得るため、子が先に大量出力する場合はstdout/stderrを並行して読み、入力の半閉じと調整する。
+- native/PROC/Tcl fixtureの成功を、実wish/TkのGUI表示成功とは扱わない。Linux display budgetのnative socketケースには、socket directoryがなく除外したものがある。
+
+設計とレビューは[PROCESS_MANAGEMENT_DESIGN.md](PROCESS_MANAGEMENT_DESIGN.md)、[643-review-response.md](reviews/643-review-response.md)、[643-tcl-claude-review.md](reviews/643-tcl-claude-review.md)。FILE側は[ASYNC_IO_DESIGN.md](ASYNC_IO_DESIGN.md)を参照する。
+
+### 次の640で行うこと
+
+現在は[ASYNC_CORE_PLAN.mdの項目4](ASYNC_CORE_PLAN.md#4-unicode処理640)に検討案があるだけで、640用の詳細設計・実装・Claude Codeレビュー・子タスク分割はまだ行っていない。
+
+1. 既存の`src/core/char_width.zig`、`scripts/make-width-table.py`、Unicode関連語と試験、`THIRD_PARTY_NOTICES.md`を読む。幅生成器の現在の版はUnicode 15.1.0。新機能も同じ版にするかは未決であり、最新版へ変更するとも既存版を維持するとも決めつけない。
+2. 書記素境界の語名/スタック効果、前方/後方探索、空文字、不正UTF-8、途中位置、長い結合列での計算量、結果の単位とエラーを詳細設計へまとめる。`X-GRAPHEME`は候補名であり確定名ではない。後方探索では文字列の先頭情報が必要という計画を確認する。
+3. UAX #29とUnicode版を対応させ、GraphemeBreakProperty・emoji-data・DerivedCoreProperties・GraphemeBreakTestの使用ファイル、生成方法、ライセンスを確定する。公式資料/データは採用版に合わせて確認し、記憶だけで挙動を実装しない。
+4. 書記素境界と表示幅を分け、結合絵文字の幅など未決の範囲を明記する。単語境界とタブを含む表示列計算は現在の計画ではアプリ側。語群とビルド除外条件も既存基盤に合わせて設計する。
+5. tqueを仕様/実装/Windows・Linux/Mac実機へ分け、Claude Codeへread-onlyレビューを依頼する。レビュー原文・評価/採否・採用設計を別に残し、指摘を反映してから実装する。レモンは「レビューを依頼しながら、できるだけ止めないで進めて」を希望している。
+6. 採用版のGraphemeBreakTestで照合し、メモリ/stack/不正入力/計算量/除外構成/保存画像の回帰を確認。英日HELP・全語参照・第三者ライセンス・実装記録を更新する。MacクロスビルドとMac実機実行を区別する。
+
+### 再開時の操作と注意
+
+```powershell
+git status -sb
+git log -3 --oneline
+tque ls --root 1002 --all --json
+zig version
+zig build test --summary all
+```
+
+process回帰の再現方法は`tests/scripts/README.md`と`README.ja.md`、前記の実装記録にある。`.work/643`の旧Windows/Linux証拠は旧基点のものとして扱い、新しいsourceの証拠で上書きする場合は対象commit/sourceを記録する。
+
+質問にはまず回答し、仕様の重大な曖昧さを推測で埋めない。今回の引継ぎ作成から640の実装許可までを読み込まない。コミット・タグ・pushはその依頼で明示されたときだけ行う。LOGOはSigmaへ組み込まず、汎用基盤を使う外部Forthアプリに置く方針を維持する。
+
+---
+
+## ここから過去の記録
+
 ## 最新追記：639から643へ（2026-11-19）
 
 利用者の「macは残して、次に進めて」により643へ着手。639の1091・1094・1095は完了、Mac実機1092・1096は未完了のまま。643と1051の開発依存は639全体から完了済みI/O実装へ置き換え、最終統合はMacも待つ。
