@@ -1018,7 +1018,9 @@ const win32 = struct {
             window = handle;
             physical_state.available = true;
             physical_state.supported = @splat(0);
-            for (physical_map.windows) |scan| if (scan != 70 and scan != 72 and scan != 102 and (scan < 127 or scan > 129)) {
+            // IME-processed legacy messages do not preserve physical edges for
+            // the grave/zenkaku position (53) and Kana (136). Exclude both.
+            for (physical_map.windows) |scan| if (scan != 53 and scan != 136 and scan != 70 and scan != 72 and scan != 102 and (scan < 127 or scan > 129)) {
                 physical_state.support(scan);
             };
             if (SetTimer(handle, 0x5343, 16, null) == 0) physical_state.supported[28] &= ~@as(u8, 0x22);

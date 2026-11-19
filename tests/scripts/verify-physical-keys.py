@@ -39,7 +39,10 @@ KEY DROP
 def run(sigma):
     logs=[]; q=queue.Queue()
     with tempfile.TemporaryDirectory(prefix='physical-',dir=ROOT/'.work') as d:
-        source=Path(d)/'native.fs';source.write_text(PROGRAM)
+        program=PROGRAM
+        if os.name=='nt':
+            program=program.replace('." PH-STATE "', '." PH-EXCLUDED " 53 SCAN-SUPPORTED? . 136 SCAN-SUPPORTED? . 53 SCAN-HELD? . 136 SCAN-HELD? . CR\n." PH-STATE "')
+        source=Path(d)/'native.fs';source.write_text(program)
         p=subprocess.Popen([str(sigma.resolve()),str(source)],stdin=subprocess.PIPE,stdout=subprocess.PIPE,stderr=subprocess.STDOUT,bufsize=0,cwd=ROOT)
         def reader():
             for raw in iter(p.stdout.readline,b''):
@@ -63,9 +66,15 @@ def run(sigma):
         try:
             line('PH-READY')
             backend=Windows(p.pid) if os.name=='nt' else Linux(p.pid)
+            # Replay IME's up-then-down ordering for excluded Windows keys.
+            # Neither capability, held state nor the following edge stream may include them.
+            if os.name=='nt':
+                for vk,make in ((0xf3,0x29),(0xf0,0x70)):
+                    backend.key(vk,make,False);backend.key(0xe5,make,True)
             # Prime a text event separately from physical edges.
             backend.a(True);backend.a(True);backend.a(False);backend.shift(True,False);backend.shift(True,True);backend.text_a();backend.sync()
             gate(b'gx')
+            if os.name=='nt':line('PH-EXCLUDED',[0,0,0,0])
             line('PH-STATE',[-1,-1,-1,-1,0])
             line('PH-STDIN',[120])
             line('PH-TEXT',[65 if os.name=='nt' else 97])

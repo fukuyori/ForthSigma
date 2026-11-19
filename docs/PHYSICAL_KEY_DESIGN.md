@@ -1,6 +1,6 @@
 # 物理キーの詳細設計（997）
 
-2026-11-19。管理：997／1079（設計）→1080（実装）→1081（Windows/Linux自動受け入れ）、1082（Mac実機）・1087（Windows/Linux実キーボード）。**詳細設計・実装・統合レビュー・Windows/Linux自動受け入れを完了。Mac実機1082とWindows/Linux実キーボード1087は未確認。**
+2026-11-19。管理：997／1079（設計）→1080（実装）→1081（Windows/Linux自動受け入れ）。**設計・実装・統合レビュー・自動受け入れと1087（Windows US）・1089（Windows JIS追加確認）は完了。リモート81294afのMac1082・Linux JIS1090の実機記録も統合済み（tqueは両方完了）。旧Linux US1088は取り込み時のtqueでは見つからず、先行WSLg記録は実装記録に保持する。**
 
 [設計レビュー原文](reviews/997-design-claude-review.md)、[採否・対応](reviews/997-review-response.md)、[実装・検証記録](PHYSICAL_KEY_IMPLEMENTATION.md)を区別する。
 
@@ -84,6 +84,8 @@ WM_KEYDOWN/WM_SYSKEYDOWN/WM_KEYUP/WM_SYSKEYUPの先頭で、lParamのSet1 make c
 
 左右Shift/Ctrl/Alt/GUI、通常Enter/テンキーEnter、通常slash/テンキーdivide、ナビゲーション／テンキーを区別する。Alt+Enter等のホストshortcutも物理通知は分岐前に取り込む。WM_CHAR/IMEは従来どおり。
 
+Windowsではusage53（USのgrave／JISの半角全角位置）と136（カタカナ／ひらがな）をsupported=falseとし、物理状態・edge・snapshotへ入れない。JIS実機でIME処理後の通常通知にup→downが記録され、保持が残ったための制約。53はUS配列でも同じ物理位置を対象外とする。文字入力・IME切替は既存経路を維持する。Raw Inputへの切替は行わない。
+
 Pause（非拡張0x45）とPrintScreenはsupported=false。NumLockは拡張0x45で区別する。両Shift時の欠落keyupは16msのUIタイマーでGetKeyStateと照合し、解放だけを補う。タイマーを作れなければ左右Shiftもunsupportedにする。電源・音量などのシステムキーもWindows/Macではunsupportedとする。対応しない合成通知を推測で補わない。WM_KILLFOCUSで全解放、WM_DESTROYで全解放後にunavailable。複数キーボードの個別識別、Raw Input、グローバルフックは範囲外。
 
 ## macOS
@@ -133,7 +135,7 @@ NamesNotifyのxkbTypeは6。SelectEventsの選択bitとdetail、aliases、未知
 3. 1081：Windows/Linuxでnative入力と公開語を実行し、Macクロスコンパイル、除外構成を確認。短押し、全状態、範囲外、左右修飾、repeat、focus、overflow、stale snapshot、文字入力独立、復元成功／失敗、optional opsなし、IPC欠落を検証。ワーカーの実行ガード試験は1049〜1053へ引き継ぐ。
 4. 1082：Mac実機でAppKit、Command併用、左右修飾、focus、最後の解放の通信損失と回復、全体／除外構成を実行。コンパイル／合成イベントと実機確認を区別する。
 
-5. 1087：Windows/Linuxの実キーボードでJIS/US・国際キー・左右同時押下と片方解放・IME併用を確認する。合成通知で完了にはしない。
+5. 実キーボードはOS・配列ごとに分離する。1087：Windows US（完了）、1088：Linux US、1089：Windows JIS追加確認（完了、53/136対象外）、1090：Linux JIS。国際キー・左右同時押下と片方解放・IME併用を対象OSで確認し、合成通知で完了にはしない。
 
 JIS/USの実キーボード・IMEを試していない場合はその旨を記録し、自動テストだけで実機確認済みとしない。997は実機まで閉じない。1042のfocus/close通知は本物理入力の全解放経路を再利用し、別のheld表を作らない。
 
