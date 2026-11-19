@@ -327,6 +327,7 @@ pub const State = struct {
     /// many are left. The host sets `steps_left` again with `resetSteps`.
     step_limit: u64 = 0,
     steps_left: u64 = 0,
+    execution: if (defs.debug_enabled) @import("core/execution_control.zig").Control else @import("core/execution_control.zig").Empty = .{},
     /// --trace: whether the words are shown as they start and end, how many lines the
     /// trace may have (--trace-limit, 0: any number) and has, and how deep the traced
     /// words are nested.
@@ -638,6 +639,7 @@ pub const State = struct {
                 line = self.source_line;
             }
             const token = nextToken(line, &cursor) orelse break;
+            if (@import("core/execution_control.zig").active(self)) try @import("core/execution_control.zig").charge(self, .interpreted);
             self.source_line = line;
             self.token_start = @intFromPtr(token.ptr) - @intFromPtr(line.ptr);
             self.setSourceCursor(cursor);
@@ -1740,6 +1742,7 @@ pub const State = struct {
 
     /// Lets compiled code run `step_limit` operations again.
     pub fn resetSteps(self: *State) void {
+        @import("core/execution_control.zig").clearStop(self);
         self.steps_left = self.step_limit;
     }
 
@@ -1820,7 +1823,7 @@ pub const State = struct {
         // The loops are called, not made a part of this function: as a part of it, with
         // what is done here before and after them, the usual loop ran slower than before
         // there were two (stack words 1.4 times as long; measured on 2026-11-11).
-        if (defs.debug_enabled and (self.step_limit != 0 or self.tracing or self.profile != null or self.keep_counting)) return @call(.never_inline, runOperations, .{ self, true, start_pc, end_pc, defining_word });
+        if (defs.debug_enabled and (self.step_limit != 0 or self.tracing or self.profile != null or self.keep_counting or @import("core/execution_control.zig").active(self))) return @call(.never_inline, runOperations, .{ self, true, start_pc, end_pc, defining_word });
         return @call(.never_inline, runOperations, .{ self, false, start_pc, end_pc, defining_word });
     }
 
@@ -1917,10 +1920,7 @@ pub const State = struct {
             const op = self.code[pc];
             if (counted) ran = @intCast(pc);
             pc = @as(u16, @intCast(pc + 1));
-            if (counted and self.step_limit != 0) {
-                if (self.steps_left == 0) return error.StepLimit;
-                self.steps_left -= 1;
-            }
+            if (counted) try @import("core/execution_control.zig").charge(self, .operation);
             if (counted) if (self.profile) |profile| profile.countOperation(@intCast(pc - 1));
             if (counted and self.stepper == .on and self.call_depth == self.step_depth) try words_debug.step(self, @intCast(pc - 1), @intCast(end_pc));
             switch (op.kind) {

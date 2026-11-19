@@ -402,6 +402,7 @@ const PipeSignalScope = @import("host_pipe_signal.zig").Scope;
 const file_event = @import("core/standard_event.zig");
 const file_reader = @import("host_file_reader.zig");
 const io_types = @import("core/host_interface.zig");
+const host_fs = @import("host_filesystem.zig");
 var file_wake: ?@import("host_wake.zig").Wake = null;
 var stdin_reader: file_reader.Reader = .{};
 var stdout_writer: file_reader.Writer = .{};
@@ -751,7 +752,11 @@ const LineSource = struct {
                 self.ior = result.ior;
                 return if (result.byte) |byte| byte else -1;
             }
-            file_slots[fileSlot(self.fileid)].last_read = true;
+            const prepared = prepareFileRead(self.fileid, file);
+            if (prepared != 0) {
+                self.ior = prepared;
+                return -1;
+            }
             const byte = getc(file);
             file_slots[fileSlot(self.fileid)].eof = feof(file) != 0;
             if (byte < 0 and ferror(file) != 0) {
@@ -824,7 +829,8 @@ fn fileRead(_: ?*anyopaque, fileid: forth.Cell, buffer: []u8) forth.FileResult {
     var count: usize = 0;
     if (prefix < buffer.len and !file_slots[fileSlot(fileid)].eof) {
         if (builtin.is_test and test_file_read_failure) return .{ .ior = forth.errnoIor(errno_io) };
-        file_slots[fileSlot(fileid)].last_read = true;
+        const prepared = prepareFileRead(fileid, file);
+        if (prepared != 0) return .{ .ior = prepared };
         if (managedReader(fileid) or nativePipe(fileid)) {
             while (count < buffer.len - prefix) {
                 const result = (if (managedReader(fileid)) readerByte(fileid) else directPipeByte(fileid)) catch |err| {
@@ -856,6 +862,18 @@ fn fileRead(_: ?*anyopaque, fileid: forth.Cell, buffer: []u8) forth.FileResult {
     // Commit the copied prefix only after the remainder succeeds or reaches EOF.
     for (0..prefix) |_| _ = decoder.takeByte();
     return .{ .value = prefix + count };
+}
+
+fn prepareFileRead(fileid: forth.Cell, file: *anyopaque) forth.Cell {
+    const slot = &file_slots[fileSlot(fileid)];
+    if (!slot.native_pipe and slot.access == .read_write and !slot.last_read) {
+        clearErrno();
+        // ISO C update streams require a flush/position operation between output
+        // and input. Waiting until SYNC-FILE would be too late on UCRT.
+        if (fflush(file) != 0) return lastIor();
+    }
+    if (slot.access != .write_only) slot.last_read = true;
+    return 0;
 }
 
 fn prepareFileWrite(fileid: forth.Cell, file: *anyopaque) forth.Cell {
@@ -1002,6 +1020,57 @@ fn fileFlush(_: ?*anyopaque, fileid: forth.Cell) forth.Cell {
     return ior;
 }
 
+fn fileSync(_: ?*anyopaque, fileid: forth.Cell) forth.Cell {
+    if (fileid == forth.stdin_fileid or fileid == forth.stdout_fileid or fileid == forth.stderr_fileid) return forth.errnoIor(22);
+    const file = openedFile(fileid) orelse return badFileIor();
+    const slot = &file_slots[fileSlot(fileid)];
+    if (slot.pipe or slot.native_pipe or slot.proc_owner != 0) return forth.errnoIor(22);
+    const regular = host_fs.sigma_fs_regular(file_number(file));
+    if (regular != 0) return forth.errnoIor(regular);
+    if (slot.access == .read_only) return forth.errnoIor(13);
+    // Regular files have no async workers. Positioning synchronizes a C input
+    // stream without discarding the FileSlot's semantic EOF or pending bytes.
+    clearErrno();
+    if (slot.last_read) {
+        if (seek64(file, 0, 1) != 0) return lastIor();
+    } else if (fflush(file) != 0) return lastIor();
+    const code = host_fs.sigma_fs_sync(file_number(file));
+    return if (code == 0) 0 else forth.errnoIor(code);
+}
+
+test "filesystem sync preserves pending input EOF and ownership and rejects standard and readonly" {
+    if (!host_fs.supported) return error.SkipZigTest;
+    const path = ".zig-cache/sigma-filesystem-sync.bin";
+    defer _ = fileDelete(null, path);
+    const opened = fileOpen(null, path, .read_write, true);
+    try std.testing.expectEqual(@as(forth.Cell, 0), opened.ior);
+    const id: forth.Cell = @bitCast(opened.value);
+    defer _ = fileClose(null, id);
+    try std.testing.expectEqual(@as(forth.Cell, 0), fileWrite(null, id, "A\rB"));
+    try std.testing.expectEqual(@as(forth.Cell, 0), fileReposition(null, id, 0));
+    var line: [8]u8 = undefined;
+    const read = fileReadLine(null, id, &line);
+    try std.testing.expectEqual(@as(usize, 1), read.length);
+    try std.testing.expectEqual(@as(usize, 1), file_slots[fileSlot(id)].input.length);
+    const position = filePosition(null, id).value;
+    try std.testing.expectEqual(@as(forth.Cell, 0), fileSync(null, id));
+    try std.testing.expectEqual(position, filePosition(null, id).value);
+    try std.testing.expectEqual(@as(usize, 1), file_slots[fileSlot(id)].input.length);
+    try std.testing.expectEqual(@as(u8, 'B'), (try fileKey(null, id)).byte.?);
+    try std.testing.expect((try fileKey(null, id)).byte == null);
+    try std.testing.expectEqual(@as(forth.Cell, 0), fileSync(null, id));
+    try std.testing.expectEqual(@as(forth.UCell, 1), fileEof(null, id).value);
+    const ro = fileOpen(null, path, .read_only, false);
+    try std.testing.expectEqual(@as(forth.Cell, 0), ro.ior);
+    const readonly: forth.Cell = @bitCast(ro.value);
+    try std.testing.expectEqual(forth.errnoIor(13), fileSync(null, readonly));
+    try std.testing.expectEqual(@as(forth.Cell, 0), fileSize(null, readonly).ior);
+    try std.testing.expectEqual(@as(forth.Cell, 0), fileClose(null, readonly));
+    try std.testing.expectEqual(badFileIor(), fileSync(null, readonly));
+    try std.testing.expectEqual(forth.errnoIor(22), fileSync(null, forth.stdin_fileid));
+    try std.testing.expectEqual(forth.errnoIor(22), fileSync(null, forth.stdout_fileid));
+}
+
 /// The name as a C string, or null when it is too long or holds a NUL.
 fn cPath(name: []const u8, path: *[4096:0]u8) ?[*:0]const u8 {
     if (name.len >= path.len or std.mem.indexOfScalar(u8, name, 0) != null) return null;
@@ -1110,7 +1179,8 @@ fn fileKey(_: ?*anyopaque, fileid: forth.Cell) forth.RuntimeError!forth.FileKeyR
     if (file_slots[fileSlot(fileid)].eof) return .{};
     if (managedReader(fileid)) return readerByte(fileid);
     if (nativePipe(fileid)) return directPipeByte(fileid);
-    file_slots[fileSlot(fileid)].last_read = true;
+    const prepared = prepareFileRead(fileid, file);
+    if (prepared != 0) return .{ .ior = prepared };
     const byte = getc(file);
     file_slots[fileSlot(fileid)].eof = feof(file) != 0;
     if (byte < 0) {
@@ -1255,7 +1325,7 @@ fn directPipeByte(id: forth.Cell) forth.RuntimeError!forth.FileKeyResult {
             const code = if (success == 0) GetLastError() else 0;
             guard.endConsoleRead();
             if (count != 0) return .{ .byte = byte[0] };
-            if (code == 995 and guard.inputInterrupted()) return error.UserInterrupt;
+            if (code == 995 and guard.inputInterrupted()) return deliveredInterrupt();
             if (success != 0) continue;
             if (code == 109 or code == 38) {
                 file_slots[fileSlot(id)].eof = true;
@@ -1298,7 +1368,7 @@ fn readerByte(id: forth.Cell) forth.RuntimeError!forth.FileKeyResult {
         const wake = try ioWake();
         const reader = if (id == forth.stdin_fileid) &stdin_reader else &file_slots[fileSlot(id)].reader;
         while (true) {
-            if (guard.inputInterrupted()) return error.UserInterrupt;
+            if (guard.inputInterrupted()) return deliveredInterrupt();
             const observed = wake.observe();
             const state = reader.peek();
             if (state.count != 0 or state.eof or state.code != 0) {
@@ -1332,7 +1402,7 @@ fn stdinProbeByte() forth.RuntimeError!file_event.Result {
             if (deferred_length == deferred_packets.len) return .{ .failure = forth.errnoIor(errno_io) };
             const packet = host_input.nextStandardPacket() orelse break;
             if (packet.value >= 0 and packet.value <= 255 and packet.mouse == null and !packet.reset) {
-                if (packet.value == 3) return error.UserInterrupt;
+                if (packet.value == 3) return deliveredInterrupt();
                 return .{ .event = packet };
             }
             deferred_packets[(deferred_head + deferred_length) % deferred_packets.len] = packet;
@@ -1472,7 +1542,7 @@ fn drainWriter(id: forth.Cell) forth.RuntimeError!forth.Cell {
         const wake = try ioWake();
         const writer = writerForId(id);
         while (true) {
-            if (guard.inputInterrupted()) return error.UserInterrupt;
+            if (guard.inputInterrupted()) return deliveredInterrupt();
             const observed = wake.observe();
             const state = writer.peek();
             if (state.code != 0 or state.count == 0) {
@@ -1609,7 +1679,7 @@ fn fileWaitFiles(_: ?*anyopaque, ids: []const forth.Cell, milliseconds: i64, wri
     const deadline = try @import("core/runtime_base.zig").Deadline.afterMilliseconds(try clock.now(), milliseconds);
     const wake: ?*@import("host_wake.zig").Wake = if (builtin.os.tag == .windows) try ioWake() else null;
     while (true) {
-        if (guard.inputInterrupted()) return error.UserInterrupt;
+        if (guard.inputInterrupted()) return deliveredInterrupt();
         const observed = if (wake) |value| value.observe() else 0;
         for (ids, 0..) |id, index| {
             if (writing) {
@@ -1694,11 +1764,12 @@ fn filePollByte(fileid: forth.Cell) forth.RuntimeError!file_event.Result {
             else => return .{ .failure = forth.errnoIor(forth.errno_invalid) },
         }
     }
+    const prepared = prepareFileRead(fileid, file);
+    if (prepared != 0) return .{ .failure = prepared };
     const old_flags = if (builtin.os.tag == .windows) 0 else fcntl(file_number(file), @import("c_file").F_GETFL);
     if (builtin.os.tag != .windows) {
         if (old_flags < 0 or fcntl(file_number(file), @import("c_file").F_SETFL, @as(c_int, old_flags | @import("c_file").O_NONBLOCK)) < 0) return .{ .failure = lastIor() };
     }
-    file_slots[slot].last_read = true;
     var raw_byte: [1]u8 = undefined;
     const raw_count = if (builtin.os.tag != .windows and file_slots[slot].native_pipe) std.c.read(file_number(file), &raw_byte, 1) else -2;
     const byte: c_int = if (raw_count == -2) getc(file) else if (raw_count == 1) raw_byte[0] else -1;
@@ -1763,7 +1834,7 @@ const FileWaitSource = struct {
         const clock = @import("host_clock.zig").clock;
         const deadline = try @import("core/runtime_base.zig").Deadline.afterMilliseconds(try clock.now(), milliseconds);
         while (true) {
-            if (@import("host_wait.zig").inputInterrupted()) return error.UserInterrupt;
+            if (@import("host_wait.zig").inputInterrupted()) return deliveredInterrupt();
             const wake = if (managedReader(self.id)) try ioWake() else null;
             const observed = if (wake) |value| value.observe() else 0;
             const result = try filePollByte(self.id);
@@ -1794,7 +1865,7 @@ fn fileEventWait(_: ?*anyopaque, fileid: forth.Cell, milliseconds: i64) forth.Ru
     const result = try file_event.read(&file_slots[fileSlot(fileid)].input, callbacks, milliseconds, true);
     guarded = false;
     try guard.endInput();
-    if (builtin.is_test and test_file_commit_interrupt) return error.UserInterrupt;
+    if (builtin.is_test and test_file_commit_interrupt) return deliveredInterrupt();
     return switch (result) {
         .event, .eof => file_event.read(&file_slots[fileSlot(fileid)].input, callbacks, 0, false),
         else => result,
@@ -1841,7 +1912,7 @@ fn fileStdinByte(wait: bool) forth.RuntimeError!?u8 {
             break :next @intCast(read);
         };
         if (byte) |value| {
-            if (host_input.input_is_terminal and value == 3) return error.UserInterrupt;
+            if (host_input.input_is_terminal and value == 3) return deliveredInterrupt();
             if (wait) stdin_eof = false;
             return value;
         }
@@ -2001,7 +2072,7 @@ fn procWait(context: ?*anyopaque, id: forth.Cell, milliseconds: i64) forth.Runti
     const clock = @import("host_clock.zig");
     const deadline = try @import("core/runtime_base.zig").Deadline.afterMilliseconds(try clock.now(), milliseconds);
     while (true) {
-        if (guard.inputInterrupted()) return error.UserInterrupt;
+        if (guard.inputInterrupted()) return deliveredInterrupt();
         const result = registry.status(id, false);
         const now = try clock.now();
         if (result.state != 1 or result.ior != 0 or milliseconds == 0 or deadline.expired(now)) {
@@ -2044,7 +2115,7 @@ fn closeAllProcesses() forth.Cell {
 const process_ops: forth.ProcessOps = .{ .new = procNew, .text = procText, .io = procIo, .start = procLaunch, .stream = procStream, .status = procStatus, .wait = procWait, .signal = procSignal, .free = procFree };
 
 const host_directories = @import("host_directories.zig");
-const file_ops = forth.FileOps{ .io_check = fileIoCheck, .wait_files = fileWaitFiles, .read_available = fileReadAvailable, .write_available = fileWriteAvailable, .event_wait = fileEventWait, .open_pipe = fileOpenPipe, .close_pipe = fileClosePipe, .open_dir = host_directories.open, .read_dir = host_directories.read, .close_dir = host_directories.close, .mkdir = makeDirectory, .get_dir = getDirectory, .set_dir = setDirectory, .user_home = userHome, .open = fileOpen, .close = fileClose, .read_line = fileReadLine, .read = fileRead, .write = fileWrite, .size = fileSize, .reposition = fileReposition, .position = filePosition, .resize = fileResize, .flush = fileFlush, .delete = fileDelete, .rename = fileRename, .status = fileStatus, .key = fileKey, .unread = fileUnread, .ready = fileReady, .eof = fileEof, .create_mode = fileCreateMode };
+const file_ops = forth.FileOps{ .realpath = if (host_fs.supported) host_fs.realpath else null, .release_realpath = if (host_fs.supported) host_fs.release else null, .metadata = if (host_fs.supported) host_fs.metadata else null, .sync = if (host_fs.supported) fileSync else null, .io_check = fileIoCheck, .wait_files = fileWaitFiles, .read_available = fileReadAvailable, .write_available = fileWriteAvailable, .event_wait = fileEventWait, .open_pipe = fileOpenPipe, .close_pipe = fileClosePipe, .open_dir = host_directories.open, .read_dir = host_directories.read, .close_dir = host_directories.close, .mkdir = makeDirectory, .get_dir = getDirectory, .set_dir = setDirectory, .user_home = userHome, .open = fileOpen, .close = fileClose, .read_line = fileReadLine, .read = fileRead, .write = fileWrite, .size = fileSize, .reposition = fileReposition, .position = filePosition, .resize = fileResize, .flush = fileFlush, .delete = fileDelete, .rename = fileRename, .status = fileStatus, .key = fileKey, .unread = fileUnread, .ready = fileReady, .eof = fileEof, .create_mode = fileCreateMode };
 
 /// Lets the Windows console interpret the ANSI sequences written by PAGE.
 fn enableVirtualTerminal() bool {
@@ -3028,7 +3099,7 @@ fn terminalEventKey(_: ?*anyopaque, timeout_ms: i32) forth.RuntimeError!?forth.C
     output_cursor.unknown();
     if (try terminalBufferedKey(null)) |byte| return byte;
     if (builtin.os.tag == .windows) if (utf8_console.takePendingByte()) |byte| {
-        if (byte == 3) return error.UserInterrupt;
+        if (byte == 3) return deliveredInterrupt();
         stdin_eof = false;
         return byte;
     };
@@ -3038,7 +3109,7 @@ fn terminalEventKey(_: ?*anyopaque, timeout_ms: i32) forth.RuntimeError!?forth.C
         if (host_input.input_is_terminal and @import("host_resize.zig").take()) return @import("core/standard_keys.zig").winch;
         if (host_input.input_is_terminal) {
             if (host_input.nextStandard()) |event| {
-                if (event == 3) return error.UserInterrupt;
+                if (event == 3) return deliveredInterrupt();
                 stdin_eof = false;
                 return event;
             }
@@ -3121,7 +3192,7 @@ fn terminalUnread(context: ?*anyopaque, byte: u8) void {
 
 fn terminalBufferedKey(_: ?*anyopaque) forth.RuntimeError!?u8 {
     const byte = popLookahead() orelse return null;
-    if (host_input.input_is_terminal and byte == 3) return error.UserInterrupt;
+    if (host_input.input_is_terminal and byte == 3) return deliveredInterrupt();
     stdin_eof = false;
     return byte;
 }
@@ -3155,8 +3226,108 @@ fn inputEvent(_: ?*anyopaque) ?forth.InputEvent {
     return host_input.next() orelse host_window.poll();
 }
 
+const execution_host_ops = @import("core/host_interface.zig").ExecutionOps{
+    .begin = executionBegin,
+    .poll = executionPoll,
+    .end = executionEnd,
+};
+fn executionBegin(_: ?*anyopaque, machine: *forth.State) forth.RuntimeError!void {
+    try @import("host_wait.zig").beginExecution(machine, executionRawPoll);
+}
+fn executionPoll(_: ?*anyopaque, _: *forth.State) forth.RuntimeError!void {
+    try @import("host_wait.zig").pollExecution();
+}
+fn executionEnd(_: ?*anyopaque, machine: *forth.State) forth.RuntimeError!void {
+    try @import("host_wait.zig").endExecution(machine);
+}
+const ExecutionReplay = struct {
+    const standard = @import("core/standard_event.zig");
+    packets: [5120]standard.Packet = undefined,
+    origins: [5120]?host_input.ExecutionOrigin = undefined,
+    // Each byte supplied to the cloned decoder retains its source tag.
+    byte_origins: [5120]?host_input.ExecutionOrigin = undefined,
+    length: usize = 0,
+    index: usize = 0,
+    bytes: usize = 0,
+    last_three: bool = false,
+    fn add(self: *@This(), packet: standard.Packet, origin: ?host_input.ExecutionOrigin) void {
+        std.debug.assert(self.length < self.packets.len);
+        self.packets[self.length] = packet;
+        self.origins[self.length] = origin;
+        self.length += 1;
+    }
+    fn read(context: ?*anyopaque, _: i32) forth.RuntimeError!standard.Result {
+        const self: *@This() = @ptrCast(@alignCast(context.?));
+        if (self.index == self.length) return .timeout;
+        const at = self.index;
+        const packet = self.packets[at];
+        self.last_three = false;
+        self.index += 1;
+        if (packet.reset) return .restart;
+        if (packet.mouse == null and packet.value >= 0 and packet.value <= 255) {
+            self.last_three = packet.value == 3;
+            self.byte_origins[self.bytes] = self.origins[at];
+            self.bytes += 1;
+        }
+        return .{ .event = packet };
+    }
+};
+// Process-owned and used only by the host thread; replay has no reentrant callbacks.
+var execution_replay_workspace = ExecutionReplay{};
+fn executionRawPoll(machine: *forth.State) forth.RuntimeError!void {
+    try host_input.captureExecution();
+    if (@import("core/event_input.zig").modern_depth != 0) return;
+    const view = host_input.executionView();
+    if (!view.candidate()) return;
+    const replay = &execution_replay_workspace;
+    replay.length = 0;
+    replay.index = 0;
+    replay.bytes = 0;
+    if (machine.pending_key) |byte| replay.add(.{ .value = byte }, null);
+    var pending = machine.pending_event_count;
+    while (pending != 0) {
+        pending -= 1;
+        replay.add(.{ .value = machine.pending_event_bytes[pending] }, null);
+    }
+    if (machine.pending_standard_event) |value| replay.add(.{ .value = value }, null);
+    for (0..deferred_length) |index| replay.add(deferred_packets[(deferred_head + index) % deferred_packets.len], null);
+    if (lookahead) |byte| replay.add(.{ .value = byte }, null);
+    var unread = unread_count;
+    while (unread != 0) {
+        unread -= 1;
+        replay.add(.{ .value = unread_bytes[unread] }, null);
+    }
+    if (comptime builtin.os.tag == .windows) for (utf8_console.bytes[utf8_console.start..utf8_console.end]) |byte| replay.add(.{ .value = byte }, null);
+    for (view.packets[0..view.length], view.origins[0..view.length]) |packet, origin| replay.add(packet, origin);
+    var shadow = machine.standard_input;
+    const initial = shadow.length;
+    const source = ExecutionReplay.standard.Source{ .context = replay, .read_fn = ExecutionReplay.read, .clock = @import("host_clock.zig").clock };
+    // A read has a work bound; keep replaying after timeout if it made progress.
+    while (true) {
+        const before = replay.index;
+        replay.last_three = false;
+        const result = ExecutionReplay.standard.read(&shadow, source, 0, false) catch |err| {
+            if (err != error.UserInterrupt) return err;
+            const consumed = initial + replay.bytes - 1 - (if (replay.last_three) @as(usize, 0) else shadow.length);
+            if (consumed < initial) return;
+            if (replay.byte_origins[consumed - initial]) |origin| {
+                host_input.cancelExecution(origin);
+                return deliveredInterrupt();
+            }
+            // Earlier core input retains its existing delivery contract.
+            return;
+        };
+        if (result == .timeout and replay.index == before) return;
+    }
+}
+
 var input_failure: ?forth.RuntimeError = null;
+fn deliveredInterrupt() forth.RuntimeError {
+    _ = @import("host_wait.zig").takeInterrupt();
+    return error.UserInterrupt;
+}
 fn latchInput(err: forth.RuntimeError) void {
+    if (err == error.UserInterrupt) _ = @import("host_wait.zig").takeInterrupt();
     if (input_failure == null) input_failure = err;
 }
 fn inputError(_: ?*anyopaque) forth.RuntimeError!void {
@@ -3437,7 +3608,7 @@ fn run(init: std.process.Init.Minimal) !u8 {
     const previous_mode_recovery = host_input.before_mode_change;
     host_input.before_mode_change = @import("host_wait.zig").beforeInputModeChange;
     defer host_input.before_mode_change = previous_mode_recovery;
-    machine.init(.{ .process_ops = if (process_native.available) &process_ops else null, .physical_key_ops = if (graphics and host_window.available) &host_window.physical_ops else null, .gamepad_ops = if (graphics) &host_gamepad.ops else null, .context = @ptrCast(&host), .write_fn = terminalWrite, .read_fn = terminalRead, .load_fn = loadDictionary, .save_fn = saveDictionary, .savesys_fn = saveExecutableImage, .key_fn = terminalKey, .key_ior_fn = terminalKeyIor, .event_key_fn = terminalEventKey, .standard_event_fn = terminalStandardEvent, .standard_clock = @import("host_clock.zig").clock, .standard_interrupts = host_input.input_is_terminal, .monotonic_ms_fn = monotonicMilliseconds, .key_ready_fn = terminalKeyReady, .buffered_key_fn = terminalBufferedKey, .unread_fn = terminalUnread, .unread_byte_fn = terminalUnreadChecked, .sleep_fn = sleepMilliseconds, .sleep_ns_fn = sleepNanoseconds, .utime_fn = microsecondsSinceEpoch, .ntime_fn = nanosecondsSinceEpoch, .cputime_fn = processCpuTimes, .local_time_fn = localTime, .zoned_time_fn = @import("host_timezone.zig").convert, .getenv_fn = environmentValue, .errno_fn = currentErrno, .system_fn = runShellCommand, .editor_fn = if (@import("build_options").tools) editSource else null, .file_ops = &file_ops, .framebuffer_fn = graphicsBuffer, .image_alloc_fn = if (graphics) imageAlloc else null, .image_free_fn = if (graphics) imageFree else null, .terminal_size_fn = terminalSize, .terminal_mode_set_fn = terminalModeSet, .terminal_mode_get_fn = terminalModeGet, .input_error_fn = inputError, .terminal_utf8_fn = terminalUtf8, .display_budget_fn = if (graphics and (builtin.os.tag == .windows or (builtin.os.tag == .linux and @import("build_options").x11))) @import("host_display_budget.zig").scope else null, .window_fn = if (graphics and host_window.available) host_window.show else null, .ime_preedit_fn = if (graphics and (builtin.os.tag == .windows or builtin.os.tag == .macos or (builtin.os.tag == .linux and @import("build_options").x11))) host_window.imePreedit else null, .ime_caret_fn = if (graphics and (builtin.os.tag == .windows or builtin.os.tag == .macos or (builtin.os.tag == .linux and @import("build_options").x11))) host_window.imeCaret else null, .window_fullscreen_fn = if (graphics and (builtin.os.tag == .windows or builtin.os.tag == .macos or (builtin.os.tag == .linux and @import("build_options").x11))) host_window.fullscreen else null, .window_cursor_fn = if (graphics and (builtin.os.tag == .windows or builtin.os.tag == .macos or (builtin.os.tag == .linux and @import("build_options").x11))) host_window.mouseCursor else null, .input_fn = inputEvent, .mouse_fn = mouseMode, .cursor_fn = cursorPosition, .font_buffer_fn = if (graphics) fontBuffer else null, .font_free_fn = if (graphics) fontFree else null, .system_font_fn = if (graphics and host_font.available) host_font.select else null, .system_glyph_fn = if (graphics and host_font.available) host_font.glyph else null, .process_start_fn = if (graphics) processStart else null, .process_write_fn = if (graphics) host_process.write else null, .process_read_fn = if (graphics) host_process.read else null, .process_stop_fn = if (graphics) host_process.stop else null, .audio_fn = if (audio) host_audio.start else null, .audio_device_fn = if (audio) host_audio.hasDevice else null, .audio_wait_fn = if (audio) audioWait else null }, storage);
+    machine.init(.{ .execution_ops = if (@import("build_options").debug and @import("build_options").extension) &execution_host_ops else null, .process_ops = if (process_native.available) &process_ops else null, .physical_key_ops = if (graphics and host_window.available) &host_window.physical_ops else null, .gamepad_ops = if (graphics) &host_gamepad.ops else null, .context = @ptrCast(&host), .write_fn = terminalWrite, .read_fn = terminalRead, .load_fn = loadDictionary, .save_fn = saveDictionary, .savesys_fn = saveExecutableImage, .key_fn = terminalKey, .key_ior_fn = terminalKeyIor, .event_key_fn = terminalEventKey, .standard_event_fn = terminalStandardEvent, .standard_clock = @import("host_clock.zig").clock, .standard_interrupts = host_input.input_is_terminal, .monotonic_ms_fn = monotonicMilliseconds, .key_ready_fn = terminalKeyReady, .buffered_key_fn = terminalBufferedKey, .unread_fn = terminalUnread, .unread_byte_fn = terminalUnreadChecked, .sleep_fn = sleepMilliseconds, .sleep_ns_fn = sleepNanoseconds, .utime_fn = microsecondsSinceEpoch, .ntime_fn = nanosecondsSinceEpoch, .cputime_fn = processCpuTimes, .local_time_fn = localTime, .zoned_time_fn = @import("host_timezone.zig").convert, .getenv_fn = environmentValue, .errno_fn = currentErrno, .system_fn = runShellCommand, .editor_fn = if (@import("build_options").tools) editSource else null, .file_ops = &file_ops, .framebuffer_fn = graphicsBuffer, .image_alloc_fn = if (graphics) imageAlloc else null, .image_free_fn = if (graphics) imageFree else null, .terminal_size_fn = terminalSize, .terminal_mode_set_fn = terminalModeSet, .terminal_mode_get_fn = terminalModeGet, .input_error_fn = inputError, .terminal_utf8_fn = terminalUtf8, .display_budget_fn = if (graphics and (builtin.os.tag == .windows or (builtin.os.tag == .linux and @import("build_options").x11))) @import("host_display_budget.zig").scope else null, .window_fn = if (graphics and host_window.available) host_window.show else null, .ime_preedit_fn = if (graphics and (builtin.os.tag == .windows or builtin.os.tag == .macos or (builtin.os.tag == .linux and @import("build_options").x11))) host_window.imePreedit else null, .ime_caret_fn = if (graphics and (builtin.os.tag == .windows or builtin.os.tag == .macos or (builtin.os.tag == .linux and @import("build_options").x11))) host_window.imeCaret else null, .window_fullscreen_fn = if (graphics and (builtin.os.tag == .windows or builtin.os.tag == .macos or (builtin.os.tag == .linux and @import("build_options").x11))) host_window.fullscreen else null, .window_cursor_fn = if (graphics and (builtin.os.tag == .windows or builtin.os.tag == .macos or (builtin.os.tag == .linux and @import("build_options").x11))) host_window.mouseCursor else null, .input_fn = inputEvent, .mouse_fn = mouseMode, .cursor_fn = cursorPosition, .font_buffer_fn = if (graphics) fontBuffer else null, .font_free_fn = if (graphics) fontFree else null, .system_font_fn = if (graphics and host_font.available) host_font.select else null, .system_glyph_fn = if (graphics and host_font.available) host_font.glyph else null, .process_start_fn = if (graphics) processStart else null, .process_write_fn = if (graphics) host_process.write else null, .process_read_fn = if (graphics) host_process.read else null, .process_stop_fn = if (graphics) host_process.stop else null, .audio_fn = if (audio) host_audio.start else null, .audio_device_fn = if (audio) host_audio.hasDevice else null, .audio_wait_fn = if (audio) audioWait else null }, storage);
     defer closeAllFiles();
     defer _ = closeAllProcesses();
     defer host_directories.closeAll();

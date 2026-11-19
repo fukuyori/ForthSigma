@@ -140,6 +140,67 @@ fn queue(byte: u8) void {
     queued_len += 1;
 }
 
+// EXEC captures only already-raw input and never changes terminal modes.
+var execution_captured = false;
+pub const ExecutionOrigin = union(enum) { queued: usize, record: usize, after };
+pub const ExecutionView = struct {
+    const Packet = @import("core/standard_event.zig").Packet;
+    packets: [320]Packet = undefined,
+    origins: [320]?ExecutionOrigin = @splat(null),
+    length: usize = 0,
+    fn add(self: *@This(), packet: Packet, origin: ?ExecutionOrigin) void {
+        std.debug.assert(self.length < self.packets.len);
+        self.packets[self.length] = packet;
+        self.origins[self.length] = origin;
+        self.length += 1;
+    }
+    pub fn candidate(self: *const @This()) bool {
+        for (self.packets[0..self.length]) |packet| if (packet.value == 3) return true;
+        return false;
+    }
+};
+pub fn captureExecution() forth.RuntimeError!void {
+    if (!raw or !input_is_terminal) return;
+    if (is_windows) return windows.captureExecution();
+    // Reserve a complete cursor reply so DSR cannot overflow this queue.
+    while (queued_len + 32 < queued.len) {
+        var byte: [1]u8 = undefined;
+        const count = std.c.read(0, &byte, 1);
+        if (count == 1) {
+            queue(byte[0]);
+            execution_captured = true;
+            continue;
+        }
+        if (count == 0) return;
+        const code = std.c._errno().*;
+        if (code == @backingInt(std.c.E.INTR)) continue;
+        if (code == @backingInt(std.c.E.AGAIN)) return;
+        return error.HostFailed;
+    }
+}
+pub fn executionView() ExecutionView {
+    var view = ExecutionView{};
+    if (standard_seen_generation != mode_generation) view.add(.{ .value = 0, .reset = true }, null);
+    for (0..queued_len) |index| view.add(.{ .value = queued[(queued_head + index) % queued.len] }, .{ .queued = index });
+    if (is_windows) windows.executionView(&view);
+    return view;
+}
+pub fn cancelExecution(origin: ExecutionOrigin) void {
+    switch (origin) {
+        .queued => |index| {
+            std.debug.assert(index < queued_len and queued[(queued_head + index) % queued.len] == 3);
+            for (index..queued_len - 1) |at| queued[(queued_head + at) % queued.len] = queued[(queued_head + at + 1) % queued.len];
+            queued_len -= 1;
+        },
+        .record => |index| if (is_windows) {
+            windows.records[(windows.record_head + index) % windows.records.len].cancelled = true;
+        },
+        .after => if (is_windows) {
+            windows.after = null;
+        },
+    }
+}
+
 /// The next event from the terminal without waiting, or null.
 pub fn next() ?InputEvent {
     if (!enter()) return null;
@@ -260,7 +321,8 @@ pub fn leave() void {
         return;
     }
     raw = false;
-    if (!standard_keyboard) queued_len = 0;
+    if (!standard_keyboard and !execution_captured) queued_len = 0;
+    execution_captured = false;
     standard_keyboard = false;
 }
 
@@ -371,6 +433,7 @@ const posix = struct {
             if (left <= 0) break;
             var descriptor = [_]std.c.pollfd{.{ .fd = 0, .events = std.c.POLL.IN, .revents = 0 }};
             if (std.c.poll(&descriptor, 1, @intCast(@min(left, 200))) <= 0) continue;
+            if (queued_len + length == queued.len) break;
             var byte: [1]u8 = undefined;
             if (std.c.read(0, &byte, 1) != 1) continue;
             if (length == reply.len) {
@@ -464,6 +527,68 @@ const windows = struct {
     var releasing = false;
     var after: ?InputEvent = null;
 
+    const Retained = struct { record: InputRecord, cancelled: bool = false };
+    var records: [64]Retained = undefined;
+    var record_head: usize = 0;
+    var record_len: usize = 0;
+    fn captureExecution() forth.RuntimeError!void {
+        const console = input orelse return error.HostFailed;
+        while (record_len < records.len and queued_len + 4 * (record_len + 1) + 32 <= queued.len) {
+            var count: u32 = 0;
+            if (GetNumberOfConsoleInputEvents(console, &count) == 0) return error.HostFailed;
+            if (count == 0) return;
+            var record: InputRecord = undefined;
+            var read: u32 = 0;
+            if (ReadConsoleInputW(console, &record, 1, &read) == 0 or read == 0) return error.HostFailed;
+            records[(record_head + record_len) % records.len] = .{ .record = record };
+            record_len += 1;
+            execution_captured = true;
+        }
+    }
+    fn executionView(view: *ExecutionView) void {
+        if (after) |event| switch (event) {
+            .key => |code| view.add(.{ .value = code }, .after),
+            else => {},
+        };
+        for (pending[0..pending_len]) |byte| view.add(.{ .value = byte }, null);
+        var high = high_surrogate;
+        for (0..record_len) |index| {
+            const kept = records[(record_head + index) % records.len];
+            if (kept.cancelled) {
+                high = 0;
+                continue;
+            }
+            if (kept.record.event_type != key_event) continue;
+            const data = &kept.record.data;
+            if (std.mem.readInt(i32, data[0..4], .little) == 0) continue;
+            const virtual = std.mem.readInt(u16, data[6..8], .little);
+            const mods = std.mem.readInt(u32, data[12..16], .little);
+            if (standardExtraKey(virtual, mods)) |key| {
+                view.add(.{ .value = key }, null);
+                continue;
+            }
+            if (keyCode(virtual) != null) {
+                view.add(.{ .value = 0x80000000 }, null);
+                continue;
+            }
+            const unit = std.mem.readInt(u16, data[10..12], .little);
+            if (unit == 0) continue;
+            if (unit >= 0xd800 and unit < 0xdc00) {
+                high = unit;
+                continue;
+            }
+            var point: u21 = unit;
+            if (unit >= 0xdc00 and unit < 0xe000) {
+                if (high == 0) continue;
+                point = 0x10000 + ((@as(u21, high) - 0xd800) << 10) + (unit - 0xdc00);
+            }
+            high = 0;
+            var bytes: [4]u8 = undefined;
+            const length = std.unicode.utf8Encode(point, &bytes) catch continue;
+            for (bytes[0..length]) |byte| view.add(.{ .value = byte }, .{ .record = index });
+        }
+    }
+
     /// The event of a key pressed, remembering its code; when the key was down with
     /// another code (a held key that gives another character), the release of that one
     /// comes first.
@@ -494,9 +619,18 @@ const windows = struct {
     fn leave() bool {
         const console = input orelse return false;
         if (SetConsoleMode(console, saved_mode) == 0) return false;
-        if (!standard_keyboard) _ = FlushConsoleInputBuffer(console) else {
+        if (execution_captured) {
+            var view = ExecutionView{};
+            windows.executionView(&view);
+            for (view.packets[0..view.length]) |packet| if (packet.value >= 0 and packet.value <= 255) {
+                queue(@intCast(packet.value));
+            };
+        } else if (standard_keyboard) {
             for (pending[0..pending_len]) |byte| queue(byte);
         }
+        if (!standard_keyboard) _ = FlushConsoleInputBuffer(console);
+        record_len = 0;
+        record_head = 0;
         pending_len = 0;
         high_surrogate = 0;
         down = @splat(0);
@@ -573,11 +707,22 @@ const windows = struct {
             raw_mode = updated;
         }
         for (0..32) |_| {
-            var count: u32 = 0;
-            if (GetNumberOfConsoleInputEvents(console, &count) == 0 or count == 0) return null;
             var record: InputRecord = undefined;
-            var read: u32 = 0;
-            if (ReadConsoleInputW(console, &record, 1, &read) == 0 or read == 0) return null;
+            if (record_len != 0) {
+                const kept = records[record_head];
+                record_head = (record_head + 1) % records.len;
+                record_len -= 1;
+                if (kept.cancelled) {
+                    high_surrogate = 0;
+                    continue;
+                }
+                record = kept.record;
+            } else {
+                var count: u32 = 0;
+                if (GetNumberOfConsoleInputEvents(console, &count) == 0 or count == 0) return null;
+                var read: u32 = 0;
+                if (ReadConsoleInputW(console, &record, 1, &read) == 0 or read == 0) return null;
+            }
             const data = &record.data;
             switch (record.event_type) {
                 key_event => {
@@ -732,4 +877,63 @@ test "standard restart notification leaves graphics restart available" {
     try std.testing.expect(restarted);
     const event = next() orelse return error.TestUnexpectedResult;
     try std.testing.expect(event == .restarted);
+}
+
+test "EXEC raw queued cancellation preserves all surrounding bytes without committing input" {
+    queued_head = 254;
+    queued_len = 0;
+    defer {
+        queued_head = 0;
+        queued_len = 0;
+    }
+    for ("a\x1b[200~\x03\x1b[201~\x03z") |byte| queue(byte);
+    const before = queued_len;
+    const view = executionView();
+    try std.testing.expect(view.candidate());
+    try std.testing.expectEqual(before, queued_len);
+    const origin = view.origins[view.length - 2].?;
+    cancelExecution(origin);
+    var actual: [32]u8 = undefined;
+    var length: usize = 0;
+    while (takePendingByte()) |byte| {
+        actual[length] = byte;
+        length += 1;
+    }
+    try std.testing.expectEqualStrings("a\x1b[200~\x03\x1b[201~z", actual[0..length]);
+}
+
+test "EXEC Windows retains raw records and clears surrogate across cancelled Ctrl+C" {
+    if (comptime !is_windows) return error.SkipZigTest;
+    const saved_after = windows.after;
+    const saved_high = windows.high_surrogate;
+    const saved_pending = windows.pending_len;
+    const saved_queued = queued_len;
+    defer {
+        windows.after = saved_after;
+        windows.high_surrogate = saved_high;
+        windows.pending_len = saved_pending;
+        windows.record_len = 0;
+        windows.record_head = 0;
+        queued_len = saved_queued;
+    }
+    windows.after = null;
+    windows.high_surrogate = 0;
+    windows.pending_len = 0;
+    queued_len = 0;
+    windows.record_head = 0;
+    windows.record_len = 4;
+    for ([_]u16{ 0xd83d, 3, 0xde00, 'z' }, 0..) |unit, index| {
+        var record = std.mem.zeroes(windows.InputRecord);
+        record.event_type = windows.key_event;
+        std.mem.writeInt(i32, record.data[0..4], 1, .little);
+        std.mem.writeInt(u16, record.data[10..12], unit, .little);
+        windows.records[index] = .{ .record = record };
+    }
+    const view = executionView();
+    try std.testing.expectEqual(@as(forth.Cell, 3), view.packets[view.length - 2].value);
+    cancelExecution(view.origins[view.length - 2].?);
+    const after = executionView();
+    try std.testing.expectEqual(@as(usize, 1), after.length - @intFromBool(standard_seen_generation != mode_generation));
+    try std.testing.expectEqual(@as(forth.Cell, 'z'), after.packets[after.length - 1].value);
+    try std.testing.expectEqual(@as(usize, 4), windows.record_len);
 }

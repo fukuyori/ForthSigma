@@ -108,6 +108,7 @@ Stateを値コピーせず、新しいStorageとState.initから構築する。�
 | `code_columns` | 初期化 | State.init後の新規状態。実行位置・フラグ・履歴等をコピーせず、必要な論理設定は検証済みデータから再構成 |
 | `step_limit` | 初期化 | State.init後の新規状態。実行位置・フラグ・履歴等をコピーせず、必要な論理設定は検証済みデータから再構成 |
 | `steps_left` | 初期化 | State.init後の新規状態。実行位置・フラグ・履歴等をコピーせず、必要な論理設定は検証済みデータから再構成 |
+| `execution` | 新規初期化 | 入口予算・owner・poll counterは実行時だけ。画像や他VMからコピーしない。debugなしでは空型 |
 | `tracing` | 初期化 | State.init後の新規状態。実行位置・フラグ・履歴等をコピーせず、必要な論理設定は検証済みデータから再構成 |
 | `trace_limit` | 初期化 | State.init後の新規状態。実行位置・フラグ・履歴等をコピーせず、必要な論理設定は検証済みデータから再構成 |
 | `trace_lines` | 初期化 | State.init後の新規状態。実行位置・フラグ・履歴等をコピーせず、必要な論理設定は検証済みデータから再構成 |
@@ -205,3 +206,5 @@ State直下以外のコンテナ変数、関数内static相当、Cライブラ�
 
 
 997でWriter.physical_key_opsを追加した。メインのウィンドウのTracker、supported bitmap、contextをワーカーへ借用しない。ワーカーWriterではnullにし、SCAN-INPUT?・SCAN-SUPPORTED?・SCAN-HELD?・KEY-EVENT・KEY-RESYNCを入力/UI禁止語として将来の静的・動的検査に加える。State直下のフィールド追加はなく169項目のまま。ホストTrackerとMac Sender/Receiverはイメージに含めない。
+
+652でexecutionを追加しState直下は170項目。Writer.execution_opsのbegin/poll/endとcontextはワーカー専用に検査し、メインの信号所有者やVMポインターを借用しない。

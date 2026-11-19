@@ -123,13 +123,19 @@ pub const CatchContext = struct {
         if (self.backtrace_suppression > context.backtrace_suppression) self.throw_nobt = true;
         self.backtrace_suppression = context.backtrace_suppression;
         if (err == error.Quit or err == error.StepLimit) return err;
+        const code = self.throwCodeOf(err);
+        context.restore(self);
+        try self.push(code);
+    }
+
+    pub fn restore(context: CatchContext, self: *State) void {
+        if (self.backtrace_suppression > context.backtrace_suppression) self.throw_nobt = true;
+        self.backtrace_suppression = context.backtrace_suppression;
         self.trace_depth = context.trace_depth;
         if (self.stepper == .on and self.step_depth > self.call_depth) self.stepper = .off;
         if (self.profile) |profile| profile.unwind(context.profile_depth);
-        const code = self.throwCodeOf(err);
         self.abort_message = null;
         self.restoreCatchFrame(context.frame);
-        try self.push(code);
     }
 };
 
@@ -268,6 +274,7 @@ pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
         },
         .throw => {
             const code = try self.pop();
+            if (code == -280) @import("execution_control.zig").clearStop(self);
             if (code == 0) return;
             if (code == -1) return error.Aborted;
             // Codes of interpreter errors raise that error again, with its own message.

@@ -90,7 +90,7 @@ test "HELP has a description for every built-in word, and only for words that ex
     }
     if (@import("build_options").extension) {
         try machine.interpretLine("REQUIRE-EXTENSION ALSO EXTENSION");
-        for (@import("../core/words_extension.zig").definitions) |definition| {
+        for (@import("../core/words_extension.zig").enabled_definitions) |definition| {
             try std.testing.expect(machine.lookup(definition[0]) != null);
             try std.testing.expect(words_help.entry(definition[0]) != null);
         }

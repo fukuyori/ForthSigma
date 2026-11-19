@@ -126,33 +126,50 @@ pub const Buffer = struct {
 };
 
 fn absolute(text: []const u8) bool {
-    return text.len != 0 and (text[0] == '/' or text[0] == '~' or std.mem.startsWith(u8, text, "./") or (text.len > 2 and text[1] == ':'));
+    return (@import("builtin").os.tag == .windows and std.mem.startsWith(u8, text, "\\\\")) or (text.len != 0 and (text[0] == '/' or text[0] == '~' or std.mem.startsWith(u8, text, "./") or (text.len > 2 and text[1] == ':')));
 }
 
 // Lexical compaction deliberately does not resolve symlinks or require existence.
-fn normalize(input: []const u8) RuntimeError!Buffer {
-    var result = Buffer{};
-    var starts: [capacity]usize = undefined;
-    var parents: [capacity]bool = undefined;
-    var depth: usize = 0;
+pub fn compactInto(input: []const u8, output: []u8) RuntimeError!usize {
+    var length: usize = 0;
     const rooted = std.mem.startsWith(u8, input, "/");
-    if (rooted) try result.append("/");
+    if (rooted) {
+        if (output.len == 0) return error.StringTooLong;
+        output[0] = '/';
+        length = 1;
+    }
     var parts = std.mem.splitScalar(u8, input, '/');
     while (parts.next()) |part| {
         const terminal = @intFromPtr(part.ptr) + part.len == @intFromPtr(input.ptr) + input.len;
         if (part.len == 0 or (!terminal and std.mem.eql(u8, part, "."))) continue;
-        if (!terminal and std.mem.eql(u8, part, "..") and depth > 0 and !parents[depth - 1]) {
-            depth -= 1;
-            result.len = starts[depth];
-            continue;
+        if (!terminal and std.mem.eql(u8, part, "..") and length > @intFromBool(rooted)) {
+            const separator = std.mem.lastIndexOfScalar(u8, output[0..length], '/');
+            const component = if (separator) |index| index + 1 else 0;
+            if (!std.mem.eql(u8, output[component..length], "..")) {
+                length = if (separator) |index| if (index == 0 and rooted) 1 else index else 0;
+                continue;
+            }
         }
-        starts[depth] = result.len;
-        parents[depth] = std.mem.eql(u8, part, "..");
-        depth += 1;
-        if (result.len > 0 and result.bytes[result.len - 1] != '/') try result.append("/");
-        try result.append(part);
+        if (length > 0 and output[length - 1] != '/') {
+            if (length == output.len) return error.StringTooLong;
+            output[length] = '/';
+            length += 1;
+        }
+        if (part.len > output.len - length) return error.StringTooLong;
+        @memcpy(output[length..][0..part.len], part);
+        length += part.len;
     }
-    if (input.len > 0 and input[input.len - 1] == '/' and result.len > 0 and result.bytes[result.len - 1] != '/') try result.append("/");
+    if (input.len > 0 and input[input.len - 1] == '/' and length > 0 and output[length - 1] != '/') {
+        if (length == output.len) return error.StringTooLong;
+        output[length] = '/';
+        length += 1;
+    }
+    return length;
+}
+
+fn normalize(input: []const u8) RuntimeError!Buffer {
+    var result = Buffer{};
+    result.len = try compactInto(input, &result.bytes);
     return result;
 }
 

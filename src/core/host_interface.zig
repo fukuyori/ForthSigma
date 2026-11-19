@@ -10,6 +10,11 @@ const State = forth.State;
 const UCell = memory_map.UCell;
 
 pub const CpuTimes = struct { user: Double, system: Double };
+pub const ExecutionOps = struct {
+    begin: *const fn (?*anyopaque, *State) RuntimeError!void,
+    poll: *const fn (?*anyopaque, *State) RuntimeError!void,
+    end: *const fn (?*anyopaque, *State) RuntimeError!void,
+};
 
 /// Process resources live in the host; these results contain only opaque IDs.
 pub const ProcessStatus = struct { state: Cell = 0, code: Cell = 0, ior: Cell = 0 };
@@ -29,6 +34,8 @@ pub const ProcessOps = struct {
 pub const FileAccess = enum { read_only, write_only, read_write };
 
 pub const FileResult = struct { value: UCell = 0, ior: Cell = 0 };
+pub const OwnedPath = struct { bytes: []const u8 = &.{}, ior: Cell = 0 };
+pub const FileMetadata = struct { size: u64 = 0, seconds: i64 = 0, nanoseconds: u32 = 0, ior: Cell = 0 };
 /// null byte means EOF; an I/O error has a nonzero ior instead.
 pub const FileKeyResult = struct { byte: ?u8 = null, ior: Cell = 0 };
 pub const AvailableResult = struct { count: usize = 0, eof: bool = false, ior: Cell = 0 };
@@ -39,6 +46,11 @@ pub const LineResult = struct { length: usize = 0, found: bool = false, ior: Cel
 
 /// Host file operations. Ids are opaque cells; the standard streams use the fixed ids above.
 pub const FileOps = struct {
+    /// Host-owned complete result. Always release a nonempty result in the same call.
+    realpath: ?*const fn (?*anyopaque, []const u8) OwnedPath = null,
+    release_realpath: ?*const fn (?*anyopaque, []const u8) void = null,
+    metadata: ?*const fn (?*anyopaque, []const u8) FileMetadata = null,
+    sync: ?*const fn (?*anyopaque, Cell) Cell = null,
     /// Validate direction/capability without consuming data or starting workers.
     io_check: ?*const fn (?*anyopaque, Cell, bool) Cell = null,
     wait_files: ?*const fn (?*anyopaque, []const Cell, i64, bool) RuntimeError!FileWaitResult = null,
@@ -172,6 +184,7 @@ pub const EditorRequest = union(enum) {
 };
 
 pub const Writer = struct {
+    execution_ops: ?*const ExecutionOps = null,
     process_ops: ?*const ProcessOps = null,
     physical_key_ops: ?*const @import("physical_keys.zig").Ops = null,
     gamepad_ops: ?*const @import("gamepad.zig").Ops = null,

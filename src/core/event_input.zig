@@ -150,6 +150,8 @@ fn sourceRead(context: ?*anyopaque, timeout: i32) forth.RuntimeError!standard.Re
     const callback = self.writer.standard_event_fn orelse return error.HostUnavailable;
     return callback(self.writer.context, timeout);
 }
+// Host replay must not inspect a decoder while its source callback is running.
+pub var modern_depth: usize = 0;
 pub fn modern(self: *forth.State, timeout: i64, peek: bool) forth.RuntimeError!standard.Result {
     if (@import("input_redirect.zig").selected(self)) |id| {
         const callback = (try self.fileOps()).event_wait orelse return error.HostUnavailable;
@@ -157,6 +159,8 @@ pub fn modern(self: *forth.State, timeout: i64, peek: bool) forth.RuntimeError!s
     }
     if (self.writer.standard_event_fn == null) return error.HostUnavailable;
     const clock = self.writer.standard_clock orelse return error.HostUnavailable;
+    modern_depth += 1;
+    defer modern_depth -= 1;
     return standard.read(&self.standard_input, .{ .context = self, .read_fn = sourceRead, .clock = clock, .interrupts = self.writer.standard_interrupts and @import("input_redirect.zig").selected(self) == null, .controls = @import("input_redirect.zig").selected(self) == null }, timeout, peek);
 }
 

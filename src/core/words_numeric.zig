@@ -83,10 +83,5 @@ pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
 /// One budget unit per at most 256 native-loop iterations. The VM's compiled hot
 /// loop is unchanged; direct numeric calls also respect an enabled --max-steps.
 pub fn checkWorkBlock(self: *State) RuntimeError!void {
-    if (comptime defs.debug_enabled) {
-        if (self.step_limit != 0) {
-            if (self.steps_left == 0) return error.StepLimit;
-            self.steps_left -= 1;
-        }
-    }
+    try @import("execution_control.zig").charge(self, .native);
 }

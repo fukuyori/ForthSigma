@@ -1523,3 +1523,48 @@ Presentation needs terminal stdin/stdout and VT support; POSIX also needs a none
 `REQUIRE-EXTENSION ALSO EXTENSION` provides `EKEY-WAIT ( ms -- event flag ior )` and `EKEY-MOUSE ( -- column row buttons wheel )`. A timeout returns `0 false 0`; EOF returns `K-EOF true 0`. Zero polls, negative waits indefinitely. Partial UTF-8/ESC survives timeouts. `K-MOUSE`, `K-PASTE-BEGIN`, and `K-PASTE-END` are standard noncharacter events. Mouse metadata changes only on consumption. Paste content preserves control bytes; switching to byte/GRAPHICS input ends paste interpretation. On standard stdin, `EKEY?` peeks complete events without committing mouse or paste state. Audio/graphics are independent. A custom embedded host needs the new typed source and Clock callbacks for EKEY-WAIT; legacy EKEY callbacks remain supported. See [the event design](EVENT_QUEUE_DESIGN.md) for ordering, errors, selected-file behavior and platform validation.
 
 EKEY-WAIT targets standard stdin, including redirected stdin. A non-stdin INFILE-EXECUTE selection throws -21 before consuming input; existing file EKEY/EKEY? behavior is retained. Per-file timed waits and persistent buffering are tracked in 639/1078.
+
+## Unicode grapheme boundaries
+
+Load `REQUIRE-EXTENSION ALSO EXTENSION`. `X-GRAPHEME ( c-addr u -- u1 )` returns the first default extended grapheme cluster length in UTF-8 bytes; `X-GRAPHEME-LAST ( c-addr u -- u1 )` returns the last. Both return zero for an empty slice. These words use Unicode 18.0.0, UAX #29 revision 49; existing character display widths remain at 15.1.0.
+
+Forward scanning decodes only the first cluster and one lookahead scalar; malformed UTF-8 there throws -24, leaving arguments unchanged. Later bytes are checked only on later calls. The last-cluster word scans and validates the whole slice, so repeated backward deletion may be quadratic. Invalid memory throws -9. Supply the original start and total length for last-cluster queries. Each supplied slice is independent text: a cut inside a cluster need not preserve the original boundaries. No normalization, tailoring or cluster display-width calculation is performed. See [design and complexity](GRAPHEME_DESIGN.md).
+
+```forth
+REQUIRE-EXTENSION ALSO EXTENSION
+S" abc" 2DUP X-GRAPHEME /STRING TYPE  \ bc
+S" abc" X-GRAPHEME-LAST .            \ 1
+PREVIOUS
+```
+
+## Filesystem extension
+
+Load `REQUIRE-EXTENSION ALSO EXTENSION`. `COMPACT-FILENAME ( c-addr u -- c-addr u2 )` edits the supplied bytes in place using Gforth's lexical rules. Only `/` separates components; a terminal `.` or `..` is retained. It neither checks existence nor follows links, and requires no file host. Temporary storage is proportional to the input length; it has no fixed 1024-byte limit.
+
+`FILE>REALPATH ( name u buffer capacity -- needed ior )` resolves an existing path, following links, and copies UTF-8 on Windows or native path bytes on POSIX, without a trailing NUL. Input/output may overlap. Short capacity returns the required byte count and ERANGE, leaving the buffer unchanged; zero capacity queries the size. Other failures return `0 ior`. Windows returns an extended path with backslashes; input paths remain limited to 4095 bytes, including when reusing a resolved result. No `~` or FPATH expansion is performed.
+
+`FILE-METADATA ( name u -- ud-size mtime-sec mtime-nsec ior )` follows links to a regular file and returns its size as a double cell, signed UTC Unix seconds, and nanoseconds from 0 to 999999999. Negative times use floor decomposition. Actual resolution depends on the filesystem. Failure returns four zero cells and ior. This is one query, not an atomic relationship with later operations or a guarantee of detecting every change.
+
+`SYNC-FILE ( fileid -- ior )` accepts writable regular files. It synchronizes C buffering and requests POSIX fsync or Windows FlushFileBuffers, preserving logical position, pending input and semantic EOF on success. Standard streams, pipes, devices and directories are rejected before flushing; readonly handles are rejected too. OS failure retains the handle. The operation can block without cancellation. It does not guarantee parent-directory/rename or power-loss durability; macOS uses fsync, not F_FULLFSYNC. FLUSH-FILE retains its existing meaning. Invalid ranges/negative lengths throw -9; missing files/host callbacks throw -21. See [design](FILESYSTEM_DESIGN.md).
+
+```forth
+REQUIRE-EXTENSION ALSO EXTENSION
+S" a/../b" COMPACT-FILENAME TYPE  \ b
+S" VERSION" FILE-METADATA THROW . . D.
+PREVIOUS
+```
+
+## Execution budgets and interrupts (652)
+
+Load `REQUIRE-EXTENSION ALSO EXTENSION` for `EXEC-LIMITED ( i*x xt u -- j*x ior )`; debug and extension must both be enabled. Zero u is unlimited with interrupt checks. Normal completion returns 0; exhaustion of this entry returns -280. Up to 16 entries may nest, and all enclosing finite budgets are charged. CLI exhaustion, ordinary THROW and Ctrl+C (-28) propagate. Passing returned -280 to THROW retains the existing fatal StepLimit behavior; compare the number at the entry instead.
+
+Units are entry dispatch, compiled operations, interpreted tokens inside an active entry, and existing native checkWorkBlock checkpoints. They are not time or CPU instructions. Exhaustion restores CATCH-like entry depths after removing xt/u, but not values, memory, files, drawing or other side effects. There is no continuation or scheduling. OS calls and native operations without checkpoints cannot be preempted.
+
+Computation does not change raw/cooked mode. Raw input retains earlier characters, UTF-8 and special keys; a pasted byte 3 remains text. If the bounded queue fills, Ctrl+C behind it may remain undetected. OS interrupts have a separate latch. The 20ms target is not a guarantee. Missing host support throws -21. See [design](EXECUTION_CONTROL_DESIGN.md).
+
+```forth
+REQUIRE-EXTENSION ALSO EXTENSION
+: SPIN BEGIN AGAIN ;
+' SPIN 100 EXEC-LIMITED .  \ -280
+PREVIOUS
+```

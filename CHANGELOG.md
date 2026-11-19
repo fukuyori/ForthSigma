@@ -4,10 +4,15 @@
 
 ### Added
 
+- Debug EXTENSION `EXEC-LIMITED` provides nested cooperative execution budgets and Ctrl+C checks. Enclosing budgets are charged; CLI limits and ordinary exceptions propagate. Raw input is retained, including pasted byte 3; a full queue can delay Ctrl+C detection. No continuation or side-effect rollback.
+
+- EXTENSION filesystem utilities: `COMPACT-FILENAME`, `FILE>REALPATH`, `FILE-METADATA` and `SYNC-FILE`, separating lexical compaction, existing-path resolution, regular-file size/UTC modification time, and OS synchronization. Windows/Linux and optimized Windows fixtures pass; Mac runtime acceptance remains separate.
+- EXTENSION `X-GRAPHEME` and `X-GRAPHEME-LAST` return default extended grapheme cluster byte lengths using Unicode 18.0.0 / UAX #29 revision 49. Forward scanning validates only the cluster and one lookahead scalar; backward queries scan the full supplied text. Display-width tables remain at Unicode 15.1.0.
 - GRAPHICS physical-key input: `SCAN-INPUT?`, `SCAN-SUPPORTED?`, `SCAN-HELD?`, `KEY-EVENT`, `KEY-RESYNC` and USB HID keyboard `SC-*` constants, with an independent256-event queue, explicit overflow resynchronization, focus-loss releases and native Windows/macOS/X11 adapters. Windows/Linux synthetic native-window acceptance passed; physical keyboard checks and Mac runtime acceptance remain pending.
 
 ### Changed
 
+- Read/write C file streams now flush output before switching to any of the four input paths, preventing NUL corruption observed on Windows when writing, reading and then syncing. SYNC preserves pending input and semantic EOF; FLUSH-FILE retains its existing contract.
 - The new builtin tags change the dictionary-image ABI signature. Existing saved images must be recreated with the current executable; physical held state and event history are never saved.
 
 ## [0.12.0] - 2026-11-18

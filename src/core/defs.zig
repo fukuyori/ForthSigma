@@ -64,7 +64,7 @@ const image_builtins = builtinSet(&.{&.{ .load, .save, .savesys }});
 const graphics_builtins = builtinSet(&.{&@import("words_graphics.zig").words});
 const audio_builtins = builtinSet(&.{&@import("words_audio.zig").words});
 const extension_builtins = builtinSet(&.{&@import("words_extension.zig").words});
-const debug_builtins = builtinSet(&.{ &@import("words_debug.zig").words, &.{ .assert_close, .assert_level, .assert_zero, .assert_one, .assert_two, .assert_three }, &@import("source_diagnostics.zig").trace_words });
+const debug_builtins = builtinSet(&.{ &@import("words_debug.zig").words, &.{ .exec_limited, .assert_close, .assert_level, .assert_zero, .assert_one, .assert_two, .assert_three }, &@import("source_diagnostics.zig").trace_words });
 
 const excluded_builtins = blk: {
     @setEvalBranchQuota(builtin_count * 16);
@@ -1151,6 +1151,13 @@ pub const Builtin = enum {
     proc_term,
     proc_kill,
     proc_free,
+    x_grapheme,
+    x_grapheme_last,
+    compact_filename,
+    file_realpath,
+    file_metadata,
+    sync_file,
+    exec_limited,
 };
 
 pub const HeapResult = union(enum) { address: Cell, no_memory, bad_pointer };

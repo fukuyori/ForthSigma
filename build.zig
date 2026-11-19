@@ -55,6 +55,7 @@ pub fn build(b: *std.Build) void {
         .flags = &.{"-std=gnu11"},
     });
     if (target.result.os.tag == .windows or target.result.os.tag == .linux or target.result.os.tag == .macos) {
+        exe.root_module.addCSourceFile(.{ .file = b.path("src/host_filesystem_native.c"), .flags = &.{"-std=gnu11"} });
         exe.root_module.addCSourceFile(.{ .file = b.path("src/host_process_native.c"), .flags = &.{"-std=gnu11"} });
         if (target.result.os.tag == .linux) exe.root_module.linkSystemLibrary("pthread", .{});
     }
@@ -102,6 +103,8 @@ pub fn build(b: *std.Build) void {
         .link_libc = true,
     });
     test_module.addOptions("build_options", options);
+    test_module.addAnonymousImport("grapheme_break_test", .{ .root_source_file = b.path("tests/data/unicode-18.0.0/GraphemeBreakTest.txt") });
+    test_module.addAnonymousImport("compact_filename_cases", .{ .root_source_file = b.path("tests/data/compact-filename.json") });
     addEmbeddedTexts(b, test_module);
     if (float) {
         addCoreMath(b, test_module);

@@ -157,5 +157,11 @@ if reference_check.returncode:
     found('complete word reference is missing, stale, or has an undocumented registration')
     print(reference_check.stderr, end='')
 
+grapheme_check = subprocess.run([sys.executable, os.path.join(ROOT, 'scripts', 'make-grapheme-table.py'), '--check'], cwd=ROOT, capture_output=True, text=True, encoding='utf-8')
+print(grapheme_check.stdout, end='')
+if grapheme_check.returncode:
+    found('grapheme table or pinned Unicode inputs changed')
+    print(grapheme_check.stderr, end='')
+
 print('findings: %d' % len(findings))
 sys.exit(1 if findings else 0)

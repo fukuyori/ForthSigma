@@ -1,5 +1,21 @@
 # Test and verification scripts
 
+`verify-filesystem.py --sigma PATH --output PATH` checks 1,010 observed Gforth
+COMPACT cases, long byte paths, realpath capacity/alias/links, regular-file metadata
+and SYNC direction/pending-input/EOF and rejection cases on owned temporary files.
+`zig cc -shared -DSIGMA_FS_TESTING src/host_filesystem_native.c -o .work/646/filesystem-native.dll`
+builds the Windows native fixture for `verify-filesystem-native.py --library PATH`.
+On Linux use a GNU shared object (`-shared -fPIC -target x86_64-linux-gnu`).
+The native test checks 1,000 iterations for handle/fd cleanup and, on Windows,
+uses a test-only counter to verify device rejection before open. It does not
+open serial devices. All owned test files stay under `.work/646`.
+
+`verify-graphemes.py --sigma PATH` compares EXTENSION's X-GRAPHEME and
+X-GRAPHEME-LAST against all 853 pinned Unicode 18.0.0 GraphemeBreakTest cases,
+including every cluster from both ends (3,096 public-word checks).
+`python scripts/make-grapheme-table.py --check` verifies offline regeneration
+and the SHA256 hashes of the official inputs. Neither command accesses the network.
+
 Run these scripts from the repository root. `test-*` contains regression tests,
 `verify-*` contains integration and comparison checks, and `probe-*` collects
 reference results. `gforth-p00/` contains the P00 Gforth reference suite; see its
@@ -91,3 +107,7 @@ changes dithering. It changes no desktop display settings. See its header.
 native C単体は `zig cc -shared -DSIGMA_PROC_TESTING src/host_process_native.c -o .work/643/process-native.dll` と `verify-process-native.py --library PATH`。LinuxのPython ctypesにはGNU共有libraryを使う。Linuxの子孫試験は専用helperのsubreaper設定を一時変更し、自分で作った子孫を回収して元の設定へ戻す。製品Sigmaにsubreaperを設定しない。
 
 各scriptの`--output PATH`でJSON証拠を残せる。OS単体・公開語・Tcl protocol・実GUIを区別し、Macのクロスコンパイルは実機確認へ代えない。
+
+### EXEC-LIMITED (652)
+
+Run `python tests/scripts/verify-execution-control.py PATH_TO_SIGMA` for public budget/THROW/NS cases. On Unix it also owns PTYs for raw character/paste/ESC retention, SIGINT, NS and cooked KEY interruption, and terminal-mode restoration. Run `python tests/scripts/verify-execution-control-windows.py PATH_TO_SIGMA_EXE` for a hidden private console with injected F1/Japanese/paste/partial ESC input, cooked Ctrl+C, NS/KEY and queue-full retention. It never sends input or signals to the user console. Redirect stdout to JSON evidence. These fixtures do not prove physical keyboard or Mac acceptance.

@@ -83,7 +83,7 @@ const win = struct {
         console: ?*anyopaque = null,
         mode: u32 = 0,
         installed: bool = false,
-        fn begin(scope: *Scope, with_terminal: bool) base.Error!void {
+        fn begin(scope: *Scope, with_terminal: bool, _: bool) base.Error!void {
             if (SetConsoleCtrlHandler(&onControl, 1) == 0) return error.HostFailed;
             scope.installed = true;
             if (with_terminal and input.input_is_terminal) {
@@ -113,8 +113,9 @@ const posix = if (is_windows) struct {} else struct {
         previous: std.c.Sigaction = undefined,
         installed: bool = false,
         terminal: ?input.TerminalSettings = null,
-        fn begin(scope: *Scope, with_terminal: bool) base.Error!void {
+        fn begin(scope: *Scope, with_terminal: bool, restart: bool) base.Error!void {
             var action = std.mem.zeroes(std.c.Sigaction);
+            if (restart) action.flags = std.c.SA.RESTART;
             action.handler.handler = &onSignal;
             if (std.c.sigemptyset(&action.mask) != 0) return error.HostFailed;
             if (std.c.sigaction(.INT, &action, &scope.previous) != 0) return error.HostFailed;
@@ -165,6 +166,7 @@ const WaitScope = if (is_windows) win.Scope else posix.Scope;
 
 const NativeScope = struct {
     with_terminal: bool,
+    restart: bool = false,
     scope: ?WaitScope = null,
     mode_generation: u64 = 0,
     fn begin(context: ?*anyopaque) signal_broker.HookError!void {
@@ -173,7 +175,7 @@ const NativeScope = struct {
         accepting_interrupts.store(true, .release);
         self.mode_generation = input.modeGeneration();
         self.scope = .{};
-        self.scope.?.begin(self.with_terminal) catch |err| {
+        self.scope.?.begin(self.with_terminal, self.restart) catch |err| {
             accepting_interrupts.store(false, .release);
             self.scope.?.end() catch return error.SignalRestoreFailed;
             self.scope = null;
@@ -204,6 +206,11 @@ const NativeScope = struct {
         self.* = .{ .with_terminal = false };
         try begin(context);
     }
+    fn beginExecution(context: ?*anyopaque) signal_broker.HookError!void {
+        const self: *@This() = @ptrCast(@alignCast(context.?));
+        self.* = .{ .with_terminal = false, .restart = true };
+        try begin(context);
+    }
     fn hooks(self: *@This()) signal_broker.Hooks {
         return .{ .context = self, .begin_fn = begin, .end_fn = end };
     }
@@ -230,7 +237,7 @@ fn beginNative(broker: *signal_broker.Broker, with_terminal: bool) base.Error!si
     if (broker.isActive()) return error.HostFailed;
     return broker.begin(.{
         .context = &native_scope,
-        .begin_fn = if (with_terminal) NativeScope.beginTerminal else NativeScope.beginAudio,
+        .begin_fn = if (with_terminal) NativeScope.beginTerminal else if (execution_depth != 0) NativeScope.beginExecution else NativeScope.beginAudio,
         .end_fn = NativeScope.end,
     }) catch |err| {
         if (broker.failed_scope != null) recovery_broker = broker;
@@ -247,6 +254,36 @@ fn finishNative(broker: *signal_broker.Broker, ticket: signal_broker.Ticket) bas
 // Nested cooked input on the host thread shares one interrupt-only native scope.
 var input_depth: u32 = 0;
 var input_ticket: ?signal_broker.Ticket = null;
+var execution_depth: usize = 0;
+var execution_machine: ?*forth.State = null;
+var execution_poll: ?*const fn (*forth.State) forth.RuntimeError!void = null;
+
+pub fn beginExecution(machine: *forth.State, poll: *const fn (*forth.State) forth.RuntimeError!void) forth.RuntimeError!void {
+    if (execution_depth != 0 and execution_machine != machine) return error.HostFailed;
+    execution_depth += 1;
+    errdefer execution_depth -= 1;
+    try beginInput();
+    execution_machine = machine;
+    execution_poll = poll;
+}
+pub fn takeInterrupt() bool {
+    return interrupted.swap(false, .acq_rel);
+}
+pub fn pollExecution() forth.RuntimeError!void {
+    if (takeInterrupt()) return error.UserInterrupt;
+    if (execution_poll) |poll| try poll(execution_machine.?);
+}
+pub fn endExecution(machine: *forth.State) forth.RuntimeError!void {
+    if (execution_depth == 0 or execution_machine != machine) return error.HostFailed;
+    execution_depth -= 1;
+    if (execution_depth == 0) {
+        execution_machine = null;
+        execution_poll = null;
+    }
+    // Only the outer input owner consumes a pending interrupt. Inner entries
+    // must leave it for the owning outer budget/end to observe.
+    try endInput();
+}
 pub fn beginInput() base.Error!void {
     if (input_depth == std.math.maxInt(u32)) return error.HostFailed;
     if (input_depth == 0) input_ticket = try beginNative(&signal_broker.fallback, false);
@@ -295,7 +332,7 @@ fn loop(duration: forth.Double, source: base.Clock) forth.RuntimeError!void {
     if (sum[1] != 0) return error.ResultOutOfRange;
     const deadline = sum[0];
     while (true) {
-        if (interrupted.load(.seq_cst)) return error.UserInterrupt;
+        if (execution_depth != 0) try pollExecution() else if (interrupted.load(.seq_cst)) return error.UserInterrupt;
         const current = try source.now();
         if (current >= deadline) return;
         const difference = @subWithOverflow(deadline, current);
@@ -322,6 +359,7 @@ fn waitUsing(broker: *signal_broker.Broker, source: base.Clock, duration: forth.
     // Terminal modes and signal dispositions are process-global, so do not nest waits.
     if (active.swap(true, .seq_cst)) return error.HostFailed;
     defer active.store(false, .seq_cst);
+    if (execution_depth != 0) return loop(duration, source);
     const scope = try beginNative(broker, true);
     const outcome = loop(duration, source);
     // Restoring the console/handler takes priority over an interrupted wait.
@@ -331,6 +369,14 @@ fn waitUsing(broker: *signal_broker.Broker, source: base.Clock, duration: forth.
 
 /// Audio keeps raw mode unchanged; it uses the same process signal owner as NS.
 pub fn audioWait(runtime: ?*host_runtime.Runtime) forth.AudioWait {
+    if (execution_depth != 0) {
+        pollExecution() catch |err| return if (err == error.UserInterrupt) .interrupted else .host_failed;
+        if (is_windows) win.Sleep(3) else {
+            const request = std.c.timespec{ .sec = 0, .nsec = 3_000_000 };
+            _ = std.c.nanosleep(&request, null);
+        }
+        return if (input.isRaw()) .read_input else .waited;
+    }
     const broker = if (runtime) |value| value.signalBroker() catch return .host_failed else &signal_broker.fallback;
     const scope = beginNative(broker, false) catch return .host_failed;
     if (is_windows) {
@@ -461,4 +507,64 @@ test "nested cooked input shares its ticket and excludes other runtime scopes" {
     try endInput();
     try std.testing.expect(input_ticket == null);
     try waitWithRuntime(&runtime, 1);
+}
+
+test "EXEC-LIMITED shared interrupt owner survives nested input NS and audio" {
+    const saved_input = input.input_is_terminal;
+    input.input_is_terminal = false;
+    defer input.input_is_terminal = saved_input;
+    const Fake = struct {
+        fn poll(_: *forth.State) forth.RuntimeError!void {}
+    };
+    // The callback does not dereference this identity; no VM allocation is needed.
+    const machine: *forth.State = @ptrFromInt(@alignOf(forth.State));
+    try beginExecution(machine, Fake.poll);
+    defer if (execution_depth != 0) endExecution(machine) catch unreachable;
+    const ticket = input_ticket.?;
+    try beginExecution(machine, Fake.poll);
+    try beginInput();
+    try endInput();
+    try wait(1);
+    try std.testing.expect(audioWait(null) != .host_failed);
+    try std.testing.expectEqual(ticket, input_ticket.?);
+    interrupted.store(true, .seq_cst);
+    try std.testing.expectError(error.UserInterrupt, pollExecution());
+    try pollExecution();
+    interrupted.store(true, .seq_cst);
+    try endExecution(machine);
+    try std.testing.expectEqual(@as(usize, 1), execution_depth);
+    try std.testing.expect(interrupted.load(.seq_cst));
+    try std.testing.expectError(error.UserInterrupt, endExecution(machine));
+    try std.testing.expect(execution_machine == null and execution_poll == null);
+    try std.testing.expect(!signal_broker.fallback.isActive());
+}
+
+test "outer budget exhaustion with interrupt during inner end reaches outer as -28" {
+    if (comptime !@import("build_options").debug or !@import("build_options").extension) return error.SkipZigTest;
+    const support = @import("tests/support.zig");
+    var output = support.Output{};
+    const machine = try support.createMachine(&output);
+    defer support.destroyMachine(machine);
+    const saved_input = input.input_is_terminal;
+    input.input_is_terminal = false;
+    defer input.input_is_terminal = saved_input;
+    const Fake = struct {
+        fn rawPoll(_: *forth.State) forth.RuntimeError!void {}
+        fn begin(_: ?*anyopaque, state: *forth.State) forth.RuntimeError!void {
+            try beginExecution(state, rawPoll);
+        }
+        fn poll(_: ?*anyopaque, _: *forth.State) forth.RuntimeError!void {}
+        fn end(_: ?*anyopaque, state: *forth.State) forth.RuntimeError!void {
+            if (execution_depth == 2) interrupted.store(true, .seq_cst);
+            try endExecution(state);
+        }
+    };
+    const ops = @import("core/host_interface.zig").ExecutionOps{ .begin = Fake.begin, .poll = Fake.poll, .end = Fake.end };
+    machine.writer.execution_ops = &ops;
+    try machine.interpretLine("REQUIRE-EXTENSION ALSO EXTENSION : FOREVER BEGIN AGAIN ; : OUTER ['] FOREVER 0 EXEC-LIMITED ;");
+    try std.testing.expectError(error.UserInterrupt, machine.interpretLine("' OUTER 40 EXEC-LIMITED"));
+    try std.testing.expectEqual(@as(usize, 0), machine.execution.depth);
+    try std.testing.expectEqual(@as(usize, 0), execution_depth);
+    try std.testing.expect(!interrupted.load(.seq_cst));
+    try std.testing.expect(!signal_broker.fallback.isActive());
 }

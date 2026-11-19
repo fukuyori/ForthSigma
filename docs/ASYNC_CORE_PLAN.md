@@ -145,6 +145,14 @@ Gforthの `fork+exec` は、ソース上でLinux向けの条件の中に定義�
 
 ## 4. Unicode処理（640）
 
+### 2026-11-20の実装
+
+Unicode 18.0.0／UAX #29改訂49を採用し、表示幅は15.1.0を維持する。
+EXTENSIONへX-GRAPHEMEとX-GRAPHEME-LASTを追加した。[採用設計](GRAPHEME_DESIGN.md)、
+[実装・検証記録](GRAPHEME_IMPLEMENTATION.md)、[レビュー評価](reviews/640-review-response.md)を参照。
+前方は先頭クラスタと境界判定用の次の1コードポイントだけを検査し、末尾は先頭から全文を走査する。
+以下の現状・候補は検討時点の記録であり、語名・例外・計算量は採用設計を優先する。
+
 ### 現状
 
 文字の幅は `char_width.zig` の表で求める。表は `scripts/make-width-table.py` がUnicode Character Databaseから作り、全コードポイントでGforthと同じ幅になることを確かめてある。書記素クラスタの境界を求める手段はない。Gforthにも書記素の語は見当たらなかった。
@@ -194,6 +202,10 @@ Gforthの `fork+exec` は、ソース上でLinux向けの条件の中に定義�
 - 標準エラーを別のパイプにするか、標準出力にまとめる指定を持つか。
 
 ## 6. ファイルシステム（646）
+
+### 2026-11-20の実装
+
+レモンの指示でSYNCも含め、COMPACT-FILENAME・FILE>REALPATH・FILE-METADATA・SYNC-FILEをEXTENSIONへ追加する。[採用設計](FILESYSTEM_DESIGN.md)、[レビュー評価](reviews/646-review-response.md)、[Mac実機手順](FILESYSTEM_MAC_ACCEPTANCE.md)を参照。Gforth1.0.2との字句整理を1,010例で照合した。実パスは呼出し側bufferへコピーし、metadataは通常fileのサイズとUnix秒/nsを返す。同期は通常fileのC/OS同期とし、read方向への切替も整える。以下の未決・候補は検討時点の記録。
 
 ### 現状
 

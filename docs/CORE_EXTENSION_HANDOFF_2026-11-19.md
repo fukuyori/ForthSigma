@@ -1,5 +1,73 @@
 # 613 本体機能拡張の引継ぎ（2026-11-19）
 
+
+## 最新追記：652実行制御のWindows/Linux受け入れ、Mac実機を残す（2026-11-20）
+
+この節を最新状態とする。Raw入力を捨てない方針と、満杯の後ろのCtrl+Cを検出できない場合がある制約をレモンが了承した。640/646のMac実機を残し、652を実装した。Git基点main `8f4a968`。640/646/652の変更は未コミットで、コミット・タグ・pushは行っていない。
+
+- 652は1117仕様→1118コア/1119ホスト→1120 Windows/Linux/1121画像・文書/1122 Mac実機。1117〜1121を完了、652はauto83%。1122は未着手のままで652全体は未完了。640の1111、646の1116も未着手（640 auto75%、646 auto80%）。
+- EXTENSIONかつdebugへ`EXEC-LIMITED ( i*x xt u -- j*x ior )`を追加。u=0は無制限の中断確認、正常0、自分の予算切れ-280。最大16段、外側予算も消費し、CLI・通常THROW・-28は外へ伝える。CATCH相当の深さだけ戻し、副作用の巻戻し・継続再開はしない。
+- [採用設計](EXECUTION_CONTROL_DESIGN.md)、[実装・測定・検証記録](EXECUTION_CONTROL_IMPLEMENTATION.md)、[レビュー評価](reviews/652-review-response.md)、[Mac手順](EXECUTION_CONTROL_MAC_ACCEPTANCE.md)を参照する。
+- 通常VM loop(false)本体には確認を追加せず、counted・有効入口内の解釈token・native hookを使う。signal所有をNS/audio/inputと共有。RawはPOSIX byte queue/Windows未デコードrecord ringに保持し、貼付け・UTF-8・特殊キー・未完成ESCを維持する。
+- 実装レビューで見つかった未完成ESC直後のCtrl+C削除位置と、inner endの割込み早期消費を修正。大きな再生領域をstaticへ移動。debugなしの登録/HELP/画像復元も修正した。限定再レビューでは対象修正に高・中の具体的欠陥なし。原文・採否・採用設計を別保存。
+- 最終Windows core1093成功10除外・host148成功12除外。Linux（graphics/audioなし）core938成功165除外・host138成功15除外。debugなし/extensionなしも失敗0件。native FAXPYの部分更新、画像保存除外・LOAD後の予算維持を確認。
+- Windows private console/Linux PTYで文字・貼付けの3・ESC保持、Raw→KEYのBackspace、Raw→READ-FILEのUTF-8、NS/Cooked KEYと計算の中断、端末mode復元を確認。Windowsの満杯70文字保持とOS割込みも成功。ReleaseFastの公開語/consoleも成功。
+- 確認間隔256/1024/4096を比較し1024を採用。CLI countedには基準より約10%の追加費用が観測されている。通常/入口/nativeの別表を実装記録へ残し、20ms保証とは扱わない。
+- 実辞書1802項目、HELP1588項目、文書例28件・個別例398件を照合。check-docs指摘0、diff --check成功。Mac aarch64の代表構成はcore/hostクロスコンパイルのみ成功で実行はしていない。
+
+再開時はGit/tqueのタイトルと親子関係、`.work/652/source-fingerprints.json`を再確認する。Mac実機の1111/1116/1122を残して次へ進める方針は継続するが、次の本体項目は着手前に現在の計画と依存を照合する。
+
+## 最新追記：646のWindows/Linux受け入れ、Mac実機を残す（2026-11-20）
+
+この節を最新状態とする。640のMac1111を残して646へ進む指示を受け、SYNCも含めることを確認した。
+基点main `8f4a968`。640と646の差分は未コミットで、コミット・タグ・push・配布物作成は行っていない。
+
+- 646は1112仕様→1113ホスト→1114コア/文書→1115 Windows/Linux、1114→1116 Mac実機。
+  1112〜1115を完了し646はauto80%。1116は未着手で、646全体は未完了。640のMac1111も未着手。
+- EXTENSIONへCOMPACT-FILENAME、FILE>REALPATH、FILE-METADATA、SYNC-FILEを追加。
+  [採用設計](FILESYSTEM_DESIGN.md)、[実装・検証記録](FILESYSTEM_IMPLEMENTATION.md)、
+  [レビュー評価](reviews/646-review-response.md)、[Mac手順](FILESYSTEM_MAC_ACCEPTANCE.md)を読む。
+- COMPACTはGforth1.0.2の実測1,010例と一致し、8,003バイトでも成功。GPLソースを移植していない。
+  実パスはhost所有結果を呼出し側bufferへコピーし、metadataは通常fileのサイズとUTC秒/nsを返す。
+  SYNCは通常fileに限定し、C/OS同期を要求する。FLUSH-FILEやRENAME-FILEの意味は変えない。
+- Windowsで書込み→読取り→SYNC後にNULが混じる問題を再現し、入力前のprepareFileReadを4経路へ接続して修正。
+  読取り値・位置・内容、CR先読みの保留byteとEOF保持をWindows/Linuxで確認した。
+- Windows通常23/23 step、Linux core1085成功10除外・host149成功14除外・runtime15成功。
+  extension除外・代表files/graphics/audio除外、Windows fast、公開語9ケース群も成功。
+  native1,000反復の資源数はWindows handle126→126、Linux fd5→5。open前device拒否10照会も成功。
+- Macはaarch64向け14/14 stepクロスコンパイルだけ。実ネットワークshare・serial device・停電耐性は確認していない。
+  Windowsでは負時刻を実測し、WSL作業領域は設定後もstatで0となったためLinux負時刻合格とは扱わない。
+- 英日HELP・全語参照・マニュアル・試験手順を更新。実辞書1801項目、HELP1587項目、文書例28件・使用例397件を照合。
+  check-docs指摘0件。設計・実装・限定再レビューの原文と採否を別保存している。
+
+再開時はGitとtqueのタイトル・親子関係を取り直し、640/646の未コミット差分を保持する。
+Mac実機を行うか、独立した次工程へ進むかはレモンの指示に従う。
+
+## 最新追記：640のWindows/Linux受け入れ、Mac実機を残す（2026-11-20）
+
+この節を最新状態とする。下の「640未着手」「次は640」は以前の記録。
+基点main `8f4a968`。今回の640は未コミットで、コミット・タグ・pushは行っていない。
+
+- 640を1108仕様→1109実装→1110 Windows/Linux、1109→1111 Mac実機へ分割。
+  1108〜1110を完了し、640はauto75%。1111は未着手で、640全体は未完了。
+- レモンの決定：書記素はUnicode18.0.0／UAX #29改訂49、表示幅は既存15.1.0を維持。
+  前方のUTF-8検査は探索に必要な範囲へ限定する。
+- EXTENSIONへX-GRAPHEMEとX-GRAPHEME-LASTを追加。結果はバイト数、空は0。
+  前方はクラスタと境界判定用の次の1コードポイントまで、末尾は元の先頭から全文を走査。
+  不正符号化は-24、領域外は-9。引数を保持して失敗する。
+- Windows通常23/23 step、Linux core1082成功9除外・host148成功14除外・runtime15成功。
+  公開語の公式853ケース／3,096項目はWindows・Linux・Windows fastで成功。
+  公式適合試験を通常core単体にも組み込んだ。extension除外と代表的な他機能除外も試験。
+- Macはaarch64向けクロスコンパイルだけ。実機は[1111の手順](GRAPHEME_MAC_ACCEPTANCE.md)へ残す。
+- [採用設計](GRAPHEME_DESIGN.md)、[実装・検証記録](GRAPHEME_IMPLEMENTATION.md)、
+  [レビュー評価](reviews/640-review-response.md)を参照。設計・実装・限定再レビューの原文を別保存。
+  初回認証失敗の後、レモンの再認証でレビューを完了した。
+- 公式入力・ライセンス・manifestをtests/data/unicode-18.0.0へ同梱し、txtのGit改行変換を抑止。
+  製品には生成表だけを含める。check-docsは生成再現性と固定入力SHAも検査し指摘0件。
+
+再開時はGitとtqueのタイトル・親子を再照合する。Mac実機で1111を完了するか、
+独立した次工程へ進むかはレモンの指示に従う。番号だけでタスクを特定しない。
+
 ## 現在の引継ぎ：Mac検証の取込み後、次は640
 
 2026-11-19、この節を最新情報とする。下の過去の追記にある「Mac未完了」「643は80%」「未コミット」や古いHEADは、各時点の履歴であり現在の状態ではない。今回の引継ぎではコード変更・ビルド・試験・tque変更は行っていない。現在のGit/tqueと、取り込んだ検証記録を照合した。

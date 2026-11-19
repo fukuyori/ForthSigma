@@ -352,3 +352,15 @@ EKEY-WAITは、ホストがFileOps.event_waitを提供する場合にINFILE-EXEC
 `REQUIRE-EXTENSION ALSO EXTENSION`でWAIT-FILES、READ-AVAILABLE、WRITE-AVAILABLE、WAIT-WRITABLEを使えます。ID配列は1〜64セルで全件を待機前に検査します。時間切れは-1 0、読取りでは未準備と観測済みEOFを区別します。書込みは戻る前にコピーし、Windowsでは64KiBのホストqueueへの受付と配送を分けます。FLUSH/CLOSEは配送を待ち、Windowsのcloseが中断された場合は-516と開いたIDを残して再試行できます。プロセス終了時は中断・エラー後の未配送分を破棄できます。
 
 Windowsの新語は単方向同期pipeをworkerで扱い、双方向pipeとstdinに共有するstdout/stderrを拒否します。従来のファイル語は維持します。POSIXはpollと一時的な非ブロッキング設定を使い、fd flagsを復元します。組込みhostはoptional callbackが必要で、未提供なら-21です。Stateや保存画像にOS資源を追加しません。Builtinを末尾に追加するため旧画像はABI検査で拒否し、辞書は変更しません。Windows/Linuxの試験は成功、Macはクロスビルドまでで実機確認は残っています。[設計](ASYNC_IO_DESIGN.md)と[実装・試験記録](ASYNC_IO_IMPLEMENTATION.md)を参照してください。
+
+## Unicode書記素拡張
+
+`X-GRAPHEME`と`X-GRAPHEME-LAST`はSigmaのEXTENSION語で、Unicode 18.0.0／UAX #29改訂49の既定の拡張書記素規則に基づくバイト長を返します。X-WIDTH／XC-WIDTH（15.1.0）から独立し、既存XCHAR語の寛容な復号とは異なり厳密なUTF-8を使います。先頭側は先頭クラスタと次の1コードポイント、末尾側は全文を検査します。不正符号化は引数を保持して-24、領域外は-9です。Gforth互換を確認した語ではありません。`-Dextension=false`で両語を除外します。Builtin追加で画像ABI署名が変わるため、古い保存画像はソースから作り直してください。[設計](GRAPHEME_DESIGN.md)を参照してください。
+
+## ファイルシステム補助拡張
+
+EXTENSIONへ`COMPACT-FILENAME`・`FILE>REALPATH`・`FILE-METADATA`・`SYNC-FILE`を追加します。COMPACTはGforth 1.0.2のバイト単位の動作と1,010例で一致し、GPLソースはコピーしていません。字句的な整理によりリンクを含むパスの意味が変わる場合があるため、OSによる解決にはFILE>REALPATHを使います。他のAPIはSigma独自です。パス解決・metadata・Cのflush・OS同期を分けて扱い、OSごとのファイル名の符号化や時刻精度の違いは残ります。OS側の3語はfiles/host能力が必要で、欠けると-21です。COMPACTはホスト不要で、extension除外時は4語すべてを外します。Builtin追加により保存画像のABI署名が変わります。[ファイルシステム設計](FILESYSTEM_DESIGN.md)を参照してください。
+
+## EXEC-LIMITED (652)
+
+Sigma独自のdebug実行入口`EXEC-LIMITED`は正常時0、自分の予算切れでは-280を返し、CLI上限・通常THROW・-28は外へ伝えます。外側すべての予算を消費します。協調的な中断で、継続再開や副作用の巻戻しは行いません。Raw文字を保持し、満杯の後ろのCtrl+Cを検出できない場合があります。-Ddebug=falseまたは-Dextension=falseで除外します。予算は画像に保存しませんが、新Builtinで画像ABIは変わります。[設計](EXECUTION_CONTROL_DESIGN.md)。

@@ -19,7 +19,9 @@
 - [Forth 2012の語の状況](forth2012-word-status.tsv): Forth 2012規格の語の一覧の各項目と、全機能ビルドでの有無（2026-11-17確認。要約はトップのREADME）
 - [サイズ測定・速度比較](SIZE_SPEED_MEASUREMENT.md): 2026-11-17のWindows/Linux実行体サイズとWSLでのGforth 1.0.2比較、生データと再実行手順
 - [本体の機能拡張の全体](CORE_EXTENSION_PLAN.md): 共通基盤・OS判別、TUI・非同期、音と描画、ゲーム表示、タスク制御の範囲、依存関係、段階0〜Eの工程（tque 613、共通基盤・637のMac実機まで完了、638はWindows/Linux受け入れ済み・Mac実機待ち）。[実装・検証記録](CORE_EXTENSION_IMPLEMENTATION.md)
-- [本体機能拡張の引継ぎ（2026-11-19）](CORE_EXTENSION_HANDOFF_2026-11-19.md): 共通基盤・637の完了と638のWindows/Linux受け入れ、Mac実機1077、Git・tque・検証結果
+- [Unicode書記素の設計](GRAPHEME_DESIGN.md)と[実装・検証記録](GRAPHEME_IMPLEMENTATION.md): Unicode 18.0.0の境界、検査範囲と計算量、試験とMac実機の残作業
+- [ファイルシステム設計](FILESYSTEM_DESIGN.md)と[実装・検証記録](FILESYSTEM_IMPLEMENTATION.md): パス補助・metadata・同期、レビュー採否とMac実機の残作業
+- [本体機能拡張の引継ぎ（2026-11-19）](CORE_EXTENSION_HANDOFF_2026-11-19.md): 現在の本体拡張、Git・tque・検証結果
 - [語群基盤とOS判別の設計](EXTENSION_GROUP_DESIGN.md): extensionの選択・読込み、HOST-OS、除外構成・イメージの契約（1056・1036）
 - [保存アプリの起動基盤](SAVED_APPLICATION_STARTUP_PLAN.md): SAVESYS実行体の自動起動・引数・終了・保存整合の計画（1003配下1066）。LOGO本体は外部Forthアプリ
 - [本体の機能拡張の詳細設計](CORE_EXTENSION_DETAILED_DESIGN.md): 本体コア・グラフィックス・サウンド・拡張への配置、API候補、内部構造、所有権、失敗・取消し・復元、検証条件。[判断記録](CORE_EXTENSION_DESIGN_DECISIONS.md)、[State隔離監査表](CORE_EXTENSION_WORKER_STATE_AUDIT.md)

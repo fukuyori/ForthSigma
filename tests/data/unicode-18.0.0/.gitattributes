@@ -1,0 +1,2 @@
+# Preserve the exact downloaded bytes used by manifest.json on every checkout.
+*.txt -text

@@ -1,5 +1,20 @@
 # テストと検証のスクリプト
 
+`verify-filesystem.py --sigma PATH --output PATH`は、実測したGforthのCOMPACT
+1,010例、長いパス、実パスの容量・重複・リンク、通常fileのmetadata、SYNCの方向切替・
+保留入力・EOF・拒否条件を所有する一時fileで確認します。
+`zig cc -shared -DSIGMA_FS_TESTING src/host_filesystem_native.c -o .work/646/filesystem-native.dll`
+でWindows用fixtureを作り、`verify-filesystem-native.py --library PATH`で確認します。
+LinuxはGNU共有library（`-shared -fPIC -target x86_64-linux-gnu`）を使います。
+native試験は1,000反復後のhandle/fd数と、Windowsの試験専用カウンターによる
+open前のdevice拒否を確認します。シリアル機器は開きません。所有する試験fileは.work/646内です。
+
+`verify-graphemes.py --sigma PATH`は、EXTENSIONのX-GRAPHEMEと
+X-GRAPHEME-LASTをUnicode 18.0.0の固定GraphemeBreakTest全853ケースと照合します。
+各クラスタを両端から照会する3,096項目の検査です。
+`python scripts/make-grapheme-table.py --check`はオフライン再生成と公式入力の
+SHA256を照合します。どちらもネットワークへアクセスしません。
+
 リポジトリのルートから実行します。`test-*`は回帰テスト、`verify-*`は統合・比較の
 確認、`probe-*`は参考結果の収集です。`gforth-p00/`にはP00のGforth参照テストが
 あります。必要な参照ビルドはそのREADMEを確認してください。各スクリプトの
@@ -97,3 +112,7 @@ native C単体は`zig cc -shared -DSIGMA_PROC_TESTING src/host_process_native.c 
 
 各scriptの`--output PATH`でJSONの結果を保存できます。OS単体・公開語・Tcl protocol・実GUIを区別し、
 Macのクロスコンパイルを実機確認の代わりにしません。
+
+### EXEC-LIMITED (652)
+
+`python tests/scripts/verify-execution-control.py Sigmaのパス`で公開予算・THROW・NSを確認します。Unixでは専用PTYでRaw文字・貼付け・未完成ESC保持、SIGINT、NS/Cooked KEYの中断とmode復元も調べます。`python tests/scripts/verify-execution-control-windows.py Sigma.exeのパス`は専用の非表示consoleにだけF1・日本語・貼付け・未完成ESC・Ctrl+Cを注入し、NS/KEY・満杯時の文字保持を調べます。利用者のconsoleへ入力・信号を送りません。stdoutをJSON記録へ保存できます。物理キーボードやMac実機の確認とは区別します。

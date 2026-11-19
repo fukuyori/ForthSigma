@@ -1520,3 +1520,48 @@ stdin/stdoutが端末でVTを利用できることが条件です。POSIXではT
 `REQUIRE-EXTENSION ALSO EXTENSION`で`EKEY-WAIT ( ms -- event flag ior )`と`EKEY-MOUSE ( -- column row buttons wheel )`を使えます。期限は`0 false 0`、EOFは`K-EOF true 0`です。0はポーリング、負数は無期限。UTF-8/ESCの途中入力は期限を過ぎても保持します。`K-MOUSE`、`K-PASTE-BEGIN`、`K-PASTE-END`は非文字イベントです。マウス情報は消費時だけ更新します。貼り付け中は制御バイトも文字とし、byte入力やGRAPHICSへ切り替えると貼り付けの解釈を解除します。標準入力の`EKEY?`は完成イベントを先読みし、マウスや貼り付けの状態を確定しません。音・描画は前提ではありません。独自の埋込みホストでEKEY-WAITを使う場合は新しい型付き入力口とClockが必要で、従来EKEYの操作口も維持します。順序・エラー・ファイル選択・OS別の確認は[イベント設計](EVENT_QUEUE_DESIGN.md)を参照してください。
 
 EKEY-WAITの対象は標準入力（リダイレクトしたstdinを含む）です。INFILE-EXECUTEで非stdinを選択している場合は入力を消費せず-21をTHROWし、既存のファイルEKEY/EKEY?の動作を維持します。ファイルごとの期限待機と永続する保留は639/1078で扱います。
+
+## Unicode書記素境界
+
+`REQUIRE-EXTENSION ALSO EXTENSION`で読み込みます。`X-GRAPHEME ( c-addr u -- u1 )`は先頭、`X-GRAPHEME-LAST ( c-addr u -- u1 )`は末尾の拡張書記素クラスタのUTF-8バイト数を返します。空なら0です。Unicode 18.0.0／UAX #29改訂49を使い、既存の文字の表示幅は15.1.0のままです。
+
+前方は先頭クラスタと境界判定用の次の1コードポイントだけ復号します。その範囲の不正UTF-8は-24で失敗し、引数を保持します。それより後ろのバイトは後続の呼出しで検査します。末尾側は渡した全文を検査するため、末尾の反復削除は二乗時間になり得ます。領域外は-9です。末尾の照会には元の先頭と全長を渡します。渡した範囲を独立した文字列として扱うため、クラスタの途中で切った範囲では元の境界を再現する保証はありません。正規化・言語別の調整・クラスタの表示幅計算は行いません。[設計と計算量](GRAPHEME_DESIGN.md)を参照してください。
+
+```forth
+REQUIRE-EXTENSION ALSO EXTENSION
+S" abc" 2DUP X-GRAPHEME /STRING TYPE  \ bc
+S" abc" X-GRAPHEME-LAST .            \ 1
+PREVIOUS
+```
+
+## ファイルシステム拡張
+
+`REQUIRE-EXTENSION ALSO EXTENSION`で読み込みます。`COMPACT-FILENAME ( c-addr u -- c-addr u2 )`は、Gforthの字句規則で指定領域を直接整理します。区切りは`/`だけで、末尾の`.`と`..`は残します。実在確認やリンク解決は行わず、ホストのファイル機能も不要です。入力長に応じた一時領域を使い、固定1024バイト制限はありません。
+
+`FILE>REALPATH ( name u buffer capacity -- needed ior )`は既存パスのリンクをたどり、WindowsではUTF-8、POSIXではOSのパスのバイト列を、終端NULなしでコピーします。入力と出力は重なっても構いません。容量不足は必要バイト数とERANGEを返し、バッファを変えません。容量0で必要長を照会できます。他の失敗は`0 ior`です。Windowsはバックスラッシュを含む拡張パスを返しますが、既存の入力4095バイト制限は、結果を再利用するときも適用されます。`~`展開やFPATH検索は行いません。
+
+`FILE-METADATA ( name u -- ud-size mtime-sec mtime-nsec ior )`はリンク先の通常ファイルを照会し、サイズを2セル、UTCのUnix符号付き秒と0〜999999999のナノ秒を各1セルで返します。負時刻はfloor分解します。実際の精度はファイルシステム次第です。失敗時は数値4セルを0にします。1回の照会であり、後続操作との原子性や、すべての変更を検出できる保証はありません。
+
+`SYNC-FILE ( fileid -- ior )`は書込み可能な通常ファイルに対し、Cバッファを整合させてPOSIX fsync／Windows FlushFileBuffersを要求します。成功時は論理位置・保留入力・意味上のEOFを保ちます。標準ストリーム・パイプ・デバイス・ディレクトリはflush前に拒否し、読取り専用も拒否します。OS失敗時もハンドルを保持します。途中取消しできない同期処理で、親ディレクトリ・rename・停電時の永続性は保証しません。MacはF_FULLFSYNCではなくfsyncです。FLUSH-FILEの意味は変えません。不正領域・負長は-9、files機能やhost callbackがなければ-21をTHROWします。[設計](FILESYSTEM_DESIGN.md)を参照してください。
+
+```forth
+REQUIRE-EXTENSION ALSO EXTENSION
+S" a/../b" COMPACT-FILENAME TYPE  \ b
+S" VERSION" FILE-METADATA THROW . . D.
+PREVIOUS
+```
+
+## 実行予算と中断（652）
+
+`REQUIRE-EXTENSION ALSO EXTENSION`で`EXEC-LIMITED ( i*x xt u -- j*x ior )`を使えます。debugとextensionの両方が必要です。u=0は上限なしで中断を確認し、正常終了は0、その入口の予算切れは-280を返します。最大16段で、内側の実行は外側すべての有限予算にも計上します。CLIの上限、通常のTHROW、Ctrl+C（-28）は外へ伝えます。返った-280をTHROWすると既存のStepLimitとして通常CATCHを通り抜けるため、入口で数値を比較して処理してください。
+
+単位は入口dispatch、compiled operation、有効入口内の解釈token、nativeの既存checkWorkBlockです。時間やCPU命令数ではありません。予算切れではxt/uを除いた入口のCATCH相当の深さを戻しますが、値・メモリ・ファイル・描画等の副作用は巻き戻しません。継続再開やスケジューリングは行いません。OS処理や未対応native処理は安全な確認点まで中断できません。
+
+計算中にRaw/Cooked modeを変更しません。Raw入力は先行する文字・UTF-8・特殊キーを保持し、貼り付け中の値3は文字として残します。有界キューが満杯になると、その後ろのCtrl+Cを検出できない場合があります。OSから届く割込みは別に確認します。20msは目標で、保証ではありません。host能力不足は-21です。[詳細設計](EXECUTION_CONTROL_DESIGN.md)。
+
+```forth
+REQUIRE-EXTENSION ALSO EXTENSION
+: SPIN BEGIN AGAIN ;
+' SPIN 100 EXEC-LIMITED .  \ -280
+PREVIOUS
+```
