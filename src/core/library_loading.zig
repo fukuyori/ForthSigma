@@ -32,8 +32,8 @@ pub fn Group(comptime Definition: type) type {
         /// The cell that keeps the vocabulary's word number.
         vocabulary_address: Cell,
         /// The cell that says the group was loaded, for a group whose built-in words
-        /// change the image's format; null for a group without built-in words, whose
-        /// images any build with its prerequisites reads.
+        /// need a legacy image magic. Null for groups needing no extra magic,
+        /// including EXTENSION: excluded builtins are validated from image contents.
         image_address: ?Cell = null,
         /// Groups loaded first; the library finds their words, after its own.
         prerequisites: []const Prerequisite = &.{},

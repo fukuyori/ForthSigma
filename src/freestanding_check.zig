@@ -5,6 +5,23 @@
 //! linked, so a function the core declares `extern` itself is not checked.
 
 const forth = @import("forth.zig");
+const runtime = @import("core/runtime_base.zig");
+
+// The shared deadline and metadata contracts must not import a host service.
+export fn sigma_runtime_deadline(now: i64, duration_ms: i64) bool {
+    const deadline = runtime.Deadline.afterMilliseconds(now, duration_ms) catch return false;
+    return deadline.expired(now);
+}
+
+export fn sigma_runtime_resource() bool {
+    var table = runtime.ResourceTable(u32, 1).init(1) catch return false;
+    const handle = table.insert(1, .task, 42) catch return false;
+    _ = table.remove(handle, 1, .task) catch return false;
+    var scopes = runtime.SignalOwnership(1){};
+    const scope = scopes.enter(1) catch return false;
+    scopes.leave(scope) catch return false;
+    return true;
+}
 
 export fn sigma_init(state: *forth.State, writer: *const forth.Writer, storage: *const forth.Storage) void {
     state.init(writer.*, storage.*);

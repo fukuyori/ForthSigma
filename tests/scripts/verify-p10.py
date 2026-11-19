@@ -11,7 +11,7 @@ import tempfile
 
 p = argparse.ArgumentParser(description=__doc__)
 p.add_argument('--sigma', type=Path, required=True)
-p.add_argument('--disabled', choices=['float', 'files', 'help', 'tools', 'image', 'graphics', 'audio', 'debug'])
+p.add_argument('--disabled', choices=['float', 'files', 'help', 'tools', 'image', 'graphics', 'audio', 'extension', 'debug'])
 p.add_argument('--output', type=Path, required=True)
 a = p.parse_args()
 sigma = str(a.sigma.resolve(strict=True))
@@ -42,7 +42,7 @@ groups = {
 for group, names in groups.items():
     run(f'registration-{group}', ' '.join(f'[DEFINED] {name} .' for name in names),
         ''.join(f'{0 if group == a.disabled else -1} ' for _ in names).encode())
-for group, vocabulary, word, code in [('graphics', 'GRAPHICS', 'GFX-INIT', -270), ('audio', 'AUDIO', 'SND-PLAY', -275)]:
+for group, vocabulary, word, code in [('graphics', 'GRAPHICS', 'GFX-INIT', -270), ('audio', 'AUDIO', 'SND-PLAY', -275), ('extension', 'EXTENSION', 'HOST-OS', -13)]:
     if a.disabled == group:
         run(f'registration-{group}', f': TRY-W S" REQUIRE-{group.upper()}" EVALUATE ; \' TRY-W CATCH . [DEFINED] {vocabulary} .', f'{code} 0 '.encode())
     else:

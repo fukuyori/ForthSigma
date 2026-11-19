@@ -5,6 +5,7 @@ const defs = @import("defs.zig");
 const map = @import("memory_map.zig");
 const planner = @import("image_append_plan.zig");
 const RuntimeError = defs.RuntimeError;
+const groups = @import("library_groups.zig").groups;
 pub const Workspace = struct {
     plan: planner.Plan = undefined,
     file_map: [map.max_source_files]u8 = @splat(0),
@@ -12,14 +13,14 @@ pub const Workspace = struct {
     file_loaded: [map.max_source_files]bool = @splat(false),
     file_count: usize = 0,
     loaded_before: map.UCell = 0,
-    groups_loaded: [4]bool = @splat(false),
+    groups_loaded: [groups.len]bool = @splat(false),
 };
 
 /// image and Workspace must be disjoint from State and remain stable throughout.
 pub fn append(state: *forth.State, image: []const u8, work: *Workspace) RuntimeError!void {
     try planner.prepare(state, image, &work.plan);
     prepareFiles(state, work);
-    inline for (.{ @import("words_graphics.zig").group, @import("words_audio.zig").group, @import("words_gui.zig").group, @import("words_game.zig").group }, 0..) |group, i| {
+    inline for (groups, 0..) |group, i| {
         work.groups_loaded[i] = @import("library_loading.zig").isLoaded(state, group);
     }
     apply(state, work);
@@ -121,7 +122,7 @@ fn apply(state: *forth.State, work: *Workspace) void {
     // Normalize first, then specialize against the newly installed word table.
     for (state.code[plan.code_base..state.code_count]) |*op| op.* = state.specializeCall(op.*);
     if (defs.debug_enabled) @import("words_debug.zig").noteBreakpoints(state);
-    inline for (.{ @import("words_graphics.zig").group, @import("words_audio.zig").group, @import("words_gui.zig").group, @import("words_game.zig").group }, 0..) |group, i| {
+    inline for (groups, 0..) |group, i| {
         appendGroup(state, work, group, work.groups_loaded[i]);
     }
 }

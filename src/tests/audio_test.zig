@@ -230,6 +230,48 @@ test "Ctrl+C while PLAY waits throws USER INTERRUPT and drops the notes put so f
     try expectStack(machine, &.{0});
 }
 
+test "PLAY reports an interrupt scope failure as HOST FUNCTION ERROR" {
+    try skipWithout(&.{.audio});
+    var engine = newEngine();
+    var output = Output{ .audio = &engine };
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
+    const Fake = struct {
+        fn wait(context: ?*anyopaque) forth.AudioWait {
+            const output_value: *Output = @ptrCast(@alignCast(context.?));
+            const outcome = Output.audioWait(context);
+            return if (output_value.audio_waits == 1) .host_failed else outcome;
+        }
+    };
+    machine.writer.audio_wait_fn = Fake.wait;
+    try machine.interpretLine("REQUIRE-AUDIO ALSO AUDIO");
+    try std.testing.expectError(error.HostFailed, machine.interpretLine("S\" " ++ support.repeat("C", 100) ++ "\" PLAY"));
+    try std.testing.expectEqual(mml.Voice{}, machine.audio_voices[0]);
+    for (0..3) |v| try std.testing.expectEqual(@as(u32, 0), queued(&engine, v));
+}
+
+test "persistent audio host failure reports an error without claiming reset was consumed" {
+    try skipWithout(&.{.audio});
+    var engine = newEngine();
+    var output = Output{ .audio = &engine };
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
+    const Fake = struct {
+        fn wait(context: ?*anyopaque) forth.AudioWait {
+            const value: *Output = @ptrCast(@alignCast(context.?));
+            value.audio_waits += 1;
+            return .host_failed;
+        }
+    };
+    machine.writer.audio_wait_fn = Fake.wait;
+    try machine.interpretLine("REQUIRE-AUDIO ALSO AUDIO");
+    try std.testing.expectError(error.HostFailed, machine.interpretLine("S\" " ++ support.repeat("C", 100) ++ "\" PLAY"));
+    try std.testing.expect(output.audio_waits < 4);
+    try std.testing.expect(!engine.commands.isEmpty());
+    render(&engine, 1);
+    for (0..3) |v| try std.testing.expectEqual(@as(u32, 0), queued(&engine, v));
+}
+
 test "Ctrl+C as a key, when the terminal gives single keys, also stops PLAY's wait" {
     try skipWithout(&.{.audio});
     var engine = newEngine();

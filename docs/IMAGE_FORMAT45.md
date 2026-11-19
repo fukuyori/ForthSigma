@@ -67,3 +67,9 @@ The P09a builtin additions and `exception_entry` WordKind change the ABI fingerp
 The additional35 public builtins change the ABI fingerprint; recreate images from earlier/intermediate commits. Fixed64-bit cells0x0d98/0x0da0/0x0da8/0x0db0/0x0db8 hold MAXDEPTH-.S, F.S-PRECISION, BEFORE-LOCATE, AFTER-LOCATE and WHERE style (0 short,1 expanded,2 prepend). Fixed builtin VALUE addresses are checked by the shared mapping. WHERE style outside0..2 is rejected during save/parse. Full restore copies settings; append retains destination settings.
 
 Cursor paths/windows, WHERE/BROWSE snapshots, saved exception locations, editor destination modes, editor callbacks and inspection captures are runtime state and are not image roots. Full restore invalidates views by generation; an editor callback restoring a heap cannot free a previous capture at a reused address. Compiled return extension words use builtin IDs; no host/native return pointers are serialized. Existing image paths continue to omit stacks and recorded-use history.
+
+## 2026-11-19：語群の機能検査
+
+EXTENSION追加では新しいmagicを増やさず、HOST-OSのBuiltin追加によりABI署名を更新する。構造コーデックは機能構成に依存せず、SAVEも構造検査を行う。実際の復元とバイト列追加はimage_restore_planで、State追加はdictionary_imageで、image_featuresの共通検査を行う。起動時の予約欄を除く追加builtin語と直接builtin Opが読込み先で除外されていれば、対象を変更する前にInvalidImageで拒否する。audio/graphicsも対象であり、従来より読込みを制限する。
+
+予約された基本辞書欄への通常の呼出しは従来どおり読込み可能で、除外語の実行時にInvalidExecutionTokenとなる。例えばfloatの直接FLITERAL Opは事前拒否するが、F+への通常の呼出しは実行時に拒否する。生のxtをデータとして保存した場合の実行時防御も維持する。詳細は[語群基盤の設計](EXTENSION_GROUP_DESIGN.md)。

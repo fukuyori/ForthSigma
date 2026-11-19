@@ -25,6 +25,12 @@ pub fn prepare(state: *const forth.State, image: []const u8, plan: *Plan) Runtim
     plan.view = try format.parse(image, &plan.validation);
     const view = plan.view;
     const h = view.header;
+    // Both restore and typed append pass through this non-mutating feature check.
+    for (0..h.word_count) |i| try @import("image_features.zig").validateWord(wordAt(view, i), i, h.builtin_count);
+    for (0..h.code_count) |i| {
+        const op = std.mem.bytesToValue(defs.Op, view.code[i * @sizeOf(defs.Op) ..][0..@sizeOf(defs.Op)]);
+        try @import("image_features.zig").validateOperation(op);
+    }
     if (h.m != state.sizes.m or h.l != state.sizes.l or h.builtin_count != state.builtin_count) return error.InvalidImage;
     for (state.words[0..state.builtin_count], 0..) |own, i| {
         const saved = wordAt(view, i);

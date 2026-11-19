@@ -6,18 +6,19 @@
 
 通常構成を基準とします。機能を除いた構成では対象の語を使えません。追加語彙はREQUIREで読み込んでから検索順へ加えます。即時語・コンパイル専用の印は、組込み語の実装にある属性です。構文の実行条件は説明本文に従ってください。
 
-項目数（語彙と名前の組）：**1533**。同名でも語彙が異なる項目は別に数えます。
+項目数（語彙と名前の組）：**1536**。同名でも語彙が異なる項目は別に数えます。
 
 ## 目次
 
 - [AUDIO](#namespace-audio) (73)
 - [EKEYS](#namespace-ekeys) (35)
-- [FORTH](#namespace-forth) (957)
+- [EXTENSION](#namespace-extension) (1)
+- [FORTH](#namespace-forth) (958)
 - [GAME](#namespace-game) (59)
 - [GRAPHICS](#namespace-graphics) (222)
 - [GUI](#namespace-gui) (135)
 - [Root](#namespace-root) (14)
-- [Syntax](#namespace-syntax) (38)
+- [Syntax](#namespace-syntax) (39)
 
 更新：`python scripts/word-reference.py`。照合のみ：`python scripts/word-reference.py --check`。生成文書の本文を直接編集せず、HELP原文・登録定義または生成スクリプトを更新してください。
 
@@ -125,7 +126,7 @@ Set the instrument's envelope, each 0 to 15 as on the C64's SID; 0 0 15 0 at fir
 7 INSTRUMENT PULSE 25 DUTY 1 2 10 3 ADSR
 ```
 
-[使用例の文脈](../src/tests/audio_test.zig#L343)
+[使用例の文脈](../src/tests/audio_test.zig#L385)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -135,7 +136,7 @@ Set the instrument's envelope, each 0 to 15 as on the C64's SID; 0 0 15 0 at fir
 : ADSR ( attack decay sustain release -- )   SND-ADSR ;
 ```
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1331).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1333).
 
 <a id="w-415544494f3a414d494741"></a>
 
@@ -169,7 +170,7 @@ REQUIRE-AUDIO ALSO AUDIO AMIGA . PREVIOUS
 16 CONSTANT SCC   32 CONSTANT AMIGA
 ```
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1373).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1375).
 
 <a id="w-415544494f3a414d4947412d46494c544552"></a>
 
@@ -197,7 +198,7 @@ Turn the Amiga's LED filter (a low-pass at about 3.3 kHz) on or off; off at firs
 REQUIRE-AUDIO ALSO AUDIO AMIGA-SOUND TRUE AMIGA-FILTER
 ```
 
-[使用例の文脈](../src/tests/audio_test.zig#L578)
+[使用例の文脈](../src/tests/audio_test.zig#L620)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -207,7 +208,7 @@ REQUIRE-AUDIO ALSO AUDIO AMIGA-SOUND TRUE AMIGA-FILTER
 : AMIGA-FILTER ( flag -- )   SND-AMIGA-FILTER ;
 ```
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1355).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1357).
 
 <a id="w-415544494f3a414d4947412d534f554e44"></a>
 
@@ -235,7 +236,7 @@ Play PLAY on the Amiga's Paula (PAL, 4 voices of samples, left right right left)
 REQUIRE-AUDIO ALSO AUDIO AMIGA-SOUND TRUE AMIGA-FILTER
 ```
 
-[使用例の文脈](../src/tests/audio_test.zig#L578)
+[使用例の文脈](../src/tests/audio_test.zig#L620)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -245,7 +246,7 @@ REQUIRE-AUDIO ALSO AUDIO AMIGA-SOUND TRUE AMIGA-FILTER
 : AMIGA-SOUND ( -- )   5 SND-CHIP ;
 ```
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1354).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1356).
 
 <a id="w-415544494f3a415544494f3f"></a>
 
@@ -273,7 +274,7 @@ Report whether an available audio engine reaches a physical device; without a de
 AUDIO?
 ```
 
-[使用例の文脈](../src/tests/audio_test.zig#L291)
+[使用例の文脈](../src/tests/audio_test.zig#L333)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -283,7 +284,7 @@ AUDIO?
 : AUDIO? ( -- flag )   SND-DEVICE ;
 ```
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1313).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1315).
 
 <a id="w-415544494f3a42454550"></a>
 
@@ -311,7 +312,7 @@ Stop the music, set the PSG and the PLAY settings as at start, and beep (FORTH/S
 BEEP
 ```
 
-[使用例の文脈](../src/tests/audio_test.zig#L567)
+[使用例の文脈](../src/tests/audio_test.zig#L609)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -321,7 +322,7 @@ BEEP
 : BEEP ( -- )   SND-BEEP ;
 ```
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1312).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1314).
 
 <a id="w-415544494f3a433634"></a>
 
@@ -355,7 +356,7 @@ REQUIRE-AUDIO ALSO AUDIO C64 . PREVIOUS
 1 CONSTANT MSX   2 CONSTANT ST   4 CONSTANT NES   8 CONSTANT C64
 ```
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1371).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1373).
 
 <a id="w-415544494f3a4336342d534f554e44"></a>
 
@@ -383,7 +384,7 @@ Play PLAY on the C64's SID (PAL, 3 voices); the music stops (FORTH/Sigma audio).
 C64-SOUND
 ```
 
-[使用例の文脈](../src/tests/audio_test.zig#L614)
+[使用例の文脈](../src/tests/audio_test.zig#L656)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -393,7 +394,7 @@ C64-SOUND
 : C64-SOUND ( -- )   3 SND-CHIP ;
 ```
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1335).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1337).
 
 <a id="w-415544494f3a4348495053"></a>
 
@@ -421,7 +422,7 @@ Give the voices several chips, e.g. MSX SCC OR CHIPS; they are numbered in the o
 ST NES OR CHIPS
 ```
 
-[使用例の文脈](../src/tests/audio_test.zig#L610)
+[使用例の文脈](../src/tests/audio_test.zig#L652)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -431,7 +432,7 @@ ST NES OR CHIPS
 : CHIPS ( mask -- )   SND-CHIPS ;
 ```
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1365).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1367).
 
 <a id="w-415544494f3a44555459"></a>
 
@@ -459,7 +460,7 @@ Set the width of the instrument's pulse, 0 to 100 percent; 50 at first (FORTH/Si
 7 INSTRUMENT PULSE 25 DUTY 1 2 10 3 ADSR
 ```
 
-[使用例の文脈](../src/tests/audio_test.zig#L343)
+[使用例の文脈](../src/tests/audio_test.zig#L385)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -469,7 +470,7 @@ Set the width of the instrument's pulse, 0 to 100 percent; 50 at first (FORTH/Si
 : DUTY ( percent -- )   SND-DUTY ;
 ```
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1330).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1332).
 
 <a id="w-415544494f3a46494c544552"></a>
 
@@ -497,7 +498,7 @@ Send the instrument through the C64's filter: mode 0 none, 1 low-pass, 2 band-pa
 FALSE RING 0 0 0 FILTER
 ```
 
-[使用例の文脈](../src/tests/audio_test.zig#L381)
+[使用例の文脈](../src/tests/audio_test.zig#L423)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -507,7 +508,7 @@ FALSE RING 0 0 0 FILTER
 : FILTER ( mode cutoff resonance -- )   SND-FILTER ;
 ```
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1338).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1340).
 
 <a id="w-415544494f3a465245452d53414d504c4553"></a>
 
@@ -535,7 +536,7 @@ Stop music and effects, forget all samples and the loaded MOD, and reclaim their
 FREE-SAMPLES
 ```
 
-[使用例の文脈](../src/tests/audio_test.zig#L521)
+[使用例の文脈](../src/tests/audio_test.zig#L563)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -545,7 +546,7 @@ FREE-SAMPLES
 : FREE-SAMPLES ( -- )   SND-FREE-SAMPLES ;
 ```
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1353).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1355).
 
 <a id="w-415544494f3a494e535452554d454e54"></a>
 
@@ -573,7 +574,7 @@ Choose instrument n (0 to 63), which MML's @n plays with, for the words that cha
 3 INSTRUMENT FILL-W W 9 SCC-WAVE
 ```
 
-[使用例の文脈](../src/tests/audio_test.zig#L405)
+[使用例の文脈](../src/tests/audio_test.zig#L447)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -583,7 +584,7 @@ Choose instrument n (0 to 63), which MML's @n plays with, for the words that cha
 : INSTRUMENT ( n -- )   SND-INSTRUMENT ;
 ```
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1324).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1326).
 
 <a id="w-415544494f3a4c4f41442d4d4f44"></a>
 
@@ -611,7 +612,7 @@ Load a 4-channel, 31-sample ProTracker MOD into the shared sample pool. Reloadin
 REQUIRE-AUDIO ALSO AUDIO S" a.txt" LOAD-MOD
 ```
 
-[使用例の文脈](../src/tests/audio_test.zig#L782)
+[使用例の文脈](../src/tests/audio_test.zig#L824)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。 番地・長さ・容量は有効な論理メモリー範囲を指定します。所有領域と借用領域の寿命を区別してください。
 
@@ -621,7 +622,7 @@ REQUIRE-AUDIO ALSO AUDIO S" a.txt" LOAD-MOD
 : LOAD-MOD ( c-addr u -- )   SND-LOAD-MOD THROW ;
 ```
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1360).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1362).
 
 <a id="w-415544494f3a4c4f41442d53414d504c45"></a>
 
@@ -649,7 +650,7 @@ Load 8/16-bit PCM WAV as mono sample n (0..63). Samples and MOD share a 64 MiB p
 S" a.txt" 5 LOAD-SAMPLE
 ```
 
-[使用例の文脈](../src/tests/audio_test.zig#L456)
+[使用例の文脈](../src/tests/audio_test.zig#L498)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。 番地・長さ・容量は有効な論理メモリー範囲を指定します。所有領域と借用領域の寿命を区別してください。
 
@@ -659,7 +660,7 @@ S" a.txt" 5 LOAD-SAMPLE
 : LOAD-SAMPLE ( c-addr u n -- )   SND-LOAD-SAMPLE THROW ;
 ```
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1348).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1350).
 
 <a id="w-415544494f3a4c4f4f502d53414d504c45"></a>
 
@@ -687,7 +688,7 @@ Loop sample n from frame start to frame end; 0 0 for no loop (FORTH/Sigma audio)
 2 8 1 LOOP-SAMPLE
 ```
 
-[使用例の文脈](../src/tests/audio_test.zig#L503)
+[使用例の文脈](../src/tests/audio_test.zig#L545)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -697,7 +698,7 @@ Loop sample n from frame start to frame end; 0 0 for no loop (FORTH/Sigma audio)
 : LOOP-SAMPLE ( start end n -- )   SND-LOOP-SAMPLE ;
 ```
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1350).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1352).
 
 <a id="w-415544494f3a4d4f443f"></a>
 
@@ -725,7 +726,7 @@ Whether the module plays (FORTH/Sigma audio).
 MOD?
 ```
 
-[使用例の文脈](../src/tests/audio_test.zig#L749)
+[使用例の文脈](../src/tests/audio_test.zig#L791)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -735,7 +736,7 @@ MOD?
 : MOD? ( -- flag )   SND-MOD-PLAYING ;
 ```
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1363).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1365).
 
 <a id="w-415544494f3a4d5358"></a>
 
@@ -769,7 +770,7 @@ REQUIRE-AUDIO ALSO AUDIO MSX . PREVIOUS
 1 CONSTANT MSX   2 CONSTANT ST   4 CONSTANT NES   8 CONSTANT C64
 ```
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1368).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1370).
 
 <a id="w-415544494f3a4d53582d534f554e44"></a>
 
@@ -797,7 +798,7 @@ Play PLAY on the MSX's AY-3-8910 (3 voices), as at start; the music stops (FORTH
 MSX-SOUND
 ```
 
-[使用例の文脈](../src/tests/audio_test.zig#L331)
+[使用例の文脈](../src/tests/audio_test.zig#L373)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -807,7 +808,7 @@ MSX-SOUND
 : MSX-SOUND ( -- )   0 SND-CHIP ;
 ```
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1321).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1323).
 
 <a id="w-415544494f3a4e4553"></a>
 
@@ -841,7 +842,7 @@ REQUIRE-AUDIO ALSO AUDIO NES . PREVIOUS
 1 CONSTANT MSX   2 CONSTANT ST   4 CONSTANT NES   8 CONSTANT C64
 ```
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1370).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1372).
 
 <a id="w-415544494f3a4e45532d534f554e44"></a>
 
@@ -869,7 +870,7 @@ Play PLAY on the NES's APU: pulse, pulse, triangle, noise; the music stops (FORT
 NES-SOUND BEEP
 ```
 
-[使用例の文脈](../src/tests/audio_test.zig#L358)
+[使用例の文脈](../src/tests/audio_test.zig#L400)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -879,7 +880,7 @@ NES-SOUND BEEP
 : NES-SOUND ( -- )   2 SND-CHIP ;
 ```
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1323).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1325).
 
 <a id="w-415544494f3a4e4f495345"></a>
 
@@ -907,7 +908,7 @@ Make the instrument noise, on the chips that let it choose (FORTH/Sigma audio).
 SQUARE TRIANGLE SAW NOISE
 ```
 
-[使用例の文脈](../src/tests/audio_test.zig#L349)
+[使用例の文脈](../src/tests/audio_test.zig#L391)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -917,7 +918,7 @@ SQUARE TRIANGLE SAW NOISE
 : NOISE ( -- )   4 SND-WAVE ;
 ```
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1329).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1331).
 
 <a id="w-415544494f3a504c4159"></a>
 
@@ -955,7 +956,7 @@ S" CDE" PLAY
 : PLAY ( c-addr u -- )   0 0 0 0 SND-PLAY ;
 ```
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1307).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1309).
 
 <a id="w-415544494f3a504c41592d4d4f44"></a>
 
@@ -983,7 +984,7 @@ Play the module from its start, beside PLAY and SFX; again after its end when fl
 TRUE PLAY-MOD
 ```
 
-[使用例の文脈](../src/tests/audio_test.zig#L754)
+[使用例の文脈](../src/tests/audio_test.zig#L796)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -993,7 +994,7 @@ TRUE PLAY-MOD
 : PLAY-MOD ( flag -- )   SND-PLAY-MOD ;
 ```
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1361).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1363).
 
 <a id="w-415544494f3a504c415932"></a>
 
@@ -1031,7 +1032,7 @@ S" O5 L8 C" S" D" PLAY2  S" E" S" F" S" G" PLAY3
 : PLAY2 ( c-addr1 u1 c-addr2 u2 -- )   0 0 SND-PLAY ;
 ```
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1308).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1310).
 
 <a id="w-415544494f3a504c415933"></a>
 
@@ -1069,7 +1070,7 @@ S" O5 L8 C" S" D" PLAY2  S" E" S" F" S" G" PLAY3
 : PLAY3 ( c-addr1 u1 c-addr2 u2 c-addr3 u3 -- )   SND-PLAY ;
 ```
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1309).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1311).
 
 <a id="w-415544494f3a504c41593f"></a>
 
@@ -1107,7 +1108,7 @@ Whether voice n (1 to 8), or any voice for 0, still has notes to play, as MSX BA
 : PLAY? ( n -- flag )   SND-PLAYING ;
 ```
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1310).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1312).
 
 <a id="w-415544494f3a504c415953"></a>
 
@@ -1143,7 +1144,7 @@ REQUIRE-AUDIO ALSO AUDIO S" C" S" E" S" G" S" C" 4 PLAYS 4 PLAY? .
 : PLAYS ( c-addr1 u1 ... c-addrn un n -- )   SND-PLAYS ;
 ```
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1320).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1322).
 
 <a id="w-415544494f3a50554c5345"></a>
 
@@ -1171,7 +1172,7 @@ Make the instrument a pulse of DUTY's width; the NES takes 12.5, 25, 50, or 75% 
 7 INSTRUMENT PULSE 25 DUTY 1 2 10 3 ADSR
 ```
 
-[使用例の文脈](../src/tests/audio_test.zig#L343)
+[使用例の文脈](../src/tests/audio_test.zig#L385)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -1181,7 +1182,7 @@ Make the instrument a pulse of DUTY's width; the NES takes 12.5, 25, 50, or 75% 
 : PULSE ( -- )   1 SND-WAVE ;
 ```
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1326).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1328).
 
 <a id="w-415544494f3a52494e47"></a>
 
@@ -1209,7 +1210,7 @@ Ring-modulate the instrument's triangle by the voice before (voice 1 by voice 3)
 FALSE RING 0 0 0 FILTER
 ```
 
-[使用例の文脈](../src/tests/audio_test.zig#L381)
+[使用例の文脈](../src/tests/audio_test.zig#L423)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -1219,7 +1220,7 @@ FALSE RING 0 0 0 FILTER
 : RING ( flag -- )   SND-RING ;
 ```
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1336).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1338).
 
 <a id="w-415544494f3a53414d504c45"></a>
 
@@ -1247,7 +1248,7 @@ Make the u signed 8-bit bytes at c-addr sample n, recorded at rate Hz (1000 to 1
 CREATE S 10 ALLOT S 10 0 FILL 127 S C! 128 S 1 + C!  S 10 8000 1 SAMPLE
 ```
 
-[使用例の文脈](../src/tests/audio_test.zig#L499)
+[使用例の文脈](../src/tests/audio_test.zig#L541)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。 番地・長さ・容量は有効な論理メモリー範囲を指定します。所有領域と借用領域の寿命を区別してください。
 
@@ -1257,7 +1258,7 @@ CREATE S 10 ALLOT S 10 0 FILL 127 S C! 128 S 1 + C!  S 10 8000 1 SAMPLE
 : SAMPLE ( c-addr u rate n -- )   SND-SAMPLE ;
 ```
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1349).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1351).
 
 <a id="w-415544494f3a53414d504c452d494e535452554d454e54"></a>
 
@@ -1285,7 +1286,7 @@ Have the instrument play sample n on the Amiga, O4's C at the sample's rate; -1 
 -1 SAMPLE-INSTRUMENT
 ```
 
-[使用例の文脈](../src/tests/audio_test.zig#L514)
+[使用例の文脈](../src/tests/audio_test.zig#L556)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -1295,7 +1296,7 @@ Have the instrument play sample n on the Amiga, O4's C at the sample's rate; -1 
 : SAMPLE-INSTRUMENT ( n -- )   SND-SAMPLE-INSTRUMENT ;
 ```
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1351).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1353).
 
 <a id="w-415544494f3a534157"></a>
 
@@ -1323,7 +1324,7 @@ Make the instrument a sawtooth wave, on the chips that let it choose (FORTH/Sigm
 SQUARE TRIANGLE SAW NOISE
 ```
 
-[使用例の文脈](../src/tests/audio_test.zig#L349)
+[使用例の文脈](../src/tests/audio_test.zig#L391)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -1333,7 +1334,7 @@ SQUARE TRIANGLE SAW NOISE
 : SAW ( -- )   3 SND-WAVE ;
 ```
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1328).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1330).
 
 <a id="w-415544494f3a534343"></a>
 
@@ -1367,7 +1368,7 @@ REQUIRE-AUDIO ALSO AUDIO SCC . PREVIOUS
 16 CONSTANT SCC   32 CONSTANT AMIGA
 ```
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1372).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1374).
 
 <a id="w-415544494f3a5343432d534f554e44"></a>
 
@@ -1395,7 +1396,7 @@ Play PLAY on Konami's SCC (5 voices of 32-sample waves); the music stops (FORTH/
 REQUIRE-AUDIO ALSO AUDIO SCC-SOUND
 ```
 
-[使用例の文脈](../src/tests/audio_test.zig#L396)
+[使用例の文脈](../src/tests/audio_test.zig#L438)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -1405,7 +1406,7 @@ REQUIRE-AUDIO ALSO AUDIO SCC-SOUND
 : SCC-SOUND ( -- )   4 SND-CHIP ;
 ```
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1340).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1342).
 
 <a id="w-415544494f3a5343432d57415645"></a>
 
@@ -1433,7 +1434,7 @@ Make the 32 signed bytes at c-addr the wave instrument n plays on the SCC; witho
 3 INSTRUMENT FILL-W W 9 SCC-WAVE
 ```
 
-[使用例の文脈](../src/tests/audio_test.zig#L405)
+[使用例の文脈](../src/tests/audio_test.zig#L447)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。 番地・長さ・容量は有効な論理メモリー範囲を指定します。所有領域と借用領域の寿命を区別してください。
 
@@ -1443,7 +1444,7 @@ Make the 32 signed bytes at c-addr the wave instrument n plays on the SCC; witho
 : SCC-WAVE ( c-addr n -- )   SND-WAVETABLE ;
 ```
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1374).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1376).
 
 <a id="w-415544494f3a534658"></a>
 
@@ -1471,7 +1472,7 @@ Play sample n once at its rate, at once and beside the music, on any chip; four 
 1 SFX
 ```
 
-[使用例の文脈](../src/tests/audio_test.zig#L517)
+[使用例の文脈](../src/tests/audio_test.zig#L559)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -1481,7 +1482,7 @@ Play sample n once at its rate, at once and beside the music, on any chip; four 
 : SFX ( n -- )   SND-SFX ;
 ```
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1352).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1354).
 
 <a id="w-415544494f3a534e442d41445352"></a>
 
@@ -1513,7 +1514,7 @@ Host primitive for ADSR (FORTH/Sigma).
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1319).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1321).
 
 <a id="w-415544494f3a534e442d414d4947412d46494c544552"></a>
 
@@ -1545,7 +1546,7 @@ Host primitive for AMIGA-FILTER (FORTH/Sigma).
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1346).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1348).
 
 <a id="w-415544494f3a534e442d42454550"></a>
 
@@ -1577,7 +1578,7 @@ Host primitive for BEEP (FORTH/Sigma).
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1304).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1306).
 
 <a id="w-415544494f3a534e442d43484950"></a>
 
@@ -1609,7 +1610,7 @@ Host primitive for MSX-SOUND (0), ST-SOUND (1), NES-SOUND (2), C64-SOUND (3), SC
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1315).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1317).
 
 <a id="w-415544494f3a534e442d4348495053"></a>
 
@@ -1641,7 +1642,7 @@ Host primitive for CHIPS (FORTH/Sigma).
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1364).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1366).
 
 <a id="w-415544494f3a534e442d444556494345"></a>
 
@@ -1673,7 +1674,7 @@ Host primitive for AUDIO? (FORTH/Sigma).
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1306).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1308).
 
 <a id="w-415544494f3a534e442d44555459"></a>
 
@@ -1705,7 +1706,7 @@ Host primitive for DUTY (FORTH/Sigma).
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1318).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1320).
 
 <a id="w-415544494f3a534e442d46494c544552"></a>
 
@@ -1737,7 +1738,7 @@ Host primitive for FILTER (FORTH/Sigma).
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1334).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1336).
 
 <a id="w-415544494f3a534e442d465245452d53414d504c4553"></a>
 
@@ -1769,7 +1770,7 @@ Host primitive for FREE-SAMPLES (FORTH/Sigma).
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1347).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1349).
 
 <a id="w-415544494f3a534e442d494e535452554d454e54"></a>
 
@@ -1801,7 +1802,7 @@ Host primitive for INSTRUMENT (FORTH/Sigma).
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1316).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1318).
 
 <a id="w-415544494f3a534e442d4c4f41442d4d4f44"></a>
 
@@ -1833,7 +1834,7 @@ Host primitive for LOAD-MOD: ior 0, the file's, -277, or -257 (FORTH/Sigma).
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。 戻り値のiorを確認してください。0が成功です。THROWへ渡す方法もあります。 番地・長さ・容量は有効な論理メモリー範囲を指定します。所有領域と借用領域の寿命を区別してください。
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1356).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1358).
 
 <a id="w-415544494f3a534e442d4c4f41442d53414d504c45"></a>
 
@@ -1861,11 +1862,11 @@ Host primitive for LOAD-SAMPLE: ior 0, the file's, -276, or -257 (FORTH/Sigma).
 S" b.txt" 6 SND-LOAD-SAMPLE S" missing.txt" 6 SND-LOAD-SAMPLE 0<>
 ```
 
-[使用例の文脈](../src/tests/audio_test.zig#L475)
+[使用例の文脈](../src/tests/audio_test.zig#L517)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。 戻り値のiorを確認してください。0が成功です。THROWへ渡す方法もあります。 番地・長さ・容量は有効な論理メモリー範囲を指定します。所有領域と借用領域の寿命を区別してください。
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1341).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1343).
 
 <a id="w-415544494f3a534e442d4c4f4f502d53414d504c45"></a>
 
@@ -1897,7 +1898,7 @@ Host primitive for LOOP-SAMPLE (FORTH/Sigma).
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1343).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1345).
 
 <a id="w-415544494f3a534e442d4d4f442d504c4159494e47"></a>
 
@@ -1929,7 +1930,7 @@ Host primitive for MOD? (FORTH/Sigma).
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1359).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1361).
 
 <a id="w-415544494f3a534e442d504c4159"></a>
 
@@ -1961,7 +1962,7 @@ Put the MML of the three voices of one PLAY; an empty string for a voice that ha
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。 番地・長さ・容量は有効な論理メモリー範囲を指定します。所有領域と借用領域の寿命を区別してください。
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1302).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1304).
 
 <a id="w-415544494f3a534e442d504c41592d4d4f44"></a>
 
@@ -1993,7 +1994,7 @@ Host primitive for PLAY-MOD (FORTH/Sigma).
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1357).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1359).
 
 <a id="w-415544494f3a534e442d504c4159494e47"></a>
 
@@ -2025,7 +2026,7 @@ Host primitive for PLAY? (FORTH/Sigma).
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1305).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1307).
 
 <a id="w-415544494f3a534e442d504c415953"></a>
 
@@ -2057,7 +2058,7 @@ Host primitive for PLAYS (FORTH/Sigma).
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。 番地・長さ・容量は有効な論理メモリー範囲を指定します。所有領域と借用領域の寿命を区別してください。
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1314).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1316).
 
 <a id="w-415544494f3a534e442d52494e47"></a>
 
@@ -2089,7 +2090,7 @@ Host primitive for RING (FORTH/Sigma).
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1332).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1334).
 
 <a id="w-415544494f3a534e442d53414d504c45"></a>
 
@@ -2121,7 +2122,7 @@ Host primitive for SAMPLE (FORTH/Sigma).
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。 番地・長さ・容量は有効な論理メモリー範囲を指定します。所有領域と借用領域の寿命を区別してください。
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1342).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1344).
 
 <a id="w-415544494f3a534e442d53414d504c452d494e535452554d454e54"></a>
 
@@ -2153,7 +2154,7 @@ Host primitive for SAMPLE-INSTRUMENT (FORTH/Sigma).
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1344).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1346).
 
 <a id="w-415544494f3a534e442d534658"></a>
 
@@ -2185,7 +2186,7 @@ Host primitive for SFX (FORTH/Sigma).
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1345).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1347).
 
 <a id="w-415544494f3a534e442d534f554e44"></a>
 
@@ -2217,7 +2218,7 @@ Host primitive for SOUND (FORTH/Sigma).
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1303).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1305).
 
 <a id="w-415544494f3a534e442d53544f502d4d4f44"></a>
 
@@ -2249,7 +2250,7 @@ Host primitive for STOP-MOD (FORTH/Sigma).
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1358).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1360).
 
 <a id="w-415544494f3a534e442d5354594c45"></a>
 
@@ -2281,7 +2282,7 @@ Host primitive for STYLE (FORTH/Sigma).
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1366).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1368).
 
 <a id="w-415544494f3a534e442d53594e43"></a>
 
@@ -2313,7 +2314,7 @@ Host primitive for SYNC (FORTH/Sigma).
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1333).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1335).
 
 <a id="w-415544494f3a534e442d57415645"></a>
 
@@ -2345,7 +2346,7 @@ Host primitive for SQUARE (0), PULSE (1), TRIANGLE (2), SAW (3), and NOISE (4) (
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1317).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1319).
 
 <a id="w-415544494f3a534e442d574156455441424c45"></a>
 
@@ -2377,7 +2378,7 @@ Host primitive for SCC-WAVE (FORTH/Sigma).
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。 番地・長さ・容量は有効な論理メモリー範囲を指定します。所有領域と借用領域の寿命を区別してください。
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1339).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1341).
 
 <a id="w-415544494f3a534f554e44"></a>
 
@@ -2405,7 +2406,7 @@ Write a value 0 to 255 to the PSG's register 0 to 13, as MSX BASIC's SOUND (FORT
 0 100 SOUND 8 15 SOUND
 ```
 
-[使用例の文脈](../src/tests/audio_test.zig#L252)
+[使用例の文脈](../src/tests/audio_test.zig#L294)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -2415,7 +2416,7 @@ Write a value 0 to 255 to the PSG's register 0 to 13, as MSX BASIC's SOUND (FORT
 : SOUND ( reg value -- )   SND-SOUND ;
 ```
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1311).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1313).
 
 <a id="w-415544494f3a535155415245"></a>
 
@@ -2443,7 +2444,7 @@ Make the instrument a square wave, a pulse of 50% (FORTH/Sigma audio).
 SQUARE TRIANGLE SAW NOISE
 ```
 
-[使用例の文脈](../src/tests/audio_test.zig#L349)
+[使用例の文脈](../src/tests/audio_test.zig#L391)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -2453,7 +2454,7 @@ SQUARE TRIANGLE SAW NOISE
 : SQUARE ( -- )   0 SND-WAVE ;
 ```
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1325).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1327).
 
 <a id="w-415544494f3a5354"></a>
 
@@ -2487,7 +2488,7 @@ REQUIRE-AUDIO ALSO AUDIO ST .
 1 CONSTANT MSX   2 CONSTANT ST   4 CONSTANT NES   8 CONSTANT C64
 ```
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1369).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1371).
 
 <a id="w-415544494f3a53542d534f554e44"></a>
 
@@ -2517,7 +2518,7 @@ Play PLAY on the Atari ST's YM2149 at 2 MHz (3 voices); the music stops (FORTH/S
 ST-SOUND
 ```
 
-[使用例の文脈](../src/tests/audio_test.zig#L329)
+[使用例の文脈](../src/tests/audio_test.zig#L371)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -2527,7 +2528,7 @@ ST-SOUND
 : ST-SOUND ( -- )   1 SND-CHIP ;
 ```
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1322).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1324).
 
 <a id="w-415544494f3a53544f502d4d4f44"></a>
 
@@ -2555,7 +2556,7 @@ Stop the module (FORTH/Sigma audio).
 STOP-MOD
 ```
 
-[使用例の文脈](../src/tests/audio_test.zig#L757)
+[使用例の文脈](../src/tests/audio_test.zig#L799)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -2565,7 +2566,7 @@ STOP-MOD
 : STOP-MOD ( -- )   SND-STOP-MOD ;
 ```
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1362).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1364).
 
 <a id="w-415544494f3a5354594c45"></a>
 
@@ -2593,7 +2594,7 @@ Choose one chip mask (MSX, ST, NES, C64, SCC or AMIGA) for an instrument on any 
 0 STYLE
 ```
 
-[使用例の文脈](../src/tests/audio_test.zig#L634)
+[使用例の文脈](../src/tests/audio_test.zig#L676)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -2603,7 +2604,7 @@ Choose one chip mask (MSX, ST, NES, C64, SCC or AMIGA) for an instrument on any 
 : STYLE ( chip -- )   SND-STYLE ;
 ```
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1367).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1369).
 
 <a id="w-415544494f3a53594e43"></a>
 
@@ -2633,7 +2634,7 @@ Restart the instrument's wave with each cycle of the voice before (voice 1 by vo
 4 INSTRUMENT TRIANGLE TRUE RING TRUE SYNC 2 1500 12 FILTER
 ```
 
-[使用例の文脈](../src/tests/audio_test.zig#L373)
+[使用例の文脈](../src/tests/audio_test.zig#L415)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -2643,7 +2644,7 @@ Restart the instrument's wave with each cycle of the voice before (voice 1 by vo
 : SYNC ( flag -- )   SND-SYNC ;
 ```
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1337).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1339).
 
 <a id="w-415544494f3a545249414e474c45"></a>
 
@@ -2671,7 +2672,7 @@ Make the instrument a triangle wave, on the chips that let it choose (FORTH/Sigm
 SQUARE TRIANGLE SAW NOISE
 ```
 
-[使用例の文脈](../src/tests/audio_test.zig#L349)
+[使用例の文脈](../src/tests/audio_test.zig#L391)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -2681,7 +2682,7 @@ SQUARE TRIANGLE SAW NOISE
 : TRIANGLE ( -- )   2 SND-WAVE ;
 ```
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1327).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1329).
 
 <a id="namespace-ekeys"></a>
 
@@ -3705,6 +3706,40 @@ ALSO EKEYS K-WINCH . PREVIOUS
 
 出典：[src/core/standard_keys.zig](../src/core/standard_keys.zig).
 
+<a id="namespace-extension"></a>
+
+## EXTENSION
+
+- [` HOST-OS `](#w-455854454e53494f4e3a484f53542d4f53)
+
+<a id="w-455854454e53494f4e3a484f53542d4f53"></a>
+
+### ` HOST-OS `
+
+` ( -- c-addr u ) `
+
+実行体の対象OS系列を小文字ASCII文字列で返します。windows・linux（WSLやAndroidを含む）・macos・その他はunknownです。論理メモリー上の借用領域を毎回書き直します。次のHOST-OSまたはイメージ復元まで有効で、書き換えは禁止です。保持する場合はコピーしてください。 値が増える場合があるため、未知の文字列はunknownと同じく扱ってください。
+
+<details><summary>英語の説明（HELP・実装に基づく）</summary>
+
+Return borrowed lowercase target OS family: windows, linux (including WSL/Android), macos, or unknown. Valid until the next HOST-OS or image restore; do not modify it. Copy it to retain it. Values may grow; treat unfamiliar values as unknown (FORTH/Sigma extension).
+
+</details>
+
+種別：builtin.
+
+` REQUIRE-EXTENSION ALSO EXTENSION ` で読み込み、検索対象にします。
+
+使用例
+
+```forth
+REQUIRE-EXTENSION ALSO EXTENSION HOST-OS TYPE PREVIOUS
+```
+
+注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。 番地・長さ・容量は有効な論理メモリー範囲を指定します。所有領域と借用領域の寿命を区別してください。
+
+出典：[src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1302).
+
 <a id="namespace-forth"></a>
 
 ## FORTH
@@ -4154,6 +4189,7 @@ ALSO EKEYS K-WINCH . PREVIOUS
 - [` EXIT `](#w-464f5254483a45584954)
 - [` EXPAND-WHERE `](#w-464f5254483a455850414e442d5748455245)
 - [` EXTEND-MEM `](#w-464f5254483a455854454e442d4d454d)
+- [` EXTENSION `](#w-464f5254483a455854454e53494f4e)
 - [` F! `](#w-464f5254483a4621)
 - [` F* `](#w-464f5254483a462a)
 - [` F** `](#w-464f5254483a462a2a)
@@ -7751,7 +7787,7 @@ Print a number in the current base and a space.
 1 . SHOW
 ```
 
-[使用例の文脈](../src/tests/graphics_test.zig#L1465)
+[使用例の文脈](../src/tests/graphics_test.zig#L1469)
 
 注意：スタック効果の入力順を守ってください。使用例の名前・値は例の定義や初期状態に依存します。
 
@@ -13364,7 +13400,7 @@ Run xt; return 0, or the exception number with the stack depths restored.
 ' T CATCH
 ```
 
-[使用例の文脈](../src/tests/graphics_test.zig#L1971)
+[使用例の文脈](../src/tests/graphics_test.zig#L1975)
 
 注意：スタック効果の入力順を守ってください。使用例の名前・値は例の定義や初期状態に依存します。
 
@@ -13628,7 +13664,7 @@ The code point of the first character (UTF-8) of the next word. In a definition 
 CHAR b KEY-HELD?
 ```
 
-[使用例の文脈](../src/tests/graphics_test.zig#L2341)
+[使用例の文脈](../src/tests/graphics_test.zig#L2345)
 
 注意：スタック効果の入力順を守ってください。使用例の名前・値は例の定義や初期状態に依存します。
 
@@ -14418,7 +14454,7 @@ Start a new line.
 CR SHOW
 ```
 
-[使用例の文脈](../src/tests/graphics_test.zig#L1371)
+[使用例の文脈](../src/tests/graphics_test.zig#L1375)
 
 注意：スタック効果の入力順を守ってください。使用例の名前・値は例の定義や初期状態に依存します。
 
@@ -17678,6 +17714,32 @@ S" abc" SAVE-MEM 5 EXTEND-MEM
 
 出典：[src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L201).
 
+<a id="w-464f5254483a455854454e53494f4e"></a>
+
+### ` EXTENSION `
+
+` ( -- ) `
+
+REQUIRE-EXTENSIONで読み込んだEXTENSION語彙を検索順の先頭へ選びます。現在の先頭を残すにはALSOを先に実行します。
+
+<details><summary>英語の説明（HELP・実装に基づく）</summary>
+
+Select EXTENSION as the first-searched vocabulary. Load it first with REQUIRE-EXTENSION; use ALSO to retain the current first vocabulary.
+
+</details>
+
+種別：vocabulary.
+
+使用例
+
+```forth
+REQUIRE-EXTENSION ALSO EXTENSION WORDS PREVIOUS
+```
+
+注意：スタック効果の入力順を守ってください。使用例の名前・値は例の定義や初期状態に依存します。
+
+出典：[src/core/words_extension.zig](../src/core/words_extension.zig).
+
 <a id="w-464f5254483a4621"></a>
 
 ### ` F! `
@@ -17728,7 +17790,7 @@ Multiply floats.
 CLS : SQ ( F: x -- y ) FDUP F* ; ' SQ PLOT
 ```
 
-[使用例の文脈](../src/tests/graphics_test.zig#L1167)
+[使用例の文脈](../src/tests/graphics_test.zig#L1171)
 
 注意：F:の値はデータスタックではなく浮動小数点スタックで受け渡します。
 
@@ -18096,7 +18158,7 @@ True if the float is negative.
 CLS : GAP ( F: x -- y ) FDUP F0< IF FDROP 0e0 0e0 F/ THEN ; ' GAP PLOT
 ```
 
-[使用例の文脈](../src/tests/graphics_test.zig#L1176)
+[使用例の文脈](../src/tests/graphics_test.zig#L1180)
 
 注意：F:の値はデータスタックではなく浮動小数点スタックで受け渡します。
 
@@ -18396,7 +18458,7 @@ True if the floats are equal; the flag goes on the data stack.
 0e0 1e308 X-RANGE ' REC PLOT BAD @ LAST F@ 1e308 F=
 ```
 
-[使用例の文脈](../src/tests/graphics_test.zig#L1898)
+[使用例の文脈](../src/tests/graphics_test.zig#L1902)
 
 注意：F:の値はデータスタックではなく浮動小数点スタックで受け渡します。
 
@@ -18904,7 +18966,7 @@ The false flag.
 FALSE PLAY-MOD
 ```
 
-[使用例の文脈](../src/tests/audio_test.zig#L784)
+[使用例の文脈](../src/tests/audio_test.zig#L826)
 
 注意：スタック効果の入力順を守ってください。使用例の名前・値は例の定義や初期状態に依存します。
 
@@ -19390,7 +19452,7 @@ Copy the top float.
 CLS : SQ ( F: x -- y ) FDUP F* ; ' SQ PLOT
 ```
 
-[使用例の文脈](../src/tests/graphics_test.zig#L1167)
+[使用例の文脈](../src/tests/graphics_test.zig#L1171)
 
 注意：F:の値はデータスタックではなく浮動小数点スタックで受け渡します。
 
@@ -21714,7 +21776,7 @@ Describe name, or show the basic help when no name follows on the line. In a def
 HELP RGB
 ```
 
-[使用例の文脈](../src/tests/graphics_test.zig#L505)
+[使用例の文脈](../src/tests/graphics_test.zig#L509)
 
 注意：スタック効果の入力順を守ってください。使用例の名前・値は例の定義や初期状態に依存します。
 
@@ -21774,7 +21836,7 @@ Use base 16 for numbers.
 HEX
 ```
 
-[使用例の文脈](../src/tests/graphics_test.zig#L868)
+[使用例の文脈](../src/tests/graphics_test.zig#L872)
 
 注意：スタック効果の入力順を守ってください。使用例の名前・値は例の定義や初期状態に依存します。
 
@@ -25376,7 +25438,7 @@ Bitwise or.
 ST NES OR CHIPS
 ```
 
-[使用例の文脈](../src/tests/audio_test.zig#L610)
+[使用例の文脈](../src/tests/audio_test.zig#L652)
 
 注意：スタック効果の入力順を守ってください。使用例の名前・値は例の定義や初期状態に依存します。
 
@@ -27218,7 +27280,7 @@ Save the words you defined to an image file.
 SAVE x.img
 ```
 
-[使用例の文脈](../src/tests/graphics_test.zig#L2207)
+[使用例の文脈](../src/tests/graphics_test.zig#L2211)
 
 注意：スタック効果の入力順を守ってください。使用例の名前・値は例の定義や初期状態に依存します。
 
@@ -27364,7 +27426,7 @@ Write an executable that starts with the current dictionary.
 SAVESYS x.exe
 ```
 
-[使用例の文脈](../src/tests/graphics_test.zig#L2224)
+[使用例の文脈](../src/tests/graphics_test.zig#L2228)
 
 注意：スタック効果の入力順を守ってください。使用例の名前・値は例の定義や初期状態に依存します。
 
@@ -35243,7 +35305,7 @@ Draw the axes x = 0 and y = 0 that are in the range, with the current color (FOR
 AXES
 ```
 
-[使用例の文脈](../src/tests/graphics_test.zig#L1141)
+[使用例の文脈](../src/tests/graphics_test.zig#L1145)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -35288,7 +35350,7 @@ Draw TEXT with the built-in ASCII font, 4 by 8 pixels (FORTH/Sigma graphics).
 2 TEXT-SCALE TEXT-HEIGHT 1 TEXT-SCALE BUILTIN-FONT TEXT-HEIGHT
 ```
 
-[使用例の文脈](../src/tests/graphics_test.zig#L1647)
+[使用例の文脈](../src/tests/graphics_test.zig#L1651)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -35326,7 +35388,7 @@ Draw a circle of radius r around x y (FORTH/Sigma graphics).
 CLS 5 5 5 CIRCLE
 ```
 
-[使用例の文脈](../src/tests/graphics_test.zig#L628)
+[使用例の文脈](../src/tests/graphics_test.zig#L632)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -35377,7 +35439,7 @@ Make the whole image black (FORTH/Sigma graphics).
 CLS AXES
 ```
 
-[使用例の文脈](../src/tests/graphics_test.zig#L1211)
+[使用例の文脈](../src/tests/graphics_test.zig#L1215)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -35415,7 +35477,7 @@ Set the current color, which the drawing words use; it starts white (FORTH/Sigma
 255 0 0 COLOR 0 0 PAINT
 ```
 
-[使用例の文脈](../src/tests/graphics_test.zig#L681)
+[使用例の文脈](../src/tests/graphics_test.zig#L685)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -35453,7 +35515,7 @@ Set the current color to $RRGGBB (FORTH/Sigma graphics).
 $FF0000 COLOR! 0 0 PSET DISPLAY-TK SHOW
 ```
 
-[使用例の文脈](../src/tests/graphics_test.zig#L1990)
+[使用例の文脈](../src/tests/graphics_test.zig#L1994)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -35491,7 +35553,7 @@ The current color as $RRGGBB (FORTH/Sigma graphics).
 1 2 3 COLOR COLOR@ $7F654321 COLOR! COLOR@
 ```
 
-[使用例の文脈](../src/tests/graphics_test.zig#L501)
+[使用例の文脈](../src/tests/graphics_test.zig#L505)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -35604,7 +35666,7 @@ Make SHOW use full color (0) or 2, 16, or 256 colors; the image keeps its colors
 256 DISPLAY-COLORS SHOW
 ```
 
-[使用例の文脈](../src/tests/graphics_test.zig#L1772)
+[使用例の文脈](../src/tests/graphics_test.zig#L1776)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -35642,7 +35704,7 @@ Make SHOW show the image on the terminal (FORTH/Sigma graphics).
 DISPLAY-TERMINAL
 ```
 
-[使用例の文脈](../src/tests/graphics_test.zig#L2638)
+[使用例の文脈](../src/tests/graphics_test.zig#L2642)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -35680,7 +35742,7 @@ Make SHOW show the image in a Tk window, from which INKEY and MOUSE also read (F
 FALSE MOUSE-CURSOR DISPLAY-TK SHOW
 ```
 
-[使用例の文脈](../src/tests/graphics_test.zig#L2672)
+[使用例の文脈](../src/tests/graphics_test.zig#L2676)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -35718,7 +35780,7 @@ Select a native window for SHOW; throw -21 when the host has no native-window su
 ' DISPLAY-WINDOW CATCH
 ```
 
-[使用例の文脈](../src/tests/graphics_test.zig#L955)
+[使用例の文脈](../src/tests/graphics_test.zig#L959)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -35756,7 +35818,7 @@ Make SHOW mix the colors of fewer colors with a 4 by 4 Bayer matrix (true) or ta
 0 DITHER 0 DISPLAY-COLORS 256 -1 GFX-COLOR-MODE SHOW
 ```
 
-[使用例の文脈](../src/tests/graphics_test.zig#L1797)
+[使用例の文脈](../src/tests/graphics_test.zig#L1801)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -35870,7 +35932,7 @@ Fill a circle of radius r around x y (FORTH/Sigma graphics).
 CLS 5 5 100000000000 FILL-CIRCLE
 ```
 
-[使用例の文脈](../src/tests/graphics_test.zig#L667)
+[使用例の文脈](../src/tests/graphics_test.zig#L671)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -35914,7 +35976,7 @@ Fill a w by h rectangle whose top left corner is x y (FORTH/Sigma graphics).
 CLS 5 3 10 10 FILL-RECT -3 -3 5 5 RECT 2 2 0 5 FILL-RECT 2 2 5 -1 RECT
 ```
 
-[使用例の文脈](../src/tests/graphics_test.zig#L576)
+[使用例の文脈](../src/tests/graphics_test.zig#L580)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -35958,7 +36020,7 @@ Wait until ms milliseconds have passed since the last FRAME, then SHOW, for anim
 50 FRAME
 ```
 
-[使用例の文脈](../src/tests/graphics_test.zig#L1492)
+[使用例の文脈](../src/tests/graphics_test.zig#L1496)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -36038,7 +36100,7 @@ Make Sigma's own window cover its screen (true) or be a window again (false), wi
 TRUE FULLSCREEN FULLSCREEN?
 ```
 
-[使用例の文脈](../src/tests/graphics_test.zig#L2621)
+[使用例の文脈](../src/tests/graphics_test.zig#L2625)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -36081,7 +36143,7 @@ Whether fullscreen is wanted now; false after the user left it with its key (FOR
 FULLSCREEN?
 ```
 
-[使用例の文脈](../src/tests/graphics_test.zig#L2630)
+[使用例の文脈](../src/tests/graphics_test.zig#L2634)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -36626,7 +36688,7 @@ Internal runtime state for automatic SHOW selection; 0 undecided, 1 terminal, 2 
 SHOW (DISPLAY) @ GFX-AUTO-DISPLAY
 ```
 
-[使用例の文脈](../src/tests/graphics_test.zig#L2035)
+[使用例の文脈](../src/tests/graphics_test.zig#L2039)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -36758,7 +36820,7 @@ Show the image with 0 (full color), 2, 16, or 256 colors, dithered when flag is 
 0 DITHER 0 DISPLAY-COLORS 256 -1 GFX-COLOR-MODE SHOW
 ```
 
-[使用例の文脈](../src/tests/graphics_test.zig#L1797)
+[使用例の文脈](../src/tests/graphics_test.zig#L1801)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -36855,7 +36917,7 @@ The height of a line of TEXT's current font (FORTH/Sigma).
 REQUIRE-GRAPHICS ALSO GRAPHICS GFX-FONT-HEIGHT CHAR A GFX-GLYPH-LOAD GFX-GLYPH-BOX 1 0 GFX-GLYPH-ALPHA 0 0 GFX-GLYPH-ALPHA 2 1 GFX-GLYPH-ALPHA 3 0 GFX-GLYPH-ALPHA
 ```
 
-[使用例の文脈](../src/tests/graphics_test.zig#L1518)
+[使用例の文脈](../src/tests/graphics_test.zig#L1522)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -37171,7 +37233,7 @@ The coverage, 0 to 255, of the loaded glyph at x y of its box (FORTH/Sigma).
 S" a.txt" LOAD-FONT CHAR A GFX-GLYPH-LOAD DROP BL GFX-GLYPH-LOAD GFX-GLYPH-BOX 0 0 GFX-GLYPH-ALPHA
 ```
 
-[使用例の文脈](../src/tests/graphics_test.zig#L1828)
+[使用例の文脈](../src/tests/graphics_test.zig#L1832)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -37203,7 +37265,7 @@ The box of the loaded glyph, from the pen and the top of the line (FORTH/Sigma).
 S" a.txt" LOAD-FONT CHAR A GFX-GLYPH-LOAD DROP BL GFX-GLYPH-LOAD GFX-GLYPH-BOX 0 0 GFX-GLYPH-ALPHA
 ```
 
-[使用例の文脈](../src/tests/graphics_test.zig#L1828)
+[使用例の文脈](../src/tests/graphics_test.zig#L1832)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -37235,7 +37297,7 @@ Load the glyph of a code point in TEXT's current font; -1 when the font has none
 S" a.txt" LOAD-FONT CHAR A GFX-GLYPH-LOAD DROP BL GFX-GLYPH-LOAD GFX-GLYPH-BOX 0 0 GFX-GLYPH-ALPHA
 ```
 
-[使用例の文脈](../src/tests/graphics_test.zig#L1828)
+[使用例の文脈](../src/tests/graphics_test.zig#L1832)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -37570,7 +37632,7 @@ Make a new black image of w by h pixels, each side 1 to 16384, at most 1 GiB (FO
 1 9 GFX-INIT
 ```
 
-[使用例の文脈](../src/tests/graphics_test.zig#L904)
+[使用例の文脈](../src/tests/graphics_test.zig#L908)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -37993,7 +38055,7 @@ Write the image to the named file as a PNG without compression (FORTH/Sigma).
 S" a.txt" GFX-SAVE-PNG S" b.txt" SAVE-PNG
 ```
 
-[使用例の文脈](../src/tests/graphics_test.zig#L1081)
+[使用例の文脈](../src/tests/graphics_test.zig#L1085)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。 戻り値のiorを確認してください。0が成功です。THROWへ渡す方法もあります。 番地・長さ・容量は有効な論理メモリー範囲を指定します。所有領域と借用領域の寿命を区別してください。
 
@@ -38057,7 +38119,7 @@ Show the image on the terminal with half block characters, made smaller to fit (
 GFX-SHOW-BLOCKS
 ```
 
-[使用例の文脈](../src/tests/graphics_test.zig#L883)
+[使用例の文脈](../src/tests/graphics_test.zig#L887)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -38089,7 +38151,7 @@ Show the image on the terminal as Sixel graphics, made smaller to fit (FORTH/Sig
 GFX-SHOW-SIXEL
 ```
 
-[使用例の文脈](../src/tests/graphics_test.zig#L917)
+[使用例の文脈](../src/tests/graphics_test.zig#L921)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -38514,7 +38576,7 @@ True when the host can show the image in a window (FORTH/Sigma).
 GFX-WINDOW? SHOW
 ```
 
-[使用例の文脈](../src/tests/graphics_test.zig#L953)
+[使用例の文脈](../src/tests/graphics_test.zig#L957)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -38736,7 +38798,7 @@ The next key pressed, without waiting; -1 when none. Keys that are not character
 INKEY
 ```
 
-[使用例の文脈](../src/tests/graphics_test.zig#L2157)
+[使用例の文脈](../src/tests/graphics_test.zig#L2161)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -39524,7 +39586,7 @@ Whether the key (a character of one byte, or K-UP and so on) is held down now; t
 K-UP KEY-HELD?
 ```
 
-[使用例の文脈](../src/tests/graphics_test.zig#L2321)
+[使用例の文脈](../src/tests/graphics_test.zig#L2325)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -39562,7 +39624,7 @@ Draw a line between two points, both included (FORTH/Sigma graphics).
 CLS 1 0 3 5 LINE
 ```
 
-[使用例の文脈](../src/tests/graphics_test.zig#L541)
+[使用例の文脈](../src/tests/graphics_test.zig#L545)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -39622,7 +39684,7 @@ Read the named BDF font file and draw TEXT with it; THROW on failure (FORTH/Sigm
 : T S" b.txt" LOAD-FONT ; ' T CATCH TEXT-HEIGHT
 ```
 
-[使用例の文脈](../src/tests/graphics_test.zig#L1667)
+[使用例の文脈](../src/tests/graphics_test.zig#L1671)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。 番地・長さ・容量は有効な論理メモリー範囲を指定します。所有領域と借用領域の寿命を区別してください。
 
@@ -39698,7 +39760,7 @@ Draw a line between two points in mathematical coordinates (FORTH/Sigma graphics
 CLS -1e0 -1e0 1e0 -1e0 MLINE
 ```
 
-[使用例の文脈](../src/tests/graphics_test.zig#L1164)
+[使用例の文脈](../src/tests/graphics_test.zig#L1168)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。 F:の値はデータスタックではなく浮動小数点スタックで受け渡します。
 
@@ -39739,7 +39801,7 @@ The pixel of the image under the mouse, -1 -1 when not known, and the buttons he
 MOUSE
 ```
 
-[使用例の文脈](../src/tests/graphics_test.zig#L1330)
+[使用例の文脈](../src/tests/graphics_test.zig#L1334)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -39777,7 +39839,7 @@ Show (true) or hide (false) the mouse cursor over the graphics view in the nativ
 TRUE MOUSE-CURSOR
 ```
 
-[使用例の文脈](../src/tests/graphics_test.zig#L2635)
+[使用例の文脈](../src/tests/graphics_test.zig#L2639)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -39819,7 +39881,7 @@ The oldest mouse event not yet read, without waiting: kind 1 pressed, 2 released
 MOUSE DROP DROP DROP MOUSE-EVENT
 ```
 
-[使用例の文脈](../src/tests/graphics_test.zig#L1432)
+[使用例の文脈](../src/tests/graphics_test.zig#L1436)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -39857,7 +39919,7 @@ Stop the terminal's mouse reports (FORTH/Sigma graphics).
 MOUSE MOUSE-OFF
 ```
 
-[使用例の文脈](../src/tests/graphics_test.zig#L1381)
+[使用例の文脈](../src/tests/graphics_test.zig#L1385)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -39895,7 +39957,7 @@ Have the terminal report the mouse, for MOUSE (FORTH/Sigma graphics).
 MOUSE-ON DISPLAY-TERMINAL SHOW
 ```
 
-[使用例の文脈](../src/tests/graphics_test.zig#L1336)
+[使用例の文脈](../src/tests/graphics_test.zig#L1340)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -39933,7 +39995,7 @@ Set the pixel at the mathematical coordinates x y to the current color (FORTH/Si
 CLS -1e300 -1e300 1e300 1e300 MLINE 1e0 0e0 F/ FDUP MPSET
 ```
 
-[使用例の文脈](../src/tests/graphics_test.zig#L1162)
+[使用例の文脈](../src/tests/graphics_test.zig#L1166)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。 F:の値はデータスタックではなく浮動小数点スタックで受け渡します。
 
@@ -40012,7 +40074,7 @@ Fill the area around x y that has the color of x y with the current color (FORTH
 255 0 0 COLOR 0 0 PAINT
 ```
 
-[使用例の文脈](../src/tests/graphics_test.zig#L681)
+[使用例の文脈](../src/tests/graphics_test.zig#L685)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -40057,7 +40119,7 @@ Draw the graph of xt ( F: x -- y ) across the image, joining the columns with li
 CLS : SQ ( F: x -- y ) FDUP F* ; ' SQ PLOT
 ```
 
-[使用例の文脈](../src/tests/graphics_test.zig#L1167)
+[使用例の文脈](../src/tests/graphics_test.zig#L1171)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -40107,7 +40169,7 @@ Set one pixel to the current color (FORTH/Sigma graphics).
 $FF0000 COLOR! 0 0 PSET DISPLAY-TK SHOW
 ```
 
-[使用例の文脈](../src/tests/graphics_test.zig#L1990)
+[使用例の文脈](../src/tests/graphics_test.zig#L1994)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -40183,7 +40245,7 @@ Draw the outline of a w by h rectangle whose top left corner is x y (FORTH/Sigma
 1 1 4 3 RECT 6 4 1 1 RECT
 ```
 
-[使用例の文脈](../src/tests/graphics_test.zig#L566)
+[使用例の文脈](../src/tests/graphics_test.zig#L570)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -40228,7 +40290,7 @@ The color $RRGGBB of red, green, and blue, each 0 to 255 (FORTH/Sigma graphics).
 HEX REQUIRE-GRAPHICS BASE @ DECIMAL ALSO GRAPHICS COLOR@ 18 52 86 RGB 256 -1 0 RGB
 ```
 
-[使用例の文脈](../src/tests/graphics_test.zig#L498)
+[使用例の文脈](../src/tests/graphics_test.zig#L502)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -40266,7 +40328,7 @@ Write the image to the named file as a 24-bit BMP; THROW on failure (FORTH/Sigma
 : T S" missing" SAVE-BMP ; ' T CATCH
 ```
 
-[使用例の文脈](../src/tests/graphics_test.zig#L699)
+[使用例の文脈](../src/tests/graphics_test.zig#L703)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。 番地・長さ・容量は有効な論理メモリー範囲を指定します。所有領域と借用領域の寿命を区別してください。
 
@@ -40304,7 +40366,7 @@ Write the image to the named file as a PNG; THROW on failure (FORTH/Sigma graphi
 : T S" missing" SAVE-PNG ; ' T CATCH
 ```
 
-[使用例の文脈](../src/tests/graphics_test.zig#L1130)
+[使用例の文脈](../src/tests/graphics_test.zig#L1134)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。 番地・長さ・容量は有効な論理メモリー範囲を指定します。所有領域と借用領域の寿命を区別してください。
 
@@ -40416,7 +40478,7 @@ Show the image where DISPLAY-WINDOW, DISPLAY-TK, or DISPLAY-TERMINAL chose. With
 SHOW
 ```
 
-[使用例の文脈](../src/tests/graphics_test.zig#L1340)
+[使用例の文脈](../src/tests/graphics_test.zig#L1344)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -40463,7 +40525,7 @@ Draw TEXT with the system's font of that name, height pixels a line, smoothed (W
 REQUIRE-GRAPHICS ALSO GRAPHICS : T S" Fake" 8 SYSTEM-FONT ; ' T CATCH
 ```
 
-[使用例の文脈](../src/tests/graphics_test.zig#L1708)
+[使用例の文脈](../src/tests/graphics_test.zig#L1712)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。 番地・長さ・容量は有効な論理メモリー範囲を指定します。所有領域と借用領域の寿命を区別してください。
 
@@ -40501,7 +40563,7 @@ Run a Tcl script in a Tcl/Tk program (wish) Sigma starts; TCL ERROR (-273) when 
 S" a" TCL
 ```
 
-[使用例の文脈](../src/tests/graphics_test.zig#L2162)
+[使用例の文脈](../src/tests/graphics_test.zig#L2166)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。 番地・長さ・容量は有効な論理メモリー範囲を指定します。所有領域と借用領域の寿命を区別してください。
 
@@ -40539,7 +40601,7 @@ The message of the last Tcl script that failed (FORTH/Sigma graphics).
 TCL-ERROR$ TYPE S" set y {}" TCL-EVAL NIP S" s" TCL-EVAL TYPE
 ```
 
-[使用例の文脈](../src/tests/graphics_test.zig#L1923)
+[使用例の文脈](../src/tests/graphics_test.zig#L1927)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。 番地・長さ・容量は有効な論理メモリー範囲を指定します。所有領域と借用領域の寿命を区別してください。
 
@@ -40577,7 +40639,7 @@ Run a Tcl script and give its result, kept until the next script; TCL ERROR (-27
 S" b" TCL-EVAL TYPE
 ```
 
-[使用例の文脈](../src/tests/graphics_test.zig#L2084)
+[使用例の文脈](../src/tests/graphics_test.zig#L2088)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。 番地・長さ・容量は有効な論理メモリー範囲を指定します。所有領域と借用領域の寿命を区別してください。
 
@@ -40615,7 +40677,7 @@ The next text a Tk widget sent with sigma\_event, without waiting (FORTH/Sigma g
 TCL-EVENT
 ```
 
-[使用例の文脈](../src/tests/graphics_test.zig#L2110)
+[使用例の文脈](../src/tests/graphics_test.zig#L2114)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。 番地・長さ・容量は有効な論理メモリー範囲を指定します。所有領域と借用領域の寿命を区別してください。
 
@@ -40653,7 +40715,7 @@ Name the Tcl program to start: else SIGMA\_WISH, else wish on the PATH (on macOS
 S" tclsh9" TCL-PROGRAM S" y" TCL-EVAL TYPE TCL-STOP
 ```
 
-[使用例の文脈](../src/tests/graphics_test.zig#L1964)
+[使用例の文脈](../src/tests/graphics_test.zig#L1968)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。 番地・長さ・容量は有効な論理メモリー範囲を指定します。所有領域と借用領域の寿命を区別してください。
 
@@ -40691,7 +40753,7 @@ End the Tcl program, dropping what it wrote and Sigma did not read; the next TCL
 TCL-STOP
 ```
 
-[使用例の文脈](../src/tests/graphics_test.zig#L2244)
+[使用例の文脈](../src/tests/graphics_test.zig#L2248)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -40729,7 +40791,7 @@ Show the image on the terminal with half block characters, the default (FORTH/Si
 TERMINAL-BLOCKS DISPLAY-WINDOW SHOW
 ```
 
-[使用例の文脈](../src/tests/graphics_test.zig#L944)
+[使用例の文脈](../src/tests/graphics_test.zig#L948)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -40767,7 +40829,7 @@ Show the image on the terminal as Sixel graphics (FORTH/Sigma graphics).
 TERMINAL-SIXEL SHOW
 ```
 
-[使用例の文脈](../src/tests/graphics_test.zig#L942)
+[使用例の文脈](../src/tests/graphics_test.zig#L946)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -40805,7 +40867,7 @@ Draw the UTF-8 string with the top left of its line at x y, in the current font 
 S\" A\tあ" 1 1 TEXT
 ```
 
-[使用例の文脈](../src/tests/graphics_test.zig#L1531)
+[使用例の文脈](../src/tests/graphics_test.zig#L1535)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。 番地・長さ・容量は有効な論理メモリー範囲を指定します。所有領域と借用領域の寿命を区別してください。
 
@@ -40852,7 +40914,7 @@ The height of a line of TEXT, at the current scale (FORTH/Sigma graphics).
 : T S" b.txt" LOAD-FONT ; ' T CATCH TEXT-HEIGHT
 ```
 
-[使用例の文脈](../src/tests/graphics_test.zig#L1667)
+[使用例の文脈](../src/tests/graphics_test.zig#L1671)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -40890,7 +40952,7 @@ Draw each pixel of TEXT's font as n by n pixels, 1 to 256; 1 at first (FORTH/Sig
 2 TEXT-SCALE TEXT-HEIGHT 1 TEXT-SCALE BUILTIN-FONT TEXT-HEIGHT
 ```
 
-[使用例の文脈](../src/tests/graphics_test.zig#L1647)
+[使用例の文脈](../src/tests/graphics_test.zig#L1651)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -40928,7 +40990,7 @@ How many pixels wide TEXT draws the string (FORTH/Sigma graphics).
 S"  A" 0 0 TEXT S"  A" TEXT-WIDTH
 ```
 
-[使用例の文脈](../src/tests/graphics_test.zig#L1831)
+[使用例の文脈](../src/tests/graphics_test.zig#L1835)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。 番地・長さ・容量は有効な論理メモリー範囲を指定します。所有領域と借用領域の寿命を区別してください。
 
@@ -41009,7 +41071,7 @@ Show the image in a window w by h pixels large from the next SHOW, keeping its p
 640 480 WINDOW-SIZE
 ```
 
-[使用例の文脈](../src/tests/graphics_test.zig#L2451)
+[使用例の文脈](../src/tests/graphics_test.zig#L2455)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -41047,7 +41109,7 @@ Make the image show x from lo at the left edge to hi at the right one; -1 to 1 a
 CLS 1e0 2e0 X-RANGE 0e0 1e0 Y-RANGE AXES
 ```
 
-[使用例の文脈](../src/tests/graphics_test.zig#L1195)
+[使用例の文脈](../src/tests/graphics_test.zig#L1199)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。 F:の値はデータスタックではなく浮動小数点スタックで受け渡します。
 
@@ -41085,7 +41147,7 @@ Make the image show y from lo at the bottom edge to hi at the top one; -1 to 1 a
 CLS 1e0 2e0 X-RANGE 0e0 1e0 Y-RANGE AXES
 ```
 
-[使用例の文脈](../src/tests/graphics_test.zig#L1195)
+[使用例の文脈](../src/tests/graphics_test.zig#L1199)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。 F:の値はデータスタックではなく浮動小数点スタックで受け渡します。
 
@@ -49625,6 +49687,7 @@ WORDS
 - [` LOCALS| `](#w-53796e7461783a4c4f43414c537c)
 - [` POSTPONE `](#w-53796e7461783a504f5354504f4e45)
 - [` REQUIRE-AUDIO `](#w-53796e7461783a524551554952452d415544494f)
+- [` REQUIRE-EXTENSION `](#w-53796e7461783a524551554952452d455854454e53494f4e)
 - [` REQUIRE-GAME `](#w-53796e7461783a524551554952452d47414d45)
 - [` REQUIRE-GRAPHICS `](#w-53796e7461783a524551554952452d4752415048494353)
 - [` REQUIRE-GUI `](#w-53796e7461783a524551554952452d475549)
@@ -50367,6 +50430,32 @@ REQUIRE-AUDIO
 
 注意：スタック効果の入力順を守ってください。使用例の名前・値は例の定義や初期状態に依存します。
 
+出典：[src/core/help_text.zig](../src/core/help_text.zig), [HELP](../src/core/help_text.zig#L1303).
+
+<a id="w-53796e7461783a524551554952452d455854454e53494f4e"></a>
+
+### ` REQUIRE-EXTENSION `
+
+` ( -- ) `
+
+拡張語群をEXTENSION語彙へ初回だけ読み込みます。利用時はALSO EXTENSIONで検索順に加えます。音・描画の語群は不要です。除外ビルドでは未定義語（-13）です。
+
+<details><summary>英語の説明（HELP・実装に基づく）</summary>
+
+Load the independent EXTENSION vocabulary once; select it with ALSO EXTENSION (FORTH/Sigma).
+
+</details>
+
+種別：syntax.
+
+使用例
+
+```forth
+REQUIRE-EXTENSION ALSO EXTENSION WORDS PREVIOUS
+```
+
+注意：スタック効果の入力順を守ってください。使用例の名前・値は例の定義や初期状態に依存します。
+
 出典：[src/core/help_text.zig](../src/core/help_text.zig), [HELP](../src/core/help_text.zig#L1301).
 
 <a id="w-53796e7461783a524551554952452d47414d45"></a>
@@ -50511,7 +50600,7 @@ The string up to the next ", with escapes such as \\n and \\t.
 S\" A\tあ" 1 1 TEXT
 ```
 
-[使用例の文脈](../src/tests/graphics_test.zig#L1531)
+[使用例の文脈](../src/tests/graphics_test.zig#L1535)
 
 注意：番地・長さ・容量は有効な論理メモリー範囲を指定します。所有領域と借用領域の寿命を区別してください。
 

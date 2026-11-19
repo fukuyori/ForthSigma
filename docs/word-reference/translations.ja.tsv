@@ -1319,3 +1319,5 @@ GUI:(USE)	指定したGUI色役割を現在の描画色にします。
 GRAPHICS:(AUTO-SHOW-WINDOW)	選択済みネイティブウィンドウへ表示します。ホストエラー時は次回候補をTkにしてエラーを再送出する内部語です。
 GRAPHICS:(AUTO-SHOW-TK)	選択済みTkへ表示します。ホストエラー時は次回候補を端末にしてエラーを再送出する内部語です。
 GRAPHICS:(AUTO-SHOW)	自動表示のランタイム状態に従って表示し、未選択なら候補を順に試します。内部語です。
+REQUIRE-EXTENSION	拡張語群をEXTENSION語彙へ初回だけ読み込みます。利用時はALSO EXTENSIONで検索順に加えます。音・描画の語群は不要です。除外ビルドでは未定義語（-13）です。
+EXTENSION:HOST-OS	実行体の対象OS系列を小文字ASCII文字列で返します。windows・linux（WSLやAndroidを含む）・macos・その他はunknownです。論理メモリー上の借用領域を毎回書き直します。次のHOST-OSまたはイメージ復元まで有効で、書き換えは禁止です。保持する場合はコピーしてください。 値が増える場合があるため、未知の文字列はunknownと同じく扱ってください。

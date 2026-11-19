@@ -9,7 +9,7 @@ pub fn skipWithoutFloat() error{SkipZigTest}!void {
 
 /// Skips a test that uses a word group the build leaves out (-Dfiles=false, -Dhelp=false,
 /// -Dtools=false, -Dimage=false, or -Ddebug=false); several groups may be named.
-pub fn skipWithout(comptime groups: []const enum { files, help, tools, image, graphics, audio, debug }) error{SkipZigTest}!void {
+pub fn skipWithout(comptime groups: []const enum { files, help, tools, image, graphics, audio, extension, debug }) error{SkipZigTest}!void {
     const options = @import("build_options");
     inline for (groups) |group| {
         if (!@field(options, @tagName(group))) return error.SkipZigTest;

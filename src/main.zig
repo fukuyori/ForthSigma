@@ -1,6 +1,7 @@
 const std = @import("std");
 const builtin = @import("builtin");
 const forth = @import("forth.zig");
+const host_runtime = @import("host_runtime.zig");
 
 extern "c" fn getchar() c_int;
 extern "c" fn ttyname(c_int) ?[*:0]const u8;
@@ -25,6 +26,7 @@ extern "c" fn rename([*:0]const u8, [*:0]const u8) c_int;
 /// take it in the ANSI code page (932 on a Japanese system), where UTF-8 names other
 /// than ASCII fail; there the UTF-8 is turned into UTF-16 for their wide forms.
 const libc = struct {
+    extern "c" fn exit(c_int) noreturn;
     extern "c" fn fopen([*:0]const u8, [*:0]const u8) ?*anyopaque;
     extern "c" fn remove([*:0]const u8) c_int;
     extern "c" fn system(?[*:0]const u8) c_int;
@@ -156,7 +158,7 @@ const image_footer_magic = "SIGEND01";
 /// `framebuffer` is the graphics image that GFX-INIT got last, and `fonts` the buffers of
 /// the BDF fonts LOAD-FONT reads (the font in use, and one being read); all are freed
 /// when Sigma ends.
-const HostContext = struct { allocator: std.mem.Allocator, executable_path: [:0]const u8, environ_map: *std.process.Environ.Map, framebuffer: []u32 = &.{}, fonts: [2][]u64 = .{ &.{}, &.{} } };
+const HostContext = struct { allocator: std.mem.Allocator, executable_path: [:0]const u8, environ_map: *std.process.Environ.Map, runtime: ?*host_runtime.Runtime = null, framebuffer: []u32 = &.{}, fonts: [2][]u64 = .{ &.{}, &.{} } };
 
 fn hostContext(context: ?*anyopaque) forth.RuntimeError!*HostContext {
     return @ptrCast(@alignCast(context orelse return error.HostUnavailable));
@@ -262,8 +264,12 @@ fn sleepMilliseconds(_: ?*anyopaque, milliseconds: forth.Cell) forth.RuntimeErro
     }
 }
 
-fn sleepNanoseconds(_: ?*anyopaque, nanoseconds: forth.Double) forth.RuntimeError!void {
+fn sleepNanoseconds(context: ?*anyopaque, nanoseconds: forth.Double) forth.RuntimeError!void {
     flushOutput();
+    if (context) |value| {
+        const host: *HostContext = @ptrCast(@alignCast(value));
+        if (host.runtime) |runtime| return @import("host_wait.zig").waitWithRuntime(runtime, nanoseconds);
+    }
     try @import("host_wait.zig").wait(nanoseconds);
 }
 
@@ -1748,8 +1754,12 @@ fn terminalWrite(_: ?*anyopaque, bytes: []const u8) void {
 }
 
 /// PLAY waiting for room in its queues: what was written before shows during the wait.
-fn audioWait(_: ?*anyopaque) forth.AudioWait {
+fn audioWait(context: ?*anyopaque) forth.AudioWait {
     flushOutput();
+    if (context) |value| {
+        const host: *HostContext = @ptrCast(@alignCast(value));
+        if (host.runtime) |runtime| return host_audio.waitWithRuntime(runtime);
+    }
     return host_audio.wait();
 }
 
@@ -2087,6 +2097,25 @@ fn run(init: std.process.Init.Minimal) !u8 {
         return 1;
     };
     defer storage.free(std.heap.page_allocator);
+    var runtime = try host_runtime.Runtime.init();
+    defer {
+        // Retry retained native restoration while the runtime still exists.
+        const restoration = @import("host_wait.zig").recover();
+        const teardown = if (restoration) |_| runtime.deinit() else |_| @as(host_runtime.Error!void, error.HostFailed);
+        teardown catch {
+            // These older defers would otherwise be skipped by the fatal path.
+            // None of them access VM Storage or the retained runtime resources.
+            flushOutput();
+            utf8_console.finish();
+            _ = resize_scope.end();
+            _ = writeStandardError("error: runtime resources or signal restoration remain active\n");
+            libc.exit(1);
+        };
+    }
+    host.runtime = &runtime;
+    const previous_mode_recovery = host_input.before_mode_change;
+    host_input.before_mode_change = @import("host_wait.zig").beforeInputModeChange;
+    defer host_input.before_mode_change = previous_mode_recovery;
     machine.init(.{ .gamepad_ops = if (graphics) &host_gamepad.ops else null, .context = @ptrCast(&host), .write_fn = terminalWrite, .read_fn = terminalRead, .load_fn = loadDictionary, .save_fn = saveDictionary, .savesys_fn = saveExecutableImage, .key_fn = terminalKey, .key_ior_fn = terminalKeyIor, .event_key_fn = terminalEventKey, .monotonic_ms_fn = monotonicMilliseconds, .key_ready_fn = terminalKeyReady, .buffered_key_fn = terminalBufferedKey, .unread_fn = terminalUnread, .sleep_fn = sleepMilliseconds, .sleep_ns_fn = sleepNanoseconds, .utime_fn = microsecondsSinceEpoch, .ntime_fn = nanosecondsSinceEpoch, .cputime_fn = processCpuTimes, .local_time_fn = localTime, .zoned_time_fn = @import("host_timezone.zig").convert, .getenv_fn = environmentValue, .errno_fn = currentErrno, .system_fn = runShellCommand, .editor_fn = if (@import("build_options").tools) editSource else null, .file_ops = &file_ops, .framebuffer_fn = graphicsBuffer, .image_alloc_fn = if (graphics) imageAlloc else null, .image_free_fn = if (graphics) imageFree else null, .terminal_size_fn = terminalSize, .terminal_utf8_fn = terminalUtf8, .display_budget_fn = if (graphics and (builtin.os.tag == .windows or (builtin.os.tag == .linux and @import("build_options").x11))) @import("host_display_budget.zig").scope else null, .window_fn = if (graphics and host_window.available) host_window.show else null, .ime_preedit_fn = if (graphics and (builtin.os.tag == .windows or builtin.os.tag == .macos or (builtin.os.tag == .linux and @import("build_options").x11))) host_window.imePreedit else null, .ime_caret_fn = if (graphics and (builtin.os.tag == .windows or builtin.os.tag == .macos or (builtin.os.tag == .linux and @import("build_options").x11))) host_window.imeCaret else null, .window_fullscreen_fn = if (graphics and (builtin.os.tag == .windows or builtin.os.tag == .macos or (builtin.os.tag == .linux and @import("build_options").x11))) host_window.fullscreen else null, .window_cursor_fn = if (graphics and (builtin.os.tag == .windows or builtin.os.tag == .macos or (builtin.os.tag == .linux and @import("build_options").x11))) host_window.mouseCursor else null, .input_fn = inputEvent, .mouse_fn = mouseMode, .cursor_fn = cursorPosition, .font_buffer_fn = if (graphics) fontBuffer else null, .font_free_fn = if (graphics) fontFree else null, .system_font_fn = if (graphics and host_font.available) host_font.select else null, .system_glyph_fn = if (graphics and host_font.available) host_font.glyph else null, .process_start_fn = if (graphics) host_process.start else null, .process_write_fn = if (graphics) host_process.write else null, .process_read_fn = if (graphics) host_process.read else null, .process_stop_fn = if (graphics) host_process.stop else null, .audio_fn = if (audio) host_audio.start else null, .audio_device_fn = if (audio) host_audio.hasDevice else null, .audio_wait_fn = if (audio) audioWait else null }, storage);
     defer closeAllFiles();
     defer host_directories.closeAll();
@@ -2095,10 +2124,18 @@ fn run(init: std.process.Init.Minimal) !u8 {
     defer host_window.close();
     defer if (graphics) host_gamepad.close();
     // The terminal gets its line input back (and stops reporting the mouse) at the end.
-    defer host_input.leave();
+    defer {
+        @import("host_wait.zig").recover() catch {
+            _ = writeStandardError("error: pending signal restoration before terminal leave\n");
+        };
+        host_input.leave();
+    }
     // The Tcl program of TCL, if it was started, ends with Sigma.
     defer if (graphics) {
         _ = host_process.stop(null);
+    };
+    defer runtime.beginShutdown() catch {
+        _ = writeStandardError("error: runtime shutdown notification failed\n");
     };
     // Before the image: with the trace, its short definitions stay calls.
     machine.step_limit = start.max_steps;
@@ -2443,6 +2480,7 @@ test "SAVE and LOAD through the host keep the words, also when loaded twice" {
 }
 test {
     // The tests of the host's terminal input and of the Tcl program it starts.
+    _ = @import("host_wait.zig");
     _ = host_input;
     _ = host_line;
     _ = host_font;

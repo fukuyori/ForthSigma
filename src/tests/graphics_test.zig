@@ -431,7 +431,7 @@ test "saving an image larger than the write buffer, and the first ior when a wri
     }
 }
 
-test "a build without graphics loads a SIGIMG46 image and refuses to run its GFX- words" {
+test "a build without graphics rejects a SIGIMG46 image before changing its dictionary" {
     if (@import("build_options").graphics) return error.SkipZigTest;
     try skipWithout(&.{.image});
     var output = Output{};
@@ -446,13 +446,17 @@ test "a build without graphics loads a SIGIMG46 image and refuses to run its GFX
     try std.testing.expectEqualStrings("SIGIMG46", image[0..8]);
     const restored = try createMachine(&output);
     defer destroyMachine(restored);
-    try restored.restoreImage(image);
-    try std.testing.expectError(error.InvalidExecutionToken, restored.interpretLine("1 1 GFX-INIT"));
-    restored.data_depth = 0;
-    try std.testing.expectError(error.InvalidExecutionToken, restored.interpretLine("USE"));
-    restored.data_depth = 0;
-    try restored.interpretLine("' USE CATCH");
-    try std.testing.expectEqual(@as(forth.Cell, -261), restored.data_stack[restored.data_depth - 1]);
+    try restored.interpretLine(": KEPT 42 ;");
+    const count = restored.word_count;
+    try std.testing.expectError(error.InvalidImage, restored.restoreImage(image));
+    try std.testing.expectError(error.InvalidImage, restored.appendImage(source));
+    var work: @import("../core/image_append.zig").Workspace = undefined;
+    try std.testing.expectError(error.InvalidImage, @import("../core/image_append.zig").append(restored, image, &work));
+    try std.testing.expectEqual(count, restored.word_count);
+    try restored.interpretLine("KEPT");
+    try expectStack(restored, &.{42});
+    // Runtime defense still applies to directly supplied excluded builtin ids.
+    try std.testing.expectError(error.InvalidExecutionToken, restored.executeBuiltin(.gfx_init));
 }
 
 // ---- The graphics library (G2) ----

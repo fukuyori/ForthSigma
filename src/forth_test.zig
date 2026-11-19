@@ -72,6 +72,7 @@ comptime {
     _ = @import("tests/inline_calls_test.zig");
     _ = @import("tests/graphics_test.zig");
     _ = @import("tests/library_loading_test.zig");
+    _ = @import("tests/extension_test.zig");
     _ = @import("tests/graphics_images_test.zig");
     _ = @import("tests/load_image_test.zig");
     _ = @import("tests/gui_test.zig");

@@ -1,8 +1,11 @@
 #!/usr/bin/env python3
 """Check NS steady-clock contracts, signal interruption and terminal input retention."""
 import argparse, pathlib, subprocess, json, os, time, signal, select, sys
-p=argparse.ArgumentParser();p.add_argument('--gforth-build',type=pathlib.Path,required=True);a=p.parse_args()
-b=a.gforth_build.resolve();commands={'sigma':[str(pathlib.Path('zig-out/bin/sigma').resolve()),'--max-steps','1000000','-e'],'gforth':[str(b/'gforth-ditc'),'-p',str(b)+':~+','-i',str(b/'gforth.fi'),'-e']}
+p=argparse.ArgumentParser();p.add_argument('--gforth-build',type=pathlib.Path);p.add_argument('--sigma',type=pathlib.Path,default=pathlib.Path('zig-out/bin/sigma'));p.add_argument('--sigma-only',action='store_true');a=p.parse_args()
+commands={'sigma':[str(a.sigma.resolve()),'--max-steps','1000000','-e']}
+if not a.sigma_only:
+ if a.gforth_build is None:p.error('--gforth-build is required unless --sigma-only is used')
+ b=a.gforth_build.resolve();commands['gforth']=[str(b/'gforth-ditc'),'-p',str(b)+':~+','-i',str(b/'gforth.fi'),'-e']
 results=[]
 for duration in [-1000000,-1,0,1,1000,1000000,20000000,100000000]:
  for runtime,cmd in commands.items():
@@ -84,5 +87,5 @@ if sys.platform!='win32':
   finally:
    if child.poll() is None:child.kill();child.wait()
    os.close(master);os.close(slave)
-report={'word':'NS','duration_contract_cases':8,'duration_runtime_checks':len(results),'range_cases':2,'redirected_cases':4,'signal_recovery_cases':4,'sigma_pty_cases':pty_results,'timing_results':results,'pass':True}
-root=pathlib.Path('.work/p05b-ns-check');root.mkdir(parents=True,exist_ok=True);(root/'comparison.json').write_text(json.dumps(report,indent=2)+'\n');print(json.dumps({k:v for k,v in report.items() if k!='timing_results'}))
+report={'word':'NS','runtimes':list(commands),'comparison':not a.sigma_only,'duration_contract_cases':8,'duration_runtime_checks':len(results),'range_cases':len(commands),'redirected_cases':2*len(commands),'signal_recovery_cases':2*len(commands),'sigma_pty_cases':pty_results,'timing_results':results,'pass':True}
+root=pathlib.Path('.work/p05b-ns-check');root.mkdir(parents=True,exist_ok=True);(root/('sigma-only.json' if a.sigma_only else 'comparison.json')).write_text(json.dumps(report,indent=2)+'\n');print(json.dumps({k:v for k,v in report.items() if k!='timing_results'}))

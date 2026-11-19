@@ -325,3 +325,11 @@ The following startup words are implemented. Entries are grouped by the validate
 | P09b | `AFTER-LOCATE`, `BEFORE-LOCATE`, `BROWSE`, `BW`, `CLEARSTACK`, `CLEARSTACKS`, `EXPAND-WHERE`, `F.S-PRECISION`, `FANCY-AFTER-L`, `FCLEARSTACK`, `GG`, `MAXDEPTH-.S` |
 | P09b | `NW`, `PREPEND-WHERE`, `SHORT-WHERE`, `TT`, `UNUSED-WORDS`, `WHEREG`, `WW`, `XT-LOCATE` |
 | P09c | `F>R`, `FR>`, `FR@`, `R'@`, `RPICK` |
+
+## Independent extension group (1056/1036)
+
+`REQUIRE-EXTENSION` and `HOST-OS ( -- c-addr u )` in EXTENSION are Sigma extensions. `-Dextension` defaults to true and is independent of audio/graphics. HOST-OS returns the compilation target OS family as `windows`, `linux` (including WSL/Android), `macos`, or `unknown`. Its read-only borrowed text lasts until the next call or image restore. Excluded builds treat the loader as an unknown word (-13) and omit its HELP entries. Compatibility with same-named Gforth words was not checked in this work.
+
+The new Builtin changes the image ABI signature. A receiving build rejects images containing excluded appended builtins or direct builtin operations with InvalidImage before installation. This tightens the earlier behavior for audio/graphics images, which could previously load in excluded builds. Runtime defenses for raw xt values remain.
+
+Image feature checks cover appended builtin words and direct builtin operations. Ordinary calls to reserved base dictionary slots retain the earlier behavior: loading succeeds and executing an excluded base word raises INVALID EXECUTION TOKEN. This is separate from data holding a raw xt value.

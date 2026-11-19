@@ -12,10 +12,14 @@
 - [グラフィックモード](GRAPHICS_MODES.ja.md): `SHOW` の表示先（端末、Sixel、ウィンドウ、Tkのウィンドウ）、色数、表示の大きさ
 - [サウンドの調査](SOUND_RESEARCH.md): MSX、Atari ST、C64、NES、Amiga の音源、MSX BASIC の音の語、各システムの音の出力と、その出典
 - [ネイティブウィンドウの検討（Windows・macOS・Linux）](NATIVE_WINDOW_STUDY.md): `SHOW` の共通条件の案と、macOS・Linux の表示方式・依存・検証条件（検討段階）
+- [LOGOのタートルグラフィックスの検討](LOGO_TURTLE_STUDY.md): 外部ForthアプリとしてLOGOのプログラムを解釈してタートルグラフィックスを描く方式、決める項目、問題点（検討段階）
 - [実装ノート](IMPLEMENTATION.md): Zig移植版の構成、実装判断、未実装機能
 - [Forth 2012の語の状況](forth2012-word-status.tsv): Forth 2012規格の語の一覧の各項目と、全機能ビルドでの有無（2026-11-17確認。要約はトップのREADME）
 - [サイズ測定・速度比較](SIZE_SPEED_MEASUREMENT.md): 2026-11-17のWindows/Linux実行体サイズとWSLでのGforth 1.0.2比較、生データと再実行手順
-- [本体の機能拡張の全体](CORE_EXTENSION_PLAN.md): 共通基盤・OS判別、TUI・非同期、音と描画、ゲーム表示、タスク制御の範囲、依存関係、段階0〜Eの工程（tque 613、実装未着手）
+- [本体の機能拡張の全体](CORE_EXTENSION_PLAN.md): 共通基盤・OS判別、TUI・非同期、音と描画、ゲーム表示、タスク制御の範囲、依存関係、段階0〜Eの工程（tque 613、900のホスト統合・自動確認済み、Mac実機確認待ち）。[実装・検証記録](CORE_EXTENSION_IMPLEMENTATION.md)
+- [本体機能拡張の引継ぎ（2026-11-19）](CORE_EXTENSION_HANDOFF_2026-11-19.md): 完了した語群基盤・OS判別、Mac実機の残作業、Git・tque・検証結果、次の637・638
+- [語群基盤とOS判別の設計](EXTENSION_GROUP_DESIGN.md): extensionの選択・読込み、HOST-OS、除外構成・イメージの契約（1056・1036）
+- [保存アプリの起動基盤](SAVED_APPLICATION_STARTUP_PLAN.md): SAVESYS実行体の自動起動・引数・終了・保存整合の計画（1003配下1066）。LOGO本体は外部Forthアプリ
 - [本体の機能拡張の詳細設計](CORE_EXTENSION_DETAILED_DESIGN.md): 本体コア・グラフィックス・サウンド・拡張への配置、API候補、内部構造、所有権、失敗・取消し・復元、検証条件。[判断記録](CORE_EXTENSION_DESIGN_DECISIONS.md)、[State隔離監査表](CORE_EXTENSION_WORKER_STATE_AUDIT.md)
 - [詳細設計レビューへの対応](CORE_EXTENSION_REVIEW_RESPONSE.md): Claude Codeの[初稿レビュー](CORE_EXTENSION_CLAUDE_REVIEW.md)と[再確認](CORE_EXTENSION_CLAUDE_FOLLOWUP.md)への対応、残る採用判断。[依頼文](CORE_EXTENSION_REVIEW_REQUEST.md)
 - [システムのタスク制御の補完計画](TASK_CONTROL_PLAN.md): 実行方式、状態と結果、複合待機、取消し・回収、VM分離、通常ビルドでの利用（tque 1048、方式未確定・実装未着手）
@@ -37,7 +41,7 @@
 
 - [P01レビュー・検証記録](P01_REVIEW.md)：Claude Codeの指摘対応とリターンスタック差異の実測。
 
-- [非同期・TUI実行基盤とエディタ拡張の企画](ASYNC_OVERVIEW.md): 非同期案の検討3点、エディタ向け16項目のAPI・要件・段階案と、本体・アプリ側の区分。tque 613配下の1002は本体側の7件、共通の取り決めの1件（900）は613の直下、仕様未確定。
+- [非同期・TUI実行基盤とエディタ拡張の企画](ASYNC_OVERVIEW.md): 非同期案の検討3点、エディタ向け16項目のAPI・要件・段階案と、本体・アプリ側の区分。tque 613配下の1002は本体側の7件、共通の取り決め（900）は1055配下。内部基盤を実装し、後続機能の仕様は各担当項目で確定。
 
 - [P02数値演算・数値入出力の実装記録](P02_IMPLEMENTATION.md)：境界仕様、Gforthとの差、検証手順。
 

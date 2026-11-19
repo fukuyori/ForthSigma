@@ -1,0 +1,22 @@
+# 1056 レビュー依頼文
+
+## 設計
+
+1056語群基盤と1036 OS判別の設計レビューを依頼します。読み取り専用、Read/Glob/Grepのみ。編集・Git・テスト・外部アクセスなし。docs/CORE_EXTENSION_PLAN.md、CORE_EXTENSION_DETAILED_DESIGN.md第3節、CORE_EXTENSION_DESIGN_DECISIONS.md、src/core/library_loading.zig、defs.zig、image_format.zig、image_append.zig、dictionary_image.zig、words_help.zig、src/forth.zigと既存graphics/audioの構成を確認してください。
+利用者は3語群（audio/graphics/extension）をビルド時に切り離すこと、未決を実装時にClaudeとの協議で具体化すること、Mac実機確認1065は残して次へ進めることを指示しました。900は91%のまま、1056の先行条件を900全体から完了済み1064に切り替えます。最終Mac受入は残します。
+提案：-Dextension既定true、REQUIRE-EXTENSIONは既存REQUIRE-AUDIOと同じparser入口。EXTENSION vocabularyへ独立してlazy登録。将来の公開時計/タスク/端末/Unicode/OS判別を所属させるが既存標準語の移動はしない。files/debug追加条件は今後の担当機能で適用。内部runtimeはextension除外でも残す。第一の小さな語HOST-OSは( -- c-addr u )でASCII小文字windows/linux/macos、未知OSはunknown。ネイティブHostContextが返すホスト識別コールバック（coreはOS非依存）またはbuild target builtinを使う案を比較して具体的に選んでください。freestandingはunknown。extension無効時REQUIRE-EXTENSIONはUnknownWord(-13)とし、新規エラー番号は設けない。HELPは未読込みでも説明、除外構成ではunknown。イメージは新しいBuiltin追加によりABI署名更新で旧版拒否し、第三kind/magicを増やさず通常形式のbuiltin内容検査でextension除外を拒否する案。extension vocabulary記録セルとappend後の認識は追加が必要です。
+この具体案の欠陥・互換性・取りこぼしを指摘し、未確定箇所には推奨の具体値と根拠を返してください。既存の設計レビューとの差分、コールバックかcomptime targetか、image形式の適切な選択を特に確認してください。日本語で重大度付き最大8件と採用推奨仕様を標準出力へ。読んだ範囲と実行していない旨も。
+
+## 実装
+
+1056/1036の実装を読み取り専用でレビューしてください。Read/Glob/Grepのみ、編集・テスト・Git・外部アクセスなし。固定コピー.work/1056-review/implementation/src/とbuild.zigを対象にしてください。元srcは開発中なので指摘の対象に混ぜないでください。設計レビュー原文docs/reviews/1056-design.mdも参照してください。
+実装：extension既定true、REQUIRE-EXTENSIONは有効時だけparser処理、EXTENSIONへHOST-OSをlazy登録。HOST-OS( -- c-addr u )はbuiltin.os.tagをwindows/linux/macos/unknownへ写像、呼ぶごとに論理メモリー0xdc8へコピー、0xdc0がvocabulary記録セル。main/Writerの追加接続は不要。8バイト領域はtimezone buffer前、$TMPの0x300帯とは別です。次の呼出しまたはイメージ復元まで有効・書換え禁止。数値案から文字列案へ具体化し文書は更新中です。
+語群一覧library_groups.zigで両append経路を共通化。新magicなし、Builtin追加でABI更新。全語群の除外builtinについて、image_formatはbuiltin_count以降のbuiltin語と直接builtin Opを拒否、State appendも事前検査しInvalidImage。起動時の名前なし欄は拒否しない。これは以前audio/graphicsを除いても読めたイメージを拒否する挙動変更として文書化予定です。単体試験はsrc/tests/extension_test.zig、初回Windows全体試験は23/23成功・core1026成功6skip、8通り＋files/debug除外試験を並行実行中です。
+重点：読込み失敗後の辞書・BASE/order/current/name復元、コピー文字列の寿命/イメージ/再配置、画像形式の有効条件・未検査の復元経路・append preflightでの対象変更、機能除外、unknownOS、HELP、corefreestandingの境界。重大度・ファイル位置・再現条件・修正案を最大8件、現在の欠陥と将来案を区別し、読んだ範囲/未実行を明記して日本語で標準出力へ。できれば新語の名前と文字列仕様について問題ないかも確認してください。
+
+## 修正の追加確認
+
+1056の追加確認を読み取り専用でお願いします。Read/Glob/Grepのみ、実行・編集・Git・外部アクセスなし。固定コピー.work/1056-review/followup/src/内のimage_features.zig、image_restore_plan.zig、dictionary_image.zig、image_format.zig、words_help.zig、memory_map.zig、tests/extension_test.zig、tests/graphics_test.zigを重点に、前回docs/reviews/1056-implementation.mdのI01/I03/I05/I06の修正を確認してください。
+変更：wire codec image_formatから除外条件を外し、共通image_featuresのvalidateWord/validateOperationを復元preflight（typedappendもここを通る）とStateappendへ追加。encoderは除外語のfixtureを構造的に保存でき、実際の読込みで拒否します。Stateappendはword_count等の範囲チェックが先。既存graphics試験を事前拒否＋辞書不変へ更新し、extension/audio/files/debugの除外builtin/直接Opがrestore/typedappend/Stateappendの3経路で拒否される試験を追加。基本辞書欄への普通のcall_builtin等は従来どおり読め、実行時-261とする(I02案a)ことを文書化し、その試験も追加しました。生xtデータも実行時防御。HELPはextensionのdefinitions/library_wordsを走査。領域境界はcomptime検査。
+名前HOST-OSは維持し、OS系列/未知文字列対応/Wine例を文書化。任意Forthのスタック/メモリー副作用は巻戻さず、辞書・検索設定の巻戻しであることを明記します。
+前回指摘の修正で新たな高・中の問題がないかを優先して確認し、重大度・場所・条件・修正案を最大5件。修正済みの指摘と未確認事項、読んだ範囲と未実行を日本語で返してください。

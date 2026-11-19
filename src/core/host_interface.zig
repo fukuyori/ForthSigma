@@ -129,6 +129,8 @@ pub const ZonedTime = struct { local: LocalTime, dst: bool, offset: Cell, zone_l
 
 /// What audio_wait_fn saw while it waited.
 pub const AudioWait = enum {
+    /// Installing/restoring the host's interrupt scope failed; map to -265.
+    host_failed,
     /// Only the time passed.
     waited,
     /// Ctrl+C was pressed (as a signal: the terminal has its line input).

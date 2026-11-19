@@ -168,13 +168,19 @@ Build options leave out groups of words, for a smaller program or for a host tha
 | `-Dimage=false` | `SAVE`, `LOAD-DICTIONARY`, and `SAVESYS` | 1,451,520 bytes |
 | `-Dgraphics=false` | `REQUIRE-GRAPHICS`, the `GFX-` words, the graphics library, its fonts, and the Tcl/Tk words | 1,192,448 bytes |
 | `-Daudio=false` | `REQUIRE-AUDIO`, the `SND-` words, the audio library, and the audio thread | 1,371,136 bytes |
+| `-Dextension=false` | `REQUIRE-EXTENSION` and the EXTENSION vocabulary, including `HOST-OS` | Not measured |
 | `-Ddebug=false` | The debugging features: the backtrace after an error, `--max-steps`, `--trace`, `--profile`, `--debug-log`, `--lint`, `--format`, `--coverage`, and the words `WATCH`, `UNWATCH`, `.COVER-RAW`, `COV%`, `.COVERAGE`, `DBG`, `BREAK:`, `BREAK"`, `~~BT`, `~~1BT`, `ONCE`, `~~VALUE`, `~~VARIABLE`, `+LTRACE`, and `-LTRACE` | 1,245,184 bytes |
-| The seven above `-Ddebug=false` | All of the above but the debugging features | 517,632 bytes |
-| All eight | All of the above | 363,520 bytes |
+| The original seven above `-Ddebug=false` (excluding extension) | All of the above but the debugging features | 517,632 bytes |
+| All original eight (excluding extension) | All of the above | 363,520 bytes |
 
 The sizes are those of the source after 0.10.0 built with `-Doptimize=fast -Dcpu=baseline`, the same as the release, on Windows x86_64 (measured 2026-11-11); the executables of a release are about 10 KB larger with their signature. In 0.10.0 itself, a build that leaves out a group other than `HELP` or the debugging features is 50 to 78 KB larger than in this table. The options can be combined, for example `zig build -Doptimize=fast -Dfloat=false -Dhelp=false`.
 
-The words of a group left out are not in the dictionary, and `HELP` has no entries for them. The groups are independent: without the file words, `SAVE`, `LOAD-DICTIONARY`, and `SAVESYS` still write and read image files, and `LOCATE` still reads the source file, unless their own groups are left out too. Every build gives each built-in word the same execution token, so an image saved by one build loads into a build with other groups; running a word that build left out gives the error `INVALID EXECUTION TOKEN`, and `SEE` shows it by its name. An image saved by an earlier build that left a group out (such as `-Dfloat=false`) gives `INVALID IMAGE`, since its built-in words had other execution tokens.
+
+The extension module is enabled by default. `REQUIRE-EXTENSION ALSO EXTENSION HOST-OS TYPE PREVIOUS` displays the target OS family. `HOST-OS ( -- c-addr u )` returns `windows`, `linux` (including WSL/Android), `macos`, or `unknown`. Its read-only borrowed text is valid until the next HOST-OS or image restore. Audio and graphics are not prerequisites. With `-Dextension=false`, REQUIRE-EXTENSION is an ordinary unknown word (-13); internal shared clocks and waits remain available to audio/graphics. Future terminal/task extensions are still planned work.
+
+The words of a group left out are not in the dictionary, and `HELP` has no entries for them. The groups are independent: without the file words, `SAVE`, `LOAD-DICTIONARY`, and `SAVESYS` still write and read image files, and `LOCATE` still reads the source file, unless their own groups are left out too. Builtin execution tokens stay stable across feature configurations, but images containing appended builtins or direct builtin operations excluded by the receiving build are rejected with `INVALID IMAGE` before installation. The runtime `INVALID EXECUTION TOKEN` defense remains for raw execution-token values kept as data. Images from older builtin tables are also rejected by the ABI check.
+
+Image feature checks cover appended builtin words and direct builtin operations. Ordinary calls to reserved base dictionary slots retain the earlier behavior: loading succeeds and executing an excluded base word raises INVALID EXECUTION TOKEN. This is separate from data holding a raw xt value.
 
 The tests run with the same options, for example `zig build test -Dfloat=false`; the tests that use a group left out are skipped.
 

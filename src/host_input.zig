@@ -21,8 +21,44 @@ pub var input_is_terminal = false;
 pub var output_is_terminal = false;
 /// Writes the host's buffered output, before anything here writes to the terminal.
 pub var flush_output: *const fn () void = noFlush;
+/// The host's signal service restores pending temporary modes before raw/cooked
+/// changes. False prevents enter from capturing a temporary NS mode as its baseline.
+pub var before_mode_change: *const fn () bool = noModeRecovery;
+fn noModeRecovery() bool {
+    return true;
+}
+var mode_generation: u64 = 0;
+pub fn modeGeneration() u64 {
+    return mode_generation;
+}
 
 fn noFlush() void {}
+
+test "input mode changes consult pending recovery before taking a raw baseline" {
+    const saved_hook = before_mode_change;
+    const saved_raw = raw;
+    const saved_terminal = input_is_terminal;
+    defer before_mode_change = saved_hook;
+    defer raw = saved_raw;
+    defer input_is_terminal = saved_terminal;
+    const Fake = struct {
+        var calls: usize = 0;
+        fn fail() bool {
+            calls += 1;
+            return false;
+        }
+    };
+    Fake.calls = 0;
+    before_mode_change = Fake.fail;
+    input_is_terminal = false;
+    raw = false;
+    try std.testing.expect(!enter());
+    raw = true;
+    try std.testing.expect(!enter());
+    raw = false;
+    leave();
+    try std.testing.expectEqual(@as(usize, 3), Fake.calls);
+}
 
 /// Whether the terminal is in raw mode, whether MOUSE-ON asked for the mouse, and
 /// whether the terminal is reporting it now (only in raw mode).
@@ -120,6 +156,7 @@ pub fn nextByte() ?u8 {
 /// MOUSE-ON and MOUSE-OFF: the terminal reports the mouse while it is in raw mode.
 pub fn setMouse(on: bool) void {
     mouse_wanted = on;
+    if (!before_mode_change()) return;
     // A terminal that did not answer may be asked again after a new MOUSE-ON.
     if (on) cursor_unanswered = false;
     if (raw) report(on);
@@ -139,7 +176,9 @@ var cursor_unanswered = false;
 
 /// Gives the terminal back its line input.
 pub fn leave() void {
+    _ = before_mode_change();
     if (!raw) return;
+    mode_generation +%= 1;
     if (mouse_reporting) report(false);
     if (is_windows) windows.leave() else posix.leave();
     raw = false;
@@ -153,9 +192,14 @@ pub fn isRaw() bool {
 }
 
 fn enter() bool {
-    if (raw) return true;
+    if (!before_mode_change()) return false;
+    if (raw) {
+        if (mouse_wanted != mouse_reporting) report(mouse_wanted);
+        return true;
+    }
     if (!input_is_terminal) return false;
     if (!(if (is_windows) windows.enter() else posix.enter())) return false;
+    mode_generation +%= 1;
     raw = true;
     restarted = true;
     if (mouse_wanted) report(true);

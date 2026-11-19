@@ -4,13 +4,12 @@ import argparse
 import json
 from pathlib import Path
 import platform
-import re
 import subprocess
 import sys
 
 p = argparse.ArgumentParser(description=__doc__)
 p.add_argument('--platform', choices=['windows', 'linux', 'macos'], required=True)
-p.add_argument('--groups', nargs='+', default=['float', 'files', 'help', 'tools', 'image', 'graphics', 'audio', 'debug'])
+p.add_argument('--groups', nargs='+', default=['float', 'files', 'help', 'tools', 'image', 'graphics', 'audio', 'extension', 'debug'])
 a = p.parse_args()
 via_wsl = a.platform == 'linux' and sys.platform == 'win32'
 if not via_wsl and ((a.platform == 'linux' and sys.platform != 'linux') or
@@ -36,17 +35,19 @@ for group in a.groups:
     label = 'no-' + group
     prefix = folder / label
     compile_log = folder / (label + '-tests.log')
-    r = command(['zig', 'build', 'test', *flags, '--summary', 'all'], compile_log)
     native_logs = []
     if not via_wsl:
+        r = command(['zig', 'build', 'test', *flags, '--summary', 'all'], compile_log)
         assert r.returncode == 0, (label, 'tests', str(compile_log))
     else:
-        log = compile_log.read_text(errors='replace')
-        paths = list(dict.fromkeys(re.findall(r'failed command: "([^"\r\n]+?test)"', log)))
-        assert len(paths) == 2 and 'compilation errors' not in log and 'compile test' in log, (label, 'cross-test build', str(compile_log))
-        for index, path in enumerate(paths):
-            program = Path(path.replace('\\\\', '\\')).resolve()
-            native_log = folder / f'{label}-native-test-{index}.log'
+        # Cross compilation and native execution are explicit stages. Do not infer
+        # test executables from failed `zig build test` diagnostics or a fixed count.
+        r = command(['zig', 'build', 'core-check', 'host-check', 'runtime-check',
+                     *flags, '--prefix', str(prefix), '--summary', 'all'], compile_log)
+        assert r.returncode == 0, (label, 'cross-test build', str(compile_log))
+        for kind in ('core', 'host', 'runtime'):
+            program = prefix / f'{kind}-tests/x86_64-linux/test'
+            native_log = folder / f'{label}-native-test-{kind}.log'
             native = command(['wsl', '--cd', linux(root), '--exec', linux(program)], native_log)
             assert native.returncode == 0, (label, 'native tests', str(native_log))
             native_logs.append(str(native_log.relative_to(root)))

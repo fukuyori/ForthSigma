@@ -1298,6 +1298,8 @@ pub const entries = [_]Entry{
     .{ .name = "AXES", .stack = "( -- )", .text = "Draw the axes x = 0 and y = 0 that are in the range, with the current color (FORTH/Sigma graphics)." },
     .{ .name = "PLOT", .stack = "( xt -- )", .text = "Draw the graph of xt ( F: x -- y ) across the image, joining the columns with lines; NaN leaves a gap (FORTH/Sigma graphics)." },
     // Audio (FORTH/Sigma): the SND- words and the audio library are in the AUDIO vocabulary.
+    .{ .name = "REQUIRE-EXTENSION", .stack = "( -- )", .text = "Load the independent EXTENSION vocabulary once; select it with ALSO EXTENSION (FORTH/Sigma)." },
+    .{ .name = "HOST-OS", .stack = "( -- c-addr u )", .text = "Return borrowed lowercase target OS family: windows, linux (including WSL/Android), macos, or unknown. Valid until the next HOST-OS or image restore; do not modify it. Copy it to retain it. Values may grow; treat unfamiliar values as unknown (FORTH/Sigma extension)." },
     .{ .name = "REQUIRE-AUDIO", .stack = "( -- )", .text = "Load the audio words into the AUDIO vocabulary, the first time only (FORTH/Sigma)." },
     .{ .name = "SND-PLAY", .stack = "( c-addr1 u1 c-addr2 u2 c-addr3 u3 -- )", .text = "Put the MML of the three voices of one PLAY; an empty string for a voice that has no notes (FORTH/Sigma)." },
     .{ .name = "SND-SOUND", .stack = "( reg value -- )", .text = "Host primitive for SOUND (FORTH/Sigma)." },

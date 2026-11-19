@@ -325,3 +325,11 @@ P09レビュー対応：生存中のEXCEPTION(S)レコードを切り詰める�
 | P09b | `NW`, `PREPEND-WHERE`, `SHORT-WHERE`, `TT`, `UNUSED-WORDS`, `WHEREG`, `WW`, `XT-LOCATE` |
 | P09c | `F>R`, `FR>`, `FR@`, `R'@`, `RPICK` |
 | 追加登録語 | `BYE` |
+
+## 独立した拡張語群（1056・1036）
+
+`REQUIRE-EXTENSION`とEXTENSIONの`HOST-OS ( -- c-addr u )`はSigma独自の拡張です。`-Dextension`は既定有効で、audio/graphicsから独立しています。HOST-OSはコンパイル対象のOS系列を`windows`・`linux`（WSL/Androidを含む）・`macos`・`unknown`で返します。結果は次の呼出しかイメージ復元までの書換え禁止の借用文字列です。除外時の読込みは未定義語（-13）、HELPも除外します。Gforth同名語との互換性は今回照合していません。
+
+新しいBuiltin追加でイメージABI署名が変わります。機能を除いた実行体は、追加組込み語・直接組込みOpに除外した語が含まれるイメージを読込み前にInvalidImageで拒否します。以前audio/graphics除外でも読めたイメージに対する制限の追加です。生のxt値に対する実行時の防御は維持します。
+
+イメージの機能検査は追加した組込み語と直接builtin Opを対象とする。起動時から予約されている基本辞書の欄への通常の呼出しは従来どおり読込みを許し、除外語の実行時にINVALID EXECUTION TOKENとなる。生のxtをデータとして保存する場合とは別の制約である。

@@ -7,6 +7,7 @@ const help_text = @import("help_text.zig");
 const text_input = @import("text_input.zig");
 const words_graphics = @import("words_graphics.zig");
 const words_audio = @import("words_audio.zig");
+const words_extension = @import("words_extension.zig");
 const Builtin = defs.Builtin;
 const RuntimeError = defs.RuntimeError;
 const State = forth.State;
@@ -51,7 +52,7 @@ fn isLineEnd(byte: u8) bool {
 /// word the user defined. An unknown name is an error, as everywhere else.
 fn describe(self: *State, name: []const u8) RuntimeError!void {
     if (self.lookup(name)) |id| {
-        const group_word = words_graphics.isGraphicsWord(self, self.words[id]) or words_audio.isAudioWord(self, self.words[id]) or @import("words_gui.zig").isGuiWord(self, self.words[id]) or @import("words_game.zig").isGameWord(self, self.words[id]);
+        const group_word = @import("library_loading.zig").isGroupWord(self, self.words[id], words_extension.library_name) or words_graphics.isGraphicsWord(self, self.words[id]) or words_audio.isAudioWord(self, self.words[id]) or @import("words_gui.zig").isGuiWord(self, self.words[id]) or @import("words_game.zig").isGameWord(self, self.words[id]);
         if (id >= self.builtin_count and !(group_word and entry(name) != null)) {
             const word = self.words[id];
             const word_name = self.wordName(word);
@@ -140,6 +141,13 @@ fn isExcludedName(comptime name: []const u8) bool {
     if (std.mem.eql(u8, name, "REQUIRE-GAME")) return !defs.graphics_enabled;
     for (@import("words_game.zig").library_words) |library_word| {
         if (std.mem.eql(u8, library_word, name)) return !defs.graphics_enabled;
+    }
+    if (std.mem.eql(u8, name, "REQUIRE-EXTENSION")) return !defs.extension_enabled;
+    for (words_extension.library_words) |library_word| {
+        if (std.mem.eql(u8, library_word, name)) return !defs.extension_enabled;
+    }
+    for (words_extension.definitions) |definition| {
+        if (std.mem.eql(u8, definition[0], name)) return defs.isExcludedBuiltin(definition[1]);
     }
     if (std.mem.eql(u8, name, "REQUIRE-AUDIO")) return !defs.audio_enabled;
     for (words_audio.library_words) |library_word| {

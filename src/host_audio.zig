@@ -125,22 +125,12 @@ fn playSilently() void {
 
 // ---- PLAY's wait ----
 
-var interrupted = std.atomic.Value(bool).init(false);
-
 /// Waits a few milliseconds with Ctrl+C caught.
 pub fn wait() forth.AudioWait {
-    if (is_windows) {
-        _ = windows.SetConsoleCtrlHandler(windows.ctrlHandler, 1);
-        sleepMilliseconds(3);
-        _ = windows.SetConsoleCtrlHandler(windows.ctrlHandler, 0);
-    } else {
-        const previous = posix.signal(posix.sigint, @intFromPtr(&posix.handler));
-        sleepMilliseconds(3);
-        _ = posix.signal(posix.sigint, previous);
-    }
-    if (interrupted.swap(false, .acq_rel)) return .interrupted;
-    // In single-key mode Ctrl+C is a key, which the core reads.
-    return if (host_input.isRaw()) .read_input else .waited;
+    return @import("host_wait.zig").audioWait(null);
+}
+pub fn waitWithRuntime(runtime: *@import("host_runtime.zig").Runtime) forth.AudioWait {
+    return @import("host_wait.zig").audioWait(runtime);
 }
 
 // ---- Time ----
@@ -169,15 +159,6 @@ fn monotonicNanoseconds() u64 {
     if (std.c.clock_gettime(std.c.CLOCK.MONOTONIC, &time) != 0) return 0;
     return @as(u64, @intCast(time.sec)) * std.time.ns_per_s + @as(u64, @intCast(time.nsec));
 }
-
-const posix = struct {
-    extern "c" fn signal(c_int, usize) usize;
-    const sigint = 2;
-
-    fn handler(_: c_int) callconv(.c) void {
-        interrupted.store(true, .release);
-    }
-};
 
 // ---- Windows: waveOut ----
 
@@ -225,12 +206,6 @@ const windows = struct {
     var event: ?HANDLE = null;
     var samples: [buffer_count][buffer_frames * 2]i16 = undefined;
     var headers: [buffer_count]WaveHeader = undefined;
-
-    fn ctrlHandler(kind: u32) callconv(.winapi) c_int {
-        if (kind != ctrl_c_event) return 0;
-        interrupted.store(true, .release);
-        return 1;
-    }
 
     /// Opens the default device; false when there is none.
     fn open() bool {

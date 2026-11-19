@@ -286,6 +286,15 @@ pub const f_s_precision_address: Cell = 0x0da0;
 pub const before_locate_address: Cell = 0x0da8;
 pub const after_locate_address: Cell = 0x0db0;
 pub const where_style_address: Cell = 0x0db8;
+/// Lazy EXTENSION vocabulary identity and borrowed HOST-OS result (max 7 bytes).
+pub const extension_vocabulary_address: Cell = 0x0dc0;
+pub const host_os_buffer_address: Cell = 0x0dc8;
+comptime {
+    if (where_style_address + cell_size > extension_vocabulary_address or
+        extension_vocabulary_address + cell_size > host_os_buffer_address or
+        host_os_buffer_address + 8 > timezone_buffer_address)
+        @compileError("extension metadata or HOST-OS overlaps system storage");
+}
 
 /// Dedicated borrowed >TIME&DATE&TZ text; no owned pointer or relocation root.
 pub const timezone_buffer_address: Cell = 0x0e00;

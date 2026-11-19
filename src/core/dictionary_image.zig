@@ -96,6 +96,10 @@ pub fn restoreFreshImage(self: *State, image: []const u8) RuntimeError!void {
 
 pub fn appendImage(self: *State, source: *const State) RuntimeError!void {
     if (self == source) return error.InvalidImage;
+    // Reject malformed ranges and excluded operations before any target mutation.
+    if (source.builtin_count == 0 or source.builtin_count > source.word_count or source.word_count > source.words.len or source.code_count > source.code.len) return error.InvalidImage;
+    for (source.words[0..source.word_count], 0..) |word, i| try @import("image_features.zig").validateWord(word, i, source.builtin_count);
+    for (source.code[0..source.code_count]) |op| try @import("image_features.zig").validateOperation(op);
     const exceptions = @import("exception_registry.zig");
     try exceptions.validateState(self);
     try exceptions.validateState(source);
@@ -125,10 +129,9 @@ pub fn appendImage(self: *State, source: *const State) RuntimeError!void {
     if (source.builtin_count == 0 or source.builtin_count != self.builtin_count or source.word_count < source.builtin_count) return error.InvalidImage;
     const added_words: usize = source.word_count - source.builtin_count;
     const word_base: usize = self.word_count;
-    const graphics_loaded = words_graphics.graphicsLoaded(self);
-    const audio_loaded = words_audio.audioLoaded(self);
-    const gui_loaded = @import("words_gui.zig").guiLoaded(self);
-    const game_loaded = @import("words_game.zig").gameLoaded(self);
+    const groups = @import("library_groups.zig").groups;
+    var groups_loaded: [groups.len]bool = undefined;
+    inline for (groups, 0..) |group, i| groups_loaded[i] = library_loading.isLoaded(self, group);
     const code_base: usize = self.code_count;
     const code_count: usize = source.code_count;
     if (word_base + added_words > max_words) return error.DictionaryFull;
@@ -265,10 +268,7 @@ pub fn appendImage(self: *State, source: *const State) RuntimeError!void {
     self.last_created_word = null;
     // The loaded image's graphics words count as loaded here too, unless this dictionary
     // has its own; either way, images saved from now on are SIGIMG46.
-    try library_loading.appendLoaded(self, source, words_graphics.group, graphics_loaded, word_base);
-    try library_loading.appendLoaded(self, source, words_audio.group, audio_loaded, word_base);
-    try library_loading.appendLoaded(self, source, @import("words_gui.zig").group, gui_loaded, word_base);
-    try library_loading.appendLoaded(self, source, @import("words_game.zig").group, game_loaded, word_base);
+    inline for (groups, 0..) |group, i| try library_loading.appendLoaded(self, source, group, groups_loaded[i], word_base);
     for (graph.objects[0..graph.object_count], 0..) |object, i| {
         const at = heap_addresses[i];
         self.setBlock(at - memory_map.heap_header, @intCast(object.bytes.len), true);

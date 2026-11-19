@@ -16,6 +16,7 @@ pub fn build(b: *std.Build) void {
     const graphics = b.option(bool, "graphics", "Include REQUIRE-GRAPHICS and the GFX- words (default: on)") orelse true;
     const x11 = b.option(bool, "x11", "Enable the Linux X11/XWayland window (default: on)") orelse true;
     const audio = b.option(bool, "audio", "Include REQUIRE-AUDIO and the SND- words (default: on)") orelse true;
+    const extension = b.option(bool, "extension", "Include REQUIRE-EXTENSION and the EXTENSION vocabulary (default: on)") orelse true;
     const debug = b.option(bool, "debug", "Include the debugging features: the backtrace after an error, --max-steps, --trace, --profile, --debug-log, --lint, --format, --coverage, and the debugging words (DBG, BREAK:, ~~BT and others) (default: on)") orelse true;
     const options = b.addOptions();
     options.addOption(bool, "float", float);
@@ -26,6 +27,7 @@ pub fn build(b: *std.Build) void {
     options.addOption(bool, "graphics", graphics);
     options.addOption(bool, "x11", x11);
     options.addOption(bool, "audio", audio);
+    options.addOption(bool, "extension", extension);
     options.addOption(bool, "debug", debug);
     options.addOption(usize, "memory_mib", b.option(usize, "memory-mib", "The default size of the data area, and of the heap, in MiB (default: 32)") orelse 32);
     options.addOption(usize, "locals_kib", b.option(usize, "locals-kib", "The default size of the area for local variables, in KiB (default: 64)") orelse 64);
@@ -98,11 +100,35 @@ pub fn build(b: *std.Build) void {
     }
     const unit_tests = b.addTest(.{ .root_module = test_module });
     const run_tests = b.addRunArtifact(unit_tests);
+    const core_check = b.step("core-check", "Compile and stage core tests without running them");
+    core_check.dependOn(&b.addInstallFile(unit_tests.getEmittedBin(), b.fmt("core-tests/{s}-{s}/test{s}", .{
+        @tagName(target.result.cpu.arch), @tagName(target.result.os.tag), if (target.result.os.tag == .windows) ".exe" else "",
+    })).step);
     const test_step = b.step("test", "Run FORTH/Σ core and host tests");
     test_step.dependOn(&run_tests.step);
 
     const host_tests = b.addTest(.{ .root_module = exe.root_module });
     test_step.dependOn(&b.addRunArtifact(host_tests).step);
+    const host_check = b.step("host-check", "Compile and stage host tests without running them");
+    host_check.dependOn(&b.addInstallFile(host_tests.getEmittedBin(), b.fmt("host-tests/{s}-{s}/test{s}", .{
+        @tagName(target.result.cpu.arch), @tagName(target.result.os.tag), if (target.result.os.tag == .windows) ".exe" else "",
+    })).step);
+
+    const runtime_module = b.createModule(.{
+        .root_source_file = b.path("src/runtime_test.zig"),
+        .target = target,
+        .optimize = optimize,
+        .link_libc = true,
+    });
+    runtime_module.addImport("c_file", c_file.createModule());
+    const runtime_tests = b.addTest(.{ .root_module = runtime_module });
+    const runtime_check = b.step("runtime-check", "Compile and stage the shared runtime tests without running them");
+    runtime_check.dependOn(&b.addInstallFile(runtime_tests.getEmittedBin(), b.fmt("runtime-tests/{s}-{s}/test{s}", .{
+        @tagName(target.result.cpu.arch), @tagName(target.result.os.tag), if (target.result.os.tag == .windows) ".exe" else "",
+    })).step);
+    const run_runtime_tests = b.addRunArtifact(runtime_tests);
+    b.step("runtime-test", "Test the shared clock, wake, and runtime contracts").dependOn(&run_runtime_tests.step);
+    test_step.dependOn(&run_runtime_tests.step);
 
     // The core compiled for a Cortex-M0+ with no operating system: it fails to build
     // when forth.zig or src/core starts to use an OS service. The test step includes it.

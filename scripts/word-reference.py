@@ -203,11 +203,11 @@ def inventory():
         text = (individual + ' ' if individual else '') + ('Standard EKEYS modifier mask ' if name.endswith('-MASK') else 'Standard EKEYS event code ') + value + ' (hex ' + hex(int(value)) + '). Use with EKEY/EKEY>FKEY, not with GRAPHICS INKEY. Host support determines which events can be received.'
         add('EKEYS', name, 'src/core/standard_keys.zig', 'constant', override=dict(stack='( -- u )', text=text, category='Standard keyboard constants', value=int(value), help_line=None))
 
-    for group in ['graphics', 'gui', 'game', 'audio']:
+    for group in ['graphics', 'gui', 'game', 'audio', 'extension']:
         namespace = group.upper()
         path = 'src/core/words_%s.zig' % group
         module = read(path)
-        for name, builtin in pairs(module, 'definitions') if group in ('graphics', 'audio') else []:
+        for name, builtin in pairs(module, 'definitions') if group in ('graphics', 'audio', 'extension') else []:
             add(namespace, name, path, 'builtin', builtin)
         for name in names(module, 'library_words'):
             add(namespace, name, path, 'library')
@@ -217,7 +217,7 @@ def inventory():
         vocabulary_text = 'Select ' + namespace + ' as the first-searched vocabulary. Load it first with REQUIRE-' + namespace + '; use ALSO to retain the current first vocabulary.'
         add('FORTH', namespace, path, 'vocabulary', override=dict(stack='( -- )', text=vocabulary_text, category='Optional vocabularies', help_line=None))
 
-        libraries = ['src/audio/audio.fs'] if group == 'audio' else ['src/graphics/' + group + '.fs']
+        libraries = ['src/extension/extension.fs'] if group == 'extension' else ['src/audio/audio.fs'] if group == 'audio' else ['src/graphics/' + group + '.fs']
         if group == 'graphics':
             libraries += ['src/graphics/graphics_float.fs']
         for library in libraries:
@@ -387,7 +387,7 @@ def localize(entries, record_sources=False):
         text = translations.get(key, translations.get(name))
         if e['namespace'] == 'EKEYS':
             text = (text + ' ' if text else '') + '標準EKEYSの' + ('修飾マスク' if name.endswith('-MASK') else 'キーイベント定数') + 'です。値は%d（%s）です。EKEY系で使います。GRAPHICSとは別の符号化体系です。' % (e['value'], hex(e['value']))
-        elif e['kind'] == 'vocabulary' and name in ('GRAPHICS', 'GUI', 'GAME', 'AUDIO'):
+        elif e['kind'] == 'vocabulary' and name in ('GRAPHICS', 'GUI', 'GAME', 'AUDIO', 'EXTENSION'):
             text = 'REQUIRE-%sで読み込んだ%s語彙を検索順の先頭へ選びます。現在の先頭を残すにはALSOを先に実行します。' % (name, name)
         if text is None and e.get('note_ja'):
             text = e['note_ja']
@@ -441,9 +441,9 @@ def attach_usages(entries):
             e['usage'] = (explicit, None, None)
         elif namespace == 'EKEYS':
             e['usage'] = ('ALSO EKEYS %s . PREVIOUS' % name, None, None)
-        elif namespace == 'FORTH' and name in ('GRAPHICS', 'GUI', 'GAME', 'AUDIO'):
+        elif namespace == 'FORTH' and name in ('GRAPHICS', 'GUI', 'GAME', 'AUDIO', 'EXTENSION'):
             e['usage'] = ('REQUIRE-%s ALSO %s WORDS PREVIOUS' % (name, name), None, None)
-        elif namespace in ('GRAPHICS', 'GUI', 'GAME', 'AUDIO') and e.get('declaration') in ('CONSTANT', 'FCONSTANT', 'BEGIN-STRUCTURE'):
+        elif namespace in ('GRAPHICS', 'GUI', 'GAME', 'AUDIO', 'EXTENSION') and e.get('declaration') in ('CONSTANT', 'FCONSTANT', 'BEGIN-STRUCTURE'):
             output = 'F.S' if e.get('declaration') == 'FCONSTANT' else '.'
             e['usage'] = ('REQUIRE-%s ALSO %s %s %s PREVIOUS' % (namespace, namespace, name, output), None, None)
         elif namespace == 'GAME' and e.get('declaration') in ('FIELD:', 'CFIELD:'):
@@ -473,7 +473,7 @@ def caution(e, japanese):
         notes.append('コンパイル専用です。通常の解釈時入力では実行できません。' if japanese else 'Compile-only: ordinary interpreted execution is not allowed.')
     elif e['immediate']:
         notes.append('即時語なので、定義のコンパイル中にもその場で実行されます。' if japanese else 'Immediate: it executes during definition compilation.')
-    if e['namespace'] in ('GRAPHICS', 'GUI', 'GAME', 'AUDIO'):
+    if e['namespace'] in ('GRAPHICS', 'GUI', 'GAME', 'AUDIO', 'EXTENSION'):
         notes.append('対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。' if japanese else 'Load and select the vocabulary first. Host display, input and sound support depends on the environment.')
     if e['name'] == 'KEY-IOR':
         notes.append('結果は1セルです。バイト値をTHROWへ渡さず、負の値かどうかを先に判定してください。' if japanese else 'The result is one cell. Test for a negative result before treating it as an ior; do not pass an ordinary byte to THROW.')
@@ -519,7 +519,7 @@ def render(entries, japanese=False):
             if e.get('note_en'):
                 out += [('補足：' if japanese else 'Detail: ') + prose(e['note_ja' if japanese else 'note_en']), '',
                         '[%s](../src/core/%s)' % ('補足の根拠' if japanese else 'Detail source', 'words_width.zig' if e['name'] in {'/W', '/L', '/X', 'FLOAT', 'CELL/', 'FLOAT/', 'DFLOAT/', 'SFLOAT/', 'WALIGN', 'WALIGNED', 'LALIGN', 'LALIGNED', 'XALIGN', 'XALIGNED', 'MAXALIGNED', '*ALIGN', '*ALIGNED', 'W!', 'L!', 'X!', 'TH!', 'WLE', 'LLE', 'XLE', 'XDLE'} else 'words_arithmetic.zig'), '']
-            if namespace in ('GRAPHICS', 'GUI', 'GAME', 'AUDIO'):
+            if namespace in ('GRAPHICS', 'GUI', 'GAME', 'AUDIO', 'EXTENSION'):
                 out += [code('REQUIRE-' + namespace + ' ALSO ' + namespace) + (' で読み込み、検索対象にします。' if japanese else ' loads the vocabulary and makes it searchable.'), '']
             elif namespace == 'EKEYS':
                 out += [code('ALSO EKEYS') + (' で標準キー定数を検索します。GRAPHICSとは別の符号化体系です。' if japanese else ' selects standard keyboard constants, using an encoding independent of GRAPHICS.'), '']
@@ -555,7 +555,7 @@ def audit_runtime(entries, sigma):
     namespaces = {e['namespace'] for e in entries} - {'Syntax'}
     for namespace in sorted(namespaces):
         if namespace == 'FORTH':
-            source = 'REQUIRE-GRAPHICS REQUIRE-GUI REQUIRE-GAME REQUIRE-AUDIO WORDS BYE'
+            source = 'REQUIRE-GRAPHICS REQUIRE-GUI REQUIRE-GAME REQUIRE-AUDIO REQUIRE-EXTENSION WORDS BYE'
         elif namespace == 'Root':
             source = 'ONLY WORDS FORTH BYE'
         elif namespace == 'EKEYS':

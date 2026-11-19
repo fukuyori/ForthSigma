@@ -94,7 +94,7 @@ pub fn execute(self: *State, builtin: Builtin) RuntimeError!void {
             if (count == 0) {
                 const engine = try getEngine(self);
                 try putCommand(self, engine, engine.stopPlayCommand());
-                waitTaken(self, engine);
+                try waitTaken(self, engine);
                 return;
             }
             var texts: [sound_engine.max_voices][]const u8 = undefined;
@@ -220,7 +220,7 @@ pub fn execute(self: *State, builtin: Builtin) RuntimeError!void {
             const engine = try getEngine(self);
             try putCommand(self, engine, .{ .mod_play = repeat });
             // MOD? is true at once.
-            waitTaken(self, engine);
+            try waitTaken(self, engine);
         },
         .snd_stop_mod => {
             const engine = try getEngine(self);
@@ -506,7 +506,9 @@ fn play(self: *State, texts: []const []const u8) RuntimeError!void {
     sound_engine.putPlay(engine, &self.audio_voices, texts, &waiter, Waiter.wait) catch |err| switch (err) {
         error.InvalidMml => unreachable,
         error.Interrupted => {
-            reset(self, engine, false) catch {};
+            reset(self, engine, false) catch |reset_error| {
+                if (reset_error != error.UserInterrupt) return reset_error;
+            };
             return waiter.failure orelse error.UserInterrupt;
         },
     };
@@ -525,18 +527,21 @@ fn reset(self: *State, engine: *Engine, beep: bool) RuntimeError!void {
 fn stop(self: *State, engine: *Engine, command: sound_engine.Command) RuntimeError!void {
     self.audio_voices = @splat(.{});
     try putCommand(self, engine, command);
-    waitTaken(self, engine);
+    try waitTaken(self, engine);
 }
 
 /// Waits until the audio thread has taken the commands put so far. It takes them every
 /// few milliseconds; Ctrl+C is not taken here (the waits are short). The bound only
 /// guards against a host whose thread has stopped.
-fn waitTaken(self: *State, engine: *Engine) void {
+fn waitTaken(self: *State, engine: *Engine) RuntimeError!void {
     var waiter: Waiter = .{ .state = self };
     var waits: usize = 0;
     while (!engine.commands.isEmpty() and waits < max_reset_waits) : (waits += 1) {
-        _ = waiter.wait();
+        if (!waiter.wait()) {
+            if (waiter.failure) |failure| if (failure != error.UserInterrupt) return failure;
+        }
     }
+    if (!engine.commands.isEmpty()) return error.HostFailed;
 }
 
 /// About a second of the host's waits.
@@ -561,6 +566,10 @@ const Waiter = struct {
             return false;
         };
         switch (wait_fn(state.writer.context)) {
+            .host_failed => {
+                self.failure = error.HostFailed;
+                return false;
+            },
             .waited => return true,
             .interrupted => {
                 self.failure = error.UserInterrupt;

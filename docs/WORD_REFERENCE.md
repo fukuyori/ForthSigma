@@ -6,18 +6,19 @@ Each entry has a stack effect and a behavior description based on runtime HELP, 
 
 Coverage assumes the full build. Feature-disabled builds omit their respective words. Load optional vocabularies with REQUIRE before adding them to the search order. Immediate/compile-only flags come from the built-in implementation; syntax forms have their own conditions in their descriptions.
 
-Entries (namespace/name pairs): **1533**. The same name in different vocabularies counts separately.
+Entries (namespace/name pairs): **1536**. The same name in different vocabularies counts separately.
 
 ## Contents
 
 - [AUDIO](#namespace-audio) (73)
 - [EKEYS](#namespace-ekeys) (35)
-- [FORTH](#namespace-forth) (957)
+- [EXTENSION](#namespace-extension) (1)
+- [FORTH](#namespace-forth) (958)
 - [GAME](#namespace-game) (59)
 - [GRAPHICS](#namespace-graphics) (222)
 - [GUI](#namespace-gui) (135)
 - [Root](#namespace-root) (14)
-- [Syntax](#namespace-syntax) (38)
+- [Syntax](#namespace-syntax) (39)
 
 Regenerate: `python scripts/word-reference.py`. Check only: `python scripts/word-reference.py --check`. Edit the HELP/registration sources or generator, rather than editing generated entries.
 
@@ -119,7 +120,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 7 INSTRUMENT PULSE 25 DUTY 1 2 10 3 ADSR
 ```
 
-[Example context](../src/tests/audio_test.zig#L343)
+[Example context](../src/tests/audio_test.zig#L385)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -129,7 +130,7 @@ Implementation definition (private helpers may change):
 : ADSR ( attack decay sustain release -- )   SND-ADSR ;
 ```
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1331).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1333).
 
 <a id="w-415544494f3a414d494741"></a>
 
@@ -157,7 +158,7 @@ Implementation definition (private helpers may change):
 16 CONSTANT SCC   32 CONSTANT AMIGA
 ```
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1373).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1375).
 
 <a id="w-415544494f3a414d4947412d46494c544552"></a>
 
@@ -179,7 +180,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 REQUIRE-AUDIO ALSO AUDIO AMIGA-SOUND TRUE AMIGA-FILTER
 ```
 
-[Example context](../src/tests/audio_test.zig#L578)
+[Example context](../src/tests/audio_test.zig#L620)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -189,7 +190,7 @@ Implementation definition (private helpers may change):
 : AMIGA-FILTER ( flag -- )   SND-AMIGA-FILTER ;
 ```
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1355).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1357).
 
 <a id="w-415544494f3a414d4947412d534f554e44"></a>
 
@@ -211,7 +212,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 REQUIRE-AUDIO ALSO AUDIO AMIGA-SOUND TRUE AMIGA-FILTER
 ```
 
-[Example context](../src/tests/audio_test.zig#L578)
+[Example context](../src/tests/audio_test.zig#L620)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -221,7 +222,7 @@ Implementation definition (private helpers may change):
 : AMIGA-SOUND ( -- )   5 SND-CHIP ;
 ```
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1354).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1356).
 
 <a id="w-415544494f3a415544494f3f"></a>
 
@@ -243,7 +244,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 AUDIO?
 ```
 
-[Example context](../src/tests/audio_test.zig#L291)
+[Example context](../src/tests/audio_test.zig#L333)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -253,7 +254,7 @@ Implementation definition (private helpers may change):
 : AUDIO? ( -- flag )   SND-DEVICE ;
 ```
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1313).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1315).
 
 <a id="w-415544494f3a42454550"></a>
 
@@ -275,7 +276,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 BEEP
 ```
 
-[Example context](../src/tests/audio_test.zig#L567)
+[Example context](../src/tests/audio_test.zig#L609)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -285,7 +286,7 @@ Implementation definition (private helpers may change):
 : BEEP ( -- )   SND-BEEP ;
 ```
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1312).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1314).
 
 <a id="w-415544494f3a433634"></a>
 
@@ -313,7 +314,7 @@ Implementation definition (private helpers may change):
 1 CONSTANT MSX   2 CONSTANT ST   4 CONSTANT NES   8 CONSTANT C64
 ```
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1371).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1373).
 
 <a id="w-415544494f3a4336342d534f554e44"></a>
 
@@ -335,7 +336,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 C64-SOUND
 ```
 
-[Example context](../src/tests/audio_test.zig#L614)
+[Example context](../src/tests/audio_test.zig#L656)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -345,7 +346,7 @@ Implementation definition (private helpers may change):
 : C64-SOUND ( -- )   3 SND-CHIP ;
 ```
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1335).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1337).
 
 <a id="w-415544494f3a4348495053"></a>
 
@@ -367,7 +368,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 ST NES OR CHIPS
 ```
 
-[Example context](../src/tests/audio_test.zig#L610)
+[Example context](../src/tests/audio_test.zig#L652)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -377,7 +378,7 @@ Implementation definition (private helpers may change):
 : CHIPS ( mask -- )   SND-CHIPS ;
 ```
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1365).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1367).
 
 <a id="w-415544494f3a44555459"></a>
 
@@ -399,7 +400,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 7 INSTRUMENT PULSE 25 DUTY 1 2 10 3 ADSR
 ```
 
-[Example context](../src/tests/audio_test.zig#L343)
+[Example context](../src/tests/audio_test.zig#L385)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -409,7 +410,7 @@ Implementation definition (private helpers may change):
 : DUTY ( percent -- )   SND-DUTY ;
 ```
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1330).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1332).
 
 <a id="w-415544494f3a46494c544552"></a>
 
@@ -431,7 +432,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 FALSE RING 0 0 0 FILTER
 ```
 
-[Example context](../src/tests/audio_test.zig#L381)
+[Example context](../src/tests/audio_test.zig#L423)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -441,7 +442,7 @@ Implementation definition (private helpers may change):
 : FILTER ( mode cutoff resonance -- )   SND-FILTER ;
 ```
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1338).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1340).
 
 <a id="w-415544494f3a465245452d53414d504c4553"></a>
 
@@ -463,7 +464,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 FREE-SAMPLES
 ```
 
-[Example context](../src/tests/audio_test.zig#L521)
+[Example context](../src/tests/audio_test.zig#L563)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -473,7 +474,7 @@ Implementation definition (private helpers may change):
 : FREE-SAMPLES ( -- )   SND-FREE-SAMPLES ;
 ```
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1353).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1355).
 
 <a id="w-415544494f3a494e535452554d454e54"></a>
 
@@ -495,7 +496,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 3 INSTRUMENT FILL-W W 9 SCC-WAVE
 ```
 
-[Example context](../src/tests/audio_test.zig#L405)
+[Example context](../src/tests/audio_test.zig#L447)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -505,7 +506,7 @@ Implementation definition (private helpers may change):
 : INSTRUMENT ( n -- )   SND-INSTRUMENT ;
 ```
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1324).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1326).
 
 <a id="w-415544494f3a4c4f41442d4d4f44"></a>
 
@@ -527,7 +528,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 REQUIRE-AUDIO ALSO AUDIO S" a.txt" LOAD-MOD
 ```
 
-[Example context](../src/tests/audio_test.zig#L782)
+[Example context](../src/tests/audio_test.zig#L824)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment. Use valid logical-memory addresses, lengths and capacities; distinguish owned storage from borrowed lifetimes.
 
@@ -537,7 +538,7 @@ Implementation definition (private helpers may change):
 : LOAD-MOD ( c-addr u -- )   SND-LOAD-MOD THROW ;
 ```
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1360).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1362).
 
 <a id="w-415544494f3a4c4f41442d53414d504c45"></a>
 
@@ -559,7 +560,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 S" a.txt" 5 LOAD-SAMPLE
 ```
 
-[Example context](../src/tests/audio_test.zig#L456)
+[Example context](../src/tests/audio_test.zig#L498)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment. Use valid logical-memory addresses, lengths and capacities; distinguish owned storage from borrowed lifetimes.
 
@@ -569,7 +570,7 @@ Implementation definition (private helpers may change):
 : LOAD-SAMPLE ( c-addr u n -- )   SND-LOAD-SAMPLE THROW ;
 ```
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1348).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1350).
 
 <a id="w-415544494f3a4c4f4f502d53414d504c45"></a>
 
@@ -591,7 +592,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 2 8 1 LOOP-SAMPLE
 ```
 
-[Example context](../src/tests/audio_test.zig#L503)
+[Example context](../src/tests/audio_test.zig#L545)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -601,7 +602,7 @@ Implementation definition (private helpers may change):
 : LOOP-SAMPLE ( start end n -- )   SND-LOOP-SAMPLE ;
 ```
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1350).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1352).
 
 <a id="w-415544494f3a4d4f443f"></a>
 
@@ -623,7 +624,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 MOD?
 ```
 
-[Example context](../src/tests/audio_test.zig#L749)
+[Example context](../src/tests/audio_test.zig#L791)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -633,7 +634,7 @@ Implementation definition (private helpers may change):
 : MOD? ( -- flag )   SND-MOD-PLAYING ;
 ```
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1363).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1365).
 
 <a id="w-415544494f3a4d5358"></a>
 
@@ -661,7 +662,7 @@ Implementation definition (private helpers may change):
 1 CONSTANT MSX   2 CONSTANT ST   4 CONSTANT NES   8 CONSTANT C64
 ```
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1368).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1370).
 
 <a id="w-415544494f3a4d53582d534f554e44"></a>
 
@@ -683,7 +684,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 MSX-SOUND
 ```
 
-[Example context](../src/tests/audio_test.zig#L331)
+[Example context](../src/tests/audio_test.zig#L373)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -693,7 +694,7 @@ Implementation definition (private helpers may change):
 : MSX-SOUND ( -- )   0 SND-CHIP ;
 ```
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1321).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1323).
 
 <a id="w-415544494f3a4e4553"></a>
 
@@ -721,7 +722,7 @@ Implementation definition (private helpers may change):
 1 CONSTANT MSX   2 CONSTANT ST   4 CONSTANT NES   8 CONSTANT C64
 ```
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1370).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1372).
 
 <a id="w-415544494f3a4e45532d534f554e44"></a>
 
@@ -743,7 +744,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 NES-SOUND BEEP
 ```
 
-[Example context](../src/tests/audio_test.zig#L358)
+[Example context](../src/tests/audio_test.zig#L400)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -753,7 +754,7 @@ Implementation definition (private helpers may change):
 : NES-SOUND ( -- )   2 SND-CHIP ;
 ```
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1323).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1325).
 
 <a id="w-415544494f3a4e4f495345"></a>
 
@@ -775,7 +776,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 SQUARE TRIANGLE SAW NOISE
 ```
 
-[Example context](../src/tests/audio_test.zig#L349)
+[Example context](../src/tests/audio_test.zig#L391)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -785,7 +786,7 @@ Implementation definition (private helpers may change):
 : NOISE ( -- )   4 SND-WAVE ;
 ```
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1329).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1331).
 
 <a id="w-415544494f3a504c4159"></a>
 
@@ -817,7 +818,7 @@ Implementation definition (private helpers may change):
 : PLAY ( c-addr u -- )   0 0 0 0 SND-PLAY ;
 ```
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1307).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1309).
 
 <a id="w-415544494f3a504c41592d4d4f44"></a>
 
@@ -839,7 +840,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 TRUE PLAY-MOD
 ```
 
-[Example context](../src/tests/audio_test.zig#L754)
+[Example context](../src/tests/audio_test.zig#L796)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -849,7 +850,7 @@ Implementation definition (private helpers may change):
 : PLAY-MOD ( flag -- )   SND-PLAY-MOD ;
 ```
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1361).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1363).
 
 <a id="w-415544494f3a504c415932"></a>
 
@@ -881,7 +882,7 @@ Implementation definition (private helpers may change):
 : PLAY2 ( c-addr1 u1 c-addr2 u2 -- )   0 0 SND-PLAY ;
 ```
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1308).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1310).
 
 <a id="w-415544494f3a504c415933"></a>
 
@@ -913,7 +914,7 @@ Implementation definition (private helpers may change):
 : PLAY3 ( c-addr1 u1 c-addr2 u2 c-addr3 u3 -- )   SND-PLAY ;
 ```
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1309).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1311).
 
 <a id="w-415544494f3a504c41593f"></a>
 
@@ -945,7 +946,7 @@ Implementation definition (private helpers may change):
 : PLAY? ( n -- flag )   SND-PLAYING ;
 ```
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1310).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1312).
 
 <a id="w-415544494f3a504c415953"></a>
 
@@ -975,7 +976,7 @@ Implementation definition (private helpers may change):
 : PLAYS ( c-addr1 u1 ... c-addrn un n -- )   SND-PLAYS ;
 ```
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1320).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1322).
 
 <a id="w-415544494f3a50554c5345"></a>
 
@@ -997,7 +998,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 7 INSTRUMENT PULSE 25 DUTY 1 2 10 3 ADSR
 ```
 
-[Example context](../src/tests/audio_test.zig#L343)
+[Example context](../src/tests/audio_test.zig#L385)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -1007,7 +1008,7 @@ Implementation definition (private helpers may change):
 : PULSE ( -- )   1 SND-WAVE ;
 ```
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1326).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1328).
 
 <a id="w-415544494f3a52494e47"></a>
 
@@ -1029,7 +1030,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 FALSE RING 0 0 0 FILTER
 ```
 
-[Example context](../src/tests/audio_test.zig#L381)
+[Example context](../src/tests/audio_test.zig#L423)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -1039,7 +1040,7 @@ Implementation definition (private helpers may change):
 : RING ( flag -- )   SND-RING ;
 ```
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1336).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1338).
 
 <a id="w-415544494f3a53414d504c45"></a>
 
@@ -1061,7 +1062,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 CREATE S 10 ALLOT S 10 0 FILL 127 S C! 128 S 1 + C!  S 10 8000 1 SAMPLE
 ```
 
-[Example context](../src/tests/audio_test.zig#L499)
+[Example context](../src/tests/audio_test.zig#L541)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment. Use valid logical-memory addresses, lengths and capacities; distinguish owned storage from borrowed lifetimes.
 
@@ -1071,7 +1072,7 @@ Implementation definition (private helpers may change):
 : SAMPLE ( c-addr u rate n -- )   SND-SAMPLE ;
 ```
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1349).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1351).
 
 <a id="w-415544494f3a53414d504c452d494e535452554d454e54"></a>
 
@@ -1093,7 +1094,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 -1 SAMPLE-INSTRUMENT
 ```
 
-[Example context](../src/tests/audio_test.zig#L514)
+[Example context](../src/tests/audio_test.zig#L556)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -1103,7 +1104,7 @@ Implementation definition (private helpers may change):
 : SAMPLE-INSTRUMENT ( n -- )   SND-SAMPLE-INSTRUMENT ;
 ```
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1351).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1353).
 
 <a id="w-415544494f3a534157"></a>
 
@@ -1125,7 +1126,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 SQUARE TRIANGLE SAW NOISE
 ```
 
-[Example context](../src/tests/audio_test.zig#L349)
+[Example context](../src/tests/audio_test.zig#L391)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -1135,7 +1136,7 @@ Implementation definition (private helpers may change):
 : SAW ( -- )   3 SND-WAVE ;
 ```
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1328).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1330).
 
 <a id="w-415544494f3a534343"></a>
 
@@ -1163,7 +1164,7 @@ Implementation definition (private helpers may change):
 16 CONSTANT SCC   32 CONSTANT AMIGA
 ```
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1372).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1374).
 
 <a id="w-415544494f3a5343432d534f554e44"></a>
 
@@ -1185,7 +1186,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 REQUIRE-AUDIO ALSO AUDIO SCC-SOUND
 ```
 
-[Example context](../src/tests/audio_test.zig#L396)
+[Example context](../src/tests/audio_test.zig#L438)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -1195,7 +1196,7 @@ Implementation definition (private helpers may change):
 : SCC-SOUND ( -- )   4 SND-CHIP ;
 ```
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1340).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1342).
 
 <a id="w-415544494f3a5343432d57415645"></a>
 
@@ -1217,7 +1218,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 3 INSTRUMENT FILL-W W 9 SCC-WAVE
 ```
 
-[Example context](../src/tests/audio_test.zig#L405)
+[Example context](../src/tests/audio_test.zig#L447)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment. Use valid logical-memory addresses, lengths and capacities; distinguish owned storage from borrowed lifetimes.
 
@@ -1227,7 +1228,7 @@ Implementation definition (private helpers may change):
 : SCC-WAVE ( c-addr n -- )   SND-WAVETABLE ;
 ```
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1374).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1376).
 
 <a id="w-415544494f3a534658"></a>
 
@@ -1249,7 +1250,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 1 SFX
 ```
 
-[Example context](../src/tests/audio_test.zig#L517)
+[Example context](../src/tests/audio_test.zig#L559)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -1259,7 +1260,7 @@ Implementation definition (private helpers may change):
 : SFX ( n -- )   SND-SFX ;
 ```
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1352).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1354).
 
 <a id="w-415544494f3a534e442d41445352"></a>
 
@@ -1285,7 +1286,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1319).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1321).
 
 <a id="w-415544494f3a534e442d414d4947412d46494c544552"></a>
 
@@ -1311,7 +1312,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1346).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1348).
 
 <a id="w-415544494f3a534e442d42454550"></a>
 
@@ -1337,7 +1338,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1304).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1306).
 
 <a id="w-415544494f3a534e442d43484950"></a>
 
@@ -1363,7 +1364,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1315).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1317).
 
 <a id="w-415544494f3a534e442d4348495053"></a>
 
@@ -1389,7 +1390,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1364).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1366).
 
 <a id="w-415544494f3a534e442d444556494345"></a>
 
@@ -1415,7 +1416,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1306).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1308).
 
 <a id="w-415544494f3a534e442d44555459"></a>
 
@@ -1441,7 +1442,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1318).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1320).
 
 <a id="w-415544494f3a534e442d46494c544552"></a>
 
@@ -1467,7 +1468,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1334).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1336).
 
 <a id="w-415544494f3a534e442d465245452d53414d504c4553"></a>
 
@@ -1493,7 +1494,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1347).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1349).
 
 <a id="w-415544494f3a534e442d494e535452554d454e54"></a>
 
@@ -1519,7 +1520,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1316).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1318).
 
 <a id="w-415544494f3a534e442d4c4f41442d4d4f44"></a>
 
@@ -1545,7 +1546,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment. Check the returned ior; zero is success. Passing it to THROW is one option. Use valid logical-memory addresses, lengths and capacities; distinguish owned storage from borrowed lifetimes.
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1356).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1358).
 
 <a id="w-415544494f3a534e442d4c4f41442d53414d504c45"></a>
 
@@ -1567,11 +1568,11 @@ Usage example (source excerpt; consult the link for setup and expectations)
 S" b.txt" 6 SND-LOAD-SAMPLE S" missing.txt" 6 SND-LOAD-SAMPLE 0<>
 ```
 
-[Example context](../src/tests/audio_test.zig#L475)
+[Example context](../src/tests/audio_test.zig#L517)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment. Check the returned ior; zero is success. Passing it to THROW is one option. Use valid logical-memory addresses, lengths and capacities; distinguish owned storage from borrowed lifetimes.
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1341).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1343).
 
 <a id="w-415544494f3a534e442d4c4f4f502d53414d504c45"></a>
 
@@ -1597,7 +1598,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1343).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1345).
 
 <a id="w-415544494f3a534e442d4d4f442d504c4159494e47"></a>
 
@@ -1623,7 +1624,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1359).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1361).
 
 <a id="w-415544494f3a534e442d504c4159"></a>
 
@@ -1649,7 +1650,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment. Use valid logical-memory addresses, lengths and capacities; distinguish owned storage from borrowed lifetimes.
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1302).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1304).
 
 <a id="w-415544494f3a534e442d504c41592d4d4f44"></a>
 
@@ -1675,7 +1676,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1357).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1359).
 
 <a id="w-415544494f3a534e442d504c4159494e47"></a>
 
@@ -1701,7 +1702,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1305).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1307).
 
 <a id="w-415544494f3a534e442d504c415953"></a>
 
@@ -1727,7 +1728,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment. Use valid logical-memory addresses, lengths and capacities; distinguish owned storage from borrowed lifetimes.
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1314).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1316).
 
 <a id="w-415544494f3a534e442d52494e47"></a>
 
@@ -1753,7 +1754,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1332).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1334).
 
 <a id="w-415544494f3a534e442d53414d504c45"></a>
 
@@ -1779,7 +1780,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment. Use valid logical-memory addresses, lengths and capacities; distinguish owned storage from borrowed lifetimes.
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1342).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1344).
 
 <a id="w-415544494f3a534e442d53414d504c452d494e535452554d454e54"></a>
 
@@ -1805,7 +1806,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1344).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1346).
 
 <a id="w-415544494f3a534e442d534658"></a>
 
@@ -1831,7 +1832,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1345).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1347).
 
 <a id="w-415544494f3a534e442d534f554e44"></a>
 
@@ -1857,7 +1858,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1303).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1305).
 
 <a id="w-415544494f3a534e442d53544f502d4d4f44"></a>
 
@@ -1883,7 +1884,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1358).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1360).
 
 <a id="w-415544494f3a534e442d5354594c45"></a>
 
@@ -1909,7 +1910,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1366).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1368).
 
 <a id="w-415544494f3a534e442d53594e43"></a>
 
@@ -1935,7 +1936,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1333).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1335).
 
 <a id="w-415544494f3a534e442d57415645"></a>
 
@@ -1961,7 +1962,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1317).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1319).
 
 <a id="w-415544494f3a534e442d574156455441424c45"></a>
 
@@ -1987,7 +1988,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment. Use valid logical-memory addresses, lengths and capacities; distinguish owned storage from borrowed lifetimes.
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1339).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1341).
 
 <a id="w-415544494f3a534f554e44"></a>
 
@@ -2009,7 +2010,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 0 100 SOUND 8 15 SOUND
 ```
 
-[Example context](../src/tests/audio_test.zig#L252)
+[Example context](../src/tests/audio_test.zig#L294)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -2019,7 +2020,7 @@ Implementation definition (private helpers may change):
 : SOUND ( reg value -- )   SND-SOUND ;
 ```
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1311).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1313).
 
 <a id="w-415544494f3a535155415245"></a>
 
@@ -2041,7 +2042,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 SQUARE TRIANGLE SAW NOISE
 ```
 
-[Example context](../src/tests/audio_test.zig#L349)
+[Example context](../src/tests/audio_test.zig#L391)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -2051,7 +2052,7 @@ Implementation definition (private helpers may change):
 : SQUARE ( -- )   0 SND-WAVE ;
 ```
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1325).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1327).
 
 <a id="w-415544494f3a5354"></a>
 
@@ -2079,7 +2080,7 @@ Implementation definition (private helpers may change):
 1 CONSTANT MSX   2 CONSTANT ST   4 CONSTANT NES   8 CONSTANT C64
 ```
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1369).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1371).
 
 <a id="w-415544494f3a53542d534f554e44"></a>
 
@@ -2103,7 +2104,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 ST-SOUND
 ```
 
-[Example context](../src/tests/audio_test.zig#L329)
+[Example context](../src/tests/audio_test.zig#L371)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -2113,7 +2114,7 @@ Implementation definition (private helpers may change):
 : ST-SOUND ( -- )   1 SND-CHIP ;
 ```
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1322).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1324).
 
 <a id="w-415544494f3a53544f502d4d4f44"></a>
 
@@ -2135,7 +2136,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 STOP-MOD
 ```
 
-[Example context](../src/tests/audio_test.zig#L757)
+[Example context](../src/tests/audio_test.zig#L799)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -2145,7 +2146,7 @@ Implementation definition (private helpers may change):
 : STOP-MOD ( -- )   SND-STOP-MOD ;
 ```
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1362).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1364).
 
 <a id="w-415544494f3a5354594c45"></a>
 
@@ -2167,7 +2168,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 0 STYLE
 ```
 
-[Example context](../src/tests/audio_test.zig#L634)
+[Example context](../src/tests/audio_test.zig#L676)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -2177,7 +2178,7 @@ Implementation definition (private helpers may change):
 : STYLE ( chip -- )   SND-STYLE ;
 ```
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1367).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1369).
 
 <a id="w-415544494f3a53594e43"></a>
 
@@ -2201,7 +2202,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 4 INSTRUMENT TRIANGLE TRUE RING TRUE SYNC 2 1500 12 FILTER
 ```
 
-[Example context](../src/tests/audio_test.zig#L373)
+[Example context](../src/tests/audio_test.zig#L415)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -2211,7 +2212,7 @@ Implementation definition (private helpers may change):
 : SYNC ( flag -- )   SND-SYNC ;
 ```
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1337).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1339).
 
 <a id="w-415544494f3a545249414e474c45"></a>
 
@@ -2233,7 +2234,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 SQUARE TRIANGLE SAW NOISE
 ```
 
-[Example context](../src/tests/audio_test.zig#L349)
+[Example context](../src/tests/audio_test.zig#L391)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -2243,7 +2244,7 @@ Implementation definition (private helpers may change):
 : TRIANGLE ( -- )   2 SND-WAVE ;
 ```
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1327).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1329).
 
 <a id="namespace-ekeys"></a>
 
@@ -3057,6 +3058,34 @@ Caution: Follow the operand order in the stack effect. Example names and values 
 
 Sources: [src/core/standard_keys.zig](../src/core/standard_keys.zig).
 
+<a id="namespace-extension"></a>
+
+## EXTENSION
+
+- [` HOST-OS `](#w-455854454e53494f4e3a484f53542d4f53)
+
+<a id="w-455854454e53494f4e3a484f53542d4f53"></a>
+
+### ` HOST-OS `
+
+` ( -- c-addr u ) `
+
+Return borrowed lowercase target OS family: windows, linux (including WSL/Android), macos, or unknown. Valid until the next HOST-OS or image restore; do not modify it. Copy it to retain it. Values may grow; treat unfamiliar values as unknown (FORTH/Sigma extension).
+
+Kind: builtin.
+
+` REQUIRE-EXTENSION ALSO EXTENSION ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-EXTENSION ALSO EXTENSION HOST-OS TYPE PREVIOUS
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment. Use valid logical-memory addresses, lengths and capacities; distinguish owned storage from borrowed lifetimes.
+
+Sources: [src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1302).
+
 <a id="namespace-forth"></a>
 
 ## FORTH
@@ -3506,6 +3535,7 @@ Sources: [src/core/standard_keys.zig](../src/core/standard_keys.zig).
 - [` EXIT `](#w-464f5254483a45584954)
 - [` EXPAND-WHERE `](#w-464f5254483a455850414e442d5748455245)
 - [` EXTEND-MEM `](#w-464f5254483a455854454e442d4d454d)
+- [` EXTENSION `](#w-464f5254483a455854454e53494f4e)
 - [` F! `](#w-464f5254483a4621)
 - [` F* `](#w-464f5254483a462a)
 - [` F** `](#w-464f5254483a462a2a)
@@ -6479,7 +6509,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 1 . SHOW
 ```
 
-[Example context](../src/tests/graphics_test.zig#L1465)
+[Example context](../src/tests/graphics_test.zig#L1469)
 
 Caution: Follow the operand order in the stack effect. Example names and values depend on their setup.
 
@@ -10932,7 +10962,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 ' T CATCH
 ```
 
-[Example context](../src/tests/graphics_test.zig#L1971)
+[Example context](../src/tests/graphics_test.zig#L1975)
 
 Caution: Follow the operand order in the stack effect. Example names and values depend on their setup.
 
@@ -11142,7 +11172,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 CHAR b KEY-HELD?
 ```
 
-[Example context](../src/tests/graphics_test.zig#L2341)
+[Example context](../src/tests/graphics_test.zig#L2345)
 
 Caution: Follow the operand order in the stack effect. Example names and values depend on their setup.
 
@@ -11768,7 +11798,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 CR SHOW
 ```
 
-[Example context](../src/tests/graphics_test.zig#L1371)
+[Example context](../src/tests/graphics_test.zig#L1375)
 
 Caution: Follow the operand order in the stack effect. Example names and values depend on their setup.
 
@@ -14356,6 +14386,26 @@ Caution: Use valid logical-memory addresses, lengths and capacities; distinguish
 
 Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L201).
 
+<a id="w-464f5254483a455854454e53494f4e"></a>
+
+### ` EXTENSION `
+
+` ( -- ) `
+
+Select EXTENSION as the first-searched vocabulary. Load it first with REQUIRE-EXTENSION; use ALSO to retain the current first vocabulary.
+
+Kind: vocabulary.
+
+Usage example
+
+```forth
+REQUIRE-EXTENSION ALSO EXTENSION WORDS PREVIOUS
+```
+
+Caution: Follow the operand order in the stack effect. Example names and values depend on their setup.
+
+Sources: [src/core/words_extension.zig](../src/core/words_extension.zig).
+
 <a id="w-464f5254483a4621"></a>
 
 ### ` F! `
@@ -14394,7 +14444,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 CLS : SQ ( F: x -- y ) FDUP F* ; ' SQ PLOT
 ```
 
-[Example context](../src/tests/graphics_test.zig#L1167)
+[Example context](../src/tests/graphics_test.zig#L1171)
 
 Caution: F: items belong to the floating-point stack, not the data stack.
 
@@ -14684,7 +14734,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 CLS : GAP ( F: x -- y ) FDUP F0< IF FDROP 0e0 0e0 F/ THEN ; ' GAP PLOT
 ```
 
-[Example context](../src/tests/graphics_test.zig#L1176)
+[Example context](../src/tests/graphics_test.zig#L1180)
 
 Caution: F: items belong to the floating-point stack, not the data stack.
 
@@ -14918,7 +14968,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 0e0 1e308 X-RANGE ' REC PLOT BAD @ LAST F@ 1e308 F=
 ```
 
-[Example context](../src/tests/graphics_test.zig#L1898)
+[Example context](../src/tests/graphics_test.zig#L1902)
 
 Caution: F: items belong to the floating-point stack, not the data stack.
 
@@ -15318,7 +15368,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 FALSE PLAY-MOD
 ```
 
-[Example context](../src/tests/audio_test.zig#L784)
+[Example context](../src/tests/audio_test.zig#L826)
 
 Caution: Follow the operand order in the stack effect. Example names and values depend on their setup.
 
@@ -15702,7 +15752,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 CLS : SQ ( F: x -- y ) FDUP F* ; ' SQ PLOT
 ```
 
-[Example context](../src/tests/graphics_test.zig#L1167)
+[Example context](../src/tests/graphics_test.zig#L1171)
 
 Caution: F: items belong to the floating-point stack, not the data stack.
 
@@ -17546,7 +17596,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 HELP RGB
 ```
 
-[Example context](../src/tests/graphics_test.zig#L505)
+[Example context](../src/tests/graphics_test.zig#L509)
 
 Caution: Follow the operand order in the stack effect. Example names and values depend on their setup.
 
@@ -17594,7 +17644,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 HEX
 ```
 
-[Example context](../src/tests/graphics_test.zig#L868)
+[Example context](../src/tests/graphics_test.zig#L872)
 
 Caution: Follow the operand order in the stack effect. Example names and values depend on their setup.
 
@@ -20450,7 +20500,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 ST NES OR CHIPS
 ```
 
-[Example context](../src/tests/audio_test.zig#L610)
+[Example context](../src/tests/audio_test.zig#L652)
 
 Caution: Follow the operand order in the stack effect. Example names and values depend on their setup.
 
@@ -21914,7 +21964,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 SAVE x.img
 ```
 
-[Example context](../src/tests/graphics_test.zig#L2207)
+[Example context](../src/tests/graphics_test.zig#L2211)
 
 Caution: Follow the operand order in the stack effect. Example names and values depend on their setup.
 
@@ -22030,7 +22080,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 SAVESYS x.exe
 ```
 
-[Example context](../src/tests/graphics_test.zig#L2224)
+[Example context](../src/tests/graphics_test.zig#L2228)
 
 Caution: Follow the operand order in the stack effect. Example names and values depend on their setup.
 
@@ -28469,7 +28519,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 AXES
 ```
 
-[Example context](../src/tests/graphics_test.zig#L1141)
+[Example context](../src/tests/graphics_test.zig#L1145)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -28508,7 +28558,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 2 TEXT-SCALE TEXT-HEIGHT 1 TEXT-SCALE BUILTIN-FONT TEXT-HEIGHT
 ```
 
-[Example context](../src/tests/graphics_test.zig#L1647)
+[Example context](../src/tests/graphics_test.zig#L1651)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -28540,7 +28590,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 CLS 5 5 5 CIRCLE
 ```
 
-[Example context](../src/tests/graphics_test.zig#L628)
+[Example context](../src/tests/graphics_test.zig#L632)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -28585,7 +28635,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 CLS AXES
 ```
 
-[Example context](../src/tests/graphics_test.zig#L1211)
+[Example context](../src/tests/graphics_test.zig#L1215)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -28617,7 +28667,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 255 0 0 COLOR 0 0 PAINT
 ```
 
-[Example context](../src/tests/graphics_test.zig#L681)
+[Example context](../src/tests/graphics_test.zig#L685)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -28649,7 +28699,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 $FF0000 COLOR! 0 0 PSET DISPLAY-TK SHOW
 ```
 
-[Example context](../src/tests/graphics_test.zig#L1990)
+[Example context](../src/tests/graphics_test.zig#L1994)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -28681,7 +28731,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 1 2 3 COLOR COLOR@ $7F654321 COLOR! COLOR@
 ```
 
-[Example context](../src/tests/graphics_test.zig#L501)
+[Example context](../src/tests/graphics_test.zig#L505)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -28776,7 +28826,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 256 DISPLAY-COLORS SHOW
 ```
 
-[Example context](../src/tests/graphics_test.zig#L1772)
+[Example context](../src/tests/graphics_test.zig#L1776)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -28808,7 +28858,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 DISPLAY-TERMINAL
 ```
 
-[Example context](../src/tests/graphics_test.zig#L2638)
+[Example context](../src/tests/graphics_test.zig#L2642)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -28840,7 +28890,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 FALSE MOUSE-CURSOR DISPLAY-TK SHOW
 ```
 
-[Example context](../src/tests/graphics_test.zig#L2672)
+[Example context](../src/tests/graphics_test.zig#L2676)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -28872,7 +28922,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 ' DISPLAY-WINDOW CATCH
 ```
 
-[Example context](../src/tests/graphics_test.zig#L955)
+[Example context](../src/tests/graphics_test.zig#L959)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -28904,7 +28954,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 0 DITHER 0 DISPLAY-COLORS 256 -1 GFX-COLOR-MODE SHOW
 ```
 
-[Example context](../src/tests/graphics_test.zig#L1797)
+[Example context](../src/tests/graphics_test.zig#L1801)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -29000,7 +29050,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 CLS 5 5 100000000000 FILL-CIRCLE
 ```
 
-[Example context](../src/tests/graphics_test.zig#L667)
+[Example context](../src/tests/graphics_test.zig#L671)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -29038,7 +29088,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 CLS 5 3 10 10 FILL-RECT -3 -3 5 5 RECT 2 2 0 5 FILL-RECT 2 2 5 -1 RECT
 ```
 
-[Example context](../src/tests/graphics_test.zig#L576)
+[Example context](../src/tests/graphics_test.zig#L580)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -29076,7 +29126,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 50 FRAME
 ```
 
-[Example context](../src/tests/graphics_test.zig#L1492)
+[Example context](../src/tests/graphics_test.zig#L1496)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -29144,7 +29194,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 TRUE FULLSCREEN FULLSCREEN?
 ```
 
-[Example context](../src/tests/graphics_test.zig#L2621)
+[Example context](../src/tests/graphics_test.zig#L2625)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -29181,7 +29231,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 FULLSCREEN?
 ```
 
-[Example context](../src/tests/graphics_test.zig#L2630)
+[Example context](../src/tests/graphics_test.zig#L2634)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -29636,7 +29686,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 SHOW (DISPLAY) @ GFX-AUTO-DISPLAY
 ```
 
-[Example context](../src/tests/graphics_test.zig#L2035)
+[Example context](../src/tests/graphics_test.zig#L2039)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -29744,7 +29794,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 0 DITHER 0 DISPLAY-COLORS 256 -1 GFX-COLOR-MODE SHOW
 ```
 
-[Example context](../src/tests/graphics_test.zig#L1797)
+[Example context](../src/tests/graphics_test.zig#L1801)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -29823,7 +29873,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 REQUIRE-GRAPHICS ALSO GRAPHICS GFX-FONT-HEIGHT CHAR A GFX-GLYPH-LOAD GFX-GLYPH-BOX 1 0 GFX-GLYPH-ALPHA 0 0 GFX-GLYPH-ALPHA 2 1 GFX-GLYPH-ALPHA 3 0 GFX-GLYPH-ALPHA
 ```
 
-[Example context](../src/tests/graphics_test.zig#L1518)
+[Example context](../src/tests/graphics_test.zig#L1522)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -30079,7 +30129,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 S" a.txt" LOAD-FONT CHAR A GFX-GLYPH-LOAD DROP BL GFX-GLYPH-LOAD GFX-GLYPH-BOX 0 0 GFX-GLYPH-ALPHA
 ```
 
-[Example context](../src/tests/graphics_test.zig#L1828)
+[Example context](../src/tests/graphics_test.zig#L1832)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -30105,7 +30155,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 S" a.txt" LOAD-FONT CHAR A GFX-GLYPH-LOAD DROP BL GFX-GLYPH-LOAD GFX-GLYPH-BOX 0 0 GFX-GLYPH-ALPHA
 ```
 
-[Example context](../src/tests/graphics_test.zig#L1828)
+[Example context](../src/tests/graphics_test.zig#L1832)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -30131,7 +30181,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 S" a.txt" LOAD-FONT CHAR A GFX-GLYPH-LOAD DROP BL GFX-GLYPH-LOAD GFX-GLYPH-BOX 0 0 GFX-GLYPH-ALPHA
 ```
 
-[Example context](../src/tests/graphics_test.zig#L1828)
+[Example context](../src/tests/graphics_test.zig#L1832)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -30406,7 +30456,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 1 9 GFX-INIT
 ```
 
-[Example context](../src/tests/graphics_test.zig#L904)
+[Example context](../src/tests/graphics_test.zig#L908)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -30751,7 +30801,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 S" a.txt" GFX-SAVE-PNG S" b.txt" SAVE-PNG
 ```
 
-[Example context](../src/tests/graphics_test.zig#L1081)
+[Example context](../src/tests/graphics_test.zig#L1085)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment. Check the returned ior; zero is success. Passing it to THROW is one option. Use valid logical-memory addresses, lengths and capacities; distinguish owned storage from borrowed lifetimes.
 
@@ -30803,7 +30853,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 GFX-SHOW-BLOCKS
 ```
 
-[Example context](../src/tests/graphics_test.zig#L883)
+[Example context](../src/tests/graphics_test.zig#L887)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -30829,7 +30879,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 GFX-SHOW-SIXEL
 ```
 
-[Example context](../src/tests/graphics_test.zig#L917)
+[Example context](../src/tests/graphics_test.zig#L921)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -31176,7 +31226,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 GFX-WINDOW? SHOW
 ```
 
-[Example context](../src/tests/graphics_test.zig#L953)
+[Example context](../src/tests/graphics_test.zig#L957)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -31362,7 +31412,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 INKEY
 ```
 
-[Example context](../src/tests/graphics_test.zig#L2157)
+[Example context](../src/tests/graphics_test.zig#L2161)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -32012,7 +32062,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 K-UP KEY-HELD?
 ```
 
-[Example context](../src/tests/graphics_test.zig#L2321)
+[Example context](../src/tests/graphics_test.zig#L2325)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -32044,7 +32094,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 CLS 1 0 3 5 LINE
 ```
 
-[Example context](../src/tests/graphics_test.zig#L541)
+[Example context](../src/tests/graphics_test.zig#L545)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -32098,7 +32148,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 : T S" b.txt" LOAD-FONT ; ' T CATCH TEXT-HEIGHT
 ```
 
-[Example context](../src/tests/graphics_test.zig#L1667)
+[Example context](../src/tests/graphics_test.zig#L1671)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment. Use valid logical-memory addresses, lengths and capacities; distinguish owned storage from borrowed lifetimes.
 
@@ -32162,7 +32212,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 CLS -1e0 -1e0 1e0 -1e0 MLINE
 ```
 
-[Example context](../src/tests/graphics_test.zig#L1164)
+[Example context](../src/tests/graphics_test.zig#L1168)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment. F: items belong to the floating-point stack, not the data stack.
 
@@ -32197,7 +32247,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 MOUSE
 ```
 
-[Example context](../src/tests/graphics_test.zig#L1330)
+[Example context](../src/tests/graphics_test.zig#L1334)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -32229,7 +32279,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 TRUE MOUSE-CURSOR
 ```
 
-[Example context](../src/tests/graphics_test.zig#L2635)
+[Example context](../src/tests/graphics_test.zig#L2639)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -32265,7 +32315,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 MOUSE DROP DROP DROP MOUSE-EVENT
 ```
 
-[Example context](../src/tests/graphics_test.zig#L1432)
+[Example context](../src/tests/graphics_test.zig#L1436)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -32297,7 +32347,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 MOUSE MOUSE-OFF
 ```
 
-[Example context](../src/tests/graphics_test.zig#L1381)
+[Example context](../src/tests/graphics_test.zig#L1385)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -32329,7 +32379,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 MOUSE-ON DISPLAY-TERMINAL SHOW
 ```
 
-[Example context](../src/tests/graphics_test.zig#L1336)
+[Example context](../src/tests/graphics_test.zig#L1340)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -32361,7 +32411,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 CLS -1e300 -1e300 1e300 1e300 MLINE 1e0 0e0 F/ FDUP MPSET
 ```
 
-[Example context](../src/tests/graphics_test.zig#L1162)
+[Example context](../src/tests/graphics_test.zig#L1166)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment. F: items belong to the floating-point stack, not the data stack.
 
@@ -32428,7 +32478,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 255 0 0 COLOR 0 0 PAINT
 ```
 
-[Example context](../src/tests/graphics_test.zig#L681)
+[Example context](../src/tests/graphics_test.zig#L685)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -32467,7 +32517,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 CLS : SQ ( F: x -- y ) FDUP F* ; ' SQ PLOT
 ```
 
-[Example context](../src/tests/graphics_test.zig#L1167)
+[Example context](../src/tests/graphics_test.zig#L1171)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -32511,7 +32561,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 $FF0000 COLOR! 0 0 PSET DISPLAY-TK SHOW
 ```
 
-[Example context](../src/tests/graphics_test.zig#L1990)
+[Example context](../src/tests/graphics_test.zig#L1994)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -32575,7 +32625,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 1 1 4 3 RECT 6 4 1 1 RECT
 ```
 
-[Example context](../src/tests/graphics_test.zig#L566)
+[Example context](../src/tests/graphics_test.zig#L570)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -32614,7 +32664,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 HEX REQUIRE-GRAPHICS BASE @ DECIMAL ALSO GRAPHICS COLOR@ 18 52 86 RGB 256 -1 0 RGB
 ```
 
-[Example context](../src/tests/graphics_test.zig#L498)
+[Example context](../src/tests/graphics_test.zig#L502)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -32646,7 +32696,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 : T S" missing" SAVE-BMP ; ' T CATCH
 ```
 
-[Example context](../src/tests/graphics_test.zig#L699)
+[Example context](../src/tests/graphics_test.zig#L703)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment. Use valid logical-memory addresses, lengths and capacities; distinguish owned storage from borrowed lifetimes.
 
@@ -32678,7 +32728,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 : T S" missing" SAVE-PNG ; ' T CATCH
 ```
 
-[Example context](../src/tests/graphics_test.zig#L1130)
+[Example context](../src/tests/graphics_test.zig#L1134)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment. Use valid logical-memory addresses, lengths and capacities; distinguish owned storage from borrowed lifetimes.
 
@@ -32772,7 +32822,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 SHOW
 ```
 
-[Example context](../src/tests/graphics_test.zig#L1340)
+[Example context](../src/tests/graphics_test.zig#L1344)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -32813,7 +32863,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 REQUIRE-GRAPHICS ALSO GRAPHICS : T S" Fake" 8 SYSTEM-FONT ; ' T CATCH
 ```
 
-[Example context](../src/tests/graphics_test.zig#L1708)
+[Example context](../src/tests/graphics_test.zig#L1712)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment. Use valid logical-memory addresses, lengths and capacities; distinguish owned storage from borrowed lifetimes.
 
@@ -32845,7 +32895,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 S" a" TCL
 ```
 
-[Example context](../src/tests/graphics_test.zig#L2162)
+[Example context](../src/tests/graphics_test.zig#L2166)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment. Use valid logical-memory addresses, lengths and capacities; distinguish owned storage from borrowed lifetimes.
 
@@ -32877,7 +32927,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 TCL-ERROR$ TYPE S" set y {}" TCL-EVAL NIP S" s" TCL-EVAL TYPE
 ```
 
-[Example context](../src/tests/graphics_test.zig#L1923)
+[Example context](../src/tests/graphics_test.zig#L1927)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment. Use valid logical-memory addresses, lengths and capacities; distinguish owned storage from borrowed lifetimes.
 
@@ -32909,7 +32959,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 S" b" TCL-EVAL TYPE
 ```
 
-[Example context](../src/tests/graphics_test.zig#L2084)
+[Example context](../src/tests/graphics_test.zig#L2088)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment. Use valid logical-memory addresses, lengths and capacities; distinguish owned storage from borrowed lifetimes.
 
@@ -32941,7 +32991,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 TCL-EVENT
 ```
 
-[Example context](../src/tests/graphics_test.zig#L2110)
+[Example context](../src/tests/graphics_test.zig#L2114)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment. Use valid logical-memory addresses, lengths and capacities; distinguish owned storage from borrowed lifetimes.
 
@@ -32973,7 +33023,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 S" tclsh9" TCL-PROGRAM S" y" TCL-EVAL TYPE TCL-STOP
 ```
 
-[Example context](../src/tests/graphics_test.zig#L1964)
+[Example context](../src/tests/graphics_test.zig#L1968)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment. Use valid logical-memory addresses, lengths and capacities; distinguish owned storage from borrowed lifetimes.
 
@@ -33005,7 +33055,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 TCL-STOP
 ```
 
-[Example context](../src/tests/graphics_test.zig#L2244)
+[Example context](../src/tests/graphics_test.zig#L2248)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -33037,7 +33087,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 TERMINAL-BLOCKS DISPLAY-WINDOW SHOW
 ```
 
-[Example context](../src/tests/graphics_test.zig#L944)
+[Example context](../src/tests/graphics_test.zig#L948)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -33069,7 +33119,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 TERMINAL-SIXEL SHOW
 ```
 
-[Example context](../src/tests/graphics_test.zig#L942)
+[Example context](../src/tests/graphics_test.zig#L946)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -33101,7 +33151,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 S\" A\tあ" 1 1 TEXT
 ```
 
-[Example context](../src/tests/graphics_test.zig#L1531)
+[Example context](../src/tests/graphics_test.zig#L1535)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment. Use valid logical-memory addresses, lengths and capacities; distinguish owned storage from borrowed lifetimes.
 
@@ -33142,7 +33192,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 : T S" b.txt" LOAD-FONT ; ' T CATCH TEXT-HEIGHT
 ```
 
-[Example context](../src/tests/graphics_test.zig#L1667)
+[Example context](../src/tests/graphics_test.zig#L1671)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -33174,7 +33224,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 2 TEXT-SCALE TEXT-HEIGHT 1 TEXT-SCALE BUILTIN-FONT TEXT-HEIGHT
 ```
 
-[Example context](../src/tests/graphics_test.zig#L1647)
+[Example context](../src/tests/graphics_test.zig#L1651)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -33206,7 +33256,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 S"  A" 0 0 TEXT S"  A" TEXT-WIDTH
 ```
 
-[Example context](../src/tests/graphics_test.zig#L1831)
+[Example context](../src/tests/graphics_test.zig#L1835)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment. Use valid logical-memory addresses, lengths and capacities; distinguish owned storage from borrowed lifetimes.
 
@@ -33275,7 +33325,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 640 480 WINDOW-SIZE
 ```
 
-[Example context](../src/tests/graphics_test.zig#L2451)
+[Example context](../src/tests/graphics_test.zig#L2455)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -33307,7 +33357,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 CLS 1e0 2e0 X-RANGE 0e0 1e0 Y-RANGE AXES
 ```
 
-[Example context](../src/tests/graphics_test.zig#L1195)
+[Example context](../src/tests/graphics_test.zig#L1199)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment. F: items belong to the floating-point stack, not the data stack.
 
@@ -33339,7 +33389,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 CLS 1e0 2e0 X-RANGE 0e0 1e0 Y-RANGE AXES
 ```
 
-[Example context](../src/tests/graphics_test.zig#L1195)
+[Example context](../src/tests/graphics_test.zig#L1199)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment. F: items belong to the floating-point stack, not the data stack.
 
@@ -40631,6 +40681,7 @@ Sources: [src/core/memory_map.zig](../src/core/memory_map.zig), [HELP](../src/co
 - [` LOCALS| `](#w-53796e7461783a4c4f43414c537c)
 - [` POSTPONE `](#w-53796e7461783a504f5354504f4e45)
 - [` REQUIRE-AUDIO `](#w-53796e7461783a524551554952452d415544494f)
+- [` REQUIRE-EXTENSION `](#w-53796e7461783a524551554952452d455854454e53494f4e)
 - [` REQUIRE-GAME `](#w-53796e7461783a524551554952452d47414d45)
 - [` REQUIRE-GRAPHICS `](#w-53796e7461783a524551554952452d4752415048494353)
 - [` REQUIRE-GUI `](#w-53796e7461783a524551554952452d475549)
@@ -41223,6 +41274,26 @@ REQUIRE-AUDIO
 
 Caution: Follow the operand order in the stack effect. Example names and values depend on their setup.
 
+Sources: [src/core/help_text.zig](../src/core/help_text.zig), [HELP](../src/core/help_text.zig#L1303).
+
+<a id="w-53796e7461783a524551554952452d455854454e53494f4e"></a>
+
+### ` REQUIRE-EXTENSION `
+
+` ( -- ) `
+
+Load the independent EXTENSION vocabulary once; select it with ALSO EXTENSION (FORTH/Sigma).
+
+Kind: syntax.
+
+Usage example
+
+```forth
+REQUIRE-EXTENSION ALSO EXTENSION WORDS PREVIOUS
+```
+
+Caution: Follow the operand order in the stack effect. Example names and values depend on their setup.
+
 Sources: [src/core/help_text.zig](../src/core/help_text.zig), [HELP](../src/core/help_text.zig#L1301).
 
 <a id="w-53796e7461783a524551554952452d47414d45"></a>
@@ -41337,7 +41408,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 S\" A\tあ" 1 1 TEXT
 ```
 
-[Example context](../src/tests/graphics_test.zig#L1531)
+[Example context](../src/tests/graphics_test.zig#L1535)
 
 Caution: Use valid logical-memory addresses, lengths and capacities; distinguish owned storage from borrowed lifetimes.
 

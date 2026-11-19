@@ -31,6 +31,8 @@ pub const image_enabled = build_options.image;
 pub const graphics_enabled = build_options.graphics;
 /// False with -Daudio=false, which leaves out REQUIRE-AUDIO and the SND- words.
 pub const audio_enabled = build_options.audio;
+/// Public extension words only; shared host runtime services remain independent.
+pub const extension_enabled = build_options.extension;
 
 /// The built-in words of the floating-point word set: those of words_float.zig and the
 /// float fields, sizes, and defining words of the other files.
@@ -61,6 +63,7 @@ const tool_builtins = builtinSet(&.{ &.{ .see, .locate, .where }, &@import("sour
 const image_builtins = builtinSet(&.{&.{ .load, .save, .savesys }});
 const graphics_builtins = builtinSet(&.{&@import("words_graphics.zig").words});
 const audio_builtins = builtinSet(&.{&@import("words_audio.zig").words});
+const extension_builtins = builtinSet(&.{&@import("words_extension.zig").words});
 const debug_builtins = builtinSet(&.{ &@import("words_debug.zig").words, &.{ .assert_close, .assert_level, .assert_zero, .assert_one, .assert_two, .assert_three }, &@import("source_diagnostics.zig").trace_words });
 
 const excluded_builtins = blk: {
@@ -70,7 +73,8 @@ const excluded_builtins = blk: {
         excluded.* = (!float_enabled and float_builtins[index]) or (!files_enabled and file_builtins[index]) or
             (!help_enabled and help_builtins[index]) or (!tools_enabled and tool_builtins[index]) or
             (!image_enabled and image_builtins[index]) or (!graphics_enabled and graphics_builtins[index]) or
-            (!audio_enabled and audio_builtins[index]) or (!debug_enabled and debug_builtins[index]);
+            (!audio_enabled and audio_builtins[index]) or (!extension_enabled and extension_builtins[index]) or
+            (!debug_enabled and debug_builtins[index]);
     }
     break :blk table;
 };
@@ -1117,6 +1121,7 @@ pub const Builtin = enum {
     gfx_fullscreen,
     gfx_fullscreen_query,
     gfx_mouse_cursor,
+    host_os,
 };
 
 pub const HeapResult = union(enum) { address: Cell, no_memory, bad_pointer };
