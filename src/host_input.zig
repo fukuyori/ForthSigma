@@ -64,8 +64,64 @@ test "input mode changes consult pending recovery before taking a raw baseline" 
 /// whether the terminal is reporting it now (only in raw mode).
 var raw = false;
 var standard_keyboard = false;
-var mouse_wanted = false;
-var mouse_reporting = false;
+const presentation = @import("host_terminal.zig");
+pub var modes = presentation.Manager{ .backend = .{ .apply = applyPresentation } };
+pub var presentation_changed: *const fn () void = noFlush;
+var presentation_error: ?forth.RuntimeError = null;
+pub fn takePresentationError() forth.RuntimeError!void {
+    if (presentation_error) |err| {
+        presentation_error = null;
+        return err;
+    }
+}
+fn failed(err: anyerror) void {
+    presentation_error = if (err == error.HostUnavailable) error.HostUnavailable else error.HostFailed;
+}
+pub fn configurePresentation(available: bool) void {
+    modes.available = available;
+    modes.supported = if (available) (if (is_windows) presentation.all & ~presentation.paste else presentation.all) else if (is_windows and input_is_terminal) presentation.mouse else 0;
+}
+pub fn setPresentation(mask: u8) presentation.Error!void {
+    if (!before_mode_change()) return error.HostFailed;
+    try modes.set(mask);
+    if (mask & presentation.mouse != 0) cursor_unanswered = false;
+}
+pub fn pausePresentation() presentation.Error!void {
+    if (!before_mode_change()) return error.HostFailed;
+    try modes.suspendModes();
+}
+pub fn resumePresentation() presentation.Error!void {
+    try modes.resumeModes();
+}
+pub fn finishPresentation() presentation.Error!void {
+    try modes.finish();
+}
+fn applyPresentation(_: ?*anyopaque, bit: u8, on: bool) error{HostFailed}!void {
+    if (bit == presentation.mouse and is_windows) return windows.setMouse(on);
+    const bytes: []const u8 = switch (bit) {
+        presentation.alternate => if (on) "\x1b[?1049h" else "\x1b[?1049l",
+        presentation.paste => if (on) "\x1b[?2004h" else "\x1b[?2004l",
+        presentation.hidden_cursor => if (on) "\x1b[?25l" else "\x1b[?25h",
+        presentation.mouse => if (on) "\x1b[?1003h\x1b[?1006h" else "\x1b[?1006l\x1b[?1003l",
+        else => unreachable,
+    };
+    flush_output();
+    presentation_changed();
+    var rest = bytes;
+    while (rest.len != 0) {
+        if (is_windows) {
+            const console = windows.handle(-11) orelse return error.HostFailed;
+            var written: u32 = 0;
+            if (windows.WriteFile(console, rest.ptr, @intCast(rest.len), &written, null) == 0 or written == 0) return error.HostFailed;
+            rest = rest[written..];
+        } else {
+            const written = std.c.write(1, rest.ptr, rest.len);
+            if (written < 0 and std.c._errno().* == @backingInt(std.c.E.INTR)) continue;
+            if (written <= 0) return error.HostFailed;
+            rest = rest[@intCast(written)..];
+        }
+    }
+}
 
 /// Whether the terminal went to raw mode since next last gave an event: next tells the
 /// core first, which then drops what it kept of the input before.
@@ -155,11 +211,17 @@ pub fn nextByte() ?u8 {
 
 /// MOUSE-ON and MOUSE-OFF: the terminal reports the mouse while it is in raw mode.
 pub fn setMouse(on: bool) void {
-    mouse_wanted = on;
-    if (!before_mode_change()) return;
-    // A terminal that did not answer may be asked again after a new MOUSE-ON.
+    // Legacy MOUSE-ON works on a Windows input console even with redirected output.
+    // TERM-MODE! remains strict about a VT-capable stdout.
+    if (!before_mode_change()) {
+        failed(error.HostFailed);
+        return;
+    }
+    modes.setLegacyMouse(on) catch |err| {
+        failed(err);
+        return;
+    };
     if (on) cursor_unanswered = false;
-    if (raw) report(on);
 }
 
 /// The cursor's place on the screen (column and row from 0), or null.
@@ -179,8 +241,11 @@ pub fn leave() void {
     _ = before_mode_change();
     if (!raw) return;
     mode_generation +%= 1;
-    if (mouse_reporting) report(false);
-    if (is_windows) windows.leave() else posix.leave();
+    modes.setRaw(false) catch |err| failed(err);
+    if (!(if (is_windows) windows.leave() else posix.leave())) {
+        failed(error.HostFailed);
+        return;
+    }
     raw = false;
     if (!standard_keyboard) queued_len = 0;
     standard_keyboard = false;
@@ -194,7 +259,10 @@ pub fn isRaw() bool {
 fn enter() bool {
     if (!before_mode_change()) return false;
     if (raw) {
-        if (mouse_wanted != mouse_reporting) report(mouse_wanted);
+        modes.setRaw(true) catch |err| {
+            failed(err);
+            return false;
+        };
         return true;
     }
     if (!input_is_terminal) return false;
@@ -202,19 +270,13 @@ fn enter() bool {
     mode_generation +%= 1;
     raw = true;
     restarted = true;
-    if (mouse_wanted) report(true);
+    modes.setRaw(true) catch |err| {
+        failed(err);
+        if (if (is_windows) windows.leave() else posix.leave()) raw = false;
+        modes.setRaw(false) catch |cleanup| failed(cleanup);
+        return false;
+    };
     return true;
-}
-
-fn report(on: bool) void {
-    mouse_reporting = on;
-    if (is_windows) {
-        windows.setMouse(on);
-    } else if (output_is_terminal) {
-        flush_output();
-        // Any motion (1003) in the SGR form (1006), which has no limit on the position.
-        posix.writeAll(if (on) "\x1b[?1003h\x1b[?1006h" else "\x1b[?1006l\x1b[?1003l");
-    }
 }
 
 /// The terminal's settings of Linux and macOS (termios), with the room the C library's
@@ -259,9 +321,10 @@ const posix = struct {
         return changed.set();
     }
 
-    fn leave() void {
+    fn leave() bool {
+        if (!saved.set()) return false;
         if (!standard_keyboard) _ = tcflush(0, input_flush);
-        _ = saved.set();
+        return true;
     }
 
     fn writeAll(bytes: []const u8) void {
@@ -351,6 +414,7 @@ const windows = struct {
     const ScreenInfo = extern struct { size: Coord, cursor: Coord, attributes: u16, window: [4]i16, maximum_size: Coord };
     const InputRecord = extern struct { event_type: u16, padding: u16, data: [16]u8 };
     extern "kernel32" fn GetStdHandle(u32) callconv(.winapi) ?Handle;
+    extern "kernel32" fn WriteFile(Handle, [*]const u8, u32, *u32, ?*anyopaque) callconv(.winapi) c_int;
     extern "kernel32" fn GetConsoleMode(Handle, *u32) callconv(.winapi) c_int;
     extern "kernel32" fn SetConsoleMode(Handle, u32) callconv(.winapi) c_int;
     extern "kernel32" fn GetNumberOfConsoleInputEvents(Handle, *u32) callconv(.winapi) c_int;
@@ -408,29 +472,35 @@ const windows = struct {
         if (GetConsoleMode(console, &saved_mode) == 0) return false;
         // Without line input, echo, and Ctrl+C handling (it comes as a key); without
         // the selection by the mouse, which would take the mouse's input.
-        raw_mode = (saved_mode & ~(processed_input | line_input | echo_input | quick_edit | virtual_terminal_input)) | extended_flags | (if (standard_keyboard) @as(u32, 0x0008) else 0);
+        raw_mode = (saved_mode & ~(processed_input | line_input | echo_input | quick_edit | virtual_terminal_input | mouse_input)) | extended_flags | (if (standard_keyboard) @as(u32, 0x0008) else 0);
         if (SetConsoleMode(console, raw_mode) == 0) return false;
         input = console;
         return true;
     }
 
-    fn leave() void {
-        const console = input orelse return;
+    fn leave() bool {
+        const console = input orelse return false;
+        if (SetConsoleMode(console, saved_mode) == 0) return false;
         if (!standard_keyboard) _ = FlushConsoleInputBuffer(console) else {
             for (pending[0..pending_len]) |byte| queue(byte);
         }
-        _ = SetConsoleMode(console, saved_mode);
         pending_len = 0;
         high_surrogate = 0;
         down = @splat(0);
         releasing = false;
         after = null;
+        return true;
     }
 
-    fn setMouse(on: bool) void {
-        const console = input orelse return;
+    fn setMouse(on: bool) error{HostFailed}!void {
+        // A completed cooked restore supersedes old raw mouse flags.
+        if (!raw) {
+            if (on) return error.HostFailed;
+            return;
+        }
+        const console = input orelse return error.HostFailed;
         raw_mode = if (on) raw_mode | mouse_input else raw_mode & ~mouse_input;
-        _ = SetConsoleMode(console, raw_mode);
+        if (SetConsoleMode(console, raw_mode) == 0) return error.HostFailed;
     }
 
     fn screen() ?ScreenInfo {

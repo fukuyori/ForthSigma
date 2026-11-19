@@ -176,7 +176,7 @@ HFR版は1280×800の窓で開き、リサイズできます。目標値はモ�
 大きさは、0.10.0 の後のソースをリリースと同じ `-Doptimize=fast -Dcpu=baseline` でWindows x86_64向けにビルドしたものです（2026-11-11に測定）。リリースの実行ファイルは、署名の分だけ約10 KB大きくなります。0.10.0 そのものでは、`HELP` とデバッグ機能以外のグループを除いた版は、この表より50〜78 KB大きくなります。オプションは組み合わせられます（例: `zig build -Doptimize=fast -Dfloat=false -Dhelp=false`）。
 
 
-拡張モジュールは既定で有効です。`REQUIRE-EXTENSION ALSO EXTENSION HOST-OS TYPE PREVIOUS`で対象OS系列を表示できます。`HOST-OS ( -- c-addr u )`は`windows`、`linux`（WSL/Androidを含む）、`macos`、その他は`unknown`を返します。結果は次のHOST-OSかイメージ復元まで借用でき、書換えは禁止です。音・描画の読込みは不要です。`-Dextension=false`ではREQUIRE-EXTENSIONは通常の未定義語（-13）となり、内部の共通時計・待機は音や描画から引き続き使えます。将来の端末・タスク等の機能の実装完了を意味しません。
+拡張モジュールは既定で有効です。`REQUIRE-EXTENSION ALSO EXTENSION HOST-OS TYPE PREVIOUS`で対象OS系列を表示できます。`HOST-OS ( -- c-addr u )`は`windows`、`linux`（WSL/Androidを含む）、`macos`、その他は`unknown`を返します。結果は次のHOST-OSかイメージ復元まで借用でき、書換えは禁止です。音・描画の読込みは不要です。`-Dextension=false`ではREQUIRE-EXTENSIONは通常の未定義語（-13）となり、内部の共通時計・待機は音や描画から引き続き使えます。端末制御は`TERM-MODE! ( mask -- ior )`、`TERM-MODE@ ( -- mask )`、`COLS`、`ROWS`を利用できます。フラグは`TERM-ALT-SCREEN`（1）、`TERM-PASTE`（2）、`TERM-HIDE-CURSOR`（4）、`TERM-MOUSE`（8）です。getterは受理済み要求を返し、paste/mouseの実適用はraw入力時に限ります。Windowsはpasteを除外します。[端末制御の設計](docs/TERMINAL_CONTROL_DESIGN.md)に対応条件と後始末を記載しています。イベントキュー・タスク制御は後続作業です。
 
 除いたグループの語は辞書になく、`HELP` の説明もありません。グループはそれぞれ独立しているので、ファイルの語を除いても、`SAVE`・`LOAD-DICTIONARY`・`SAVESYS` はイメージのファイルを書き読みし、`LOCATE` はソースファイルを読みます（それぞれのグループも除いた場合を除きます）。組み込み語の実行トークンは機能構成間で共通ですが、読込み先が除いた語群の追加組込み語や直接組込み命令を含むイメージは、変更前に`INVALID IMAGE`で拒否します。生の数値として保存した実行トークンを使う場合の`INVALID EXECUTION TOKEN`の防御も維持します。組込み語の表が異なる旧版イメージもABI照合で拒否します。
 

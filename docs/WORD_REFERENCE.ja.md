@@ -6,13 +6,13 @@
 
 通常構成を基準とします。機能を除いた構成では対象の語を使えません。追加語彙はREQUIREで読み込んでから検索順へ加えます。即時語・コンパイル専用の印は、組込み語の実装にある属性です。構文の実行条件は説明本文に従ってください。
 
-項目数（語彙と名前の組）：**1536**。同名でも語彙が異なる項目は別に数えます。
+項目数（語彙と名前の組）：**1544**。同名でも語彙が異なる項目は別に数えます。
 
 ## 目次
 
 - [AUDIO](#namespace-audio) (73)
 - [EKEYS](#namespace-ekeys) (35)
-- [EXTENSION](#namespace-extension) (1)
+- [EXTENSION](#namespace-extension) (9)
 - [FORTH](#namespace-forth) (958)
 - [GAME](#namespace-game) (59)
 - [GRAPHICS](#namespace-graphics) (222)
@@ -136,7 +136,7 @@ Set the instrument's envelope, each 0 to 15 as on the C64's SID; 0 0 15 0 at fir
 : ADSR ( attack decay sustain release -- )   SND-ADSR ;
 ```
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1333).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1341).
 
 <a id="w-415544494f3a414d494741"></a>
 
@@ -170,7 +170,7 @@ REQUIRE-AUDIO ALSO AUDIO AMIGA . PREVIOUS
 16 CONSTANT SCC   32 CONSTANT AMIGA
 ```
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1375).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1383).
 
 <a id="w-415544494f3a414d4947412d46494c544552"></a>
 
@@ -208,7 +208,7 @@ REQUIRE-AUDIO ALSO AUDIO AMIGA-SOUND TRUE AMIGA-FILTER
 : AMIGA-FILTER ( flag -- )   SND-AMIGA-FILTER ;
 ```
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1357).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1365).
 
 <a id="w-415544494f3a414d4947412d534f554e44"></a>
 
@@ -246,7 +246,7 @@ REQUIRE-AUDIO ALSO AUDIO AMIGA-SOUND TRUE AMIGA-FILTER
 : AMIGA-SOUND ( -- )   5 SND-CHIP ;
 ```
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1356).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1364).
 
 <a id="w-415544494f3a415544494f3f"></a>
 
@@ -284,7 +284,7 @@ AUDIO?
 : AUDIO? ( -- flag )   SND-DEVICE ;
 ```
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1315).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1323).
 
 <a id="w-415544494f3a42454550"></a>
 
@@ -322,7 +322,7 @@ BEEP
 : BEEP ( -- )   SND-BEEP ;
 ```
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1314).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1322).
 
 <a id="w-415544494f3a433634"></a>
 
@@ -356,7 +356,7 @@ REQUIRE-AUDIO ALSO AUDIO C64 . PREVIOUS
 1 CONSTANT MSX   2 CONSTANT ST   4 CONSTANT NES   8 CONSTANT C64
 ```
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1373).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1381).
 
 <a id="w-415544494f3a4336342d534f554e44"></a>
 
@@ -394,7 +394,7 @@ C64-SOUND
 : C64-SOUND ( -- )   3 SND-CHIP ;
 ```
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1337).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1345).
 
 <a id="w-415544494f3a4348495053"></a>
 
@@ -432,7 +432,7 @@ ST NES OR CHIPS
 : CHIPS ( mask -- )   SND-CHIPS ;
 ```
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1367).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1375).
 
 <a id="w-415544494f3a44555459"></a>
 
@@ -470,7 +470,7 @@ Set the width of the instrument's pulse, 0 to 100 percent; 50 at first (FORTH/Si
 : DUTY ( percent -- )   SND-DUTY ;
 ```
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1332).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1340).
 
 <a id="w-415544494f3a46494c544552"></a>
 
@@ -508,7 +508,7 @@ FALSE RING 0 0 0 FILTER
 : FILTER ( mode cutoff resonance -- )   SND-FILTER ;
 ```
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1340).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1348).
 
 <a id="w-415544494f3a465245452d53414d504c4553"></a>
 
@@ -546,7 +546,7 @@ FREE-SAMPLES
 : FREE-SAMPLES ( -- )   SND-FREE-SAMPLES ;
 ```
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1355).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1363).
 
 <a id="w-415544494f3a494e535452554d454e54"></a>
 
@@ -584,7 +584,7 @@ Choose instrument n (0 to 63), which MML's @n plays with, for the words that cha
 : INSTRUMENT ( n -- )   SND-INSTRUMENT ;
 ```
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1326).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1334).
 
 <a id="w-415544494f3a4c4f41442d4d4f44"></a>
 
@@ -622,7 +622,7 @@ REQUIRE-AUDIO ALSO AUDIO S" a.txt" LOAD-MOD
 : LOAD-MOD ( c-addr u -- )   SND-LOAD-MOD THROW ;
 ```
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1362).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1370).
 
 <a id="w-415544494f3a4c4f41442d53414d504c45"></a>
 
@@ -660,7 +660,7 @@ S" a.txt" 5 LOAD-SAMPLE
 : LOAD-SAMPLE ( c-addr u n -- )   SND-LOAD-SAMPLE THROW ;
 ```
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1350).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1358).
 
 <a id="w-415544494f3a4c4f4f502d53414d504c45"></a>
 
@@ -698,7 +698,7 @@ Loop sample n from frame start to frame end; 0 0 for no loop (FORTH/Sigma audio)
 : LOOP-SAMPLE ( start end n -- )   SND-LOOP-SAMPLE ;
 ```
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1352).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1360).
 
 <a id="w-415544494f3a4d4f443f"></a>
 
@@ -736,7 +736,7 @@ MOD?
 : MOD? ( -- flag )   SND-MOD-PLAYING ;
 ```
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1365).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1373).
 
 <a id="w-415544494f3a4d5358"></a>
 
@@ -770,7 +770,7 @@ REQUIRE-AUDIO ALSO AUDIO MSX . PREVIOUS
 1 CONSTANT MSX   2 CONSTANT ST   4 CONSTANT NES   8 CONSTANT C64
 ```
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1370).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1378).
 
 <a id="w-415544494f3a4d53582d534f554e44"></a>
 
@@ -808,7 +808,7 @@ MSX-SOUND
 : MSX-SOUND ( -- )   0 SND-CHIP ;
 ```
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1323).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1331).
 
 <a id="w-415544494f3a4e4553"></a>
 
@@ -842,7 +842,7 @@ REQUIRE-AUDIO ALSO AUDIO NES . PREVIOUS
 1 CONSTANT MSX   2 CONSTANT ST   4 CONSTANT NES   8 CONSTANT C64
 ```
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1372).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1380).
 
 <a id="w-415544494f3a4e45532d534f554e44"></a>
 
@@ -880,7 +880,7 @@ NES-SOUND BEEP
 : NES-SOUND ( -- )   2 SND-CHIP ;
 ```
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1325).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1333).
 
 <a id="w-415544494f3a4e4f495345"></a>
 
@@ -918,7 +918,7 @@ SQUARE TRIANGLE SAW NOISE
 : NOISE ( -- )   4 SND-WAVE ;
 ```
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1331).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1339).
 
 <a id="w-415544494f3a504c4159"></a>
 
@@ -956,7 +956,7 @@ S" CDE" PLAY
 : PLAY ( c-addr u -- )   0 0 0 0 SND-PLAY ;
 ```
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1309).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1317).
 
 <a id="w-415544494f3a504c41592d4d4f44"></a>
 
@@ -994,7 +994,7 @@ TRUE PLAY-MOD
 : PLAY-MOD ( flag -- )   SND-PLAY-MOD ;
 ```
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1363).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1371).
 
 <a id="w-415544494f3a504c415932"></a>
 
@@ -1032,7 +1032,7 @@ S" O5 L8 C" S" D" PLAY2  S" E" S" F" S" G" PLAY3
 : PLAY2 ( c-addr1 u1 c-addr2 u2 -- )   0 0 SND-PLAY ;
 ```
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1310).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1318).
 
 <a id="w-415544494f3a504c415933"></a>
 
@@ -1070,7 +1070,7 @@ S" O5 L8 C" S" D" PLAY2  S" E" S" F" S" G" PLAY3
 : PLAY3 ( c-addr1 u1 c-addr2 u2 c-addr3 u3 -- )   SND-PLAY ;
 ```
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1311).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1319).
 
 <a id="w-415544494f3a504c41593f"></a>
 
@@ -1108,7 +1108,7 @@ Whether voice n (1 to 8), or any voice for 0, still has notes to play, as MSX BA
 : PLAY? ( n -- flag )   SND-PLAYING ;
 ```
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1312).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1320).
 
 <a id="w-415544494f3a504c415953"></a>
 
@@ -1144,7 +1144,7 @@ REQUIRE-AUDIO ALSO AUDIO S" C" S" E" S" G" S" C" 4 PLAYS 4 PLAY? .
 : PLAYS ( c-addr1 u1 ... c-addrn un n -- )   SND-PLAYS ;
 ```
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1322).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1330).
 
 <a id="w-415544494f3a50554c5345"></a>
 
@@ -1182,7 +1182,7 @@ Make the instrument a pulse of DUTY's width; the NES takes 12.5, 25, 50, or 75% 
 : PULSE ( -- )   1 SND-WAVE ;
 ```
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1328).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1336).
 
 <a id="w-415544494f3a52494e47"></a>
 
@@ -1220,7 +1220,7 @@ FALSE RING 0 0 0 FILTER
 : RING ( flag -- )   SND-RING ;
 ```
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1338).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1346).
 
 <a id="w-415544494f3a53414d504c45"></a>
 
@@ -1258,7 +1258,7 @@ CREATE S 10 ALLOT S 10 0 FILL 127 S C! 128 S 1 + C!  S 10 8000 1 SAMPLE
 : SAMPLE ( c-addr u rate n -- )   SND-SAMPLE ;
 ```
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1351).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1359).
 
 <a id="w-415544494f3a53414d504c452d494e535452554d454e54"></a>
 
@@ -1296,7 +1296,7 @@ Have the instrument play sample n on the Amiga, O4's C at the sample's rate; -1 
 : SAMPLE-INSTRUMENT ( n -- )   SND-SAMPLE-INSTRUMENT ;
 ```
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1353).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1361).
 
 <a id="w-415544494f3a534157"></a>
 
@@ -1334,7 +1334,7 @@ SQUARE TRIANGLE SAW NOISE
 : SAW ( -- )   3 SND-WAVE ;
 ```
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1330).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1338).
 
 <a id="w-415544494f3a534343"></a>
 
@@ -1368,7 +1368,7 @@ REQUIRE-AUDIO ALSO AUDIO SCC . PREVIOUS
 16 CONSTANT SCC   32 CONSTANT AMIGA
 ```
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1374).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1382).
 
 <a id="w-415544494f3a5343432d534f554e44"></a>
 
@@ -1406,7 +1406,7 @@ REQUIRE-AUDIO ALSO AUDIO SCC-SOUND
 : SCC-SOUND ( -- )   4 SND-CHIP ;
 ```
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1342).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1350).
 
 <a id="w-415544494f3a5343432d57415645"></a>
 
@@ -1444,7 +1444,7 @@ Make the 32 signed bytes at c-addr the wave instrument n plays on the SCC; witho
 : SCC-WAVE ( c-addr n -- )   SND-WAVETABLE ;
 ```
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1376).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1384).
 
 <a id="w-415544494f3a534658"></a>
 
@@ -1482,7 +1482,7 @@ Play sample n once at its rate, at once and beside the music, on any chip; four 
 : SFX ( n -- )   SND-SFX ;
 ```
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1354).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1362).
 
 <a id="w-415544494f3a534e442d41445352"></a>
 
@@ -1514,7 +1514,7 @@ Host primitive for ADSR (FORTH/Sigma).
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1321).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1329).
 
 <a id="w-415544494f3a534e442d414d4947412d46494c544552"></a>
 
@@ -1546,7 +1546,7 @@ Host primitive for AMIGA-FILTER (FORTH/Sigma).
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1348).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1356).
 
 <a id="w-415544494f3a534e442d42454550"></a>
 
@@ -1578,7 +1578,7 @@ Host primitive for BEEP (FORTH/Sigma).
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1306).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1314).
 
 <a id="w-415544494f3a534e442d43484950"></a>
 
@@ -1610,7 +1610,7 @@ Host primitive for MSX-SOUND (0), ST-SOUND (1), NES-SOUND (2), C64-SOUND (3), SC
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1317).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1325).
 
 <a id="w-415544494f3a534e442d4348495053"></a>
 
@@ -1642,7 +1642,7 @@ Host primitive for CHIPS (FORTH/Sigma).
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1366).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1374).
 
 <a id="w-415544494f3a534e442d444556494345"></a>
 
@@ -1674,7 +1674,7 @@ Host primitive for AUDIO? (FORTH/Sigma).
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1308).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1316).
 
 <a id="w-415544494f3a534e442d44555459"></a>
 
@@ -1706,7 +1706,7 @@ Host primitive for DUTY (FORTH/Sigma).
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1320).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1328).
 
 <a id="w-415544494f3a534e442d46494c544552"></a>
 
@@ -1738,7 +1738,7 @@ Host primitive for FILTER (FORTH/Sigma).
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1336).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1344).
 
 <a id="w-415544494f3a534e442d465245452d53414d504c4553"></a>
 
@@ -1770,7 +1770,7 @@ Host primitive for FREE-SAMPLES (FORTH/Sigma).
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1349).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1357).
 
 <a id="w-415544494f3a534e442d494e535452554d454e54"></a>
 
@@ -1802,7 +1802,7 @@ Host primitive for INSTRUMENT (FORTH/Sigma).
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1318).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1326).
 
 <a id="w-415544494f3a534e442d4c4f41442d4d4f44"></a>
 
@@ -1834,7 +1834,7 @@ Host primitive for LOAD-MOD: ior 0, the file's, -277, or -257 (FORTH/Sigma).
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。 戻り値のiorを確認してください。0が成功です。THROWへ渡す方法もあります。 番地・長さ・容量は有効な論理メモリー範囲を指定します。所有領域と借用領域の寿命を区別してください。
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1358).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1366).
 
 <a id="w-415544494f3a534e442d4c4f41442d53414d504c45"></a>
 
@@ -1866,7 +1866,7 @@ S" b.txt" 6 SND-LOAD-SAMPLE S" missing.txt" 6 SND-LOAD-SAMPLE 0<>
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。 戻り値のiorを確認してください。0が成功です。THROWへ渡す方法もあります。 番地・長さ・容量は有効な論理メモリー範囲を指定します。所有領域と借用領域の寿命を区別してください。
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1343).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1351).
 
 <a id="w-415544494f3a534e442d4c4f4f502d53414d504c45"></a>
 
@@ -1898,7 +1898,7 @@ Host primitive for LOOP-SAMPLE (FORTH/Sigma).
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1345).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1353).
 
 <a id="w-415544494f3a534e442d4d4f442d504c4159494e47"></a>
 
@@ -1930,7 +1930,7 @@ Host primitive for MOD? (FORTH/Sigma).
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1361).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1369).
 
 <a id="w-415544494f3a534e442d504c4159"></a>
 
@@ -1962,7 +1962,7 @@ Put the MML of the three voices of one PLAY; an empty string for a voice that ha
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。 番地・長さ・容量は有効な論理メモリー範囲を指定します。所有領域と借用領域の寿命を区別してください。
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1304).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1312).
 
 <a id="w-415544494f3a534e442d504c41592d4d4f44"></a>
 
@@ -1994,7 +1994,7 @@ Host primitive for PLAY-MOD (FORTH/Sigma).
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1359).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1367).
 
 <a id="w-415544494f3a534e442d504c4159494e47"></a>
 
@@ -2026,7 +2026,7 @@ Host primitive for PLAY? (FORTH/Sigma).
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1307).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1315).
 
 <a id="w-415544494f3a534e442d504c415953"></a>
 
@@ -2058,7 +2058,7 @@ Host primitive for PLAYS (FORTH/Sigma).
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。 番地・長さ・容量は有効な論理メモリー範囲を指定します。所有領域と借用領域の寿命を区別してください。
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1316).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1324).
 
 <a id="w-415544494f3a534e442d52494e47"></a>
 
@@ -2090,7 +2090,7 @@ Host primitive for RING (FORTH/Sigma).
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1334).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1342).
 
 <a id="w-415544494f3a534e442d53414d504c45"></a>
 
@@ -2122,7 +2122,7 @@ Host primitive for SAMPLE (FORTH/Sigma).
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。 番地・長さ・容量は有効な論理メモリー範囲を指定します。所有領域と借用領域の寿命を区別してください。
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1344).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1352).
 
 <a id="w-415544494f3a534e442d53414d504c452d494e535452554d454e54"></a>
 
@@ -2154,7 +2154,7 @@ Host primitive for SAMPLE-INSTRUMENT (FORTH/Sigma).
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1346).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1354).
 
 <a id="w-415544494f3a534e442d534658"></a>
 
@@ -2186,7 +2186,7 @@ Host primitive for SFX (FORTH/Sigma).
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1347).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1355).
 
 <a id="w-415544494f3a534e442d534f554e44"></a>
 
@@ -2218,7 +2218,7 @@ Host primitive for SOUND (FORTH/Sigma).
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1305).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1313).
 
 <a id="w-415544494f3a534e442d53544f502d4d4f44"></a>
 
@@ -2250,7 +2250,7 @@ Host primitive for STOP-MOD (FORTH/Sigma).
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1360).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1368).
 
 <a id="w-415544494f3a534e442d5354594c45"></a>
 
@@ -2282,7 +2282,7 @@ Host primitive for STYLE (FORTH/Sigma).
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1368).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1376).
 
 <a id="w-415544494f3a534e442d53594e43"></a>
 
@@ -2314,7 +2314,7 @@ Host primitive for SYNC (FORTH/Sigma).
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1335).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1343).
 
 <a id="w-415544494f3a534e442d57415645"></a>
 
@@ -2346,7 +2346,7 @@ Host primitive for SQUARE (0), PULSE (1), TRIANGLE (2), SAW (3), and NOISE (4) (
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1319).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1327).
 
 <a id="w-415544494f3a534e442d574156455441424c45"></a>
 
@@ -2378,7 +2378,7 @@ Host primitive for SCC-WAVE (FORTH/Sigma).
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。 番地・長さ・容量は有効な論理メモリー範囲を指定します。所有領域と借用領域の寿命を区別してください。
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1341).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1349).
 
 <a id="w-415544494f3a534f554e44"></a>
 
@@ -2416,7 +2416,7 @@ Write a value 0 to 255 to the PSG's register 0 to 13, as MSX BASIC's SOUND (FORT
 : SOUND ( reg value -- )   SND-SOUND ;
 ```
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1313).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1321).
 
 <a id="w-415544494f3a535155415245"></a>
 
@@ -2454,7 +2454,7 @@ SQUARE TRIANGLE SAW NOISE
 : SQUARE ( -- )   0 SND-WAVE ;
 ```
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1327).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1335).
 
 <a id="w-415544494f3a5354"></a>
 
@@ -2488,7 +2488,7 @@ REQUIRE-AUDIO ALSO AUDIO ST .
 1 CONSTANT MSX   2 CONSTANT ST   4 CONSTANT NES   8 CONSTANT C64
 ```
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1371).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1379).
 
 <a id="w-415544494f3a53542d534f554e44"></a>
 
@@ -2528,7 +2528,7 @@ ST-SOUND
 : ST-SOUND ( -- )   1 SND-CHIP ;
 ```
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1324).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1332).
 
 <a id="w-415544494f3a53544f502d4d4f44"></a>
 
@@ -2566,7 +2566,7 @@ STOP-MOD
 : STOP-MOD ( -- )   SND-STOP-MOD ;
 ```
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1364).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1372).
 
 <a id="w-415544494f3a5354594c45"></a>
 
@@ -2604,7 +2604,7 @@ Choose one chip mask (MSX, ST, NES, C64, SCC or AMIGA) for an instrument on any 
 : STYLE ( chip -- )   SND-STYLE ;
 ```
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1369).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1377).
 
 <a id="w-415544494f3a53594e43"></a>
 
@@ -2644,7 +2644,7 @@ Restart the instrument's wave with each cycle of the voice before (voice 1 by vo
 : SYNC ( flag -- )   SND-SYNC ;
 ```
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1339).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1347).
 
 <a id="w-415544494f3a545249414e474c45"></a>
 
@@ -2682,7 +2682,7 @@ SQUARE TRIANGLE SAW NOISE
 : TRIANGLE ( -- )   2 SND-WAVE ;
 ```
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1329).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1337).
 
 <a id="namespace-ekeys"></a>
 
@@ -3710,7 +3710,43 @@ ALSO EKEYS K-WINCH . PREVIOUS
 
 ## EXTENSION
 
+- [` COLS `](#w-455854454e53494f4e3a434f4c53)
 - [` HOST-OS `](#w-455854454e53494f4e3a484f53542d4f53)
+- [` ROWS `](#w-455854454e53494f4e3a524f5753)
+- [` TERM-ALT-SCREEN `](#w-455854454e53494f4e3a5445524d2d414c542d53435245454e)
+- [` TERM-HIDE-CURSOR `](#w-455854454e53494f4e3a5445524d2d484944452d435552534f52)
+- [` TERM-MODE! `](#w-455854454e53494f4e3a5445524d2d4d4f444521)
+- [` TERM-MODE@ `](#w-455854454e53494f4e3a5445524d2d4d4f444540)
+- [` TERM-MOUSE `](#w-455854454e53494f4e3a5445524d2d4d4f555345)
+- [` TERM-PASTE `](#w-455854454e53494f4e3a5445524d2d5041535445)
+
+<a id="w-455854454e53494f4e3a434f4c53"></a>
+
+### ` COLS `
+
+` ( -- u ) `
+
+FORMと同じ出力先・取得・既定値の規則で列数を返します。capture中は最大正セル値です。EXTENSION語彙に置きます。
+
+<details><summary>英語の説明（HELP・実装に基づく）</summary>
+
+Return FORM column count with the same output target, capture and fallback rules (extension vocabulary).
+
+</details>
+
+種別：builtin.
+
+` REQUIRE-EXTENSION ALSO EXTENSION ` で読み込み、検索対象にします。
+
+使用例
+
+```forth
+REQUIRE-EXTENSION ALSO EXTENSION COLS . PREVIOUS
+```
+
+注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
+
+出典：[src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1305).
 
 <a id="w-455854454e53494f4e3a484f53542d4f53"></a>
 
@@ -3739,6 +3775,234 @@ REQUIRE-EXTENSION ALSO EXTENSION HOST-OS TYPE PREVIOUS
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。 番地・長さ・容量は有効な論理メモリー範囲を指定します。所有領域と借用領域の寿命を区別してください。
 
 出典：[src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1302).
+
+<a id="w-455854454e53494f4e3a524f5753"></a>
+
+### ` ROWS `
+
+` ( -- u ) `
+
+FORMと同じ出力先・取得・既定値の規則で行数を返します。capture中は1です。EXTENSION語彙に置きます。
+
+<details><summary>英語の説明（HELP・実装に基づく）</summary>
+
+Return FORM row count with the same output target, capture and fallback rules (extension vocabulary).
+
+</details>
+
+種別：builtin.
+
+` REQUIRE-EXTENSION ALSO EXTENSION ` で読み込み、検索対象にします。
+
+使用例
+
+```forth
+REQUIRE-EXTENSION ALSO EXTENSION ROWS . PREVIOUS
+```
+
+注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
+
+出典：[src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1306).
+
+<a id="w-455854454e53494f4e3a5445524d2d414c542d53435245454e"></a>
+
+### ` TERM-ALT-SCREEN `
+
+` ( -- mask ) `
+
+代替画面を要求するビット1を返します。
+
+<details><summary>英語の説明（HELP・実装に基づく）</summary>
+
+Push 1, the alternate screen request bit (Sigma extension).
+
+</details>
+
+種別：library.
+
+` REQUIRE-EXTENSION ALSO EXTENSION ` で読み込み、検索対象にします。
+
+関連説明：[端末表示の拡張](USER_MANUAL.ja.md#端末表示の拡張).
+
+使用例
+
+```forth
+REQUIRE-EXTENSION ALSO EXTENSION TERM-ALT-SCREEN . PREVIOUS
+```
+
+注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
+
+実装定義（内部補助語は変更される場合があります）：
+
+```forth
+1 CONSTANT TERM-ALT-SCREEN
+```
+
+出典：[src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1307).
+
+<a id="w-455854454e53494f4e3a5445524d2d484944452d435552534f52"></a>
+
+### ` TERM-HIDE-CURSOR `
+
+` ( -- mask ) `
+
+カーソル非表示を要求するビット4を返します。
+
+<details><summary>英語の説明（HELP・実装に基づく）</summary>
+
+Push 4, the hidden cursor request bit (Sigma extension).
+
+</details>
+
+種別：library.
+
+` REQUIRE-EXTENSION ALSO EXTENSION ` で読み込み、検索対象にします。
+
+関連説明：[端末表示の拡張](USER_MANUAL.ja.md#端末表示の拡張).
+
+使用例
+
+```forth
+REQUIRE-EXTENSION ALSO EXTENSION TERM-HIDE-CURSOR . PREVIOUS
+```
+
+注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
+
+実装定義（内部補助語は変更される場合があります）：
+
+```forth
+4 CONSTANT TERM-HIDE-CURSOR
+```
+
+出典：[src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1309).
+
+<a id="w-455854454e53494f4e3a5445524d2d4d4f444521"></a>
+
+### ` TERM-MODE! `
+
+` ( mask -- ior ) `
+
+端末の表示要求をmask全体で置き換えます。1は代替画面、2は貼り付け報告、4はカーソル非表示、8はマウス報告です。0成功、-24は不正mask、-21は非対応、-265はホスト障害。Windowsは貼り付けを無視します。報告はraw時だけ有効で、既存MOUSE-ON/OFFの要求も置き換えます。
+
+<details><summary>英語の説明（HELP・実装に基づく）</summary>
+
+Replace accepted terminal requests (bits 1/2/4/8). 0 succeeds, -24 invalid mask, -21 unavailable, -265 host failure. Windows ignores paste. Raw-only mouse/paste are delayed; existing MOUSE-ON shares the request (Sigma extension).
+
+</details>
+
+種別：builtin.
+
+` REQUIRE-EXTENSION ALSO EXTENSION ` で読み込み、検索対象にします。
+
+使用例
+
+```forth
+REQUIRE-EXTENSION ALSO EXTENSION 0 TERM-MODE! . PREVIOUS
+```
+
+注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。 戻り値のiorを確認してください。0が成功です。THROWへ渡す方法もあります。
+
+出典：[src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1303).
+
+<a id="w-455854454e53494f4e3a5445524d2d4d4f444540"></a>
+
+### ` TERM-MODE@ `
+
+` ( -- mask ) `
+
+ホストが受理した端末の要求を返します。非対応と成否不明のビットは除外し、raw状態や一時退避では値を変えません。端末からの肯定応答や対応機能の実在を確認した値ではありません。
+
+<details><summary>英語の説明（HELP・実装に基づく）</summary>
+
+Return accepted terminal requests, excluding unsupported/uncertain bits, independent of temporary suspension and raw mode. This records accepted requests, not an acknowledgment from the terminal (Sigma extension).
+
+</details>
+
+種別：builtin.
+
+` REQUIRE-EXTENSION ALSO EXTENSION ` で読み込み、検索対象にします。
+
+使用例
+
+```forth
+REQUIRE-EXTENSION ALSO EXTENSION TERM-MODE@ . PREVIOUS
+```
+
+注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
+
+出典：[src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1304).
+
+<a id="w-455854454e53494f4e3a5445524d2d4d4f555345"></a>
+
+### ` TERM-MOUSE `
+
+` ( -- mask ) `
+
+raw時のマウス報告を要求するビット8を返します。MOUSE-ON/OFFと同じ要求を共有します。
+
+<details><summary>英語の説明（HELP・実装に基づく）</summary>
+
+Push 8, the raw mouse reporting request bit, shared with MOUSE-ON/OFF (Sigma extension).
+
+</details>
+
+種別：library.
+
+` REQUIRE-EXTENSION ALSO EXTENSION ` で読み込み、検索対象にします。
+
+関連説明：[端末表示の拡張](USER_MANUAL.ja.md#端末表示の拡張).
+
+使用例
+
+```forth
+REQUIRE-EXTENSION ALSO EXTENSION TERM-MOUSE . PREVIOUS
+```
+
+注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
+
+実装定義（内部補助語は変更される場合があります）：
+
+```forth
+8 CONSTANT TERM-MOUSE
+```
+
+出典：[src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1310).
+
+<a id="w-455854454e53494f4e3a5445524d2d5041535445"></a>
+
+### ` TERM-PASTE `
+
+` ( -- mask ) `
+
+raw時の貼り付け報告を要求するビット2を返します。Windowsは無視します。この版で貼り付け境界をイベントとして解釈する機能は含まず、638で別に扱います。
+
+<details><summary>英語の説明（HELP・実装に基づく）</summary>
+
+Push 2, the raw bracketed paste request bit. Windows ignores it. POSIX markers are not decoded by this version; event decoding is planned separately (Sigma extension).
+
+</details>
+
+種別：library.
+
+` REQUIRE-EXTENSION ALSO EXTENSION ` で読み込み、検索対象にします。
+
+関連説明：[端末表示の拡張](USER_MANUAL.ja.md#端末表示の拡張).
+
+使用例
+
+```forth
+REQUIRE-EXTENSION ALSO EXTENSION TERM-PASTE . PREVIOUS
+```
+
+注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
+
+実装定義（内部補助語は変更される場合があります）：
+
+```forth
+2 CONSTANT TERM-PASTE
+```
+
+出典：[src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1308).
 
 <a id="namespace-forth"></a>
 
@@ -9487,7 +9751,7 @@ End a colon definition.
 ;
 ```
 
-[使用例の文脈](../src/tests/support.zig#L676)
+[使用例の文脈](../src/tests/support.zig#L680)
 
 注意：コンパイル専用です。通常の解釈時入力では実行できません。
 
@@ -50430,7 +50694,7 @@ REQUIRE-AUDIO
 
 注意：スタック効果の入力順を守ってください。使用例の名前・値は例の定義や初期状態に依存します。
 
-出典：[src/core/help_text.zig](../src/core/help_text.zig), [HELP](../src/core/help_text.zig#L1303).
+出典：[src/core/help_text.zig](../src/core/help_text.zig), [HELP](../src/core/help_text.zig#L1311).
 
 <a id="w-53796e7461783a524551554952452d455854454e53494f4e"></a>
 

@@ -1,5 +1,32 @@
 # 613 実装・検証の記録
 
+## 2026-11-19：637 ターミナル制御（1070〜1073）
+
+基点は`b4af2fb Record Mac acceptance for core extension`。本節の実装・設計・レビュー記録は、この文書と同じコミットに含む。tqueの1070〜1072は完了、637はauto75%。Mac実機1073は未実施。
+
+EXTENSIONへTERM-MODE!/@、COLS/ROWSと4定数を追加した。表示要求はホストのManagerでraw入力と独立して所有する。KEY/ACCEPTではalt/cursorを保ち、REPLとSYSTEMで退避、未捕捉診断と通常終了で解除する。Windowsのpaste要求を除外する。coreは語の処理・FORM共用・入力エラー伝達、ホストはOS操作と資源の後始末を担当する。[詳細設計](TERMINAL_CONTROL_DESIGN.md)。
+
+Claude Codeへ設計・実装・Windows入力再開・最終の読み取り専用レビューを依頼し、指摘を評価して反映した。レビュー原文・こちらの採否・仕様を別資料に保存した。[反映判断](reviews/637-review-response.md)。Windowsのcooked readをキャンセルした後、次の一行が失われるケースを実際に確認し、専用CONIN$ハンドルを中断後に閉じる修正で解消した。追加レビューで指摘された読み取り完了とCtrl+Cハンドラーの順序、POSIXのread直前の信号、dirty状態からの明示解除も補強した。
+
+| 確認 | 結果と証拠 |
+|---|---|
+| Windows `zig build test --summary all` | 23/23ステップ成功。host 95成功・10スキップ。core 1031成功・8スキップ、runtime 15成功は直前の成功済みキャッシュを含む。Cortex-M0+のfreestandingチェックも成功。`.work/637-review/final3-tests.log` |
+| Windows 通常実行体 | debug実行体のビルド10/10成功。`.work/637-windows/bin/sigma.exe`、`.work/637-review/final3-native-build.log` |
+| Windows新規独立コンソール | 8ケース成功。raw前の表示、paste除外、mouse、解除、不正mask、SYSTEM、CATCH、外部生成Ctrl+C後のFILE-EOF?=0と次のKEY。`.work/terminal-modes/windows/result.json` |
+| Windows ConPTY | Ctrl+Cバイト→CATCH=-28→次のKEYでQ=81を10回連続成功。最後のEOF修正後もFILE-EOF?=0と次のKEYを再確認。`.work/terminal-modes/windows/conpty.json`は最後の1回。物理キー操作とは区別 |
+| Windows既存コンソール | 入力レコード注入36ケース成功。`.work/windows-console.json` |
+| Linux向けコンパイル・実行 | musl向けcore/host/runtimeを16/16ステップで作成しWSLで実行。core 1031成功・8スキップ、host 106成功・5スキップ、runtime 15成功。`.work/637-review/final3-linux-build.log`、`final3-linux-execution.log` |
+| Linux PTY | 13ケース成功。KEY/ACCEPTの表示維持・SIGINT、REPL打掛けBYEの実行抑止、SYSTEM、例外、profile、リダイレクト、termios/画面復元。`.work/terminal-modes/posix.json` |
+| Linux NS既存回帰 | sigma-only pass=true。期限8・範囲1・リダイレクト2・信号復帰2・PTY5ケース。`.work/p05b-ns-check/sigma-only.json` |
+| Mac向けコンパイル | aarch64-macos、audio/graphics/float除外のcore/host/runtimeで14/14ステップ成功。`.work/637-review/final3-macos-build.log`。Mac実行の証拠ではない |
+| 英日HELP・全語参照 | 1544項目、HELP1330、実辞書に欠落なし、例28件と個別例144件成功。check-docs findings=0。`.work/637-review/final3-word-reference.log`、`final3-check-docs.log` |
+| 3語群・機能除外 | 最終コードの12/12構成でtestと実行体ビルド成功。extension除外版でのイメージ拒否と既存辞書の保持も成功。matrix.jsonのsource_sha256が現在のbuild.zig/srcと一致。`.work/637-review/final3-extension-matrix.log`、`.work/extension-matrix/matrix.json` |
+
+実OS APIの失敗を任意に注入した受け入れ、物理キーボード操作、Mac実行は未確認。Managerの差替えBackendでは部分失敗・巻戻し・dirty保持・入れ子・明示解除を確認した。入力/待機スコープ外の既定SIGINTやCtrl+Break、SIGTERM/SIGHUP・強制終了時の完全復元は保証しない。通常VMループへ信号処理を追加する変更は含めていない。
+
+次工程は638イベントキュー。637のMac実機確認は1073として残し、1057の最終統合受け入れで待つ。保存アプリ起動の1067は計画済み・未実装であり、LOGO機能のSigma組込みは行っていない。
+
+
 ## 2026-11-19：1065 Mac実機受け入れ
 
 対象コミット：`b7411f68d9430d495906d30fefc4e14efb399213`。環境はmacOS 27.2（Darwin 27.2.0、arm64）、Zig 0.17.1、Python 3。作業ツリーは開始時にクリーン。クロスコンパイルではなく、このMacで同一コードをビルド・実行した。

@@ -32,27 +32,26 @@ pub const words = [_]Builtin{ .gfx_init, .gfx_width, .gfx_height, .gfx_pset, .gf
 /// vocabulary. The order is part of the dictionary that images keep: add new words at
 /// the end.
 pub const definitions = [_]struct { []const u8, Builtin }{
-    .{ "GFX-INIT", .gfx_init },                 .{ "GFX-WIDTH", .gfx_width },                    .{ "GFX-HEIGHT", .gfx_height },
-    .{ "GFX-PSET", .gfx_pset },                 .{ "GFX-PGET", .gfx_pget },                      .{ "GFX-HLINE", .gfx_hline },
-    .{ "GFX-CLS", .gfx_cls },                   .{ "GFX-SAVE-PPM", .gfx_save_ppm },              .{ "GFX-SAVE-BMP", .gfx_save_bmp },
-    .{ "GFX-SHOW-BLOCKS", .gfx_show_blocks },   .{ "GFX-SHOW-SIXEL", .gfx_show_sixel },          .{ "GFX-SHOW-WINDOW", .gfx_show_window },
-    .{ "GFX-WINDOW?", .gfx_window_query },      .{ "GFX-SAVE-PNG", .gfx_save_png },              .{ "GFX-INKEY", .gfx_inkey },
-    .{ "GFX-MOUSE", .gfx_mouse },               .{ "GFX-MOUSE-MODE", .gfx_mouse_mode },          .{ "GFX-GLYPH-LOAD", .gfx_glyph_load },
-    .{ "GFX-GLYPH-BOX", .gfx_glyph_box },       .{ "GFX-GLYPH-ALPHA", .gfx_glyph_alpha },        .{ "GFX-FONT-HEIGHT", .gfx_font_height },
-    .{ "GFX-FONT-BUILTIN", .gfx_font_builtin }, .{ "GFX-FONT-LOAD", .gfx_font_load },            .{ "GFX-FONT-SYSTEM", .gfx_font_system },
-    .{ "GFX-COLOR-MODE", .gfx_color_mode },     .{ "GFX-TCL", .gfx_tcl },                        .{ "GFX-TCL-ERROR", .gfx_tcl_error },
-    .{ "GFX-TCL-EVENT", .gfx_tcl_event },       .{ "GFX-TCL-PROGRAM", .gfx_tcl_program },        .{ "GFX-TCL-STOP", .gfx_tcl_stop },
-    .{ "GFX-SHOW-TK", .gfx_show_tk },           .{ "GFX-KEY-HELD", .gfx_key_held },              .{ "GFX-WINDOW-SIZE", .gfx_window_size },
-    .{ "GFX-GAMEPAD-POLL", .gfx_gamepad_poll }, .{ "GFX-GAMEPAD-QUERY", .gfx_gamepad_query },    .{ "GFX-GAMEPAD-NAME", .gfx_gamepad_name },
-    .{ "GFX-GAMEPAD-MAP", .gfx_gamepad_map },   .{ "GFX-GAMEPAD-GUID", .gfx_gamepad_guid },      .{ "GFX-IMAGE-NEW", .gfx_image_new },
-    .{ "GFX-IMAGE-FREE", .gfx_image_free },     .{ "GFX-IMAGE-SIZE", .gfx_image_size },          .{ "GFX-TARGET", .gfx_target },
-    .{ "GFX-TARGET@", .gfx_target_query },      .{ "GFX-COPY", .gfx_copy },                      .{ "GFX-IMAGE-LOAD", .gfx_image_load },
-    .{ "GFX-MOUSE-EVENT", .gfx_mouse_event },   .{ "GFX-PIXEL", .gfx_pixel },                    .{ "GFX-TILEMAP", .gfx_tilemap },
-    .{ "GFX-INDEXED", .gfx_indexed },           .{ "GFX-ROW-SHIFT", .gfx_row_shift },            .{ "GFX-ROW-COLOR", .gfx_row_color },
-    .{ "GFX-AUTO-DISPLAY", .gfx_auto_display }, .{ "GFX-AUTO-DISPLAY!", .gfx_auto_display_set }, .{ "GFX-IME-PREEDIT", .gfx_ime_preedit },
-    .{ "GFX-IME-CARET", .gfx_ime_caret },       .{ "GFX-AUTO-TRY", .gfx_auto_try },
-    .{ "GFX-FULLSCREEN", .gfx_fullscreen },     .{ "GFX-FULLSCREEN?", .gfx_fullscreen_query },
-    .{ "GFX-MOUSE-CURSOR", .gfx_mouse_cursor },
+    .{ "GFX-INIT", .gfx_init },                    .{ "GFX-WIDTH", .gfx_width },                    .{ "GFX-HEIGHT", .gfx_height },
+    .{ "GFX-PSET", .gfx_pset },                    .{ "GFX-PGET", .gfx_pget },                      .{ "GFX-HLINE", .gfx_hline },
+    .{ "GFX-CLS", .gfx_cls },                      .{ "GFX-SAVE-PPM", .gfx_save_ppm },              .{ "GFX-SAVE-BMP", .gfx_save_bmp },
+    .{ "GFX-SHOW-BLOCKS", .gfx_show_blocks },      .{ "GFX-SHOW-SIXEL", .gfx_show_sixel },          .{ "GFX-SHOW-WINDOW", .gfx_show_window },
+    .{ "GFX-WINDOW?", .gfx_window_query },         .{ "GFX-SAVE-PNG", .gfx_save_png },              .{ "GFX-INKEY", .gfx_inkey },
+    .{ "GFX-MOUSE", .gfx_mouse },                  .{ "GFX-MOUSE-MODE", .gfx_mouse_mode },          .{ "GFX-GLYPH-LOAD", .gfx_glyph_load },
+    .{ "GFX-GLYPH-BOX", .gfx_glyph_box },          .{ "GFX-GLYPH-ALPHA", .gfx_glyph_alpha },        .{ "GFX-FONT-HEIGHT", .gfx_font_height },
+    .{ "GFX-FONT-BUILTIN", .gfx_font_builtin },    .{ "GFX-FONT-LOAD", .gfx_font_load },            .{ "GFX-FONT-SYSTEM", .gfx_font_system },
+    .{ "GFX-COLOR-MODE", .gfx_color_mode },        .{ "GFX-TCL", .gfx_tcl },                        .{ "GFX-TCL-ERROR", .gfx_tcl_error },
+    .{ "GFX-TCL-EVENT", .gfx_tcl_event },          .{ "GFX-TCL-PROGRAM", .gfx_tcl_program },        .{ "GFX-TCL-STOP", .gfx_tcl_stop },
+    .{ "GFX-SHOW-TK", .gfx_show_tk },              .{ "GFX-KEY-HELD", .gfx_key_held },              .{ "GFX-WINDOW-SIZE", .gfx_window_size },
+    .{ "GFX-GAMEPAD-POLL", .gfx_gamepad_poll },    .{ "GFX-GAMEPAD-QUERY", .gfx_gamepad_query },    .{ "GFX-GAMEPAD-NAME", .gfx_gamepad_name },
+    .{ "GFX-GAMEPAD-MAP", .gfx_gamepad_map },      .{ "GFX-GAMEPAD-GUID", .gfx_gamepad_guid },      .{ "GFX-IMAGE-NEW", .gfx_image_new },
+    .{ "GFX-IMAGE-FREE", .gfx_image_free },        .{ "GFX-IMAGE-SIZE", .gfx_image_size },          .{ "GFX-TARGET", .gfx_target },
+    .{ "GFX-TARGET@", .gfx_target_query },         .{ "GFX-COPY", .gfx_copy },                      .{ "GFX-IMAGE-LOAD", .gfx_image_load },
+    .{ "GFX-MOUSE-EVENT", .gfx_mouse_event },      .{ "GFX-PIXEL", .gfx_pixel },                    .{ "GFX-TILEMAP", .gfx_tilemap },
+    .{ "GFX-INDEXED", .gfx_indexed },              .{ "GFX-ROW-SHIFT", .gfx_row_shift },            .{ "GFX-ROW-COLOR", .gfx_row_color },
+    .{ "GFX-AUTO-DISPLAY", .gfx_auto_display },    .{ "GFX-AUTO-DISPLAY!", .gfx_auto_display_set }, .{ "GFX-IME-PREEDIT", .gfx_ime_preedit },
+    .{ "GFX-IME-CARET", .gfx_ime_caret },          .{ "GFX-AUTO-TRY", .gfx_auto_try },              .{ "GFX-FULLSCREEN", .gfx_fullscreen },
+    .{ "GFX-FULLSCREEN?", .gfx_fullscreen_query }, .{ "GFX-MOUSE-CURSOR", .gfx_mouse_cursor },
 };
 
 /// The words of the graphics library that HELP describes; the help test checks that the
@@ -226,7 +225,7 @@ pub fn execute(self: *State, builtin: Builtin) RuntimeError!void {
             const state = try graphics_input.mouseState(self);
             for (state) |value| try self.push(value);
         },
-        .gfx_mouse_mode => graphics_input.setMouse(self, try self.pop() != 0),
+        .gfx_mouse_mode => try graphics_input.setMouse(self, try self.pop() != 0),
         .gfx_mouse_event => if (try graphics_input.nextMouseEvent(self)) |event| {
             for ([_]Cell{ event.x, event.y, event.button, @backingInt(event.kind), -1 }) |value| try self.push(value);
         } else try self.push(0),

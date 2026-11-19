@@ -352,7 +352,12 @@ fn runShellCommand(_: ?*anyopaque, command: []const u8) forth.RuntimeError!forth
     if (std.mem.indexOfScalar(u8, command, 0) != null) return error.HostFailed;
     @memcpy(terminated[0..command.len], command);
     terminated[command.len] = 0;
-    // The command gets the terminal with its line input.
+    // Give the shell its normal screen for the entire subprocess call.
+    host_input.pausePresentation() catch return error.HostFailed;
+    var presentation_paused = true;
+    defer if (presentation_paused) {
+        host_input.resumePresentation() catch |err| latchInput(if (err == error.HostUnavailable) error.HostUnavailable else error.HostFailed);
+    };
     host_input.leave();
     // A child cmd.exe may change shared console input/output mode bits even
     // for a silent command. Restore the cooked modes before re-entering raw input.
@@ -380,6 +385,8 @@ fn runShellCommand(_: ?*anyopaque, command: []const u8) forth.RuntimeError!forth
     }
     output_cursor.unknown();
     utf8_console.@"resume"();
+    presentation_paused = false;
+    host_input.resumePresentation() catch return error.HostFailed;
     if (status == -1 or !restored) return error.HostFailed;
     return status;
 }
@@ -991,6 +998,7 @@ fn fileStdinByte(wait: bool) forth.RuntimeError!?u8 {
             if (builtin.os.tag == .windows) if (utf8_console.takePendingByte()) |pending| break :next pending;
             if (host_input.input_is_terminal) {
                 if (host_input.nextByte()) |raw| break :next raw;
+                try host_input.takePresentationError();
                 if (!host_input.isRaw()) return error.HostFailed;
                 if (builtin.os.tag != .windows) {
                     var descriptor = [_]std.c.pollfd{.{ .fd = 0, .events = std.c.POLL.IN, .revents = 0 }};
@@ -1028,14 +1036,15 @@ const host_directories = @import("host_directories.zig");
 const file_ops = forth.FileOps{ .open_pipe = fileOpenPipe, .close_pipe = fileClosePipe, .open_dir = host_directories.open, .read_dir = host_directories.read, .close_dir = host_directories.close, .mkdir = makeDirectory, .get_dir = getDirectory, .set_dir = setDirectory, .user_home = userHome, .open = fileOpen, .close = fileClose, .read_line = fileReadLine, .read = fileRead, .write = fileWrite, .size = fileSize, .reposition = fileReposition, .position = filePosition, .resize = fileResize, .flush = fileFlush, .delete = fileDelete, .rename = fileRename, .status = fileStatus, .key = fileKey, .unread = fileUnread, .ready = fileReady, .eof = fileEof, .create_mode = fileCreateMode };
 
 /// Lets the Windows console interpret the ANSI sequences written by PAGE.
-fn enableVirtualTerminal() void {
+fn enableVirtualTerminal() bool {
     if (builtin.os.tag == .windows) {
         const std_output_handle: u32 = @bitCast(@as(i32, -11));
-        const handle = GetStdHandle(std_output_handle) orelse return;
+        const handle = GetStdHandle(std_output_handle) orelse return false;
         var mode: u32 = 0;
-        if (GetConsoleMode(handle, &mode) == 0) return;
-        _ = SetConsoleMode(handle, mode | std.os.windows.ENABLE_VIRTUAL_TERMINAL_PROCESSING);
+        if (GetConsoleMode(handle, &mode) == 0) return false;
+        return SetConsoleMode(handle, mode | std.os.windows.ENABLE_VIRTUAL_TERMINAL_PROCESSING) != 0;
     }
+    return output_is_terminal;
 }
 
 /// Strings are UTF-8, so a Windows console shows and gives text in UTF-8 for the whole
@@ -1051,12 +1060,35 @@ const utf8_console = if (builtin.os.tag != .windows) struct {
     fn pause() void {}
     fn @"resume"() void {}
     fn readByte() c_int {
+        const guarded = beginInputGuard() catch |err| {
+            latchInput(err);
+            return -1;
+        };
+        defer endInputGuard(guarded);
+        if (@import("host_wait.zig").inputInterrupted()) {
+            latchInput(error.UserInterrupt);
+            return -1;
+        }
         return -1;
     }
 } else struct {
     extern "kernel32" fn SetConsoleCP(u32) callconv(.winapi) c_int;
     extern "kernel32" fn GetConsoleCP() callconv(.winapi) u32;
     extern "kernel32" fn ReadConsoleW(*anyopaque, [*]u16, u32, *u32, ?*anyopaque) callconv(.winapi) c_int;
+    extern "kernel32" fn CreateFileW([*:0]const u16, u32, u32, ?*anyopaque, u32, u32, ?*anyopaque) callconv(.winapi) *anyopaque;
+    extern "kernel32" fn CloseHandle(*anyopaque) callconv(.winapi) c_int;
+    // A cancelled cooked read can remain pending in conhost. Closing our own
+    // console handle also releases that server-side read, without closing stdin.
+    var read_input: ?*anyopaque = null;
+    var read_cancelled = false;
+    fn closeReadInput() bool {
+        if (read_input) |handle| {
+            if (CloseHandle(handle) == 0) return false;
+            read_input = null;
+        }
+        read_cancelled = false;
+        return true;
+    }
     extern "kernel32" fn SetConsoleCtrlHandler(?*const fn (u32) callconv(.winapi) c_int, c_int) callconv(.winapi) c_int;
 
     var active = false;
@@ -1091,6 +1123,7 @@ const utf8_console = if (builtin.os.tag != .windows) struct {
     }
 
     fn finish() void {
+        if (!closeReadInput()) _ = writeStandardError("console input cleanup failed\n");
         if (!active) return;
         flushOutput();
         _ = SetConsoleOutputCP(saved_output);
@@ -1131,8 +1164,24 @@ const utf8_console = if (builtin.os.tag != .windows) struct {
     }
 
     fn readByte() c_int {
+        const guarded = beginInputGuard() catch |err| {
+            latchInput(err);
+            return -1;
+        };
+        defer endInputGuard(guarded);
+        if (@import("host_wait.zig").inputInterrupted()) {
+            latchInput(error.UserInterrupt);
+            return -1;
+        }
         while (start == end) {
-            if (ended or !fill()) {
+            if (ended) return -1;
+            const filled = fill();
+            if (!filled) {
+                if (@import("host_wait.zig").inputInterrupted()) {
+                    latchInput(error.UserInterrupt);
+                    return -1;
+                }
+                if (input_failure != null) return -1;
                 ended = true;
                 return -1;
             }
@@ -1145,7 +1194,43 @@ const utf8_console = if (builtin.os.tag != .windows) struct {
     fn fill() bool {
         var wide: [units_per_read]u16 = undefined;
         var read: u32 = 0;
-        if (ReadConsoleW(input.?, &wide, wide.len, &read, null) == 0 or read == 0) return false;
+        if (read_cancelled and !closeReadInput()) {
+            latchInput(error.HostFailed);
+            return false;
+        }
+        if (read_input == null) {
+            const name = std.unicode.utf8ToUtf16LeStringLiteral("CONIN$");
+            const handle = CreateFileW(name, 0xC0000000, 3, null, 3, 0, null);
+            if (@intFromPtr(handle) == std.math.maxInt(usize)) {
+                latchInput(error.HostFailed);
+                return false;
+            }
+            read_input = handle;
+        }
+        @import("host_wait.zig").beginConsoleRead() catch |err| {
+            latchInput(err);
+            return false;
+        };
+        defer {
+            // Stop the handler's cancellation loop before closing the handle.
+            @import("host_wait.zig").endConsoleRead();
+            if (@import("host_wait.zig").inputInterrupted()) {
+                read_cancelled = true;
+                if (!closeReadInput()) latchInput(error.HostFailed);
+            }
+        }
+        if (@import("host_wait.zig").inputInterrupted()) return false;
+        const success = ReadConsoleW(read_input.?, &wide, wide.len, &read, null) != 0;
+        if (!success or read == 0) {
+            if (@import("host_wait.zig").inputGuardActive()) {
+                if (@import("host_wait.zig").awaitConsoleInterrupt()) {
+                    latchInput(error.UserInterrupt);
+                } else {
+                    latchInput(error.HostFailed);
+                }
+            } else if (!success) latchInput(error.HostFailed);
+            return false;
+        }
         start = 0;
         end = 0;
         var at: usize = 0;
@@ -1173,8 +1258,15 @@ const utf8_console = if (builtin.os.tag != .windows) struct {
 fn standardInputByte() c_int {
     clearErrno();
     const byte = rawStandardInputByte();
-    if (byte >= 0) stdin_eof = false else if (std.c._errno().* == 0) stdin_eof = true;
+    rememberStdinByte(byte);
     return byte;
+}
+fn rememberStdinByte(byte: c_int) void {
+    if (byte >= 0) {
+        stdin_eof = false;
+    } else if (input_failure == null and !@import("host_wait.zig").inputInterrupted() and std.c._errno().* == 0) {
+        stdin_eof = true;
+    }
 }
 
 fn rawStandardInputByte() c_int {
@@ -1201,10 +1293,26 @@ fn rawStandardInputByte() c_int {
     if (builtin.os.tag != .windows) {
         var byte: [1]u8 = undefined;
         while (true) {
+            if (@import("host_wait.zig").inputGuardActive()) {
+                // A bounded poll also catches SIGINT delivered just before read.
+                if (@import("host_wait.zig").inputInterrupted()) return -1;
+                var descriptor = [_]std.c.pollfd{.{ .fd = 0, .events = std.c.POLL.IN, .revents = 0 }};
+                const ready = std.c.poll(&descriptor, 1, 20);
+                if (@import("host_wait.zig").inputInterrupted()) return -1;
+                if (ready == 0) continue;
+                if (ready < 0) {
+                    if (std.c._errno().* == @backingInt(std.c.E.INTR)) continue;
+                    latchInput(error.HostFailed);
+                    return -1;
+                }
+            }
             clearErrno();
             const count = std.c.read(0, &byte, 1);
             if (count == 1) return byte[0];
-            if (count < 0 and std.c._errno().* == @backingInt(std.c.E.INTR)) continue;
+            if (count < 0 and std.c._errno().* == @backingInt(std.c.E.INTR)) {
+                if (@import("host_wait.zig").inputInterrupted()) return -1;
+                continue;
+            }
             return -1;
         }
     }
@@ -1791,6 +1899,15 @@ fn popLookahead() ?u8 {
 }
 
 fn readByte() c_int {
+    const guarded = beginInputGuard() catch |err| {
+        latchInput(err);
+        return -1;
+    };
+    defer endInputGuard(guarded);
+    if (@import("host_wait.zig").inputInterrupted()) {
+        latchInput(error.UserInterrupt);
+        return -1;
+    }
     // A prompt or a question is out before the program takes the answer, also when KEY?
     // has read the byte ahead and the program wrote in between.
     flushOutput();
@@ -1805,7 +1922,12 @@ fn readByte() c_int {
         stdin_eof = false;
         return byte;
     }
-    return standardInputByte();
+    const result = standardInputByte();
+    if (@import("host_wait.zig").inputInterrupted()) {
+        latchInput(error.UserInterrupt);
+        return -1;
+    }
+    return result;
 }
 
 fn terminalKey(_: ?*anyopaque) ?u8 {
@@ -1833,6 +1955,7 @@ fn redirectedInputReady() bool {
 
 /// EKEY uses the raw terminal, with a bounded wait for escape continuations.
 fn terminalEventKey(_: ?*anyopaque, timeout_ms: i32) forth.RuntimeError!?forth.Cell {
+    try inputError(null);
     flushOutput();
     output_cursor.unknown();
     if (try terminalBufferedKey(null)) |byte| return byte;
@@ -1851,6 +1974,8 @@ fn terminalEventKey(_: ?*anyopaque, timeout_ms: i32) forth.RuntimeError!?forth.C
                 stdin_eof = false;
                 return event;
             }
+            try host_input.takePresentationError();
+            if (!host_input.isRaw()) return error.HostFailed;
         } else if (redirectedInputReady()) {
             clearErrno();
             const byte = standardInputByte();
@@ -1886,6 +2011,11 @@ fn terminalBufferedKey(_: ?*anyopaque) forth.RuntimeError!?u8 {
 }
 
 fn terminalKeyReady(_: ?*anyopaque) bool {
+    const guarded = beginInputGuard() catch |err| {
+        latchInput(err);
+        return false;
+    };
+    defer endInputGuard(guarded);
     flushOutput();
     host_input.leave();
     if (lookahead != null) return true;
@@ -1909,6 +2039,54 @@ fn inputEvent(_: ?*anyopaque) ?forth.InputEvent {
     return host_input.next() orelse host_window.poll();
 }
 
+var input_failure: ?forth.RuntimeError = null;
+fn latchInput(err: forth.RuntimeError) void {
+    if (input_failure == null) input_failure = err;
+}
+fn inputError(_: ?*anyopaque) forth.RuntimeError!void {
+    if (input_failure) |err| {
+        input_failure = null;
+        return err;
+    }
+    try host_input.takePresentationError();
+}
+fn presentationChanged() void {
+    output_cursor.unknown();
+}
+fn terminalModeSet(_: ?*anyopaque, mask: u8) forth.Cell {
+    host_input.setPresentation(mask) catch |err| return switch (err) {
+        error.HostUnavailable => -21,
+        error.InvalidMode => -24,
+        else => -265,
+    };
+    return 0;
+}
+fn terminalModeGet(_: ?*anyopaque) u8 {
+    return host_input.modes.get();
+}
+fn beginInputGuard() forth.RuntimeError!bool {
+    if (!host_input.input_is_terminal or host_input.modes.wanted & 5 == 0) return false;
+    try @import("host_wait.zig").beginInput();
+    return true;
+}
+fn endInputGuard(active: bool) void {
+    if (active) @import("host_wait.zig").endInput() catch |err| latchInput(err);
+}
+fn clearForDiagnostics() void {
+    @import("host_wait.zig").recover() catch {
+        _ = writeStandardError("error: signal recovery before terminal cleanup\n");
+    };
+    host_input.finishPresentation() catch {
+        _ = writeStandardError("error: terminal presentation restoration failed\n");
+    };
+    host_input.leave();
+}
+fn reportDiagnostic(machine: *forth.State, err: anyerror) void {
+    clearForDiagnostics();
+    machine.gfx_input.mouse_on = false;
+    machine.report(err);
+}
+
 fn mouseMode(_: ?*anyopaque, on: bool) void {
     host_input.setMouse(on);
 }
@@ -1918,6 +2096,11 @@ fn cursorPosition(_: ?*anyopaque) ?forth.CursorPosition {
 }
 
 fn terminalRead(_: ?*anyopaque, buffer: []u8) ?[]const u8 {
+    const guarded = beginInputGuard() catch |err| {
+        latchInput(err);
+        return null;
+    };
+    defer endInputGuard(guarded);
     if (editedLine(buffer, null)) |result| return result.line;
     var used: usize = 0;
     while (true) {
@@ -1945,6 +2128,11 @@ var line_history = host_line.History{};
 /// is to be read as it comes. The terminal's line input is given back first if INKEY had
 /// taken it.
 fn editedLine(buffer: []u8, history: ?*host_line.History) ?host_line.Result {
+    const guarded = beginInputGuard() catch |err| {
+        latchInput(err);
+        return .{ .line = null };
+    };
+    defer endInputGuard(guarded);
     if (builtin.os.tag == .windows or !line_editing or !output_is_terminal or !host_input.input_is_terminal) return null;
     host_input.leave();
     const width = editingWidth(terminalSize(null));
@@ -1977,13 +2165,23 @@ fn lineByte() ?u8 {
     return if (ch < 0) null else @intCast(ch);
 }
 
-fn interpretAndPrompt(machine: *forth.State, line: []const u8) void {
+fn pauseForRepl() forth.RuntimeError!void {
+    host_input.pausePresentation() catch return error.HostFailed;
+}
+fn interpretAndPrompt(machine: *forth.State, line: []const u8) forth.RuntimeError!void {
+    host_input.resumePresentation() catch |err| {
+        reportDiagnostic(machine, err);
+        try pauseForRepl();
+        return;
+    };
     machine.resetSteps();
     machine.interpretLine(line) catch |err| {
-        machine.report(err);
+        reportDiagnostic(machine, err);
+        try pauseForRepl();
         return;
     };
     if (!machine.defining) machine.write(" OK\n");
+    try pauseForRepl();
 }
 
 const version = std.mem.trimEnd(u8, @embedFile("version"), " \t\r\n");
@@ -2052,7 +2250,11 @@ fn run(init: std.process.Init.Minimal) !u8 {
     // The output kept in the buffer goes out however the session ends.
     defer flushOutput();
 
-    enableVirtualTerminal();
+    const vt_available = enableVirtualTerminal();
+    const terminal_kind = host.environ_map.get("TERM") orelse "";
+    host_input.configurePresentation(output_is_terminal and host_input.input_is_terminal and vt_available and
+        (builtin.os.tag == .windows or (terminal_kind.len != 0 and !std.mem.eql(u8, terminal_kind, "dumb"))));
+    host_input.presentation_changed = presentationChanged;
     useBinaryStdin();
     utf8_console.begin();
     defer utf8_console.finish();
@@ -2116,7 +2318,7 @@ fn run(init: std.process.Init.Minimal) !u8 {
     const previous_mode_recovery = host_input.before_mode_change;
     host_input.before_mode_change = @import("host_wait.zig").beforeInputModeChange;
     defer host_input.before_mode_change = previous_mode_recovery;
-    machine.init(.{ .gamepad_ops = if (graphics) &host_gamepad.ops else null, .context = @ptrCast(&host), .write_fn = terminalWrite, .read_fn = terminalRead, .load_fn = loadDictionary, .save_fn = saveDictionary, .savesys_fn = saveExecutableImage, .key_fn = terminalKey, .key_ior_fn = terminalKeyIor, .event_key_fn = terminalEventKey, .monotonic_ms_fn = monotonicMilliseconds, .key_ready_fn = terminalKeyReady, .buffered_key_fn = terminalBufferedKey, .unread_fn = terminalUnread, .sleep_fn = sleepMilliseconds, .sleep_ns_fn = sleepNanoseconds, .utime_fn = microsecondsSinceEpoch, .ntime_fn = nanosecondsSinceEpoch, .cputime_fn = processCpuTimes, .local_time_fn = localTime, .zoned_time_fn = @import("host_timezone.zig").convert, .getenv_fn = environmentValue, .errno_fn = currentErrno, .system_fn = runShellCommand, .editor_fn = if (@import("build_options").tools) editSource else null, .file_ops = &file_ops, .framebuffer_fn = graphicsBuffer, .image_alloc_fn = if (graphics) imageAlloc else null, .image_free_fn = if (graphics) imageFree else null, .terminal_size_fn = terminalSize, .terminal_utf8_fn = terminalUtf8, .display_budget_fn = if (graphics and (builtin.os.tag == .windows or (builtin.os.tag == .linux and @import("build_options").x11))) @import("host_display_budget.zig").scope else null, .window_fn = if (graphics and host_window.available) host_window.show else null, .ime_preedit_fn = if (graphics and (builtin.os.tag == .windows or builtin.os.tag == .macos or (builtin.os.tag == .linux and @import("build_options").x11))) host_window.imePreedit else null, .ime_caret_fn = if (graphics and (builtin.os.tag == .windows or builtin.os.tag == .macos or (builtin.os.tag == .linux and @import("build_options").x11))) host_window.imeCaret else null, .window_fullscreen_fn = if (graphics and (builtin.os.tag == .windows or builtin.os.tag == .macos or (builtin.os.tag == .linux and @import("build_options").x11))) host_window.fullscreen else null, .window_cursor_fn = if (graphics and (builtin.os.tag == .windows or builtin.os.tag == .macos or (builtin.os.tag == .linux and @import("build_options").x11))) host_window.mouseCursor else null, .input_fn = inputEvent, .mouse_fn = mouseMode, .cursor_fn = cursorPosition, .font_buffer_fn = if (graphics) fontBuffer else null, .font_free_fn = if (graphics) fontFree else null, .system_font_fn = if (graphics and host_font.available) host_font.select else null, .system_glyph_fn = if (graphics and host_font.available) host_font.glyph else null, .process_start_fn = if (graphics) host_process.start else null, .process_write_fn = if (graphics) host_process.write else null, .process_read_fn = if (graphics) host_process.read else null, .process_stop_fn = if (graphics) host_process.stop else null, .audio_fn = if (audio) host_audio.start else null, .audio_device_fn = if (audio) host_audio.hasDevice else null, .audio_wait_fn = if (audio) audioWait else null }, storage);
+    machine.init(.{ .gamepad_ops = if (graphics) &host_gamepad.ops else null, .context = @ptrCast(&host), .write_fn = terminalWrite, .read_fn = terminalRead, .load_fn = loadDictionary, .save_fn = saveDictionary, .savesys_fn = saveExecutableImage, .key_fn = terminalKey, .key_ior_fn = terminalKeyIor, .event_key_fn = terminalEventKey, .monotonic_ms_fn = monotonicMilliseconds, .key_ready_fn = terminalKeyReady, .buffered_key_fn = terminalBufferedKey, .unread_fn = terminalUnread, .sleep_fn = sleepMilliseconds, .sleep_ns_fn = sleepNanoseconds, .utime_fn = microsecondsSinceEpoch, .ntime_fn = nanosecondsSinceEpoch, .cputime_fn = processCpuTimes, .local_time_fn = localTime, .zoned_time_fn = @import("host_timezone.zig").convert, .getenv_fn = environmentValue, .errno_fn = currentErrno, .system_fn = runShellCommand, .editor_fn = if (@import("build_options").tools) editSource else null, .file_ops = &file_ops, .framebuffer_fn = graphicsBuffer, .image_alloc_fn = if (graphics) imageAlloc else null, .image_free_fn = if (graphics) imageFree else null, .terminal_size_fn = terminalSize, .terminal_mode_set_fn = terminalModeSet, .terminal_mode_get_fn = terminalModeGet, .input_error_fn = inputError, .terminal_utf8_fn = terminalUtf8, .display_budget_fn = if (graphics and (builtin.os.tag == .windows or (builtin.os.tag == .linux and @import("build_options").x11))) @import("host_display_budget.zig").scope else null, .window_fn = if (graphics and host_window.available) host_window.show else null, .ime_preedit_fn = if (graphics and (builtin.os.tag == .windows or builtin.os.tag == .macos or (builtin.os.tag == .linux and @import("build_options").x11))) host_window.imePreedit else null, .ime_caret_fn = if (graphics and (builtin.os.tag == .windows or builtin.os.tag == .macos or (builtin.os.tag == .linux and @import("build_options").x11))) host_window.imeCaret else null, .window_fullscreen_fn = if (graphics and (builtin.os.tag == .windows or builtin.os.tag == .macos or (builtin.os.tag == .linux and @import("build_options").x11))) host_window.fullscreen else null, .window_cursor_fn = if (graphics and (builtin.os.tag == .windows or builtin.os.tag == .macos or (builtin.os.tag == .linux and @import("build_options").x11))) host_window.mouseCursor else null, .input_fn = inputEvent, .mouse_fn = mouseMode, .cursor_fn = cursorPosition, .font_buffer_fn = if (graphics) fontBuffer else null, .font_free_fn = if (graphics) fontFree else null, .system_font_fn = if (graphics and host_font.available) host_font.select else null, .system_glyph_fn = if (graphics and host_font.available) host_font.glyph else null, .process_start_fn = if (graphics) host_process.start else null, .process_write_fn = if (graphics) host_process.write else null, .process_read_fn = if (graphics) host_process.read else null, .process_stop_fn = if (graphics) host_process.stop else null, .audio_fn = if (audio) host_audio.start else null, .audio_device_fn = if (audio) host_audio.hasDevice else null, .audio_wait_fn = if (audio) audioWait else null }, storage);
     defer closeAllFiles();
     defer host_directories.closeAll();
     // The images of the pool, when the session ends without BYE.
@@ -2127,6 +2329,9 @@ fn run(init: std.process.Init.Minimal) !u8 {
     defer {
         @import("host_wait.zig").recover() catch {
             _ = writeStandardError("error: pending signal restoration before terminal leave\n");
+        };
+        host_input.finishPresentation() catch {
+            _ = writeStandardError("error: terminal cleanup failed\n");
         };
         host_input.leave();
     }
@@ -2191,6 +2396,7 @@ fn run(init: std.process.Init.Minimal) !u8 {
         counts.reset();
         machine.profile = counts;
     }
+    defer clearForDiagnostics();
     if (embedded) |image| machine.restoreFreshImage(image) catch machine.write("INVALID IMAGE !\n");
 
     // The other arguments go into Forth memory, where ARGC, ARGV, ARG, and NEXT-ARG see
@@ -2199,7 +2405,7 @@ fn run(init: std.process.Init.Minimal) !u8 {
     const kept_arguments = argument_list.items[start.next - 1 ..];
     kept_arguments[0] = argument_list.items[0];
     machine.setArguments(kept_arguments) catch |err| {
-        machine.report(err);
+        reportDiagnostic(machine, err);
         return 1;
     };
     // As in gforth: each argument names a file to include, in order, and `-e` (or
@@ -2211,7 +2417,7 @@ fn run(init: std.process.Init.Minimal) !u8 {
     while (true) {
         machine.resetSteps();
         const option = nextArgument(machine, &argument_text) catch |err| {
-            machine.report(err);
+            reportDiagnostic(machine, err);
             return 1;
         } orelse break;
         if (std.mem.eql(u8, option, "-e") or std.mem.eql(u8, option, "--evaluate")) {
@@ -2219,7 +2425,7 @@ fn run(init: std.process.Init.Minimal) !u8 {
             const name = option_name[0..option.len];
             @memcpy(name, option);
             const source = nextArgument(machine, &argument_text) catch |err| {
-                machine.report(err);
+                reportDiagnostic(machine, err);
                 return 1;
             } orelse {
                 machine.write(name);
@@ -2227,7 +2433,7 @@ fn run(init: std.process.Init.Minimal) !u8 {
                 return 1;
             };
             machine.interpretLine(source) catch |err| {
-                machine.report(err);
+                reportDiagnostic(machine, err);
                 return 1;
             };
         } else {
@@ -2237,7 +2443,7 @@ fn run(init: std.process.Init.Minimal) !u8 {
                     machine.write(option);
                     machine.write(": ");
                 }
-                machine.report(err);
+                reportDiagnostic(machine, err);
                 return 1;
             };
         }
@@ -2246,6 +2452,11 @@ fn run(init: std.process.Init.Minimal) !u8 {
 
     // With --lint, the findings take the place of the interactive session.
     if (start.lint) return finishBlocks(machine);
+    // REPL prompts are outside application presentation. Restore only while a line runs.
+    host_input.pausePresentation() catch |err| {
+        reportDiagnostic(machine, err);
+        return 1;
+    };
     // The banner comes after the arguments, as in gforth.
     machine.write(banner);
     var line: [4096]u8 = undefined;
@@ -2253,18 +2464,39 @@ fn run(init: std.process.Init.Minimal) !u8 {
     var discarding_line = false;
     while (!machine.halted) {
         if (editedLine(&line, &line_history)) |result| {
+            inputError(null) catch |err| {
+                reportDiagnostic(machine, err);
+                return 1;
+            };
             const text = result.line orelse break;
-            if (result.overflow) machine.write("LINE TOO LONG\n") else interpretAndPrompt(machine, text);
+            if (result.overflow) machine.write("LINE TOO LONG\n") else interpretAndPrompt(machine, text) catch |err| {
+                reportDiagnostic(machine, err);
+                return 1;
+            };
             continue;
         }
+        inputError(null) catch |err| {
+            reportDiagnostic(machine, err);
+            return 1;
+        };
         const ch = readByte();
+        inputError(null) catch |err| {
+            reportDiagnostic(machine, err);
+            return 1;
+        };
         if (ch < 0) {
-            if (!discarding_line and used != 0) interpretAndPrompt(machine, line[0..used]);
+            if (!discarding_line and used != 0) interpretAndPrompt(machine, line[0..used]) catch |err| {
+                reportDiagnostic(machine, err);
+                return 1;
+            };
             break;
         }
         const byte: u8 = @intCast(ch);
         if (byte == '\r' or byte == '\n') {
-            if (!discarding_line and used != 0) interpretAndPrompt(machine, line[0..used]);
+            if (!discarding_line and used != 0) interpretAndPrompt(machine, line[0..used]) catch |err| {
+                reportDiagnostic(machine, err);
+                return 1;
+            };
             used = 0;
             discarding_line = false;
             continue;
@@ -2286,11 +2518,11 @@ fn run(init: std.process.Init.Minimal) !u8 {
 /// saved executables. Errors remain visible and make the process fail.
 fn finishBlocks(machine: *forth.State) u8 {
     if (machine.defining or machine.quote_depth != 0 or machine.postponing) {
-        machine.report(error.InvalidDefinition);
+        reportDiagnostic(machine, error.InvalidDefinition);
         return 1;
     }
     @import("core/blocks.zig").saveAll(machine) catch |err| {
-        machine.report(err);
+        reportDiagnostic(machine, err);
         return 1;
     };
     return 0;
@@ -2481,6 +2713,7 @@ test "SAVE and LOAD through the host keep the words, also when loaded twice" {
 test {
     // The tests of the host's terminal input and of the Tcl program it starts.
     _ = @import("host_wait.zig");
+    _ = @import("host_terminal.zig");
     _ = host_input;
     _ = host_line;
     _ = host_font;
@@ -2838,4 +3071,28 @@ test "native pipe lifetime invalidates untracked child output cursor positions" 
 // Keep native editor argument tests in the host test root even when main() is not called.
 test {
     _ = @import("host_editor.zig");
+}
+
+test "interrupted or failed stdin reads do not become EOF" {
+    const saved_eof = stdin_eof;
+    const saved_error = input_failure;
+    const saved_errno = std.c._errno().*;
+    defer {
+        stdin_eof = saved_eof;
+        input_failure = saved_error;
+        std.c._errno().* = saved_errno;
+    }
+    stdin_eof = false;
+    std.c._errno().* = 0;
+    input_failure = error.UserInterrupt;
+    rememberStdinByte(-1);
+    try std.testing.expect(!stdin_eof);
+    input_failure = error.HostFailed;
+    rememberStdinByte(-1);
+    try std.testing.expect(!stdin_eof);
+    input_failure = null;
+    rememberStdinByte(-1);
+    try std.testing.expect(stdin_eof);
+    rememberStdinByte('Q');
+    try std.testing.expect(!stdin_eof);
 }

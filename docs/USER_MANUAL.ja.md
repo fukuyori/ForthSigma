@@ -1508,3 +1508,9 @@ P08レビュー補足：REQUIRE-*の内部読込みは成功・失敗ともNEXTN
 非公開枠・Rootの複製・キー定数を含む組込み数より小さい辞書容量は、必要最小値を示してビルド時に拒否する。起動後の容量不足にはしない。
 
 エディタの起動は、2026-11-17にWindows、Linux（WSL）、macOSで確かめた。WindowsとLinuxでは、`EDIT` と `G` が、記録するだけの代わりのエディタに `+行番号` とファイル名を渡すことを、EDITORの3つの形（PATH上のコマンド、空白を含む引用符付きの実行パス、その後ろにオプションを付けた形）で確かめた。実際のエディタも、引用符付きの実行パスで端末なしで起動し、開いた行を報告させて確かめた（Windowsは `C:\Program Files` 配下のNeovimとGitのvim、Linuxは `/usr/bin/vim`）。したがってWindowsでも、EDITORの先頭を引用符付きの実行パス（Program Files配下など）にできる。対話のプロンプトから `EDIT` を実行してエディタの画面で編集する操作は、macOS（vim）でだけ確かめており、WindowsとLinuxでは未確認。
+
+## 端末表示の拡張
+
+`REQUIRE-EXTENSION ALSO EXTENSION`で読み込みます。`TERM-MODE! ( mask -- ior )`で要求を置き換え、`TERM-MODE@ ( -- mask )`で受理済み要求を取得します。フラグは`TERM-ALT-SCREEN`＝1、`TERM-PASTE`＝2、`TERM-HIDE-CURSOR`＝4、`TERM-MOUSE`＝8です。明示的に戻す場合は`0 TERM-MODE! THROW`を実行します。`COLS ( -- u )`と`ROWS ( -- u )`はFORMと同じ寸法取得・既定値を使います。
+
+stdin/stdoutが端末でVTを利用できることが条件です。POSIXではTERMが未設定・空・dumbの場合も対象外です。非対応の非0要求は-21、不正なmaskは-24、ホスト操作の失敗は-265を返します。Windowsはpasteを除外し、既存の入力レコード方式を維持します。paste/mouse報告の実適用はraw入力時だけですが、getterは受理した要求を保持します。制御列はVMの出力captureへ混ぜません。KEY/ACCEPTは代替画面を維持し、REPL/SYSTEMの間は通常表示へ退避します。未捕捉エラーの診断と通常終了では要求を解除し、CATCHしたTHROWでは維持します。割込みの制約、所有権、OS別の確認範囲は[詳細設計](TERMINAL_CONTROL_DESIGN.md)に記載しています。

@@ -8,11 +8,15 @@ const Builtin = defs.Builtin;
 const RuntimeError = defs.RuntimeError;
 const State = forth.State;
 
-pub const words = [_]Builtin{.host_os};
+pub const words = [_]Builtin{ .host_os, .term_mode_set, .term_mode_get, .terminal_cols, .terminal_rows };
 pub const definitions = [_]struct { []const u8, Builtin }{
     .{ "HOST-OS", .host_os },
+    .{ "TERM-MODE!", .term_mode_set },
+    .{ "TERM-MODE@", .term_mode_get },
+    .{ "COLS", .terminal_cols },
+    .{ "ROWS", .terminal_rows },
 };
-pub const library_words = [_][]const u8{};
+pub const library_words = [_][]const u8{ "TERM-ALT-SCREEN", "TERM-PASTE", "TERM-HIDE-CURSOR", "TERM-MOUSE" };
 pub const library_name = "*extension library*";
 pub const library = @embedFile("../extension/extension.fs");
 pub const group: loading.Group(@TypeOf(definitions[0])) = .{
@@ -41,6 +45,25 @@ pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
             @memcpy(self.memory[at..][0..name.len], name);
             try self.push(map.host_os_buffer_address);
             try self.push(@intCast(name.len));
+        },
+        .term_mode_set => {
+            const mask = try self.peek(0);
+            const ior: map.Cell = if (mask < 0 or mask > 15) -24 else if (self.writer.terminal_mode_set_fn) |callback| callback(self.writer.context, @intCast(mask)) else -21;
+            if (ior == 0) {
+                const accepted = if (self.writer.terminal_mode_get_fn) |get| get(self.writer.context) else @as(u8, @intCast(mask));
+                self.gfx_input.mouse_on = accepted & 8 != 0;
+            }
+            self.data_stack[self.data_depth - 1] = ior;
+        },
+        .term_mode_get => {
+            if (self.data_depth == self.data_stack.len) return error.StackOverflow;
+            const callback = self.writer.terminal_mode_get_fn orelse return error.HostUnavailable;
+            try self.push(callback(self.writer.context));
+        },
+        .terminal_cols, .terminal_rows => {
+            if (self.data_depth == self.data_stack.len) return error.StackOverflow;
+            const size = @import("words_terminal.zig").dimensions(self);
+            try self.push(if (builtin == .terminal_cols) size.columns else size.rows);
         },
         else => @compileError(@tagName(builtin) ++ " is not an extension word"),
     }

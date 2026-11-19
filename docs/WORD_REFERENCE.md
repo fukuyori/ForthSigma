@@ -6,13 +6,13 @@ Each entry has a stack effect and a behavior description based on runtime HELP, 
 
 Coverage assumes the full build. Feature-disabled builds omit their respective words. Load optional vocabularies with REQUIRE before adding them to the search order. Immediate/compile-only flags come from the built-in implementation; syntax forms have their own conditions in their descriptions.
 
-Entries (namespace/name pairs): **1536**. The same name in different vocabularies counts separately.
+Entries (namespace/name pairs): **1544**. The same name in different vocabularies counts separately.
 
 ## Contents
 
 - [AUDIO](#namespace-audio) (73)
 - [EKEYS](#namespace-ekeys) (35)
-- [EXTENSION](#namespace-extension) (1)
+- [EXTENSION](#namespace-extension) (9)
 - [FORTH](#namespace-forth) (958)
 - [GAME](#namespace-game) (59)
 - [GRAPHICS](#namespace-graphics) (222)
@@ -130,7 +130,7 @@ Implementation definition (private helpers may change):
 : ADSR ( attack decay sustain release -- )   SND-ADSR ;
 ```
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1333).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1341).
 
 <a id="w-415544494f3a414d494741"></a>
 
@@ -158,7 +158,7 @@ Implementation definition (private helpers may change):
 16 CONSTANT SCC   32 CONSTANT AMIGA
 ```
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1375).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1383).
 
 <a id="w-415544494f3a414d4947412d46494c544552"></a>
 
@@ -190,7 +190,7 @@ Implementation definition (private helpers may change):
 : AMIGA-FILTER ( flag -- )   SND-AMIGA-FILTER ;
 ```
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1357).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1365).
 
 <a id="w-415544494f3a414d4947412d534f554e44"></a>
 
@@ -222,7 +222,7 @@ Implementation definition (private helpers may change):
 : AMIGA-SOUND ( -- )   5 SND-CHIP ;
 ```
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1356).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1364).
 
 <a id="w-415544494f3a415544494f3f"></a>
 
@@ -254,7 +254,7 @@ Implementation definition (private helpers may change):
 : AUDIO? ( -- flag )   SND-DEVICE ;
 ```
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1315).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1323).
 
 <a id="w-415544494f3a42454550"></a>
 
@@ -286,7 +286,7 @@ Implementation definition (private helpers may change):
 : BEEP ( -- )   SND-BEEP ;
 ```
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1314).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1322).
 
 <a id="w-415544494f3a433634"></a>
 
@@ -314,7 +314,7 @@ Implementation definition (private helpers may change):
 1 CONSTANT MSX   2 CONSTANT ST   4 CONSTANT NES   8 CONSTANT C64
 ```
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1373).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1381).
 
 <a id="w-415544494f3a4336342d534f554e44"></a>
 
@@ -346,7 +346,7 @@ Implementation definition (private helpers may change):
 : C64-SOUND ( -- )   3 SND-CHIP ;
 ```
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1337).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1345).
 
 <a id="w-415544494f3a4348495053"></a>
 
@@ -378,7 +378,7 @@ Implementation definition (private helpers may change):
 : CHIPS ( mask -- )   SND-CHIPS ;
 ```
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1367).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1375).
 
 <a id="w-415544494f3a44555459"></a>
 
@@ -410,7 +410,7 @@ Implementation definition (private helpers may change):
 : DUTY ( percent -- )   SND-DUTY ;
 ```
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1332).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1340).
 
 <a id="w-415544494f3a46494c544552"></a>
 
@@ -442,7 +442,7 @@ Implementation definition (private helpers may change):
 : FILTER ( mode cutoff resonance -- )   SND-FILTER ;
 ```
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1340).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1348).
 
 <a id="w-415544494f3a465245452d53414d504c4553"></a>
 
@@ -474,7 +474,7 @@ Implementation definition (private helpers may change):
 : FREE-SAMPLES ( -- )   SND-FREE-SAMPLES ;
 ```
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1355).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1363).
 
 <a id="w-415544494f3a494e535452554d454e54"></a>
 
@@ -506,7 +506,7 @@ Implementation definition (private helpers may change):
 : INSTRUMENT ( n -- )   SND-INSTRUMENT ;
 ```
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1326).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1334).
 
 <a id="w-415544494f3a4c4f41442d4d4f44"></a>
 
@@ -538,7 +538,7 @@ Implementation definition (private helpers may change):
 : LOAD-MOD ( c-addr u -- )   SND-LOAD-MOD THROW ;
 ```
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1362).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1370).
 
 <a id="w-415544494f3a4c4f41442d53414d504c45"></a>
 
@@ -570,7 +570,7 @@ Implementation definition (private helpers may change):
 : LOAD-SAMPLE ( c-addr u n -- )   SND-LOAD-SAMPLE THROW ;
 ```
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1350).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1358).
 
 <a id="w-415544494f3a4c4f4f502d53414d504c45"></a>
 
@@ -602,7 +602,7 @@ Implementation definition (private helpers may change):
 : LOOP-SAMPLE ( start end n -- )   SND-LOOP-SAMPLE ;
 ```
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1352).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1360).
 
 <a id="w-415544494f3a4d4f443f"></a>
 
@@ -634,7 +634,7 @@ Implementation definition (private helpers may change):
 : MOD? ( -- flag )   SND-MOD-PLAYING ;
 ```
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1365).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1373).
 
 <a id="w-415544494f3a4d5358"></a>
 
@@ -662,7 +662,7 @@ Implementation definition (private helpers may change):
 1 CONSTANT MSX   2 CONSTANT ST   4 CONSTANT NES   8 CONSTANT C64
 ```
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1370).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1378).
 
 <a id="w-415544494f3a4d53582d534f554e44"></a>
 
@@ -694,7 +694,7 @@ Implementation definition (private helpers may change):
 : MSX-SOUND ( -- )   0 SND-CHIP ;
 ```
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1323).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1331).
 
 <a id="w-415544494f3a4e4553"></a>
 
@@ -722,7 +722,7 @@ Implementation definition (private helpers may change):
 1 CONSTANT MSX   2 CONSTANT ST   4 CONSTANT NES   8 CONSTANT C64
 ```
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1372).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1380).
 
 <a id="w-415544494f3a4e45532d534f554e44"></a>
 
@@ -754,7 +754,7 @@ Implementation definition (private helpers may change):
 : NES-SOUND ( -- )   2 SND-CHIP ;
 ```
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1325).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1333).
 
 <a id="w-415544494f3a4e4f495345"></a>
 
@@ -786,7 +786,7 @@ Implementation definition (private helpers may change):
 : NOISE ( -- )   4 SND-WAVE ;
 ```
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1331).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1339).
 
 <a id="w-415544494f3a504c4159"></a>
 
@@ -818,7 +818,7 @@ Implementation definition (private helpers may change):
 : PLAY ( c-addr u -- )   0 0 0 0 SND-PLAY ;
 ```
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1309).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1317).
 
 <a id="w-415544494f3a504c41592d4d4f44"></a>
 
@@ -850,7 +850,7 @@ Implementation definition (private helpers may change):
 : PLAY-MOD ( flag -- )   SND-PLAY-MOD ;
 ```
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1363).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1371).
 
 <a id="w-415544494f3a504c415932"></a>
 
@@ -882,7 +882,7 @@ Implementation definition (private helpers may change):
 : PLAY2 ( c-addr1 u1 c-addr2 u2 -- )   0 0 SND-PLAY ;
 ```
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1310).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1318).
 
 <a id="w-415544494f3a504c415933"></a>
 
@@ -914,7 +914,7 @@ Implementation definition (private helpers may change):
 : PLAY3 ( c-addr1 u1 c-addr2 u2 c-addr3 u3 -- )   SND-PLAY ;
 ```
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1311).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1319).
 
 <a id="w-415544494f3a504c41593f"></a>
 
@@ -946,7 +946,7 @@ Implementation definition (private helpers may change):
 : PLAY? ( n -- flag )   SND-PLAYING ;
 ```
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1312).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1320).
 
 <a id="w-415544494f3a504c415953"></a>
 
@@ -976,7 +976,7 @@ Implementation definition (private helpers may change):
 : PLAYS ( c-addr1 u1 ... c-addrn un n -- )   SND-PLAYS ;
 ```
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1322).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1330).
 
 <a id="w-415544494f3a50554c5345"></a>
 
@@ -1008,7 +1008,7 @@ Implementation definition (private helpers may change):
 : PULSE ( -- )   1 SND-WAVE ;
 ```
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1328).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1336).
 
 <a id="w-415544494f3a52494e47"></a>
 
@@ -1040,7 +1040,7 @@ Implementation definition (private helpers may change):
 : RING ( flag -- )   SND-RING ;
 ```
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1338).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1346).
 
 <a id="w-415544494f3a53414d504c45"></a>
 
@@ -1072,7 +1072,7 @@ Implementation definition (private helpers may change):
 : SAMPLE ( c-addr u rate n -- )   SND-SAMPLE ;
 ```
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1351).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1359).
 
 <a id="w-415544494f3a53414d504c452d494e535452554d454e54"></a>
 
@@ -1104,7 +1104,7 @@ Implementation definition (private helpers may change):
 : SAMPLE-INSTRUMENT ( n -- )   SND-SAMPLE-INSTRUMENT ;
 ```
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1353).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1361).
 
 <a id="w-415544494f3a534157"></a>
 
@@ -1136,7 +1136,7 @@ Implementation definition (private helpers may change):
 : SAW ( -- )   3 SND-WAVE ;
 ```
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1330).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1338).
 
 <a id="w-415544494f3a534343"></a>
 
@@ -1164,7 +1164,7 @@ Implementation definition (private helpers may change):
 16 CONSTANT SCC   32 CONSTANT AMIGA
 ```
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1374).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1382).
 
 <a id="w-415544494f3a5343432d534f554e44"></a>
 
@@ -1196,7 +1196,7 @@ Implementation definition (private helpers may change):
 : SCC-SOUND ( -- )   4 SND-CHIP ;
 ```
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1342).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1350).
 
 <a id="w-415544494f3a5343432d57415645"></a>
 
@@ -1228,7 +1228,7 @@ Implementation definition (private helpers may change):
 : SCC-WAVE ( c-addr n -- )   SND-WAVETABLE ;
 ```
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1376).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1384).
 
 <a id="w-415544494f3a534658"></a>
 
@@ -1260,7 +1260,7 @@ Implementation definition (private helpers may change):
 : SFX ( n -- )   SND-SFX ;
 ```
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1354).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1362).
 
 <a id="w-415544494f3a534e442d41445352"></a>
 
@@ -1286,7 +1286,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1321).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1329).
 
 <a id="w-415544494f3a534e442d414d4947412d46494c544552"></a>
 
@@ -1312,7 +1312,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1348).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1356).
 
 <a id="w-415544494f3a534e442d42454550"></a>
 
@@ -1338,7 +1338,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1306).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1314).
 
 <a id="w-415544494f3a534e442d43484950"></a>
 
@@ -1364,7 +1364,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1317).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1325).
 
 <a id="w-415544494f3a534e442d4348495053"></a>
 
@@ -1390,7 +1390,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1366).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1374).
 
 <a id="w-415544494f3a534e442d444556494345"></a>
 
@@ -1416,7 +1416,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1308).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1316).
 
 <a id="w-415544494f3a534e442d44555459"></a>
 
@@ -1442,7 +1442,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1320).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1328).
 
 <a id="w-415544494f3a534e442d46494c544552"></a>
 
@@ -1468,7 +1468,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1336).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1344).
 
 <a id="w-415544494f3a534e442d465245452d53414d504c4553"></a>
 
@@ -1494,7 +1494,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1349).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1357).
 
 <a id="w-415544494f3a534e442d494e535452554d454e54"></a>
 
@@ -1520,7 +1520,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1318).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1326).
 
 <a id="w-415544494f3a534e442d4c4f41442d4d4f44"></a>
 
@@ -1546,7 +1546,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment. Check the returned ior; zero is success. Passing it to THROW is one option. Use valid logical-memory addresses, lengths and capacities; distinguish owned storage from borrowed lifetimes.
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1358).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1366).
 
 <a id="w-415544494f3a534e442d4c4f41442d53414d504c45"></a>
 
@@ -1572,7 +1572,7 @@ S" b.txt" 6 SND-LOAD-SAMPLE S" missing.txt" 6 SND-LOAD-SAMPLE 0<>
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment. Check the returned ior; zero is success. Passing it to THROW is one option. Use valid logical-memory addresses, lengths and capacities; distinguish owned storage from borrowed lifetimes.
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1343).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1351).
 
 <a id="w-415544494f3a534e442d4c4f4f502d53414d504c45"></a>
 
@@ -1598,7 +1598,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1345).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1353).
 
 <a id="w-415544494f3a534e442d4d4f442d504c4159494e47"></a>
 
@@ -1624,7 +1624,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1361).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1369).
 
 <a id="w-415544494f3a534e442d504c4159"></a>
 
@@ -1650,7 +1650,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment. Use valid logical-memory addresses, lengths and capacities; distinguish owned storage from borrowed lifetimes.
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1304).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1312).
 
 <a id="w-415544494f3a534e442d504c41592d4d4f44"></a>
 
@@ -1676,7 +1676,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1359).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1367).
 
 <a id="w-415544494f3a534e442d504c4159494e47"></a>
 
@@ -1702,7 +1702,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1307).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1315).
 
 <a id="w-415544494f3a534e442d504c415953"></a>
 
@@ -1728,7 +1728,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment. Use valid logical-memory addresses, lengths and capacities; distinguish owned storage from borrowed lifetimes.
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1316).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1324).
 
 <a id="w-415544494f3a534e442d52494e47"></a>
 
@@ -1754,7 +1754,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1334).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1342).
 
 <a id="w-415544494f3a534e442d53414d504c45"></a>
 
@@ -1780,7 +1780,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment. Use valid logical-memory addresses, lengths and capacities; distinguish owned storage from borrowed lifetimes.
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1344).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1352).
 
 <a id="w-415544494f3a534e442d53414d504c452d494e535452554d454e54"></a>
 
@@ -1806,7 +1806,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1346).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1354).
 
 <a id="w-415544494f3a534e442d534658"></a>
 
@@ -1832,7 +1832,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1347).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1355).
 
 <a id="w-415544494f3a534e442d534f554e44"></a>
 
@@ -1858,7 +1858,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1305).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1313).
 
 <a id="w-415544494f3a534e442d53544f502d4d4f44"></a>
 
@@ -1884,7 +1884,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1360).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1368).
 
 <a id="w-415544494f3a534e442d5354594c45"></a>
 
@@ -1910,7 +1910,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1368).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1376).
 
 <a id="w-415544494f3a534e442d53594e43"></a>
 
@@ -1936,7 +1936,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1335).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1343).
 
 <a id="w-415544494f3a534e442d57415645"></a>
 
@@ -1962,7 +1962,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1319).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1327).
 
 <a id="w-415544494f3a534e442d574156455441424c45"></a>
 
@@ -1988,7 +1988,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment. Use valid logical-memory addresses, lengths and capacities; distinguish owned storage from borrowed lifetimes.
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1341).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1349).
 
 <a id="w-415544494f3a534f554e44"></a>
 
@@ -2020,7 +2020,7 @@ Implementation definition (private helpers may change):
 : SOUND ( reg value -- )   SND-SOUND ;
 ```
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1313).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1321).
 
 <a id="w-415544494f3a535155415245"></a>
 
@@ -2052,7 +2052,7 @@ Implementation definition (private helpers may change):
 : SQUARE ( -- )   0 SND-WAVE ;
 ```
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1327).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1335).
 
 <a id="w-415544494f3a5354"></a>
 
@@ -2080,7 +2080,7 @@ Implementation definition (private helpers may change):
 1 CONSTANT MSX   2 CONSTANT ST   4 CONSTANT NES   8 CONSTANT C64
 ```
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1371).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1379).
 
 <a id="w-415544494f3a53542d534f554e44"></a>
 
@@ -2114,7 +2114,7 @@ Implementation definition (private helpers may change):
 : ST-SOUND ( -- )   1 SND-CHIP ;
 ```
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1324).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1332).
 
 <a id="w-415544494f3a53544f502d4d4f44"></a>
 
@@ -2146,7 +2146,7 @@ Implementation definition (private helpers may change):
 : STOP-MOD ( -- )   SND-STOP-MOD ;
 ```
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1364).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1372).
 
 <a id="w-415544494f3a5354594c45"></a>
 
@@ -2178,7 +2178,7 @@ Implementation definition (private helpers may change):
 : STYLE ( chip -- )   SND-STYLE ;
 ```
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1369).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1377).
 
 <a id="w-415544494f3a53594e43"></a>
 
@@ -2212,7 +2212,7 @@ Implementation definition (private helpers may change):
 : SYNC ( flag -- )   SND-SYNC ;
 ```
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1339).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1347).
 
 <a id="w-415544494f3a545249414e474c45"></a>
 
@@ -2244,7 +2244,7 @@ Implementation definition (private helpers may change):
 : TRIANGLE ( -- )   2 SND-WAVE ;
 ```
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1329).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1337).
 
 <a id="namespace-ekeys"></a>
 
@@ -3062,7 +3062,37 @@ Sources: [src/core/standard_keys.zig](../src/core/standard_keys.zig).
 
 ## EXTENSION
 
+- [` COLS `](#w-455854454e53494f4e3a434f4c53)
 - [` HOST-OS `](#w-455854454e53494f4e3a484f53542d4f53)
+- [` ROWS `](#w-455854454e53494f4e3a524f5753)
+- [` TERM-ALT-SCREEN `](#w-455854454e53494f4e3a5445524d2d414c542d53435245454e)
+- [` TERM-HIDE-CURSOR `](#w-455854454e53494f4e3a5445524d2d484944452d435552534f52)
+- [` TERM-MODE! `](#w-455854454e53494f4e3a5445524d2d4d4f444521)
+- [` TERM-MODE@ `](#w-455854454e53494f4e3a5445524d2d4d4f444540)
+- [` TERM-MOUSE `](#w-455854454e53494f4e3a5445524d2d4d4f555345)
+- [` TERM-PASTE `](#w-455854454e53494f4e3a5445524d2d5041535445)
+
+<a id="w-455854454e53494f4e3a434f4c53"></a>
+
+### ` COLS `
+
+` ( -- u ) `
+
+Return FORM column count with the same output target, capture and fallback rules (extension vocabulary).
+
+Kind: builtin.
+
+` REQUIRE-EXTENSION ALSO EXTENSION ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-EXTENSION ALSO EXTENSION COLS . PREVIOUS
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Sources: [src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1305).
 
 <a id="w-455854454e53494f4e3a484f53542d4f53"></a>
 
@@ -3085,6 +3115,192 @@ REQUIRE-EXTENSION ALSO EXTENSION HOST-OS TYPE PREVIOUS
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment. Use valid logical-memory addresses, lengths and capacities; distinguish owned storage from borrowed lifetimes.
 
 Sources: [src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1302).
+
+<a id="w-455854454e53494f4e3a524f5753"></a>
+
+### ` ROWS `
+
+` ( -- u ) `
+
+Return FORM row count with the same output target, capture and fallback rules (extension vocabulary).
+
+Kind: builtin.
+
+` REQUIRE-EXTENSION ALSO EXTENSION ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-EXTENSION ALSO EXTENSION ROWS . PREVIOUS
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Sources: [src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1306).
+
+<a id="w-455854454e53494f4e3a5445524d2d414c542d53435245454e"></a>
+
+### ` TERM-ALT-SCREEN `
+
+` ( -- mask ) `
+
+Push 1, the alternate screen request bit (Sigma extension).
+
+Kind: library.
+
+` REQUIRE-EXTENSION ALSO EXTENSION ` loads the vocabulary and makes it searchable.
+
+Related: [Terminal presentation extension](USER_MANUAL.md#terminal-presentation-extension).
+
+Usage example
+
+```forth
+REQUIRE-EXTENSION ALSO EXTENSION TERM-ALT-SCREEN . PREVIOUS
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+1 CONSTANT TERM-ALT-SCREEN
+```
+
+Sources: [src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1307).
+
+<a id="w-455854454e53494f4e3a5445524d2d484944452d435552534f52"></a>
+
+### ` TERM-HIDE-CURSOR `
+
+` ( -- mask ) `
+
+Push 4, the hidden cursor request bit (Sigma extension).
+
+Kind: library.
+
+` REQUIRE-EXTENSION ALSO EXTENSION ` loads the vocabulary and makes it searchable.
+
+Related: [Terminal presentation extension](USER_MANUAL.md#terminal-presentation-extension).
+
+Usage example
+
+```forth
+REQUIRE-EXTENSION ALSO EXTENSION TERM-HIDE-CURSOR . PREVIOUS
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+4 CONSTANT TERM-HIDE-CURSOR
+```
+
+Sources: [src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1309).
+
+<a id="w-455854454e53494f4e3a5445524d2d4d4f444521"></a>
+
+### ` TERM-MODE! `
+
+` ( mask -- ior ) `
+
+Replace accepted terminal requests (bits 1/2/4/8). 0 succeeds, -24 invalid mask, -21 unavailable, -265 host failure. Windows ignores paste. Raw-only mouse/paste are delayed; existing MOUSE-ON shares the request (Sigma extension).
+
+Kind: builtin.
+
+` REQUIRE-EXTENSION ALSO EXTENSION ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-EXTENSION ALSO EXTENSION 0 TERM-MODE! . PREVIOUS
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment. Check the returned ior; zero is success. Passing it to THROW is one option.
+
+Sources: [src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1303).
+
+<a id="w-455854454e53494f4e3a5445524d2d4d4f444540"></a>
+
+### ` TERM-MODE@ `
+
+` ( -- mask ) `
+
+Return accepted terminal requests, excluding unsupported/uncertain bits, independent of temporary suspension and raw mode. This records accepted requests, not an acknowledgment from the terminal (Sigma extension).
+
+Kind: builtin.
+
+` REQUIRE-EXTENSION ALSO EXTENSION ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-EXTENSION ALSO EXTENSION TERM-MODE@ . PREVIOUS
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Sources: [src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1304).
+
+<a id="w-455854454e53494f4e3a5445524d2d4d4f555345"></a>
+
+### ` TERM-MOUSE `
+
+` ( -- mask ) `
+
+Push 8, the raw mouse reporting request bit, shared with MOUSE-ON/OFF (Sigma extension).
+
+Kind: library.
+
+` REQUIRE-EXTENSION ALSO EXTENSION ` loads the vocabulary and makes it searchable.
+
+Related: [Terminal presentation extension](USER_MANUAL.md#terminal-presentation-extension).
+
+Usage example
+
+```forth
+REQUIRE-EXTENSION ALSO EXTENSION TERM-MOUSE . PREVIOUS
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+8 CONSTANT TERM-MOUSE
+```
+
+Sources: [src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1310).
+
+<a id="w-455854454e53494f4e3a5445524d2d5041535445"></a>
+
+### ` TERM-PASTE `
+
+` ( -- mask ) `
+
+Push 2, the raw bracketed paste request bit. Windows ignores it. POSIX markers are not decoded by this version; event decoding is planned separately (Sigma extension).
+
+Kind: library.
+
+` REQUIRE-EXTENSION ALSO EXTENSION ` loads the vocabulary and makes it searchable.
+
+Related: [Terminal presentation extension](USER_MANUAL.md#terminal-presentation-extension).
+
+Usage example
+
+```forth
+REQUIRE-EXTENSION ALSO EXTENSION TERM-PASTE . PREVIOUS
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+2 CONSTANT TERM-PASTE
+```
+
+Sources: [src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1308).
 
 <a id="namespace-forth"></a>
 
@@ -7859,7 +8075,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 ;
 ```
 
-[Example context](../src/tests/support.zig#L676)
+[Example context](../src/tests/support.zig#L680)
 
 Caution: Compile-only: ordinary interpreted execution is not allowed.
 
@@ -41274,7 +41490,7 @@ REQUIRE-AUDIO
 
 Caution: Follow the operand order in the stack effect. Example names and values depend on their setup.
 
-Sources: [src/core/help_text.zig](../src/core/help_text.zig), [HELP](../src/core/help_text.zig#L1303).
+Sources: [src/core/help_text.zig](../src/core/help_text.zig), [HELP](../src/core/help_text.zig#L1311).
 
 <a id="w-53796e7461783a524551554952452d455854454e53494f4e"></a>
 

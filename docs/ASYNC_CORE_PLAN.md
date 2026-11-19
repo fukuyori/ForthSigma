@@ -48,6 +48,10 @@ Gforthの `fork+exec` は、ソース上でLinux向けの条件の中に定義�
 
 ## 1. ターミナル制御（637）
 
+### 2026-11-19の実装
+
+637を1070仕様・1071実装・1072 Windows/Linux受け入れ・1073 Mac実機へ分割した。[採用した設計](TERMINAL_CONTROL_DESIGN.md)にAPIと失敗・復元・対応条件を記録する。TERM-MODE!/@と4定数、COLS/ROWSはEXTENSIONに置く。getterは受理済み要求で、raw時だけ適用するpaste/mouseと、一時退避している表示も要求として保持する。Windowsの貼り付け除外は維持する。KEY/ACCEPT中はalt/cursorを保ち、REPLとSYSTEMでは表示を退避する。以下は検討時の現状・案の履歴で、採用した仕様は設計文書を優先する。
+
 ### 現状
 
 `host_input.zig` は、`INKEY` や `EKEY` が最初に端末を読んだときにRaw modeへ切り替え、行入力・`KEY`・`SYSTEM`・終了の前に `leave` で戻す。マウスの報告（`ESC [ ? 1003 h` と `1006 h`）の開始と停止、カーソル位置の問合せ（`ESC [ 6 n`）もここにある。Windowsでは、コンソールの入力レコードをここで復号する。VT出力は起動時に有効化している（`src/main.zig`）。

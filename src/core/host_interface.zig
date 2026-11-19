@@ -208,6 +208,11 @@ pub const Writer = struct {
     /// The size of the terminal that output goes to, or null when it is not a terminal
     /// (the graphics words then assume 80 columns and 24 rows).
     terminal_size_fn: ?*const fn (?*anyopaque) ?TerminalSize = null,
+    /// Accepted terminal presentation requests; independent of raw/cooked input.
+    terminal_mode_set_fn: ?*const fn (?*anyopaque, u8) Cell = null,
+    terminal_mode_get_fn: ?*const fn (?*anyopaque) u8 = null,
+    /// Reports a latched failure from legacy nullable input callbacks, once.
+    input_error_fn: ?*const fn (?*anyopaque) RuntimeError!void = null,
     /// Called with true before the graphics words write UTF-8 text to the terminal, and
     /// with false after it, for a host whose terminal needs to be told (a Windows
     /// console with another code page). The output written before the call must have

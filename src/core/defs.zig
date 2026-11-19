@@ -1122,6 +1122,10 @@ pub const Builtin = enum {
     gfx_fullscreen_query,
     gfx_mouse_cursor,
     host_os,
+    term_mode_set,
+    term_mode_get,
+    terminal_cols,
+    terminal_rows,
 };
 
 pub const HeapResult = union(enum) { address: Cell, no_memory, bad_pointer };

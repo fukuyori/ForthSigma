@@ -1,6 +1,7 @@
 # FORTH/Σ for Zig
 
 英語版（正）: [README.md](README.md)。この日本語版は英語版の訳です。内容が異なる場合は英語版に従ってください。
+- [637 端末制御の詳細設計](TERMINAL_CONTROL_DESIGN.md): 表示要求、入力境界、復元、Windows/Linux/Macの確認範囲。
 
 プロジェクト概要、ビルド方法、現状の機能、Forth標準との違い、出典とライセンスは[リポジトリのREADME](../README.ja.md)を参照してください。
 
@@ -16,8 +17,8 @@
 - [実装ノート](IMPLEMENTATION.md): Zig移植版の構成、実装判断、未実装機能
 - [Forth 2012の語の状況](forth2012-word-status.tsv): Forth 2012規格の語の一覧の各項目と、全機能ビルドでの有無（2026-11-17確認。要約はトップのREADME）
 - [サイズ測定・速度比較](SIZE_SPEED_MEASUREMENT.md): 2026-11-17のWindows/Linux実行体サイズとWSLでのGforth 1.0.2比較、生データと再実行手順
-- [本体の機能拡張の全体](CORE_EXTENSION_PLAN.md): 共通基盤・OS判別、TUI・非同期、音と描画、ゲーム表示、タスク制御の範囲、依存関係、段階0〜Eの工程（tque 613、900のホスト統合・自動確認済み、Mac実機確認待ち）。[実装・検証記録](CORE_EXTENSION_IMPLEMENTATION.md)
-- [本体機能拡張の引継ぎ（2026-11-19）](CORE_EXTENSION_HANDOFF_2026-11-19.md): 完了した語群基盤・OS判別、Mac実機の残作業、Git・tque・検証結果、次の637・638
+- [本体の機能拡張の全体](CORE_EXTENSION_PLAN.md): 共通基盤・OS判別、TUI・非同期、音と描画、ゲーム表示、タスク制御の範囲、依存関係、段階0〜Eの工程（tque 613、共通基盤のMac実機まで完了、端末制御637の実機確認は別途）。[実装・検証記録](CORE_EXTENSION_IMPLEMENTATION.md)
+- [本体機能拡張の引継ぎ（2026-11-19）](CORE_EXTENSION_HANDOFF_2026-11-19.md): 共通基盤の完了と端末制御637の進捗、Mac実機1073、Git・tque・検証結果、次工程638
 - [語群基盤とOS判別の設計](EXTENSION_GROUP_DESIGN.md): extensionの選択・読込み、HOST-OS、除外構成・イメージの契約（1056・1036）
 - [保存アプリの起動基盤](SAVED_APPLICATION_STARTUP_PLAN.md): SAVESYS実行体の自動起動・引数・終了・保存整合の計画（1003配下1066）。LOGO本体は外部Forthアプリ
 - [本体の機能拡張の詳細設計](CORE_EXTENSION_DETAILED_DESIGN.md): 本体コア・グラフィックス・サウンド・拡張への配置、API候補、内部構造、所有権、失敗・取消し・復元、検証条件。[判断記録](CORE_EXTENSION_DESIGN_DECISIONS.md)、[State隔離監査表](CORE_EXTENSION_WORKER_STATE_AUDIT.md)

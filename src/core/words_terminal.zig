@@ -21,7 +21,9 @@ fn keyIor(self: *forth.State) forth.RuntimeError!map.Cell {
         break :selected try callback(self.writer.context, id);
     } else if (self.writer.key_ior_fn) |callback| try callback(self.writer.context) else {
         const callback = self.writer.key_fn orelse return error.InputUnavailable;
-        return if (callback(self.writer.context)) |byte| byte else map.ior_errno_base;
+        const byte = callback(self.writer.context);
+        if (self.writer.input_error_fn) |check| try check(self.writer.context);
+        return if (byte) |value| value else map.ior_errno_base;
     };
     if (result.ior != 0) return result.ior;
     return if (result.byte) |byte| byte else map.ior_errno_base;
@@ -49,21 +51,9 @@ pub fn execute(self: *forth.State, comptime word: defs.Builtin) forth.RuntimeErr
         },
         .form => {
             if (self.data_stack.len - self.data_depth < 2) return error.StackOverflow;
-            var rows: map.Cell = 24;
-            var columns: map.Cell = 80;
-            if (self.capture_target != null or self.capture_sink != null) {
-                rows = 1;
-                columns = std.math.maxInt(map.Cell);
-            } else if ((self.output_file orelse map.stdout_fileid) == map.stdout_fileid) {
-                if (self.writer.terminal_size_fn) |callback| if (callback(self.writer.context)) |size| {
-                    if (size.rows != 0 and size.columns != 0) {
-                        rows = size.rows;
-                        columns = size.columns;
-                    }
-                };
-            }
-            try self.push(rows);
-            try self.push(columns);
+            const size = dimensions(self);
+            try self.push(size.rows);
+            try self.push(size.columns);
         },
         .at_deltaxy => {
             try self.requireDepth(2);
@@ -81,4 +71,22 @@ pub fn execute(self: *forth.State, comptime word: defs.Builtin) forth.RuntimeErr
         },
         else => unreachable,
     }
+}
+
+/// Shared FORM/COLS/ROWS output-target and fallback policy.
+pub fn dimensions(self: *forth.State) struct { rows: map.Cell, columns: map.Cell } {
+    var rows: map.Cell = 24;
+    var columns: map.Cell = 80;
+    if (self.capture_target != null or self.capture_sink != null) {
+        rows = 1;
+        columns = std.math.maxInt(map.Cell);
+    } else if ((self.output_file orelse map.stdout_fileid) == map.stdout_fileid) {
+        if (self.writer.terminal_size_fn) |callback| if (callback(self.writer.context)) |size| {
+            if (size.rows != 0 and size.columns != 0) {
+                rows = size.rows;
+                columns = size.columns;
+            }
+        };
+    }
+    return .{ .rows = rows, .columns = columns };
 }

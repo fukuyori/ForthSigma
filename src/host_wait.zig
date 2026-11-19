@@ -20,9 +20,63 @@ const win = struct {
     extern "kernel32" fn SetConsoleMode(*anyopaque, u32) callconv(.winapi) c_int;
     extern "kernel32" fn SetConsoleCtrlHandler(?*const fn (u32) callconv(.winapi) c_int, c_int) callconv(.winapi) c_int;
     extern "kernel32" fn Sleep(u32) callconv(.winapi) void;
+    extern "kernel32" fn GetCurrentThreadId() callconv(.winapi) u32;
+    extern "kernel32" fn OpenThread(u32, c_int, u32) callconv(.winapi) ?*anyopaque;
+    extern "kernel32" fn CloseHandle(*anyopaque) callconv(.winapi) c_int;
+    extern "kernel32" fn CancelSynchronousIo(*anyopaque) callconv(.winapi) c_int;
+    var read_lock = std.atomic.Value(bool).init(false);
+    var read_thread: ?*anyopaque = null;
+    var read_generation: u64 = 0;
+    fn lockRead() void {
+        while (read_lock.swap(true, .acquire)) std.atomic.spinLoopHint();
+    }
+    fn unlockRead() void {
+        read_lock.store(false, .release);
+    }
+    fn beginConsoleRead() base.Error!void {
+        const handle = OpenThread(1, 0, GetCurrentThreadId()) orelse return error.HostFailed;
+        lockRead();
+        defer unlockRead();
+        if (read_thread != null) {
+            _ = CloseHandle(handle);
+            return error.HostFailed;
+        }
+        if (read_generation == std.math.maxInt(u64)) {
+            _ = CloseHandle(handle);
+            return error.HostFailed;
+        }
+        read_generation += 1;
+        read_thread = handle;
+    }
+    fn endConsoleRead() void {
+        lockRead();
+        defer unlockRead();
+        if (read_thread) |handle| {
+            read_thread = null;
+            _ = CloseHandle(handle);
+        }
+    }
+    fn cancelConsoleRead() void {
+        // Retry the small publication-to-ReadConsoleW race. The handle is used
+        // under the same lock as close, and only while a console read owns it.
+        lockRead();
+        const generation = read_generation;
+        unlockRead();
+        for (0..250) |_| {
+            lockRead();
+            const reading = read_thread != null and generation == read_generation;
+            if (reading) {
+                _ = CancelSynchronousIo(read_thread.?);
+            }
+            unlockRead();
+            if (!reading or !accepting_interrupts.load(.acquire)) return;
+            Sleep(1);
+        }
+    }
     fn onControl(event: u32) callconv(.winapi) c_int {
         if (event != 0 or !accepting_interrupts.load(.acquire)) return 0;
         interrupted.store(true, .seq_cst);
+        cancelConsoleRead();
         return 1;
     }
     const Scope = struct {
@@ -190,6 +244,49 @@ fn finishNative(broker: *signal_broker.Broker, ticket: signal_broker.Ticket) bas
     };
 }
 
+// Nested cooked input on the host thread shares one interrupt-only native scope.
+var input_depth: u32 = 0;
+var input_ticket: ?signal_broker.Ticket = null;
+pub fn beginInput() base.Error!void {
+    if (input_depth == std.math.maxInt(u32)) return error.HostFailed;
+    if (input_depth == 0) input_ticket = try beginNative(&signal_broker.fallback, false);
+    input_depth += 1;
+}
+pub fn inputInterrupted() bool {
+    return input_depth != 0 and interrupted.load(.seq_cst);
+}
+pub fn endInput() forth.RuntimeError!void {
+    if (input_depth == 0) return error.HostFailed;
+    input_depth -= 1;
+    if (input_depth != 0) return;
+    const ticket = input_ticket orelse return error.HostFailed;
+    input_ticket = null;
+    try finishNative(&signal_broker.fallback, ticket);
+    if (interrupted.swap(false, .acq_rel)) return error.UserInterrupt;
+}
+
+/// An interrupt-only input scope can cancel synchronous ReadConsoleW without
+/// switching the console to VT/raw input or losing its line editor.
+pub fn beginConsoleRead() base.Error!void {
+    if (is_windows and input_depth != 0) try win.beginConsoleRead();
+}
+pub fn endConsoleRead() void {
+    if (is_windows and input_depth != 0) win.endConsoleRead();
+}
+/// Native Ctrl+C may complete ReadConsoleW before its handler thread runs.
+/// Keep the scope installed briefly so a zero-length read is not made into EOF.
+pub fn awaitConsoleInterrupt() bool {
+    if (!is_windows or input_depth == 0) return false;
+    for (0..100) |_| {
+        if (inputInterrupted()) return true;
+        win.Sleep(1);
+    }
+    return inputInterrupted();
+}
+pub fn inputGuardActive() bool {
+    return input_depth != 0;
+}
+
 fn now() forth.RuntimeError!forth.Double {
     return clock.now();
 }
@@ -346,4 +443,22 @@ test "a superseded terminal snapshot is discarded without reapplying raw mode" {
     } else {
         try std.testing.expect(saved.scope.?.terminal == null);
     }
+}
+test "nested cooked input shares its ticket and excludes other runtime scopes" {
+    const saved_input = input.input_is_terminal;
+    input.input_is_terminal = false;
+    defer input.input_is_terminal = saved_input;
+    var runtime = try host_runtime.Runtime.init();
+    defer runtime.deinit() catch unreachable;
+    try beginInput();
+    defer if (input_depth != 0) endInput() catch unreachable;
+    const ticket = input_ticket.?;
+    try beginInput();
+    try std.testing.expectEqual(ticket, input_ticket.?);
+    try std.testing.expectError(error.HostFailed, waitWithRuntime(&runtime, 1));
+    try endInput();
+    try std.testing.expect(input_ticket != null);
+    try endInput();
+    try std.testing.expect(input_ticket == null);
+    try waitWithRuntime(&runtime, 1);
 }

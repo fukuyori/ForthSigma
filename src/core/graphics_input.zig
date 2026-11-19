@@ -473,7 +473,9 @@ fn readInput(self: *State, until_key: bool) RuntimeError!void {
     var first = true;
     while (first or !(until_key and input.key_count != 0)) {
         first = false;
-        const event = input_fn(self.writer.context) orelse break;
+        const next_event = input_fn(self.writer.context);
+        if (self.writer.input_error_fn) |check| try check(self.writer.context);
+        const event = next_event orelse break;
         switch (event) {
             .byte => |byte| {
                 // A sequence that waited too long ends before the new byte.
@@ -573,7 +575,8 @@ pub fn mouseState(self: *State) RuntimeError![3]Cell {
 }
 
 /// MOUSE-ON and MOUSE-OFF.
-pub fn setMouse(self: *State, on: bool) void {
-    self.gfx_input.mouse_on = on;
+pub fn setMouse(self: *State, on: bool) RuntimeError!void {
     if (self.writer.mouse_fn) |mouse_fn| mouse_fn(self.writer.context, on);
+    if (self.writer.input_error_fn) |check| try check(self.writer.context);
+    self.gfx_input.mouse_on = on;
 }

@@ -333,3 +333,9 @@ P09レビュー対応：生存中のEXCEPTION(S)レコードを切り詰める�
 新しいBuiltin追加でイメージABI署名が変わります。機能を除いた実行体は、追加組込み語・直接組込みOpに除外した語が含まれるイメージを読込み前にInvalidImageで拒否します。以前audio/graphics除外でも読めたイメージに対する制限の追加です。生のxt値に対する実行時の防御は維持します。
 
 イメージの機能検査は追加した組込み語と直接builtin Opを対象とする。起動時から予約されている基本辞書の欄への通常の呼出しは従来どおり読込みを許し、除外語の実行時にINVALID EXECUTION TOKENとなる。生のxtをデータとして保存する場合とは別の制約である。
+
+## 端末表示の拡張
+
+`REQUIRE-EXTENSION ALSO EXTENSION`で読み込みます。`TERM-MODE! ( mask -- ior )`で要求を置き換え、`TERM-MODE@ ( -- mask )`で受理済み要求を取得します。フラグは`TERM-ALT-SCREEN`＝1、`TERM-PASTE`＝2、`TERM-HIDE-CURSOR`＝4、`TERM-MOUSE`＝8です。明示的に戻す場合は`0 TERM-MODE! THROW`を実行します。`COLS ( -- u )`と`ROWS ( -- u )`はFORMと同じ寸法取得・既定値を使います。
+
+stdin/stdoutが端末でVTを利用できることが条件です。POSIXではTERMが未設定・空・dumbの場合も対象外です。非対応の非0要求は-21、不正なmaskは-24、ホスト操作の失敗は-265を返します。Windowsはpasteを除外し、既存の入力レコード方式を維持します。paste/mouse報告の実適用はraw入力時だけですが、getterは受理した要求を保持します。制御列はVMの出力captureへ混ぜません。KEY/ACCEPTは代替画面を維持し、REPL/SYSTEMの間は通常表示へ退避します。未捕捉エラーの診断と通常終了では要求を解除し、CATCHしたTHROWでは維持します。割込みの制約、所有権、OS別の確認範囲は[詳細設計](TERMINAL_CONTROL_DESIGN.md)に記載しています。

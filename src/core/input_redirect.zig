@@ -58,14 +58,18 @@ pub fn ready(self: *forth.State) forth.RuntimeError!bool {
         if (result.ior != 0) return self.throwCode(result.ior);
         return result.value != 0;
     }
-    return self.pending_key != null or self.pending_event_count != 0 or if (self.writer.key_ready_fn) |callback| callback(self.writer.context) else false;
+    const result = self.pending_key != null or self.pending_event_count != 0 or if (self.writer.key_ready_fn) |callback| callback(self.writer.context) else false;
+    if (self.writer.input_error_fn) |check| try check(self.writer.context);
+    return result;
 }
 
 /// Preserve Sigma's line-read/clip behavior; drain the complete physical line.
 pub fn line(self: *forth.State, buffer: []u8) forth.RuntimeError!?[]const u8 {
     if (selected(self) == null) {
         const callback = self.writer.read_fn orelse return null;
-        return callback(self.writer.context, buffer);
+        const result = callback(self.writer.context, buffer);
+        if (self.writer.input_error_fn) |check| try check(self.writer.context);
+        return result;
     }
     var length: usize = 0;
     var found = false;

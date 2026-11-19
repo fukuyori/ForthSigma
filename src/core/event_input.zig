@@ -26,10 +26,14 @@ fn next(self: *forth.State, timeout: i32) forth.RuntimeError!?Cell {
     if (self.writer.event_key_fn) |callback| return callback(self.writer.context, timeout);
     if (timeout >= 0) {
         const poll_key = self.writer.key_ready_fn orelse return null;
-        if (!poll_key(self.writer.context)) return null;
+        const ready_key = poll_key(self.writer.context);
+        if (self.writer.input_error_fn) |check| try check(self.writer.context);
+        if (!ready_key) return null;
     }
     const callback = self.writer.key_fn orelse return null;
-    return @as(Cell, callback(self.writer.context) orelse return null);
+    const byte = callback(self.writer.context);
+    if (self.writer.input_error_fn) |check| try check(self.writer.context);
+    return @as(Cell, byte orelse return null);
 }
 
 fn unread(self: *forth.State, bytes: []const u8) forth.RuntimeError!void {

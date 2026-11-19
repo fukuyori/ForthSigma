@@ -1,6 +1,7 @@
 # FORTH/Σ for Zig
 
 Japanese version: [README.ja.md](README.ja.md). This English version is the primary one.
+- [637 端末制御の詳細設計](TERMINAL_CONTROL_DESIGN.md): 表示要求、入力境界、復元、Windows/Linux/Macの確認範囲。
 
 For the project overview, how to build, the current features, the differences from standard Forth, and the sources and the license, see the [README of the repository](../README.md).
 
@@ -16,8 +17,8 @@ For the project overview, how to build, the current features, the differences fr
 - [Implementation notes](IMPLEMENTATION.md): the structure of the Zig port, implementation decisions, features not implemented
 - [Forth 2012 word status](forth2012-word-status.tsv): each glossary entry of the Forth 2012 standard and whether the full build provides it (checked 2026-11-17; summary in the top-level README)
 - [Size and speed measurements](SIZE_SPEED_MEASUREMENT.md): 2026-11-17 Windows/Linux executable sizes and WSL comparisons with Gforth 1.0.2, including raw samples (in Japanese)
-- [Extending the core: the whole plan](CORE_EXTENSION_PLAN.md): shared infrastructure and OS identification, TUI and async I/O, sound and drawing, game display, task control, dependencies, and stages 0–E (tque 613; host integration and automated acceptance for 900 completed, native Mac acceptance pending). [Implementation and validation log](CORE_EXTENSION_IMPLEMENTATION.md) (in Japanese)
-- [Core extension handoff (2026-11-19)](CORE_EXTENSION_HANDOFF_2026-11-19.md): completed word groups/OS identification, pending native Mac acceptance, Git/tque state, validation, and next tasks 637/638 (in Japanese)
+- [Extending the core: the whole plan](CORE_EXTENSION_PLAN.md): shared infrastructure and OS identification, TUI and async I/O, sound and drawing, game display, task control, dependencies, and stages 0–E (tque 613; common foundation accepted on Mac, with separate native terminal acceptance pending). [Implementation and validation log](CORE_EXTENSION_IMPLEMENTATION.md) (in Japanese)
+- [Core extension handoff (2026-11-19)](CORE_EXTENSION_HANDOFF_2026-11-19.md): completed common foundation and terminal-control progress, pending terminal Mac acceptance 1073, Git/tque state, validation, and next task 638 (in Japanese)
 - [Word groups and OS identification](EXTENSION_GROUP_DESIGN.md): extension selection/loading, HOST-OS, excluded builds, and image contracts (1056/1036; in Japanese)
 - [Saved application startup plan](SAVED_APPLICATION_STARTUP_PLAN.md): SAVESYS startup, application arguments, lifecycle, image integration and acceptance (1066 under 1003). LOGO remains an external Forth application (in Japanese)
 - [Core extension detailed design](CORE_EXTENSION_DETAILED_DESIGN.md): allocation to the core and optional word groups, proposed APIs, internal structure, ownership, failure, cancellation, restore, and validation. [Design decisions](CORE_EXTENSION_DESIGN_DECISIONS.md), [State isolation audit](CORE_EXTENSION_WORKER_STATE_AUDIT.md) (in Japanese; proposals, not implemented)

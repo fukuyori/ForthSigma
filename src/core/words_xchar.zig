@@ -130,7 +130,9 @@ fn nextKey(self: *State) RuntimeError!u8 {
     }
     if (@import("input_redirect.zig").selected(self) != null) return (try @import("input_redirect.zig").byte(self)) orelse error.InputUnavailable;
     const key_fn = self.writer.key_fn orelse return error.InputUnavailable;
-    return key_fn(self.writer.context) orelse error.InputUnavailable;
+    const byte = key_fn(self.writer.context);
+    if (self.writer.input_error_fn) |check| try check(self.writer.context);
+    return byte orelse error.InputUnavailable;
 }
 
 /// KEY, which gives first the byte XKEY left.
@@ -152,7 +154,7 @@ fn xkey(self: *State) RuntimeError!u21 {
     var length: usize = 1;
     while (length <= more) : (length += 1) {
         const byte = nextKey(self) catch |err| {
-            if (@import("input_redirect.zig").selected(self) != null and err != error.InputUnavailable) return err;
+            if (err != error.InputUnavailable) return err;
             break;
         };
         if (byte & 0xC0 != 0x80) {

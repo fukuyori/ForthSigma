@@ -1321,3 +1321,11 @@ GRAPHICS:(AUTO-SHOW-TK)	選択済みTkへ表示します。ホストエラー時
 GRAPHICS:(AUTO-SHOW)	自動表示のランタイム状態に従って表示し、未選択なら候補を順に試します。内部語です。
 REQUIRE-EXTENSION	拡張語群をEXTENSION語彙へ初回だけ読み込みます。利用時はALSO EXTENSIONで検索順に加えます。音・描画の語群は不要です。除外ビルドでは未定義語（-13）です。
 EXTENSION:HOST-OS	実行体の対象OS系列を小文字ASCII文字列で返します。windows・linux（WSLやAndroidを含む）・macos・その他はunknownです。論理メモリー上の借用領域を毎回書き直します。次のHOST-OSまたはイメージ復元まで有効で、書き換えは禁止です。保持する場合はコピーしてください。 値が増える場合があるため、未知の文字列はunknownと同じく扱ってください。
+EXTENSION:TERM-MODE!	端末の表示要求をmask全体で置き換えます。1は代替画面、2は貼り付け報告、4はカーソル非表示、8はマウス報告です。0成功、-24は不正mask、-21は非対応、-265はホスト障害。Windowsは貼り付けを無視します。報告はraw時だけ有効で、既存MOUSE-ON/OFFの要求も置き換えます。
+EXTENSION:TERM-MODE@	ホストが受理した端末の要求を返します。非対応と成否不明のビットは除外し、raw状態や一時退避では値を変えません。端末からの肯定応答や対応機能の実在を確認した値ではありません。
+EXTENSION:COLS	FORMと同じ出力先・取得・既定値の規則で列数を返します。capture中は最大正セル値です。EXTENSION語彙に置きます。
+EXTENSION:ROWS	FORMと同じ出力先・取得・既定値の規則で行数を返します。capture中は1です。EXTENSION語彙に置きます。
+EXTENSION:TERM-ALT-SCREEN	代替画面を要求するビット1を返します。
+EXTENSION:TERM-PASTE	raw時の貼り付け報告を要求するビット2を返します。Windowsは無視します。この版で貼り付け境界をイベントとして解釈する機能は含まず、638で別に扱います。
+EXTENSION:TERM-HIDE-CURSOR	カーソル非表示を要求するビット4を返します。
+EXTENSION:TERM-MOUSE	raw時のマウス報告を要求するビット8を返します。MOUSE-ON/OFFと同じ要求を共有します。

@@ -333,3 +333,9 @@ The following startup words are implemented. Entries are grouped by the validate
 The new Builtin changes the image ABI signature. A receiving build rejects images containing excluded appended builtins or direct builtin operations with InvalidImage before installation. This tightens the earlier behavior for audio/graphics images, which could previously load in excluded builds. Runtime defenses for raw xt values remain.
 
 Image feature checks cover appended builtin words and direct builtin operations. Ordinary calls to reserved base dictionary slots retain the earlier behavior: loading succeeds and executing an excluded base word raises INVALID EXECUTION TOKEN. This is separate from data holding a raw xt value.
+
+## Terminal presentation extension
+
+Load with `REQUIRE-EXTENSION ALSO EXTENSION`. `TERM-MODE! ( mask -- ior )` replaces the request; `TERM-MODE@ ( -- mask )` reads the accepted request. Flags: `TERM-ALT-SCREEN` = 1, `TERM-PASTE` = 2, `TERM-HIDE-CURSOR` = 4, `TERM-MOUSE` = 8. Use `0 TERM-MODE! THROW` to restore presentation explicitly. `COLS ( -- u )` and `ROWS ( -- u )` share FORM's dimensions and fallback rules.
+
+Presentation needs terminal stdin/stdout and VT support; POSIX also needs a nonempty TERM other than dumb. An unsupported nonzero request returns -21, an invalid mask -24, and a host failure -265. Windows ignores paste and retains native input records. Paste/mouse reports run only during raw input; the getter still retains their accepted requests. Controls bypass VM output capture. KEY/ACCEPT retain the alternate screen; REPL and SYSTEM temporarily restore normal presentation. Uncaught diagnostics and normal termination clear requests. Caught THROW retains them. See [the detailed design](TERMINAL_CONTROL_DESIGN.md) for interruption limits, ownership and platform acceptance.
