@@ -63,6 +63,9 @@ test "resize notification coalesces and restores the previous SIGWINCH dispositi
     var after = std.mem.zeroes(std.c.Sigaction);
     try std.testing.expectEqual(@as(c_int, 0), std.c.sigaction(.WINCH, null, &after));
     try std.testing.expectEqual(before.handler.handler, after.handler.handler);
-    try std.testing.expectEqual(before.flags, after.flags);
+    // Linux libc supplies a sigreturn trampoline even when restoring SIG_DFL.
+    // musl sigaction.c ORs SA_RESTORER; this ABI bit is not a disposition change.
+    const restorer: @TypeOf(before.flags) = if (@hasDecl(std.c.SA, "RESTORER")) std.c.SA.RESTORER else 0;
+    try std.testing.expectEqual(before.flags & ~restorer, after.flags & ~restorer);
     try std.testing.expectEqualSlices(u8, std.mem.asBytes(&before.mask), std.mem.asBytes(&after.mask));
 }

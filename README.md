@@ -318,3 +318,9 @@ The MIT License covers the program code and documentation made in this project. 
 ## License
 
 The code and documentation made in the project are provided under the [MIT License](https://github.com/fukuyori/ForthSigma/blob/main/LICENSE). The floating-point math functions (`FSIN` `FEXP` `FASIN` `F**` and others) use the code of CORE-MATH (MIT License, `src/core-math/`) and, on CPUs without an FMA instruction, musl's `fma` (MIT License, `src/fma/`). On Linux, `SYSTEM-FONT` reads font files with stb_truetype (MIT License, `src/stb/`). The copyright notices are in [THIRD_PARTY_NOTICES.md](https://github.com/fukuyori/ForthSigma/blob/main/THIRD_PARTY_NOTICES.md). For the handling of third-party material, see "Scope of the sources and the license" above.
+
+## Standard event waiting
+
+`REQUIRE-EXTENSION ALSO EXTENSION` provides `EKEY-WAIT ( ms -- event flag ior )` and `EKEY-MOUSE ( -- column row buttons wheel )`. A timeout returns `0 false 0`; EOF returns `K-EOF true 0`. Zero polls, negative waits indefinitely. Partial UTF-8/ESC survives timeouts. `K-MOUSE`, `K-PASTE-BEGIN`, and `K-PASTE-END` are standard noncharacter events. Mouse metadata changes only on consumption. Paste content preserves control bytes; switching to byte/GRAPHICS input ends paste interpretation. On standard stdin, `EKEY?` peeks complete events without committing mouse or paste state. Audio/graphics are independent. A custom embedded host needs the new typed source and Clock callbacks for EKEY-WAIT; legacy EKEY callbacks remain supported. See [the event design](docs/EVENT_QUEUE_DESIGN.md) for ordering, errors, selected-file behavior and platform validation.
+
+EKEY-WAIT targets standard stdin, including redirected stdin. A non-stdin INFILE-EXECUTE selection throws -21 before consuming input; existing file EKEY/EKEY? behavior is retained. Per-file timed waits and persistent buffering are tracked in 639/1078.

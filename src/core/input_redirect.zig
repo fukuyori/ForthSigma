@@ -2,7 +2,7 @@
 const forth = @import("../forth.zig");
 const map = @import("memory_map.zig");
 
-pub fn selected(self: *forth.State) ?forth.Cell {
+pub fn selected(self: *const forth.State) ?forth.Cell {
     const id = self.input_file orelse return null;
     return if (id == map.stdin_fileid) null else id;
 }
@@ -14,27 +14,35 @@ pub fn run(self: *forth.State) forth.RuntimeError!void {
     _ = try self.fileOps();
     const previous = self.input_file;
     const changed = id != (previous orelse map.stdin_fileid);
-    const pending = self.pending_key;
-    const events = self.pending_event_bytes;
-    const count = self.pending_event_count;
-    const event = self.pending_standard_event;
+    const pending = capturePending(self);
+    const leaving_stdin = changed and (previous orelse map.stdin_fileid) == map.stdin_fileid;
+    const entering_stdin = changed and id == map.stdin_fileid;
+    if (leaving_stdin) self.standard_input.legacy = pending;
     self.input_file = id;
     if (changed) {
-        self.pending_key = null;
-        self.pending_event_count = 0;
-        self.pending_standard_event = null;
+        applyPending(self, if (entering_stdin) self.standard_input.legacy else .{});
+        if (entering_stdin) self.standard_input.legacy = .{};
     }
     defer {
+        if (entering_stdin) self.standard_input.legacy = capturePending(self);
         self.input_file = previous;
         if (changed) {
-            self.pending_key = pending;
-            self.pending_event_bytes = events;
-            self.pending_event_count = count;
-            self.pending_standard_event = event;
+            applyPending(self, if (leaving_stdin) self.standard_input.legacy else pending);
+            if (leaving_stdin) self.standard_input.legacy = .{};
         }
     }
     self.data_depth -= 2;
     try self.executeWord(xt);
+}
+
+fn capturePending(self: *forth.State) @import("standard_event.zig").Legacy {
+    return .{ .key = self.pending_key, .bytes = self.pending_event_bytes, .count = self.pending_event_count, .event = self.pending_standard_event };
+}
+fn applyPending(self: *forth.State, pending: @import("standard_event.zig").Legacy) void {
+    self.pending_key = pending.key;
+    self.pending_event_bytes = pending.bytes;
+    self.pending_event_count = pending.count;
+    self.pending_standard_event = pending.event;
 }
 
 pub fn byte(self: *forth.State) forth.RuntimeError!?u8 {
@@ -58,13 +66,40 @@ pub fn ready(self: *forth.State) forth.RuntimeError!bool {
         if (result.ior != 0) return self.throwCode(result.ior);
         return result.value != 0;
     }
-    const result = self.pending_key != null or self.pending_event_count != 0 or if (self.writer.key_ready_fn) |callback| callback(self.writer.context) else false;
+    const result = self.pending_key != null or self.pending_event_count != 0 or self.standard_input.length != 0 or if (self.writer.key_ready_fn) |callback| callback(self.writer.context) else false;
     if (self.writer.input_error_fn) |check| try check(self.writer.context);
     return result;
 }
 
 /// Preserve Sigma's line-read/clip behavior; drain the complete physical line.
 pub fn line(self: *forth.State, buffer: []u8) forth.RuntimeError!?[]const u8 {
+    try @import("event_input.zig").beforeBytes(self);
+    if (selected(self) == null and (self.standard_input.length != 0 or self.pending_key != null or self.pending_event_count != 0)) {
+        if (self.writer.key_fn == null) return error.HostUnavailable;
+        var length: usize = 0;
+        var found = false;
+        while (true) {
+            const value = @import("words_xchar.zig").key(self) catch |err| switch (err) {
+                error.InputUnavailable => break,
+                else => return err,
+            };
+            found = true;
+            if (value == '\n') break;
+            if (value == '\r') {
+                if (self.pending_key != null or self.pending_event_count != 0 or self.standard_input.length != 0 or try ready(self)) {
+                    if (@import("words_xchar.zig").key(self)) |next| {
+                        if (next != '\n') try @import("event_input.zig").unreadByte(self, next);
+                    } else |err| if (err != error.InputUnavailable) return err;
+                }
+                break;
+            }
+            if (length < buffer.len) {
+                buffer[length] = value;
+                length += 1;
+            }
+        }
+        return if (found) buffer[0..length] else null;
+    }
     if (selected(self) == null) {
         const callback = self.writer.read_fn orelse return null;
         const result = callback(self.writer.context, buffer);

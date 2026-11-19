@@ -87,6 +87,9 @@ Gforthの `fork+exec` は、ソース上でLinux向けの条件の中に定義�
 
 ## 2. イベントキュー（638）
 
+2026-11-19、1074仕様・1075実装・1076 Windows/Linux・1077 Mac実機へ分割した。[採用した設計](EVENT_QUEUE_DESIGN.md)に固定3セルのEKEY-WAIT、マウス付随情報、貼付け、期限と入力切替を記載する。以下は検討時の履歴で、採用仕様は詳細設計を優先する。
+
+
 ### 現状
 
 `EKEY` はすでに、キー、修飾キー（`K-SHIFT-MASK` など）、端末の大きさの変更（`K-WINCH`）を1つのセルで返す。`event_input.zig` の内部の読取りは待ち時間の引数を持っているが、時間を指定して待つ語はない。マウスはGRAPHICSの `MOUSE-EVENT` と `INKEY` の側にあり、`EKEY` には来ない。`EKEY` と `INKEY` はどちらも `host_input.zig` から読む。Raw modeを出るとき、標準入力の経路（`standard_keyboard`）で読んでいた場合は読み残しを保ち、そうでない場合は捨てる（`src/host_input.zig:146`、219、375〜376）。

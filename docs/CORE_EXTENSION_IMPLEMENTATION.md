@@ -1,5 +1,34 @@
 # 613 実装・検証の記録
 
+## 2026-11-19：638 イベントキュー（1074〜1077）
+
+基点は`e66c701 Record Mac acceptance for terminal controls`。今回のコード・設計・レビュー記録は、この文書と同じコミットに含む。1074〜1076は完了、638はauto75%、1077 Mac実機は未着手。
+
+EXTENSIONへEKEY-WAIT、EKEY-MOUSE、K-MOUSE/K-PASTE-BEGIN/K-PASTE-ENDを追加した。coreに純粋な逐次Decoderと一つのstdin状態、ホストに型付き入力・共通Clock・checked pushbackを置く。EKEY/EKEY?は既存の所属を維持し、旧埋込みの操作口も残した。部分UTF8/ESC、先読み、native通知、paste、EOF、別入力APIへの切替を共有する。[設計](EVENT_QUEUE_DESIGN.md)。
+
+Claude Codeへ設計・実装・ファイル対応範囲・複数の再レビューを依頼し、最後は固定スナップショットで押し戻しとEOFの順序を確認した。原文と採否を[レビュー評価](reviews/638-review-response.md)へ分けて保存した。新しいEKEY-WAITはstdin専用と確定し、選択ファイルの期限待機・ハンドルごとの保留を639配下1078へ追加した。既存ファイルEKEY/EKEY?の動作を維持する。
+
+| 確認 | 結果と証拠 |
+|---|---|
+| Windows全体 | `zig build test --summary all` 23/23成功。core1050成功・8skip、host96成功・11skip、runtime15成功済みキャッシュ。Cortex-M0+ freestandingも成功。`.work/638-review/release-candidate-tests.log` |
+| Windows実行体 | debugビルド10/10成功。`.work/638-windows/bin/sigma.exe`、`.work/638-review/release-candidate-native.log` |
+| Windows新規入力 | 独立コンソールとpipeで5ケース。期限、native mouseの修飾/先読み、空pipe EOF、ESC/UTF8途中のEOFとbyte API切替。`.work/event-queue/windows/result.json`、`.work/638-review/release-candidate-windows.log` |
+| Windows既存回帰 | 入力レコード36ケース、637の8ケース、ConPTY Ctrl+C後の次KEYが成功。`.work/windows-console.json`、`.work/terminal-modes/windows/result.json`、`conpty.json` |
+| Linuxビルド・実行 | musl向けcore/host/runtimeの16/16ステップ成功。WSL実行でcore1050成功・8skip、host108成功・5skip、runtime15成功。`.work/638-review/release-candidate-linux-build.log`、`release-candidate-linux-execution.log` |
+| Linux実行体 | ReleaseFastを12/12ステップでビルド。UTF8のbyte変換を既存のunsigned経由へそろえ、実行試験を通した。`.work/638-linux/bin/sigma` |
+| Linux新規PTY/pipe | 15ケース成功。全体期限・分割UTF8/ESC、paste内外のCtrl+C、mouse先読み、KEY/ACCEPT/INKEY/STDIN file APIへの切替、32byte押戻し、EOF順序。`.work/event-queue/posix.json` |
+| Linux既存回帰 | 637 PTY13ケース、NS sigma-only pass=true（期限8、範囲1、redirect2、signal2、PTY5）。`.work/terminal-modes/posix.json`、`.work/p05b-ns-check/sigma-only.json` |
+| Mac向けコンパイル | aarch64-macos、audio/graphics/float除外のcore/host/runtimeで14/14成功。実行確認ではない。`.work/638-review/release-candidate-macos-build.log` |
+| 英日HELP・語参照 | 1549項目、HELP1335、EKEYSの既存35値一致、実辞書に欠落なし。例28・個別例149成功。`.work/638-review/release-candidate-word-reference.log` |
+| 3語群・除外構成 | 最終コードの12/12構成でtestとビルド成功、除外イメージの拒否・既存辞書保持も成功。matrix.jsonのsource_sha256が現在のbuild.zig/srcと一致。`.work/638-review/release-candidate-matrix.log` |
+
+LinuxでSIGWINCHの既存復元試験も実行対象となり、muslが付加するSA_RESTORERとの差を確認した。使用中のZig同梱muslソースでABIフラグの付加を確認し、そのビットだけを比較から除外した。ハンドラー、マスク、他のフラグは比較する。
+
+WindowsでEOF直前のESC[をpeekしたあとKEYへ切り替えると、`ESC → EOF → [`になる不具合を再現した。成功したpushbackごとにcoreのEOFキャッシュを解除し、ストリーム終端はホストが再通知する契約にそろえて、`ESC → [ → EOF`と途中UTF8の両方を実行試験へ追加した。checked拒否・旧void受理後のエラー・旧pendingとのXYZ順序・入れ子stdin・イメージ復元等は19件の新規core試験で確認した。
+
+実物キーボード・実端末エミュレーターの表示、OS APIの任意失敗注入、Mac実行は未確認。差替えcallbackで拒否・エラーの保持を確認した。新しい待機は複数入力源やワーカーを追加せず、stdinの同時利用者は一つとする。入力スコープ外のOSシグナル・強制終了の制約は637と共通。LOGO言語機能や保存アプリ起動1067〜1069の実装は含まない。
+
+
 ## 2026-11-19：637 ターミナル制御（1070〜1073）
 
 基点は`b4af2fb Record Mac acceptance for core extension`。本節の実装・設計・レビュー記録は、この文書と同じコミットに含む。tqueの1070〜1073と637は完了。1073は`15a7cd82a4fef36ff4bcda4357d4ccd21d8b0e50`をmacOS 27.2.1 Build 26B131（Darwin 27.2.0、arm64）、Zig 0.17.1、Python 3で実機ビルド・実行した。開始時の作業ツリーはクリーン。

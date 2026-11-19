@@ -8,15 +8,17 @@ const Builtin = defs.Builtin;
 const RuntimeError = defs.RuntimeError;
 const State = forth.State;
 
-pub const words = [_]Builtin{ .host_os, .term_mode_set, .term_mode_get, .terminal_cols, .terminal_rows };
+pub const words = [_]Builtin{ .host_os, .term_mode_set, .term_mode_get, .terminal_cols, .terminal_rows, .ekey_wait, .ekey_mouse };
 pub const definitions = [_]struct { []const u8, Builtin }{
     .{ "HOST-OS", .host_os },
     .{ "TERM-MODE!", .term_mode_set },
     .{ "TERM-MODE@", .term_mode_get },
     .{ "COLS", .terminal_cols },
     .{ "ROWS", .terminal_rows },
+    .{ "EKEY-WAIT", .ekey_wait },
+    .{ "EKEY-MOUSE", .ekey_mouse },
 };
-pub const library_words = [_][]const u8{ "TERM-ALT-SCREEN", "TERM-PASTE", "TERM-HIDE-CURSOR", "TERM-MOUSE" };
+pub const library_words = [_][]const u8{ "TERM-ALT-SCREEN", "TERM-PASTE", "TERM-HIDE-CURSOR", "TERM-MOUSE", "K-MOUSE", "K-PASTE-BEGIN", "K-PASTE-END" };
 pub const library_name = "*extension library*";
 pub const library = @embedFile("../extension/extension.fs");
 pub const group: loading.Group(@TypeOf(definitions[0])) = .{
@@ -52,6 +54,8 @@ pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
             if (ior == 0) {
                 const accepted = if (self.writer.terminal_mode_get_fn) |get| get(self.writer.context) else @as(u8, @intCast(mask));
                 self.gfx_input.mouse_on = accepted & 8 != 0;
+                if (accepted & 8 == 0) self.standard_input.buttons = 0;
+                if (accepted & 2 == 0) self.standard_input.paste = false;
             }
             self.data_stack[self.data_depth - 1] = ior;
         },
@@ -59,6 +63,43 @@ pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
             if (self.data_depth == self.data_stack.len) return error.StackOverflow;
             const callback = self.writer.terminal_mode_get_fn orelse return error.HostUnavailable;
             try self.push(callback(self.writer.context));
+        },
+        .ekey_wait => {
+            if (@import("input_redirect.zig").selected(self) != null) return error.HostUnavailable;
+            const timeout = try self.peek(0);
+            if (self.data_depth + 2 > self.data_stack.len) return error.StackOverflow;
+            const result = try @import("event_input.zig").modern(self, timeout, false);
+            self.data_depth -= 1;
+            switch (result) {
+                .event => |packet| {
+                    try self.push(packet.value);
+                    try self.push(-1);
+                    try self.push(0);
+                },
+                .eof => {
+                    try self.push(@import("standard_keys.zig").eof);
+                    try self.push(-1);
+                    try self.push(0);
+                },
+                .timeout, .restart => {
+                    try self.push(0);
+                    try self.push(0);
+                    try self.push(0);
+                },
+                .failure => |ior| {
+                    try self.push(0);
+                    try self.push(0);
+                    try self.push(ior);
+                },
+            }
+        },
+        .ekey_mouse => {
+            if (self.data_depth + 4 > self.data_stack.len) return error.StackOverflow;
+            const mouse = self.standard_input.last_mouse;
+            try self.push(mouse.column);
+            try self.push(mouse.row);
+            try self.push(mouse.buttons);
+            try self.push(mouse.wheel);
         },
         .terminal_cols, .terminal_rows => {
             if (self.data_depth == self.data_stack.len) return error.StackOverflow;

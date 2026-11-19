@@ -287,6 +287,7 @@ pub const State = struct {
     pending_event_bytes: [32]u8 = undefined,
     pending_event_count: usize = 0,
     pending_standard_event: ?Cell = null,
+    standard_input: @import("core/standard_event.zig").Decoder = .{},
     block_storage: @import("core/blocks.zig").Storage = .{},
     call_depth: usize = 0,
     /// The callers of the colon definitions that compiled code is running, innermost last

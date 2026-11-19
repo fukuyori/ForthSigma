@@ -1126,6 +1126,8 @@ pub const Builtin = enum {
     term_mode_get,
     terminal_cols,
     terminal_rows,
+    ekey_wait,
+    ekey_mouse,
 };
 
 pub const HeapResult = union(enum) { address: Cell, no_memory, bad_pointer };

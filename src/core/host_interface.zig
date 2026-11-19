@@ -104,7 +104,7 @@ pub const InputEvent = union(enum) {
     /// The mouse on the terminal: its character cell (column and row from 0, counted on
     /// the screen as `cursor_fn` counts them) and the buttons held.
     /// `wheel` is 1 for a notch of the wheel up (away from the user), -1 down, else 0.
-    terminal_mouse: struct { column: i32, row: i32, buttons: MouseButtons, wheel: i8 = 0 },
+    terminal_mouse: struct { column: i32, row: i32, buttons: MouseButtons, wheel: i8 = 0, modifiers: u32 = 0 },
     /// The mouse in the window: the pixel of the image under it, the buttons held, and
     /// the wheel as above. A host gives each press and release, also when the program
     /// reads them later (MOUSE-EVENT); moves may be given only as the last place.
@@ -164,6 +164,11 @@ pub const Writer = struct {
     monotonic_ms_fn: ?*const fn (?*anyopaque) i64 = null,
     /// A byte or standard special key. timeout_ms < 0 waits; 0 polls.
     event_key_fn: ?*const fn (?*anyopaque, i32) RuntimeError!?Cell = null,
+    /// Complete host item, timeout and EOF are distinct; core decodes byte items.
+    /// EOF is a stream condition, reasserted after pushed-back bytes are drained.
+    standard_event_fn: ?*const fn (?*anyopaque, i32) RuntimeError!@import("standard_event.zig").Result = null,
+    standard_clock: ?@import("runtime_base.zig").Clock = null,
+    standard_interrupts: bool = false,
     /// Take only bytes held by unread_fn, without polling/reading the device.
     /// These bytes precede any deferred special event from EKEY.
     buffered_key_fn: ?*const fn (?*anyopaque) RuntimeError!?u8 = null,
@@ -173,6 +178,8 @@ pub const Writer = struct {
     /// first. Repeated calls push bytes back in reverse order.
     /// Without it, only KEY, XKEY and EKEY get the bytes back.
     unread_fn: ?*const fn (?*anyopaque, u8) void = null,
+    /// Atomic checked pushback: on error the byte was not accepted.
+    unread_byte_fn: ?*const fn (?*anyopaque, u8) RuntimeError!void = null,
     sleep_fn: ?*const fn (?*anyopaque, Cell) RuntimeError!void = null,
     /// Positive signed double-cell ns; interruptible, monotonic relative wait.
     sleep_ns_fn: ?*const fn (?*anyopaque, Double) RuntimeError!void = null,

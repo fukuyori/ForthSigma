@@ -318,3 +318,9 @@ MITライセンスは、このプロジェクトで作成したプログラム�
 ## ライセンス
 
 プロジェクトで作成したコードとドキュメントは[MIT License](https://github.com/fukuyori/ForthSigma/blob/main/LICENSE)で提供します。浮動小数点の数学関数（`FSIN` `FEXP` `FASIN` `F**` など）は、CORE-MATHのコード（MIT License、`src/core-math/`）と、FMA命令のないCPUではmuslの `fma`（MIT License、`src/fma/`）を使います。Linuxの `SYSTEM-FONT` は、フォントファイルの読み取りにstb_truetype（MIT License、`src/stb/`）を使います。著作権表示は[THIRD_PARTY_NOTICES.md](https://github.com/fukuyori/ForthSigma/blob/main/THIRD_PARTY_NOTICES.md)にあります。第三者資料の扱いは上記「資料とライセンスの範囲」を参照してください。
+
+## 標準イベントの待機
+
+`REQUIRE-EXTENSION ALSO EXTENSION`で`EKEY-WAIT ( ms -- event flag ior )`と`EKEY-MOUSE ( -- column row buttons wheel )`を使えます。期限は`0 false 0`、EOFは`K-EOF true 0`です。0はポーリング、負数は無期限。UTF-8/ESCの途中入力は期限を過ぎても保持します。`K-MOUSE`、`K-PASTE-BEGIN`、`K-PASTE-END`は非文字イベントです。マウス情報は消費時だけ更新します。貼り付け中は制御バイトも文字とし、byte入力やGRAPHICSへ切り替えると貼り付けの解釈を解除します。標準入力の`EKEY?`は完成イベントを先読みし、マウスや貼り付けの状態を確定しません。音・描画は前提ではありません。独自の埋込みホストでEKEY-WAITを使う場合は新しい型付き入力口とClockが必要で、従来EKEYの操作口も維持します。順序・エラー・ファイル選択・OS別の確認は[イベント設計](docs/EVENT_QUEUE_DESIGN.md)を参照してください。
+
+EKEY-WAITの対象は標準入力（リダイレクトしたstdinを含む）です。INFILE-EXECUTEで非stdinを選択している場合は入力を消費せず-21をTHROWし、既存のファイルEKEY/EKEY?の動作を維持します。ファイルごとの期限待機と永続する保留は639/1078で扱います。

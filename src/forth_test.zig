@@ -73,6 +73,7 @@ comptime {
     _ = @import("tests/graphics_test.zig");
     _ = @import("tests/library_loading_test.zig");
     _ = @import("tests/extension_test.zig");
+    _ = @import("tests/event_queue_test.zig");
     _ = @import("tests/terminal_modes_test.zig");
     _ = @import("tests/graphics_images_test.zig");
     _ = @import("tests/load_image_test.zig");

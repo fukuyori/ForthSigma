@@ -120,6 +120,13 @@ fn lastCharacter(bytes: []const u8) struct { start: usize, whole: bool } {
 /// The next byte of the terminal input: first a byte XKEY left when the host cannot
 /// take it back (see `unread_fn`), else from the host.
 fn nextKey(self: *State) RuntimeError!u8 {
+    const value = try rawKey(self);
+    if (@import("input_redirect.zig").selected(self) == null) self.standard_input.paste = false;
+    return value;
+}
+fn rawKey(self: *State) RuntimeError!u8 {
+    try @import("event_input.zig").beforeBytes(self);
+    if (@import("input_redirect.zig").selected(self) == null) if (self.standard_input.takeByte()) |byte| return byte;
     if (self.pending_key) |byte| {
         self.pending_key = null;
         return byte;
@@ -137,7 +144,9 @@ fn nextKey(self: *State) RuntimeError!u8 {
 
 /// KEY, which gives first the byte XKEY left.
 pub fn key(self: *State) RuntimeError!u8 {
-    return nextKey(self);
+    const value = try nextKey(self);
+    if (@import("input_redirect.zig").selected(self) == null) self.standard_input.paste = false;
+    return value;
 }
 
 /// XKEY: the bytes of one character from KEY. A byte that does not continue the
@@ -158,7 +167,7 @@ fn xkey(self: *State) RuntimeError!u21 {
             break;
         };
         if (byte & 0xC0 != 0x80) {
-            if (@import("input_redirect.zig").selected(self) != null) try @import("input_redirect.zig").unread(self, byte) else if (self.writer.unread_fn) |unread| unread(self.writer.context, byte) else self.pending_key = byte;
+            try @import("event_input.zig").unreadByte(self, byte);
             break;
         }
         bytes[length] = byte;

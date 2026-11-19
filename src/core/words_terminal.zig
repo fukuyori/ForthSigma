@@ -15,7 +15,8 @@ fn nameBytes(self: *forth.State, index: usize) []const u8 {
     return self.memory[at..][0..keys.names[index].len];
 }
 fn keyIor(self: *forth.State) forth.RuntimeError!map.Cell {
-    if (self.pending_key != null or self.pending_event_count != 0) return try @import("words_xchar.zig").key(self);
+    try @import("event_input.zig").beforeBytes(self);
+    if (self.pending_key != null or self.pending_event_count != 0 or (@import("input_redirect.zig").selected(self) == null and self.standard_input.length != 0)) return try @import("words_xchar.zig").key(self);
     const result = if (@import("input_redirect.zig").selected(self)) |id| selected: {
         const callback = (try self.fileOps()).key orelse return error.FileUnavailable;
         break :selected try callback(self.writer.context, id);

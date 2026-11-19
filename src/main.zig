@@ -1990,17 +1990,59 @@ fn terminalEventKey(_: ?*anyopaque, timeout_ms: i32) forth.RuntimeError!?forth.C
     }
 }
 
+/// Typed input for the standard decoder: null is never confused with EOF.
+fn terminalStandardEvent(_: ?*anyopaque, timeout_ms: i32) forth.RuntimeError!@import("core/standard_event.zig").Result {
+    try inputError(null);
+    flushOutput();
+    output_cursor.unknown();
+    if (lookahead != null) {
+        const byte = popLookahead().?;
+        stdin_eof = false;
+        return .{ .event = .{ .value = byte } };
+    }
+    if (builtin.os.tag == .windows) if (utf8_console.takePendingByte()) |byte| {
+        stdin_eof = false;
+        return .{ .event = .{ .value = byte } };
+    };
+    const deadline = try @import("core/runtime_base.zig").Deadline.afterMilliseconds(try @import("host_clock.zig").now(), timeout_ms);
+    while (true) {
+        if (host_input.input_is_terminal) {
+            if (host_input.nextStandardPacket()) |packet| {
+                if (packet.reset) return .restart;
+                stdin_eof = false;
+                return .{ .event = packet };
+            }
+            try host_input.takePresentationError();
+            if (!host_input.isRaw()) return error.HostFailed;
+        } else if (redirectedInputReady()) {
+            clearErrno();
+            const byte = standardInputByte();
+            try inputError(null);
+            if (byte < 0 and std.c._errno().* != 0) return .{ .failure = lastIor() };
+            return if (byte < 0) .eof else .{ .event = .{ .value = byte } };
+        }
+        if (timeout_ms >= 0 and deadline.expired(try @import("host_clock.zig").now())) return .timeout;
+        try sleepMilliseconds(null, 1);
+    }
+}
+
 /// XKEY gives back a byte it read: it becomes the byte read ahead, as KEY? leaves one.
-fn terminalUnread(_: ?*anyopaque, byte: u8) void {
-    stdin_eof = false;
+fn terminalUnreadChecked(_: ?*anyopaque, byte: u8) forth.RuntimeError!void {
     if (lookahead) |old| {
-        // EKEY restores at most 31 consumed bytes; XKEY and READ-LINE restore
+        // EKEY restores at most 32 consumed bytes; XKEY and READ-LINE restore
         // one consumed byte. They cannot grow this stack beyond that read-ahead.
-        std.debug.assert(unread_count < unread_bytes.len);
+        if (unread_count == unread_bytes.len) {
+            return error.HostFailed;
+        }
         unread_bytes[unread_count] = old;
         unread_count += 1;
     }
+    stdin_eof = false;
     lookahead = byte;
+}
+
+fn terminalUnread(context: ?*anyopaque, byte: u8) void {
+    terminalUnreadChecked(context, byte) catch |err| latchInput(err);
 }
 
 fn terminalBufferedKey(_: ?*anyopaque) forth.RuntimeError!?u8 {
@@ -2084,6 +2126,7 @@ fn clearForDiagnostics() void {
 fn reportDiagnostic(machine: *forth.State, err: anyerror) void {
     clearForDiagnostics();
     machine.gfx_input.mouse_on = false;
+    machine.standard_input.paste = false;
     machine.report(err);
 }
 
@@ -2318,7 +2361,7 @@ fn run(init: std.process.Init.Minimal) !u8 {
     const previous_mode_recovery = host_input.before_mode_change;
     host_input.before_mode_change = @import("host_wait.zig").beforeInputModeChange;
     defer host_input.before_mode_change = previous_mode_recovery;
-    machine.init(.{ .gamepad_ops = if (graphics) &host_gamepad.ops else null, .context = @ptrCast(&host), .write_fn = terminalWrite, .read_fn = terminalRead, .load_fn = loadDictionary, .save_fn = saveDictionary, .savesys_fn = saveExecutableImage, .key_fn = terminalKey, .key_ior_fn = terminalKeyIor, .event_key_fn = terminalEventKey, .monotonic_ms_fn = monotonicMilliseconds, .key_ready_fn = terminalKeyReady, .buffered_key_fn = terminalBufferedKey, .unread_fn = terminalUnread, .sleep_fn = sleepMilliseconds, .sleep_ns_fn = sleepNanoseconds, .utime_fn = microsecondsSinceEpoch, .ntime_fn = nanosecondsSinceEpoch, .cputime_fn = processCpuTimes, .local_time_fn = localTime, .zoned_time_fn = @import("host_timezone.zig").convert, .getenv_fn = environmentValue, .errno_fn = currentErrno, .system_fn = runShellCommand, .editor_fn = if (@import("build_options").tools) editSource else null, .file_ops = &file_ops, .framebuffer_fn = graphicsBuffer, .image_alloc_fn = if (graphics) imageAlloc else null, .image_free_fn = if (graphics) imageFree else null, .terminal_size_fn = terminalSize, .terminal_mode_set_fn = terminalModeSet, .terminal_mode_get_fn = terminalModeGet, .input_error_fn = inputError, .terminal_utf8_fn = terminalUtf8, .display_budget_fn = if (graphics and (builtin.os.tag == .windows or (builtin.os.tag == .linux and @import("build_options").x11))) @import("host_display_budget.zig").scope else null, .window_fn = if (graphics and host_window.available) host_window.show else null, .ime_preedit_fn = if (graphics and (builtin.os.tag == .windows or builtin.os.tag == .macos or (builtin.os.tag == .linux and @import("build_options").x11))) host_window.imePreedit else null, .ime_caret_fn = if (graphics and (builtin.os.tag == .windows or builtin.os.tag == .macos or (builtin.os.tag == .linux and @import("build_options").x11))) host_window.imeCaret else null, .window_fullscreen_fn = if (graphics and (builtin.os.tag == .windows or builtin.os.tag == .macos or (builtin.os.tag == .linux and @import("build_options").x11))) host_window.fullscreen else null, .window_cursor_fn = if (graphics and (builtin.os.tag == .windows or builtin.os.tag == .macos or (builtin.os.tag == .linux and @import("build_options").x11))) host_window.mouseCursor else null, .input_fn = inputEvent, .mouse_fn = mouseMode, .cursor_fn = cursorPosition, .font_buffer_fn = if (graphics) fontBuffer else null, .font_free_fn = if (graphics) fontFree else null, .system_font_fn = if (graphics and host_font.available) host_font.select else null, .system_glyph_fn = if (graphics and host_font.available) host_font.glyph else null, .process_start_fn = if (graphics) host_process.start else null, .process_write_fn = if (graphics) host_process.write else null, .process_read_fn = if (graphics) host_process.read else null, .process_stop_fn = if (graphics) host_process.stop else null, .audio_fn = if (audio) host_audio.start else null, .audio_device_fn = if (audio) host_audio.hasDevice else null, .audio_wait_fn = if (audio) audioWait else null }, storage);
+    machine.init(.{ .gamepad_ops = if (graphics) &host_gamepad.ops else null, .context = @ptrCast(&host), .write_fn = terminalWrite, .read_fn = terminalRead, .load_fn = loadDictionary, .save_fn = saveDictionary, .savesys_fn = saveExecutableImage, .key_fn = terminalKey, .key_ior_fn = terminalKeyIor, .event_key_fn = terminalEventKey, .standard_event_fn = terminalStandardEvent, .standard_clock = @import("host_clock.zig").clock, .standard_interrupts = host_input.input_is_terminal, .monotonic_ms_fn = monotonicMilliseconds, .key_ready_fn = terminalKeyReady, .buffered_key_fn = terminalBufferedKey, .unread_fn = terminalUnread, .unread_byte_fn = terminalUnreadChecked, .sleep_fn = sleepMilliseconds, .sleep_ns_fn = sleepNanoseconds, .utime_fn = microsecondsSinceEpoch, .ntime_fn = nanosecondsSinceEpoch, .cputime_fn = processCpuTimes, .local_time_fn = localTime, .zoned_time_fn = @import("host_timezone.zig").convert, .getenv_fn = environmentValue, .errno_fn = currentErrno, .system_fn = runShellCommand, .editor_fn = if (@import("build_options").tools) editSource else null, .file_ops = &file_ops, .framebuffer_fn = graphicsBuffer, .image_alloc_fn = if (graphics) imageAlloc else null, .image_free_fn = if (graphics) imageFree else null, .terminal_size_fn = terminalSize, .terminal_mode_set_fn = terminalModeSet, .terminal_mode_get_fn = terminalModeGet, .input_error_fn = inputError, .terminal_utf8_fn = terminalUtf8, .display_budget_fn = if (graphics and (builtin.os.tag == .windows or (builtin.os.tag == .linux and @import("build_options").x11))) @import("host_display_budget.zig").scope else null, .window_fn = if (graphics and host_window.available) host_window.show else null, .ime_preedit_fn = if (graphics and (builtin.os.tag == .windows or builtin.os.tag == .macos or (builtin.os.tag == .linux and @import("build_options").x11))) host_window.imePreedit else null, .ime_caret_fn = if (graphics and (builtin.os.tag == .windows or builtin.os.tag == .macos or (builtin.os.tag == .linux and @import("build_options").x11))) host_window.imeCaret else null, .window_fullscreen_fn = if (graphics and (builtin.os.tag == .windows or builtin.os.tag == .macos or (builtin.os.tag == .linux and @import("build_options").x11))) host_window.fullscreen else null, .window_cursor_fn = if (graphics and (builtin.os.tag == .windows or builtin.os.tag == .macos or (builtin.os.tag == .linux and @import("build_options").x11))) host_window.mouseCursor else null, .input_fn = inputEvent, .mouse_fn = mouseMode, .cursor_fn = cursorPosition, .font_buffer_fn = if (graphics) fontBuffer else null, .font_free_fn = if (graphics) fontFree else null, .system_font_fn = if (graphics and host_font.available) host_font.select else null, .system_glyph_fn = if (graphics and host_font.available) host_font.glyph else null, .process_start_fn = if (graphics) host_process.start else null, .process_write_fn = if (graphics) host_process.write else null, .process_read_fn = if (graphics) host_process.read else null, .process_stop_fn = if (graphics) host_process.stop else null, .audio_fn = if (audio) host_audio.start else null, .audio_device_fn = if (audio) host_audio.hasDevice else null, .audio_wait_fn = if (audio) audioWait else null }, storage);
     defer closeAllFiles();
     defer host_directories.closeAll();
     // The images of the pool, when the session ends without BYE.

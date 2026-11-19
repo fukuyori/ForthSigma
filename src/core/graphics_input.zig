@@ -464,6 +464,8 @@ fn now(self: *State) ?forth.Double {
 /// `until_key`) or the host has nothing more. Keys beyond the queue's room are dropped,
 /// but the mouse and Ctrl+C are still read.
 fn readInput(self: *State, until_key: bool) RuntimeError!void {
+    self.standard_input.paste = false;
+    self.standard_input.escape_at = null;
     const input = &self.gfx_input;
     // The Tk window's keys and mouse come with the Tcl program's messages.
     if (defs.graphics_enabled) try @import("tcl.zig").poll(self);
@@ -473,7 +475,7 @@ fn readInput(self: *State, until_key: bool) RuntimeError!void {
     var first = true;
     while (first or !(until_key and input.key_count != 0)) {
         first = false;
-        const next_event = input_fn(self.writer.context);
+        const next_event: ?forth.InputEvent = if (self.standard_input.takeByte()) |byte| .{ .byte = byte } else input_fn(self.writer.context);
         if (self.writer.input_error_fn) |check| try check(self.writer.context);
         const event = next_event orelse break;
         switch (event) {
@@ -579,4 +581,5 @@ pub fn setMouse(self: *State, on: bool) RuntimeError!void {
     if (self.writer.mouse_fn) |mouse_fn| mouse_fn(self.writer.context, on);
     if (self.writer.input_error_fn) |check| try check(self.writer.context);
     self.gfx_input.mouse_on = on;
+    if (!on) self.standard_input.buttons = 0;
 }

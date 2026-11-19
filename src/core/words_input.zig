@@ -54,8 +54,14 @@ pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
             try self.push(@intCast(length));
         },
         .evaluate => try self.interpretSource(try self.memoryRange(), .evaluate),
-        .ekey_question => try self.push(truth(try @import("event_input.zig").ready(self))),
-        .ekey => try self.push(try @import("event_input.zig").read(self)),
+        .ekey_question => {
+            if (self.data_depth == self.data_stack.len) return error.StackOverflow;
+            try self.push(truth(try @import("event_input.zig").ready(self)));
+        },
+        .ekey => {
+            if (self.data_depth == self.data_stack.len) return error.StackOverflow;
+            try self.push(try @import("event_input.zig").read(self));
+        },
         .key => try self.push(try words_xchar.key(self)),
         .key_question => {
             const ready = try @import("input_redirect.zig").ready(self);

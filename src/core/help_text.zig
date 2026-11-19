@@ -1300,6 +1300,11 @@ pub const entries = [_]Entry{
     // Audio (FORTH/Sigma): the SND- words and the audio library are in the AUDIO vocabulary.
     .{ .name = "REQUIRE-EXTENSION", .stack = "( -- )", .text = "Load the independent EXTENSION vocabulary once; select it with ALSO EXTENSION (FORTH/Sigma)." },
     .{ .name = "HOST-OS", .stack = "( -- c-addr u )", .text = "Return borrowed lowercase target OS family: windows, linux (including WSL/Android), macos, or unknown. Valid until the next HOST-OS or image restore; do not modify it. Copy it to retain it. Values may grow; treat unfamiliar values as unknown (FORTH/Sigma extension)." },
+    .{ .name = "EKEY-WAIT", .stack = "( ms -- event flag ior )", .text = "Wait for a complete standard event with one monotonic deadline; zero polls, negative waits indefinitely. Timeout returns 0 0 0, EOF K-EOF true 0. Partial input survives timeout and interruption." },
+    .{ .name = "EKEY-MOUSE", .stack = "( -- column row buttons wheel )", .text = "Return metadata of the last consumed K-MOUSE; peeking does not update it. Coordinates start at zero; buttons use left=1 right=2 middle=4, wheel up=1 down=-1." },
+    .{ .name = "K-MOUSE", .stack = "( -- event )", .text = "Standard terminal mouse event; use EKEY-MOUSE after consuming it." },
+    .{ .name = "K-PASTE-BEGIN", .stack = "( -- event )", .text = "Start of bracketed paste; content is text including ESC and byte 3." },
+    .{ .name = "K-PASTE-END", .stack = "( -- event )", .text = "End of bracketed paste." },
     .{ .name = "TERM-MODE!", .stack = "( mask -- ior )", .text = "Replace accepted terminal requests (bits 1/2/4/8). 0 succeeds, -24 invalid mask, -21 unavailable, -265 host failure. Windows ignores paste. Raw-only mouse/paste are delayed; existing MOUSE-ON shares the request (Sigma extension)." },
     .{ .name = "TERM-MODE@", .stack = "( -- mask )", .text = "Return accepted terminal requests, excluding unsupported/uncertain bits, independent of temporary suspension and raw mode. This records accepted requests, not an acknowledgment from the terminal (Sigma extension)." },
     .{ .name = "COLS", .stack = "( -- u )", .text = "Return FORM column count with the same output target, capture and fallback rules (extension vocabulary)." },

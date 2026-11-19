@@ -90,6 +90,7 @@ Stateを値コピーせず、新しいStorageとState.initから構築する。�
 | `pending_event_bytes` | 初期化 | State.init後の新規状態。実行位置・フラグ・履歴等をコピーせず、必要な論理設定は検証済みデータから再構成 |
 | `pending_event_count` | 初期化 | State.init後の新規状態。実行位置・フラグ・履歴等をコピーせず、必要な論理設定は検証済みデータから再構成 |
 | `pending_standard_event` | 初期化 | State.init後の新規状態。実行位置・フラグ・履歴等をコピーせず、必要な論理設定は検証済みデータから再構成 |
+| `standard_input` | 初期化 | 638の一時Decoder。生バイト・保留nativeイベント・ESC時刻・paste・マウス情報を共有せず、新規Stateでゼロ初期化。イメージに保存しない |
 | `block_storage` | 初期化・借用禁止 | 空またはnullへ。メインのホスト資源・一時値・入力元・診断先を引き継がない |
 | `call_depth` | 初期化 | State.init後の新規状態。実行位置・フラグ・履歴等をコピーせず、必要な論理設定は検証済みデータから再構成 |
 | `frames` | 新規初期化 | ワーカー自身のStorageから設定。メインの配列・sliceを借用しない |
@@ -197,3 +198,7 @@ State直下以外のコンテナ変数、関数内static相当、Cライブラ�
 2026-11-19、1056で追加したextension_libraryを含めState直下168項目を列挙に照合した。これは直下の列挙照合であり、ポインター・グローバル参照の再帰監査と1053の完了を意味しない。
 
 637のWriterにterminal_mode_set_fn・terminal_mode_get_fn・input_error_fnを追加した。端末と信号はホストスレッドの共有資源なので、ワーカーへメインの操作口をそのまま渡さない。1053の再帰監査でこの3口も分類し、通常のState直下168項目の列挙照合と区別する。
+
+638でState直下へstandard_inputを追加し、169項目とした。Writer.standard_event_fn・standard_clock（Clock.context/now_fnを含む）・standard_interruptsも1053の再帰監査対象。メインの入力/時計contextや保留イベントをワーカーへ借用しない。
+
+638のchecked押し戻しWriter.unread_byte_fnと、standard_input.legacyの旧pendingキャッシュも再帰監査に含める。Decoder全体は純粋な値だが、ワーカーへメインの未読入力やEOF/paste状態をコピーしない。

@@ -29,7 +29,7 @@ test "P06c names remain stable and FKEY prints modifiers in shift ctrl alt order
     defer support.destroyMachine(m);
     try m.interpretLine("K-UP SIMPLE-FKEY-STRING K-DOWN SIMPLE-FKEY-STRING 2DROP TYPE K-TAB K-SHIFT-MASK OR K-CTRL-MASK OR K-ALT-MASK OR FKEY.");
     try std.testing.expectEqualStrings("k-upk-tab k-shift-mask or k-ctrl-mask or k-alt-mask or", out.written());
-    for ([_]map.Cell{ -1, 65, keys.special + 34, keys.special | keys.shift }) |invalid| {
+    for ([_]map.Cell{ -1, 65, keys.special + 37, keys.special | keys.shift }) |invalid| {
         try m.push(invalid);
         try std.testing.expectError(error.Thrown, m.executeBuiltin(.simple_fkey_string));
         try std.testing.expectEqual(@as(map.Cell, -24), m.throw_code);

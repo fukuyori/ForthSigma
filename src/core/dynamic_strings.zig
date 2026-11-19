@@ -213,6 +213,7 @@ pub fn slurpLines(self: *State, fileid: Cell, array_var: Cell) RuntimeError!void
 /// $SLURP-LINE and $[]SLURP. At the end of the file it gives false and, as in gforth,
 /// leaves an empty string.
 pub fn slurpLine(self: *State, fileid: Cell, string_var: Cell) RuntimeError!bool {
+    try @import("event_input.zig").beforeFileRead(self, fileid);
     const reserved = try reservePointer(self, string_var);
     errdefer cancelPointer(self, string_var, reserved);
     const files = try self.fileOps();
@@ -248,6 +249,7 @@ pub fn slurpLine(self: *State, fileid: Cell, string_var: Cell) RuntimeError!bool
 
 /// Appends the rest of the file, from its position to the end, to the string variable.
 pub fn slurpRest(self: *State, fileid: Cell, string_var: Cell) RuntimeError!void {
+    try @import("event_input.zig").beforeFileRead(self, fileid);
     const files = try self.fileOps();
     var chunk: [4096]u8 = undefined;
     while (true) {

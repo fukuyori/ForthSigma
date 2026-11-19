@@ -123,6 +123,7 @@ pub fn readIncludeLine(self: *State) RuntimeError!?[]const u8 {
     var chunk: [tib_size + 1]u8 = undefined;
     const position = files.position(self.writer.context, frame.fileid);
     if (position.ior == 0) frame.line_start = position.value;
+    try @import("event_input.zig").beforeFileRead(self, frame.fileid);
     const result = files.read_line(self.writer.context, frame.fileid, &chunk);
     if (result.ior != 0) return self.throwCode(result.ior);
     if (!result.found) return null;

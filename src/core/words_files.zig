@@ -77,6 +77,11 @@ pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
         .triple_backslash => try source_input.endSourceFile(self),
         .key_file, .key_query_file, .file_eof_query => {
             const fileid = try self.peek(0);
+            if (fileid == stdin_fileid and self.writer.standard_event_fn != null and @import("event_input.zig").hasStdinBytes(self) and builtin != .key_file) {
+                self.data_stack[self.data_depth - 1] = truth(builtin == .key_query_file);
+                return;
+            }
+            if (builtin == .key_file) try @import("event_input.zig").beforeFileRead(self, fileid);
             const files = try self.fileOps();
             const value: Cell = if (builtin == .key_file) result: {
                 const key = files.key orelse return error.FileUnavailable;
@@ -166,6 +171,7 @@ pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
             const buffer = try self.memoryRange();
             const files = try self.fileOps();
             if (self.data_stack.len - self.data_depth < 3) return error.StackOverflow;
+            try @import("event_input.zig").beforeFileRead(self, fileid);
             const result = files.read_line(self.writer.context, fileid, buffer);
             @import("address_registry.zig").written(self, @intCast(@intFromPtr(buffer.ptr) - @intFromPtr(self.memory.ptr)), if (result.ior != 0) buffer.len else @min(result.length, buffer.len), false);
             try self.push(if (result.ior == 0) @intCast(result.length) else 0);
@@ -226,6 +232,7 @@ pub fn execute(self: *State, comptime builtin: Builtin) RuntimeError!void {
             const buffer = try self.memoryRange();
             const files = try self.fileOps();
             if (self.data_stack.len - self.data_depth < 2) return error.StackOverflow;
+            if (buffer.len != 0) try @import("event_input.zig").beforeFileRead(self, fileid);
             const result = files.read(self.writer.context, fileid, buffer);
             @import("address_registry.zig").written(self, @intCast(@intFromPtr(buffer.ptr) - @intFromPtr(self.memory.ptr)), if (result.ior != 0) buffer.len else @intCast(@min(result.value, buffer.len)), false);
             try self.push(if (result.ior == 0) @intCast(result.value) else 0);

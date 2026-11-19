@@ -44,7 +44,7 @@ pub const constants = [_]struct { []const u8, Cell }{
 
 pub fn isFunction(event: Cell) bool {
     const base = event & ~(shift | alt | ctrl);
-    return base >= special and base <= special + 33;
+    return base >= special and base <= special + 36;
 }
 
 pub fn isCharacter(event: Cell) bool {
@@ -52,12 +52,15 @@ pub fn isCharacter(event: Cell) bool {
 }
 
 pub const names = [_][]const u8{
-    "k-left", "k-right", "k-up",    "k-down", "k-home",  "k-end",     "k-prior",     "k-next", "k-insert", "k-delete",  "k-enter",
-    "k-f1",   "k-f2",    "k-f3",    "k-f4",   "k-f5",    "k-f6",      "k-f7",        "k-f8",   "k-f9",     "k-f10",     "k-f11",
-    "k-f12",  "k-winch", "k-pause", "k-mute", "k-volup", "k-voldown", "k-backspace", "k-tab",  "k-sel",    "k-fgcolor", "k-bgcolor",
-    "k-eof",
+    "k-left", "k-right", "k-up",          "k-down",      "k-home",  "k-end",     "k-prior",     "k-next", "k-insert", "k-delete",  "k-enter",
+    "k-f1",   "k-f2",    "k-f3",          "k-f4",        "k-f5",    "k-f6",      "k-f7",        "k-f8",   "k-f9",     "k-f10",     "k-f11",
+    "k-f12",  "k-winch", "k-pause",       "k-mute",      "k-volup", "k-voldown", "k-backspace", "k-tab",  "k-sel",    "k-fgcolor", "k-bgcolor",
+    "k-eof",  "k-mouse", "k-paste-begin", "k-paste-end",
 };
 pub const eof = special + 33;
+pub const mouse = special + 34;
+pub const paste_begin = special + 35;
+pub const paste_end = special + 36;
 pub const winch = special + 23;
 pub const tab = special + 29;
 pub const name_bytes = bytes: {

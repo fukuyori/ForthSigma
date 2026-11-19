@@ -52,54 +52,12 @@ fn unread(self: *forth.State, bytes: []const u8) forth.RuntimeError!void {
     }
 }
 
-fn letter(byte: u8) ?Cell {
-    return switch (byte) {
-        'D' => keys.special,
-        'C' => keys.special + 1,
-        'A' => keys.special + 2,
-        'B' => keys.special + 3,
-        'H' => keys.special + 4,
-        'F' => keys.special + 5,
-        'P'...'S' => keys.special + 11 + byte - 'P',
-        else => null,
-    };
-}
-
-fn sequence(bytes: []const u8) ?Cell {
-    if (bytes.len < 3) return null;
-    const final = bytes[bytes.len - 1];
-    if (bytes[1] == 'O') return if (bytes.len == 3) letter(final) else null;
-    if (bytes[1] != '[') return null;
-    var numbers = std.mem.splitScalar(u8, bytes[2 .. bytes.len - 1], ';');
-    const first = numbers.next().?;
-    const number = if (first.len == 0) 1 else std.fmt.parseInt(u32, first, 10) catch return null;
-    var modifiers: Cell = 0;
-    if (numbers.next()) |parameter| {
-        const value = std.fmt.parseInt(u32, parameter, 10) catch return null;
-        if (value < 1 or value > 8) return null;
-        const bits = value - 1;
-        if (bits & 1 != 0) modifiers |= keys.shift;
-        if (bits & 2 != 0) modifiers |= keys.alt;
-        if (bits & 4 != 0) modifiers |= keys.ctrl;
-    }
-    if (numbers.next() != null) return null;
-    if (final == 'Z' and number == 1) return keys.tab | keys.shift | modifiers;
-    const base: Cell = if (final == '~') switch (number) {
-        1, 7 => keys.special + 4,
-        4, 8 => keys.special + 5,
-        5 => keys.special + 6,
-        6 => keys.special + 7,
-        2 => keys.special + 8,
-        3 => keys.special + 9,
-        11...15 => keys.special + 11 + number - 11,
-        17...21 => keys.special + 16 + number - 17,
-        23, 24 => keys.special + 21 + number - 23,
-        else => return null,
-    } else if (number == 1) letter(final) orelse return null else return null;
-    return base | modifiers;
-}
-
 pub fn ready(self: *forth.State) forth.RuntimeError!bool {
+    if (self.writer.standard_event_fn != null and @import("input_redirect.zig").selected(self) == null) return switch (try modern(self, 0, true)) {
+        .event => true,
+        .failure => error.HostFailed,
+        else => false,
+    };
     if (@import("input_redirect.zig").selected(self) != null) return @import("input_redirect.zig").ready(self);
     if (self.pending_key != null or self.pending_event_count != 0 or self.pending_standard_event != null) return true;
     const event = (try next(self, 0)) orelse return false;
@@ -111,6 +69,12 @@ pub fn ready(self: *forth.State) forth.RuntimeError!bool {
 }
 
 pub fn read(self: *forth.State) forth.RuntimeError!Cell {
+    if (self.writer.standard_event_fn != null and @import("input_redirect.zig").selected(self) == null) return switch (try modern(self, -1, false)) {
+        .event => |packet| packet.value,
+        .eof => keys.eof,
+        .failure => error.HostFailed,
+        .timeout, .restart => error.HostFailed,
+    };
     const first = (try next(self, -1)) orelse return keys.eof;
     if (first > 255) return first;
     var bytes: [32]u8 = undefined;
@@ -134,7 +98,7 @@ pub fn read(self: *forth.State) forth.RuntimeError!Cell {
             length += 1;
             if (length == 2 and value != '[' and value != 'O') break;
             if (length >= 3 and value >= 0x40 and value <= 0x7e) {
-                if (sequence(bytes[0..length])) |event| return event;
+                if (@import("standard_sequence.zig").decode(bytes[0..length])) |event| return event;
                 break;
             }
         }
@@ -166,4 +130,110 @@ pub fn read(self: *forth.State) forth.RuntimeError!Cell {
         length += 1;
     }
     return xchar.decode(bytes[0..length]).code;
+}
+
+const standard = @import("standard_event.zig");
+fn sourceRead(context: ?*anyopaque, timeout: i32) forth.RuntimeError!standard.Result {
+    const self: *forth.State = @ptrCast(@alignCast(context.?));
+    if (self.pending_key) |byte| {
+        self.pending_key = null;
+        return .{ .event = .{ .value = byte } };
+    }
+    if (self.pending_event_count != 0) {
+        self.pending_event_count -= 1;
+        return .{ .event = .{ .value = self.pending_event_bytes[self.pending_event_count] } };
+    }
+    if (self.pending_standard_event) |value| {
+        self.pending_standard_event = null;
+        return .{ .event = .{ .value = value } };
+    }
+    const callback = self.writer.standard_event_fn orelse return error.HostUnavailable;
+    return callback(self.writer.context, timeout);
+}
+pub fn modern(self: *forth.State, timeout: i64, peek: bool) forth.RuntimeError!standard.Result {
+    if (@import("input_redirect.zig").selected(self) != null) return error.HostUnavailable;
+    if (self.writer.standard_event_fn == null) return error.HostUnavailable;
+    const clock = self.writer.standard_clock orelse return error.HostUnavailable;
+    return standard.read(&self.standard_input, .{ .context = self, .read_fn = sourceRead, .clock = clock, .interrupts = self.writer.standard_interrupts and @import("input_redirect.zig").selected(self) == null, .controls = @import("input_redirect.zig").selected(self) == null }, timeout, peek);
+}
+
+/// Change to a byte API without hiding bytes already fetched by EKEY?.
+pub fn beforeBytes(self: *forth.State) forth.RuntimeError!void {
+    if (@import("input_redirect.zig").selected(self) != null) return;
+    if (self.writer.standard_event_fn != null and self.writer.unread_byte_fn != null) return beforeFileRead(self, @import("memory_map.zig").stdin_fileid);
+    if (self.standard_input.length != 0 and (self.pending_key != null or self.pending_event_count != 0)) return;
+    try beforeStdinBytes(self);
+}
+pub fn beforeStdinBytes(self: *forth.State) forth.RuntimeError!void {
+    if (self.standard_input.length == 0) {
+        self.standard_input.paste = false;
+        return;
+    }
+    if (self.writer.input_error_fn) |check| try check(self.writer.context);
+    if (self.writer.unread_byte_fn) |callback| {
+        while (self.standard_input.length != 0) {
+            const at = self.standard_input.length - 1;
+            try callback(self.writer.context, self.standard_input.bytes[at]);
+            self.standard_input.length = at;
+            self.standard_input.eof = false;
+        }
+        self.standard_input.escape_at = null;
+        self.standard_input.paste = false;
+    } else if (self.writer.unread_fn) |callback| {
+        // Legacy void pushback has no rejection result: acceptance is its contract.
+        while (self.standard_input.length != 0) {
+            const at = self.standard_input.length - 1;
+            callback(self.writer.context, self.standard_input.bytes[at]);
+            self.standard_input.length = at;
+            self.standard_input.eof = false;
+            if (at == 0) self.standard_input.escape_at = null;
+            if (self.writer.input_error_fn) |check| try check(self.writer.context);
+        }
+        self.standard_input.paste = false;
+    }
+}
+
+/// Explicit STDIN file operations share its host byte queue too.
+pub fn beforeFileRead(self: *forth.State, fileid: Cell) forth.RuntimeError!void {
+    if (fileid != @import("memory_map.zig").stdin_fileid or self.writer.standard_event_fn == null) return;
+    if (self.writer.input_error_fn) |check| try check(self.writer.context);
+    const selected = @import("input_redirect.zig").selected(self) != null;
+    var legacy: standard.Legacy = if (selected) self.standard_input.legacy else .{ .key = self.pending_key, .bytes = self.pending_event_bytes, .count = self.pending_event_count, .event = self.pending_standard_event };
+    defer {
+        if (selected) self.standard_input.legacy = legacy else {
+            self.pending_key = legacy.key;
+            self.pending_event_bytes = legacy.bytes;
+            self.pending_event_count = legacy.count;
+            self.pending_standard_event = legacy.event;
+        }
+    }
+    if (legacy.key != null or legacy.count != 0) {
+        const push = self.writer.unread_byte_fn orelse return error.HostUnavailable;
+        // Legacy storage is a stack: its lowest index is the latest byte.
+        while (legacy.count != 0) {
+            try push(self.writer.context, legacy.bytes[0]);
+            self.standard_input.eof = false;
+            std.mem.copyForwards(u8, legacy.bytes[0 .. legacy.count - 1], legacy.bytes[1..legacy.count]);
+            legacy.count -= 1;
+        }
+        if (legacy.key) |byte| {
+            try push(self.writer.context, byte);
+            self.standard_input.eof = false;
+            legacy.key = null;
+        }
+    }
+    try beforeStdinBytes(self);
+    if (self.standard_input.length != 0) return error.HostUnavailable;
+}
+
+pub fn unreadByte(self: *forth.State, byte: u8) forth.RuntimeError!void {
+    if (@import("input_redirect.zig").selected(self) != null) return @import("input_redirect.zig").unread(self, byte);
+    if (self.writer.standard_event_fn != null) return self.standard_input.putByte(byte);
+    if (self.writer.unread_fn) |callback| callback(self.writer.context, byte) else self.pending_key = byte;
+}
+
+pub fn hasStdinBytes(self: *const forth.State) bool {
+    if (self.standard_input.length != 0) return true;
+    if (@import("input_redirect.zig").selected(self)) |_| return self.standard_input.legacy.key != null or self.standard_input.legacy.count != 0;
+    return self.pending_key != null or self.pending_event_count != 0;
 }

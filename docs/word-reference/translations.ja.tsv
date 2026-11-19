@@ -1329,3 +1329,8 @@ EXTENSION:TERM-ALT-SCREEN	代替画面を要求するビット1を返します�
 EXTENSION:TERM-PASTE	raw時の貼り付け報告を要求するビット2を返します。Windowsは無視します。この版で貼り付け境界をイベントとして解釈する機能は含まず、638で別に扱います。
 EXTENSION:TERM-HIDE-CURSOR	カーソル非表示を要求するビット4を返します。
 EXTENSION:TERM-MOUSE	raw時のマウス報告を要求するビット8を返します。MOUSE-ON/OFFと同じ要求を共有します。
+EXTENSION:EKEY-WAIT	相対ミリ秒で完成した標準イベントを待ち、event flag iorの固定3セルを返します。0はポーリング、負数は無期限。期限は0 false 0、EOFはK-EOF true 0、対象の読取り障害は0 false iorです。途中入力は保持し、Ctrl+Cは貼り付け外だけ-28です。
+EXTENSION:EKEY-MOUSE	EKEYまたはEKEY-WAITが最後に取得したK-MOUSEの列・行・押下ボタン集合・ホイールを返します。0起点、ボタンは左1・右2・中央4、ホイールは上1・下-1。先読みでは更新せず、初期値はすべて0です。
+EXTENSION:K-MOUSE	標準端末のマウスイベントの値を返します。付随情報は消費後のEKEY-MOUSEで取得します。修飾マスクをORでき、GRAPHICSのマウス値とは別です。
+EXTENSION:K-PASTE-BEGIN	bracketed pasteの開始イベントを返します。終了まで文字を一つずつ返し、終了印以外のESC列や値3も文字として扱います。
+EXTENSION:K-PASTE-END	bracketed pasteの終了イベントを返します。EOFでの打切り時にこのイベントを合成しません。

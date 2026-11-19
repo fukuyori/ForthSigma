@@ -126,6 +126,7 @@ fn applyPresentation(_: ?*anyopaque, bit: u8, on: bool) error{HostFailed}!void {
 /// Whether the terminal went to raw mode since next last gave an event: next tells the
 /// core first, which then drops what it kept of the input before.
 var restarted = false;
+var standard_seen_generation: u64 = 0;
 
 /// Bytes read while waiting for the reply to a DSR request, given before new ones (more
 /// than fit are dropped, as keys pressed while the host is busy may be).
@@ -166,24 +167,33 @@ pub fn takePendingByte() ?u8 {
 }
 
 /// A standard keyboard byte or event, without changing GRAPHICS key values.
-pub fn nextStandard() ?forth.Cell {
-    if (@import("host_resize.zig").take()) return @import("core/standard_keys.zig").winch;
+pub fn nextStandardPacket() ?@import("core/standard_event.zig").Packet {
     standard_keyboard = true;
     if (!enter()) return null;
+    if (standard_seen_generation != mode_generation) {
+        standard_seen_generation = mode_generation;
+        return .{ .value = 0, .reset = true };
+    }
+    if (@import("host_resize.zig").take()) return .{ .value = @import("core/standard_keys.zig").winch };
     if (is_windows) {
-        if (takePendingByte()) |byte| return byte;
-        while (windows.next(true)) |event| {
+        if (takePendingByte()) |byte| return .{ .value = byte };
+        for (0..32) |_| {
+            const event = windows.next(true) orelse return null;
             switch (event) {
-                .key => |code| return code,
+                .key => |code| return .{ .value = code },
+                .terminal_mouse => |value| return .{ .value = @import("core/standard_keys.zig").mouse | @as(forth.Cell, value.modifiers), .mouse = .{ .column = value.column, .row = value.row, .buttons = value.buttons, .wheel = value.wheel } },
                 else => {},
             }
         }
         return null;
     }
-    while (next()) |event| switch (event) {
-        .byte => |byte| return byte,
-        else => {},
-    };
+    if (takePendingByte()) |byte| return .{ .value = byte };
+    var byte: [1]u8 = undefined;
+    return if (std.c.read(0, &byte, 1) == 1) .{ .value = byte[0] } else null;
+}
+
+pub fn nextStandard() ?forth.Cell {
+    while (nextStandardPacket()) |packet| if (packet.mouse == null and !packet.reset) return packet.value;
     return null;
 }
 
@@ -194,12 +204,15 @@ pub fn nextByte() ?u8 {
     if (!enter()) return null;
     if (is_windows) {
         if (takePendingByte()) |byte| return byte;
-        while (windows.next(true)) |event| switch (event) {
-            .key => |code| if (code <= 255) {
-                return @intCast(code);
-            },
-            else => {},
-        };
+        for (0..32) |_| {
+            const event = windows.next(true) orelse return null;
+            switch (event) {
+                .key => |code| if (code <= 255) {
+                    return @intCast(code);
+                },
+                else => {},
+            }
+        }
         return null;
     }
     while (next()) |event| switch (event) {
@@ -531,6 +544,16 @@ const windows = struct {
         };
     }
 
+    fn releaseNext() ?InputEvent {
+        for (&down) |*code| {
+            if (code.* == 0) continue;
+            const old = code.* - 1;
+            code.* = 0;
+            return .{ .key_release = old };
+        }
+        releasing = false;
+        return null;
+    }
     fn next(standard: bool) ?InputEvent {
         if (after) |event| {
             after = null;
@@ -542,22 +565,14 @@ const windows = struct {
             pending_len -= 1;
             return .{ .key = byte };
         }
-        if (releasing) {
-            for (&down) |*code| {
-                if (code.* == 0) continue;
-                const old = code.* - 1;
-                code.* = 0;
-                return .{ .key_release = old };
-            }
-            releasing = false;
-        }
+        if (releasing) if (releaseNext()) |event| return event;
         const console = input orelse return null;
         if (standard and raw_mode & 0x0008 == 0) {
             const updated = raw_mode | 0x0008;
             if (SetConsoleMode(console, updated) == 0) return null;
             raw_mode = updated;
         }
-        while (true) {
+        for (0..32) |_| {
             var count: u32 = 0;
             if (GetNumberOfConsoleInputEvents(console, &count) == 0 or count == 0) return null;
             var record: InputRecord = undefined;
@@ -632,17 +647,21 @@ const windows = struct {
                     const distance: i16 = @bitCast(@as(u16, @truncate(state >> 16)));
                     const wheel: i8 = if (flags & mouse_wheeled == 0 or distance == 0) 0 else if (distance > 0) 1 else -1;
                     const info = screen() orelse return null;
-                    return .{ .terminal_mouse = .{ .column = @as(i32, x) - info.window[0], .row = @as(i32, y) - info.window[1], .buttons = buttons, .wheel = wheel } };
+                    const control = std.mem.readInt(u32, data[8..12], .little);
+                    const mods: u32 = (if (control & 0x10 != 0) @as(u32, 0x10000000) else 0) | (if (control & 3 != 0) @as(u32, 0x20000000) else 0) | (if (control & 12 != 0) @as(u32, 0x40000000) else 0);
+                    return .{ .terminal_mouse = .{ .modifiers = mods, .column = @as(i32, x) - info.window[0], .row = @as(i32, y) - info.window[1], .buttons = buttons, .wheel = wheel } };
                 },
                 // The console lost the focus: the keys down will not tell their release.
                 focus_event => {
                     if (std.mem.readInt(i32, data[0..4], .little) != 0) continue;
                     releasing = true;
-                    return windows.next(standard);
+                    if (releaseNext()) |event| return event;
+                    continue;
                 },
                 else => continue,
             }
         }
+        return null;
     }
 };
 
@@ -680,4 +699,37 @@ test "standard extra keys preserve plain controls and map modifiers media and pa
     try std.testing.expectEqual(@as(?u32, @intCast(keys.special + 25)), standardExtraKey(0xad, 0));
     try std.testing.expectEqual(@as(?u32, @intCast(keys.special + 27)), standardExtraKey(0xae, 0));
     try std.testing.expectEqual(@as(?u32, @intCast(keys.special + 26)), standardExtraKey(0xaf, 0));
+}
+
+test "standard restart notification leaves graphics restart available" {
+    const saved_raw = raw;
+    const saved_standard = standard_keyboard;
+    const saved_terminal = input_is_terminal;
+    const saved_modes = modes;
+    const saved_restart = restarted;
+    const saved_generation = mode_generation;
+    const saved_seen = standard_seen_generation;
+    const saved_hook = before_mode_change;
+    defer {
+        raw = saved_raw;
+        standard_keyboard = saved_standard;
+        input_is_terminal = saved_terminal;
+        modes = saved_modes;
+        restarted = saved_restart;
+        mode_generation = saved_generation;
+        standard_seen_generation = saved_seen;
+        before_mode_change = saved_hook;
+    }
+    raw = true;
+    input_is_terminal = true;
+    modes = .{ .backend = .{ .apply = applyPresentation } };
+    restarted = true;
+    mode_generation = 42;
+    standard_seen_generation = 41;
+    before_mode_change = noModeRecovery;
+    const packet = nextStandardPacket() orelse return error.TestUnexpectedResult;
+    try std.testing.expect(packet.reset);
+    try std.testing.expect(restarted);
+    const event = next() orelse return error.TestUnexpectedResult;
+    try std.testing.expect(event == .restarted);
 }

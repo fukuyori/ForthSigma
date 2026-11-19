@@ -9,6 +9,7 @@ const checkWork = @import("words_numeric.zig").checkWorkBlock;
 /// Read from the current position until a zero-byte read, without requiring size
 /// or seek support. A short read alone does not mean EOF in the host interface.
 pub fn slurp(self: *forth.State, fileid: map.Cell) defs.RuntimeError!@import("dynamic_strings.zig").StringRef {
+    try @import("event_input.zig").beforeFileRead(self, fileid);
     const files = try self.fileOps();
     var buffer: map.Cell = 0;
     var length: usize = 0;
