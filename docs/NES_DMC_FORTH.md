@@ -1,5 +1,7 @@
 # NES DMCと5声のForth試作（1135）
 
+2026-11-21：モデルと補助の表は`include/`へ移し、`*-DEMO-SETUP`などデモ用の語は`examples/<名前>-demo.fs`へ分けた（1185）。`*-play.fs`はデモのファイルを読む。以下の記録にある`examples/`のモデルのパスは、移す前のものである。
+
 ## Linux実聴1151の受け入れ完了（2026-11-20）
 
 レモンがWSL上のLinux版→pacat→WSLg PulseAudio RDPSinkで、4声デモ約3秒、17byte DMC単独ブザー、4声＋DMCを聞いて確認。物理Ctrl+C後の停止と約3秒の再再生も確認し、CATCH=-28/handle=0、REPLAY-OK handle=0、code0、underrun0を記録した。1151と親1132を完了。[環境と全結果](measurements/2026-11-20-linux-audio-listening.json)。Linux実機ALSA・実機NES/ROM互換の確認ではない。以下のLinux未確認は履歴。

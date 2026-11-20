@@ -1,5 +1,5 @@
 \ Explicit mono wrapper. FALSE sends zeros; loading never starts playback.
-S" examples/chip8-audio.fs" INCLUDED
+S" examples/chip8-audio-demo.fs" REQUIRED
 S" examples/pcm-synth-play.fs" INCLUDED
 : C8-STREAM-RUN ( -- )
   C8-RATE 1 4096 PCM-OPEN THROW PS-HANDLE !

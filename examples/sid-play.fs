@@ -1,6 +1,6 @@
 \ Explicit PCM wrapper. Loading never plays sound. Run from repository root.
 \ sigma examples/sid-play.fs -e "SI-DEMO-SETUP 16 FALSE SI-STREAM BYE"
-S" examples/sid.fs" INCLUDED
+S" examples/sid-demo.fs" REQUIRED
 S" examples/pcm-synth-play.fs" INCLUDED
 : SI-STREAM-RUN ( -- )
   SI-RATE 1 4096 PCM-OPEN THROW PS-HANDLE !

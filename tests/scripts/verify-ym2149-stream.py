@@ -46,6 +46,6 @@ def main():
   clean=' '.join(line for line in q.stdout.decode().splitlines() if not line.startswith('WARNING:')).strip()
   assert q.returncode==0 and not q.stderr and clean==expected+' 0',(name,q.returncode,clean,q.stderr)
   results.append({'case':name,'result':clean})
- files=['tests/scripts/verify-ym2149-stream.py','examples/ym2149.fs','examples/ym2149-levels.fs','examples/ym2149-play.fs','examples/pcm-synth-play.fs','examples/pcm-synth.fs']
+ files=['tests/scripts/verify-ym2149-stream.py','include/ym2149.fs','include/ym2149-levels.fs','examples/ym2149-play.fs','examples/pcm-synth-play.fs','examples/pcm-synth.fs']
  print(json.dumps({'scope':__doc__,'binary_sha256':hashlib.sha256(binary.read_bytes()).hexdigest(),'tests':results,'source_sha256_lf':{f:hashlib.sha256((ROOT/f).read_bytes().replace(b'\r\n',b'\n')).hexdigest() for f in files}},indent=2))
 if __name__=='__main__':main()

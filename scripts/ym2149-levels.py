@@ -6,7 +6,7 @@ with localcontext() as c:
 s='\\ Original ideal1.5dB YM2149 model levels; not measured chip DAC data.\nCREATE YM-LEVELS\n'+'\n'.join(' '.join(str(v)+' ,' for v in values[i:i+8]) for i in range(0,32,8))+'\n'
 import argparse
 p=argparse.ArgumentParser();p.add_argument('--check',action='store_true');args=p.parse_args()
-target=Path(__file__).resolve().parents[1]/'examples/ym2149-levels.fs'
+target=Path(__file__).resolve().parents[1]/'include/ym2149-levels.fs'
 if args.check:assert target.read_text(encoding='utf-8')==s,'Level table is stale'
 else:target.write_text(s,encoding='utf-8',newline='\n')
 print('32 ideal levels reproduced.')

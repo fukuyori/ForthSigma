@@ -65,9 +65,9 @@ class Model:
 
 def main():
  p=argparse.ArgumentParser(description=__doc__);p.add_argument('sigma',type=Path);p.add_argument('--benchmark',action='store_true');args=p.parse_args();binary=args.sigma.resolve();work=ROOT/'.work/1138';work.mkdir(parents=True,exist_ok=True)
- files=['examples/ym2149.fs','examples/ym2149-levels.fs','examples/ym2149-play.fs','scripts/ym2149-levels.py','tests/scripts/verify-ym2149.py','examples/pcm-synth-play.fs','examples/pcm-synth.fs']
+ files=['include/ym2149.fs','include/ym2149-levels.fs','examples/ym2149-play.fs','scripts/ym2149-levels.py','tests/scripts/verify-ym2149.py','examples/pcm-synth-play.fs','examples/pcm-synth.fs']
  report={'platform':platform.platform(),'binary_sha256':hashlib.sha256(binary.read_bytes()).hexdigest(),'source_sha256_lf':{f:hashlib.sha256((ROOT/f).read_bytes().replace(b'\r\n',b'\n')).hexdigest() for f in files},'tests':[]}
- def run(code,source='examples/ym2149.fs'):
+ def run(code,source='examples/ym2149-demo.fs'):
   with tempfile.NamedTemporaryFile('w',encoding='utf-8',suffix='.fs',dir=work,delete=False) as f:
    path=Path(f.name)
    for word in ['YM-EVENT!','YM-INPUT-EVENT!','YM-BUS-EVENT!','YM-WRITE','YM-INPUT!','YM-BUS!']:code=re.sub(' '+re.escape(word)+r'(?=\s|$)',lambda m:m[0]+'\n',code)

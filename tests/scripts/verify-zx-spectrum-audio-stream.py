@@ -108,6 +108,6 @@ def main():
   clean=' '.join(line for line in q.stdout.decode().splitlines() if not line.startswith('WARNING:')).strip()
   assert q.returncode==0 and not q.stderr and clean==expected+' 0',(name,q.returncode,clean,q.stderr)
   results.append({'case':name,'result':clean})
- files=['tests/scripts/verify-zx-spectrum-audio-stream.py','examples/zx-spectrum-audio.fs','examples/zx-ay-levels.fs','examples/zx-spectrum-audio-play.fs','examples/pcm-synth-play.fs','examples/pcm-synth.fs']
+ files=['tests/scripts/verify-zx-spectrum-audio-stream.py','include/zx-spectrum-audio.fs','include/zx-ay-levels.fs','examples/zx-spectrum-audio-play.fs','examples/pcm-synth-play.fs','examples/pcm-synth.fs']
  print(json.dumps({'scope':__doc__,'binary_sha256':hashlib.sha256(binary.read_bytes()).hexdigest(),'tests':results,'source_sha256_lf':{f:hashlib.sha256((ROOT/f).read_bytes().replace(b'\r\n',b'\n')).hexdigest() for f in files}},indent=2))
 if __name__=='__main__':main()

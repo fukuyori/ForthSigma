@@ -11,7 +11,7 @@ def main():
   tmp=Path(tmp);pcm=tmp/'pcm.bin';ram=tmp/'ram.bin';source=tmp/'run.fs'
   def run(code,exe=binary,entry=True):
    source.write_text((sd.DUMP if entry else '')+code+'\nDEPTH . BYE\n',encoding='utf-8')
-   r=subprocess.run([str(exe),*(['examples/snes-dsp-audio-native.fs'] if entry else []),str(source)],input=b'',capture_output=True,cwd=ROOT,timeout=90)
+   r=subprocess.run([str(exe),*(['examples/snes-dsp-audio-native-demo.fs'] if entry else []),str(source)],input=b'',capture_output=True,cwd=ROOT,timeout=90)
    assert r.returncode==0 and not r.stderr,(r.returncode,r.stdout[:1200],r.stderr)
    values=list(map(int,r.stdout.split()));assert values.pop()==0,values[-5:];return values
   def save_ram():return f'S" {ram.as_posix()}" W/O CREATE-FILE THROW CONSTANT RF SD-ARAM 65536 RF WRITE-FILE THROW RF CLOSE-FILE THROW '
@@ -40,6 +40,6 @@ def main():
   m=sd.demo();m.advance(32768)
   values=run('NATIVE? 32768 SD-RUN SNAP '+save_ram(),app,False);check(m,values)
   tests.append({'case':'SAVESYS-selected-native-execution-token-roundtrip-full-state-and-ARAM'})
- files=['tests/scripts/verify-snes-dsp-audio.py','scripts/snes-gauss-data.json','examples/snes-gauss.fs','tests/scripts/verify-snes-dsp-native.py','examples/snes-dsp-audio.fs','examples/snes-dsp-native-backend.fs','examples/snes-dsp-audio-native.fs','src/core/sound_snes_dsp.zig','src/core/words_snes_dsp.zig','src/core/snes_gauss.zig']
+ files=['tests/scripts/verify-snes-dsp-audio.py','scripts/snes-gauss-data.json','include/snes-gauss.fs','tests/scripts/verify-snes-dsp-native.py','include/snes-dsp-audio.fs','include/snes-dsp-native-backend.fs','include/snes-dsp-audio-native.fs','src/core/sound_snes_dsp.zig','src/core/words_snes_dsp.zig','src/core/snes_gauss.zig']
  print(json.dumps({'scope':__doc__,'platform':platform.platform(),'binary_sha256':hashlib.sha256(binary.read_bytes()).hexdigest(),'tests':tests,'source_sha256_lf':{f:hashlib.sha256((ROOT/f).read_bytes().replace(b'\r\n',b'\n')).hexdigest() for f in files}},indent=2))
 if __name__=='__main__':main()

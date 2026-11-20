@@ -1,5 +1,5 @@
 \ Explicit mono wrapper; load alone is silent, FALSE submits zeros.
-S" examples/zx-spectrum-audio.fs" INCLUDED
+S" examples/zx-spectrum-audio-demo.fs" REQUIRED
 S" examples/pcm-synth-play.fs" INCLUDED
 \ Publish a full ring initially: the host may render eight 480-frame buffers
 \ back-to-back. Keep subsequent production in 512-frame blocks.

@@ -8,7 +8,7 @@ with localcontext() as ctx:
 text = '\\ Original ideal3dB AY model levels, not measured chip DAC data.\nCREATE ZX-LEVELS\n'
 text += '\n'.join(' '.join(str(v) + ' ,' for v in values[i:i + 8]) for i in range(0, 16, 8)) + '\n'
 p = argparse.ArgumentParser(); p.add_argument('--check', action='store_true'); args = p.parse_args()
-target = Path(__file__).resolve().parents[1] / 'examples/zx-ay-levels.fs'
+target = Path(__file__).resolve().parents[1] / 'include/zx-ay-levels.fs'
 if args.check:
     if target.read_text(encoding='utf-8') != text: raise SystemExit('AY level table is stale')
 else: target.write_text(text, encoding='utf-8', newline='\n')

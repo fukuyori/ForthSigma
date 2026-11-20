@@ -153,8 +153,8 @@ class Model:
 def main():
  p=argparse.ArgumentParser(description=__doc__);p.add_argument('sigma',type=Path);p.add_argument('--benchmark',action='store_true');args=p.parse_args();binary=args.sigma.resolve()
  work=R/'.work/1132';work.mkdir(parents=True,exist_ok=True)
- report={'platform':platform.platform(),'binary_sha256':hashlib.sha256(binary.read_bytes()).hexdigest(),'source_sha256_lf':{f:hashlib.sha256((R/f).read_bytes().replace(b'\r\n',b'\n')).hexdigest() for f in ['examples/nes-apu.fs','examples/nes-apu-play.fs','tests/scripts/verify-nes-apu.py','examples/pcm-synth.fs','examples/pcm-synth-play.fs']},'tests':[]}
- def run(code,source='examples/nes-apu.fs'):
+ report={'platform':platform.platform(),'binary_sha256':hashlib.sha256(binary.read_bytes()).hexdigest(),'source_sha256_lf':{f:hashlib.sha256((R/f).read_bytes().replace(b'\r\n',b'\n')).hexdigest() for f in ['include/nes-apu.fs','examples/nes-apu-play.fs','tests/scripts/verify-nes-apu.py','examples/pcm-synth.fs','examples/pcm-synth-play.fs']},'tests':[]}
+ def run(code,source='examples/nes-apu-demo.fs'):
   # Use an owned input file so long event schedules do not hit the CLI -e string limit.
   with tempfile.NamedTemporaryFile('w',encoding='utf-8',suffix='.fs',dir=work,delete=False) as f:
    path=Path(f.name);f.write(code.replace(' NA-EVENT!',' NA-EVENT!\n'))

@@ -1,5 +1,5 @@
 \ Stereo32000Hz wrapper; load is silent, FALSE submits zeros.
-S" examples/snes-dsp-audio.fs" INCLUDED
+S" examples/snes-dsp-audio-demo.fs" REQUIRED
 S" examples/pcm-synth-play.fs" INCLUDED
 CREATE SD-PRIME 16384 ALLOT CREATE SD-BUFFER 2048 ALLOT
 : SD-SEND { address frames -- }

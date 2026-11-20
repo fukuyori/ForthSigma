@@ -109,7 +109,7 @@ def main():
   clean=' '.join(line for line in q.stdout.decode().splitlines() if not line.startswith('WARNING:')).strip()
   assert q.returncode==0 and not q.stderr and clean==expected+' 0',(name,q.returncode,clean,q.stderr)
   results.append({'case':name,'result':clean})
- files=['tests/scripts/verify-snes-dsp-audio-stream.py','examples/snes-dsp-audio.fs','examples/snes-gauss.fs','examples/snes-dsp-audio-play.fs','examples/pcm-synth-play.fs','examples/pcm-synth.fs']
- if args.native:files+=['src/core/sound_snes_dsp.zig','src/core/words_snes_dsp.zig','src/core/snes_gauss.zig','examples/snes-dsp-native-backend.fs','examples/snes-dsp-audio-native.fs','examples/snes-dsp-audio-native-play.fs']
+ files=['tests/scripts/verify-snes-dsp-audio-stream.py','include/snes-dsp-audio.fs','include/snes-gauss.fs','examples/snes-dsp-audio-play.fs','examples/pcm-synth-play.fs','examples/pcm-synth.fs']
+ if args.native:files+=['src/core/sound_snes_dsp.zig','src/core/words_snes_dsp.zig','src/core/snes_gauss.zig','include/snes-dsp-native-backend.fs','include/snes-dsp-audio-native.fs','examples/snes-dsp-audio-native-play.fs']
  print(json.dumps({'scope':__doc__,'binary_sha256':hashlib.sha256(binary.read_bytes()).hexdigest(),'tests':results,'source_sha256_lf':{f:hashlib.sha256((ROOT/f).read_bytes().replace(b'\r\n',b'\n')).hexdigest() for f in files}},indent=2))
 if __name__=='__main__':main()

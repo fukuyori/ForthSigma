@@ -1,5 +1,7 @@
 # CHIP-8 / SUPER-CHIP / XO-CHIPの音源モデル（1164）
 
+2026-11-21：モデルと補助の表は`include/`へ移し、`*-DEMO-SETUP`などデモ用の語は`examples/<名前>-demo.fs`へ分けた（1185）。`*-play.fs`はデモのファイルを読む。以下の記録にある`examples/`のモデルのパスは、移す前のものである。
+
 ## Mac受け入れ1167の完了（2026-11-20）
 
 main `c205820`、macOS 27.2.1 / Apple M5 / Zig 0.17.1。Zigソースは53ebe81から変更がなく、1154で作ったReleaseFast / cpu=baseline / strip=trueの4構成（全機能、debug/graphics/extension除外、float/debug/graphics/extension除外、audio/graphics/extension除外）を使った。作業ファイルは`.work/1167-1172-mac/`（git管理外）。

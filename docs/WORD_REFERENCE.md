@@ -2229,7 +2229,7 @@ Kind: builtin.
 Usage example
 
 ```forth
-S" examples/snes-dsp-audio.fs" INCLUDED REQUIRE-AUDIO ALSO AUDIO SD-REGS SD-ARAM SD-VOICES SD-GLOBALS SD-EHIST 0 1 SND-SNES-FRAMES
+S" include/snes-dsp-audio.fs" INCLUDED REQUIRE-AUDIO ALSO AUDIO SD-REGS SD-ARAM SD-VOICES SD-GLOBALS SD-EHIST 0 1 SND-SNES-FRAMES
 ```
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
@@ -2407,7 +2407,7 @@ Kind: library.
 Usage example
 
 ```forth
-S" examples/snes-dsp-audio.fs" INCLUDED REQUIRE-AUDIO ALSO AUDIO SD-REGS SD-ARAM SD-VOICES SD-GLOBALS SD-EHIST 0 1 SNES-FRAMES
+S" include/snes-dsp-audio.fs" INCLUDED REQUIRE-AUDIO ALSO AUDIO SD-REGS SD-ARAM SD-VOICES SD-GLOBALS SD-EHIST 0 1 SNES-FRAMES
 ```
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.

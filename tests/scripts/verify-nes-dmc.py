@@ -11,8 +11,8 @@ RATES=[428,380,340,320,286,254,226,214,190,160,142,128,106,84,72,54]
 def main():
  p=argparse.ArgumentParser(description=__doc__);p.add_argument('sigma',type=Path);p.add_argument('--benchmark',action='store_true');args=p.parse_args();binary=args.sigma.resolve()
  W=R/'.work/1135';W.mkdir(parents=True,exist_ok=True)
- report={'platform':platform.platform(),'binary_sha256':hashlib.sha256(binary.read_bytes()).hexdigest(),'source_sha256_lf':{f:hashlib.sha256((R/f).read_bytes().replace(b'\r\n',b'\n')).hexdigest() for f in ['examples/nes-apu.fs','examples/nes-apu-play.fs','examples/pcm-synth.fs','examples/pcm-synth-play.fs','tests/scripts/verify-nes-apu.py','tests/scripts/verify-nes-dmc.py']},'memory_fixture':{'description':'Original byte[i]=(37*i+11)&255; emulated addresses8000..FFFF. No ROM.','sha256':hashlib.sha256(MEMORY).hexdigest()},'tests':[]}
- def run(code,source='examples/nes-apu.fs'):
+ report={'platform':platform.platform(),'binary_sha256':hashlib.sha256(binary.read_bytes()).hexdigest(),'source_sha256_lf':{f:hashlib.sha256((R/f).read_bytes().replace(b'\r\n',b'\n')).hexdigest() for f in ['include/nes-apu.fs','examples/nes-apu-play.fs','examples/pcm-synth.fs','examples/pcm-synth-play.fs','tests/scripts/verify-nes-apu.py','tests/scripts/verify-nes-dmc.py']},'memory_fixture':{'description':'Original byte[i]=(37*i+11)&255; emulated addresses8000..FFFF. No ROM.','sha256':hashlib.sha256(MEMORY).hexdigest()},'tests':[]}
+ def run(code,source='examples/nes-apu-demo.fs'):
   with tempfile.NamedTemporaryFile('w',encoding='utf-8',suffix='.fs',dir=W,delete=False) as f:
    path=Path(f.name);f.write(code.replace(' NA-EVENT!',' NA-EVENT!\n'))
   try:q=subprocess.run([str(binary),source,str(path)],cwd=R,input=b'',capture_output=True,timeout=45)

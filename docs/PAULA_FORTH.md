@@ -1,5 +1,7 @@
 # Paula のForthレジスタモデル（1137）
 
+2026-11-21：モデルと補助の表は`include/`へ移し、`*-DEMO-SETUP`などデモ用の語は`examples/<名前>-demo.fs`へ分けた（1185）。`*-play.fs`はデモのファイルを読む。以下の記録にある`examples/`のモデルのパスは、移す前のものである。
+
 ## Linux実聴1156の受け入れ完了（2026-11-20）
 
 レモンがWSL上のLinux版→pacat→WSLg PulseAudio RDPSinkで、4声stereo約3秒、DMACON=6/9による左だけ→右だけ各約1.5秒を確認。物理Ctrl+C後の停止と約3秒の再再生も確認し、CATCH=-28/handle=0、REPLAY-OK handle=0、code0、underrun0を記録。1156と親1137を完了。[環境と全結果](measurements/2026-11-20-linux-audio-listening.json)。Linux実機ALSA・実機Amiga互換の確認ではない。以下のLinux未確認は履歴。

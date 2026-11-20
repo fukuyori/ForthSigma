@@ -1,5 +1,7 @@
 # ZX Spectrum48K/128KのForth音源（1169）
 
+2026-11-21：モデルと補助の表は`include/`へ移し、`*-DEMO-SETUP`などデモ用の語は`examples/<名前>-demo.fs`へ分けた（1185）。`*-play.fs`はデモのファイルを読む。以下の記録にある`examples/`のモデルのパスは、移す前のものである。
+
 2026-11-20、レモンが48K beeperと128K beeper+AYを対象とすることを承認した。1169は音源側の仕様/実装/独立検証。Windows1170/Linux1171/Mac1172の測定・実聴は別に残す。CPU/ROM/画面/keyboard/テープ/MIDIの実装ではない。
 
 ## Mac受け入れ1172の完了（2026-11-20）

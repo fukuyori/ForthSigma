@@ -98,7 +98,7 @@ def main():
     def run(code):
         with tempfile.NamedTemporaryFile('w',encoding='utf-8',suffix='.fs',dir=work,delete=False) as f:
             file=Path(f.name); f.write(DUMP+code+'\nDEPTH . BYE\n')
-        try: r=subprocess.run([str(binary),'examples/zx-spectrum-audio.fs',str(file)],cwd=ROOT,input=b'',capture_output=True,timeout=60)
+        try: r=subprocess.run([str(binary),'examples/zx-spectrum-audio-demo.fs',str(file)],cwd=ROOT,input=b'',capture_output=True,timeout=60)
         finally: file.unlink()
         assert r.returncode==0 and not r.stderr,(r.returncode,r.stdout[:2000],r.stderr)
         values=list(map(int,r.stdout.split())); assert values.pop()==0,'stack leak'; return values
@@ -185,7 +185,7 @@ def main():
         assert r==[9223372036854775734+(3546895 if mode else 3500000)//48000,(3546895 if mode else 3500000)%48000]
     assert run('0 ZX-RESET : BAD -1 1 ZX-RENDER ; \' BAD CATCH . ZX-CYCLE @ . ZX-FRACTION @ .')==[-9,72,44000]
     tests.append({'case':'queue-capacity-reclaim-wide-time-preflight-and-partial-memory-error'})
-    files=['tests/scripts/verify-zx-spectrum-audio.py','examples/zx-spectrum-audio.fs','examples/zx-ay-levels.fs','examples/zx-spectrum-audio-play.fs','scripts/zx-ay-levels.py']
+    files=['tests/scripts/verify-zx-spectrum-audio.py','include/zx-spectrum-audio.fs','include/zx-ay-levels.fs','examples/zx-spectrum-audio-play.fs','scripts/zx-ay-levels.py']
     print(json.dumps({'platform':platform.platform(),'scope':__doc__,'binary_sha256':hashlib.sha256(binary.read_bytes()).hexdigest(),'source_sha256_lf':{f:hashlib.sha256((ROOT/f).read_bytes().replace(b'\r\n',b'\n')).hexdigest() for f in files},'tests':tests},indent=2))
 
 

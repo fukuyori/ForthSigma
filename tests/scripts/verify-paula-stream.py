@@ -45,5 +45,5 @@ def main():
   clean=' '.join(line for line in q.stdout.decode().splitlines() if not line.startswith('WARNING:')).strip()
   assert q.returncode==0 and not q.stderr and clean==expected+' 0',(name,q.returncode,clean,q.stderr)
   results.append({'case':name,'result':clean})
- print(json.dumps({'scope':__doc__,'binary_sha256':hashlib.sha256(binary.read_bytes()).hexdigest(),'tests':results,'source_sha256_lf':{f:hashlib.sha256((ROOT/f).read_bytes().replace(b'\r\n',b'\n')).hexdigest() for f in ['tests/scripts/verify-paula-stream.py','examples/paula-play.fs','examples/paula.fs','examples/pcm-synth-play.fs','examples/pcm-synth.fs']}},indent=2))
+ print(json.dumps({'scope':__doc__,'binary_sha256':hashlib.sha256(binary.read_bytes()).hexdigest(),'tests':results,'source_sha256_lf':{f:hashlib.sha256((ROOT/f).read_bytes().replace(b'\r\n',b'\n')).hexdigest() for f in ['tests/scripts/verify-paula-stream.py','examples/paula-play.fs','include/paula.fs','examples/pcm-synth-play.fs','examples/pcm-synth.fs']}},indent=2))
 if __name__=='__main__':main()

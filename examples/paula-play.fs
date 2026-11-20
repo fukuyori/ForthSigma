@@ -1,5 +1,5 @@
 \ Explicit stereo wrapper; loading never plays sound. FALSE submits zero samples.
-S" examples/paula.fs" INCLUDED
+S" examples/paula-demo.fs" REQUIRED
 S" examples/pcm-synth-play.fs" INCLUDED
 CREATE PA-BUFFER 2048 ALLOT
 : PA-SEND ( -- )

@@ -101,9 +101,9 @@ class Model:
 def main():
  p=argparse.ArgumentParser(description=__doc__);p.add_argument('sigma',type=Path);p.add_argument('--benchmark',action='store_true');args=p.parse_args();binary=args.sigma.resolve()
  work=ROOT/'.work/1137';work.mkdir(parents=True,exist_ok=True)
- files=['examples/paula.fs','examples/paula-play.fs','tests/scripts/verify-paula.py','examples/pcm-synth-play.fs','examples/pcm-synth.fs']
+ files=['include/paula.fs','examples/paula-play.fs','tests/scripts/verify-paula.py','examples/pcm-synth-play.fs','examples/pcm-synth.fs']
  report={'platform':platform.platform(),'binary_sha256':hashlib.sha256(binary.read_bytes()).hexdigest(),'source_sha256_lf':{f:hashlib.sha256((ROOT/f).read_bytes().replace(b'\r\n',b'\n')).hexdigest() for f in files},'tests':[]}
- def run(code,source='examples/paula.fs'):
+ def run(code,source='examples/paula-demo.fs'):
   with tempfile.NamedTemporaryFile('w',encoding='utf-8',suffix='.fs',dir=work,delete=False) as f:
    path=Path(f.name);f.write(code.replace(' PA-EVENT!',' PA-EVENT!\n'))
   try:q=subprocess.run([str(binary),source,str(path)],cwd=ROOT,input=b'',capture_output=True,timeout=45)

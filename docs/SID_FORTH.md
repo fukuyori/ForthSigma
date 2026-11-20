@@ -1,5 +1,7 @@
 # C64 SID のForthモデル（1136、1141/1142）
 
+2026-11-21：モデルと補助の表は`include/`へ移し、`*-DEMO-SETUP`などデモ用の語は`examples/<名前>-demo.fs`へ分けた（1185）。`*-play.fs`はデモのファイルを読む。以下の記録にある`examples/`のモデルのパスは、移す前のものである。
+
 ## Linux実聴1158の受け入れ完了（2026-11-20）
 
 レモンがWSL上のLinux版→pacat→WSLg PulseAudio RDPSinkで、3声デモ約4秒と停止、物理Ctrl+C後の停止と約4秒の再再生を確認。CATCH=-28/handle=0、REPLAY-OK handle=0、code0、underrun0を記録し、1158と親1136を完了。[環境と全結果](measurements/2026-11-20-linux-audio-listening.json)。Linux実機ALSA・実機SID/ROM互換の確認ではない。以下のLinux未確認は履歴。

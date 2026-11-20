@@ -1,6 +1,6 @@
 \ Explicit PCM wrapper. Loading never plays sound. Run from repository root.
 \ sigma examples/ym2149-play.fs -e "YM-DEMO-SETUP 16 FALSE YM-STREAM BYE"
-S" examples/ym2149.fs" INCLUDED
+S" examples/ym2149-demo.fs" REQUIRED
 S" examples/pcm-synth-play.fs" INCLUDED
 : YM-STREAM-RUN ( -- )
   YM-RATE 1 4096 PCM-OPEN THROW PS-HANDLE !

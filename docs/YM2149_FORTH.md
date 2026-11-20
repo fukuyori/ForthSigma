@@ -1,5 +1,7 @@
 # Atari ST YM2149：既存対応の監査とForthモデル（1138）
 
+2026-11-21：モデルと補助の表は`include/`へ移し、`*-DEMO-SETUP`などデモ用の語は`examples/<名前>-demo.fs`へ分けた（1185）。`*-play.fs`はデモのファイルを読む。以下の記録にある`examples/`のモデルのパスは、移す前のものである。
+
 ## Mac実機受け入れ1154（2026-11-20）
 
 main `53ebe81`、macOS 27.2.1 / Apple M5 / Zig 0.17.1。固定音量0の修正を含むソースからReleaseFast / cpu=baseline / strip=trueで4構成（全機能、debug/graphics/extension除外、float/debug/graphics/extension除外、audio/graphics/extension除外）を新たにビルドした。作業ファイルは`.work/1154-mac/`（git管理外）。

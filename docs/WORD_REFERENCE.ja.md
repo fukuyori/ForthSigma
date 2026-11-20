@@ -2673,7 +2673,7 @@ Internal synchronous S-DSP kernel. Layout 1 borrows disjoint buffers: 128 bytes 
 使用例
 
 ```forth
-S" examples/snes-dsp-audio.fs" INCLUDED REQUIRE-AUDIO ALSO AUDIO SD-REGS SD-ARAM SD-VOICES SD-GLOBALS SD-EHIST 0 1 SND-SNES-FRAMES
+S" include/snes-dsp-audio.fs" INCLUDED REQUIRE-AUDIO ALSO AUDIO SD-REGS SD-ARAM SD-VOICES SD-GLOBALS SD-EHIST 0 1 SND-SNES-FRAMES
 ```
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
@@ -2893,7 +2893,7 @@ Synchronous S-DSP frame kernel; layout1 and five disjoint borrowed VM buffers. S
 使用例
 
 ```forth
-S" examples/snes-dsp-audio.fs" INCLUDED REQUIRE-AUDIO ALSO AUDIO SD-REGS SD-ARAM SD-VOICES SD-GLOBALS SD-EHIST 0 1 SNES-FRAMES
+S" include/snes-dsp-audio.fs" INCLUDED REQUIRE-AUDIO ALSO AUDIO SD-REGS SD-ARAM SD-VOICES SD-GLOBALS SD-EHIST 0 1 SNES-FRAMES
 ```
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。

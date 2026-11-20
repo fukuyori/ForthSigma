@@ -1,0 +1,7 @@
+\ Demo setup for the Atari ST YM2149 model (include/ym2149.fs). Run from the repository root.
+S" include/ym2149.fs" REQUIRED
+: YM-DEMO-SETUP ( -- )
+  YM-RESET 28 0 0 YM-WRITE 1 1 0 YM-WRITE 227 2 0 YM-WRITE 1 3 0 YM-WRITE
+  82 4 0 YM-WRITE 2 5 0 YM-WRITE 9 6 0 YM-WRITE 48 7 0 YM-WRITE
+  12 8 0 YM-WRITE 10 9 0 YM-WRITE 16 10 0 YM-WRITE
+  100 11 0 YM-WRITE 0 12 0 YM-WRITE 14 13 0 YM-WRITE ;

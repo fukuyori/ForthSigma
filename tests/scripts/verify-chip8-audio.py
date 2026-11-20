@@ -78,7 +78,7 @@ def main():
     def run(code):
         with tempfile.NamedTemporaryFile('w', encoding='utf-8', suffix='.fs', dir=work, delete=False) as f:
             path = Path(f.name); f.write(DUMP + code + '\nDEPTH . BYE\n')
-        try: q = subprocess.run([str(binary), 'examples/chip8-audio.fs', str(path)], cwd=ROOT, input=b'', capture_output=True, timeout=30)
+        try: q = subprocess.run([str(binary), 'examples/chip8-audio-demo.fs', str(path)], cwd=ROOT, input=b'', capture_output=True, timeout=30)
         finally: path.unlink()
         assert q.returncode == 0 and not q.stderr, (q.returncode, q.stdout[:2000], q.stderr)
         values = list(map(int, q.stdout.split()))
@@ -198,7 +198,7 @@ OUT 1024 + 513 C8-RENDER
     assert run('9223372036854774807 C8-TO CREATE OUT 2 ALLOT OUT 1 C8-RENDER C8-CYCLE @ . OUT C@ . OUT 1+ C@ .') == [(1 << 63) - 1, 0, 0]
     assert run('1 0 C8-TIMER! : BAD -1 1 C8-RENDER ; \' BAD CATCH . C8-CYCLE @ .') == [-9, 1000]
     tests.append({'case': 'queue-capacity-reclaim-and-int64-overflow'})
-    files = ['examples/chip8-audio.fs', 'examples/chip8-pitches.fs', 'examples/chip8-audio-play.fs', 'scripts/chip8-pitches.py', 'tests/scripts/verify-chip8-audio.py']
+    files = ['include/chip8-audio.fs', 'include/chip8-pitches.fs', 'examples/chip8-audio-play.fs', 'scripts/chip8-pitches.py', 'tests/scripts/verify-chip8-audio.py']
     print(json.dumps({'platform': platform.platform(), 'binary_sha256': hashlib.sha256(binary.read_bytes()).hexdigest(),
                       'source_sha256_lf': {f: hashlib.sha256((ROOT / f).read_bytes().replace(b'\r\n', b'\n')).hexdigest() for f in files},
                       'tests': tests, 'scope': __doc__}, indent=2))

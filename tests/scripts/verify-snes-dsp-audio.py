@@ -160,7 +160,7 @@ def main():
         tests.append({'case':'independent-extraction-from-reference-document','reference_sha256':hashlib.sha256(args.reference_doc.read_bytes()).hexdigest()})
     def run(code):
         with tempfile.NamedTemporaryFile('w',encoding='utf-8',suffix='.fs',dir=work,delete=False) as f:file=Path(f.name);f.write(DUMP+code+'\nDEPTH . BYE\n')
-        try:r=subprocess.run([str(binary),'examples/snes-dsp-audio-native.fs' if args.native else 'examples/snes-dsp-audio.fs',str(file)],cwd=ROOT,input=b'',capture_output=True,timeout=60)
+        try:r=subprocess.run([str(binary),'examples/snes-dsp-audio-native-demo.fs' if args.native else 'examples/snes-dsp-audio-demo.fs',str(file)],cwd=ROOT,input=b'',capture_output=True,timeout=60)
         finally:file.unlink()
         assert r.returncode==0 and not r.stderr,(r.returncode,r.stdout[:1500],r.stderr)
         v=list(map(int,r.stdout.split()));assert v.pop()==0,'stack leak';return v
@@ -323,7 +323,7 @@ def main():
     assert run("SD-RESET 9223372036854775791 SD-CYCLE ! : BAD 17 SD-RUN ; ' BAD CATCH . SD-CYCLE @ .")==[-24,9223372036854775791]
     assert run("SD-RESET : BAD -1 1 SD-RENDER ; ' BAD CATCH . SD-CYCLE @ . SD-FRAME @ .")==[-9,32,1]
     tests.append({'case':'error-atomicity-entire-aram-queue-capacity-reclaim-time-and-memory','atomic_cases':len(error_cases)})
-    files=['examples/snes-dsp-audio.fs','examples/snes-gauss.fs','examples/snes-dsp-audio-play.fs','scripts/snes-tables.py','scripts/snes-gauss-data.json','tests/scripts/verify-snes-dsp-audio.py']
-    if args.native:files+=['src/core/sound_snes_dsp.zig','src/core/words_snes_dsp.zig','src/core/snes_gauss.zig','examples/snes-dsp-native-backend.fs','examples/snes-dsp-audio-native.fs']
+    files=['include/snes-dsp-audio.fs','include/snes-gauss.fs','examples/snes-dsp-audio-play.fs','scripts/snes-tables.py','scripts/snes-gauss-data.json','tests/scripts/verify-snes-dsp-audio.py']
+    if args.native:files+=['src/core/sound_snes_dsp.zig','src/core/words_snes_dsp.zig','src/core/snes_gauss.zig','include/snes-dsp-native-backend.fs','include/snes-dsp-audio-native.fs']
     print(json.dumps({'scope':__doc__,'platform':platform.platform(),'backend':'native' if args.native else 'forth','binary_sha256':hashlib.sha256(binary.read_bytes()).hexdigest(),'tests':tests,'source_sha256_lf':{f:hashlib.sha256((ROOT/f).read_bytes().replace(b'\r\n',b'\n')).hexdigest() for f in files}},indent=2))
 if __name__=='__main__':main()

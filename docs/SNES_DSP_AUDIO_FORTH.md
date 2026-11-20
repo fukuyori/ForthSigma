@@ -1,5 +1,7 @@
 # SNES標準S-DSPのForth音源（1174）
 
+2026-11-21：モデルと補助の表は`include/`へ移し、`*-DEMO-SETUP`などデモ用の語は`examples/<名前>-demo.fs`へ分けた（1185）。`*-play.fs`はデモのファイルを読む。以下の記録にある`examples/`のモデルのパスは、移す前のものである。
+
 レモンが標準S-DSPの8声/BRR・envelope/noise・pitch modulation・echo/FIRを承認した。SPC700 CPU/ROM/APU port/実機bus/アナログ回路は含めない。1174は仕様/実装/独立検証、Windows1175/Linux1176/Mac1177で速度・採否・実聴。Mac完了まで親1173は未完了。
 
 ## 資料・実装の来歴
@@ -117,7 +119,7 @@ Windows fullのHEREは122880→218632（増分95752byte、HEREのlogical領域�
 既定は参照Forth版のまま。以下はRAM内の処理を選ぶ読込みで、音は再生しない。
 
 ```forth
-S" examples/snes-dsp-audio-native.fs" INCLUDED
+S" examples/snes-dsp-audio-native-demo.fs" INCLUDED
 SD-DEMO-SETUP
 CREATE OUT 4096 ALLOT
 OUT 1024 SD-RENDER

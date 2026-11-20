@@ -54,7 +54,7 @@ def main():
                 source+=f'SUM . SNAP S" {pcm.as_posix()}" W/O CREATE-FILE THROW CONSTANT FD OUT 65536 FD WRITE-FILE THROW FD CLOSE-FILE THROW DEPTH . BYE\n'
                 file.write_text(source,encoding='utf-8',newline='\n')
                 pcm.unlink(missing_ok=True)
-                r=subprocess.run([str(binary),'examples/zx-spectrum-audio.fs',str(file)],cwd=ROOT,input=b'',capture_output=True,timeout=60)
+                r=subprocess.run([str(binary),'examples/zx-spectrum-audio-demo.fs',str(file)],cwd=ROOT,input=b'',capture_output=True,timeout=60)
                 assert r.returncode==0 and not r.stderr,(name,r.returncode,r.stdout[:1000],r.stderr)
                 v=list(map(int,r.stdout.split()));assert len(v)==88 and v[-1]==0,(name,v)
                 assert v[:2]==[165,165] and v[2:41]==oracle.Model(c['mode']).state() and v[41:43]==[c['initial'],0],(name,'pre-state')
@@ -65,7 +65,7 @@ def main():
                 c['last_source']=source
     for name,c in cases.items():
         w=c['wall'];report['workloads'][name]={'frames':FRAMES,'events':len(c['events']),'all_full_pcm_and_state_checks_passed':True,'pcm_sha256':hashlib.sha256(c['pcm']).hexdigest(),'nonzero_samples':sum(x!=0 for x in struct.unpack('<32768h',c['pcm'])),'final_semantic_state':c['model'].state(),'final_queue_count_and_index':[c['final']]*2,'wall_nanoseconds':w,'process_cpu_microseconds':c['cpu'],'timed_pre_states':c['pre_states'],'timed_post_states':c['post_states'],'median_ns_per_frame':statistics.median(w)/FRAMES if w else None,'median_realtime_ratio':FRAMES/48000*1e9/statistics.median(w) if w else None,'forth_source':c['last_source']}
-    files=['tests/scripts/measure-zx-spectrum-audio.py','tests/scripts/verify-zx-spectrum-audio.py','examples/zx-spectrum-audio.fs','examples/zx-ay-levels.fs']
+    files=['tests/scripts/measure-zx-spectrum-audio.py','tests/scripts/verify-zx-spectrum-audio.py','include/zx-spectrum-audio.fs','include/zx-ay-levels.fs']
     report['source_sha256_lf']={f:hashlib.sha256((ROOT/f).read_bytes().replace(b'\r\n',b'\n')).hexdigest() for f in files}
     print(json.dumps(report,indent=2))
 if __name__=='__main__':main()

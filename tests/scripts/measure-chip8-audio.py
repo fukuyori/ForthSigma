@@ -55,7 +55,7 @@ def main():
     args = parser.parse_args(); binary = args.sigma.resolve()
     folder = ROOT / '.work/1165-1166'; folder.mkdir(parents=True, exist_ok=True)
     files = ['tests/scripts/measure-chip8-audio.py', 'tests/scripts/verify-chip8-audio.py',
-             'examples/chip8-audio.fs', 'examples/chip8-pitches.fs', 'scripts/chip8-pitches.py']
+             'include/chip8-audio.fs', 'include/chip8-pitches.fs', 'scripts/chip8-pitches.py']
     report = {'platform': platform.platform(), 'binary_sha256': hashlib.sha256(binary.read_bytes()).hexdigest(),
               'source_sha256_lf': {f: hashlib.sha256((ROOT / f).read_bytes().replace(b'\r\n', b'\n')).hexdigest() for f in files},
               'scope': 'Sequential full-build timings only; seven fresh-process rounds with rotated workload order. Initial setup/warmup/reset and A5 buffer fill/pre-state check outside timing; dense pattern generation/owned enqueue/compaction inside. Wall is primary, CPU reference only (possibly quantized). No device or CPU emulator. Full32768frame PCM and22 semantic states checked before timing and after every timed run. Clock/background apps uncontrolled; Linux in this session is WSL2.', 'workloads': {}}
@@ -98,7 +98,7 @@ def main():
                 tail = f'CHECKSUM . SNAP S" {pcm.as_posix()}" W/O CREATE-FILE THROW CONSTANT FD OUT 65536 FD WRITE-FILE THROW FD CLOSE-FILE THROW DEPTH . BYE\n'
                 source = oracle.DUMP + base + body + tail
                 script.write_text(source, encoding='utf-8', newline='\n')
-                result = subprocess.run([str(binary), 'examples/chip8-audio.fs', str(script)], cwd=ROOT,
+                result = subprocess.run([str(binary), 'examples/chip8-audio-demo.fs', str(script)], cwd=ROOT,
                                         input=b'', capture_output=True, timeout=45)
                 assert result.returncode == 0 and not result.stderr, (name, result.returncode, result.stdout, result.stderr)
                 values = list(map(int, result.stdout.split())); assert len(values) == 54 and values[-1] == 0, values
