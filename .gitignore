@@ -5,3 +5,4 @@ dist/
 /try/
 /reference/
 /.zig-global-cache/
+__pycache__/

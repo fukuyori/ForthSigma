@@ -47,7 +47,7 @@ DMC=0なら1134の4声の表と値が一致する。変更前の測定値・指�
 python tests/scripts/verify-nes-dmc.py zig-out/bin/sigma --benchmark
 ```
 
-サンプルは独自のbyte[i]=(37i+11)&255で、市販ROMや第三者の音声を使用しない。PCM自動試験は5声を合成した後で0を渡す。生成波形の実聴、実機DMA、Macでの新しい例の実行は未確認。既存PCM基盤のMac1130は完了済み。
+サンプルは独自のbyte[i]=(37i+11)&255で、市販ROMや第三者の音声を使用しない。PCM自動試験は5声を合成した後で0を渡す。生成波形の実聴、実機DMA、Macでの新しい例の実行は未確認。既存PCM基盤のMac1130は完了済み。（追記：Mac実行と実聴は[1144](#mac実機受け入れ1144)で確認。）
 
 ### 測定の比較条件
 
@@ -97,8 +97,35 @@ CPU/PPUやDMAの停止、アナログfilter、装置遅延を含むNES全体の�
 | windows-no-debug | 0.311 | 8192 | -1 |
 | linux-no-debug | 0.815 | 8192 | 0 |
 
-LinuxのAUDIO?=0は無音の消費で、実音声装置の確認ではない。生成波形を実際に聞く確認とMac上のこの例の実行は未確認として残す。
+LinuxのAUDIO?=0は無音の消費で、実音声装置の確認ではない。生成波形を実際に聞く確認とMac上のこの例の実行は未確認として残す。（追記：Macは1144で確認済み、Windows/Linuxの実聴はtque 1150（Windows）・1151（Linux）。）
 
 ## レビュー
 
 [設計原文](reviews/1135-design-claude-review.md)、[実装原文](reviews/1135-implementation-claude-review.md)、[最終原文](reviews/1135-final-claude-review.md)、[評価・採否](reviews/1135-review-response.md)を分ける。Claudeは読み取り専用で、実行試験をしたという意味ではない。最終レビューはHigh/Mediumなし。固定4声ハッシュ、rate保持の手計算、全対象の最終採否の依存関係、測定条件の説明を補強した。
+
+## Mac実機受け入れ（1144）
+
+2026-11-20、main `1f1a67c`、macOS 27.2.1 / Apple M5 / Zig 0.17.1。Zigソースは9d1c528から変更がなく、1130で作ったReleaseFast / cpu=baseline / strip=trueの実行体（全機能、debug/graphics/extension除外、audio/graphics/extension除外）を使った。作業ファイルは`.work/1144-mac/`・`.work/1143-mac/`（git管理外）。
+
+| 対象 | 結果 |
+| --- | --- |
+| verify-nes-apu.py（全機能・debug等除外） | 各12検査群成功。4声固定PCMのSHA256はc63131af…d94755でWindows/Linuxと一致 |
+| verify-nes-dmc.py --benchmark（同2構成） | 各8検査群成功。全検査のSHA256・境界値がWindowsの記録と一致（5声2048frame 57913656…、LUT32799項目56ac605a…、pulse最大8469・TND最大24297） |
+| audio/graphics/extension除外 | `1000 23039 0`、status0（Windows/Linuxと同じ） |
+| 論理辞書領域 | 読込み前122880→後443760、差320880byte（全機能・debug除外とも同じ） |
+| 無音PCM送出 | 8192frame、AUDIO?=-1、全process約0.287秒 |
+
+合成負荷（32768frame、各7process中央値、Apple M5、他アプリ停止なし）：
+
+| 構成 | fast | reference | 最速noise+DMC | 8kHz DAC |
+| --- | --- | --- | --- | --- |
+| 全機能 | 12.99倍（1604ns/frame） | 1.53倍 | 9.17倍 | 10.03倍 |
+| debug等除外 | 10.13倍 | 1.31倍 | 7.04倍 | 7.97倍 |
+
+レモンがGhosttyで実際に聞いた（`.work/1144-mac/nes.fs`）。4声デモ約3秒、DMCを加えた5声約3秒、連続再生中のCtrl+Cで`CATCH= -28 handle=0`、その後の再再生、status0。各回underrun0。音声起動後fd13/thread8、終了前fd13/thread7で増加なし。
+
+ただし検証用DMCデータ（(37i+11)&255の65byte loop）を加えた5声は、4声と同じに聞こえた。差分を計算すると、DMC成分は約64Hzとその倍音が中心で、交流RMSは4声1秒分の3542に対し1162、平均値（直流）が9216→18047へ移るだけだった。MacBookの内蔵スピーカーでは聞き分けにくい。そこで`.work/1144-mac/dmc-tone.fs`で、17byte loop（FF×8、00×9）、rate15、DAC0から始まるDMCだけの音を作った。波形から零交差243.5Hz・min8074/max22248を確かめてから聞き、DMC単独のブザー音、4声だけの音、4声＋ブザーとの違いがいずれも聞き分けられた。
+
+Ctrl+Cの扱い：PS-SENDはPCM-WAITと合成を交互に行う。Macで300blockを測ると3.18秒中1.02秒が合成で、待機中に届いたCtrl+Cは`-28`で捕捉されhandleを解放する。合成中に届いた場合は[既存の規則](USER_MANUAL.ja.md)どおり確認点のない計算としてOSが終了させる（SIGINTを無作為な時刻に20回送り、13回-28・7回シグナル終了）。例の不具合ではなく、現行の中断規則による。
+
+Windows/Linuxでの生成波形の実聴は未確認（tque 1150（Windows）・1151（Linux））。実機DMA・ROM互換は範囲外のまま。

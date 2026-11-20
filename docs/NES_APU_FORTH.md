@@ -118,7 +118,7 @@ Windows GNU/Linux musl（WSL）の通常版とdebug/graphics/extension除外版�
 | windows-no-debug | 0.303 | 22 | 5 | 1 | 6 | 1 | -1 |
 | linux-no-debug | 0.827 | 32 | 16 | 0 | 16 | 0 | 0 |
 
-AUDIO?が0のLinuxは無音消費であり、実音声装置での確認ではない。underrunを0へ丸めず記録している。物理キー・生成波形の実聴・MacでのこのNES例の実行は未確認。既存のPCM基盤のMac受け入れ1130はdde0547で完了済みで、今回のNES例の未確認とは区別する。
+AUDIO?が0のLinuxは無音消費であり、実音声装置での確認ではない。underrunを0へ丸めず記録している。物理キー・生成波形の実聴・MacでのこのNES例の実行は未確認（追記：Mac実行と実聴は[1144](NES_DMC_FORTH.md#mac実機受け入れ1144)で確認）。既存のPCM基盤のMac受け入れ1130はdde0547で完了済みで、今回のNES例の未確認とは区別する。
 
 ## NES以外の対象
 

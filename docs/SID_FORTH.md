@@ -60,7 +60,7 @@ Q16のstate-variable近似を1標本に2回、同じ入力で進める。alpha[F
 
 ## 検証と測定
 
-実行結果・負荷・採否は以下に記録する。既存PCMのMac1130は完了済みだが、このSID例のMac実行は未確認として残す。Windows自動試験は生成後にゼロをPCMへ送るため、実聴確認ではない。
+実行結果・負荷・採否は以下に記録する。既存PCMのMac1130は完了済みだが、このSID例のMac実行は未確認として残す（追記：[1143](#mac実機受け入れ1143)で確認）。Windows自動試験は生成後にゼロをPCMへ送るため、実聴確認ではない。
 
 ## 実行結果と採否（2026-11-20）
 
@@ -84,6 +84,34 @@ Windows GNUとWSL Linux muslで通常版、debug/graphics/extension除外版、�
 
 本体のZigソースは変更せず、PCM1128のソース指紋を全項目照合した既存ReleaseFast/cpu=baseline/strip=true実行体を使った。通常版の実行ファイルのサイズ増加は0。Windows通常版でHEREの差は41688byte（読込み前122880、後164568）。これは論理辞書領域であり、RSSではない。主な固定表は2048cellの係数と3072cellの予定表である。audio/graphics/extension=falseでも純粋な合成例をWindows/Linuxで実行でき、512frame後は10509clock・stack深さ0だった。
 
-Windows通常版はAUDIO?=-1、WSL LinuxはAUDIO?=0の無音consumerであり、Linux実装置の検証ではない。自動PCM試験は8192frameを合成後ゼロ化してopen/write/wait/drain/closeし、時刻overflowで中断した場合もhandleを解放した。生成音の実聴、SID例のMac実行、実機/ROMとの一致は未確認。既存PCMのMac1130完了とは別に残す。親999の他機種と対象照合も継続する。
+Windows通常版はAUDIO?=-1、WSL LinuxはAUDIO?=0の無音consumerであり、Linux実装置の検証ではない。自動PCM試験は8192frameを合成後ゼロ化してopen/write/wait/drain/closeし、時刻overflowで中断した場合もhandleを解放した。生成音の実聴、SID例のMac実行、実機/ROMとの一致は未確認（追記：Mac実行と実聴は1143で確認、Windows/Linuxの実聴はtque 1150（Windows）・1151（Linux））。既存PCMのMac1130完了とは別に残す。親999の他機種と対象照合も継続する。
 
 [設計・実装・追加・最終レビューと採否](reviews/1136-review-response.md)を保存した。実装Medium3件と追加N1を解決し、最終ClaudeレビューはHigh/Mediumなし。レビューは読取りだけで、ここに記録した実行結果はロクによる。
+
+## Mac実機受け入れ（1143）
+
+2026-11-20、main `1f1a67c`、macOS 27.2.1 / Apple M5 / Zig 0.17.1。Zigソースは9d1c528から変更がなく、1130で作ったReleaseFast / cpu=baseline / strip=trueの実行体（全機能、debug/graphics/extension除外、audio/graphics/extension除外）を使った。作業ファイルは`.work/1144-mac/`・`.work/1143-mac/`（git管理外）。 float除外版（float/debug/graphics/extension=false、audio=true）は同じ設定で新たにビルドした。
+
+| 対象 | 結果 |
+| --- | --- |
+| verify-sid.py --benchmark（全機能・debug等除外・float除外） | 各12検査群成功、全検査の結果がWindowsの記録と一致。3声2048frame固定PCM ad597ded…990c7、係数2048項目09a84573… |
+| audio/graphics/extension除外 | `10509 0`、status0 |
+| 論理辞書領域 | 122880→164568、差41688byte |
+| 無音PCM送出 | 8192frame、AUDIO?=-1、clipping0、全process約0.284秒 |
+| 実行体サイズ | 全機能1,990,632、debug等除外1,497,752、float除外1,046,648byte |
+
+合成負荷（32768frame、各7process中央値。音声時間÷wall）：
+
+| 構成 | 通常まとめ | 1clock | 最大filter/同期/混在 | 3声noise | 8kHz書込み |
+| --- | --- | --- | --- | --- | --- |
+| 全機能 | 3.58倍 | 1.02倍 | 1.43倍 | 1.63倍 | 1.46倍 |
+| debug等除外 | 3.19倍 | 0.86倍 | 1.31倍 | 1.41倍 | 1.34倍 |
+| float除外 | 3.20倍 | 0.84倍 | 1.32倍 | 1.42倍 | 1.33倍 |
+
+clipping数（0/2594/8525/5737）とfilter制限0はWindows/Linuxと同じ。重い条件の余裕が小さいという判断は変わらない。
+
+レモンがGhosttyで実際に聞いた（`.work/1144-mac/sid.fs`）。3声デモ約4秒、連続再生中のCtrl+Cで`CATCH= -28 handle=0`、その後の再再生、`ACCEPT`での入力、status0。underrun0、fd13は不変、thread8→7。画面出力に加え、聞こえ方の相違の報告はなかった。
+
+Ctrl+Cの扱い：PS-SENDはPCM-WAITと合成を交互に行う。Macで300blockを測ると3.18秒中1.02秒が合成で、待機中に届いたCtrl+Cは`-28`で捕捉されhandleを解放する。合成中に届いた場合は[既存の規則](USER_MANUAL.ja.md)どおり確認点のない計算としてOSが終了させる（SIGINTを無作為な時刻に20回送り、13回-28・7回シグナル終了）。例の不具合ではなく、現行の中断規則による。
+
+Windows/Linuxでの生成波形の実聴は未確認（tque 1150（Windows）・1151（Linux））。6581/8580実機・ROM互換は範囲外のまま。
