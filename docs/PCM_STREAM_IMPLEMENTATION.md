@@ -1,5 +1,9 @@
 # PCMストリーム：内部実装と検証（998 / 1125・1126）
 
+2026-11-20最新追記：公開語1128とWindows/Linux自動確認1129まで完了。現在の範囲は[公開語の実装・検証](PCM_PUBLIC_IMPLEMENTATION.md)を参照。Mac実機1130は未完了。以下は各時点の履歴。
+
+2026-11-20追記：hostの停止・回収1127を実装した。[1127の記録](PCM_HOST_LIFETIME_IMPLEMENTATION.md)を参照。以下は1125/1126完了時の記録。PCM公開語1128、装置受け入れ1129/1130は未完了。
+
 2026-11-20、基点main `6512916`、Zig 0.17.1。1125の設計と1126の内部コンポーネントを実装した記録。**PCMの公開語・ホストの停止回収はまだ実装しておらず、アプリからPCMを使える状態ではない。** 全体998は未完了。
 
 [採用設計](PCM_STREAM_DESIGN.md)、[初期提案](PCM_STREAM_DESIGN_PROPOSAL.md)、[ソース/API照合](PCM_STREAM_SOURCE_AUDIT.md)、[レビュー評価](reviews/998-review-response.md)、[原データ・コマンド・ソース指紋](measurements/2026-11-20-pcm-internal.json)。

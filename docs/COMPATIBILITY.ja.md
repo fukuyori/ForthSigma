@@ -368,3 +368,7 @@ Sigma独自のdebug実行入口`EXEC-LIMITED`は正常時0、自分の予算切�
 ## Saved application entry (1066)
 
 Sigma独自の`APP-ENTRY!`、`APP-ENTRY@`、`APP-ENTRY-OFF`はimage語群で、完成colonを登録します。SAVESYS実起動で一度だけ呼び、LOADは追加先の設定を保ち呼びません。APP引数と明示的な--sigma host prefixを分けます。QUITのstatus1を維持し、暗黙の協調VM loopは加えません。新Builtinで保存画像ABIが変わります。[設計](SAVED_APPLICATION_STARTUP_DESIGN.md)。
+
+## PCMストリーム拡張
+
+SigmaのAUDIOに`PCM-OPEN`・`PCM-WRITE`・`PCM-QUEUED`・`PCM-WAIT`・`PCM-STOP`・`PCM-CLOSE`・`PCM-UNDERRUNS`と内部語`SND-PCM-OPEN`・`SND-PCM-WRITE`・`SND-PCM-QUEUED`・`SND-PCM-WAIT`・`SND-PCM-STOP`・`SND-PCM-CLOSE`・`SND-PCM-UNDERRUNS`を加えました。Gforthとの互換性を示すものではありません。s16LEの有界フレーム入力、プロセス内の所有管理、明示的に中断できる待機を使います。実行中のPCMは保存せず、所有中の完全復元はbusy、LOAD-DICTIONARYの追記はPCMを保持します。audio除外で7組をすべて除外し、debug/graphics/extensionには依存しません。Builtinタグ7個の追加で画像ABIが変わるため、古い画像は保存し直してください。[音声マニュアル](GRAPHICS_AND_SOUND.ja.md#pcmストリーム)を参照してください。

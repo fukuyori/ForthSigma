@@ -168,6 +168,7 @@ Stateを値コピーせず、新しいStorageとState.initから構築する。�
 | `audio_instrument` | 初期化 | State.init後の新規状態。実行位置・フラグ・履歴等をコピーせず、必要な論理設定は検証済みデータから再構成 |
 | `audio_samples` | 初期化・借用禁止 | 空またはnullへ。メインのホスト資源・一時値・入力元・診断先を引き継がない |
 | `audio_pool_used` | 初期化 | State.init後の新規状態。実行位置・フラグ・履歴等をコピーせず、必要な論理設定は検証済みデータから再構成 |
+| `audio_pcm_handle` | 非永続・初期化0 | PCM consumerはStateを参照しない。別ownerやIDを拒否し、完全復元は所有中busy、appendは追加先を保持。workerへコピーせず、1053でaudio callback許可を再帰監査する |
 | `gfx_band` | 初期化 | State.init後の新規状態。実行位置・フラグ・履歴等をコピーせず、必要な論理設定は検証済みデータから再構成 |
 | `gfx_glyph_alpha` | 初期化 | State.init後の新規状態。実行位置・フラグ・履歴等をコピーせず、必要な論理設定は検証済みデータから再構成 |
 | `embedded_source` | 初期化・借用禁止 | 空またはnullへ。メインのホスト資源・一時値・入力元・診断先を引き継がない |
@@ -210,3 +211,5 @@ State直下以外のコンテナ変数、関数内static相当、Cライブラ�
 652でexecutionを追加しState直下は170項目。Writer.execution_opsのbegin/poll/endとcontextはワーカー専用に検査し、メインの信号所有者やVMポインターを借用しない。
 
 1068でsystem領域0x0dd0へ保存アプリの起動登録（word ID+1）を追加した。State直下は170項目のまま。新規Stateは未登録、完全復元は明示画像の登録を検査し、appendは追加先の設定を保持する。実起動時の自動dispatchはhost mainだけで行い、復元自体では実行しない。1053ではworker snapshotへのこの永続設定の取込み方、APP語/SAVE/SAVESYSの許可、host callbackとmainの起動IDを共有しないことを再帰監査する。
+
+1128でaudio_pcm_handleを追加しState直下は171項目。writer.audio_scope_opsはdebug/extensionとは独立だが、workerへメインのscope/contextを共有させない。Engine/Session/Framesはhostの安定領域であり、Stateを値コピーして共有しない。

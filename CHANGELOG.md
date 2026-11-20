@@ -4,6 +4,8 @@
 
 ### Added
 
+- AUDIO PCM-OPEN/WRITE/QUEUED/WAIT/STOP/CLOSE/UNDERRUNS: bounded s16LE mono/stereo input, partial writes, rate conversion, State ownership, cancellable waits and retryable close. Audio worker shutdown joins before freeing storage. Live streams are not serialized; new Builtin tags require rebuilding older images. Windows/Linux automated validation passes; Mac runtime and audible output remain unverified.
+
 - Saved-application entry registration with APP-ENTRY!, APP-ENTRY@ and APP-ENTRY-OFF, explicit --sigma host options and --no-app diagnostic startup, embedded-image failure termination and atomic SAVESYS publication.
 
 - Debug EXTENSION `EXEC-LIMITED` provides nested cooperative execution budgets and Ctrl+C checks. Enclosing budgets are charged; CLI limits and ordinary exceptions propagate. Raw input is retained, including pasted byte 3; a full queue can delay Ctrl+C detection. No continuation or side-effect rollback.
@@ -13,6 +15,8 @@
 - GRAPHICS physical-key input: `SCAN-INPUT?`, `SCAN-SUPPORTED?`, `SCAN-HELD?`, `KEY-EVENT`, `KEY-RESYNC` and USB HID keyboard `SC-*` constants, with an independent256-event queue, explicit overflow resynchronization, focus-loss releases and native Windows/macOS/X11 adapters. Windows/Linux synthetic native-window acceptance passed; physical keyboard checks and Mac runtime acceptance remain pending.
 
 ### Changed
+
+- Audio workers now stop and join during host shutdown, roll back partial device initialization, and retain shared storage on incomplete shutdown. Linux player pipes are nonblocking and their owned children are reaped.
 
 - Read/write C file streams now flush output before switching to any of the four input paths, preventing NUL corruption observed on Windows when writing, reading and then syncing. SYNC preserves pending input and semantic EOF; FLUSH-FILE retains its existing contract.
 - The new builtin tags change the dictionary-image ABI signature. Existing saved images must be recreated with the current executable; physical held state and event history are never saved.

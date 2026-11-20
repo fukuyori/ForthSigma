@@ -58,3 +58,7 @@ For the project overview, how to build, the current features, the differences fr
 - [Saved application startup: implementation, validation and Mac procedure (Japanese)](SAVED_APPLICATION_STARTUP_IMPLEMENTATION.md)
 
 - [PCM stream design, source audit and internal component validation (Japanese)](PCM_STREAM_IMPLEMENTATION.md)
+
+- [Audio host shutdown, rollback and lifecycle verification (Japanese)](PCM_HOST_LIFETIME_IMPLEMENTATION.md)
+
+- [Public PCM implementation and validation](PCM_PUBLIC_IMPLEMENTATION.md): ownership, waits, image boundaries, Windows/Linux automation and pending Mac checks.

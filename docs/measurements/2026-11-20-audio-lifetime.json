@@ -1,0 +1,318 @@
+{
+  "date": "2026-11-20",
+  "base_commit": "416caf9afc99b1a0e2ae1bad2d9b167dc8a75189",
+  "zig": "0.17.1",
+  "scope": "1127 host audio shutdown only; PCM public words/storage integration remain 1128",
+  "source_lf_sha256": {
+    "build.zig": "93d65a9d0ee9a6d83a18a363cea52fbe854d2c71f839ed5488c9a701a578abe9",
+    "src/host_audio.zig": "4a2c05d29ca72dca54c3ffa5557c890e1c09cd0ec2f84832db24ecbecabc5f4b",
+    "src/main.zig": "0ea830d2257706e092f0ef0a0da097237781fd94cde281a679b76085e5ac83f0",
+    "src/audio_lifecycle_probe.zig": "e30455ada4b30da62e71e0c4a4a3ade0957eb3b889ac9ae3280d7a2edb7bda71",
+    "tests/scripts/verify-audio-shutdown.py": "18bea22c8e5cfff0df2d813da959af2e23a837292f751e6e371f32f80f056afb"
+  },
+  "tests": {
+    "windows-host-final.log": {
+      "passed": 160,
+      "skipped": 15,
+      "failed": 0,
+      "sha256": "a0e25a2fc07ea67d4ef56acb6d30f537d336973c6bd19d93d42659f4fcf753e8",
+      "audio_cases": [
+        "143/175 host_audio.test.audio lifecycle stops and joins silent consumers repeatedly...OK",
+        "144/175 host_audio.test.audio lifecycle timeout retains blocked consumer storage and allows late join...OK",
+        "145/175 host_audio.test.audio lifecycle failed thread creation rolls back host storage...OK",
+        "146/175 host_audio.test.audio repeated silent join leaves native handles or fds unchanged...OK",
+        "147/175 host_audio.test.Windows audio partial open rolls back event and prepared headers...OK",
+        "148/175 host_audio.test.Windows real audio device repeated shutdown releases buffers and handles...OK",
+        "149/175 host_audio.test.Linux stalled private audio player pipe stops and reaps its process group...SKIP",
+        "150/175 host_audio.test.audio clock failure prevents restart and retains storage until retry...OK",
+        "151/175 host_audio.test.audio failed backend cleanup retains storage after joining...OK",
+        "152/175 host_audio.test.Linux ALSA partial and unready retries stop and close on the owner...SKIP",
+        "153/175 host_audio.test.audio recovered pre-thread rollback completes shutdown without retaining storage...OK",
+        "154/175 host_audio.test.Linux transient worker cleanup failure recovers before join...SKIP"
+      ]
+    },
+    "linux-host-final.log": {
+      "passed": 165,
+      "skipped": 17,
+      "failed": 0,
+      "sha256": "d0dbd8a34ee1ac81e63f3ad9d23361919b830f6541a74d63e9cf4f38611d14ef",
+      "audio_cases": [
+        "143/182 host_audio.test.audio lifecycle stops and joins silent consumers repeatedly...OK",
+        "144/182 host_audio.test.audio lifecycle timeout retains blocked consumer storage and allows late join...OK",
+        "145/182 host_audio.test.audio lifecycle failed thread creation rolls back host storage...OK",
+        "146/182 host_audio.test.audio repeated silent join leaves native handles or fds unchanged...OK",
+        "147/182 host_audio.test.Windows audio partial open rolls back event and prepared headers...SKIP",
+        "148/182 host_audio.test.Windows real audio device repeated shutdown releases buffers and handles...SKIP",
+        "149/182 host_audio.test.Linux stalled private audio player pipe stops and reaps its process group...OK",
+        "150/182 host_audio.test.audio clock failure prevents restart and retains storage until retry...OK",
+        "151/182 host_audio.test.audio failed backend cleanup retains storage after joining...OK",
+        "152/182 host_audio.test.Linux ALSA partial and unready retries stop and close on the owner...OK",
+        "153/182 host_audio.test.audio recovered pre-thread rollback completes shutdown without retaining storage...OK",
+        "154/182 host_audio.test.Linux transient worker cleanup failure recovers before join...OK"
+      ]
+    },
+    "minimal-host.log": {
+      "passed": 158,
+      "skipped": 15,
+      "failed": 0,
+      "sha256": "7dbe0f4b76c280e0c6caaf1db9d8d7d33c4f801557f675c70518c06c463871f4",
+      "audio_cases": [
+        "143/173 host_audio.test.audio lifecycle stops and joins silent consumers repeatedly...OK",
+        "144/173 host_audio.test.audio lifecycle timeout retains blocked consumer storage and allows late join...OK",
+        "145/173 host_audio.test.audio lifecycle failed thread creation rolls back host storage...OK",
+        "146/173 host_audio.test.audio repeated silent join leaves native handles or fds unchanged...OK",
+        "147/173 host_audio.test.Windows audio partial open rolls back event and prepared headers...OK",
+        "148/173 host_audio.test.Windows real audio device repeated shutdown releases buffers and handles...OK",
+        "149/173 host_audio.test.Linux stalled private audio player pipe stops and reaps its process group...SKIP",
+        "150/173 host_audio.test.audio clock failure prevents restart and retains storage until retry...OK",
+        "151/173 host_audio.test.audio failed backend cleanup retains storage after joining...OK",
+        "152/173 host_audio.test.Linux ALSA partial and unready retries stop and close on the owner...SKIP",
+        "153/173 host_audio.test.audio recovered pre-thread rollback completes shutdown without retaining storage...OK",
+        "154/173 host_audio.test.Linux transient worker cleanup failure recovers before join...SKIP"
+      ]
+    }
+  },
+  "all_test_exit": 0,
+  "macos": "aarch64 host+fixture compiled, not run",
+  "binary_sha256": {
+    "windows/host-tests/x86_64-windows/test.exe": "29f46b26281fd1455fddb51da6737548677cf6b3a69d45a4e50cc09019e55d77",
+    "linux/host-tests/x86_64-linux/test": "0a70fc0b96803ba3935a12696cb6f5796d9a3923e04d2687615dc8bdd0465118",
+    "windows/audio-check/x86_64-windows/probe.exe": "0422da076178155cfb5b4617e2c0f031e369ecd4794854155a5b672d619578ba",
+    "linux/audio-check/x86_64-linux/probe": "75c5795544af3b6c2e04508034ee411566bad43cd25db747ee81926fab1f0744",
+    "mac/host-tests/aarch64-macos/test": "4899ac81ece406b93e4aa51f349c679bf3271c93b4fc12f9dfa90bf7cccaf87e",
+    "mac/audio-check/aarch64-macos/probe": "b184f926b7b8896d1f27396b7d48280289c8c362bd39be905ab10f19f95d49a7",
+    "public/bin/sigma.exe": "28b6eb8c433c3a7b8d449d15c12d0121f36424c164a96cb55777acc7813d4c9b",
+    "linux-gnu/bin/sigma": "3b89df008c489ad3af24bac844bf857082c79f738e17149f71c8de368b84f2ae"
+  },
+  "fixtures": {
+    "windows": {
+      "probe": "D:\\home\\source\\zig\\forthz\\.work\\1127\\windows\\audio-check\\x86_64-windows\\probe.exe",
+      "sha256": "0422da076178155cfb5b4617e2c0f031e369ecd4794854155a5b672d619578ba",
+      "runs": [
+        {
+          "exit_code": 1,
+          "stdout": "blocked consumer retained; hard exit 1\r\n",
+          "stderr": "",
+          "elapsed_seconds": 0.07423350001045037
+        },
+        {
+          "exit_code": 1,
+          "stdout": "blocked consumer retained; hard exit 1\r\n",
+          "stderr": "",
+          "elapsed_seconds": 0.031234699999913573
+        },
+        {
+          "exit_code": 1,
+          "stdout": "blocked consumer retained; hard exit 1\r\n",
+          "stderr": "",
+          "elapsed_seconds": 0.03169039999193046
+        }
+      ]
+    },
+    "linux": {
+      "probe": "/mnt/d/home/source/zig/forthz/.work/1127/linux/audio-check/x86_64-linux/probe",
+      "sha256": "75c5795544af3b6c2e04508034ee411566bad43cd25db747ee81926fab1f0744",
+      "runs": [
+        {
+          "exit_code": 1,
+          "stdout": "blocked consumer retained; hard exit 1\n",
+          "stderr": "",
+          "elapsed_seconds": 0.07210436299999934
+        },
+        {
+          "exit_code": 1,
+          "stdout": "blocked consumer retained; hard exit 1\n",
+          "stderr": "",
+          "elapsed_seconds": 0.06481592299999939
+        },
+        {
+          "exit_code": 1,
+          "stdout": "blocked consumer retained; hard exit 1\n",
+          "stderr": "",
+          "elapsed_seconds": 0.054052794000000404
+        }
+      ]
+    }
+  },
+  "cli_windows": [
+    {
+      "case": "normal",
+      "exit_code": 0,
+      "stdout": "-1 ",
+      "stderr": ""
+    },
+    {
+      "case": "throw",
+      "exit_code": 1,
+      "stdout": "NUMBER ERROR !\r\n",
+      "stderr": ""
+    },
+    {
+      "case": "saved-app",
+      "exit_code": 0,
+      "stdout": "-1 ",
+      "stderr": ""
+    }
+  ],
+  "gnu_linux_cli": {
+    "command": "sigma -e REQUIRE-AUDIO ALSO AUDIO AUDIO? . BYE",
+    "stdout": "0 ",
+    "stderr": "",
+    "exit": 0,
+    "real_device": false
+  },
+  "startup_regression": [
+    "once-empty-source-current-argv-including-empty-space-unicode-options",
+    "host-prefix-bypass-unknown-layout-and-capacity-errors",
+    "format-requires-no-app-and-debug-log",
+    "normal-bye-quit-throw-and-recovery",
+    "unregistered-legacy-behavior",
+    "unicode-save-and-executable-path",
+    "readonly-existing-output-retained",
+    "resave-does-not-append-another-base",
+    "self-overwrite-relative-path-and-hardlink-rejected",
+    "final-symlink-rejected",
+    "corrupt-crc-abi-root-and-footer-fail-before-forth-arguments",
+    "no-owned-temporary-files-left"
+  ],
+  "documentation": {
+    "reference_entries": 1805,
+    "help": 1591,
+    "examples": 28,
+    "individual_examples": 401,
+    "check_docs_findings": 0,
+    "final_check_sha256": "58ed4ef7075c91dafcde537ad4b42a4685a850011ac4c1b75fa9cc790048f015"
+  },
+  "tasks": [
+    {
+      "id": 998,
+      "title": "本体09 PCMストリーム出力（段階B、依存は共通基盤1064。AUDIO）：開始・書込み・残量（フレーム数）・停止の語、専用の有界のリング、周波数の変換、残量と再生位置の区別、満杯のときの待機と中断・部分書込みは900の取り決め、MML・SFX・モジュールとの混合（EMULATOR_CORE_PLAN.md）",
+      "status": "todo",
+      "parent_id": 1003,
+      "progress": 0,
+      "progress_mode": "auto",
+      "created_at": "2026-11-17T22:47:12Z",
+      "depends_on": [
+        1064
+      ],
+      "effective_progress": 50,
+      "blocked": false,
+      "blocked_by": []
+    },
+    {
+      "id": 1125,
+      "title": "PCM01 仕様設計：形式・容量・部分書込み・期限と中断・停止とclose・再標本化・混合・所有と画像・backend終了をソース照合しClaudeレビューで確定",
+      "status": "done",
+      "parent_id": 998,
+      "progress": 100,
+      "progress_mode": "auto",
+      "created_at": "2026-11-20T01:14:54Z",
+      "completed_at": "2026-11-20T01:32:15Z",
+      "depends_on": [
+        1064
+      ],
+      "effective_progress": 100,
+      "blocked": false,
+      "blocked_by": []
+    },
+    {
+      "id": 1126,
+      "title": "PCM02 有界リングと再標本化：SPSC・wrap・入力frame残量・underrun・sample hold・saturating混合を実装し決定的試験",
+      "status": "done",
+      "parent_id": 998,
+      "progress": 100,
+      "progress_mode": "auto",
+      "created_at": "2026-11-20T01:14:54Z",
+      "completed_at": "2026-11-20T01:32:15Z",
+      "depends_on": [
+        1125
+      ],
+      "effective_progress": 100,
+      "blocked": false,
+      "blocked_by": []
+    },
+    {
+      "id": 1127,
+      "title": "PCM03 ホスト寿命：音スレッドの停止とjoin・Windows/Linux/macOS装置待機解除・callback停止・初期化失敗の回収を実装",
+      "status": "done",
+      "parent_id": 998,
+      "progress": 100,
+      "progress_mode": "auto",
+      "created_at": "2026-11-20T01:14:54Z",
+      "completed_at": "2026-11-20T02:06:42Z",
+      "depends_on": [
+        1125
+      ],
+      "effective_progress": 100,
+      "blocked": false,
+      "blocked_by": []
+    },
+    {
+      "id": 1128,
+      "title": "PCM04 公開語と所有：開始・部分書込み・待機・残量・停止・closeと画像/世代/終了経路、英日HELPを実装",
+      "status": "todo",
+      "parent_id": 998,
+      "progress": 0,
+      "progress_mode": "auto",
+      "created_at": "2026-11-20T01:14:54Z",
+      "depends_on": [
+        1056,
+        1125,
+        1126,
+        1127
+      ],
+      "effective_progress": 0,
+      "blocked": false,
+      "blocked_by": []
+    },
+    {
+      "id": 1129,
+      "title": "PCM05 Windows/Linux受け入れ：満杯・中断・停止・保存アプリ・語群除外・資源回収・英日文書と測定を検証",
+      "status": "todo",
+      "parent_id": 998,
+      "progress": 0,
+      "progress_mode": "auto",
+      "created_at": "2026-11-20T01:14:54Z",
+      "depends_on": [
+        1128
+      ],
+      "effective_progress": 0,
+      "blocked": true,
+      "blocked_by": [
+        1128
+      ]
+    },
+    {
+      "id": 1130,
+      "title": "PCM06 Mac実機受け入れ：生成アプリ・連続PCM・混合・待機中断・停止/再開・装置と資源回収・除外構成を確認",
+      "status": "todo",
+      "parent_id": 998,
+      "progress": 0,
+      "progress_mode": "auto",
+      "created_at": "2026-11-20T01:14:54Z",
+      "depends_on": [
+        1128
+      ],
+      "effective_progress": 0,
+      "blocked": true,
+      "blocked_by": [
+        1128
+      ]
+    }
+  ],
+  "commands": [
+    "zig build test host-check audio-lifecycle-check --prefix .work/1127/windows",
+    "run Windows host-tests and verify-audio-shutdown.py on owned fixture",
+    "zig build host-check audio-lifecycle-check -Dtarget=x86_64-linux-musl --prefix .work/1127/linux; run tests and Python fixture under WSL",
+    "zig build host-check audio-lifecycle-check -Dtarget=aarch64-macos --prefix .work/1127/mac (compile only)",
+    "zig build host-check -Daudio=false -Dgraphics=false -Dextension=false -Ddebug=false --prefix .work/1127/minimal; run staged host-tests",
+    "python scripts/word-reference.py --check --sigma .work/1127/public/bin/sigma.exe",
+    "python scripts/check-docs.py 416caf9"
+  ],
+  "limits": [
+    "Linux actual Pulse/ALSA output not tested; GNU runtime used silent fallback",
+    "Mac actual execution remains 1130",
+    "Native library/driver arbitrary failures not guaranteed fully reclaimed within deadline; failed consumers retain storage",
+    "PCM public words/Frame storage ownership and image integration not yet implemented"
+  ]
+}

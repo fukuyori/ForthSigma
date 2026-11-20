@@ -97,6 +97,21 @@ pub fn build(b: *std.Build) void {
     b.installFile("LICENSE", "LICENSE");
     b.installFile("THIRD_PARTY_NOTICES.md", "THIRD_PARTY_NOTICES.md");
 
+    // Explicit verification target only; it is not part of install/release output.
+    const audio_probe_module = b.createModule(.{
+        .root_source_file = b.path("src/audio_lifecycle_probe.zig"),
+        .target = target,
+        .optimize = optimize,
+        .link_libc = true,
+    });
+    audio_probe_module.addOptions("build_options", options);
+    addEmbeddedTexts(b, audio_probe_module);
+    if (target.result.os.tag == .linux) audio_probe_module.linkSystemLibrary("pthread", .{});
+    const audio_probe = b.addExecutable(.{ .name = "audio-lifecycle-probe", .root_module = audio_probe_module });
+    b.step("audio-lifecycle-check", "Build the isolated blocked-audio shutdown fixture").dependOn(&b.addInstallFile(audio_probe.getEmittedBin(), b.fmt("audio-check/{s}-{s}/probe{s}", .{
+        @tagName(target.result.cpu.arch), @tagName(target.result.os.tag), if (target.result.os.tag == .windows) ".exe" else "",
+    })).step);
+
     const test_module = b.createModule(.{
         .root_source_file = b.path("src/forth_test.zig"),
         .target = target,

@@ -1,5 +1,15 @@
 # ForthSigma 作業引き継ぎ
 
+## 最新追記：PCM公開語・Windows/Linux自動確認（2026-11-20）
+
+この節を最新状態とする。基点mainは416caf9（PCM設計/内部までpush済み）。その後1127・1128・1129を実装/自動検証し、差分は未コミット。1128/1129はtque完了、親998は83%。Mac実機1130は未完了で残す。保存アプリのMac受け入れ1124/1069/1066はc822e53で統合済み。
+
+[PCM公開語の実装・検証記録](PCM_PUBLIC_IMPLEMENTATION.md)、[Claudeレビュー採否](reviews/1128-review-response.md)、[測定一次データ](measurements/2026-11-20-pcm-public.json)を参照。7公開語、State所有、CLOSE中断時の再試行、完全復元busy/辞書追記保持、英日HELPを実装した。Claude最終静的レビューはHigh/Mediumなし。Windows/Linuxの22構成、専用console/PTY入力保持、core各1124成功、host162/167成功、zig build test、全参考書の照合が成功。可聴音・Linux実音声装置・Mac実機は未確認。
+
+再開時はGit/tqueと最新JSONのソース指紋を照合する。以下の「未実装」「次は1128」等は各時点の履歴。次のMac受け入れは1130のタイトルと親998を再照合して進める。
+
+2026-11-20追記：PCM設計/内部は416caf9でcommit/push済み。続いて音声host停止・回収1127を完了し、次は1128の公開語/所有管理。host差分は未コミット。Mac1130は未確認。[最新引継ぎ](CORE_EXTENSION_HANDOFF_2026-11-19.md)、[1127結果](PCM_HOST_LIFETIME_IMPLEMENTATION.md)を参照。
+
 2026-11-20統合追記：c822e53の保存アプリMac受け入れを統合済み（1124/1069/1066完了）。PCMは設計1125・内部1126を完了し、次はhost寿命1127。PCMのMac1130は未実施。以下は各時点の記録。
 
 2026-11-20追記：保存アプリは6512916でcommit/push済み。Mac1124を残し、PCM998の設計・内部リング1125/1126へ進んだ。次はhost寿命1127。[最新引継ぎ](CORE_EXTENSION_HANDOFF_2026-11-19.md)と[PCM実装範囲](PCM_STREAM_IMPLEMENTATION.md)を参照。PCM公開語/host回収は未実装、PCM差分は未コミット。

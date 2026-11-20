@@ -113,3 +113,12 @@
 \ ---- The device ------------------------------------------------------------------
 
 : AUDIO? ( -- flag )   SND-DEVICE ;
+
+\ Streaming PCM (host-owned bounded frames).
+: PCM-OPEN SND-PCM-OPEN ;
+: PCM-WRITE SND-PCM-WRITE ;
+: PCM-QUEUED SND-PCM-QUEUED ;
+: PCM-WAIT SND-PCM-WAIT ;
+: PCM-STOP SND-PCM-STOP ;
+: PCM-CLOSE SND-PCM-CLOSE ;
+: PCM-UNDERRUNS SND-PCM-UNDERRUNS ;

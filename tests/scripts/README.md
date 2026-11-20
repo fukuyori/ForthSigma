@@ -1,5 +1,12 @@
 # Test and verification scripts
 
+`zig build audio-lifecycle-check --prefix .work/1127/windows` builds an isolated
+blocked-consumer fixture (outside the normal install/release). Run
+`python tests/scripts/verify-audio-shutdown.py .work/1127/windows/audio-check/x86_64-windows/probe.exe`
+to verify three owned child processes exit with status 1 while retaining storage.
+Use a Linux target and run the generated probe under Linux for the POSIX check.
+See [lifecycle results](../../docs/PCM_HOST_LIFETIME_IMPLEMENTATION.md).
+
 `python tests/scripts/verify-saved-application.py PATH` creates owned SAVESYS
 executables and checks entry dispatch, raw arguments, host bypass, corrupt images,
 atomic resave/self-alias rejection and process exit. On POSIX it also uses an owned
@@ -120,3 +127,9 @@ native C単体は `zig cc -shared -DSIGMA_PROC_TESTING src/host_process_native.c
 ### EXEC-LIMITED (652)
 
 Run `python tests/scripts/verify-execution-control.py PATH_TO_SIGMA` for public budget/THROW/NS cases. On Unix it also owns PTYs for raw character/paste/ESC retention, SIGINT, NS and cooked KEY interruption, and terminal-mode restoration. Run `python tests/scripts/verify-execution-control-windows.py PATH_TO_SIGMA_EXE` for a hidden private console with injected F1/Japanese/paste/partial ESC input, cooked Ctrl+C, NS/KEY and queue-full retention. It never sends input or signals to the user console. Redirect stdout to JSON evidence. These fixtures do not prove physical keyboard or Mac acceptance.
+
+## Public PCM validation
+
+`python tests/scripts/verify-pcm-stream.py PATH_TO_SIGMA` runs owned processes with silent PCM: write/full wait/drain/close, memory error recovery, busy open, saved applications and dictionary append. Use `--no-image` for image-excluded builds.
+
+`python tests/scripts/verify-pcm-terminal.py PATH_TO_SIGMA` uses a dedicated hidden Windows console or a Linux PTY. It injects characters, Japanese, incomplete ESC and Ctrl+C, verifies WAIT/STOP -28 and CLOSE -516/retry, retained input and restored terminal settings. It never injects into the user's console. All frames are zero; this does not verify audible sound or physical keys. Results: [PCM validation](../../docs/PCM_PUBLIC_IMPLEMENTATION.md).

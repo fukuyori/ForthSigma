@@ -1,5 +1,25 @@
 # 613 本体機能拡張の引継ぎ（2026-11-19）
 
+## 最新追記：PCM公開語・Windows/Linux自動確認（2026-11-20）
+
+この節を最新状態とする。基点mainは416caf9（PCM設計/内部までpush済み）。その後1127・1128・1129を実装/自動検証し、差分は未コミット。1128/1129はtque完了、親998は83%。Mac実機1130は未完了で残す。保存アプリのMac受け入れ1124/1069/1066はc822e53で統合済み。
+
+[PCM公開語の実装・検証記録](PCM_PUBLIC_IMPLEMENTATION.md)、[Claudeレビュー採否](reviews/1128-review-response.md)、[測定一次データ](measurements/2026-11-20-pcm-public.json)を参照。7公開語、State所有、CLOSE中断時の再試行、完全復元busy/辞書追記保持、英日HELPを実装した。Claude最終静的レビューはHigh/Mediumなし。Windows/Linuxの22構成、専用console/PTY入力保持、core各1124成功、host162/167成功、zig build test、全参考書の照合が成功。可聴音・Linux実音声装置・Mac実機は未確認。
+
+再開時はGit/tqueと最新JSONのソース指紋を照合する。以下の「未実装」「次は1128」等は各時点の履歴。次のMac受け入れは1130のタイトルと親998を再照合して進める。
+
+## 最新追記：音声ホスト停止・回収1127（2026-11-20）
+
+この節を最新状態とする。PCM設計/内部リングはmain `416caf9`でcommit/push済み。その後1127を実装し、host関連の差分は未コミット。今回の後続実装はまだcommit/pushしていない。
+
+- 1127完了、998はauto50%。次は1128（公開語・PCM storage/owner/handle・画像busy/append・英日HELP）。1129 Windows/LinuxのPCM受け入れと1130 Mac実機は未完了。保存アプリ1124/1069/1066のMac受け入れはc822e53で統合済み。
+- [1127の実装・検証](PCM_HOST_LIFETIME_IMPLEMENTATION.md)、[レビュー採否](reviews/1127-review-response.md)、[原データ/ソース指紋](measurements/2026-11-20-audio-lifetime.json)を参照。Claudeの指摘を修正し、最後の限定再レビューは対象に高・中の指摘なし。
+- 音声threadのstop/join、device/callback終了、libraryはjoin後unload、pool freeを実装。未停止時は領域を保持し再start拒否。通常deferとflush後に専用hard exitでstatus1。時計故障・初期化途中・一時的/恒久的cleanup失敗も照合。
+- Windows host160成功15除外、Linux host165成功17除外、graphics/audio/extension/debug全除外host158成功15除外、全失敗0。Windows zig build test成功。別プロセスの阻害fixtureはWindows/Linux各3回status1。実waveOut20回/途中open、Linux pipe EOF/TERM/KILL・ALSA差替え・native資源数を確認。Macはhost/fixture cross compileのみ。
+- Windows通常/THROW/保存アプリからのaudio起動を確認。Linux GNUは装置なしsilentで終了。**Linux Pulse/ALSA実装置、実際に聞く音、Mac実機は未確認。** 公開PCM語・stream Frameのhost確保は1128で未実装なので、PCMアプリが使えると報告しない。
+
+再開時はGit/tqueと最新JSONのLF正規化ソース指紋を照合する。1128は採用設計のms/中断/closing再試行・同一processのhandle検査・完全復元busy/append保持を実装する。workerが残る間にState/runtimeやstream storageを参照させない。1130のMac実機を未完了で残して開発を続ける。
+
 ## 最新追記：保存アプリ起動のMac実機受け入れ（2026-11-20）
 
 この節を最新状態とする。基点main `6512916`。macOS 27.2.1 / Apple M5 / Zig 0.17.1で1124を実施して合格し、tqueの1124・1069・1066を完了にした。生成実行体の公開試験（通常と10構成）、image除外、補助確認、Ghosttyでの実端末Ctrl+C（status1、その後のecho正常）を確認した。結果は[実装記録](SAVED_APPLICATION_STARTUP_IMPLEMENTATION.md#mac実機受け入れ1124)。下の節の「Mac実機1124（未確認）」は当時の記録。

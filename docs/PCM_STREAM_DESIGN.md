@@ -1,14 +1,18 @@
 # PCMストリームの採用設計（998）
 
-2026-11-20、基点6512916、Zig 0.17.1。設計1125の採用仕様。公開語・ホスト終了処理は実装前。内部リング1126の実装/実行結果は別記録へ分ける。[初期提案](PCM_STREAM_DESIGN_PROPOSAL.md)、[ソース/API照合](PCM_STREAM_SOURCE_AUDIT.md)、[レビュー判断](reviews/998-review-response.md)。
+2026-11-20追記：公開語1128とWindows/Linux自動検証1129を実装・確認済み。[公開語の実装記録](PCM_PUBLIC_IMPLEMENTATION.md)に現在の範囲と結果を分ける。以下は採用した契約で、Mac実機1130は未確認。
+
+2026-11-20、基点6512916、Zig 0.17.1。設計1125の採用仕様。当初設計時点では公開語・ホスト終了処理は実装前。内部リング1126の実装/実行結果は別記録へ分ける。[初期提案](PCM_STREAM_DESIGN_PROPOSAL.md)、[ソース/API照合](PCM_STREAM_SOURCE_AUDIT.md)、[レビュー判断](reviews/998-review-response.md)。
 
 ## 公開境界
+
+OPENはaudio_fnに加え、待機scope・clock・audio_wait_fnの能力も先に検査し、不完全なhostで閉じられないstreamを作らない。
 
 AUDIO語群。内部Builtinは既存に合わせSND-PCM-*、audio.fsでPCM-*を公開する。audio=falseで除外し、debug/graphics/extensionは必要条件にしない。通常の不正数値は-24、不正範囲は-9をTHROWし、検査前の引数を保持。stack不足もTHROW。対象の状態に関する失敗は既存のerrnoIorを使う。missing host callbackは-21、host基盤・時計・端末復元の失敗は-265をTHROWする。正常なdeviceなしは既存同様silent消費で継続し、AUDIO?で区別する。
 
 | 語 | スタック効果 | 契約 |
 | --- | --- | --- |
-| PCM-OPEN | hz channels capacity -- pcm ior | mono/stereo、s16LE固定、入力Hz 8000..192000。容量は2の冪で256..65536、capacity≤hzかつcapacity×25≥hz（40ms..1s）。同時に1stream。busyは0,-528、未確保は0,-524。成功は正のID,0 |
+| PCM-OPEN | hz channels capacity -- pcm ior | mono/stereo、s16LE固定、入力Hz 8000..192000。容量は2の冪で256..65536、capacity≤hzかつcapacity×25≥hz（40ms..1s）。同時に1stream。busyは0,-528、未確保は0,-524、ID枯渇は0,-587（EOVERFLOW）。成功は正のID,0 |
 | PCM-WRITE | addr frames pcm -- written ior | nonblocking complete-frame copy。全要求のbyte範囲と乗算overflowを先に検査。fullは0,0。frames=0ならmemoryを参照しない。呼出し後sourceを借りない |
 | PCM-QUEUED | pcm -- frames ior | engineが消費する前の入力frame数。ZOHが出力中のframeを含む。失敗は0,ior |
 | PCM-WAIT | frames ms pcm -- flag ior | frames以上の空き。1..capacity。0ms=poll、負数=無期限、正数は単調期限1個。timeout false,0。中断はTHROW -28 |
@@ -18,7 +22,7 @@ AUDIO語群。内部Builtinは既存に合わせSND-PCM-*、audio.fsでPCM-*を�
 
 不正/閉じた/同一process内の古いIDは-521。stopping/stopped/closingへのWRITE/WAITは-534。STOP後もQUEUED/UNDERRUNS/CLOSEは使える。STOP済みからの再生はCLOSE→OPENとし、暗黙restartしない。
 
-OPENのattach ack前でも新入力のコピーは許すが、UNDERRUNSは新世代のackまで0として古いstreamの値を返さない。STOP/CLOSEは前のattach requestのackを待ってからdetachをpublishし、mailboxを上書きしない。各操作の期限を待ち直す際も延長しない。
+OPENのattach ack前でも新入力のコピーは許すが、UNDERRUNSは新世代のackまで0として古いstreamの値を返さない。STOP/CLOSEは前のattach requestのackを待ってからdetachをpublishし、mailboxを上書きしない。各操作の期限を待ち直す際も延長しない。待機を伴う経路はms=0/readyでもscopeとpollを通し、観測した中断や復元失敗を成功に隠さない。停止済みのSTOP/CLOSEは確認済みのまま即時に戻れる。
 
 readyとtimeoutが同時なら、まず引数・対象状態を検査し、その後readyを検査してから期限を検査する。ただし観測済み中断/host失敗を成功に隠さない。共有信号scopeは待機全体を覆う形にし、3msごとにscopeを外す窓でCtrl+Cを取り逃す設計にしない。既存の内部clock・Deadline・信号所有/入力保持を使う。新しい暗黙VMポーリングは追加しない。
 
@@ -28,7 +32,7 @@ readyとtimeoutが同時なら、まず引数・対象状態を検査し、そ�
 
 IDは同一process内で単調増加し使い回さず、枯渇ならOPEN失敗。cross-process一意性は保証しない。画像に普通の整数として保存した値が別起動の新streamと一致する可能性はあり、世代検査だけで必ず拒否できるとは言わない。画像からOS資源やstreamを復活させない。
 
-SAVE/SAVESYSは許可し、live handle/ring/positionは保存対象外。完全復元はcurrent StateがPCMを所有していれば**適用前にbusy（-528）を拒否**し、明示的CLOSE後に再実行する。image_restore.applyへ待機やabandonを足さない。typed appendとLOADは追加先のPCMを保持し、自動再開しない。LOADの一時StateはPCMを所有しない。完全復元とappendが共有するprepareへ無条件のbusy検査を足し、appendを意図せず禁止しない。
+SAVE/SAVESYSは許可し、live handle/ring/positionは保存対象外。完全復元はcurrent StateがPCMを所有していれば**適用前にbusy（-528）を拒否**し、明示的CLOSE後に再実行する。image_restore.applyへ待機やabandonを足さない。typed appendとLOAD-DICTIONARY（辞書追加読込み）は追加先のPCMを保持し、自動再開しない。LOADの一時StateはPCMを所有しない。完全復元とappendが共有するprepareへ無条件のbusy検査を足し、appendを意図せず禁止しない。
 
 ## SPSCと再標本化
 
@@ -44,7 +48,9 @@ drain開始前にproducerがdrainingをreleaseで立て、consumerはacquireで�
 
 drainはengineへ取り込むまで。QUEUED=0も実際に鳴り終わった意味ではなく、OS装置bufferは残る。初版は実再生位置・device送出位置の能力を提供しない。音を基準にしたエミュレータ同期精度は未測定。
 
-## hostの停止（1127で実装、未実装）
+## hostの停止（1127で実装、Mac実機は1130）
+
+[実装・検証記録](PCM_HOST_LIFETIME_IMPLEMENTATION.md)を参照。PCMの公開語とstorage所有は1128で未実装。
 
 既存backendを維持する。stop_requested→再投入を止める→consumer/callback停止→OS資源解放→thread_exited→join→engine storage解放。初期化失敗のrollbackも同じ所有状態を使う。OS解放は原則としてbackend所有thread内で行い、期限内join後のVM threadが追加の無期限driver呼出しへ入らないようにする。
 
@@ -52,7 +58,7 @@ shutdownは1000msを基本期限とし、未停止ならfailedを報告してbuf
 
 | backend | 採用する対応 |
 | --- | --- |
-| Windows waveOut | event wake、再投入終了、waveOutReset→準備済みheaderのunprepare→close→event close。途中open失敗も段階別に回収 |
+| Windows waveOut | 有限100msのevent waitでstop検査、再投入終了、waveOutReset→準備済みheaderのunprepare→close→event close。途中open失敗も段階別に回収 |
 | Linux Pulse simple | 現行backendを維持。write間でstopを見る。blocking writeを別threadからfreeして中断しない。期限内終了できなければ上記の未完了を返して保持。asyncへの移行は別工程で測定後に判断 |
 | Linux ALSA | nonblocking化、EAGAINでは有限wait後stop再検査、部分書込みとrecoverにもstop検査。drop/closeは所有thread。open/set_params失敗をrollback |
 | Linux pipe | 専有writerをnonblockingにし有限poll。pid/groupを保持、EOF→期限→TERM/KILL→指定pid回収。process registryと二重回収しない。partial spawn失敗のfd/child回収も検査 |

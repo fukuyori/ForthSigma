@@ -260,6 +260,7 @@ pub const Engine = struct {
 
     /// Producer publishes PCM attachment; consumer applies at a render boundary.
     pcm_control: stream.Control = .{},
+    pcm_session: @import("sound_stream_session.zig").Session = .{},
 
     // The consumer's own state.
     remaining: [max_voices]u16 = @splat(0),

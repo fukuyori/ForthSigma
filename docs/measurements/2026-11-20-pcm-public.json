@@ -1,0 +1,1142 @@
+{
+  "date": "2026-11-20",
+  "base_commit": "416caf9afc99b1a0e2ae1bad2d9b167dc8a75189",
+  "state": "Uncommitted 1127 host lifetime plus 1128 public PCM; no commit/push in this turn",
+  "toolchain": "0.17.1",
+  "source_sha256_lf": {
+    "src/core/sound_stream_session.zig": "fe9484dcb213a35c9b28452d7f51ad87c5a1010d71feaf8fc7eca47c9085bf61",
+    "src/core/words_pcm.zig": "591c6d99721a2db7ba99c7e93ac03346ab0780c4c8c97780e1d6ce45db6957ed",
+    "src/core/sound_stream.zig": "089d3cc5ef7975279953a3cb5e1e255546fca9cdd821101b6790c3d97bf69614",
+    "src/core/sound_engine.zig": "7de38184557ba58b8f44e964297ba479fa423d1da063a71b145ed2182bf1c50f",
+    "src/core/host_interface.zig": "1ef41aaa8fcd8046dc6e71ac0319ab894e29f55d1de93c9ae037940cc8445b62",
+    "src/core/image_restore.zig": "3e5b9217b32c07e1fc0db41ff50b048a2eb16c450058ca2572e6981ac94a9e6d",
+    "src/core/defs.zig": "394d93337654b268800b680c79c3cbe03c84f72418d6fb93abfea40cf4d959cb",
+    "src/core/words_audio.zig": "f39d803491d1f527c0cb7c34b97bf1b6fcdbd31c0786472c38a4971bcd08d53e",
+    "src/core/help_text.zig": "8ce2def1260c0f0ada62133f35416929855528f9bca7cd3cd62aa4a0e9f8ae53",
+    "src/forth.zig": "21affdedbfaeff5aafcff4d25547f4c8dfce756b5e54bd47d486ef241cea5439",
+    "src/forth_test.zig": "178072a77a5e2a72f56979180db5d655b9914eede5b2d33d5393e6ddf3955d8c",
+    "src/host_audio.zig": "c058e3137c7bced8e8c678d3ff0f530d893896f5954dcc53c9368ea7eb817a14",
+    "src/main.zig": "9362b742ebed4ed33c0f264cffb64010260012104d0304e7387a6edf97f3d1c5",
+    "src/audio/audio.fs": "31d53dc3a25e179bd48e8c1882274f88617f08a077e8659b582e571ab037a09d",
+    "src/tests/pcm_words_test.zig": "75f3fcafa93353e17d5775f1294000be91b310ded1d9209918a249aa54a3a535",
+    "build.zig": "93d65a9d0ee9a6d83a18a363cea52fbe854d2c71f839ed5488c9a701a578abe9",
+    "tests/scripts/verify-pcm-stream.py": "b07745b898677e2e163c0a89341336cf35d113357aae23e992443786ef8a5a8f",
+    "tests/scripts/verify-pcm-terminal.py": "3b942740ced18cd85543162601bbe17905caa5e99e52a1ca44b8ae99ca873b50"
+  },
+  "matrix": [
+    {
+      "target": "x86_64-windows-gnu",
+      "variant": "g0a0e0",
+      "disabled": [
+        "graphics",
+        "audio",
+        "extension"
+      ],
+      "build": [
+        "zig",
+        "build",
+        "-Dtarget=x86_64-windows-gnu",
+        "-Doptimize=fast",
+        "-Dcpu=baseline",
+        "-Dstrip=true",
+        "-Dgraphics=false",
+        "-Daudio=false",
+        "-Dextension=false",
+        "--prefix",
+        "D:\\home\\source\\zig\\forthz\\.work\\1128\\matrix\\x86_64-windows-gnu-g0a0e0"
+      ],
+      "test": [
+        "D:\\home\\source\\zig\\forthz\\.work\\1128\\matrix\\x86_64-windows-gnu-g0a0e0\\bin\\sigma.exe",
+        "-e",
+        "[DEFINED] REQUIRE-AUDIO . [DEFINED] PCM-OPEN . BYE"
+      ],
+      "binary": ".work/1128/matrix/x86_64-windows-gnu-g0a0e0/bin/sigma.exe",
+      "sha256": "2e04ef29886f978ed7c12d1d9fe05dac9b00ef0edcc122a55658d38189511c57",
+      "bytes": 1657344,
+      "exit": 0,
+      "stdout": "0 0 ",
+      "stderr": ""
+    },
+    {
+      "target": "x86_64-windows-gnu",
+      "variant": "g0a0e1",
+      "disabled": [
+        "graphics",
+        "audio"
+      ],
+      "build": [
+        "zig",
+        "build",
+        "-Dtarget=x86_64-windows-gnu",
+        "-Doptimize=fast",
+        "-Dcpu=baseline",
+        "-Dstrip=true",
+        "-Dgraphics=false",
+        "-Daudio=false",
+        "--prefix",
+        "D:\\home\\source\\zig\\forthz\\.work\\1128\\matrix\\x86_64-windows-gnu-g0a0e1"
+      ],
+      "test": [
+        "D:\\home\\source\\zig\\forthz\\.work\\1128\\matrix\\x86_64-windows-gnu-g0a0e1\\bin\\sigma.exe",
+        "-e",
+        "[DEFINED] REQUIRE-AUDIO . [DEFINED] PCM-OPEN . BYE"
+      ],
+      "binary": ".work/1128/matrix/x86_64-windows-gnu-g0a0e1/bin/sigma.exe",
+      "sha256": "b4bf2acdfefb542a9b95b5d7a2f4a0488cfaeb8f659ce8104007b8076035cb5a",
+      "bytes": 1711104,
+      "exit": 0,
+      "stdout": "0 0 ",
+      "stderr": ""
+    },
+    {
+      "target": "x86_64-windows-gnu",
+      "variant": "g0a1e0",
+      "disabled": [
+        "graphics",
+        "extension"
+      ],
+      "build": [
+        "zig",
+        "build",
+        "-Dtarget=x86_64-windows-gnu",
+        "-Doptimize=fast",
+        "-Dcpu=baseline",
+        "-Dstrip=true",
+        "-Dgraphics=false",
+        "-Dextension=false",
+        "--prefix",
+        "D:\\home\\source\\zig\\forthz\\.work\\1128\\matrix\\x86_64-windows-gnu-g0a1e0"
+      ],
+      "test": [
+        "C:\\Users\\n_fuk\\AppData\\Local\\Python\\pythoncore-3.14-64\\python.exe",
+        "tests/scripts/verify-pcm-stream.py",
+        ".work/1128/matrix/x86_64-windows-gnu-g0a1e0/bin/sigma.exe"
+      ],
+      "binary": ".work/1128/matrix/x86_64-windows-gnu-g0a1e0/bin/sigma.exe",
+      "sha256": "63b5bf4aa7c42e9e50ebcc5c39e874e56b5879766efa11e3e06a77a94b5df017",
+      "bytes": 1769472,
+      "exit": 0,
+      "stdout": "[\n  \"copied-silent-stereo-write-wait-drain-stop-close-stale-id\",\n  \"invalid-memory-catch-and-close-recovery\",\n  \"one-stream-busy-and-close-pending-stop\",\n  \"active-stream-savesys-does-not-persist-live-ownership\",\n  \"save-load-reopen-without-reviving-old-handle\",\n  \"load-while-active-preserves-target-pcm\"\n]\n",
+      "stderr": ""
+    },
+    {
+      "target": "x86_64-windows-gnu",
+      "variant": "g0a1e1",
+      "disabled": [
+        "graphics"
+      ],
+      "build": [
+        "zig",
+        "build",
+        "-Dtarget=x86_64-windows-gnu",
+        "-Doptimize=fast",
+        "-Dcpu=baseline",
+        "-Dstrip=true",
+        "-Dgraphics=false",
+        "--prefix",
+        "D:\\home\\source\\zig\\forthz\\.work\\1128\\matrix\\x86_64-windows-gnu-g0a1e1"
+      ],
+      "test": [
+        "C:\\Users\\n_fuk\\AppData\\Local\\Python\\pythoncore-3.14-64\\python.exe",
+        "tests/scripts/verify-pcm-stream.py",
+        ".work/1128/matrix/x86_64-windows-gnu-g0a1e1/bin/sigma.exe"
+      ],
+      "binary": ".work/1128/matrix/x86_64-windows-gnu-g0a1e1/bin/sigma.exe",
+      "sha256": "333dc170494d3c0b6a03b6d233aef8ba88f5bfb46e34bef22e119c95bdc72c0c",
+      "bytes": 1816576,
+      "exit": 0,
+      "stdout": "[\n  \"copied-silent-stereo-write-wait-drain-stop-close-stale-id\",\n  \"invalid-memory-catch-and-close-recovery\",\n  \"one-stream-busy-and-close-pending-stop\",\n  \"active-stream-savesys-does-not-persist-live-ownership\",\n  \"save-load-reopen-without-reviving-old-handle\",\n  \"load-while-active-preserves-target-pcm\"\n]\n",
+      "stderr": ""
+    },
+    {
+      "target": "x86_64-windows-gnu",
+      "variant": "g1a0e0",
+      "disabled": [
+        "audio",
+        "extension"
+      ],
+      "build": [
+        "zig",
+        "build",
+        "-Dtarget=x86_64-windows-gnu",
+        "-Doptimize=fast",
+        "-Dcpu=baseline",
+        "-Dstrip=true",
+        "-Daudio=false",
+        "-Dextension=false",
+        "--prefix",
+        "D:\\home\\source\\zig\\forthz\\.work\\1128\\matrix\\x86_64-windows-gnu-g1a0e0"
+      ],
+      "test": [
+        "D:\\home\\source\\zig\\forthz\\.work\\1128\\matrix\\x86_64-windows-gnu-g1a0e0\\bin\\sigma.exe",
+        "-e",
+        "[DEFINED] REQUIRE-AUDIO . [DEFINED] PCM-OPEN . BYE"
+      ],
+      "binary": ".work/1128/matrix/x86_64-windows-gnu-g1a0e0/bin/sigma.exe",
+      "sha256": "bedd003fb9d6f1586b54a5f0f8720ebaa3d897a48ac0192f7779b8ca93a2c381",
+      "bytes": 1995776,
+      "exit": 0,
+      "stdout": "0 0 ",
+      "stderr": ""
+    },
+    {
+      "target": "x86_64-windows-gnu",
+      "variant": "g1a0e1",
+      "disabled": [
+        "audio"
+      ],
+      "build": [
+        "zig",
+        "build",
+        "-Dtarget=x86_64-windows-gnu",
+        "-Doptimize=fast",
+        "-Dcpu=baseline",
+        "-Dstrip=true",
+        "-Daudio=false",
+        "--prefix",
+        "D:\\home\\source\\zig\\forthz\\.work\\1128\\matrix\\x86_64-windows-gnu-g1a0e1"
+      ],
+      "test": [
+        "D:\\home\\source\\zig\\forthz\\.work\\1128\\matrix\\x86_64-windows-gnu-g1a0e1\\bin\\sigma.exe",
+        "-e",
+        "[DEFINED] REQUIRE-AUDIO . [DEFINED] PCM-OPEN . BYE"
+      ],
+      "binary": ".work/1128/matrix/x86_64-windows-gnu-g1a0e1/bin/sigma.exe",
+      "sha256": "7735a8afbff34463fb7d32b1d977c8810b53a7fd679fed342e458b1ad1a85862",
+      "bytes": 2050048,
+      "exit": 0,
+      "stdout": "0 0 ",
+      "stderr": ""
+    },
+    {
+      "target": "x86_64-windows-gnu",
+      "variant": "g1a1e0",
+      "disabled": [
+        "extension"
+      ],
+      "build": [
+        "zig",
+        "build",
+        "-Dtarget=x86_64-windows-gnu",
+        "-Doptimize=fast",
+        "-Dcpu=baseline",
+        "-Dstrip=true",
+        "-Dextension=false",
+        "--prefix",
+        "D:\\home\\source\\zig\\forthz\\.work\\1128\\matrix\\x86_64-windows-gnu-g1a1e0"
+      ],
+      "test": [
+        "C:\\Users\\n_fuk\\AppData\\Local\\Python\\pythoncore-3.14-64\\python.exe",
+        "tests/scripts/verify-pcm-stream.py",
+        ".work/1128/matrix/x86_64-windows-gnu-g1a1e0/bin/sigma.exe"
+      ],
+      "binary": ".work/1128/matrix/x86_64-windows-gnu-g1a1e0/bin/sigma.exe",
+      "sha256": "807bb36d2496e8035d4b8c9153fe2d83f2471bba6ceec455f1ad7282e870304f",
+      "bytes": 2100736,
+      "exit": 0,
+      "stdout": "[\n  \"copied-silent-stereo-write-wait-drain-stop-close-stale-id\",\n  \"invalid-memory-catch-and-close-recovery\",\n  \"one-stream-busy-and-close-pending-stop\",\n  \"active-stream-savesys-does-not-persist-live-ownership\",\n  \"save-load-reopen-without-reviving-old-handle\",\n  \"load-while-active-preserves-target-pcm\"\n]\n",
+      "stderr": ""
+    },
+    {
+      "target": "x86_64-windows-gnu",
+      "variant": "g1a1e1",
+      "disabled": [],
+      "build": [
+        "zig",
+        "build",
+        "-Dtarget=x86_64-windows-gnu",
+        "-Doptimize=fast",
+        "-Dcpu=baseline",
+        "-Dstrip=true",
+        "--prefix",
+        "D:\\home\\source\\zig\\forthz\\.work\\1128\\matrix\\x86_64-windows-gnu-g1a1e1"
+      ],
+      "test": [
+        "C:\\Users\\n_fuk\\AppData\\Local\\Python\\pythoncore-3.14-64\\python.exe",
+        "tests/scripts/verify-pcm-stream.py",
+        ".work/1128/matrix/x86_64-windows-gnu-g1a1e1/bin/sigma.exe"
+      ],
+      "binary": ".work/1128/matrix/x86_64-windows-gnu-g1a1e1/bin/sigma.exe",
+      "sha256": "c45698661baede62a3c31637dec67144851de046440e077cb2b4576f0c7b0b7e",
+      "bytes": 2145280,
+      "exit": 0,
+      "stdout": "[\n  \"copied-silent-stereo-write-wait-drain-stop-close-stale-id\",\n  \"invalid-memory-catch-and-close-recovery\",\n  \"one-stream-busy-and-close-pending-stop\",\n  \"active-stream-savesys-does-not-persist-live-ownership\",\n  \"save-load-reopen-without-reviving-old-handle\",\n  \"load-while-active-preserves-target-pcm\"\n]\n",
+      "stderr": ""
+    },
+    {
+      "target": "x86_64-windows-gnu",
+      "variant": "no-debug",
+      "disabled": [
+        "debug",
+        "graphics",
+        "extension"
+      ],
+      "build": [
+        "zig",
+        "build",
+        "-Dtarget=x86_64-windows-gnu",
+        "-Doptimize=fast",
+        "-Dcpu=baseline",
+        "-Dstrip=true",
+        "-Ddebug=false",
+        "-Dgraphics=false",
+        "-Dextension=false",
+        "--prefix",
+        "D:\\home\\source\\zig\\forthz\\.work\\1128\\matrix\\x86_64-windows-gnu-no-debug"
+      ],
+      "test": [
+        "C:\\Users\\n_fuk\\AppData\\Local\\Python\\pythoncore-3.14-64\\python.exe",
+        "tests/scripts/verify-pcm-stream.py",
+        ".work/1128/matrix/x86_64-windows-gnu-no-debug/bin/sigma.exe"
+      ],
+      "binary": ".work/1128/matrix/x86_64-windows-gnu-no-debug/bin/sigma.exe",
+      "sha256": "b0b656152d7d9c7762eae779d65f1268f6f92bb12b3a6d4f5bde21f4557c560a",
+      "bytes": 1656832,
+      "exit": 0,
+      "stdout": "[\n  \"copied-silent-stereo-write-wait-drain-stop-close-stale-id\",\n  \"invalid-memory-catch-and-close-recovery\",\n  \"one-stream-busy-and-close-pending-stop\",\n  \"active-stream-savesys-does-not-persist-live-ownership\",\n  \"save-load-reopen-without-reviving-old-handle\",\n  \"load-while-active-preserves-target-pcm\"\n]\n",
+      "stderr": ""
+    },
+    {
+      "target": "x86_64-windows-gnu",
+      "variant": "no-files",
+      "disabled": [
+        "files"
+      ],
+      "build": [
+        "zig",
+        "build",
+        "-Dtarget=x86_64-windows-gnu",
+        "-Doptimize=fast",
+        "-Dcpu=baseline",
+        "-Dstrip=true",
+        "-Dfiles=false",
+        "--prefix",
+        "D:\\home\\source\\zig\\forthz\\.work\\1128\\matrix\\x86_64-windows-gnu-no-files"
+      ],
+      "test": [
+        "C:\\Users\\n_fuk\\AppData\\Local\\Python\\pythoncore-3.14-64\\python.exe",
+        "tests/scripts/verify-pcm-stream.py",
+        ".work/1128/matrix/x86_64-windows-gnu-no-files/bin/sigma.exe"
+      ],
+      "binary": ".work/1128/matrix/x86_64-windows-gnu-no-files/bin/sigma.exe",
+      "sha256": "e8ff8c33195afe9b6f5507bed0167aa8622a2ee6c8cfc38c86ad7b75c6455ac5",
+      "bytes": 2063872,
+      "exit": 0,
+      "stdout": "[\n  \"copied-silent-stereo-write-wait-drain-stop-close-stale-id\",\n  \"invalid-memory-catch-and-close-recovery\",\n  \"one-stream-busy-and-close-pending-stop\",\n  \"active-stream-savesys-does-not-persist-live-ownership\",\n  \"save-load-reopen-without-reviving-old-handle\",\n  \"load-while-active-preserves-target-pcm\"\n]\n",
+      "stderr": ""
+    },
+    {
+      "target": "x86_64-windows-gnu",
+      "variant": "no-image",
+      "disabled": [
+        "image"
+      ],
+      "build": [
+        "zig",
+        "build",
+        "-Dtarget=x86_64-windows-gnu",
+        "-Doptimize=fast",
+        "-Dcpu=baseline",
+        "-Dstrip=true",
+        "-Dimage=false",
+        "--prefix",
+        "D:\\home\\source\\zig\\forthz\\.work\\1128\\matrix\\x86_64-windows-gnu-no-image"
+      ],
+      "test": [
+        "C:\\Users\\n_fuk\\AppData\\Local\\Python\\pythoncore-3.14-64\\python.exe",
+        "tests/scripts/verify-pcm-stream.py",
+        ".work/1128/matrix/x86_64-windows-gnu-no-image/bin/sigma.exe",
+        "--no-image"
+      ],
+      "binary": ".work/1128/matrix/x86_64-windows-gnu-no-image/bin/sigma.exe",
+      "sha256": "dccb3c6cbd830ec8e28400574ffcfcb64df9ef19fb52e46147ffd6f8ab89ff93",
+      "bytes": 2141696,
+      "exit": 0,
+      "stdout": "[\n  \"copied-silent-stereo-write-wait-drain-stop-close-stale-id\",\n  \"invalid-memory-catch-and-close-recovery\",\n  \"one-stream-busy-and-close-pending-stop\"\n]\n",
+      "stderr": ""
+    },
+    {
+      "target": "x86_64-linux-musl",
+      "variant": "g0a0e0",
+      "disabled": [
+        "graphics",
+        "audio",
+        "extension"
+      ],
+      "build": [
+        "zig",
+        "build",
+        "-Dtarget=x86_64-linux-musl",
+        "-Doptimize=fast",
+        "-Dcpu=baseline",
+        "-Dstrip=true",
+        "-Dgraphics=false",
+        "-Daudio=false",
+        "-Dextension=false",
+        "--prefix",
+        "D:\\home\\source\\zig\\forthz\\.work\\1128\\matrix\\x86_64-linux-musl-g0a0e0"
+      ],
+      "test": [
+        "wsl.exe",
+        "--cd",
+        "/mnt/d/home/source/zig/forthz",
+        "--exec",
+        "./.work/1128/matrix/x86_64-linux-musl-g0a0e0/bin/sigma",
+        "-e",
+        "[DEFINED] REQUIRE-AUDIO . [DEFINED] PCM-OPEN . BYE"
+      ],
+      "binary": ".work/1128/matrix/x86_64-linux-musl-g0a0e0/bin/sigma",
+      "sha256": "f9e75be472399802631ea974bc999719dd9c51fb4f516e4fbd1b0cde90a1daef",
+      "bytes": 1659992,
+      "exit": 0,
+      "stdout": "0 0 ",
+      "stderr": ""
+    },
+    {
+      "target": "x86_64-linux-musl",
+      "variant": "g0a0e1",
+      "disabled": [
+        "graphics",
+        "audio"
+      ],
+      "build": [
+        "zig",
+        "build",
+        "-Dtarget=x86_64-linux-musl",
+        "-Doptimize=fast",
+        "-Dcpu=baseline",
+        "-Dstrip=true",
+        "-Dgraphics=false",
+        "-Daudio=false",
+        "--prefix",
+        "D:\\home\\source\\zig\\forthz\\.work\\1128\\matrix\\x86_64-linux-musl-g0a0e1"
+      ],
+      "test": [
+        "wsl.exe",
+        "--cd",
+        "/mnt/d/home/source/zig/forthz",
+        "--exec",
+        "./.work/1128/matrix/x86_64-linux-musl-g0a0e1/bin/sigma",
+        "-e",
+        "[DEFINED] REQUIRE-AUDIO . [DEFINED] PCM-OPEN . BYE"
+      ],
+      "binary": ".work/1128/matrix/x86_64-linux-musl-g0a0e1/bin/sigma",
+      "sha256": "84bb190f405c6e190867248cd6e0dd34a822b2b1a23ecba228c11617113986e5",
+      "bytes": 1711528,
+      "exit": 0,
+      "stdout": "0 0 ",
+      "stderr": ""
+    },
+    {
+      "target": "x86_64-linux-musl",
+      "variant": "g0a1e0",
+      "disabled": [
+        "graphics",
+        "extension"
+      ],
+      "build": [
+        "zig",
+        "build",
+        "-Dtarget=x86_64-linux-musl",
+        "-Doptimize=fast",
+        "-Dcpu=baseline",
+        "-Dstrip=true",
+        "-Dgraphics=false",
+        "-Dextension=false",
+        "--prefix",
+        "D:\\home\\source\\zig\\forthz\\.work\\1128\\matrix\\x86_64-linux-musl-g0a1e0"
+      ],
+      "test": [
+        "wsl.exe",
+        "--cd",
+        "/mnt/d/home/source/zig/forthz",
+        "--exec",
+        "python3",
+        "tests/scripts/verify-pcm-stream.py",
+        ".work/1128/matrix/x86_64-linux-musl-g0a1e0/bin/sigma"
+      ],
+      "binary": ".work/1128/matrix/x86_64-linux-musl-g0a1e0/bin/sigma",
+      "sha256": "57838b110ae9912ae224f81a72ee3b5672fb93637ac421feb896c97f764d9d93",
+      "bytes": 1781552,
+      "exit": 0,
+      "stdout": "[\n  \"copied-silent-stereo-write-wait-drain-stop-close-stale-id\",\n  \"invalid-memory-catch-and-close-recovery\",\n  \"one-stream-busy-and-close-pending-stop\",\n  \"active-stream-savesys-does-not-persist-live-ownership\",\n  \"save-load-reopen-without-reviving-old-handle\",\n  \"load-while-active-preserves-target-pcm\"\n]\n",
+      "stderr": ""
+    },
+    {
+      "target": "x86_64-linux-musl",
+      "variant": "g0a1e1",
+      "disabled": [
+        "graphics"
+      ],
+      "build": [
+        "zig",
+        "build",
+        "-Dtarget=x86_64-linux-musl",
+        "-Doptimize=fast",
+        "-Dcpu=baseline",
+        "-Dstrip=true",
+        "-Dgraphics=false",
+        "--prefix",
+        "D:\\home\\source\\zig\\forthz\\.work\\1128\\matrix\\x86_64-linux-musl-g0a1e1"
+      ],
+      "test": [
+        "wsl.exe",
+        "--cd",
+        "/mnt/d/home/source/zig/forthz",
+        "--exec",
+        "python3",
+        "tests/scripts/verify-pcm-stream.py",
+        ".work/1128/matrix/x86_64-linux-musl-g0a1e1/bin/sigma"
+      ],
+      "binary": ".work/1128/matrix/x86_64-linux-musl-g0a1e1/bin/sigma",
+      "sha256": "25a48733bf78188ea3929a7cb87dccf2f34fef38fe74b62edbfbfcfbc09893e1",
+      "bytes": 1829648,
+      "exit": 0,
+      "stdout": "[\n  \"copied-silent-stereo-write-wait-drain-stop-close-stale-id\",\n  \"invalid-memory-catch-and-close-recovery\",\n  \"one-stream-busy-and-close-pending-stop\",\n  \"active-stream-savesys-does-not-persist-live-ownership\",\n  \"save-load-reopen-without-reviving-old-handle\",\n  \"load-while-active-preserves-target-pcm\"\n]\n",
+      "stderr": ""
+    },
+    {
+      "target": "x86_64-linux-musl",
+      "variant": "g1a0e0",
+      "disabled": [
+        "audio",
+        "extension"
+      ],
+      "build": [
+        "zig",
+        "build",
+        "-Dtarget=x86_64-linux-musl",
+        "-Doptimize=fast",
+        "-Dcpu=baseline",
+        "-Dstrip=true",
+        "-Daudio=false",
+        "-Dextension=false",
+        "--prefix",
+        "D:\\home\\source\\zig\\forthz\\.work\\1128\\matrix\\x86_64-linux-musl-g1a0e0"
+      ],
+      "test": [
+        "wsl.exe",
+        "--cd",
+        "/mnt/d/home/source/zig/forthz",
+        "--exec",
+        "./.work/1128/matrix/x86_64-linux-musl-g1a0e0/bin/sigma",
+        "-e",
+        "[DEFINED] REQUIRE-AUDIO . [DEFINED] PCM-OPEN . BYE"
+      ],
+      "binary": ".work/1128/matrix/x86_64-linux-musl-g1a0e0/bin/sigma",
+      "sha256": "172b648df14901da750d8dd638d0c1e33b3a0085ccfd8a3f35a0a2ba8f6f2f92",
+      "bytes": 2200016,
+      "exit": 0,
+      "stdout": "0 0 ",
+      "stderr": ""
+    },
+    {
+      "target": "x86_64-linux-musl",
+      "variant": "g1a0e1",
+      "disabled": [
+        "audio"
+      ],
+      "build": [
+        "zig",
+        "build",
+        "-Dtarget=x86_64-linux-musl",
+        "-Doptimize=fast",
+        "-Dcpu=baseline",
+        "-Dstrip=true",
+        "-Daudio=false",
+        "--prefix",
+        "D:\\home\\source\\zig\\forthz\\.work\\1128\\matrix\\x86_64-linux-musl-g1a0e1"
+      ],
+      "test": [
+        "wsl.exe",
+        "--cd",
+        "/mnt/d/home/source/zig/forthz",
+        "--exec",
+        "./.work/1128/matrix/x86_64-linux-musl-g1a0e1/bin/sigma",
+        "-e",
+        "[DEFINED] REQUIRE-AUDIO . [DEFINED] PCM-OPEN . BYE"
+      ],
+      "binary": ".work/1128/matrix/x86_64-linux-musl-g1a0e1/bin/sigma",
+      "sha256": "a1cc22584aaabbf14d497ffda9e4b4eb89004cd1ad89e689dc66cac16bcfb3fc",
+      "bytes": 2251440,
+      "exit": 0,
+      "stdout": "0 0 ",
+      "stderr": ""
+    },
+    {
+      "target": "x86_64-linux-musl",
+      "variant": "g1a1e0",
+      "disabled": [
+        "extension"
+      ],
+      "build": [
+        "zig",
+        "build",
+        "-Dtarget=x86_64-linux-musl",
+        "-Doptimize=fast",
+        "-Dcpu=baseline",
+        "-Dstrip=true",
+        "-Dextension=false",
+        "--prefix",
+        "D:\\home\\source\\zig\\forthz\\.work\\1128\\matrix\\x86_64-linux-musl-g1a1e0"
+      ],
+      "test": [
+        "wsl.exe",
+        "--cd",
+        "/mnt/d/home/source/zig/forthz",
+        "--exec",
+        "python3",
+        "tests/scripts/verify-pcm-stream.py",
+        ".work/1128/matrix/x86_64-linux-musl-g1a1e0/bin/sigma"
+      ],
+      "binary": ".work/1128/matrix/x86_64-linux-musl-g1a1e0/bin/sigma",
+      "sha256": "e8b1eb0c58fd003357dc324b9e1efcc2f4a4849b4d2dd98a03ff5404e8109c8d",
+      "bytes": 2310000,
+      "exit": 0,
+      "stdout": "[\n  \"copied-silent-stereo-write-wait-drain-stop-close-stale-id\",\n  \"invalid-memory-catch-and-close-recovery\",\n  \"one-stream-busy-and-close-pending-stop\",\n  \"active-stream-savesys-does-not-persist-live-ownership\",\n  \"save-load-reopen-without-reviving-old-handle\",\n  \"load-while-active-preserves-target-pcm\"\n]\n",
+      "stderr": ""
+    },
+    {
+      "target": "x86_64-linux-musl",
+      "variant": "g1a1e1",
+      "disabled": [],
+      "build": [
+        "zig",
+        "build",
+        "-Dtarget=x86_64-linux-musl",
+        "-Doptimize=fast",
+        "-Dcpu=baseline",
+        "-Dstrip=true",
+        "--prefix",
+        "D:\\home\\source\\zig\\forthz\\.work\\1128\\matrix\\x86_64-linux-musl-g1a1e1"
+      ],
+      "test": [
+        "wsl.exe",
+        "--cd",
+        "/mnt/d/home/source/zig/forthz",
+        "--exec",
+        "python3",
+        "tests/scripts/verify-pcm-stream.py",
+        ".work/1128/matrix/x86_64-linux-musl-g1a1e1/bin/sigma"
+      ],
+      "binary": ".work/1128/matrix/x86_64-linux-musl-g1a1e1/bin/sigma",
+      "sha256": "3ac99defda9caa086f012f1528f8a0e90c9bed7ee79e12220ff51c7a22f8758b",
+      "bytes": 2356304,
+      "exit": 0,
+      "stdout": "[\n  \"copied-silent-stereo-write-wait-drain-stop-close-stale-id\",\n  \"invalid-memory-catch-and-close-recovery\",\n  \"one-stream-busy-and-close-pending-stop\",\n  \"active-stream-savesys-does-not-persist-live-ownership\",\n  \"save-load-reopen-without-reviving-old-handle\",\n  \"load-while-active-preserves-target-pcm\"\n]\n",
+      "stderr": ""
+    },
+    {
+      "target": "x86_64-linux-musl",
+      "variant": "no-debug",
+      "disabled": [
+        "debug",
+        "graphics",
+        "extension"
+      ],
+      "build": [
+        "zig",
+        "build",
+        "-Dtarget=x86_64-linux-musl",
+        "-Doptimize=fast",
+        "-Dcpu=baseline",
+        "-Dstrip=true",
+        "-Ddebug=false",
+        "-Dgraphics=false",
+        "-Dextension=false",
+        "--prefix",
+        "D:\\home\\source\\zig\\forthz\\.work\\1128\\matrix\\x86_64-linux-musl-no-debug"
+      ],
+      "test": [
+        "wsl.exe",
+        "--cd",
+        "/mnt/d/home/source/zig/forthz",
+        "--exec",
+        "python3",
+        "tests/scripts/verify-pcm-stream.py",
+        ".work/1128/matrix/x86_64-linux-musl-no-debug/bin/sigma"
+      ],
+      "binary": ".work/1128/matrix/x86_64-linux-musl-no-debug/bin/sigma",
+      "sha256": "dfc8fab00350ff7531f8aa9ab7d8dc18b71673477a4e61580f663f801a7c4d63",
+      "bytes": 1669392,
+      "exit": 0,
+      "stdout": "[\n  \"copied-silent-stereo-write-wait-drain-stop-close-stale-id\",\n  \"invalid-memory-catch-and-close-recovery\",\n  \"one-stream-busy-and-close-pending-stop\",\n  \"active-stream-savesys-does-not-persist-live-ownership\",\n  \"save-load-reopen-without-reviving-old-handle\",\n  \"load-while-active-preserves-target-pcm\"\n]\n",
+      "stderr": ""
+    },
+    {
+      "target": "x86_64-linux-musl",
+      "variant": "no-files",
+      "disabled": [
+        "files"
+      ],
+      "build": [
+        "zig",
+        "build",
+        "-Dtarget=x86_64-linux-musl",
+        "-Doptimize=fast",
+        "-Dcpu=baseline",
+        "-Dstrip=true",
+        "-Dfiles=false",
+        "--prefix",
+        "D:\\home\\source\\zig\\forthz\\.work\\1128\\matrix\\x86_64-linux-musl-no-files"
+      ],
+      "test": [
+        "wsl.exe",
+        "--cd",
+        "/mnt/d/home/source/zig/forthz",
+        "--exec",
+        "python3",
+        "tests/scripts/verify-pcm-stream.py",
+        ".work/1128/matrix/x86_64-linux-musl-no-files/bin/sigma"
+      ],
+      "binary": ".work/1128/matrix/x86_64-linux-musl-no-files/bin/sigma",
+      "sha256": "06aa43abdbe3281df76a704366a1797b1b4a59793444cadde36d37c5547ac9b0",
+      "bytes": 2269840,
+      "exit": 0,
+      "stdout": "[\n  \"copied-silent-stereo-write-wait-drain-stop-close-stale-id\",\n  \"invalid-memory-catch-and-close-recovery\",\n  \"one-stream-busy-and-close-pending-stop\",\n  \"active-stream-savesys-does-not-persist-live-ownership\",\n  \"save-load-reopen-without-reviving-old-handle\",\n  \"load-while-active-preserves-target-pcm\"\n]\n",
+      "stderr": ""
+    },
+    {
+      "target": "x86_64-linux-musl",
+      "variant": "no-image",
+      "disabled": [
+        "image"
+      ],
+      "build": [
+        "zig",
+        "build",
+        "-Dtarget=x86_64-linux-musl",
+        "-Doptimize=fast",
+        "-Dcpu=baseline",
+        "-Dstrip=true",
+        "-Dimage=false",
+        "--prefix",
+        "D:\\home\\source\\zig\\forthz\\.work\\1128\\matrix\\x86_64-linux-musl-no-image"
+      ],
+      "test": [
+        "wsl.exe",
+        "--cd",
+        "/mnt/d/home/source/zig/forthz",
+        "--exec",
+        "python3",
+        "tests/scripts/verify-pcm-stream.py",
+        ".work/1128/matrix/x86_64-linux-musl-no-image/bin/sigma",
+        "--no-image"
+      ],
+      "binary": ".work/1128/matrix/x86_64-linux-musl-no-image/bin/sigma",
+      "sha256": "bb69d7e878cd67c8092d8633d11783a133158a2fcfd8de127bcc8de29d5a50f1",
+      "bytes": 2352240,
+      "exit": 0,
+      "stdout": "[\n  \"copied-silent-stereo-write-wait-drain-stop-close-stale-id\",\n  \"invalid-memory-catch-and-close-recovery\",\n  \"one-stream-busy-and-close-pending-stop\"\n]\n",
+      "stderr": ""
+    }
+  ],
+  "terminal": {
+    "windows-terminal.json": [
+      {
+        "operation": "wait",
+        "payload": "ab",
+        "exit": 0,
+        "elapsed_seconds": 0.07561440000426956,
+        "output": "-28 \r\n0 \r\n97 98 "
+      },
+      {
+        "operation": "stop",
+        "payload": "ab",
+        "exit": 0,
+        "elapsed_seconds": 0.08314020000398159,
+        "output": "-28 \r\n0 \r\n97 98 "
+      },
+      {
+        "operation": "close",
+        "payload": "ab",
+        "exit": 0,
+        "elapsed_seconds": 0.03718649999063928,
+        "output": "-516 \r\n0 \r\n97 98 "
+      },
+      {
+        "operation": "wait",
+        "payload": "\u001b[",
+        "exit": 0,
+        "elapsed_seconds": 0.1479676000017207,
+        "output": "-28 \r\n0 \r\n27 91 "
+      },
+      {
+        "operation": "wait",
+        "payload": "日",
+        "exit": 0,
+        "elapsed_seconds": 0.06606599999940954,
+        "output": "-28 \r\n0 \r\n26085 "
+      }
+    ],
+    "windows-terminal-no-debug.json": [
+      {
+        "operation": "wait",
+        "payload": "ab",
+        "exit": 0,
+        "elapsed_seconds": 0.08700999998836778,
+        "output": "-28 \r\n0 \r\n97 98 "
+      },
+      {
+        "operation": "stop",
+        "payload": "ab",
+        "exit": 0,
+        "elapsed_seconds": 0.06592069999896921,
+        "output": "-28 \r\n0 \r\n97 98 "
+      },
+      {
+        "operation": "close",
+        "payload": "ab",
+        "exit": 0,
+        "elapsed_seconds": 0.039392200007569045,
+        "output": "-516 \r\n0 \r\n97 98 "
+      },
+      {
+        "operation": "wait",
+        "payload": "\u001b[",
+        "exit": 0,
+        "elapsed_seconds": 0.14950359999784268,
+        "output": "-28 \r\n0 \r\n27 91 "
+      },
+      {
+        "operation": "wait",
+        "payload": "日",
+        "exit": 0,
+        "elapsed_seconds": 0.06619649998901878,
+        "output": "-28 \r\n0 \r\n26085 "
+      }
+    ],
+    "linux-terminal.json": [
+      {
+        "operation": "wait",
+        "payload": "ab",
+        "exit": 0,
+        "elapsed_seconds": 0.03587594199998989,
+        "output": "READY\r\n-28 \r\n0 \r\n97 98 "
+      },
+      {
+        "operation": "stop",
+        "payload": "ab",
+        "exit": 0,
+        "elapsed_seconds": 0.035570082000006664,
+        "output": "READY\r\n-28 \r\n0 \r\n97 98 "
+      },
+      {
+        "operation": "close",
+        "payload": "ab",
+        "exit": 0,
+        "elapsed_seconds": 0.03568481899999654,
+        "output": "READY\r\n-516 \r\n0 \r\n97 98 "
+      },
+      {
+        "operation": "wait",
+        "payload": "\u001b[",
+        "exit": 0,
+        "elapsed_seconds": 0.08654860900000472,
+        "output": "READY\r\n-28 \r\n0 \r\n27 91 "
+      },
+      {
+        "operation": "wait",
+        "payload": "日",
+        "exit": 0,
+        "elapsed_seconds": 0.035703625000010675,
+        "output": "READY\r\n-28 \r\n0 \r\n26085 "
+      }
+    ],
+    "linux-terminal-no-debug.json": [
+      {
+        "operation": "wait",
+        "payload": "ab",
+        "exit": 0,
+        "elapsed_seconds": 0.035894026000000245,
+        "output": "READY\r\n-28 \r\n0 \r\n97 98 "
+      },
+      {
+        "operation": "stop",
+        "payload": "ab",
+        "exit": 0,
+        "elapsed_seconds": 0.0356349550000008,
+        "output": "READY\r\n-28 \r\n0 \r\n97 98 "
+      },
+      {
+        "operation": "close",
+        "payload": "ab",
+        "exit": 0,
+        "elapsed_seconds": 0.036267995999999414,
+        "output": "READY\r\n-516 \r\n0 \r\n97 98 "
+      },
+      {
+        "operation": "wait",
+        "payload": "\u001b[",
+        "exit": 0,
+        "elapsed_seconds": 0.08679346400000032,
+        "output": "READY\r\n-28 \r\n0 \r\n27 91 "
+      },
+      {
+        "operation": "wait",
+        "payload": "日",
+        "exit": 0,
+        "elapsed_seconds": 0.03579154100000004,
+        "output": "READY\r\n-28 \r\n0 \r\n26085 "
+      }
+    ]
+  },
+  "unit_tests": {
+    "windows-core.log": {
+      "summary": "1124 passed; 10 skipped; 0 failed."
+    },
+    "windows-host.log": {
+      "summary": "162 passed; 15 skipped; 0 failed."
+    },
+    "linux-core.log": {
+      "summary": "1124 passed; 10 skipped; 0 failed."
+    },
+    "linux-host.log": {
+      "summary": "167 passed; 17 skipped; 0 failed."
+    }
+  },
+  "full_build_test": {
+    "command": [
+      "zig",
+      "build",
+      "test"
+    ],
+    "exit": 0
+  },
+  "mac": {
+    "command": [
+      "zig",
+      "build",
+      "core-check",
+      "host-check",
+      "-Dtarget=aarch64-macos",
+      "--prefix",
+      ".work/1128/mac-final"
+    ],
+    "exit": 0,
+    "scope": "Cross compile only, no Mac execution"
+  },
+  "word_reference": "Japanese explanations, usage examples and cautions: 1819 complete\r\nruntime AUDIO: 87 names, no omissions\r\nruntime EKEYS: 35 names, no omissions\r\nruntime EXTENSION: 39 names, no omissions\r\nruntime FORTH: 961 names, no omissions\r\nruntime GAME: 59 names, no omissions\r\nruntime GRAPHICS: 450 names, no omissions\r\nruntime GUI: 135 names, no omissions\r\nruntime Root: 14 names, no omissions\r\nruntime EKEYS values: 35 matched\r\ndocumentation examples: 28 passed\r\nindividual runnable usage examples: 415 passed\r\nHELP descriptions: 1605; reference entries: 1819\r\nNamespaces: AUDIO=87, EKEYS=35, EXTENSION=39, FORTH=961, GAME=59, GRAPHICS=450, GUI=135, Root=14, Syntax=39\r\n",
+  "microbenchmarks": {
+    "windows": {
+      "platform": "windows",
+      "clock": "UTIME wall microseconds inside program; startup/close excluded; one warm-up per process; 7 processes",
+      "results": {
+        "queued": {
+          "iterations": 1000000,
+          "source": "REQUIRE-AUDIO ALSO AUDIO 48000 2 4096 PCM-OPEN THROW CONSTANT P : PCM-BENCH 1000000 0 DO P PCM-QUEUED 2DROP LOOP ; PCM-BENCH UTIME PCM-BENCH UTIME 2SWAP D- D. P PCM-CLOSE THROW BYE",
+          "microseconds": [
+            25731,
+            33114,
+            25122,
+            26692,
+            26566,
+            27492,
+            37015
+          ],
+          "median_ns_per_call": 26.692,
+          "min_ns_per_call": 25.122,
+          "max_ns_per_call": 37.015
+        },
+        "wait_poll": {
+          "iterations": 10000,
+          "source": "REQUIRE-AUDIO ALSO AUDIO 48000 2 4096 PCM-OPEN THROW CONSTANT P : PCM-BENCH 10000 0 DO 1 0 P PCM-WAIT 2DROP LOOP ; PCM-BENCH UTIME PCM-BENCH UTIME 2SWAP D- D. P PCM-CLOSE THROW BYE",
+          "microseconds": [
+            3990,
+            3984,
+            4079,
+            4387,
+            4689,
+            4634,
+            4247
+          ],
+          "median_ns_per_call": 424.7,
+          "min_ns_per_call": 398.4,
+          "max_ns_per_call": 468.9
+        }
+      }
+    },
+    "linux_wsl": {
+      "platform": "linux",
+      "clock": "UTIME wall microseconds inside program; startup/close excluded; one warm-up per process; 7 processes",
+      "results": {
+        "queued": {
+          "iterations": 1000000,
+          "source": "REQUIRE-AUDIO ALSO AUDIO 48000 2 4096 PCM-OPEN THROW CONSTANT P : PCM-BENCH 1000000 0 DO P PCM-QUEUED 2DROP LOOP ; PCM-BENCH UTIME PCM-BENCH UTIME 2SWAP D- D. P PCM-CLOSE THROW BYE",
+          "microseconds": [
+            16499,
+            16198,
+            16996,
+            17465,
+            15868,
+            15878,
+            15940
+          ],
+          "median_ns_per_call": 16.198,
+          "min_ns_per_call": 15.868,
+          "max_ns_per_call": 17.465
+        },
+        "wait_poll": {
+          "iterations": 10000,
+          "source": "REQUIRE-AUDIO ALSO AUDIO 48000 2 4096 PCM-OPEN THROW CONSTANT P : PCM-BENCH 10000 0 DO 1 0 P PCM-WAIT 2DROP LOOP ; PCM-BENCH UTIME PCM-BENCH UTIME 2SWAP D- D. P PCM-CLOSE THROW BYE",
+          "microseconds": [
+            10516,
+            10417,
+            10615,
+            10371,
+            10700,
+            10406,
+            10488
+          ],
+          "median_ns_per_call": 1048.8,
+          "min_ns_per_call": 1037.1,
+          "max_ns_per_call": 1070.0
+        }
+      }
+    },
+    "driver": "import json,subprocess,statistics,sys\nfrom pathlib import Path\nroot=Path.cwd();work=root/'.work/1128';windows=sys.platform=='win32'\nbinary=root/'.work/1128/matrix'/('x86_64-windows-gnu-g1a1e1/bin/sigma.exe' if windows else 'x86_64-linux-musl-g1a1e1/bin/sigma')\nrows={}\nfor name,n,body in [('queued',1000000,'P PCM-QUEUED 2DROP'),('wait_poll',10000,'1 0 P PCM-WAIT 2DROP')]:\n code=f'REQUIRE-AUDIO ALSO AUDIO 48000 2 4096 PCM-OPEN THROW CONSTANT P : PCM-BENCH {n} 0 DO {body} LOOP ; PCM-BENCH UTIME PCM-BENCH UTIME 2SWAP D- D. P PCM-CLOSE THROW BYE'\n samples=[]\n for _ in range(7):\n  p=subprocess.run([str(binary),'-e',code],input=b'',capture_output=True,timeout=30)\n  assert p.returncode==0 and not p.stderr,(p.returncode,p.stdout,p.stderr)\n  samples.append(int(p.stdout.split()[0]))\n rows[name]={'iterations':n,'source':code,'microseconds':samples,'median_ns_per_call':statistics.median(samples)*1000/n,'min_ns_per_call':min(samples)*1000/n,'max_ns_per_call':max(samples)*1000/n}\nprint(json.dumps({'platform':'windows' if windows else 'linux','clock':'UTIME wall microseconds inside program; startup/close excluded; one warm-up per process; 7 processes','results':rows},indent=2))\r\n\r\n",
+    "limits": "New API baseline only; includes Forth dispatch/loop and background audio. Not a prior-version/Gforth regression comparison. No device playback timing."
+  },
+  "limits": [
+    "All public integration input is silence; audible output and physical key entry unverified.",
+    "Linux live PulseAudio/ALSA hardware unverified; synthetic/CLI scope distinct.",
+    "Mac task1130 remains todo.",
+    "CLOSE acknowledgment and QUEUED measure engine consumption, not device playback position.",
+    "Audio lifetime resource/reaping evidence is in 2026-11-20-audio-lifetime.json; current host unit tests also include ID/storage restart."
+  ],
+  "documentation_check": {
+    "command": [
+      "python",
+      "scripts/check-docs.py",
+      "416caf9"
+    ],
+    "exit": 0,
+    "findings": 0
+  },
+  "format_check": {
+    "command": "zig fmt --check (changed Zig files)",
+    "exit": 0
+  },
+  "python_syntax_check": {
+    "files": [
+      "tests/scripts/verify-pcm-stream.py",
+      "tests/scripts/verify-pcm-terminal.py"
+    ],
+    "exit": 0
+  },
+  "tasks_after_validation": [
+    {
+      "id": 998,
+      "title": "本体09 PCMストリーム出力（段階B、依存は共通基盤1064。AUDIO）：開始・書込み・残量（フレーム数）・停止の語、専用の有界のリング、周波数の変換、残量と再生位置の区別、満杯のときの待機と中断・部分書込みは900の取り決め、MML・SFX・モジュールとの混合（EMULATOR_CORE_PLAN.md）",
+      "status": "todo",
+      "parent_id": 1003,
+      "progress": 0,
+      "progress_mode": "auto",
+      "created_at": "2026-11-17T22:47:12Z",
+      "depends_on": [
+        1064
+      ],
+      "effective_progress": 83,
+      "blocked": false,
+      "blocked_by": []
+    },
+    {
+      "id": 1125,
+      "title": "PCM01 仕様設計：形式・容量・部分書込み・期限と中断・停止とclose・再標本化・混合・所有と画像・backend終了をソース照合しClaudeレビューで確定",
+      "status": "done",
+      "parent_id": 998,
+      "progress": 100,
+      "progress_mode": "auto",
+      "created_at": "2026-11-20T01:14:54Z",
+      "completed_at": "2026-11-20T01:32:15Z",
+      "depends_on": [
+        1064
+      ],
+      "effective_progress": 100,
+      "blocked": false,
+      "blocked_by": []
+    },
+    {
+      "id": 1126,
+      "title": "PCM02 有界リングと再標本化：SPSC・wrap・入力frame残量・underrun・sample hold・saturating混合を実装し決定的試験",
+      "status": "done",
+      "parent_id": 998,
+      "progress": 100,
+      "progress_mode": "auto",
+      "created_at": "2026-11-20T01:14:54Z",
+      "completed_at": "2026-11-20T01:32:15Z",
+      "depends_on": [
+        1125
+      ],
+      "effective_progress": 100,
+      "blocked": false,
+      "blocked_by": []
+    },
+    {
+      "id": 1127,
+      "title": "PCM03 ホスト寿命：音スレッドの停止とjoin・Windows/Linux/macOS装置待機解除・callback停止・初期化失敗の回収を実装",
+      "status": "done",
+      "parent_id": 998,
+      "progress": 100,
+      "progress_mode": "auto",
+      "created_at": "2026-11-20T01:14:54Z",
+      "completed_at": "2026-11-20T02:06:42Z",
+      "depends_on": [
+        1125
+      ],
+      "effective_progress": 100,
+      "blocked": false,
+      "blocked_by": []
+    },
+    {
+      "id": 1128,
+      "title": "PCM04 公開語と所有：開始・部分書込み・待機・残量・停止・closeと画像/世代/終了経路、英日HELPを実装",
+      "status": "done",
+      "parent_id": 998,
+      "progress": 100,
+      "progress_mode": "auto",
+      "created_at": "2026-11-20T01:14:54Z",
+      "completed_at": "2026-11-20T03:14:15Z",
+      "depends_on": [
+        1056,
+        1125,
+        1126,
+        1127
+      ],
+      "effective_progress": 100,
+      "blocked": false,
+      "blocked_by": []
+    },
+    {
+      "id": 1129,
+      "title": "PCM05 Windows/Linux受け入れ：満杯・中断・停止・保存アプリ・語群除外・資源回収・英日文書と測定を検証",
+      "status": "done",
+      "parent_id": 998,
+      "progress": 100,
+      "progress_mode": "auto",
+      "created_at": "2026-11-20T01:14:54Z",
+      "completed_at": "2026-11-20T03:14:15Z",
+      "depends_on": [
+        1128
+      ],
+      "effective_progress": 100,
+      "blocked": false,
+      "blocked_by": []
+    },
+    {
+      "id": 1130,
+      "title": "PCM06 Mac実機受け入れ：生成アプリ・連続PCM・混合・待機中断・停止/再開・装置と資源回収・除外構成を確認",
+      "status": "todo",
+      "parent_id": 998,
+      "progress": 0,
+      "progress_mode": "auto",
+      "created_at": "2026-11-20T01:14:54Z",
+      "depends_on": [
+        1128
+      ],
+      "effective_progress": 0,
+      "blocked": false,
+      "blocked_by": []
+    }
+  ]
+}

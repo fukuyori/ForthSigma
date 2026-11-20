@@ -1981,6 +1981,7 @@ const process_native = @import("host_process_native.zig");
 var processes: ?process_registry_module.Registry = null;
 var next_process_id: forth.Cell = @import("host_process_table.zig").first_id;
 var process_cleanup_error: forth.Cell = 0;
+var audio_cleanup_failed = false;
 var test_process_publish_fail_after: ?usize = null;
 var test_process_published: usize = 0;
 var test_process_close_error: bool = false;
@@ -3548,13 +3549,18 @@ fn nextArgument(machine: *forth.State, buffer: []u8) !?[]const u8 {
 /// without setting up std.Io (see HostContext).
 pub fn main(init: std.process.Init.Minimal) u8 {
     process_cleanup_error = 0;
-    const status = run(init) catch |err| {
+    audio_cleanup_failed = false;
+    const status = run(init) catch |err| failed: {
         // As the standard library reports an error returned from main.
         var message: [128]u8 = undefined;
         _ = writeStandardError(std.fmt.bufPrint(&message, "error: {s}\n", .{@errorName(err)}) catch "error\n");
-        return 1;
+        break :failed @as(u8, 1);
     };
-    if (process_cleanup_error != 0) return 1;
+    if (audio_cleanup_failed) {
+        flushOutput();
+        host_audio.abortIncomplete();
+    }
+    if (process_cleanup_error != 0 or audio_cleanup_failed) return 1;
     return if (status == 0 and lint_findings != 0) 2 else status;
 }
 
@@ -3671,6 +3677,7 @@ fn run(init: std.process.Init.Minimal) !u8 {
             utf8_console.finish();
             _ = resize_scope.end();
             _ = writeStandardError("error: runtime resources or signal restoration remain active\n");
+            if (audio and audio_cleanup_failed) host_audio.abortIncomplete();
             libc.exit(1);
         };
     }
@@ -3678,7 +3685,7 @@ fn run(init: std.process.Init.Minimal) !u8 {
     const previous_mode_recovery = host_input.before_mode_change;
     host_input.before_mode_change = @import("host_wait.zig").beforeInputModeChange;
     defer host_input.before_mode_change = previous_mode_recovery;
-    machine.init(.{ .execution_ops = if (@import("build_options").debug and @import("build_options").extension) &execution_host_ops else null, .process_ops = if (process_native.available) &process_ops else null, .physical_key_ops = if (graphics and host_window.available) &host_window.physical_ops else null, .gamepad_ops = if (graphics) &host_gamepad.ops else null, .context = @ptrCast(&host), .write_fn = terminalWrite, .read_fn = terminalRead, .load_fn = loadDictionary, .save_fn = saveDictionary, .savesys_fn = saveExecutableImage, .key_fn = terminalKey, .key_ior_fn = terminalKeyIor, .event_key_fn = terminalEventKey, .standard_event_fn = terminalStandardEvent, .standard_clock = @import("host_clock.zig").clock, .standard_interrupts = host_input.input_is_terminal, .monotonic_ms_fn = monotonicMilliseconds, .key_ready_fn = terminalKeyReady, .buffered_key_fn = terminalBufferedKey, .unread_fn = terminalUnread, .unread_byte_fn = terminalUnreadChecked, .sleep_fn = sleepMilliseconds, .sleep_ns_fn = sleepNanoseconds, .utime_fn = microsecondsSinceEpoch, .ntime_fn = nanosecondsSinceEpoch, .cputime_fn = processCpuTimes, .local_time_fn = localTime, .zoned_time_fn = @import("host_timezone.zig").convert, .getenv_fn = environmentValue, .errno_fn = currentErrno, .system_fn = runShellCommand, .editor_fn = if (@import("build_options").tools) editSource else null, .file_ops = &file_ops, .framebuffer_fn = graphicsBuffer, .image_alloc_fn = if (graphics) imageAlloc else null, .image_free_fn = if (graphics) imageFree else null, .terminal_size_fn = terminalSize, .terminal_mode_set_fn = terminalModeSet, .terminal_mode_get_fn = terminalModeGet, .input_error_fn = inputError, .terminal_utf8_fn = terminalUtf8, .display_budget_fn = if (graphics and (builtin.os.tag == .windows or (builtin.os.tag == .linux and @import("build_options").x11))) @import("host_display_budget.zig").scope else null, .window_fn = if (graphics and host_window.available) host_window.show else null, .ime_preedit_fn = if (graphics and (builtin.os.tag == .windows or builtin.os.tag == .macos or (builtin.os.tag == .linux and @import("build_options").x11))) host_window.imePreedit else null, .ime_caret_fn = if (graphics and (builtin.os.tag == .windows or builtin.os.tag == .macos or (builtin.os.tag == .linux and @import("build_options").x11))) host_window.imeCaret else null, .window_fullscreen_fn = if (graphics and (builtin.os.tag == .windows or builtin.os.tag == .macos or (builtin.os.tag == .linux and @import("build_options").x11))) host_window.fullscreen else null, .window_cursor_fn = if (graphics and (builtin.os.tag == .windows or builtin.os.tag == .macos or (builtin.os.tag == .linux and @import("build_options").x11))) host_window.mouseCursor else null, .input_fn = inputEvent, .mouse_fn = mouseMode, .cursor_fn = cursorPosition, .font_buffer_fn = if (graphics) fontBuffer else null, .font_free_fn = if (graphics) fontFree else null, .system_font_fn = if (graphics and host_font.available) host_font.select else null, .system_glyph_fn = if (graphics and host_font.available) host_font.glyph else null, .process_start_fn = if (graphics) processStart else null, .process_write_fn = if (graphics) host_process.write else null, .process_read_fn = if (graphics) host_process.read else null, .process_stop_fn = if (graphics) host_process.stop else null, .audio_fn = if (audio) host_audio.start else null, .audio_device_fn = if (audio) host_audio.hasDevice else null, .audio_wait_fn = if (audio) audioWait else null }, storage);
+    machine.init(.{ .execution_ops = if (@import("build_options").debug and @import("build_options").extension) &execution_host_ops else null, .process_ops = if (process_native.available) &process_ops else null, .physical_key_ops = if (graphics and host_window.available) &host_window.physical_ops else null, .gamepad_ops = if (graphics) &host_gamepad.ops else null, .context = @ptrCast(&host), .write_fn = terminalWrite, .read_fn = terminalRead, .load_fn = loadDictionary, .save_fn = saveDictionary, .savesys_fn = saveExecutableImage, .key_fn = terminalKey, .key_ior_fn = terminalKeyIor, .event_key_fn = terminalEventKey, .standard_event_fn = terminalStandardEvent, .standard_clock = @import("host_clock.zig").clock, .standard_interrupts = host_input.input_is_terminal, .monotonic_ms_fn = monotonicMilliseconds, .key_ready_fn = terminalKeyReady, .buffered_key_fn = terminalBufferedKey, .unread_fn = terminalUnread, .unread_byte_fn = terminalUnreadChecked, .sleep_fn = sleepMilliseconds, .sleep_ns_fn = sleepNanoseconds, .utime_fn = microsecondsSinceEpoch, .ntime_fn = nanosecondsSinceEpoch, .cputime_fn = processCpuTimes, .local_time_fn = localTime, .zoned_time_fn = @import("host_timezone.zig").convert, .getenv_fn = environmentValue, .errno_fn = currentErrno, .system_fn = runShellCommand, .editor_fn = if (@import("build_options").tools) editSource else null, .file_ops = &file_ops, .framebuffer_fn = graphicsBuffer, .image_alloc_fn = if (graphics) imageAlloc else null, .image_free_fn = if (graphics) imageFree else null, .terminal_size_fn = terminalSize, .terminal_mode_set_fn = terminalModeSet, .terminal_mode_get_fn = terminalModeGet, .input_error_fn = inputError, .terminal_utf8_fn = terminalUtf8, .display_budget_fn = if (graphics and (builtin.os.tag == .windows or (builtin.os.tag == .linux and @import("build_options").x11))) @import("host_display_budget.zig").scope else null, .window_fn = if (graphics and host_window.available) host_window.show else null, .ime_preedit_fn = if (graphics and (builtin.os.tag == .windows or builtin.os.tag == .macos or (builtin.os.tag == .linux and @import("build_options").x11))) host_window.imePreedit else null, .ime_caret_fn = if (graphics and (builtin.os.tag == .windows or builtin.os.tag == .macos or (builtin.os.tag == .linux and @import("build_options").x11))) host_window.imeCaret else null, .window_fullscreen_fn = if (graphics and (builtin.os.tag == .windows or builtin.os.tag == .macos or (builtin.os.tag == .linux and @import("build_options").x11))) host_window.fullscreen else null, .window_cursor_fn = if (graphics and (builtin.os.tag == .windows or builtin.os.tag == .macos or (builtin.os.tag == .linux and @import("build_options").x11))) host_window.mouseCursor else null, .input_fn = inputEvent, .mouse_fn = mouseMode, .cursor_fn = cursorPosition, .font_buffer_fn = if (graphics) fontBuffer else null, .font_free_fn = if (graphics) fontFree else null, .system_font_fn = if (graphics and host_font.available) host_font.select else null, .system_glyph_fn = if (graphics and host_font.available) host_font.glyph else null, .process_start_fn = if (graphics) processStart else null, .process_write_fn = if (graphics) host_process.write else null, .process_read_fn = if (graphics) host_process.read else null, .process_stop_fn = if (graphics) host_process.stop else null, .audio_scope_ops = if (audio) &execution_host_ops else null, .audio_fn = if (audio) host_audio.start else null, .audio_device_fn = if (audio) host_audio.hasDevice else null, .audio_wait_fn = if (audio) audioWait else null }, storage);
     defer closeAllFiles();
     defer _ = closeAllProcesses();
     defer host_directories.closeAll();
@@ -3686,6 +3693,12 @@ fn run(init: std.process.Init.Minimal) !u8 {
     defer forth.releaseImages(machine);
     defer host_window.close();
     defer if (graphics) host_gamepad.close();
+    defer if (audio) {
+        if (!host_audio.shutdown(1000)) {
+            _ = writeStandardError("error: audio shutdown incomplete\n");
+            audio_cleanup_failed = true;
+        }
+    };
     // The terminal gets its line input back (and stops reporting the mouse) at the end.
     defer {
         @import("host_wait.zig").recover() catch {
@@ -4106,6 +4119,7 @@ test {
     _ = @import("host_wait.zig");
     _ = @import("host_terminal.zig");
     _ = host_input;
+    _ = host_audio;
     _ = host_line;
     _ = host_font;
     _ = host_process;
@@ -4763,4 +4777,69 @@ test "SAVESYS atomic publication retains prior output at every injected failure"
     defer allocator.free(encoded);
     const info = try @import("host_saved_image.zig").inspect(encoded, allocator);
     try std.testing.expectEqual(@as(?u16, null), info.entry);
+}
+
+test "PCM uses real native interrupt scope across waits and preserves the outer owner" {
+    if (!audio) return error.SkipZigTest;
+    const AudioEngine = @import("core/sound_engine.zig");
+    const Scope = @import("host_wait.zig");
+    const Fake = struct {
+        engine: *AudioEngine.Engine,
+        saw_guard: bool = false,
+        inject_at_end: bool = false,
+        fn get(context: ?*anyopaque) ?*AudioEngine.Engine {
+            const f: *@This() = @ptrCast(@alignCast(context.?));
+            return f.engine;
+        }
+        fn step(context: ?*anyopaque) forth.AudioWait {
+            const f: *@This() = @ptrCast(@alignCast(context.?));
+            if (!Scope.inputGuardActive()) return .host_failed;
+            f.saw_guard = true;
+            const outcome = Scope.audioWait(null);
+            var samples: [960]i16 = undefined;
+            f.engine.render(&samples);
+            return outcome;
+        }
+        fn finish(context: ?*anyopaque, machine: *forth.State) forth.RuntimeError!void {
+            const f: *@This() = @ptrCast(@alignCast(context.?));
+            if (builtin.os.tag != .windows and f.inject_at_end) {
+                f.inject_at_end = false;
+                if (std.c.raise(.INT) != 0) return error.HostFailed;
+            }
+            try executionEnd(context, machine);
+        }
+        const ops = @import("core/host_interface.zig").ExecutionOps{ .begin = executionBegin, .poll = executionPoll, .end = finish };
+    };
+    const saved_terminal = host_input.input_is_terminal;
+    host_input.input_is_terminal = false;
+    defer host_input.input_is_terminal = saved_terminal;
+    var engine = AudioEngine.Engine.init(.ay8910, @import("core/sound_psg.zig").msx_clock, 48000);
+    var frames: [4096]AudioEngine.stream.Frame = undefined;
+    engine.pcm_session.storage = &frames;
+    var fake = Fake{ .engine = &engine };
+    const allocator = std.testing.allocator;
+    const machine = try allocator.create(forth.State);
+    defer allocator.destroy(machine);
+    const storage = try forth.Storage.allocate(allocator, false, .small);
+    defer storage.free(allocator);
+    machine.init(.{ .context = &fake, .write_fn = discardOutput, .audio_fn = Fake.get, .audio_wait_fn = Fake.step, .audio_scope_ops = &Fake.ops, .standard_clock = @import("host_clock.zig").clock }, storage);
+    try machine.interpretLine("REQUIRE-AUDIO ALSO AUDIO 48000 2 4096 PCM-OPEN THROW PCM-CLOSE");
+    try std.testing.expectEqual(@as(i64, 0), try machine.pop());
+    try std.testing.expect(fake.saw_guard);
+    try std.testing.expect(!Scope.inputGuardActive());
+    try machine.interpretLine("48000 2 4096 PCM-OPEN THROW");
+    const id = try machine.pop();
+    try Scope.beginExecution(machine, executionRawPoll);
+    defer if (Scope.inputGuardActive()) {
+        Scope.endExecution(machine) catch {};
+    };
+    fake.inject_at_end = true;
+    try machine.push(id);
+    try machine.interpretLine("PCM-CLOSE");
+    try std.testing.expectEqual(@as(i64, 0), try machine.pop());
+    try std.testing.expect(Scope.inputGuardActive());
+    if (builtin.os.tag != .windows) {
+        try std.testing.expectError(error.UserInterrupt, Scope.endExecution(machine));
+    } else try Scope.endExecution(machine);
+    try std.testing.expect(!Scope.inputGuardActive());
 }

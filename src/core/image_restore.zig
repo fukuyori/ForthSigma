@@ -10,6 +10,7 @@ const RuntimeError = defs.RuntimeError;
 /// image must be disjoint from State storage. The caller owns Plan so validation
 /// and commit share one borrowed view without allocating during commit.
 pub fn restore(state: *forth.State, image: []const u8, plan: *preflight.Plan) RuntimeError!void {
+    if (state.audio_pcm_handle != 0) return state.throwCode(-528);
     try preflight.prepare(state, image, plan);
     apply(state, plan, false);
 }
@@ -17,6 +18,7 @@ pub fn restore(state: *forth.State, image: []const u8, plan: *preflight.Plan) Ru
 /// No fallible operations remain after successful preflight. Keep this private:
 /// applying an out-of-date or failed plan is not supported.
 pub fn restoreFresh(state: *forth.State, image: []const u8, plan: *preflight.Plan) RuntimeError!void {
+    if (state.audio_pcm_handle != 0) return state.throwCode(-528);
     try preflight.prepare(state, image, plan);
     apply(state, plan, true);
 }

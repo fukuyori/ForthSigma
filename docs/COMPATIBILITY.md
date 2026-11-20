@@ -368,3 +368,7 @@ Sigma-specific debug execution entry `EXEC-LIMITED` returns 0 or its own budget 
 ## Saved application entry (1066)
 
 Sigma-specific `APP-ENTRY!`, `APP-ENTRY@` and `APP-ENTRY-OFF` are image-group words for a completed colon entry. SAVESYS startup executes it once; LOAD preserves the receiving setting and never invokes it. App arguments use a separate explicit --sigma host prefix. QUIT retains status1; no implicit cooperative VM loop is introduced. The added Builtin tags change saved-image ABI. See [design](SAVED_APPLICATION_STARTUP_DESIGN.md).
+
+## PCM stream extension
+
+Sigma AUDIO adds `PCM-OPEN`, `PCM-WRITE`, `PCM-QUEUED`, `PCM-WAIT`, `PCM-STOP`, `PCM-CLOSE`, `PCM-UNDERRUNS` and their internal `SND-PCM-OPEN`, `SND-PCM-WRITE`, `SND-PCM-QUEUED`, `SND-PCM-WAIT`, `SND-PCM-STOP`, `SND-PCM-CLOSE`, `SND-PCM-UNDERRUNS`. No Gforth equivalence is claimed. These use bounded s16LE frame input, process-local ownership and explicit cancellable waits. No live PCM is serialized; full restore is busy while owning PCM, while LOAD-DICTIONARY append preserves it. Audio exclusion removes all seven pairs; debug/graphics/extension are independent. Seven new Builtin tags change image ABI; recreate older images. See [sound manual](GRAPHICS_AND_SOUND.md#pcm-streams).

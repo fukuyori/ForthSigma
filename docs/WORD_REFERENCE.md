@@ -6,11 +6,11 @@ Each entry has a stack effect and a behavior description based on runtime HELP, 
 
 Coverage assumes the full build. Feature-disabled builds omit their respective words. Load optional vocabularies with REQUIRE before adding them to the search order. Immediate/compile-only flags come from the built-in implementation; syntax forms have their own conditions in their descriptions.
 
-Entries (namespace/name pairs): **1805**. The same name in different vocabularies counts separately.
+Entries (namespace/name pairs): **1819**. The same name in different vocabularies counts separately.
 
 ## Contents
 
-- [AUDIO](#namespace-audio) (73)
+- [AUDIO](#namespace-audio) (87)
 - [EKEYS](#namespace-ekeys) (35)
 - [EXTENSION](#namespace-extension) (39)
 - [FORTH](#namespace-forth) (961)
@@ -48,6 +48,13 @@ Regenerate: `python scripts/word-reference.py`. Check only: `python scripts/word
 - [` NES `](#w-415544494f3a4e4553)
 - [` NES-SOUND `](#w-415544494f3a4e45532d534f554e44)
 - [` NOISE `](#w-415544494f3a4e4f495345)
+- [` PCM-CLOSE `](#w-415544494f3a50434d2d434c4f5345)
+- [` PCM-OPEN `](#w-415544494f3a50434d2d4f50454e)
+- [` PCM-QUEUED `](#w-415544494f3a50434d2d515545554544)
+- [` PCM-STOP `](#w-415544494f3a50434d2d53544f50)
+- [` PCM-UNDERRUNS `](#w-415544494f3a50434d2d554e44455252554e53)
+- [` PCM-WAIT `](#w-415544494f3a50434d2d57414954)
+- [` PCM-WRITE `](#w-415544494f3a50434d2d5752495445)
 - [` PLAY `](#w-415544494f3a504c4159)
 - [` PLAY-MOD `](#w-415544494f3a504c41592d4d4f44)
 - [` PLAY2 `](#w-415544494f3a504c415932)
@@ -77,6 +84,13 @@ Regenerate: `python scripts/word-reference.py`. Check only: `python scripts/word
 - [` SND-LOAD-SAMPLE `](#w-415544494f3a534e442d4c4f41442d53414d504c45)
 - [` SND-LOOP-SAMPLE `](#w-415544494f3a534e442d4c4f4f502d53414d504c45)
 - [` SND-MOD-PLAYING `](#w-415544494f3a534e442d4d4f442d504c4159494e47)
+- [` SND-PCM-CLOSE `](#w-415544494f3a534e442d50434d2d434c4f5345)
+- [` SND-PCM-OPEN `](#w-415544494f3a534e442d50434d2d4f50454e)
+- [` SND-PCM-QUEUED `](#w-415544494f3a534e442d50434d2d515545554544)
+- [` SND-PCM-STOP `](#w-415544494f3a534e442d50434d2d53544f50)
+- [` SND-PCM-UNDERRUNS `](#w-415544494f3a534e442d50434d2d554e44455252554e53)
+- [` SND-PCM-WAIT `](#w-415544494f3a534e442d50434d2d57414954)
+- [` SND-PCM-WRITE `](#w-415544494f3a534e442d50434d2d5752495445)
 - [` SND-PLAY `](#w-415544494f3a534e442d504c4159)
 - [` SND-PLAY-MOD `](#w-415544494f3a534e442d504c41592d4d4f44)
 - [` SND-PLAYING `](#w-415544494f3a534e442d504c4159494e47)
@@ -236,7 +250,7 @@ Kind: library.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` loads the vocabulary and makes it searchable.
 
-Related: [Sound](GRAPHICS_AND_SOUND.md#sound), [MSX BASIC](GRAPHICS_AND_SOUND.md#msx-basic).
+Related: [Sound](GRAPHICS_AND_SOUND.md#sound), [MSX BASIC](GRAPHICS_AND_SOUND.md#msx-basic), [PCM streams](GRAPHICS_AND_SOUND.md#pcm-streams).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
@@ -787,6 +801,202 @@ Implementation definition (private helpers may change):
 ```
 
 Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1372).
+
+<a id="w-415544494f3a50434d2d434c4f5345"></a>
+
+### ` PCM-CLOSE `
+
+` ( pcm -- ior ) `
+
+Discard and detach, waiting up to 1000ms for consumer acknowledgement. Busy -528 or interruption -516 keeps the closing ID for retry. Success invalidates the ID; host retains backing storage until shutdown.
+
+Kind: library.
+
+` REQUIRE-AUDIO ALSO AUDIO ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-AUDIO ALSO AUDIO 0 PCM-CLOSE DROP
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment. Check the returned ior; zero is success. Passing it to THROW is one option.
+
+Implementation definition (private helpers may change):
+
+```forth
+: PCM-CLOSE SND-PCM-CLOSE ;
+```
+
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1657).
+
+<a id="w-415544494f3a50434d2d4f50454e"></a>
+
+### ` PCM-OPEN `
+
+` ( hz channels capacity -- pcm ior ) `
+
+Open one host-owned s16LE mono/stereo stream. Input 8000..192000 Hz; power-of-two capacity 256..65536 frames, 40ms..1s. Busy -528; no storage -524; identity exhaustion -587.
+
+Kind: library.
+
+` REQUIRE-AUDIO ALSO AUDIO ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-AUDIO ALSO AUDIO : OPEN-STREAM 48000 2 4096 PCM-OPEN ;
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment. Check the returned ior; zero is success. Passing it to THROW is one option.
+
+Implementation definition (private helpers may change):
+
+```forth
+: PCM-OPEN SND-PCM-OPEN ;
+```
+
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1647).
+
+<a id="w-415544494f3a50434d2d515545554544"></a>
+
+### ` PCM-QUEUED `
+
+` ( pcm -- frames ior ) `
+
+Input frames not yet consumed by the engine, including a held resampling frame. This is not a device or audible playback position. Invalid ID -521.
+
+Kind: library.
+
+` REQUIRE-AUDIO ALSO AUDIO ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-AUDIO ALSO AUDIO 0 PCM-QUEUED 2DROP
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment. Check the returned ior; zero is success. Passing it to THROW is one option.
+
+Implementation definition (private helpers may change):
+
+```forth
+: PCM-QUEUED SND-PCM-QUEUED ;
+```
+
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1651).
+
+<a id="w-415544494f3a50434d2d53544f50"></a>
+
+### ` PCM-STOP `
+
+` ( mode ms pcm -- flag ior ) `
+
+Mode 0 discards; 1 drains to the engine, not the device. Timeout false 0; after detach publication stop remains pending. Ctrl+C throws -28 without erasing accepted audio.
+
+Kind: library.
+
+` REQUIRE-AUDIO ALSO AUDIO ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-AUDIO ALSO AUDIO 0 0 0 PCM-STOP 2DROP
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment. Check the returned ior; zero is success. Passing it to THROW is one option.
+
+Implementation definition (private helpers may change):
+
+```forth
+: PCM-STOP SND-PCM-STOP ;
+```
+
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1655).
+
+<a id="w-415544494f3a50434d2d554e44455252554e53"></a>
+
+### ` PCM-UNDERRUNS `
+
+` ( pcm -- u ior ) `
+
+Saturating u32 count of empty episodes after initial input, excluding intentional drain tails. Does not count every silent output frame. Invalid ID -521.
+
+Kind: library.
+
+` REQUIRE-AUDIO ALSO AUDIO ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-AUDIO ALSO AUDIO 0 PCM-UNDERRUNS 2DROP
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment. Check the returned ior; zero is success. Passing it to THROW is one option.
+
+Implementation definition (private helpers may change):
+
+```forth
+: PCM-UNDERRUNS SND-PCM-UNDERRUNS ;
+```
+
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1659).
+
+<a id="w-415544494f3a50434d2d57414954"></a>
+
+### ` PCM-WAIT `
+
+` ( frames ms pcm -- flag ior ) `
+
+Wait for at least frames free input slots. ms=0 polls; negative is unbounded; timeout false 0. Ctrl+C throws -28; host/scope failure throws -265.
+
+Kind: library.
+
+` REQUIRE-AUDIO ALSO AUDIO ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-AUDIO ALSO AUDIO 1 0 0 PCM-WAIT 2DROP
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment. Check the returned ior; zero is success. Passing it to THROW is one option.
+
+Implementation definition (private helpers may change):
+
+```forth
+: PCM-WAIT SND-PCM-WAIT ;
+```
+
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1653).
+
+<a id="w-415544494f3a50434d2d5752495445"></a>
+
+### ` PCM-WRITE `
+
+` ( addr frames pcm -- written ior ) `
+
+Copy complete frames without waiting; full is 0 0. Source may be reused on return. Zero frames does not access memory. Stopped/closing -534; invalid ID -521.
+
+Kind: library.
+
+` REQUIRE-AUDIO ALSO AUDIO ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-AUDIO ALSO AUDIO 0 0 0 PCM-WRITE 2DROP
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment. Check the returned ior; zero is success. Passing it to THROW is one option. Use valid logical-memory addresses, lengths and capacities; distinguish owned storage from borrowed lifetimes.
+
+Implementation definition (private helpers may change):
+
+```forth
+: PCM-WRITE SND-PCM-WRITE ;
+```
+
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1649).
 
 <a id="w-415544494f3a504c4159"></a>
 
@@ -1625,6 +1835,174 @@ Usage example (source excerpt; consult the link for setup and expectations)
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
 Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1402).
+
+<a id="w-415544494f3a534e442d50434d2d434c4f5345"></a>
+
+### ` SND-PCM-CLOSE `
+
+` ( pcm -- ior ) `
+
+Host primitive: Discard and detach, waiting up to 1000ms for consumer acknowledgement. Busy -528 or interruption -516 keeps the closing ID for retry. Success invalidates the ID; host retains backing storage until shutdown.
+
+Kind: builtin.
+
+` REQUIRE-AUDIO ALSO AUDIO ` loads the vocabulary and makes it searchable.
+
+Related: [PCM streams](GRAPHICS_AND_SOUND.md#pcm-streams).
+
+Usage example
+
+```forth
+REQUIRE-AUDIO ALSO AUDIO 0 SND-PCM-CLOSE DROP
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment. Check the returned ior; zero is success. Passing it to THROW is one option.
+
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1656).
+
+<a id="w-415544494f3a534e442d50434d2d4f50454e"></a>
+
+### ` SND-PCM-OPEN `
+
+` ( hz channels capacity -- pcm ior ) `
+
+Host primitive: Open one host-owned s16LE mono/stereo stream. Input 8000..192000 Hz; power-of-two capacity 256..65536 frames, 40ms..1s. Busy -528; no storage -524; identity exhaustion -587.
+
+Kind: builtin.
+
+` REQUIRE-AUDIO ALSO AUDIO ` loads the vocabulary and makes it searchable.
+
+Related: [PCM streams](GRAPHICS_AND_SOUND.md#pcm-streams).
+
+Usage example
+
+```forth
+REQUIRE-AUDIO ALSO AUDIO : OPEN-STREAM 48000 2 4096 SND-PCM-OPEN ;
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment. Check the returned ior; zero is success. Passing it to THROW is one option.
+
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1646).
+
+<a id="w-415544494f3a534e442d50434d2d515545554544"></a>
+
+### ` SND-PCM-QUEUED `
+
+` ( pcm -- frames ior ) `
+
+Host primitive: Input frames not yet consumed by the engine, including a held resampling frame. This is not a device or audible playback position. Invalid ID -521.
+
+Kind: builtin.
+
+` REQUIRE-AUDIO ALSO AUDIO ` loads the vocabulary and makes it searchable.
+
+Related: [PCM streams](GRAPHICS_AND_SOUND.md#pcm-streams).
+
+Usage example
+
+```forth
+REQUIRE-AUDIO ALSO AUDIO 0 SND-PCM-QUEUED 2DROP
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment. Check the returned ior; zero is success. Passing it to THROW is one option.
+
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1650).
+
+<a id="w-415544494f3a534e442d50434d2d53544f50"></a>
+
+### ` SND-PCM-STOP `
+
+` ( mode ms pcm -- flag ior ) `
+
+Host primitive: Mode 0 discards; 1 drains to the engine, not the device. Timeout false 0; after detach publication stop remains pending. Ctrl+C throws -28 without erasing accepted audio.
+
+Kind: builtin.
+
+` REQUIRE-AUDIO ALSO AUDIO ` loads the vocabulary and makes it searchable.
+
+Related: [PCM streams](GRAPHICS_AND_SOUND.md#pcm-streams).
+
+Usage example
+
+```forth
+REQUIRE-AUDIO ALSO AUDIO 0 0 0 SND-PCM-STOP 2DROP
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment. Check the returned ior; zero is success. Passing it to THROW is one option.
+
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1654).
+
+<a id="w-415544494f3a534e442d50434d2d554e44455252554e53"></a>
+
+### ` SND-PCM-UNDERRUNS `
+
+` ( pcm -- u ior ) `
+
+Host primitive: Saturating u32 count of empty episodes after initial input, excluding intentional drain tails. Does not count every silent output frame. Invalid ID -521.
+
+Kind: builtin.
+
+` REQUIRE-AUDIO ALSO AUDIO ` loads the vocabulary and makes it searchable.
+
+Related: [PCM streams](GRAPHICS_AND_SOUND.md#pcm-streams).
+
+Usage example
+
+```forth
+REQUIRE-AUDIO ALSO AUDIO 0 SND-PCM-UNDERRUNS 2DROP
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment. Check the returned ior; zero is success. Passing it to THROW is one option.
+
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1658).
+
+<a id="w-415544494f3a534e442d50434d2d57414954"></a>
+
+### ` SND-PCM-WAIT `
+
+` ( frames ms pcm -- flag ior ) `
+
+Host primitive: Wait for at least frames free input slots. ms=0 polls; negative is unbounded; timeout false 0. Ctrl+C throws -28; host/scope failure throws -265.
+
+Kind: builtin.
+
+` REQUIRE-AUDIO ALSO AUDIO ` loads the vocabulary and makes it searchable.
+
+Related: [PCM streams](GRAPHICS_AND_SOUND.md#pcm-streams).
+
+Usage example
+
+```forth
+REQUIRE-AUDIO ALSO AUDIO 1 0 0 SND-PCM-WAIT 2DROP
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment. Check the returned ior; zero is success. Passing it to THROW is one option.
+
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1652).
+
+<a id="w-415544494f3a534e442d50434d2d5752495445"></a>
+
+### ` SND-PCM-WRITE `
+
+` ( addr frames pcm -- written ior ) `
+
+Host primitive: Copy complete frames without waiting; full is 0 0. Source may be reused on return. Zero frames does not access memory. Stopped/closing -534; invalid ID -521.
+
+Kind: builtin.
+
+` REQUIRE-AUDIO ALSO AUDIO ` loads the vocabulary and makes it searchable.
+
+Related: [PCM streams](GRAPHICS_AND_SOUND.md#pcm-streams).
+
+Usage example
+
+```forth
+REQUIRE-AUDIO ALSO AUDIO 0 0 0 SND-PCM-WRITE 2DROP
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment. Check the returned ior; zero is success. Passing it to THROW is one option. Use valid logical-memory addresses, lengths and capacities; distinguish owned storage from borrowed lifetimes.
+
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1648).
 
 <a id="w-415544494f3a534e442d504c4159"></a>
 

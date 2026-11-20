@@ -411,6 +411,8 @@ TUNE
 
 `PLAY` は、MSX と同じく、音符が声部の待ち行列（各32個）に入りきったところで戻ります。そのあとは、音楽がひとりでに進みます。待ち行列がいっぱいの間、`PLAY` は待ちます。このとき Ctrl+C を押すと、音楽を止めて `USER INTERRUPT !`（THROW -28）になります。待っていないときの Ctrl+C は、これまでどおりです。音の出力装置がないときも、語は同じ時間で、音を出さずに動きます（どちらなのかは `AUDIO?` で分かります）。
 
+セッションが終わると、Sigmaは音声の処理を止めて出力装置を解放します。待ち行列の音楽を最後まで鳴らすまで待つ動作ではありません。音声の後始末が完了しない場合は、`audio shutdown incomplete`を表示し、終了コード1で終わります。
+
 ### MML（音楽の記述）
 
 `PLAY` などの語は、MSX BASIC の MML（MSX Red Book が説明する MSX1 の ROM のもの）を受け付けます。大文字と小文字は同じに扱い、空白は読み飛ばします。声部ごとに、オクターブ、長さ、テンポ、音量、音色を、次の `PLAY` まで覚えています。`BEEP` で初期値に戻ります。
@@ -541,3 +543,33 @@ PRINT-EDGE
 ```
 
 フォーカス喪失・閉鎖は全解放し、閉鎖後も残った履歴を取り出せます。保存イメージに状態や履歴は入らず、復元成功時に境界を置きます。ただしOSやMacのpipeに未読で残り、復元後に届く通知は取り込みます。OS上の発生時刻による排除は保証しません。詳細と確認範囲は[設計](PHYSICAL_KEY_DESIGN.md)と[検証記録](PHYSICAL_KEY_IMPLEMENTATION.md)。
+
+## PCMストリーム
+
+`REQUIRE-AUDIO ALSO AUDIO`で、符号付き16bitリトルエンディアン、mono/stereoのチャンネル交互配置のPCMを使えます。MML・SFX・モジュールと混合します。入力は8000..192000Hz、容量は256..65536入力フレームの2の冪で、40ms..1秒に相当する範囲です。音声hostにつき1ストリームです。装置がなければ無音で消費し、`AUDIO?`で区別できます。
+
+| 語 | スタック効果 | 意味 |
+| --- | --- | --- |
+| PCM-OPEN | hz channels capacity -- pcm ior | 開く。同一プロセス内で正のIDを割り当てる |
+| PCM-WRITE | addr frames pcm -- written ior | 完全なフレーム単位でコピー。待機せず、満杯なら0,0 |
+| PCM-QUEUED | pcm -- frames ior | engineが未消費の入力フレーム数。出力保持中の1フレームを含む |
+| PCM-WAIT | frames ms pcm -- flag ior | 入力の空きを待つ。0msは照会、負数は無期限 |
+| PCM-STOP | mode ms pcm -- flag ior | 0は破棄、1はengineで消費してから切り離す |
+| PCM-CLOSE | pcm -- ior | 破棄と切離しを最大1000ms待つ。成功時だけIDを無効にする |
+| PCM-UNDERRUNS | pcm -- u ior | 最初の出力後に空になった回数。飽和し、意図したdrain末尾は除外 |
+
+```forth
+REQUIRE-AUDIO ALSO AUDIO
+CREATE PCM-ZERO 16384 ALLOT
+PCM-ZERO 16384 0 FILL
+48000 2 4096 PCM-OPEN THROW CONSTANT PCM-ID
+PCM-ZERO 4096 PCM-ID PCM-WRITE THROW .
+1 1000 PCM-ID PCM-STOP THROW .
+PCM-ID PCM-CLOSE THROW
+```
+
+この例は無音を渡します。1フレームは各チャンネルのサンプル1個ずつで、stereo s16LEなら4byteです。WRITEは受理した入力をコピーするため、呼出し後に元の領域を再利用できます。QUEUEDとdrainはengineの消費を表し、装置の再生位置ではありません。周波数変換はsample holdで、アンチエイリアス処理はありません。
+
+WAIT/STOPの期限切れはfalse,0、中断はTHROW -28です。切離し前にdrainを取り消した場合は受理済み入力を保ち、書込みを続けられます。切離し要求後はSTOPの再試行で応答を確認できます。CLOSEは期限切れで-528、中断で-516を返し、closingのIDを保持するため再試行できます。停止要求中・closingへのWRITE/WAITは-534、不正IDは-521です。不正数値はTHROW -24、不正メモリはTHROW -9で、副作用の前に検査します。hostやscope復元の失敗はTHROW -265です。WAITには容量と同じフレーム数も指定できます。
+
+内部語`SND-PCM-OPEN`・`SND-PCM-WRITE`・`SND-PCM-QUEUED`・`SND-PCM-WAIT`・`SND-PCM-STOP`・`SND-PCM-CLOSE`・`SND-PCM-UNDERRUNS`も同じ効果です。audio=falseですべて除外し、graphics/debug/extensionには依存しません。IDは開いたStateが所有し、同一プロセス内では再利用しません。イメージに実行中ストリームは保存しません。所有中の完全復元はbusy（-528）、LOAD-DICTIONARYの追記は対象のPCMを保持します。保存アプリはPCM未所有で起動します。追加した7個のBuiltinタグで画像ABIが変わるため、古いイメージはソースから保存し直してください。[実装と検証の記録](PCM_PUBLIC_IMPLEMENTATION.md)も参照してください。

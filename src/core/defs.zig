@@ -1161,6 +1161,13 @@ pub const Builtin = enum {
     app_entry_set,
     app_entry_get,
     app_entry_off,
+    snd_pcm_open,
+    snd_pcm_write,
+    snd_pcm_queued,
+    snd_pcm_wait,
+    snd_pcm_stop,
+    snd_pcm_close,
+    snd_pcm_underruns,
 };
 
 pub const HeapResult = union(enum) { address: Cell, no_memory, bad_pointer };

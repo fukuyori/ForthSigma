@@ -1,5 +1,11 @@
 # テストと検証のスクリプト
 
+`zig build audio-lifecycle-check --prefix .work/1127/windows`は、停止要求を無視する
+consumerの専用fixtureを作る。通常のinstall/releaseには含めない。
+`python tests/scripts/verify-audio-shutdown.py .work/1127/windows/audio-check/x86_64-windows/probe.exe`
+は自分で起動した子を3回実行し、領域保持とstatus1の終了を確認する。
+Linux targetの生成probeはLinuxで実行する。[検証記録](../../docs/PCM_HOST_LIFETIME_IMPLEMENTATION.md)を参照。
+
 `python tests/scripts/verify-saved-application.py PATH`は自分専用のSAVESYS実行体を作り、
 起動語・引数・起動回避・破損画像・再保存・自己別名拒否と終了コードを検査する。
 POSIXでは専用PTYで中断と端末設定の復元も照合する。機能除外版は`--no-debug`、
@@ -124,3 +130,9 @@ Macのクロスコンパイルを実機確認の代わりにしません。
 ### EXEC-LIMITED (652)
 
 `python tests/scripts/verify-execution-control.py Sigmaのパス`で公開予算・THROW・NSを確認します。Unixでは専用PTYでRaw文字・貼付け・未完成ESC保持、SIGINT、NS/Cooked KEYの中断とmode復元も調べます。`python tests/scripts/verify-execution-control-windows.py Sigma.exeのパス`は専用の非表示consoleにだけF1・日本語・貼付け・未完成ESC・Ctrl+Cを注入し、NS/KEY・満杯時の文字保持を調べます。利用者のconsoleへ入力・信号を送りません。stdoutをJSON記録へ保存できます。物理キーボードやMac実機の確認とは区別します。
+
+## PCM公開語の検証
+
+`python tests/scripts/verify-pcm-stream.py SIGMAのパス`は専用プロセスに無音PCMを渡し、書込み・満杯待機・drain・close、メモリエラーからの回復、二重open、保存アプリ、辞書追記を確認します。image除外構成には`--no-image`を付けます。
+
+`python tests/scripts/verify-pcm-terminal.py SIGMAのパス`は専用の非表示WindowsコンソールかLinux PTYを使います。文字・日本語・未完成ESCとCtrl+Cを送り、WAIT/STOPの-28、CLOSEの-516と再試行、入力保持、端末設定復元を確認します。利用者のコンソールには入力しません。フレームはすべて0で、可聴音や物理キーの確認にはなりません。結果は[PCM検証記録](../../docs/PCM_PUBLIC_IMPLEMENTATION.md)を参照してください。

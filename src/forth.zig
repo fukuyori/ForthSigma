@@ -435,6 +435,8 @@ pub const State = struct {
     /// take (FREE-SAMPLES empties it).
     audio_samples: [sound_engine.pcm.sample_count]sound_engine.pcm.Sample = @splat(.{}),
     audio_pool_used: u32 = 0,
+    /// Nonpersistent logical ownership; never read by the audio consumer.
+    audio_pcm_handle: Cell = 0,
     /// One band of six rows of a Sixel image, as color registers (none in a build without
     /// graphics).
     gfx_band: if (defs.graphics_enabled) [6][graphics_terminal.max_sixel_width]u8 else void = undefined,

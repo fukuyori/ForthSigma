@@ -58,3 +58,7 @@
 - [保存アプリ起動基盤：実装・検証結果とMac手順](SAVED_APPLICATION_STARTUP_IMPLEMENTATION.md)
 
 - [PCMストリーム：採用設計・内部リングと変換の検証](PCM_STREAM_IMPLEMENTATION.md)
+
+- [音声ホストの停止・回収と初期化失敗の検証](PCM_HOST_LIFETIME_IMPLEMENTATION.md)
+
+- [PCM公開語の実装と検証](PCM_PUBLIC_IMPLEMENTATION.md)：所有・待機・画像境界、Windows/Linux自動確認とMacの残件。

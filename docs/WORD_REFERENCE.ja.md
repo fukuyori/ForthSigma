@@ -6,11 +6,11 @@
 
 通常構成を基準とします。機能を除いた構成では対象の語を使えません。追加語彙はREQUIREで読み込んでから検索順へ加えます。即時語・コンパイル専用の印は、組込み語の実装にある属性です。構文の実行条件は説明本文に従ってください。
 
-項目数（語彙と名前の組）：**1805**。同名でも語彙が異なる項目は別に数えます。
+項目数（語彙と名前の組）：**1819**。同名でも語彙が異なる項目は別に数えます。
 
 ## 目次
 
-- [AUDIO](#namespace-audio) (73)
+- [AUDIO](#namespace-audio) (87)
 - [EKEYS](#namespace-ekeys) (35)
 - [EXTENSION](#namespace-extension) (39)
 - [FORTH](#namespace-forth) (961)
@@ -48,6 +48,13 @@
 - [` NES `](#w-415544494f3a4e4553)
 - [` NES-SOUND `](#w-415544494f3a4e45532d534f554e44)
 - [` NOISE `](#w-415544494f3a4e4f495345)
+- [` PCM-CLOSE `](#w-415544494f3a50434d2d434c4f5345)
+- [` PCM-OPEN `](#w-415544494f3a50434d2d4f50454e)
+- [` PCM-QUEUED `](#w-415544494f3a50434d2d515545554544)
+- [` PCM-STOP `](#w-415544494f3a50434d2d53544f50)
+- [` PCM-UNDERRUNS `](#w-415544494f3a50434d2d554e44455252554e53)
+- [` PCM-WAIT `](#w-415544494f3a50434d2d57414954)
+- [` PCM-WRITE `](#w-415544494f3a50434d2d5752495445)
 - [` PLAY `](#w-415544494f3a504c4159)
 - [` PLAY-MOD `](#w-415544494f3a504c41592d4d4f44)
 - [` PLAY2 `](#w-415544494f3a504c415932)
@@ -77,6 +84,13 @@
 - [` SND-LOAD-SAMPLE `](#w-415544494f3a534e442d4c4f41442d53414d504c45)
 - [` SND-LOOP-SAMPLE `](#w-415544494f3a534e442d4c4f4f502d53414d504c45)
 - [` SND-MOD-PLAYING `](#w-415544494f3a534e442d4d4f442d504c4159494e47)
+- [` SND-PCM-CLOSE `](#w-415544494f3a534e442d50434d2d434c4f5345)
+- [` SND-PCM-OPEN `](#w-415544494f3a534e442d50434d2d4f50454e)
+- [` SND-PCM-QUEUED `](#w-415544494f3a534e442d50434d2d515545554544)
+- [` SND-PCM-STOP `](#w-415544494f3a534e442d50434d2d53544f50)
+- [` SND-PCM-UNDERRUNS `](#w-415544494f3a534e442d50434d2d554e44455252554e53)
+- [` SND-PCM-WAIT `](#w-415544494f3a534e442d50434d2d57414954)
+- [` SND-PCM-WRITE `](#w-415544494f3a534e442d50434d2d5752495445)
 - [` SND-PLAY `](#w-415544494f3a534e442d504c4159)
 - [` SND-PLAY-MOD `](#w-415544494f3a534e442d504c41592d4d4f44)
 - [` SND-PLAYING `](#w-415544494f3a534e442d504c4159494e47)
@@ -266,7 +280,7 @@ Report whether an available audio engine reaches a physical device; without a de
 
 ` REQUIRE-AUDIO ALSO AUDIO ` で読み込み、検索対象にします。
 
-関連説明：[サウンド](GRAPHICS_AND_SOUND.ja.md#サウンド), [MSX BASIC の語](GRAPHICS_AND_SOUND.ja.md#msx-basic-の語).
+関連説明：[サウンド](GRAPHICS_AND_SOUND.ja.md#サウンド), [MSX BASIC の語](GRAPHICS_AND_SOUND.ja.md#msx-basic-の語), [PCMストリーム](GRAPHICS_AND_SOUND.ja.md#pcmストリーム).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
@@ -919,6 +933,244 @@ SQUARE TRIANGLE SAW NOISE
 ```
 
 出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1372).
+
+<a id="w-415544494f3a50434d2d434c4f5345"></a>
+
+### ` PCM-CLOSE `
+
+` ( pcm -- ior ) `
+
+破棄と取り外しを要求し、音声側の確認を最大1000ms待ちます。busy -528または中断-516では終了待ちIDを保持し、再試行できます。成功でIDを無効にし、実領域はhost終了まで保持します。
+
+<details><summary>英語の説明（HELP・実装に基づく）</summary>
+
+Discard and detach, waiting up to 1000ms for consumer acknowledgement. Busy -528 or interruption -516 keeps the closing ID for retry. Success invalidates the ID; host retains backing storage until shutdown.
+
+</details>
+
+種別：library.
+
+` REQUIRE-AUDIO ALSO AUDIO ` で読み込み、検索対象にします。
+
+使用例
+
+```forth
+REQUIRE-AUDIO ALSO AUDIO 0 PCM-CLOSE DROP
+```
+
+注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。 戻り値のiorを確認してください。0が成功です。THROWへ渡す方法もあります。
+
+実装定義（内部補助語は変更される場合があります）：
+
+```forth
+: PCM-CLOSE SND-PCM-CLOSE ;
+```
+
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1657).
+
+<a id="w-415544494f3a50434d2d4f50454e"></a>
+
+### ` PCM-OPEN `
+
+` ( hz channels capacity -- pcm ior ) `
+
+s16LEのmono/stereoストリームを1個開きます。8000..192000Hz、容量は2の冪で256..65536入力フレーム、40ms..1秒です。busyは-528、領域不足は-524、ID枯渇は-587を返します。
+
+<details><summary>英語の説明（HELP・実装に基づく）</summary>
+
+Open one host-owned s16LE mono/stereo stream. Input 8000..192000 Hz; power-of-two capacity 256..65536 frames, 40ms..1s. Busy -528; no storage -524; identity exhaustion -587.
+
+</details>
+
+種別：library.
+
+` REQUIRE-AUDIO ALSO AUDIO ` で読み込み、検索対象にします。
+
+使用例
+
+```forth
+REQUIRE-AUDIO ALSO AUDIO : OPEN-STREAM 48000 2 4096 PCM-OPEN ;
+```
+
+注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。 戻り値のiorを確認してください。0が成功です。THROWへ渡す方法もあります。
+
+実装定義（内部補助語は変更される場合があります）：
+
+```forth
+: PCM-OPEN SND-PCM-OPEN ;
+```
+
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1647).
+
+<a id="w-415544494f3a50434d2d515545554544"></a>
+
+### ` PCM-QUEUED `
+
+` ( pcm -- frames ior ) `
+
+エンジンが未消費の入力フレーム数を返し、再標本化で保持中のフレームも数えます。装置への送出位置や実際に鳴っている位置ではありません。不正IDは-521です。
+
+<details><summary>英語の説明（HELP・実装に基づく）</summary>
+
+Input frames not yet consumed by the engine, including a held resampling frame. This is not a device or audible playback position. Invalid ID -521.
+
+</details>
+
+種別：library.
+
+` REQUIRE-AUDIO ALSO AUDIO ` で読み込み、検索対象にします。
+
+使用例
+
+```forth
+REQUIRE-AUDIO ALSO AUDIO 0 PCM-QUEUED 2DROP
+```
+
+注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。 戻り値のiorを確認してください。0が成功です。THROWへ渡す方法もあります。
+
+実装定義（内部補助語は変更される場合があります）：
+
+```forth
+: PCM-QUEUED SND-PCM-QUEUED ;
+```
+
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1651).
+
+<a id="w-415544494f3a50434d2d53544f50"></a>
+
+### ` PCM-STOP `
+
+` ( mode ms pcm -- flag ior ) `
+
+mode 0は破棄、1はエンジンまで鳴らし切って停止します。装置の再生完了待ちではありません。timeoutはfalse 0で、停止要求を公開済みなら要求を保持します。Ctrl+CはTHROW -28で受理済み音を勝手に消しません。
+
+<details><summary>英語の説明（HELP・実装に基づく）</summary>
+
+Mode 0 discards; 1 drains to the engine, not the device. Timeout false 0; after detach publication stop remains pending. Ctrl+C throws -28 without erasing accepted audio.
+
+</details>
+
+種別：library.
+
+` REQUIRE-AUDIO ALSO AUDIO ` で読み込み、検索対象にします。
+
+使用例
+
+```forth
+REQUIRE-AUDIO ALSO AUDIO 0 0 0 PCM-STOP 2DROP
+```
+
+注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。 戻り値のiorを確認してください。0が成功です。THROWへ渡す方法もあります。
+
+実装定義（内部補助語は変更される場合があります）：
+
+```forth
+: PCM-STOP SND-PCM-STOP ;
+```
+
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1655).
+
+<a id="w-415544494f3a50434d2d554e44455252554e53"></a>
+
+### ` PCM-UNDERRUNS `
+
+` ( pcm -- u ior ) `
+
+初回入力後に空になった回数をu32で飽和して返します。意図的なdrainの尾部を除き、無音の出力フレームごとに数えません。不正IDは-521です。
+
+<details><summary>英語の説明（HELP・実装に基づく）</summary>
+
+Saturating u32 count of empty episodes after initial input, excluding intentional drain tails. Does not count every silent output frame. Invalid ID -521.
+
+</details>
+
+種別：library.
+
+` REQUIRE-AUDIO ALSO AUDIO ` で読み込み、検索対象にします。
+
+使用例
+
+```forth
+REQUIRE-AUDIO ALSO AUDIO 0 PCM-UNDERRUNS 2DROP
+```
+
+注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。 戻り値のiorを確認してください。0が成功です。THROWへ渡す方法もあります。
+
+実装定義（内部補助語は変更される場合があります）：
+
+```forth
+: PCM-UNDERRUNS SND-PCM-UNDERRUNS ;
+```
+
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1659).
+
+<a id="w-415544494f3a50434d2d57414954"></a>
+
+### ` PCM-WAIT `
+
+` ( frames ms pcm -- flag ior ) `
+
+指定数の入力フレームを書けるまで待ちます。ms=0はpoll、負数は無期限、timeoutはfalse 0です。Ctrl+CはTHROW -28、基盤・scopeの失敗はTHROW -265です。
+
+<details><summary>英語の説明（HELP・実装に基づく）</summary>
+
+Wait for at least frames free input slots. ms=0 polls; negative is unbounded; timeout false 0. Ctrl+C throws -28; host/scope failure throws -265.
+
+</details>
+
+種別：library.
+
+` REQUIRE-AUDIO ALSO AUDIO ` で読み込み、検索対象にします。
+
+使用例
+
+```forth
+REQUIRE-AUDIO ALSO AUDIO 1 0 0 PCM-WAIT 2DROP
+```
+
+注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。 戻り値のiorを確認してください。0が成功です。THROWへ渡す方法もあります。
+
+実装定義（内部補助語は変更される場合があります）：
+
+```forth
+: PCM-WAIT SND-PCM-WAIT ;
+```
+
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1653).
+
+<a id="w-415544494f3a50434d2d5752495445"></a>
+
+### ` PCM-WRITE `
+
+` ( addr frames pcm -- written ior ) `
+
+待たずに完全なフレームをコピーし、受理した数を返します。満杯は0 0、0フレームではメモリを読みません。戻った後に入力を再利用できます。停止・終了待ちは-534、不正IDは-521です。
+
+<details><summary>英語の説明（HELP・実装に基づく）</summary>
+
+Copy complete frames without waiting; full is 0 0. Source may be reused on return. Zero frames does not access memory. Stopped/closing -534; invalid ID -521.
+
+</details>
+
+種別：library.
+
+` REQUIRE-AUDIO ALSO AUDIO ` で読み込み、検索対象にします。
+
+使用例
+
+```forth
+REQUIRE-AUDIO ALSO AUDIO 0 0 0 PCM-WRITE 2DROP
+```
+
+注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。 戻り値のiorを確認してください。0が成功です。THROWへ渡す方法もあります。 番地・長さ・容量は有効な論理メモリー範囲を指定します。所有領域と借用領域の寿命を区別してください。
+
+実装定義（内部補助語は変更される場合があります）：
+
+```forth
+: PCM-WRITE SND-PCM-WRITE ;
+```
+
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1649).
 
 <a id="w-415544494f3a504c4159"></a>
 
@@ -1931,6 +2183,216 @@ Host primitive for MOD? (FORTH/Sigma).
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
 出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1402).
+
+<a id="w-415544494f3a534e442d50434d2d434c4f5345"></a>
+
+### ` SND-PCM-CLOSE `
+
+` ( pcm -- ior ) `
+
+対応するPCM語を実行する内部処理です。破棄と取り外しを要求し、音声側の確認を最大1000ms待ちます。busy -528または中断-516では終了待ちIDを保持し、再試行できます。成功でIDを無効にし、実領域はhost終了まで保持します。
+
+<details><summary>英語の説明（HELP・実装に基づく）</summary>
+
+Host primitive: Discard and detach, waiting up to 1000ms for consumer acknowledgement. Busy -528 or interruption -516 keeps the closing ID for retry. Success invalidates the ID; host retains backing storage until shutdown.
+
+</details>
+
+種別：builtin.
+
+` REQUIRE-AUDIO ALSO AUDIO ` で読み込み、検索対象にします。
+
+関連説明：[PCMストリーム](GRAPHICS_AND_SOUND.ja.md#pcmストリーム).
+
+使用例
+
+```forth
+REQUIRE-AUDIO ALSO AUDIO 0 SND-PCM-CLOSE DROP
+```
+
+注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。 戻り値のiorを確認してください。0が成功です。THROWへ渡す方法もあります。
+
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1656).
+
+<a id="w-415544494f3a534e442d50434d2d4f50454e"></a>
+
+### ` SND-PCM-OPEN `
+
+` ( hz channels capacity -- pcm ior ) `
+
+対応するPCM語を実行する内部処理です。s16LEのmono/stereoストリームを1個開きます。8000..192000Hz、容量は2の冪で256..65536入力フレーム、40ms..1秒です。busyは-528、領域不足は-524、ID枯渇は-587を返します。
+
+<details><summary>英語の説明（HELP・実装に基づく）</summary>
+
+Host primitive: Open one host-owned s16LE mono/stereo stream. Input 8000..192000 Hz; power-of-two capacity 256..65536 frames, 40ms..1s. Busy -528; no storage -524; identity exhaustion -587.
+
+</details>
+
+種別：builtin.
+
+` REQUIRE-AUDIO ALSO AUDIO ` で読み込み、検索対象にします。
+
+関連説明：[PCMストリーム](GRAPHICS_AND_SOUND.ja.md#pcmストリーム).
+
+使用例
+
+```forth
+REQUIRE-AUDIO ALSO AUDIO : OPEN-STREAM 48000 2 4096 SND-PCM-OPEN ;
+```
+
+注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。 戻り値のiorを確認してください。0が成功です。THROWへ渡す方法もあります。
+
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1646).
+
+<a id="w-415544494f3a534e442d50434d2d515545554544"></a>
+
+### ` SND-PCM-QUEUED `
+
+` ( pcm -- frames ior ) `
+
+対応するPCM語を実行する内部処理です。エンジンが未消費の入力フレーム数を返し、再標本化で保持中のフレームも数えます。装置への送出位置や実際に鳴っている位置ではありません。不正IDは-521です。
+
+<details><summary>英語の説明（HELP・実装に基づく）</summary>
+
+Host primitive: Input frames not yet consumed by the engine, including a held resampling frame. This is not a device or audible playback position. Invalid ID -521.
+
+</details>
+
+種別：builtin.
+
+` REQUIRE-AUDIO ALSO AUDIO ` で読み込み、検索対象にします。
+
+関連説明：[PCMストリーム](GRAPHICS_AND_SOUND.ja.md#pcmストリーム).
+
+使用例
+
+```forth
+REQUIRE-AUDIO ALSO AUDIO 0 SND-PCM-QUEUED 2DROP
+```
+
+注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。 戻り値のiorを確認してください。0が成功です。THROWへ渡す方法もあります。
+
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1650).
+
+<a id="w-415544494f3a534e442d50434d2d53544f50"></a>
+
+### ` SND-PCM-STOP `
+
+` ( mode ms pcm -- flag ior ) `
+
+対応するPCM語を実行する内部処理です。mode 0は破棄、1はエンジンまで鳴らし切って停止します。装置の再生完了待ちではありません。timeoutはfalse 0で、停止要求を公開済みなら要求を保持します。Ctrl+CはTHROW -28で受理済み音を勝手に消しません。
+
+<details><summary>英語の説明（HELP・実装に基づく）</summary>
+
+Host primitive: Mode 0 discards; 1 drains to the engine, not the device. Timeout false 0; after detach publication stop remains pending. Ctrl+C throws -28 without erasing accepted audio.
+
+</details>
+
+種別：builtin.
+
+` REQUIRE-AUDIO ALSO AUDIO ` で読み込み、検索対象にします。
+
+関連説明：[PCMストリーム](GRAPHICS_AND_SOUND.ja.md#pcmストリーム).
+
+使用例
+
+```forth
+REQUIRE-AUDIO ALSO AUDIO 0 0 0 SND-PCM-STOP 2DROP
+```
+
+注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。 戻り値のiorを確認してください。0が成功です。THROWへ渡す方法もあります。
+
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1654).
+
+<a id="w-415544494f3a534e442d50434d2d554e44455252554e53"></a>
+
+### ` SND-PCM-UNDERRUNS `
+
+` ( pcm -- u ior ) `
+
+対応するPCM語を実行する内部処理です。初回入力後に空になった回数をu32で飽和して返します。意図的なdrainの尾部を除き、無音の出力フレームごとに数えません。不正IDは-521です。
+
+<details><summary>英語の説明（HELP・実装に基づく）</summary>
+
+Host primitive: Saturating u32 count of empty episodes after initial input, excluding intentional drain tails. Does not count every silent output frame. Invalid ID -521.
+
+</details>
+
+種別：builtin.
+
+` REQUIRE-AUDIO ALSO AUDIO ` で読み込み、検索対象にします。
+
+関連説明：[PCMストリーム](GRAPHICS_AND_SOUND.ja.md#pcmストリーム).
+
+使用例
+
+```forth
+REQUIRE-AUDIO ALSO AUDIO 0 SND-PCM-UNDERRUNS 2DROP
+```
+
+注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。 戻り値のiorを確認してください。0が成功です。THROWへ渡す方法もあります。
+
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1658).
+
+<a id="w-415544494f3a534e442d50434d2d57414954"></a>
+
+### ` SND-PCM-WAIT `
+
+` ( frames ms pcm -- flag ior ) `
+
+対応するPCM語を実行する内部処理です。指定数の入力フレームを書けるまで待ちます。ms=0はpoll、負数は無期限、timeoutはfalse 0です。Ctrl+CはTHROW -28、基盤・scopeの失敗はTHROW -265です。
+
+<details><summary>英語の説明（HELP・実装に基づく）</summary>
+
+Host primitive: Wait for at least frames free input slots. ms=0 polls; negative is unbounded; timeout false 0. Ctrl+C throws -28; host/scope failure throws -265.
+
+</details>
+
+種別：builtin.
+
+` REQUIRE-AUDIO ALSO AUDIO ` で読み込み、検索対象にします。
+
+関連説明：[PCMストリーム](GRAPHICS_AND_SOUND.ja.md#pcmストリーム).
+
+使用例
+
+```forth
+REQUIRE-AUDIO ALSO AUDIO 1 0 0 SND-PCM-WAIT 2DROP
+```
+
+注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。 戻り値のiorを確認してください。0が成功です。THROWへ渡す方法もあります。
+
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1652).
+
+<a id="w-415544494f3a534e442d50434d2d5752495445"></a>
+
+### ` SND-PCM-WRITE `
+
+` ( addr frames pcm -- written ior ) `
+
+対応するPCM語を実行する内部処理です。待たずに完全なフレームをコピーし、受理した数を返します。満杯は0 0、0フレームではメモリを読みません。戻った後に入力を再利用できます。停止・終了待ちは-534、不正IDは-521です。
+
+<details><summary>英語の説明（HELP・実装に基づく）</summary>
+
+Host primitive: Copy complete frames without waiting; full is 0 0. Source may be reused on return. Zero frames does not access memory. Stopped/closing -534; invalid ID -521.
+
+</details>
+
+種別：builtin.
+
+` REQUIRE-AUDIO ALSO AUDIO ` で読み込み、検索対象にします。
+
+関連説明：[PCMストリーム](GRAPHICS_AND_SOUND.ja.md#pcmストリーム).
+
+使用例
+
+```forth
+REQUIRE-AUDIO ALSO AUDIO 0 0 0 SND-PCM-WRITE 2DROP
+```
+
+注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。 戻り値のiorを確認してください。0が成功です。THROWへ渡す方法もあります。 番地・長さ・容量は有効な論理メモリー範囲を指定します。所有領域と借用領域の寿命を区別してください。
+
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1648).
 
 <a id="w-415544494f3a534e442d504c4159"></a>
 

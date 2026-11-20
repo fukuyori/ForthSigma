@@ -411,6 +411,8 @@ TUNE
 
 `PLAY` returns as soon as the notes fit in the voices' queues (32 places for each), as on the MSX; the music then goes on by itself. While the queues are full, `PLAY` waits; Ctrl+C then stops the music and gives `USER INTERRUPT !` (THROW -28). Outside such a wait, Ctrl+C works as before. When there is no audio device, the words work the same without sound, in time (`AUDIO?` tells which).
 
+When the session ends, Sigma stops the audio worker and releases its output device; it does not wait for queued music to finish. If audio shutdown cannot complete, Sigma reports `audio shutdown incomplete` and exits with status 1.
+
 ### The music macro language (MML)
 
 `PLAY` and the words like it take the music macro language of MSX BASIC (the MSX1 ROM's, as the MSX Red Book describes it). Upper and lower case letters are the same, and spaces are skipped. Each voice keeps its octave, length, tempo, volume, and instrument from one `PLAY` to the next; `BEEP` sets them back to the defaults.
@@ -541,3 +543,33 @@ PRINT-EDGE
 ```
 
 Focus loss and closure release all held keys; queued history remains readable after closure. Dictionary images contain neither bitmap nor history; successful restore creates a tracker boundary. OS/Mac pipe notifications still unread at that point are applied when they arrive after restore. No filtering by OS occurrence time is guaranteed. See the [design](PHYSICAL_KEY_DESIGN.md) and [validation record](PHYSICAL_KEY_IMPLEMENTATION.md).
+
+## PCM streams
+
+`REQUIRE-AUDIO ALSO AUDIO` exposes signed 16-bit little-endian interleaved mono/stereo PCM, mixed with MML, SFX and modules. Input rates are 8000..192000 Hz; capacity is a power of two from 256..65536 input frames and must represent 40 ms..1 s. One stream per audio host. Missing hardware consumes silently; use `AUDIO?` to distinguish it.
+
+| Word | Stack effect | Meaning |
+| --- | --- | --- |
+| PCM-OPEN | hz channels capacity -- pcm ior | Open one stream; positive process-local ID |
+| PCM-WRITE | addr frames pcm -- written ior | Copy complete frames without blocking; full returns 0,0 |
+| PCM-QUEUED | pcm -- frames ior | Input frames not consumed by the engine, including its held frame |
+| PCM-WAIT | frames ms pcm -- flag ior | Wait for free input frames; 0 ms polls, negative waits indefinitely |
+| PCM-STOP | mode ms pcm -- flag ior | 0 discards, 1 drains the engine, then detaches |
+| PCM-CLOSE | pcm -- ior | Discard and detach, with a 1000 ms deadline; invalidate only on success |
+| PCM-UNDERRUNS | pcm -- u ior | Saturating empty episodes after the first sample, excluding intentional drain tails |
+
+```forth
+REQUIRE-AUDIO ALSO AUDIO
+CREATE PCM-ZERO 16384 ALLOT
+PCM-ZERO 16384 0 FILL
+48000 2 4096 PCM-OPEN THROW CONSTANT PCM-ID
+PCM-ZERO 4096 PCM-ID PCM-WRITE THROW .
+1 1000 PCM-ID PCM-STOP THROW .
+PCM-ID PCM-CLOSE THROW
+```
+
+This submits silence. A frame contains one sample per channel; stereo s16LE uses four bytes. WRITE copies accepted input, so its source can be reused immediately. QUEUED and drain refer to engine consumption, not device playback position. Rate conversion uses sample hold without anti-alias filtering.
+
+WAIT/STOP timeout returns false,0; interruption throws -28. Before detach, a cancelled drain keeps accepted input writable. Once detach is published, STOP can be retried to observe acknowledgment. CLOSE returns -528 on timeout or -516 on interruption and retains a closing ID for retry. WRITE/WAIT on stopping or closing streams return -534; invalid handles return -521. Invalid numbers throw -24 and invalid memory throws -9 before side effects. Host/scope restoration failure throws -265. Capacity-sized WAIT is permitted.
+
+The internal `SND-PCM-OPEN`, `SND-PCM-WRITE`, `SND-PCM-QUEUED`, `SND-PCM-WAIT`, `SND-PCM-STOP`, `SND-PCM-CLOSE` and `SND-PCM-UNDERRUNS` have the same effects. All are excluded with audio=false, independently of graphics/debug/extension. IDs belong to the opening State and are not reused within a process. Images contain no live stream. Full restore while owning one is busy (-528); LOAD-DICTIONARY append preserves the target stream. Saved applications start with no PCM owner. The seven new Builtin tags change the image ABI: recreate older images from source. See [implementation and validation](PCM_PUBLIC_IMPLEMENTATION.md).
