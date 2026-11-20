@@ -25,7 +25,7 @@ const Cell = memory_map.Cell;
 const State = forth.State;
 
 /// The built-in words this file executes; executeBuiltin dispatches by this list.
-pub const words = [_]Builtin{ .snd_play, .snd_sound, .snd_beep, .snd_playing, .snd_device, .snd_plays, .snd_chip, .snd_instrument, .snd_wave, .snd_duty, .snd_adsr, .snd_ring, .snd_sync, .snd_filter, .snd_wavetable, .snd_load_sample, .snd_sample, .snd_loop_sample, .snd_sample_instrument, .snd_sfx, .snd_amiga_filter, .snd_free_samples, .snd_chips, .snd_load_mod, .snd_play_mod, .snd_stop_mod, .snd_mod_playing, .snd_style, .snd_pcm_open, .snd_pcm_write, .snd_pcm_queued, .snd_pcm_wait, .snd_pcm_stop, .snd_pcm_close, .snd_pcm_underruns, .snd_snes_frames, .snd_tone, .snd_play_tone, .snd_mod_filter };
+pub const words = [_]Builtin{ .snd_play, .snd_sound, .snd_beep, .snd_playing, .snd_device, .snd_plays, .snd_chip, .snd_instrument, .snd_wave, .snd_duty, .snd_adsr, .snd_ring, .snd_sync, .snd_filter, .snd_wavetable, .snd_load_sample, .snd_sample, .snd_loop_sample, .snd_sample_instrument, .snd_sfx, .snd_amiga_filter, .snd_free_samples, .snd_chips, .snd_load_mod, .snd_play_mod, .snd_stop_mod, .snd_mod_playing, .snd_style, .snd_pcm_open, .snd_pcm_write, .snd_pcm_queued, .snd_pcm_wait, .snd_pcm_stop, .snd_pcm_close, .snd_pcm_underruns, .snd_snes_frames, .snd_tone, .snd_play_tone, .snd_mod_filter, .snd_global, .snd_voice };
 
 /// The SND- words in the order REQUIRE-AUDIO appends them, right after the AUDIO
 /// vocabulary. The order is part of the dictionary that images keep: add new words at
@@ -44,11 +44,12 @@ pub const definitions = [_]struct { []const u8, Builtin }{
     .{ "SND-PCM-QUEUED", .snd_pcm_queued },               .{ "SND-PCM-WAIT", .snd_pcm_wait },           .{ "SND-PCM-STOP", .snd_pcm_stop },
     .{ "SND-PCM-CLOSE", .snd_pcm_close },                 .{ "SND-PCM-UNDERRUNS", .snd_pcm_underruns }, .{ "SND-SNES-FRAMES", .snd_snes_frames },
     .{ "SND-TONE", .snd_tone },                           .{ "SND-PLAY-TONE", .snd_play_tone },         .{ "SND-MOD-FILTER", .snd_mod_filter },
+    .{ "SND-GLOBAL", .snd_global },                       .{ "SND-VOICE", .snd_voice },
 };
 
 /// The words of the audio library that HELP describes; the help test checks that the
 /// library defines each of them.
-pub const library_words = [_][]const u8{ "PLAY", "PLAY2", "PLAY3", "PLAY?", "BEEP", "AUDIO?", "PLAYS", "INSTRUMENT", "SQUARE", "PULSE", "TRIANGLE", "SAW", "NOISE", "DUTY", "ADSR", "RING", "SYNC", "FILTER", "WAVETABLE", "LOAD-SAMPLE", "SAMPLE", "LOOP-SAMPLE", "SAMPLE-INSTRUMENT", "SFX", "FREE-SAMPLES", "LOAD-MOD", "PLAY-MOD", "STOP-MOD", "MOD?", "PCM-OPEN", "PCM-WRITE", "PCM-QUEUED", "PCM-WAIT", "PCM-STOP", "PCM-CLOSE", "PCM-UNDERRUNS", "SNES-FRAMES", "PLAY-TONE", "NOISE-LFSR", "NOISE-MIX", "ENVELOPE", "PITCH-SWEEP", "PITCH-SWEEP-LIMIT", "PORTAMENTO", "VIBRATO", "PITCH-MOD", "VOLUME-MOD", "MOD-ONLY", "PHASE-RESET", "NOTE-LIMIT", "VOICE-PAN", "REVERB-SEND", "MOD-FILTER" };
+pub const library_words = [_][]const u8{ "PLAY", "PLAY2", "PLAY3", "PLAY?", "BEEP", "AUDIO?", "PLAYS", "INSTRUMENT", "SQUARE", "PULSE", "TRIANGLE", "SAW", "NOISE", "DUTY", "ADSR", "RING", "SYNC", "FILTER", "WAVETABLE", "LOAD-SAMPLE", "SAMPLE", "LOOP-SAMPLE", "SAMPLE-INSTRUMENT", "SFX", "FREE-SAMPLES", "LOAD-MOD", "PLAY-MOD", "STOP-MOD", "MOD?", "PCM-OPEN", "PCM-WRITE", "PCM-QUEUED", "PCM-WAIT", "PCM-STOP", "PCM-CLOSE", "PCM-UNDERRUNS", "SNES-FRAMES", "PLAY-TONE", "NOISE-LFSR", "NOISE-MIX", "ENVELOPE", "PITCH-SWEEP", "PITCH-SWEEP-LIMIT", "PORTAMENTO", "VIBRATO", "PITCH-MOD", "VOLUME-MOD", "MOD-ONLY", "PHASE-RESET", "NOTE-LIMIT", "VOICE-PAN", "REVERB-SEND", "MOD-FILTER", "REVERB", "REVERB-FIR", "MASTER-FILTER", "TONE-CONTROL", "MASTER-VOLUME", "VOICE-OSC", "VOICE-ENV", "VOICE-POS", "VOICE-ENDS", "VOICE-ON?" };
 
 /// The audio library, which REQUIRE-AUDIO interprets after appending the SND- words.
 pub const library = @embedFile("../audio/audio.fs");
@@ -182,6 +183,21 @@ pub fn execute(self: *State, builtin: Builtin) RuntimeError!void {
             self.audio_pool_used += @intCast(count);
         },
         .snd_tone => try toneWord(self),
+        .snd_global => try globalWord(self),
+        .snd_voice => {
+            const key = try self.pop();
+            const n = try self.pop();
+            if (n < 1 or n > voice.voice_count or key < 0 or key > 4) return error.InvalidNumber;
+            const engine = try getEngine(self);
+            const s = &engine.voice_states[@intCast(n - 1)];
+            try self.push(switch (key) {
+                0 => s.osc.load(.acquire),
+                1 => s.env.load(.acquire),
+                2 => s.position.load(.acquire),
+                3 => s.ends.load(.acquire),
+                else => if (s.on.load(.acquire)) -1 else 0,
+            });
+        },
         .snd_play_tone => {
             const ms = try self.pop();
             const hz = try self.pop();
@@ -514,6 +530,61 @@ pub fn adsrEnvelope(attack: u32, decay: u32, sustain: u16, release: u32) voice.E
     e.segments[2] = .{ .level = 0, .ms = release, .curve = 1 };
     return e;
 }
+
+/// SND-GLOBAL ( ... key -- ): REVERB (0), REVERB-FIR (1), MASTER-FILTER (2),
+/// TONE-CONTROL (3), and MASTER-VOLUME (4), 3.7 of the study. They take effect at once.
+fn globalWord(self: *State) RuntimeError!void {
+    const key = try self.pop();
+    const command: sound_engine.Command = switch (key) {
+        0 => command: {
+            const volume = try self.pop();
+            const feedback = try self.pop();
+            const ms = try self.pop();
+            // The longest delay at 48 kHz (sound_master.max_delay_frames).
+            if (ms < 0 or ms > max_reverb_ms or feedback < -65535 or feedback > 65535 or volume < 0 or volume > 65535) return error.InvalidNumber;
+            break :command .{ .reverb = .{ .ms = @intCast(ms), .feedback = @intCast(feedback), .volume = @intCast(volume) } };
+        },
+        1 => command: {
+            const n = try self.pop();
+            const address = try self.pop();
+            if (n < 0 or n > sound_engine.master.max_fir) return error.InvalidNumber;
+            var coefficients: [sound_engine.master.max_fir]i32 = @splat(0);
+            if (n > 0) {
+                const count: usize = @intCast(n);
+                const start = try self.memoryAddress(address, count * memory_map.cell_size);
+                for (0..count) |i| {
+                    const c = std.mem.readInt(i64, self.memory[start + i * memory_map.cell_size ..][0..8], .little);
+                    if (c < -32768 or c > 32767) return error.InvalidNumber;
+                    coefficients[i] = @intCast(c);
+                }
+            }
+            break :command .{ .reverb_fir = .{ .count = @intCast(n), .coefficients = coefficients } };
+        },
+        2 => command: {
+            const hz = try self.pop();
+            const mode = try self.pop();
+            if ((mode != 0 and mode != 1 and mode != 3) or !frequency(hz)) return error.InvalidNumber;
+            break :command .{ .master_filter = .{ .mode = @enumFromInt(@as(u8, @intCast(mode))), .hz = @intCast(hz) } };
+        },
+        3 => command: {
+            const treble = try self.pop();
+            const bass = try self.pop();
+            if (bass < -12 or bass > 12 or treble < -12 or treble > 12) return error.InvalidNumber;
+            break :command .{ .tone_control = .{ .bass = @intCast(bass), .treble = @intCast(treble) } };
+        },
+        4 => command: {
+            const ratio = try self.pop();
+            if (ratio < 0 or ratio > 65535) return error.InvalidNumber;
+            break :command .{ .master_volume = @intCast(ratio) };
+        },
+        else => return error.InvalidNumber,
+    };
+    const engine = try getEngine(self);
+    try putCommand(self, engine, command);
+}
+
+/// REVERB's longest delay: sound_master's 16384 frames at 48 kHz, in whole ms.
+const max_reverb_ms = 341;
 
 /// What SND-TONE's key (on top of the stack) chooses: the words of 3.3.1 of the study
 /// that the audio library defines on it.

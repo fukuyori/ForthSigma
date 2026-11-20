@@ -1174,6 +1174,8 @@ pub const Builtin = enum {
     snd_tone,
     snd_play_tone,
     snd_mod_filter,
+    snd_global,
+    snd_voice,
 };
 
 pub const HeapResult = union(enum) { address: Cell, no_memory, bad_pointer };

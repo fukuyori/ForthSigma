@@ -103,6 +103,27 @@
 : MOD? ( -- flag )   SND-MOD-PLAYING ;
 : MOD-FILTER ( mode hz -- )   SND-MOD-FILTER ;
 
+\ ---- All the voices together --------------------------------------------------
+\
+\ These take effect at once and stay over BEEP and stops. The reverb hears what the
+\ instruments send it (REVERB-SEND).
+
+: REVERB ( delay-ms feedback volume -- )   0 SND-GLOBAL ;   \ 0 to 341 ms; volume 0: off
+: REVERB-FIR ( addr n -- )   1 SND-GLOBAL ;    \ n (0 to 8) cells, 128 is 1
+: MASTER-FILTER ( mode hz -- )   2 SND-GLOBAL ;   \ 0 none, 1 low-pass, 3 high-pass
+: TONE-CONTROL ( bass treble -- )   3 SND-GLOBAL ;   \ dB, -12 to 12
+: MASTER-VOLUME ( ratio -- )   4 SND-GLOBAL ;
+
+\ ---- What the voices do ---------------------------------------------------------
+\
+\ Voices 1 to 16, as the audio thread last left them (it writes them every few ms).
+
+: VOICE-OSC ( voice -- n )   0 SND-VOICE ;     \ -32768 to 32767
+: VOICE-ENV ( voice -- ratio )   1 SND-VOICE ;
+: VOICE-POS ( voice -- n )   2 SND-VOICE ;     \ the sample's place, or -1
+: VOICE-ENDS ( voice -- n )   3 SND-VOICE ;    \ the sample's ends and loops so far
+: VOICE-ON? ( voice -- flag )   4 SND-VOICE ;
+
 \ ---- The device ------------------------------------------------------------------
 
 : AUDIO? ( -- flag )   SND-DEVICE ;

@@ -1610,6 +1610,18 @@ NOTE-LIMIT	音の開始からmsミリ秒で音を止めます。0で制限なし
 VOICE-PAN	音色の左右の音量を-65535〜65535で設定します（負の側は逆相）。初期値は65535 65535です。
 REVERB-SEND	音色をリバーブへ送る量を0〜65535で設定します。
 MOD-FILTER	MODの効果E0xが入れるフィルターを0なし・1低域・2帯域・3高域・4ノッチと周波数で設定します。初期状態はなしです。
+SND-GLOBAL	REVERB（0）・REVERB-FIR（1）・MASTER-FILTER（2）・TONE-CONTROL（3）・MASTER-VOLUME（4）を実行する基本処理です。
+SND-VOICE	VOICE-OSC（0）・VOICE-ENV（1）・VOICE-POS（2）・VOICE-ENDS（3）・VOICE-ON?（4）を実行する基本処理です。
+REVERB	全体のリバーブを、遅れ0〜341ms、帰還-65535〜65535、音量0〜65535（0で切る）で設定します。REVERB-SENDで送られた音を響かせます。
+REVERB-FIR	リバーブの響きに、addrのセルにあるn個（0〜8）の符号付き係数（128が1）のフィルターをかけます。0でなしです。
+MASTER-FILTER	全体にフィルターをかけます。0なし・1低域・3高域と周波数です。
+TONE-CONTROL	全体の低音（約200Hz以下）と高音（約4kHz以上）を-12〜12dBで上げ下げします。
+MASTER-VOLUME	全体の音量を0〜65535で設定します。初期値は65535です。
+VOICE-OSC	声1〜16の発振の値を、音のスレッドが最後に書いたとおり-32768〜32767で返します。
+VOICE-ENV	声1〜16のエンベロープの値を0〜65535で返します。
+VOICE-POS	声1〜16の標本の再生位置を返します。標本でなければ-1です。
+VOICE-ENDS	声1〜16の標本が終わった回数とループした回数の合計を返します。増え続けます。
+VOICE-ON?	声1〜16が鳴っているかを返します。
 SND-TONE	音色の語NOISE-LFSR（0）〜REVERB-SEND（13）を実行する基本処理です。
 SND-PLAY-TONE	PLAY-TONEを実行する基本処理です。
 SND-MOD-FILTER	MOD-FILTERを実行する基本処理です。

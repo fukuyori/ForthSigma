@@ -19,6 +19,7 @@ pub const voice = @import("sound_voice.zig");
 pub const pcm = @import("sound_pcm.zig");
 pub const stream = @import("sound_stream.zig");
 pub const mod_module = @import("sound_mod.zig");
+pub const master = @import("sound_master.zig");
 
 pub const Event = mml.Event;
 pub const Tone = voice.Tone;
@@ -120,6 +121,22 @@ pub const Command = union(enum) {
     mod_stop,
     /// MOD-FILTER: the filter the effect E0x turns on for MOD's voices.
     mod_filter: struct { mode: voice.FilterMode, hz: u32 },
+    /// The effects on all the voices together (sound_master.zig).
+    reverb: struct { ms: u32, feedback: i32, volume: u16 },
+    reverb_fir: struct { count: u8, coefficients: [master.max_fir]i32 },
+    master_filter: struct { mode: master.FilterMode, hz: u32 },
+    tone_control: struct { bass: i32, treble: i32 },
+    master_volume: u16,
+};
+
+/// What the audio thread last saw of each voice, for VOICE-OSC and the others; it
+/// writes them at the end of each render, and the program reads them.
+pub const VoiceState = struct {
+    osc: std.atomic.Value(i32) = .init(0),
+    env: std.atomic.Value(u32) = .init(0),
+    position: std.atomic.Value(i32) = .init(-1),
+    ends: std.atomic.Value(u32) = .init(0),
+    on: std.atomic.Value(bool) = .init(false),
 };
 
 /// BEEP: about 1316 Hz (O6's E on the MSX's PSG, 1789773 / (16 × 85)) at MML's V7 for
@@ -130,6 +147,8 @@ pub const beep_milliseconds: u32 = 40;
 
 pub const Engine = struct {
     bank: voice.Bank,
+    master: master.Master,
+    voice_states: [voice.voice_count]VoiceState = @splat(.{}),
     sample_rate: u32,
     /// The host's pool of samples; the producer adds to its end (sound_pcm.zig).
     pool: []i16 = &.{},
@@ -167,7 +186,7 @@ pub const Engine = struct {
     dc_output: [2]f32 = .{ 0, 0 },
 
     pub fn init(sample_rate: u32) Engine {
-        return .{ .bank = voice.Bank.init(sample_rate), .mod = mod_module.Mod.init(sample_rate), .sample_rate = sample_rate };
+        return .{ .bank = voice.Bank.init(sample_rate), .master = master.Master.init(sample_rate), .mod = mod_module.Mod.init(sample_rate), .sample_rate = sample_rate };
     }
 
     fn rate(self: *const Engine) f32 {
@@ -252,11 +271,24 @@ pub const Engine = struct {
                 if (!self.mod.playing) self.silenceMod();
             }
             const frame = self.bank.next(self.pool);
+            const mixed = self.master.process(frame.left, frame.right, frame.reverb_left, frame.reverb_right);
             const input = if (self.pcm_control.active) |active| active.sample() else stream.Frame{ .left = 0, .right = 0 };
-            out[i] = stream.mix(self.filtered(0, frame.left * mix_gain), input.left);
-            out[i + 1] = stream.mix(self.filtered(1, frame.right * mix_gain), input.right);
+            out[i] = stream.mix(self.filtered(0, mixed[0] * mix_gain), input.left);
+            out[i + 1] = stream.mix(self.filtered(1, mixed[1] * mix_gain), input.right);
         }
         self.mod_playing.store(self.mod.playing, .release);
+        self.publishStates();
+    }
+
+    /// The voices' state for VOICE-OSC and the others, as this render left them.
+    fn publishStates(self: *Engine) void {
+        for (&self.bank.voices, &self.voice_states) |*v, *s| {
+            s.osc.store(@intFromFloat(std.math.clamp(v.osc, -1, 1) * 32767), .release);
+            s.env.store(@intFromFloat(std.math.clamp(v.level, 0, 1) * 65535), .release);
+            s.position.store(@intCast(std.math.clamp(v.samplePosition(), -1, std.math.maxInt(i32))), .release);
+            s.ends.store(v.ends, .release);
+            s.on.store(v.active, .release);
+        }
     }
 
     /// The level without its constant part (as the coupling capacitor of a computer's
@@ -306,6 +338,11 @@ pub const Engine = struct {
                     self.mod_filter_hz = f.hz;
                     self.applyModFilter();
                 },
+                .reverb => |r| self.master.setReverb(r.ms, r.feedback, r.volume),
+                .reverb_fir => |f| self.master.setFir(f.coefficients[0..f.count]),
+                .master_filter => |f| self.master.setFilter(f.mode, f.hz),
+                .tone_control => |t| self.master.setTone(t.bass, t.treble),
+                .master_volume => |ratio| self.master.setVolume(ratio),
                 .sfx => |n| {
                     const tone: Tone = .{ .wave = .sample, .sample = n };
                     self.nextSfx().noteOn(tone, voice.sample_base_hz, 1, self.samples[n], self.rate());

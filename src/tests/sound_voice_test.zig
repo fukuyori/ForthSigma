@@ -300,3 +300,97 @@ test "a huge pitch modulation and a slow rate with a filter stay finite" {
     slow.voices[0].noteOn(.{ .filter = .low_pass, .filter_hz = 1000 }, 0.1, 1, .{}, slow.rate);
     for (0..10) |_| try std.testing.expect(std.math.isFinite(slow.next(&.{}).left));
 }
+
+// ---- 1198: the effects on all the voices together ----
+
+const master_module = @import("../core/sound_master.zig");
+
+test "the reverb repeats what is sent to it after its delay, smaller by its feedback" {
+    const m = try std.testing.allocator.create(master_module.Master);
+    defer std.testing.allocator.destroy(m);
+    m.* = master_module.Master.init(rate);
+    m.setReverb(10, 32768, 65535);
+    // One impulse sent to the reverb: it comes back 480 frames later, then again.
+    var heard: [3]f32 = .{ 0, 0, 0 };
+    for (0..1500) |i| {
+        const send: f32 = if (i == 0) 1 else 0;
+        const out = m.process(0, 0, send, send);
+        if (i == 480) heard[0] = out[0];
+        if (i == 960) heard[1] = out[0];
+        if (i == 1440) heard[2] = out[0];
+    }
+    try std.testing.expectApproxEqAbs(@as(f32, 1), heard[0], 1e-6);
+    try std.testing.expectApproxEqAbs(@as(f32, 32768.0 / 65535.0), heard[1], 1e-4);
+    try std.testing.expect(heard[2] > 0.2 and heard[2] < 0.3);
+    // Volume 0 turns it off and empties it: on again, nothing sent before comes back.
+    _ = m.process(0, 0, 1, 1);
+    m.setReverb(10, 32768, 0);
+    for (0..1000) |_| try std.testing.expectEqual(@as(f32, 0), m.process(0, 0, 1, 1)[0]);
+    m.setReverb(10, 32768, 65535);
+    for (0..2000) |_| try std.testing.expectEqual(@as(f32, 0), m.process(0, 0, 0, 0)[0]);
+}
+
+test "the reverb's FIR filters the echo, and the master volume and filter apply to all" {
+    const m = try std.testing.allocator.create(master_module.Master);
+    defer std.testing.allocator.destroy(m);
+    m.* = master_module.Master.init(rate);
+    // The first echo is the delay itself; the FIR (0.75, 0.25) shapes what goes back.
+    m.setReverb(1, 65535, 65535);
+    m.setFir(&.{ 96, 32 });
+    var heard: [200]f32 = undefined;
+    for (&heard, 0..) |*h, i| h.* = m.process(0, 0, if (i == 0) 1 else 0, 0)[0];
+    try std.testing.expectApproxEqAbs(@as(f32, 1), heard[48], 1e-6);
+    try std.testing.expectApproxEqAbs(@as(f32, 0), heard[49], 1e-6);
+    try std.testing.expectApproxEqAbs(@as(f32, 0.75), heard[96], 1e-4);
+    try std.testing.expectApproxEqAbs(@as(f32, 0.25), heard[97], 1e-4);
+
+    const v = try std.testing.allocator.create(master_module.Master);
+    defer std.testing.allocator.destroy(v);
+    v.* = master_module.Master.init(rate);
+    v.setVolume(32768);
+    try std.testing.expectApproxEqAbs(@as(f32, 0.25), v.process(0.5, 0.5, 0, 0)[0], 1e-4);
+    v.setVolume(65535);
+    v.setFilter(.low_pass, 200);
+    var sum: f32 = 0;
+    for (0..rate / 10) |i| sum += @abs(v.process(if (i % 4 < 2) 1 else -1, 0, 0, 0)[0]);
+    try std.testing.expect(sum < @as(f32, rate / 10) * 0.05);
+}
+
+fn tonePeak(m: *master_module.Master, hz: f32) f32 {
+    var peak: f32 = 0;
+    for (0..rate) |i| {
+        const x = @sin(2 * std.math.pi * hz * @as(f32, @floatFromInt(i)) / frate);
+        const out = m.process(x, x, 0, 0)[0];
+        if (i > rate / 2) peak = @max(peak, @abs(out));
+    }
+    return peak;
+}
+
+test "TONE-CONTROL raises the bass and leaves the middle, and the treble reaches its dB" {
+    const m = try std.testing.allocator.create(master_module.Master);
+    defer std.testing.allocator.destroy(m);
+    m.* = master_module.Master.init(rate);
+    m.setTone(12, 0);
+    // +12 dB is about 4 times; below the shelf's corner it comes close.
+    try std.testing.expect(tonePeak(m, 20) > 3.5);
+    const middle = tonePeak(m, 1000);
+    try std.testing.expect(middle > 0.95 and middle < 1.3);
+    // -12 dB at half the rate: the alternating +1 -1 comes out at 10^(-12/20).
+    m.* = master_module.Master.init(rate);
+    m.setTone(0, -12);
+    var last: f32 = 0;
+    for (0..rate / 10) |i| last = m.process(if (i % 2 == 0) 1 else -1, 0, 0, 0)[0];
+    try std.testing.expectApproxEqAbs(std.math.pow(f32, 10, -12.0 / 20.0), @abs(last), 0.01);
+}
+
+test "turning TONE-CONTROL on again does not bring back sound from before" {
+    const m = try std.testing.allocator.create(master_module.Master);
+    defer std.testing.allocator.destroy(m);
+    m.* = master_module.Master.init(rate);
+    m.setTone(12, 0);
+    for (0..rate) |_| _ = m.process(1, 1, 0, 0);
+    m.setTone(0, 0);
+    for (0..rate) |_| _ = m.process(0, 0, 0, 0);
+    m.setTone(12, 0);
+    try std.testing.expect(@abs(m.process(0, 0, 0, 0)[0]) < 1e-3);
+}

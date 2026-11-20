@@ -498,6 +498,33 @@ test "E00 turns MOD-FILTER's filter on for MOD's voices only, and E01 off" {
     for (0..4) |c| try std.testing.expectEqual(sound_engine.voice.FilterMode.none, engine.bank.voices[sound_engine.mod_first + c].tone.filter);
 }
 
+test "the effects on all the voices and the voices' state through the words" {
+    try skipWithout(&.{.audio});
+    const engine = try std.testing.allocator.create(Engine);
+    defer std.testing.allocator.destroy(engine);
+    engine.* = newEngine();
+    var output = Output{ .audio = engine };
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
+    try machine.interpretLine("REQUIRE-AUDIO ALSO AUDIO 100 -30000 20000 REVERB CREATE C 64 , 64 , C 2 REVERB-FIR 3 5000 MASTER-FILTER 6 -3 TONE-CONTROL 40000 MASTER-VOLUME");
+    render(engine, 1);
+    try std.testing.expectEqual(@as(u32, 4800), engine.master.delay_frames);
+    try std.testing.expectEqual(@as(u8, 2), engine.master.fir_count);
+    try std.testing.expectEqual(@import("../core/sound_master.zig").FilterMode.high_pass, engine.master.filter);
+    try std.testing.expectApproxEqRel(@as(f32, 40000.0 / 65535.0), engine.master.volume, 1e-6);
+    for ([_][]const u8{ "342 0 1 REVERB", "0 65536 1 REVERB", "C 9 REVERB-FIR", "2 1000 MASTER-FILTER", "13 0 TONE-CONTROL", "65536 MASTER-VOLUME", "5 SND-GLOBAL", "0 VOICE-ON?", "17 VOICE-ON?", "1 5 SND-VOICE" }) |line| {
+        try std.testing.expectError(error.InvalidNumber, machine.interpretLine(line));
+        machine.data_depth = 0;
+    }
+    try machine.interpretLine("S\" C1\" PLAY");
+    render(engine, 960);
+    try machine.interpretLine("1 VOICE-ON? 2 VOICE-ON? 1 VOICE-ENV 1 VOICE-POS 1 VOICE-ENDS");
+    try expectStack(machine, &.{ -1, 0, 65535, -1, 0 });
+    machine.data_depth = 0;
+    try machine.interpretLine("1 VOICE-OSC ABS 32767 <=");
+    try expectStack(machine, &.{-1});
+}
+
 test "FREE-SAMPLES forgets the wavetables on both sides" {
     try skipWithout(&.{.audio});
     var engine = newEngine();
