@@ -93,6 +93,7 @@ comptime {
     _ = @import("tests/gamepad_test.zig");
     _ = @import("tests/sound_test.zig");
     _ = @import("tests/audio_test.zig");
+    _ = @import("tests/sound_voice_test.zig");
     _ = @import("tests/pcm_stream_test.zig");
     _ = @import("tests/pcm_words_test.zig");
     _ = @import("tests/snes_dsp_test.zig");
