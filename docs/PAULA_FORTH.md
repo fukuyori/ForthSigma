@@ -1,6 +1,6 @@
 # Paula のForthレジスタモデル（1137）
 
-2026-11-20、基点main1f1a67c。実装1145・Windows/Linux検証/測定1146を完了した。親1137は未完了・auto66%。Mac受け入れ1147は1137の子で未完了に残し、1147が済むまで親1137を完了にしない。既存AMIGA-SOUND/Builtinは変更しない。
+2026-11-20、基点main1f1a67c。実装1145・Windows/Linux検証/測定1146を完了した。親1137は未完了・auto66%。Mac受け入れ1147も同日に合格し（[下記](#mac実機受け入れ1147)）た。Windows/Linuxの実聴1155/1156が1137の子として残るため、親1137は未完了。既存AMIGA-SOUND/Builtinは変更しない。
 
 ## 一次資料と独自の取り決め
 
@@ -61,7 +61,7 @@ sigma examples/paula-play.fs -e "PA-DEMO-MEMORY PA-DEMO-SETUP 16 FALSE PA-STREAM
 python tests/scripts/verify-paula.py zig-out/bin/sigma --benchmark
 ```
 
-Pythonの1tickモデル、Forthの基準/まとめ処理/分割描画を全PCM・状態で比較する。手計算したbyte順・manual latch・IRQ mask・メモリwrap・buffer保持・PER変更遅延、全128volume値、全256attach mask、512KiB全byteの保持、不正値の状態原子性を含む。PCM自動確認は合成後にゼロを送り、実聴と区別する。Mac確認1147は未実施。
+Pythonの1tickモデル、Forthの基準/まとめ処理/分割描画を全PCM・状態で比較する。手計算したbyte順・manual latch・IRQ mask・メモリwrap・buffer保持・PER変更遅延、全128volume値、全256attach mask、512KiB全byteの保持、不正値の状態原子性を含む。PCM自動確認は合成後にゼロを送り、実聴と区別する。Mac確認1147は下記で実施済み。
 
 測定は32768frame、初期化/reset/warm-up/初期queueを時間外にし、6負荷で7つの新processを使う。NTIME wall nsとuser+system CPUTIME usを保存する。通常・1tick版・全4声最小周期123/LEN1・変調・8kHz volume書込み・8kHz手動DATを分け、streaming enqueue/領域回収は時間内に含める。各負荷は別の計時しないprocessで全PCMをPythonと比較してから計測する。原データ・採否は以下に記録する。
 
@@ -88,6 +88,32 @@ Windows GNU/Linux musl（WSL）の通常版、debug/graphics/extension除外版�
 
 実PCMへの自動確認は8192frameを合成後ゼロ化し、stereo open/write/wait/drain/closeと、レンダー中のtime overflow後のhandle解放を確認した。WindowsはAUDIO?=-1、WSL LinuxはAUDIO?=0の無音consumerで、Linux実装置の検証ではない。非ゼロPCMの補助fixtureも装置へ送らないため、生成音の実聴完了とは扱わない。
 
-Mac受け入れ1147は未完了で、親1137を完了にしない。既存PCM基盤のMac1130完了とは別である。Windows/LinuxのPCM実聴1148/1149も各機能の配下に残る。
+Mac受け入れ1147は下記で合格した。既存PCM基盤のMac1130完了とは別である。Windows/LinuxのPCM実聴1148/1149も各機能の配下に残る。
 
-[レビュー評価・採否と設計/実装/追加/最終の原文](reviews/1137-review-response.md)を保存した。追加レビューのMediumは奇数LEN3の検査で解決し、最終ClaudeレビューはHigh/Mediumなし。tempコピーでresetを外した負の対照も、stack0で値の不一致を検出した。Mac1147は未確認のままで、これらの成功を親1137全体の完了とは扱わない。
+[レビュー評価・採否と設計/実装/追加/最終の原文](reviews/1137-review-response.md)を保存した。追加レビューのMediumは奇数LEN3の検査で解決し、最終ClaudeレビューはHigh/Mediumなし。tempコピーでresetを外した負の対照も、stack0で値の不一致を検出した。Mac1147は下記で確認した。
+
+## Mac実機受け入れ（1147）
+
+2026-11-20、main `cf080b4`、macOS 27.2.1 / Apple M5 / Zig 0.17.1。Zigソースは9d1c528から変更がなく、1130で作ったReleaseFast / cpu=baseline / strip=trueの実行体（全機能、debug/graphics/extension除外、float/debug/graphics/extension除外、audio/graphics/extension除外）を使った。作業ファイルは`.work/1147-mac/`（git管理外）。
+
+| 対象 | 結果 |
+| --- | --- |
+| verify-paula.py --benchmark（全機能・debug等除外・float除外） | 各10検査群成功、全検査の結果がWindowsの記録と一致。固定2048frame ab75b30b…ad52d |
+| verify-paula-stream.py（同3構成） | 各10検査成功、結果がWindowsと一致 |
+| audio/graphics/extension除外 | `37833 0`、status0 |
+| 論理辞書領域 | 122880→672496、差549616byte |
+| 無音PCM送出 | 8192frame stereo、AUDIO?=-1、全process約0.284秒 |
+
+合成負荷（32768frame、各7process中央値。音声時間÷wall）：
+
+| 構成 | 通常まとめ | 1tick | PER123/LEN1 | 変調 | 8kHz volume | 8kHz DAT |
+| --- | --- | --- | --- | --- | --- | --- |
+| 全機能 | 14.27倍 | 0.90倍 | 9.81倍 | 7.95倍 | 12.94倍 | 11.37倍 |
+| debug等除外 | 10.85倍 | 0.78倍 | 7.16倍 | 6.30倍 | 9.77倍 | 8.76倍 |
+| float除外 | 11.03倍 | 0.81倍 | 7.79倍 | 6.47倍 | 10.40倍 | 9.08倍 |
+
+左右の分離は、デモ設定の後にDMACONへ6（ch1/2停止）または9（ch0/3停止）を書いて確かめた。1秒分の描画で、左だけは右が全標本0、右だけは左が全標本0だった（左右とも鳴らすときのRMSは6795/6774）。
+
+レモンがGhosttyで実際に聞いた（`.work/1147-mac/paula.fs`）。4声stereo約3秒、左だけ・右だけが正しく分かれて聞こえた。連続再生中のCtrl+Cで`CATCH= -28 handle=0`、その後の再再生、`ACCEPT`での入力。各回underrun0、fd13は不変、thread8→7。1回目のCtrl+Cは合成中に届いてOS終了となり、2回目で上記を確認した。NES/SIDと同じく、確認点のない計算中のCtrl+Cは既存の中断規則でOS終了になる。全機能版（extensionとdebugを含む）では、合成の呼出しをEXEC-LIMITED（予算0）で包めば合成中のCtrl+Cも-28で捕捉できる。ただし実行制御の記録どおり包んだ中の計算は約2.8倍遅くなり、Macでの試算ではSIDデモが約1.3倍、Windowsでは約0.9倍と実時間を下回るため、例には組み込まない（2026-11-20に試作し、全機能版で20回中20回-28を確認した後に取り消した）。
+
+Windows/Linuxでの生成波形の実聴は未確認（tque 1155（Windows）・1156（Linux））。Agnus bus・analog filter・実機Amiga互換は範囲外のまま。

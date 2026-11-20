@@ -1,12 +1,16 @@
 # 613 本体機能拡張の引継ぎ（2026-11-19）
 
+## 最新追記：PaulaのMac実機受け入れ1147（2026-11-20）
+
+この節を最新状態とする。基点main `cf080b4`。macOS 27.2.1 / Apple M5で1147を実施し合格、tqueの1147を完了にした。各音源のWindows/Linux実聴を機能ごとの子へ移した（NES1150/1151→1132、SID1157/1158→1136、Paula1155/1156→1137）ため、親1132/1136/1137は未完了。合成中のCtrl+CをEXEC-LIMITEDで捕捉する例の修正は、合成が約2.8倍遅くなるため取り消し、文書に記載した。3構成の全検査がWindowsと一致し、Ghosttyで4声stereo・左右の分離・Ctrl+C中断と再再生を実聴で確認した。結果は[Paulaの記録](PAULA_FORTH.md#mac実機受け入れ1147)。
+
 ## 現在状態：Mac受け入れ結果の取り込み（2026-11-20）
 
 mainは9baef92（NES/DMC・SIDのMac受け入れ記録まで取り込み済み）。1144/1143と親1132/1136は完了。Paulaの1145/1146は完了、Mac1147と親1137は未完了（auto66%）のまま。999はauto52%。未コミットのPaula実装・測定・タスク配置の文書は保全した。以下の節は各作業時点の記録であり、Mac未確認や古い進捗表示は、この現在状態と各Mac受け入れ節を優先する。
 
 ## 最新追記：NES/SID音源例のMac実機受け入れ1144/1143（2026-11-20）
 
-この節を最新状態とする。基点main `1f1a67c`。macOS 27.2.1 / Apple M5で1144（NES APU/DMC）と1143（SID）を実施し合格した。tqueの1144・1143と親1132・1136を完了にした。全検査がWindows/Linuxの記録と一致し、Ghosttyで実聴とCtrl+C中断・再再生を確認した。結果は[NES](NES_DMC_FORTH.md#mac実機受け入れ1144)、[SID](SID_FORTH.md#mac実機受け入れ1143)。合成中のCtrl+CはOS終了になる（既存規則、20回中7回）。Windows/Linuxの実聴はtque 1150（Windows）・1151（Linux）で未確認。
+この節を最新状態とする。基点main `1f1a67c`。macOS 27.2.1 / Apple M5で1144（NES APU/DMC）と1143（SID）を実施し合格した。tqueの1144・1143を完了にした（親1132・1136は後に実聴の子を移したため未完了）。全検査がWindows/Linuxの記録と一致し、Ghosttyで実聴とCtrl+C中断・再再生を確認した。結果は[NES](NES_DMC_FORTH.md#mac実機受け入れ1144)、[SID](SID_FORTH.md#mac実機受け入れ1143)。合成中のCtrl+CはOS終了になる（既存規則、20回中7回）。Windows/Linuxの実聴はNES 1150/1151、SID 1157/1158で未確認。
 
 ## 最新追記：Paulaの実装・Windows/Linux確認、Mac未完了（2026-11-20）
 

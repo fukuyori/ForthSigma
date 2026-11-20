@@ -72,7 +72,7 @@ WAITはscope/pollを含む。これを装置遅延や前版/Gforthとの速度�
 | host（aarch64-macos、リポジトリ直下で実行） | 152成功・21除外・失敗0。Windows/Linux専用の寿命試験は除外、共通の停止/join・timeout保持・時計故障・cleanup失敗・PCM ID/storage再起動は成功 |
 | 阻害consumer（`verify-audio-shutdown.py`） | 3回ともstatus1と期待stdout（0.305/0.022/0.018秒） |
 
-ReleaseFast / cpu=baseline / strip=trueで11構成を作った。audio有効の7構成（graphics/extensionの4組合せ、no-debug、no-files、no-image）は`verify-pcm-stream.py`が成功し、no-imageは画像系3ケースを除く3ケース。audio無効の4構成は`REQUIRE-AUDIO`と`PCM-OPEN`が不在（`0 0`）。全機能版1,990,632 byte、audio・graphics・extension全除外版1,513,160 byte。
+ReleaseFast / cpu=baseline / strip=trueで11構成を作った。audio有効の7構成（graphics/extensionの4組合せ、no-debug、no-files、no-image）は`verify-pcm-stream.py`が成功し、no-imageは画像系3ケースを除く3ケース。audio無効の4構成では`REQUIRE-AUDIO`の実行が-275で失敗し、audio有効版では成功して`ALSO AUDIO`後に`PCM-OPEN`が見つかる（`0 -1`）。（2026-11-20訂正：当初記録した`[DEFINED] REQUIRE-AUDIO . [DEFINED] PCM-OPEN .`の`0 0`は、REQUIRE語が`[DEFINED]`で見つからず、PCM-OPENも`ALSO AUDIO`前は検索順にないため、audio有効版でも同じ結果になり不在の証拠にならなかった。上の方法で確認し直した。）全機能版1,990,632 byte、audio・graphics・extension全除外版1,513,160 byte。
 
 `verify-pcm-terminal.py`の専用PTY 5ケースを全機能版、graphics/extension除外版、debug/graphics/extension除外版で実行した。WAIT/STOPは-28、CLOSEは-516の後に再試行0、`ab`・未完成ESC列・`日`を保持し、PENDINを除いた端末設定が復元された。
 

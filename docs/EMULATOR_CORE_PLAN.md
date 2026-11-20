@@ -77,6 +77,8 @@ Forthが作った波形を途切れなく流す語がない。ZX SpectrumとAppl
 
 ## 10. 音源チップのレジスタ書込み（999、段階C）
 
+2026-11-20最新：各音源のWindows/Linux実聴を機能ごとの子に置いた（NES1150/1151、SID1157/1158、Paula1155/1156）。Mac受け入れ1144/1143/1147は合格だが、親1132/1136/1137は未完了。以下は当時の記録。
+
 2026-11-20リモート取り込み後の現在状態：NES/SIDのMac受け入れ1144/1143が合格し、親1132/1136も完了。Paulaは実装1145・Windows/Linux1146が完了、Mac1147と親1137は未完了66%。999はauto52%。
 
 2026-11-20現在：[PaulaのForthモデル](PAULA_FORTH.md)の実装1145とWindows/Linux検証・測定1146を完了。Mac1147が未完了のため親1137は未完了66%。確認を最後へ集約せず、1137の配下で完了を管理する。次はAtari ST1138の充足・不足監査。
@@ -98,7 +100,7 @@ Forthが作った波形を途切れなく流す語がない。ZX SpectrumとAppl
 | Commodore 64 | 決定的3声レジスタモデルと独自Q16フィルターをForthで検証・測定、1136完了 | 合成波形・実機6581/8580アナログ特性・ROM互換は範囲外。Mac例/実聴は1143で確認、Windows/Linux実聴は未確認。重い混在のWindows約1.03倍は音源単独 | 1136 / 1141 / 1142 / 1143 |
 | SNES | PCMの共通基盤 | DSPレジスタ用途の充足・不足を照合 | 1139 |
 | Apple II | PCMの共通基盤 | 機種固有用途を既存機能で満たすか未判定 | 1139 |
-| Amiga | 4声stereoレジスタ/DMA/手動DAT/IRQ/attachの実装1145と検証/測定1146完了、親1137は未完了66% | Mac受け入れ1147を1137の子で管理。Agnus bus/実機pipeline・analog/ROM互換は範囲外 | 1137 / 1145 / 1146 / 1147 |
+| Amiga | 4声stereoレジスタ/DMA/手動DAT/IRQ/attachの実装1145と検証/測定1146完了、Mac受け入れ1147も合格。1137はWindows/Linuxの実聴1155/1156が残り未完了 | Windows/Linuxの実聴は未確認。Agnus bus/実機pipeline・analog/ROM互換は範囲外 | 1137 / 1145 / 1146 / 1147 |
 | Atari ST | ST-SOUNDがYM2149を選択し、SOUNDで0〜13を書き込む既存経路 | 書込み時刻・読取り・I/Oポート・副作用の充足、不足分の実装/実測・採否を確認 | 1138 |
 
 Atari STの根拠はsrc/core/sound_engine.zigのchip reset時のPsg.init(.ym2149)、同じengineのwrite command、src/core/words_audio.zigのSOUND 0..13検査、src/core/sound_psg.zigのレジスタ処理。既存経路があることを、機種全体の互換性が完了した意味にはしない。未検証の不足を推測で実装する前に、1138でソースと資料を照合する。

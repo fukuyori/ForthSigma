@@ -86,7 +86,7 @@ Windows GNUとWSL Linux muslで通常版、debug/graphics/extension除外版、�
 
 本体のZigソースは変更せず、PCM1128のソース指紋を全項目照合した既存ReleaseFast/cpu=baseline/strip=true実行体を使った。通常版の実行ファイルのサイズ増加は0。Windows通常版でHEREの差は41688byte（読込み前122880、後164568）。これは論理辞書領域であり、RSSではない。主な固定表は2048cellの係数と3072cellの予定表である。audio/graphics/extension=falseでも純粋な合成例をWindows/Linuxで実行でき、512frame後は10509clock・stack深さ0だった。
 
-Windows通常版はAUDIO?=-1、WSL LinuxはAUDIO?=0の無音consumerであり、Linux実装置の検証ではない。自動PCM試験は8192frameを合成後ゼロ化してopen/write/wait/drain/closeし、時刻overflowで中断した場合もhandleを解放した。生成音の実聴、SID例のMac実行、実機/ROMとの一致は未確認（追記：Mac実行と実聴は1143で確認、Windows/Linuxの実聴はtque 1150（Windows）・1151（Linux））。既存PCMのMac1130完了とは別に残す。親999の他機種と対象照合も継続する。
+Windows通常版はAUDIO?=-1、WSL LinuxはAUDIO?=0の無音consumerであり、Linux実装置の検証ではない。自動PCM試験は8192frameを合成後ゼロ化してopen/write/wait/drain/closeし、時刻overflowで中断した場合もhandleを解放した。生成音の実聴、SID例のMac実行、実機/ROMとの一致は未確認（追記：Mac実行と実聴は1143で確認、Windows/Linuxの実聴はtque 1157（Windows）・1158（Linux））。既存PCMのMac1130完了とは別に残す。親999の他機種と対象照合も継続する。
 
 [設計・実装・追加・最終レビューと採否](reviews/1136-review-response.md)を保存した。実装Medium3件と追加N1を解決し、最終ClaudeレビューはHigh/Mediumなし。レビューは読取りだけで、ここに記録した実行結果はロクによる。
 
@@ -114,6 +114,6 @@ clipping数（0/2594/8525/5737）とfilter制限0はWindows/Linuxと同じ。重
 
 レモンがGhosttyで実際に聞いた（`.work/1144-mac/sid.fs`）。3声デモ約4秒、連続再生中のCtrl+Cで`CATCH= -28 handle=0`、その後の再再生、`ACCEPT`での入力、status0。underrun0、fd13は不変、thread8→7。画面出力に加え、聞こえ方の相違の報告はなかった。
 
-Ctrl+Cの扱い：PS-SENDはPCM-WAITと合成を交互に行う。Macで300blockを測ると3.18秒中1.02秒が合成で、待機中に届いたCtrl+Cは`-28`で捕捉されhandleを解放する。合成中に届いた場合は[既存の規則](USER_MANUAL.ja.md)どおり確認点のない計算としてOSが終了させる（SIGINTを無作為な時刻に20回送り、13回-28・7回シグナル終了）。例の不具合ではなく、現行の中断規則による。
+Ctrl+Cの扱い：PS-SENDはPCM-WAITと合成を交互に行う。Macで300blockを測ると3.18秒中1.02秒が合成で、待機中に届いたCtrl+Cは`-28`で捕捉されhandleを解放する。合成中に届いた場合は[既存の規則](USER_MANUAL.ja.md)どおり確認点のない計算としてOSが終了させる（SIGINTを無作為な時刻に20回送り、13回-28・7回シグナル終了）。例の不具合ではなく、現行の中断規則による。全機能版（extensionとdebugを含む）では、合成の呼出しをEXEC-LIMITED（予算0）で包めば合成中のCtrl+Cも-28で捕捉できる。ただし実行制御の記録どおり包んだ中の計算は約2.8倍遅くなり、Macでの試算ではSIDデモが約1.3倍、Windowsでは約0.9倍と実時間を下回るため、例には組み込まない（2026-11-20に試作し、全機能版で20回中20回-28を確認した後に取り消した）。
 
-Windows/Linuxでの生成波形の実聴は未確認（tque 1150（Windows）・1151（Linux））。6581/8580実機・ROM互換は範囲外のまま。
+Windows/Linuxでの生成波形の実聴は未確認（tque 1157（Windows）・1158（Linux））。6581/8580実機・ROM互換は範囲外のまま。
