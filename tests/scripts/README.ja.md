@@ -140,3 +140,11 @@ Macのクロスコンパイルを実機確認の代わりにしません。
 ## Forth音源の試作
 
 `python tests/scripts/verify-pcm-synth.py SIGMAのパス [--benchmark]`は、手計算した標本、独立したPythonのs16LE列、分割・レジスタ変更時の連続性、不正引数、強制した部分書込み・満杯・期限切れ・close失敗と、実PCMへの無音送出を確認します。benchmark指定時はwarm-up後のNTIME/CPUTIME差を7回測り、最終バッファのチェックサムも照合します。別の送出試験は外側の単調時計を使い、書込み・待機・アンダーラン回数とAUDIO?も記録します。実機の音源や可聴音を検証するものではありません。リポジトリ直下から実行してください。[範囲と結果](../../docs/PCM_SYNTH_PROTOTYPE.md)。
+
+## NES APUのForthサブセット
+
+`python tests/scripts/verify-nes-apu.py SIGMAのパス [--benchmark]`は、Forthの1クロック版・まとめ処理版の状態とPCMを独立したPythonモデルと比較します。frame/reset/IRQの境界、envelope/length/sweep/linear、時刻付き書込み、予定表の順序・容量、不正入力、実PCMへの無音送出を確認します。benchmark指定時は通常・1クロック版・最速noiseの負荷をwarm-up付き7processで測り、128件の時間指定書込みを含めます。この回帰負荷ではDMC再生を無効にし、CPU/PPU・バス競合・装置再生は含みません。5声の負荷はverify-nes-dmc.pyで扱います。長い予定表は専用の一時Forthファイルにし、CLIの-e長制限を避けます。[仕様・資料照合・結果](../../docs/NES_APU_FORTH.md)。
+
+## NES DMCモデル
+
+`python tests/scripts/verify-nes-dmc.py SIGMAのパス [--benchmark]`は全レート、コピーしたbuffer、loop/stop/restart、IRQ/status、番地の折返し、直接DACの境界、全32799 LUT項目とメモリ検査を照合します。8kHz直接DACで1024件を超えて登録し、全出力をPythonと比較します。benchmark指定時は通常/基準版/最速noise-DMC/直接DACを各7processで測定します。verify-nes-apu.pyは1134の固定出力SHAを保持します。独自データだけを使用し、ROM・実機DMA・可聴音の確認ではありません。[契約と測定](../../docs/NES_DMC_FORTH.md)。

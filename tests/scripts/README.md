@@ -137,3 +137,11 @@ Run `python tests/scripts/verify-execution-control.py PATH_TO_SIGMA` for public 
 ## Forth synthesis prototype
 
 `python tests/scripts/verify-pcm-synth.py PATH_TO_SIGMA [--benchmark]` checks hand-calculated samples, independent Python s16LE vectors, split/render/register continuity, invalid arguments, forced partial/full/timeout/close failures and silent real PCM integration. Benchmark mode records seven warmed synthesis-only NTIME/CPUTIME intervals with a final-buffer checksum; the separate paced run uses an external monotonic clock and records write/wait/underrun counts and AUDIO?. It does not validate a chip emulator or audible output. Run from the repository root. [Scope and results](../../docs/PCM_SYNTH_PROTOTYPE.md).
+
+## NES APU Forth subset
+
+`python tests/scripts/verify-nes-apu.py PATH_TO_SIGMA [--benchmark]` compares Forth per-cycle/batched state and PCM against an independent Python per-cycle model. It checks frame/reset/IRQ boundaries, envelope/length/sweep/linear behavior, timestamped writes, queue ordering/capacity, invalid input and silent real PCM integration. Benchmark mode times nominal/reference and fastest-noise APU workloads in seven warmed processes with 128 timed writes. This regression workload leaves DMC playback disabled and excludes emulated CPU/PPU, bus arbitration and device playback; the five-voice workload is in verify-nes-dmc.py. Long schedules use owned temporary Forth files, avoiding CLI -e length limits. [Specification, source audit and results](../../docs/NES_APU_FORTH.md).
+
+## NES DMC model
+
+`python tests/scripts/verify-nes-dmc.py PATH_TO_SIGMA [--benchmark]` checks all rates, copied buffers, loop/stop/restart, IRQ/status, address wrap, direct DAC parity limits, all32799 LUT entries and mapped-memory validation. Streaming8kHz DAC exceeds1024 queued writes and compares full output with Python. Benchmark mode records seven processes per nominal/reference/maximum-noise-DMC/direct-DAC workload. The companion verify-nes-apu.py retains the fixed1134 output SHA. Own sample patterns only; no ROM, hardware DMA or audible generated output. [Contract and measurements](../../docs/NES_DMC_FORTH.md).

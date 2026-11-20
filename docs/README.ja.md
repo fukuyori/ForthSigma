@@ -64,3 +64,7 @@
 - [PCM公開語の実装と検証](PCM_PUBLIC_IMPLEMENTATION.md)：所有・待機・画像境界、Windows/Linux自動確認とMacの残件。
 
 - [Forth音源の試作](PCM_SYNTH_PROTOTYPE.md)：独自の4声合成、PCM送出、Windows/Linux測定と限界。
+
+- [NES APUのForth試作](NES_APU_FORTH.md)：NTSC 4声のレジスタ、時刻指定書込み、基準版とまとめ処理版の照合・測定範囲。
+
+- [NES DMCのForthモデル](NES_DMC_FORTH.md)：5声のreader/DAC/IRQ、専用メモリと負荷測定。

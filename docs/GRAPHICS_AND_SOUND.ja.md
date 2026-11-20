@@ -575,3 +575,7 @@ WAIT/STOPの期限切れはfalse,0、中断はTHROW -28です。切離し前にd
 内部語`SND-PCM-OPEN`・`SND-PCM-WRITE`・`SND-PCM-QUEUED`・`SND-PCM-WAIT`・`SND-PCM-STOP`・`SND-PCM-CLOSE`・`SND-PCM-UNDERRUNS`も同じ効果です。audio=falseですべて除外し、graphics/debug/extensionには依存しません。IDは開いたStateが所有し、同一プロセス内では再利用しません。イメージに実行中ストリームは保存しません。所有中の完全復元はbusy（-528）、LOAD-DICTIONARYの追記は対象のPCMを保持します。保存アプリはPCM未所有で起動します。追加した7個のBuiltinタグで画像ABIが変わるため、古いイメージはソースから保存し直してください。[実装と検証の記録](PCM_PUBLIC_IMPLEMENTATION.md)も参照してください。
 
 独自の[Forth合成例](../examples/pcm-synth.fs)は、音声を起動せず4声の汎用音源を定義します。[PCM送出例](../examples/pcm-synth-play.fs)は部分書込みとclose再試行に対応します。リポジトリ直下で`sigma examples/pcm-synth-play.fs -e "PS-DEMO-SETUP 96 FALSE PS-STREAM BYE"`を実行すると、約1秒分を合成して無音を渡します。TRUEを指定した場合だけ生成波形を出力します。特定チップのエミュレーションではありません。[仕様・測定・残件](PCM_SYNTH_PROTOTYPE.md)を参照してください。
+
+[NES APUのForth例](NES_APU_FORTH.md)は、技術資料に基づくNTSCのpulse 2声・triangle・noiseと、envelope/length/sweep/linear counterを扱います。PCM生成中も予定された書込みのCPU時刻順を保ちます。Builtinは追加しません。CPU/PPUのバス競合・アナログフィルターは試作の対象外で、DMCは下記の拡張で扱います。`sigma examples/nes-apu-play.fs -e "NA-DEMO-SETUP 16 FALSE NA-STREAM BYE"`は無音を渡し、TRUEを明示した場合だけ生成波形を渡します。読み込むだけでは再生しません。
+
+[DMC拡張](NES_DMC_FORTH.md)ではForth例に5声目、専用サンプルメモリ、reader/buffer/IRQ/loopと直接DAC書込みを追加しました。DMAの待ちは0とするモデルで、CPU/PPUのバス競合は対象外です。5声と8kHz直接DACの負荷を別に測定し、読み込むだけでは再生しません。

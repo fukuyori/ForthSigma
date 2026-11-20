@@ -4,9 +4,13 @@
 
 ### Added
 
+- NES Forth DMC sample reader, byte buffer, delta DAC, loop and IRQ with an owned32KiB sample map and wide-integer nonlinear mixing. Zero DMA-delay model; hardware bus races remain excluded. Five-voice and streaming8kHz DAC validation/measurements are recorded separately.
+
+- Forth NTSC NES APU register model (pulse/triangle/noise/DMC, envelope/length/sweep/linear, frame IRQ and scheduled writes), independently checked against a Python per-cycle model. Batched rendering preserves the defined zero-DMA subset; CPU/PPU bus-level compatibility remains excluded. No built-in words are added.
+
 - Forth-only four-voice synthesis workload and explicit PCM streaming example, with independent vector tests and Windows/Linux timing. This is an original synthetic workload, not chip emulation; loading does not play audio.
 
-- AUDIO PCM-OPEN/WRITE/QUEUED/WAIT/STOP/CLOSE/UNDERRUNS: bounded s16LE mono/stereo input, partial writes, rate conversion, State ownership, cancellable waits and retryable close. Audio worker shutdown joins before freeing storage. Live streams are not serialized; new Builtin tags require rebuilding older images. Windows/Linux automated validation passes; Mac runtime and audible output remain unverified.
+- AUDIO PCM-OPEN/WRITE/QUEUED/WAIT/STOP/CLOSE/UNDERRUNS: bounded s16LE mono/stereo input, partial writes, rate conversion, State ownership, cancellable waits and retryable close. Audio worker shutdown joins before freeing storage. Live streams are not serialized; new Builtin tags require rebuilding older images. Windows/Linux automated validation and Mac device/hearing acceptance passed; Windows hearing and Linux hardware remain pending.
 
 - Saved-application entry registration with APP-ENTRY!, APP-ENTRY@ and APP-ENTRY-OFF, explicit --sigma host options and --no-app diagnostic startup, embedded-image failure termination and atomic SAVESYS publication.
 

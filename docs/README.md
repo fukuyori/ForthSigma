@@ -64,3 +64,7 @@ For the project overview, how to build, the current features, the differences fr
 - [Public PCM implementation and validation](PCM_PUBLIC_IMPLEMENTATION.md): ownership, waits, image boundaries, Windows/Linux automation and pending Mac checks.
 
 - [Forth synthesis prototype](PCM_SYNTH_PROTOTYPE.md): original four-voice workload, PCM streaming, Windows/Linux measurements and limits.
+
+- [NES APU Forth prototype](NES_APU_FORTH.md): NTSC four-channel registers, scheduled writes, reference/batch equivalence and measured scope.
+
+- [NES DMC Forth model](NES_DMC_FORTH.md): five-voice sample reader/DAC/IRQ behavior, own memory map and workload measurements.
