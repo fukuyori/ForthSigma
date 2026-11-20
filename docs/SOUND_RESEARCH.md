@@ -429,6 +429,8 @@ NTSC の R=F は約33.1 kHz、R=0 は約4.18 kHz。
 
 ## Amiga の Paula と ProTracker の MOD 形式
 
+2026-11-20実装時の更新：以下は当初調査の記録。HRM第5章と付録A/Bを原典照合し、AUD0〜3 IRQはbit7〜10、VOL bit6で64、ADKCONのattach割当てとPAL最小123を確認した。以下の「推定／未確認」は当時の状態として残す。現行のモデル規則と、実機Agnus/pipelineを省いた範囲は[Paulaの契約](PAULA_FORTH.md)を参照する。
+
 出典: [A] Amiga Hardware Reference Manual 第5章 https://www.amigarealm.com/computing/knowledge/hardref/ch5.htm 、[A2] 音量の節 https://scratch.grimore.org/HARDWARE_MANUAL_GUIDE/node00dc.html 、[B] 付録B https://sblive.w10.site/ZX-Spectrum/AMIGAHardware/APPENDIXB.html 、[C] ADKCON https://amigadev.grimore.org/Hardware_Manual_guide/node0194.html 、[D] Free Pascal の Amiga 定数 https://www.freepascal.org/daily/packages/amunits/hardware/ 、[E] pt2-clone の pt2_paula.c のコメント（BSD-3）https://raw.githubusercontent.com/8bitbubsy/pt2-clone/master/src/pt2_paula.c 、[G] https://forum.renoise.com/t/disabling-amiga-internal-filter/46412 、[H] https://www.aes.id.au/modformat.html 、[I] FMODDOC https://resources.openmpt.org/resources/FMODDOC.txt 、[J] https://wiki.openmpt.org/Manual:_Effect_Reference 、[K] https://wiki.openmpt.org/Development:_Test_Cases/MOD 、[L] AHX http://ftp.modland.com/pub/documents/format_documentation/Abyss%27%20Highest%20eXperience%20(.ahx).txt
 
 ### レジスタ（$DFF000 からのオフセット）[B]

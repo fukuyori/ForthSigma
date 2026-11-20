@@ -152,3 +152,9 @@ Macのクロスコンパイルを実機確認の代わりにしません。
 ## SIDレジスタとフィルター近似
 
 `python tests/scripts/verify-sid.py SIGMAのパス [--benchmark]`は独立したPythonの1clock版とForthの両経路を比較します。時刻指定3声PCM、ADSR/同期/ノイズ境界、不正入力の状態保持、パルス/リング/配線の手計算値、全2048係数、64種のフィルターインパルスと8kHz予定表回収の全PCMを照合します。benchmarkは通常/基準版/最大フィルター・同期の混在/3声noise/8kHz書込みをwarm-up付き7processで測定します。`python scripts/sid-filter-coeffs.py --check`でDecimalの表を再生成せず検証します。音声試験は無音を送り、実際の6581/8580やROMを正解値とした検証ではありません。[契約と制限](../../docs/SID_FORTH.md)。
+
+## Paulaステレオレジスタモデル
+
+`python tests/scripts/verify-paula.py SIGMAのパス [--benchmark]`は独立したPythonの1tickモデルをForthの両経路・分割ステレオPCMと比較します。DMA/reload/IRQ、手動DAT保持、volume/attachの全mask、メモリ折返し/保持、不正値の原子性、予定表の回収を確認します。benchmarkは通常/基準版/最小周期/変調/8kHz volume・手動DATを各7processで測り、先に計時外で全PCMを照合します。音声試験は無音を送り、Macと生成音の実聴は別確認です。[契約と制限](../../docs/PAULA_FORTH.md)。
+
+補助の`python tests/scripts/verify-paula-stream.py SIGMAのパス`は実PCMを開かず、ステレオcallbackと変調の手計算値の10検査を行います。部分/満杯からの再試行、非ゼロbyte列、4byte単位のoffset、cleanup例外、attachの交互動作を確認します。

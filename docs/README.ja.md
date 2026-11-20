@@ -70,3 +70,5 @@
 - [NES DMCのForthモデル](NES_DMC_FORTH.md)：5声のreader/DAC/IRQ、専用メモリと負荷測定。
 
 - [C64 SIDのForthモデル](SID_FORTH.md)：3声の決定的モデル、整数フィルター近似、独立検証と再現範囲。
+
+- [PaulaのForthレジスタモデル](PAULA_FORTH.md)：4声ステレオのDMA/手動出力/IRQ/変調モデル、独立検証とMac受け入れの残項目。

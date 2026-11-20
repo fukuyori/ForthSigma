@@ -70,3 +70,5 @@ For the project overview, how to build, the current features, the differences fr
 - [NES DMC Forth model](NES_DMC_FORTH.md): five-voice sample reader/DAC/IRQ behavior, own memory map and workload measurements.
 
 - [C64 SID Forth model](SID_FORTH.md): declared three-voice digital model, integer filter proxy, independent verification and scope limits.
+
+- [Paula Forth register model](PAULA_FORTH.md): declared stereo DMA/manual/IRQ/attachment model, independent validation and pending Mac acceptance.

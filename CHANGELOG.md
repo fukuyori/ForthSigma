@@ -6,6 +6,7 @@
 
 - NES Forth DMC sample reader, byte buffer, delta DAC, loop and IRQ with an owned32KiB sample map and wide-integer nonlinear mixing. Zero DMA-delay model; hardware bus races remain excluded. Five-voice and streaming8kHz DAC validation/measurements are recorded separately.
 
+- Forth Paula stereo register model with declared DMA/manual/IRQ/attachment timing and independent Python verification. Agnus bus arbitration, analog filters and ROM compatibility are excluded; Mac acceptance remains pending. No built-in changes.
 - Forth C64 SID three-voice register model with declared TEST/SYNC/RING/ADSR behavior and an integer filter proxy; independent Python verification and workload measurements. Actual 6581/8580 analog fidelity and combined waveforms remain excluded. No built-in changes.
 - Forth NTSC NES APU register model (pulse/triangle/noise/DMC, envelope/length/sweep/linear, frame IRQ and scheduled writes), independently checked against a Python per-cycle model. Batched rendering preserves the defined zero-DMA subset; CPU/PPU bus-level compatibility remains excluded. No built-in words are added.
 

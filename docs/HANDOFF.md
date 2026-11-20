@@ -1,8 +1,32 @@
 # ForthSigma 作業引き継ぎ
 
+## 現在状態：Mac受け入れ結果の取り込み（2026-11-20）
+
+mainは9baef92（NES/DMC・SIDのMac受け入れ記録まで取り込み済み）。1144/1143と親1132/1136は完了。Paulaの1145/1146は完了、Mac1147と親1137は未完了（auto66%）のまま。999はauto52%。未コミットのPaula実装・測定・タスク配置の文書は保全した。以下の節は各作業時点の記録であり、Mac未確認や古い進捗表示は、この現在状態と各Mac受け入れ節を優先する。
+
 ## 最新追記：NES/SID音源例のMac実機受け入れ1144/1143（2026-11-20）
 
 この節を最新状態とする。基点main `1f1a67c`。macOS 27.2.1 / Apple M5で1144（NES APU/DMC）と1143（SID）を実施し合格した。tqueの1144・1143と親1132・1136を完了にした。全検査がWindows/Linuxの記録と一致し、Ghosttyで実聴とCtrl+C中断・再再生を確認した。結果は[NES](NES_DMC_FORTH.md#mac実機受け入れ1144)、[SID](SID_FORTH.md#mac実機受け入れ1143)。合成中のCtrl+CはOS終了になる（既存規則、20回中7回）。Windows/Linuxの実聴はtque 1150（Windows）・1151（Linux）で未確認。
+
+## 最新追記：Paulaの実装・Windows/Linux確認、Mac未完了（2026-11-20）
+
+Paula実装時のmainは1f1a67c（SIDまでpush済み）。今回のPaulaとタスク配置修正の文書は未コミット。1145のレジスタモデルと1146のWindows/Linux検証・測定を完了した。Mac受け入れ1147は1137の子で未完了に残し、親1137は未完了・auto66%。Macの確認までタスク全体の完了とはしない。999はauto42%（子タスクの均等平均）。
+
+[契約・資料・検証と測定](PAULA_FORTH.md)、[レビュー評価と原文](reviews/1137-review-response.md)、[生データ・コマンド・ソース本文](measurements/2026-11-20-paula.json)を参照。4声stereo、DMA/手動DATの1word保持、IRQ、attachと予定書込みをForthに追加。Agnusのslot/CPU/Copper競合・IRQ pipeline、analog/LEDfilter・実機/ROM互換はモデルに含めない。既存AMIGA-SOUND/Builtinは変更しない。
+
+Windows/Linuxの通常・debug/graphics/extension除外・さらにfloat除外の6構成で各10検査群と補助10検査が成功。全256attach mask、全128volume値、512KiB全memory、固定PCM、6負荷の全32768frameを照合した。stereo部分書込みは実装置を開かないfixtureで非ゼロデータの4byte offset/全byteコピーを検証し、oddLEN3の位相resetも手計算・負の対照で補った。最終ClaudeレビューはHigh/Mediumなし。実聴成功とは区別する。
+
+通常まとめ版はWindows約9.44倍、Linux約10.46倍、変調負荷は約5.52/6.44倍。音源単独の宣言範囲をForthで維持する採否で、Amiga全体の性能ではない。辞書増加549616byte（512KiB memoryと24KiB queueが中心）、本体実行ファイルの増加0。再開時はGit/tqueとJSONのLF指紋を照合する。
+
+Mac側は1147でverify-paula.py/verify-paula-stream.pyの通常/除外・全PCM照合、サイズと速度、生成音のstereo実聴・中断と回収を実施し、OS/CPU/版と結果を記録する。既存PCMのMac1130完了とは別。PCM実聴は998→1133→Windows1148/Linux1149、SID/NESのMacは1136→1143/1132→1144に残す。次の実装はAtari ST1138の既存レジスタ経路の充足・不足監査。以下は各時点の履歴。
+
+PCM実聴1133は、Windows1148とLinux1149の子タスクに分割した。両方とも未完了・0%。OSごとに実装置の確認と実聴結果を記録し、両方が済むまで親1133を完了にしない。
+
+## 最新追記：実機確認を各機能の配下へ移動（2026-11-20）
+
+利用者の「最後にまとめないで」に従い、1057の末尾へ集約していた未確認を移動した。1133（Windows/Linux PCM実聴）は998 PCM配下、1143（Mac SID）は1136 SID配下、1144（Mac NES APU/DMC）は1132 NES配下で管理する。確認を残す親998/1136/1132は未完了へ戻し、実装・検証済みの子タスクは完了を維持した。依存先は完了済みの実装・受け入れ項目へ付け替え、子から親への循環依存を避けた。
+
+現在は998=auto85%、1136=auto66%、1132=auto66%、999=auto33%。均等平均であり、実装を取り消した意味ではない。3件は着手可能で、他機種の実装を待つ条件はない。Mac確認を残して次の実装へ進めることと、確認自体を最後の工程へ移すことは区別する。以下の1136/1132/998完了や999=42%等は、確認タスクを各機能へ戻す前の記録。
 
 ## 最新追記：SID1136の決定的モデル・実測・採否完了（2026-11-20）
 

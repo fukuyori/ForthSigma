@@ -149,3 +149,9 @@ Run `python tests/scripts/verify-execution-control.py PATH_TO_SIGMA` for public 
 ## SID register model and filter proxy
 
 `python tests/scripts/verify-sid.py PATH_TO_SIGMA [--benchmark]` checks per-clock Python against both Forth paths, scheduled three-voice PCM, ADSR/sync/noise boundaries, atomic rejection, pulse/ring/routing hand values, all2048 coefficients,64 filter impulse cases and8kHz queue compaction with full PCM comparison. Benchmark mode uses seven warmed fresh processes for nominal/reference/maximum mixed-filter-sync/three-noise/8kHz write workloads. `python scripts/sid-filter-coeffs.py --check` reproduces the Decimal table. Audio checks submit silence. No real6581/8580 or ROM oracle is claimed. [Contract and limits](../../docs/SID_FORTH.md).
+
+## Paula stereo register model
+
+`python tests/scripts/verify-paula.py PATH_TO_SIGMA [--benchmark]` compares independent per-clock Python with both Forth paths and split stereo PCM. It checks DMA/reload/IRQ, manual-data latches, volume and attachment masks, memory wrap/preservation, atomic errors and queue compaction. Benchmarks record seven processes for nominal/reference/minimum-period/attachment/8kHz volume/manual workloads, each preceded by full PCM verification outside timing. Audio tests submit silence; Mac and generated-sound audition remain separate. [Contract and limitations](../../docs/PAULA_FORTH.md).
+
+Supplemental `python tests/scripts/verify-paula-stream.py PATH_TO_SIGMA` runs ten isolated stereo callback/hand-attachment checks without opening native PCM. It forces partial/full retries and checks nonzero bytes,4-byte offsets,cleanup errors and attach alternation.

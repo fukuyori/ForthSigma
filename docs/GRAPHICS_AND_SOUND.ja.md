@@ -581,3 +581,5 @@ WAIT/STOPの期限切れはfalse,0、中断はTHROW -28です。切離し前にd
 [DMC拡張](NES_DMC_FORTH.md)ではForth例に5声目、専用サンプルメモリ、reader/buffer/IRQ/loopと直接DAC書込みを追加しました。DMAの待ちは0とするモデルで、CPU/PPUのバス競合は対象外です。5声と8kHz直接DACの負荷を別に測定し、読み込むだけでは再生しません。
 
 [C64 SIDのForthモデル](SID_FORTH.md)は、3声の時刻指定レジスタ、TEST/SYNC/RING、ADSRと独自の整数フィルター近似を扱います。合成波形、実際の6581/8580のアナログ特性、ROM互換は対象外です。`sigma examples/sid-play.fs -e "SI-DEMO-SETUP 16 FALSE SI-STREAM BYE"`は合成後に無音を送り、TRUEを明示すると生成音を送ります。読み込むだけでは再生しません。
+
+[PaulaのForthレジスタモデル](PAULA_FORTH.md)は、4声ステレオの標本出力、DMA/手動DAT、IRQ mask、attachと時刻指定書込みを扱います。bus待ちを省いたモデルで、Agnusの競合・アナログfilter・ROM互換は含みません。`sigma examples/paula-play.fs -e "PA-DEMO-MEMORY PA-DEMO-SETUP 16 FALSE PA-STREAM BYE"`は合成後にステレオ無音を送り、TRUEだけ生成音を送ります。読込みだけでは再生しません。Mac受け入れ1147は1137の子に残しています。
