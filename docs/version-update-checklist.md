@@ -21,6 +21,7 @@
 - `tests/scripts/debug-outputs/README.md`、`tests/scripts/debug-outputs/README.ja.md`: 上の3つを記録したときのOSと版番号の表。記録し直したときだけ、表の版番号を合わせる。
 
 - `docs/measurements/2026-11-20-size-speed.json`: 測定当時の版番号を含む履歴。過去の測定値なので、将来の版へ書き換えない。
+- `docs/measurements/2026-11-20-snes-dsp-native.json`: SNES DSPの本体計算の測定で保存した`check-docs.py`の出力に、測定当時の版番号が入っている。過去の測定記録なので、将来の版へ書き換えない。
 
 ## リリース時
 
