@@ -162,4 +162,14 @@ Supplemental `python tests/scripts/verify-paula-stream.py PATH_TO_SIGMA` runs te
 
 ## PCM audio exclusion and listening acceptance
 
+For CHIP-8 audio, run `python tests/scripts/verify-chip8-audio.py PATH_TO_SIGMA` for independent math/fullPCM/state checks and `python tests/scripts/verify-chip8-audio-stream.py PATH_TO_SIGMA` for nonzero RAM-only mono/cleanup fixtures. `python scripts/chip8-pitches.py --check` reproduces all256 integer steps. Run from the repository root; these commands do not submit generated sound to a device. [Contract](../../docs/CHIP8_AUDIO_FORTH.md).
+
 `python tests/scripts/verify-pcm-exclusion.py PATH_TO_SIGMA --audio enabled` (or `disabled`) executes REQUIRE-AUDIO through EVALUATE/CATCH and checks actual name lookup/stack depth. It opens no audio. `python tests/scripts/pcm-listen.py PATH_TO_SIGMA --case 1` runs a silent acceptance case. Add `--audible` explicitly for generated sound; cases1..8 cover mono/stereo, MML/SFX mix, discard/reopen, drain, SAVESYS and foreground Ctrl+C/ACCEPT. Execution JSON never claims a human listening result. [Procedure and remaining acceptance](../../docs/PCM_LISTENING_ACCEPTANCE.md).
+
+## ZX Spectrum audio (1169)
+
+`python tests/scripts/verify-zx-spectrum-audio.py PATH_TO_SIGMA` checks all 65536 OUT/IN ports, AY masks/envelopes, independent CPU-tick PCM/state, same-tick ordering and error boundaries. It opens no audio device.
+
+`python tests/scripts/verify-zx-spectrum-audio-stream.py PATH_TO_SIGMA` checks partial writes, copied bytes, timeout/cleanup and stream preflight with RAM callbacks. Generated audio remains in memory. See [scope and results](../../docs/ZX_SPECTRUM_AUDIO_FORTH.md). Speed measurements require a separate start confirmation.
+
+`python tests/scripts/measure-zx-spectrum-audio.py PATH_TO_SIGMA` verifies six full32768frame workloads without timing by default. Use `--measure` only after user timing-start approval; it performs seven fresh-process rounds. See [preparation review](../../docs/reviews/1170-1171-review-response.md).

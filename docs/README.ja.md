@@ -74,3 +74,8 @@
 - [PaulaのForthレジスタモデル](PAULA_FORTH.md)：4声ステレオのDMA/手動出力/IRQ/変調モデル、独立検証とMac受け入れの残項目。
 
 - [YM2149/STのForthモデルと監査](YM2149_FORTH.md)：既存nativeの不足・固定0音量の修正、時刻指定・仮想port/bus、独立PCM検証と測定。
+
+- [8対象の音源経路と不足の監査](AUDIO_TARGET_AUDIT.md)：ソースと資料による不足・モデルの境界、機種別/OS別の後続タスク。最終採否は別工程。
+
+- [ZX Spectrum 48K/128K音源](ZX_SPECTRUM_AUDIO_FORTH.md): Forthのbeeper/AY、独立port/PCM検証と宣言範囲。
+- [CHIP-8とXO-CHIPのForth音源](CHIP8_AUDIO_FORTH.md)：60Hz timer、移植用ブザー、128bitコピーと整数pitch/phaseモデル。CPUとOS別受け入れは別工程。

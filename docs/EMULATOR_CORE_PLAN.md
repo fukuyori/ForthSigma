@@ -1,5 +1,115 @@
 # レトロPCエミュレータ向け拡張の対応方法
 
+
+## ZX Windows1170/Linux1171完了・次はSNES1174の範囲確認（2026-11-20）
+
+レモンがLinux物理再試験の停止→低音再生を確認し、最終追レビューHigh/Mediumなしで1171を完了。Windows1170も完了。[仕様・結果](ZX_SPECTRUM_AUDIO_FORTH.md)、[全値/ログ/ソース](measurements/2026-11-20-zx-spectrum-os-acceptance.json)、[最終レビュー評価](reviews/1170-1171-review-response.md)。
+
+Linux物理は2回中、試験用の非可聴B/C/noise周期を変えた2回目で成功。初回exit=-2とcleanup未確認を保存。プログラムSIGINT診断は物理受け入れに数えず、NativeScope外のCtrl+Cは終了し得る制約を維持した。Linuxの残留Sigma/pacatなし、owned keepaliveはcmdline確認後停止済み。再生wrapperの初回最大4096frame供給修正は6構成×19RAM検査成功、純粋core/native不変・速度再測定なし。
+
+1169/1170/1171完了、Mac1172未完了のため親1168は未完了auto75%、999は未完了auto68%。次はSNES1174。標準S-DSPの8声/BRR、envelope/noise、pitch modulation、echo/8tap FIRを対象とし、SPC700 CPUは別扱いとする案をレモンが承認済み。既存資料 `.work/1139/snes.pdf/.txt` のDSP register表とBRR章を確認したが、SDK/ROM/他実装コードはコピーせず、補間/境界/時刻とモデル範囲は資料とClaudeレビューで設計する。SNES実装には未着手。この範囲のコミット・プッシュ依頼を受領した。公開結果はGitの状態で確認する。以下は各作業時点の記録。
+
+
+## Linux物理Ctrl+C初回失敗・診断と再試験準備（2026-11-20）
+
+初回はREADY後SIGINT exit=-2、CATCH/再再生なしで1171未完了。失敗source/JSONを保存。[全記録](measurements/2026-11-20-zx-spectrum-os-acceptance.json)、[診断レビュー/評価](reviews/1170-1171-review-response.md)。無音の制御診断はSigCgtを確認してSIGSTOPで固定後にSIGINT/SIGCONTを注入し、捕捉なしはexit-2、捕捉ありはCATCH=-28/handle0→replay underrun0/DEPTH0/code0。物理受け入れの代替にはしない。元の失敗時の命令位置は特定できない。
+
+再試験用Linux helperのみ非可聴B/C period4095、noise31へ変更。AY高/低音各49152frameの全PCM/39状態を独立Pythonと照合し、元の実聴PCMともhash一致。192/288block無音送出もunderrun0/handle0。native/core/wrapper不変、追加速度測定なし。物理捕捉が必ず成功するとは保証しない。
+
+次は了承後 `.work/1170-1171/launch-linux-interrupt.ps1` を開く（引数linux linux-r2）。新しい結果はlinux-r2-interruptへ分ける。まだ生成音を再生していない。Windows1170完了、Linux1171/Mac1172と親1168は未完了。WSL保持用owned sleep1800はLinux完了後に本人確認して停止。コミット/プッシュは行っていない。以下は各作業時点の記録。
+
+
+## Linux128K実聴済み・物理Ctrl+C準備（2026-11-20）
+
+レモンがLinux128Kの高音→低音→低音+断続beeperを確認した。全段階underrun0/handle0/49152frame/stack0/code0。Linux48Kも実聴済み。[全記録](measurements/2026-11-20-zx-spectrum-os-acceptance.json)。
+
+次は了承後、`.work/1170-1171/launch-linux-interrupt.ps1` で可視PowerShellからWSL/python3のinterrupt.py linuxを実行する。連続約440Hzを1秒ほど聴いたら、そのテスト窓でCtrl+Cを1回。停止後500msの間を置いて低い約220Hzが約3秒再生される。CATCH=-28/handle0、replay handle0/underrun0、DEPTH0/code0を確認する。まだ起動していない。タイトルはEncodedCommand方式でWindowsの引用符問題を避ける。
+
+Windows1170完了、Linux1171/Mac1172と親1168は未完了。WSL保持用owned sleep1800はLinux完了後に本人確認して停止する。コミット/プッシュは行っていない。以下は各作業時点の記録。
+
+
+## Linux48K実聴済み・128K準備完了（2026-11-20）
+
+レモンがLinux48Kのブザー約1秒→無音約1秒を確認。underrun0/handle0/98304frame/stack0/code0。[全記録](measurements/2026-11-20-zx-spectrum-os-acceptance.json)。Linux128Kの3段階（AY約440Hz→約220Hz→低音+断続beeper、各1.024秒）は全段階の無音実PCMがunderrun0/handle0で、各全PCM/状態も独立期待値とLinux上で一致した。生成音はまだ鳴らしていない。
+
+次は了承後、`.work/1170-1171/linux-128k.fs` をWSL/Linux通常binaryで実行する。その後物理Ctrl+C。Windows1170完了、Linux1171/Mac1172と親1168は未完了。WSL保持用sleep1800はownedで、Linux完了後にkeepalive.pidとcmdlineを確認して停止する。コミット/プッシュは行っていない。以下は各作業時点の記録。
+
+
+## Windows1170完了・Linux48K実聴準備（2026-11-20）
+
+レモンが物理Ctrl+Cで停止後の低音再生も確認し、Windows1170を完了にした。48K/128K実聴とCATCH=-28/handle0、再生underrun0/DEPTH0/code0が揃った。[全記録](measurements/2026-11-20-zx-spectrum-os-acceptance.json)。親1168は未完了auto50%、Linux1171/Mac1172は未完了。
+
+WSLg Pulseは初回connection refused、ownedWSL sleep1800で保持後pactl infoとAUDIO?=-1を確認した。RDPSink/44100Hz stereo、model入力48000Hz mono。Linux48Kの約440Hzブザー→無音の無音版はunderrun0/handle0/98304frame/code0。生成音はまだ鳴らしていない。次は了承後、`.work/1170-1171/linux-48k.fs` をWSLの通常Linux binaryで実行する。保持用のowned processはkeepalive.pidで識別し、Linux受け入れ後に本人確認して停止する。Windowsテスト窓は終了したSigmaの後にPowerShellが残るだけで、勝手に閉じない。コミット/プッシュは行っていない。以下は各作業時点の記録。
+
+
+## Windows物理Ctrl+C/再生ログ成功・実聴詳細待ち（2026-11-20）
+
+可視テストでCATCH=-28/handle0、REPLAY-OK handle0/underrun0、DEPTH0/code0を確認した。レモンは「音は鳴った」とログを提示。停止後に低い音が約3秒鳴る順序の実聴確認はまだ明示されていないため1170は未完了。Sigma processは終了済み。[全記録](measurements/2026-11-20-zx-spectrum-os-acceptance.json)。
+
+冒頭のZX command-not-foundはStart-Process -Commandのタイトル設定で引用符が失われたもの。無音のlabel代入だけで同じエラーを再現し、EncodedCommand方式で文字列全体の出力/stderr0を確認した。次回用 `.work/1170-1171/launch-windows-interrupt.ps1` は修正済みだが、音声テストは再実行していない。1170/1171/1172と親1168は未完了。コミット/プッシュは行っていない。以下は各作業時点の記録。
+
+
+## Windows128K実聴確認済み・物理Ctrl+C準備（2026-11-20）
+
+レモンがAY高音→低音→低音+断続beeperの3段階を確認した。全段階underrun0/handle0/49152frame/stack0/code0。[記録](measurements/2026-11-20-zx-spectrum-os-acceptance.json)に保存した。Windows48K修正版も実聴済み。
+
+次はWindowsの物理Ctrl+C。`.work/1170-1171/interrupt.py windows` を可視PowerShellから実行し、約440Hzの連続音を1秒ほど聴いたらCtrl+Cを1回。CATCH=-28/handle0で停止し、500ms後、約220Hzを3.072秒再生する。replay handle0/underrun0、DEPTH0、code0を確認する。監督PythonだけSIGINTを捕捉し、Sigmaへ物理入力が届く構成。まだ起動していない。割込み前streamのunderrunはclose後に照会できないため0とは記録しない。
+
+1170/1171/1172と親1168は未完了。コミット/プッシュは行っていない。以下は各作業時点の記録。
+
+
+## Windows48K修正版の実聴確認済み・128K準備完了（2026-11-20）
+
+レモンが修正版の約440Hzブザー約1秒→無音約1秒を確認した。underrun0/handle0/98304frame/stack0/code0。[記録](measurements/2026-11-20-zx-spectrum-os-acceptance.json)に保存した。
+
+次のWindows128KはAY高音約440Hz→低音約220Hz→低音に断続的なbeeperが重なる3段階（各96block=1.024秒）。無音の実PCMは全段階underrun0/handle0/49152frame/code0。各段階の全PCM/39状態/queueを独立Pythonと照合済み。生成音はまだ鳴らしていない。1170/1171/1172と親1168は未完了。次は128K実聴への了承後に `.work/1170-1171/windows-128k.fs` を通常Windows binaryで実行する。コミット/プッシュは行っていない。以下は各作業時点の記録。
+
+
+## ZX初期供給不足を修正・無音検証完了（2026-11-20）
+
+レモンが最初のWindows48Kブザー→無音を実聴確認した。underrunはWindowsの初期8×480frame連続renderに対して初回512frameしか渡さない経路で再現し、ZX wrapperの初回だけ最大4096frameをまとめて公開するよう修正。1block/8blockだけを変える比較で対照1/1/1、修正48K0/0/0・128K0/0/0。6構成×19RAM検査とClaudeレビュー（High/Mediumなし）も成功した。[結果/ログ/ソース](measurements/2026-11-20-zx-spectrum-os-acceptance.json)、[評価](reviews/1170-1171-review-response.md)。native/coreと測定source不変、速度再測定なし。
+
+追加の生成音は鳴らしていない。次は修正版で同じWindows48Kブザー→無音を再確認し、その後128K・物理Ctrl+Cへ進む。Windows1170/Linux1171/Mac1172と親1168は未完了。今回コミット/プッシュは行っていない。以下は各作業時点の記録。
+
+
+## ZX Spectrum Windows実聴でunderrun検出（2026-11-20）
+
+レモンのＯＫ後、約440Hz/約1秒→無音約1秒をWindowsで1回再生した。code0/handle0/98304frame/ULA0/stack0だがunderrun2で、実聴の返答も未受領のため受け入れは保留。追加の生成音は鳴らしていない。無音3回はunderrun0/1/1、事前に2048frame合成する無音3回も2/1/2で解消せず、原因未特定。最初の影響例はblock4/5で増加している。[全ログ/実行source](measurements/2026-11-20-zx-spectrum-os-acceptance.json)に保存。1170/1171/1172と親1168は未完了。次は実聴の返答を受け、初期送出とconsumerのログを調査する。速度測定は再実行していない。以下は各作業時点の記録。
+
+
+## ZX Spectrum Windows/Linuxの速度・サイズ記録（2026-11-20）
+
+レモンの開始確認へのＯＫ後、通常構成の6負荷32768frame×7processをWindows→WSL/Linuxの順に測定し、全回のPCM/状態/queueとRESET/A5を照合した。実時間比の中央値は48K beeperが78.81倍/91.59倍、最小の128K period0が3.59倍/4.14倍。[全値・指紋](measurements/2026-11-20-zx-spectrum-os-acceptance.json)、[結果と採否](ZX_SPECTRUM_AUDIO_FORTH.md)。測定範囲の音源はForthを維持するが、CPU/ROM全体・任意trace・実装置再生の保証ではない。
+
+サイズはnative不変でWindows2145792byte/Linux2356352byte、logical辞書増分25160byte。Windows1170/Linux1171は生成音の実聴・物理Ctrl+C後の停止/再再生待ち、Mac1172も未完了。親1168は未完了auto25%、999は未完了auto61%。次はWindowsの48K beeper約1秒→無音約1秒の実聴から行う。コミット/プッシュは行っていない。以下は各作業時点の記録。
+
+
+## ZX Spectrum実装1169完了（2026-11-20）
+
+レモンが48K beeper/128K beeper+AYを承認した。[仕様・結果](ZX_SPECTRUM_AUDIO_FORTH.md)、[全検査データ/ソース指紋](measurements/2026-11-20-zx-spectrum-audio.json)、[レビュー対応](reviews/1169-review-response.md)を保存した。全port/register byte、16envelope手書き列、独立CPU tick/全PCM/状態、queue/error/time上限を8構成で照合。音声有効6構成の11RAM送出検査、両OSの各8192frame無音実PCMも成功。最終ClaudeはHigh/Mediumなし。native332ソース不変、HERE増分25160byte（RSSではない）。
+
+1169完了、親1168は未完了・auto25%。999は未完了・auto61%。Windows1170/Linux1171/Mac1172のサイズ/速度・採否・生成音の実聴は未完了。速度測定は準備を済ませ、開始確認への返答後に実行する。Macの確認は対応featureの子タスクに残す。今回の差分は未コミットで、コミット/プッシュは行っていない。1170/1171用の6負荷32768frame測定ハーネスは両OSで計時なしの全PCM/状態検証に成功し、[準備記録](measurements/2026-11-20-zx-spectrum-os-preparation.json)と[計画レビュー](reviews/1170-1171-review-response.md)を保存した。計時開始の返答待ち。以下は各作業時点の記録。
+
+## CHIP-8 Windows/Linux受け入れ1165/1166完了（2026-11-20）
+
+レモンの開始確認へのＯＫ後、6負荷32768frame×7processをWindows→WSL/Linuxで正式再測定した。最重の8kHz pattern/pitch更新は実時間比Windows33.78倍/Linux38.23倍。全PCM/状態・A5/RESET・queue件数/stack0を照合。実聴は両OSでclassicのtimer停止、XO高低の切替、物理Ctrl+C後の停止/再再生を確認し、handle0/underrun0/code0。宣言した音源はForth維持とし、CPU/ROM全体の性能は主張しない。[結果/採否](CHIP8_AUDIO_FORTH.md)、[全データ](measurements/2026-11-20-chip8-os-acceptance.json)、[レビュー](reviews/1165-1166-review-response.md)。
+
+1164/1165/1166完了、Mac1167は未完了のため親1163は未完了・auto75%。YMのMac1154はtodo。999は未完了・auto59%。次はZX Spectrum1169の対象モデル/音源範囲を確定して仕様・実装へ進む。事前確認なしの速度値は参考値として保全し正式値とは分離した。今回の差分は未コミット。以下の測定待ち等は各作業時点の記録。
+
+## CHIP-8/XO音源の実装1164完了（2026-11-20）
+
+レモンが原型/SUPER-CHIPのブザーとXO-CHIP pattern/pitchを承認した。[仕様・結果](CHIP8_AUDIO_FORTH.md)、[全生データ/ソース指紋・本文](measurements/2026-11-20-chip8-audio.json)、[レビュー評価](reviews/1164-review-response.md)を保存。modern timer>0 gate、固定440Hzブザー、16byte所有コピー、Q32 pitch/phase、60Hz境界と時刻付きqueueをForthに追加した。CPU/ROMや原機speakerの電気特性は対象外で、native/Builtin/ABIは変更していない。
+
+Windows/Linuxの通常・除外の8構成で各13モデル検査群、音声有効6構成で各11RAM送出/cleanup検査成功。全256pitch/65536frame、512pending patternの回収と2730event、同tick順、250境界のphaseを独立数理/手計算と照合。無音の実PCMも両OSで成功、最終ClaudeはHigh/Mediumなし。辞書HERE増加43120byteはlogical値でRSSではない。性能測定・生成音の実聴は未実施。
+
+1164を完了、Windows1165/Linux1166/Mac1167は未完了のまま。親1163は未完了・auto25%、999は未完了・auto55%。次は1165/1166のサイズ/速度・採否と生成音の実聴へ進む。YMのMac1154はtodo。監査1139と今回の実装差分は未コミットで、コミット/プッシュは今回行っていない。
+
+## 音源8対象の先行照合1139完了（2026-11-20）
+
+[8対象の音源監査](AUDIO_TARGET_AUDIT.md)と[資料/ソース指紋・タスク出力](measurements/2026-11-20-audio-target-audit.json)を保存した。CHIP-8、ZX Spectrum、SNES、Apple IIに機種固有の状態/時刻/PCM生成の不足があり、機種別親1163/1168/1173/1178を999直下へ追加。各機種に仕様実装・Windows・Linux・Macの子を置き、Macの未確認を末尾へまとめない。1140は新4件への依存も保持し、モデル/変種の対象と保留理由を最終確認する。Forth先行は既存の利用者決定で、今回最終採否を決めていない。[レビュー評価](reviews/1139-review-response.md)、最終High/Mediumなし。
+
+1139は完了、新4機種は未着手。YM2149のMac1154はtodo、1138は未完了・auto80%。999は未完了・auto52%（未着手4枝を追加したため表示が下がった。工数比ではない）。1140は未完了で依存待ち。次はCHIP-8の仕様/実装1164から着手し、対象変種と波形・timer境界を先に確定する。今回の監査差分は未コミット。
+
 ## 最新の音声受け入れ状態（2026-11-20）
 
 Linux版からpacat/WSLg PulseAudio経由の実聴を完了し、PCM998、NES1132、SID1136、Paula1137は完了。YM2149はWindows1161/Linux1162完了、Mac1154が未完了のため1138は未完了・auto80%。音源全体999は未完了・auto68%。[Linux実聴の全記録](measurements/2026-11-20-linux-audio-listening.json)。Linux実機ALSA装置の確認とは区別する。以下は各時点の履歴。

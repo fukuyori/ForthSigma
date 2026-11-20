@@ -165,4 +165,14 @@ Macのクロスコンパイルを実機確認の代わりにしません。
 
 ## PCM語群除外と実聴の受け入れ
 
+CHIP-8音源は`python tests/scripts/verify-chip8-audio.py SIGMAのパス`で独立数理モデルと全PCM/状態を照合し、`python tests/scripts/verify-chip8-audio-stream.py SIGMAのパス`で非ゼロRAMだけのmono/cleanup fixtureを確認します。`python scripts/chip8-pitches.py --check`は全256整数stepを再生成照合します。リポジトリ直下から実行し、これらのコマンドは生成音を実装置へ送りません。[契約](../../docs/CHIP8_AUDIO_FORTH.md)。
+
 `python tests/scripts/verify-pcm-exclusion.py SIGMAのパス --audio enabled`（または`disabled`）はEVALUATE/CATCHでREQUIRE-AUDIOを実行し、実際の名前検索とstack深さを照合します。音声は開きません。`python tests/scripts/pcm-listen.py SIGMAのパス --case 1`は無音で実行します。明示した`--audible`時だけ生成音を出します。case1..8でmono/stereo・MML/SFX混合・破棄/再open・drain・SAVESYS・前面端末でのCtrl+C/ACCEPTを確認します。実行JSONだけで利用者の実聴成功とはしません。[手順と残件](../../docs/PCM_LISTENING_ACCEPTANCE.md)。
+
+## ZX Spectrum音源（1169）
+
+`python tests/scripts/verify-zx-spectrum-audio.py PATH_TO_SIGMA` は全65536 OUT/IN port、AY mask/envelope、独立CPU-tickのPCM/状態、同tick順序とerror境界を検査する。音声装置は開かない。
+
+`python tests/scripts/verify-zx-spectrum-audio-stream.py PATH_TO_SIGMA` はRAM callbackで部分送出・全byteのコピー・timeout/cleanup・streamの事前検査を確認する。生成音はメモリ内だけに保持する。[仕様・結果](../../docs/ZX_SPECTRUM_AUDIO_FORTH.md)を参照。速度測定の開始には別途確認が必要。
+
+`python tests/scripts/measure-zx-spectrum-audio.py PATH_TO_SIGMA` は既定では計時せず、6負荷各32768frameを照合する。`--measure` は計時開始への利用者の了承後だけ使い、7回の別processで測定する。[準備レビュー](../../docs/reviews/1170-1171-review-response.md)を参照。

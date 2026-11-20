@@ -1,0 +1,102 @@
+\ Original declared portable CHIP-8/SUPER-CHIP buzzer and XO audio model.
+\ No CPU/ROM/device access. Time is virtual48MHz, not a CHIP-8 CPU clock.
+DECIMAL
+S" examples/chip8-pitches.fs" INCLUDED
+48000000 CONSTANT C8-CLOCK 48000 CONSTANT C8-RATE
+800000 CONSTANT C8-TIMER-PERIOD 4294967296 CONSTANT C8-TURN
+549755813888 CONSTANT C8-XO-TURN
+CREATE C8-PATTERN 16 ALLOT CREATE C8-TEMP 16 ALLOT
+CREATE C8-EVENTS 40960 ALLOT
+VARIABLE C8-CYCLE VARIABLE C8-DIV VARIABLE C8-TIMER VARIABLE C8-PITCH
+VARIABLE C8-MODE VARIABLE C8-PHASE VARIABLE C8-EVENT-COUNT VARIABLE C8-EVENT-INDEX
+: C8-RESET ( -- )
+  0 C8-CYCLE ! 0 C8-DIV ! 0 C8-TIMER ! 64 C8-PITCH !
+  0 C8-MODE ! 0 C8-PHASE ! 0 C8-EVENT-COUNT ! 0 C8-EVENT-INDEX !
+  C8-PATTERN 16 0 FILL ;
+: C8-CHECK { value kind tick -- }
+  tick C8-CYCLE @ < IF -24 THROW THEN
+  kind 0 4 WITHIN 0= IF -24 THROW THEN
+  kind 3 <> IF value 0 kind 2 = IF 2 ELSE 256 THEN WITHIN 0= IF -24 THROW THEN THEN ;
+: C8-STORE { value kind -- }
+  kind CASE
+    0 OF value C8-TIMER ! value 0= IF 0 C8-PHASE ! THEN ENDOF
+    1 OF value C8-PITCH ! ENDOF
+    2 OF value C8-MODE @ <> IF 0 C8-PHASE ! THEN value C8-MODE ! ENDOF
+    3 OF value C8-PATTERN 16 MOVE ENDOF
+  ENDCASE ;
+: C8-STEP ( -- q32 )
+  C8-MODE @ IF C8-PITCH @ CELLS C8-PITCHES + @ ELSE 440 C8-TURN * C8-CLOCK / THEN ;
+: C8-RAW-RUN { ticks | count -- }
+  BEGIN ticks 0> WHILE
+    C8-TIMER @ 0= IF
+      C8-DIV @ ticks C8-TIMER-PERIOD MOD + C8-TIMER-PERIOD MOD C8-DIV !
+      ticks C8-CYCLE +! EXIT
+    THEN
+    ticks C8-TIMER-PERIOD C8-DIV @ - MIN TO count
+    C8-PHASE @ count C8-STEP * +
+      C8-MODE @ IF C8-XO-TURN ELSE C8-TURN THEN MOD C8-PHASE !
+    count C8-CYCLE +! count C8-DIV +! ticks count - TO ticks
+    C8-DIV @ C8-TIMER-PERIOD = IF
+      0 C8-DIV ! -1 C8-TIMER +! C8-TIMER @ 0= IF 0 C8-PHASE ! THEN
+    THEN
+  REPEAT ;
+: C8-RAW-TO ( tick -- ) C8-CYCLE @ - C8-RAW-RUN ;
+: C8-COMPACT ( -- )
+  C8-EVENTS C8-EVENT-INDEX @ 40 * + C8-EVENTS
+    C8-EVENT-COUNT @ C8-EVENT-INDEX @ - 40 * MOVE
+  C8-EVENT-INDEX @ NEGATE C8-EVENT-COUNT +! 0 C8-EVENT-INDEX ! ;
+: C8-QUEUE { value kind tick | entry -- }
+  value kind tick C8-CHECK
+  C8-EVENT-COUNT @ C8-EVENT-INDEX @ - 1024 >= IF -528 THROW THEN
+  C8-EVENT-COUNT @ IF
+    C8-EVENTS C8-EVENT-COUNT @ 1- 40 * + @ tick > IF -24 THROW THEN
+  THEN
+  kind 3 = IF value C8-TEMP 16 MOVE THEN
+  C8-EVENT-COUNT @ 1024 >= IF C8-COMPACT THEN
+  C8-EVENTS C8-EVENT-COUNT @ 40 * + TO entry
+  tick entry ! kind entry CELL+ !
+  kind 3 = IF 0 entry 2 CELLS + ! C8-TEMP entry 3 CELLS + 16 MOVE
+    ELSE value entry 2 CELLS + ! THEN
+  1 C8-EVENT-COUNT +! ;
+: C8-TO { tick | entry at kind -- }
+  tick C8-CYCLE @ < IF -24 THROW THEN
+  BEGIN C8-EVENT-INDEX @ C8-EVENT-COUNT @ < WHILE
+    C8-EVENTS C8-EVENT-INDEX @ 40 * + TO entry entry @ TO at
+    at tick > IF tick C8-RAW-TO EXIT THEN
+    at C8-RAW-TO entry CELL+ @ TO kind
+    kind 3 = IF entry 3 CELLS + ELSE entry 2 CELLS + @ THEN kind C8-STORE
+    1 C8-EVENT-INDEX +!
+  REPEAT tick C8-RAW-TO ;
+: C8-RUN ( ticks -- )
+  DUP 0< IF -24 THROW THEN
+  DUP 9223372036854775807 C8-CYCLE @ - > IF -24 THROW THEN C8-CYCLE @ + C8-TO ;
+: C8-WRITE { value kind tick -- }
+  value kind tick C8-CHECK
+  kind 3 = IF value C8-TEMP 16 MOVE THEN
+  tick C8-TO kind 3 = IF C8-TEMP ELSE value THEN kind C8-STORE ;
+: C8-TIMER! ( byte tick -- ) 0 SWAP C8-WRITE ;
+: C8-PITCH! ( byte tick -- ) 1 SWAP C8-WRITE ;
+: C8-MODE! ( mode tick -- ) 2 SWAP C8-WRITE ;
+: C8-PATTERN! ( addr tick -- ) 3 SWAP C8-WRITE ;
+: C8-TIMER-EVENT! ( byte tick -- ) 0 SWAP C8-QUEUE ;
+: C8-PITCH-EVENT! ( byte tick -- ) 1 SWAP C8-QUEUE ;
+: C8-MODE-EVENT! ( mode tick -- ) 2 SWAP C8-QUEUE ;
+: C8-PATTERN-EVENT! ( addr tick -- ) 3 SWAP C8-QUEUE ;
+: C8-TIMER@ ( tick -- byte ) C8-TO C8-TIMER @ ;
+: C8-SAMPLE ( -- s16 )
+  C8-TIMER @ 0= IF 0 EXIT THEN
+  C8-MODE @ 0= IF C8-PHASE @ C8-TURN 2 / < IF 4096 ELSE -4096 THEN EXIT THEN
+  C8-PHASE @ 32 RSHIFT DUP 3 RSHIFT C8-PATTERN + C@
+    SWAP 7 AND 7 SWAP - RSHIFT 1 AND 4096 * ;
+: C8-LE! ( n address -- ) OVER 255 AND OVER C! SWAP 8 RSHIFT 255 AND SWAP 1+ C! ;
+: C8-RENDER { address frames -- }
+  frames 0< IF -24 THROW THEN
+  frames 9223372036854775807 C8-CYCLE @ - 1000 / > IF -24 THROW THEN
+  frames 0 ?DO 1000 C8-RUN C8-SAMPLE address C8-LE! address 2 + TO address LOOP ;
+CREATE C8-DEMO-PATTERN 0 C, 0 C, 0 C, 0 C, 0 C, 0 C, 0 C, 0 C,
+  255 C, 255 C, 255 C, 255 C, 255 C, 255 C, 255 C, 255 C,
+: C8-DEMO-SETUP ( -- ) C8-RESET 255 0 C8-TIMER! ;
+: C8-XO-DEMO-SETUP ( -- )
+  C8-RESET 1 0 C8-MODE! C8-DEMO-PATTERN 0 C8-PATTERN!
+  247 0 C8-PITCH! 255 0 C8-TIMER! ;
+C8-RESET

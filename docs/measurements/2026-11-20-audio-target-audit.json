@@ -1,0 +1,1218 @@
+{
+  "date": "2026-11-20",
+  "base_commit": "53ebe81",
+  "scope": "Source/document/primary-source audit and task/dependency verification only; no new runtime or speed/size measurements. No device playback.",
+  "source_sha256_lf": {
+    "src/core/sound_parts.zig": "b43ae54cc0c1ded433951dc9ab4a4b492c77b316949c722ff372f613cec6c5e1",
+    "src/core/sound_engine.zig": "7de38184557ba58b8f44e964297ba479fa423d1da063a71b145ed2182bf1c50f",
+    "src/core/sound_psg.zig": "b5c1753fe04e34334fe9ef8e7eb07ca4801b55833c2b8fd184c67c46a84e2eb8",
+    "src/core/words_audio.zig": "f39d803491d1f527c0cb7c34b97bf1b6fcdbd31c0786472c38a4971bcd08d53e",
+    "src/core/words_pcm.zig": "591c6d99721a2db7ba99c7e93ac03346ab0780c4c8c97780e1d6ce45db6957ed",
+    "src/audio/audio.fs": "31d53dc3a25e179bd48e8c1882274f88617f08a077e8659b582e571ab037a09d",
+    "examples/pcm-synth.fs": "8f397fd447f9b7f3b3773c324f9c03f38b248b645addee2233f843fd720f8811",
+    "examples/ym2149.fs": "8350e1b62385569234311d37cb642cc67b4c2f05e74c4f27a8071a567b3ba16a",
+    "examples/nes-apu.fs": "10a46f5745b04cabbe83e86a3ca6179c9b942b634475a26ec2c14359add208e5",
+    "examples/sid.fs": "c6bb9918de9c1e287c180f845ddfb40dc4df7687ef9f08461635a7ed6c6a7a7e",
+    "examples/paula.fs": "ababbb8d88e23c69392ca4373d0a1c093fbf2dbdeda13a7acb8dea9fd6f61d47"
+  },
+  "source_snapshots_lf": {
+    "src/core/sound_parts.zig": "//! The parts the chips other than the PSG are made of: instruments, the ADSR envelope,\n//! a pulse oscillator with its steps band-limited, and the pitch of a note.\n//!\n//! The chips' settings (sound_nes.zig and the others) use these parts with their own\n//! ranges, clocks, and mixers. Everything works at the output's sample rate and gives\n//! the same samples for the same input.\n\nconst std = @import(\"std\");\n\n/// What an instrument's oscillator plays, on a chip that lets it choose (C64); a chip\n/// with fixed waves takes what fits (the NES's pulse voices take the duty).\npub const Wave = enum(u8) { square, pulse, triangle, saw, noise };\n\n/// The chips whose sound a voice can have.\npub const Chip = enum(u8) { msx, atari_st, nes, c64, scc, amiga };\n\n/// The voices PLAY has. Each chip's sound (sound_nes.zig and the others) has this many\n/// places, numbered as the voices are, so that any voice can sound like any chip.\npub const voice_slots = 8;\n\n/// An instrument (INSTRUMENT and the words after it; MML's `@` chooses one).\npub const Instrument = struct {\n    /// STYLE: the chip this instrument sounds like; without one, the chip the voice\n    /// has from NES-SOUND, CHIPS, and the others.\n    style: ?Chip = null,\n    wave: Wave = .square,\n    /// The pulse's high part, 0 to 100 percent (PULSE).\n    duty: u8 = 50,\n    /// ADSR as on the C64's SID: the attack, decay, and release times by the SID's\n    /// table, and the sustain level, each 0 to 15.\n    attack: u8 = 0,\n    decay: u8 = 0,\n    sustain: u8 = 15,\n    release: u8 = 0,\n    /// RING and SYNC: the C64's ring modulation (of the triangle) and hard sync, by\n    /// the voice before this one.\n    ring: bool = false,\n    sync: bool = false,\n    /// FILTER: 0 none, 1 low-pass, 2 band-pass, 3 high-pass; the cutoff 0 to 2047 and\n    /// the resonance 0 to 15, as the SID's registers.\n    filter: u8 = 0,\n    cutoff: u16 = 1024,\n    resonance: u8 = 0,\n    /// SCC-WAVE: the 32 signed samples the SCC plays; without one it plays `wave`.\n    wavetable: ?[32]i8 = null,\n    /// SAMPLE-INSTRUMENT: the sample (0 to 63) the Amiga plays; without one it plays\n    /// the wave as the SCC does.\n    sample: ?u8 = null,\n\n    /// The 32 samples the SCC plays: SCC-WAVE's, or `wave` made into 32 steps (the\n    /// SCC has no noise: a square instead).\n    pub fn table(self: Instrument) [32]i8 {\n        if (self.wavetable) |samples| return samples;\n        var samples: [32]i8 = undefined;\n        const high: usize = switch (self.wave) {\n            .pulse => @intFromFloat(@round(@as(f32, @floatFromInt(@min(self.duty, 100))) * 32.0 / 100.0)),\n            else => 16,\n        };\n        for (&samples, 0..) |*s, i| {\n            const n: i32 = @intCast(i);\n            s.* = switch (self.wave) {\n                .square, .pulse, .noise => if (i < high) 127 else -128,\n                // Up from -128 to 127 and down again, over the 32 steps.\n                .triangle => @intCast(if (n < 16) -128 + n * 17 else 127 - (n - 16) * 17),\n                .saw => @intCast(-128 + n * 8 + @divTrunc(n, 4)),\n            };\n        }\n        return samples;\n    }\n};\n\n/// The SID's attack times in milliseconds for the values 0 to 15; decay and release\n/// take three times as long.\nconst attack_ms = [16]f32{ 2, 8, 16, 24, 38, 56, 68, 80, 100, 250, 500, 800, 1000, 3000, 5000, 8000 };\n\n/// An ADSR envelope, from 0 to 1, a sample at a time: a straight attack, then a decay\n/// and a release that slow down as they go (to 1% of their way in their time, near\n/// enough to the SID's curve).\npub const Adsr = struct {\n    stage: enum { idle, attack, decay, sustain, release } = .idle,\n    level: f32 = 0,\n    attack_step: f32 = 1,\n    decay_factor: f32 = 0,\n    release_factor: f32 = 0,\n    sustain: f32 = 1,\n\n    pub fn start(self: *Adsr, instrument: Instrument, sample_rate: u32) void {\n        const rate: f32 = @floatFromInt(sample_rate);\n        self.attack_step = 1.0 / (attack_ms[instrument.attack & 15] / 1000.0 * rate);\n        self.decay_factor = factor(3 * attack_ms[instrument.decay & 15], rate);\n        self.release_factor = factor(3 * attack_ms[instrument.release & 15], rate);\n        self.sustain = @as(f32, @floatFromInt(instrument.sustain & 15)) / 15.0;\n        // The attack goes on from the level the last note left (as the SID's does).\n        self.stage = .attack;\n    }\n\n    pub fn stop(self: *Adsr) void {\n        if (self.stage != .idle) self.stage = .release;\n    }\n\n    /// The factor that takes a level 99% of its way in `ms` milliseconds.\n    fn factor(ms: f32, rate: f32) f32 {\n        return @exp(@log(@as(f32, 0.01)) / (ms / 1000.0 * rate));\n    }\n\n    pub fn next(self: *Adsr) f32 {\n        switch (self.stage) {\n            .idle => {},\n            .attack => {\n                self.level += self.attack_step;\n                if (self.level >= 1) {\n                    self.level = 1;\n                    self.stage = .decay;\n                }\n            },\n            .decay => {\n                self.level = self.sustain + (self.level - self.sustain) * self.decay_factor;\n                if (self.level - self.sustain < 0.001) {\n                    self.level = self.sustain;\n                    self.stage = .sustain;\n                }\n            },\n            .sustain => {},\n            .release => {\n                self.level *= self.release_factor;\n                if (self.level < 0.0001) {\n                    self.level = 0;\n                    self.stage = .idle;\n                }\n            },\n        }\n        return self.level;\n    }\n};\n\n/// The correction to a step of height 2 at phase 0 for an oscillator moving `increment`\n/// of its cycle a sample (PolyBLEP): it spreads the step over two samples, which keeps\n/// the high harmonics from folding back as audible tones.\npub fn polyBlep(phase: f32, increment: f32) f32 {\n    if (phase < increment) {\n        const x = phase / increment;\n        return x + x - x * x - 1;\n    }\n    if (phase > 1 - increment) {\n        const x = (phase - 1) / increment;\n        return x * x + x + x + 1;\n    }\n    return 0;\n}\n\n/// A pulse from 0 to 1, high for `duty` (0 to 1) of each cycle, with its two steps\n/// band-limited.\npub const Pulse = struct {\n    phase: f32 = 0,\n\n    pub fn next(self: *Pulse, increment: f32, duty: f32) f32 {\n        const phase = self.phase;\n        var value: f32 = if (phase < duty) 1 else 0;\n        value += 0.5 * polyBlep(phase, increment);\n        var fall = phase - duty;\n        if (fall < 0) fall += 1;\n        value -= 0.5 * polyBlep(fall, increment);\n        self.phase += increment;\n        if (self.phase >= 1) self.phase -= 1;\n        return value;\n    }\n};\n\n/// The 12 semitones from A up, as ratios of frequency.\nconst semitone_ratios = [12]f64{ 1.0, 1.0594630943592953, 1.122462048309373, 1.189207115002721, 1.2599210498948732, 1.3348398541700344, 1.4142135623730951, 1.4983070768766815, 1.5874010519681994, 1.681792830507429, 1.7817974362806785, 1.8877486253633868 };\n\n/// The frequency of a note (octave × 12 + semitone, as sound_mml's Event.note) in equal\n/// temperament with O4's A at 440 Hz.\npub fn noteFrequency(note: u8) f64 {\n    const distance = @as(i32, note) - 57;\n    var frequency = 440.0 * semitone_ratios[@intCast(@mod(distance, 12))];\n    var octaves = @divFloor(distance, 12);\n    while (octaves > 0) : (octaves -= 1) frequency *= 2;\n    while (octaves < 0) : (octaves += 1) frequency /= 2;\n    return frequency;\n}\n\n/// The period register a chip whose frequency is clock / (divider × (period + offset))\n/// needs for a note, rounded, within 0 to `max`.\npub fn chipPeriod(note: u8, clock: u32, divider: u32, offset: u32, max: u32) u32 {\n    const exact = @as(f64, @floatFromInt(clock)) / (@as(f64, @floatFromInt(divider)) * noteFrequency(note));\n    const rounded: i64 = @intFromFloat(@round(exact));\n    return @intCast(std.math.clamp(rounded - offset, 0, max));\n}\n",
+    "src/core/sound_engine.zig": "//! Plays MSX BASIC's PLAY and SOUND on a PSG, for a host's audio thread.\n//!\n//! Two threads share an Engine: the Forth program (the producer) puts notes and commands\n//! into one-way queues, and the audio thread (the consumer) takes them in `render`, which\n//! makes the samples. Each queue has one writer of each index, so neither side locks or\n//! waits. As on the MSX, a PLAY's voices start together: each PLAY ends every voice's\n//! notes with an end mark, and the next PLAY starts only when all three voices reached\n//! theirs (and the producer has put all of the next one in).\n\nconst std = @import(\"std\");\nconst mml = @import(\"sound_mml.zig\");\nconst psg_module = @import(\"sound_psg.zig\");\nconst parts = @import(\"sound_parts.zig\");\nconst nes_module = @import(\"sound_nes.zig\");\nconst c64_module = @import(\"sound_c64.zig\");\nconst scc_module = @import(\"sound_scc.zig\");\nconst amiga_module = @import(\"sound_amiga.zig\");\npub const pcm = @import(\"sound_pcm.zig\");\npub const stream = @import(\"sound_stream.zig\");\npub const mod_module = @import(\"sound_mod.zig\");\n\npub const Event = mml.Event;\npub const Psg = psg_module.Psg;\npub const Instrument = parts.Instrument;\n\n/// The chip a note sounds like. The PSG runs with every chip, for SOUND and BEEP.\npub const Chip = parts.Chip;\n\n/// How many voices a chip has of its own.\nfn chipVoices(chip: Chip) usize {\n    return switch (chip) {\n        .msx, .atari_st => 3,\n        .nes => nes_module.voice_count,\n        .c64 => c64_module.voice_count,\n        .scc => scc_module.voice_count,\n        .amiga => amiga_module.voice_count,\n    };\n}\n\n/// The chips the voices have (CHIPS; MSX-SOUND and the others choose one), which an\n/// instrument without STYLE sounds like. Their voices are numbered in the order of\n/// `Chip`: with the MSX and the SCC, voices 1 to 3 are the PSG's and 4 to 8 the SCC's.\n/// The voices after those of the last chip sound like the last chip.\npub const Chips = struct {\n    mask: u8,\n\n    pub fn one(chip: Chip) Chips {\n        return .{ .mask = bit(chip) };\n    }\n\n    fn bit(chip: Chip) u8 {\n        return @as(u8, 1) << @intCast(@backingInt(chip));\n    }\n\n    pub fn has(self: Chips, chip: Chip) bool {\n        return self.mask & bit(chip) != 0;\n    }\n\n    /// The chip, when only one is chosen.\n    pub fn only(self: Chips) ?Chip {\n        if (@popCount(self.mask) != 1) return null;\n        return @fromBackingInt(@intCast(@ctz(self.mask)));\n    }\n\n    /// A mask CHIPS takes: at least one chip, and no unknown bit.\n    pub fn fromMask(mask: i64) ?Chips {\n        const all = (@as(i64, 1) << chip_count) - 1;\n        if (mask <= 0 or mask & ~all != 0) return null;\n        return .{ .mask = @intCast(mask) };\n    }\n\n    pub fn voiceCount(self: Chips) usize {\n        var count: usize = 0;\n        for (0..chip_count) |c| {\n            const chip: Chip = @fromBackingInt(@intCast(c));\n            if (self.has(chip)) count += chipVoices(chip);\n        }\n        return count;\n    }\n\n    /// The chip whose own voice v (from 0) is, and the voice's number on that chip.\n    pub fn place(self: Chips, v: usize) ?struct { chip: Chip, voice: usize } {\n        var first: usize = 0;\n        for (0..chip_count) |c| {\n            const chip: Chip = @fromBackingInt(@intCast(c));\n            if (!self.has(chip)) continue;\n            if (v < first + chipVoices(chip)) return .{ .chip = chip, .voice = v - first };\n            first += chipVoices(chip);\n        }\n        return null;\n    }\n\n    /// The chip voice v sounds like when its instrument has no STYLE.\n    pub fn chipOf(self: Chips, v: usize) Chip {\n        if (self.place(v)) |at| return at.chip;\n        var last: Chip = .msx;\n        for (0..chip_count) |c| {\n            const chip: Chip = @fromBackingInt(@intCast(c));\n            if (self.has(chip)) last = chip;\n        }\n        return last;\n    }\n\n    /// The voice (from 0) where a chip's own voices start, if it is one of these.\n    pub fn firstVoice(self: Chips, wanted: Chip) ?usize {\n        if (!self.has(wanted)) return null;\n        var first: usize = 0;\n        for (0..chip_count) |c| {\n            const chip: Chip = @fromBackingInt(@intCast(c));\n            if (chip == wanted) break;\n            if (self.has(chip)) first += chipVoices(chip);\n        }\n        return if (first < max_voices) first else null;\n    }\n};\n\nconst chip_count = 6;\n\n/// The voices PLAY has; each has its queue, and can sound like any chip.\npub const max_voices = parts.voice_slots;\n\n/// The PSGs besides `Engine.psg`: each chip's voices go three to a PSG, so there are two\n/// more of its kind and three of the other kind.\nconst extra_psgs = 5;\n\n/// The SFX that can sound at once; a new one takes the place of the oldest.\npub const sfx_voices = 4;\n\n/// A queue with one producer and one consumer. `capacity` must be a power of two.\npub fn Ring(comptime T: type, comptime capacity: u32) type {\n    return struct {\n        const Self = @This();\n        items: [capacity]T = undefined,\n        /// The next item to take; only the consumer writes it.\n        head: std.atomic.Value(u32) = .init(0),\n        /// The next free place; only the producer writes it.\n        tail: std.atomic.Value(u32) = .init(0),\n\n        pub const size = capacity;\n\n        /// Producer: how many items fit now.\n        pub fn free(self: *const Self) u32 {\n            return capacity - (self.tail.raw -% self.head.load(.acquire));\n        }\n\n        /// Producer.\n        pub fn push(self: *Self, item: T) bool {\n            const tail = self.tail.raw;\n            if (tail -% self.head.load(.acquire) >= capacity) return false;\n            self.items[tail % capacity] = item;\n            self.tail.store(tail +% 1, .release);\n            return true;\n        }\n\n        /// Producer: whether the consumer has taken everything.\n        pub fn isEmpty(self: *const Self) bool {\n            return self.head.load(.acquire) == self.tail.raw;\n        }\n\n        /// Consumer: the next item, still in the queue.\n        pub fn peek(self: *const Self) ?T {\n            const head = self.head.raw;\n            if (head == self.tail.load(.acquire)) return null;\n            return self.items[head % capacity];\n        }\n\n        /// Consumer: takes the item `peek` gave.\n        pub fn drop(self: *Self) void {\n            self.head.store(self.head.raw +% 1, .release);\n        }\n\n        /// Consumer: takes everything before `position`, a tail the producer had.\n        pub fn dropUntil(self: *Self, position: u32) void {\n            self.head.store(position, .release);\n        }\n    };\n}\n\n/// Notes and end marks each voice can wait with.\npub const voice_queue_size = 32;\n\npub const Command = union(enum) {\n    /// SOUND reg, value.\n    write: struct { reg: u8, value: u8 },\n    /// BEEP (with `beep`) or a stop: drops the notes put before it (up to these tails\n    /// and this PLAY count), sounds 1316 Hz for 40 ms when `beep`, and sets the PSG as\n    /// the MSX starts it. With `chip`, PLAY plays on that chip from now on.\n    reset: struct { tails: [max_voices]u32, plays: u32, beep: bool, chips: ?Chips = null, preserve_effects: bool = false },\n    /// INSTRUMENT and the words after it: the instrument's settings, which the notes\n    /// that start from now on use.\n    instrument: struct { index: u8, value: Instrument },\n    /// LOAD-SAMPLE, SAMPLE, and LOOP-SAMPLE: where sample `index` is in the pool.\n    sample: struct { index: u8, value: pcm.Sample },\n    /// FREE-SAMPLES, after a stop: every sample is gone.\n    free_samples,\n    /// SFX: plays a sample once at its rate, at once and beside the music.\n    sfx: u8,\n    /// AMIGA-FILTER: the LED filter on or off.\n    amiga_filter: bool,\n    /// LOAD-MOD: the module whose song (sound_mod.Song) is in the pool from this place\n    /// (in 16-bit units). A module that plays stops.\n    mod_load: u32,\n    /// PLAY-MOD: plays the module from its start, again after its end when true.\n    mod_play: bool,\n    /// STOP-MOD.\n    mod_stop,\n};\n\n/// The PSG's registers as the MSX's BIOS sets them (GICINI): R0 = 55H, the tones on and\n/// the noise off (R7 = B8H), R11 = 0BH, the others 0.\npub fn msxInitialRegisters() [16]u8 {\n    var regs: [16]u8 = @splat(0);\n    regs[0] = 0x55;\n    regs[7] = 0xb8;\n    regs[11] = 0x0b;\n    return regs;\n}\n\n/// BEEP: about 1316 Hz (O6's E) at volume 7 for 40 ms.\npub const beep_period: u16 = 85;\npub const beep_volume: u8 = 7;\npub const beep_milliseconds: u32 = 40;\n\npub const Engine = struct {\n    /// The PSG of SOUND and BEEP, and of the first three voices.\n    psg: Psg,\n    /// The other PSGs, for the voices that use them.\n    psg_extra: [extra_psgs]Psg,\n    /// Bit n: `psg_extra[n]` has played since the last stop.\n    psg_used: u8 = 0,\n    nes: nes_module.Nes,\n    c64: c64_module.C64,\n    scc: scc_module.Scc,\n    amiga: amiga_module.Amiga,\n    sample_rate: u32,\n    /// The host's pool of samples; the producer adds to its end (sound_pcm.zig).\n    pool: []i16 = &.{},\n    samples: [pcm.sample_count]pcm.Sample = @splat(.{}),\n    amiga_led: bool = false,\n    /// The voices of SFX, used in turn.\n    sfx_players: [sfx_voices]pcm.Player = @splat(.{}),\n    sfx_next: usize = 0,\n    mod: mod_module.Mod,\n    /// Whether the module plays; only the consumer writes it (MOD?).\n    mod_playing: std.atomic.Value(bool) = .init(false),\n    chips: Chips = Chips.one(.msx),\n    /// The chips that make sound: `chips`, and those STYLE has used since the last stop.\n    active: Chips = Chips.one(.msx),\n    /// The chip each voice's last note played on, since the last stop.\n    current: [max_voices]?Chip = @splat(null),\n    instruments: [mml.instrument_count]Instrument = @splat(.{}),\n    voices: [max_voices]Ring(Event, voice_queue_size) = @splat(.{}),\n    commands: Ring(Command, 64) = .{},\n    /// The PLAYs put in; only the producer writes it.\n    plays_put: std.atomic.Value(u32) = .init(0),\n    /// The PLAYs started; only the consumer writes it.\n    plays_started: std.atomic.Value(u32) = .init(0),\n    /// Bit n: voice n plays a note of the current PLAY; only the consumer writes it.\n    sounding: std.atomic.Value(u8) = .init(0),\n\n    /// Producer publishes PCM attachment; consumer applies at a render boundary.\n    pcm_control: stream.Control = .{},\n    pcm_session: @import(\"sound_stream_session.zig\").Session = .{},\n\n    // The consumer's own state.\n    remaining: [max_voices]u16 = @splat(0),\n    at_end: [max_voices]bool = @splat(true),\n    tick_fraction: u32 = 0,\n    beep_samples: u32 = 0,\n    dc_input: [2]f32 = .{ 0, 0 },\n    dc_output: [2]f32 = .{ 0, 0 },\n\n    pub fn init(model: psg_module.Model, clock: u32, sample_rate: u32) Engine {\n        var engine: Engine = .{ .psg = Psg.init(model, clock, sample_rate), .psg_extra = undefined, .nes = nes_module.Nes.init(sample_rate), .c64 = c64_module.C64.init(sample_rate), .scc = scc_module.Scc.init(sample_rate), .amiga = amiga_module.Amiga.init(sample_rate), .mod = mod_module.Mod.init(sample_rate), .sample_rate = sample_rate };\n        engine.setRegisters(msxInitialRegisters());\n        engine.resetVoices();\n        return engine;\n    }\n\n    fn setRegisters(self: *Engine, regs: [16]u8) void {\n        for (regs, 0..) |value, reg| self.psg.write(@intCast(reg), value);\n    }\n\n    /// After a stop or a change of chips: no voice has played, the other PSGs are as at\n    /// start, and each chip knows which voices are its own.\n    fn resetVoices(self: *Engine) void {\n        const main_is_ym = self.psg.model == .ym2149;\n        for (&self.psg_extra, 0..) |*psg, i| {\n            const is_ym = if (i < 2) main_is_ym else !main_is_ym;\n            psg.* = if (is_ym)\n                Psg.init(.ym2149, psg_module.atari_st_clock, self.sample_rate)\n            else\n                Psg.init(.ay8910, psg_module.msx_clock, self.sample_rate);\n            for (msxInitialRegisters(), 0..) |value, reg| psg.write(@intCast(reg), value);\n        }\n        self.psg_used = 0;\n        self.active = self.chips;\n        self.current = @splat(null);\n        self.nes.place(self.chips.firstVoice(.nes));\n        self.c64.place(self.chips.firstVoice(.c64));\n        self.amiga.place(self.chips.firstVoice(.amiga));\n    }\n\n    /// Which of `psg_extra` plays voice v as `chip`, or null for `psg`.\n    fn psgIndex(self: *const Engine, chip: Chip, v: usize) ?usize {\n        const bank = v / 3;\n        if ((chip == .atari_st) == (self.psg.model == .ym2149)) {\n            return if (bank == 0) null else bank - 1;\n        }\n        return 2 + bank;\n    }\n\n    fn psgOf(self: *Engine, chip: Chip, v: usize) *Psg {\n        return if (self.psgIndex(chip, v)) |i| &self.psg_extra[i] else &self.psg;\n    }\n\n    // ---- The producer's side (the Forth program) ----\n\n    /// How many more items voice `voice` can take now.\n    pub fn voiceFree(self: *const Engine, voice: usize) u32 {\n        return self.voices[voice].free();\n    }\n\n    pub fn putEvent(self: *Engine, voice: usize, event: Event) bool {\n        return self.voices[voice].push(event);\n    }\n\n    /// Lets the audio thread start the PLAY being put.\n    pub fn countPlay(self: *Engine) void {\n        self.plays_put.store(self.plays_put.raw +% 1, .release);\n    }\n\n    /// Ends one PLAY with an end mark in each voice (the caller has checked they fit).\n    pub fn endPlay(self: *Engine) void {\n        for (&self.voices) |*queue| std.debug.assert(queue.push(.{ .kind = .end }));\n    }\n\n    pub fn putCommand(self: *Engine, command: Command) bool {\n        return self.commands.push(command);\n    }\n\n    /// The command for BEEP (`beep`) or a stop, which drops every note put so far.\n    pub fn resetCommand(self: *const Engine, beep: bool) Command {\n        var tails: [max_voices]u32 = undefined;\n        for (&tails, &self.voices) |*tail, *queue| tail.* = queue.tail.raw;\n        return .{ .reset = .{ .tails = tails, .plays = self.plays_put.raw, .beep = beep } };\n    }\n\n    /// Stop MML and reset its chip voices, preserving independent SFX and MOD playback.\n    pub fn stopPlayCommand(self: *const Engine) Command {\n        var command = self.resetCommand(false);\n        command.reset.preserve_effects = true;\n        return command;\n    }\n\n    /// The command for MSX-SOUND and the others: a stop that also chooses the chip.\n    pub fn chipCommand(self: *const Engine, chip: Chip) Command {\n        return self.chipsCommand(Chips.one(chip));\n    }\n\n    /// The command for CHIPS: a stop that also chooses the chips.\n    pub fn chipsCommand(self: *const Engine, chips: Chips) Command {\n        var command = self.resetCommand(false);\n        command.reset.chips = chips;\n        return command;\n    }\n\n    /// PLAY(n): whether voice n - 1 (or any voice, for n = 0) still has notes to play.\n    pub fn isPlaying(self: *const Engine, n: usize) bool {\n        if (n == 0) {\n            for (1..max_voices + 1) |voice| {\n                if (self.isPlaying(voice)) return true;\n            }\n            return false;\n        }\n        const voice = n - 1;\n        // The consumer sets `sounding` before it takes the note, so the voice never\n        // looks idle between the two.\n        if (self.sounding.load(.acquire) & (@as(u8, 1) << @intCast(voice)) != 0) return true;\n        return !self.voices[voice].isEmpty();\n    }\n\n    // ---- The consumer's side (the audio thread) ----\n\n    /// Fills `out` with stereo frames (left, right) of 16-bit samples.\n    pub fn render(self: *Engine, out: []i16) void {\n        self.pcm_control.apply();\n        self.runCommands();\n        var i: usize = 0;\n        while (i + 1 < out.len) : (i += 2) {\n            if (self.beep_samples > 0) {\n                self.beep_samples -= 1;\n                if (self.beep_samples == 0) self.setRegisters(msxInitialRegisters());\n            } else {\n                self.tick_fraction += 50;\n                if (self.tick_fraction >= self.sample_rate) {\n                    self.tick_fraction -= self.sample_rate;\n                    self.tick();\n                }\n            }\n            var center = self.psg.sample() + self.sfxSample();\n            if (self.psg_used != 0) {\n                for (&self.psg_extra, 0..) |*psg, n| {\n                    if (self.psg_used & (@as(u8, 1) << @intCast(n)) != 0) center += psg.sample();\n                }\n            }\n            if (self.active.has(.nes)) center += self.nes.sample();\n            if (self.active.has(.c64)) center += self.c64.sample();\n            if (self.active.has(.scc)) center += self.scc.sample();\n            var sides: [2]f32 = .{ center, center };\n            if (self.active.has(.amiga)) {\n                const amiga = self.amiga.sample(self.pool, self.amiga_led);\n                sides[0] += amiga[0];\n                sides[1] += amiga[1];\n            }\n            if (self.mod.playing) {\n                const module = self.mod.sample(self.pool, &self.amiga_led);\n                sides[0] += module[0];\n                sides[1] += module[1];\n            }\n            const input = if (self.pcm_control.active) |active| active.sample() else stream.Frame{ .left = 0, .right = 0 };\n            out[i] = stream.mix(self.filtered(0, sides[0]), input.left);\n            out[i + 1] = stream.mix(self.filtered(1, sides[1]), input.right);\n        }\n        self.mod_playing.store(self.mod.playing, .release);\n    }\n\n    /// The level without its constant part (as the coupling capacitor of a computer's\n    /// audio output removes it), as a 16-bit sample.\n    fn filtered(self: *Engine, side: usize, x: f32) i16 {\n        const y = x - self.dc_input[side] + 0.9985 * self.dc_output[side];\n        self.dc_input[side] = x;\n        self.dc_output[side] = y;\n        const scaled = std.math.clamp(y * 0.6, -1.0, 1.0) * 32767.0;\n        return @intFromFloat(scaled);\n    }\n\n    fn runCommands(self: *Engine) void {\n        while (self.commands.peek()) |command| {\n            self.commands.drop();\n            switch (command) {\n                .write => |w| self.psg.write(w.reg, w.value),\n                .instrument => |i| self.instruments[i.index] = i.value,\n                .sample => |s| self.samples[s.index] = s.value,\n                .free_samples => {\n                    self.samples = @splat(.{});\n                    self.mod = mod_module.Mod.init(self.sample_rate);\n                    self.mod_playing.store(false, .release);\n                },\n                .mod_load => |at| {\n                    self.mod.stop();\n                    const bytes = std.mem.sliceAsBytes(self.pool);\n                    const start = @as(usize, at) * 2;\n                    @memcpy(std.mem.asBytes(&self.mod.song), bytes[start..][0..@sizeOf(mod_module.Song)]);\n                    self.mod_playing.store(false, .release);\n                },\n                .mod_play => |repeat| {\n                    self.mod.start(repeat);\n                    self.mod_playing.store(self.mod.playing, .release);\n                },\n                .mod_stop => {\n                    self.mod.stop();\n                    self.mod_playing.store(false, .release);\n                },\n                .amiga_filter => |on| self.amiga_led = on,\n                .sfx => |n| {\n                    self.sfx_players[self.sfx_next].start(self.samples[n], @as(f64, @floatFromInt(self.samples[n].rate)) / @as(f64, @floatFromInt(self.sample_rate)));\n                    self.sfx_next = (self.sfx_next + 1) % sfx_voices;\n                },\n                .reset => |b| {\n                    for (&self.voices, b.tails) |*queue, tail| queue.dropUntil(tail);\n                    self.plays_started.store(b.plays, .release);\n                    self.remaining = @splat(0);\n                    self.at_end = @splat(true);\n                    self.sounding.store(0, .release);\n                    if (b.chips) |chips| {\n                        self.chips = chips;\n                        // The Atari ST's YM2149 runs at 2 MHz; the MSX's PSG is an AY.\n                        self.psg = if (chips.has(.atari_st) and !chips.has(.msx))\n                            Psg.init(.ym2149, psg_module.atari_st_clock, self.sample_rate)\n                        else\n                            Psg.init(.ay8910, psg_module.msx_clock, self.sample_rate);\n                    }\n                    self.nes = nes_module.Nes.init(self.sample_rate);\n                    self.c64 = c64_module.C64.init(self.sample_rate);\n                    self.scc = scc_module.Scc.init(self.sample_rate);\n                    self.amiga = amiga_module.Amiga.init(self.sample_rate);\n                    self.resetVoices();\n                    if (!b.preserve_effects) {\n                        self.sfx_players = @splat(.{});\n                        self.mod.stop();\n                        self.mod_playing.store(false, .release);\n                    }\n                    self.setRegisters(msxInitialRegisters());\n                    if (b.beep) {\n                        self.psg.write(0, @truncate(beep_period));\n                        self.psg.write(1, @truncate(beep_period >> 8));\n                        self.psg.write(8, beep_volume);\n                        self.beep_samples = @max(self.sample_rate * beep_milliseconds / 1000, 1);\n                    }\n                },\n            }\n        }\n    }\n\n    /// One tick of 1/50 second: each voice counts down its note and takes the next.\n    fn tick(self: *Engine) void {\n        for (0..max_voices) |v| {\n            if (self.remaining[v] > 0) self.remaining[v] -= 1;\n            if (self.remaining[v] == 0 and !self.at_end[v]) self.nextEvent(v);\n        }\n        for (self.at_end) |at_end| {\n            if (!at_end) return;\n        }\n        self.startPlay();\n    }\n\n    fn startPlay(self: *Engine) void {\n        const started = self.plays_started.raw;\n        if (self.plays_put.load(.acquire) == started) return;\n        self.plays_started.store(started +% 1, .release);\n        self.at_end = @splat(false);\n        for (0..max_voices) |v| self.nextEvent(v);\n    }\n\n    fn nextEvent(self: *Engine, v: usize) void {\n        // The producer puts a whole PLAY before it counts it, so the voice has an item.\n        const event = self.voices[v].peek() orelse return;\n        const bit = @as(u8, 1) << @intCast(v);\n        switch (event.kind) {\n            .end => {\n                self.at_end[v] = true;\n                self.silence(v);\n                self.sounding.store(self.sounding.raw & ~bit, .release);\n                self.voices[v].drop();\n            },\n            .note => {\n                self.sounding.store(self.sounding.raw | bit, .release);\n                self.voices[v].drop();\n                self.play(v, event);\n            },\n        }\n    }\n\n    /// The SFX voices together, each sample once at half the full level.\n    fn sfxSample(self: *Engine) f32 {\n        var sum: f32 = 0;\n        for (&self.sfx_players) |*player| sum += player.next(self.pool) * 0.5;\n        return sum;\n    }\n\n    /// Ends voice v's note (at a rest or the end of a PLAY).\n    fn silence(self: *Engine, v: usize) void {\n        self.silenceOn(self.current[v] orelse self.chips.chipOf(v), v);\n    }\n\n    fn silenceOn(self: *Engine, chip: Chip, v: usize) void {\n        switch (chip) {\n            .msx, .atari_st => self.psgOf(chip, v).write(@intCast(8 + v % 3), 0),\n            .nes => self.nes.noteOff(v),\n            .c64 => self.c64.noteOff(v),\n            .scc => self.scc.noteOff(v),\n            .amiga => self.amiga.noteOff(v),\n        }\n    }\n\n    fn play(self: *Engine, v: usize, event: Event) void {\n        self.remaining[v] = event.ticks;\n        if (event.period == 0) return self.silence(v);\n        const volume = @min(event.amplitude, 15);\n        const instrument = self.instruments[event.instrument];\n        const chip = instrument.style orelse self.chips.chipOf(v);\n        // A voice sounds on one chip at a time.\n        if (self.current[v]) |old| {\n            if (old != chip) self.silenceOn(old, v);\n        }\n        self.current[v] = chip;\n        self.active.mask |= Chips.one(chip).mask;\n        switch (chip) {\n            .msx, .atari_st => {\n                if (self.psgIndex(chip, v)) |n| self.psg_used |= @as(u8, 1) << @intCast(n);\n                // The same note on the YM2149's 2 MHz clock.\n                const period: u16 = if (chip == .msx) event.period else @intCast(parts.chipPeriod(event.note, psg_module.atari_st_clock, 16, 0, 4095));\n                playPsg(self.psgOf(chip, v), v % 3, event, period);\n            },\n            // S (the PSG's envelope) has no meaning here: such a note plays at full volume.\n            .nes => {\n                if (instrument.style != null) {\n                    self.nes.noteOnWave(v, event.note, volume, instrument);\n                } else {\n                    self.nes.noteOn(v, event.note, volume, instrument);\n                }\n            },\n            .c64 => self.c64.noteOn(v, event.note, volume, instrument),\n            .scc => self.scc.noteOn(v, event.note, volume, instrument),\n            .amiga => self.amiga.noteOn(v, event.note, volume, instrument, &self.samples),\n        }\n    }\n\n    fn playPsg(psg: *Psg, channel: usize, event: Event, period: u16) void {\n        const reg: u8 = @intCast(channel * 2);\n        psg.write(reg, @truncate(period));\n        psg.write(reg + 1, @truncate(period >> 8));\n        if (event.amplitude == 16) {\n            psg.write(11, @truncate(event.envelope_period));\n            psg.write(12, @truncate(event.envelope_period >> 8));\n            psg.write(@intCast(8 + channel), 16);\n            psg.write(13, event.shape);\n        } else {\n            psg.write(@intCast(8 + channel), event.amplitude);\n        }\n    }\n};\n\n/// Puts one PLAY's voices (up to 3 texts) for `engine`, a note at a time, after checking\n/// all of them, so that an error puts nothing. When the voices that still have notes are\n/// all full, the PLAY is let start (as the MSX does, so that a long PLAY plays while it\n/// is being put) and `waitFn(context)` is called until there is room; it returns false\n/// to stop, and putPlay then returns error.Interrupted: the notes put so far stay, and\n/// the caller drops them with a reset command.\npub fn putPlay(engine: *Engine, voices: []mml.Voice, texts: []const []const u8, context: anytype, comptime waitFn: fn (@TypeOf(context)) bool) (mml.Error || error{Interrupted})!void {\n    std.debug.assert(texts.len <= max_voices and voices.len >= texts.len);\n    for (texts, 0..) |text, v| try mml.check(voices[v], text);\n    var parsers: [max_voices]?mml.Parser = @splat(null);\n    for (texts, 0..) |text, v| parsers[v] = mml.Parser.init(&voices[v], text);\n    var pending: [max_voices]?Event = @splat(null);\n    var counted = false;\n    while (true) {\n        var left = false;\n        var progressed = false;\n        for (0..max_voices) |v| {\n            if (parsers[v] == null) continue;\n            while (true) {\n                if (pending[v] == null) pending[v] = parsers[v].?.next() catch unreachable;\n                const event = pending[v] orelse {\n                    parsers[v] = null;\n                    break;\n                };\n                // Keep one place for the end mark.\n                if (engine.voiceFree(v) <= 1) break;\n                std.debug.assert(engine.putEvent(v, event));\n                pending[v] = null;\n                progressed = true;\n            }\n            if (parsers[v] != null) left = true;\n        }\n        if (!left) break;\n        if (!progressed) {\n            if (!counted) {\n                engine.countPlay();\n                counted = true;\n            }\n            if (!waitFn(context)) return error.Interrupted;\n        }\n    }\n    while (!allHaveRoom(engine)) {\n        if (!counted) {\n            engine.countPlay();\n            counted = true;\n        }\n        if (!waitFn(context)) return error.Interrupted;\n    }\n    engine.endPlay();\n    if (!counted) engine.countPlay();\n}\n\nfn allHaveRoom(engine: *const Engine) bool {\n    for (0..max_voices) |v| {\n        if (engine.voiceFree(v) < 1) return false;\n    }\n    return true;\n}\n",
+    "src/core/sound_psg.zig": "//! The PSG of the MSX and the Atari ST: General Instrument's AY-3-8910 and Yamaha's\n//! YM2149, by their registers. Three square-wave tones, one noise, and one envelope that\n//! the channels share.\n//!\n//! The behavior follows the data sheets and the MSX Technical Handbook (see\n//! docs/SOUND_RESEARCH.md); no emulator's code is used. The chip is stepped at 1/8 of its\n//! clock: a tone's output flips every `period` steps (clock / (16 × period) Hz), the\n//! noise and the envelope advance every second step and every `period` steps, so a whole\n//! envelope cycle is clock / (256 × period) on both chips (the AY's 16 levels last two\n//! of the YM's 32 steps each). Each sample is the mean of the steps it covers, which\n//! keeps the highest tones from folding back as audible noise.\n\npub const Model = enum { ay8910, ym2149 };\n\n/// The MSX's clock (1.7897725 MHz) and the Atari ST's (2 MHz).\npub const msx_clock: u32 = 1_789_773;\npub const atari_st_clock: u32 = 2_000_000;\n\n/// The AY's 16 volume levels, from Matthew Westcott's measurement of an AY-3-8910 (2001,\n/// placed in the public domain): 1.147 V at level 0 up to 2.58 V at level 15, here less\n/// level 0's voltage and scaled to 1.\nconst ay_levels = blk: {\n    const volts = [16]f32{ 1.147, 1.162, 1.169, 1.178, 1.192, 1.213, 1.238, 1.299, 1.336, 1.457, 1.573, 1.707, 1.882, 2.06, 2.32, 2.58 };\n    var levels: [16]f32 = undefined;\n    for (volts, 0..) |v, i| levels[i] = (v - volts[0]) / (volts[15] - volts[0]);\n    break :blk levels;\n};\n\n/// The YM's 32 levels: 1.5 dB apart, as the data sheet's figure shows (the fixed\n/// volumes are every second level, 3 dB apart), and 0 at the bottom.\nconst ym_levels = blk: {\n    @setEvalBranchQuota(10_000);\n    var levels: [32]f32 = undefined;\n    levels[0] = 0;\n    for (1..32) |i| levels[i] = pow10(-1.5 * @as(f32, @floatFromInt(31 - i)) / 20.0);\n    break :blk levels;\n};\n\n/// 10^x at compile time (exp of x ln 10, by its series), since @exp of a comptime float\n/// is not available on every target.\nfn pow10(x: f32) f32 {\n    const y: f64 = @as(f64, x) * 2.302585092994046;\n    var term: f64 = 1;\n    var sum: f64 = 1;\n    var n: f64 = 1;\n    while (n < 60) : (n += 1) {\n        term *= y / n;\n        sum += term;\n    }\n    return @floatCast(sum);\n}\n\npub const Psg = struct {\n    model: Model,\n    clock: u32,\n    sample_rate: u32,\n    regs: [16]u8 = @splat(0),\n    tone_count: [3]u16 = .{ 0, 0, 0 },\n    tone_high: [3]bool = .{ false, false, false },\n    noise_count: u8 = 0,\n    noise_half: bool = false,\n    /// 17 bits; the input is bit 0 XOR bit 3, the output bit 0.\n    lfsr: u32 = 1,\n    env_count: u16 = 0,\n    /// 31 down to 0; the level is this XOR `env_attack`.\n    env_step: u8 = 31,\n    env_attack: u8 = 0,\n    env_hold: bool = true,\n    env_alternate: bool = false,\n    env_holding: bool = true,\n    /// Steps (clock / 8) per sample, in units of 1 / (8 × sample_rate).\n    fraction: u64 = 0,\n    last: f32 = 0,\n\n    pub fn init(model: Model, clock: u32, sample_rate: u32) Psg {\n        var psg: Psg = .{ .model = model, .clock = clock, .sample_rate = sample_rate };\n        psg.reset();\n        return psg;\n    }\n\n    /// All registers 0 (tones and noise on, volumes 0), the noise and the envelope from\n    /// their start.\n    pub fn reset(self: *Psg) void {\n        const model = self.model;\n        const clock = self.clock;\n        const rate = self.sample_rate;\n        self.* = .{ .model = model, .clock = clock, .sample_rate = rate };\n    }\n\n    pub fn write(self: *Psg, reg: u8, value: u8) void {\n        if (reg > 15) return;\n        // The AY keeps only the bits each register has; the YM keeps all 8 (and reads\n        // them back), but uses the same bits.\n        const masks = [16]u8{ 0xff, 0x0f, 0xff, 0x0f, 0xff, 0x0f, 0x1f, 0xff, 0x1f, 0x1f, 0x1f, 0xff, 0xff, 0x0f, 0xff, 0xff };\n        self.regs[reg] = if (self.model == .ay8910) value & masks[reg] else value;\n        if (reg == 13) self.startEnvelope();\n    }\n\n    pub fn read(self: *const Psg, reg: u8) u8 {\n        return if (reg > 15) 0xff else self.regs[reg];\n    }\n\n    /// Writing R13 starts the envelope again from its first step.\n    fn startEnvelope(self: *Psg) void {\n        const shape = self.regs[13] & 0x0f;\n        self.env_attack = if (shape & 4 != 0) 0x1f else 0;\n        if (shape & 8 == 0) {\n            // Shapes 0 to 7: one ramp, then 0.\n            self.env_hold = true;\n            self.env_alternate = self.env_attack != 0;\n        } else {\n            self.env_hold = shape & 1 != 0;\n            self.env_alternate = shape & 2 != 0;\n        }\n        self.env_step = 31;\n        self.env_count = 0;\n        self.env_holding = false;\n    }\n\n    fn tonePeriod(self: *const Psg, channel: usize) u16 {\n        const period = @as(u16, self.regs[channel * 2 + 1] & 0x0f) << 8 | self.regs[channel * 2];\n        return if (period == 0) 1 else period;\n    }\n\n    /// One step of 8 clocks.\n    pub fn step(self: *Psg) void {\n        for (0..3) |c| {\n            self.tone_count[c] += 1;\n            if (self.tone_count[c] >= self.tonePeriod(c)) {\n                self.tone_count[c] = 0;\n                self.tone_high[c] = !self.tone_high[c];\n            }\n        }\n        self.noise_half = !self.noise_half;\n        if (self.noise_half) {\n            const period = @max(self.regs[6] & 0x1f, 1);\n            self.noise_count += 1;\n            if (self.noise_count >= period) {\n                self.noise_count = 0;\n                const bit = (self.lfsr ^ (self.lfsr >> 3)) & 1;\n                self.lfsr = (self.lfsr >> 1) | (bit << 16);\n            }\n        }\n        if (!self.env_holding) {\n            const period = @max(@as(u16, self.regs[12]) << 8 | self.regs[11], 1);\n            self.env_count += 1;\n            if (self.env_count >= period) {\n                self.env_count = 0;\n                if (self.env_step > 0) {\n                    self.env_step -= 1;\n                } else {\n                    if (self.env_alternate) self.env_attack ^= 0x1f;\n                    if (self.env_hold) self.env_holding = true else self.env_step = 31;\n                }\n            }\n        }\n    }\n\n    /// The envelope's level, 0 to 31.\n    pub fn envelopeLevel(self: *const Psg) u8 {\n        return self.env_step ^ self.env_attack;\n    }\n\n    /// One channel's output now, 0 to 1.\n    pub fn channelLevel(self: *const Psg, channel: usize) f32 {\n        const mixer = self.regs[7];\n        const tone_off = mixer & (@as(u8, 1) << @intCast(channel)) != 0;\n        const noise_off = mixer & (@as(u8, 8) << @intCast(channel)) != 0;\n        const on = (self.tone_high[channel] or tone_off) and (self.lfsr & 1 != 0 or noise_off);\n        if (!on) return 0;\n        const amplitude = self.regs[8 + channel];\n        // Nonzero fixed volumes use envelope level 2L + 1; fixed zero is mute.\n        // Envelope level 1 remains available in the YM's 32-step mode.\n        const fixed_level = amplitude & 0x0f;\n        const step_level: u8 = if (amplitude & 0x10 != 0) self.envelopeLevel() else if (fixed_level == 0) 0 else fixed_level * 2 + 1;\n        return switch (self.model) {\n            .ay8910 => ay_levels[step_level >> 1],\n            .ym2149 => ym_levels[step_level],\n        };\n    }\n\n    /// The three channels together, 0 to 1.\n    pub fn level(self: *const Psg) f32 {\n        return (self.channelLevel(0) + self.channelLevel(1) + self.channelLevel(2)) / 3.0;\n    }\n\n    /// The next sample: the mean of the steps it covers (0 to 1).\n    pub fn sample(self: *Psg) f32 {\n        const unit: u64 = @as(u64, self.sample_rate) * 8;\n        self.fraction += self.clock;\n        var sum: f32 = 0;\n        var count: u32 = 0;\n        while (self.fraction >= unit) {\n            self.fraction -= unit;\n            self.step();\n            sum += self.level();\n            count += 1;\n        }\n        if (count > 0) self.last = sum / @as(f32, @floatFromInt(count));\n        return self.last;\n    }\n};\n",
+    "src/core/words_audio.zig": "//! The audio words: REQUIRE-AUDIO, which loads them, and the SND- words, which give MSX\n//! BASIC's PLAY, SOUND, and BEEP to the AUDIO library (src/audio/audio.fs).\n//!\n//! As with the graphics words, a dictionary that never loads them keeps the numbers of\n//! its words, and its images keep their format. The notes go to the sound engine of the\n//! host's audio thread (sound_engine.zig) through one-way queues; this file is the\n//! producer's side. What each voice keeps from one PLAY to the next (octave, length,\n//! tempo, volume) is in State.audio_voices, on this side too.\n\nconst std = @import(\"std\");\nconst defs = @import(\"defs.zig\");\nconst forth = @import(\"../forth.zig\");\nconst graphics_input = @import(\"graphics_input.zig\");\nconst library_loading = @import(\"library_loading.zig\");\nconst memory_map = @import(\"memory_map.zig\");\nconst mml = @import(\"sound_mml.zig\");\nconst sound_engine = @import(\"sound_engine.zig\");\nconst parts = @import(\"sound_parts.zig\");\nconst pcm = sound_engine.pcm;\nconst Builtin = defs.Builtin;\nconst Engine = sound_engine.Engine;\nconst RuntimeError = defs.RuntimeError;\nconst Cell = memory_map.Cell;\nconst State = forth.State;\n\n/// The built-in words this file executes; executeBuiltin dispatches by this list.\npub const words = [_]Builtin{ .snd_play, .snd_sound, .snd_beep, .snd_playing, .snd_device, .snd_plays, .snd_chip, .snd_instrument, .snd_wave, .snd_duty, .snd_adsr, .snd_ring, .snd_sync, .snd_filter, .snd_wavetable, .snd_load_sample, .snd_sample, .snd_loop_sample, .snd_sample_instrument, .snd_sfx, .snd_amiga_filter, .snd_free_samples, .snd_chips, .snd_load_mod, .snd_play_mod, .snd_stop_mod, .snd_mod_playing, .snd_style, .snd_pcm_open, .snd_pcm_write, .snd_pcm_queued, .snd_pcm_wait, .snd_pcm_stop, .snd_pcm_close, .snd_pcm_underruns };\n\n/// The SND- words in the order REQUIRE-AUDIO appends them, right after the AUDIO\n/// vocabulary. The order is part of the dictionary that images keep: add new words at\n/// the end.\npub const definitions = [_]struct { []const u8, Builtin }{\n    .{ \"SND-PLAY\", .snd_play },                           .{ \"SND-SOUND\", .snd_sound },                 .{ \"SND-BEEP\", .snd_beep },\n    .{ \"SND-PLAYING\", .snd_playing },                     .{ \"SND-DEVICE\", .snd_device },               .{ \"SND-PLAYS\", .snd_plays },\n    .{ \"SND-CHIP\", .snd_chip },                           .{ \"SND-INSTRUMENT\", .snd_instrument },       .{ \"SND-WAVE\", .snd_wave },\n    .{ \"SND-DUTY\", .snd_duty },                           .{ \"SND-ADSR\", .snd_adsr },                   .{ \"SND-RING\", .snd_ring },\n    .{ \"SND-SYNC\", .snd_sync },                           .{ \"SND-FILTER\", .snd_filter },               .{ \"SND-WAVETABLE\", .snd_wavetable },\n    .{ \"SND-LOAD-SAMPLE\", .snd_load_sample },             .{ \"SND-SAMPLE\", .snd_sample },               .{ \"SND-LOOP-SAMPLE\", .snd_loop_sample },\n    .{ \"SND-SAMPLE-INSTRUMENT\", .snd_sample_instrument }, .{ \"SND-SFX\", .snd_sfx },                     .{ \"SND-AMIGA-FILTER\", .snd_amiga_filter },\n    .{ \"SND-FREE-SAMPLES\", .snd_free_samples },           .{ \"SND-CHIPS\", .snd_chips },                 .{ \"SND-LOAD-MOD\", .snd_load_mod },\n    .{ \"SND-PLAY-MOD\", .snd_play_mod },                   .{ \"SND-STOP-MOD\", .snd_stop_mod },           .{ \"SND-MOD-PLAYING\", .snd_mod_playing },\n    .{ \"SND-STYLE\", .snd_style },                         .{ \"SND-PCM-OPEN\", .snd_pcm_open },           .{ \"SND-PCM-WRITE\", .snd_pcm_write },\n    .{ \"SND-PCM-QUEUED\", .snd_pcm_queued },               .{ \"SND-PCM-WAIT\", .snd_pcm_wait },           .{ \"SND-PCM-STOP\", .snd_pcm_stop },\n    .{ \"SND-PCM-CLOSE\", .snd_pcm_close },                 .{ \"SND-PCM-UNDERRUNS\", .snd_pcm_underruns },\n};\n\n/// The words of the audio library that HELP describes; the help test checks that the\n/// library defines each of them.\npub const library_words = [_][]const u8{ \"PLAY\", \"PLAY2\", \"PLAY3\", \"PLAY?\", \"SOUND\", \"BEEP\", \"AUDIO?\", \"PLAYS\", \"MSX-SOUND\", \"ST-SOUND\", \"NES-SOUND\", \"INSTRUMENT\", \"SQUARE\", \"PULSE\", \"TRIANGLE\", \"SAW\", \"NOISE\", \"DUTY\", \"ADSR\", \"C64-SOUND\", \"RING\", \"SYNC\", \"FILTER\", \"SCC-SOUND\", \"SCC-WAVE\", \"LOAD-SAMPLE\", \"SAMPLE\", \"LOOP-SAMPLE\", \"SAMPLE-INSTRUMENT\", \"SFX\", \"FREE-SAMPLES\", \"AMIGA-SOUND\", \"AMIGA-FILTER\", \"CHIPS\", \"MSX\", \"ST\", \"NES\", \"C64\", \"SCC\", \"AMIGA\", \"LOAD-MOD\", \"PLAY-MOD\", \"STOP-MOD\", \"MOD?\", \"STYLE\", \"PCM-OPEN\", \"PCM-WRITE\", \"PCM-QUEUED\", \"PCM-WAIT\", \"PCM-STOP\", \"PCM-CLOSE\", \"PCM-UNDERRUNS\" };\n\n/// The audio library, which REQUIRE-AUDIO interprets after appending the SND- words.\npub const library = @embedFile(\"../audio/audio.fs\");\n\n/// The name the library has in the source file table, for LOCATE and error messages.\npub const library_name = \"*audio library*\";\n\npub const group: library_loading.Group(@TypeOf(definitions[0])) = .{\n    .vocabulary = \"AUDIO\",\n    .definitions = &definitions,\n    .library_name = library_name,\n    .vocabulary_address = memory_map.audio_vocabulary_address,\n    .image_address = memory_map.audio_image_address,\n};\n\n/// REQUIRE-AUDIO: as REQUIRE-GRAPHICS, for the AUDIO vocabulary, the SND- words, and the\n/// audio library.\npub fn requireAudio(self: *State) RuntimeError!void {\n    if (!defs.audio_enabled) return error.AudioUnavailable;\n    return library_loading.require(self, group, self.audio_library);\n}\n\n/// Whether REQUIRE-AUDIO has loaded the audio words and they are still in the dictionary.\npub fn audioLoaded(self: *const State) bool {\n    return library_loading.isLoaded(self, group);\n}\n\n/// Whether a word is one REQUIRE-AUDIO added (HELP describes these).\npub fn isAudioWord(self: *const State, word: defs.Word) bool {\n    return library_loading.isGroupWord(self, word, library_name);\n}\n\npub fn execute(self: *State, builtin: Builtin) RuntimeError!void {\n    switch (builtin) {\n        .snd_pcm_open, .snd_pcm_write, .snd_pcm_queued, .snd_pcm_wait, .snd_pcm_stop, .snd_pcm_close, .snd_pcm_underruns => return @import(\"words_pcm.zig\").execute(self, builtin),\n        .snd_play => {\n            var texts: [3][]const u8 = undefined;\n            var v: usize = 3;\n            while (v > 0) {\n                v -= 1;\n                texts[v] = try self.memoryRange();\n            }\n            try play(self, &texts);\n        },\n        .snd_plays => {\n            const count = try self.pop();\n            if (count < 0 or count > sound_engine.max_voices) return error.InvalidNumber;\n            if (count == 0) {\n                const engine = try getEngine(self);\n                try putCommand(self, engine, engine.stopPlayCommand());\n                try waitTaken(self, engine);\n                return;\n            }\n            var texts: [sound_engine.max_voices][]const u8 = undefined;\n            var v: usize = @intCast(count);\n            while (v > 0) {\n                v -= 1;\n                texts[v] = try self.memoryRange();\n            }\n            try play(self, texts[0..@intCast(count)]);\n        },\n        .snd_chip => {\n            const n = try self.pop();\n            const chips = @typeInfo(sound_engine.Chip).@\"enum\".field_names.len;\n            if (n < 0 or n >= chips) return error.InvalidNumber;\n            const engine = try getEngine(self);\n            const chip: sound_engine.Chip = @fromBackingInt(@intCast(n));\n            try stop(self, engine, engine.chipCommand(chip));\n        },\n        .snd_style => {\n            const n = try self.pop();\n            if (n == 0) return changeInstrument(self, .{ .style = .none });\n            const chips = sound_engine.Chips.fromMask(n) orelse return error.InvalidNumber;\n            const chip = chips.only() orelse return error.InvalidNumber;\n            try changeInstrument(self, .{ .style = .{ .chip = chip } });\n        },\n        .snd_instrument => {\n            const n = try self.pop();\n            if (n < 0 or n >= mml.instrument_count) return error.InvalidNumber;\n            self.audio_instrument = @intCast(n);\n        },\n        .snd_wave => {\n            const n = try self.pop();\n            if (n < 0 or n >= @typeInfo(parts.Wave).@\"enum\".field_names.len) return error.InvalidNumber;\n            try changeInstrument(self, .{ .wave = @fromBackingInt(@intCast(n)) });\n        },\n        .snd_duty => {\n            const n = try self.pop();\n            if (n < 0 or n > 100) return error.InvalidNumber;\n            try changeInstrument(self, .{ .duty = @intCast(n) });\n        },\n        .snd_adsr => {\n            var values: [4]u8 = undefined;\n            var i: usize = 4;\n            while (i > 0) {\n                i -= 1;\n                const n = try self.pop();\n                if (n < 0 or n > 15) return error.InvalidNumber;\n                values[i] = @intCast(n);\n            }\n            try changeInstrument(self, .{ .attack = values[0], .decay = values[1], .sustain = values[2], .release = values[3] });\n        },\n        .snd_ring => try changeInstrument(self, .{ .ring = try self.pop() != 0 }),\n        .snd_sync => try changeInstrument(self, .{ .sync = try self.pop() != 0 }),\n        .snd_filter => {\n            const resonance = try self.pop();\n            const cutoff = try self.pop();\n            const mode = try self.pop();\n            if (mode < 0 or mode > 3 or cutoff < 0 or cutoff > 2047 or resonance < 0 or resonance > 15) return error.InvalidNumber;\n            try changeInstrument(self, .{ .filter = @intCast(mode), .cutoff = @intCast(cutoff), .resonance = @intCast(resonance) });\n        },\n        .snd_wavetable => {\n            const n = try self.pop();\n            const address = try self.pop();\n            if (n < 0 or n >= mml.instrument_count) return error.InvalidNumber;\n            const start = try self.memoryAddress(address, 32);\n            var samples: [32]i8 = undefined;\n            for (&samples, self.memory[start..][0..32]) |*s, byte| s.* = @bitCast(byte);\n            try changeInstrumentAt(self, @intCast(n), .{ .wavetable = samples });\n        },\n        .snd_load_sample => {\n            const n = try sampleNumber(self);\n            const name = try self.memoryRange();\n            try self.push(try loadSample(self, name, n));\n        },\n        .snd_sample => {\n            const n = try sampleNumber(self);\n            const rate = try self.pop();\n            const bytes = try self.memoryRange();\n            if (rate < 1000 or rate > 192_000) return error.InvalidNumber;\n            const engine = try getEngine(self);\n            const out = try poolSpace(self, engine, bytes.len);\n            for (out, bytes) |*s, byte| s.* = @as(i16, @as(i8, @bitCast(byte))) * 256;\n            try addSample(self, engine, n, @intCast(bytes.len), @intCast(rate));\n        },\n        .snd_loop_sample => {\n            const n = try sampleNumber(self);\n            const end = try self.pop();\n            const start = try self.pop();\n            const sample = &self.audio_samples[n];\n            // 0 0 turns the loop off.\n            if (start < 0 or end < start or end > sample.length) return error.InvalidNumber;\n            sample.loop_start = @intCast(start);\n            sample.loop_end = @intCast(end);\n            const engine = try getEngine(self);\n            try putCommand(self, engine, .{ .sample = .{ .index = n, .value = sample.* } });\n        },\n        .snd_sample_instrument => {\n            const n = try self.pop();\n            if (n < -1 or n >= pcm.sample_count) return error.InvalidNumber;\n            try changeInstrument(self, .{ .sample = if (n < 0) .none else .{ .number = @intCast(n) } });\n        },\n        .snd_sfx => {\n            const n = try sampleNumber(self);\n            const engine = try getEngine(self);\n            try putCommand(self, engine, .{ .sfx = n });\n        },\n        .snd_amiga_filter => {\n            const on = try self.pop() != 0;\n            const engine = try getEngine(self);\n            try putCommand(self, engine, .{ .amiga_filter = on });\n        },\n        .snd_chips => {\n            const chips = sound_engine.Chips.fromMask(try self.pop()) orelse return error.InvalidNumber;\n            const engine = try getEngine(self);\n            try stop(self, engine, engine.chipsCommand(chips));\n        },\n        .snd_load_mod => {\n            const name = try self.memoryRange();\n            try self.push(try loadMod(self, name));\n        },\n        .snd_play_mod => {\n            const repeat = try self.pop() != 0;\n            const engine = try getEngine(self);\n            try putCommand(self, engine, .{ .mod_play = repeat });\n            // MOD? is true at once.\n            try waitTaken(self, engine);\n        },\n        .snd_stop_mod => {\n            const engine = try getEngine(self);\n            try putCommand(self, engine, .mod_stop);\n        },\n        .snd_mod_playing => {\n            const engine = try getEngine(self);\n            try self.push(if (engine.mod_playing.load(.acquire)) -1 else 0);\n        },\n        .snd_free_samples => {\n            const engine = try getEngine(self);\n            // The music and the SFX stop first, so that nothing reads the pool any more.\n            try reset(self, engine, false);\n            try putCommand(self, engine, .free_samples);\n            self.audio_samples = @splat(.{});\n            self.audio_pool_used = 0;\n        },\n        .snd_sound => {\n            const value = try self.pop();\n            const reg = try self.pop();\n            // MSX BASIC's SOUND takes the registers 0 to 13 and values 0 to 255.\n            if (reg < 0 or reg > 13 or value < 0 or value > 255) return error.InvalidNumber;\n            const engine = try getEngine(self);\n            try putCommand(self, engine, .{ .write = .{ .reg = @intCast(reg), .value = @intCast(value) } });\n        },\n        .snd_beep => {\n            const engine = try getEngine(self);\n            try reset(self, engine, true);\n        },\n        .snd_playing => {\n            const n = try self.pop();\n            if (n < 0 or n > sound_engine.max_voices) return error.InvalidNumber;\n            const engine = try getEngine(self);\n            try self.push(if (engine.isPlaying(@intCast(n))) -1 else 0);\n        },\n        .snd_device => {\n            // Whether the sound is heard: the thread runs first, so that it has tried\n            // the device.\n            _ = try getEngine(self);\n            const device_fn = self.writer.audio_device_fn orelse return self.push(0);\n            try self.push(if (device_fn(self.writer.context)) -1 else 0);\n        },\n        else => unreachable,\n    }\n}\n\nfn getEngine(self: *State) RuntimeError!*Engine {\n    const audio_fn = self.writer.audio_fn orelse return error.HostUnavailable;\n    return audio_fn(self.writer.context) orelse error.HostFailed;\n}\n\n/// Pops a sample's number, 0 to 63.\nfn sampleNumber(self: *State) RuntimeError!u8 {\n    const n = try self.pop();\n    if (n < 0 or n >= pcm.sample_count) return error.InvalidNumber;\n    return @intCast(n);\n}\n\n/// The next `count` places of the pool, or OUT OF MEMORY when it has not that many.\nfn poolSpace(self: *State, engine: *Engine, count: usize) RuntimeError![]i16 {\n    const used: usize = self.audio_pool_used;\n    if (used > engine.pool.len or count > engine.pool.len - used) return error.MemoryExhausted;\n    return engine.pool[used .. used + count];\n}\n\n/// Makes the `count` samples just written at the pool's end sample n.\nfn addSample(self: *State, engine: *Engine, n: u8, count: u32, rate: u32) RuntimeError!void {\n    self.audio_samples[n] = .{ .start = self.audio_pool_used, .length = count, .rate = rate };\n    self.audio_pool_used += count;\n    try putCommand(self, engine, .{ .sample = .{ .index = n, .value = self.audio_samples[n] } });\n}\n\n/// The THROW code of a file LOAD-SAMPLE cannot read, and of a full pool.\nconst sample_error_code: Cell = -276;\nconst memory_error_code: Cell = -257;\n\n/// LOAD-SAMPLE: reads a WAV file's PCM into the pool as sample n. The ior: 0, the\n/// file's, SAMPLE ERROR (-276) for a file that is not a WAV of 8- or 16-bit PCM, or\n/// OUT OF MEMORY (-257) when the pool has no room. Nothing changes on an error.\nfn loadSample(self: *State, name: []const u8, n: u8) RuntimeError!Cell {\n    const engine = try getEngine(self);\n    const files = try self.fileOps();\n    const context = self.writer.context;\n    const opened = files.open(context, name, .read_only, false);\n    if (opened.ior != 0) return opened.ior;\n    const fileid: Cell = @bitCast(opened.value);\n    defer _ = files.close(context, fileid);\n    var buffer: [4096]u8 = undefined;\n\n    var header: [12]u8 = undefined;\n    switch (readAll(files, context, fileid, &header)) {\n        .bytes => |count| if (count < 12 or !std.mem.eql(u8, header[0..4], \"RIFF\") or !std.mem.eql(u8, header[8..12], \"WAVE\")) return sample_error_code,\n        .ior => |ior| return ior,\n    }\n    var format: ?pcm.Format = null;\n    while (true) {\n        var chunk: [8]u8 = undefined;\n        const got = switch (readAll(files, context, fileid, &chunk)) {\n            .bytes => |count| count,\n            .ior => |ior| return ior,\n        };\n        if (got < 8) return sample_error_code;\n        const size: u64 = std.mem.readInt(u32, chunk[4..8], .little);\n        if (std.mem.eql(u8, chunk[0..4], \"data\")) {\n            const found = format orelse return sample_error_code;\n            const frame = found.frameBytes();\n            const frames: usize = @intCast(size / frame);\n            const out = poolSpace(self, engine, frames) catch return memory_error_code;\n            // Whole frames at a time: 4096 bytes hold a whole number of any frame size.\n            var done: usize = 0;\n            while (done < frames) {\n                const want = @min(frames - done, buffer.len / frame) * frame;\n                const count = switch (readAll(files, context, fileid, buffer[0..want])) {\n                    .bytes => |c| c,\n                    .ior => |ior| return ior,\n                };\n                done += pcm.convertFrames(found, buffer[0..count], out[done..]);\n                if (count < want) break;\n            }\n            try addSample(self, engine, n, @intCast(done), found.rate);\n            return 0;\n        }\n        // Other chunks are skipped; their size is padded to an even number of bytes.\n        var left = size + (size & 1);\n        if (std.mem.eql(u8, chunk[0..4], \"fmt \")) {\n            const body_size: usize = @intCast(@min(size, buffer.len));\n            switch (readAll(files, context, fileid, buffer[0..body_size])) {\n                .bytes => |count| if (count < body_size) return sample_error_code,\n                .ior => |ior| return ior,\n            }\n            format = pcm.parseFormat(buffer[0..body_size]) catch return sample_error_code;\n            left -= body_size;\n        }\n        while (left > 0) {\n            const part: usize = @intCast(@min(left, buffer.len));\n            switch (readAll(files, context, fileid, buffer[0..part])) {\n                .bytes => |count| if (count < part) return sample_error_code,\n                .ior => |ior| return ior,\n            }\n            left -= part;\n        }\n    }\n}\n\nconst mod_error_code: Cell = -277;\n\n/// LOAD-MOD: reads a ProTracker module (4 channels, 31 samples) into the pool: its\n/// patterns, its samples (8-bit, as 16-bit), and its song. The ior: 0, the file's,\n/// MOD ERROR (-277) for a file that is not such a module or ends in its patterns, or\n/// OUT OF MEMORY (-257). A module whose samples end early keeps what is there. The\n/// module that played stops; nothing else changes on an error.\nfn loadMod(self: *State, name: []const u8) RuntimeError!Cell {\n    const mod = sound_engine.mod_module;\n    const engine = try getEngine(self);\n    const files = try self.fileOps();\n    const context = self.writer.context;\n    const opened = files.open(context, name, .read_only, false);\n    if (opened.ior != 0) return opened.ior;\n    const fileid: Cell = @bitCast(opened.value);\n    defer _ = files.close(context, fileid);\n\n    var header: [mod.header_size]u8 = undefined;\n    switch (readAll(files, context, fileid, &header)) {\n        .bytes => |count| if (count < header.len) return mod_error_code,\n        .ior => |ior| return ior,\n    }\n    var song = mod.parseHeader(&header) catch return mod_error_code;\n    // The patterns' bytes, the samples, and the song, one after the other.\n    const pattern_slots = @as(usize, song.pattern_count) * mod.pattern_size / 2;\n    var frames: usize = 0;\n    for (song.samples) |info| frames += info.length;\n    const song_slots = (@sizeOf(mod.Song) + 1) / 2;\n    const out = poolSpace(self, engine, pattern_slots + frames + song_slots) catch return memory_error_code;\n    const base = self.audio_pool_used;\n\n    switch (readAll(files, context, fileid, std.mem.sliceAsBytes(out[0..pattern_slots]))) {\n        .bytes => |count| if (count < pattern_slots * 2) return mod_error_code,\n        .ior => |ior| return ior,\n    }\n    song.patterns_at = base * 2;\n    var at: usize = pattern_slots;\n    var buffer: [4096]u8 = undefined;\n    var ended = false;\n    for (&song.samples) |*info| {\n        info.start = @intCast(base + at);\n        var left: usize = info.length;\n        var done: usize = 0;\n        while (left > 0 and !ended) {\n            const part = @min(left, buffer.len);\n            const count = switch (readAll(files, context, fileid, buffer[0..part])) {\n                .bytes => |c| c,\n                .ior => |ior| return ior,\n            };\n            for (out[at + done ..][0..count], buffer[0..count]) |*s, byte| s.* = @as(i16, @as(i8, @bitCast(byte))) * 256;\n            done += count;\n            left -= count;\n            if (count < part) ended = true;\n        }\n        // A sample cut short by the file's end is as long as what was read.\n        info.length = @intCast(done);\n        if (info.loop_start + info.loop_length > info.length) {\n            info.loop_start = 0;\n            info.loop_length = 0;\n        }\n        at += done;\n    }\n    @memcpy(std.mem.sliceAsBytes(out[at..][0..song_slots])[0..@sizeOf(mod.Song)], std.mem.asBytes(&song));\n    const song_at: u32 = @intCast(base + at);\n    self.audio_pool_used = @intCast(base + at + song_slots);\n    try putCommand(self, engine, .{ .mod_load = song_at });\n    return 0;\n}\n\n/// Reads until `buffer` is full or the file ends: the bytes read, or the file's ior.\nfn readAll(files: *const forth.FileOps, context: ?*anyopaque, fileid: Cell, buffer: []u8) union(enum) { bytes: usize, ior: Cell } {\n    var used: usize = 0;\n    while (used < buffer.len) {\n        const result = files.read(context, fileid, buffer[used..]);\n        if (result.ior != 0) return .{ .ior = result.ior };\n        if (result.value == 0) break;\n        used += @intCast(result.value);\n    }\n    return .{ .bytes = used };\n}\n\n/// Which settings of the instrument being edited change.\nconst Change = struct {\n    style: ?union(enum) { none, chip: sound_engine.Chip } = null,\n    wave: ?parts.Wave = null,\n    duty: ?u8 = null,\n    attack: ?u8 = null,\n    decay: ?u8 = null,\n    sustain: ?u8 = null,\n    release: ?u8 = null,\n    ring: ?bool = null,\n    sync: ?bool = null,\n    filter: ?u8 = null,\n    cutoff: ?u16 = null,\n    resonance: ?u8 = null,\n    wavetable: ?[32]i8 = null,\n    sample: ?union(enum) { none, number: u8 } = null,\n};\n\n/// Changes the instrument INSTRUMENT chose, here and for the audio thread.\nfn changeInstrument(self: *State, change: Change) RuntimeError!void {\n    return changeInstrumentAt(self, self.audio_instrument, change);\n}\n\n/// Changes instrument `index`, here and for the audio thread.\nfn changeInstrumentAt(self: *State, index: u8, change: Change) RuntimeError!void {\n    const instrument = &self.audio_instruments[index];\n    if (change.style) |value| instrument.style = switch (value) {\n        .none => null,\n        .chip => |chip| chip,\n    };\n    if (change.wave) |value| instrument.wave = value;\n    if (change.duty) |value| instrument.duty = value;\n    if (change.attack) |value| instrument.attack = value;\n    if (change.decay) |value| instrument.decay = value;\n    if (change.sustain) |value| instrument.sustain = value;\n    if (change.release) |value| instrument.release = value;\n    if (change.ring) |value| instrument.ring = value;\n    if (change.sync) |value| instrument.sync = value;\n    if (change.filter) |value| instrument.filter = value;\n    if (change.cutoff) |value| instrument.cutoff = value;\n    if (change.resonance) |value| instrument.resonance = value;\n    if (change.wavetable) |value| instrument.wavetable = value;\n    if (change.sample) |value| instrument.sample = switch (value) {\n        .none => null,\n        .number => |n| n,\n    };\n    const engine = try getEngine(self);\n    try putCommand(self, engine, .{ .instrument = .{ .index = index, .value = instrument.* } });\n}\n\n/// PLAY: checks the voices' MML (an error puts nothing), then puts their notes,\n/// waiting while the queues are full. Ctrl+C while it waits drops every note put so far,\n/// as BEEP does without its sound, and throws USER INTERRUPT.\nfn play(self: *State, texts: []const []const u8) RuntimeError!void {\n    for (texts, 0..) |text, v| mml.check(self.audio_voices[v], text) catch return error.InvalidMml;\n    const engine = try getEngine(self);\n    var waiter: Waiter = .{ .state = self };\n    sound_engine.putPlay(engine, &self.audio_voices, texts, &waiter, Waiter.wait) catch |err| switch (err) {\n        error.InvalidMml => unreachable,\n        error.Interrupted => {\n            reset(self, engine, false) catch |reset_error| {\n                if (reset_error != error.UserInterrupt) return reset_error;\n            };\n            return waiter.failure orelse error.UserInterrupt;\n        },\n    };\n}\n\n/// Drops the notes put so far and sets the PSG as the MSX starts it, sounding BEEP's\n/// tone when `beep`; the voices' octave, length, tempo, and volume go back to MSX\n/// BASIC's defaults. It returns when the audio thread has taken the command, so that\n/// PLAY? is false at once.\nfn reset(self: *State, engine: *Engine, beep: bool) RuntimeError!void {\n    try stop(self, engine, engine.resetCommand(beep));\n}\n\n/// Puts a reset command (BEEP's, a stop's, or MSX-SOUND's and the others') and waits\n/// until the audio thread has taken it.\nfn stop(self: *State, engine: *Engine, command: sound_engine.Command) RuntimeError!void {\n    self.audio_voices = @splat(.{});\n    try putCommand(self, engine, command);\n    try waitTaken(self, engine);\n}\n\n/// Waits until the audio thread has taken the commands put so far. It takes them every\n/// few milliseconds; Ctrl+C is not taken here (the waits are short). The bound only\n/// guards against a host whose thread has stopped.\nfn waitTaken(self: *State, engine: *Engine) RuntimeError!void {\n    var waiter: Waiter = .{ .state = self };\n    var waits: usize = 0;\n    while (!engine.commands.isEmpty() and waits < max_reset_waits) : (waits += 1) {\n        if (!waiter.wait()) {\n            if (waiter.failure) |failure| if (failure != error.UserInterrupt) return failure;\n        }\n    }\n    if (!engine.commands.isEmpty()) return error.HostFailed;\n}\n\n/// About a second of the host's waits.\nconst max_reset_waits = 300;\n\nfn putCommand(self: *State, engine: *Engine, command: sound_engine.Command) RuntimeError!void {\n    var waiter: Waiter = .{ .state = self };\n    while (!engine.putCommand(command)) {\n        if (!waiter.wait()) return waiter.failure orelse error.UserInterrupt;\n    }\n}\n\n/// Waits for the audio thread through the host, and notices Ctrl+C.\nconst Waiter = struct {\n    state: *State,\n    failure: ?RuntimeError = null,\n\n    fn wait(self: *Waiter) bool {\n        const state = self.state;\n        const wait_fn = state.writer.audio_wait_fn orelse {\n            self.failure = error.HostUnavailable;\n            return false;\n        };\n        switch (wait_fn(state.writer.context)) {\n            .host_failed => {\n                self.failure = error.HostFailed;\n                return false;\n            },\n            .waited => return true,\n            .interrupted => {\n                self.failure = error.UserInterrupt;\n                return false;\n            },\n            .read_input => {\n                // Keys read here stay for INKEY; Ctrl+C throws.\n                graphics_input.readPending(state) catch |err| {\n                    self.failure = err;\n                    return false;\n                };\n                return true;\n            },\n        }\n    }\n};\n",
+    "src/core/words_pcm.zig": "//! Public PCM primitives. Validate before effects; all consumer storage is host-owned.\nconst std = @import(\"std\");\nconst forth = @import(\"../forth.zig\");\nconst defs = @import(\"defs.zig\");\nconst base = @import(\"runtime_base.zig\");\nconst Engine = @import(\"sound_engine.zig\").Engine;\nconst Session = @import(\"sound_stream_session.zig\").Session;\nconst State = forth.State;\nconst Cell = forth.Cell;\nconst Error = forth.RuntimeError;\n\nfn engineOf(self: *State) Error!*Engine {\n    const callback = self.writer.audio_fn orelse return error.HostUnavailable;\n    return callback(self.writer.context) orelse error.HostFailed;\n}\nfn owned(self: *State, id: Cell) Error!?*Engine {\n    if (self.writer.audio_fn == null) return error.HostUnavailable;\n    if (id <= 0 or self.audio_pcm_handle != id) return null;\n    const engine = try engineOf(self);\n    if (!engine.pcm_session.matches(@intFromPtr(self), id)) {\n        self.audio_pcm_handle = 0;\n        return null;\n    }\n    engine.pcm_session.refresh(&engine.pcm_control);\n    return engine;\n}\nfn result(self: *State, consumed: usize, value: Cell, ior: Cell) Error!void {\n    self.data_depth -= consumed;\n    try self.push(value);\n    try self.push(ior);\n}\nfn single(self: *State, ior: Cell) Error!void {\n    self.data_depth -= 1;\n    try self.push(ior);\n}\n\npub fn execute(self: *State, builtin: defs.Builtin) Error!void {\n    switch (builtin) {\n        .snd_pcm_open => {\n            try self.requireDepth(3);\n            const hz = try self.peek(2);\n            const channels = try self.peek(1);\n            const capacity = try self.peek(0);\n            if (hz < 8000 or hz > 192000 or channels < 1 or channels > 2 or capacity < 256 or capacity > 65536 or\n                !@import(\"sound_stream.zig\").validCapacity(@intCast(hz), @intCast(capacity))) return error.InvalidNumber;\n            if (self.writer.audio_scope_ops == null or self.writer.standard_clock == null or self.writer.audio_wait_fn == null) return error.HostUnavailable;\n            const engine = try engineOf(self);\n            if (self.audio_pcm_handle != 0 and !engine.pcm_session.matches(@intFromPtr(self), self.audio_pcm_handle)) self.audio_pcm_handle = 0;\n            if (self.audio_pcm_handle != 0) return result(self, 3, 0, -528);\n            const opened = try engine.pcm_session.open(&engine.pcm_control, @intFromPtr(self), @intCast(hz), @intCast(channels), @intCast(capacity), engine.sample_rate);\n            if (opened.ior == 0) self.audio_pcm_handle = opened.id;\n            try result(self, 3, opened.id, opened.ior);\n        },\n        .snd_pcm_write => {\n            try self.requireDepth(3);\n            const address = try self.peek(2);\n            const frames = try self.peek(1);\n            const id = try self.peek(0);\n            if (frames < 0) return error.InvalidNumber;\n            const engine = (try owned(self, id)) orelse return result(self, 3, 0, -521);\n            const session = &engine.pcm_session;\n            if (!session.writable()) return result(self, 3, 0, -534);\n            var bytes: []const u8 = &.{};\n            if (frames != 0) {\n                const product = @mulWithOverflow(@as(u64, @intCast(frames)), @as(u64, session.transport.channels) * 2);\n                if (product[1] != 0 or product[0] > std.math.maxInt(usize)) return error.InvalidAddress;\n                const length: usize = @intCast(product[0]);\n                const start = try self.memoryAddress(address, length);\n                bytes = self.memory[start..][0..length];\n            }\n            const copied = session.transport.write(bytes, @intCast(frames)) catch return error.HostFailed;\n            try result(self, 3, @intCast(copied), 0);\n        },\n        .snd_pcm_queued, .snd_pcm_underruns => {\n            try self.requireDepth(1);\n            if (self.data_depth >= self.data_stack.len) return error.StackOverflow;\n            const engine = (try owned(self, try self.peek(0))) orelse return result(self, 1, 0, -521);\n            const session = &engine.pcm_session;\n            const value: Cell = if (builtin == .snd_pcm_queued) session.transport.queued() else if (!engine.pcm_control.completed(session.request) and !session.detached) 0 else session.transport.underruns.load(.acquire);\n            try result(self, 1, value, 0);\n        },\n        .snd_pcm_wait, .snd_pcm_stop => {\n            try self.requireDepth(3);\n            const argument = try self.peek(2);\n            const milliseconds = try self.peek(1);\n            const id = try self.peek(0);\n            if (argument < 0 or (builtin == .snd_pcm_stop and argument > 1)) return error.InvalidNumber;\n            const engine = (try owned(self, id)) orelse return result(self, 3, 0, -521);\n            const session = &engine.pcm_session;\n            if (builtin == .snd_pcm_wait) {\n                if (argument == 0 or argument > session.transport.frames.len) return error.InvalidNumber;\n                if (!session.writable()) return result(self, 3, 0, -534);\n            } else {\n                if (session.phase == .closing) return result(self, 3, 0, -534);\n                if (session.phase == .stopped) return result(self, 3, -1, 0);\n            }\n            const ready = try waitFor(self, engine, if (builtin == .snd_pcm_wait) .space else .stop, argument, milliseconds);\n            try result(self, 3, if (ready) -1 else 0, 0);\n        },\n        .snd_pcm_close => {\n            try self.requireDepth(1);\n            const engine = (try owned(self, try self.peek(0))) orelse return single(self, -521);\n            const session = &engine.pcm_session;\n            if (session.phase != .stopped) {\n                const completed = waitFor(self, engine, .close, 0, 1000) catch |err| {\n                    if (err == error.UserInterrupt) return single(self, -516);\n                    return err;\n                };\n                if (!completed) return single(self, -528);\n            }\n            // Commit only after the whole-operation interrupt scope restored.\n            session.commitClose(&engine.pcm_control);\n            self.audio_pcm_handle = 0;\n            try single(self, 0);\n        },\n        else => unreachable,\n    }\n}\nconst Kind = enum { space, stop, close };\nfn waitFor(self: *State, engine: *Engine, kind: Kind, argument: Cell, milliseconds: Cell) Error!bool {\n    const ops = self.writer.audio_scope_ops orelse return error.HostUnavailable;\n    const clock = self.writer.standard_clock orelse return error.HostUnavailable;\n    const sleep = self.writer.audio_wait_fn orelse return error.HostUnavailable;\n    try ops.begin(self.writer.context, self);\n    const session = &engine.pcm_session;\n    if (kind == .close) session.beginClose();\n    if (kind == .stop and argument == 1 and session.writable()) session.transport.draining.store(true, .release);\n    const outcome = loop(self, engine, ops, clock, sleep, kind, argument, milliseconds);\n    // An uncommitted drain timeout/error returns to running. A published detach\n    // keeps suppression until ack and the next OPEN's quiescent initialization.\n    if (kind == .stop and !session.detached) session.transport.draining.store(false, .release);\n    ops.end(self.writer.context, self) catch |end_error| {\n        if (end_error != error.UserInterrupt) return end_error;\n        if (outcome) |_| {} else |work_error| if (work_error != error.UserInterrupt) return work_error;\n        return end_error;\n    };\n    return outcome;\n}\nfn loop(self: *State, engine: *Engine, ops: *const @import(\"host_interface.zig\").ExecutionOps, clock: base.Clock, sleep: *const fn (?*anyopaque) forth.AudioWait, kind: Kind, argument: Cell, milliseconds: Cell) Error!bool {\n    const deadline = try base.Deadline.afterMilliseconds(try clock.now(), milliseconds);\n    const session = &engine.pcm_session;\n    while (true) {\n        try ops.poll(self.writer.context, self);\n        session.refresh(&engine.pcm_control);\n        const ready = switch (kind) {\n            .space => session.transport.free() >= @as(u64, @intCast(argument)),\n            .stop => if (argument == 1 and !session.detached and session.transport.queued() != 0) false else try session.tryDetach(&engine.pcm_control, false),\n            .close => try session.tryDetach(&engine.pcm_control, true),\n        };\n        if (ready) return true;\n        if (deadline.expired(try clock.now())) return false;\n        switch (sleep(self.writer.context)) {\n            .host_failed => return error.HostFailed,\n            .interrupted => return error.UserInterrupt,\n            .waited, .read_input => {}, // scope.poll preserves raw input itself.\n        }\n    }\n}\n",
+    "src/audio/audio.fs": "\\ The audio library of FORTH/Sigma, written in Forth.\n\\\n\\ REQUIRE-AUDIO interprets this file, which is built into the program, after it has put\n\\ the SND- words in the AUDIO vocabulary. While the file loads, new words go into AUDIO,\n\\ AUDIO is searched first, and BASE is decimal; afterwards the search order, the current\n\\ word list, and BASE are what they were before REQUIRE-AUDIO.\n\\\n\\ To try a changed copy of this file without rebuilding, load the built-in one first\n\\ and then include the copy into AUDIO (its words then replace the built-in ones):\n\\   REQUIRE-AUDIO  ALSO AUDIO DEFINITIONS  DECIMAL  INCLUDE src/audio/audio.fs\n\\\n\\ The SND- words underneath:\n\\   SND-PLAY ( c-addr1 u1 c-addr2 u2 c-addr3 u3 -- )  the three voices of one PLAY\n\\   SND-SOUND ( reg value -- )  SND-BEEP ( -- )  SND-PLAYING ( n -- flag )\n\\   SND-DEVICE ( -- flag )  SND-PLAYS ( c-addr1 u1 ... c-addrn un n -- )\n\\     n=0 stops MML and resets its chip voices, keeping SFX/MOD and MML settings.\n\\   SND-CHIP ( n -- )  SND-INSTRUMENT ( n -- )  SND-WAVE ( n -- )\n\\   SND-DUTY ( percent -- )  SND-ADSR ( a d s r -- )  SND-RING ( flag -- )\n\\   SND-SYNC ( flag -- )  SND-FILTER ( mode cutoff resonance -- )\n\\   SND-WAVETABLE ( c-addr n -- )  SND-LOAD-SAMPLE ( c-addr u n -- ior )\n\\   SND-SAMPLE ( c-addr u rate n -- )  SND-LOOP-SAMPLE ( start end n -- )\n\\   SND-SAMPLE-INSTRUMENT ( n -- )  SND-SFX ( n -- )  SND-AMIGA-FILTER ( flag -- )\n\\   SND-FREE-SAMPLES ( -- )  SND-CHIPS ( mask -- )  SND-LOAD-MOD ( c-addr u -- ior )\n\\   SND-PLAY-MOD ( flag -- )  SND-STOP-MOD ( -- )  SND-MOD-PLAYING ( -- flag )\n\\   SND-STYLE ( chip -- )\n\\\n\\ The sound is MSX BASIC's: an AY-3-8910 at the MSX's clock, played by the host's audio\n\\ thread. PLAY takes MSX BASIC's music macro language (MML) and returns as soon as the\n\\ notes fit in the queues (32 places for each voice); the music goes on while the\n\\ program runs.\n\n\\ ---- MSX BASIC -------------------------------------------------------------------\n\n: PLAY ( c-addr u -- )   0 0 0 0 SND-PLAY ;\n: PLAY2 ( c-addr1 u1 c-addr2 u2 -- )   0 0 SND-PLAY ;\n: PLAY3 ( c-addr1 u1 c-addr2 u2 c-addr3 u3 -- )   SND-PLAY ;\n: PLAY? ( n -- flag )   SND-PLAYING ;\n: SOUND ( reg value -- )   SND-SOUND ;\n: BEEP ( -- )   SND-BEEP ;\n\n\\ ---- Chips ----------------------------------------------------------------------\n\\\n\\ PLAY has 8 voices. These words say which chip the voices sound like; an instrument\n\\ with STYLE sounds like its own chip on any voice. Choosing them stops the music, as\n\\ BEEP does without its sound; the PSG of SOUND and BEEP sounds with every chip.\n\n: MSX-SOUND ( -- )   0 SND-CHIP ;     \\ the MSX's AY-3-8910, 3 voices (at start)\n: ST-SOUND ( -- )   1 SND-CHIP ;      \\ the Atari ST's YM2149 at 2 MHz, 3 voices\n: NES-SOUND ( -- )   2 SND-CHIP ;     \\ the NES: pulse, pulse, triangle, noise\n: C64-SOUND ( -- )   3 SND-CHIP ;     \\ the C64's SID (PAL), 3 voices\n: SCC-SOUND ( -- )   4 SND-CHIP ;     \\ Konami's SCC, 5 voices\n: AMIGA-SOUND ( -- )   5 SND-CHIP ;   \\ the Amiga's Paula (PAL): samples, 4 voices\n: PLAYS ( c-addr1 u1 ... c-addrn un n -- )   SND-PLAYS ;\n\n\\ Several chips together: CHIPS takes their bits, e.g. MSX SCC OR CHIPS, and numbers\n\\ the voices in this order (there voices 1 to 3 are the PSG's, 4 to 8 the SCC's). The\n\\ voices after the last chip's own sound like the last chip; voices past the 8th are\n\\ not played.\n\n1 CONSTANT MSX   2 CONSTANT ST   4 CONSTANT NES   8 CONSTANT C64\n16 CONSTANT SCC   32 CONSTANT AMIGA\n: CHIPS ( mask -- )   SND-CHIPS ;\n\n\\ The chip the instrument INSTRUMENT chose sounds like, on any voice: one of the\n\\ constants above, or 0 for the chip of the voice that plays it.\n: STYLE ( chip -- )   SND-STYLE ;\n\n\\ ---- Instruments ----------------------------------------------------------------\n\\\n\\ MML's @n plays with instrument n (0 to 63) on the chips that have instruments (the\n\\ NES, the C64, the SCC, and the Amiga). INSTRUMENT chooses the one the words after it change, e.g.\n\\   1 INSTRUMENT  PULSE 25 DUTY  0 6 8 4 ADSR\n\\   2 INSTRUMENT  SAW  1 400 8 FILTER       ( the C64: low-pass, cutoff, resonance )\n\n: INSTRUMENT ( n -- )   SND-INSTRUMENT ;\n: SQUARE ( -- )   0 SND-WAVE ;\n: PULSE ( -- )   1 SND-WAVE ;\n: TRIANGLE ( -- )   2 SND-WAVE ;\n: SAW ( -- )   3 SND-WAVE ;\n: NOISE ( -- )   4 SND-WAVE ;\n: DUTY ( percent -- )   SND-DUTY ;\n: ADSR ( attack decay sustain release -- )   SND-ADSR ;\n: RING ( flag -- )   SND-RING ;\n: SYNC ( flag -- )   SND-SYNC ;\n: FILTER ( mode cutoff resonance -- )   SND-FILTER ;\n\\ The SCC plays instrument n with the 32 signed bytes at c-addr as its wave.\n: SCC-WAVE ( c-addr n -- )   SND-WAVETABLE ;\n\n\\ ---- Samples --------------------------------------------------------------------\n\\\n\\ Samples 0 to 63 are recorded sound in the host's pool (64 MiB, outside the\n\\ dictionary's memory). The Amiga plays an instrument's sample with its notes, O4's C\n\\ at the sample's own rate; SFX plays one at once beside the music, on any chip.\n\n: LOAD-SAMPLE ( c-addr u n -- )   SND-LOAD-SAMPLE THROW ;   \\ a WAV file, 8 or 16 bits\n: SAMPLE ( c-addr u rate n -- )   SND-SAMPLE ;              \\ signed 8-bit bytes\n: LOOP-SAMPLE ( start end n -- )   SND-LOOP-SAMPLE ;        \\ 0 0 for no loop\n: SAMPLE-INSTRUMENT ( n -- )   SND-SAMPLE-INSTRUMENT ;      \\ -1 for none\n: SFX ( n -- )   SND-SFX ;\n: FREE-SAMPLES ( -- )   SND-FREE-SAMPLES ;                  \\ stops the music too\n: AMIGA-FILTER ( flag -- )   SND-AMIGA-FILTER ;             \\ the LED filter\n\n\\ ---- Modules ----------------------------------------------------------------------\n\\\n\\ A ProTracker module (MOD, 4 channels) plays beside PLAY and SFX, on the Amiga's\n\\ periods and filters; its data is in the pool of samples, which FREE-SAMPLES empties.\n\n: LOAD-MOD ( c-addr u -- )   SND-LOAD-MOD THROW ;\n: PLAY-MOD ( flag -- )   SND-PLAY-MOD ;     \\ again from the start after the end when true\n: STOP-MOD ( -- )   SND-STOP-MOD ;\n: MOD? ( -- flag )   SND-MOD-PLAYING ;\n\n\\ ---- The device ------------------------------------------------------------------\n\n: AUDIO? ( -- flag )   SND-DEVICE ;\n\n\\ Streaming PCM (host-owned bounded frames).\n: PCM-OPEN SND-PCM-OPEN ;\n: PCM-WRITE SND-PCM-WRITE ;\n: PCM-QUEUED SND-PCM-QUEUED ;\n: PCM-WAIT SND-PCM-WAIT ;\n: PCM-STOP SND-PCM-STOP ;\n: PCM-CLOSE SND-PCM-CLOSE ;\n: PCM-UNDERRUNS SND-PCM-UNDERRUNS ;\n",
+    "examples/pcm-synth.fs": "\\ Original Forth-only synthesis workload for task999. NOT a hardware emulator.\n\\ Loading only defines words: it does not open audio or play anything.\n\\ 4 voices; Q24 phase; fixed 48000 Hz mono signed16 little-endian output.\nDECIMAL\n48000 CONSTANT PS-RATE\n16777216 CONSTANT PS-TURN\nCREATE PS-KIND 4 CELLS ALLOT\nCREATE PS-STEP 4 CELLS ALLOT\nCREATE PS-GAIN 4 CELLS ALLOT\nCREATE PS-DUTY 4 CELLS ALLOT\nCREATE PS-PHASE 4 CELLS ALLOT\nCREATE PS-NOISE 4 CELLS ALLOT\n: PS-AT ( voice base -- addr ) SWAP CELLS + ;\n: PS-VOICE? ( voice -- ) 0 4 WITHIN 0= IF -24 THROW THEN ;\n: PS-RESET ( -- )\n  4 0 DO\n    0 I PS-KIND PS-AT ! 0 I PS-STEP PS-AT !\n    0 I PS-GAIN PS-AT ! 128 I PS-DUTY PS-AT !\n    0 I PS-PHASE PS-AT ! 1 I PS-NOISE PS-AT !\n  LOOP ;\n\\ Write (value voice register): 0 kind(0mute/1pulse/2triangle/3noise),\n\\ 1 Hz(0..23999), 2 peak gain(0..8191), 3 pulse duty(1..255 /256).\n\\ Validate all arguments before changing state; other fields/phase stay intact.\n: PS-REG! ( value voice register -- )\n  OVER PS-VOICE?\n  DUP 0 4 WITHIN 0= IF -24 THROW THEN\n  DUP 0= IF DROP OVER 0 4 WITHIN 0= IF -24 THROW THEN PS-KIND PS-AT ! EXIT THEN\n  DUP 1 = IF DROP OVER 0 24000 WITHIN 0= IF -24 THROW THEN\n    SWAP PS-TURN * PS-RATE / SWAP PS-STEP PS-AT ! EXIT THEN\n  DUP 2 = IF DROP OVER 0 8192 WITHIN 0= IF -24 THROW THEN PS-GAIN PS-AT ! EXIT THEN\n  DROP OVER 1 256 WITHIN 0= IF -24 THROW THEN PS-DUTY PS-AT ! ;\n: PS-LFSR ( u -- u ) DUP DUP 1 RSHIFT XOR 1 AND 15 LSHIFT SWAP 1 RSHIFT OR ;\n: PS-VOICE ( voice -- sample )\n  DUP PS-PHASE PS-AT @ OVER PS-STEP PS-AT @ +\n  DUP PS-TURN >= IF\n    OVER PS-NOISE PS-AT DUP @ PS-LFSR SWAP !\n  THEN\n  PS-TURN 1- AND DUP 2 PICK PS-PHASE PS-AT !\n  OVER PS-KIND PS-AT @\n  DUP 0= IF DROP 2DROP 0 EXIT THEN\n  DUP 1 = IF DROP OVER PS-DUTY PS-AT @ 65536 * <\n    IF PS-GAIN PS-AT @ ELSE PS-GAIN PS-AT @ NEGATE THEN EXIT THEN\n  2 = IF\n    14 RSHIFT DUP 512 < IF 128 * 32768 - ELSE 128 * 98304 SWAP - THEN\n    SWAP PS-GAIN PS-AT @ * 32768 / EXIT THEN\n  DROP DUP PS-NOISE PS-AT @ 1 AND IF PS-GAIN PS-AT @ ELSE PS-GAIN PS-AT @ NEGATE THEN ;\n: PS-SAMPLE ( -- n ) 0 4 0 DO I PS-VOICE + LOOP ;\n: PS-LE! ( n addr -- ) OVER 255 AND OVER C! SWAP 8 RSHIFT 255 AND SWAP 1+ C! ;\n\\ Caller supplies a valid destination of frames*2 bytes; no audio host needed.\n: PS-RENDER ( addr frames -- ) DUP 0< IF -24 THROW THEN 0 ?DO PS-SAMPLE OVER PS-LE! 2 + LOOP DROP ;\n: PS-DEMO-SETUP ( -- )\n  PS-RESET\n  1 0 0 PS-REG! 440 0 1 PS-REG! 2000 0 2 PS-REG! 64 0 3 PS-REG!\n  1 1 0 PS-REG! 660 1 1 PS-REG! 2000 1 2 PS-REG!\n  2 2 0 PS-REG! 110 2 1 PS-REG! 2000 2 2 PS-REG!\n  3 3 0 PS-REG! 3000 3 1 PS-REG! 500 3 2 PS-REG! ;\nPS-RESET\n",
+    "examples/ym2149.fs": "\\ Original declared YM2149/ST model. No real peripheral I/O or ROM fidelity.\nS\" examples/ym2149-levels.fs\" INCLUDED\nDECIMAL\n2000000 CONSTANT YM-CPU 48000 CONSTANT YM-RATE\n16746496 CONSTANT YM-SELECT-ADDRESS 16746498 CONSTANT YM-DATA-ADDRESS\nCREATE YM-REGS 16 CELLS ALLOT\nCREATE YM-TONE-COUNT 3 CELLS ALLOT CREATE YM-TONE-HIGH 3 CELLS ALLOT\nCREATE YM-PINS 2 CELLS ALLOT\nVARIABLE YM-NOISE-COUNT VARIABLE YM-NOISE-HALF VARIABLE YM-LFSR\nVARIABLE YM-ENV-COUNT VARIABLE YM-ENV-STEP VARIABLE YM-ENV-ATTACK\nVARIABLE YM-ENV-HOLD VARIABLE YM-ENV-ALTERNATE VARIABLE YM-ENV-HOLDING\nVARIABLE YM-CYCLE VARIABLE YM-DIV VARIABLE YM-FRACTION VARIABLE YM-SLOW\nVARIABLE YM-SELECT\nCREATE YM-EVENTS 3072 CELLS ALLOT VARIABLE YM-EVENT-COUNT VARIABLE YM-EVENT-INDEX\n: YM-R@ ( reg -- byte ) CELLS YM-REGS + @ ;\n: YM-RESET ( -- )\n  YM-REGS 16 CELLS 0 FILL YM-TONE-COUNT 3 CELLS 0 FILL YM-TONE-HIGH 3 CELLS 0 FILL\n  255 YM-PINS ! 255 YM-PINS CELL+ !\n  0 YM-NOISE-COUNT ! 0 YM-NOISE-HALF ! 1 YM-LFSR !\n  0 YM-ENV-COUNT ! 31 YM-ENV-STEP ! 0 YM-ENV-ATTACK !\n  TRUE YM-ENV-HOLD ! FALSE YM-ENV-ALTERNATE ! TRUE YM-ENV-HOLDING !\n  0 YM-CYCLE ! 0 YM-DIV ! 0 YM-FRACTION ! FALSE YM-SLOW !\n  0 YM-SELECT ! 0 YM-EVENT-COUNT ! 0 YM-EVENT-INDEX ! ;\n: YM-TONE-PERIOD ( channel -- steps ) 2 * DUP YM-R@ SWAP 1+ YM-R@ 15 AND 8 LSHIFT OR 1 MAX ;\n: YM-NOISE-PERIOD ( -- steps ) 6 YM-R@ 31 AND 1 MAX ;\n: YM-ENV-PERIOD ( -- steps ) 11 YM-R@ 12 YM-R@ 8 LSHIFT OR 1 MAX ;\n: YM-ENV-LEVEL ( -- level ) YM-ENV-STEP @ YM-ENV-ATTACK @ XOR ;\n: YM-ENV-START { | shape -- }\n  13 YM-R@ 15 AND TO shape\n  shape 4 AND IF 31 ELSE 0 THEN YM-ENV-ATTACK !\n  shape 8 AND 0= IF TRUE YM-ENV-HOLD ! YM-ENV-ATTACK @ 0<> YM-ENV-ALTERNATE !\n  ELSE shape 1 AND 0<> YM-ENV-HOLD ! shape 2 AND 0<> YM-ENV-ALTERNATE ! THEN\n  31 YM-ENV-STEP ! 0 YM-ENV-COUNT ! FALSE YM-ENV-HOLDING ! ;\n: YM-ENV-NEXT ( -- )\n  YM-ENV-STEP @ 0> IF -1 YM-ENV-STEP +! ELSE\n    YM-ENV-ALTERNATE @ IF YM-ENV-ATTACK @ 31 XOR YM-ENV-ATTACK ! THEN\n    YM-ENV-HOLD @ IF TRUE YM-ENV-HOLDING ! ELSE 31 YM-ENV-STEP ! THEN\n  THEN ;\n: YM-NOISE-NEXT ( -- )\n  YM-LFSR @ DUP 3 RSHIFT XOR 1 AND 16 LSHIFT YM-LFSR @ 1 RSHIFT OR YM-LFSR ! ;\n: YM-STEP-LIMIT { steps -- n }\n  3 0 DO I YM-TONE-PERIOD YM-TONE-COUNT I CELLS + @ - 1 MAX steps MIN TO steps LOOP\n  YM-NOISE-PERIOD YM-NOISE-COUNT @ - 1 MAX 2 * 1 - YM-NOISE-HALF @ + steps MIN TO steps\n  YM-ENV-HOLDING @ 0= IF YM-ENV-PERIOD YM-ENV-COUNT @ - 1 MAX steps MIN TO steps THEN steps ;\n: YM-ADVANCE-STEPS { steps | count noise -- }\n  3 0 DO\n    YM-TONE-COUNT I CELLS + @ steps + TO count\n    count I YM-TONE-PERIOD >= IF 0 TO count YM-TONE-HIGH I CELLS + DUP @ 0= SWAP ! THEN\n    count YM-TONE-COUNT I CELLS + !\n  LOOP\n  steps 1 + YM-NOISE-HALF @ - 2 / TO noise\n  YM-NOISE-HALF @ steps 1 AND + 1 AND YM-NOISE-HALF !\n  noise IF\n    YM-NOISE-COUNT @ noise + DUP YM-NOISE-PERIOD >= IF DROP 0 YM-NOISE-NEXT THEN YM-NOISE-COUNT !\n  THEN\n  YM-ENV-HOLDING @ 0= IF\n    YM-ENV-COUNT @ steps + DUP YM-ENV-PERIOD >= IF DROP 0 YM-ENV-NEXT THEN YM-ENV-COUNT !\n  THEN ;\n: YM-FAST-STEPS { steps | n -- }\n  BEGIN steps 0> WHILE steps YM-STEP-LIMIT TO n n YM-ADVANCE-STEPS n NEGATE +TO steps REPEAT ;\n: YM-RAW-RUN { clocks | steps -- }\n  clocks 0< clocks 9223372036854775807 YM-CYCLE @ - > OR IF -24 THROW THEN\n  YM-SLOW @ IF\n    clocks 0 ?DO YM-DIV @ 1+ DUP 8 = IF DROP 0 1 YM-ADVANCE-STEPS THEN YM-DIV ! LOOP\n  ELSE\n    YM-DIV @ clocks + 8 /MOD TO steps YM-DIV ! steps YM-FAST-STEPS\n  THEN clocks YM-CYCLE +! ;\n: YM-RAW-TO ( tick -- ) DUP YM-CYCLE @ < IF -24 THROW THEN YM-CYCLE @ - YM-RAW-RUN ;\n: YM-CHECK { value target tick -- }\n  value 0 256 WITHIN target 0 20 WITHIN AND 0= IF -24 THROW THEN\n  tick YM-CYCLE @ < IF -24 THROW THEN ;\n: YM-CHECK-REG ( reg -- ) 0 16 WITHIN 0= IF -24 THROW THEN ;\n: YM-CHECK-PORT ( port -- ) 0 2 WITHIN 0= IF -24 THROW THEN ;\n: YM-STORE { value target -- }\n  target 16 < IF value target CELLS YM-REGS + ! target 13 = IF YM-ENV-START THEN EXIT THEN\n  target 18 < IF value target 16 - CELLS YM-PINS + ! EXIT THEN\n  target 18 = IF\n    value YM-SELECT ! EXIT\n  THEN\n  YM-SELECT @ 16 < IF value YM-SELECT @ CELLS YM-REGS + ! YM-SELECT @ 13 = IF YM-ENV-START THEN THEN ;\n: YM-COMPACT ( -- )\n  YM-EVENT-INDEX @ 3 * CELLS YM-EVENTS + YM-EVENTS YM-EVENT-COUNT @ YM-EVENT-INDEX @ - 3 * CELLS MOVE\n  YM-EVENT-INDEX @ NEGATE YM-EVENT-COUNT +! 0 YM-EVENT-INDEX ! ;\n: YM-QUEUE { value target tick | entry -- }\n  value target tick YM-CHECK\n  YM-EVENT-COUNT @ YM-EVENT-INDEX @ - 1024 >= IF -528 THROW THEN\n  YM-EVENT-COUNT @ IF YM-EVENT-COUNT @ 1- 3 * 2 + CELLS YM-EVENTS + @ tick > IF -24 THROW THEN THEN\n  YM-EVENT-COUNT @ 1024 >= IF YM-COMPACT THEN\n  YM-EVENT-COUNT @ 3 * CELLS YM-EVENTS + TO entry value entry ! target entry CELL+ ! tick entry 2 CELLS + !\n  1 YM-EVENT-COUNT +! ;\n: YM-EVENT! { value reg tick -- } reg YM-CHECK-REG value reg tick YM-QUEUE ;\n: YM-INPUT-EVENT! { value port tick -- } port YM-CHECK-PORT value port 16 + tick YM-QUEUE ;\n: YM-BUS-TARGET ( address -- target )\n  CASE YM-SELECT-ADDRESS OF 18 ENDOF YM-DATA-ADDRESS OF 19 ENDOF -24 THROW ENDCASE ;\n: YM-BUS-EVENT! { value address tick -- } value address YM-BUS-TARGET tick YM-QUEUE ;\n: YM-TO { tick | entry at -- }\n  tick YM-CYCLE @ < IF -24 THROW THEN\n  BEGIN YM-EVENT-INDEX @ YM-EVENT-COUNT @ < WHILE\n    YM-EVENT-INDEX @ 3 * CELLS YM-EVENTS + TO entry entry 2 CELLS + @ TO at\n    at tick > IF tick YM-RAW-TO EXIT THEN\n    at YM-RAW-TO entry @ entry CELL+ @ YM-STORE 1 YM-EVENT-INDEX +!\n  REPEAT tick YM-RAW-TO ;\n: YM-RUN ( clocks -- ) DUP 0< IF -24 THROW THEN DUP 9223372036854775807 YM-CYCLE @ - > IF -24 THROW THEN YM-CYCLE @ + YM-TO ;\n: YM-WRITE { value reg tick -- } reg YM-CHECK-REG value reg tick YM-CHECK tick YM-TO value reg YM-STORE ;\n: YM-INPUT! { value port tick -- } port YM-CHECK-PORT value port 16 + tick YM-CHECK tick YM-TO value port 16 + YM-STORE ;\n: YM-BUS! { value address tick | target -- } address YM-BUS-TARGET TO target value target tick YM-CHECK tick YM-TO value target YM-STORE ;\n: YM-PORT@ ( port -- latch drive-mask )\n  DUP YM-CHECK-PORT DUP 14 + YM-R@ SWAP 7 YM-R@ SWAP 64 SWAP LSHIFT AND IF 255 ELSE 0 THEN ;\n: YM-PIN@ { port | pins -- value }\n  port YM-CHECK-PORT YM-PINS port CELLS + @ TO pins\n  7 YM-R@ 64 port LSHIFT AND IF port 14 + YM-R@ pins AND ELSE pins THEN ;\n: YM-READ { reg tick -- byte }\n  reg YM-CHECK-REG tick YM-CYCLE @ < IF -24 THROW THEN tick YM-TO\n  reg 14 < IF reg YM-R@ ELSE reg 14 - YM-PIN@ THEN ;\n: YM-BUS@ { address tick -- byte }\n  address YM-DATA-ADDRESS = IF -21 THROW THEN address YM-SELECT-ADDRESS <> IF -24 THROW THEN\n  tick YM-CYCLE @ < IF -24 THROW THEN tick YM-TO\n  YM-SELECT @ 16 < IF YM-SELECT @ tick YM-READ ELSE 255 THEN ;\n: YM-CHANNEL { channel | amplitude level -- s16level }\n  YM-TONE-HIGH channel CELLS + @ 7 YM-R@ 1 channel LSHIFT AND OR 0<>\n  YM-LFSR @ 1 AND 7 YM-R@ 8 channel LSHIFT AND OR 0<> AND 0= IF 0 EXIT THEN\n  channel 8 + YM-R@ TO amplitude\n  amplitude 16 AND IF YM-ENV-LEVEL ELSE amplitude 15 AND DUP IF 2 * 1+ THEN THEN\n  CELLS YM-LEVELS + @ ;\n: YM-SAMPLE ( -- s16 ) 0 YM-CHANNEL 1 YM-CHANNEL + 2 YM-CHANNEL + 3 / ;\n: YM-LE! ( n address -- ) OVER 255 AND OVER C! SWAP 8 RSHIFT 255 AND SWAP 1+ C! ;\n: YM-RENDER { address frames -- }\n  frames 0< IF -24 THROW THEN\n  frames 0 ?DO YM-FRACTION @ YM-CPU + YM-RATE /MOD YM-RUN YM-FRACTION !\n    YM-SAMPLE address YM-LE! address 2 + TO address LOOP ;\n: YM-DEMO-SETUP ( -- )\n  YM-RESET 28 0 0 YM-WRITE 1 1 0 YM-WRITE 227 2 0 YM-WRITE 1 3 0 YM-WRITE\n  82 4 0 YM-WRITE 2 5 0 YM-WRITE 9 6 0 YM-WRITE 48 7 0 YM-WRITE\n  12 8 0 YM-WRITE 10 9 0 YM-WRITE 16 10 0 YM-WRITE\n  100 11 0 YM-WRITE 0 12 0 YM-WRITE 14 13 0 YM-WRITE ;\nYM-RESET\n",
+    "examples/nes-apu.fs": "\\ Original Forth NTSC NES APU register-model prototype. No audio on load.\n\\ Source facts: docs/NES_APU_FORTH.md. DMC: docs/NES_DMC_FORTH.md. PAL/bus races/filtering excluded.\nDECIMAL\n1789773 CONSTANT NA-CPU\n48000 CONSTANT NA-RATE\nCREATE NA-STATE 44 CELLS ALLOT\n\\ Per channel: control,period,timer,sequence,length,env-start,env-div,decay,\n\\              sweep-register,sweep-divider,sweep-reload.\n: NA@ ( channel field -- value ) SWAP 11 * + CELLS NA-STATE + @ ;\n: NA! ( value channel field -- ) SWAP 11 * + CELLS NA-STATE + ! ;\nCREATE NA-LENGTHS\n10 , 254 , 20 , 2 , 40 , 4 , 80 , 6 , 160 , 8 , 60 , 10 , 14 , 12 , 26 , 14 ,\n12 , 16 , 24 , 18 , 48 , 20 , 96 , 22 , 192 , 24 , 72 , 26 , 16 , 28 , 32 , 30 ,\nCREATE NA-NOISE-PERIODS\n4 , 8 , 16 , 32 , 64 , 96 , 128 , 160 , 202 , 254 , 380 , 508 , 762 , 1016 , 2034 , 4068 ,\nCREATE NA-DUTIES 2 , 6 , 30 , 249 ,\nVARIABLE NA-CYCLE VARIABLE NA-FRAME VARIABLE NA-MODE VARIABLE NA-INHIBIT\nVARIABLE NA-IRQ VARIABLE NA-ENABLE VARIABLE NA-LINEAR VARIABLE NA-RELOAD\nVARIABLE NA-LFSR VARIABLE NA-NOISE-MODE VARIABLE NA-RESET-AT VARIABLE NA-PENDING-MODE\nVARIABLE NA-FRACTION VARIABLE NA-SLOW\nCREATE NA-EVENTS 3072 CELLS ALLOT\nVARIABLE NA-EVENT-COUNT VARIABLE NA-EVENT-INDEX\nCREATE NA-DMC 15 CELLS ALLOT\nCREATE NA-DMC-MEMORY 32768 ALLOT\nCREATE NA-DMC-RATES\n428 , 380 , 340 , 320 , 286 , 254 , 226 , 214 , 190 , 160 , 142 , 128 , 106 , 84 , 72 , 54 ,\n\\ DMC: ctrl,dac,start-reg,length-reg,period,timer,address,remaining,\n\\      buffer,full,shift,bits,silent,irq,fetch-count.\n: ND@ ( field -- value ) CELLS NA-DMC + @ ;\n: ND! ( value field -- ) CELLS NA-DMC + ! ;\n: NA-MEM! { value address -- }\n  value 0 256 WITHIN 0= IF -24 THROW THEN\n  address 32768 65536 WITHIN 0= IF -24 THROW THEN\n  value address 32768 - NA-DMC-MEMORY + C! ;\n: NA-DMC-RESTART ( -- ) 2 ND@ 64 * 49152 + 6 ND! 3 ND@ 16 * 1+ 7 ND! ;\n: NA-DMC-FETCH ( -- )\n  9 ND@ 0= 7 ND@ 0> AND IF\n    6 ND@ 32768 - NA-DMC-MEMORY + C@ 8 ND! 1 9 ND!\n    6 ND@ 1+ DUP 65536 = IF DROP 32768 THEN 6 ND!\n    7 ND@ 1- DUP 7 ND! 0= IF\n      0 ND@ 64 AND IF NA-DMC-RESTART\n      ELSE 0 ND@ 128 AND IF 1 13 ND! THEN THEN\n    THEN\n    14 ND@ 1+ 14 ND!\n  THEN ;\n: NA-DMC-OUTPUT ( -- )\n  12 ND@ 0= IF\n    10 ND@ 1 AND IF 1 ND@ 125 <= IF 1 ND@ 2 + 1 ND! THEN\n    ELSE 1 ND@ 2 >= IF 1 ND@ 2 - 1 ND! THEN THEN\n  THEN\n  10 ND@ 1 RSHIFT 10 ND!\n  11 ND@ 1- DUP 11 ND! 0= IF\n    8 11 ND!\n    9 ND@ IF 0 12 ND! 8 ND@ 10 ND! 0 9 ND!\n    ELSE 1 12 ND! THEN\n  THEN ;\n\\ Fast caller splits at each output clock, so at most one clock is due.\n: NA-DMC-CLOCK { clocks -- }\n  clocks 0= IF EXIT THEN\n  clocks 5 ND@ <= IF 5 ND@ clocks - 5 ND!\n  ELSE 4 ND@ 5 ND! NA-DMC-OUTPUT THEN ;\n: NA-DMC-NEXT ( -- cpu-clocks ) 5 ND@ 1+ 2 * NA-CYCLE @ 1 AND - ;\n: NA-RESET ( -- )\n  NA-STATE 44 CELLS 0 FILL\n  NA-DMC 15 CELLS 0 FILL 213 4 ND! 8 11 ND! 1 12 ND!\n  0 NA-CYCLE ! 0 NA-FRAME ! 0 NA-MODE ! 0 NA-INHIBIT !\n  0 NA-IRQ ! 0 NA-ENABLE ! 0 NA-LINEAR ! 0 NA-RELOAD !\n  1 NA-LFSR ! 0 NA-NOISE-MODE ! 0 NA-RESET-AT ! 0 NA-PENDING-MODE !\n  0 NA-FRACTION ! 0 NA-SLOW ! 1 3 1 NA!\n  0 NA-EVENT-COUNT ! 0 NA-EVENT-INDEX ! ;\n: NA-ENV { ch | ctl -- }\n  ch 0 NA@ TO ctl\n  ch 5 NA@ IF\n    0 ch 5 NA! 15 ch 7 NA! ctl 15 AND ch 6 NA!\n  ELSE\n    ch 6 NA@ IF ch 6 NA@ 1- ch 6 NA!\n    ELSE\n      ctl 15 AND ch 6 NA!\n      ch 7 NA@ IF ch 7 NA@ 1- ch 7 NA!\n      ELSE ctl 32 AND IF 15 ch 7 NA! THEN THEN\n    THEN\n  THEN ;\n: NA-QUARTER ( -- )\n  0 NA-ENV 1 NA-ENV 3 NA-ENV\n  NA-RELOAD @ IF 2 0 NA@ 127 AND NA-LINEAR !\n  ELSE NA-LINEAR @ IF -1 NA-LINEAR +! THEN THEN\n  2 0 NA@ 128 AND 0= IF 0 NA-RELOAD ! THEN ;\n: NA-TARGET { ch | period sweep delta -- target }\n  ch 1 NA@ TO period ch 8 NA@ TO sweep\n  period sweep 7 AND RSHIFT TO delta\n  sweep 8 AND IF period delta - ch 0= IF 1- THEN 0 MAX\n  ELSE period delta + THEN ;\n: NA-MUTED? ( ch -- flag ) DUP 1 NA@ 8 < SWAP NA-TARGET 2047 > OR ;\n: NA-HALF { | halt ch sweep -- }\n  4 0 DO\n    I TO ch ch 2 = IF 128 ELSE 32 THEN TO halt\n    ch 0 NA@ halt AND 0= ch 4 NA@ 0> AND IF ch 4 NA@ 1- ch 4 NA! THEN\n  LOOP\n  2 0 DO\n    I TO ch ch 8 NA@ TO sweep\n    ch 9 NA@ 0= sweep 128 AND 0<> AND sweep 7 AND 0<> AND\n    ch NA-MUTED? 0= AND IF ch NA-TARGET ch 1 NA! THEN\n    ch 9 NA@ 0= ch 10 NA@ OR IF\n      sweep 4 RSHIFT 7 AND ch 9 NA! 0 ch 10 NA!\n    ELSE ch 9 NA@ 1- ch 9 NA! THEN\n  LOOP ;\n: NA-NEXT-FRAME ( -- frame )\n  NA-FRAME @ DUP 7457 < IF DROP 7457 EXIT THEN\n  DUP 14913 < IF DROP 14913 EXIT THEN\n  DUP 22371 < IF DROP 22371 EXIT THEN\n  NA-MODE @ IF 37281 < IF 37281 ELSE 37282 THEN\n  ELSE DUP 29828 < IF DROP 29828 EXIT THEN\n    29829 < IF 29829 ELSE 29830 THEN THEN ;\n: NA-FRAME-EVENT ( -- )\n  NA-FRAME @ DUP 7457 = OVER 22371 = OR IF DROP NA-QUARTER EXIT THEN\n  DUP 14913 = IF DROP NA-QUARTER NA-HALF EXIT THEN\n  NA-MODE @ IF\n    DUP 37281 = IF NA-QUARTER NA-HALF THEN\n    37282 = IF 0 NA-FRAME ! THEN\n  ELSE\n    DUP 29828 >= IF NA-INHIBIT @ 0= IF 1 NA-IRQ ! THEN THEN\n    DUP 29829 = IF NA-QUARTER NA-HALF THEN\n    29830 = IF 0 NA-FRAME ! THEN\n  THEN ;\n: NA-FRAME-END ( -- )\n  NA-RESET-AT @ DUP 0<> SWAP NA-CYCLE @ = AND IF\n    0 NA-RESET-AT ! 0 NA-FRAME ! NA-PENDING-MODE @ NA-MODE !\n    NA-MODE @ IF NA-QUARTER NA-HALF THEN\n  ELSE NA-FRAME-EVENT THEN ;\n: NA-NOISE-SHIFT ( -- )\n  NA-LFSR @ DUP NA-NOISE-MODE @ IF 6 ELSE 1 THEN RSHIFT XOR 1 AND\n  14 LSHIFT NA-LFSR @ 1 RSHIFT OR NA-LFSR ! ;\n\\ Batch a divider's input clocks; same zero->reload semantics as reference tick.\n: NA-CLOCK { clocks ch | timer period events rest -- }\n  clocks 0= IF EXIT THEN\n  ch 2 NA@ TO timer ch 1 NA@ TO period\n  clocks timer <= IF timer clocks - ch 2 NA! EXIT THEN\n  clocks timer - 1- TO rest\n  rest period 1+ / 1+ TO events\n  period rest period 1+ MOD - ch 2 NA!\n  ch 2 < IF ch 3 NA@ events + 7 AND ch 3 NA! EXIT THEN\n  ch 2 = IF\n    ch 4 NA@ 0<> NA-LINEAR @ 0<> AND IF ch 3 NA@ events + 31 AND ch 3 NA! THEN EXIT\n  THEN\n  events 0 ?DO NA-NOISE-SHIFT LOOP ;\n: NA-TICK ( -- )\n  1 NA-CYCLE +! NA-DMC-FETCH\n  NA-CYCLE @ 1 AND 0= IF 1 0 NA-CLOCK 1 1 NA-CLOCK 1 3 NA-CLOCK 1 NA-DMC-CLOCK THEN\n  1 2 NA-CLOCK\n  1 NA-FRAME +! NA-FRAME-END ;\n: NA-FAST { clocks | n pulses -- }\n  BEGIN clocks 0> WHILE\n    NA-NEXT-FRAME NA-FRAME @ - clocks MIN TO n\n    NA-RESET-AT @ IF NA-RESET-AT @ NA-CYCLE @ - n MIN TO n THEN\n    NA-DMC-NEXT n MIN TO n\n    9 ND@ 0= 7 ND@ 0> AND IF 1 n MIN TO n THEN\n    NA-CYCLE @ n + 2 / NA-CYCLE @ 2 / - TO pulses\n    pulses 0 NA-CLOCK pulses 1 NA-CLOCK n 2 NA-CLOCK pulses 3 NA-CLOCK\n    n NA-CYCLE +! NA-DMC-FETCH pulses NA-DMC-CLOCK\n    n NA-FRAME +! n NEGATE +TO clocks NA-FRAME-END\n  REPEAT ;\n: NA-RAW-RUN ( clocks -- )\n  DUP 0< IF -24 THROW THEN\n  DUP 9223372036854775807 NA-CYCLE @ - > IF -24 THROW THEN\n  NA-SLOW @ IF 0 ?DO NA-TICK LOOP ELSE NA-FAST THEN ;\n: NA-RAW-TO ( cycle -- ) DUP NA-CYCLE @ < IF -24 THROW THEN NA-CYCLE @ - NA-RAW-RUN ;\n: NA-LOAD-LENGTH { value ch -- }\n  NA-ENABLE @ 1 ch LSHIFT AND IF value 3 RSHIFT CELLS NA-LENGTHS + @ ch 4 NA! THEN ;\n: NA-PERIOD-LOW { value ch -- } ch 1 NA@ 1792 AND value OR ch 1 NA! ;\n: NA-PERIOD-HIGH { value ch -- } ch 1 NA@ 255 AND value 7 AND 8 LSHIFT OR ch 1 NA! ;\n: NA-CHECK-WRITE { value address cycle -- }\n  value 0 256 WITHIN 0= IF -24 THROW THEN\n  address 16384 16408 WITHIN 0= IF -24 THROW THEN\n  cycle NA-CYCLE @ < IF -24 THROW THEN\n  address 16404 = address 16406 = OR IF -24 THROW THEN\n  address 16407 = cycle 9223372036854775803 > AND IF -24 THROW THEN\n  ;\n: NA-STORE { value address | ch reg -- }\n  address 16405 = IF\n    value 31 AND NA-ENABLE !\n    0 13 ND!\n    value 16 AND IF 7 ND@ 0= IF NA-DMC-RESTART THEN ELSE 0 7 ND! THEN\n    4 0 DO value 1 I LSHIFT AND 0= IF 0 I 4 NA! THEN LOOP EXIT THEN\n  address 16400 16404 WITHIN IF\n    address 16400 - CASE\n      0 OF value 0 ND! value 15 AND CELLS NA-DMC-RATES + @ 2 / 1- 4 ND!\n        value 128 AND 0= IF 0 13 ND! THEN ENDOF\n      1 OF value 127 AND 1 ND! ENDOF\n      2 OF value 2 ND! ENDOF\n      3 OF value 3 ND! ENDOF\n    ENDCASE EXIT THEN\n  address 16407 = IF\n    value 64 AND NA-INHIBIT ! NA-INHIBIT @ IF 0 NA-IRQ ! THEN\n    value 128 AND NA-PENDING-MODE !\n    NA-CYCLE @ DUP 1 AND IF 4 ELSE 3 THEN + NA-RESET-AT ! EXIT THEN\n  address 16384 - 4 / TO ch address 3 AND TO reg\n  ch 2 < IF\n    reg CASE\n      0 OF value ch 0 NA! ENDOF\n      1 OF value ch 8 NA! 1 ch 10 NA! ENDOF\n      2 OF value ch NA-PERIOD-LOW ENDOF\n      3 OF value ch NA-PERIOD-HIGH value ch NA-LOAD-LENGTH\n        0 ch 3 NA! 1 ch 5 NA! ENDOF\n    ENDCASE EXIT THEN\n  ch 2 = IF\n    reg CASE\n      0 OF value ch 0 NA! ENDOF\n      2 OF value ch NA-PERIOD-LOW ENDOF\n      3 OF value ch NA-PERIOD-HIGH value ch NA-LOAD-LENGTH 1 NA-RELOAD ! ENDOF\n    ENDCASE EXIT THEN\n  reg CASE\n    0 OF value 3 0 NA! ENDOF\n    2 OF value 128 AND NA-NOISE-MODE !\n      value 15 AND CELLS NA-NOISE-PERIODS + @ 2 / 1- 3 1 NA! ENDOF\n    3 OF value 3 NA-LOAD-LENGTH 1 3 5 NA! ENDOF\n  ENDCASE ;\n\\ Reclaim consumed entries only after all admission checks have succeeded.\n: NA-COMPACT ( -- )\n  NA-EVENT-INDEX @ 3 * CELLS NA-EVENTS + NA-EVENTS\n  NA-EVENT-COUNT @ NA-EVENT-INDEX @ - 3 * CELLS MOVE\n  NA-EVENT-INDEX @ NEGATE NA-EVENT-COUNT +! 0 NA-EVENT-INDEX ! ;\n: NA-EVENT! { value address cycle | entry -- }\n  value address cycle NA-CHECK-WRITE\n  NA-EVENT-COUNT @ NA-EVENT-INDEX @ - 1024 >= IF -528 THROW THEN\n  NA-EVENT-COUNT @ IF\n    NA-EVENT-COUNT @ 1- 3 * 2 + CELLS NA-EVENTS + @ cycle > IF -24 THROW THEN\n  THEN\n  NA-EVENT-COUNT @ 1024 >= IF NA-COMPACT THEN\n  NA-EVENT-COUNT @ 3 * CELLS NA-EVENTS + TO entry\n  value entry ! address entry CELL+ ! cycle entry 2 CELLS + !\n  1 NA-EVENT-COUNT +! ;\n: NA-TO { cycle | entry at -- }\n  cycle NA-CYCLE @ < IF -24 THROW THEN\n  BEGIN NA-EVENT-INDEX @ NA-EVENT-COUNT @ < WHILE\n    NA-EVENT-INDEX @ 3 * CELLS NA-EVENTS + TO entry\n    entry 2 CELLS + @ TO at\n    at cycle > IF cycle NA-RAW-TO EXIT THEN\n    at NA-RAW-TO entry @ entry CELL+ @ NA-STORE 1 NA-EVENT-INDEX +!\n  REPEAT cycle NA-RAW-TO ;\n: NA-RUN ( clocks -- )\n  DUP 0< IF -24 THROW THEN\n  DUP 9223372036854775807 NA-CYCLE @ - > IF -24 THROW THEN\n  NA-CYCLE @ + NA-TO ;\n: NA-WRITE { value address cycle -- }\n  value address cycle NA-CHECK-WRITE cycle NA-TO value address NA-STORE ;\n: NA-IRQ? ( -- flag ) NA-IRQ @ 13 ND@ OR 0<> ;\n: NA-STATUS ( cycle -- status )\n  NA-TO 0 4 0 DO I 4 NA@ IF 1 I LSHIFT OR THEN LOOP\n  7 ND@ IF 16 OR THEN 13 ND@ IF 128 OR THEN\n  NA-IRQ @ IF 64 OR THEN 0 NA-IRQ ! ;\n: NA-VOLUME ( ch -- volume ) DUP 0 NA@ DUP 16 AND IF 15 AND NIP ELSE DROP 7 NA@ THEN ;\n: NA-PULSE { ch -- level }\n  ch 4 NA@ 0= ch NA-MUTED? OR IF 0 EXIT THEN\n  ch 0 NA@ 6 RSHIFT CELLS NA-DUTIES + @ ch 3 NA@ RSHIFT 1 AND\n  IF ch NA-VOLUME ELSE 0 THEN ;\n: NA-TRIANGLE ( -- level ) 2 3 NA@ DUP 16 < IF 15 SWAP - ELSE 16 - THEN ;\n: NA-NOISE ( -- level ) 3 4 NA@ 0= NA-LFSR @ 1 AND OR IF 0 ELSE 3 NA-VOLUME THEN ;\n\\ Exact rational evaluation of the documented approximate DAC equations, including DMC.\n\\ Output = floor(pulse*32767) + floor(tnd*32767), using wide rational LUTs.\n\\ Unipolar; no analog filters or DC removal.\nCREATE NA-PULSE-MIX 31 CELLS ALLOT\nCREATE NA-TND-MIX 32768 CELLS ALLOT\n: NA-INIT-MIX ( -- )\n  31 0 DO I 9588 * 32767 * 8128 I 100 * + 100 * / I CELLS NA-PULSE-MIX + ! LOOP\n  32768 0 DO\n    I 2048 / 12241 * 22638 * I 128 / 15 AND 8227 * 22638 * +\n    I 127 AND 8227 * 12241 * +\n    DUP 15979 * 32767 UM* ROT 100 * 8227 12241 * 22638 * + 100 * UM/MOD NIP\n    I CELLS NA-TND-MIX + !\n  LOOP ;\n: NA-SAMPLE ( -- s16 )\n  0 NA-PULSE 1 NA-PULSE + CELLS NA-PULSE-MIX + @\n  NA-TRIANGLE 16 * NA-NOISE + 128 * 1 ND@ + CELLS NA-TND-MIX + @ + 32767 MIN ;\n\n: NA-LE! ( n addr -- ) OVER 255 AND OVER C! SWAP 8 RSHIFT 255 AND SWAP 1+ C! ;\n: NA-RENDER ( addr frames -- )\n  DUP 0< IF -24 THROW THEN\n  0 ?DO\n    NA-FRACTION @ NA-CPU + NA-RATE /MOD NA-RUN NA-FRACTION !\n    NA-SAMPLE OVER NA-LE! 2 +\n  LOOP DROP ;\n: NA-DEMO-SETUP ( -- )\n  NA-RESET\n  15 16405 0 NA-WRITE\n  191 16384 0 NA-WRITE 8 16385 0 NA-WRITE 253 16386 0 NA-WRITE 8 16387 0 NA-WRITE\n  115 16388 0 NA-WRITE 8 16389 0 NA-WRITE 167 16390 0 NA-WRITE 8 16391 0 NA-WRITE\n  255 16392 0 NA-WRITE 253 16394 0 NA-WRITE 8 16395 0 NA-WRITE\n  56 16396 0 NA-WRITE 132 16398 0 NA-WRITE 8 16399 0 NA-WRITE ;\nNA-DMC-MEMORY 32768 0 FILL\nNA-INIT-MIX NA-RESET\n",
+    "examples/sid.fs": "\\ Original PAL SID register model. Not 6581/8580 analog or ROM compatibility.\n\\ Load from repository root; loading alone never opens audio.\nS\" examples/sid-filter-coeffs.fs\" INCLUDED\nDECIMAL\n985248 CONSTANT SI-CPU\n48000 CONSTANT SI-RATE\n16777215 CONSTANT SI-MASK\nCREATE SI-REGS 25 CELLS ALLOT\nCREATE SI-STATE 30 CELLS ALLOT\n\\ Per voice: phase,lfsr,envelope,stage(0attack/1decay/2release),rate-counter,\n\\            exp-counter,hold-zero,frequency,width,exp-period.\n: SI@ ( voice field -- n ) SWAP 10 * + CELLS SI-STATE + @ ;\n: SI! ( value voice field -- ) SWAP 10 * + CELLS SI-STATE + ! ;\n: SI-R@ ( offset -- n ) CELLS SI-REGS + @ ;\n: SI-CONTROL ( voice -- n ) 7 * 4 + SI-R@ ;\nCREATE SI-RATES 9 , 32 , 63 , 95 , 149 , 220 , 267 , 313 , 392 , 977 , 1954 , 3126 , 3907 , 11720 , 19532 , 31251 ,\nCREATE SI-NOISE-TAPS 22 , 20 , 16 , 13 , 11 , 7 , 4 , 2 ,\nCREATE SI-RISE 3 CELLS ALLOT\nVARIABLE SI-CYCLE VARIABLE SI-FRACTION VARIABLE SI-SLOW\nVARIABLE SI-LOW VARIABLE SI-BAND\nVARIABLE SI-CLIPS VARIABLE SI-FILTER-LIMITS\nCREATE SI-EVENTS 3072 CELLS ALLOT\nVARIABLE SI-EVENT-COUNT VARIABLE SI-EVENT-INDEX\n: SI-RESET ( -- )\n  SI-REGS 25 CELLS 0 FILL SI-STATE 30 CELLS 0 FILL\n  3 0 DO 8388600 I 1 SI! 2 I 3 SI! 1 I 6 SI! 1 I 9 SI! LOOP\n  SI-RISE 3 CELLS 0 FILL\n  0 SI-CYCLE ! 0 SI-FRACTION ! 0 SI-SLOW ! 0 SI-LOW ! 0 SI-BAND !\n  0 SI-EVENT-COUNT ! 0 SI-EVENT-INDEX ! 0 SI-CLIPS ! 0 SI-FILTER-LIMITS ! ;\n: SI-ENV-RATE ( voice -- clocks )\n  DUP 3 SI@ CASE\n    0 OF 7 * 5 + SI-R@ 4 RSHIFT ENDOF\n    1 OF 7 * 5 + SI-R@ 15 AND ENDOF\n    2 OF 7 * 6 + SI-R@ 15 AND ENDOF\n  ENDCASE CELLS SI-RATES + @ ;\n: SI-EXP-UPDATE { voice | level -- }\n  voice 2 SI@ TO level\n  level CASE\n    255 OF 1 voice 9 SI! ENDOF 93 OF 2 voice 9 SI! ENDOF\n    54 OF 4 voice 9 SI! ENDOF 26 OF 8 voice 9 SI! ENDOF\n    14 OF 16 voice 9 SI! ENDOF 6 OF 30 voice 9 SI! ENDOF\n    0 OF 1 voice 9 SI! ENDOF\n  ENDCASE ;\n: SI-ENV { voice | level stage sustain exp -- }\n  voice 2 SI@ TO level voice 3 SI@ TO stage\n  stage 0= IF\n    0 voice 5 SI! level 255 < IF level 1+ TO level THEN\n    level voice 2 SI! voice SI-EXP-UPDATE level 255 = IF 1 voice 3 SI! THEN EXIT\n  THEN\n  voice 5 SI@ 1+ TO exp\n  exp voice 9 SI@ >= IF\n    0 voice 5 SI!\n    voice 6 SI@ 0= IF\n      voice 7 * 6 + SI-R@ 4 RSHIFT 17 * TO sustain\n      stage 2 = level sustain > OR IF\n        level 0> IF level 1- DUP voice 2 SI! 0= IF 1 voice 6 SI! THEN voice SI-EXP-UPDATE THEN\n      THEN\n    THEN\n  ELSE exp voice 5 SI! THEN ;\n: SI-NOISE-SHIFT ( voice -- )\n  DUP 1 SI@ DUP 22 RSHIFT OVER 17 RSHIFT XOR 1 AND\n  SWAP 1 LSHIFT OR 8388607 AND SWAP 1 SI! ;\n: SI-PHASES { clocks | voice old raw fresh -- }\n  3 0 DO\n    I TO voice voice 0 SI@ TO old\n    voice SI-CONTROL 8 AND IF 0 TO raw\n    ELSE old clocks voice 7 SI@ * + TO raw THEN\n    raw SI-MASK AND TO fresh\n    fresh voice 0 SI!\n    old 8388608 + 24 RSHIFT raw 8388608 + 24 RSHIFT < SI-RISE I CELLS + !\n    old 524288 + 20 RSHIFT raw 524288 + 20 RSHIFT < IF voice SI-NOISE-SHIFT THEN\n  LOOP\n  3 0 DO\n    I SI-CONTROL 2 AND SI-RISE I 2 + 3 MOD CELLS + @ AND IF 0 I 0 SI! THEN\n  LOOP ;\n: SI-COUNTERS { clocks | voice count -- }\n  3 0 DO\n    I TO voice voice 4 SI@ clocks + 32767 AND TO count\n    count voice 4 SI! count voice SI-ENV-RATE = IF 0 voice 4 SI! voice SI-ENV THEN\n  LOOP ;\n: SI-TICK ( -- ) 1 SI-PHASES 1 SI-COUNTERS 1 SI-CYCLE +! ;\n: SI-EDGE { phase frequency half | pos distance -- clocks }\n  phase half 2 * MOD TO pos\n  pos half < IF half pos - ELSE half 3 * pos - THEN TO distance\n  distance frequency 1- + frequency / ;\n: SI-STEP-LIMIT { clocks | voice count distance frequency phase -- n }\n  3 0 DO\n    I TO voice voice 4 SI@ TO count\n    voice SI-ENV-RATE count - 32767 AND DUP 0= IF DROP 32768 THEN\n    clocks MIN TO clocks\n    voice 7 SI@ TO frequency voice 0 SI@ TO phase\n    frequency voice SI-CONTROL 8 AND 0= AND IF\n      phase frequency 524288 SI-EDGE clocks MIN TO clocks\n      phase frequency 8388608 SI-EDGE clocks MIN TO clocks\n    THEN\n  LOOP clocks ;\n: SI-FAST { clocks | n -- }\n  BEGIN clocks 0> WHILE\n    clocks SI-STEP-LIMIT TO n n SI-PHASES n SI-COUNTERS n SI-CYCLE +!\n    n NEGATE +TO clocks\n  REPEAT ;\n: SI-RAW-RUN ( clocks -- )\n  DUP 0< IF -24 THROW THEN\n  DUP 9223372036854775807 SI-CYCLE @ - > IF -24 THROW THEN\n  SI-SLOW @ IF 0 ?DO SI-TICK LOOP ELSE SI-FAST THEN ;\n: SI-RAW-TO ( cycle -- ) DUP SI-CYCLE @ < IF -24 THROW THEN SI-CYCLE @ - SI-RAW-RUN ;\n: SI-CHECK-WRITE { value address cycle | waveform -- }\n  value 0 256 WITHIN 0= IF -24 THROW THEN\n  address 54272 54297 WITHIN 0= IF -24 THROW THEN\n  cycle SI-CYCLE @ < IF -24 THROW THEN\n  address 54272 - DUP 21 < SWAP 7 MOD 4 = AND IF\n    value 240 AND TO waveform waveform waveform 1- AND IF -21 THROW THEN\n  THEN ;\n: SI-STORE { value address | offset voice field old -- }\n  address 54272 - TO offset offset 25 >= IF EXIT THEN\n  offset 21 < IF\n    offset 7 / TO voice offset 7 MOD TO field\n    field 3 = IF value 15 AND TO value THEN\n    field 4 = IF\n      voice SI-CONTROL TO old\n      old value XOR 1 AND IF\n        value 1 AND IF 0 voice 3 SI! 0 voice 6 SI! ELSE 2 voice 3 SI! THEN\n      THEN\n      value 8 AND IF 0 voice 0 SI! 8388600 voice 1 SI!\n      ELSE old 8 AND IF 8388600 voice 1 SI! THEN THEN\n    THEN\n    value offset CELLS SI-REGS + !\n    field 2 < IF\n      voice 7 * SI-R@ voice 7 * 1+ SI-R@ 8 LSHIFT OR voice 7 SI!\n    THEN\n    field 2 = field 3 = OR IF\n      voice 7 * 2 + SI-R@ voice 7 * 3 + SI-R@ 8 LSHIFT OR voice 8 SI!\n    THEN\n  ELSE\n    offset 21 = IF value 7 AND TO value THEN\n    value offset CELLS SI-REGS + !\n  THEN ;\n: SI-COMPACT ( -- )\n  SI-EVENT-INDEX @ 3 * CELLS SI-EVENTS + SI-EVENTS\n  SI-EVENT-COUNT @ SI-EVENT-INDEX @ - 3 * CELLS MOVE\n  SI-EVENT-INDEX @ NEGATE SI-EVENT-COUNT +! 0 SI-EVENT-INDEX ! ;\n: SI-EVENT! { value address cycle | entry -- }\n  value address cycle SI-CHECK-WRITE\n  SI-EVENT-COUNT @ SI-EVENT-INDEX @ - 1024 >= IF -528 THROW THEN\n  SI-EVENT-COUNT @ IF\n    SI-EVENT-COUNT @ 1- 3 * 2 + CELLS SI-EVENTS + @ cycle > IF -24 THROW THEN\n  THEN\n  SI-EVENT-COUNT @ 1024 >= IF SI-COMPACT THEN\n  SI-EVENT-COUNT @ 3 * CELLS SI-EVENTS + TO entry\n  value entry ! address entry CELL+ ! cycle entry 2 CELLS + ! 1 SI-EVENT-COUNT +! ;\n: SI-TO { cycle | entry at -- }\n  cycle SI-CYCLE @ < IF -24 THROW THEN\n  BEGIN SI-EVENT-INDEX @ SI-EVENT-COUNT @ < WHILE\n    SI-EVENT-INDEX @ 3 * CELLS SI-EVENTS + TO entry entry 2 CELLS + @ TO at\n    at cycle > IF cycle SI-RAW-TO EXIT THEN\n    at SI-RAW-TO entry @ entry CELL+ @ SI-STORE 1 SI-EVENT-INDEX +!\n  REPEAT cycle SI-RAW-TO ;\n: SI-RUN ( clocks -- )\n  DUP 0< IF -24 THROW THEN\n  DUP 9223372036854775807 SI-CYCLE @ - > IF -24 THROW THEN SI-CYCLE @ + SI-TO ;\n: SI-WRITE { value address cycle -- }\n  value address cycle SI-CHECK-WRITE cycle SI-TO value address SI-STORE ;\n: SI-WAVE { voice | phase control waveform fold noise -- wave12 }\n  voice SI-CONTROL TO control control 240 AND TO waveform\n  waveform 0= IF 0 EXIT THEN\n  control 8 AND IF waveform 64 = IF 4095 ELSE 0 THEN EXIT THEN\n  voice 0 SI@ TO phase\n  waveform CASE\n    16 OF\n      phase 8388608 AND TO fold\n      control 4 AND IF fold voice 2 + 3 MOD 0 SI@ 8388608 AND XOR TO fold THEN\n      phase 12 RSHIFT 2047 AND fold IF 2047 XOR THEN 1 LSHIFT\n    ENDOF\n    32 OF phase 12 RSHIFT ENDOF\n    64 OF\n      voice 8 SI@ DUP 0= IF DROP 4095 ELSE\n        DUP 4095 = IF DROP 0 ELSE phase 12 RSHIFT SWAP >= IF 4095 ELSE 0 THEN THEN\n      THEN\n    ENDOF\n    128 OF\n      0 TO noise\n      8 0 DO noise 1 LSHIFT voice 1 SI@ SI-NOISE-TAPS I CELLS + @ RSHIFT 1 AND OR TO noise LOOP\n      noise 4 LSHIFT\n    ENDOF\n  ENDCASE ;\n: SI-READ { address cycle -- byte }\n  address 54272 54301 WITHIN 0= IF -24 THROW THEN\n  cycle SI-CYCLE @ < IF -24 THROW THEN\n  address 54299 < IF -21 THROW THEN\n  cycle SI-TO\n  address CASE\n    54299 OF 2 SI-WAVE 4 RSHIFT ENDOF 54300 OF 2 2 SI@ ENDOF\n  ENDCASE ;\n: SI-CLAMP ( fp -- fp )\n  DUP -8589934592 < OVER 8589934592 > OR IF 1 SI-FILTER-LIMITS +! THEN\n  -8589934592 MAX 8589934592 MIN ;\n: SI-FILTER { input | cutoff alpha damping high -- filtered }\n  21 SI-R@ 22 SI-R@ 3 LSHIFT OR TO cutoff\n  cutoff CELLS SI-FILTER-COEFFS + @ TO alpha\n  1414 23 SI-R@ 4 RSHIFT 80 * - 65536 * 1000 / TO damping\n  2 0 DO\n    input 65536 * SI-LOW @ - damping SI-BAND @ * 65536 / - TO high\n    SI-BAND @ alpha high * 65536 / + SI-CLAMP SI-BAND !\n    SI-LOW @ alpha SI-BAND @ * 65536 / + SI-CLAMP SI-LOW !\n  LOOP\n  0 24 SI-R@ 16 AND IF SI-LOW @ + THEN\n  24 SI-R@ 32 AND IF SI-BAND @ + THEN\n  24 SI-R@ 64 AND IF high + THEN 65536 / ;\n: SI-SAMPLE { | routed direct voice sample filtered -- s16 }\n  0 TO routed 0 TO direct\n  3 0 DO\n    I TO voice voice SI-CONTROL 240 AND IF\n      voice SI-WAVE 2048 - voice 2 SI@ * 255 / TO sample\n    ELSE 0 TO sample THEN\n    23 SI-R@ 1 voice LSHIFT AND IF routed sample + TO routed\n    ELSE voice 2 = 24 SI-R@ 128 AND 0<> AND 0= IF direct sample + TO direct THEN THEN\n  LOOP\n  routed SI-LOW @ OR SI-BAND @ OR IF routed SI-FILTER ELSE 0 THEN TO filtered\n  direct filtered + 24 SI-R@ 15 AND * 3 /\n  DUP -32768 < OVER 32767 > OR IF 1 SI-CLIPS +! THEN -32768 MAX 32767 MIN ;\n: SI-LE! ( n addr -- ) OVER 255 AND OVER C! SWAP 8 RSHIFT 255 AND SWAP 1+ C! ;\n: SI-RENDER ( addr frames -- )\n  DUP 0< IF -24 THROW THEN\n  0 ?DO SI-FRACTION @ SI-CPU + SI-RATE /MOD SI-RUN SI-FRACTION !\n    SI-SAMPLE OVER SI-LE! 2 + LOOP DROP ;\n: SI-DEMO-SETUP ( -- )\n  SI-RESET\n  68 54272 0 SI-WRITE 29 54273 0 SI-WRITE 0 54274 0 SI-WRITE 8 54275 0 SI-WRITE\n  34 54277 0 SI-WRITE 168 54278 0 SI-WRITE 65 54276 0 SI-WRITE\n  230 54279 0 SI-WRITE 14 54280 0 SI-WRITE\n  67 54284 0 SI-WRITE 136 54285 0 SI-WRITE 21 54283 0 SI-WRITE\n  113 54286 0 SI-WRITE 9 54287 0 SI-WRITE\n  50 54291 0 SI-WRITE 104 54292 0 SI-WRITE 33 54290 0 SI-WRITE\n  7 54293 0 SI-WRITE 100 54294 0 SI-WRITE\n  167 54295 0 SI-WRITE 31 54296 0 SI-WRITE ;\nSI-RESET\n",
+    "examples/paula.fs": "\\ Original declared Paula register model; no Agnus bus/ROM/analog fidelity.\n\\ Register addresses are custom-chip offsets. Loading never opens audio.\nDECIMAL\n3546895 CONSTANT PA-CPU\n48000 CONSTANT PA-RATE\nCREATE PA-MEMORY 524288 ALLOT PA-MEMORY 524288 0 FILL\nCREATE PA-REGS 24 CELLS ALLOT\nCREATE PA-STATE 56 CELLS ALLOT\n\\ ptr,remaining,timer,mode(0idle1DMA2manual),phase,word,sample,period,volume,first,attach-phase,fetches,pending-word,pending-valid\n: PA@ ( voice field -- n ) SWAP 14 * + CELLS PA-STATE + @ ;\n: PA! ( value voice field -- ) SWAP 14 * + CELLS PA-STATE + ! ;\n: PA-R@ ( voice field -- n ) SWAP 6 * + CELLS PA-REGS + @ ;\n: PA-R! ( value voice field -- ) SWAP 6 * + CELLS PA-REGS + ! ;\nVARIABLE PA-DMA VARIABLE PA-ADK VARIABLE PA-INTENA VARIABLE PA-INTREQ\nVARIABLE PA-CYCLE VARIABLE PA-FRACTION VARIABLE PA-SLOW VARIABLE PA-PER-CLAMPS\nCREATE PA-DUE 4 CELLS ALLOT\nCREATE PA-EVENTS 3072 CELLS ALLOT\nVARIABLE PA-EVENT-COUNT VARIABLE PA-EVENT-INDEX\n: PA-RESET ( -- )\n  PA-REGS 24 CELLS 0 FILL PA-STATE 56 CELLS 0 FILL PA-DUE 4 CELLS 0 FILL\n  4 0 DO 65536 I 7 PA! LOOP\n  0 PA-DMA ! 0 PA-ADK ! 0 PA-INTENA ! 0 PA-INTREQ !\n  0 PA-CYCLE ! 0 PA-FRACTION ! 0 PA-SLOW ! 0 PA-PER-CLAMPS !\n  0 PA-EVENT-COUNT ! 0 PA-EVENT-INDEX ! ;\n: PA-MEM! { byte address -- }\n  byte 0 256 WITHIN address 0 524288 WITHIN AND 0= IF -24 THROW THEN\n  byte PA-MEMORY address + C! ;\n: PA-PERIOD ( word -- ticks ) DUP 0= IF DROP 65536 THEN ;\n: PA-VOLUME ( word -- volume ) DUP 64 AND IF DROP 64 ELSE 63 AND THEN ;\n: PA-LENGTH ( voice -- words ) 2 PA-R@ DUP 0= IF DROP 65536 THEN ;\n: PA-LOCATION ( voice -- address ) DUP 0 PA-R@ 16 LSHIFT SWAP 1 PA-R@ OR ;\n: PA-IRQ ( voice -- ) 128 SWAP LSHIFT PA-INTREQ @ OR PA-INTREQ ! ;\n: PA-IRQ? ( -- flag ) PA-INTENA @ 16384 AND 0<> PA-INTENA @ PA-INTREQ @ AND 1920 AND 0<> AND ;\n: PA-ENABLED ( voice -- flag ) 1 SWAP LSHIFT PA-DMA @ AND 0<> PA-DMA @ 512 AND 0<> AND ;\n: PA-RELOAD ( voice -- ) DUP PA-LOCATION OVER 0 PA! DUP PA-LENGTH OVER 1 PA! 0 SWAP 10 PA! ;\n: PA-START ( voice -- )\n  DUP PA-RELOAD 1 OVER 2 PA! 1 OVER 3 PA! 0 OVER 4 PA! 1 OVER 9 PA! 0 SWAP 13 PA! ;\n: PA-ATTACH { voice word | av ap target -- }\n  PA-ADK @ 1 voice LSHIFT AND 0<> TO av\n  PA-ADK @ 16 voice LSHIFT AND 0<> TO ap\n  voice 3 = av ap OR 0= OR IF EXIT THEN\n  voice 1+ TO target\n  av ap AND IF\n    voice 10 PA@ IF FALSE TO av ELSE FALSE TO ap THEN\n    voice 10 PA@ 1 XOR voice 10 PA!\n  THEN\n  av IF word PA-VOLUME target 8 PA! THEN\n  ap IF\n    word PA-PERIOD DUP 123 < IF DROP 123 1 PA-PER-CLAMPS +! THEN\n    target 7 PA!\n  THEN ;\n: PA-FETCH { voice | address word -- }\n  voice 0 PA@ TO address\n  PA-MEMORY address + C@ 8 LSHIFT PA-MEMORY address 1+ 524287 AND + C@ OR TO word\n  word voice 5 PA! word voice 5 PA-R!\n  address 2 + 524287 AND voice 0 PA!\n  voice 11 PA@ 1+ voice 11 PA!\n  voice word PA-ATTACH\n  voice 9 PA@ IF voice PA-IRQ 0 voice 9 PA! THEN\n  voice 1 PA@ 1- DUP voice 1 PA! 0= IF voice PA-RELOAD voice PA-IRQ THEN ;\n: PA-SIGNED ( byte -- sample ) DUP 128 AND IF 256 - THEN ;\n: PA-TRANSITION { voice | phase mode -- }\n  voice 4 PA@ TO phase voice 3 PA@ TO mode\n  mode 0= IF EXIT THEN\n  phase 0= IF\n    mode 1 = IF voice PA-FETCH ELSE\n      voice 12 PA@ voice 5 PA! 0 voice 13 PA!\n      voice 11 PA@ 1+ voice 11 PA! voice voice 5 PA@ PA-ATTACH\n    THEN\n    voice 5 PA@ 8 RSHIFT PA-SIGNED voice 6 PA! 1 voice 4 PA!\n  ELSE phase 1 = IF\n    voice 5 PA@ 255 AND PA-SIGNED voice 6 PA!\n    mode 1 = IF 0 ELSE 2 THEN voice 4 PA!\n  ELSE\n    voice PA-IRQ\n    voice 13 PA@ IF 0 voice 4 PA! voice RECURSE\n    ELSE 0 voice 3 PA! 0 voice 2 PA! THEN EXIT\n  THEN THEN\n  voice 7 PA@ voice 2 PA! ;\n: PA-ADVANCE { ticks -- }\n  4 0 DO\n    I 3 PA@ IF I 2 PA@ ticks - DUP I 2 PA! 0= ELSE FALSE THEN\n    PA-DUE I CELLS + !\n  LOOP\n  4 0 DO PA-DUE I CELLS + @ IF I PA-TRANSITION THEN LOOP\n  ticks PA-CYCLE +! ;\n: PA-STEP-LIMIT ( ticks -- n ) 4 0 DO I 3 PA@ IF I 2 PA@ MIN THEN LOOP ;\n: PA-RAW-RUN { ticks | n -- }\n  ticks 0< ticks 9223372036854775807 PA-CYCLE @ - > OR IF -24 THROW THEN\n  BEGIN ticks 0> WHILE\n    PA-SLOW @ IF 1 ELSE ticks PA-STEP-LIMIT THEN TO n\n    n PA-ADVANCE n NEGATE +TO ticks\n  REPEAT ;\n: PA-RAW-TO ( tick -- ) DUP PA-CYCLE @ < IF -24 THROW THEN PA-CYCLE @ - PA-RAW-RUN ;\n: PA-AUDIO-REG? ( offset -- flag ) DUP 160 220 WITHIN SWAP 15 AND 12 < AND ;\n: PA-CHECK { value address tick | mask -- }\n  value 0 65536 WITHIN address 0 512 WITHIN AND address 1 AND 0= AND 0= IF -24 THROW THEN\n  tick PA-CYCLE @ < IF -24 THROW THEN\n  address PA-AUDIO-REG? IF\n    address 15 AND 6 = IF value 0> value 123 < AND IF -21 THROW THEN THEN EXIT\n  THEN\n  address CASE\n    150 OF 527 ENDOF 158 OF 255 ENDOF 154 OF 18304 ENDOF 156 OF 1920 ENDOF\n    -24 THROW\n  ENDCASE TO mask\n  value 32767 AND mask INVERT AND IF -21 THROW THEN ;\n: PA-BITS ( value old -- new ) OVER 32768 AND IF OR 32767 AND ELSE SWAP INVERT AND THEN ;\n: PA-STORE { value address | voice field old was now -- }\n  address PA-AUDIO-REG? IF\n    address 160 - 4 RSHIFT TO voice address 15 AND 2 / TO field\n    field CASE\n      0 OF value 7 AND TO value ENDOF\n      1 OF value 65534 AND TO value ENDOF\n      3 OF value PA-PERIOD voice 7 PA! ENDOF\n      4 OF value PA-VOLUME voice 8 PA! ENDOF\n    ENDCASE\n    value voice field PA-R!\n    field 5 = voice PA-ENABLED 0= AND IF\n      value voice 12 PA! 1 voice 13 PA!\n      voice 3 PA@ 2 <> IF\n        2 voice 3 PA! 0 voice 4 PA! 1 voice 2 PA! 0 voice 10 PA!\n      THEN\n    THEN EXIT\n  THEN\n  address CASE\n    150 OF\n      PA-DMA @ TO old value old PA-BITS PA-DMA !\n      4 0 DO\n        old 512 AND 0<> old 1 I LSHIFT AND 0<> AND TO was\n        I PA-ENABLED TO now\n        now was 0= AND IF I PA-START THEN\n        was now 0= AND IF 0 I 3 PA! 0 I 2 PA! THEN\n      LOOP\n    ENDOF\n    158 OF value PA-ADK @ PA-BITS PA-ADK ! ENDOF\n    154 OF value PA-INTENA @ PA-BITS PA-INTENA ! ENDOF\n    156 OF value PA-INTREQ @ PA-BITS PA-INTREQ ! ENDOF\n  ENDCASE ;\n: PA-COMPACT ( -- )\n  PA-EVENT-INDEX @ 3 * CELLS PA-EVENTS + PA-EVENTS\n  PA-EVENT-COUNT @ PA-EVENT-INDEX @ - 3 * CELLS MOVE\n  PA-EVENT-INDEX @ NEGATE PA-EVENT-COUNT +! 0 PA-EVENT-INDEX ! ;\n: PA-EVENT! { value address tick | entry -- }\n  value address tick PA-CHECK\n  PA-EVENT-COUNT @ PA-EVENT-INDEX @ - 1024 >= IF -528 THROW THEN\n  PA-EVENT-COUNT @ IF PA-EVENT-COUNT @ 1- 3 * 2 + CELLS PA-EVENTS + @ tick > IF -24 THROW THEN THEN\n  PA-EVENT-COUNT @ 1024 >= IF PA-COMPACT THEN\n  PA-EVENT-COUNT @ 3 * CELLS PA-EVENTS + TO entry\n  value entry ! address entry CELL+ ! tick entry 2 CELLS + ! 1 PA-EVENT-COUNT +! ;\n: PA-TO { tick | entry at -- }\n  tick PA-CYCLE @ < IF -24 THROW THEN\n  BEGIN PA-EVENT-INDEX @ PA-EVENT-COUNT @ < WHILE\n    PA-EVENT-INDEX @ 3 * CELLS PA-EVENTS + TO entry entry 2 CELLS + @ TO at\n    at tick > IF tick PA-RAW-TO EXIT THEN\n    at PA-RAW-TO entry @ entry CELL+ @ PA-STORE 1 PA-EVENT-INDEX +!\n  REPEAT tick PA-RAW-TO ;\n: PA-WRITE { value address tick -- } value address tick PA-CHECK tick PA-TO value address PA-STORE ;\n: PA-RUN ( ticks -- )\n  DUP 0< IF -24 THROW THEN DUP 9223372036854775807 PA-CYCLE @ - > IF -24 THROW THEN PA-CYCLE @ + PA-TO ;\n: PA-READ { address tick -- word }\n  address 0 512 WITHIN address 1 AND 0= AND 0= IF -24 THROW THEN\n  tick PA-CYCLE @ < IF -24 THROW THEN\n  address 2 = address 16 = OR address 28 = OR address 30 = OR 0= IF -21 THROW THEN\n  tick PA-TO address CASE\n    2 OF PA-DMA @ ENDOF 16 OF PA-ADK @ ENDOF 28 OF PA-INTENA @ ENDOF 30 OF PA-INTREQ @ ENDOF\n  ENDCASE ;\n: PA-SAMPLE { | left right value -- left right }\n  0 TO left 0 TO right\n  4 0 DO\n    PA-ADK @ 17 I LSHIFT AND 0= IF\n      I 6 PA@ I 8 PA@ * 2 * TO value\n      I 0= I 3 = OR IF left value + TO left ELSE right value + TO right THEN\n    THEN\n  LOOP left right ;\n: PA-LE! ( n address -- ) OVER 255 AND OVER C! SWAP 8 RSHIFT 255 AND SWAP 1+ C! ;\n: PA-RENDER { address frames -- }\n  frames 0< IF -24 THROW THEN\n  frames 0 ?DO\n    PA-FRACTION @ PA-CPU + PA-RATE /MOD PA-RUN PA-FRACTION !\n    PA-SAMPLE address 2 + PA-LE! address PA-LE! address 4 + TO address\n  LOOP ;\n: PA-DEMO-MEMORY ( -- ) 1024 0 DO I 37 * 11 + 255 AND I PA-MEM! LOOP ;\n: PA-DEMO-SETUP ( -- )\n  PA-RESET 4 0 DO\n    I 128 * I 16 * 162 + 0 PA-WRITE 32 I 16 * 164 + 0 PA-WRITE\n    I 107 * 214 + I 16 * 166 + 0 PA-WRITE 32 I 16 * 168 + 0 PA-WRITE\n  LOOP 33295 150 0 PA-WRITE ;\nPA-RESET\n"
+  },
+  "primary_pdfs": [
+    {
+      "name": "vip",
+      "url": "https://storage.googleapis.com/wzukusers/user-34724694/documents/130d458901764787969269f48aeeee2a/VIP_Manual.pdf",
+      "sha256": "2400ee2dc3c0c94b214445e2b342bbbc40e5f03996f11ce6da900606b712ff24",
+      "visually_checked_pdf_page": 13,
+      "printed_page": "14"
+    },
+    {
+      "name": "apple",
+      "url": "https://apple2history.org/dl/Apple_II_Redbook.pdf",
+      "sha256": "7f54a4847dbc1a19027d11df48894074132be8fdd2e29362f420a7ba3751228e",
+      "visually_checked_pdf_page": 51,
+      "printed_page": "43"
+    },
+    {
+      "name": "snes",
+      "url": "https://floating.muncher.se/bot/manual/book1_text.pdf",
+      "sha256": "e3b2f00859e39422a36a989bb8b61ab22546a7b7b1b0badc63ec48da44708388",
+      "visually_checked_pdf_page": 98,
+      "visually_checked_pdf_pages": [
+        98,
+        157
+      ],
+      "printed_sections": [
+        "2-22-1",
+        "3-2-1"
+      ]
+    }
+  ],
+  "other_primary_reference": {
+    "source": "Sinclair ZX Spectrum128 Service Manual, re-typeset mirror",
+    "urls": [
+      "https://www.manualslib.com/manual/1322152/Sinclair-Zx-Spectrum-128.html?page=15",
+      "https://www.manualslib.com/manual/1322152/Sinclair-Zx-Spectrum-128.html?page=16"
+    ],
+    "sections": [
+      "1.6.1",
+      "1.7"
+    ]
+  },
+  "created_tasks": [
+    {
+      "id": 1163,
+      "title": "音源試作06 CHIP-8のtimer/gateとPCM接続：対象となる原型/拡張系と波形を先に確定し、Fx18・60Hz境界・0/再設定・PCM化をForthで検証/測定、本体移行の採否と未対応を記録",
+      "parent": 999,
+      "depends_on": [
+        1131
+      ]
+    },
+    {
+      "id": 1164,
+      "title": "CHIP-801 仕様・Forth実装と独立検証：対象モデル/変種と宣言範囲を資料で確定、状態/時刻境界とPCMを別実装・手計算で照合しClaudeレビューと採否論点を記録",
+      "parent": 1163,
+      "depends_on": [
+        1131
+      ]
+    },
+    {
+      "id": 1165,
+      "title": "CHIP-8 Windows受け入れ：通常/機能除外構成の独立PCM/状態照合、サイズと速度・採否、Windows実装置での生成音の実聴・Ctrl+C後の停止/再再生と資源回収を確認しOS/版/装置を記録",
+      "parent": 1163,
+      "depends_on": [
+        1164
+      ]
+    },
+    {
+      "id": 1166,
+      "title": "CHIP-8 Linux受け入れ：通常/機能除外構成の独立PCM/状態照合、サイズと速度・採否、PulseAudio/ALSAでの生成音の実聴・Ctrl+C後の停止/再再生と資源回収を確認しOS/版/装置とWSL/実機の別を記録",
+      "parent": 1163,
+      "depends_on": [
+        1164
+      ]
+    },
+    {
+      "id": 1167,
+      "title": "CHIP-8 Mac受け入れ：Mac実機の通常/機能除外構成・独立PCM/状態照合・サイズと速度、生成音の実聴・Ctrl+C後の停止/再再生と資源回収を確認しOS/CPU/版/装置を記録。完了まで機種の親を未完了に維持",
+      "parent": 1163,
+      "depends_on": [
+        1130,
+        1164
+      ]
+    },
+    {
+      "id": 1168,
+      "title": "音源試作07 ZX SpectrumのULA/beeperとAY：48K/128K等の対象モデルを先に確定し、時刻指定・port select/readとAY/YM差・混合をForthで検証/測定、本体移行の採否と未対応を記録",
+      "parent": 999,
+      "depends_on": [
+        1131
+      ]
+    },
+    {
+      "id": 1169,
+      "title": "ZX Spectrum01 仕様・Forth実装と独立検証：対象モデル/変種と宣言範囲を資料で確定、状態/時刻境界とPCMを別実装・手計算で照合しClaudeレビューと採否論点を記録",
+      "parent": 1168,
+      "depends_on": [
+        1131
+      ]
+    },
+    {
+      "id": 1170,
+      "title": "ZX Spectrum Windows受け入れ：通常/機能除外構成の独立PCM/状態照合、サイズと速度・採否、Windows実装置での生成音の実聴・Ctrl+C後の停止/再再生と資源回収を確認しOS/版/装置を記録",
+      "parent": 1168,
+      "depends_on": [
+        1169
+      ]
+    },
+    {
+      "id": 1171,
+      "title": "ZX Spectrum Linux受け入れ：通常/機能除外構成の独立PCM/状態照合、サイズと速度・採否、PulseAudio/ALSAでの生成音の実聴・Ctrl+C後の停止/再再生と資源回収を確認しOS/版/装置とWSL/実機の別を記録",
+      "parent": 1168,
+      "depends_on": [
+        1169
+      ]
+    },
+    {
+      "id": 1172,
+      "title": "ZX Spectrum Mac受け入れ：Mac実機の通常/機能除外構成・独立PCM/状態照合・サイズと速度、生成音の実聴・Ctrl+C後の停止/再再生と資源回収を確認しOS/CPU/版/装置を記録。完了まで機種の親を未完了に維持",
+      "parent": 1168,
+      "depends_on": [
+        1130,
+        1169
+      ]
+    },
+    {
+      "id": 1173,
+      "title": "音源試作08 SNES S-DSP：資料/ライセンスと対象範囲を確定し、レジスタ/状態・8声/BRR・envelope/noise/echo等をForthで検証/測定、SPC700 CPUとは分けて本体移行の採否と未実装を記録",
+      "parent": 999,
+      "depends_on": [
+        1131
+      ]
+    },
+    {
+      "id": 1174,
+      "title": "SNES01 仕様・Forth実装と独立検証：対象モデル/変種と宣言範囲を資料で確定、状態/時刻境界とPCMを別実装・手計算で照合しClaudeレビューと採否論点を記録",
+      "parent": 1173,
+      "depends_on": [
+        1131
+      ]
+    },
+    {
+      "id": 1175,
+      "title": "SNES Windows受け入れ：通常/機能除外構成の独立PCM/状態照合、サイズと速度・採否、Windows実装置での生成音の実聴・Ctrl+C後の停止/再再生と資源回収を確認しOS/版/装置を記録",
+      "parent": 1173,
+      "depends_on": [
+        1174
+      ]
+    },
+    {
+      "id": 1176,
+      "title": "SNES Linux受け入れ：通常/機能除外構成の独立PCM/状態照合、サイズと速度・採否、PulseAudio/ALSAでの生成音の実聴・Ctrl+C後の停止/再再生と資源回収を確認しOS/版/装置とWSL/実機の別を記録",
+      "parent": 1173,
+      "depends_on": [
+        1174
+      ]
+    },
+    {
+      "id": 1177,
+      "title": "SNES Mac受け入れ：Mac実機の通常/機能除外構成・独立PCM/状態照合・サイズと速度、生成音の実聴・Ctrl+C後の停止/再再生と資源回収を確認しOS/CPU/版/装置を記録。完了まで機種の親を未完了に維持",
+      "parent": 1173,
+      "depends_on": [
+        1130,
+        1174
+      ]
+    },
+    {
+      "id": 1178,
+      "title": "音源試作09 Apple II speaker toggle：対象モデルと追加音源の範囲を先に確定し、C030等のbus時刻・read/write副作用・PCM化をForthで検証/測定、本体移行の採否と未対応を記録",
+      "parent": 999,
+      "depends_on": [
+        1131
+      ]
+    },
+    {
+      "id": 1179,
+      "title": "Apple II01 仕様・Forth実装と独立検証：対象モデル/変種と宣言範囲を資料で確定、状態/時刻境界とPCMを別実装・手計算で照合しClaudeレビューと採否論点を記録",
+      "parent": 1178,
+      "depends_on": [
+        1131
+      ]
+    },
+    {
+      "id": 1180,
+      "title": "Apple II Windows受け入れ：通常/機能除外構成の独立PCM/状態照合、サイズと速度・採否、Windows実装置での生成音の実聴・Ctrl+C後の停止/再再生と資源回収を確認しOS/版/装置を記録",
+      "parent": 1178,
+      "depends_on": [
+        1179
+      ]
+    },
+    {
+      "id": 1181,
+      "title": "Apple II Linux受け入れ：通常/機能除外構成の独立PCM/状態照合、サイズと速度・採否、PulseAudio/ALSAでの生成音の実聴・Ctrl+C後の停止/再再生と資源回収を確認しOS/版/装置とWSL/実機の別を記録",
+      "parent": 1178,
+      "depends_on": [
+        1179
+      ]
+    },
+    {
+      "id": 1182,
+      "title": "Apple II Mac受け入れ：Mac実機の通常/機能除外構成・独立PCM/状態照合・サイズと速度、生成音の実聴・Ctrl+C後の停止/再再生と資源回収を確認しOS/CPU/版/装置を記録。完了まで機種の親を未完了に維持",
+      "parent": 1178,
+      "depends_on": [
+        1130,
+        1179
+      ]
+    }
+  ],
+  "tasks_snapshot": [
+    {
+      "id": 999,
+      "title": "本体10 音源チップのレジスタ書込み（段階C、AUDIO）：上位計画の全対象機種で既存音源/PCM基盤の充足と不足を確認し、必要な音源をForthで実装・実測して本体移行の採否を判断する。機種別作業と対象一覧の照合を含める（EMULATOR_CORE_PLAN.md）",
+      "status": "todo",
+      "parent_id": 1003,
+      "progress": 0,
+      "progress_mode": "auto",
+      "created_at": "2026-11-17T22:47:12Z",
+      "depends_on": [
+        1064,
+        1129
+      ],
+      "effective_progress": 52,
+      "blocked": false,
+      "blocked_by": []
+    },
+    {
+      "id": 1131,
+      "title": "音源試作01 Forthの4声合成とPCM送出：独自の合成負荷、境界と連続性の決定的検証、Windows/Linux測定とClaudeレビュー。実機音源の採否とは分ける",
+      "status": "done",
+      "parent_id": 999,
+      "progress": 100,
+      "progress_mode": "auto",
+      "created_at": "2026-11-20T03:18:43Z",
+      "completed_at": "2026-11-20T03:30:30Z",
+      "depends_on": [],
+      "effective_progress": 100,
+      "blocked": false,
+      "blocked_by": []
+    },
+    {
+      "id": 1132,
+      "title": "音源試作02 NES APUのForth音源と実測・採否：NTSCレジスタ動作・未実装機能を明記し、合成負荷から本体移行の要否を判断する。汎用4声試作の速度とは分ける",
+      "status": "done",
+      "parent_id": 999,
+      "progress": 100,
+      "progress_mode": "auto",
+      "created_at": "2026-11-20T03:24:41Z",
+      "completed_at": "2026-11-20T07:55:04Z",
+      "depends_on": [
+        1131
+      ],
+      "effective_progress": 100,
+      "blocked": false,
+      "blocked_by": []
+    },
+    {
+      "id": 1134,
+      "title": "NES音源01 NTSC APUのForthレジスタ試作と仕様照合：pulse/triangle/noise、envelope/length/sweep/linear、時刻指定書込みとIRQ境界、独立試験・測定・Claudeレビュー。DMC等の除外と採否条件を明記",
+      "status": "done",
+      "parent_id": 1132,
+      "progress": 100,
+      "progress_mode": "auto",
+      "created_at": "2026-11-20T03:37:53Z",
+      "completed_at": "2026-11-20T03:56:47Z",
+      "depends_on": [],
+      "effective_progress": 100,
+      "blocked": false,
+      "blocked_by": []
+    },
+    {
+      "id": 1135,
+      "title": "NES音源02 DMCのForthモデルと実測・採否：サンプルreader/buffer/DAC/IRQ、時刻境界・専用メモリ・混合を資料/試験で照合する。DMA待ち・CPU/PPUとバス競合は未実装として記録",
+      "status": "done",
+      "parent_id": 1132,
+      "progress": 100,
+      "progress_mode": "auto",
+      "created_at": "2026-11-20T03:46:50Z",
+      "completed_at": "2026-11-20T04:51:38Z",
+      "depends_on": [
+        1134
+      ],
+      "effective_progress": 100,
+      "blocked": false,
+      "blocked_by": []
+    },
+    {
+      "id": 1136,
+      "title": "音源試作03 C64 SIDのForth音源と実測・採否：資料/ライセンス照合、再現範囲の確定、レジスタ・時刻指定・読取り/副作用、合成/PCM出力、独立検証と測定・Claudeレビューを行い、本体移行の要否と未実装機能を記録",
+      "status": "done",
+      "parent_id": 999,
+      "progress": 100,
+      "progress_mode": "auto",
+      "created_at": "2026-11-20T04:31:06Z",
+      "completed_at": "2026-11-20T07:55:49Z",
+      "depends_on": [
+        1131
+      ],
+      "effective_progress": 100,
+      "blocked": false,
+      "blocked_by": []
+    },
+    {
+      "id": 1137,
+      "title": "音源試作04 Amiga PaulaのForth音源と実測・採否：資料/ライセンス照合、再現範囲の確定、音声レジスタ・時刻指定・メモリ読取り/DMA/IRQの境界、合成/PCM出力、独立検証と測定・Claudeレビューを行い、本体移行の要否と未実装機能を記録",
+      "status": "done",
+      "parent_id": 999,
+      "progress": 100,
+      "progress_mode": "auto",
+      "created_at": "2026-11-20T04:31:06Z",
+      "completed_at": "2026-11-20T07:56:36Z",
+      "depends_on": [
+        1131
+      ],
+      "effective_progress": 100,
+      "blocked": false,
+      "blocked_by": []
+    },
+    {
+      "id": 1138,
+      "title": "音源試作05 Atari ST YM2149の既存対応と不足の確認：ST-SOUND/SOUNDのレジスタ経路、時刻指定・読取り・I/Oポートと副作用、PCM経路との使い分けをソース/資料で照合し、不足分のForth実装・検証・実測と本体移行の採否を記録",
+      "status": "todo",
+      "parent_id": 999,
+      "progress": 0,
+      "progress_mode": "auto",
+      "created_at": "2026-11-20T04:32:14Z",
+      "depends_on": [
+        1131
+      ],
+      "effective_progress": 80,
+      "blocked": false,
+      "blocked_by": []
+    },
+    {
+      "id": 1139,
+      "title": "音源対象一覧の先行照合：上位計画のCHIP-8/ZX Spectrum/NES/C64/SNES/Apple II/Amiga/Atari STについて既存基盤の充足・不足・対象外理由を整理し、不足を見つけたら機種別子タスクを追加する。最終採否は別工程",
+      "status": "done",
+      "parent_id": 999,
+      "progress": 100,
+      "progress_mode": "auto",
+      "created_at": "2026-11-20T04:32:14Z",
+      "completed_at": "2026-11-20T08:08:06Z",
+      "depends_on": [],
+      "effective_progress": 100,
+      "blocked": false,
+      "blocked_by": []
+    },
+    {
+      "id": 1141,
+      "title": "SID01 データシートに基づくレジスタ/時刻/読取りと決定的3声モデル：波形・TEST/SYNC/RING・ADSRの再現範囲を確定し、Forth基準/まとめ処理を独立検証する。実機差と未対応を記録",
+      "status": "done",
+      "parent_id": 1136,
+      "progress": 100,
+      "progress_mode": "auto",
+      "created_at": "2026-11-20T05:11:05Z",
+      "completed_at": "2026-11-20T05:36:17Z",
+      "depends_on": [
+        1131
+      ],
+      "effective_progress": 100,
+      "blocked": false,
+      "blocked_by": []
+    },
+    {
+      "id": 1142,
+      "title": "SID02 フィルター近似と3声負荷・PCM送出の実測/採否：実機6581/8580のアナログ再現と区別し、波形/変調/書込み・境界を検証、Windows/Linuxと除外構成を測定して本体移行の要否を決める",
+      "status": "done",
+      "parent_id": 1136,
+      "progress": 100,
+      "progress_mode": "auto",
+      "created_at": "2026-11-20T05:11:05Z",
+      "completed_at": "2026-11-20T05:36:17Z",
+      "depends_on": [
+        1141
+      ],
+      "effective_progress": 100,
+      "blocked": false,
+      "blocked_by": []
+    },
+    {
+      "id": 1143,
+      "title": "音源Mac受け入れ SID：Mac実機でsid.fs/sid-play.fsとverify-sid.pyを実行し、3声モデル・全PCM照合・通常/除外構成・サイズと速度・PCM実聴・中断と資源回収を確認してOS/CPU/版と結果を記録する。6581/8580実機互換とは区別（SID_FORTH.md）",
+      "status": "done",
+      "parent_id": 1136,
+      "progress": 100,
+      "progress_mode": "auto",
+      "created_at": "2026-11-20T05:58:20Z",
+      "completed_at": "2026-11-20T06:23:51Z",
+      "depends_on": [
+        1130,
+        1141,
+        1142
+      ],
+      "effective_progress": 100,
+      "blocked": false,
+      "blocked_by": []
+    },
+    {
+      "id": 1144,
+      "title": "音源Mac受け入れ NES APU/DMC：Mac実機でnes-apu.fs/nes-apu-play.fsとverify-nes-apu.py/verify-nes-dmc.pyを実行し、5声・全PCM照合・通常/除外構成・サイズと速度・PCM実聴・中断と資源回収を確認してOS/CPU/版と結果を記録する。実機DMA/ROM互換とは区別（NES_DMC_FORTH.md）",
+      "status": "done",
+      "parent_id": 1132,
+      "progress": 100,
+      "progress_mode": "auto",
+      "created_at": "2026-11-20T05:58:20Z",
+      "completed_at": "2026-11-20T06:23:51Z",
+      "depends_on": [
+        1130,
+        1134,
+        1135
+      ],
+      "effective_progress": 100,
+      "blocked": false,
+      "blocked_by": []
+    },
+    {
+      "id": 1145,
+      "title": "Paula01 レジスタ対応Forthモデルの仕様・実装：DMA/手動DAT・IRQ・変調・専用メモリ・時刻境界を一次資料と照合し、独立1clockモデルと基準/まとめ処理を検証する。未再現のbus/実機差を明記",
+      "status": "done",
+      "parent_id": 1137,
+      "progress": 100,
+      "progress_mode": "auto",
+      "created_at": "2026-11-20T06:02:16Z",
+      "completed_at": "2026-11-20T06:25:23Z",
+      "depends_on": [
+        1131
+      ],
+      "effective_progress": 100,
+      "blocked": false,
+      "blocked_by": []
+    },
+    {
+      "id": 1146,
+      "title": "Paula02 ステレオPCM・負荷とサイズ/速度・採否：Windows/Linuxの通常/除外構成で独立PCM照合と測定、Claudeレビュー・文書と本体移行判断を記録",
+      "status": "done",
+      "parent_id": 1137,
+      "progress": 100,
+      "progress_mode": "auto",
+      "created_at": "2026-11-20T06:02:16Z",
+      "completed_at": "2026-11-20T06:25:23Z",
+      "depends_on": [
+        1145
+      ],
+      "effective_progress": 100,
+      "blocked": false,
+      "blocked_by": []
+    },
+    {
+      "id": 1147,
+      "title": "Paula Mac受け入れ：Mac実機でForth Paulaモデル・通常/除外構成・独立PCM照合・サイズと速度・ステレオ実聴・中断と資源回収を確認しOS/CPU/版と結果を記録。実機Amiga互換とは区別",
+      "status": "done",
+      "parent_id": 1137,
+      "progress": 100,
+      "progress_mode": "auto",
+      "created_at": "2026-11-20T06:02:16Z",
+      "completed_at": "2026-11-20T06:50:22Z",
+      "depends_on": [
+        1130,
+        1145,
+        1146
+      ],
+      "effective_progress": 100,
+      "blocked": false,
+      "blocked_by": []
+    },
+    {
+      "id": 1150,
+      "title": "NES音源例の実聴 Windows：examples/nes-apu-play.fsのTRUE（生成波形）をWindows実装置で聞き、4声・DMC（可聴な音程のloop）・Ctrl+C中断と再再生を確認（自動試験は無音のみ。Macは1144で確認済み）",
+      "status": "done",
+      "parent_id": 1132,
+      "progress": 100,
+      "progress_mode": "auto",
+      "created_at": "2026-11-20T06:23:47Z",
+      "completed_at": "2026-11-20T07:33:55Z",
+      "depends_on": [],
+      "effective_progress": 100,
+      "blocked": false,
+      "blocked_by": []
+    },
+    {
+      "id": 1151,
+      "title": "NES音源例の実聴 Linux：examples/nes-apu-play.fsのTRUE（生成波形）をPulseAudio/ALSA実装置で聞き、4声・DMC（可聴な音程のloop）・Ctrl+C中断と再再生を確認（WSLの無音consumer試験とは区別。Macは1144で確認済み）",
+      "status": "done",
+      "parent_id": 1132,
+      "progress": 100,
+      "progress_mode": "auto",
+      "created_at": "2026-11-20T06:25:03Z",
+      "completed_at": "2026-11-20T07:55:04Z",
+      "depends_on": [],
+      "effective_progress": 100,
+      "blocked": false,
+      "blocked_by": []
+    },
+    {
+      "id": 1152,
+      "title": "Atari ST01 既存YM2149の充足・不足監査とレジスタ/時刻/I-Oモデル：ST-SOUND/SOUNDを資料と照合し、Forthで時刻指定・読取り・I/O portとST選択latchを実装し独立検証。実機差・未対応を記録",
+      "status": "done",
+      "parent_id": 1138,
+      "progress": 100,
+      "progress_mode": "auto",
+      "created_at": "2026-11-20T06:31:53Z",
+      "completed_at": "2026-11-20T07:09:33Z",
+      "depends_on": [
+        1131
+      ],
+      "effective_progress": 100,
+      "blocked": false,
+      "blocked_by": []
+    },
+    {
+      "id": 1153,
+      "title": "Atari ST02 Windows/Linux検証とサイズ/速度・採否：3声/ノイズ/全envelope・高速write・I/Oを独立PCM/境界で照合し、通常/除外構成とClaudeレビュー・記録を整える",
+      "status": "done",
+      "parent_id": 1138,
+      "progress": 100,
+      "progress_mode": "auto",
+      "created_at": "2026-11-20T06:31:53Z",
+      "completed_at": "2026-11-20T07:09:33Z",
+      "depends_on": [
+        1152
+      ],
+      "effective_progress": 100,
+      "blocked": false,
+      "blocked_by": []
+    },
+    {
+      "id": 1154,
+      "title": "Atari ST Mac受け入れ：新ビルドでnative YM固定音量0の回帰・core/host検査、Forth通常/除外構成・独立PCM照合・サイズ/速度・生成音の実聴と中断/資源回収を確認しOS/CPU/版を記録。実機Atari互換とは区別",
+      "status": "todo",
+      "parent_id": 1138,
+      "progress": 0,
+      "progress_mode": "auto",
+      "created_at": "2026-11-20T06:31:53Z",
+      "depends_on": [
+        1130,
+        1152,
+        1153
+      ],
+      "effective_progress": 0,
+      "blocked": false,
+      "blocked_by": []
+    },
+    {
+      "id": 1155,
+      "title": "Paula音源例の実聴 Windows：examples/paula-play.fsのTRUE（生成波形）をWindows実装置で聞き、4声stereo・左だけ/右だけ（DMACONでch1/2またはch0/3を停止）・Ctrl+C中断と再再生を確認（自動試験は無音のみ。Macは1147で確認済み）",
+      "status": "done",
+      "parent_id": 1137,
+      "progress": 100,
+      "progress_mode": "auto",
+      "created_at": "2026-11-20T06:50:04Z",
+      "completed_at": "2026-11-20T07:38:37Z",
+      "depends_on": [],
+      "effective_progress": 100,
+      "blocked": false,
+      "blocked_by": []
+    },
+    {
+      "id": 1156,
+      "title": "Paula音源例の実聴 Linux：examples/paula-play.fsのTRUE（生成波形）をPulseAudio/ALSA実装置で聞き、4声stereo・左だけ/右だけ・Ctrl+C中断と再再生を確認（WSLの無音consumer試験とは区別。Macは1147で確認済み）",
+      "status": "done",
+      "parent_id": 1137,
+      "progress": 100,
+      "progress_mode": "auto",
+      "created_at": "2026-11-20T06:50:04Z",
+      "completed_at": "2026-11-20T07:56:36Z",
+      "depends_on": [],
+      "effective_progress": 100,
+      "blocked": false,
+      "blocked_by": []
+    },
+    {
+      "id": 1157,
+      "title": "SID音源例の実聴 Windows：examples/sid-play.fsのTRUE（生成波形）をWindows実装置で聞き、3声デモ・Ctrl+C中断と再再生を確認（自動試験は無音のみ。Macは1143で確認済み）",
+      "status": "done",
+      "parent_id": 1136,
+      "progress": 100,
+      "progress_mode": "auto",
+      "created_at": "2026-11-20T06:58:45Z",
+      "completed_at": "2026-11-20T07:33:55Z",
+      "depends_on": [],
+      "effective_progress": 100,
+      "blocked": false,
+      "blocked_by": []
+    },
+    {
+      "id": 1158,
+      "title": "SID音源例の実聴 Linux：examples/sid-play.fsのTRUE（生成波形）をPulseAudio/ALSA実装置で聞き、3声デモ・Ctrl+C中断と再再生を確認（WSLの無音consumer試験とは区別。Macは1143で確認済み）",
+      "status": "done",
+      "parent_id": 1136,
+      "progress": 100,
+      "progress_mode": "auto",
+      "created_at": "2026-11-20T06:58:45Z",
+      "completed_at": "2026-11-20T07:55:48Z",
+      "depends_on": [],
+      "effective_progress": 100,
+      "blocked": false,
+      "blocked_by": []
+    },
+    {
+      "id": 1161,
+      "title": "YM2149音源例の実聴 Windows：examples/ym2149-play.fsのTRUE（生成波形）をWindows実装置で聞き、3声・ノイズ・envelope、Ctrl+C中断後の停止と再再生、handle解放を確認しOS/版/装置と結果を記録する。無音自動検査・実機Atari互換とは区別",
+      "status": "done",
+      "parent_id": 1138,
+      "progress": 100,
+      "progress_mode": "auto",
+      "created_at": "2026-11-20T07:35:10Z",
+      "completed_at": "2026-11-20T07:38:38Z",
+      "depends_on": [
+        1153
+      ],
+      "effective_progress": 100,
+      "blocked": false,
+      "blocked_by": []
+    },
+    {
+      "id": 1162,
+      "title": "YM2149音源例の実聴 Linux：examples/ym2149-play.fsのTRUE（生成波形）をPulseAudio/ALSA実装置で聞き、3声・ノイズ・envelope、Ctrl+C中断後の停止と再再生、handle解放を確認しOS/版/装置と結果を記録する。WSL無音consumer試験・実機Atari互換とは区別",
+      "status": "done",
+      "parent_id": 1138,
+      "progress": 100,
+      "progress_mode": "auto",
+      "created_at": "2026-11-20T07:35:10Z",
+      "completed_at": "2026-11-20T07:57:39Z",
+      "depends_on": [
+        1153
+      ],
+      "effective_progress": 100,
+      "blocked": false,
+      "blocked_by": []
+    },
+    {
+      "id": 1163,
+      "title": "音源試作06 CHIP-8のtimer/gateとPCM接続：対象となる原型/拡張系と波形を先に確定し、Fx18・60Hz境界・0/再設定・PCM化をForthで検証/測定、本体移行の採否と未対応を記録",
+      "status": "todo",
+      "parent_id": 999,
+      "progress": 0,
+      "progress_mode": "auto",
+      "created_at": "2026-11-20T08:03:33Z",
+      "depends_on": [
+        1131
+      ],
+      "effective_progress": 0,
+      "blocked": false,
+      "blocked_by": []
+    },
+    {
+      "id": 1164,
+      "title": "CHIP-801 仕様・Forth実装と独立検証：対象モデル/変種と宣言範囲を資料で確定、状態/時刻境界とPCMを別実装・手計算で照合しClaudeレビューと採否論点を記録",
+      "status": "todo",
+      "parent_id": 1163,
+      "progress": 0,
+      "progress_mode": "auto",
+      "created_at": "2026-11-20T08:03:33Z",
+      "depends_on": [
+        1131
+      ],
+      "effective_progress": 0,
+      "blocked": false,
+      "blocked_by": []
+    },
+    {
+      "id": 1165,
+      "title": "CHIP-8 Windows受け入れ：通常/機能除外構成の独立PCM/状態照合、サイズと速度・採否、Windows実装置での生成音の実聴・Ctrl+C後の停止/再再生と資源回収を確認しOS/版/装置を記録",
+      "status": "todo",
+      "parent_id": 1163,
+      "progress": 0,
+      "progress_mode": "auto",
+      "created_at": "2026-11-20T08:03:33Z",
+      "depends_on": [
+        1164
+      ],
+      "effective_progress": 0,
+      "blocked": true,
+      "blocked_by": [
+        1164
+      ]
+    },
+    {
+      "id": 1166,
+      "title": "CHIP-8 Linux受け入れ：通常/機能除外構成の独立PCM/状態照合、サイズと速度・採否、PulseAudio/ALSAでの生成音の実聴・Ctrl+C後の停止/再再生と資源回収を確認しOS/版/装置とWSL/実機の別を記録",
+      "status": "todo",
+      "parent_id": 1163,
+      "progress": 0,
+      "progress_mode": "auto",
+      "created_at": "2026-11-20T08:03:33Z",
+      "depends_on": [
+        1164
+      ],
+      "effective_progress": 0,
+      "blocked": true,
+      "blocked_by": [
+        1164
+      ]
+    },
+    {
+      "id": 1167,
+      "title": "CHIP-8 Mac受け入れ：Mac実機の通常/機能除外構成・独立PCM/状態照合・サイズと速度、生成音の実聴・Ctrl+C後の停止/再再生と資源回収を確認しOS/CPU/版/装置を記録。完了まで機種の親を未完了に維持",
+      "status": "todo",
+      "parent_id": 1163,
+      "progress": 0,
+      "progress_mode": "auto",
+      "created_at": "2026-11-20T08:03:33Z",
+      "depends_on": [
+        1130,
+        1164
+      ],
+      "effective_progress": 0,
+      "blocked": true,
+      "blocked_by": [
+        1164
+      ]
+    },
+    {
+      "id": 1168,
+      "title": "音源試作07 ZX SpectrumのULA/beeperとAY：48K/128K等の対象モデルを先に確定し、時刻指定・port select/readとAY/YM差・混合をForthで検証/測定、本体移行の採否と未対応を記録",
+      "status": "todo",
+      "parent_id": 999,
+      "progress": 0,
+      "progress_mode": "auto",
+      "created_at": "2026-11-20T08:03:34Z",
+      "depends_on": [
+        1131
+      ],
+      "effective_progress": 0,
+      "blocked": false,
+      "blocked_by": []
+    },
+    {
+      "id": 1169,
+      "title": "ZX Spectrum01 仕様・Forth実装と独立検証：対象モデル/変種と宣言範囲を資料で確定、状態/時刻境界とPCMを別実装・手計算で照合しClaudeレビューと採否論点を記録",
+      "status": "todo",
+      "parent_id": 1168,
+      "progress": 0,
+      "progress_mode": "auto",
+      "created_at": "2026-11-20T08:03:34Z",
+      "depends_on": [
+        1131
+      ],
+      "effective_progress": 0,
+      "blocked": false,
+      "blocked_by": []
+    },
+    {
+      "id": 1170,
+      "title": "ZX Spectrum Windows受け入れ：通常/機能除外構成の独立PCM/状態照合、サイズと速度・採否、Windows実装置での生成音の実聴・Ctrl+C後の停止/再再生と資源回収を確認しOS/版/装置を記録",
+      "status": "todo",
+      "parent_id": 1168,
+      "progress": 0,
+      "progress_mode": "auto",
+      "created_at": "2026-11-20T08:03:34Z",
+      "depends_on": [
+        1169
+      ],
+      "effective_progress": 0,
+      "blocked": true,
+      "blocked_by": [
+        1169
+      ]
+    },
+    {
+      "id": 1171,
+      "title": "ZX Spectrum Linux受け入れ：通常/機能除外構成の独立PCM/状態照合、サイズと速度・採否、PulseAudio/ALSAでの生成音の実聴・Ctrl+C後の停止/再再生と資源回収を確認しOS/版/装置とWSL/実機の別を記録",
+      "status": "todo",
+      "parent_id": 1168,
+      "progress": 0,
+      "progress_mode": "auto",
+      "created_at": "2026-11-20T08:03:34Z",
+      "depends_on": [
+        1169
+      ],
+      "effective_progress": 0,
+      "blocked": true,
+      "blocked_by": [
+        1169
+      ]
+    },
+    {
+      "id": 1172,
+      "title": "ZX Spectrum Mac受け入れ：Mac実機の通常/機能除外構成・独立PCM/状態照合・サイズと速度、生成音の実聴・Ctrl+C後の停止/再再生と資源回収を確認しOS/CPU/版/装置を記録。完了まで機種の親を未完了に維持",
+      "status": "todo",
+      "parent_id": 1168,
+      "progress": 0,
+      "progress_mode": "auto",
+      "created_at": "2026-11-20T08:03:34Z",
+      "depends_on": [
+        1130,
+        1169
+      ],
+      "effective_progress": 0,
+      "blocked": true,
+      "blocked_by": [
+        1169
+      ]
+    },
+    {
+      "id": 1173,
+      "title": "音源試作08 SNES S-DSP：資料/ライセンスと対象範囲を確定し、レジスタ/状態・8声/BRR・envelope/noise/echo等をForthで検証/測定、SPC700 CPUとは分けて本体移行の採否と未実装を記録",
+      "status": "todo",
+      "parent_id": 999,
+      "progress": 0,
+      "progress_mode": "auto",
+      "created_at": "2026-11-20T08:03:34Z",
+      "depends_on": [
+        1131
+      ],
+      "effective_progress": 0,
+      "blocked": false,
+      "blocked_by": []
+    },
+    {
+      "id": 1174,
+      "title": "SNES01 仕様・Forth実装と独立検証：対象モデル/変種と宣言範囲を資料で確定、状態/時刻境界とPCMを別実装・手計算で照合しClaudeレビューと採否論点を記録",
+      "status": "todo",
+      "parent_id": 1173,
+      "progress": 0,
+      "progress_mode": "auto",
+      "created_at": "2026-11-20T08:03:34Z",
+      "depends_on": [
+        1131
+      ],
+      "effective_progress": 0,
+      "blocked": false,
+      "blocked_by": []
+    },
+    {
+      "id": 1175,
+      "title": "SNES Windows受け入れ：通常/機能除外構成の独立PCM/状態照合、サイズと速度・採否、Windows実装置での生成音の実聴・Ctrl+C後の停止/再再生と資源回収を確認しOS/版/装置を記録",
+      "status": "todo",
+      "parent_id": 1173,
+      "progress": 0,
+      "progress_mode": "auto",
+      "created_at": "2026-11-20T08:03:34Z",
+      "depends_on": [
+        1174
+      ],
+      "effective_progress": 0,
+      "blocked": true,
+      "blocked_by": [
+        1174
+      ]
+    },
+    {
+      "id": 1176,
+      "title": "SNES Linux受け入れ：通常/機能除外構成の独立PCM/状態照合、サイズと速度・採否、PulseAudio/ALSAでの生成音の実聴・Ctrl+C後の停止/再再生と資源回収を確認しOS/版/装置とWSL/実機の別を記録",
+      "status": "todo",
+      "parent_id": 1173,
+      "progress": 0,
+      "progress_mode": "auto",
+      "created_at": "2026-11-20T08:03:34Z",
+      "depends_on": [
+        1174
+      ],
+      "effective_progress": 0,
+      "blocked": true,
+      "blocked_by": [
+        1174
+      ]
+    },
+    {
+      "id": 1177,
+      "title": "SNES Mac受け入れ：Mac実機の通常/機能除外構成・独立PCM/状態照合・サイズと速度、生成音の実聴・Ctrl+C後の停止/再再生と資源回収を確認しOS/CPU/版/装置を記録。完了まで機種の親を未完了に維持",
+      "status": "todo",
+      "parent_id": 1173,
+      "progress": 0,
+      "progress_mode": "auto",
+      "created_at": "2026-11-20T08:03:34Z",
+      "depends_on": [
+        1130,
+        1174
+      ],
+      "effective_progress": 0,
+      "blocked": true,
+      "blocked_by": [
+        1174
+      ]
+    },
+    {
+      "id": 1178,
+      "title": "音源試作09 Apple II speaker toggle：対象モデルと追加音源の範囲を先に確定し、C030等のbus時刻・read/write副作用・PCM化をForthで検証/測定、本体移行の採否と未対応を記録",
+      "status": "todo",
+      "parent_id": 999,
+      "progress": 0,
+      "progress_mode": "auto",
+      "created_at": "2026-11-20T08:03:34Z",
+      "depends_on": [
+        1131
+      ],
+      "effective_progress": 0,
+      "blocked": false,
+      "blocked_by": []
+    },
+    {
+      "id": 1140,
+      "title": "音源対象一覧の最終採否：先行照合1139と全機種別作業の完了を照合し、8対象のモデル/変種・未再現項目の対象と保留理由を明示確定。対象に選ぶ不足は機種別タスクと依存へ追加して完了を待ち、全対象の根拠と本体移行の採否を記録する。先行監査だけで完了にしない",
+      "status": "todo",
+      "parent_id": 999,
+      "progress": 0,
+      "progress_mode": "auto",
+      "created_at": "2026-11-20T04:38:52Z",
+      "depends_on": [
+        1132,
+        1136,
+        1137,
+        1138,
+        1139,
+        1163,
+        1168,
+        1173,
+        1178
+      ],
+      "effective_progress": 0,
+      "blocked": true,
+      "blocked_by": [
+        1138,
+        1163,
+        1168,
+        1173,
+        1178
+      ]
+    },
+    {
+      "id": 1179,
+      "title": "Apple II01 仕様・Forth実装と独立検証：対象モデル/変種と宣言範囲を資料で確定、状態/時刻境界とPCMを別実装・手計算で照合しClaudeレビューと採否論点を記録",
+      "status": "todo",
+      "parent_id": 1178,
+      "progress": 0,
+      "progress_mode": "auto",
+      "created_at": "2026-11-20T08:03:34Z",
+      "depends_on": [
+        1131
+      ],
+      "effective_progress": 0,
+      "blocked": false,
+      "blocked_by": []
+    },
+    {
+      "id": 1180,
+      "title": "Apple II Windows受け入れ：通常/機能除外構成の独立PCM/状態照合、サイズと速度・採否、Windows実装置での生成音の実聴・Ctrl+C後の停止/再再生と資源回収を確認しOS/版/装置を記録",
+      "status": "todo",
+      "parent_id": 1178,
+      "progress": 0,
+      "progress_mode": "auto",
+      "created_at": "2026-11-20T08:03:34Z",
+      "depends_on": [
+        1179
+      ],
+      "effective_progress": 0,
+      "blocked": true,
+      "blocked_by": [
+        1179
+      ]
+    },
+    {
+      "id": 1181,
+      "title": "Apple II Linux受け入れ：通常/機能除外構成の独立PCM/状態照合、サイズと速度・採否、PulseAudio/ALSAでの生成音の実聴・Ctrl+C後の停止/再再生と資源回収を確認しOS/版/装置とWSL/実機の別を記録",
+      "status": "todo",
+      "parent_id": 1178,
+      "progress": 0,
+      "progress_mode": "auto",
+      "created_at": "2026-11-20T08:03:34Z",
+      "depends_on": [
+        1179
+      ],
+      "effective_progress": 0,
+      "blocked": true,
+      "blocked_by": [
+        1179
+      ]
+    },
+    {
+      "id": 1182,
+      "title": "Apple II Mac受け入れ：Mac実機の通常/機能除外構成・独立PCM/状態照合・サイズと速度、生成音の実聴・Ctrl+C後の停止/再再生と資源回収を確認しOS/CPU/版/装置を記録。完了まで機種の親を未完了に維持",
+      "status": "todo",
+      "parent_id": 1178,
+      "progress": 0,
+      "progress_mode": "auto",
+      "created_at": "2026-11-20T08:03:34Z",
+      "depends_on": [
+        1130,
+        1179
+      ],
+      "effective_progress": 0,
+      "blocked": true,
+      "blocked_by": [
+        1179
+      ]
+    }
+  ],
+  "task_dependency_checks": "Four parents under999; implementation+Windows+Linux+Mac under each; final1140 retains old5 deps and adds all4 parents.",
+  "retrieval_limitations": "bitsavers direct download403; web PDF find timed out. RCA mirror retrieved and visually checked. PDFs remain checkout-local.",
+  "tasks_snapshot_pcm": [
+    {
+      "id": 998,
+      "title": "本体09 PCMストリーム出力（段階B、依存は共通基盤1064。AUDIO）：開始・書込み・残量（フレーム数）・停止の語、専用の有界のリング、周波数の変換、残量と再生位置の区別、満杯のときの待機と中断・部分書込みは900の取り決め、MML・SFX・モジュールとの混合（EMULATOR_CORE_PLAN.md）",
+      "status": "done",
+      "parent_id": 1003,
+      "progress": 100,
+      "progress_mode": "auto",
+      "created_at": "2026-11-17T22:47:12Z",
+      "completed_at": "2026-11-20T07:53:27Z",
+      "depends_on": [
+        1064
+      ],
+      "effective_progress": 100,
+      "blocked": false,
+      "blocked_by": []
+    },
+    {
+      "id": 1125,
+      "title": "PCM01 仕様設計：形式・容量・部分書込み・期限と中断・停止とclose・再標本化・混合・所有と画像・backend終了をソース照合しClaudeレビューで確定",
+      "status": "done",
+      "parent_id": 998,
+      "progress": 100,
+      "progress_mode": "auto",
+      "created_at": "2026-11-20T01:14:54Z",
+      "completed_at": "2026-11-20T01:32:15Z",
+      "depends_on": [
+        1064
+      ],
+      "effective_progress": 100,
+      "blocked": false,
+      "blocked_by": []
+    },
+    {
+      "id": 1126,
+      "title": "PCM02 有界リングと再標本化：SPSC・wrap・入力frame残量・underrun・sample hold・saturating混合を実装し決定的試験",
+      "status": "done",
+      "parent_id": 998,
+      "progress": 100,
+      "progress_mode": "auto",
+      "created_at": "2026-11-20T01:14:54Z",
+      "completed_at": "2026-11-20T01:32:15Z",
+      "depends_on": [
+        1125
+      ],
+      "effective_progress": 100,
+      "blocked": false,
+      "blocked_by": []
+    },
+    {
+      "id": 1127,
+      "title": "PCM03 ホスト寿命：音スレッドの停止とjoin・Windows/Linux/macOS装置待機解除・callback停止・初期化失敗の回収を実装",
+      "status": "done",
+      "parent_id": 998,
+      "progress": 100,
+      "progress_mode": "auto",
+      "created_at": "2026-11-20T01:14:54Z",
+      "completed_at": "2026-11-20T02:06:42Z",
+      "depends_on": [
+        1125
+      ],
+      "effective_progress": 100,
+      "blocked": false,
+      "blocked_by": []
+    },
+    {
+      "id": 1128,
+      "title": "PCM04 公開語と所有：開始・部分書込み・待機・残量・停止・closeと画像/世代/終了経路、英日HELPを実装",
+      "status": "done",
+      "parent_id": 998,
+      "progress": 100,
+      "progress_mode": "auto",
+      "created_at": "2026-11-20T01:14:54Z",
+      "completed_at": "2026-11-20T03:14:15Z",
+      "depends_on": [
+        1056,
+        1125,
+        1126,
+        1127
+      ],
+      "effective_progress": 100,
+      "blocked": false,
+      "blocked_by": []
+    },
+    {
+      "id": 1129,
+      "title": "PCM05 Windows/Linux受け入れ：満杯・中断・停止・保存アプリ・語群除外・資源回収・英日文書と測定を検証",
+      "status": "done",
+      "parent_id": 998,
+      "progress": 100,
+      "progress_mode": "auto",
+      "created_at": "2026-11-20T01:14:54Z",
+      "completed_at": "2026-11-20T03:14:15Z",
+      "depends_on": [
+        1128
+      ],
+      "effective_progress": 100,
+      "blocked": false,
+      "blocked_by": []
+    },
+    {
+      "id": 1130,
+      "title": "PCM06 Mac実機受け入れ：生成アプリ・連続PCM・混合・待機中断・停止/再開・装置と資源回収・除外構成を確認",
+      "status": "done",
+      "parent_id": 998,
+      "progress": 100,
+      "progress_mode": "auto",
+      "created_at": "2026-11-20T01:14:54Z",
+      "completed_at": "2026-11-20T03:30:42Z",
+      "depends_on": [
+        1128
+      ],
+      "effective_progress": 100,
+      "blocked": false,
+      "blocked_by": []
+    },
+    {
+      "id": 1133,
+      "title": "PCM実聴の受け入れ：WindowsとLinuxを子タスクで個別に確認する。両OSのPCM単独・左右・混合・破棄/再開・drain・保存アプリ・中断と資源回収、実聴結果を記録。MacのPCM基盤は1130で確認済み",
+      "status": "done",
+      "parent_id": 998,
+      "progress": 100,
+      "progress_mode": "auto",
+      "created_at": "2026-11-20T03:30:42Z",
+      "completed_at": "2026-11-20T07:53:27Z",
+      "depends_on": [
+        1129
+      ],
+      "effective_progress": 100,
+      "blocked": false,
+      "blocked_by": []
+    },
+    {
+      "id": 1148,
+      "title": "PCM実聴 Windows：Windows実装置でPCM単独・左右・MML/SFXとの混合・破棄と再開・drain・保存アプリ・Ctrl+C中断を実際に聞き、再生結果と停止後の資源回収、OS/版/装置を記録する。自動試験と利用者の実聴確認を区別",
+      "status": "done",
+      "parent_id": 1133,
+      "progress": 100,
+      "progress_mode": "auto",
+      "created_at": "2026-11-20T06:07:03Z",
+      "completed_at": "2026-11-20T07:28:44Z",
+      "depends_on": [
+        1129
+      ],
+      "effective_progress": 100,
+      "blocked": false,
+      "blocked_by": []
+    },
+    {
+      "id": 1149,
+      "title": "PCM実聴 Linux：PulseAudio/ALSA実装置でPCM単独・左右・MML/SFXとの混合・破棄と再開・drain・保存アプリ・Ctrl+C中断を実際に聞き、再生結果と停止後の資源回収、OS/版/装置を記録する。WSLの無音consumer試験とは区別",
+      "status": "done",
+      "parent_id": 1133,
+      "progress": 100,
+      "progress_mode": "auto",
+      "created_at": "2026-11-20T06:07:03Z",
+      "completed_at": "2026-11-20T07:53:27Z",
+      "depends_on": [
+        1129
+      ],
+      "effective_progress": 100,
+      "blocked": false,
+      "blocked_by": []
+    },
+    {
+      "id": 1159,
+      "title": "PCM語群除外の再確認 Windows：1129の不在確認は[DEFINED]でaudio有効版でも0 0となり証拠にならない。audio無効4構成でREQUIRE-AUDIOをCATCH内で実行し-275、有効版で成功しALSO AUDIO後にPCM-OPENが見つかることを確認・記録（Macは1130で確認済み）",
+      "status": "done",
+      "parent_id": 998,
+      "progress": 100,
+      "progress_mode": "auto",
+      "created_at": "2026-11-20T07:05:49Z",
+      "completed_at": "2026-11-20T07:17:29Z",
+      "depends_on": [],
+      "effective_progress": 100,
+      "blocked": false,
+      "blocked_by": []
+    },
+    {
+      "id": 1160,
+      "title": "PCM語群除外の再確認 Linux：1129の不在確認は[DEFINED]でaudio有効版でも0 0となり証拠にならない。audio無効4構成でREQUIRE-AUDIOをCATCH内で実行し-275、有効版で成功しALSO AUDIO後にPCM-OPENが見つかることを確認・記録（Macは1130で確認済み）",
+      "status": "done",
+      "parent_id": 998,
+      "progress": 100,
+      "progress_mode": "auto",
+      "created_at": "2026-11-20T07:05:49Z",
+      "completed_at": "2026-11-20T07:17:29Z",
+      "depends_on": [],
+      "effective_progress": 100,
+      "blocked": false,
+      "blocked_by": []
+    }
+  ],
+  "verified_at": "2026-11-20T17:08:06.959453+09:00",
+  "queries": [
+    "tque ls --root 998 --all --json",
+    "tque ls --root 999 --all --json"
+  ],
+  "additional_primary_creator_spec": "https://johnearnest.github.io/Octo/docs/XO-ChipSpecification.html"
+}

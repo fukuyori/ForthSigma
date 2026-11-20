@@ -74,3 +74,8 @@ For the project overview, how to build, the current features, the differences fr
 - [Paula Forth register model](PAULA_FORTH.md): declared stereo DMA/manual/IRQ/attachment model, independent validation and pending Mac acceptance.
 
 - [YM2149/ST Forth model and audit](YM2149_FORTH.md): existing/native gaps, fixed-zero mute correction, timestamped registers/virtual ports/bus, independent PCM tests and measurements.
+
+- [Eight-target audio coverage audit](AUDIO_TARGET_AUDIT.md): source-backed gaps, declared model boundaries and per-machine/OS follow-up tasks; final adoption remains separate.
+
+- [ZX Spectrum 48K/128K audio model](ZX_SPECTRUM_AUDIO_FORTH.md): Forth beeper/AY synthesis, independent port/PCM validation and declared limits.
+- [CHIP-8 and XO-CHIP Forth audio](CHIP8_AUDIO_FORTH.md): declared60Hz timer, portable buzzer, copied128-bit pattern and integer pitch/phase model; CPU and OS acceptance are separate.
