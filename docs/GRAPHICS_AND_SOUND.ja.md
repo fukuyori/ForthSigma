@@ -579,3 +579,5 @@ WAIT/STOPの期限切れはfalse,0、中断はTHROW -28です。切離し前にd
 [NES APUのForth例](NES_APU_FORTH.md)は、技術資料に基づくNTSCのpulse 2声・triangle・noiseと、envelope/length/sweep/linear counterを扱います。PCM生成中も予定された書込みのCPU時刻順を保ちます。Builtinは追加しません。CPU/PPUのバス競合・アナログフィルターは試作の対象外で、DMCは下記の拡張で扱います。`sigma examples/nes-apu-play.fs -e "NA-DEMO-SETUP 16 FALSE NA-STREAM BYE"`は無音を渡し、TRUEを明示した場合だけ生成波形を渡します。読み込むだけでは再生しません。
 
 [DMC拡張](NES_DMC_FORTH.md)ではForth例に5声目、専用サンプルメモリ、reader/buffer/IRQ/loopと直接DAC書込みを追加しました。DMAの待ちは0とするモデルで、CPU/PPUのバス競合は対象外です。5声と8kHz直接DACの負荷を別に測定し、読み込むだけでは再生しません。
+
+[C64 SIDのForthモデル](SID_FORTH.md)は、3声の時刻指定レジスタ、TEST/SYNC/RING、ADSRと独自の整数フィルター近似を扱います。合成波形、実際の6581/8580のアナログ特性、ROM互換は対象外です。`sigma examples/sid-play.fs -e "SI-DEMO-SETUP 16 FALSE SI-STREAM BYE"`は合成後に無音を送り、TRUEを明示すると生成音を送ります。読み込むだけでは再生しません。

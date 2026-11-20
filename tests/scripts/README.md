@@ -145,3 +145,7 @@ Run `python tests/scripts/verify-execution-control.py PATH_TO_SIGMA` for public 
 ## NES DMC model
 
 `python tests/scripts/verify-nes-dmc.py PATH_TO_SIGMA [--benchmark]` checks all rates, copied buffers, loop/stop/restart, IRQ/status, address wrap, direct DAC parity limits, all32799 LUT entries and mapped-memory validation. Streaming8kHz DAC exceeds1024 queued writes and compares full output with Python. Benchmark mode records seven processes per nominal/reference/maximum-noise-DMC/direct-DAC workload. The companion verify-nes-apu.py retains the fixed1134 output SHA. Own sample patterns only; no ROM, hardware DMA or audible generated output. [Contract and measurements](../../docs/NES_DMC_FORTH.md).
+
+## SID register model and filter proxy
+
+`python tests/scripts/verify-sid.py PATH_TO_SIGMA [--benchmark]` checks per-clock Python against both Forth paths, scheduled three-voice PCM, ADSR/sync/noise boundaries, atomic rejection, pulse/ring/routing hand values, all2048 coefficients,64 filter impulse cases and8kHz queue compaction with full PCM comparison. Benchmark mode uses seven warmed fresh processes for nominal/reference/maximum mixed-filter-sync/three-noise/8kHz write workloads. `python scripts/sid-filter-coeffs.py --check` reproduces the Decimal table. Audio checks submit silence. No real6581/8580 or ROM oracle is claimed. [Contract and limits](../../docs/SID_FORTH.md).

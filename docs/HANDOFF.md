@@ -1,5 +1,13 @@
 # ForthSigma 作業引き継ぎ
 
+## 最新追記：SID1136の決定的モデル・実測・採否完了（2026-11-20）
+
+mainは8eff166（NES/DMCと対象修正までpush済み）。今回のSID差分は未コミット。1141/1142/1136を完了し、999は7枝の均等平均auto42%になった。6581/8580のアナログ再現やROM互換の完了ではない。既存C64-SOUND/Builtinを変更せず、宣言したレジスタ/ADSR/波形・時刻指定と独自Q16フィルターをForthで維持する。
+
+[SIDの契約・制限・実測](SID_FORTH.md)、[レビュー評価と原文](reviews/1136-review-response.md)、[全測定・ソース本文](measurements/2026-11-20-sid.json)を参照。Windows/Linuxの通常・debug/graphics/extension除外・floatも除外した6構成で各12検査群成功。5負荷すべて32768frameの全PCM/終了状態をPythonと照合し、7processずつ測定した。最終ClaudeレビューはHigh/Mediumなし。Windows通常約2.53倍、重い混在約1.03倍。単独音源でも余裕が小さく、C64全体の実時間性を立証していない。辞書増加41688byte、本体実行ファイルの増加0。
+
+Mac上のSID例、生成波形の実聴、実機/ROM照合は未確認として残す。既存PCMのMac1130は完了済み。次はAmiga Paula1137の再現範囲・DMA/IRQ契約を資料と照合し、既存近似を調べてForth側の試作へ進む。Atari ST1138、対象一覧の先行照合1139、依存付き最終採否1140も未完了。以下の28%等とSID未着手は各時点の履歴。
+
 ## 最新追記：DMCと5声モデル・採否1135/1132完了（2026-11-20）
 
 mainは816129a（汎用試作までpush済み）。4声/DMC・対象一覧修正の今回の差分は未コミット。DMCのreader/buffer/DAC/loop/IRQ、専用32KB map、非線形5声混合と8kHz直接DACをForth側に追加し、1135とNES1132のモデル・実測・採否を完了した。定義したzero DMA-delayのAPU単独の範囲はForthに維持する。CPU/PPUや実機DMA/bus競合、ROM互換を完了した意味ではない。

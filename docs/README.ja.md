@@ -68,3 +68,5 @@
 - [NES APUのForth試作](NES_APU_FORTH.md)：NTSC 4声のレジスタ、時刻指定書込み、基準版とまとめ処理版の照合・測定範囲。
 
 - [NES DMCのForthモデル](NES_DMC_FORTH.md)：5声のreader/DAC/IRQ、専用メモリと負荷測定。
+
+- [C64 SIDのForthモデル](SID_FORTH.md)：3声の決定的モデル、整数フィルター近似、独立検証と再現範囲。

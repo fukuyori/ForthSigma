@@ -148,3 +148,7 @@ Macのクロスコンパイルを実機確認の代わりにしません。
 ## NES DMCモデル
 
 `python tests/scripts/verify-nes-dmc.py SIGMAのパス [--benchmark]`は全レート、コピーしたbuffer、loop/stop/restart、IRQ/status、番地の折返し、直接DACの境界、全32799 LUT項目とメモリ検査を照合します。8kHz直接DACで1024件を超えて登録し、全出力をPythonと比較します。benchmark指定時は通常/基準版/最速noise-DMC/直接DACを各7processで測定します。verify-nes-apu.pyは1134の固定出力SHAを保持します。独自データだけを使用し、ROM・実機DMA・可聴音の確認ではありません。[契約と測定](../../docs/NES_DMC_FORTH.md)。
+
+## SIDレジスタとフィルター近似
+
+`python tests/scripts/verify-sid.py SIGMAのパス [--benchmark]`は独立したPythonの1clock版とForthの両経路を比較します。時刻指定3声PCM、ADSR/同期/ノイズ境界、不正入力の状態保持、パルス/リング/配線の手計算値、全2048係数、64種のフィルターインパルスと8kHz予定表回収の全PCMを照合します。benchmarkは通常/基準版/最大フィルター・同期の混在/3声noise/8kHz書込みをwarm-up付き7processで測定します。`python scripts/sid-filter-coeffs.py --check`でDecimalの表を再生成せず検証します。音声試験は無音を送り、実際の6581/8580やROMを正解値とした検証ではありません。[契約と制限](../../docs/SID_FORTH.md)。

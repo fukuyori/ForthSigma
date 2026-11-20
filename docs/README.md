@@ -68,3 +68,5 @@ For the project overview, how to build, the current features, the differences fr
 - [NES APU Forth prototype](NES_APU_FORTH.md): NTSC four-channel registers, scheduled writes, reference/batch equivalence and measured scope.
 
 - [NES DMC Forth model](NES_DMC_FORTH.md): five-voice sample reader/DAC/IRQ behavior, own memory map and workload measurements.
+
+- [C64 SID Forth model](SID_FORTH.md): declared three-voice digital model, integer filter proxy, independent verification and scope limits.
