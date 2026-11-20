@@ -1,5 +1,29 @@
 # CHIP-8 / SUPER-CHIP / XO-CHIPの音源モデル（1164）
 
+## Mac受け入れ1167の完了（2026-11-20）
+
+main `c205820`、macOS 27.2.1 / Apple M5 / Zig 0.17.1。Zigソースは53ebe81から変更がなく、1154で作ったReleaseFast / cpu=baseline / strip=trueの4構成（全機能、debug/graphics/extension除外、float/debug/graphics/extension除外、audio/graphics/extension除外）を使った。作業ファイルは`.work/1167-1172-mac/`（git管理外）。
+
+| 対象 | 結果 |
+| --- | --- |
+| chip8-pitches.py --check | 256項目再現（既定357913） |
+| verify-chip8-audio.py（4構成） | 各13検査群成功、全検査の結果がWindowsの記録と一致 |
+| verify-chip8-audio-stream.py（音声有効3構成） | 各11検査成功、Windowsと一致 |
+| 論理辞書領域 | 122880→166000、差43120byte |
+
+レモンの了承後に通常構成で測った実時間比（6負荷32768frame、各7fresh processのwall中央値、全PCM/状態をPythonと照合）：
+
+| 負荷 | Mac | Windows | Linux/WSL |
+| --- | ---: | ---: | ---: |
+| classic | 96.46 | 65.03 | 76.92 |
+| xo_default | 90.36 | 63.72 | 74.84 |
+| xo_pitch255 | 95.56 | 64.84 | 74.42 |
+| classic_60hz_gates | 95.73 | 66.96 | 77.30 |
+| xo_changes128 | 120.34 | 83.21 | 91.90 |
+| xo_8khz_pattern_pitch | 50.59 | 33.78 | 38.23 |
+
+レモンがGhosttyで実際に聞いた（`.work/1167-1172-mac/chip8.fs`、Windows1165と同じ設定）。classicのブザー約1秒→無音約1秒、XOの高い音→1オクターブ低い音（各約2秒）が説明どおりに聞こえた。連続XO音で物理Ctrl+C後に`CATCH= -28 handle=0`、約3秒の再再生、status0。各回underrun0、fd13は不変、thread8→6。1167と親1163を完了にした。採否（Forth維持）は変わらない。
+
 ## Windows1165/Linux1166の受け入れ完了（2026-11-20）
 
 レモンが他アプリを止める機会を設けて開始を確認し、ＯＫの後にWindows→WSL/Linuxの順で正式再測定した。6負荷32768frame、各7fresh processのwall中央値。全計時でA5 bufferとRESET初期状態、全PCM/semantic22値/queue件数、stack0と正常終了を照合した。事前確認なしの旧値はJSONのreports_reference_onlyに保全し、今回の採否に使わない。

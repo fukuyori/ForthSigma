@@ -1,5 +1,9 @@
 # 613 本体機能拡張の引継ぎ（2026-11-19）
 
+## CHIP-8/ZX SpectrumのMac受け入れ1167/1172（2026-11-20）
+
+この節を最新状態とする。基点main `c205820`。macOS 27.2.1 / Apple M5で1167（CHIP-8）と1172（ZX Spectrum）を実施し合格、tqueの1167・1172と親1163・1168を完了にした。全検査がWindowsの記録と一致し、通常構成の速度は全負荷でWindows/Linuxより余裕があった（CHIP-8最重50.59倍、ZX最重5.34倍）。Ghosttyで実聴とCtrl+C中断・再再生を確認した。結果は[CHIP-8](CHIP8_AUDIO_FORTH.md)、[ZX Spectrum](ZX_SPECTRUM_AUDIO_FORTH.md)の冒頭の節。
+
 ## YM2149のMac実機受け入れ1154（2026-11-20）
 
 この節を最新状態とする。基点main `53ebe81`。macOS 27.2.1 / Apple M5で固定音量0修正を含む新ビルドを作り、native回帰・core1126/host152成功、YM2149の3構成の全検査がWindowsと一致、Ghosttyで実聴とCtrl+C中断・再再生を確認した。1154と親1138を完了にした。結果は[YM2149の記録](YM2149_FORTH.md#mac実機受け入れ11542026-11-20)。

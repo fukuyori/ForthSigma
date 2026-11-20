@@ -2,6 +2,30 @@
 
 2026-11-20、レモンが48K beeperと128K beeper+AYを対象とすることを承認した。1169は音源側の仕様/実装/独立検証。Windows1170/Linux1171/Mac1172の測定・実聴は別に残す。CPU/ROM/画面/keyboard/テープ/MIDIの実装ではない。
 
+## Mac受け入れ1172の完了（2026-11-20）
+
+main `c205820`、macOS 27.2.1 / Apple M5 / Zig 0.17.1。Zigソースは53ebe81から変更がなく、1154で作ったReleaseFast / cpu=baseline / strip=trueの4構成（全機能、debug/graphics/extension除外、float/debug/graphics/extension除外、audio/graphics/extension除外）を使った。作業ファイルは`.work/1167-1172-mac/`（git管理外）。
+
+| 対象 | 結果 |
+| --- | --- |
+| zx-ay-levels.py --check | 16項目再現 |
+| verify-zx-spectrum-audio.py（4構成） | 各13検査群成功、全検査の結果がWindowsの記録と一致 |
+| verify-zx-spectrum-audio-stream.py（音声有効3構成） | 各19検査成功、初回供給修正後のWindows/Linux記録（startup_fix.ram_reports）と一致 |
+| 論理辞書領域 | 122880→148040、差25160byte |
+
+レモンの了承後に通常構成で測った実時間比（6負荷32768frame×7process、wall中央値、全PCM/39状態/queue照合）：
+
+| 負荷 | Mac | Windows | Linux/WSL |
+| --- | ---: | ---: | ---: |
+| 48k_beeper | 110.68 | 78.81 | 91.59 |
+| 128k_tone | 6.34 | 4.11 | 4.90 |
+| 128k_mix | 14.81 | 9.99 | 11.83 |
+| 128k_period_zero | 5.34 | 3.59 | 4.14 |
+| 128k_changes384 | 13.55 | 9.53 | 11.20 |
+| 128k_8khz_bus | 5.92 | 3.95 | 4.50 |
+
+レモンがGhosttyで実際に聞いた（`.work/1167-1172-mac/zx.fs`、Windows1170と同じ設定）。48Kブザー約1秒→無音、128K AYの高い音→低い音→低い音＋断続beeperが説明どおりに聞こえた。物理Ctrl+Cは1回目が合成中に届いてOS終了となり、2回目で`CATCH= -28 handle=0`、低い音約3秒の再再生、`ACCEPT`入力、status0を確認した。各回underrun0、fd13は不変、thread8→7。無音のAY連続送出へ無作為な時刻のSIGINTを20回送ると13回-28・7回終了で、他の音源例と同じ既存の中断規則による。1172と親1168を完了にした。
+
 ## 最新の受け入れ状況
 
 Windows1170は実聴・物理Ctrl+C後の停止/再再生まで完了。Linux1171は再試験でCATCH=-28/handle0、replay underrun0/DEPTH0/code0となり、レモンが実聴確認し1171も完了。初回のSIGINT exit=-2は失敗として別記録に保持し、プログラム注入の診断と物理再試験を区別した。Mac1172は未確認で、親1168は未完了を維持する。
@@ -95,7 +119,7 @@ Windows/Linuxそれぞれ通常・no-debug・no-float・no-audioの8構成で、
 | --- | --- | --- |
 | Windows | 48Kブザー約1秒→無音、128K AY高音→低音→低音+断続beeper、物理Ctrl+C停止→低音約3秒再生 | レモンが全件確認。修正後underrun0/handle0、CATCH=-28、replay underrun0/DEPTH0/code0。1170完了 |
 | Linux WSL2 | 同じ48K/128K実聴と物理Ctrl+C停止→低音約3秒再生 | レモンが全件確認。通常再生underrun0/handle0。物理試行2回のうち、試験設定を変えた2回目でCATCH=-28/handle0、replay underrun0/DEPTH0/code0。1171完了 |
-| Mac | Mac実機の構成/サイズ/速度/実聴/割込み | 未確認。1172と親1168は未完了 |
+| Mac | 同じ48K/128K実聴と物理Ctrl+C停止→低音約3秒再生 | レモンが全件確認。CATCH=-28/handle0、underrun0。1172完了（上記） |
 
 Linuxの初回はREADY後SIGINT exit=-2で終了し、CATCH/cleanup/再再生は確認できなかった。正確な命令位置は未特定。資源はプロセス終了でOSへ戻るが、その回に明示的cleanupが行われたとは主張しない。失敗source/JSONを保存した。
 

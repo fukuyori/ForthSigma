@@ -1,6 +1,10 @@
 # レトロPCエミュレータ向け拡張の対応方法
 
 
+## CHIP-8/ZX SpectrumのMac受け入れ1167/1172完了（2026-11-20）
+
+Mac1167/1172が合格し、CHIP-8の親1163とZX Spectrumの親1168を完了にした。YM2149の1138もMac1154で完了済み。結果は[CHIP-8](CHIP8_AUDIO_FORTH.md)、[ZX Spectrum](ZX_SPECTRUM_AUDIO_FORTH.md)。次の音源はSNES1174。以下の「Mac1172未完了」等は当時の記録。
+
 ## ZX Windows1170/Linux1171完了・次はSNES1174の範囲確認（2026-11-20）
 
 レモンがLinux物理再試験の停止→低音再生を確認し、最終追レビューHigh/Mediumなしで1171を完了。Windows1170も完了。[仕様・結果](ZX_SPECTRUM_AUDIO_FORTH.md)、[全値/ログ/ソース](measurements/2026-11-20-zx-spectrum-os-acceptance.json)、[最終レビュー評価](reviews/1170-1171-review-response.md)。
