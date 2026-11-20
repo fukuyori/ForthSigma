@@ -1,5 +1,15 @@
 # 613 本体機能拡張の引継ぎ（2026-11-19）
 
+## Linux実聴5件の完了（2026-11-20）
+
+WSL Ubuntu26.04.1へpulseaudio-utilsを導入し、Linux静的musl版→pacat→WSLg PulseAudio RDPSink→Windows出力で、レモンがPCM全8項目、NES4声/DMC単独/混合、SID3声、Paula4声stereo/左右分離、YM2149デモ/noise/envelopeの計20caseを聞いて確認した。各音源の物理Ctrl+C後の停止・再再生はCATCH=-28、handle=0、REPLAY-OK handle=0、PCMはclose0/hello入力、全process code0。記録したunderrunはすべて0。最後にPulse sink-inputとpacat processが残らないことも確認した。[環境・全コマンド・実聴結果・ソース本文](measurements/2026-11-20-linux-audio-listening.json)。Linux実機ALSA装置の確認とは区別する。
+
+1149/1151/1158/1156/1162と親1133/998/1132/1136/1137を完了。1138はtodo・auto80%、Mac1154はtodo。999は未完了・auto68%。今回のLinux記録は未コミット。以下のLinux未確認やAUDIO?=0は当時の状態。
+
+## Linux PCM実聴1149と親998の完了（2026-11-20）
+
+WSL Ubuntu26.04.1へpulseaudio-utilsと依存ライブラリを導入し、静的musl版Sigmaのpacat pipe経由でWSLg PulseAudio RDPSinkへ出力した。AUDIO?=-1を確認し、レモンがmono/stereo左右・MML/SFX混合・破棄と再開・drain後停止・保存アプリ・物理Ctrl+C後の停止とhello入力の全8項目を実聴してＯＫと回答。case1〜7のunderrun0、case8はCATCH=-28/CLOSE=0、全process code0。1149・1133・998を完了した。[環境・コマンド・実聴記録](measurements/2026-11-20-linux-audio-listening.json)。これはWSL/Linux実行体からPulseAudioを経た実出力の確認で、Linux実機のALSA装置確認とは区別する。以降のLinux未確認・AUDIO?=0は当時の記録。
+
 ## 今回のコミット対象（2026-11-20）
 
 YM2149のForthモデル・native固定音量0修正と検証/測定、PCM語群除外の再確認1159/1160、Windows実聴1148/1150/1157/1155/1161の受け入れ記録を含む。Linux実聴1149/1151/1158/1156/1162とYM2149のMac1154は未完了のまま各機能配下に残す。以下は作業時点の履歴であり、未コミット等の記述も当時の状態。

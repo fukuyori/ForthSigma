@@ -1,5 +1,9 @@
 # C64 SID のForthモデル（1136、1141/1142）
 
+## Linux実聴1158の受け入れ完了（2026-11-20）
+
+レモンがWSL上のLinux版→pacat→WSLg PulseAudio RDPSinkで、3声デモ約4秒と停止、物理Ctrl+C後の停止と約4秒の再再生を確認。CATCH=-28/handle=0、REPLAY-OK handle=0、code0、underrun0を記録し、1158と親1136を完了。[環境と全結果](measurements/2026-11-20-linux-audio-listening.json)。Linux実機ALSA・実機SID/ROM互換の確認ではない。以下のLinux未確認は履歴。
+
 ## Windows実聴1157の受け入れ完了（2026-11-20）
 
 レモンがWindows11 Pro 10.0.26300、waveOut既定出力でSI-DEMO-SETUPの3声デモ約4秒と終了後の停止を確認した。続いて前面PowerShellで連続再生中に物理Ctrl+Cを押し、音の停止、CATCH=-28/handle=0、その後約4秒の再再生とREPLAY-OK handle=0を確認。全processはcode0、各回underrun0。[全ソース・コマンドと実聴記録](measurements/2026-11-20-nes-sid-windows-listening.json)。1157を完了し、Linux1158は未完了に残す。以下のWindows未確認はこの受け入れ前の履歴。6581/8580実機・ROM互換は対象外。

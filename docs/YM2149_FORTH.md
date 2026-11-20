@@ -1,5 +1,9 @@
 # Atari ST YM2149：既存対応の監査とForthモデル（1138）
 
+## Linux実聴1162の受け入れ完了（2026-11-20）
+
+レモンがWSL上のLinux版→pacat→WSLg PulseAudio RDPSinkで、3声/noise/envelopeデモ約3秒、noise単独約1.5秒、envelope音量変化約3秒を確認。物理Ctrl+C後の停止と約3秒の再再生も確認し、CATCH=-28/handle=0、REPLAY-OK handle=0、code0、underrun0を記録。1162を完了し、Mac1154はtodo、親1138はtodo・auto80%。[環境と全結果](measurements/2026-11-20-linux-audio-listening.json)。Linux実機ALSA・実機Atari互換の確認ではない。以下のLinux未確認は履歴。
+
 ## Windows実聴1161の受け入れ完了（2026-11-20）
 
 レモンがWindows11 Pro 10.0.26300、waveOut既定出力でYM-DEMO-SETUPの3声/noise/envelopeデモ約3秒と停止を確認した。さらにR7=55/音量12,0,0でnoiseだけ約1.5秒、R7=62/音量16,0,0・envelope period3906/shape14で音量が周期的に増減するtone約3秒を聞いて確認。連続再生を物理Ctrl+Cで止め、音の停止、CATCH=-28/handle=0、その後約3秒の再再生とREPLAY-OK handle=0を確認した。全processはcode0、記録したunderrunは0。[全コマンド・ソースと実聴記録](measurements/2026-11-20-paula-ym-windows-listening.json)。1161を完了し、Linux1162とMac1154は未完了。以下のWindows未確認や以前の進捗は履歴。実機Atari互換は対象外。

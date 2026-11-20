@@ -1,5 +1,9 @@
 # Paula のForthレジスタモデル（1137）
 
+## Linux実聴1156の受け入れ完了（2026-11-20）
+
+レモンがWSL上のLinux版→pacat→WSLg PulseAudio RDPSinkで、4声stereo約3秒、DMACON=6/9による左だけ→右だけ各約1.5秒を確認。物理Ctrl+C後の停止と約3秒の再再生も確認し、CATCH=-28/handle=0、REPLAY-OK handle=0、code0、underrun0を記録。1156と親1137を完了。[環境と全結果](measurements/2026-11-20-linux-audio-listening.json)。Linux実機ALSA・実機Amiga互換の確認ではない。以下のLinux未確認は履歴。
+
 ## Windows実聴1155の受け入れ完了（2026-11-20）
 
 レモンがWindows11 Pro 10.0.26300、waveOut既定出力でPA-DEMO-MEMORY/PA-DEMO-SETUPの4声stereo約3秒と停止を確認した。DMACONへ6（ch1/2停止）、9（ch0/3停止）を書き、左だけ→右だけを各約1.5秒聞いて分離を確認。連続再生を前面PowerShellの物理Ctrl+Cで止め、音の停止、CATCH=-28/handle=0、その後約3秒の再再生とREPLAY-OK handle=0を確認した。全processはcode0、記録したunderrunは0。[全コマンド・ソースと実聴記録](measurements/2026-11-20-paula-ym-windows-listening.json)。1155を完了しLinux1156は未完了。以下のWindows未確認はこの受け入れ以前の履歴。実機Amiga互換は対象外。

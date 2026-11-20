@@ -1,5 +1,9 @@
 # レトロPCエミュレータ向け拡張の対応方法
 
+## 最新の音声受け入れ状態（2026-11-20）
+
+Linux版からpacat/WSLg PulseAudio経由の実聴を完了し、PCM998、NES1132、SID1136、Paula1137は完了。YM2149はWindows1161/Linux1162完了、Mac1154が未完了のため1138は未完了・auto80%。音源全体999は未完了・auto68%。[Linux実聴の全記録](measurements/2026-11-20-linux-audio-listening.json)。Linux実機ALSA装置の確認とは区別する。以下は各時点の履歴。
+
 ## 現在状態：Atari ST YM2149の実装・Windows/Linux検証（2026-11-20）
 
 基点mainはcf080b4（Paulaまでpush済み）。今回のYM2149差分は未コミット。1152（監査と実装）・1153（Windows/Linux検証と測定）を完了し、Mac1154を1138の子に残した。1138は未完了・auto66%、999はauto49%。PaulaのMac1147は完了し、Windows実聴1155/Linux実聴1156が未完了のためPaula1137はtodo・auto60%。Macの確認まで親タスクの完了とはしない。以下は各作業時点の履歴で、この節を優先する。

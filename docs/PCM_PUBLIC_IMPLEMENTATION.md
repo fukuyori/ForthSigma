@@ -1,5 +1,9 @@
 # PCM公開語の実装・Windows/Linux検証（1128 / 1129）
 
+## Linux PCM実聴1149と親998の完了（2026-11-20）
+
+WSL Ubuntu26.04.1へpulseaudio-utilsと依存ライブラリを導入し、静的musl版Sigmaのpacat pipe経由でWSLg PulseAudio RDPSinkへ出力した。AUDIO?=-1を確認し、レモンがmono/stereo左右・MML/SFX混合・破棄と再開・drain後停止・保存アプリ・物理Ctrl+C後の停止とhello入力の全8項目を実聴してＯＫと回答。case1〜7のunderrun0、case8はCATCH=-28/CLOSE=0、全process code0。1149・1133・998を完了した。[環境・コマンド・実聴記録](measurements/2026-11-20-linux-audio-listening.json)。これはWSL/Linux実行体からPulseAudioを経た実出力の確認で、Linux実機のALSA装置確認とは区別する。以降のLinux未確認・AUDIO?=0は当時の記録。
+
 ## Windows実聴1148の受け入れ完了（2026-11-20）
 
 レモンがWindows実装置で8項目を順番に聞き、各項目をokで確認した。48000Hz mono、22050Hz stereo左右、MML/SFXとの混合、破棄と再open、drain後の停止、SAVESYS保存アプリの2音を確認。最後は前面のPowerShellで物理Ctrl+Cを押し、CATCH=-28/CLOSE=0、続くhelloのACCEPTとcode0を記録し、中断後の音の停止も追加確認した。case1〜7のUNDERRUNSはすべて0。Windows11 Pro 10.0.26300、waveOut既定出力（個別endpoint表示名は未取得）。[全実行記録と利用者の確認](measurements/2026-11-20-pcm-windows-listening.json)。
