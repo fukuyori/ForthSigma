@@ -6,11 +6,11 @@
 
 通常構成を基準とします。機能を除いた構成では対象の語を使えません。追加語彙はREQUIREで読み込んでから検索順へ加えます。即時語・コンパイル専用の印は、組込み語の実装にある属性です。構文の実行条件は説明本文に従ってください。
 
-項目数（語彙と名前の組）：**1819**。同名でも語彙が異なる項目は別に数えます。
+項目数（語彙と名前の組）：**1821**。同名でも語彙が異なる項目は別に数えます。
 
 ## 目次
 
-- [AUDIO](#namespace-audio) (87)
+- [AUDIO](#namespace-audio) (89)
 - [EKEYS](#namespace-ekeys) (35)
 - [EXTENSION](#namespace-extension) (39)
 - [FORTH](#namespace-forth) (961)
@@ -99,12 +99,14 @@
 - [` SND-SAMPLE `](#w-415544494f3a534e442d53414d504c45)
 - [` SND-SAMPLE-INSTRUMENT `](#w-415544494f3a534e442d53414d504c452d494e535452554d454e54)
 - [` SND-SFX `](#w-415544494f3a534e442d534658)
+- [` SND-SNES-FRAMES `](#w-415544494f3a534e442d534e45532d4652414d4553)
 - [` SND-SOUND `](#w-415544494f3a534e442d534f554e44)
 - [` SND-STOP-MOD `](#w-415544494f3a534e442d53544f502d4d4f44)
 - [` SND-STYLE `](#w-415544494f3a534e442d5354594c45)
 - [` SND-SYNC `](#w-415544494f3a534e442d53594e43)
 - [` SND-WAVE `](#w-415544494f3a534e442d57415645)
 - [` SND-WAVETABLE `](#w-415544494f3a534e442d574156455441424c45)
+- [` SNES-FRAMES `](#w-415544494f3a534e45532d4652414d4553)
 - [` SOUND `](#w-415544494f3a534f554e44)
 - [` SQUARE `](#w-415544494f3a535155415245)
 - [` ST `](#w-415544494f3a5354)
@@ -2650,6 +2652,34 @@ Host primitive for SFX (FORTH/Sigma).
 
 出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1388).
 
+<a id="w-415544494f3a534e442d534e45532d4652414d4553"></a>
+
+### ` SND-SNES-FRAMES `
+
+` ( regs aram voices globals history frames layout -- ) `
+
+S-DSPの同期内部処理です。layout 1で、重ならない128byteレジスタ、65536byte ARAM、112/10/16個のlittle-endian符号付き64bitセル（声/全体状態/echo履歴）を借用します。番地・状態・時刻を変更前に検査し、番地不正は-9、形式・範囲・重複は-24です。中断では完了フレームを保持します。装置を開かず、番地を保持しません。詳細はSNES\_DSP\_NATIVE\_DESIGN.mdを参照してください。
+
+<details><summary>英語の説明（HELP・実装に基づく）</summary>
+
+Internal synchronous S-DSP kernel. Layout 1 borrows disjoint buffers: 128 bytes registers, 65536 bytes ARAM, 112/10/16 little-endian signed 64-bit cells for voices/globals/echo history. Validates addresses, fields and time before effects; -9 address, -24 layout/range/overlap. Completed frames persist on execution interruption. No audio device or retained pointers. See SNES\_DSP\_NATIVE\_DESIGN.md.
+
+</details>
+
+種別：builtin.
+
+` REQUIRE-AUDIO ALSO AUDIO ` で読み込み、検索対象にします。
+
+使用例
+
+```forth
+S" examples/snes-dsp-audio.fs" INCLUDED REQUIRE-AUDIO ALSO AUDIO SD-REGS SD-ARAM SD-VOICES SD-GLOBALS SD-EHIST 0 1 SND-SNES-FRAMES
+```
+
+注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
+
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1660).
+
 <a id="w-415544494f3a534e442d534f554e44"></a>
 
 ### ` SND-SOUND `
@@ -2841,6 +2871,40 @@ Host primitive for SCC-WAVE (FORTH/Sigma).
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。 番地・長さ・容量は有効な論理メモリー範囲を指定します。所有領域と借用領域の寿命を区別してください。
 
 出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1382).
+
+<a id="w-415544494f3a534e45532d4652414d4553"></a>
+
+### ` SNES-FRAMES `
+
+` ( regs aram voices globals history frames layout -- ) `
+
+S-DSPを同期処理する語です。layout 1と重ならない5領域を指定します。寸法とセル順はSND-SNES-FRAMESとSNES\_DSP\_NATIVE\_DESIGN.mdを参照してください。変更前に検査し、番地不正は-9、形式・個数・状態・重複は-24です。0フレームでは検査のみ行います。装置を開かず、中断では完了フレームを保持します。
+
+<details><summary>英語の説明（HELP・実装に基づく）</summary>
+
+Synchronous S-DSP frame kernel; layout1 and five disjoint borrowed VM buffers. See SND-SNES-FRAMES and SNES\_DSP\_NATIVE\_DESIGN.md for exact sizes/fields. Invalid address -9; invalid layout/count/state/overlap -24, before effects. Zero frames changes nothing after validation. No audio device; completed frames persist on interruption.
+
+</details>
+
+種別：library.
+
+` REQUIRE-AUDIO ALSO AUDIO ` で読み込み、検索対象にします。
+
+使用例
+
+```forth
+S" examples/snes-dsp-audio.fs" INCLUDED REQUIRE-AUDIO ALSO AUDIO SD-REGS SD-ARAM SD-VOICES SD-GLOBALS SD-EHIST 0 1 SNES-FRAMES
+```
+
+注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
+
+実装定義（内部補助語は変更される場合があります）：
+
+```forth
+: SNES-FRAMES ( regs aram voices globals history frames layout -- ) SND-SNES-FRAMES ;
+```
+
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1661).
 
 <a id="w-415544494f3a534f554e44"></a>
 

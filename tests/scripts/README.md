@@ -173,3 +173,19 @@ For CHIP-8 audio, run `python tests/scripts/verify-chip8-audio.py PATH_TO_SIGMA`
 `python tests/scripts/verify-zx-spectrum-audio-stream.py PATH_TO_SIGMA` checks partial writes, copied bytes, timeout/cleanup and stream preflight with RAM callbacks. Generated audio remains in memory. See [scope and results](../../docs/ZX_SPECTRUM_AUDIO_FORTH.md). Speed measurements require a separate start confirmation.
 
 `python tests/scripts/measure-zx-spectrum-audio.py PATH_TO_SIGMA` verifies six full32768frame workloads without timing by default. Use `--measure` only after user timing-start approval; it performs seven fresh-process rounds. See [preparation review](../../docs/reviews/1170-1171-review-response.md).
+
+## SNES S-DSP audio (1174)
+
+`python scripts/snes-tables.py --check` reproduces the512 hardware constants.
+
+`python tests/scripts/verify-snes-dsp-audio.py PATH_TO_SIGMA --reference-doc CACHED_FULLSNES_HTML` checks exhaustiveBRR/Gauss/rates/registers/ARAM, independentPCM/state/fullARAM and queue/error boundaries. A cached [fullsnes](https://problemkaputt.de/fullsnes.htm) HTML is checked against its pinned hash. Without the option, the numeric hash still checks the table but independent document extraction is omitted. No audio device opens.
+
+`python tests/scripts/verify-snes-dsp-audio-stream.py PATH_TO_SIGMA` checks19 owned stereo RAM callback fixtures:4byte offsets, prime/continuation, partial writes, timeout and cleanup. See [scope/results](../../docs/SNES_DSP_AUDIO_FORTH.md).
+
+`python tests/scripts/measure-snes-dsp-audio.py PATH_TO_SIGMA` validates six16384frame workloads without timing by default. Use `--measure` only after user timing-start approval.
+
+### S-DSP native frame kernel
+
+`verify-snes-dsp-audio.py SIGMA --native` adds native-frame BRR256x16x3,317 envelope cases,Gaussian256x4 and FIR8 impulses against independent Python. `verify-snes-dsp-native.py SIGMA` checks batches, divider, backend switches, reset, EXEC-LIMITED interruption/resume and SAVESYS state/ARAM. Pass `--no-debug` when debug is excluded.
+
+`verify-snes-dsp-audio-stream.py SIGMA --native` uses RAM callbacks only. `measure-snes-dsp-audio.py SIGMA --native` defaults to untimed six-load validation; add `--measure` only after fresh user start approval. Audio-excluded builds use the reference Forth checks without --native. Temporary helpers belong under `.work`.

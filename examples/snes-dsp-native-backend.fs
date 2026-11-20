@@ -1,0 +1,7 @@
+\ Explicit synchronous backend; requires no audio device.
+REQUIRE-AUDIO ALSO AUDIO
+: SD-NATIVE-FRAMES { frames -- }
+  SD-REGS SD-ARAM SD-VOICES SD-GLOBALS SD-EHIST frames 1 SNES-FRAMES ;
+: SD-USE-NATIVE ['] SD-NATIVE-FRAMES SD-FRAMES-XT ! ;
+SD-USE-NATIVE
+PREVIOUS

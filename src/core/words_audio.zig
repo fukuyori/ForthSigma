@@ -24,7 +24,7 @@ const Cell = memory_map.Cell;
 const State = forth.State;
 
 /// The built-in words this file executes; executeBuiltin dispatches by this list.
-pub const words = [_]Builtin{ .snd_play, .snd_sound, .snd_beep, .snd_playing, .snd_device, .snd_plays, .snd_chip, .snd_instrument, .snd_wave, .snd_duty, .snd_adsr, .snd_ring, .snd_sync, .snd_filter, .snd_wavetable, .snd_load_sample, .snd_sample, .snd_loop_sample, .snd_sample_instrument, .snd_sfx, .snd_amiga_filter, .snd_free_samples, .snd_chips, .snd_load_mod, .snd_play_mod, .snd_stop_mod, .snd_mod_playing, .snd_style, .snd_pcm_open, .snd_pcm_write, .snd_pcm_queued, .snd_pcm_wait, .snd_pcm_stop, .snd_pcm_close, .snd_pcm_underruns };
+pub const words = [_]Builtin{ .snd_play, .snd_sound, .snd_beep, .snd_playing, .snd_device, .snd_plays, .snd_chip, .snd_instrument, .snd_wave, .snd_duty, .snd_adsr, .snd_ring, .snd_sync, .snd_filter, .snd_wavetable, .snd_load_sample, .snd_sample, .snd_loop_sample, .snd_sample_instrument, .snd_sfx, .snd_amiga_filter, .snd_free_samples, .snd_chips, .snd_load_mod, .snd_play_mod, .snd_stop_mod, .snd_mod_playing, .snd_style, .snd_pcm_open, .snd_pcm_write, .snd_pcm_queued, .snd_pcm_wait, .snd_pcm_stop, .snd_pcm_close, .snd_pcm_underruns, .snd_snes_frames };
 
 /// The SND- words in the order REQUIRE-AUDIO appends them, right after the AUDIO
 /// vocabulary. The order is part of the dictionary that images keep: add new words at
@@ -41,12 +41,12 @@ pub const definitions = [_]struct { []const u8, Builtin }{
     .{ "SND-PLAY-MOD", .snd_play_mod },                   .{ "SND-STOP-MOD", .snd_stop_mod },           .{ "SND-MOD-PLAYING", .snd_mod_playing },
     .{ "SND-STYLE", .snd_style },                         .{ "SND-PCM-OPEN", .snd_pcm_open },           .{ "SND-PCM-WRITE", .snd_pcm_write },
     .{ "SND-PCM-QUEUED", .snd_pcm_queued },               .{ "SND-PCM-WAIT", .snd_pcm_wait },           .{ "SND-PCM-STOP", .snd_pcm_stop },
-    .{ "SND-PCM-CLOSE", .snd_pcm_close },                 .{ "SND-PCM-UNDERRUNS", .snd_pcm_underruns },
+    .{ "SND-PCM-CLOSE", .snd_pcm_close },                 .{ "SND-PCM-UNDERRUNS", .snd_pcm_underruns }, .{ "SND-SNES-FRAMES", .snd_snes_frames },
 };
 
 /// The words of the audio library that HELP describes; the help test checks that the
 /// library defines each of them.
-pub const library_words = [_][]const u8{ "PLAY", "PLAY2", "PLAY3", "PLAY?", "SOUND", "BEEP", "AUDIO?", "PLAYS", "MSX-SOUND", "ST-SOUND", "NES-SOUND", "INSTRUMENT", "SQUARE", "PULSE", "TRIANGLE", "SAW", "NOISE", "DUTY", "ADSR", "C64-SOUND", "RING", "SYNC", "FILTER", "SCC-SOUND", "SCC-WAVE", "LOAD-SAMPLE", "SAMPLE", "LOOP-SAMPLE", "SAMPLE-INSTRUMENT", "SFX", "FREE-SAMPLES", "AMIGA-SOUND", "AMIGA-FILTER", "CHIPS", "MSX", "ST", "NES", "C64", "SCC", "AMIGA", "LOAD-MOD", "PLAY-MOD", "STOP-MOD", "MOD?", "STYLE", "PCM-OPEN", "PCM-WRITE", "PCM-QUEUED", "PCM-WAIT", "PCM-STOP", "PCM-CLOSE", "PCM-UNDERRUNS" };
+pub const library_words = [_][]const u8{ "PLAY", "PLAY2", "PLAY3", "PLAY?", "SOUND", "BEEP", "AUDIO?", "PLAYS", "MSX-SOUND", "ST-SOUND", "NES-SOUND", "INSTRUMENT", "SQUARE", "PULSE", "TRIANGLE", "SAW", "NOISE", "DUTY", "ADSR", "C64-SOUND", "RING", "SYNC", "FILTER", "SCC-SOUND", "SCC-WAVE", "LOAD-SAMPLE", "SAMPLE", "LOOP-SAMPLE", "SAMPLE-INSTRUMENT", "SFX", "FREE-SAMPLES", "AMIGA-SOUND", "AMIGA-FILTER", "CHIPS", "MSX", "ST", "NES", "C64", "SCC", "AMIGA", "LOAD-MOD", "PLAY-MOD", "STOP-MOD", "MOD?", "STYLE", "PCM-OPEN", "PCM-WRITE", "PCM-QUEUED", "PCM-WAIT", "PCM-STOP", "PCM-CLOSE", "PCM-UNDERRUNS", "SNES-FRAMES" };
 
 /// The audio library, which REQUIRE-AUDIO interprets after appending the SND- words.
 pub const library = @embedFile("../audio/audio.fs");
@@ -81,6 +81,7 @@ pub fn isAudioWord(self: *const State, word: defs.Word) bool {
 
 pub fn execute(self: *State, builtin: Builtin) RuntimeError!void {
     switch (builtin) {
+        .snd_snes_frames => return @import("words_snes_dsp.zig").execute(self),
         .snd_pcm_open, .snd_pcm_write, .snd_pcm_queued, .snd_pcm_wait, .snd_pcm_stop, .snd_pcm_close, .snd_pcm_underruns => return @import("words_pcm.zig").execute(self, builtin),
         .snd_play => {
             var texts: [3][]const u8 = undefined;

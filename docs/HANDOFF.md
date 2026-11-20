@@ -1,5 +1,87 @@
 # ForthSigma 作業引き継ぎ
 
+## SNES Windows/Linux完了・Mac1177残し、次はApple IIの範囲確認（2026-11-20）
+
+Linux1176は左低音→右高音と物理Ctrl+C停止/低音再再生をレモンが確認。CATCH=-28/handle0/accepted155136、replay98304/underrun0/stack0/code0/timeoutなし。Linux4構成・通常6負荷の速度/サイズも記録済み。従来同様のUbuntu26.04.1/WSL2→pacat/PulseAudio/WSLg範囲で1176完了。physical Linux/direct ALSAの合格ではない。[仕様/結果](SNES_DSP_AUDIO_FORTH.md)、[全結果](measurements/2026-11-20-snes-dsp-os-acceptance.json)、[追レビュー](reviews/1176-linux-followup-claude-review.md)。
+
+最初の無音補助ログのLEFT行欠落は、POSIXでreadlineとcommunicateを混ぜた取り込みの欠落を再現し、元ログを残した。全量ファイル回収の無音機能再試験で両ラベル/前後AUDIO?=-1/全統計を確認し、pacatの親がSigmaであることも記録。音源本体/実行体を直したのではなく記録補助だけを修正。Linuxlauncher実行前後とsnapshotのhashを補い、latest statusも統一した。追レビューはこれらを踏まえblocking High/Mediumなし（状態更新条件を実施済み）。
+
+Sigma/pacat残留なし、owned WSL sleep1800はPID310とcmdline照合後にSIGTERMし、Windows controller29088退出を確認。追加のpersistent保持用processは起動していない。旧actual-run helper snapshotと後のmetadata修正版を区別する。
+
+1174/1183/1175/1176完了、Mac1177と親1173は未完了auto80%。Windows初回連続試験の未合格・仮想既定出力/物理機器未同定の制限も保持する。次の1179は対象モデル/追加音源を先に利用者と確定する。提案は初代Apple II（NTSC）の内蔵speakerを先行し、MockingboardとIIgs DOCを別扱いとすること。現時点でApple II実装には未着手、承認済み仕様ではない。cached RedbookのC030/PEEK toggle資料と現task1178/1179を確認した。検証記録作成時点では未コミットだった。利用者からコミット/プッシュの指示を受領し、公開結果はGitのHEAD/originで確認する。一時helperは.work。以下は各時点の履歴。
+
+
+## SNES Linuxの左右音確認ＯＫ・物理Ctrl+C開始確認待ち（2026-11-20）
+
+Linux/WSLの左低音→右高音は各98304frame/handle0/underrun0/stack0/code0で完了し、レモンからＯＫ。人の確認として記録した。次は了承後.work/1175-1176/launch-linux-interrupt.ps1で新しいSNES Linux Ctrl+C test窓を開く。高音を約1秒聴いて、その窓でCtrl+Cを1回。500ms後の低音約3秒、CATCH=-28/handle0・replay98304/underrun0/stack0/code0を確認する。
+
+Linux固有の両tone全PCM/state/ARAM、両OS RAM模擬control、全source/silent gateと--check-readyは成功。実際のWSL物理信号は未検証。共有supervisorはレビュー済み、Win actual-run snapshotと、後のLinux tone-proof選択対応版を区別して保存した。[全記録](measurements/2026-11-20-snes-dsp-os-acceptance.json)。Windows1175完了、Linux1176/Mac1177と親1173（auto60%）は未完了。owned WSL sleep1800はLinux後に本人確認して回収する。追加速度測定/コミット/プッシュなし。以下は各時点の履歴。
+
+
+## SNES Windows1175完了・Linux1176の実聴開始確認待ち（2026-11-20）
+
+Windows物理Ctrl+CはCATCH=-28/handle0/accepted81856、500ms後の低音98304frameはhandle0/underrun0/stack0/code0、レモンからＯＫ。終了後Sigma残留なし。最終ClaudeはHigh0/Medium3で、状態表記を修正し、次の制限を明記して宣言Windows範囲を閉じる評価に従い1175完了。[結果と範囲](SNES_DSP_AUDIO_FORTH.md)、[レビュー](reviews/1175-windows-final-claude-review.md)、[全記録](measurements/2026-11-20-snes-dsp-os-acceptance.json)。
+
+確認は物理WindowsホストのwaveOut既定経路。試験後defaultはCABLE Input (VB-Audio Virtual Cable)、後段物理機器と再生時open handleのendpointは未同定。初回連続ステレオの未合格は保存し、連続試験が再合格したとは言わない。右初回/元の左単独再試験・raw参照・物理停止/再再生はそれぞれ確認済み。原因特定や本体/設定修正による恒久解決の主張はしない。
+
+Linuxは初回Pulse接続拒否とsocketなしを記録。owned WSL接続保持中にsocket生成とRDPSink接続成功を確認し、追加の同一process無音送出は前後AUDIO?=-1/2段階98304frame/underrun0/handle0/stack0/code0。実pacat sink inputを記録し、Ubuntu26.04.1/WSL2→PulseAudio17/RDPSinkと識別。generated Linux音と物理Ctrl+Cは未実施。了承後 `wsl --exec python3 .work/1175-1176/acceptance.py linux --play` で左低音→右高音各約3秒を確認する。両gateは成功。owned sleep1800はPID記録済みで、Linux完了後に本人確認して回収。1176/1177と親1173（auto60%）は未完了。追加速度測定/コミット/プッシュなし。一時helperは.work。以下は各時点の履歴。
+
+
+## SNES左低音の再確認ＯＫ・Windows物理Ctrl+C準備（2026-11-20）
+
+元と同じSNES左低音の単独再試験はtechnical checks成功後にレモンからＯＫ。初回「右しか聞こえなかった」の失敗を保持し、原因特定やcode/設定修正による解決とは主張しない。右音は初回、左音は単独再試験で確認された記録として扱う。
+
+次は了承後.work/1175-1176/launch-windows-interrupt.ps1で可視SNES Ctrl+C test窓を開く。高音を約1秒聴いてCtrl+Cを1回。CATCH=-28/handle0、500ms後に低音約3秒、再生handle0/underrun0/98304frame/stack0/code0を確認する。高音は最長30秒（1875block）で終了。全ソース/無音試験gate、両音の全PCM/state/ARAMとRAM模擬中断/replayを検証済みだが、実際の物理試験は未実施。[全準備](measurements/2026-11-20-snes-dsp-os-acceptance.json)のlistening_preparation.physical_interrupt_preparation。ClaudeレビューはHighなし・Medium1件を反映済み。両toneとRAM検証の一致を起動条件にし、--check-ready成功。親deadline45秒、accepted-frame表示、実Python.exe解決、PowerShell parser確認も追加した。1175/1176/1177と親1173は未完了。以下は各時点の履歴。
+
+
+## SNES raw左右確認ＯＫ・元の左低音を単独再確認待ち（2026-11-20）
+
+raw440Hzの左→右→両側（各2秒）はtechnical checks全成功後にレモンからＯＫ。試聴確認返答として記録した。元のSNES左低音が聞こえなかった報告は消さず、原因は未特定のまま。
+
+次は元と同じ451/16/0・192block/98304frame・同音量の左低音のみを、1秒の予告後に約3秒出す。元の全PCM/state/ARAM proofと送出RAM captureのhashを照合し、無音実装置ではhandle0/underrun0/98304frame・stack0/code0。新helperは.work/1175-1176/left-recheck.pyで、了承後だけ--play実行する。[全記録](measurements/2026-11-20-snes-dsp-os-acceptance.json)のwindows_left_channel_investigation。生成音の再確認は未実施、設定/本体/実行体の変更なし。1175/1176/1177と親1173は未完了。以下は各時点の履歴。
+
+
+## SNES Windows左側の実聴未合格・同一周波数で切り分け（2026-11-20）
+
+レモンから「右しか聞こえなかった」と報告。Windows1175を完了にせず、左右実聴は未合格で保存した。技術上のhandle0/underrun0/code0を、人の確認成功として扱わない。
+
+SD-SENDがPCM-WRITEへ渡す全98304frameをRAM callbackで捕捉し、独立PythonのPCMと全byte一致。左音は左98231非ゼロ/peak849・右全ゼロ、右音は左全ゼロ・右98245非ゼロ/peak849。ただし実装置出力の録音ではなく、原因は未特定。音の高さとchannelを分けるため、S-DSPの合成を通さない同じ440Hz/peak849のraw PCMを左→右→両側各2秒で出すテストを準備。全入力byteの照合、S-DSP frame0、実装置のゼロ送出3段階handle0/underrun0/64000frame・stack0/code0、--check-ready成功。[全記録](measurements/2026-11-20-snes-dsp-os-acceptance.json)のwindows_left_channel_investigation。
+
+了承後だけ `python .work/1175-1176/channel-check.py --play` を実行する。切り分け音はまだ再生していない。prodコード/設定/実行体を変更せず、追加の速度測定もしていない。Claudeへ狭い範囲の確認を依頼済み。1175/1176/1177と親1173は未完了。以下は各時点の履歴。
+
+
+## SNES Windows実聴準備済み（2026-11-20）
+
+次は左だけの低音→500ms間隔→右だけの高音を各98304frame（約3.072秒）確認する。共通setupとnative PCM/266state/queue2/fullARAMを独立Pythonで両OS照合し、反対側channel全ゼロも確認。両OSは同じfixtureのFALSE送出のみ実装置で実行し、各handle0/underrun0/98304frame、DEPTH0/code0。生成音の実聴はまだ行っていない。[準備ソース/全記録](measurements/2026-11-20-snes-dsp-os-acceptance.json)のlistening_preparation。
+
+一時helperは.work/1175-1176。了承後の実行は `python .work/1175-1176/acceptance.py windows --play`。物理Ctrl+C試験は準備のみで、RAM内模擬THROWによるcleanup/replayの両OS検査は物理合格に数えない。実際には別の可視テスト窓で約1秒後Ctrl+Cを1回押して低音再生を確認する予定。1175/1176/1177と親1173は未完了。追加の速度測定・コミット/プッシュはしていない。以下は各時点の履歴。
+
+
+Claude準備レビューのMedium3件（全ソースの固定、無音実行の前提化、逐次表示）を反映し、両OSの--check-readyも成功。peak<=2048。レビュー原文とこちらの修正検証を区別して記録した。
+
+## SNES native速度測定済み・次はOS実聴/物理中断（2026-11-20）
+
+レモンの新たなＯＫ後、検証済みの通常版をWindows→WSL/Linuxで6負荷各16384frame×7回測定。全回の全PCM/266state/queue2/fullARAM、初期ARAM reset/前状態/A5とForth版との一致を確認し、7値の中央値も再計算した。[全値と採否](measurements/2026-11-20-snes-dsp-os-acceptance.json)のnative_candidate_timings、[結果表](SNES_DSP_AUDIO_FORTH.md)。
+
+全6負荷で実時間を満たし、最小余裕はWindows28.69倍/Linux30.34倍（dense8kHz）。従来不足したBRR/filter3/maxpitchは36.21/36.94倍で、ARSHIFT Forth比72.96/66.41倍。次の再生受け入れにはnative候補を採用し、参照Forthは既定として保持する。SPC700/ROM/実装置込みの結果ではない。
+
+1183完了、1175/1176は速度/サイズを記録済みだが実聴・物理Ctrl+C停止/再再生が残る。Mac1177と親1173（auto40%）も未完了。今回生成音の装置再生・コミット/プッシュ・追加ビルドはしていない。一時スクリプトは.workへ置く。以下は各時点の履歴。
+
+
+
+## SNES native1183完了・速度測定の開始確認待ち（2026-11-20）
+
+mainを0f33455へff-onlyでプルし、YM2149/CHIP-8/ZX SpectrumのMac受け入れ完了記録を取り込んだ。EMULATOR_CORE_PLANの競合は両側を保持して解消し、作業中のSNES変更も保持した。コミット/プッシュは行っていない。一時スクリプトは.work/1183へ置いた。
+
+ARSHIFT後も最重BRRはWindows0.496倍/Linux0.556倍で実時間不足だったため、既定方針に従い同期・借用bufferのnative frame kernel1183を実装。[新測定と採否](measurements/2026-11-20-snes-dsp-os-acceptance.json)、[native全36report/全ソース・指紋・実行体](measurements/2026-11-20-snes-dsp-native.json)、[設計](SNES_DSP_NATIVE_DESIGN.md)、[レビュー評価](reviews/1183-review-response.md)。最終ClaudeはHigh/Mediumなし。
+
+8構成で参照Forth19モデル群、音声有効6構成でnative23群・両backend各19RAM群を照合。nativeはBRR256×16×3、317ENV、Gauss256×4、FIR8tapと非自明なfeedback/MVOL境界も通す。6構成で一括frame/DIV/切替え/reset/SAVESYS、通常2構成でEXEC-LIMITED中断後k-frameとPythonの全state/ARAM・queue/retryを確認。両OS各6負荷は両backendで計時なしの全PCM/266state/queue2/fullARAM照合が成功。no-audioでは語が未定義で、旧ABI/native依存画像の拒否も両OS成功。core1130/host162成功（skip10/15）、全reportの現物binary/source hashを照合した。
+
+通常版サイズはWindows2161664（旧比+15872）/Linux2371680（+15328）byte。HEREは両OS122880→218640（増分95760、logical領域のみ）。Forthのキューと所有ARAMを保持し、参照版を既定、nativeは明示adapter。新実行体へ読ませる旧画像はABI署名不一致なので再作成が必要。
+
+1183完了、1175/1176/1177と親1173は未完了auto40%。次は新たな開始確認への返答後だけ、通常版の `measure-snes-dsp-audio.py PATH --native --measure` をWindows→WSL/Linuxで順に実行する。nativeの速度は未測定で、実時間採用・実聴/物理中断再再生・Mac受け入れを完了としない。以下は各時点の履歴。
+
+
 ## CHIP-8/ZX SpectrumのMac受け入れ1167/1172（2026-11-20）
 
 この節を最新状態とする。基点main `c205820`。macOS 27.2.1 / Apple M5で1167（CHIP-8）と1172（ZX Spectrum）を実施し合格、tqueの1167・1172と親1163・1168を完了にした。全検査がWindowsの記録と一致し、通常構成の速度は全負荷でWindows/Linuxより余裕があった（CHIP-8最重50.59倍、ZX最重5.34倍）。Ghosttyで実聴とCtrl+C中断・再再生を確認した。結果は[CHIP-8](CHIP8_AUDIO_FORTH.md)、[ZX Spectrum](ZX_SPECTRUM_AUDIO_FORTH.md)の冒頭の節。
@@ -7,6 +89,26 @@
 ## YM2149のMac実機受け入れ1154（2026-11-20）
 
 この節を最新状態とする。基点main `53ebe81`。macOS 27.2.1 / Apple M5で固定音量0修正を含む新ビルドを作り、native回帰・core1126/host152成功、YM2149の3構成の全検査がWindowsと一致、Ghosttyで実聴とCtrl+C中断・再再生を確認した。1154と親1138を完了にした。結果は[YM2149の記録](YM2149_FORTH.md#mac実機受け入れ11542026-11-20)。
+
+## SNES初回速度測定で実時間未達・ARSHIFT候補検証済み（2026-11-20）
+
+レモンの開始確認へのＯＫ後、Windows→WSL/Linuxで6負荷各16384frame×7processを測定し、全回のPCM/266state/queue2/fullARAMと前状態/ARAM reset/A5を照合した。最重filter3/maxpitchは実時間比Windows0.425倍/Linux0.503倍、Windows echoも0.983倍。初回版で宣言全負荷の実時間採用には不足する。[全7値・旧source・候補検証](measurements/2026-11-20-snes-dsp-os-acceptance.json)、[結果と採否](SNES_DSP_AUDIO_FORTH.md)。
+
+まずForthのSD-ASRをFM/MODによるfloorから既存ARSHIFTへのaliasへ変更した候補を作成。native/ABI/API/harnessは不変。使用shift1/4/5/6/7/10/11の旧helper/候補/独立Pythonの境界115vectorを両OSで直接比較し、8構成×20モデル群（新helperの1344vector含む）・6構成×19RAM群が成功した。6負荷の計時なし検証でも全PCM/ARAM hash・state/queueが初回版と完全一致、oracle brr/Model/demo AST不変を確認。HERE95752byte増分のまま、native332source/8binary現物hashも不変。[候補レビュー](reviews/1175-1176-arshift-claude-review.md)は使用範囲で同値として評価を推奨しているが、改善幅は未測定。
+
+次は新たな計時開始確認への返答後、同じmeasureスクリプトをWindows→Linuxで--measure実行し、候補の7値と旧版の比を別に記録する。旧値は上書きしない。なお不足すれば本体移行判断を具体化する。生成音の実聴は未実施。1174完了、1175/1176/1177と親1173は未完了。Mac1177は対応機能の子に残す。今回コミット/プッシュは行っていない。以下は各作業時点の記録。
+
+
+## SNES1174完了・Windows/Linux測定の開始確認待ち（2026-11-20）
+
+承認された標準S-DSPの8声/BRR/Gauss/ADSR/GAIN/noise/PMON/stereo/echoFIRをForthで実装し1174完了。[仕様・制限・結果](SNES_DSP_AUDIO_FORTH.md)、[14report/全ソース・指紋・来歴](measurements/2026-11-20-snes-dsp-audio.json)、[レビュー原文と評価](reviews/1174-review-response.md)。8構成×19モデル群、音声有効6構成×19stereo RAM caseが成功。10統合caseの全PCM/266state/全ARAM、一括/分割、BRR/Gauss/rate/317ENV/全reg/ARAM/手計算/error境界を検査。8構成すべて保存HTMLからGaussを別抽出して照合した。最終ClaudeはHigh/Mediumなし、Lowも検査追加後に全構成成功。
+
+両OSの実PCM経路で各8192frameをFALSEのゼロのみ送出しAUDIO?=-1/handle0/underrun0/stack0/code0。Linux最初のAUDIO?=0回は参考に保存し、接続保持後の実経路を確認した。残留Sigma/pacatなし、保持用owned sleep120も終了済み。HEREはWindows122880→218632（logical増分95752byte、RSSではない）、再生bufferは別。native332ソース不変で既検証8binaryを再利用。CPU/ROM/実機微細slot互換の完了とは主張せず、宣言差分を仕様に明記。
+
+親1173は未完了auto25%、Windows1175/Linux1176/Mac1177も未完了。999は未完了auto75%。次の1175/1176用6負荷各16384frameのハーネスは両OSで計時せず、全PCM/266state/queue2/fullARAMと前状態/全ARAM resetを照合した。[準備記録](measurements/2026-11-20-snes-dsp-os-preparation.json)、[計画レビュー](reviews/1175-1176-review-response.md)はHigh/Mediumなし。-Oは入口で拒否、未計時roundを明示。速度/採否/実聴は未実施。
+
+次はレモンの計時開始への返答後、Windows→WSL/Linuxを順に `python tests/scripts/measure-snes-dsp-audio.py PATH_TO_SIGMA --measure` で7回ずつ測定する。開始確認は必須で、タイムアウトや機能検査は測定の代用ではない。Mac1177は残し、完了まで親1173を未完了に維持。今回コミット/プッシュは行っていない。以下は各作業時点の記録。
+
 
 ## ZX Windows1170/Linux1171完了・次はSNES1174の範囲確認（2026-11-20）
 

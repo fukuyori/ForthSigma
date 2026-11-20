@@ -176,3 +176,19 @@ CHIP-8音源は`python tests/scripts/verify-chip8-audio.py SIGMAのパス`で独
 `python tests/scripts/verify-zx-spectrum-audio-stream.py PATH_TO_SIGMA` はRAM callbackで部分送出・全byteのコピー・timeout/cleanup・streamの事前検査を確認する。生成音はメモリ内だけに保持する。[仕様・結果](../../docs/ZX_SPECTRUM_AUDIO_FORTH.md)を参照。速度測定の開始には別途確認が必要。
 
 `python tests/scripts/measure-zx-spectrum-audio.py PATH_TO_SIGMA` は既定では計時せず、6負荷各32768frameを照合する。`--measure` は計時開始への利用者の了承後だけ使い、7回の別processで測定する。[準備レビュー](../../docs/reviews/1170-1171-review-response.md)を参照。
+
+## SNES S-DSP音源（1174）
+
+`python scripts/snes-tables.py --check` は512係数の生成表を再現確認する。
+
+`python tests/scripts/verify-snes-dsp-audio.py PATH_TO_SIGMA --reference-doc CACHED_FULLSNES_HTML` は全BRR/Gauss/rate/register/ARAM、独立PCM/状態/全ARAM、時刻・queue/errorを検査する。元HTMLは[fullsnes](https://problemkaputt.de/fullsnes.htm)から取得したものを使い、記録済みhashを照合する。option省略時もnumeric pin hashを確認するが、元資料との別抽出は省略される。音声装置は開かない。
+
+`python tests/scripts/verify-snes-dsp-audio-stream.py PATH_TO_SIGMA` は生成音をRAMだけへ送り、stereo4byte offset・prime/継続・partial/timeout/cleanup等19caseを検査する。[仕様・結果](../../docs/SNES_DSP_AUDIO_FORTH.md)を参照。
+
+`python tests/scripts/measure-snes-dsp-audio.py PATH_TO_SIGMA` は既定では計時せず6負荷各16384frameを全PCM/状態/ARAMと照合する。`--measure` は計時開始への利用者の了承後だけ使う。
+
+### S-DSP native frame kernel
+
+`verify-snes-dsp-audio.py SIGMA --native` はForth個別検査に加えてnative frameのBRR全256×16×3、317 ENV、補間256位相×4履歴、FIR8タップを独立Pythonと照合します。`verify-snes-dsp-native.py SIGMA` は複数frame、DIV、切替え、reset、EXEC-LIMITED中断と再開、SAVESYS後の全state/ARAMを照合します。debug除外では `--no-debug` を指定します。
+
+`verify-snes-dsp-audio-stream.py SIGMA --native` はRAM callbackのみを使います。`measure-snes-dsp-audio.py SIGMA --native` の既定も計時なしの6負荷照合です。`--measure` は新たな開始確認への返答後に限ります。audio除外ではnativeを指定せず参照Forthを検査します。一時スクリプトは `.work` に置きます。

@@ -1168,6 +1168,7 @@ pub const Builtin = enum {
     snd_pcm_stop,
     snd_pcm_close,
     snd_pcm_underruns,
+    snd_snes_frames,
 };
 
 pub const HeapResult = union(enum) { address: Cell, no_memory, bad_pointer };

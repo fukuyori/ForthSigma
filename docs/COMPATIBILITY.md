@@ -372,3 +372,7 @@ Sigma-specific `APP-ENTRY!`, `APP-ENTRY@` and `APP-ENTRY-OFF` are image-group wo
 ## PCM stream extension
 
 Sigma AUDIO adds `PCM-OPEN`, `PCM-WRITE`, `PCM-QUEUED`, `PCM-WAIT`, `PCM-STOP`, `PCM-CLOSE`, `PCM-UNDERRUNS` and their internal `SND-PCM-OPEN`, `SND-PCM-WRITE`, `SND-PCM-QUEUED`, `SND-PCM-WAIT`, `SND-PCM-STOP`, `SND-PCM-CLOSE`, `SND-PCM-UNDERRUNS`. No Gforth equivalence is claimed. These use bounded s16LE frame input, process-local ownership and explicit cancellable waits. No live PCM is serialized; full restore is busy while owning PCM, while LOAD-DICTIONARY append preserves it. Audio exclusion removes all seven pairs; debug/graphics/extension are independent. Seven new Builtin tags change image ABI; recreate older images. See [sound manual](GRAPHICS_AND_SOUND.md#pcm-streams).
+
+## S-DSP native frame kernel
+
+AUDIO adds Sigma-specific `SNES-FRAMES` and internal `SND-SNES-FRAMES` for synchronous borrowed VM buffers, without opening a device. The added builtin changes the saved-image ABI signature; recreate older images. [Design](SNES_DSP_NATIVE_DESIGN.md).

@@ -372,3 +372,7 @@ Sigma独自の`APP-ENTRY!`、`APP-ENTRY@`、`APP-ENTRY-OFF`はimage語群で、�
 ## PCMストリーム拡張
 
 SigmaのAUDIOに`PCM-OPEN`・`PCM-WRITE`・`PCM-QUEUED`・`PCM-WAIT`・`PCM-STOP`・`PCM-CLOSE`・`PCM-UNDERRUNS`と内部語`SND-PCM-OPEN`・`SND-PCM-WRITE`・`SND-PCM-QUEUED`・`SND-PCM-WAIT`・`SND-PCM-STOP`・`SND-PCM-CLOSE`・`SND-PCM-UNDERRUNS`を加えました。Gforthとの互換性を示すものではありません。s16LEの有界フレーム入力、プロセス内の所有管理、明示的に中断できる待機を使います。実行中のPCMは保存せず、所有中の完全復元はbusy、LOAD-DICTIONARYの追記はPCMを保持します。audio除外で7組をすべて除外し、debug/graphics/extensionには依存しません。Builtinタグ7個の追加で画像ABIが変わるため、古い画像は保存し直してください。[音声マニュアル](GRAPHICS_AND_SOUND.ja.md#pcmストリーム)を参照してください。
+
+## S-DSP native frame kernel
+
+AUDIO語彙の `SNES-FRAMES` と内部語 `SND-SNES-FRAMES` を追加。装置を開かず、借用したVM領域を同期処理するSigma独自の語です。builtin追加により保存イメージのABI署名が変わるため、旧イメージは再作成してください。 [Design](SNES_DSP_NATIVE_DESIGN.md).

@@ -1,0 +1,1987 @@
+{
+  "date": "2026-11-20",
+  "verified_at": "2026-11-20T19:40:09.732198+09:00",
+  "task": 1174,
+  "status": "1174 complete. Windows1175/Linux1176/Mac1177 size/speed/adoption/audible acceptance pending; parent1173 incomplete.",
+  "base_commit": "8c793ac150e239c115a636fbfb660d2803e22ef6",
+  "scope": "User-approved standard S-DSP feature prototype:8voice,BRR,Gaussian,ADSR/GAIN,noise,PMON,stereo,echo/FIR,owned64KiB ARAM. Declared sample-boundary timing and arithmetic limits, not SPC700/ROM/subcycle/silicon compatibility. No speed measurements or audible acceptance in1174.",
+  "source_sha256_lf": {
+    "examples/snes-dsp-audio.fs": "3614b1e767dfdd8c8ddb941c131f8984078e07c36c6723091466c6e28ac2529e",
+    "examples/snes-gauss.fs": "e0d5cefee60b5d85a8b368dd66bc62d1f75e1d3aaa22cdb47b8ec1cd994da078",
+    "examples/snes-dsp-audio-play.fs": "7867e461cea24a84615b9c4861d3acd41752c557d53b218491b32a76419582b9",
+    "scripts/snes-tables.py": "327170a26a43b480e36783fc4ae8f41a923979ca5df3c9c4e441d1e73e805e4b",
+    "scripts/snes-gauss-data.json": "40fa10574a7b63925432c7d86ebf4c574b2f6c612ab75893036193cec7d73cce",
+    "tests/scripts/verify-snes-dsp-audio.py": "4d9470e1bc4b9dabb0c89390df2d4650eaadf4db29efd34a74dea215c8a73b59",
+    "tests/scripts/verify-snes-dsp-audio-stream.py": "72e3f78b82156ff307379523942e066bbafefa2f2b7bd9a178ec5946ad560c8c",
+    "examples/pcm-synth.fs": "8f397fd447f9b7f3b3773c324f9c03f38b248b645addee2233f843fd720f8811",
+    "examples/pcm-synth-play.fs": "f2f5f56f3fea06260cf5386cea2134337634ff05be0ca0dfd6de8d8e876d8c3f"
+  },
+  "source_snapshots_lf": {
+    "examples/snes-dsp-audio.fs": "\\ Original declared S-DSP sample-boundary model. No CPU/ROM/SDK/real I/O.\nDECIMAL\nS\" examples/snes-gauss.fs\" INCLUDED\n32000 CONSTANT SD-RATE 1024000 CONSTANT SD-CLOCK\nCREATE SD-REGS 128 ALLOT CREATE SD-ARAM 65536 ALLOT\n\\ Per voice: on,pos,nibble,header,previous,older,phase,env,mode,delay,hist0..3.\nCREATE SD-VOICES 112 CELLS ALLOT\n0 CONSTANT SD-ON 1 CONSTANT SD-POS 2 CONSTANT SD-NIB 3 CONSTANT SD-HEADER\n4 CONSTANT SD-P1 5 CONSTANT SD-P2 6 CONSTANT SD-PHASE 7 CONSTANT SD-ENV\n8 CONSTANT SD-MODE 9 CONSTANT SD-DELAY\nCREATE SD-RATES 0 , 2048 , 1536 , 1280 , 1024 , 768 , 640 , 512 ,\n384 , 320 , 256 , 192 , 160 , 128 , 96 , 80 , 64 , 48 , 40 , 32 ,\n24 , 20 , 16 , 12 , 10 , 8 , 6 , 5 , 4 , 3 , 2 , 1 ,\nVARIABLE SD-CYCLE VARIABLE SD-DIV VARIABLE SD-FRAME VARIABLE SD-PENDING\nVARIABLE SD-NOISE VARIABLE SD-EOFF VARIABLE SD-ELEN VARIABLE SD-EHI\nVARIABLE SD-LEFT VARIABLE SD-RIGHT\nCREATE SD-EHIST 16 CELLS ALLOT CREATE SD-MIX 2 CELLS ALLOT CREATE SD-EMIX 2 CELLS ALLOT\nCREATE SD-EVENTS 3072 CELLS ALLOT VARIABLE SD-EVENT-COUNT VARIABLE SD-EVENT-INDEX\n: SD-ASR { n bits -- q } n S>D 1 bits LSHIFT FM/MOD SWAP DROP ;\n: SD-S8 255 AND DUP 128 AND IF 256 - THEN ;\n: SD-S15 32767 AND DUP 16384 AND IF 32768 - THEN ;\n: SD-S16 65535 AND DUP 32768 AND IF 65536 - THEN ;\n: SD-SAT -32768 MAX 32767 MIN ;\n: SD-V@ { v field -- n } v 14 * field + CELLS SD-VOICES + @ ;\n: SD-V! { n v field -- } n v 14 * field + CELLS SD-VOICES + ! ;\n: SD-R@ SD-REGS + C@ ;\n: SD-B@ 65535 AND SD-ARAM + C@ ;\n: SD-B! 65535 AND SD-ARAM + C! ;\n: SD-W@ { a -- n } a SD-B@ a 1+ SD-B@ 8 LSHIFT OR ;\n: SD-W! { n a -- } n 255 AND a SD-B! n 8 RSHIFT 255 AND a 1+ SD-B! ;\n: SD-RESET ( -- )\n  SD-REGS 128 0 FILL SD-ARAM 65536 0 FILL SD-VOICES 112 CELLS 0 FILL\n  8 0 DO 3 I SD-MODE SD-V! LOOP 224 108 SD-REGS + C!\n  0 SD-CYCLE ! 0 SD-DIV ! 0 SD-FRAME ! 0 SD-PENDING ! 16384 SD-NOISE !\n  0 SD-EOFF ! 4 SD-ELEN ! 0 SD-EHI ! 0 SD-LEFT ! 0 SD-RIGHT !\n  SD-EHIST 16 CELLS 0 FILL SD-MIX 2 CELLS 0 FILL SD-EMIX 2 CELLS 0 FILL\n  0 SD-EVENT-COUNT ! 0 SD-EVENT-INDEX ! ;\n: SD-BRR { nibble header old older | n shift f -- sample }\n  nibble 8 >= IF nibble 16 - ELSE nibble THEN TO n\n  header 4 RSHIFT TO shift header 2 RSHIFT 3 AND TO f\n  shift 12 <= IF n 1 shift LSHIFT * 1 SD-ASR ELSE n 0< IF -2048 ELSE 0 THEN THEN TO n\n  f CASE\n    1 OF n old + old NEGATE 4 SD-ASR + TO n ENDOF\n    2 OF n old 2 * + old -3 * 5 SD-ASR + older - older 4 SD-ASR + TO n ENDOF\n    3 OF n old 2 * + old -13 * 6 SD-ASR + older - older 3 * 4 SD-ASR + TO n ENDOF\n  ENDCASE n SD-SAT SD-S15 ;\n: SD-DIR-ADDR { v -- addr } 93 SD-R@ 256 * v 16 * 4 + SD-R@ 4 * + 65535 AND ;\n: SD-START { v -- }\n  TRUE v SD-ON SD-V! v SD-DIR-ADDR SD-W@ v SD-POS SD-V!\n  0 v SD-NIB SD-V! 0 v SD-HEADER SD-V! 0 v SD-P1 SD-V! 0 v SD-P2 SD-V!\n  0 v SD-PHASE SD-V! 0 v SD-ENV SD-V! 0 v SD-MODE SD-V! 5 v SD-DELAY SD-V!\n  4 0 DO 0 v 10 I + SD-V! LOOP\n  124 SD-R@ 1 v LSHIFT INVERT AND 124 SD-REGS + C! ;\n: SD-CONSUME { v | nib pos header b value -- }\n  v SD-NIB SD-V@ TO nib v SD-POS SD-V@ TO pos\n  nib 0= IF pos SD-B@ v SD-HEADER SD-V! THEN v SD-HEADER SD-V@ TO header\n  pos 1+ nib 2 / + SD-B@ TO b\n  nib 1 AND IF b 15 AND ELSE b 4 RSHIFT THEN header v SD-P1 SD-V@ v SD-P2 SD-V@ SD-BRR TO value\n  v SD-P1 SD-V@ v SD-P2 SD-V! value v SD-P1 SD-V!\n  3 0 DO v 11 I + SD-V@ v 10 I + SD-V! LOOP value v 13 SD-V!\n  nib 1+ TO nib nib 16 = IF\n    0 TO nib header 1 AND IF\n      124 SD-R@ 1 v LSHIFT OR 124 SD-REGS + C!\n      v SD-DIR-ADDR 2 + SD-W@ TO pos\n      header 2 AND 0= IF 0 v SD-ENV SD-V! 3 v SD-MODE SD-V! THEN\n    ELSE pos 9 + 65535 AND TO pos THEN\n  THEN nib v SD-NIB SD-V! pos v SD-POS SD-V! ;\n: SD-RATE? { rate -- flag } rate 0= IF FALSE EXIT THEN SD-FRAME @ rate CELLS SD-RATES + @ MOD 0= ;\n: SD-ENV-PHASE { v | level -- }\n  v SD-ENV SD-V@ TO level\n  v SD-MODE SD-V@ 0= level 2016 >= AND IF 1 v SD-MODE SD-V! THEN\n  v SD-MODE SD-V@ 1 = level v 16 * 6 + SD-R@ 5 RSHIFT 1+ 256 * <= AND IF 2 v SD-MODE SD-V! THEN ;\n: SD-ENV-STEP { v | env mode a b gain rate delta -- }\n  v SD-ENV SD-V@ TO env v SD-MODE SD-V@ TO mode\n  mode 3 = IF env 8 - 0 MAX v SD-ENV SD-V! EXIT THEN\n  v 16 * 5 + SD-R@ TO a v 16 * 6 + SD-R@ TO b v 16 * 7 + SD-R@ TO gain\n  a 128 AND IF\n    mode CASE\n      0 OF a 15 AND 2 * 1+ TO rate a 15 AND 15 = IF 1024 ELSE 32 THEN TO delta ENDOF\n      1 OF a 4 RSHIFT 7 AND 2 * 16 + TO rate env 255 + 256 / NEGATE TO delta ENDOF\n      2 OF b 31 AND TO rate env 255 + 256 / NEGATE TO delta ENDOF\n    ENDCASE\n    rate SD-RATE? IF env delta + TO env THEN\n  ELSE\n    gain 128 AND 0= IF gain 127 AND 16 * TO env ELSE\n      gain 31 AND SD-RATE? IF\n        gain 5 RSHIFT 3 AND CASE\n          0 OF env 32 - TO env ENDOF\n          1 OF env env 255 + 256 / - TO env ENDOF\n          2 OF env 32 + TO env ENDOF\n          3 OF env env 1536 < IF 32 ELSE 8 THEN + TO env ENDOF\n        ENDCASE\n      THEN\n    THEN\n  THEN env 0 MAX 2047 MIN v SD-ENV SD-V! v SD-ENV-PHASE ;\n: SD-GAUSS-SAMPLE { v | phase sum coefficient -- sample }\n  v SD-PHASE SD-V@ 4 RSHIFT 255 AND TO phase 0 TO sum\n  4 0 DO\n    I CASE 0 OF 255 phase - ENDOF 1 OF 511 phase - ENDOF\n      2 OF 256 phase + ENDOF 3 OF phase ENDOF ENDCASE\n    CELLS SD-GAUSS + @ TO coefficient\n    I 3 = IF sum SD-S16 TO sum THEN\n    sum v 10 I + SD-V@ coefficient * 10 SD-ASR + TO sum\n  LOOP sum SD-SAT 1 SD-ASR ;\n: SD-PUBLISH { value v -- }\n  v SD-ENV SD-V@ 4 RSHIFT v 16 * 8 + SD-REGS + C!\n  value 7 SD-ASR 255 AND v 16 * 9 + SD-REGS + C! ;\n: SD-VOICE { v previous | value pitch phase -- sample }\n  v SD-ON SD-V@ 0= IF 0 v SD-PUBLISH 0 EXIT THEN\n  v SD-DELAY SD-V@ DUP 0> IF\n    1- DUP v SD-DELAY SD-V! 0= IF v SD-CONSUME THEN\n    0 v SD-PUBLISH 0 EXIT\n  THEN DROP\n  61 SD-R@ 1 v LSHIFT AND IF SD-NOISE @ SD-S15 ELSE v SD-GAUSS-SAMPLE THEN\n  v SD-ENV SD-V@ * 11 SD-ASR TO value\n  value v SD-PUBLISH v SD-ENV-STEP\n  v 16 * 2 + SD-R@ v 16 * 3 + SD-R@ 63 AND 8 LSHIFT OR TO pitch\n  v 0> 45 SD-R@ 1 v LSHIFT AND 0<> AND IF\n    pitch previous 4 SD-ASR 1024 + * 10 SD-ASR 0 MAX 16383 MIN TO pitch\n  THEN\n  v SD-PHASE SD-V@ pitch + TO phase\n  BEGIN phase 4096 >= WHILE v SD-CONSUME phase 4096 - TO phase REPEAT\n  phase v SD-PHASE SD-V! value ;\n: SD-ADD-MIX { value channel base -- }\n  base channel CELLS + DUP @ value + SD-SAT SWAP ! ;\n: SD-FIR { channel | sum h coefficient -- n }\n  0 TO sum\n  8 0 DO\n    SD-EHI @ I 1+ + 7 AND 2 * channel + CELLS SD-EHIST + @ TO h\n    I 16 * 15 + SD-R@ SD-S8 TO coefficient\n    I 7 = IF sum SD-S16 TO sum THEN\n    sum h coefficient * 6 SD-ASR + TO sum\n  LOOP sum SD-SAT ;\n: SD-ECHO { | address left right value -- }\n  SD-EOFF @ 0= IF 125 SD-R@ 15 AND 2048 * 4 MAX SD-ELEN ! THEN\n  109 SD-R@ 256 * SD-EOFF @ + 65535 AND TO address\n  address SD-W@ SD-S16 1 SD-ASR SD-EHI @ 2 * CELLS SD-EHIST + !\n  address 2 + SD-W@ SD-S16 1 SD-ASR SD-EHI @ 2 * 1+ CELLS SD-EHIST + !\n  0 SD-FIR TO left 1 SD-FIR TO right\n  2 0 DO\n    I IF right ELSE left THEN TO value\n    SD-MIX I CELLS + @ I 16 * 12 + SD-R@ SD-S8 * 7 SD-ASR SD-S16\n    value I 16 * 44 + SD-R@ SD-S8 * 7 SD-ASR SD-S16 + SD-SAT\n    108 SD-R@ 64 AND IF DROP 0 THEN\n    I IF SD-RIGHT ELSE SD-LEFT THEN !\n    108 SD-R@ 32 AND 0= IF\n      SD-EMIX I CELLS + @ value 13 SD-R@ SD-S8 * 7 SD-ASR SD-S16 + SD-SAT -2 AND\n      address I 2 * + SD-W!\n    THEN\n  LOOP\n  SD-EOFF @ 4 + DUP SD-ELEN @ >= IF DROP 0 THEN SD-EOFF !\n  SD-EHI @ 1+ 7 AND SD-EHI ! ;\n: SD-STEP { | pending previous value term -- }\n  1 SD-FRAME +!\n  108 SD-R@ 31 AND SD-RATE? IF\n    SD-NOISE @ DUP 1 RSHIFT XOR 1 AND 14 LSHIFT SD-NOISE @ 1 RSHIFT OR SD-NOISE !\n  THEN\n  SD-PENDING @ TO pending\n  8 0 DO\n    108 SD-R@ 128 AND IF 0 I SD-ENV SD-V! 3 I SD-MODE SD-V! THEN\n    SD-FRAME @ 1 AND IF\n      92 SD-R@ 1 I LSHIFT AND IF 3 I SD-MODE SD-V! THEN\n      pending 1 I LSHIFT AND IF I SD-START THEN\n    THEN\n  LOOP SD-FRAME @ 1 AND IF 0 SD-PENDING ! THEN\n  SD-MIX 2 CELLS 0 FILL SD-EMIX 2 CELLS 0 FILL 0 TO previous\n  8 0 DO\n    I previous SD-VOICE TO value\n    2 0 DO\n      value J 16 * I + SD-R@ SD-S8 * 6 SD-ASR TO term\n      term I SD-MIX SD-ADD-MIX\n      77 SD-R@ 1 J LSHIFT AND IF term I SD-EMIX SD-ADD-MIX THEN\n    LOOP value TO previous\n  LOOP SD-ECHO ;\n: SD-CHECK-TICK ( tick -- ) SD-CYCLE @ < IF -24 THROW THEN ;\n: SD-RAW-RUN { ticks | frames rem -- }\n  ticks 0< ticks 9223372036854775807 SD-CYCLE @ - > OR IF -24 THROW THEN\n  ticks 32 /MOD TO frames TO rem\n  SD-DIV @ rem + 32 /MOD frames + TO frames SD-DIV !\n  frames 0 ?DO SD-STEP LOOP ticks SD-CYCLE +! ;\n: SD-RAW-TO DUP SD-CHECK-TICK SD-CYCLE @ - SD-RAW-RUN ;\n: SD-CHECK { value target tick -- }\n  value 0 256 WITHIN target 0 65664 WITHIN AND 0= IF -24 THROW THEN tick SD-CHECK-TICK ;\n: SD-STORE { value target -- }\n  target 128 < IF\n    target 124 = IF 0 ELSE value THEN target SD-REGS + C!\n    target 76 = IF value SD-PENDING ! THEN\n  ELSE value target 128 - SD-B! THEN ;\n: SD-COMPACT\n  SD-EVENTS SD-EVENT-INDEX @ 3 * CELLS + SD-EVENTS\n  SD-EVENT-COUNT @ SD-EVENT-INDEX @ - 3 * CELLS MOVE\n  SD-EVENT-INDEX @ NEGATE SD-EVENT-COUNT +! 0 SD-EVENT-INDEX ! ;\n: SD-QUEUE { value target tick | p -- }\n  value target tick SD-CHECK\n  SD-EVENT-COUNT @ SD-EVENT-INDEX @ - 1024 >= IF -528 THROW THEN\n  SD-EVENT-COUNT @ IF SD-EVENTS SD-EVENT-COUNT @ 1- 3 * 2 + CELLS + @ tick > IF -24 THROW THEN THEN\n  SD-EVENT-COUNT @ 1024 >= IF SD-COMPACT THEN\n  SD-EVENTS SD-EVENT-COUNT @ 3 * CELLS + TO p\n  value p ! target p CELL+ ! tick p 2 CELLS + ! 1 SD-EVENT-COUNT +! ;\n: SD-TO { tick | p at -- }\n  tick SD-CHECK-TICK\n  BEGIN SD-EVENT-INDEX @ SD-EVENT-COUNT @ < WHILE\n    SD-EVENTS SD-EVENT-INDEX @ 3 * CELLS + TO p p 2 CELLS + @ TO at\n    at tick > IF tick SD-RAW-TO EXIT THEN\n    at SD-RAW-TO p @ p CELL+ @ SD-STORE 1 SD-EVENT-INDEX +!\n  REPEAT tick SD-RAW-TO ;\n: SD-RUN DUP 0< IF -24 THROW THEN DUP 9223372036854775807 SD-CYCLE @ - > IF -24 THROW THEN SD-CYCLE @ + SD-TO ;\n: SD-WRITE { value target tick -- } value target tick SD-CHECK tick SD-TO value target SD-STORE ;\n: SD-CHECK-REG 0 128 WITHIN 0= IF -24 THROW THEN ;\n: SD-CHECK-RAM 0 65536 WITHIN 0= IF -24 THROW THEN ;\n: SD-REG! { value reg tick -- } reg SD-CHECK-REG value reg tick SD-WRITE ;\n: SD-REG-EVENT! { value reg tick -- } reg SD-CHECK-REG value reg tick SD-QUEUE ;\n: SD-REG@ { reg tick -- byte } reg SD-CHECK-REG tick SD-TO reg SD-R@ ;\n: SD-RAM! { value addr tick -- } addr SD-CHECK-RAM value addr 128 + tick SD-WRITE ;\n: SD-RAM-EVENT! { value addr tick -- } addr SD-CHECK-RAM value addr 128 + tick SD-QUEUE ;\n: SD-RAM@ { addr tick -- byte } addr SD-CHECK-RAM tick SD-TO addr SD-B@ ;\n: SD-SAMPLE SD-LEFT @ SD-RIGHT @ ;\n: SD-MAX-FRAMES 9223372036854775807 SD-CYCLE @ - 32 / ;\n: SD-LE! { n addr -- } n 255 AND addr C! n 8 RSHIFT 255 AND addr 1+ C! ;\n: SD-RENDER { address frames -- }\n  frames 0< frames SD-MAX-FRAMES > OR IF -24 THROW THEN\n  frames 0 ?DO 32 SD-RUN SD-LEFT @ address SD-LE! SD-RIGHT @ address 2 + SD-LE! address 4 + TO address LOOP ;\nCREATE SD-DEMO-DATA 2 C, 70 C, 118 C, 66 C, 14 C, 172 C, 154 C, 206 C,\n: SD-DEMO-SETUP ( -- )\n  SD-RESET 512 256 SD-W! 512 258 SD-W! 195 512 SD-B!\n  8 0 DO SD-DEMO-DATA I + C@ 513 I + SD-B! LOOP\n  1 93 SD-STORE 64 12 SD-STORE 64 28 SD-STORE\n  32 44 SD-STORE 32 60 SD-STORE 48 13 SD-STORE 64 127 SD-STORE\n  64 109 SD-STORE 1 125 SD-STORE 255 77 SD-STORE\n  8 0 DO\n    901 I 73 * + DUP 255 AND I 16 * 2 + SD-STORE 8 RSHIFT I 16 * 3 + SD-STORE\n    I 1 AND IF 8 ELSE 20 THEN I 16 * SD-STORE\n    I 1 AND IF 20 ELSE 8 THEN I 16 * 1+ SD-STORE\n    48 I 16 * 7 + SD-STORE\n  LOOP 0 108 SD-STORE 255 76 SD-STORE ;\nSD-RESET\n",
+    "examples/snes-gauss.fs": "\\ Hardware numeric constants referenced from fullsnes; see scripts/snes-gauss-data.json.\nDECIMAL\nCREATE SD-GAUSS\n0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 ,\n1 , 1 , 1 , 1 , 1 , 1 , 1 , 1 , 1 , 1 , 1 , 2 , 2 , 2 , 2 , 2 ,\n2 , 2 , 3 , 3 , 3 , 3 , 3 , 4 , 4 , 4 , 4 , 4 , 5 , 5 , 5 , 5 ,\n6 , 6 , 6 , 6 , 7 , 7 , 7 , 8 , 8 , 8 , 9 , 9 , 9 , 10 , 10 , 10 ,\n11 , 11 , 11 , 12 , 12 , 13 , 13 , 14 , 14 , 15 , 15 , 15 , 16 , 16 , 17 , 17 ,\n18 , 19 , 19 , 20 , 20 , 21 , 21 , 22 , 23 , 23 , 24 , 24 , 25 , 26 , 27 , 27 ,\n28 , 29 , 29 , 30 , 31 , 32 , 32 , 33 , 34 , 35 , 36 , 36 , 37 , 38 , 39 , 40 ,\n41 , 42 , 43 , 44 , 45 , 46 , 47 , 48 , 49 , 50 , 51 , 52 , 53 , 54 , 55 , 56 ,\n58 , 59 , 60 , 61 , 62 , 64 , 65 , 66 , 67 , 69 , 70 , 71 , 73 , 74 , 76 , 77 ,\n78 , 80 , 81 , 83 , 84 , 86 , 87 , 89 , 90 , 92 , 94 , 95 , 97 , 99 , 100 , 102 ,\n104 , 106 , 107 , 109 , 111 , 113 , 115 , 117 , 118 , 120 , 122 , 124 , 126 , 128 , 130 , 132 ,\n134 , 137 , 139 , 141 , 143 , 145 , 147 , 150 , 152 , 154 , 156 , 159 , 161 , 163 , 166 , 168 ,\n171 , 173 , 175 , 178 , 180 , 183 , 186 , 188 , 191 , 193 , 196 , 199 , 201 , 204 , 207 , 210 ,\n212 , 215 , 218 , 221 , 224 , 227 , 230 , 233 , 236 , 239 , 242 , 245 , 248 , 251 , 254 , 257 ,\n260 , 263 , 267 , 270 , 273 , 276 , 280 , 283 , 286 , 290 , 293 , 297 , 300 , 304 , 307 , 311 ,\n314 , 318 , 321 , 325 , 328 , 332 , 336 , 339 , 343 , 347 , 351 , 354 , 358 , 362 , 366 , 370 ,\n374 , 378 , 381 , 385 , 389 , 393 , 397 , 401 , 405 , 410 , 414 , 418 , 422 , 426 , 430 , 434 ,\n439 , 443 , 447 , 451 , 456 , 460 , 464 , 469 , 473 , 477 , 482 , 486 , 491 , 495 , 499 , 504 ,\n508 , 513 , 517 , 522 , 527 , 531 , 536 , 540 , 545 , 550 , 554 , 559 , 563 , 568 , 573 , 577 ,\n582 , 587 , 592 , 596 , 601 , 606 , 611 , 615 , 620 , 625 , 630 , 635 , 640 , 644 , 649 , 654 ,\n659 , 664 , 669 , 674 , 678 , 683 , 688 , 693 , 698 , 703 , 708 , 713 , 718 , 723 , 728 , 732 ,\n737 , 742 , 747 , 752 , 757 , 762 , 767 , 772 , 777 , 782 , 787 , 792 , 797 , 802 , 806 , 811 ,\n816 , 821 , 826 , 831 , 836 , 841 , 846 , 851 , 855 , 860 , 865 , 870 , 875 , 880 , 884 , 889 ,\n894 , 899 , 904 , 908 , 913 , 918 , 923 , 927 , 932 , 937 , 941 , 946 , 951 , 955 , 960 , 965 ,\n969 , 974 , 978 , 983 , 988 , 992 , 997 , 1001 , 1005 , 1010 , 1014 , 1019 , 1023 , 1027 , 1032 , 1036 ,\n1040 , 1045 , 1049 , 1053 , 1057 , 1061 , 1066 , 1070 , 1074 , 1078 , 1082 , 1086 , 1090 , 1094 , 1098 , 1102 ,\n1106 , 1109 , 1113 , 1117 , 1121 , 1125 , 1128 , 1132 , 1136 , 1139 , 1143 , 1146 , 1150 , 1153 , 1157 , 1160 ,\n1164 , 1167 , 1170 , 1174 , 1177 , 1180 , 1183 , 1186 , 1190 , 1193 , 1196 , 1199 , 1202 , 1205 , 1207 , 1210 ,\n1213 , 1216 , 1219 , 1221 , 1224 , 1227 , 1229 , 1232 , 1234 , 1237 , 1239 , 1241 , 1244 , 1246 , 1248 , 1251 ,\n1253 , 1255 , 1257 , 1259 , 1261 , 1263 , 1265 , 1267 , 1269 , 1270 , 1272 , 1274 , 1275 , 1277 , 1279 , 1280 ,\n1282 , 1283 , 1284 , 1286 , 1287 , 1288 , 1290 , 1291 , 1292 , 1293 , 1294 , 1295 , 1296 , 1297 , 1297 , 1298 ,\n1299 , 1300 , 1300 , 1301 , 1302 , 1302 , 1303 , 1303 , 1303 , 1304 , 1304 , 1304 , 1304 , 1304 , 1305 , 1305 ,\n",
+    "examples/snes-dsp-audio-play.fs": "\\ Stereo32000Hz wrapper; load is silent, FALSE submits zeros.\nS\" examples/snes-dsp-audio.fs\" INCLUDED\nS\" examples/pcm-synth-play.fs\" INCLUDED\nCREATE SD-PRIME 16384 ALLOT CREATE SD-BUFFER 2048 ALLOT\n: SD-SEND { address frames -- }\n  0 PS-SENT !\n  BEGIN frames PS-SENT @ - DUP 0> WHILE\n    DUP PS-REQUEST ! address PS-SENT @ 4 * + SWAP PS-HANDLE @ PCM-WRITE THROW\n    1 PS-WRITES +! DUP 0= IF 1 PS-FULL +! THEN\n    DUP 0> IF DUP PS-REQUEST @ < IF 1 PS-PARTIAL +! THEN THEN\n    DUP PS-FRAMES +! PS-SENT +!\n    PS-SENT @ frames < IF\n      1 PS-WAITS +! 1 1000 PS-HANDLE @ PCM-WAIT THROW 0= IF -528 THROW THEN\n    THEN\n  REPEAT DROP ;\n: SD-STREAM-RUN { | initial -- }\n  SD-RATE 2 4096 PCM-OPEN THROW PS-HANDLE !\n  PS-BLOCKS @ 8 MIN TO initial\n  initial IF\n    SD-PRIME initial 512 * SD-RENDER\n    PS-AUDIBLE @ 0= IF SD-PRIME initial 2048 * 0 FILL THEN\n    SD-PRIME initial 512 * SD-SEND\n  THEN\n  PS-BLOCKS @ initial - 0 ?DO\n    SD-BUFFER 512 SD-RENDER\n    PS-AUDIBLE @ 0= IF SD-BUFFER 2048 0 FILL THEN\n    SD-BUFFER 512 SD-SEND\n  LOOP\n  1 1000 PS-HANDLE @ PCM-STOP THROW 0= IF -528 THROW THEN\n  PS-HANDLE @ PCM-UNDERRUNS THROW PS-UNDERRUN-COUNT ! ;\n: SD-STREAM ( blocks audible -- )\n  OVER 0< IF -24 THROW THEN PS-HANDLE @ IF -528 THROW THEN\n  OVER SD-MAX-FRAMES 512 / > IF -24 THROW THEN\n  PS-AUDIBLE ! PS-BLOCKS !\n  0 PS-WRITES ! 0 PS-PARTIAL ! 0 PS-FULL ! 0 PS-WAITS ! 0 PS-FRAMES ! 0 PS-UNDERRUN-COUNT !\n  ['] SD-STREAM-RUN CATCH >R PS-SAFE-CLEANUP\n  R> ?DUP IF SWAP DROP THROW THEN THROW ;\n",
+    "scripts/snes-tables.py": "#!/usr/bin/env python3\n\"\"\"Reproduce numeric hardware lookup data; no audio and no external code.\"\"\"\nimport argparse,json\nfrom pathlib import Path\nROOT=Path(__file__).resolve().parents[1]\np=argparse.ArgumentParser(description=__doc__);p.add_argument('--check',action='store_true');args=p.parse_args()\nv=json.loads((ROOT/'scripts/snes-gauss-data.json').read_text(encoding='utf-8'))['values']\nif len(v)!=512 or any(type(x)!=int or not 0<=x<=1305 for x in v):raise SystemExit('Invalid Gauss dataset')\ns='\\\\ Hardware numeric constants referenced from fullsnes; see scripts/snes-gauss-data.json.\\nDECIMAL\\nCREATE SD-GAUSS\\n'\ns+=''.join(' '.join(str(x)+' ,' for x in v[i:i+16])+'\\n' for i in range(0,512,16))\nf=ROOT/'examples/snes-gauss.fs'\nif args.check:\n if f.read_text(encoding='utf-8')!=s:raise SystemExit('Gauss table differs')\n print('512 Gaussian hardware constants reproduced')\nelse:f.write_text(s,encoding='utf-8',newline='\\n')\n",
+    "scripts/snes-gauss-data.json": "{\n  \"source_url\": \"https://problemkaputt.de/fullsnes.htm\",\n  \"source_html_sha256\": \"3853b65a7331bf12eea431ff494a2948a1c78ef22f7e819db4b139fd5a79f6c6\",\n  \"kind\": \"512 hardware Gaussian lookup numeric constants as documented by fullsnes; no document text or emulator source copied.\",\n  \"values\": [\n    0,\n    0,\n    0,\n    0,\n    0,\n    0,\n    0,\n    0,\n    0,\n    0,\n    0,\n    0,\n    0,\n    0,\n    0,\n    0,\n    1,\n    1,\n    1,\n    1,\n    1,\n    1,\n    1,\n    1,\n    1,\n    1,\n    1,\n    2,\n    2,\n    2,\n    2,\n    2,\n    2,\n    2,\n    3,\n    3,\n    3,\n    3,\n    3,\n    4,\n    4,\n    4,\n    4,\n    4,\n    5,\n    5,\n    5,\n    5,\n    6,\n    6,\n    6,\n    6,\n    7,\n    7,\n    7,\n    8,\n    8,\n    8,\n    9,\n    9,\n    9,\n    10,\n    10,\n    10,\n    11,\n    11,\n    11,\n    12,\n    12,\n    13,\n    13,\n    14,\n    14,\n    15,\n    15,\n    15,\n    16,\n    16,\n    17,\n    17,\n    18,\n    19,\n    19,\n    20,\n    20,\n    21,\n    21,\n    22,\n    23,\n    23,\n    24,\n    24,\n    25,\n    26,\n    27,\n    27,\n    28,\n    29,\n    29,\n    30,\n    31,\n    32,\n    32,\n    33,\n    34,\n    35,\n    36,\n    36,\n    37,\n    38,\n    39,\n    40,\n    41,\n    42,\n    43,\n    44,\n    45,\n    46,\n    47,\n    48,\n    49,\n    50,\n    51,\n    52,\n    53,\n    54,\n    55,\n    56,\n    58,\n    59,\n    60,\n    61,\n    62,\n    64,\n    65,\n    66,\n    67,\n    69,\n    70,\n    71,\n    73,\n    74,\n    76,\n    77,\n    78,\n    80,\n    81,\n    83,\n    84,\n    86,\n    87,\n    89,\n    90,\n    92,\n    94,\n    95,\n    97,\n    99,\n    100,\n    102,\n    104,\n    106,\n    107,\n    109,\n    111,\n    113,\n    115,\n    117,\n    118,\n    120,\n    122,\n    124,\n    126,\n    128,\n    130,\n    132,\n    134,\n    137,\n    139,\n    141,\n    143,\n    145,\n    147,\n    150,\n    152,\n    154,\n    156,\n    159,\n    161,\n    163,\n    166,\n    168,\n    171,\n    173,\n    175,\n    178,\n    180,\n    183,\n    186,\n    188,\n    191,\n    193,\n    196,\n    199,\n    201,\n    204,\n    207,\n    210,\n    212,\n    215,\n    218,\n    221,\n    224,\n    227,\n    230,\n    233,\n    236,\n    239,\n    242,\n    245,\n    248,\n    251,\n    254,\n    257,\n    260,\n    263,\n    267,\n    270,\n    273,\n    276,\n    280,\n    283,\n    286,\n    290,\n    293,\n    297,\n    300,\n    304,\n    307,\n    311,\n    314,\n    318,\n    321,\n    325,\n    328,\n    332,\n    336,\n    339,\n    343,\n    347,\n    351,\n    354,\n    358,\n    362,\n    366,\n    370,\n    374,\n    378,\n    381,\n    385,\n    389,\n    393,\n    397,\n    401,\n    405,\n    410,\n    414,\n    418,\n    422,\n    426,\n    430,\n    434,\n    439,\n    443,\n    447,\n    451,\n    456,\n    460,\n    464,\n    469,\n    473,\n    477,\n    482,\n    486,\n    491,\n    495,\n    499,\n    504,\n    508,\n    513,\n    517,\n    522,\n    527,\n    531,\n    536,\n    540,\n    545,\n    550,\n    554,\n    559,\n    563,\n    568,\n    573,\n    577,\n    582,\n    587,\n    592,\n    596,\n    601,\n    606,\n    611,\n    615,\n    620,\n    625,\n    630,\n    635,\n    640,\n    644,\n    649,\n    654,\n    659,\n    664,\n    669,\n    674,\n    678,\n    683,\n    688,\n    693,\n    698,\n    703,\n    708,\n    713,\n    718,\n    723,\n    728,\n    732,\n    737,\n    742,\n    747,\n    752,\n    757,\n    762,\n    767,\n    772,\n    777,\n    782,\n    787,\n    792,\n    797,\n    802,\n    806,\n    811,\n    816,\n    821,\n    826,\n    831,\n    836,\n    841,\n    846,\n    851,\n    855,\n    860,\n    865,\n    870,\n    875,\n    880,\n    884,\n    889,\n    894,\n    899,\n    904,\n    908,\n    913,\n    918,\n    923,\n    927,\n    932,\n    937,\n    941,\n    946,\n    951,\n    955,\n    960,\n    965,\n    969,\n    974,\n    978,\n    983,\n    988,\n    992,\n    997,\n    1001,\n    1005,\n    1010,\n    1014,\n    1019,\n    1023,\n    1027,\n    1032,\n    1036,\n    1040,\n    1045,\n    1049,\n    1053,\n    1057,\n    1061,\n    1066,\n    1070,\n    1074,\n    1078,\n    1082,\n    1086,\n    1090,\n    1094,\n    1098,\n    1102,\n    1106,\n    1109,\n    1113,\n    1117,\n    1121,\n    1125,\n    1128,\n    1132,\n    1136,\n    1139,\n    1143,\n    1146,\n    1150,\n    1153,\n    1157,\n    1160,\n    1164,\n    1167,\n    1170,\n    1174,\n    1177,\n    1180,\n    1183,\n    1186,\n    1190,\n    1193,\n    1196,\n    1199,\n    1202,\n    1205,\n    1207,\n    1210,\n    1213,\n    1216,\n    1219,\n    1221,\n    1224,\n    1227,\n    1229,\n    1232,\n    1234,\n    1237,\n    1239,\n    1241,\n    1244,\n    1246,\n    1248,\n    1251,\n    1253,\n    1255,\n    1257,\n    1259,\n    1261,\n    1263,\n    1265,\n    1267,\n    1269,\n    1270,\n    1272,\n    1274,\n    1275,\n    1277,\n    1279,\n    1280,\n    1282,\n    1283,\n    1284,\n    1286,\n    1287,\n    1288,\n    1290,\n    1291,\n    1292,\n    1293,\n    1294,\n    1295,\n    1296,\n    1297,\n    1297,\n    1298,\n    1299,\n    1300,\n    1300,\n    1301,\n    1302,\n    1302,\n    1303,\n    1303,\n    1303,\n    1304,\n    1304,\n    1304,\n    1304,\n    1304,\n    1305,\n    1305\n  ],\n  \"source_document_credit\": \"fullsnes/no$sns help text Copyright2012 Martin Korth; credits Anomie hardware specifications. Original document text, figures and software are not included.\"\n}\n",
+    "tests/scripts/verify-snes-dsp-audio.py": "#!/usr/bin/env python3\n\"\"\"Independent integer S-DSP sample-boundary oracle; all generated audio stays in RAM.\"\"\"\nimport argparse,hashlib,heapq,json,platform,re,struct,subprocess,tempfile\nfrom pathlib import Path\nROOT=Path(__file__).resolve().parents[2]\nDATA=json.loads((ROOT/'scripts/snes-gauss-data.json').read_text(encoding='utf-8'))\nGAUSS=DATA['values']\nRATES=[0,2048,1536,1280,1024,768,640,512,384,320,256,192,160,128,96,80,64,48,40,32,24,20,16,12,10,8,6,5,4,3,2,1]\nFIELDS=['on','pos','nib','header','p1','p2','phase','env','mode','delay']\nGLOBALS=['CYCLE','DIV','FRAME','PENDING','NOISE','EOFF','ELEN','EHI','LEFT','RIGHT']\nDUMP=': SNAP 128 0 DO I SD-R@ . LOOP 112 0 DO SD-VOICES I CELLS + @ . LOOP '+' '.join('SD-'+v+' @ .' for v in GLOBALS)+' 16 0 DO SD-EHIST I CELLS + @ . LOOP SD-EVENT-COUNT @ . SD-EVENT-INDEX @ . ;\\n'\ndef signed(n,bits):return (n+(1<<(bits-1)))%(1<<bits)-(1<<(bits-1))\ndef clamp(n):return min(32767,max(-32768,n))\ndef brr(nibble,header,old,older):\n    n=signed(nibble,4);shift=header>>4\n    val=n*2**shift//2 if shift<=12 else -2048 if n<0 else 0\n    # Mathematically equivalent rational predictors, distinct from Forth shift decomposition.\n    p,q=[(0,0),(old*15//16,0),(old*61//32,older*-15//16),(old*115//64,older*-13//16)][header//4%4]\n    return signed(clamp(val+p+q),15)\n\nclass Model:\n    def __init__(self):\n        self.r=bytearray(128);self.r[108]=224;self.ram=bytearray(65536)\n        self.v=[dict(zip(FIELDS,[0,0,0,0,0,0,0,0,3,0]),hist=[0]*4) for _ in range(8)]\n        self.t=self.div=self.frame=self.pending=self.eoff=self.ehi=self.left=self.right=0\n        self.noise=16384;self.elen=4;self.ehist=[[0,0] for _ in range(8)];self.events=[];self.serial=0;self.coverage=set()\n    def word(self,addr):return self.ram[addr%65536]+256*self.ram[(addr+1)%65536]\n    def putword(self,addr,n):\n        self.ram[addr%65536]=n%256;self.ram[(addr+1)%65536]=n//256%256\n    def directory(self,i):return (self.r[93]*256+self.r[i*16+4]*4)%65536\n    def start(self,i):\n        self.v[i]=dict(zip(FIELDS,[-1,self.word(self.directory(i)),0,0,0,0,0,0,0,5]),hist=[0]*4)\n        self.r[124]&=255-(1<<i)\n    def consume(self,i):\n        v=self.v[i];n=v['nib'];pos=v['pos']\n        if not n:v['header']=self.ram[pos]\n        byte=self.ram[(pos+1+n//2)%65536];value=brr(byte%16 if n%2 else byte//16,v['header'],v['p1'],v['p2'])\n        v['p2'],v['p1']=v['p1'],value;v['hist']=v['hist'][1:]+[value];v['nib']+=1\n        if v['nib']==16:\n            v['nib']=0\n            if v['header']%2:\n                self.r[124]|=1<<i;v['pos']=self.word(self.directory(i)+2)\n                if not(v['header']&2):v['env']=0;v['mode']=3;self.coverage.add('nonloop-end')\n            else:v['pos']=(pos+9)%65536\n    def due(self,rate):return rate!=0 and self.frame%RATES[rate]==0\n    def envelope(self,i):\n        v=self.v[i];env=v['env'];mode=v['mode'];a,b,g=self.r[i*16+5:i*16+8]\n        if mode==3:v['env']=max(0,env-8);return\n        if a&128:\n            rate=[2*(a%16)+1,16+2*(a//16%8),b%32][mode]\n            delta=(1024 if a%16==15 else 32) if mode==0 else -((env+255)//256)\n            if self.due(rate):env+=delta\n        elif g<128:env=g*16\n        elif self.due(g%32):\n            modeg=g//32%4;env+=[-32,-((env+255)//256),32,32 if env<1536 else 8][modeg]\n        v['env']=min(2047,max(0,env))\n        if v['mode']==0 and v['env']>=2016:v['mode']=1\n        if v['mode']==1 and v['env']<=(b//32+1)*256:v['mode']=2\n    def gaussian(self,i):\n        v=self.v[i];f=v['phase']//16;h=v['hist'];c=[GAUSS[255-f],GAUSS[511-f],GAUSS[256+f],GAUSS[f]]\n        parts=[x*y//1024 for x,y in zip(h,c)]\n        return clamp(signed(sum(parts[:3]),16)+parts[3])//2\n    def voice(self,i,previous):\n        v=self.v[i];value=0;published_env=v['env']\n        if v['on']:\n            if v['delay']:\n                v['delay']-=1\n                if v['delay']==0:self.consume(i)\n            else:\n                sample=signed(self.noise,15) if self.r[61]&(1<<i) else self.gaussian(i)\n                value=sample*v['env']//2048\n                self.envelope(i)\n                pitch=self.r[i*16+2]+256*(self.r[i*16+3]%64)\n                if self.r[i*16+3]>=64:self.coverage.add('pitch-high-mask')\n                if i and self.r[45]&(1<<i):\n                    pitch=pitch*(1024+previous//16)//1024\n                    if pitch>16383:self.coverage.add('pmon-clamp')\n                    pitch=min(16383,max(0,pitch))\n                v['phase']+=pitch\n                if v['phase']>=8192:self.coverage.add('multiple-consume')\n                while v['phase']>=4096:self.consume(i);v['phase']-=4096\n        self.r[i*16+8]=published_env//16;self.r[i*16+9]=value//128%256\n        return value\n    def step(self):\n        self.frame+=1\n        if self.due(self.r[108]%32):self.noise=self.noise//2+(((self.noise^(self.noise//2))%2)<<14)\n        for i,v in enumerate(self.v):\n            if self.r[108]&128:v['env']=0;v['mode']=3\n            if self.frame%2:\n                if self.r[92]&(1<<i):v['mode']=3\n                if self.pending&(1<<i):self.start(i)\n        if self.frame%2:self.pending=0\n        mix=[0,0];emix=[0,0];previous=0\n        for i in range(8):\n            value=self.voice(i,previous);previous=value\n            for ch in range(2):\n                term=value*signed(self.r[i*16+ch],8)//64\n                mix[ch]=clamp(mix[ch]+term)\n                if self.r[77]&(1<<i):emix[ch]=clamp(emix[ch]+term)\n        if not self.eoff:self.elen=max(4,(self.r[125]%16)*2048)\n        address=(self.r[109]*256+self.eoff)%65536\n        if self.r[109]*256+self.eoff>=65536:self.coverage.add('echo-16bit-wrap')\n        if address in [256,260]:self.coverage.add('echo-dir-overlap')\n        if address in [512,516,520]:self.coverage.add('echo-brr-overlap')\n        self.ehist[self.ehi]=[signed(self.word(address+ch*2),16)//2 for ch in range(2)]\n        outs=[]\n        for ch in range(2):\n            terms=[self.ehist[(self.ehi+k+1)%8][ch]*signed(self.r[k*16+15],8)//64 for k in range(8)]\n            if not -32768<=sum(terms[:7])<=32767:self.coverage.add('fir-prefix-wrap')\n            fir=clamp(signed(sum(terms[:7]),16)+terms[7])\n            val=clamp(signed(mix[ch]*signed(self.r[ch*16+12],8)//128,16)+signed(fir*signed(self.r[ch*16+44],8)//128,16))\n            outs.append(0 if self.r[108]&64 else val)\n            if not(self.r[108]&32):self.putword(address+ch*2,clamp(emix[ch]+signed(fir*signed(self.r[13],8)//128,16))&~1)\n        self.left,self.right=outs;self.eoff=(self.eoff+4)%self.elen;self.ehi=(self.ehi+1)%8\n    def advance(self,tick):\n        assert tick>=self.t\n        while self.t+32-self.div<=tick:\n            self.t+=32-self.div;self.div=0;self.step()\n        self.div+=tick-self.t;self.t=tick\n    def store(self,value,target):\n        if target<128:\n            self.r[target]=0 if target==124 else value\n            if target==76:self.pending=value\n        else:self.ram[target-128]=value\n    def enqueue(self,value,target,tick):\n        heapq.heappush(self.events,(tick,self.serial,value,target));self.serial+=1\n    def to(self,tick):\n        while self.events and self.events[0][0]<=tick:\n            t,_,v,r=heapq.heappop(self.events);self.advance(t);self.store(v,r)\n        self.advance(tick)\n    def render(self,frames):\n        out=bytearray()\n        for _ in range(frames):self.to(self.t+32);out.extend(struct.pack('<hh',self.left,self.right))\n        return bytes(out)\n    def state(self):\n        voices=[value for v in self.v for value in [*[v[f] for f in FIELDS],*v['hist']]]\n        return list(self.r)+voices+[self.t,self.div,self.frame,self.pending,self.noise,self.eoff,self.elen,self.ehi,self.left,self.right]+[x for h in self.ehist for x in h]\n\ndef demo():\n    m=Model();m.putword(256,512);m.putword(258,512);m.ram[512:521]=bytes([195,2,70,118,66,14,172,154,206])\n    for reg,val in [(93,1),(12,64),(28,64),(44,32),(60,32),(13,48),(127,64),(109,64),(125,1),(77,255)]:m.store(val,reg)\n    for i in range(8):\n        p=901+i*73\n        for reg,val in [(2,p%256),(3,p//256),(0,8 if i%2 else 20),(1,20 if i%2 else 8),(7,48)]:m.store(val,i*16+reg)\n    m.store(0,108);m.store(255,76);return m\n\ndef queue(events):\n    return '\\n'.join(f'{v} {r} {t} SD-REG-EVENT!' if r<128 else f'{v} {r-128} {t} SD-RAM-EVENT!' for t,v,r in events)+'\\n'\n\ndef main():\n    p=argparse.ArgumentParser(description=__doc__);p.add_argument('sigma',type=Path);p.add_argument('--reference-doc',type=Path);args=p.parse_args();binary=args.sigma.resolve();work=ROOT/'.work/1174';work.mkdir(parents=True,exist_ok=True);tests=[]\n    if args.reference_doc:\n        text=args.reference_doc.read_text(encoding='utf-8')\n        if args.reference_doc.suffix.lower() in ['.html','.htm']:assert hashlib.sha256(args.reference_doc.read_bytes()).hexdigest()==DATA['source_html_sha256']\n        region=text.split('The Gauss table contains the following values (in hex):',1)[1].split('The gauss table is slightly bugged:',1)[0]\n        region=re.sub(r';[^\\n]*','',re.sub(r'<[^>]*>','',region))\n        independent=[int(x,16) for x in re.findall(r'\\b[0-9A-Fa-f]{3}\\b',region)]\n        assert independent==GAUSS and len(independent)==512\n        tests.append({'case':'independent-extraction-from-reference-document','reference_sha256':hashlib.sha256(args.reference_doc.read_bytes()).hexdigest()})\n    def run(code):\n        with tempfile.NamedTemporaryFile('w',encoding='utf-8',suffix='.fs',dir=work,delete=False) as f:file=Path(f.name);f.write(DUMP+code+'\\nDEPTH . BYE\\n')\n        try:r=subprocess.run([str(binary),'examples/snes-dsp-audio.fs',str(file)],cwd=ROOT,input=b'',capture_output=True,timeout=60)\n        finally:file.unlink()\n        assert r.returncode==0 and not r.stderr,(r.returncode,r.stdout[:1500],r.stderr)\n        v=list(map(int,r.stdout.split()));assert v.pop()==0,'stack leak';return v\n    assert run('SNAP')==Model().state()+[0,0]\n    # All headers/nibbles with diverse signed histories exercise rational predictor rounding.\n    for old,older in [(0,0),(12345,-8765),(-16384,16383)]:\n        code=f': BRRS 256 0 DO 16 0 DO I J {old} {older} SD-BRR . LOOP LOOP ; BRRS'\n        wanted=[brr(n,h,old,older) for h in range(256) for n in range(16)]\n        assert run(code)==wanted\n    tests.append({'case':'all256headers16nibbles3histories-rational-brr'})\n    assert hashlib.sha256(struct.pack('<512H',*GAUSS)).hexdigest()=='0acd5077942f6cc6676829bc1954a05aeaad51be716f62d9ef4e8e7c94685af2'\n    assert all(a<=b for a,b in zip(GAUSS,GAUSS[1:]))\n    assert all(2047<=sum(GAUSS[x] for x in [i,255-i,256+i,511-i])<=2049 for i in range(256))\n    for hist in [[0,1000,-500,16383],[-16384]*4,[16383]*4,[-16384,16383,-16384,16383]]:\n        m=Model();m.v[0]['hist']=hist;wanted=[]\n        for f in range(256):m.v[0]['phase']=f*16;wanted.append(m.gaussian(0))\n        init=' '.join(f'{value} 0 {10+i} SD-V!' for i,value in enumerate(hist))\n        got=run('SD-RESET '+init+' : GS 256 0 DO I 16 * 0 SD-PHASE SD-V! 0 SD-GAUSS-SAMPLE . LOOP ; GS')\n        assert got==wanted\n        if hist==[-16384]*4:assert 16376 in got\n    tests.append({'case':'all256-gauss-phases4-history-extremes-and-overflow'})\n    assert run(': RATES 32 0 DO I CELLS SD-RATES + @ . LOOP ; RATES')==RATES\n    wanted=[]\n    for rate in range(32):\n        frames=RATES[rate]*2 if rate else 8\n        wanted.extend([-int(bool(rate and f%RATES[rate]==0)) for f in range(1,frames+1)])\n    assert run(': RATECHECK 32 0 DO I CELLS SD-RATES + @ DUP IF 2 * ELSE DROP 8 THEN 0 DO I 1+ SD-FRAME ! J SD-RATE? . LOOP LOOP ; RATECHECK')==wanted\n    tests.append({'case':'all32-global-rate-boundaries-two-periods'})\n    envcases=[]\n    for mode in range(4):\n        for rate in range(32):envcases.append((0,96,128+32*mode+rate,[2047,2047,0,1520][mode],0,RATES[rate]*2 if rate else 8))\n    envcases.extend((0,96,gain,0,0,1) for gain in range(128))\n    envcases.extend((128+a,96,0,0,0,2*RATES[2*a+1]) for a in range(16))\n    envcases.extend((128+16*d,96,0,2047,1,2*RATES[16+2*d]) for d in range(8))\n    envcases.extend((128,rate,0,1024,2,2*RATES[rate] if rate else 8) for rate in range(32))\n    envcases.extend((0,0,0,env,3,2) for env in [0,1,7,8,2047])\n    wanted=[]\n    for a,b,gain,env,mode,frames in envcases:\n        m=Model();m.r[5:8]=bytes([a,b,gain]);m.v[0]['env']=env;m.v[0]['mode']=mode\n        for frame in range(1,frames+1):m.frame=frame;m.envelope(0)\n        wanted.extend([m.v[0]['env'],m.v[0]['mode']])\n    proc=': ET { a b gain env mode frames -- } SD-RESET a 5 SD-STORE b 6 SD-STORE gain 7 SD-STORE env 0 SD-ENV SD-V! mode 0 SD-MODE SD-V! frames 0 DO I 1+ SD-FRAME ! 0 SD-ENV-STEP LOOP 0 SD-ENV SD-V@ . 0 SD-MODE SD-V@ . ; '\n    assert run(proc+'\\n'+'\\n'.join(' '.join(map(str,case))+' ET' for case in envcases))==wanted\n    tests.append({'case':'gain4modes-all32rates-direct128-attack16-decay8-sustain32-release','cases':len(envcases)})\n    assert run('SD-RESET 1 12 32 SD-REG-EVENT! 2 12 32 SD-REG! 12 SD-R@ . 3 12 32 SD-REG-EVENT! 12 SD-R@ . 0 SD-RUN 12 SD-R@ .')==[2,2,3]\n    assert run('SD-DEMO-SETUP : DELAYTEST 6 0 DO 32 SD-RUN 0 SD-DELAY SD-V@ . 0 SD-ENV SD-V@ . 0 SD-PHASE SD-V@ . LOOP ; DELAYTEST')==[4,0,0,3,0,0,2,0,0,1,0,0,0,0,0,0,768,901]\n    assert run('SD-DEMO-SETUP 0 76 0 SD-REG! 1 76 32 SD-REG-EVENT! 32 SD-TO 0 SD-ON SD-V@ . 64 SD-TO 0 SD-ON SD-V@ . 96 SD-TO 0 SD-ON SD-V@ .')==[0,0,-1]\n    assert run('SD-DEMO-SETUP 0 SD-START 0 SD-CONSUME 0 512 SD-B! 768 258 SD-W! : MORE 14 0 DO 0 SD-CONSUME LOOP ; MORE 124 SD-R@ . 0 SD-NIB SD-V@ . 0 SD-CONSUME 124 SD-R@ . 0 SD-NIB SD-V@ . 0 SD-POS SD-V@ . 0 SD-HEADER SD-V@ .')==[0,15,1,0,768,195]\n    assert run('SD-RESET 52 65535 SD-B! 18 0 SD-B! 65535 SD-W@ .')==[4660]\n    tests.append({'case':'hand-kon5delay-event-boundary-latched-header-end-loop-and-word-wrap'})\n    assert run(': ALLREG 128 0 DO SD-RESET 256 0 DO I J 0 SD-REG! J 0 SD-REG@ . LOOP LOOP ; ALLREG')==[0 if reg==124 else value for reg in range(128) for value in range(256)]\n    ram_values=[(i*17)^85 for i in range(65536)];ram_values=[i%256 for i in ram_values]\n    assert run('SD-RESET : ALLRAM 65536 0 DO I 17 * 85 XOR 255 AND I 0 SD-RAM! LOOP 65536 0 DO I 0 SD-RAM@ . LOOP ; ALLRAM')==ram_values\n    tests.append({'case':'all128registers256bytes-and-all65536aram-addresses'})\n    assert run('7 200 16383 -16384 SD-BRR . 8 200 -16384 16383 SD-BRR .')==[-1,0]\n    assert run('SD-RESET 32 108 SD-STORE -32768 SD-MIX ! 128 12 SD-STORE SD-ECHO SD-LEFT @ .')==[-32768]\n    echoedge='SD-RESET 64 15 SD-STORE 64 127 SD-STORE -16384 SD-EHIST 2 CELLS + ! -32768 0 SD-W! '\n    assert run(echoedge+'32 108 SD-STORE 128 44 SD-STORE SD-ECHO SD-LEFT @ .')==[-32768]\n    assert run(echoedge+'0 108 SD-STORE 128 13 SD-STORE SD-ECHO 0 SD-W@ SD-S16 .')==[-32768]\n    for tap in range(8):\n        code=f'SD-RESET 32 108 SD-STORE 64 44 SD-STORE 64 {tap*16+15} SD-STORE -1234 0 SD-W! : IMPULSE 9 0 DO SD-ECHO SD-LEFT @ . 0 0 SD-W! LOOP ; IMPULSE'\n        assert run(code)==[-309 if i==7-tap else 0 for i in range(9)]\n    assert run('SD-RESET 0 108 SD-STORE 1 125 SD-STORE 32 SD-RUN 0 125 32 SD-REG! 16320 SD-RUN SD-EOFF @ . SD-ELEN @ . 32 SD-RUN SD-EOFF @ . SD-ELEN @ . 32 SD-RUN SD-EOFF @ . SD-ELEN @ .')==[2044,2048,0,2048,0,4]\n    assert run('SD-RESET 31 108 SD-STORE : NOISE20 20 0 DO 32 SD-RUN SD-NOISE @ . LOOP ; NOISE20')==[8192,4096,2048,1024,512,256,128,64,32,16,8,4,2,16385,24576,12288,6144,3072,1536,768]\n    tests.append({'case':'hand-signed-volume-feedback-wrap-fir8impulses-edl-latch-noise20'})\n    # First five poll+delay outputs are zero, then compare full stereo/ARAM/state.\n    events=[(31,31,108),(211,128,45),(1023,128,61),(2049,128,92),(3071,1,76),(4096,0,92),(6001,192,108),(6303,0,108),(6400,255,124),(7000,2,125),(7200,65,109),(8192,255,44),(8224,128,13),(9501,7,127)]\n    cases=[('demo',demo(),[]),('changes',demo(),events)]\n    m=demo()\n    for reg,value in [(12,128),(28,128),(44,128),(60,127),(13,128),(109,255),(125,1),(61,170),(45,255),(108,31)]:m.store(value,reg)\n    for i in range(8):\n        for reg,value in [(i*16,128 if i%2 else 127),(i*16+1,127 if i%2 else 128),(i*16+2,255),(i*16+3,255),(i*16+7,127),(i*16+15,128 if i%2 else 127)]:m.store(value,reg)\n    cases.append(('signed8voice-noise-pmon-fir-and-aram-alias',m,[(4096,0,125),(5120,255,109),(7000,255,124)]))\n    m=demo()\n    for i in range(8):m.store(100,i*16+7)\n    cases.append(('all-envelope-modes',m,[(601,159,39),(601,191,55),(601,223,71),(601,255,87),(601,143,101),(601,255,117),(601,255,118),(602,31,108),(1024,255,92),(2048,0,92),(2048,255,76)]))\n    m=Model();m.putword(256,65532);m.putword(258,65532)\n    for i,b in enumerate([195,2,70,118,66,14,172,154,206]):m.ram[(65532+i)%65536]=b\n    for reg,val in [(93,1),(2,255),(3,63),(7,127),(0,127),(1,128),(12,127),(28,127),(108,32),(76,1)]:m.store(val,reg)\n    cases.append(('brr16bit-wrap-maxpitch',m,[(1024,0,2),(1536,255,2),(1700,0,124)]))\n    for tick in [65,97]:\n        m=demo();m.store(1,92);m.store(1,76)\n        cases.append((f'koff-kon-clear-at{tick}',m,[(tick,0,92)]))\n    m=demo();m.ram[512]=193;m.store(255,61);m.store(31,108)\n    cases.append(('nonloop-end-even-under-noise',m,[(1000,255,124),(1500,1,76)]))\n    m=demo()\n    for i in range(8):m.store(127,i*16+15)\n    for reg,val in [(12,0),(28,0),(44,127),(60,127),(125,0),(108,32)]:m.store(val,reg)\n    m.putword(16384,32766);m.putword(16386,-32768)\n    cases.append(('fir-prefix-overflow',m,[]))\n    cases.append(('offset17-render',demo(),[(17,64,12),(31,128,13),(32,31,108),(33,255,61),(1000,0,124)]))\n    all_coverage=set()\n    for label,m,events_for_case in cases:\n        initial_regs=bytes(m.r);initial_ram=bytes(m.ram);start_tick=17 if label=='offset17-render' else 0\n        m.advance(start_tick)\n        for tick,val,reg in events_for_case:m.enqueue(val,reg,tick)\n        expected=m.render(2048)\n        with tempfile.TemporaryDirectory(dir=work) as tmp:\n            pcm=Path(tmp)/'out.bin';ram=Path(tmp)/'ram.bin'\n            prefix='SD-RESET\\n'+''.join(f'{v} {i} 0 SD-REG!\\n' for i,v in enumerate(initial_regs))+''.join(f'{v} {i} 0 SD-RAM!\\n' for i,v in enumerate(initial_ram) if v)+(f'{start_tick} SD-TO\\n' if start_tick else '')+queue(events_for_case)+'CREATE OUT 8192 ALLOT\\n'\n            if label=='demo':prefix='SD-DEMO-SETUP\\nCREATE OUT 8192 ALLOT\\n'\n            for body in ['OUT 2048 SD-RENDER','OUT 13 SD-RENDER OUT 52 + 2035 SD-RENDER']:\n                code=prefix+body+f' SNAP S\" {pcm.as_posix()}\" W/O CREATE-FILE THROW CONSTANT FD OUT 8192 FD WRITE-FILE THROW FD CLOSE-FILE THROW S\" {ram.as_posix()}\" W/O CREATE-FILE THROW CONSTANT RF SD-ARAM 65536 RF WRITE-FILE THROW RF CLOSE-FILE THROW'\n                got=run(code);assert got[:266]==m.state(),(label,[(i,a,b) for i,(a,b) in enumerate(zip(got[:266],m.state())) if a!=b][:12]);assert got[266:]==[len(events_for_case)]*2\n                assert pcm.read_bytes()==expected,(label,'PCM');assert ram.read_bytes()==m.ram,(label,'ARAM')\n        all_coverage.update(m.coverage)\n        tests.append({'case':label+'-full2048frames-state-aram-split','pcm_sha256':hashlib.sha256(expected).hexdigest(),'oracle_branches':sorted(m.coverage)})\n    assert all_coverage>={'nonloop-end','pitch-high-mask','pmon-clamp','multiple-consume','echo-16bit-wrap','echo-dir-overlap','echo-brr-overlap','fir-prefix-wrap'},all_coverage\n    error_cases=[('256 0 0 SD-REG!',-24),('256 12 999 SD-REG!',-24),('256 65535 999 SD-RAM!',-24),('1 128 0 SD-REG!',-24),('128 999 SD-REG@',-24),('1 65536 0 SD-RAM!',-24),('65536 999 SD-RAM@',-24),('-1 SD-TO',-24),('-1 SD-RUN',-24),('1 12 50 SD-REG-EVENT!',-24),('0 12 -1 SD-REG-EVENT!',-24),('OUT -1 SD-RENDER',-24)]\n    for body,error in error_cases:\n        code='SD-DEMO-SETUP 0 12 100 SD-REG-EVENT! CREATE QB 24576 ALLOT CREATE RB 65536 ALLOT CREATE OUT 4 ALLOT SD-EVENTS QB 24576 MOVE SD-ARAM RB 65536 MOVE SNAP : BAD '+body+\" ; ' BAD CATCH . SNAP SD-EVENTS 24576 QB 24576 COMPARE . SD-ARAM 65536 RB 65536 COMPARE .\"\n        got=run(code);assert got[268]==error and got[:268]==got[269:537] and got[537:]==[0,0],(body,got[268],got[-2:])\n    assert run('SD-RESET 7 12 0 SD-REG-EVENT! -1 0 SD-RENDER 12 SD-R@ . SD-SAMPLE . . 0 SD-RUN 12 SD-R@ .')==[0,0,0,7]\n    fill='SD-RESET : FILLQ 1024 0 DO I 255 AND 12 I SD-REG-EVENT! LOOP ; FILLQ '\n    assert run(fill+\": BAD 2 12 0 SD-REG-EVENT! ; ' BAD CATCH . 512 SD-TO 7 12 1024 SD-REG-EVENT! SD-EVENT-COUNT @ . SD-EVENT-INDEX @ . 1024 SD-TO 12 SD-R@ .\")==[-528,512,0,7]\n    got=run(\"SD-DEMO-SETUP 9223372036854775775 SD-CYCLE ! CREATE OUT 8 ALLOT OUT 8 42 FILL SNAP : BAD OUT 2 SD-RENDER ; ' BAD CATCH . SNAP OUT C@ . OUT 7 + C@ . OUT 1 SD-RENDER SD-CYCLE @ .\")\n    assert got[268]==-24 and got[:268]==got[269:537] and got[537:]==[42,42,9223372036854775807]\n    assert run(\"SD-RESET 9223372036854775791 SD-CYCLE ! : BAD 17 SD-RUN ; ' BAD CATCH . SD-CYCLE @ .\")==[-24,9223372036854775791]\n    assert run(\"SD-RESET : BAD -1 1 SD-RENDER ; ' BAD CATCH . SD-CYCLE @ . SD-FRAME @ .\")==[-9,32,1]\n    tests.append({'case':'error-atomicity-entire-aram-queue-capacity-reclaim-time-and-memory','atomic_cases':len(error_cases)})\n    files=['examples/snes-dsp-audio.fs','examples/snes-gauss.fs','examples/snes-dsp-audio-play.fs','scripts/snes-tables.py','scripts/snes-gauss-data.json','tests/scripts/verify-snes-dsp-audio.py']\n    print(json.dumps({'scope':__doc__,'platform':platform.platform(),'binary_sha256':hashlib.sha256(binary.read_bytes()).hexdigest(),'tests':tests,'source_sha256_lf':{f:hashlib.sha256((ROOT/f).read_bytes().replace(b'\\r\\n',b'\\n')).hexdigest() for f in files}},indent=2))\nif __name__=='__main__':main()\n",
+    "tests/scripts/verify-snes-dsp-audio-stream.py": "#!/usr/bin/env python3\n\"\"\"Owned stereo callback fixtures: nonzero model output stays in memory, no native audio.\"\"\"\nimport argparse,hashlib,json,subprocess,tempfile\nfrom pathlib import Path\nROOT=Path(__file__).resolve().parents[2]\nPREFIX='''REQUIRE-AUDIO ALSO AUDIO DEFINITIONS\nVARIABLE MC-WRITES VARIABLE MC-WAITS VARIABLE MC-CLOSES VARIABLE MC-LEFT\nVARIABLE MC-WAIT-FAIL VARIABLE MC-CLOSE-FAIL VARIABLE MC-OPEN-FAIL VARIABLE MC-CLOSE-THROW\nVARIABLE MC-STOP-FAIL VARIABLE MC-COPIED-FRAMES VARIABLE MC-FOLLOW-FAIL\nCREATE MC-ADDR 64 ALLOT CREATE MC-COPIED 24576 ALLOT\n: PCM-OPEN { rate channels capacity -- handle ior }\n  rate 32000 <> channels 2 <> OR capacity 4096 <> OR IF -24 THROW THEN\n  MC-OPEN-FAIL @ IF 0 -528 ELSE 7 0 THEN ;\n: PCM-WRITE { address frames id | accepted -- written ior }\n  address MC-WRITES @ CELLS MC-ADDR + !\n  MC-FOLLOW-FAIL @ MC-WRITES @ 3 = AND IF TRUE MC-WAIT-FAIL ! 1 MC-WRITES +! 0 0 EXIT THEN\n  MC-WRITES @ CASE 0 OF frames 5 MIN ENDOF 1 OF 0 ENDOF frames SWAP ENDCASE TO accepted\n  address MC-COPIED MC-COPIED-FRAMES @ 4 * + accepted 4 * MOVE\n  accepted MC-COPIED-FRAMES +! accepted NEGATE MC-LEFT +! 1 MC-WRITES +! accepted 0 ;\n: PCM-WAIT DROP 2DROP 1 MC-WAITS +! MC-WAIT-FAIL @ IF FALSE ELSE TRUE THEN 0 ;\n: PCM-STOP DROP 2DROP MC-STOP-FAIL @ IF FALSE ELSE TRUE THEN 0 ;\n: PCM-UNDERRUNS DROP 0 0 ;\n: PCM-CLOSE DROP 1 MC-CLOSES +! MC-CLOSE-THROW @ IF -265 THROW THEN MC-CLOSE-FAIL @ ;\n: MC-SUM 0 2048 0 DO MC-COPIED I + C@ + LOOP ;\nS\" examples/snes-dsp-audio-play.fs\" INCLUDED\nSD-DEMO-SETUP\n'''\nCASES=[('stereo-partial-full-byte-copy',\n  '512 MC-LEFT ! 1 TRUE SD-STREAM MC-LEFT @ . MC-WRITES @ . MC-WAITS @ . MC-CLOSES @ . PS-HANDLE @ . MC-ADDR '\n  '@ SD-PRIME - . MC-ADDR CELL+ @ SD-PRIME - . MC-ADDR 2 CELLS + @ SD-PRIME - . MC-COPIED 2048 SD-PRIME '\n  '2048 COMPARE . MC-SUM 0> . PS-FRAMES @ .',\n  '0 3 2 1 0 0 20 20 0 -1 512'),\n ('noise-stereo-partial-full-byte-copy',\n  'SD-DEMO-SETUP 255 61 0 SD-REG! 31 108 0 SD-REG! 512 MC-LEFT ! 1 TRUE SD-STREAM MC-LEFT @ . MC-WRITES @ . MC-WAITS @ . MC-CLOSES @ . '\n  'PS-HANDLE @ . MC-ADDR @ SD-PRIME - . MC-ADDR CELL+ @ SD-PRIME - . MC-ADDR 2 CELLS + @ SD-PRIME - . '\n  'MC-COPIED 2048 SD-PRIME 2048 COMPARE . MC-SUM 0> . PS-FRAMES @ .',\n  '0 3 2 1 0 0 20 20 0 -1 512'),\n ('full-ring-prime-partial-copy',\n  '4096 MC-LEFT ! 8 TRUE SD-STREAM MC-LEFT @ . MC-WRITES @ . MC-WAITS @ . MC-CLOSES @ . PS-HANDLE @ . '\n  'MC-ADDR @ SD-PRIME - . MC-ADDR CELL+ @ SD-PRIME - . MC-ADDR 2 CELLS + @ SD-PRIME - . '\n  'MC-COPIED 16384 SD-PRIME 16384 COMPARE . PS-FRAMES @ .',\n  '0 3 2 1 0 0 20 20 0 4096'),\n ('prime-and-following-block-copy',\n  '4608 MC-LEFT ! 9 TRUE SD-STREAM MC-LEFT @ . MC-WRITES @ . MC-WAITS @ . '\n  'MC-COPIED 16384 SD-PRIME 16384 COMPARE . MC-COPIED 16384 + 2048 SD-BUFFER 2048 COMPARE . '\n  'MC-ADDR 3 CELLS + @ SD-BUFFER - . PS-FRAMES @ . PS-HANDLE @ .',\n  '0 4 2 0 0 0 4608 0'),\n ('silent-prime-and-following-block',\n  '9 FALSE SD-STREAM : SUMALL 0 18432 0 DO MC-COPIED I + C@ + LOOP ; SUMALL . PS-FRAMES @ . PS-HANDLE @ .',\n  '0 4608 0'),\n ('zero-block-no-render-or-write',\n  'SD-CYCLE @ 0 TRUE SD-STREAM SD-CYCLE @ = . MC-WRITES @ . MC-CLOSES @ . PS-FRAMES @ . PS-HANDLE @ .',\n  '-1 0 1 0 0'),\n ('prime-exact-clock-limit-success',\n  'SD-RESET 9223372036854644735 SD-CYCLE ! 8 FALSE SD-STREAM '\n  '9223372036854775807 SD-CYCLE @ - . PS-FRAMES @ . PS-HANDLE @ .',\n  '0 4096 0'),\n ('8voice-prime-boundary-matches-monolithic-render',\n  'CREATE EXPECT 18432 ALLOT VARIABLE END-T VARIABLE END-F '\n  'SD-DEMO-SETUP EXPECT 4608 SD-RENDER SD-CYCLE @ END-T ! SD-DIV @ END-F ! '\n  'SD-DEMO-SETUP 9 TRUE SD-STREAM EXPECT 18432 MC-COPIED 18432 COMPARE . '\n  'END-T @ SD-CYCLE @ = . END-F @ SD-DIV @ = . PS-FRAMES @ . PS-HANDLE @ .',\n  '0 -1 -1 4608 0'),\n ('noise-prime-boundary-matches-monolithic-render',\n  'CREATE EXPECT 18432 ALLOT VARIABLE END-T VARIABLE END-F '\n  'SD-DEMO-SETUP 255 61 0 SD-REG! 31 108 0 SD-REG! EXPECT 4608 SD-RENDER SD-CYCLE @ END-T ! SD-DIV @ END-F ! '\n  'SD-DEMO-SETUP 255 61 0 SD-REG! 31 108 0 SD-REG! 9 TRUE SD-STREAM EXPECT 18432 MC-COPIED 18432 COMPARE . '\n  'END-T @ SD-CYCLE @ = . END-F @ SD-DIV @ = . PS-FRAMES @ . PS-HANDLE @ .',\n  '0 -1 -1 4608 0'),\n ('following-block-wait-timeout-closes',\n  \"TRUE MC-FOLLOW-FAIL ! : GO 9 FALSE SD-STREAM ; ['] GO CATCH . PS-FRAMES @ . MC-WRITES @ . MC-WAITS @ . MC-CLOSES @ . PS-HANDLE @ .\",\n  '-528 4096 4 3 1 0'),\n ('timeout-closes',\n  \"TRUE MC-WAIT-FAIL ! : GO 1 FALSE SD-STREAM ; ['] GO CATCH . MC-CLOSES @ . PS-HANDLE @ .\",\n  '-528 1 0'),\n ('close-retry',\n  \"-516 MC-CLOSE-FAIL ! : GO 1 FALSE SD-STREAM ; ['] GO CATCH . PS-HANDLE @ . 0 MC-CLOSE-FAIL ! PS-CLEANUP . \"\n  'PS-HANDLE @ .',\n  '-516 7 0 0'),\n ('primary-error-retained',\n  \"TRUE MC-WAIT-FAIL ! -516 MC-CLOSE-FAIL ! : GO 1 FALSE SD-STREAM ; ['] GO CATCH . PS-HANDLE @ .\",\n  '-528 7'),\n ('cleanup-throw-retains-primary',\n  \"TRUE MC-WAIT-FAIL ! TRUE MC-CLOSE-THROW ! : GO 1 FALSE SD-STREAM ; ['] GO CATCH . PS-HANDLE @ .\",\n  '-528 7'),\n ('cleanup-throw-propagates',\n  \"TRUE MC-CLOSE-THROW ! : GO 1 FALSE SD-STREAM ; ['] GO CATCH . PS-HANDLE @ .\",\n  '-265 7'),\n ('open-busy-no-close',\n  \"TRUE MC-OPEN-FAIL ! : GO 1 FALSE SD-STREAM ; ['] GO CATCH . MC-CLOSES @ . PS-HANDLE @ .\",\n  '-528 0 0'),\n ('drain-timeout-closes',\n  \"TRUE MC-STOP-FAIL ! : GO 1 FALSE SD-STREAM ; ['] GO CATCH . MC-CLOSES @ . PS-HANDLE @ .\",\n  '-528 1 0'),\n ('stream-overflow-before-open',\n  \"9223372036854775307 SD-CYCLE ! : GO 1 FALSE SD-STREAM ; ['] GO CATCH . MC-CLOSES @ . PS-HANDLE @ .\",\n  '-24 0 0'),\n ('active-handle-not-stolen',\n  \"7 PS-HANDLE ! : GO 1 FALSE SD-STREAM ; ['] GO CATCH . MC-CLOSES @ . PS-HANDLE @ .\",\n  '-528 0 7')]\n\ndef main():\n p=argparse.ArgumentParser(description=__doc__);p.add_argument('sigma',type=Path);args=p.parse_args();binary=args.sigma.resolve();work=ROOT/'.work/1174';work.mkdir(parents=True,exist_ok=True);results=[]\n for name,code,expected in CASES:\n  with tempfile.NamedTemporaryFile('w',encoding='utf-8',suffix='.fs',dir=work,delete=False) as f:path=Path(f.name);f.write(PREFIX+code+' DEPTH . BYE\\n')\n  try:q=subprocess.run([str(binary),str(path)],cwd=ROOT,input=b'',capture_output=True,timeout=20)\n  finally:path.unlink()\n  clean=' '.join(line for line in q.stdout.decode().splitlines() if not line.startswith('WARNING:')).strip()\n  assert q.returncode==0 and not q.stderr and clean==expected+' 0',(name,q.returncode,clean,q.stderr)\n  results.append({'case':name,'result':clean})\n files=['tests/scripts/verify-snes-dsp-audio-stream.py','examples/snes-dsp-audio.fs','examples/snes-gauss.fs','examples/snes-dsp-audio-play.fs','examples/pcm-synth-play.fs','examples/pcm-synth.fs']\n print(json.dumps({'scope':__doc__,'binary_sha256':hashlib.sha256(binary.read_bytes()).hexdigest(),'tests':results,'source_sha256_lf':{f:hashlib.sha256((ROOT/f).read_bytes().replace(b'\\r\\n',b'\\n')).hexdigest() for f in files}},indent=2))\nif __name__=='__main__':main()\n",
+    "examples/pcm-synth.fs": "\\ Original Forth-only synthesis workload for task999. NOT a hardware emulator.\n\\ Loading only defines words: it does not open audio or play anything.\n\\ 4 voices; Q24 phase; fixed 48000 Hz mono signed16 little-endian output.\nDECIMAL\n48000 CONSTANT PS-RATE\n16777216 CONSTANT PS-TURN\nCREATE PS-KIND 4 CELLS ALLOT\nCREATE PS-STEP 4 CELLS ALLOT\nCREATE PS-GAIN 4 CELLS ALLOT\nCREATE PS-DUTY 4 CELLS ALLOT\nCREATE PS-PHASE 4 CELLS ALLOT\nCREATE PS-NOISE 4 CELLS ALLOT\n: PS-AT ( voice base -- addr ) SWAP CELLS + ;\n: PS-VOICE? ( voice -- ) 0 4 WITHIN 0= IF -24 THROW THEN ;\n: PS-RESET ( -- )\n  4 0 DO\n    0 I PS-KIND PS-AT ! 0 I PS-STEP PS-AT !\n    0 I PS-GAIN PS-AT ! 128 I PS-DUTY PS-AT !\n    0 I PS-PHASE PS-AT ! 1 I PS-NOISE PS-AT !\n  LOOP ;\n\\ Write (value voice register): 0 kind(0mute/1pulse/2triangle/3noise),\n\\ 1 Hz(0..23999), 2 peak gain(0..8191), 3 pulse duty(1..255 /256).\n\\ Validate all arguments before changing state; other fields/phase stay intact.\n: PS-REG! ( value voice register -- )\n  OVER PS-VOICE?\n  DUP 0 4 WITHIN 0= IF -24 THROW THEN\n  DUP 0= IF DROP OVER 0 4 WITHIN 0= IF -24 THROW THEN PS-KIND PS-AT ! EXIT THEN\n  DUP 1 = IF DROP OVER 0 24000 WITHIN 0= IF -24 THROW THEN\n    SWAP PS-TURN * PS-RATE / SWAP PS-STEP PS-AT ! EXIT THEN\n  DUP 2 = IF DROP OVER 0 8192 WITHIN 0= IF -24 THROW THEN PS-GAIN PS-AT ! EXIT THEN\n  DROP OVER 1 256 WITHIN 0= IF -24 THROW THEN PS-DUTY PS-AT ! ;\n: PS-LFSR ( u -- u ) DUP DUP 1 RSHIFT XOR 1 AND 15 LSHIFT SWAP 1 RSHIFT OR ;\n: PS-VOICE ( voice -- sample )\n  DUP PS-PHASE PS-AT @ OVER PS-STEP PS-AT @ +\n  DUP PS-TURN >= IF\n    OVER PS-NOISE PS-AT DUP @ PS-LFSR SWAP !\n  THEN\n  PS-TURN 1- AND DUP 2 PICK PS-PHASE PS-AT !\n  OVER PS-KIND PS-AT @\n  DUP 0= IF DROP 2DROP 0 EXIT THEN\n  DUP 1 = IF DROP OVER PS-DUTY PS-AT @ 65536 * <\n    IF PS-GAIN PS-AT @ ELSE PS-GAIN PS-AT @ NEGATE THEN EXIT THEN\n  2 = IF\n    14 RSHIFT DUP 512 < IF 128 * 32768 - ELSE 128 * 98304 SWAP - THEN\n    SWAP PS-GAIN PS-AT @ * 32768 / EXIT THEN\n  DROP DUP PS-NOISE PS-AT @ 1 AND IF PS-GAIN PS-AT @ ELSE PS-GAIN PS-AT @ NEGATE THEN ;\n: PS-SAMPLE ( -- n ) 0 4 0 DO I PS-VOICE + LOOP ;\n: PS-LE! ( n addr -- ) OVER 255 AND OVER C! SWAP 8 RSHIFT 255 AND SWAP 1+ C! ;\n\\ Caller supplies a valid destination of frames*2 bytes; no audio host needed.\n: PS-RENDER ( addr frames -- ) DUP 0< IF -24 THROW THEN 0 ?DO PS-SAMPLE OVER PS-LE! 2 + LOOP DROP ;\n: PS-DEMO-SETUP ( -- )\n  PS-RESET\n  1 0 0 PS-REG! 440 0 1 PS-REG! 2000 0 2 PS-REG! 64 0 3 PS-REG!\n  1 1 0 PS-REG! 660 1 1 PS-REG! 2000 1 2 PS-REG!\n  2 2 0 PS-REG! 110 2 1 PS-REG! 2000 2 2 PS-REG!\n  3 3 0 PS-REG! 3000 3 1 PS-REG! 500 3 2 PS-REG! ;\nPS-RESET\n",
+    "examples/pcm-synth-play.fs": "\\ Explicit PCM playback wrapper for pcm-synth.fs. Loading does not play audio.\n\\ Run from repository root: sigma examples/pcm-synth-play.fs -e \"PS-DEMO-SETUP 96 FALSE PS-STREAM BYE\"\n\\ TRUE opts into audible output (start at low system volume).\nS\" examples/pcm-synth.fs\" INCLUDED\nREQUIRE-AUDIO ALSO AUDIO\nCREATE PS-BUFFER 1024 ALLOT\nVARIABLE PS-HANDLE\nVARIABLE PS-BLOCKS\nVARIABLE PS-AUDIBLE\nVARIABLE PS-SENT\nVARIABLE PS-REQUEST\nVARIABLE PS-WRITES\nVARIABLE PS-PARTIAL\nVARIABLE PS-FULL\nVARIABLE PS-WAITS\nVARIABLE PS-FRAMES\nVARIABLE PS-UNDERRUN-COUNT\n: PS-SEND ( -- )\n  0 PS-SENT !\n  BEGIN 512 PS-SENT @ - DUP 0> WHILE\n    DUP PS-REQUEST ! PS-BUFFER PS-SENT @ 2 * + SWAP PS-HANDLE @ PCM-WRITE THROW\n    1 PS-WRITES +!\n    DUP 0= IF 1 PS-FULL +! THEN\n    DUP 0> IF DUP PS-REQUEST @ < IF 1 PS-PARTIAL +! THEN THEN\n    DUP PS-FRAMES +! PS-SENT +!\n    PS-SENT @ 512 < IF\n      1 PS-WAITS +! 1 1000 PS-HANDLE @ PCM-WAIT THROW 0= IF -528 THROW THEN\n    THEN\n  REPEAT DROP ;\n: PS-RUN ( -- )\n  PS-RATE 1 4096 PCM-OPEN THROW PS-HANDLE !\n  PS-BLOCKS @ 0 ?DO\n    PS-BUFFER 512 PS-RENDER\n    PS-AUDIBLE @ 0= IF PS-BUFFER 1024 0 FILL THEN\n    PS-SEND\n  LOOP\n  1 1000 PS-HANDLE @ PCM-STOP THROW 0= IF -528 THROW THEN\n  PS-HANDLE @ PCM-UNDERRUNS THROW PS-UNDERRUN-COUNT ! ;\n\\ Always attempt close after success/error. A failed close retains PS-HANDLE\n\\ for PS-CLEANUP retry; primary error wins if both body and cleanup fail.\n: PS-CLEANUP ( -- ior )\n  PS-HANDLE @ DUP 0= IF DROP 0 EXIT THEN\n  PCM-CLOSE DUP 0= IF 0 PS-HANDLE ! THEN ;\n: PS-SAFE-CLEANUP ( -- ior ) ['] PS-CLEANUP CATCH DUP IF EXIT THEN DROP ;\n: PS-STREAM ( blocks audible -- )\n  OVER 0< IF -24 THROW THEN\n  PS-HANDLE @ IF -528 THROW THEN\n  PS-AUDIBLE ! PS-BLOCKS !\n  0 PS-WRITES ! 0 PS-PARTIAL ! 0 PS-FULL ! 0 PS-WAITS !\n  0 PS-FRAMES ! 0 PS-UNDERRUN-COUNT !\n  ['] PS-RUN CATCH >R PS-SAFE-CLEANUP\n  R> ?DUP IF SWAP DROP THROW THEN THROW ;\n"
+  },
+  "primary_references": {
+    "nintendo_manual": {
+      "url": "https://floating.muncher.se/bot/manual/book1_text.pdf",
+      "cached_pdf_sha256": "e3b2f00859e39422a36a989bb8b61ab22546a7b7b1b0badc63ec48da44708388",
+      "scope": "DSP register/BRR/envelope/noise/FIR reference, third-party mirror, redistribution permission unverified; original document not redistributed."
+    },
+    "fullsnes": {
+      "url": "https://problemkaputt.de/fullsnes.htm",
+      "cached_html_sha256": "3853b65a7331bf12eea431ff494a2948a1c78ef22f7e819db4b139fd5a79f6c6",
+      "credit": "Martin Korth, Copyright2012 help text; credits Anomie research. Only technical observations and512 numeric hardware coefficients referenced; original text/figures/pseudocode not redistributed."
+    }
+  },
+  "binary_reuse": {
+    "reference": "2026-11-20-ym2149.json",
+    "native_source_sha256_lf": {
+      "build.zig": "93d65a9d0ee9a6d83a18a363cea52fbe854d2c71f839ed5488c9a701a578abe9",
+      "src/audio/audio.fs": "31d53dc3a25e179bd48e8c1882274f88617f08a077e8659b582e571ab037a09d",
+      "src/audio_lifecycle_probe.zig": "e30455ada4b30da62e71e0c4a4a3ade0957eb3b889ac9ae3280d7a2edb7bda71",
+      "src/core-math/acos/acos.c": "ae78ed253160e4bc963c29144839c537d9010200537fc67a6c0e0f5d78a67d06",
+      "src/core-math/acosh/acosh.c": "82f010b7abb986809d357ad58585a7879fd4a9200fd3c8a1d680e0e95d75eef5",
+      "src/core-math/asin/asin.c": "a986ab8c2cb1cdfc6064b15109bc969da460a3974a4cd02dd9b3767666e76d19",
+      "src/core-math/asinh/asinh.c": "0ec75c3d84f4932aadfefe8a88a201b4f8a5055b7f1a33eb31dcebd22492cc78",
+      "src/core-math/atan/atan.c": "712ee60888f293531e6e6852ab1b30ed99a804bce3637a931c2c7a9daa972928",
+      "src/core-math/atan2/atan2.c": "a36a7d1505a34298e37fb1123e60317f4e93a01b8e1cca3546d9bc70f98ca66d",
+      "src/core-math/atan2/tint.h": "4ce7ae7688bf78c2cc6f6ac2bb159c76d2d67faa802a18f35ca348ec434bc5de",
+      "src/core-math/atanh/atanh.c": "4f4f970b8139c1824734059244d5a1dcc409061c896c9689a2850a1756b92792",
+      "src/core-math/cos.c": "d81bb47913372d300e3f8073348696a1aab316d97f14a4c45df9e507111c6dce",
+      "src/core-math/cosh/cosh.c": "55c18935d8f5be836a4b180f43a06f39e577bfd10d195165e61b536d71c201f2",
+      "src/core-math/dint.h": "c88276a77ad7fb21f698f2331fd859b2319e5ff708adce8e34395a1b2528ce9c",
+      "src/core-math/exp.c": "7a25151329ff72f7bfdde29885ff024667983d49006a3f781920ce936b5ed96b",
+      "src/core-math/exp10/exp10.c": "f30569452bc5b875916116471636be99ac94818915e8f50d47fcf6a97b423828",
+      "src/core-math/expm1/expm1.c": "5d270181a7a046fe305a5543a7f10bcd280fcea0e1be32658d4243da73896d01",
+      "src/core-math/log.c": "054e061f21bcaaaa7a2bb0f605d93e0db6692cff763dc2269e15871034d3e7ae",
+      "src/core-math/log10/dint.h": "91b9e30ebe0b2b7d200e897ee32ef388dd249b95e873a0ffd705f8ce676b047f",
+      "src/core-math/log10/log10.c": "43850aaa6046c5069ccc0d5a10776c90651772915196c2a236eca2150ff061fa",
+      "src/core-math/log1p/dint.h": "5c58a17ea0ad729849aea66ef0e64481a64204065138b55d9dd1a3bb3e7d1d0c",
+      "src/core-math/log1p/log1p.c": "d2f1258188b7ff4e49c4c6a3c2ebb1ef6c2ece17bc258a21ea70853a241907e7",
+      "src/core-math/pow/dint.h": "c12ac5f59fa4d3409d1b392df56845687cb82f57d280faa083cdf833a5aa5ba7",
+      "src/core-math/pow/pow.c": "adc2001a299f342ec8e4e69fccbb2fd459ea77794d05f36d9f1ca9131f31b7cd",
+      "src/core-math/pow/pow.h": "1233d071cab515a082daec0ec2ec476a4c2797050a95dabe62c724e51b5a5dc0",
+      "src/core-math/pow/qint.h": "32de9c10388056e2294339e3302c3695cdf4abc87ca790ad48917d9794bfb6e4",
+      "src/core-math/sin.c": "96502cb5cf51ff640e544776acefc04a82fb393b009a12836c61c3a8e59ff45c",
+      "src/core-math/sinh/sinh.c": "08344b39a40a2824fe5e00dd353e9745a6b48933e897653e010a06cee874652d",
+      "src/core-math/tan.c": "3775e0f44431ce46b2c32ebb21b6ea934a772c703d29e66708b406012da51eef",
+      "src/core-math/tanh/tanh.c": "c76166a7e16ff85dc91460184fe67ce3aecc19f5b53e6d42d7d1cf81e57c8c39",
+      "src/core/address_registry.zig": "1c4e7023ac5afd5173f93f033ac08ece10081f6765c096747268c13c1e5709e5",
+      "src/core/app_entry.zig": "1fca97a4b603500e24663e37d5e066e5d872f78c489c6e3fcc8051f6deaa4a54",
+      "src/core/blocks.zig": "da5d796d8bace1755bb5274062ecb01b0e1776f06760523a09ae244d28eb9dc7",
+      "src/core/char_width.zig": "681ca0279267da9e8f46271674aa2359de44da1794217f7f1da6737edd124326",
+      "src/core/control_flow.zig": "8213ef52b994f96874a2763feea4065c80dd2adaef3b9ab1f063b4c06e45ab47",
+      "src/core/coverage.zig": "bb6d34b14201a5b291ceb01615d98e8e8bf132d9d7d4e5cb81770033212afaaa",
+      "src/core/csv.zig": "74979e890403f84687f3073cbfe84401b3d31d95155cb14b4d538b60e2498086",
+      "src/core/csv_reader.zig": "1bb77051b4c958f388926d918c19c8b8a86a3b237428a11660fd24ceea316489",
+      "src/core/debug_log.zig": "9537a37a5c6616d20986666b1f30be8968daaf5dd509346a1e4703e1f5f53a2f",
+      "src/core/decompiler.zig": "7c71483f068652144e9b2e88d2739f13e37a6117ef4b34ac850ea473a9fcbe6d",
+      "src/core/definers.zig": "6f25816f3e27512cb921db8a5a0f40cc7db407de2bcbf1937e09379365c814bb",
+      "src/core/defs.zig": "394d93337654b268800b680c79c3cbe03c84f72418d6fb93abfea40cf4d959cb",
+      "src/core/dictionary_image.zig": "70a607edb929b7f9e17556e473509ca9415d4de287389aae6371b234fc0ee5c6",
+      "src/core/directories.zig": "94cd4e81e4c06795075bebd5388980369ee390e3d3eb2ce3e7b8aeed765a89ce",
+      "src/core/dynamic_strings.zig": "c3d50eba180d70407c3fb693313b94e0f6b5e19ce4e120bfc8253c29773bf3f4",
+      "src/core/error_reporting.zig": "becd566f4b1bc654dec29d01d41e3c461479074a82fa81682f7781ccbeadfdbf",
+      "src/core/event_input.zig": "08d49628fecd4e2c67f515179071a245a80bbfcbea9147c2f803531cb58b64dd",
+      "src/core/exception_registry.zig": "e9b84eb3273c1e949000febafa2b9c2553293827eae2df23119aa5f13ab30cde",
+      "src/core/execution_control.zig": "86e5130606e312864292ffc378fcca90deb70af0c327921511c7d9e681e0649d",
+      "src/core/file_streams.zig": "7e2144678c337a8517e4a0e8f21fa5e53517b36f5041cb7e34041c0709be1039",
+      "src/core/filename_match.zig": "b314235f3f8cedcd6f73f14b63d176dc5911dea96df592d8e83c4022f0ba88f1",
+      "src/core/float_format.zig": "6e0562553f3b8ad4ff54e803fd115eec1f1f164fdd208f8ece956b797bbcc91d",
+      "src/core/float_math.zig": "2ed27d53e44f908901545f8f9d5f58fe4470fafd5a7dca5f26fa325419665ac6",
+      "src/core/gamepad.zig": "5c52b891b946c132ef35911f6590e9b64d67b269c578cf885c942e1616b186de",
+      "src/core/grapheme.zig": "eb30a9ced164fa5ed59a90782f8328b24f83e5b8e471955d686649e3c27cc2af",
+      "src/core/grapheme_data.zig": "9b4edb78e7e7677a55a225154731cb7b8a0fe17bd434e52aa3ad61fb25986274",
+      "src/core/graphics_decode.zig": "5188d7801f3465ecbf6d3076ee0f67b8b5b0b841c0693801cbbf6d8c779bff76",
+      "src/core/graphics_font.zig": "445a5555e6cc16af5f109bc916f5f30c6bd6963264bf112bfee2c3fcf854637a",
+      "src/core/graphics_images.zig": "9fd459175dd35e83a9bcc63249a0f5892dd47e280ae125380a42f0fb92f63040",
+      "src/core/graphics_input.zig": "a1f6904438eb658d1f0d32a1613f026e5d580582acc766cec77ed6301198b60c",
+      "src/core/graphics_palette.zig": "c331b0c07252369213601fa60b34a90a01df22219bfb649493f39dc36bf19b44",
+      "src/core/graphics_terminal.zig": "6b2143c612f14795319e1f91236f485cc66296deba009e12afc2f8fb586f4af1",
+      "src/core/heap_memory.zig": "080a50855599a7a61ddfd3110176ba4e5e1e3a06eaef1a2611fd66c9c97ec490",
+      "src/core/help_text.zig": "8ce2def1260c0f0ada62133f35416929855528f9bca7cd3cd62aa4a0e9f8ae53",
+      "src/core/host_interface.zig": "1ef41aaa8fcd8046dc6e71ac0319ab894e29f55d1de93c9ae037940cc8445b62",
+      "src/core/image_append.zig": "5943b92a85e232ac23da7052a0fb916ffaf78a0e9ae105b413866e968141fa8c",
+      "src/core/image_append_plan.zig": "42f0513593612da6b5f801f712c91d594ac1584ad401e3a3977ad6bf5b1d7adc",
+      "src/core/image_encoder.zig": "a97889d34357a247b15061fa8439d8e273fcf2f674f59256937c57917f9ea201",
+      "src/core/image_features.zig": "234960c9c17f4d128b81f6562bc13a87c549d7607e6a17c8ed674c692f047d1d",
+      "src/core/image_format.zig": "e10d4fac0e57d108d6d07d17e80d25627c2108319576b10bac5ab4cc857c9f94",
+      "src/core/image_graph.zig": "26c605ec793593fad5a9189bc9b77731d8d3d30f3cce30a3431249773482f4a0",
+      "src/core/image_restore.zig": "3e5b9217b32c07e1fc0db41ff50b048a2eb16c450058ca2572e6981ac94a9e6d",
+      "src/core/image_restore_plan.zig": "e19f01827ff1cd39cabf208d41336cb973843688cb5492578cb0d6d2cff1c060",
+      "src/core/inline_calls.zig": "b0222ee0e881cb6f64dbe51ce360f415febd952057c12934c520ded05b8838e0",
+      "src/core/input_redirect.zig": "3a460c9c0aa086d25a403ce93317b91a7d9466a2ca4543f4776c2d50614af302",
+      "src/core/integer_math.zig": "4f41092e7571095bfd6a2abda933040b5e6b001e2b932fda8f51c69933fa36db",
+      "src/core/library_groups.zig": "98e7d0f88411a82c388d728e8354362e12bec9c8ae33b35fe18ea0590535c14c",
+      "src/core/library_loading.zig": "82f72d7d1235331670518b5c0a3ae3aa427c59fe07fb30c13911486eadea5a5a",
+      "src/core/lint.zig": "751ded9cccfd4f4e506b68b57de56092d1cf63db7629e0bcce3fb0d32a58a1a3",
+      "src/core/local_variables.zig": "08f5f0bd6ac7bd1d6e57f446fe7df73c01ce19345902d5e5e541b241a868b35f",
+      "src/core/macro_substitute.zig": "d3bef0762d9583b54b78943c4d32b4a208f9e65dbd24744fc296438e4717f7be",
+      "src/core/memory_map.zig": "59a0be8cc9701fee749cf3734b76c9ba87d1d6a3cc85d3992833177bf53e5f60",
+      "src/core/nanosecond_wait.zig": "861647b88ed33f7dec3f50c7fc1f815526ca5c73281db27185de7e01d9ae5c99",
+      "src/core/number_io.zig": "28bcb0dfb129a20cc6766b28b3edae1ca78d3e6d20efd880268c81803b53ddcc",
+      "src/core/output_redirect.zig": "30bd8cd61459b2a223241b1c730a4fd28febd59a37a2b06b29a28513396df5c3",
+      "src/core/paths.zig": "fd6965fa99a0287984cd9c0546f0a16fbdbd36199d3a4ea92fedee13de66e491",
+      "src/core/physical_keys.zig": "957fb22b0b47f1ca0c73d144df8bfcdc4232cfc3863581b3745684ff61b3dee5",
+      "src/core/pipes.zig": "b49a6c27e7176392f125adee23318f26755cc287967c7dbf3cc35a52f07b434b",
+      "src/core/profiler.zig": "e1ba6cb5d8c96ede648c9693ef7084c3b2f406d04aa107f8738aa9375c4f238a",
+      "src/core/quotations.zig": "61a9bc92ece89bee5345cebcd5181fe3235e2f74cede0344c27d32c0cc41fcc8",
+      "src/core/runtime_base.zig": "6910f78bab7920e69c07aa41540f1512bfafeda8e31c0bcbfc06a896c3b0d473",
+      "src/core/shell_line.zig": "dbc2201997f3ed22e175989adaf07ec42eac2843f01841ffaf02fe823d1c146e",
+      "src/core/shell_output.zig": "15009926d9b4fc98afdf5c327531a58ef7b67864d2255590b488c5e63655c819",
+      "src/core/sound_amiga.zig": "f07453a4e678fad53db63da1027edde71583f41af84ded7b85745e32b188c7a2",
+      "src/core/sound_c64.zig": "6368fd524fa9c902c30c1ff02cecee6f6b89d8bf9211c5ca005ffc88809b8d37",
+      "src/core/sound_engine.zig": "7de38184557ba58b8f44e964297ba479fa423d1da063a71b145ed2182bf1c50f",
+      "src/core/sound_mml.zig": "e72ce1a8d8f79182da18ce3214774cfa1b1de90f3e0fa5a2591c6e879f5e3f11",
+      "src/core/sound_mod.zig": "17be131839ec7b1c33e65cfef8bc51dcd50f215e6d0efaeb8383e3341f6361cb",
+      "src/core/sound_nes.zig": "c020d9acddff22923b6146e4b6185ea070fde6e5a56ea0dcaedf8919efcef139",
+      "src/core/sound_parts.zig": "b43ae54cc0c1ded433951dc9ab4a4b492c77b316949c722ff372f613cec6c5e1",
+      "src/core/sound_pcm.zig": "efdd2e56606dbfa40b83470275b41ac4a2ebf0571f2e3a53e6f04d52fb294ef5",
+      "src/core/sound_psg.zig": "b5c1753fe04e34334fe9ef8e7eb07ca4801b55833c2b8fd184c67c46a84e2eb8",
+      "src/core/sound_scc.zig": "137f70c7155e53c5fac478f7ca38d8e6f6619fd2b58c7dd8df6bc14229b871e0",
+      "src/core/sound_stream.zig": "089d3cc5ef7975279953a3cb5e1e255546fca9cdd821101b6790c3d97bf69614",
+      "src/core/sound_stream_session.zig": "fe9484dcb213a35c9b28452d7f51ad87c5a1010d71feaf8fc7eca47c9085bf61",
+      "src/core/sound_wav.zig": "6e1b68052c97da8b9d0c722f7fdfa91103e340f8aa8ac6cc83ab725718464380",
+      "src/core/source_diagnostics.zig": "7dc881e775b7528de2952a0dcfb61068087b5b944ac1c8612812c2b341601092",
+      "src/core/source_editor.zig": "910c7d2244b35cd256fbe537125b1a7c14a0d2be2b085f8320b75a35a7ca9df9",
+      "src/core/source_input.zig": "c7284dfe5aaf14de23da5b1352430028b708c12f81d6d03ffe817ea00fb2ff5c",
+      "src/core/source_listing.zig": "f19e65aaad5915021430d51c8ba56df29b366d8e76a7d5e63778b7464ce050e7",
+      "src/core/source_navigation.zig": "4913c4479c4f6896171962d14808c7ce6c428adb12c38be2e9b53af0b3aad338",
+      "src/core/source_search.zig": "b0d1d4f109913bc2ec7206e9c02d2951388970628dc43d201b7411fa71cd5c22",
+      "src/core/standard_event.zig": "e8b99ac2b6e95015a506ccd41dbb0badf65679edcd55fea19a0f568a4b642059",
+      "src/core/standard_keys.zig": "a9f84d0f96576d08ce6fb299c8c8168d1c965955abd54e54a09435a0e7193b16",
+      "src/core/standard_sequence.zig": "0e53dc2a094ab4865e6143e891beedc499a700f9a4cb29cb9f685cdfaac04e6e",
+      "src/core/string_values.zig": "a0b0db875615d1dfc48ed210222d47df8f6d2531ea6338650808486379567913",
+      "src/core/tcl.zig": "2907e30ada482da6bedc39f64ca1e5f31e5b1e1bf5ff6c6e52f1db1a74995586",
+      "src/core/text_input.zig": "98114b664f79f827791f1fdcc1f32836aa17472077ad1a34c688accf583387d6",
+      "src/core/word_semantics.zig": "085d36fdfafb69bb1c709b7f8a08edefa5aa3680b1378b3a180a315f8b132457",
+      "src/core/wordlists.zig": "76281d3d10cfaa12b9a9d50ccfa848d10558b191deec71cd63d79a15d61ab325",
+      "src/core/words_arithmetic.zig": "27cdc0dccc3f88ac3550c3ac0567d9536a15e240f5c423a2f6728c5e1ade9fc5",
+      "src/core/words_async_io.zig": "a80b5756f5dce4627022d2d701abffa71357170be01e3a8ad792d088ad8cb904",
+      "src/core/words_audio.zig": "f39d803491d1f527c0cb7c34b97bf1b6fcdbd31c0786472c38a4971bcd08d53e",
+      "src/core/words_buffers.zig": "ab3f96864cd651ef3d8eacbbef41823de36e56da37d26615d4bf2c1430a07359",
+      "src/core/words_compilation_tokens.zig": "a107c2f7c6742102746af59aa1bbf1588581249ffdc569607aae75c37893f5e4",
+      "src/core/words_compiling.zig": "8d4e88581c408645b8d43fd687cbff1046e73a9a91272a0f777b2fafad38ac29",
+      "src/core/words_data.zig": "3072f40e8e81f06a810e6a4b02a76069d04816bf6341420447aa5256861fbe8b",
+      "src/core/words_debug.zig": "32eaf3e4d395d3b32131ad64cdaa5fde9d95f82e5d2c9ba07c0980293f549aff",
+      "src/core/words_defining.zig": "fe42536d1dee8fa300c2175ebb88de13cf871b773c3df95ed01b57bcf14ba229",
+      "src/core/words_diagnostics.zig": "a0256f3ced3deb5ef1a3bf2ac2cd81229e4e886a3ca42496e590a73fbb0298e9",
+      "src/core/words_dictionary.zig": "22350d261fa07a113ae4ba0e56883338c566d915f2aa91d3834b1a63fc5400c5",
+      "src/core/words_extension.zig": "daf5e1749fee6df1e9353dee7adf483f02d05b3851451b5a10d7dd0f0a67be5e",
+      "src/core/words_files.zig": "8853ffc0c22a1de7366512175673bc8adf6fb1b9c0a0cb7b096b3e1b28013362",
+      "src/core/words_filesystem.zig": "ddde11c4e841bf9c806822c623d059db30e26059ca6e377a71aaeb5aca7c2270",
+      "src/core/words_float.zig": "2bb5c1d72619ddae11ac82b5a4fff549da60a8403006dd0eaae8567060ea6488",
+      "src/core/words_game.zig": "64afc03d9f0b2d1d671d38e0f7b8c2e3e4c6569ac0bccce04c25db350afef1ef",
+      "src/core/words_graphics.zig": "0ccad40c1a40622e94cd2bf8e9e0c1a1bfb9af6ceba720a4d5be3b154d7c99e1",
+      "src/core/words_gui.zig": "822e698fc5ee30174a4e96e652b9907f51014f95f4d7e6a049d979f20f095a1d",
+      "src/core/words_help.zig": "3f94ed4006947c9ae5c77c2fd7ebe14483d0f22a26e554219295093fa78c468d",
+      "src/core/words_input.zig": "b7485c85b9baa04bce9120d3a108e0a67fb8a98a12e824492a4fb03fa3973ca2",
+      "src/core/words_loops.zig": "4e8afb41966a631112f79b6609103c0702fcec9574e25e4dd942a4b27f70ce56",
+      "src/core/words_memory.zig": "aaf0e2a41f6bb37bd495cb938da5fa093485e027186b75ed874aefa7b003f6bc",
+      "src/core/words_names.zig": "7b15f033100c5855d97fa37e58c9ed53947075456c9e486348aaaf29503ce9ff",
+      "src/core/words_numeric.zig": "e369b7eb0a13845bfd65f03a443bcfe6379af0953c2f922ff499a03eb4aa55d6",
+      "src/core/words_output.zig": "b7391315a1dee04794a714c67849efc48268ce962883d5473a7965ac4d609b31",
+      "src/core/words_parsing.zig": "05015b15b503fcb6d3f1760ac660c9bcf090e86e4569acb33d5a9639f8635c07",
+      "src/core/words_pcm.zig": "591c6d99721a2db7ba99c7e93ac03346ab0780c4c8c97780e1d6ce45db6957ed",
+      "src/core/words_pictured.zig": "646d528d6625fd5b13d873c2bf700854070276e8c9ae9c6be932b4836ff11117",
+      "src/core/words_process.zig": "235b55c1e62760bd274bb579e02f9892778c5e64ff1c3b737f2d5105278b927a",
+      "src/core/words_return_extensions.zig": "54ea5740e02133b6584da657bb0d42fae6fb9683b3369ef0037d5c422c1b7105",
+      "src/core/words_stack.zig": "39bd4102b871ccfb628b6146aca61744870c18453558d62c1a7b7e7fc8af668c",
+      "src/core/words_stack_display.zig": "073b7e898b2620ea368995932a503156fdfc5b98ea30d71d0eb81a1ea3f2ddff",
+      "src/core/words_string_edit.zig": "6d6ed2a7d9b96d9f22e65ae40c2712a05211689b15a077e49cbc7441827af4ed",
+      "src/core/words_strings.zig": "3095ea0f1524557cb75f757fec4f9808f52503762eea30e4ef0c042586c81cf3",
+      "src/core/words_system.zig": "b049270385fcc38f701b868dc902aa6d64d72608e64bc5535e3e0f9aad52d6b2",
+      "src/core/words_terminal.zig": "7158ed183082578985544dddd15b9510a7d46593de897ec1822358b7147eb547",
+      "src/core/words_text.zig": "ee8e8926a53be0c8892a8269060626fa9e1825d09b1ba81bb5cb1a54f77573c5",
+      "src/core/words_tools.zig": "476d171298c2af73d0292f536aedb663becd821d7c75888903b26aaa6b0ee116",
+      "src/core/words_value_extensions.zig": "9bd4800ddb355c6f9dd6aa35231e1d17303de1b8c1b196ec4f688dc342599934",
+      "src/core/words_width.zig": "9ad045b62955a4f8ed74ef53b5d56d4bf91a80ff272f3ce043d55a324b300e22",
+      "src/core/words_xchar.zig": "bb86a909781f3974d395b3df169e05d5c1abb8bc09f76eba468e7ca85abeb28f",
+      "src/core/zoned_time.zig": "dc670117fabecdb562f02567bb9c52d0490864d7e7eab7a80cd33a3ff05fefe5",
+      "src/extension/extension.fs": "af15712a806791c33218f8fd3fe2ab2f31edc22e2481e70eba878c04968ca06c",
+      "src/fma/atomic.h": "399878f9d33cd7dba696e33fdfd09a1001a863b3b711c1fb078715483e4ea468",
+      "src/fma/fma.c": "f15e2db8c727f6cb3886dbc8817bebfcd7afff155b284be409fb961e0b985894",
+      "src/fma/fma_for_tests.c": "14c032ea423580521b58a7c3e5444368b371685f69d57355e39a6c1d7dba2f8b",
+      "src/fma/sigma_fma.h": "7b38d40f17599ddbd068157a6592122e2cb22eba0b7df3d159a0523924372a89",
+      "src/format.zig": "65a1a3811fc2facfce6485484175455b9b0128eb6c77f2ddd42d0c54cf078b70",
+      "src/forth.zig": "21affdedbfaeff5aafcff4d25547f4c8dfce756b5e54bd47d486ef241cea5439",
+      "src/forth_test.zig": "178072a77a5e2a72f56979180db5d655b9914eede5b2d33d5393e6ddf3955d8c",
+      "src/freestanding_check.zig": "7f5a35111c785b3b9cb4d44deda554dd3469fd5add6e8dbab21dcf9ec3ad2463",
+      "src/graphics/font_misaki.zig": "b9c1134e29bf6942b0642f47ec4f24b60f89b07ff103fbd7bc8f664d03e2e4dc",
+      "src/graphics/game.fs": "e650ef05dd9c8d205bd7b6a7d5d384dcbbf6c2521b48c780b6b0c608ff4e8c09",
+      "src/graphics/graphics.fs": "9aaa10103f703f856870ca4c1256797873b81bd1bfcc1bf01109652d02633afe",
+      "src/graphics/graphics_float.fs": "90ef953451223f299471a8a558586147c463f2a3d6864eb440d7717fc456c043",
+      "src/graphics/gui.fs": "f8eab2322bb302bf6e6f4fded329a6ec05c388744b7518b7bc2e2eec3ddfd662",
+      "src/host_audio.zig": "c058e3137c7bced8e8c678d3ff0f530d893896f5954dcc53c9368ea7eb817a14",
+      "src/host_clock.zig": "100c89cc27bdb344bb17b8f6a54be3c6b9ebe7af2b2e33d2921a3b6cc28be05b",
+      "src/host_directories.zig": "c03efb1b4d707ea8c946124a4c483090689522a230addf81561ee9d57e93390a",
+      "src/host_display_budget.zig": "19be6d11911b4d5fbdab5b282d378843ea80421618e24c762b19522072b65276",
+      "src/host_editor.zig": "2b7b12a7996d088ce6b77fb7d1677499d1981438b19919f95e7b34b01b1c8902",
+      "src/host_evdev.h": "2aa1e5ce1d2cfea6ccc53383e023518632e919ad3c2c97a1fabcd656444e768c",
+      "src/host_evdev.zig": "dae68a217bf2896fad028f9aeb6d206f2b7cc778e558d86cdd4fde00feea24b7",
+      "src/host_file_kind.c": "4d5a4fbd5703dcde1f6e9b9e732b84d535801cb70188ce09e29122c4647392a7",
+      "src/host_file_reader.zig": "35c67d187be36419eeccea18957458092a58ecf56417e41bfcdcd5074174f158",
+      "src/host_file_stdio.c": "3311c3b6136a67b77355b3854cac6ee01333f41f7d4b4aff3a22abc6e279ad57",
+      "src/host_filesystem.zig": "70d4e3373c065a962d0d936c7723c17505994468194fbc6e404260b2098016fe",
+      "src/host_filesystem_native.c": "74f1ba9a4da2dfc5ce9f7ef418a0aba62114e7a0da989ea2d44e189f542cf09a",
+      "src/host_font.zig": "3146b74c1560e5509dcfb448a89c235aa01ac44d2f60906ff894344df7003816",
+      "src/host_gamepad.zig": "b881b7de0e42a47c3b6fbeaf4f1861fff1a6c78f7c54d0ae522458b74f6ecccc",
+      "src/host_input.zig": "bcbf0f2d34ff9c64216f06f6900defd85f3ac5cfbf4e484c39f2a2886adefa2e",
+      "src/host_line.zig": "e39cf0e9d85b7bca52bc6fddf492b668026cfb8e376df07c922aca237ac82a3c",
+      "src/host_pipe_access.zig": "a646b7499d804d312de607088552b3d66bec8de4d5c0972e323680261795cf7b",
+      "src/host_pipe_signal.zig": "d6e7440f52d2748dff7ececd4a490050a2c770c0b21b5338e3fd71fe047b1774",
+      "src/host_process.zig": "43b6f94ac6b0c2508e69fd272f30f3a3033552aef092d8aa704e042c96d3b5f4",
+      "src/host_process_native.c": "fa5a236d5642d81c13a885ce7b08bfeefbb2df9e87fd759abb8c56b1dbfb0473",
+      "src/host_process_native.h": "d455662d43786b11952f2edf6fc004a855e169eae05814e2f97202154c4b4bd5",
+      "src/host_process_native.zig": "9866e7620a2311c86bd1e76ca4d8be7be904676e79b2fea812096979ac96d43f",
+      "src/host_process_native_test_driver.zig": "48c4df79fca79d70b0ed442b490f8b25c0db797452d7c4e784488ec67e197098",
+      "src/host_process_quote.zig": "7fcb085d84b32513c4995b47954928f2dae5b178a23c3c39b93659d82617fbbf",
+      "src/host_process_registry.zig": "d08a96f014d1ff35252fd8cdfed144f80fb66d54469114bc06360185dd42e1df",
+      "src/host_process_spec.zig": "db54318d2ba091a53a6f8911d464ebc589b9d2f5e0e08efaab7583bc318974d4",
+      "src/host_process_table.zig": "fbdabf7a990bf3ab546c441f9eb664b0497ce1a8c158abd2ca9aaae2ec5c8f43",
+      "src/host_resize.zig": "3d26d6b41bdb3887f4038b350cf4bdc5ab07e71fa822f63bb58ee258e5763a8e",
+      "src/host_runtime.zig": "b6b1f740759795f2b405994d3bb04033f1bd77f80e1bd07fe92b0b97a95dcd5d",
+      "src/host_saved_image.zig": "c53f21bf5889c78af754b084afa07ff16413ef173c22a7a2b25cf699ad9dafc7",
+      "src/host_saved_image_native.c": "e5a5c4fcc4dbf6df42895f8965132b0f88fc1b71091eccde14f78cd0112eaacd",
+      "src/host_signal_broker.zig": "3655ad90259053b5ca874a7f69037535c4efd858ef33c626af7afce2d91070d8",
+      "src/host_terminal.zig": "abd7399eb6560d6ab085969fa749109df202d643e3f54170d3d361411ebe5afe",
+      "src/host_timezone.zig": "39c4c38377418e6f349cd8d84834fd663d5cff65cfe1194a2e11c7da2b411ccd",
+      "src/host_wait.zig": "7d7a30a561be603a4737cbaaa88ab5e8bac773520becc3b433029162f924af4d",
+      "src/host_wake.zig": "fcaa278146dffb7f7a9bb922658af0e37600e603227e98e94cb6e57b8eb8fac0",
+      "src/host_window.zig": "e8b8ef7f87788b02985e9fa732160a35767c53cd1fd7b88609c9b11b013a7676",
+      "src/host_window_linux.zig": "7c815b6852d99c0c43b356f9767bca4c64052ea50e0f4182a3668033a71b56ce",
+      "src/host_window_macos.zig": "9046e48eca92a15bc174fd845b2fc0f4cb634720a5c52d6acab09b2788451e9d",
+      "src/host_x11.c": "ff56c05c30b016c1145ad904bb30e1dcbccb0c0ddbbf30f749bfed6a840e4181",
+      "src/host_x11.h": "65bb9fcbd1ef4a4ba08376d706baf789fbcd15f3259c43d43416cac4b6c16615",
+      "src/host_x11.zig": "ef5dffe4b223c2c7792ae99f912e87faf6cd8dcef54c21793be9daea5a2aa49e",
+      "src/host_xim.zig": "b653bfee9baf9aaa4ef1e83480e864e4ae2352b3dd09d584face56b1bbe113af",
+      "src/main.zig": "9362b742ebed4ed33c0f264cffb64010260012104d0304e7387a6edf97f3d1c5",
+      "src/physical_key_map.zig": "e638630a49c2e2c358dc136aadc47fcd23ebbd5a11b7a68e769b4fe9481d81de",
+      "src/physical_key_protocol.zig": "f6ff7e274f11628233cc9f5cf3d2b5b14da675ce147ead0c9eda3216297dcde1",
+      "src/runtime_test.zig": "466cd719f27c7f9085c2308266a84a0c83baab9e1736f5ea4e90f9c0a8a9433d",
+      "src/stb/sigma_font.c": "d1698db33cc12a091499411a4e5b80b87587c199d0c637fe4ee8f1816d50759c",
+      "src/stb/stb_truetype.h": "428cfe93520f2aed5e413a220b0db5bba5b17e2ebe5a64e4a8efa9eeeb67ec5f",
+      "src/tests/app_entry_test.zig": "d8b889f1f619e23115c54408c30347f2e184f2cdccb86eee4ae62ad4c65462c8",
+      "src/tests/argument_file.fs": "0cdb301b2f928dc68be2ece50be7e8172ed7e12f69dc6c70bdb7e4bd37dbadbc",
+      "src/tests/async_io_test.zig": "6bfa3d7c57fb5ef55803f1460fd0ce10248a1479e5eca7f05b0c1ee385651208",
+      "src/tests/audio_test.zig": "b934e824e0378e23b0f4f977dbaf837ed0be946611d20bfbc3ef9803647584dd",
+      "src/tests/blocks_test.zig": "0741239f0e78e3b6e0951c862c52fe855c2df00fc63c7b5a269f916c6e3912c9",
+      "src/tests/catch_test.zig": "cab94a4b27a5c57a131d087d27047a5a15dc59e105b2e90ba9c1daf731c1eebb",
+      "src/tests/core_words_test.zig": "e00fa9d153ca4dc6cc5a202c734c3323697cd3d6dc74d9cd8e9a526705ca60dd",
+      "src/tests/debug_log_test.zig": "b8191d1d7250506e8755e5d28f86dac4e1f2be464d904241683121e4392823b9",
+      "src/tests/debug_step_test.zig": "5b2445bb0c58699221e4916808eded602d2aed64adfa87fa787917622a049b1a",
+      "src/tests/debug_test.zig": "8ccc2eb67d32cc267acee5ea515a52185839c88bc1ebe4fc93e984a4b329e01a",
+      "src/tests/debug_words_test.zig": "6df7ef4db1cffc61d14e6bd7ddb29f47fe8bed385c77acf2b66d4d35c4c33806",
+      "src/tests/definitions_test.zig": "1144e4d2d54eb75ef92bb01c1bdedac9f5c48685dcd890eb5d7636db9e90b60b",
+      "src/tests/dictionary_test.zig": "28c1aec08f1461bada3a5f8b118a2c96bf42d07f660c2d79b0008850bf6e2d56",
+      "src/tests/event_queue_test.zig": "cadeb992c0f3e7bf9755ee4d315bcdbd8330dc7d9c35633fbb6c4dbb28c4e077",
+      "src/tests/execution_control_test.zig": "af93aad87f014713bd9dc7e9969d6bc8a6aa8b36912e2bea40319d65375298dc",
+      "src/tests/execution_replay_test.zig": "4d80881e1653f0a0b9b79645b9dca9150cfe278ab9ddee540a6c2a7fa4b55ccd",
+      "src/tests/extension_test.zig": "66b10edb9fe6952c65fc9320ba3da6d309a7ccf0e179f1ff022650681cd66cc3",
+      "src/tests/files_and_heap_test.zig": "d5dc8d1f942ffceed9ecfaf12c04feb7ac546319723e07a7b9116646ab10d313",
+      "src/tests/filesystem_test.zig": "28e4d1b76cdcbf150b935ff884061360dd8b3875555edb8566ecf355cd41cbb6",
+      "src/tests/float_test.zig": "1f670be5ebfca4ea9dc0013102cb5df31370cf59489e7dfb8479af65859d5c83",
+      "src/tests/game_test.zig": "68f189ce96ef2614e8fc21c1ab6b1b3ab268ff2d0c7de6a42419ace8439fad5f",
+      "src/tests/gamepad_test.zig": "544c50b20bea8759a6d060b74829be1fdfb07a471df3cc98ff3608eaa57fbf5e",
+      "src/tests/gforth_rest_test.zig": "30b5880c2c64e3bbc91c38b8829c5fe61f12edc587c0c0f4da1c294dbe7704b7",
+      "src/tests/grapheme_test.zig": "8ddace53c33137a13bdff8fde6a9354a7e0a437790a5936a83ca26a376aa59e4",
+      "src/tests/graphics_images_test.zig": "c997581d8a89f9bf8f90f0f9444f9025e0d998189334d11f9f568aee75703c05",
+      "src/tests/graphics_test.zig": "33919b2c5cf1de541b3037c1cf55a54a3580642fb7ac42d2003f0675598ec842",
+      "src/tests/gui_test.zig": "b135f30bc3ed6ac29ba9860446a6b529f052d1af80549b9f6cf270259849eebd",
+      "src/tests/help_test.zig": "ce7bcc98bef3054b6677ba1d8280d5e922b9112799a80687be0623ad4c486608",
+      "src/tests/host_words_test.zig": "60b28205e3dd052f3ce63da1f7e14bce1ca5ed994b8fe1d3cb30a21d4f250cd5",
+      "src/tests/image_append_plan_test.zig": "1b7f01452d8891c2be8d5d3aed009d8b98a4568da8e2556e72d666d6a4c3c4b3",
+      "src/tests/image_append_typed_test.zig": "bb1305561b456d3e70882c9506a7d50f8a8d40c6f209b1337b94dbf92ff47eef",
+      "src/tests/image_encoder_test.zig": "f98734bbeff364754f81769a36021bbca78134034f8ae9fe04d4409ff69fbb92",
+      "src/tests/image_format_test.zig": "5ddad253c0e8c09076aa080fd2636f50f75e63e6a7ba2e7a3820b73d612c7b7d",
+      "src/tests/image_graph_test.zig": "8f3bb8eed0bbb50c771e509cb5218130b279ce3637671b0541654e8a352878f5",
+      "src/tests/image_restore_plan_test.zig": "573b443abd3847ee788d88837d584c50a7571049ab70291ae3c2386b82e9e095",
+      "src/tests/image_restore_typed_test.zig": "d397a0657452d8de75bb2bc394f1d5802e3ef80653dd7fc830a9d6a0216cb6dc",
+      "src/tests/images/expected.zig": "11c91fb152e2279952134a20f19736d9c1bf90d35e942d6578117ff8dce2a1de",
+      "src/tests/inline_calls_test.zig": "5967ffb5dba9e9c0e75734df6ac0dc63f9c063396188912a529b8eb7da541f7e",
+      "src/tests/internal_pointer_test.zig": "f78034aad21888f0610a42bf6f1586f428dbf714cf4787ca7c37c44f46a05ca3",
+      "src/tests/library_loading_test.zig": "37cc7aaef3710a17d06e9d83da36460a75d38f2e6b3f629c15ee6f4f451063b5",
+      "src/tests/lint_test.zig": "d27b54b3cc8e3892e15dab87048676913da7eb7036e9668dc92d2108013ab0c2",
+      "src/tests/load_image_test.zig": "7212afa28417b539b0047e34cbee72a22618eeda6325733f955ca5ca82a37969",
+      "src/tests/locals_test.zig": "7f1cd91276af56a4e9e22b2cc73a683a11505971934c552fba0249c5ee768191",
+      "src/tests/output_activity_test.zig": "226d71d2e70b0eac0f919fefd3dccec227a963bbd707bcd7e794f90d91033645",
+      "src/tests/p01a_test.zig": "d6df5dd4c6003d980318fcfd935a06009487865c9c937c9b656655f552d771ff",
+      "src/tests/p01b_test.zig": "8777403fb560a547a25fb81bd1ff53daf616aeb2553bed938ef308f94c0f92a4",
+      "src/tests/p01c_test.zig": "7180cfc9d94dc3811f3290afdabdf7fe70efd596844212c28d5aacc207a901e2",
+      "src/tests/p02a_test.zig": "99c9c22e83bcbaaa697658ce24632f20c39649752c98d04f60414b7e882df1f8",
+      "src/tests/p02b_test.zig": "7cdef78ea7fceb0d76d855d19bcb51eb4f9922fb47262f4630355e97249e7908",
+      "src/tests/p02c_test.zig": "7a451ba2a3cc5c5827d38c2bce3a4279c82623bb04c434ba9f79bf1a8ab0b7ea",
+      "src/tests/p03_review_test.zig": "2e06c70306b59f031dcf6ae6898893ae9df36c3bfb8e2bc1998ad28678d63152",
+      "src/tests/p03a_test.zig": "4ce9e7e73b055fed152d183521f94eb473a4adba32705351b7d3f963721535bc",
+      "src/tests/p03b_address_test.zig": "58edde76e7c12e82c5e6510c686f6bb2e496796a0721f45d62cf9cb825837161",
+      "src/tests/p03b_data_test.zig": "f46966b1ebb5501692d47e07c9b895477283771ffb062bce871fcca092f71e2b",
+      "src/tests/p03c_test.zig": "4175269d7fcad132c1a3a4795f784195babd983254fb55c81754bbf6e484f3b0",
+      "src/tests/p04_review_test.zig": "24e1d4f1e7965f2c3ef41944f576bb5be1513d43569e429e78439b695c231978",
+      "src/tests/p04a_basic_test.zig": "cabc0004c3a95cbeaa175e8989479b113d4029a9190a94a6c7d20e9d5c8c40e5",
+      "src/tests/p04a_edit_test.zig": "cd2352d88965c59033ef9b4ea9c638a22f1f09b7749cd2da6213f99cde47a699",
+      "src/tests/p04a_xc_test.zig": "e6335a84e03e6dd7d0cda60932103e00f3c1aaa23d9b3b15ddea3fd304a6c428",
+      "src/tests/p04b_macros_test.zig": "1de0f1df31e463f7211462d50d15ada5b527309e41205f3c488a0e216c5618a2",
+      "src/tests/p04b_values_test.zig": "80702c46aee867f6b917816163da0c30ae2d80907725e1824c799529a27869f4",
+      "src/tests/p05a_input_test.zig": "31d4ad0d60c63e40131bf86aafc1437dcbbb0bb4204ac53fe7a8b52f1b377632",
+      "src/tests/p05a_misc_test.zig": "4b03be3fab178d2d8ffd563f1a566cc46adfb4b06ed5bbdec328cc6c284e1de0",
+      "src/tests/p05a_path_test.zig": "7ed815f78245b64b10d1d6944f6393d3c957a0f065cb27b31286ddc2c3bff831",
+      "src/tests/p05a_search_test.zig": "639c0edc1892a12271a98d32dddcdbb063e5d9245c37ad9846b4aabd305bbd16",
+      "src/tests/p05a_stream_test.zig": "f6de70feaa6b92d0eec65bae04cf21b345cfc724717b6223023df6d64d8b61d1",
+      "src/tests/p05b_clocks_test.zig": "e062fd1ebd44063766840ebd214cbb0508be6e8cd3c53cf681e34dc8ef61cc1a",
+      "src/tests/p05b_cwd_test.zig": "8f6e8a9683ef9e4261baf5d033ffea5aa63c1a402f1998b0c149f696c5b4b108",
+      "src/tests/p05b_dir_iterator_test.zig": "72e157474f9c11414da6bfdf6743c228b99f9c6f318c80877458159877942c21",
+      "src/tests/p05b_filename_match_test.zig": "22b0e1b14ef42441aa286f32d66747bd980226c93789c870355e7b96009eff9c",
+      "src/tests/p05b_mkdir_test.zig": "d9858164820ae0e579c77ed797084c6773843085a625025cc86af280764222af",
+      "src/tests/p05b_ns_test.zig": "e3918ee7f4d8f90376a42681d2a698b31bffbb3dbd878a9a95eee19eae16f714",
+      "src/tests/p05b_path_parts_test.zig": "5a671d5391c7f7a42b18bfefd6d87f0c5f0e13f1d776ddf5f48f2d39a84819d2",
+      "src/tests/p05b_timezone_test.zig": "8ce03b967f98e47793ff27dfc85be336f33a0f593a009c0789e62ccbb0dd3a2e",
+      "src/tests/p06a_capture_test.zig": "685d524ec5cc0d6cfb5f4fbfef9b73dbd9f96a06eb4bde0c380f6bac18e1e1f7",
+      "src/tests/p06a_input_test.zig": "de17e97b56be6fbeb9c655dbda16c100c11aeb0c9641153ca506aa6f1508d6ba",
+      "src/tests/p06a_output_test.zig": "30ef1fe648c1e22ddd0da62e7daef11d5f03f6493a99203a9ab31f434f4a1163",
+      "src/tests/p06b_csv_input_test.zig": "00ad760dede4aee941680584eed3e078a60eb81e09770b4a56731a45d4077e6c",
+      "src/tests/p06b_csv_output_test.zig": "602fec30dad8f7575892d0b39569563da71e87a4644faf675a7437f488af5d69",
+      "src/tests/p06b_pipe_test.zig": "7a729a79555991061497f5519024009373fd7f9b1c54937a16ccf205c9328db9",
+      "src/tests/p06b_sh_get_test.zig": "da1bcfa98f063f1b0d1615e929842e61947473a3637a5f5a43478e970b887eb1",
+      "src/tests/p06b_sh_test.zig": "cff49b9b6eb8a210ec42a7b6e0b0f53d6e4f267ca7407094e528511b25138fd9",
+      "src/tests/p06c_test.zig": "11385ccff4cc7761ba8912ca61972c9c5cede2c192504535cac62ad659111910",
+      "src/tests/p07_prework_test.zig": "b643be9025ed34159541a001a3dd0cd828457c6d4911319e55bd6feab7bc2870",
+      "src/tests/p07a_test.zig": "f9794d9944291229343e1302f22eded829f14732b43e21e2b4561c94e50c1f23",
+      "src/tests/p07b_test.zig": "e8f5d6e6f6d3e7cdd732bb525c8b3fe461bef3575d5a29891a412517fc839fbb",
+      "src/tests/p07c_test.zig": "df5a71d5d5036c033adfcbb942bcf8173d843fcd03361b403dfac1eab045042e",
+      "src/tests/p07d_test.zig": "b3891b0ffe2b059f22477042edf28f6a3e35b64925f530447e93f4ff77ab12f8",
+      "src/tests/p08_review_test.zig": "97495a89176f67c44f306d45782d921a635ca169a5aa630645a855ea2fa4122e",
+      "src/tests/p08a_test.zig": "2d195241b7d8011521c421feae9ac527b16066632dd5661a190789541a918b02",
+      "src/tests/p08b_test.zig": "faa1bc85050e56e6e1e6b1f6a5a95d512a855cc4ff718ff3f5349b3099500138",
+      "src/tests/p09a_test.zig": "7e03f90e7cc4817e48c0e54aeed1a37f049c48860584f6240b0513b7de672bd1",
+      "src/tests/p09b_test.zig": "3059c31d677d9abf07f252ae28313e0872ddc8089f7e0b10601748b497c4ca0d",
+      "src/tests/p09c_test.zig": "9d3544df192e78c2363b01bcc40b2d093b5a6aa3950e6f7a92279f592412dbfe",
+      "src/tests/pcm_stream_test.zig": "1de53f4819e1cd0cbb6bede93c37328fe29d53feae5c08bb21be9b3828b9fc82",
+      "src/tests/pcm_words_test.zig": "75f3fcafa93353e17d5775f1294000be91b310ded1d9209918a249aa54a3a535",
+      "src/tests/physical_key_test.zig": "fae5e80adbf6fadffe43599b1bc9924133043eb8cf03cc45ec3d28da6d947840",
+      "src/tests/process_test.zig": "f864fe71a6404317a61ddeeb313466201fb501ceeba15bc3fc9134945ea38fb3",
+      "src/tests/runtime_base_test.zig": "8e5142bc2977bd6135eda33afce8ecec7413a2903a3d80d2d413832875969052",
+      "src/tests/sound_test.zig": "cc8045ddd88068f5e2488fa942307f900b01e83f7a86f95d856a53d22737857b",
+      "src/tests/source_and_see_test.zig": "587e24fec59be0f78035a05c3add8be8ca3541cdfc9cfe0c2c3bf3256cda8c41",
+      "src/tests/support.zig": "3069afe24703a35643f68d16f90ab2e350318136ec814fcb917b2dc63c951182",
+      "src/tests/terminal_modes_test.zig": "4c0f93afb84b923965975c0c4c488744c268150e37170028a0b868fb4d21fd3f",
+      "src/tests/text_and_numbers_test.zig": "79a692df3ce75c5ed17091798aaea527cd53e6892f49c0e97c260834aaf662c3",
+      "src/tests/wordlists_test.zig": "9f93d23e2b61e60be346b53a104a124e0852794d759c416029caa10cf340221b",
+      "src/tests/xchar_test.zig": "698b330da6ba271d4a5d5e5a1d9debe706c514c17ac54b5849b03d46f4e08cfc",
+      "src/window_layout.zig": "54865592c030eff0d4bf0c0b17b41d1ed1b873b4567bfca5cdc16c591f60d5b1"
+    },
+    "toolchain_record": "0.17.1",
+    "build_commands_record": {
+      "windows": "zig build -Dtarget=x86_64-windows-gnu -Doptimize=fast -Dcpu=baseline -Dstrip=true --prefix .work/1138/matrix/windows",
+      "linux": "zig build -Dtarget=x86_64-linux-musl -Doptimize=fast -Dcpu=baseline -Dstrip=true --prefix .work/1138/matrix/linux",
+      "windows-no-debug": "zig build -Dtarget=x86_64-windows-gnu -Doptimize=fast -Dcpu=baseline -Dstrip=true -Ddebug=false -Dgraphics=false -Dextension=false --prefix .work/1138/matrix/windows-no-debug",
+      "linux-no-debug": "zig build -Dtarget=x86_64-linux-musl -Doptimize=fast -Dcpu=baseline -Dstrip=true -Ddebug=false -Dgraphics=false -Dextension=false --prefix .work/1138/matrix/linux-no-debug",
+      "windows-no-float": "zig build -Dtarget=x86_64-windows-gnu -Doptimize=fast -Dcpu=baseline -Dstrip=true -Ddebug=false -Dgraphics=false -Dextension=false -Dfloat=false --prefix .work/1138/matrix/windows-no-float",
+      "linux-no-float": "zig build -Dtarget=x86_64-linux-musl -Doptimize=fast -Dcpu=baseline -Dstrip=true -Ddebug=false -Dgraphics=false -Dextension=false -Dfloat=false --prefix .work/1138/matrix/linux-no-float",
+      "windows-no-audio": "zig build -Dtarget=x86_64-windows-gnu -Doptimize=fast -Dcpu=baseline -Dstrip=true -Daudio=false -Dgraphics=false -Dextension=false --prefix .work/1138/matrix/windows-no-audio",
+      "linux-no-audio": "zig build -Dtarget=x86_64-linux-musl -Doptimize=fast -Dcpu=baseline -Dstrip=true -Daudio=false -Dgraphics=false -Dextension=false --prefix .work/1138/matrix/linux-no-audio"
+    },
+    "binaries": {
+      "windows": {
+        "bytes": 2145792,
+        "sha256": "afac007953731a2bb6c717a52aac85bea196b5ce44e62b182a8524325e604d5b"
+      },
+      "linux": {
+        "bytes": 2356352,
+        "sha256": "28b12e5b3555c0afff155de3e1bb39474dc549d0a382a18128e73003ab24f193"
+      },
+      "windows-no-debug": {
+        "bytes": 1656832,
+        "sha256": "be8eae272a0f7b5df5e3107a5c1857e8a27f345e721c71db8f25a381d77143b5"
+      },
+      "linux-no-debug": {
+        "bytes": 1669440,
+        "sha256": "d66c25c1a5233afe338a74f580cc025b80905448d9c1eaadb968abd0b1dbdbc8"
+      },
+      "windows-no-float": {
+        "bytes": 1230848,
+        "sha256": "6acea2b7a2c7dc2cdac6f7e389cd4f9be4bf2428f3502af4d3a6807b0fb89da2"
+      },
+      "linux-no-float": {
+        "bytes": 1178048,
+        "sha256": "5b5fa65bfa4c84731a1f06beb6362d6844467a2408fe6510a9e87565699b57fd"
+      },
+      "windows-no-audio": {
+        "bytes": 1657344,
+        "sha256": "2e04ef29886f978ed7c12d1d9fe05dac9b00ef0edcc122a55658d38189511c57"
+      },
+      "linux-no-audio": {
+        "bytes": 1659992,
+        "sha256": "f9e75be472399802631ea974bc999719dd9c51fb4f516e4fbd1b0cde90a1daef"
+      }
+    },
+    "current_manifest_match": true,
+    "meaning": "All332 native sources match prior verified baseline ReleaseFast binaries. No rebuild, native/Builtin/ABI changes."
+  },
+  "reports": {
+    "linux-model": {
+      "scope": "Independent integer S-DSP sample-boundary oracle; all generated audio stays in RAM.",
+      "platform": "Linux-6.18.33.2-microsoft-standard-WSL2-x86_64-with-glibc2.43",
+      "binary_sha256": "28b12e5b3555c0afff155de3e1bb39474dc549d0a382a18128e73003ab24f193",
+      "tests": [
+        {
+          "case": "independent-extraction-from-reference-document",
+          "reference_sha256": "3853b65a7331bf12eea431ff494a2948a1c78ef22f7e819db4b139fd5a79f6c6"
+        },
+        {
+          "case": "all256headers16nibbles3histories-rational-brr"
+        },
+        {
+          "case": "all256-gauss-phases4-history-extremes-and-overflow"
+        },
+        {
+          "case": "all32-global-rate-boundaries-two-periods"
+        },
+        {
+          "case": "gain4modes-all32rates-direct128-attack16-decay8-sustain32-release",
+          "cases": 317
+        },
+        {
+          "case": "hand-kon5delay-event-boundary-latched-header-end-loop-and-word-wrap"
+        },
+        {
+          "case": "all128registers256bytes-and-all65536aram-addresses"
+        },
+        {
+          "case": "hand-signed-volume-feedback-wrap-fir8impulses-edl-latch-noise20"
+        },
+        {
+          "case": "demo-full2048frames-state-aram-split",
+          "pcm_sha256": "431c7625f3d99bd621d60e85a90e15c4918b9c43aaed6622cee69e51586a6ec4",
+          "oracle_branches": []
+        },
+        {
+          "case": "changes-full2048frames-state-aram-split",
+          "pcm_sha256": "a9af2b31d983ee65f539fae8f4b99ae534055c7c9234cbf61dee3fe0740fbe5e",
+          "oracle_branches": []
+        },
+        {
+          "case": "signed8voice-noise-pmon-fir-and-aram-alias-full2048frames-state-aram-split",
+          "pcm_sha256": "6b72895e65144198a1304a57325109b1e24867235daa9173a4e8036650b9d764",
+          "oracle_branches": [
+            "echo-16bit-wrap",
+            "echo-brr-overlap",
+            "echo-dir-overlap",
+            "fir-prefix-wrap",
+            "multiple-consume",
+            "pitch-high-mask",
+            "pmon-clamp"
+          ]
+        },
+        {
+          "case": "all-envelope-modes-full2048frames-state-aram-split",
+          "pcm_sha256": "444756c2902882aeccb350ea77264ee2d37e9671f9b175c5381fbc07f06f774c",
+          "oracle_branches": []
+        },
+        {
+          "case": "brr16bit-wrap-maxpitch-full2048frames-state-aram-split",
+          "pcm_sha256": "f68340f9559ce4f781285ce9aaeac0fa26f63ab7d59e05e229e7266b2f67b3c0",
+          "oracle_branches": [
+            "multiple-consume"
+          ]
+        },
+        {
+          "case": "koff-kon-clear-at65-full2048frames-state-aram-split",
+          "pcm_sha256": "4775af3b5979c890b9a540d203ce534b9cb2873378804fedd35cac548682c0d8",
+          "oracle_branches": []
+        },
+        {
+          "case": "koff-kon-clear-at97-full2048frames-state-aram-split",
+          "pcm_sha256": "9f1dcbc35c350d6027f98be0f5c8b43b42ca52b7604459c0c42be3aa88913d47",
+          "oracle_branches": []
+        },
+        {
+          "case": "nonloop-end-even-under-noise-full2048frames-state-aram-split",
+          "pcm_sha256": "635058a6021d19cf291f672877871175407505edcebc4376d93194b1594dcc0b",
+          "oracle_branches": [
+            "nonloop-end"
+          ]
+        },
+        {
+          "case": "fir-prefix-overflow-full2048frames-state-aram-split",
+          "pcm_sha256": "41478147ef7325f84c99c24bc919413ec6472d74953b60470a122450861257e6",
+          "oracle_branches": [
+            "fir-prefix-wrap"
+          ]
+        },
+        {
+          "case": "offset17-render-full2048frames-state-aram-split",
+          "pcm_sha256": "a46cd42428d5abc3fd96064f8d9fe9acd38b4a42a648f021f6397e43beae0951",
+          "oracle_branches": []
+        },
+        {
+          "case": "error-atomicity-entire-aram-queue-capacity-reclaim-time-and-memory",
+          "atomic_cases": 12
+        }
+      ],
+      "source_sha256_lf": {
+        "examples/snes-dsp-audio.fs": "3614b1e767dfdd8c8ddb941c131f8984078e07c36c6723091466c6e28ac2529e",
+        "examples/snes-gauss.fs": "e0d5cefee60b5d85a8b368dd66bc62d1f75e1d3aaa22cdb47b8ec1cd994da078",
+        "examples/snes-dsp-audio-play.fs": "7867e461cea24a84615b9c4861d3acd41752c557d53b218491b32a76419582b9",
+        "scripts/snes-tables.py": "327170a26a43b480e36783fc4ae8f41a923979ca5df3c9c4e441d1e73e805e4b",
+        "scripts/snes-gauss-data.json": "40fa10574a7b63925432c7d86ebf4c574b2f6c612ab75893036193cec7d73cce",
+        "tests/scripts/verify-snes-dsp-audio.py": "4d9470e1bc4b9dabb0c89390df2d4650eaadf4db29efd34a74dea215c8a73b59"
+      }
+    },
+    "linux-no-audio-model": {
+      "scope": "Independent integer S-DSP sample-boundary oracle; all generated audio stays in RAM.",
+      "platform": "Linux-6.18.33.2-microsoft-standard-WSL2-x86_64-with-glibc2.43",
+      "binary_sha256": "f9e75be472399802631ea974bc999719dd9c51fb4f516e4fbd1b0cde90a1daef",
+      "tests": [
+        {
+          "case": "independent-extraction-from-reference-document",
+          "reference_sha256": "3853b65a7331bf12eea431ff494a2948a1c78ef22f7e819db4b139fd5a79f6c6"
+        },
+        {
+          "case": "all256headers16nibbles3histories-rational-brr"
+        },
+        {
+          "case": "all256-gauss-phases4-history-extremes-and-overflow"
+        },
+        {
+          "case": "all32-global-rate-boundaries-two-periods"
+        },
+        {
+          "case": "gain4modes-all32rates-direct128-attack16-decay8-sustain32-release",
+          "cases": 317
+        },
+        {
+          "case": "hand-kon5delay-event-boundary-latched-header-end-loop-and-word-wrap"
+        },
+        {
+          "case": "all128registers256bytes-and-all65536aram-addresses"
+        },
+        {
+          "case": "hand-signed-volume-feedback-wrap-fir8impulses-edl-latch-noise20"
+        },
+        {
+          "case": "demo-full2048frames-state-aram-split",
+          "pcm_sha256": "431c7625f3d99bd621d60e85a90e15c4918b9c43aaed6622cee69e51586a6ec4",
+          "oracle_branches": []
+        },
+        {
+          "case": "changes-full2048frames-state-aram-split",
+          "pcm_sha256": "a9af2b31d983ee65f539fae8f4b99ae534055c7c9234cbf61dee3fe0740fbe5e",
+          "oracle_branches": []
+        },
+        {
+          "case": "signed8voice-noise-pmon-fir-and-aram-alias-full2048frames-state-aram-split",
+          "pcm_sha256": "6b72895e65144198a1304a57325109b1e24867235daa9173a4e8036650b9d764",
+          "oracle_branches": [
+            "echo-16bit-wrap",
+            "echo-brr-overlap",
+            "echo-dir-overlap",
+            "fir-prefix-wrap",
+            "multiple-consume",
+            "pitch-high-mask",
+            "pmon-clamp"
+          ]
+        },
+        {
+          "case": "all-envelope-modes-full2048frames-state-aram-split",
+          "pcm_sha256": "444756c2902882aeccb350ea77264ee2d37e9671f9b175c5381fbc07f06f774c",
+          "oracle_branches": []
+        },
+        {
+          "case": "brr16bit-wrap-maxpitch-full2048frames-state-aram-split",
+          "pcm_sha256": "f68340f9559ce4f781285ce9aaeac0fa26f63ab7d59e05e229e7266b2f67b3c0",
+          "oracle_branches": [
+            "multiple-consume"
+          ]
+        },
+        {
+          "case": "koff-kon-clear-at65-full2048frames-state-aram-split",
+          "pcm_sha256": "4775af3b5979c890b9a540d203ce534b9cb2873378804fedd35cac548682c0d8",
+          "oracle_branches": []
+        },
+        {
+          "case": "koff-kon-clear-at97-full2048frames-state-aram-split",
+          "pcm_sha256": "9f1dcbc35c350d6027f98be0f5c8b43b42ca52b7604459c0c42be3aa88913d47",
+          "oracle_branches": []
+        },
+        {
+          "case": "nonloop-end-even-under-noise-full2048frames-state-aram-split",
+          "pcm_sha256": "635058a6021d19cf291f672877871175407505edcebc4376d93194b1594dcc0b",
+          "oracle_branches": [
+            "nonloop-end"
+          ]
+        },
+        {
+          "case": "fir-prefix-overflow-full2048frames-state-aram-split",
+          "pcm_sha256": "41478147ef7325f84c99c24bc919413ec6472d74953b60470a122450861257e6",
+          "oracle_branches": [
+            "fir-prefix-wrap"
+          ]
+        },
+        {
+          "case": "offset17-render-full2048frames-state-aram-split",
+          "pcm_sha256": "a46cd42428d5abc3fd96064f8d9fe9acd38b4a42a648f021f6397e43beae0951",
+          "oracle_branches": []
+        },
+        {
+          "case": "error-atomicity-entire-aram-queue-capacity-reclaim-time-and-memory",
+          "atomic_cases": 12
+        }
+      ],
+      "source_sha256_lf": {
+        "examples/snes-dsp-audio.fs": "3614b1e767dfdd8c8ddb941c131f8984078e07c36c6723091466c6e28ac2529e",
+        "examples/snes-gauss.fs": "e0d5cefee60b5d85a8b368dd66bc62d1f75e1d3aaa22cdb47b8ec1cd994da078",
+        "examples/snes-dsp-audio-play.fs": "7867e461cea24a84615b9c4861d3acd41752c557d53b218491b32a76419582b9",
+        "scripts/snes-tables.py": "327170a26a43b480e36783fc4ae8f41a923979ca5df3c9c4e441d1e73e805e4b",
+        "scripts/snes-gauss-data.json": "40fa10574a7b63925432c7d86ebf4c574b2f6c612ab75893036193cec7d73cce",
+        "tests/scripts/verify-snes-dsp-audio.py": "4d9470e1bc4b9dabb0c89390df2d4650eaadf4db29efd34a74dea215c8a73b59"
+      }
+    },
+    "linux-no-debug-model": {
+      "scope": "Independent integer S-DSP sample-boundary oracle; all generated audio stays in RAM.",
+      "platform": "Linux-6.18.33.2-microsoft-standard-WSL2-x86_64-with-glibc2.43",
+      "binary_sha256": "d66c25c1a5233afe338a74f580cc025b80905448d9c1eaadb968abd0b1dbdbc8",
+      "tests": [
+        {
+          "case": "independent-extraction-from-reference-document",
+          "reference_sha256": "3853b65a7331bf12eea431ff494a2948a1c78ef22f7e819db4b139fd5a79f6c6"
+        },
+        {
+          "case": "all256headers16nibbles3histories-rational-brr"
+        },
+        {
+          "case": "all256-gauss-phases4-history-extremes-and-overflow"
+        },
+        {
+          "case": "all32-global-rate-boundaries-two-periods"
+        },
+        {
+          "case": "gain4modes-all32rates-direct128-attack16-decay8-sustain32-release",
+          "cases": 317
+        },
+        {
+          "case": "hand-kon5delay-event-boundary-latched-header-end-loop-and-word-wrap"
+        },
+        {
+          "case": "all128registers256bytes-and-all65536aram-addresses"
+        },
+        {
+          "case": "hand-signed-volume-feedback-wrap-fir8impulses-edl-latch-noise20"
+        },
+        {
+          "case": "demo-full2048frames-state-aram-split",
+          "pcm_sha256": "431c7625f3d99bd621d60e85a90e15c4918b9c43aaed6622cee69e51586a6ec4",
+          "oracle_branches": []
+        },
+        {
+          "case": "changes-full2048frames-state-aram-split",
+          "pcm_sha256": "a9af2b31d983ee65f539fae8f4b99ae534055c7c9234cbf61dee3fe0740fbe5e",
+          "oracle_branches": []
+        },
+        {
+          "case": "signed8voice-noise-pmon-fir-and-aram-alias-full2048frames-state-aram-split",
+          "pcm_sha256": "6b72895e65144198a1304a57325109b1e24867235daa9173a4e8036650b9d764",
+          "oracle_branches": [
+            "echo-16bit-wrap",
+            "echo-brr-overlap",
+            "echo-dir-overlap",
+            "fir-prefix-wrap",
+            "multiple-consume",
+            "pitch-high-mask",
+            "pmon-clamp"
+          ]
+        },
+        {
+          "case": "all-envelope-modes-full2048frames-state-aram-split",
+          "pcm_sha256": "444756c2902882aeccb350ea77264ee2d37e9671f9b175c5381fbc07f06f774c",
+          "oracle_branches": []
+        },
+        {
+          "case": "brr16bit-wrap-maxpitch-full2048frames-state-aram-split",
+          "pcm_sha256": "f68340f9559ce4f781285ce9aaeac0fa26f63ab7d59e05e229e7266b2f67b3c0",
+          "oracle_branches": [
+            "multiple-consume"
+          ]
+        },
+        {
+          "case": "koff-kon-clear-at65-full2048frames-state-aram-split",
+          "pcm_sha256": "4775af3b5979c890b9a540d203ce534b9cb2873378804fedd35cac548682c0d8",
+          "oracle_branches": []
+        },
+        {
+          "case": "koff-kon-clear-at97-full2048frames-state-aram-split",
+          "pcm_sha256": "9f1dcbc35c350d6027f98be0f5c8b43b42ca52b7604459c0c42be3aa88913d47",
+          "oracle_branches": []
+        },
+        {
+          "case": "nonloop-end-even-under-noise-full2048frames-state-aram-split",
+          "pcm_sha256": "635058a6021d19cf291f672877871175407505edcebc4376d93194b1594dcc0b",
+          "oracle_branches": [
+            "nonloop-end"
+          ]
+        },
+        {
+          "case": "fir-prefix-overflow-full2048frames-state-aram-split",
+          "pcm_sha256": "41478147ef7325f84c99c24bc919413ec6472d74953b60470a122450861257e6",
+          "oracle_branches": [
+            "fir-prefix-wrap"
+          ]
+        },
+        {
+          "case": "offset17-render-full2048frames-state-aram-split",
+          "pcm_sha256": "a46cd42428d5abc3fd96064f8d9fe9acd38b4a42a648f021f6397e43beae0951",
+          "oracle_branches": []
+        },
+        {
+          "case": "error-atomicity-entire-aram-queue-capacity-reclaim-time-and-memory",
+          "atomic_cases": 12
+        }
+      ],
+      "source_sha256_lf": {
+        "examples/snes-dsp-audio.fs": "3614b1e767dfdd8c8ddb941c131f8984078e07c36c6723091466c6e28ac2529e",
+        "examples/snes-gauss.fs": "e0d5cefee60b5d85a8b368dd66bc62d1f75e1d3aaa22cdb47b8ec1cd994da078",
+        "examples/snes-dsp-audio-play.fs": "7867e461cea24a84615b9c4861d3acd41752c557d53b218491b32a76419582b9",
+        "scripts/snes-tables.py": "327170a26a43b480e36783fc4ae8f41a923979ca5df3c9c4e441d1e73e805e4b",
+        "scripts/snes-gauss-data.json": "40fa10574a7b63925432c7d86ebf4c574b2f6c612ab75893036193cec7d73cce",
+        "tests/scripts/verify-snes-dsp-audio.py": "4d9470e1bc4b9dabb0c89390df2d4650eaadf4db29efd34a74dea215c8a73b59"
+      }
+    },
+    "linux-no-float-model": {
+      "scope": "Independent integer S-DSP sample-boundary oracle; all generated audio stays in RAM.",
+      "platform": "Linux-6.18.33.2-microsoft-standard-WSL2-x86_64-with-glibc2.43",
+      "binary_sha256": "5b5fa65bfa4c84731a1f06beb6362d6844467a2408fe6510a9e87565699b57fd",
+      "tests": [
+        {
+          "case": "independent-extraction-from-reference-document",
+          "reference_sha256": "3853b65a7331bf12eea431ff494a2948a1c78ef22f7e819db4b139fd5a79f6c6"
+        },
+        {
+          "case": "all256headers16nibbles3histories-rational-brr"
+        },
+        {
+          "case": "all256-gauss-phases4-history-extremes-and-overflow"
+        },
+        {
+          "case": "all32-global-rate-boundaries-two-periods"
+        },
+        {
+          "case": "gain4modes-all32rates-direct128-attack16-decay8-sustain32-release",
+          "cases": 317
+        },
+        {
+          "case": "hand-kon5delay-event-boundary-latched-header-end-loop-and-word-wrap"
+        },
+        {
+          "case": "all128registers256bytes-and-all65536aram-addresses"
+        },
+        {
+          "case": "hand-signed-volume-feedback-wrap-fir8impulses-edl-latch-noise20"
+        },
+        {
+          "case": "demo-full2048frames-state-aram-split",
+          "pcm_sha256": "431c7625f3d99bd621d60e85a90e15c4918b9c43aaed6622cee69e51586a6ec4",
+          "oracle_branches": []
+        },
+        {
+          "case": "changes-full2048frames-state-aram-split",
+          "pcm_sha256": "a9af2b31d983ee65f539fae8f4b99ae534055c7c9234cbf61dee3fe0740fbe5e",
+          "oracle_branches": []
+        },
+        {
+          "case": "signed8voice-noise-pmon-fir-and-aram-alias-full2048frames-state-aram-split",
+          "pcm_sha256": "6b72895e65144198a1304a57325109b1e24867235daa9173a4e8036650b9d764",
+          "oracle_branches": [
+            "echo-16bit-wrap",
+            "echo-brr-overlap",
+            "echo-dir-overlap",
+            "fir-prefix-wrap",
+            "multiple-consume",
+            "pitch-high-mask",
+            "pmon-clamp"
+          ]
+        },
+        {
+          "case": "all-envelope-modes-full2048frames-state-aram-split",
+          "pcm_sha256": "444756c2902882aeccb350ea77264ee2d37e9671f9b175c5381fbc07f06f774c",
+          "oracle_branches": []
+        },
+        {
+          "case": "brr16bit-wrap-maxpitch-full2048frames-state-aram-split",
+          "pcm_sha256": "f68340f9559ce4f781285ce9aaeac0fa26f63ab7d59e05e229e7266b2f67b3c0",
+          "oracle_branches": [
+            "multiple-consume"
+          ]
+        },
+        {
+          "case": "koff-kon-clear-at65-full2048frames-state-aram-split",
+          "pcm_sha256": "4775af3b5979c890b9a540d203ce534b9cb2873378804fedd35cac548682c0d8",
+          "oracle_branches": []
+        },
+        {
+          "case": "koff-kon-clear-at97-full2048frames-state-aram-split",
+          "pcm_sha256": "9f1dcbc35c350d6027f98be0f5c8b43b42ca52b7604459c0c42be3aa88913d47",
+          "oracle_branches": []
+        },
+        {
+          "case": "nonloop-end-even-under-noise-full2048frames-state-aram-split",
+          "pcm_sha256": "635058a6021d19cf291f672877871175407505edcebc4376d93194b1594dcc0b",
+          "oracle_branches": [
+            "nonloop-end"
+          ]
+        },
+        {
+          "case": "fir-prefix-overflow-full2048frames-state-aram-split",
+          "pcm_sha256": "41478147ef7325f84c99c24bc919413ec6472d74953b60470a122450861257e6",
+          "oracle_branches": [
+            "fir-prefix-wrap"
+          ]
+        },
+        {
+          "case": "offset17-render-full2048frames-state-aram-split",
+          "pcm_sha256": "a46cd42428d5abc3fd96064f8d9fe9acd38b4a42a648f021f6397e43beae0951",
+          "oracle_branches": []
+        },
+        {
+          "case": "error-atomicity-entire-aram-queue-capacity-reclaim-time-and-memory",
+          "atomic_cases": 12
+        }
+      ],
+      "source_sha256_lf": {
+        "examples/snes-dsp-audio.fs": "3614b1e767dfdd8c8ddb941c131f8984078e07c36c6723091466c6e28ac2529e",
+        "examples/snes-gauss.fs": "e0d5cefee60b5d85a8b368dd66bc62d1f75e1d3aaa22cdb47b8ec1cd994da078",
+        "examples/snes-dsp-audio-play.fs": "7867e461cea24a84615b9c4861d3acd41752c557d53b218491b32a76419582b9",
+        "scripts/snes-tables.py": "327170a26a43b480e36783fc4ae8f41a923979ca5df3c9c4e441d1e73e805e4b",
+        "scripts/snes-gauss-data.json": "40fa10574a7b63925432c7d86ebf4c574b2f6c612ab75893036193cec7d73cce",
+        "tests/scripts/verify-snes-dsp-audio.py": "4d9470e1bc4b9dabb0c89390df2d4650eaadf4db29efd34a74dea215c8a73b59"
+      }
+    },
+    "windows-model": {
+      "scope": "Independent integer S-DSP sample-boundary oracle; all generated audio stays in RAM.",
+      "platform": "Windows-11-10.0.26300-SP0",
+      "binary_sha256": "afac007953731a2bb6c717a52aac85bea196b5ce44e62b182a8524325e604d5b",
+      "tests": [
+        {
+          "case": "independent-extraction-from-reference-document",
+          "reference_sha256": "3853b65a7331bf12eea431ff494a2948a1c78ef22f7e819db4b139fd5a79f6c6"
+        },
+        {
+          "case": "all256headers16nibbles3histories-rational-brr"
+        },
+        {
+          "case": "all256-gauss-phases4-history-extremes-and-overflow"
+        },
+        {
+          "case": "all32-global-rate-boundaries-two-periods"
+        },
+        {
+          "case": "gain4modes-all32rates-direct128-attack16-decay8-sustain32-release",
+          "cases": 317
+        },
+        {
+          "case": "hand-kon5delay-event-boundary-latched-header-end-loop-and-word-wrap"
+        },
+        {
+          "case": "all128registers256bytes-and-all65536aram-addresses"
+        },
+        {
+          "case": "hand-signed-volume-feedback-wrap-fir8impulses-edl-latch-noise20"
+        },
+        {
+          "case": "demo-full2048frames-state-aram-split",
+          "pcm_sha256": "431c7625f3d99bd621d60e85a90e15c4918b9c43aaed6622cee69e51586a6ec4",
+          "oracle_branches": []
+        },
+        {
+          "case": "changes-full2048frames-state-aram-split",
+          "pcm_sha256": "a9af2b31d983ee65f539fae8f4b99ae534055c7c9234cbf61dee3fe0740fbe5e",
+          "oracle_branches": []
+        },
+        {
+          "case": "signed8voice-noise-pmon-fir-and-aram-alias-full2048frames-state-aram-split",
+          "pcm_sha256": "6b72895e65144198a1304a57325109b1e24867235daa9173a4e8036650b9d764",
+          "oracle_branches": [
+            "echo-16bit-wrap",
+            "echo-brr-overlap",
+            "echo-dir-overlap",
+            "fir-prefix-wrap",
+            "multiple-consume",
+            "pitch-high-mask",
+            "pmon-clamp"
+          ]
+        },
+        {
+          "case": "all-envelope-modes-full2048frames-state-aram-split",
+          "pcm_sha256": "444756c2902882aeccb350ea77264ee2d37e9671f9b175c5381fbc07f06f774c",
+          "oracle_branches": []
+        },
+        {
+          "case": "brr16bit-wrap-maxpitch-full2048frames-state-aram-split",
+          "pcm_sha256": "f68340f9559ce4f781285ce9aaeac0fa26f63ab7d59e05e229e7266b2f67b3c0",
+          "oracle_branches": [
+            "multiple-consume"
+          ]
+        },
+        {
+          "case": "koff-kon-clear-at65-full2048frames-state-aram-split",
+          "pcm_sha256": "4775af3b5979c890b9a540d203ce534b9cb2873378804fedd35cac548682c0d8",
+          "oracle_branches": []
+        },
+        {
+          "case": "koff-kon-clear-at97-full2048frames-state-aram-split",
+          "pcm_sha256": "9f1dcbc35c350d6027f98be0f5c8b43b42ca52b7604459c0c42be3aa88913d47",
+          "oracle_branches": []
+        },
+        {
+          "case": "nonloop-end-even-under-noise-full2048frames-state-aram-split",
+          "pcm_sha256": "635058a6021d19cf291f672877871175407505edcebc4376d93194b1594dcc0b",
+          "oracle_branches": [
+            "nonloop-end"
+          ]
+        },
+        {
+          "case": "fir-prefix-overflow-full2048frames-state-aram-split",
+          "pcm_sha256": "41478147ef7325f84c99c24bc919413ec6472d74953b60470a122450861257e6",
+          "oracle_branches": [
+            "fir-prefix-wrap"
+          ]
+        },
+        {
+          "case": "offset17-render-full2048frames-state-aram-split",
+          "pcm_sha256": "a46cd42428d5abc3fd96064f8d9fe9acd38b4a42a648f021f6397e43beae0951",
+          "oracle_branches": []
+        },
+        {
+          "case": "error-atomicity-entire-aram-queue-capacity-reclaim-time-and-memory",
+          "atomic_cases": 12
+        }
+      ],
+      "source_sha256_lf": {
+        "examples/snes-dsp-audio.fs": "3614b1e767dfdd8c8ddb941c131f8984078e07c36c6723091466c6e28ac2529e",
+        "examples/snes-gauss.fs": "e0d5cefee60b5d85a8b368dd66bc62d1f75e1d3aaa22cdb47b8ec1cd994da078",
+        "examples/snes-dsp-audio-play.fs": "7867e461cea24a84615b9c4861d3acd41752c557d53b218491b32a76419582b9",
+        "scripts/snes-tables.py": "327170a26a43b480e36783fc4ae8f41a923979ca5df3c9c4e441d1e73e805e4b",
+        "scripts/snes-gauss-data.json": "40fa10574a7b63925432c7d86ebf4c574b2f6c612ab75893036193cec7d73cce",
+        "tests/scripts/verify-snes-dsp-audio.py": "4d9470e1bc4b9dabb0c89390df2d4650eaadf4db29efd34a74dea215c8a73b59"
+      }
+    },
+    "windows-no-audio-model": {
+      "scope": "Independent integer S-DSP sample-boundary oracle; all generated audio stays in RAM.",
+      "platform": "Windows-11-10.0.26300-SP0",
+      "binary_sha256": "2e04ef29886f978ed7c12d1d9fe05dac9b00ef0edcc122a55658d38189511c57",
+      "tests": [
+        {
+          "case": "independent-extraction-from-reference-document",
+          "reference_sha256": "3853b65a7331bf12eea431ff494a2948a1c78ef22f7e819db4b139fd5a79f6c6"
+        },
+        {
+          "case": "all256headers16nibbles3histories-rational-brr"
+        },
+        {
+          "case": "all256-gauss-phases4-history-extremes-and-overflow"
+        },
+        {
+          "case": "all32-global-rate-boundaries-two-periods"
+        },
+        {
+          "case": "gain4modes-all32rates-direct128-attack16-decay8-sustain32-release",
+          "cases": 317
+        },
+        {
+          "case": "hand-kon5delay-event-boundary-latched-header-end-loop-and-word-wrap"
+        },
+        {
+          "case": "all128registers256bytes-and-all65536aram-addresses"
+        },
+        {
+          "case": "hand-signed-volume-feedback-wrap-fir8impulses-edl-latch-noise20"
+        },
+        {
+          "case": "demo-full2048frames-state-aram-split",
+          "pcm_sha256": "431c7625f3d99bd621d60e85a90e15c4918b9c43aaed6622cee69e51586a6ec4",
+          "oracle_branches": []
+        },
+        {
+          "case": "changes-full2048frames-state-aram-split",
+          "pcm_sha256": "a9af2b31d983ee65f539fae8f4b99ae534055c7c9234cbf61dee3fe0740fbe5e",
+          "oracle_branches": []
+        },
+        {
+          "case": "signed8voice-noise-pmon-fir-and-aram-alias-full2048frames-state-aram-split",
+          "pcm_sha256": "6b72895e65144198a1304a57325109b1e24867235daa9173a4e8036650b9d764",
+          "oracle_branches": [
+            "echo-16bit-wrap",
+            "echo-brr-overlap",
+            "echo-dir-overlap",
+            "fir-prefix-wrap",
+            "multiple-consume",
+            "pitch-high-mask",
+            "pmon-clamp"
+          ]
+        },
+        {
+          "case": "all-envelope-modes-full2048frames-state-aram-split",
+          "pcm_sha256": "444756c2902882aeccb350ea77264ee2d37e9671f9b175c5381fbc07f06f774c",
+          "oracle_branches": []
+        },
+        {
+          "case": "brr16bit-wrap-maxpitch-full2048frames-state-aram-split",
+          "pcm_sha256": "f68340f9559ce4f781285ce9aaeac0fa26f63ab7d59e05e229e7266b2f67b3c0",
+          "oracle_branches": [
+            "multiple-consume"
+          ]
+        },
+        {
+          "case": "koff-kon-clear-at65-full2048frames-state-aram-split",
+          "pcm_sha256": "4775af3b5979c890b9a540d203ce534b9cb2873378804fedd35cac548682c0d8",
+          "oracle_branches": []
+        },
+        {
+          "case": "koff-kon-clear-at97-full2048frames-state-aram-split",
+          "pcm_sha256": "9f1dcbc35c350d6027f98be0f5c8b43b42ca52b7604459c0c42be3aa88913d47",
+          "oracle_branches": []
+        },
+        {
+          "case": "nonloop-end-even-under-noise-full2048frames-state-aram-split",
+          "pcm_sha256": "635058a6021d19cf291f672877871175407505edcebc4376d93194b1594dcc0b",
+          "oracle_branches": [
+            "nonloop-end"
+          ]
+        },
+        {
+          "case": "fir-prefix-overflow-full2048frames-state-aram-split",
+          "pcm_sha256": "41478147ef7325f84c99c24bc919413ec6472d74953b60470a122450861257e6",
+          "oracle_branches": [
+            "fir-prefix-wrap"
+          ]
+        },
+        {
+          "case": "offset17-render-full2048frames-state-aram-split",
+          "pcm_sha256": "a46cd42428d5abc3fd96064f8d9fe9acd38b4a42a648f021f6397e43beae0951",
+          "oracle_branches": []
+        },
+        {
+          "case": "error-atomicity-entire-aram-queue-capacity-reclaim-time-and-memory",
+          "atomic_cases": 12
+        }
+      ],
+      "source_sha256_lf": {
+        "examples/snes-dsp-audio.fs": "3614b1e767dfdd8c8ddb941c131f8984078e07c36c6723091466c6e28ac2529e",
+        "examples/snes-gauss.fs": "e0d5cefee60b5d85a8b368dd66bc62d1f75e1d3aaa22cdb47b8ec1cd994da078",
+        "examples/snes-dsp-audio-play.fs": "7867e461cea24a84615b9c4861d3acd41752c557d53b218491b32a76419582b9",
+        "scripts/snes-tables.py": "327170a26a43b480e36783fc4ae8f41a923979ca5df3c9c4e441d1e73e805e4b",
+        "scripts/snes-gauss-data.json": "40fa10574a7b63925432c7d86ebf4c574b2f6c612ab75893036193cec7d73cce",
+        "tests/scripts/verify-snes-dsp-audio.py": "4d9470e1bc4b9dabb0c89390df2d4650eaadf4db29efd34a74dea215c8a73b59"
+      }
+    },
+    "windows-no-debug-model": {
+      "scope": "Independent integer S-DSP sample-boundary oracle; all generated audio stays in RAM.",
+      "platform": "Windows-11-10.0.26300-SP0",
+      "binary_sha256": "be8eae272a0f7b5df5e3107a5c1857e8a27f345e721c71db8f25a381d77143b5",
+      "tests": [
+        {
+          "case": "independent-extraction-from-reference-document",
+          "reference_sha256": "3853b65a7331bf12eea431ff494a2948a1c78ef22f7e819db4b139fd5a79f6c6"
+        },
+        {
+          "case": "all256headers16nibbles3histories-rational-brr"
+        },
+        {
+          "case": "all256-gauss-phases4-history-extremes-and-overflow"
+        },
+        {
+          "case": "all32-global-rate-boundaries-two-periods"
+        },
+        {
+          "case": "gain4modes-all32rates-direct128-attack16-decay8-sustain32-release",
+          "cases": 317
+        },
+        {
+          "case": "hand-kon5delay-event-boundary-latched-header-end-loop-and-word-wrap"
+        },
+        {
+          "case": "all128registers256bytes-and-all65536aram-addresses"
+        },
+        {
+          "case": "hand-signed-volume-feedback-wrap-fir8impulses-edl-latch-noise20"
+        },
+        {
+          "case": "demo-full2048frames-state-aram-split",
+          "pcm_sha256": "431c7625f3d99bd621d60e85a90e15c4918b9c43aaed6622cee69e51586a6ec4",
+          "oracle_branches": []
+        },
+        {
+          "case": "changes-full2048frames-state-aram-split",
+          "pcm_sha256": "a9af2b31d983ee65f539fae8f4b99ae534055c7c9234cbf61dee3fe0740fbe5e",
+          "oracle_branches": []
+        },
+        {
+          "case": "signed8voice-noise-pmon-fir-and-aram-alias-full2048frames-state-aram-split",
+          "pcm_sha256": "6b72895e65144198a1304a57325109b1e24867235daa9173a4e8036650b9d764",
+          "oracle_branches": [
+            "echo-16bit-wrap",
+            "echo-brr-overlap",
+            "echo-dir-overlap",
+            "fir-prefix-wrap",
+            "multiple-consume",
+            "pitch-high-mask",
+            "pmon-clamp"
+          ]
+        },
+        {
+          "case": "all-envelope-modes-full2048frames-state-aram-split",
+          "pcm_sha256": "444756c2902882aeccb350ea77264ee2d37e9671f9b175c5381fbc07f06f774c",
+          "oracle_branches": []
+        },
+        {
+          "case": "brr16bit-wrap-maxpitch-full2048frames-state-aram-split",
+          "pcm_sha256": "f68340f9559ce4f781285ce9aaeac0fa26f63ab7d59e05e229e7266b2f67b3c0",
+          "oracle_branches": [
+            "multiple-consume"
+          ]
+        },
+        {
+          "case": "koff-kon-clear-at65-full2048frames-state-aram-split",
+          "pcm_sha256": "4775af3b5979c890b9a540d203ce534b9cb2873378804fedd35cac548682c0d8",
+          "oracle_branches": []
+        },
+        {
+          "case": "koff-kon-clear-at97-full2048frames-state-aram-split",
+          "pcm_sha256": "9f1dcbc35c350d6027f98be0f5c8b43b42ca52b7604459c0c42be3aa88913d47",
+          "oracle_branches": []
+        },
+        {
+          "case": "nonloop-end-even-under-noise-full2048frames-state-aram-split",
+          "pcm_sha256": "635058a6021d19cf291f672877871175407505edcebc4376d93194b1594dcc0b",
+          "oracle_branches": [
+            "nonloop-end"
+          ]
+        },
+        {
+          "case": "fir-prefix-overflow-full2048frames-state-aram-split",
+          "pcm_sha256": "41478147ef7325f84c99c24bc919413ec6472d74953b60470a122450861257e6",
+          "oracle_branches": [
+            "fir-prefix-wrap"
+          ]
+        },
+        {
+          "case": "offset17-render-full2048frames-state-aram-split",
+          "pcm_sha256": "a46cd42428d5abc3fd96064f8d9fe9acd38b4a42a648f021f6397e43beae0951",
+          "oracle_branches": []
+        },
+        {
+          "case": "error-atomicity-entire-aram-queue-capacity-reclaim-time-and-memory",
+          "atomic_cases": 12
+        }
+      ],
+      "source_sha256_lf": {
+        "examples/snes-dsp-audio.fs": "3614b1e767dfdd8c8ddb941c131f8984078e07c36c6723091466c6e28ac2529e",
+        "examples/snes-gauss.fs": "e0d5cefee60b5d85a8b368dd66bc62d1f75e1d3aaa22cdb47b8ec1cd994da078",
+        "examples/snes-dsp-audio-play.fs": "7867e461cea24a84615b9c4861d3acd41752c557d53b218491b32a76419582b9",
+        "scripts/snes-tables.py": "327170a26a43b480e36783fc4ae8f41a923979ca5df3c9c4e441d1e73e805e4b",
+        "scripts/snes-gauss-data.json": "40fa10574a7b63925432c7d86ebf4c574b2f6c612ab75893036193cec7d73cce",
+        "tests/scripts/verify-snes-dsp-audio.py": "4d9470e1bc4b9dabb0c89390df2d4650eaadf4db29efd34a74dea215c8a73b59"
+      }
+    },
+    "windows-no-float-model": {
+      "scope": "Independent integer S-DSP sample-boundary oracle; all generated audio stays in RAM.",
+      "platform": "Windows-11-10.0.26300-SP0",
+      "binary_sha256": "6acea2b7a2c7dc2cdac6f7e389cd4f9be4bf2428f3502af4d3a6807b0fb89da2",
+      "tests": [
+        {
+          "case": "independent-extraction-from-reference-document",
+          "reference_sha256": "3853b65a7331bf12eea431ff494a2948a1c78ef22f7e819db4b139fd5a79f6c6"
+        },
+        {
+          "case": "all256headers16nibbles3histories-rational-brr"
+        },
+        {
+          "case": "all256-gauss-phases4-history-extremes-and-overflow"
+        },
+        {
+          "case": "all32-global-rate-boundaries-two-periods"
+        },
+        {
+          "case": "gain4modes-all32rates-direct128-attack16-decay8-sustain32-release",
+          "cases": 317
+        },
+        {
+          "case": "hand-kon5delay-event-boundary-latched-header-end-loop-and-word-wrap"
+        },
+        {
+          "case": "all128registers256bytes-and-all65536aram-addresses"
+        },
+        {
+          "case": "hand-signed-volume-feedback-wrap-fir8impulses-edl-latch-noise20"
+        },
+        {
+          "case": "demo-full2048frames-state-aram-split",
+          "pcm_sha256": "431c7625f3d99bd621d60e85a90e15c4918b9c43aaed6622cee69e51586a6ec4",
+          "oracle_branches": []
+        },
+        {
+          "case": "changes-full2048frames-state-aram-split",
+          "pcm_sha256": "a9af2b31d983ee65f539fae8f4b99ae534055c7c9234cbf61dee3fe0740fbe5e",
+          "oracle_branches": []
+        },
+        {
+          "case": "signed8voice-noise-pmon-fir-and-aram-alias-full2048frames-state-aram-split",
+          "pcm_sha256": "6b72895e65144198a1304a57325109b1e24867235daa9173a4e8036650b9d764",
+          "oracle_branches": [
+            "echo-16bit-wrap",
+            "echo-brr-overlap",
+            "echo-dir-overlap",
+            "fir-prefix-wrap",
+            "multiple-consume",
+            "pitch-high-mask",
+            "pmon-clamp"
+          ]
+        },
+        {
+          "case": "all-envelope-modes-full2048frames-state-aram-split",
+          "pcm_sha256": "444756c2902882aeccb350ea77264ee2d37e9671f9b175c5381fbc07f06f774c",
+          "oracle_branches": []
+        },
+        {
+          "case": "brr16bit-wrap-maxpitch-full2048frames-state-aram-split",
+          "pcm_sha256": "f68340f9559ce4f781285ce9aaeac0fa26f63ab7d59e05e229e7266b2f67b3c0",
+          "oracle_branches": [
+            "multiple-consume"
+          ]
+        },
+        {
+          "case": "koff-kon-clear-at65-full2048frames-state-aram-split",
+          "pcm_sha256": "4775af3b5979c890b9a540d203ce534b9cb2873378804fedd35cac548682c0d8",
+          "oracle_branches": []
+        },
+        {
+          "case": "koff-kon-clear-at97-full2048frames-state-aram-split",
+          "pcm_sha256": "9f1dcbc35c350d6027f98be0f5c8b43b42ca52b7604459c0c42be3aa88913d47",
+          "oracle_branches": []
+        },
+        {
+          "case": "nonloop-end-even-under-noise-full2048frames-state-aram-split",
+          "pcm_sha256": "635058a6021d19cf291f672877871175407505edcebc4376d93194b1594dcc0b",
+          "oracle_branches": [
+            "nonloop-end"
+          ]
+        },
+        {
+          "case": "fir-prefix-overflow-full2048frames-state-aram-split",
+          "pcm_sha256": "41478147ef7325f84c99c24bc919413ec6472d74953b60470a122450861257e6",
+          "oracle_branches": [
+            "fir-prefix-wrap"
+          ]
+        },
+        {
+          "case": "offset17-render-full2048frames-state-aram-split",
+          "pcm_sha256": "a46cd42428d5abc3fd96064f8d9fe9acd38b4a42a648f021f6397e43beae0951",
+          "oracle_branches": []
+        },
+        {
+          "case": "error-atomicity-entire-aram-queue-capacity-reclaim-time-and-memory",
+          "atomic_cases": 12
+        }
+      ],
+      "source_sha256_lf": {
+        "examples/snes-dsp-audio.fs": "3614b1e767dfdd8c8ddb941c131f8984078e07c36c6723091466c6e28ac2529e",
+        "examples/snes-gauss.fs": "e0d5cefee60b5d85a8b368dd66bc62d1f75e1d3aaa22cdb47b8ec1cd994da078",
+        "examples/snes-dsp-audio-play.fs": "7867e461cea24a84615b9c4861d3acd41752c557d53b218491b32a76419582b9",
+        "scripts/snes-tables.py": "327170a26a43b480e36783fc4ae8f41a923979ca5df3c9c4e441d1e73e805e4b",
+        "scripts/snes-gauss-data.json": "40fa10574a7b63925432c7d86ebf4c574b2f6c612ab75893036193cec7d73cce",
+        "tests/scripts/verify-snes-dsp-audio.py": "4d9470e1bc4b9dabb0c89390df2d4650eaadf4db29efd34a74dea215c8a73b59"
+      }
+    },
+    "linux-no-debug-stream": {
+      "scope": "Owned stereo callback fixtures: nonzero model output stays in memory, no native audio.",
+      "binary_sha256": "d66c25c1a5233afe338a74f580cc025b80905448d9c1eaadb968abd0b1dbdbc8",
+      "tests": [
+        {
+          "case": "stereo-partial-full-byte-copy",
+          "result": "0 3 2 1 0 0 20 20 0 -1 512 0"
+        },
+        {
+          "case": "noise-stereo-partial-full-byte-copy",
+          "result": "0 3 2 1 0 0 20 20 0 -1 512 0"
+        },
+        {
+          "case": "full-ring-prime-partial-copy",
+          "result": "0 3 2 1 0 0 20 20 0 4096 0"
+        },
+        {
+          "case": "prime-and-following-block-copy",
+          "result": "0 4 2 0 0 0 4608 0 0"
+        },
+        {
+          "case": "silent-prime-and-following-block",
+          "result": "0 4608 0 0"
+        },
+        {
+          "case": "zero-block-no-render-or-write",
+          "result": "-1 0 1 0 0 0"
+        },
+        {
+          "case": "prime-exact-clock-limit-success",
+          "result": "0 4096 0 0"
+        },
+        {
+          "case": "8voice-prime-boundary-matches-monolithic-render",
+          "result": "0 -1 -1 4608 0 0"
+        },
+        {
+          "case": "noise-prime-boundary-matches-monolithic-render",
+          "result": "0 -1 -1 4608 0 0"
+        },
+        {
+          "case": "following-block-wait-timeout-closes",
+          "result": "-528 4096 4 3 1 0 0"
+        },
+        {
+          "case": "timeout-closes",
+          "result": "-528 1 0 0"
+        },
+        {
+          "case": "close-retry",
+          "result": "-516 7 0 0 0"
+        },
+        {
+          "case": "primary-error-retained",
+          "result": "-528 7 0"
+        },
+        {
+          "case": "cleanup-throw-retains-primary",
+          "result": "-528 7 0"
+        },
+        {
+          "case": "cleanup-throw-propagates",
+          "result": "-265 7 0"
+        },
+        {
+          "case": "open-busy-no-close",
+          "result": "-528 0 0 0"
+        },
+        {
+          "case": "drain-timeout-closes",
+          "result": "-528 1 0 0"
+        },
+        {
+          "case": "stream-overflow-before-open",
+          "result": "-24 0 0 0"
+        },
+        {
+          "case": "active-handle-not-stolen",
+          "result": "-528 0 7 0"
+        }
+      ],
+      "source_sha256_lf": {
+        "tests/scripts/verify-snes-dsp-audio-stream.py": "72e3f78b82156ff307379523942e066bbafefa2f2b7bd9a178ec5946ad560c8c",
+        "examples/snes-dsp-audio.fs": "3614b1e767dfdd8c8ddb941c131f8984078e07c36c6723091466c6e28ac2529e",
+        "examples/snes-gauss.fs": "e0d5cefee60b5d85a8b368dd66bc62d1f75e1d3aaa22cdb47b8ec1cd994da078",
+        "examples/snes-dsp-audio-play.fs": "7867e461cea24a84615b9c4861d3acd41752c557d53b218491b32a76419582b9",
+        "examples/pcm-synth-play.fs": "f2f5f56f3fea06260cf5386cea2134337634ff05be0ca0dfd6de8d8e876d8c3f",
+        "examples/pcm-synth.fs": "8f397fd447f9b7f3b3773c324f9c03f38b248b645addee2233f843fd720f8811"
+      }
+    },
+    "linux-no-float-stream": {
+      "scope": "Owned stereo callback fixtures: nonzero model output stays in memory, no native audio.",
+      "binary_sha256": "5b5fa65bfa4c84731a1f06beb6362d6844467a2408fe6510a9e87565699b57fd",
+      "tests": [
+        {
+          "case": "stereo-partial-full-byte-copy",
+          "result": "0 3 2 1 0 0 20 20 0 -1 512 0"
+        },
+        {
+          "case": "noise-stereo-partial-full-byte-copy",
+          "result": "0 3 2 1 0 0 20 20 0 -1 512 0"
+        },
+        {
+          "case": "full-ring-prime-partial-copy",
+          "result": "0 3 2 1 0 0 20 20 0 4096 0"
+        },
+        {
+          "case": "prime-and-following-block-copy",
+          "result": "0 4 2 0 0 0 4608 0 0"
+        },
+        {
+          "case": "silent-prime-and-following-block",
+          "result": "0 4608 0 0"
+        },
+        {
+          "case": "zero-block-no-render-or-write",
+          "result": "-1 0 1 0 0 0"
+        },
+        {
+          "case": "prime-exact-clock-limit-success",
+          "result": "0 4096 0 0"
+        },
+        {
+          "case": "8voice-prime-boundary-matches-monolithic-render",
+          "result": "0 -1 -1 4608 0 0"
+        },
+        {
+          "case": "noise-prime-boundary-matches-monolithic-render",
+          "result": "0 -1 -1 4608 0 0"
+        },
+        {
+          "case": "following-block-wait-timeout-closes",
+          "result": "-528 4096 4 3 1 0 0"
+        },
+        {
+          "case": "timeout-closes",
+          "result": "-528 1 0 0"
+        },
+        {
+          "case": "close-retry",
+          "result": "-516 7 0 0 0"
+        },
+        {
+          "case": "primary-error-retained",
+          "result": "-528 7 0"
+        },
+        {
+          "case": "cleanup-throw-retains-primary",
+          "result": "-528 7 0"
+        },
+        {
+          "case": "cleanup-throw-propagates",
+          "result": "-265 7 0"
+        },
+        {
+          "case": "open-busy-no-close",
+          "result": "-528 0 0 0"
+        },
+        {
+          "case": "drain-timeout-closes",
+          "result": "-528 1 0 0"
+        },
+        {
+          "case": "stream-overflow-before-open",
+          "result": "-24 0 0 0"
+        },
+        {
+          "case": "active-handle-not-stolen",
+          "result": "-528 0 7 0"
+        }
+      ],
+      "source_sha256_lf": {
+        "tests/scripts/verify-snes-dsp-audio-stream.py": "72e3f78b82156ff307379523942e066bbafefa2f2b7bd9a178ec5946ad560c8c",
+        "examples/snes-dsp-audio.fs": "3614b1e767dfdd8c8ddb941c131f8984078e07c36c6723091466c6e28ac2529e",
+        "examples/snes-gauss.fs": "e0d5cefee60b5d85a8b368dd66bc62d1f75e1d3aaa22cdb47b8ec1cd994da078",
+        "examples/snes-dsp-audio-play.fs": "7867e461cea24a84615b9c4861d3acd41752c557d53b218491b32a76419582b9",
+        "examples/pcm-synth-play.fs": "f2f5f56f3fea06260cf5386cea2134337634ff05be0ca0dfd6de8d8e876d8c3f",
+        "examples/pcm-synth.fs": "8f397fd447f9b7f3b3773c324f9c03f38b248b645addee2233f843fd720f8811"
+      }
+    },
+    "linux-stream": {
+      "scope": "Owned stereo callback fixtures: nonzero model output stays in memory, no native audio.",
+      "binary_sha256": "28b12e5b3555c0afff155de3e1bb39474dc549d0a382a18128e73003ab24f193",
+      "tests": [
+        {
+          "case": "stereo-partial-full-byte-copy",
+          "result": "0 3 2 1 0 0 20 20 0 -1 512 0"
+        },
+        {
+          "case": "noise-stereo-partial-full-byte-copy",
+          "result": "0 3 2 1 0 0 20 20 0 -1 512 0"
+        },
+        {
+          "case": "full-ring-prime-partial-copy",
+          "result": "0 3 2 1 0 0 20 20 0 4096 0"
+        },
+        {
+          "case": "prime-and-following-block-copy",
+          "result": "0 4 2 0 0 0 4608 0 0"
+        },
+        {
+          "case": "silent-prime-and-following-block",
+          "result": "0 4608 0 0"
+        },
+        {
+          "case": "zero-block-no-render-or-write",
+          "result": "-1 0 1 0 0 0"
+        },
+        {
+          "case": "prime-exact-clock-limit-success",
+          "result": "0 4096 0 0"
+        },
+        {
+          "case": "8voice-prime-boundary-matches-monolithic-render",
+          "result": "0 -1 -1 4608 0 0"
+        },
+        {
+          "case": "noise-prime-boundary-matches-monolithic-render",
+          "result": "0 -1 -1 4608 0 0"
+        },
+        {
+          "case": "following-block-wait-timeout-closes",
+          "result": "-528 4096 4 3 1 0 0"
+        },
+        {
+          "case": "timeout-closes",
+          "result": "-528 1 0 0"
+        },
+        {
+          "case": "close-retry",
+          "result": "-516 7 0 0 0"
+        },
+        {
+          "case": "primary-error-retained",
+          "result": "-528 7 0"
+        },
+        {
+          "case": "cleanup-throw-retains-primary",
+          "result": "-528 7 0"
+        },
+        {
+          "case": "cleanup-throw-propagates",
+          "result": "-265 7 0"
+        },
+        {
+          "case": "open-busy-no-close",
+          "result": "-528 0 0 0"
+        },
+        {
+          "case": "drain-timeout-closes",
+          "result": "-528 1 0 0"
+        },
+        {
+          "case": "stream-overflow-before-open",
+          "result": "-24 0 0 0"
+        },
+        {
+          "case": "active-handle-not-stolen",
+          "result": "-528 0 7 0"
+        }
+      ],
+      "source_sha256_lf": {
+        "tests/scripts/verify-snes-dsp-audio-stream.py": "72e3f78b82156ff307379523942e066bbafefa2f2b7bd9a178ec5946ad560c8c",
+        "examples/snes-dsp-audio.fs": "3614b1e767dfdd8c8ddb941c131f8984078e07c36c6723091466c6e28ac2529e",
+        "examples/snes-gauss.fs": "e0d5cefee60b5d85a8b368dd66bc62d1f75e1d3aaa22cdb47b8ec1cd994da078",
+        "examples/snes-dsp-audio-play.fs": "7867e461cea24a84615b9c4861d3acd41752c557d53b218491b32a76419582b9",
+        "examples/pcm-synth-play.fs": "f2f5f56f3fea06260cf5386cea2134337634ff05be0ca0dfd6de8d8e876d8c3f",
+        "examples/pcm-synth.fs": "8f397fd447f9b7f3b3773c324f9c03f38b248b645addee2233f843fd720f8811"
+      }
+    },
+    "windows-no-debug-stream": {
+      "scope": "Owned stereo callback fixtures: nonzero model output stays in memory, no native audio.",
+      "binary_sha256": "be8eae272a0f7b5df5e3107a5c1857e8a27f345e721c71db8f25a381d77143b5",
+      "tests": [
+        {
+          "case": "stereo-partial-full-byte-copy",
+          "result": "0 3 2 1 0 0 20 20 0 -1 512 0"
+        },
+        {
+          "case": "noise-stereo-partial-full-byte-copy",
+          "result": "0 3 2 1 0 0 20 20 0 -1 512 0"
+        },
+        {
+          "case": "full-ring-prime-partial-copy",
+          "result": "0 3 2 1 0 0 20 20 0 4096 0"
+        },
+        {
+          "case": "prime-and-following-block-copy",
+          "result": "0 4 2 0 0 0 4608 0 0"
+        },
+        {
+          "case": "silent-prime-and-following-block",
+          "result": "0 4608 0 0"
+        },
+        {
+          "case": "zero-block-no-render-or-write",
+          "result": "-1 0 1 0 0 0"
+        },
+        {
+          "case": "prime-exact-clock-limit-success",
+          "result": "0 4096 0 0"
+        },
+        {
+          "case": "8voice-prime-boundary-matches-monolithic-render",
+          "result": "0 -1 -1 4608 0 0"
+        },
+        {
+          "case": "noise-prime-boundary-matches-monolithic-render",
+          "result": "0 -1 -1 4608 0 0"
+        },
+        {
+          "case": "following-block-wait-timeout-closes",
+          "result": "-528 4096 4 3 1 0 0"
+        },
+        {
+          "case": "timeout-closes",
+          "result": "-528 1 0 0"
+        },
+        {
+          "case": "close-retry",
+          "result": "-516 7 0 0 0"
+        },
+        {
+          "case": "primary-error-retained",
+          "result": "-528 7 0"
+        },
+        {
+          "case": "cleanup-throw-retains-primary",
+          "result": "-528 7 0"
+        },
+        {
+          "case": "cleanup-throw-propagates",
+          "result": "-265 7 0"
+        },
+        {
+          "case": "open-busy-no-close",
+          "result": "-528 0 0 0"
+        },
+        {
+          "case": "drain-timeout-closes",
+          "result": "-528 1 0 0"
+        },
+        {
+          "case": "stream-overflow-before-open",
+          "result": "-24 0 0 0"
+        },
+        {
+          "case": "active-handle-not-stolen",
+          "result": "-528 0 7 0"
+        }
+      ],
+      "source_sha256_lf": {
+        "tests/scripts/verify-snes-dsp-audio-stream.py": "72e3f78b82156ff307379523942e066bbafefa2f2b7bd9a178ec5946ad560c8c",
+        "examples/snes-dsp-audio.fs": "3614b1e767dfdd8c8ddb941c131f8984078e07c36c6723091466c6e28ac2529e",
+        "examples/snes-gauss.fs": "e0d5cefee60b5d85a8b368dd66bc62d1f75e1d3aaa22cdb47b8ec1cd994da078",
+        "examples/snes-dsp-audio-play.fs": "7867e461cea24a84615b9c4861d3acd41752c557d53b218491b32a76419582b9",
+        "examples/pcm-synth-play.fs": "f2f5f56f3fea06260cf5386cea2134337634ff05be0ca0dfd6de8d8e876d8c3f",
+        "examples/pcm-synth.fs": "8f397fd447f9b7f3b3773c324f9c03f38b248b645addee2233f843fd720f8811"
+      }
+    },
+    "windows-no-float-stream": {
+      "scope": "Owned stereo callback fixtures: nonzero model output stays in memory, no native audio.",
+      "binary_sha256": "6acea2b7a2c7dc2cdac6f7e389cd4f9be4bf2428f3502af4d3a6807b0fb89da2",
+      "tests": [
+        {
+          "case": "stereo-partial-full-byte-copy",
+          "result": "0 3 2 1 0 0 20 20 0 -1 512 0"
+        },
+        {
+          "case": "noise-stereo-partial-full-byte-copy",
+          "result": "0 3 2 1 0 0 20 20 0 -1 512 0"
+        },
+        {
+          "case": "full-ring-prime-partial-copy",
+          "result": "0 3 2 1 0 0 20 20 0 4096 0"
+        },
+        {
+          "case": "prime-and-following-block-copy",
+          "result": "0 4 2 0 0 0 4608 0 0"
+        },
+        {
+          "case": "silent-prime-and-following-block",
+          "result": "0 4608 0 0"
+        },
+        {
+          "case": "zero-block-no-render-or-write",
+          "result": "-1 0 1 0 0 0"
+        },
+        {
+          "case": "prime-exact-clock-limit-success",
+          "result": "0 4096 0 0"
+        },
+        {
+          "case": "8voice-prime-boundary-matches-monolithic-render",
+          "result": "0 -1 -1 4608 0 0"
+        },
+        {
+          "case": "noise-prime-boundary-matches-monolithic-render",
+          "result": "0 -1 -1 4608 0 0"
+        },
+        {
+          "case": "following-block-wait-timeout-closes",
+          "result": "-528 4096 4 3 1 0 0"
+        },
+        {
+          "case": "timeout-closes",
+          "result": "-528 1 0 0"
+        },
+        {
+          "case": "close-retry",
+          "result": "-516 7 0 0 0"
+        },
+        {
+          "case": "primary-error-retained",
+          "result": "-528 7 0"
+        },
+        {
+          "case": "cleanup-throw-retains-primary",
+          "result": "-528 7 0"
+        },
+        {
+          "case": "cleanup-throw-propagates",
+          "result": "-265 7 0"
+        },
+        {
+          "case": "open-busy-no-close",
+          "result": "-528 0 0 0"
+        },
+        {
+          "case": "drain-timeout-closes",
+          "result": "-528 1 0 0"
+        },
+        {
+          "case": "stream-overflow-before-open",
+          "result": "-24 0 0 0"
+        },
+        {
+          "case": "active-handle-not-stolen",
+          "result": "-528 0 7 0"
+        }
+      ],
+      "source_sha256_lf": {
+        "tests/scripts/verify-snes-dsp-audio-stream.py": "72e3f78b82156ff307379523942e066bbafefa2f2b7bd9a178ec5946ad560c8c",
+        "examples/snes-dsp-audio.fs": "3614b1e767dfdd8c8ddb941c131f8984078e07c36c6723091466c6e28ac2529e",
+        "examples/snes-gauss.fs": "e0d5cefee60b5d85a8b368dd66bc62d1f75e1d3aaa22cdb47b8ec1cd994da078",
+        "examples/snes-dsp-audio-play.fs": "7867e461cea24a84615b9c4861d3acd41752c557d53b218491b32a76419582b9",
+        "examples/pcm-synth-play.fs": "f2f5f56f3fea06260cf5386cea2134337634ff05be0ca0dfd6de8d8e876d8c3f",
+        "examples/pcm-synth.fs": "8f397fd447f9b7f3b3773c324f9c03f38b248b645addee2233f843fd720f8811"
+      }
+    },
+    "windows-stream": {
+      "scope": "Owned stereo callback fixtures: nonzero model output stays in memory, no native audio.",
+      "binary_sha256": "afac007953731a2bb6c717a52aac85bea196b5ce44e62b182a8524325e604d5b",
+      "tests": [
+        {
+          "case": "stereo-partial-full-byte-copy",
+          "result": "0 3 2 1 0 0 20 20 0 -1 512 0"
+        },
+        {
+          "case": "noise-stereo-partial-full-byte-copy",
+          "result": "0 3 2 1 0 0 20 20 0 -1 512 0"
+        },
+        {
+          "case": "full-ring-prime-partial-copy",
+          "result": "0 3 2 1 0 0 20 20 0 4096 0"
+        },
+        {
+          "case": "prime-and-following-block-copy",
+          "result": "0 4 2 0 0 0 4608 0 0"
+        },
+        {
+          "case": "silent-prime-and-following-block",
+          "result": "0 4608 0 0"
+        },
+        {
+          "case": "zero-block-no-render-or-write",
+          "result": "-1 0 1 0 0 0"
+        },
+        {
+          "case": "prime-exact-clock-limit-success",
+          "result": "0 4096 0 0"
+        },
+        {
+          "case": "8voice-prime-boundary-matches-monolithic-render",
+          "result": "0 -1 -1 4608 0 0"
+        },
+        {
+          "case": "noise-prime-boundary-matches-monolithic-render",
+          "result": "0 -1 -1 4608 0 0"
+        },
+        {
+          "case": "following-block-wait-timeout-closes",
+          "result": "-528 4096 4 3 1 0 0"
+        },
+        {
+          "case": "timeout-closes",
+          "result": "-528 1 0 0"
+        },
+        {
+          "case": "close-retry",
+          "result": "-516 7 0 0 0"
+        },
+        {
+          "case": "primary-error-retained",
+          "result": "-528 7 0"
+        },
+        {
+          "case": "cleanup-throw-retains-primary",
+          "result": "-528 7 0"
+        },
+        {
+          "case": "cleanup-throw-propagates",
+          "result": "-265 7 0"
+        },
+        {
+          "case": "open-busy-no-close",
+          "result": "-528 0 0 0"
+        },
+        {
+          "case": "drain-timeout-closes",
+          "result": "-528 1 0 0"
+        },
+        {
+          "case": "stream-overflow-before-open",
+          "result": "-24 0 0 0"
+        },
+        {
+          "case": "active-handle-not-stolen",
+          "result": "-528 0 7 0"
+        }
+      ],
+      "source_sha256_lf": {
+        "tests/scripts/verify-snes-dsp-audio-stream.py": "72e3f78b82156ff307379523942e066bbafefa2f2b7bd9a178ec5946ad560c8c",
+        "examples/snes-dsp-audio.fs": "3614b1e767dfdd8c8ddb941c131f8984078e07c36c6723091466c6e28ac2529e",
+        "examples/snes-gauss.fs": "e0d5cefee60b5d85a8b368dd66bc62d1f75e1d3aaa22cdb47b8ec1cd994da078",
+        "examples/snes-dsp-audio-play.fs": "7867e461cea24a84615b9c4861d3acd41752c557d53b218491b32a76419582b9",
+        "examples/pcm-synth-play.fs": "f2f5f56f3fea06260cf5386cea2134337634ff05be0ca0dfd6de8d8e876d8c3f",
+        "examples/pcm-synth.fs": "8f397fd447f9b7f3b3773c324f9c03f38b248b645addee2233f843fd720f8811"
+      }
+    }
+  },
+  "native_silent": {
+    "source": "S\" examples/snes-dsp-audio-play.fs\" INCLUDED SD-DEMO-SETUP 16 FALSE SD-STREAM PS-HANDLE @ . PS-UNDERRUN-COUNT @ . PS-FRAMES @ . DEPTH . BYE\n",
+    "reports": {
+      "windows": {
+        "device_precheck": {
+          "exit": 0,
+          "stdout": "-1 ",
+          "stderr": ""
+        },
+        "exit": 0,
+        "stdout": "0 0 8192 0 ",
+        "stderr": ""
+      },
+      "linux": {
+        "device_precheck": {
+          "exit": 0,
+          "stdout": "-1 ",
+          "stderr": ""
+        },
+        "exit": 0,
+        "stdout": "0 0 8192 0 ",
+        "stderr": ""
+      }
+    },
+    "scope": "FALSE submits zero samples only. Functional stream test; no timing measurements and no audible acceptance.",
+    "linux_initial_no_device_reference": {
+      "device_precheck": {
+        "exit": 0,
+        "stdout": "0 ",
+        "stderr": ""
+      },
+      "exit": 0,
+      "stdout": "0 0 8192 0 ",
+      "stderr": ""
+    }
+  },
+  "native_resource_probe": {
+    "owned_keepalive_pid": 482,
+    "cmdline": "",
+    "remaining_sigma": [],
+    "remaining_pacat": [],
+    "keepalive_stop_requested": false,
+    "keepalive_already_exited": true
+  },
+  "dictionary_here": {
+    "platform": "Windows full build",
+    "before": 122880,
+    "after": 218632,
+    "delta": 95752,
+    "meaning": "Logical HERE region only, not RSS, total allocator usage or native binary growth. Playback buffers allocated separately."
+  },
+  "tasks_snapshot": [
+    {
+      "id": 1173,
+      "title": "音源試作08 SNES S-DSP：資料/ライセンスと対象範囲を確定し、レジスタ/状態・8声/BRR・envelope/noise/echo等をForthで検証/測定、SPC700 CPUとは分けて本体移行の採否と未実装を記録",
+      "status": "todo",
+      "parent_id": 999,
+      "progress": 0,
+      "progress_mode": "auto",
+      "created_at": "2026-11-20T08:03:34Z",
+      "depends_on": [
+        1131
+      ],
+      "effective_progress": 25,
+      "blocked": false,
+      "blocked_by": []
+    },
+    {
+      "id": 1174,
+      "title": "SNES01 仕様・Forth実装と独立検証：対象モデル/変種と宣言範囲を資料で確定、状態/時刻境界とPCMを別実装・手計算で照合しClaudeレビューと採否論点を記録",
+      "status": "done",
+      "parent_id": 1173,
+      "progress": 100,
+      "progress_mode": "auto",
+      "created_at": "2026-11-20T08:03:34Z",
+      "completed_at": "2026-11-20T10:40:09Z",
+      "depends_on": [
+        1131
+      ],
+      "effective_progress": 100,
+      "blocked": false,
+      "blocked_by": []
+    },
+    {
+      "id": 1175,
+      "title": "SNES Windows受け入れ：通常/機能除外構成の独立PCM/状態照合、サイズと速度・採否、Windows実装置での生成音の実聴・Ctrl+C後の停止/再再生と資源回収を確認しOS/版/装置を記録",
+      "status": "todo",
+      "parent_id": 1173,
+      "progress": 0,
+      "progress_mode": "auto",
+      "created_at": "2026-11-20T08:03:34Z",
+      "depends_on": [
+        1174
+      ],
+      "effective_progress": 0,
+      "blocked": false,
+      "blocked_by": []
+    },
+    {
+      "id": 1176,
+      "title": "SNES Linux受け入れ：通常/機能除外構成の独立PCM/状態照合、サイズと速度・採否、PulseAudio/ALSAでの生成音の実聴・Ctrl+C後の停止/再再生と資源回収を確認しOS/版/装置とWSL/実機の別を記録",
+      "status": "todo",
+      "parent_id": 1173,
+      "progress": 0,
+      "progress_mode": "auto",
+      "created_at": "2026-11-20T08:03:34Z",
+      "depends_on": [
+        1174
+      ],
+      "effective_progress": 0,
+      "blocked": false,
+      "blocked_by": []
+    },
+    {
+      "id": 1177,
+      "title": "SNES Mac受け入れ：Mac実機の通常/機能除外構成・独立PCM/状態照合・サイズと速度、生成音の実聴・Ctrl+C後の停止/再再生と資源回収を確認しOS/CPU/版/装置を記録。完了まで機種の親を未完了に維持",
+      "status": "todo",
+      "parent_id": 1173,
+      "progress": 0,
+      "progress_mode": "auto",
+      "created_at": "2026-11-20T08:03:34Z",
+      "depends_on": [
+        1130,
+        1174
+      ],
+      "effective_progress": 0,
+      "blocked": false,
+      "blocked_by": []
+    }
+  ],
+  "remaining": [
+    "1175 Windows size/speed/adoption/generated-sound/physicalCtrlC acceptance",
+    "1176 Linux size/speed/adoption/generated-sound/physicalCtrlC acceptance",
+    "1177 physicalMac acceptance; parent1173 remains incomplete"
+  ],
+  "reproduce": [
+    "python scripts/snes-tables.py --check",
+    "python tests/scripts/verify-snes-dsp-audio.py PATH_TO_SIGMA --reference-doc CACHED_FULLSNES_HTML",
+    "python tests/scripts/verify-snes-dsp-audio-stream.py PATH_TO_SIGMA"
+  ],
+  "reviews": [
+    "../reviews/1174-design-claude-review.md",
+    "../reviews/1174-implementation-claude-review.md",
+    "../reviews/1174-final-claude-review.md",
+    "../reviews/1174-review-response.md"
+  ],
+  "historical_snapshot_note": "Recorded before baseline measurement and later ARSHIFT candidate. Exact source snapshots/hashes retained; subsequent candidate validation is in2026-11-20-snes-dsp-os-acceptance.json:arshift_candidate."
+}

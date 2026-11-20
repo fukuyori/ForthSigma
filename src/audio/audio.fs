@@ -122,3 +122,5 @@
 : PCM-STOP SND-PCM-STOP ;
 : PCM-CLOSE SND-PCM-CLOSE ;
 : PCM-UNDERRUNS SND-PCM-UNDERRUNS ;
+
+: SNES-FRAMES ( regs aram voices globals history frames layout -- ) SND-SNES-FRAMES ;

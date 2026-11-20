@@ -6,11 +6,11 @@ Each entry has a stack effect and a behavior description based on runtime HELP, 
 
 Coverage assumes the full build. Feature-disabled builds omit their respective words. Load optional vocabularies with REQUIRE before adding them to the search order. Immediate/compile-only flags come from the built-in implementation; syntax forms have their own conditions in their descriptions.
 
-Entries (namespace/name pairs): **1819**. The same name in different vocabularies counts separately.
+Entries (namespace/name pairs): **1821**. The same name in different vocabularies counts separately.
 
 ## Contents
 
-- [AUDIO](#namespace-audio) (87)
+- [AUDIO](#namespace-audio) (89)
 - [EKEYS](#namespace-ekeys) (35)
 - [EXTENSION](#namespace-extension) (39)
 - [FORTH](#namespace-forth) (961)
@@ -99,12 +99,14 @@ Regenerate: `python scripts/word-reference.py`. Check only: `python scripts/word
 - [` SND-SAMPLE `](#w-415544494f3a534e442d53414d504c45)
 - [` SND-SAMPLE-INSTRUMENT `](#w-415544494f3a534e442d53414d504c452d494e535452554d454e54)
 - [` SND-SFX `](#w-415544494f3a534e442d534658)
+- [` SND-SNES-FRAMES `](#w-415544494f3a534e442d534e45532d4652414d4553)
 - [` SND-SOUND `](#w-415544494f3a534e442d534f554e44)
 - [` SND-STOP-MOD `](#w-415544494f3a534e442d53544f502d4d4f44)
 - [` SND-STYLE `](#w-415544494f3a534e442d5354594c45)
 - [` SND-SYNC `](#w-415544494f3a534e442d53594e43)
 - [` SND-WAVE `](#w-415544494f3a534e442d57415645)
 - [` SND-WAVETABLE `](#w-415544494f3a534e442d574156455441424c45)
+- [` SNES-FRAMES `](#w-415544494f3a534e45532d4652414d4553)
 - [` SOUND `](#w-415544494f3a534f554e44)
 - [` SQUARE `](#w-415544494f3a535155415245)
 - [` ST `](#w-415544494f3a5354)
@@ -2212,6 +2214,28 @@ Caution: Load and select the vocabulary first. Host display, input and sound sup
 
 Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1388).
 
+<a id="w-415544494f3a534e442d534e45532d4652414d4553"></a>
+
+### ` SND-SNES-FRAMES `
+
+` ( regs aram voices globals history frames layout -- ) `
+
+Internal synchronous S-DSP kernel. Layout 1 borrows disjoint buffers: 128 bytes registers, 65536 bytes ARAM, 112/10/16 little-endian signed 64-bit cells for voices/globals/echo history. Validates addresses, fields and time before effects; -9 address, -24 layout/range/overlap. Completed frames persist on execution interruption. No audio device or retained pointers. See SNES\_DSP\_NATIVE\_DESIGN.md.
+
+Kind: builtin.
+
+` REQUIRE-AUDIO ALSO AUDIO ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+S" examples/snes-dsp-audio.fs" INCLUDED REQUIRE-AUDIO ALSO AUDIO SD-REGS SD-ARAM SD-VOICES SD-GLOBALS SD-EHIST 0 1 SND-SNES-FRAMES
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1660).
+
 <a id="w-415544494f3a534e442d534f554e44"></a>
 
 ### ` SND-SOUND `
@@ -2367,6 +2391,34 @@ Usage example (source excerpt; consult the link for setup and expectations)
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment. Use valid logical-memory addresses, lengths and capacities; distinguish owned storage from borrowed lifetimes.
 
 Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1382).
+
+<a id="w-415544494f3a534e45532d4652414d4553"></a>
+
+### ` SNES-FRAMES `
+
+` ( regs aram voices globals history frames layout -- ) `
+
+Synchronous S-DSP frame kernel; layout1 and five disjoint borrowed VM buffers. See SND-SNES-FRAMES and SNES\_DSP\_NATIVE\_DESIGN.md for exact sizes/fields. Invalid address -9; invalid layout/count/state/overlap -24, before effects. Zero frames changes nothing after validation. No audio device; completed frames persist on interruption.
+
+Kind: library.
+
+` REQUIRE-AUDIO ALSO AUDIO ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+S" examples/snes-dsp-audio.fs" INCLUDED REQUIRE-AUDIO ALSO AUDIO SD-REGS SD-ARAM SD-VOICES SD-GLOBALS SD-EHIST 0 1 SNES-FRAMES
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+: SNES-FRAMES ( regs aram voices globals history frames layout -- ) SND-SNES-FRAMES ;
+```
+
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1661).
 
 <a id="w-415544494f3a534f554e44"></a>
 
