@@ -2,6 +2,8 @@
 
 2026-11-21：モデルと補助の表は`include/`へ移し、`*-DEMO-SETUP`などデモ用の語は`examples/<名前>-demo.fs`へ分けた（1185）。`*-play.fs`はデモのファイルを読む。以下の記録にある`examples/`のモデルのパスは、移す前のものである。
 
+2026-11-21：語の名前と形をそろえた（1187）。どのモデルも`*-RESET ( -- )` `*-WRITE` `*-EVENT! ( value target tick -- )` `*-READ ( target tick -- value )` `*-RUN ( clocks -- )` `*-RENDER ( addr frames -- )`を持つ。共通の語の検査は`tests/scripts/verify-model-common-words.py`。
+
 ## Mac実機受け入れ1154（2026-11-20）
 
 main `53ebe81`、macOS 27.2.1 / Apple M5 / Zig 0.17.1。固定音量0の修正を含むソースからReleaseFast / cpu=baseline / strip=trueで4構成（全機能、debug/graphics/extension除外、float/debug/graphics/extension除外、audio/graphics/extension除外）を新たにビルドした。作業ファイルは`.work/1154-mac/`（git管理外）。
@@ -83,9 +85,10 @@ mixerは(tone OR disableTone)AND(noise OR disableNoise)。両方disableならDC�
 | 語 | 契約 |
 | --- | --- |
 | YM-RESET ( -- ) | reg/counter/queue/時刻/端数/slow選択を初期化。I/O pinsはFF、select rawは0 |
-| YM-WRITE ( byte reg tick -- ) | 指定tickまで進め、0..15のregへbyteを書く |
-| YM-EVENT! ( byte reg tick -- ) | 時刻順queueへ追加。同tickは追加順。未処理1024件、満杯-528、領域回収あり |
-| YM-READ ( reg tick -- byte ) | 指定tickの読戻し。R0..13はraw8bit、R14/15は下記のpin値 |
+| YM-WRITE ( byte target tick -- ) | 指定tickまで進め、targetへbyteを書く。target 0..15はreg、16/17はport0/1の外部pin、18はFF8800のselect、19はFF8802のdata。ほかは-24 |
+| YM-EVENT! ( byte target tick -- ) | targetは`YM-WRITE`と同じ。時刻順queueへ追加。同tickは追加順。未処理1024件、満杯-528、領域回収あり |
+| YM-READ ( target tick -- byte ) | 指定tickの読戻し。target 0..15は`YM-REG@`、18は選択regの読取り（`YM-BUS@`のFF8800と同じ）。16/17/19は-21、ほかは-24 |
+| YM-REG@ ( reg tick -- byte ) | reg0..15の読戻し。R0..13はraw8bit、R14/15は下記のpin値 |
 | YM-TO ( tick -- ) / YM-RUN ( clocks -- ) | 絶対/相対master時刻へ。逆行/負の相対値/加算overflowは-24 |
 | YM-INPUT! / YM-INPUT-EVENT! ( byte port tick -- ) | port0/1の外部pinを指定/予定変更する。ホストI/Oではない |
 | YM-PORT@ ( port -- latch drive-mask ) | 現在のCPU出力latchと0/FFの駆動mask。時間を進めない |

@@ -88,7 +88,7 @@ CREATE YM-EVENTS 3072 CELLS ALLOT VARIABLE YM-EVENT-COUNT VARIABLE YM-EVENT-INDE
   YM-EVENT-COUNT @ 1024 >= IF YM-COMPACT THEN
   YM-EVENT-COUNT @ 3 * CELLS YM-EVENTS + TO entry value entry ! target entry CELL+ ! tick entry 2 CELLS + !
   1 YM-EVENT-COUNT +! ;
-: YM-EVENT! { value reg tick -- } reg YM-CHECK-REG value reg tick YM-QUEUE ;
+: YM-EVENT! ( value target tick -- ) YM-QUEUE ;
 : YM-INPUT-EVENT! { value port tick -- } port YM-CHECK-PORT value port 16 + tick YM-QUEUE ;
 : YM-BUS-TARGET ( address -- target )
   CASE YM-SELECT-ADDRESS OF 18 ENDOF YM-DATA-ADDRESS OF 19 ENDOF -24 THROW ENDCASE ;
@@ -101,7 +101,7 @@ CREATE YM-EVENTS 3072 CELLS ALLOT VARIABLE YM-EVENT-COUNT VARIABLE YM-EVENT-INDE
     at YM-RAW-TO entry @ entry CELL+ @ YM-STORE 1 YM-EVENT-INDEX +!
   REPEAT tick YM-RAW-TO ;
 : YM-RUN ( clocks -- ) DUP 0< IF -24 THROW THEN DUP 9223372036854775807 YM-CYCLE @ - > IF -24 THROW THEN YM-CYCLE @ + YM-TO ;
-: YM-WRITE { value reg tick -- } reg YM-CHECK-REG value reg tick YM-CHECK tick YM-TO value reg YM-STORE ;
+: YM-WRITE { value target tick -- } value target tick YM-CHECK tick YM-TO value target YM-STORE ;
 : YM-INPUT! { value port tick -- } port YM-CHECK-PORT value port 16 + tick YM-CHECK tick YM-TO value port 16 + YM-STORE ;
 : YM-BUS! { value address tick | target -- } address YM-BUS-TARGET TO target value target tick YM-CHECK tick YM-TO value target YM-STORE ;
 : YM-PORT@ ( port -- latch drive-mask )
@@ -109,13 +109,18 @@ CREATE YM-EVENTS 3072 CELLS ALLOT VARIABLE YM-EVENT-COUNT VARIABLE YM-EVENT-INDE
 : YM-PIN@ { port | pins -- value }
   port YM-CHECK-PORT YM-PINS port CELLS + @ TO pins
   7 YM-R@ 64 port LSHIFT AND IF port 14 + YM-R@ pins AND ELSE pins THEN ;
-: YM-READ { reg tick -- byte }
+: YM-REG@ { reg tick -- byte }
   reg YM-CHECK-REG tick YM-CYCLE @ < IF -24 THROW THEN tick YM-TO
   reg 14 < IF reg YM-R@ ELSE reg 14 - YM-PIN@ THEN ;
+: YM-SELECTED@ ( tick -- byte ) YM-TO YM-SELECT @ 16 < IF YM-SELECT @ YM-CYCLE @ YM-REG@ ELSE 255 THEN ;
+: YM-READ { target tick -- byte }
+  target 0 20 WITHIN 0= IF -24 THROW THEN tick YM-CYCLE @ < IF -24 THROW THEN
+  target 16 < IF target tick YM-REG@ EXIT THEN
+  target 18 <> IF -21 THROW THEN tick YM-SELECTED@ ;
 : YM-BUS@ { address tick -- byte }
   address YM-DATA-ADDRESS = IF -21 THROW THEN address YM-SELECT-ADDRESS <> IF -24 THROW THEN
   tick YM-CYCLE @ < IF -24 THROW THEN tick YM-TO
-  YM-SELECT @ 16 < IF YM-SELECT @ tick YM-READ ELSE 255 THEN ;
+  tick YM-SELECTED@ ;
 : YM-CHANNEL { channel | amplitude level -- s16level }
   YM-TONE-HIGH channel CELLS + @ 7 YM-R@ 1 channel LSHIFT AND OR 0<>
   YM-LFSR @ 1 AND 7 YM-R@ 8 channel LSHIFT AND OR 0<> AND 0= IF 0 EXIT THEN

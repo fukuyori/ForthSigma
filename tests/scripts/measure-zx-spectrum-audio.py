@@ -22,7 +22,7 @@ def workloads():
 
 def program(mode,events,densebase):
     initial=events if densebase is None else densebase
-    setup=f': SETUP {mode} ZX-RESET '+oracle.queue(initial)+' ;\n'
+    setup=f': SETUP {mode} ZX-MODEL! ZX-RESET '+oracle.queue(initial)+' ;\n'
     count=len(initial);index=0
     if densebase is not None:
         work=': WORK 5461 0 DO I 15 AND 49149 I 6 * ZX-CPU @ * ZX-RATE / 1+ ZX-OUT-EVENT! I 16 AND 254 I 6 * ZX-CPU @ * ZX-RATE / 1+ ZX-OUT-EVENT! OUT I 12 * + 6 ZX-RENDER LOOP OUT 65532 + 2 ZX-RENDER ;\n'

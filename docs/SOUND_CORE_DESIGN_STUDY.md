@@ -225,6 +225,8 @@
 
 各モデルの語の名前と形をそろえる（利用者の決定、2026-11-21）。どのモデルも`*-RESET` `*-WRITE ( value target tick -- )` `*-EVENT! ( value target tick -- )` `*-READ ( target tick -- value )` `*-RUN ( clocks -- )` `*-RENDER ( addr frames -- )`を持ち、書く対象の種類（ZXのポートとAY、SNESのレジスタとARAMなど）は`target`の番号に割り当てる。接頭辞（機種名）は残す。ZXのモデルの番号のように初期化に要る設定は、別の語で先に設定する。機種を選んで共通の語で操作する層（記述子とハンドル）は、必要になったときに別に検討する。
 
+1187で実装した（2026-11-21）。足した語は`NA-READ` `YM-REG@`（旧`YM-READ`）`C8-EVENT!` `C8-READ` `ZX-MODEL!` `ZX-EVENT!` `ZX-READ` `SD-EVENT!` `SD-READ`で、`YM-WRITE` `YM-EVENT!` `YM-READ`は`target`（0〜15はレジスタ、16・17は外部pin、18はselect、19はdata）を取る形に変えた。`ZX-RESET`は引数を取らず、機種は`ZX-MODEL!`で先に設定する。機種固有の語（`ZX-OUT` `SD-REG!`など）は残す。検査は`tests/scripts/verify-model-common-words.py`。
+
 ## 6. 確認が必要な事項
 
 - 今の機種の設定（`sound_psg.zig` `sound_nes.zig` `sound_c64.zig` `sound_scc.zig` `sound_amiga.zig`）が、3.5節の加工の組合せで表せるか。表せないもの（SIDのフィルターの特性、PSGのエンベロープの形など）の扱い。

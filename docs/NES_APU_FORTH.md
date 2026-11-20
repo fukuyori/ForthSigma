@@ -2,6 +2,8 @@
 
 2026-11-21：モデルと補助の表は`include/`へ移し、`*-DEMO-SETUP`などデモ用の語は`examples/<名前>-demo.fs`へ分けた（1185）。`*-play.fs`はデモのファイルを読む。以下の記録にある`examples/`のモデルのパスは、移す前のものである。
 
+2026-11-21：語の名前と形をそろえた（1187）。どのモデルも`*-RESET ( -- )` `*-WRITE` `*-EVENT! ( value target tick -- )` `*-READ ( target tick -- value )` `*-RUN ( clocks -- )` `*-RENDER ( addr frames -- )`を持つ。共通の語の検査は`tests/scripts/verify-model-common-words.py`。
+
 2026-11-20追記：DMCを加えた現行5声の契約は[NES DMCの記録](NES_DMC_FORTH.md)を参照。以下の4声・DMC除外・-21拒否・IRQの記述は1134時点の履歴。旧ソースは測定JSONのsource_snapshots_lfに保持している。
 
 2026-11-20、基点main `816129a`、Zig 0.17.1。利用者が最初の対象としてNES APUを選択したため、1132の子1134として実装した。1131の汎用合成とは別のレジスタモデルである。今回の変更は未コミット。
@@ -39,6 +41,7 @@ DMC/DMA、CPU/PPUのバス競合、半サイクル単位のlength reload競合�
 | NA-EVENT! | value address cycle -- | 時刻順の予定表に追加。時刻は進めない |
 | NA-RUN | clocks -- | 予定された書込みを適用して指定CPUクロック数を進める。音を格納しない |
 | NA-TO | cycle -- | 絶対CPU時刻まで進める。音を格納しない |
+| NA-READ | address cycle -- byte | 共通の読取り。4015は`NA-STATUS`と同じ。4000〜4017のほかのアドレスは-21、範囲外と4014・4016は-24 |
 | NA-STATUS | cycle -- status | 指定時刻で4015相当のlength/IRQ状態を読み、frame IRQを消す |
 | NA-IRQ? | -- flag | 現在のframe IRQを消さずに照会する |
 | NA-RENDER | addr frames -- | 時間を進めながら48kHz、mono s16LEを格納する |

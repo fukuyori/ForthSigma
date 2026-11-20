@@ -228,6 +228,10 @@ CREATE SD-EVENTS 3072 CELLS ALLOT VARIABLE SD-EVENT-COUNT VARIABLE SD-EVENT-INDE
 : SD-RAM! { value addr tick -- } addr SD-CHECK-RAM value addr 128 + tick SD-WRITE ;
 : SD-RAM-EVENT! { value addr tick -- } addr SD-CHECK-RAM value addr 128 + tick SD-QUEUE ;
 : SD-RAM@ { addr tick -- byte } addr SD-CHECK-RAM tick SD-TO addr SD-B@ ;
+: SD-EVENT! ( value target tick -- ) SD-QUEUE ;
+: SD-READ { target tick -- byte }
+  target 0 65664 WITHIN 0= IF -24 THROW THEN
+  target 128 < IF target tick SD-REG@ ELSE target 128 - tick SD-RAM@ THEN ;
 : SD-SAMPLE SD-LEFT @ SD-RIGHT @ ;
 : SD-MAX-FRAMES 9223372036854775807 SD-CYCLE @ - 32 / ;
 : SD-LE! { n addr -- } n 255 AND addr C! n 8 RSHIFT 255 AND addr 1+ C! ;

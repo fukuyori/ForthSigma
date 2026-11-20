@@ -2,6 +2,8 @@
 
 2026-11-21：モデルと補助の表は`include/`へ移し、`*-DEMO-SETUP`などデモ用の語は`examples/<名前>-demo.fs`へ分けた（1185）。`*-play.fs`はデモのファイルを読む。以下の記録にある`examples/`のモデルのパスは、移す前のものである。
 
+2026-11-21：語の名前と形をそろえた（1187）。どのモデルも`*-RESET ( -- )` `*-WRITE` `*-EVENT! ( value target tick -- )` `*-READ ( target tick -- value )` `*-RUN ( clocks -- )` `*-RENDER ( addr frames -- )`を持つ。共通の語の検査は`tests/scripts/verify-model-common-words.py`。
+
 ## Mac受け入れ1167の完了（2026-11-20）
 
 main `c205820`、macOS 27.2.1 / Apple M5 / Zig 0.17.1。Zigソースは53ebe81から変更がなく、1154で作ったReleaseFast / cpu=baseline / strip=trueの4構成（全機能、debug/graphics/extension除外、float/debug/graphics/extension除外、audio/graphics/extension除外）を使った。作業ファイルは`.work/1167-1172-mac/`（git管理外）。
@@ -75,6 +77,8 @@ RENDERはframesが非負かつframes <= (MAX-CYCLE)/1000を全体の前検査と
 | C8-MODE! / C8-MODE-EVENT! | ( mode tick -- ) 0=classic、1=XO |
 | C8-PATTERN! / C8-PATTERN-EVENT! | ( addr tick -- ) F002相当の16byteコピー |
 | C8-TO / C8-RUN | ( tick -- ) / ( ticks -- ) 単調な絶対/相対進行 |
+| C8-WRITE / C8-EVENT! | ( value kind tick -- ) 共通の即時/予定書込み。kind 0=timer、1=pitch、2=mode、3=pattern（valueはaddr） |
+| C8-READ | ( kind tick -- value ) 共通の読取り。kind 0..2はtimer/pitch/mode、3は-21、ほかは-24 |
 | C8-TIMER@ | ( tick -- byte ) 時刻をtickまで進め、予定も適用してtimerを読む |
 | C8-SAMPLE / C8-RENDER | ( -- s16 ) / ( addr frames -- ) 呼出側がframes*2byteの有効bufferを用意 |
 | C8-DEMO-SETUP / C8-XO-DEMO-SETUP | ( -- ) 独自の通常/XOデモ設定。読むだけでは再生しない |

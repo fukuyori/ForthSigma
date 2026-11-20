@@ -2,6 +2,8 @@
 
 2026-11-21：モデルと補助の表は`include/`へ移し、`*-DEMO-SETUP`などデモ用の語は`examples/<名前>-demo.fs`へ分けた（1185）。`*-play.fs`はデモのファイルを読む。以下の記録にある`examples/`のモデルのパスは、移す前のものである。
 
+2026-11-21：語の名前と形をそろえた（1187）。どのモデルも`*-RESET ( -- )` `*-WRITE` `*-EVENT! ( value target tick -- )` `*-READ ( target tick -- value )` `*-RUN ( clocks -- )` `*-RENDER ( addr frames -- )`を持つ。共通の語の検査は`tests/scripts/verify-model-common-words.py`。
+
 レモンが標準S-DSPの8声/BRR・envelope/noise・pitch modulation・echo/FIRを承認した。SPC700 CPU/ROM/APU port/実機bus/アナログ回路は含めない。1174は仕様/実装/独立検証、Windows1175/Linux1176/Mac1177で速度・採否・実聴。Mac完了まで親1173は未完了。
 
 ## 資料・実装の来歴
@@ -21,6 +23,7 @@ RESETは128register、64KiB所有ARAM、voice/echo/history、clock、queueを全
 | SD-RESET | ( -- ) 全所有state/ARAM/queueを初期化 |
 | SD-REG! / SD-REG-EVENT! / SD-REG@ | ( byte reg tick -- ) / 同左 / ( reg tick -- byte ) reg0..127 |
 | SD-RAM! / SD-RAM-EVENT! / SD-RAM@ | ( byte addr tick -- ) / 同左 / ( addr tick -- byte ) addr0..65535 |
+| SD-WRITE / SD-EVENT! / SD-READ | ( byte target tick -- ) / 同左 / ( target tick -- byte ) 共通の語。target 0..127はreg、128+addrはARAM |
 | SD-TO / SD-RUN | ( tick -- ) / ( ticks -- ) 単調絶対/相対時刻 |
 | SD-SAMPLE / SD-RENDER | ( -- left right ) / ( addr frames -- ) query/生成。各frame32tick進む |
 | SD-DEMO-SETUP | ( -- ) 自作BRRと独自8声設定、音声装置は開かない |

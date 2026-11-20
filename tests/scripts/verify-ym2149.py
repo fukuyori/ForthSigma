@@ -130,14 +130,14 @@ def main():
    assert list(map(int,run(code)))==m.snapshot()+[0];assert out.read_bytes()==expected,(slow,split,'PCM mismatch')
  digest=hashlib.sha256(expected).hexdigest();assert digest=='bf14ef0a51dfe0fc8e749ad7115f27c25abb077a475c8506f6e3df71948796b0'
  report['tests'].append({'case':'three-voice-noise-envelope-ports-bus-full-pcm-fast-reference-split','frames':2048,'sha256':digest})
- bad=[('YM-WRITE',-1,8,100,-24),('YM-WRITE',256,8,100,-24),('YM-WRITE',1,16,100,-24),('YM-EVENT!',1,-1,100,-24),('YM-EVENT!',1,8,0,-24),('YM-INPUT!',0,2,100,-24),('YM-INPUT-EVENT!',256,0,100,-24),('YM-BUS!',256,SELECT,100,-24),('YM-BUS-EVENT!',0,SELECT+1,100,-24)]
+ bad=[('YM-WRITE',-1,8,100,-24),('YM-WRITE',256,8,100,-24),('YM-WRITE',1,20,100,-24),('YM-EVENT!',1,-1,100,-24),('YM-EVENT!',1,8,0,-24),('YM-INPUT!',0,2,100,-24),('YM-INPUT-EVENT!',256,0,100,-24),('YM-BUS!',256,SELECT,100,-24),('YM-BUS-EVENT!',0,SELECT+1,100,-24)]
  for word,v,r,t,error in bad:
   q=run(DUMP+queue(DEMO)+f'1 YM-TO : BAD {v} {r} {t} {word} ; SNAP [\'] BAD CATCH . SNAP DEPTH . BYE')
   assert len(q)==80 and q[:39]==q[40:79] and q[39]==str(error) and q[-1]=='0',(word,q)
- for body,error in [('YM-WRITE',-4),('YM-INPUT!',-4),('YM-BUS!',-4),('16 100 YM-READ DROP',-24),('0 0 YM-READ DROP',-24),(f'{DATA} 100 YM-BUS@ DROP',-21),('-1 YM-RUN',-24),('9223372036854775807 YM-RUN',-24),('0 -1 YM-RENDER',-24),('-1 YM-PORT@ 2DROP',-24)]:
+ for body,error in [('YM-WRITE',-4),('YM-INPUT!',-4),('YM-BUS!',-4),('20 100 YM-READ DROP',-24),('16 100 YM-READ DROP',-21),('19 100 YM-READ DROP',-21),('0 0 YM-READ DROP',-24),(f'{DATA} 100 YM-BUS@ DROP',-21),('-1 YM-RUN',-24),('9223372036854775807 YM-RUN',-24),('0 -1 YM-RENDER',-24),('-1 YM-PORT@ 2DROP',-24)]:
   q=run(DUMP+'1 YM-TO : BAD '+body+" ; SNAP ['] BAD CATCH . SNAP DEPTH . BYE")
   assert len(q)==80 and q[:39]==q[40:79] and q[39]==str(error) and q[-1]=='0',(body,q)
- report['tests'].append({'case':'atomic-register-port-bus-value-read-time-stack-errors','cases':19})
+ report['tests'].append({'case':'atomic-register-port-bus-value-read-time-stack-errors','cases':21})
  assert run(': FILL-Q 1024 0 DO 3 8 I YM-EVENT! LOOP ; FILL-Q 511 YM-TO 15 8 1024 YM-EVENT! YM-EVENT-COUNT @ . YM-EVENT-INDEX @ . 1024 YM-TO 8 YM-R@ . DEPTH . BYE')==['513','0','15','0']
  assert run("3 8 5 YM-EVENT! 15 8 5 YM-WRITE 8 YM-R@ . : BAD 1 8 4 YM-EVENT! ; ['] BAD CATCH . DEPTH . BYE")==['15','-24','0']
  assert run(": FILL-Q 1024 0 DO 3 8 I YM-EVENT! LOOP ; : BAD 1 8 1024 YM-EVENT! ; FILL-Q ['] BAD CATCH . YM-EVENT-COUNT @ . YM-CYCLE @ . DEPTH . BYE")==['-528','1024','0','0']

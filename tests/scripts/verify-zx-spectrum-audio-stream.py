@@ -52,7 +52,7 @@ CASES=[('mono-partial-full-byte-copy',
   'ZX-CYCLE @ 0 TRUE ZX-STREAM ZX-CYCLE @ = . MC-WRITES @ . MC-CLOSES @ . PS-FRAMES @ . PS-HANDLE @ .',
   '-1 0 1 0 0'),
  ('prime-exact-clock-limit-success',
-  '0 ZX-RESET 9223372036854477141 ZX-CYCLE ! 8 FALSE ZX-STREAM '
+  '0 ZX-MODEL! ZX-RESET 9223372036854477141 ZX-CYCLE ! 8 FALSE ZX-STREAM '
   '9223372036854775807 ZX-CYCLE @ - . PS-FRAMES @ . PS-HANDLE @ .',
   '0 4096 0'),
  ('128k-prime-boundary-matches-monolithic-render',

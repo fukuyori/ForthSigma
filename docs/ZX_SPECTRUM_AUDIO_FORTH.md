@@ -2,6 +2,8 @@
 
 2026-11-21：モデルと補助の表は`include/`へ移し、`*-DEMO-SETUP`などデモ用の語は`examples/<名前>-demo.fs`へ分けた（1185）。`*-play.fs`はデモのファイルを読む。以下の記録にある`examples/`のモデルのパスは、移す前のものである。
 
+2026-11-21：語の名前と形をそろえた（1187）。どのモデルも`*-RESET ( -- )` `*-WRITE` `*-EVENT! ( value target tick -- )` `*-READ ( target tick -- value )` `*-RUN ( clocks -- )` `*-RENDER ( addr frames -- )`を持つ。共通の語の検査は`tests/scripts/verify-model-common-words.py`。
+
 2026-11-20、レモンが48K beeperと128K beeper+AYを対象とすることを承認した。1169は音源側の仕様/実装/独立検証。Windows1170/Linux1171/Mac1172の測定・実聴は別に残す。CPU/ROM/画面/keyboard/テープ/MIDIの実装ではない。
 
 ## Mac受け入れ1172の完了（2026-11-20）
@@ -62,7 +64,10 @@ RENDERは現在CPU tickからfractionを持ち越して進み、その時刻の�
 
 | 語 | stack/用途 |
 | --- | --- |
-| ZX-RESET | ( model -- ) 0=48K/1=128K。clock/counters/queue/latchを初期化 |
+| ZX-MODEL! | ( model -- ) 0=48K/1=128K。次の`ZX-RESET`で使う。`ZX-RESET`までは今の機種のまま動く。ほかは-24 |
+| ZX-RESET | ( -- ) `ZX-MODEL!`の機種でclock/counters/queue/latchを初期化 |
+| ZX-WRITE / ZX-EVENT! | ( byte target tick -- ) 共通の即時/予定書込み。target 0..14はAY reg、15は仮想portAの外部pins、16+portはCPU I/O write |
+| ZX-READ | ( target tick -- byte ) 共通の読取り。0..14は`ZX-AY@`、16+portは`ZX-IN`、15は-21、範囲外は-24 |
 | ZX-OUT / ZX-OUT-EVENT! | ( byte port tick -- ) CPU I/O write即時/予定 |
 | ZX-IN | ( port tick -- byte ) 対応AY read。tickまで進める |
 | ZX-AY! / ZX-AY-EVENT! / ZX-AY@ | ( byte reg tick -- ) / 同左 / ( reg tick -- byte ) direct sound/virtualA |

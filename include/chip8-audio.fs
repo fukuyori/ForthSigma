@@ -74,6 +74,11 @@ VARIABLE C8-MODE VARIABLE C8-PHASE VARIABLE C8-EVENT-COUNT VARIABLE C8-EVENT-IND
   value kind tick C8-CHECK
   kind 3 = IF value C8-TEMP 16 MOVE THEN
   tick C8-TO kind 3 = IF C8-TEMP ELSE value THEN kind C8-STORE ;
+: C8-EVENT! ( value kind tick -- ) C8-QUEUE ;
+: C8-READ { kind tick -- value }
+  kind 0 4 WITHIN 0= IF -24 THROW THEN tick C8-CYCLE @ < IF -24 THROW THEN
+  kind 3 = IF -21 THROW THEN tick C8-TO
+  kind CASE 0 OF C8-TIMER @ ENDOF 1 OF C8-PITCH @ ENDOF 2 OF C8-MODE @ ENDOF ENDCASE ;
 : C8-TIMER! ( byte tick -- ) 0 SWAP C8-WRITE ;
 : C8-PITCH! ( byte tick -- ) 1 SWAP C8-WRITE ;
 : C8-MODE! ( mode tick -- ) 2 SWAP C8-WRITE ;
