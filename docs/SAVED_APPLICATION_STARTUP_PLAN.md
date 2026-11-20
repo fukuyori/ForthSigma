@@ -1,6 +1,6 @@
 # SAVESYSで保存したアプリの起動基盤
 
-2026-11-19。利用者の指示を受け、1003の段階で整備する共通基盤として追加する。2026-11-20更新：1067仕様設計・1068実装・1123 Windows/Linux受け入れを完了。1124 Mac実機を残し、1069受け入れと1066全体は未完了。LOGO機能をSigmaへ組み込む計画ではない。
+2026-11-19。利用者の指示を受け、1003の段階で整備する共通基盤として追加する。2026-11-20更新：1067仕様設計・1068実装・1123 Windows/Linux受け入れを完了。同日、1124 Mac実機も合格し、1069受け入れと1066全体を完了した（[実装記録](SAVED_APPLICATION_STARTUP_IMPLEMENTATION.md#mac実機受け入れ1124)）。LOGO機能をSigmaへ組み込む計画ではない。
 
 [実装・検証とMac手順](SAVED_APPLICATION_STARTUP_IMPLEMENTATION.md)、[採用設計](SAVED_APPLICATION_STARTUP_DESIGN.md)、[レビュー採否](reviews/1067-review-response.md)、[ソース照合と受け入れ条件](SAVED_APPLICATION_STARTUP_ACCEPTANCE.md)を参照する。以下の「設計で決める細部」は着手時の論点で、現在の仕様は採用設計を優先する。
 

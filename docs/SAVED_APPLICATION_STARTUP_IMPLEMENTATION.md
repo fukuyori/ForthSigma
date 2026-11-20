@@ -1,6 +1,6 @@
 # 保存アプリ起動基盤：実装と検証
 
-2026-11-20。基点main `d9e88f2`、Zig 0.17.1、未コミットの作業ツリー。仕様1067・実装1068とWindows/Linux受け入れ1123を完了。Mac実機1124は未確認のため、受け入れ1069と親1066は未完了とする。
+2026-11-20。基点main `d9e88f2`、Zig 0.17.1、未コミットの作業ツリー。仕様1067・実装1068、Windows/Linux受け入れ1123、Mac実機1124を完了し、受け入れ1069と親1066を完了した（Mac実機は下記「Mac実機受け入れ（1124）」）。
 
 [採用設計](SAVED_APPLICATION_STARTUP_DESIGN.md)、[設計レビュー評価](reviews/1067-review-response.md)、[実装レビュー評価](reviews/1068-review-response.md)、[数値・構成・実行体とソースのSHA256](measurements/2026-11-20-saved-startup.json)。以前の[サイズ・速度測定](SIZE_SPEED_MEASUREMENT.md)は789420eの結果であり、この起動機能を含む測定ではない。
 
@@ -22,7 +22,7 @@ Claude Codeの読み取り専用レビューを設計・実装と並行して依
 | Linux musl Debug core / host（WSL） | 1097成功・10除外 / 155成功・15除外、失敗0 |
 | Windows `zig build test` | 成功（runtime・freestanding等を含む既存build test） |
 | Windows/Linux ReleaseFast | 各11構成、合計22構成のビルドと公開プロセス試験が成功 |
-| Mac aarch64 | core-check / host-checkのクロスコンパイル成功。実行していない |
+| Mac aarch64 | core-check / host-checkのクロスコンパイル成功。Mac実機の結果は下記1124 |
 | 全語参照 | 実辞書1805項目、HELP1591項目、文書例28件・個別例401件を照合 |
 | 文書 | `python scripts/check-docs.py d9e88f2` 指摘0 |
 
@@ -77,3 +77,21 @@ echo $?
 ```
 
 無限計算のOS終了確認は専用PTY試験が担当する。表示/音の物理操作や後続資源の結合を、このCLI受け入れ成功から確認済みと推定しない。
+
+## Mac実機受け入れ（1124）
+
+2026-11-20、macOS 27.2.1（26B131）/ Apple M5 arm64 / Zig 0.17.1、対象commit `6512916`（未コミット差分なし）。上記の手順をMac上で実行し、すべて合格した。
+
+| 確認 | 結果 |
+| --- | --- |
+| `zig build test`（Debug） | 23/23 step、1240成功・26除外・失敗0 |
+| 公開試験（fast/baseline/strip、通常） | 13項目成功。生成実行体を別プロセスで起動し、一度だけの起動・空SOURCE・空文字/空白/日本語/option風引数、prefixと起動回避・容量エラー、format/log、正常/BYE/QUIT/THROWと回復、未登録の従来動作、日本語の保存先・実行体パス、readonly既存先の保持、再保存、自己相対名/hardlink/最終symlinkの拒否、CRC/ABI/root/footer破損の拒否、PTYでのNS待機中SIGINT（status1・termios復元）と無限計算のSIGINT終了、tempの回収 |
+| 構成別の公開試験 | graphics/audio/extensionの8通りは各13項目、`-Ddebug=false`（`--no-debug`）12項目、`-Dfiles=false`（`--no-files`）13項目が成功 |
+| image除外 | ビルド成功。APP-ENTRY!/@/-OFFとSAVESYSが不在で、通常起動のバナーが出る |
+| 補助確認 | 復元した起動語のtrace/profile/debug-log、CLI StepLimit、登録済み画像を付けたimage除外ホストの実行前拒否（INVALID IMAGE）が成功 |
+| 起動時間の参考値 | 15回の中央値（範囲）は87,558 Bの画像で4.595 ms（2.967–8.450）、8,476,166 Bで32.579 ms（32.330–32.919）。上記の参考値と同じ条件・注意 |
+| 実端末（利用者の操作、Ghostty） | `.work/mac-wait`の5秒NS待機中にCtrl+Cを押し、`USER INTERRUPT !`・BACKTRACE・status=1。その後の`echo hello`は入力がechoされ`hello`を返した |
+| 文書 | 全語1805・HELP1591・個別例401件を照合、`check-docs.py d9e88f2`指摘0 |
+
+ログとJSONは`.work/1124-mac/`（`public-full.json`、`cfg-*.json`、`matrix.txt`、`noimage.txt`、`supplement.json`、`manual-results.txt`）。補助確認は測定記録の`supplement_helper_source`のパスだけをMac用に変えた`supplement-mac.py`で実行した。
+手元の確認で、子にPTYを制御端末として持たせずに^Cの文字を送るとSIGINTが届かず、待機が最後まで終わることを確認した。これは試験方法の誤りで、実端末の結果とは扱わない。表示・音の物理操作と後続資源との結合は、ここまでの範囲に含めない（1057）。
