@@ -16,6 +16,7 @@ const c64_module = @import("sound_c64.zig");
 const scc_module = @import("sound_scc.zig");
 const amiga_module = @import("sound_amiga.zig");
 pub const pcm = @import("sound_pcm.zig");
+pub const stream = @import("sound_stream.zig");
 pub const mod_module = @import("sound_mod.zig");
 
 pub const Event = mml.Event;
@@ -257,6 +258,9 @@ pub const Engine = struct {
     /// Bit n: voice n plays a note of the current PLAY; only the consumer writes it.
     sounding: std.atomic.Value(u8) = .init(0),
 
+    /// Producer publishes PCM attachment; consumer applies at a render boundary.
+    pcm_control: stream.Control = .{},
+
     // The consumer's own state.
     remaining: [max_voices]u16 = @splat(0),
     at_end: [max_voices]bool = @splat(true),
@@ -379,6 +383,7 @@ pub const Engine = struct {
 
     /// Fills `out` with stereo frames (left, right) of 16-bit samples.
     pub fn render(self: *Engine, out: []i16) void {
+        self.pcm_control.apply();
         self.runCommands();
         var i: usize = 0;
         while (i + 1 < out.len) : (i += 2) {
@@ -412,8 +417,9 @@ pub const Engine = struct {
                 sides[0] += module[0];
                 sides[1] += module[1];
             }
-            out[i] = self.filtered(0, sides[0]);
-            out[i + 1] = self.filtered(1, sides[1]);
+            const input = if (self.pcm_control.active) |active| active.sample() else stream.Frame{ .left = 0, .right = 0 };
+            out[i] = stream.mix(self.filtered(0, sides[0]), input.left);
+            out[i + 1] = stream.mix(self.filtered(1, sides[1]), input.right);
         }
         self.mod_playing.store(self.mod.playing, .release);
     }

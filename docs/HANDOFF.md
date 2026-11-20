@@ -1,5 +1,9 @@
 # ForthSigma 作業引き継ぎ
 
+2026-11-20統合追記：c822e53の保存アプリMac受け入れを統合済み（1124/1069/1066完了）。PCMは設計1125・内部1126を完了し、次はhost寿命1127。PCMのMac1130は未実施。以下は各時点の記録。
+
+2026-11-20追記：保存アプリは6512916でcommit/push済み。Mac1124を残し、PCM998の設計・内部リング1125/1126へ進んだ。次はhost寿命1127。[最新引継ぎ](CORE_EXTENSION_HANDOFF_2026-11-19.md)と[PCM実装範囲](PCM_STREAM_IMPLEMENTATION.md)を参照。PCM公開語/host回収は未実装、PCM差分は未コミット。
+
 2026-11-20追記：保存アプリ起動基盤は設計・実装・Windows/Linux受け入れを完了し、Mac実機を残した。[最新引継ぎ](CORE_EXTENSION_HANDOFF_2026-11-19.md)と[実装・Mac手順](SAVED_APPLICATION_STARTUP_IMPLEMENTATION.md)を参照。サイズ/速度記録と起動機能は未コミット。
 
 2026-11-19追記：本体拡張613の最新状態・未コミット実装・次工程は[613の引継ぎ](CORE_EXTENSION_HANDOFF_2026-11-19.md)を参照。以下の各節は記載日の記録。

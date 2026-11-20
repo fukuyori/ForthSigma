@@ -56,3 +56,5 @@
 - [SIGIMG45/46/47 image format](IMAGE_FORMAT45.md)
 
 - [保存アプリ起動基盤：実装・検証結果とMac手順](SAVED_APPLICATION_STARTUP_IMPLEMENTATION.md)
+
+- [PCMストリーム：採用設計・内部リングと変換の検証](PCM_STREAM_IMPLEMENTATION.md)

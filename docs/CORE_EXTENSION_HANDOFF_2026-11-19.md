@@ -4,6 +4,20 @@
 
 この節を最新状態とする。基点main `6512916`。macOS 27.2.1 / Apple M5 / Zig 0.17.1で1124を実施して合格し、tqueの1124・1069・1066を完了にした。生成実行体の公開試験（通常と10構成）、image除外、補助確認、Ghosttyでの実端末Ctrl+C（status1、その後のecho正常）を確認した。結果は[実装記録](SAVED_APPLICATION_STARTUP_IMPLEMENTATION.md#mac実機受け入れ1124)。下の節の「Mac実機1124（未確認）」は当時の記録。
 
+## PCMの設計・内部リング（2026-11-20、Mac受け入れ統合前の記録）
+
+以下は着手時点の記録。保存アプリMac1124は上のリモート受け入れ記録により完了。PCM自体のMac1130は別項目で未実施。
+
+この節を最新状態とする。Git基点main `6512916`（保存アプリ起動・測定記録をcommit/push済み）。新しいPCM関連のソース/文書は未コミット。今回コミット・push・タグは行っていない。
+
+- レモンの「Macの確認は残して次へ」により、保存アプリMac1124を未完了で保持し、段階BのPCM998へ進んだ。998を1125仕様、1126内部リング、1127host寿命、1128公開語/所有、1129 Windows/Linux、1130 Mac実機へ分割。1125/1126完了、998 auto33%。1130も未実行。
+- [採用設計](PCM_STREAM_DESIGN.md)、[実装/試験記録](PCM_STREAM_IMPLEMENTATION.md)、[レビュー評価](reviews/998-review-response.md)、[ソースと実行結果の指紋](measurements/2026-11-20-pcm-internal.json)。Claude Codeへ設計・リング・限定再レビュー2回を読み取り専用で依頼。最終は高・中の指摘なし。
+- sound_stream.zigとEngine.renderへ有界SPSC・s16LE mono/stereo・整数ZOH・skip持越し・飽和混合・制御ackを実装。sourceを借用せず、consumer参照終了後のackまで旧storageを保持する。drain尾部のunderrun抑制も追加。
+- Windows Debug/ReleaseFast、Linux Debug core1113成功10除外。hostはWindows151成功12除外/Linux155成功15除外。graphics/audio/extension全除外core933成功190除外/host149成功12除外。全失敗0。zig build testに含まれるCortex-M0+の64bit atomic制約を検出し、内部counter/serialを32bitへ修正して成功。Macはcore/host cross compileのみ成功。
+- **公開PCM語とhost storage/終了回収は未実装。** 現行host_audioはdetach/無限消費のままで、アプリからPCMを使えるとは報告しない。新しいBuiltin/画像ABI/語一覧の変更はない。実音や装置latencyを測定していない。
+
+次は1127（host寿命）。採用設計のbackend別停止・join・途中open失敗回収を実装し、blocked Pulse writeで期限内に失敗を返して参照領域を保持すること、Windows反復handleとLinux pipe child/fdを検証する。その後1128を実装する。完全復元は適用前busy、append保持。CLOSEでringをfreeせずhost join後にfreeする。PCM全体998やMac1130を完了扱いにしない。
+
 ## 最新追記：保存アプリ起動基盤と測定記録（2026-11-20）
 
 この節を最新状態とする。Git基点main `d9e88f2`、origin/mainとの差分コミットなし。サイズ/速度の記録と保存アプリ起動の実装・文書が未コミット。コミット・タグ・pushは行っていない。

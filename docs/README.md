@@ -56,3 +56,5 @@ For the project overview, how to build, the current features, the differences fr
 - [SIGIMG45/46/47 image format](IMAGE_FORMAT45.md)
 
 - [Saved application startup: implementation, validation and Mac procedure (Japanese)](SAVED_APPLICATION_STARTUP_IMPLEMENTATION.md)
+
+- [PCM stream design, source audit and internal component validation (Japanese)](PCM_STREAM_IMPLEMENTATION.md)

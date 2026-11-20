@@ -1,0 +1,281 @@
+{
+  "date": "2026-11-20",
+  "base_commit": "6512916b9cd749300d7fffb4c29b14867ececfba",
+  "zig": "0.17.1",
+  "scope": "PCM internal component only; public words and host lifetime NOT implemented",
+  "source_sha256": {
+    "src/core/sound_stream.zig": "089d3cc5ef7975279953a3cb5e1e255546fca9cdd821101b6790c3d97bf69614",
+    "src/core/sound_engine.zig": "dea4f99d8f2eb2432992f1a0975adedaf93ac6d088a7d538378a0dc90b6e9401",
+    "src/tests/pcm_stream_test.zig": "1de53f4819e1cd0cbb6bede93c37328fe29d53feae5c08bb21be9b3828b9fc82",
+    "src/forth_test.zig": "78240ac22877093a2571ae113e381b41566ef6aeadcc44df6cc8eacce4e5bf0f"
+  },
+  "new_tests": 16,
+  "commands": {
+    "windows_debug": "zig build core-check host-check --prefix .work/998/windows-final; execute both staged tests",
+    "windows_fast": "zig build core-check -Doptimize=fast --prefix .work/998/windows-fast; execute staged core test",
+    "linux": "zig build core-check host-check -Dtarget=x86_64-linux-musl --prefix .work/998/linux-final; execute both staged tests in WSL",
+    "macos": "zig build core-check host-check -Dtarget=aarch64-macos --prefix .work/998/mac-final; compile only",
+    "minimal": "zig build core-check host-check -Daudio=false -Dgraphics=false -Dextension=false --prefix .work/998/minimal; execute both staged tests",
+    "all": "zig build test",
+    "reference": "python scripts/word-reference.py --check --sigma .work/998/public/bin/sigma.exe",
+    "regression": "python tests/scripts/verify-saved-application.py .work/998/public/bin/sigma.exe"
+  },
+  "logs": {
+    "windows-core.log": {
+      "sha256": "394a39367cda89f91cc3c251acce16a8b677c20577dd57faca0a72f4ce7160d1",
+      "summary": [
+        "1121/1123 tests.lint_test.test.words that move a number of cells that is not fixed are not counted...OK",
+        "1122/1123 tests.lint_test.test.a word that takes the place of a removed one has its own stack comment...OK",
+        "1123/1123 tests.lint_test.test.macro lint redefinition distinguishes exact case but still detects identical names...OK",
+        "1113 passed; 10 skipped; 0 failed."
+      ]
+    },
+    "windows-host.log": {
+      "sha256": "603a545eec985697a145585cd7cb29e7dfdb3155bef14747d6f7638d99ff2dc4",
+      "summary": [
+        "161/163 host_directories.test.native directory reads consume truncation and preserve EOF buffers...OK",
+        "162/163 host_gamepad.test_0...OK",
+        "163/163 host_gamepad.test.SDL3 virtual raw/mapped devices, remapping and hot unplug...SKIP",
+        "151 passed; 12 skipped; 0 failed."
+      ]
+    },
+    "windows-fast-core.log": {
+      "sha256": "9c022ce720c9a9bda17eebb3d359aabfe6a8a00337c1c695bbae9c9284c24a3b",
+      "summary": [
+        "1121/1123 tests.lint_test.test.words that move a number of cells that is not fixed are not counted...OK",
+        "1122/1123 tests.lint_test.test.a word that takes the place of a removed one has its own stack comment...OK",
+        "1123/1123 tests.lint_test.test.macro lint redefinition distinguishes exact case but still detects identical names...OK",
+        "1113 passed; 10 skipped; 0 failed."
+      ]
+    },
+    "linux-core.log": {
+      "sha256": "de38218b7a89a7c30e7ffbd982a61b425ca8459e281386935590de56d22a4024",
+      "summary": [
+        "1121/1123 tests.lint_test.test.words that move a number of cells that is not fixed are not counted...OK",
+        "1122/1123 tests.lint_test.test.a word that takes the place of a removed one has its own stack comment...OK",
+        "1123/1123 tests.lint_test.test.macro lint redefinition distinguishes exact case but still detects identical names...OK",
+        "1113 passed; 10 skipped; 0 failed."
+      ]
+    },
+    "linux-host.log": {
+      "sha256": "36ca7e21696441641ad599e2f091671173cfb6f9198f58f698561394c15e4147",
+      "summary": [
+        "168/170 host_directories.test.native directory reads consume truncation and preserve EOF buffers...OK",
+        "169/170 host_gamepad.test_0...OK",
+        "170/170 host_gamepad.test.SDL3 virtual raw/mapped devices, remapping and hot unplug...SKIP",
+        "155 passed; 15 skipped; 0 failed."
+      ]
+    },
+    "minimal-core.log": {
+      "sha256": "8610fd15f641e37d7d5322d122653d234d5abdede132160a0bcf918ec3ab0291",
+      "summary": [
+        "1121/1123 tests.lint_test.test.words that move a number of cells that is not fixed are not counted...OK",
+        "1122/1123 tests.lint_test.test.a word that takes the place of a removed one has its own stack comment...OK",
+        "1123/1123 tests.lint_test.test.macro lint redefinition distinguishes exact case but still detects identical names...OK",
+        "933 passed; 190 skipped; 0 failed."
+      ]
+    },
+    "minimal-host.log": {
+      "sha256": "280da8fc4bfd3b6fed5bdf3f710787f9028f6bd7c4218a666ad8fa75cdaa752e",
+      "summary": [
+        "159/161 physical_key_map.test.native positions distinguish sides and keypad without characters...OK",
+        "160/161 host_directories.test.directory IDs reject stale and foreign handles and exhaust without leaking...OK",
+        "161/161 host_directories.test.native directory reads consume truncation and preserve EOF buffers...OK",
+        "149 passed; 12 skipped; 0 failed."
+      ]
+    },
+    "windows-build-test-final.log": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "summary": []
+    },
+    "mac-build.log": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "summary": []
+    },
+    "reference-runtime.log": {
+      "sha256": "eaa3149ae57e6fb460ef368abc1a4c360bfc9dee40d480a5a1756e9994e04212",
+      "summary": [
+        "documentation examples: 28 passed",
+        "individual runnable usage examples: 401 passed",
+        "HELP descriptions: 1591; reference entries: 1805",
+        "Namespaces: AUDIO=73, EKEYS=35, EXTENSION=39, FORTH=961, GAME=59, GRAPHICS=450, GUI=135, Root=14, Syntax=39"
+      ]
+    },
+    "check-docs.log": {
+      "sha256": "1a52cf41b62bb6d3cdb0db3ced4505e184b278610492d32e5b8d96786f4e7f4f",
+      "summary": [
+        "HELP descriptions: 1591; reference entries: 1805",
+        "Namespaces: AUDIO=73, EKEYS=35, EXTENSION=39, FORTH=961, GAME=59, GRAPHICS=450, GUI=135, Root=14, Syntax=39",
+        "grapheme table reproducible; pinned hashes verified",
+        "findings: 0"
+      ]
+    }
+  },
+  "saved_application_regression": [
+    "once-empty-source-current-argv-including-empty-space-unicode-options",
+    "host-prefix-bypass-unknown-layout-and-capacity-errors",
+    "format-requires-no-app-and-debug-log",
+    "normal-bye-quit-throw-and-recovery",
+    "unregistered-legacy-behavior",
+    "unicode-save-and-executable-path",
+    "readonly-existing-output-retained",
+    "resave-does-not-append-another-base",
+    "self-overwrite-relative-path-and-hardlink-rejected",
+    "final-symlink-rejected",
+    "corrupt-crc-abi-root-and-footer-fail-before-forth-arguments",
+    "no-owned-temporary-files-left"
+  ],
+  "tasks": [
+    {
+      "id": 998,
+      "title": "本体09 PCMストリーム出力（段階B、依存は共通基盤1064。AUDIO）：開始・書込み・残量（フレーム数）・停止の語、専用の有界のリング、周波数の変換、残量と再生位置の区別、満杯のときの待機と中断・部分書込みは900の取り決め、MML・SFX・モジュールとの混合（EMULATOR_CORE_PLAN.md）",
+      "status": "todo",
+      "parent_id": 1003,
+      "progress": 0,
+      "progress_mode": "auto",
+      "created_at": "2026-11-17T22:47:12Z",
+      "depends_on": [
+        1064
+      ],
+      "effective_progress": 33,
+      "blocked": false,
+      "blocked_by": []
+    },
+    {
+      "id": 1125,
+      "title": "PCM01 仕様設計：形式・容量・部分書込み・期限と中断・停止とclose・再標本化・混合・所有と画像・backend終了をソース照合しClaudeレビューで確定",
+      "status": "done",
+      "parent_id": 998,
+      "progress": 100,
+      "progress_mode": "auto",
+      "created_at": "2026-11-20T01:14:54Z",
+      "completed_at": "2026-11-20T01:32:15Z",
+      "depends_on": [
+        1064
+      ],
+      "effective_progress": 100,
+      "blocked": false,
+      "blocked_by": []
+    },
+    {
+      "id": 1126,
+      "title": "PCM02 有界リングと再標本化：SPSC・wrap・入力frame残量・underrun・sample hold・saturating混合を実装し決定的試験",
+      "status": "done",
+      "parent_id": 998,
+      "progress": 100,
+      "progress_mode": "auto",
+      "created_at": "2026-11-20T01:14:54Z",
+      "completed_at": "2026-11-20T01:32:15Z",
+      "depends_on": [
+        1125
+      ],
+      "effective_progress": 100,
+      "blocked": false,
+      "blocked_by": []
+    },
+    {
+      "id": 1127,
+      "title": "PCM03 ホスト寿命：音スレッドの停止とjoin・Windows/Linux/macOS装置待機解除・callback停止・初期化失敗の回収を実装",
+      "status": "todo",
+      "parent_id": 998,
+      "progress": 0,
+      "progress_mode": "auto",
+      "created_at": "2026-11-20T01:14:54Z",
+      "depends_on": [
+        1125
+      ],
+      "effective_progress": 0,
+      "blocked": false,
+      "blocked_by": []
+    },
+    {
+      "id": 1128,
+      "title": "PCM04 公開語と所有：開始・部分書込み・待機・残量・停止・closeと画像/世代/終了経路、英日HELPを実装",
+      "status": "todo",
+      "parent_id": 998,
+      "progress": 0,
+      "progress_mode": "auto",
+      "created_at": "2026-11-20T01:14:54Z",
+      "depends_on": [
+        1056,
+        1125,
+        1126,
+        1127
+      ],
+      "effective_progress": 0,
+      "blocked": true,
+      "blocked_by": [
+        1127
+      ]
+    },
+    {
+      "id": 1129,
+      "title": "PCM05 Windows/Linux受け入れ：満杯・中断・停止・保存アプリ・語群除外・資源回収・英日文書と測定を検証",
+      "status": "todo",
+      "parent_id": 998,
+      "progress": 0,
+      "progress_mode": "auto",
+      "created_at": "2026-11-20T01:14:54Z",
+      "depends_on": [
+        1128
+      ],
+      "effective_progress": 0,
+      "blocked": true,
+      "blocked_by": [
+        1128
+      ]
+    },
+    {
+      "id": 1130,
+      "title": "PCM06 Mac実機受け入れ：生成アプリ・連続PCM・混合・待機中断・停止/再開・装置と資源回収・除外構成を確認",
+      "status": "todo",
+      "parent_id": 998,
+      "progress": 0,
+      "progress_mode": "auto",
+      "created_at": "2026-11-20T01:14:54Z",
+      "depends_on": [
+        1128
+      ],
+      "effective_progress": 0,
+      "blocked": true,
+      "blocked_by": [
+        1128
+      ]
+    }
+  ],
+  "reviews": [
+    "998-design-claude-review.md",
+    "998-ring-claude-review.md",
+    "998-followup-claude-review.md",
+    "998-final-claude-review.md"
+  ],
+  "known_remaining": [
+    "host audio shutdown/join/device cleanup",
+    "public words and ownership/image integration",
+    "Windows/Linux real device acceptance",
+    "Mac actual execution",
+    "No latency/throughput/audio-quality guarantee from ring tests"
+  ],
+  "command_exit_codes": {
+    "windows_debug": 0,
+    "windows_fast": 0,
+    "linux": 0,
+    "macos": 0,
+    "minimal": 0,
+    "all": 0,
+    "reference": 0,
+    "regression": 0
+  },
+  "documentation_check": {
+    "base": "6512916",
+    "findings": 0,
+    "final_log_sha256": "1a52cf41b62bb6d3cdb0db3ced4505e184b278610492d32e5b8d96786f4e7f4f"
+  },
+  "source_lf_sha256": {
+    "src/core/sound_stream.zig": "089d3cc5ef7975279953a3cb5e1e255546fca9cdd821101b6790c3d97bf69614",
+    "src/core/sound_engine.zig": "dea4f99d8f2eb2432992f1a0975adedaf93ac6d088a7d538378a0dc90b6e9401",
+    "src/tests/pcm_stream_test.zig": "1de53f4819e1cd0cbb6bede93c37328fe29d53feae5c08bb21be9b3828b9fc82",
+    "src/forth_test.zig": "78240ac22877093a2571ae113e381b41566ef6aeadcc44df6cc8eacce4e5bf0f"
+  },
+  "integration_note": "c822e53 Mac startup acceptance pulled after measurements; PCM source preserved, tracked files converted to checkout CRLF by autostash. source_sha256 is original measured byte hash; source_lf_sha256 permits line-ending-independent verification."
+}
