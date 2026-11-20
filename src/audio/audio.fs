@@ -11,23 +11,25 @@
 \
 \ The SND- words underneath:
 \   SND-PLAY ( c-addr1 u1 c-addr2 u2 c-addr3 u3 -- )  the three voices of one PLAY
-\   SND-SOUND ( reg value -- )  SND-BEEP ( -- )  SND-PLAYING ( n -- flag )
-\   SND-DEVICE ( -- flag )  SND-PLAYS ( c-addr1 u1 ... c-addrn un n -- )
-\     n=0 stops MML and resets its chip voices, keeping SFX/MOD and MML settings.
-\   SND-CHIP ( n -- )  SND-INSTRUMENT ( n -- )  SND-WAVE ( n -- )
-\   SND-DUTY ( percent -- )  SND-ADSR ( a d s r -- )  SND-RING ( flag -- )
-\   SND-SYNC ( flag -- )  SND-FILTER ( mode cutoff resonance -- )
-\   SND-WAVETABLE ( c-addr n -- )  SND-LOAD-SAMPLE ( c-addr u n -- ior )
+\   SND-BEEP ( -- )  SND-PLAYING ( n -- flag )  SND-DEVICE ( -- flag )
+\   SND-PLAYS ( c-addr1 u1 ... c-addrn un n -- )
+\     n=0 stops MML and its voices, keeping SFX/MOD and MML settings.
+\   SND-INSTRUMENT ( n -- )  SND-WAVE ( n -- )  SND-DUTY ( ratio -- )
+\   SND-ADSR ( attack-ms decay-ms sustain release-ms -- )  SND-RING ( voice -- )
+\   SND-SYNC ( voice -- )  SND-FILTER ( mode hz resonance -- )
+\   SND-WAVETABLE ( addr n -- )  SND-LOAD-SAMPLE ( c-addr u n -- ior )
 \   SND-SAMPLE ( c-addr u rate n -- )  SND-LOOP-SAMPLE ( start end n -- )
-\   SND-SAMPLE-INSTRUMENT ( n -- )  SND-SFX ( n -- )  SND-AMIGA-FILTER ( flag -- )
-\   SND-FREE-SAMPLES ( -- )  SND-CHIPS ( mask -- )  SND-LOAD-MOD ( c-addr u -- ior )
-\   SND-PLAY-MOD ( flag -- )  SND-STOP-MOD ( -- )  SND-MOD-PLAYING ( -- flag )
-\   SND-STYLE ( chip -- )
+\   SND-SAMPLE-INSTRUMENT ( n -- )  SND-SFX ( n -- )  SND-FREE-SAMPLES ( -- )
+\   SND-LOAD-MOD ( c-addr u -- ior )  SND-PLAY-MOD ( flag -- )  SND-STOP-MOD ( -- )
+\   SND-MOD-PLAYING ( -- flag )  SND-TONE ( ... key -- )  SND-PLAY-TONE ( hz ms -- )
+\   SND-MOD-FILTER ( mode hz -- )
+\   SND-SOUND, SND-CHIP, SND-CHIPS, SND-STYLE, and SND-AMIGA-FILTER are left for the
+\   images that have them; they throw -21. The chips' words are in include/.
 \
-\ The sound is MSX BASIC's: an AY-3-8910 at the MSX's clock, played by the host's audio
-\ thread. PLAY takes MSX BASIC's music macro language (MML) and returns as soon as the
-\ notes fit in the queues (32 places for each voice); the music goes on while the
-\ program runs.
+\ The standard sound has 16 voices with no chip's limits: PLAY has voices 1 to 8, SFX 9
+\ to 12, and MOD 13 to 16. PLAY takes MSX BASIC's music macro language (MML) and returns
+\ as soon as the notes fit in the queues (32 places for each voice); the music goes on
+\ while the program runs. Units: ratios 0 to 65535, Hz, milliseconds, cents.
 
 \ ---- MSX BASIC -------------------------------------------------------------------
 
@@ -35,42 +37,17 @@
 : PLAY2 ( c-addr1 u1 c-addr2 u2 -- )   0 0 SND-PLAY ;
 : PLAY3 ( c-addr1 u1 c-addr2 u2 c-addr3 u3 -- )   SND-PLAY ;
 : PLAY? ( n -- flag )   SND-PLAYING ;
-: SOUND ( reg value -- )   SND-SOUND ;
 : BEEP ( -- )   SND-BEEP ;
-
-\ ---- Chips ----------------------------------------------------------------------
-\
-\ PLAY has 8 voices. These words say which chip the voices sound like; an instrument
-\ with STYLE sounds like its own chip on any voice. Choosing them stops the music, as
-\ BEEP does without its sound; the PSG of SOUND and BEEP sounds with every chip.
-
-: MSX-SOUND ( -- )   0 SND-CHIP ;     \ the MSX's AY-3-8910, 3 voices (at start)
-: ST-SOUND ( -- )   1 SND-CHIP ;      \ the Atari ST's YM2149 at 2 MHz, 3 voices
-: NES-SOUND ( -- )   2 SND-CHIP ;     \ the NES: pulse, pulse, triangle, noise
-: C64-SOUND ( -- )   3 SND-CHIP ;     \ the C64's SID (PAL), 3 voices
-: SCC-SOUND ( -- )   4 SND-CHIP ;     \ Konami's SCC, 5 voices
-: AMIGA-SOUND ( -- )   5 SND-CHIP ;   \ the Amiga's Paula (PAL): samples, 4 voices
 : PLAYS ( c-addr1 u1 ... c-addrn un n -- )   SND-PLAYS ;
-
-\ Several chips together: CHIPS takes their bits, e.g. MSX SCC OR CHIPS, and numbers
-\ the voices in this order (there voices 1 to 3 are the PSG's, 4 to 8 the SCC's). The
-\ voices after the last chip's own sound like the last chip; voices past the 8th are
-\ not played.
-
-1 CONSTANT MSX   2 CONSTANT ST   4 CONSTANT NES   8 CONSTANT C64
-16 CONSTANT SCC   32 CONSTANT AMIGA
-: CHIPS ( mask -- )   SND-CHIPS ;
-
-\ The chip the instrument INSTRUMENT chose sounds like, on any voice: one of the
-\ constants above, or 0 for the chip of the voice that plays it.
-: STYLE ( chip -- )   SND-STYLE ;
+\ A square of hz for ms milliseconds, beside the music (on an SFX voice).
+: PLAY-TONE ( hz ms -- )   SND-PLAY-TONE ;
 
 \ ---- Instruments ----------------------------------------------------------------
 \
-\ MML's @n plays with instrument n (0 to 63) on the chips that have instruments (the
-\ NES, the C64, the SCC, and the Amiga). INSTRUMENT chooses the one the words after it change, e.g.
-\   1 INSTRUMENT  PULSE 25 DUTY  0 6 8 4 ADSR
-\   2 INSTRUMENT  SAW  1 400 8 FILTER       ( the C64: low-pass, cutoff, resonance )
+\ MML's @n plays with instrument n (0 to 63). INSTRUMENT chooses the one the words
+\ after it change, e.g.
+\   1 INSTRUMENT  PULSE 16384 DUTY  10 200 40000 300 ADSR
+\   2 INSTRUMENT  SAW  1 800 20000 FILTER     ( low-pass, 800 Hz, resonance )
 
 : INSTRUMENT ( n -- )   SND-INSTRUMENT ;
 : SQUARE ( -- )   0 SND-WAVE ;
@@ -78,19 +55,34 @@
 : TRIANGLE ( -- )   2 SND-WAVE ;
 : SAW ( -- )   3 SND-WAVE ;
 : NOISE ( -- )   4 SND-WAVE ;
-: DUTY ( percent -- )   SND-DUTY ;
-: ADSR ( attack decay sustain release -- )   SND-ADSR ;
-: RING ( flag -- )   SND-RING ;
-: SYNC ( flag -- )   SND-SYNC ;
-: FILTER ( mode cutoff resonance -- )   SND-FILTER ;
-\ The SCC plays instrument n with the 32 signed bytes at c-addr as its wave.
-: SCC-WAVE ( c-addr n -- )   SND-WAVETABLE ;
+: DUTY ( ratio -- )   SND-DUTY ;
+: ADSR ( attack-ms decay-ms sustain release-ms -- )   SND-ADSR ;
+: RING ( voice -- )   SND-RING ;
+: SYNC ( voice -- )   SND-SYNC ;
+: FILTER ( mode hz resonance -- )   SND-FILTER ;
+\ One cycle of n signed 16-bit values in cells at addr.
+: WAVETABLE ( addr n -- )   SND-WAVETABLE ;
+: NOISE-LFSR ( bits tap -- )   0 SND-TONE ;
+: NOISE-MIX ( mode -- )   1 SND-TONE ;
+\ n segments of three cells (level, ms, curve) at addr.
+: ENVELOPE ( addr n loop release -- )   2 SND-TONE ;
+: PITCH-SWEEP ( cents ms -- )   3 SND-TONE ;
+: PITCH-SWEEP-LIMIT ( low-hz high-hz -- )   4 SND-TONE ;
+: PORTAMENTO ( ms -- )   5 SND-TONE ;
+: VIBRATO ( cents hz delay-ms -- )   6 SND-TONE ;
+: PITCH-MOD ( voice cents -- )   7 SND-TONE ;
+: VOLUME-MOD ( voice ratio -- )   8 SND-TONE ;
+: MOD-ONLY ( flag -- )   9 SND-TONE ;
+: PHASE-RESET ( flag -- )   10 SND-TONE ;
+: NOTE-LIMIT ( ms -- )   11 SND-TONE ;
+: VOICE-PAN ( left right -- )   12 SND-TONE ;
+: REVERB-SEND ( ratio -- )   13 SND-TONE ;
 
 \ ---- Samples --------------------------------------------------------------------
 \
 \ Samples 0 to 63 are recorded sound in the host's pool (64 MiB, outside the
-\ dictionary's memory). The Amiga plays an instrument's sample with its notes, O4's C
-\ at the sample's own rate; SFX plays one at once beside the music, on any chip.
+\ dictionary's memory). An instrument with a sample plays it with its notes, O4's C at
+\ the sample's own rate; SFX plays one at once beside the music.
 
 : LOAD-SAMPLE ( c-addr u n -- )   SND-LOAD-SAMPLE THROW ;   \ a WAV file, 8 or 16 bits
 : SAMPLE ( c-addr u rate n -- )   SND-SAMPLE ;              \ signed 8-bit bytes
@@ -98,17 +90,18 @@
 : SAMPLE-INSTRUMENT ( n -- )   SND-SAMPLE-INSTRUMENT ;      \ -1 for none
 : SFX ( n -- )   SND-SFX ;
 : FREE-SAMPLES ( -- )   SND-FREE-SAMPLES ;                  \ stops the music too
-: AMIGA-FILTER ( flag -- )   SND-AMIGA-FILTER ;             \ the LED filter
 
 \ ---- Modules ----------------------------------------------------------------------
 \
-\ A ProTracker module (MOD, 4 channels) plays beside PLAY and SFX, on the Amiga's
-\ periods and filters; its data is in the pool of samples, which FREE-SAMPLES empties.
+\ A ProTracker module (MOD, 4 channels) plays beside PLAY and SFX on voices 13 to 16;
+\ its data is in the pool of samples, which FREE-SAMPLES empties. The effect E0x turns
+\ on MOD-FILTER's filter (mode 0 none, 1 low-pass, 2 band-pass, 3 high-pass, 4 notch).
 
 : LOAD-MOD ( c-addr u -- )   SND-LOAD-MOD THROW ;
 : PLAY-MOD ( flag -- )   SND-PLAY-MOD ;     \ again from the start after the end when true
 : STOP-MOD ( -- )   SND-STOP-MOD ;
 : MOD? ( -- flag )   SND-MOD-PLAYING ;
+: MOD-FILTER ( mode hz -- )   SND-MOD-FILTER ;
 
 \ ---- The device ------------------------------------------------------------------
 

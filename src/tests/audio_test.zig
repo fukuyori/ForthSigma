@@ -6,7 +6,6 @@ const forth = @import("../forth.zig");
 const defs = @import("../core/defs.zig");
 const memory_map = @import("../core/memory_map.zig");
 const mml = @import("../core/sound_mml.zig");
-const psg_module = @import("../core/sound_psg.zig");
 const sound_engine = @import("../core/sound_engine.zig");
 const words_audio = @import("../core/words_audio.zig");
 const support = @import("support.zig");
@@ -20,7 +19,7 @@ const Engine = sound_engine.Engine;
 const rate = 48_000;
 
 fn newEngine() Engine {
-    return Engine.init(.ay8910, psg_module.msx_clock, rate);
+    return Engine.init(rate);
 }
 
 /// Plays `frames` frames, as the audio thread would.
@@ -284,23 +283,22 @@ test "Ctrl+C as a key, when the terminal gives single keys, also stops PLAY's wa
     for (0..3) |v| try std.testing.expectEqual(@as(u32, 0), queued(&engine, v));
 }
 
-test "SOUND writes a PSG register at the audio thread's next turn, within MSX BASIC's ranges" {
+test "the chips' words left the core: their SND- words throw -21 and the library has none of them" {
     try skipWithout(&.{.audio});
     var engine = newEngine();
     var output = Output{ .audio = &engine };
     const machine = try createMachine(&output);
     defer destroyMachine(machine);
     try machine.interpretLine("REQUIRE-AUDIO ALSO AUDIO");
-    try machine.interpretLine("0 100 SOUND 8 15 SOUND");
-    try std.testing.expectEqual(@as(u8, 0x55), engine.psg.read(0));
-    render(&engine, 1);
-    try std.testing.expectEqual(@as(u8, 100), engine.psg.read(0));
-    try std.testing.expectEqual(@as(u8, 15), engine.psg.read(8));
-    try std.testing.expectError(error.InvalidNumber, machine.interpretLine("14 0 SOUND"));
-    machine.data_depth = 0;
-    try std.testing.expectError(error.InvalidNumber, machine.interpretLine("0 256 SOUND"));
-    machine.data_depth = 0;
-    try std.testing.expectError(error.InvalidNumber, machine.interpretLine("-1 0 SOUND"));
+    for ([_][]const u8{ "0 100 SND-SOUND", "0 SND-CHIP", "1 SND-CHIPS", "4 SND-STYLE", "TRUE SND-AMIGA-FILTER" }) |line| {
+        try std.testing.expectError(error.HostUnavailable, machine.interpretLine(line));
+        machine.data_depth = 0;
+    }
+    inline for (.{ "SOUND", "MSX-SOUND", "NES-SOUND", "CHIPS", "STYLE", "SCC-WAVE", "AMIGA-FILTER" }) |name| {
+        try machine.interpretLine("S\" " ++ name ++ "\" FIND-NAME 0=");
+        try expectStack(machine, &.{-1});
+        machine.data_depth = 0;
+    }
 }
 
 test "BEEP drops the music and the voices' settings, and beeps" {
@@ -316,10 +314,10 @@ test "BEEP drops the music and the voices' settings, and beeps" {
     try expectStack(machine, &.{0});
     render(&engine, 1);
     for (0..3) |v| try std.testing.expectEqual(@as(u32, 0), queued(&engine, v));
-    try std.testing.expectEqual(@as(u8, sound_engine.beep_period), engine.psg.read(0));
-    try std.testing.expectEqual(sound_engine.beep_volume, engine.psg.read(8));
+    try std.testing.expectApproxEqRel(sound_engine.beep_hz, engine.bank.voices[0].hz, 1e-6);
+    try std.testing.expect(engine.bank.voices[0].active);
     render(&engine, rate / 10);
-    try std.testing.expectEqual(@as(u8, 0), engine.psg.read(8));
+    try std.testing.expect(!engine.bank.voices[0].active);
 }
 
 test "AUDIO? tells whether the sound reaches a device; without the host's engine the words fail" {
@@ -340,39 +338,21 @@ test "AUDIO? tells whether the sound reaches a device; without the host's engine
     try std.testing.expectError(error.HostFailed, failing.interpretLine("BEEP"));
 }
 
-test "NES-SOUND, ST-SOUND, and MSX-SOUND choose the chip, and PLAYS and PLAY? take 8 voices on any" {
+test "PLAYS and PLAY? take the 8 voices of PLAY" {
     try skipWithout(&.{.audio});
     var engine = newEngine();
     var output = Output{ .audio = &engine };
     const machine = try createMachine(&output);
     defer destroyMachine(machine);
     try machine.interpretLine("REQUIRE-AUDIO ALSO AUDIO");
-    try std.testing.expectError(error.InvalidNumber, machine.interpretLine("9 PLAYS"));
-    machine.data_depth = 0;
-    try std.testing.expectError(error.InvalidNumber, machine.interpretLine("9 PLAY?"));
-    machine.data_depth = 0;
-
-    // The chip changes at once: the audio thread has taken the command when it returns.
-    try machine.interpretLine("S\" O2 CDEFG\" PLAY NES-SOUND");
-    try std.testing.expectEqual(sound_engine.Chip.nes, engine.chips.only().?);
-    try machine.interpretLine("0 PLAY?");
-    try expectStack(machine, &.{0});
-    machine.data_depth = 0;
-    try machine.interpretLine("S\" C\" S\" E\" S\" G\" S\" C\" 4 PLAYS 4 PLAY?");
+    for ([_][]const u8{ "9 PLAYS", "9 PLAY?", "-1 PLAYS" }) |line| {
+        try std.testing.expectError(error.InvalidNumber, machine.interpretLine(line));
+        machine.data_depth = 0;
+    }
+    try machine.interpretLine("S\" C\" S\" E\" S\" G\" S\" C\" S\" E\" S\" G\" S\" >C\" S\" <C\" 8 PLAYS 8 PLAY?");
     try expectStack(machine, &.{-1});
     machine.data_depth = 0;
-    try std.testing.expectEqual(@as(u32, 2), queued(&engine, 3));
-    try std.testing.expectEqual(@as(u32, 1), queued(&engine, 4));
-    try std.testing.expectError(error.InvalidNumber, machine.interpretLine("9 PLAYS"));
-    machine.data_depth = 0;
-    try std.testing.expectError(error.InvalidNumber, machine.interpretLine("-1 PLAYS"));
-    machine.data_depth = 0;
-
-    try machine.interpretLine("ST-SOUND");
-    try std.testing.expectEqual(sound_engine.Chip.atari_st, engine.chips.only().?);
-    try machine.interpretLine("MSX-SOUND");
-    try std.testing.expectEqual(sound_engine.Chip.msx, engine.chips.only().?);
-    try std.testing.expectError(error.InvalidNumber, machine.interpretLine("9 SND-CHIP"));
+    try std.testing.expectEqual(@as(u32, 2), queued(&engine, 7));
 }
 
 test "INSTRUMENT and the words after it change an instrument here and for the audio thread" {
@@ -382,82 +362,173 @@ test "INSTRUMENT and the words after it change an instrument here and for the au
     const machine = try createMachine(&output);
     defer destroyMachine(machine);
     try machine.interpretLine("REQUIRE-AUDIO ALSO AUDIO");
-    try machine.interpretLine("7 INSTRUMENT PULSE 25 DUTY 1 2 10 3 ADSR");
-    const expected: sound_engine.Instrument = .{ .wave = .pulse, .duty = 25, .attack = 1, .decay = 2, .sustain = 10, .release = 3 };
-    try std.testing.expectEqual(expected, machine.audio_instruments[7]);
+    try machine.interpretLine("7 INSTRUMENT PULSE 16384 DUTY 10 200 40000 300 ADSR");
+    var expected: sound_engine.Tone = .{ .wave = .pulse, .duty = 16384 };
+    expected.envelope = words_audio.adsrEnvelope(10, 200, 40000, 300);
+    try std.testing.expectEqualDeep(expected, machine.audio_instruments[7]);
     render(&engine, 1);
-    try std.testing.expectEqual(expected, engine.instruments[7]);
-    try std.testing.expectEqual(sound_engine.Instrument{}, engine.instruments[0]);
+    try std.testing.expectEqualDeep(expected, engine.instruments[7]);
+    try std.testing.expectEqualDeep(sound_engine.Tone{}, engine.instruments[0]);
     try machine.interpretLine("SQUARE TRIANGLE SAW NOISE");
-    try std.testing.expectEqual(@import("../core/sound_parts.zig").Wave.noise, machine.audio_instruments[7].wave);
+    try std.testing.expectEqual(sound_engine.voice.Wave.noise, machine.audio_instruments[7].wave);
 
-    // The ranges.
-    for ([_][]const u8{ "64 INSTRUMENT", "-1 INSTRUMENT", "101 DUTY", "16 0 0 0 ADSR", "0 0 0 -1 ADSR", "5 SND-WAVE" }) |line| {
+    // The ranges; an error changes nothing.
+    for ([_][]const u8{ "64 INSTRUMENT", "-1 INSTRUMENT", "65536 DUTY", "-1 DUTY", "0 0 65536 0 ADSR", "0 0 0 -1 ADSR", "5 SND-WAVE" }) |line| {
         try std.testing.expectError(error.InvalidNumber, machine.interpretLine(line));
         machine.data_depth = 0;
     }
-    // BEEP keeps the instruments and the chip.
-    try machine.interpretLine("NES-SOUND BEEP");
-    try std.testing.expectEqual(sound_engine.Chip.nes, engine.chips.only().?);
+    try std.testing.expectEqual(@as(u16, 16384), machine.audio_instruments[7].duty);
+    // BEEP keeps the instruments.
+    try machine.interpretLine("BEEP");
     try std.testing.expectEqual(expected.duty, machine.audio_instruments[7].duty);
 }
 
-test "C64-SOUND, RING, SYNC, and FILTER" {
+test "RING, SYNC, and FILTER take source voices and Hz" {
     try skipWithout(&.{.audio});
     var engine = newEngine();
     var output = Output{ .audio = &engine };
     const machine = try createMachine(&output);
     defer destroyMachine(machine);
-    try machine.interpretLine("REQUIRE-AUDIO ALSO AUDIO C64-SOUND");
-    try std.testing.expectEqual(sound_engine.Chip.c64, engine.chips.only().?);
-    try std.testing.expectError(error.InvalidNumber, machine.interpretLine("9 PLAYS"));
-    machine.data_depth = 0;
-    try machine.interpretLine("4 INSTRUMENT TRIANGLE TRUE RING TRUE SYNC 2 1500 12 FILTER");
-    const instrument = machine.audio_instruments[4];
-    try std.testing.expect(instrument.ring and instrument.sync);
-    try std.testing.expectEqual(@as(u8, 2), instrument.filter);
-    try std.testing.expectEqual(@as(u16, 1500), instrument.cutoff);
-    try std.testing.expectEqual(@as(u8, 12), instrument.resonance);
+    try machine.interpretLine("REQUIRE-AUDIO ALSO AUDIO 4 INSTRUMENT TRIANGLE 3 RING 16 SYNC 2 1500 30000 FILTER");
+    const tone = machine.audio_instruments[4];
+    try std.testing.expectEqual(@as(u8, 3), tone.ring);
+    try std.testing.expectEqual(@as(u8, 16), tone.sync);
+    try std.testing.expectEqual(sound_engine.voice.FilterMode.band_pass, tone.filter);
+    try std.testing.expectEqual(@as(u32, 1500), tone.filter_hz);
+    try std.testing.expectEqual(@as(u16, 30000), tone.resonance);
     render(&engine, 1);
-    try std.testing.expectEqual(instrument, engine.instruments[4]);
-    try machine.interpretLine("FALSE RING 0 0 0 FILTER");
-    try std.testing.expect(!machine.audio_instruments[4].ring);
-    try std.testing.expectEqual(@as(u8, 0), machine.audio_instruments[4].filter);
-    for ([_][]const u8{ "4 0 0 FILTER", "1 2048 0 FILTER", "1 0 16 FILTER", "-1 0 0 FILTER" }) |line| {
+    try std.testing.expectEqualDeep(tone, engine.instruments[4]);
+    try machine.interpretLine("0 RING 4 100 0 FILTER");
+    try std.testing.expectEqual(@as(u8, 0), machine.audio_instruments[4].ring);
+    try std.testing.expectEqual(sound_engine.voice.FilterMode.notch, machine.audio_instruments[4].filter);
+    for ([_][]const u8{ "17 RING", "-1 SYNC", "5 0 0 FILTER", "1 1000001 0 FILTER", "1 0 65536 FILTER", "-1 0 0 FILTER" }) |line| {
         try std.testing.expectError(error.InvalidNumber, machine.interpretLine(line));
         machine.data_depth = 0;
     }
 }
 
-test "SCC-SOUND plays five voices, and SCC-WAVE gives an instrument its wave" {
+test "WAVETABLE puts a cycle of cells in the pool for the instrument INSTRUMENT chose" {
+    try skipWithout(&.{.audio});
+    var engine = newEngine();
+    var pool: [64]i16 = undefined;
+    engine.pool = &pool;
+    var output = Output{ .audio = &engine };
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
+    try machine.interpretLine("REQUIRE-AUDIO ALSO AUDIO CREATE W 32767 , -32768 , 0 , 100 ,");
+    try machine.interpretLine("3 INSTRUMENT W 4 WAVETABLE");
+    const tone = machine.audio_instruments[3];
+    try std.testing.expectEqual(sound_engine.voice.Wave.wavetable, tone.wave);
+    try std.testing.expectEqual(@as(u32, 4), tone.table.length);
+    try std.testing.expectEqualSlices(i16, &.{ 32767, -32768, 0, 100 }, pool[tone.table.start..][0..4]);
+    try std.testing.expectEqual(@as(u32, 4), machine.audio_pool_used);
+    try machine.interpretLine("CREATE BAD 32768 ,");
+    for ([_][]const u8{ "BAD 1 WAVETABLE", "W 0 WAVETABLE", "W 65537 WAVETABLE" }) |line| {
+        try std.testing.expectError(error.InvalidNumber, machine.interpretLine(line));
+        machine.data_depth = 0;
+    }
+    try std.testing.expectEqual(@as(u32, 4), machine.audio_pool_used);
+    try std.testing.expectError(error.InvalidAddress, machine.interpretLine("-5 1 WAVETABLE"));
+}
+
+test "the instrument words of the standard sound check their ranges before changing anything" {
     try skipWithout(&.{.audio});
     var engine = newEngine();
     var output = Output{ .audio = &engine };
     const machine = try createMachine(&output);
     defer destroyMachine(machine);
-    try machine.interpretLine("REQUIRE-AUDIO ALSO AUDIO SCC-SOUND");
-    try std.testing.expectEqual(sound_engine.Chip.scc, engine.chips.only().?);
-    try machine.interpretLine("S\" C\" S\" E\" S\" G\" S\" >C\" S\" <C\" 5 PLAYS 5 PLAY?");
-    try expectStack(machine, &.{-1});
-    machine.data_depth = 0;
-
-    // The 32 bytes are signed: 255 is -1. SCC-WAVE does not change which instrument
-    // INSTRUMENT chose.
-    try machine.interpretLine("CREATE W 32 ALLOT  : FILL-W 32 0 DO I 8 * W I + C! LOOP 255 W 31 + C! ;");
-    try machine.interpretLine("3 INSTRUMENT FILL-W W 9 SCC-WAVE");
-    const table = machine.audio_instruments[9].wavetable.?;
-    try std.testing.expectEqual(@as(i8, 0), table[0]);
-    try std.testing.expectEqual(@as(i8, 120), table[15]);
-    try std.testing.expectEqual(@as(i8, -128), table[16]);
-    try std.testing.expectEqual(@as(i8, -1), table[31]);
-    try std.testing.expectEqual(@as(u8, 3), machine.audio_instrument);
-    try std.testing.expect(machine.audio_instruments[3].wavetable == null);
+    try machine.interpretLine("REQUIRE-AUDIO ALSO AUDIO 5 INSTRUMENT");
+    try machine.interpretLine("17 3 NOISE-LFSR 2 NOISE-MIX -100 20 PITCH-SWEEP 50 2000 PITCH-SWEEP-LIMIT 30 PORTAMENTO 20 6 100 VIBRATO");
+    try machine.interpretLine("1 -1200 PITCH-MOD 2 30000 VOLUME-MOD TRUE MOD-ONLY TRUE PHASE-RESET 250 NOTE-LIMIT -65535 32768 VOICE-PAN 1000 REVERB-SEND");
+    try machine.interpretLine("CREATE SEGS 65535 , 10 , 0 ,  20000 , 100 , 1 ,  0 , 50 , 1 ,  SEGS 3 -1 1 ENVELOPE");
+    const t = machine.audio_instruments[5];
+    try std.testing.expectEqual(@as(u8, 17), t.noise_bits);
+    try std.testing.expectEqual(@as(u8, 3), t.noise_tap);
+    try std.testing.expectEqual(sound_engine.voice.NoiseMix.gate, t.noise_mix);
+    try std.testing.expectEqual(@as(i32, -100), t.sweep_cents);
+    try std.testing.expectEqual(@as(u32, 20), t.sweep_ms);
+    try std.testing.expectEqual(@as(u32, 2000), t.sweep_high_hz);
+    try std.testing.expectEqual(@as(u32, 30), t.portamento_ms);
+    try std.testing.expectEqual(@as(u32, 100), t.vibrato_delay_ms);
+    try std.testing.expectEqual(@as(i32, -1200), t.pitch_mod_cents);
+    try std.testing.expectEqual(@as(u16, 30000), t.volume_mod_depth);
+    try std.testing.expect(t.mod_only and t.phase_reset);
+    try std.testing.expectEqual(@as(u32, 250), t.note_limit_ms);
+    try std.testing.expectEqual(@as(i32, -65535), t.pan_left);
+    try std.testing.expectEqual(@as(u16, 1000), t.reverb_send);
+    try std.testing.expectEqual(@as(u8, 3), t.envelope.count);
+    try std.testing.expectEqual(@as(i8, 1), t.envelope.release);
+    try std.testing.expectEqual(@as(u16, 20000), t.envelope.segments[1].level);
+    try std.testing.expectEqual(@as(u8, 1), t.envelope.segments[2].curve);
     render(&engine, 1);
-    try std.testing.expectEqual(table, engine.instruments[9].wavetable.?);
-
-    try std.testing.expectError(error.InvalidNumber, machine.interpretLine("W 64 SCC-WAVE"));
+    try std.testing.expectEqualDeep(t, engine.instruments[5]);
+    for ([_][]const u8{ "1 1 NOISE-LFSR", "33 1 NOISE-LFSR", "8 8 NOISE-LFSR", "3 NOISE-MIX", "SEGS 17 -1 -1 ENVELOPE", "SEGS 3 3 -1 ENVELOPE", "SEGS 0 0 -1 ENVELOPE", "2000 50 PITCH-SWEEP-LIMIT", "-1 PORTAMENTO", "-1 6 0 VIBRATO", "17 0 PITCH-MOD", "1 65536 VOLUME-MOD", "-65536 0 VOICE-PAN", "65536 REVERB-SEND", "14 SND-TONE" }) |line| {
+        try std.testing.expectError(error.InvalidNumber, machine.interpretLine(line));
+        machine.data_depth = 0;
+    }
+    try machine.interpretLine("CREATE BADSEG 65536 , 10 , 0 ,");
+    try std.testing.expectError(error.InvalidNumber, machine.interpretLine("BADSEG 1 -1 -1 ENVELOPE"));
     machine.data_depth = 0;
-    try std.testing.expectError(error.InvalidAddress, machine.interpretLine("-5 0 SCC-WAVE"));
+    try std.testing.expectEqualDeep(t, machine.audio_instruments[5]);
+    // 0 segments: no envelope.
+    try machine.interpretLine("0 0 -1 -1 ENVELOPE");
+    try std.testing.expectEqual(@as(u8, 0), machine.audio_instruments[5].envelope.count);
+}
+
+test "E00 turns MOD-FILTER's filter on for MOD's voices only, and E01 off" {
+    try skipWithout(&.{ .audio, .files });
+    var engine = newEngine();
+    var pool: [8192]i16 = undefined;
+    engine.pool = &pool;
+    var output = Output{ .audio = &engine };
+    support.setFakeFile(&output, 0, &modFile(1, &.{ .{ 0, modCell(1, 428, 0xe, 0x00) }, .{ 2, modCell(0, 0, 0xe, 0x01) } }));
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
+    try machine.interpretLine("REQUIRE-AUDIO ALSO AUDIO 1 3300 MOD-FILTER S\" a.txt\" LOAD-MOD FALSE PLAY-MOD S\" C1\" PLAY");
+    _ = playUntil(&engine, .row, 1);
+    render(&engine, 10);
+    for (0..4) |c| {
+        const v = engine.bank.voices[sound_engine.mod_first + c];
+        try std.testing.expectEqual(sound_engine.voice.FilterMode.low_pass, v.tone.filter);
+        try std.testing.expectEqual(@as(u32, 3300), v.tone.filter_hz);
+    }
+    try std.testing.expectEqual(sound_engine.voice.FilterMode.none, engine.bank.voices[0].tone.filter);
+    _ = playUntil(&engine, .row, 3);
+    render(&engine, 10);
+    for (0..4) |c| try std.testing.expectEqual(sound_engine.voice.FilterMode.none, engine.bank.voices[sound_engine.mod_first + c].tone.filter);
+}
+
+test "FREE-SAMPLES forgets the wavetables on both sides" {
+    try skipWithout(&.{.audio});
+    var engine = newEngine();
+    var pool: [64]i16 = undefined;
+    engine.pool = &pool;
+    var output = Output{ .audio = &engine };
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
+    try machine.interpretLine("REQUIRE-AUDIO ALSO AUDIO CREATE W 1 , 2 , 2 INSTRUMENT W 2 WAVETABLE FREE-SAMPLES");
+    render(&engine, 1);
+    try std.testing.expectEqual(@as(u32, 0), machine.audio_instruments[2].table.length);
+    try std.testing.expectEqual(sound_engine.voice.Wave.square, machine.audio_instruments[2].wave);
+    try std.testing.expectEqualDeep(machine.audio_instruments[2], engine.instruments[2]);
+}
+
+test "PLAY-TONE sounds on an SFX voice and MOD-FILTER sets the filter of E0x" {
+    try skipWithout(&.{.audio});
+    var engine = newEngine();
+    var output = Output{ .audio = &engine };
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
+    try machine.interpretLine("REQUIRE-AUDIO ALSO AUDIO 880 100 PLAY-TONE 1 3300 MOD-FILTER");
+    render(&engine, 1);
+    try std.testing.expect(engine.bank.voices[sound_engine.sfx_first].active);
+    try std.testing.expectApproxEqRel(@as(f32, 880), engine.bank.voices[sound_engine.sfx_first].hz, 1e-6);
+    try std.testing.expectEqual(sound_engine.voice.FilterMode.low_pass, engine.mod_filter);
+    try std.testing.expectEqual(@as(u32, 3300), engine.mod_filter_hz);
+    for ([_][]const u8{ "-1 100 PLAY-TONE", "440 -1 PLAY-TONE", "440 3600001 PLAY-TONE", "0 0 0 3600001 ADSR", "5 100 MOD-FILTER", "1 -1 MOD-FILTER" }) |line| {
+        try std.testing.expectError(error.InvalidNumber, machine.interpretLine(line));
+        machine.data_depth = 0;
+    }
 }
 
 /// A WAV file of 16-bit mono PCM at 11025 Hz with `frames` samples 0, 500, 1000, ...,
@@ -553,17 +624,19 @@ test "SAMPLE, LOOP-SAMPLE, SAMPLE-INSTRUMENT, SFX, and FREE-SAMPLES" {
 
     try machine.interpretLine("3 INSTRUMENT 1 SAMPLE-INSTRUMENT");
     try std.testing.expectEqual(@as(?u8, 1), machine.audio_instruments[3].sample);
+    try std.testing.expectEqual(sound_engine.voice.Wave.sample, machine.audio_instruments[3].wave);
     try machine.interpretLine("-1 SAMPLE-INSTRUMENT");
     try std.testing.expectEqual(@as(?u8, null), machine.audio_instruments[3].sample);
+    try std.testing.expectEqual(sound_engine.voice.Wave.square, machine.audio_instruments[3].wave);
 
     try machine.interpretLine("1 SFX");
     render(&engine, 1);
-    try std.testing.expect(engine.sfx_players[0].active);
+    try std.testing.expect(engine.bank.voices[sound_engine.sfx_first].active);
 
     try machine.interpretLine("FREE-SAMPLES");
     try std.testing.expectEqual(@as(u32, 0), machine.audio_pool_used);
     try std.testing.expectEqual(@as(u32, 0), machine.audio_samples[1].length);
-    try std.testing.expect(!engine.sfx_players[0].active);
+    try std.testing.expect(!engine.bank.voices[sound_engine.sfx_first].active);
     render(&engine, 1);
     try std.testing.expectEqual(@as(u32, 0), engine.samples[1].length);
 }
@@ -577,13 +650,14 @@ test "0 PLAYS stops queued and sounding MML while SFX and MOD continue" {
     support.setFakeFile(&output, 0, &modFile(1, &.{.{ 0, modCell(1, 428, 0, 0) }}));
     const machine = try createMachine(&output);
     defer destroyMachine(machine);
-    try machine.interpretLine("REQUIRE-AUDIO ALSO AUDIO NES-SOUND S\" a.txt\" LOAD-MOD TRUE PLAY-MOD");
+    try machine.interpretLine("REQUIRE-AUDIO ALSO AUDIO S\" a.txt\" LOAD-MOD TRUE PLAY-MOD");
     try machine.interpretLine("CREATE STOP-SAMPLE 2048 ALLOT STOP-SAMPLE 2048 64 FILL STOP-SAMPLE 2048 8000 1 SAMPLE");
     try machine.interpretLine("2 INSTRUMENT PULSE 25 DUTY S\" @2 T42 O3 V12 L8 C1 D1\" PLAY 1 SFX");
     render(&engine, 16);
+    const sfx = &engine.bank.voices[sound_engine.sfx_first];
     try std.testing.expect(engine.isPlaying(0));
-    try std.testing.expect(engine.sfx_players[0].active);
-    const position = engine.sfx_players[0].position;
+    try std.testing.expect(sfx.active);
+    const position = sfx.position;
     const mod_tick = @as(u16, engine.mod.row) * 6 + engine.mod.tick;
     const voice = machine.audio_voices[0];
     const instrument = machine.audio_instruments[2];
@@ -593,95 +667,21 @@ test "0 PLAYS stops queued and sounding MML while SFX and MOD continue" {
     try std.testing.expectEqualDeep(voice, machine.audio_voices[0]);
     try std.testing.expectEqualDeep(instrument, machine.audio_instruments[2]);
     try std.testing.expectEqual(@as(u8, 2), machine.audio_instrument);
-    try std.testing.expectEqual(sound_engine.Chip.nes, engine.chips.only().?);
     for (0..sound_engine.max_voices) |v| try std.testing.expectEqual(@as(u32, 0), queued(&engine, v));
     render(&engine, 2400);
     try std.testing.expect(!engine.isPlaying(0));
-    try std.testing.expect(engine.sfx_players[0].active);
-    try std.testing.expect(engine.sfx_players[0].position > position);
+    try std.testing.expect(sfx.active);
+    try std.testing.expect(sfx.position > position);
     try std.testing.expect(engine.mod.playing);
     try std.testing.expect(@as(u16, engine.mod.row) * 6 + engine.mod.tick > mod_tick);
     try std.testing.expectEqual(@as(u32, 2048), engine.samples[1].length);
     try machine.interpretLine("S\" @2 O5 C64\" PLAY");
     render(&engine, 1);
     try std.testing.expect(engine.isPlaying(0));
-    try std.testing.expect(engine.sfx_players[0].active);
+    try std.testing.expect(sfx.active);
     try machine.interpretLine("BEEP");
-    try std.testing.expect(!engine.sfx_players[0].active);
+    try std.testing.expect(!sfx.active);
     try std.testing.expect(!engine.mod.playing);
-}
-
-test "AMIGA-SOUND plays four voices, and AMIGA-FILTER turns the LED filter on" {
-    try skipWithout(&.{.audio});
-    var engine = newEngine();
-    var output = Output{ .audio = &engine };
-    const machine = try createMachine(&output);
-    defer destroyMachine(machine);
-    try machine.interpretLine("REQUIRE-AUDIO ALSO AUDIO AMIGA-SOUND TRUE AMIGA-FILTER");
-    try std.testing.expectEqual(sound_engine.Chip.amiga, engine.chips.only().?);
-    render(&engine, 1);
-    try std.testing.expect(engine.amiga_led);
-    try machine.interpretLine("S\" C\" S\" E\" S\" G\" S\" >C\" 4 PLAYS 4 PLAY?");
-    try expectStack(machine, &.{-1});
-    machine.data_depth = 0;
-    try std.testing.expectError(error.InvalidNumber, machine.interpretLine("9 PLAY?"));
-    machine.data_depth = 0;
-    try machine.interpretLine("FALSE AMIGA-FILTER");
-    render(&engine, 1);
-    try std.testing.expect(!engine.amiga_led);
-}
-
-test "CHIPS chooses several chips, whose voices PLAYS and PLAY? count together" {
-    try skipWithout(&.{.audio});
-    var engine = newEngine();
-    var output = Output{ .audio = &engine };
-    const machine = try createMachine(&output);
-    defer destroyMachine(machine);
-    try machine.interpretLine("REQUIRE-AUDIO ALSO AUDIO MSX SCC OR CHIPS");
-    try std.testing.expectEqual(@as(u8, 1 | 16), engine.chips.mask);
-    try machine.interpretLine("S\" C\" S\" E\" S\" G\" S\" C\" S\" E\" S\" G\" S\" >C\" S\" <C\" 8 PLAYS 8 PLAY?");
-    try expectStack(machine, &.{-1});
-    machine.data_depth = 0;
-    try std.testing.expectError(error.InvalidNumber, machine.interpretLine("9 PLAY?"));
-    machine.data_depth = 0;
-    for ([_][]const u8{ "0 CHIPS", "64 CHIPS" }) |line| {
-        try std.testing.expectError(error.InvalidNumber, machine.interpretLine(line));
-        machine.data_depth = 0;
-    }
-    try std.testing.expectEqual(@as(u8, 1 | 16), engine.chips.mask);
-    try machine.interpretLine("ST NES OR CHIPS");
-    try std.testing.expectEqual(psg_module.Model.ym2149, engine.psg.model);
-    try std.testing.expectEqual(@as(usize, 7), engine.chips.voiceCount());
-    // A word for one chip chooses that one alone again.
-    try machine.interpretLine("C64-SOUND");
-    try std.testing.expectEqual(sound_engine.Chip.c64, engine.chips.only().?);
-}
-
-test "STYLE gives an instrument its chip, and every voice can be played" {
-    try skipWithout(&.{.audio});
-    var engine = newEngine();
-    var output = Output{ .audio = &engine };
-    const machine = try createMachine(&output);
-    defer destroyMachine(machine);
-    try machine.interpretLine("REQUIRE-AUDIO ALSO AUDIO 1 INSTRUMENT NES STYLE TRIANGLE 2 INSTRUMENT SCC STYLE");
-    try std.testing.expectEqual(sound_engine.Chip.nes, machine.audio_instruments[1].style.?);
-    try std.testing.expectEqual(@import("../core/sound_parts.zig").Wave.triangle, machine.audio_instruments[1].wave);
-    render(&engine, 1);
-    try std.testing.expectEqual(sound_engine.Chip.scc, engine.instruments[2].style.?);
-    try std.testing.expectEqual(sound_engine.Chip.msx, engine.chips.only().?);
-    try machine.interpretLine("S\" @1 C\" S\" @2 C\" S\" C\" S\" C\" S\" C\" S\" C\" S\" C\" S\" C\" 8 PLAYS 8 PLAY?");
-    try expectStack(machine, &.{-1});
-    machine.data_depth = 0;
-    // 0 takes the style away; only one chip at a time, and nothing unknown.
-    try machine.interpretLine("0 STYLE");
-    try std.testing.expectEqual(@as(?sound_engine.Chip, null), machine.audio_instruments[2].style);
-    for ([_][]const u8{ "3 STYLE", "64 STYLE", "-1 STYLE" }) |line| {
-        try std.testing.expectError(error.InvalidNumber, machine.interpretLine(line));
-        machine.data_depth = 0;
-    }
-    // BEEP and choosing a chip keep the instruments' styles.
-    try machine.interpretLine("NES-SOUND BEEP");
-    try std.testing.expectEqual(sound_engine.Chip.nes, machine.audio_instruments[1].style.?);
 }
 
 // ---- S6: modules ----

@@ -3,7 +3,6 @@ const forth = @import("../forth.zig");
 const support = @import("support.zig");
 const stream = @import("../core/sound_stream.zig");
 const engine_module = @import("../core/sound_engine.zig");
-const psg = @import("../core/sound_psg.zig");
 const ops_type = @import("../core/host_interface.zig").ExecutionOps;
 const Fake = struct {
     output: support.Output = .{},
@@ -50,7 +49,7 @@ const Fake = struct {
     }
 };
 fn newEngine() engine_module.Engine {
-    return engine_module.Engine.init(.ay8910, psg.msx_clock, 48000);
+    return engine_module.Engine.init(48000);
 }
 fn setup(machine: *forth.State) !void {
     try machine.interpretLine("REQUIRE-AUDIO ALSO AUDIO");

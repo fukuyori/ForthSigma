@@ -204,8 +204,7 @@ test "PCM initial silence is not an underrun episode" {
 
 test "PCM engine mixes after legacy filter and detaches at block boundary" {
     const engine = @import("../core/sound_engine.zig");
-    const psg = @import("../core/sound_psg.zig");
-    var sound = engine.Engine.init(.ay8910, psg.msx_clock, 48000);
+    var sound = engine.Engine.init(48000);
     var memory: [4]Frame = undefined;
     var s = try Stream.init(&memory, 48000, 48000, 2);
     _ = try s.write(&.{ 0xff, 0x7f, 0, 0x80, 0x34, 0x12, 0xcc, 0xed }, 2);

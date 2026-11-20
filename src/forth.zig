@@ -429,7 +429,7 @@ pub const State = struct {
     audio_voices: [sound_engine.max_voices]sound_mml.Voice = @splat(.{}),
     /// The instruments, as the audio thread has them, and the one INSTRUMENT chose to
     /// change.
-    audio_instruments: [sound_mml.instrument_count]sound_engine.Instrument = @splat(.{}),
+    audio_instruments: [sound_mml.instrument_count]sound_engine.Tone = @splat(.{}),
     audio_instrument: u8 = 0,
     /// The samples, as the audio thread has them, and how much of the host's pool they
     /// take (FREE-SAMPLES empties it).

@@ -482,19 +482,20 @@ Output:
 3 4
 ```
 
-### Audio chip masks
+### An instrument of the standard sound
 
-Combine chip masks with OR. This example does not select a device or play sound.
+Instrument 1 gets a quarter pulse, an envelope in milliseconds, and an inverted left side. Setting an instrument needs the host's audio engine but plays no sound.
 
 ```forth
 REQUIRE-AUDIO ALSO AUDIO
-MSX SCC OR . CR
+1 INSTRUMENT PULSE 16384 DUTY 10 200 40000 300 ADSR
+-65535 65535 VOICE-PAN ." set" CR
 ```
 
 Output:
 
 ```text
-17
+set
 ```
 
 ## Regeneration and checks

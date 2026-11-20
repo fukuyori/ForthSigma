@@ -1,6 +1,8 @@
 //! Playing ProTracker modules (MOD files) for LOAD-MOD and PLAY-MOD: four channels of
 //! 8-bit samples, the patterns of 64 rows, and the effects most modules use, on Paula's
-//! periods and through the Amiga's filters.
+//! periods. The channels sound on the standard sound's voices 13 to 16 (sound_engine.zig),
+//! where MOD-FILTER's filter, which the effect E0x turns on and off, takes the place of
+//! the Amiga's (tque 1189 decision).
 //!
 //! The format and the effects follow ProTracker's published description (see
 //! docs/DECISIONS.md, "S6"); no player's code is used. The module's patterns, samples,
@@ -8,7 +10,10 @@
 
 const std = @import("std");
 const pcm = @import("sound_pcm.zig");
-const amiga = @import("sound_amiga.zig");
+
+/// The clock of a PAL Amiga's Paula, which the format's periods count (a period p plays
+/// clock / p samples a second). Part of the MOD format, not of a chip setting.
+pub const clock: u32 = 3_546_895;
 
 pub const channel_count = 4;
 pub const sample_count = 31;
@@ -156,10 +161,9 @@ pub const Mod = struct {
     /// The rows played, by position: a song played once ends when it jumps to one.
     visited: [128]u64 = @splat(0),
     channels: [channel_count]Channel = @splat(.{}),
-    filters: amiga.Filters,
 
     pub fn init(sample_rate: u32) Mod {
-        return .{ .sample_rate = sample_rate, .filters = amiga.Filters.init(sample_rate) };
+        return .{ .sample_rate = sample_rate };
     }
 
     /// Plays the song from its start, again from the start after its end when `repeat`.
@@ -176,10 +180,10 @@ pub const Mod = struct {
         for (&self.channels) |*channel| channel.player.active = false;
     }
 
-    /// The next left and right samples, about -1 to 1. `led` is the LED filter, which
-    /// the effect E0x turns on and off.
-    pub fn sample(self: *Mod, pool: []const i16, led: *bool) [2]f32 {
-        if (!self.playing) return .{ 0, 0 };
+    /// The next value of each channel, -1 to 1 with its volume. `led` is the filter the
+    /// effect E0x turns on and off (MOD-FILTER's; the Amiga's LED filter in ProTracker).
+    pub fn sample(self: *Mod, pool: []const i16, led: *bool) [channel_count]f32 {
+        if (!self.playing) return @splat(0);
         if (self.tick_left <= 0) {
             // A tempo set on this tick (Fxx) counts from the next one.
             const tempo = self.tempo;
@@ -187,13 +191,17 @@ pub const Mod = struct {
             self.tick_left += @as(f64, @floatFromInt(self.sample_rate)) * 2.5 / @as(f64, @floatFromInt(tempo));
         }
         self.tick_left -= 1;
-        var sides: [2]f32 = .{ 0, 0 };
-        for (&self.channels, 0..) |*channel, c| {
-            const value = self.nextValue(channel, pool) * @as(f32, @floatFromInt(channel.out_volume)) / 64.0;
-            // Channels 1 and 4 on the left, 2 and 3 on the right, as Paula's.
-            sides[if (c == 0 or c == 3) 0 else 1] += value / 2;
+        var values: [channel_count]f32 = undefined;
+        for (&self.channels, &values) |*channel, *value| {
+            value.* = self.nextValue(channel, pool) * @as(f32, @floatFromInt(channel.out_volume)) / 64.0;
         }
-        return self.filters.process(sides, led.*);
+        return values;
+    }
+
+    /// The side a channel plays on: 1 and 4 on the left, 2 and 3 on the right (the MOD
+    /// format's, as Paula's); 0 is the left.
+    pub fn side(channel: usize) usize {
+        return if (channel == 0 or channel == 3) 0 else 1;
     }
 
     /// One tick: the next row starts when the last tick of a row has had its time.
@@ -496,7 +504,7 @@ pub const Mod = struct {
     /// samples a second.
     fn sound(self: *Mod, channel: *Channel) void {
         if (channel.out_period == 0) return;
-        const frequency = @as(f64, @floatFromInt(amiga.clock)) / @as(f64, @floatFromInt(channel.out_period));
+        const frequency = @as(f64, @floatFromInt(clock)) / @as(f64, @floatFromInt(channel.out_period));
         channel.player.step = frequency / @as(f64, @floatFromInt(self.sample_rate));
     }
 };

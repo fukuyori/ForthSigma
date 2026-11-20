@@ -482,19 +482,20 @@ HERO SPRITE-X @ . HERO SPRITE-Y @ . CR
 3 4
 ```
 
-### 音源の組合せマスク
+### 標準の音の音色
 
-ORで音源のマスクを組み合わせます。この例では装置の選択や音の再生は行いません。
+音色1を4分の1のパルス、ミリ秒の包絡、左を逆相にします。音色の設定にはホストの音声エンジンが要りますが、音は鳴らしません。
 
 ```forth
 REQUIRE-AUDIO ALSO AUDIO
-MSX SCC OR . CR
+1 INSTRUMENT PULSE 16384 DUTY 10 200 40000 300 ADSR
+-65535 65535 VOICE-PAN ." set" CR
 ```
 
 出力：
 
 ```text
-17
+set
 ```
 
 ## 更新と照合

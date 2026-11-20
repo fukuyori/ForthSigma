@@ -1169,6 +1169,11 @@ pub const Builtin = enum {
     snd_pcm_close,
     snd_pcm_underruns,
     snd_snes_frames,
+    // The standard sound's words (tque 1189), after the others so that their execution
+    // tokens stay as they were.
+    snd_tone,
+    snd_play_tone,
+    snd_mod_filter,
 };
 
 pub const HeapResult = union(enum) { address: Cell, no_memory, bad_pointer };

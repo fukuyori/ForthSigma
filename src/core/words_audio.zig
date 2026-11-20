@@ -15,8 +15,9 @@ const library_loading = @import("library_loading.zig");
 const memory_map = @import("memory_map.zig");
 const mml = @import("sound_mml.zig");
 const sound_engine = @import("sound_engine.zig");
-const parts = @import("sound_parts.zig");
+const voice = sound_engine.voice;
 const pcm = sound_engine.pcm;
+const Tone = voice.Tone;
 const Builtin = defs.Builtin;
 const Engine = sound_engine.Engine;
 const RuntimeError = defs.RuntimeError;
@@ -24,7 +25,7 @@ const Cell = memory_map.Cell;
 const State = forth.State;
 
 /// The built-in words this file executes; executeBuiltin dispatches by this list.
-pub const words = [_]Builtin{ .snd_play, .snd_sound, .snd_beep, .snd_playing, .snd_device, .snd_plays, .snd_chip, .snd_instrument, .snd_wave, .snd_duty, .snd_adsr, .snd_ring, .snd_sync, .snd_filter, .snd_wavetable, .snd_load_sample, .snd_sample, .snd_loop_sample, .snd_sample_instrument, .snd_sfx, .snd_amiga_filter, .snd_free_samples, .snd_chips, .snd_load_mod, .snd_play_mod, .snd_stop_mod, .snd_mod_playing, .snd_style, .snd_pcm_open, .snd_pcm_write, .snd_pcm_queued, .snd_pcm_wait, .snd_pcm_stop, .snd_pcm_close, .snd_pcm_underruns, .snd_snes_frames };
+pub const words = [_]Builtin{ .snd_play, .snd_sound, .snd_beep, .snd_playing, .snd_device, .snd_plays, .snd_chip, .snd_instrument, .snd_wave, .snd_duty, .snd_adsr, .snd_ring, .snd_sync, .snd_filter, .snd_wavetable, .snd_load_sample, .snd_sample, .snd_loop_sample, .snd_sample_instrument, .snd_sfx, .snd_amiga_filter, .snd_free_samples, .snd_chips, .snd_load_mod, .snd_play_mod, .snd_stop_mod, .snd_mod_playing, .snd_style, .snd_pcm_open, .snd_pcm_write, .snd_pcm_queued, .snd_pcm_wait, .snd_pcm_stop, .snd_pcm_close, .snd_pcm_underruns, .snd_snes_frames, .snd_tone, .snd_play_tone, .snd_mod_filter };
 
 /// The SND- words in the order REQUIRE-AUDIO appends them, right after the AUDIO
 /// vocabulary. The order is part of the dictionary that images keep: add new words at
@@ -42,11 +43,12 @@ pub const definitions = [_]struct { []const u8, Builtin }{
     .{ "SND-STYLE", .snd_style },                         .{ "SND-PCM-OPEN", .snd_pcm_open },           .{ "SND-PCM-WRITE", .snd_pcm_write },
     .{ "SND-PCM-QUEUED", .snd_pcm_queued },               .{ "SND-PCM-WAIT", .snd_pcm_wait },           .{ "SND-PCM-STOP", .snd_pcm_stop },
     .{ "SND-PCM-CLOSE", .snd_pcm_close },                 .{ "SND-PCM-UNDERRUNS", .snd_pcm_underruns }, .{ "SND-SNES-FRAMES", .snd_snes_frames },
+    .{ "SND-TONE", .snd_tone },                           .{ "SND-PLAY-TONE", .snd_play_tone },         .{ "SND-MOD-FILTER", .snd_mod_filter },
 };
 
 /// The words of the audio library that HELP describes; the help test checks that the
 /// library defines each of them.
-pub const library_words = [_][]const u8{ "PLAY", "PLAY2", "PLAY3", "PLAY?", "SOUND", "BEEP", "AUDIO?", "PLAYS", "MSX-SOUND", "ST-SOUND", "NES-SOUND", "INSTRUMENT", "SQUARE", "PULSE", "TRIANGLE", "SAW", "NOISE", "DUTY", "ADSR", "C64-SOUND", "RING", "SYNC", "FILTER", "SCC-SOUND", "SCC-WAVE", "LOAD-SAMPLE", "SAMPLE", "LOOP-SAMPLE", "SAMPLE-INSTRUMENT", "SFX", "FREE-SAMPLES", "AMIGA-SOUND", "AMIGA-FILTER", "CHIPS", "MSX", "ST", "NES", "C64", "SCC", "AMIGA", "LOAD-MOD", "PLAY-MOD", "STOP-MOD", "MOD?", "STYLE", "PCM-OPEN", "PCM-WRITE", "PCM-QUEUED", "PCM-WAIT", "PCM-STOP", "PCM-CLOSE", "PCM-UNDERRUNS", "SNES-FRAMES" };
+pub const library_words = [_][]const u8{ "PLAY", "PLAY2", "PLAY3", "PLAY?", "BEEP", "AUDIO?", "PLAYS", "INSTRUMENT", "SQUARE", "PULSE", "TRIANGLE", "SAW", "NOISE", "DUTY", "ADSR", "RING", "SYNC", "FILTER", "WAVETABLE", "LOAD-SAMPLE", "SAMPLE", "LOOP-SAMPLE", "SAMPLE-INSTRUMENT", "SFX", "FREE-SAMPLES", "LOAD-MOD", "PLAY-MOD", "STOP-MOD", "MOD?", "PCM-OPEN", "PCM-WRITE", "PCM-QUEUED", "PCM-WAIT", "PCM-STOP", "PCM-CLOSE", "PCM-UNDERRUNS", "SNES-FRAMES", "PLAY-TONE", "NOISE-LFSR", "NOISE-MIX", "ENVELOPE", "PITCH-SWEEP", "PITCH-SWEEP-LIMIT", "PORTAMENTO", "VIBRATO", "PITCH-MOD", "VOLUME-MOD", "MOD-ONLY", "PHASE-RESET", "NOTE-LIMIT", "VOICE-PAN", "REVERB-SEND", "MOD-FILTER" };
 
 /// The audio library, which REQUIRE-AUDIO interprets after appending the SND- words.
 pub const library = @embedFile("../audio/audio.fs");
@@ -109,21 +111,9 @@ pub fn execute(self: *State, builtin: Builtin) RuntimeError!void {
             }
             try play(self, texts[0..@intCast(count)]);
         },
-        .snd_chip => {
-            const n = try self.pop();
-            const chips = @typeInfo(sound_engine.Chip).@"enum".field_names.len;
-            if (n < 0 or n >= chips) return error.InvalidNumber;
-            const engine = try getEngine(self);
-            const chip: sound_engine.Chip = @fromBackingInt(@intCast(n));
-            try stop(self, engine, engine.chipCommand(chip));
-        },
-        .snd_style => {
-            const n = try self.pop();
-            if (n == 0) return changeInstrument(self, .{ .style = .none });
-            const chips = sound_engine.Chips.fromMask(n) orelse return error.InvalidNumber;
-            const chip = chips.only() orelse return error.InvalidNumber;
-            try changeInstrument(self, .{ .style = .{ .chip = chip } });
-        },
+        // The chips' words left the core (tque 1189): their libraries in include/ give
+        // them again (tque 1190). The SND- words stay, so that images keep their words.
+        .snd_chip, .snd_chips, .snd_style, .snd_amiga_filter, .snd_sound => return error.HostUnavailable,
         .snd_instrument => {
             const n = try self.pop();
             if (n < 0 or n >= mml.instrument_count) return error.InvalidNumber;
@@ -131,42 +121,80 @@ pub fn execute(self: *State, builtin: Builtin) RuntimeError!void {
         },
         .snd_wave => {
             const n = try self.pop();
-            if (n < 0 or n >= @typeInfo(parts.Wave).@"enum".field_names.len) return error.InvalidNumber;
-            try changeInstrument(self, .{ .wave = @fromBackingInt(@intCast(n)) });
+            // SQUARE, PULSE, TRIANGLE, SAW, and NOISE (0 to 4).
+            if (n < 0 or n > 4) return error.InvalidNumber;
+            var tone = currentTone(self);
+            tone.wave = @fromBackingInt(@intCast(n));
+            try setTone(self, tone);
         },
         .snd_duty => {
             const n = try self.pop();
-            if (n < 0 or n > 100) return error.InvalidNumber;
-            try changeInstrument(self, .{ .duty = @intCast(n) });
+            if (n < 0 or n > 65535) return error.InvalidNumber;
+            var tone = currentTone(self);
+            tone.duty = @intCast(n);
+            try setTone(self, tone);
         },
         .snd_adsr => {
-            var values: [4]u8 = undefined;
-            var i: usize = 4;
-            while (i > 0) {
-                i -= 1;
-                const n = try self.pop();
-                if (n < 0 or n > 15) return error.InvalidNumber;
-                values[i] = @intCast(n);
-            }
-            try changeInstrument(self, .{ .attack = values[0], .decay = values[1], .sustain = values[2], .release = values[3] });
+            const release = try self.pop();
+            const sustain = try self.pop();
+            const decay = try self.pop();
+            const attack = try self.pop();
+            if (!milliseconds(attack) or !milliseconds(decay) or !milliseconds(release) or sustain < 0 or sustain > 65535) return error.InvalidNumber;
+            var tone = currentTone(self);
+            tone.envelope = adsrEnvelope(@intCast(attack), @intCast(decay), @intCast(sustain), @intCast(release));
+            try setTone(self, tone);
         },
-        .snd_ring => try changeInstrument(self, .{ .ring = try self.pop() != 0 }),
-        .snd_sync => try changeInstrument(self, .{ .sync = try self.pop() != 0 }),
+        .snd_ring, .snd_sync => {
+            const n = try self.pop();
+            if (n < 0 or n > voice.voice_count) return error.InvalidNumber;
+            var tone = currentTone(self);
+            if (builtin == .snd_ring) tone.ring = @intCast(n) else tone.sync = @intCast(n);
+            try setTone(self, tone);
+        },
         .snd_filter => {
             const resonance = try self.pop();
-            const cutoff = try self.pop();
+            const hz = try self.pop();
             const mode = try self.pop();
-            if (mode < 0 or mode > 3 or cutoff < 0 or cutoff > 2047 or resonance < 0 or resonance > 15) return error.InvalidNumber;
-            try changeInstrument(self, .{ .filter = @intCast(mode), .cutoff = @intCast(cutoff), .resonance = @intCast(resonance) });
+            if (mode < 0 or mode > 4 or !frequency(hz) or resonance < 0 or resonance > 65535) return error.InvalidNumber;
+            var tone = currentTone(self);
+            tone.filter = @fromBackingInt(@intCast(mode));
+            tone.filter_hz = @intCast(hz);
+            tone.resonance = @intCast(resonance);
+            try setTone(self, tone);
         },
         .snd_wavetable => {
             const n = try self.pop();
             const address = try self.pop();
-            if (n < 0 or n >= mml.instrument_count) return error.InvalidNumber;
-            const start = try self.memoryAddress(address, 32);
-            var samples: [32]i8 = undefined;
-            for (&samples, self.memory[start..][0..32]) |*s, byte| s.* = @bitCast(byte);
-            try changeInstrumentAt(self, @intCast(n), .{ .wavetable = samples });
+            if (n < 1 or n > max_wavetable) return error.InvalidNumber;
+            const count: usize = @intCast(n);
+            const start = try self.memoryAddress(address, count * memory_map.cell_size);
+            for (0..count) |i| {
+                const value = std.mem.readInt(i64, self.memory[start + i * memory_map.cell_size ..][0..8], .little);
+                if (value < -32768 or value > 32767) return error.InvalidNumber;
+            }
+            const engine = try getEngine(self);
+            const out = try poolSpace(self, engine, count);
+            for (out, 0..) |*s, i| s.* = @intCast(std.mem.readInt(i64, self.memory[start + i * memory_map.cell_size ..][0..8], .little));
+            var tone = currentTone(self);
+            tone.wave = .wavetable;
+            tone.table = .{ .start = self.audio_pool_used, .length = @intCast(count) };
+            try setTone(self, tone);
+            self.audio_pool_used += @intCast(count);
+        },
+        .snd_tone => try toneWord(self),
+        .snd_play_tone => {
+            const ms = try self.pop();
+            const hz = try self.pop();
+            if (!frequency(hz) or !milliseconds(ms)) return error.InvalidNumber;
+            const engine = try getEngine(self);
+            try putCommand(self, engine, .{ .tone = .{ .hz = @intCast(hz), .ms = @intCast(ms) } });
+        },
+        .snd_mod_filter => {
+            const hz = try self.pop();
+            const mode = try self.pop();
+            if (mode < 0 or mode > 4 or !frequency(hz)) return error.InvalidNumber;
+            const engine = try getEngine(self);
+            try putCommand(self, engine, .{ .mod_filter = .{ .mode = @fromBackingInt(@intCast(mode)), .hz = @intCast(hz) } });
         },
         .snd_load_sample => {
             const n = try sampleNumber(self);
@@ -198,22 +226,20 @@ pub fn execute(self: *State, builtin: Builtin) RuntimeError!void {
         .snd_sample_instrument => {
             const n = try self.pop();
             if (n < -1 or n >= pcm.sample_count) return error.InvalidNumber;
-            try changeInstrument(self, .{ .sample = if (n < 0) .none else .{ .number = @intCast(n) } });
+            var tone = currentTone(self);
+            if (n < 0) {
+                tone.sample = null;
+                if (tone.wave == .sample) tone.wave = .square;
+            } else {
+                tone.sample = @intCast(n);
+                tone.wave = .sample;
+            }
+            try setTone(self, tone);
         },
         .snd_sfx => {
             const n = try sampleNumber(self);
             const engine = try getEngine(self);
             try putCommand(self, engine, .{ .sfx = n });
-        },
-        .snd_amiga_filter => {
-            const on = try self.pop() != 0;
-            const engine = try getEngine(self);
-            try putCommand(self, engine, .{ .amiga_filter = on });
-        },
-        .snd_chips => {
-            const chips = sound_engine.Chips.fromMask(try self.pop()) orelse return error.InvalidNumber;
-            const engine = try getEngine(self);
-            try stop(self, engine, engine.chipsCommand(chips));
         },
         .snd_load_mod => {
             const name = try self.memoryRange();
@@ -241,14 +267,8 @@ pub fn execute(self: *State, builtin: Builtin) RuntimeError!void {
             try putCommand(self, engine, .free_samples);
             self.audio_samples = @splat(.{});
             self.audio_pool_used = 0;
-        },
-        .snd_sound => {
-            const value = try self.pop();
-            const reg = try self.pop();
-            // MSX BASIC's SOUND takes the registers 0 to 13 and values 0 to 255.
-            if (reg < 0 or reg > 13 or value < 0 or value > 255) return error.InvalidNumber;
-            const engine = try getEngine(self);
-            try putCommand(self, engine, .{ .write = .{ .reg = @intCast(reg), .value = @intCast(value) } });
+            // The wavetables were in the pool too (the engine forgets them alike).
+            sound_engine.forgetTables(&self.audio_instruments);
         },
         .snd_beep => {
             const engine = try getEngine(self);
@@ -450,54 +470,159 @@ fn readAll(files: *const forth.FileOps, context: ?*anyopaque, fileid: Cell, buff
     return .{ .bytes = used };
 }
 
-/// Which settings of the instrument being edited change.
-const Change = struct {
-    style: ?union(enum) { none, chip: sound_engine.Chip } = null,
-    wave: ?parts.Wave = null,
-    duty: ?u8 = null,
-    attack: ?u8 = null,
-    decay: ?u8 = null,
-    sustain: ?u8 = null,
-    release: ?u8 = null,
-    ring: ?bool = null,
-    sync: ?bool = null,
-    filter: ?u8 = null,
-    cutoff: ?u16 = null,
-    resonance: ?u8 = null,
-    wavetable: ?[32]i8 = null,
-    sample: ?union(enum) { none, number: u8 } = null,
-};
-
-/// Changes the instrument INSTRUMENT chose, here and for the audio thread.
-fn changeInstrument(self: *State, change: Change) RuntimeError!void {
-    return changeInstrumentAt(self, self.audio_instrument, change);
+/// The instrument INSTRUMENT chose, as this side has it.
+fn currentTone(self: *const State) Tone {
+    return self.audio_instruments[self.audio_instrument];
 }
 
-/// Changes instrument `index`, here and for the audio thread.
-fn changeInstrumentAt(self: *State, index: u8, change: Change) RuntimeError!void {
-    const instrument = &self.audio_instruments[index];
-    if (change.style) |value| instrument.style = switch (value) {
-        .none => null,
-        .chip => |chip| chip,
-    };
-    if (change.wave) |value| instrument.wave = value;
-    if (change.duty) |value| instrument.duty = value;
-    if (change.attack) |value| instrument.attack = value;
-    if (change.decay) |value| instrument.decay = value;
-    if (change.sustain) |value| instrument.sustain = value;
-    if (change.release) |value| instrument.release = value;
-    if (change.ring) |value| instrument.ring = value;
-    if (change.sync) |value| instrument.sync = value;
-    if (change.filter) |value| instrument.filter = value;
-    if (change.cutoff) |value| instrument.cutoff = value;
-    if (change.resonance) |value| instrument.resonance = value;
-    if (change.wavetable) |value| instrument.wavetable = value;
-    if (change.sample) |value| instrument.sample = switch (value) {
-        .none => null,
-        .number => |n| n,
-    };
+/// Gives the instrument INSTRUMENT chose its new settings, for the audio thread and then
+/// here (so that an error changes neither).
+fn setTone(self: *State, tone: Tone) RuntimeError!void {
     const engine = try getEngine(self);
-    try putCommand(self, engine, .{ .instrument = .{ .index = index, .value = instrument.* } });
+    try putCommand(self, engine, .{ .instrument = .{ .index = self.audio_instrument, .value = tone } });
+    self.audio_instruments[self.audio_instrument] = tone;
+}
+
+/// The longest WAVETABLE, in samples.
+const max_wavetable = 65536;
+
+/// The largest time, frequency, and pitch difference the words take. An hour of
+/// milliseconds fits the voices' counts of samples at any rate up to 192 kHz.
+const max_milliseconds = 3_600_000;
+const max_frequency = 1_000_000;
+const max_cents = 1_200_000;
+
+fn milliseconds(n: Cell) bool {
+    return n >= 0 and n <= max_milliseconds;
+}
+
+fn frequency(n: Cell) bool {
+    return n >= 0 and n <= max_frequency;
+}
+
+fn centsValue(n: Cell) bool {
+    return n >= -max_cents and n <= max_cents;
+}
+
+/// ADSR as ENVELOPE's segments (3.3 of the study): a straight attack to the full level,
+/// a decay to the sustain level (exponential), held until the note stops, and an
+/// exponential release to 0.
+pub fn adsrEnvelope(attack: u32, decay: u32, sustain: u16, release: u32) voice.Envelope {
+    var e: voice.Envelope = .{ .count = 3, .release = 1 };
+    e.segments[0] = .{ .level = 65535, .ms = attack };
+    e.segments[1] = .{ .level = sustain, .ms = decay, .curve = 1 };
+    e.segments[2] = .{ .level = 0, .ms = release, .curve = 1 };
+    return e;
+}
+
+/// What SND-TONE's key (on top of the stack) chooses: the words of 3.3.1 of the study
+/// that the audio library defines on it.
+const ToneKey = enum(u8) { noise_lfsr, noise_mix, envelope, pitch_sweep, pitch_sweep_limit, portamento, vibrato, pitch_mod, volume_mod, mod_only, phase_reset, note_limit, voice_pan, reverb_send };
+
+/// SND-TONE ( ... key -- ): one of the instrument's settings of 3.3.1. Every argument is
+/// checked before anything changes.
+fn toneWord(self: *State) RuntimeError!void {
+    const key = try self.pop();
+    if (key < 0 or key >= @typeInfo(ToneKey).@"enum".field_names.len) return error.InvalidNumber;
+    var tone = currentTone(self);
+    switch (@as(ToneKey, @fromBackingInt(@intCast(key)))) {
+        .noise_lfsr => {
+            const tap = try self.pop();
+            const bits = try self.pop();
+            if (bits < 2 or bits > 32 or tap < 1 or tap >= bits) return error.InvalidNumber;
+            tone.noise_bits = @intCast(bits);
+            tone.noise_tap = @intCast(tap);
+        },
+        .noise_mix => {
+            const mode = try self.pop();
+            if (mode < 0 or mode > 2) return error.InvalidNumber;
+            tone.noise_mix = @fromBackingInt(@intCast(mode));
+        },
+        .envelope => {
+            const release = try self.pop();
+            const loop = try self.pop();
+            const n = try self.pop();
+            const address = try self.pop();
+            if (n < 0 or n > voice.max_segments or loop < -1 or loop >= @max(n, 1) or release < -1 or release >= @max(n, 1)) return error.InvalidNumber;
+            if (n == 0 and (loop != -1 or release != -1)) return error.InvalidNumber;
+            var e: voice.Envelope = .{ .count = @intCast(n), .loop = @intCast(loop), .release = @intCast(release) };
+            if (n > 0) {
+                const count: usize = @intCast(n);
+                const start = try self.memoryAddress(address, count * 3 * memory_map.cell_size);
+                for (0..count) |i| {
+                    const at = start + i * 3 * memory_map.cell_size;
+                    const level = std.mem.readInt(i64, self.memory[at..][0..8], .little);
+                    const ms = std.mem.readInt(i64, self.memory[at + 8 ..][0..8], .little);
+                    const curve = std.mem.readInt(i64, self.memory[at + 16 ..][0..8], .little);
+                    if (level < 0 or level > 65535 or !milliseconds(ms) or curve < 0 or curve > 1) return error.InvalidNumber;
+                    e.segments[i] = .{ .level = @intCast(level), .ms = @intCast(ms), .curve = @intCast(curve) };
+                }
+            }
+            tone.envelope = e;
+        },
+        .pitch_sweep => {
+            const ms = try self.pop();
+            const c = try self.pop();
+            if (!centsValue(c) or !milliseconds(ms)) return error.InvalidNumber;
+            tone.sweep_cents = @intCast(c);
+            tone.sweep_ms = @intCast(ms);
+        },
+        .pitch_sweep_limit => {
+            const high = try self.pop();
+            const low = try self.pop();
+            if (!frequency(low) or !frequency(high) or (high != 0 and low > high)) return error.InvalidNumber;
+            tone.sweep_low_hz = @intCast(low);
+            tone.sweep_high_hz = @intCast(high);
+        },
+        .portamento => {
+            const ms = try self.pop();
+            if (!milliseconds(ms)) return error.InvalidNumber;
+            tone.portamento_ms = @intCast(ms);
+        },
+        .vibrato => {
+            const delay = try self.pop();
+            const hz = try self.pop();
+            const c = try self.pop();
+            if (c < 0 or c > max_cents or !frequency(hz) or !milliseconds(delay)) return error.InvalidNumber;
+            tone.vibrato_cents = @intCast(c);
+            tone.vibrato_hz = @intCast(hz);
+            tone.vibrato_delay_ms = @intCast(delay);
+        },
+        .pitch_mod => {
+            const c = try self.pop();
+            const v = try self.pop();
+            if (v < 0 or v > voice.voice_count or !centsValue(c)) return error.InvalidNumber;
+            tone.pitch_mod = @intCast(v);
+            tone.pitch_mod_cents = @intCast(c);
+        },
+        .volume_mod => {
+            const ratio = try self.pop();
+            const v = try self.pop();
+            if (v < 0 or v > voice.voice_count or ratio < 0 or ratio > 65535) return error.InvalidNumber;
+            tone.volume_mod = @intCast(v);
+            tone.volume_mod_depth = @intCast(ratio);
+        },
+        .mod_only => tone.mod_only = try self.pop() != 0,
+        .phase_reset => tone.phase_reset = try self.pop() != 0,
+        .note_limit => {
+            const ms = try self.pop();
+            if (!milliseconds(ms)) return error.InvalidNumber;
+            tone.note_limit_ms = @intCast(ms);
+        },
+        .voice_pan => {
+            const right = try self.pop();
+            const left = try self.pop();
+            if (left < -65535 or left > 65535 or right < -65535 or right > 65535) return error.InvalidNumber;
+            tone.pan_left = @intCast(left);
+            tone.pan_right = @intCast(right);
+        },
+        .reverb_send => {
+            const ratio = try self.pop();
+            if (ratio < 0 or ratio > 65535) return error.InvalidNumber;
+            tone.reverb_send = @intCast(ratio);
+        },
+    }
+    try setTone(self, tone);
 }
 
 /// PLAY: checks the voices' MML (an error puts nothing), then puts their notes,
@@ -518,15 +643,14 @@ fn play(self: *State, texts: []const []const u8) RuntimeError!void {
     };
 }
 
-/// Drops the notes put so far and sets the PSG as the MSX starts it, sounding BEEP's
-/// tone when `beep`; the voices' octave, length, tempo, and volume go back to MSX
+/// Drops the notes put so far, sounding BEEP's tone when `beep`; the voices' octave, length, tempo, and volume go back to MSX
 /// BASIC's defaults. It returns when the audio thread has taken the command, so that
 /// PLAY? is false at once.
 fn reset(self: *State, engine: *Engine, beep: bool) RuntimeError!void {
     try stop(self, engine, engine.resetCommand(beep));
 }
 
-/// Puts a reset command (BEEP's, a stop's, or MSX-SOUND's and the others') and waits
+/// Puts a reset command (BEEP's or a stop's) and waits
 /// until the audio thread has taken it.
 fn stop(self: *State, engine: *Engine, command: sound_engine.Command) RuntimeError!void {
     self.audio_voices = @splat(.{});

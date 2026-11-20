@@ -23,7 +23,9 @@ pub const sample_base_hz: f32 = 261.6256;
 /// the noise follows the note (low notes rumble, high notes hiss).
 pub const noise_shifts_per_cycle: f32 = 16;
 
-pub const Wave = enum(u8) { square, pulse, triangle, saw, noise, wavetable, sample };
+/// `external` is not chosen by a word: the engine gives the value of each sample (the
+/// channels of a MOD, whose own player steps through their samples).
+pub const Wave = enum(u8) { square, pulse, triangle, saw, noise, wavetable, sample, external };
 
 /// 0: tone or noise alone; 1: the two added; 2: gated, high only when both are high
 /// (as a PSG's channel mixes them).
@@ -144,6 +146,8 @@ pub const Voice = struct {
     out: f32 = 0,
     /// How many times the sample has reached its end or looped (VOICE-ENDS).
     ends: u32 = 0,
+    /// The value of an `external` voice for the next sample.
+    external: f32 = 0,
 
     /// Starts a note at `hz` with `volume` (0 to 1). `sample` is the tone's sample when
     /// it plays one.
@@ -277,7 +281,7 @@ pub const Voice = struct {
         };
     }
 
-    fn setFilter(self: *Voice, rate: f32) void {
+    pub fn setFilter(self: *Voice, rate: f32) void {
         self.ic1 = 0;
         self.ic2 = 0;
         if (self.tone.filter == .none) return;
@@ -337,6 +341,7 @@ pub const Voice = struct {
                 break :table @as(f32, @floatFromInt(pool[@intCast(at)])) / 32768.0;
             },
             .sample => self.samplePlay(pool, rate),
+            .external => self.external,
         };
         if (self.tone.wave == .noise or self.tone.noise_mix != .none) {
             self.noise_phase += increment * noise_shifts_per_cycle;
@@ -494,6 +499,20 @@ pub const Bank = struct {
     }
 };
 
+/// The 12 semitones from A up, as ratios of frequency.
+const semitone_ratios = [12]f64{ 1.0, 1.0594630943592953, 1.122462048309373, 1.189207115002721, 1.2599210498948732, 1.3348398541700344, 1.4142135623730951, 1.4983070768766815, 1.5874010519681994, 1.681792830507429, 1.7817974362806785, 1.8877486253633868 };
+
+/// The frequency of a note (octave × 12 + semitone, as sound_mml's Event.note) in equal
+/// temperament with O4's A at 440 Hz.
+pub fn noteFrequency(note: u8) f64 {
+    const distance = @as(i32, note) - 57;
+    var frequency = 440.0 * semitone_ratios[@intCast(@mod(distance, 12))];
+    var octaves = @divFloor(distance, 12);
+    while (octaves > 0) : (octaves -= 1) frequency *= 2;
+    while (octaves < 0) : (octaves += 1) frequency /= 2;
+    return frequency;
+}
+
 fn level(value: u16) f32 {
     return @as(f32, @floatFromInt(value)) / 65535.0;
 }
@@ -518,7 +537,8 @@ fn pulse(phase: f32, increment: f32, duty: f32) f32 {
     return value;
 }
 
-/// The correction to a step of height 2 at phase 0 (PolyBLEP), as sound_parts.zig has.
+/// The correction to a step of height 2 at phase 0 for an oscillator moving `increment`
+/// of its cycle a sample (PolyBLEP): it spreads the step over two samples.
 fn polyBlep(phase: f32, increment: f32) f32 {
     if (increment <= 0) return 0;
     if (phase < increment) {

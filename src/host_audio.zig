@@ -20,7 +20,6 @@ const builtin = @import("builtin");
 const forth = @import("forth.zig");
 const host_input = @import("host_input.zig");
 const sound_engine = @import("core/sound_engine.zig");
-const sound_psg = @import("core/sound_psg.zig");
 
 const Engine = sound_engine.Engine;
 const fixture_enabled = builtin.is_test or (@hasDecl(@import("root"), "audio_lifecycle_fixture") and @import("root").audio_lifecycle_fixture);
@@ -108,7 +107,7 @@ pub fn start(_: ?*anyopaque) ?*Engine {
     thread_exited.store(false, .release);
     cleanup_ok.store(true, .release);
     terminal_cleanup_failure = false;
-    engine = Engine.init(.ay8910, sound_psg.msx_clock, sample_rate);
+    engine = Engine.init(sample_rate);
     engine.pcm_session.next_id = next_pcm_id;
     engine.pcm_session.storage = std.heap.page_allocator.alloc(sound_engine.stream.Frame, 65536) catch &.{};
     engine.pool = std.heap.page_allocator.alloc(i16, sound_engine.pcm.pool_samples) catch &.{};

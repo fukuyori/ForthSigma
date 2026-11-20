@@ -4823,7 +4823,7 @@ test "PCM uses real native interrupt scope across waits and preserves the outer 
     const saved_terminal = host_input.input_is_terminal;
     host_input.input_is_terminal = false;
     defer host_input.input_is_terminal = saved_terminal;
-    var engine = AudioEngine.Engine.init(.ay8910, @import("core/sound_psg.zig").msx_clock, 48000);
+    var engine = AudioEngine.Engine.init(48000);
     var frames: [4096]AudioEngine.stream.Frame = undefined;
     engine.pcm_session.storage = &frames;
     var fake = Fake{ .engine = &engine };
