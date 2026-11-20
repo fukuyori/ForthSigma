@@ -1,5 +1,30 @@
 # Atari ST YM2149：既存対応の監査とForthモデル（1138）
 
+## Mac実機受け入れ1154（2026-11-20）
+
+main `53ebe81`、macOS 27.2.1 / Apple M5 / Zig 0.17.1。固定音量0の修正を含むソースからReleaseFast / cpu=baseline / strip=trueで4構成（全機能、debug/graphics/extension除外、float/debug/graphics/extension除外、audio/graphics/extension除外）を新たにビルドした。作業ファイルは`.work/1154-mac/`（git管理外）。
+
+| 対象 | 結果 |
+| --- | --- |
+| native | `zig build test`成功。core 1126成功・10除外、host 152成功・21除外、失敗0。`fixed zero volume mutes every PSG channel without muting envelope level one`成功 |
+| ym2149-levels.py --check | 32項目再現 |
+| verify-ym2149.py --benchmark（全機能・debug等除外・float除外） | 各11検査群成功、全検査の結果がWindowsの記録と一致 |
+| verify-ym2149-stream.py（同3構成） | 各12検査成功、Windowsと一致 |
+| audio/graphics/extension除外 | 512frameのPCM SHA256 141e367c…がWindowsと一致、chip時刻21333 |
+| 論理辞書領域 | 122880→148032、差25152byte |
+| 無音PCM送出 | 8192frame、AUDIO?=-1、全process約0.30秒 |
+| 実行体サイズ | 全機能1,990,632、debug等除外1,497,752、float除外1,046,648、audio除外1,513,160byte |
+
+実時間倍率（32768frame、各7process中央値）：
+
+| 構成 | fast | reference | period1 | staggered | 8kHz volume | 8kHz bus/I/O |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| 全機能 | 14.27 | 8.05 | 4.87 | 5.93 | 13.23 | 12.70 |
+| debug等除外 | 11.62 | 6.80 | 3.77 | 4.69 | 11.58 | 10.44 |
+| float除外 | 12.25 | 6.74 | 4.07 | 5.06 | 12.12 | 10.94 |
+
+レモンがGhosttyで実際に聞いた（`.work/1154-mac/ym.fs`、Windows1161と同じ設定）。3声/noise/envelopeデモ約3秒、noise単独（R7=55、音量12,0,0）約1.5秒、envelope（R7=62、音量16、period3906、shape14）で音量が周期的に増減するtone約3秒が説明どおりに聞こえた。連続再生中のCtrl+Cで`CATCH= -28 handle=0`、その後約3秒の再再生、`ACCEPT`での入力。各回underrun0、fd13は不変、thread8→7。1154と親1138を完了にした。実機Atari互換は範囲外。
+
 ## Linux実聴1162の受け入れ完了（2026-11-20）
 
 レモンがWSL上のLinux版→pacat→WSLg PulseAudio RDPSinkで、3声/noise/envelopeデモ約3秒、noise単独約1.5秒、envelope音量変化約3秒を確認。物理Ctrl+C後の停止と約3秒の再再生も確認し、CATCH=-28/handle=0、REPLAY-OK handle=0、code0、underrun0を記録。1162を完了し、Mac1154はtodo、親1138はtodo・auto80%。[環境と全結果](measurements/2026-11-20-linux-audio-listening.json)。Linux実機ALSA・実機Atari互換の確認ではない。以下のLinux未確認は履歴。
