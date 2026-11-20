@@ -1,6 +1,6 @@
 # PCMストリームの採用設計（998）
 
-2026-11-20追記：公開語1128とWindows/Linux自動検証1129を実装・確認済み。[公開語の実装記録](PCM_PUBLIC_IMPLEMENTATION.md)に現在の範囲と結果を分ける。以下は採用した契約で、Mac実機1130は未確認。
+2026-11-20追記：公開語1128とWindows/Linux自動検証1129を実装・確認済み。[公開語の実装記録](PCM_PUBLIC_IMPLEMENTATION.md)に現在の範囲と結果を分ける。以下は採用した契約。Mac実機1130も同日に合格した（[記録](PCM_PUBLIC_IMPLEMENTATION.md#mac実機受け入れ1130)）。
 
 2026-11-20、基点6512916、Zig 0.17.1。設計1125の採用仕様。当初設計時点では公開語・ホスト終了処理は実装前。内部リング1126の実装/実行結果は別記録へ分ける。[初期提案](PCM_STREAM_DESIGN_PROPOSAL.md)、[ソース/API照合](PCM_STREAM_SOURCE_AUDIT.md)、[レビュー判断](reviews/998-review-response.md)。
 

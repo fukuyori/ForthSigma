@@ -1,6 +1,6 @@
 # PCM公開語の実装・Windows/Linux検証（1128 / 1129）
 
-2026-11-20、Zig 0.17.1、基点main `416caf9`。1127のhost寿命差分と1128の公開語は未コミット。この記録を現在状態とする。Mac実機1130は未実施で残す。
+2026-11-20、Zig 0.17.1、基点main `416caf9`。1127のhost寿命差分と1128の公開語は未コミット。この記録を現在状態とする。Mac実機1130は同日9d1c528で実施し合格した（[下記](#mac実機受け入れ1130)）。
 
 ## 実装範囲
 
@@ -55,4 +55,37 @@ WAITはscope/pollを含む。これを装置遅延や前版/Gforthとの速度�
 
 ## 未確認と次の作業
 
-すべての公開process試験は無音フレームであり、実際に聞こえる音・物理キーは未確認。Linuxの実PulseAudio/ALSA装置、MacのAudioQueue実行・生成アプリ・混合・待機中断・停止/再開・資源回収は未確認。Macは1130を未完了のまま残す。埋込みhostがCLOSEせずStateを破棄する場合の所有規則は1053の監査対象として残す。
+すべての公開process試験は無音フレームであり、実際に聞こえる音・物理キーは未確認。Linuxの実PulseAudio/ALSA装置は未確認。MacのAudioQueue実行・生成アプリ・混合・待機中断・停止/再開・資源回収は1130で確認した（下記）。埋込みhostがCLOSEせずStateを破棄する場合の所有規則は1053の監査対象として残す。
+
+## Mac実機受け入れ（1130）
+
+2026-11-20、main `9d1c528`、macOS 27.2.1 / Apple M5 / Zig 0.17.1。`docs/measurements/2026-11-20-pcm-public.json`の`source_sha256_lf`全19ファイルと一致するソースで実施し、合格とした。作業ファイルは`.work/1130-mac/`（git管理外）。
+
+| 対象 | 結果 |
+| --- | --- |
+| `zig build test` | 成功 |
+| core（aarch64-macos） | 1124成功・10除外・失敗0 |
+| host（aarch64-macos、リポジトリ直下で実行） | 152成功・21除外・失敗0。Windows/Linux専用の寿命試験は除外、共通の停止/join・timeout保持・時計故障・cleanup失敗・PCM ID/storage再起動は成功 |
+| 阻害consumer（`verify-audio-shutdown.py`） | 3回ともstatus1と期待stdout（0.305/0.022/0.018秒） |
+
+ReleaseFast / cpu=baseline / strip=trueで11構成を作った。audio有効の7構成（graphics/extensionの4組合せ、no-debug、no-files、no-image）は`verify-pcm-stream.py`が成功し、no-imageは画像系3ケースを除く3ケース。audio無効の4構成は`REQUIRE-AUDIO`と`PCM-OPEN`が不在（`0 0`）。全機能版1,990,632 byte、audio・graphics・extension全除外版1,513,160 byte。
+
+`verify-pcm-terminal.py`の専用PTY 5ケースを全機能版、graphics/extension除外版、debug/graphics/extension除外版で実行した。WAIT/STOPは-28、CLOSEは-516の後に再試行0、`ab`・未完成ESC列・`日`を保持し、PENDINを除いた端末設定が復元された。
+
+実装置の確認：
+
+- `AUDIO?`は-1で、AudioQueueの既定出力を使った。
+- 1プロセス内でPCM-OPEN/WRITE/（半数はdrain STOP）/CLOSEを1000回、22050Hz monoと48000Hz stereoを交互に行った。初回open/close後のfd13・thread7は1000回後も同数で、次のIDは1002（再利用なし）。初回の増加は音声hostとAudioQueueの起動分。
+- 32768フレームを書いた直後にBYEするプロセスを50回実行し、全てstatus0、stderrなし、終了時間の中央値0.077秒・最大0.090秒。再生中のAudioQueueのStop/Disposeで停止しないことを確認した（1127レビューの照合事項）。callback内部の待ち合わせをAppleの実装として観測したものではない。
+
+レモンがGhosttyで実際に聞いて確認した（三角波、振幅4096）。下記は画面出力に加え、事前に示した聞こえ方と違うという報告がなかったものである。
+
+1. 48000Hz monoの440Hzを2秒。
+2. 22050Hz stereoで左だけ・右だけを各1.5秒（再標本化とチャンネル）。
+3. PCMの220HzとMML `PLAY`のメロディの同時再生（混合）。
+4. 32768フレーム書込み後150msでPCM-STOP 0（破棄）→即停止、1秒後に開き直して再開。
+5. PCM-STOP 1でdrain後に`drained`表示。UNDERRUNSは0。
+6. SAVESYSで作った保存アプリから523Hz→784Hzを再生、status0。
+7. PCM-WAITで鳴り続ける550HzをCtrl+Cで中断：`CATCH= -28 CLOSE= 0`、音が停止、続く`ACCEPT`で`hello`を受け取りstatus0、その後のシェルの`echo`も正常。
+
+物理キーボードからの入力はCtrl+Cと`hello`のみ。LinuxのPulseAudio/ALSA実装置とWindows waveOutでの実聴は引き続き未確認で、tque 1133に登録した。

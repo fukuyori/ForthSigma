@@ -2,7 +2,7 @@
 
 2026-11-20、基点main `416caf9`、Zig 0.17.1。1127の実装・検証記録。前段のPCM設計/内部リングは416caf9でcommit/push済み。本記録のhost変更は未コミット。[採用設計](PCM_STREAM_DESIGN.md)、[レビュー評価](reviews/1127-review-response.md)、[原データとソース指紋](measurements/2026-11-20-audio-lifetime.json)。
 
-**公開PCM語・PCM Frameのhost確保/所有・画像連携は1128で未実装。** 998全体を完了にせず、Mac実機1130も残す。
+**公開PCM語・PCM Frameのhost確保/所有・画像連携は1128で未実装。** 998全体を完了にせず、Mac実機1130も残す。（2026-11-20追記：1128実装後、Mac実機1130を[実施・合格](PCM_PUBLIC_IMPLEMENTATION.md#mac実機受け入れ1130)。）
 
 ## 実装した動作
 
