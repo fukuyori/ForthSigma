@@ -208,3 +208,5 @@ State直下以外のコンテナ変数、関数内static相当、Cライブラ�
 997でWriter.physical_key_opsを追加した。メインのウィンドウのTracker、supported bitmap、contextをワーカーへ借用しない。ワーカーWriterではnullにし、SCAN-INPUT?・SCAN-SUPPORTED?・SCAN-HELD?・KEY-EVENT・KEY-RESYNCを入力/UI禁止語として将来の静的・動的検査に加える。State直下のフィールド追加はなく169項目のまま。ホストTrackerとMac Sender/Receiverはイメージに含めない。
 
 652でexecutionを追加しState直下は170項目。Writer.execution_opsのbegin/poll/endとcontextはワーカー専用に検査し、メインの信号所有者やVMポインターを借用しない。
+
+1068でsystem領域0x0dd0へ保存アプリの起動登録（word ID+1）を追加した。State直下は170項目のまま。新規Stateは未登録、完全復元は明示画像の登録を検査し、appendは追加先の設定を保持する。実起動時の自動dispatchはhost mainだけで行い、復元自体では実行しない。1053ではworker snapshotへのこの永続設定の取込み方、APP語/SAVE/SAVESYSの許可、host callbackとmainの起動IDを共有しないことを再帰監査する。

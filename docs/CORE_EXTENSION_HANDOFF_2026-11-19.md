@@ -1,5 +1,18 @@
 # 613 本体機能拡張の引継ぎ（2026-11-19）
 
+## 最新追記：保存アプリ起動基盤と測定記録（2026-11-20）
+
+この節を最新状態とする。Git基点main `d9e88f2`、origin/mainとの差分コミットなし。サイズ/速度の記録と保存アプリ起動の実装・文書が未コミット。コミット・タグ・pushは行っていない。
+
+- 保存アプリ1066は設計1067・実装1068を完了し、受け入れ1069をWindows/Linux1123（完了）とMac実機1124（未確認）へ分割した。親1066はauto83%、1069はauto50%。番号は再開時にタイトル・親子関係で照合する。
+- APP-ENTRY! / APP-ENTRY@ / APP-ENTRY-OFF、保存実行体からの一度だけの自動起動、アプリ引数と--sigmaホストprefix、起動回避、rootの寿命/画像検査、SAVESYS原子的公開を実装。新Builtinにより画像ABIが変わる。既存画像はソースから保存し直す。
+- Claude Codeへ設計・metadata・実装と限定再レビューを読み取り専用で依頼し、採否を別保存した。最終限定レビューは対象に高・中の具体的欠陥なし。POSIXのumask変更を除き、Windows drive-relativeのtempと診断準備順を整理した。
+- Windows core1097成功10除外/host151成功12除外、Linux core1097成功10除外/host155成功15除外。22構成の生成実行体試験、専用console/PTYの中断、破損画像/自己別名/readonly/日本語pathを確認。Mac aarch64はcore/hostクロスコンパイルのみ成功。
+- 全語1805・HELP1591・文書例28・個別例401、check-docs指摘0。[採用設計](SAVED_APPLICATION_STARTUP_DESIGN.md)、[実装・生値・Mac手順](SAVED_APPLICATION_STARTUP_IMPLEMENTATION.md)を参照。LOGOやタスク制御は実装していない。後続資源との結合は1057。
+- [サイズ・速度記録](SIZE_SPEED_MEASUREMENT.md)は789420eの実測（Zig 0.17.1）で、今回の起動機能を含まない。前回11/17との比較・Windowsの大きなばらつきを記録済み。起動時間の参考値は別の起動実装記録に保存。
+
+再開時はGit/tqueと`docs/measurements/2026-11-20-saved-startup.json`の指紋を確認する。Mac実機1124は上記の手順に従って実際に生成実行体を起動し、実端末Ctrl+Cも確認する。Windows/Linuxの成功やMacクロスコンパイルからMac実機受け入れ済みとはしない。
+
 ## 最新追記：640・646・652のMac実機受け入れ（2026-11-20）
 
 この節を最新状態とする。基点main `789420e`。macOS 27.2.1 / Apple M5 / Zig 0.17.1で、1111（書記素）・1116（ファイルシステム）・1122（実行制御）のMac実機受け入れをすべて実施して合格した。tqueでは3件と親の640・646・652、1002を完了にした。

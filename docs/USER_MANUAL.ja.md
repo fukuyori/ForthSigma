@@ -1019,7 +1019,7 @@ SAVESYS demo.exe
 | ループ関連 | `I`, `J`, `K`, `LEAVE`, `UNLOOP` |
 | 入出力 | `.`, `U.`, `.R`, `U.R`, `C.`, `.S`, `ECHO`, `EMIT`, `CR`, `SPACE`, `SPCES`, `SPACES`, `TYPE`, `INPUT`, `EMIT?` |
 | 基数 | `HEX`, `DEC`, `DECIMAL`, `OCT`, `BASE` |
-| 定義補助・辞書・実行 | `<BUILDS`, `CREATE`, `IMMEDIATE`, `WORDS`, `BYE`, `LOAD-DICTIONARY`, `SAVE`, `SAVESYS`, `EXECUTE`, `SEE`, `FIND`, `FIND-NAME`, `NAME>INT`, `NAME>STRING`, `MARKER`, `LOCATE`, `WHERE`, `PERFORM`, `NOOP`, `DEFER`, `DEFER!`, `DEFER@`, `DEFERS`, `COMPILE,`, `[COMPILE]`, `NAME>COMPILE`, `COMP'`, `[COMP']`, `POSTPONE,`, `COMPILE-ONLY`, `RESTRICT`, `EXECUTE-EXIT`, `SELECT`, `[NOOP]`, `+DO`, `U+DO`, `-DO`, `U-DO`, `-[DO`, `U-[DO`, `-LOOP`, `FOR`, `NEXT`, `MEM+DO`, `MEM-DO`, `ARRAY>MEM`, `I'`, `DELTA-I`, `CS-DROP`, `DONE`, `?DUP-IF`, `?DUP-0=-IF`, `[:`, `;]`, `NONAME`, `IN-COLON-DEF?`, `]]`, `TO`, `IS`, `+TO`, `ACTION-OF`, `BEGIN-STRUCTURE`, `END-STRUCTURE`, `+FIELD`, `FIELD:`, `CFIELD:`, `FFIELD:`, `SFFIELD:`, `DFFIELD:`, `STRUCT`, `FIELD`, `END-STRUCT`, `CELL%`, `CHAR%`, `FLOAT%`, `DOUBLE%`, `SFLOAT%`, `DFLOAT%`, `%SIZE`, `%ALIGNMENT`, `%ALIGN`, `%ALLOT`, `%ALLOC`, `%ALLOCATE`, `LATEST`, `LATESTXT`, `>NAME`, `ID.`, `.NAME`, `ALIAS` |
+| 定義補助・辞書・実行 | `<BUILDS`, `CREATE`, `IMMEDIATE`, `WORDS`, `BYE`, `LOAD-DICTIONARY`, `SAVE`, `SAVESYS`, `APP-ENTRY!`, `APP-ENTRY@`, `APP-ENTRY-OFF`, `EXECUTE`, `SEE`, `FIND`, `FIND-NAME`, `NAME>INT`, `NAME>STRING`, `MARKER`, `LOCATE`, `WHERE`, `PERFORM`, `NOOP`, `DEFER`, `DEFER!`, `DEFER@`, `DEFERS`, `COMPILE,`, `[COMPILE]`, `NAME>COMPILE`, `COMP'`, `[COMP']`, `POSTPONE,`, `COMPILE-ONLY`, `RESTRICT`, `EXECUTE-EXIT`, `SELECT`, `[NOOP]`, `+DO`, `U+DO`, `-DO`, `U-DO`, `-[DO`, `U-[DO`, `-LOOP`, `FOR`, `NEXT`, `MEM+DO`, `MEM-DO`, `ARRAY>MEM`, `I'`, `DELTA-I`, `CS-DROP`, `DONE`, `?DUP-IF`, `?DUP-0=-IF`, `[:`, `;]`, `NONAME`, `IN-COLON-DEF?`, `]]`, `TO`, `IS`, `+TO`, `ACTION-OF`, `BEGIN-STRUCTURE`, `END-STRUCTURE`, `+FIELD`, `FIELD:`, `CFIELD:`, `FFIELD:`, `SFFIELD:`, `DFFIELD:`, `STRUCT`, `FIELD`, `END-STRUCT`, `CELL%`, `CHAR%`, `FLOAT%`, `DOUBLE%`, `SFLOAT%`, `DFLOAT%`, `%SIZE`, `%ALIGNMENT`, `%ALIGN`, `%ALLOT`, `%ALLOC`, `%ALLOCATE`, `LATEST`, `LATESTXT`, `>NAME`, `ID.`, `.NAME`, `ALIAS` |
 | 制御構造（即時語） | `IF`, `ELSE`, `AHEAD`, `THEN`, `CS-PICK`, `CS-ROLL`, `ENDIF`, `BEGIN`, `END`, `UNTIL`, `AGAIN`, `WHILE`, `REPEAT`, `DO`, `?DO`, `LOOP`, `+LOOP`, `DOES>`, `CASE`, `OF`, `?OF`, `ENDOF`, `CONTOF`, `ENDCASE`, `NEXT-CASE`, `EXIT`, `?EXIT`, `?LEAVE`, `RECURSE` |
 | 浮動小数点スタック | `FDROP`, `FDUP`, `FSWAP`, `FOVER`, `FROT`, `F-ROT`, `FNIP`, `FTUCK`, `FPICK`, `FDEPTH`, `F.S` |
 | 浮動小数点算術・関数 | `F+`, `F-`, `F*`, `F/`, `FNEGATE`, `FMINUS`, `FABS`, `FMAX`, `FMIN`, `FSQRT`, `FEXP`, `FLN`, `FSIN`, `FCOS`, `FTAN`, `FSINCOS`, `FASIN`, `FACOS`, `FATAN`, `FATAN2`, `FSINH`, `FCOSH`, `FTANH`, `FASINH`, `FACOSH`, `FATANH`, `FEXPM1`, `FLNP1`, `FLOG`, `FALOG`, `F**`, `FLOOR`, `FTRUNC`, `FROUND` |
@@ -1564,4 +1564,24 @@ REQUIRE-EXTENSION ALSO EXTENSION
 : SPIN BEGIN AGAIN ;
 ' SPIN 100 EXEC-LIMITED .  \ -280
 PREVIOUS
+```
+
+## 保存アプリの自動起動
+
+`APP-ENTRY! ( xt -- )`で完成したcolon定義を登録し、`SAVESYS`で保存すると、その実行体を起動した際に一度だけ呼び出します。`APP-ENTRY@ ( -- xt flag )`は未登録なら`0 false`、登録済みなら`xt true`を返し、`APP-ENTRY-OFF ( -- )`で解除します。image機能が必要で、audio/graphics/extension/debug/filesは必須ではありません。builtin・DEFER・SYNONYM等は直接登録せず、colonで包んでください。不正tokenは-261、定義中の登録は-259で、引数と既存設定を保持します。
+
+SAVEも登録を保存しますが、LOAD-DICTIONARYは追加先の登録を未登録も含め維持し、読み込んだだけで起動しません。同名再定義で登録は切り替わらず、登録先のFORGET/MARKER等による削除で解除されます。旧Builtin ABIの画像は作り直してください。
+
+登録済み実行体の引数は既定ですべてアプリのデータです。空・日本語・空白入り・`-e`・`--format`・`--`も保持し、Forthソースやファイルとして自動実行しません。argv0は現在渡された名前。argv0込み256件までで、引数文字列と終端NULの合計も既存領域に収まる必要があります。
+
+Sigmaのオプションを使う場合だけ先頭に`--sigma`を置き、hostオプションとアプリ引数を`--`で区切ります。`app --sigma -- --sigma`は最初のアプリ引数として`--sigma`を渡します。`app --sigma --no-app -- -e "WORDS BYE"`は登録を保持したまま自動起動を回避し、通常のForth処理へ進みます。APPのformat/lintはこの回避が必須で、debugなしでは使えません。保存実行体のhost側`-m`/`-l`は拒否します。
+
+正常復帰とBYEは共通のblock保存・後始末を通って終了し、REPLへ戻りません。QUITは既存-eと同じ表示なし/status1、THROWと協調的中断もstatus1です。通常VMへ新たな中断pollは加えていないため、確認点のない計算のCtrl+CはOSによる終了で、後始末は保証しません。
+
+実行体の読取りを起動要件とし、認識した埋込みの読取り・CRC・ABI・登録・復元失敗ではstatus1で停止します。`--no-app`でも壊れた画像を使いません。末尾marker自体が失われた任意の破損を通常実行体と区別する保証はありません。SAVESYSは同directoryの排他的tempへ完全に書いてから置換し、途中失敗で既存先を壊さない方式です。自身と同じfile ID、最終symlink/Windows reparse point、通常ファイル以外を保存先にしません。出力先directoryへの書込み権限が必要です。[採用設計](SAVED_APPLICATION_STARTUP_DESIGN.md)。
+
+```forth
+: MAIN ." application started" CR ;
+' MAIN APP-ENTRY!
+SAVESYS myapp
 ```

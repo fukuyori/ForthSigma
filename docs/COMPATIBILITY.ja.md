@@ -364,3 +364,7 @@ EXTENSIONへ`COMPACT-FILENAME`・`FILE>REALPATH`・`FILE-METADATA`・`SYNC-FILE`
 ## EXEC-LIMITED (652)
 
 Sigma独自のdebug実行入口`EXEC-LIMITED`は正常時0、自分の予算切れでは-280を返し、CLI上限・通常THROW・-28は外へ伝えます。外側すべての予算を消費します。協調的な中断で、継続再開や副作用の巻戻しは行いません。Raw文字を保持し、満杯の後ろのCtrl+Cを検出できない場合があります。-Ddebug=falseまたは-Dextension=falseで除外します。予算は画像に保存しませんが、新Builtinで画像ABIは変わります。[設計](EXECUTION_CONTROL_DESIGN.md)。
+
+## Saved application entry (1066)
+
+Sigma独自の`APP-ENTRY!`、`APP-ENTRY@`、`APP-ENTRY-OFF`はimage語群で、完成colonを登録します。SAVESYS実起動で一度だけ呼び、LOADは追加先の設定を保ち呼びません。APP引数と明示的な--sigma host prefixを分けます。QUITのstatus1を維持し、暗黙の協調VM loopは加えません。新Builtinで保存画像ABIが変わります。[設計](SAVED_APPLICATION_STARTUP_DESIGN.md)。

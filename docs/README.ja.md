@@ -17,7 +17,7 @@
 - [LOGOのタートルグラフィックスの検討](LOGO_TURTLE_STUDY.md): 外部ForthアプリとしてLOGOのプログラムを解釈してタートルグラフィックスを描く方式、決める項目、問題点（検討段階）
 - [実装ノート](IMPLEMENTATION.md): Zig移植版の構成、実装判断、未実装機能
 - [Forth 2012の語の状況](forth2012-word-status.tsv): Forth 2012規格の語の一覧の各項目と、全機能ビルドでの有無（2026-11-17確認。要約はトップのREADME）
-- [サイズ測定・速度比較](SIZE_SPEED_MEASUREMENT.md): 2026-11-17のWindows/Linux実行体サイズとWSLでのGforth 1.0.2比較、生データと再実行手順
+- [サイズ測定・速度比較](SIZE_SPEED_MEASUREMENT.md): 2026-11-20のWindows/Linux構成別サイズ・変更前後のCPU時間とWSLでのGforth 1.0.2比較、生データと再実行手順
 - [本体の機能拡張の全体](CORE_EXTENSION_PLAN.md): 共通基盤・OS判別、TUI・非同期、音と描画、ゲーム表示、タスク制御の範囲、依存関係、段階0〜Eの工程（tque 613、共通基盤・637のMac実機まで完了、638はWindows/Linux受け入れ済み・Mac実機待ち）。[実装・検証記録](CORE_EXTENSION_IMPLEMENTATION.md)
 - [Unicode書記素の設計](GRAPHEME_DESIGN.md)と[実装・検証記録](GRAPHEME_IMPLEMENTATION.md): Unicode 18.0.0の境界、検査範囲と計算量、試験とMac実機の残作業
 - [ファイルシステム設計](FILESYSTEM_DESIGN.md)と[実装・検証記録](FILESYSTEM_IMPLEMENTATION.md): パス補助・metadata・同期、レビュー採否とMac実機の残作業
@@ -54,3 +54,5 @@
 - [P03メモリー操作の実装記録](P03_IMPLEMENTATION.md)：P03aの幅・整列・エンディアンと検証。再配置・ヒープの段階は未着手。
 
 - [SIGIMG45/46/47 image format](IMAGE_FORMAT45.md)
+
+- [保存アプリ起動基盤：実装・検証結果とMac手順](SAVED_APPLICATION_STARTUP_IMPLEMENTATION.md)

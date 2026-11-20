@@ -17,7 +17,7 @@ For the project overview, how to build, the current features, the differences fr
 - [LOGO turtle graphics: a study](LOGO_TURTLE_STUDY.md): interpreting LOGO programs and drawing turtle graphics in Forth on Sigma without changing Sigma itself; approach, items to decide, and problems (under consideration; in Japanese)
 - [Implementation notes](IMPLEMENTATION.md): the structure of the Zig port, implementation decisions, features not implemented
 - [Forth 2012 word status](forth2012-word-status.tsv): each glossary entry of the Forth 2012 standard and whether the full build provides it (checked 2026-11-17; summary in the top-level README)
-- [Size and speed measurements](SIZE_SPEED_MEASUREMENT.md): 2026-11-17 Windows/Linux executable sizes and WSL comparisons with Gforth 1.0.2, including raw samples (in Japanese)
+- [Size and speed measurements](SIZE_SPEED_MEASUREMENT.md): 2026-11-20 Windows/Linux size configurations, before/after CPU timings and WSL comparisons with Gforth 1.0.2, including raw samples (in Japanese)
 - [Extending the core: the whole plan](CORE_EXTENSION_PLAN.md): shared infrastructure and OS identification, TUI and async I/O, sound and drawing, game display, task control, dependencies, and stages 0–E (tque 613; common foundation and terminal controls accepted on Mac, event-queue Windows/Linux acceptance completed with native Mac acceptance pending). [Implementation and validation log](CORE_EXTENSION_IMPLEMENTATION.md) (in Japanese)
 - [Unicode grapheme design](GRAPHEME_DESIGN.md) and [implementation evidence](GRAPHEME_IMPLEMENTATION.md): Unicode 18.0.0 boundaries, validation scope and complexity, tests and remaining Mac acceptance (in Japanese)
 - [Filesystem design](FILESYSTEM_DESIGN.md) and [implementation evidence](FILESYSTEM_IMPLEMENTATION.md): path utilities, metadata, synchronization, review decisions and remaining Mac acceptance (in Japanese)
@@ -54,3 +54,5 @@ For the project overview, how to build, the current features, the differences fr
 - [P03 memory implementation](P03_IMPLEMENTATION.md): P03a widths, alignment, endian conversion, and validation; relocation and heap stages remain pending (Japanese).
 
 - [SIGIMG45/46/47 image format](IMAGE_FORMAT45.md)
+
+- [Saved application startup: implementation, validation and Mac procedure (Japanese)](SAVED_APPLICATION_STARTUP_IMPLEMENTATION.md)

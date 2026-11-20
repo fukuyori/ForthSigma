@@ -96,6 +96,7 @@ pub fn restoreFreshImage(self: *State, image: []const u8) RuntimeError!void {
 
 pub fn appendImage(self: *State, source: *const State) RuntimeError!void {
     if (self == source) return error.InvalidImage;
+    try @import("app_entry.zig").validateState(self);
     // Reject malformed ranges and excluded operations before any target mutation.
     if (source.builtin_count == 0 or source.builtin_count > source.word_count or source.word_count > source.words.len or source.code_count > source.code.len) return error.InvalidImage;
     for (source.words[0..source.word_count], 0..) |word, i| try @import("image_features.zig").validateWord(word, i, source.builtin_count);

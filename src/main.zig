@@ -2444,23 +2444,23 @@ fn writeU64(bytes: []u8, value: u64) void {
 
 /// The image `SAVESYS` put at the end of the executable, in a new allocation; null when
 /// there is none.
-fn readEmbeddedImage(path: [:0]const u8, allocator: std.mem.Allocator) ?[]u8 {
-    const file = fopen(path.ptr, "rb") orelse return null;
+fn readEmbeddedImage(path: [:0]const u8, allocator: std.mem.Allocator) forth.RuntimeError!?[]u8 {
+    const saved = @import("host_saved_image.zig");
+    const file = fopen(path.ptr, "rb") orelse return error.InvalidImage;
     defer _ = fclose(file);
-    if (fseek(file, 0, 2) != 0) return null;
-    const end = ftell(file);
-    if (end < image_footer_size or fseek(file, end - image_footer_size, 0) != 0) return null;
-    var footer: [image_footer_size]u8 = undefined;
-    if (fread(&footer, 1, footer.len, file) != footer.len or !std.mem.eql(u8, footer[0..8], image_footer_magic)) return null;
-    const image_len = readU32(footer[8..12]);
-    const base_len = readU64(footer[12..20]);
-    if (base_len + image_len + image_footer_size != end) return null;
-    if (fseek(file, @intCast(base_len), 0) != 0) return null;
-    const image = allocator.alloc(u8, image_len) catch return null;
-    if (fread(image.ptr, 1, image.len, file) != image.len) {
-        allocator.free(image);
-        return null;
-    }
+    if (seek64(file, 0, 2) != 0) return error.InvalidImage;
+    const position = tell64(file);
+    if (position < 0) return error.InvalidImage;
+    const end: u64 = @intCast(position);
+    if (end < saved.footer_size) return null;
+    if (seek64(file, @intCast(end - saved.footer_size), 0) != 0) return error.InvalidImage;
+    var bytes: [saved.footer_size]u8 = undefined;
+    if (fread(&bytes, 1, bytes.len, file) != bytes.len) return error.InvalidImage;
+    const info = (try saved.footer(&bytes, end)) orelse return null;
+    if (seek64(file, @intCast(info.base_len), 0) != 0) return error.InvalidImage;
+    const image = allocator.alloc(u8, info.image_len) catch return error.MemoryExhausted;
+    errdefer allocator.free(image);
+    if (fread(image.ptr, 1, image.len, file) != image.len) return error.InvalidImage;
     return image;
 }
 
@@ -2496,6 +2496,8 @@ const StartOptions = struct {
     /// to as lines of JSON.
     debug_log: ?[]const u8 = null,
     next: usize = 1,
+    no_app: bool = false,
+    layout_seen: bool = false,
 };
 
 const debug_log_option = "--debug-log";
@@ -2619,11 +2621,21 @@ fn parseSize(text: []const u8, element: usize) ?usize {
 /// `-dSIZE`, `--data-stack-size SIZE`, and `--data-stack-size=SIZE`; `--` ends them, and
 /// so does anything else. A size of 0 keeps the default. On an error, `failed` is the
 /// option at fault.
-fn parseStartOptions(args: []const []const u8, failed: *[]const u8) error{ MissingValue, InvalidSize, InvalidNumber }!StartOptions {
+const StartError = error{ MissingValue, InvalidSize, InvalidNumber, UnknownOption, DiagnosticRequiresNoApp };
+fn parseStartOptions(args: []const []const u8, failed: *[]const u8) StartError!StartOptions {
+    return parseStartOptionsPolicy(args, failed, false);
+}
+fn parseStartOptionsPolicy(args: []const []const u8, failed: *[]const u8, strict: bool) StartError!StartOptions {
     var options = StartOptions{};
     var index: usize = 1;
     while (index < args.len) {
         const argument = args[index];
+        if (strict and std.mem.eql(u8, argument, "--no-app")) {
+            options.no_app = true;
+            index += 1;
+            continue;
+        }
+
         if (std.mem.eql(u8, argument, "--")) {
             index += 1;
             break;
@@ -2710,7 +2722,13 @@ fn parseStartOptions(args: []const []const u8, failed: *[]const u8) error{ Missi
                 break option;
             }
         } else null;
-        const option = found orelse break;
+        const option = found orelse {
+            if (strict) {
+                failed.* = argument;
+                return error.UnknownOption;
+            }
+            break;
+        };
         failed.* = argument;
         if (needs_next) {
             if (index + 1 >= args.len) return error.MissingValue;
@@ -2722,6 +2740,7 @@ fn parseStartOptions(args: []const []const u8, failed: *[]const u8) error{ Missi
         // Memory is kept in whole cells, and stacks in whole elements.
         const in_bytes = std.mem.alignForward(usize, bytes, 8);
         const elements = in_bytes / 8;
+        if (option.field == .m or option.field == .l) options.layout_seen = true;
         if (bytes == 0) continue;
         switch (option.field) {
             .m => options.m = in_bytes,
@@ -2733,6 +2752,21 @@ fn parseStartOptions(args: []const []const u8, failed: *[]const u8) error{ Missi
     }
     options.next = index;
     return options;
+}
+
+const ApplicationStart = struct { start: StartOptions, args_start: usize, app_mode: bool, prefix: bool };
+fn applicationStart(args: []const []const u8, registered: bool, failed: *[]const u8) StartError!ApplicationStart {
+    if (args.len > 1 and std.mem.eql(u8, args[1], "--sigma")) {
+        const start = try parseStartOptionsPolicy(args[1..], failed, true);
+        if (registered and !start.no_app and (start.format != .none or start.lint)) {
+            failed.* = if (start.format != .none) "--format" else "--lint";
+            return error.DiagnosticRequiresNoApp;
+        }
+        return .{ .start = start, .args_start = start.next + 1, .app_mode = registered and !start.no_app, .prefix = true };
+    }
+    if (registered) return .{ .start = .{}, .args_start = 1, .app_mode = true, .prefix = false };
+    const start = try parseStartOptions(args, failed);
+    return .{ .start = start, .args_start = start.next, .app_mode = false, .prefix = false };
 }
 
 /// The sizes to run with; null, with `failed` naming the option, when an option asks for
@@ -2810,31 +2844,52 @@ fn saveDictionary(context: ?*anyopaque, output_path: []const u8, machine: *forth
     if (fwrite(image.ptr, 1, length, file) != length or fflush(file) != 0) return error.FileUnavailable;
 }
 
+const saved_native = struct {
+    extern "c" fn sigma_saved_target_safe(?*anyopaque, [*:0]const u8) c_int;
+    extern "c" fn sigma_saved_temp([*:0]const u8, [*]u8, usize, *c_uint) ?*anyopaque;
+    extern "c" fn sigma_saved_mode(?*anyopaque, c_uint) c_int;
+    extern "c" fn sigma_saved_publish(?*anyopaque, [*:0]const u8, [*:0]const u8) c_int;
+};
+const SaveFault = enum { none, base, image, footer, flush, mode, close, publish };
+var test_save_fault: SaveFault = .none;
+fn saveFault(stage: SaveFault) bool {
+    return builtin.is_test and test_save_fault == stage;
+}
 fn saveExecutableImage(context: ?*anyopaque, output_path: []const u8, machine: *forth.State) forth.RuntimeError!void {
     const host: *HostContext = @ptrCast(@alignCast(context orelse return error.FileUnavailable));
     const allocator = host.allocator;
     const executable_path = host.executable_path;
-    if (output_path.len >= 4096 or std.ascii.eqlIgnoreCase(output_path, executable_path)) return error.FileUnavailable;
+    if (output_path.len == 0 or output_path.len >= 4096 or std.mem.indexOfScalar(u8, output_path, 0) != null) return error.FileUnavailable;
     var terminated_output: [4096:0]u8 = undefined;
     @memcpy(terminated_output[0..output_path.len], output_path);
     terminated_output[output_path.len] = 0;
     const source = fopen(executable_path.ptr, "rb") orelse return error.FileUnavailable;
     defer _ = fclose(source);
-    if (fseek(source, 0, 2) != 0) return error.FileUnavailable;
-    var base_len: u64 = @intCast(ftell(source));
-    if (base_len >= image_footer_size and fseek(source, @intCast(base_len - image_footer_size), 0) == 0) {
+    if (saved_native.sigma_saved_target_safe(source, &terminated_output) == 0) return error.FileUnavailable;
+    if (seek64(source, 0, 2) != 0) return error.FileUnavailable;
+    const position = tell64(source);
+    if (position < 0) return error.FileUnavailable;
+    var base_len: u64 = @intCast(position);
+    if (base_len >= image_footer_size) {
+        if (seek64(source, @intCast(base_len - image_footer_size), 0) != 0) return error.FileUnavailable;
         var previous_footer: [image_footer_size]u8 = undefined;
-        if (fread(&previous_footer, 1, previous_footer.len, source) == previous_footer.len and std.mem.eql(u8, previous_footer[0..8], image_footer_magic)) {
-            const prior_base = readU64(previous_footer[12..20]);
-            if (prior_base <= base_len) base_len = prior_base;
-        }
+        if (fread(&previous_footer, 1, previous_footer.len, source) != previous_footer.len) return error.FileUnavailable;
+        if (try @import("host_saved_image.zig").footer(&previous_footer, base_len)) |info| base_len = info.base_len;
     }
-    if (fseek(source, 0, 0) != 0) return error.FileUnavailable;
+    if (seek64(source, 0, 0) != 0) return error.FileUnavailable;
     const image = allocator.alloc(u8, try machine.encodedSize()) catch return error.MemoryExhausted;
     defer allocator.free(image);
     const image_len = try machine.encodeImage(image);
-    const destination = fopen(&terminated_output, "wb") orelse return error.FileUnavailable;
-    defer _ = fclose(destination);
+    if (image_len > std.math.maxInt(u32)) return error.FileUnavailable;
+    var temporary: [4096:0]u8 = undefined;
+    var final_mode: c_uint = 0;
+    const destination = saved_native.sigma_saved_temp(&terminated_output, &temporary, temporary.len, &final_mode) orelse return error.FileUnavailable;
+    var open = true;
+    var published = false;
+    defer {
+        if (open) _ = fclose(destination);
+        if (!published) _ = remove(&temporary);
+    }
     var buffer: [8192]u8 = undefined;
     var copied: u64 = 0;
     while (copied < base_len) {
@@ -2843,20 +2898,21 @@ fn saveExecutableImage(context: ?*anyopaque, output_path: []const u8, machine: *
         if (amount != wanted or fwrite(&buffer, 1, amount, destination) != amount) return error.FileUnavailable;
         copied += amount;
     }
-
-    if (fwrite(image.ptr, 1, image_len, destination) != image_len) return error.FileUnavailable;
+    if (saveFault(.base)) return error.FileUnavailable;
+    if (fwrite(image.ptr, 1, image_len, destination) != image_len or saveFault(.image)) return error.FileUnavailable;
     var footer: [image_footer_size]u8 = undefined;
     @memcpy(footer[0..8], image_footer_magic);
     writeU32(footer[8..12], @intCast(image_len));
     writeU64(footer[12..20], base_len);
-    if (fwrite(&footer, 1, footer.len, destination) != footer.len) return error.FileUnavailable;
-    // A C stream makes the file without the permission to run it; as a linker does, the
-    // executable gets every permission the umask lets through (usually rwxr-xr-x).
-    if (builtin.os.tag != .windows) {
-        const mask = std.c.umask(0);
-        _ = std.c.umask(mask);
-        if (std.c.chmod(&terminated_output, 0o777 & ~mask) != 0) return error.FileUnavailable;
-    }
+    if (fwrite(&footer, 1, footer.len, destination) != footer.len or saveFault(.footer)) return error.FileUnavailable;
+    if (fflush(destination) != 0 or saveFault(.flush)) return error.FileUnavailable;
+    if (saved_native.sigma_saved_mode(destination, final_mode) != 0 or saveFault(.mode)) return error.FileUnavailable;
+    const close_result = fclose(destination);
+    open = false;
+    if (close_result != 0 or saveFault(.close)) return error.FileUnavailable;
+    if (saveFault(.publish)) return error.FileUnavailable;
+    if (saved_native.sigma_saved_publish(source, &temporary, &terminated_output) != 0) return error.FileUnavailable;
+    published = true;
 }
 
 /// Writes to the standard error handle directly, as std.Io did: it is not buffered, so it
@@ -3555,35 +3611,49 @@ fn run(init: std.process.Init.Minimal) !u8 {
     var argument_list: std.ArrayList([]const u8) = .empty;
     defer argument_list.deinit(allocator);
     while (arguments.next()) |argument| try argument_list.append(allocator, argument);
+    if (argument_list.items.len == 0) {
+        terminalWrite(null, "INVALID ARGUMENTS !\n");
+        return 1;
+    }
+    const embedded = readEmbeddedImage(executable_path, allocator) catch |err| {
+        terminalWrite(null, if (err == error.MemoryExhausted) "OUT OF MEMORY !\n" else "INVALID IMAGE !\n");
+        return 1;
+    };
+    defer if (embedded) |image| allocator.free(image);
+    const saved_info: ?@import("host_saved_image.zig").Info = if (embedded) |image|
+        @import("host_saved_image.zig").inspect(image, allocator) catch |err| {
+            terminalWrite(null, if (err == error.MemoryExhausted) "OUT OF MEMORY !\n" else "INVALID IMAGE !\n");
+            return 1;
+        }
+    else
+        null;
     var failed_option: []const u8 = "";
-    const start = parseStartOptions(argument_list.items, &failed_option) catch |err| {
+    const selection = applicationStart(argument_list.items, if (saved_info) |info| info.entry != null else false, &failed_option) catch |err| {
         terminalWrite(null, failed_option);
         terminalWrite(null, switch (err) {
             error.MissingValue => ": OPTION REQUIRES AN ARGUMENT !\n",
             error.InvalidSize => ": INVALID SIZE !\n",
             error.InvalidNumber => ": INVALID NUMBER !\n",
+            error.UnknownOption => ": UNKNOWN OPTION !\n",
+            error.DiagnosticRequiresNoApp => ": DIAGNOSTIC OPTION REQUIRES --no-app !\n",
         });
         return 1;
     };
-    // --format and --format-check read the files as text; nothing is run.
-    if (start.format != .none) return formatFiles(allocator, argument_list.items[start.next..], start.format == .check, @intCast(start.format_indent));
-    const embedded = readEmbeddedImage(executable_path, allocator);
-    defer if (embedded) |image| allocator.free(image);
+    const start = selection.start;
+    if (start.format != .none and saved_info == null) return formatFiles(allocator, argument_list.items[selection.args_start..], start.format == .check, @intCast(start.format_indent));
     var sizes = startSizes(start, &failed_option) orelse {
         terminalWrite(null, failed_option);
         terminalWrite(null, ": INVALID SIZE !\n");
         return 1;
     };
-    // A saved program keeps addresses, so it runs with the layout it was saved with.
-    if (embedded) |image| if (forth.State.imageLayout(image)) |layout| {
-        if (start.m != null or start.l != null) {
-            terminalWrite(null, if (start.m != null) "-m" else "-l");
-            terminalWrite(null, ": A SAVED PROGRAM KEEPS ITS MEMORY LAYOUT !\n");
+    if (saved_info) |info| {
+        if (start.m != null or start.l != null or (selection.prefix and start.layout_seen)) {
+            terminalWrite(null, "-m/-l: A SAVED PROGRAM KEEPS ITS MEMORY LAYOUT !\n");
             return 1;
         }
-        sizes.m = layout[0];
-        sizes.l = layout[1];
-    };
+        sizes.m = info.m;
+        sizes.l = info.l;
+    }
     const storage = forth.Storage.allocate(std.heap.page_allocator, true, sizes) catch {
         terminalWrite(null, "OUT OF MEMORY !\n");
         return 1;
@@ -3636,7 +3706,7 @@ fn run(init: std.process.Init.Minimal) !u8 {
     machine.trace_limit = start.trace_limit;
     machine.plain_calls = start.trace or start.profile or start.coverage;
     machine.cover_blocks = start.coverage;
-    if (start.debug_log) |path| {
+    if (if (start.format == .none) start.debug_log else null) |path| {
         var terminated_path: [4096:0]u8 = undefined;
         if (path.len >= terminated_path.len) {
             terminalWrite(null, debug_log_option ++ ": FILE ERROR !\n");
@@ -3652,7 +3722,7 @@ fn run(init: std.process.Init.Minimal) !u8 {
         forth.logStart(machine, version);
     }
     // The checks of --lint are made however the program ends, as the profile is shown.
-    const lint: ?*forth.Lint = if (start.lint) std.heap.page_allocator.create(forth.Lint) catch {
+    const lint: ?*forth.Lint = if (start.format == .none and start.lint) std.heap.page_allocator.create(forth.Lint) catch {
         terminalWrite(null, "OUT OF MEMORY !\n");
         return 1;
     } else null;
@@ -3672,7 +3742,7 @@ fn run(init: std.process.Init.Minimal) !u8 {
     };
     // The profile is shown however the program ends: BYE, an error, or the end of input.
     // --coverage keeps the same counts, for its words, and shows nothing at the end.
-    const profile: ?*forth.Profile = if (start.profile or start.coverage) std.heap.page_allocator.create(forth.Profile) catch {
+    const profile: ?*forth.Profile = if (start.format == .none and (start.profile or start.coverage)) std.heap.page_allocator.create(forth.Profile) catch {
         terminalWrite(null, "OUT OF MEMORY !\n");
         return 1;
     } else null;
@@ -3685,17 +3755,50 @@ fn run(init: std.process.Init.Minimal) !u8 {
         machine.profile = counts;
     }
     defer clearForDiagnostics();
-    if (embedded) |image| machine.restoreFreshImage(image) catch machine.write("INVALID IMAGE !\n");
+    if (embedded) |image| machine.restoreFreshImage(image) catch |err| {
+        reportDiagnostic(machine, err);
+        return 1;
+    };
+    if (saved_info) |info| {
+        const restored = @import("core/app_entry.zig").get(machine) catch |err| {
+            reportDiagnostic(machine, err);
+            return 1;
+        };
+        if (restored != info.entry) {
+            reportDiagnostic(machine, error.InvalidImage);
+            return 1;
+        }
+    }
+    if (start.format != .none) return formatFiles(allocator, argument_list.items[selection.args_start..], start.format == .check, @intCast(start.format_indent));
 
     // The other arguments go into Forth memory, where ARGC, ARGV, ARG, and NEXT-ARG see
     // them, after the program's name. This comes after the image is restored, since
     // restoring clears that area.
-    const kept_arguments = argument_list.items[start.next - 1 ..];
-    kept_arguments[0] = argument_list.items[0];
-    machine.setArguments(kept_arguments) catch |err| {
+    var kept_arguments: std.ArrayList([]const u8) = .empty;
+    defer kept_arguments.deinit(allocator);
+    if (argument_list.items.len == 0) return 1;
+    try kept_arguments.append(allocator, argument_list.items[0]);
+    try kept_arguments.appendSlice(allocator, argument_list.items[selection.args_start..]);
+    machine.setArguments(kept_arguments.items) catch |err| {
         reportDiagnostic(machine, err);
         return 1;
     };
+    if (selection.app_mode) {
+        machine.resetSteps();
+        const root = @import("core/app_entry.zig").get(machine) catch |err| {
+            reportDiagnostic(machine, err);
+            return 1;
+        };
+        const id = root orelse {
+            reportDiagnostic(machine, error.InvalidImage);
+            return 1;
+        };
+        machine.runEntry(id) catch |err| {
+            reportDiagnostic(machine, err);
+            return 1;
+        };
+        return finishBlocks(machine);
+    }
     // As in gforth: each argument names a file to include, in order, and `-e` (or
     // `--evaluate`) interprets the next argument. Each is removed from the arguments
     // before it runs, so a file sees only the ones after it, and the ones it takes with
@@ -4606,4 +4709,58 @@ test "process publication rollback is retryable and closed-stream errors still r
         try std.testing.expectEqual(badFileIor(), procStatus(context, id).ior);
         for (file_slots) |slot| try std.testing.expect(slot.proc_owner != id);
     }
+}
+
+test "saved app argv grammar preserves app options and isolates explicit host prefix" {
+    var failed: []const u8 = "";
+    const raw = try applicationStart(&.{ "app", "-e", "NOT-FORTH", "", "--trace" }, true, &failed);
+    try std.testing.expect(raw.app_mode and !raw.prefix and !raw.start.trace);
+    try std.testing.expectEqual(@as(usize, 1), raw.args_start);
+    const escape = try applicationStart(&.{ "app", "--sigma", "--", "--sigma" }, true, &failed);
+    try std.testing.expectEqual(@as(usize, 3), escape.args_start);
+    const bypass = try applicationStart(&.{ "app", "--sigma", "--no-app", "--", "-e", "BYE" }, true, &failed);
+    try std.testing.expect(!bypass.app_mode and bypass.start.no_app);
+    try std.testing.expectEqual(@as(usize, 4), bypass.args_start);
+    try std.testing.expectError(error.UnknownOption, applicationStart(&.{ "app", "--sigma", "--unknown=1" }, true, &failed));
+    if (@import("build_options").debug) {
+        try std.testing.expectError(error.DiagnosticRequiresNoApp, applicationStart(&.{ "app", "--sigma", "--format" }, true, &failed));
+        const trace = try applicationStart(&.{ "app", "--sigma", "--trace", "--", "-e" }, true, &failed);
+        try std.testing.expect(trace.app_mode and trace.start.trace);
+    } else try std.testing.expectError(error.UnknownOption, applicationStart(&.{ "app", "--sigma", "--trace" }, true, &failed));
+    const zero = try applicationStart(&.{ "app", "--sigma", "-m", "0" }, true, &failed);
+    try std.testing.expect(zero.start.layout_seen and zero.start.m == null);
+}
+
+test "SAVESYS atomic publication retains prior output at every injected failure" {
+    if (!@import("build_options").image) return error.SkipZigTest;
+    const allocator = std.testing.allocator;
+    const source = ".zig-cache/sigma-app-source-" ++ @tagName(builtin.os.tag) ++ ".bin";
+    const output = ".zig-cache/sigma-app-output-" ++ @tagName(builtin.os.tag) ++ ".bin";
+    try writeTestFile(source, "private program bytes without a saved image footer");
+    defer _ = remove(source);
+    defer _ = remove(output);
+    var host = HostContext{ .allocator = allocator, .executable_path = source, .environ_map = undefined };
+    const machine = try allocator.create(forth.State);
+    defer allocator.destroy(machine);
+    const storage = try forth.Storage.allocate(allocator, false, .small);
+    defer storage.free(allocator);
+    machine.init(.{ .context = null, .write_fn = discardOutput }, storage);
+    defer test_save_fault = .none;
+    for ([_]SaveFault{ .base, .image, .footer, .flush, .mode, .close, .publish }) |stage| {
+        try writeTestFile(output, "OLD");
+        test_save_fault = stage;
+        try std.testing.expectError(error.FileUnavailable, saveExecutableImage(&host, output, machine));
+        const file = fopen(output, "rb") orelse return error.TestUnexpectedResult;
+        defer _ = fclose(file);
+        var bytes: [4]u8 = undefined;
+        try std.testing.expectEqual(@as(usize, 3), fread(&bytes, 1, bytes.len, file));
+        try std.testing.expectEqualStrings("OLD", bytes[0..3]);
+    }
+    test_save_fault = .none;
+    try std.testing.expectError(error.FileUnavailable, saveExecutableImage(&host, source, machine));
+    try saveExecutableImage(&host, output, machine);
+    const encoded = (try readEmbeddedImage(output, allocator)).?;
+    defer allocator.free(encoded);
+    const info = try @import("host_saved_image.zig").inspect(encoded, allocator);
+    try std.testing.expectEqual(@as(?u16, null), info.entry);
 }

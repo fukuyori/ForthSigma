@@ -1027,7 +1027,7 @@ The following table lists the built-in words registered at start-up and listed b
 | Loops | `I`, `J`, `K`, `LEAVE`, `UNLOOP` |
 | Input and output | `.`, `U.`, `.R`, `U.R`, `C.`, `.S`, `ECHO`, `EMIT`, `CR`, `SPACE`, `SPCES`, `SPACES`, `TYPE`, `INPUT`, `EMIT?` |
 | Number base | `HEX`, `DEC`, `DECIMAL`, `OCT`, `BASE` |
-| Definition helpers, dictionary, and execution | `<BUILDS`, `CREATE`, `IMMEDIATE`, `WORDS`, `BYE`, `LOAD-DICTIONARY`, `SAVE`, `SAVESYS`, `EXECUTE`, `SEE`, `FIND`, `FIND-NAME`, `NAME>INT`, `NAME>STRING`, `MARKER`, `LOCATE`, `WHERE`, `PERFORM`, `NOOP`, `DEFER`, `DEFER!`, `DEFER@`, `DEFERS`, `COMPILE,`, `[COMPILE]`, `NAME>COMPILE`, `COMP'`, `[COMP']`, `POSTPONE,`, `COMPILE-ONLY`, `RESTRICT`, `EXECUTE-EXIT`, `SELECT`, `[NOOP]`, `+DO`, `U+DO`, `-DO`, `U-DO`, `-[DO`, `U-[DO`, `-LOOP`, `FOR`, `NEXT`, `MEM+DO`, `MEM-DO`, `ARRAY>MEM`, `I'`, `DELTA-I`, `CS-DROP`, `DONE`, `?DUP-IF`, `?DUP-0=-IF`, `[:`, `;]`, `NONAME`, `IN-COLON-DEF?`, `]]`, `TO`, `IS`, `+TO`, `ACTION-OF`, `BEGIN-STRUCTURE`, `END-STRUCTURE`, `+FIELD`, `FIELD:`, `CFIELD:`, `FFIELD:`, `SFFIELD:`, `DFFIELD:`, `STRUCT`, `FIELD`, `END-STRUCT`, `CELL%`, `CHAR%`, `FLOAT%`, `DOUBLE%`, `SFLOAT%`, `DFLOAT%`, `%SIZE`, `%ALIGNMENT`, `%ALIGN`, `%ALLOT`, `%ALLOC`, `%ALLOCATE`, `LATEST`, `LATESTXT`, `>NAME`, `ID.`, `.NAME`, `ALIAS` |
+| Definition helpers, dictionary, and execution | `<BUILDS`, `CREATE`, `IMMEDIATE`, `WORDS`, `BYE`, `LOAD-DICTIONARY`, `SAVE`, `SAVESYS`, `APP-ENTRY!`, `APP-ENTRY@`, `APP-ENTRY-OFF`, `EXECUTE`, `SEE`, `FIND`, `FIND-NAME`, `NAME>INT`, `NAME>STRING`, `MARKER`, `LOCATE`, `WHERE`, `PERFORM`, `NOOP`, `DEFER`, `DEFER!`, `DEFER@`, `DEFERS`, `COMPILE,`, `[COMPILE]`, `NAME>COMPILE`, `COMP'`, `[COMP']`, `POSTPONE,`, `COMPILE-ONLY`, `RESTRICT`, `EXECUTE-EXIT`, `SELECT`, `[NOOP]`, `+DO`, `U+DO`, `-DO`, `U-DO`, `-[DO`, `U-[DO`, `-LOOP`, `FOR`, `NEXT`, `MEM+DO`, `MEM-DO`, `ARRAY>MEM`, `I'`, `DELTA-I`, `CS-DROP`, `DONE`, `?DUP-IF`, `?DUP-0=-IF`, `[:`, `;]`, `NONAME`, `IN-COLON-DEF?`, `]]`, `TO`, `IS`, `+TO`, `ACTION-OF`, `BEGIN-STRUCTURE`, `END-STRUCTURE`, `+FIELD`, `FIELD:`, `CFIELD:`, `FFIELD:`, `SFFIELD:`, `DFFIELD:`, `STRUCT`, `FIELD`, `END-STRUCT`, `CELL%`, `CHAR%`, `FLOAT%`, `DOUBLE%`, `SFLOAT%`, `DFLOAT%`, `%SIZE`, `%ALIGNMENT`, `%ALIGN`, `%ALLOT`, `%ALLOC`, `%ALLOCATE`, `LATEST`, `LATESTXT`, `>NAME`, `ID.`, `.NAME`, `ALIAS` |
 | Control structures (immediate words) | `IF`, `ELSE`, `AHEAD`, `THEN`, `CS-PICK`, `CS-ROLL`, `ENDIF`, `BEGIN`, `END`, `UNTIL`, `AGAIN`, `WHILE`, `REPEAT`, `DO`, `?DO`, `LOOP`, `+LOOP`, `DOES>`, `CASE`, `OF`, `?OF`, `ENDOF`, `CONTOF`, `ENDCASE`, `NEXT-CASE`, `EXIT`, `?EXIT`, `?LEAVE`, `RECURSE` |
 | Floating-point stack | `FDROP`, `FDUP`, `FSWAP`, `FOVER`, `FROT`, `F-ROT`, `FNIP`, `FTUCK`, `FPICK`, `FDEPTH`, `F.S` |
 | Floating-point arithmetic and functions | `F+`, `F-`, `F*`, `F/`, `FNEGATE`, `FMINUS`, `FABS`, `FMAX`, `FMIN`, `FSQRT`, `FEXP`, `FLN`, `FSIN`, `FCOS`, `FTAN`, `FSINCOS`, `FASIN`, `FACOS`, `FATAN`, `FATAN2`, `FSINH`, `FCOSH`, `FTANH`, `FASINH`, `FACOSH`, `FATANH`, `FEXPM1`, `FLNP1`, `FLOG`, `FALOG`, `F**`, `FLOOR`, `FTRUNC`, `FROUND` |
@@ -1567,4 +1567,24 @@ REQUIRE-EXTENSION ALSO EXTENSION
 : SPIN BEGIN AGAIN ;
 ' SPIN 100 EXEC-LIMITED .  \ -280
 PREVIOUS
+```
+
+## Saved application autostart
+
+`APP-ENTRY! ( xt -- )` registers a completed colon definition. A SAVESYS executable calls it once on real startup. `APP-ENTRY@ ( -- xt flag )` returns `0 false` when absent or `xt true` when registered; `APP-ENTRY-OFF ( -- )` clears it. The image feature is required; audio/graphics/extension/debug/files are independent. Wrap builtins, DEFER or SYNONYM in a colon definition. Invalid targets throw -261 and registration while defining throws -259, retaining arguments and the old setting.
+
+SAVE preserves registration too. LOAD-DICTIONARY preserves the receiving setting, including absence, and never autostarts merely on import. Redefining a name does not retarget registration; FORGET/MARKER deletion clears it. Recreate images using an older Builtin ABI.
+
+A registered executable treats all ordinary arguments as application data, retaining empty, Japanese, spaced, -e, --format and -- strings. It does not automatically execute them as Forth or include them as files. argv0 is the current supplied name. The existing limit is 256 arguments including argv0, and strings plus NUL terminators must fit the argument area.
+
+Only a leading `--sigma` enables host options; `--` separates them from application arguments. `app --sigma -- --sigma` passes literal --sigma as the first app argument. `app --sigma --no-app -- -e "WORDS BYE"` bypasses autostart without clearing registration and uses ordinary Forth processing. App format/lint requires this bypass and the debug feature. Host -m/-l options are rejected for saved executables.
+
+Normal return and BYE exit through common block writeback and cleanup, without entering the REPL. QUIT retains the existing -e behavior: no diagnostic, status1. Ordinary THROW and cooperative interruption return status1. No new interrupt polling is added to the normal VM: Ctrl+C during computation without checkpoints follows OS termination, without guaranteed cleanup.
+
+The executable must be readable. Recognized embedded-image read/CRC/ABI/entry/restore failure exits with status1; --no-app cannot bypass corrupt images. Arbitrary corruption that removes the footer marker cannot always be distinguished from a plain executable. SAVESYS writes a complete exclusive temporary in the same directory before atomic replacement; ordinary failures preserve an existing output. It rejects the running file identity, final symlinks/Windows reparse points and nonregular outputs. A writable destination directory is required. See [design](SAVED_APPLICATION_STARTUP_DESIGN.md).
+
+```forth
+: MAIN ." application started" CR ;
+' MAIN APP-ENTRY!
+SAVESYS myapp
 ```

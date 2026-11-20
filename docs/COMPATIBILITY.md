@@ -364,3 +364,7 @@ EXTENSION adds `COMPACT-FILENAME`, `FILE>REALPATH`, `FILE-METADATA` and `SYNC-FI
 ## EXEC-LIMITED (652)
 
 Sigma-specific debug execution entry `EXEC-LIMITED` returns 0 or its own budget exhaustion -280; CLI exhaustion and ordinary THROW/-28 propagate. All enclosing budgets are charged. This is cooperative interruption, with no continuation or side-effect rollback. Raw characters are retained; Ctrl+C behind a full queue may not be detected. Excluded by either -Ddebug=false or -Dextension=false. Runtime budgets are not serialized, but the added Builtin tag changes image ABI. See [design](EXECUTION_CONTROL_DESIGN.md).
+
+## Saved application entry (1066)
+
+Sigma-specific `APP-ENTRY!`, `APP-ENTRY@` and `APP-ENTRY-OFF` are image-group words for a completed colon entry. SAVESYS startup executes it once; LOAD preserves the receiving setting and never invokes it. App arguments use a separate explicit --sigma host prefix. QUIT retains status1; no implicit cooperative VM loop is introduced. The added Builtin tags change saved-image ABI. See [design](SAVED_APPLICATION_STARTUP_DESIGN.md).

@@ -1,5 +1,13 @@
 # テストと検証のスクリプト
 
+`python tests/scripts/verify-saved-application.py PATH`は自分専用のSAVESYS実行体を作り、
+起動語・引数・起動回避・破損画像・再保存・自己別名拒否と終了コードを検査する。
+POSIXでは専用PTYで中断と端末設定の復元も照合する。機能除外版は`--no-debug`、
+`--no-files`で期待結果を切り替える。Windows用の
+`verify-saved-application-windows.py PATH`は非表示の専用consoleでCtrl+Cを確認する。
+所有ファイルは`.work/1069`内へ作り後始末する。利用者のconsoleへ入力は送らない。
+[検証結果とMac手順](../../docs/SAVED_APPLICATION_STARTUP_IMPLEMENTATION.md)を参照。
+
 `verify-filesystem.py --sigma PATH --output PATH`は、実測したGforthのCOMPACT
 1,010例、長いパス、実パスの容量・重複・リンク、通常fileのmetadata、SYNCの方向切替・
 保留入力・EOF・拒否条件を所有する一時fileで確認します。

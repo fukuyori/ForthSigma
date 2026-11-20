@@ -81,6 +81,7 @@ comptime {
     _ = @import("tests/filesystem_test.zig");
     _ = @import("tests/execution_replay_test.zig");
     _ = @import("tests/execution_control_test.zig");
+    _ = @import("tests/app_entry_test.zig");
     _ = @import("tests/event_queue_test.zig");
     _ = @import("tests/async_io_test.zig");
     _ = @import("tests/process_test.zig");

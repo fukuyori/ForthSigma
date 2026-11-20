@@ -487,6 +487,7 @@ pub const State = struct {
         self.writeCell(memory_map.before_locate_address, 3) catch unreachable;
         self.writeCell(memory_map.after_locate_address, 12) catch unreachable;
         self.writeCell(memory_map.where_style_address, 0) catch unreachable;
+        self.writeCell(memory_map.app_entry_address, 0) catch unreachable;
         for (@import("core/standard_keys.zig").names, 0..) |name, index| {
             const at: usize = @intCast(memory_map.key_name_base + @as(Cell, @intCast(@import("core/standard_keys.zig").nameOffset(index))));
             @memcpy(self.memory[at..][0..name.len], name);
@@ -596,6 +597,35 @@ pub const State = struct {
         const start: usize = @intCast(tib_address);
         std.mem.copyForwards(u8, self.memory[start .. start + input.len], input);
         return self.interpretSource(self.memory[start .. start + input.len], .terminal);
+    }
+
+    /// Run one host entry with an empty terminal source, without inventing Forth text.
+    pub fn runEntry(self: *State, id: u16) RuntimeError!void {
+        const previous_line = self.source_line;
+        const previous_cursor = self.sourceCursor();
+        const previous_kind = self.source_kind;
+        const previous_blk = self.readCellConst(memory_map.blk_address);
+        const previous_serial = self.input_line_serial;
+        const previous_token = self.token_start;
+        self.writeCell(memory_map.blk_address, 0) catch unreachable;
+        const tib: usize = @intCast(memory_map.tib_address);
+        self.source_line = self.memory[tib..tib];
+        self.source_kind = .terminal;
+        self.setSourceCursor(0);
+        self.token_start = 0;
+        self.numberInputLine();
+        self.last_created_word = null;
+        self.last_unknown_word = null;
+        defer {
+            self.source_line = previous_line;
+            self.setSourceCursor(previous_cursor);
+            self.source_kind = previous_kind;
+            self.writeCell(memory_map.blk_address, previous_blk) catch unreachable;
+            self.input_line_serial = previous_serial;
+            self.token_start = previous_token;
+        }
+        errdefer @import("core/quotations.zig").abort(self);
+        try self.executeWord(id);
     }
 
     /// Interprets `input`, which lies in logical memory.
@@ -913,7 +943,8 @@ pub const State = struct {
         .{ "PREPEND-WHERE", .prepend_where },         .{ "UNUSED-WORDS", .unused_words },             .{ "EDIT", .edit_source },                          .{ "G", .source_g },                           .{ "GG", .source_gg },
         .{ "LL", .source_ll },                        .{ "WHEREG", .where_g },                        .{ "...", .smart_stacks },                          .{ "TT", .trace_select },                      .{ "NT", .trace_next },
         .{ "BT", .trace_back },                       .{ "FANCY-AFTER-L", .fancy_after_l },           .{ "F>R", .f_to_r },                                .{ "FR>", .f_r_from },                         .{ "FR@", .f_r_fetch },
-        .{ "R'@", .r_second_fetch },                  .{ "RPICK", .r_pick },                          .{ "\\\\\\", .triple_backslash },
+        .{ "R'@", .r_second_fetch },                  .{ "RPICK", .r_pick },                          .{ "\\\\\\", .triple_backslash },                   .{ "APP-ENTRY!", .app_entry_set },             .{ "APP-ENTRY@", .app_entry_get },
+        .{ "APP-ENTRY-OFF", .app_entry_off },
     };
 
     pub const minimum_dictionary_words = builtin_definitions.len + root_word_names.len + 2 + @import("core/standard_keys.zig").constants.len;
@@ -1137,6 +1168,7 @@ pub const State = struct {
     /// Takes word `id` and every later word out of the dictionary and the index of the
     /// names; the caller gives back their code, data, and names.
     pub fn dropWordsFrom(self: *State, id: u16) void {
+        @import("core/app_entry.zig").forget(self, id);
         if (self.hidden_word != wordlists.no_word and self.hidden_word >= id) self.hidden_word = wordlists.no_word;
         if (self.hidden_word != wordlists.no_word and self.hidden_word >= id) self.hidden_word = wordlists.no_word;
         if (self.hidden_word != wordlists.no_word and self.hidden_word >= id) self.hidden_word = wordlists.no_word;

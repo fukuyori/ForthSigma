@@ -4,6 +4,8 @@
 
 ### Added
 
+- Saved-application entry registration with APP-ENTRY!, APP-ENTRY@ and APP-ENTRY-OFF, explicit --sigma host options and --no-app diagnostic startup, embedded-image failure termination and atomic SAVESYS publication.
+
 - Debug EXTENSION `EXEC-LIMITED` provides nested cooperative execution budgets and Ctrl+C checks. Enclosing budgets are charged; CLI limits and ordinary exceptions propagate. Raw input is retained, including pasted byte 3; a full queue can delay Ctrl+C detection. No continuation or side-effect rollback.
 
 - EXTENSION filesystem utilities: `COMPACT-FILENAME`, `FILE>REALPATH`, `FILE-METADATA` and `SYNC-FILE`, separating lexical compaction, existing-path resolution, regular-file size/UTC modification time, and OS synchronization. Windows/Linux and optimized Windows fixtures pass; Mac runtime acceptance remains separate.

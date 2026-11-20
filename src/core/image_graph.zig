@@ -25,6 +25,7 @@ pub fn collectForAppend(state: *forth.State, output: *Graph) RuntimeError!void {
     return collectInternal(state, output, true);
 }
 fn collectInternal(state: *forth.State, output: *Graph, preserve_fpath: bool) RuntimeError!void {
+    try @import("app_entry.zig").validateState(state);
     if (state.quote_depth != 0 or state.postponing or state.colon_is_word != null) return error.InvalidDefinition;
     _ = @import("source_listing.zig").style(state) catch return error.InvalidImage;
     try @import("exception_registry.zig").validateState(state);

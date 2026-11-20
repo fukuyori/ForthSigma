@@ -24,6 +24,7 @@ pub const Plan = struct {
 /// Input must be separate from State. A successful plan borrows input and itself,
 /// must not be copied, and is invalidated by any target State change.
 pub fn prepare(state: *forth.State, bytes: []const u8, plan: *Plan) RuntimeError!void {
+    try @import("app_entry.zig").validateState(state);
     try full.prepare(state, bytes, &plan.image);
     try registry.validate(state);
     const view = plan.image.view;

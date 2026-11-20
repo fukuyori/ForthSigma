@@ -56,6 +56,7 @@ pub fn build(b: *std.Build) void {
     });
     if (target.result.os.tag == .windows or target.result.os.tag == .linux or target.result.os.tag == .macos) {
         exe.root_module.addCSourceFile(.{ .file = b.path("src/host_filesystem_native.c"), .flags = &.{"-std=gnu11"} });
+        exe.root_module.addCSourceFile(.{ .file = b.path("src/host_saved_image_native.c"), .flags = &.{"-std=gnu11"} });
         exe.root_module.addCSourceFile(.{ .file = b.path("src/host_process_native.c"), .flags = &.{"-std=gnu11"} });
         if (target.result.os.tag == .linux) exe.root_module.linkSystemLibrary("pthread", .{});
     }

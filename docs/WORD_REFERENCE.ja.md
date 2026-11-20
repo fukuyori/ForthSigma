@@ -6,14 +6,14 @@
 
 通常構成を基準とします。機能を除いた構成では対象の語を使えません。追加語彙はREQUIREで読み込んでから検索順へ加えます。即時語・コンパイル専用の印は、組込み語の実装にある属性です。構文の実行条件は説明本文に従ってください。
 
-項目数（語彙と名前の組）：**1802**。同名でも語彙が異なる項目は別に数えます。
+項目数（語彙と名前の組）：**1805**。同名でも語彙が異なる項目は別に数えます。
 
 ## 目次
 
 - [AUDIO](#namespace-audio) (73)
 - [EKEYS](#namespace-ekeys) (35)
 - [EXTENSION](#namespace-extension) (39)
-- [FORTH](#namespace-forth) (958)
+- [FORTH](#namespace-forth) (961)
 - [GAME](#namespace-game) (59)
 - [GRAPHICS](#namespace-graphics) (450)
 - [GUI](#namespace-gui) (135)
@@ -136,7 +136,7 @@ Set the instrument's envelope, each 0 to 15 as on the C64's SID; 0 0 15 0 at fir
 : ADSR ( attack decay sustain release -- )   SND-ADSR ;
 ```
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1371).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1374).
 
 <a id="w-415544494f3a414d494741"></a>
 
@@ -170,7 +170,7 @@ REQUIRE-AUDIO ALSO AUDIO AMIGA . PREVIOUS
 16 CONSTANT SCC   32 CONSTANT AMIGA
 ```
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1413).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1416).
 
 <a id="w-415544494f3a414d4947412d46494c544552"></a>
 
@@ -208,7 +208,7 @@ REQUIRE-AUDIO ALSO AUDIO AMIGA-SOUND TRUE AMIGA-FILTER
 : AMIGA-FILTER ( flag -- )   SND-AMIGA-FILTER ;
 ```
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1395).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1398).
 
 <a id="w-415544494f3a414d4947412d534f554e44"></a>
 
@@ -246,7 +246,7 @@ REQUIRE-AUDIO ALSO AUDIO AMIGA-SOUND TRUE AMIGA-FILTER
 : AMIGA-SOUND ( -- )   5 SND-CHIP ;
 ```
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1394).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1397).
 
 <a id="w-415544494f3a415544494f3f"></a>
 
@@ -284,7 +284,7 @@ AUDIO?
 : AUDIO? ( -- flag )   SND-DEVICE ;
 ```
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1353).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1356).
 
 <a id="w-415544494f3a42454550"></a>
 
@@ -322,7 +322,7 @@ BEEP
 : BEEP ( -- )   SND-BEEP ;
 ```
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1352).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1355).
 
 <a id="w-415544494f3a433634"></a>
 
@@ -356,7 +356,7 @@ REQUIRE-AUDIO ALSO AUDIO C64 . PREVIOUS
 1 CONSTANT MSX   2 CONSTANT ST   4 CONSTANT NES   8 CONSTANT C64
 ```
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1411).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1414).
 
 <a id="w-415544494f3a4336342d534f554e44"></a>
 
@@ -394,7 +394,7 @@ C64-SOUND
 : C64-SOUND ( -- )   3 SND-CHIP ;
 ```
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1375).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1378).
 
 <a id="w-415544494f3a4348495053"></a>
 
@@ -432,7 +432,7 @@ ST NES OR CHIPS
 : CHIPS ( mask -- )   SND-CHIPS ;
 ```
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1405).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1408).
 
 <a id="w-415544494f3a44555459"></a>
 
@@ -470,7 +470,7 @@ Set the width of the instrument's pulse, 0 to 100 percent; 50 at first (FORTH/Si
 : DUTY ( percent -- )   SND-DUTY ;
 ```
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1370).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1373).
 
 <a id="w-415544494f3a46494c544552"></a>
 
@@ -508,7 +508,7 @@ FALSE RING 0 0 0 FILTER
 : FILTER ( mode cutoff resonance -- )   SND-FILTER ;
 ```
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1378).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1381).
 
 <a id="w-415544494f3a465245452d53414d504c4553"></a>
 
@@ -546,7 +546,7 @@ FREE-SAMPLES
 : FREE-SAMPLES ( -- )   SND-FREE-SAMPLES ;
 ```
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1393).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1396).
 
 <a id="w-415544494f3a494e535452554d454e54"></a>
 
@@ -584,7 +584,7 @@ Choose instrument n (0 to 63), which MML's @n plays with, for the words that cha
 : INSTRUMENT ( n -- )   SND-INSTRUMENT ;
 ```
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1364).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1367).
 
 <a id="w-415544494f3a4c4f41442d4d4f44"></a>
 
@@ -622,7 +622,7 @@ REQUIRE-AUDIO ALSO AUDIO S" a.txt" LOAD-MOD
 : LOAD-MOD ( c-addr u -- )   SND-LOAD-MOD THROW ;
 ```
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1400).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1403).
 
 <a id="w-415544494f3a4c4f41442d53414d504c45"></a>
 
@@ -660,7 +660,7 @@ S" a.txt" 5 LOAD-SAMPLE
 : LOAD-SAMPLE ( c-addr u n -- )   SND-LOAD-SAMPLE THROW ;
 ```
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1388).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1391).
 
 <a id="w-415544494f3a4c4f4f502d53414d504c45"></a>
 
@@ -698,7 +698,7 @@ Loop sample n from frame start to frame end; 0 0 for no loop (FORTH/Sigma audio)
 : LOOP-SAMPLE ( start end n -- )   SND-LOOP-SAMPLE ;
 ```
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1390).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1393).
 
 <a id="w-415544494f3a4d4f443f"></a>
 
@@ -736,7 +736,7 @@ MOD?
 : MOD? ( -- flag )   SND-MOD-PLAYING ;
 ```
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1403).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1406).
 
 <a id="w-415544494f3a4d5358"></a>
 
@@ -770,7 +770,7 @@ REQUIRE-AUDIO ALSO AUDIO MSX . PREVIOUS
 1 CONSTANT MSX   2 CONSTANT ST   4 CONSTANT NES   8 CONSTANT C64
 ```
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1408).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1411).
 
 <a id="w-415544494f3a4d53582d534f554e44"></a>
 
@@ -808,7 +808,7 @@ MSX-SOUND
 : MSX-SOUND ( -- )   0 SND-CHIP ;
 ```
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1361).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1364).
 
 <a id="w-415544494f3a4e4553"></a>
 
@@ -842,7 +842,7 @@ REQUIRE-AUDIO ALSO AUDIO NES . PREVIOUS
 1 CONSTANT MSX   2 CONSTANT ST   4 CONSTANT NES   8 CONSTANT C64
 ```
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1410).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1413).
 
 <a id="w-415544494f3a4e45532d534f554e44"></a>
 
@@ -880,7 +880,7 @@ NES-SOUND BEEP
 : NES-SOUND ( -- )   2 SND-CHIP ;
 ```
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1363).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1366).
 
 <a id="w-415544494f3a4e4f495345"></a>
 
@@ -918,7 +918,7 @@ SQUARE TRIANGLE SAW NOISE
 : NOISE ( -- )   4 SND-WAVE ;
 ```
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1369).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1372).
 
 <a id="w-415544494f3a504c4159"></a>
 
@@ -956,7 +956,7 @@ S" CDE" PLAY
 : PLAY ( c-addr u -- )   0 0 0 0 SND-PLAY ;
 ```
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1347).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1350).
 
 <a id="w-415544494f3a504c41592d4d4f44"></a>
 
@@ -994,7 +994,7 @@ TRUE PLAY-MOD
 : PLAY-MOD ( flag -- )   SND-PLAY-MOD ;
 ```
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1401).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1404).
 
 <a id="w-415544494f3a504c415932"></a>
 
@@ -1032,7 +1032,7 @@ S" O5 L8 C" S" D" PLAY2  S" E" S" F" S" G" PLAY3
 : PLAY2 ( c-addr1 u1 c-addr2 u2 -- )   0 0 SND-PLAY ;
 ```
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1348).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1351).
 
 <a id="w-415544494f3a504c415933"></a>
 
@@ -1070,7 +1070,7 @@ S" O5 L8 C" S" D" PLAY2  S" E" S" F" S" G" PLAY3
 : PLAY3 ( c-addr1 u1 c-addr2 u2 c-addr3 u3 -- )   SND-PLAY ;
 ```
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1349).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1352).
 
 <a id="w-415544494f3a504c41593f"></a>
 
@@ -1108,7 +1108,7 @@ Whether voice n (1 to 8), or any voice for 0, still has notes to play, as MSX BA
 : PLAY? ( n -- flag )   SND-PLAYING ;
 ```
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1350).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1353).
 
 <a id="w-415544494f3a504c415953"></a>
 
@@ -1144,7 +1144,7 @@ REQUIRE-AUDIO ALSO AUDIO S" C" S" E" S" G" S" C" 4 PLAYS 4 PLAY? .
 : PLAYS ( c-addr1 u1 ... c-addrn un n -- )   SND-PLAYS ;
 ```
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1360).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1363).
 
 <a id="w-415544494f3a50554c5345"></a>
 
@@ -1182,7 +1182,7 @@ Make the instrument a pulse of DUTY's width; the NES takes 12.5, 25, 50, or 75% 
 : PULSE ( -- )   1 SND-WAVE ;
 ```
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1366).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1369).
 
 <a id="w-415544494f3a52494e47"></a>
 
@@ -1220,7 +1220,7 @@ FALSE RING 0 0 0 FILTER
 : RING ( flag -- )   SND-RING ;
 ```
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1376).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1379).
 
 <a id="w-415544494f3a53414d504c45"></a>
 
@@ -1258,7 +1258,7 @@ CREATE S 10 ALLOT S 10 0 FILL 127 S C! 128 S 1 + C!  S 10 8000 1 SAMPLE
 : SAMPLE ( c-addr u rate n -- )   SND-SAMPLE ;
 ```
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1389).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1392).
 
 <a id="w-415544494f3a53414d504c452d494e535452554d454e54"></a>
 
@@ -1296,7 +1296,7 @@ Have the instrument play sample n on the Amiga, O4's C at the sample's rate; -1 
 : SAMPLE-INSTRUMENT ( n -- )   SND-SAMPLE-INSTRUMENT ;
 ```
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1391).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1394).
 
 <a id="w-415544494f3a534157"></a>
 
@@ -1334,7 +1334,7 @@ SQUARE TRIANGLE SAW NOISE
 : SAW ( -- )   3 SND-WAVE ;
 ```
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1368).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1371).
 
 <a id="w-415544494f3a534343"></a>
 
@@ -1368,7 +1368,7 @@ REQUIRE-AUDIO ALSO AUDIO SCC . PREVIOUS
 16 CONSTANT SCC   32 CONSTANT AMIGA
 ```
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1412).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1415).
 
 <a id="w-415544494f3a5343432d534f554e44"></a>
 
@@ -1406,7 +1406,7 @@ REQUIRE-AUDIO ALSO AUDIO SCC-SOUND
 : SCC-SOUND ( -- )   4 SND-CHIP ;
 ```
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1380).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1383).
 
 <a id="w-415544494f3a5343432d57415645"></a>
 
@@ -1444,7 +1444,7 @@ Make the 32 signed bytes at c-addr the wave instrument n plays on the SCC; witho
 : SCC-WAVE ( c-addr n -- )   SND-WAVETABLE ;
 ```
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1414).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1417).
 
 <a id="w-415544494f3a534658"></a>
 
@@ -1482,7 +1482,7 @@ Play sample n once at its rate, at once and beside the music, on any chip; four 
 : SFX ( n -- )   SND-SFX ;
 ```
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1392).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1395).
 
 <a id="w-415544494f3a534e442d41445352"></a>
 
@@ -1514,7 +1514,7 @@ Host primitive for ADSR (FORTH/Sigma).
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1359).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1362).
 
 <a id="w-415544494f3a534e442d414d4947412d46494c544552"></a>
 
@@ -1546,7 +1546,7 @@ Host primitive for AMIGA-FILTER (FORTH/Sigma).
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1386).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1389).
 
 <a id="w-415544494f3a534e442d42454550"></a>
 
@@ -1578,7 +1578,7 @@ Host primitive for BEEP (FORTH/Sigma).
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1344).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1347).
 
 <a id="w-415544494f3a534e442d43484950"></a>
 
@@ -1610,7 +1610,7 @@ Host primitive for MSX-SOUND (0), ST-SOUND (1), NES-SOUND (2), C64-SOUND (3), SC
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1355).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1358).
 
 <a id="w-415544494f3a534e442d4348495053"></a>
 
@@ -1642,7 +1642,7 @@ Host primitive for CHIPS (FORTH/Sigma).
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1404).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1407).
 
 <a id="w-415544494f3a534e442d444556494345"></a>
 
@@ -1674,7 +1674,7 @@ Host primitive for AUDIO? (FORTH/Sigma).
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1346).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1349).
 
 <a id="w-415544494f3a534e442d44555459"></a>
 
@@ -1706,7 +1706,7 @@ Host primitive for DUTY (FORTH/Sigma).
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1358).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1361).
 
 <a id="w-415544494f3a534e442d46494c544552"></a>
 
@@ -1738,7 +1738,7 @@ Host primitive for FILTER (FORTH/Sigma).
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1374).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1377).
 
 <a id="w-415544494f3a534e442d465245452d53414d504c4553"></a>
 
@@ -1770,7 +1770,7 @@ Host primitive for FREE-SAMPLES (FORTH/Sigma).
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1387).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1390).
 
 <a id="w-415544494f3a534e442d494e535452554d454e54"></a>
 
@@ -1802,7 +1802,7 @@ Host primitive for INSTRUMENT (FORTH/Sigma).
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1356).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1359).
 
 <a id="w-415544494f3a534e442d4c4f41442d4d4f44"></a>
 
@@ -1834,7 +1834,7 @@ Host primitive for LOAD-MOD: ior 0, the file's, -277, or -257 (FORTH/Sigma).
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。 戻り値のiorを確認してください。0が成功です。THROWへ渡す方法もあります。 番地・長さ・容量は有効な論理メモリー範囲を指定します。所有領域と借用領域の寿命を区別してください。
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1396).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1399).
 
 <a id="w-415544494f3a534e442d4c4f41442d53414d504c45"></a>
 
@@ -1866,7 +1866,7 @@ S" b.txt" 6 SND-LOAD-SAMPLE S" missing.txt" 6 SND-LOAD-SAMPLE 0<>
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。 戻り値のiorを確認してください。0が成功です。THROWへ渡す方法もあります。 番地・長さ・容量は有効な論理メモリー範囲を指定します。所有領域と借用領域の寿命を区別してください。
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1381).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1384).
 
 <a id="w-415544494f3a534e442d4c4f4f502d53414d504c45"></a>
 
@@ -1898,7 +1898,7 @@ Host primitive for LOOP-SAMPLE (FORTH/Sigma).
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1383).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1386).
 
 <a id="w-415544494f3a534e442d4d4f442d504c4159494e47"></a>
 
@@ -1930,7 +1930,7 @@ Host primitive for MOD? (FORTH/Sigma).
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1399).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1402).
 
 <a id="w-415544494f3a534e442d504c4159"></a>
 
@@ -1962,7 +1962,7 @@ Put the MML of the three voices of one PLAY; an empty string for a voice that ha
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。 番地・長さ・容量は有効な論理メモリー範囲を指定します。所有領域と借用領域の寿命を区別してください。
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1342).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1345).
 
 <a id="w-415544494f3a534e442d504c41592d4d4f44"></a>
 
@@ -1994,7 +1994,7 @@ Host primitive for PLAY-MOD (FORTH/Sigma).
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1397).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1400).
 
 <a id="w-415544494f3a534e442d504c4159494e47"></a>
 
@@ -2026,7 +2026,7 @@ Host primitive for PLAY? (FORTH/Sigma).
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1345).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1348).
 
 <a id="w-415544494f3a534e442d504c415953"></a>
 
@@ -2058,7 +2058,7 @@ Host primitive for PLAYS (FORTH/Sigma).
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。 番地・長さ・容量は有効な論理メモリー範囲を指定します。所有領域と借用領域の寿命を区別してください。
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1354).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1357).
 
 <a id="w-415544494f3a534e442d52494e47"></a>
 
@@ -2090,7 +2090,7 @@ Host primitive for RING (FORTH/Sigma).
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1372).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1375).
 
 <a id="w-415544494f3a534e442d53414d504c45"></a>
 
@@ -2122,7 +2122,7 @@ Host primitive for SAMPLE (FORTH/Sigma).
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。 番地・長さ・容量は有効な論理メモリー範囲を指定します。所有領域と借用領域の寿命を区別してください。
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1382).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1385).
 
 <a id="w-415544494f3a534e442d53414d504c452d494e535452554d454e54"></a>
 
@@ -2154,7 +2154,7 @@ Host primitive for SAMPLE-INSTRUMENT (FORTH/Sigma).
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1384).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1387).
 
 <a id="w-415544494f3a534e442d534658"></a>
 
@@ -2186,7 +2186,7 @@ Host primitive for SFX (FORTH/Sigma).
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1385).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1388).
 
 <a id="w-415544494f3a534e442d534f554e44"></a>
 
@@ -2218,7 +2218,7 @@ Host primitive for SOUND (FORTH/Sigma).
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1343).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1346).
 
 <a id="w-415544494f3a534e442d53544f502d4d4f44"></a>
 
@@ -2250,7 +2250,7 @@ Host primitive for STOP-MOD (FORTH/Sigma).
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1398).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1401).
 
 <a id="w-415544494f3a534e442d5354594c45"></a>
 
@@ -2282,7 +2282,7 @@ Host primitive for STYLE (FORTH/Sigma).
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1406).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1409).
 
 <a id="w-415544494f3a534e442d53594e43"></a>
 
@@ -2314,7 +2314,7 @@ Host primitive for SYNC (FORTH/Sigma).
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1373).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1376).
 
 <a id="w-415544494f3a534e442d57415645"></a>
 
@@ -2346,7 +2346,7 @@ Host primitive for SQUARE (0), PULSE (1), TRIANGLE (2), SAW (3), and NOISE (4) (
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1357).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1360).
 
 <a id="w-415544494f3a534e442d574156455441424c45"></a>
 
@@ -2378,7 +2378,7 @@ Host primitive for SCC-WAVE (FORTH/Sigma).
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。 番地・長さ・容量は有効な論理メモリー範囲を指定します。所有領域と借用領域の寿命を区別してください。
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1379).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1382).
 
 <a id="w-415544494f3a534f554e44"></a>
 
@@ -2416,7 +2416,7 @@ Write a value 0 to 255 to the PSG's register 0 to 13, as MSX BASIC's SOUND (FORT
 : SOUND ( reg value -- )   SND-SOUND ;
 ```
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1351).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1354).
 
 <a id="w-415544494f3a535155415245"></a>
 
@@ -2454,7 +2454,7 @@ SQUARE TRIANGLE SAW NOISE
 : SQUARE ( -- )   0 SND-WAVE ;
 ```
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1365).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1368).
 
 <a id="w-415544494f3a5354"></a>
 
@@ -2488,7 +2488,7 @@ REQUIRE-AUDIO ALSO AUDIO ST .
 1 CONSTANT MSX   2 CONSTANT ST   4 CONSTANT NES   8 CONSTANT C64
 ```
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1409).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1412).
 
 <a id="w-415544494f3a53542d534f554e44"></a>
 
@@ -2528,7 +2528,7 @@ ST-SOUND
 : ST-SOUND ( -- )   1 SND-CHIP ;
 ```
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1362).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1365).
 
 <a id="w-415544494f3a53544f502d4d4f44"></a>
 
@@ -2566,7 +2566,7 @@ STOP-MOD
 : STOP-MOD ( -- )   SND-STOP-MOD ;
 ```
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1402).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1405).
 
 <a id="w-415544494f3a5354594c45"></a>
 
@@ -2604,7 +2604,7 @@ Choose one chip mask (MSX, ST, NES, C64, SCC or AMIGA) for an instrument on any 
 : STYLE ( chip -- )   SND-STYLE ;
 ```
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1407).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1410).
 
 <a id="w-415544494f3a53594e43"></a>
 
@@ -2644,7 +2644,7 @@ Restart the instrument's wave with each cycle of the voice before (voice 1 by vo
 : SYNC ( flag -- )   SND-SYNC ;
 ```
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1377).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1380).
 
 <a id="w-415544494f3a545249414e474c45"></a>
 
@@ -2682,7 +2682,7 @@ SQUARE TRIANGLE SAW NOISE
 : TRIANGLE ( -- )   2 SND-WAVE ;
 ```
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1367).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1370).
 
 <a id="namespace-ekeys"></a>
 
@@ -3776,7 +3776,7 @@ REQUIRE-EXTENSION ALSO EXTENSION COLS . PREVIOUS
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
-出典：[src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1335).
+出典：[src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1338).
 
 <a id="w-455854454e53494f4e3a434f4d504143542d46494c454e414d45"></a>
 
@@ -3804,7 +3804,7 @@ REQUIRE-EXTENSION ALSO EXTENSION S" a/../b" COMPACT-FILENAME TYPE PREVIOUS
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。 番地・長さ・容量は有効な論理メモリー範囲を指定します。所有領域と借用領域の寿命を区別してください。
 
-出典：[src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1325).
+出典：[src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1328).
 
 <a id="w-455854454e53494f4e3a454b45592d4d4f555345"></a>
 
@@ -3832,7 +3832,7 @@ REQUIRE-EXTENSION ALSO EXTENSION EKEY-MOUSE 2DROP 2DROP PREVIOUS
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
-出典：[src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1304).
+出典：[src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1307).
 
 <a id="w-455854454e53494f4e3a454b45592d57414954"></a>
 
@@ -3860,7 +3860,7 @@ REQUIRE-EXTENSION ALSO EXTENSION 0 EKEY-WAIT DROP 2DROP PREVIOUS
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。 戻り値のiorを確認してください。0が成功です。THROWへ渡す方法もあります。
 
-出典：[src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1303).
+出典：[src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1306).
 
 <a id="w-455854454e53494f4e3a455845432d4c494d49544544"></a>
 
@@ -3888,7 +3888,7 @@ REQUIRE-EXTENSION ALSO EXTENSION : SMALL 42 ; ' SMALL 100 EXEC-LIMITED . . PREVI
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。 戻り値のiorを確認してください。0が成功です。THROWへ渡す方法もあります。
 
-出典：[src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1328).
+出典：[src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1331).
 
 <a id="w-455854454e53494f4e3a46494c452d4d45544144415441"></a>
 
@@ -3916,7 +3916,7 @@ REQUIRE-EXTENSION ALSO EXTENSION S" VERSION" FILE-METADATA THROW . . D. PREVIOUS
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。 戻り値のiorを確認してください。0が成功です。THROWへ渡す方法もあります。
 
-出典：[src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1327).
+出典：[src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1330).
 
 <a id="w-455854454e53494f4e3a46494c453e5245414c50415448"></a>
 
@@ -3945,7 +3945,7 @@ S" ." FS-PATH-BUFFER 8192 FILE>REALPATH THROW FS-PATH-BUFFER SWAP TYPE PREVIOUS
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。 戻り値のiorを確認してください。0が成功です。THROWへ渡す方法もあります。
 
-出典：[src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1326).
+出典：[src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1329).
 
 <a id="w-455854454e53494f4e3a484f53542d4f53"></a>
 
@@ -3973,7 +3973,7 @@ REQUIRE-EXTENSION ALSO EXTENSION HOST-OS TYPE PREVIOUS
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。 番地・長さ・容量は有効な論理メモリー範囲を指定します。所有領域と借用領域の寿命を区別してください。
 
-出典：[src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1302).
+出典：[src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1305).
 
 <a id="w-455854454e53494f4e3a4b2d4d4f555345"></a>
 
@@ -4009,7 +4009,7 @@ REQUIRE-EXTENSION ALSO EXTENSION K-MOUSE . PREVIOUS
 2147483682 CONSTANT K-MOUSE
 ```
 
-出典：[src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1330).
+出典：[src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1333).
 
 <a id="w-455854454e53494f4e3a4b2d50415354452d424547494e"></a>
 
@@ -4045,7 +4045,7 @@ REQUIRE-EXTENSION ALSO EXTENSION K-PASTE-BEGIN . PREVIOUS
 2147483683 CONSTANT K-PASTE-BEGIN
 ```
 
-出典：[src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1331).
+出典：[src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1334).
 
 <a id="w-455854454e53494f4e3a4b2d50415354452d454e44"></a>
 
@@ -4081,7 +4081,7 @@ REQUIRE-EXTENSION ALSO EXTENSION K-PASTE-END . PREVIOUS
 2147483684 CONSTANT K-PASTE-END
 ```
 
-出典：[src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1332).
+出典：[src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1335).
 
 <a id="w-455854454e53494f4e3a50524f432d415247"></a>
 
@@ -4111,7 +4111,7 @@ P PROC-FREE THROW
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。 戻り値のiorを確認してください。0が成功です。THROWへ渡す方法もあります。 番地・長さ・容量は有効な論理メモリー範囲を指定します。所有領域と借用領域の寿命を区別してください。
 
-出典：[src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1310).
+出典：[src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1313).
 
 <a id="w-455854454e53494f4e3a50524f432d435744"></a>
 
@@ -4141,7 +4141,7 @@ P PROC-FREE THROW
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。 戻り値のiorを確認してください。0が成功です。THROWへ渡す方法もあります。 番地・長さ・容量は有効な論理メモリー範囲を指定します。所有領域と借用領域の寿命を区別してください。
 
-出典：[src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1311).
+出典：[src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1314).
 
 <a id="w-455854454e53494f4e3a50524f432d454e56"></a>
 
@@ -4171,7 +4171,7 @@ P PROC-FREE THROW
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。 戻り値のiorを確認してください。0が成功です。THROWへ渡す方法もあります。 番地・長さ・容量は有効な論理メモリー範囲を指定します。所有領域と借用領域の寿命を区別してください。
 
-出典：[src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1312).
+出典：[src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1315).
 
 <a id="w-455854454e53494f4e3a50524f432d46524545"></a>
 
@@ -4200,7 +4200,7 @@ P PROC-FREE THROW
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。 戻り値のiorを確認してください。0が成功です。THROWへ渡す方法もあります。
 
-出典：[src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1322).
+出典：[src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1325).
 
 <a id="w-455854454e53494f4e3a50524f432d494f"></a>
 
@@ -4230,7 +4230,7 @@ P PROC-FREE THROW
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。 戻り値のiorを確認してください。0が成功です。THROWへ渡す方法もあります。
 
-出典：[src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1313).
+出典：[src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1316).
 
 <a id="w-455854454e53494f4e3a50524f432d4b494c4c"></a>
 
@@ -4260,7 +4260,7 @@ P PROC-FREE THROW
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。 戻り値のiorを確認してください。0が成功です。THROWへ渡す方法もあります。
 
-出典：[src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1321).
+出典：[src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1324).
 
 <a id="w-455854454e53494f4e3a50524f432d4e4557"></a>
 
@@ -4288,7 +4288,7 @@ REQUIRE-EXTENSION ALSO EXTENSION PROC-NEW THROW DUP PROC-STATUS . . . PROC-FREE 
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。 戻り値のiorを確認してください。0が成功です。THROWへ渡す方法もあります。
 
-出典：[src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1309).
+出典：[src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1312).
 
 <a id="w-455854454e53494f4e3a50524f432d5354415254"></a>
 
@@ -4318,7 +4318,7 @@ P PROC-FREE THROW
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。 戻り値のiorを確認してください。0が成功です。THROWへ渡す方法もあります。
 
-出典：[src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1314).
+出典：[src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1317).
 
 <a id="w-455854454e53494f4e3a50524f432d535441545553"></a>
 
@@ -4348,7 +4348,7 @@ P PROC-FREE THROW
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。 戻り値のiorを確認してください。0が成功です。THROWへ渡す方法もあります。
 
-出典：[src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1318).
+出典：[src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1321).
 
 <a id="w-455854454e53494f4e3a50524f432d535444455252"></a>
 
@@ -4378,7 +4378,7 @@ P PROC-FREE THROW
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。 戻り値のiorを確認してください。0が成功です。THROWへ渡す方法もあります。
 
-出典：[src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1317).
+出典：[src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1320).
 
 <a id="w-455854454e53494f4e3a50524f432d535444494e"></a>
 
@@ -4408,7 +4408,7 @@ P PROC-FREE THROW
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。 戻り値のiorを確認してください。0が成功です。THROWへ渡す方法もあります。
 
-出典：[src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1315).
+出典：[src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1318).
 
 <a id="w-455854454e53494f4e3a50524f432d5354444f5554"></a>
 
@@ -4438,7 +4438,7 @@ P PROC-FREE THROW
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。 戻り値のiorを確認してください。0が成功です。THROWへ渡す方法もあります。
 
-出典：[src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1316).
+出典：[src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1319).
 
 <a id="w-455854454e53494f4e3a50524f432d5445524d"></a>
 
@@ -4468,7 +4468,7 @@ P PROC-FREE THROW
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。 戻り値のiorを確認してください。0が成功です。THROWへ渡す方法もあります。
 
-出典：[src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1320).
+出典：[src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1323).
 
 <a id="w-455854454e53494f4e3a50524f432d57414954"></a>
 
@@ -4498,7 +4498,7 @@ P PROC-FREE THROW
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。 戻り値のiorを確認してください。0が成功です。THROWへ渡す方法もあります。
 
-出典：[src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1319).
+出典：[src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1322).
 
 <a id="w-455854454e53494f4e3a524541442d415641494c41424c45"></a>
 
@@ -4528,7 +4528,7 @@ PAD 8 10 READ-AVAILABLE PAD 2 10 WRITE-AVAILABLE
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。 戻り値のiorを確認してください。0が成功です。THROWへ渡す方法もあります。 番地・長さ・容量は有効な論理メモリー範囲を指定します。所有領域と借用領域の寿命を区別してください。
 
-出典：[src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1306).
+出典：[src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1309).
 
 <a id="w-455854454e53494f4e3a524f5753"></a>
 
@@ -4556,7 +4556,7 @@ REQUIRE-EXTENSION ALSO EXTENSION ROWS . PREVIOUS
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
-出典：[src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1336).
+出典：[src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1339).
 
 <a id="w-455854454e53494f4e3a53594e432d46494c45"></a>
 
@@ -4584,7 +4584,7 @@ REQUIRE-EXTENSION ALSO EXTENSION S" VERSION" R/W OPEN-FILE THROW DUP SYNC-FILE T
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。 戻り値のiorを確認してください。0が成功です。THROWへ渡す方法もあります。
 
-出典：[src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1329).
+出典：[src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1332).
 
 <a id="w-455854454e53494f4e3a5445524d2d414c542d53435245454e"></a>
 
@@ -4620,7 +4620,7 @@ REQUIRE-EXTENSION ALSO EXTENSION TERM-ALT-SCREEN . PREVIOUS
 1 CONSTANT TERM-ALT-SCREEN
 ```
 
-出典：[src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1337).
+出典：[src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1340).
 
 <a id="w-455854454e53494f4e3a5445524d2d484944452d435552534f52"></a>
 
@@ -4656,7 +4656,7 @@ REQUIRE-EXTENSION ALSO EXTENSION TERM-HIDE-CURSOR . PREVIOUS
 4 CONSTANT TERM-HIDE-CURSOR
 ```
 
-出典：[src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1339).
+出典：[src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1342).
 
 <a id="w-455854454e53494f4e3a5445524d2d4d4f444521"></a>
 
@@ -4684,7 +4684,7 @@ REQUIRE-EXTENSION ALSO EXTENSION 0 TERM-MODE! . PREVIOUS
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。 戻り値のiorを確認してください。0が成功です。THROWへ渡す方法もあります。
 
-出典：[src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1333).
+出典：[src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1336).
 
 <a id="w-455854454e53494f4e3a5445524d2d4d4f444540"></a>
 
@@ -4712,7 +4712,7 @@ REQUIRE-EXTENSION ALSO EXTENSION TERM-MODE@ . PREVIOUS
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
-出典：[src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1334).
+出典：[src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1337).
 
 <a id="w-455854454e53494f4e3a5445524d2d4d4f555345"></a>
 
@@ -4748,7 +4748,7 @@ REQUIRE-EXTENSION ALSO EXTENSION TERM-MOUSE . PREVIOUS
 8 CONSTANT TERM-MOUSE
 ```
 
-出典：[src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1340).
+出典：[src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1343).
 
 <a id="w-455854454e53494f4e3a5445524d2d5041535445"></a>
 
@@ -4784,7 +4784,7 @@ REQUIRE-EXTENSION ALSO EXTENSION TERM-PASTE . PREVIOUS
 2 CONSTANT TERM-PASTE
 ```
 
-出典：[src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1338).
+出典：[src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1341).
 
 <a id="w-455854454e53494f4e3a574149542d46494c4553"></a>
 
@@ -4814,7 +4814,7 @@ Wait for the first readable file ID in a 1..64-cell array; EOF and I/O errors ar
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。 戻り値のiorを確認してください。0が成功です。THROWへ渡す方法もあります。 番地・長さ・容量は有効な論理メモリー範囲を指定します。所有領域と借用領域の寿命を区別してください。
 
-出典：[src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1305).
+出典：[src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1308).
 
 <a id="w-455854454e53494f4e3a574149542d5752495441424c45"></a>
 
@@ -4844,7 +4844,7 @@ Wait for the first file ID that can accept output or report an I/O error; valida
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。 戻り値のiorを確認してください。0が成功です。THROWへ渡す方法もあります。 番地・長さ・容量は有効な論理メモリー範囲を指定します。所有領域と借用領域の寿命を区別してください。
 
-出典：[src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1308).
+出典：[src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1311).
 
 <a id="w-455854454e53494f4e3a57524954452d415641494c41424c45"></a>
 
@@ -4874,7 +4874,7 @@ PAD 8 10 READ-AVAILABLE PAD 2 10 WRITE-AVAILABLE
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。 戻り値のiorを確認してください。0が成功です。THROWへ渡す方法もあります。 番地・長さ・容量は有効な論理メモリー範囲を指定します。所有領域と借用領域の寿命を区別してください。
 
-出典：[src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1307).
+出典：[src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1310).
 
 <a id="w-455854454e53494f4e3a582d4752415048454d45"></a>
 
@@ -4902,7 +4902,7 @@ REQUIRE-EXTENSION ALSO EXTENSION S" abc" X-GRAPHEME . PREVIOUS
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。 番地・長さ・容量は有効な論理メモリー範囲を指定します。所有領域と借用領域の寿命を区別してください。
 
-出典：[src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1323).
+出典：[src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1326).
 
 <a id="w-455854454e53494f4e3a582d4752415048454d452d4c415354"></a>
 
@@ -4930,7 +4930,7 @@ REQUIRE-EXTENSION ALSO EXTENSION S" abc" X-GRAPHEME-LAST . PREVIOUS
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。 番地・長さ・容量は有効な論理メモリー範囲を指定します。所有領域と借用領域の寿命を区別してください。
 
-出典：[src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1324).
+出典：[src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1327).
 
 <a id="namespace-forth"></a>
 
@@ -5181,6 +5181,9 @@ REQUIRE-EXTENSION ALSO EXTENSION S" abc" X-GRAPHEME-LAST . PREVIOUS
 - [` ALSO `](#w-464f5254483a414c534f)
 - [` ALSO-PATH `](#w-464f5254483a414c534f2d50415448)
 - [` AND `](#w-464f5254483a414e44)
+- [` APP-ENTRY! `](#w-464f5254483a4150502d454e54525921)
+- [` APP-ENTRY-OFF `](#w-464f5254483a4150502d454e5452592d4f4646)
+- [` APP-ENTRY@ `](#w-464f5254483a4150502d454e54525940)
 - [` APPEND `](#w-464f5254483a415050454e44)
 - [` ARG `](#w-464f5254483a415247)
 - [` ARGC `](#w-464f5254483a41524743)
@@ -7717,7 +7720,7 @@ Ignore text through the first ); comments do not nest. In a file the comment goe
 
 注意：即時語なので、定義のコンパイル中にもその場で実行されます。
 
-出典：[src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L947).
+出典：[src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L950).
 
 <a id="w-464f5254483a2841535345525429"></a>
 
@@ -8407,7 +8410,7 @@ Compile a signed ascending loop, entered only for start &lt; limit.
 
 注意：コンパイル専用です。通常の解釈時入力では実行できません。
 
-出典：[src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L962).
+出典：[src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L965).
 
 <a id="w-464f5254483a2b4649454c44"></a>
 
@@ -8721,7 +8724,7 @@ VARIABLE TIMES : EQ 0 TIMES ! 0 0 -[DO I 1 TIMES +! TIMES @ 3 = IF LEAVE THEN 0 
 
 注意：コンパイル専用です。通常の解釈時入力では実行できません。
 
-出典：[src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L966).
+出典：[src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L969).
 
 <a id="w-464f5254483a2d444f"></a>
 
@@ -8749,7 +8752,7 @@ Compile a signed descending loop, entered only for start &gt; limit.
 
 注意：コンパイル専用です。通常の解釈時入力では実行できません。
 
-出典：[src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L964).
+出典：[src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L967).
 
 <a id="w-464f5254483a2d494e46"></a>
 
@@ -8837,7 +8840,7 @@ Subtract unsigned u and repeat while strictly above the lower limit.
 
 注意：コンパイル専用です。通常の解釈時入力では実行できません。
 
-出典：[src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L968).
+出典：[src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L971).
 
 <a id="w-464f5254483a2d4c5452414345"></a>
 
@@ -9103,7 +9106,7 @@ VLIST PREVIOUS W .VOC S" W" FIND-NAME .ID
 
 注意：スタック効果の入力順を守ってください。使用例の名前・値は例の定義や初期状態に依存します。
 
-出典：[src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L980).
+出典：[src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L983).
 
 <a id="w-464f5254483a2e494e434c55444544"></a>
 
@@ -9331,7 +9334,7 @@ FORWARD F : T F ; : TOKEN ['] F ; : RUN T ; ' RUN CATCH : F 7 ; T TOKEN ' F = TO
 
 注意：スタック効果の入力順を守ってください。使用例の名前・値は例の定義や初期状態に依存します。
 
-出典：[src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L1015).
+出典：[src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L1018).
 
 <a id="w-464f5254483a2e564f43"></a>
 
@@ -9361,7 +9364,7 @@ VLIST PREVIOUS W .VOC S" W" FIND-NAME .ID
 
 注意：スタック効果の入力順を守ってください。使用例の名前・値は例の定義や初期状態に依存します。
 
-出典：[src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L981).
+出典：[src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L984).
 
 <a id="w-464f5254483a2f"></a>
 
@@ -10653,7 +10656,7 @@ Start an anonymous colon definition, assigning its xt to the deferred word only 
 
 注意：スタック効果の入力順を守ってください。使用例の名前・値は例の定義や初期状態に依存します。
 
-出典：[src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L1006).
+出典：[src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L1009).
 
 <a id="w-464f5254483a3b"></a>
 
@@ -10711,7 +10714,7 @@ End a quotation and produce its execution token.
 
 注意：即時語なので、定義のコンパイル中にもその場で実行されます。
 
-出典：[src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L957).
+出典：[src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L960).
 
 <a id="w-464f5254483a3c"></a>
 
@@ -11439,7 +11442,7 @@ Compile ?DUP 0= IF, retaining the value on the nonzero branch.
 
 注意：コンパイル専用です。通常の解釈時入力では実行できません。
 
-出典：[src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L979).
+出典：[src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L982).
 
 <a id="w-464f5254483a3f4455502d4946"></a>
 
@@ -11467,7 +11470,7 @@ Compile ?DUP IF, retaining a nonzero value.
 
 注意：コンパイル専用です。通常の解釈時入力では実行できません。
 
-出典：[src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L978).
+出典：[src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L981).
 
 <a id="w-464f5254483a3f4552524e4f2d5448524f57"></a>
 
@@ -11699,7 +11702,7 @@ Start an isolated anonymous quotation, nested or interpreted; outer locals are n
 
 注意：即時語なので、定義のコンパイル中にもその場で実行されます。
 
-出典：[src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L956).
+出典：[src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L959).
 
 <a id="w-464f5254483a5b3f444f5d"></a>
 
@@ -11813,7 +11816,7 @@ Compile a compilation-token pair; requires compile state.
 
 注意：コンパイル専用です。通常の解釈時入力では実行できません。
 
-出典：[src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L1018).
+出典：[src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L1021).
 
 <a id="w-464f5254483a5b434f4d50494c455d"></a>
 
@@ -12189,7 +12192,7 @@ COMP' [NOOP]
 
 注意：スタック効果の入力順を守ってください。使用例の名前・値は例の定義や初期状態に依存します。
 
-出典：[src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L1024).
+出典：[src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L1027).
 
 <a id="w-464f5254483a5b5245504541545d"></a>
 
@@ -12424,7 +12427,7 @@ Begin postponing in an open definition; \[\[ returns to compilation. Numeric lit
 
 注意：即時語なので、定義のコンパイル中にもその場で実行されます。
 
-出典：[src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L961).
+出典：[src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L964).
 
 <a id="w-464f5254483a4121"></a>
 
@@ -12706,7 +12709,7 @@ Address a value or compiled value-flavoured local; normal compilation emits a re
 
 注意：即時語なので、定義のコンパイル中にもその場で実行されます。 番地・長さ・容量は有効な論理メモリー範囲を指定します。所有領域と借用領域の寿命を区別してください。
 
-出典：[src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L1005).
+出典：[src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L1008).
 
 <a id="w-464f5254483a4144445245535341424c453a"></a>
 
@@ -12736,7 +12739,7 @@ Compatibility annotation; Sigma values already have stable addressable storage.
 
 注意：スタック効果の入力順を守ってください。使用例の名前・値は例の定義や初期状態に依存します。
 
-出典：[src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L1004).
+出典：[src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L1007).
 
 <a id="w-464f5254483a41444a5553542d425546464552"></a>
 
@@ -13086,6 +13089,84 @@ Bitwise and.
 
 出典：[src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L322).
 
+<a id="w-464f5254483a4150502d454e54525921"></a>
+
+### ` APP-ENTRY! `
+
+` ( xt -- ) `
+
+完成したcolon定義を保存アプリの起動語として登録します。SAVE/SAVESYSは設定を保存し、LOADは追加先の設定を保ちます。不正tokenは-261、定義中は-259で引数と設定を保持します。登録先の削除で解除し、image機能が必要です。
+
+<details><summary>英語の説明（HELP・実装に基づく）</summary>
+
+Register a completed, non-compile-only colon definition as the saved application's entry. SAVE/SAVESYS preserve it; LOAD keeps the receiving dictionary's setting. Invalid tokens throw -261 without changing the argument or setting; defining throws -259. Deleting the target clears registration. Image feature required.
+
+</details>
+
+種別：builtin.
+
+使用例
+
+```forth
+: DEMO ; ' DEMO APP-ENTRY! APP-ENTRY-OFF
+```
+
+注意：スタック効果の入力順を守ってください。使用例の名前・値は例の定義や初期状態に依存します。
+
+出典：[src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L940).
+
+<a id="w-464f5254483a4150502d454e5452592d4f4646"></a>
+
+### ` APP-ENTRY-OFF `
+
+` ( -- ) `
+
+保存アプリの起動語登録を解除します。次のSAVE/SAVESYSも解除を保存します。実行中アプリを止めたりhostを再起動したりせず、image機能が必要です。
+
+<details><summary>英語の説明（HELP・実装に基づく）</summary>
+
+Clear saved application registration. A later SAVE/SAVESYS preserves the cleared setting. Does not stop the current application or restart its host. Image feature required.
+
+</details>
+
+種別：builtin.
+
+使用例
+
+```forth
+APP-ENTRY-OFF APP-ENTRY@ . .
+```
+
+注意：スタック効果の入力順を守ってください。使用例の名前・値は例の定義や初期状態に依存します。
+
+出典：[src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L942).
+
+<a id="w-464f5254483a4150502d454e54525940"></a>
+
+### ` APP-ENTRY@ `
+
+` ( -- xt flag ) `
+
+保存アプリの登録を照会し、未登録は0 false、登録済みはxt trueを返します。対象を再検査し、破損は-261とします。起動語を実行せず、image機能が必要です。
+
+<details><summary>英語の説明（HELP・実装に基づく）</summary>
+
+Query saved application registration: 0 false when absent, xt true when present. Revalidates the target; damaged registration throws -261. Does not execute the entry. Image feature required.
+
+</details>
+
+種別：builtin.
+
+使用例
+
+```forth
+APP-ENTRY@ . .
+```
+
+注意：スタック効果の入力順を守ってください。使用例の名前・値は例の定義や初期状態に依存します。
+
+出典：[src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L941).
+
 <a id="w-464f5254483a415050454e44"></a>
 
 ### ` APPEND `
@@ -13258,7 +13339,7 @@ Multiply element count by size with cell-width wrapping.
 
 注意：スタック効果の入力順を守ってください。使用例の名前・値は例の定義や初期状態に依存します。
 
-出典：[src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L973).
+出典：[src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L976).
 
 <a id="w-464f5254483a41525348494654"></a>
 
@@ -13574,7 +13655,7 @@ CREATE BUFFER 16 ALLOT BUFFER AVALUE P 8 +TO P P BUFFER 8 + = 0 TO P P BUFFER AD
 
 注意：番地・長さ・容量は有効な論理メモリー範囲を指定します。所有領域と借用領域の寿命を区別してください。
 
-出典：[src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L1003).
+出典：[src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L1006).
 
 <a id="w-464f5254483a415641524941424c45"></a>
 
@@ -14860,7 +14941,7 @@ CHAR b KEY-HELD?
 
 注意：スタック効果の入力順を守ってください。使用例の名前・値は例の定義や初期状態に依存します。
 
-出典：[src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L953).
+出典：[src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L956).
 
 <a id="w-464f5254483a4348415225"></a>
 
@@ -15266,7 +15347,7 @@ COMP' IF
 
 注意：スタック効果の入力順を守ってください。使用例の名前・値は例の定義や初期状態に依存します。
 
-出典：[src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L1017).
+出典：[src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L1020).
 
 <a id="w-464f5254483a434f4d50415245"></a>
 
@@ -15354,7 +15435,7 @@ Restrict the latest named user word's ordinary interpretation (-14). Explicit to
 
 注意：スタック効果の入力順を守ってください。使用例の名前・値は例の定義や初期状態に依存します。
 
-出典：[src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L1019).
+出典：[src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L1022).
 
 <a id="w-464f5254483a434f4d50494c452d4f4e4c593f"></a>
 
@@ -15384,7 +15465,7 @@ S" IF" FIND-NAME COMPILE-ONLY? SYNONYM COND IF S" COND" FIND-NAME COMPILE-ONLY? 
 
 注意：スタック効果の入力順を守ってください。使用例の名前・値は例の定義や初期状態に依存します。
 
-出典：[src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L982).
+出典：[src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L985).
 
 <a id="w-464f5254483a434f4e5354"></a>
 
@@ -15472,7 +15553,7 @@ WORDLIST CONSTANT W W CURRENT ! GET-CURRENT W = FORTH-WORDLIST CURRENT ! W >ORDE
 
 注意：番地・長さ・容量は有効な論理メモリー範囲を指定します。所有領域と借用領域の寿命を区別してください。
 
-出典：[src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L983).
+出典：[src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L986).
 
 <a id="w-464f5254483a434f4e544f46"></a>
 
@@ -15738,7 +15819,7 @@ Drop a copied orig/dest control entry in an open definition.
 
 注意：スタック効果の入力順を守ってください。使用例の名前・値は例の定義や初期状態に依存します。
 
-出典：[src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L976).
+出典：[src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L979).
 
 <a id="w-464f5254483a43532d5049434b"></a>
 
@@ -15824,7 +15905,7 @@ CS-VOCABULARY V ALSO V DEFINITIONS : Foo 7 ; : foo 8 ; FORTH DEFINITIONS PREVIOU
 
 注意：スタック効果の入力順を守ってください。使用例の名前・値は例の定義や初期状態に依存します。
 
-出典：[src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L984).
+出典：[src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L987).
 
 <a id="w-464f5254483a43532d574f52444c495354"></a>
 
@@ -15854,7 +15935,7 @@ CS-WORDLIST DROP
 
 注意：スタック効果の入力順を守ってください。使用例の名前・値は例の定義や初期状態に依存します。
 
-出典：[src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L985).
+出典：[src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L988).
 
 <a id="w-464f5254483a43535452494e473e53535452494e47"></a>
 
@@ -16002,7 +16083,7 @@ WORDLIST CONSTANT OLD OLD CURRENT ! S" restore"
 
 注意：番地・長さ・容量は有効な論理メモリー範囲を指定します。所有領域と借用領域の寿命を区別してください。
 
-出典：[src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L986).
+出典：[src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L989).
 
 <a id="w-464f5254483a442b"></a>
 
@@ -17014,7 +17095,7 @@ Return loop limit minus index with cell-width wrapping.
 
 注意：スタック効果の入力順を守ってください。使用例の名前・値は例の定義や初期状態に依存します。
 
-出典：[src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L975).
+出典：[src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L978).
 
 <a id="w-464f5254483a4445505448"></a>
 
@@ -17532,7 +17613,7 @@ Resolve LEAVE targets and close a do-sys. Explicit UNLOOP cleanup is required.
 
 注意：コンパイル専用です。通常の解釈時入力では実行できません。
 
-出典：[src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L977).
+出典：[src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L980).
 
 <a id="w-464f5254483a444f55424c4525"></a>
 
@@ -18760,7 +18841,7 @@ Compile execution of xt followed by exit from the current definition.
 
 注意：コンパイル専用です。通常の解釈時入力では実行できません。
 
-出典：[src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L1021).
+出典：[src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L1024).
 
 <a id="w-464f5254483a455845435554452d50415253494e47"></a>
 
@@ -18788,7 +18869,7 @@ Execute xt with a borrowed string source, restoring source and cursor on every e
 
 注意：番地・長さ・容量は有効な論理メモリー範囲を指定します。所有領域と借用領域の寿命を区別してください。
 
-出典：[src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L1009).
+出典：[src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L1012).
 
 <a id="w-464f5254483a455845435554452d50415253494e472d46494c45"></a>
 
@@ -18816,7 +18897,7 @@ S" a.txt" R/O OPEN-FILE THROW CONSTANT F : BAD REFILL DROP -123 THROW ; : R F ['
 
 注意：スタック効果の入力順を守ってください。使用例の名前・値は例の定義や初期状態に依存します。
 
-出典：[src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L1010).
+出典：[src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L1013).
 
 <a id="w-464f5254483a45584954"></a>
 
@@ -21142,7 +21223,7 @@ CS-VOCABULARY V ALSO V DEFINITIONS : Foo 7 ; : foo 8 ; Foo foo FORTH DEFINITIONS
 
 注意：番地・長さ・容量は有効な論理メモリー範囲を指定します。所有領域と借用領域の寿命を区別してください。
 
-出典：[src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L987).
+出典：[src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L990).
 
 <a id="w-464f5254483a46494e505554"></a>
 
@@ -21752,7 +21833,7 @@ Compile an unsigned countdown from u through zero (u+1 bodies).
 
 注意：コンパイル専用です。通常の解釈時入力では実行できません。
 
-出典：[src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L969).
+出典：[src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L972).
 
 <a id="w-464f5254483a464f524d"></a>
 
@@ -21866,7 +21947,7 @@ FORWARD F : F 7 ;
 
 注意：スタック効果の入力順を守ってください。使用例の名前・値は例の定義や初期状態に依存します。
 
-出典：[src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L1014).
+出典：[src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L1017).
 
 <a id="w-464f5254483a464f55525448"></a>
 
@@ -22972,7 +23053,7 @@ HELP RGB
 
 注意：スタック効果の入力順を守ってください。使用例の名前・値は例の定義や初期状態に依存します。
 
-出典：[src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L943).
+出典：[src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L946).
 
 <a id="w-464f5254483a48455245"></a>
 
@@ -23180,7 +23261,7 @@ Return the innermost VM loop limit, also through helper calls.
 
 注意：スタック効果の入力順を守ってください。使用例の名前・値は例の定義や初期状態に依存します。
 
-出典：[src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L974).
+出典：[src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L977).
 
 <a id="w-464f5254483a49442e"></a>
 
@@ -23298,7 +23379,7 @@ VOCABULARY REVIEW-VOC IN REVIEW-VOC : REVIEW-WORD 42 ; ALSO REVIEW-VOC REVIEW-WO
 
 注意：スタック効果の入力順を守ってください。使用例の名前・値は例の定義や初期状態に依存します。
 
-出典：[src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L988).
+出典：[src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L991).
 
 <a id="w-464f5254483a494e2d434f4c4f4e2d4445463f"></a>
 
@@ -23326,7 +23407,7 @@ IN-COLON-DEF? : T [ IN-COLON-DEF? ] LITERAL [: IN-COLON-DEF? ;] EXECUTE ; T 4 [:
 
 注意：スタック効果の入力順を守ってください。使用例の名前・値は例の定義や初期状態に依存します。
 
-出典：[src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L959).
+出典：[src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L962).
 
 <a id="w-464f5254483a494e2d574f52444c495354"></a>
 
@@ -23356,7 +23437,7 @@ WORDLIST CONSTANT W W IN-WORDLIST : F [ GET-CURRENT FORTH-WORDLIST = ] LITERAL ;
 
 注意：スタック効果の入力順を守ってください。使用例の名前・値は例の定義や初期状態に依存します。
 
-出典：[src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L989).
+出典：[src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L992).
 
 <a id="w-464f5254483a494e434c554445"></a>
 
@@ -24246,7 +24327,7 @@ WORDLIST CONSTANT W W SET-CURRENT : A 1 ; : TEST-BUF 2 ; FORTH-WORDLIST SET-CURR
 
 注意：スタック効果の入力順を守ってください。使用例の名前・値は例の定義や初期状態に依存します。
 
-出典：[src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L990).
+出典：[src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L993).
 
 <a id="w-464f5254483a4c41544553545854"></a>
 
@@ -24392,7 +24473,7 @@ LICENSE
 
 注意：スタック効果の入力順を守ってください。使用例の名前・値は例の定義や初期状態に依存します。
 
-出典：[src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L944).
+出典：[src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L947).
 
 <a id="w-464f5254483a4c495354"></a>
 
@@ -24574,7 +24655,7 @@ Add the words of an image file made by SAVE to the dictionary.
 
 注意：スタック効果の入力順を守ってください。使用例の名前・値は例の定義や初期状態に依存します。
 
-出典：[src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L941).
+出典：[src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L944).
 
 <a id="w-464f5254483a4c4f43415445"></a>
 
@@ -24924,7 +25005,7 @@ VARIABLE TIMES : VISIT DROP 1 TIMES +! WORDLIST DROP ; ' VISIT MAP-VOCS TIMES @
 
 注意：スタック効果の入力順を守ってください。使用例の名前・値は例の定義や初期状態に依存します。
 
-出典：[src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L991).
+出典：[src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L994).
 
 <a id="w-464f5254483a4d41524b4552"></a>
 
@@ -25096,7 +25177,7 @@ Walk memory upward with positive stride, ending with LOOP. Reject wrapped ranges
 
 注意：コンパイル専用です。通常の解釈時入力では実行できません。 番地・長さ・容量は有効な論理メモリー範囲を指定します。所有領域と借用領域の寿命を区別してください。
 
-出典：[src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L971).
+出典：[src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L974).
 
 <a id="w-464f5254483a4d454d2c"></a>
 
@@ -25152,7 +25233,7 @@ Walk full stride-sized elements downward, ending with LOOP. Reject nonpositive s
 
 注意：コンパイル専用です。通常の解釈時入力では実行できません。 番地・長さ・容量は有効な論理メモリー範囲を指定します。所有領域と借用領域の寿命を区別してください。
 
-出典：[src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L972).
+出典：[src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L975).
 
 <a id="w-464f5254483a4d494e"></a>
 
@@ -25448,7 +25529,7 @@ WORDLIST CONSTANT W W SET-CURRENT : Alpha 1 ; : Beta 2 ; : AlphaBeta 3 ; FORTH-W
 
 注意：スタック効果の入力順を守ってください。使用例の名前・値は例の定義や初期状態に依存します。
 
-出典：[src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L992).
+出典：[src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L995).
 
 <a id="w-464f5254483a4e"></a>
 
@@ -25536,7 +25617,7 @@ Alias behavior of PARSE-NAME.
 
 注意：番地・長さ・容量は有効な論理メモリー範囲を指定します。所有領域と借用領域の寿命を区別してください。
 
-出典：[src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L1013).
+出典：[src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L1016).
 
 <a id="w-464f5254483a4e414d453e434f4d50494c45"></a>
 
@@ -25656,7 +25737,7 @@ WORDLIST CONSTANT W W SET-CURRENT : A 1 ; : TEST-BUF 2 ; FORTH-WORDLIST SET-CURR
 
 注意：スタック効果の入力順を守ってください。使用例の名前・値は例の定義や初期状態に依存します。
 
-出典：[src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L993).
+出典：[src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L996).
 
 <a id="w-464f5254483a4e414d453e535452494e47"></a>
 
@@ -25854,7 +25935,7 @@ End FOR and decrement its index.
 
 注意：コンパイル専用です。通常の解釈時入力では実行できません。
 
-出典：[src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L970).
+出典：[src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L973).
 
 <a id="w-464f5254483a4e4558542d415247"></a>
 
@@ -25944,7 +26025,7 @@ S" User-Name" NEXTNAME
 
 注意：番地・長さ・容量は有効な論理メモリー範囲を指定します。所有領域と借用領域の寿命を区別してください。
 
-出典：[src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L994).
+出典：[src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L997).
 
 <a id="w-464f5254483a4e4950"></a>
 
@@ -26000,7 +26081,7 @@ NONAME
 
 注意：スタック効果の入力順を守ってください。使用例の名前・値は例の定義や初期状態に依存します。
 
-出典：[src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L958).
+出典：[src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L961).
 
 <a id="w-464f5254483a4e4f4f50"></a>
 
@@ -26314,7 +26395,7 @@ S" DUP" FIND-NAME OBSOLETE? .
 
 注意：スタック効果の入力順を守ってください。使用例の名前・値は例の定義や初期状態に依存します。
 
-出典：[src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L995).
+出典：[src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L998).
 
 <a id="w-464f5254483a4f4354"></a>
 
@@ -26922,7 +27003,7 @@ Alias behavior of PARSE-NAME.
 
 注意：番地・長さ・容量は有効な論理メモリー範囲を指定します。所有領域と借用領域の寿命を区別してください。
 
-出典：[src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L1012).
+出典：[src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L1015).
 
 <a id="w-464f5254483a504154482b"></a>
 
@@ -27124,7 +27205,7 @@ Append a compilation token's semantics to an open definition.
 
 注意：スタック効果の入力順を守ってください。使用例の名前・値は例の定義や初期状態に依存します。
 
-出典：[src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L1022).
+出典：[src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L1025).
 
 <a id="w-464f5254483a504f57323f"></a>
 
@@ -27242,7 +27323,7 @@ Compile restoration of the deferred action captured now; requires compilation.
 
 注意：即時語なので、定義のコンパイル中にもその場で実行されます。
 
-出典：[src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L1007).
+出典：[src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L1010).
 
 <a id="w-464f5254483a50524556494f5553"></a>
 
@@ -27686,7 +27767,7 @@ Make the definition being compiled findable by its own name, so that it can call
 
 注意：コンパイル専用です。通常の解釈時入力では実行できません。
 
-出典：[src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L1016).
+出典：[src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L1019).
 
 <a id="w-464f5254483a524546494c4c"></a>
 
@@ -28068,7 +28149,7 @@ Same restriction as COMPILE-ONLY.
 
 注意：スタック効果の入力順を守ってください。使用例の名前・値は例の定義や初期状態に依存します。
 
-出典：[src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L1020).
+出典：[src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L1023).
 
 <a id="w-464f5254483a524e44"></a>
 
@@ -28184,7 +28265,7 @@ ALSO ROOT WORDS PREVIOUS
 
 注意：スタック効果の入力順を守ってください。使用例の名前・値は例の定義や初期状態に依存します。
 
-出典：[src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L996).
+出典：[src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L999).
 
 <a id="w-464f5254483a524f52"></a>
 
@@ -28476,7 +28557,7 @@ SAVE x.img
 
 注意：スタック効果の入力順を守ってください。使用例の名前・値は例の定義や初期状態に依存します。
 
-出典：[src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L940).
+出典：[src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L943).
 
 <a id="w-464f5254483a534156452d42554646455253"></a>
 
@@ -28610,7 +28691,7 @@ Write an executable that starts with the current dictionary.
 
 種別：builtin.
 
-関連説明：[起動と入力](USER_MANUAL.ja.md#起動と入力), [辞書の保存と単独実行ファイル](USER_MANUAL.ja.md#辞書の保存と単独実行ファイル), [グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
+関連説明：[起動と入力](USER_MANUAL.ja.md#起動と入力), [辞書の保存と単独実行ファイル](USER_MANUAL.ja.md#辞書の保存と単独実行ファイル), [保存アプリの自動起動](USER_MANUAL.ja.md#保存アプリの自動起動).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
@@ -28622,7 +28703,7 @@ SAVESYS x.exe
 
 注意：スタック効果の入力順を守ってください。使用例の名前・値は例の定義や初期状態に依存します。
 
-出典：[src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L942).
+出典：[src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L945).
 
 <a id="w-464f5254483a5343414e"></a>
 
@@ -28740,7 +28821,7 @@ WORDLIST CONSTANT W W CURRENT ! GET-CURRENT W = FORTH-WORDLIST CURRENT ! W >ORDE
 
 注意：スタック効果の入力順を守ってください。使用例の名前・値は例の定義や初期状態に依存します。
 
-出典：[src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L997).
+出典：[src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L1000).
 
 <a id="w-464f5254483a534541524348"></a>
 
@@ -28888,7 +28969,7 @@ Select u1 for any nonzero flag, otherwise u2.
 
 注意：スタック効果の入力順を守ってください。使用例の名前・値は例の定義や初期状態に依存します。
 
-出典：[src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L1023).
+出典：[src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L1026).
 
 <a id="w-464f5254483a5345542d43555252454e54"></a>
 
@@ -30030,7 +30111,7 @@ Parse up to a byte-string delimiter; empty delimiter consumes nothing.
 
 注意：番地・長さ・容量は有効な論理メモリー範囲を指定します。所有領域と借用領域の寿命を区別してください。
 
-出典：[src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L1011).
+出典：[src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L1014).
 
 <a id="w-464f5254483a535452494e472d5052454649583f"></a>
 
@@ -30292,7 +30373,7 @@ CS-VOCABULARY V ALSO V DEFINITIONS : Foo 7 ; : foo 8 ; FORTH DEFINITIONS PREVIOU
 
 注意：スタック効果の入力順を守ってください。使用例の名前・値は例の定義や初期状態に依存します。
 
-出典：[src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L998).
+出典：[src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L1001).
 
 <a id="w-464f5254483a5448"></a>
 
@@ -30566,7 +30647,7 @@ Change a value, DEFER action, or compiled local. Tick executes interpretation ev
 
 注意：即時語なので、定義のコンパイル中にもその場で実行されます。
 
-出典：[src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L1025).
+出典：[src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L1028).
 
 <a id="w-464f5254483a544f5550504552"></a>
 
@@ -30858,7 +30939,7 @@ Unsigned +DO.
 
 注意：コンパイル専用です。通常の解釈時入力では実行できません。
 
-出典：[src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L963).
+出典：[src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L966).
 
 <a id="w-464f5254483a552d5b444f"></a>
 
@@ -30884,7 +30965,7 @@ Unsigned -\[DO.
 
 注意：コンパイル専用です。通常の解釈時入力では実行できません。
 
-出典：[src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L967).
+出典：[src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L970).
 
 <a id="w-464f5254483a552d444f"></a>
 
@@ -30912,7 +30993,7 @@ Unsigned -DO.
 
 注意：コンパイル専用です。通常の解釈時入力では実行できません。
 
-出典：[src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L965).
+出典：[src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L968).
 
 <a id="w-464f5254483a552e"></a>
 
@@ -31804,7 +31885,7 @@ VLIST PREVIOUS W .VOC S" W" FIND-NAME .ID
 
 注意：スタック効果の入力順を守ってください。使用例の名前・値は例の定義や初期状態に依存します。
 
-出典：[src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L999).
+出典：[src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L1002).
 
 <a id="w-464f5254483a564f434142554c415259"></a>
 
@@ -31860,7 +31941,7 @@ VOCS
 
 注意：スタック効果の入力順を守ってください。使用例の名前・値は例の定義や初期状態に依存します。
 
-出典：[src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L1000).
+出典：[src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L1003).
 
 <a id="w-464f5254483a5721"></a>
 
@@ -32462,7 +32543,7 @@ FORTH-WORDLIST WORDLIST-WORDS
 
 注意：スタック効果の入力順を守ってください。使用例の名前・値は例の定義や初期状態に依存します。
 
-出典：[src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L1001).
+出典：[src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L1004).
 
 <a id="w-464f5254483a574f524453"></a>
 
@@ -32520,7 +32601,7 @@ Temporarily install action and restore on success/error. A removed saved action 
 
 注意：スタック効果の入力順を守ってください。使用例の名前・値は例の定義や初期状態に依存します。
 
-出典：[src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L1008).
+出典：[src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L1011).
 
 <a id="w-464f5254483a57524954452d46494c45"></a>
 
@@ -33754,7 +33835,7 @@ WORDLIST CONSTANT W W SET-CURRENT : A 1 ; : TEST-BUF 2 ; FORTH-WORDLIST SET-CURR
 
 注意：スタック効果の入力順を守ってください。使用例の名前・値は例の定義や初期状態に依存します。
 
-出典：[src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L1002).
+出典：[src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L1005).
 
 <a id="w-464f5254483a7e7e"></a>
 
@@ -34002,7 +34083,7 @@ REQUIRE-GAME ALSO GAME /INDEXED . PREVIOUS
 BEGIN-STRUCTURE /INDEXED
 ```
 
-出典：[src/core/words_game.zig](../src/core/words_game.zig), [HELP](../src/core/help_text.zig#L1086).
+出典：[src/core/words_game.zig](../src/core/words_game.zig), [HELP](../src/core/help_text.zig#L1089).
 
 <a id="w-47414d453a2f535052495445"></a>
 
@@ -34038,7 +34119,7 @@ REQUIRE-GAME ALSO GAME /SPRITE . PREVIOUS
 BEGIN-STRUCTURE /SPRITE
 ```
 
-出典：[src/core/words_game.zig](../src/core/words_game.zig), [HELP](../src/core/help_text.zig#L1045).
+出典：[src/core/words_game.zig](../src/core/words_game.zig), [HELP](../src/core/help_text.zig#L1048).
 
 <a id="w-47414d453a2f54494c454d4150"></a>
 
@@ -34072,7 +34153,7 @@ REQUIRE-GAME ALSO GAME /TILEMAP . PREVIOUS
 BEGIN-STRUCTURE /TILEMAP
 ```
 
-出典：[src/core/words_game.zig](../src/core/words_game.zig), [HELP](../src/core/help_text.zig#L1069).
+出典：[src/core/words_game.zig](../src/core/words_game.zig), [HELP](../src/core/help_text.zig#L1072).
 
 <a id="w-47414d453a3e54494c45"></a>
 
@@ -34110,7 +34191,7 @@ The tile under pixel x y of a map (FORTH/Sigma game).
 : >TILE { x y map -- col row }   x map TILEMAP-TW @ /  y map TILEMAP-TH @ / ;
 ```
 
-出典：[src/core/words_game.zig](../src/core/words_game.zig), [HELP](../src/core/help_text.zig#L1080).
+出典：[src/core/words_game.zig](../src/core/words_game.zig), [HELP](../src/core/help_text.zig#L1083).
 
 <a id="w-47414d453a414e494d415445"></a>
 
@@ -34152,7 +34233,7 @@ S ANIMATE S ANIMATE S SPRITE-FRAME @ S ANIMATE S SPRITE-FRAME @ S ANIMATE S ANIM
    spr SPRITE-FRAME @ 1+ spr SPRITE-FRAMES @ MOD spr SPRITE-FRAME ! ;
 ```
 
-出典：[src/core/words_game.zig](../src/core/words_game.zig), [HELP](../src/core/help_text.zig#L1064).
+出典：[src/core/words_game.zig](../src/core/words_game.zig), [HELP](../src/core/help_text.zig#L1067).
 
 <a id="w-47414d453a445241572d494e4445584544"></a>
 
@@ -34191,7 +34272,7 @@ Draw a picture at x y with the colors of a palette, leaving out number key (-1 f
    pic INDEXED-DATA  pic INDEXED-W @  pic INDEXED-H @  pal  x y key  GFX-INDEXED ;
 ```
 
-出典：[src/core/words_game.zig](../src/core/words_game.zig), [HELP](../src/core/help_text.zig#L1093).
+出典：[src/core/words_game.zig](../src/core/words_game.zig), [HELP](../src/core/help_text.zig#L1096).
 
 <a id="w-47414d453a445241572d535052495445"></a>
 
@@ -34232,7 +34313,7 @@ $777777 GFX-CLS FALSE S SPRITE-SHOWN ! S DRAW-SPRITE 0 0 GFX-PGET
    spr SPRITE-X @  spr SPRITE-Y @  spr SPRITE-KEY @  spr SPRITE-FLIP @  0 128 1 GFX-COPY ;
 ```
 
-出典：[src/core/words_game.zig](../src/core/words_game.zig), [HELP](../src/core/help_text.zig#L1065).
+出典：[src/core/words_game.zig](../src/core/words_game.zig), [HELP](../src/core/help_text.zig#L1068).
 
 <a id="w-47414d453a445241572d53505249544553"></a>
 
@@ -34276,7 +34357,7 @@ $777777 GFX-CLS THREE 3 0 DRAW-SPRITES 10 2 GFX-PGET
    ?DUP IF  NIP NIP NIP NIP THROW  THEN ;
 ```
 
-出典：[src/core/words_game.zig](../src/core/words_game.zig), [HELP](../src/core/help_text.zig#L1096).
+出典：[src/core/words_game.zig](../src/core/words_game.zig), [HELP](../src/core/help_text.zig#L1099).
 
 <a id="w-47414d453a445241572d54494c454d4150"></a>
 
@@ -34317,7 +34398,7 @@ $777777 GFX-CLS 2 1 1 0 12 8 M DRAW-TILEMAP
    sx sy x y w h  map TILEMAP-KEY @  GFX-TILEMAP ;
 ```
 
-出典：[src/core/words_game.zig](../src/core/words_game.zig), [HELP](../src/core/help_text.zig#L1081).
+出典：[src/core/words_game.zig](../src/core/words_game.zig), [HELP](../src/core/help_text.zig#L1084).
 
 <a id="w-47414d453a4849543f"></a>
 
@@ -34360,7 +34441,7 @@ Whether the rectangles of two shown sprites overlap (FORTH/Sigma game).
    b SPRITE-Y @  a SPRITE-Y @ a SPRITE-H @ +  <  AND ;
 ```
 
-出典：[src/core/words_game.zig](../src/core/words_game.zig), [HELP](../src/core/help_text.zig#L1066).
+出典：[src/core/words_game.zig](../src/core/words_game.zig), [HELP](../src/core/help_text.zig#L1069).
 
 <a id="w-47414d453a494e44455821"></a>
 
@@ -34400,7 +34481,7 @@ Set the indexed-image pixel at x y to the low eight bits of n; invalid coordinat
 : INDEX! ( n x y pic -- )   (INDEX-ADDR) C! ;
 ```
 
-出典：[src/core/words_game.zig](../src/core/words_game.zig), [HELP](../src/core/help_text.zig#L1092).
+出典：[src/core/words_game.zig](../src/core/words_game.zig), [HELP](../src/core/help_text.zig#L1095).
 
 <a id="w-47414d453a494e44455840"></a>
 
@@ -34440,7 +34521,7 @@ The color number of pixel x y of a picture (FORTH/Sigma game).
 : INDEX@ ( x y pic -- n )   (INDEX-ADDR) C@ ;
 ```
 
-出典：[src/core/words_game.zig](../src/core/words_game.zig), [HELP](../src/core/help_text.zig#L1091).
+出典：[src/core/words_game.zig](../src/core/words_game.zig), [HELP](../src/core/help_text.zig#L1094).
 
 <a id="w-47414d453a494e44455845442d44415441"></a>
 
@@ -34479,7 +34560,7 @@ The color numbers of a picture, one byte each, row by row (FORTH/Sigma game).
 : INDEXED-DATA ( pic -- addr )   /INDEXED + ;
 ```
 
-出典：[src/core/words_game.zig](../src/core/words_game.zig), [HELP](../src/core/help_text.zig#L1089).
+出典：[src/core/words_game.zig](../src/core/words_game.zig), [HELP](../src/core/help_text.zig#L1092).
 
 <a id="w-47414d453a494e44455845442d48"></a>
 
@@ -34515,7 +34596,7 @@ REQUIRE-GAME ALSO GAME CREATE REVIEW-OBJECT /INDEXED ALLOT REVIEW-OBJECT INDEXED
 FIELD: INDEXED-H
 ```
 
-出典：[src/core/words_game.zig](../src/core/words_game.zig), [HELP](../src/core/help_text.zig#L1088).
+出典：[src/core/words_game.zig](../src/core/words_game.zig), [HELP](../src/core/help_text.zig#L1091).
 
 <a id="w-47414d453a494e44455845442d57"></a>
 
@@ -34551,7 +34632,7 @@ REQUIRE-GAME ALSO GAME CREATE REVIEW-OBJECT /INDEXED ALLOT REVIEW-OBJECT INDEXED
 FIELD: INDEXED-W
 ```
 
-出典：[src/core/words_game.zig](../src/core/words_game.zig), [HELP](../src/core/help_text.zig#L1087).
+出典：[src/core/words_game.zig](../src/core/words_game.zig), [HELP](../src/core/help_text.zig#L1090).
 
 <a id="w-47414d453a494e44455845443a"></a>
 
@@ -34594,7 +34675,7 @@ Define a picture of w by h color numbers, all 0 (FORTH/Sigma game).
    w pic INDEXED-W !  h pic INDEXED-H !  pic INDEXED-DATA w h * ERASE ;
 ```
 
-出典：[src/core/words_game.zig](../src/core/words_game.zig), [HELP](../src/core/help_text.zig#L1090).
+出典：[src/core/words_game.zig](../src/core/words_game.zig), [HELP](../src/core/help_text.zig#L1093).
 
 <a id="w-47414d453a494e49542d535052495445"></a>
 
@@ -34636,7 +34717,7 @@ SHEET 0 0 4 4 0 SP INIT-SPRITE SHEET 0 0 4 4 1 SP INIT-SPRITE 0 1 SP SPRITE-KEY 
    1 spr SPRITE-FRAMES !  1 spr SPRITE-DELAY !  -1 spr SPRITE-KEY !  TRUE spr SPRITE-SHOWN ! ;
 ```
 
-出典：[src/core/words_game.zig](../src/core/words_game.zig), [HELP](../src/core/help_text.zig#L1060).
+出典：[src/core/words_game.zig](../src/core/words_game.zig), [HELP](../src/core/help_text.zig#L1063).
 
 <a id="w-47414d453a50414c4554544521"></a>
 
@@ -34674,7 +34755,7 @@ PALETTE: P  $FF0000 1 P PALETTE! $00FF00 2 P PALETTE! $10000FF 3 P PALETTE! 1 P 
 : PALETTE! ( rgb n pal -- )   (COLOR#) SWAP $FFFFFF AND SWAP ! ;
 ```
 
-出典：[src/core/words_game.zig](../src/core/words_game.zig), [HELP](../src/core/help_text.zig#L1083).
+出典：[src/core/words_game.zig](../src/core/words_game.zig), [HELP](../src/core/help_text.zig#L1086).
 
 <a id="w-47414d453a50414c455454453a"></a>
 
@@ -34712,7 +34793,7 @@ PALETTE: P  $FF0000 1 P PALETTE! $00FF00 2 P PALETTE! $10000FF 3 P PALETTE! 1 P 
 : PALETTE: ( "name" -- )   CREATE HERE 256 CELLS ALLOT 256 CELLS ERASE ;
 ```
 
-出典：[src/core/words_game.zig](../src/core/words_game.zig), [HELP](../src/core/help_text.zig#L1082).
+出典：[src/core/words_game.zig](../src/core/words_game.zig), [HELP](../src/core/help_text.zig#L1085).
 
 <a id="w-47414d453a50414c4554544540"></a>
 
@@ -34750,7 +34831,7 @@ The color of number n of a palette (FORTH/Sigma game).
 : PALETTE@ ( n pal -- rgb )   (COLOR#) @ ;
 ```
 
-出典：[src/core/words_game.zig](../src/core/words_game.zig), [HELP](../src/core/help_text.zig#L1084).
+出典：[src/core/words_game.zig](../src/core/words_game.zig), [HELP](../src/core/help_text.zig#L1087).
 
 <a id="w-47414d453a504958454c2d4849543f"></a>
 
@@ -34796,7 +34877,7 @@ Whether two shown sprites show a pixel at the same place (FORTH/Sigma game).
    LOOP LOOP  FALSE ;
 ```
 
-出典：[src/core/words_game.zig](../src/core/words_game.zig), [HELP](../src/core/help_text.zig#L1068).
+出典：[src/core/words_game.zig](../src/core/words_game.zig), [HELP](../src/core/help_text.zig#L1071).
 
 <a id="w-47414d453a5055542d535052495445"></a>
 
@@ -34834,7 +34915,7 @@ Put a sprite at x y (FORTH/Sigma game).
 : PUT-SPRITE ( x y spr -- )   TUCK SPRITE-Y ! SPRITE-X ! ;
 ```
 
-出典：[src/core/words_game.zig](../src/core/words_game.zig), [HELP](../src/core/help_text.zig#L1062).
+出典：[src/core/words_game.zig](../src/core/words_game.zig), [HELP](../src/core/help_text.zig#L1065).
 
 <a id="w-47414d453a5241535445522d434f4c4f52"></a>
 
@@ -34872,7 +34953,7 @@ CREATE C $111111 , $222222 ,  0 GFX-CLS $FF0000 COLOR! 9 0 1 3 FILL-RECT C 0 0 0
 : RASTER-COLOR ( table rgb x y w h -- )   GFX-ROW-COLOR ;
 ```
 
-出典：[src/core/words_game.zig](../src/core/words_game.zig), [HELP](../src/core/help_text.zig#L1095).
+出典：[src/core/words_game.zig](../src/core/words_game.zig), [HELP](../src/core/help_text.zig#L1098).
 
 <a id="w-47414d453a5241535445522d5343524f4c4c"></a>
 
@@ -34910,7 +34991,7 @@ T 0 0 0 8 RASTER-SCROLL T 100 0 4 4 RASTER-SCROLL
 : RASTER-SCROLL ( table x y w h -- )   GFX-ROW-SHIFT ;
 ```
 
-出典：[src/core/words_game.zig](../src/core/words_game.zig), [HELP](../src/core/help_text.zig#L1094).
+出典：[src/core/words_game.zig](../src/core/words_game.zig), [HELP](../src/core/help_text.zig#L1097).
 
 <a id="w-47414d453a524f544154452d50414c45545445"></a>
 
@@ -34952,7 +35033,7 @@ Turn the colors of numbers first to first+count-1 one place up, the first taking
    last first pal PALETTE! ;
 ```
 
-出典：[src/core/words_game.zig](../src/core/words_game.zig), [HELP](../src/core/help_text.zig#L1085).
+出典：[src/core/words_game.zig](../src/core/words_game.zig), [HELP](../src/core/help_text.zig#L1088).
 
 <a id="w-47414d453a5350524954452d414e494d"></a>
 
@@ -34992,7 +35073,7 @@ SHEET 0 0 4 4 SPRITE: S  2 3 S SPRITE-ANIM  1 2 S PUT-SPRITE  0 GFX-CLS S DRAW-S
    0 spr SPRITE-FRAME !  0 spr SPRITE-TICK ! ;
 ```
 
-出典：[src/core/words_game.zig](../src/core/words_game.zig), [HELP](../src/core/help_text.zig#L1063).
+出典：[src/core/words_game.zig](../src/core/words_game.zig), [HELP](../src/core/help_text.zig#L1066).
 
 <a id="w-47414d453a5350524954452d44454c4159"></a>
 
@@ -35028,7 +35109,7 @@ REQUIRE-GAME ALSO GAME CREATE REVIEW-OBJECT /SPRITE ALLOT REVIEW-OBJECT SPRITE-D
 FIELD: SPRITE-DELAY
 ```
 
-出典：[src/core/words_game.zig](../src/core/words_game.zig), [HELP](../src/core/help_text.zig#L1055).
+出典：[src/core/words_game.zig](../src/core/words_game.zig), [HELP](../src/core/help_text.zig#L1058).
 
 <a id="w-47414d453a5350524954452d464c4950"></a>
 
@@ -35064,7 +35145,7 @@ REQUIRE-GAME ALSO GAME CREATE REVIEW-OBJECT /SPRITE ALLOT REVIEW-OBJECT SPRITE-F
 FIELD: SPRITE-FLIP
 ```
 
-出典：[src/core/words_game.zig](../src/core/words_game.zig), [HELP](../src/core/help_text.zig#L1057).
+出典：[src/core/words_game.zig](../src/core/words_game.zig), [HELP](../src/core/help_text.zig#L1060).
 
 <a id="w-47414d453a5350524954452d4652414d45"></a>
 
@@ -35100,7 +35181,7 @@ REQUIRE-GAME ALSO GAME CREATE REVIEW-OBJECT /SPRITE ALLOT REVIEW-OBJECT SPRITE-F
 FIELD: SPRITE-FRAME
 ```
 
-出典：[src/core/words_game.zig](../src/core/words_game.zig), [HELP](../src/core/help_text.zig#L1054).
+出典：[src/core/words_game.zig](../src/core/words_game.zig), [HELP](../src/core/help_text.zig#L1057).
 
 <a id="w-47414d453a5350524954452d4652414d4553"></a>
 
@@ -35136,7 +35217,7 @@ REQUIRE-GAME ALSO GAME CREATE REVIEW-OBJECT /SPRITE ALLOT REVIEW-OBJECT SPRITE-F
 FIELD: SPRITE-FRAMES
 ```
 
-出典：[src/core/words_game.zig](../src/core/words_game.zig), [HELP](../src/core/help_text.zig#L1053).
+出典：[src/core/words_game.zig](../src/core/words_game.zig), [HELP](../src/core/help_text.zig#L1056).
 
 <a id="w-47414d453a5350524954452d48"></a>
 
@@ -35172,7 +35253,7 @@ REQUIRE-GAME ALSO GAME CREATE REVIEW-OBJECT /SPRITE ALLOT REVIEW-OBJECT SPRITE-H
 FIELD: SPRITE-H
 ```
 
-出典：[src/core/words_game.zig](../src/core/words_game.zig), [HELP](../src/core/help_text.zig#L1052).
+出典：[src/core/words_game.zig](../src/core/words_game.zig), [HELP](../src/core/help_text.zig#L1055).
 
 <a id="w-47414d453a5350524954452d494d414745"></a>
 
@@ -35208,7 +35289,7 @@ REQUIRE-GAME ALSO GAME CREATE REVIEW-OBJECT /SPRITE ALLOT REVIEW-OBJECT SPRITE-I
 FIELD: SPRITE-IMAGE
 ```
 
-出典：[src/core/words_game.zig](../src/core/words_game.zig), [HELP](../src/core/help_text.zig#L1048).
+出典：[src/core/words_game.zig](../src/core/words_game.zig), [HELP](../src/core/help_text.zig#L1051).
 
 <a id="w-47414d453a5350524954452d4b4559"></a>
 
@@ -35244,7 +35325,7 @@ REQUIRE-GAME ALSO GAME CREATE REVIEW-OBJECT /SPRITE ALLOT REVIEW-OBJECT SPRITE-K
 FIELD: SPRITE-KEY
 ```
 
-出典：[src/core/words_game.zig](../src/core/words_game.zig), [HELP](../src/core/help_text.zig#L1058).
+出典：[src/core/words_game.zig](../src/core/words_game.zig), [HELP](../src/core/help_text.zig#L1061).
 
 <a id="w-47414d453a5350524954452d504958454c3f"></a>
 
@@ -35289,7 +35370,7 @@ Whether a sprite shows a pixel at x y: inside it and not its transparent color (
    spr SPRITE-KEY @ DUP 0< IF DROP TRUE ELSE $FFFFFF AND c <> THEN ;
 ```
 
-出典：[src/core/words_game.zig](../src/core/words_game.zig), [HELP](../src/core/help_text.zig#L1067).
+出典：[src/core/words_game.zig](../src/core/words_game.zig), [HELP](../src/core/help_text.zig#L1070).
 
 <a id="w-47414d453a5350524954452d53484f574e"></a>
 
@@ -35325,7 +35406,7 @@ REQUIRE-GAME ALSO GAME CREATE REVIEW-OBJECT /SPRITE ALLOT REVIEW-OBJECT SPRITE-S
 FIELD: SPRITE-SHOWN
 ```
 
-出典：[src/core/words_game.zig](../src/core/words_game.zig), [HELP](../src/core/help_text.zig#L1059).
+出典：[src/core/words_game.zig](../src/core/words_game.zig), [HELP](../src/core/help_text.zig#L1062).
 
 <a id="w-47414d453a5350524954452d5358"></a>
 
@@ -35361,7 +35442,7 @@ REQUIRE-GAME ALSO GAME CREATE REVIEW-OBJECT /SPRITE ALLOT REVIEW-OBJECT SPRITE-S
 FIELD: SPRITE-SX
 ```
 
-出典：[src/core/words_game.zig](../src/core/words_game.zig), [HELP](../src/core/help_text.zig#L1049).
+出典：[src/core/words_game.zig](../src/core/words_game.zig), [HELP](../src/core/help_text.zig#L1052).
 
 <a id="w-47414d453a5350524954452d5359"></a>
 
@@ -35397,7 +35478,7 @@ REQUIRE-GAME ALSO GAME CREATE REVIEW-OBJECT /SPRITE ALLOT REVIEW-OBJECT SPRITE-S
 FIELD: SPRITE-SY
 ```
 
-出典：[src/core/words_game.zig](../src/core/words_game.zig), [HELP](../src/core/help_text.zig#L1050).
+出典：[src/core/words_game.zig](../src/core/words_game.zig), [HELP](../src/core/help_text.zig#L1053).
 
 <a id="w-47414d453a5350524954452d5449434b"></a>
 
@@ -35433,7 +35514,7 @@ REQUIRE-GAME ALSO GAME CREATE REVIEW-OBJECT /SPRITE ALLOT REVIEW-OBJECT SPRITE-T
 FIELD: SPRITE-TICK
 ```
 
-出典：[src/core/words_game.zig](../src/core/words_game.zig), [HELP](../src/core/help_text.zig#L1056).
+出典：[src/core/words_game.zig](../src/core/words_game.zig), [HELP](../src/core/help_text.zig#L1059).
 
 <a id="w-47414d453a5350524954452d57"></a>
 
@@ -35469,7 +35550,7 @@ REQUIRE-GAME ALSO GAME CREATE REVIEW-OBJECT /SPRITE ALLOT REVIEW-OBJECT SPRITE-W
 FIELD: SPRITE-W
 ```
 
-出典：[src/core/words_game.zig](../src/core/words_game.zig), [HELP](../src/core/help_text.zig#L1051).
+出典：[src/core/words_game.zig](../src/core/words_game.zig), [HELP](../src/core/help_text.zig#L1054).
 
 <a id="w-47414d453a5350524954452d58"></a>
 
@@ -35505,7 +35586,7 @@ REQUIRE-GAME ALSO GAME CREATE REVIEW-OBJECT /SPRITE ALLOT REVIEW-OBJECT SPRITE-X
 FIELD: SPRITE-X
 ```
 
-出典：[src/core/words_game.zig](../src/core/words_game.zig), [HELP](../src/core/help_text.zig#L1046).
+出典：[src/core/words_game.zig](../src/core/words_game.zig), [HELP](../src/core/help_text.zig#L1049).
 
 <a id="w-47414d453a5350524954452d59"></a>
 
@@ -35541,7 +35622,7 @@ REQUIRE-GAME ALSO GAME CREATE REVIEW-OBJECT /SPRITE ALLOT REVIEW-OBJECT SPRITE-Y
 FIELD: SPRITE-Y
 ```
 
-出典：[src/core/words_game.zig](../src/core/words_game.zig), [HELP](../src/core/help_text.zig#L1047).
+出典：[src/core/words_game.zig](../src/core/words_game.zig), [HELP](../src/core/help_text.zig#L1050).
 
 <a id="w-47414d453a5350524954453a"></a>
 
@@ -35579,7 +35660,7 @@ SHEET 0 0 4 4 SPRITE: S 5 6 S PUT-SPRITE SHEET 4 4 3 2 TILEMAP: M 3 2 1 M TILE!
 : SPRITE: ( img sx sy w h "name" -- )   CREATE HERE /SPRITE ALLOT INIT-SPRITE ;
 ```
 
-出典：[src/core/words_game.zig](../src/core/words_game.zig), [HELP](../src/core/help_text.zig#L1061).
+出典：[src/core/words_game.zig](../src/core/words_game.zig), [HELP](../src/core/help_text.zig#L1064).
 
 <a id="w-47414d453a54494c4521"></a>
 
@@ -35617,7 +35698,7 @@ SHEET 0 0 4 4 SPRITE: S 5 6 S PUT-SPRITE SHEET 4 4 3 2 TILEMAP: M 3 2 1 M TILE!
 : TILE! ( n col row map -- )   (TILE-ADDR) C! ;
 ```
 
-出典：[src/core/words_game.zig](../src/core/words_game.zig), [HELP](../src/core/help_text.zig#L1079).
+出典：[src/core/words_game.zig](../src/core/words_game.zig), [HELP](../src/core/help_text.zig#L1082).
 
 <a id="w-47414d453a54494c4540"></a>
 
@@ -35655,7 +35736,7 @@ S SPRITE-X @ S SPRITE-Y @ 2 1 M TILE@
 : TILE@ ( col row map -- n )   (TILE-ADDR) C@ ;
 ```
 
-出典：[src/core/words_game.zig](../src/core/words_game.zig), [HELP](../src/core/help_text.zig#L1078).
+出典：[src/core/words_game.zig](../src/core/words_game.zig), [HELP](../src/core/help_text.zig#L1081).
 
 <a id="w-47414d453a54494c454d41502d434f4c53"></a>
 
@@ -35691,7 +35772,7 @@ REQUIRE-GAME ALSO GAME CREATE REVIEW-OBJECT /TILEMAP ALLOT REVIEW-OBJECT TILEMAP
 FIELD: TILEMAP-COLS
 ```
 
-出典：[src/core/words_game.zig](../src/core/words_game.zig), [HELP](../src/core/help_text.zig#L1073).
+出典：[src/core/words_game.zig](../src/core/words_game.zig), [HELP](../src/core/help_text.zig#L1076).
 
 <a id="w-47414d453a54494c454d41502d44415441"></a>
 
@@ -35731,7 +35812,7 @@ The tile bytes of a map, row by row (FORTH/Sigma game).
 : TILEMAP-DATA ( map -- addr )   /TILEMAP + ;
 ```
 
-出典：[src/core/words_game.zig](../src/core/words_game.zig), [HELP](../src/core/help_text.zig#L1076).
+出典：[src/core/words_game.zig](../src/core/words_game.zig), [HELP](../src/core/help_text.zig#L1079).
 
 <a id="w-47414d453a54494c454d41502d494d414745"></a>
 
@@ -35767,7 +35848,7 @@ REQUIRE-GAME ALSO GAME CREATE REVIEW-OBJECT /TILEMAP ALLOT REVIEW-OBJECT TILEMAP
 FIELD: TILEMAP-IMAGE
 ```
 
-出典：[src/core/words_game.zig](../src/core/words_game.zig), [HELP](../src/core/help_text.zig#L1070).
+出典：[src/core/words_game.zig](../src/core/words_game.zig), [HELP](../src/core/help_text.zig#L1073).
 
 <a id="w-47414d453a54494c454d41502d4b4559"></a>
 
@@ -35803,7 +35884,7 @@ REQUIRE-GAME ALSO GAME CREATE REVIEW-OBJECT /TILEMAP ALLOT REVIEW-OBJECT TILEMAP
 FIELD: TILEMAP-KEY
 ```
 
-出典：[src/core/words_game.zig](../src/core/words_game.zig), [HELP](../src/core/help_text.zig#L1075).
+出典：[src/core/words_game.zig](../src/core/words_game.zig), [HELP](../src/core/help_text.zig#L1078).
 
 <a id="w-47414d453a54494c454d41502d524f5753"></a>
 
@@ -35839,7 +35920,7 @@ REQUIRE-GAME ALSO GAME CREATE REVIEW-OBJECT /TILEMAP ALLOT REVIEW-OBJECT TILEMAP
 FIELD: TILEMAP-ROWS
 ```
 
-出典：[src/core/words_game.zig](../src/core/words_game.zig), [HELP](../src/core/help_text.zig#L1074).
+出典：[src/core/words_game.zig](../src/core/words_game.zig), [HELP](../src/core/help_text.zig#L1077).
 
 <a id="w-47414d453a54494c454d41502d5448"></a>
 
@@ -35875,7 +35956,7 @@ REQUIRE-GAME ALSO GAME CREATE REVIEW-OBJECT /TILEMAP ALLOT REVIEW-OBJECT TILEMAP
 FIELD: TILEMAP-TH
 ```
 
-出典：[src/core/words_game.zig](../src/core/words_game.zig), [HELP](../src/core/help_text.zig#L1072).
+出典：[src/core/words_game.zig](../src/core/words_game.zig), [HELP](../src/core/help_text.zig#L1075).
 
 <a id="w-47414d453a54494c454d41502d5457"></a>
 
@@ -35911,7 +35992,7 @@ REQUIRE-GAME ALSO GAME CREATE REVIEW-OBJECT /TILEMAP ALLOT REVIEW-OBJECT TILEMAP
 FIELD: TILEMAP-TW
 ```
 
-出典：[src/core/words_game.zig](../src/core/words_game.zig), [HELP](../src/core/help_text.zig#L1071).
+出典：[src/core/words_game.zig](../src/core/words_game.zig), [HELP](../src/core/help_text.zig#L1074).
 
 <a id="w-47414d453a54494c454d41503a"></a>
 
@@ -35954,7 +36035,7 @@ SHEET 0 0 4 4 SPRITE: S 5 6 S PUT-SPRITE SHEET 4 4 3 2 TILEMAP: M 3 2 1 M TILE!
    map TILEMAP-DATA cols rows * ERASE ;
 ```
 
-出典：[src/core/words_game.zig](../src/core/words_game.zig), [HELP](../src/core/help_text.zig#L1077).
+出典：[src/core/words_game.zig](../src/core/words_game.zig), [HELP](../src/core/help_text.zig#L1080).
 
 <a id="w-47414d453a28434f4c4f522329"></a>
 
@@ -36742,7 +36823,7 @@ AXES
    THEN ;
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1298).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1301).
 
 <a id="w-47524150484943533a4255494c54494e2d464f4e54"></a>
 
@@ -36780,7 +36861,7 @@ Draw TEXT with the built-in ASCII font, 4 by 8 pixels (FORTH/Sigma graphics).
 : BUILTIN-FONT ( -- )   GFX-FONT-BUILTIN ;
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1257).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1260).
 
 <a id="w-47524150484943533a434952434c45"></a>
 
@@ -36831,7 +36912,7 @@ CLS 5 5 5 CIRCLE
    LOOP ;
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1164).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1167).
 
 <a id="w-47524150484943533a434c53"></a>
 
@@ -36869,7 +36950,7 @@ CLS AXES
 : CLS ( -- )   0 GFX-CLS ;
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1160).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1163).
 
 <a id="w-47524150484943533a434f4c4f52"></a>
 
@@ -36907,7 +36988,7 @@ Set the current color, which the drawing words use; it starts white (FORTH/Sigma
 : COLOR ( r g b -- )   RGB COLOR! ;
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1156).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1159).
 
 <a id="w-47524150484943533a434f4c4f5221"></a>
 
@@ -36945,7 +37026,7 @@ $FF0000 COLOR! 0 0 PSET DISPLAY-TK SHOW
 : COLOR! ( rgb -- )   $FFFFFF AND (COLOR) ! ;
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1157).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1160).
 
 <a id="w-47524150484943533a434f4c4f5240"></a>
 
@@ -36983,7 +37064,7 @@ The current color as $RRGGBB (FORTH/Sigma graphics).
 : COLOR@ ( -- rgb )   (COLOR) @ ;
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1158).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1161).
 
 <a id="w-47524150484943533a434f50592d52454354"></a>
 
@@ -37022,7 +37103,7 @@ SCREEN 0 0 3 3 1 1 COPY-RECT
    (TRANSPARENT) @ (FLIP) @ (MODE) @ (ALPHA) @ (SCALE) @ GFX-COPY ;
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1232).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1235).
 
 <a id="w-47524150484943533a444953504c41592d4155544f"></a>
 
@@ -37058,7 +37139,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS DISPLAY-TK DISPLAY-AUTO
 : DISPLAY-AUTO ( -- )   0 (DISPLAY) !  0 GFX-AUTO-DISPLAY! ;
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1179).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1182).
 
 <a id="w-47524150484943533a444953504c41592d434f4c4f5253"></a>
 
@@ -37096,7 +37177,7 @@ Make SHOW use full color (0) or 2, 16, or 256 colors; the image keeps its colors
 : DISPLAY-COLORS ( n -- )   DUP (DITHER) @ GFX-COLOR-MODE  (COLORS) ! ;
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1246).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1249).
 
 <a id="w-47524150484943533a444953504c41592d5445524d494e414c"></a>
 
@@ -37134,7 +37215,7 @@ DISPLAY-TERMINAL
 : DISPLAY-TERMINAL ( -- )   1 (DISPLAY) ! ;
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1171).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1174).
 
 <a id="w-47524150484943533a444953504c41592d544b"></a>
 
@@ -37172,7 +37253,7 @@ FALSE MOUSE-CURSOR DISPLAY-TK SHOW
 : DISPLAY-TK ( -- )   3 (DISPLAY) ! ;
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1223).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1226).
 
 <a id="w-47524150484943533a444953504c41592d57494e444f57"></a>
 
@@ -37210,7 +37291,7 @@ Select a native window for SHOW; throw -21 when the host has no native-window su
 : DISPLAY-WINDOW ( -- )   GFX-WINDOW? 0= IF -21 THROW THEN  2 (DISPLAY) ! ;
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1172).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1175).
 
 <a id="w-47524150484943533a444954484552"></a>
 
@@ -37248,7 +37329,7 @@ Make SHOW mix the colors of fewer colors with a 4 by 4 Bayer matrix (true) or ta
 : DITHER ( flag -- )   0<> (DITHER) ! ;
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1247).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1250).
 
 <a id="w-47524150484943533a445241572d544f"></a>
 
@@ -37286,7 +37367,7 @@ A DRAW-TO
 : DRAW-TO ( img -- )   GFX-TARGET ;
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1228).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1231).
 
 <a id="w-47524150484943533a44524157494e47"></a>
 
@@ -37324,7 +37405,7 @@ A FREE-IMAGE DRAWING
 : DRAWING ( -- img )   GFX-TARGET@ ;
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1229).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1232).
 
 <a id="w-47524150484943533a46494c4c2d434952434c45"></a>
 
@@ -37368,7 +37449,7 @@ CLS 5 5 100000000000 FILL-CIRCLE
    LOOP ;
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1165).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1168).
 
 <a id="w-47524150484943533a46494c4c2d52454354"></a>
 
@@ -37412,7 +37493,7 @@ CLS 5 3 10 10 FILL-RECT -3 -3 5 5 RECT 2 2 0 5 FILL-RECT 2 2 5 -1 RECT
    bottom 1+ top DO  x  x w + 1-  I  COLOR@ GFX-HLINE  LOOP ;
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1163).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1166).
 
 <a id="w-47524150484943533a4652414d45"></a>
 
@@ -37454,7 +37535,7 @@ Wait until ms milliseconds have passed since the last FRAME, then SHOW, for anim
    SHOW ;
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1270).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1273).
 
 <a id="w-47524150484943533a465245452d494d414745"></a>
 
@@ -37492,7 +37573,7 @@ A FREE-IMAGE DRAWING
 : FREE-IMAGE ( img -- )   GFX-IMAGE-FREE ;
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1226).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1229).
 
 <a id="w-47524150484943533a46554c4c53435245454e"></a>
 
@@ -37535,7 +37616,7 @@ TRUE FULLSCREEN FULLSCREEN?
    THEN DROP ;
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1173).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1176).
 
 <a id="w-47524150484943533a46554c4c53435245454e3f"></a>
 
@@ -37578,7 +37659,7 @@ FULLSCREEN?
    THEN GFX-FULLSCREEN? ;
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1174).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1177).
 
 <a id="w-47524150484943533a47414d455041442d41584553"></a>
 
@@ -37612,7 +37693,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS 0 GAMEPAD-AXES .
 : GAMEPAD-AXES ( pad -- count ) 4 SWAP GFX-GAMEPAD-QUERY ;
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1201).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1204).
 
 <a id="w-47524150484943533a47414d455041442d41584953"></a>
 
@@ -37649,7 +37730,7 @@ GAMEPAD-POLL 0 GAMEPAD? 0 GAMEPAD-ID 0 GAMEPAD-BUTTONS 0 0 GAMEPAD-AXIS PAD 10 0
    { axis pad } axis 0 16 WITHIN 0= IF -24 THROW THEN 16 axis + pad GFX-GAMEPAD-QUERY ;
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1204).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1207).
 
 <a id="w-47524150484943533a47414d455041442d425554544f4e2d434f554e54"></a>
 
@@ -37683,7 +37764,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS 0 GAMEPAD-BUTTON-COUNT .
 : GAMEPAD-BUTTON-COUNT ( pad -- count ) 5 SWAP GFX-GAMEPAD-QUERY ;
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1202).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1205).
 
 <a id="w-47524150484943533a47414d455041442d425554544f4e3f"></a>
 
@@ -37721,7 +37802,7 @@ GAMEPAD-POLL 0 GAMEPAD-ID 0 GAMEPAD-MAPPED? 0 0 GAMEPAD-AXIS 5 0 GAMEPAD-AXIS 0 
    pad GAMEPAD-BUTTONS 1 button LSHIFT AND 0<> ;
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1206).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1209).
 
 <a id="w-47524150484943533a47414d455041442d425554544f4e53"></a>
 
@@ -37757,7 +37838,7 @@ GAMEPAD-POLL 0 GAMEPAD-BUTTONS
 : GAMEPAD-BUTTONS ( pad -- mask ) 2 SWAP GFX-GAMEPAD-QUERY ;
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1199).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1202).
 
 <a id="w-47524150484943533a47414d455041442d47554944"></a>
 
@@ -37791,7 +37872,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS PAD 32 0 GAMEPAD-GUID .
 : GAMEPAD-GUID ( addr capacity pad -- length ) GFX-GAMEPAD-GUID ;
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1212).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1215).
 
 <a id="w-47524150484943533a47414d455041442d484154"></a>
 
@@ -37828,7 +37909,7 @@ GAMEPAD-POLL 0 GAMEPAD-ID 0 GAMEPAD-MAPPED? 0 0 GAMEPAD-AXIS 5 0 GAMEPAD-AXIS 0 
    { hat pad } hat 0 4 WITHIN 0= IF -24 THROW THEN 32 hat + pad GFX-GAMEPAD-QUERY ;
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1205).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1208).
 
 <a id="w-47524150484943533a47414d455041442d48415453"></a>
 
@@ -37862,7 +37943,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS 0 GAMEPAD-HATS .
 : GAMEPAD-HATS ( pad -- count ) 6 SWAP GFX-GAMEPAD-QUERY ;
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1203).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1206).
 
 <a id="w-47524150484943533a47414d455041442d4944"></a>
 
@@ -37898,7 +37979,7 @@ GAMEPAD-POLL 0 GAMEPAD? 0 GAMEPAD-ID 0 GAMEPAD-BUTTONS 0 0 GAMEPAD-AXIS PAD 10 0
 : GAMEPAD-ID ( pad -- id ) 1 SWAP GFX-GAMEPAD-QUERY ;
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1198).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1201).
 
 <a id="w-47524150484943533a47414d455041442d4d4150"></a>
 
@@ -37936,7 +38017,7 @@ S" test mapping" GAMEPAD-MAP S" bad" GAMEPAD-MAP
 : GAMEPAD-MAP ( addr length -- flag ) GFX-GAMEPAD-MAP ;
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1208).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1211).
 
 <a id="w-47524150484943533a47414d455041442d4d41505045443f"></a>
 
@@ -37974,7 +38055,7 @@ GAMEPAD-POLL 0 GAMEPAD-ID 0 GAMEPAD-MAPPED? 0 0 GAMEPAD-AXIS 5 0 GAMEPAD-AXIS 0 
 : GAMEPAD-MAPPED? ( pad -- flag ) 3 SWAP GFX-GAMEPAD-QUERY ;
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1200).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1203).
 
 <a id="w-47524150484943533a47414d455041442d4e414d45"></a>
 
@@ -38010,7 +38091,7 @@ GAMEPAD-POLL 0 GAMEPAD? 0 GAMEPAD-ID 0 GAMEPAD-BUTTONS 0 0 GAMEPAD-AXIS PAD 10 0
 : GAMEPAD-NAME ( addr capacity pad -- length ) GFX-GAMEPAD-NAME ;
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1207).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1210).
 
 <a id="w-47524150484943533a47414d455041442d504f4c4c"></a>
 
@@ -38046,7 +38127,7 @@ GAMEPAD-POLL 0 GAMEPAD-BUTTONS
 : GAMEPAD-POLL ( -- count ) GFX-GAMEPAD-POLL ;
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1196).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1199).
 
 <a id="w-47524150484943533a47414d455041443f"></a>
 
@@ -38082,7 +38163,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS GAMEPAD-POLL 0 GAMEPAD? 0 GAMEPAD-BUTTONS
 : GAMEPAD? ( pad -- flag ) 0 SWAP GFX-GAMEPAD-QUERY ;
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1197).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1200).
 
 <a id="w-47524150484943533a4746582d4155544f2d444953504c4159"></a>
 
@@ -38112,7 +38193,7 @@ SHOW (DISPLAY) @ GFX-AUTO-DISPLAY
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1185).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1188).
 
 <a id="w-47524150484943533a4746582d4155544f2d444953504c415921"></a>
 
@@ -38142,7 +38223,7 @@ Set internal automatic SHOW state to 0 through 3. Used by DISPLAY-AUTO and SHOW;
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1187).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1190).
 
 <a id="w-47524150484943533a4746582d4155544f2d545259"></a>
 
@@ -38180,7 +38261,7 @@ Internal initial SHOW search: try the native window, then Tk on a desktop, retur
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1186).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1189).
 
 <a id="w-47524150484943533a4746582d434c53"></a>
 
@@ -38212,7 +38293,7 @@ Fill the whole image with the color $RRGGBB (FORTH/Sigma).
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1146).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1149).
 
 <a id="w-47524150484943533a4746582d434f4c4f522d4d4f4445"></a>
 
@@ -38244,7 +38325,7 @@ Show the image with 0 (full color), 2, 16, or 256 colors, dithered when flag is 
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1245).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1248).
 
 <a id="w-47524150484943533a4746582d434f5059"></a>
 
@@ -38277,7 +38358,7 @@ Copy a rectangle to the image drawn on; key is the transparent color or negative
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1244).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1247).
 
 <a id="w-47524150484943533a4746582d464f4e542d4255494c54494e"></a>
 
@@ -38309,7 +38390,7 @@ Use the built-in ASCII font for TEXT (FORTH/Sigma).
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1252).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1255).
 
 <a id="w-47524150484943533a4746582d464f4e542d484549474854"></a>
 
@@ -38341,7 +38422,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS GFX-FONT-HEIGHT CHAR A GFX-GLYPH-LOAD GFX-GLYPH-B
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1251).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1254).
 
 <a id="w-47524150484943533a4746582d464f4e542d4c4f4144"></a>
 
@@ -38373,7 +38454,7 @@ Read a BDF font file for TEXT; ior 0, the file's error, or -272 (FORTH/Sigma).
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。 戻り値のiorを確認してください。0が成功です。THROWへ渡す方法もあります。 番地・長さ・容量は有効な論理メモリー範囲を指定します。所有領域と借用領域の寿命を区別してください。
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1253).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1256).
 
 <a id="w-47524150484943533a4746582d464f4e542d53595354454d"></a>
 
@@ -38405,7 +38486,7 @@ Use the system's font of that name, height pixels a line, for TEXT; ior 0 or -27
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。 戻り値のiorを確認してください。0が成功です。THROWへ渡す方法もあります。 番地・長さ・容量は有効な論理メモリー範囲を指定します。所有領域と借用領域の寿命を区別してください。
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1254).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1257).
 
 <a id="w-47524150484943533a4746582d46554c4c53435245454e"></a>
 
@@ -38440,7 +38521,7 @@ Host primitive for FULLSCREEN (FORTH/Sigma).
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1176).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1179).
 
 <a id="w-47524150484943533a4746582d46554c4c53435245454e3f"></a>
 
@@ -38475,7 +38556,7 @@ Host primitive for FULLSCREEN? (FORTH/Sigma).
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1177).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1180).
 
 <a id="w-47524150484943533a4746582d47414d455041442d47554944"></a>
 
@@ -38505,7 +38586,7 @@ Host primitive for GAMEPAD-GUID (FORTH/Sigma).
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。 番地・長さ・容量は有効な論理メモリー範囲を指定します。所有領域と借用領域の寿命を区別してください。
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1213).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1216).
 
 <a id="w-47524150484943533a4746582d47414d455041442d4d4150"></a>
 
@@ -38535,7 +38616,7 @@ Host primitive for GAMEPAD-MAP (FORTH/Sigma).
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。 番地・長さ・容量は有効な論理メモリー範囲を指定します。所有領域と借用領域の寿命を区別してください。
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1211).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1214).
 
 <a id="w-47524150484943533a4746582d47414d455041442d4e414d45"></a>
 
@@ -38565,7 +38646,7 @@ Host primitive for GAMEPAD-NAME (FORTH/Sigma).
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。 番地・長さ・容量は有効な論理メモリー範囲を指定します。所有領域と借用領域の寿命を区別してください。
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1210).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1213).
 
 <a id="w-47524150484943533a4746582d47414d455041442d504f4c4c"></a>
 
@@ -38595,7 +38676,7 @@ Host primitive for GAMEPAD-POLL (FORTH/Sigma).
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1209).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1212).
 
 <a id="w-47524150484943533a4746582d47414d455041442d5155455259"></a>
 
@@ -38625,7 +38706,7 @@ Fields: 0 present, 1 ID, 2 buttons, 3 mapped, 4 axes, 5 button count, 6 hats; 16
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1214).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1217).
 
 <a id="w-47524150484943533a4746582d474c5950482d414c504841"></a>
 
@@ -38657,7 +38738,7 @@ S" a.txt" LOAD-FONT CHAR A GFX-GLYPH-LOAD DROP BL GFX-GLYPH-LOAD GFX-GLYPH-BOX 0
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1250).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1253).
 
 <a id="w-47524150484943533a4746582d474c5950482d424f58"></a>
 
@@ -38689,7 +38770,7 @@ S" a.txt" LOAD-FONT CHAR A GFX-GLYPH-LOAD DROP BL GFX-GLYPH-LOAD GFX-GLYPH-BOX 0
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1249).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1252).
 
 <a id="w-47524150484943533a4746582d474c5950482d4c4f4144"></a>
 
@@ -38721,7 +38802,7 @@ S" a.txt" LOAD-FONT CHAR A GFX-GLYPH-LOAD DROP BL GFX-GLYPH-LOAD GFX-GLYPH-BOX 0
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1248).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1251).
 
 <a id="w-47524150484943533a4746582d484549474854"></a>
 
@@ -38753,7 +38834,7 @@ GRAPHICS GFX-WIDTH GFX-HEIGHT
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1142).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1145).
 
 <a id="w-47524150484943533a4746582d484c494e45"></a>
 
@@ -38785,7 +38866,7 @@ $00FF00 GFX-CLS 3 1 1 $0000FF GFX-HLINE -10 100 2 $FF0000 GFX-HLINE
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1145).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1148).
 
 <a id="w-47524150484943533a4746582d494d4147452d46524545"></a>
 
@@ -38817,7 +38898,7 @@ Primitive for FREE-IMAGE (FORTH/Sigma).
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1240).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1243).
 
 <a id="w-47524150484943533a4746582d494d4147452d4c4f4144"></a>
 
@@ -38849,7 +38930,7 @@ Primitive for LOAD-IMAGE: key is the color of the transparent pixels, negative f
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。 戻り値のiorを確認してください。0が成功です。THROWへ渡す方法もあります。 番地・長さ・容量は有効な論理メモリー範囲を指定します。所有領域と借用領域の寿命を区別してください。
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1238).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1241).
 
 <a id="w-47524150484943533a4746582d494d4147452d4e4557"></a>
 
@@ -38881,7 +38962,7 @@ Primitive for NEW-IMAGE (FORTH/Sigma).
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1239).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1242).
 
 <a id="w-47524150484943533a4746582d494d4147452d53495a45"></a>
 
@@ -38913,7 +38994,7 @@ Primitive for IMAGE-SIZE (FORTH/Sigma).
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1241).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1244).
 
 <a id="w-47524150484943533a4746582d494d452d4341524554"></a>
 
@@ -38955,7 +39036,7 @@ Set the native input method's GUI-FIELD caret in image pixels; internal to GUI-F
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1189).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1192).
 
 <a id="w-47524150484943533a4746582d494d452d50524545444954"></a>
 
@@ -38991,7 +39072,7 @@ Copy the current native input method's uncommitted UTF-8 text into a buffer; int
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。 番地・長さ・容量は有効な論理メモリー範囲を指定します。所有領域と借用領域の寿命を区別してください。
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1188).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1191).
 
 <a id="w-47524150484943533a4746582d494e4445584544"></a>
 
@@ -39024,7 +39105,7 @@ Draw at x y the w by h color numbers, one byte each at addr, with the colors of 
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。 番地・長さ・容量は有効な論理メモリー範囲を指定します。所有領域と借用領域の寿命を区別してください。
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1042).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1045).
 
 <a id="w-47524150484943533a4746582d494e4954"></a>
 
@@ -39056,7 +39137,7 @@ Make a new black image of w by h pixels, each side 1 to 16384, at most 1 GiB (FO
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1140).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1143).
 
 <a id="w-47524150484943533a4746582d494e4b4559"></a>
 
@@ -39088,7 +39169,7 @@ The next key from the terminal or the window without waiting, or -1; Ctrl+C thro
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1182).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1185).
 
 <a id="w-47524150484943533a4746582d4b45592d4556454e54"></a>
 
@@ -39116,7 +39197,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS : SC-EVENT-DEMO GFX-KEY-EVENT IF . . ELSE ." none
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1422).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1425).
 
 <a id="w-47524150484943533a4746582d4b45592d48454c44"></a>
 
@@ -39148,7 +39229,7 @@ Whether the key (as GFX-INKEY gives it) is held down now (FORTH/Sigma).
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1195).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1198).
 
 <a id="w-47524150484943533a4746582d4b45592d524553594e43"></a>
 
@@ -39176,7 +39257,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS CREATE SC-BITS 32 ALLOT SC-BITS GFX-KEY-RESYNC SC
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。 番地・長さ・容量は有効な論理メモリー範囲を指定します。所有領域と借用領域の寿命を区別してください。
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1424).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1427).
 
 <a id="w-47524150484943533a4746582d4d4f555345"></a>
 
@@ -39208,7 +39289,7 @@ The pixel of the image under the mouse and the buttons held, 1 left 2 right 4 mi
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1183).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1186).
 
 <a id="w-47524150484943533a4746582d4d4f5553452d435552534f52"></a>
 
@@ -39242,7 +39323,7 @@ Host primitive for MOUSE-CURSOR (FORTH/Sigma).
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1178).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1181).
 
 <a id="w-47524150484943533a4746582d4d4f5553452d4556454e54"></a>
 
@@ -39272,7 +39353,7 @@ Primitive for MOUSE-EVENT (FORTH/Sigma).
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1269).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1272).
 
 <a id="w-47524150484943533a4746582d4d4f5553452d4d4f4445"></a>
 
@@ -39304,7 +39385,7 @@ Ask the terminal to report the mouse (true) or to stop (FORTH/Sigma).
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1184).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1187).
 
 <a id="w-47524150484943533a4746582d50474554"></a>
 
@@ -39336,7 +39417,7 @@ SCREEN DRAW-TO GFX-WIDTH 0 0 GFX-PGET DISPLAY-WINDOW SHOW
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1144).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1147).
 
 <a id="w-47524150484943533a4746582d504958454c"></a>
 
@@ -39375,7 +39456,7 @@ The color of pixel x y of any image (SCREEN too), -1 outside it (FORTH/Sigma).
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1040).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1043).
 
 <a id="w-47524150484943533a4746582d50534554"></a>
 
@@ -39407,7 +39488,7 @@ Set the pixel at x y to the color $RRGGBB; nothing happens outside the image (FO
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1143).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1146).
 
 <a id="w-47524150484943533a4746582d524f572d434f4c4f52"></a>
 
@@ -39439,7 +39520,7 @@ Give the pixels of color rgb in each row of the w by h rectangle at x y the colo
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1044).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1047).
 
 <a id="w-47524150484943533a4746582d524f572d5348494654"></a>
 
@@ -39471,7 +39552,7 @@ Move each row of the w by h rectangle at x y of the image drawn on to the right 
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1043).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1046).
 
 <a id="w-47524150484943533a4746582d534156452d424d50"></a>
 
@@ -39503,7 +39584,7 @@ S" b.txt" GFX-SAVE-BMP
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。 戻り値のiorを確認してください。0が成功です。THROWへ渡す方法もあります。 番地・長さ・容量は有効な論理メモリー範囲を指定します。所有領域と借用領域の寿命を区別してください。
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1148).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1151).
 
 <a id="w-47524150484943533a4746582d534156452d504e47"></a>
 
@@ -39535,7 +39616,7 @@ S" a.txt" GFX-SAVE-PNG S" b.txt" SAVE-PNG
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。 戻り値のiorを確認してください。0が成功です。THROWへ渡す方法もあります。 番地・長さ・容量は有効な論理メモリー範囲を指定します。所有領域と借用領域の寿命を区別してください。
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1153).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1156).
 
 <a id="w-47524150484943533a4746582d534156452d50504d"></a>
 
@@ -39567,7 +39648,7 @@ S" a.txt" GFX-SAVE-PPM
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。 戻り値のiorを確認してください。0が成功です。THROWへ渡す方法もあります。 番地・長さ・容量は有効な論理メモリー範囲を指定します。所有領域と借用領域の寿命を区別してください。
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1147).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1150).
 
 <a id="w-47524150484943533a4746582d5343414e2d48454c443f"></a>
 
@@ -39595,7 +39676,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-LSHIFT GFX-SCAN-HELD? .
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1420).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1423).
 
 <a id="w-47524150484943533a4746582d5343414e2d494e5055543f"></a>
 
@@ -39623,7 +39704,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS GFX-SCAN-INPUT? .
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1416).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1419).
 
 <a id="w-47524150484943533a4746582d5343414e2d535550504f525445443f"></a>
 
@@ -39651,7 +39732,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-A GFX-SCAN-SUPPORTED? .
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1418).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1421).
 
 <a id="w-47524150484943533a4746582d53484f572d424c4f434b53"></a>
 
@@ -39683,7 +39764,7 @@ GFX-SHOW-BLOCKS
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1149).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1152).
 
 <a id="w-47524150484943533a4746582d53484f572d534958454c"></a>
 
@@ -39715,7 +39796,7 @@ GFX-SHOW-SIXEL
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1150).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1153).
 
 <a id="w-47524150484943533a4746582d53484f572d544b"></a>
 
@@ -39751,7 +39832,7 @@ Show the image in the Tk window of the Tcl program (FORTH/Sigma).
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1216).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1219).
 
 <a id="w-47524150484943533a4746582d53484f572d57494e444f57"></a>
 
@@ -39787,7 +39868,7 @@ Show the image in the host's window (FORTH/Sigma).
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1151).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1154).
 
 <a id="w-47524150484943533a4746582d544152474554"></a>
 
@@ -39819,7 +39900,7 @@ Primitive for DRAW-TO (FORTH/Sigma).
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1242).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1245).
 
 <a id="w-47524150484943533a4746582d54415247455440"></a>
 
@@ -39851,7 +39932,7 @@ Primitive for DRAWING (FORTH/Sigma).
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1243).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1246).
 
 <a id="w-47524150484943533a4746582d54434c"></a>
 
@@ -39883,7 +39964,7 @@ Run a Tcl script in the Tcl program; its result, or with a true flag the script'
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。 番地・長さ・容量は有効な論理メモリー範囲を指定します。所有領域と借用領域の寿命を区別してください。
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1190).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1193).
 
 <a id="w-47524150484943533a4746582d54434c2d4552524f52"></a>
 
@@ -39915,7 +39996,7 @@ The message of the last Tcl script that failed (FORTH/Sigma).
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。 番地・長さ・容量は有効な論理メモリー範囲を指定します。所有領域と借用領域の寿命を区別してください。
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1191).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1194).
 
 <a id="w-47524150484943533a4746582d54434c2d4556454e54"></a>
 
@@ -39947,7 +40028,7 @@ The next text the Tcl program sent with sigma\_event, without waiting (FORTH/Sig
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。 番地・長さ・容量は有効な論理メモリー範囲を指定します。所有領域と借用領域の寿命を区別してください。
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1192).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1195).
 
 <a id="w-47524150484943533a4746582d54434c2d50524f4752414d"></a>
 
@@ -39979,7 +40060,7 @@ The Tcl program (wish) to start; empty for SIGMA\_WISH, wish on the PATH, or on 
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。 番地・長さ・容量は有効な論理メモリー範囲を指定します。所有領域と借用領域の寿命を区別してください。
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1193).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1196).
 
 <a id="w-47524150484943533a4746582d54434c2d53544f50"></a>
 
@@ -40011,7 +40092,7 @@ End the Tcl program, dropping what it wrote and Sigma did not read; -265 on term
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1194).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1197).
 
 <a id="w-47524150484943533a4746582d54494c454d4150"></a>
 
@@ -40046,7 +40127,7 @@ Draw the w by h view at x y of a map of cols by rows tile bytes at addr, seen fr
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。 番地・長さ・容量は有効な論理メモリー範囲を指定します。所有領域と借用領域の寿命を区別してください。
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1041).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1044).
 
 <a id="w-47524150484943533a4746582d5749445448"></a>
 
@@ -40078,7 +40159,7 @@ GRAPHICS GFX-WIDTH GFX-HEIGHT
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1141).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1144).
 
 <a id="w-47524150484943533a4746582d57494e444f572d53495a45"></a>
 
@@ -40108,7 +40189,7 @@ The size of the part of the window that shows the image, each side 1 to 16384, o
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1215).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1218).
 
 <a id="w-47524150484943533a4746582d57494e444f573f"></a>
 
@@ -40140,7 +40221,7 @@ GFX-WINDOW? SHOW
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1152).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1155).
 
 <a id="w-47524150484943533a494d4147452d414c504841"></a>
 
@@ -40178,7 +40259,7 @@ How much of the copy IMAGE-MODE 3 shows, 0 (none) to 255 (all); 128 at the start
 : IMAGE-ALPHA ( n -- )   DUP 0 256 WITHIN 0= IF DROP -24 THROW THEN (ALPHA) ! ;
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1234).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1237).
 
 <a id="w-47524150484943533a494d4147452d464c4950"></a>
 
@@ -40216,7 +40297,7 @@ How COPY-RECT and PUT-IMAGE flip: 0 not, 1 left and right, 2 top and bottom, 3 b
 : IMAGE-FLIP ( n -- )   DUP 0 4 WITHIN 0= IF DROP -24 THROW THEN (FLIP) ! ;
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1231).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1234).
 
 <a id="w-47524150484943533a494d4147452d4d4f4445"></a>
 
@@ -40254,7 +40335,7 @@ $103090 GFX-CLS 1 IMAGE-MODE S 0 0 PUT-IMAGE
 : IMAGE-MODE ( n -- )   DUP 0 4 WITHIN 0= IF DROP -24 THROW THEN (MODE) ! ;
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1233).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1236).
 
 <a id="w-47524150484943533a494d4147452d5343414c45"></a>
 
@@ -40292,7 +40373,7 @@ COPY-RECT and PUT-IMAGE draw each pixel n by n, 1 (the start) to 16 (FORTH/Sigma
 : IMAGE-SCALE ( n -- )   DUP 1 17 WITHIN 0= IF DROP -24 THROW THEN (SCALE) ! ;
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1235).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1238).
 
 <a id="w-47524150484943533a494d4147452d53495a45"></a>
 
@@ -40330,7 +40411,7 @@ The width and height of an image, or of the screen (0 0 before GFX-INIT) (FORTH/
 : IMAGE-SIZE ( img -- w h )   GFX-IMAGE-SIZE ;
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1227).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1230).
 
 <a id="w-47524150484943533a494e4b4559"></a>
 
@@ -40368,7 +40449,7 @@ INKEY
 : INKEY ( -- key | -1 )   GFX-INKEY ;
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1262).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1265).
 
 <a id="w-47524150484943533a4b2d44454c455445"></a>
 
@@ -40402,7 +40483,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS K-DELETE . PREVIOUS
 264 CONSTANT K-INSERT 265 CONSTANT K-DELETE
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1280).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1283).
 
 <a id="w-47524150484943533a4b2d444f574e"></a>
 
@@ -40436,7 +40517,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS K-DOWN . PREVIOUS
 256 CONSTANT K-UP     257 CONSTANT K-DOWN   258 CONSTANT K-LEFT    259 CONSTANT K-RIGHT
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1272).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1275).
 
 <a id="w-47524150484943533a4b2d454e44"></a>
 
@@ -40470,7 +40551,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS K-END . PREVIOUS
 260 CONSTANT K-HOME   261 CONSTANT K-END    262 CONSTANT K-PRIOR   263 CONSTANT K-NEXT
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1276).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1279).
 
 <a id="w-47524150484943533a4b2d4631"></a>
 
@@ -40504,7 +40585,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS K-F1 . PREVIOUS
 266 CONSTANT K-F1   267 CONSTANT K-F2   268 CONSTANT K-F3   269 CONSTANT K-F4
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1281).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1284).
 
 <a id="w-47524150484943533a4b2d463130"></a>
 
@@ -40538,7 +40619,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS K-F10 . PREVIOUS
 274 CONSTANT K-F9   275 CONSTANT K-F10  276 CONSTANT K-F11  277 CONSTANT K-F12
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1290).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1293).
 
 <a id="w-47524150484943533a4b2d463131"></a>
 
@@ -40572,7 +40653,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS K-F11 . PREVIOUS
 274 CONSTANT K-F9   275 CONSTANT K-F10  276 CONSTANT K-F11  277 CONSTANT K-F12
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1291).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1294).
 
 <a id="w-47524150484943533a4b2d463132"></a>
 
@@ -40606,7 +40687,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS K-F12 . PREVIOUS
 274 CONSTANT K-F9   275 CONSTANT K-F10  276 CONSTANT K-F11  277 CONSTANT K-F12
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1292).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1295).
 
 <a id="w-47524150484943533a4b2d4632"></a>
 
@@ -40640,7 +40721,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS K-F2 . PREVIOUS
 266 CONSTANT K-F1   267 CONSTANT K-F2   268 CONSTANT K-F3   269 CONSTANT K-F4
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1282).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1285).
 
 <a id="w-47524150484943533a4b2d4633"></a>
 
@@ -40674,7 +40755,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS K-F3 . PREVIOUS
 266 CONSTANT K-F1   267 CONSTANT K-F2   268 CONSTANT K-F3   269 CONSTANT K-F4
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1283).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1286).
 
 <a id="w-47524150484943533a4b2d4634"></a>
 
@@ -40708,7 +40789,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS K-F4 . PREVIOUS
 266 CONSTANT K-F1   267 CONSTANT K-F2   268 CONSTANT K-F3   269 CONSTANT K-F4
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1284).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1287).
 
 <a id="w-47524150484943533a4b2d4635"></a>
 
@@ -40742,7 +40823,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS K-F5 . PREVIOUS
 270 CONSTANT K-F5   271 CONSTANT K-F6   272 CONSTANT K-F7   273 CONSTANT K-F8
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1285).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1288).
 
 <a id="w-47524150484943533a4b2d4636"></a>
 
@@ -40776,7 +40857,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS K-F6 . PREVIOUS
 270 CONSTANT K-F5   271 CONSTANT K-F6   272 CONSTANT K-F7   273 CONSTANT K-F8
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1286).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1289).
 
 <a id="w-47524150484943533a4b2d4637"></a>
 
@@ -40810,7 +40891,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS K-F7 . PREVIOUS
 270 CONSTANT K-F5   271 CONSTANT K-F6   272 CONSTANT K-F7   273 CONSTANT K-F8
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1287).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1290).
 
 <a id="w-47524150484943533a4b2d4638"></a>
 
@@ -40844,7 +40925,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS K-F8 . PREVIOUS
 270 CONSTANT K-F5   271 CONSTANT K-F6   272 CONSTANT K-F7   273 CONSTANT K-F8
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1288).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1291).
 
 <a id="w-47524150484943533a4b2d4639"></a>
 
@@ -40878,7 +40959,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS K-F9 . PREVIOUS
 274 CONSTANT K-F9   275 CONSTANT K-F10  276 CONSTANT K-F11  277 CONSTANT K-F12
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1289).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1292).
 
 <a id="w-47524150484943533a4b2d484f4d45"></a>
 
@@ -40912,7 +40993,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS K-HOME . PREVIOUS
 260 CONSTANT K-HOME   261 CONSTANT K-END    262 CONSTANT K-PRIOR   263 CONSTANT K-NEXT
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1275).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1278).
 
 <a id="w-47524150484943533a4b2d494e53455254"></a>
 
@@ -40946,7 +41027,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS K-INSERT . PREVIOUS
 264 CONSTANT K-INSERT 265 CONSTANT K-DELETE
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1279).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1282).
 
 <a id="w-47524150484943533a4b2d4c454654"></a>
 
@@ -40980,7 +41061,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS K-LEFT . PREVIOUS
 256 CONSTANT K-UP     257 CONSTANT K-DOWN   258 CONSTANT K-LEFT    259 CONSTANT K-RIGHT
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1273).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1276).
 
 <a id="w-47524150484943533a4b2d4e455854"></a>
 
@@ -41014,7 +41095,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS K-NEXT . PREVIOUS
 260 CONSTANT K-HOME   261 CONSTANT K-END    262 CONSTANT K-PRIOR   263 CONSTANT K-NEXT
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1278).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1281).
 
 <a id="w-47524150484943533a4b2d5052494f52"></a>
 
@@ -41048,7 +41129,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS K-PRIOR . PREVIOUS
 260 CONSTANT K-HOME   261 CONSTANT K-END    262 CONSTANT K-PRIOR   263 CONSTANT K-NEXT
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1277).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1280).
 
 <a id="w-47524150484943533a4b2d5249474854"></a>
 
@@ -41082,7 +41163,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS K-RIGHT . PREVIOUS
 256 CONSTANT K-UP     257 CONSTANT K-DOWN   258 CONSTANT K-LEFT    259 CONSTANT K-RIGHT
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1274).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1277).
 
 <a id="w-47524150484943533a4b2d5550"></a>
 
@@ -41118,7 +41199,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS K-UP . PREVIOUS
 256 CONSTANT K-UP     257 CONSTANT K-DOWN   258 CONSTANT K-LEFT    259 CONSTANT K-RIGHT
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1271).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1274).
 
 <a id="w-47524150484943533a4b45592d4556454e54"></a>
 
@@ -41154,7 +41235,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS : SC-EVENT-DEMO KEY-EVENT IF . . ELSE ." none" TH
 : KEY-EVENT ( -- scan kind true | false ) GFX-KEY-EVENT ;
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1421).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1424).
 
 <a id="w-47524150484943533a4b45592d48454c443f"></a>
 
@@ -41192,7 +41273,7 @@ K-UP KEY-HELD?
 : KEY-HELD? ( key -- flag )   GFX-KEY-HELD ;
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1263).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1266).
 
 <a id="w-47524150484943533a4b45592d524553594e43"></a>
 
@@ -41226,7 +41307,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS CREATE SC-BITS 32 ALLOT SC-BITS KEY-RESYNC SC-BIT
 : KEY-RESYNC ( addr -- ) GFX-KEY-RESYNC ;
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1423).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1426).
 
 <a id="w-47524150484943533a4c494e45"></a>
 
@@ -41286,7 +41367,7 @@ CLS 1 0 3 5 LINE
    AGAIN ;
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1161).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1164).
 
 <a id="w-47524150484943533a4c4f41442d464f4e54"></a>
 
@@ -41324,7 +41405,7 @@ Read the named BDF font file and draw TEXT with it; THROW on failure (FORTH/Sigm
 : LOAD-FONT ( c-addr u -- )   GFX-FONT-LOAD THROW ;
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1258).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1261).
 
 <a id="w-47524150484943533a4c4f41442d494d414745"></a>
 
@@ -41362,7 +41443,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS : REVIEW-LOAD S" " LOAD-IMAGE ; ' REVIEW-LOAD CAT
 : LOAD-IMAGE ( c-addr u -- img )   (TRANSPARENT) @ GFX-IMAGE-LOAD THROW ;
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1237).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1240).
 
 <a id="w-47524150484943533a4d4c494e45"></a>
 
@@ -41403,7 +41484,7 @@ CLS -1e0 -1e0 1e0 -1e0 MLINE
    x1 (M>PX) y1 (M>PY) x2 (M>PX) y2 (M>PY) LINE ;
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1297).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1300).
 
 <a id="w-47524150484943533a4d4f555345"></a>
 
@@ -41441,7 +41522,7 @@ MOUSE
 : MOUSE ( -- x y buttons )   GFX-MOUSE ;
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1265).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1268).
 
 <a id="w-47524150484943533a4d4f5553452d435552534f52"></a>
 
@@ -41483,7 +41564,7 @@ TRUE MOUSE-CURSOR
    THEN DROP ;
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1175).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1178).
 
 <a id="w-47524150484943533a4d4f5553452d4556454e54"></a>
 
@@ -41521,7 +41602,7 @@ MOUSE DROP DROP DROP MOUSE-EVENT
 : MOUSE-EVENT ( -- x y button kind true | false )   GFX-MOUSE-EVENT ;
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1268).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1271).
 
 <a id="w-47524150484943533a4d4f5553452d4f4646"></a>
 
@@ -41559,7 +41640,7 @@ MOUSE MOUSE-OFF
 : MOUSE-OFF ( -- )   FALSE GFX-MOUSE-MODE ;
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1267).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1270).
 
 <a id="w-47524150484943533a4d4f5553452d4f4e"></a>
 
@@ -41597,7 +41678,7 @@ MOUSE-ON DISPLAY-TERMINAL SHOW
 : MOUSE-ON ( -- )   TRUE GFX-MOUSE-MODE ;
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1266).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1269).
 
 <a id="w-47524150484943533a4d50534554"></a>
 
@@ -41638,7 +41719,7 @@ CLS -1e300 -1e300 1e300 1e300 MLINE 1e0 0e0 F/ FDUP MPSET
    x (M>PX) y (M>PY) PSET ;
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1296).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1299).
 
 <a id="w-47524150484943533a4e45572d494d414745"></a>
 
@@ -41676,7 +41757,7 @@ Make a black image besides the screen, each side 1 to 16384; at most 256 images 
 : NEW-IMAGE ( w h -- img )   GFX-IMAGE-NEW ;
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1225).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1228).
 
 <a id="w-47524150484943533a5041494e54"></a>
 
@@ -41721,7 +41802,7 @@ Fill the area around x y that has the color of x y with the current color (FORTH
    THROW ;
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1166).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1169).
 
 <a id="w-47524150484943533a504c4f54"></a>
 
@@ -41771,7 +41852,7 @@ CLS : SQ ( F: x -- y ) FDUP F* ; ' SQ PLOT
    LOOP ;
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1299).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1302).
 
 <a id="w-47524150484943533a50534554"></a>
 
@@ -41809,7 +41890,7 @@ $FF0000 COLOR! 0 0 PSET DISPLAY-TK SHOW
 : PSET ( x y -- )   COLOR@ GFX-PSET ;
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1159).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1162).
 
 <a id="w-47524150484943533a5055542d494d414745"></a>
 
@@ -41847,7 +41928,7 @@ S 1 1 PUT-IMAGE
 : PUT-IMAGE { src x y | w h -- }   src IMAGE-SIZE TO h TO w  src 0 0 w h x y COPY-RECT ;
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1236).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1239).
 
 <a id="w-47524150484943533a52454354"></a>
 
@@ -41892,7 +41973,7 @@ Draw the outline of a w by h rectangle whose top left corner is x y (FORTH/Sigma
    x w + 1-   y  y h + 1-  (VLINE) ;
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1162).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1165).
 
 <a id="w-47524150484943533a524742"></a>
 
@@ -41930,7 +42011,7 @@ HEX REQUIRE-GRAPHICS BASE @ DECIMAL ALSO GRAPHICS COLOR@ 18 52 86 RGB 256 -1 0 R
 : RGB ( r g b -- rgb )   255 AND  SWAP 255 AND 8 LSHIFT OR  SWAP 255 AND 16 LSHIFT OR ;
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1155).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1158).
 
 <a id="w-47524150484943533a534156452d424d50"></a>
 
@@ -41968,7 +42049,7 @@ Write the image to the named file as a 24-bit BMP; THROW on failure (FORTH/Sigma
 : SAVE-BMP ( c-addr u -- )   GFX-SAVE-BMP THROW ;
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1168).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1171).
 
 <a id="w-47524150484943533a534156452d504e47"></a>
 
@@ -42006,7 +42087,7 @@ Write the image to the named file as a PNG; THROW on failure (FORTH/Sigma graphi
 : SAVE-PNG ( c-addr u -- )   GFX-SAVE-PNG THROW ;
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1169).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1172).
 
 <a id="w-47524150484943533a534156452d50504d"></a>
 
@@ -42044,7 +42125,7 @@ S" a.txt" SAVE-PPM
 : SAVE-PPM ( c-addr u -- )   GFX-SAVE-PPM THROW ;
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1167).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1170).
 
 <a id="w-47524150484943533a53432d30"></a>
 
@@ -42078,7 +42159,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-0 .
 39 CONSTANT SC-0
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1460).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1463).
 
 <a id="w-47524150484943533a53432d31"></a>
 
@@ -42112,7 +42193,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-1 .
 30 CONSTANT SC-1
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1451).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1454).
 
 <a id="w-47524150484943533a53432d32"></a>
 
@@ -42146,7 +42227,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-2 .
 31 CONSTANT SC-2
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1452).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1455).
 
 <a id="w-47524150484943533a53432d33"></a>
 
@@ -42180,7 +42261,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-3 .
 32 CONSTANT SC-3
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1453).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1456).
 
 <a id="w-47524150484943533a53432d34"></a>
 
@@ -42214,7 +42295,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-4 .
 33 CONSTANT SC-4
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1454).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1457).
 
 <a id="w-47524150484943533a53432d35"></a>
 
@@ -42248,7 +42329,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-5 .
 34 CONSTANT SC-5
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1455).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1458).
 
 <a id="w-47524150484943533a53432d36"></a>
 
@@ -42282,7 +42363,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-6 .
 35 CONSTANT SC-6
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1456).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1459).
 
 <a id="w-47524150484943533a53432d37"></a>
 
@@ -42316,7 +42397,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-7 .
 36 CONSTANT SC-7
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1457).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1460).
 
 <a id="w-47524150484943533a53432d38"></a>
 
@@ -42350,7 +42431,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-8 .
 37 CONSTANT SC-8
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1458).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1461).
 
 <a id="w-47524150484943533a53432d39"></a>
 
@@ -42384,7 +42465,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-9 .
 38 CONSTANT SC-9
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1459).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1462).
 
 <a id="w-47524150484943533a53432d41"></a>
 
@@ -42420,7 +42501,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-A .
 4 CONSTANT SC-A
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1425).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1428).
 
 <a id="w-47524150484943533a53432d414741494e"></a>
 
@@ -42454,7 +42535,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-AGAIN .
 121 CONSTANT SC-AGAIN
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1542).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1545).
 
 <a id="w-47524150484943533a53432d414c544552415345"></a>
 
@@ -42488,7 +42569,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-ALTERASE .
 153 CONSTANT SC-ALTERASE
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1574).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1577).
 
 <a id="w-47524150484943533a53432d41504f5354524f504845"></a>
 
@@ -42522,7 +42603,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-APOSTROPHE .
 52 CONSTANT SC-APOSTROPHE
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1473).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1476).
 
 <a id="w-47524150484943533a53432d4150504c49434154494f4e"></a>
 
@@ -42556,7 +42637,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-APPLICATION .
 101 CONSTANT SC-APPLICATION
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1522).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1525).
 
 <a id="w-47524150484943533a53432d42"></a>
 
@@ -42590,7 +42671,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-B .
 5 CONSTANT SC-B
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1426).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1429).
 
 <a id="w-47524150484943533a53432d4241434b534c415348"></a>
 
@@ -42624,7 +42705,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-BACKSLASH .
 49 CONSTANT SC-BACKSLASH
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1470).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1473).
 
 <a id="w-47524150484943533a53432d4241434b5350414345"></a>
 
@@ -42658,7 +42739,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-BACKSPACE .
 42 CONSTANT SC-BACKSPACE
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1463).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1466).
 
 <a id="w-47524150484943533a53432d43"></a>
 
@@ -42692,7 +42773,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-C .
 6 CONSTANT SC-C
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1427).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1430).
 
 <a id="w-47524150484943533a53432d43414e43454c"></a>
 
@@ -42726,7 +42807,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-CANCEL .
 155 CONSTANT SC-CANCEL
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1576).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1579).
 
 <a id="w-47524150484943533a53432d434150534c4f434b"></a>
 
@@ -42760,7 +42841,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-CAPSLOCK .
 57 CONSTANT SC-CAPSLOCK
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1478).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1481).
 
 <a id="w-47524150484943533a53432d434c454152"></a>
 
@@ -42794,7 +42875,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-CLEAR .
 156 CONSTANT SC-CLEAR
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1577).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1580).
 
 <a id="w-47524150484943533a53432d434c454152414741494e"></a>
 
@@ -42828,7 +42909,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-CLEARAGAIN .
 162 CONSTANT SC-CLEARAGAIN
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1583).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1586).
 
 <a id="w-47524150484943533a53432d434f4d4d41"></a>
 
@@ -42862,7 +42943,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-COMMA .
 54 CONSTANT SC-COMMA
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1475).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1478).
 
 <a id="w-47524150484943533a53432d434f5059"></a>
 
@@ -42896,7 +42977,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-COPY .
 124 CONSTANT SC-COPY
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1545).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1548).
 
 <a id="w-47524150484943533a53432d435253454c"></a>
 
@@ -42930,7 +43011,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-CRSEL .
 163 CONSTANT SC-CRSEL
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1584).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1587).
 
 <a id="w-47524150484943533a53432d43555252454e4359535542554e4954"></a>
 
@@ -42964,7 +43045,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-CURRENCYSUBUNIT .
 181 CONSTANT SC-CURRENCYSUBUNIT
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1591).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1594).
 
 <a id="w-47524150484943533a53432d43555252454e4359554e4954"></a>
 
@@ -42998,7 +43079,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-CURRENCYUNIT .
 180 CONSTANT SC-CURRENCYUNIT
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1590).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1593).
 
 <a id="w-47524150484943533a53432d435554"></a>
 
@@ -43032,7 +43113,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-CUT .
 123 CONSTANT SC-CUT
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1544).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1547).
 
 <a id="w-47524150484943533a53432d44"></a>
 
@@ -43066,7 +43147,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-D .
 7 CONSTANT SC-D
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1428).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1431).
 
 <a id="w-47524150484943533a53432d444543494d414c534550415241544f52"></a>
 
@@ -43100,7 +43181,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-DECIMALSEPARATOR .
 179 CONSTANT SC-DECIMALSEPARATOR
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1589).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1592).
 
 <a id="w-47524150484943533a53432d44454c455445"></a>
 
@@ -43134,7 +43215,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-DELETE .
 76 CONSTANT SC-DELETE
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1497).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1500).
 
 <a id="w-47524150484943533a53432d444f574e"></a>
 
@@ -43168,7 +43249,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-DOWN .
 81 CONSTANT SC-DOWN
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1502).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1505).
 
 <a id="w-47524150484943533a53432d45"></a>
 
@@ -43202,7 +43283,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-E .
 8 CONSTANT SC-E
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1429).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1432).
 
 <a id="w-47524150484943533a53432d454e44"></a>
 
@@ -43236,7 +43317,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-END .
 77 CONSTANT SC-END
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1498).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1501).
 
 <a id="w-47524150484943533a53432d455155414c53"></a>
 
@@ -43270,7 +43351,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-EQUALS .
 46 CONSTANT SC-EQUALS
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1467).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1470).
 
 <a id="w-47524150484943533a53432d455343415045"></a>
 
@@ -43304,7 +43385,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-ESCAPE .
 41 CONSTANT SC-ESCAPE
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1462).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1465).
 
 <a id="w-47524150484943533a53432d45584543555445"></a>
 
@@ -43338,7 +43419,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-EXECUTE .
 116 CONSTANT SC-EXECUTE
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1537).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1540).
 
 <a id="w-47524150484943533a53432d455853454c"></a>
 
@@ -43372,7 +43453,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-EXSEL .
 164 CONSTANT SC-EXSEL
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1585).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1588).
 
 <a id="w-47524150484943533a53432d46"></a>
 
@@ -43406,7 +43487,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-F .
 9 CONSTANT SC-F
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1430).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1433).
 
 <a id="w-47524150484943533a53432d4631"></a>
 
@@ -43440,7 +43521,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-F1 .
 58 CONSTANT SC-F1
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1479).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1482).
 
 <a id="w-47524150484943533a53432d463130"></a>
 
@@ -43474,7 +43555,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-F10 .
 67 CONSTANT SC-F10
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1488).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1491).
 
 <a id="w-47524150484943533a53432d463131"></a>
 
@@ -43508,7 +43589,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-F11 .
 68 CONSTANT SC-F11
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1489).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1492).
 
 <a id="w-47524150484943533a53432d463132"></a>
 
@@ -43542,7 +43623,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-F12 .
 69 CONSTANT SC-F12
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1490).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1493).
 
 <a id="w-47524150484943533a53432d463133"></a>
 
@@ -43576,7 +43657,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-F13 .
 104 CONSTANT SC-F13
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1525).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1528).
 
 <a id="w-47524150484943533a53432d463134"></a>
 
@@ -43610,7 +43691,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-F14 .
 105 CONSTANT SC-F14
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1526).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1529).
 
 <a id="w-47524150484943533a53432d463135"></a>
 
@@ -43644,7 +43725,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-F15 .
 106 CONSTANT SC-F15
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1527).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1530).
 
 <a id="w-47524150484943533a53432d463136"></a>
 
@@ -43678,7 +43759,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-F16 .
 107 CONSTANT SC-F16
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1528).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1531).
 
 <a id="w-47524150484943533a53432d463137"></a>
 
@@ -43712,7 +43793,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-F17 .
 108 CONSTANT SC-F17
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1529).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1532).
 
 <a id="w-47524150484943533a53432d463138"></a>
 
@@ -43746,7 +43827,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-F18 .
 109 CONSTANT SC-F18
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1530).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1533).
 
 <a id="w-47524150484943533a53432d463139"></a>
 
@@ -43780,7 +43861,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-F19 .
 110 CONSTANT SC-F19
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1531).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1534).
 
 <a id="w-47524150484943533a53432d4632"></a>
 
@@ -43814,7 +43895,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-F2 .
 59 CONSTANT SC-F2
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1480).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1483).
 
 <a id="w-47524150484943533a53432d463230"></a>
 
@@ -43848,7 +43929,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-F20 .
 111 CONSTANT SC-F20
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1532).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1535).
 
 <a id="w-47524150484943533a53432d463231"></a>
 
@@ -43882,7 +43963,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-F21 .
 112 CONSTANT SC-F21
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1533).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1536).
 
 <a id="w-47524150484943533a53432d463232"></a>
 
@@ -43916,7 +43997,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-F22 .
 113 CONSTANT SC-F22
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1534).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1537).
 
 <a id="w-47524150484943533a53432d463233"></a>
 
@@ -43950,7 +44031,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-F23 .
 114 CONSTANT SC-F23
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1535).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1538).
 
 <a id="w-47524150484943533a53432d463234"></a>
 
@@ -43984,7 +44065,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-F24 .
 115 CONSTANT SC-F24
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1536).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1539).
 
 <a id="w-47524150484943533a53432d4633"></a>
 
@@ -44018,7 +44099,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-F3 .
 60 CONSTANT SC-F3
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1481).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1484).
 
 <a id="w-47524150484943533a53432d4634"></a>
 
@@ -44052,7 +44133,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-F4 .
 61 CONSTANT SC-F4
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1482).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1485).
 
 <a id="w-47524150484943533a53432d4635"></a>
 
@@ -44086,7 +44167,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-F5 .
 62 CONSTANT SC-F5
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1483).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1486).
 
 <a id="w-47524150484943533a53432d4636"></a>
 
@@ -44120,7 +44201,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-F6 .
 63 CONSTANT SC-F6
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1484).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1487).
 
 <a id="w-47524150484943533a53432d4637"></a>
 
@@ -44154,7 +44235,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-F7 .
 64 CONSTANT SC-F7
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1485).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1488).
 
 <a id="w-47524150484943533a53432d4638"></a>
 
@@ -44188,7 +44269,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-F8 .
 65 CONSTANT SC-F8
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1486).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1489).
 
 <a id="w-47524150484943533a53432d4639"></a>
 
@@ -44222,7 +44303,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-F9 .
 66 CONSTANT SC-F9
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1487).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1490).
 
 <a id="w-47524150484943533a53432d46494e44"></a>
 
@@ -44256,7 +44337,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-FIND .
 126 CONSTANT SC-FIND
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1547).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1550).
 
 <a id="w-47524150484943533a53432d47"></a>
 
@@ -44290,7 +44371,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-G .
 10 CONSTANT SC-G
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1431).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1434).
 
 <a id="w-47524150484943533a53432d4752415645"></a>
 
@@ -44324,7 +44405,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-GRAVE .
 53 CONSTANT SC-GRAVE
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1474).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1477).
 
 <a id="w-47524150484943533a53432d48"></a>
 
@@ -44358,7 +44439,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-H .
 11 CONSTANT SC-H
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1432).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1435).
 
 <a id="w-47524150484943533a53432d48454c50"></a>
 
@@ -44392,7 +44473,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-HELP .
 117 CONSTANT SC-HELP
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1538).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1541).
 
 <a id="w-47524150484943533a53432d484f4d45"></a>
 
@@ -44426,7 +44507,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-HOME .
 74 CONSTANT SC-HOME
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1495).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1498).
 
 <a id="w-47524150484943533a53432d49"></a>
 
@@ -44460,7 +44541,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-I .
 12 CONSTANT SC-I
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1433).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1436).
 
 <a id="w-47524150484943533a53432d494e53455254"></a>
 
@@ -44494,7 +44575,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-INSERT .
 73 CONSTANT SC-INSERT
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1494).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1497).
 
 <a id="w-47524150484943533a53432d494e5445524e4154494f4e414c31"></a>
 
@@ -44528,7 +44609,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-INTERNATIONAL1 .
 135 CONSTANT SC-INTERNATIONAL1
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1556).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1559).
 
 <a id="w-47524150484943533a53432d494e5445524e4154494f4e414c32"></a>
 
@@ -44562,7 +44643,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-INTERNATIONAL2 .
 136 CONSTANT SC-INTERNATIONAL2
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1557).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1560).
 
 <a id="w-47524150484943533a53432d494e5445524e4154494f4e414c33"></a>
 
@@ -44596,7 +44677,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-INTERNATIONAL3 .
 137 CONSTANT SC-INTERNATIONAL3
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1558).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1561).
 
 <a id="w-47524150484943533a53432d494e5445524e4154494f4e414c34"></a>
 
@@ -44630,7 +44711,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-INTERNATIONAL4 .
 138 CONSTANT SC-INTERNATIONAL4
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1559).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1562).
 
 <a id="w-47524150484943533a53432d494e5445524e4154494f4e414c35"></a>
 
@@ -44664,7 +44745,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-INTERNATIONAL5 .
 139 CONSTANT SC-INTERNATIONAL5
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1560).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1563).
 
 <a id="w-47524150484943533a53432d494e5445524e4154494f4e414c36"></a>
 
@@ -44698,7 +44779,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-INTERNATIONAL6 .
 140 CONSTANT SC-INTERNATIONAL6
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1561).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1564).
 
 <a id="w-47524150484943533a53432d494e5445524e4154494f4e414c37"></a>
 
@@ -44732,7 +44813,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-INTERNATIONAL7 .
 141 CONSTANT SC-INTERNATIONAL7
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1562).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1565).
 
 <a id="w-47524150484943533a53432d494e5445524e4154494f4e414c38"></a>
 
@@ -44766,7 +44847,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-INTERNATIONAL8 .
 142 CONSTANT SC-INTERNATIONAL8
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1563).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1566).
 
 <a id="w-47524150484943533a53432d494e5445524e4154494f4e414c39"></a>
 
@@ -44800,7 +44881,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-INTERNATIONAL9 .
 143 CONSTANT SC-INTERNATIONAL9
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1564).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1567).
 
 <a id="w-47524150484943533a53432d4a"></a>
 
@@ -44834,7 +44915,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-J .
 13 CONSTANT SC-J
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1434).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1437).
 
 <a id="w-47524150484943533a53432d4b"></a>
 
@@ -44868,7 +44949,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-K .
 14 CONSTANT SC-K
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1435).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1438).
 
 <a id="w-47524150484943533a53432d4b502d30"></a>
 
@@ -44902,7 +44983,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-KP-0 .
 98 CONSTANT SC-KP-0
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1519).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1522).
 
 <a id="w-47524150484943533a53432d4b502d3030"></a>
 
@@ -44936,7 +45017,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-KP-00 .
 176 CONSTANT SC-KP-00
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1586).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1589).
 
 <a id="w-47524150484943533a53432d4b502d303030"></a>
 
@@ -44970,7 +45051,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-KP-000 .
 177 CONSTANT SC-KP-000
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1587).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1590).
 
 <a id="w-47524150484943533a53432d4b502d31"></a>
 
@@ -45004,7 +45085,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-KP-1 .
 89 CONSTANT SC-KP-1
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1510).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1513).
 
 <a id="w-47524150484943533a53432d4b502d32"></a>
 
@@ -45038,7 +45119,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-KP-2 .
 90 CONSTANT SC-KP-2
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1511).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1514).
 
 <a id="w-47524150484943533a53432d4b502d33"></a>
 
@@ -45072,7 +45153,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-KP-3 .
 91 CONSTANT SC-KP-3
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1512).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1515).
 
 <a id="w-47524150484943533a53432d4b502d34"></a>
 
@@ -45106,7 +45187,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-KP-4 .
 92 CONSTANT SC-KP-4
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1513).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1516).
 
 <a id="w-47524150484943533a53432d4b502d35"></a>
 
@@ -45140,7 +45221,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-KP-5 .
 93 CONSTANT SC-KP-5
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1514).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1517).
 
 <a id="w-47524150484943533a53432d4b502d36"></a>
 
@@ -45174,7 +45255,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-KP-6 .
 94 CONSTANT SC-KP-6
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1515).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1518).
 
 <a id="w-47524150484943533a53432d4b502d37"></a>
 
@@ -45208,7 +45289,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-KP-7 .
 95 CONSTANT SC-KP-7
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1516).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1519).
 
 <a id="w-47524150484943533a53432d4b502d38"></a>
 
@@ -45242,7 +45323,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-KP-8 .
 96 CONSTANT SC-KP-8
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1517).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1520).
 
 <a id="w-47524150484943533a53432d4b502d39"></a>
 
@@ -45276,7 +45357,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-KP-9 .
 97 CONSTANT SC-KP-9
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1518).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1521).
 
 <a id="w-47524150484943533a53432d4b502d41"></a>
 
@@ -45310,7 +45391,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-KP-A .
 188 CONSTANT SC-KP-A
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1598).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1601).
 
 <a id="w-47524150484943533a53432d4b502d414d50455253414e44"></a>
 
@@ -45344,7 +45425,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-KP-AMPERSAND .
 199 CONSTANT SC-KP-AMPERSAND
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1609).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1612).
 
 <a id="w-47524150484943533a53432d4b502d4154"></a>
 
@@ -45378,7 +45459,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-KP-AT .
 206 CONSTANT SC-KP-AT
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1616).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1619).
 
 <a id="w-47524150484943533a53432d4b502d42"></a>
 
@@ -45412,7 +45493,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-KP-B .
 189 CONSTANT SC-KP-B
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1599).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1602).
 
 <a id="w-47524150484943533a53432d4b502d4241434b5350414345"></a>
 
@@ -45446,7 +45527,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-KP-BACKSPACE .
 187 CONSTANT SC-KP-BACKSPACE
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1597).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1600).
 
 <a id="w-47524150484943533a53432d4b502d42494e415259"></a>
 
@@ -45480,7 +45561,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-KP-BINARY .
 218 CONSTANT SC-KP-BINARY
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1628).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1631).
 
 <a id="w-47524150484943533a53432d4b502d43"></a>
 
@@ -45514,7 +45595,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-KP-C .
 190 CONSTANT SC-KP-C
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1600).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1603).
 
 <a id="w-47524150484943533a53432d4b502d434c454152"></a>
 
@@ -45548,7 +45629,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-KP-CLEAR .
 216 CONSTANT SC-KP-CLEAR
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1626).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1629).
 
 <a id="w-47524150484943533a53432d4b502d434c454152454e545259"></a>
 
@@ -45582,7 +45663,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-KP-CLEARENTRY .
 217 CONSTANT SC-KP-CLEARENTRY
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1627).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1630).
 
 <a id="w-47524150484943533a53432d4b502d434f4c4f4e"></a>
 
@@ -45616,7 +45697,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-KP-COLON .
 203 CONSTANT SC-KP-COLON
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1613).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1616).
 
 <a id="w-47524150484943533a53432d4b502d434f4d4d41"></a>
 
@@ -45650,7 +45731,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-KP-COMMA .
 133 CONSTANT SC-KP-COMMA
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1554).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1557).
 
 <a id="w-47524150484943533a53432d4b502d44"></a>
 
@@ -45684,7 +45765,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-KP-D .
 191 CONSTANT SC-KP-D
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1601).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1604).
 
 <a id="w-47524150484943533a53432d4b502d44424c414d50455253414e44"></a>
 
@@ -45718,7 +45799,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-KP-DBLAMPERSAND .
 200 CONSTANT SC-KP-DBLAMPERSAND
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1610).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1613).
 
 <a id="w-47524150484943533a53432d4b502d44424c564552544943414c424152"></a>
 
@@ -45752,7 +45833,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-KP-DBLVERTICALBAR .
 202 CONSTANT SC-KP-DBLVERTICALBAR
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1612).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1615).
 
 <a id="w-47524150484943533a53432d4b502d444543494d414c"></a>
 
@@ -45786,7 +45867,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-KP-DECIMAL .
 220 CONSTANT SC-KP-DECIMAL
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1630).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1633).
 
 <a id="w-47524150484943533a53432d4b502d444956494445"></a>
 
@@ -45820,7 +45901,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-KP-DIVIDE .
 84 CONSTANT SC-KP-DIVIDE
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1505).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1508).
 
 <a id="w-47524150484943533a53432d4b502d45"></a>
 
@@ -45854,7 +45935,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-KP-E .
 192 CONSTANT SC-KP-E
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1602).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1605).
 
 <a id="w-47524150484943533a53432d4b502d454e544552"></a>
 
@@ -45888,7 +45969,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-KP-ENTER .
 88 CONSTANT SC-KP-ENTER
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1509).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1512).
 
 <a id="w-47524150484943533a53432d4b502d455155414c53"></a>
 
@@ -45922,7 +46003,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-KP-EQUALS .
 103 CONSTANT SC-KP-EQUALS
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1524).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1527).
 
 <a id="w-47524150484943533a53432d4b502d455155414c534153343030"></a>
 
@@ -45956,7 +46037,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-KP-EQUALSAS400 .
 134 CONSTANT SC-KP-EQUALSAS400
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1555).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1558).
 
 <a id="w-47524150484943533a53432d4b502d4558434c414d"></a>
 
@@ -45990,7 +46071,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-KP-EXCLAM .
 207 CONSTANT SC-KP-EXCLAM
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1617).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1620).
 
 <a id="w-47524150484943533a53432d4b502d46"></a>
 
@@ -46024,7 +46105,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-KP-F .
 193 CONSTANT SC-KP-F
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1603).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1606).
 
 <a id="w-47524150484943533a53432d4b502d47524541544552"></a>
 
@@ -46058,7 +46139,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-KP-GREATER .
 198 CONSTANT SC-KP-GREATER
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1608).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1611).
 
 <a id="w-47524150484943533a53432d4b502d48415348"></a>
 
@@ -46092,7 +46173,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-KP-HASH .
 204 CONSTANT SC-KP-HASH
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1614).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1617).
 
 <a id="w-47524150484943533a53432d4b502d48455841444543494d414c"></a>
 
@@ -46126,7 +46207,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-KP-HEXADECIMAL .
 221 CONSTANT SC-KP-HEXADECIMAL
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1631).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1634).
 
 <a id="w-47524150484943533a53432d4b502d4c4546544252414345"></a>
 
@@ -46160,7 +46241,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-KP-LEFTBRACE .
 184 CONSTANT SC-KP-LEFTBRACE
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1594).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1597).
 
 <a id="w-47524150484943533a53432d4b502d4c454654504152454e"></a>
 
@@ -46194,7 +46275,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-KP-LEFTPAREN .
 182 CONSTANT SC-KP-LEFTPAREN
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1592).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1595).
 
 <a id="w-47524150484943533a53432d4b502d4c455353"></a>
 
@@ -46228,7 +46309,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-KP-LESS .
 197 CONSTANT SC-KP-LESS
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1607).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1610).
 
 <a id="w-47524150484943533a53432d4b502d4d454d414444"></a>
 
@@ -46262,7 +46343,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-KP-MEMADD .
 211 CONSTANT SC-KP-MEMADD
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1621).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1624).
 
 <a id="w-47524150484943533a53432d4b502d4d454d434c454152"></a>
 
@@ -46296,7 +46377,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-KP-MEMCLEAR .
 210 CONSTANT SC-KP-MEMCLEAR
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1620).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1623).
 
 <a id="w-47524150484943533a53432d4b502d4d454d444956494445"></a>
 
@@ -46330,7 +46411,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-KP-MEMDIVIDE .
 214 CONSTANT SC-KP-MEMDIVIDE
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1624).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1627).
 
 <a id="w-47524150484943533a53432d4b502d4d454d4d554c5449504c59"></a>
 
@@ -46364,7 +46445,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-KP-MEMMULTIPLY .
 213 CONSTANT SC-KP-MEMMULTIPLY
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1623).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1626).
 
 <a id="w-47524150484943533a53432d4b502d4d454d524543414c4c"></a>
 
@@ -46398,7 +46479,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-KP-MEMRECALL .
 209 CONSTANT SC-KP-MEMRECALL
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1619).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1622).
 
 <a id="w-47524150484943533a53432d4b502d4d454d53544f5245"></a>
 
@@ -46432,7 +46513,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-KP-MEMSTORE .
 208 CONSTANT SC-KP-MEMSTORE
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1618).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1621).
 
 <a id="w-47524150484943533a53432d4b502d4d454d5355425452414354"></a>
 
@@ -46466,7 +46547,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-KP-MEMSUBTRACT .
 212 CONSTANT SC-KP-MEMSUBTRACT
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1622).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1625).
 
 <a id="w-47524150484943533a53432d4b502d4d494e5553"></a>
 
@@ -46500,7 +46581,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-KP-MINUS .
 86 CONSTANT SC-KP-MINUS
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1507).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1510).
 
 <a id="w-47524150484943533a53432d4b502d4d554c5449504c59"></a>
 
@@ -46534,7 +46615,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-KP-MULTIPLY .
 85 CONSTANT SC-KP-MULTIPLY
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1506).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1509).
 
 <a id="w-47524150484943533a53432d4b502d4f4354414c"></a>
 
@@ -46568,7 +46649,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-KP-OCTAL .
 219 CONSTANT SC-KP-OCTAL
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1629).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1632).
 
 <a id="w-47524150484943533a53432d4b502d50455243454e54"></a>
 
@@ -46602,7 +46683,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-KP-PERCENT .
 196 CONSTANT SC-KP-PERCENT
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1606).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1609).
 
 <a id="w-47524150484943533a53432d4b502d504552494f44"></a>
 
@@ -46636,7 +46717,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-KP-PERIOD .
 99 CONSTANT SC-KP-PERIOD
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1520).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1523).
 
 <a id="w-47524150484943533a53432d4b502d504c5553"></a>
 
@@ -46670,7 +46751,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-KP-PLUS .
 87 CONSTANT SC-KP-PLUS
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1508).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1511).
 
 <a id="w-47524150484943533a53432d4b502d504c55534d494e5553"></a>
 
@@ -46704,7 +46785,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-KP-PLUSMINUS .
 215 CONSTANT SC-KP-PLUSMINUS
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1625).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1628).
 
 <a id="w-47524150484943533a53432d4b502d504f574552"></a>
 
@@ -46738,7 +46819,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-KP-POWER .
 195 CONSTANT SC-KP-POWER
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1605).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1608).
 
 <a id="w-47524150484943533a53432d4b502d52494748544252414345"></a>
 
@@ -46772,7 +46853,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-KP-RIGHTBRACE .
 185 CONSTANT SC-KP-RIGHTBRACE
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1595).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1598).
 
 <a id="w-47524150484943533a53432d4b502d5249474854504152454e"></a>
 
@@ -46806,7 +46887,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-KP-RIGHTPAREN .
 183 CONSTANT SC-KP-RIGHTPAREN
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1593).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1596).
 
 <a id="w-47524150484943533a53432d4b502d5350414345"></a>
 
@@ -46840,7 +46921,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-KP-SPACE .
 205 CONSTANT SC-KP-SPACE
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1615).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1618).
 
 <a id="w-47524150484943533a53432d4b502d544142"></a>
 
@@ -46874,7 +46955,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-KP-TAB .
 186 CONSTANT SC-KP-TAB
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1596).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1599).
 
 <a id="w-47524150484943533a53432d4b502d564552544943414c424152"></a>
 
@@ -46908,7 +46989,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-KP-VERTICALBAR .
 201 CONSTANT SC-KP-VERTICALBAR
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1611).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1614).
 
 <a id="w-47524150484943533a53432d4b502d584f52"></a>
 
@@ -46942,7 +47023,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-KP-XOR .
 194 CONSTANT SC-KP-XOR
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1604).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1607).
 
 <a id="w-47524150484943533a53432d4c"></a>
 
@@ -46976,7 +47057,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-L .
 15 CONSTANT SC-L
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1436).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1439).
 
 <a id="w-47524150484943533a53432d4c414c54"></a>
 
@@ -47010,7 +47091,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-LALT .
 226 CONSTANT SC-LALT
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1634).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1637).
 
 <a id="w-47524150484943533a53432d4c414e4731"></a>
 
@@ -47044,7 +47125,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-LANG1 .
 144 CONSTANT SC-LANG1
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1565).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1568).
 
 <a id="w-47524150484943533a53432d4c414e4732"></a>
 
@@ -47078,7 +47159,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-LANG2 .
 145 CONSTANT SC-LANG2
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1566).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1569).
 
 <a id="w-47524150484943533a53432d4c414e4733"></a>
 
@@ -47112,7 +47193,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-LANG3 .
 146 CONSTANT SC-LANG3
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1567).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1570).
 
 <a id="w-47524150484943533a53432d4c414e4734"></a>
 
@@ -47146,7 +47227,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-LANG4 .
 147 CONSTANT SC-LANG4
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1568).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1571).
 
 <a id="w-47524150484943533a53432d4c414e4735"></a>
 
@@ -47180,7 +47261,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-LANG5 .
 148 CONSTANT SC-LANG5
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1569).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1572).
 
 <a id="w-47524150484943533a53432d4c414e4736"></a>
 
@@ -47214,7 +47295,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-LANG6 .
 149 CONSTANT SC-LANG6
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1570).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1573).
 
 <a id="w-47524150484943533a53432d4c414e4737"></a>
 
@@ -47248,7 +47329,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-LANG7 .
 150 CONSTANT SC-LANG7
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1571).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1574).
 
 <a id="w-47524150484943533a53432d4c414e4738"></a>
 
@@ -47282,7 +47363,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-LANG8 .
 151 CONSTANT SC-LANG8
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1572).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1575).
 
 <a id="w-47524150484943533a53432d4c414e4739"></a>
 
@@ -47316,7 +47397,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-LANG9 .
 152 CONSTANT SC-LANG9
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1573).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1576).
 
 <a id="w-47524150484943533a53432d4c4354524c"></a>
 
@@ -47350,7 +47431,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-LCTRL .
 224 CONSTANT SC-LCTRL
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1632).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1635).
 
 <a id="w-47524150484943533a53432d4c454654"></a>
 
@@ -47384,7 +47465,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-LEFT .
 80 CONSTANT SC-LEFT
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1501).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1504).
 
 <a id="w-47524150484943533a53432d4c454654425241434b4554"></a>
 
@@ -47418,7 +47499,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-LEFTBRACKET .
 47 CONSTANT SC-LEFTBRACKET
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1468).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1471).
 
 <a id="w-47524150484943533a53432d4c475549"></a>
 
@@ -47452,7 +47533,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-LGUI .
 227 CONSTANT SC-LGUI
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1635).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1638).
 
 <a id="w-47524150484943533a53432d4c4f434b494e47434150534c4f434b"></a>
 
@@ -47486,7 +47567,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-LOCKINGCAPSLOCK .
 130 CONSTANT SC-LOCKINGCAPSLOCK
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1551).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1554).
 
 <a id="w-47524150484943533a53432d4c4f434b494e474e554d4c4f434b"></a>
 
@@ -47520,7 +47601,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-LOCKINGNUMLOCK .
 131 CONSTANT SC-LOCKINGNUMLOCK
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1552).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1555).
 
 <a id="w-47524150484943533a53432d4c4f434b494e475343524f4c4c4c4f434b"></a>
 
@@ -47554,7 +47635,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-LOCKINGSCROLLLOCK .
 132 CONSTANT SC-LOCKINGSCROLLLOCK
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1553).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1556).
 
 <a id="w-47524150484943533a53432d4c5348494654"></a>
 
@@ -47590,7 +47671,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-LSHIFT .
 225 CONSTANT SC-LSHIFT
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1633).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1636).
 
 <a id="w-47524150484943533a53432d4d"></a>
 
@@ -47624,7 +47705,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-M .
 16 CONSTANT SC-M
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1437).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1440).
 
 <a id="w-47524150484943533a53432d4d454e55"></a>
 
@@ -47658,7 +47739,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-MENU .
 118 CONSTANT SC-MENU
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1539).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1542).
 
 <a id="w-47524150484943533a53432d4d494e5553"></a>
 
@@ -47692,7 +47773,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-MINUS .
 45 CONSTANT SC-MINUS
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1466).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1469).
 
 <a id="w-47524150484943533a53432d4d555445"></a>
 
@@ -47726,7 +47807,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-MUTE .
 127 CONSTANT SC-MUTE
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1548).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1551).
 
 <a id="w-47524150484943533a53432d4e"></a>
 
@@ -47760,7 +47841,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-N .
 17 CONSTANT SC-N
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1438).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1441).
 
 <a id="w-47524150484943533a53432d4e4f4e55534241434b534c415348"></a>
 
@@ -47794,7 +47875,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-NONUSBACKSLASH .
 100 CONSTANT SC-NONUSBACKSLASH
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1521).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1524).
 
 <a id="w-47524150484943533a53432d4e4f4e555348415348"></a>
 
@@ -47828,7 +47909,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-NONUSHASH .
 50 CONSTANT SC-NONUSHASH
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1471).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1474).
 
 <a id="w-47524150484943533a53432d4e554d4c4f434b434c454152"></a>
 
@@ -47862,7 +47943,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-NUMLOCKCLEAR .
 83 CONSTANT SC-NUMLOCKCLEAR
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1504).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1507).
 
 <a id="w-47524150484943533a53432d4f"></a>
 
@@ -47896,7 +47977,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-O .
 18 CONSTANT SC-O
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1439).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1442).
 
 <a id="w-47524150484943533a53432d4f504552"></a>
 
@@ -47930,7 +48011,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-OPER .
 161 CONSTANT SC-OPER
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1582).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1585).
 
 <a id="w-47524150484943533a53432d4f5554"></a>
 
@@ -47964,7 +48045,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-OUT .
 160 CONSTANT SC-OUT
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1581).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1584).
 
 <a id="w-47524150484943533a53432d50"></a>
 
@@ -47998,7 +48079,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-P .
 19 CONSTANT SC-P
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1440).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1443).
 
 <a id="w-47524150484943533a53432d50414745444f574e"></a>
 
@@ -48032,7 +48113,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-PAGEDOWN .
 78 CONSTANT SC-PAGEDOWN
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1499).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1502).
 
 <a id="w-47524150484943533a53432d504147455550"></a>
 
@@ -48066,7 +48147,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-PAGEUP .
 75 CONSTANT SC-PAGEUP
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1496).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1499).
 
 <a id="w-47524150484943533a53432d5041535445"></a>
 
@@ -48100,7 +48181,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-PASTE .
 125 CONSTANT SC-PASTE
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1546).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1549).
 
 <a id="w-47524150484943533a53432d5041555345"></a>
 
@@ -48134,7 +48215,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-PAUSE .
 72 CONSTANT SC-PAUSE
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1493).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1496).
 
 <a id="w-47524150484943533a53432d504552494f44"></a>
 
@@ -48168,7 +48249,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-PERIOD .
 55 CONSTANT SC-PERIOD
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1476).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1479).
 
 <a id="w-47524150484943533a53432d504f574552"></a>
 
@@ -48202,7 +48283,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-POWER .
 102 CONSTANT SC-POWER
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1523).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1526).
 
 <a id="w-47524150484943533a53432d5052455353"></a>
 
@@ -48238,7 +48319,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-PRESS .
 1 CONSTANT SC-PRESS
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1640).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1643).
 
 <a id="w-47524150484943533a53432d5052494e5453435245454e"></a>
 
@@ -48272,7 +48353,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-PRINTSCREEN .
 70 CONSTANT SC-PRINTSCREEN
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1491).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1494).
 
 <a id="w-47524150484943533a53432d5052494f52"></a>
 
@@ -48306,7 +48387,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-PRIOR .
 157 CONSTANT SC-PRIOR
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1578).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1581).
 
 <a id="w-47524150484943533a53432d51"></a>
 
@@ -48340,7 +48421,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-Q .
 20 CONSTANT SC-Q
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1441).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1444).
 
 <a id="w-47524150484943533a53432d52"></a>
 
@@ -48374,7 +48455,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-R .
 21 CONSTANT SC-R
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1442).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1445).
 
 <a id="w-47524150484943533a53432d52414c54"></a>
 
@@ -48408,7 +48489,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-RALT .
 230 CONSTANT SC-RALT
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1638).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1641).
 
 <a id="w-47524150484943533a53432d524354524c"></a>
 
@@ -48442,7 +48523,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-RCTRL .
 228 CONSTANT SC-RCTRL
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1636).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1639).
 
 <a id="w-47524150484943533a53432d52454c45415345"></a>
 
@@ -48478,7 +48559,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-RELEASE .
 2 CONSTANT SC-RELEASE
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1641).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1644).
 
 <a id="w-47524150484943533a53432d524553594e43"></a>
 
@@ -48512,7 +48593,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-RESYNC .
 3 CONSTANT SC-RESYNC
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1642).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1645).
 
 <a id="w-47524150484943533a53432d52455455524e"></a>
 
@@ -48546,7 +48627,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-RETURN .
 40 CONSTANT SC-RETURN
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1461).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1464).
 
 <a id="w-47524150484943533a53432d52455455524e32"></a>
 
@@ -48580,7 +48661,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-RETURN2 .
 158 CONSTANT SC-RETURN2
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1579).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1582).
 
 <a id="w-47524150484943533a53432d52475549"></a>
 
@@ -48614,7 +48695,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-RGUI .
 231 CONSTANT SC-RGUI
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1639).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1642).
 
 <a id="w-47524150484943533a53432d5249474854"></a>
 
@@ -48648,7 +48729,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-RIGHT .
 79 CONSTANT SC-RIGHT
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1500).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1503).
 
 <a id="w-47524150484943533a53432d5249474854425241434b4554"></a>
 
@@ -48682,7 +48763,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-RIGHTBRACKET .
 48 CONSTANT SC-RIGHTBRACKET
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1469).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1472).
 
 <a id="w-47524150484943533a53432d525348494654"></a>
 
@@ -48718,7 +48799,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-RSHIFT .
 229 CONSTANT SC-RSHIFT
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1637).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1640).
 
 <a id="w-47524150484943533a53432d53"></a>
 
@@ -48752,7 +48833,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-S .
 22 CONSTANT SC-S
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1443).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1446).
 
 <a id="w-47524150484943533a53432d5343524f4c4c4c4f434b"></a>
 
@@ -48786,7 +48867,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-SCROLLLOCK .
 71 CONSTANT SC-SCROLLLOCK
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1492).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1495).
 
 <a id="w-47524150484943533a53432d53454c454354"></a>
 
@@ -48820,7 +48901,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-SELECT .
 119 CONSTANT SC-SELECT
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1540).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1543).
 
 <a id="w-47524150484943533a53432d53454d49434f4c4f4e"></a>
 
@@ -48854,7 +48935,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-SEMICOLON .
 51 CONSTANT SC-SEMICOLON
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1472).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1475).
 
 <a id="w-47524150484943533a53432d534550415241544f52"></a>
 
@@ -48888,7 +48969,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-SEPARATOR .
 159 CONSTANT SC-SEPARATOR
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1580).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1583).
 
 <a id="w-47524150484943533a53432d534c415348"></a>
 
@@ -48922,7 +49003,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-SLASH .
 56 CONSTANT SC-SLASH
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1477).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1480).
 
 <a id="w-47524150484943533a53432d5350414345"></a>
 
@@ -48956,7 +49037,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-SPACE .
 44 CONSTANT SC-SPACE
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1465).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1468).
 
 <a id="w-47524150484943533a53432d53544f50"></a>
 
@@ -48990,7 +49071,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-STOP .
 120 CONSTANT SC-STOP
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1541).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1544).
 
 <a id="w-47524150484943533a53432d535953524551"></a>
 
@@ -49024,7 +49105,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-SYSREQ .
 154 CONSTANT SC-SYSREQ
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1575).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1578).
 
 <a id="w-47524150484943533a53432d54"></a>
 
@@ -49058,7 +49139,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-T .
 23 CONSTANT SC-T
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1444).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1447).
 
 <a id="w-47524150484943533a53432d544142"></a>
 
@@ -49092,7 +49173,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-TAB .
 43 CONSTANT SC-TAB
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1464).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1467).
 
 <a id="w-47524150484943533a53432d54484f5553414e4453534550415241544f52"></a>
 
@@ -49126,7 +49207,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-THOUSANDSSEPARATOR .
 178 CONSTANT SC-THOUSANDSSEPARATOR
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1588).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1591).
 
 <a id="w-47524150484943533a53432d55"></a>
 
@@ -49160,7 +49241,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-U .
 24 CONSTANT SC-U
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1445).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1448).
 
 <a id="w-47524150484943533a53432d554e444f"></a>
 
@@ -49194,7 +49275,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-UNDO .
 122 CONSTANT SC-UNDO
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1543).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1546).
 
 <a id="w-47524150484943533a53432d5550"></a>
 
@@ -49228,7 +49309,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-UP .
 82 CONSTANT SC-UP
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1503).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1506).
 
 <a id="w-47524150484943533a53432d56"></a>
 
@@ -49262,7 +49343,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-V .
 25 CONSTANT SC-V
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1446).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1449).
 
 <a id="w-47524150484943533a53432d564f4c554d45444f574e"></a>
 
@@ -49296,7 +49377,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-VOLUMEDOWN .
 129 CONSTANT SC-VOLUMEDOWN
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1550).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1553).
 
 <a id="w-47524150484943533a53432d564f4c554d455550"></a>
 
@@ -49330,7 +49411,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-VOLUMEUP .
 128 CONSTANT SC-VOLUMEUP
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1549).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1552).
 
 <a id="w-47524150484943533a53432d57"></a>
 
@@ -49364,7 +49445,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-W .
 26 CONSTANT SC-W
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1447).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1450).
 
 <a id="w-47524150484943533a53432d58"></a>
 
@@ -49398,7 +49479,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-X .
 27 CONSTANT SC-X
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1448).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1451).
 
 <a id="w-47524150484943533a53432d59"></a>
 
@@ -49432,7 +49513,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-Y .
 28 CONSTANT SC-Y
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1449).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1452).
 
 <a id="w-47524150484943533a53432d5a"></a>
 
@@ -49466,7 +49547,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-Z .
 29 CONSTANT SC-Z
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1450).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1453).
 
 <a id="w-47524150484943533a5343414e2d48454c443f"></a>
 
@@ -49500,7 +49581,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-LSHIFT SCAN-HELD? .
 : SCAN-HELD? ( scan -- flag ) GFX-SCAN-HELD? ;
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1419).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1422).
 
 <a id="w-47524150484943533a5343414e2d494e5055543f"></a>
 
@@ -49536,7 +49617,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SCAN-INPUT? .
 : SCAN-INPUT? ( -- flag ) GFX-SCAN-INPUT? ;
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1415).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1418).
 
 <a id="w-47524150484943533a5343414e2d535550504f525445443f"></a>
 
@@ -49570,7 +49651,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-A SCAN-SUPPORTED? .
 : SCAN-SUPPORTED? ( scan -- flag ) GFX-SCAN-SUPPORTED? ;
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1417).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1420).
 
 <a id="w-47524150484943533a53435245454e"></a>
 
@@ -49606,7 +49687,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SCREEN . PREVIOUS
 0 CONSTANT SCREEN
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1224).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1227).
 
 <a id="w-47524150484943533a53484f57"></a>
 
@@ -49653,7 +49734,7 @@ SHOW
    (TERMINAL-MODE) @ IF GFX-SHOW-SIXEL ELSE GFX-SHOW-BLOCKS THEN ;
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1170).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1173).
 
 <a id="w-47524150484943533a53595354454d2d464f4e54"></a>
 
@@ -49691,7 +49772,7 @@ REQUIRE-GRAPHICS ALSO GRAPHICS : T S" Fake" 8 SYSTEM-FONT ; ' T CATCH
 : SYSTEM-FONT ( c-addr u height -- )   GFX-FONT-SYSTEM THROW ;
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1259).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1262).
 
 <a id="w-47524150484943533a54434c"></a>
 
@@ -49729,7 +49810,7 @@ S" a" TCL
 : TCL ( c-addr u -- )   TCL-EVAL 2DROP ;
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1217).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1220).
 
 <a id="w-47524150484943533a54434c2d4552524f5224"></a>
 
@@ -49767,7 +49848,7 @@ TCL-ERROR$ TYPE S" set y {}" TCL-EVAL NIP S" s" TCL-EVAL TYPE
 : TCL-ERROR$ ( -- c-addr u )   GFX-TCL-ERROR ;
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1219).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1222).
 
 <a id="w-47524150484943533a54434c2d4556414c"></a>
 
@@ -49805,7 +49886,7 @@ S" b" TCL-EVAL TYPE
 : TCL-EVAL ( c-addr u -- c-addr2 u2 )   GFX-TCL IF 2DROP -273 THROW THEN ;
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1218).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1221).
 
 <a id="w-47524150484943533a54434c2d4556454e54"></a>
 
@@ -49843,7 +49924,7 @@ TCL-EVENT
 : TCL-EVENT ( -- c-addr u true | false )   GFX-TCL-EVENT ;
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1220).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1223).
 
 <a id="w-47524150484943533a54434c2d50524f4752414d"></a>
 
@@ -49881,7 +49962,7 @@ S" tclsh9" TCL-PROGRAM S" y" TCL-EVAL TYPE TCL-STOP
 : TCL-PROGRAM ( c-addr u -- )   GFX-TCL-PROGRAM ;
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1221).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1224).
 
 <a id="w-47524150484943533a54434c2d53544f50"></a>
 
@@ -49919,7 +50000,7 @@ TCL-STOP
 : TCL-STOP ( -- )   GFX-TCL-STOP ;
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1222).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1225).
 
 <a id="w-47524150484943533a5445524d494e414c2d424c4f434b53"></a>
 
@@ -49957,7 +50038,7 @@ TERMINAL-BLOCKS DISPLAY-WINDOW SHOW
 : TERMINAL-BLOCKS ( -- )   0 (TERMINAL-MODE) ! ;
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1180).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1183).
 
 <a id="w-47524150484943533a5445524d494e414c2d534958454c"></a>
 
@@ -49995,7 +50076,7 @@ TERMINAL-SIXEL SHOW
 : TERMINAL-SIXEL ( -- )   1 (TERMINAL-MODE) ! ;
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1181).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1184).
 
 <a id="w-47524150484943533a54455854"></a>
 
@@ -50042,7 +50123,7 @@ S\" A\tあ" 1 1 TEXT
    REPEAT ;
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1255).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1258).
 
 <a id="w-47524150484943533a544558542d484549474854"></a>
 
@@ -50080,7 +50161,7 @@ The height of a line of TEXT, at the current scale (FORTH/Sigma graphics).
 : TEXT-HEIGHT ( -- h )   GFX-FONT-HEIGHT (TEXT-SCALE) @ * ;
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1256).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1259).
 
 <a id="w-47524150484943533a544558542d5343414c45"></a>
 
@@ -50118,7 +50199,7 @@ Draw each pixel of TEXT's font as n by n pixels, 1 to 256; 1 at first (FORTH/Sig
 : TEXT-SCALE ( n -- )   DUP 1 257 WITHIN 0= IF DROP -24 THROW THEN  (TEXT-SCALE) ! ;
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1260).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1263).
 
 <a id="w-47524150484943533a544558542d5749445448"></a>
 
@@ -50161,7 +50242,7 @@ S"  A" 0 0 TEXT S"  A" TEXT-WIDTH
    w (TEXT-SCALE) @ * ;
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1261).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1264).
 
 <a id="w-47524150484943533a5452414e53504152454e54"></a>
 
@@ -50199,7 +50280,7 @@ $7 GFX-CLS 2 TRANSPARENT S 0 0 PUT-IMAGE
 : TRANSPARENT ( rgb|-1 -- )   DUP 0< IF DROP -1 ELSE $FFFFFF AND THEN (TRANSPARENT) ! ;
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1230).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1233).
 
 <a id="w-47524150484943533a57494e444f572d53495a45"></a>
 
@@ -50237,7 +50318,7 @@ Show the image in a window w by h pixels large from the next SHOW, keeping its p
 : WINDOW-SIZE ( w h -- )   GFX-WINDOW-SIZE ;
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1264).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1267).
 
 <a id="w-47524150484943533a582d52414e4745"></a>
 
@@ -50275,7 +50356,7 @@ CLS 1e0 2e0 X-RANGE 0e0 1e0 Y-RANGE AXES
 : X-RANGE { F: lo F: hi -- }   lo hi (CHECK-RANGE)  lo (X-MIN) F!  hi (X-MAX) F! ;
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1294).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1297).
 
 <a id="w-47524150484943533a592d52414e4745"></a>
 
@@ -50313,7 +50394,7 @@ CLS 1e0 2e0 X-RANGE 0e0 1e0 Y-RANGE AXES
 : Y-RANGE { F: lo F: hi -- }   lo hi (CHECK-RANGE)  lo (Y-MIN) F!  hi (Y-MAX) F! ;
 ```
 
-出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1295).
+出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1298).
 
 <a id="w-47524150484943533a28414c50484129"></a>
 
@@ -52890,7 +52971,7 @@ FRAME-1 GUI-ACTIVE @
 VARIABLE GUI-ACTIVE
 ```
 
-出典：[src/core/words_gui.zig](../src/core/words_gui.zig), [HELP](../src/core/help_text.zig#L1137).
+出典：[src/core/words_gui.zig](../src/core/words_gui.zig), [HELP](../src/core/help_text.zig#L1140).
 
 <a id="w-4755493a4755492d41534b"></a>
 
@@ -52931,7 +53012,7 @@ S" Quit?" GUI-ASK 20 20 GFX-PGET DRAWING
    NIP NIP  (END-WAIT)  1 = ;
 ```
 
-出典：[src/core/words_gui.zig](../src/core/words_gui.zig), [HELP](../src/core/help_text.zig#L1132).
+出典：[src/core/words_gui.zig](../src/core/words_gui.zig), [HELP](../src/core/help_text.zig#L1135).
 
 <a id="w-4755493a4755492d4241434b47524f554e44"></a>
 
@@ -52967,7 +53048,7 @@ REQUIRE-GUI ALSO GUI GUI-BACKGROUND . PREVIOUS
 0 CONSTANT GUI-BACKGROUND    \ panels, dialogs, menus, the menu and key bars
 ```
 
-出典：[src/core/words_gui.zig](../src/core/words_gui.zig), [HELP](../src/core/help_text.zig#L1098).
+出典：[src/core/words_gui.zig](../src/core/words_gui.zig), [HELP](../src/core/help_text.zig#L1101).
 
 <a id="w-4755493a4755492d424547494e"></a>
 
@@ -53023,7 +53104,7 @@ Start the GUI of a frame: read the mouse, the keys, and the first gamepad once (
    GUI-FOCUSED @ 1 < GUI-FOCUSED @ (LAST-FOCUS-N) @ > OR IF 1 GUI-FOCUSED ! THEN ;
 ```
 
-出典：[src/core/words_gui.zig](../src/core/words_gui.zig), [HELP](../src/core/help_text.zig#L1114).
+出典：[src/core/words_gui.zig](../src/core/words_gui.zig), [HELP](../src/core/help_text.zig#L1117).
 
 <a id="w-4755493a4755492d424f52444552"></a>
 
@@ -53059,7 +53140,7 @@ REQUIRE-GUI ALSO GUI GUI-BORDER . PREVIOUS
 6 CONSTANT GUI-BORDER
 ```
 
-出典：[src/core/words_gui.zig](../src/core/words_gui.zig), [HELP](../src/core/help_text.zig#L1104).
+出典：[src/core/words_gui.zig](../src/core/words_gui.zig), [HELP](../src/core/help_text.zig#L1107).
 
 <a id="w-4755493a4755492d424f524445522d5749445448"></a>
 
@@ -53097,7 +53178,7 @@ $FF123456 GUI-TEXT GUI-COLOR! GUI-TEXT GUI-COLOR@ 3 GUI-BORDER-WIDTH
 : GUI-BORDER-WIDTH ( n -- )   DUP 0 9 WITHIN 0= IF DROP -24 THROW THEN (BORDER-W) ! ;
 ```
 
-出典：[src/core/words_gui.zig](../src/core/words_gui.zig), [HELP](../src/core/help_text.zig#L1111).
+出典：[src/core/words_gui.zig](../src/core/words_gui.zig), [HELP](../src/core/help_text.zig#L1114).
 
 <a id="w-4755493a4755492d425554544f4e"></a>
 
@@ -53149,7 +53230,7 @@ A button; true when clicked, or Enter or Space was pressed while it has the focu
    clicked ;
 ```
 
-出典：[src/core/words_gui.zig](../src/core/words_gui.zig), [HELP](../src/core/help_text.zig#L1122).
+出典：[src/core/words_gui.zig](../src/core/words_gui.zig), [HELP](../src/core/help_text.zig#L1125).
 
 <a id="w-4755493a4755492d425554544f4e2d53495a45"></a>
 
@@ -53201,7 +53282,7 @@ The size a button of this text takes (FORTH/Sigma GUI).
 : GUI-BUTTON-SIZE ( addr u -- w h )   TEXT-WIDTH (PAD-X) 2* + (BORDER-W) @ 2* +  (ROW-H) ;
 ```
 
-出典：[src/core/words_gui.zig](../src/core/words_gui.zig), [HELP](../src/core/help_text.zig#L1121).
+出典：[src/core/words_gui.zig](../src/core/words_gui.zig), [HELP](../src/core/help_text.zig#L1124).
 
 <a id="w-4755493a4755492d434845434b"></a>
 
@@ -53258,7 +53339,7 @@ VARIABLE GRID : FRAME-1 GUI-BEGIN GRID S" Grid" 10 10 GUI-CHECK GUI-END ;
    changed ;
 ```
 
-出典：[src/core/words_gui.zig](../src/core/words_gui.zig), [HELP](../src/core/help_text.zig#L1123).
+出典：[src/core/words_gui.zig](../src/core/words_gui.zig), [HELP](../src/core/help_text.zig#L1126).
 
 <a id="w-4755493a4755492d43484f4f5345"></a>
 
@@ -53296,7 +53377,7 @@ S" A|B|C" GUI-CHOOSE
 : GUI-CHOOSE ( addr u -- n )   2DUP (LIST-ITEMS) 2!  (ITEMS) ['] (LIST-ITEM) SWAP GUI-CHOOSE-XT ;
 ```
 
-出典：[src/core/words_gui.zig](../src/core/words_gui.zig), [HELP](../src/core/help_text.zig#L1134).
+出典：[src/core/words_gui.zig](../src/core/words_gui.zig), [HELP](../src/core/help_text.zig#L1137).
 
 <a id="w-4755493a4755492d43484f4f53452d5854"></a>
 
@@ -53348,7 +53429,7 @@ GUI-CHOOSE with n items that xt ( i -- c-addr u ) gives; -1 at once without item
    (END-WAIT)  chosen ;
 ```
 
-出典：[src/core/words_gui.zig](../src/core/words_gui.zig), [HELP](../src/core/help_text.zig#L1135).
+出典：[src/core/words_gui.zig](../src/core/words_gui.zig), [HELP](../src/core/help_text.zig#L1138).
 
 <a id="w-4755493a4755492d434f4c4f5221"></a>
 
@@ -53386,7 +53467,7 @@ $FF123456 GUI-TEXT GUI-COLOR! GUI-TEXT GUI-COLOR@ 3 GUI-BORDER-WIDTH
 : GUI-COLOR! ( rgb role -- )   (ROLE) SWAP $FFFFFF AND SWAP ! ;
 ```
 
-出典：[src/core/words_gui.zig](../src/core/words_gui.zig), [HELP](../src/core/help_text.zig#L1109).
+出典：[src/core/words_gui.zig](../src/core/words_gui.zig), [HELP](../src/core/help_text.zig#L1112).
 
 <a id="w-4755493a4755492d434f4c4f5240"></a>
 
@@ -53424,7 +53505,7 @@ REQUIRE-GUI require-gui GUI GUI-FACE GUI-COLOR@ FORTH
 : GUI-COLOR@ ( role -- rgb )   (ROLE) @ ;
 ```
 
-出典：[src/core/words_gui.zig](../src/core/words_gui.zig), [HELP](../src/core/help_text.zig#L1110).
+出典：[src/core/words_gui.zig](../src/core/words_gui.zig), [HELP](../src/core/help_text.zig#L1113).
 
 <a id="w-4755493a4755492d44454641554c54"></a>
 
@@ -53465,7 +53546,7 @@ GUI-DEFAULT
    1 (BORDER-W) !  1 (FOCUS-W) ! ;
 ```
 
-出典：[src/core/words_gui.zig](../src/core/words_gui.zig), [HELP](../src/core/help_text.zig#L1113).
+出典：[src/core/words_gui.zig](../src/core/words_gui.zig), [HELP](../src/core/help_text.zig#L1116).
 
 <a id="w-4755493a4755492d4449414c4f47"></a>
 
@@ -53517,7 +53598,7 @@ A dialog with a message and the buttons "a\|b" in the middle: the button chosen,
    chosen ;
 ```
 
-出典：[src/core/words_gui.zig](../src/core/words_gui.zig), [HELP](../src/core/help_text.zig#L1130).
+出典：[src/core/words_gui.zig](../src/core/words_gui.zig), [HELP](../src/core/help_text.zig#L1133).
 
 <a id="w-4755493a4755492d44495341424c4544"></a>
 
@@ -53553,7 +53634,7 @@ REQUIRE-GUI ALSO GUI GUI-DISABLED . PREVIOUS
 5 CONSTANT GUI-DISABLED      \ the text of parts that cannot be used
 ```
 
-出典：[src/core/words_gui.zig](../src/core/words_gui.zig), [HELP](../src/core/help_text.zig#L1103).
+出典：[src/core/words_gui.zig](../src/core/words_gui.zig), [HELP](../src/core/help_text.zig#L1106).
 
 <a id="w-4755493a4755492d454e41424c45"></a>
 
@@ -53591,7 +53672,7 @@ GUI-BEGIN FALSE GUI-ENABLE S" OK" 10 10 GUI-BUTTON GUI-END GUI-KEY GUI-KEY
 : GUI-ENABLE ( flag -- )   0<> (ENABLED) ! ;
 ```
 
-出典：[src/core/words_gui.zig](../src/core/words_gui.zig), [HELP](../src/core/help_text.zig#L1117).
+出典：[src/core/words_gui.zig](../src/core/words_gui.zig), [HELP](../src/core/help_text.zig#L1120).
 
 <a id="w-4755493a4755492d454e44"></a>
 
@@ -53634,7 +53715,7 @@ End the GUI of a frame: draw the open menu over the other parts (FORTH/Sigma GUI
    (FOCUS-N) @ (LAST-FOCUS-N) ! ;
 ```
 
-出典：[src/core/words_gui.zig](../src/core/words_gui.zig), [HELP](../src/core/help_text.zig#L1115).
+出典：[src/core/words_gui.zig](../src/core/words_gui.zig), [HELP](../src/core/help_text.zig#L1118).
 
 <a id="w-4755493a4755492d46414345"></a>
 
@@ -53670,7 +53751,7 @@ REQUIRE-GUI ALSO GUI GUI-FACE . PREVIOUS
 1 CONSTANT GUI-FACE          \ buttons
 ```
 
-出典：[src/core/words_gui.zig](../src/core/words_gui.zig), [HELP](../src/core/help_text.zig#L1099).
+出典：[src/core/words_gui.zig](../src/core/words_gui.zig), [HELP](../src/core/help_text.zig#L1102).
 
 <a id="w-4755493a4755492d4649454c44"></a>
 
@@ -53764,7 +53845,7 @@ CREATE BUF 8 ALLOT VARIABLE LEN : FRAME-1 GUI-BEGIN BUF 8 LEN 10 10 100 GUI-FIEL
    entered ;
 ```
 
-出典：[src/core/words_gui.zig](../src/core/words_gui.zig), [HELP](../src/core/help_text.zig#L1124).
+出典：[src/core/words_gui.zig](../src/core/words_gui.zig), [HELP](../src/core/help_text.zig#L1127).
 
 <a id="w-4755493a4755492d4649454c442d46414345"></a>
 
@@ -53800,7 +53881,7 @@ REQUIRE-GUI ALSO GUI GUI-FIELD-FACE . PREVIOUS
 7 CONSTANT GUI-FIELD-FACE    \ text fields and check boxes
 ```
 
-出典：[src/core/words_gui.zig](../src/core/words_gui.zig), [HELP](../src/core/help_text.zig#L1105).
+出典：[src/core/words_gui.zig](../src/core/words_gui.zig), [HELP](../src/core/help_text.zig#L1108).
 
 <a id="w-4755493a4755492d464b455953"></a>
 
@@ -53851,7 +53932,7 @@ A function key bar "a\|b\|c" at the bottom: the key, 0 for F1, pressed or clicke
    key ;
 ```
 
-出典：[src/core/words_gui.zig](../src/core/words_gui.zig), [HELP](../src/core/help_text.zig#L1129).
+出典：[src/core/words_gui.zig](../src/core/words_gui.zig), [HELP](../src/core/help_text.zig#L1132).
 
 <a id="w-4755493a4755492d464f435553"></a>
 
@@ -53887,7 +53968,7 @@ REQUIRE-GUI ALSO GUI GUI-FOCUS . PREVIOUS
 8 CONSTANT GUI-FOCUS         \ the border of the part the keys go to
 ```
 
-出典：[src/core/words_gui.zig](../src/core/words_gui.zig), [HELP](../src/core/help_text.zig#L1106).
+出典：[src/core/words_gui.zig](../src/core/words_gui.zig), [HELP](../src/core/help_text.zig#L1109).
 
 <a id="w-4755493a4755492d464f4355532d5749445448"></a>
 
@@ -53923,7 +54004,7 @@ REQUIRE-GUI ALSO GUI 1 GUI-FOCUS-WIDTH
 : GUI-FOCUS-WIDTH ( n -- )   DUP 0 9 WITHIN 0= IF DROP -24 THROW THEN (FOCUS-W) ! ;
 ```
 
-出典：[src/core/words_gui.zig](../src/core/words_gui.zig), [HELP](../src/core/help_text.zig#L1112).
+出典：[src/core/words_gui.zig](../src/core/words_gui.zig), [HELP](../src/core/help_text.zig#L1115).
 
 <a id="w-4755493a4755492d464f4355534544"></a>
 
@@ -53961,7 +54042,7 @@ The variable of the part the keys go to, counted from 1 among the parts that tak
 VARIABLE GUI-FOCUSED
 ```
 
-出典：[src/core/words_gui.zig](../src/core/words_gui.zig), [HELP](../src/core/help_text.zig#L1136).
+出典：[src/core/words_gui.zig](../src/core/words_gui.zig), [HELP](../src/core/help_text.zig#L1139).
 
 <a id="w-4755493a4755492d484f564552"></a>
 
@@ -53997,7 +54078,7 @@ REQUIRE-GUI ALSO GUI GUI-HOVER . PREVIOUS
 2 CONSTANT GUI-HOVER         \ a button under the mouse
 ```
 
-出典：[src/core/words_gui.zig](../src/core/words_gui.zig), [HELP](../src/core/help_text.zig#L1100).
+出典：[src/core/words_gui.zig](../src/core/words_gui.zig), [HELP](../src/core/help_text.zig#L1103).
 
 <a id="w-4755493a4755492d4b4559"></a>
 
@@ -54037,7 +54118,7 @@ GUI-BEGIN FALSE GUI-ENABLE S" OK" 10 10 GUI-BUTTON GUI-END GUI-KEY GUI-KEY
    (KEYS) @  (KEYS) CELL+ (KEYS) (KEY-COUNT) @ 1- CELLS MOVE  -1 (KEY-COUNT) +! ;
 ```
 
-出典：[src/core/words_gui.zig](../src/core/words_gui.zig), [HELP](../src/core/help_text.zig#L1116).
+出典：[src/core/words_gui.zig](../src/core/words_gui.zig), [HELP](../src/core/help_text.zig#L1119).
 
 <a id="w-4755493a4755492d4c4142454c"></a>
 
@@ -54073,7 +54154,7 @@ REQUIRE-GUI ALSO GRAPHICS ALSO GUI 32 32 GFX-INIT S" hi" 0 0 GUI-LABEL
 : GUI-LABEL ( addr u x y -- )   GUI-TEXT (TEXT) ;
 ```
 
-出典：[src/core/words_gui.zig](../src/core/words_gui.zig), [HELP](../src/core/help_text.zig#L1120).
+出典：[src/core/words_gui.zig](../src/core/words_gui.zig), [HELP](../src/core/help_text.zig#L1123).
 
 <a id="w-4755493a4755492d4c495354"></a>
 
@@ -54112,7 +54193,7 @@ VARIABLE PICK : FRAME-1 GUI-BEGIN S" One|Two|Three" PICK 10 10 60 GUI-LIST GUI-E
    addr u (LIST-ITEMS) 2!  ['] (LIST-ITEM) addr u (ITEMS) var x y w GUI-LIST-XT ;
 ```
 
-出典：[src/core/words_gui.zig](../src/core/words_gui.zig), [HELP](../src/core/help_text.zig#L1125).
+出典：[src/core/words_gui.zig](../src/core/words_gui.zig), [HELP](../src/core/help_text.zig#L1128).
 
 <a id="w-4755493a4755492d4c4953542d5854"></a>
 
@@ -54178,7 +54259,7 @@ VARIABLE PICK : FRAME-1 GUI-BEGIN ['] COLOR-NAME 3 PICK 10 10 0 GUI-LIST-XT GUI-
    picked ;
 ```
 
-出典：[src/core/words_gui.zig](../src/core/words_gui.zig), [HELP](../src/core/help_text.zig#L1126).
+出典：[src/core/words_gui.zig](../src/core/words_gui.zig), [HELP](../src/core/help_text.zig#L1129).
 
 <a id="w-4755493a4755492d4d454e55"></a>
 
@@ -54240,7 +54321,7 @@ The items "a\|-\|~b" of the open menu (- a line, ~ cannot be chosen): the item c
    chosen ;
 ```
 
-出典：[src/core/words_gui.zig](../src/core/words_gui.zig), [HELP](../src/core/help_text.zig#L1128).
+出典：[src/core/words_gui.zig](../src/core/words_gui.zig), [HELP](../src/core/help_text.zig#L1131).
 
 <a id="w-4755493a4755492d4d454e552d4954454d"></a>
 
@@ -54278,7 +54359,7 @@ The variable of the highlighted item of the open menu, from 0 (FORTH/Sigma GUI).
 VARIABLE GUI-MENU-ITEM
 ```
 
-出典：[src/core/words_gui.zig](../src/core/words_gui.zig), [HELP](../src/core/help_text.zig#L1139).
+出典：[src/core/words_gui.zig](../src/core/words_gui.zig), [HELP](../src/core/help_text.zig#L1142).
 
 <a id="w-4755493a4755492d4d454e552d4f50454e"></a>
 
@@ -54316,7 +54397,7 @@ The variable of the open menu of the menu bar, from 0, -1 for none; the program 
 VARIABLE GUI-MENU-OPEN
 ```
 
-出典：[src/core/words_gui.zig](../src/core/words_gui.zig), [HELP](../src/core/help_text.zig#L1138).
+出典：[src/core/words_gui.zig](../src/core/words_gui.zig), [HELP](../src/core/help_text.zig#L1141).
 
 <a id="w-4755493a4755492d4d454e55424152"></a>
 
@@ -54383,7 +54464,7 @@ A menu bar "a\|b\|c" at the top: the menu open, -1 for none; GUI-MENU gives its 
    GUI-MENU-OPEN @ ;
 ```
 
-出典：[src/core/words_gui.zig](../src/core/words_gui.zig), [HELP](../src/core/help_text.zig#L1127).
+出典：[src/core/words_gui.zig](../src/core/words_gui.zig), [HELP](../src/core/help_text.zig#L1130).
 
 <a id="w-4755493a4755492d4d455353414745"></a>
 
@@ -54424,7 +54505,7 @@ S" Done" GUI-MESSAGE 20 20 GFX-PGET
    2DROP (END-WAIT) ;
 ```
 
-出典：[src/core/words_gui.zig](../src/core/words_gui.zig), [HELP](../src/core/help_text.zig#L1133).
+出典：[src/core/words_gui.zig](../src/core/words_gui.zig), [HELP](../src/core/help_text.zig#L1136).
 
 <a id="w-4755493a4755492d50414e454c"></a>
 
@@ -54478,7 +54559,7 @@ A panel with its border, or drawn with the tiles of GUI-TILES (FORTH/Sigma GUI).
    x y w h GUI-BACKGROUND GUI-BORDER (BORDER-W) @ (BOX) ;
 ```
 
-出典：[src/core/words_gui.zig](../src/core/words_gui.zig), [HELP](../src/core/help_text.zig#L1118).
+出典：[src/core/words_gui.zig](../src/core/words_gui.zig), [HELP](../src/core/help_text.zig#L1121).
 
 <a id="w-4755493a4755492d50524553534544"></a>
 
@@ -54514,7 +54595,7 @@ REQUIRE-GUI ALSO GUI GUI-PRESSED . PREVIOUS
 3 CONSTANT GUI-PRESSED       \ a button held down
 ```
 
-出典：[src/core/words_gui.zig](../src/core/words_gui.zig), [HELP](../src/core/help_text.zig#L1101).
+出典：[src/core/words_gui.zig](../src/core/words_gui.zig), [HELP](../src/core/help_text.zig#L1104).
 
 <a id="w-4755493a4755492d53454c45435445442d54455854"></a>
 
@@ -54550,7 +54631,7 @@ REQUIRE-GUI ALSO GUI GUI-SELECTED-TEXT . PREVIOUS
 10 CONSTANT GUI-SELECTED-TEXT
 ```
 
-出典：[src/core/words_gui.zig](../src/core/words_gui.zig), [HELP](../src/core/help_text.zig#L1108).
+出典：[src/core/words_gui.zig](../src/core/words_gui.zig), [HELP](../src/core/help_text.zig#L1111).
 
 <a id="w-4755493a4755492d53454c454354494f4e"></a>
 
@@ -54586,7 +54667,7 @@ REQUIRE-GUI ALSO GUI GUI-SELECTION . PREVIOUS
 9 CONSTANT GUI-SELECTION     \ the chosen item of a list or a menu
 ```
 
-出典：[src/core/words_gui.zig](../src/core/words_gui.zig), [HELP](../src/core/help_text.zig#L1107).
+出典：[src/core/words_gui.zig](../src/core/words_gui.zig), [HELP](../src/core/help_text.zig#L1110).
 
 <a id="w-4755493a4755492d54455854"></a>
 
@@ -54622,7 +54703,7 @@ REQUIRE-GUI ALSO GUI GUI-TEXT . PREVIOUS
 4 CONSTANT GUI-TEXT
 ```
 
-出典：[src/core/words_gui.zig](../src/core/words_gui.zig), [HELP](../src/core/help_text.zig#L1102).
+出典：[src/core/words_gui.zig](../src/core/words_gui.zig), [HELP](../src/core/help_text.zig#L1105).
 
 <a id="w-4755493a4755492d54494c4553"></a>
 
@@ -54658,7 +54739,7 @@ REQUIRE-GUI ALSO GUI 0 0 GUI-TILES
 : GUI-TILES ( img size -- )   (TILE) !  (TILES) ! ;
 ```
 
-出典：[src/core/words_gui.zig](../src/core/words_gui.zig), [HELP](../src/core/help_text.zig#L1119).
+出典：[src/core/words_gui.zig](../src/core/words_gui.zig), [HELP](../src/core/help_text.zig#L1122).
 
 <a id="w-4755493a4755492d5945532d4e4f"></a>
 
@@ -54696,7 +54777,7 @@ A dialog with Yes and No: 1 for yes, 0 for no, -1 while there is no answer (FORT
 : GUI-YES-NO ( addr u -- n )   S" Yes|No" GUI-DIALOG  DUP 0< IF EXIT THEN  0= 1 AND ;
 ```
 
-出典：[src/core/words_gui.zig](../src/core/words_gui.zig), [HELP](../src/core/help_text.zig#L1131).
+出典：[src/core/words_gui.zig](../src/core/words_gui.zig), [HELP](../src/core/help_text.zig#L1134).
 
 <a id="w-4755493a284144442d4b455929"></a>
 
@@ -58694,7 +58775,7 @@ ALSO ROOT WORDS PREVIOUS
 
 注意：スタック効果の入力順を守ってください。使用例の名前・値は例の定義や初期状態に依存します。
 
-出典：[src/core/memory_map.zig](../src/core/memory_map.zig), [HELP](../src/core/help_text.zig#L996).
+出典：[src/core/memory_map.zig](../src/core/memory_map.zig), [HELP](../src/core/help_text.zig#L999).
 
 <a id="w-526f6f743a5345414c"></a>
 
@@ -58724,7 +58805,7 @@ WORDLIST CONSTANT W W CURRENT ! GET-CURRENT W = FORTH-WORDLIST CURRENT ! W >ORDE
 
 注意：スタック効果の入力順を守ってください。使用例の名前・値は例の定義や初期状態に依存します。
 
-出典：[src/core/memory_map.zig](../src/core/memory_map.zig), [HELP](../src/core/help_text.zig#L997).
+出典：[src/core/memory_map.zig](../src/core/memory_map.zig), [HELP](../src/core/help_text.zig#L1000).
 
 <a id="w-526f6f743a5345542d4f52444552"></a>
 
@@ -58782,7 +58863,7 @@ VOCS
 
 注意：スタック効果の入力順を守ってください。使用例の名前・値は例の定義や初期状態に依存します。
 
-出典：[src/core/memory_map.zig](../src/core/memory_map.zig), [HELP](../src/core/help_text.zig#L1000).
+出典：[src/core/memory_map.zig](../src/core/memory_map.zig), [HELP](../src/core/help_text.zig#L1003).
 
 <a id="w-526f6f743a574f524453"></a>
 
@@ -58886,7 +58967,7 @@ In a definition, the string up to the next " (FORTH/Sigma).
 
 注意：番地・長さ・容量は有効な論理メモリー範囲を指定します。所有領域と借用領域の寿命を区別してください。
 
-出典：[src/core/help_text.zig](../src/core/help_text.zig), [HELP](../src/core/help_text.zig#L1036).
+出典：[src/core/help_text.zig](../src/core/help_text.zig), [HELP](../src/core/help_text.zig#L1039).
 
 <a id="w-53796e7461783a2d2d"></a>
 
@@ -58904,7 +58985,7 @@ Inside a local declaration, start a stack-effect comment up to its closing delim
 
 種別：local declaration delimiter.
 
-関連説明：[メモリとスタックの大きさ](USER_MANUAL.ja.md#メモリとスタックの大きさ), [ローカル変数](USER_MANUAL.ja.md#ローカル変数), [何を使うか](DEBUGGING.ja.md#何を使うか).
+関連説明：[メモリとスタックの大きさ](USER_MANUAL.ja.md#メモリとスタックの大きさ), [ローカル変数](USER_MANUAL.ja.md#ローカル変数), [保存アプリの自動起動](USER_MANUAL.ja.md#保存アプリの自動起動).
 
 使用例
 
@@ -58942,7 +59023,7 @@ Print the text up to the next ".
 
 注意：スタック効果の入力順を守ってください。使用例の名前・値は例の定義や初期状態に依存します。
 
-出典：[src/core/help_text.zig](../src/core/help_text.zig), [HELP](../src/core/help_text.zig#L1034).
+出典：[src/core/help_text.zig](../src/core/help_text.zig), [HELP](../src/core/help_text.zig#L1037).
 
 <a id="w-53796e7461783a2e28"></a>
 
@@ -58970,7 +59051,7 @@ Print the text up to ) at once.
 
 注意：スタック効果の入力順を守ってください。使用例の名前・値は例の定義や初期状態に依存します。
 
-出典：[src/core/help_text.zig](../src/core/help_text.zig), [HELP](../src/core/help_text.zig#L949).
+出典：[src/core/help_text.zig](../src/core/help_text.zig), [HELP](../src/core/help_text.zig#L952).
 
 <a id="w-53796e7461783a2e5c22"></a>
 
@@ -58998,7 +59079,7 @@ S\" a\tb\x41\"q" TYPE .\" x\ny" : SAY .\" [\q]" ; SAY .( paren) CR
 
 注意：スタック効果の入力順を守ってください。使用例の名前・値は例の定義や初期状態に依存します。
 
-出典：[src/core/help_text.zig](../src/core/help_text.zig), [HELP](../src/core/help_text.zig#L1035).
+出典：[src/core/help_text.zig](../src/core/help_text.zig), [HELP](../src/core/help_text.zig#L1038).
 
 <a id="w-53796e7461783a3a4e4f4e414d45"></a>
 
@@ -59028,7 +59109,7 @@ Start a definition without a name; ; leaves its execution token.
 
 注意：スタック効果の入力順を守ってください。使用例の名前・値は例の定義や初期状態に依存します。
 
-出典：[src/core/help_text.zig](../src/core/help_text.zig), [HELP](../src/core/help_text.zig#L1026).
+出典：[src/core/help_text.zig](../src/core/help_text.zig), [HELP](../src/core/help_text.zig#L1029).
 
 <a id="w-53796e7461783a3a7d"></a>
 
@@ -59086,7 +59167,7 @@ Stop compiling and interpret.
 
 注意：スタック効果の入力順を守ってください。使用例の名前・値は例の定義や初期状態に依存します。
 
-出典：[src/core/help_text.zig](../src/core/help_text.zig), [HELP](../src/core/help_text.zig#L950).
+出典：[src/core/help_text.zig](../src/core/help_text.zig), [HELP](../src/core/help_text.zig#L953).
 
 <a id="w-53796e7461783a5b275d"></a>
 
@@ -59116,7 +59197,7 @@ Compile the execution token of name, which is read when compiling.
 
 注意：スタック効果の入力順を守ってください。使用例の名前・値は例の定義や初期状態に依存します。
 
-出典：[src/core/help_text.zig](../src/core/help_text.zig), [HELP](../src/core/help_text.zig#L952).
+出典：[src/core/help_text.zig](../src/core/help_text.zig), [HELP](../src/core/help_text.zig#L955).
 
 <a id="w-53796e7461783a5b5b"></a>
 
@@ -59146,7 +59227,7 @@ End postponing and resume compilation; only recognized inside \]\] ... \[\[.
 
 注意：スタック効果の入力順を守ってください。使用例の名前・値は例の定義や初期状態に依存します。
 
-出典：[src/core/help_text.zig](../src/core/help_text.zig), [HELP](../src/core/help_text.zig#L960).
+出典：[src/core/help_text.zig](../src/core/help_text.zig), [HELP](../src/core/help_text.zig#L963).
 
 <a id="w-53796e7461783a5b434841525d"></a>
 
@@ -59176,7 +59257,7 @@ Compile the code point of the first character (UTF-8) of the next word.
 
 注意：スタック効果の入力順を守ってください。使用例の名前・値は例の定義や初期状態に依存します。
 
-出典：[src/core/help_text.zig](../src/core/help_text.zig), [HELP](../src/core/help_text.zig#L954).
+出典：[src/core/help_text.zig](../src/core/help_text.zig), [HELP](../src/core/help_text.zig#L957).
 
 <a id="w-53796e7461783a5c"></a>
 
@@ -59206,7 +59287,7 @@ Ignore through the line end; block input skips to the next 64-byte row boundary.
 
 注意：スタック効果の入力順を守ってください。使用例の名前・値は例の定義や初期状態に依存します。
 
-出典：[src/core/help_text.zig](../src/core/help_text.zig), [HELP](../src/core/help_text.zig#L948).
+出典：[src/core/help_text.zig](../src/core/help_text.zig), [HELP](../src/core/help_text.zig#L951).
 
 <a id="w-53796e7461783a5d"></a>
 
@@ -59236,7 +59317,7 @@ Go back to compiling the current definition.
 
 注意：スタック効果の入力順を守ってください。使用例の名前・値は例の定義や初期状態に依存します。
 
-出典：[src/core/help_text.zig](../src/core/help_text.zig), [HELP](../src/core/help_text.zig#L951).
+出典：[src/core/help_text.zig](../src/core/help_text.zig), [HELP](../src/core/help_text.zig#L954).
 
 <a id="w-53796e7461783a41424f525422"></a>
 
@@ -59264,7 +59345,7 @@ In a definition: if flag is not zero, show the text and abort (THROW -2).
 
 注意：スタック効果の入力順を守ってください。使用例の名前・値は例の定義や初期状態に依存します。
 
-出典：[src/core/help_text.zig](../src/core/help_text.zig), [HELP](../src/core/help_text.zig#L1032).
+出典：[src/core/help_text.zig](../src/core/help_text.zig), [HELP](../src/core/help_text.zig#L1035).
 
 <a id="w-53796e7461783a4322"></a>
 
@@ -59292,7 +59373,7 @@ In a definition, the counted string up to the next ".
 
 注意：番地・長さ・容量は有効な論理メモリー範囲を指定します。所有領域と借用領域の寿命を区別してください。
 
-出典：[src/core/help_text.zig](../src/core/help_text.zig), [HELP](../src/core/help_text.zig#L1031).
+出典：[src/core/help_text.zig](../src/core/help_text.zig), [HELP](../src/core/help_text.zig#L1034).
 
 <a id="w-53796e7461783a433a"></a>
 
@@ -59526,7 +59607,7 @@ Declare local variables; the first name takes the top of the stack.
 
 注意：スタック効果の入力順を守ってください。使用例の名前・値は例の定義や初期状態に依存します。
 
-出典：[src/core/help_text.zig](../src/core/help_text.zig), [HELP](../src/core/help_text.zig#L1029).
+出典：[src/core/help_text.zig](../src/core/help_text.zig), [HELP](../src/core/help_text.zig#L1032).
 
 <a id="w-53796e7461783a504f5354504f4e45"></a>
 
@@ -59556,7 +59637,7 @@ Compile name so that it is compiled, or run if immediate, when the definition ru
 
 注意：スタック効果の入力順を守ってください。使用例の名前・値は例の定義や初期状態に依存します。
 
-出典：[src/core/help_text.zig](../src/core/help_text.zig), [HELP](../src/core/help_text.zig#L955).
+出典：[src/core/help_text.zig](../src/core/help_text.zig), [HELP](../src/core/help_text.zig#L958).
 
 <a id="w-53796e7461783a524551554952452d415544494f"></a>
 
@@ -59586,7 +59667,7 @@ REQUIRE-AUDIO
 
 注意：スタック効果の入力順を守ってください。使用例の名前・値は例の定義や初期状態に依存します。
 
-出典：[src/core/help_text.zig](../src/core/help_text.zig), [HELP](../src/core/help_text.zig#L1341).
+出典：[src/core/help_text.zig](../src/core/help_text.zig), [HELP](../src/core/help_text.zig#L1344).
 
 <a id="w-53796e7461783a524551554952452d455854454e53494f4e"></a>
 
@@ -59612,7 +59693,7 @@ REQUIRE-EXTENSION ALSO EXTENSION WORDS PREVIOUS
 
 注意：スタック効果の入力順を守ってください。使用例の名前・値は例の定義や初期状態に依存します。
 
-出典：[src/core/help_text.zig](../src/core/help_text.zig), [HELP](../src/core/help_text.zig#L1301).
+出典：[src/core/help_text.zig](../src/core/help_text.zig), [HELP](../src/core/help_text.zig#L1304).
 
 <a id="w-53796e7461783a524551554952452d47414d45"></a>
 
@@ -59642,7 +59723,7 @@ REQUIRE-GAME
 
 注意：スタック効果の入力順を守ってください。使用例の名前・値は例の定義や初期状態に依存します。
 
-出典：[src/core/help_text.zig](../src/core/help_text.zig), [HELP](../src/core/help_text.zig#L1039).
+出典：[src/core/help_text.zig](../src/core/help_text.zig), [HELP](../src/core/help_text.zig#L1042).
 
 <a id="w-53796e7461783a524551554952452d4752415048494353"></a>
 
@@ -59672,7 +59753,7 @@ REQUIRE-GRAPHICS
 
 注意：スタック効果の入力順を守ってください。使用例の名前・値は例の定義や初期状態に依存します。
 
-出典：[src/core/help_text.zig](../src/core/help_text.zig), [HELP](../src/core/help_text.zig#L1038).
+出典：[src/core/help_text.zig](../src/core/help_text.zig), [HELP](../src/core/help_text.zig#L1041).
 
 <a id="w-53796e7461783a524551554952452d475549"></a>
 
@@ -59702,7 +59783,7 @@ REQUIRE-GUI
 
 注意：スタック効果の入力順を守ってください。使用例の名前・値は例の定義や初期状態に依存します。
 
-出典：[src/core/help_text.zig](../src/core/help_text.zig), [HELP](../src/core/help_text.zig#L1097).
+出典：[src/core/help_text.zig](../src/core/help_text.zig), [HELP](../src/core/help_text.zig#L1100).
 
 <a id="w-53796e7461783a5322"></a>
 
@@ -59732,7 +59813,7 @@ S" " NIP
 
 注意：番地・長さ・容量は有効な論理メモリー範囲を指定します。所有領域と借用領域の寿命を区別してください。
 
-出典：[src/core/help_text.zig](../src/core/help_text.zig), [HELP](../src/core/help_text.zig#L1030).
+出典：[src/core/help_text.zig](../src/core/help_text.zig), [HELP](../src/core/help_text.zig#L1033).
 
 <a id="w-53796e7461783a535c22"></a>
 
@@ -59760,7 +59841,7 @@ S\" A\tあ" 1 1 TEXT
 
 注意：番地・長さ・容量は有効な論理メモリー範囲を指定します。所有領域と借用領域の寿命を区別してください。
 
-出典：[src/core/help_text.zig](../src/core/help_text.zig), [HELP](../src/core/help_text.zig#L1033).
+出典：[src/core/help_text.zig](../src/core/help_text.zig), [HELP](../src/core/help_text.zig#L1036).
 
 <a id="w-53796e7461783a573a"></a>
 
@@ -59902,7 +59983,7 @@ Declare local variables: { a b -- c } takes a and b from the stack.
 
 注意：スタック効果の入力順を守ってください。使用例の名前・値は例の定義や初期状態に依存します。
 
-出典：[src/core/help_text.zig](../src/core/help_text.zig), [HELP](../src/core/help_text.zig#L1027).
+出典：[src/core/help_text.zig](../src/core/help_text.zig), [HELP](../src/core/help_text.zig#L1030).
 
 <a id="w-53796e7461783a7b3a"></a>
 
@@ -59930,7 +60011,7 @@ Declare local variables, the standard way: {: a b :}.
 
 注意：スタック効果の入力順を守ってください。使用例の名前・値は例の定義や初期状態に依存します。
 
-出典：[src/core/help_text.zig](../src/core/help_text.zig), [HELP](../src/core/help_text.zig#L1028).
+出典：[src/core/help_text.zig](../src/core/help_text.zig), [HELP](../src/core/help_text.zig#L1031).
 
 <a id="w-53796e7461783a7c"></a>
 

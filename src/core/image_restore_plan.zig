@@ -23,6 +23,7 @@ pub const Plan = struct {
 /// or consumed after State changes. No target resource or dictionary is modified.
 pub fn prepare(state: *const forth.State, image: []const u8, plan: *Plan) RuntimeError!void {
     plan.view = try format.parse(image, &plan.validation);
+    _ = try @import("app_entry.zig").imageEntry(plan.view);
     const view = plan.view;
     const h = view.header;
     // Both restore and typed append pass through this non-mutating feature check.

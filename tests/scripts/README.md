@@ -1,5 +1,14 @@
 # Test and verification scripts
 
+`python tests/scripts/verify-saved-application.py PATH` creates owned SAVESYS
+executables and checks entry dispatch, raw arguments, host bypass, corrupt images,
+atomic resave/self-alias rejection and process exit. On POSIX it also uses an owned
+PTY for interruption and terminal restoration. `--no-debug` and `--no-files` select
+feature-disabled expectations. On Windows, `verify-saved-application-windows.py
+PATH` checks Ctrl+C in a hidden private console. Both scripts clean up their own
+files under `.work/1069`; neither sends input to the user console. See
+[results and Mac procedure](../../docs/SAVED_APPLICATION_STARTUP_IMPLEMENTATION.md).
+
 `verify-filesystem.py --sigma PATH --output PATH` checks 1,010 observed Gforth
 COMPACT cases, long byte paths, realpath capacity/alias/links, regular-file metadata
 and SYNC direction/pending-input/EOF and rejection cases on owned temporary files.
