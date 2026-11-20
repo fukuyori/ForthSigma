@@ -1,0 +1,526 @@
+{
+  "date": "2026-11-20",
+  "tasks": {
+    "1150": "complete",
+    "1157": "complete"
+  },
+  "scope": "Windows real output, user listening confirmed case by case; hardware-chip/ROM compatibility excluded.",
+  "cases": [
+    {
+      "task": 1150,
+      "case": "nes-four-voices",
+      "command": [
+        "D:\\home\\source\\zig\\forthz\\.work\\1138\\matrix\\windows\\bin\\sigma.exe",
+        "examples/nes-apu-play.fs",
+        "-e",
+        "NA-DEMO-SETUP 288 TRUE NA-STREAM .\" handle=\" PS-HANDLE @ . .\" underruns=\" PS-UNDERRUN-COUNT @ . CR 250 MS BYE"
+      ],
+      "code": "NA-DEMO-SETUP 288 TRUE NA-STREAM .\" handle=\" PS-HANDLE @ . .\" underruns=\" PS-UNDERRUN-COUNT @ . CR 250 MS BYE",
+      "binary_sha256": "afac007953731a2bb6c717a52aac85bea196b5ce44e62b182a8524325e604d5b",
+      "stdout": "handle=0 underruns=0 \n",
+      "stderr": "",
+      "exit": 0,
+      "human_listening_result": "レモンがNES4声デモが約3秒聞こえ、その後停止したことをＯＫで確認"
+    },
+    {
+      "task": 1150,
+      "case": "nes-dmc-buzzer-alone",
+      "command": [
+        "D:\\home\\source\\zig\\forthz\\.work\\1138\\matrix\\windows\\bin\\sigma.exe",
+        "examples/nes-apu-play.fs",
+        "-e",
+        "NA-RESET NA-DMC-MEMORY 16384 + 17 0 FILL NA-DMC-MEMORY 16384 + 8 255 FILL 79 16400 0 NA-WRITE 0 16401 0 NA-WRITE 0 16402 0 NA-WRITE 1 16403 0 NA-WRITE 16 16405 0 NA-WRITE 288 TRUE NA-STREAM .\" handle=\" PS-HANDLE @ . .\" underruns=\" PS-UNDERRUN-COUNT @ . CR 250 MS BYE"
+      ],
+      "code": "NA-RESET NA-DMC-MEMORY 16384 + 17 0 FILL NA-DMC-MEMORY 16384 + 8 255 FILL 79 16400 0 NA-WRITE 0 16401 0 NA-WRITE 0 16402 0 NA-WRITE 1 16403 0 NA-WRITE 16 16405 0 NA-WRITE 288 TRUE NA-STREAM .\" handle=\" PS-HANDLE @ . .\" underruns=\" PS-UNDERRUN-COUNT @ . CR 250 MS BYE",
+      "sample": "Owned17byte loop: FF*8+00*9, rate15, initialDAC0",
+      "binary_sha256": "afac007953731a2bb6c717a52aac85bea196b5ce44e62b182a8524325e604d5b",
+      "stdout": "handle=0 underruns=0 \n",
+      "stderr": "",
+      "exit": 0,
+      "human_listening_result": "レモンが4声デモとは異なるDMC単独ブザー音が約3秒聞こえ停止したことをＯＫで確認"
+    },
+    {
+      "task": 1150,
+      "case": "nes-four-plus-dmc-buzzer",
+      "command": [
+        "D:\\home\\source\\zig\\forthz\\.work\\1138\\matrix\\windows\\bin\\sigma.exe",
+        "examples/nes-apu-play.fs",
+        "-e",
+        "NA-DEMO-SETUP NA-DMC-MEMORY 16384 + 17 0 FILL NA-DMC-MEMORY 16384 + 8 255 FILL 79 16400 0 NA-WRITE 0 16401 0 NA-WRITE 0 16402 0 NA-WRITE 1 16403 0 NA-WRITE 31 16405 0 NA-WRITE 288 TRUE NA-STREAM .\" handle=\" PS-HANDLE @ . .\" underruns=\" PS-UNDERRUN-COUNT @ . CR 250 MS BYE"
+      ],
+      "code": "NA-DEMO-SETUP NA-DMC-MEMORY 16384 + 17 0 FILL NA-DMC-MEMORY 16384 + 8 255 FILL 79 16400 0 NA-WRITE 0 16401 0 NA-WRITE 0 16402 0 NA-WRITE 1 16403 0 NA-WRITE 31 16405 0 NA-WRITE 288 TRUE NA-STREAM .\" handle=\" PS-HANDLE @ . .\" underruns=\" PS-UNDERRUN-COUNT @ . CR 250 MS BYE",
+      "sample": "Owned17byte loop: FF*8+00*9, rate15, initialDAC0; mixed with demo4voices",
+      "binary_sha256": "afac007953731a2bb6c717a52aac85bea196b5ce44e62b182a8524325e604d5b",
+      "stdout": "handle=0 underruns=0 \n",
+      "stderr": "",
+      "exit": 0,
+      "human_listening_result": "レモンが4声デモにDMCブザーが重なり4声だけとの違いを聞き分けられたことをＯＫで確認"
+    },
+    {
+      "task": 1150,
+      "case": "nes-physical-interruption-and-replay",
+      "source": "S\" examples/nes-apu-play.fs\" INCLUDED\n: LONG NA-DEMO-SETUP 100000 TRUE NA-STREAM ;\n: CHECK ( ior -- ) DUP -28 <> IF THROW THEN DROP PS-HANDLE @ IF -528 THROW THEN ;\n.\" READY: wait about1second, press Ctrl+C once; replay follows automatically\" CR STDOUT FLUSH-FILE THROW\n' LONG CATCH DUP .\" CATCH=\" . .\" handle=\" PS-HANDLE @ . CR STDOUT FLUSH-FILE THROW CHECK\n500 MS .\" REPLAY\" CR STDOUT FLUSH-FILE THROW\nNA-DEMO-SETUP 288 TRUE NA-STREAM\n.\" REPLAY-OK handle=\" PS-HANDLE @ . .\" underruns=\" PS-UNDERRUN-COUNT @ . CR 250 MS BYE\n",
+      "stdout": "READY: wait about1second, press Ctrl+C once; replay follows automatically\nCATCH=-28 handle=0 \nREPLAY\nREPLAY-OK handle=0 underruns=0 \n",
+      "exit": 0,
+      "interruption_and_replay_checks_passed": true,
+      "binary_sha256": "afac007953731a2bb6c717a52aac85bea196b5ce44e62b182a8524325e604d5b",
+      "human_listening_result": "レモンが物理Ctrl+C後の音の停止、約3秒の再再生とREPLAY-OK handle=0をＯＫで確認"
+    },
+    {
+      "task": 1157,
+      "case": "sid-three-voices",
+      "command": [
+        "D:\\home\\source\\zig\\forthz\\.work\\1138\\matrix\\windows\\bin\\sigma.exe",
+        "examples/sid-play.fs",
+        "-e",
+        "SI-DEMO-SETUP 384 TRUE SI-STREAM .\" handle=\" PS-HANDLE @ . .\" underruns=\" PS-UNDERRUN-COUNT @ . CR 250 MS BYE"
+      ],
+      "code": "SI-DEMO-SETUP 384 TRUE SI-STREAM .\" handle=\" PS-HANDLE @ . .\" underruns=\" PS-UNDERRUN-COUNT @ . CR 250 MS BYE",
+      "binary_sha256": "afac007953731a2bb6c717a52aac85bea196b5ce44e62b182a8524325e604d5b",
+      "stdout": "handle=0 underruns=0 \n",
+      "stderr": "",
+      "exit": 0,
+      "human_listening_result": "レモンがSID3声デモが約4秒聞こえ、その後停止したことをＯＫで確認"
+    },
+    {
+      "task": 1157,
+      "case": "sid-physical-interruption-and-replay",
+      "source": "S\" examples/sid-play.fs\" INCLUDED\n: LONG SI-DEMO-SETUP 100000 TRUE SI-STREAM ;\n: CHECK ( ior -- ) DUP -28 <> IF THROW THEN DROP PS-HANDLE @ IF -528 THROW THEN ;\n.\" READY: wait about1second, press Ctrl+C once; replay follows automatically\" CR STDOUT FLUSH-FILE THROW\n' LONG CATCH DUP .\" CATCH=\" . .\" handle=\" PS-HANDLE @ . CR STDOUT FLUSH-FILE THROW CHECK\n500 MS .\" REPLAY\" CR STDOUT FLUSH-FILE THROW\nSI-DEMO-SETUP 384 TRUE SI-STREAM\n.\" REPLAY-OK handle=\" PS-HANDLE @ . .\" underruns=\" PS-UNDERRUN-COUNT @ . CR 250 MS BYE\n",
+      "stdout": "READY: wait about1second, press Ctrl+C once; replay follows automatically\nCATCH=-28 handle=0 \nREPLAY\nREPLAY-OK handle=0 underruns=0 \n",
+      "exit": 0,
+      "interruption_and_replay_checks_passed": true,
+      "binary_sha256": "afac007953731a2bb6c717a52aac85bea196b5ce44e62b182a8524325e604d5b",
+      "human_listening_result": "レモンが物理Ctrl+C後の音の停止、約4秒の再再生とREPLAY-OK handle=0をＯＫで確認"
+    }
+  ],
+  "environment": {
+    "os": "Windows11 Pro 10.0.26300",
+    "backend": "waveOut WAVE_MAPPER default output, AUDIO?=-1",
+    "endpoint_display_name": "not separately queried"
+  },
+  "remaining": "Linux実聴1151（NES）/1158（SID）は未完了。実機チップ/ROM互換は対象外。",
+  "tasks_snapshot": [
+    {
+      "id": 999,
+      "title": "本体10 音源チップのレジスタ書込み（段階C、AUDIO）：上位計画の全対象機種で既存音源/PCM基盤の充足と不足を確認し、必要な音源をForthで実装・実測して本体移行の採否を判断する。機種別作業と対象一覧の照合を含める（EMULATOR_CORE_PLAN.md）",
+      "status": "todo",
+      "parent_id": 1003,
+      "progress": 0,
+      "progress_mode": "auto",
+      "created_at": "2026-11-17T22:47:12Z",
+      "depends_on": [
+        1064,
+        1129
+      ],
+      "effective_progress": 55,
+      "blocked": false,
+      "blocked_by": []
+    },
+    {
+      "id": 1131,
+      "title": "音源試作01 Forthの4声合成とPCM送出：独自の合成負荷、境界と連続性の決定的検証、Windows/Linux測定とClaudeレビュー。実機音源の採否とは分ける",
+      "status": "done",
+      "parent_id": 999,
+      "progress": 100,
+      "progress_mode": "auto",
+      "created_at": "2026-11-20T03:18:43Z",
+      "completed_at": "2026-11-20T03:30:30Z",
+      "depends_on": [],
+      "effective_progress": 100,
+      "blocked": false,
+      "blocked_by": []
+    },
+    {
+      "id": 1132,
+      "title": "音源試作02 NES APUのForth音源と実測・採否：NTSCレジスタ動作・未実装機能を明記し、合成負荷から本体移行の要否を判断する。汎用4声試作の速度とは分ける",
+      "status": "todo",
+      "parent_id": 999,
+      "progress": 0,
+      "progress_mode": "auto",
+      "created_at": "2026-11-20T03:24:41Z",
+      "depends_on": [
+        1131
+      ],
+      "effective_progress": 80,
+      "blocked": false,
+      "blocked_by": []
+    },
+    {
+      "id": 1134,
+      "title": "NES音源01 NTSC APUのForthレジスタ試作と仕様照合：pulse/triangle/noise、envelope/length/sweep/linear、時刻指定書込みとIRQ境界、独立試験・測定・Claudeレビュー。DMC等の除外と採否条件を明記",
+      "status": "done",
+      "parent_id": 1132,
+      "progress": 100,
+      "progress_mode": "auto",
+      "created_at": "2026-11-20T03:37:53Z",
+      "completed_at": "2026-11-20T03:56:47Z",
+      "depends_on": [],
+      "effective_progress": 100,
+      "blocked": false,
+      "blocked_by": []
+    },
+    {
+      "id": 1135,
+      "title": "NES音源02 DMCのForthモデルと実測・採否：サンプルreader/buffer/DAC/IRQ、時刻境界・専用メモリ・混合を資料/試験で照合する。DMA待ち・CPU/PPUとバス競合は未実装として記録",
+      "status": "done",
+      "parent_id": 1132,
+      "progress": 100,
+      "progress_mode": "auto",
+      "created_at": "2026-11-20T03:46:50Z",
+      "completed_at": "2026-11-20T04:51:38Z",
+      "depends_on": [
+        1134
+      ],
+      "effective_progress": 100,
+      "blocked": false,
+      "blocked_by": []
+    },
+    {
+      "id": 1136,
+      "title": "音源試作03 C64 SIDのForth音源と実測・採否：資料/ライセンス照合、再現範囲の確定、レジスタ・時刻指定・読取り/副作用、合成/PCM出力、独立検証と測定・Claudeレビューを行い、本体移行の要否と未実装機能を記録",
+      "status": "todo",
+      "parent_id": 999,
+      "progress": 0,
+      "progress_mode": "auto",
+      "created_at": "2026-11-20T04:31:06Z",
+      "depends_on": [
+        1131
+      ],
+      "effective_progress": 80,
+      "blocked": false,
+      "blocked_by": []
+    },
+    {
+      "id": 1137,
+      "title": "音源試作04 Amiga PaulaのForth音源と実測・採否：資料/ライセンス照合、再現範囲の確定、音声レジスタ・時刻指定・メモリ読取り/DMA/IRQの境界、合成/PCM出力、独立検証と測定・Claudeレビューを行い、本体移行の要否と未実装機能を記録",
+      "status": "todo",
+      "parent_id": 999,
+      "progress": 0,
+      "progress_mode": "auto",
+      "created_at": "2026-11-20T04:31:06Z",
+      "depends_on": [
+        1131
+      ],
+      "effective_progress": 60,
+      "blocked": false,
+      "blocked_by": []
+    },
+    {
+      "id": 1138,
+      "title": "音源試作05 Atari ST YM2149の既存対応と不足の確認：ST-SOUND/SOUNDのレジスタ経路、時刻指定・読取り・I/Oポートと副作用、PCM経路との使い分けをソース/資料で照合し、不足分のForth実装・検証・実測と本体移行の採否を記録",
+      "status": "todo",
+      "parent_id": 999,
+      "progress": 0,
+      "progress_mode": "auto",
+      "created_at": "2026-11-20T04:32:14Z",
+      "depends_on": [
+        1131
+      ],
+      "effective_progress": 66,
+      "blocked": false,
+      "blocked_by": []
+    },
+    {
+      "id": 1139,
+      "title": "音源対象一覧の先行照合：上位計画のCHIP-8/ZX Spectrum/NES/C64/SNES/Apple II/Amiga/Atari STについて既存基盤の充足・不足・対象外理由を整理し、不足を見つけたら機種別子タスクを追加する。最終採否は別工程",
+      "status": "todo",
+      "parent_id": 999,
+      "progress": 0,
+      "progress_mode": "auto",
+      "created_at": "2026-11-20T04:32:14Z",
+      "depends_on": [],
+      "effective_progress": 0,
+      "blocked": false,
+      "blocked_by": []
+    },
+    {
+      "id": 1140,
+      "title": "音源対象一覧の最終採否：先行照合1139とNES/SID/Paula/Atari STの機種別作業・追加で見つかった不足の完了を照合し、全対象の根拠と本体移行の採否を記録する。未判定を完了扱いにしない",
+      "status": "todo",
+      "parent_id": 999,
+      "progress": 0,
+      "progress_mode": "auto",
+      "created_at": "2026-11-20T04:38:52Z",
+      "depends_on": [
+        1132,
+        1136,
+        1137,
+        1138,
+        1139
+      ],
+      "effective_progress": 0,
+      "blocked": true,
+      "blocked_by": [
+        1132,
+        1136,
+        1137,
+        1138,
+        1139
+      ]
+    },
+    {
+      "id": 1141,
+      "title": "SID01 データシートに基づくレジスタ/時刻/読取りと決定的3声モデル：波形・TEST/SYNC/RING・ADSRの再現範囲を確定し、Forth基準/まとめ処理を独立検証する。実機差と未対応を記録",
+      "status": "done",
+      "parent_id": 1136,
+      "progress": 100,
+      "progress_mode": "auto",
+      "created_at": "2026-11-20T05:11:05Z",
+      "completed_at": "2026-11-20T05:36:17Z",
+      "depends_on": [
+        1131
+      ],
+      "effective_progress": 100,
+      "blocked": false,
+      "blocked_by": []
+    },
+    {
+      "id": 1142,
+      "title": "SID02 フィルター近似と3声負荷・PCM送出の実測/採否：実機6581/8580のアナログ再現と区別し、波形/変調/書込み・境界を検証、Windows/Linuxと除外構成を測定して本体移行の要否を決める",
+      "status": "done",
+      "parent_id": 1136,
+      "progress": 100,
+      "progress_mode": "auto",
+      "created_at": "2026-11-20T05:11:05Z",
+      "completed_at": "2026-11-20T05:36:17Z",
+      "depends_on": [
+        1141
+      ],
+      "effective_progress": 100,
+      "blocked": false,
+      "blocked_by": []
+    },
+    {
+      "id": 1143,
+      "title": "音源Mac受け入れ SID：Mac実機でsid.fs/sid-play.fsとverify-sid.pyを実行し、3声モデル・全PCM照合・通常/除外構成・サイズと速度・PCM実聴・中断と資源回収を確認してOS/CPU/版と結果を記録する。6581/8580実機互換とは区別（SID_FORTH.md）",
+      "status": "done",
+      "parent_id": 1136,
+      "progress": 100,
+      "progress_mode": "auto",
+      "created_at": "2026-11-20T05:58:20Z",
+      "completed_at": "2026-11-20T06:23:51Z",
+      "depends_on": [
+        1130,
+        1141,
+        1142
+      ],
+      "effective_progress": 100,
+      "blocked": false,
+      "blocked_by": []
+    },
+    {
+      "id": 1144,
+      "title": "音源Mac受け入れ NES APU/DMC：Mac実機でnes-apu.fs/nes-apu-play.fsとverify-nes-apu.py/verify-nes-dmc.pyを実行し、5声・全PCM照合・通常/除外構成・サイズと速度・PCM実聴・中断と資源回収を確認してOS/CPU/版と結果を記録する。実機DMA/ROM互換とは区別（NES_DMC_FORTH.md）",
+      "status": "done",
+      "parent_id": 1132,
+      "progress": 100,
+      "progress_mode": "auto",
+      "created_at": "2026-11-20T05:58:20Z",
+      "completed_at": "2026-11-20T06:23:51Z",
+      "depends_on": [
+        1130,
+        1134,
+        1135
+      ],
+      "effective_progress": 100,
+      "blocked": false,
+      "blocked_by": []
+    },
+    {
+      "id": 1145,
+      "title": "Paula01 レジスタ対応Forthモデルの仕様・実装：DMA/手動DAT・IRQ・変調・専用メモリ・時刻境界を一次資料と照合し、独立1clockモデルと基準/まとめ処理を検証する。未再現のbus/実機差を明記",
+      "status": "done",
+      "parent_id": 1137,
+      "progress": 100,
+      "progress_mode": "auto",
+      "created_at": "2026-11-20T06:02:16Z",
+      "completed_at": "2026-11-20T06:25:23Z",
+      "depends_on": [
+        1131
+      ],
+      "effective_progress": 100,
+      "blocked": false,
+      "blocked_by": []
+    },
+    {
+      "id": 1146,
+      "title": "Paula02 ステレオPCM・負荷とサイズ/速度・採否：Windows/Linuxの通常/除外構成で独立PCM照合と測定、Claudeレビュー・文書と本体移行判断を記録",
+      "status": "done",
+      "parent_id": 1137,
+      "progress": 100,
+      "progress_mode": "auto",
+      "created_at": "2026-11-20T06:02:16Z",
+      "completed_at": "2026-11-20T06:25:23Z",
+      "depends_on": [
+        1145
+      ],
+      "effective_progress": 100,
+      "blocked": false,
+      "blocked_by": []
+    },
+    {
+      "id": 1147,
+      "title": "Paula Mac受け入れ：Mac実機でForth Paulaモデル・通常/除外構成・独立PCM照合・サイズと速度・ステレオ実聴・中断と資源回収を確認しOS/CPU/版と結果を記録。実機Amiga互換とは区別",
+      "status": "done",
+      "parent_id": 1137,
+      "progress": 100,
+      "progress_mode": "auto",
+      "created_at": "2026-11-20T06:02:16Z",
+      "completed_at": "2026-11-20T06:50:22Z",
+      "depends_on": [
+        1130,
+        1145,
+        1146
+      ],
+      "effective_progress": 100,
+      "blocked": false,
+      "blocked_by": []
+    },
+    {
+      "id": 1150,
+      "title": "NES音源例の実聴 Windows：examples/nes-apu-play.fsのTRUE（生成波形）をWindows実装置で聞き、4声・DMC（可聴な音程のloop）・Ctrl+C中断と再再生を確認（自動試験は無音のみ。Macは1144で確認済み）",
+      "status": "done",
+      "parent_id": 1132,
+      "progress": 100,
+      "progress_mode": "auto",
+      "created_at": "2026-11-20T06:23:47Z",
+      "completed_at": "2026-11-20T07:33:55Z",
+      "depends_on": [],
+      "effective_progress": 100,
+      "blocked": false,
+      "blocked_by": []
+    },
+    {
+      "id": 1151,
+      "title": "NES音源例の実聴 Linux：examples/nes-apu-play.fsのTRUE（生成波形）をPulseAudio/ALSA実装置で聞き、4声・DMC（可聴な音程のloop）・Ctrl+C中断と再再生を確認（WSLの無音consumer試験とは区別。Macは1144で確認済み）",
+      "status": "todo",
+      "parent_id": 1132,
+      "progress": 0,
+      "progress_mode": "auto",
+      "created_at": "2026-11-20T06:25:03Z",
+      "depends_on": [],
+      "effective_progress": 0,
+      "blocked": false,
+      "blocked_by": []
+    },
+    {
+      "id": 1152,
+      "title": "Atari ST01 既存YM2149の充足・不足監査とレジスタ/時刻/I-Oモデル：ST-SOUND/SOUNDを資料と照合し、Forthで時刻指定・読取り・I/O portとST選択latchを実装し独立検証。実機差・未対応を記録",
+      "status": "done",
+      "parent_id": 1138,
+      "progress": 100,
+      "progress_mode": "auto",
+      "created_at": "2026-11-20T06:31:53Z",
+      "completed_at": "2026-11-20T07:09:33Z",
+      "depends_on": [
+        1131
+      ],
+      "effective_progress": 100,
+      "blocked": false,
+      "blocked_by": []
+    },
+    {
+      "id": 1153,
+      "title": "Atari ST02 Windows/Linux検証とサイズ/速度・採否：3声/ノイズ/全envelope・高速write・I/Oを独立PCM/境界で照合し、通常/除外構成とClaudeレビュー・記録を整える",
+      "status": "done",
+      "parent_id": 1138,
+      "progress": 100,
+      "progress_mode": "auto",
+      "created_at": "2026-11-20T06:31:53Z",
+      "completed_at": "2026-11-20T07:09:33Z",
+      "depends_on": [
+        1152
+      ],
+      "effective_progress": 100,
+      "blocked": false,
+      "blocked_by": []
+    },
+    {
+      "id": 1154,
+      "title": "Atari ST Mac受け入れ：新ビルドでnative YM固定音量0の回帰・core/host検査、Forth通常/除外構成・独立PCM照合・サイズ/速度・生成音の実聴と中断/資源回収を確認しOS/CPU/版を記録。実機Atari互換とは区別",
+      "status": "todo",
+      "parent_id": 1138,
+      "progress": 0,
+      "progress_mode": "auto",
+      "created_at": "2026-11-20T06:31:53Z",
+      "depends_on": [
+        1130,
+        1152,
+        1153
+      ],
+      "effective_progress": 0,
+      "blocked": false,
+      "blocked_by": []
+    },
+    {
+      "id": 1155,
+      "title": "Paula音源例の実聴 Windows：examples/paula-play.fsのTRUE（生成波形）をWindows実装置で聞き、4声stereo・左だけ/右だけ（DMACONでch1/2またはch0/3を停止）・Ctrl+C中断と再再生を確認（自動試験は無音のみ。Macは1147で確認済み）",
+      "status": "todo",
+      "parent_id": 1137,
+      "progress": 0,
+      "progress_mode": "auto",
+      "created_at": "2026-11-20T06:50:04Z",
+      "depends_on": [],
+      "effective_progress": 0,
+      "blocked": false,
+      "blocked_by": []
+    },
+    {
+      "id": 1156,
+      "title": "Paula音源例の実聴 Linux：examples/paula-play.fsのTRUE（生成波形）をPulseAudio/ALSA実装置で聞き、4声stereo・左だけ/右だけ・Ctrl+C中断と再再生を確認（WSLの無音consumer試験とは区別。Macは1147で確認済み）",
+      "status": "todo",
+      "parent_id": 1137,
+      "progress": 0,
+      "progress_mode": "auto",
+      "created_at": "2026-11-20T06:50:04Z",
+      "depends_on": [],
+      "effective_progress": 0,
+      "blocked": false,
+      "blocked_by": []
+    },
+    {
+      "id": 1157,
+      "title": "SID音源例の実聴 Windows：examples/sid-play.fsのTRUE（生成波形）をWindows実装置で聞き、3声デモ・Ctrl+C中断と再再生を確認（自動試験は無音のみ。Macは1143で確認済み）",
+      "status": "done",
+      "parent_id": 1136,
+      "progress": 100,
+      "progress_mode": "auto",
+      "created_at": "2026-11-20T06:58:45Z",
+      "completed_at": "2026-11-20T07:33:55Z",
+      "depends_on": [],
+      "effective_progress": 100,
+      "blocked": false,
+      "blocked_by": []
+    },
+    {
+      "id": 1158,
+      "title": "SID音源例の実聴 Linux：examples/sid-play.fsのTRUE（生成波形）をPulseAudio/ALSA実装置で聞き、3声デモ・Ctrl+C中断と再再生を確認（WSLの無音consumer試験とは区別。Macは1143で確認済み）",
+      "status": "todo",
+      "parent_id": 1136,
+      "progress": 0,
+      "progress_mode": "auto",
+      "created_at": "2026-11-20T06:58:45Z",
+      "depends_on": [],
+      "effective_progress": 0,
+      "blocked": false,
+      "blocked_by": []
+    }
+  ],
+  "source_sha256_lf": {
+    "examples/nes-apu.fs": "10a46f5745b04cabbe83e86a3ca6179c9b942b634475a26ec2c14359add208e5",
+    "examples/nes-apu-play.fs": "12a7a73a739b4e8709bff5b51ea81152f1be88c3e931ea2bffc0a8267b53b807",
+    "examples/sid.fs": "c6bb9918de9c1e287c180f845ddfb40dc4df7687ef9f08461635a7ed6c6a7a7e",
+    "examples/sid-play.fs": "ce22f1c1ea7b95036053f7298276509e5767729f9c8f73696ee76f723f9b46a5",
+    "examples/pcm-synth.fs": "8f397fd447f9b7f3b3773c324f9c03f38b248b645addee2233f843fd720f8811",
+    "examples/pcm-synth-play.fs": "f2f5f56f3fea06260cf5386cea2134337634ff05be0ca0dfd6de8d8e876d8c3f"
+  },
+  "source_snapshots_lf": {
+    "examples/nes-apu.fs": "\\ Original Forth NTSC NES APU register-model prototype. No audio on load.\n\\ Source facts: docs/NES_APU_FORTH.md. DMC: docs/NES_DMC_FORTH.md. PAL/bus races/filtering excluded.\nDECIMAL\n1789773 CONSTANT NA-CPU\n48000 CONSTANT NA-RATE\nCREATE NA-STATE 44 CELLS ALLOT\n\\ Per channel: control,period,timer,sequence,length,env-start,env-div,decay,\n\\              sweep-register,sweep-divider,sweep-reload.\n: NA@ ( channel field -- value ) SWAP 11 * + CELLS NA-STATE + @ ;\n: NA! ( value channel field -- ) SWAP 11 * + CELLS NA-STATE + ! ;\nCREATE NA-LENGTHS\n10 , 254 , 20 , 2 , 40 , 4 , 80 , 6 , 160 , 8 , 60 , 10 , 14 , 12 , 26 , 14 ,\n12 , 16 , 24 , 18 , 48 , 20 , 96 , 22 , 192 , 24 , 72 , 26 , 16 , 28 , 32 , 30 ,\nCREATE NA-NOISE-PERIODS\n4 , 8 , 16 , 32 , 64 , 96 , 128 , 160 , 202 , 254 , 380 , 508 , 762 , 1016 , 2034 , 4068 ,\nCREATE NA-DUTIES 2 , 6 , 30 , 249 ,\nVARIABLE NA-CYCLE VARIABLE NA-FRAME VARIABLE NA-MODE VARIABLE NA-INHIBIT\nVARIABLE NA-IRQ VARIABLE NA-ENABLE VARIABLE NA-LINEAR VARIABLE NA-RELOAD\nVARIABLE NA-LFSR VARIABLE NA-NOISE-MODE VARIABLE NA-RESET-AT VARIABLE NA-PENDING-MODE\nVARIABLE NA-FRACTION VARIABLE NA-SLOW\nCREATE NA-EVENTS 3072 CELLS ALLOT\nVARIABLE NA-EVENT-COUNT VARIABLE NA-EVENT-INDEX\nCREATE NA-DMC 15 CELLS ALLOT\nCREATE NA-DMC-MEMORY 32768 ALLOT\nCREATE NA-DMC-RATES\n428 , 380 , 340 , 320 , 286 , 254 , 226 , 214 , 190 , 160 , 142 , 128 , 106 , 84 , 72 , 54 ,\n\\ DMC: ctrl,dac,start-reg,length-reg,period,timer,address,remaining,\n\\      buffer,full,shift,bits,silent,irq,fetch-count.\n: ND@ ( field -- value ) CELLS NA-DMC + @ ;\n: ND! ( value field -- ) CELLS NA-DMC + ! ;\n: NA-MEM! { value address -- }\n  value 0 256 WITHIN 0= IF -24 THROW THEN\n  address 32768 65536 WITHIN 0= IF -24 THROW THEN\n  value address 32768 - NA-DMC-MEMORY + C! ;\n: NA-DMC-RESTART ( -- ) 2 ND@ 64 * 49152 + 6 ND! 3 ND@ 16 * 1+ 7 ND! ;\n: NA-DMC-FETCH ( -- )\n  9 ND@ 0= 7 ND@ 0> AND IF\n    6 ND@ 32768 - NA-DMC-MEMORY + C@ 8 ND! 1 9 ND!\n    6 ND@ 1+ DUP 65536 = IF DROP 32768 THEN 6 ND!\n    7 ND@ 1- DUP 7 ND! 0= IF\n      0 ND@ 64 AND IF NA-DMC-RESTART\n      ELSE 0 ND@ 128 AND IF 1 13 ND! THEN THEN\n    THEN\n    14 ND@ 1+ 14 ND!\n  THEN ;\n: NA-DMC-OUTPUT ( -- )\n  12 ND@ 0= IF\n    10 ND@ 1 AND IF 1 ND@ 125 <= IF 1 ND@ 2 + 1 ND! THEN\n    ELSE 1 ND@ 2 >= IF 1 ND@ 2 - 1 ND! THEN THEN\n  THEN\n  10 ND@ 1 RSHIFT 10 ND!\n  11 ND@ 1- DUP 11 ND! 0= IF\n    8 11 ND!\n    9 ND@ IF 0 12 ND! 8 ND@ 10 ND! 0 9 ND!\n    ELSE 1 12 ND! THEN\n  THEN ;\n\\ Fast caller splits at each output clock, so at most one clock is due.\n: NA-DMC-CLOCK { clocks -- }\n  clocks 0= IF EXIT THEN\n  clocks 5 ND@ <= IF 5 ND@ clocks - 5 ND!\n  ELSE 4 ND@ 5 ND! NA-DMC-OUTPUT THEN ;\n: NA-DMC-NEXT ( -- cpu-clocks ) 5 ND@ 1+ 2 * NA-CYCLE @ 1 AND - ;\n: NA-RESET ( -- )\n  NA-STATE 44 CELLS 0 FILL\n  NA-DMC 15 CELLS 0 FILL 213 4 ND! 8 11 ND! 1 12 ND!\n  0 NA-CYCLE ! 0 NA-FRAME ! 0 NA-MODE ! 0 NA-INHIBIT !\n  0 NA-IRQ ! 0 NA-ENABLE ! 0 NA-LINEAR ! 0 NA-RELOAD !\n  1 NA-LFSR ! 0 NA-NOISE-MODE ! 0 NA-RESET-AT ! 0 NA-PENDING-MODE !\n  0 NA-FRACTION ! 0 NA-SLOW ! 1 3 1 NA!\n  0 NA-EVENT-COUNT ! 0 NA-EVENT-INDEX ! ;\n: NA-ENV { ch | ctl -- }\n  ch 0 NA@ TO ctl\n  ch 5 NA@ IF\n    0 ch 5 NA! 15 ch 7 NA! ctl 15 AND ch 6 NA!\n  ELSE\n    ch 6 NA@ IF ch 6 NA@ 1- ch 6 NA!\n    ELSE\n      ctl 15 AND ch 6 NA!\n      ch 7 NA@ IF ch 7 NA@ 1- ch 7 NA!\n      ELSE ctl 32 AND IF 15 ch 7 NA! THEN THEN\n    THEN\n  THEN ;\n: NA-QUARTER ( -- )\n  0 NA-ENV 1 NA-ENV 3 NA-ENV\n  NA-RELOAD @ IF 2 0 NA@ 127 AND NA-LINEAR !\n  ELSE NA-LINEAR @ IF -1 NA-LINEAR +! THEN THEN\n  2 0 NA@ 128 AND 0= IF 0 NA-RELOAD ! THEN ;\n: NA-TARGET { ch | period sweep delta -- target }\n  ch 1 NA@ TO period ch 8 NA@ TO sweep\n  period sweep 7 AND RSHIFT TO delta\n  sweep 8 AND IF period delta - ch 0= IF 1- THEN 0 MAX\n  ELSE period delta + THEN ;\n: NA-MUTED? ( ch -- flag ) DUP 1 NA@ 8 < SWAP NA-TARGET 2047 > OR ;\n: NA-HALF { | halt ch sweep -- }\n  4 0 DO\n    I TO ch ch 2 = IF 128 ELSE 32 THEN TO halt\n    ch 0 NA@ halt AND 0= ch 4 NA@ 0> AND IF ch 4 NA@ 1- ch 4 NA! THEN\n  LOOP\n  2 0 DO\n    I TO ch ch 8 NA@ TO sweep\n    ch 9 NA@ 0= sweep 128 AND 0<> AND sweep 7 AND 0<> AND\n    ch NA-MUTED? 0= AND IF ch NA-TARGET ch 1 NA! THEN\n    ch 9 NA@ 0= ch 10 NA@ OR IF\n      sweep 4 RSHIFT 7 AND ch 9 NA! 0 ch 10 NA!\n    ELSE ch 9 NA@ 1- ch 9 NA! THEN\n  LOOP ;\n: NA-NEXT-FRAME ( -- frame )\n  NA-FRAME @ DUP 7457 < IF DROP 7457 EXIT THEN\n  DUP 14913 < IF DROP 14913 EXIT THEN\n  DUP 22371 < IF DROP 22371 EXIT THEN\n  NA-MODE @ IF 37281 < IF 37281 ELSE 37282 THEN\n  ELSE DUP 29828 < IF DROP 29828 EXIT THEN\n    29829 < IF 29829 ELSE 29830 THEN THEN ;\n: NA-FRAME-EVENT ( -- )\n  NA-FRAME @ DUP 7457 = OVER 22371 = OR IF DROP NA-QUARTER EXIT THEN\n  DUP 14913 = IF DROP NA-QUARTER NA-HALF EXIT THEN\n  NA-MODE @ IF\n    DUP 37281 = IF NA-QUARTER NA-HALF THEN\n    37282 = IF 0 NA-FRAME ! THEN\n  ELSE\n    DUP 29828 >= IF NA-INHIBIT @ 0= IF 1 NA-IRQ ! THEN THEN\n    DUP 29829 = IF NA-QUARTER NA-HALF THEN\n    29830 = IF 0 NA-FRAME ! THEN\n  THEN ;\n: NA-FRAME-END ( -- )\n  NA-RESET-AT @ DUP 0<> SWAP NA-CYCLE @ = AND IF\n    0 NA-RESET-AT ! 0 NA-FRAME ! NA-PENDING-MODE @ NA-MODE !\n    NA-MODE @ IF NA-QUARTER NA-HALF THEN\n  ELSE NA-FRAME-EVENT THEN ;\n: NA-NOISE-SHIFT ( -- )\n  NA-LFSR @ DUP NA-NOISE-MODE @ IF 6 ELSE 1 THEN RSHIFT XOR 1 AND\n  14 LSHIFT NA-LFSR @ 1 RSHIFT OR NA-LFSR ! ;\n\\ Batch a divider's input clocks; same zero->reload semantics as reference tick.\n: NA-CLOCK { clocks ch | timer period events rest -- }\n  clocks 0= IF EXIT THEN\n  ch 2 NA@ TO timer ch 1 NA@ TO period\n  clocks timer <= IF timer clocks - ch 2 NA! EXIT THEN\n  clocks timer - 1- TO rest\n  rest period 1+ / 1+ TO events\n  period rest period 1+ MOD - ch 2 NA!\n  ch 2 < IF ch 3 NA@ events + 7 AND ch 3 NA! EXIT THEN\n  ch 2 = IF\n    ch 4 NA@ 0<> NA-LINEAR @ 0<> AND IF ch 3 NA@ events + 31 AND ch 3 NA! THEN EXIT\n  THEN\n  events 0 ?DO NA-NOISE-SHIFT LOOP ;\n: NA-TICK ( -- )\n  1 NA-CYCLE +! NA-DMC-FETCH\n  NA-CYCLE @ 1 AND 0= IF 1 0 NA-CLOCK 1 1 NA-CLOCK 1 3 NA-CLOCK 1 NA-DMC-CLOCK THEN\n  1 2 NA-CLOCK\n  1 NA-FRAME +! NA-FRAME-END ;\n: NA-FAST { clocks | n pulses -- }\n  BEGIN clocks 0> WHILE\n    NA-NEXT-FRAME NA-FRAME @ - clocks MIN TO n\n    NA-RESET-AT @ IF NA-RESET-AT @ NA-CYCLE @ - n MIN TO n THEN\n    NA-DMC-NEXT n MIN TO n\n    9 ND@ 0= 7 ND@ 0> AND IF 1 n MIN TO n THEN\n    NA-CYCLE @ n + 2 / NA-CYCLE @ 2 / - TO pulses\n    pulses 0 NA-CLOCK pulses 1 NA-CLOCK n 2 NA-CLOCK pulses 3 NA-CLOCK\n    n NA-CYCLE +! NA-DMC-FETCH pulses NA-DMC-CLOCK\n    n NA-FRAME +! n NEGATE +TO clocks NA-FRAME-END\n  REPEAT ;\n: NA-RAW-RUN ( clocks -- )\n  DUP 0< IF -24 THROW THEN\n  DUP 9223372036854775807 NA-CYCLE @ - > IF -24 THROW THEN\n  NA-SLOW @ IF 0 ?DO NA-TICK LOOP ELSE NA-FAST THEN ;\n: NA-RAW-TO ( cycle -- ) DUP NA-CYCLE @ < IF -24 THROW THEN NA-CYCLE @ - NA-RAW-RUN ;\n: NA-LOAD-LENGTH { value ch -- }\n  NA-ENABLE @ 1 ch LSHIFT AND IF value 3 RSHIFT CELLS NA-LENGTHS + @ ch 4 NA! THEN ;\n: NA-PERIOD-LOW { value ch -- } ch 1 NA@ 1792 AND value OR ch 1 NA! ;\n: NA-PERIOD-HIGH { value ch -- } ch 1 NA@ 255 AND value 7 AND 8 LSHIFT OR ch 1 NA! ;\n: NA-CHECK-WRITE { value address cycle -- }\n  value 0 256 WITHIN 0= IF -24 THROW THEN\n  address 16384 16408 WITHIN 0= IF -24 THROW THEN\n  cycle NA-CYCLE @ < IF -24 THROW THEN\n  address 16404 = address 16406 = OR IF -24 THROW THEN\n  address 16407 = cycle 9223372036854775803 > AND IF -24 THROW THEN\n  ;\n: NA-STORE { value address | ch reg -- }\n  address 16405 = IF\n    value 31 AND NA-ENABLE !\n    0 13 ND!\n    value 16 AND IF 7 ND@ 0= IF NA-DMC-RESTART THEN ELSE 0 7 ND! THEN\n    4 0 DO value 1 I LSHIFT AND 0= IF 0 I 4 NA! THEN LOOP EXIT THEN\n  address 16400 16404 WITHIN IF\n    address 16400 - CASE\n      0 OF value 0 ND! value 15 AND CELLS NA-DMC-RATES + @ 2 / 1- 4 ND!\n        value 128 AND 0= IF 0 13 ND! THEN ENDOF\n      1 OF value 127 AND 1 ND! ENDOF\n      2 OF value 2 ND! ENDOF\n      3 OF value 3 ND! ENDOF\n    ENDCASE EXIT THEN\n  address 16407 = IF\n    value 64 AND NA-INHIBIT ! NA-INHIBIT @ IF 0 NA-IRQ ! THEN\n    value 128 AND NA-PENDING-MODE !\n    NA-CYCLE @ DUP 1 AND IF 4 ELSE 3 THEN + NA-RESET-AT ! EXIT THEN\n  address 16384 - 4 / TO ch address 3 AND TO reg\n  ch 2 < IF\n    reg CASE\n      0 OF value ch 0 NA! ENDOF\n      1 OF value ch 8 NA! 1 ch 10 NA! ENDOF\n      2 OF value ch NA-PERIOD-LOW ENDOF\n      3 OF value ch NA-PERIOD-HIGH value ch NA-LOAD-LENGTH\n        0 ch 3 NA! 1 ch 5 NA! ENDOF\n    ENDCASE EXIT THEN\n  ch 2 = IF\n    reg CASE\n      0 OF value ch 0 NA! ENDOF\n      2 OF value ch NA-PERIOD-LOW ENDOF\n      3 OF value ch NA-PERIOD-HIGH value ch NA-LOAD-LENGTH 1 NA-RELOAD ! ENDOF\n    ENDCASE EXIT THEN\n  reg CASE\n    0 OF value 3 0 NA! ENDOF\n    2 OF value 128 AND NA-NOISE-MODE !\n      value 15 AND CELLS NA-NOISE-PERIODS + @ 2 / 1- 3 1 NA! ENDOF\n    3 OF value 3 NA-LOAD-LENGTH 1 3 5 NA! ENDOF\n  ENDCASE ;\n\\ Reclaim consumed entries only after all admission checks have succeeded.\n: NA-COMPACT ( -- )\n  NA-EVENT-INDEX @ 3 * CELLS NA-EVENTS + NA-EVENTS\n  NA-EVENT-COUNT @ NA-EVENT-INDEX @ - 3 * CELLS MOVE\n  NA-EVENT-INDEX @ NEGATE NA-EVENT-COUNT +! 0 NA-EVENT-INDEX ! ;\n: NA-EVENT! { value address cycle | entry -- }\n  value address cycle NA-CHECK-WRITE\n  NA-EVENT-COUNT @ NA-EVENT-INDEX @ - 1024 >= IF -528 THROW THEN\n  NA-EVENT-COUNT @ IF\n    NA-EVENT-COUNT @ 1- 3 * 2 + CELLS NA-EVENTS + @ cycle > IF -24 THROW THEN\n  THEN\n  NA-EVENT-COUNT @ 1024 >= IF NA-COMPACT THEN\n  NA-EVENT-COUNT @ 3 * CELLS NA-EVENTS + TO entry\n  value entry ! address entry CELL+ ! cycle entry 2 CELLS + !\n  1 NA-EVENT-COUNT +! ;\n: NA-TO { cycle | entry at -- }\n  cycle NA-CYCLE @ < IF -24 THROW THEN\n  BEGIN NA-EVENT-INDEX @ NA-EVENT-COUNT @ < WHILE\n    NA-EVENT-INDEX @ 3 * CELLS NA-EVENTS + TO entry\n    entry 2 CELLS + @ TO at\n    at cycle > IF cycle NA-RAW-TO EXIT THEN\n    at NA-RAW-TO entry @ entry CELL+ @ NA-STORE 1 NA-EVENT-INDEX +!\n  REPEAT cycle NA-RAW-TO ;\n: NA-RUN ( clocks -- )\n  DUP 0< IF -24 THROW THEN\n  DUP 9223372036854775807 NA-CYCLE @ - > IF -24 THROW THEN\n  NA-CYCLE @ + NA-TO ;\n: NA-WRITE { value address cycle -- }\n  value address cycle NA-CHECK-WRITE cycle NA-TO value address NA-STORE ;\n: NA-IRQ? ( -- flag ) NA-IRQ @ 13 ND@ OR 0<> ;\n: NA-STATUS ( cycle -- status )\n  NA-TO 0 4 0 DO I 4 NA@ IF 1 I LSHIFT OR THEN LOOP\n  7 ND@ IF 16 OR THEN 13 ND@ IF 128 OR THEN\n  NA-IRQ @ IF 64 OR THEN 0 NA-IRQ ! ;\n: NA-VOLUME ( ch -- volume ) DUP 0 NA@ DUP 16 AND IF 15 AND NIP ELSE DROP 7 NA@ THEN ;\n: NA-PULSE { ch -- level }\n  ch 4 NA@ 0= ch NA-MUTED? OR IF 0 EXIT THEN\n  ch 0 NA@ 6 RSHIFT CELLS NA-DUTIES + @ ch 3 NA@ RSHIFT 1 AND\n  IF ch NA-VOLUME ELSE 0 THEN ;\n: NA-TRIANGLE ( -- level ) 2 3 NA@ DUP 16 < IF 15 SWAP - ELSE 16 - THEN ;\n: NA-NOISE ( -- level ) 3 4 NA@ 0= NA-LFSR @ 1 AND OR IF 0 ELSE 3 NA-VOLUME THEN ;\n\\ Exact rational evaluation of the documented approximate DAC equations, including DMC.\n\\ Output = floor(pulse*32767) + floor(tnd*32767), using wide rational LUTs.\n\\ Unipolar; no analog filters or DC removal.\nCREATE NA-PULSE-MIX 31 CELLS ALLOT\nCREATE NA-TND-MIX 32768 CELLS ALLOT\n: NA-INIT-MIX ( -- )\n  31 0 DO I 9588 * 32767 * 8128 I 100 * + 100 * / I CELLS NA-PULSE-MIX + ! LOOP\n  32768 0 DO\n    I 2048 / 12241 * 22638 * I 128 / 15 AND 8227 * 22638 * +\n    I 127 AND 8227 * 12241 * +\n    DUP 15979 * 32767 UM* ROT 100 * 8227 12241 * 22638 * + 100 * UM/MOD NIP\n    I CELLS NA-TND-MIX + !\n  LOOP ;\n: NA-SAMPLE ( -- s16 )\n  0 NA-PULSE 1 NA-PULSE + CELLS NA-PULSE-MIX + @\n  NA-TRIANGLE 16 * NA-NOISE + 128 * 1 ND@ + CELLS NA-TND-MIX + @ + 32767 MIN ;\n\n: NA-LE! ( n addr -- ) OVER 255 AND OVER C! SWAP 8 RSHIFT 255 AND SWAP 1+ C! ;\n: NA-RENDER ( addr frames -- )\n  DUP 0< IF -24 THROW THEN\n  0 ?DO\n    NA-FRACTION @ NA-CPU + NA-RATE /MOD NA-RUN NA-FRACTION !\n    NA-SAMPLE OVER NA-LE! 2 +\n  LOOP DROP ;\n: NA-DEMO-SETUP ( -- )\n  NA-RESET\n  15 16405 0 NA-WRITE\n  191 16384 0 NA-WRITE 8 16385 0 NA-WRITE 253 16386 0 NA-WRITE 8 16387 0 NA-WRITE\n  115 16388 0 NA-WRITE 8 16389 0 NA-WRITE 167 16390 0 NA-WRITE 8 16391 0 NA-WRITE\n  255 16392 0 NA-WRITE 253 16394 0 NA-WRITE 8 16395 0 NA-WRITE\n  56 16396 0 NA-WRITE 132 16398 0 NA-WRITE 8 16399 0 NA-WRITE ;\nNA-DMC-MEMORY 32768 0 FILL\nNA-INIT-MIX NA-RESET\n",
+    "examples/nes-apu-play.fs": "\\ Explicit PCM wrapper. Run from repository root; load alone is silent.\n\\ sigma examples/nes-apu-play.fs -e \"NA-DEMO-SETUP 96 FALSE NA-STREAM BYE\"\n\\ TRUE submits the unfiltered waveform; FALSE synthesizes then sends zeros.\nS\" examples/nes-apu.fs\" INCLUDED\nS\" examples/pcm-synth-play.fs\" INCLUDED\n: NA-STREAM-RUN ( -- )\n  NA-RATE 1 4096 PCM-OPEN THROW PS-HANDLE !\n  PS-BLOCKS @ 0 ?DO\n    PS-BUFFER 512 NA-RENDER\n    PS-AUDIBLE @ 0= IF PS-BUFFER 1024 0 FILL THEN\n    PS-SEND\n  LOOP\n  1 1000 PS-HANDLE @ PCM-STOP THROW 0= IF -528 THROW THEN\n  PS-HANDLE @ PCM-UNDERRUNS THROW PS-UNDERRUN-COUNT ! ;\n: NA-STREAM ( blocks audible -- )\n  OVER 0< IF -24 THROW THEN\n  PS-HANDLE @ IF -528 THROW THEN\n  PS-AUDIBLE ! PS-BLOCKS !\n  0 PS-WRITES ! 0 PS-PARTIAL ! 0 PS-FULL ! 0 PS-WAITS !\n  0 PS-FRAMES ! 0 PS-UNDERRUN-COUNT !\n  ['] NA-STREAM-RUN CATCH >R PS-SAFE-CLEANUP\n  R> ?DUP IF SWAP DROP THROW THEN THROW ;\n",
+    "examples/sid.fs": "\\ Original PAL SID register model. Not 6581/8580 analog or ROM compatibility.\n\\ Load from repository root; loading alone never opens audio.\nS\" examples/sid-filter-coeffs.fs\" INCLUDED\nDECIMAL\n985248 CONSTANT SI-CPU\n48000 CONSTANT SI-RATE\n16777215 CONSTANT SI-MASK\nCREATE SI-REGS 25 CELLS ALLOT\nCREATE SI-STATE 30 CELLS ALLOT\n\\ Per voice: phase,lfsr,envelope,stage(0attack/1decay/2release),rate-counter,\n\\            exp-counter,hold-zero,frequency,width,exp-period.\n: SI@ ( voice field -- n ) SWAP 10 * + CELLS SI-STATE + @ ;\n: SI! ( value voice field -- ) SWAP 10 * + CELLS SI-STATE + ! ;\n: SI-R@ ( offset -- n ) CELLS SI-REGS + @ ;\n: SI-CONTROL ( voice -- n ) 7 * 4 + SI-R@ ;\nCREATE SI-RATES 9 , 32 , 63 , 95 , 149 , 220 , 267 , 313 , 392 , 977 , 1954 , 3126 , 3907 , 11720 , 19532 , 31251 ,\nCREATE SI-NOISE-TAPS 22 , 20 , 16 , 13 , 11 , 7 , 4 , 2 ,\nCREATE SI-RISE 3 CELLS ALLOT\nVARIABLE SI-CYCLE VARIABLE SI-FRACTION VARIABLE SI-SLOW\nVARIABLE SI-LOW VARIABLE SI-BAND\nVARIABLE SI-CLIPS VARIABLE SI-FILTER-LIMITS\nCREATE SI-EVENTS 3072 CELLS ALLOT\nVARIABLE SI-EVENT-COUNT VARIABLE SI-EVENT-INDEX\n: SI-RESET ( -- )\n  SI-REGS 25 CELLS 0 FILL SI-STATE 30 CELLS 0 FILL\n  3 0 DO 8388600 I 1 SI! 2 I 3 SI! 1 I 6 SI! 1 I 9 SI! LOOP\n  SI-RISE 3 CELLS 0 FILL\n  0 SI-CYCLE ! 0 SI-FRACTION ! 0 SI-SLOW ! 0 SI-LOW ! 0 SI-BAND !\n  0 SI-EVENT-COUNT ! 0 SI-EVENT-INDEX ! 0 SI-CLIPS ! 0 SI-FILTER-LIMITS ! ;\n: SI-ENV-RATE ( voice -- clocks )\n  DUP 3 SI@ CASE\n    0 OF 7 * 5 + SI-R@ 4 RSHIFT ENDOF\n    1 OF 7 * 5 + SI-R@ 15 AND ENDOF\n    2 OF 7 * 6 + SI-R@ 15 AND ENDOF\n  ENDCASE CELLS SI-RATES + @ ;\n: SI-EXP-UPDATE { voice | level -- }\n  voice 2 SI@ TO level\n  level CASE\n    255 OF 1 voice 9 SI! ENDOF 93 OF 2 voice 9 SI! ENDOF\n    54 OF 4 voice 9 SI! ENDOF 26 OF 8 voice 9 SI! ENDOF\n    14 OF 16 voice 9 SI! ENDOF 6 OF 30 voice 9 SI! ENDOF\n    0 OF 1 voice 9 SI! ENDOF\n  ENDCASE ;\n: SI-ENV { voice | level stage sustain exp -- }\n  voice 2 SI@ TO level voice 3 SI@ TO stage\n  stage 0= IF\n    0 voice 5 SI! level 255 < IF level 1+ TO level THEN\n    level voice 2 SI! voice SI-EXP-UPDATE level 255 = IF 1 voice 3 SI! THEN EXIT\n  THEN\n  voice 5 SI@ 1+ TO exp\n  exp voice 9 SI@ >= IF\n    0 voice 5 SI!\n    voice 6 SI@ 0= IF\n      voice 7 * 6 + SI-R@ 4 RSHIFT 17 * TO sustain\n      stage 2 = level sustain > OR IF\n        level 0> IF level 1- DUP voice 2 SI! 0= IF 1 voice 6 SI! THEN voice SI-EXP-UPDATE THEN\n      THEN\n    THEN\n  ELSE exp voice 5 SI! THEN ;\n: SI-NOISE-SHIFT ( voice -- )\n  DUP 1 SI@ DUP 22 RSHIFT OVER 17 RSHIFT XOR 1 AND\n  SWAP 1 LSHIFT OR 8388607 AND SWAP 1 SI! ;\n: SI-PHASES { clocks | voice old raw fresh -- }\n  3 0 DO\n    I TO voice voice 0 SI@ TO old\n    voice SI-CONTROL 8 AND IF 0 TO raw\n    ELSE old clocks voice 7 SI@ * + TO raw THEN\n    raw SI-MASK AND TO fresh\n    fresh voice 0 SI!\n    old 8388608 + 24 RSHIFT raw 8388608 + 24 RSHIFT < SI-RISE I CELLS + !\n    old 524288 + 20 RSHIFT raw 524288 + 20 RSHIFT < IF voice SI-NOISE-SHIFT THEN\n  LOOP\n  3 0 DO\n    I SI-CONTROL 2 AND SI-RISE I 2 + 3 MOD CELLS + @ AND IF 0 I 0 SI! THEN\n  LOOP ;\n: SI-COUNTERS { clocks | voice count -- }\n  3 0 DO\n    I TO voice voice 4 SI@ clocks + 32767 AND TO count\n    count voice 4 SI! count voice SI-ENV-RATE = IF 0 voice 4 SI! voice SI-ENV THEN\n  LOOP ;\n: SI-TICK ( -- ) 1 SI-PHASES 1 SI-COUNTERS 1 SI-CYCLE +! ;\n: SI-EDGE { phase frequency half | pos distance -- clocks }\n  phase half 2 * MOD TO pos\n  pos half < IF half pos - ELSE half 3 * pos - THEN TO distance\n  distance frequency 1- + frequency / ;\n: SI-STEP-LIMIT { clocks | voice count distance frequency phase -- n }\n  3 0 DO\n    I TO voice voice 4 SI@ TO count\n    voice SI-ENV-RATE count - 32767 AND DUP 0= IF DROP 32768 THEN\n    clocks MIN TO clocks\n    voice 7 SI@ TO frequency voice 0 SI@ TO phase\n    frequency voice SI-CONTROL 8 AND 0= AND IF\n      phase frequency 524288 SI-EDGE clocks MIN TO clocks\n      phase frequency 8388608 SI-EDGE clocks MIN TO clocks\n    THEN\n  LOOP clocks ;\n: SI-FAST { clocks | n -- }\n  BEGIN clocks 0> WHILE\n    clocks SI-STEP-LIMIT TO n n SI-PHASES n SI-COUNTERS n SI-CYCLE +!\n    n NEGATE +TO clocks\n  REPEAT ;\n: SI-RAW-RUN ( clocks -- )\n  DUP 0< IF -24 THROW THEN\n  DUP 9223372036854775807 SI-CYCLE @ - > IF -24 THROW THEN\n  SI-SLOW @ IF 0 ?DO SI-TICK LOOP ELSE SI-FAST THEN ;\n: SI-RAW-TO ( cycle -- ) DUP SI-CYCLE @ < IF -24 THROW THEN SI-CYCLE @ - SI-RAW-RUN ;\n: SI-CHECK-WRITE { value address cycle | waveform -- }\n  value 0 256 WITHIN 0= IF -24 THROW THEN\n  address 54272 54297 WITHIN 0= IF -24 THROW THEN\n  cycle SI-CYCLE @ < IF -24 THROW THEN\n  address 54272 - DUP 21 < SWAP 7 MOD 4 = AND IF\n    value 240 AND TO waveform waveform waveform 1- AND IF -21 THROW THEN\n  THEN ;\n: SI-STORE { value address | offset voice field old -- }\n  address 54272 - TO offset offset 25 >= IF EXIT THEN\n  offset 21 < IF\n    offset 7 / TO voice offset 7 MOD TO field\n    field 3 = IF value 15 AND TO value THEN\n    field 4 = IF\n      voice SI-CONTROL TO old\n      old value XOR 1 AND IF\n        value 1 AND IF 0 voice 3 SI! 0 voice 6 SI! ELSE 2 voice 3 SI! THEN\n      THEN\n      value 8 AND IF 0 voice 0 SI! 8388600 voice 1 SI!\n      ELSE old 8 AND IF 8388600 voice 1 SI! THEN THEN\n    THEN\n    value offset CELLS SI-REGS + !\n    field 2 < IF\n      voice 7 * SI-R@ voice 7 * 1+ SI-R@ 8 LSHIFT OR voice 7 SI!\n    THEN\n    field 2 = field 3 = OR IF\n      voice 7 * 2 + SI-R@ voice 7 * 3 + SI-R@ 8 LSHIFT OR voice 8 SI!\n    THEN\n  ELSE\n    offset 21 = IF value 7 AND TO value THEN\n    value offset CELLS SI-REGS + !\n  THEN ;\n: SI-COMPACT ( -- )\n  SI-EVENT-INDEX @ 3 * CELLS SI-EVENTS + SI-EVENTS\n  SI-EVENT-COUNT @ SI-EVENT-INDEX @ - 3 * CELLS MOVE\n  SI-EVENT-INDEX @ NEGATE SI-EVENT-COUNT +! 0 SI-EVENT-INDEX ! ;\n: SI-EVENT! { value address cycle | entry -- }\n  value address cycle SI-CHECK-WRITE\n  SI-EVENT-COUNT @ SI-EVENT-INDEX @ - 1024 >= IF -528 THROW THEN\n  SI-EVENT-COUNT @ IF\n    SI-EVENT-COUNT @ 1- 3 * 2 + CELLS SI-EVENTS + @ cycle > IF -24 THROW THEN\n  THEN\n  SI-EVENT-COUNT @ 1024 >= IF SI-COMPACT THEN\n  SI-EVENT-COUNT @ 3 * CELLS SI-EVENTS + TO entry\n  value entry ! address entry CELL+ ! cycle entry 2 CELLS + ! 1 SI-EVENT-COUNT +! ;\n: SI-TO { cycle | entry at -- }\n  cycle SI-CYCLE @ < IF -24 THROW THEN\n  BEGIN SI-EVENT-INDEX @ SI-EVENT-COUNT @ < WHILE\n    SI-EVENT-INDEX @ 3 * CELLS SI-EVENTS + TO entry entry 2 CELLS + @ TO at\n    at cycle > IF cycle SI-RAW-TO EXIT THEN\n    at SI-RAW-TO entry @ entry CELL+ @ SI-STORE 1 SI-EVENT-INDEX +!\n  REPEAT cycle SI-RAW-TO ;\n: SI-RUN ( clocks -- )\n  DUP 0< IF -24 THROW THEN\n  DUP 9223372036854775807 SI-CYCLE @ - > IF -24 THROW THEN SI-CYCLE @ + SI-TO ;\n: SI-WRITE { value address cycle -- }\n  value address cycle SI-CHECK-WRITE cycle SI-TO value address SI-STORE ;\n: SI-WAVE { voice | phase control waveform fold noise -- wave12 }\n  voice SI-CONTROL TO control control 240 AND TO waveform\n  waveform 0= IF 0 EXIT THEN\n  control 8 AND IF waveform 64 = IF 4095 ELSE 0 THEN EXIT THEN\n  voice 0 SI@ TO phase\n  waveform CASE\n    16 OF\n      phase 8388608 AND TO fold\n      control 4 AND IF fold voice 2 + 3 MOD 0 SI@ 8388608 AND XOR TO fold THEN\n      phase 12 RSHIFT 2047 AND fold IF 2047 XOR THEN 1 LSHIFT\n    ENDOF\n    32 OF phase 12 RSHIFT ENDOF\n    64 OF\n      voice 8 SI@ DUP 0= IF DROP 4095 ELSE\n        DUP 4095 = IF DROP 0 ELSE phase 12 RSHIFT SWAP >= IF 4095 ELSE 0 THEN THEN\n      THEN\n    ENDOF\n    128 OF\n      0 TO noise\n      8 0 DO noise 1 LSHIFT voice 1 SI@ SI-NOISE-TAPS I CELLS + @ RSHIFT 1 AND OR TO noise LOOP\n      noise 4 LSHIFT\n    ENDOF\n  ENDCASE ;\n: SI-READ { address cycle -- byte }\n  address 54272 54301 WITHIN 0= IF -24 THROW THEN\n  cycle SI-CYCLE @ < IF -24 THROW THEN\n  address 54299 < IF -21 THROW THEN\n  cycle SI-TO\n  address CASE\n    54299 OF 2 SI-WAVE 4 RSHIFT ENDOF 54300 OF 2 2 SI@ ENDOF\n  ENDCASE ;\n: SI-CLAMP ( fp -- fp )\n  DUP -8589934592 < OVER 8589934592 > OR IF 1 SI-FILTER-LIMITS +! THEN\n  -8589934592 MAX 8589934592 MIN ;\n: SI-FILTER { input | cutoff alpha damping high -- filtered }\n  21 SI-R@ 22 SI-R@ 3 LSHIFT OR TO cutoff\n  cutoff CELLS SI-FILTER-COEFFS + @ TO alpha\n  1414 23 SI-R@ 4 RSHIFT 80 * - 65536 * 1000 / TO damping\n  2 0 DO\n    input 65536 * SI-LOW @ - damping SI-BAND @ * 65536 / - TO high\n    SI-BAND @ alpha high * 65536 / + SI-CLAMP SI-BAND !\n    SI-LOW @ alpha SI-BAND @ * 65536 / + SI-CLAMP SI-LOW !\n  LOOP\n  0 24 SI-R@ 16 AND IF SI-LOW @ + THEN\n  24 SI-R@ 32 AND IF SI-BAND @ + THEN\n  24 SI-R@ 64 AND IF high + THEN 65536 / ;\n: SI-SAMPLE { | routed direct voice sample filtered -- s16 }\n  0 TO routed 0 TO direct\n  3 0 DO\n    I TO voice voice SI-CONTROL 240 AND IF\n      voice SI-WAVE 2048 - voice 2 SI@ * 255 / TO sample\n    ELSE 0 TO sample THEN\n    23 SI-R@ 1 voice LSHIFT AND IF routed sample + TO routed\n    ELSE voice 2 = 24 SI-R@ 128 AND 0<> AND 0= IF direct sample + TO direct THEN THEN\n  LOOP\n  routed SI-LOW @ OR SI-BAND @ OR IF routed SI-FILTER ELSE 0 THEN TO filtered\n  direct filtered + 24 SI-R@ 15 AND * 3 /\n  DUP -32768 < OVER 32767 > OR IF 1 SI-CLIPS +! THEN -32768 MAX 32767 MIN ;\n: SI-LE! ( n addr -- ) OVER 255 AND OVER C! SWAP 8 RSHIFT 255 AND SWAP 1+ C! ;\n: SI-RENDER ( addr frames -- )\n  DUP 0< IF -24 THROW THEN\n  0 ?DO SI-FRACTION @ SI-CPU + SI-RATE /MOD SI-RUN SI-FRACTION !\n    SI-SAMPLE OVER SI-LE! 2 + LOOP DROP ;\n: SI-DEMO-SETUP ( -- )\n  SI-RESET\n  68 54272 0 SI-WRITE 29 54273 0 SI-WRITE 0 54274 0 SI-WRITE 8 54275 0 SI-WRITE\n  34 54277 0 SI-WRITE 168 54278 0 SI-WRITE 65 54276 0 SI-WRITE\n  230 54279 0 SI-WRITE 14 54280 0 SI-WRITE\n  67 54284 0 SI-WRITE 136 54285 0 SI-WRITE 21 54283 0 SI-WRITE\n  113 54286 0 SI-WRITE 9 54287 0 SI-WRITE\n  50 54291 0 SI-WRITE 104 54292 0 SI-WRITE 33 54290 0 SI-WRITE\n  7 54293 0 SI-WRITE 100 54294 0 SI-WRITE\n  167 54295 0 SI-WRITE 31 54296 0 SI-WRITE ;\nSI-RESET\n",
+    "examples/sid-play.fs": "\\ Explicit PCM wrapper. Loading never plays sound. Run from repository root.\n\\ sigma examples/sid-play.fs -e \"SI-DEMO-SETUP 16 FALSE SI-STREAM BYE\"\nS\" examples/sid.fs\" INCLUDED\nS\" examples/pcm-synth-play.fs\" INCLUDED\n: SI-STREAM-RUN ( -- )\n  SI-RATE 1 4096 PCM-OPEN THROW PS-HANDLE !\n  PS-BLOCKS @ 0 ?DO\n    PS-BUFFER 512 SI-RENDER\n    PS-AUDIBLE @ 0= IF PS-BUFFER 1024 0 FILL THEN PS-SEND\n  LOOP\n  1 1000 PS-HANDLE @ PCM-STOP THROW 0= IF -528 THROW THEN\n  PS-HANDLE @ PCM-UNDERRUNS THROW PS-UNDERRUN-COUNT ! ;\n: SI-STREAM ( blocks audible -- )\n  OVER 0< IF -24 THROW THEN PS-HANDLE @ IF -528 THROW THEN\n  PS-AUDIBLE ! PS-BLOCKS !\n  0 PS-WRITES ! 0 PS-PARTIAL ! 0 PS-FULL ! 0 PS-WAITS !\n  0 PS-FRAMES ! 0 PS-UNDERRUN-COUNT !\n  ['] SI-STREAM-RUN CATCH >R PS-SAFE-CLEANUP\n  R> ?DUP IF SWAP DROP THROW THEN THROW ;\n",
+    "examples/pcm-synth.fs": "\\ Original Forth-only synthesis workload for task999. NOT a hardware emulator.\n\\ Loading only defines words: it does not open audio or play anything.\n\\ 4 voices; Q24 phase; fixed 48000 Hz mono signed16 little-endian output.\nDECIMAL\n48000 CONSTANT PS-RATE\n16777216 CONSTANT PS-TURN\nCREATE PS-KIND 4 CELLS ALLOT\nCREATE PS-STEP 4 CELLS ALLOT\nCREATE PS-GAIN 4 CELLS ALLOT\nCREATE PS-DUTY 4 CELLS ALLOT\nCREATE PS-PHASE 4 CELLS ALLOT\nCREATE PS-NOISE 4 CELLS ALLOT\n: PS-AT ( voice base -- addr ) SWAP CELLS + ;\n: PS-VOICE? ( voice -- ) 0 4 WITHIN 0= IF -24 THROW THEN ;\n: PS-RESET ( -- )\n  4 0 DO\n    0 I PS-KIND PS-AT ! 0 I PS-STEP PS-AT !\n    0 I PS-GAIN PS-AT ! 128 I PS-DUTY PS-AT !\n    0 I PS-PHASE PS-AT ! 1 I PS-NOISE PS-AT !\n  LOOP ;\n\\ Write (value voice register): 0 kind(0mute/1pulse/2triangle/3noise),\n\\ 1 Hz(0..23999), 2 peak gain(0..8191), 3 pulse duty(1..255 /256).\n\\ Validate all arguments before changing state; other fields/phase stay intact.\n: PS-REG! ( value voice register -- )\n  OVER PS-VOICE?\n  DUP 0 4 WITHIN 0= IF -24 THROW THEN\n  DUP 0= IF DROP OVER 0 4 WITHIN 0= IF -24 THROW THEN PS-KIND PS-AT ! EXIT THEN\n  DUP 1 = IF DROP OVER 0 24000 WITHIN 0= IF -24 THROW THEN\n    SWAP PS-TURN * PS-RATE / SWAP PS-STEP PS-AT ! EXIT THEN\n  DUP 2 = IF DROP OVER 0 8192 WITHIN 0= IF -24 THROW THEN PS-GAIN PS-AT ! EXIT THEN\n  DROP OVER 1 256 WITHIN 0= IF -24 THROW THEN PS-DUTY PS-AT ! ;\n: PS-LFSR ( u -- u ) DUP DUP 1 RSHIFT XOR 1 AND 15 LSHIFT SWAP 1 RSHIFT OR ;\n: PS-VOICE ( voice -- sample )\n  DUP PS-PHASE PS-AT @ OVER PS-STEP PS-AT @ +\n  DUP PS-TURN >= IF\n    OVER PS-NOISE PS-AT DUP @ PS-LFSR SWAP !\n  THEN\n  PS-TURN 1- AND DUP 2 PICK PS-PHASE PS-AT !\n  OVER PS-KIND PS-AT @\n  DUP 0= IF DROP 2DROP 0 EXIT THEN\n  DUP 1 = IF DROP OVER PS-DUTY PS-AT @ 65536 * <\n    IF PS-GAIN PS-AT @ ELSE PS-GAIN PS-AT @ NEGATE THEN EXIT THEN\n  2 = IF\n    14 RSHIFT DUP 512 < IF 128 * 32768 - ELSE 128 * 98304 SWAP - THEN\n    SWAP PS-GAIN PS-AT @ * 32768 / EXIT THEN\n  DROP DUP PS-NOISE PS-AT @ 1 AND IF PS-GAIN PS-AT @ ELSE PS-GAIN PS-AT @ NEGATE THEN ;\n: PS-SAMPLE ( -- n ) 0 4 0 DO I PS-VOICE + LOOP ;\n: PS-LE! ( n addr -- ) OVER 255 AND OVER C! SWAP 8 RSHIFT 255 AND SWAP 1+ C! ;\n\\ Caller supplies a valid destination of frames*2 bytes; no audio host needed.\n: PS-RENDER ( addr frames -- ) DUP 0< IF -24 THROW THEN 0 ?DO PS-SAMPLE OVER PS-LE! 2 + LOOP DROP ;\n: PS-DEMO-SETUP ( -- )\n  PS-RESET\n  1 0 0 PS-REG! 440 0 1 PS-REG! 2000 0 2 PS-REG! 64 0 3 PS-REG!\n  1 1 0 PS-REG! 660 1 1 PS-REG! 2000 1 2 PS-REG!\n  2 2 0 PS-REG! 110 2 1 PS-REG! 2000 2 2 PS-REG!\n  3 3 0 PS-REG! 3000 3 1 PS-REG! 500 3 2 PS-REG! ;\nPS-RESET\n",
+    "examples/pcm-synth-play.fs": "\\ Explicit PCM playback wrapper for pcm-synth.fs. Loading does not play audio.\n\\ Run from repository root: sigma examples/pcm-synth-play.fs -e \"PS-DEMO-SETUP 96 FALSE PS-STREAM BYE\"\n\\ TRUE opts into audible output (start at low system volume).\nS\" examples/pcm-synth.fs\" INCLUDED\nREQUIRE-AUDIO ALSO AUDIO\nCREATE PS-BUFFER 1024 ALLOT\nVARIABLE PS-HANDLE\nVARIABLE PS-BLOCKS\nVARIABLE PS-AUDIBLE\nVARIABLE PS-SENT\nVARIABLE PS-REQUEST\nVARIABLE PS-WRITES\nVARIABLE PS-PARTIAL\nVARIABLE PS-FULL\nVARIABLE PS-WAITS\nVARIABLE PS-FRAMES\nVARIABLE PS-UNDERRUN-COUNT\n: PS-SEND ( -- )\n  0 PS-SENT !\n  BEGIN 512 PS-SENT @ - DUP 0> WHILE\n    DUP PS-REQUEST ! PS-BUFFER PS-SENT @ 2 * + SWAP PS-HANDLE @ PCM-WRITE THROW\n    1 PS-WRITES +!\n    DUP 0= IF 1 PS-FULL +! THEN\n    DUP 0> IF DUP PS-REQUEST @ < IF 1 PS-PARTIAL +! THEN THEN\n    DUP PS-FRAMES +! PS-SENT +!\n    PS-SENT @ 512 < IF\n      1 PS-WAITS +! 1 1000 PS-HANDLE @ PCM-WAIT THROW 0= IF -528 THROW THEN\n    THEN\n  REPEAT DROP ;\n: PS-RUN ( -- )\n  PS-RATE 1 4096 PCM-OPEN THROW PS-HANDLE !\n  PS-BLOCKS @ 0 ?DO\n    PS-BUFFER 512 PS-RENDER\n    PS-AUDIBLE @ 0= IF PS-BUFFER 1024 0 FILL THEN\n    PS-SEND\n  LOOP\n  1 1000 PS-HANDLE @ PCM-STOP THROW 0= IF -528 THROW THEN\n  PS-HANDLE @ PCM-UNDERRUNS THROW PS-UNDERRUN-COUNT ! ;\n\\ Always attempt close after success/error. A failed close retains PS-HANDLE\n\\ for PS-CLEANUP retry; primary error wins if both body and cleanup fail.\n: PS-CLEANUP ( -- ior )\n  PS-HANDLE @ DUP 0= IF DROP 0 EXIT THEN\n  PCM-CLOSE DUP 0= IF 0 PS-HANDLE ! THEN ;\n: PS-SAFE-CLEANUP ( -- ior ) ['] PS-CLEANUP CATCH DUP IF EXIT THEN DROP ;\n: PS-STREAM ( blocks audible -- )\n  OVER 0< IF -24 THROW THEN\n  PS-HANDLE @ IF -528 THROW THEN\n  PS-AUDIBLE ! PS-BLOCKS !\n  0 PS-WRITES ! 0 PS-PARTIAL ! 0 PS-FULL ! 0 PS-WAITS !\n  0 PS-FRAMES ! 0 PS-UNDERRUN-COUNT !\n  ['] PS-RUN CATCH >R PS-SAFE-CLEANUP\n  R> ?DUP IF SWAP DROP THROW THEN THROW ;\n"
+  },
+  "interruption_supervisor_source": "from pathlib import Path\nimport importlib.util,sys,json,subprocess,hashlib,re\nroot=Path.cwd();chip=sys.argv[1];assert chip in ['nes','sid']\nspec=importlib.util.spec_from_file_location('listen',root/'tests/scripts/pcm-listen.py');m=importlib.util.module_from_spec(spec);spec.loader.exec_module(m)\nprefix='NA' if chip=='nes' else 'SI';example='examples/nes-apu-play.fs' if chip=='nes' else 'examples/sid-play.fs'\nblocks=288 if chip=='nes' else 384\nsource=f'''S\" {example}\" INCLUDED\n: LONG {prefix}-DEMO-SETUP 100000 TRUE {prefix}-STREAM ;\n: CHECK ( ior -- ) DUP -28 <> IF THROW THEN DROP PS-HANDLE @ IF -528 THROW THEN ;\n.\" READY: wait about1second, press Ctrl+C once; replay follows automatically\" CR STDOUT FLUSH-FILE THROW\n' LONG CATCH DUP .\" CATCH=\" . .\" handle=\" PS-HANDLE @ . CR STDOUT FLUSH-FILE THROW CHECK\n500 MS .\" REPLAY\" CR STDOUT FLUSH-FILE THROW\n{prefix}-DEMO-SETUP {blocks} TRUE {prefix}-STREAM\n.\" REPLAY-OK handle=\" PS-HANDLE @ . .\" underruns=\" PS-UNDERRUN-COUNT @ . CR 250 MS BYE\n'''\npath=root/f'.work/1150-1157/{chip}-interrupt.fs';path.write_text(source,encoding='utf-8',newline='\\n')\nbinary=root/'.work/1138/matrix/windows/bin/sigma.exe'\nwith m.parent_sigint_guard():\n with subprocess.Popen([str(binary),str(path)],stdout=subprocess.PIPE,stderr=subprocess.STDOUT,text=True,encoding='utf-8',bufsize=1) as p:\n  lines=[]\n  for line in p.stdout:print(line,end='',flush=True);lines.append(line)\n  p.wait()\nout=''.join(lines)\nok=p.returncode==0 and re.search(r'CATCH=\\s*-28\\s+handle=\\s*0',out) and re.search(r'REPLAY-OK handle=\\s*0',out)\nreport={'task':1150 if chip=='nes' else 1157,'case':chip+'-physical-interruption-and-replay','source':source,'stdout':out,'exit':p.returncode,'interruption_and_replay_checks_passed':bool(ok),'binary_sha256':hashlib.sha256(binary.read_bytes()).hexdigest(),'human_listening_result':'pending'}\n(root/f'.work/1150-1157/{chip}-interrupt.json').write_text(json.dumps(report,ensure_ascii=False,indent=2)+'\\n',encoding='utf-8',newline='\\n')\nif not ok:raise SystemExit('Interruption not caught during PCM-WAIT; see record. A signal during synthesis follows normal compute-loop termination rules.')\n"
+}

@@ -583,3 +583,5 @@ WAIT/STOPの期限切れはfalse,0、中断はTHROW -28です。切離し前にd
 [C64 SIDのForthモデル](SID_FORTH.md)は、3声の時刻指定レジスタ、TEST/SYNC/RING、ADSRと独自の整数フィルター近似を扱います。合成波形、実際の6581/8580のアナログ特性、ROM互換は対象外です。`sigma examples/sid-play.fs -e "SI-DEMO-SETUP 16 FALSE SI-STREAM BYE"`は合成後に無音を送り、TRUEを明示すると生成音を送ります。読み込むだけでは再生しません。
 
 [PaulaのForthレジスタモデル](PAULA_FORTH.md)は、4声ステレオの標本出力、DMA/手動DAT、IRQ mask、attachと時刻指定書込みを扱います。bus待ちを省いたモデルで、Agnusの競合・アナログfilter・ROM互換は含みません。`sigma examples/paula-play.fs -e "PA-DEMO-MEMORY PA-DEMO-SETUP 16 FALSE PA-STREAM BYE"`は合成後にステレオ無音を送り、TRUEだけ生成音を送ります。読込みだけでは再生しません。Mac受け入れ1147は1137の子に残しています。
+
+[YM2149/STのForthモデル](YM2149_FORTH.md)は、既存ST-SOUND/SOUNDの非同期経路に、時刻指定・読取り・仮想I/OポートとST選択/dataのモデルを補います。点標本のPCMはnativeの内部step平均とは別です。nativeの固定音量0はPSG sourceを無音にし、envelope level1とcoupling filterの減衰は維持します。読込みだけでは再生しません。`sigma examples/ym2149-play.fs -e "YM-DEMO-SETUP 16 FALSE YM-STREAM BYE"`は無音を送り、TRUEだけ生成音を送ります。実周辺機器やST/TOS完全互換は対象外で、Mac受け入れ1154は1138の子に残しています。

@@ -1,8 +1,20 @@
 # PCM公開語の実装・Windows/Linux検証（1128 / 1129）
 
+## Windows実聴1148の受け入れ完了（2026-11-20）
+
+レモンがWindows実装置で8項目を順番に聞き、各項目をokで確認した。48000Hz mono、22050Hz stereo左右、MML/SFXとの混合、破棄と再open、drain後の停止、SAVESYS保存アプリの2音を確認。最後は前面のPowerShellで物理Ctrl+Cを押し、CATCH=-28/CLOSE=0、続くhelloのACCEPTとcode0を記録し、中断後の音の停止も追加確認した。case1〜7のUNDERRUNSはすべて0。Windows11 Pro 10.0.26300、waveOut既定出力（個別endpoint表示名は未取得）。[全実行記録と利用者の確認](measurements/2026-11-20-pcm-windows-listening.json)。
+
+1148を完了。Linux1149は未完了・0%、1133は未完了・auto50%、998は未完了・auto94%。現WSLはAUDIO?=0のため、Linuxの実聴成功とは扱わない。以下の「Windows実聴未確認」はこの受け入れ以前の履歴。
+
+## 998の残件と語群除外再確認（2026-11-20）
+
+1159（Windows）・1160（Linux）を完了。1129の旧`[DEFINED] REQUIRE-AUDIO / PCM-OPEN`の0 0は有効版でも出るため、audio除外の根拠として撤回する。REQUIRE-AUDIOは辞書に残るparsing語なので、定義内でS" REQUIRE-AUDIO" EVALUATEしCATCHで実行した。両OSそれぞれaudio無効4構成で-275、AUDIOと全7組14語が現在の検索順で見つからないこと、stack深さ0を確認。有効4構成では成功0、ALSO AUDIO後に全7組14語が見つかりstack深さ0。1129保存版のSHAを元の記録と照合した16構成に、YM修正後の通常/audio除外の両OS4実行体も加え、計20件成功。[検査コード](../tests/scripts/verify-pcm-exclusion.py)、[全コマンドと原データ](measurements/2026-11-20-pcm-exclusion-recheck.json)。旧測定JSONは変更しない。
+
+998は未完了・auto88%。実装1125〜1128、自動受け入れ1129、Mac1130は完了を維持。残件は1133配下のWindows実聴1148とLinux実聴1149で、どちらも未完了。[8項目の実行手順](PCM_LISTENING_ACCEPTANCE.md)と専用スクリプトを追加し、両OSでcase1〜7の無音実行、case8の専用console/PTYによる合成キーを確認した。実聴/物理入力は未確認で、スクリプトは明示した--audible時だけ生成音を出す。現WSLはAUDIO?=0、libpulse0/libasound2t64未導入。システムへの導入・設定変更はしていない。
+
 PCM実聴1133は、Windows1148とLinux1149の子タスクに分割した。両方とも未完了・0%。OSごとに実装置の確認と実聴結果を記録し、両方が済むまで親1133を完了にしない。
 
-現行タスク状態（2026-11-20更新）：Windows/Linuxの実聴1133を998の子に移し、親998は未完了・auto85%へ戻した。実装1125〜1128、自動受け入れ1129、Mac受け入れ1130は完了を維持する。未確認の実聴を最後の統合1057へ集約しない。
+以前のタスク配置変更時点：Windows/Linuxの実聴1133を998の子に移し、親998は未完了・auto85%へ戻した（現在の再確認結果は冒頭の88%を参照）。実装1125〜1128、自動受け入れ1129、Mac受け入れ1130は完了を維持する。未確認の実聴を最後の統合1057へ集約しない。
 
 2026-11-20、Zig 0.17.1、基点main `416caf9`。1127のhost寿命差分と1128の公開語は未コミット。この記録を現在状態とする。Mac実機1130は同日9d1c528で実施し合格した（[下記](#mac実機受け入れ1130)）。
 
@@ -33,7 +45,7 @@ AUDIOにPCM-OPEN / WRITE / QUEUED / WAIT / STOP / CLOSE / UNDERRUNSの7語と対
 
 `zig build test`成功。aarch64-macosのcore/host cross compile成功は実行確認とは区別する。
 
-Windows GNU/Linux musl各11構成、計22構成をReleaseFast / cpu=baseline / strip=trueでビルドし実行した。graphics/audio/extensionの8組合せと、no-debug（graphics/extensionも除外）、no-files、no-image。audio有効では無音PCMの書込み、空き待ち、drain、停止/close、無効ID、メモリエラー回復、busyを確認。image有効ではPCM所有中SAVESYSから生成したアプリの未所有起動、SAVE/LOAD-DICTIONARYによる再openと既存所有の保持を確認した。audio無効ではREQUIRE-AUDIOとPCM-OPENの不在を確認した。
+Windows GNU/Linux musl各11構成、計22構成をReleaseFast / cpu=baseline / strip=trueでビルドし実行した。graphics/audio/extensionの8組合せと、no-debug（graphics/extensionも除外）、no-files、no-image。audio有効では無音PCMの書込み、空き待ち、drain、停止/close、無効ID、メモリエラー回復、busyを確認。image有効ではPCM所有中SAVESYSから生成したアプリの未所有起動、SAVE/LOAD-DICTIONARYによる再openと既存所有の保持を確認した。audio無効の旧不在確認は証拠として不十分だったため撤回し、上記1159/1160の実行検査で再確認した。
 
 専用WindowsコンソールとLinux PTYで各5ケースを実行し、WAIT/STOPで-28、CLOSEで-516と再試行、ab/日本語/未完成ESC列の保持、端末設定の復元、全子processの正常終了を確認した。Windowsは通常版とdebug/graphics/extension除外版、Linuxはgraphics/extension除外版とdebug/graphics/extension除外版。利用者のコンソールには入力していない。
 

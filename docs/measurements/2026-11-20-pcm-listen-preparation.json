@@ -1,0 +1,606 @@
+{
+  "date": "2026-11-20",
+  "base_commit": "52d432e",
+  "scope": "Preparation only. Silent real process executions and synthetic owned keys; human audition remains pending. No system package/configuration changed.",
+  "source_sha256_lf": {
+    "tests/scripts/pcm-listen.py": "94c09cef82640fd000b7c282b462271a8d633dc30156b7fb023be28dcf230b85",
+    "tests/scripts/verify-pcm-exclusion.py": "f287349bc3007869b8497468355a23c38e7bdd1b4fb1196571df1d2ec0f429e4"
+  },
+  "generator_checks": [
+    {
+      "case": 1,
+      "bytes": 192000,
+      "min": -4096,
+      "max": 4096,
+      "audible_pcm_sha256": "72bec4079b9459c1f005905db7e050cd1e8fe4b223a47bffc926fc83ec15d173",
+      "scope": "Generated buffer only; not submitted to native audio"
+    },
+    {
+      "case": 2,
+      "bytes": 264600,
+      "min": -4096,
+      "max": 4092,
+      "audible_pcm_sha256": "c49570877bd80ef4fc16cd7336258fbda825ce54c2266cfd2c0cd5288b4ede50",
+      "scope": "Generated buffer only; not submitted to native audio"
+    },
+    {
+      "case": 3,
+      "bytes": 192000,
+      "min": -4096,
+      "max": 4096,
+      "audible_pcm_sha256": "5eb9cbcc6a54c01ead051fb3c399cae2e011a34e5adcde2a403c3bab86e437f3",
+      "scope": "Generated buffer only; not submitted to native audio"
+    },
+    {
+      "case": 4,
+      "bytes": 192000,
+      "min": -4096,
+      "max": 4096,
+      "audible_pcm_sha256": "5eb9cbcc6a54c01ead051fb3c399cae2e011a34e5adcde2a403c3bab86e437f3",
+      "scope": "Generated buffer only; not submitted to native audio"
+    },
+    {
+      "case": 5,
+      "bytes": 192000,
+      "min": -4096,
+      "max": 4096,
+      "audible_pcm_sha256": "72bec4079b9459c1f005905db7e050cd1e8fe4b223a47bffc926fc83ec15d173",
+      "scope": "Generated buffer only; not submitted to native audio"
+    },
+    {
+      "case": 6,
+      "bytes": 192000,
+      "min": -4096,
+      "max": 4096,
+      "audible_pcm_sha256": "72bec4079b9459c1f005905db7e050cd1e8fe4b223a47bffc926fc83ec15d173",
+      "scope": "Generated buffer only; not submitted to native audio"
+    },
+    {
+      "case": 7,
+      "bytes": 192000,
+      "min": -4096,
+      "max": 4096,
+      "audible_pcm_sha256": "2f81ed892d7f4f90510beb63c5806a7588fc74f9347646677733d46ff7d2fcdf",
+      "scope": "Generated buffer only; not submitted to native audio"
+    },
+    {
+      "case": 8,
+      "bytes": 192000,
+      "min": -4096,
+      "max": 4096,
+      "audible_pcm_sha256": "302996aa01ffbe9b7df7c6ac25cd7f921c41e0afab23626c2d19de734869cce4",
+      "scope": "Generated buffer only; not submitted to native audio"
+    }
+  ],
+  "silent_cases": [
+    {
+      "case": 1,
+      "description": "48000Hz mono 440Hz, 2 seconds",
+      "audible_requested": false,
+      "human_listening_result": "not recorded; requires user confirmation",
+      "binary_sha256": "afac007953731a2bb6c717a52aac85bea196b5ce44e62b182a8524325e604d5b",
+      "pcm_sha256": "ea0787f65f73b0013d03b359490e3125211b28ad5c1502ffb1544c0ded4192f5",
+      "pcm_bytes": 192000,
+      "source": "REQUIRE-AUDIO ALSO AUDIO\nCREATE BUF 192000 ALLOT\nS\" D:/home/source/zig/forthz/.work/998-followup/listen-xt0e0fu2/input.pcm\" R/O OPEN-FILE THROW CONSTANT FD\n: LOAD-PCM BUF 192000 FD READ-FILE THROW 192000 <> IF -37 THROW THEN ; LOAD-PCM\nFD CLOSE-FILE THROW\nVARIABLE P VARIABLE OFFSET VARIABLE SENT VARIABLE REQUEST VARIABLE WRITES\n: OPEN-PCM 48000 1 32768 PCM-OPEN THROW P ! ;\n: CLEANUP P @ DUP IF PCM-CLOSE DUP 0= IF 0 P ! THEN ELSE DROP 0 THEN ;\n: SEND ( frames -- )\n  0 SENT ! BEGIN DUP SENT @ > WHILE\n    DUP SENT @ - 512 MIN REQUEST !\n    BUF OFFSET @ 2 * + REQUEST @ P @ PCM-WRITE THROW\n    DUP SENT +! OFFSET +! 1 WRITES +!\n    DUP SENT @ > IF 1 1000 P @ PCM-WAIT THROW 0= IF -528 THROW THEN THEN\n  REPEAT DROP ;\n: DRAIN 1 3000 P @ PCM-STOP THROW 0= IF -528 THROW THEN .\" DRAINED\" CR ;\n: REPORT .\" UNDERRUNS=\" P @ PCM-UNDERRUNS THROW .\n  .\" WRITES=\" WRITES @ . CR ;\n: TONE 0 OFFSET ! 96000 SEND ;\n: BODY OPEN-PCM TONE DRAIN REPORT 250 MS ;\n: RUN ['] BODY CATCH >R ['] CLEANUP CATCH DUP IF ELSE DROP THEN R> ?DUP IF SWAP DROP THROW THEN THROW ;\nRUN .\" COMPLETE DEPTH=\" DEPTH . CR BYE\n",
+      "exit": 0,
+      "stdout": "DRAINED\nUNDERRUNS=0 WRITES=201 \nCOMPLETE DEPTH=0 \n",
+      "stderr": "",
+      "underruns": [
+        0
+      ],
+      "elapsed_seconds": 2.275387999994564
+    },
+    {
+      "case": 2,
+      "description": "22050Hz stereo: left 440Hz then right 660Hz, 1.5 seconds each",
+      "audible_requested": false,
+      "human_listening_result": "not recorded; requires user confirmation",
+      "binary_sha256": "afac007953731a2bb6c717a52aac85bea196b5ce44e62b182a8524325e604d5b",
+      "pcm_sha256": "a8df041925e5c1bb9388fc80d5664827c8ca7ee6a7feff2deb78210b103d95af",
+      "pcm_bytes": 264600,
+      "source": "REQUIRE-AUDIO ALSO AUDIO\nCREATE BUF 264600 ALLOT\nS\" D:/home/source/zig/forthz/.work/998-followup/listen-3srtpc37/input.pcm\" R/O OPEN-FILE THROW CONSTANT FD\n: LOAD-PCM BUF 264600 FD READ-FILE THROW 264600 <> IF -37 THROW THEN ; LOAD-PCM\nFD CLOSE-FILE THROW\nVARIABLE P VARIABLE OFFSET VARIABLE SENT VARIABLE REQUEST VARIABLE WRITES\n: OPEN-PCM 22050 2 16384 PCM-OPEN THROW P ! ;\n: CLEANUP P @ DUP IF PCM-CLOSE DUP 0= IF 0 P ! THEN ELSE DROP 0 THEN ;\n: SEND ( frames -- )\n  0 SENT ! BEGIN DUP SENT @ > WHILE\n    DUP SENT @ - 512 MIN REQUEST !\n    BUF OFFSET @ 4 * + REQUEST @ P @ PCM-WRITE THROW\n    DUP SENT +! OFFSET +! 1 WRITES +!\n    DUP SENT @ > IF 1 1000 P @ PCM-WAIT THROW 0= IF -528 THROW THEN THEN\n  REPEAT DROP ;\n: DRAIN 1 3000 P @ PCM-STOP THROW 0= IF -528 THROW THEN .\" DRAINED\" CR ;\n: REPORT .\" UNDERRUNS=\" P @ PCM-UNDERRUNS THROW .\n  .\" WRITES=\" WRITES @ . CR ;\n: TONE 0 OFFSET ! 66150 SEND ;\n: BODY OPEN-PCM TONE DRAIN REPORT 250 MS ;\n: RUN ['] BODY CATCH >R ['] CLEANUP CATCH DUP IF ELSE DROP THEN R> ?DUP IF SWAP DROP THROW THEN THROW ;\nRUN .\" COMPLETE DEPTH=\" DEPTH . CR BYE\n",
+      "exit": 0,
+      "stdout": "DRAINED\nUNDERRUNS=0 WRITES=231 \nCOMPLETE DEPTH=0 \n",
+      "stderr": "",
+      "underruns": [
+        0
+      ],
+      "elapsed_seconds": 3.300256899994565
+    },
+    {
+      "case": 3,
+      "description": "48000Hz mono 220Hz mixed with MML melody",
+      "audible_requested": false,
+      "human_listening_result": "not recorded; requires user confirmation",
+      "binary_sha256": "afac007953731a2bb6c717a52aac85bea196b5ce44e62b182a8524325e604d5b",
+      "pcm_sha256": "ea0787f65f73b0013d03b359490e3125211b28ad5c1502ffb1544c0ded4192f5",
+      "pcm_bytes": 192000,
+      "source": "REQUIRE-AUDIO ALSO AUDIO\nCREATE BUF 192000 ALLOT\nS\" D:/home/source/zig/forthz/.work/998-followup/listen-gs47noqt/input.pcm\" R/O OPEN-FILE THROW CONSTANT FD\n: LOAD-PCM BUF 192000 FD READ-FILE THROW 192000 <> IF -37 THROW THEN ; LOAD-PCM\nFD CLOSE-FILE THROW\nVARIABLE P VARIABLE OFFSET VARIABLE SENT VARIABLE REQUEST VARIABLE WRITES\n: OPEN-PCM 48000 1 32768 PCM-OPEN THROW P ! ;\n: CLEANUP P @ DUP IF PCM-CLOSE DUP 0= IF 0 P ! THEN ELSE DROP 0 THEN ;\n: SEND ( frames -- )\n  0 SENT ! BEGIN DUP SENT @ > WHILE\n    DUP SENT @ - 512 MIN REQUEST !\n    BUF OFFSET @ 2 * + REQUEST @ P @ PCM-WRITE THROW\n    DUP SENT +! OFFSET +! 1 WRITES +!\n    DUP SENT @ > IF 1 1000 P @ PCM-WAIT THROW 0= IF -528 THROW THEN THEN\n  REPEAT DROP ;\n: DRAIN 1 3000 P @ PCM-STOP THROW 0= IF -528 THROW THEN .\" DRAINED\" CR ;\n: REPORT .\" UNDERRUNS=\" P @ PCM-UNDERRUNS THROW .\n  .\" WRITES=\" WRITES @ . CR ;\n: TONE 0 OFFSET ! 96000 SEND ;\n: BODY OPEN-PCM TONE DRAIN REPORT 250 MS ;\n: RUN ['] BODY CATCH >R ['] CLEANUP CATCH DUP IF ELSE DROP THEN R> ?DUP IF SWAP DROP THROW THEN THROW ;\nRUN .\" COMPLETE DEPTH=\" DEPTH . CR BYE\n",
+      "exit": 0,
+      "stdout": "DRAINED\nUNDERRUNS=0 WRITES=206 \nCOMPLETE DEPTH=0 \n",
+      "stderr": "",
+      "underruns": [
+        0
+      ],
+      "elapsed_seconds": 2.2850328000058653
+    },
+    {
+      "case": 4,
+      "description": "48000Hz mono 220Hz mixed with signed-8-bit SFX 880Hz",
+      "audible_requested": false,
+      "human_listening_result": "not recorded; requires user confirmation",
+      "binary_sha256": "afac007953731a2bb6c717a52aac85bea196b5ce44e62b182a8524325e604d5b",
+      "pcm_sha256": "ea0787f65f73b0013d03b359490e3125211b28ad5c1502ffb1544c0ded4192f5",
+      "pcm_bytes": 192000,
+      "source": "REQUIRE-AUDIO ALSO AUDIO\nCREATE BUF 192000 ALLOT\nS\" D:/home/source/zig/forthz/.work/998-followup/listen-7cb3jtfi/input.pcm\" R/O OPEN-FILE THROW CONSTANT FD\n: LOAD-PCM BUF 192000 FD READ-FILE THROW 192000 <> IF -37 THROW THEN ; LOAD-PCM\nFD CLOSE-FILE THROW\nVARIABLE P VARIABLE OFFSET VARIABLE SENT VARIABLE REQUEST VARIABLE WRITES\n: OPEN-PCM 48000 1 32768 PCM-OPEN THROW P ! ;\n: CLEANUP P @ DUP IF PCM-CLOSE DUP 0= IF 0 P ! THEN ELSE DROP 0 THEN ;\n: SEND ( frames -- )\n  0 SENT ! BEGIN DUP SENT @ > WHILE\n    DUP SENT @ - 512 MIN REQUEST !\n    BUF OFFSET @ 2 * + REQUEST @ P @ PCM-WRITE THROW\n    DUP SENT +! OFFSET +! 1 WRITES +!\n    DUP SENT @ > IF 1 1000 P @ PCM-WAIT THROW 0= IF -528 THROW THEN THEN\n  REPEAT DROP ;\n: DRAIN 1 3000 P @ PCM-STOP THROW 0= IF -528 THROW THEN .\" DRAINED\" CR ;\n: REPORT .\" UNDERRUNS=\" P @ PCM-UNDERRUNS THROW .\n  .\" WRITES=\" WRITES @ . CR ;\n: TONE 0 OFFSET ! 96000 SEND ;\nCREATE FX 48000 ALLOT\nS\" D:/home/source/zig/forthz/.work/998-followup/listen-7cb3jtfi/sfx.raw\" R/O OPEN-FILE THROW CONSTANT FXFD\n: LOAD-FX FX 48000 FXFD READ-FILE THROW 48000 <> IF -37 THROW THEN ; LOAD-FX\nFXFD CLOSE-FILE THROW FX 48000 48000 0 SAMPLE\n: BODY OPEN-PCM 0 SFX TONE DRAIN REPORT 250 MS ;\n: RUN ['] BODY CATCH >R ['] CLEANUP CATCH DUP IF ELSE DROP THEN R> ?DUP IF SWAP DROP THROW THEN THROW ;\nRUN .\" COMPLETE DEPTH=\" DEPTH . CR BYE\n",
+      "exit": 0,
+      "stdout": "DRAINED\nUNDERRUNS=0 WRITES=234 \nCOMPLETE DEPTH=0 \n",
+      "stderr": "",
+      "underruns": [
+        0
+      ],
+      "elapsed_seconds": 2.2980301000061445
+    },
+    {
+      "case": 5,
+      "description": "queued PCM discard after150ms, 1 second pause, reopen and restart",
+      "audible_requested": false,
+      "human_listening_result": "not recorded; requires user confirmation",
+      "binary_sha256": "afac007953731a2bb6c717a52aac85bea196b5ce44e62b182a8524325e604d5b",
+      "pcm_sha256": "ea0787f65f73b0013d03b359490e3125211b28ad5c1502ffb1544c0ded4192f5",
+      "pcm_bytes": 192000,
+      "source": "REQUIRE-AUDIO ALSO AUDIO\nCREATE BUF 192000 ALLOT\nS\" D:/home/source/zig/forthz/.work/998-followup/listen-4wwz0cfq/input.pcm\" R/O OPEN-FILE THROW CONSTANT FD\n: LOAD-PCM BUF 192000 FD READ-FILE THROW 192000 <> IF -37 THROW THEN ; LOAD-PCM\nFD CLOSE-FILE THROW\nVARIABLE P VARIABLE OFFSET VARIABLE SENT VARIABLE REQUEST VARIABLE WRITES\n: OPEN-PCM 48000 1 32768 PCM-OPEN THROW P ! ;\n: CLEANUP P @ DUP IF PCM-CLOSE DUP 0= IF 0 P ! THEN ELSE DROP 0 THEN ;\n: SEND ( frames -- )\n  0 SENT ! BEGIN DUP SENT @ > WHILE\n    DUP SENT @ - 512 MIN REQUEST !\n    BUF OFFSET @ 2 * + REQUEST @ P @ PCM-WRITE THROW\n    DUP SENT +! OFFSET +! 1 WRITES +!\n    DUP SENT @ > IF 1 1000 P @ PCM-WAIT THROW 0= IF -528 THROW THEN THEN\n  REPEAT DROP ;\n: DRAIN 1 3000 P @ PCM-STOP THROW 0= IF -528 THROW THEN .\" DRAINED\" CR ;\n: REPORT .\" UNDERRUNS=\" P @ PCM-UNDERRUNS THROW .\n  .\" WRITES=\" WRITES @ . CR ;\n: TONE 0 OFFSET ! 96000 SEND ;\n: BODY OPEN-PCM 0 OFFSET ! 32768 SEND 150 MS 0 1000 P @ PCM-STOP THROW 0= IF -528 THROW THEN .\" DISCARDED\" CR CLEANUP THROW 1000 MS OPEN-PCM TONE DRAIN REPORT 250 MS ;\n: RUN ['] BODY CATCH >R ['] CLEANUP CATCH DUP IF ELSE DROP THEN R> ?DUP IF SWAP DROP THROW THEN THROW ;\nRUN .\" COMPLETE DEPTH=\" DEPTH . CR BYE\n",
+      "exit": 0,
+      "stdout": "DISCARDED\nDRAINED\nUNDERRUNS=0 WRITES=260 \nCOMPLETE DEPTH=0 \n",
+      "stderr": "",
+      "underruns": [
+        0
+      ],
+      "elapsed_seconds": 3.4966346000001067
+    },
+    {
+      "case": 6,
+      "description": "PCM drain followed by DRAINED, silence after completion",
+      "audible_requested": false,
+      "human_listening_result": "not recorded; requires user confirmation",
+      "binary_sha256": "afac007953731a2bb6c717a52aac85bea196b5ce44e62b182a8524325e604d5b",
+      "pcm_sha256": "ea0787f65f73b0013d03b359490e3125211b28ad5c1502ffb1544c0ded4192f5",
+      "pcm_bytes": 192000,
+      "source": "REQUIRE-AUDIO ALSO AUDIO\nCREATE BUF 192000 ALLOT\nS\" D:/home/source/zig/forthz/.work/998-followup/listen-frc65bnm/input.pcm\" R/O OPEN-FILE THROW CONSTANT FD\n: LOAD-PCM BUF 192000 FD READ-FILE THROW 192000 <> IF -37 THROW THEN ; LOAD-PCM\nFD CLOSE-FILE THROW\nVARIABLE P VARIABLE OFFSET VARIABLE SENT VARIABLE REQUEST VARIABLE WRITES\n: OPEN-PCM 48000 1 32768 PCM-OPEN THROW P ! ;\n: CLEANUP P @ DUP IF PCM-CLOSE DUP 0= IF 0 P ! THEN ELSE DROP 0 THEN ;\n: SEND ( frames -- )\n  0 SENT ! BEGIN DUP SENT @ > WHILE\n    DUP SENT @ - 512 MIN REQUEST !\n    BUF OFFSET @ 2 * + REQUEST @ P @ PCM-WRITE THROW\n    DUP SENT +! OFFSET +! 1 WRITES +!\n    DUP SENT @ > IF 1 1000 P @ PCM-WAIT THROW 0= IF -528 THROW THEN THEN\n  REPEAT DROP ;\n: DRAIN 1 3000 P @ PCM-STOP THROW 0= IF -528 THROW THEN .\" DRAINED\" CR ;\n: REPORT .\" UNDERRUNS=\" P @ PCM-UNDERRUNS THROW .\n  .\" WRITES=\" WRITES @ . CR ;\n: TONE 0 OFFSET ! 96000 SEND ;\n: BODY OPEN-PCM TONE DRAIN REPORT 1000 MS ;\n: RUN ['] BODY CATCH >R ['] CLEANUP CATCH DUP IF ELSE DROP THEN R> ?DUP IF SWAP DROP THROW THEN THROW ;\nRUN .\" COMPLETE DEPTH=\" DEPTH . CR BYE\n",
+      "exit": 0,
+      "stdout": "DRAINED\nUNDERRUNS=0 WRITES=199 \nCOMPLETE DEPTH=0 \n",
+      "stderr": "",
+      "underruns": [
+        0
+      ],
+      "elapsed_seconds": 3.049657700001262
+    },
+    {
+      "case": 7,
+      "description": "SAVESYS app plays523Hz then784Hz, each1second",
+      "audible_requested": false,
+      "human_listening_result": "not recorded; requires user confirmation",
+      "binary_sha256": "afac007953731a2bb6c717a52aac85bea196b5ce44e62b182a8524325e604d5b",
+      "pcm_sha256": "ea0787f65f73b0013d03b359490e3125211b28ad5c1502ffb1544c0ded4192f5",
+      "pcm_bytes": 192000,
+      "source": "REQUIRE-AUDIO ALSO AUDIO\nCREATE BUF 192000 ALLOT\nS\" D:/home/source/zig/forthz/.work/998-followup/listen-nlurwz_e/input.pcm\" R/O OPEN-FILE THROW CONSTANT FD\n: LOAD-PCM BUF 192000 FD READ-FILE THROW 192000 <> IF -37 THROW THEN ; LOAD-PCM\nFD CLOSE-FILE THROW\nVARIABLE P VARIABLE OFFSET VARIABLE SENT VARIABLE REQUEST VARIABLE WRITES\n: OPEN-PCM 48000 1 32768 PCM-OPEN THROW P ! ;\n: CLEANUP P @ DUP IF PCM-CLOSE DUP 0= IF 0 P ! THEN ELSE DROP 0 THEN ;\n: SEND ( frames -- )\n  0 SENT ! BEGIN DUP SENT @ > WHILE\n    DUP SENT @ - 512 MIN REQUEST !\n    BUF OFFSET @ 2 * + REQUEST @ P @ PCM-WRITE THROW\n    DUP SENT +! OFFSET +! 1 WRITES +!\n    DUP SENT @ > IF 1 1000 P @ PCM-WAIT THROW 0= IF -528 THROW THEN THEN\n  REPEAT DROP ;\n: DRAIN 1 3000 P @ PCM-STOP THROW 0= IF -528 THROW THEN .\" DRAINED\" CR ;\n: REPORT .\" UNDERRUNS=\" P @ PCM-UNDERRUNS THROW .\n  .\" WRITES=\" WRITES @ . CR ;\n: TONE 0 OFFSET ! 96000 SEND ;\n: BODY OPEN-PCM TONE DRAIN REPORT 250 MS ;\n: RUN ['] BODY CATCH >R ['] CLEANUP CATCH DUP IF ELSE DROP THEN R> ?DUP IF SWAP DROP THROW THEN THROW ;\n: MAIN RUN ; ' MAIN APP-ENTRY! SAVESYS D:/home/source/zig/forthz/.work/998-followup/listen-nlurwz_e/pcm-saved.exe BYE\n",
+      "exit": 0,
+      "stdout": "DRAINED\nUNDERRUNS=0 WRITES=212 \n",
+      "stderr": "",
+      "underruns": [
+        0
+      ],
+      "elapsed_seconds": 2.3411250000062864
+    },
+    {
+      "case": 1,
+      "description": "48000Hz mono 440Hz, 2 seconds",
+      "audible_requested": false,
+      "human_listening_result": "not recorded; requires user confirmation",
+      "binary_sha256": "28b12e5b3555c0afff155de3e1bb39474dc549d0a382a18128e73003ab24f193",
+      "pcm_sha256": "ea0787f65f73b0013d03b359490e3125211b28ad5c1502ffb1544c0ded4192f5",
+      "pcm_bytes": 192000,
+      "source": "REQUIRE-AUDIO ALSO AUDIO\nCREATE BUF 192000 ALLOT\nS\" /mnt/d/home/source/zig/forthz/.work/998-followup/listen-z_9l7wpd/input.pcm\" R/O OPEN-FILE THROW CONSTANT FD\n: LOAD-PCM BUF 192000 FD READ-FILE THROW 192000 <> IF -37 THROW THEN ; LOAD-PCM\nFD CLOSE-FILE THROW\nVARIABLE P VARIABLE OFFSET VARIABLE SENT VARIABLE REQUEST VARIABLE WRITES\n: OPEN-PCM 48000 1 32768 PCM-OPEN THROW P ! ;\n: CLEANUP P @ DUP IF PCM-CLOSE DUP 0= IF 0 P ! THEN ELSE DROP 0 THEN ;\n: SEND ( frames -- )\n  0 SENT ! BEGIN DUP SENT @ > WHILE\n    DUP SENT @ - 512 MIN REQUEST !\n    BUF OFFSET @ 2 * + REQUEST @ P @ PCM-WRITE THROW\n    DUP SENT +! OFFSET +! 1 WRITES +!\n    DUP SENT @ > IF 1 1000 P @ PCM-WAIT THROW 0= IF -528 THROW THEN THEN\n  REPEAT DROP ;\n: DRAIN 1 3000 P @ PCM-STOP THROW 0= IF -528 THROW THEN .\" DRAINED\" CR ;\n: REPORT .\" UNDERRUNS=\" P @ PCM-UNDERRUNS THROW .\n  .\" WRITES=\" WRITES @ . CR ;\n: TONE 0 OFFSET ! 96000 SEND ;\n: BODY OPEN-PCM TONE DRAIN REPORT 250 MS ;\n: RUN ['] BODY CATCH >R ['] CLEANUP CATCH DUP IF ELSE DROP THEN R> ?DUP IF SWAP DROP THROW THEN THROW ;\nRUN .\" COMPLETE DEPTH=\" DEPTH . CR BYE\n",
+      "exit": 0,
+      "stdout": "DRAINED\nUNDERRUNS=0 WRITES=327 \nCOMPLETE DEPTH=0 \n",
+      "stderr": "",
+      "underruns": [
+        0
+      ],
+      "elapsed_seconds": 2.635241127999997
+    },
+    {
+      "case": 2,
+      "description": "22050Hz stereo: left 440Hz then right 660Hz, 1.5 seconds each",
+      "audible_requested": false,
+      "human_listening_result": "not recorded; requires user confirmation",
+      "binary_sha256": "28b12e5b3555c0afff155de3e1bb39474dc549d0a382a18128e73003ab24f193",
+      "pcm_sha256": "a8df041925e5c1bb9388fc80d5664827c8ca7ee6a7feff2deb78210b103d95af",
+      "pcm_bytes": 264600,
+      "source": "REQUIRE-AUDIO ALSO AUDIO\nCREATE BUF 264600 ALLOT\nS\" /mnt/d/home/source/zig/forthz/.work/998-followup/listen-3y21znx6/input.pcm\" R/O OPEN-FILE THROW CONSTANT FD\n: LOAD-PCM BUF 264600 FD READ-FILE THROW 264600 <> IF -37 THROW THEN ; LOAD-PCM\nFD CLOSE-FILE THROW\nVARIABLE P VARIABLE OFFSET VARIABLE SENT VARIABLE REQUEST VARIABLE WRITES\n: OPEN-PCM 22050 2 16384 PCM-OPEN THROW P ! ;\n: CLEANUP P @ DUP IF PCM-CLOSE DUP 0= IF 0 P ! THEN ELSE DROP 0 THEN ;\n: SEND ( frames -- )\n  0 SENT ! BEGIN DUP SENT @ > WHILE\n    DUP SENT @ - 512 MIN REQUEST !\n    BUF OFFSET @ 4 * + REQUEST @ P @ PCM-WRITE THROW\n    DUP SENT +! OFFSET +! 1 WRITES +!\n    DUP SENT @ > IF 1 1000 P @ PCM-WAIT THROW 0= IF -528 THROW THEN THEN\n  REPEAT DROP ;\n: DRAIN 1 3000 P @ PCM-STOP THROW 0= IF -528 THROW THEN .\" DRAINED\" CR ;\n: REPORT .\" UNDERRUNS=\" P @ PCM-UNDERRUNS THROW .\n  .\" WRITES=\" WRITES @ . CR ;\n: TONE 0 OFFSET ! 66150 SEND ;\n: BODY OPEN-PCM TONE DRAIN REPORT 250 MS ;\n: RUN ['] BODY CATCH >R ['] CLEANUP CATCH DUP IF ELSE DROP THEN R> ?DUP IF SWAP DROP THROW THEN THROW ;\nRUN .\" COMPLETE DEPTH=\" DEPTH . CR BYE\n",
+      "exit": 0,
+      "stdout": "DRAINED\nUNDERRUNS=0 WRITES=490 \nCOMPLETE DEPTH=0 \n",
+      "stderr": "",
+      "underruns": [
+        0
+      ],
+      "elapsed_seconds": 3.937590509000003
+    },
+    {
+      "case": 3,
+      "description": "48000Hz mono 220Hz mixed with MML melody",
+      "audible_requested": false,
+      "human_listening_result": "not recorded; requires user confirmation",
+      "binary_sha256": "28b12e5b3555c0afff155de3e1bb39474dc549d0a382a18128e73003ab24f193",
+      "pcm_sha256": "ea0787f65f73b0013d03b359490e3125211b28ad5c1502ffb1544c0ded4192f5",
+      "pcm_bytes": 192000,
+      "source": "REQUIRE-AUDIO ALSO AUDIO\nCREATE BUF 192000 ALLOT\nS\" /mnt/d/home/source/zig/forthz/.work/998-followup/listen-1gv055pc/input.pcm\" R/O OPEN-FILE THROW CONSTANT FD\n: LOAD-PCM BUF 192000 FD READ-FILE THROW 192000 <> IF -37 THROW THEN ; LOAD-PCM\nFD CLOSE-FILE THROW\nVARIABLE P VARIABLE OFFSET VARIABLE SENT VARIABLE REQUEST VARIABLE WRITES\n: OPEN-PCM 48000 1 32768 PCM-OPEN THROW P ! ;\n: CLEANUP P @ DUP IF PCM-CLOSE DUP 0= IF 0 P ! THEN ELSE DROP 0 THEN ;\n: SEND ( frames -- )\n  0 SENT ! BEGIN DUP SENT @ > WHILE\n    DUP SENT @ - 512 MIN REQUEST !\n    BUF OFFSET @ 2 * + REQUEST @ P @ PCM-WRITE THROW\n    DUP SENT +! OFFSET +! 1 WRITES +!\n    DUP SENT @ > IF 1 1000 P @ PCM-WAIT THROW 0= IF -528 THROW THEN THEN\n  REPEAT DROP ;\n: DRAIN 1 3000 P @ PCM-STOP THROW 0= IF -528 THROW THEN .\" DRAINED\" CR ;\n: REPORT .\" UNDERRUNS=\" P @ PCM-UNDERRUNS THROW .\n  .\" WRITES=\" WRITES @ . CR ;\n: TONE 0 OFFSET ! 96000 SEND ;\n: BODY OPEN-PCM TONE DRAIN REPORT 250 MS ;\n: RUN ['] BODY CATCH >R ['] CLEANUP CATCH DUP IF ELSE DROP THEN R> ?DUP IF SWAP DROP THROW THEN THROW ;\nRUN .\" COMPLETE DEPTH=\" DEPTH . CR BYE\n",
+      "exit": 0,
+      "stdout": "DRAINED\nUNDERRUNS=0 WRITES=326 \nCOMPLETE DEPTH=0 \n",
+      "stderr": "",
+      "underruns": [
+        0
+      ],
+      "elapsed_seconds": 2.9319758839999963
+    },
+    {
+      "case": 4,
+      "description": "48000Hz mono 220Hz mixed with signed-8-bit SFX 880Hz",
+      "audible_requested": false,
+      "human_listening_result": "not recorded; requires user confirmation",
+      "binary_sha256": "28b12e5b3555c0afff155de3e1bb39474dc549d0a382a18128e73003ab24f193",
+      "pcm_sha256": "ea0787f65f73b0013d03b359490e3125211b28ad5c1502ffb1544c0ded4192f5",
+      "pcm_bytes": 192000,
+      "source": "REQUIRE-AUDIO ALSO AUDIO\nCREATE BUF 192000 ALLOT\nS\" /mnt/d/home/source/zig/forthz/.work/998-followup/listen-22i2sn8j/input.pcm\" R/O OPEN-FILE THROW CONSTANT FD\n: LOAD-PCM BUF 192000 FD READ-FILE THROW 192000 <> IF -37 THROW THEN ; LOAD-PCM\nFD CLOSE-FILE THROW\nVARIABLE P VARIABLE OFFSET VARIABLE SENT VARIABLE REQUEST VARIABLE WRITES\n: OPEN-PCM 48000 1 32768 PCM-OPEN THROW P ! ;\n: CLEANUP P @ DUP IF PCM-CLOSE DUP 0= IF 0 P ! THEN ELSE DROP 0 THEN ;\n: SEND ( frames -- )\n  0 SENT ! BEGIN DUP SENT @ > WHILE\n    DUP SENT @ - 512 MIN REQUEST !\n    BUF OFFSET @ 2 * + REQUEST @ P @ PCM-WRITE THROW\n    DUP SENT +! OFFSET +! 1 WRITES +!\n    DUP SENT @ > IF 1 1000 P @ PCM-WAIT THROW 0= IF -528 THROW THEN THEN\n  REPEAT DROP ;\n: DRAIN 1 3000 P @ PCM-STOP THROW 0= IF -528 THROW THEN .\" DRAINED\" CR ;\n: REPORT .\" UNDERRUNS=\" P @ PCM-UNDERRUNS THROW .\n  .\" WRITES=\" WRITES @ . CR ;\n: TONE 0 OFFSET ! 96000 SEND ;\nCREATE FX 48000 ALLOT\nS\" /mnt/d/home/source/zig/forthz/.work/998-followup/listen-22i2sn8j/sfx.raw\" R/O OPEN-FILE THROW CONSTANT FXFD\n: LOAD-FX FX 48000 FXFD READ-FILE THROW 48000 <> IF -37 THROW THEN ; LOAD-FX\nFXFD CLOSE-FILE THROW FX 48000 48000 0 SAMPLE\n: BODY OPEN-PCM 0 SFX TONE DRAIN REPORT 250 MS ;\n: RUN ['] BODY CATCH >R ['] CLEANUP CATCH DUP IF ELSE DROP THEN R> ?DUP IF SWAP DROP THROW THEN THROW ;\nRUN .\" COMPLETE DEPTH=\" DEPTH . CR BYE\n",
+      "exit": 0,
+      "stdout": "DRAINED\nUNDERRUNS=0 WRITES=323 \nCOMPLETE DEPTH=0 \n",
+      "stderr": "",
+      "underruns": [
+        0
+      ],
+      "elapsed_seconds": 2.9355663099999987
+    },
+    {
+      "case": 5,
+      "description": "queued PCM discard after150ms, 1 second pause, reopen and restart",
+      "audible_requested": false,
+      "human_listening_result": "not recorded; requires user confirmation",
+      "binary_sha256": "28b12e5b3555c0afff155de3e1bb39474dc549d0a382a18128e73003ab24f193",
+      "pcm_sha256": "ea0787f65f73b0013d03b359490e3125211b28ad5c1502ffb1544c0ded4192f5",
+      "pcm_bytes": 192000,
+      "source": "REQUIRE-AUDIO ALSO AUDIO\nCREATE BUF 192000 ALLOT\nS\" /mnt/d/home/source/zig/forthz/.work/998-followup/listen-ulbn9oij/input.pcm\" R/O OPEN-FILE THROW CONSTANT FD\n: LOAD-PCM BUF 192000 FD READ-FILE THROW 192000 <> IF -37 THROW THEN ; LOAD-PCM\nFD CLOSE-FILE THROW\nVARIABLE P VARIABLE OFFSET VARIABLE SENT VARIABLE REQUEST VARIABLE WRITES\n: OPEN-PCM 48000 1 32768 PCM-OPEN THROW P ! ;\n: CLEANUP P @ DUP IF PCM-CLOSE DUP 0= IF 0 P ! THEN ELSE DROP 0 THEN ;\n: SEND ( frames -- )\n  0 SENT ! BEGIN DUP SENT @ > WHILE\n    DUP SENT @ - 512 MIN REQUEST !\n    BUF OFFSET @ 2 * + REQUEST @ P @ PCM-WRITE THROW\n    DUP SENT +! OFFSET +! 1 WRITES +!\n    DUP SENT @ > IF 1 1000 P @ PCM-WAIT THROW 0= IF -528 THROW THEN THEN\n  REPEAT DROP ;\n: DRAIN 1 3000 P @ PCM-STOP THROW 0= IF -528 THROW THEN .\" DRAINED\" CR ;\n: REPORT .\" UNDERRUNS=\" P @ PCM-UNDERRUNS THROW .\n  .\" WRITES=\" WRITES @ . CR ;\n: TONE 0 OFFSET ! 96000 SEND ;\n: BODY OPEN-PCM 0 OFFSET ! 32768 SEND 150 MS 0 1000 P @ PCM-STOP THROW 0= IF -528 THROW THEN .\" DISCARDED\" CR CLEANUP THROW 1000 MS OPEN-PCM TONE DRAIN REPORT 250 MS ;\n: RUN ['] BODY CATCH >R ['] CLEANUP CATCH DUP IF ELSE DROP THEN R> ?DUP IF SWAP DROP THROW THEN THROW ;\nRUN .\" COMPLETE DEPTH=\" DEPTH . CR BYE\n",
+      "exit": 0,
+      "stdout": "DISCARDED\nDRAINED\nUNDERRUNS=0 WRITES=391 \nCOMPLETE DEPTH=0 \n",
+      "stderr": "",
+      "underruns": [
+        0
+      ],
+      "elapsed_seconds": 4.081472239
+    },
+    {
+      "case": 6,
+      "description": "PCM drain followed by DRAINED, silence after completion",
+      "audible_requested": false,
+      "human_listening_result": "not recorded; requires user confirmation",
+      "binary_sha256": "28b12e5b3555c0afff155de3e1bb39474dc549d0a382a18128e73003ab24f193",
+      "pcm_sha256": "ea0787f65f73b0013d03b359490e3125211b28ad5c1502ffb1544c0ded4192f5",
+      "pcm_bytes": 192000,
+      "source": "REQUIRE-AUDIO ALSO AUDIO\nCREATE BUF 192000 ALLOT\nS\" /mnt/d/home/source/zig/forthz/.work/998-followup/listen-hh9binxb/input.pcm\" R/O OPEN-FILE THROW CONSTANT FD\n: LOAD-PCM BUF 192000 FD READ-FILE THROW 192000 <> IF -37 THROW THEN ; LOAD-PCM\nFD CLOSE-FILE THROW\nVARIABLE P VARIABLE OFFSET VARIABLE SENT VARIABLE REQUEST VARIABLE WRITES\n: OPEN-PCM 48000 1 32768 PCM-OPEN THROW P ! ;\n: CLEANUP P @ DUP IF PCM-CLOSE DUP 0= IF 0 P ! THEN ELSE DROP 0 THEN ;\n: SEND ( frames -- )\n  0 SENT ! BEGIN DUP SENT @ > WHILE\n    DUP SENT @ - 512 MIN REQUEST !\n    BUF OFFSET @ 2 * + REQUEST @ P @ PCM-WRITE THROW\n    DUP SENT +! OFFSET +! 1 WRITES +!\n    DUP SENT @ > IF 1 1000 P @ PCM-WAIT THROW 0= IF -528 THROW THEN THEN\n  REPEAT DROP ;\n: DRAIN 1 3000 P @ PCM-STOP THROW 0= IF -528 THROW THEN .\" DRAINED\" CR ;\n: REPORT .\" UNDERRUNS=\" P @ PCM-UNDERRUNS THROW .\n  .\" WRITES=\" WRITES @ . CR ;\n: TONE 0 OFFSET ! 96000 SEND ;\n: BODY OPEN-PCM TONE DRAIN REPORT 1000 MS ;\n: RUN ['] BODY CATCH >R ['] CLEANUP CATCH DUP IF ELSE DROP THEN R> ?DUP IF SWAP DROP THROW THEN THROW ;\nRUN .\" COMPLETE DEPTH=\" DEPTH . CR BYE\n",
+      "exit": 0,
+      "stdout": "DRAINED\nUNDERRUNS=0 WRITES=327 \nCOMPLETE DEPTH=0 \n",
+      "stderr": "",
+      "underruns": [
+        0
+      ],
+      "elapsed_seconds": 3.6743036700000005
+    },
+    {
+      "case": 7,
+      "description": "SAVESYS app plays523Hz then784Hz, each1second",
+      "audible_requested": false,
+      "human_listening_result": "not recorded; requires user confirmation",
+      "binary_sha256": "28b12e5b3555c0afff155de3e1bb39474dc549d0a382a18128e73003ab24f193",
+      "pcm_sha256": "ea0787f65f73b0013d03b359490e3125211b28ad5c1502ffb1544c0ded4192f5",
+      "pcm_bytes": 192000,
+      "source": "REQUIRE-AUDIO ALSO AUDIO\nCREATE BUF 192000 ALLOT\nS\" /mnt/d/home/source/zig/forthz/.work/998-followup/listen-g23vikll/input.pcm\" R/O OPEN-FILE THROW CONSTANT FD\n: LOAD-PCM BUF 192000 FD READ-FILE THROW 192000 <> IF -37 THROW THEN ; LOAD-PCM\nFD CLOSE-FILE THROW\nVARIABLE P VARIABLE OFFSET VARIABLE SENT VARIABLE REQUEST VARIABLE WRITES\n: OPEN-PCM 48000 1 32768 PCM-OPEN THROW P ! ;\n: CLEANUP P @ DUP IF PCM-CLOSE DUP 0= IF 0 P ! THEN ELSE DROP 0 THEN ;\n: SEND ( frames -- )\n  0 SENT ! BEGIN DUP SENT @ > WHILE\n    DUP SENT @ - 512 MIN REQUEST !\n    BUF OFFSET @ 2 * + REQUEST @ P @ PCM-WRITE THROW\n    DUP SENT +! OFFSET +! 1 WRITES +!\n    DUP SENT @ > IF 1 1000 P @ PCM-WAIT THROW 0= IF -528 THROW THEN THEN\n  REPEAT DROP ;\n: DRAIN 1 3000 P @ PCM-STOP THROW 0= IF -528 THROW THEN .\" DRAINED\" CR ;\n: REPORT .\" UNDERRUNS=\" P @ PCM-UNDERRUNS THROW .\n  .\" WRITES=\" WRITES @ . CR ;\n: TONE 0 OFFSET ! 96000 SEND ;\n: BODY OPEN-PCM TONE DRAIN REPORT 250 MS ;\n: RUN ['] BODY CATCH >R ['] CLEANUP CATCH DUP IF ELSE DROP THEN R> ?DUP IF SWAP DROP THROW THEN THROW ;\n: MAIN RUN ; ' MAIN APP-ENTRY! SAVESYS /mnt/d/home/source/zig/forthz/.work/998-followup/listen-g23vikll/pcm-saved BYE\n",
+      "exit": 0,
+      "stdout": "DRAINED\nUNDERRUNS=0 WRITES=324 \n",
+      "stderr": "",
+      "underruns": [
+        0
+      ],
+      "elapsed_seconds": 3.074422292999998
+    }
+  ],
+  "synthetic_interruption": {
+    "windows": {
+      "scope": "Silent owned private console/PTY, synthetic keys; not physical-key or listening acceptance",
+      "rows": [
+        {
+          "operation": "wait",
+          "payload": "abcde\r",
+          "exit": 0,
+          "elapsed_seconds": 0.0624285000085365,
+          "output": "CATCH=-28 CLOSE=0 \r\n5 \r\nabcde\r\n"
+        }
+      ]
+    },
+    "linux": {
+      "scope": "Silent owned private console/PTY, synthetic keys; not physical-key or listening acceptance",
+      "rows": [
+        {
+          "operation": "wait",
+          "payload": "abcde\r",
+          "exit": 0,
+          "elapsed_seconds": 0.033152841999999794,
+          "output": "READY\r\nCATCH=-28 CLOSE=0 \r\na\bab\b\babc\b\b\babcd\b\b\b\babcde\r\n5 \r\nabcde\r\n"
+        }
+      ]
+    }
+  },
+  "device_probe": {
+    "windows_AUDIO?": -1,
+    "linux_AUDIO?": 0,
+    "linux_os": "Ubuntu26.04.1 WSL",
+    "linux_PULSE_SERVER": "unix:/mnt/wslg/PulseServer",
+    "linux_pulse_socket_exists": true,
+    "linux_libpulse0_installed": false,
+    "linux_libasound2t64_installed": false
+  },
+  "fixture_limitations": "Initial synthetic hello with VK0/key-down-only events produced helo on Windows; fixture changed to distinct abcde to test queue/ACCEPT. No conclusion about real repeated physical keys; actual hello after Ctrl+C remains required.",
+  "remaining_tasks": [
+    1148,
+    1149
+  ],
+  "supervisor_os_interrupt_tests": {
+    "windows": {
+      "scope": "Private hidden console only. OS CTRL_C_EVENT sent to whole private console including Python supervisor/Sigma; synthetic hello after cleanup, no sound or physical input",
+      "command": [
+        "C:\\Users\\n_fuk\\AppData\\Local\\Python\\pythoncore-3.14-64\\python.exe",
+        "tests/scripts/pcm-listen.py",
+        ".work/1138/matrix/windows/bin/sigma.exe",
+        "--case",
+        "8",
+        "--record",
+        "D:\\home\\source\\zig\\forthz\\.work\\998-followup\\windows-parent-sigint-case8.json"
+      ],
+      "exit": 0,
+      "child_record": {
+        "case": 8,
+        "description": "continuous550Hz; physical Ctrl+C during PCM-WAIT, then type hello",
+        "audible_requested": false,
+        "human_listening_result": "not recorded; requires user confirmation",
+        "binary_sha256": "afac007953731a2bb6c717a52aac85bea196b5ce44e62b182a8524325e604d5b",
+        "pcm_sha256": "ea0787f65f73b0013d03b359490e3125211b28ad5c1502ffb1544c0ded4192f5",
+        "pcm_bytes": 192000,
+        "source": "REQUIRE-AUDIO ALSO AUDIO\nCREATE BUF 192000 ALLOT\nS\" D:/home/source/zig/forthz/.work/998-followup/listen-04kbo4ec/input.pcm\" R/O OPEN-FILE THROW CONSTANT FD\n: LOAD-PCM BUF 192000 FD READ-FILE THROW 192000 <> IF -37 THROW THEN ; LOAD-PCM\nFD CLOSE-FILE THROW\nVARIABLE P VARIABLE OFFSET VARIABLE SENT VARIABLE REQUEST VARIABLE WRITES\n: OPEN-PCM 48000 1 32768 PCM-OPEN THROW P ! ;\n: CLEANUP P @ DUP IF PCM-CLOSE DUP 0= IF 0 P ! THEN ELSE DROP 0 THEN ;\n: SEND ( frames -- )\n  0 SENT ! BEGIN DUP SENT @ > WHILE\n    DUP SENT @ - 512 MIN REQUEST !\n    BUF OFFSET @ 2 * + REQUEST @ P @ PCM-WRITE THROW\n    DUP SENT +! OFFSET +! 1 WRITES +!\n    DUP SENT @ > IF 1 1000 P @ PCM-WAIT THROW 0= IF -528 THROW THEN THEN\n  REPEAT DROP ;\n: DRAIN 1 3000 P @ PCM-STOP THROW 0= IF -528 THROW THEN .\" DRAINED\" CR ;\n: REPORT .\" UNDERRUNS=\" P @ PCM-UNDERRUNS THROW .\n  .\" WRITES=\" WRITES @ . CR ;\n: TONE 0 OFFSET ! 96000 SEND ;\n: BODY OPEN-PCM EKEY? DROP .\" READY: Ctrl+C during PCM-WAIT; then type hello\" CR STDOUT FLUSH-FILE THROW BEGIN 0 OFFSET ! 4800 SEND 4800 -1 P @ PCM-WAIT THROW 0= IF -528 THROW THEN AGAIN ;\n: RUN ['] BODY CATCH >R ['] CLEANUP CATCH DUP IF ELSE DROP THEN R> ?DUP IF SWAP DROP THROW THEN THROW ;\n' BODY CATCH .\" CATCH=\" . CLEANUP .\" CLOSE=\" . CR CREATE LINE 64 ALLOT LINE 64 ACCEPT DUP . CR LINE SWAP TYPE CR BYE\n",
+        "exit": 0,
+        "stdout": "READY: Ctrl+C during PCM-WAIT; then type hello\nCATCH=-28 CLOSE=0 \n5 \nhello\n",
+        "stderr": null,
+        "underruns": [],
+        "elapsed_seconds": 0.4093949999951292
+      }
+    },
+    "linux": {
+      "scope": "Owned PTY, SIGINT sent to whole new process group including Python parent and Sigma; synthetic hello after CATCH/CLOSE, no human or sound",
+      "command": [
+        "python3",
+        "tests/scripts/pcm-listen.py",
+        ".work/1138/matrix/linux/bin/sigma",
+        "--case",
+        "8",
+        "--record",
+        "/mnt/d/home/source/zig/forthz/.work/998-followup/linux-parent-sigint-case8.json"
+      ],
+      "exit": 0,
+      "child_record": {
+        "case": 8,
+        "description": "continuous550Hz; physical Ctrl+C during PCM-WAIT, then type hello",
+        "audible_requested": false,
+        "human_listening_result": "not recorded; requires user confirmation",
+        "binary_sha256": "28b12e5b3555c0afff155de3e1bb39474dc549d0a382a18128e73003ab24f193",
+        "pcm_sha256": "ea0787f65f73b0013d03b359490e3125211b28ad5c1502ffb1544c0ded4192f5",
+        "pcm_bytes": 192000,
+        "source": "REQUIRE-AUDIO ALSO AUDIO\nCREATE BUF 192000 ALLOT\nS\" /mnt/d/home/source/zig/forthz/.work/998-followup/listen-cxmtll43/input.pcm\" R/O OPEN-FILE THROW CONSTANT FD\n: LOAD-PCM BUF 192000 FD READ-FILE THROW 192000 <> IF -37 THROW THEN ; LOAD-PCM\nFD CLOSE-FILE THROW\nVARIABLE P VARIABLE OFFSET VARIABLE SENT VARIABLE REQUEST VARIABLE WRITES\n: OPEN-PCM 48000 1 32768 PCM-OPEN THROW P ! ;\n: CLEANUP P @ DUP IF PCM-CLOSE DUP 0= IF 0 P ! THEN ELSE DROP 0 THEN ;\n: SEND ( frames -- )\n  0 SENT ! BEGIN DUP SENT @ > WHILE\n    DUP SENT @ - 512 MIN REQUEST !\n    BUF OFFSET @ 2 * + REQUEST @ P @ PCM-WRITE THROW\n    DUP SENT +! OFFSET +! 1 WRITES +!\n    DUP SENT @ > IF 1 1000 P @ PCM-WAIT THROW 0= IF -528 THROW THEN THEN\n  REPEAT DROP ;\n: DRAIN 1 3000 P @ PCM-STOP THROW 0= IF -528 THROW THEN .\" DRAINED\" CR ;\n: REPORT .\" UNDERRUNS=\" P @ PCM-UNDERRUNS THROW .\n  .\" WRITES=\" WRITES @ . CR ;\n: TONE 0 OFFSET ! 96000 SEND ;\n: BODY OPEN-PCM EKEY? DROP .\" READY: Ctrl+C during PCM-WAIT; then type hello\" CR STDOUT FLUSH-FILE THROW BEGIN 0 OFFSET ! 4800 SEND 4800 -1 P @ PCM-WAIT THROW 0= IF -528 THROW THEN AGAIN ;\n: RUN ['] BODY CATCH >R ['] CLEANUP CATCH DUP IF ELSE DROP THEN R> ?DUP IF SWAP DROP THROW THEN THROW ;\n' BODY CATCH .\" CATCH=\" . CLEANUP .\" CLOSE=\" . CR CREATE LINE 64 ALLOT LINE 64 ACCEPT DUP . CR LINE SWAP TYPE CR BYE\n",
+        "exit": 0,
+        "stdout": "READY: Ctrl+C during PCM-WAIT; then type hello\nCATCH=-28 CLOSE=0 \n5 \nhello\n",
+        "stderr": null,
+        "underruns": [],
+        "elapsed_seconds": 0.9776567939999978
+      }
+    }
+  },
+  "source_snapshots_lf": {
+    "tests/scripts/pcm-listen.py": "#!/usr/bin/env python3\n\"\"\"Prepare/run owned PCM acceptance cases; silent unless --audible is explicit.\n\nRun from a foreground terminal for case8 (physical Ctrl+C and hello input).\nThe JSON records execution only; a human must separately report what was heard.\n\"\"\"\nimport argparse\nimport contextlib\nimport hashlib\nimport json\nimport os\nimport re\nimport signal\nimport struct\nimport subprocess\nimport tempfile\nimport time\nfrom pathlib import Path\n\nROOT = Path(__file__).resolve().parents[2]\nCASES = {\n    1: '48000Hz mono 440Hz, 2 seconds',\n    2: '22050Hz stereo: left 440Hz then right 660Hz, 1.5 seconds each',\n    3: '48000Hz mono 220Hz mixed with MML melody',\n    4: '48000Hz mono 220Hz mixed with signed-8-bit SFX 880Hz',\n    5: 'queued PCM discard after150ms, 1 second pause, reopen and restart',\n    6: 'PCM drain followed by DRAINED, silence after completion',\n    7: 'SAVESYS app plays523Hz then784Hz, each1second',\n    8: 'continuous550Hz; physical Ctrl+C during PCM-WAIT, then type hello',\n}\n\n\ndef triangle(rate, hz, index, amplitude):\n    phase = index * hz % rate\n    return (rate - abs(2 * phase - rate)) * 2 * amplitude // rate - amplitude\n\n\ndef prepare(folder, case, audible):\n    if any(c in folder.as_posix() for c in ['\"', '\\n', '\\r']):\n        raise ValueError('Forth S\" paths cannot contain quotes or line breaks')\n    if case == 7 and any(c.isspace() for c in folder.as_posix()):\n        raise ValueError('SAVESYS acceptance requires a repository path without whitespace')\n    rate = 22050 if case == 2 else 48000\n    channels = 2 if case == 2 else 1\n    frames = rate * (3 if case == 2 else 2)\n    amplitude = 4096 if audible else 0\n    data = bytearray()\n    for i in range(frames):\n        hz = 440 if case in [1, 2, 5, 6] else 220 if case in [3, 4] else (523 if i < rate else 784) if case == 7 else 550\n        if channels == 2:\n            left = i < rate * 3 // 2\n            value = triangle(rate, 440 if left else 660, i, amplitude)\n            data.extend(struct.pack('<hh', value if left else 0, 0 if left else value))\n        else:\n            data.extend(struct.pack('<h', triangle(rate, hz, i, amplitude)))\n    pcm = folder / 'input.pcm'\n    pcm.write_bytes(data)\n    common = f'''REQUIRE-AUDIO ALSO AUDIO\nCREATE BUF {len(data)} ALLOT\nS\" {pcm.as_posix()}\" R/O OPEN-FILE THROW CONSTANT FD\nBUF {len(data)} FD READ-FILE THROW {len(data)} <> IF -37 THROW THEN\nFD CLOSE-FILE THROW\nVARIABLE P VARIABLE OFFSET VARIABLE SENT VARIABLE REQUEST VARIABLE WRITES\n: OPEN-PCM {rate} {channels} {32768 if rate == 48000 else 16384} PCM-OPEN THROW P ! ;\n: CLEANUP P @ DUP IF PCM-CLOSE DUP 0= IF 0 P ! THEN ELSE DROP 0 THEN ;\n: SEND ( frames -- )\n  0 SENT ! BEGIN DUP SENT @ > WHILE\n    DUP SENT @ - 512 MIN REQUEST !\n    BUF OFFSET @ {channels * 2} * + REQUEST @ P @ PCM-WRITE THROW\n    DUP SENT +! OFFSET +! 1 WRITES +!\n    DUP SENT @ > IF 1 1000 P @ PCM-WAIT THROW 0= IF -528 THROW THEN THEN\n  REPEAT DROP ;\n: DRAIN 1 3000 P @ PCM-STOP THROW 0= IF -528 THROW THEN .\" DRAINED\" CR ;\n: REPORT .\" UNDERRUNS=\" P @ PCM-UNDERRUNS THROW .\n  .\" WRITES=\" WRITES @ . CR ;\n: TONE 0 OFFSET ! {frames} SEND ;\n'''\n    # Keep the file-size guard inside a definition: IF is compile-only.\n    common = common.replace(f'BUF {len(data)} FD READ-FILE THROW {len(data)} <> IF -37 THROW THEN',\n                            f': LOAD-PCM BUF {len(data)} FD READ-FILE THROW {len(data)} <> IF -37 THROW THEN ; LOAD-PCM')\n    extra = ''\n    if case == 4:\n        sfx = bytes((triangle(48000, 880, i, 24 if audible else 0) & 255) for i in range(48000))\n        sample = folder / 'sfx.raw'; sample.write_bytes(sfx)\n        extra = f'''CREATE FX 48000 ALLOT\nS\" {sample.as_posix()}\" R/O OPEN-FILE THROW CONSTANT FXFD\n: LOAD-FX FX 48000 FXFD READ-FILE THROW 48000 <> IF -37 THROW THEN ; LOAD-FX\nFXFD CLOSE-FILE THROW FX 48000 48000 0 SAMPLE\n'''\n    if case == 5:\n        body = 'OPEN-PCM 0 OFFSET ! 32768 SEND 150 MS 0 1000 P @ PCM-STOP THROW 0= IF -528 THROW THEN .\" DISCARDED\" CR CLEANUP THROW 1000 MS OPEN-PCM TONE DRAIN REPORT 250 MS'\n    elif case == 8:\n        # 4800 frames contain exactly55 periods at550Hz/48000Hz. Repeating\n        # this block preserves phase; wait for one block of space, not empty.\n        body = 'OPEN-PCM EKEY? DROP .\" READY: Ctrl+C during PCM-WAIT; then type hello\" CR STDOUT FLUSH-FILE THROW BEGIN 0 OFFSET ! 4800 SEND 4800 -1 P @ PCM-WAIT THROW 0= IF -528 THROW THEN AGAIN'\n    else:\n        mix = ('S\" T120 O5 L8 CEG>C<GE\" PLAY ' if audible else '') if case == 3 else ('0 SFX ' if case == 4 else '')\n        body = 'OPEN-PCM ' + mix + 'TONE DRAIN REPORT ' + ('1000 MS' if case == 6 else '250 MS')\n    source = common + extra + ': BODY ' + body + ' ;\\n'\n    source += ': RUN [\\'] BODY CATCH >R [\\'] CLEANUP CATCH DUP IF ELSE DROP THEN R> ?DUP IF SWAP DROP THROW THEN THROW ;\\n'\n    if case == 7:\n        app = folder / ('pcm-saved.exe' if os.name == 'nt' else 'pcm-saved')\n        source += ': MAIN RUN ; \\' MAIN APP-ENTRY! SAVESYS ' + app.as_posix() + ' BYE\\n'\n    elif case == 8:\n        source += \"' BODY CATCH .\\\" CATCH=\\\" . CLEANUP .\\\" CLOSE=\\\" . CR CREATE LINE 64 ALLOT LINE 64 ACCEPT . CR LINE SWAP TYPE CR BYE\\n\"\n        # ACCEPT's count is needed for TYPE; retain it when printing.\n        source = source.replace('LINE 64 ACCEPT . CR LINE SWAP TYPE', 'LINE 64 ACCEPT DUP . CR LINE SWAP TYPE')\n    else:\n        source += 'RUN .\" COMPLETE DEPTH=\" DEPTH . CR BYE\\n'\n    script = folder / 'listen.fs'; script.write_text(source, encoding='utf-8', newline='\\n')\n    return script, source, data\n\n\n@contextlib.contextmanager\ndef parent_sigint_guard():\n    # A caught (rather than SIG_IGN) handler resets to default across POSIX\n    # exec. Sigma installs its own wait handler. Only the Python parent keeps\n    # this no-op, so Ctrl+C can reach Sigma without aborting the supervisor.\n    previous = signal.signal(signal.SIGINT, lambda signum, frame: None)\n    try:\n        yield\n    finally:\n        signal.signal(signal.SIGINT, previous)\n\n\ndef main():\n    parser = argparse.ArgumentParser(description=__doc__)\n    parser.add_argument('sigma', type=Path)\n    parser.add_argument('--case', type=int, choices=CASES, required=True)\n    parser.add_argument('--audible', action='store_true')\n    parser.add_argument('--record', type=Path)\n    args = parser.parse_args()\n    binary = args.sigma.resolve()\n    work = ROOT / '.work/998-followup'; work.mkdir(parents=True, exist_ok=True)\n    with tempfile.TemporaryDirectory(prefix='listen-', dir=work) as tmp:\n        folder = Path(tmp); script, source, data = prepare(folder, args.case, args.audible)\n        print(CASES[args.case] + (' [AUDIBLE]' if args.audible else ' [SILENT]'), flush=True)\n        if args.audible:\n            probe = subprocess.run([str(binary), '-e', 'REQUIRE-AUDIO ALSO AUDIO AUDIO? . BYE'], capture_output=True, text=True, timeout=15)\n            if probe.returncode or probe.stderr or probe.stdout.split() != ['-1']:\n                raise RuntimeError('AUDIO? is not true; no device audition attempted: ' + repr(probe.stdout))\n        start = time.monotonic()\n        if args.case == 8:\n            # Inherit physical stdin; tee stdout for both user and evidence.\n            with parent_sigint_guard():\n                with subprocess.Popen([str(binary), str(script)], cwd=ROOT,\n                                      stdout=subprocess.PIPE, stderr=subprocess.STDOUT,\n                                      text=True, encoding='utf-8', bufsize=1) as result:\n                    lines = []\n                    for line in result.stdout:\n                        print(line, end='', flush=True); lines.append(line)\n                    result.wait()\n            stdout = ''.join(lines); stderr = None\n            if not re.search(r'CATCH=\\s*-28\\s+CLOSE=\\s*0[\\s\\S]*5\\s+hello\\s*$', stdout):\n                raise RuntimeError('Interruption/cleanup/hello did not match: ' + repr(stdout))\n        else:\n            result = subprocess.run([str(binary), str(script)], cwd=ROOT, capture_output=True, text=True, encoding='utf-8', timeout=25)\n            stdout, stderr = result.stdout, result.stderr\n            if result.returncode or stderr:\n                raise RuntimeError((result.returncode, stdout, stderr))\n            if args.case == 7:\n                app = folder / ('pcm-saved.exe' if os.name == 'nt' else 'pcm-saved')\n                saved = subprocess.run([str(app)], cwd=ROOT, capture_output=True, text=True, encoding='utf-8', timeout=25)\n                if saved.returncode or saved.stderr or 'DRAINED' not in saved.stdout:\n                    raise RuntimeError((saved.returncode, saved.stdout, saved.stderr))\n                stdout += saved.stdout\n            elif 'COMPLETE DEPTH=0' not in stdout or 'DRAINED' not in stdout:\n                raise RuntimeError(stdout)\n            if args.case == 5 and 'DISCARDED' not in stdout:\n                raise RuntimeError('Discard acknowledgement missing: ' + stdout)\n            print(stdout, end='')\n        report = {'case': args.case, 'description': CASES[args.case], 'audible_requested': args.audible,\n                  'human_listening_result': 'not recorded; requires user confirmation',\n                  'binary_sha256': hashlib.sha256(binary.read_bytes()).hexdigest(),\n                  'pcm_sha256': hashlib.sha256(data).hexdigest(), 'pcm_bytes': len(data),\n                  'source': source, 'exit': result.returncode, 'stdout': stdout, 'stderr': stderr,\n                  'underruns': [int(n) for n in re.findall(r'UNDERRUNS=\\s*(\\d+)', stdout or '')],\n                  'elapsed_seconds': time.monotonic() - start}\n        if result.returncode:\n            raise RuntimeError(report)\n        if args.record:\n            args.record.parent.mkdir(parents=True, exist_ok=True)\n            args.record.write_text(json.dumps(report, ensure_ascii=False, indent=2) + '\\n', encoding='utf-8', newline='\\n')\n\n\nif __name__ == '__main__':\n    main()\n",
+    "tests/scripts/verify-pcm-exclusion.py": "#!/usr/bin/env python3\n\"\"\"Check audio loading with an executed parser word, without opening audio.\"\"\"\nimport argparse\nimport hashlib\nimport json\nimport subprocess\nfrom pathlib import Path\n\nPCM_WORDS = ['PCM-' + name for name in ['OPEN', 'WRITE', 'QUEUED', 'WAIT', 'STOP', 'CLOSE', 'UNDERRUNS']]\n\n\ndef main():\n    parser = argparse.ArgumentParser(description=__doc__)\n    parser.add_argument('sigma', type=Path)\n    parser.add_argument('--audio', choices=['enabled', 'disabled'], required=True)\n    args = parser.parse_args()\n    binary = args.sigma.resolve()\n    # REQUIRE-AUDIO is a parsing word. EVALUATE runs it inside CATCH rather\n    # than trying to compile it into PROBE. FIND-NAME checks the actual order.\n    common = ': PROBE S\" REQUIRE-AUDIO\" EVALUATE ; \\' PROBE CATCH . '\n    lookups = ' '.join(f'S\" {name}\" FIND-NAME 0<> .' for name in PCM_WORDS + ['SND-' + name for name in PCM_WORDS])\n    if args.audio == 'enabled':\n        source = common + 'ALSO AUDIO ' + lookups + ' DEPTH . BYE'\n        expected = ['0'] + ['-1'] * 14 + ['0']\n    else:\n        source = common + 'S\" AUDIO\" FIND-NAME 0<> . ' + lookups + ' DEPTH . BYE'\n        expected = ['-275'] + ['0'] * 16\n    result = subprocess.run([str(binary), '-e', source], capture_output=True,\n                            text=True, encoding='utf-8', timeout=15)\n    if result.returncode or result.stderr or result.stdout.split() != expected:\n        raise RuntimeError((result.returncode, result.stdout, result.stderr, expected))\n    print(json.dumps({'binary': str(binary), 'binary_sha256': hashlib.sha256(binary.read_bytes()).hexdigest(),\n                      'audio': args.audio, 'source': source, 'expected': expected,\n                      'exit': result.returncode, 'stdout': result.stdout, 'stderr': result.stderr}, indent=2))\n\n\nif __name__ == '__main__':\n    main()\n"
+  },
+  "tasks_snapshot": [
+    {
+      "id": 998,
+      "title": "本体09 PCMストリーム出力（段階B、依存は共通基盤1064。AUDIO）：開始・書込み・残量（フレーム数）・停止の語、専用の有界のリング、周波数の変換、残量と再生位置の区別、満杯のときの待機と中断・部分書込みは900の取り決め、MML・SFX・モジュールとの混合（EMULATOR_CORE_PLAN.md）",
+      "status": "todo",
+      "parent_id": 1003,
+      "progress": 0,
+      "progress_mode": "auto",
+      "created_at": "2026-11-17T22:47:12Z",
+      "depends_on": [
+        1064
+      ],
+      "effective_progress": 88,
+      "blocked": false,
+      "blocked_by": []
+    },
+    {
+      "id": 1125,
+      "title": "PCM01 仕様設計：形式・容量・部分書込み・期限と中断・停止とclose・再標本化・混合・所有と画像・backend終了をソース照合しClaudeレビューで確定",
+      "status": "done",
+      "parent_id": 998,
+      "progress": 100,
+      "progress_mode": "auto",
+      "created_at": "2026-11-20T01:14:54Z",
+      "completed_at": "2026-11-20T01:32:15Z",
+      "depends_on": [
+        1064
+      ],
+      "effective_progress": 100,
+      "blocked": false,
+      "blocked_by": []
+    },
+    {
+      "id": 1126,
+      "title": "PCM02 有界リングと再標本化：SPSC・wrap・入力frame残量・underrun・sample hold・saturating混合を実装し決定的試験",
+      "status": "done",
+      "parent_id": 998,
+      "progress": 100,
+      "progress_mode": "auto",
+      "created_at": "2026-11-20T01:14:54Z",
+      "completed_at": "2026-11-20T01:32:15Z",
+      "depends_on": [
+        1125
+      ],
+      "effective_progress": 100,
+      "blocked": false,
+      "blocked_by": []
+    },
+    {
+      "id": 1127,
+      "title": "PCM03 ホスト寿命：音スレッドの停止とjoin・Windows/Linux/macOS装置待機解除・callback停止・初期化失敗の回収を実装",
+      "status": "done",
+      "parent_id": 998,
+      "progress": 100,
+      "progress_mode": "auto",
+      "created_at": "2026-11-20T01:14:54Z",
+      "completed_at": "2026-11-20T02:06:42Z",
+      "depends_on": [
+        1125
+      ],
+      "effective_progress": 100,
+      "blocked": false,
+      "blocked_by": []
+    },
+    {
+      "id": 1128,
+      "title": "PCM04 公開語と所有：開始・部分書込み・待機・残量・停止・closeと画像/世代/終了経路、英日HELPを実装",
+      "status": "done",
+      "parent_id": 998,
+      "progress": 100,
+      "progress_mode": "auto",
+      "created_at": "2026-11-20T01:14:54Z",
+      "completed_at": "2026-11-20T03:14:15Z",
+      "depends_on": [
+        1056,
+        1125,
+        1126,
+        1127
+      ],
+      "effective_progress": 100,
+      "blocked": false,
+      "blocked_by": []
+    },
+    {
+      "id": 1129,
+      "title": "PCM05 Windows/Linux受け入れ：満杯・中断・停止・保存アプリ・語群除外・資源回収・英日文書と測定を検証",
+      "status": "done",
+      "parent_id": 998,
+      "progress": 100,
+      "progress_mode": "auto",
+      "created_at": "2026-11-20T01:14:54Z",
+      "completed_at": "2026-11-20T03:14:15Z",
+      "depends_on": [
+        1128
+      ],
+      "effective_progress": 100,
+      "blocked": false,
+      "blocked_by": []
+    },
+    {
+      "id": 1130,
+      "title": "PCM06 Mac実機受け入れ：生成アプリ・連続PCM・混合・待機中断・停止/再開・装置と資源回収・除外構成を確認",
+      "status": "done",
+      "parent_id": 998,
+      "progress": 100,
+      "progress_mode": "auto",
+      "created_at": "2026-11-20T01:14:54Z",
+      "completed_at": "2026-11-20T03:30:42Z",
+      "depends_on": [
+        1128
+      ],
+      "effective_progress": 100,
+      "blocked": false,
+      "blocked_by": []
+    },
+    {
+      "id": 1133,
+      "title": "PCM実聴の受け入れ：WindowsとLinuxを子タスクで個別に確認する。両OSのPCM単独・左右・混合・破棄/再開・drain・保存アプリ・中断と資源回収、実聴結果を記録。MacのPCM基盤は1130で確認済み",
+      "status": "todo",
+      "parent_id": 998,
+      "progress": 0,
+      "progress_mode": "auto",
+      "created_at": "2026-11-20T03:30:42Z",
+      "depends_on": [
+        1129
+      ],
+      "effective_progress": 0,
+      "blocked": false,
+      "blocked_by": []
+    },
+    {
+      "id": 1148,
+      "title": "PCM実聴 Windows：Windows実装置でPCM単独・左右・MML/SFXとの混合・破棄と再開・drain・保存アプリ・Ctrl+C中断を実際に聞き、再生結果と停止後の資源回収、OS/版/装置を記録する。自動試験と利用者の実聴確認を区別",
+      "status": "todo",
+      "parent_id": 1133,
+      "progress": 0,
+      "progress_mode": "auto",
+      "created_at": "2026-11-20T06:07:03Z",
+      "depends_on": [
+        1129
+      ],
+      "effective_progress": 0,
+      "blocked": false,
+      "blocked_by": []
+    },
+    {
+      "id": 1149,
+      "title": "PCM実聴 Linux：PulseAudio/ALSA実装置でPCM単独・左右・MML/SFXとの混合・破棄と再開・drain・保存アプリ・Ctrl+C中断を実際に聞き、再生結果と停止後の資源回収、OS/版/装置を記録する。WSLの無音consumer試験とは区別",
+      "status": "todo",
+      "parent_id": 1133,
+      "progress": 0,
+      "progress_mode": "auto",
+      "created_at": "2026-11-20T06:07:03Z",
+      "depends_on": [
+        1129
+      ],
+      "effective_progress": 0,
+      "blocked": false,
+      "blocked_by": []
+    },
+    {
+      "id": 1159,
+      "title": "PCM語群除外の再確認 Windows：1129の不在確認は[DEFINED]でaudio有効版でも0 0となり証拠にならない。audio無効4構成でREQUIRE-AUDIOをCATCH内で実行し-275、有効版で成功しALSO AUDIO後にPCM-OPENが見つかることを確認・記録（Macは1130で確認済み）",
+      "status": "done",
+      "parent_id": 998,
+      "progress": 100,
+      "progress_mode": "auto",
+      "created_at": "2026-11-20T07:05:49Z",
+      "completed_at": "2026-11-20T07:17:29Z",
+      "depends_on": [],
+      "effective_progress": 100,
+      "blocked": false,
+      "blocked_by": []
+    },
+    {
+      "id": 1160,
+      "title": "PCM語群除外の再確認 Linux：1129の不在確認は[DEFINED]でaudio有効版でも0 0となり証拠にならない。audio無効4構成でREQUIRE-AUDIOをCATCH内で実行し-275、有効版で成功しALSO AUDIO後にPCM-OPENが見つかることを確認・記録（Macは1130で確認済み）",
+      "status": "done",
+      "parent_id": 998,
+      "progress": 100,
+      "progress_mode": "auto",
+      "created_at": "2026-11-20T07:05:49Z",
+      "completed_at": "2026-11-20T07:17:29Z",
+      "depends_on": [],
+      "effective_progress": 100,
+      "blocked": false,
+      "blocked_by": []
+    }
+  ]
+}

@@ -72,3 +72,5 @@ For the project overview, how to build, the current features, the differences fr
 - [C64 SID Forth model](SID_FORTH.md): declared three-voice digital model, integer filter proxy, independent verification and scope limits.
 
 - [Paula Forth register model](PAULA_FORTH.md): declared stereo DMA/manual/IRQ/attachment model, independent validation and pending Mac acceptance.
+
+- [YM2149/ST Forth model and audit](YM2149_FORTH.md): existing/native gaps, fixed-zero mute correction, timestamped registers/virtual ports/bus, independent PCM tests and measurements.

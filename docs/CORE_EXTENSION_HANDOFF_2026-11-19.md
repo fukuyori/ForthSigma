@@ -1,5 +1,41 @@
 # 613 本体機能拡張の引継ぎ（2026-11-19）
 
+## 今回のコミット対象（2026-11-20）
+
+YM2149のForthモデル・native固定音量0修正と検証/測定、PCM語群除外の再確認1159/1160、Windows実聴1148/1150/1157/1155/1161の受け入れ記録を含む。Linux実聴1149/1151/1158/1156/1162とYM2149のMac1154は未完了のまま各機能配下に残す。以下は作業時点の履歴であり、未コミット等の記述も当時の状態。
+
+## WindowsのPaula/YM2149実聴1155・1161完了（2026-11-20）
+
+レモンがPaula4声stereo・左だけ/右だけ、YM2149デモ・noise単独/envelope音量変化を実聴し、両例の物理Ctrl+C後の停止と再再生を確認した。CATCH=-28、handle=0、REPLAY-OK handle=0、code0、記録したunderrun0を保存し1155/1161を完了。[Paula](PAULA_FORTH.md)、[YM2149](YM2149_FORTH.md)、[全生データ](measurements/2026-11-20-paula-ym-windows-listening.json)。Linux1156/1162、YMのMac1154は未完了。親1137は未完了・auto80%、1138は未完了・auto60%、999は未完了・auto57%。今回コミット/プッシュは行っていない。
+
+## YM2149のOS別実聴タスク追加（2026-11-20）
+
+1138直下にWindows1161・Linux1162を追加し、1153へ依存させた。両方未完了・0%。3声/ノイズ/envelopeの実聴、Ctrl+C後の停止・再再生とhandle解放、OS/版/装置を確認する。Mac1154も維持し、親1138は未完了・auto40%。[確認範囲](YM2149_FORTH.md)。末尾の統合タスクへ移さない。
+
+## WindowsのNES/SID実聴1150・1157完了（2026-11-20）
+
+レモンがNES4声・DMC単独・4声＋DMC、SID3声を実聴し、両例の物理Ctrl+C後の停止と再再生を確認。CATCH=-28、handle=0、REPLAY-OK handle=0、underrun0、code0を保存し1150/1157を完了した。[NESの記録](NES_DMC_FORTH.md)、[SIDの記録](SID_FORTH.md)、[原データ](measurements/2026-11-20-nes-sid-windows-listening.json)。Linux実聴1151/1158が未完了のため親1132/1136はともに未完了・auto80%。999は未完了・auto55%。機能ごとの確認を末尾へ集約しない。今回コミット/プッシュは行っていない。
+
+## Windows実聴1148の受け入れ完了（2026-11-20）
+
+レモンがWindows実装置で8項目を順番に聞き、各項目をokで確認した。48000Hz mono、22050Hz stereo左右、MML/SFXとの混合、破棄と再open、drain後の停止、SAVESYS保存アプリの2音を確認。最後は前面のPowerShellで物理Ctrl+Cを押し、CATCH=-28/CLOSE=0、続くhelloのACCEPTとcode0を記録し、中断後の音の停止も追加確認した。case1〜7のUNDERRUNSはすべて0。Windows11 Pro 10.0.26300、waveOut既定出力（個別endpoint表示名は未取得）。[全実行記録と利用者の確認](measurements/2026-11-20-pcm-windows-listening.json)。
+
+1148を完了。Linux1149は未完了・0%、1133は未完了・auto50%、998は未完了・auto94%。現WSLはAUDIO?=0のため、Linuxの実聴成功とは扱わない。以下の「Windows実聴未確認」はこの受け入れ以前の履歴。
+
+## PCM998の再確認と実聴準備（2026-11-20）
+
+Windows1159/Linux1160の語群除外再確認を完了し998は未完了・auto88%。旧[DEFINED]の0 0を除外の証拠とした部分は撤回。実行したREQUIRE-AUDIOをCATCHで捕捉して無効版-275、有効版でAUDIO内のPCM語を確認し、元の16構成と新4実行体で成功した。残件は1133配下の実聴1148/1149。[現在の検査記録](PCM_PUBLIC_IMPLEMENTATION.md)、[実聴の手順と8項目](PCM_LISTENING_ACCEPTANCE.md)。スクリプト既定は無音。現WSLはAUDIO?=0で音声client library未導入、実聴成功とは扱わない。YM2149の未コミット差分は保持する。
+
+## 現在状態：Atari ST YM2149の実装・Windows/Linux検証（2026-11-20）
+
+基点mainはcf080b4（Paulaまでpush済み）。今回のYM2149差分は未コミット。1152（監査と実装）・1153（Windows/Linux検証と測定）を完了し、Mac1154を1138の子に残した。1138は未完了・auto66%、999はauto49%。PaulaのMac1147は完了し、Windows実聴1155/Linux実聴1156が未完了のためPaula1137はtodo・auto60%。Macの確認まで親タスクの完了とはしない。以下は各作業時点の履歴で、この節を優先する。
+
+[YM2149の契約・資料・結果](YM2149_FORTH.md)、[レビュー評価](reviews/1138-review-response.md)、[全測定・ソース本文](measurements/2026-11-20-ym2149.json)を参照。3声/noise/全16envelope、時刻指定、raw読取り、2つのI/O latchとFF8800/FF8802のbyte busをForthに追加した。既存native YMの固定音量0が微小出力になる問題も修正し、非ゼロ固定音量・envelope level1と停止後のfilter tailを保持する回帰検査を追加した。Builtin/ABIは追加しない。
+
+両OSの通常・debug/graphics/extension除外・さらにfloat除外の6構成で各11検査群と補助12検査が成功。audio除外の2構成でも全512frame/状態が一致。全8実行体はnative修正後の新ビルド。native Windows全体検査成功、Linux core1126成功/10skip、host167成功/17skip、失敗0。通常負荷は実時間比Windows9.532倍/Linux11.431倍、全period1は3.212/3.834倍。各6負荷32768frameの全PCM/状態と、各7計時の最終37状態を独立Pythonと照合した。辞書HERE増加25152byte、通常実行体はPCM1128保存済み版比Windows+512/Linux+48byte。最終ClaudeレビューはHigh/Mediumなし。
+
+Mac1154では新ビルドのnative fixed-zero回帰・core/host検査、Forth通常/除外構成・サイズ/速度と生成音の実聴・中断/資源回収を確認する。Windows/Linuxのfixtureは実聴を証明しない。次は1139で8対象の既存音源経路と不足を照合し、追加不要の根拠または必要な機種別タスクを記録する。1140の最終採否は各機能のMac確認を含む依存が済むまで完了にしない。
+
 ## 最新追記：PaulaのMac実機受け入れ1147（2026-11-20）
 
 この節を最新状態とする。基点main `cf080b4`。macOS 27.2.1 / Apple M5で1147を実施し合格、tqueの1147を完了にした。各音源のWindows/Linux実聴を機能ごとの子へ移した（NES1150/1151→1132、SID1157/1158→1136、Paula1155/1156→1137）ため、親1132/1136/1137は未完了。合成中のCtrl+CをEXEC-LIMITEDで捕捉する例の修正は、合成が約2.8倍遅くなるため取り消し、文書に記載した。3構成の全検査がWindowsと一致し、Ghosttyで4声stereo・左右の分離・Ctrl+C中断と再再生を実聴で確認した。結果は[Paulaの記録](PAULA_FORTH.md#mac実機受け入れ1147)。

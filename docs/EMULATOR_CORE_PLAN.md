@@ -1,5 +1,15 @@
 # レトロPCエミュレータ向け拡張の対応方法
 
+## 現在状態：Atari ST YM2149の実装・Windows/Linux検証（2026-11-20）
+
+基点mainはcf080b4（Paulaまでpush済み）。今回のYM2149差分は未コミット。1152（監査と実装）・1153（Windows/Linux検証と測定）を完了し、Mac1154を1138の子に残した。1138は未完了・auto66%、999はauto49%。PaulaのMac1147は完了し、Windows実聴1155/Linux実聴1156が未完了のためPaula1137はtodo・auto60%。Macの確認まで親タスクの完了とはしない。以下は各作業時点の履歴で、この節を優先する。
+
+[YM2149の契約・資料・結果](YM2149_FORTH.md)、[レビュー評価](reviews/1138-review-response.md)、[全測定・ソース本文](measurements/2026-11-20-ym2149.json)を参照。3声/noise/全16envelope、時刻指定、raw読取り、2つのI/O latchとFF8800/FF8802のbyte busをForthに追加した。既存native YMの固定音量0が微小出力になる問題も修正し、非ゼロ固定音量・envelope level1と停止後のfilter tailを保持する回帰検査を追加した。Builtin/ABIは追加しない。
+
+両OSの通常・debug/graphics/extension除外・さらにfloat除外の6構成で各11検査群と補助12検査が成功。audio除外の2構成でも全512frame/状態が一致。全8実行体はnative修正後の新ビルド。native Windows全体検査成功、Linux core1126成功/10skip、host167成功/17skip、失敗0。通常負荷は実時間比Windows9.532倍/Linux11.431倍、全period1は3.212/3.834倍。各6負荷32768frameの全PCM/状態と、各7計時の最終37状態を独立Pythonと照合した。辞書HERE増加25152byte、通常実行体はPCM1128保存済み版比Windows+512/Linux+48byte。最終ClaudeレビューはHigh/Mediumなし。
+
+Mac1154では新ビルドのnative fixed-zero回帰・core/host検査、Forth通常/除外構成・サイズ/速度と生成音の実聴・中断/資源回収を確認する。Windows/Linuxのfixtureは実聴を証明しない。次は1139で8対象の既存音源経路と不足を照合し、追加不要の根拠または必要な機種別タスクを記録する。1140の最終採否は各機能のMac確認を含む依存が済むまで完了にしない。
+
 作成日：2026-11-18
 状態：方針の3点を決定済み（2026-11-18）。語の名前とスタック効果などの細部は未確定（実装未着手）
 

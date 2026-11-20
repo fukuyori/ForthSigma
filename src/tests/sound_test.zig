@@ -106,6 +106,36 @@ test "a whole envelope lasts 256 × period clocks on the AY and the YM" {
     try std.testing.expectEqual(@as(u32, 32 * 10), steps);
 }
 
+test "fixed zero volume mutes every PSG channel without muting envelope level one" {
+    for ([_]psg_module.Model{ .ay8910, .ym2149 }) |model| {
+        var psg = Psg.init(model, psg_module.atari_st_clock, rate);
+        for (0..64) |mixer| {
+            psg.write(7, @intCast(mixer));
+            for (0..2) |tone| for (0..2) |noise| {
+                psg.tone_high = @splat(tone != 0);
+                psg.lfsr = @intCast(noise);
+                for (0..8) |unused| {
+                    for (0..3) |channel| {
+                        psg.write(@intCast(8 + channel), @intCast(unused * 32));
+                        try std.testing.expectEqual(@as(f32, 0), psg.channelLevel(channel));
+                    }
+                    try std.testing.expectEqual(@as(f32, 0), psg.level());
+                }
+            };
+        }
+        psg.write(7, 0xff);
+        psg.write(8, 1);
+        try std.testing.expect(psg.channelLevel(0) > 0);
+        if (model == .ym2149) try std.testing.expectApproxEqAbs(@as(f32, 0.007943282), psg.channelLevel(0), 0.000001);
+        psg.write(8, 16);
+        psg.env_attack = 0;
+        psg.env_step = 1;
+        if (model == .ym2149) try std.testing.expectApproxEqAbs(@as(f32, 0.005623413), psg.channelLevel(0), 0.000001);
+        psg.env_step = 0;
+        try std.testing.expectEqual(@as(f32, 0), psg.channelLevel(0));
+    }
+}
+
 test "the PSG's mixer and volumes" {
     var psg = msxPsg();
     // Tone and noise off: the channel's level is its volume, constantly.
@@ -565,6 +595,27 @@ test "the engine plays four NES voices together, with their instruments" {
     try std.testing.expectEqual(@as(f32, 0.5), engine.nes.voices[1].duty);
     player.play(1000);
     try std.testing.expect(!engine.isPlaying(0));
+}
+
+test "ST-SOUND starts silent and stopping removes the PSG source" {
+    var engine = Engine.init(.ay8910, psg_module.msx_clock, rate);
+    var samples: [4096]i16 = undefined;
+    try std.testing.expect(engine.putCommand(engine.chipCommand(.atari_st)));
+    engine.render(&samples);
+    try std.testing.expectEqual(psg_module.Model.ym2149, engine.psg.model);
+    for (samples) |sample| try std.testing.expectEqual(@as(i16, 0), sample);
+    try std.testing.expect(engine.putCommand(.{ .write = .{ .reg = 7, .value = 0xff } }));
+    try std.testing.expect(engine.putCommand(.{ .write = .{ .reg = 8, .value = 15 } }));
+    engine.render(&samples);
+    try std.testing.expect(samples[0] > 0);
+    try std.testing.expect(engine.putCommand(engine.stopPlayCommand()));
+    engine.render(&samples);
+    try std.testing.expectEqual(@as(f32, 0), engine.psg.level());
+    try std.testing.expect(samples[0] < 0);
+    // Stopping a DC source leaves the existing coupling filter's decay tail.
+    // Do not clear that filter: independent SFX/MOD/PCM must keep their state.
+    for (0..10) |_| engine.render(&samples);
+    for (samples) |sample| try std.testing.expectEqual(@as(i16, 0), sample);
 }
 
 test "ST-SOUND plays the same notes on a YM2149 at 2 MHz" {

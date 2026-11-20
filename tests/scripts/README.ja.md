@@ -158,3 +158,11 @@ Macのクロスコンパイルを実機確認の代わりにしません。
 `python tests/scripts/verify-paula.py SIGMAのパス [--benchmark]`は独立したPythonの1tickモデルをForthの両経路・分割ステレオPCMと比較します。DMA/reload/IRQ、手動DAT保持、volume/attachの全mask、メモリ折返し/保持、不正値の原子性、予定表の回収を確認します。benchmarkは通常/基準版/最小周期/変調/8kHz volume・手動DATを各7processで測り、先に計時外で全PCMを照合します。音声試験は無音を送り、Macと生成音の実聴は別確認です。[契約と制限](../../docs/PAULA_FORTH.md)。
 
 補助の`python tests/scripts/verify-paula-stream.py SIGMAのパス`は実PCMを開かず、ステレオcallbackと変調の手計算値の10検査を行います。部分/満杯からの再試行、非ゼロbyte列、4byte単位のoffset、cleanup例外、attachの交互動作を確認します。
+
+## YM2149/STのレジスタと仮想ポート
+
+`python tests/scripts/verify-ym2149.py SIGMAのパス [--benchmark]`は独立したPythonのmaster clockモデルをForth両経路と比較します。全16envelope、64mixer真理表、32係数、3072種I/O、ST select/data、不正値の原子性、予定表回収と全PCMを確認します。benchmarkは6負荷の全32768frameと37項目の状態を比較後、7つの新processを測り、warmup/reset後の計時終了状態もすべて照合します。`python tests/scripts/verify-ym2149-stream.py SIGMAのパス`はmono callback/cleanupと相対時刻/query/bus/reset状態の手計算を補います。`python scripts/ym2149-levels.py --check`で理想DAC表を検証し、native固定0の回帰は`zig build test`で実行します。実周辺機器や実機の正解値による検証ではありません。[契約と測定](../../docs/YM2149_FORTH.md)。
+
+## PCM語群除外と実聴の受け入れ
+
+`python tests/scripts/verify-pcm-exclusion.py SIGMAのパス --audio enabled`（または`disabled`）はEVALUATE/CATCHでREQUIRE-AUDIOを実行し、実際の名前検索とstack深さを照合します。音声は開きません。`python tests/scripts/pcm-listen.py SIGMAのパス --case 1`は無音で実行します。明示した`--audible`時だけ生成音を出します。case1..8でmono/stereo・MML/SFX混合・破棄/再open・drain・SAVESYS・前面端末でのCtrl+C/ACCEPTを確認します。実行JSONだけで利用者の実聴成功とはしません。[手順と残件](../../docs/PCM_LISTENING_ACCEPTANCE.md)。

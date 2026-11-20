@@ -1,5 +1,9 @@
 # Paula のForthレジスタモデル（1137）
 
+## Windows実聴1155の受け入れ完了（2026-11-20）
+
+レモンがWindows11 Pro 10.0.26300、waveOut既定出力でPA-DEMO-MEMORY/PA-DEMO-SETUPの4声stereo約3秒と停止を確認した。DMACONへ6（ch1/2停止）、9（ch0/3停止）を書き、左だけ→右だけを各約1.5秒聞いて分離を確認。連続再生を前面PowerShellの物理Ctrl+Cで止め、音の停止、CATCH=-28/handle=0、その後約3秒の再再生とREPLAY-OK handle=0を確認した。全processはcode0、記録したunderrunは0。[全コマンド・ソースと実聴記録](measurements/2026-11-20-paula-ym-windows-listening.json)。1155を完了しLinux1156は未完了。以下のWindows未確認はこの受け入れ以前の履歴。実機Amiga互換は対象外。
+
 2026-11-20、基点main1f1a67c。実装1145・Windows/Linux検証/測定1146を完了した。親1137は未完了・auto66%。Mac受け入れ1147も同日に合格し（[下記](#mac実機受け入れ1147)）た。Windows/Linuxの実聴1155/1156が1137の子として残るため、親1137は未完了。既存AMIGA-SOUND/Builtinは変更しない。
 
 ## 一次資料と独自の取り決め

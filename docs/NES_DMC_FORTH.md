@@ -1,5 +1,9 @@
 # NES DMCと5声のForth試作（1135）
 
+## Windows実聴1150の受け入れ完了（2026-11-20）
+
+レモンがWindows11 Pro 10.0.26300、waveOut既定出力で4声デモ約3秒、DMC単独ブザー約3秒、4声＋DMC約3秒を順に聞いて確認した。DMCは独自17byte loop（FF×8、00×9）、rate15、DAC0で、単独音と4声へ重ねた違いを確認した。連続再生を前面PowerShellの物理Ctrl+Cで止め、CATCH=-28/handle=0、その後約3秒の再再生とREPLAY-OK handle=0を確認。全processはcode0、各回underrun0。親Pythonは中断中も維持し実行結果を保存した。[全ソース・コマンドと実聴記録](measurements/2026-11-20-nes-sid-windows-listening.json)。1150を完了し、Linux1151は未完了に残す。以下のWindows未確認はこの受け入れ前の履歴。実機DMA/ROM互換は対象外。
+
 現行タスク状態（2026-11-20更新）：Mac受け入れ1144は合格。Windows/Linuxの実聴1150/1151を1132の子に置いたため、親1132は未完了。結果は下のMac実機受け入れ節を参照。Mac確認前の未完了・進捗表示は当時の記録として保持する。
 
 2026-11-20、基点main816129a。[NTSC 4声1134の記録](NES_APU_FORTH.md)にDMCを加えた。1135とNES1132のモデル・実測・採否を完了した。999全体はauto28%で未完了。今回の差分は未コミット。Builtinや既存NES-SOUNDは変更しない。先行照合1139と最終採否1140、SID1136/Paula1137/ST1138は別作業として残す。

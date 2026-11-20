@@ -1,0 +1,359 @@
+{
+  "date": "2026-11-20",
+  "task": 1148,
+  "status": "complete",
+  "scope": "User confirms audible results one case at a time; automated execution and listening kept separate.",
+  "cases": [
+    {
+      "case": 1,
+      "description": "48000Hz mono 440Hz, 2 seconds",
+      "audible_requested": true,
+      "human_listening_result": "レモンが一定の音が約2秒聞こえ、その後停止したことをokで確認",
+      "binary_sha256": "afac007953731a2bb6c717a52aac85bea196b5ce44e62b182a8524325e604d5b",
+      "pcm_sha256": "72bec4079b9459c1f005905db7e050cd1e8fe4b223a47bffc926fc83ec15d173",
+      "pcm_bytes": 192000,
+      "source": "REQUIRE-AUDIO ALSO AUDIO\nCREATE BUF 192000 ALLOT\nS\" D:/home/source/zig/forthz/.work/998-followup/listen-wrhfoy0i/input.pcm\" R/O OPEN-FILE THROW CONSTANT FD\n: LOAD-PCM BUF 192000 FD READ-FILE THROW 192000 <> IF -37 THROW THEN ; LOAD-PCM\nFD CLOSE-FILE THROW\nVARIABLE P VARIABLE OFFSET VARIABLE SENT VARIABLE REQUEST VARIABLE WRITES\n: OPEN-PCM 48000 1 32768 PCM-OPEN THROW P ! ;\n: CLEANUP P @ DUP IF PCM-CLOSE DUP 0= IF 0 P ! THEN ELSE DROP 0 THEN ;\n: SEND ( frames -- )\n  0 SENT ! BEGIN DUP SENT @ > WHILE\n    DUP SENT @ - 512 MIN REQUEST !\n    BUF OFFSET @ 2 * + REQUEST @ P @ PCM-WRITE THROW\n    DUP SENT +! OFFSET +! 1 WRITES +!\n    DUP SENT @ > IF 1 1000 P @ PCM-WAIT THROW 0= IF -528 THROW THEN THEN\n  REPEAT DROP ;\n: DRAIN 1 3000 P @ PCM-STOP THROW 0= IF -528 THROW THEN .\" DRAINED\" CR ;\n: REPORT .\" UNDERRUNS=\" P @ PCM-UNDERRUNS THROW .\n  .\" WRITES=\" WRITES @ . CR ;\n: TONE 0 OFFSET ! 96000 SEND ;\n: BODY OPEN-PCM TONE DRAIN REPORT 250 MS ;\n: RUN ['] BODY CATCH >R ['] CLEANUP CATCH DUP IF ELSE DROP THEN R> ?DUP IF SWAP DROP THROW THEN THROW ;\nRUN .\" COMPLETE DEPTH=\" DEPTH . CR BYE\n",
+      "exit": 0,
+      "stdout": "DRAINED\nUNDERRUNS=0 WRITES=240 \nCOMPLETE DEPTH=0 \n",
+      "stderr": "",
+      "underruns": [
+        0
+      ],
+      "elapsed_seconds": 2.308478799997829
+    },
+    {
+      "case": 2,
+      "description": "22050Hz stereo: left 440Hz then right 660Hz, 1.5 seconds each",
+      "audible_requested": true,
+      "human_listening_result": "レモンが左だけから低い音、続いて右だけから高い音が聞こえたことをokで確認",
+      "binary_sha256": "afac007953731a2bb6c717a52aac85bea196b5ce44e62b182a8524325e604d5b",
+      "pcm_sha256": "c49570877bd80ef4fc16cd7336258fbda825ce54c2266cfd2c0cd5288b4ede50",
+      "pcm_bytes": 264600,
+      "source": "REQUIRE-AUDIO ALSO AUDIO\nCREATE BUF 264600 ALLOT\nS\" D:/home/source/zig/forthz/.work/998-followup/listen-_bahv2x_/input.pcm\" R/O OPEN-FILE THROW CONSTANT FD\n: LOAD-PCM BUF 264600 FD READ-FILE THROW 264600 <> IF -37 THROW THEN ; LOAD-PCM\nFD CLOSE-FILE THROW\nVARIABLE P VARIABLE OFFSET VARIABLE SENT VARIABLE REQUEST VARIABLE WRITES\n: OPEN-PCM 22050 2 16384 PCM-OPEN THROW P ! ;\n: CLEANUP P @ DUP IF PCM-CLOSE DUP 0= IF 0 P ! THEN ELSE DROP 0 THEN ;\n: SEND ( frames -- )\n  0 SENT ! BEGIN DUP SENT @ > WHILE\n    DUP SENT @ - 512 MIN REQUEST !\n    BUF OFFSET @ 4 * + REQUEST @ P @ PCM-WRITE THROW\n    DUP SENT +! OFFSET +! 1 WRITES +!\n    DUP SENT @ > IF 1 1000 P @ PCM-WAIT THROW 0= IF -528 THROW THEN THEN\n  REPEAT DROP ;\n: DRAIN 1 3000 P @ PCM-STOP THROW 0= IF -528 THROW THEN .\" DRAINED\" CR ;\n: REPORT .\" UNDERRUNS=\" P @ PCM-UNDERRUNS THROW .\n  .\" WRITES=\" WRITES @ . CR ;\n: TONE 0 OFFSET ! 66150 SEND ;\n: BODY OPEN-PCM TONE DRAIN REPORT 250 MS ;\n: RUN ['] BODY CATCH >R ['] CLEANUP CATCH DUP IF ELSE DROP THEN R> ?DUP IF SWAP DROP THROW THEN THROW ;\nRUN .\" COMPLETE DEPTH=\" DEPTH . CR BYE\n",
+      "exit": 0,
+      "stdout": "DRAINED\nUNDERRUNS=0 WRITES=181 \nCOMPLETE DEPTH=0 \n",
+      "stderr": "",
+      "underruns": [
+        0
+      ],
+      "elapsed_seconds": 3.2793306999956258
+    },
+    {
+      "case": 3,
+      "description": "48000Hz mono 220Hz mixed with MML melody",
+      "audible_requested": true,
+      "human_listening_result": "レモンが低い一定音とメロディが同時に聞こえたことをokで確認",
+      "binary_sha256": "afac007953731a2bb6c717a52aac85bea196b5ce44e62b182a8524325e604d5b",
+      "pcm_sha256": "5eb9cbcc6a54c01ead051fb3c399cae2e011a34e5adcde2a403c3bab86e437f3",
+      "pcm_bytes": 192000,
+      "source": "REQUIRE-AUDIO ALSO AUDIO\nCREATE BUF 192000 ALLOT\nS\" D:/home/source/zig/forthz/.work/998-followup/listen-tnw1ce0r/input.pcm\" R/O OPEN-FILE THROW CONSTANT FD\n: LOAD-PCM BUF 192000 FD READ-FILE THROW 192000 <> IF -37 THROW THEN ; LOAD-PCM\nFD CLOSE-FILE THROW\nVARIABLE P VARIABLE OFFSET VARIABLE SENT VARIABLE REQUEST VARIABLE WRITES\n: OPEN-PCM 48000 1 32768 PCM-OPEN THROW P ! ;\n: CLEANUP P @ DUP IF PCM-CLOSE DUP 0= IF 0 P ! THEN ELSE DROP 0 THEN ;\n: SEND ( frames -- )\n  0 SENT ! BEGIN DUP SENT @ > WHILE\n    DUP SENT @ - 512 MIN REQUEST !\n    BUF OFFSET @ 2 * + REQUEST @ P @ PCM-WRITE THROW\n    DUP SENT +! OFFSET +! 1 WRITES +!\n    DUP SENT @ > IF 1 1000 P @ PCM-WAIT THROW 0= IF -528 THROW THEN THEN\n  REPEAT DROP ;\n: DRAIN 1 3000 P @ PCM-STOP THROW 0= IF -528 THROW THEN .\" DRAINED\" CR ;\n: REPORT .\" UNDERRUNS=\" P @ PCM-UNDERRUNS THROW .\n  .\" WRITES=\" WRITES @ . CR ;\n: TONE 0 OFFSET ! 96000 SEND ;\n: BODY OPEN-PCM S\" T120 O5 L8 CEG>C<GE\" PLAY TONE DRAIN REPORT 250 MS ;\n: RUN ['] BODY CATCH >R ['] CLEANUP CATCH DUP IF ELSE DROP THEN R> ?DUP IF SWAP DROP THROW THEN THROW ;\nRUN .\" COMPLETE DEPTH=\" DEPTH . CR BYE\n",
+      "exit": 0,
+      "stdout": "DRAINED\nUNDERRUNS=0 WRITES=236 \nCOMPLETE DEPTH=0 \n",
+      "stderr": "",
+      "underruns": [
+        0
+      ],
+      "elapsed_seconds": 2.315822599994135
+    },
+    {
+      "case": 4,
+      "description": "48000Hz mono 220Hz mixed with signed-8-bit SFX 880Hz",
+      "audible_requested": true,
+      "human_listening_result": "レモンが最初は高い音と低い音が重なり、後半は低い音だけになったことをokで確認",
+      "binary_sha256": "afac007953731a2bb6c717a52aac85bea196b5ce44e62b182a8524325e604d5b",
+      "pcm_sha256": "5eb9cbcc6a54c01ead051fb3c399cae2e011a34e5adcde2a403c3bab86e437f3",
+      "pcm_bytes": 192000,
+      "source": "REQUIRE-AUDIO ALSO AUDIO\nCREATE BUF 192000 ALLOT\nS\" D:/home/source/zig/forthz/.work/998-followup/listen-l3rkk4za/input.pcm\" R/O OPEN-FILE THROW CONSTANT FD\n: LOAD-PCM BUF 192000 FD READ-FILE THROW 192000 <> IF -37 THROW THEN ; LOAD-PCM\nFD CLOSE-FILE THROW\nVARIABLE P VARIABLE OFFSET VARIABLE SENT VARIABLE REQUEST VARIABLE WRITES\n: OPEN-PCM 48000 1 32768 PCM-OPEN THROW P ! ;\n: CLEANUP P @ DUP IF PCM-CLOSE DUP 0= IF 0 P ! THEN ELSE DROP 0 THEN ;\n: SEND ( frames -- )\n  0 SENT ! BEGIN DUP SENT @ > WHILE\n    DUP SENT @ - 512 MIN REQUEST !\n    BUF OFFSET @ 2 * + REQUEST @ P @ PCM-WRITE THROW\n    DUP SENT +! OFFSET +! 1 WRITES +!\n    DUP SENT @ > IF 1 1000 P @ PCM-WAIT THROW 0= IF -528 THROW THEN THEN\n  REPEAT DROP ;\n: DRAIN 1 3000 P @ PCM-STOP THROW 0= IF -528 THROW THEN .\" DRAINED\" CR ;\n: REPORT .\" UNDERRUNS=\" P @ PCM-UNDERRUNS THROW .\n  .\" WRITES=\" WRITES @ . CR ;\n: TONE 0 OFFSET ! 96000 SEND ;\nCREATE FX 48000 ALLOT\nS\" D:/home/source/zig/forthz/.work/998-followup/listen-l3rkk4za/sfx.raw\" R/O OPEN-FILE THROW CONSTANT FXFD\n: LOAD-FX FX 48000 FXFD READ-FILE THROW 48000 <> IF -37 THROW THEN ; LOAD-FX\nFXFD CLOSE-FILE THROW FX 48000 48000 0 SAMPLE\n: BODY OPEN-PCM 0 SFX TONE DRAIN REPORT 250 MS ;\n: RUN ['] BODY CATCH >R ['] CLEANUP CATCH DUP IF ELSE DROP THEN R> ?DUP IF SWAP DROP THROW THEN THROW ;\nRUN .\" COMPLETE DEPTH=\" DEPTH . CR BYE\n",
+      "exit": 0,
+      "stdout": "DRAINED\nUNDERRUNS=0 WRITES=196 \nCOMPLETE DEPTH=0 \n",
+      "stderr": "",
+      "underruns": [
+        0
+      ],
+      "elapsed_seconds": 2.2857742000051076
+    },
+    {
+      "case": 5,
+      "description": "queued PCM discard after150ms, 1 second pause, reopen and restart",
+      "audible_requested": true,
+      "human_listening_result": "レモンが短い音が止まり、間を空けて再び約2秒鳴ったことをokで確認",
+      "binary_sha256": "afac007953731a2bb6c717a52aac85bea196b5ce44e62b182a8524325e604d5b",
+      "pcm_sha256": "72bec4079b9459c1f005905db7e050cd1e8fe4b223a47bffc926fc83ec15d173",
+      "pcm_bytes": 192000,
+      "source": "REQUIRE-AUDIO ALSO AUDIO\nCREATE BUF 192000 ALLOT\nS\" D:/home/source/zig/forthz/.work/998-followup/listen-u5fymgq_/input.pcm\" R/O OPEN-FILE THROW CONSTANT FD\n: LOAD-PCM BUF 192000 FD READ-FILE THROW 192000 <> IF -37 THROW THEN ; LOAD-PCM\nFD CLOSE-FILE THROW\nVARIABLE P VARIABLE OFFSET VARIABLE SENT VARIABLE REQUEST VARIABLE WRITES\n: OPEN-PCM 48000 1 32768 PCM-OPEN THROW P ! ;\n: CLEANUP P @ DUP IF PCM-CLOSE DUP 0= IF 0 P ! THEN ELSE DROP 0 THEN ;\n: SEND ( frames -- )\n  0 SENT ! BEGIN DUP SENT @ > WHILE\n    DUP SENT @ - 512 MIN REQUEST !\n    BUF OFFSET @ 2 * + REQUEST @ P @ PCM-WRITE THROW\n    DUP SENT +! OFFSET +! 1 WRITES +!\n    DUP SENT @ > IF 1 1000 P @ PCM-WAIT THROW 0= IF -528 THROW THEN THEN\n  REPEAT DROP ;\n: DRAIN 1 3000 P @ PCM-STOP THROW 0= IF -528 THROW THEN .\" DRAINED\" CR ;\n: REPORT .\" UNDERRUNS=\" P @ PCM-UNDERRUNS THROW .\n  .\" WRITES=\" WRITES @ . CR ;\n: TONE 0 OFFSET ! 96000 SEND ;\n: BODY OPEN-PCM 0 OFFSET ! 32768 SEND 150 MS 0 1000 P @ PCM-STOP THROW 0= IF -528 THROW THEN .\" DISCARDED\" CR CLEANUP THROW 1000 MS OPEN-PCM TONE DRAIN REPORT 250 MS ;\n: RUN ['] BODY CATCH >R ['] CLEANUP CATCH DUP IF ELSE DROP THEN R> ?DUP IF SWAP DROP THROW THEN THROW ;\nRUN .\" COMPLETE DEPTH=\" DEPTH . CR BYE\n",
+      "exit": 0,
+      "stdout": "DISCARDED\nDRAINED\nUNDERRUNS=0 WRITES=260 \nCOMPLETE DEPTH=0 \n",
+      "stderr": "",
+      "underruns": [
+        0
+      ],
+      "elapsed_seconds": 3.5414903000055347
+    },
+    {
+      "case": 6,
+      "description": "PCM drain followed by DRAINED, silence after completion",
+      "audible_requested": true,
+      "human_listening_result": "レモンが約2秒の音が最後まで鳴り、その後は無音になったことをokで確認",
+      "binary_sha256": "afac007953731a2bb6c717a52aac85bea196b5ce44e62b182a8524325e604d5b",
+      "pcm_sha256": "72bec4079b9459c1f005905db7e050cd1e8fe4b223a47bffc926fc83ec15d173",
+      "pcm_bytes": 192000,
+      "source": "REQUIRE-AUDIO ALSO AUDIO\nCREATE BUF 192000 ALLOT\nS\" D:/home/source/zig/forthz/.work/998-followup/listen-_8k888er/input.pcm\" R/O OPEN-FILE THROW CONSTANT FD\n: LOAD-PCM BUF 192000 FD READ-FILE THROW 192000 <> IF -37 THROW THEN ; LOAD-PCM\nFD CLOSE-FILE THROW\nVARIABLE P VARIABLE OFFSET VARIABLE SENT VARIABLE REQUEST VARIABLE WRITES\n: OPEN-PCM 48000 1 32768 PCM-OPEN THROW P ! ;\n: CLEANUP P @ DUP IF PCM-CLOSE DUP 0= IF 0 P ! THEN ELSE DROP 0 THEN ;\n: SEND ( frames -- )\n  0 SENT ! BEGIN DUP SENT @ > WHILE\n    DUP SENT @ - 512 MIN REQUEST !\n    BUF OFFSET @ 2 * + REQUEST @ P @ PCM-WRITE THROW\n    DUP SENT +! OFFSET +! 1 WRITES +!\n    DUP SENT @ > IF 1 1000 P @ PCM-WAIT THROW 0= IF -528 THROW THEN THEN\n  REPEAT DROP ;\n: DRAIN 1 3000 P @ PCM-STOP THROW 0= IF -528 THROW THEN .\" DRAINED\" CR ;\n: REPORT .\" UNDERRUNS=\" P @ PCM-UNDERRUNS THROW .\n  .\" WRITES=\" WRITES @ . CR ;\n: TONE 0 OFFSET ! 96000 SEND ;\n: BODY OPEN-PCM TONE DRAIN REPORT 1000 MS ;\n: RUN ['] BODY CATCH >R ['] CLEANUP CATCH DUP IF ELSE DROP THEN R> ?DUP IF SWAP DROP THROW THEN THROW ;\nRUN .\" COMPLETE DEPTH=\" DEPTH . CR BYE\n",
+      "exit": 0,
+      "stdout": "DRAINED\nUNDERRUNS=0 WRITES=196 \nCOMPLETE DEPTH=0 \n",
+      "stderr": "",
+      "underruns": [
+        0
+      ],
+      "elapsed_seconds": 3.060914600006072
+    },
+    {
+      "case": 7,
+      "description": "SAVESYS app plays523Hz then784Hz, each1second",
+      "audible_requested": true,
+      "human_listening_result": "レモンが保存アプリで低い音から高い音へ切り替わり、それぞれ約1秒鳴って止まったことをokで確認",
+      "binary_sha256": "afac007953731a2bb6c717a52aac85bea196b5ce44e62b182a8524325e604d5b",
+      "pcm_sha256": "2f81ed892d7f4f90510beb63c5806a7588fc74f9347646677733d46ff7d2fcdf",
+      "pcm_bytes": 192000,
+      "source": "REQUIRE-AUDIO ALSO AUDIO\nCREATE BUF 192000 ALLOT\nS\" D:/home/source/zig/forthz/.work/998-followup/listen-q7p0nbdu/input.pcm\" R/O OPEN-FILE THROW CONSTANT FD\n: LOAD-PCM BUF 192000 FD READ-FILE THROW 192000 <> IF -37 THROW THEN ; LOAD-PCM\nFD CLOSE-FILE THROW\nVARIABLE P VARIABLE OFFSET VARIABLE SENT VARIABLE REQUEST VARIABLE WRITES\n: OPEN-PCM 48000 1 32768 PCM-OPEN THROW P ! ;\n: CLEANUP P @ DUP IF PCM-CLOSE DUP 0= IF 0 P ! THEN ELSE DROP 0 THEN ;\n: SEND ( frames -- )\n  0 SENT ! BEGIN DUP SENT @ > WHILE\n    DUP SENT @ - 512 MIN REQUEST !\n    BUF OFFSET @ 2 * + REQUEST @ P @ PCM-WRITE THROW\n    DUP SENT +! OFFSET +! 1 WRITES +!\n    DUP SENT @ > IF 1 1000 P @ PCM-WAIT THROW 0= IF -528 THROW THEN THEN\n  REPEAT DROP ;\n: DRAIN 1 3000 P @ PCM-STOP THROW 0= IF -528 THROW THEN .\" DRAINED\" CR ;\n: REPORT .\" UNDERRUNS=\" P @ PCM-UNDERRUNS THROW .\n  .\" WRITES=\" WRITES @ . CR ;\n: TONE 0 OFFSET ! 96000 SEND ;\n: BODY OPEN-PCM TONE DRAIN REPORT 250 MS ;\n: RUN ['] BODY CATCH >R ['] CLEANUP CATCH DUP IF ELSE DROP THEN R> ?DUP IF SWAP DROP THROW THEN THROW ;\n: MAIN RUN ; ' MAIN APP-ENTRY! SAVESYS D:/home/source/zig/forthz/.work/998-followup/listen-q7p0nbdu/pcm-saved.exe BYE\n",
+      "exit": 0,
+      "stdout": "DRAINED\nUNDERRUNS=0 WRITES=219 \n",
+      "stderr": "",
+      "underruns": [
+        0
+      ],
+      "elapsed_seconds": 2.318144000004395
+    },
+    {
+      "case": 8,
+      "description": "continuous550Hz; physical Ctrl+C during PCM-WAIT, then type hello",
+      "audible_requested": true,
+      "human_listening_result": "レモンが物理Ctrl+Cとhello入力を実行してログを報告し、追加のokでCtrl+C後の音の停止も確認。CATCH=-28 CLOSE=0、5、hello、正常終了code0。",
+      "binary_sha256": "afac007953731a2bb6c717a52aac85bea196b5ce44e62b182a8524325e604d5b",
+      "pcm_sha256": "302996aa01ffbe9b7df7c6ac25cd7f921c41e0afab23626c2d19de734869cce4",
+      "pcm_bytes": 192000,
+      "source": "REQUIRE-AUDIO ALSO AUDIO\nCREATE BUF 192000 ALLOT\nS\" D:/home/source/zig/forthz/.work/998-followup/listen-2x289szs/input.pcm\" R/O OPEN-FILE THROW CONSTANT FD\n: LOAD-PCM BUF 192000 FD READ-FILE THROW 192000 <> IF -37 THROW THEN ; LOAD-PCM\nFD CLOSE-FILE THROW\nVARIABLE P VARIABLE OFFSET VARIABLE SENT VARIABLE REQUEST VARIABLE WRITES\n: OPEN-PCM 48000 1 32768 PCM-OPEN THROW P ! ;\n: CLEANUP P @ DUP IF PCM-CLOSE DUP 0= IF 0 P ! THEN ELSE DROP 0 THEN ;\n: SEND ( frames -- )\n  0 SENT ! BEGIN DUP SENT @ > WHILE\n    DUP SENT @ - 512 MIN REQUEST !\n    BUF OFFSET @ 2 * + REQUEST @ P @ PCM-WRITE THROW\n    DUP SENT +! OFFSET +! 1 WRITES +!\n    DUP SENT @ > IF 1 1000 P @ PCM-WAIT THROW 0= IF -528 THROW THEN THEN\n  REPEAT DROP ;\n: DRAIN 1 3000 P @ PCM-STOP THROW 0= IF -528 THROW THEN .\" DRAINED\" CR ;\n: REPORT .\" UNDERRUNS=\" P @ PCM-UNDERRUNS THROW .\n  .\" WRITES=\" WRITES @ . CR ;\n: TONE 0 OFFSET ! 96000 SEND ;\n: BODY OPEN-PCM EKEY? DROP .\" READY: Ctrl+C during PCM-WAIT; then type hello\" CR STDOUT FLUSH-FILE THROW BEGIN 0 OFFSET ! 4800 SEND 4800 -1 P @ PCM-WAIT THROW 0= IF -528 THROW THEN AGAIN ;\n: RUN ['] BODY CATCH >R ['] CLEANUP CATCH DUP IF ELSE DROP THEN R> ?DUP IF SWAP DROP THROW THEN THROW ;\n' BODY CATCH .\" CATCH=\" . CLEANUP .\" CLOSE=\" . CR CREATE LINE 64 ALLOT LINE 64 ACCEPT DUP . CR LINE SWAP TYPE CR BYE\n",
+      "exit": 0,
+      "stdout": "READY: Ctrl+C during PCM-WAIT; then type hello\nCATCH=-28 CLOSE=0 \n5 \nhello\n",
+      "stderr": null,
+      "underruns": [],
+      "elapsed_seconds": 21.87058760000218
+    }
+  ],
+  "environment": {
+    "os": "Microsoft Windows 11 Pro",
+    "version": "10.0.26300",
+    "build": "26300",
+    "backend": "waveOut, WAVE_MAPPER default output; endpoint display name not yet recorded",
+    "endpoint_name_scope": "既定出力を使用。個別endpointの表示名は取得していない。"
+  },
+  "remaining": "Linux実聴1149は別タスクで未完了。",
+  "tasks_snapshot": [
+    {
+      "id": 998,
+      "title": "本体09 PCMストリーム出力（段階B、依存は共通基盤1064。AUDIO）：開始・書込み・残量（フレーム数）・停止の語、専用の有界のリング、周波数の変換、残量と再生位置の区別、満杯のときの待機と中断・部分書込みは900の取り決め、MML・SFX・モジュールとの混合（EMULATOR_CORE_PLAN.md）",
+      "status": "todo",
+      "parent_id": 1003,
+      "progress": 0,
+      "progress_mode": "auto",
+      "created_at": "2026-11-17T22:47:12Z",
+      "depends_on": [
+        1064
+      ],
+      "effective_progress": 94,
+      "blocked": false,
+      "blocked_by": []
+    },
+    {
+      "id": 1125,
+      "title": "PCM01 仕様設計：形式・容量・部分書込み・期限と中断・停止とclose・再標本化・混合・所有と画像・backend終了をソース照合しClaudeレビューで確定",
+      "status": "done",
+      "parent_id": 998,
+      "progress": 100,
+      "progress_mode": "auto",
+      "created_at": "2026-11-20T01:14:54Z",
+      "completed_at": "2026-11-20T01:32:15Z",
+      "depends_on": [
+        1064
+      ],
+      "effective_progress": 100,
+      "blocked": false,
+      "blocked_by": []
+    },
+    {
+      "id": 1126,
+      "title": "PCM02 有界リングと再標本化：SPSC・wrap・入力frame残量・underrun・sample hold・saturating混合を実装し決定的試験",
+      "status": "done",
+      "parent_id": 998,
+      "progress": 100,
+      "progress_mode": "auto",
+      "created_at": "2026-11-20T01:14:54Z",
+      "completed_at": "2026-11-20T01:32:15Z",
+      "depends_on": [
+        1125
+      ],
+      "effective_progress": 100,
+      "blocked": false,
+      "blocked_by": []
+    },
+    {
+      "id": 1127,
+      "title": "PCM03 ホスト寿命：音スレッドの停止とjoin・Windows/Linux/macOS装置待機解除・callback停止・初期化失敗の回収を実装",
+      "status": "done",
+      "parent_id": 998,
+      "progress": 100,
+      "progress_mode": "auto",
+      "created_at": "2026-11-20T01:14:54Z",
+      "completed_at": "2026-11-20T02:06:42Z",
+      "depends_on": [
+        1125
+      ],
+      "effective_progress": 100,
+      "blocked": false,
+      "blocked_by": []
+    },
+    {
+      "id": 1128,
+      "title": "PCM04 公開語と所有：開始・部分書込み・待機・残量・停止・closeと画像/世代/終了経路、英日HELPを実装",
+      "status": "done",
+      "parent_id": 998,
+      "progress": 100,
+      "progress_mode": "auto",
+      "created_at": "2026-11-20T01:14:54Z",
+      "completed_at": "2026-11-20T03:14:15Z",
+      "depends_on": [
+        1056,
+        1125,
+        1126,
+        1127
+      ],
+      "effective_progress": 100,
+      "blocked": false,
+      "blocked_by": []
+    },
+    {
+      "id": 1129,
+      "title": "PCM05 Windows/Linux受け入れ：満杯・中断・停止・保存アプリ・語群除外・資源回収・英日文書と測定を検証",
+      "status": "done",
+      "parent_id": 998,
+      "progress": 100,
+      "progress_mode": "auto",
+      "created_at": "2026-11-20T01:14:54Z",
+      "completed_at": "2026-11-20T03:14:15Z",
+      "depends_on": [
+        1128
+      ],
+      "effective_progress": 100,
+      "blocked": false,
+      "blocked_by": []
+    },
+    {
+      "id": 1130,
+      "title": "PCM06 Mac実機受け入れ：生成アプリ・連続PCM・混合・待機中断・停止/再開・装置と資源回収・除外構成を確認",
+      "status": "done",
+      "parent_id": 998,
+      "progress": 100,
+      "progress_mode": "auto",
+      "created_at": "2026-11-20T01:14:54Z",
+      "completed_at": "2026-11-20T03:30:42Z",
+      "depends_on": [
+        1128
+      ],
+      "effective_progress": 100,
+      "blocked": false,
+      "blocked_by": []
+    },
+    {
+      "id": 1133,
+      "title": "PCM実聴の受け入れ：WindowsとLinuxを子タスクで個別に確認する。両OSのPCM単独・左右・混合・破棄/再開・drain・保存アプリ・中断と資源回収、実聴結果を記録。MacのPCM基盤は1130で確認済み",
+      "status": "todo",
+      "parent_id": 998,
+      "progress": 0,
+      "progress_mode": "auto",
+      "created_at": "2026-11-20T03:30:42Z",
+      "depends_on": [
+        1129
+      ],
+      "effective_progress": 50,
+      "blocked": false,
+      "blocked_by": []
+    },
+    {
+      "id": 1148,
+      "title": "PCM実聴 Windows：Windows実装置でPCM単独・左右・MML/SFXとの混合・破棄と再開・drain・保存アプリ・Ctrl+C中断を実際に聞き、再生結果と停止後の資源回収、OS/版/装置を記録する。自動試験と利用者の実聴確認を区別",
+      "status": "done",
+      "parent_id": 1133,
+      "progress": 100,
+      "progress_mode": "auto",
+      "created_at": "2026-11-20T06:07:03Z",
+      "completed_at": "2026-11-20T07:28:44Z",
+      "depends_on": [
+        1129
+      ],
+      "effective_progress": 100,
+      "blocked": false,
+      "blocked_by": []
+    },
+    {
+      "id": 1149,
+      "title": "PCM実聴 Linux：PulseAudio/ALSA実装置でPCM単独・左右・MML/SFXとの混合・破棄と再開・drain・保存アプリ・Ctrl+C中断を実際に聞き、再生結果と停止後の資源回収、OS/版/装置を記録する。WSLの無音consumer試験とは区別",
+      "status": "todo",
+      "parent_id": 1133,
+      "progress": 0,
+      "progress_mode": "auto",
+      "created_at": "2026-11-20T06:07:03Z",
+      "depends_on": [
+        1129
+      ],
+      "effective_progress": 0,
+      "blocked": false,
+      "blocked_by": []
+    },
+    {
+      "id": 1159,
+      "title": "PCM語群除外の再確認 Windows：1129の不在確認は[DEFINED]でaudio有効版でも0 0となり証拠にならない。audio無効4構成でREQUIRE-AUDIOをCATCH内で実行し-275、有効版で成功しALSO AUDIO後にPCM-OPENが見つかることを確認・記録（Macは1130で確認済み）",
+      "status": "done",
+      "parent_id": 998,
+      "progress": 100,
+      "progress_mode": "auto",
+      "created_at": "2026-11-20T07:05:49Z",
+      "completed_at": "2026-11-20T07:17:29Z",
+      "depends_on": [],
+      "effective_progress": 100,
+      "blocked": false,
+      "blocked_by": []
+    },
+    {
+      "id": 1160,
+      "title": "PCM語群除外の再確認 Linux：1129の不在確認は[DEFINED]でaudio有効版でも0 0となり証拠にならない。audio無効4構成でREQUIRE-AUDIOをCATCH内で実行し-275、有効版で成功しALSO AUDIO後にPCM-OPENが見つかることを確認・記録（Macは1130で確認済み）",
+      "status": "done",
+      "parent_id": 998,
+      "progress": 100,
+      "progress_mode": "auto",
+      "created_at": "2026-11-20T07:05:49Z",
+      "completed_at": "2026-11-20T07:17:29Z",
+      "depends_on": [],
+      "effective_progress": 100,
+      "blocked": false,
+      "blocked_by": []
+    }
+  ],
+  "repeat_checks": [
+    {
+      "case": 2,
+      "description": "22050Hz stereo: left 440Hz then right 660Hz, 1.5 seconds each",
+      "audible_requested": true,
+      "human_listening_result": "レモンの依頼で左右テストを再実行し、左だけから低い音、続いて右だけから高い音が聞こえたことをＯＫで確認。",
+      "binary_sha256": "afac007953731a2bb6c717a52aac85bea196b5ce44e62b182a8524325e604d5b",
+      "pcm_sha256": "c49570877bd80ef4fc16cd7336258fbda825ce54c2266cfd2c0cd5288b4ede50",
+      "pcm_bytes": 264600,
+      "source": "REQUIRE-AUDIO ALSO AUDIO\nCREATE BUF 264600 ALLOT\nS\" D:/home/source/zig/forthz/.work/998-followup/listen-lmh96x6p/input.pcm\" R/O OPEN-FILE THROW CONSTANT FD\n: LOAD-PCM BUF 264600 FD READ-FILE THROW 264600 <> IF -37 THROW THEN ; LOAD-PCM\nFD CLOSE-FILE THROW\nVARIABLE P VARIABLE OFFSET VARIABLE SENT VARIABLE REQUEST VARIABLE WRITES\n: OPEN-PCM 22050 2 16384 PCM-OPEN THROW P ! ;\n: CLEANUP P @ DUP IF PCM-CLOSE DUP 0= IF 0 P ! THEN ELSE DROP 0 THEN ;\n: SEND ( frames -- )\n  0 SENT ! BEGIN DUP SENT @ > WHILE\n    DUP SENT @ - 512 MIN REQUEST !\n    BUF OFFSET @ 4 * + REQUEST @ P @ PCM-WRITE THROW\n    DUP SENT +! OFFSET +! 1 WRITES +!\n    DUP SENT @ > IF 1 1000 P @ PCM-WAIT THROW 0= IF -528 THROW THEN THEN\n  REPEAT DROP ;\n: DRAIN 1 3000 P @ PCM-STOP THROW 0= IF -528 THROW THEN .\" DRAINED\" CR ;\n: REPORT .\" UNDERRUNS=\" P @ PCM-UNDERRUNS THROW .\n  .\" WRITES=\" WRITES @ . CR ;\n: TONE 0 OFFSET ! 66150 SEND ;\n: BODY OPEN-PCM TONE DRAIN REPORT 250 MS ;\n: RUN ['] BODY CATCH >R ['] CLEANUP CATCH DUP IF ELSE DROP THEN R> ?DUP IF SWAP DROP THROW THEN THROW ;\nRUN .\" COMPLETE DEPTH=\" DEPTH . CR BYE\n",
+      "exit": 0,
+      "stdout": "DRAINED\nUNDERRUNS=0 WRITES=269 \nCOMPLETE DEPTH=0 \n",
+      "stderr": "",
+      "underruns": [
+        0
+      ],
+      "elapsed_seconds": 3.2819745000015246
+    }
+  ]
+}

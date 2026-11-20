@@ -72,3 +72,5 @@
 - [C64 SIDのForthモデル](SID_FORTH.md)：3声の決定的モデル、整数フィルター近似、独立検証と再現範囲。
 
 - [PaulaのForthレジスタモデル](PAULA_FORTH.md)：4声ステレオのDMA/手動出力/IRQ/変調モデル、独立検証とMac受け入れの残項目。
+
+- [YM2149/STのForthモデルと監査](YM2149_FORTH.md)：既存nativeの不足・固定0音量の修正、時刻指定・仮想port/bus、独立PCM検証と測定。

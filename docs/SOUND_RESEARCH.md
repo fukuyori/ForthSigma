@@ -82,6 +82,9 @@
 
 ## AY-3-8910 / YM2149（MSX と Atari ST の PSG）
 
+2026-11-20追記：Atari CorporationのEngineering Hardware Specification（1986）§4.1でSTの2MHzを確認した。Yamaha原本PDF p7/8を読み、今回のモデル・資料と実測を[YM2149監査](YM2149_FORTH.md)にまとめた。以下は当初の調査履歴であり、「Atariの一次資料は未確認」は現在の状態ではない。32段の係数は理想1.5dB表として独自生成し、実機DACの厳密値とは区別する。LFSR/period0等の宣言範囲も新しい文書を参照。
+
+
 出典: [GI-DS] GI AY-3-8910 データシート http://map.grauw.nl/resources/sound/generalinstrument_ay-3-8910.pdf 、[YM-DS] Yamaha YM2149 データシート http://www.ym2149.com/ym2149.pdf 、[TH] MSX2 Technical Handbook 第5章 https://github.com/Konamiman/MSX2-Technical-Handbook/blob/master/md/Chapter5a.md 、[RB] The MSX Red Book https://github.com/gseidler/The-MSX-Red-Book/blob/master/the_msx_red_book.md 、[MAME] ay8910.cpp/.h のコメント（BSD-3）https://github.com/mamedev/mame/blob/master/src/devices/sound/ay8910.cpp 、[WIKI-PLAY] https://www.msx.org/wiki/PLAY 、[WIKI-PLAYF] https://www.msx.org/wiki/PLAY() 、[WIKI-SOUND] https://www.msx.org/wiki/SOUND 、[WIKI-BEEP] https://www.msx.org/wiki/BEEP 、差異 https://maidavale.org/blog/ay-ym-differences/
 
 ### レジスタ [GI-DS][YM-DS][TH]

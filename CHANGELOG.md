@@ -4,6 +4,8 @@
 
 ### Added
 
+- Forth YM2149/ST register model with timestamped writes/reads, virtual I/O latches/pins and ST select/data bus helpers. Independent master-clock/state/PCM validation and workload measurements; no physical peripheral or TOS compatibility claim. Mac acceptance remains pending.
+
 - NES Forth DMC sample reader, byte buffer, delta DAC, loop and IRQ with an owned32KiB sample map and wide-integer nonlinear mixing. Zero DMA-delay model; hardware bus races remain excluded. Five-voice and streaming8kHz DAC validation/measurements are recorded separately.
 
 - Forth Paula stereo register model with declared DMA/manual/IRQ/attachment timing and independent Python verification. Agnus bus arbitration, analog filters and ROM compatibility are excluded; Mac acceptance remains pending. No built-in changes.
@@ -28,6 +30,10 @@
 
 - Read/write C file streams now flush output before switching to any of the four input paths, preventing NUL corruption observed on Windows when writing, reading and then syncing. SYNC preserves pending input and semantic EOF; FLUSH-FILE retains its existing contract.
 - The new builtin tags change the dictionary-image ABI signature. Existing saved images must be recreated with the current executable; physical held state and event history are never saved.
+
+### Fixed
+
+- Native YM2149 fixed-volume zero now mutes the PSG source used for rests/stops, while preserving nonzero fixed levels, envelope level1 and the existing coupling-filter decay.
 
 ## [0.12.0] - 2026-11-18
 

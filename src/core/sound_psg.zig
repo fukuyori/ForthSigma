@@ -169,8 +169,10 @@ pub const Psg = struct {
         const on = (self.tone_high[channel] or tone_off) and (self.lfsr & 1 != 0 or noise_off);
         if (!on) return 0;
         const amplitude = self.regs[8 + channel];
-        // A fixed volume L is the envelope's level 2L + 1.
-        const step_level: u8 = if (amplitude & 0x10 != 0) self.envelopeLevel() else (amplitude & 0x0f) * 2 + 1;
+        // Nonzero fixed volumes use envelope level 2L + 1; fixed zero is mute.
+        // Envelope level 1 remains available in the YM's 32-step mode.
+        const fixed_level = amplitude & 0x0f;
+        const step_level: u8 = if (amplitude & 0x10 != 0) self.envelopeLevel() else if (fixed_level == 0) 0 else fixed_level * 2 + 1;
         return switch (self.model) {
             .ay8910 => ay_levels[step_level >> 1],
             .ym2149 => ym_levels[step_level],
