@@ -136,3 +136,7 @@ Macのクロスコンパイルを実機確認の代わりにしません。
 `python tests/scripts/verify-pcm-stream.py SIGMAのパス`は専用プロセスに無音PCMを渡し、書込み・満杯待機・drain・close、メモリエラーからの回復、二重open、保存アプリ、辞書追記を確認します。image除外構成には`--no-image`を付けます。
 
 `python tests/scripts/verify-pcm-terminal.py SIGMAのパス`は専用の非表示WindowsコンソールかLinux PTYを使います。文字・日本語・未完成ESCとCtrl+Cを送り、WAIT/STOPの-28、CLOSEの-516と再試行、入力保持、端末設定復元を確認します。利用者のコンソールには入力しません。フレームはすべて0で、可聴音や物理キーの確認にはなりません。結果は[PCM検証記録](../../docs/PCM_PUBLIC_IMPLEMENTATION.md)を参照してください。
+
+## Forth音源の試作
+
+`python tests/scripts/verify-pcm-synth.py SIGMAのパス [--benchmark]`は、手計算した標本、独立したPythonのs16LE列、分割・レジスタ変更時の連続性、不正引数、強制した部分書込み・満杯・期限切れ・close失敗と、実PCMへの無音送出を確認します。benchmark指定時はwarm-up後のNTIME/CPUTIME差を7回測り、最終バッファのチェックサムも照合します。別の送出試験は外側の単調時計を使い、書込み・待機・アンダーラン回数とAUDIO?も記録します。実機の音源や可聴音を検証するものではありません。リポジトリ直下から実行してください。[範囲と結果](../../docs/PCM_SYNTH_PROTOTYPE.md)。

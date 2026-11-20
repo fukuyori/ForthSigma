@@ -4,6 +4,14 @@
 
 この節を最新状態とする。基点main `9d1c528`。macOS 27.2.1 / Apple M5でPCM06（1130）を実施し合格した。tqueの1130と親998を完了にした。core1124成功・host152成功、11構成、専用PTY、AudioQueue実装置での1000回開閉（fd/thread不変）・再生中終了50回、Ghosttyでの実聴（単独・左右・混合・破棄と再開・drain・保存アプリ）とCtrl+C中断を確認した。結果は[実装記録](PCM_PUBLIC_IMPLEMENTATION.md#mac実機受け入れ1130)。以下の「Mac実機1130は未完了」は当時の記録。LinuxのPulseAudio/ALSA実装置とWindowsの実聴は未確認のまま（tque 1133）。
 
+## Forth音源の先行試作1131（2026-11-20、Mac受け入れ統合前の記録）
+
+現在のmainは9d1c528（PCM公開語/host寿命/Windows/Linux確認までcommit/push済み）。その後999の先行子1131として、独自4声のForth合成・PCM送出例と検証/測定を追加した。今回の差分は未コミット。Mac実機1130は未完了で残す。
+
+1131完了、999は50%。次は1132の機種別Forth音源・実測と採否判断。今回の汎用試作をNES/SID/Paulaの再現や本体移行不要の証拠とは扱わない。[試作仕様と結果](PCM_SYNTH_PROTOTYPE.md)、[Claude採否](reviews/1131-review-response.md)、[生データ](measurements/2026-11-20-pcm-synth.json)を参照。通常/除外のWindows/Linux各18検査群が成功。ClaudeのMedium試験不足2件を補強し、再レビューは解決済み・新しいHigh/Mediumなし。可聴確認はしていない。
+
+999の着手依存は利用者の「Macを残して進める」指示に合わせ、1064と完了済み1129へ変更した。998全体と1130は完了にしていない。再開時はGit/tqueとJSONのソース指紋を照合する。以下は各時点の履歴。
+
 ## PCM公開語・Windows/Linux自動確認（2026-11-20）
 
 この節を最新状態とする。基点mainは416caf9（PCM設計/内部までpush済み）。その後1127・1128・1129を実装/自動検証し、差分は未コミット。1128/1129はtque完了、親998は83%。Mac実機1130は未完了で残す。保存アプリのMac受け入れ1124/1069/1066はc822e53で統合済み。

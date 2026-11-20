@@ -1,0 +1,57 @@
+\ Original Forth-only synthesis workload for task999. NOT a hardware emulator.
+\ Loading only defines words: it does not open audio or play anything.
+\ 4 voices; Q24 phase; fixed 48000 Hz mono signed16 little-endian output.
+DECIMAL
+48000 CONSTANT PS-RATE
+16777216 CONSTANT PS-TURN
+CREATE PS-KIND 4 CELLS ALLOT
+CREATE PS-STEP 4 CELLS ALLOT
+CREATE PS-GAIN 4 CELLS ALLOT
+CREATE PS-DUTY 4 CELLS ALLOT
+CREATE PS-PHASE 4 CELLS ALLOT
+CREATE PS-NOISE 4 CELLS ALLOT
+: PS-AT ( voice base -- addr ) SWAP CELLS + ;
+: PS-VOICE? ( voice -- ) 0 4 WITHIN 0= IF -24 THROW THEN ;
+: PS-RESET ( -- )
+  4 0 DO
+    0 I PS-KIND PS-AT ! 0 I PS-STEP PS-AT !
+    0 I PS-GAIN PS-AT ! 128 I PS-DUTY PS-AT !
+    0 I PS-PHASE PS-AT ! 1 I PS-NOISE PS-AT !
+  LOOP ;
+\ Write (value voice register): 0 kind(0mute/1pulse/2triangle/3noise),
+\ 1 Hz(0..23999), 2 peak gain(0..8191), 3 pulse duty(1..255 /256).
+\ Validate all arguments before changing state; other fields/phase stay intact.
+: PS-REG! ( value voice register -- )
+  OVER PS-VOICE?
+  DUP 0 4 WITHIN 0= IF -24 THROW THEN
+  DUP 0= IF DROP OVER 0 4 WITHIN 0= IF -24 THROW THEN PS-KIND PS-AT ! EXIT THEN
+  DUP 1 = IF DROP OVER 0 24000 WITHIN 0= IF -24 THROW THEN
+    SWAP PS-TURN * PS-RATE / SWAP PS-STEP PS-AT ! EXIT THEN
+  DUP 2 = IF DROP OVER 0 8192 WITHIN 0= IF -24 THROW THEN PS-GAIN PS-AT ! EXIT THEN
+  DROP OVER 1 256 WITHIN 0= IF -24 THROW THEN PS-DUTY PS-AT ! ;
+: PS-LFSR ( u -- u ) DUP DUP 1 RSHIFT XOR 1 AND 15 LSHIFT SWAP 1 RSHIFT OR ;
+: PS-VOICE ( voice -- sample )
+  DUP PS-PHASE PS-AT @ OVER PS-STEP PS-AT @ +
+  DUP PS-TURN >= IF
+    OVER PS-NOISE PS-AT DUP @ PS-LFSR SWAP !
+  THEN
+  PS-TURN 1- AND DUP 2 PICK PS-PHASE PS-AT !
+  OVER PS-KIND PS-AT @
+  DUP 0= IF DROP 2DROP 0 EXIT THEN
+  DUP 1 = IF DROP OVER PS-DUTY PS-AT @ 65536 * <
+    IF PS-GAIN PS-AT @ ELSE PS-GAIN PS-AT @ NEGATE THEN EXIT THEN
+  2 = IF
+    14 RSHIFT DUP 512 < IF 128 * 32768 - ELSE 128 * 98304 SWAP - THEN
+    SWAP PS-GAIN PS-AT @ * 32768 / EXIT THEN
+  DROP DUP PS-NOISE PS-AT @ 1 AND IF PS-GAIN PS-AT @ ELSE PS-GAIN PS-AT @ NEGATE THEN ;
+: PS-SAMPLE ( -- n ) 0 4 0 DO I PS-VOICE + LOOP ;
+: PS-LE! ( n addr -- ) OVER 255 AND OVER C! SWAP 8 RSHIFT 255 AND SWAP 1+ C! ;
+\ Caller supplies a valid destination of frames*2 bytes; no audio host needed.
+: PS-RENDER ( addr frames -- ) DUP 0< IF -24 THROW THEN 0 ?DO PS-SAMPLE OVER PS-LE! 2 + LOOP DROP ;
+: PS-DEMO-SETUP ( -- )
+  PS-RESET
+  1 0 0 PS-REG! 440 0 1 PS-REG! 2000 0 2 PS-REG! 64 0 3 PS-REG!
+  1 1 0 PS-REG! 660 1 1 PS-REG! 2000 1 2 PS-REG!
+  2 2 0 PS-REG! 110 2 1 PS-REG! 2000 2 2 PS-REG!
+  3 3 0 PS-REG! 3000 3 1 PS-REG! 500 3 2 PS-REG! ;
+PS-RESET

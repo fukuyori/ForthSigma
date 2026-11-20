@@ -4,6 +4,8 @@
 
 ### Added
 
+- Forth-only four-voice synthesis workload and explicit PCM streaming example, with independent vector tests and Windows/Linux timing. This is an original synthetic workload, not chip emulation; loading does not play audio.
+
 - AUDIO PCM-OPEN/WRITE/QUEUED/WAIT/STOP/CLOSE/UNDERRUNS: bounded s16LE mono/stereo input, partial writes, rate conversion, State ownership, cancellable waits and retryable close. Audio worker shutdown joins before freeing storage. Live streams are not serialized; new Builtin tags require rebuilding older images. Windows/Linux automated validation passes; Mac runtime and audible output remain unverified.
 
 - Saved-application entry registration with APP-ENTRY!, APP-ENTRY@ and APP-ENTRY-OFF, explicit --sigma host options and --no-app diagnostic startup, embedded-image failure termination and atomic SAVESYS publication.

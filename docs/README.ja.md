@@ -62,3 +62,5 @@
 - [音声ホストの停止・回収と初期化失敗の検証](PCM_HOST_LIFETIME_IMPLEMENTATION.md)
 
 - [PCM公開語の実装と検証](PCM_PUBLIC_IMPLEMENTATION.md)：所有・待機・画像境界、Windows/Linux自動確認とMacの残件。
+
+- [Forth音源の試作](PCM_SYNTH_PROTOTYPE.md)：独自の4声合成、PCM送出、Windows/Linux測定と限界。

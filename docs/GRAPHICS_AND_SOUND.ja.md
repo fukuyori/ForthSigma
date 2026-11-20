@@ -573,3 +573,5 @@ PCM-ID PCM-CLOSE THROW
 WAIT/STOPの期限切れはfalse,0、中断はTHROW -28です。切離し前にdrainを取り消した場合は受理済み入力を保ち、書込みを続けられます。切離し要求後はSTOPの再試行で応答を確認できます。CLOSEは期限切れで-528、中断で-516を返し、closingのIDを保持するため再試行できます。停止要求中・closingへのWRITE/WAITは-534、不正IDは-521です。不正数値はTHROW -24、不正メモリはTHROW -9で、副作用の前に検査します。hostやscope復元の失敗はTHROW -265です。WAITには容量と同じフレーム数も指定できます。
 
 内部語`SND-PCM-OPEN`・`SND-PCM-WRITE`・`SND-PCM-QUEUED`・`SND-PCM-WAIT`・`SND-PCM-STOP`・`SND-PCM-CLOSE`・`SND-PCM-UNDERRUNS`も同じ効果です。audio=falseですべて除外し、graphics/debug/extensionには依存しません。IDは開いたStateが所有し、同一プロセス内では再利用しません。イメージに実行中ストリームは保存しません。所有中の完全復元はbusy（-528）、LOAD-DICTIONARYの追記は対象のPCMを保持します。保存アプリはPCM未所有で起動します。追加した7個のBuiltinタグで画像ABIが変わるため、古いイメージはソースから保存し直してください。[実装と検証の記録](PCM_PUBLIC_IMPLEMENTATION.md)も参照してください。
+
+独自の[Forth合成例](../examples/pcm-synth.fs)は、音声を起動せず4声の汎用音源を定義します。[PCM送出例](../examples/pcm-synth-play.fs)は部分書込みとclose再試行に対応します。リポジトリ直下で`sigma examples/pcm-synth-play.fs -e "PS-DEMO-SETUP 96 FALSE PS-STREAM BYE"`を実行すると、約1秒分を合成して無音を渡します。TRUEを指定した場合だけ生成波形を出力します。特定チップのエミュレーションではありません。[仕様・測定・残件](PCM_SYNTH_PROTOTYPE.md)を参照してください。

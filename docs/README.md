@@ -62,3 +62,5 @@ For the project overview, how to build, the current features, the differences fr
 - [Audio host shutdown, rollback and lifecycle verification (Japanese)](PCM_HOST_LIFETIME_IMPLEMENTATION.md)
 
 - [Public PCM implementation and validation](PCM_PUBLIC_IMPLEMENTATION.md): ownership, waits, image boundaries, Windows/Linux automation and pending Mac checks.
+
+- [Forth synthesis prototype](PCM_SYNTH_PROTOTYPE.md): original four-voice workload, PCM streaming, Windows/Linux measurements and limits.

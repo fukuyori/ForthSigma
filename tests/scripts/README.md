@@ -133,3 +133,7 @@ Run `python tests/scripts/verify-execution-control.py PATH_TO_SIGMA` for public 
 `python tests/scripts/verify-pcm-stream.py PATH_TO_SIGMA` runs owned processes with silent PCM: write/full wait/drain/close, memory error recovery, busy open, saved applications and dictionary append. Use `--no-image` for image-excluded builds.
 
 `python tests/scripts/verify-pcm-terminal.py PATH_TO_SIGMA` uses a dedicated hidden Windows console or a Linux PTY. It injects characters, Japanese, incomplete ESC and Ctrl+C, verifies WAIT/STOP -28 and CLOSE -516/retry, retained input and restored terminal settings. It never injects into the user's console. All frames are zero; this does not verify audible sound or physical keys. Results: [PCM validation](../../docs/PCM_PUBLIC_IMPLEMENTATION.md).
+
+## Forth synthesis prototype
+
+`python tests/scripts/verify-pcm-synth.py PATH_TO_SIGMA [--benchmark]` checks hand-calculated samples, independent Python s16LE vectors, split/render/register continuity, invalid arguments, forced partial/full/timeout/close failures and silent real PCM integration. Benchmark mode records seven warmed synthesis-only NTIME/CPUTIME intervals with a final-buffer checksum; the separate paced run uses an external monotonic clock and records write/wait/underrun counts and AUDIO?. It does not validate a chip emulator or audible output. Run from the repository root. [Scope and results](../../docs/PCM_SYNTH_PROTOTYPE.md).
