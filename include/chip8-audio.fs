@@ -1,7 +1,7 @@
 \ Original declared portable CHIP-8/SUPER-CHIP buzzer and XO audio model.
 \ No CPU/ROM/device access. Time is virtual48MHz, not a CHIP-8 CPU clock.
 DECIMAL
-S" include/chip8-pitches.fs" REQUIRED
+S" ./chip8-pitches.fs" REQUIRED
 48000000 CONSTANT C8-CLOCK 48000 CONSTANT C8-RATE
 800000 CONSTANT C8-TIMER-PERIOD 4294967296 CONSTANT C8-TURN
 549755813888 CONSTANT C8-XO-TURN

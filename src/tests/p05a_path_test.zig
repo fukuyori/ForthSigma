@@ -365,3 +365,30 @@ test "P05 review unavailable home expansion leaves LOCATE and WHERE nonthrowing"
     try m.interpretLine("LOCATE HOME-WORD WHERE HOME-WORD");
     try std.testing.expect(!output.files[0].open);
 }
+
+test "FPATH startup default is the working directory then include beside the executable" {
+    try support.skipWithout(&.{.files});
+    var output = support.Output{};
+    const m = try support.createMachine(&output);
+    defer support.destroyMachine(m);
+    try m.interpretLine("FPATH PATH= old|entries");
+    const windows = @import("builtin").os.tag == .windows;
+    const cases = [_][2][]const u8{
+        .{ "C:\\Program Files\\Sigma", if (windows) "~+\x00C:\\Program Files\\Sigma\\include" else "~+\x00C:\\Program Files\\Sigma/include" },
+        .{ "\\\\server\\share\\Sigma", if (windows) "~+\x00\\\\server\\share\\Sigma\\include" else "~+\x00\\\\server\\share\\Sigma/include" },
+        .{ "\\\\?\\C:\\Sigma\\", if (windows) "~+\x00C:\\Sigma\\include" else "~+\x00\\\\?\\C:\\Sigma\\/include" },
+        .{ "\\\\?\\UNC\\server\\share", if (windows) "~+\x00\\\\server\\share\\include" else "~+\x00\\\\?\\UNC\\server\\share/include" },
+        .{ "/opt/sigma\\dev", if (windows) "~+\x00/opt/sigma\\dev\\include" else "~+\x00/opt/sigma\\dev/include" },
+    };
+    for (cases) |case| {
+        try m.setDefaultIncludePath(case[0]);
+        const text = try m.fetchString(map.fpath_address);
+        try std.testing.expectEqualStrings(case[1], m.memory[@intCast(text.address)..][0..text.length]);
+    }
+    try m.setDefaultIncludePath("/opt/a|b/");
+    const posix = try m.fetchString(map.fpath_address);
+    try std.testing.expectEqualStrings("~+\x00/opt/a|b/include", m.memory[@intCast(posix.address)..][0..posix.length]);
+    try registry.validate(m);
+    try m.interpretLine("FPATH .PATH");
+    try std.testing.expectEqualStrings("~+ /opt/a|b/include ", output.written());
+}

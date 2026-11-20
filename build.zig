@@ -96,6 +96,8 @@ pub fn build(b: *std.Build) void {
     // The program's license and the third-party notices go with every build output.
     b.installFile("LICENSE", "LICENSE");
     b.installFile("THIRD_PARTY_NOTICES.md", "THIRD_PARTY_NOTICES.md");
+    // The libraries go beside the executable, where the default FPATH looks for them.
+    if (files) b.installDirectory(.{ .source_dir = b.path("include"), .install_dir = .bin, .install_subdir = "include", .include_extensions = &.{".fs"} });
 
     // Explicit verification target only; it is not part of install/release output.
     const audio_probe_module = b.createModule(.{

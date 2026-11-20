@@ -35,6 +35,7 @@ Source: "..\LICENSE"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\README.md"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\THIRD_PARTY_NOTICES.md"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\docs\USER_MANUAL.md"; DestDir: "{app}\docs"; Flags: ignoreversion
+Source: "..\include\*.fs"; DestDir: "{app}\include"; Flags: ignoreversion
 
 [Icons]
 Name: "{group}\FORTH Sigma"; Filename: "{app}\sigma.exe"

@@ -1,6 +1,6 @@
 \ Original PAL SID register model. Not 6581/8580 analog or ROM compatibility.
 \ Load from repository root; loading alone never opens audio.
-S" include/sid-filter-coeffs.fs" REQUIRED
+S" ./sid-filter-coeffs.fs" REQUIRED
 DECIMAL
 985248 CONSTANT SI-CPU
 48000 CONSTANT SI-RATE

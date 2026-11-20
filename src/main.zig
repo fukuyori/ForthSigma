@@ -3772,6 +3772,16 @@ fn run(init: std.process.Init.Minimal) !u8 {
         reportDiagnostic(machine, err);
         return 1;
     };
+    // FPATH starts as the working directory, then `include` beside the executable, so
+    // the libraries load wherever Sigma starts. A SAVESYS executable keeps the FPATH of
+    // its image instead (tque 1191).
+    if (@import("build_options").files and embedded == null) {
+        const directory = std.fs.path.dirname(host.executable_path) orelse ".";
+        machine.setDefaultIncludePath(directory) catch |err| {
+            reportDiagnostic(machine, err);
+            return 1;
+        };
+    }
     if (saved_info) |info| {
         const restored = @import("core/app_entry.zig").get(machine) catch |err| {
             reportDiagnostic(machine, err);

@@ -22569,11 +22569,11 @@ NAN FP. INF FP. -INF FP.
 
 ` ( -- owner ) `
 
-取込み検索パスの所有記述子です。空なら従来のcwd検索、空以外ならパス検索を使います。イメージ追加は追加先の設定を保持します。
+取込み検索パスの所有記述子です。起動時は\`~+\`、実行ファイルと同じ場所の\`include\`の順で、SAVESYSで作ったプログラムは保存した設定を使います。空なら従来のcwd検索、空以外ならパス検索を使います。イメージ追加は追加先の設定を保持します。
 
 <details><summary>英語の説明（HELP・実装に基づく）</summary>
 
-Include search-path owner. Empty retains legacy cwd/raw-name behavior; nonempty opts into path search. Use PATH=/PATH+/CLEAR-PATH/.PATH. Image append preserves the destination setting.
+Include search-path owner. Starts as ~+ then include beside the executable; a SAVESYS program keeps its image's. Empty retains legacy cwd/raw-name behavior; nonempty opts into path search. Use PATH=/PATH+/CLEAR-PATH/.PATH. Image append preserves the destination setting.
 
 </details>
 
@@ -29217,7 +29217,7 @@ Write an executable that starts with the current dictionary.
 
 種別：builtin.
 
-関連説明：[起動と入力](USER_MANUAL.ja.md#起動と入力), [辞書の保存と単独実行ファイル](USER_MANUAL.ja.md#辞書の保存と単独実行ファイル), [保存アプリの自動起動](USER_MANUAL.ja.md#保存アプリの自動起動).
+関連説明：[起動と入力](USER_MANUAL.ja.md#起動と入力), [ソースファイルの読み込み](USER_MANUAL.ja.md#ソースファイルの読み込み), [辞書の保存と単独実行ファイル](USER_MANUAL.ja.md#辞書の保存と単独実行ファイル).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 

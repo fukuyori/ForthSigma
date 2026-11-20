@@ -84,6 +84,9 @@ jobs:
             mkdir "$dir/examples"
             cp examples/*.fs "$dir/examples/"
           fi
+          # The libraries, in every ZIP (they hold words, not demos).
+          mkdir "$dir/include"
+          cp include/*.fs "$dir/include/"
           zip -r "$dir.zip" "$dir"
       - uses: actions/upload-artifact@v7
         with:

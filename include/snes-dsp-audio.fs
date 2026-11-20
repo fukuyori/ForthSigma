@@ -1,6 +1,6 @@
 \ Original declared S-DSP sample-boundary model. No CPU/ROM/SDK/real I/O.
 DECIMAL
-S" include/snes-gauss.fs" REQUIRED
+S" ./snes-gauss.fs" REQUIRED
 32000 CONSTANT SD-RATE 1024000 CONSTANT SD-CLOCK
 CREATE SD-REGS 128 ALLOT CREATE SD-ARAM 65536 ALLOT
 \ Per voice: on,pos,nibble,header,previous,older,phase,env,mode,delay,hist0..3.

@@ -120,6 +120,10 @@ if ! ls examples/*.fs > /dev/null 2>&1; then
     echo "Error: no example programs in $ROOT/examples" >&2
     exit 1
 fi
+if ! ls include/*.fs > /dev/null 2>&1; then
+    echo "Error: no libraries in $ROOT/include" >&2
+    exit 1
+fi
 
 mkdir -p "$OUTPUT"
 STAGING="$ROOT/.work/zip-staging"
@@ -150,6 +154,9 @@ for platform in $PLATFORMS; do
             mkdir "$STAGING/$name/examples"
             cp examples/*.fs "$STAGING/$name/examples/"
         fi
+        # The libraries go in every ZIP: they hold words, not demos.
+        mkdir "$STAGING/$name/include"
+        cp include/*.fs "$STAGING/$name/include/"
 
         rm -f "$OUTPUT/$name.zip"
         (cd "$STAGING" && zip -q -r "$OUTPUT/$name.zip" "$name")

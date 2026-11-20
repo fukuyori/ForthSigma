@@ -79,6 +79,37 @@ pub fn execute(self: *State, comptime builtin: defs.Builtin) RuntimeError!void {
     }
 }
 
+/// The default include search path at startup (tque 1191): the working directory
+/// (`~+`), then `include` in the directory of the executable. The directory keeps its
+/// own separators: the path search compacts only `/`, so a Windows `\\server\share`
+/// stays a share. A Windows `\\?\` prefix is dropped (`\\?\UNC\` becomes `\\`), since
+/// the search appends names with `/`, which such a path would take literally.
+pub fn setDefault(self: *State, owner: map.Cell, executable_directory: []const u8) RuntimeError!void {
+    const windows = @import("builtin").os.tag == .windows;
+    var directory = executable_directory;
+    // The entries are separated by NUL, as PATH= leaves them.
+    var entries = Buffer{};
+    try entries.append("~+\x00");
+    if (windows and std.mem.startsWith(u8, directory, "\\\\?\\UNC\\")) {
+        try entries.append("\\\\");
+        directory = directory["\\\\?\\UNC\\".len..];
+    } else if (windows and std.mem.startsWith(u8, directory, "\\\\?\\")) {
+        directory = directory["\\\\?\\".len..];
+    }
+    try entries.append(directory);
+    const separator: u8 = if (windows) '\\' else '/';
+    const last = entries.bytes[entries.len - 1];
+    if (last != '/' and !(windows and last == '\\')) try entries.append(&.{separator});
+    try entries.append("include");
+    const temporary = try self.heapAllocate(entries.len) orelse return self.throwIor(map.errno_no_memory);
+    defer _ = self.heapFree(temporary) catch {};
+    const at: usize = @intCast(temporary);
+    @memcpy(self.memory[at..][0..entries.len], entries.text());
+    registry.written(self, temporary, entries.len, false);
+    // One replacement: a failure leaves the old FPATH, and a `|` in the directory stays.
+    try strings.storeString(self, temporary, entries.len, owner);
+}
+
 /// Assemble privately, then replace the owned string once. Aliases and allocation
 /// failures cannot leave a half-appended separator or modify the parse source.
 fn store(self: *State, owner: map.Cell, input: []const u8, replace: bool) RuntimeError!void {

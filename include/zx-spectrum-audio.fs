@@ -1,6 +1,6 @@
 \ Original declared ZX48K/128K audio model; no CPU/ROM/real peripheral I/O.
 DECIMAL
-S" include/zx-ay-levels.fs" REQUIRED
+S" ./zx-ay-levels.fs" REQUIRED
 48000 CONSTANT ZX-RATE
 CREATE ZX-REGS 16 CELLS ALLOT
 CREATE ZX-TONE-COUNT 3 CELLS ALLOT CREATE ZX-TONE-HIGH 3 CELLS ALLOT

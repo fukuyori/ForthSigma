@@ -592,6 +592,12 @@ pub const State = struct {
         self.writeCell(in_address, @intCast(offset)) catch unreachable;
     }
 
+    /// Sets FPATH to its startup default: the working directory, then `include` in
+    /// `executable_directory` (tque 1191).
+    pub fn setDefaultIncludePath(self: *State, executable_directory: []const u8) RuntimeError!void {
+        try @import("core/paths.zig").setDefault(self, memory_map.fpath_address, executable_directory);
+    }
+
     /// Interprets one line of terminal input. The line is copied to the terminal input
     /// buffer so PARSE and WORD can return addresses in logical memory.
     pub fn interpretLine(self: *State, input: []const u8) RuntimeError!void {

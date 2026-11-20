@@ -59,6 +59,12 @@ $exampleFiles = @(Get-ChildItem -LiteralPath $examplesDirectory -Filter '*.fs' -
 if ($exampleFiles.Count -eq 0) {
     throw "No example programs in $examplesDirectory"
 }
+# The libraries (include\*.fs) go in every ZIP: they hold words, not demos.
+$includeDirectory = Join-Path $repositoryRoot 'include'
+$includeFiles = @(Get-ChildItem -LiteralPath $includeDirectory -Filter '*.fs' -File | Sort-Object Name)
+if ($includeFiles.Count -eq 0) {
+    throw "No libraries in $includeDirectory"
+}
 
 New-Item -ItemType Directory -Path $outputPath -Force | Out-Null
 $stagingRoot = Join-Path $repositoryRoot '.work\zip-staging'
@@ -92,6 +98,12 @@ foreach ($package in $packages) {
         foreach ($example in $exampleFiles) {
             Copy-Item -LiteralPath $example.FullName -Destination $packageExamples
         }
+    }
+
+    $packageInclude = Join-Path $packageDirectory 'include'
+    New-Item -ItemType Directory -Path $packageInclude -Force | Out-Null
+    foreach ($library in $includeFiles) {
+        Copy-Item -LiteralPath $library.FullName -Destination $packageInclude
     }
 
     $zipPath = Join-Path $outputPath "$packageName.zip"

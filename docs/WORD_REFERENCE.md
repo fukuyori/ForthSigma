@@ -18257,7 +18257,7 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L13
 
 ` ( -- owner ) `
 
-Include search-path owner. Empty retains legacy cwd/raw-name behavior; nonempty opts into path search. Use PATH=/PATH+/CLEAR-PATH/.PATH. Image append preserves the destination setting.
+Include search-path owner. Starts as ~+ then include beside the executable; a SAVESYS program keeps its image's. Empty retains legacy cwd/raw-name behavior; nonempty opts into path search. Use PATH=/PATH+/CLEAR-PATH/.PATH. Image append preserves the destination setting.
 
 Kind: builtin.
 
@@ -23529,7 +23529,7 @@ Write an executable that starts with the current dictionary.
 
 Kind: builtin.
 
-Related: [Starting and input](USER_MANUAL.md#starting-and-input), [Dynamic memory and dynamic strings](USER_MANUAL.md#dynamic-memory-and-dynamic-strings), [Saving the dictionary and stand-alone executables](USER_MANUAL.md#saving-the-dictionary-and-stand-alone-executables).
+Related: [Starting and input](USER_MANUAL.md#starting-and-input), [Dynamic memory and dynamic strings](USER_MANUAL.md#dynamic-memory-and-dynamic-strings), [Graphics and sound](USER_MANUAL.md#graphics-and-sound).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
