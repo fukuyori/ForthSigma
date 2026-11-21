@@ -189,3 +189,9 @@ For CHIP-8 audio, run `python tests/scripts/verify-chip8-audio.py PATH_TO_SIGMA`
 `verify-snes-dsp-audio.py SIGMA --native` adds native-frame BRR256x16x3,317 envelope cases,Gaussian256x4 and FIR8 impulses against independent Python. `verify-snes-dsp-native.py SIGMA` checks batches, divider, backend switches, reset, EXEC-LIMITED interruption/resume and SAVESYS state/ARAM. Pass `--no-debug` when debug is excluded.
 
 `verify-snes-dsp-audio-stream.py SIGMA --native` uses RAM callbacks only. `measure-snes-dsp-audio.py SIGMA --native` defaults to untimed six-load validation; add `--measure` only after fresh user start approval. Audio-excluded builds use the reference Forth checks without --native. Temporary helpers belong under `.work`.
+
+### Standard sound
+
+`python tests/scripts/listen-standard-sound.py PATH_TO_SIGMA` plays 21 listening cases of the standard sound (PLAY, MML V/S/M, BEEP, PLAY-TONE, the instrument words, SAMPLE and SFX, MOD, the global effects, and all 16 voices at once), printing what should be heard before each and waiting for Enter. `--list` prints the cases, `--case N` picks some, and `--silent` runs them all at `0 MASTER-VOLUME` to check that they run. The JSON records only what ran; a human reports what was heard. Generated programs and the MOD file go under `.work/1201`.
+
+`python tests/scripts/measure-standard-sound-load.py zig-out/audio-check/<arch>-<os>/sound-load(.exe)` checks three 16-voice loads on the engine alone (built by `zig build sound-load-check -Doptimize=ReleaseFast`) without timing by default. Use `--measure` only after user timing-start approval; it renders each load once untimed and seven times timed, ten seconds of 48 kHz stereo each.

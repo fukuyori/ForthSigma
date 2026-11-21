@@ -192,3 +192,9 @@ CHIP-8音源は`python tests/scripts/verify-chip8-audio.py SIGMAのパス`で独
 `verify-snes-dsp-audio.py SIGMA --native` はForth個別検査に加えてnative frameのBRR全256×16×3、317 ENV、補間256位相×4履歴、FIR8タップを独立Pythonと照合します。`verify-snes-dsp-native.py SIGMA` は複数frame、DIV、切替え、reset、EXEC-LIMITED中断と再開、SAVESYS後の全state/ARAMを照合します。debug除外では `--no-debug` を指定します。
 
 `verify-snes-dsp-audio-stream.py SIGMA --native` はRAM callbackのみを使います。`measure-snes-dsp-audio.py SIGMA --native` の既定も計時なしの6負荷照合です。`--measure` は新たな開始確認への返答後に限ります。audio除外ではnativeを指定せず参照Forthを検査します。一時スクリプトは `.work` に置きます。
+
+### 標準の音
+
+`python tests/scripts/listen-standard-sound.py PATH_TO_SIGMA` は標準の音を実際に聞く21のケース(PLAY、MML の V・S・M、BEEP、PLAY-TONE、音色の語、SAMPLE と SFX、MOD、全体の効果、16声の同時発音)を鳴らします。各ケースの前に聞こえるはずの音を表示し、Enter を待ちます。`--list` はケースの一覧を表示し、`--case N` はケースを選び、`--silent` は `0 MASTER-VOLUME` で全ケースを動かして動作だけを確かめます。JSON は実行の記録だけで、聞こえた音は人が報告します。生成したプログラムと MOD ファイルは `.work/1201` に置きます。
+
+`python tests/scripts/measure-standard-sound-load.py zig-out/audio-check/<arch>-<os>/sound-load(.exe)` は、エンジン単体での16声の3つの負荷(`zig build sound-load-check -Doptimize=ReleaseFast` でビルド)を、既定では計時せずに照合します。`--measure` は計時開始への利用者の了承後だけ使います。各負荷を計時なしで1回、計時ありで7回、それぞれ48 kHz ステレオ10秒分を合成します。

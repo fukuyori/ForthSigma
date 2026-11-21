@@ -114,6 +114,18 @@ pub fn build(b: *std.Build) void {
         @tagName(target.result.cpu.arch), @tagName(target.result.os.tag), if (target.result.os.tag == .windows) ".exe" else "",
     })).step);
 
+    // The standard sound's 16-voice load (tque 1201); a verification target only.
+    const sound_load_module = b.createModule(.{
+        .root_source_file = b.path("src/sound_load_probe.zig"),
+        .target = target,
+        .optimize = optimize,
+        .link_libc = true,
+    });
+    const sound_load = b.addExecutable(.{ .name = "sound-load-probe", .root_module = sound_load_module });
+    b.step("sound-load-check", "Build the standard sound's 16-voice load probe").dependOn(&b.addInstallFile(sound_load.getEmittedBin(), b.fmt("audio-check/{s}-{s}/sound-load{s}", .{
+        @tagName(target.result.cpu.arch), @tagName(target.result.os.tag), if (target.result.os.tag == .windows) ".exe" else "",
+    })).step);
+
     const test_module = b.createModule(.{
         .root_source_file = b.path("src/forth_test.zig"),
         .target = target,

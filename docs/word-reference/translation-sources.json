@@ -221,6 +221,7 @@
     "src/physical_key_map.zig": "e638630a49c2e2c358dc136aadc47fcd23ebbd5a11b7a68e769b4fe9481d81de",
     "src/physical_key_protocol.zig": "f6ff7e274f11628233cc9f5cf3d2b5b14da675ce147ead0c9eda3216297dcde1",
     "src/runtime_test.zig": "466cd719f27c7f9085c2308266a84a0c83baab9e1736f5ea4e90f9c0a8a9433d",
+    "src/sound_load_probe.zig": "0cf3f3844a1bf5798ed42853ceae060559fca8d1086f8332f8b2cf7e5462c921",
     "src/stb/sigma_font.c": "d1698db33cc12a091499411a4e5b80b87587c199d0c637fe4ee8f1816d50759c",
     "src/stb/stb_truetype.h": "428cfe93520f2aed5e413a220b0db5bba5b17e2ebe5a64e4a8efa9eeeb67ec5f",
     "src/tests/app_entry_test.zig": "d8b889f1f619e23115c54408c30347f2e184f2cdccb86eee4ae62ad4c65462c8",
