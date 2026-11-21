@@ -39,6 +39,9 @@
 : PLAY? ( n -- flag )   SND-PLAYING ;
 : BEEP ( -- )   SND-BEEP ;
 : PLAYS ( c-addr1 u1 ... c-addrn un n -- )   SND-PLAYS ;
+\ Stops the music as 0 PLAYS does, and puts the voices' MML settings (octave, length,
+\ tempo, volume, instrument, and the others) back as at start, without a sound.
+: PLAY-RESET ( -- )   10 SND-GLOBAL ;
 \ A square of hz for ms milliseconds, beside the music (on an SFX voice).
 : PLAY-TONE ( hz ms -- )   SND-PLAY-TONE ;
 

@@ -14,6 +14,7 @@
 - `MASTER-FILTER ( mode hz stage -- )` has two stages, one after the other, and one-pole filters (modes 11 and 13) beside the two-pole ones; it took `( mode hz -- )` before. `FILTER` and `MOD-FILTER` take modes 5 to 7, which add the filter's outputs as the SID's mode bits do. `MIXER 1` takes voice 5 as the NES's DMC.
 - Chip libraries: `NES-SOUND` has five voices and the output's two filters, with `NES-SHORT-NOISE` and `NES-DMC`; `C64-FILTER` sets the SID's filter from its registers' values; `STE-SOUND`, `STE-STEPS`, `STE-LEFT`, and `STE-RIGHT` give the STE's sample channels; `AMIGA-SOUND` puts the A500's one-pole low-pass first and `AMIGA-FILTER`'s LED filter after it, with periods from 123.
 - `VOICE-PAN ( left right voice -- )` sets the left and right levels of a voice, whatever it plays; the instrument's levels, which had this name, are `INSTRUMENT-PAN ( left right -- )`. `AMIGA-SOUND` puts voices 1 to 4 left, right, right, left with it.
+- `PLAY-RESET ( -- )` stops the music as `0 PLAYS` does and puts the voices' MML settings back as at start, without a sound; SFX and a module go on.
 
 - Forth YM2149/ST register model with timestamped writes/reads, virtual I/O latches/pins and ST select/data bus helpers. Independent master-clock/state/PCM validation and workload measurements; no physical peripheral or TOS compatibility claim. Mac acceptance remains pending.
 

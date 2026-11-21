@@ -49,7 +49,7 @@ pub const definitions = [_]struct { []const u8, Builtin }{
 
 /// The words of the audio library that HELP describes; the help test checks that the
 /// library defines each of them.
-pub const library_words = [_][]const u8{ "PLAY", "PLAY2", "PLAY3", "PLAY?", "BEEP", "AUDIO?", "PLAYS", "INSTRUMENT", "SQUARE", "PULSE", "TRIANGLE", "SAW", "NOISE", "DUTY", "ADSR", "RING", "SYNC", "FILTER", "WAVETABLE", "LOAD-SAMPLE", "SAMPLE", "LOOP-SAMPLE", "SAMPLE-INSTRUMENT", "SFX", "FREE-SAMPLES", "LOAD-MOD", "PLAY-MOD", "STOP-MOD", "MOD?", "PCM-OPEN", "PCM-WRITE", "PCM-QUEUED", "PCM-WAIT", "PCM-STOP", "PCM-CLOSE", "PCM-UNDERRUNS", "SNES-FRAMES", "PLAY-TONE", "NOISE-LFSR", "NOISE-MIX", "ENVELOPE", "PITCH-SWEEP", "PITCH-SWEEP-LIMIT", "PORTAMENTO", "VIBRATO", "PITCH-MOD", "VOLUME-MOD", "MOD-ONLY", "PHASE-RESET", "NOTE-LIMIT", "VOICE-PAN", "INSTRUMENT-PAN", "REVERB-SEND", "MOD-FILTER", "REVERB", "REVERB-FIR", "MASTER-FILTER", "TONE-CONTROL", "MASTER-VOLUME", "VOICE-OSC", "VOICE-ENV", "VOICE-POS", "VOICE-ENDS", "VOICE-ON?", "PITCH-PERIOD", "PITCH-STEP", "VOLUME-STEPS", "DUTY-STEPS", "INTERPOLATION", "VOICE-LIMIT", "MIXER", "OUTPUT-BITS", "NOISE-RATE", "VOICE-HOLD", "V-STEPS" };
+pub const library_words = [_][]const u8{ "PLAY", "PLAY2", "PLAY3", "PLAY?", "BEEP", "AUDIO?", "PLAYS", "PLAY-RESET", "INSTRUMENT", "SQUARE", "PULSE", "TRIANGLE", "SAW", "NOISE", "DUTY", "ADSR", "RING", "SYNC", "FILTER", "WAVETABLE", "LOAD-SAMPLE", "SAMPLE", "LOOP-SAMPLE", "SAMPLE-INSTRUMENT", "SFX", "FREE-SAMPLES", "LOAD-MOD", "PLAY-MOD", "STOP-MOD", "MOD?", "PCM-OPEN", "PCM-WRITE", "PCM-QUEUED", "PCM-WAIT", "PCM-STOP", "PCM-CLOSE", "PCM-UNDERRUNS", "SNES-FRAMES", "PLAY-TONE", "NOISE-LFSR", "NOISE-MIX", "ENVELOPE", "PITCH-SWEEP", "PITCH-SWEEP-LIMIT", "PORTAMENTO", "VIBRATO", "PITCH-MOD", "VOLUME-MOD", "MOD-ONLY", "PHASE-RESET", "NOTE-LIMIT", "VOICE-PAN", "INSTRUMENT-PAN", "REVERB-SEND", "MOD-FILTER", "REVERB", "REVERB-FIR", "MASTER-FILTER", "TONE-CONTROL", "MASTER-VOLUME", "VOICE-OSC", "VOICE-ENV", "VOICE-POS", "VOICE-ENDS", "VOICE-ON?", "PITCH-PERIOD", "PITCH-STEP", "VOLUME-STEPS", "DUTY-STEPS", "INTERPOLATION", "VOICE-LIMIT", "MIXER", "OUTPUT-BITS", "NOISE-RATE", "VOICE-HOLD", "V-STEPS" };
 
 /// The audio library, which REQUIRE-AUDIO interprets after appending the SND- words.
 pub const library = @embedFile("../audio/audio.fs");
@@ -548,9 +548,15 @@ pub fn adsrEnvelope(attack: u32, decay: u32, sustain: u16, release: u32) voice.E
 
 /// SND-GLOBAL ( ... key -- ): REVERB (0), REVERB-FIR (1), MASTER-FILTER (2),
 /// TONE-CONTROL (3), and MASTER-VOLUME (4), 3.7 of the study, and VOICE-LIMIT (5),
-/// MIXER (6), and OUTPUT-BITS (7), 3.5; MASTER-FILTER with its stage (8) and VOICE-PAN (9). They take effect at once.
+/// MIXER (6), and OUTPUT-BITS (7), 3.5; MASTER-FILTER with its stage (8), VOICE-PAN (9), and PLAY-RESET (10). They take effect at once.
 fn globalWord(self: *State) RuntimeError!void {
     const key = try self.pop();
+    // PLAY-RESET: as a stop of the music (0 PLAYS), and the voices' MML settings go back
+    // to what they are at start. SFX and MOD go on, and nothing sounds.
+    if (key == 10) {
+        const engine = try getEngine(self);
+        return stop(self, engine, engine.stopPlayCommand());
+    }
     const command: sound_engine.Command = switch (key) {
         0 => command: {
             const volume = try self.pop();

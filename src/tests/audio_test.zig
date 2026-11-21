@@ -522,7 +522,7 @@ test "the effects on all the voices and the voices' state through the words" {
     try std.testing.expectApproxEqAbs(@as(f32, -32768.0 / 65535.0), engine.bank.pans[2][1], 1e-6);
     try std.testing.expectEqual([2]f32{ 1, 1 }, engine.bank.pans[3]);
     try std.testing.expectApproxEqRel(@as(f32, 40000.0 / 65535.0), engine.master.volume, 1e-6);
-    for ([_][]const u8{ "342 0 1 REVERB", "0 65536 1 REVERB", "C 9 REVERB-FIR", "2 1000 1 MASTER-FILTER", "5 1000 1 MASTER-FILTER", "1 1000 0 MASTER-FILTER", "1 1000 3 MASTER-FILTER", "13 0 TONE-CONTROL", "65536 MASTER-VOLUME", "0 0 0 VOICE-PAN", "0 0 17 VOICE-PAN", "65536 0 1 VOICE-PAN", "0 -65536 1 VOICE-PAN", "10 SND-GLOBAL", "0 VOICE-ON?", "17 VOICE-ON?", "1 5 SND-VOICE" }) |line| {
+    for ([_][]const u8{ "342 0 1 REVERB", "0 65536 1 REVERB", "C 9 REVERB-FIR", "2 1000 1 MASTER-FILTER", "5 1000 1 MASTER-FILTER", "1 1000 0 MASTER-FILTER", "1 1000 3 MASTER-FILTER", "13 0 TONE-CONTROL", "65536 MASTER-VOLUME", "0 0 0 VOICE-PAN", "0 0 17 VOICE-PAN", "65536 0 1 VOICE-PAN", "0 -65536 1 VOICE-PAN", "11 SND-GLOBAL", "0 VOICE-ON?", "17 VOICE-ON?", "1 5 SND-VOICE" }) |line| {
         try std.testing.expectError(error.InvalidNumber, machine.interpretLine(line));
         machine.data_depth = 0;
     }
@@ -676,6 +676,53 @@ test "SAMPLE, LOOP-SAMPLE, SAMPLE-INSTRUMENT, SFX, and FREE-SAMPLES" {
     try std.testing.expect(!engine.bank.voices[sound_engine.sfx_first].active);
     render(&engine, 1);
     try std.testing.expectEqual(@as(u32, 0), engine.samples[1].length);
+}
+
+test "PLAY-RESET stops MML and puts the voices' MML settings back, without a sound, while SFX goes on" {
+    try skipWithout(&.{.audio});
+    var engine = newEngine();
+    var pool: [8192]i16 = undefined;
+    engine.pool = &pool;
+    var output = Output{ .audio = &engine };
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
+    try machine.interpretLine("REQUIRE-AUDIO ALSO AUDIO CREATE RESET-SAMPLE 2048 ALLOT RESET-SAMPLE 2048 64 FILL RESET-SAMPLE 2048 8000 1 SAMPLE");
+    try machine.interpretLine("2 INSTRUMENT PULSE 16384 DUTY S\" @2 T42 O6 V5 L8 P100,0 C1 D1\" S\" O2 V3 C1\" PLAY2 1 SFX");
+    render(&engine, 16);
+    const sfx = &engine.bank.voices[sound_engine.sfx_first];
+    try std.testing.expect(engine.isPlaying(0));
+    try std.testing.expect(sfx.active);
+    const position = sfx.position;
+    const instrument = machine.audio_instruments[2];
+    const fresh: mml.Voice = .{};
+    try std.testing.expect(!std.meta.eql(fresh, machine.audio_voices[0]));
+    try std.testing.expect(!std.meta.eql(fresh, machine.audio_voices[1]));
+    try machine.interpretLine("PLAY-RESET 0 PLAY?");
+    try expectStack(machine, &.{0});
+    machine.data_depth = 0;
+    // Every voice's settings are as at start; the instruments stay as they were set.
+    for (machine.audio_voices) |v| try std.testing.expectEqualDeep(fresh, v);
+    try std.testing.expectEqualDeep(instrument, machine.audio_instruments[2]);
+    try std.testing.expectEqual(@as(u8, 2), machine.audio_instrument);
+    for (0..sound_engine.max_voices) |v| try std.testing.expectEqual(@as(u32, 0), queued(&engine, v));
+    // Nothing sounds on PLAY's voices (BEEP would sound its note), and the SFX goes on.
+    try std.testing.expectEqual(@as(u32, 0), engine.beep_samples);
+    for (engine.bank.voices[0..sound_engine.max_voices]) |v| try std.testing.expect(!v.active);
+    render(&engine, 2400);
+    try std.testing.expect(!engine.isPlaying(0));
+    try std.testing.expect(sfx.active);
+    try std.testing.expect(sfx.position > position);
+    // The next PLAY starts from the settings at start: instrument 0, the square.
+    try machine.interpretLine("S\" C1\" PLAY");
+    render(&engine, 2400);
+    try std.testing.expect(engine.isPlaying(1));
+    try std.testing.expectEqual(sound_engine.voice.Wave.square, engine.bank.voices[0].tone.wave);
+    try std.testing.expectEqual(@as(i32, 65535), engine.bank.voices[0].tone.pan_right);
+    // PLAYS itself takes no such number.
+    for ([_][]const u8{ "-1 PLAYS", "9 PLAYS" }) |line| {
+        try std.testing.expectError(error.InvalidNumber, machine.interpretLine(line));
+        machine.data_depth = 0;
+    }
 }
 
 test "0 PLAYS stops queued and sounding MML while SFX and MOD continue" {

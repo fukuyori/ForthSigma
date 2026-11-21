@@ -1182,6 +1182,7 @@ BEEP	音楽・SFX・MODを止めてPLAY設定を初期化し、標準の矩形�
 AUDIO?	音声エンジンが物理デバイスへ出力できるか返します。デバイスがなければ無音で動作します。エンジンのホストコールバック自体がなければ偽ではなくHostUnavailableです。
 SND-CHIP	イメージとの互換のために残した基本処理で、-21を返します。機種の語はinclude/のライブラリにあります。
 SND-WAVE	波形を0矩形・1パルス・2三角・3のこぎり・4ノイズで選ぶ基本処理です。
+PLAY-RESET	0 PLAYSと同じくMMLとその声を停止し、声部のMML設定（オクターブ・長さ・テンポ・音量・音色・SとM・P・Y・K・Q）を起動時の値に戻します。音は鳴らしません。SFX・MOD・標本・音色は保持します。BEEPは音を鳴らして同じことを行い、SFXとMODも止めます。
 PLAYS	最初のn声部（1〜8）でMMLを同時開始します。n=0ではMMLとその声を停止し、SFX・MOD・標本・音色・声部のMML設定を保持します。
 INSTRUMENT	編集対象の音色0〜63を選びます。MMLの@nで演奏時に指定します。
 SQUARE	音色を周期の半分が高い矩形波にします。
@@ -1616,7 +1617,7 @@ VOLUME-STEPS	音色の音量を、addrのセルにある昇順のn個（0〜128�
 DUTY-STEPS	音色の矩形波のデューティーをn段に丸めます（0と1周期にはしません）。0でなしです。
 INTERPOLATION	音色の波形表と標本の読み方を、0補間なし（階段、初期値）・1線形で設定します。
 MOD-FILTER	MODの効果E0xが入れるフィルターを、FILTERと同じ種類（0なし〜7）と周波数で設定します。初期状態はなしです。
-SND-GLOBAL	REVERB（0）・REVERB-FIR（1）・MASTER-FILTER（2）・TONE-CONTROL（3）・MASTER-VOLUME（4）・VOICE-LIMIT（5）・MIXER（6）・OUTPUT-BITS（7）・MASTER-FILTER（8。2は段の番号を取らない1段目）・VOICE-PAN（9）を実行する基本処理です。
+SND-GLOBAL	REVERB（0）・REVERB-FIR（1）・MASTER-FILTER（2）・TONE-CONTROL（3）・MASTER-VOLUME（4）・VOICE-LIMIT（5）・MIXER（6）・OUTPUT-BITS（7）・MASTER-FILTER（8。2は段の番号を取らない1段目）・VOICE-PAN（9）・PLAY-RESET（10）を実行する基本処理です。
 SND-VOICE	VOICE-OSC（0）・VOICE-ENV（1）・VOICE-POS（2）・VOICE-ENDS（3）・VOICE-ON?（4）を実行する基本処理です。
 REVERB	全体のリバーブを、遅れ0〜341ms、帰還-65535〜65535、音量0〜65535（0で切る）で設定します。REVERB-SENDで送られた音を響かせます。
 REVERB-FIR	リバーブの響きに、addrのセルにあるn個（0〜8）の符号付き係数（128が1）のフィルターをかけます。0でなしです。
